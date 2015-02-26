@@ -1,0 +1,79 @@
+/*
+** FamiTracker - NES/Famicom sound tracker
+** Copyright (C) 2005-2015 Jonathan Liss
+**
+** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+**
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful, 
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+** Library General Public License for more details.  To obtain a 
+** copy of the GNU Library General Public License, write to the Free 
+** Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+**
+** Any permitted reproduction of these routin, in whole or in part,
+** must bear this legend.
+*/
+
+#include "stdafx.h"
+#include "Groove.h"
+
+CGroove::CGroove(int Speed)
+{
+	Clear(Speed);
+}
+
+void CGroove::Copy(const CGroove *Source)
+{
+	SetSize(Source->GetSize());
+	memcpy(m_iEntry, Source->m_iEntry, MAX_GROOVE_SIZE);
+}
+
+void CGroove::Clear(char Speed)
+{
+	m_iLength = (Speed > 0);
+	memset(m_iEntry, 0, MAX_GROOVE_SIZE);
+	SetEntry(0, Speed);
+}
+
+char CGroove::GetEntry(int Index) const
+{
+	if (Index >= 0 && m_iLength > 0)
+		return m_iEntry[Index % m_iLength];
+	else
+		return -1;
+}
+
+void CGroove::SetEntry(int Index, char Value)
+{
+	if (Index >= m_iLength) return;
+	m_iEntry[Index] = Value;
+}
+
+char CGroove::GetSize() const
+{
+	return m_iLength;
+}
+
+void CGroove::SetSize(int Size)
+{
+	if (Size > MAX_GROOVE_SIZE || Size < 0) return;
+	if (m_iLength < Size) for (int i = m_iLength; i < Size; i++)
+		m_iEntry[i] = 0;
+	m_iLength = Size;
+}
+
+float CGroove::GetAverage() const
+{
+	float Total = 0;
+	if (!m_iLength) return 6.0; // return DEFAULT_SPEED;
+	else {
+		for (int i = 0; i < m_iLength; i++) Total += m_iEntry[i];
+		return Total / m_iLength;
+	}
+}

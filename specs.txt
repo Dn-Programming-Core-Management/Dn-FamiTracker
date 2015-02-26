@@ -1,0 +1,106 @@
+0CC-FamiTracker Mod
+Specification
+Written by HertzDevil
+Version 0.3.8 - Feeb 16 2015
+
+--------------------------------------------------------------------------------
+
+	===
+	Newly added enumerable types
+	===
+
+The following changes to the FTM effect enumeration are made:
+ - Mxy: 0x19: delayed channel volume
+ - Lxx: 0x21: delayed note release
+ - Oxx: 0x22: groove setting
+
+The following effect command bytes are added to the NSF export format:
+ - Lxx: 0xBA: delayed note release
+ - Sxx: 0xBC: linear counter
+ - Oxx: 0xBE: groove setting
+ - Mxy: 0xC0: delayed channel volume
+ - Txy: 0xC2: delayed transpose
+ - Hxx: 0xC4: FDS FM depth
+ - Ixx: 0xC6: FDS FM rate, high byte
+ - Jxx: 0xC8: FDS FM rate, low byte
+ - Jxx: 0xC4: 5B envelope shape
+ - Ixx: 0xC6: 5B envelope rate, high byte
+ - Hxx: 0xC8: 5B envelope rate, low byte
+(+6 to 5B effect bytes if both FDS and 5B are present)
+
+The following note bytes are added to the FTM format:
+ -  ^x: 0x0F: Echo buffer access
+
+	===
+	DETUNETABLES Block
+	===
+
+Version 1:
+ - chip: char[0,5] - index of the detune table. 0=2A03, 1=2A07, 2=VRC6 sawtooth,
+                     3=VRC7, 4=FDS, 5=N163
+ - count: char[1,96] - number of notes in the specified detune table
+   Repeat [count] times:
+  - note: char[0,95] - zero-based note index of the detune table entry
+  - offset: int[-32767,32767] - register offset of the detune table entry
+
+	===
+	GROOVES Block
+	===
+
+Version 1:
+ - count: char[1,32] - number of grooves
+   Repeat [count] times:
+  - index: char[0,31] - index of the groove
+  - size: char[1,128] - size of the groove
+    Repeat [size] times:
+   - entry: char[1,255] - groove entry
+ - tracks: char[1,64] - Number of tracks
+   Repeat [tracks] times:
+  - flag: char[0,1] - 0 for default speed, 1 for default groove
+
+	===
+	SEQUENCE_REGIONS Block
+	===
+
+Version 1:
+ - count: int[1,320] - number of sequences using regions
+   Repeat [count] times:
+  - index: char[0,63] - instrument index
+  - type: char[0,4] - sequence type. 0=volume, 1=arpeggio, 2=pitch, 3=hi-pitch,
+                      4=duty 
+  - size: char[1,96] - number of sequence regions
+    Repeat [size] times:
+   - notelo: char[0,95] - lowest note of the region
+   - notehi: char[0,95] - highest note of the region
+   - sequence: char[0,127] - sequence index
+
+	===
+	Text exporter syntax
+	===
+
+The text command syntax for a detune table entry is:
+
+ - DETUNE [chip] [octave] [note] [offset]
+  - chip: int[0,5] - index of the detune table. 0=2A03, 1=2A07, 2=VRC6 sawtooth,
+                     3=VRC7, 4=FDS, 5=N163
+  - octave: int[0,7] - octave of key 
+  - note: int[0,11] - scale note of key 
+  - offset: int[-32767,32767] - register offset
+
+The text command syntax for a groove is:
+
+ - GROOVE [index] [size] : [speed]
+  - index: int[0,31] - index of the groove
+  - size: int[1,128] - length of the groove
+  - speed: int_list[1,255] - groove entries
+
+To use grooves in a module, the following command must be included before all
+TRACK commands:
+
+ - USEGROOVE : [track]
+  - track: int_list[1,64] - list of one-based indices of tracks that use a
+                            default groove
+
+--------------------------------------------------------------------------------
+
+For enquiries mail to nicetas.c@gmail.com
