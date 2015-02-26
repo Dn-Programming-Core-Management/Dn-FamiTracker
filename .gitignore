@@ -38,3 +38,5 @@ hlp/**
 *.lastbuildstate
 FamiTracker.opensdf
 FamiTracker.sdf
+config.h
+.gitignore
