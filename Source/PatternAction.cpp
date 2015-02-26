@@ -340,60 +340,93 @@ void CPatternAction::Interpolate(CFamiTrackerDoc *pDoc) const
 	const int EndRow = m_selection.GetRowEnd();
 
 	for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); ++i) {
-		const int Columns = pDoc->GetEffColumns(m_iUndoTrack, i) + 2;
+		const int Columns = pDoc->GetEffColumns(m_iUndoTrack, i) + 4;		// // //
 		for (int j = 0; j < Columns; ++j) {
-			float StartVal, EndVal, Delta;
+			double StartValHi, StartValLo;		// // //
+			double EndValHi, EndValLo;
+			double DeltaHi, DeltaLo;
+			bool TwoParam = false;
 			int Effect;
-			stChanNote NoteData;
+			stChanNote StartData, EndData;
+			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, i, StartRow, &StartData);
+			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, i, EndRow, &EndData);
 			switch (j) {
-				case 0:	// Volume
-					if (!m_selection.IsColumnSelected(COLUMN_VOLUME, i))
-						continue;
-					pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, i, StartRow, &NoteData);
-					if (NoteData.Vol == MAX_VOLUME)
-						continue;
-					StartVal = (float)NoteData.Vol;
-					pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, i, EndRow, &NoteData);
-					if (NoteData.Vol == MAX_VOLUME)
-						continue;
-					EndVal = (float)NoteData.Vol;
-					break;
-				case 1:	// Effect 1
-				case 2:
-				case 3:
-				case 4:
-					if (!m_selection.IsColumnSelected(COLUMN_EFF1 + j - 1, i))
-						continue;
-					pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, i, StartRow, &NoteData);
-					if (NoteData.EffNumber[j - 1] == EF_NONE)
-						continue;
-					StartVal = (float)NoteData.EffParam[j - 1];
-					Effect = NoteData.EffNumber[j - 1];
-					pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, i, EndRow, &NoteData);
-					if (NoteData.EffNumber[j - 1] == EF_NONE)
-						continue;
-					EndVal = (float)NoteData.EffParam[j - 1];
-					break;
+			case 0: // // // Note
+				if (!m_selection.IsColumnSelected(COLUMN_NOTE, i)
+					|| StartData.Note < C || StartData.Note > B || EndData.Note < C || EndData.Note > B)
+					continue;
+				StartValLo = (float)MIDI_NOTE(StartData.Octave, StartData.Note);
+				EndValLo = (float)MIDI_NOTE(EndData.Octave, EndData.Note);
+				break;
+			case 1: // // // Instrument
+				if (!m_selection.IsColumnSelected(COLUMN_INSTRUMENT, i)
+					|| StartData.Instrument == MAX_INSTRUMENTS || EndData.Instrument == MAX_INSTRUMENTS)
+					continue;
+				StartValLo = (float)StartData.Instrument;
+				EndValLo = (float)EndData.Instrument;
+				break;
+			case 2:	// // // Volume
+				if (!m_selection.IsColumnSelected(COLUMN_VOLUME, i)
+					|| StartData.Vol == MAX_VOLUME || EndData.Vol == MAX_VOLUME)
+					continue;
+				StartValLo = (float)StartData.Vol;
+				EndValLo = (float)EndData.Vol;
+				break;
+			case 3:	// // // Effects
+			case 4:
+			case 5:
+			case 6:
+				if (!m_selection.IsColumnSelected(COLUMN_EFF1 + j - 3, i)
+					|| StartData.EffNumber[j - 3] == EF_NONE || EndData.EffNumber[j - 3] == EF_NONE
+					|| StartData.EffNumber[j - 3] != EndData.EffNumber[j - 3])
+					continue;
+				StartValLo = (float)StartData.EffParam[j - 3];
+				EndValLo = (float)EndData.EffParam[j - 3];
+				Effect = StartData.EffNumber[j - 3];
+				switch (Effect) {
+				case EF_SWEEPUP: case EF_SWEEPDOWN: case EF_SLIDE_UP: case EF_SLIDE_DOWN:
+				case EF_ARPEGGIO: case EF_VIBRATO: case EF_TREMOLO:
+				case EF_VOLUME_SLIDE: case EF_DELAYED_VOLUME: case EF_TRANSPOSE:
+					TwoParam = true;
+				}
+				break;
 			}
 
-			Delta = (EndVal - StartVal) / float(EndRow - StartRow);
+			if (TwoParam) {
+				StartValHi = std::floor(StartValLo / 16.0);
+				StartValLo = std::fmod(StartValLo, 16.0);
+				EndValHi = std::floor(EndValLo / 16.0);
+				EndValLo = std::fmod(EndValLo, 16.0);
+			}
+			else
+				StartValHi = EndValHi = 0.0;
+			DeltaHi = (EndValHi - StartValHi) / float(EndRow - StartRow);
+			DeltaLo = (EndValLo - StartValLo) / float(EndRow - StartRow);
 
 			for (int k = StartRow; k < EndRow; ++k) {
-				pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, i, k, &NoteData);
+				pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, i, k, &EndData);
 				switch (j) {
-					case 0: 
-						NoteData.Vol = (int)StartVal; 
+					case 0: // // //
+						EndData.Note = GET_NOTE((int)StartValLo); 
+						EndData.Octave = GET_OCTAVE((int)StartValLo); 
 						break;
-					case 1: 
-					case 2: 
-					case 3: 
-					case 4:
-						NoteData.EffNumber[j - 1] = Effect;
-						NoteData.EffParam[j - 1] = (int)StartVal; 
+					case 1: // // //
+						EndData.Instrument = (int)StartValLo; 
+						break;
+					case 2: // // //
+						EndData.Vol = (int)StartValLo; 
+						break;
+					case 3: // // //
+					case 4: 
+					case 5: 
+					case 6:
+						EndData.EffNumber[j - 3] = Effect;
+						EndData.EffParam[j - 3] = (int)StartValLo + ((int)StartValHi << 4); 
 						break;
 				}
-				StartVal += Delta;
-				pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, i, k, &NoteData);
+				StartValLo += DeltaLo;
+				StartValHi += DeltaHi;
+				pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, i, k, &EndData);
 			}
 		}
 	}
