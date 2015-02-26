@@ -1285,9 +1285,9 @@
     </None>
     <None Include="changelog.txt" />
     <None Include="FamiTracker.reg" />
-    <None Include="Texts\FastTracker effects.txt" />
     <None Include="gpl.txt" />
-    <None Include="ReadMe.txt" />
+    <None Include="specs.txt" />
+    <None Include="0CC-readme.txt" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="res\FamiTracker.manifest" />

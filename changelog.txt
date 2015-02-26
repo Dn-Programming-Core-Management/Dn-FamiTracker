@@ -27,8 +27,8 @@ Improvements:
  - Added hotkey to duplicate the current pattern to the first unused pattern of
     the channel
  - FTM import now supports detune tables and groove tables
- - Sequence MML field now accepts "L" for loop point, "R" for release point
-    (like NSDL), and "'" single quotation mark for repetition (like XPMCK)
+ - Sequence MML field now accepts "'" single quotation mark for repetition (like
+    XPMCK)
  - The Sunsoft 5B's volume level can now be modified in the chip mixer
  - MMC5 can now output sound when the period register is below 0x008
  - The status bar now displays the current row and frame index in hexadecimal

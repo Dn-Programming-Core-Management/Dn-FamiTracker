@@ -864,6 +864,7 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(Filename)%(Extension)" &gt;&gt; "hlp\
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="0CC-readme.txt" />
     <None Include="res\Application.ico" />
     <None Include="res\Document.ico" />
     <None Include="res\Inst_2A03.ico" />
@@ -1129,9 +1130,8 @@ echo.
     </None>
     <None Include="changelog.txt" />
     <None Include="FamiTracker.reg" />
-    <None Include="Texts\FastTracker effects.txt" />
     <None Include="gpl.txt" />
-    <None Include="ReadMe.txt" />
+    <None Include="specs.txt" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="res\FamiTracker.manifest">
