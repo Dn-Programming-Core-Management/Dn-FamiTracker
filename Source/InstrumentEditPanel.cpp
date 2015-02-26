@@ -270,11 +270,11 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 	char *term = strtok_s(str2, " ", &context);
 
 	while (term != NULL && AddedItems < MAX_SEQUENCE_ITEMS) {
-		if (term[0] == '|' || term[0] == 'L') {		// // //
+		if (term[0] == '|' || term[0] == 'l') {		// // //
 			// Set loop point
 			pSequence->SetLoopPoint(AddedItems);
 		}
-		else if (term[0] == '/' || term[0] == 'R') {		// // //
+		else if (term[0] == '/' || term[0] == 'r') {		// // //
 			// Set release point
 			pSequence->SetReleasePoint(AddedItems);
 		}
