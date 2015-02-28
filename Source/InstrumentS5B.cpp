@@ -150,7 +150,7 @@ bool CInstrumentS5B::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTracker
 						pSeq->SetReleasePoint(pFile->ReadInt());
 					}
 					if (iVersion >= 22) {
-						pSeq->SetSetting(pFile->ReadInt());
+						pSeq->SetSetting(static_cast<seq_setting_t>(pFile->ReadInt()));		// // //
 					}
 					for (int j = 0; j < Count; ++j) {
 						pSeq->SetItem(j, pFile->ReadChar());

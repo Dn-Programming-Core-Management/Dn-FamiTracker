@@ -111,7 +111,7 @@ bool CInstrumentFDS::LoadInstSequence(CInstrumentFile *pFile, CSequence *pSeq)
 	pSeq->SetItemCount(SeqCount);
 	pSeq->SetLoopPoint(pFile->ReadInt());
 	pSeq->SetReleasePoint(pFile->ReadInt());
-	pSeq->SetSetting(pFile->ReadInt());
+	pSeq->SetSetting(static_cast<seq_setting_t>(pFile->ReadInt()));		// // //
 
 	for (unsigned i = 0; i < SeqCount; ++i)
 		pSeq->SetItem(i, pFile->ReadChar());
@@ -153,7 +153,7 @@ bool CInstrumentFDS::LoadSequence(CDocumentFile *pDocFile, CSequence *pSeq)
 	pSeq->SetItemCount(SeqCount);
 	pSeq->SetLoopPoint(LoopPoint);
 	pSeq->SetReleasePoint(ReleasePoint);
-	pSeq->SetSetting(Settings);
+	pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
 
 	for (int x = 0; x < SeqCount; ++x) {
 		char Value = pDocFile->GetBlockChar();

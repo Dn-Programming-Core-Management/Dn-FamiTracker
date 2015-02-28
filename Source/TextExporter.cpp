@@ -758,7 +758,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					CHECK(t.ReadInt(i,-1,MAX_SEQUENCE_ITEMS,&sResult));
 					pSeq->SetReleasePoint(i);
 					CHECK(t.ReadInt(i,0,255,&sResult));
-					pSeq->SetSetting(i);
+					pSeq->SetSetting(static_cast<seq_setting_t>(i));		// // //
 
 					CHECK_COLON();
 
@@ -1045,7 +1045,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					CHECK(t.ReadInt(i,-1,MAX_SEQUENCE_ITEMS,&sResult));
 					pSeq->SetReleasePoint(i);
 					CHECK(t.ReadInt(i,0,255,&sResult));
-					pSeq->SetSetting(i);
+					pSeq->SetSetting(static_cast<seq_setting_t>(i));		// // //
 
 					CHECK_COLON();
 

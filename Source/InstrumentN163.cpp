@@ -216,7 +216,7 @@ bool CInstrumentN163::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTracke
 				pSeq->SetItemCount(Count);
 				pSeq->SetLoopPoint(pFile->ReadInt());
 				pSeq->SetReleasePoint(pFile->ReadInt());
-				pSeq->SetSetting(pFile->ReadInt());
+				pSeq->SetSetting(static_cast<seq_setting_t>(pFile->ReadInt()));		// // //
 				for (int j = 0; j < Count; ++j) {
 					pSeq->SetItem(j, pFile->ReadChar());
 				}

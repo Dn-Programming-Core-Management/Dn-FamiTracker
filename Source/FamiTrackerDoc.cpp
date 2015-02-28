@@ -1968,7 +1968,7 @@ bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 				ReleasePoint = pDocFile->GetBlockInt();
 				Settings = pDocFile->GetBlockInt();
 				pSeq->SetReleasePoint(ReleasePoint);
-				pSeq->SetSetting(Settings);
+				pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
 			}
 
 			for (int j = 0; j < SeqCount; ++j) {
@@ -1987,7 +1987,7 @@ bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 					if (GetSequenceItemCount(i, j) > 0) {
 						CSequence *pSeq = GetSequence(i, j);
 						pSeq->SetReleasePoint(ReleasePoint);
-						pSeq->SetSetting(Settings);
+						pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
 					}
 				}
 			}
@@ -2001,7 +2001,7 @@ bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 				unsigned int Type = Types[i];
 				CSequence *pSeq = GetSequence(Index, Type);
 				pSeq->SetReleasePoint(ReleasePoint);
-				pSeq->SetSetting(Settings);
+				pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
 			}
 		}
 
@@ -2070,7 +2070,7 @@ bool CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile)
 				ReleasePoint = pDocFile->GetBlockInt();
 				Settings = pDocFile->GetBlockInt();
 				pSeq->SetReleasePoint(ReleasePoint);
-				pSeq->SetSetting(Settings);
+				pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
 			}
 
 			for (unsigned int j = 0; j < SeqCount; ++j) {
@@ -2089,7 +2089,7 @@ bool CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile)
 					if (GetSequenceItemCountVRC6(i, j) > 0) {
 						CSequence *pSeq = GetSequenceVRC6(i, j);
 						pSeq->SetReleasePoint(ReleasePoint);
-						pSeq->SetSetting(Settings);
+						pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
 					}
 				}
 			}
@@ -2102,7 +2102,7 @@ bool CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile)
 				unsigned int Type = Types[i];
 				CSequence *pSeq = GetSequenceVRC6(Index, Type);
 				pSeq->SetReleasePoint(ReleasePoint);
-				pSeq->SetSetting(Settings);
+				pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
 			}
 		}
 	}
@@ -2134,7 +2134,7 @@ bool CFamiTrackerDoc::ReadBlock_SequencesN163(CDocumentFile *pDocFile)
 		pSeq->SetItemCount(SeqCount);
 		pSeq->SetLoopPoint(LoopPoint);
 		pSeq->SetReleasePoint(ReleasePoint);
-		pSeq->SetSetting(Setting);
+		pSeq->SetSetting(static_cast<seq_setting_t>(Setting));		// // //
 
 		for (int j = 0; j < SeqCount; ++j) {
 			char Value = pDocFile->GetBlockChar();
@@ -2170,7 +2170,7 @@ bool CFamiTrackerDoc::ReadBlock_SequencesS5B(CDocumentFile *pDocFile)
 		pSeq->SetItemCount(SeqCount);
 		pSeq->SetLoopPoint(LoopPoint);
 		pSeq->SetReleasePoint(ReleasePoint);
-		pSeq->SetSetting(Setting);
+		pSeq->SetSetting(static_cast<seq_setting_t>(Setting));		// // //
 
 		for (int j = 0; j < SeqCount; ++j) {
 			char Value = pDocFile->GetBlockChar();

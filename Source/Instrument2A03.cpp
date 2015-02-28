@@ -259,14 +259,10 @@ bool CInstrument2A03::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTracke
 					pSeq->SetItemCount(Count);
 					int LoopPoint = pFile->ReadInt();
 					pSeq->SetLoopPoint(LoopPoint);
-					if (iVersion > 20) {
-						int ReleasePoint = pFile->ReadInt();
-						pSeq->SetReleasePoint(ReleasePoint);
-					}
-					if (iVersion >= 23) {
-						int Setting = pFile->ReadInt();
-						pSeq->SetSetting(Setting);
-					}
+					if (iVersion > 20)
+						pSeq->SetReleasePoint(pFile->ReadInt());		// // //
+					if (iVersion >= 22)		// // //
+						pSeq->SetSetting(static_cast<seq_setting_t>(pFile->ReadInt()));		// // //
 					for (int j = 0; j < Count; ++j) {
 						char Val = pFile->ReadChar();
 						pSeq->SetItem(j, Val);

@@ -29,6 +29,7 @@ class CDocumentFile;
 
 // // // Settings
 enum seq_setting_t : unsigned int {
+	SETTING_DEFAULT        = 0x0000,
 	SETTING_ARP_ABSOLUTE   = 0x0000,
 	SETTING_ARP_FIXED      = 0x0001,
 	SETTING_ARP_RELATIVE   = 0x0002,
@@ -69,7 +70,7 @@ public:
 	void		 SetItemCount(unsigned int Count);
 	void		 SetLoopPoint(unsigned int Point);
 	void		 SetReleasePoint(unsigned int Point);
-	void		 SetSetting(unsigned int Setting); 
+	void		 SetSetting(seq_setting_t Setting);			// // //
 	void		 Copy(const CSequence *pSeq);
 
 private:

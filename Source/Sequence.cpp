@@ -32,7 +32,7 @@ void CSequence::Clear()
 	m_iItemCount = 0;
 	m_iLoopPoint = -1;
 	m_iReleasePoint = -1;
-	m_iSetting = 0;
+	m_iSetting = SETTING_DEFAULT;		// // //
 
 	memset(m_cValues, 0, sizeof(char) * MAX_SEQUENCE_ITEMS);
 
@@ -73,7 +73,7 @@ void CSequence::SetReleasePoint(unsigned int Point)
 		m_iLoopPoint = -1;
 }
 
-void CSequence::SetSetting(unsigned int Setting)
+void CSequence::SetSetting(seq_setting_t Setting)		// // //
 {
 	m_iSetting = Setting;
 }
