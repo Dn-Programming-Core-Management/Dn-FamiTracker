@@ -232,7 +232,9 @@ BOOL CConfigGeneral::OnInitDialog()
 		m_bDisableDblClick,
 		m_bWrapPatternValue,
 		m_bCutVolume,
-		m_bFDSOldVolume
+		m_bFDSOldVolume,
+		m_bRetrieveChanState,
+		m_bOverflowPaste
 	};
 
 	CListCtrl *pList = static_cast<CListCtrl*>(GetDlgItem(IDC_CONFIG_LIST));
@@ -290,7 +292,9 @@ void CConfigGeneral::OnLvnItemchangedConfigList(NMHDR *pNMHDR, LRESULT *pResult)
 		&m_bDisableDblClick,
 		&m_bWrapPatternValue,
 		&m_bCutVolume,
-		&m_bFDSOldVolume
+		&m_bFDSOldVolume,
+		&m_bRetrieveChanState,
+		&m_bOverflowPaste
 	};
 	
 	if (pNMLV->uChanged & LVIF_STATE) {
