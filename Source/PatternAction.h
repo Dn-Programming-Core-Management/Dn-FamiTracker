@@ -41,8 +41,7 @@ public:
 		ACT_DELETE_ROW,
 		ACT_INCREASE,
 		ACT_DECREASE,
-		ACT_EDIT_PASTE,
-		ACT_EDIT_PASTE_MIX,
+		ACT_EDIT_PASTE,		// // //
 		ACT_EDIT_DELETE,
 		ACT_EDIT_DELETE_ROWS,
 		ACT_INSERT_SEL_ROWS,
@@ -71,6 +70,8 @@ public:
 	void SetNote(stChanNote &Note);
 	void SetDelete(bool PullUp, bool Back);
 	void SetPaste(CPatternClipData *pClipData);
+	void SetPasteMode(paste_mode_t Mode);		// // //
+	void SetPastePos(paste_pos_t Pos);		// // //
 	void SetTranspose(transpose_t Mode);
 	void SetScroll(int Scroll);
 	void SetInstrument(int Instrument);
@@ -126,6 +127,8 @@ private:
 
 	const CPatternClipData *m_pClipData;
 	CPatternClipData *m_pUndoClipData;
+	paste_mode_t m_iPasteMode;		// // //
+	paste_pos_t m_iPastePos;		// // //
 	
 	bool m_bSelecting;
 	CSelection m_selection;

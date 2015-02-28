@@ -26,6 +26,7 @@
 // CFamiTrackerView, the document view class
 
 #include <afxmt.h>	// Include synchronization objects
+#include "PatternEditorTypes.h"		// // //
 
 // Custom window messages for CFamiTrackerView
 enum {
@@ -90,6 +91,7 @@ public:
 	bool		 GetEditMode() const { return m_bEditEnable; };
 	void		 SetStepping(int Step);
 	unsigned int GetStepping() const { return m_iInsertKeyStepping; };
+	paste_pos_t  GetPastePos() const { return m_iPastePos; };		// // //
 
 	// Player callback (TODO move to new interface)
 	void		 PlayerTick();
@@ -271,6 +273,7 @@ private:
 	bool				m_bCompactMode;							// // // Compact mode, default false
 	bool				m_bMaskInstrument;						// Ignore instrument column on new notes
 	bool				m_bMaskVolume;							// Ignore volume column on new notes
+	paste_pos_t			m_iPastePos;							// // // Paste position
 
 	// Playing
 	bool				m_bMuteChannels[MAX_CHANNELS];			// Muted channels
@@ -344,7 +347,7 @@ public:
 	afx_msg void OnEditCopy();
 	afx_msg void OnEditCut();
 	afx_msg void OnEditPaste();
-	afx_msg void OnEditPastemix();
+	afx_msg void OnEditPasteMix();		// // // case
 	afx_msg void OnEditDelete();
 	afx_msg void OnEditInstrumentMask();
 	afx_msg void OnEditVolumeMask();
@@ -414,6 +417,12 @@ public:
 	afx_msg void OnUpdateFindNext(CCmdUI *pCmdUI);
 	afx_msg void OnEditExpandPatterns();
 	afx_msg void OnEditShrinkPatterns();
+	afx_msg void OnEditPasteOverwrite();
+	afx_msg void OnEditPasteInsert();
+	afx_msg void OnEditPasteSpecialCursor();
+	afx_msg void OnEditPasteSpecialSelection();
+	afx_msg void OnEditPasteSpecialFill();
+	afx_msg void OnUpdatePasteSpecial(CCmdUI *pCmdUI);
 };
 
 #ifndef _DEBUG  // debug version in FamiTrackerView.cpp

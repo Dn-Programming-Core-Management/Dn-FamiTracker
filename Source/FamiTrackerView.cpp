@@ -134,7 +134,7 @@ BEGIN_MESSAGE_MAP(CFamiTrackerView, CView)
 	ON_WM_RBUTTONUP()
 	ON_WM_MENUCHAR()
 	ON_WM_SYSKEYDOWN()
-	ON_COMMAND(ID_EDIT_PASTEMIX, OnEditPastemix)
+	ON_COMMAND(ID_EDIT_PASTEMIX, OnEditPasteMix)
 	ON_COMMAND(ID_EDIT_INSTRUMENTMASK, OnEditInstrumentMask)
 	ON_COMMAND(ID_EDIT_VOLUMEMASK, OnEditVolumeMask)
 	ON_COMMAND(ID_EDIT_INTERPOLATE, OnEditInterpolate)
@@ -186,6 +186,16 @@ BEGIN_MESSAGE_MAP(CFamiTrackerView, CView)
 	ON_COMMAND(ID_MODULE_DETUNE, OnTrackerDetune)
 	ON_COMMAND(ID_MODULE_GROOVE, OnTrackerGroove)
 	ON_UPDATE_COMMAND_UI(ID_FIND_NEXT, OnUpdateFindNext)
+	ON_COMMAND(ID_EDIT_PASTEOVERWRITE, OnEditPasteOverwrite)
+	// ON_COMMAND(ID_EDIT_PASTEINSERT, OnEditPasteInsert)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_PASTEOVERWRITE, OnUpdateEditPaste)
+	// ON_UPDATE_COMMAND_UI(ID_EDIT_PASTEINSERT, OnUpdateEditPaste)
+	ON_COMMAND(ID_PASTESPECIAL_CURSOR, OnEditPasteSpecialCursor)
+	ON_COMMAND(ID_PASTESPECIAL_SELECTION, OnEditPasteSpecialSelection)
+	// ON_COMMAND(ID_PASTESPECIAL_FILL, OnEditPasteSpecialFill)
+	ON_UPDATE_COMMAND_UI(ID_PASTESPECIAL_CURSOR, OnUpdatePasteSpecial)
+	ON_UPDATE_COMMAND_UI(ID_PASTESPECIAL_SELECTION, OnUpdatePasteSpecial)
+	// ON_UPDATE_COMMAND_UI(ID_PASTESPECIAL_FILL, OnUpdatePasteSpecial)
 END_MESSAGE_MAP()
 
 // Convert keys 0-F to numbers, -1 = invalid key
@@ -227,6 +237,7 @@ CFamiTrackerView::CFamiTrackerView() :
 	m_bMaskInstrument(false),
 	m_bMaskVolume(true),
 	m_bSwitchToInstrument(false),
+	m_iPastePos(PASTE_CURSOR),		// // //
 	m_iOctave(3),
 	m_iLastNote(NONE),		// // //
 	m_iLastVolume(MAX_VOLUME),
@@ -898,11 +909,13 @@ void CFamiTrackerView::OnEditPaste()
 		// Create an undo point
 		CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EDIT_PASTE);
 		pAction->SetPaste(pClipData);
+		pAction->SetPasteMode(PASTE_DEFAULT);		// // //
+		pAction->SetPastePos(m_iPastePos);
 		AddAction(pAction);
 	}
 }
 
-void CFamiTrackerView::OnEditPastemix()
+void CFamiTrackerView::OnEditPasteMix()		// // //
 {
 	if (!m_bEditEnable) return;		// // //
 	CClipboard Clipboard(this, m_iClipboard);
@@ -925,8 +938,72 @@ void CFamiTrackerView::OnEditPastemix()
 		pClipData->FromMem(hMem);
 
 		// Add an undo point
-		CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EDIT_PASTE_MIX);
+		CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EDIT_PASTE);		// // //
 		pAction->SetPaste(pClipData);
+		pAction->SetPasteMode(PASTE_MIX);		// // //
+		pAction->SetPastePos(m_iPastePos);
+		AddAction(pAction);
+	}
+}
+
+void CFamiTrackerView::OnEditPasteOverwrite()		// // //
+{
+	if (!m_bEditEnable) return;
+	CClipboard Clipboard(this, m_iClipboard);
+
+	if (!Clipboard.IsOpened()) {
+		AfxMessageBox(IDS_CLIPBOARD_OPEN_ERROR);
+		return;
+	}
+
+	if (!Clipboard.IsDataAvailable()) {
+		AfxMessageBox(IDS_CLIPBOARD_NOT_AVALIABLE);
+		::CloseClipboard();
+		return;
+	}
+
+	HGLOBAL hMem = Clipboard.GetData();
+
+	if (hMem != NULL) {
+		CPatternClipData *pClipData = new CPatternClipData();
+		pClipData->FromMem(hMem);
+
+		// Add an undo point
+		CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EDIT_PASTE);
+		pAction->SetPaste(pClipData);
+		pAction->SetPasteMode(PASTE_OVERWRITE);
+		pAction->SetPastePos(m_iPastePos);
+		AddAction(pAction);
+	}
+}
+
+void CFamiTrackerView::OnEditPasteInsert()		// // //
+{
+	if (!m_bEditEnable) return;
+	CClipboard Clipboard(this, m_iClipboard);
+
+	if (!Clipboard.IsOpened()) {
+		AfxMessageBox(IDS_CLIPBOARD_OPEN_ERROR);
+		return;
+	}
+
+	if (!Clipboard.IsDataAvailable()) {
+		AfxMessageBox(IDS_CLIPBOARD_NOT_AVALIABLE);
+		::CloseClipboard();
+		return;
+	}
+
+	HGLOBAL hMem = Clipboard.GetData();
+
+	if (hMem != NULL) {
+		CPatternClipData *pClipData = new CPatternClipData();
+		pClipData->FromMem(hMem);
+
+		// Add an undo point
+		CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EDIT_PASTE);
+		pAction->SetPaste(pClipData);
+		pAction->SetPasteMode(PASTE_INSERT);
+		pAction->SetPastePos(m_iPastePos);
 		AddAction(pAction);
 	}
 }
@@ -1381,6 +1458,27 @@ void CFamiTrackerView::OnUpdateSpeedCustom(CCmdUI *pCmdUI)
 	ASSERT_VALID(pDoc);	
 
 	pCmdUI->SetCheck(pDoc->GetEngineSpeed() != 0);
+}
+
+void CFamiTrackerView::OnEditPasteSpecialCursor()		// // //
+{
+	m_iPastePos = PASTE_CURSOR;
+}
+
+void CFamiTrackerView::OnEditPasteSpecialSelection()
+{
+	m_iPastePos = PASTE_SELECTION;
+}
+
+void CFamiTrackerView::OnEditPasteSpecialFill()
+{
+	m_iPastePos = PASTE_FILL;
+}
+
+void CFamiTrackerView::OnUpdatePasteSpecial(CCmdUI *pCmdUI)
+{
+	if (pCmdUI->m_pMenu != NULL)
+		pCmdUI->m_pMenu->CheckMenuRadioItem(ID_PASTESPECIAL_CURSOR, ID_PASTESPECIAL_FILL, ID_PASTESPECIAL_CURSOR + m_iPastePos, MF_BYCOMMAND);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////

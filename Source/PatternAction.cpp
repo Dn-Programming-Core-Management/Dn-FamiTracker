@@ -67,6 +67,16 @@ void CPatternAction::SetPaste(CPatternClipData *pClipData)
 	m_pClipData = pClipData;
 }
 
+void CPatternAction::SetPasteMode(paste_mode_t Mode)		// // //
+{
+	m_iPasteMode = Mode;
+}
+
+void CPatternAction::SetPastePos(paste_pos_t Pos)		// // //
+{
+	m_iPastePos = Pos;
+}
+
 void CPatternAction::SetTranspose(transpose_t Mode)
 {
 	m_iTransposeMode = Mode;
@@ -639,11 +649,7 @@ bool CPatternAction::SaveState(CMainFrame *pMainFrm)
 		case ACT_EDIT_PASTE:
 			// Paste
 			m_pUndoClipData = pPatternEditor->CopyEntire();
-			break;
-		case ACT_EDIT_PASTE_MIX:
-			// Paste and mix
-			m_pUndoClipData = pPatternEditor->CopyEntire();
-			break;
+			break;		// // //
 		case ACT_EDIT_DELETE:
 			// Delete selection
 			SaveEntire(pPatternEditor);
@@ -758,8 +764,7 @@ void CPatternAction::Undo(CMainFrame *pMainFrm)
 			pDoc->PullUp(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow);
 			pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, pDoc->GetPatternLength(m_iUndoTrack) - 1, &m_OldNote);
 			break;
-		case ACT_EDIT_PASTE:
-		case ACT_EDIT_PASTE_MIX:
+		case ACT_EDIT_PASTE:		// // //
 		case ACT_EDIT_DELETE:
 		case ACT_EDIT_DELETE_ROWS:
 		case ACT_INSERT_SEL_ROWS:
@@ -828,11 +833,8 @@ void CPatternAction::Redo(CMainFrame *pMainFrm)
 			pDoc->InsertRow(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow);
 			break;
 		case ACT_EDIT_PASTE:
-			pPatternEditor->Paste(m_pClipData, PASTE_DEFAULT);		// // //
-			break;
-		case ACT_EDIT_PASTE_MIX:
-			pPatternEditor->Paste(m_pClipData, PASTE_MIX);		// // //
-			break;
+			pPatternEditor->Paste(m_pClipData, m_iPasteMode, m_iPastePos);		// // //
+			break;		// // //
 		case ACT_EDIT_DELETE:
 			pPatternEditor->SetSelection(m_selection);
 			DeleteSelection(pDoc);

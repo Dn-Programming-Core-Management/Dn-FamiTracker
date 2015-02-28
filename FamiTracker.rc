@@ -101,12 +101,12 @@ BEGIN
         MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
         MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
         MENUITEM SEPARATOR
-        MENUITEM "&Create NSF...\tCtrl+E",      ID_FILE_CREATE_NSF
+        MENUITEM "Create NSF...\tCtrl+E",       ID_FILE_CREATE_NSF
         MENUITEM "Create WAV...",               ID_FILE_CREATEWAV
         MENUITEM SEPARATOR
-        MENUITEM "Import text...",              ID_FILE_IMPORTTEXT
-        MENUITEM "Export text...",              ID_FILE_EXPORTTEXT
-        MENUITEM "Export rows...",              ID_FILE_EXPORTROWS
+        MENUITEM "Import Text...",              ID_FILE_IMPORTTEXT
+        MENUITEM "Export Text...",              ID_FILE_EXPORTTEXT
+        MENUITEM "Export Rows...",              ID_FILE_EXPORTROWS
         MENUITEM SEPARATOR
         MENUITEM "&Configuration",              ID_FILE_GENERALSETTINGS
         MENUITEM SEPARATOR
@@ -122,14 +122,32 @@ BEGIN
         MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
         MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
-        MENUITEM "Paste (mix)",                 ID_EDIT_PASTEMIX
+        POPUP "Paste Special"
+        BEGIN
+            MENUITEM "&Mix",                        ID_EDIT_PASTEMIX
+            MENUITEM "&Overwrite",                  ID_EDIT_PASTEOVERWRITE
+            MENUITEM "&Insert",                     ID_EDIT_PASTEINSERT, INACTIVE
+            MENUITEM SEPARATOR
+            MENUITEM "Cursor",                      ID_PASTESPECIAL_CURSOR, CHECKED
+            MENUITEM "Selection",                   ID_PASTESPECIAL_SELECTION
+            MENUITEM "Fill",                        ID_PASTESPECIAL_FILL, INACTIVE
+        END
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
-        MENUITEM SEPARATOR
-        MENUITEM "&Find / Replace\tCtrl+F",     ID_EDIT_FIND_TOGGLE
-        MENUITEM "Find &next",                  ID_FIND_NEXT
         MENUITEM SEPARATOR
         MENUITEM "Select &All\tCtrl+A",         ID_EDIT_SELECTALL
         MENUITEM SEPARATOR
+        MENUITEM "&Find / Replace...\tCtrl+F",  ID_EDIT_FIND_TOGGLE
+        MENUITEM "Find &Next",                  ID_FIND_NEXT
+        MENUITEM SEPARATOR
+        POPUP "Selection"
+        BEGIN
+            MENUITEM "Interpolate\tCtrl+G",         ID_EDIT_INTERPOLATE
+            MENUITEM "&Reverse\tCtrl+R",            ID_EDIT_REVERSE
+            MENUITEM "R&eplace Instrument\tAlt+S",  ID_EDIT_REPLACEINSTRUMENT
+            MENUITEM SEPARATOR
+            MENUITEM "Expand",                      ID_EDIT_EXPANDPATTERNS
+            MENUITEM "Shrink",                      ID_EDIT_SHRINKPATTERNS
+        END
         POPUP "Transpose"
         BEGIN
             MENUITEM "Decrease Note\tCtrl+F1",      ID_TRANSPOSE_DECREASENOTE
@@ -137,20 +155,14 @@ BEGIN
             MENUITEM "Decrease Octave\tCtrl+F3",    ID_TRANSPOSE_DECREASEOCTAVE
             MENUITEM "Increase Octave\tCtrl+F4",    ID_TRANSPOSE_INCREASEOCTAVE
         END
-        MENUITEM "Interpolate\tCtrl+G",         ID_EDIT_INTERPOLATE
-        MENUITEM "&Reverse\tCtrl+R",            ID_EDIT_REVERSE
-        MENUITEM "R&eplace instrument\tAlt+S",  ID_EDIT_REPLACEINSTRUMENT
         MENUITEM SEPARATOR
-        MENUITEM "Expand selection",            ID_EDIT_EXPANDPATTERNS
-        MENUITEM "Shrink selection",            ID_EDIT_SHRINKPATTERNS
-        MENUITEM SEPARATOR
-        MENUITEM "Clear patterns",              ID_EDIT_CLEARPATTERNS
-        POPUP "Clean up"
+        MENUITEM "Clear Patterns",              ID_EDIT_CLEARPATTERNS
+        POPUP "Cleanup"
         BEGIN
-            MENUITEM "Remove unused instruments",   ID_CLEANUP_REMOVEUNUSEDINSTRUMENTS
-            MENUITEM "Remove unused DPCM samples",  ID_CLEANUP_REMOVEUNUSEDDPCMSAMPLES
-            MENUITEM "Remove unused patterns",      ID_CLEANUP_REMOVEUNUSEDPATTERNS
-            MENUITEM "Merge duplicated patterns",   ID_CLEANUP_MERGEDUPLICATEDPATTERNS
+            MENUITEM "Remove Unused Instruments",   ID_CLEANUP_REMOVEUNUSEDINSTRUMENTS
+            MENUITEM "Remove Unused DPCM Samples",  ID_CLEANUP_REMOVEUNUSEDDPCMSAMPLES
+            MENUITEM "Remove Unused Patterns",      ID_CLEANUP_REMOVEUNUSEDPATTERNS
+            MENUITEM "Merge Duplicated Patterns",   ID_CLEANUP_MERGEDUPLICATEDPATTERNS
         END
         MENUITEM SEPARATOR
         MENUITEM "Instrument Mask\tAlt+T",      ID_EDIT_INSTRUMENTMASK
@@ -160,30 +172,29 @@ BEGIN
     END
     POPUP "&Module"
     BEGIN
-        MENUITEM "Insert frame",                ID_MODULE_INSERTFRAME
-        MENUITEM "Remove frame",                ID_MODULE_REMOVEFRAME
-        MENUITEM "&Duplicate frame",            ID_MODULE_DUPLICATEFRAME
-        MENUITEM "Clone pattern\tAlt+D",        ID_MODULE_DUPLICATECURRENTPATTERN
-        MENUITEM "Duplicate patterns",          ID_MODULE_DUPLICATEFRAMEPATTERNS
+        MENUITEM "Insert Frame",                ID_MODULE_INSERTFRAME
+        MENUITEM "&Duplicate Frame",            ID_MODULE_DUPLICATEFRAME
+        MENUITEM "Clone Pattern\tAlt+D",        ID_MODULE_DUPLICATECURRENTPATTERN
+        MENUITEM "Duplicate Patterns",          ID_MODULE_DUPLICATEFRAMEPATTERNS
         MENUITEM SEPARATOR
         MENUITEM "Move Frame Up",               ID_MODULE_MOVEFRAMEUP
         MENUITEM "Move Frame Down",             ID_MODULE_MOVEFRAMEDOWN
         MENUITEM SEPARATOR
         MENUITEM "Comments",                    ID_MODULE_COMMENTS
         MENUITEM "Module Properties\tCtrl+P",   ID_MODULE_MODULEPROPERTIES
-        MENUITEM "Detune settings",             ID_MODULE_DETUNE
-        MENUITEM "Groove settings",             ID_MODULE_GROOVE
+        MENUITEM "Detune Settings",             ID_MODULE_DETUNE
+        MENUITEM "Groove Settings",             ID_MODULE_GROOVE
         MENUITEM "Channels",                    ID_MODULE_CHANNELS
     END
     POPUP "&Instrument"
     BEGIN
-        MENUITEM "New instrument",              ID_INSTRUMENT_NEW
-        MENUITEM "Remove instrument",           ID_INSTRUMENT_REMOVE
-        MENUITEM "Clone instrument",            ID_INSTRUMENT_CLONE
-        MENUITEM "Deep clone instrument",       ID_INSTRUMENT_DEEPCLONE
+        MENUITEM "New Instrument",              ID_INSTRUMENT_NEW
+        MENUITEM "Remove Instrument",           ID_INSTRUMENT_REMOVE
+        MENUITEM "Clone Instrument",            ID_INSTRUMENT_CLONE
+        MENUITEM "Deep Clone Instrument",       ID_INSTRUMENT_DEEPCLONE
         MENUITEM SEPARATOR
-        MENUITEM "Load from file...",           ID_INSTRUMENT_LOAD
-        MENUITEM "Save to file...",             ID_INSTRUMENT_SAVE
+        MENUITEM "Load from File...",           ID_INSTRUMENT_LOAD
+        MENUITEM "Save to File...",             ID_INSTRUMENT_SAVE
         MENUITEM SEPARATOR
         MENUITEM "Edit\tCtrl+I",                ID_INSTRUMENT_EDIT
     END
@@ -191,18 +202,18 @@ BEGIN
     BEGIN
         MENUITEM "&Play\tReturn",               ID_TRACKER_PLAY
         MENUITEM "P&lay Pattern\tShift+Return", ID_TRACKER_PLAYPATTERN
-        MENUITEM "Play from start",             ID_TRACKER_PLAY_START
-        MENUITEM "Play from cursor",            ID_TRACKER_PLAY_CURSOR
+        MENUITEM "Play from Start",             ID_TRACKER_PLAY_START
+        MENUITEM "Play from Cursor",            ID_TRACKER_PLAY_CURSOR
         MENUITEM "&Stop\tReturn",               ID_TRACKER_STOP
-        MENUITEM "Toggle &Edit mode\tSpace",    ID_TRACKER_EDIT
+        MENUITEM "Toggle &Edit Mode\tSpace",    ID_TRACKER_EDIT
         MENUITEM SEPARATOR
-        MENUITEM "Toggle channel\tAlt+F9",      ID_TRACKER_TOGGLECHANNEL
-        MENUITEM "Solo channel\tAlt+F10",       ID_TRACKER_SOLOCHANNEL
+        MENUITEM "Toggle Channel\tAlt+F9",      ID_TRACKER_TOGGLECHANNEL
+        MENUITEM "Solo Channel\tAlt+F10",       ID_TRACKER_SOLOCHANNEL
         MENUITEM SEPARATOR
-        MENUITEM "Switch to track instrument",  ID_TRACKER_SWITCHTOTRACKINSTRUMENT
+        MENUITEM "Switch to Track Instrument",  ID_TRACKER_SWITCHTOTRACKINSTRUMENT
         MENUITEM SEPARATOR
-        MENUITEM "Display register state",      ID_TRACKER_DISPLAYREGISTERSTATE
-        MENUITEM "&Display DPCM state",         ID_TRACKER_DPCM
+        MENUITEM "Display Register State",      ID_TRACKER_DISPLAYREGISTERSTATE
+        MENUITEM "&Display DPCM State",         ID_TRACKER_DPCM
         MENUITEM SEPARATOR
         MENUITEM "&Kill Sound\tF12",            ID_TRACKER_KILLSOUND
         MENUITEM SEPARATOR
@@ -219,9 +230,9 @@ BEGIN
     BEGIN
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
-        MENUITEM "Control panel",               ID_VIEW_CONTROLPANEL
+        MENUITEM "Control Panel",               ID_VIEW_CONTROLPANEL
         MENUITEM SEPARATOR
-        POPUP "Frame editor position"
+        POPUP "Frame Editor Position"
         BEGIN
             MENUITEM "Top",                         ID_FRAMEEDITOR_TOP, CHECKED
             MENUITEM "Left",                        ID_FRAMEEDITOR_LEFT
@@ -230,7 +241,7 @@ BEGIN
     POPUP "&Help"
     BEGIN
         MENUITEM "&Help Topics\tF1",            ID_HELP_FINDER
-        MENUITEM "Effect table",                ID_HELP_EFFECTTABLE
+        MENUITEM "Effect Table",                ID_HELP_EFFECTTABLE
         MENUITEM "FAQ",                         ID_HELP_FAQ
         MENUITEM SEPARATOR
         MENUITEM "Performance",                 ID_HELP_PERFORMANCE
@@ -1930,7 +1941,7 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_EDIT_PASTEMIX        "Pasted notes will mix with existing notes"
+    ID_EDIT_PASTEMIX        "Pasted notes will mix with blank fields in destination"
     ID_MODULE_MOVEFRAMEDOWN "Move selected frame one step down\nMove frame down"
     ID_MODULE_MOVEFRAMEUP   "Move selected frame one step up\nMove frame up"
     ID_MODULE_SAVEINSTRUMENT "Save instrument to file\nSave instrument"
@@ -2110,6 +2121,11 @@ BEGIN
     ID_MODULE_DETUNE        "Open the detune settings dialog\nDetune settings"
     ID_MODULE_DUPLICATECURRENTPATTERN 
                             "Duplicates the current pattern to the first unused pattern\nClone pattern"
+    ID_EDIT_PASTEINSERT     "Pasted notes will be inserted above the destination"
+    ID_PASTESPECIAL_CURSOR  "Paste operations occur at the cursor"
+    ID_PASTESPECIAL_SELECTION 
+                            "Paste operations occur at the start of selection"
+    ID_PASTESPECIAL_FILL    "Paste operations loop throughout the current selection"
 END
 
 STRINGTABLE
