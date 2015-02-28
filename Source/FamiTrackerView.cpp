@@ -1873,7 +1873,7 @@ void CFamiTrackerView::PlayNote(unsigned int Channel, unsigned int Note, unsigne
 	NoteData.Vol		= Velocity / 8;
 	NoteData.Instrument	= GetInstrument();
 /*	
-	if (theApp.GetSettings()->General.iEditStyle == EDIT_STYLE3)
+	if (theApp.GetSettings()->General.iEditStyle == EDIT_STYLE_IT)
 		NoteData.Instrument	= m_iLastInstrument;
 	else
 		NoteData.Instrument	= GetInstrument();
@@ -1985,7 +1985,7 @@ void CFamiTrackerView::TriggerMIDINote(unsigned int Channel, unsigned int MidiNo
 	m_iActiveNotes[Channel] = MidiNote;
 
 	if (!theApp.GetSettings()->Midi.bMidiVelocity) {
-		if (theApp.GetSettings()->General.iEditStyle != EDIT_STYLE3)
+		if (theApp.GetSettings()->General.iEditStyle != EDIT_STYLE_IT)
 			Velocity = 127;
 		else {
 			Velocity = m_iLastVolume * 8;
@@ -2043,7 +2043,7 @@ void CFamiTrackerView::CutMIDINote(unsigned int Channel, unsigned int MidiNote, 
 		InsertNote(HALT, 0, Channel, 0);
 
 	// IT-mode, cut note on cuts
-	if (theApp.GetSettings()->General.iEditStyle == EDIT_STYLE3)
+	if (theApp.GetSettings()->General.iEditStyle == EDIT_STYLE_IT)
 		HaltNote(Channel);
 
 	TRACE("%i: Cut note %i on channel %i\n", GetTickCount(), MidiNote, Channel);
@@ -2074,7 +2074,7 @@ void CFamiTrackerView::ReleaseMIDINote(unsigned int Channel, unsigned int MidiNo
 		InsertNote(RELEASE, 0, Channel, 0);
 
 	// IT-mode, release note
-	if (theApp.GetSettings()->General.iEditStyle == EDIT_STYLE3)
+	if (theApp.GetSettings()->General.iEditStyle == EDIT_STYLE_IT)
 		ReleaseNote(Channel);
 
 	TRACE("%i: Release note %i on channel %i\n", GetTickCount(), MidiNote, Channel);
@@ -2390,7 +2390,7 @@ bool CFamiTrackerView::EditInstrumentColumn(stChanNote &Note, int Key, bool &Ste
 
 	if (CheckClearKey(Key)) {
 		Note.Instrument = MAX_INSTRUMENTS;	// Indicate no instrument selected
-		if (EditStyle != EDIT_STYLE2)
+		if (EditStyle != EDIT_STYLE_MPT)
 			StepDown = true;
 		m_iLastInstrument = MAX_INSTRUMENTS;
 		return true;
@@ -2398,7 +2398,7 @@ bool CFamiTrackerView::EditInstrumentColumn(stChanNote &Note, int Key, bool &Ste
 	else if (CheckRepeatKey(Key)) {
 		Note.Instrument = m_iLastInstrument;
 		SetInstrument(m_iLastInstrument);
-		if (EditStyle != EDIT_STYLE2)
+		if (EditStyle != EDIT_STYLE_MPT)
 			StepDown = true;
 		return true;
 	}
@@ -2422,16 +2422,16 @@ bool CFamiTrackerView::EditInstrumentColumn(stChanNote &Note, int Key, bool &Ste
 		Note.Instrument = 0;
 
 	switch (EditStyle) {
-		case EDIT_STYLE1: // FT2
+		case EDIT_STYLE_FT2: // FT2
 			Note.Instrument = (Note.Instrument & Mask) | (Value << Shift);
 			StepDown = true;
 			break;
-		case EDIT_STYLE2: // MPT
+		case EDIT_STYLE_MPT: // MPT
 			if (Note.Instrument == (MAX_INSTRUMENTS - 1))
 				Note.Instrument = 0;
 			Note.Instrument = ((Note.Instrument & 0x0F) << 4) | Value & 0x0F;
 			break;
-		case EDIT_STYLE3: // IT
+		case EDIT_STYLE_IT: // IT
 			Note.Instrument = (Note.Instrument & Mask) | (Value << Shift);
 			if (Column == C_INSTRUMENT1)
 				MoveRight = true;
@@ -2462,14 +2462,14 @@ bool CFamiTrackerView::EditVolumeColumn(stChanNote &Note, int Key, bool &bStepDo
 
 	if (CheckClearKey(Key)) {
 		Note.Vol = MAX_VOLUME;
-		if (EditStyle != EDIT_STYLE2)
+		if (EditStyle != EDIT_STYLE_MPT)
 			bStepDown = true;
 		m_iLastVolume = MAX_VOLUME;
 		return true;
 	}
 	else if (CheckRepeatKey(Key)) {
 		Note.Vol = m_iLastVolume;
-		if (EditStyle != EDIT_STYLE2)
+		if (EditStyle != EDIT_STYLE_MPT)
 			bStepDown = true;
 		return true;
 	}
@@ -2486,7 +2486,7 @@ bool CFamiTrackerView::EditVolumeColumn(stChanNote &Note, int Key, bool &bStepDo
 
 	m_iLastVolume = Note.Vol;
 
-	if (EditStyle != EDIT_STYLE2)
+	if (EditStyle != EDIT_STYLE_MPT)
 		bStepDown = true;
 
 	return true;
@@ -2502,7 +2502,7 @@ bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, unsigned char nChar
 	if (CheckRepeatKey(nChar)) {
 		Note.EffNumber[EffectIndex] = m_iLastEffect;
 		Note.EffParam[EffectIndex] = m_iLastEffectParam;
-		if (EditStyle != EDIT_STYLE2)		// // //
+		if (EditStyle != EDIT_STYLE_MPT)		// // //
 			bStepDown = true;
 		if (m_bEditEnable && Note.EffNumber[EffectIndex] != EF_NONE)		// // //
 			GetParentFrame()->SetMessageText(GetEffectHint(Note, EffectIndex));
@@ -2511,7 +2511,7 @@ bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, unsigned char nChar
 
 	if (CheckClearKey(nChar)) {
 		Note.EffNumber[EffectIndex] = EF_NONE;
-		if (EditStyle != EDIT_STYLE2)
+		if (EditStyle != EDIT_STYLE_MPT)
 			bStepDown = true;
 		return true;
 	}
@@ -2583,7 +2583,7 @@ bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, unsigned char nChar
 		if (m_bEditEnable && Note.EffNumber[EffectIndex] != EF_NONE)		// // //
 			GetParentFrame()->SetMessageText(GetEffectHint(Note, EffectIndex));
 		switch (EditStyle) {
-			case EDIT_STYLE2:	// Modplug
+			case EDIT_STYLE_MPT:	// Modplug
 				if (Effect == m_iLastEffect)
 					Note.EffParam[EffectIndex] = m_iLastEffectParam;
 				break;
@@ -2611,7 +2611,7 @@ bool CFamiTrackerView::EditEffParamColumn(stChanNote &Note, int Key, int EffectI
 	if (CheckRepeatKey(Key)) {
 		Note.EffNumber[EffectIndex] = m_iLastEffect;
 		Note.EffParam[EffectIndex] = m_iLastEffectParam;
-		if (EditStyle != EDIT_STYLE2)		// // //
+		if (EditStyle != EDIT_STYLE_MPT)		// // //
 			bStepDown = true;
 		if (m_bEditEnable && Note.EffNumber[EffectIndex] != EF_NONE)		// // //
 			GetParentFrame()->SetMessageText(GetEffectHint(Note, EffectIndex));
@@ -2620,7 +2620,7 @@ bool CFamiTrackerView::EditEffParamColumn(stChanNote &Note, int Key, int EffectI
 
 	if (CheckClearKey(Key)) {
 		Note.EffParam[EffectIndex] = 0;
-		if (EditStyle != EDIT_STYLE2)
+		if (EditStyle != EDIT_STYLE_MPT)
 			bStepDown = true;
 		return true;
 	}
@@ -2639,14 +2639,14 @@ bool CFamiTrackerView::EditEffParamColumn(stChanNote &Note, int Key, int EffectI
 	}
 	
 	switch (EditStyle) {
-		case EDIT_STYLE1:	// FT2
+		case EDIT_STYLE_FT2:	// FT2
 			Note.EffParam[EffectIndex] = (Note.EffParam[EffectIndex] & Mask) | Value << Shift;
 			bStepDown = true;
 			break;
-		case EDIT_STYLE2:	// Modplug
+		case EDIT_STYLE_MPT:	// Modplug
 			Note.EffParam[EffectIndex] = ((Note.EffParam[EffectIndex] & 0x0F) << 4) | Value & 0x0F;
 			break;
-		case EDIT_STYLE3:	// IT
+		case EDIT_STYLE_IT:	// IT
 			Note.EffParam[EffectIndex] = (Note.EffParam[EffectIndex] & Mask) | Value << Shift;
 			if (Mask == 0x0F)
 				bMoveRight = true;
@@ -2751,7 +2751,7 @@ void CFamiTrackerView::HandleKeyboardInput(char nChar)
 				HandleKeyboardNote(nChar, true);
 				return;
 			}
-			if (EditStyle != EDIT_STYLE2)		// // //
+			if (EditStyle != EDIT_STYLE_MPT)		// // //
 				bStepDown = true;
 			break;
 		// Instrument column
@@ -2831,7 +2831,7 @@ void CFamiTrackerView::HandleKeyboardNote(char nChar, bool Pressed)
 		if (Note == -1)
 			return;
 		// IT doesn't cut the note when key is released
-		if (theApp.GetSettings()->General.iEditStyle != EDIT_STYLE3) {
+		if (theApp.GetSettings()->General.iEditStyle != EDIT_STYLE_IT) {
 			// Find if note release should be used
 			// TODO: make this an option instead?
 			if (DoRelease())
@@ -3058,7 +3058,7 @@ int CFamiTrackerView::TranslateKey(unsigned char Key) const
 	// Translates a keyboard character into a MIDI note
 
 	// For modplug users
-	if (theApp.GetSettings()->General.iEditStyle == EDIT_STYLE2)
+	if (theApp.GetSettings()->General.iEditStyle == EDIT_STYLE_MPT)
 		return TranslateKeyModplug(Key);
 
 	// Default

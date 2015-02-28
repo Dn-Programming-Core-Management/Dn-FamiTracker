@@ -25,10 +25,10 @@
 
 // CSettings command target
 
-enum EDIT_STYLES {
-	EDIT_STYLE1 = 0,		// FT2
-	EDIT_STYLE2 = 1,		// ModPlug
-	EDIT_STYLE3 = 2			// IT
+enum EDIT_STYLES {		// // // renamed
+	EDIT_STYLE_FT2 = 0,		// FT2
+	EDIT_STYLE_MPT = 1,		// ModPlug
+	EDIT_STYLE_IT = 2		// IT
 };
 
 enum WIN_STATES {

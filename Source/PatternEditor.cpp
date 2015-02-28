@@ -2545,7 +2545,7 @@ void CPatternEditor::UpdateSelection()
 	else {
 		m_bCurrentlySelecting = false;
 
-		if (theApp.GetSettings()->General.iEditStyle != EDIT_STYLE3 || m_bSelecting == false)
+		if (theApp.GetSettings()->General.iEditStyle != EDIT_STYLE_IT || m_bSelecting == false)
 			CancelSelection();
 
 		SetSelectionStart();
@@ -2658,7 +2658,7 @@ void CPatternEditor::OnHomeKey()
 {
 	const bool bControl = IsControlPressed();
 
-	if (bControl || theApp.GetSettings()->General.iEditStyle == EDIT_STYLE1) {
+	if (bControl || theApp.GetSettings()->General.iEditStyle == EDIT_STYLE_FT2) {
 		// Control or FT2 edit style
 		MoveToTop();
 	}
@@ -2680,7 +2680,7 @@ void CPatternEditor::OnEndKey()
 	const int Channels = GetChannelCount();
 	const int Columns = GetChannelColumns(GetChannel());
 
-	if (bControl || theApp.GetSettings()->General.iEditStyle == EDIT_STYLE1) {
+	if (bControl || theApp.GetSettings()->General.iEditStyle == EDIT_STYLE_FT2) {
 		// Control or FT2 edit style
 		MoveToBottom();
 	}
@@ -3491,28 +3491,31 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 
 			const stChanNote *pClipNote = pClipData->GetPattern(i, j);
 
-			// Note & octave
-			if ((i != 0 || StartColumn <= COLUMN_NOTE) && (i != (Channels - 1) || EndColumn >= COLUMN_NOTE)) {
-				if (PasteMode == PASTE_DEFAULT ||
-					(PasteMode == PASTE_MIX && pClipNote->Note != NONE && NoteData.Note == NONE) ||
-					(PasteMode == PASTE_OVERWRITE && pClipNote->Note != NONE)) {
-					NoteData.Note = pClipNote->Note;
-					NoteData.Octave = pClipNote->Octave;
+			if (theApp.GetSettings()->General.iEditStyle != EDIT_STYLE_IT ||		// // // IT style
+				(NoteData.Note == NONE && NoteData.Instrument == MAX_INSTRUMENTS && NoteData.Vol == MAX_VOLUME)) {
+				// Note & octave
+				if ((i != 0 || StartColumn <= COLUMN_NOTE) && (i != (Channels - 1) || EndColumn >= COLUMN_NOTE)) {
+					if (PasteMode == PASTE_DEFAULT ||
+						(PasteMode == PASTE_MIX && pClipNote->Note != NONE && NoteData.Note == NONE) ||
+						(PasteMode == PASTE_OVERWRITE && pClipNote->Note != NONE)) {
+						NoteData.Note = pClipNote->Note;
+						NoteData.Octave = pClipNote->Octave;
+					}
 				}
-			}
-			// Instrument
-			if ((i != 0 || StartColumn <= COLUMN_INSTRUMENT) && (i != (Channels - 1) || EndColumn >= COLUMN_INSTRUMENT)) {
-				if (PasteMode == PASTE_DEFAULT ||
-					(PasteMode == PASTE_MIX && pClipNote->Instrument < MAX_INSTRUMENTS && NoteData.Instrument == MAX_INSTRUMENTS) ||
-					(PasteMode == PASTE_OVERWRITE && pClipNote->Instrument < MAX_INSTRUMENTS))
-					NoteData.Instrument = pClipNote->Instrument;
-			}
-			// Volume
-			if ((i != 0 || StartColumn <= COLUMN_VOLUME) && (i != (Channels - 1) || EndColumn >= COLUMN_VOLUME)) {
-				if (PasteMode == PASTE_DEFAULT ||
-					(PasteMode == PASTE_MIX && pClipNote->Vol < MAX_VOLUME && NoteData.Vol == MAX_VOLUME) ||
-					(PasteMode == PASTE_OVERWRITE && pClipNote->Vol < MAX_VOLUME))
-					NoteData.Vol = pClipNote->Vol;
+				// Instrument
+				if ((i != 0 || StartColumn <= COLUMN_INSTRUMENT) && (i != (Channels - 1) || EndColumn >= COLUMN_INSTRUMENT)) {
+					if (PasteMode == PASTE_DEFAULT ||
+						(PasteMode == PASTE_MIX && pClipNote->Instrument != MAX_INSTRUMENTS && NoteData.Instrument == MAX_INSTRUMENTS) ||
+						(PasteMode == PASTE_OVERWRITE && pClipNote->Instrument != MAX_INSTRUMENTS))
+						NoteData.Instrument = pClipNote->Instrument;
+				}
+				// Volume
+				if ((i != 0 || StartColumn <= COLUMN_VOLUME) && (i != (Channels - 1) || EndColumn >= COLUMN_VOLUME)) {
+					if (PasteMode == PASTE_DEFAULT ||
+						(PasteMode == PASTE_MIX && pClipNote->Vol != MAX_VOLUME && NoteData.Vol == MAX_VOLUME) ||
+						(PasteMode == PASTE_OVERWRITE && pClipNote->Vol != MAX_VOLUME))
+						NoteData.Vol = pClipNote->Vol;
+				}
 			}
 			// Effects
 			for (unsigned int k = 0; k <= m_pDocument->GetEffColumns(Track, i + c); ++k) {

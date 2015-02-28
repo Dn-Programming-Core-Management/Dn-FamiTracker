@@ -82,7 +82,7 @@ void CSettings::SetupSettings()
 	//
 
 	// General
-	SETTING_INT("General", "Edit style", EDIT_STYLE1, &General.iEditStyle);
+	SETTING_INT("General", "Edit style", EDIT_STYLE_FT2, &General.iEditStyle);
 	SETTING_INT("General", "Page step size", 4, &General.iPageStepSize);
 	SETTING_BOOL("General", "Wrap cursor", true, &General.bWrapCursor);
 	SETTING_BOOL("General", "Wrap across frames", true, &General.bWrapFrames);
