@@ -3446,6 +3446,8 @@ CString	CFamiTrackerView::GetEffectHint(const stChanNote &Note, int Column) cons
 {
 	int Index = Note.EffNumber[Column];
 	int Param = Note.EffParam[Column];
+	if (Index >= EF_COUNT) return _T("Undefined effect");
+
 	int Channel = m_pPatternEditor->GetChannel();
 	int Chip = GetDocument()->GetChannel(Channel)->GetChip();
 	if (Index > EF_NOTE_CUT || (Index == EF_NOTE_CUT && Param >= 0x80 && Channel == CHANID_TRIANGLE)) Index++;
