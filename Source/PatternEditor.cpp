@@ -3439,25 +3439,32 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, paste_mode_t Mode)
 
 	stChanNote NoteData;
 
+	int f = m_iCurrentFrame;
+	int r = m_cpCursorPos.m_iRow;
+
 	// Special, single channel and effect columns only
 	if (Channels == 1 && StartColumn >= COLUMN_EFF1) {
 		for (int j = 0; j < Rows; ++j) {
-			if ((j + m_cpCursorPos.m_iRow) < 0 || (j + m_cpCursorPos.m_iRow) >= PatternLength)
-				continue;
+			if (r < 0 || r >= PatternLength) {
+				if (!theApp.GetSettings()->General.bOverflowPaste) continue;
+			}
 
 			const stChanNote *pClipPattern = pClipData->GetPattern(0, j);
 
-			m_pDocument->GetNoteData(Track, m_iCurrentFrame, m_cpCursorPos.m_iChannel, j + m_cpCursorPos.m_iRow, &NoteData);
+			m_pDocument->GetNoteData(Track, f, m_cpCursorPos.m_iChannel, j + m_cpCursorPos.m_iRow, &NoteData);
 
 			for (int i = StartColumn - COLUMN_EFF1; i < (EndColumn - COLUMN_EFF1 + 1); ++i) {
 				int Offset = (GetSelectColumn(m_cpCursorPos.m_iColumn) - COLUMN_EFF1) + (i - (StartColumn - COLUMN_EFF1));
-				if (Offset < 4 && Offset >= 0) {
+				if ((PasteMode == PASTE_DEFAULT ||
+					(PasteMode == PASTE_MIX && pClipPattern->EffNumber[i] != EF_NONE && NoteData.EffNumber[Offset] == EF_NONE) ||
+					(PasteMode == PASTE_OVERWRITE && pClipPattern->EffNumber[i] != EF_NONE))
+					&& Offset < 4 && Offset >= 0) {
 					NoteData.EffNumber[Offset] = pClipPattern->EffNumber[i];
 					NoteData.EffParam[Offset] = pClipPattern->EffParam[i];
 				}
 			}
 
-			m_pDocument->SetNoteData(Track, m_iCurrentFrame, m_cpCursorPos.m_iChannel, j + m_cpCursorPos.m_iRow, &NoteData);
+			m_pDocument->SetNoteData(Track, f, m_cpCursorPos.m_iChannel, j + m_cpCursorPos.m_iRow, &NoteData);
 		}
 		return;
 	}	
@@ -3470,7 +3477,7 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, paste_mode_t Mode)
 			if ((j + m_cpCursorPos.m_iRow) < 0 || (j + m_cpCursorPos.m_iRow) >= PatternLength)
 				continue;
 
-			m_pDocument->GetNoteData(Track, m_iCurrentFrame, i + m_cpCursorPos.m_iChannel, j + m_cpCursorPos.m_iRow, &NoteData);
+			m_pDocument->GetNoteData(Track, f, i + m_cpCursorPos.m_iChannel, j + m_cpCursorPos.m_iRow, &NoteData);
 
 			const stChanNote *pClipNote = pClipData->GetPattern(i, j);
 
@@ -3510,7 +3517,7 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, paste_mode_t Mode)
 				}
 			}
 
-			m_pDocument->SetNoteData(Track, m_iCurrentFrame, i + m_cpCursorPos.m_iChannel, j + m_cpCursorPos.m_iRow, &NoteData);
+			m_pDocument->SetNoteData(Track, f, i + m_cpCursorPos.m_iChannel, j + m_cpCursorPos.m_iRow, &NoteData);
 		}
 	}
 }

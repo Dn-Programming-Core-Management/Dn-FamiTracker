@@ -118,8 +118,10 @@ public:
 		bool	bPreviewFullRow;
 		bool	bDblClickSelect;
 		bool	bWrapPatternValue;		// // //
-		bool	bCutVolume;				// // //
-		bool	bFDSOldVolume;			// // //
+		bool	bCutVolume;
+		bool	bFDSOldVolume;
+		bool	bRetrieveChanState;
+		bool	bOverflowPaste;
 	} General;
 
 	struct {

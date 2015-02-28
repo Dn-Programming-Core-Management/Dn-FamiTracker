@@ -43,27 +43,31 @@ const CString CConfigGeneral::CONFIG_STR[] = {
 	_T("Don't select on double-click"),
 	_T("Warp pattern values"),
 	_T("Cut sub-volume"),
-	_T("Use old FDS volume table")
+	_T("Use old FDS volume table"),
+	_T("Retrieve channel state"),
+	_T("Overflow paste mode")
 };
 
 const CString CConfigGeneral::CONFIG_DESC[] = {
 	_T("Wrap around the cursor when reaching top or bottom in the pattern editor."),
 	_T("Move to next or previous frame when reaching top or bottom in the pattern editor."),
-	_T("Unlocks the cursor from the center of the pattern editor."),
+	_T("Unlock the cursor from the center of the pattern editor."),
 	_T("Preview wave and DPCM files in the open file dialog when loading samples to the module."),
 	_T("Enable key repetition in the pattern editor."),
-	_T("Display row numbers in hexadecimal."),
-	_T("Preview next and previous frame in the pattern editor."),
-	_T("Prevents resetting the DPCM channel on note stop commands."),
+	_T("Display row numbers and the frame count on the status bar in hexadecimal."),
+	_T("Preview next and previous frames in the pattern editor."),
+	_T("Prevent resetting the DPCM channel on note stop commands."),
 	_T("Ignore the pattern step setting when moving the cursor, only use it when inserting notes."),
-	_T("Makes delete key pull up rows rather than only deleting the value."),
-	_T("Creates a backup copy of the existing file when saving a module."),
+	_T("Make delete key pull up rows rather than only deleting the value."),
+	_T("Create a backup copy of the existing file when saving a module."),
 	_T("Only allow one single instance of the FamiTracker application."),
 	_T("Preview all channels when inserting notes in the pattern editor."),
 	_T("Don't select the whole channel when double-clicking in the pattern editor."),
 	_T("When using Shift + Mouse Wheel to modify a pattern value, allow the parameter to wrap around its limit values."),
 	_T("Always silent volume values below 1 caused by the Axy or 7xy effects."),
 	_T("Use the existing volume table for the FDS channel which has higher precision than in exported NSFs.")
+	_T("Reconstruct the current channel's state from previous frames upon playing (except when playing one row)."),
+	_T("Move pasted pattern data outside the rows of the current frame to subsequent frames.")
 };
 
 // CConfigGeneral dialog
@@ -136,8 +140,10 @@ BOOL CConfigGeneral::OnApply()
 	theApp.GetSettings()->General.bPreviewFullRow	= m_bPreviewFullRow;
 	theApp.GetSettings()->General.bDblClickSelect	= m_bDisableDblClick;
 	theApp.GetSettings()->General.bWrapPatternValue	= m_bWrapPatternValue;		// // //
-	theApp.GetSettings()->General.bCutVolume		= m_bCutVolume;				// // //
-	theApp.GetSettings()->General.bFDSOldVolume		= m_bFDSOldVolume;			// // //
+	theApp.GetSettings()->General.bCutVolume		= m_bCutVolume;
+	theApp.GetSettings()->General.bFDSOldVolume		= m_bFDSOldVolume;
+	theApp.GetSettings()->General.bRetrieveChanState = m_bRetrieveChanState;
+	theApp.GetSettings()->General.bOverflowPaste	= m_bOverflowPaste;
 
 	theApp.GetSettings()->Keys.iKeyNoteCut			= m_iKeyNoteCut;
 	theApp.GetSettings()->Keys.iKeyNoteRelease		= m_iKeyNoteRelease;
@@ -171,8 +177,10 @@ BOOL CConfigGeneral::OnInitDialog()
 	m_bPreviewFullRow	= theApp.GetSettings()->General.bPreviewFullRow;
 	m_bDisableDblClick	= theApp.GetSettings()->General.bDblClickSelect;
 	m_bWrapPatternValue = theApp.GetSettings()->General.bWrapPatternValue;		// // //
-	m_bCutVolume		= theApp.GetSettings()->General.bCutVolume;				// // //
-	m_bFDSOldVolume		= theApp.GetSettings()->General.bFDSOldVolume;			// // //
+	m_bCutVolume		= theApp.GetSettings()->General.bCutVolume;
+	m_bFDSOldVolume		= theApp.GetSettings()->General.bFDSOldVolume;
+	m_bRetrieveChanState = theApp.GetSettings()->General.bRetrieveChanState;
+	m_bOverflowPaste	= theApp.GetSettings()->General.bOverflowPaste;
 
 	m_iKeyNoteCut		= theApp.GetSettings()->Keys.iKeyNoteCut; 
 	m_iKeyNoteRelease	= theApp.GetSettings()->Keys.iKeyNoteRelease; 

@@ -22,7 +22,7 @@
 
 #pragma once
 
-#define SETTINGS_BOOL_COUNT 17
+#define SETTINGS_BOOL_COUNT 19
 
 // CConfigGeneral dialog
 
@@ -55,8 +55,10 @@ protected:
 	bool	m_bPreviewFullRow;
 	bool	m_bDisableDblClick;
 	bool	m_bWrapPatternValue;		// // //
-	bool	m_bCutVolume;				// // //
-	bool	m_bFDSOldVolume;			// // //
+	bool	m_bCutVolume;
+	bool	m_bFDSOldVolume;
+	bool	m_bRetrieveChanState;
+	bool	m_bOverflowPaste;
 
 	int		m_iEditStyle;
 	int		m_iPageStepSize;

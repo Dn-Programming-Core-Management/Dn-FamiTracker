@@ -101,6 +101,8 @@ void CSettings::SetupSettings()
 	SETTING_BOOL("General", "Wrap pattern values", false, &General.bWrapPatternValue);		// // //
 	SETTING_BOOL("General", "Cut sub-volume", false, &General.bCutVolume);		// // //
 	SETTING_BOOL("General", "Use old FDS volume table", false, &General.bFDSOldVolume);		// // //
+	SETTING_BOOL("General", "Retrieve channel state", false, &General.bRetrieveChanState);		// // //
+	SETTING_BOOL("General", "Overflow paste mode", false, &General.bOverflowPaste);		// // //
 
 	// Keys
 	SETTING_INT("Keys", "Note cut",		0x31, &Keys.iKeyNoteCut);
