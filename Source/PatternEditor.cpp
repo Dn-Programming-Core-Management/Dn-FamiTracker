@@ -3422,36 +3422,39 @@ void CPatternEditor::PasteEntire(const CPatternClipData *pClipData)
 	}
 }
 
-void CPatternEditor::Paste(const CPatternClipData *pClipData, paste_mode_t Mode)		// // //
+void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t PasteMode)		// // //
 {
 	// // // Paste
-	const int Track			= GetSelectedTrack();
-	const int ChannelCount  = GetChannelCount();
-	const int PatternLength = m_pDocument->GetPatternLength(Track);
+	const int Track		   = GetSelectedTrack();
+	const int ChannelCount = GetChannelCount();
 
 	const int Channels	  = pClipData->ClipInfo.Channels;
 	const int Rows		  = pClipData->ClipInfo.Rows;
 	const int StartColumn = pClipData->ClipInfo.StartColumn;
 	const int EndColumn	  = pClipData->ClipInfo.EndColumn;
 	
-	const int PasteMode = Mode & 0xFF;		// // //
-	const int PasteAttribute = Mode >> 8;
+	// const int PasteAttribute = PasteMode >> 8;
 
 	stChanNote NoteData;
 
-	int f = m_iCurrentFrame;
-	int r = m_cpCursorPos.m_iRow;
+	unsigned int f = m_iCurrentFrame;
+	unsigned int r = m_cpCursorPos.m_iRow;
+	unsigned int FrameLength = GetCurrentPatternLength(f);
 
 	// Special, single channel and effect columns only
 	if (Channels == 1 && StartColumn >= COLUMN_EFF1) {
 		for (int j = 0; j < Rows; ++j) {
-			if (r < 0 || r >= PatternLength) {
+			if (r >= FrameLength) {		// // //
 				if (!theApp.GetSettings()->General.bOverflowPaste) continue;
+				f++;
+				if (f >= m_pDocument->GetFrameCount(Track)) f = 0;
+				FrameLength = GetCurrentPatternLength(f);
+				r = 0;
 			}
 
 			const stChanNote *pClipPattern = pClipData->GetPattern(0, j);
 
-			m_pDocument->GetNoteData(Track, f, m_cpCursorPos.m_iChannel, j + m_cpCursorPos.m_iRow, &NoteData);
+			m_pDocument->GetNoteData(Track, f, m_cpCursorPos.m_iChannel, r, &NoteData);
 
 			for (int i = StartColumn - COLUMN_EFF1; i < (EndColumn - COLUMN_EFF1 + 1); ++i) {
 				int Offset = (GetSelectColumn(m_cpCursorPos.m_iColumn) - COLUMN_EFF1) + (i - (StartColumn - COLUMN_EFF1));
@@ -3464,24 +3467,29 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, paste_mode_t Mode)
 				}
 			}
 
-			m_pDocument->SetNoteData(Track, f, m_cpCursorPos.m_iChannel, j + m_cpCursorPos.m_iRow, &NoteData);
+			m_pDocument->SetNoteData(Track, f, m_cpCursorPos.m_iChannel, r++, &NoteData);
+			if (theApp.GetSettings()->General.bFramePreview) FrameLength = m_pDocument->GetFrameLength(Track, f);
 		}
 		return;
-	}	
+	}
 
 	for (int i = 0; i < Channels; ++i) {
 		if ((i + m_cpCursorPos.m_iChannel) < 0 || (i + m_cpCursorPos.m_iChannel) >= ChannelCount)
 			continue;
 
 		for (int j = 0; j < Rows; ++j) {
-			if ((j + m_cpCursorPos.m_iRow) < 0 || (j + m_cpCursorPos.m_iRow) >= PatternLength)
-				continue;
+			if (r >= FrameLength) {		// // //
+				if (!theApp.GetSettings()->General.bOverflowPaste) continue;
+				f++;
+				if (f >= m_pDocument->GetFrameCount(Track)) f = 0;
+				FrameLength = GetCurrentPatternLength(f);
+				r -= FrameLength;
+			}
 
-			m_pDocument->GetNoteData(Track, f, i + m_cpCursorPos.m_iChannel, j + m_cpCursorPos.m_iRow, &NoteData);
+			m_pDocument->GetNoteData(Track, f, i + m_cpCursorPos.m_iChannel, r, &NoteData);
 
 			const stChanNote *pClipNote = pClipData->GetPattern(i, j);
 
-			bool Skip;
 			// Note & octave
 			if ((i != 0 || StartColumn <= COLUMN_NOTE) && (i != (Channels - 1) || EndColumn >= COLUMN_NOTE)) {
 				if (PasteMode == PASTE_DEFAULT ||
@@ -3517,7 +3525,8 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, paste_mode_t Mode)
 				}
 			}
 
-			m_pDocument->SetNoteData(Track, f, i + m_cpCursorPos.m_iChannel, j + m_cpCursorPos.m_iRow, &NoteData);
+			m_pDocument->SetNoteData(Track, f, i + m_cpCursorPos.m_iChannel, r++, &NoteData);
+			if (theApp.GetSettings()->General.bFramePreview) FrameLength = m_pDocument->GetFrameLength(Track, f);
 		}
 	}
 }
@@ -3569,8 +3578,6 @@ int CPatternEditor::GetCurrentPatternLength(unsigned int Frame) const
 	const int Track = GetSelectedTrack();
 	const int Channels = GetChannelCount();
 	const int PatternLength = m_pDocument->GetPatternLength(Track);	// default length
-	
-	int HaltPoint = PatternLength;
 
 	if (!theApp.GetSettings()->General.bFramePreview || Frame >= m_pDocument->GetFrameCount(Track))
 		return PatternLength;

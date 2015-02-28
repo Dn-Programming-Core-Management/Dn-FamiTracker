@@ -45,14 +45,17 @@ enum column_t {
 
 // // // Paste modes
 enum paste_mode_t : unsigned int {
-	PASTE_DEFAULT	= 0x0000,
-	PASTE_MIX		= 0x0001,
-	PASTE_OVERWRITE	= 0x0002,
-	PASTE_INSERT	= 0x0003,
-	PASTE_REPLACE	= 0x0004,
-	PASTE_CURSOR	= 0x0000,
-	PASTE_SELECTION	= 0x0100,
-	PASTE_FILL		= 0x0200
+	PASTE_DEFAULT = 0,
+	PASTE_MIX,
+	PASTE_OVERWRITE,
+	PASTE_INSERT,
+	PASTE_REPLACE
+};
+
+enum paste_pos_t : unsigned int {
+	PASTE_CURSOR = 0,
+	PASTE_SELECTION,
+	PASTE_FILL
 };
 
 // Class used by clipboard

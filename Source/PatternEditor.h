@@ -138,7 +138,7 @@ public:
 	CPatternClipData *Copy() const;
 	void Cut();
 	void PasteEntire(const CPatternClipData *pClipData);
-	void Paste(const CPatternClipData *pClipData, paste_mode_t Mode);		// // //
+	void Paste(const CPatternClipData *pClipData, const paste_mode_t PasteMode);		// // //
 
 	bool IsSelecting() const;
 	void SelectChannel();
