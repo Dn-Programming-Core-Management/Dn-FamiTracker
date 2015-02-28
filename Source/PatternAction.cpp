@@ -131,37 +131,37 @@ void CPatternAction::IncreaseRowAction(CFamiTrackerDoc *pDoc) const
 	switch (m_iUndoColumn) {
 		case C_INSTRUMENT1:
 		case C_INSTRUMENT2: 
-			if (Note.Instrument < MAX_INSTRUMENTS) {
+			if (Note.Instrument < MAX_INSTRUMENTS - 1) {		// // //
 				++Note.Instrument;
 				bUpdate = true;
 			}
 			break;
 		case C_VOLUME: 
-			if (Note.Vol < 0x10) {
+			if (Note.Vol < MAX_VOLUME - 1) {		// // //
 				++Note.Vol;
 				bUpdate = true;
 			}
 			break;
 		case C_EFF_NUM: case C_EFF_PARAM1: case C_EFF_PARAM2: 
-			if (Note.EffParam[0] != 255) {
+			if (Note.EffParam[0] < 0xFF && Note.EffNumber[0] != EF_NONE) {		// // //
 				++Note.EffParam[0];
 				bUpdate = true;
 			}
 			break;
 		case C_EFF2_NUM: case C_EFF2_PARAM1: case C_EFF2_PARAM2: 
-			if (Note.EffParam[1] != 255) {
+			if (Note.EffParam[1] < 0xFF && Note.EffNumber[1] != EF_NONE) {		// // //
 				++Note.EffParam[1];
 				bUpdate = true;
 			}
 			break;
 		case C_EFF3_NUM: case C_EFF3_PARAM1: case C_EFF3_PARAM2: 
-			if (Note.EffParam[2] != 255) {
+			if (Note.EffParam[2] < 0xFF && Note.EffNumber[2] != EF_NONE) {		// // //
 				++Note.EffParam[2];
 				bUpdate = true;
 			}
 			break;
 		case C_EFF4_NUM: case C_EFF4_PARAM1: case C_EFF4_PARAM2: 
-			if (Note.EffParam[3] != 255) {
+			if (Note.EffParam[3] < 0xFF && Note.EffNumber[3] != EF_NONE) {		// // //
 				++Note.EffParam[3];
 				bUpdate = true;
 			}
@@ -182,37 +182,37 @@ void CPatternAction::DecreaseRowAction(CFamiTrackerDoc *pDoc) const
 	switch (m_iUndoColumn) {
 		case C_INSTRUMENT1:
 		case C_INSTRUMENT2:
-			if (Note.Instrument > 0) {
+			if (Note.Instrument > 0 && Note.Instrument != MAX_INSTRUMENTS) {		// // //
 				--Note.Instrument;
 				bUpdate = true;
 			}
 			break;
 		case C_VOLUME: 
-			if (Note.Vol > 0) {
+			if (Note.Vol > 0 && Note.Vol != MAX_VOLUME) {		// // //
 				--Note.Vol;
 				bUpdate = true;
 			}
 			break;
 		case C_EFF_NUM: case C_EFF_PARAM1: case C_EFF_PARAM2: 
-			if (Note.EffParam[0] > 0) {
+			if (Note.EffParam[0] > 0 && Note.EffNumber[0] != EF_NONE) {		// // //
 				--Note.EffParam[0];
 				bUpdate = true;
 			}
 			break;
 		case C_EFF2_NUM: case C_EFF2_PARAM1: case C_EFF2_PARAM2: 
-			if (Note.EffParam[1] > 0) {
+			if (Note.EffParam[1] > 0 && Note.EffNumber[1] != EF_NONE) {		// // //
 				--Note.EffParam[1];
 				bUpdate = true;
 			}
 			break;
 		case C_EFF3_NUM: case C_EFF3_PARAM1: case C_EFF3_PARAM2: 
-			if (Note.EffParam[2] > 0) {
+			if (Note.EffParam[2] > 0 && Note.EffNumber[2] != EF_NONE) {		// // //
 				--Note.EffParam[2];
 				bUpdate = true;
 			}
 			break;
-		case C_EFF4_NUM: case C_EFF4_PARAM1: case C_EFF4_PARAM2: 					
-			if (Note.EffParam[3] > 0) {
+		case C_EFF4_NUM: case C_EFF4_PARAM1: case C_EFF4_PARAM2: 	
+			if (Note.EffParam[3] > 0 && Note.EffNumber[3] != EF_NONE) {		// // //
 				--Note.EffParam[3];
 				bUpdate = true;
 			}
@@ -647,81 +647,35 @@ bool CPatternAction::SaveState(CMainFrame *pMainFrm)
 			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, pDoc->GetPatternLength(m_iUndoTrack) - 1, &m_OldNote);
 			break;
 		case ACT_EDIT_PASTE:
-			// Paste
-			m_pUndoClipData = pPatternEditor->CopyEntire();
-			break;		// // //
-		case ACT_EDIT_DELETE:
-			// Delete selection
-			SaveEntire(pPatternEditor);
-			break;
+		case ACT_EDIT_DELETE:		// // //
 		case ACT_EDIT_DELETE_ROWS:
-			// Delete and pull up selection
-			SaveEntire(pPatternEditor);
-			break;
 		case ACT_INSERT_SEL_ROWS:
-			// Insert rows in multiple channels
-			SaveEntire(pPatternEditor);
-			break;
 		case ACT_TRANSPOSE:
-			// Transpose notes
-			SaveEntire(pPatternEditor);
-			break;
 		case ACT_SCROLL_VALUES:
-			// Scroll pattern values
-			SaveEntire(pPatternEditor);
+		case ACT_DRAG_AND_DROP:
+			SaveEntire(pPatternEditor);		// // //
 			break;
 		case ACT_INTERPOLATE:
-			// Interpolate pattern
-			if (!pPatternEditor->IsSelecting())
-				return false;
-			SaveEntire(pPatternEditor);
-			break;
 		case ACT_REVERSE:
-			// Reverse pattern
-			if (!pPatternEditor->IsSelecting())
-				return false;
-			SaveEntire(pPatternEditor);
-			break;
 		case ACT_REPLACE_INSTRUMENT:
-			// Replace instruments
+		case ACT_EXPAND_PATTERN:
+		case ACT_SHRINK_PATTERN:
 			if (!pPatternEditor->IsSelecting())
 				return false;
 			SaveEntire(pPatternEditor);
 			break;
 		case ACT_INCREASE:
+		case ACT_DECREASE:		// // //
 			// Increase action
 			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow, &m_OldNote);
-			break;
-		case ACT_DECREASE:
-			// Decrease action
-			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow, &m_OldNote);
-			break;
-		case ACT_DRAG_AND_DROP:
-			// Drag'n'drop
-			SaveEntire(pPatternEditor);
 			break;
 		case ACT_PATTERN_LENGTH:
 			// Change pattern length
 			m_iOldPatternLen = pDoc->GetPatternLength(m_iUndoTrack);
 			break;
-		case ACT_EXPAND_PATTERN:
-			// Expand pattern
-			if (!pPatternEditor->IsSelecting())		// // //
-				return false;
-			SaveEntire(pPatternEditor);
-			break;
-		case ACT_SHRINK_PATTERN:
-			// Shrink pattern
-			if (!pPatternEditor->IsSelecting())		// // //
-				return false;
-			SaveEntire(pPatternEditor);
-			break;
 		case ACT_EXPAND_COLUMNS:
-			// Add effect column
-			m_iUndoColumnCount = pDoc->GetEffColumns(m_iUndoTrack, m_iClickedChannel);
-			break;
-		case ACT_SHRINK_COLUMNS:
-			// Remove effect column
+		case ACT_SHRINK_COLUMNS:		// // //
+			// Add / remove effect column
 			m_iUndoColumnCount = pDoc->GetEffColumns(m_iUndoTrack, m_iClickedChannel);
 			break;
 #ifdef _DEBUG_
@@ -757,6 +711,8 @@ void CPatternAction::Undo(CMainFrame *pMainFrm)
 
 	switch (m_iAction) {
 		case ACT_EDIT_NOTE:
+		case ACT_INCREASE:		// // //
+		case ACT_DECREASE:		// // //
 			pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow, &m_OldNote);
 			break;
 		case ACT_DELETE_ROW:
@@ -781,12 +737,6 @@ void CPatternAction::Undo(CMainFrame *pMainFrm)
 		case ACT_SHRINK_PATTERN:
 			RestoreSelection(pPatternEditor);
 			RestoreEntire(pPatternEditor);
-			break;
-		case ACT_INCREASE:
-			pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow, &m_OldNote);
-			break;
-		case ACT_DECREASE:
-			pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow, &m_OldNote);
 			break;
 		case ACT_DRAG_AND_DROP:
 			RestoreEntire(pPatternEditor);
