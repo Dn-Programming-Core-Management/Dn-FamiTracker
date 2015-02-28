@@ -65,7 +65,7 @@ const CString CConfigGeneral::CONFIG_DESC[] = {
 	_T("Don't select the whole channel when double-clicking in the pattern editor."),
 	_T("When using Shift + Mouse Wheel to modify a pattern value, allow the parameter to wrap around its limit values."),
 	_T("Always silent volume values below 1 caused by the Axy or 7xy effects."),
-	_T("Use the existing volume table for the FDS channel which has higher precision than in exported NSFs.")
+	_T("Use the existing volume table for the FDS channel which has higher precision than in exported NSFs."),
 	_T("Reconstruct the current channel's state from previous frames upon playing (except when playing one row)."),
 	_T("Move pasted pattern data outside the rows of the current frame to subsequent frames.")
 };
