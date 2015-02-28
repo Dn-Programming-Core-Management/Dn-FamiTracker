@@ -162,7 +162,7 @@ protected:
 	bool	IsActive() const;
 	bool	IsReleasing() const;
 
-	void	WriteEchoBuffer(stChanNote *NoteData, int Pos);
+	void	WriteEchoBuffer(stChanNote *NoteData, int Pos, int EffColumns);		// // //
 
 	void	WriteRegister(uint16 Reg, uint8 Value);
 	void	WriteExternalRegister(uint16 Reg, uint8 Value);

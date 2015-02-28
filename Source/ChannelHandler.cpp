@@ -200,6 +200,7 @@ void CChannelHandler::RetrieveChannelState()		// // //
 	int Frame = m_pSoundGen->GetPlayerFrame();
 	int Row = m_pSoundGen->GetPlayerRow();
 	int Channel = pDoc->GetChannelPosition(m_iChannelID, pDoc->GetExpansionChip());
+	int EffColumns = pDoc->GetEffColumns(Track, Channel);
 
 	int f = Frame, r = Row, BufferPos = 0, State[EF_COUNT];
 	for (int i = 0; i < EF_COUNT; i++)
@@ -213,16 +214,15 @@ void CChannelHandler::RetrieveChannelState()		// // //
 		stChanNote Note;
 		pDoc->GetNoteData(Track, f, Channel, r, &Note);
 		
-		// 0CC: retrieve echo buffer state
 		if (Note.Note != NONE && Note.Note != RELEASE) {
-			if (BufferPos <= ECHO_BUFFER_LENGTH)
-				WriteEchoBuffer(&Note, BufferPos++);
 			for (int i = 0; i < BufferPos; i++) {
 				if (m_iEchoBuffer[i] == BUFFER_ECHO)
-					WriteEchoBuffer(&Note, i);
+					WriteEchoBuffer(&Note, i, EffColumns);
 				else if (m_iEchoBuffer[i] > BUFFER_ECHO && m_iEchoBuffer[i] <= BUFFER_ECHO + ECHO_BUFFER_LENGTH)
 					m_iEchoBuffer[i]--;
 			}
+			if (BufferPos <= ECHO_BUFFER_LENGTH)
+				WriteEchoBuffer(&Note, BufferPos++, EffColumns);
 		}
 
 		if (m_iInstrument == MAX_INSTRUMENTS)
@@ -233,7 +233,7 @@ void CChannelHandler::RetrieveChannelState()		// // //
 			if (Note.Vol != MAX_VOLUME)
 				m_iDefaultVolume = m_iVolume = Note.Vol << VOL_COLUMN_SHIFT;
 		
-		for (int c = pDoc->GetEffColumns(Track, Channel); c >= 0; c--)
+		for (int c = EffColumns; c >= 0; c--)
 			switch (Note.EffNumber[c]) {
 			case EF_NONE: case EF_PORTAOFF:
 			case EF_DAC: case EF_DPCM_PITCH: case EF_RETRIGGER:
@@ -288,27 +288,38 @@ void CChannelHandler::PlayNote(stChanNote *pNoteData, int EffColumns)
 	HandleNoteData(pNoteData, EffColumns);
 }
 
-void CChannelHandler::WriteEchoBuffer(stChanNote *NoteData, int Pos)
+void CChannelHandler::WriteEchoBuffer(stChanNote *NoteData, int Pos, int EffColumns)
 {
 	if (Pos < 0 || Pos > ECHO_BUFFER_LENGTH) return;
 	int Value;
 	switch (NoteData->Note) {
 	case NONE: Value = BUFFER_NONE; break;
 	case HALT: Value = BUFFER_HALT; break;
-	case ECHO: Value = BUFFER_ECHO; break;
-	default: 
-		Value = MIDI_NOTE(NoteData->Octave, NoteData->Note); 
+	case ECHO: Value = BUFFER_ECHO + NoteData->Octave; break;
+	default:
+		Value = MIDI_NOTE(NoteData->Octave, NoteData->Note);
+		for (int i = EffColumns; i >= 0; i--) {
+			if (NoteData->EffNumber[i] == EF_SLIDE_UP) {
+				Value += NoteData->EffParam[i] & 0x0F;
+				break;
+			}
+			else if (NoteData->EffNumber[i] == EF_SLIDE_DOWN) {
+				Value -= NoteData->EffParam[i] & 0x0F;
+				break;
+			}
+			else if (NoteData->EffNumber[i] == EF_TRANSPOSE) {
+				// Sometimes there are not enough ticks for the transpose to take place
+				if (NoteData->EffParam[i] & 0x80)
+					Value -= NoteData->EffParam[i] & 0x0F;
+				else
+					Value += NoteData->EffParam[i] & 0x0F;
+				break;
+			}
+		}
+		Value = std::max(std::min(Value, NOTE_COUNT - 1), 0);
 	}
 
-	switch (NoteData->EffNumber[0]) {
-	case EF_SLIDE_UP:
-		break;
-	case EF_SLIDE_DOWN:
-		break;
-	case EF_TRANSPOSE:
-		break;
-	}
-	m_iEchoBuffer[Pos] = std::max(std::min(Value, NOTE_COUNT - 1), 0);
+	m_iEchoBuffer[Pos] = Value;
 }
 
 void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
@@ -336,7 +347,7 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	{ // push buffer
 		for (int i = ECHO_BUFFER_LENGTH; i > 0; i--)
 			m_iEchoBuffer[i] = m_iEchoBuffer[i - 1];
-		WriteEchoBuffer(pNoteData, 0);
+		WriteEchoBuffer(pNoteData, 0, EffColumns);
 	}
 	
 	// Clear the note cut effect
@@ -484,9 +495,6 @@ void CChannelHandler::SetupSlide(int Type, int EffParam)
 		m_iNote = m_iNote + (EffParam & 0xF);
 	else
 		m_iNote = m_iNote - (EffParam & 0xF);
-
-	if (m_iEchoBuffer[0] != BUFFER_NONE && m_iEchoBuffer[0] != BUFFER_HALT)		// // //
-		m_iEchoBuffer[0] = std::max(std::min(m_iNote, NOTE_COUNT - 1), 0);
 	
 	if (m_iChannelID == CHANID_NOISE) {		// // //
 		m_iNote = m_iNote % 0x10 + 0x100;
@@ -649,10 +657,6 @@ void CChannelHandler::UpdateTranspose()		// // //
 			// trigger note
 			SetNote(GetNote() + m_iTransposeTarget * (m_iTranspose ? -1 : 1));
 			SetPeriod(TriggerNote(m_iNote));
-			if (m_iEchoBuffer[0] != BUFFER_NONE && m_iEchoBuffer[0] != BUFFER_HALT) {
-				m_iEchoBuffer[0] += m_iTransposeTarget * (m_iTranspose ? -1 : 1);
-				m_iEchoBuffer[0] = std::max(std::min(m_iEchoBuffer[0], NOTE_COUNT - 1), 0);
-			}
 		}
 	}
 }
@@ -1020,17 +1024,17 @@ void CSequenceHandler::UpdateSequenceRunning(int Index, const CSequence *pSequen
 		// Arpeggiator
 		case SEQ_ARPEGGIO:
 			switch (pSequence->GetSetting()) {
-				case ARP_SETTING_ABSOLUTE:
+				case SETTING_ARP_ABSOLUTE:
 					SetPeriod(TriggerNote(GetNote() + Value));
 					break;
-				case ARP_SETTING_FIXED:
+				case SETTING_ARP_FIXED:
 					SetPeriod(TriggerNote(Value));
 					break;
-				case ARP_SETTING_RELATIVE:
+				case SETTING_ARP_RELATIVE:
 					SetNote(GetNote() + Value);
 					SetPeriod(TriggerNote(GetNote()));
 					break;
-					case ARP_SETTING_SCHEME: // // //
+					case SETTING_ARP_SCHEME: // // //
 						if (Value < 0) Value += 256;
 						int lim = Value % 0x40, scheme = Value / 0x40;
 						if (lim > 36)
@@ -1096,7 +1100,7 @@ void CSequenceHandler::UpdateSequenceEnd(int Index, const CSequence *pSequence)
 {
 	switch (Index) {
 		case SEQ_ARPEGGIO:
-			if (pSequence->GetSetting() == ARP_SETTING_FIXED) {
+			if (pSequence->GetSetting() == SETTING_ARP_FIXED) {
 				SetPeriod(TriggerNote(GetNote()));
 			}
 			break;

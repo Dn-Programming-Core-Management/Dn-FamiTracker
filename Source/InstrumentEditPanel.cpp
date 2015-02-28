@@ -283,7 +283,7 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 			int Rep = 1;
 			bool HasTerm = false;
 			bool Invalid = false;
-			if (pSequence->GetSetting() == ARP_SETTING_SCHEME) {			// // //
+			if (pSequence->GetSetting() == SETTING_ARP_SCHEME) {			// // //
 				// Arp scheme modes
 				if (term[0] == 'x') {
 					HasTerm = true; term += 1; Mode = ARPSCHEME_MODE_X;
@@ -308,11 +308,11 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 			// Check for invalid chars
 			if (!(value == 0 && term[0] != '0' && !HasTerm) && !Invalid) {
 				value = std::min<int>(std::max<int>(value, Min), Max);
-				if (pSequence->GetSetting() == ARP_SETTING_SCHEME && value < 0)		// // //
+				if (pSequence->GetSetting() == SETTING_ARP_SCHEME && value < 0)		// // //
 					value += 64;
 				term += std::strspn(term, "$-");
 				term += std::strspn(term, "0123456789abcdef");
-				if (pSequence->GetSetting() == ARP_SETTING_SCHEME) {
+				if (pSequence->GetSetting() == SETTING_ARP_SCHEME) {
 					// Arp scheme modes
 					if (term[0] == '+') {
 						if (HasTerm) Invalid = true;

@@ -1679,7 +1679,7 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 			if (IsInstrumentUsed(i) && GetInstrumentType(i) == INST_FDS) {
 				CInstrumentFDS *pInstrument = static_cast<CInstrumentFDS*>(GetInstrument(i));
 				CSequence *pSeq = pInstrument->GetArpSeq();
-				if (pSeq->GetItemCount() > 0 && pSeq->GetSetting() == ARP_SETTING_FIXED) {
+				if (pSeq->GetItemCount() > 0 && pSeq->GetSetting() == SETTING_ARP_FIXED) {
 					for (unsigned int j = 0; j < pSeq->GetItemCount(); ++j) {
 						pSeq->SetItem(j, pSeq->GetItem(j) + 24);
 					}

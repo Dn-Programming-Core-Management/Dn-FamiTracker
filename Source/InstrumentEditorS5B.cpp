@@ -215,10 +215,10 @@ void CInstrumentEditorS5B::OnKeyReturn()
 			TranslateMML(Text, MAX_VOLUME, 0);
 			break;
 		case SEQ_ARPEGGIO:
-			if (m_pSequence->GetSetting() == ARP_SETTING_SCHEME)	// // //
+			if (m_pSequence->GetSetting() == SETTING_ARP_SCHEME)	// // //
 				TranslateMML(Text, 36, -27);
 			else
-				TranslateMML(Text, 96, m_pSequence->GetSetting()== ARP_SETTING_FIXED ? 0 : -96);
+				TranslateMML(Text, 96, m_pSequence->GetSetting()== SETTING_ARP_FIXED ? 0 : -96);
 			break;
 		case SEQ_PITCH:
 			TranslateMML(Text, 126, -127);

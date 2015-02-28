@@ -27,6 +27,31 @@
 
 class CDocumentFile;
 
+// // // Settings
+enum seq_setting_t : unsigned int {
+	SETTING_ARP_ABSOLUTE   = 0x0000,
+	SETTING_ARP_FIXED      = 0x0001,
+	SETTING_ARP_RELATIVE   = 0x0002,
+	SETTING_ARP_SCHEME     = 0x0003,
+	SETTING_PITCH_DEFAULT  = 0x0000,
+	SETTING_PITCH_ABSOLUTE = 0x0010,
+	SETTING_PITCH_RELATIVE = 0x0020,
+};
+
+// // // Sunsoft modes
+enum s5b_mode_t {
+	S5B_MODE_ENVELOPE = 0x20,
+	S5B_MODE_SQUARE   = 0x40,
+	S5B_MODE_NOISE    = 0x80
+};
+
+// // // Arpeggio scheme modes
+enum arp_scheme_mode_t {
+	ARPSCHEME_MODE_X     = 0x40,
+	ARPSCHEME_MODE_Y     = 0x80,
+	ARPSCHEME_MODE_NEG_Y = 0xC0
+};
+
 /*
 ** This class is used to store instrument sequences
 */
@@ -39,7 +64,7 @@ public:
 	unsigned int GetItemCount() const;
 	unsigned int GetLoopPoint() const;
 	unsigned int GetReleasePoint() const;
-	unsigned int GetSetting() const;
+	seq_setting_t GetSetting() const;		// // //
 	void		 SetItem(int Index, signed char Value);
 	void		 SetItemCount(unsigned int Count);
 	void		 SetLoopPoint(unsigned int Point);
@@ -52,30 +77,7 @@ private:
 	unsigned int m_iItemCount;
 	unsigned int m_iLoopPoint;
 	unsigned int m_iReleasePoint;
-	unsigned int m_iSetting;
+	seq_setting_t m_iSetting;		// // //
 	signed char	 m_cValues[MAX_SEQUENCE_ITEMS];
 	int			 m_iPlaying;
-};
-
-
-// Settings
-enum arp_setting_t {
-	ARP_SETTING_ABSOLUTE = 0,
-	ARP_SETTING_FIXED = 1,
-	ARP_SETTING_RELATIVE = 2,
-	ARP_SETTING_SCHEME = 3			// // //
-};
-
-// Sunsoft modes
-enum s5b_mode_t {		// // //
-	S5B_MODE_ENVELOPE = 32,
-	S5B_MODE_SQUARE = 64,
-	S5B_MODE_NOISE = 128
-};
-
-// Arpeggio scheme modes			// // //
-enum arp_scheme_mode_t {
-	ARPSCHEME_MODE_X = 64,
-	ARPSCHEME_MODE_Y = 128,
-	ARPSCHEME_MODE_NEG_Y = 192
 };

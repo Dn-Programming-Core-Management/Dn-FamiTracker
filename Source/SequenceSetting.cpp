@@ -118,16 +118,16 @@ void CSequenceSetting::OnLButtonDown(UINT nFlags, CPoint point)
 	if (m_iType == SEQ_ARPEGGIO) {
 
 		switch (m_pSequence->GetSetting()) {		// // //
-			case ARP_SETTING_ABSOLUTE:
+			case SETTING_ARP_ABSOLUTE:
 				m_menuPopup.CheckMenuRadioItem(MENU_ARP_ABSOLUTE, MENU_ARP_SCHEME, MENU_ARP_ABSOLUTE, MF_BYCOMMAND);
 				break;
-			case ARP_SETTING_RELATIVE:
+			case SETTING_ARP_RELATIVE:
 				m_menuPopup.CheckMenuRadioItem(MENU_ARP_ABSOLUTE, MENU_ARP_SCHEME, MENU_ARP_RELATIVE, MF_BYCOMMAND);
 				break;
-			case ARP_SETTING_FIXED:
+			case SETTING_ARP_FIXED:
 				m_menuPopup.CheckMenuRadioItem(MENU_ARP_ABSOLUTE, MENU_ARP_SCHEME, MENU_ARP_FIXED, MF_BYCOMMAND);
 				break;
-			case ARP_SETTING_SCHEME:
+			case SETTING_ARP_SCHEME:
 				m_menuPopup.CheckMenuRadioItem(MENU_ARP_ABSOLUTE, MENU_ARP_SCHEME, MENU_ARP_SCHEME, MF_BYCOMMAND);
 				break;
 		}
@@ -150,19 +150,19 @@ void CSequenceSetting::SelectSequence(CSequence *pSequence, int Type, int Instru
 
 void CSequenceSetting::OnMenuArpAbsolute()
 {
-	m_pSequence->SetSetting(ARP_SETTING_ABSOLUTE);
+	m_pSequence->SetSetting(SETTING_ARP_ABSOLUTE);
 	static_cast<CSequenceEditor*>(m_pParent)->ChangedSetting();
 }
 
 void CSequenceSetting::OnMenuArpRelative()
 {
-	m_pSequence->SetSetting(ARP_SETTING_RELATIVE);
+	m_pSequence->SetSetting(SETTING_ARP_RELATIVE);
 	static_cast<CSequenceEditor*>(m_pParent)->ChangedSetting();
 }
 
 void CSequenceSetting::OnMenuArpFixed()
 {
-	m_pSequence->SetSetting(ARP_SETTING_FIXED);
+	m_pSequence->SetSetting(SETTING_ARP_FIXED);
 	static_cast<CSequenceEditor*>(m_pParent)->ChangedSetting();
 
 	// Prevent invalid sequence items
@@ -176,7 +176,7 @@ void CSequenceSetting::OnMenuArpFixed()
 
 void CSequenceSetting::OnMenuArpScheme()		// // //
 {
-	m_pSequence->SetSetting(ARP_SETTING_SCHEME);
+	m_pSequence->SetSetting(SETTING_ARP_SCHEME);
 	static_cast<CSequenceEditor*>(m_pParent)->ChangedSetting();
 }
 

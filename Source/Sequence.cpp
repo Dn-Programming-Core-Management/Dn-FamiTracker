@@ -99,7 +99,7 @@ unsigned int CSequence::GetReleasePoint() const
 	return m_iReleasePoint;
 }
 
-unsigned int CSequence::GetSetting() const
+seq_setting_t CSequence::GetSetting() const		// // //
 {
 	return m_iSetting;
 }

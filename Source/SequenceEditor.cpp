@@ -206,7 +206,7 @@ void CSequenceEditor::SequenceChangedMessage(bool Changed)
 			Text.Append(_T("| "));
 		else if (m_pSequence->GetReleasePoint() == i)
 			Text.Append(_T("/ "));
-		if (m_iSelectedSetting == SEQ_ARPEGGIO && m_pSequence->GetSetting() == ARP_SETTING_SCHEME) {		// // //
+		if (m_iSelectedSetting == SEQ_ARPEGGIO && m_pSequence->GetSetting() == SETTING_ARP_SCHEME) {		// // //
 			int value = m_pSequence->GetItem(i);
 			if (value < 0) value += 0x100;
 			if (value % 0x40 == 0)

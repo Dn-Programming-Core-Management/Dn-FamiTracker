@@ -690,13 +690,13 @@ void CArpeggioGraphEditor::Initialize()
 	info.fMask = SIF_ALL;
 
 	switch (m_pSequence->GetSetting()) {		// // //
-	case ARP_SETTING_FIXED:
+	case SETTING_ARP_FIXED:
 		info.nMax = 84;
 		info.nMin = 0;
 		info.nPage = 1;
 		info.nPos = 84;
 		m_iScrollMax = 84; break;
-	case ARP_SETTING_SCHEME:
+	case SETTING_ARP_SCHEME:
 		info.nMax = 72;
 		info.nMin = 0;
 		info.nPage = 1;
@@ -712,7 +712,7 @@ void CArpeggioGraphEditor::Initialize()
 
 	if (m_pSequence != NULL && m_pSequence->GetItemCount() > 0) {
 		m_iScrollOffset = m_pSequence->GetItem(0);
-		if (m_pSequence->GetSetting() == ARP_SETTING_SCHEME){			// // //
+		if (m_pSequence->GetSetting() == SETTING_ARP_SCHEME){			// // //
 			m_iScrollOffset = (m_iScrollOffset + 0x80) % 0x40;
 			m_iScrollOffset -= 0x40 * (m_iScrollOffset % 0x40 > 0x24);
 		}
@@ -742,13 +742,13 @@ void CArpeggioGraphEditor::ChangeSetting()
 	SCROLLINFO info;
 
 	switch (m_pSequence->GetSetting()) {		// // //
-	case ARP_SETTING_FIXED:
+	case SETTING_ARP_FIXED:
 		info.nMax = 84;
 		info.nMin = 0;
 		info.nPage = 1;
 		info.nPos = 84;
 		m_iScrollMax = 84; break;
-	case ARP_SETTING_SCHEME:
+	case SETTING_ARP_SCHEME:
 		info.nMax = 72;
 		info.nMin = 0;
 		info.nPage = 1;
@@ -787,7 +787,7 @@ void CArpeggioGraphEditor::DrawRange(CDC *pDC, int Max, int Min)
 	const char NOTES_B[] = {'-', '#', '-', '#', '-', '-', '#', '-', '#', '-', '#', '-'};
 	const char NOTES_C[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
-	if (m_pSequence->GetSetting() != ARP_SETTING_FIXED) {
+	if (m_pSequence->GetSetting() != SETTING_ARP_FIXED) {
 		// Absolute, relative
 		CGraphEditor::DrawRange(pDC, Max, Min);
 	}
@@ -827,7 +827,7 @@ void CArpeggioGraphEditor::OnPaint()
 	CPaintDC dc(this);
 
 	DrawBackground(m_pBackDC, ITEMS, true,		// // //
-		m_pSequence->GetSetting() == ARP_SETTING_FIXED ? 2 - m_iScrollOffset : -m_iScrollOffset);
+		m_pSequence->GetSetting() == SETTING_ARP_FIXED ? 2 - m_iScrollOffset : -m_iScrollOffset);
 	DrawRange(m_pBackDC, m_iScrollOffset + 10, m_iScrollOffset - 10);
 
 	// Return now if no sequence is selected
@@ -852,14 +852,14 @@ void CArpeggioGraphEditor::OnPaint()
 
 	if (m_iHighlightedItem >= 0 && m_iHighlightedItem < Count) {
 		int item;			// // //
-		if (m_pSequence->GetSetting() == ARP_SETTING_SCHEME) {
+		if (m_pSequence->GetSetting() == SETTING_ARP_SCHEME) {
 			int value = (m_iHighlightedValue + 0x100) % 0x40;
 			if (value > 36) value -= 0x40;
 			item = (ITEMS / 2) - value + m_iScrollOffset;
 		}
 		else
 			item = (ITEMS / 2) - m_iHighlightedValue + m_iScrollOffset;
-		if (m_pSequence->GetSetting() == ARP_SETTING_FIXED)
+		if (m_pSequence->GetSetting() == SETTING_ARP_FIXED)
 			item += (ITEMS / 2);
 		if (item >= 0 && item <= 20) {
 			int x = m_GraphRect.left + m_iHighlightedItem * StepWidth + 1;
@@ -873,14 +873,14 @@ void CArpeggioGraphEditor::OnPaint()
 	// Draw items
 	for (int i = 0; i < Count; i++) {
 		int item;			// // //
-		if (m_pSequence->GetSetting() == ARP_SETTING_SCHEME) {
+		if (m_pSequence->GetSetting() == SETTING_ARP_SCHEME) {
 			int value = (m_pSequence->GetItem(i) + 0x100) % 0x40;
 			if (value > 36) value -= 0x40;
 			item = (ITEMS / 2) - value + m_iScrollOffset;
 		}
 		else
 			item = (ITEMS / 2) - m_pSequence->GetItem(i) + m_iScrollOffset;
-		if (m_pSequence->GetSetting() == ARP_SETTING_FIXED)
+		if (m_pSequence->GetSetting() == SETTING_ARP_FIXED)
 			item += (ITEMS / 2);
 		if (item >= 0 && item <= 20) {
 			int x = m_GraphRect.left + i * StepWidth + 1;
@@ -916,7 +916,7 @@ void CArpeggioGraphEditor::ModifyItem(CPoint point, bool Redraw)
 	m_iHighlightedItem = ItemIndex;
 	m_iHighlightedValue = ItemValue;
 	
-	if (m_pSequence->GetSetting() == ARP_SETTING_SCHEME) {		// // //
+	if (m_pSequence->GetSetting() == SETTING_ARP_SCHEME) {		// // //
 		int value = m_pSequence->GetItem(ItemIndex);
 		if (value < 0) value += 0x100;
 		if (ItemValue < 0) ItemValue += 0x40;
@@ -954,14 +954,14 @@ int CArpeggioGraphEditor::GetItemValue(int pos)
 	int ItemHeight = GetItemHeight();
 
 	switch (m_pSequence->GetSetting()) {		// // //
-	case ARP_SETTING_FIXED:
+	case SETTING_ARP_FIXED:
 		ItemValue = ITEMS - ((pos - m_GraphRect.top) / ItemHeight) + m_iScrollOffset;
 		if (ItemValue < 0)
 			ItemValue = 0;
 		if (ItemValue > 95)
 			ItemValue = 95;
 		break;
-	case ARP_SETTING_SCHEME:
+	case SETTING_ARP_SCHEME:
 		ItemValue = (ITEMS / 2) - ((pos - m_GraphRect.top) / ItemHeight) + m_iScrollOffset;
 		if (ItemValue < -27)
 			ItemValue = -27;
@@ -1003,7 +1003,7 @@ void CArpeggioGraphEditor::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrol
 			m_iScrollOffset = m_iScrollMax;
 			break;
 		case SB_BOTTOM:	
-			m_iScrollOffset = (m_pSequence->GetSetting() != ARP_SETTING_FIXED) ? -m_iScrollMax : 0;
+			m_iScrollOffset = (m_pSequence->GetSetting() != SETTING_ARP_FIXED) ? -m_iScrollMax : 0;
 			break;
 		case SB_THUMBPOSITION:
 		case SB_THUMBTRACK:
@@ -1017,7 +1017,7 @@ void CArpeggioGraphEditor::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrol
 	if (m_iScrollOffset > m_iScrollMax)
 		m_iScrollOffset = m_iScrollMax;
 
-	if (m_pSequence->GetSetting() != ARP_SETTING_FIXED) {
+	if (m_pSequence->GetSetting() != SETTING_ARP_FIXED) {
 		if (m_iScrollOffset < -m_iScrollMax)
 			m_iScrollOffset = -m_iScrollMax;
 	}

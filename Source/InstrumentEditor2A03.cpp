@@ -159,7 +159,7 @@ void CInstrumentEditor2A03::OnKeyReturn()
 			TranslateMML(Text, 15, 0);
 			break;
 		case SEQ_ARPEGGIO:
-			TranslateMML(Text, 96, m_pSequence->GetSetting()== ARP_SETTING_FIXED ? 0 : -96);
+			TranslateMML(Text, 96, m_pSequence->GetSetting()== SETTING_ARP_FIXED ? 0 : -96);
 			break;
 		case SEQ_PITCH:
 			TranslateMML(Text, 126, -127);

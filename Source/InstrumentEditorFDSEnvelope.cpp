@@ -126,10 +126,10 @@ void CInstrumentEditorFDSEnvelope::OnKeyReturn()
 			TranslateMML(string, m_pInstrument->GetVolumeSeq(), MAX_VOLUME, 0);
 			break;
 		case SEQ_ARPEGGIO:
-			if (m_pInstrument->GetArpSeq()->GetSetting() == ARP_SETTING_SCHEME)	// // //
+			if (m_pInstrument->GetArpSeq()->GetSetting() == SETTING_ARP_SCHEME)	// // //
 				TranslateMML(string, m_pInstrument->GetArpSeq(), 36, -27);
 			else
-				TranslateMML(string, m_pInstrument->GetArpSeq(), 96, m_pInstrument->GetArpSeq()->GetSetting()== ARP_SETTING_FIXED ? 0 : -96);
+				TranslateMML(string, m_pInstrument->GetArpSeq(), 96, m_pInstrument->GetArpSeq()->GetSetting()== SETTING_ARP_FIXED ? 0 : -96);
 			break;
 		case SEQ_PITCH:
 			TranslateMML(string, m_pInstrument->GetPitchSeq(), 126, -127);
