@@ -706,10 +706,14 @@ bool CPatternAction::SaveState(CMainFrame *pMainFrm)
 			break;
 		case ACT_EXPAND_PATTERN:
 			// Expand pattern
+			if (!pPatternEditor->IsSelecting())		// // //
+				return false;
 			SaveEntire(pPatternEditor);
 			break;
 		case ACT_SHRINK_PATTERN:
 			// Shrink pattern
+			if (!pPatternEditor->IsSelecting())		// // //
+				return false;
 			SaveEntire(pPatternEditor);
 			break;
 		case ACT_EXPAND_COLUMNS:
