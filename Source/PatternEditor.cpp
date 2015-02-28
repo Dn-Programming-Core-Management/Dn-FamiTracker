@@ -3602,8 +3602,10 @@ void CPatternEditor::SetFollowMove(bool bEnable)
 
 void CPatternEditor::SetCompactMode(bool bEnable)		// // //
 {
-	m_bCompactMode = bEnable;
-	CalculatePatternLayout();
+	if (m_bCompactMode != bEnable) {
+		CalculatePatternLayout();
+		m_bCompactMode = bEnable;
+	}
 }
 
 void CPatternEditor::SetFocus(bool bFocus)
