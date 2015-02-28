@@ -828,10 +828,10 @@ void CPatternAction::Redo(CMainFrame *pMainFrm)
 			pDoc->InsertRow(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow);
 			break;
 		case ACT_EDIT_PASTE:
-			pPatternEditor->Paste(m_pClipData);
+			pPatternEditor->Paste(m_pClipData, PASTE_DEFAULT);		// // //
 			break;
 		case ACT_EDIT_PASTE_MIX:
-			pPatternEditor->PasteMix(m_pClipData);
+			pPatternEditor->Paste(m_pClipData, PASTE_MIX);		// // //
 			break;
 		case ACT_EDIT_DELETE:
 			pPatternEditor->SetSelection(m_selection);

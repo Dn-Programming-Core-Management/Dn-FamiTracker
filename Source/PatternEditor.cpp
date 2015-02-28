@@ -3231,10 +3231,7 @@ void CPatternEditor::DragPaste(const CPatternClipData *pClipData, const CSelecti
 	// Set cursor location
 	m_cpCursorPos = pDragTarget->m_cpStart;
 
-	if (bMix)
-		PasteMix(pClipData);
-	else
-		Paste(pClipData);
+	Paste(pClipData, bMix ? PASTE_MIX : PASTE_DEFAULT);		// // //
 
 	// Update selection
 	SetSelectionStart(pDragTarget->m_cpStart);
@@ -3425,9 +3422,9 @@ void CPatternEditor::PasteEntire(const CPatternClipData *pClipData)
 	}
 }
 
-void CPatternEditor::Paste(const CPatternClipData *pClipData)
+void CPatternEditor::Paste(const CPatternClipData *pClipData, paste_mode_t Mode)		// // //
 {
-	// Paste
+	// // // Paste
 	const int Track			= GetSelectedTrack();
 	const int ChannelCount  = GetChannelCount();
 	const int PatternLength = m_pDocument->GetPatternLength(Track);
@@ -3436,6 +3433,9 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData)
 	const int Rows		  = pClipData->ClipInfo.Rows;
 	const int StartColumn = pClipData->ClipInfo.StartColumn;
 	const int EndColumn	  = pClipData->ClipInfo.EndColumn;
+	
+	const int PasteMode = Mode & 0xFF;		// // //
+	const int PasteAttribute = Mode >> 8;
 
 	stChanNote NoteData;
 
@@ -3474,99 +3474,36 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData)
 
 			const stChanNote *pClipNote = pClipData->GetPattern(i, j);
 
-			if ((i != 0 || StartColumn <= COLUMN_NOTE) && (i != (Channels - 1) || EndColumn >= COLUMN_NOTE)) {
-				NoteData.Note = pClipNote->Note;
-				NoteData.Octave = pClipNote->Octave;
-			}
-			if ((i != 0 || StartColumn <= COLUMN_INSTRUMENT) && (i != (Channels - 1) || EndColumn >= COLUMN_INSTRUMENT)) {
-				NoteData.Instrument = pClipNote->Instrument;
-			}
-			if ((i != 0 || StartColumn <= COLUMN_VOLUME) && (i != (Channels - 1) || EndColumn >= COLUMN_VOLUME)) {
-				NoteData.Vol = pClipNote->Vol;
-			}
-			for (int k = 0; k < MAX_EFFECT_COLUMNS; ++k) {
-				if ((i != 0 || StartColumn <= (COLUMN_EFF1 + k)) && (i != (Channels - 1) || EndColumn >= (COLUMN_EFF1 + k))) {
-					NoteData.EffNumber[k] = pClipNote->EffNumber[k];
-					NoteData.EffParam[k] = pClipNote->EffParam[k];
-				}
-			}
-
-			m_pDocument->SetNoteData(Track, m_iCurrentFrame, i + m_cpCursorPos.m_iChannel, j + m_cpCursorPos.m_iRow, &NoteData);
-		}
-	}
-}
-
-void CPatternEditor::PasteMix(const CPatternClipData *pClipData)
-{
-	// Paste and mix
-	const int Track			= GetSelectedTrack();
-	const int ChannelCount	= GetChannelCount();
-	const int PatternLength = m_pDocument->GetPatternLength(Track);
-
-	int Channels	= pClipData->ClipInfo.Channels;
-	int Rows		= pClipData->ClipInfo.Rows;
-	int StartColumn = pClipData->ClipInfo.StartColumn;
-	int EndColumn	= pClipData->ClipInfo.EndColumn;
-
-	stChanNote NoteData;
-
-	// Special case, single channel and effect columns only
-	if (pClipData->ClipInfo.Channels == 1 && pClipData->ClipInfo.StartColumn >= COLUMN_EFF1) {
-
-		for (int j = 0; j < pClipData->ClipInfo.Rows; ++j) {
-			if ((j + m_cpCursorPos.m_iRow) < 0 || (j + m_cpCursorPos.m_iRow) >= PatternLength)
-				continue;
-
-			const stChanNote *pClipPattern = pClipData->GetPattern(0, j);
-			m_pDocument->GetNoteData(Track, m_iCurrentFrame, m_cpCursorPos.m_iChannel, j + m_cpCursorPos.m_iRow, &NoteData);
-
-			for (int i = StartColumn - COLUMN_EFF1; i < (EndColumn - COLUMN_EFF1 + 1); ++i) {
-				int Offset = (GetSelectColumn(m_cpCursorPos.m_iColumn) - COLUMN_EFF1) + (i - (StartColumn - COLUMN_EFF1));
-				if (Offset < 4 && Offset >= 0 && pClipPattern->EffNumber[i] > EF_NONE && NoteData.EffNumber[Offset] == EF_NONE) {
-					NoteData.EffNumber[Offset] = pClipPattern->EffNumber[i];
-					NoteData.EffParam[Offset] = pClipPattern->EffParam[i];
-				}
-			}
-			m_pDocument->SetNoteData(Track, m_iCurrentFrame, m_cpCursorPos.m_iChannel, j + m_cpCursorPos.m_iRow, &NoteData);
-		}
-		return;
-	}	
-
-	for (int i = 0; i < Channels; ++i) {
-		if ((i + m_cpCursorPos.m_iChannel) < 0 || (i + m_cpCursorPos.m_iChannel) >= ChannelCount)
-			continue;
-
-		for (int j = 0; j < Rows; ++j) {
-			if ((j + m_cpCursorPos.m_iRow) < 0 || (j + m_cpCursorPos.m_iRow) >= PatternLength)
-				continue;
-
-			m_pDocument->GetNoteData(Track, m_iCurrentFrame, i + m_cpCursorPos.m_iChannel, j + m_cpCursorPos.m_iRow, &NoteData);
-
-			const stChanNote *pClipNote = pClipData->GetPattern(i, j);
-
+			bool Skip;
 			// Note & octave
-			if ((i != 0 || pClipData->ClipInfo.StartColumn <= COLUMN_NOTE) && (i != (pClipData->ClipInfo.Channels - 1) || pClipData->ClipInfo.EndColumn >= COLUMN_NOTE)) {
-				if (pClipNote->Note > 0 && NoteData.Note == NONE) {
+			if ((i != 0 || StartColumn <= COLUMN_NOTE) && (i != (Channels - 1) || EndColumn >= COLUMN_NOTE)) {
+				if (PasteMode == PASTE_DEFAULT ||
+					(PasteMode == PASTE_MIX && pClipNote->Note != NONE && NoteData.Note == NONE) ||
+					(PasteMode == PASTE_OVERWRITE && pClipNote->Note != NONE)) {
 					NoteData.Note = pClipNote->Note;
 					NoteData.Octave = pClipNote->Octave;
 				}
 			}
 			// Instrument
-			if ((i != 0 || pClipData->ClipInfo.StartColumn <= COLUMN_INSTRUMENT) && (i != (pClipData->ClipInfo.Channels - 1) || pClipData->ClipInfo.EndColumn >= COLUMN_INSTRUMENT)) {
-				if (pClipNote->Instrument < MAX_INSTRUMENTS && NoteData.Instrument == MAX_INSTRUMENTS) {
+			if ((i != 0 || StartColumn <= COLUMN_INSTRUMENT) && (i != (Channels - 1) || EndColumn >= COLUMN_INSTRUMENT)) {
+				if (PasteMode == PASTE_DEFAULT ||
+					(PasteMode == PASTE_MIX && pClipNote->Instrument < MAX_INSTRUMENTS && NoteData.Instrument == MAX_INSTRUMENTS) ||
+					(PasteMode == PASTE_OVERWRITE && pClipNote->Instrument < MAX_INSTRUMENTS))
 					NoteData.Instrument = pClipNote->Instrument;
-				}
 			}
 			// Volume
-			if ((i != 0 || pClipData->ClipInfo.StartColumn <= COLUMN_VOLUME) && (i != (pClipData->ClipInfo.Channels - 1) || pClipData->ClipInfo.EndColumn >= COLUMN_VOLUME)) {
-				if (pClipNote->Vol < MAX_VOLUME && NoteData.Vol == MAX_VOLUME) {
+			if ((i != 0 || StartColumn <= COLUMN_VOLUME) && (i != (Channels - 1) || EndColumn >= COLUMN_VOLUME)) {
+				if (PasteMode == PASTE_DEFAULT ||
+					(PasteMode == PASTE_MIX && pClipNote->Vol < MAX_VOLUME && NoteData.Vol == MAX_VOLUME) ||
+					(PasteMode == PASTE_OVERWRITE && pClipNote->Vol < MAX_VOLUME))
 					NoteData.Vol = pClipNote->Vol;
-				}
 			}
 			// Effects
 			for (int k = 0; k < MAX_EFFECT_COLUMNS; ++k) {
 				if ((i != 0 || StartColumn <= (COLUMN_EFF1 + k)) && (i != (Channels - 1) || EndColumn >= (COLUMN_EFF1 + k))) {
-					if (pClipNote->EffNumber[k] != EF_NONE && NoteData.EffNumber[k] == EF_NONE) {
+					if (PasteMode == PASTE_DEFAULT ||
+						(PasteMode == PASTE_MIX && pClipNote->EffNumber[k] != EF_NONE && NoteData.EffNumber[k] == EF_NONE) ||
+						(PasteMode == PASTE_OVERWRITE && pClipNote->EffNumber[k] != EF_NONE)) {
 						NoteData.EffNumber[k] = pClipNote->EffNumber[k];
 						NoteData.EffParam[k] = pClipNote->EffParam[k];
 					}
