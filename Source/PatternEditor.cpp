@@ -3568,7 +3568,7 @@ int CPatternEditor::GetCurrentPatternLength(unsigned int Frame) const
 	if (!theApp.GetSettings()->General.bFramePreview || Frame >= m_pDocument->GetFrameCount(Track))
 		return PatternLength;
 	else
-		return m_pDocument->GetActualPatternLength(Track, Frame);		// // // moved
+		return m_pDocument->GetFrameLength(Track, Frame);		// // // moved
 }
 
 void CPatternEditor::SetHighlight(int Rows, int SecondRows)

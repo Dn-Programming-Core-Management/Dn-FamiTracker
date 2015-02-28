@@ -264,7 +264,7 @@ public:
 	CGroove			*GetGroove(int Index) const;
 	void			SetGroove(int Index, const CGroove* Groove);
 
-	int				GetActualPatternLength(unsigned int Track, unsigned int Frame) const;
+	int				GetFrameLength(unsigned int Track, unsigned int Frame) const;
 
 	// Track management functions
 	int				AddTrack();

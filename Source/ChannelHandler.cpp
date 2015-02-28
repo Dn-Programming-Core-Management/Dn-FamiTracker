@@ -209,7 +209,7 @@ void CChannelHandler::RetrieveChannelState()		// // //
 	while (f || r) {
 		if (r) r--;
 		else
-			r = pDoc->GetActualPatternLength(Track, --f) - 1;
+			r = pDoc->GetFrameLength(Track, --f) - 1;
 
 		stChanNote Note;
 		pDoc->GetNoteData(Track, f, Channel, r, &Note);

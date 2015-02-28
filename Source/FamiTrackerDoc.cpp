@@ -5284,7 +5284,7 @@ void CFamiTrackerDoc::SetExceededFlag(bool Exceed)
 	m_bExceeded = Exceed;
 }
 
-int CFamiTrackerDoc::GetActualPatternLength(unsigned int Track, unsigned int Frame) const
+int CFamiTrackerDoc::GetFrameLength(unsigned int Track, unsigned int Frame) const
 {
 	// // // moved from PatternEditor.cpp
 	const int PatternLength = GetPatternLength(Track);	// default length
