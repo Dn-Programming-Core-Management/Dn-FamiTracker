@@ -3443,14 +3443,6 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 	// Special, single channel and effect columns only
 	if (Channels == 1 && StartColumn >= COLUMN_EFF1) {
 		for (unsigned int j = 0; j < Rows; ++j) {
-			if (r >= FrameLength) {		// // //
-				if (!theApp.GetSettings()->General.bOverflowPaste) continue;
-				f++;
-				if (f >= m_pDocument->GetFrameCount(Track)) f = 0;
-				FrameLength = GetCurrentPatternLength(f);
-				r = 0;
-			}
-
 			const stChanNote *pClipPattern = pClipData->GetPattern(0, j);
 
 			m_pDocument->GetNoteData(Track, f, c, r, &NoteData);
@@ -3467,7 +3459,16 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 			}
 
 			m_pDocument->SetNoteData(Track, f, c, r++, &NoteData);
-			if (theApp.GetSettings()->General.bFramePreview) FrameLength = m_pDocument->GetFrameLength(Track, f);
+			if (theApp.GetSettings()->General.bFramePreview)
+				FrameLength = m_pDocument->GetFrameLength(Track, f);
+			if (r >= FrameLength) {		// // //
+				if (!theApp.GetSettings()->General.bOverflowPaste) break;
+				r -= FrameLength;
+				f++;
+				if (f >= m_pDocument->GetFrameCount(Track)) f = 0;
+				if (f == m_iCurrentFrame) break;
+				FrameLength = GetCurrentPatternLength(f);
+			}
 		}
 		return;
 	}
@@ -3479,14 +3480,6 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 		r = (PastePos != PASTE_CURSOR && IsSelecting()) ? m_selection.GetRowStart() : m_cpCursorPos.m_iRow;
 		f = m_iCurrentFrame;
 		for (unsigned int j = 0; j < Rows; ++j) {
-			if (r >= FrameLength) {		// // //
-				if (!theApp.GetSettings()->General.bOverflowPaste) continue;
-				f++;
-				if (f >= m_pDocument->GetFrameCount(Track)) f = 0;
-				FrameLength = GetCurrentPatternLength(f);
-				r -= FrameLength;
-			}
-
 			m_pDocument->GetNoteData(Track, f, i + c, r, &NoteData);
 
 			const stChanNote *pClipNote = pClipData->GetPattern(i, j);
@@ -3530,7 +3523,16 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 			}
 
 			m_pDocument->SetNoteData(Track, f, i + c, r++, &NoteData);
-			if (theApp.GetSettings()->General.bFramePreview) FrameLength = m_pDocument->GetFrameLength(Track, f);
+			if (theApp.GetSettings()->General.bFramePreview) // if skip effects are removed
+				FrameLength = m_pDocument->GetFrameLength(Track, f);
+			if (r >= FrameLength) {		// // //
+				if (!theApp.GetSettings()->General.bOverflowPaste) break;
+				r -= FrameLength;
+				f++;
+				if (f >= m_pDocument->GetFrameCount(Track)) f = 0;
+				if (f == m_iCurrentFrame) break;
+				FrameLength = GetCurrentPatternLength(f);
+			}
 		}
 	}
 }
