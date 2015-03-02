@@ -3442,10 +3442,10 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 
 	if (PasteMode == PASTE_INSERT) {
 		CSelection Current = m_selection;
-		m_selection.SetStart(CCursorPos(r, c, StartColumn));
-		m_selection.SetEnd(CCursorPos(FrameLength - 1 - Rows, c + Channels - 1, EndColumn));
+		m_selection.SetStart(CCursorPos(r, c, GetCursorStartColumn(StartColumn)));
+		m_selection.SetEnd(CCursorPos(FrameLength - 1 - Rows, c + Channels - 1, GetCursorEndColumn(EndColumn)));
 		CPatternClipData *Shift = Copy();
-		m_selection.SetStart(CCursorPos(r + Rows, c, StartColumn));
+		m_selection.SetStart(CCursorPos(r + Rows, c, GetCursorStartColumn(StartColumn)));
 		m_bSelecting = true;
 		Paste(Shift, PASTE_DEFAULT, PASTE_SELECTION);
 		m_bSelecting = false;
