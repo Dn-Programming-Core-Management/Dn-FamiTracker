@@ -2,6 +2,8 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
+** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -120,23 +122,22 @@ int CSelection::GetChanEnd() const
 	return (m_cpEnd.m_iChannel > m_cpStart.m_iChannel) ? m_cpEnd.m_iChannel : m_cpStart.m_iChannel; 
 }
 
+int CSelection::GetFrameStart() const		// // //
+{
+	return (m_iFrameEnd > m_iFrameStart) ? m_iFrameStart : m_iFrameEnd;
+}
+
+int CSelection::GetFrameEnd() const		// // //
+{
+	return (m_iFrameEnd > m_iFrameStart) ? m_iFrameEnd : m_iFrameStart;
+}
+
 bool CSelection::IsWithin(const CCursorPos &pos) const 
 {
-	if (pos.m_iRow >= GetRowStart() && pos.m_iRow <= GetRowEnd()) {
-		if (pos.m_iChannel == GetChanStart() && pos.m_iChannel == GetChanEnd()) {
-			return (pos.m_iColumn >= GetColStart() && pos.m_iColumn <= GetColEnd());
-		}
-		else if (pos.m_iChannel == GetChanStart() && pos.m_iChannel != GetChanEnd()) {
-			return (pos.m_iColumn >= GetColStart());
-		}
-		else if (pos.m_iChannel == GetChanEnd() && pos.m_iChannel != GetChanStart()) {
-			return (pos.m_iColumn <= GetColEnd());
-		}
-		else if (pos.m_iChannel >= GetChanStart() && pos.m_iChannel < GetChanEnd()) {
-			return true;
-		}
-	}
-	return false;
+	return (pos.m_iRow >= GetRowStart() || pos.m_iFrame > GetFrameStart())		// // //
+		&& (pos.m_iRow <= GetRowEnd() || pos.m_iFrame < GetFrameEnd())
+		&& (pos.m_iChannel > GetChanStart() || (pos.m_iChannel == GetChanStart() && pos.m_iColumn >= GetColStart()))
+		&& (pos.m_iChannel < GetChanEnd() || (pos.m_iChannel == GetChanEnd() && pos.m_iColumn <= GetColEnd()));
 }
 
 bool CSelection::IsSingleChannel() const 

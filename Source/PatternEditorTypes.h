@@ -2,6 +2,8 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
+** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -45,15 +47,15 @@ enum column_t {
 
 // // // Paste modes
 enum paste_mode_t : unsigned int {
-	PASTE_DEFAULT = 0,
+	PASTE_DEFAULT,
 	PASTE_MIX,
 	PASTE_OVERWRITE,
 	PASTE_INSERT,
-	PASTE_REPLACE
+	PASTE_OVERFLOW // forced overflow paste, used for undo
 };
 
 enum paste_pos_t : unsigned int {
-	PASTE_CURSOR = 0,
+	PASTE_CURSOR,
 	PASTE_SELECTION,
 	PASTE_FILL
 };
@@ -112,6 +114,7 @@ public:
 	bool IsValid(int RowCount, int ChannelCount) const;
 
 public:
+	int m_iFrame;		// // //
 	int m_iRow;
 	int m_iColumn;
 	int m_iChannel;
@@ -127,6 +130,8 @@ public:
 	int  GetColEnd() const;
 	int  GetChanStart() const;
 	int  GetChanEnd() const;
+	int  GetFrameStart() const;		// // //
+	int  GetFrameEnd() const;		// // //
 	bool IsWithin(const CCursorPos &pos) const;
 	bool IsSingleChannel() const;
 	bool IsSameStartPoint(const CSelection &selection) const;
@@ -141,6 +146,8 @@ public:
 public:
 	CCursorPos m_cpStart;
 	CCursorPos m_cpEnd;
+	int m_iFrameStart;		// // //
+	int m_iFrameEnd;
 };
 /*
 // Pattern layout
