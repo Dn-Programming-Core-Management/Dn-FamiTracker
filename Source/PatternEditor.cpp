@@ -3436,9 +3436,21 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 	stChanNote NoteData;
 
 	unsigned int f = m_iCurrentFrame;
-	unsigned int r = (PastePos != PASTE_CURSOR && IsSelecting()) ? m_selection.GetRowStart() : m_cpCursorPos.m_iRow;
-	unsigned int c = (PastePos != PASTE_CURSOR && IsSelecting()) ? m_selection.GetChanStart() : m_cpCursorPos.m_iChannel;
+	unsigned int r = (PastePos != PASTE_CURSOR && m_bSelecting) ? m_selection.GetRowStart() : m_cpCursorPos.m_iRow;
+	unsigned int c = (PastePos != PASTE_CURSOR && m_bSelecting) ? m_selection.GetChanStart() : m_cpCursorPos.m_iChannel;
 	unsigned int FrameLength = GetCurrentPatternLength(f);
+
+	if (PasteMode == PASTE_INSERT) {
+		CSelection Current = m_selection;
+		m_selection.SetStart(CCursorPos(r, c, StartColumn));
+		m_selection.SetEnd(CCursorPos(FrameLength - 1 - Rows, c + Channels - 1, EndColumn));
+		CPatternClipData *Shift = Copy();
+		m_selection.SetStart(CCursorPos(r + Rows, c, StartColumn));
+		m_bSelecting = true;
+		Paste(Shift, PASTE_DEFAULT, PASTE_SELECTION);
+		m_bSelecting = false;
+		m_selection = Current;
+	}
 
 	// Special, single channel and effect columns only
 	if (Channels == 1 && StartColumn >= COLUMN_EFF1) {
@@ -3449,7 +3461,7 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 
 			for (unsigned int i = StartColumn - COLUMN_EFF1; i < (EndColumn - COLUMN_EFF1 + 1); ++i) {
 				unsigned int Offset = (GetSelectColumn(m_cpCursorPos.m_iColumn) - COLUMN_EFF1) + (i - (StartColumn - COLUMN_EFF1));
-				if ((PasteMode == PASTE_DEFAULT ||
+				if ((PasteMode == PASTE_DEFAULT || PasteMode == PASTE_INSERT ||
 					(PasteMode == PASTE_MIX && pClipPattern->EffNumber[i] != EF_NONE && NoteData.EffNumber[Offset] == EF_NONE) ||
 					(PasteMode == PASTE_OVERWRITE && pClipPattern->EffNumber[i] != EF_NONE))
 					&& Offset <= m_pDocument->GetEffColumns(Track, c) && Offset >= 0) {
@@ -3462,7 +3474,7 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 			if (theApp.GetSettings()->General.bFramePreview)
 				FrameLength = m_pDocument->GetFrameLength(Track, f);
 			if (r >= FrameLength) {		// // //
-				if (!theApp.GetSettings()->General.bOverflowPaste) break;
+				if (!theApp.GetSettings()->General.bOverflowPaste || PasteMode == PASTE_INSERT) break;
 				r -= FrameLength;
 				f++;
 				if (f >= m_pDocument->GetFrameCount(Track)) f = 0;
@@ -3477,18 +3489,19 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 		if ((i + c) < 0 || (i + c) >= ChannelCount)
 			continue;
 
-		r = (PastePos != PASTE_CURSOR && IsSelecting()) ? m_selection.GetRowStart() : m_cpCursorPos.m_iRow;
+		r = (PastePos != PASTE_CURSOR && m_bSelecting) ? m_selection.GetRowStart() : m_cpCursorPos.m_iRow;
 		f = m_iCurrentFrame;
+		
 		for (unsigned int j = 0; j < Rows; ++j) {
-			m_pDocument->GetNoteData(Track, f, i + c, r, &NoteData);
-
 			const stChanNote *pClipNote = pClipData->GetPattern(i, j);
+
+			m_pDocument->GetNoteData(Track, f, i + c, r, &NoteData);
 
 			if (theApp.GetSettings()->General.iEditStyle != EDIT_STYLE_IT ||		// // // IT style
 				(NoteData.Note == NONE && NoteData.Instrument == MAX_INSTRUMENTS && NoteData.Vol == MAX_VOLUME)) {
 				// Note & octave
 				if ((i != 0 || StartColumn <= COLUMN_NOTE) && (i != (Channels - 1) || EndColumn >= COLUMN_NOTE)) {
-					if (PasteMode == PASTE_DEFAULT ||
+					if (PasteMode == PASTE_DEFAULT || PasteMode == PASTE_INSERT ||
 						(PasteMode == PASTE_MIX && pClipNote->Note != NONE && NoteData.Note == NONE) ||
 						(PasteMode == PASTE_OVERWRITE && pClipNote->Note != NONE)) {
 						NoteData.Note = pClipNote->Note;
@@ -3497,14 +3510,14 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 				}
 				// Instrument
 				if ((i != 0 || StartColumn <= COLUMN_INSTRUMENT) && (i != (Channels - 1) || EndColumn >= COLUMN_INSTRUMENT)) {
-					if (PasteMode == PASTE_DEFAULT ||
+					if (PasteMode == PASTE_DEFAULT || PasteMode == PASTE_INSERT ||
 						(PasteMode == PASTE_MIX && pClipNote->Instrument != MAX_INSTRUMENTS && NoteData.Instrument == MAX_INSTRUMENTS) ||
 						(PasteMode == PASTE_OVERWRITE && pClipNote->Instrument != MAX_INSTRUMENTS))
 						NoteData.Instrument = pClipNote->Instrument;
 				}
 				// Volume
 				if ((i != 0 || StartColumn <= COLUMN_VOLUME) && (i != (Channels - 1) || EndColumn >= COLUMN_VOLUME)) {
-					if (PasteMode == PASTE_DEFAULT ||
+					if (PasteMode == PASTE_DEFAULT || PasteMode == PASTE_INSERT ||
 						(PasteMode == PASTE_MIX && pClipNote->Vol != MAX_VOLUME && NoteData.Vol == MAX_VOLUME) ||
 						(PasteMode == PASTE_OVERWRITE && pClipNote->Vol != MAX_VOLUME))
 						NoteData.Vol = pClipNote->Vol;
@@ -3513,7 +3526,7 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 			// Effects
 			for (unsigned int k = 0; k <= m_pDocument->GetEffColumns(Track, i + c); ++k) {
 				if ((i != 0 || StartColumn <= (COLUMN_EFF1 + k)) && (i != (Channels - 1) || EndColumn >= (COLUMN_EFF1 + k))) {
-					if (PasteMode == PASTE_DEFAULT ||
+					if (PasteMode == PASTE_DEFAULT || PasteMode == PASTE_INSERT ||
 						(PasteMode == PASTE_MIX && pClipNote->EffNumber[k] != EF_NONE && NoteData.EffNumber[k] == EF_NONE) ||
 						(PasteMode == PASTE_OVERWRITE && pClipNote->EffNumber[k] != EF_NONE)) {
 						NoteData.EffNumber[k] = pClipNote->EffNumber[k];
@@ -3526,7 +3539,7 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 			if (theApp.GetSettings()->General.bFramePreview) // if skip effects are removed
 				FrameLength = m_pDocument->GetFrameLength(Track, f);
 			if (r >= FrameLength) {		// // //
-				if (!theApp.GetSettings()->General.bOverflowPaste) break;
+				if (!theApp.GetSettings()->General.bOverflowPaste || PasteMode == PASTE_INSERT) break;
 				r -= FrameLength;
 				f++;
 				if (f >= m_pDocument->GetFrameCount(Track)) f = 0;
