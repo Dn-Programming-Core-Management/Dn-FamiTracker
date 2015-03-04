@@ -3485,14 +3485,11 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 		return;
 	}
 
-	for (unsigned int i = 0; i < Channels; ++i) {
-		if ((i + c) < 0 || (i + c) >= ChannelCount)
-			continue;
-
-		r = (PastePos != PASTE_CURSOR && m_bSelecting) ? m_selection.GetRowStart() : m_cpCursorPos.m_iRow;
-		f = m_iCurrentFrame;
+	for (unsigned int j = 0; j < Rows; ++j) {
+		for (unsigned int i = 0; i < Channels; ++i) {
+			if ((i + c) < 0 || (i + c) >= ChannelCount)
+				continue;
 		
-		for (unsigned int j = 0; j < Rows; ++j) {
 			const stChanNote *pClipNote = pClipData->GetPattern(i, j);
 
 			m_pDocument->GetNoteData(Track, f, i + c, r, &NoteData);
@@ -3535,17 +3532,17 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 				}
 			}
 
-			m_pDocument->SetNoteData(Track, f, i + c, r++, &NoteData);
-			if (theApp.GetSettings()->General.bFramePreview) // if skip effects are removed
-				FrameLength = m_pDocument->GetFrameLength(Track, f);
-			if (r >= FrameLength) {		// // //
-				if (!theApp.GetSettings()->General.bOverflowPaste || PasteMode == PASTE_INSERT) break;
-				r -= FrameLength;
-				f++;
-				if (f >= m_pDocument->GetFrameCount(Track)) f = 0;
-				if (f == m_iCurrentFrame) break;
-				FrameLength = GetCurrentPatternLength(f);
-			}
+			m_pDocument->SetNoteData(Track, f, i + c, r, &NoteData);
+		}
+		if (theApp.GetSettings()->General.bFramePreview) // if skip effects are removed
+			FrameLength = m_pDocument->GetFrameLength(Track, f);
+		if (++r >= FrameLength) {		// // //
+			if (!theApp.GetSettings()->General.bOverflowPaste || PasteMode == PASTE_INSERT) break;
+			r -= FrameLength;
+			f++;
+			if (f >= m_pDocument->GetFrameCount(Track)) f = 0;
+			if (f == m_iCurrentFrame) break;
+			FrameLength = GetCurrentPatternLength(f);
 		}
 	}
 }
