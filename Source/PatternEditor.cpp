@@ -3675,39 +3675,34 @@ void CPatternEditor::AutoScroll(const CPoint &point, UINT nFlags)
 	m_ptScrollMousePos = point;
 	m_nScrollFlags = nFlags;
 
+	m_iScrolling = SCROLL_NONE;		// // //
+
 	if ((PointPos.m_iRow - m_iCenterRow) > (m_iLinesFullVisible / 2) - 3) {
 		if (m_cpCursorPos.m_iRow < m_iPatternLength && m_iCenterRow < (m_iPatternLength - (m_iLinesFullVisible / 2) + 2))
-			m_iScrolling = SCROLL_DOWN;
-		else
-			m_iScrolling = SCROLL_NONE;
+			m_iScrolling += SCROLL_DOWN;		// // //
 	}
 	else if ((PointPos.m_iRow - m_iCenterRow) <= -(m_iLinesFullVisible / 2)) {
 		if (m_cpCursorPos.m_iRow > 0 && m_iCenterRow > (m_iLinesFullVisible / 2))
-			m_iScrolling = SCROLL_UP;
-		else
-			m_iScrolling = SCROLL_NONE;
+			m_iScrolling += SCROLL_UP;		// // //
 	}
-	else if (PointPos.m_iChannel >= (m_iFirstChannel + m_iChannelsVisible - 1) && m_iChannelsVisible < GetChannelCount()) {		// // //
-		if (m_cpCursorPos.m_iChannel < Channels)
-			m_iScrolling = SCROLL_RIGHT;
-		else
-			m_iScrolling = SCROLL_NONE;
+
+	if (PointPos.m_iChannel >= (m_iFirstChannel + m_iChannelsVisible - 1) && m_iChannelsVisible < GetChannelCount()) {		// // //
+		if (m_cpCursorPos.m_iChannel < Channels - 1)		// // //
+			m_iScrolling += SCROLL_RIGHT;		// // //
 	}
 	else if (PointPos.m_iChannel < m_iFirstChannel) {
 		if (m_cpCursorPos.m_iChannel > 0)
-			m_iScrolling = SCROLL_LEFT;
-		else
-			m_iScrolling = SCROLL_NONE;
+			m_iScrolling += SCROLL_LEFT;		// // //
 	}
-	else
-		m_iScrolling = SCROLL_NONE;
 }
 
 bool CPatternEditor::ScrollTimerCallback()
 {
 	const int Channels = GetChannelCount();
 
-	switch (m_iScrolling) {
+	if (!m_iScrolling) return false;		// // //
+
+	switch (m_iScrolling & 0x03) {		// // //
 	case SCROLL_UP:
 		m_cpCursorPos.m_iRow--;
 		m_iCenterRow--;
@@ -3716,6 +3711,8 @@ bool CPatternEditor::ScrollTimerCallback()
 		m_cpCursorPos.m_iRow++;
 		m_iCenterRow++;
 		break;
+	}
+	switch (m_iScrolling & 0x0C) {		// // //
 	case SCROLL_RIGHT:
 		if (m_iFirstChannel + m_iChannelsFullVisible < Channels) {
 			m_iFirstChannel++;
@@ -3732,8 +3729,6 @@ bool CPatternEditor::ScrollTimerCallback()
 			InvalidateBackground();
 		}
 		break;
-	default:
-		return false;
 	}
 
 	if (m_bSelecting && !m_bDragging)

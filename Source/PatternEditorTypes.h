@@ -27,11 +27,11 @@
 
 // Scroll modes
 enum scroll_t {
-	SCROLL_NONE, 
-	SCROLL_UP, 
-	SCROLL_DOWN, 
-	SCROLL_RIGHT, 
-	SCROLL_LEFT
+	SCROLL_NONE  = 0x00,		// // //
+	SCROLL_UP    = 0x01, 
+	SCROLL_DOWN  = 0x02, 
+	SCROLL_RIGHT = 0x04, 
+	SCROLL_LEFT  = 0x08
 };
 
 // Column layout

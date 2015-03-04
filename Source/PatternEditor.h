@@ -372,7 +372,7 @@ private:
 	bool	m_bChannelPushed;
 
 	CSelection m_selection;
-	CCursorPos m_cpSelCursor;
+	// // // gone
 
 	// Drag
 	CSelection m_selDrag;
@@ -396,7 +396,7 @@ private:
 	// Scrolling
 	CPoint	m_ptScrollMousePos;
 	UINT	m_nScrollFlags;
-	scroll_t m_iScrolling;
+	int		m_iScrolling;		// // // int for addition
 	int		m_iCurrentHScrollPos;
 
 	// Benchmarking
