@@ -911,7 +911,7 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 
 	m_pTrackerView->MakeSilent();
 
-	for (int i = 0; i < CHANNELS; ++i) {		// // //
+	if (theApp.GetSettings()->General.bRetrieveChanState) for (int i = 0; i < CHANNELS; ++i) {		// // //
 		if (m_pChannels[i]) {
 			m_pChannels[i]->RetrieveChannelState();
 		}

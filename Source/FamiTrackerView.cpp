@@ -1178,10 +1178,8 @@ void CFamiTrackerView::OnTrackerPlayrow()
 	for (int i = 0; i < Channels; ++i) {
 		stChanNote Note;
 		pDoc->GetNoteData(Track, Frame, i, Row, &Note);
-		if (!m_bMuteChannels[i]) {
-			theApp.GetSoundGenerator()->GetChannel(i)->RetrieveChannelState();		// // //
+		if (!m_bMuteChannels[i])
 			theApp.GetSoundGenerator()->QueueNote(i, Note, NOTE_PRIO_1);
-		}
 	}
 
 	m_pPatternEditor->MoveDown(1);
