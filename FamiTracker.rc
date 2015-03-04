@@ -173,6 +173,7 @@ BEGIN
     POPUP "&Module"
     BEGIN
         MENUITEM "Insert Frame",                ID_MODULE_INSERTFRAME
+        MENUITEM "&Remove Frame",               ID_MODULE_REMOVEFRAME
         MENUITEM "&Duplicate Frame",            ID_MODULE_DUPLICATEFRAME
         MENUITEM "Clone Pattern\tAlt+D",        ID_MODULE_DUPLICATECURRENTPATTERN
         MENUITEM "Duplicate Patterns",          ID_MODULE_DUPLICATEFRAMEPATTERNS
