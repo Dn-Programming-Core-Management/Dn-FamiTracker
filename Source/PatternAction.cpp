@@ -444,34 +444,28 @@ void CPatternAction::Interpolate(CFamiTrackerDoc *pDoc) const
 
 void CPatternAction::Reverse(CFamiTrackerDoc *pDoc) const
 {
-	stChanNote ReverseBuffer[MAX_PATTERN_LENGTH];
-	const int StartRow = m_selection.GetRowStart();
-	const int EndRow = m_selection.GetRowEnd();
+	const int FrameCount = pDoc->GetFrameCount(m_iUndoTrack);
+	int fBegin = m_selection.GetFrameStart();		// // //
+	int fEnd = m_selection.GetFrameEnd();
+	int rBegin = m_selection.GetRowStart();
+	int rEnd = m_selection.GetRowEnd();
+	stChanNote NoteBegin, NoteEnd;
 
-	for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); ++i) {
-		// Copy the selected rows
-		for (int j = StartRow, m = 0; j < EndRow + 1; ++j, ++m) {
-			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, i, j, ReverseBuffer + m);
-		}
-		// Paste reversed
-		for (int j = EndRow, m = 0; j > StartRow - 1; --j, ++m) {
-			stChanNote NoteData;
-			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, i, j, &NoteData);
-			if (m_selection.IsColumnSelected(COLUMN_NOTE, i)) {
-				NoteData.Note = ReverseBuffer[m].Note;
-				NoteData.Octave = ReverseBuffer[m].Octave;
+	for (int c = m_selection.GetChanStart(); c <= m_selection.GetChanEnd(); ++c) {
+		for (int i = 0; i < m_iSelectionSize / 2; i++) {
+			pDoc->GetNoteData(m_iUndoTrack, (fBegin + FrameCount) % FrameCount, c, rBegin, &NoteBegin);
+			pDoc->GetNoteData(m_iUndoTrack, (fEnd + FrameCount) % FrameCount, c, rEnd, &NoteEnd);
+			pDoc->SetNoteData(m_iUndoTrack, (fBegin + FrameCount) % FrameCount, c, rBegin, &NoteEnd);
+			pDoc->SetNoteData(m_iUndoTrack, (fEnd + FrameCount) % FrameCount, c, rEnd, &NoteBegin);
+
+			if (++rBegin == pDoc->GetFrameLength(m_iUndoTrack, (fBegin + FrameCount) % FrameCount)) {
+				rBegin = 0; // 0CC: ensure these math optimizations work
+				fBegin++;
 			}
-			if (m_selection.IsColumnSelected(COLUMN_INSTRUMENT, i))
-				NoteData.Instrument = ReverseBuffer[m].Instrument;
-			if (m_selection.IsColumnSelected(COLUMN_VOLUME, i))
-				NoteData.Vol = ReverseBuffer[m].Vol;
-			for (int k = 0; k < 4; k++) {
-				if (m_selection.IsColumnSelected(k + COLUMN_EFF1, i)) {
-					NoteData.EffNumber[k] = ReverseBuffer[m].EffNumber[k];
-					NoteData.EffParam[k] = ReverseBuffer[m].EffParam[k];
-				}
+			if (--rEnd == -1) {
+				fEnd--;
+				fEnd = pDoc->GetFrameLength(m_iUndoTrack, (fEnd + FrameCount) % FrameCount);
 			}
-			pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, i, j, &NoteData);
 		}
 	}
 }
@@ -629,6 +623,7 @@ bool CPatternAction::SaveState(CMainFrame *pMainFrm)
 
 	m_bSelecting = pPatternEditor->IsSelecting();
 	m_selection = pPatternEditor->GetSelection();
+	m_iSelectionSize = pPatternEditor->GetSelectionSize();		// // //
 
 	// Save old state
 	switch (m_iAction) {

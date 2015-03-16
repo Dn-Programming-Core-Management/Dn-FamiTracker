@@ -132,6 +132,7 @@ private:
 	
 	bool m_bSelecting;
 	CSelection m_selection;
+	int m_iSelectionSize;		// // //
 
 	transpose_t m_iTransposeMode;
 	int m_iScrollValue;
