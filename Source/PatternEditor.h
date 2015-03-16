@@ -182,7 +182,9 @@ public:
 	// Public class methods
 public:
 	static int GetSelectColumn(int Column);
-	int GetCurrentPatternLength(unsigned int Frame) const;		// // //
+	bool IsInRange(const CSelection &sel, int Frame, int Row, int Channel, int Column) const;		// // //
+	int GetSelectionSize() const;		// // //
+	int GetCurrentPatternLength(int Frame) const;		// // // allow negative frames
 
 	// Private methods
 private:
@@ -216,19 +218,18 @@ private:
 	void UpdateHorizontalScroll();
 
 	// Translation
-	int  GetRowAtPoint(int PointY) const;
 	int  GetColumnAtPoint(int PointX) const;
 	int  GetCursorStartColumn(int Column) const;
 	int  GetCursorEndColumn(int Column) const;
 	int	 GetChannelColumns(int Channel) const;
 	int  GetSelectedTrack() const;
+	int  GetFrameCount() const;		// // //
 	int	 GetChannelCount() const;
 	int	 RowToLine(int Row) const;
 
 	CCursorPos GetCursorAtPoint(const CPoint &point) const;
 
 	// Selection methods
-	void SetSelectionStart();
 	void UpdateSelection();
 
 	void SetSelectionStart(const CCursorPos &start);
@@ -301,8 +302,7 @@ private:
 	int		m_iCurrentFrame;				// Selected frame
 	
 	int		m_iPatternLength;				// Pattern length of selected frame
-	int		m_iPrevPatternLength;			// Pattern length of previous frame
-	int		m_iNextPatternLength;			// Pattern length of next frame
+	// // // gone
 
 	// Previous draw state
 	int		m_iLastCenterRow;				// Previous center row
@@ -365,6 +365,8 @@ private:
 	bool	m_bDragStart;			// Indicates that drag & drop is being initiated
 	bool	m_bDragging;			// Drag & drop is active
 	bool	m_bFullRowSelect;		// Enable full row selection
+	int		m_iWarpCount;			// // //
+	int		m_iDragBeginWarp;		// // //
 
 	// Mouse
 	bool	m_bMouseActive;			// Indicates that mouse activity is in progess by the user

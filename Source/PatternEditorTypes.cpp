@@ -26,11 +26,12 @@
 
 // CCursorPos /////////////////////////////////////////////////////////////////////
 
-CCursorPos::CCursorPos() : m_iRow(0), m_iChannel(0), m_iColumn(0) 
+CCursorPos::CCursorPos() : m_iRow(0), m_iChannel(0), m_iColumn(0), m_iFrame(0)		// // //
 {
 }
 
-CCursorPos::CCursorPos(int Row, int Channel, int Column) : m_iRow(Row), m_iChannel(Channel), m_iColumn(Column) 
+CCursorPos::CCursorPos(int Row, int Channel, int Column, int Frame) :		// // //
+	m_iRow(Row), m_iChannel(Channel), m_iColumn(Column), m_iFrame(Frame)
 {
 }
 
@@ -40,23 +41,27 @@ const CCursorPos& CCursorPos::operator=(const CCursorPos &pos)
 	m_iRow = pos.m_iRow;
 	m_iColumn = pos.m_iColumn;
 	m_iChannel = pos.m_iChannel;
+	m_iFrame = pos.m_iFrame;		// // //
 	return *this;
 }
 
 bool CCursorPos::operator !=(const CCursorPos &other) const
 {
 	// Unequality check
-	return (m_iRow != other.m_iRow) || (m_iChannel != other.m_iChannel) || (m_iColumn != other.m_iColumn);
+	return (m_iRow != other.m_iRow) || (m_iChannel != other.m_iChannel)		// // //
+		|| (m_iColumn != other.m_iColumn) || (m_iFrame != other.m_iFrame);
 }
 
-bool CCursorPos::IsValid(int RowCount, int ChannelCount) const
+bool CCursorPos::IsValid(int FrameCount, int RowCount, int ChannelCount) const		// // //
 {
 	// Check if a valid pattern position
+	if (m_iFrame < -FrameCount || m_iFrame >= 2 * FrameCount)		// // //
+		return false;
 	if (m_iChannel < 0 || m_iChannel >= ChannelCount)
 		return false;
 	if (m_iRow < 0 || m_iRow >= RowCount)
 		return false;
-	if (m_iColumn < 0)
+	if (m_iColumn < 0 || m_iColumn > 15)		// // //
 		return false;
 
 	return true;
@@ -66,11 +71,21 @@ bool CCursorPos::IsValid(int RowCount, int ChannelCount) const
 
 int CSelection::GetRowStart() const 
 {
+	if (m_cpEnd.m_iFrame > m_cpStart.m_iFrame)		// // //
+		return m_cpStart.m_iRow;
+	if (m_cpEnd.m_iFrame < m_cpStart.m_iFrame)
+		return m_cpEnd.m_iRow;
+
 	return (m_cpEnd.m_iRow > m_cpStart.m_iRow ?  m_cpStart.m_iRow : m_cpEnd.m_iRow);
 }
 
 int CSelection::GetRowEnd() const 
 {
+	if (m_cpEnd.m_iFrame > m_cpStart.m_iFrame)		// // //
+		return m_cpEnd.m_iRow;
+	if (m_cpEnd.m_iFrame < m_cpStart.m_iFrame)
+		return m_cpStart.m_iRow;
+
 	return (m_cpEnd.m_iRow > m_cpStart.m_iRow ? m_cpEnd.m_iRow : m_cpStart.m_iRow);
 }
 
@@ -124,67 +139,31 @@ int CSelection::GetChanEnd() const
 
 int CSelection::GetFrameStart() const		// // //
 {
-	return (m_iFrameEnd > m_iFrameStart) ? m_iFrameStart : m_iFrameEnd;
+	return (m_cpEnd.m_iFrame > m_cpStart.m_iFrame) ? m_cpStart.m_iFrame : m_cpEnd.m_iFrame;
 }
 
 int CSelection::GetFrameEnd() const		// // //
 {
-	return (m_iFrameEnd > m_iFrameStart) ? m_iFrameEnd : m_iFrameStart;
-}
-
-bool CSelection::IsWithin(const CCursorPos &pos) const 
-{
-	return (pos.m_iRow >= GetRowStart() || pos.m_iFrame > GetFrameStart())		// // //
-		&& (pos.m_iRow <= GetRowEnd() || pos.m_iFrame < GetFrameEnd())
-		&& (pos.m_iChannel > GetChanStart() || (pos.m_iChannel == GetChanStart() && pos.m_iColumn >= GetColStart()))
-		&& (pos.m_iChannel < GetChanEnd() || (pos.m_iChannel == GetChanEnd() && pos.m_iColumn <= GetColEnd()));
-}
-
-bool CSelection::IsSingleChannel() const 
-{
-	return (m_cpStart.m_iChannel == m_cpEnd.m_iChannel);
+	return (m_cpEnd.m_iFrame > m_cpStart.m_iFrame) ? m_cpEnd.m_iFrame : m_cpStart.m_iFrame;
 }
 
 bool CSelection::IsSameStartPoint(const CSelection &selection) const
 {
 	return GetChanStart() == selection.GetChanStart() &&
 		GetRowStart() == selection.GetRowStart() &&
-		GetColStart() == selection.GetColStart();
+		GetColStart() == selection.GetColStart() &&
+		GetFrameStart() == selection.GetFrameStart();		// // //
 }
 
 bool CSelection::IsColumnSelected(int Column, int Channel) const
 {
 	int SelColStart = GetColStart();
 	int SelColEnd	= GetColEnd();
-
-	if (Channel > GetChanStart() && Channel < GetChanEnd())
-		return true;
-
-	// 0 = Note (0)
-	// 1, 2 = Instrument (1)
-	// 3 = Volume (2)
-	// 4, 5, 6 = Effect 1 (3)
-	// 7, 8, 9 = Effect 1 (4)
-	// 10, 11, 12 = Effect 1 (5)
-	// 13, 14, 15 = Effect 1 (6)
-
-	int SelStart = CPatternEditor::GetSelectColumn(SelColStart);
+	int SelStart = CPatternEditor::GetSelectColumn(SelColStart);		// // //
 	int SelEnd = CPatternEditor::GetSelectColumn(SelColEnd);
-	
-	if (Channel == GetChanStart() && Channel == GetChanEnd()) {
-		if (Column >= SelStart && Column <= SelEnd)
-			return true;
-	}
-	else if (Channel == GetChanStart()) {
-		if (Column >= SelStart)
-			return true;
-	}
-	else if (Channel == GetChanEnd()) {
-		if (Column <= SelEnd)
-			return true;
-	}
 
-	return false;
+	return (Channel > GetChanStart() || (Channel == GetChanStart() && Column >= SelStart))		// // //
+		&& (Channel < GetChanEnd() || (Channel == GetChanEnd() && Column <= SelEnd));
 }
 
 void CSelection::Clear()

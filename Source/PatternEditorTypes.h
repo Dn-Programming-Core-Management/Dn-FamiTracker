@@ -108,10 +108,10 @@ public:
 class CCursorPos {
 public:
 	CCursorPos();
-	CCursorPos(int Row, int Channel, int Column);
+	CCursorPos(int Row, int Channel, int Column, int Frame);		// // //
 	const CCursorPos& operator=(const CCursorPos &pos);
 	bool operator !=(const CCursorPos &other) const;
-	bool IsValid(int RowCount, int ChannelCount) const;
+	bool IsValid(int FrameCount, int RowCount, int ChannelCount) const;		// // //
 
 public:
 	int m_iFrame;		// // //
@@ -132,8 +132,7 @@ public:
 	int  GetChanEnd() const;
 	int  GetFrameStart() const;		// // //
 	int  GetFrameEnd() const;		// // //
-	bool IsWithin(const CCursorPos &pos) const;
-	bool IsSingleChannel() const;
+	// // // gone
 	bool IsSameStartPoint(const CSelection &selection) const;
 	bool IsColumnSelected(int Column, int Channel) const;
 
@@ -146,8 +145,6 @@ public:
 public:
 	CCursorPos m_cpStart;
 	CCursorPos m_cpEnd;
-	int m_iFrameStart;		// // //
-	int m_iFrameEnd;
 };
 /*
 // Pattern layout
