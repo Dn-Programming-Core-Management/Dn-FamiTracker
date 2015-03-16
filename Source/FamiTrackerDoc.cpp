@@ -339,6 +339,11 @@ BOOL CFamiTrackerDoc::OnOpenDocument(LPCTSTR lpszPathName)
 
 BOOL CFamiTrackerDoc::OnSaveDocument(LPCTSTR lpszPathName)
 {
+#ifdef DISABLE_SAVE		// // //
+	static_cast<CMainFrame*>(AfxGetMainWnd())->SetMessageText(_T("Saving is disabled in this build of 0CC-FamiTracker."));
+	return FALSE;
+#endif
+
 	// This function is called by the GUI to save the file
 
 	if (!m_bFileLoaded)
@@ -524,6 +529,11 @@ void CFamiTrackerDoc::CreateEmpty()
 
 void CFamiTrackerDoc::OnFileSave()
 {
+#ifdef DISABLE_SAVE		// // //
+	static_cast<CMainFrame*>(AfxGetMainWnd())->SetMessageText(_T("Saving is disabled in this build of 0CC-FamiTracker."));
+	return;
+#endif
+
 	if (GetPathName().GetLength() == 0)
 		OnFileSaveAs();
 	else
@@ -532,6 +542,11 @@ void CFamiTrackerDoc::OnFileSave()
 
 void CFamiTrackerDoc::OnFileSaveAs()
 {
+#ifdef DISABLE_SAVE		// // //
+	static_cast<CMainFrame*>(AfxGetMainWnd())->SetMessageText(_T("Saving is disabled in this build of 0CC-FamiTracker."));
+	return;
+#endif
+
 	// Overloaded in order to save the ftm-path
 	CString newName = GetPathName();
 

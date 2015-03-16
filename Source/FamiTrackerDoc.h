@@ -33,6 +33,8 @@
 
 #define TRANSPOSE_FDS
 
+#define DISABLE_SAVE		// // //
+
 // Default song settings
 const unsigned int DEFAULT_TEMPO_NTSC		 = 150;
 const unsigned int DEFAULT_TEMPO_PAL		 = 125;

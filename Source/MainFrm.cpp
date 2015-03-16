@@ -1861,6 +1861,11 @@ void CMainFrame::OnFileImportText()
 
 void CMainFrame::OnFileExportText()
 {
+#ifdef DISABLE_SAVE		// // //
+	static_cast<CMainFrame*>(AfxGetMainWnd())->SetMessageText(_T("Saving is disabled in this build of 0CC-FamiTracker."));
+	return;
+#endif
+
 	CFamiTrackerDoc	*pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
 	CString	DefFileName = pDoc->GetFileTitle();
 
@@ -1881,6 +1886,11 @@ void CMainFrame::OnFileExportText()
 
 void CMainFrame::OnFileExportRows()		// // //
 {
+#ifdef DISABLE_SAVE		// // //
+	static_cast<CMainFrame*>(AfxGetMainWnd())->SetMessageText(_T("Saving is disabled in this build of 0CC-FamiTracker."));
+	return;
+#endif
+
 	CFamiTrackerDoc	*pDoc = (CFamiTrackerDoc*)GetActiveDocument();
 	CString	DefFileName = pDoc->GetFileTitle();
 
