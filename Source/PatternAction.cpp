@@ -21,6 +21,7 @@
 */
 
 #include <algorithm>
+#include <vector>		// // //
 #include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
@@ -41,7 +42,8 @@
 CPatternAction::CPatternAction(int iAction) : 
 	CAction(iAction), 
 	m_pClipData(NULL), 
-	m_pUndoClipData(NULL)
+	m_pUndoClipData(NULL),
+	m_iStretchMap(std::vector<int>())		// // //
 {
 }
 
@@ -167,6 +169,11 @@ void CPatternAction::SetPatternLength(int Length)
 void CPatternAction::SetClickedChannel(int Channel)
 {
 	m_iClickedChannel = Channel;
+}
+
+void CPatternAction::SetStretchMap(const std::vector<int> Map)		// // //
+{
+	m_iStretchMap = Map;
 }
 
 void CPatternAction::SaveEntire(const CPatternEditor *pPatternEditor)
@@ -300,40 +307,34 @@ void CPatternAction::PullUpRows(CFamiTrackerDoc *pDoc) const
 	}	
 }
 
-void CPatternAction::ExpandPattern(CFamiTrackerDoc *pDoc) const
-{
-	const int Rows = m_selection.GetRowEnd() - m_selection.GetRowStart();
-	const int StartRow = m_selection.GetRowStart();
-	for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); ++i) {
-		for (int j = Rows / 2; j >= 0; --j) {
-			stChanNote Note;
-			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, i, StartRow + j, &Note);
-			pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, i, StartRow + j * 2, &Note);
-			if (j * 2 + 1 <= Rows)		// // //
-				pDoc->ClearRow(m_iUndoTrack, m_iUndoFrame, i, StartRow + j * 2 + 1);
-		}
-	}
-}
-
-void CPatternAction::ShrinkPattern(CFamiTrackerDoc *pDoc) const
+void CPatternAction::StretchPattern(CFamiTrackerDoc *pDoc) const		// // //
 {
 	CPatternIterator it = GetStartIterator();		// // //
-	CPatternIterator source = GetStartIterator();
 	const CPatternIterator End = GetEndIterator();
-	stChanNote Note;
+	const int ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());		// // //
+	const int ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
+	stChanNote Target, Source;
+	
+	int Pos = 0;
+	int Offset = 0;
+	CPatternClipData *Original = static_cast<CFamiTrackerView*>(static_cast<CMainFrame*>(AfxGetMainWnd())->GetActiveView())->GetPatternEditor()->Copy();
+
 	do {
 		for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); ++i) {
-			if (source <= End) {
-				source.Get(i, &Note);
-				it.Set(i, &Note);
-			}
+			if (Offset < m_iSelectionSize && m_iStretchMap[Pos] > 0)
+				Source = *(Original->GetPattern(i, Offset));
 			else {
-				it.Clear(i);
+				memset(&Source, 0, sizeof(stChanNote));
+				Source.Instrument = MAX_INSTRUMENTS;
+				Source.Vol = MAX_VOLUME;
 			}
+			it.Get(i, &Target);
+			CopySection(&Target, &Source, PASTE_DEFAULT, i == m_selection.GetChanStart() ? ColStart : COLUMN_NOTE,
+				i == m_selection.GetChanEnd() ? ColEnd : COLUMN_EFF4);
+			it.Set(i, &Target);
 		}
-		if (source <= End) {
-			source += 2;
-		}
+		Offset += m_iStretchMap[Pos++];
+		Pos %= m_iStretchMap.size();
 	} while (++it <= End);
 }
 
@@ -907,10 +908,15 @@ void CPatternAction::Redo(CMainFrame *pMainFrm)
 			pMainFrm->UpdateControls();
 			break;
 		case ACT_EXPAND_PATTERN:
-			ExpandPattern(pDoc);
+			m_iStretchMap.resize(2);
+			m_iStretchMap[0] = 1;
+			m_iStretchMap[1] = 0;
+			StretchPattern(pDoc);
 			break;
 		case ACT_SHRINK_PATTERN:
-			ShrinkPattern(pDoc);
+			m_iStretchMap.resize(1);
+			m_iStretchMap[0] = 2;
+			StretchPattern(pDoc);
 			break;
 		case ACT_EXPAND_COLUMNS:
 			pDoc->SetEffColumns(m_iUndoTrack, m_iClickedChannel, m_iUndoColumnCount + 1);

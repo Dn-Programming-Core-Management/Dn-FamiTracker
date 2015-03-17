@@ -21,6 +21,7 @@
 */
 
 #include <algorithm>
+#include <vector>		// // //
 #include <cmath>
 #include "stdafx.h"
 #include "FamiTracker.h"

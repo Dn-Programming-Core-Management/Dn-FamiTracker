@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <vector>		// // //
 #include "Action.h"
 #include "PatternEditorTypes.h"
 
@@ -79,6 +80,7 @@ public:
 	void SetPatternLength(int Length);
 	void Update(CMainFrame *pMainFrm);
 	void SetClickedChannel(int Channel);
+	void SetStretchMap(const std::vector<int> Map);
 
 private:
 	void SaveEntire(const CPatternEditor *pPatternEditor);
@@ -90,8 +92,7 @@ private:
 
 	void InsertRows(CFamiTrackerDoc *pDoc) const;
 	void PullUpRows(CFamiTrackerDoc *pDoc) const;
-	void ExpandPattern(CFamiTrackerDoc *pDoc) const;
-	void ShrinkPattern(CFamiTrackerDoc *pDoc) const;
+	void StretchPattern(CFamiTrackerDoc *pDoc) const;		// // //
 	void ReplaceInstrument(CFamiTrackerDoc *pDoc) const;
 	void Transpose(CFamiTrackerDoc *pDoc) const;
 	void Interpolate(CFamiTrackerDoc *pDoc) const;
@@ -147,4 +148,5 @@ private:
 
 	int m_iClickedChannel;
 
+	std::vector<int> m_iStretchMap;		// // //
 };
