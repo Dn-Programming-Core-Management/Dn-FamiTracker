@@ -258,55 +258,60 @@ void CPatternAction::ExpandPattern(CFamiTrackerDoc *pDoc) const
 
 void CPatternAction::ShrinkPattern(CFamiTrackerDoc *pDoc) const
 {
-	const int Rows = m_selection.GetRowEnd() - m_selection.GetRowStart();
-	const int StartRow = m_selection.GetRowStart();
-	for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); ++i) {
-		for (int j = 0; j <= Rows; ++j) {
-			if (j <= Rows / 2) {
-				stChanNote Note;
-				pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, i, StartRow + j * 2, &Note);
-				pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, i, StartRow + j, &Note);
+	CPatternIterator it = GetStartIterator();		// // //
+	CPatternIterator source = GetStartIterator();
+	const CPatternIterator End = GetEndIterator();
+	stChanNote Note;
+	do {
+		for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); ++i) {
+			if (source <= End) {
+				source.Get(i, &Note);
+				it.Set(i, &Note);
 			}
 			else {
-				pDoc->ClearRow(m_iUndoTrack, m_iUndoFrame, i, StartRow + j);
+				it.Clear(i);
 			}
 		}
-	}
+		if (source <= End) {
+			source += 2;
+		}
+	} while (++it <= End);
 }
 
 void CPatternAction::ReplaceInstrument(CFamiTrackerDoc *pDoc) const
 {
-	for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); ++i) {
-		for (int j = m_selection.GetRowStart(); j <= m_selection.GetRowEnd(); ++j) {
+	CPatternIterator it = GetStartIterator();		// // //
+	const CPatternIterator End = GetEndIterator();
+	
+	do {
+		for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); ++i) {
 			stChanNote Note;
-			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, i, j, &Note);
+			it.Get(i, &Note);
 			if (Note.Instrument != MAX_INSTRUMENTS)
 				Note.Instrument = m_iInstrument;
-			pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, i, j, &Note);
+			it.Set(i, &Note);
 		}
-	}
+	} while (++it <= End);
 }
 
 void CPatternAction::Transpose(CFamiTrackerDoc *pDoc) const
 {
-	int RowStart = m_selection.GetRowStart();
-	int RowEnd = m_selection.GetRowEnd();
+	CPatternIterator it = GetStartIterator();		// // //
+	const CPatternIterator End = GetEndIterator();
+	stChanNote Note;
 	int ChanStart = m_selection.GetChanStart();
 	int ChanEnd	= m_selection.GetChanEnd();
 
 	if (!m_bSelecting) {
-		RowStart = m_iUndoRow;
-		RowEnd = m_iUndoRow;
 		ChanStart = m_iUndoChannel;
 		ChanEnd = m_iUndoChannel;
 	}
 
-	for (int i = ChanStart; i <= ChanEnd; ++i) {
-		if (!m_selection.IsColumnSelected(COLUMN_NOTE, i))
-			continue;
-		for (int j = RowStart; j <= RowEnd; ++j) {
-			stChanNote Note;
-			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, i, j, &Note);
+	do {
+		for (int i = ChanStart; i <= ChanEnd; ++i) {
+			if (!m_selection.IsColumnSelected(COLUMN_NOTE, i))
+				continue;
+			it.Get(i, &Note);
 			if (Note.Note == NONE || Note.Note == HALT || Note.Note == RELEASE)
 				continue;
 			switch (m_iTransposeMode) {
@@ -339,27 +344,27 @@ void CPatternAction::Transpose(CFamiTrackerDoc *pDoc) const
 						Note.Octave++;
 					break;
 			}
-			pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, i, j, &Note);
+			it.Set(i, &Note);
 		}
-	}
+	} while (++it <= End);
 }
 
 void CPatternAction::Interpolate(CFamiTrackerDoc *pDoc) const
 {
-	const int StartRow = m_selection.GetRowStart();
-	const int EndRow = m_selection.GetRowEnd();
+	const CPatternIterator End = GetEndIterator();		// // //
+	stChanNote StartData, EndData;
 
 	for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); ++i) {
 		const int Columns = pDoc->GetEffColumns(m_iUndoTrack, i) + 4;		// // //
 		for (int j = 0; j < Columns; ++j) {
+			CPatternIterator it = GetStartIterator();		// // //
+			it.Get(i, &StartData);
+			End.Get(i, &EndData);
 			double StartValHi, StartValLo;		// // //
 			double EndValHi, EndValLo;
 			double DeltaHi, DeltaLo;
 			bool TwoParam = false;
 			int Effect;
-			stChanNote StartData, EndData;
-			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, i, StartRow, &StartData);
-			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, i, EndRow, &EndData);
 			switch (j) {
 			case 0: // // // Note
 				if (!m_selection.IsColumnSelected(COLUMN_NOTE, i)
@@ -410,11 +415,11 @@ void CPatternAction::Interpolate(CFamiTrackerDoc *pDoc) const
 			}
 			else
 				StartValHi = EndValHi = 0.0;
-			DeltaHi = (EndValHi - StartValHi) / float(EndRow - StartRow);
-			DeltaLo = (EndValLo - StartValLo) / float(EndRow - StartRow);
+			DeltaHi = (EndValHi - StartValHi) / float(m_iSelectionSize - 1);
+			DeltaLo = (EndValLo - StartValLo) / float(m_iSelectionSize - 1);
 
-			for (int k = StartRow; k < EndRow; ++k) {
-				pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, i, k, &EndData);
+			do {
+				it.Get(i, &EndData);
 				switch (j) {
 					case 0: // // //
 						EndData.Note = GET_NOTE((int)StartValLo); 
@@ -436,52 +441,41 @@ void CPatternAction::Interpolate(CFamiTrackerDoc *pDoc) const
 				}
 				StartValLo += DeltaLo;
 				StartValHi += DeltaHi;
-				pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, i, k, &EndData);
-			}
+				it.Set(i, &EndData);
+			} while (++it <= End);
 		}
 	}
 }
 
 void CPatternAction::Reverse(CFamiTrackerDoc *pDoc) const
 {
-	const int FrameCount = pDoc->GetFrameCount(m_iUndoTrack);
-	int fBegin = m_selection.GetFrameStart();		// // //
-	int fEnd = m_selection.GetFrameEnd();
-	int rBegin = m_selection.GetRowStart();
-	int rEnd = m_selection.GetRowEnd();
 	stChanNote NoteBegin, NoteEnd;
-
-	for (int c = m_selection.GetChanStart(); c <= m_selection.GetChanEnd(); ++c) {
-		for (int i = 0; i < m_iSelectionSize / 2; i++) {
-			pDoc->GetNoteData(m_iUndoTrack, (fBegin + FrameCount) % FrameCount, c, rBegin, &NoteBegin);
-			pDoc->GetNoteData(m_iUndoTrack, (fEnd + FrameCount) % FrameCount, c, rEnd, &NoteEnd);
-			pDoc->SetNoteData(m_iUndoTrack, (fBegin + FrameCount) % FrameCount, c, rBegin, &NoteEnd);
-			pDoc->SetNoteData(m_iUndoTrack, (fEnd + FrameCount) % FrameCount, c, rEnd, &NoteBegin);
-
-			if (++rBegin == pDoc->GetFrameLength(m_iUndoTrack, (fBegin + FrameCount) % FrameCount)) {
-				rBegin = 0; // 0CC: ensure these math optimizations work
-				fBegin++;
-			}
-			if (--rEnd == -1) {
-				fEnd--;
-				fEnd = pDoc->GetFrameLength(m_iUndoTrack, (fEnd + FrameCount) % FrameCount);
-			}
+	CPatternIterator itb = GetStartIterator();		// // //
+	CPatternIterator ite = GetEndIterator();
+	
+	while (itb < ite) {
+		for (int c = m_selection.GetChanStart(); c <= m_selection.GetChanEnd(); ++c) {
+			itb.Get(c, &NoteBegin);
+			ite.Get(c, &NoteEnd);
+			itb.Set(c, &NoteEnd);
+			ite.Set(c, &NoteBegin);
 		}
+		itb++;
+		ite--;
 	}
 }
 
 void CPatternAction::ScrollValues(CFamiTrackerDoc *pDoc) const
 {
-	int RowStart = m_selection.GetRowStart();
-	int RowEnd = m_selection.GetRowEnd();
+	CPatternIterator it = GetStartIterator();		// // //
+	const CPatternIterator End = GetEndIterator();
+	stChanNote Note;
+
 	int ChanStart = m_selection.GetChanStart();
 	int ChanEnd = m_selection.GetChanEnd();
 	int ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());
 	int ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
-
 	if (!m_bSelecting) {
-		RowStart = m_iUndoRow;
-		RowEnd = m_iUndoRow;
 		ChanStart = m_iUndoChannel;
 		ChanEnd = m_iUndoChannel;
 		ColStart = CPatternEditor::GetSelectColumn(m_iUndoColumn);
@@ -489,17 +483,16 @@ void CPatternAction::ScrollValues(CFamiTrackerDoc *pDoc) const
 	}
 
 	bool bWarp = theApp.GetSettings()->General.bWrapPatternValue;		// // //
-	bool bSingular = (RowStart == RowEnd) && (ChanStart == ChanEnd) && (ColStart == ColEnd);		// // //
+	bool bSingular = (it == End) && (ChanStart == ChanEnd) && (ColStart == ColEnd);		// // //
 	
-	for (int i = ChanStart; i <= ChanEnd; ++i) {
-		for (int k = 1; k < COLUMNS; ++k) {
-			if (i == ChanStart && k < ColStart)
-				continue;
-			if (i == ChanEnd && k > ColEnd)
-				continue;
-			for (int j = RowStart; j <= RowEnd; ++j) {
-				stChanNote Note;
-				pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, i, j, &Note);
+	do {
+		for (int i = ChanStart; i <= ChanEnd; ++i) {
+			for (int k = 1; k < COLUMNS; ++k) {
+				if (i == ChanStart && k < ColStart)
+					continue;
+				if (i == ChanEnd && k > ColEnd)
+					continue;
+				it.Get(i, &Note);
 				switch (k) {
 					case COLUMN_INSTRUMENT:
 						if (Note.Instrument != MAX_INSTRUMENTS) {
@@ -564,20 +557,22 @@ void CPatternAction::ScrollValues(CFamiTrackerDoc *pDoc) const
 						}
 						break;
 				}
-				pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, i, j, &Note);
+				it.Set(i, &Note);
 			}
 		}
-	}
+	} while (++it <= End);
 }
 
 void CPatternAction::DeleteSelection(CFamiTrackerDoc *pDoc) const
 {
 	// Delete selection
-	for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); ++i) {
-		for (int j = m_selection.GetRowStart(); j <= m_selection.GetRowEnd(); ++j) {
+	CPatternIterator it = GetStartIterator();		// // //
+	const CPatternIterator End = GetEndIterator();
 
+	do {
+		for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); ++i) {
 			stChanNote NoteData;
-			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, i, j, &NoteData);
+			it.Get(i, &NoteData);
 
 			if (m_selection.IsColumnSelected(COLUMN_NOTE, i)) {
 				NoteData.Note = 0;
@@ -602,10 +597,27 @@ void CPatternAction::DeleteSelection(CFamiTrackerDoc *pDoc) const
 				NoteData.EffNumber[3] = NoteData.EffParam[3] = 0;
 			}
 		
-			pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, i, j, &NoteData);
+			it.Set(i, &NoteData);
 		}
-	}
+	} while (++it <= End);
 }
+
+CPatternIterator CPatternAction::GetStartIterator() const		// // //
+{
+	CMainFrame *pMainFrm = static_cast<CMainFrame*>(AfxGetMainWnd());
+	CCursorPos Pos = m_selection.m_cpStart < m_selection.m_cpEnd ? m_selection.m_cpStart : m_selection.m_cpEnd;
+	if (!m_bSelecting) Pos = CCursorPos(m_iUndoRow, m_iUndoChannel, m_iUndoColumn, m_iUndoFrame);
+	return CPatternIterator(static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor(), m_iUndoTrack, Pos);
+}
+
+CPatternIterator CPatternAction::GetEndIterator() const
+{
+	CMainFrame *pMainFrm = static_cast<CMainFrame*>(AfxGetMainWnd());
+	CCursorPos Pos = m_selection.m_cpStart < m_selection.m_cpEnd ? m_selection.m_cpEnd : m_selection.m_cpStart;
+	if (!m_bSelecting) Pos = CCursorPos(m_iUndoRow, m_iUndoChannel, m_iUndoColumn, m_iUndoFrame);
+	return CPatternIterator(static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor(), m_iUndoTrack, Pos);
+}
+
 // Undo / Redo base methods
 
 bool CPatternAction::SaveState(CMainFrame *pMainFrm)
@@ -651,6 +663,10 @@ bool CPatternAction::SaveState(CMainFrame *pMainFrm)
 			SaveEntire(pPatternEditor);		// // //
 			break;
 		case ACT_INTERPOLATE:
+			if (!pPatternEditor->IsSelecting() || m_iSelectionSize < 3)		// // //
+				return false;
+			SaveEntire(pPatternEditor);
+			break;
 		case ACT_REVERSE:
 		case ACT_REPLACE_INSTRUMENT:
 		case ACT_EXPAND_PATTERN:

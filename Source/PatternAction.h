@@ -99,6 +99,9 @@ private:
 	void ScrollValues(CFamiTrackerDoc *pDoc) const;
 	void DeleteSelection(CFamiTrackerDoc *pDoc) const;
 
+	CPatternIterator GetStartIterator() const;
+	CPatternIterator GetEndIterator() const;
+
 private:
 	stChanNote m_NewNote;
 	stChanNote m_OldNote;

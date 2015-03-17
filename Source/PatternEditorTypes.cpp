@@ -52,6 +52,16 @@ bool CCursorPos::operator !=(const CCursorPos &other) const
 		|| (m_iColumn != other.m_iColumn) || (m_iFrame != other.m_iFrame);
 }
 
+bool CCursorPos::operator<(const CCursorPos &other) const		// // //
+{
+	return m_iFrame < other.m_iFrame || (m_iFrame == other.m_iFrame && m_iRow < other.m_iRow);
+}
+
+bool CCursorPos::operator<=(const CCursorPos &other) const		// // //
+{
+	return !(other < *this);
+}
+
 bool CCursorPos::IsValid(int FrameCount, int RowCount, int ChannelCount) const		// // //
 {
 	// Check if a valid pattern position
@@ -243,6 +253,100 @@ const stChanNote *CPatternClipData::GetPattern(int Channel, int Row) const
 	ASSERT(Row < ClipInfo.Rows);
 
 	return pPattern + (Channel * ClipInfo.Rows + Row);
+}
+
+// // // CPatternIterator //////////////////////////////////////////////////////
+// does not use m_iChannel
+
+CPatternIterator::CPatternIterator(const CPatternIterator &it)
+{
+	m_iTrack = it.m_iTrack;
+	m_iFrame = it.m_iFrame;
+	m_iRow = it.m_iRow;
+	m_pDocument = it.m_pDocument;
+	m_pPatternEditor = it.m_pPatternEditor;
+}
+
+CPatternIterator::CPatternIterator(CPatternEditor *pEditor, unsigned int Track, const CCursorPos &Pos)
+{
+	m_iTrack = Track;
+	m_iFrame = Pos.m_iFrame;
+	m_iRow = Pos.m_iRow;
+	m_pDocument = CFamiTrackerDoc::GetDoc();
+	m_pPatternEditor = pEditor;
+	Warp();
+}
+
+void CPatternIterator::Get(int Channel, stChanNote *pNote) const
+{
+	int Frame = m_iFrame % m_pDocument->GetFrameCount(m_iTrack);
+	if (Frame < 0) Frame += m_pDocument->GetFrameCount(m_iTrack);
+	m_pDocument->GetNoteData(m_iTrack, Frame, Channel, m_iRow, pNote);
+}
+
+void CPatternIterator::Set(int Channel, const stChanNote *pNote)
+{
+	int Frame = m_iFrame % m_pDocument->GetFrameCount(m_iTrack);
+	if (Frame < 0) Frame += m_pDocument->GetFrameCount(m_iTrack);
+	m_pDocument->SetNoteData(m_iTrack, Frame, Channel, m_iRow, pNote);
+}
+
+void CPatternIterator::Clear(int Channel)
+{
+	int Frame = m_iFrame % m_pDocument->GetFrameCount(m_iTrack);
+	if (Frame < 0) Frame += m_pDocument->GetFrameCount(m_iTrack);
+	m_pDocument->ClearRow(m_iTrack, Frame, Channel, m_iRow);
+}
+
+CPatternIterator& CPatternIterator::operator+=(const int Rows)
+{
+	m_iRow += Rows;
+	Warp();
+	return *this;
+}
+
+CPatternIterator& CPatternIterator::operator-=(const int Rows)
+{
+	return operator+=(-Rows);
+}
+
+CPatternIterator& CPatternIterator::operator++()
+{
+	return operator+=(1);
+}
+
+CPatternIterator CPatternIterator::operator++(int)
+{
+	CPatternIterator tmp(*this);
+	operator+=(1);
+	return tmp;
+}
+
+CPatternIterator& CPatternIterator::operator--()
+{
+	return operator+=(-1);
+}
+
+CPatternIterator CPatternIterator::operator--(int)
+{
+	CPatternIterator tmp(*this);
+	operator+=(-1);
+	return tmp;
+}
+
+bool CPatternIterator::operator==(const CPatternIterator &other) const
+{
+	return m_iFrame == other.m_iFrame && m_iRow == other.m_iRow;
+}
+
+void CPatternIterator::Warp()
+{
+	while (m_iRow >= m_pPatternEditor->GetCurrentPatternLength(m_iFrame))
+		m_iRow -= m_pPatternEditor->GetCurrentPatternLength(m_iFrame++);
+	while (m_iRow < 0)
+		m_iRow += m_pPatternEditor->GetCurrentPatternLength(--m_iFrame);
+	//m_iFrame %= m_pDocument->GetFrameCount(m_iTrack);
+	//if (m_iFrame < 0) m_iFrame += m_pDocument->GetFrameCount(m_iTrack);
 }
 
 // CPatternEditorLayout ////////////////////////////////////////////////////////

@@ -60,6 +60,8 @@ enum paste_pos_t : unsigned int {
 	PASTE_FILL
 };
 
+class CPatternEditor;		// // //
+
 // Class used by clipboard
 class CPatternClipData
 {
@@ -111,6 +113,8 @@ public:
 	CCursorPos(int Row, int Channel, int Column, int Frame);		// // //
 	const CCursorPos& operator=(const CCursorPos &pos);
 	bool operator !=(const CCursorPos &other) const;
+	bool operator<(const CCursorPos &other) const;
+	bool operator<=(const CCursorPos &other) const;
 	bool IsValid(int FrameCount, int RowCount, int ChannelCount) const;		// // //
 
 public:
@@ -120,6 +124,32 @@ public:
 	int m_iChannel;
 };
 
+class CPatternIterator : public CCursorPos {		// // //
+public:
+	CPatternIterator(const CPatternIterator &it);
+	CPatternIterator(CPatternEditor *pEditor, unsigned int Track, const CCursorPos &Pos);
+	
+	void Get(int Channel, stChanNote *pNote) const;
+	void Set(int Channel, const stChanNote *pNote);
+	void Clear(int Channel);
+	CPatternIterator &operator+=(const int Rows);
+	CPatternIterator &operator-=(const int Rows);
+	CPatternIterator &operator++();
+	CPatternIterator operator++(int);
+	CPatternIterator &operator--();
+	CPatternIterator operator--(int);
+	bool operator ==(const CPatternIterator &other) const;
+
+private:
+	void Warp();
+
+public:
+	int m_iTrack;
+
+private:
+	CFamiTrackerDoc *m_pDocument;
+	CPatternEditor *m_pPatternEditor;
+};
 
 // Selection
 class CSelection {
