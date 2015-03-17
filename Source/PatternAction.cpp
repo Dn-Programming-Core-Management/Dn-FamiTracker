@@ -51,6 +51,65 @@ CPatternAction::~CPatternAction()
 	SAFE_RELEASE(m_pUndoClipData);
 }
 
+static void CopySection(stChanNote *Target, stChanNote *Source, paste_mode_t Mode, int Begin, int End)		// // // find a use for this
+{
+	if (Begin > End) {
+		int Temp = End; End = Begin; Begin = Temp;
+	}
+
+	bool CanOverwrite[7];
+	for (int i = 0; i < 7; i++) {
+		int Address = i + (i >= 1); // skip octave byte
+		const unsigned char TByte = *(reinterpret_cast<unsigned char*>(Target) + Address);
+		const unsigned char SByte = *(reinterpret_cast<unsigned char*>(Target) + Address);
+		switch (Mode) {
+		case PASTE_DEFAULT: case PASTE_INSERT:
+			CanOverwrite[i] = true;
+			break;
+		case PASTE_MIX:
+			switch (i) {
+			case COLUMN_INSTRUMENT:
+				if (TByte == MAX_INSTRUMENTS) CanOverwrite[i] = true;
+				break;
+			case COLUMN_VOLUME:
+				if (TByte == MAX_VOLUME) CanOverwrite[i] = true;
+				break;
+			default:
+				if (TByte == 0) CanOverwrite[i] = true;
+			}
+			if (!CanOverwrite[i]) break;
+			else CanOverwrite[i] = false; // continue
+		case PASTE_OVERWRITE:
+			switch (i) {
+			case COLUMN_INSTRUMENT:
+				if (SByte != MAX_INSTRUMENTS) CanOverwrite[i] = true;
+				break;
+			case COLUMN_VOLUME:
+				if (SByte != MAX_VOLUME) CanOverwrite[i] = true;
+				break;
+			default:
+				if (SByte != 0) CanOverwrite[i] = true;
+			}
+		}
+	}
+
+	for (int i = Begin; i <= End; i++) if (CanOverwrite[i]) switch (i) {
+	case COLUMN_NOTE:
+		Target->Note = Source->Note;
+		Target->Octave = Source->Octave;
+		break;
+	case COLUMN_INSTRUMENT:
+		Target->Instrument = Source->Instrument;
+		break;
+	case COLUMN_VOLUME:
+		Target->Vol = Source->Vol;
+		break;
+	default:
+		Target->EffNumber[i - 3] = Source->EffNumber[i - 3];
+		Target->EffParam[i - 3] = Source->EffParam[i - 3];
+	}
+}
+
 void CPatternAction::SetNote(stChanNote &Note)
 {
 	m_NewNote = Note;
