@@ -132,7 +132,7 @@ public:
 	
 	void Get(int Channel, stChanNote *pNote) const;
 	void Set(int Channel, const stChanNote *pNote);
-	void Clear(int Channel);
+	void Step();
 	CPatternIterator &operator+=(const int Rows);
 	CPatternIterator &operator-=(const int Rows);
 	CPatternIterator &operator++();
@@ -167,7 +167,7 @@ public:
 	bool IsSameStartPoint(const CSelection &selection) const;
 	bool IsColumnSelected(int Column, int Channel) const;
 
-	void Clear();
+	// // // gone
 	void SetStart(const CCursorPos &pos);
 	void SetEnd(const CCursorPos &pos);
 

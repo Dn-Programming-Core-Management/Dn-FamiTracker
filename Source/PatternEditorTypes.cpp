@@ -176,12 +176,6 @@ bool CSelection::IsColumnSelected(int Column, int Channel) const
 		&& (Channel < GetChanEnd() || (Channel == GetChanEnd() && Column <= SelEnd));
 }
 
-void CSelection::Clear()
-{
-	m_cpStart = CCursorPos();
-	m_cpEnd = CCursorPos();
-}
-
 void CSelection::SetStart(const CCursorPos &pos) 
 {
 	m_cpStart = pos;
@@ -301,11 +295,33 @@ void CPatternIterator::Set(int Channel, const stChanNote *pNote)
 	m_pDocument->SetNoteData(m_iTrack, Frame, Channel, m_iRow, pNote);
 }
 
-void CPatternIterator::Clear(int Channel)
+void CPatternIterator::Step() // resolves skip effects
 {
-	int Frame = m_iFrame % m_pDocument->GetFrameCount(m_iTrack);
-	if (Frame < 0) Frame += m_pDocument->GetFrameCount(m_iTrack);
-	m_pDocument->ClearRow(m_iTrack, Frame, Channel, m_iRow);
+	stChanNote Note;
+
+	for (int i = m_pDocument->GetChannelCount() - 1; i >= 0; i--) {
+		Get(i, &Note);
+		for (int c = m_pDocument->GetEffColumns(m_iTrack, i); c >= 0; c--) {
+			if (Note.EffNumber[c] == EF_JUMP) {
+				m_iFrame = Note.EffParam[c];
+				if (m_iFrame >= static_cast<int>(m_pDocument->GetFrameCount(m_iTrack)))
+					m_iFrame = m_pDocument->GetFrameCount(m_iTrack) - 1;
+				m_iRow = 0;
+				return;
+			}
+		}
+	}
+	for (int i = m_pDocument->GetChannelCount() - 1; i >= 0; i--) {
+		Get(i, &Note);
+		for (int c = m_pDocument->GetEffColumns(m_iTrack, i); c >= 0; c--) {
+			if (Note.EffNumber[c] == EF_SKIP) {
+				m_iFrame++;
+				m_iRow = 0;
+				return;
+			}
+		}
+	}
+	operator+=(1);
 }
 
 CPatternIterator& CPatternIterator::operator+=(const int Rows)
