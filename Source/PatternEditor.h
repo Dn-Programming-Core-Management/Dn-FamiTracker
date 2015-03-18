@@ -231,6 +231,9 @@ private:
 
 	CCursorPos GetCursorAtPoint(const CPoint &point) const;
 
+	CPatternIterator GetStartIterator() const;		// // //
+	CPatternIterator GetEndIterator() const;
+
 	// Selection methods
 	void UpdateSelection();
 

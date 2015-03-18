@@ -2470,6 +2470,18 @@ CCursorPos CPatternEditor::GetCursorAtPoint(const CPoint &point) const
 	return CCursorPos(Row, GetChannelAtPoint(point.x), GetColumnAtPoint(point.x), Frame); // // //
 }
 
+CPatternIterator CPatternEditor::GetStartIterator() const		// // //
+{
+	const CCursorPos Pos = m_selection.m_cpStart < m_selection.m_cpEnd ? m_selection.m_cpStart : m_selection.m_cpEnd;
+	return CPatternIterator(this, GetSelectedTrack(), m_bSelecting ? Pos : m_cpCursorPos);
+}
+
+CPatternIterator CPatternEditor::GetEndIterator() const
+{
+	CCursorPos Pos = m_selection.m_cpStart < m_selection.m_cpEnd ? m_selection.m_cpEnd : m_selection.m_cpStart;
+	return CPatternIterator(this, GetSelectedTrack(), m_bSelecting ? Pos : m_cpCursorPos);
+}
+
 int CPatternEditor::GetSelectColumn(int Column)
 {
 	// Return first column for a specific column field

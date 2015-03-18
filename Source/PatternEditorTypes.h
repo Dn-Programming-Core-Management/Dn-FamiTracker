@@ -128,6 +128,7 @@ class CPatternIterator : public CCursorPos {		// // //
 public:
 	CPatternIterator(const CPatternIterator &it);
 	CPatternIterator(CPatternEditor *pEditor, unsigned int Track, const CCursorPos &Pos);
+	CPatternIterator(const CPatternEditor *const pEditor, unsigned int Track, const CCursorPos &Pos);
 	
 	void Get(int Channel, stChanNote *pNote) const;
 	void Set(int Channel, const stChanNote *pNote);
@@ -147,8 +148,8 @@ public:
 	int m_iTrack;
 
 private:
-	CFamiTrackerDoc *m_pDocument;
-	CPatternEditor *m_pPatternEditor;
+	CFamiTrackerDoc *const m_pDocument;
+	const CPatternEditor *const m_pPatternEditor;
 };
 
 // Selection

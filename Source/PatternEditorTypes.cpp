@@ -258,22 +258,32 @@ const stChanNote *CPatternClipData::GetPattern(int Channel, int Row) const
 // // // CPatternIterator //////////////////////////////////////////////////////
 // does not use m_iChannel
 
-CPatternIterator::CPatternIterator(const CPatternIterator &it)
+CPatternIterator::CPatternIterator(const CPatternIterator &it) :
+	m_iTrack(it.m_iTrack),
+	m_pDocument(it.m_pDocument),
+	m_pPatternEditor(it.m_pPatternEditor)
 {
-	m_iTrack = it.m_iTrack;
 	m_iFrame = it.m_iFrame;
 	m_iRow = it.m_iRow;
-	m_pDocument = it.m_pDocument;
-	m_pPatternEditor = it.m_pPatternEditor;
 }
 
-CPatternIterator::CPatternIterator(CPatternEditor *pEditor, unsigned int Track, const CCursorPos &Pos)
+CPatternIterator::CPatternIterator(CPatternEditor *pEditor, unsigned int Track, const CCursorPos &Pos) :
+	m_iTrack(Track),
+	m_pDocument(CFamiTrackerDoc::GetDoc()),
+	m_pPatternEditor(pEditor)
 {
-	m_iTrack = Track;
 	m_iFrame = Pos.m_iFrame;
 	m_iRow = Pos.m_iRow;
-	m_pDocument = CFamiTrackerDoc::GetDoc();
-	m_pPatternEditor = pEditor;
+	Warp();
+}
+
+CPatternIterator::CPatternIterator(const CPatternEditor *pEditor, unsigned int Track, const CCursorPos &Pos) :
+	m_iTrack(Track),
+	m_pDocument(CFamiTrackerDoc::GetDoc()),
+	m_pPatternEditor(pEditor)
+{
+	m_iFrame = Pos.m_iFrame;
+	m_iRow = Pos.m_iRow;
 	Warp();
 }
 
