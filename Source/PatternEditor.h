@@ -39,6 +39,8 @@ struct RowColorInfo_t {
 	COLORREF Shaded;
 };
 
+void CopyNoteSection(stChanNote *Target, stChanNote *Source, paste_mode_t Mode, int Begin, int End);		// // //
+
 // External classes
 class CFamiTrackerDoc;
 class CFamiTrackerView;
