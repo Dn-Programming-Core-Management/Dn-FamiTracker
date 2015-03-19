@@ -254,16 +254,14 @@ void CPatternAction::StretchPattern(CFamiTrackerDoc *pDoc) const		// // //
 	const CPatternIterator End = GetEndIterator();
 	const int ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());		// // //
 	const int ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
-	stChanNote Target, Source;
+	stChanNote Target = {}, Source = {};
 	
 	int Pos = 0;
 	int Offset = 0;
-	CPatternClipData *Original = static_cast<CFamiTrackerView*>(static_cast<CMainFrame*>(AfxGetMainWnd())->GetActiveView())->GetPatternEditor()->Copy();
-
 	do {
 		for (int i = 0; i <= m_selection.GetChanEnd() - m_selection.GetChanStart(); ++i) {
 			if (Offset < m_iSelectionSize && m_iStretchMap[Pos] > 0)
-				Source = *(Original->GetPattern(i, Offset));
+				Source = *(m_pUndoClipData->GetPattern(i, Offset));
 			else {
 				memset(&Source, 0, sizeof(stChanNote));
 				Source.Instrument = MAX_INSTRUMENTS;
@@ -421,7 +419,9 @@ void CPatternAction::Interpolate(CFamiTrackerDoc *pDoc) const
 			DeltaHi = (EndValHi - StartValHi) / float(m_iSelectionSize - 1);
 			DeltaLo = (EndValLo - StartValLo) / float(m_iSelectionSize - 1);
 
-			do {
+			while (++it < End) {
+				StartValLo += DeltaLo;
+				StartValHi += DeltaHi;
 				it.Get(i, &EndData);
 				switch (j) {
 					case 0: // // //
@@ -442,24 +442,34 @@ void CPatternAction::Interpolate(CFamiTrackerDoc *pDoc) const
 						EndData.EffParam[j - 3] = (int)StartValLo + ((int)StartValHi << 4); 
 						break;
 				}
-				StartValLo += DeltaLo;
-				StartValHi += DeltaHi;
 				it.Set(i, &EndData);
-			} while (++it <= End);
+			}
 		}
 	}
 }
 
 void CPatternAction::Reverse(CFamiTrackerDoc *pDoc) const
 {
-	stChanNote NoteBegin, NoteEnd;
 	CPatternIterator itb = GetStartIterator();		// // //
 	CPatternIterator ite = GetEndIterator();
+	const int ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());
+	const int ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
+	stChanNote NoteBegin, NoteEnd, Temp = {};
 	
 	while (itb < ite) {
 		for (int c = m_selection.GetChanStart(); c <= m_selection.GetChanEnd(); ++c) {
 			itb.Get(c, &NoteBegin);
 			ite.Get(c, &NoteEnd);
+			if (c == m_selection.GetChanStart()) {		// // //
+				Temp = NoteEnd;
+				CopyNoteSection(&NoteEnd, &NoteBegin, PASTE_DEFAULT, 0, ColStart - 1);
+				CopyNoteSection(&NoteBegin, &Temp, PASTE_DEFAULT, 0, ColStart - 1);
+			}
+			if (c == m_selection.GetChanEnd()) {
+				Temp = NoteEnd;
+				CopyNoteSection(&NoteEnd, &NoteBegin, PASTE_DEFAULT, ColEnd + 1, COLUMN_EFF4);
+				CopyNoteSection(&NoteBegin, &Temp, PASTE_DEFAULT, ColEnd + 1, COLUMN_EFF4);
+			}
 			itb.Set(c, &NoteEnd);
 			ite.Set(c, &NoteBegin);
 		}
@@ -567,35 +577,18 @@ void CPatternAction::DeleteSelection(CFamiTrackerDoc *pDoc) const
 	// Delete selection
 	CPatternIterator it = GetStartIterator();		// // //
 	const CPatternIterator End = GetEndIterator();
+	const int ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());		// // //
+	const int ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
+
+	stChanNote NoteData, Blank = {};		// // //
+	Blank.Instrument = MAX_INSTRUMENTS;
+	Blank.Vol = MAX_VOLUME;
 
 	do {
 		for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); ++i) {
-			stChanNote NoteData;
 			it.Get(i, &NoteData);
-
-			if (m_selection.IsColumnSelected(COLUMN_NOTE, i)) {
-				NoteData.Note = 0;
-				NoteData.Octave = 0;
-			}
-			if (m_selection.IsColumnSelected(COLUMN_INSTRUMENT, i)) {
-				NoteData.Instrument = MAX_INSTRUMENTS;
-			}
-			if (m_selection.IsColumnSelected(COLUMN_VOLUME, i)) {
-				NoteData.Vol = MAX_VOLUME;
-			}
-			if (m_selection.IsColumnSelected(COLUMN_EFF1, i)) {
-				NoteData.EffNumber[0] = NoteData.EffParam[0] = 0;
-			}
-			if (m_selection.IsColumnSelected(COLUMN_EFF2, i)) {
-				NoteData.EffNumber[1] = NoteData.EffParam[1] = 0;
-			}
-			if (m_selection.IsColumnSelected(COLUMN_EFF3, i)) {
-				NoteData.EffNumber[2] = NoteData.EffParam[2] = 0;
-			}
-			if (m_selection.IsColumnSelected(COLUMN_EFF4, i)) {
-				NoteData.EffNumber[3] = NoteData.EffParam[3] = 0;
-			}
-		
+			CopyNoteSection(&NoteData, &Blank, PASTE_DEFAULT, i == m_selection.GetChanStart() ? ColStart : COLUMN_NOTE,
+				i == m_selection.GetChanEnd() ? ColEnd : COLUMN_EFF4);		// // //
 			it.Set(i, &NoteData);
 		}
 	} while (++it <= End);
@@ -848,7 +841,7 @@ void CPatternAction::Redo(CMainFrame *pMainFrm)
 			pMainFrm->UpdateControls();
 			break;
 		case ACT_EXPAND_PATTERN:
-			m_iStretchMap.resize(2);
+			m_iStretchMap.resize(2);		// // //
 			m_iStretchMap[0] = 1;
 			m_iStretchMap[1] = 0;
 			StretchPattern(pDoc);
