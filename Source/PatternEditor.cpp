@@ -1207,8 +1207,10 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 	const COLORREF SelectColor = DIM(BLEND(ColSelect, BackColor, SHADE_LEVEL.SELECT),		// // //
 		((Frame == m_iCurrentFrame) ? 100 : PREVIEW_SHADE_LEVEL));
 	const COLORREF DragColor = BLEND(SEL_DRAG_COL, BackColor, SHADE_LEVEL.SELECT);
-	const COLORREF SelectEdgeCol = DIM(BLEND(SelectColor, 0xFFFFFF, SHADE_LEVEL.SELECT_EDGE),		// // //
-		((Frame == m_iCurrentFrame) ? 100 : PREVIEW_SHADE_LEVEL));
+	const COLORREF SelectEdgeCol = (m_iSelectionCondition == SEL_CLEAN /* || m_iSelectionCondition == SEL_UNKNOWN_SIZE*/ ) ?		// // //
+		DIM(BLEND(SelectColor, 0xFFFFFF, SHADE_LEVEL.SELECT_EDGE), ((Frame == m_iCurrentFrame) ? 100 : PREVIEW_SHADE_LEVEL)) :
+		0x0000FF;
+	const int BorderWidth = (m_iSelectionCondition == SEL_NONTERMINAL_SKIP) ? 2 : 1;
 
 	RowColorInfo_t colorInfo;
 
@@ -1274,13 +1276,17 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 
 					// Outline
 					if (Row == m_selection.GetRowStart() && !((f - m_selection.GetFrameStart()) % GetFrameCount()))
-						pDC->FillSolidRect(SelStart - COLUMN_SPACING, 0, SELECT_WIDTH[j], 1, SelectEdgeCol);
+						pDC->FillSolidRect(SelStart - COLUMN_SPACING, 0,
+							SELECT_WIDTH[j], BorderWidth, SelectEdgeCol);
 					if (Row == m_selection.GetRowEnd() && !((f - m_selection.GetFrameEnd()) % GetFrameCount()))
-						pDC->FillSolidRect(SelStart - COLUMN_SPACING, m_iRowHeight - 1, SELECT_WIDTH[j], 1, SelectEdgeCol);
+						pDC->FillSolidRect(SelStart - COLUMN_SPACING, m_iRowHeight - BorderWidth,
+							SELECT_WIDTH[j], BorderWidth, SelectEdgeCol);
 					if (i == m_selection.GetChanStart() && j == m_selection.GetColStart())
-						pDC->FillSolidRect(SelStart - COLUMN_SPACING, 0, 1, m_iRowHeight, SelectEdgeCol);
+						pDC->FillSolidRect(SelStart - COLUMN_SPACING, 0,
+							BorderWidth, m_iRowHeight, SelectEdgeCol);
 					if (i == m_selection.GetChanEnd() && j == m_selection.GetColEnd())
-						pDC->FillSolidRect(SelStart - COLUMN_SPACING + SELECT_WIDTH[j] - 1, 0, 1, m_iRowHeight, SelectEdgeCol);
+						pDC->FillSolidRect(SelStart - COLUMN_SPACING + SELECT_WIDTH[j] - BorderWidth, 0,
+							BorderWidth, m_iRowHeight, SelectEdgeCol);
 				}
 			}
 
@@ -3742,35 +3748,45 @@ int CPatternEditor::GetSelectionSize() const		// // //
 
 sel_condition_t CPatternEditor::GetSelectionCondition() const		// // //
 {
-	bool Used[MAX_PATTERN];
+	const int Track = GetSelectedTrack();
+	const int Frames = GetFrameCount();
+	unsigned char Lo[MAX_PATTERN], Hi[MAX_PATTERN];
+
 	for (int c = m_selection.GetChanStart(); c <= m_selection.GetChanEnd(); c++) {
-		memset(Used, false, MAX_PATTERN * sizeof(bool));
+		memset(Lo, 255, MAX_PATTERN);
+		memset(Hi, 0, MAX_PATTERN);
+
 		for (int i = m_selection.GetFrameStart(); i <= m_selection.GetFrameEnd(); i++) {
-			int Pattern = m_pDocument->GetPatternAtFrame(GetSelectedTrack(), i, c);
-			if (Used[Pattern])
-				return SEL_REPEATED_PATTERN;
-			Used[Pattern] = true;
+			int Pattern = m_pDocument->GetPatternAtFrame(Track, (i + Frames) % Frames, c);
+			int RBegin = (i == m_selection.GetFrameStart()) ? m_selection.GetRowStart() : 0;
+			int REnd = (i == m_selection.GetFrameEnd()) ? m_selection.GetRowEnd() : GetCurrentPatternLength(i) - 1;
+			if (Lo[Pattern] <= Hi[Pattern] && RBegin <= Hi[Pattern] && REnd >= Lo[Pattern])
+				return SEL_REPEATED_ROW;
+			Lo[Pattern] = std::min(Lo[Pattern], static_cast<unsigned char>(RBegin));
+			Hi[Pattern] = std::max(Hi[Pattern], static_cast<unsigned char>(REnd));
 		}
+
+
 	}
 
-	if (/*!theApp.GetSettings()->General.bShowSkippedRows*/ true) {
+	if (!theApp.GetSettings()->General.bShowSkippedRows) {
 		CPatternIterator it = GetStartIterator();
 		const CPatternIterator End = GetEndIterator();
 		stChanNote Note;
 		for (; it <= End; it++) {
-			bool HasSkip = false;
-			for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); i++) {
+			// bool HasSkip = false;
+			for (int i = 0; i <= GetChannelCount(); i++) {
 				it.Get(i, &Note);
-				for (unsigned int c = 0; c <= m_pDocument->GetEffColumns(GetSelectedTrack(), i); c++) switch (Note.EffNumber[c]) {
+				for (unsigned int c = 0; c <= m_pDocument->GetEffColumns(Track, i); c++) switch (Note.EffNumber[c]) {
 				case EF_JUMP: case EF_SKIP: case EF_HALT:
 					if (m_selection.IsColumnSelected(COLUMN_EFF1 + c, i))
 						return (it == End) ? SEL_TERMINAL_SKIP : SEL_NONTERMINAL_SKIP;
-					else if (it != End)
-						HasSkip = true;
+					/*else if (it != End)
+						HasSkip = true;*/
 				}
 			}
-			if (HasSkip)
-				return SEL_UNKNOWN_SIZE;
+			/*if (HasSkip)
+				return SEL_UNKNOWN_SIZE SEL_CLEAN;*/
 		}
 	}
 

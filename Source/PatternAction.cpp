@@ -637,6 +637,7 @@ bool CPatternAction::SaveState(CMainFrame *pMainFrm)
 	m_bSelecting = pPatternEditor->IsSelecting();
 	m_selection = pPatternEditor->GetSelection();
 	m_iSelectionSize = pPatternEditor->GetSelectionSize();		// // //
+	sel_condition_t Cond = pPatternEditor->GetSelectionCondition();		// // //
 
 	// Save old state
 	switch (m_iAction) {

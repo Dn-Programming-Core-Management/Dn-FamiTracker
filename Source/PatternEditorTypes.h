@@ -63,8 +63,8 @@ enum paste_pos_t : unsigned int {
 // // // Selection condition
 enum sel_condition_t {
 	SEL_CLEAN,				// safe for operations
-	SEL_REPEATED_PATTERN,	// same pattern included in multiple frames
-	SEL_UNKNOWN_SIZE,		// skip effect outside selection
+	SEL_REPEATED_ROW,		// same row included in multiple frames
+	// SEL_UNKNOWN_SIZE,	// skip effect outside selection, unused
 	SEL_NONTERMINAL_SKIP,	// skip effect on non-terminal row
 	SEL_TERMINAL_SKIP		// skip effect on last row
 };
