@@ -394,12 +394,7 @@ static bool ImportCellText(
 	unsigned int row,
 	CString& sResult)
 {
-	stChanNote Cell;
-
-	// empty Cell
-	::memset(&Cell, 0, sizeof(Cell));
-	Cell.Instrument = MAX_INSTRUMENTS;
-	Cell.Vol = 0x10;
+	stChanNote Cell = BLANK_NOTE;		// // //
 
 	CString sNote = t.ReadToken();
 	if      (sNote == _T("...")) { Cell.Note = 0; }

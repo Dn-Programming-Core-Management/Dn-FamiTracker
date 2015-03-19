@@ -120,18 +120,8 @@ void CPatternData::AllocatePattern(unsigned int Channel, unsigned int Pattern)
 	m_pPatternData[Channel][Pattern] = new stChanNote[MAX_PATTERN_LENGTH];
 
 	// Clear memory
-	for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
-		stChanNote *pNote = m_pPatternData[Channel][Pattern] + i;
-		pNote->Note		  = 0;
-		pNote->Octave	  = 0;
-		pNote->Instrument = MAX_INSTRUMENTS;
-		pNote->Vol		  = MAX_VOLUME;
-
-		for (int n = 0; n < MAX_EFFECT_COLUMNS; ++n) {
-			pNote->EffNumber[n] = 0;
-			pNote->EffParam[n] = 0;
-		}
-	}
+	for (int i = 0; i < MAX_PATTERN_LENGTH; ++i)
+		*(m_pPatternData[Channel][Pattern] + i) = BLANK_NOTE;		// // //
 }
 
 void CPatternData::ClearEverything()

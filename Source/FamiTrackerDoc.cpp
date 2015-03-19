@@ -3929,17 +3929,7 @@ bool CFamiTrackerDoc::ClearRow(unsigned int Track, unsigned int Frame, unsigned 
 
 	CPatternData *pTrack = GetTrack(Track);
 	int Pattern = pTrack->GetFramePattern(Frame, Channel);
-	stChanNote *pNote = pTrack->GetPatternData(Channel, Pattern, Row);
-
-	pNote->Note = 0;
-	pNote->Octave = 0;
-	pNote->Instrument = MAX_INSTRUMENTS;
-	pNote->Vol = MAX_VOLUME;
-
-	for (int i = 0; i < MAX_EFFECT_COLUMNS; ++i) {
-		pNote->EffNumber[i] = EF_NONE;
-		pNote->EffParam[i] = 0;
-	}
+	*pTrack->GetPatternData(Channel, Pattern, Row) = BLANK_NOTE;		// // //
 	
 	SetModifiedFlag();
 
@@ -5399,10 +5389,8 @@ void CFamiTrackerDoc::MakeKraid()			// // // Easter Egg
 
 	// Triangle
 	stChanNote* kraidRow = new stChanNote;
-	kraidRow->Vol = MAX_VOLUME;
+	*kraidRow = BLANK_NOTE;
 	kraidRow->Instrument = 2;
-	for (int i = 0; i < MAX_EFFECT_COLUMNS; i++) {
-		kraidRow->EffNumber[i] = EF_NONE;  kraidRow->EffParam[i] = 0;}
 	for (int i = 0; i < 24; i += 6) {
 		kraidRow->Note = E; kraidRow->Octave = 2; SetDataAtPattern(0, 0, 2, i    , kraidRow);
 		                    kraidRow->Octave = 3; SetDataAtPattern(0, 0, 2, i + 2, kraidRow);}

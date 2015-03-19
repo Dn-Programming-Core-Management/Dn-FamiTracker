@@ -472,17 +472,10 @@ bool CFindDlg::GetSimpleReplaceTerm(searchTerm &Term)
 replaceTerm CFindDlg::toReplace(const searchTerm x)
 {
 	replaceTerm Term;
-	Term.Note.Note = x.Note->Current->Min;
-	Term.Note.Octave = x.Oct->Current->Min;
-	Term.Note.Instrument = x.Inst->Current->Min;
-	Term.Note.Vol = x.Vol->Current->Min;
+	Term.Note = BLANK_NOTE;
 	Term.rowOffset = x.rowOffset;
 	Term.colOffset = x.colOffset;
 	Term.NoiseChan = x.NoiseChan;
-	for (int i = 0; i < 4; i++) {
-		Term.Note.EffNumber[i] = x.EffNumber[i]->Current->Min;
-		Term.Note.EffParam[i] = x.EffParam[i]->Current->Min;
-	}
 	for (int i = 0; i < 6; i++) {
 		Term.Definite[i] = x.Definite[i];
 	}
@@ -613,7 +606,7 @@ bool CFindDlg::Replace(bool CanUndo)
 	m_pDocument = static_cast<CFamiTrackerDoc*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveDocument());
 	m_pView = static_cast<CFamiTrackerView*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveView());
 	searchTerm Term2;
-	replaceTerm Term;
+	replaceTerm Term = {};
 	stChanNote Target;
 	bool bReplaced = false;
 	int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
