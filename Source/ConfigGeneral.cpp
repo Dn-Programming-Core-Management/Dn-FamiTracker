@@ -45,7 +45,8 @@ const CString CConfigGeneral::CONFIG_STR[] = {
 	_T("Cut sub-volume"),
 	_T("Use old FDS volume table"),
 	_T("Retrieve channel state"),
-	_T("Overflow paste mode")
+	_T("Overflow paste mode"),
+	_T("Show skipped rows")
 };
 
 const CString CConfigGeneral::CONFIG_DESC[] = {

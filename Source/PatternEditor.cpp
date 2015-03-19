@@ -3730,7 +3730,7 @@ int CPatternEditor::GetCurrentPatternLength(int Frame) const		// // //
 	const int Channels = GetChannelCount();
 	const int PatternLength = m_pDocument->GetPatternLength(Track);	// default length
 
-	if (!theApp.GetSettings()->General.bFramePreview)
+	if (theApp.GetSettings()->General.bShowSkippedRows)		// // //
 		return PatternLength;
 	else {		// // //
 		Frame %= GetFrameCount();
