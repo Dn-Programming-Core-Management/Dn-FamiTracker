@@ -661,8 +661,6 @@
 #define ID_EDIT_EXPANDPATTERN           33041
 #define ID_EDIT_SHRINKPATTERN           33042
 #define ID_EDIT_EXPANDPATTERN33043      33043
-#define ID_EDIT_SHRINKPATTERN33044      33044
-#define ID_Menu33045                    33045
 #define ID_FILE_IMPORT                  33046
 #define ID_MODULE_FRAME_INSERT          33047
 #define ID_MODULE_FRAME_REMOVE          33048
@@ -692,15 +690,10 @@
 #define ID_FRAMEEDITOR_TOP              33081
 #define ID_FRAMEEDITOR_LEFT             33082
 #define ID_POPUP_TRANSPOSE              33083
-#define ID_TRANSPOSE_INCREASENOTE33084  33084
-#define ID_TRANSPOSE_DECREASENOTE33085  33085
-#define ID_TRANSPOSE_INCRESAEOCTAVE     33086
-#define ID_TRANSPOSE_DECREASEOCTAVE33087 33087
 #define ID_TRANSOSE_INCREASEOCTAVE      33088
 #define ID_TRACKER_PLAYFROMCURSOR       33089
 #define ID_TOGGLE_SPEED                 33092
 #define ID_POPUP_COPYVOLUMEVALUES       33097
-#define ID_Menu33098                    33098
 #define ID_FRAME_CUT                    33099
 #define ID_FILE_TESTTEST                33100
 #define ID_FRAME_DELETE                 33101
@@ -711,11 +704,9 @@
 #define ID_POPUP_SAMPLESCOPE1           33108
 #define ID_EDIT_VOLUMEMASK              33111
 #define ID_POPUP_HIDECHANNEL            33112
-#define ID_EDIT_PASTE33113              33113
 #define ID_EDIT_PASTEMIXED              33114
 #define ID_FRAME_PASTEASNEWPA           33115
 #define ID_FRAME_PASTENEWPATTERNS       33116
-#define ID_POPUP_DELETE33117            33117
 #define ID_POPUP_TRIM                   33118
 #define ID_POPUP_PLAY                   33119
 #define ID_INSTRUMENT_SAVETOFILE        33120
@@ -732,7 +723,6 @@
 #define ID_MODULE_DETUNE                33136
 #define ID_MODULE_GROOVE                33137
 #define ID_EDIT_FIND_NEXT               33138
-#define ID_EDIT_FIND33136               33139
 #define ID_EDIT_NEXTRESULT              33140
 #define ID_FILE_EXPORTROWS              33141
 #define ID_MODULE_DUPLICATECURRENTPATTERN 33142
