@@ -122,6 +122,7 @@ public:
 		bool	bFDSOldVolume;
 		bool	bRetrieveChanState;
 		bool	bOverflowPaste;
+		bool	bShowSkippedRows;
 	} General;
 
 	struct {

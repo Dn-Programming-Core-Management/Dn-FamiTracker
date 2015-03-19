@@ -22,7 +22,7 @@
 
 #pragma once
 
-#define SETTINGS_BOOL_COUNT 19
+#define SETTINGS_BOOL_COUNT 20		// // //
 
 // CConfigGeneral dialog
 
@@ -59,6 +59,7 @@ protected:
 	bool	m_bFDSOldVolume;
 	bool	m_bRetrieveChanState;
 	bool	m_bOverflowPaste;
+	bool	m_bShowSkippedRows;
 
 	int		m_iEditStyle;
 	int		m_iPageStepSize;

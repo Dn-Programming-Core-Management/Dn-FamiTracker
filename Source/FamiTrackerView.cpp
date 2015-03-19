@@ -51,6 +51,7 @@
 const TCHAR CFamiTrackerView::CLIPBOARD_ID[] = _T("FamiTracker Pattern");
 
 // Effect texts (TODO update this list)
+// 0CC: add verbose description as in modplug
 const CString EFFECT_TEXTS[] = {		// // //
 	_T("Fxx - Set speed to XX, cancels groove"),
 	_T("Fxx - Set tempo to XX"),
@@ -859,6 +860,14 @@ void CFamiTrackerView::OnEditCopy()
 
 	if (!Clipboard.IsOpened()) {
 		AfxMessageBox(IDS_CLIPBOARD_OPEN_ERROR);
+		return;
+	}
+
+	if (m_pPatternEditor->GetSelectionCondition() == SEL_NONTERMINAL_SKIP) {		// // //
+		CMainFrame *pMainFrm = static_cast<CMainFrame*>(GetParentFrame());
+		ASSERT_VALID(pMainFrm);
+		MessageBeep(MB_ICONWARNING);
+		pMainFrm->SetMessageText(IDS_SEL_NONTERMINAL_SKIP);
 		return;
 	}
 	

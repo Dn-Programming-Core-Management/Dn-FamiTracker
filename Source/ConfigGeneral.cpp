@@ -67,7 +67,8 @@ const CString CConfigGeneral::CONFIG_DESC[] = {
 	_T("Always silent volume values below 1 caused by the Axy or 7xy effects."),
 	_T("Use the existing volume table for the FDS channel which has higher precision than in exported NSFs."),
 	_T("Reconstruct the current channel's state from previous frames upon playing (except when playing one row)."),
-	_T("Move pasted pattern data outside the rows of the current frame to subsequent frames.")
+	_T("Move pasted pattern data outside the rows of the current frame to subsequent frames."),
+	_T("Display rows that are truncated by Bxx, Cxx, or Dxx effects.")
 };
 
 // CConfigGeneral dialog
@@ -139,11 +140,13 @@ BOOL CConfigGeneral::OnApply()
 	theApp.GetSettings()->General.bSingleInstance	= m_bSingleInstance;
 	theApp.GetSettings()->General.bPreviewFullRow	= m_bPreviewFullRow;
 	theApp.GetSettings()->General.bDblClickSelect	= m_bDisableDblClick;
-	theApp.GetSettings()->General.bWrapPatternValue	= m_bWrapPatternValue;		// // //
+	// // //
+	theApp.GetSettings()->General.bWrapPatternValue	= m_bWrapPatternValue;
 	theApp.GetSettings()->General.bCutVolume		= m_bCutVolume;
 	theApp.GetSettings()->General.bFDSOldVolume		= m_bFDSOldVolume;
 	theApp.GetSettings()->General.bRetrieveChanState = m_bRetrieveChanState;
 	theApp.GetSettings()->General.bOverflowPaste	= m_bOverflowPaste;
+	theApp.GetSettings()->General.bShowSkippedRows	= m_bShowSkippedRows;
 
 	theApp.GetSettings()->Keys.iKeyNoteCut			= m_iKeyNoteCut;
 	theApp.GetSettings()->Keys.iKeyNoteRelease		= m_iKeyNoteRelease;
@@ -176,11 +179,13 @@ BOOL CConfigGeneral::OnInitDialog()
 	m_bSingleInstance	= theApp.GetSettings()->General.bSingleInstance;
 	m_bPreviewFullRow	= theApp.GetSettings()->General.bPreviewFullRow;
 	m_bDisableDblClick	= theApp.GetSettings()->General.bDblClickSelect;
-	m_bWrapPatternValue = theApp.GetSettings()->General.bWrapPatternValue;		// // //
+	// // //
+	m_bWrapPatternValue = theApp.GetSettings()->General.bWrapPatternValue;
 	m_bCutVolume		= theApp.GetSettings()->General.bCutVolume;
 	m_bFDSOldVolume		= theApp.GetSettings()->General.bFDSOldVolume;
 	m_bRetrieveChanState = theApp.GetSettings()->General.bRetrieveChanState;
 	m_bOverflowPaste	= theApp.GetSettings()->General.bOverflowPaste;
+	m_bShowSkippedRows	= theApp.GetSettings()->General.bShowSkippedRows;
 
 	m_iKeyNoteCut		= theApp.GetSettings()->Keys.iKeyNoteCut; 
 	m_iKeyNoteRelease	= theApp.GetSettings()->Keys.iKeyNoteRelease; 
@@ -234,7 +239,8 @@ BOOL CConfigGeneral::OnInitDialog()
 		m_bCutVolume,
 		m_bFDSOldVolume,
 		m_bRetrieveChanState,
-		m_bOverflowPaste
+		m_bOverflowPaste,
+		m_bShowSkippedRows
 	};
 
 	CListCtrl *pList = static_cast<CListCtrl*>(GetDlgItem(IDC_CONFIG_LIST));
@@ -294,7 +300,8 @@ void CConfigGeneral::OnLvnItemchangedConfigList(NMHDR *pNMHDR, LRESULT *pResult)
 		&m_bCutVolume,
 		&m_bFDSOldVolume,
 		&m_bRetrieveChanState,
-		&m_bOverflowPaste
+		&m_bOverflowPaste,
+		&m_bShowSkippedRows
 	};
 	
 	if (pNMLV->uChanged & LVIF_STATE) {
