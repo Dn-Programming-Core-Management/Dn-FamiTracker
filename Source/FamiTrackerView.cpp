@@ -2426,9 +2426,9 @@ bool CFamiTrackerView::EditInstrumentColumn(stChanNote &Note, int Key, bool &Ste
 			StepDown = true;
 			break;
 		case EDIT_STYLE_MPT: // MPT
-			if (Note.Instrument == (MAX_INSTRUMENTS - 1))
-				Note.Instrument = 0;
 			Note.Instrument = ((Note.Instrument & 0x0F) << 4) | Value & 0x0F;
+			if (Note.Instrument >= MAX_INSTRUMENTS)		// // //
+				Note.Instrument &= 0x0F;
 			break;
 		case EDIT_STYLE_IT: // IT
 			Note.Instrument = (Note.Instrument & Mask) | (Value << Shift);
