@@ -452,7 +452,7 @@ void CInstrumentEditDlg::SwitchOffNote(bool ForceHalt)
 
 	int Channel = pView->GetSelectedChannel();
 
-	memset(&NoteData, 0, sizeof(stChanNote));
+	NoteData = BLANK_NOTE;		// // //
 
 	NoteData.Note			= (pView->DoRelease() && !ForceHalt) ? RELEASE : HALT;
 	NoteData.Vol			= 0x10;

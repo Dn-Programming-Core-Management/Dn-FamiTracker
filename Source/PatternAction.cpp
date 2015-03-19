@@ -254,7 +254,7 @@ void CPatternAction::StretchPattern(CFamiTrackerDoc *pDoc) const		// // //
 	const CPatternIterator End = GetEndIterator();
 	const int ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());		// // //
 	const int ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
-	stChanNote Target = {}, Source = {};
+	stChanNote Target, Source;
 	
 	int Pos = 0;
 	int Offset = 0;
@@ -262,11 +262,8 @@ void CPatternAction::StretchPattern(CFamiTrackerDoc *pDoc) const		// // //
 		for (int i = 0; i <= m_selection.GetChanEnd() - m_selection.GetChanStart(); ++i) {
 			if (Offset < m_iSelectionSize && m_iStretchMap[Pos] > 0)
 				Source = *(m_pUndoClipData->GetPattern(i, Offset));
-			else {
-				memset(&Source, 0, sizeof(stChanNote));
-				Source.Instrument = MAX_INSTRUMENTS;
-				Source.Vol = MAX_VOLUME;
-			}
+			else 
+				Source = BLANK_NOTE;		// // //
 			it.Get(i + m_selection.GetChanStart(), &Target);
 			CopyNoteSection(&Target, &Source, PASTE_DEFAULT, i == 0 ? ColStart : COLUMN_NOTE,
 				i == m_selection.GetChanEnd() - m_selection.GetChanStart() ? ColEnd : COLUMN_EFF4);
@@ -454,7 +451,7 @@ void CPatternAction::Reverse(CFamiTrackerDoc *pDoc) const
 	CPatternIterator ite = GetEndIterator();
 	const int ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());
 	const int ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
-	stChanNote NoteBegin, NoteEnd, Temp = {};
+	stChanNote NoteBegin, NoteEnd, Temp;
 	
 	while (itb < ite) {
 		for (int c = m_selection.GetChanStart(); c <= m_selection.GetChanEnd(); ++c) {
@@ -580,9 +577,7 @@ void CPatternAction::DeleteSelection(CFamiTrackerDoc *pDoc) const
 	const int ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());		// // //
 	const int ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
 
-	stChanNote NoteData, Blank = {};		// // //
-	Blank.Instrument = MAX_INSTRUMENTS;
-	Blank.Vol = MAX_VOLUME;
+	stChanNote NoteData, Blank = BLANK_NOTE;		// // //
 
 	do {
 		for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); ++i) {

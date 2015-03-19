@@ -2313,7 +2313,7 @@ bool CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile)
 			ASSERT_FILE_DATA(Row < MAX_PATTERN_LENGTH);
 
 			stChanNote *Note = pTrack->GetPatternData(Channel, Pattern, Row);
-			memset(Note, 0, sizeof(stChanNote));
+			*Note = BLANK_NOTE;		// // //
 
 			Note->Note		 = pDocFile->GetBlockChar();
 			Note->Octave	 = pDocFile->GetBlockChar();
@@ -3824,17 +3824,7 @@ bool CFamiTrackerDoc::InsertRow(unsigned int Track, unsigned int Frame, unsigned
 	CPatternData *pTrack = GetTrack(Track);
 	int Pattern = pTrack->GetFramePattern(Frame, Channel);
 	int PatternLen = pTrack->GetPatternLength();
-	stChanNote Note;
-
-	for (int n = 0; n < MAX_EFFECT_COLUMNS; n++) {
-		Note.EffNumber[n] = 0;
-		Note.EffParam[n] = 0;
-	}
-
-	Note.Note		= 0;
-	Note.Octave		= 0;
-	Note.Instrument	= MAX_INSTRUMENTS;
-	Note.Vol		= MAX_VOLUME;
+	stChanNote Note = BLANK_NOTE;		// // //
 
 	for (unsigned int i = PatternLen - 1; i > Row; i--) {
 		memcpy(
@@ -4021,17 +4011,7 @@ bool CFamiTrackerDoc::RemoveNote(unsigned int Track, unsigned int Frame, unsigne
 
 	CPatternData *pTrack = GetTrack(Track);
 	int Pattern = pTrack->GetFramePattern(Frame, Channel);
-	stChanNote Note;
-
-	for (int n = 0; n < MAX_EFFECT_COLUMNS; n++) {
-		Note.EffNumber[n] = 0;
-		Note.EffParam[n] = 0;
-	}
-
-	Note.Note = 0;
-	Note.Octave = 0;
-	Note.Instrument = MAX_INSTRUMENTS;
-	Note.Vol = MAX_VOLUME;
+	stChanNote Note = BLANK_NOTE;		// // //
 
 	unsigned int PatternLen = pTrack->GetPatternLength();
 

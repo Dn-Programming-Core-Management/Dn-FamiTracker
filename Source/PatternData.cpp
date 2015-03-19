@@ -184,7 +184,7 @@ unsigned int CPatternData::GetFirstRowHighlight() const
 	return m_iRowHighlight2;
 }
 
-void CPatternData::CopyChannel(unsigned int Target, unsigned int Source)
+void CPatternData::CopyChannel(unsigned int Target, unsigned int Source)		// // //
 {
 	if (Source == Target) return;
 	SetEffectColumnCount(Target, GetEffectColumnCount(Source));
@@ -198,9 +198,7 @@ void CPatternData::CopyChannel(unsigned int Target, unsigned int Source)
 			stChanNote *s = GetPatternData(Source, i, j);
 			stChanNote *t = GetPatternData(Target, i, j);
 			memcpy(t, s, sizeof(stChanNote));
-			memset(s, 0, sizeof(stChanNote));
-			s->Vol = MAX_VOLUME;
-			s->Instrument = MAX_INSTRUMENTS;
+			*s = BLANK_NOTE;		// // //
 		}
 	}
 }

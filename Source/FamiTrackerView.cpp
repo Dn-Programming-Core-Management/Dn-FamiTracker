@@ -1871,9 +1871,7 @@ void CFamiTrackerView::InsertNote(int Note, int Octave, int Channel, int Velocit
 void CFamiTrackerView::PlayNote(unsigned int Channel, unsigned int Note, unsigned int Octave, unsigned int Velocity)
 {
 	// Play a note in a channel
-	stChanNote NoteData;
-
-	memset(&NoteData, 0, sizeof(stChanNote));
+	stChanNote NoteData = BLANK_NOTE;		// // //
 
 	NoteData.Note		= Note;
 	NoteData.Octave		= Octave;
@@ -1907,11 +1905,9 @@ void CFamiTrackerView::PlayNote(unsigned int Channel, unsigned int Note, unsigne
 void CFamiTrackerView::ReleaseNote(unsigned int Channel)
 {
 	// Releases a channel
-	stChanNote NoteData;
-	memset(&NoteData, 0, sizeof(stChanNote));
+	stChanNote NoteData = BLANK_NOTE;		// // //
 
 	NoteData.Note = RELEASE;
-	NoteData.Vol = MAX_VOLUME;
 	NoteData.Instrument = GetInstrument();
 
 	theApp.GetSoundGenerator()->QueueNote(Channel, NoteData, NOTE_PRIO_2);
@@ -1930,11 +1926,9 @@ void CFamiTrackerView::ReleaseNote(unsigned int Channel)
 void CFamiTrackerView::HaltNote(unsigned int Channel)
 {
 	// Halts a channel
-	stChanNote NoteData;
-	memset(&NoteData, 0, sizeof(stChanNote));
+	stChanNote NoteData = BLANK_NOTE;		// // //
 
 	NoteData.Note = HALT;
-	NoteData.Vol = MAX_VOLUME;
 	NoteData.Instrument = GetInstrument();
 
 	theApp.GetSoundGenerator()->QueueNote(Channel, NoteData, NOTE_PRIO_2);
@@ -1952,11 +1946,9 @@ void CFamiTrackerView::HaltNote(unsigned int Channel)
 void CFamiTrackerView::HaltNoteSingle(unsigned int Channel)
 {
 	// Halts one single channel only
-	stChanNote NoteData;
-	memset(&NoteData, 0, sizeof(stChanNote));
+	stChanNote NoteData = BLANK_NOTE;		// // //
 
 	NoteData.Note = HALT;
-	NoteData.Vol = MAX_VOLUME;
 	NoteData.Instrument = GetInstrument();
 
 	theApp.GetSoundGenerator()->QueueNote(Channel, NoteData, NOTE_PRIO_2);

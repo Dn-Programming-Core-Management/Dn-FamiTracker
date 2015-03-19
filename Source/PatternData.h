@@ -33,6 +33,8 @@ struct stChanNote {
 	unsigned char EffParam[MAX_EFFECT_COLUMNS];
 };
 
+const stChanNote BLANK_NOTE = {NONE, 0, MAX_VOLUME, MAX_INSTRUMENTS, {EF_NONE, EF_NONE, EF_NONE, EF_NONE}, {0, 0, 0, 0}}; // // //
+
 // TODO rename to CTrack perhaps?
 
 // CPatternData holds all notes in the patterns
