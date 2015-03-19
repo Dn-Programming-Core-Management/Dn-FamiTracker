@@ -218,6 +218,7 @@ CPatternEditor::CPatternEditor() :
 	m_bCompactMode(false),		// // //
 	m_iWarpCount(0),		// // //
 	m_iDragBeginWarp(0),		// // //
+	m_iSelectionCondition(SEL_CLEAN),		// // //
 	// Benchmarking
 	m_iRedraws(0),
 	m_iFullRedraws(0),
@@ -2576,6 +2577,7 @@ void CPatternEditor::SetSelectionStart(const CCursorPos &start)
 	Pos.m_iFrame %= GetFrameCount();
 	Pos.m_iFrame += GetFrameCount() * (m_iWarpCount + (Pos.m_iFrame < 0));
 	m_selection.SetStart(Pos);
+	m_iSelectionCondition = GetSelectionCondition();		// // //
 }
 
 void CPatternEditor::SetSelectionEnd(const CCursorPos &end)
@@ -2587,6 +2589,7 @@ void CPatternEditor::SetSelectionEnd(const CCursorPos &end)
 	Pos.m_iFrame %= GetFrameCount();
 	Pos.m_iFrame += GetFrameCount() * (m_iWarpCount + (Pos.m_iFrame < 0));
 	m_selection.SetEnd(Pos);
+	m_iSelectionCondition = GetSelectionCondition();		// // //
 }
 
 void CPatternEditor::UpdateSelection()
@@ -3735,6 +3738,43 @@ int CPatternEditor::GetSelectionSize() const		// // //
 	}
 
 	return Rows;
+}
+
+sel_condition_t CPatternEditor::GetSelectionCondition() const		// // //
+{
+	bool Used[MAX_PATTERN];
+	for (int c = m_selection.GetChanStart(); c <= m_selection.GetChanEnd(); c++) {
+		memset(Used, false, MAX_PATTERN * sizeof(bool));
+		for (int i = m_selection.GetFrameStart(); i <= m_selection.GetFrameEnd(); i++) {
+			int Pattern = m_pDocument->GetPatternAtFrame(GetSelectedTrack(), i, c);
+			if (Used[Pattern])
+				return SEL_REPEATED_PATTERN;
+			Used[Pattern] = true;
+		}
+	}
+
+	if (/*!theApp.GetSettings()->General.bShowSkippedRows*/ true) {
+		CPatternIterator it = GetStartIterator();
+		const CPatternIterator End = GetEndIterator();
+		stChanNote Note;
+		for (; it <= End; it++) {
+			bool HasSkip = false;
+			for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); i++) {
+				it.Get(i, &Note);
+				for (unsigned int c = 0; c <= m_pDocument->GetEffColumns(GetSelectedTrack(), i); c++) switch (Note.EffNumber[c]) {
+				case EF_JUMP: case EF_SKIP: case EF_HALT:
+					if (m_selection.IsColumnSelected(COLUMN_EFF1 + c, i))
+						return (it == End) ? SEL_TERMINAL_SKIP : SEL_NONTERMINAL_SKIP;
+					else if (it != End)
+						HasSkip = true;
+				}
+			}
+			if (HasSkip)
+				return SEL_UNKNOWN_SIZE;
+		}
+	}
+
+	return SEL_CLEAN;
 }
 
 // Other ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -186,6 +186,7 @@ public:
 	static int GetSelectColumn(int Column);
 	bool IsInRange(const CSelection &sel, int Frame, int Row, int Channel, int Column) const;		// // //
 	int GetSelectionSize() const;		// // //
+	sel_condition_t GetSelectionCondition() const;		// // //
 	int GetCurrentPatternLength(int Frame) const;		// // // allow negative frames
 
 	// Private methods
@@ -372,6 +373,7 @@ private:
 	bool	m_bFullRowSelect;		// Enable full row selection
 	int		m_iWarpCount;			// // //
 	int		m_iDragBeginWarp;		// // //
+	sel_condition_t m_iSelectionCondition;		// // //
 
 	// Mouse
 	bool	m_bMouseActive;			// Indicates that mouse activity is in progess by the user
