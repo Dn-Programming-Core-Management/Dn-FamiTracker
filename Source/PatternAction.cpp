@@ -299,20 +299,21 @@ void CPatternAction::Transpose(CFamiTrackerDoc *pDoc) const
 {
 	CPatternIterator it = GetStartIterator();		// // //
 	const CPatternIterator End = GetEndIterator();
-	stChanNote Note;
 	int ChanStart = m_selection.GetChanStart();
 	int ChanEnd	= m_selection.GetChanEnd();
+	stChanNote Note;
 
 	if (!m_bSelecting) {
 		ChanStart = m_iUndoChannel;
 		ChanEnd = m_iUndoChannel;
 	}
 
+	int Row = 0;		// // //
 	do {
 		for (int i = ChanStart; i <= ChanEnd; ++i) {
 			if (!m_selection.IsColumnSelected(COLUMN_NOTE, i))
 				continue;
-			it.Get(i, &Note);
+			Note = *(m_pUndoClipData->GetPattern(i - ChanStart, Row));		// // //
 			if (Note.Note == NONE || Note.Note == HALT || Note.Note == RELEASE)
 				continue;
 			switch (m_iTransposeMode) {
@@ -347,6 +348,7 @@ void CPatternAction::Transpose(CFamiTrackerDoc *pDoc) const
 			}
 			it.Set(i, &Note);
 		}
+		Row++;
 	} while (++it <= End);
 }
 
@@ -472,95 +474,91 @@ void CPatternAction::ScrollValues(CFamiTrackerDoc *pDoc) const
 	const CPatternIterator End = GetEndIterator();
 	stChanNote Note;
 
-	int ChanStart = m_selection.GetChanStart();
-	int ChanEnd = m_selection.GetChanEnd();
-	int ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());
-	int ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
-	if (!m_bSelecting) {
-		ChanStart = m_iUndoChannel;
-		ChanEnd = m_iUndoChannel;
-		ColStart = CPatternEditor::GetSelectColumn(m_iUndoColumn);
-		ColEnd = CPatternEditor::GetSelectColumn(m_iUndoColumn);
-	}
+	int ChanStart	= m_bSelecting ? m_selection.GetChanStart() : m_iUndoChannel;
+	int ChanEnd		= m_bSelecting ? m_selection.GetChanEnd() : m_iUndoChannel;
+	int ColStart	= CPatternEditor::GetSelectColumn(m_bSelecting ? m_selection.GetColStart() : m_iUndoColumn);
+	int ColEnd		= CPatternEditor::GetSelectColumn(m_bSelecting ? m_selection.GetColEnd() : m_iUndoColumn);
 
-	bool bWarp = theApp.GetSettings()->General.bWrapPatternValue;		// // //
-	bool bSingular = (it == End) && (ChanStart == ChanEnd) && (ColStart == ColEnd);		// // //
+	bool bWarp = theApp.GetSettings()->General.bWrapPatternValue;
+	bool bSingular = (it == End) && (ChanStart == ChanEnd) && (ColStart == ColEnd);
 	
+	int Row = 0;
 	do {
 		for (int i = ChanStart; i <= ChanEnd; ++i) {
+			Note = *(m_pUndoClipData->GetPattern(i - ChanStart, Row));		// // //
 			for (int k = 1; k < COLUMNS; ++k) {
 				if (i == ChanStart && k < ColStart)
 					continue;
 				if (i == ChanEnd && k > ColEnd)
 					continue;
-				it.Get(i, &Note);
 				switch (k) {
-					case COLUMN_INSTRUMENT:
-						if (Note.Instrument != MAX_INSTRUMENTS) {
-							if (bWarp)		// // //
-								Note.Instrument = (Note.Instrument + m_iScrollValue + MAX_INSTRUMENTS) % MAX_INSTRUMENTS;
-							else if ((m_iScrollValue < 0 && Note.Instrument > 0) || (m_iScrollValue > 0 && Note.Instrument < MAX_INSTRUMENTS - 1))
-								Note.Instrument += m_iScrollValue;
-						}
-						break;
-					case COLUMN_VOLUME:
-						if (Note.Vol != MAX_VOLUME) {
-							if (bWarp)		// // //
-								Note.Vol = (Note.Vol + m_iScrollValue + MAX_VOLUME) % MAX_VOLUME;
-							else if ((m_iScrollValue < 0 && Note.Vol > 0) || (m_iScrollValue > 0 && Note.Vol < 0x0F))
-								Note.Vol += m_iScrollValue;
-						}
-						break;
-					case COLUMN_EFF1:
-					case COLUMN_EFF2:
-					case COLUMN_EFF3:
-					case COLUMN_EFF4:
-						if (Note.EffNumber[k - COLUMN_EFF1] != EF_NONE) {
-							int Type = m_iScrollValue;		// // //
-							if (bSingular) {
-								int Hi = Note.EffParam[k - COLUMN_EFF1] >> 4;
-								int Lo = Note.EffParam[k - COLUMN_EFF1] & 0x0F;
-								switch (Note.EffNumber[k - COLUMN_EFF1]) {
-								case EF_SWEEPUP: case EF_SWEEPDOWN:
-								case EF_ARPEGGIO: case EF_VIBRATO: case EF_TREMOLO:
-								case EF_SLIDE_UP: case EF_SLIDE_DOWN: case EF_VOLUME_SLIDE:
-								case EF_DELAYED_VOLUME: case EF_TRANSPOSE:
-									int CurCol = CFamiTrackerView::GetView()->GetPatternEditor()->GetColumn();
-									if (CurCol % 3 != 2) { // y
-										if (bWarp)
-											Lo = (Lo + Type) & 0x0F;
-										else {
-											Lo += Type;
-											if (Lo > 0x0F) Lo = 0x0F;
-											if (Lo < 0)    Lo = 0;
-										}
+				case COLUMN_INSTRUMENT:
+					if (Note.Instrument != MAX_INSTRUMENTS) {
+						if (bWarp)		// // //
+							Note.Instrument = (Note.Instrument + m_iScrollValue + MAX_INSTRUMENTS) % MAX_INSTRUMENTS;
+						else if ((m_iScrollValue < 0 && Note.Instrument > 0) || (m_iScrollValue > 0 && Note.Instrument < MAX_INSTRUMENTS - 1))
+							Note.Instrument += m_iScrollValue;
+					}
+					break;
+				case COLUMN_VOLUME:
+					if (Note.Vol != MAX_VOLUME) {
+						if (bWarp)		// // //
+							Note.Vol = (Note.Vol + m_iScrollValue + MAX_VOLUME) % MAX_VOLUME;
+						else if ((m_iScrollValue < 0 && Note.Vol > 0) || (m_iScrollValue > 0 && Note.Vol < 0x0F))
+							Note.Vol += m_iScrollValue;
+					}
+					break;
+				case COLUMN_EFF1:
+				case COLUMN_EFF2:
+				case COLUMN_EFF3:
+				case COLUMN_EFF4:
+					if (Note.EffNumber[k - COLUMN_EFF1] != EF_NONE) {
+						int Type = m_iScrollValue;		// // //
+						if (bSingular) {
+							int Hi = Note.EffParam[k - COLUMN_EFF1] >> 4;
+							int Lo = Note.EffParam[k - COLUMN_EFF1] & 0x0F;
+							switch (Note.EffNumber[k - COLUMN_EFF1]) {
+							case EF_SWEEPUP: case EF_SWEEPDOWN:
+							case EF_ARPEGGIO: case EF_VIBRATO: case EF_TREMOLO:
+							case EF_SLIDE_UP: case EF_SLIDE_DOWN: case EF_VOLUME_SLIDE:
+							case EF_DELAYED_VOLUME: case EF_TRANSPOSE:
+								int CurCol = CFamiTrackerView::GetView()->GetPatternEditor()->GetColumn();
+								if (CurCol % 3 != 2) { // y
+									if (bWarp)
+										Lo = (Lo + Type) & 0x0F;
+									else {
+										Lo += Type;
+										if (Lo > 0x0F) Lo = 0x0F;
+										if (Lo < 0)    Lo = 0;
 									}
-									else { // x
-										if (bWarp)
-											Hi = (Hi + Type) & 0x0F;
-										else {
-											Hi += Type;
-											if (Hi > 0x0F) Hi = 0x0F;
-											if (Hi < 0)    Hi = 0;
-										}
-									}
-									Type = 0;
-									Note.EffParam[k - COLUMN_EFF1] = (Hi << 4) | Lo;
 								}
+								else { // x
+									if (bWarp)
+										Hi = (Hi + Type) & 0x0F;
+									else {
+										Hi += Type;
+										if (Hi > 0x0F) Hi = 0x0F;
+										if (Hi < 0)    Hi = 0;
+									}
+								}
+								Type = 0;
+								Note.EffParam[k - COLUMN_EFF1] = (Hi << 4) | Lo;
 							}
-							if (!bWarp) {
-								if (Note.EffParam[k - COLUMN_EFF1] + Type > 0xFF)
-									Type = 0xFF - Note.EffParam[k - COLUMN_EFF1];
-								if (Note.EffParam[k - COLUMN_EFF1] + Type < 0)
-									Type = -Note.EffParam[k - COLUMN_EFF1];
-							}
-							Note.EffParam[k - COLUMN_EFF1] += Type;
 						}
-						break;
+						if (!bWarp) {
+							if (Note.EffParam[k - COLUMN_EFF1] + Type > 0xFF)
+								Type = 0xFF - Note.EffParam[k - COLUMN_EFF1];
+							if (Note.EffParam[k - COLUMN_EFF1] + Type < 0)
+								Type = -Note.EffParam[k - COLUMN_EFF1];
+						}
+						Note.EffParam[k - COLUMN_EFF1] += Type;
+					}
+					break;
 				}
-				it.Set(i, &Note);
 			}
+			it.Set(i, &Note);
 		}
+		Row++;
 	} while (++it <= End);
 }
 

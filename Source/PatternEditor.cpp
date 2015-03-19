@@ -95,47 +95,60 @@ static const unsigned int SELECT_WIDTH[] = {
 
 void CopyNoteSection(stChanNote *Target, stChanNote *Source, paste_mode_t Mode, int Begin, int End)		// // //
 {
-	if (Begin > End) {
-		int Temp = End; End = Begin; Begin = Temp;
-	}
-
-	bool CanOverwrite[7];
+	bool Protected[7] = {};
 	for (int i = 0; i < 7; i++) {
-		int Address = i + (i >= 1); // skip octave byte
-		const unsigned char TByte = *(reinterpret_cast<unsigned char*>(Target) + Address);
-		const unsigned char SByte = *(reinterpret_cast<unsigned char*>(Source) + Address);
+		const unsigned char TByte = *(reinterpret_cast<unsigned char*>(Target) + i + (i >= 1)); // skip octave byte
+		const unsigned char SByte = *(reinterpret_cast<unsigned char*>(Source) + i + (i >= 1));
 		switch (Mode) {
-		case PASTE_DEFAULT: case PASTE_INSERT:
-			CanOverwrite[i] = true;
-			break;
 		case PASTE_MIX:
 			switch (i) {
+			case COLUMN_NOTE:
+				if (TByte != NONE) Protected[i] = true;
+				break;
 			case COLUMN_INSTRUMENT:
-				if (TByte == MAX_INSTRUMENTS) CanOverwrite[i] = true;
+				if (TByte != MAX_INSTRUMENTS) Protected[i] = true;
 				break;
 			case COLUMN_VOLUME:
-				if (TByte == MAX_VOLUME) CanOverwrite[i] = true;
+				if (TByte != MAX_VOLUME) Protected[i] = true;
 				break;
 			default:
-				if (TByte == 0) CanOverwrite[i] = true;
+				if (TByte != EF_NONE) Protected[i] = true;
 			}
-			if (!CanOverwrite[i]) break;
-			else CanOverwrite[i] = false; // continue
+			// continue
 		case PASTE_OVERWRITE:
 			switch (i) {
+			case COLUMN_NOTE:
+				if (SByte == NONE) Protected[i] = true;
+				break;
 			case COLUMN_INSTRUMENT:
-				if (SByte != MAX_INSTRUMENTS) CanOverwrite[i] = true;
+				if (SByte == MAX_INSTRUMENTS) Protected[i] = true;
 				break;
 			case COLUMN_VOLUME:
-				if (SByte != MAX_VOLUME) CanOverwrite[i] = true;
+				if (SByte == MAX_VOLUME) Protected[i] = true;
 				break;
 			default:
-				if (SByte != 0) CanOverwrite[i] = true;
+				if (SByte == EF_NONE) Protected[i] = true;
 			}
 		}
 	}
 
-	for (int i = Begin; i <= End; i++) if (CanOverwrite[i]) switch (i) {
+	if (theApp.GetSettings()->General.iEditStyle == EDIT_STYLE_IT) {
+		switch (Mode) {
+		case PASTE_MIX:
+			if (Target->Note != NONE || Target->Instrument != MAX_INSTRUMENTS || Target->Vol != MAX_VOLUME)
+				Protected[COLUMN_NOTE] = Protected[COLUMN_INSTRUMENT] = Protected[COLUMN_VOLUME] = true;
+			// continue
+		case PASTE_OVERWRITE:
+			if (Source->Note == NONE && Source->Instrument == MAX_INSTRUMENTS && Source->Vol == MAX_VOLUME)
+				Protected[COLUMN_NOTE] = Protected[COLUMN_INSTRUMENT] = Protected[COLUMN_VOLUME] = true;
+		}
+	}
+
+	if (Begin > End) {
+		int Temp = End; End = Begin; Begin = Temp;
+	}
+
+	for (int i = Begin; i <= End; i++) if (!Protected[i]) switch (i) {
 	case COLUMN_NOTE:
 		Target->Note = Source->Note;
 		Target->Octave = Source->Octave;
@@ -3477,68 +3490,31 @@ CPatternClipData *CPatternEditor::CopyEntire() const
 CPatternClipData *CPatternEditor::Copy() const
 {
 	// Copy selection
-
-	const int Track			= GetSelectedTrack();
-	const int ChannelCount	= GetChannelCount();
-	const int FrameCount	= GetFrameCount();		// // //
-	const int Channels		= m_selection.GetChanEnd() - m_selection.GetChanStart() + 1;
-	const int Rows			= GetSelectionSize();		// // //
-	const int FrameBegin	= m_selection.GetFrameStart();
-	const int FrameEnd		= m_selection.GetFrameEnd();
+	CPatternIterator it = GetStartIterator();		// // //
+	const int Channels	= m_selection.GetChanEnd() - m_selection.GetChanStart() + 1;
+	const int Rows		= GetSelectionSize();		// // //
+	const int ColStart	= GetSelectColumn(m_selection.GetColStart());		// // //
+	const int ColEnd	= GetSelectColumn(m_selection.GetColEnd());
+	stChanNote NoteData;
 
 	CPatternClipData *pClipData = new CPatternClipData(Channels, Rows);
-
 	pClipData->ClipInfo.Channels	= Channels;		// // //
-	pClipData->ClipInfo.StartColumn	= GetSelectColumn(m_selection.GetColStart());
-	pClipData->ClipInfo.EndColumn	= GetSelectColumn(m_selection.GetColEnd());
-	pClipData->ClipInfo.Rows		= Rows;		// // //
-
-	int Channel = 0;
-	for (int i = std::max(m_selection.GetChanStart(), 0); i <= std::min(m_selection.GetChanEnd(), ChannelCount - 1); ++i) {
-		int Row = 0;
-		for (int k = FrameBegin; k <= FrameEnd; ++k) {		// // //
-			const int f = k % FrameCount + (k < 0 ? FrameCount : 0);
-			const int PatternLength = GetCurrentPatternLength(f);
-			const int RowBegin = (k == FrameBegin) ? std::max(m_selection.GetRowStart(), 0) : 0;
-			const int RowEnd = (k == FrameEnd) ? std::min(m_selection.GetRowEnd(), PatternLength - 1) : (PatternLength - 1);
-			for (int j = RowBegin; j <= RowEnd; ++j) {
-
-				stChanNote NoteData;
-				m_pDocument->GetNoteData(Track, f, i, j, &NoteData);
-
-				stChanNote *pClipNote = pClipData->GetPattern(Channel, Row);
-
-				if (m_selection.IsColumnSelected(COLUMN_NOTE, i)) {
-					pClipNote->Note = NoteData.Note;
-					pClipNote->Octave = NoteData.Octave;
-				}
-				if (m_selection.IsColumnSelected(COLUMN_INSTRUMENT, i)) {
-					pClipNote->Instrument = NoteData.Instrument;
-				}
-				if (m_selection.IsColumnSelected(COLUMN_VOLUME, i)) {
-					pClipNote->Vol = NoteData.Vol;
-				}
-				if (m_selection.IsColumnSelected(COLUMN_EFF1, i)) {
-					pClipNote->EffNumber[0] = NoteData.EffNumber[0];
-					pClipNote->EffParam[0] = NoteData.EffParam[0];
-				}
-				if (m_selection.IsColumnSelected(COLUMN_EFF2, i)) {
-					pClipNote->EffNumber[1] = NoteData.EffNumber[1];
-					pClipNote->EffParam[1] = NoteData.EffParam[1];
-				}
-				if (m_selection.IsColumnSelected(COLUMN_EFF3, i)) {
-					pClipNote->EffNumber[2] = NoteData.EffNumber[2];
-					pClipNote->EffParam[2] = NoteData.EffParam[2];
-				}
-				if (m_selection.IsColumnSelected(COLUMN_EFF4, i)) {
-					pClipNote->EffNumber[3] = NoteData.EffNumber[3];
-					pClipNote->EffParam[3] = NoteData.EffParam[3];
-				}
-
-				++Row;
-			}
+	pClipData->ClipInfo.Rows		= Rows;
+	pClipData->ClipInfo.StartColumn	= ColStart;
+	pClipData->ClipInfo.EndColumn	= ColEnd;
+	
+	int Channel = 0, Row = 0;
+	for (int r = 0; r < Rows; r++) {		// // //
+		for (int i = 0; i < Channels; ++i) {
+			stChanNote *Target = pClipData->GetPattern(i, r);
+			it.Get(i + m_selection.GetChanStart(), &NoteData);
+			/*CopyNoteSection(Target, &NoteData, PASTE_DEFAULT,
+				i == 0 ? ColStart : COLUMN_NOTE, i == Channels - 1 ? ColEnd : COLUMN_EFF4);*/
+			memcpy(pClipData->GetPattern(i, r), &NoteData, sizeof(stChanNote));
+			// the clip data should store the entire field;
+			// other methods should check ClipInfo.StartColumn and ClipInfo.EndColumn before operating
 		}
-		++Channel;
+		it++;
 	}
 
 	return pClipData;
