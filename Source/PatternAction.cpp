@@ -239,13 +239,30 @@ void CPatternAction::InsertRows(CFamiTrackerDoc *pDoc) const
 
 void CPatternAction::PullUpRows(CFamiTrackerDoc *pDoc) const
 {
-	const int Channels = pDoc->GetAvailableChannels();
-	const int PatternLength = pDoc->GetPatternLength(m_iUndoTrack);
-	for (int i = std::max(m_selection.GetChanStart(), 0); i <= std::min(m_selection.GetChanEnd(), Channels - 1); ++i) {
-		for (int j = std::max(m_selection.GetRowStart(), 0); j <= std::min(m_selection.GetRowEnd(), PatternLength - 1); ++j) {
-			pDoc->PullUp(m_iUndoTrack, m_iUndoFrame, i, m_selection.GetRowStart());
-		}		
-	}	
+	const int ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());		// // //
+	const int ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
+	stChanNote Target, Source;
+	
+	CPatternIterator it = GetStartIterator();		// // //
+	it.m_iFrame = m_iUndoFrame;
+	it.m_iRow = (m_selection.GetFrameStart() < m_iUndoFrame) ? 0 : m_selection.GetRowStart();
+	CPatternIterator front = CPatternIterator(it);
+	front.m_iRow = (m_selection.GetFrameEnd() > m_iUndoFrame) ? pDoc->GetPatternLength(m_iUndoTrack) : m_selection.GetRowEnd() + 1;
+
+	while (it.m_iFrame == m_iUndoFrame) {
+		for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); ++i) {
+			it.Get(i, &Target);
+			if (front.m_iFrame == m_iUndoFrame)
+				front.Get(i, &Source);
+			else
+				Source = BLANK_NOTE;
+			CopyNoteSection(&Target, &Source, PASTE_DEFAULT, (i == m_selection.GetChanStart()) ? ColStart : COLUMN_NOTE,
+				(i == m_selection.GetChanEnd()) ? ColEnd : COLUMN_EFF4);
+			it.Set(i, &Target);
+		}
+		it++;
+		front++;
+	}
 }
 
 void CPatternAction::StretchPattern(CFamiTrackerDoc *pDoc) const		// // //
