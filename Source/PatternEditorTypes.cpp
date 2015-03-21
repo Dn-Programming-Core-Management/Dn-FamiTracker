@@ -259,6 +259,8 @@ CPatternIterator::CPatternIterator(const CPatternIterator &it) :
 {
 	m_iFrame = it.m_iFrame;
 	m_iRow = it.m_iRow;
+	m_iChannel = it.m_iChannel; // init these anyway
+	m_iColumn = it.m_iColumn;
 }
 
 CPatternIterator::CPatternIterator(CPatternEditor *pEditor, unsigned int Track, const CCursorPos &Pos) :
@@ -268,6 +270,8 @@ CPatternIterator::CPatternIterator(CPatternEditor *pEditor, unsigned int Track, 
 {
 	m_iFrame = Pos.m_iFrame;
 	m_iRow = Pos.m_iRow;
+	m_iChannel = Pos.m_iChannel;
+	m_iColumn = Pos.m_iColumn;
 	Warp();
 }
 
@@ -278,6 +282,8 @@ CPatternIterator::CPatternIterator(const CPatternEditor *pEditor, unsigned int T
 {
 	m_iFrame = Pos.m_iFrame;
 	m_iRow = Pos.m_iRow;
+	m_iChannel = Pos.m_iChannel;
+	m_iColumn = Pos.m_iColumn;
 	Warp();
 }
 
@@ -367,8 +373,14 @@ bool CPatternIterator::operator==(const CPatternIterator &other) const
 
 void CPatternIterator::Warp()
 {
-	while (m_iRow >= m_pPatternEditor->GetCurrentPatternLength(m_iFrame))
-		m_iRow -= m_pPatternEditor->GetCurrentPatternLength(m_iFrame++);
+	while (true) {
+		const int Length = m_pPatternEditor->GetCurrentPatternLength(m_iFrame);
+		if (m_iRow >= Length) {
+			m_iRow -= Length;
+			m_iFrame++;
+		}
+		else break;
+	}
 	while (m_iRow < 0)
 		m_iRow += m_pPatternEditor->GetCurrentPatternLength(--m_iFrame);
 	//m_iFrame %= m_pDocument->GetFrameCount(m_iTrack);
