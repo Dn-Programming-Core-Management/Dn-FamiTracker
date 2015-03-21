@@ -854,7 +854,11 @@ void CFamiTrackerView::DrawExportTestProgress()
 
 void CFamiTrackerView::OnEditCopy()
 {
-	bool bShiftPressed = IsShiftPressed();
+	// // // Copy volume values
+	if (IsShiftPressed()) {
+		CopyVolumeColumn();
+		return;
+	}
 
 	CClipboard Clipboard(this, m_iClipboard);
 
@@ -880,11 +884,6 @@ void CFamiTrackerView::OnEditCopy()
 		pClipData->ToMem(hMem);
 		// Set clipboard for internal data, hMem may not be used after this point
 		Clipboard.SetData(hMem);
-	}
-
-	// Copy volume values
-	if (bShiftPressed) {
-		CopyVolumeColumn();
 	}
 }
 

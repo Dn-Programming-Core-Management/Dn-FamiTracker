@@ -4004,22 +4004,30 @@ void CPatternEditor::GetVolumeColumn(CString &str) const
 	// Copy the volume column as text
 
 	const int Track = GetSelectedTrack();
-	const int Channel = m_selection.GetChanStart();
+	const int Channel = m_selection.GetChanStart() + !m_selection.IsColumnSelected(COLUMN_VOLUME, m_selection.GetChanStart()); // // //
+	const CPatternIterator End = GetEndIterator();
+	stChanNote NoteData;
 
 	if (Channel < 0 || Channel >= GetChannelCount())
 		return;
 	
-	str.Empty();
-
-	int vol = 0;
-	for (int i = std::max(m_selection.GetRowStart(), 0); i <= std::min(m_selection.GetRowEnd(), m_iPatternLength); ++i) {
-		stChanNote NoteData;
-		m_pDocument->GetNoteData(Track, m_iCurrentFrame, Channel, i, &NoteData);
-		if (m_selection.IsColumnSelected(COLUMN_VOLUME, Channel)) {
-			if (NoteData.Vol != MAX_VOLUME)
-				vol = NoteData.Vol;
-			str.AppendFormat(_T("%i "), vol);
+	int vol = MAX_VOLUME - 1;		// // //
+	CPatternIterator it = GetStartIterator();
+	do {
+		it--;
+		it.Get(Channel, &NoteData);
+		if (NoteData.Vol != MAX_VOLUME) {
+			vol = NoteData.Vol;
+			break;
 		}
+	} while (it.m_iFrame || it.m_iRow);
+	
+	str.Empty();
+	for (CPatternIterator it = GetStartIterator(); it <= End; it++) {
+		it.Get(Channel, &NoteData);
+		if (NoteData.Vol != MAX_VOLUME)
+			vol = NoteData.Vol;
+		str.AppendFormat(_T("%i "), vol);
 	}
 }
 
