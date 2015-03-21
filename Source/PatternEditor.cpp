@@ -978,27 +978,28 @@ void CPatternEditor::PerformQuickRedraw(CDC *pDC)
 void CPatternEditor::PrintRow(CDC *pDC, int Row, int Line, int Frame) const
 {
 	const int FrameCount = GetFrameCount();		// // //
-
-	// // // preview more than just two frames
-	if (Row >= 0 && Row < m_iPatternLength) {
+	const int rEnd = (theApp.IsPlaying() && m_bFollowMode) ? std::max(m_iPlayRow + 1, m_iPatternLength) : m_iPatternLength;
+	if (Row >= 0 && Row < rEnd) {
 		DrawRow(pDC, Row, Line, Frame, false);
 	}
 	else if (theApp.GetSettings()->General.bFramePreview) {
-		while (Row >= GetCurrentPatternLength(Frame)) {		// // //
-			Row -= GetCurrentPatternLength(Frame);
+		if (Row >= rEnd) { // first frame
+			Row -= rEnd;
 			Frame++;
+		}
+		while (Row >= GetCurrentPatternLength(Frame)) {		// // //
+			Row -= GetCurrentPatternLength(Frame++);
 			/*if (Frame >= FrameCount) {
 				Frame = 0;
 				// if (Row) Row--; else { ClearRow(pDC, Line); return; }
 			}*/
 		}
 		while (Row < 0) {		// // //
-			Frame--;
-			/*if (Frame < 0) {
-				Frame = FrameCount - 1;
+			/*if (Frame <= 0) {
+				Frame = FrameCount;
 				// if (Row != -1) Row++; else { ClearRow(pDC, Line); return; }
 			}*/
-			Row += GetCurrentPatternLength(Frame);
+			Row += GetCurrentPatternLength(--Frame);
 		}
 		DrawRow(pDC, Row, Line, Frame, true);
 	}
