@@ -3195,8 +3195,19 @@ void CPatternEditor::ContinueMouseSelection(const CPoint &point)
 		// Dragging
 		if (abs(m_ptSelStartPoint.x - point.x) > m_iDragThresholdX || abs(m_ptSelStartPoint.y - point.y) > m_iDragThresholdY) {
 			// Initiate OLE drag & drop
+			PointPos = GetCursorAtPoint(m_ptSelStartPoint);		// // //
+			CSelection Original = m_selection;
+			if (m_selection.m_cpEnd < m_selection.m_cpStart) {
+				m_selection.m_cpStart = m_selection.m_cpEnd;
+			}
+			m_selection.m_cpEnd = PointPos;
+			while (m_selection.m_cpEnd < m_selection.m_cpStart)
+				m_selection.m_cpEnd.m_iFrame += FrameCount;
+			while (!GetSelectionSize()) // correction for overlapping selection
+				m_selection.m_cpEnd.m_iFrame -= FrameCount;
 			int ChanOffset = PointPos.m_iChannel - m_selection.GetChanStart();
-			int RowOffset = PointPos.m_iRow - m_selection.GetRowStart();
+			int RowOffset = GetSelectionSize() - 1;
+			m_selection = Original;
 			m_bDragStart = false;
 			m_pView->BeginDragData(ChanOffset, RowOffset);
 		}
@@ -3374,11 +3385,16 @@ void CPatternEditor::DragPaste(const CPatternClipData *pClipData, const CSelecti
 	// Set cursor location
 	m_cpCursorPos = pDragTarget->m_cpStart;
 
-	Paste(pClipData, bMix ? PASTE_MIX : PASTE_DEFAULT, m_pView->GetPastePos());		// // //
+	Paste(pClipData, bMix ? PASTE_MIX : PASTE_DEFAULT, PASTE_DRAG);		// // //
 
 	// Update selection
 	SetSelectionStart(pDragTarget->m_cpStart);
 	SetSelectionEnd(pDragTarget->m_cpEnd);
+	if (pDragTarget->m_cpStart.m_iFrame < 0) {
+		const int Frames = GetFrameCount();
+		m_cpCursorPos.m_iFrame += Frames;
+		m_selection.m_cpStart.m_iFrame -= Frames;
+	}
 	m_bSelectionInvalidated = true;
 }
 
@@ -3547,22 +3563,23 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 	const unsigned int Rows		   = pClipData->ClipInfo.Rows;
 	const unsigned int StartColumn = pClipData->ClipInfo.StartColumn;
 	const unsigned int EndColumn   = pClipData->ClipInfo.EndColumn;
+	
+	bool AtSel = (PastePos == PASTE_SELECTION || PastePos == PASTE_FILL) && m_bSelecting;
+	const int f = AtSel ? m_selection.GetFrameStart() : (PastePos == PASTE_DRAG ? m_selDrag.GetFrameStart() : m_cpCursorPos.m_iFrame);
+	const unsigned int r = AtSel ? m_selection.GetRowStart() : (PastePos == PASTE_DRAG ? m_selDrag.GetRowStart() : m_cpCursorPos.m_iRow);
+	const unsigned int c = AtSel ? m_selection.GetChanStart() : (PastePos == PASTE_DRAG ? m_selDrag.GetChanStart() : m_cpCursorPos.m_iChannel);
+	const unsigned int CEnd = std::min(Channels + c, ChannelCount);
 
-	const unsigned int C = (PastePos != PASTE_CURSOR && m_bSelecting) ? m_selection.GetChanStart() : m_cpCursorPos.m_iChannel;
-	const unsigned int CEnd = std::min(Channels + C, ChannelCount);
-
-	CPatternIterator it = (PastePos == PASTE_CURSOR) ? CPatternIterator(this, Track, m_cpCursorPos) : GetStartIterator();		// // //
+	CPatternIterator it = CPatternIterator(this, Track, CCursorPos(r, c, StartColumn, f));		// // //
 	stChanNote NoteData, Source;
 
-	int f = (PastePos != PASTE_CURSOR && m_bSelecting) ? m_selection.GetFrameStart() : m_iCurrentFrame;
-	const unsigned int r = (PastePos != PASTE_CURSOR && m_bSelecting) ? m_selection.GetRowStart() : m_cpCursorPos.m_iRow;
 	const unsigned int FrameLength = GetCurrentPatternLength(f);
 	if (PasteMode == PASTE_INSERT && r + Rows < FrameLength) {
 		CSelection Current = m_selection;
-		m_selection.SetStart(CCursorPos(r, C, GetCursorStartColumn(StartColumn), m_iCurrentFrame));
-		m_selection.SetEnd(CCursorPos(FrameLength - 1 - Rows, C + Channels - 1, GetCursorEndColumn(EndColumn), m_iCurrentFrame));
+		m_selection.SetStart(CCursorPos(r, c, GetCursorStartColumn(StartColumn), m_iCurrentFrame));
+		m_selection.SetEnd(CCursorPos(FrameLength - 1 - Rows, c + Channels - 1, GetCursorEndColumn(EndColumn), m_iCurrentFrame));
 		CPatternClipData *Shift = Copy();
-		m_selection.SetStart(CCursorPos(r + Rows, C, GetCursorStartColumn(StartColumn), m_iCurrentFrame));
+		m_selection.SetStart(CCursorPos(r + Rows, c, GetCursorStartColumn(StartColumn), m_iCurrentFrame));
 		m_bSelecting = true;
 		Paste(Shift, PASTE_DEFAULT, PASTE_SELECTION);
 		m_bSelecting = false;
@@ -3571,11 +3588,14 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 
 	// Special, single channel and effect columns only
 	if (Channels == 1 && StartColumn >= COLUMN_EFF1) {
+		const unsigned int ColStart = AtSel ? m_selection.GetColStart() :
+			GetSelectColumn(m_cpCursorPos.m_iColumn);
 		for (unsigned int j = 0; j < Rows; ++j) {
-			it.Get(C, &NoteData);
+			it.Get(c, &NoteData);
 			Source = *(pClipData->GetPattern(0, j));
-			for (unsigned int i = StartColumn - COLUMN_EFF1; i < (EndColumn - COLUMN_EFF1 + 1); ++i) {
-				unsigned int Offset = (GetSelectColumn(m_cpCursorPos.m_iColumn) - COLUMN_EFF1) + (i - (StartColumn - COLUMN_EFF1));
+			for (unsigned int i = StartColumn - COLUMN_EFF1; i <= EndColumn - COLUMN_EFF1; ++i) {		// // //
+				const unsigned int Offset = i - StartColumn + ColStart;
+				if (Offset > m_pDocument->GetEffColumns(Track, c)) break;
 				bool Protected = false;
 				switch (PasteMode) {
 				case PASTE_MIX:
@@ -3584,33 +3604,48 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 				case PASTE_OVERWRITE:
 					if (Source.EffNumber[i] == EF_NONE) Protected = true;
 				}
-				if (!Protected && Offset <= m_pDocument->GetEffColumns(Track, C) && Offset >= 0) {
+				if (!Protected) {
 					NoteData.EffNumber[Offset] = Source.EffNumber[i];
 					NoteData.EffParam[Offset] = Source.EffParam[i];
 				}
 			}
-			it.Set(C, &NoteData);
+			it.Set(c, &NoteData);
 			if ((++it).m_iRow == 0) { // end of frame reached
 				if ((!theApp.GetSettings()->General.bOverflowPaste && PasteMode != PASTE_OVERFLOW) ||
-					PasteMode == PASTE_INSERT || it.m_iFrame == m_iCurrentFrame) break;
+					PasteMode == PASTE_INSERT) break;
 			}
+			if (it.m_iFrame == f && it.m_iRow == r) break;
 		}
+		/*
+		it--;
+		m_selection.m_cpStart = CCursorPos(r, c, ColStart , f);
+		m_selection.m_cpEnd = CCursorPos(it.m_iRow, c,
+			std::min(ColStart + EndColumn - StartColumn, static_cast<unsigned int>(COLUMN_EFF4)), it.m_iFrame);
+		m_bSelecting = true;
+		*/
 		return;
 	}
 
 	for (unsigned int j = 0; j < Rows; ++j) {
-		for (unsigned int i = C; i < CEnd; ++i) {
+		for (unsigned int i = c; i < CEnd; ++i) {
 			it.Get(i, &NoteData);
-			Source = *(pClipData->GetPattern(i - C, j));
-			CopyNoteSection(&NoteData, &Source, PasteMode, (i == C) ? StartColumn : COLUMN_NOTE,
-				std::min((i == CEnd - 1) ? EndColumn : COLUMN_EFF4, COLUMN_EFF1 + m_pDocument->GetEffColumns(Track, C)));
+			Source = *(pClipData->GetPattern(i - c, j));
+			CopyNoteSection(&NoteData, &Source, PasteMode, (i == c) ? StartColumn : COLUMN_NOTE,
+				std::min((i == CEnd - 1) ? EndColumn : COLUMN_EFF4, COLUMN_EFF1 + m_pDocument->GetEffColumns(Track, c)));
 			it.Set(i, &NoteData);
 		}
 		if ((++it).m_iRow == 0) { // end of frame reached
 			if ((!theApp.GetSettings()->General.bOverflowPaste && PasteMode != PASTE_OVERFLOW) ||
-				PasteMode == PASTE_INSERT || it.m_iFrame == m_iCurrentFrame) break;
+				PasteMode == PASTE_INSERT) break;
 		}
+		if (!((it.m_iFrame - f) % GetFrameCount()) && it.m_iRow == r) break;
 	}
+	/*
+	it--;
+	m_selection.m_cpStart = CCursorPos(r, c, StartColumn, f);
+	m_selection.m_cpEnd = CCursorPos(it.m_iRow, CEnd - 1, EndColumn, it.m_iFrame);
+	m_bSelecting = true;
+	*/
 }
 
 bool CPatternEditor::IsSelecting() const
@@ -3670,7 +3705,7 @@ int CPatternEditor::GetSelectionSize() const		// // //
 		if (i == FrameBegin)
 			Rows -= std::max(std::min(m_selection.GetRowStart(), PatternLength), 0);
 		if (i == FrameEnd)
-			Rows -= std::max(std::min(PatternLength - m_selection.GetRowEnd() - 1, PatternLength), 0);
+			Rows -= std::max(PatternLength - m_selection.GetRowEnd() - 1, 0);
 	}
 
 	return Rows;
@@ -4067,13 +4102,13 @@ bool CPatternEditor::PerformDrop(const CPatternClipData *pClipData, bool bCopy, 
 		return false;
 	}
 
-	if (m_selDrag.GetChanStart() >= Channels || m_selDrag.GetChanEnd() < 0 || m_selDrag.GetRowStart() >= m_iPatternLength || m_selDrag.GetRowEnd() < 0) {
+	if (m_selDrag.GetChanStart() >= Channels || m_selDrag.GetChanEnd() < 0) {		// // //
 		// Completely outside of visible area
 		CancelSelection();
 		return false;
 	}
 
-	if (m_selDrag.m_cpStart.m_iChannel < 0 || m_selDrag.m_cpStart.m_iRow < 0) {
+	if (m_selDrag.m_cpStart.m_iChannel < 0/* || m_selDrag.m_cpStart.m_iRow < 0*/) {
 
 		// Clip if selection is less than zero as this is not handled by the paste routine
 		int ChannelOffset = (m_selDrag.m_cpStart.m_iChannel < 0) ? -m_selDrag.m_cpStart.m_iChannel : 0;
@@ -4110,7 +4145,7 @@ bool CPatternEditor::PerformDrop(const CPatternClipData *pClipData, bool bCopy, 
 		m_selDrag.m_cpEnd.m_iColumn = GetChannelColumns(Channels);
 	}
 
-	m_selDrag.m_cpEnd.m_iRow = std::min(m_selDrag.m_cpEnd.m_iRow, m_iPatternLength - 1);
+	// // //
 	m_selDrag.m_cpEnd.m_iColumn = std::min(m_selDrag.m_cpEnd.m_iColumn, 15);	// TODO remove hardcoded number
 
 	// Paste
@@ -4145,10 +4180,14 @@ void CPatternEditor::UpdateDrag(const CPoint &point)
 		ColumnEnd = ColumnStart + (m_iDragEndCol - m_iDragStartCol);
 	}
 
-	m_selDrag.m_cpStart = CCursorPos(PointPos.m_iRow - m_iDragOffsetRow, PointPos.m_iChannel - m_iDragOffsetChannel,
-		ColumnStart, m_iCurrentFrame);		// // //
-	m_selDrag.m_cpEnd = CCursorPos(m_iDragRows + PointPos.m_iRow - m_iDragOffsetRow,		// // //
-		m_iDragChannels + PointPos.m_iChannel - m_iDragOffsetChannel, ColumnEnd, m_iCurrentFrame);
+	CPatternIterator cpBegin(this, GetSelectedTrack(), CCursorPos(PointPos.m_iRow - m_iDragOffsetRow,		// // //
+		PointPos.m_iChannel - m_iDragOffsetChannel, ColumnStart, PointPos.m_iFrame));
+	CPatternIterator cpEnd = cpBegin;
+	cpEnd += GetSelectionSize() - 1;
+	cpEnd.m_iChannel += m_iDragChannels;
+	cpEnd.m_iColumn = ColumnEnd;
+	m_selDrag.m_cpStart = static_cast<CCursorPos>(cpBegin);
+	m_selDrag.m_cpEnd = static_cast<CCursorPos>(cpEnd);
 
 	AutoScroll(point, 0);
 }
