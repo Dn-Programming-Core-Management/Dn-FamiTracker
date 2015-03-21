@@ -296,8 +296,12 @@ void CPatternAction::ReplaceInstrument(CFamiTrackerDoc *pDoc) const
 	CPatternIterator it = GetStartIterator();		// // //
 	const CPatternIterator End = GetEndIterator();
 	
+	int cBegin = m_selection.GetChanStart();
+	int cEnd = m_selection.GetChanEnd();
+	if (!m_selection.IsColumnSelected(COLUMN_INSTRUMENT, cBegin)) cBegin++;		// // //
+	if (!m_selection.IsColumnSelected(COLUMN_INSTRUMENT, cEnd)) cEnd--;
 	do {
-		for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); ++i) {
+		for (int i = cBegin; i <= cEnd; ++i) {
 			stChanNote Note;
 			it.Get(i, &Note);
 			if (Note.Instrument != MAX_INSTRUMENTS)
