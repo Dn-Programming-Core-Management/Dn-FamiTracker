@@ -470,7 +470,7 @@ void CInstrumentEditorVRC7::PasteSettings(LPCTSTR pString)
 	std::istream_iterator<std::string> end;
 
 	for (int i = 0; (i < 8) && (begin != end); ++i) {
-		int value = CSequenceInstrumentEditPanel::ReadStringValue(*begin++);
+		int value = CSequenceInstrumentEditPanel::ReadStringValue(*begin++, false);
 		value = std::min<int>(std::max<int>(value, 0x00), 0xFF);
 		m_pInstrument->SetCustomReg(i, value);
 	}

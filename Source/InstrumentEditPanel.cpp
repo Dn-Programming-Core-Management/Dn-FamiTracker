@@ -226,18 +226,27 @@ void CSequenceInstrumentEditPanel::SetupDialog(LPCTSTR *pListItems)
 	m_pSequenceEditor->ShowWindow(SW_SHOW);
 }
 
-int CSequenceInstrumentEditPanel::ReadStringValue(const std::string &str)
+int CSequenceInstrumentEditPanel::ReadStringValue(const std::string &str, bool Signed)		// // //
 {
 	// Translate a string number to integer, accepts '$' for hexadecimal notation
 	// // // 'x' has been disabled due to arp scheme support
 	std::stringstream ss;
-	if (str[0] == '$')
+	if (Signed) {
+		if (str[0] == '$')
+			ss << std::hex << str.substr(1, 2);
+		else
+			ss << std::hex << str.substr(0, 2);
+	}
+	else if (str[0] == '$')
 		ss << std::hex << str.substr(1);
 	else
 		ss << str;
 	int value = 0;
 	ss >> value;
-	return value;
+	if (Signed)
+		return static_cast<signed char>(value);
+	else
+		return value;
 }
 
 void CSequenceInstrumentEditPanel::PreviewNote(unsigned char Key)
@@ -269,20 +278,36 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 	char *context = NULL;
 	char *term = strtok_s(str2, " ", &context);
 
+	bool HexStr = false, ForceHex = false, Invalid = false;		// // //
 	while (term != NULL && AddedItems < MAX_SEQUENCE_ITEMS) {
-		if (term[0] == '|' || term[0] == 'l') {		// // //
+		if (ForceHex) HexStr = true;
+		if (term[0] == '$' && term[1] == '$') {
+			term += 2;
+			ForceHex = true;
+			continue;
+		}
+		else if (term[0] == '|' || term[0] == 'l') {		// // //
 			// Set loop point
-			pSequence->SetLoopPoint(AddedItems);
+			term++;
+			if (term[0]) Invalid = true;
+			else {
+				pSequence->SetLoopPoint(AddedItems);
+				continue;
+			}
 		}
 		else if (term[0] == '/' || term[0] == 'r') {		// // //
 			// Set release point
-			pSequence->SetReleasePoint(AddedItems);
+			term++;
+			if (term[0]) Invalid = true;
+			else {
+				pSequence->SetReleasePoint(AddedItems);
+				continue;
+			}
 		}
 		else {
 			int Mode = 0;
 			int Rep = 1;
 			bool HasTerm = false;
-			bool Invalid = false;
 			if (pSequence->GetSetting() == SETTING_ARP_SCHEME) {			// // //
 				// Arp scheme modes
 				if (term[0] == 'x') {
@@ -301,21 +326,34 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 					HasTerm = true; term += 2; Mode = ARPSCHEME_MODE_NEG_Y;
 				}
 				if (HasTerm && !(term[0] == '+' || term[0] == '-' || term[0] == '\0')) Invalid = true;
+				if (HasTerm && HexStr) Invalid = true;
 				if (HasTerm && term[0] == '+') term++;
 			}
 			// Convert to number
-			int value = ReadStringValue(term);
+			int value;
+			if (!HasTerm && term[0] == '$') {
+				if (!std::strpbrk(term, "xy'")) {
+					HexStr = true;
+					value = ReadStringValue(term, HexStr);
+				}
+				else
+					value = ReadStringValue(term, false);
+			}
+			else value = ReadStringValue(term, HexStr);
 			// Check for invalid chars
-			if (!(value == 0 && term[0] != '0' && !HasTerm) && !Invalid) {
+			if (!(HasTerm && HexStr) && !Invalid) {
 				value = std::min<int>(std::max<int>(value, Min), Max);
 				if (pSequence->GetSetting() == SETTING_ARP_SCHEME && value < 0)		// // //
 					value += 64;
 				term += std::strspn(term, "$-");
-				term += std::strspn(term, "0123456789abcdef");
+				if (HexStr)
+					term += std::min(2, static_cast<int>(std::strspn(term, "0123456789abcdef")));
+				else
+					term += std::strspn(term, "0123456789abcdef");
 				if (pSequence->GetSetting() == SETTING_ARP_SCHEME) {
 					// Arp scheme modes
 					if (term[0] == '+') {
-						if (HasTerm) Invalid = true;
+						if (HasTerm || HexStr) Invalid = true;
 						else {
 							if (term[1] == 'x') {
 								term += 2; Mode = ARPSCHEME_MODE_X;
@@ -326,7 +364,7 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 						}
 					}
 					if (term[0] == '-' && term[1] == 'y') {
-						if (HasTerm) Invalid = true;
+						if (HasTerm || HexStr) Invalid = true;
 						else {
 							term += 2; Mode = ARPSCHEME_MODE_NEG_Y;
 						}
@@ -335,8 +373,13 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 				value += Mode;
 				if (term[0] == '\'') {		// // //
 					term++;
-					if (term[0] < '1' || term[0] > '9') Invalid = true;
-					Rep = atoi(term);
+					HexStr = ForceHex;
+					if (term[0] == '$') {
+						term++;
+						HexStr = true;
+					}
+					Rep = ReadStringValue(term, HexStr);
+					if (Rep == 0) Invalid = true;
 				}
 				if (!Invalid) for (int i = 0; i < Rep; i++) {
 					pSequence->SetItem(AddedItems++, value);
@@ -344,7 +387,12 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 				}
 			}
 		}
-		term = strtok_s(NULL, " ", &context);
+		if (term[0] == '\0')
+			HexStr = false;
+		if (!HexStr || Invalid) {
+			term = strtok_s(NULL, " ", &context);
+			Invalid = false;
+		}
 	}
 
 	pSequence->SetItemCount(AddedItems);
