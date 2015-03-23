@@ -164,7 +164,7 @@ bool CTrackerChannel::IsEffectCompatible(int EffNumber, int EffParam) const		// 
 		case EF_DELAY:
 			return true;
 		case EF_JUMP: case EF_NOTE_CUT: case EF_NOTE_RELEASE:
-			return EffParam <= 0x7F;
+			return EffParam <= 0x7F || m_iChannelID == CHANID_TRIANGLE;
 		case EF_GROOVE:
 			return EffParam < MAX_GROOVE;
 		case EF_VOLUME:
