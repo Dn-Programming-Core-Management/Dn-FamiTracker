@@ -2582,6 +2582,7 @@ void CPatternEditor::CancelSelection()
 	m_bSelecting = false;
 	m_bCurrentlySelecting = false;
 	m_iWarpCount = 0;		// // //
+	m_iDragBeginWarp = 0;		// // //
 	m_selection.SetStart(m_cpCursorPos);
 	m_selection.SetEnd(m_cpCursorPos);		// // //
 
@@ -3132,7 +3133,8 @@ void CPatternEditor::OnMouseUp(const CPoint &point)
 
 		// Pattern area
 		CCursorPos PointPos = GetCursorAtPoint(point);
-		PointPos.m_iFrame = PointPos.m_iFrame % GetFrameCount() + (PointPos.m_iFrame < 0 ? GetFrameCount(): 0);		// // //
+		PointPos.m_iFrame %= GetFrameCount(); 
+		if (PointPos.m_iFrame < 0) PointPos.m_iFrame += GetFrameCount();		// // //
 		const int PatternLength = GetCurrentPatternLength(PointPos.m_iFrame);		// // //
 
 		if (IsInsideRowColumn(point)) {
@@ -3145,7 +3147,7 @@ void CPatternEditor::OnMouseUp(const CPoint &point)
 				return;
 			m_cpCursorPos.m_iRow = PointPos.m_iRow;
 			m_cpCursorPos.m_iFrame = m_iCurrentFrame = PointPos.m_iFrame;		// // //
-
+			m_iDragBeginWarp = 0;		// // //
 			return;
 		}
 
