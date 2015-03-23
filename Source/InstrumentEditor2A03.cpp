@@ -159,7 +159,10 @@ void CInstrumentEditor2A03::OnKeyReturn()
 			TranslateMML(Text, 15, 0);
 			break;
 		case SEQ_ARPEGGIO:
-			TranslateMML(Text, 96, m_pSequence->GetSetting()== SETTING_ARP_FIXED ? 0 : -96);
+			if (m_pSequence->GetSetting() == SETTING_ARP_SCHEME)	// // //
+				TranslateMML(Text, 36, -27);
+			else
+				TranslateMML(Text, 96, m_pSequence->GetSetting()== SETTING_ARP_FIXED ? 0 : -96);
 			break;
 		case SEQ_PITCH:
 			TranslateMML(Text, 126, -127);
@@ -205,7 +208,7 @@ void CInstrumentEditor2A03::SelectInstrument(int Instrument)
 void CInstrumentEditor2A03::SelectSequence(int Sequence, int Type)
 {
 	// Selects the current sequence in the sequence editor
-	m_pSequence = GetDocument()->GetSequence(unsigned(Sequence), Type);
+	m_pSequence = GetDocument()->GetSequence(SNDCHIP_NONE, unsigned(Sequence), Type);		// // //
 	m_pSequenceEditor->SelectSequence(m_pSequence, Type, INST_2A03);
 }
 
