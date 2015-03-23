@@ -337,6 +337,7 @@ public:
 	void			RemoveUnusedSamples();		// // //
 	void			RemoveUnusedPatterns();
 	void			MergeDuplicatedPatterns();
+	void			PopulateUniquePatterns();		// // //
 	void			SwapInstruments(int First, int Second);
 
 	// For file version compability

@@ -4316,7 +4316,8 @@ void CFamiTrackerDoc::AllocateTrack(unsigned int Track)
 	// Allocate a new song if not already done
 	if (m_pTracks[Track] == NULL) {
 		int Tempo = (m_iMachine == NTSC) ? DEFAULT_TEMPO_NTSC : DEFAULT_TEMPO_PAL;
-		m_pTracks[Track] = new CPatternData(DEFAULT_ROW_COUNT, DEFAULT_SPEED, Tempo);
+		m_pTracks[Track] = new CPatternData(DEFAULT_ROW_COUNT);		// // //
+		m_pTracks[Track]->SetSongTempo(Tempo);
 		m_sTrackNames[Track] = DEFAULT_TRACK_NAME;
 	}
 }
@@ -5208,6 +5209,34 @@ void CFamiTrackerDoc::MergeDuplicatedPatterns()
             m_pTracks[i]->SetFramePattern(f,c,uiPatternUsed[uiPattern]);
         }
     }
+}
+
+void CFamiTrackerDoc::PopulateUniquePatterns()		// // //
+{
+	for (unsigned int i = 0; i < m_iTrackCount; i++) {
+		const int Rows = GetPatternLength(i);
+		const int Frames = GetFrameCount(i);
+		CPatternData *pTrack = m_pTracks[i];
+		CPatternData *pNew = new CPatternData(Rows);
+
+		pNew->SetSongSpeed(GetSongSpeed(i));
+		pNew->SetSongTempo(GetSongTempo(i));
+		pNew->SetFrameCount(Frames);
+		pNew->SetSongGroove(GetSongGroove(i));
+
+		for (int c = 0; c < GetChannelCount(); c++) {
+			pNew->SetEffectColumnCount(c, GetEffColumns(i, c));
+			for (int f = 0; f < Frames; f++) {
+				pNew->SetFramePattern(f, c, f);
+				for (int r = 0; r < Rows; r++)
+					memcpy(pNew->GetPatternData(c, f, r),
+					pTrack->GetPatternData(c, pTrack->GetFramePattern(f, c), r), sizeof(stChanNote));
+			}
+		}
+
+		SAFE_RELEASE(pTrack);
+		m_pTracks[i] = pNew;
+	}
 }
 
 void CFamiTrackerDoc::SwapInstruments(int First, int Second)

@@ -40,7 +40,7 @@ const stChanNote BLANK_NOTE = {NONE, 0, MAX_VOLUME, MAX_INSTRUMENTS, {EF_NONE, E
 // CPatternData holds all notes in the patterns
 class CPatternData {
 public:
-	CPatternData(unsigned int PatternLength, unsigned int Speed, unsigned int Tempo);
+	CPatternData(unsigned int PatternLength);		// // //
 	~CPatternData();
 
 	char GetNote(unsigned int Channel, unsigned int Pattern, unsigned int Row) const { 

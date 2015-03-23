@@ -212,7 +212,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_TRACKER_PLAY_CURSOR, OnTrackerPlayCursor)
 	ON_COMMAND(ID_TRACKER_STOP, OnTrackerStop)
 	ON_COMMAND(ID_TRACKER_TOGGLE_PLAY, OnTrackerTogglePlay)
-	ON_COMMAND(ID_TRACKER_PLAYPATTERN, OnTrackerPlaypattern)	
+	ON_COMMAND(ID_TRACKER_PLAYPATTERN, OnTrackerPlaypattern)
 	ON_COMMAND(ID_TRACKER_KILLSOUND, OnTrackerKillsound)
 	ON_COMMAND(ID_TRACKER_SWITCHTOTRACKINSTRUMENT, OnTrackerSwitchToInstrument)
 	ON_COMMAND(ID_TRACKER_DPCM, OnTrackerDPCM)
@@ -306,11 +306,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_TOGGLE_MULTIPLEXER, OnToggleMultiplexer)
 	ON_BN_CLICKED(IDC_BUTTON_GROOVE, OnToggleGroove)
 	ON_UPDATE_COMMAND_UI(IDC_BUTTON_GROOVE, OnUpdateGrooveEdit)
-	ON_COMMAND(ID_KRAID1, OnEasterEggKraid1)		// Easter Egg
-	ON_COMMAND(ID_KRAID2, OnEasterEggKraid2)
-	ON_COMMAND(ID_KRAID3, OnEasterEggKraid3)
-	ON_COMMAND(ID_KRAID4, OnEasterEggKraid4)
-	ON_COMMAND(ID_KRAID5, OnEasterEggKraid5)
 	ON_COMMAND(ID_FIND_NEXT, OnFindNext)
 	ON_COMMAND(ID_EDIT_FIND_TOGGLE, OnEditFindToggle)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_FIND_TOGGLE, OnUpdateEditFindToggle)
@@ -318,6 +313,12 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_MODULE_DUPLICATECURRENTPATTERN, OnModuleDuplicateCurrentPattern)
 	ON_COMMAND(ID_CLEANUP_REMOVEUNUSEDDPCMSAMPLES, OnEditRemoveUnusedSamples)
 	ON_BN_CLICKED(IDC_CHECK_COMPACT, OnClickedCompact)
+	ON_COMMAND(ID_CLEANUP_POPULATEUNIQUEPATTERNS, OnEditPopulateUniquePatterns)
+	ON_COMMAND(ID_KRAID1, OnEasterEggKraid1)		// Easter Egg
+	ON_COMMAND(ID_KRAID2, OnEasterEggKraid2)
+	ON_COMMAND(ID_KRAID3, OnEasterEggKraid3)
+	ON_COMMAND(ID_KRAID4, OnEasterEggKraid4)
+	ON_COMMAND(ID_KRAID5, OnEasterEggKraid5)
 	END_MESSAGE_MAP()
 
 
@@ -2961,4 +2962,15 @@ void CMainFrame::OnEditRemoveUnusedSamples()
 	CloseInstrumentEditor();
 	pDoc->RemoveUnusedSamples();
 	pDoc->UpdateAllViews(NULL, UPDATE_PATTERN);
+}
+
+void CMainFrame::OnEditPopulateUniquePatterns()
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
+
+	if (AfxMessageBox(IDS_POPULATE_PATTERNS, MB_YESNO | MB_ICONINFORMATION) == IDNO)
+		return;
+	
+	pDoc->PopulateUniquePatterns();
+	pDoc->UpdateAllViews(NULL, UPDATE_FRAME);
 }

@@ -156,13 +156,16 @@ BEGIN
             MENUITEM "Increase Octave\tCtrl+F4",    ID_TRANSPOSE_INCREASEOCTAVE
         END
         MENUITEM SEPARATOR
-        MENUITEM "Clear Patterns",              ID_EDIT_CLEARPATTERNS
         POPUP "Cleanup"
         BEGIN
+            MENUITEM "Clear Patterns",              ID_EDIT_CLEARPATTERNS
+            MENUITEM SEPARATOR
             MENUITEM "Remove Unused Instruments",   ID_CLEANUP_REMOVEUNUSEDINSTRUMENTS
             MENUITEM "Remove Unused DPCM Samples",  ID_CLEANUP_REMOVEUNUSEDDPCMSAMPLES
             MENUITEM "Remove Unused Patterns",      ID_CLEANUP_REMOVEUNUSEDPATTERNS
+            MENUITEM SEPARATOR
             MENUITEM "Merge Duplicated Patterns",   ID_CLEANUP_MERGEDUPLICATEDPATTERNS
+            MENUITEM "Populate Unique Patterns",    ID_CLEANUP_POPULATEUNIQUEPATTERNS
         END
         MENUITEM SEPARATOR
         MENUITEM "Instrument Mask\tAlt+T",      ID_EDIT_INSTRUMENTMASK
@@ -2122,11 +2125,15 @@ BEGIN
     ID_MODULE_DETUNE        "Open the detune settings dialog\nDetune settings"
     ID_MODULE_DUPLICATECURRENTPATTERN 
                             "Duplicates the current pattern to the first unused pattern\nClone pattern"
+    ID_CLEANUP_REMOVEUNUSEDDPCMSAMPLES 
+                            "Removes all unised DPCM samples\nRemove unused DPCM samples"
     ID_EDIT_PASTEINSERT     "Pasted notes will be inserted above the destination"
     ID_PASTESPECIAL_CURSOR  "Paste operations occur at the cursor"
     ID_PASTESPECIAL_SELECTION 
                             "Paste operations occur at the start of selection"
     ID_PASTESPECIAL_FILL    "Paste operations loop throughout the current selection"
+    ID_CLEANUP_POPULATEUNIQUEPATTERNS 
+                            "Copies a unique pattern for each frame\nPopulate Unique Patterns"
 END
 
 STRINGTABLE
@@ -2175,7 +2182,14 @@ STRINGTABLE
 BEGIN
     ID_FILE_IMPORTTEXT      "Imports pattern text files"
     ID_FILE_EXPORTTEXT      "Exports pattern text files"
+    ID_CLEANUP_MERGEDUPLICATEDPATTERNS 
+                            "Combines copies of duplicated patterns\nMerge duplicated patterns"
     ID_EDIT_VOLUMEMASK      "Disables insertion of values in the volume column"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_KRAID               "Do you want to carry out this operation? There is no undo for this command."
 END
 
 #endif    // English (United States) resources

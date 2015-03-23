@@ -27,11 +27,11 @@
 // This class contains pattern data
 // A list of these objects exists inside the document one for each song
 
-CPatternData::CPatternData(unsigned int PatternLength, unsigned int Speed, unsigned int Tempo) :
+CPatternData::CPatternData(unsigned int PatternLength) :		// // //
 	m_iPatternLength(PatternLength),
 	m_iFrameCount(1),
-	m_iSongSpeed(Speed),
-	m_iSongTempo(Tempo),
+	m_iSongSpeed(DEFAULT_SPEED),
+	m_iSongTempo(DEFAULT_TEMPO_NTSC),
 	m_bUseGroove(false),		// // //
 	m_iRowHighlight1(CFamiTrackerDoc::DEFAULT_FIRST_HIGHLIGHT),
 	m_iRowHighlight2(CFamiTrackerDoc::DEFAULT_SECOND_HIGHLIGHT)

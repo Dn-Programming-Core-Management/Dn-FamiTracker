@@ -141,6 +141,7 @@
 #define IDD_CONFIG_APPEARANCE           180
 #define IDS_KRAID                       181
 #define IDD_CONFIG_GENERAL              183
+#define IDS_POPULATE_PATTERNS           183
 #define IDD_PROPERTIES                  185
 #define IDS_FIND_END                    186
 #define IDS_FIND_NONE                   187
