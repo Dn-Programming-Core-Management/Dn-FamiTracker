@@ -134,12 +134,16 @@
 #define IDS_REMOVE_SAMPLES              175
 #define IDB_KEY_WHITE_MARK              176
 #define ID_MODULE_TEST_EXPORT           176
+#define IDS_SEL_REPEATED_ROW            176
 #define ID_INCREASEVALUES               177
+#define IDS_SEL_NONTERMINAL_SKIP        177
 #define ID_DECREASEVALUES               178
+#define IDS_SEL_TERMINAL_SKIP           178
 #define IDI_INST_2A03INV                179
 #define IDI_INST_2A03                   179
+#define IDS_PASTE_REPEATED_ROW          179
 #define IDD_CONFIG_APPEARANCE           180
-#define IDS_KRAID                       181
+#define IDS_PASTE_NONTERMINAL           180
 #define IDD_CONFIG_GENERAL              183
 #define IDS_POPULATE_PATTERNS           183
 #define IDD_PROPERTIES                  185
@@ -173,6 +177,7 @@
 #define IDI_INST_5B                     247
 #define IDI_INST_S5B                    247
 #define IDD_INSTRUMENT_FDS              248
+#define IDS_KRAID                       250
 #define IDD_FRAMEBAR                    251
 #define IDD_FRAMECONTROLS               251
 #define IDB_TOOLBAR_256                 257
@@ -733,6 +738,9 @@
 #define ID_PASTESPECIAL_CURSOR          33146
 #define ID_PASTESPECIAL_SELECTION       33147
 #define ID_PASTESPECIAL_FILL            33148
+#define ID_CLEANUP_CLEARPATTERNS        33149
+#define ID_CLEANUP_POPULATEUNIQUEPATTERNS 33150
+#define ID_EDIT_POPULATEPATTERNS        33151
 #define ID_INSTRUMENT_ADD_2A03          36864
 #define ID_INSTRUMENT_ADD_FDS           36865
 #define ID_INSTRUMENT_ADD_MMC5          36866
@@ -753,7 +761,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        323
-#define _APS_NEXT_COMMAND_VALUE         33149
+#define _APS_NEXT_COMMAND_VALUE         33152
 #define _APS_NEXT_CONTROL_VALUE         1411
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
