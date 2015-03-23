@@ -105,10 +105,10 @@ void CopyNoteSection(stChanNote *Target, stChanNote *Source, paste_mode_t Mode, 
 			case COLUMN_NOTE:
 				if (TByte != NONE) Protected[i] = true;
 				break;
-			case COLUMN_INSTRUMENT:
+			case COLUMN_VOLUME:
 				if (TByte != MAX_INSTRUMENTS) Protected[i] = true;
 				break;
-			case COLUMN_VOLUME:
+			case COLUMN_INSTRUMENT:
 				if (TByte != MAX_VOLUME) Protected[i] = true;
 				break;
 			default:
@@ -120,10 +120,10 @@ void CopyNoteSection(stChanNote *Target, stChanNote *Source, paste_mode_t Mode, 
 			case COLUMN_NOTE:
 				if (SByte == NONE) Protected[i] = true;
 				break;
-			case COLUMN_INSTRUMENT:
+			case COLUMN_VOLUME:
 				if (SByte == MAX_INSTRUMENTS) Protected[i] = true;
 				break;
-			case COLUMN_VOLUME:
+			case COLUMN_INSTRUMENT:
 				if (SByte == MAX_VOLUME) Protected[i] = true;
 				break;
 			default:
@@ -153,10 +153,10 @@ void CopyNoteSection(stChanNote *Target, stChanNote *Source, paste_mode_t Mode, 
 		Target->Note = Source->Note;
 		Target->Octave = Source->Octave;
 		break;
-	case COLUMN_INSTRUMENT:
+	case COLUMN_VOLUME:
 		Target->Instrument = Source->Instrument;
 		break;
-	case COLUMN_VOLUME:
+	case COLUMN_INSTRUMENT:
 		Target->Vol = Source->Vol;
 		break;
 	default:
