@@ -96,19 +96,20 @@ static const unsigned int SELECT_WIDTH[] = {
 void CopyNoteSection(stChanNote *Target, stChanNote *Source, paste_mode_t Mode, int Begin, int End)		// // //
 {
 	bool Protected[7] = {};
+	static const char Offset[7] = {0, 3, 2, 4, 5, 6, 7};
 	for (int i = 0; i < 7; i++) {
-		const unsigned char TByte = *(reinterpret_cast<unsigned char*>(Target) + i + (i >= 1)); // skip octave byte
-		const unsigned char SByte = *(reinterpret_cast<unsigned char*>(Source) + i + (i >= 1));
+		const unsigned char TByte = *(reinterpret_cast<unsigned char*>(Target) + Offset[i]); // skip octave byte
+		const unsigned char SByte = *(reinterpret_cast<unsigned char*>(Source) + Offset[i]);
 		switch (Mode) {
 		case PASTE_MIX:
 			switch (i) {
 			case COLUMN_NOTE:
 				if (TByte != NONE) Protected[i] = true;
 				break;
-			case COLUMN_VOLUME:
+			case COLUMN_INSTRUMENT:
 				if (TByte != MAX_INSTRUMENTS) Protected[i] = true;
 				break;
-			case COLUMN_INSTRUMENT:
+			case COLUMN_VOLUME:
 				if (TByte != MAX_VOLUME) Protected[i] = true;
 				break;
 			default:
@@ -120,10 +121,10 @@ void CopyNoteSection(stChanNote *Target, stChanNote *Source, paste_mode_t Mode, 
 			case COLUMN_NOTE:
 				if (SByte == NONE) Protected[i] = true;
 				break;
-			case COLUMN_VOLUME:
+			case COLUMN_INSTRUMENT:
 				if (SByte == MAX_INSTRUMENTS) Protected[i] = true;
 				break;
-			case COLUMN_INSTRUMENT:
+			case COLUMN_VOLUME:
 				if (SByte == MAX_VOLUME) Protected[i] = true;
 				break;
 			default:
@@ -153,10 +154,10 @@ void CopyNoteSection(stChanNote *Target, stChanNote *Source, paste_mode_t Mode, 
 		Target->Note = Source->Note;
 		Target->Octave = Source->Octave;
 		break;
-	case COLUMN_VOLUME:
+	case COLUMN_INSTRUMENT:
 		Target->Instrument = Source->Instrument;
 		break;
-	case COLUMN_INSTRUMENT:
+	case COLUMN_VOLUME:
 		Target->Vol = Source->Vol;
 		break;
 	default:
