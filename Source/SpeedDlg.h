@@ -37,7 +37,6 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-	int m_iInitSpeed;
 	int m_iSpeed;
 
 	DECLARE_MESSAGE_MAP()

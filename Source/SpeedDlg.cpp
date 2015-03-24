@@ -22,14 +22,14 @@
 #include "FamiTracker.h"
 #include "SpeedDlg.h"
 
-const int RATE_MIN = 25;
+const int RATE_MIN = 16;		// // //
 const int RATE_MAX = 400;
 
 // CSpeedDlg dialog
 
 IMPLEMENT_DYNAMIC(CSpeedDlg, CDialog)
 CSpeedDlg::CSpeedDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CSpeedDlg::IDD, pParent), m_iInitSpeed(0), m_iSpeed(0)
+	: CDialog(CSpeedDlg::IDD, pParent), m_iSpeed(0)
 {
 }
 
