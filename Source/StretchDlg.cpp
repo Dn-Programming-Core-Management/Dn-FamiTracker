@@ -47,11 +47,12 @@ void CStretchDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CStretchDlg, CDialog)
-	ON_EN_CHANGE(IDC_EDIT_STRETCH_MAP, &CStretchDlg::OnEnChangeEditStretchMap)
-	ON_BN_CLICKED(IDC_BUTTON_STRETCH_EXPAND, &CStretchDlg::OnBnClickedButtonStretchExpand)
-	ON_BN_CLICKED(IDC_BUTTON_STRETCH_SHRINK, &CStretchDlg::OnBnClickedButtonStretchShrink)
-	ON_BN_CLICKED(IDC_BUTTON_STRETCH_RESET, &CStretchDlg::OnBnClickedButtonStretchReset)
-	ON_BN_CLICKED(IDC_BUTTON_STRETCH_INVERT, &CStretchDlg::OnBnClickedButtonStretchInvert)
+	ON_EN_CHANGE(IDC_EDIT_STRETCH_MAP, OnEnChangeEditStretchMap)
+	ON_BN_CLICKED(IDCANCEL, OnBnClickedCancel)
+	ON_BN_CLICKED(IDC_BUTTON_STRETCH_EXPAND, OnBnClickedButtonStretchExpand)
+	ON_BN_CLICKED(IDC_BUTTON_STRETCH_SHRINK, OnBnClickedButtonStretchShrink)
+	ON_BN_CLICKED(IDC_BUTTON_STRETCH_RESET, OnBnClickedButtonStretchReset)
+	ON_BN_CLICKED(IDC_BUTTON_STRETCH_INVERT, OnBnClickedButtonStretchInvert)
 END_MESSAGE_MAP()
 
 
