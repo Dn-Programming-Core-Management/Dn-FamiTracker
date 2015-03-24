@@ -98,11 +98,11 @@ const stAccelEntry CAccelerator::DEFAULT_TABLE[] = {
 	{_T("Shrink patterns"),				MOD_NONE,		0,				ID_EDIT_SHRINKPATTERNS},
 	{_T("Stretch patterns"),			MOD_NONE,		0,				ID_EDIT_STRETCHPATTERNS},		// // //
 	{_T("Duplicate patterns"),			MOD_NONE,		0,				ID_MODULE_DUPLICATEFRAMEPATTERNS},
+	{_T("Duplicate current pattern"),	MOD_ALT,		'D',			ID_MODULE_DUPLICATECURRENTPATTERN},		// // //
 	{_T("Decrease pattern values"),		MOD_SHIFT,		VK_F1,			ID_DECREASEVALUES},
 	{_T("Increase pattern values"),		MOD_SHIFT,		VK_F2,			ID_INCREASEVALUES},
 	{_T("Toggle find / replace tab"),	MOD_CONTROL,	'F',			ID_EDIT_FIND_TOGGLE},		// // //
-	{_T("Find next"),					MOD_NONE,		0,				ID_FIND_NEXT},
-	{_T("Duplicate current pattern"),	MOD_ALT,		'D',			ID_MODULE_DUPLICATECURRENTPATTERN},
+	{_T("Find next"),					MOD_NONE,		0,				ID_FIND_NEXT},		// // //
 };
 
 const int CAccelerator::ACCEL_COUNT = sizeof(CAccelerator::DEFAULT_TABLE) / sizeof(stAccelEntry);
