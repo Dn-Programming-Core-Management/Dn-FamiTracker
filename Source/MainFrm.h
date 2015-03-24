@@ -338,19 +338,19 @@ public:
 	afx_msg LRESULT OnDisplayMessageString(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnDisplayMessageID(WPARAM wParam, LPARAM lParam);
 	// // //
-	afx_msg void OnToggleMultiplexer();
 	afx_msg void OnToggleGroove();
-	afx_msg void OnUpdateGrooveEdit(CCmdUI *pCmdUI);
+	afx_msg void OnClickedCompact();
+	afx_msg void OnFileExportRows();
+	afx_msg void OnEditFindToggle();
 	afx_msg void OnFindNext();
 	afx_msg void OnFindPrevious();
-	afx_msg void OnEditFindToggle();
-	afx_msg void OnUpdateEditFindToggle(CCmdUI *pCmdUI);
-	afx_msg void OnFileExportRows();
-	afx_msg void OnModuleDuplicateCurrentPattern();
 	afx_msg void OnEditStretchpatterns();
 	afx_msg void OnEditRemoveUnusedSamples();
-	afx_msg void OnClickedCompact();
 	afx_msg void OnEditPopulateUniquePatterns();
+	afx_msg void OnModuleDuplicateCurrentPattern();
+	afx_msg void OnToggleMultiplexer();
+	afx_msg void OnUpdateGrooveEdit(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateEditFindToggle(CCmdUI *pCmdUI);
 
 	afx_msg void OnEasterEggKraid1();		// Easter Egg
 	afx_msg void OnEasterEggKraid2();
