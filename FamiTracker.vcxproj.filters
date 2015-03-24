@@ -608,6 +608,9 @@
     <ClCompile Include="Source\GrooveDlg.cpp">
       <Filter>Source Files\Dialog Boxes</Filter>
     </ClCompile>
+    <ClCompile Include="Source\StretchDlg.cpp">
+      <Filter>Source Files\Dialog Boxes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">
@@ -986,6 +989,9 @@
       <Filter>Header Files\Dialog Boxes Headers</Filter>
     </ClInclude>
     <ClInclude Include="Source\DetuneDlg.h">
+      <Filter>Header Files\Dialog Boxes Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\StretchDlg.h">
       <Filter>Header Files\Dialog Boxes Headers</Filter>
     </ClInclude>
   </ItemGroup>

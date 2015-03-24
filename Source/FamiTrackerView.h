@@ -417,6 +417,7 @@ public:
 	afx_msg void OnUpdateFindNext(CCmdUI *pCmdUI);
 	afx_msg void OnEditExpandPatterns();
 	afx_msg void OnEditShrinkPatterns();
+	afx_msg void OnEditStretchPatterns();
 	afx_msg void OnEditPasteOverwrite();
 	afx_msg void OnEditPasteInsert();
 	afx_msg void OnEditPasteSpecialCursor();

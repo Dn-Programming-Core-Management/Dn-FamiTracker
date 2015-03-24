@@ -311,6 +311,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_FIND_TOGGLE, OnUpdateEditFindToggle)
 	ON_COMMAND(ID_FILE_EXPORTROWS, OnFileExportRows)
 	ON_COMMAND(ID_MODULE_DUPLICATECURRENTPATTERN, OnModuleDuplicateCurrentPattern)
+	ON_COMMAND(ID_EDIT_STRETCHPATTERNS, OnEditStretchpatterns)
 	ON_COMMAND(ID_CLEANUP_REMOVEUNUSEDDPCMSAMPLES, OnEditRemoveUnusedSamples)
 	ON_BN_CLICKED(IDC_CHECK_COMPACT, OnClickedCompact)
 	ON_COMMAND(ID_CLEANUP_POPULATEUNIQUEPATTERNS, OnEditPopulateUniquePatterns)
@@ -2632,6 +2633,12 @@ void CMainFrame::OnEditShrinkpatterns()
 {
 	if (GetFocus() == GetActiveView())		// // //
 		static_cast<CFamiTrackerView*>(GetActiveView())->OnEditShrinkPatterns();
+}
+
+void CMainFrame::OnEditStretchpatterns()		// // //
+{
+	if (GetFocus() == GetActiveView())
+		static_cast<CFamiTrackerView*>(GetActiveView())->OnEditStretchPatterns();
 }
 
 void CMainFrame::OnEditClearPatterns()

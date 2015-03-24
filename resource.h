@@ -222,6 +222,7 @@
 #define IDS_MIDI_MESSAGE_OFF            317
 #define IDI_RIGHT                       317
 #define IDR_SEQUENCE_POPUP              319
+#define IDD_STRETCH                     323
 #define IDC_INSTRUMENTS                 1001
 #define IDC_INSTSETTINGS                1002
 #define IDC_IMPORT_DETUNE               1002
@@ -466,12 +467,14 @@
 #define IDC_DELTA_COUNTER               1265
 #define IDC_BUTTON1                     1266
 #define IDC_ABORT                       1266
+#define IDC_BUTTON_STRETCH_EXPAND       1266
 #define IDC_CONTINUE                    1267
 #define IDC_SLIDER1                     1268
 #define IDC_SLIDER_APU1                 1268
 #define IDC_EDIT1                       1270
 #define IDC_ABOUT_CONTRIB               1270
 #define IDC_EDIT_CONFIG_DESC            1270
+#define IDC_EDIT_STRETCH_MAP            1270
 #define IDC_HEAD                        1271
 #define IDC_COMBOBOXEX1                 1272
 #define IDC_ABOUT_LIB                   1272
@@ -589,6 +592,10 @@
 #define IDC_DETUNE_INFO_N163            1407
 #define IDC_LIST1                       1408
 #define IDC_CONFIG_LIST                 1410
+#define IDC_BUTTON_STRETCH_SHRINK       1411
+#define IDC_STRETCH_TEST                1412
+#define IDC_BUTTON_STRETCH_RESET        1413
+#define IDC_BUTTON_STRETCH_INVERT       1414
 #define ID_TRACKER_PLAY                 32771
 #define ID_TRACKER_PLAYPATTERN          32775
 #define ID_TRACKER_STOP                 32776
@@ -741,6 +748,9 @@
 #define ID_CLEANUP_CLEARPATTERNS        33149
 #define ID_CLEANUP_POPULATEUNIQUEPATTERNS 33150
 #define ID_EDIT_POPULATEPATTERNS        33151
+#define ID_SELECTION_STRETCH            33152
+#define ID_EDIT_STRETCHPATTERNS         33153
+#define ID_POPUP_STRETCHSELECTION       33154
 #define ID_INSTRUMENT_ADD_2A03          36864
 #define ID_INSTRUMENT_ADD_FDS           36865
 #define ID_INSTRUMENT_ADD_MMC5          36866
@@ -760,9 +770,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        323
-#define _APS_NEXT_COMMAND_VALUE         33152
-#define _APS_NEXT_CONTROL_VALUE         1411
+#define _APS_NEXT_RESOURCE_VALUE        324
+#define _APS_NEXT_COMMAND_VALUE         33155
+#define _APS_NEXT_CONTROL_VALUE         1415
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif

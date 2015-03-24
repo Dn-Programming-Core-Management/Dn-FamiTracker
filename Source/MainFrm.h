@@ -347,6 +347,7 @@ public:
 	afx_msg void OnUpdateEditFindToggle(CCmdUI *pCmdUI);
 	afx_msg void OnFileExportRows();
 	afx_msg void OnModuleDuplicateCurrentPattern();
+	afx_msg void OnEditStretchpatterns();
 	afx_msg void OnEditRemoveUnusedSamples();
 	afx_msg void OnClickedCompact();
 	afx_msg void OnEditPopulateUniquePatterns();

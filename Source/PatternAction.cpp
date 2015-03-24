@@ -673,13 +673,12 @@ bool CPatternAction::SaveState(CMainFrame *pMainFrm)
 			break;
 		case ACT_INTERPOLATE:
 			if (!pPatternEditor->IsSelecting() || m_iSelectionSize < 3)		// // //
+		case ACT_STRETCH_PATTERN:		// // //
 				return false;
 			SaveEntire(pPatternEditor);
 			break;
 		case ACT_REVERSE:
 		case ACT_REPLACE_INSTRUMENT:
-		case ACT_EXPAND_PATTERN:
-		case ACT_SHRINK_PATTERN:
 			if (!pPatternEditor->IsSelecting())
 				return false;
 			SaveEntire(pPatternEditor);
@@ -753,8 +752,7 @@ void CPatternAction::Undo(CMainFrame *pMainFrm)
 		case ACT_INTERPOLATE:
 		case ACT_REVERSE:
 		case ACT_REPLACE_INSTRUMENT:
-		case ACT_EXPAND_PATTERN:
-		case ACT_SHRINK_PATTERN:
+		case ACT_STRETCH_PATTERN:		// // //
 			RestoreSelection(pPatternEditor);
 			RestoreEntire(pPatternEditor);
 			break;
@@ -856,15 +854,7 @@ void CPatternAction::Redo(CMainFrame *pMainFrm)
 			pDoc->SetPatternLength(m_iUndoTrack, m_iNewPatternLen);
 			pMainFrm->UpdateControls();
 			break;
-		case ACT_EXPAND_PATTERN:
-			m_iStretchMap.resize(2);		// // //
-			m_iStretchMap[0] = 1;
-			m_iStretchMap[1] = 0;
-			StretchPattern(pDoc);
-			break;
-		case ACT_SHRINK_PATTERN:
-			m_iStretchMap.resize(1);
-			m_iStretchMap[0] = 2;
+		case ACT_STRETCH_PATTERN:		// // //
 			StretchPattern(pDoc);
 			break;
 		case ACT_EXPAND_COLUMNS:

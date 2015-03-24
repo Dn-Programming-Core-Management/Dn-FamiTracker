@@ -41,6 +41,7 @@
 #include "APU/APU.h"
 #include "DetuneDlg.h"		// // //
 #include "GrooveDlg.h"		// // //
+#include "StretchDlg.h"		// // //
 #include "ChannelHandler.h"		// // // required for retrieving channel state
 
 #ifdef _DEBUG
@@ -3293,13 +3294,34 @@ void CFamiTrackerView::OnEditReplaceInstrument()
 void CFamiTrackerView::OnEditExpandPatterns()		// // //
 {
 	if (!m_bEditEnable) return;
-	AddAction(new CPatternAction(CPatternAction::ACT_EXPAND_PATTERN));
+
+	std::vector<int> Map(2, 0);
+	Map[0] = 1;
+	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_STRETCH_PATTERN);
+	pAction->SetStretchMap(Map);
+	AddAction(pAction);
 }
 
 void CFamiTrackerView::OnEditShrinkPatterns()		// // //
 {
 	if (!m_bEditEnable) return;
-	AddAction(new CPatternAction(CPatternAction::ACT_SHRINK_PATTERN));
+
+	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_STRETCH_PATTERN);
+	pAction->SetStretchMap(std::vector<int>(1, 2));
+	AddAction(pAction);
+}
+
+void CFamiTrackerView::OnEditStretchPatterns()		// // //
+{
+	if (!m_bEditEnable) return;
+
+	CStretchDlg StretchDlg;
+
+	std::vector<int> Map = StretchDlg.GetStretchMap();
+	if (Map.empty()) return;
+	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_STRETCH_PATTERN);
+	pAction->SetStretchMap(Map);
+	AddAction(pAction);
 }
 
 void CFamiTrackerView::OnNcMouseMove(UINT nHitTest, CPoint point)
