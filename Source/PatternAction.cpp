@@ -323,7 +323,8 @@ void CPatternAction::Transpose(CFamiTrackerDoc *pDoc) const
 		ChanStart = m_iUndoChannel;
 		ChanEnd = m_iUndoChannel;
 	}
-
+	
+	const bool bSingular = (it == End) && (ChanStart == ChanEnd);
 	int Row = 0;		// // //
 	do {
 		for (int i = ChanStart; i <= ChanEnd; ++i) {
@@ -332,35 +333,26 @@ void CPatternAction::Transpose(CFamiTrackerDoc *pDoc) const
 			Note = *(m_pUndoClipData->GetPattern(i - ChanStart, Row));		// // //
 			if (Note.Note == NONE || Note.Note == HALT || Note.Note == RELEASE)
 				continue;
-			switch (m_iTransposeMode) {
+			if (Note.Note == ECHO) {
+				if (bSingular) switch (m_iTransposeMode) {		// // //
 				case TRANSPOSE_DEC_NOTES:
-					if (!m_bSelecting && Note.Note == ECHO && Note.Octave > 1)		// // //
+				case TRANSPOSE_DEC_OCTAVES:
+					if (Note.Octave > 1)
 						Note.Octave--;
-					else if (Note.Note > C) 
-						Note.Note--;
-					else if (Note.Octave > 0) {
-						Note.Note = B;
-						Note.Octave--;
-					}
 					break;
 				case TRANSPOSE_INC_NOTES:
-					if (!m_bSelecting && Note.Note == ECHO && Note.Octave < ECHO_BUFFER_LENGTH)		// // //
-						Note.Octave++;
-					else if (Note.Note < B)
-						Note.Note++;
-					else if (Note.Octave < 7) {
-						Note.Note = C;
-						Note.Octave++;
-					}
-					break;
-				case TRANSPOSE_DEC_OCTAVES:
-					if (Note.Octave > 0 && (Note.Note != ECHO || (!m_bSelecting && Note.Octave > 1)))		// // //
-						Note.Octave--;
-					break;
 				case TRANSPOSE_INC_OCTAVES:
-					if (Note.Octave < 7 && (Note.Note != ECHO || (!m_bSelecting && Note.Octave < ECHO_BUFFER_LENGTH)))		// // //
+					if (Note.Octave < ECHO_BUFFER_LENGTH)
 						Note.Octave++;
 					break;
+				}
+			}
+			else {		// // //
+				static const int AMOUNT[] = {-1, 1, -12, 12};
+				int NewNote = MIDI_NOTE(Note.Octave, Note.Note) + AMOUNT[m_iTransposeMode];
+				NewNote = std::max(std::min(NewNote, NOTE_COUNT - 1), 0);
+				Note.Note = GET_NOTE(NewNote);
+				Note.Octave = GET_OCTAVE(NewNote);
 			}
 			it.Set(i, &Note);
 		}
@@ -507,8 +499,8 @@ void CPatternAction::ScrollValues(CFamiTrackerDoc *pDoc) const
 	int ColStart	= CPatternEditor::GetSelectColumn(m_bSelecting ? m_selection.GetColStart() : m_iUndoColumn);
 	int ColEnd		= CPatternEditor::GetSelectColumn(m_bSelecting ? m_selection.GetColEnd() : m_iUndoColumn);
 
-	bool bWarp = theApp.GetSettings()->General.bWrapPatternValue;
-	bool bSingular = (it == End) && (ChanStart == ChanEnd) && (ColStart == ColEnd);
+	const bool bWarp = theApp.GetSettings()->General.bWrapPatternValue;
+	const bool bSingular = (it == End) && (ChanStart == ChanEnd) && (ColStart == ColEnd);
 	
 	int Row = 0;
 	do {
