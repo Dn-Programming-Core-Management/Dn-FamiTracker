@@ -933,6 +933,7 @@ void CFrameEditor::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 	// Popup menu
 	CMenu *pPopupMenu, PopupMenuBar;
 	PopupMenuBar.LoadMenu(IDR_FRAME_POPUP);
+	static_cast<CMainFrame*>(theApp.GetMainWnd())->UpdateMenu(&PopupMenuBar);
 	pPopupMenu = PopupMenuBar.GetSubMenu(0);
 
 	// Paste menu item

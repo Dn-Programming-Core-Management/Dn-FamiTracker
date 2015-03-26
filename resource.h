@@ -130,7 +130,6 @@
 #define IDS_INSTRUMENT_FOLDER           173
 #define IDB_KEY_WHITE                   174
 #define IDS_IMPORT_GROOVE_SLOTS         174
-#define ID_CLONE_SEQUENCE               175
 #define IDS_REMOVE_SAMPLES              175
 #define IDB_KEY_WHITE_MARK              176
 #define ID_MODULE_TEST_EXPORT           176
@@ -144,6 +143,7 @@
 #define IDS_PASTE_REPEATED_ROW          179
 #define IDD_CONFIG_APPEARANCE           180
 #define IDS_PASTE_NONTERMINAL           180
+#define ID_CLONE_SEQUENCE               181
 #define IDD_CONFIG_GENERAL              183
 #define IDS_POPULATE_PATTERNS           183
 #define IDD_PROPERTIES                  185
@@ -590,7 +590,6 @@
 #define IDC_DETUNE_INFO_VRC7            1405
 #define IDC_DETUNE_INFO_FDS             1406
 #define IDC_DETUNE_INFO_N163            1407
-#define IDC_LIST1                       1408
 #define IDC_CONFIG_LIST                 1410
 #define IDC_BUTTON_STRETCH_SHRINK       1411
 #define IDC_STRETCH_TEST                1412
@@ -623,7 +622,6 @@
 #define ID_TRACKER_PLAYROW              32858
 #define ID_FILE_IMPORTMIDI              32863
 #define ID_CREATE_NSF                   32867
-#define ID_BUTTON32892                  32892
 #define ID_SPEED_DEFAULT                32893
 #define ID_MODULE_MODULEPROPERTIES      32895
 #define ID_EDIT_PASTEMIX                32899
@@ -740,7 +738,6 @@
 #define ID_FILE_EXPORTROWS              33141
 #define ID_MODULE_DUPLICATECURRENTPATTERN 33142
 #define ID_CLEANUP_REMOVEUNUSEDDPCMSAMPLES 33143
-#define ID_EDIT_                        33144
 #define ID_EDIT_PASTEINSERT             33145
 #define ID_PASTESPECIAL_CURSOR          33146
 #define ID_PASTESPECIAL_SELECTION       33147

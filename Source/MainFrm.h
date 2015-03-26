@@ -78,6 +78,7 @@ public:
 	void	SetSecondHighlightRow(int Rows);
 
 	void	UpdateMenus();
+	void	UpdateMenu(CMenu *pMenu);		// // //
 
 	// Instrument
 	void	OpenInstrumentEditor();
@@ -127,7 +128,6 @@ private:
 	void	GetInstrumentName(char *pText) const;
 	void	SetInstrumentName(char *pText);
 
-	void	UpdateMenu(CMenu *pMenu);
 	void	SetFrameEditorPosition(int Position);
 	void	SelectInstrumentFolder();
 

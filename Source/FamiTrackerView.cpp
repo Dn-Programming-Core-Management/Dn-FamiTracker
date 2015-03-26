@@ -42,7 +42,6 @@
 #include "DetuneDlg.h"		// // //
 #include "GrooveDlg.h"		// // //
 #include "StretchDlg.h"		// // //
-#include "ChannelHandler.h"		// // // required for retrieving channel state
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -596,6 +595,7 @@ void CFamiTrackerView::OnRButtonUp(UINT nFlags, CPoint point)
 		// Pattern header
 		m_iMenuChannel = m_pPatternEditor->GetChannelAtPoint(point.x);
 		PopupMenuBar.LoadMenu(IDR_PATTERN_HEADER_POPUP);
+		static_cast<CMainFrame*>(theApp.GetMainWnd())->UpdateMenu(&PopupMenuBar);
 		pPopupMenu = PopupMenuBar.GetSubMenu(0);
 		pPopupMenu->TrackPopupMenu(TPM_RIGHTBUTTON, point.x + WinRect.left, point.y + WinRect.top, this);
 	}
@@ -603,6 +603,7 @@ void CFamiTrackerView::OnRButtonUp(UINT nFlags, CPoint point)
 		// Pattern area
 		m_iMenuChannel = -1;
 		PopupMenuBar.LoadMenu(IDR_PATTERN_POPUP);
+		static_cast<CMainFrame*>(theApp.GetMainWnd())->UpdateMenu(&PopupMenuBar);
 		pPopupMenu = PopupMenuBar.GetSubMenu(0);
 		// Send messages to parent in order to get the menu options working
 		pPopupMenu->TrackPopupMenu(TPM_RIGHTBUTTON, point.x + WinRect.left, point.y + WinRect.top, GetParentFrame());
