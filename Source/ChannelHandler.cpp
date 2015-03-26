@@ -207,10 +207,6 @@ void CChannelHandler::RetrieveChannelState()		// // //
 		State[i] = -1;
 
 	while (f || r) {
-		if (r) r--;
-		else
-			r = pDoc->GetFrameLength(Track, --f) - 1;
-
 		stChanNote Note;
 		pDoc->GetNoteData(Track, f, Channel, r, &Note);
 		
@@ -263,6 +259,9 @@ void CChannelHandler::RetrieveChannelState()		// // //
 			default:
 				break;
 			}
+		if (r) r--;
+		else
+			r = pDoc->GetFrameLength(Track, --f) - 1;
 	}
 
 	for (unsigned int i = 0; i < EF_COUNT; i++)
