@@ -206,7 +206,7 @@ void CChannelHandler::RetrieveChannelState()		// // //
 	for (int i = 0; i < EF_COUNT; i++)
 		State[i] = -1;
 
-	while (f || r) {
+	while (true) {
 		stChanNote Note;
 		pDoc->GetNoteData(Track, f, Channel, r, &Note);
 		
@@ -232,7 +232,7 @@ void CChannelHandler::RetrieveChannelState()		// // //
 		for (int c = EffColumns; c >= 0; c--)
 			switch (Note.EffNumber[c]) {
 			case EF_NONE: case EF_PORTAOFF:
-			case EF_DAC: case EF_DPCM_PITCH: case EF_RETRIGGER:
+			case EF_DPCM_PITCH: case EF_RETRIGGER:
 			case EF_DELAY: case EF_NOTE_CUT: case EF_DELAYED_VOLUME: case EF_NOTE_RELEASE: case EF_TRANSPOSE:
 				continue; // ignore effects that cannot have memory
 			case EF_JUMP: case EF_SKIP: case EF_HALT:
@@ -243,7 +243,7 @@ void CChannelHandler::RetrieveChannelState()		// // //
 			case EF_PITCH: case EF_DUTY_CYCLE: case EF_SAMPLE_OFFSET: case EF_VOLUME_SLIDE:
 			case EF_FDS_MOD_DEPTH: case EF_FDS_MOD_SPEED_HI: case EF_FDS_MOD_SPEED_LO:
 			case EF_SUNSOFT_ENV_LO: case EF_SUNSOFT_ENV_HI: case EF_SUNSOFT_ENV_TYPE:
-			case EF_N163_WAVE_BUFFER:
+			case EF_DAC: case EF_N163_WAVE_BUFFER:
 				if (State[Note.EffNumber[c]] == -1)
 					State[Note.EffNumber[c]] = Note.EffParam[c];
 				break;
@@ -260,8 +260,8 @@ void CChannelHandler::RetrieveChannelState()		// // //
 				break;
 			}
 		if (r) r--;
-		else
-			r = pDoc->GetFrameLength(Track, --f) - 1;
+		else if (f) r = pDoc->GetFrameLength(Track, --f) - 1;
+		else break;
 	}
 
 	for (unsigned int i = 0; i < EF_COUNT; i++)
