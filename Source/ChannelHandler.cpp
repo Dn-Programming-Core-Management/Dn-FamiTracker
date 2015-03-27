@@ -202,23 +202,61 @@ void CChannelHandler::RetrieveChannelState()		// // //
 	int Channel = pDoc->GetChannelPosition(m_iChannelID, pDoc->GetExpansionChip());
 	int EffColumns = pDoc->GetEffColumns(Track, Channel);
 
-	int f = Frame, r = Row, BufferPos = 0, State[EF_COUNT];
-	for (int i = 0; i < EF_COUNT; i++)
-		State[i] = -1;
+	int f = Frame, r = Row, BufferPos = -1, State[EF_COUNT], Transpose[ECHO_BUFFER_LENGTH + 1] = {};
+	memset(State, -1, EF_COUNT * sizeof(int));
 
 	while (true) {
 		stChanNote Note;
 		pDoc->GetNoteData(Track, f, Channel, r, &Note);
 		
 		if (Note.Note != NONE && Note.Note != RELEASE) {
-			for (int i = 0; i < BufferPos; i++) {
-				if (m_iEchoBuffer[i] == BUFFER_ECHO)
-					WriteEchoBuffer(&Note, i, EffColumns);
+			for (int i = 0; i < std::min(BufferPos, ECHO_BUFFER_LENGTH + 1); i++) {
+				if (m_iEchoBuffer[i] == BUFFER_ECHO) {
+					for (int j = EffColumns; j >= 0; j--) {
+						const int Param = Note.EffParam[j] & 0x0F;
+						if (Note.EffNumber[j] == EF_SLIDE_UP) {
+							Transpose[i] += Param; break;
+						}
+						else if (Note.EffNumber[j] == EF_SLIDE_DOWN) {
+							Transpose[i] -= Param; break;
+						}
+						else if (Note.EffNumber[j] == EF_TRANSPOSE) {
+							// Sometimes there are not enough ticks for the transpose to take place
+							if (Note.EffParam[j] & 0x80) Transpose[i] -= Param;
+							else Transpose[i] += Param;
+							break;
+						}
+					}
+					switch (Note.Note) {
+					case HALT: m_iEchoBuffer[i] = BUFFER_HALT; break;
+					case ECHO: m_iEchoBuffer[i] = BUFFER_ECHO + Note.Octave; break;
+					default:
+						int NewNote = MIDI_NOTE(Note.Octave, Note.Note) + Transpose[i];
+						NewNote = std::max(std::min(NewNote, NOTE_COUNT - 1), 0);
+						m_iEchoBuffer[i] = NewNote;
+					}
+				}
 				else if (m_iEchoBuffer[i] > BUFFER_ECHO && m_iEchoBuffer[i] <= BUFFER_ECHO + ECHO_BUFFER_LENGTH)
 					m_iEchoBuffer[i]--;
 			}
-			if (BufferPos <= ECHO_BUFFER_LENGTH)
-				WriteEchoBuffer(&Note, BufferPos++, EffColumns);
+			if (BufferPos >= 0 && BufferPos <= ECHO_BUFFER_LENGTH) {
+				WriteEchoBuffer(&Note, BufferPos, EffColumns);
+				for (int j = EffColumns; j >= 0; j--) { // 0CC: optimize this
+					const int Param = Note.EffParam[j] & 0x0F;
+					if (Note.EffNumber[j] == EF_SLIDE_UP) {
+						Transpose[BufferPos] += Param; break;
+					}
+					else if (Note.EffNumber[j] == EF_SLIDE_DOWN) {
+						Transpose[BufferPos] -= Param; break;
+					}
+					else if (Note.EffNumber[j] == EF_TRANSPOSE) {
+						if (Note.EffParam[j] & 0x80) Transpose[BufferPos] -= Param;
+						else Transpose[BufferPos] += Param;
+						break;
+					}
+				}
+			}
+			BufferPos++;
 		}
 
 		if (m_iInstrument == MAX_INSTRUMENTS)
@@ -299,20 +337,21 @@ void CChannelHandler::WriteEchoBuffer(stChanNote *NoteData, int Pos, int EffColu
 	default:
 		Value = MIDI_NOTE(NoteData->Octave, NoteData->Note);
 		for (int i = EffColumns; i >= 0; i--) {
+			const int Param = NoteData->EffParam[i] & 0x0F;
 			if (NoteData->EffNumber[i] == EF_SLIDE_UP) {
-				Value += NoteData->EffParam[i] & 0x0F;
+				Value += Param;
 				break;
 			}
 			else if (NoteData->EffNumber[i] == EF_SLIDE_DOWN) {
-				Value -= NoteData->EffParam[i] & 0x0F;
+				Value -= Param;
 				break;
 			}
 			else if (NoteData->EffNumber[i] == EF_TRANSPOSE) {
 				// Sometimes there are not enough ticks for the transpose to take place
 				if (NoteData->EffParam[i] & 0x80)
-					Value -= NoteData->EffParam[i] & 0x0F;
+					Value -= Param;
 				else
-					Value += NoteData->EffParam[i] & 0x0F;
+					Value += Param;
 				break;
 			}
 		}
