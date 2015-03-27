@@ -233,11 +233,14 @@ void CChannelHandler::RetrieveChannelState()		// // //
 			switch (Note.EffNumber[c]) {
 			case EF_NONE: case EF_PORTAOFF:
 			case EF_DPCM_PITCH: case EF_RETRIGGER:
-			case EF_DELAY: case EF_NOTE_CUT: case EF_DELAYED_VOLUME: case EF_NOTE_RELEASE: case EF_TRANSPOSE:
+			case EF_DELAY: case EF_DELAYED_VOLUME: case EF_NOTE_RELEASE: case EF_TRANSPOSE:
 				continue; // ignore effects that cannot have memory
 			case EF_JUMP: case EF_SKIP: case EF_HALT:
 			case EF_SPEED: case EF_GROOVE:
 				if (true) continue; // ignore global effects
+			case EF_NOTE_CUT:
+				if (m_iChannelID != CHANID_TRIANGLE) continue;
+				else if (Note.EffParam[c] < 0x80) continue;
 
 			case EF_VOLUME: case EF_VIBRATO: case EF_TREMOLO:
 			case EF_PITCH: case EF_DUTY_CYCLE: case EF_SAMPLE_OFFSET: case EF_VOLUME_SLIDE:
@@ -246,7 +249,7 @@ void CChannelHandler::RetrieveChannelState()		// // //
 			case EF_DAC: case EF_N163_WAVE_BUFFER:
 				if (State[Note.EffNumber[c]] == -1)
 					State[Note.EffNumber[c]] = Note.EffParam[c];
-				break;
+				continue;
 			case EF_SWEEPUP: case EF_SWEEPDOWN: case EF_SLIDE_UP: case EF_SLIDE_DOWN:
 			case EF_PORTAMENTO: case EF_ARPEGGIO: case EF_PORTA_UP: case EF_PORTA_DOWN:
 				if (State[EF_PORTAMENTO] == -1) { // anything else within can be used here
@@ -255,9 +258,7 @@ void CChannelHandler::RetrieveChannelState()		// // //
 					State[EF_PORTA_UP] = Note.EffNumber[c] == EF_PORTA_UP ? Note.EffParam[c] : -2;
 					State[EF_PORTA_DOWN] = Note.EffNumber[c] == EF_PORTA_DOWN ? Note.EffParam[c] : -2;
 				}
-				break;
-			default:
-				break;
+				continue;
 			}
 		if (r) r--;
 		else if (f) r = pDoc->GetFrameLength(Track, --f) - 1;
