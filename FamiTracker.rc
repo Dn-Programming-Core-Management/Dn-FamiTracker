@@ -130,7 +130,7 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "Cursor",                      ID_PASTESPECIAL_CURSOR, CHECKED
             MENUITEM "Selection",                   ID_PASTESPECIAL_SELECTION
-            MENUITEM "Fill",                        ID_PASTESPECIAL_FILL, INACTIVE
+            MENUITEM "Fill",                        ID_PASTESPECIAL_FILL
         END
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
         MENUITEM SEPARATOR
