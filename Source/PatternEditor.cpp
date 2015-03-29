@@ -3390,13 +3390,14 @@ void CPatternEditor::DragPaste(const CPatternClipData *pClipData, const CSelecti
 
 	Paste(pClipData, bMix ? PASTE_MIX : PASTE_DEFAULT, PASTE_DRAG);		// // //
 
-	// Update selection
-	SetSelectionStart(pDragTarget->m_cpStart);
-	SetSelectionEnd(pDragTarget->m_cpEnd);
+	// // // Update selection
+	m_selection.m_cpStart = pDragTarget->m_cpStart;
+	m_selection.m_cpEnd = pDragTarget->m_cpEnd;
 	if (pDragTarget->m_cpStart.m_iFrame < 0) {
 		const int Frames = GetFrameCount();
 		m_cpCursorPos.m_iFrame += Frames;
-		m_selection.m_cpStart.m_iFrame -= Frames;
+		m_selection.m_cpStart.m_iFrame += Frames;
+		m_selection.m_cpEnd.m_iFrame += Frames;
 	}
 	m_bSelectionInvalidated = true;
 }

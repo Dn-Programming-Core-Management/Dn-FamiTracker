@@ -87,6 +87,8 @@ private:
 	bool SetTargetSelection(CPatternEditor *pPatternEditor);		// // //
 	void CopySelection(const CPatternEditor *pPatternEditor);		// // //
 	void PasteSelection(CPatternEditor *pPatternEditor);		// // //
+	void CopyAuxiliary(const CPatternEditor *pPatternEditor);		// // //
+	void PasteAuxiliary(CPatternEditor *pPatternEditor);		// // //
 	void IncreaseRowAction(CFamiTrackerDoc *pDoc) const;
 	void DecreaseRowAction(CFamiTrackerDoc *pDoc) const;
 
@@ -132,7 +134,7 @@ private:
 	bool m_bBack;
 
 	const CPatternClipData *m_pClipData;
-	CPatternClipData *m_pUndoClipData;
+	CPatternClipData *m_pUndoClipData, *m_pAuxiliaryClipData;		// // //
 	paste_mode_t m_iPasteMode;		// // //
 	paste_pos_t m_iPastePos;		// // //
 	

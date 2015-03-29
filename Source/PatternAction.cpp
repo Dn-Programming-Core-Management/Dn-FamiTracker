@@ -43,6 +43,7 @@ CPatternAction::CPatternAction(int iAction) :
 	CAction(iAction), 
 	m_pClipData(NULL), 
 	m_pUndoClipData(NULL),
+	m_pAuxiliaryClipData(NULL),		// // //
 	m_iStretchMap(std::vector<int>())		// // //
 {
 }
@@ -100,6 +101,7 @@ void CPatternAction::SetDragAndDrop(const CPatternClipData *pClipData, bool bDel
 	m_bDragDelete	= bDelete;
 	m_bDragMix		= bMix;
 	m_dragTarget	= *pDragTarget;
+	m_iPastePos		= PASTE_DRAG;
 }
 
 void CPatternAction::SetPatternLength(int Length)
@@ -186,7 +188,7 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // /
 
 	sel_condition_t Cond = pPatternEditor->GetSelectionCondition();
 	if (Cond == SEL_CLEAN) {
-		m_selection = New;
+		// m_selection = New;
 		return true;
 	}
 	else {
@@ -203,7 +205,7 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // /
 		}
 		if (Confirm == IDYES) {
 			pPatternEditor->SetSelection(New);
-			m_selection = New;
+			// m_selection = New;
 			return true;
 		}
 		else {
@@ -220,6 +222,16 @@ void CPatternAction::CopySelection(const CPatternEditor *pPatternEditor)		// // 
 void CPatternAction::PasteSelection(CPatternEditor *pPatternEditor)		// // //
 {
 	pPatternEditor->Paste(m_pUndoClipData, PASTE_DEFAULT, PASTE_SELECTION);
+}
+
+void CPatternAction::CopyAuxiliary(const CPatternEditor *pPatternEditor)		// // //
+{
+	m_pAuxiliaryClipData = pPatternEditor->Copy();
+}
+
+void CPatternAction::PasteAuxiliary(CPatternEditor *pPatternEditor)		// // //
+{
+	pPatternEditor->Paste(m_pAuxiliaryClipData, PASTE_DEFAULT, PASTE_SELECTION);
 }
 
 void CPatternAction::IncreaseRowAction(CFamiTrackerDoc *pDoc) const
@@ -748,8 +760,10 @@ bool CPatternAction::SaveState(CMainFrame *pMainFrm)
 			// Insert empty row
 			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, pDoc->GetPatternLength(m_iUndoTrack) - 1, &m_OldNote);
 			break;
-		case ACT_EDIT_PASTE:
 		case ACT_DRAG_AND_DROP:
+			CopyAuxiliary(pPatternEditor);
+			// continue
+		case ACT_EDIT_PASTE:
 			if (!SetTargetSelection(pPatternEditor))		// // //
 				return false;
 			CopySelection(pPatternEditor);
@@ -872,6 +886,7 @@ void CPatternAction::Undo(CMainFrame *pMainFrm)
 		case ACT_DRAG_AND_DROP:
 			PasteSelection(pPatternEditor);		// // //
 			RestoreSelection(pPatternEditor);
+			PasteAuxiliary(pPatternEditor);
 			break;
 		case ACT_PATTERN_LENGTH:
 			pDoc->SetPatternLength(m_iUndoTrack, m_iOldPatternLen);
