@@ -3576,23 +3576,30 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 	CPatternIterator it = CPatternIterator(this, Track, CCursorPos(r, c, StartColumn, f));		// // //
 	stChanNote NoteData, Source;
 
-	const unsigned int FrameLength = GetCurrentPatternLength(f);
-	if (PasteMode == PASTE_INSERT && r + Rows < FrameLength) {
-		CSelection Current = m_selection;
-		m_selection.SetStart(CCursorPos(r, c, GetCursorStartColumn(StartColumn), m_iCurrentFrame));
-		m_selection.SetEnd(CCursorPos(FrameLength - 1 - Rows, c + Channels - 1, GetCursorEndColumn(EndColumn), m_iCurrentFrame));
-		CPatternClipData *Shift = Copy();
-		m_selection.SetStart(CCursorPos(r + Rows, c, GetCursorStartColumn(StartColumn), m_iCurrentFrame));
-		m_bSelecting = true;
-		Paste(Shift, PASTE_DEFAULT, PASTE_SELECTION);
-		m_bSelecting = false;
-		m_selection = Current;
+	const unsigned int FrameLength = m_pDocument->GetPatternLength(Track);
+
+	if (PasteMode == PASTE_INSERT) {		// // //
+		CPatternIterator front = CPatternIterator(this, Track, CCursorPos(FrameLength - 1, c, StartColumn, f));
+		CPatternIterator back = CPatternIterator(this, Track, CCursorPos(FrameLength - 1 - Rows, c, StartColumn, f));
+		front.m_iFrame = back.m_iFrame = f; // do not warp
+		front.m_iRow = FrameLength - 1;
+		back.m_iRow = FrameLength - 1 - Rows;
+		while (back.m_iRow >= static_cast<int>(r)) {
+			for (unsigned int i = c; i < CEnd; i++) {
+				back.Get(i, &Source);
+				front.Get(i, &NoteData);
+				CopyNoteSection(&NoteData, &Source, PasteMode, (i == c) ? StartColumn : COLUMN_NOTE,
+					std::min((i == CEnd - 1) ? EndColumn : COLUMN_EFF4, COLUMN_EFF1 + m_pDocument->GetEffColumns(Track, i)));
+				front.Set(i, &NoteData);
+			}
+			front.m_iRow--;
+			back.m_iRow--;
+		}
 	}
 
 	// Special, single channel and effect columns only
 	if (Channels == 1 && StartColumn >= COLUMN_EFF1) {
-		const unsigned int ColStart = AtSel ? m_selection.GetColStart() :
-			GetSelectColumn(m_cpCursorPos.m_iColumn);
+		const unsigned int ColStart = GetSelectColumn(AtSel ? m_selection.GetColStart() : m_cpCursorPos.m_iColumn);
 		for (unsigned int j = 0; j < Rows; ++j) {
 			it.Get(c, &NoteData);
 			Source = *(pClipData->GetPattern(0, j));
@@ -3634,7 +3641,7 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 			it.Get(i, &NoteData);
 			Source = *(pClipData->GetPattern(i - c, j));
 			CopyNoteSection(&NoteData, &Source, PasteMode, (i == c) ? StartColumn : COLUMN_NOTE,
-				std::min((i == CEnd - 1) ? EndColumn : COLUMN_EFF4, COLUMN_EFF1 + m_pDocument->GetEffColumns(Track, c)));
+				std::min((i == CEnd - 1) ? EndColumn : COLUMN_EFF4, COLUMN_EFF1 + m_pDocument->GetEffColumns(Track, i)));
 			it.Set(i, &NoteData);
 		}
 		if ((++it).m_iRow == 0) { // end of frame reached
