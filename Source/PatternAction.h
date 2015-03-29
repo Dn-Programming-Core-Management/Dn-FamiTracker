@@ -84,6 +84,9 @@ public:
 private:
 	void SaveEntire(const CPatternEditor *pPatternEditor);
 	void RestoreEntire(CPatternEditor *pPatternEditor);
+	bool SetTargetSelection(CPatternEditor *pPatternEditor);		// // //
+	void CopySelection(const CPatternEditor *pPatternEditor);		// // //
+	void PasteSelection(CPatternEditor *pPatternEditor);		// // //
 	void IncreaseRowAction(CFamiTrackerDoc *pDoc) const;
 	void DecreaseRowAction(CFamiTrackerDoc *pDoc) const;
 

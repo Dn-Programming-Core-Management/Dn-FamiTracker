@@ -184,6 +184,8 @@ public:
 	// Public class methods
 public:
 	static int GetSelectColumn(int Column);
+	static int GetCursorStartColumn(int Column);		// // //
+	static int GetCursorEndColumn(int Column);		// // //
 	bool IsInRange(const CSelection &sel, int Frame, int Row, int Channel, int Column) const;		// // //
 	int GetSelectionSize() const;		// // //
 	sel_condition_t GetSelectionCondition() const;		// // //
@@ -222,8 +224,6 @@ private:
 
 	// Translation
 	int  GetColumnAtPoint(int PointX) const;
-	int  GetCursorStartColumn(int Column) const;
-	int  GetCursorEndColumn(int Column) const;
 	int	 GetChannelColumns(int Channel) const;
 	int  GetSelectedTrack() const;
 	int  GetFrameCount() const;		// // //

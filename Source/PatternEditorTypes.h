@@ -56,9 +56,9 @@ enum paste_mode_t : unsigned int {
 
 enum paste_pos_t : unsigned int {
 	PASTE_CURSOR,
-	PASTE_DRAG,
 	PASTE_SELECTION,
-	PASTE_FILL
+	PASTE_FILL,
+	PASTE_DRAG
 };
 
 // // // Selection condition

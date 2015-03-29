@@ -446,6 +446,7 @@ void CPatternEditor::DrawScreen(CDC *pDC, CFamiTrackerView *pView)
 
 	if (m_bSelectionInvalidated) {
 		// Selection has changed, do full redraw
+		m_iSelectionCondition = GetSelectionCondition();		// // //
 		bDrawPattern = true;
 		bQuickRedraw = false;
 	}
@@ -797,8 +798,6 @@ bool CPatternEditor::CursorUpdated()
 			m_cpCursorPos.m_iRow = m_iPlayRow;
 			m_iCurrentFrame = m_iPlayFrame;
 		}
-
-		CancelSelection();		// // //
 	}
 	else {
 		m_iPlayRow = -1;
@@ -1221,8 +1220,9 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 
 	const COLORREF SelectColor = DIM(BLEND(ColSelect, BackColor, SHADE_LEVEL.SELECT),		// // //
 		((Frame == m_iCurrentFrame) ? 100 : PREVIEW_SHADE_LEVEL));
-	const COLORREF DragColor = BLEND(SEL_DRAG_COL, BackColor, SHADE_LEVEL.SELECT);
-	const COLORREF SelectEdgeCol = (m_iSelectionCondition == SEL_CLEAN /* || m_iSelectionCondition == SEL_UNKNOWN_SIZE*/ ) ?		// // //
+	const COLORREF DragColor = DIM(BLEND(SEL_DRAG_COL, BackColor, SHADE_LEVEL.SELECT),
+		((Frame == m_iCurrentFrame) ? 100 : PREVIEW_SHADE_LEVEL));
+	const COLORREF SelectEdgeCol = (m_iSelectionCondition == SEL_CLEAN /* || m_iSelectionCondition == SEL_UNKNOWN_SIZE*/ ) ?
 		DIM(BLEND(SelectColor, 0xFFFFFF, SHADE_LEVEL.SELECT_EDGE), ((Frame == m_iCurrentFrame) ? 100 : PREVIEW_SHADE_LEVEL)) :
 		0x0000FF;
 	const int BorderWidth = (m_iSelectionCondition == SEL_NONTERMINAL_SKIP) ? 2 : 1;
@@ -1306,7 +1306,7 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 			}
 
 			// Dragging
-			if (m_bDragging && !bPreview) {
+			if (m_bDragging) {		// // //
 				if (IsInRange(m_selDrag, Frame, Row, i, j)) {		// // //
 					pDC->FillSolidRect(SelStart - COLUMN_SPACING, 0, SELECT_WIDTH[j], m_iRowHeight, DragColor);
 				}
@@ -2522,7 +2522,7 @@ int CPatternEditor::GetSelectColumn(int Column)
 	return COLUMNS[Column];
 }
 
-int CPatternEditor::GetCursorStartColumn(int Column) const
+int CPatternEditor::GetCursorStartColumn(int Column)
 {
 	static const int COL_START[] = {
 		0, 1, 3, 4, 7, 10, 13
@@ -2533,7 +2533,7 @@ int CPatternEditor::GetCursorStartColumn(int Column) const
 	return COL_START[Column];
 }
 
-int CPatternEditor::GetCursorEndColumn(int Column) const
+int CPatternEditor::GetCursorEndColumn(int Column)
 {
 	static const int COL_END[] = {
 		0, 2, 3, 6, 9, 12, 15

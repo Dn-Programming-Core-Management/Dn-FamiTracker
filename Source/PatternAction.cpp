@@ -128,6 +128,100 @@ void CPatternAction::RestoreEntire(CPatternEditor *pPatternEditor)
 	pPatternEditor->PasteEntire(m_pUndoClipData);
 }
 
+bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // //
+{
+	CCursorPos Start;
+	CSelection New;
+
+	if ((m_iPastePos == PASTE_SELECTION || m_iPastePos == PASTE_FILL) && !m_bSelecting)
+		m_iPastePos = PASTE_CURSOR;
+
+	switch (m_iPastePos) {
+	case PASTE_CURSOR:
+		Start.m_iFrame = m_iUndoFrame;
+		Start.m_iRow = m_iUndoRow;
+		Start.m_iChannel = m_iUndoChannel;
+		break;
+	case PASTE_DRAG:
+		Start.m_iFrame = m_dragTarget.GetFrameStart();
+		Start.m_iRow = m_dragTarget.GetRowStart();
+		Start.m_iChannel = m_dragTarget.GetChanStart();
+		break;
+	case PASTE_SELECTION:
+	case PASTE_FILL:
+		Start.m_iFrame = m_selection.GetFrameStart();
+		Start.m_iRow = m_selection.GetRowStart();
+		Start.m_iChannel = m_selection.GetChanStart();
+		break;
+	}
+
+	CPatternIterator it(pPatternEditor, m_iUndoTrack, Start);
+	CPatternIterator End = it;
+	
+	if (m_iPasteMode == PASTE_INSERT) {
+		End.m_iFrame = Start.m_iFrame;
+		End.m_iRow = pPatternEditor->GetCurrentPatternLength(End.m_iFrame) - 1;
+	}
+	else
+		End += m_pClipData->ClipInfo.Rows - 1;
+
+	if (m_iPastePos == PASTE_FILL) {
+		End.m_iFrame = m_selection.GetFrameEnd();
+		End.m_iRow = m_selection.GetRowEnd();
+		End.m_iChannel = m_selection.GetChanEnd();
+		bool Cut = (End.m_iChannel - Start.m_iChannel + 1) % m_pClipData->ClipInfo.Channels == 0;
+		Start.m_iColumn = CPatternEditor::GetCursorStartColumn(m_pClipData->ClipInfo.StartColumn);
+		End.m_iColumn = CPatternEditor::GetCursorStartColumn(Cut ? m_pClipData->ClipInfo.EndColumn :
+			4 + 3 * CFamiTrackerDoc::GetDoc()->GetEffColumns(m_iUndoTrack, End.m_iChannel));
+	}
+	else {
+		End.m_iChannel += m_pClipData->ClipInfo.Channels - 1;
+		Start.m_iColumn = CPatternEditor::GetCursorStartColumn(m_pClipData->ClipInfo.StartColumn);
+		End.m_iColumn = CPatternEditor::GetCursorStartColumn(m_pClipData->ClipInfo.EndColumn);
+	}
+
+	New.m_cpStart = Start;
+	New.m_cpEnd = End;
+	pPatternEditor->SetSelection(New);
+
+	sel_condition_t Cond = pPatternEditor->GetSelectionCondition();
+	if (Cond == SEL_CLEAN) {
+		m_selection = New;
+		return true;
+	}
+	else {
+		pPatternEditor->SetSelection(m_selection);
+		if (!m_bSelecting) pPatternEditor->CancelSelection();
+		int Confirm;
+		switch (Cond) {
+		case SEL_REPEATED_ROW:
+			Confirm = AfxMessageBox(IDS_PASTE_REPEATED_ROW, MB_YESNO | MB_ICONEXCLAMATION | MB_DEFBUTTON2);
+			break;
+		case SEL_NONTERMINAL_SKIP: case SEL_TERMINAL_SKIP:
+			Confirm = AfxMessageBox(IDS_PASTE_NONTERMINAL, MB_YESNO | MB_ICONEXCLAMATION | MB_DEFBUTTON2);
+			break;
+		}
+		if (Confirm == IDYES) {
+			pPatternEditor->SetSelection(New);
+			m_selection = New;
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+}
+
+void CPatternAction::CopySelection(const CPatternEditor *pPatternEditor)		// // //
+{
+	m_pUndoClipData = pPatternEditor->Copy();
+}
+
+void CPatternAction::PasteSelection(CPatternEditor *pPatternEditor)		// // //
+{
+	pPatternEditor->Paste(m_pUndoClipData, PASTE_DEFAULT, PASTE_SELECTION);
+}
+
 void CPatternAction::IncreaseRowAction(CFamiTrackerDoc *pDoc) const
 {
 	stChanNote Note;
@@ -655,25 +749,49 @@ bool CPatternAction::SaveState(CMainFrame *pMainFrm)
 			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, pDoc->GetPatternLength(m_iUndoTrack) - 1, &m_OldNote);
 			break;
 		case ACT_EDIT_PASTE:
-		case ACT_EDIT_DELETE:		// // //
-		case ACT_EDIT_DELETE_ROWS:
-		case ACT_INSERT_SEL_ROWS:
-		case ACT_TRANSPOSE:
-		case ACT_SCROLL_VALUES:
 		case ACT_DRAG_AND_DROP:
-			SaveEntire(pPatternEditor);		// // //
-			break;
-		case ACT_INTERPOLATE:
-			if (!pPatternEditor->IsSelecting() || m_iSelectionSize < 3)		// // //
-		case ACT_STRETCH_PATTERN:		// // //
+			if (!SetTargetSelection(pPatternEditor))		// // //
 				return false;
+			CopySelection(pPatternEditor);
+			break;
+		case ACT_EDIT_DELETE:		// // //
+			CopySelection(pPatternEditor);		// // //
+			break;
+		case ACT_EDIT_DELETE_ROWS:
+			if (!(m_selection.GetFrameStart() <= m_iUndoFrame && m_selection.GetFrameEnd() >= m_iUndoFrame))
+				return false;
+			// continue
+		case ACT_INSERT_SEL_ROWS:
 			SaveEntire(pPatternEditor);
 			break;
+		case ACT_TRANSPOSE:		// // //
+		case ACT_SCROLL_VALUES:
+			pPatternEditor->SetSelection(m_selection);
+			CopySelection(pPatternEditor);
+			break;
+		case ACT_INTERPOLATE: // 0CC: Copy only the selection if it is guaranteed to remain unmodified
 		case ACT_REVERSE:
+		case ACT_STRETCH_PATTERN:		// // //
+			if (!pPatternEditor->IsSelecting())
+				return false;
+			switch (Cond) {
+			case SEL_REPEATED_ROW:
+				pMainFrm->SetMessageText(IDS_SEL_REPEATED_ROW); break;
+			case SEL_NONTERMINAL_SKIP:
+				pMainFrm->SetMessageText(IDS_SEL_NONTERMINAL_SKIP); break;
+			case SEL_TERMINAL_SKIP:
+				pMainFrm->SetMessageText(IDS_SEL_TERMINAL_SKIP); break;
+			}
+			if (Cond != SEL_CLEAN) {
+				MessageBeep(MB_ICONWARNING);
+				return false;
+			}
+			CopySelection(pPatternEditor);
+			break;
 		case ACT_REPLACE_INSTRUMENT:
 			if (!pPatternEditor->IsSelecting())
 				return false;
-			SaveEntire(pPatternEditor);
+			CopySelection(pPatternEditor);
 			break;
 		case ACT_INCREASE:
 		case ACT_DECREASE:		// // //
@@ -737,8 +855,6 @@ void CPatternAction::Undo(CMainFrame *pMainFrm)
 			break;
 		case ACT_EDIT_PASTE:		// // //
 		case ACT_EDIT_DELETE:
-		case ACT_EDIT_DELETE_ROWS:
-		case ACT_INSERT_SEL_ROWS:
 		case ACT_TRANSPOSE:
 		case ACT_SCROLL_VALUES:
 		case ACT_INTERPOLATE:
@@ -746,10 +862,15 @@ void CPatternAction::Undo(CMainFrame *pMainFrm)
 		case ACT_REPLACE_INSTRUMENT:
 		case ACT_STRETCH_PATTERN:		// // //
 			RestoreSelection(pPatternEditor);
+			PasteSelection(pPatternEditor);		// // //
+			break;
+		case ACT_INSERT_SEL_ROWS:
+		case ACT_EDIT_DELETE_ROWS:
+			RestoreSelection(pPatternEditor);
 			RestoreEntire(pPatternEditor);
 			break;
 		case ACT_DRAG_AND_DROP:
-			RestoreEntire(pPatternEditor);
+			PasteSelection(pPatternEditor);		// // //
 			RestoreSelection(pPatternEditor);
 			break;
 		case ACT_PATTERN_LENGTH:
@@ -811,11 +932,11 @@ void CPatternAction::Redo(CMainFrame *pMainFrm)
 			InsertRows(pDoc);
 			break;
 		case ACT_TRANSPOSE:
-			RestoreSelection(pPatternEditor);
+			// // //
 			Transpose(pDoc);
 			break;
 		case ACT_SCROLL_VALUES:
-			pPatternEditor->SetSelection(m_selection);
+			// // //
 			ScrollValues(pDoc);
 			break;
 		case ACT_INTERPOLATE:

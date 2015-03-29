@@ -3412,7 +3412,18 @@ DROPEFFECT CFamiTrackerView::OnDragEnter(COleDataObject* pDataObject, DWORD dwKe
 {
 	TRACE0("OLE: OnDragEnter\n");
 
-	if (pDataObject->IsDataAvailable(m_iClipboard)) {
+	sel_condition_t Cond = m_pPatternEditor->GetSelectionCondition();
+	if (m_pPatternEditor->GetSelectionCondition() == SEL_NONTERMINAL_SKIP) {		// // //
+		MessageBeep(MB_ICONWARNING);
+		static_cast<CMainFrame*>(GetParentFrame())->SetMessageText(IDS_SEL_NONTERMINAL_SKIP);
+		m_nDropEffect = DROPEFFECT_NONE;
+	}
+	else if (m_pPatternEditor->GetSelectionCondition() == SEL_REPEATED_ROW) {		// // //
+		MessageBeep(MB_ICONWARNING);
+		static_cast<CMainFrame*>(GetParentFrame())->SetMessageText(IDS_SEL_REPEATED_ROW);
+		m_nDropEffect = DROPEFFECT_NONE;
+	}
+	else if (pDataObject->IsDataAvailable(m_iClipboard)) {
 		if (dwKeyState & (MK_CONTROL | MK_SHIFT)) {
 			m_nDropEffect = DROPEFFECT_COPY;
 			if (dwKeyState & MK_SHIFT)
