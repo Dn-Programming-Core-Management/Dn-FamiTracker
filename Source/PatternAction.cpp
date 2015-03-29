@@ -761,7 +761,8 @@ bool CPatternAction::SaveState(CMainFrame *pMainFrm)
 			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, pDoc->GetPatternLength(m_iUndoTrack) - 1, &m_OldNote);
 			break;
 		case ACT_DRAG_AND_DROP:
-			CopyAuxiliary(pPatternEditor);
+			if (m_bDragDelete)
+				CopyAuxiliary(pPatternEditor);
 			// continue
 		case ACT_EDIT_PASTE:
 			if (!SetTargetSelection(pPatternEditor))		// // //
@@ -886,7 +887,8 @@ void CPatternAction::Undo(CMainFrame *pMainFrm)
 		case ACT_DRAG_AND_DROP:
 			PasteSelection(pPatternEditor);		// // //
 			RestoreSelection(pPatternEditor);
-			PasteAuxiliary(pPatternEditor);
+			if (m_bDragDelete)
+				PasteAuxiliary(pPatternEditor);
 			break;
 		case ACT_PATTERN_LENGTH:
 			pDoc->SetPatternLength(m_iUndoTrack, m_iOldPatternLen);
