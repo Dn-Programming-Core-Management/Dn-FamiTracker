@@ -69,7 +69,7 @@ END_MESSAGE_MAP()
 
 const CString CFindDlg::m_pNoteName[7] = {_T("C"), _T("D"), _T("E"), _T("F"), _T("G"), _T("A"), _T("B")};
 const CString CFindDlg::m_pNoteSign[3] = {_T("b"), _T("-"), _T("#")};
-const int CFindDlg::m_iNoteOffset[7] = {C, D, E, F, G, A, B};
+const int CFindDlg::m_iNoteOffset[7] = {NOTE_C, NOTE_D, NOTE_E, NOTE_F, NOTE_G, NOTE_A, NOTE_B};
 
 enum {
 	WC_NOTE = 0,
@@ -515,16 +515,16 @@ bool CFindDlg::CompareFields(const searchTerm &Source, const stChanNote Target, 
 	if (Term.Definite[WC_NOTE]) {
 		if (Term.NoiseChan) {
 			if (!Noise) return false;
-			if (Term.Note.Note < C || Term.Note.Note > B) {
+			if (Term.Note.Note < NOTE_C || Term.Note.Note > NOTE_B) {
 				if (Term.Note.Note != Target.Note) return false;
 			}
 			else if (MIDI_NOTE(Term.Note.Octave, Term.Note.Note) != MIDI_NOTE(Target.Octave, Target.Note) % 16) return false;
 		}
 		else {
-			if (Noise && Term.Note.Note >= C && Term.Note.Note <= B) return false;
+			if (Noise && Term.Note.Note >= NOTE_C && Term.Note.Note <= NOTE_B) return false;
 			if (Term.Note.Note != Target.Note) return false;
 			if (Term.Definite[WC_OCT] && Term.Note.Octave != Target.Octave
-				&& (Term.Note.Note >= C && Term.Note.Note <= B || Term.Note.Note == ECHO))
+				&& (Term.Note.Note >= NOTE_C && Term.Note.Note <= NOTE_B || Term.Note.Note == ECHO))
 					return false;
 		}
 	}

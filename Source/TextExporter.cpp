@@ -560,7 +560,7 @@ static const CString& ExportCellText(const stChanNote& stCell, unsigned int nEff
 		_T("==="), _T("---"), _T("^-?") };
 		
 	s = (stCell.Note <= ECHO) ? TEXT_NOTE[stCell.Note] : "...";		// // //
-	if (stCell.Note >= C && stCell.Note <= B || stCell.Note == ECHO)		// // //
+	if (stCell.Note >= NOTE_C && stCell.Note <= NOTE_B || stCell.Note == ECHO)		// // //
 	{
 		if (bNoise)
 		{

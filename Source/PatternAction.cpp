@@ -485,7 +485,8 @@ void CPatternAction::Interpolate(CFamiTrackerDoc *pDoc) const
 			switch (j) {
 			case 0: // // // Note
 				if (!m_selection.IsColumnSelected(COLUMN_NOTE, i)
-					|| StartData.Note < C || StartData.Note > B || EndData.Note < C || EndData.Note > B)
+					|| StartData.Note < NOTE_C || StartData.Note > NOTE_B
+					|| EndData.Note < NOTE_C || EndData.Note > NOTE_B)
 					continue;
 				StartValLo = (float)MIDI_NOTE(StartData.Octave, StartData.Note);
 				EndValLo = (float)MIDI_NOTE(EndData.Octave, EndData.Note);

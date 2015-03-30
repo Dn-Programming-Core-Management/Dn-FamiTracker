@@ -233,10 +233,11 @@ const char EFF_CHAR[] = {
 
 enum note_t {
 	NONE = 0,	// No note
-	C, Cs, D, Ds, E, F, Fs, G, Gs, A, As, B,
+	NOTE_C,  NOTE_Cs, NOTE_D,  NOTE_Ds, NOTE_E,  NOTE_F,		// // // renamed
+	NOTE_Fs, NOTE_G,  NOTE_Gs, NOTE_A,  NOTE_As, NOTE_B,
 	RELEASE,	// Release, begin note release sequence
 	HALT,		// Halt, stops note
-	ECHO,		// Echo buffer access, octave determines position
+	ECHO,		// // // Echo buffer access, octave determines position
 };
 
 enum machine_t {
