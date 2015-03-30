@@ -258,6 +258,8 @@ void CChannelHandler::RetrieveChannelState()		// // //
 			}
 			BufferPos++;
 		}
+		if (BufferPos < 0)
+			BufferPos = 0;
 
 		if (m_iInstrument == MAX_INSTRUMENTS)
 			if (Note.Instrument != MAX_INSTRUMENTS)
