@@ -472,10 +472,17 @@ bool CFindDlg::GetSimpleReplaceTerm(searchTerm &Term)
 replaceTerm CFindDlg::toReplace(const searchTerm x)
 {
 	replaceTerm Term;
-	Term.Note = BLANK_NOTE;
+	Term.Note.Note = x.Note->Current->Min;
+	Term.Note.Octave = x.Oct->Current->Min;
+	Term.Note.Instrument = x.Inst->Current->Min;
+	Term.Note.Vol = x.Vol->Current->Min;
 	Term.rowOffset = x.rowOffset;
 	Term.colOffset = x.colOffset;
 	Term.NoiseChan = x.NoiseChan;
+	for (int i = 0; i < 4; i++) {
+		Term.Note.EffNumber[i] = x.EffNumber[i]->Current->Min;
+		Term.Note.EffParam[i] = x.EffParam[i]->Current->Min;
+	}
 	for (int i = 0; i < 6; i++) {
 		Term.Definite[i] = x.Definite[i];
 	}
@@ -693,19 +700,29 @@ void CFindDlg::OnBnClickedButtonReplace()
 					 BeginChan  = m_pView->GetSelectedChannel(),
 					 Count = 0;
 		CString str;
-		bool Second = false;
+		
+		unsigned int Filter = m_cSearchArea->GetCurSel();
+		unsigned int ZipPos = 0, PrevPos = 0;
+		if (!(Filter & 0x02))
+			m_pView->SelectFrame(0);
+		if (!(Filter & 0x01))
+			m_pView->SelectChannel(0);
+		m_pView->SelectRow(0);
+		m_bSkipFirst = false;
 
 		Find();
 		while (m_bFound) {
 			Replace();
-			if (Second) break;
-			Find();
 			Count++;
-			if (m_pView->GetSelectedFrame() == BeginFrame
-				&& m_pView->GetSelectedRow() == BeginRow
-				&& m_pView->GetSelectedChannel() == BeginChan)
-				Second = true;
+			Find();
+			if (IsDlgButtonChecked(IDC_CHECK_VERTICAL_SEARCH))
+				ZipPos = (m_pView->GetSelectedFrame() << 16) + (m_pView->GetSelectedChannel() << 8) + m_pView->GetSelectedRow();
+			else
+				ZipPos = (m_pView->GetSelectedFrame() << 16) + (m_pView->GetSelectedRow() << 8) + m_pView->GetSelectedChannel();
+			if (ZipPos <= PrevPos) break;
+			else PrevPos = ZipPos;
 		}
+
 		m_pView->SelectFrame(BeginFrame);
 		m_pView->SelectRow(BeginRow);
 		m_pView->SelectChannel(BeginChan);
