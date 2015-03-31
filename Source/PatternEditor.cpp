@@ -3742,7 +3742,7 @@ sel_condition_t CPatternEditor::GetSelectionCondition() const		// // //
 		stChanNote Note;
 		for (; it <= End; it++) {
 			// bool HasSkip = false;
-			for (int i = 0; i <= GetChannelCount(); i++) {
+			for (int i = 0; i < GetChannelCount(); i++) {
 				it.Get(i, &Note);
 				for (unsigned int c = 0; c <= m_pDocument->GetEffColumns(Track, i); c++) switch (Note.EffNumber[c]) {
 				case EF_JUMP: case EF_SKIP: case EF_HALT:
