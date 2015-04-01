@@ -187,6 +187,8 @@ BEGIN_MESSAGE_MAP(CFamiTrackerView, CView)
 	ON_COMMAND(ID_MODULE_DETUNE, OnTrackerDetune)
 	ON_COMMAND(ID_MODULE_GROOVE, OnTrackerGroove)
 	ON_UPDATE_COMMAND_UI(ID_FIND_NEXT, OnUpdateFindNext)
+	ON_COMMAND(ID_DECREASEVALUESCOARSE, OnCoarseDecreaseValues)
+	ON_COMMAND(ID_INCREASEVALUESCOARSE, OnCoarseIncreaseValues)
 	ON_COMMAND(ID_EDIT_PASTEOVERWRITE, OnEditPasteOverwrite)
 	ON_COMMAND(ID_EDIT_PASTEINSERT, OnEditPasteInsert)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_PASTEOVERWRITE, OnUpdateEditPaste)
@@ -1156,6 +1158,22 @@ void CFamiTrackerView::OnIncreaseValues()
 	if (!m_bEditEnable) return;		// // //
 	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_SCROLL_VALUES);
 	pAction->SetScroll(1);
+	AddAction(pAction);
+}
+
+void CFamiTrackerView::OnCoarseDecreaseValues()		// // //
+{
+	if (!m_bEditEnable) return;
+	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_SCROLL_VALUES);
+	pAction->SetScroll(-16);
+	AddAction(pAction);
+}
+
+void CFamiTrackerView::OnCoarseIncreaseValues()		// // //
+{
+	if (!m_bEditEnable) return;
+	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_SCROLL_VALUES);
+	pAction->SetScroll(16);
 	AddAction(pAction);
 }
 

@@ -141,6 +141,8 @@
 #define IDI_INST_2A03INV                179
 #define IDI_INST_2A03                   179
 #define IDS_PASTE_REPEATED_ROW          179
+#define ID_INCREASEVALUESCOARSE         179
+#define ID_DECREASEVALUESCOARSE         180
 #define IDD_CONFIG_APPEARANCE           180
 #define IDS_PASTE_NONTERMINAL           180
 #define ID_CLONE_SEQUENCE               181

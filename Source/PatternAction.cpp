@@ -607,7 +607,7 @@ void CPatternAction::ScrollValues(CFamiTrackerDoc *pDoc) const
 	int ColEnd		= CPatternEditor::GetSelectColumn(m_bSelecting ? m_selection.GetColEnd() : m_iUndoColumn);
 
 	const bool bWarp = theApp.GetSettings()->General.bWrapPatternValue;
-	const bool bSingular = (it == End) && (ChanStart == ChanEnd) && (ColStart == ColEnd);
+	const bool bSingular = (it == End) && (ChanStart == ChanEnd) && (ColStart == ColEnd) && (m_iScrollValue == -1 || m_iScrollValue == 1);
 	
 	int Row = 0;
 	do {
@@ -623,16 +623,20 @@ void CPatternAction::ScrollValues(CFamiTrackerDoc *pDoc) const
 					if (Note.Instrument != MAX_INSTRUMENTS) {
 						if (bWarp)		// // //
 							Note.Instrument = (Note.Instrument + m_iScrollValue + MAX_INSTRUMENTS) % MAX_INSTRUMENTS;
-						else if ((m_iScrollValue < 0 && Note.Instrument > 0) || (m_iScrollValue > 0 && Note.Instrument < MAX_INSTRUMENTS - 1))
-							Note.Instrument += m_iScrollValue;
+						else {
+							int Val = Note.Instrument + m_iScrollValue;
+							Note.Instrument = std::max(std::min(Val, MAX_INSTRUMENTS - 1), 0);
+						}
 					}
 					break;
 				case COLUMN_VOLUME:
 					if (Note.Vol != MAX_VOLUME) {
 						if (bWarp)		// // //
 							Note.Vol = (Note.Vol + m_iScrollValue + MAX_VOLUME) % MAX_VOLUME;
-						else if ((m_iScrollValue < 0 && Note.Vol > 0) || (m_iScrollValue > 0 && Note.Vol < 0x0F))
-							Note.Vol += m_iScrollValue;
+						else {
+							int Val = Note.Vol + m_iScrollValue;
+							Note.Vol = std::max(std::min(Val, MAX_VOLUME - 1), 0);
+						}
 					}
 					break;
 				case COLUMN_EFF1:

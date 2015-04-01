@@ -415,6 +415,8 @@ public:
 	afx_msg void OnTrackerDetune();
 	afx_msg void OnTrackerGroove();
 	afx_msg void OnUpdateFindNext(CCmdUI *pCmdUI);
+	afx_msg void OnCoarseDecreaseValues();
+	afx_msg void OnCoarseIncreaseValues();
 	afx_msg void OnEditExpandPatterns();
 	afx_msg void OnEditShrinkPatterns();
 	afx_msg void OnEditStretchPatterns();
