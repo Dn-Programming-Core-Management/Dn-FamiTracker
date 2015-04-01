@@ -120,9 +120,9 @@ protected:
 	bool ParseVol(searchTerm &Term, CString str, bool Simple, CString &err);
 	bool ParseEff(searchTerm &Term, CString str, bool Simple, CString &err);
 
-	bool GetSimpleFindTerm(searchTerm &Term);
-	bool GetSimpleReplaceTerm(searchTerm &Term);
-	bool CompareFields(const searchTerm &Source, const stChanNote Target, bool Noise, int EffCount);
+	bool GetSimpleFindTerm();
+	bool GetSimpleReplaceTerm();
+	bool CompareFields(const stChanNote Target, bool Noise, int EffCount);
 
 	replaceTerm toReplace(const searchTerm x);
 	searchTerm toSearch(const replaceTerm x);
@@ -135,8 +135,11 @@ protected:
 	CEdit *m_cFindMacroField, *m_cReplaceMacroField, *m_cFilterMacroField;
 	CComboBox *m_cSearchArea, *m_cEffectColumn;
 
+	searchTerm m_searchTerm;
+	replaceTerm m_replaceTerm;
 	bool m_bFindMacro, m_bReplaceMacro, m_bFilterMacro;
-	bool m_bFound, m_bSkipFirst;
+	bool m_bFound, m_bSkipFirst, m_bVisible;
+	int m_iFrame, m_iRow, m_iChannel;
 	static const CString m_pNoteName[7];
 	static const CString m_pNoteSign[3];
 	static const int m_iNoteOffset[7];

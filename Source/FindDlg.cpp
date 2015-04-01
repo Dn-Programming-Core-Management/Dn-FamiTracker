@@ -37,10 +37,19 @@
 
 IMPLEMENT_DYNAMIC(CFindDlg, CDialog)
 
-CFindDlg::CFindDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CFindDlg::IDD, pParent)
+CFindDlg::CFindDlg(CWnd* pParent /*=NULL*/) : CDialog(CFindDlg::IDD, pParent),
+	m_bFindMacro(false),
+	m_bReplaceMacro(false),
+	m_bFilterMacro(false),
+	m_bFound(false),
+	m_bSkipFirst(true),
+	m_bVisible(true),
+	m_iFrame(0),
+	m_iRow(0),
+	m_iChannel(0)
 {
-
+	memset(&m_searchTerm, 0, sizeof(searchTerm));
+	memset(&m_replaceTerm, 0, sizeof(replaceTerm));
 }
 
 CFindDlg::~CFindDlg()
@@ -164,12 +173,6 @@ searchTerm::searchTerm() :
 BOOL CFindDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
-
-	m_bFindMacro = false;
-	m_bReplaceMacro = false;
-	m_bFilterMacro = false;
-	m_bFound = false;
-	m_bSkipFirst = true;
 
 	CheckRadioButton(IDC_RADIO_FIND_SIMPLE, IDC_RADIO_FIND_MACRO, IDC_RADIO_FIND_SIMPLE);
 	CheckRadioButton(IDC_RADIO_REPLACE_SIMPLE, IDC_RADIO_REPLACE_MACRO, IDC_RADIO_REPLACE_SIMPLE);
@@ -371,7 +374,7 @@ bool CFindDlg::ParseEff(searchTerm &Term, CString str, bool Simple, CString &err
 	return true;
 }
 
-bool CFindDlg::GetSimpleFindTerm(searchTerm &Term)
+bool CFindDlg::GetSimpleFindTerm()
 {
 	CString str = _T(""), err = _T("");
 	searchTerm out;
@@ -416,11 +419,11 @@ bool CFindDlg::GetSimpleFindTerm(searchTerm &Term)
 		if (out.Definite[i]) break;
 	}
 
-	Term = out;
+	m_searchTerm = out;
 	return true;
 }
 
-bool CFindDlg::GetSimpleReplaceTerm(searchTerm &Term)
+bool CFindDlg::GetSimpleReplaceTerm()
 {
 	CString str = _T(""), err = _T("");
 	searchTerm out;
@@ -465,7 +468,7 @@ bool CFindDlg::GetSimpleReplaceTerm(searchTerm &Term)
 		if (out.Definite[i]) break;
 	}
 
-	Term = out;
+	m_replaceTerm = toReplace(out);
 	return true;
 }
 
@@ -511,13 +514,13 @@ searchTerm CFindDlg::toSearch(const replaceTerm x)
 	return Term;
 }
 
-bool CFindDlg::CompareFields(const searchTerm &Source, const stChanNote Target, bool Noise, int EffCount)
+bool CFindDlg::CompareFields(const stChanNote Target, bool Noise, int EffCount)
 {
 	int EffColumn = m_cEffectColumn->GetCurSel();
 	if (EffColumn > EffCount) return false;
 	bool EffectMatch = false;
 
-	replaceTerm Term = toReplace(Source);
+	replaceTerm Term = toReplace(m_searchTerm);
 
 	if (Term.Definite[WC_NOTE]) {
 		if (Term.NoiseChan) {
@@ -551,19 +554,15 @@ bool CFindDlg::Find(bool ShowEnd)
 {
 	m_pDocument = static_cast<CFamiTrackerDoc*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveDocument());
 	m_pView = static_cast<CFamiTrackerView*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveView());
-	searchTerm Term;
 	stChanNote Target;
 	unsigned int Filter = m_cSearchArea->GetCurSel();
 	int Track = static_cast<CMainFrame*>(theApp.m_pMainWnd)->GetSelectedTrack();
 
-	memset(&Term, 0, sizeof(searchTerm));
-
 	if (m_bFindMacro) { m_bFound = false; return false; } // 0CC: unimplemented
-	else if (!GetSimpleFindTerm(Term)) { m_bFound = false; return m_bFound; }
 
-	unsigned int BeginFrame = m_pView->GetSelectedFrame(),
-				 BeginRow   = m_pView->GetSelectedRow(),
-				 BeginChan  = m_pView->GetSelectedChannel();
+	unsigned int BeginFrame = m_bVisible ? m_pView->GetSelectedFrame() : m_iFrame,
+				 BeginRow   = m_bVisible ? m_pView->GetSelectedRow() : m_iRow,
+				 BeginChan  = m_bVisible ? m_pView->GetSelectedChannel() : m_iChannel;
 	bool bFirst = true, bSecond = false, bVertical = IsDlgButtonChecked(IDC_CHECK_VERTICAL_SEARCH) == 1;
 	for (unsigned int i = (Filter & 0x02) ? BeginFrame : 0; i <= ((Filter & 0x02) ? BeginFrame + 1 : m_pDocument->GetFrameCount(Track)); i++) {
 		if (!bSecond && i == ((Filter & 0x02) ? BeginFrame + 1 : m_pDocument->GetFrameCount(Track))) {
@@ -591,10 +590,15 @@ bool CFindDlg::Find(bool ShowEnd)
 			}
 			m_pDocument->GetNoteData(Track, i, k, j, &Target);
 
-			if (CompareFields(Term, Target, k == CHANID_NOISE, m_pDocument->GetEffColumns(Track, k))) {
-				m_pView->SelectFrame(i);
-				m_pView->SelectRow(j);
-				m_pView->SelectChannel(k);
+			if (CompareFields(Target, k == CHANID_NOISE, m_pDocument->GetEffColumns(Track, k))) {
+				m_iFrame = i;
+				m_iRow = j;
+				m_iChannel = k;
+				if (m_bVisible) {
+					m_pView->SelectFrame(i);
+					m_pView->SelectRow(j);
+					m_pView->SelectChannel(k);
+				}
 				m_bSkipFirst = true; m_bFound = true; return m_bFound;
 			}
 			if (bSecond && i == BeginFrame && j == BeginRow && k == BeginChan) {
@@ -612,70 +616,74 @@ bool CFindDlg::Replace(bool CanUndo)
 {
 	m_pDocument = static_cast<CFamiTrackerDoc*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveDocument());
 	m_pView = static_cast<CFamiTrackerView*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveView());
-	searchTerm Term2;
-	replaceTerm Term = {};
 	stChanNote Target;
-	bool bReplaced = false;
 	int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
 
 	if (m_bReplaceMacro) return false; // 0CC: unimplemented
-	else if (!GetSimpleReplaceTerm(Term2)) return false;
-	Term = toReplace(Term2);
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) {
-		if (Term.Definite[WC_NOTE] && !Term.Definite[WC_OCT]) {
+		if (m_replaceTerm.Definite[WC_NOTE] && !m_replaceTerm.Definite[WC_OCT]) {
 			AfxMessageBox(_T("Simple replacement query cannot contain a note with an unspecified octave if the option \"Remove original data\" is enabled."), MB_OK | MB_ICONSTOP);
 			return false;
 		}
-		if (Term.Definite[WC_EFF] && !Term.Definite[WC_PARAM]) {
+		if (m_replaceTerm.Definite[WC_EFF] && !m_replaceTerm.Definite[WC_PARAM]) {
 			AfxMessageBox(_T("Simple replacement query cannot contain an effect with an unspecified parameter if the option \"Remove original data\" is enabled."), MB_OK | MB_ICONSTOP);
 			return false;
 		}
 	}
 
 	if (m_bFound) {
-		m_pDocument->GetNoteData(Track, m_pView->GetSelectedFrame(), m_pView->GetSelectedChannel(), m_pView->GetSelectedRow(), &Target);
+		m_pDocument->GetNoteData(Track, m_iFrame, m_iChannel, m_iRow, &Target);
 		int EffColumn = m_cEffectColumn->GetCurSel();
-		if (EffColumn == MAX_EFFECT_COLUMNS && (Term.Definite[WC_EFF] || Term.Definite[WC_PARAM])) {
+		if (EffColumn == MAX_EFFECT_COLUMNS && (m_replaceTerm.Definite[WC_EFF] || m_replaceTerm.Definite[WC_PARAM])) {
 			for (int i = 0; i < MAX_EFFECT_COLUMNS && EffColumn != MAX_EFFECT_COLUMNS; i++)
-				if (Term.Note.EffNumber[0] == Target.EffNumber[i] && Term.Note.EffParam[0] == Target.EffParam[i])
+				if (m_replaceTerm.Note.EffNumber[0] == Target.EffNumber[i] && m_replaceTerm.Note.EffParam[0] == Target.EffParam[i])
 					EffColumn = i;
 		}
 
-		if (Term.Definite[WC_NOTE])  Target.Note = Term.Note.Note;
-		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) Target.Note = NONE;
-		if (Term.Definite[WC_OCT])   Target.Octave = Term.Note.Octave;
-		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) Target.Octave = 0;
-		if (Term.Definite[WC_INST])  Target.Instrument = Term.Note.Instrument;
-		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) Target.Instrument = MAX_INSTRUMENTS;
-		if (Term.Definite[WC_VOL])   Target.Vol = Term.Note.Vol;
-		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) Target.Vol = 0x10;
-		if (Term.Definite[WC_EFF]) {
+		if (m_replaceTerm.Definite[WC_NOTE])
+			Target.Note = m_replaceTerm.Note.Note;
+		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE))
+			Target.Note = NONE;
+		if (m_replaceTerm.Definite[WC_OCT])
+			Target.Octave = m_replaceTerm.Note.Octave;
+		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE))
+			Target.Octave = 0;
+		if (m_replaceTerm.Definite[WC_INST])
+			Target.Instrument = m_replaceTerm.Note.Instrument;
+		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE))
+			Target.Instrument = MAX_INSTRUMENTS;
+		if (m_replaceTerm.Definite[WC_VOL])
+			Target.Vol = m_replaceTerm.Note.Vol;
+		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE))
+			Target.Vol = MAX_VOLUME;
+
+		if (m_replaceTerm.Definite[WC_EFF]) {
 			switch (m_pDocument->GetChipType(m_pView->GetSelectedChannel())) {
 			case SNDCHIP_FDS:
-				switch (Term.Note.EffNumber[0]) {
-				case EF_SWEEPUP: Term.Note.EffNumber[0] = EF_FDS_MOD_DEPTH; break;
-				case EF_SWEEPDOWN: Term.Note.EffNumber[0] = EF_FDS_MOD_SPEED_HI; break;
+				switch (m_replaceTerm.Note.EffNumber[0]) {
+				case EF_SWEEPUP: m_replaceTerm.Note.EffNumber[0] = EF_FDS_MOD_DEPTH; break;
+				case EF_SWEEPDOWN: m_replaceTerm.Note.EffNumber[0] = EF_FDS_MOD_SPEED_HI; break;
 				} break;
 			case SNDCHIP_S5B:
-				switch (Term.Note.EffNumber[0]) {
-				case EF_SWEEPUP: Term.Note.EffNumber[0] = EF_SUNSOFT_ENV_LO; break;
-				case EF_SWEEPDOWN: Term.Note.EffNumber[0] = EF_SUNSOFT_ENV_HI; break;
-				case EF_FDS_MOD_SPEED_LO: Term.Note.EffNumber[0] = EF_SUNSOFT_ENV_TYPE; break;
+				switch (m_replaceTerm.Note.EffNumber[0]) {
+				case EF_SWEEPUP: m_replaceTerm.Note.EffNumber[0] = EF_SUNSOFT_ENV_LO; break;
+				case EF_SWEEPDOWN: m_replaceTerm.Note.EffNumber[0] = EF_SUNSOFT_ENV_HI; break;
+				case EF_FDS_MOD_SPEED_LO: m_replaceTerm.Note.EffNumber[0] = EF_SUNSOFT_ENV_TYPE; break;
 				} break;
 			case SNDCHIP_N163:
-				switch (Term.Note.EffNumber[0]) {
-				case EF_DAC: Term.Note.EffNumber[0] = EF_N163_WAVE_BUFFER; break;
+				switch (m_replaceTerm.Note.EffNumber[0]) {
+				case EF_DAC: m_replaceTerm.Note.EffNumber[0] = EF_N163_WAVE_BUFFER; break;
 				} break;
 			}
-			Target.EffNumber[EffColumn]	= Term.Note.EffNumber[0];
+			Target.EffNumber[EffColumn]	= m_replaceTerm.Note.EffNumber[0];
 		}
 		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) Target.EffNumber[EffColumn] = EF_NONE;
-		if (Term.Definite[WC_PARAM]) Target.EffParam[EffColumn] = Term.Note.EffParam[0];
+		if (m_replaceTerm.Definite[WC_PARAM]) Target.EffParam[EffColumn] = m_replaceTerm.Note.EffParam[0];
 		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) Target.EffParam[EffColumn] = 0;
 		if (CanUndo) m_pView->EditReplace(Target);
-		m_pDocument->SetNoteData(Track, m_pView->GetSelectedFrame(), m_pView->GetSelectedChannel(), m_pView->GetSelectedRow(), &Target);
+		m_pDocument->SetNoteData(Track, m_iFrame, m_iChannel, m_iRow, &Target);
 		m_bFound = false;
-		bReplaced = true; return true;
+		return true;
 	}
 	else {
 		m_bSkipFirst = false;
@@ -685,11 +693,15 @@ bool CFindDlg::Replace(bool CanUndo)
 
 void CFindDlg::OnBnClickedButtonFindNext()
 {
+	if (!GetSimpleFindTerm()) return;
+	m_bVisible = true;
 	Find(true);
 }
 
 void CFindDlg::OnBnClickedButtonReplace()
 {
+	if (!GetSimpleFindTerm()) return;
+	if (!GetSimpleReplaceTerm()) return;
 	m_pView = static_cast<CFamiTrackerView*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveView());
 	if (theApp.IsPlaying() && m_pView->GetFollowMode())
 		return;
@@ -703,12 +715,19 @@ void CFindDlg::OnBnClickedButtonReplace()
 		
 		unsigned int Filter = m_cSearchArea->GetCurSel();
 		unsigned int ZipPos = 0, PrevPos = 0;
-		if (!(Filter & 0x02))
-			m_pView->SelectFrame(0);
-		if (!(Filter & 0x01))
-			m_pView->SelectChannel(0);
-		m_pView->SelectRow(0);
+		if (!(Filter & 0x02)) {
+			//m_pView->SelectFrame(0);
+			m_iFrame = 0;
+		}
+		if (!(Filter & 0x01)) {
+			//m_pView->SelectChannel(0);
+			m_iChannel = 0;
+		}
+		//m_pView->SelectRow(0);
+		m_iRow = 0;
+
 		m_bSkipFirst = false;
+		m_bVisible = false;
 
 		Find();
 		while (m_bFound) {
@@ -716,9 +735,9 @@ void CFindDlg::OnBnClickedButtonReplace()
 			Count++;
 			Find();
 			if (IsDlgButtonChecked(IDC_CHECK_VERTICAL_SEARCH))
-				ZipPos = (m_pView->GetSelectedFrame() << 16) + (m_pView->GetSelectedChannel() << 8) + m_pView->GetSelectedRow();
+				ZipPos = (m_iFrame << 16) + (m_iChannel << 8) + m_iRow;
 			else
-				ZipPos = (m_pView->GetSelectedFrame() << 16) + (m_pView->GetSelectedRow() << 8) + m_pView->GetSelectedChannel();
+				ZipPos = (m_iFrame << 16) + (m_iRow << 8) + m_iChannel;
 			if (ZipPos <= PrevPos) break;
 			else PrevPos = ZipPos;
 		}
@@ -726,16 +745,16 @@ void CFindDlg::OnBnClickedButtonReplace()
 		m_pView->SelectFrame(BeginFrame);
 		m_pView->SelectRow(BeginRow);
 		m_pView->SelectChannel(BeginChan);
+		m_pView->GetPatternEditor()->InvalidatePatternData();
 
 		str.Format(_T("%d occurrence(s) replaced."), Count);
 		AfxMessageBox(str, MB_OK | MB_ICONINFORMATION);
 	}
 	else {
+		m_bVisible = true;
 		Replace(true);
 		Find();
 	}
-
-	//m_pView->InvalidatePatternEditor();
 }
 
 void CFindDlg::Reset()
