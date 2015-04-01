@@ -2935,7 +2935,7 @@ void CMainFrame::OnEasterEggKraid5()
 
 void CMainFrame::OnFindNext()
 {
-	m_pFindDlg->Find(true);
+	m_pFindDlg->OnBnClickedButtonFindNext();
 }
 
 void CMainFrame::OnEditFindToggle()
