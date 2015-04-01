@@ -103,7 +103,13 @@ bool CModuleImportDlg::LoadFile(CString Path, CFamiTrackerDoc *pDoc)
 		return false;
 
 	// Check expansion chip match
+	// 0CC: import as superset of expansion chip configurations
 	if (m_pImportedDoc->GetExpansionChip() != m_pDocument->GetExpansionChip()) {
+		AfxMessageBox(IDS_IMPORT_CHIP_MISMATCH);
+		SAFE_RELEASE(m_pImportedDoc);
+		return false;
+	}
+	else if (m_pImportedDoc->GetNamcoChannels() != m_pDocument->GetNamcoChannels()) {
 		AfxMessageBox(IDS_IMPORT_CHIP_MISMATCH);
 		SAFE_RELEASE(m_pImportedDoc);
 		return false;
