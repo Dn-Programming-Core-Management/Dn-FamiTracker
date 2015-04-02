@@ -176,21 +176,6 @@ bool CSelection::IsColumnSelected(int Column, int Channel) const
 		&& (Channel < GetChanEnd() || (Channel == GetChanEnd() && Column <= SelEnd));
 }
 
-void CSelection::SetStart(const CCursorPos &pos) 
-{
-	m_cpStart = pos;
-}
-
-void CSelection::SetEnd(const CCursorPos &pos) 
-{
-	m_cpEnd = pos;
-}
-
-bool CSelection::operator !=(const CSelection &other) const
-{
-	return (m_cpStart != other.m_cpStart) || (m_cpEnd != other.m_cpEnd);
-}
-
 // CPatternClipData ////////////////////////////////////////////////////////////
 
 SIZE_T CPatternClipData::GetAllocSize() const

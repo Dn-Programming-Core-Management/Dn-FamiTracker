@@ -176,13 +176,7 @@ public:
 	// // // gone
 	bool IsSameStartPoint(const CSelection &selection) const;
 	bool IsColumnSelected(int Column, int Channel) const;
-
-	// // // gone
-	void SetStart(const CCursorPos &pos);
-	void SetEnd(const CCursorPos &pos);
-
-	bool operator !=(const CSelection &other) const;
-
+	// // //
 public:
 	CCursorPos m_cpStart;
 	CCursorPos m_cpEnd;

@@ -2583,8 +2583,7 @@ void CPatternEditor::CancelSelection()
 	m_bCurrentlySelecting = false;
 	m_iWarpCount = 0;		// // //
 	m_iDragBeginWarp = 0;		// // //
-	m_selection.SetStart(m_cpCursorPos);
-	m_selection.SetEnd(m_cpCursorPos);		// // //
+	m_selection.m_cpEnd = m_selection.m_cpStart = m_cpCursorPos;		// // //
 
 	m_bDragStart = false;
 	m_bDragging = false;
@@ -2598,7 +2597,7 @@ void CPatternEditor::SetSelectionStart(const CCursorPos &start)
 	CCursorPos Pos = start;		// // //
 	Pos.m_iFrame %= GetFrameCount();
 	Pos.m_iFrame += GetFrameCount() * (m_iWarpCount + (Pos.m_iFrame < 0));
-	m_selection.SetStart(Pos);
+	m_selection.m_cpStart = Pos;
 	m_iSelectionCondition = GetSelectionCondition();		// // //
 }
 
@@ -2610,7 +2609,7 @@ void CPatternEditor::SetSelectionEnd(const CCursorPos &end)
 	CCursorPos Pos = end;		// // //
 	Pos.m_iFrame %= GetFrameCount();
 	Pos.m_iFrame += GetFrameCount() * (m_iWarpCount + (Pos.m_iFrame < 0));
-	m_selection.SetEnd(Pos);
+	m_selection.m_cpEnd = Pos;
 	m_iSelectionCondition = GetSelectionCondition();		// // //
 }
 
@@ -3044,8 +3043,8 @@ void CPatternEditor::OnMouseDownPattern(const CPoint &point)
 			CancelSelection();
 			PointPos.m_iRow = std::max(PointPos.m_iRow, 0);
 			PointPos.m_iRow = std::min(PointPos.m_iRow, PatternLength - 1);		// // //
-			SetSelectionStart(CCursorPos(PointPos.m_iRow, 0, 0, PointPos.m_iFrame));		// // //
-			SetSelectionEnd(CCursorPos(PointPos.m_iRow, ChannelCount - 1, GetChannelColumns(ChannelCount - 1), PointPos.m_iFrame));
+			m_selection.m_cpStart = CCursorPos(PointPos.m_iRow, 0, 0, PointPos.m_iFrame);		// // //
+			m_selection.m_cpEnd = CCursorPos(PointPos.m_iRow, ChannelCount - 1, GetChannelColumns(ChannelCount - 1), PointPos.m_iFrame);
 			m_bFullRowSelect = true;
 			m_ptSelStartPoint = point;
 			m_bMouseActive = true;
