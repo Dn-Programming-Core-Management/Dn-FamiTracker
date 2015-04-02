@@ -3718,23 +3718,6 @@ sel_condition_t CPatternEditor::GetSelectionCondition() const		// // //
 	const int Frames = GetFrameCount();
 	unsigned char Lo[MAX_PATTERN], Hi[MAX_PATTERN];
 
-	for (int c = m_selection.GetChanStart(); c <= m_selection.GetChanEnd(); c++) {
-		memset(Lo, 255, MAX_PATTERN);
-		memset(Hi, 0, MAX_PATTERN);
-
-		for (int i = m_selection.GetFrameStart(); i <= m_selection.GetFrameEnd(); i++) {
-			int Pattern = m_pDocument->GetPatternAtFrame(Track, (i + Frames) % Frames, c);
-			int RBegin = (i == m_selection.GetFrameStart()) ? m_selection.GetRowStart() : 0;
-			int REnd = (i == m_selection.GetFrameEnd()) ? m_selection.GetRowEnd() : GetCurrentPatternLength(i) - 1;
-			if (Lo[Pattern] <= Hi[Pattern] && RBegin <= Hi[Pattern] && REnd >= Lo[Pattern])
-				return SEL_REPEATED_ROW;
-			Lo[Pattern] = std::min(Lo[Pattern], static_cast<unsigned char>(RBegin));
-			Hi[Pattern] = std::max(Hi[Pattern], static_cast<unsigned char>(REnd));
-		}
-
-
-	}
-
 	if (!theApp.GetSettings()->General.bShowSkippedRows) {
 		CPatternIterator it = GetStartIterator();
 		const CPatternIterator End = GetEndIterator();
@@ -3752,7 +3735,22 @@ sel_condition_t CPatternEditor::GetSelectionCondition() const		// // //
 				}
 			}
 			/*if (HasSkip)
-				return SEL_UNKNOWN_SIZE SEL_CLEAN;*/
+				return SEL_UNKNOWN_SIZE;*/
+		}
+	}
+
+	for (int c = m_selection.GetChanStart(); c <= m_selection.GetChanEnd(); c++) {
+		memset(Lo, 255, MAX_PATTERN);
+		memset(Hi, 0, MAX_PATTERN);
+
+		for (int i = m_selection.GetFrameStart(); i <= m_selection.GetFrameEnd(); i++) {
+			int Pattern = m_pDocument->GetPatternAtFrame(Track, (i + Frames) % Frames, c);
+			int RBegin = (i == m_selection.GetFrameStart()) ? m_selection.GetRowStart() : 0;
+			int REnd = (i == m_selection.GetFrameEnd()) ? m_selection.GetRowEnd() : GetCurrentPatternLength(i) - 1;
+			if (Lo[Pattern] <= Hi[Pattern] && RBegin <= Hi[Pattern] && REnd >= Lo[Pattern])
+				return SEL_REPEATED_ROW;
+			Lo[Pattern] = std::min(Lo[Pattern], static_cast<unsigned char>(RBegin));
+			Hi[Pattern] = std::max(Hi[Pattern], static_cast<unsigned char>(REnd));
 		}
 	}
 
