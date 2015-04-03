@@ -413,8 +413,8 @@ static bool ImportCellText(
 			int h;
 			if (!ImportHex(sNote.Left(1), h, t.line, t.GetColumn(), sResult))
 				return false;
-			Cell.Note = (h % 12) + 1;
-			Cell.Octave = h / 12;
+			Cell.Note = (h % NOTE_RANGE) + 1;
+			Cell.Octave = h / NOTE_RANGE;
 
 			// importer is very tolerant about the second and third characters
 			// in a noise note, they can be anything
@@ -452,8 +452,8 @@ static bool ImportCellText(
 					sResult.Format(_T("Line %d column %d: unrecognized note '%s'."), t.line, t.GetColumn(), sNote);
 					return false;
 			}
-			while (n <   0) n += 12;
-			while (n >= 12) n -= 12;
+			while (n < 0) n += NOTE_RANGE;
+			while (n >= NOTE_RANGE) n -= NOTE_RANGE;
 			Cell.Note = n + 1;
 
 			int o = sNote.GetAt(2) - TCHAR('0');
@@ -564,7 +564,7 @@ static const CString& ExportCellText(const stChanNote& stCell, unsigned int nEff
 	{
 		if (bNoise)
 		{
-			char nNoiseFreq = (stCell.Note - 1 + stCell.Octave * 12) & 0x0F;
+			char nNoiseFreq = (stCell.Note - 1 + stCell.Octave * NOTE_RANGE) & 0x0F;
 			s.Format(_T("%01X-#"), nNoiseFreq);
 		}
 		else
@@ -811,7 +811,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					CHECK(t.ReadInt(oct,0,OCTAVE_RANGE-1,&sResult));
 					CHECK(t.ReadInt(note,0,NOTE_RANGE-1,&sResult));
 					CHECK(t.ReadInt(offset,-32768,32767,&sResult));
-					pDoc->SetDetuneOffset(i, oct * 12 + note, offset);
+					pDoc->SetDetuneOffset(i, oct * NOTE_RANGE + note, offset);
 					CHECK(t.ReadEOL(&sResult));
 				}
 				break;
@@ -1346,10 +1346,10 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	f.WriteString(_T("\n"));
 
 	f.WriteString(_T("# Detune settings\n"));		// // //
-	for (int i = 0; i < 6; i++) for (int j = 0; j < 96; j++) {
+	for (int i = 0; i < 6; i++) for (int j = 0; j < NOTE_COUNT; j++) {
 		int Offset = pDoc->GetDetuneOffset(i, j);
 		if (Offset != 0) {
-			s.Format(_T("%s %3d %3d %3d %5d\n"), CT[CT_DETUNE], i, j / 12, j % 12, Offset);
+			s.Format(_T("%s %3d %3d %3d %5d\n"), CT[CT_DETUNE], i, j / NOTE_RANGE, j % NOTE_RANGE, Offset);
 			f.WriteString(s);
 		}
 	}
@@ -1410,7 +1410,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					f.WriteString(s);
 
 					for (int oct = 0; oct < OCTAVE_RANGE; ++oct)
-					for (int key = 0; key < 12; ++key)
+					for (int key = 0; key < NOTE_RANGE; ++key)
 					{
 						int smp = pDI->GetSample(oct, key);
 						if (smp != 0)

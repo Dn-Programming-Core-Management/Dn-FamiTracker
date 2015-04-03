@@ -105,22 +105,25 @@ BOOL CDetuneDlg::OnInitDialog()
 	EditNote = (CEdit*)GetDlgItem(IDC_EDIT_NOTE);
 	EditOffset = (CEdit*)GetDlgItem(IDC_EDIT_OFFSET);
 
-	SliderOctave->SetRange(0, 7);
+	SliderOctave->SetRange(0, OCTAVE_RANGE - 1);
+	SpinOctave->SetRange(0, OCTAVE_RANGE - 1);
 	SliderOctave->SetPos(m_iOctave);
-	SliderOctave->SetTicFreq(1);
-	SliderNote->SetRange(0, 11);
-	SliderNote->SetPos(m_iNote % 12);
-	SliderNote->SetTicFreq(1);
-	SliderOffset->SetRange(-128, 128);
-	SliderOffset->SetPos(m_iDetuneTable[m_iCurrentChip][m_iNote]);
-	SliderOffset->SetTicFreq(16);
-	SpinOctave->SetRange(0, 7);
 	SpinOctave->SetPos(m_iOctave);
-	SpinNote->SetRange(0, 11);
-	SpinNote->SetPos(m_iNote % 12);
+	SliderOctave->SetTicFreq(1);
+
+	SliderNote->SetRange(0, NOTE_RANGE - 1);
+	SpinNote->SetRange(0, NOTE_RANGE - 1);
+	SliderNote->SetPos(m_iNote % NOTE_RANGE);
+	SpinNote->SetPos(m_iNote % NOTE_RANGE);
+	SliderNote->SetTicFreq(1);
+
+	SliderOffset->SetRange(-128, 128);
 	SpinOffset->SetRange(-128, 128);
 	SpinOffset->SetPos(m_iDetuneTable[m_iCurrentChip][m_iNote]);
-	EditNote->SetWindowText(_T(m_pNote[m_iNote % 12]));
+	SliderOffset->SetPos(m_iDetuneTable[m_iCurrentChip][m_iNote]);
+	SliderOffset->SetTicFreq(16);
+
+	EditNote->SetWindowText(_T(m_pNote[m_iNote % NOTE_RANGE]));
 
 	UDACCEL Acc[1];
     Acc[0].nSec = 0;
@@ -190,7 +193,7 @@ void CDetuneDlg::UpdateOctave()
 	SliderOctave->SetPos(m_iOctave);
 	String.Format(_T("%i"), m_iOctave);
 	EditOctave->SetWindowText(String);
-	m_iNote = m_iOctave * 12 + m_iNote % 12;
+	m_iNote = m_iOctave * NOTE_RANGE + m_iNote % NOTE_RANGE;
 	UpdateOffset();
 }
 
@@ -199,9 +202,9 @@ void CDetuneDlg::UpdateNote()
 	if (m_iNote > NOTE_COUNT - 1) m_iNote = NOTE_COUNT - 1;
 	if (m_iNote < 0) m_iNote = 0;
 	
-	SliderNote->SetPos(m_iNote % 12);
-	EditNote->SetWindowText(_T(m_pNote[m_iNote % 12]));
-	m_iOctave = m_iNote / 12;
+	SliderNote->SetPos(m_iNote % NOTE_RANGE);
+	EditNote->SetWindowText(_T(m_pNote[m_iNote % NOTE_RANGE]));
+	m_iOctave = m_iNote / NOTE_RANGE;
 	UpdateOctave();
 }
 
@@ -214,17 +217,17 @@ void CDetuneDlg::UpdateOffset()
 
 	if (m_iCurrentChip == 3) { // VRC7
 		for (int i = 0; i < OCTAVE_RANGE; i++)
-			m_iDetuneTable[3][i * 12 + m_iNote % 12] = m_iDetuneTable[3][m_iNote];
+			m_iDetuneTable[3][i * NOTE_RANGE + m_iNote % NOTE_RANGE] = m_iDetuneTable[3][m_iNote];
 	}
 
 	for (int i = 0; i < 6; i++) {
 		CString str, fmt = _T("%s\n%X\n%X");
-		int oldReg = FreqToReg(NoteToFreq(m_iNote), i, m_iNote / 12);
-		int newReg = std::max(0, (signed int)FreqToReg(NoteToFreq(m_iNote), i, m_iNote / 12) + m_iDetuneTable[i][m_iNote] * (i >= 3 ? 1 : -1));
-		double values[4] = {RegToFreq(FreqToReg(NoteToFreq(m_iNote), i, m_iNote / 12), i, m_iNote / 12),
-							RegToFreq(newReg, i, m_iNote / 12),
+		int oldReg = FreqToReg(NoteToFreq(m_iNote), i, m_iNote / NOTE_RANGE);
+		int newReg = std::max(0, (signed int)FreqToReg(NoteToFreq(m_iNote), i, m_iNote / NOTE_RANGE) + m_iDetuneTable[i][m_iNote] * (i >= 3 ? 1 : -1));
+		double values[4] = {RegToFreq(FreqToReg(NoteToFreq(m_iNote), i, m_iNote / NOTE_RANGE), i, m_iNote / NOTE_RANGE),
+							RegToFreq(newReg, i, m_iNote / NOTE_RANGE),
 							NoteToFreq(m_iNote),
-							1200.0 * log(RegToFreq(newReg, i, m_iNote / 12) / NoteToFreq(m_iNote)) / log(2.0)};
+							1200.0 * log(RegToFreq(newReg, i, m_iNote / NOTE_RANGE) / NoteToFreq(m_iNote)) / log(2.0)};
 		for (int j = 0; j < 4; j++) {
 			if (abs(values[j]) >= 9999.5) {
 				fmt += _T("\n%.0f");
@@ -268,7 +271,7 @@ void CDetuneDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		UpdateOctave();
 	}
 	else if (pScrollBar == (CScrollBar*)SliderNote) {
-		m_iNote = m_iOctave * 12 + SliderNote->GetPos();
+		m_iNote = m_iOctave * NOTE_RANGE + SliderNote->GetPos();
 		UpdateNote();
 	}
 	else if (pScrollBar == (CScrollBar*)SliderOffset) {
@@ -319,9 +322,9 @@ void CDetuneDlg::OnEnKillfocusEditNote()
 {
 	CString String;
 	EditNote->GetWindowText(String);
-	for (int i = 0; i < 12; i++)
+	for (int i = 0; i < NOTE_RANGE; i++)
 		if (String == m_pNote[i] || String == m_pNoteFlat[i])
-			m_iNote = m_iOctave * 12 + i;
+			m_iNote = m_iOctave * NOTE_RANGE + i;
 	UpdateNote();
 }
 
@@ -377,7 +380,7 @@ void CDetuneDlg::OnBnClickedButtonTune()
 	for (int i = 0; i < 6; i++) if (IsDlgButtonChecked(IDC_RADIO_ALL) || i == m_iCurrentChip) for (int j = 0; j < NOTE_COUNT; j++) {
 		double OldFreq = 440.0 * pow(2.0, (j - 45.0) / 12.0);
 		double NewFreq = 440.0 * pow(2.0, (j - 45.0) / 12.0 + atof(String) / 1200.0);
-		m_iDetuneTable[i][j] = (FreqToReg(NewFreq, i, j / 12) - FreqToReg(OldFreq, i, j / 12)) * (i >= 3 ? 1 : -1);
+		m_iDetuneTable[i][j] = (FreqToReg(NewFreq, i, j / NOTE_RANGE) - FreqToReg(OldFreq, i, j / NOTE_RANGE)) * (i >= 3 ? 1 : -1);
 	}
 	UpdateOffset();
 }

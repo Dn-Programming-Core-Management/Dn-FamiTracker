@@ -167,7 +167,7 @@ BOOL CInstrumentEditorDPCM::OnInitDialog()
 	CheckDlgButton(IDC_LOOP, 0);
 	pTableListCtrl->DeleteAllItems();
 
-	for (int i = 0; i < 12; ++i)
+	for (int i = 0; i < NOTE_RANGE; ++i)
 		pTableListCtrl->InsertItem(i, KEY_NAMES[i], 0);
 
 	BuildSampleList();
@@ -188,7 +188,7 @@ BOOL CInstrumentEditorDPCM::OnInitDialog()
 
 void CInstrumentEditorDPCM::BuildKeyList()
 {
-	for (int i = 0; i < 12; ++i) {
+	for (int i = 0; i < NOTE_RANGE; ++i) {
 		UpdateKey(i);
 	}
 }
@@ -625,7 +625,7 @@ void CInstrumentEditorDPCM::OnBnClickedAdd()
 	CListCtrl* pSampleListCtrl = static_cast<CListCtrl*>(GetDlgItem(IDC_SAMPLE_LIST));
 	CListCtrl* pTableListCtrl = static_cast<CListCtrl*>(GetDlgItem(IDC_TABLE));
 
-	if (m_iSelectedKey < 12 && m_iSelectedSample < MAX_DSAMPLES) {
+	if (m_iSelectedKey < NOTE_RANGE && m_iSelectedSample < MAX_DSAMPLES) {
 		pSampleListCtrl->SetItemState(m_iSelectedSample, 0, LVIS_FOCUSED | LVIS_SELECTED);
 		pTableListCtrl->SetItemState(m_iSelectedKey, 0, LVIS_FOCUSED | LVIS_SELECTED);
 		if (m_iSelectedSample < pSampleListCtrl->GetItemCount() - 1)

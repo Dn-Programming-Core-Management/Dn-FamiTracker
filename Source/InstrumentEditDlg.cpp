@@ -262,8 +262,8 @@ void CInstrumentEditDlg::OnPaint()
 	const int BLACK_1[] = {1, 3};
 	const int BLACK_2[] = {6, 8, 10};
 
-	int Note	= m_iActiveKey % 12;
-	int Octave	= m_iActiveKey / 12;
+	int Note	= m_iActiveKey % NOTE_RANGE;
+	int Octave	= m_iActiveKey / NOTE_RANGE;
 
 	for (int j = 0; j < 8; j++) {
 		int Pos = /*KEYBOARD_LEFT +*/ ((WHITE_KEY_W * 7) * j);
@@ -416,7 +416,7 @@ void CInstrumentEditDlg::SwitchOnNote(int x, int y)
 				Note = 11;
 		}
 
-		if (Note + (Octave * 12) != m_iLastKey) {
+		if (Note + (Octave * NOTE_RANGE) != m_iLastKey) {
 			NoteData.Note			= Note + 1;
 			NoteData.Octave			= Octave;
 			NoteData.Vol			= 0x0F;
@@ -427,7 +427,7 @@ void CInstrumentEditDlg::SwitchOnNote(int x, int y)
 			theApp.GetSoundGenerator()->QueueNote(Channel, NoteData, NOTE_PRIO_2);
 		}
 
-		m_iLastKey = Note + (Octave * 12);
+		m_iLastKey = Note + (Octave * NOTE_RANGE);
 	}
 	else {
 		NoteData.Note			= pView->DoRelease() ? RELEASE : HALT;//HALT;

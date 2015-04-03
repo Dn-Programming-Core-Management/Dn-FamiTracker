@@ -772,8 +772,8 @@ CString CArpeggioGraphEditor::GetNoteString(int Value)
 	const char NOTES_B[] = {'-', '#', '-', '#', '-', '-', '#', '-', '#', '-', '#', '-'};
 	const char NOTES_C[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
-	int Octave = Value / 12;
-	int Note = Value % 12;
+	int Octave = Value / NOTE_RANGE;
+	int Note = Value % NOTE_RANGE;
 
 	CString line;
 	line.Format(_T("%c%c%c"), NOTES_A[Note], NOTES_B[Note], NOTES_C[Octave]);
@@ -802,8 +802,8 @@ void CArpeggioGraphEditor::DrawRange(CDC *pDC, int Max, int Min)
 
 		// Top
 		int NoteValue = m_iScrollOffset + 20;
-		int Octave = NoteValue / 12;
-		int Note = NoteValue % 12;
+		int Octave = NoteValue / NOTE_RANGE;
+		int Note = NoteValue % NOTE_RANGE;
 
 		CString line;
 		line = GetNoteString(NoteValue);
@@ -811,8 +811,8 @@ void CArpeggioGraphEditor::DrawRange(CDC *pDC, int Max, int Min)
 
 		// Bottom
 		NoteValue = m_iScrollOffset;
-		Octave = NoteValue / 12;
-		Note = NoteValue % 12;
+		Octave = NoteValue / NOTE_RANGE;
+		Note = NoteValue % NOTE_RANGE;
 
 		line.Format(_T("%c%c%c"), NOTES_A[Note], NOTES_B[Note], NOTES_C[Octave]);
 		pDC->TextOut(2, m_GraphRect.bottom - 13, line);

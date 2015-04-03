@@ -250,13 +250,13 @@ int CChannelHandlerVRC7::TriggerNote(int Note)
 	RegisterKeyState(Note);
 	if (m_iCommand != CMD_NOTE_TRIGGER && m_iCommand != CMD_NOTE_HALT)
 		m_iCommand = CMD_NOTE_ON;
-	m_iOctave = Note / 12;
+	m_iOctave = Note / NOTE_RANGE;
 	return GetFnum(Note);
 }
 
 unsigned int CChannelHandlerVRC7::GetFnum(int Note) const
 {
-	return m_pNoteLookupTable[Note % 12] << 2;		// // //
+	return m_pNoteLookupTable[Note % NOTE_RANGE] << 2;		// // //
 }
 
 int CChannelHandlerVRC7::CalculateVolume() const

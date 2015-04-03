@@ -263,12 +263,12 @@ bool CFindDlg::ParseNote(searchTerm &Term, CString str, bool Simple, CString &er
 			if (str.Delete(0, 1 + Accidental.GetLength())) {
 				Term.Definite[WC_OCT] = true;
 				*Term.Oct = atoi(str);
-				FIND_RAISE_ERROR(*Term.Oct > 7 || *Term.Oct < 0,
+				FIND_RAISE_ERROR(*Term.Oct >= OCTAVE_RANGE || *Term.Oct < 0,
 					_T("Note octave \"") + str + _T("\" is out of range, maximum is 7."));
 			}
-			if (*Term.Note > 12) { *Term.Note -= 12; *Term.Oct += 1; }
-			if (*Term.Note < 1) { *Term.Note += 12; *Term.Oct -= 1; }
-			FIND_RAISE_ERROR(Term.Definite[WC_OCT] && (*Term.Oct > 7),
+			if (*Term.Note > NOTE_RANGE) { *Term.Note -= NOTE_RANGE; *Term.Oct += 1; }
+			if (*Term.Note < 1) { *Term.Note += NOTE_RANGE; *Term.Oct -= 1; }
+			FIND_RAISE_ERROR(Term.Definite[WC_OCT] && (*Term.Oct >= OCTAVE_RANGE),
 				_T("Actual note octave \"" + str + "\" is out of range, check if the note contains Cb or B#."));
 		}
 	}
@@ -277,8 +277,8 @@ bool CFindDlg::ParseNote(searchTerm &Term, CString str, bool Simple, CString &er
 			int NoteValue = static_cast<unsigned char>(strtol(str.Left(1), NULL, 16));
 			Term.Definite[WC_NOTE] = true;
 			Term.Definite[WC_OCT] = true;
-			*Term.Note = NoteValue % 12 + 1;
-			*Term.Oct = NoteValue / 12;
+			*Term.Note = NoteValue % NOTE_RANGE + 1;
+			*Term.Oct = NoteValue / NOTE_RANGE;
 			Term.NoiseChan = true;
 		}
 		else if (str == _T("-") || str == _T("---")) {
@@ -307,12 +307,12 @@ bool CFindDlg::ParseNote(searchTerm &Term, CString str, bool Simple, CString &er
 			int NoteValue = atoi(str);
 			FIND_RAISE_ERROR(NoteValue == 0 && str.Left(1) != _T("0"),
 				_T("Invalid note \"" + str + "\"."));
-			FIND_RAISE_ERROR(NoteValue > 95 || NoteValue < 0,
+			FIND_RAISE_ERROR(NoteValue >= NOTE_COUNT || NoteValue < 0,
 				_T("Note value \"") + str + _T("\" is out of range, maximum is 95."));
 			Term.Definite[WC_NOTE] = true;
 			Term.Definite[WC_OCT] = true;
-			*Term.Note = NoteValue % 12 + 1;
-			*Term.Oct = NoteValue / 12;
+			*Term.Note = NoteValue % NOTE_RANGE + 1;
+			*Term.Oct = NoteValue / NOTE_RANGE;
 		}
 	}
 
@@ -326,7 +326,7 @@ bool CFindDlg::ParseInst(searchTerm &Term, CString str, bool Simple, CString &er
 		*Term.Inst = MAX_INSTRUMENTS;
 	else {
 		*Term.Inst = static_cast<unsigned char>(strtol(str, NULL, 16));
-		FIND_RAISE_ERROR(*Term.Inst > 0x3F,
+		FIND_RAISE_ERROR(*Term.Inst >= MAX_INSTRUMENTS,
 			_T("Instrument \"") + str + _T("\" is out of range, maximum is %2X."), MAX_INSTRUMENTS - 1);
 	}
 
@@ -337,10 +337,10 @@ bool CFindDlg::ParseVol(searchTerm &Term, CString str, bool Simple, CString &err
 {
 	Term.Definite[WC_VOL] = true;
 	if (str.IsEmpty())
-		*Term.Vol = 0x10;
+		*Term.Vol = MAX_VOLUME;
 	else {
 		*Term.Vol = static_cast<unsigned char>(strtol(str, NULL, 16));
-		FIND_RAISE_ERROR(*Term.Vol > 0xF,
+		FIND_RAISE_ERROR(*Term.Vol >= MAX_VOLUME,
 			_T("Channel volume \"") + str + _T("\" is out of range, maximum is F."));
 	}
 
@@ -493,7 +493,7 @@ replaceTerm CFindDlg::toReplace(const searchTerm x)
 	Term.rowOffset = x.rowOffset;
 	Term.colOffset = x.colOffset;
 	Term.NoiseChan = x.NoiseChan;
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < MAX_EFFECT_COLUMNS; i++) {
 		Term.Note.EffNumber[i] = x.EffNumber[i]->Current->Min;
 		Term.Note.EffParam[i] = x.EffParam[i]->Current->Min;
 	}
@@ -514,7 +514,7 @@ searchTerm CFindDlg::toSearch(const replaceTerm x)
 	Term.rowOffset = x.rowOffset;
 	Term.colOffset = x.colOffset;
 	Term.NoiseChan = x.NoiseChan;
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < MAX_EFFECT_COLUMNS; i++) {
 		*Term.EffNumber[i] = x.Note.EffNumber[i];
 		*Term.EffParam[i] = x.Note.EffParam[i];
 	}

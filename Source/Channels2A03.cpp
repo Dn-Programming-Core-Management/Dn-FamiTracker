@@ -594,7 +594,7 @@ void CDPCMChan::HandleNote(int Note, int Octave)
 		}
 	}
 
-	RegisterKeyState((Note - 1) + (Octave * 12));
+	RegisterKeyState((Note - 1) + (Octave * NOTE_RANGE));
 }
 
 void CDPCMChan::RefreshChannel()

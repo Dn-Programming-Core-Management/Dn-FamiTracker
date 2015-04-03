@@ -793,32 +793,32 @@ char* CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 
 		switch (pDriver->freq_table_reloc[i + 2]) {
 		case SNDCHIP_NONE:
-			for (int j = 0; j < 96; j++) {
+			for (int j = 0; j < NOTE_COUNT; j++) {
 				pData[pDriver->freq_table_reloc[i + 1] + 2 * j    ] = pSoundGen->ReadPeriodTable(j, SNDCHIP_NONE) & 0xFF;
 				pData[pDriver->freq_table_reloc[i + 1] + 2 * j + 1] = pSoundGen->ReadPeriodTable(j, SNDCHIP_NONE) >> 8;
 			} break;
 		case SNDCHIP_2A07:
-			for (int j = 0; j < 96; j++) {
+			for (int j = 0; j < NOTE_COUNT; j++) {
 				pData[pDriver->freq_table_reloc[i + 1] + 2 * j    ] = pSoundGen->ReadPeriodTable(j, SNDCHIP_2A07) & 0xFF;
 				pData[pDriver->freq_table_reloc[i + 1] + 2 * j + 1] = pSoundGen->ReadPeriodTable(j, SNDCHIP_2A07) >> 8;
 			} break;
 		case SNDCHIP_VRC6:
-			for (int j = 0; j < 96; j++) {
+			for (int j = 0; j < NOTE_COUNT; j++) {
 				pData[pDriver->freq_table_reloc[i + 1] + 2 * j    ] = pSoundGen->ReadPeriodTable(j, SNDCHIP_VRC6) & 0xFF;
 				pData[pDriver->freq_table_reloc[i + 1] + 2 * j + 1] = pSoundGen->ReadPeriodTable(j, SNDCHIP_VRC6) >> 8;
 			} break;
 		case SNDCHIP_VRC7:
-			for (int j = 0; j < 12; j++) {
-				pData[pDriver->freq_table_reloc[i + 1] + j     ] = pSoundGen->ReadPeriodTable(j, SNDCHIP_VRC7) * 4 & 0xFF;
-				pData[pDriver->freq_table_reloc[i + 1] + j + 12] = pSoundGen->ReadPeriodTable(j, SNDCHIP_VRC7) * 4 >> 8;
+			for (int j = 0; j < NOTE_RANGE; j++) {
+				pData[pDriver->freq_table_reloc[i + 1] + j             ] = pSoundGen->ReadPeriodTable(j, SNDCHIP_VRC7) * 4 & 0xFF;
+				pData[pDriver->freq_table_reloc[i + 1] + j + NOTE_RANGE] = pSoundGen->ReadPeriodTable(j, SNDCHIP_VRC7) * 4 >> 8;
 			} break;
 		case SNDCHIP_FDS:
-			for (int j = 0; j < 96; j++) {
+			for (int j = 0; j < NOTE_COUNT; j++) {
 				pData[pDriver->freq_table_reloc[i + 1] + 2 * j    ] = pSoundGen->ReadPeriodTable(j, SNDCHIP_FDS) & 0xFF;
 				pData[pDriver->freq_table_reloc[i + 1] + 2 * j + 1] = pSoundGen->ReadPeriodTable(j, SNDCHIP_FDS) >> 8;
 			} break;
 		case SNDCHIP_N163:
-			for (int j = 0; j < 96; j++) {
+			for (int j = 0; j < NOTE_COUNT; j++) {
 				int Reg;
 				if (m_iActualChip & ~SNDCHIP_N163) {
 					if (j > 82) // avoid clipping

@@ -1218,7 +1218,7 @@ void CSoundGen::LoadMachineSettings(int Machine, int Rate, int NamcoChannels)
 		// // // Sunsoft 5B uses NTSC table
 
 		// // // VRC7
-		if (i < 12) {
+		if (i < NOTE_COUNT) {
 			Pitch = Freq * 262144.0 / 49716.0 + 0.5;
 			m_iNoteLookupTableVRC7[i] = (unsigned int)(Pitch + m_pDocument->GetDetuneOffset(3, i));		// // //
 		}
@@ -1264,7 +1264,7 @@ void CSoundGen::LoadMachineSettings(int Machine, int Rate, int NamcoChannels)
 	period_file.WriteString(".ifdef NTSC_PERIOD_TABLE\n");
 	period_file.WriteString("ft_periods_ntsc:\n\t.word\t");
 
-	for (int i = 0; i < 96; ++i) {
+	for (int i = 0; i < NOTE_COUNT; ++i) {
 		CString str;
 		str.Format("$%04X%s", m_iNoteLookupTableNTSC[i], ((i % 12) < 11) && (i < 95) ? ", " : ((i < 95) ? "\n\t.word\t" : "\n"));
 		period_file.WriteString(str);
@@ -1275,7 +1275,7 @@ void CSoundGen::LoadMachineSettings(int Machine, int Rate, int NamcoChannels)
 	period_file.WriteString(".ifdef PAL_PERIOD_TABLE\n");
 	period_file.WriteString("ft_periods_pal:\n\t.word\t");
 
-	for (int i = 0; i < 96; ++i) {
+	for (int i = 0; i < NOTE_COUNT; ++i) {
 		CString str;
 		str.Format("$%04X%s", m_iNoteLookupTablePAL[i], ((i % 12) < 11) && (i < 95) ? ", " : ((i < 95) ? "\n\t.word\t" : "\n"));
 		period_file.WriteString(str);
@@ -1286,7 +1286,7 @@ void CSoundGen::LoadMachineSettings(int Machine, int Rate, int NamcoChannels)
 	period_file.WriteString(".ifdef VRC6_PERIOD_TABLE\n");
 	period_file.WriteString("ft_periods_sawtooth:\n\t.word\t");
 
-	for (int i = 0; i < 96; ++i) {
+	for (int i = 0; i < NOTE_COUNT; ++i) {
 		CString str;
 		str.Format("$%04X%s", m_iNoteLookupTableSaw[i], ((i % 12) < 11) && (i < 95) ? ", " : ((i < 95) ? "\n\t.word\t" : "\n"));
 		period_file.WriteString(str);
@@ -1297,7 +1297,7 @@ void CSoundGen::LoadMachineSettings(int Machine, int Rate, int NamcoChannels)
 	period_file.WriteString(".ifdef FDS_PERIOD_TABLE\n");
 	period_file.WriteString("ft_periods_fds:\n\t.word\t");
 
-	for (int i = 0; i < 96; ++i) {
+	for (int i = 0; i < NOTE_COUNT; ++i) {
 		CString str;
 		str.Format("$%04X%s", m_iNoteLookupTableFDS[i], ((i % 12) < 11) && (i < 95) ? ", " : ((i < 95) ? "\n\t.word\t" : "\n"));
 		period_file.WriteString(str);
@@ -1308,7 +1308,7 @@ void CSoundGen::LoadMachineSettings(int Machine, int Rate, int NamcoChannels)
 	period_file.WriteString(".ifdef N163_PERIOD_TABLE\n");
 	period_file.WriteString("ft_periods_n163:\n\t.word\t");
 
-	for (int i = 0; i < 96; ++i) {
+	for (int i = 0; i < NOTE_COUNT; ++i) {
 		CString str;
 		str.Format("$%04X%s", m_iNoteLookupTableN163[i] & 0xFFFF, ((i % 12) < 11) && (i < 95) ? ", " : ((i < 95) ? "\n\t.word\t" : "\n"));
 		period_file.WriteString(str);

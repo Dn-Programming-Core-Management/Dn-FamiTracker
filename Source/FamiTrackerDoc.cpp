@@ -2807,7 +2807,7 @@ bool CFamiTrackerDoc::ImportGrooves(CFamiTrackerDoc *pImported, int *pGrooveMap)
 
 bool CFamiTrackerDoc::ImportDetune(CFamiTrackerDoc *pImported)		// // //
 {
-	for (int i = 0; i < 6; i++) for (int j = 0; j < 96; j++)
+	for (int i = 0; i < 6; i++) for (int j = 0; j < NOTE_COUNT; j++)
 		m_iDetuneTable[i][j] = pImported->GetDetuneOffset(i, j);
 
 	theApp.GetSoundGenerator()->LoadMachineSettings(m_iMachine, m_iEngineSpeed, m_iNamcoChannels);

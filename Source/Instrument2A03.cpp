@@ -2,6 +2,8 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
+** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -45,7 +47,7 @@ CInstrument2A03::CInstrument2A03()
 	}
 
 	for (int i = 0; i < OCTAVE_RANGE; ++i) {
-		for (int j = 0; j < 12; ++j) {
+		for (int j = 0; j < NOTE_RANGE; ++j) {
 			m_cSamples[i][j] = 0;
 			m_cSamplePitch[i][j] = 0;
 			m_cSampleLoopOffset[i][j] = 0;
@@ -64,7 +66,7 @@ CInstrument *CInstrument2A03::Clone() const
 	}
 
 	for (int i = 0; i < OCTAVE_RANGE; ++i) {
-		for (int j = 0; j < 12; ++j) {
+		for (int j = 0; j < NOTE_RANGE; ++j) {
 			pNew->SetSample(i, j, GetSample(i, j));
 			pNew->SetSamplePitch(i, j, GetSamplePitch(i, j));
 		}
@@ -98,7 +100,7 @@ void CInstrument2A03::Store(CDocumentFile *pDocFile)
 	}
 
 	for (int i = 0; i < OCTAVE_RANGE; ++i) {
-		for (int j = 0; j < 12; ++j) {
+		for (int j = 0; j < NOTE_RANGE; ++j) {
 			pDocFile->WriteBlockChar(GetSample(i, j));
 			pDocFile->WriteBlockChar(GetSamplePitch(i, j));
 			pDocFile->WriteBlockChar(GetSampleDeltaValue(i, j));
@@ -123,7 +125,7 @@ bool CInstrument2A03::Load(CDocumentFile *pDocFile)
 	int Octaves = (Version == 1) ? 6 : OCTAVE_RANGE;
 
 	for (int i = 0; i < Octaves; ++i) {
-		for (int j = 0; j < 12; ++j) {
+		for (int j = 0; j < NOTE_RANGE; ++j) {
 			int Index = pDocFile->GetBlockChar();
 			if (Index > MAX_DSAMPLES)
 				Index = 0;
@@ -170,8 +172,8 @@ void CInstrument2A03::SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pD
 	unsigned int Count = 0;
 
 	// Count assigned keys
-	for (int i = 0; i < 8; ++i) {	// octaves
-		for (int j = 0; j < 12; ++j) {	// notes
+	for (int i = 0; i < OCTAVE_RANGE; ++i) {	// octaves
+		for (int j = 0; j < NOTE_RANGE; ++j) {	// notes
 			Count += (GetSample(i, j) > 0) ? 1 : 0;
 		}
 	}
@@ -181,10 +183,10 @@ void CInstrument2A03::SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pD
 	memset(UsedSamples, 0, sizeof(bool) * MAX_DSAMPLES);
 
 	// DPCM
-	for (int i = 0; i < 8; ++i) {	// octaves
-		for (int j = 0; j < 12; ++j) {	// notes
+	for (int i = 0; i < OCTAVE_RANGE; ++i) {	// octaves
+		for (int j = 0; j < NOTE_RANGE; ++j) {	// notes
 			if (GetSample(i, j) > 0) {
-				unsigned char Index = i * 12 + j;
+				unsigned char Index = i * NOTE_RANGE + j;
 				unsigned char Sample = GetSample(i, j);
 				pFile->WriteChar(Index);
 				pFile->WriteChar(Sample);
@@ -287,8 +289,8 @@ bool CInstrument2A03::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTracke
 	// DPCM instruments
 	for (unsigned int i = 0; i < Count; ++i) {
 		unsigned char InstNote = pFile->ReadChar();
-		int Octave = InstNote / 12;
-		int Note = InstNote % 12;
+		int Octave = InstNote / NOTE_RANGE;
+		int Note = InstNote % NOTE_RANGE;
 		unsigned char Sample = pFile->ReadChar();
 		unsigned char Pitch = pFile->ReadChar();
 		unsigned char Delta;
