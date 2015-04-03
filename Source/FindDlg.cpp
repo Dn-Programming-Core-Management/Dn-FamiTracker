@@ -460,15 +460,26 @@ bool CFindDlg::GetSimpleReplaceTerm()
 		}
 	}
 
+	m_replaceTerm = toReplace(out);
+
 	for (int i = 0; i <= 6; i++) {
 		if (i == 6) {
 			AfxMessageBox(_T("Replacement query is empty."), MB_OK | MB_ICONSTOP);
 			return false;
 		}
-		if (out.Definite[i]) break;
+		if (m_replaceTerm.Definite[i]) break;
+	}
+	if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) {
+		if (m_replaceTerm.Definite[WC_NOTE] && !m_replaceTerm.Definite[WC_OCT]) {
+			AfxMessageBox(_T("Simple replacement query cannot contain a note with an unspecified octave if the option \"Remove original data\" is enabled."), MB_OK | MB_ICONSTOP);
+			return false;
+		}
+		if (m_replaceTerm.Definite[WC_EFF] && !m_replaceTerm.Definite[WC_PARAM]) {
+			AfxMessageBox(_T("Simple replacement query cannot contain an effect with an unspecified parameter if the option \"Remove original data\" is enabled."), MB_OK | MB_ICONSTOP);
+			return false;
+		}
 	}
 
-	m_replaceTerm = toReplace(out);
 	return true;
 }
 
@@ -620,16 +631,6 @@ bool CFindDlg::Replace(bool CanUndo)
 	int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
 
 	if (m_bReplaceMacro) return false; // 0CC: unimplemented
-	if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) {
-		if (m_replaceTerm.Definite[WC_NOTE] && !m_replaceTerm.Definite[WC_OCT]) {
-			AfxMessageBox(_T("Simple replacement query cannot contain a note with an unspecified octave if the option \"Remove original data\" is enabled."), MB_OK | MB_ICONSTOP);
-			return false;
-		}
-		if (m_replaceTerm.Definite[WC_EFF] && !m_replaceTerm.Definite[WC_PARAM]) {
-			AfxMessageBox(_T("Simple replacement query cannot contain an effect with an unspecified parameter if the option \"Remove original data\" is enabled."), MB_OK | MB_ICONSTOP);
-			return false;
-		}
-	}
 
 	if (m_bFound) {
 		m_pDocument->GetNoteData(Track, m_iFrame, m_iChannel, m_iRow, &Target);
@@ -702,6 +703,10 @@ void CFindDlg::OnBnClickedButtonReplace()
 {
 	if (!GetSimpleFindTerm()) return;
 	if (!GetSimpleReplaceTerm()) return;
+	if (m_cEffectColumn->GetCurSel() == MAX_EFFECT_COLUMNS) {
+		AfxMessageBox(_T("\"Any\" cannot be used as the effect column scope for replacing."), MB_OK | MB_ICONSTOP);
+		return;
+	}
 	m_pView = static_cast<CFamiTrackerView*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveView());
 	if (theApp.IsPlaying() && m_pView->GetFollowMode())
 		return;
