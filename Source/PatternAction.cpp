@@ -188,7 +188,7 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // /
 
 	sel_condition_t Cond = pPatternEditor->GetSelectionCondition();
 	if (Cond == SEL_CLEAN) {
-		// m_selection = New;
+		m_newSelection = New;
 		return true;
 	}
 	else {
@@ -205,7 +205,7 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // /
 		}
 		if (Confirm == IDYES) {
 			pPatternEditor->SetSelection(New);
-			// m_selection = New;
+			m_newSelection = New;
 			return true;
 		}
 		else {
@@ -890,6 +890,7 @@ void CPatternAction::Undo(CMainFrame *pMainFrm)
 			RestoreEntire(pPatternEditor);
 			break;
 		case ACT_DRAG_AND_DROP:
+			pPatternEditor->SetSelection(m_newSelection);
 			PasteSelection(pPatternEditor);		// // //
 			RestoreSelection(pPatternEditor);
 			if (m_bDragDelete)

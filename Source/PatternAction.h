@@ -139,7 +139,7 @@ private:
 	paste_pos_t m_iPastePos;		// // //
 	
 	bool m_bSelecting;
-	CSelection m_selection;
+	CSelection m_selection, m_newSelection;		// // //
 	int m_iSelectionSize;		// // //
 
 	transpose_t m_iTransposeMode;
