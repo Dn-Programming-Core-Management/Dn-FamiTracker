@@ -1218,7 +1218,7 @@ void CSoundGen::LoadMachineSettings(int Machine, int Rate, int NamcoChannels)
 		// // // Sunsoft 5B uses NTSC table
 
 		// // // VRC7
-		if (i < NOTE_COUNT) {
+		if (i < NOTE_RANGE) {
 			Pitch = Freq * 262144.0 / 49716.0 + 0.5;
 			m_iNoteLookupTableVRC7[i] = (unsigned int)(Pitch + m_pDocument->GetDetuneOffset(3, i));		// // //
 		}
