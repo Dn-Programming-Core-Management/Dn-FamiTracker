@@ -1239,6 +1239,7 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 		colorInfo.Back = pSettings->Appearance.iColBackground;
 
 	colorInfo.Shaded = BLEND(TextColor, colorInfo.Back, SHADE_LEVEL.UNUSED);
+	colorInfo.Compact = BLEND(TextColor, colorInfo.Back, SHADE_LEVEL.PREVIEW);		// // //
 
 	if (!pSettings->Appearance.bPatternColor) {		// // //
 		colorInfo.Instrument = colorInfo.Volume = colorInfo.Effect = colorInfo.Note;
@@ -1255,6 +1256,7 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 		colorInfo.Instrument = BLEND(colorInfo.Instrument, colorInfo.Back, SHADE_LEVEL.PREVIEW);
 		colorInfo.Volume	 = BLEND(colorInfo.Volume, colorInfo.Back, SHADE_LEVEL.PREVIEW);
 		colorInfo.Effect	 = BLEND(colorInfo.Effect, colorInfo.Back, SHADE_LEVEL.PREVIEW);
+		colorInfo.Compact	 = BLEND(colorInfo.Compact, colorInfo.Back, SHADE_LEVEL.PREVIEW);		// // //
 	}
 
 	// Draw channels
@@ -1370,8 +1372,8 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, int Column, int Channel, bool 
 
 	COLORREF InstColor = pColorInfo->Instrument;
 	COLORREF EffColor = pColorInfo->Effect;
-	COLORREF DimInst = pColorInfo->Shaded;		// // //
-	COLORREF DimEff = pColorInfo->Shaded;		// // //
+	COLORREF DimInst = pColorInfo->Compact;		// // //
+	COLORREF DimEff = pColorInfo->Compact;		// // //
 
 	// Make non-available instruments red in the pattern editor
 	if (pNoteData->Instrument < MAX_INSTRUMENTS && 
@@ -1403,7 +1405,7 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, int Column, int Channel, bool 
 							break;
 						}
 						else if (pNoteData->Vol != MAX_VOLUME) {
-							DrawChar(pDC, PosX + CHAR_WIDTH * 5 / 2, PosY, HEX[pNoteData->Vol], pColorInfo->Shaded);
+							DrawChar(pDC, PosX + CHAR_WIDTH * 5 / 2, PosY, HEX[pNoteData->Vol], pColorInfo->Compact);
 							break;
 						}
 						else {

@@ -37,6 +37,7 @@ struct RowColorInfo_t {
 	COLORREF Effect;
 	COLORREF Back;
 	COLORREF Shaded;
+	COLORREF Compact;		// // //
 };
 
 void CopyNoteSection(stChanNote *Target, stChanNote *Source, paste_mode_t Mode, int Begin, int End);		// // //
