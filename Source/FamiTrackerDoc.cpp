@@ -340,7 +340,7 @@ BOOL CFamiTrackerDoc::OnOpenDocument(LPCTSTR lpszPathName)
 BOOL CFamiTrackerDoc::OnSaveDocument(LPCTSTR lpszPathName)
 {
 #ifdef DISABLE_SAVE		// // //
-	static_cast<CMainFrame*>(AfxGetMainWnd())->SetMessageText(_T("Saving is disabled in this build of 0CC-FamiTracker."));
+	static_cast<CMainFrame*>(AfxGetMainWnd())->SetMessageText(IDS_DISABLE_SAVE);
 	return FALSE;
 #endif
 
@@ -530,7 +530,7 @@ void CFamiTrackerDoc::CreateEmpty()
 void CFamiTrackerDoc::OnFileSave()
 {
 #ifdef DISABLE_SAVE		// // //
-	static_cast<CMainFrame*>(AfxGetMainWnd())->SetMessageText(_T("Saving is disabled in this build of 0CC-FamiTracker."));
+	static_cast<CMainFrame*>(AfxGetMainWnd())->SetMessageText(IDS_DISABLE_SAVE);
 	return;
 #endif
 
@@ -543,7 +543,7 @@ void CFamiTrackerDoc::OnFileSave()
 void CFamiTrackerDoc::OnFileSaveAs()
 {
 #ifdef DISABLE_SAVE		// // //
-	static_cast<CMainFrame*>(AfxGetMainWnd())->SetMessageText(_T("Saving is disabled in this build of 0CC-FamiTracker."));
+	static_cast<CMainFrame*>(AfxGetMainWnd())->SetMessageText(IDS_DISABLE_SAVE);
 	return;
 #endif
 

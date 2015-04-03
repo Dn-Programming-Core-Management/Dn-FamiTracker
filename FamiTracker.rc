@@ -1806,6 +1806,7 @@ BEGIN
     IDS_SEL_TERMINAL_SKIP   "Error: Current selection may truncate other rows, consider enabling ""Show skipped rows""."
     IDS_PASTE_REPEATED_ROW  "Warning: Clip data may overwrite itself during pasting. Do you want to apply the paste operation?"
     IDS_PASTE_NONTERMINAL   "Warning: Clip data may alter frame lengths during pasting. Do you want to apply the paste operation?"
+    IDS_DISABLE_SAVE        "Saving to external files is disabled in this build of 0CC-FamiTracker."
     IDS_POPULATE_PATTERNS   "Do you want to copy a unique pattern for all frames? There is no undo for this action."
     IDS_FIND_NONE           "Could not find the search query in the current search area."
     IDS_REPLACE_ALL         "Do you want to replace all occurrences of the search query? There is no undo for this action."
