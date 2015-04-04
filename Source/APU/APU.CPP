@@ -536,8 +536,39 @@ void CAPU::Log()
 {
 	CString str;
 	str.Format("Frame %08i: ", m_iFrame);
+	str.Append("2A03 ");
 	for (int i = 0; i < 0x14; ++i)
-		str.AppendFormat("%02X ", m_iRegs[i]);
+		str.AppendFormat("%02X ", GetReg(SNDCHIP_NONE, i));
+	if (m_iExternalSoundChip & SNDCHIP_VRC6) {		// // //
+		str.Append("VRC6 ");
+		for (int i = 0; i < 0x9; ++i)
+			str.AppendFormat("%02X ", GetReg(SNDCHIP_VRC6, i));
+	}
+	if (m_iExternalSoundChip & SNDCHIP_MMC5) {
+		str.Append("MMC5 ");
+		for (int i = 0; i < 0x8; ++i)
+			str.AppendFormat("%02X ", GetReg(SNDCHIP_MMC5, i));
+	}
+	if (m_iExternalSoundChip & SNDCHIP_N163) {
+		str.Append("N163 ");
+		for (int i = 0; i < 0x80; ++i)
+			str.AppendFormat("%02X ", GetReg(SNDCHIP_N163, i));
+	}
+	if (m_iExternalSoundChip & SNDCHIP_FDS) {
+		str.Append("FDS ");
+		for (int i = 0; i < 0x10; ++i)
+			str.AppendFormat("%02X ", GetReg(SNDCHIP_FDS, i));
+	}
+	if (m_iExternalSoundChip & SNDCHIP_VRC7) {
+		str.Append("VRC7 ");
+		for (int i = 0; i < 0x40; ++i)
+			str.AppendFormat("%02X ", GetReg(SNDCHIP_VRC7, i));
+	}
+	if (m_iExternalSoundChip & SNDCHIP_S5B) {
+		str.Append("S5B ");
+		for (int i = 0; i < 0x10; ++i)
+			str.AppendFormat("%02X ", GetReg(SNDCHIP_S5B, i));
+	}
 	str.Append("\n");
 	m_pLog->Write(str, str.GetLength());
 }

@@ -39,4 +39,4 @@ hlp/**
 FamiTracker.opensdf
 FamiTracker.sdf
 config.h
-.gitignore
+apu_log.txt
