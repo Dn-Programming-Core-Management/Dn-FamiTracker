@@ -2684,7 +2684,7 @@ bool CFamiTrackerView::EditEffParamColumn(stChanNote &Note, int Key, int EffectI
 	return true;
 }
 
-void CFamiTrackerView::HandleKeyboardInput(char nChar)
+void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 {
 	CFamiTrackerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
@@ -2795,6 +2795,9 @@ void CFamiTrackerView::HandleKeyboardInput(char nChar)
 				return;
 			break;
 	}
+
+	if (CheckClearKey(nChar) && IsControlPressed())
+		Note = BLANK_NOTE;
 
 	// Something changed, store pattern data in document and update screen
 	if (m_bEditEnable) {

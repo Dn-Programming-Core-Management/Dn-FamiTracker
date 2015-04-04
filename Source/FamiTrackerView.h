@@ -163,7 +163,7 @@ private:
 	void	StepDown();
 
 	// Input key handling
-	void	HandleKeyboardInput(char Key);
+	void	HandleKeyboardInput(unsigned char Key);		// // //
 	void	TranslateMidiMessage();
 
 	void	OnKeyDirUp();
