@@ -98,9 +98,6 @@ const CString EFFECT_TEXTS[] = {		// // //
 // OLE copy and mix
 #define	DROPEFFECT_COPY_MIX	( 8 )
 
-const unsigned char KEY_DOT = 0xBD;		// '.'
-const unsigned char KEY_DASH = 0xBE;	// '-'
-
 const int NOTE_HALT = -1;
 const int NOTE_RELEASE = -2;
 const int NOTE_ECHO = -16;		// // //
@@ -222,9 +219,9 @@ static int ConvertKeyToHex(int Key) {
 		case 69: return 0x0E;
 		case 70: return 0x0F;
 
-		case KEY_DOT:
-		case KEY_DASH:
-			return 0x80;
+		// case KEY_DOT:
+		// case KEY_DASH:
+		//	return 0x80;
 	}
 
 	return -1;
@@ -2462,10 +2459,7 @@ bool CFamiTrackerView::EditInstrumentColumn(stChanNote &Note, int Key, bool &Ste
 
 	if (Note.Instrument > (MAX_INSTRUMENTS - 1))
 		Note.Instrument = (MAX_INSTRUMENTS - 1);
-
-	if (Value == 0x80)
-		Note.Instrument = MAX_INSTRUMENTS;
-
+	// // //
 	SetInstrument(Note.Instrument);
 
 	return true;
@@ -2497,10 +2491,7 @@ bool CFamiTrackerView::EditVolumeColumn(stChanNote &Note, int Key, bool &bStepDo
 	if (Value == -1)
 		return false;
 
-	if (Value == 0x80)
-		Note.Vol = MAX_VOLUME;
-	else
-		Note.Vol = Value;
+	Note.Vol = Value;		// // //
 
 	m_iLastVolume = Note.Vol;
 
@@ -2643,7 +2634,7 @@ bool CFamiTrackerView::EditEffParamColumn(stChanNote &Note, int Key, int EffectI
 		return true;
 	}
 
-	if (Value == -1 || Value == 0x80)
+	if (Value == -1)		// // //
 		return false;
 
 	unsigned char Mask, Shift;
