@@ -3863,13 +3863,13 @@ void CPatternEditor::AutoScroll(const CPoint &point, UINT nFlags)
 	int Row = (point.y - HEADER_HEIGHT) / m_iRowHeight - (m_iLinesVisible / 2);		// // //
 
 	if (Row > (m_iLinesFullVisible / 2) - 3) {
-		//if (m_cpCursorPos.m_iRow < m_iPatternLength && m_iCenterRow < (m_iPatternLength - (m_iLinesFullVisible / 2) + 2))
-			m_iScrolling += SCROLL_DOWN;		// // //
+		m_iScrolling += SCROLL_DOWN;		// // //
 	}
 	else if (Row <= -(m_iLinesFullVisible / 2)) {
-		//if (m_cpCursorPos.m_iRow > 0 && m_iCenterRow > (m_iLinesFullVisible / 2))
-			m_iScrolling += SCROLL_UP;		// // //
+		m_iScrolling += SCROLL_UP;		// // //
 	}
+
+	if (m_bFullRowSelect) return;		// // //
 
 	if (PointPos.m_iChannel >= (m_iFirstChannel + m_iChannelsVisible - 1) && m_iChannelsVisible < GetChannelCount()) {		// // //
 		if (m_cpCursorPos.m_iChannel < Channels - 1)		// // //
