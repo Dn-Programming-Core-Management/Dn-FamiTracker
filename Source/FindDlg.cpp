@@ -30,6 +30,8 @@
 #include "FindDlg.h"
 
 #define FIND_RAISE_ERROR(cond,...) {if (cond) { err.Format(__VA_ARGS__); return false; }}
+#define FIND_SINGLE_CHANNEL(x) ( ((x) & 0x01) == 0x01 )
+#define FIND_SINGLE_FRAME(x) ( ((x) & 0x02) == 0x02 )
 #define FIND_WILD _T("*")
 #define FIND_BLANK _T("!")
 
@@ -575,15 +577,17 @@ bool CFindDlg::Find(bool ShowEnd)
 				 BeginRow   = m_bVisible ? m_pView->GetSelectedRow() : m_iRow,
 				 BeginChan  = m_bVisible ? m_pView->GetSelectedChannel() : m_iChannel;
 	bool bFirst = true, bSecond = false, bVertical = IsDlgButtonChecked(IDC_CHECK_VERTICAL_SEARCH) == 1;
-	for (unsigned int i = (Filter & 0x02) ? BeginFrame : 0; i <= ((Filter & 0x02) ? BeginFrame + 1 : m_pDocument->GetFrameCount(Track)); i++) {
-		if (!bSecond && i == ((Filter & 0x02) ? BeginFrame + 1 : m_pDocument->GetFrameCount(Track))) {
+
+	const unsigned int EndFrame = FIND_SINGLE_FRAME(Filter) ? BeginFrame + 1 : m_pDocument->GetFrameCount(Track);
+	for (unsigned int i = FIND_SINGLE_FRAME(Filter) ? BeginFrame : 0; i <= EndFrame; i++) {
+		if (!bSecond && i == (FIND_SINGLE_FRAME(Filter) ? BeginFrame + 1 : m_pDocument->GetFrameCount(Track))) {
 			bSecond = true;
-			i = (Filter & 0x02) ? BeginFrame : 0;
+			i = FIND_SINGLE_FRAME(Filter) ? BeginFrame : 0;
 		}
 		int j, k;
 		int jLimit = m_pView->GetPatternEditor()->GetCurrentPatternLength(i);
-		int kStart = (Filter & 0x01) ? BeginChan : 0;
-		int kLimit = (Filter & 0x01) ? BeginChan + 1 : m_pDocument->GetChannelCount();
+		int kStart = FIND_SINGLE_CHANNEL(Filter) ? BeginChan : 0;
+		int kLimit = FIND_SINGLE_CHANNEL(Filter) ? BeginChan + 1 : m_pDocument->GetChannelCount();
 		for (int jk = 0; jk < jLimit * (kLimit - kStart); jk++) {
 			if (bFirst) {
 				bFirst = false;
@@ -712,23 +716,13 @@ void CFindDlg::OnBnClickedButtonReplace()
 		return;
 
 	if (IsDlgButtonChecked(IDC_CHECK_REPLACE_ALL)) {
-		unsigned int BeginFrame = m_pView->GetSelectedFrame(),
-					 BeginRow   = m_pView->GetSelectedRow(),
-					 BeginChan  = m_pView->GetSelectedChannel(),
-					 Count = 0;
+		unsigned int Count = 0;
 		CString str;
 		
 		unsigned int Filter = m_cSearchArea->GetCurSel();
 		unsigned int ZipPos = 0, PrevPos = 0;
-		if (!(Filter & 0x02)) {
-			//m_pView->SelectFrame(0);
-			m_iFrame = 0;
-		}
-		if (!(Filter & 0x01)) {
-			//m_pView->SelectChannel(0);
-			m_iChannel = 0;
-		}
-		//m_pView->SelectRow(0);
+		m_iFrame = FIND_SINGLE_FRAME(Filter) ? m_pView->GetSelectedFrame() : 0;
+		m_iChannel = FIND_SINGLE_CHANNEL(Filter) ? m_pView->GetSelectedChannel() : 0;
 		m_iRow = 0;
 
 		m_bSkipFirst = false;
@@ -747,9 +741,7 @@ void CFindDlg::OnBnClickedButtonReplace()
 			else PrevPos = ZipPos;
 		}
 
-		m_pView->SelectFrame(BeginFrame);
-		m_pView->SelectRow(BeginRow);
-		m_pView->SelectChannel(BeginChan);
+		m_pView->SelectChannel(m_pView->GetSelectedChannel()); // 0CC: other better way to invalidate cursor?
 		m_pView->GetPatternEditor()->InvalidatePatternData();
 
 		str.Format(_T("%d occurrence(s) replaced."), Count);
