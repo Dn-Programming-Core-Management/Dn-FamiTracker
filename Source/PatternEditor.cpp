@@ -446,7 +446,6 @@ void CPatternEditor::DrawScreen(CDC *pDC, CFamiTrackerView *pView)
 
 	if (m_bSelectionInvalidated) {
 		// Selection has changed, do full redraw
-		m_iSelectionCondition = GetSelectionCondition();		// // //
 		bDrawPattern = true;
 		bQuickRedraw = false;
 	}
@@ -2600,7 +2599,6 @@ void CPatternEditor::SetSelectionStart(const CCursorPos &start)
 	Pos.m_iFrame %= GetFrameCount();
 	Pos.m_iFrame += GetFrameCount() * (m_iWarpCount + (Pos.m_iFrame < 0));
 	m_selection.m_cpStart = Pos;
-	m_iSelectionCondition = GetSelectionCondition();		// // //
 }
 
 void CPatternEditor::SetSelectionEnd(const CCursorPos &end)
@@ -2612,7 +2610,6 @@ void CPatternEditor::SetSelectionEnd(const CCursorPos &end)
 	Pos.m_iFrame %= GetFrameCount();
 	Pos.m_iFrame += GetFrameCount() * (m_iWarpCount + (Pos.m_iFrame < 0));
 	m_selection.m_cpEnd = Pos;
-	m_iSelectionCondition = GetSelectionCondition();		// // //
 }
 
 void CPatternEditor::UpdateSelection()
@@ -2631,6 +2628,7 @@ void CPatternEditor::UpdateSelection()
 		m_bCurrentlySelecting = true;
 		m_bSelecting = true;
 		SetSelectionEnd(m_cpCursorPos);
+		m_iSelectionCondition = GetSelectionCondition();		// // //
 		m_bSelectionInvalidated = true;
 	}
 	else {
@@ -3144,8 +3142,11 @@ void CPatternEditor::OnMouseUp(const CPoint &point)
 				m_bDragStart = false;
 			}
 			// Row column, move to clicked row
-			if (PointPos.m_iRow < 0 || m_bSelecting)
+			if (m_bSelecting) {		// // //
+				m_iSelectionCondition = GetSelectionCondition();
+				m_bSelectionInvalidated = true;
 				return;
+			}
 			m_cpCursorPos.m_iRow = PointPos.m_iRow;
 			m_cpCursorPos.m_iFrame = m_iCurrentFrame = PointPos.m_iFrame;		// // //
 			m_iDragBeginWarp = 0;		// // //
@@ -3157,8 +3158,11 @@ void CPatternEditor::OnMouseUp(const CPoint &point)
 			CancelSelection();
 		}
 
-		if (m_bSelecting)
+		if (m_bSelecting) {
+			m_iSelectionCondition = GetSelectionCondition();		// // //
+			m_bSelectionInvalidated = true;
 			return;
+		}
 
 		if (PointPos.IsValid(GetFrameCount(), PatternLength, ChannelCount)) {		// // //
 			m_cpCursorPos = PointPos;
@@ -3175,8 +3179,10 @@ void CPatternEditor::BeginMouseSelection(const CPoint &point)
 	// Enable selection only if in the pattern field
 	if (IsInsidePattern(point)) {
 		// Selection threshold
-		if (abs(m_ptSelStartPoint.x - point.x) > m_iDragThresholdX || abs(m_ptSelStartPoint.y - point.y) > m_iDragThresholdY)
+		if (abs(m_ptSelStartPoint.x - point.x) > m_iDragThresholdX || abs(m_ptSelStartPoint.y - point.y) > m_iDragThresholdY) {
+			m_iSelectionCondition = SEL_CLEAN;		// // //
 			m_bSelecting = true;
+		}
 	}
 }
 
