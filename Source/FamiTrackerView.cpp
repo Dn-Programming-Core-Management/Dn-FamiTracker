@@ -2778,7 +2778,6 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 			else {
 				// This is special
 				HandleKeyboardNote(nChar, true);
-				m_pPatternEditor->CancelSelection();		// // //
 				return;
 			}
 			if (EditStyle != EDIT_STYLE_MPT)		// // //
@@ -2822,7 +2821,6 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 				m_pPatternEditor->MoveRight();
 			if (bStepDown)
 				StepDown();
-			m_pPatternEditor->CancelSelection();		// // //
 			InvalidateCursor();
 		}
 	}
