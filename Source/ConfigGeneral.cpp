@@ -26,7 +26,7 @@
 #include "ConfigGeneral.h"
 #include "Settings.h"
 
-const CString CConfigGeneral::CONFIG_STR[] = {
+const CString CConfigGeneral::CONFIG_STR[] = {		// // //
 	_T("Wrap cursor"),
 	_T("Wrap across frames"),
 	_T("Free cursor edit"),
@@ -46,10 +46,11 @@ const CString CConfigGeneral::CONFIG_STR[] = {
 	_T("Use old FDS volume table"),
 	_T("Retrieve channel state"),
 	_T("Overflow paste mode"),
-	_T("Show skipped rows")
+	_T("Show skipped rows"),
+	_T("Hexadecimal keypad")
 };
 
-const CString CConfigGeneral::CONFIG_DESC[] = {
+const CString CConfigGeneral::CONFIG_DESC[] = {		// // //
 	_T("Wrap around the cursor when reaching top or bottom in the pattern editor."),
 	_T("Move to next or previous frame when reaching top or bottom in the pattern editor."),
 	_T("Unlock the cursor from the center of the pattern editor."),
@@ -69,7 +70,8 @@ const CString CConfigGeneral::CONFIG_DESC[] = {
 	_T("Use the existing volume table for the FDS channel which has higher precision than in exported NSFs."),
 	_T("Reconstruct the current channel's state from previous frames upon playing (except when playing one row)."),
 	_T("Move pasted pattern data outside the rows of the current frame to subsequent frames."),
-	_T("Display rows that are truncated by Bxx, Cxx, or Dxx effects.")
+	_T("Display rows that are truncated by Bxx, Cxx, or Dxx effects."),
+	_T("Use the extra keys on the keypad as hexadecimal digits in the pattern editor.")
 };
 
 // CConfigGeneral dialog
@@ -148,6 +150,7 @@ BOOL CConfigGeneral::OnApply()
 	theApp.GetSettings()->General.bRetrieveChanState = m_bRetrieveChanState;
 	theApp.GetSettings()->General.bOverflowPaste	= m_bOverflowPaste;
 	theApp.GetSettings()->General.bShowSkippedRows	= m_bShowSkippedRows;
+	theApp.GetSettings()->General.bHexKeypad		= m_bHexKeypad;
 
 	theApp.GetSettings()->Keys.iKeyNoteCut			= m_iKeyNoteCut;
 	theApp.GetSettings()->Keys.iKeyNoteRelease		= m_iKeyNoteRelease;
@@ -187,6 +190,7 @@ BOOL CConfigGeneral::OnInitDialog()
 	m_bRetrieveChanState = theApp.GetSettings()->General.bRetrieveChanState;
 	m_bOverflowPaste	= theApp.GetSettings()->General.bOverflowPaste;
 	m_bShowSkippedRows	= theApp.GetSettings()->General.bShowSkippedRows;
+	m_bHexKeypad		= theApp.GetSettings()->General.bHexKeypad;
 
 	m_iKeyNoteCut		= theApp.GetSettings()->Keys.iKeyNoteCut; 
 	m_iKeyNoteRelease	= theApp.GetSettings()->Keys.iKeyNoteRelease; 
@@ -241,7 +245,8 @@ BOOL CConfigGeneral::OnInitDialog()
 		m_bFDSOldVolume,
 		m_bRetrieveChanState,
 		m_bOverflowPaste,
-		m_bShowSkippedRows
+		m_bShowSkippedRows,
+		m_bHexKeypad
 	};
 
 	CListCtrl *pList = static_cast<CListCtrl*>(GetDlgItem(IDC_CONFIG_LIST));
@@ -302,7 +307,8 @@ void CConfigGeneral::OnLvnItemchangedConfigList(NMHDR *pNMHDR, LRESULT *pResult)
 		&m_bFDSOldVolume,
 		&m_bRetrieveChanState,
 		&m_bOverflowPaste,
-		&m_bShowSkippedRows
+		&m_bShowSkippedRows,
+		&m_bHexKeypad
 	};
 	
 	if (pNMLV->uChanged & LVIF_STATE) {

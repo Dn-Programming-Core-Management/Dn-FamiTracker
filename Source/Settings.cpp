@@ -105,6 +105,7 @@ void CSettings::SetupSettings()
 	SETTING_BOOL("General", "Retrieve channel state", false, &General.bRetrieveChanState);
 	SETTING_BOOL("General", "Overflow paste mode", false, &General.bOverflowPaste);
 	SETTING_BOOL("General", "Show skipped rows", false, &General.bShowSkippedRows);
+	SETTING_BOOL("General", "Hexadecimal keypad", false, &General.bHexKeypad);
 
 	// Keys
 	SETTING_INT("Keys", "Note cut",		0x31, &Keys.iKeyNoteCut);

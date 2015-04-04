@@ -123,6 +123,7 @@ public:
 		bool	bRetrieveChanState;
 		bool	bOverflowPaste;
 		bool	bShowSkippedRows;
+		bool	bHexKeypad;
 	} General;
 
 	struct {

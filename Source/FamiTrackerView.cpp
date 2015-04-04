@@ -199,29 +199,43 @@ BEGIN_MESSAGE_MAP(CFamiTrackerView, CView)
 END_MESSAGE_MAP()
 
 // Convert keys 0-F to numbers, -1 = invalid key
-static int ConvertKeyToHex(int Key) {
-
+static int ConvertKeyToHex(int Key)
+{
 	switch (Key) {
-		case 48: case VK_NUMPAD0: return 0x00;
-		case 49: case VK_NUMPAD1: return 0x01;
-		case 50: case VK_NUMPAD2: return 0x02;
-		case 51: case VK_NUMPAD3: return 0x03;
-		case 52: case VK_NUMPAD4: return 0x04;
-		case 53: case VK_NUMPAD5: return 0x05;
-		case 54: case VK_NUMPAD6: return 0x06;
-		case 55: case VK_NUMPAD7: return 0x07;
-		case 56: case VK_NUMPAD8: return 0x08;
-		case 57: case VK_NUMPAD9: return 0x09;
-		case 65: return 0x0A;
-		case 66: return 0x0B;
-		case 67: return 0x0C;
-		case 68: return 0x0D;
-		case 69: return 0x0E;
-		case 70: return 0x0F;
+	case '0': case VK_NUMPAD0: return 0x00;
+	case '1': case VK_NUMPAD1: return 0x01;
+	case '2': case VK_NUMPAD2: return 0x02;
+	case '3': case VK_NUMPAD3: return 0x03;
+	case '4': case VK_NUMPAD4: return 0x04;
+	case '5': case VK_NUMPAD5: return 0x05;
+	case '6': case VK_NUMPAD6: return 0x06;
+	case '7': case VK_NUMPAD7: return 0x07;
+	case '8': case VK_NUMPAD8: return 0x08;
+	case '9': case VK_NUMPAD9: return 0x09;
+	case 'A': return 0x0A;
+	case 'B': return 0x0B;
+	case 'C': return 0x0C;
+	case 'D': return 0x0D;
+	case 'E': return 0x0E;
+	case 'F': return 0x0F;
 
-		// case KEY_DOT:
-		// case KEY_DASH:
-		//	return 0x80;
+	// case KEY_DOT:
+	// case KEY_DASH:
+	//	return 0x80;
+	}
+
+	return -1;
+}
+
+static int ConvertKeyExtra(int Key)		// // //
+{
+	switch (Key) {
+		case VK_DIVIDE:   return 0x0A;
+		case VK_MULTIPLY: return 0x0B;
+		case VK_SUBTRACT: return 0x0C;
+		case VK_ADD:      return 0x0D;
+		case VK_RETURN:   return 0x0E;
+		case VK_DECIMAL:  return 0x0F;
 	}
 
 	return -1;
@@ -2145,8 +2159,10 @@ void CFamiTrackerView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			return;
 		}
 	}
-	
-	switch (nChar) {
+
+	if ((nChar == VK_ADD || nChar == VK_SUBTRACT) && theApp.GetSettings()->General.bHexKeypad)		// // //
+		HandleKeyboardInput(nChar);
+	else if (!theApp.GetSettings()->General.bHexKeypad || !(nChar == VK_RETURN && !(nFlags & KF_EXTENDED))) switch (nChar) {
 		case VK_UP:
 			OnKeyDirUp();
 			break;
@@ -2421,6 +2437,8 @@ bool CFamiTrackerView::EditInstrumentColumn(stChanNote &Note, int Key, bool &Ste
 	int Value = ConvertKeyToHex(Key);
 	unsigned char Mask, Shift;
 
+	if (Value == -1 && theApp.GetSettings()->General.bHexKeypad)		// // //
+		Value = ConvertKeyExtra(Key);
 	if (Value == -1)
 		return false;
 
@@ -2487,13 +2505,13 @@ bool CFamiTrackerView::EditVolumeColumn(stChanNote &Note, int Key, bool &bStepDo
 	}
 
 	int Value = ConvertKeyToHex(Key);
-
+	
+	if (Value == -1 && theApp.GetSettings()->General.bHexKeypad)		// // //
+		Value = ConvertKeyExtra(Key);
 	if (Value == -1)
 		return false;
 
-	Note.Vol = Value;		// // //
-
-	m_iLastVolume = Note.Vol;
+	m_iLastVolume = Note.Vol = Value;		// // //
 
 	if (EditStyle != EDIT_STYLE_MPT)
 		bStepDown = true;
@@ -2633,8 +2651,10 @@ bool CFamiTrackerView::EditEffParamColumn(stChanNote &Note, int Key, int EffectI
 			bStepDown = true;
 		return true;
 	}
-
-	if (Value == -1)		// // //
+	
+	if (Value == -1 && theApp.GetSettings()->General.bHexKeypad)		// // //
+		Value = ConvertKeyExtra(Key);
+	if (Value == -1)
 		return false;
 
 	unsigned char Mask, Shift;
