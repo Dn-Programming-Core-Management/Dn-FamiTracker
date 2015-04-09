@@ -30,13 +30,13 @@ public:
 	CGroove(int Speed = 0);
 
 	void Copy(const CGroove *Source);
-	void Clear(char Speed);
-	char GetEntry(int Index) const;
-	void SetEntry(int Index, char Value);
-	char GetSize() const;
-	void SetSize(int Size);
+	void Clear(unsigned char Speed);
+	unsigned char GetEntry(int Index) const;
+	void SetEntry(unsigned char Index, unsigned char Value);
+	unsigned char GetSize() const;
+	void SetSize(unsigned char Size);
 	float GetAverage() const;
 private:
-	int m_iLength;
-	char m_iEntry[MAX_GROOVE_SIZE];
+	unsigned char m_iLength;
+	unsigned char m_iEntry[MAX_GROOVE_SIZE];
 };

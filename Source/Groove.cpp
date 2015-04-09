@@ -34,36 +34,36 @@ void CGroove::Copy(const CGroove *Source)
 	memcpy(m_iEntry, Source->m_iEntry, MAX_GROOVE_SIZE);
 }
 
-void CGroove::Clear(char Speed)
+void CGroove::Clear(unsigned char Speed)
 {
 	m_iLength = (Speed > 0);
 	memset(m_iEntry, 0, MAX_GROOVE_SIZE);
 	SetEntry(0, Speed);
 }
 
-char CGroove::GetEntry(int Index) const
+unsigned char CGroove::GetEntry(int Index) const
 {
-	if (Index >= 0 && m_iLength > 0)
+	if (m_iLength > 0)
 		return m_iEntry[Index % m_iLength];
 	else
-		return -1;
+		return 6; // return DEFAULT_SPEED;
 }
 
-void CGroove::SetEntry(int Index, char Value)
+void CGroove::SetEntry(unsigned char Index, unsigned char Value)
 {
 	if (Index >= m_iLength) return;
 	m_iEntry[Index] = Value;
 }
 
-char CGroove::GetSize() const
+unsigned char CGroove::GetSize() const
 {
 	return m_iLength;
 }
 
-void CGroove::SetSize(int Size)
+void CGroove::SetSize(unsigned char Size)
 {
-	if (Size > MAX_GROOVE_SIZE || Size < 0) return;
-	if (m_iLength < Size) for (int i = m_iLength; i < Size; i++)
+	if (Size > MAX_GROOVE_SIZE) return;
+	if (m_iLength < Size) for (unsigned char i = m_iLength; i < Size; i++)
 		m_iEntry[i] = 0;
 	m_iLength = Size;
 }
@@ -73,7 +73,7 @@ float CGroove::GetAverage() const
 	float Total = 0;
 	if (!m_iLength) return 6.0; // return DEFAULT_SPEED;
 	else {
-		for (int i = 0; i < m_iLength; i++) Total += m_iEntry[i];
+		for (unsigned char i = 0; i < m_iLength; i++) Total += m_iEntry[i];
 		return Total / m_iLength;
 	}
 }
