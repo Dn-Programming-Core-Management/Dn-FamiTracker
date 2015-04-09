@@ -304,7 +304,9 @@ void CChannelHandler::RetrieveChannelState()		// // //
 		else if (f) r = pDoc->GetFrameLength(Track, --f) - 1;
 		else break;
 	}
-
+	
+	if (m_iInstrument != MAX_INSTRUMENTS)
+		HandleInstrument(m_iInstrument, true, true);
 	for (unsigned int i = 0; i < EF_COUNT; i++)
 		if (State[i] >= 0)
 			HandleCustomEffects(i, State[i]);
