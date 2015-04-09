@@ -296,7 +296,8 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 		
 		// Play cursor
 		if (PlayFrame == Frame && !pView->GetFollowMode() && theApp.IsPlaying()) {
-			GradientBar(&m_dcBack, 0, SY(i * ROW_HEIGHT + 4), SX(m_iWinWidth), SY(ROW_HEIGHT - 1), CPatternEditor::ROW_PLAY_COLOR, ColBackground);
+			GradientBar(&m_dcBack, 0, SY(i * ROW_HEIGHT + 4), SX(m_iWinWidth), SY(ROW_HEIGHT - 1),
+				theApp.GetSettings()->Appearance.iColCurrentRowPlaying, ColBackground);		// // //
 		}
 
 		// Queue cursor

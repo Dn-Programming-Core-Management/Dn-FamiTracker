@@ -2,6 +2,8 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
+** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -62,6 +64,9 @@ struct COLOR_SCHEME {
 	const COLORREF	TEXT_EFFECT;
 	const COLORREF	SELECTION;
 	const COLORREF	CURSOR;
+	const COLORREF	ROW_NORMAL;		// // //
+	const COLORREF	ROW_EDIT;		// // //
+	const COLORREF	ROW_PLAYING;		// // //
 	const TCHAR		*FONT_FACE;
 	const int		FONT_SIZE;
 };
@@ -80,6 +85,9 @@ const COLOR_SCHEME DEFAULT_COLOR_SCHEME = {
 	0x008080FF,			// Effect color
 	0x00F27D86,			// Selection color
 	0x00808080,			// Cursor color
+	0x00A02030,			// // // Current row
+	0x00302080,			// // // Current row (edit mode)
+	0x00400050,			// // // Current row (playing)
 	_T("Verdana"),		// Font
 	12					// Font size
 };
@@ -98,6 +106,9 @@ const COLOR_SCHEME MONOCHROME_COLOR_SCHEME = {
 	0x008080FF,			// Effect color
 	0x00454550,			// Selection color
 	0x00908080,			// Cursor color
+	0x00A02030,			// // // Current row
+	0x00302080,			// // // Current row (edit mode)
+	0x00400050,			// // // Current row (playing)
 	_T("Fixedsys"),		// Font
 	12					// Font size
 };
@@ -116,6 +127,9 @@ const COLOR_SCHEME RENOISE_COLOR_SCHEME = {
 	0x008080FF,			// Effect color
 	0x00FF8080,			// Selection color
 	0x00707070,			// Cursor color
+	0x00A02030,			// // // Current row
+	0x00302080,			// // // Current row (edit mode)
+	0x00400050,			// // // Current row (playing)
 	_T("Fixedsys"),		// Font
 	12					// Font size
 };
@@ -134,6 +148,9 @@ const COLOR_SCHEME WHITE_COLOR_SCHEME = {
 	0x00000000,			// Effect color
 	0x00FF8080,			// Selection color
 	0x00D0A0A0,			// Cursor color
+	0x00A02030,			// // // Current row
+	0x00302080,			// // // Current row (edit mode)
+	0x00400050,			// // // Current row (playing)
 	_T("Courier"),		// Font
 	12					// Font size
 };

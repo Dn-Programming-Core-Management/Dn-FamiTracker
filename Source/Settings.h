@@ -159,6 +159,9 @@ public:
 		int		iColPatternEffect;
 		int		iColSelection;
 		int		iColCursor;
+		int		iColCurrentRowNormal;		// // //
+		int		iColCurrentRowEdit;
+		int		iColCurrentRowPlaying;
 
 		CString	strFont;		// // //
 		int		iFontSize;

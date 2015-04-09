@@ -263,10 +263,7 @@ private:
 public:
 	// Public consts
 	static const int HEADER_HEIGHT;
-
-	// Colors
-	static const COLORREF ROW_PLAY_COLOR = 0x400050;
-
+	// // //
 private:
 	// Private consts
 	static LPCTSTR DEFAULT_HEADER_FONT;

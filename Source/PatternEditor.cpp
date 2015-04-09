@@ -1120,8 +1120,6 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 	// Row is row from pattern to display
 	// Line is (absolute) screen line
 
-	const COLORREF RED_BAR_COLOR  = 0x302080;
-	const COLORREF BLUE_BAR_COLOR = 0xA02030;
 	const COLORREF GRAY_BAR_COLOR = 0x606060;
 	const COLORREF SEL_DRAG_COL	  = 0xA08080;
 
@@ -1212,9 +1210,9 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 		if (!m_bHasFocus)
 			BackColor = BLEND(GRAY_BAR_COLOR, BackColor, SHADE_LEVEL.UNFOCUSED);	// Gray
 		else if (bEditMode)
-			BackColor = BLEND(RED_BAR_COLOR, BackColor, SHADE_LEVEL.FOCUSED);		// Red
+			BackColor = BLEND(pSettings->Appearance.iColCurrentRowEdit, BackColor, SHADE_LEVEL.FOCUSED);		// Red
 		else
-			BackColor = BLEND(BLUE_BAR_COLOR, BackColor, SHADE_LEVEL.FOCUSED);		// Blue
+			BackColor = BLEND(pSettings->Appearance.iColCurrentRowNormal, BackColor, SHADE_LEVEL.FOCUSED);		// Blue
 	}
 
 	const COLORREF SelectColor = DIM(BLEND(ColSelect, BackColor, SHADE_LEVEL.SELECT),		// // //
@@ -1279,7 +1277,7 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 
 		if (!m_bFollowMode && Row == m_iPlayRow && f == m_iPlayFrame && theApp.IsPlaying()) {
 			// Play row
-			GradientBar(pDC, 0, 0, Width, m_iRowHeight, ROW_PLAY_COLOR, ColBg);
+			GradientBar(pDC, 0, 0, Width, m_iRowHeight, pSettings->Appearance.iColCurrentRowPlaying, ColBg);		// // //
 		}
 
 		// Draw each column

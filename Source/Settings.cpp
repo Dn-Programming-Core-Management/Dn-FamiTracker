@@ -145,10 +145,14 @@ void CSettings::SetupSettings()
 	SETTING_INT("Appearance", "Pattern effect", DEFAULT_COLOR_SCHEME.TEXT_EFFECT, &Appearance.iColPatternEffect);
 	SETTING_INT("Appearance", "Selection", DEFAULT_COLOR_SCHEME.SELECTION, &Appearance.iColSelection);
 	SETTING_INT("Appearance", "Cursor", DEFAULT_COLOR_SCHEME.CURSOR, &Appearance.iColCursor);
-	SETTING_STRING("Appearance", "Pattern font", FONT_FACE, &Appearance.strFont);		// // //
-	SETTING_INT("Appearance", "Pattern font size", FONT_SIZE, &Appearance.iFontSize);		// // //
-	SETTING_BOOL("General", "Pattern colors", true, &Appearance.bPatternColor);		// // //
-	SETTING_BOOL("General", "Display flats", false, &Appearance.bDisplayFlats);		// // //
+	// // //
+	SETTING_INT("Appearance", "Current row (normal mode)", DEFAULT_COLOR_SCHEME.ROW_NORMAL, &Appearance.iColCurrentRowNormal);
+	SETTING_INT("Appearance", "Current row (edit mode)", DEFAULT_COLOR_SCHEME.ROW_EDIT, &Appearance.iColCurrentRowEdit);
+	SETTING_INT("Appearance", "Current row (playing)", DEFAULT_COLOR_SCHEME.ROW_PLAYING, &Appearance.iColCurrentRowPlaying);
+	SETTING_STRING("Appearance", "Pattern font", FONT_FACE, &Appearance.strFont);
+	SETTING_INT("Appearance", "Pattern font size", FONT_SIZE, &Appearance.iFontSize);
+	SETTING_BOOL("General", "Pattern colors", true, &Appearance.bPatternColor);
+	SETTING_BOOL("General", "Display flats", false, &Appearance.bDisplayFlats);
 	
 	// Window position
 	SETTING_INT("Window position", "Left", 100, &WindowPos.iLeft);
