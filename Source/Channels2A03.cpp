@@ -226,8 +226,8 @@ void CSquare1Chan::RefreshChannel()
 		if (m_cSweep & 0x80) {
 			WriteRegister(0x4001, m_cSweep);
 			m_cSweep &= 0x7F;
-			//WriteRegister(0x4017, 0x80);	// Clear sweep unit
-			//WriteRegister(0x4017, 0x00);
+			WriteRegister(0x4017, 0x80);	// Clear sweep unit
+			WriteRegister(0x4017, 0x00);
 			WriteRegister(0x4002, HiFreq);
 			WriteRegister(0x4003, LoFreq + (m_iLengthCounter << 3));		// // //
 			m_iLastPeriod = 0xFFFF;
@@ -282,8 +282,8 @@ void CSquare2Chan::RefreshChannel()
 		if (m_cSweep & 0x80) {
 			WriteRegister(0x4005, m_cSweep);
 			m_cSweep &= 0x7F;
-			//WriteRegister(0x4017, 0x80);		// Clear sweep unit
-			//WriteRegister(0x4017, 0x00);
+			WriteRegister(0x4017, 0x80);		// Clear sweep unit
+			WriteRegister(0x4017, 0x00);
 			WriteRegister(0x4006, HiFreq);
 			WriteRegister(0x4007, LoFreq + (m_iLengthCounter << 3));		// // //
 			m_iLastPeriod = 0xFFFF;
