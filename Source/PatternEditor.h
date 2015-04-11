@@ -278,7 +278,6 @@ private:
 
 	static const int HEADER_CHAN_START;
 	static const int HEADER_CHAN_HEIGHT;
-	static const int ROW_COLUMN_WIDTH;
 	static const int ROW_HEIGHT;
 
 	// Variables
@@ -335,8 +334,9 @@ private:
 	int		m_iFirstChannel;				// First drawn channel
 	int		m_iRowHeight;					// Height of each row in pixels
 	int		m_iPatternFontSize;				// Size of pattern font
-	int		m_iCharWidth;					// // //
+	int		m_iCharWidth;					// // // no longer static const
 	int		m_iColumnSpacing;				// // //
+	int		m_iRowColumnWidth;				// // //
 
 	int		m_iChannelWidths[MAX_CHANNELS];	// Cached width in pixels of each channel
 	int		m_iChannelOffsets[MAX_CHANNELS];// Cached x position of channels

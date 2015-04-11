@@ -99,4 +99,5 @@ public:
 	afx_msg void OnCbnSelchangeFontSize();
 	afx_msg void OnBnClickedPatterncolors();
 	afx_msg void OnBnClickedDisplayFlats();
+	afx_msg void OnCbnEditchangeFontSize();
 };

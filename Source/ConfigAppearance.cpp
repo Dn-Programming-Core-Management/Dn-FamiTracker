@@ -94,6 +94,7 @@ BEGIN_MESSAGE_MAP(CConfigAppearance, CPropertyPage)
 	ON_CBN_SELCHANGE(IDC_FONT_SIZE, &CConfigAppearance::OnCbnSelchangeFontSize)
 	ON_BN_CLICKED(IDC_PATTERNCOLORS, &CConfigAppearance::OnBnClickedPatterncolors)
 	ON_BN_CLICKED(IDC_DISPLAYFLATS, &CConfigAppearance::OnBnClickedDisplayFlats)
+	ON_CBN_EDITCHANGE(IDC_FONT_SIZE, &CConfigAppearance::OnCbnEditchangeFontSize)
 END_MESSAGE_MAP()
 
 
@@ -281,9 +282,9 @@ BOOL CConfigAppearance::OnInitDialog()
 	for (int i = 0; i < FONT_SIZE_COUNT; ++i) {
 		_itot_s(FONT_SIZES[i], txtBuf, 16, 10);
 		pFontSizeList->AddString(txtBuf);
-		if (FONT_SIZES[i] == m_iFontSize)
-			pFontSizeList->SelectString(0, txtBuf);
-	}
+	}		// // //
+	_itot_s(m_iFontSize, txtBuf, 16, 10);
+	pFontSizeList->SetWindowText(txtBuf);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE
@@ -416,6 +417,18 @@ void CConfigAppearance::OnCbnSelchangeFontSize()
 	CComboBox *pFontSizeList = static_cast<CComboBox*>(GetDlgItem(IDC_FONT_SIZE));
 	pFontSizeList->GetLBText(pFontSizeList->GetCurSel(), str);
 	m_iFontSize = _ttoi(str);
+	RedrawWindow();
+	SetModified();
+}
+
+void CConfigAppearance::OnCbnEditchangeFontSize()		// // //
+{
+	CComboBox *pFontSizeList = static_cast<CComboBox*>(GetDlgItem(IDC_FONT_SIZE));
+	CString str;
+	pFontSizeList->GetWindowText(str);
+	int newSize = _ttoi(str);
+	if (newSize < 5 || newSize > 30) return; // arbitrary
+	m_iFontSize = newSize;
 	RedrawWindow();
 	SetModified();
 }

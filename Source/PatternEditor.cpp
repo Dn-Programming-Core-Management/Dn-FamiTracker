@@ -50,7 +50,6 @@
 const int CPatternEditor::HEADER_HEIGHT		 = 36;
 const int CPatternEditor::HEADER_CHAN_START	 = 0;
 const int CPatternEditor::HEADER_CHAN_HEIGHT = 36;
-const int CPatternEditor::ROW_COLUMN_WIDTH	 = 32;
 const int CPatternEditor::ROW_HEIGHT		 = 12;
 
 // Pattern header font
@@ -171,6 +170,7 @@ CPatternEditor::CPatternEditor() :
 	m_iRowHeight(ROW_HEIGHT),
 	m_iCharWidth(10),		// // //
 	m_iColumnSpacing(4),		// // //
+	m_iRowColumnWidth(32),		// // //
 	m_iPatternFontSize(ROW_HEIGHT),
 	m_iDrawCursorRow(0),
 	m_iDrawFrame(0),
@@ -244,6 +244,9 @@ void CPatternEditor::ApplyColorScheme()
 
 	// Fetch font size
 	m_iPatternFontSize = pSettings->Appearance.iFontSize;		// // //
+	m_iCharWidth = m_iPatternFontSize - 1;
+	m_iColumnSpacing = (m_iPatternFontSize + 1) / 3;
+	m_iRowColumnWidth = m_iCharWidth * 3 + 2;
 	m_iRowHeight = m_iPatternFontSize;
 
 	CalcLayout();
@@ -500,7 +503,7 @@ void CPatternEditor::DrawScreen(CDC *pDC, CFamiTrackerView *pView)
 	//
 
 	const int iBlitHeight = m_iWinHeight - HEADER_HEIGHT;
-	const int iBlitWidth = m_iPatternWidth + ROW_COLUMN_WIDTH;
+	const int iBlitWidth = m_iPatternWidth + m_iRowColumnWidth;
 
 //	if (iBlitWidth > m_iWinWidth)
 //		iBlitWidth = m_iWinWidth;
@@ -608,23 +611,23 @@ void CPatternEditor::DrawScreen(CDC *pDC, CFamiTrackerView *pView)
 CRect CPatternEditor::GetActiveRect() const
 {
 	// Return the rect with pattern and header only
-	return CRect(0, 0, m_iPatternWidth + ROW_COLUMN_WIDTH, m_iWinHeight);
+	return CRect(0, 0, m_iPatternWidth + m_iRowColumnWidth, m_iWinHeight);
 }
 
 CRect CPatternEditor::GetHeaderRect() const
 {
-	return CRect(0, 0, m_iPatternWidth + ROW_COLUMN_WIDTH, HEADER_HEIGHT); 
+	return CRect(0, 0, m_iPatternWidth + m_iRowColumnWidth, HEADER_HEIGHT); 
 }
 
 CRect CPatternEditor::GetPatternRect() const
 {
 	// Return the rect with pattern and header only
-	return CRect(0, HEADER_HEIGHT, m_iPatternWidth + ROW_COLUMN_WIDTH, m_iWinHeight);
+	return CRect(0, HEADER_HEIGHT, m_iPatternWidth + m_iRowColumnWidth, m_iWinHeight);
 }
 
 CRect CPatternEditor::GetUnbufferedRect() const
 {
-	return CRect(m_iPatternWidth + ROW_COLUMN_WIDTH, 0, m_iWinWidth, m_iWinHeight);
+	return CRect(m_iPatternWidth + m_iRowColumnWidth, 0, m_iWinWidth, m_iWinHeight);
 }
 
 CRect CPatternEditor::GetInvalidatedRect() const
@@ -677,7 +680,7 @@ bool CPatternEditor::CalculatePatternLayout()
 	m_iPatternWidth = 0;
 	for (int i = m_iFirstChannel; i < ChannelCount; ++i) {
 		m_iPatternWidth += m_iChannelWidths[i];
-		if ((m_iPatternWidth + ROW_COLUMN_WIDTH) >= WinWidth) {
+		if ((m_iPatternWidth + m_iRowColumnWidth) >= WinWidth) {
 			// We passed end of window width, there are hidden channels
 			HiddenChannels = true;
 			LastChannel = i + 1;
@@ -830,7 +833,7 @@ void CPatternEditor::CreateBackground(CDC *pDC)
 		m_pPatternDC = new CDC;
 		m_pHeaderDC = new CDC;
 
-		int Width  = ROW_COLUMN_WIDTH + m_iPatternWidth;
+		int Width  = m_iRowColumnWidth + m_iPatternWidth;
 		int Height = m_iPatternHeight;
 
 		// Setup pattern dc
@@ -854,16 +857,16 @@ void CPatternEditor::DrawUnbufferedArea(CDC *pDC)
 	// This part of the surface doesn't contain anything useful
 
 	if (m_iPatternWidth < m_iWinWidth) {
-		int Width = m_iWinWidth - m_iPatternWidth - ROW_COLUMN_WIDTH;
+		int Width = m_iWinWidth - m_iPatternWidth - m_iRowColumnWidth;
 		if (m_iPatternLength > 1)
 			Width -= ::GetSystemMetrics(SM_CXVSCROLL);
 
 		// Channel header background
-		GradientRectTriple(pDC, m_iPatternWidth + ROW_COLUMN_WIDTH, HEADER_CHAN_START, Width, HEADER_HEIGHT, m_colHead1, m_colHead2, m_pView->GetEditMode() ? m_colHead4 : m_colHead3);
-		pDC->Draw3dRect(m_iPatternWidth + ROW_COLUMN_WIDTH, HEADER_CHAN_START, Width, HEADER_HEIGHT, STATIC_COLOR_SCHEME.FRAME_LIGHT, STATIC_COLOR_SCHEME.FRAME_DARK);
+		GradientRectTriple(pDC, m_iPatternWidth + m_iRowColumnWidth, HEADER_CHAN_START, Width, HEADER_HEIGHT, m_colHead1, m_colHead2, m_pView->GetEditMode() ? m_colHead4 : m_colHead3);
+		pDC->Draw3dRect(m_iPatternWidth + m_iRowColumnWidth, HEADER_CHAN_START, Width, HEADER_HEIGHT, STATIC_COLOR_SCHEME.FRAME_LIGHT, STATIC_COLOR_SCHEME.FRAME_DARK);
 
 		// The big empty area
-		pDC->FillSolidRect(m_iPatternWidth + ROW_COLUMN_WIDTH, HEADER_HEIGHT, Width, m_iWinHeight - HEADER_HEIGHT, m_colEmptyBg);	
+		pDC->FillSolidRect(m_iPatternWidth + m_iRowColumnWidth, HEADER_HEIGHT, Width, m_iWinHeight - HEADER_HEIGHT, m_colEmptyBg);	
 	}
 }
 
@@ -887,7 +890,7 @@ void CPatternEditor::PerformFullRedraw(CDC *pDC)
 	// Last unvisible row
 	ClearRow(pDC, m_iLinesVisible);
 
-	pDC->SetWindowOrg(-ROW_COLUMN_WIDTH, 0);
+	pDC->SetWindowOrg(-m_iRowColumnWidth, 0);
 
 	// Lines between channels
 	int Offset = m_iChannelWidths[m_iFirstChannel];
@@ -978,7 +981,7 @@ void CPatternEditor::PrintRow(CDC *pDC, int Row, int Line, int Frame) const
 void CPatternEditor::MovePatternArea(CDC *pDC, int FromRow, int ToRow, int NumRows) const
 {
 	// Move a part of the pattern area
-	const int Width = ROW_COLUMN_WIDTH + m_iPatternWidth - 1;
+	const int Width = m_iRowColumnWidth + m_iPatternWidth - 1;
 	const int SrcY = FromRow * m_iRowHeight;
 	const int DestY = ToRow * m_iRowHeight;
 	const int Height = NumRows * m_iRowHeight;
@@ -1046,14 +1049,14 @@ void CPatternEditor::ClearRow(CDC *pDC, int Line) const
 {
 	pDC->SetWindowOrg(0, 0);	
 
-	int Offset = ROW_COLUMN_WIDTH;
+	int Offset = m_iRowColumnWidth;
 	for (int i = m_iFirstChannel; i < m_iFirstChannel + m_iChannelsVisible; ++i) {
 		pDC->FillSolidRect(Offset, Line * m_iRowHeight, m_iChannelWidths[i] - 1, m_iRowHeight, m_colEmptyBg);
 		Offset += m_iChannelWidths[i];
 	}
 
 	// Row number
-	pDC->FillSolidRect(1, Line * m_iRowHeight, ROW_COLUMN_WIDTH - 2, m_iRowHeight, m_colEmptyBg);
+	pDC->FillSolidRect(1, Line * m_iRowHeight, m_iRowColumnWidth - 2, m_iRowHeight, m_colEmptyBg);
 }
 
 // // // gone
@@ -1105,7 +1108,7 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 
 	const int Track = GetSelectedTrack();
 	const int Channels = /*m_iFirstChannel +*/ m_iChannelsVisible;
-	int OffsetX = ROW_COLUMN_WIDTH;
+	int OffsetX = m_iRowColumnWidth;
 
 	stChanNote NoteData;
 
@@ -1122,7 +1125,7 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 	bool bSecondHighlight = (m_iHighlightSecond > 0) ? !(Row % m_iHighlightSecond) : false;
 
 	// Clear
-	pDC->FillSolidRect(1, Line * m_iRowHeight, ROW_COLUMN_WIDTH - 2, m_iRowHeight, ColBg);
+	pDC->FillSolidRect(1, Line * m_iRowHeight, m_iRowColumnWidth - 2, m_iRowHeight, ColBg);
 
 	COLORREF TextColor;
 
@@ -1149,18 +1152,18 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 	if (theApp.GetSettings()->General.bRowInHex) {
 		// // // Hex display
 		Text.Format(_T("%X"), Row >> 4);
-		pDC->TextOut((ROW_COLUMN_WIDTH - m_iCharWidth) / 2, Line * m_iRowHeight - 1, Text);
+		pDC->TextOut((m_iRowColumnWidth - m_iCharWidth) / 2, Line * m_iRowHeight - 1, Text);
 		Text.Format(_T("%X"), Row & 0x0F);
-		pDC->TextOut((ROW_COLUMN_WIDTH + m_iCharWidth) / 2, Line * m_iRowHeight - 1, Text);
+		pDC->TextOut((m_iRowColumnWidth + m_iCharWidth) / 2, Line * m_iRowHeight - 1, Text);
 	}
 	else {
 		// // // Decimal display
 		Text.Format(_T("%d"), Row / 100 % 10);
-		pDC->TextOut(ROW_COLUMN_WIDTH / 2 - m_iCharWidth, Line * m_iRowHeight - 1, Text);
+		pDC->TextOut(m_iRowColumnWidth / 2 - m_iCharWidth, Line * m_iRowHeight - 1, Text);
 		Text.Format(_T("%d"), Row / 10 % 10);
-		pDC->TextOut(ROW_COLUMN_WIDTH / 2, Line * m_iRowHeight - 1, Text);
+		pDC->TextOut(m_iRowColumnWidth / 2, Line * m_iRowHeight - 1, Text);
 		Text.Format(_T("%d"), Row % 10);
-		pDC->TextOut(ROW_COLUMN_WIDTH / 2 + m_iCharWidth, Line * m_iRowHeight - 1, Text);
+		pDC->TextOut(m_iRowColumnWidth / 2 + m_iCharWidth, Line * m_iRowHeight - 1, Text);
 	}
 
 	pDC->SetTextAlign(TA_LEFT);		// // //
@@ -1486,7 +1489,7 @@ void CPatternEditor::DrawHeader(CDC *pDC)
 	CPen HoverPen(PS_SOLID, 1, (COLORREF)0x80A080);
 	CPen BlackPen(PS_SOLID, 1, (COLORREF)0x808080);
 
-	unsigned int Offset = ROW_COLUMN_WIDTH;
+	unsigned int Offset = m_iRowColumnWidth;
 	unsigned int Track = GetSelectedTrack();
 
 	CFont *pOldFont = pDC->SelectObject(&m_fontHeader);
@@ -1494,10 +1497,10 @@ void CPatternEditor::DrawHeader(CDC *pDC)
 	pDC->SetBkMode(TRANSPARENT);
 
 	// Channel header background
-	GradientRectTriple(pDC, 0, HEADER_CHAN_START, m_iPatternWidth + ROW_COLUMN_WIDTH, HEADER_CHAN_HEIGHT, m_colHead1, m_colHead2, m_pView->GetEditMode() ? m_colHead4 : m_colHead3);
+	GradientRectTriple(pDC, 0, HEADER_CHAN_START, m_iPatternWidth + m_iRowColumnWidth, HEADER_CHAN_HEIGHT, m_colHead1, m_colHead2, m_pView->GetEditMode() ? m_colHead4 : m_colHead3);
 
 	// Corner box
-	pDC->Draw3dRect(0, HEADER_CHAN_START, ROW_COLUMN_WIDTH, HEADER_CHAN_HEIGHT, STATIC_COLOR_SCHEME.FRAME_LIGHT, STATIC_COLOR_SCHEME.FRAME_DARK);
+	pDC->Draw3dRect(0, HEADER_CHAN_START, m_iRowColumnWidth, HEADER_CHAN_HEIGHT, STATIC_COLOR_SCHEME.FRAME_LIGHT, STATIC_COLOR_SCHEME.FRAME_DARK);
 
 	for (int i = 0; i < m_iChannelsVisible; ++i) {
 
@@ -1541,17 +1544,17 @@ void CPatternEditor::DrawHeader(CDC *pDC)
 		COLORREF HeadTextCol = bMuted ? STATIC_COLOR_SCHEME.CHANNEL_MUTED : STATIC_COLOR_SCHEME.CHANNEL_NORMAL;
 
 		// Shadow
-		pDC->SetTextColor(BLEND(HeadTextCol, 0x00FFFFFF, SHADE_LEVEL.TEXT_SHADOW));
 		if (m_bCompactMode)		// // //
 			pDC->SetTextAlign(TA_CENTER);
-		pDC->TextOut(Offset + (m_bCompactMode ? 19 : 11), HEADER_CHAN_START + 6 + (bMuted ? 1 : 0), pChanName);
 
+		pDC->SetTextColor(BLEND(HeadTextCol, 0x00FFFFFF, SHADE_LEVEL.TEXT_SHADOW));
+		pDC->TextOut(Offset + (m_bCompactMode ? GetColumnSpace(0) / 2 : 10) + 1, HEADER_CHAN_START + 6 + (bMuted ? 1 : 0), pChanName);
+		
+		// Foreground
 		if (m_iMouseHoverChan == Channel)
 			HeadTextCol = BLEND(HeadTextCol, 0x0000FFFF, SHADE_LEVEL.HOVER);
-
-		// Foreground
 		pDC->SetTextColor(HeadTextCol);
-		pDC->TextOut(Offset + (m_bCompactMode ? 18 : 10), HEADER_CHAN_START + 5, pChanName);		// // //
+		pDC->TextOut(Offset + (m_bCompactMode ? GetColumnSpace(0) / 2 : 10), HEADER_CHAN_START + 5, pChanName);		// // //
 		
 		if (!m_bCompactMode) {		// // //
 			// Effect columns
@@ -1608,8 +1611,8 @@ void CPatternEditor::DrawMeters(CDC *pDC)
 	const COLORREF DPCM_STATE_COLOR = 0x00404040;
 
 	const int BAR_TOP	 = 5 + 18 + HEADER_CHAN_START;
-	const int BAR_LEFT	 = ROW_COLUMN_WIDTH + (m_bCompactMode ? 2 : 7);
-	const int BAR_SIZE	 = m_bCompactMode ? 2 : (GetChannelWidth(0) - 9) / 16;		// // //
+	const int BAR_SIZE	 = m_bCompactMode ? (GetColumnSpace(0) - 2) / 16 : (GetChannelWidth(0) - 6) / 16;		// // //
+	const int BAR_LEFT	 = m_bCompactMode ? m_iRowColumnWidth + (GetColumnSpace(0) - 16 * BAR_SIZE + 3) / 2 : m_iRowColumnWidth + 7;
 	const int BAR_SPACE	 = 1;
 	const int BAR_HEIGHT = 5;
 
@@ -1643,17 +1646,18 @@ void CPatternEditor::DrawMeters(CDC *pDC)
 
 		for (int j = 0; j < 15; ++j) {
 			int x = Offset + (j * BAR_SIZE);
-			if (j < level) {
-				pDC->FillSolidRect(x + BAR_SIZE - 1, BAR_TOP + 1, 1, BAR_HEIGHT, colors_shadow[j]);
-				pDC->FillSolidRect(x + 1, BAR_TOP + BAR_HEIGHT, BAR_SIZE - 1, 1, colors_shadow[j]);
-				pDC->FillSolidRect(CRect(x, BAR_TOP, x + (BAR_SIZE - BAR_SPACE), BAR_TOP + BAR_HEIGHT), colors[j]);
-				pDC->Draw3dRect(CRect(x, BAR_TOP, x + (BAR_SIZE - BAR_SPACE), BAR_TOP + BAR_HEIGHT), colors[j], colors_dim[j]);
+			COLORREF shadowCol = j < level ? colors_shadow[j] : COL_DARK_SHADOW;		// // //
+			if (BAR_SIZE > 2) {
+				pDC->FillSolidRect(x + BAR_SIZE - 1, BAR_TOP + 1, BAR_SPACE, BAR_HEIGHT, shadowCol);
+				pDC->FillSolidRect(x + 1, BAR_TOP + BAR_HEIGHT, BAR_SIZE - 1, 1, shadowCol);
+				pDC->FillSolidRect(x, BAR_TOP, BAR_SIZE - BAR_SPACE, BAR_HEIGHT, j < level ? colors[j] : COL_DARK);
 			}
 			else {
-				pDC->FillSolidRect(x + BAR_SIZE - 1, BAR_TOP + 1, BAR_SPACE, BAR_HEIGHT, COL_DARK_SHADOW);
-				pDC->FillSolidRect(x + 1, BAR_TOP + BAR_HEIGHT, BAR_SIZE - 1, 1, COL_DARK_SHADOW);
-				pDC->FillSolidRect(CRect(x, BAR_TOP, x + (BAR_SIZE - BAR_SPACE), BAR_TOP + BAR_HEIGHT), COL_DARK);
+				pDC->FillSolidRect(x, BAR_TOP, BAR_SIZE, BAR_HEIGHT + 1, shadowCol);
+				pDC->FillSolidRect(x, BAR_TOP, BAR_SIZE, BAR_HEIGHT, j < level ? colors[j] : COL_DARK);
 			}
+			if (j < level && BAR_SIZE > 2)
+				pDC->Draw3dRect(x, BAR_TOP, BAR_SIZE - BAR_SPACE, BAR_HEIGHT, colors[j], colors_dim[j]);
 		}
 
 		Offset += m_iChannelWidths[Channel];
@@ -1778,13 +1782,13 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 	unsigned char reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7;
 	int line = 0, vis_line = 0;
 	CFont *pOldFont = pDC->SelectObject(&m_fontCourierNew);
-	pDC->FillSolidRect(ROW_COLUMN_WIDTH + m_iPatternWidth + 30, HEADER_HEIGHT + 30, m_iWinWidth, m_iWinHeight, m_colEmptyBg); // // //
+	pDC->FillSolidRect(m_iRowColumnWidth + m_iPatternWidth + 30, HEADER_HEIGHT + 30, m_iWinWidth, m_iWinHeight, m_colEmptyBg); // // //
 
 	CString text(_T("2A03 registers"));
 	pDC->SetBkColor(m_colEmptyBg);
 	pDC->SetTextColor(0xFFAFAF);
 	pDC->SetBkMode(TRANSPARENT);		// // //
-	pDC->TextOut(ROW_COLUMN_WIDTH + m_iPatternWidth + 30, HEADER_HEIGHT + 30 + (line++) * 13, text);		// // //
+	pDC->TextOut(m_iRowColumnWidth + m_iPatternWidth + 30, HEADER_HEIGHT + 30 + (line++) * 13, text);		// // //
 
 	vis_line = 14;		// // //
 	vis_line += (m_pDocument->ExpansionEnabled(SNDCHIP_VRC6)) ? 6 : 0;
@@ -1804,7 +1808,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		pDC->SetBkColor(m_colEmptyBg);
 		pDC->SetTextColor(0xC0C0C0);
 
-		int x = ROW_COLUMN_WIDTH + m_iPatternWidth + 30;
+		int x = m_iRowColumnWidth + m_iPatternWidth + 30;
 		int y = HEADER_HEIGHT + 30 + line++ * 13;		// // //
 
 		text.Format(_T("$%04X: $%02X $%02X $%02X $%02X"), 0x4000 + i * 4, reg0, reg1, reg2, reg3);
@@ -1875,12 +1879,12 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			vol = 15 * !pSoundGen->PreviewDone();
 		}
 /*
-		pDC->FillSolidRect(ROW_COLUMN_WIDTH + m_iPatternWidth + 250 + i * 30, HEADER_CHAN_HEIGHT, 20, m_iWinHeight - HEADER_CHAN_HEIGHT, 0);
-		pDC->FillSolidRect(ROW_COLUMN_WIDTH + m_iPatternWidth + 250 + i * 30, HEADER_CHAN_HEIGHT + (period >> 1), 20, 5, RGB(vol << 4, vol << 4, vol << 4));
+		pDC->FillSolidRect(m_iRowColumnWidth + m_iPatternWidth + 250 + i * 30, HEADER_CHAN_HEIGHT, 20, m_iWinHeight - HEADER_CHAN_HEIGHT, 0);
+		pDC->FillSolidRect(m_iRowColumnWidth + m_iPatternWidth + 250 + i * 30, HEADER_CHAN_HEIGHT + (period >> 1), 20, 5, RGB(vol << 4, vol << 4, vol << 4));
 */
-		DrawNoteBar(pDC, ROW_COLUMN_WIDTH + m_iPatternWidth + 30, HEADER_HEIGHT + vis_line * 10);
+		DrawNoteBar(pDC, m_iRowColumnWidth + m_iPatternWidth + 30, HEADER_HEIGHT + vis_line * 10);
 		if (note_conv >= -12 && note_conv <= 96 && vol)		// // //
-			pDC->FillSolidRect(ROW_COLUMN_WIDTH + m_iPatternWidth + 29 + 6 * (note_conv + 12), HEADER_HEIGHT + vis_line++ * 10, 3, 7, RGB(vol << 4, vol << 4, vol << 4));
+			pDC->FillSolidRect(m_iRowColumnWidth + m_iPatternWidth + 29 + 6 * (note_conv + 12), HEADER_HEIGHT + vis_line++ * 10, 3, 7, RGB(vol << 4, vol << 4, vol << 4));
 		else vis_line++;
 	}
 
@@ -1891,7 +1895,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		CString text(_T("VRC6 registers"));
 		pDC->SetBkColor(m_colEmptyBg);
 		pDC->SetTextColor(0xFFAFAF);
-		pDC->TextOut(ROW_COLUMN_WIDTH + m_iPatternWidth + 30, HEADER_HEIGHT + 30 + (line++) * 13, text);		// // //
+		pDC->TextOut(m_iRowColumnWidth + m_iPatternWidth + 30, HEADER_HEIGHT + 30 + (line++) * 13, text);		// // //
 
 		// VRC6
 		for (int i = 0; i < 3; ++i) {
@@ -1902,7 +1906,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			pDC->SetBkColor(m_colEmptyBg);
 			pDC->SetTextColor(0xC0C0C0);
 
-			int x = ROW_COLUMN_WIDTH + m_iPatternWidth + 30;		// // //
+			int x = m_iRowColumnWidth + m_iPatternWidth + 30;		// // //
 			int y = HEADER_HEIGHT + 30 + line++ * 13;		// // //
 
 			text.Format(_T("$%04X: $%02X $%02X $%02X"), 0x9000 + i * 0x1000, reg0, reg1, reg2);
@@ -1941,9 +1945,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			if (i == 2)
 				vol = reg0 >> 1;
 			
-			DrawNoteBar(pDC, ROW_COLUMN_WIDTH + m_iPatternWidth + 30, HEADER_HEIGHT + vis_line * 10);
+			DrawNoteBar(pDC, m_iRowColumnWidth + m_iPatternWidth + 30, HEADER_HEIGHT + vis_line * 10);
 			if (note_conv >= -12 && note_conv <= 96 && vol)		// // //
-				pDC->FillSolidRect(ROW_COLUMN_WIDTH + m_iPatternWidth + 29 + 6 * (note_conv + 12), HEADER_HEIGHT + vis_line++ * 10, 3, 7, RGB(vol << 4, vol << 4, vol << 4));
+				pDC->FillSolidRect(m_iRowColumnWidth + m_iPatternWidth + 29 + 6 * (note_conv + 12), HEADER_HEIGHT + vis_line++ * 10, 3, 7, RGB(vol << 4, vol << 4, vol << 4));
 			else vis_line++;
 		}
 	}
@@ -1955,7 +1959,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		CString text(_T("MMC5 registers"));
 		pDC->SetBkColor(m_colEmptyBg);
 		pDC->SetTextColor(0xFFAFAF);
-		pDC->TextOut(ROW_COLUMN_WIDTH + m_iPatternWidth + 30, HEADER_HEIGHT + 30 + (line++) * 13, text);
+		pDC->TextOut(m_iRowColumnWidth + m_iPatternWidth + 30, HEADER_HEIGHT + 30 + (line++) * 13, text);
 
 		// MMC5
 		for (int i = 0; i < 2; ++i) {
@@ -1967,7 +1971,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			pDC->SetBkColor(m_colEmptyBg);
 			pDC->SetTextColor(0xC0C0C0);
 
-			int x = ROW_COLUMN_WIDTH + m_iPatternWidth + 30;
+			int x = m_iRowColumnWidth + m_iPatternWidth + 30;
 			int y = HEADER_HEIGHT + 30 + line++ * 13;
 
 			text.Format(_T("$%04X: $%02X $%02X $%02X $%02X"), 0x5000 + i * 4, reg0, reg1, reg2, reg3);
@@ -1991,9 +1995,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 				period, freq, NoteToStr(note_conv), cents, vol, reg0 >> 6);
 			pDC->TextOut(x + 180, y, text);
 			
-			DrawNoteBar(pDC, ROW_COLUMN_WIDTH + m_iPatternWidth + 30, HEADER_HEIGHT + vis_line * 10);
+			DrawNoteBar(pDC, m_iRowColumnWidth + m_iPatternWidth + 30, HEADER_HEIGHT + vis_line * 10);
 			if (note_conv >= -12 && note_conv <= 96 && vol)
-				pDC->FillSolidRect(ROW_COLUMN_WIDTH + m_iPatternWidth + 29 + 6 * (note_conv + 12), HEADER_HEIGHT + vis_line++ * 10, 3, 7, RGB(vol << 4, vol << 4, vol << 4));
+				pDC->FillSolidRect(m_iRowColumnWidth + m_iPatternWidth + 29 + 6 * (note_conv + 12), HEADER_HEIGHT + vis_line++ * 10, 3, 7, RGB(vol << 4, vol << 4, vol << 4));
 			else vis_line++;
 		}
 	}
@@ -2005,11 +2009,11 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		CString text(_T("N163 registers"));
 		pDC->SetBkColor(m_colEmptyBg);
 		pDC->SetTextColor(0xFFAFAF);
-		pDC->TextOut(ROW_COLUMN_WIDTH + m_iPatternWidth + 30, HEADER_HEIGHT + 30 + (line++) * 13, text);		// // //
+		pDC->TextOut(m_iRowColumnWidth + m_iPatternWidth + 30, HEADER_HEIGHT + 30 + (line++) * 13, text);		// // //
 
 		// // // N163 wave
 		int Length = 0x80 - 8 * m_pDocument->GetNamcoChannels();
-		int x = ROW_COLUMN_WIDTH + m_iPatternWidth + 30 + 300;		// // //
+		int x = m_iRowColumnWidth + m_iPatternWidth + 30 + 300;		// // //
 		int y = HEADER_HEIGHT + 30 + line * 13;		// // //
 		pDC->FillSolidRect(x - 1, y - 1, 2 * Length + 2, 17, 0x808080);
 		pDC->FillSolidRect(x, y, 2 * Length, 15, 0);
@@ -2042,7 +2046,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			pDC->SetBkColor(m_colEmptyBg);
 			pDC->SetTextColor(0xC0C0C0);
 
-			int x = ROW_COLUMN_WIDTH + m_iPatternWidth + 30;		// // //
+			int x = m_iRowColumnWidth + m_iPatternWidth + 30;		// // //
 			int y = HEADER_HEIGHT + 30 + line++ * 13;		// // //
 
 			text.Format(_T("$%02X: $%02X $%02X $%02X $%02X $%02X $%02X $%02X $%02X"), i * 8, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
@@ -2091,9 +2095,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 				note = note_conv = cents = 0;
 			}
 				
-			DrawNoteBar(pDC, ROW_COLUMN_WIDTH + m_iPatternWidth + 30, HEADER_HEIGHT + vis_line * 10);
+			DrawNoteBar(pDC, m_iRowColumnWidth + m_iPatternWidth + 30, HEADER_HEIGHT + vis_line * 10);
 			if (note_conv >= -12 && note_conv <= 96 && vol)
-				pDC->FillSolidRect(ROW_COLUMN_WIDTH + m_iPatternWidth + 29 + 6 * (note_conv + 12), HEADER_HEIGHT + vis_line++ * 10, 3, 7, RGB(vol << 4, vol << 4, vol << 4));			
+				pDC->FillSolidRect(m_iRowColumnWidth + m_iPatternWidth + 29 + 6 * (note_conv + 12), HEADER_HEIGHT + vis_line++ * 10, 3, 7, RGB(vol << 4, vol << 4, vol << 4));			
 			else vis_line++;
 		}
 	}
@@ -2105,7 +2109,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		CString text(_T("FDS registers"));
 		pDC->SetBkColor(m_colEmptyBg);
 		pDC->SetTextColor(0xFFAFAF);
-		pDC->TextOut(ROW_COLUMN_WIDTH + m_iPatternWidth + 30, HEADER_HEIGHT + 30 + (line++) * 13, text);		// // //
+		pDC->TextOut(m_iRowColumnWidth + m_iPatternWidth + 30, HEADER_HEIGHT + 30 + (line++) * 13, text);		// // //
 
 		for (int i = 0; i < 11; ++i) {
 			reg0 = pSoundGen->GetReg(SNDCHIP_FDS, i);
@@ -2113,7 +2117,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			pDC->SetBkColor(m_colEmptyBg);
 			pDC->SetTextColor(0xC0C0C0);
 
-			int x = ROW_COLUMN_WIDTH + m_iPatternWidth + 30;		// // //
+			int x = m_iRowColumnWidth + m_iPatternWidth + 30;		// // //
 			int y = HEADER_HEIGHT + 30 + line++ * 13;		// // //
 
 			text.Format(_T("$%04X: $%02X"), 0x4080 + i, reg0);
@@ -2137,14 +2141,14 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		pDC->SetTextColor(0x808080);
 		text.Format(_T("pitch = $%03X (%7.2fHz %s %+03i), vol = %02i"),
 			period, freq, NoteToStr(note_conv), cents, vol);
-		pDC->TextOut(ROW_COLUMN_WIDTH + m_iPatternWidth + 30 + 180, HEADER_HEIGHT + 30 + (line - 11) * 13, text);		// // //
+		pDC->TextOut(m_iRowColumnWidth + m_iPatternWidth + 30 + 180, HEADER_HEIGHT + 30 + (line - 11) * 13, text);		// // //
 		
-		DrawNoteBar(pDC, ROW_COLUMN_WIDTH + m_iPatternWidth + 30, HEADER_HEIGHT + vis_line * 10);		// // //
+		DrawNoteBar(pDC, m_iRowColumnWidth + m_iPatternWidth + 30, HEADER_HEIGHT + vis_line * 10);		// // //
 		if (note_conv >= -12 && note_conv <= 96 && vol) {
 			if (vol == 32)
-				pDC->FillSolidRect(ROW_COLUMN_WIDTH + m_iPatternWidth + 29 + 6 * (note_conv + 12), HEADER_HEIGHT + vis_line++ * 10, 3, 7, 0xFFFFFF);
+				pDC->FillSolidRect(m_iRowColumnWidth + m_iPatternWidth + 29 + 6 * (note_conv + 12), HEADER_HEIGHT + vis_line++ * 10, 3, 7, 0xFFFFFF);
 			else
-				pDC->FillSolidRect(ROW_COLUMN_WIDTH + m_iPatternWidth + 29 + 6 * (note_conv + 12), HEADER_HEIGHT + vis_line++ * 10, 3, 7, RGB(vol << 3, vol << 3, vol << 3));
+				pDC->FillSolidRect(m_iRowColumnWidth + m_iPatternWidth + 29 + 6 * (note_conv + 12), HEADER_HEIGHT + vis_line++ * 10, 3, 7, RGB(vol << 3, vol << 3, vol << 3));
 		}
 		else vis_line++;
 	}
@@ -2156,7 +2160,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		CString text(_T("VRC7 registers"));
 		pDC->SetBkColor(m_colEmptyBg);
 		pDC->SetTextColor(0xFFAFAF);
-		pDC->TextOut(ROW_COLUMN_WIDTH + m_iPatternWidth + 30, HEADER_HEIGHT + 30 + (line++) * 13, text);
+		pDC->TextOut(m_iRowColumnWidth + m_iPatternWidth + 30, HEADER_HEIGHT + 30 + (line++) * 13, text);
 
 		reg0 = pSoundGen->GetReg(SNDCHIP_VRC7, 0);
 		reg1 = pSoundGen->GetReg(SNDCHIP_VRC7, 1);
@@ -2171,7 +2175,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		pDC->SetTextColor(0xC0C0C0);
 
 		text.Format(_T("$00: $%02X $%02X $%02X $%02X $%02X $%02X $%02X $%02X"), reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
-		pDC->TextOut(ROW_COLUMN_WIDTH + m_iPatternWidth + 30, HEADER_HEIGHT + 30 + (line++) * 13, text);
+		pDC->TextOut(m_iRowColumnWidth + m_iPatternWidth + 30, HEADER_HEIGHT + 30 + (line++) * 13, text);
 
 		for (int i = 0; i < 6; ++i) {
 			reg0 = pSoundGen->GetReg(SNDCHIP_VRC7, i + 0x10);
@@ -2181,7 +2185,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			pDC->SetBkColor(m_colEmptyBg);
 			pDC->SetTextColor(0xC0C0C0);
 
-			int x = ROW_COLUMN_WIDTH + m_iPatternWidth + 30;
+			int x = m_iRowColumnWidth + m_iPatternWidth + 30;
 			int y = HEADER_HEIGHT + 30 + line++ * 13;
 
 			text.Format(_T("$x%01X: $%02X $%02X $%02X"), i, reg0, reg1, reg2);
@@ -2220,9 +2224,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 				period, freq, NoteToStr(note_conv), cents, vol, inst);
 			pDC->TextOut(x + 180, y, text);
 			
-			DrawNoteBar(pDC, ROW_COLUMN_WIDTH + m_iPatternWidth + 30, HEADER_HEIGHT + vis_line * 10);
+			DrawNoteBar(pDC, m_iRowColumnWidth + m_iPatternWidth + 30, HEADER_HEIGHT + vis_line * 10);
 			if (note_conv >= -12 && note_conv <= 96 && vol)
-				pDC->FillSolidRect(ROW_COLUMN_WIDTH + m_iPatternWidth + 29 + 6 * (note_conv + 12), HEADER_HEIGHT + vis_line++ * 10, 3, 7, RGB(vol << 4, vol << 4, vol << 4));
+				pDC->FillSolidRect(m_iRowColumnWidth + m_iPatternWidth + 29 + 6 * (note_conv + 12), HEADER_HEIGHT + vis_line++ * 10, 3, 7, RGB(vol << 4, vol << 4, vol << 4));
 			else vis_line++;
 		}
 	}
@@ -2234,7 +2238,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		CString text(_T("5B registers"));
 		pDC->SetBkColor(m_colEmptyBg);
 		pDC->SetTextColor(0xFFAFAF);
-		pDC->TextOut(ROW_COLUMN_WIDTH + m_iPatternWidth + 30, HEADER_HEIGHT + 30 + (line++) * 13, text);
+		pDC->TextOut(m_iRowColumnWidth + m_iPatternWidth + 30, HEADER_HEIGHT + 30 + (line++) * 13, text);
 
 		// S5B
 		for (int i = 0; i < 4; ++i) {
@@ -2244,7 +2248,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			pDC->SetBkColor(m_colEmptyBg);
 			pDC->SetTextColor(0xC0C0C0);
 
-			int x = ROW_COLUMN_WIDTH + m_iPatternWidth + 30;
+			int x = m_iRowColumnWidth + m_iPatternWidth + 30;
 			int y = HEADER_HEIGHT + 30 + line++ * 13;
 
 			text.Format(_T("$%02X: $%02X $%02X"), i * 2, reg0, reg1);
@@ -2277,9 +2281,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			}
 			pDC->TextOut(x + 180, y, text);
 			if (i < 3) {
-				DrawNoteBar(pDC, ROW_COLUMN_WIDTH + m_iPatternWidth + 30, HEADER_HEIGHT + vis_line * 10);
+				DrawNoteBar(pDC, m_iRowColumnWidth + m_iPatternWidth + 30, HEADER_HEIGHT + vis_line * 10);
 				if (note_conv >= -12 && note_conv <= 96 && vol)		// // //
-					pDC->FillSolidRect(ROW_COLUMN_WIDTH + m_iPatternWidth + 29 + 6 * (note_conv + 12), HEADER_HEIGHT + vis_line++ * 10, 3, 7, RGB(vol << 4, vol << 4, vol << 4));
+					pDC->FillSolidRect(m_iRowColumnWidth + m_iPatternWidth + 29 + 6 * (note_conv + 12), HEADER_HEIGHT + vis_line++ * 10, 3, 7, RGB(vol << 4, vol << 4, vol << 4));
 				else vis_line++;
 			}
 		}
@@ -2292,7 +2296,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			pDC->SetBkColor(m_colEmptyBg);
 			pDC->SetTextColor(0xC0C0C0);
 
-			int x = ROW_COLUMN_WIDTH + m_iPatternWidth + 30;
+			int x = m_iRowColumnWidth + m_iPatternWidth + 30;
 			int y = HEADER_HEIGHT + 30 + line++ * 13;
 
 			text.Format(_T("$%02X: $%02X $%02X $%02X"), i * 3 + 8, reg0, reg1, reg2);
@@ -2325,7 +2329,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 	pDC->SelectObject(pOldFont);
 
 	// Surrounding frame
-//	pDC->Draw3dRect(ROW_COLUMN_WIDTH + m_iPatternWidth + 20, HEADER_HEIGHT + 20, 200, line * 18 + 20, 0xA0A0A0, 0x505050);
+//	pDC->Draw3dRect(m_iRowColumnWidth + m_iPatternWidth + 20, HEADER_HEIGHT + 20, 200, line * 18 + 20, 0xA0A0A0, 0x505050);
 
 }
 
@@ -2429,10 +2433,10 @@ int CPatternEditor::GetChannelAtPoint(int PointX) const
 	// Convert X position to channel number
 	const int ChannelCount = GetChannelCount();
 
-	if (PointX < ROW_COLUMN_WIDTH)
+	if (PointX < m_iRowColumnWidth)
 		return -1;	// -1 means row number column
 
-	const int Offset = PointX - ROW_COLUMN_WIDTH + m_iChannelOffsets[m_iFirstChannel];
+	const int Offset = PointX - m_iRowColumnWidth + m_iChannelOffsets[m_iFirstChannel];
 	for (int i = m_iFirstChannel; i < ChannelCount; ++i) {
 		if (Offset >= m_iChannelOffsets[i] && Offset < (m_iChannelOffsets[i] + m_iChannelWidths[i]))
 			return i;
@@ -2452,7 +2456,7 @@ int CPatternEditor::GetColumnAtPoint(int PointX) const
 	if (Channel >= ChannelCount)
 		return GetChannelColumns(ChannelCount - 1) - 1;
 
-	const int Offset = PointX - ROW_COLUMN_WIDTH + m_iChannelOffsets[m_iFirstChannel];
+	const int Offset = PointX - m_iRowColumnWidth + m_iChannelOffsets[m_iFirstChannel];
 	int ColumnOffset = m_iChannelOffsets[Channel];
 	for (int i = 0; i < GetChannelColumns(Channel); ++i) {
 		ColumnOffset += GetColumnSpace(i);		// // //
@@ -2963,12 +2967,12 @@ bool CPatternEditor::IsOverPattern(const CPoint &point) const
 
 bool CPatternEditor::IsInsidePattern(const CPoint &point) const
 {
-	return point.x < (m_iPatternWidth + ROW_COLUMN_WIDTH);
+	return point.x < (m_iPatternWidth + m_iRowColumnWidth);
 }
 
 bool CPatternEditor::IsInsideRowColumn(const CPoint &point) const
 {
-	return point.x < ROW_COLUMN_WIDTH;
+	return point.x < m_iRowColumnWidth;
 }
 
 void CPatternEditor::OnMouseDownHeader(const CPoint &point)
