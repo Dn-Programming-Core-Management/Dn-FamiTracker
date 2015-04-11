@@ -150,6 +150,8 @@ public:
 
 	// Various
 	void GetVolumeColumn(CString &str) const;
+	int GetCurrentPatternLength(int Frame) const;		// // // allow negative frames
+	bool IsInRange(const CSelection &sel, int Frame, int Row, int Channel, int Column) const;		// // //
 
 	// Settings
 	void SetHighlight(int Rows, int SecondRows);
@@ -170,6 +172,9 @@ public:
 	CSelection GetSelection() const;
 	void SetSelection(const CSelection &selection);
 
+	int GetSelectionSize() const;		// // //
+	sel_condition_t GetSelectionCondition() const;		// // //
+
 	void DragPaste(const CPatternClipData *pClipData, const CSelection *pDragTarget, bool bMix);
 
 	// OLE support
@@ -187,10 +192,6 @@ public:
 	static int GetSelectColumn(int Column);
 	static int GetCursorStartColumn(int Column);		// // //
 	static int GetCursorEndColumn(int Column);		// // //
-	bool IsInRange(const CSelection &sel, int Frame, int Row, int Channel, int Column) const;		// // //
-	int GetSelectionSize() const;		// // //
-	sel_condition_t GetSelectionCondition() const;		// // //
-	int GetCurrentPatternLength(int Frame) const;		// // // allow negative frames
 
 	// Private methods
 private:
@@ -198,6 +199,11 @@ private:
 	// Layout
 	bool CalculatePatternLayout();
 	void CalcLayout();
+	// // //
+	unsigned int GetColumnWidth(int Column) const;
+	unsigned int GetColumnSpace(int Column) const;
+	unsigned int GetSelectWidth(int Column) const;
+	unsigned int GetChannelWidth(int EffColumns) const;
 
 	// Main draw methods
 	void PerformFullRedraw(CDC *pDC);
@@ -233,9 +239,6 @@ private:
 
 	CCursorPos GetCursorAtPoint(const CPoint &point) const;
 
-	CPatternIterator GetStartIterator() const;		// // //
-	CPatternIterator GetEndIterator() const;
-
 	// Selection methods
 	void UpdateSelection();
 
@@ -244,6 +247,9 @@ private:
 
 	void BeginMouseSelection(const CPoint &point);
 	void ContinueMouseSelection(const CPoint &point);
+
+	CPatternIterator GetStartIterator() const;		// // //
+	CPatternIterator GetEndIterator() const;
 
 	// Editing
 	void IncreaseEffectColumn(int Channel);
@@ -274,7 +280,6 @@ private:
 	static const int HEADER_CHAN_HEIGHT;
 	static const int ROW_COLUMN_WIDTH;
 	static const int ROW_HEIGHT;
-	static const int CHANNEL_WIDTH;
 
 	// Variables
 private:
@@ -330,6 +335,8 @@ private:
 	int		m_iFirstChannel;				// First drawn channel
 	int		m_iRowHeight;					// Height of each row in pixels
 	int		m_iPatternFontSize;				// Size of pattern font
+	int		m_iCharWidth;					// // //
+	int		m_iColumnSpacing;				// // //
 
 	int		m_iChannelWidths[MAX_CHANNELS];	// Cached width in pixels of each channel
 	int		m_iChannelOffsets[MAX_CHANNELS];// Cached x position of channels

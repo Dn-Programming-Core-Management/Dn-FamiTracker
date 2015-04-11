@@ -59,39 +59,7 @@ LPCTSTR CPatternEditor::DEFAULT_HEADER_FONT = _T("Tahoma");
 const int CPatternEditor::DEFAULT_FONT_SIZE			= 12;
 const int CPatternEditor::DEFAULT_HEADER_FONT_SIZE	= 11;
 
-// Channel layout
-static const int COLUMN_SPACING = 4; // 0CC: change
-static const int CHAR_WIDTH		= 10;
-
-static const unsigned int COLUMN_SPACE[] = {
-	CHAR_WIDTH * 3 + COLUMN_SPACING,
-	CHAR_WIDTH, CHAR_WIDTH + COLUMN_SPACING, 
-	CHAR_WIDTH + COLUMN_SPACING,  
-	CHAR_WIDTH, CHAR_WIDTH, CHAR_WIDTH + COLUMN_SPACING,
-	CHAR_WIDTH, CHAR_WIDTH, CHAR_WIDTH + COLUMN_SPACING,
-	CHAR_WIDTH, CHAR_WIDTH, CHAR_WIDTH + COLUMN_SPACING,
-	CHAR_WIDTH, CHAR_WIDTH, CHAR_WIDTH + COLUMN_SPACING
-};
-
-static const unsigned int COLUMN_WIDTH[] = {
-	CHAR_WIDTH * 3,
-	CHAR_WIDTH, CHAR_WIDTH, 
-	CHAR_WIDTH,
-	CHAR_WIDTH, CHAR_WIDTH, CHAR_WIDTH,
-	CHAR_WIDTH, CHAR_WIDTH, CHAR_WIDTH,
-	CHAR_WIDTH, CHAR_WIDTH, CHAR_WIDTH,
-	CHAR_WIDTH, CHAR_WIDTH, CHAR_WIDTH
-};
-
-static const unsigned int SELECT_WIDTH[] = {
-	CHAR_WIDTH * 3 + COLUMN_SPACING,
-	CHAR_WIDTH + COLUMN_SPACING, CHAR_WIDTH,
-	CHAR_WIDTH + COLUMN_SPACING,  
-	CHAR_WIDTH + COLUMN_SPACING, CHAR_WIDTH, CHAR_WIDTH,
-	CHAR_WIDTH + COLUMN_SPACING, CHAR_WIDTH, CHAR_WIDTH,
-	CHAR_WIDTH + COLUMN_SPACING, CHAR_WIDTH, CHAR_WIDTH,
-	CHAR_WIDTH + COLUMN_SPACING, CHAR_WIDTH, CHAR_WIDTH
-};
+// // //
 
 void CopyNoteSection(stChanNote *Target, stChanNote *Source, paste_mode_t Mode, int Begin, int End)		// // //
 {
@@ -166,8 +134,6 @@ void CopyNoteSection(stChanNote *Target, stChanNote *Source, paste_mode_t Mode, 
 	}
 }
 
-const int CPatternEditor::CHANNEL_WIDTH = CHAR_WIDTH * 9 + COLUMN_SPACING * 4 - 1;		// // //
-
 // CPatternEditor
 
 CPatternEditor::CPatternEditor() :
@@ -203,6 +169,8 @@ CPatternEditor::CPatternEditor() :
 	m_iChannelsFullVisible(0),
 	m_iFirstChannel(0),
 	m_iRowHeight(ROW_HEIGHT),
+	m_iCharWidth(10),		// // //
+	m_iColumnSpacing(4),		// // //
 	m_iPatternFontSize(ROW_HEIGHT),
 	m_iDrawCursorRow(0),
 	m_iDrawFrame(0),
@@ -694,8 +662,8 @@ bool CPatternEditor::CalculatePatternLayout()
 	int Offset = 0;
 	for (int i = 0; i < ChannelCount; ++i) {
 		int Width;		// // //
-		if (m_bCompactMode) Width = (3 * CHAR_WIDTH + COLUMN_SPACING);
-		else Width = CHAR_WIDTH * 9 + COLUMN_SPACING * 4 + m_pDocument->GetEffColumns(Track, i) * (3 * CHAR_WIDTH + COLUMN_SPACING);
+		if (m_bCompactMode) Width = (3 * m_iCharWidth + m_iColumnSpacing);
+		else Width = m_iCharWidth * 9 + m_iColumnSpacing * 4 + m_pDocument->GetEffColumns(Track, i) * (3 * m_iCharWidth + m_iColumnSpacing);
 		m_iChannelWidths[i] = Width + 1;
 		m_iColumns[i] = m_bCompactMode ? 1 : GetChannelColumns(i);		// // //
 		m_iChannelOffsets[i] = Offset;
@@ -1181,18 +1149,18 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 	if (theApp.GetSettings()->General.bRowInHex) {
 		// // // Hex display
 		Text.Format(_T("%X"), Row >> 4);
-		pDC->TextOut((ROW_COLUMN_WIDTH - CHAR_WIDTH) / 2, Line * m_iRowHeight - 1, Text);
+		pDC->TextOut((ROW_COLUMN_WIDTH - m_iCharWidth) / 2, Line * m_iRowHeight - 1, Text);
 		Text.Format(_T("%X"), Row & 0x0F);
-		pDC->TextOut((ROW_COLUMN_WIDTH + CHAR_WIDTH) / 2, Line * m_iRowHeight - 1, Text);
+		pDC->TextOut((ROW_COLUMN_WIDTH + m_iCharWidth) / 2, Line * m_iRowHeight - 1, Text);
 	}
 	else {
 		// // // Decimal display
 		Text.Format(_T("%d"), Row / 100 % 10);
-		pDC->TextOut(ROW_COLUMN_WIDTH / 2 - CHAR_WIDTH, Line * m_iRowHeight - 1, Text);
+		pDC->TextOut(ROW_COLUMN_WIDTH / 2 - m_iCharWidth, Line * m_iRowHeight - 1, Text);
 		Text.Format(_T("%d"), Row / 10 % 10);
 		pDC->TextOut(ROW_COLUMN_WIDTH / 2, Line * m_iRowHeight - 1, Text);
 		Text.Format(_T("%d"), Row % 10);
-		pDC->TextOut(ROW_COLUMN_WIDTH / 2 + CHAR_WIDTH, Line * m_iRowHeight - 1, Text);
+		pDC->TextOut(ROW_COLUMN_WIDTH / 2 + m_iCharWidth, Line * m_iRowHeight - 1, Text);
 	}
 
 	pDC->SetTextAlign(TA_LEFT);		// // //
@@ -1222,7 +1190,6 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 	const COLORREF SelectEdgeCol = (m_iSelectionCondition == SEL_CLEAN /* || m_iSelectionCondition == SEL_UNKNOWN_SIZE*/ ) ?
 		DIM(BLEND(SelectColor, 0xFFFFFF, SHADE_LEVEL.SELECT_EDGE), ((Frame == m_iCurrentFrame) ? 100 : PREVIEW_SHADE_LEVEL)) :
 		0x0000FF;
-	const int BorderWidth = (m_iSelectionCondition == SEL_NONTERMINAL_SKIP) ? 2 : 1;
 
 	RowColorInfo_t colorInfo;
 
@@ -1265,8 +1232,8 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 
 		pDC->SetWindowOrg(-OffsetX, - (signed)Line * m_iRowHeight);
 
-		int PosX	 = COLUMN_SPACING;
-		int SelStart = COLUMN_SPACING;
+		int PosX	 = m_iColumnSpacing;
+		int SelStart = m_iColumnSpacing;
 		int Columns	 = m_bCompactMode ? 1 : GetChannelColumns(i);		// // //
 		int Width	 = m_iChannelWidths[i] - 1;		// Remove 1, spacing between channels
 
@@ -1281,33 +1248,31 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 		}
 
 		// Draw each column
+		const int BorderWidth = (m_iSelectionCondition == SEL_NONTERMINAL_SKIP) ? 2 : 1;		// // //
 		for (int j = 0; j < Columns; ++j) {
+			int SelWidth = GetSelectWidth(j);		// // //
 
 			// Selection
 			if (m_bSelecting) {		// // //
 				if (IsInRange(m_selection, Frame, Row, i, j)) {		// // //
-					pDC->FillSolidRect(SelStart - COLUMN_SPACING, 0, SELECT_WIDTH[j], m_iRowHeight, SelectColor);
+					pDC->FillSolidRect(SelStart - m_iColumnSpacing, 0, SelWidth, m_iRowHeight, SelectColor);
 
 					// Outline
 					if (Row == m_selection.GetRowStart() && !((f - m_selection.GetFrameStart()) % GetFrameCount()))
-						pDC->FillSolidRect(SelStart - COLUMN_SPACING, 0,
-							SELECT_WIDTH[j], BorderWidth, SelectEdgeCol);
+						pDC->FillSolidRect(SelStart - m_iColumnSpacing, 0, SelWidth, BorderWidth, SelectEdgeCol);
 					if (Row == m_selection.GetRowEnd() && !((f - m_selection.GetFrameEnd()) % GetFrameCount()))
-						pDC->FillSolidRect(SelStart - COLUMN_SPACING, m_iRowHeight - BorderWidth,
-							SELECT_WIDTH[j], BorderWidth, SelectEdgeCol);
+						pDC->FillSolidRect(SelStart - m_iColumnSpacing, m_iRowHeight - BorderWidth, SelWidth, BorderWidth, SelectEdgeCol);
 					if (i == m_selection.GetChanStart() && j == m_selection.GetColStart())
-						pDC->FillSolidRect(SelStart - COLUMN_SPACING, 0,
-							BorderWidth, m_iRowHeight, SelectEdgeCol);
+						pDC->FillSolidRect(SelStart - m_iColumnSpacing, 0, BorderWidth, m_iRowHeight, SelectEdgeCol);
 					if (i == m_selection.GetChanEnd() && j == m_selection.GetColEnd())
-						pDC->FillSolidRect(SelStart - COLUMN_SPACING + SELECT_WIDTH[j] - BorderWidth, 0,
-							BorderWidth, m_iRowHeight, SelectEdgeCol);
+						pDC->FillSolidRect(SelStart - m_iColumnSpacing + SelWidth - BorderWidth, 0, BorderWidth, m_iRowHeight, SelectEdgeCol);
 				}
 			}
 
 			// Dragging
 			if (m_bDragging) {		// // //
 				if (IsInRange(m_selDrag, Frame, Row, i, j)) {		// // //
-					pDC->FillSolidRect(SelStart - COLUMN_SPACING, 0, SELECT_WIDTH[j], m_iRowHeight, DragColor);
+					pDC->FillSolidRect(SelStart - m_iColumnSpacing, 0, SelWidth, m_iRowHeight, DragColor);
 				}
 			}
 
@@ -1315,15 +1280,15 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 
 			// Draw cursor box
 			if (i == m_cpCursorPos.m_iChannel && j == m_cpCursorPos.m_iColumn && Row == m_iDrawCursorRow && !bPreview) {
-				GradientBar(pDC, PosX - COLUMN_SPACING / 2, 0, COLUMN_WIDTH[j], m_iRowHeight, ColCursor, ColBg);		// // //
-				pDC->Draw3dRect(PosX - COLUMN_SPACING / 2, 0, COLUMN_WIDTH[j], m_iRowHeight, ColCursor, DIM(ColCursor, 50));
+				GradientBar(pDC, PosX - m_iColumnSpacing / 2, 0, GetColumnWidth(j), m_iRowHeight, ColCursor, ColBg);		// // //
+				pDC->Draw3dRect(PosX - m_iColumnSpacing / 2, 0, GetColumnWidth(j), m_iRowHeight, ColCursor, DIM(ColCursor, 50));
+				//pDC->Draw3dRect(PosX - m_iColumnSpacing / 2 - 1, -1, GetColumnWidth(j) + 2, m_iRowHeight + 2, ColCursor, DIM(ColCursor, 50));
 				bInvert = true;
 			}
 
-			DrawCell(pDC, PosX - COLUMN_SPACING / 2, j, i, bInvert, &NoteData, &colorInfo);		// // //
-			PosX += COLUMN_SPACE[j];
-			SelStart += SELECT_WIDTH[j];
-			
+			DrawCell(pDC, PosX - m_iColumnSpacing / 2, j, i, bInvert, &NoteData, &colorInfo);		// // //
+			PosX += GetColumnSpace(j);
+			SelStart += GetSelectWidth(j);
 		}
 
 		OffsetX += m_iChannelWidths[i];
@@ -1386,7 +1351,7 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, int Column, int Channel, bool 
 	int PosY = -2;
 	// // // PosX -= 1;
 
-#define BAR(x, y) pDC->FillSolidRect((x) + CHAR_WIDTH / 2 - 2, (y) + (m_iRowHeight / 2) + 2, 4, 1, pColorInfo->Shaded) // // //
+#define BAR(x, y) pDC->FillSolidRect((x) + m_iCharWidth / 2 - 2, (y) + (m_iRowHeight / 2) + 2, 4, 1, pColorInfo->Shaded) // // //
 	
 	pDC->SetTextAlign(TA_CENTER);		// // //
 
@@ -1397,21 +1362,21 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, int Column, int Channel, bool 
 				case NONE:
 					if (m_bCompactMode) {		// // //
 						if (pNoteData->Instrument != MAX_INSTRUMENTS) {
-							DrawChar(pDC, PosX + CHAR_WIDTH * 3 / 2, PosY, HEX[pNoteData->Instrument >> 4], DimInst);
-							DrawChar(pDC, PosX + CHAR_WIDTH * 5 / 2, PosY, HEX[pNoteData->Instrument & 0x0F], DimInst);
+							DrawChar(pDC, PosX + m_iCharWidth * 3 / 2, PosY, HEX[pNoteData->Instrument >> 4], DimInst);
+							DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, HEX[pNoteData->Instrument & 0x0F], DimInst);
 							break;
 						}
 						else if (pNoteData->Vol != MAX_VOLUME) {
-							DrawChar(pDC, PosX + CHAR_WIDTH * 5 / 2, PosY, HEX[pNoteData->Vol], pColorInfo->Compact);
+							DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, HEX[pNoteData->Vol], pColorInfo->Compact);
 							break;
 						}
 						else {
 							bool Found = false;
 							for (unsigned int i = 0; i <= m_pDocument->GetEffColumns(GetSelectedTrack(), Channel); i++) {
 								if (pNoteData->EffNumber[i] != EF_NONE) {
-									DrawChar(pDC, PosX + CHAR_WIDTH / 2, PosY, EFF_CHAR[pNoteData->EffNumber[i] - 1], DimEff);
-									DrawChar(pDC, PosX + CHAR_WIDTH * 3 / 2, PosY, HEX[pNoteData->EffParam[i] >> 4], DimEff);
-									DrawChar(pDC, PosX + CHAR_WIDTH * 5 / 2, PosY, HEX[pNoteData->EffParam[i] & 0x0F], DimEff);
+									DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, EFF_CHAR[pNoteData->EffNumber[i] - 1], DimEff);
+									DrawChar(pDC, PosX + m_iCharWidth * 3 / 2, PosY, HEX[pNoteData->EffParam[i] >> 4], DimEff);
+									DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, HEX[pNoteData->EffParam[i] & 0x0F], DimEff);
 									Found = true;
 									break;
 								}
@@ -1419,42 +1384,42 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, int Column, int Channel, bool 
 							if (Found) break;
 						}
 						BAR(PosX, PosY);
-						BAR(PosX + CHAR_WIDTH, PosY);
-						BAR(PosX + CHAR_WIDTH * 2, PosY);
+						BAR(PosX + m_iCharWidth, PosY);
+						BAR(PosX + m_iCharWidth * 2, PosY);
 					}
 					else {
 						BAR(PosX, PosY);
-						BAR(PosX + CHAR_WIDTH, PosY);
-						BAR(PosX + CHAR_WIDTH * 2, PosY);
+						BAR(PosX + m_iCharWidth, PosY);
+						BAR(PosX + m_iCharWidth * 2, PosY);
 					}
 					break;		// // // same below
 				case HALT:
 					// Note stop
-					GradientBar(pDC, PosX + 5, (m_iRowHeight / 2) - 2, CHAR_WIDTH * 3 - 11, m_iRowHeight / 4, pColorInfo->Note, pColorInfo->Back);
+					GradientBar(pDC, PosX + 5, (m_iRowHeight / 2) - 2, m_iCharWidth * 3 - 11, m_iRowHeight / 4, pColorInfo->Note, pColorInfo->Back);
 					break;
 				case RELEASE:
 					// Note release
-					pDC->FillSolidRect(PosX + 5, m_iRowHeight / 2 - 3, CHAR_WIDTH * 3 - 11, 2, pColorInfo->Note);		// // //
-					pDC->FillSolidRect(PosX + 5, m_iRowHeight / 2 + 1, CHAR_WIDTH * 3 - 11, 2, pColorInfo->Note);
+					pDC->FillSolidRect(PosX + 5, m_iRowHeight / 2 - 3, m_iCharWidth * 3 - 11, 2, pColorInfo->Note);		// // //
+					pDC->FillSolidRect(PosX + 5, m_iRowHeight / 2 + 1, m_iCharWidth * 3 - 11, 2, pColorInfo->Note);
 					break;
 				case ECHO:
 					// // // Echo buffer access
-					DrawChar(pDC, PosX + CHAR_WIDTH, PosY, _T('^'), pColorInfo->Note);
-					DrawChar(pDC, PosX + CHAR_WIDTH * 2, PosY, NOTES_C[pNoteData->Octave], pColorInfo->Note);
+					DrawChar(pDC, PosX + m_iCharWidth, PosY, _T('^'), pColorInfo->Note);
+					DrawChar(pDC, PosX + m_iCharWidth * 2, PosY, NOTES_C[pNoteData->Octave], pColorInfo->Note);
 					break;
 				default:
 					if (pTrackerChannel->GetID() == CHANID_NOISE) {
 						// Noise
 						char NoiseFreq = (pNoteData->Note - 1 + pNoteData->Octave * 12) & 0x0F;
-						DrawChar(pDC, PosX + CHAR_WIDTH / 2, PosY, HEX[NoiseFreq], pColorInfo->Note);		// // //
-						DrawChar(pDC, PosX + CHAR_WIDTH * 3 / 2, PosY, '-', pColorInfo->Note);
-						DrawChar(pDC, PosX + CHAR_WIDTH * 5 / 2, PosY, '#', pColorInfo->Note);
+						DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[NoiseFreq], pColorInfo->Note);		// // //
+						DrawChar(pDC, PosX + m_iCharWidth * 3 / 2, PosY, '-', pColorInfo->Note);
+						DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, '#', pColorInfo->Note);
 					}
 					else {
 						// The rest
-						DrawChar(pDC, PosX + CHAR_WIDTH / 2, PosY, NOTES_A[pNoteData->Note - 1], pColorInfo->Note);		// // //
-						DrawChar(pDC, PosX + CHAR_WIDTH * 3 / 2, PosY, NOTES_B[pNoteData->Note - 1], pColorInfo->Note);
-						DrawChar(pDC, PosX + CHAR_WIDTH * 5 / 2, PosY, NOTES_C[pNoteData->Octave], pColorInfo->Note);
+						DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, NOTES_A[pNoteData->Note - 1], pColorInfo->Note);		// // //
+						DrawChar(pDC, PosX + m_iCharWidth * 3 / 2, PosY, NOTES_B[pNoteData->Note - 1], pColorInfo->Note);
+						DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, NOTES_C[pNoteData->Octave], pColorInfo->Note);
 					}
 					break;
 			}
@@ -1464,28 +1429,28 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, int Column, int Channel, bool 
 			if (pNoteData->Instrument == MAX_INSTRUMENTS || pNoteData->Note == HALT || pNoteData->Note == RELEASE)
 				BAR(PosX, PosY);
 			else
-				DrawChar(pDC, PosX + CHAR_WIDTH / 2, PosY, HEX[pNoteData->Instrument >> 4], InstColor);		// // //
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[pNoteData->Instrument >> 4], InstColor);		// // //
 			break;
 		case 2:
 			// Instrument 0x
 			if (pNoteData->Instrument == MAX_INSTRUMENTS || pNoteData->Note == HALT || pNoteData->Note == RELEASE)
 				BAR(PosX, PosY);
 			else
-				DrawChar(pDC, PosX + CHAR_WIDTH / 2, PosY, HEX[pNoteData->Instrument & 0x0F], InstColor);		// // //
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[pNoteData->Instrument & 0x0F], InstColor);		// // //
 			break;
 		case 3: 
 			// Volume
 			if (pNoteData->Vol == MAX_VOLUME || pTrackerChannel->GetID() == CHANID_DPCM)
 				BAR(PosX, PosY);
 			else 
-				DrawChar(pDC, PosX + CHAR_WIDTH / 2, PosY, HEX[pNoteData->Vol & 0x0F], pColorInfo->Volume);		// // //
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[pNoteData->Vol & 0x0F], pColorInfo->Volume);		// // //
 			break;
 		case 4: case 7: case 10: case 13:
 			// Effect type
 			if (EffNumber == 0)
 				BAR(PosX, PosY);
 			else {
-				DrawChar(pDC, PosX + CHAR_WIDTH / 2, PosY, EFF_CHAR[EffNumber - 1], EffColor);		// // //
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, EFF_CHAR[EffNumber - 1], EffColor);		// // //
 			}
 			break;
 		case 5: case 8: case 11: case 14:
@@ -1493,14 +1458,14 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, int Column, int Channel, bool 
 			if (EffNumber == 0)
 				BAR(PosX, PosY);
 			else
-				DrawChar(pDC, PosX + CHAR_WIDTH / 2, PosY, HEX[(EffParam >> 4) & 0x0F], pColorInfo->Note);		// // //
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[(EffParam >> 4) & 0x0F], pColorInfo->Note);		// // //
 			break;
 		case 6: case 9: case 12: case 15:
 			// Effect param y
 			if (EffNumber == 0)
 				BAR(PosX, PosY);
 			else
-				DrawChar(pDC, PosX + CHAR_WIDTH / 2, PosY, HEX[EffParam & 0x0F], pColorInfo->Note);		// // //
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[EffParam & 0x0F], pColorInfo->Note);		// // //
 			break;
 	}
 
@@ -1592,18 +1557,17 @@ void CPatternEditor::DrawHeader(CDC *pDC)
 			// Effect columns
 			pDC->SetTextColor(TEXT_COLOR);
 			pDC->SetTextAlign(TA_CENTER);
-			if (m_pDocument->GetEffColumns(Track, Channel) > 0)
-				pDC->TextOut(Offset + CHANNEL_WIDTH + COLUMN_SPACING + 6, HEADER_CHAN_START + HEADER_CHAN_HEIGHT - 17, _T("fx2"));
-			if (m_pDocument->GetEffColumns(Track, Channel) > 1)
-				pDC->TextOut(Offset + CHANNEL_WIDTH + COLUMN_SPACING * 2 + CHAR_WIDTH * 3 + 6, HEADER_CHAN_START + HEADER_CHAN_HEIGHT - 17, _T("fx3"));
-			if (m_pDocument->GetEffColumns(Track, Channel) > 2)
-				pDC->TextOut(Offset + CHANNEL_WIDTH + COLUMN_SPACING * 3 + (CHAR_WIDTH * 2) * 3 + 6, HEADER_CHAN_START + HEADER_CHAN_HEIGHT - 17, _T("fx4"));
+			for (unsigned int i = 1; i <= m_pDocument->GetEffColumns(Track, Channel); i++) {		// // //
+				CString str;
+				str.Format(_T("fx%d"), i + 1);
+				pDC->TextOut(Offset + GetChannelWidth(i) - m_iCharWidth * 3 / 2, HEADER_CHAN_START + HEADER_CHAN_HEIGHT - 17, str);
+			}
 
 			// Arrows for expanding/removing fx columns
 			if (m_pDocument->GetEffColumns(Track, Channel) > 0) {
-				ArrowPoints[0].SetPoint(Offset + CHAR_WIDTH * 15 / 2 + COLUMN_SPACING * 3 + 2, HEADER_CHAN_START + 6);		// // //
-				ArrowPoints[1].SetPoint(Offset + CHAR_WIDTH * 15 / 2 + COLUMN_SPACING * 3 + 2, HEADER_CHAN_START + 6 + 10);
-				ArrowPoints[2].SetPoint(Offset + CHAR_WIDTH * 15 / 2 + COLUMN_SPACING * 3 - 3, HEADER_CHAN_START + 6 + 5);
+				ArrowPoints[0].SetPoint(Offset + m_iCharWidth * 15 / 2 + m_iColumnSpacing * 3 + 2, HEADER_CHAN_START + 6);		// // //
+				ArrowPoints[1].SetPoint(Offset + m_iCharWidth * 15 / 2 + m_iColumnSpacing * 3 + 2, HEADER_CHAN_START + 6 + 10);
+				ArrowPoints[2].SetPoint(Offset + m_iCharWidth * 15 / 2 + m_iColumnSpacing * 3 - 3, HEADER_CHAN_START + 6 + 5);
 
 				bool Hover = (m_iMouseHoverChan == Channel) && (m_iMouseHoverEffArrow == 1);
 				CObject *pOldBrush = pDC->SelectObject(Hover ? &HoverBrush : &BlackBrush);
@@ -1615,9 +1579,9 @@ void CPatternEditor::DrawHeader(CDC *pDC)
 			}
 
 			if (m_pDocument->GetEffColumns(Track, Channel) < (MAX_EFFECT_COLUMNS - 1)) {
-				ArrowPoints[0].SetPoint(Offset + CHAR_WIDTH * 17 / 2 + COLUMN_SPACING * 3 - 2, HEADER_CHAN_START + 6);		// // //
-				ArrowPoints[1].SetPoint(Offset + CHAR_WIDTH * 17 / 2 + COLUMN_SPACING * 3 - 2, HEADER_CHAN_START + 6 + 10);
-				ArrowPoints[2].SetPoint(Offset + CHAR_WIDTH * 17 / 2 + COLUMN_SPACING * 3 + 3, HEADER_CHAN_START + 6 + 5);
+				ArrowPoints[0].SetPoint(Offset + m_iCharWidth * 17 / 2 + m_iColumnSpacing * 3 - 2, HEADER_CHAN_START + 6);		// // //
+				ArrowPoints[1].SetPoint(Offset + m_iCharWidth * 17 / 2 + m_iColumnSpacing * 3 - 2, HEADER_CHAN_START + 6 + 10);
+				ArrowPoints[2].SetPoint(Offset + m_iCharWidth * 17 / 2 + m_iColumnSpacing * 3 + 3, HEADER_CHAN_START + 6 + 5);
 
 				bool Hover = (m_iMouseHoverChan == Channel) && (m_iMouseHoverEffArrow == 2);
 				CObject *pOldBrush = pDC->SelectObject(Hover ? &HoverBrush : &BlackBrush);
@@ -1645,7 +1609,7 @@ void CPatternEditor::DrawMeters(CDC *pDC)
 
 	const int BAR_TOP	 = 5 + 18 + HEADER_CHAN_START;
 	const int BAR_LEFT	 = ROW_COLUMN_WIDTH + (m_bCompactMode ? 2 : 7);
-	const int BAR_SIZE	 = m_bCompactMode ? 2 : (CHANNEL_WIDTH - 9) / 16;		// // //
+	const int BAR_SIZE	 = m_bCompactMode ? 2 : (GetChannelWidth(0) - 9) / 16;		// // //
 	const int BAR_SPACE	 = 1;
 	const int BAR_HEIGHT = 5;
 
@@ -2390,6 +2354,32 @@ void CPatternEditor::SetDPCMState(const stDPCMState &State)
 // Private methods /////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////
 
+unsigned int CPatternEditor::GetColumnWidth(int Column) const		// // //
+{
+	return m_iCharWidth * (!Column ? 3 : 1);
+}
+
+unsigned int CPatternEditor::GetColumnSpace(int Column) const		// // //
+{
+	int x = GetColumnWidth(Column);
+	for (int i = 0; i < 7; i++)
+		if (Column == CPatternEditor::GetCursorEndColumn(i)) return x + m_iColumnSpacing;
+	return x;
+}
+
+unsigned int CPatternEditor::GetSelectWidth(int Column) const		// // //
+{
+	int x = GetColumnWidth(Column);
+	for (int i = 0; i < 7; i++)
+		if (Column == CPatternEditor::GetCursorStartColumn(i)) return x + m_iColumnSpacing;
+	return x;
+}
+
+unsigned int CPatternEditor::GetChannelWidth(int EffColumns) const		// // //
+{
+	return m_iCharWidth * (9 + EffColumns * 3) + m_iColumnSpacing * (4 + EffColumns) - 1;
+}
+
 void CPatternEditor::UpdateVerticalScroll()
 {
 	// Vertical scroll bar
@@ -2465,7 +2455,7 @@ int CPatternEditor::GetColumnAtPoint(int PointX) const
 	const int Offset = PointX - ROW_COLUMN_WIDTH + m_iChannelOffsets[m_iFirstChannel];
 	int ColumnOffset = m_iChannelOffsets[Channel];
 	for (int i = 0; i < GetChannelColumns(Channel); ++i) {
-		ColumnOffset += COLUMN_SPACE[i];
+		ColumnOffset += GetColumnSpace(i);		// // //
 		if (Offset <= ColumnOffset)
 			return i;
 	}
@@ -2527,7 +2517,7 @@ int CPatternEditor::GetCursorStartColumn(int Column)
 		0, 1, 3, 4, 7, 10, 13
 	};
 
-	ASSERT(Column >= 0 && Column < 16);
+	ASSERT(Column >= 0 && Column < sizeof(COL_START) / sizeof(int));		// // //
 
 	return COL_START[Column];
 }
@@ -2538,7 +2528,7 @@ int CPatternEditor::GetCursorEndColumn(int Column)
 		0, 2, 3, 6, 9, 12, 15
 	};
 
-	ASSERT(Column >= 0 && Column < 16);
+	ASSERT(Column >= 0 && Column < sizeof(COL_END) / sizeof(int));		// // //
 
 	return COL_END[Column];
 }
