@@ -157,7 +157,7 @@ const COLOR_SCHEME WHITE_COLOR_SCHEME = {
 
 // // // Saturday
 const COLOR_SCHEME SATURDAY_COLOR_SCHEME = {
-	_T("White"),		// Name
+	_T("Saturday"),		// Name
 	0x00080004,			// Background color
 	0x0030141C,			// Highlighted background color
 	0x00401828,			// Highlighted background color 2
