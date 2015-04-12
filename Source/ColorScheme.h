@@ -154,3 +154,24 @@ const COLOR_SCHEME WHITE_COLOR_SCHEME = {
 	_T("Courier"),		// Font
 	12					// Font size
 };
+
+// // // Saturday
+const COLOR_SCHEME SATURDAY_COLOR_SCHEME = {
+	_T("White"),		// Name
+	0x00080004,			// Background color
+	0x0030141C,			// Highlighted background color
+	0x00401828,			// Highlighted background color 2
+	0x00F0C0D8,			// Normal text color
+	0x0080E0F0,			// Highlighted text color
+	0x00E0FFFF,			// Highlighted text color 2
+	0x00F088C0,			// Instrument color
+	0x00F0C0D8,			// Volume color
+	0x00F088C0,			// Effect color
+	0x00602040,			// Selection color
+	0x00508090,			// Cursor color
+	0x00D01030,			// // // Current row
+	0x000030C0,			// // // Current row (edit mode)
+	0x00500070,			// // // Current row (playing)
+	_T("Courier"),		// Font
+	11					// Font size
+};
