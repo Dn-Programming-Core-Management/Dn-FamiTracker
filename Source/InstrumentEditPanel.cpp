@@ -291,6 +291,7 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 			term++;
 			if (term[0]) Invalid = true;
 			else {
+				term = strtok_s(NULL, " ", &context);
 				pSequence->SetLoopPoint(AddedItems);
 				continue;
 			}
@@ -300,13 +301,13 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 			term++;
 			if (term[0]) Invalid = true;
 			else {
+				term = strtok_s(NULL, " ", &context);
 				pSequence->SetReleasePoint(AddedItems);
 				continue;
 			}
 		}
 		else {
 			int Mode = 0;
-			int Rep = 1;
 			bool HasTerm = false;
 			if (pSequence->GetSetting() == SETTING_ARP_SCHEME) {			// // //
 				// Arp scheme modes
@@ -325,9 +326,10 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 				if (term[0] == '-' && term[1] == 'y') {
 					HasTerm = true; term += 2; Mode = ARPSCHEME_MODE_NEG_Y;
 				}
-				if (HasTerm && !(term[0] == '+' || term[0] == '-' || term[0] == '\0')) Invalid = true;
-				if (HasTerm && HexStr) Invalid = true;
-				if (HasTerm && term[0] == '+') term++;
+				if (HasTerm) {
+					if (term[0] == '+') term++;
+					else if (!(term[0] == '-' || term[0] == '\0' || term[0] == '\'')) Invalid = true;
+				}
 			}
 			// Convert to number
 			int value;
@@ -337,9 +339,9 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 					value = ReadStringValue(term, HexStr);
 				}
 				else
-					value = ReadStringValue(term, false);
+					value = ReadStringValue(term, ForceHex);
 			}
-			else value = ReadStringValue(term, HexStr);
+			else value = ReadStringValue(term, ForceHex);
 			// Check for invalid chars
 			if (!(HasTerm && HexStr) && !Invalid) {
 				value = std::min<int>(std::max<int>(value, Min), Max);
@@ -371,19 +373,18 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 					}
 				}
 				value += Mode;
+				int Rep = 1;
 				if (term[0] == '\'') {		// // //
 					term++;
 					HexStr = ForceHex;
-					if (term[0] == '$') {
-						term++;
-						HexStr = true;
-					}
-					Rep = ReadStringValue(term, HexStr);
+					Rep = ReadStringValue(term, false);
 					if (Rep == 0) Invalid = true;
 				}
-				if (!Invalid) for (int i = 0; i < Rep; i++) {
-					pSequence->SetItem(AddedItems++, value);
-					if (AddedItems == MAX_SEQUENCE_ITEMS) break;
+				if (!Invalid) {
+					for (int i = 0; i < Rep; i++) {
+						pSequence->SetItem(AddedItems++, value);
+						if (AddedItems == MAX_SEQUENCE_ITEMS) break;
+					}
 				}
 			}
 		}
