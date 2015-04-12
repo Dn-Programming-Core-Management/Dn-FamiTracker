@@ -36,31 +36,21 @@
 CChannelHandler2A03::CChannelHandler2A03() : 
 	CChannelHandler(0x7FF, 0x0F),
 	m_cSweep(0),
-	m_iInitVolume(0),
 	m_bSweeping(0),
-	m_iSweep(0),
-	m_iPostEffect(0),
-	m_iPostEffectParam(0)
+	m_iSweep(0)
 {
 }
 
 void CChannelHandler2A03::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 {
-	m_iPostEffect = 0;
-	m_iPostEffectParam = 0;
 	m_iSweep = 0;
 	m_bSweeping = false;
-	m_iInitVolume = 0x0F;
-
+	// // //
 	CChannelHandler::HandleNoteData(pNoteData, EffColumns);
 
 	if (pNoteData->Note != NONE && pNoteData->Note != HALT && pNoteData->Note != RELEASE) {
 		if (!m_bEnvelopeLoop || m_bHardwareEnvelope)		// // //
 			m_bResetEnvelope = true;
-		if (m_iPostEffect && (m_iEffect == EF_SLIDE_UP || m_iEffect == EF_SLIDE_DOWN))
-			SetupSlide(m_iPostEffect, m_iPostEffectParam);
-		else if (m_iEffect == EF_SLIDE_DOWN || m_iEffect == EF_SLIDE_UP)
-			m_iEffect = EF_NONE;
 	}
 }
 
@@ -97,12 +87,7 @@ void CChannelHandler2A03::HandleCustomEffects(int EffNum, int EffParam)
 			case EF_DUTY_CYCLE:
 				m_iDefaultDuty = m_iDutyPeriod = EffParam;
 				break;
-			case EF_SLIDE_UP:
-			case EF_SLIDE_DOWN:
-				m_iPostEffect = EffNum;
-				m_iPostEffectParam = EffParam;
-				SetupSlide(EffNum, EffParam);
-				break;
+			// // //
 		}
 	}
 }
@@ -164,7 +149,7 @@ void CChannelHandler2A03::HandleNote(int Note, int Octave)
 {
 	m_iNote			= RunNote(Octave, Note);
 	m_iDutyPeriod	= m_iDefaultDuty;
-	m_iSeqVolume	= m_iInitVolume;
+	m_iSeqVolume	= 0x0F;		// // //
 
 	m_iArpState = 0;
 
@@ -389,17 +374,17 @@ void CNoiseChan::HandleNote(int Note, int Octave)
 
 	m_iNote			= NewNote;
 	m_iDutyPeriod	= m_iDefaultDuty;
-	m_iSeqVolume	= m_iInitVolume;
+	m_iSeqVolume	= 0x0F;		// // //
 }
 
-void CNoiseChan::SetupSlide(int Type, int EffParam)
+void CNoiseChan::SetupSlide()		// // //
 {
-	CChannelHandler::SetupSlide(Type, EffParam);
+	CChannelHandler::SetupSlide();
 
 	// Work-around for noise
 	if (m_iEffect == EF_SLIDE_DOWN)
 		m_iEffect = EF_SLIDE_UP;
-	else
+	else if (m_iEffect == EF_SLIDE_UP)		// // //
 		m_iEffect = EF_SLIDE_DOWN;
 }
 

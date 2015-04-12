@@ -44,11 +44,9 @@ protected:
 protected:
 	unsigned char m_cSweep;			// Sweep, used by pulse channels
 
-	int		m_iInitVolume;			// Initial volume
+	// // //
 	bool	m_bSweeping;			// Flag for HW sweep
 	int		m_iSweep;
-	int		m_iPostEffect;
-	int		m_iPostEffectParam;
 	bool	m_bHardwareEnvelope;	// // // (constant volume flag, bit 4)
 	bool	m_bEnvelopeLoop;		// // // (halt length counter flag, bit 5 / triangle bit 7)
 	bool	m_bResetEnvelope;		// // //
@@ -116,7 +114,7 @@ public:
 protected:
 	virtual void ClearRegisters();
 	virtual void HandleNote(int Note, int Octave);
-	virtual void SetupSlide(int Type, int EffParam);
+	virtual void SetupSlide();		// // //
 
 	int TriggerNote(int Note);
 };

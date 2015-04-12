@@ -61,7 +61,8 @@ CChannelHandler::CChannelHandler(int MaxPeriod, int MaxVolume) :
 	m_bNewVibratoMode(false),
 	m_bLinearPitch(false),
 	m_bPeriodUpdated(false),
-	m_bVolumeUpdate(false)
+	m_bVolumeUpdate(false),
+	m_iEffectParam(0)		// // //
 { 
 }
 
@@ -80,6 +81,7 @@ void CChannelHandler::InitChannel(CAPU *pAPU, int *pVibTable, CSoundGen *pSoundG
 	m_bDelayEnabled = false;
 
 	m_iEffect = 0;
+	m_iEffectParam = 0;		// // //
 
 	DocumentPropertiesChanged(pSoundGen->GetDocument());
 
@@ -404,6 +406,9 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 		m_iTranspose = 0;		// // //
 	}
 
+	if (Trigger && (m_iEffect == EF_SLIDE_UP || m_iEffect == EF_SLIDE_DOWN))
+		m_iEffect = EF_NONE;
+
 	// Effects
 	for (int n = 0; n < EffColumns; n++) {
 		unsigned char EffNum   = pNoteData->EffNumber[n];
@@ -463,6 +468,9 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 			HandleNote(pNoteData->Note, pNoteData->Octave);
 			break;
 	}
+
+	if (Trigger && (m_iEffect == EF_SLIDE_DOWN || m_iEffect == EF_SLIDE_UP))		// // //
+		SetupSlide();
 }
 
 void CChannelHandler::SetNoteTable(unsigned int *pNoteLookupTable)
@@ -527,17 +535,23 @@ int CChannelHandler::RunNote(int Octave, int Note)
 	return NewNote;
 }
 
-void CChannelHandler::SetupSlide(int Type, int EffParam)
+void CChannelHandler::SetupSlide()		// // //
 {
 	#define GET_SLIDE_SPEED(x) (((x & 0xF0) >> 3) + 1)
 
-	m_iPortaSpeed = GET_SLIDE_SPEED(EffParam);
-	m_iEffect = Type;
-
-	if (Type == EF_SLIDE_UP)
-		m_iNote = m_iNote + (EffParam & 0xF);
-	else
-		m_iNote = m_iNote - (EffParam & 0xF);
+	switch (m_iEffect) {
+	case EF_PORTAMENTO:
+		m_iPortaSpeed = m_iEffectParam;
+		break;
+	case EF_SLIDE_UP:
+		m_iNote = m_iNote + (m_iEffectParam & 0xF);
+		m_iPortaSpeed = GET_SLIDE_SPEED(m_iEffectParam);
+		break;
+	case EF_SLIDE_DOWN:
+		m_iNote = m_iNote - (m_iEffectParam & 0xF);
+		m_iPortaSpeed = GET_SLIDE_SPEED(m_iEffectParam);
+		break;
+	}
 	
 	if (m_iChannelID == CHANID_NOISE) {		// // //
 		m_iNote = m_iNote % 0x10 + 0x100;
@@ -553,7 +567,9 @@ bool CChannelHandler::CheckCommonEffects(unsigned char EffCmd, unsigned char Eff
 	switch (EffCmd) {
 		case EF_PORTAMENTO:
 			m_iPortaSpeed = EffParam;
+			m_iEffectParam = EffParam;		// // //
 			m_iEffect = EF_PORTAMENTO;
+			SetupSlide();
 			if (!EffParam)
 				m_iPortaTo = 0;
 			break;
@@ -571,6 +587,7 @@ bool CChannelHandler::CheckCommonEffects(unsigned char EffCmd, unsigned char Eff
 			break;
 		case EF_ARPEGGIO:
 			m_iArpeggio = EffParam;
+			m_iEffectParam = EffParam;		// // //
 			m_iEffect = EF_ARPEGGIO;
 			break;
 		case EF_PITCH:
@@ -578,11 +595,23 @@ bool CChannelHandler::CheckCommonEffects(unsigned char EffCmd, unsigned char Eff
 			break;
 		case EF_PORTA_DOWN:
 			m_iPortaSpeed = EffParam;
+			m_iEffectParam = EffParam;		// // //
 			m_iEffect = EF_PORTA_DOWN;
 			break;
 		case EF_PORTA_UP:
 			m_iPortaSpeed = EffParam;
+			m_iEffectParam = EffParam;		// // //
 			m_iEffect = EF_PORTA_UP;
+			break;
+		case EF_SLIDE_UP:		// // //
+			m_iEffect = EF_SLIDE_UP;
+			m_iEffectParam = EffParam;
+			SetupSlide();
+			break;
+		case EF_SLIDE_DOWN:		// // //
+			m_iEffect = EF_SLIDE_DOWN;
+			m_iEffectParam = EffParam;
+			SetupSlide();
 			break;
 		case EF_VOLUME_SLIDE:
 			m_iVolSlide = EffParam;
@@ -802,31 +831,47 @@ void CChannelHandler::UpdateEffects()
 			}
 			break;
 		case EF_PORTAMENTO:
+		case EF_SLIDE_UP:		// // //
+		case EF_SLIDE_DOWN:		// // //
 			// Automatic portamento
 			if (m_iPortaSpeed > 0 && m_iPortaTo > 0) {
 				if (m_iPeriod > m_iPortaTo) {
 					PeriodRemove(m_iPortaSpeed);
-					if (m_iPeriod < m_iPortaTo)
+					if (m_iPeriod <= m_iPortaTo) {
 						SetPeriod(m_iPortaTo);
+						if (m_iEffect != EF_PORTAMENTO) {
+							m_iPortaTo = 0;
+							m_iPortaSpeed = 0;
+							m_iEffect = EF_NONE;
+						}
+					}
 				}
 				else if (m_iPeriod < m_iPortaTo) {
 					PeriodAdd(m_iPortaSpeed);
-					if (m_iPeriod > m_iPortaTo)
+					if (m_iPeriod >= m_iPortaTo) {
 						SetPeriod(m_iPortaTo);
+						if (m_iEffect != EF_PORTAMENTO) {
+							m_iPortaTo = 0;
+							m_iPortaSpeed = 0;
+							m_iEffect = EF_NONE;
+						}
+					}
 				}
 			}
 			break;
-		case EF_SLIDE_UP:
+		// case EF_SLIDE_UP:
 			if (m_iPortaSpeed > 0) {
-				PeriodRemove(m_iPortaSpeed);
-				if (m_iPeriod < m_iPortaTo) {
-					SetPeriod(m_iPortaTo);
-					m_iPortaTo = 0;
-					m_iEffect = EF_NONE;
+				if (m_iPeriod > m_iPortaTo) {
+					PeriodRemove(m_iPortaSpeed);
+					if (m_iPeriod < m_iPortaTo) {
+						SetPeriod(m_iPortaTo);
+						m_iPortaTo = 0;
+						m_iEffect = EF_NONE;
+					}
 				}
 			}
 			break;
-		case EF_SLIDE_DOWN:
+		// case EF_SLIDE_DOWN:
 			if (m_iPortaSpeed > 0) {
 				PeriodAdd(m_iPortaSpeed);
 				if (m_iPeriod > m_iPortaTo) {
@@ -1012,17 +1057,6 @@ void CChannelHandler::SetDutyPeriod(int Period)
  * Class CChannelHandlerInverted
  *
  */
-
-void CChannelHandlerInverted::SetupSlide(int Type, int EffParam)
-{
-	CChannelHandler::SetupSlide(Type, EffParam);
-
-	// Invert slide effects
-	if (m_iEffect == EF_SLIDE_DOWN)
-		m_iEffect = EF_SLIDE_UP;
-	else
-		m_iEffect = EF_SLIDE_DOWN;
-}
 
 int CChannelHandlerInverted::CalculatePeriod() const 
 {

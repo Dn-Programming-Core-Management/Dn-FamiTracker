@@ -2,6 +2,8 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
+** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -31,17 +33,14 @@ public:
 	virtual void ResetChannel();
 
 protected:
-	virtual void HandleNoteData(stChanNote *pNoteData, int EffColumns);
+	// // //
 	virtual void HandleCustomEffects(int EffNum, int EffParam);
 	virtual bool HandleInstrument(int Instrument, bool Trigger, bool NewInstrument);
 	virtual void HandleEmptyNote();
 	virtual void HandleCut();
 	virtual void HandleRelease();
 	virtual void HandleNote(int Note, int Octave);
-
-protected:
-	int m_iPostEffect;
-	int m_iPostEffectParam;
+	// // //
 };
 
 class CVRC6Square1 : public CChannelHandlerVRC6 {

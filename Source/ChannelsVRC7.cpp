@@ -36,7 +36,7 @@
 bool CChannelHandlerVRC7::m_bRegsDirty = false;
 
 CChannelHandlerVRC7::CChannelHandlerVRC7() : 
-	CChannelHandler(2047, 15),
+	CChannelHandlerInverted(2047, 15),		// // //
 	m_iCommand(CMD_NONE),
 	m_iTriggeredNote(0)
 {
@@ -49,63 +49,22 @@ void CChannelHandlerVRC7::SetChannelID(int ID)
 	m_iChannel = ID - CHANID_VRC7_CH1;
 }
 
-void CChannelHandlerVRC7::HandleNoteData(stChanNote *pNoteData, int EffColumns)
-{
-	m_iPostEffect = 0;
-	m_iPostEffectParam = 0;
-
-	CChannelHandler::HandleNoteData(pNoteData, EffColumns);
-
-	if (m_iPostEffect && (m_iPostEffect == EF_SLIDE_UP || m_iPostEffect == EF_SLIDE_DOWN)) {
-
-		#define GET_SLIDE_SPEED(x) (((x & 0xF0) >> 3) + 1)
-
-		m_iPortaSpeed = GET_SLIDE_SPEED(m_iPostEffectParam);
-		m_iEffect = m_iPostEffect;
-
-		if (m_iPostEffect == EF_SLIDE_UP) {
-			m_iNote = m_iNote + (m_iPostEffectParam & 0xF);
-			m_iEffect = EF_SLIDE_DOWN;
-		}
-		else {
-			m_iNote = m_iNote - (m_iPostEffectParam & 0xF);
-			m_iEffect = EF_SLIDE_UP;
-		}
-
-		int OldOctave = m_iOctave;
-		m_iPortaTo = TriggerNote(m_iNote);
-
-		if (m_iOctave > OldOctave) {
-			m_iPeriod >>= (m_iOctave - OldOctave);
-		}
-		else if (m_iOctave < OldOctave) {
-			m_iPortaTo >>= (OldOctave - m_iOctave);
-			m_iOctave = OldOctave;
-		}
-	}
-	else if (pNoteData->Note != NONE && (m_iEffect == EF_SLIDE_DOWN || m_iEffect == EF_SLIDE_UP))
-		m_iEffect = EF_NONE;
-}
-
 void CChannelHandlerVRC7::HandleCustomEffects(int EffNum, int EffParam)
 {
 	if (EffNum == EF_PORTA_DOWN) {
 		m_iEffect = EF_PORTA_UP;
+		m_iEffectParam = EffParam;		// // //
 		m_iPortaSpeed = EffParam;
 	}
 	else if (EffNum == EF_PORTA_UP) {
 		m_iEffect = EF_PORTA_DOWN;
+		m_iEffectParam = EffParam;		// // //
 		m_iPortaSpeed = EffParam;
 	}
 	else {
 		if (!CheckCommonEffects(EffNum, EffParam)) {
 			switch (EffNum) {
-				case EF_SLIDE_UP:
-				case EF_SLIDE_DOWN:
-					m_iPostEffect = EffNum;
-					m_iPostEffectParam = EffParam;
-					//SetupSlide(EffCmd, EffParam);
-					break;
+				// // //
 				case EF_DUTY_CYCLE:
 //					Patch = EffParam;		// TODO add this
 					break;
@@ -230,6 +189,21 @@ void CChannelHandlerVRC7::HandleNote(int Note, int Octave)
 			m_iPortaTo >>= (OldOctave - m_iOctave);
 			m_iOctave = OldOctave;
 		}
+	}
+}
+
+void CChannelHandlerVRC7::SetupSlide()		// // //
+{
+	int OldOctave = m_iOctave;
+
+	CChannelHandler::SetupSlide();		// // //
+
+	if (m_iOctave > OldOctave) {
+		m_iPeriod >>= (m_iOctave - OldOctave);
+	}
+	else if (m_iOctave < OldOctave) {
+		m_iPortaTo >>= (OldOctave - m_iOctave);
+		m_iOctave = OldOctave;
 	}
 }
 

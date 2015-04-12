@@ -35,20 +35,21 @@ enum vrc7_command_t {
 	CMD_NOTE_RELEASE
 };
 
-class CChannelHandlerVRC7 : public CChannelHandler {
+class CChannelHandlerVRC7 : public CChannelHandlerInverted {		// // //
 public:
 	CChannelHandlerVRC7();
 	virtual void ProcessChannel();
 	virtual void ResetChannel();
 	virtual void SetChannelID(int ID);
 protected:
-	virtual void HandleNoteData(stChanNote *pNoteData, int EffColumns);
+	// // //
 	virtual void HandleCustomEffects(int EffNum, int EffParam);
 	virtual bool HandleInstrument(int Instrument, bool Trigger, bool NewInstrument);
 	virtual void HandleEmptyNote();
 	virtual void HandleCut();
 	virtual void HandleRelease();
 	virtual void HandleNote(int Note, int Octave);
+	virtual void SetupSlide();		// // //
 	virtual int CalculateVolume() const;
 
 	virtual void UpdateNoteRelease();		// // //
@@ -73,9 +74,7 @@ protected:
 
 	int		m_iTriggeredNote;
 	int		m_iOctave;
-	
-	int		m_iPostEffect;
-	int		m_iPostEffectParam;
+	// // //
 };
 
 class CVRC7Channel : public CChannelHandlerVRC7 {

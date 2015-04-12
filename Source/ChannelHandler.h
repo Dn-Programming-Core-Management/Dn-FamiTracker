@@ -124,7 +124,7 @@ protected:
 	virtual void	HandleRelease() = 0;
 	virtual void	HandleNote(int Note, int Octave) = 0;
 
-	virtual void	SetupSlide(int Type, int EffParam);
+	virtual void	SetupSlide();		// // //
 
 	virtual int		CalculatePeriod() const;
 	virtual int		CalculateVolume(bool Subtract = false) const;
@@ -239,6 +239,8 @@ protected:
 	unsigned int	m_iTremoloPhase;
 
 	unsigned char	m_iEffect;						// arpeggio & portamento
+	unsigned char	m_iEffectParam;					// // // single effect parameter as in nsf driver
+													// 0CC: replace m_iArpeggio in CSequenceHandler with this
 	unsigned char	m_iArpState;
 	int				m_iPortaTo;
 	int				m_iPortaSpeed;
@@ -273,6 +275,6 @@ private:
 class CChannelHandlerInverted : public CChannelHandler {
 protected:
 	CChannelHandlerInverted(int MaxPeriod, int MaxVolume) : CChannelHandler(MaxPeriod, MaxVolume) {}
-	virtual void SetupSlide(int Type, int EffParam);
+	// // //
 	virtual int CalculatePeriod() const;
 };

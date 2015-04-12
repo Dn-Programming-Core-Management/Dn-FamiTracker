@@ -131,11 +131,6 @@ bool NoteValid(int Note)
 }
 */
 
-void CChannelHandlerS5B::HandleNoteData(stChanNote *pNoteData, int EffColumns)
-{
-	CChannelHandler::HandleNoteData(pNoteData, EffColumns);
-}
-
 void CChannelHandlerS5B::HandleCustomEffects(int EffNum, int EffParam)
 {
 	if (!CheckCommonEffects(EffNum, EffParam)) {
@@ -211,7 +206,7 @@ void CChannelHandlerS5B::HandleRelease()
 void CChannelHandlerS5B::HandleNote(int Note, int Octave)
 {
 	m_iNote	= RunNote(Octave, Note);
-	m_iSeqVolume = 0xF;
+	m_iSeqVolume = 0x0F;
 
 	m_iDutyPeriod = m_iDefaultDuty;		// // //
 

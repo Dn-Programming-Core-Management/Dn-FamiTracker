@@ -41,6 +41,7 @@ protected:
 	virtual void HandleCut();
 	virtual void HandleRelease();
 	virtual void HandleNote(int Note, int Octave);
+	virtual void SetupSlide();		// // //
 	virtual void ClearRegisters();
 
 private:
@@ -62,8 +63,7 @@ private:
 	int m_iWaveIndex;
 	int m_iWaveCount;
 protected:
-	int m_iPostEffect;
-	int m_iPostEffectParam;
+	// // //
 
 	bool m_bResetPhase;
 };

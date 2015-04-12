@@ -2,6 +2,8 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
+** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -31,21 +33,6 @@ CChannelHandlerVRC6::CChannelHandlerVRC6() : CChannelHandler(0xFFF, 0x0F)
 {
 }
 
-void CChannelHandlerVRC6::HandleNoteData(stChanNote *pNoteData, int EffColumns)
-{
-	m_iPostEffect = 0;
-	m_iPostEffectParam = 0;
-
-	CChannelHandler::HandleNoteData(pNoteData, EffColumns);
-
-	if (pNoteData->Note != NONE && pNoteData->Note != HALT && pNoteData->Note != RELEASE) {
-		if (m_iPostEffect && (m_iEffect == EF_SLIDE_UP || m_iEffect == EF_SLIDE_DOWN))
-			SetupSlide(m_iPostEffect, m_iPostEffectParam);
-		else if (m_iEffect == EF_SLIDE_DOWN || m_iEffect == EF_SLIDE_UP)
-			m_iEffect = EF_NONE;
-	}
-}
-
 void CChannelHandlerVRC6::HandleCustomEffects(int EffNum, int EffParam)
 {
 	if (!CheckCommonEffects(EffNum, EffParam)) {
@@ -53,12 +40,7 @@ void CChannelHandlerVRC6::HandleCustomEffects(int EffNum, int EffParam)
 			case EF_DUTY_CYCLE:
 				m_iDefaultDuty = m_iDutyPeriod = EffParam;
 				break;
-			case EF_SLIDE_UP:
-			case EF_SLIDE_DOWN:
-				m_iPostEffect = EffNum;
-				m_iPostEffectParam = EffParam;
-				SetupSlide(EffNum, EffParam);
-				break;
+			// // //
 		}
 	}
 }

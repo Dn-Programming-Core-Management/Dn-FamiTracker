@@ -52,34 +52,27 @@ void CChannelHandlerN163::ResetChannel()
 
 void CChannelHandlerN163::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 {
-	m_iPostEffect = 0;
-	m_iPostEffectParam = 0;
 	m_bLoadWave = false;
 	
 	CChannelHandler::HandleNoteData(pNoteData, EffColumns);
-
-	if (pNoteData->Note != NONE && pNoteData->Note != HALT && pNoteData->Note != RELEASE) {
-		if (m_iPostEffect && (m_iEffect == EF_SLIDE_UP || m_iEffect == EF_SLIDE_DOWN)) {
-			SetupSlide(m_iPostEffect, m_iPostEffectParam);
-			m_iPortaSpeed <<= N163_PITCH_SLIDE_SHIFT;
-		}
-		else if (m_iEffect == EF_SLIDE_DOWN || m_iEffect == EF_SLIDE_UP)
-			m_iEffect = EF_NONE;
-	}
+	// // //
 }
 
 void CChannelHandlerN163::HandleCustomEffects(int EffNum, int EffParam)
 {
 	if (EffNum == EF_PORTA_DOWN) {
 		m_iPortaSpeed = EffParam << N163_PITCH_SLIDE_SHIFT;
+		m_iEffectParam = EffParam;		// // //
 		m_iEffect = EF_PORTA_UP;
 	}
 	else if (EffNum == EF_PORTA_UP) {
 		m_iPortaSpeed = EffParam << N163_PITCH_SLIDE_SHIFT;
+		m_iEffectParam = EffParam;		// // //
 		m_iEffect = EF_PORTA_DOWN;
 	}
 	else if (EffNum == EF_PORTAMENTO) {
 		m_iPortaSpeed = EffParam << N163_PITCH_SLIDE_SHIFT;
+		m_iEffectParam = EffParam;		// // //
 		m_iEffect = EF_PORTAMENTO;
 	}
 	else if (!CheckCommonEffects(EffNum, EffParam)) {
@@ -89,13 +82,6 @@ void CChannelHandlerN163::HandleCustomEffects(int EffNum, int EffParam)
 				// Duty effect controls wave
 				m_iWaveIndex = EffParam;
 				m_bLoadWave = true;
-				break;
-			case EF_SLIDE_UP:
-			case EF_SLIDE_DOWN:
-				m_iPostEffect = EffNum;
-				m_iPostEffectParam = EffParam;
-				SetupSlide(EffNum, EffParam);
-				m_iPortaSpeed <<= N163_PITCH_SLIDE_SHIFT;
 				break;
 			case EF_N163_WAVE_BUFFER:		// // //
 				if (EffParam == 0x7F) {
@@ -115,6 +101,15 @@ void CChannelHandlerN163::HandleCustomEffects(int EffNum, int EffParam)
 				break;
 		}
 	}
+
+	/*
+	switch (m_iEffect) {
+	case EF_PORTA_DOWN: case EF_PORTA_UP: case EF_PORTAMENTO:
+	case EF_SLIDE_UP: case EF_SLIDE_DOWN:
+		m_iPortaSpeed <<= N163_PITCH_SLIDE_SHIFT;
+		break;
+	}
+	*/
 }
 
 bool CChannelHandlerN163::HandleInstrument(int Instrument, bool Trigger, bool NewInstrument)
@@ -179,6 +174,12 @@ void CChannelHandlerN163::HandleNote(int Note, int Octave)
 	m_bRelease = false;
 
 //	m_bResetPhase = true;
+}
+
+void CChannelHandlerN163::SetupSlide()		// // //
+{
+	CChannelHandler::SetupSlide();
+	m_iPortaSpeed <<= N163_PITCH_SLIDE_SHIFT;
 }
 
 void CChannelHandlerN163::ProcessChannel()

@@ -47,9 +47,7 @@ protected:
 	static const int SEQUENCES = 5;
 	static const int SEQ_TYPES[];
 protected:
-	int m_iPostEffect;
-	int m_iPostEffectParam;
-	int m_iInitVolume;
+	// // //
 	bool m_bHardwareEnvelope;	// // // (constant volume flag, bit 4)
 	bool m_bEnvelopeLoop;		// // // (halt length counter flag, bit 5 / triangle bit 7)
 	bool m_bResetEnvelope;		// // //

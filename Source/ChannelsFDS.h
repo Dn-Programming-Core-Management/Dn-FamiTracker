@@ -2,6 +2,8 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
+** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -56,9 +58,7 @@ protected:
 	// Modulation
 	bool m_bResetMod;
 protected:
-	int m_iPostEffect;
-	int m_iPostEffectParam;
-
+	// // //
 	int m_iEffModDepth;
 	int m_iEffModSpeedHi;
 	int m_iEffModSpeedLo;
