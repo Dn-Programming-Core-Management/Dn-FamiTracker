@@ -512,7 +512,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 					}
 					break;
 				case EF_DELAYED_VOLUME:		// // //
-					if (ChanID != CHANID_DPCM && (EffParam >> 4) && (EffParam % 0xF)) {
+					if (ChanID != CHANID_DPCM && (EffParam >> 4) && (EffParam & 0x0F)) {
 						WriteData(Command(CMD_EFF_DELAYED_VOLUME));
 						WriteData(EffParam);
 					}
