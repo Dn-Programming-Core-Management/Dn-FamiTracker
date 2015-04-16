@@ -1144,26 +1144,22 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 	}
 
 	// Draw row number
-	pDC->SetTextColor(TextColor);
-	pDC->SetTextAlign(TA_CENTER);		// // //
+	pDC->SetTextAlign(TA_CENTER | TA_BASELINE);		// // //
 
 	CString Text;
 
 	if (theApp.GetSettings()->General.bRowInHex) {
 		// // // Hex display
-		Text.Format(_T("%X"), Row >> 4);
-		pDC->TextOut((m_iRowColumnWidth - m_iCharWidth) / 2, Line * m_iRowHeight - 1, Text);
-		Text.Format(_T("%X"), Row & 0x0F);
-		pDC->TextOut((m_iRowColumnWidth + m_iCharWidth) / 2, Line * m_iRowHeight - 1, Text);
+		Text.Format(_T("%02X"), Row);
+		DrawChar(pDC, (m_iRowColumnWidth - m_iCharWidth) / 2, (Line + 1) * m_iRowHeight - m_iRowHeight / 8, Text[0], TextColor);
+		DrawChar(pDC, (m_iRowColumnWidth + m_iCharWidth) / 2, (Line + 1) * m_iRowHeight - m_iRowHeight / 8, Text[1], TextColor);
 	}
 	else {
 		// // // Decimal display
-		Text.Format(_T("%d"), Row / 100 % 10);
-		pDC->TextOut(m_iRowColumnWidth / 2 - m_iCharWidth, Line * m_iRowHeight - 1, Text);
-		Text.Format(_T("%d"), Row / 10 % 10);
-		pDC->TextOut(m_iRowColumnWidth / 2, Line * m_iRowHeight - 1, Text);
-		Text.Format(_T("%d"), Row % 10);
-		pDC->TextOut(m_iRowColumnWidth / 2 + m_iCharWidth, Line * m_iRowHeight - 1, Text);
+		Text.Format(_T("%03d"), Row);
+		DrawChar(pDC, m_iRowColumnWidth / 2 - m_iCharWidth, (Line + 1) * m_iRowHeight - m_iRowHeight / 8, Text[0], TextColor);
+		DrawChar(pDC, m_iRowColumnWidth / 2				  , (Line + 1) * m_iRowHeight - m_iRowHeight / 8, Text[1], TextColor);
+		DrawChar(pDC, m_iRowColumnWidth / 2 + m_iCharWidth, (Line + 1) * m_iRowHeight - m_iRowHeight / 8, Text[2], TextColor);
 	}
 
 	pDC->SetTextAlign(TA_LEFT);		// // //
@@ -1351,12 +1347,13 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, int Column, int Channel, bool 
 		DimEff = EffColor = RED(255);		// // //
 	}
 
-	int PosY = -2;
+	int PosY = m_iRowHeight - m_iRowHeight / 8;		// // //
 	// // // PosX -= 1;
 
-#define BAR(x, y) pDC->FillSolidRect((x) + m_iCharWidth / 2 - 2, (y) + (m_iRowHeight / 2) + 2, 4, 1, pColorInfo->Shaded) // // //
-	
-	pDC->SetTextAlign(TA_CENTER);		// // //
+#define BARLENGTH (m_iRowHeight > 6 ? 4 : 2)		// // //
+#define BAR(x, y) pDC->FillSolidRect((x) + m_iCharWidth / 2 - BARLENGTH / 2, (y) - m_iRowHeight / 2 + m_iRowHeight / 8, BARLENGTH, 1, pColorInfo->Shaded)
+
+	pDC->SetTextAlign(TA_CENTER | TA_BASELINE);		// // //
 
 	switch (Column) {
 		case 0:
@@ -3548,7 +3545,6 @@ CPatternClipData *CPatternEditor::CopyRaw() const		// // //
 
 	const int cBegin	= m_selection.GetChanStart();
 	const int Channels	= m_selection.GetChanEnd() - cBegin + 1;
-	stChanNote NoteData;
 
 	CPatternClipData *pClipData = new CPatternClipData(Channels, Rows);
 	pClipData->ClipInfo.Channels	= Channels;
