@@ -3513,15 +3513,13 @@ CPatternClipData *CPatternEditor::Copy() const
 	CPatternIterator it = GetStartIterator();		// // //
 	const int Channels	= m_selection.GetChanEnd() - m_selection.GetChanStart() + 1;
 	const int Rows		= GetSelectionSize();		// // //
-	const int ColStart	= GetSelectColumn(m_selection.GetColStart());		// // //
-	const int ColEnd	= GetSelectColumn(m_selection.GetColEnd());
 	stChanNote NoteData;
 
 	CPatternClipData *pClipData = new CPatternClipData(Channels, Rows);
 	pClipData->ClipInfo.Channels	= Channels;		// // //
 	pClipData->ClipInfo.Rows		= Rows;
-	pClipData->ClipInfo.StartColumn	= ColStart;
-	pClipData->ClipInfo.EndColumn	= ColEnd;
+	pClipData->ClipInfo.StartColumn	= GetSelectColumn(m_selection.GetColStart());		// // //
+	pClipData->ClipInfo.EndColumn	= GetSelectColumn(m_selection.GetColEnd());		// // //
 	
 	int Channel = 0, Row = 0;
 	for (int r = 0; r < Rows; r++) {		// // //
@@ -3530,12 +3528,40 @@ CPatternClipData *CPatternEditor::Copy() const
 			it.Get(i + m_selection.GetChanStart(), &NoteData);
 			/*CopyNoteSection(Target, &NoteData, PASTE_DEFAULT,
 				i == 0 ? ColStart : COLUMN_NOTE, i == Channels - 1 ? ColEnd : COLUMN_EFF4);*/
-			memcpy(pClipData->GetPattern(i, r), &NoteData, sizeof(stChanNote));
+			memcpy(Target, &NoteData, sizeof(stChanNote));
 			// the clip data should store the entire field;
 			// other methods should check ClipInfo.StartColumn and ClipInfo.EndColumn before operating
 		}
 		it++;
 	}
+
+	return pClipData;
+}
+
+CPatternClipData *CPatternEditor::CopyRaw() const		// // //
+{
+	CPatternIterator it = GetStartIterator();
+	CPatternIterator end = GetEndIterator();
+	const int Track		= GetSelectedTrack();
+	const int Length	= m_pDocument->GetPatternLength(Track);
+	const int Rows		= (end.m_iFrame - it.m_iFrame) * Length + (end.m_iRow - it.m_iRow) + 1;
+
+	const int cBegin	= m_selection.GetChanStart();
+	const int Channels	= m_selection.GetChanEnd() - cBegin + 1;
+	stChanNote NoteData;
+
+	CPatternClipData *pClipData = new CPatternClipData(Channels, Rows);
+	pClipData->ClipInfo.Channels	= Channels;
+	pClipData->ClipInfo.Rows		= Rows;
+	pClipData->ClipInfo.StartColumn	= GetSelectColumn(m_selection.GetColStart());
+	pClipData->ClipInfo.EndColumn	= GetSelectColumn(m_selection.GetColEnd());
+	
+	const int PackedPos = it.m_iFrame * Length + it.m_iRow;
+	int Channel = 0, Row = 0;
+	for (int r = 0; r < Rows; r++)
+		for (int i = 0; i < Channels; ++i)
+			m_pDocument->GetNoteData(Track, (PackedPos + r) / Length, i + cBegin, (PackedPos + r) % Length,
+				pClipData->GetPattern(i, r));
 
 	return pClipData;
 }

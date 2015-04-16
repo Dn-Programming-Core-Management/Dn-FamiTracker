@@ -157,8 +157,7 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // /
 		break;
 	}
 
-	CPatternIterator it(pPatternEditor, m_iUndoTrack, Start);
-	CPatternIterator End = it;
+	CPatternIterator End(pPatternEditor, m_iUndoTrack, Start);
 	
 	if (m_iPasteMode == PASTE_INSERT) {
 		End.m_iFrame = Start.m_iFrame;
@@ -176,10 +175,22 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // /
 		End.m_iColumn = CPatternEditor::GetCursorStartColumn(Cut ? m_pClipData->ClipInfo.EndColumn :
 			4 + 3 * CFamiTrackerDoc::GetDoc()->GetEffColumns(m_iUndoTrack, End.m_iChannel));
 	}
+	else if (m_iPastePos == PASTE_DRAG) {
+		Start.m_iColumn = m_dragTarget.GetColStart();
+		End.m_iColumn = m_dragTarget.GetColEnd();
+	}
 	else {
 		End.m_iChannel += m_pClipData->ClipInfo.Channels - 1;
 		Start.m_iColumn = CPatternEditor::GetCursorStartColumn(m_pClipData->ClipInfo.StartColumn);
 		End.m_iColumn = CPatternEditor::GetCursorStartColumn(m_pClipData->ClipInfo.EndColumn);
+	}
+
+	if (Start.m_iChannel == End.m_iChannel && Start.m_iColumn >= COLUMN_EFF1 && End.m_iColumn >= COLUMN_EFF1) {
+		if (m_iPastePos != PASTE_DRAG) {
+			Start.m_iColumn += 3 * (CPatternEditor::GetSelectColumn(m_iUndoColumn) - m_pClipData->ClipInfo.StartColumn);
+			End.m_iColumn += 3 * (CPatternEditor::GetSelectColumn(m_iUndoColumn) - m_pClipData->ClipInfo.StartColumn);
+			End.m_iColumn = std::min(End.m_iColumn, 15);
+		}
 	}
 
 	New.m_cpStart = Start;
@@ -216,7 +227,7 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // /
 
 void CPatternAction::CopySelection(const CPatternEditor *pPatternEditor)		// // //
 {
-	m_pUndoClipData = pPatternEditor->Copy();
+	m_pUndoClipData = pPatternEditor->CopyRaw();
 }
 
 void CPatternAction::PasteSelection(CPatternEditor *pPatternEditor)		// // //
@@ -226,7 +237,7 @@ void CPatternAction::PasteSelection(CPatternEditor *pPatternEditor)		// // //
 
 void CPatternAction::CopyAuxiliary(const CPatternEditor *pPatternEditor)		// // //
 {
-	m_pAuxiliaryClipData = pPatternEditor->Copy();
+	m_pAuxiliaryClipData = pPatternEditor->CopyRaw();
 }
 
 void CPatternAction::PasteAuxiliary(CPatternEditor *pPatternEditor)		// // //
