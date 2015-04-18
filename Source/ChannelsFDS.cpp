@@ -46,9 +46,13 @@ void CChannelHandlerFDS::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	m_iEffModDepth = -1;
 	m_iEffModSpeedHi = -1;
 	m_iEffModSpeedLo = -1;
+	m_bVolModTrigger = false;		// // //
 
 	CChannelHandler::HandleNoteData(pNoteData, EffColumns);
 	// // //
+	if (pNoteData->Note != NONE && pNoteData->Note != HALT && pNoteData->Note != RELEASE)
+		m_bVolModTrigger = true;
+
 	if (m_iEffModDepth != -1)
 		m_iModulationDepth = m_iEffModDepth;
 
@@ -81,6 +85,14 @@ void CChannelHandlerFDS::HandleCustomEffects(int EffNum, int EffParam)
 				break;
 			case EF_FDS_MOD_SPEED_LO:
 				m_iEffModSpeedLo = EffParam;
+				break;
+			case EF_FDS_VOLUME:
+				if (EffParam <= 0x7F) {
+					m_iVolModRate = EffParam & 0x3F;
+					m_iVolModMode = (EffParam >> 6) + 1;
+				}
+				else if (EffParam == 0xE0)
+					m_iVolModMode = 0;
 				break;
 		}
 	}
@@ -182,8 +194,16 @@ void CChannelHandlerFDS::RefreshChannel()
 	WriteExternalRegister(0x4082, LoFreq);
 	WriteExternalRegister(0x4083, HiFreq);
 
-	// Write volume, disable envelope
-	WriteExternalRegister(0x4080, 0x80 | Volume);
+	// Write volume
+	if (m_iVolModMode) {
+		if (m_bVolModTrigger) {
+			m_bVolModTrigger = false;
+			WriteExternalRegister(0x4080, 0x80 | Volume);
+		}
+		WriteExternalRegister(0x4080, ((2 - m_iVolModMode) << 6) | m_iVolModRate);
+	}
+	else
+		WriteExternalRegister(0x4080, 0x80 | Volume);
 
 	if (m_bResetMod)
 		WriteExternalRegister(0x4085, 0);
@@ -216,15 +236,22 @@ void CChannelHandlerFDS::ClearRegisters()
 	WriteExternalRegister(0x4080, 0x80);
 
 	// Silence channel
+	WriteExternalRegister(0x4082, 0x00);		// // //
 	WriteExternalRegister(0x4083, 0x80);
 
 	// Default speed
 	WriteExternalRegister(0x408A, 0xFF);
 
 	// Disable modulation
-	WriteExternalRegister(0x4087, 0x80);
+	WriteExternalRegister(0x4086, 0x00);		// // //
+	WriteExternalRegister(0x4087, 0x00);
+	WriteExternalRegister(0x4084, 0x00);		// // //
 
 	m_iSeqVolume = 0x20;
+
+	m_iVolModMode = 0;		// // //
+	m_iVolModRate = 0;
+	m_bVolModTrigger = 0;
 
 	memset(m_iModTable, 0, 32);
 	memset(m_iWaveTable, 0, 64);

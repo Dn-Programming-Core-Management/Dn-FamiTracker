@@ -668,6 +668,7 @@ bool CFindDlg::Replace(bool CanUndo)
 				switch (m_replaceTerm.Note.EffNumber[0]) {
 				case EF_SWEEPUP: m_replaceTerm.Note.EffNumber[0] = EF_FDS_MOD_DEPTH; break;
 				case EF_SWEEPDOWN: m_replaceTerm.Note.EffNumber[0] = EF_FDS_MOD_SPEED_HI; break;
+				case EF_VOLUME: m_replaceTerm.Note.EffNumber[0] = EF_FDS_VOLUME; break;
 				} break;
 			case SNDCHIP_S5B:
 				switch (m_replaceTerm.Note.EffNumber[0]) {

@@ -67,9 +67,9 @@ const CString EFFECT_TEXTS[] = {		// // //
 	_T("0xy - Arpeggio, X = second note, Y = third note"),
 	_T("4xy - Vibrato, X = speed, Y = depth"),
 	_T("7xy - Tremolo, X = speed, Y = depth"),
-	_T("Pxx - Fine pitch, 80 = default"),
+	_T("Pxx - Fine pitch, XX - 80 = offset"),
 	_T("Gxx - Row delay, XX = number of frames"),
-	_T("Zxx - DPCM delta counter setting"),
+	_T("Zxx - DPCM delta counter setting, XX = DC bias"),
 	_T("1xx - Slide up, XX = speed"),
 	_T("2xx - Slide down, XX = speed"),
 	_T("Vxx - Set Square duty / Noise mode to XX"),
@@ -82,7 +82,7 @@ const CString EFFECT_TEXTS[] = {		// // //
 	_T("Sxx - Triangle channel linear counter, XX - 80 = duration"),
 	_T("Xxx - DPCM retrigger, XX = frames to wait"),
 	_T("Mxy - Delayed channel volume, X = frames to wait, Y = channel volume"),
-	_T("Hxx - FDS modulation depth, 3F = highest"),
+	_T("Hxx - FDS modulation depth, XX = depth, 3F = highest"),
 	_T("I0x - FDS modulation rate, high byte"),
 	_T("Jxx - FDS modulation rate, low byte"),
 	_T("W0x - DPCM pitch, F = highest"),
@@ -93,6 +93,8 @@ const CString EFFECT_TEXTS[] = {		// // //
 	_T("Oxx - Set groove to XX"),
 	_T("Txy - Delayed transpose, bit 7 = direction, X = frames to wait, Y = semitone offset"),
 	_T("Zxx - N163 wave buffer access, XX = position in bytes"),
+	_T("Exx - FDS volume envelope (attack), XX = rate"),
+	_T("Exx - FDS volume envelope (decay), XX - 40 = rate"),
 };
 
 // OLE copy and mix
@@ -2556,7 +2558,7 @@ bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, unsigned char nChar
 
 	if (Chip == SNDCHIP_FDS) {
 		// FDS effects
-		const char FDS_EFFECTS[] = {EF_FDS_MOD_DEPTH, EF_FDS_MOD_SPEED_HI, EF_FDS_MOD_SPEED_LO};
+		const char FDS_EFFECTS[] = {EF_FDS_MOD_DEPTH, EF_FDS_MOD_SPEED_HI, EF_FDS_MOD_SPEED_LO, EF_FDS_VOLUME};		// // //
 		for (int i = 0; i < sizeof(FDS_EFFECTS) && !bValidEffect; ++i) {
 			if (nChar == EFF_CHAR[FDS_EFFECTS[i] - 1]) {
 				bValidEffect = true;
@@ -3612,6 +3614,7 @@ CString	CFamiTrackerView::GetEffectHint(const stChanNote &Note, int Column) cons
 
 	int Channel = m_pPatternEditor->GetChannel();
 	int Chip = GetDocument()->GetChannel(Channel)->GetChip();
+	if (Index > EF_FDS_VOLUME || (Index == EF_FDS_VOLUME && Param >= 0x40)) Index++;
 	if (Index > EF_NOTE_CUT || (Index == EF_NOTE_CUT && Param >= 0x80 && Channel == CHANID_TRIANGLE)) Index++;
 	if (Index > EF_DUTY_CYCLE || (Index == EF_DUTY_CYCLE && Chip == SNDCHIP_N163)) Index++;
 	if (Index > EF_VOLUME || (Index == EF_VOLUME && Param >= 0xE0)) Index++;

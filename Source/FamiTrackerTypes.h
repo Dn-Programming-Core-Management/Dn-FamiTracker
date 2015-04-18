@@ -165,6 +165,7 @@ enum effect_t {
 	EF_GROOVE,					// // //
 	EF_TRANSPOSE,				// // //
 	EF_N163_WAVE_BUFFER,		// // //
+	EF_FDS_VOLUME,				// // //
 //	EF_TARGET_VOLUME_SLIDE, 
 /*
 	EF_VRC7_MODULATOR,
@@ -222,6 +223,7 @@ const char EFF_CHAR[] = {
 	'O',	// // // Groove
 	'T',	// // // Delayed transpose
 	'Z',	// // // N163 wave buffer
+	'E',	// // // FDS volume envelope
 	//'9'	// Targeted volume slide
 	/*
 	'H',	// VRC7 modulator

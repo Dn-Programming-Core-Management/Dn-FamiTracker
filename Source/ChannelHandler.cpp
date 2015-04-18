@@ -288,7 +288,7 @@ void CChannelHandler::RetrieveChannelState()		// // //
 			case EF_PITCH: case EF_DUTY_CYCLE: case EF_SAMPLE_OFFSET: case EF_VOLUME_SLIDE:
 			case EF_FDS_MOD_DEPTH: case EF_FDS_MOD_SPEED_HI: case EF_FDS_MOD_SPEED_LO:
 			case EF_SUNSOFT_ENV_LO: case EF_SUNSOFT_ENV_HI: case EF_SUNSOFT_ENV_TYPE:
-			case EF_DAC: case EF_N163_WAVE_BUFFER:
+			case EF_DAC: case EF_N163_WAVE_BUFFER: case EF_FDS_VOLUME:
 				if (State[Note.EffNumber[c]] == -1)
 					State[Note.EffNumber[c]] = Note.EffParam[c];
 				continue;

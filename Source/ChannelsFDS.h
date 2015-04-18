@@ -58,7 +58,10 @@ protected:
 	// Modulation
 	bool m_bResetMod;
 protected:
-	// // //
+	int m_iVolModMode;		// // // 0CC: make an enum for this
+	int m_iVolModRate;		// // //
+	bool m_bVolModTrigger;		// // //
+
 	int m_iEffModDepth;
 	int m_iEffModSpeedHi;
 	int m_iEffModSpeedLo;

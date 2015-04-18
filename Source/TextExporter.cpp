@@ -518,17 +518,23 @@ static bool ImportCellText(
 			for (;p < EF_COUNT; ++p)
 				if (EFF_CHAR[p] == pC) break;
 			// // //
-			if (pDoc->GetChipType(channel) == SNDCHIP_FDS) switch (p - 1) {
-			case EF_SWEEPUP:			p = EF_FDS_MOD_DEPTH; break;
-			case EF_SWEEPDOWN:			p = EF_FDS_MOD_SPEED_HI; break;
-			}
-			if (pDoc->GetChipType(channel) == SNDCHIP_S5B) switch (p - 1) {
-			case EF_SWEEPUP:			p = EF_SUNSOFT_ENV_LO; break;
-			case EF_SWEEPDOWN:			p = EF_SUNSOFT_ENV_HI; break;
-			case EF_FDS_MOD_SPEED_LO:	p = EF_SUNSOFT_ENV_TYPE; break;
-			}
-			if (pDoc->GetChipType(channel) == SNDCHIP_N163) switch (p - 1) {
-			case EF_DAC: case EF_SAMPLE_OFFSET: p = EF_N163_WAVE_BUFFER; break;
+			switch (pDoc->GetChipType(channel)) {
+			case SNDCHIP_FDS:
+				switch (p - 1) {
+				case EF_SWEEPUP:	p = EF_FDS_MOD_DEPTH; break;
+				case EF_SWEEPDOWN:	p = EF_FDS_MOD_SPEED_HI; break;
+				case EF_VOLUME:		p = EF_FDS_VOLUME; break;
+				} break;
+			case SNDCHIP_S5B:
+				switch (p - 1) {
+				case EF_SWEEPUP:			p = EF_SUNSOFT_ENV_LO; break;
+				case EF_SWEEPDOWN:			p = EF_SUNSOFT_ENV_HI; break;
+				case EF_FDS_MOD_SPEED_LO:	p = EF_SUNSOFT_ENV_TYPE; break;
+				} break;
+			case SNDCHIP_N163:
+				switch (p - 1) {
+				case EF_DAC: case EF_SAMPLE_OFFSET: p = EF_N163_WAVE_BUFFER; break;
+				} break;
 			}
 			if (p >= EF_COUNT)
 			{
