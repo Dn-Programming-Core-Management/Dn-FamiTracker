@@ -64,6 +64,7 @@ public:
 	void InvalidateCursor();
 	void InvalidateBackground();
 	void InvalidateHeader();
+	void InvalidateRegister();		// // //
 
 	// Drawing
 	void DrawScreen(CDC *pDC, CFamiTrackerView *pView);	// Draw pattern area
@@ -77,6 +78,7 @@ public:
 	CRect GetActiveRect() const;
 	CRect GetHeaderRect() const;
 	CRect GetPatternRect() const;
+	CRect GetRegisterRect() const;		// // //
 	CRect GetUnbufferedRect() const;
 	CRect GetInvalidatedRect() const;
 
@@ -289,8 +291,10 @@ private:
 	// GDI objects
 	CDC		*m_pPatternDC;
 	CDC		*m_pHeaderDC;
+	CDC		*m_pRegisterDC;		// // //
 	CBitmap *m_pPatternBmp;
 	CBitmap	*m_pHeaderBmp;
+	CBitmap	*m_pRegisterBmp;		// // //
 	CFont	m_fontHeader;
 	CFont	m_fontPattern;
 	CFont	m_fontCourierNew;
@@ -305,6 +309,7 @@ private:
 	bool	m_bBackgroundInvalidated;
 	bool	m_bHeaderInvalidated;
 	bool	m_bSelectionInvalidated;
+	bool	m_bRegisterInvalidated;		// // //
 
 	// Draw state variables
 	int		m_iCenterRow;					// The row in the middle of the editor, will always point to a valid row in current frame

@@ -620,7 +620,7 @@ uint8 CAPU::GetReg(int Chip, int Reg) const
 		case SNDCHIP_N163:
 			return m_pN163->ReadMem(Reg);
 		case SNDCHIP_FDS:
-			return m_iRegsFDS[Reg & 0x1F];
+			return m_iRegsFDS[Reg & 0x0F];
 		case SNDCHIP_VRC7:		// // //
 			return m_pVRC7->GetLocalReg(Reg);
 		case SNDCHIP_S5B:		// // //

@@ -1979,6 +1979,9 @@ void CMainFrame::OnTrackerDisplayRegisterState()
 		pMenu->CheckMenuItem(ID_TRACKER_DISPLAYREGISTERSTATE, MF_UNCHECKED);
 	else
 		pMenu->CheckMenuItem(ID_TRACKER_DISPLAYREGISTERSTATE, MF_CHECKED);
+
+	CFamiTrackerView *pView	= static_cast<CFamiTrackerView*>(GetActiveView());		// // //
+	pView->GetPatternEditor()->InvalidateRegister();
 }
 
 void CMainFrame::OnUpdateTrackerSwitchToInstrument(CCmdUI *pCmdUI)
