@@ -215,7 +215,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_TRACKER_PLAYPATTERN, OnTrackerPlaypattern)
 	ON_COMMAND(ID_TRACKER_KILLSOUND, OnTrackerKillsound)
 	ON_COMMAND(ID_TRACKER_SWITCHTOTRACKINSTRUMENT, OnTrackerSwitchToInstrument)
-	ON_COMMAND(ID_TRACKER_DPCM, OnTrackerDPCM)
+	// // //
 	ON_COMMAND(ID_TRACKER_DISPLAYREGISTERSTATE, OnTrackerDisplayRegisterState)
 	ON_COMMAND(ID_VIEW_CONTROLPANEL, OnViewControlpanel)
 	ON_COMMAND(ID_HELP, CFrameWnd::OnHelp)
@@ -299,6 +299,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_MESSAGE(WM_USER_DISPLAY_MESSAGE_STRING, OnDisplayMessageString)
 	ON_MESSAGE(WM_USER_DISPLAY_MESSAGE_ID, OnDisplayMessageID)
 	ON_COMMAND(ID_VIEW_TOOLBAR, &CMainFrame::OnViewToolbar)
+
 	// // //
 	ON_BN_CLICKED(IDC_BUTTON_GROOVE, OnToggleGroove)
 	ON_BN_CLICKED(IDC_CHECK_COMPACT, OnClickedCompact)
@@ -1961,15 +1962,7 @@ void CMainFrame::OnTrackerSwitchToInstrument()
 	pView->SwitchToInstrument(!pView->SwitchToInstrument());
 }
 
-void CMainFrame::OnTrackerDPCM()
-{
-	CMenu *pMenu = GetMenu();
-
-	if (pMenu->GetMenuState(ID_TRACKER_DPCM, MF_BYCOMMAND) == MF_CHECKED)
-		pMenu->CheckMenuItem(ID_TRACKER_DPCM, MF_UNCHECKED);
-	else
-		pMenu->CheckMenuItem(ID_TRACKER_DPCM, MF_CHECKED);
-}
+// // //
 
 void CMainFrame::OnTrackerDisplayRegisterState()
 {

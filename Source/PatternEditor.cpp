@@ -901,8 +901,8 @@ void CPatternEditor::DrawUnbufferedArea(CDC *pDC)
 			Width -= ::GetSystemMetrics(SM_CXVSCROLL);
 
 		// Channel header background
-		GradientRectTriple(pDC, m_iPatternWidth + m_iRowColumnWidth, HEADER_CHAN_START, Width, HEADER_HEIGHT, m_colHead1, m_colHead2, m_pView->GetEditMode() ? m_colHead4 : m_colHead3);
-		pDC->Draw3dRect(m_iPatternWidth + m_iRowColumnWidth, HEADER_CHAN_START, Width, HEADER_HEIGHT, STATIC_COLOR_SCHEME.FRAME_LIGHT, STATIC_COLOR_SCHEME.FRAME_DARK);
+		// GradientRectTriple(pDC, m_iPatternWidth + m_iRowColumnWidth, HEADER_CHAN_START, Width, HEADER_HEIGHT, m_colHead1, m_colHead2, m_pView->GetEditMode() ? m_colHead4 : m_colHead3);
+		// pDC->Draw3dRect(m_iPatternWidth + m_iRowColumnWidth, HEADER_CHAN_START, Width, HEADER_HEIGHT, STATIC_COLOR_SCHEME.FRAME_LIGHT, STATIC_COLOR_SCHEME.FRAME_DARK);
 
 		// The big empty area
 		pDC->FillSolidRect(m_iPatternWidth + m_iRowColumnWidth, HEADER_HEIGHT, Width, m_iWinHeight - HEADER_HEIGHT, m_colEmptyBg);	
@@ -1656,8 +1656,7 @@ void CPatternEditor::DrawMeters(CDC *pDC)
 	static COLORREF colors_dim[15];
 	static COLORREF colors_shadow[15];
 
-	// TODO Remove static variables
-	static int LastSamplePos, LastDeltaPos;
+	// // //
 
 	if (!m_pDocument)
 		return;
@@ -1699,37 +1698,7 @@ void CPatternEditor::DrawMeters(CDC *pDC)
 		Offset += m_iChannelWidths[Channel];
 	}
 
-	// DPCM
-	if (m_DPCMState.SamplePos != LastSamplePos || m_DPCMState.DeltaCntr != LastDeltaPos) {
-		if (theApp.GetMainWnd()->GetMenu()->GetMenuState(ID_TRACKER_DPCM, MF_BYCOMMAND) == MF_CHECKED) {
-
-			pDC->SetBkMode(TRANSPARENT);
-			pDC->SetBkColor(DPCM_STATE_COLOR);
-			pDC->SetTextColor(DPCM_STATE_COLOR);
-
-			COLORREF iHeadCol1 = GetSysColor(COLOR_3DFACE);
-			COLORREF iHeadCol2 = GetSysColor(COLOR_BTNHIGHLIGHT);
-			COLORREF iHeadCol3 = GetSysColor(COLOR_APPWORKSPACE);
-
-			if (m_pView->GetEditMode())
-				iHeadCol3 = BLEND(iHeadCol3, 0x0000FF, SHADE_LEVEL.EDIT_MODE);
-
-			GradientRectTriple(pDC, Offset + 10, 0, 150, HEADER_CHAN_HEIGHT, iHeadCol1, iHeadCol2, iHeadCol3);
-
-			pDC->FillSolidRect(Offset + 10, 0, 150, 1, STATIC_COLOR_SCHEME.FRAME_LIGHT);
-			pDC->FillSolidRect(Offset + 10, HEADER_CHAN_HEIGHT - 1, 150, 1, STATIC_COLOR_SCHEME.FRAME_DARK);
-
-			CString Text;
-			Text.Format(_T("Sample position: %02X"), m_DPCMState.SamplePos);
-			pDC->TextOut(Offset + 20, 3, Text);
-
-			Text.Format(_T("Delta counter: %02X"), m_DPCMState.DeltaCntr);
-			pDC->TextOut(Offset + 20, 17, Text);
-
-			LastSamplePos = m_DPCMState.SamplePos;
-			LastDeltaPos = m_DPCMState.DeltaCntr;
-		}
-	}
+	// // //
 
 #ifdef DRAW_REGS
 	DrawRegisters(pDC);
@@ -1829,7 +1798,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 	pDC->SetBkMode(TRANSPARENT);		// // //
 	pDC->TextOut(30, 30 + (line++) * 13, text);		// // //
 
-	vis_line = 14 + m_pDocument->ExpansionEnabled(SNDCHIP_VRC6) * 6
+	vis_line = 15 + m_pDocument->ExpansionEnabled(SNDCHIP_VRC6) * 6
 				  + m_pDocument->ExpansionEnabled(SNDCHIP_MMC5) * 5
 				  + m_pDocument->ExpansionEnabled(SNDCHIP_N163) * 22
 				  + m_pDocument->ExpansionEnabled(SNDCHIP_FDS) * 16
@@ -1915,14 +1884,17 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			vol = 15 * !pSoundGen->PreviewDone();
 		}
 /*
-		pDC->FillSolidRect(m_iRowColumnWidth + m_iPatternWidth + 250 + i * 30, HEADER_CHAN_HEIGHT, 20, m_iWinHeight - HEADER_CHAN_HEIGHT, 0);
-		pDC->FillSolidRect(m_iRowColumnWidth + m_iPatternWidth + 250 + i * 30, HEADER_CHAN_HEIGHT + (period >> 1), 20, 5, RGB(vol << 4, vol << 4, vol << 4));
+		pDC->FillSolidRect(250 + i * 30, 0, 20, m_iWinHeight - HEADER_CHAN_HEIGHT, 0);
+		pDC->FillSolidRect(250 + i * 30, (period >> 1), 20, 5, RGB(vol << 4, vol << 4, vol << 4));
 */
 		DrawNoteBar(pDC, 30, vis_line * 10);
 		if (note_conv >= -12 && note_conv <= 96 && vol)		// // //
 			pDC->FillSolidRect(29 + 6 * (note_conv + 12), vis_line++ * 10, 3, 7, RGB(vol << 4, vol << 4, vol << 4));
 		else vis_line++;
 	}
+
+	text.Format(_T("position: %02X, delta = %02X"), m_DPCMState.SamplePos, m_DPCMState.DeltaCntr);		// // //
+	pDC->TextOut(30 + 180, 30 + line++ * 13, text);
 
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_VRC6)) {
 

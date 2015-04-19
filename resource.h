@@ -652,7 +652,6 @@
 #define ID_MODULE_DUPLICATEFRAME        32964
 #define ID_POPUP_DELETE                 32982
 #define ID_EDIT_REVERSE                 32984
-#define ID_TRACKER_DPCM                 32987
 #define ID_INSTRUMENT_ADD               32995
 #define ID_INSTRUMENT_REMOVE            32996
 #define ID_INSTRUMENT_EDIT              32997

@@ -218,7 +218,6 @@ BEGIN
         MENUITEM "Switch to Track Instrument",  ID_TRACKER_SWITCHTOTRACKINSTRUMENT
         MENUITEM SEPARATOR
         MENUITEM "Display Register State",      ID_TRACKER_DISPLAYREGISTERSTATE
-        MENUITEM "&Display DPCM State",         ID_TRACKER_DPCM
         MENUITEM SEPARATOR
         MENUITEM "&Kill Sound\tF12",            ID_TRACKER_KILLSOUND
         MENUITEM SEPARATOR
@@ -2042,7 +2041,6 @@ END
 STRINGTABLE
 BEGIN
     ID_EDIT_REVERSE         "Reverse a selection\nReverse"
-    ID_TRACKER_DPCM         "Display information about the DPCM channel\nDisplay DPCM State"
 END
 
 STRINGTABLE

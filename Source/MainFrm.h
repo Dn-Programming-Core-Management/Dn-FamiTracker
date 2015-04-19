@@ -294,7 +294,7 @@ public:
 	afx_msg void OnClickedFollow();
 	afx_msg void OnToggleFollow();
 	afx_msg void OnViewControlpanel();
-	afx_msg void OnTrackerDPCM();
+	// // //
 	afx_msg void OnTrackerDisplayRegisterState();
 	afx_msg void OnSelectPatternEditor();
 	afx_msg void OnSelectFrameEditor();
