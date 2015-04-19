@@ -819,8 +819,6 @@ void CFamiTrackerView::PeriodicUpdate()
 			if (pDoc->IsFileLoaded()) {
 				UpdateMeters();
 				// // //
-				if (theApp.GetMainWnd()->GetMenu()->GetMenuState(ID_TRACKER_DISPLAYREGISTERSTATE, MF_BYCOMMAND) == MF_CHECKED)
-					m_pPatternEditor->InvalidateRegister();
 			}
 		}
 	}

@@ -153,7 +153,6 @@ CPatternEditor::CPatternEditor() :
 	m_bBackgroundInvalidated(false),
 	m_bHeaderInvalidated(false),
 	m_bSelectionInvalidated(false),
-	m_bRegisterInvalidated(false),		// // //
 	m_iCenterRow(0),
 	m_iCurrentFrame(0),
 	m_iPatternLength(0),		// // //
@@ -300,7 +299,6 @@ void CPatternEditor::ApplyColorScheme()
 	InvalidateBackground();
 	InvalidatePatternData();
 	InvalidateHeader();
-	InvalidateRegister();		// // //
 }
 
 void CPatternEditor::SetDocument(CFamiTrackerDoc *pDoc, CFamiTrackerView *pView)
@@ -370,11 +368,6 @@ void CPatternEditor::InvalidateHeader()
 {
 	// Channel header has changed
 	m_bHeaderInvalidated = true;
-}
-
-void CPatternEditor::InvalidateRegister()
-{
-	m_bRegisterInvalidated = true;
 }
 
 void CPatternEditor::UpdatePatternLength()
@@ -503,18 +496,12 @@ void CPatternEditor::DrawScreen(CDC *pDC, CFamiTrackerView *pView)
 		++m_iHeaderRedraws;
 	}
 
-	// // //
-	if (m_bRegisterInvalidated) {
-		DrawRegisters(m_pRegisterDC);
-	}
-
 	// Clear flags
 	m_bPatternInvalidated = false;
 	m_bCursorInvalidated = false;
 	m_bBackgroundInvalidated = false;
 	m_bHeaderInvalidated = false;
 	m_bSelectionInvalidated = false;
-	m_bRegisterInvalidated = false;		// // //
 
 	//
 	// Blit to visible surface
@@ -535,13 +522,8 @@ void CPatternEditor::DrawScreen(CDC *pDC, CFamiTrackerView *pView)
 		pDC->BitBlt(0, 0, m_iWinWidth, HEADER_HEIGHT, m_pHeaderDC, 0, 0, SRCCOPY);		// // //
 
 	// Background
-	if (pDC->RectVisible(GetUnbufferedRect()))
-		DrawUnbufferedArea(pDC);
-
-	// // // registers
-	if (pDC->RectVisible(GetRegisterRect())) {
-		pDC->BitBlt(iBlitWidth, HEADER_HEIGHT, m_iWinWidth - iBlitWidth, iBlitHeight, m_pRegisterDC, 0, 0, SRCCOPY);
-	}
+	//if (pDC->RectVisible(GetUnbufferedRect()))
+	//	DrawUnbufferedArea(pDC);
 
 	int Line = 1;
 
@@ -648,11 +630,6 @@ CRect CPatternEditor::GetPatternRect() const
 	return CRect(0, HEADER_HEIGHT, m_iPatternWidth + m_iRowColumnWidth, m_iWinHeight);
 }
 
-CRect CPatternEditor::GetRegisterRect() const		// // //
-{
-	return CRect(m_iPatternWidth + m_iRowColumnWidth, HEADER_HEIGHT, m_iWinWidth, m_iWinHeight); 
-}
-
 CRect CPatternEditor::GetUnbufferedRect() const
 {
 	return CRect(m_iPatternWidth + m_iRowColumnWidth, 0, m_iWinWidth, m_iWinHeight);
@@ -660,7 +637,9 @@ CRect CPatternEditor::GetUnbufferedRect() const
 
 CRect CPatternEditor::GetInvalidatedRect() const
 {
-	if (m_bHeaderInvalidated || m_bRegisterInvalidated)		// // //
+	if (m_bHeaderInvalidated)
+		return GetActiveRect();
+	else if (theApp.GetMainWnd()->GetMenu()->GetMenuState(ID_TRACKER_DISPLAYREGISTERSTATE, MF_BYCOMMAND) == MF_CHECKED)
 		return GetActiveRect();
 
 	return GetPatternRect();
@@ -846,8 +825,6 @@ void CPatternEditor::CreateBackground(CDC *pDC)
 
 	//if (m_iLastFirstChannel != m_iFirstChannel)
 		InvalidateHeader();
-
-	InvalidateRegister();		// // //
 
 	// Allocate backbuffer area, only if window size or pattern width has changed
 	if (bCreateBuffers) {
@@ -1699,11 +1676,14 @@ void CPatternEditor::DrawMeters(CDC *pDC)
 	}
 
 	// // //
-
 #ifdef DRAW_REGS
 	DrawRegisters(pDC);
 #else
+	DrawRegisters(m_pRegisterDC);
 	// // //
+	const int iBlitHeight = m_iWinHeight - HEADER_HEIGHT;
+	const int iBlitWidth = m_iPatternWidth + m_iRowColumnWidth;
+	pDC->BitBlt(iBlitWidth, HEADER_HEIGHT, m_iWinWidth - iBlitWidth, iBlitHeight, m_pRegisterDC, 0, 0, SRCCOPY);
 #endif /* DRAW_REGS */
 
 	pDC->SelectObject(pOldFont);
@@ -1893,7 +1873,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		else vis_line++;
 	}
 
-	text.Format(_T("position: %02X, delta = %02X"), m_DPCMState.SamplePos, m_DPCMState.DeltaCntr);		// // //
+	text.Format(_T("position: %02i, delta = $%02X"), m_DPCMState.SamplePos, m_DPCMState.DeltaCntr);		// // //
 	pDC->TextOut(30 + 180, 30 + line++ * 13, text);
 
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_VRC6)) {
