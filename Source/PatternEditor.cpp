@@ -492,9 +492,9 @@ void CPatternEditor::DrawScreen(CDC *pDC, CFamiTrackerView *pView)
 	if (m_bHeaderInvalidated) {
 		// Pattern header
 		DrawHeader(m_pHeaderDC);
-		DrawMeters(m_pHeaderDC);
 		++m_iHeaderRedraws;
 	}
+	DrawMeters(m_pHeaderDC);		// // //
 
 	// Clear flags
 	m_bPatternInvalidated = false;
@@ -1759,6 +1759,8 @@ static CString NoteToStr(int Note)
 
 void CPatternEditor::DrawRegisters(CDC *pDC)
 {
+	if (!m_pDocument || !pDC) return;		// // //
+
 	// Display 2a03 registers
 	const CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 
