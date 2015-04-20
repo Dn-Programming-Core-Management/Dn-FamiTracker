@@ -2149,7 +2149,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 
 		for (int i = 0; i < 6; ++i) {
 			for (int j = 0; j < 3; j++)
-				reg[j] = pSoundGen->GetReg(SNDCHIP_VRC7, i + 0x10 * j);
+				reg[j] = pSoundGen->GetReg(SNDCHIP_VRC7, i + 0x10 + 0x10 * j);
 
 			pDC->SetBkColor(m_colEmptyBg);
 			pDC->SetTextColor(0xC0C0C0);
