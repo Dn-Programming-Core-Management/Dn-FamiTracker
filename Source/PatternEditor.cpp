@@ -2145,11 +2145,11 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		pDC->SetTextColor(0xC0C0C0);
 
 		text.Format(_T("$00: $%02X $%02X $%02X $%02X $%02X $%02X $%02X $%02X"), reg[0], reg[1], reg[2], reg[3], reg[4], reg[5], reg[6], reg[7]);
-		pDC->TextOut(30, HEADER_HEIGHT + 30 + (line++) * 13, text);
+		pDC->TextOut(30, 30 + (line++) * 13, text);
 
 		for (int i = 0; i < 6; ++i) {
 			for (int j = 0; j < 3; j++)
-				reg[j] = pSoundGen->GetReg(SNDCHIP_N163, i + 0x10 * j);
+				reg[j] = pSoundGen->GetReg(SNDCHIP_VRC7, i + 0x10 * j);
 
 			pDC->SetBkColor(m_colEmptyBg);
 			pDC->SetTextColor(0xC0C0C0);
