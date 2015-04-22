@@ -1902,7 +1902,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			pDC->TextOut(x, y, text);
 
 			int period = (reg[1] | ((reg[2] & 15) << 8));
-			int vol = (reg[0] & 0x0F);
+			int vol = (reg[0] & (i == 2 ? 0x3F : 0x0F));
 
 			double freq = RegToFreq(period, (i == 2) ? SNDCHIP_VRC6 : SNDCHIP_NONE);		// // //
 			double note = NoteFromFreq(freq);
