@@ -209,7 +209,7 @@ void CChannelHandlerN163::RefreshChannel()
 
 	int Channel = 7 - GetIndex();		// Channel #
 	int WaveSize = 256 - (m_iWaveLen >> 2);
-	int Frequency = LimitPeriod(GetPeriod() - ((GetVibrato() + GetFinePitch() + GetPitch()) << 4)) << 2;
+	int Frequency = LimitPeriod(GetPeriod() - ((-GetVibrato() + GetFinePitch() + GetPitch()) << 4)) << 2;		// // //
 
 	// Compensate for shorter waves
 //	Frequency >>= 5 - int(log(double(m_iWaveLen)) / log(2.0));
