@@ -454,7 +454,7 @@ void CPatternAction::Transpose(CFamiTrackerDoc *pDoc) const
 				if (bSingular) switch (m_iTransposeMode) {		// // //
 				case TRANSPOSE_DEC_NOTES:
 				case TRANSPOSE_DEC_OCTAVES:
-					if (Note.Octave > 1)
+					if (Note.Octave > 0)
 						Note.Octave--;
 					break;
 				case TRANSPOSE_INC_NOTES:

@@ -2768,7 +2768,6 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 				Note.Note = ECHO;
 				Note.Octave = m_iOctave;
 				if (Note.Octave > ECHO_BUFFER_LENGTH) Note.Octave = ECHO_BUFFER_LENGTH;
-				if (Note.Octave < 1) Note.Octave = 1;
 				if (!m_bMaskInstrument)
 					Note.Instrument = GetInstrument();
 				m_iLastNote = NOTE_ECHO + Note.Octave;

@@ -301,7 +301,7 @@ bool CFindDlg::ParseNote(searchTerm &Term, CString str, bool Simple, CString &er
 			if (str.Delete(0)) {
 				Term.Definite[WC_OCT] = true;
 				*Term.Oct = atoi(str);
-				FIND_RAISE_ERROR(*Term.Oct > ECHO_BUFFER_LENGTH || *Term.Oct < 1,
+				FIND_RAISE_ERROR(*Term.Oct > ECHO_BUFFER_LENGTH,
 					_T("Echo buffer access \"^") + str + _T("\" is out of range, maximum is %d."), ECHO_BUFFER_LENGTH);
 			}
 		}
