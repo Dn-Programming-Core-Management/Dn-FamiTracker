@@ -222,11 +222,12 @@ void CDetuneDlg::UpdateOffset()
 
 	for (int i = 0; i < 6; i++) {
 		CString str, fmt = _T("%s\n%X\n%X");
+		int Note = m_iNote - (i == 4) * 24;
 		int oldReg = FreqToReg(NoteToFreq(m_iNote), i, m_iNote / NOTE_RANGE);
 		int newReg = std::max(0, (signed int)FreqToReg(NoteToFreq(m_iNote), i, m_iNote / NOTE_RANGE) + m_iDetuneTable[i][m_iNote] * (i >= 3 ? 1 : -1));
-		double values[4] = {RegToFreq(FreqToReg(NoteToFreq(m_iNote), i, m_iNote / NOTE_RANGE), i, m_iNote / NOTE_RANGE),
-							RegToFreq(newReg, i, m_iNote / NOTE_RANGE),
-							NoteToFreq(m_iNote),
+		double values[4] = {RegToFreq(FreqToReg(NoteToFreq(m_iNote), i, m_iNote / NOTE_RANGE), i, m_iNote / NOTE_RANGE) * (i == 4 ? .25 : 1),
+							RegToFreq(newReg, i, m_iNote / NOTE_RANGE) * (i == 4 ? .25 : 1),
+							NoteToFreq(m_iNote) * (i == 4 ? .25 : 1),
 							1200.0 * log(RegToFreq(newReg, i, m_iNote / NOTE_RANGE) / NoteToFreq(m_iNote)) / log(2.0)};
 		for (int j = 0; j < 4; j++) {
 			if (abs(values[j]) >= 9999.5) {
