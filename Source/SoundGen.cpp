@@ -1906,11 +1906,9 @@ void CSoundGen::OnResetPlayer(WPARAM wParam, LPARAM lParam)
 	// Called when the selected song has changed
 
 	if (IsPlaying())
-		BeginPlayer(m_iPlayMode, wParam);
+		BeginPlayer(MODE_PLAY_START, wParam);		// // //
 
 	m_iPlayTrack = wParam;
-	m_iPlayFrame = 0;
-	m_iPlayRow = 0;
 }
 
 void CSoundGen::OnStartRender(WPARAM wParam, LPARAM lParam)
