@@ -29,6 +29,8 @@
 #include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
+#include "FamiTrackerView.h"		// // //
+#include "TrackerChannel.h"		// // //
 #include "SoundGen.h"
 #include "Settings.h"		// // //
 #include "ChannelHandler.h"
@@ -193,7 +195,7 @@ void CChannelHandler::ResetChannel()
 	ClearSequences();
 }
 
-void CChannelHandler::RetrieveChannelState()		// // //
+void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 {
 	CFamiTrackerDoc *pDoc = m_pSoundGen->GetDocument();
 	if (!pDoc) return;
@@ -204,7 +206,25 @@ void CChannelHandler::RetrieveChannelState()		// // //
 	int Channel = pDoc->GetChannelPosition(m_iChannelID, pDoc->GetExpansionChip());
 	int EffColumns = pDoc->GetEffColumns(Track, Channel);
 
-	int f = Frame, r = Row, BufferPos = -1, State[EF_COUNT], Transpose[ECHO_BUFFER_LENGTH + 1] = {};
+	if (!m_pSoundGen->IsPlaying()) {
+		Frame = CFamiTrackerView::GetView()->GetSelectedFrame();
+		Row = CFamiTrackerView::GetView()->GetSelectedRow();
+	}
+	else if (log) {
+		log->Format(_T("Inst.: "));
+		if (m_iInstrument == MAX_INSTRUMENTS) // never happens because famitracker will switch to selected inst
+			log->Append("None");
+		else
+			log->AppendFormat(_T("%02X"), m_iInstrument);
+		log->AppendFormat(_T("        Vol.: %X        Active effects:"), m_iDefaultVolume >> VOL_COLUMN_SHIFT);
+		log->Append(GetEffectString());
+		return;
+	}
+
+	int Inst = MAX_INSTRUMENTS, Vol = VOL_COLUMN_MAX;
+
+	int f = Frame, r = Row, BufferPos = -1, Transpose[ECHO_BUFFER_LENGTH + 1] = {};
+	int State[EF_COUNT], State_Exx = -1;
 	memset(State, -1, EF_COUNT * sizeof(int));
 
 	while (true) {
@@ -263,32 +283,48 @@ void CChannelHandler::RetrieveChannelState()		// // //
 		if (BufferPos < 0)
 			BufferPos = 0;
 
-		if (m_iInstrument == MAX_INSTRUMENTS)
+		if (Inst == MAX_INSTRUMENTS)
 			if (Note.Instrument != MAX_INSTRUMENTS)
-				m_iInstrument = Note.Instrument;
+				Inst = Note.Instrument;
 
-		if (m_iVolume == VOL_COLUMN_MAX)
+		if (Vol == VOL_COLUMN_MAX)
 			if (Note.Vol != MAX_VOLUME)
-				m_iDefaultVolume = m_iVolume = Note.Vol << VOL_COLUMN_SHIFT;
+				Vol = Note.Vol << VOL_COLUMN_SHIFT;
 		
 		for (int c = EffColumns; c >= 0; c--)
 			switch (Note.EffNumber[c]) {
 			case EF_NONE: case EF_PORTAOFF:
-			case EF_DPCM_PITCH: case EF_RETRIGGER:
+			case EF_DAC: case EF_DPCM_PITCH: case EF_RETRIGGER:
 			case EF_DELAY: case EF_DELAYED_VOLUME: case EF_NOTE_RELEASE: case EF_TRANSPOSE:
+			case EF_FDS_MOD_DEPTH: case EF_FDS_MOD_SPEED_HI: case EF_FDS_MOD_SPEED_LO:
 				continue; // ignore effects that cannot have memory
 			case EF_JUMP: case EF_SKIP: case EF_HALT:
 			case EF_SPEED: case EF_GROOVE:
 				if (true) continue; // ignore global effects
+			
+			case EF_VOLUME:
+				if (!pDoc->GetChannel(m_iChannelID)->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
+				if (State_Exx == -1 && Note.EffParam[c] >= 0xE0 && Note.EffParam[c] <= 0xE3)
+					State_Exx = Note.EffParam[c];
+				else if (State[Note.EffNumber[c]] == -1 && Note.EffParam[c] <= 0x1F) {
+					State[Note.EffNumber[c]] = Note.EffParam[c];
+					if (State_Exx == -1) State_Exx = 0xE2;
+				}
+				continue;
 			case EF_NOTE_CUT:
-				if (m_iChannelID != CHANID_TRIANGLE) continue;
-				else if (Note.EffParam[c] < 0x80) continue;
-
-			case EF_VOLUME: case EF_VIBRATO: case EF_TREMOLO:
-			case EF_PITCH: case EF_DUTY_CYCLE: case EF_SAMPLE_OFFSET: case EF_VOLUME_SLIDE:
-			case EF_FDS_MOD_DEPTH: case EF_FDS_MOD_SPEED_HI: case EF_FDS_MOD_SPEED_LO:
+				if (Note.EffParam[c] <= 0x7F) continue;
+				if (!pDoc->GetChannel(m_iChannelID)->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
+				if (State[Note.EffNumber[c]] == -1) {
+					State[Note.EffNumber[c]] = Note.EffParam[c];
+					if (State_Exx == -1) State_Exx = 0xE2;
+				}
+				continue;
+			case EF_SAMPLE_OFFSET: 
+			case EF_FDS_VOLUME:
 			case EF_SUNSOFT_ENV_LO: case EF_SUNSOFT_ENV_HI: case EF_SUNSOFT_ENV_TYPE:
-			case EF_DAC: case EF_N163_WAVE_BUFFER: case EF_FDS_VOLUME:
+			case EF_N163_WAVE_BUFFER:
+				if (!pDoc->GetChannel(m_iChannelID)->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
+			case EF_VIBRATO: case EF_TREMOLO: case EF_PITCH: case EF_DUTY_CYCLE: case EF_VOLUME_SLIDE:
 				if (State[Note.EffNumber[c]] == -1)
 					State[Note.EffNumber[c]] = Note.EffParam[c];
 				continue;
@@ -306,14 +342,103 @@ void CChannelHandler::RetrieveChannelState()		// // //
 		else if (f) r = pDoc->GetFrameLength(Track, --f) - 1;
 		else break;
 	}
-	
-	if (m_iInstrument != MAX_INSTRUMENTS)
-		HandleInstrument(m_iInstrument, true, true);
-	for (unsigned int i = 0; i < EF_COUNT; i++)
-		if (State[i] >= 0)
-			HandleCustomEffects(i, State[i]);
+
+	if (log) {
+		const int SLIDE_EFFECT = State[EF_ARPEGGIO] >= 0 ? EF_ARPEGGIO :
+								 State[EF_PORTA_UP] >= 0 ? EF_PORTA_UP :
+								 State[EF_PORTA_DOWN] >= 0 ? EF_PORTA_DOWN :
+								 EF_PORTAMENTO;
+		const int LOG_EFFECT[] = {SLIDE_EFFECT, EF_VIBRATO, EF_TREMOLO, EF_VOLUME_SLIDE, EF_PITCH, EF_DUTY_CYCLE};
+		static const int LOG_EFFECT_PUL[] = {EF_VOLUME};
+		static const int LOG_EFFECT_TRI[] = {EF_VOLUME, EF_NOTE_CUT};
+		static const int LOG_EFFECT_DMC[] = {EF_SAMPLE_OFFSET};
+		static const int LOG_EFFECT_FDS[] = {EF_FDS_VOLUME};
+		static const int LOG_EFFECT_S5B[] = {EF_SUNSOFT_ENV_LO, EF_SUNSOFT_ENV_HI, EF_SUNSOFT_ENV_TYPE};
+		static const int LOG_EFFECT_N163[] = {EF_N163_WAVE_BUFFER};
+
+		log->Format(_T("Inst.: "));
+		if (Inst == MAX_INSTRUMENTS)
+			log->Append("None");
+		else
+			log->AppendFormat(_T("%02X"), Inst);
+		log->AppendFormat(_T("        Vol.: %X        Active effects:"), Vol >> VOL_COLUMN_SHIFT);
+
+		CString effStr = _T("");
+		for (int i = 0; i < sizeof(LOG_EFFECT) / sizeof(int); i++) {
+			int p = State[LOG_EFFECT[i]];
+			if (p < 0) continue;
+			if (p == 0 && LOG_EFFECT[i] != EF_PITCH) continue;
+			if (p == 0x80 && LOG_EFFECT[i] == EF_PITCH) continue;
+			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT[i] - 1], p);
+		}
+		if (m_iChannelID == CHANID_DPCM) for (int i = 0; i < sizeof(LOG_EFFECT_DMC) / sizeof(int); i++) {
+			int p = State[LOG_EFFECT_DMC[i]];
+			if (p < 0) continue;
+			if (p == 0 && LOG_EFFECT_DMC[i] != EF_DAC) continue;
+			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_DMC[i] - 1], p);
+		}
+		if (pDoc->GetChipType(m_iChannelID) == SNDCHIP_FDS) for (int i = 0; i < sizeof(LOG_EFFECT_FDS) / sizeof(int); i++) {
+			int p = State[LOG_EFFECT_FDS[i]];
+			if (p < 0) continue;
+			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_FDS[i] - 1], p);
+		}
+		if (pDoc->GetChipType(m_iChannelID) == SNDCHIP_S5B) for (int i = 0; i < sizeof(LOG_EFFECT_S5B) / sizeof(int); i++) {
+			int p = State[LOG_EFFECT_S5B[i]];
+			if (p < 0) continue;
+			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_S5B[i] - 1], p);
+		}
+		if (pDoc->GetChipType(m_iChannelID) == SNDCHIP_N163) for (int i = 0; i < sizeof(LOG_EFFECT_N163) / sizeof(int); i++) {
+			int p = State[LOG_EFFECT_N163[i]];
+			if (p < 0) continue;
+			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_N163[i] - 1], p);
+		}
+		if (State_Exx >= 0)
+			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_VOLUME - 1], State_Exx);
+
+		if (effStr.IsEmpty()) effStr = _T(" None");
+		log->Append(effStr);
+	}
+	else {
+		m_iInstrument = Inst;
+		m_iDefaultVolume = m_iVolume = Vol;
+		if (m_iInstrument != MAX_INSTRUMENTS)
+			HandleInstrument(m_iInstrument, true, true);
+		for (unsigned int i = 0; i < EF_COUNT; i++)
+			if (State[i] >= 0)
+				HandleCustomEffects(i, State[i]);
+		if (State_Exx >= 0)
+			HandleCustomEffects(EF_VOLUME, State_Exx);
+	}
 
 	return;
+}
+
+CString CChannelHandler::GetEffectString() const		// // //
+{
+	CString str = _T("");
+	
+	switch (m_iEffect) {
+	case EF_ARPEGGIO:
+		if (m_iArpeggio) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iArpeggio); break;
+	case EF_PORTA_UP: case EF_PORTA_DOWN: case EF_PORTAMENTO:
+		if (m_iEffectParam) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iEffectParam); break;
+	}
+	if (m_iVibratoSpeed)
+		str.AppendFormat(_T(" 4%X%X"), m_iVibratoSpeed, m_iVibratoDepth >> 4);
+	if (m_iTremoloSpeed)
+		str.AppendFormat(_T(" 7%X%X"), m_iTremoloSpeed, m_iTremoloDepth >> 4);
+	if (m_iFinePitch != 0x80)
+		str.AppendFormat(_T(" P%02X"), m_iFinePitch);
+	if (m_iDutyPeriod)
+		str.AppendFormat(_T(" V%02X"), m_iDutyPeriod);
+
+	str.Append(GetCustomEffectString());
+	return str.IsEmpty() ? " None" : str;
+}
+
+CString CChannelHandler::GetCustomEffectString() const		// // //
+{
+	return _T("");
 }
 
 // Handle common things before letting the channels play the notes

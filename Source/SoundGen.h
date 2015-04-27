@@ -179,6 +179,7 @@ public:
 
 	// Other
 	uint8		GetReg(int Chip, int Reg) const;
+	CString		RecallChannelState(int Channel) const;		// // //
 
 	// FDS & N163 wave preview
 	void		WaveChanged();

@@ -426,6 +426,7 @@ public:
 	afx_msg void OnEditPasteSpecialSelection();
 	afx_msg void OnEditPasteSpecialFill();
 	afx_msg void OnUpdatePasteSpecial(CCmdUI *pCmdUI);
+	afx_msg void OnRecallChannelState();
 };
 
 #ifndef _DEBUG  // debug version in FamiTrackerView.cpp

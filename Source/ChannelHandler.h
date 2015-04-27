@@ -99,7 +99,7 @@ public:
 	virtual void	ProcessChannel() = 0;						// Run the instrument and effects
 	virtual void	RefreshChannel() = 0;						// Update channel registers
 	virtual void	ResetChannel();								// Resets all state variables to default
-	virtual void	RetrieveChannelState();						// // // Retrieve current channel state from previous frames
+	virtual void	RetrieveChannelState(CString *log);			// // // Retrieve current channel state from previous frames
 
 	virtual void	SetNoteTable(unsigned int *pNoteLookupTable);
 	virtual void	UpdateSequencePlayPos() {};
@@ -128,6 +128,8 @@ protected:
 
 	virtual int		CalculatePeriod() const;
 	virtual int		CalculateVolume(bool Subtract = false) const;
+
+	virtual CString	GetCustomEffectString() const;		// // //
 
 	// 
 	// Internal non-virtual functions
@@ -166,6 +168,7 @@ protected:
 
 	void	WriteRegister(uint16 Reg, uint8 Value);
 	void	WriteExternalRegister(uint16 Reg, uint8 Value);
+	CString	GetEffectString() const;		// // //
 
 	// CSequenceHandler virtual methods
 protected:

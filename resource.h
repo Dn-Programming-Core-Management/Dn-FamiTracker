@@ -147,6 +147,7 @@
 #define IDS_PASTE_NONTERMINAL           180
 #define ID_CLONE_SEQUENCE               181
 #define IDS_DISABLE_SAVE                181
+#define ID_RECALL_CHANNEL_STATE         182
 #define IDD_CONFIG_GENERAL              183
 #define IDS_POPULATE_PATTERNS           183
 #define IDD_PROPERTIES                  185

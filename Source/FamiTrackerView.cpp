@@ -198,6 +198,7 @@ BEGIN_MESSAGE_MAP(CFamiTrackerView, CView)
 	ON_UPDATE_COMMAND_UI(ID_PASTESPECIAL_CURSOR, OnUpdatePasteSpecial)
 	ON_UPDATE_COMMAND_UI(ID_PASTESPECIAL_SELECTION, OnUpdatePasteSpecial)
 	ON_UPDATE_COMMAND_UI(ID_PASTESPECIAL_FILL, OnUpdatePasteSpecial)
+	ON_COMMAND(ID_RECALL_CHANNEL_STATE, OnRecallChannelState)
 END_MESSAGE_MAP()
 
 // Convert keys 0-F to numbers, -1 = invalid key
@@ -3605,6 +3606,11 @@ void CFamiTrackerView::EditReplace(stChanNote &Note)		// // //
 void CFamiTrackerView::OnUpdateFindNext(CCmdUI *pCmdUI)		// // //
 {
 	InvalidateCursor();
+}
+
+void CFamiTrackerView::OnRecallChannelState()		// // //
+{
+	GetParentFrame()->SetMessageText(theApp.GetSoundGenerator()->RecallChannelState(m_pPatternEditor->GetChannel()));
 }
 
 CString	CFamiTrackerView::GetEffectHint(const stChanNote &Note, int Column) const		// // //

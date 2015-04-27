@@ -105,6 +105,7 @@ const stAccelEntry CAccelerator::DEFAULT_TABLE[] = {
 	{_T("Coarse increase values"),		MOD_SHIFT,		VK_F4,			ID_INCREASEVALUESCOARSE},		// // //
 	{_T("Toggle find / replace tab"),	MOD_CONTROL,	'F',			ID_EDIT_FIND_TOGGLE},		// // //
 	{_T("Find next"),					MOD_NONE,		0,				ID_FIND_NEXT},		// // //
+	{_T("Recall channel state"),		MOD_NONE,		0,				ID_RECALL_CHANNEL_STATE},		// // //
 };
 
 const int CAccelerator::ACCEL_COUNT = sizeof(CAccelerator::DEFAULT_TABLE) / sizeof(stAccelEntry);
