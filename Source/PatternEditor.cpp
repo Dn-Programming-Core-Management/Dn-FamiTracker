@@ -1544,7 +1544,7 @@ void CPatternEditor::DrawHeader(CDC *pDC)
 				switch (pChannel->GetChip()) {
 				case SNDCHIP_VRC6: pChanName.Format(_T("V%d"), Type - CHANID_VRC6_PULSE1 + 1); break;
 				case SNDCHIP_MMC5: pChanName.Format(_T("PU%d"), Type - CHANID_MMC5_SQUARE1 + 3); break;
-				case SNDCHIP_N163: pChanName.Format(_T("N%d"), Type - CHANID_N163_CHAN1 + 1); break;
+				case SNDCHIP_N163: pChanName.Format(_T("N%d"), Type - CHANID_N163_CH1 + 1); break;
 				case SNDCHIP_FDS: pChanName = _T("WAV"); break;
 				case SNDCHIP_VRC7: pChanName.Format(_T("FM%d"), Type - CHANID_VRC7_CH1 + 1); break;
 				case SNDCHIP_S5B: pChanName.Format(_T("5B%d"), Type - CHANID_S5B_CH1 + 1); break;

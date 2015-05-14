@@ -52,7 +52,7 @@ private:
 	void LoadWave();
 	void CheckWaveUpdate();
 private:
-	inline int GetIndex() const { return m_iChannelID - CHANID_N163_CHAN1; }
+	inline int GetIndex() const { return m_iChannelID - CHANID_N163_CH1; }
 private:
 	bool m_bLoadWave;
 	bool m_bDisableLoad;		// // //

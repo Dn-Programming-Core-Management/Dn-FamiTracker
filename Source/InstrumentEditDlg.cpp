@@ -341,7 +341,7 @@ void CInstrumentEditDlg::SwitchOnNote(int x, int y)
 	case INST_N163:
 		if (!pDoc->ExpansionEnabled(SNDCHIP_N163)) break;
 		if (pDoc->GetChipType(Channel) != SNDCHIP_N163)
-			pView->SelectChannel(pDoc->GetChannelPosition(CHANID_N163_CHAN1, Chip));
+			pView->SelectChannel(pDoc->GetChannelPosition(CHANID_N163_CH1, Chip));
 		break;
 	case INST_FDS:
 		if (!pDoc->ExpansionEnabled(SNDCHIP_FDS)) break;

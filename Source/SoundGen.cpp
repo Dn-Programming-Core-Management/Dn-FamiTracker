@@ -207,14 +207,14 @@ void CSoundGen::CreateChannels()
 	AssignChannel(new CTrackerChannel(_T("MMC5 Pulse 2"), SNDCHIP_MMC5, CHANID_MMC5_SQUARE2), new CChannelHandlerMMC5());
 
 	// Namco N163
-	AssignChannel(new CTrackerChannel(_T("Namco 1"), SNDCHIP_N163, CHANID_N163_CHAN1), new CChannelHandlerN163());
-	AssignChannel(new CTrackerChannel(_T("Namco 2"), SNDCHIP_N163, CHANID_N163_CHAN2), new CChannelHandlerN163());
-	AssignChannel(new CTrackerChannel(_T("Namco 3"), SNDCHIP_N163, CHANID_N163_CHAN3), new CChannelHandlerN163());
-	AssignChannel(new CTrackerChannel(_T("Namco 4"), SNDCHIP_N163, CHANID_N163_CHAN4), new CChannelHandlerN163());
-	AssignChannel(new CTrackerChannel(_T("Namco 5"), SNDCHIP_N163, CHANID_N163_CHAN5), new CChannelHandlerN163());
-	AssignChannel(new CTrackerChannel(_T("Namco 6"), SNDCHIP_N163, CHANID_N163_CHAN6), new CChannelHandlerN163());
-	AssignChannel(new CTrackerChannel(_T("Namco 7"), SNDCHIP_N163, CHANID_N163_CHAN7), new CChannelHandlerN163());
-	AssignChannel(new CTrackerChannel(_T("Namco 8"), SNDCHIP_N163, CHANID_N163_CHAN8), new CChannelHandlerN163());
+	AssignChannel(new CTrackerChannel(_T("Namco 1"), SNDCHIP_N163, CHANID_N163_CH1), new CChannelHandlerN163());
+	AssignChannel(new CTrackerChannel(_T("Namco 2"), SNDCHIP_N163, CHANID_N163_CH2), new CChannelHandlerN163());
+	AssignChannel(new CTrackerChannel(_T("Namco 3"), SNDCHIP_N163, CHANID_N163_CH3), new CChannelHandlerN163());
+	AssignChannel(new CTrackerChannel(_T("Namco 4"), SNDCHIP_N163, CHANID_N163_CH4), new CChannelHandlerN163());
+	AssignChannel(new CTrackerChannel(_T("Namco 5"), SNDCHIP_N163, CHANID_N163_CH5), new CChannelHandlerN163());
+	AssignChannel(new CTrackerChannel(_T("Namco 6"), SNDCHIP_N163, CHANID_N163_CH6), new CChannelHandlerN163());
+	AssignChannel(new CTrackerChannel(_T("Namco 7"), SNDCHIP_N163, CHANID_N163_CH7), new CChannelHandlerN163());
+	AssignChannel(new CTrackerChannel(_T("Namco 8"), SNDCHIP_N163, CHANID_N163_CH8), new CChannelHandlerN163());
 
 	// // // Sunsoft 5B
 	AssignChannel(new CTrackerChannel(_T("5B Square 1"), SNDCHIP_S5B, CHANID_S5B_CH1), new CChannelHandlerS5B());
@@ -320,7 +320,7 @@ void CSoundGen::RegisterChannels(int Chip, CFamiTrackerDoc *pDoc)
 	// Expansion & internal channels
 	for (int i = 0; i < CHANNELS; ++i) {
 		if (m_pTrackerChannels[i] && ((m_pTrackerChannels[i]->GetChip() & Chip) || (i < 5))			// // //
-								  && (i >= CHANID_FDS || i < CHANID_N163_CHAN1 + m_pDocument->GetNamcoChannels())) {
+								  && (i >= CHANID_FDS || i < CHANID_N163_CH1 + m_pDocument->GetNamcoChannels())) {
 			pDoc->RegisterChannel(m_pTrackerChannels[i], i, m_pTrackerChannels[i]->GetChip());
 		}
 	}
@@ -1394,14 +1394,14 @@ void CSoundGen::SetLookupTable(int Chip)		// // //
 		m_pChannels[CHANID_MMC5_SQUARE1]->SetNoteTable(m_iNoteLookupTableNTSC);
 		m_pChannels[CHANID_MMC5_SQUARE2]->SetNoteTable(m_iNoteLookupTableNTSC); break;
 	case SNDCHIP_N163:
-		m_pChannels[CHANID_N163_CHAN1]->SetNoteTable(m_iNoteLookupTableN163);
-		m_pChannels[CHANID_N163_CHAN2]->SetNoteTable(m_iNoteLookupTableN163);
-		m_pChannels[CHANID_N163_CHAN3]->SetNoteTable(m_iNoteLookupTableN163);
-		m_pChannels[CHANID_N163_CHAN4]->SetNoteTable(m_iNoteLookupTableN163);
-		m_pChannels[CHANID_N163_CHAN5]->SetNoteTable(m_iNoteLookupTableN163);
-		m_pChannels[CHANID_N163_CHAN6]->SetNoteTable(m_iNoteLookupTableN163);
-		m_pChannels[CHANID_N163_CHAN7]->SetNoteTable(m_iNoteLookupTableN163);
-		m_pChannels[CHANID_N163_CHAN8]->SetNoteTable(m_iNoteLookupTableN163); break;
+		m_pChannels[CHANID_N163_CH1]->SetNoteTable(m_iNoteLookupTableN163);
+		m_pChannels[CHANID_N163_CH2]->SetNoteTable(m_iNoteLookupTableN163);
+		m_pChannels[CHANID_N163_CH3]->SetNoteTable(m_iNoteLookupTableN163);
+		m_pChannels[CHANID_N163_CH4]->SetNoteTable(m_iNoteLookupTableN163);
+		m_pChannels[CHANID_N163_CH5]->SetNoteTable(m_iNoteLookupTableN163);
+		m_pChannels[CHANID_N163_CH6]->SetNoteTable(m_iNoteLookupTableN163);
+		m_pChannels[CHANID_N163_CH7]->SetNoteTable(m_iNoteLookupTableN163);
+		m_pChannels[CHANID_N163_CH8]->SetNoteTable(m_iNoteLookupTableN163); break;
 	case SNDCHIP_S5B:
 		m_pChannels[CHANID_S5B_CH1]->SetNoteTable(m_iNoteLookupTableS5B);
 		m_pChannels[CHANID_S5B_CH2]->SetNoteTable(m_iNoteLookupTableS5B);

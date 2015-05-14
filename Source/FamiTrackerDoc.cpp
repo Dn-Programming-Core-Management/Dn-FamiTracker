@@ -4358,7 +4358,7 @@ void CFamiTrackerDoc::SelectExpansionChip(unsigned char Chip, bool Move)
 			CH -= 3;
 		}
 		if ((OldChip & SNDCHIP_MMC5) && !(Chip & SNDCHIP_MMC5)) {
-			for (int j = GetChannelPosition(CHANID_N163_CHAN1, Current); j < CH; j++)
+			for (int j = GetChannelPosition(CHANID_N163_CH1, Current); j < CH; j++)
 				for (unsigned int i = 0; i < m_iTrackCount; ++i)
 					m_pTracks[i]->CopyChannel(j - 2, j);
 			Current &= ~SNDCHIP_MMC5;
@@ -4428,7 +4428,7 @@ void CFamiTrackerDoc::SelectExpansionChip(unsigned char Chip, bool Move)
 		}
 		if ((Chip & SNDCHIP_MMC5) && !(OldChip & SNDCHIP_MMC5)) {
 			CH += 2;
-			for (int j = GetChannelCount() - 1; j >= GetChannelPosition(CHANID_N163_CHAN1, Current) + 2; j--)
+			for (int j = GetChannelCount() - 1; j >= GetChannelPosition(CHANID_N163_CH1, Current) + 2; j--)
 				for (unsigned int i = 0; i < m_iTrackCount; ++i) {
 					m_pTracks[i]->CopyChannel(j, j - 2);
 				}

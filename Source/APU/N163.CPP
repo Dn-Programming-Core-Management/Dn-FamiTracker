@@ -53,14 +53,14 @@ CN163::CN163(CMixer *pMixer) :
 
 	m_pMixer = pMixer;
 
-	m_pChannels[0] = new CN163Chan(pMixer, CHANID_N163_CHAN1, m_pWaveData);
-	m_pChannels[1] = new CN163Chan(pMixer, CHANID_N163_CHAN2, m_pWaveData);
-	m_pChannels[2] = new CN163Chan(pMixer, CHANID_N163_CHAN3, m_pWaveData);
-	m_pChannels[3] = new CN163Chan(pMixer, CHANID_N163_CHAN4, m_pWaveData);
-	m_pChannels[4] = new CN163Chan(pMixer, CHANID_N163_CHAN5, m_pWaveData);
-	m_pChannels[5] = new CN163Chan(pMixer, CHANID_N163_CHAN6, m_pWaveData);
-	m_pChannels[6] = new CN163Chan(pMixer, CHANID_N163_CHAN7, m_pWaveData);
-	m_pChannels[7] = new CN163Chan(pMixer, CHANID_N163_CHAN8, m_pWaveData);
+	m_pChannels[0] = new CN163Chan(pMixer, CHANID_N163_CH1, m_pWaveData);
+	m_pChannels[1] = new CN163Chan(pMixer, CHANID_N163_CH2, m_pWaveData);
+	m_pChannels[2] = new CN163Chan(pMixer, CHANID_N163_CH3, m_pWaveData);
+	m_pChannels[3] = new CN163Chan(pMixer, CHANID_N163_CH4, m_pWaveData);
+	m_pChannels[4] = new CN163Chan(pMixer, CHANID_N163_CH5, m_pWaveData);
+	m_pChannels[5] = new CN163Chan(pMixer, CHANID_N163_CH6, m_pWaveData);
+	m_pChannels[6] = new CN163Chan(pMixer, CHANID_N163_CH7, m_pWaveData);
+	m_pChannels[7] = new CN163Chan(pMixer, CHANID_N163_CH8, m_pWaveData);
 }
 
 CN163::~CN163()

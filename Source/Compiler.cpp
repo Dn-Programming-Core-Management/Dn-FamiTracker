@@ -1314,7 +1314,7 @@ bool CCompiler::CompileData()
 		int lim = m_iActualNamcoChannels;
 		if (Chip & ~SNDCHIP_N163) lim = 8;
 		for (int i = 0; i < lim; i++) { // 0CC: use m_iActualNamcoChannels once cc65 is embedded
-			int Channel = m_pDocument->GetChannelPosition(CHANID_N163_CHAN1 + i, Chip);
+			int Channel = m_pDocument->GetChannelPosition(CHANID_N163_CH1 + i, Chip);
 			m_vChanOrder.push_back(Channel);
 		}
 	}
@@ -2338,7 +2338,7 @@ void CCompiler::WriteChannelMap()
 
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_N163)) {
 		for (unsigned int i = 0; i < m_pDocument->GetNamcoChannels(); ++i) {
-			pChunk->StoreByte(CHANID_N163_CHAN1 + i + 1);
+			pChunk->StoreByte(CHANID_N163_CH1 + i + 1);
 		}
 	}
 
