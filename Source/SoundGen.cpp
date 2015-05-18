@@ -911,8 +911,9 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 
 	m_pTrackerView->MakeSilent();
 
-	if (theApp.GetSettings()->General.bRetrieveChanState) for (int i = 0; i < m_pDocument->GetChannelCount(); ++i) {		// // //
-		if (m_pChannels[i] && !m_pTrackerView->IsChannelMuted(m_pDocument->GetChannelPosition(i, m_pDocument->GetExpansionChip()))) {
+	if (theApp.GetSettings()->General.bRetrieveChanState) for (int i = 0; i < CHANNELS; ++i) {		// // //
+		int id = m_pDocument->GetChannelPosition(i, m_pDocument->GetExpansionChip());
+		if (m_pChannels[i] && !m_pTrackerView->IsChannelMuted(id)) {
 			m_pChannels[i]->RetrieveChannelState(NULL);
 		}
 	}

@@ -291,6 +291,7 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 			if (Note.Vol != MAX_VOLUME)
 				Vol = Note.Vol << VOL_COLUMN_SHIFT;
 		
+		CTrackerChannel *ch = pDoc->GetChannel(pDoc->GetChannelPosition(m_iChannelID, pDoc->GetExpansionChip()));
 		for (int c = EffColumns; c >= 0; c--)
 			switch (Note.EffNumber[c]) {
 			case EF_NONE: case EF_PORTAOFF:
@@ -303,7 +304,7 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 				if (true) continue; // ignore global effects
 			
 			case EF_VOLUME:
-				if (!pDoc->GetChannel(m_iChannelID)->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
+				if (!ch->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
 				if (State_Exx == -1 && Note.EffParam[c] >= 0xE0 && Note.EffParam[c] <= 0xE3)
 					State_Exx = Note.EffParam[c];
 				else if (State[Note.EffNumber[c]] == -1 && Note.EffParam[c] <= 0x1F) {
@@ -313,7 +314,7 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 				continue;
 			case EF_NOTE_CUT:
 				if (Note.EffParam[c] <= 0x7F) continue;
-				if (!pDoc->GetChannel(m_iChannelID)->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
+				if (!ch->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
 				if (State[Note.EffNumber[c]] == -1) {
 					State[Note.EffNumber[c]] = Note.EffParam[c];
 					if (State_Exx == -1) State_Exx = 0xE2;
@@ -323,7 +324,7 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 			case EF_FDS_VOLUME:
 			case EF_SUNSOFT_ENV_LO: case EF_SUNSOFT_ENV_HI: case EF_SUNSOFT_ENV_TYPE:
 			case EF_N163_WAVE_BUFFER:
-				if (!pDoc->GetChannel(m_iChannelID)->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
+				if (!ch->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
 			case EF_VIBRATO: case EF_TREMOLO: case EF_PITCH: case EF_DUTY_CYCLE: case EF_VOLUME_SLIDE:
 				if (State[Note.EffNumber[c]] == -1)
 					State[Note.EffNumber[c]] = Note.EffParam[c];
@@ -377,21 +378,23 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 			if (p == 0 && LOG_EFFECT_DMC[i] != EF_DAC) continue;
 			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_DMC[i] - 1], p);
 		}
-		if (pDoc->GetChipType(m_iChannelID) == SNDCHIP_FDS) for (int i = 0; i < sizeof(LOG_EFFECT_FDS) / sizeof(int); i++) {
+		else if (m_iChannelID == CHANID_FDS) for (int i = 0; i < sizeof(LOG_EFFECT_FDS) / sizeof(int); i++) {
 			int p = State[LOG_EFFECT_FDS[i]];
 			if (p < 0) continue;
 			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_FDS[i] - 1], p);
 		}
-		if (pDoc->GetChipType(m_iChannelID) == SNDCHIP_S5B) for (int i = 0; i < sizeof(LOG_EFFECT_S5B) / sizeof(int); i++) {
-			int p = State[LOG_EFFECT_S5B[i]];
-			if (p < 0) continue;
-			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_S5B[i] - 1], p);
-		}
-		if (pDoc->GetChipType(m_iChannelID) == SNDCHIP_N163) for (int i = 0; i < sizeof(LOG_EFFECT_N163) / sizeof(int); i++) {
-			int p = State[LOG_EFFECT_N163[i]];
-			if (p < 0) continue;
-			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_N163[i] - 1], p);
-		}
+		else if (m_iChannelID >= CHANID_S5B_CH1 && m_iChannelID <= CHANID_S5B_CH3)
+			for (int i = 0; i < sizeof(LOG_EFFECT_S5B) / sizeof(int); i++) {
+				int p = State[LOG_EFFECT_S5B[i]];
+				if (p < 0) continue;
+				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_S5B[i] - 1], p);
+			}
+		else if (m_iChannelID >= CHANID_N163_CH1 && m_iChannelID <= CHANID_N163_CH8)
+			for (int i = 0; i < sizeof(LOG_EFFECT_N163) / sizeof(int); i++) {
+				int p = State[LOG_EFFECT_N163[i]];
+				if (p < 0 || p == 0x7F) continue;
+				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_N163[i] - 1], p);
+			}
 		if (State_Exx >= 0)
 			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_VOLUME - 1], State_Exx);
 
@@ -427,10 +430,12 @@ CString CChannelHandler::GetEffectString() const		// // //
 		str.AppendFormat(_T(" 4%X%X"), m_iVibratoSpeed, m_iVibratoDepth >> 4);
 	if (m_iTremoloSpeed)
 		str.AppendFormat(_T(" 7%X%X"), m_iTremoloSpeed, m_iTremoloDepth >> 4);
+	if (m_iVolSlide)
+		str.AppendFormat(_T(" A%02X"), m_iVolSlide);
 	if (m_iFinePitch != 0x80)
 		str.AppendFormat(_T(" P%02X"), m_iFinePitch);
-	if (m_iDutyPeriod)
-		str.AppendFormat(_T(" V%02X"), m_iDutyPeriod);
+	if (m_iDefaultDuty)
+		str.AppendFormat(_T(" V%02X"), m_iDefaultDuty);
 
 	str.Append(GetCustomEffectString());
 	return str.IsEmpty() ? " None" : str;

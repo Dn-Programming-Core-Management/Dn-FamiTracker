@@ -3611,7 +3611,8 @@ void CFamiTrackerView::OnUpdateFindNext(CCmdUI *pCmdUI)		// // //
 
 void CFamiTrackerView::OnRecallChannelState()		// // //
 {
-	GetParentFrame()->SetMessageText(theApp.GetSoundGenerator()->RecallChannelState(m_pPatternEditor->GetChannel()));
+	int Channel = static_cast<CFamiTrackerDoc*>(m_pDocument)->GetChannelType(m_pPatternEditor->GetChannel());
+	GetParentFrame()->SetMessageText(theApp.GetSoundGenerator()->RecallChannelState(Channel));
 }
 
 CString	CFamiTrackerView::GetEffectHint(const stChanNote &Note, int Column) const		// // //
