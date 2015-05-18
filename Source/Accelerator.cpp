@@ -73,7 +73,7 @@ const stAccelEntry CAccelerator::DEFAULT_TABLE[] = {
 	{_T("Next instrument"),				MOD_CONTROL,	VK_DOWN,		ID_CMD_NEXT_INSTRUMENT},
 	{_T("Previous instrument"),			MOD_CONTROL,	VK_UP,			ID_CMD_PREV_INSTRUMENT},
 	{_T("Mask instruments"),			MOD_ALT,		'T',			ID_EDIT_INSTRUMENTMASK},
-	{_T("Mask volume"),					MOD_ALT,		'V',			ID_EDIT_VOLUMEMASK},		// // //
+	{_T("Mask volume"),					MOD_ALT,		'V',			ID_EDIT_VOLUMEMASK},				// // //
 	{_T("Edit instrument"),				MOD_CONTROL,	'I',			ID_INSTRUMENT_EDIT},
 	{_T("Increase step size"),			MOD_CONTROL,	VK_ADD,			ID_CMD_INCREASESTEPSIZE},
 	{_T("Decrease step size"),			MOD_CONTROL,	VK_SUBTRACT,	ID_CMD_DECREASESTEPSIZE},
@@ -96,16 +96,17 @@ const stAccelEntry CAccelerator::DEFAULT_TABLE[] = {
 	{_T("Previous song"),				MOD_NONE,		0,				ID_PREV_SONG},
 	{_T("Expand patterns"),				MOD_NONE,		0,				ID_EDIT_EXPANDPATTERNS},
 	{_T("Shrink patterns"),				MOD_NONE,		0,				ID_EDIT_SHRINKPATTERNS},
-	{_T("Stretch patterns"),			MOD_NONE,		0,				ID_EDIT_STRETCHPATTERNS},		// // //
+	{_T("Stretch patterns"),			MOD_NONE,		0,				ID_EDIT_STRETCHPATTERNS},			// // //
 	{_T("Duplicate patterns"),			MOD_NONE,		0,				ID_MODULE_DUPLICATEFRAMEPATTERNS},
-	{_T("Duplicate current pattern"),	MOD_ALT,		'D',			ID_MODULE_DUPLICATECURRENTPATTERN},		// // //
+	{_T("Duplicate current pattern"),	MOD_ALT,		'D',			ID_MODULE_DUPLICATECURRENTPATTERN},	// // //
 	{_T("Decrease pattern values"),		MOD_SHIFT,		VK_F1,			ID_DECREASEVALUES},
 	{_T("Increase pattern values"),		MOD_SHIFT,		VK_F2,			ID_INCREASEVALUES},
-	{_T("Coarse decrease values"),		MOD_SHIFT,		VK_F3,			ID_DECREASEVALUESCOARSE},		// // //
-	{_T("Coarse increase values"),		MOD_SHIFT,		VK_F4,			ID_INCREASEVALUESCOARSE},		// // //
-	{_T("Toggle find / replace tab"),	MOD_CONTROL,	'F',			ID_EDIT_FIND_TOGGLE},		// // //
-	{_T("Find next"),					MOD_NONE,		0,				ID_FIND_NEXT},		// // //
-	{_T("Recall channel state"),		MOD_NONE,		0,				ID_RECALL_CHANNEL_STATE},		// // //
+	{_T("Coarse decrease values"),		MOD_SHIFT,		VK_F3,			ID_DECREASEVALUESCOARSE},			// // //
+	{_T("Coarse increase values"),		MOD_SHIFT,		VK_F4,			ID_INCREASEVALUESCOARSE},			// // //
+	{_T("Toggle find / replace tab"),	MOD_CONTROL,	'F',			ID_EDIT_FIND_TOGGLE},				// // //
+	{_T("Find next"),					MOD_NONE,		0,				ID_FIND_NEXT},						// // //
+	{_T("Recall channel state"),		MOD_NONE,		0,				ID_RECALL_CHANNEL_STATE},			// // //
+	{_T("Compact View"),				MOD_NONE,		0,				IDC_COMPACT_TOGGLE},				// // //
 };
 
 const int CAccelerator::ACCEL_COUNT = sizeof(CAccelerator::DEFAULT_TABLE) / sizeof(stAccelEntry);

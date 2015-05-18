@@ -340,6 +340,7 @@ public:
 	// // //
 	afx_msg void OnToggleGroove();
 	afx_msg void OnClickedCompact();
+	afx_msg void OnToggleCompact();
 	afx_msg void OnFileExportRows();
 	afx_msg void OnEditFindToggle();
 	afx_msg void OnFindNext();
@@ -349,6 +350,8 @@ public:
 	afx_msg void OnEditPopulateUniquePatterns();
 	afx_msg void OnModuleDuplicateCurrentPattern();
 	afx_msg void OnToggleMultiplexer();
+	afx_msg void OnUpdateToggleFollow(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateToggleCompact(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateGrooveEdit(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateEditFindToggle(CCmdUI *pCmdUI);
 

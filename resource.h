@@ -44,7 +44,6 @@
 #define IDS_NEW_S5B_INSTRUMENT          125
 #define ID_PREV_FRAME                   126
 #define IDS_FRAME_DROP_COPY_NEW         126
-#define IDC_FOLLOW_TOGGLE               127
 #define IDS_FRAME_DROP_COPY             127
 #define IDR_MAINFRAME                   128
 #define ID_CMD_OCTAVE_NEXT              128
@@ -365,6 +364,7 @@
 #define IDC_KEY_ECHO_BUFFER             1161
 #define IDC_RADIO_LOOP                  1162
 #define IDC_RADIO_TIME                  1163
+#define IDC_FOLLOW_TOGGLE               1164
 #define IDC_SPIN_LOOP                   1165
 #define IDC_PROGRESS_LBL                1166
 #define IDC_SPIN_TIME                   1166
@@ -751,6 +751,7 @@
 #define ID_SELECTION_STRETCH            33152
 #define ID_EDIT_STRETCHPATTERNS         33153
 #define ID_POPUP_STRETCHSELECTION       33154
+#define IDC_COMPACT_TOGGLE              33155
 #define ID_INSTRUMENT_ADD_2A03          36864
 #define ID_INSTRUMENT_ADD_FDS           36865
 #define ID_INSTRUMENT_ADD_MMC5          36866
@@ -771,7 +772,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        324
-#define _APS_NEXT_COMMAND_VALUE         33155
+#define _APS_NEXT_COMMAND_VALUE         33156
 #define _APS_NEXT_CONTROL_VALUE         1415
 #define _APS_NEXT_SYMED_VALUE           179
 #endif

@@ -303,6 +303,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	// // //
 	ON_BN_CLICKED(IDC_BUTTON_GROOVE, OnToggleGroove)
 	ON_BN_CLICKED(IDC_CHECK_COMPACT, OnClickedCompact)
+	ON_COMMAND(IDC_COMPACT_TOGGLE, OnToggleCompact)
 	ON_COMMAND(ID_FILE_EXPORTROWS, OnFileExportRows)
 	ON_COMMAND(ID_EDIT_FIND_TOGGLE, OnEditFindToggle)
 	ON_COMMAND(ID_FIND_NEXT, OnFindNext)
@@ -311,6 +312,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_CLEANUP_POPULATEUNIQUEPATTERNS, OnEditPopulateUniquePatterns)
 	ON_COMMAND(ID_MODULE_DUPLICATECURRENTPATTERN, OnModuleDuplicateCurrentPattern)
 	ON_COMMAND(ID_TOGGLE_MULTIPLEXER, OnToggleMultiplexer)
+	ON_UPDATE_COMMAND_UI(IDC_FOLLOW_TOGGLE, OnUpdateToggleFollow)
+	ON_UPDATE_COMMAND_UI(IDC_COMPACT_TOGGLE, OnUpdateToggleCompact)
 	ON_UPDATE_COMMAND_UI(IDC_BUTTON_GROOVE, OnUpdateGrooveEdit)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_FIND_TOGGLE, OnUpdateEditFindToggle)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_INTERPOLATE, OnUpdateSelectionEnabled)
@@ -2097,12 +2100,28 @@ void CMainFrame::OnToggleFollow()
 	OnClickedFollow();
 }
 
+void CMainFrame::OnUpdateToggleFollow(CCmdUI *pCmdUI)		// // //
+{
+	pCmdUI->SetCheck(m_wndOctaveBar.IsDlgButtonChecked(IDC_FOLLOW) != 0);
+}
+
 void CMainFrame::OnClickedCompact()		// // //
 {
 	CFamiTrackerView *pView	= static_cast<CFamiTrackerView*>(GetActiveView());
 	bool CompactMode = m_wndOctaveBar.IsDlgButtonChecked(IDC_CHECK_COMPACT) != 0;
 	pView->SetCompactMode(CompactMode);
 	pView->SetFocus();
+}
+
+void CMainFrame::OnToggleCompact()		// // //
+{
+	m_wndOctaveBar.CheckDlgButton(IDC_CHECK_COMPACT, !m_wndOctaveBar.IsDlgButtonChecked(IDC_CHECK_COMPACT));
+	OnClickedCompact();
+}
+
+void CMainFrame::OnUpdateToggleCompact(CCmdUI *pCmdUI)		// // //
+{
+	pCmdUI->SetCheck(m_wndOctaveBar.IsDlgButtonChecked(IDC_CHECK_COMPACT) != 0);
 }
 
 void CMainFrame::OnViewControlpanel()

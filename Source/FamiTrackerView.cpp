@@ -1626,6 +1626,7 @@ void CFamiTrackerView::SetCompactMode(bool Mode)		// // //
 {
 	m_bCompactMode = Mode;
 	m_pPatternEditor->SetCompactMode(Mode);
+	InvalidateCursor();
 }
 
 int	CFamiTrackerView::GetAutoArpeggio(unsigned int Channel)

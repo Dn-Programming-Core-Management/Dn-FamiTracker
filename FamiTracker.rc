@@ -234,7 +234,10 @@ BEGIN
     BEGIN
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
-        MENUITEM "Control Panel",               ID_VIEW_CONTROLPANEL
+        MENUITEM "&Control Panel",              ID_VIEW_CONTROLPANEL
+        MENUITEM SEPARATOR
+        MENUITEM "&Follow Mode",                IDC_FOLLOW_TOGGLE, CHECKED
+        MENUITEM "Co&mpact View",               IDC_COMPACT_TOGGLE
         MENUITEM SEPARATOR
         POPUP "Frame Editor Position"
         BEGIN
@@ -2084,8 +2087,8 @@ BEGIN
                             "Insert a copy of current frame including all patterns\nDuplicate Patterns"
     ID_EDIT_EXPANDPATTERNS  "Expand selected pattern by 2x\nExpand"
     ID_EDIT_SHRINKPATTERNS  "Shrink selected pattern by 2x\nShrink"
-    ID_FRAMEEDITOR_TOP      "Moves the frame editor to the top of the window (default)\nTop"
-    ID_FRAMEEDITOR_LEFT     "Moves the frame editor to the left of the window\nLeft"
+    ID_FRAMEEDITOR_TOP      "Move the frame editor to the top of the window (default)\nTop"
+    ID_FRAMEEDITOR_LEFT     "Move the frame editor to the left of the window\nLeft"
 END
 
 STRINGTABLE
@@ -2226,6 +2229,7 @@ END
 STRINGTABLE
 BEGIN
     ID_EDIT_STRETCHPATTERNS "Stretch the current selection\nStretch"
+    IDC_COMPACT_TOGGLE      "Hide all columns except the note column"
 END
 
 STRINGTABLE
@@ -2237,6 +2241,11 @@ STRINGTABLE
 BEGIN
     ID_POPUP_PICKUPROW      "Select current row's instrument\nPick Up Row"
     ID_POPUP_UNMUTEALLCHANNELS "Unmute all channel\nUnmute all channels"
+END
+
+STRINGTABLE
+BEGIN
+    IDC_FOLLOW_TOGGLE       "Make the cursor follow the currently played row"
 END
 
 #endif    // English (United States) resources
