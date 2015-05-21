@@ -372,17 +372,31 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 			if (p == 0x80 && LOG_EFFECT[i] == EF_PITCH) continue;
 			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT[i] - 1], p);
 		}
-		if (m_iChannelID == CHANID_DPCM) for (int i = 0; i < sizeof(LOG_EFFECT_DMC) / sizeof(int); i++) {
-			int p = State[LOG_EFFECT_DMC[i]];
-			if (p < 0) continue;
-			if (p == 0 && LOG_EFFECT_DMC[i] != EF_DAC) continue;
-			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_DMC[i] - 1], p);
-		}
-		else if (m_iChannelID == CHANID_FDS) for (int i = 0; i < sizeof(LOG_EFFECT_FDS) / sizeof(int); i++) {
-			int p = State[LOG_EFFECT_FDS[i]];
-			if (p < 0) continue;
-			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_FDS[i] - 1], p);
-		}
+		if ((m_iChannelID >= CHANID_SQUARE1 && m_iChannelID <= CHANID_SQUARE2) || m_iChannelID == CHANID_NOISE ||
+			(m_iChannelID >= CHANID_MMC5_SQUARE1 && m_iChannelID <= CHANID_MMC5_SQUARE2))
+			for (int i = 0; i < sizeof(LOG_EFFECT_PUL) / sizeof(int); i++) {
+				int p = State[LOG_EFFECT_PUL[i]];
+				if (p < 0) continue;
+				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_PUL[i] - 1], p);
+			}
+		else if (m_iChannelID == CHANID_TRIANGLE)
+			for (int i = 0; i < sizeof(LOG_EFFECT_TRI) / sizeof(int); i++) {
+				int p = State[LOG_EFFECT_TRI[i]];
+				if (p < 0) continue;
+				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_TRI[i] - 1], p);
+			}
+		else if (m_iChannelID == CHANID_DPCM)
+			for (int i = 0; i < sizeof(LOG_EFFECT_DMC) / sizeof(int); i++) {
+				int p = State[LOG_EFFECT_DMC[i]];
+				if (p <= 0) continue;
+				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_DMC[i] - 1], p);
+			}
+		else if (m_iChannelID == CHANID_FDS)
+			for (int i = 0; i < sizeof(LOG_EFFECT_FDS) / sizeof(int); i++) {
+				int p = State[LOG_EFFECT_FDS[i]];
+				if (p < 0) continue;
+				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_FDS[i] - 1], p);
+			}
 		else if (m_iChannelID >= CHANID_S5B_CH1 && m_iChannelID <= CHANID_S5B_CH3)
 			for (int i = 0; i < sizeof(LOG_EFFECT_S5B) / sizeof(int); i++) {
 				int p = State[LOG_EFFECT_S5B[i]];
@@ -406,11 +420,11 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 		m_iDefaultVolume = m_iVolume = Vol;
 		if (m_iInstrument != MAX_INSTRUMENTS)
 			HandleInstrument(m_iInstrument, true, true);
+		if (State_Exx >= 0)
+			HandleCustomEffects(EF_VOLUME, State_Exx);
 		for (unsigned int i = 0; i < EF_COUNT; i++)
 			if (State[i] >= 0)
 				HandleCustomEffects(i, State[i]);
-		if (State_Exx >= 0)
-			HandleCustomEffects(EF_VOLUME, State_Exx);
 	}
 
 	return;

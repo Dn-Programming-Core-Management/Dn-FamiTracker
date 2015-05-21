@@ -90,7 +90,7 @@ public:
 		m_bEnvelopeLoop = true;
 		m_iLengthCounter = 1;
 		m_bResetEnvelope = false;
-		m_iLinearCounter = 1;
+		m_iLinearCounter = -1;
 	};
 	virtual void RefreshChannel();
 protected:

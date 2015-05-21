@@ -325,7 +325,7 @@ void CTriangleChan::HandleCustomEffects(int EffNum, int EffParam)		// // //
 	CChannelHandler2A03::HandleCustomEffects(EffNum, EffParam);
 	switch (EffNum) {
 		case EF_VOLUME:
-			m_iLinearCounter = 0x7F;
+			if (m_iLinearCounter == -1)	m_iLinearCounter = 0x7F;
 			break;
 		case EF_NOTE_CUT:
 			if (EffParam >= 0x80) {
@@ -334,7 +334,6 @@ void CTriangleChan::HandleCustomEffects(int EffNum, int EffParam)		// // //
 				m_bResetEnvelope = true;
 			}
 			else {
-				m_iLinearCounter = 1;
 				m_bEnvelopeLoop = true;
 			}
 			break;
