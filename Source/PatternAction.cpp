@@ -588,12 +588,12 @@ void CPatternAction::Reverse(CFamiTrackerDoc *pDoc) const
 		for (int c = m_selection.GetChanStart(); c <= m_selection.GetChanEnd(); ++c) {
 			itb.Get(c, &NoteBegin);
 			ite.Get(c, &NoteEnd);
-			if (c == m_selection.GetChanStart()) {		// // //
+			if (c == m_selection.GetChanStart() && ColStart > 0) {		// // //
 				Temp = NoteEnd;
 				CopyNoteSection(&NoteEnd, &NoteBegin, PASTE_DEFAULT, 0, ColStart - 1);
 				CopyNoteSection(&NoteBegin, &Temp, PASTE_DEFAULT, 0, ColStart - 1);
 			}
-			if (c == m_selection.GetChanEnd()) {
+			if (c == m_selection.GetChanEnd() && ColEnd < COLUMN_EFF4) {
 				Temp = NoteEnd;
 				CopyNoteSection(&NoteEnd, &NoteBegin, PASTE_DEFAULT, ColEnd + 1, COLUMN_EFF4);
 				CopyNoteSection(&NoteBegin, &Temp, PASTE_DEFAULT, ColEnd + 1, COLUMN_EFF4);
