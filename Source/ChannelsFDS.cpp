@@ -257,6 +257,16 @@ void CChannelHandlerFDS::ClearRegisters()
 	memset(m_iWaveTable, 0, 64);
 }
 
+CString CChannelHandlerFDS::GetCustomEffectString() const		// // //
+{
+	CString str = _T("");
+
+	if (m_iVolModMode)
+		str.AppendFormat(_T(" E%02X"), ((m_iVolModMode - 1) << 6) | m_iVolModRate);
+
+	return str;
+}
+
 void CChannelHandlerFDS::FillWaveRAM(CInstrumentFDS *pInstrument)
 {
 	bool bNew(false);

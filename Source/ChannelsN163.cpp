@@ -268,6 +268,16 @@ void CChannelHandlerN163::ClearRegisters()
 	m_iDutyPeriod = 0;
 }
 
+CString CChannelHandlerN163::GetCustomEffectString() const		// // //
+{
+	CString str = _T("");
+
+	if (m_bDisableLoad)
+		str.AppendFormat(_T(" Z%02X"), m_iWavePos >> 1);
+
+	return str;
+}
+
 void CChannelHandlerN163::WriteReg(int Reg, int Value)
 {
 	WriteExternalRegister(0xF800, Reg);

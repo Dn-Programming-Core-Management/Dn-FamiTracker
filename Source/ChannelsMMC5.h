@@ -42,6 +42,7 @@ protected:
 	virtual void HandleRelease();
 	virtual void HandleNote(int Note, int Octave);
 	virtual void ClearRegisters();
+	virtual CString GetCustomEffectString() const;		// // //
 
 protected:
 	static const int SEQUENCES = 5;

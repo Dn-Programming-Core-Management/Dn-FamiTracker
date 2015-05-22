@@ -248,6 +248,20 @@ void CChannelHandlerS5B::ClearRegisters()
 	WriteReg(8 + m_iChannelID - CHANID_S5B_CH1, 0);		// Clear volume
 }
 
+CString CChannelHandlerS5B::GetCustomEffectString() const		// // //
+{
+	CString str = _T("");
+
+	if (m_iEnvFreqLo)
+		str.AppendFormat(_T(" H%02X"), m_iEnvFreqLo);
+	if (m_iEnvFreqHi)
+		str.AppendFormat(_T(" I%02X"), m_iEnvFreqHi);
+	if (m_iEnvType)
+		str.AppendFormat(_T(" J%02X"), m_iEnvType);
+
+	return str;
+}
+
 void CChannelHandlerS5B::RefreshChannel()
 {
 	int Period = CalculatePeriod();

@@ -66,6 +66,7 @@ public:
 	virtual void RefreshChannel();
 protected:
 	virtual void ClearRegisters();
+	virtual CString GetCustomEffectString() const;		// // //
 };
 
 // Square 2
@@ -81,6 +82,7 @@ public:
 	virtual void RefreshChannel();
 protected:
 	virtual void ClearRegisters();
+	virtual CString GetCustomEffectString() const;		// // //
 };
 
 // Triangle
@@ -93,9 +95,11 @@ public:
 		m_iLinearCounter = -1;
 	};
 	virtual void RefreshChannel();
+	virtual void ResetChannel();		// // //
 protected:
 	virtual void HandleCustomEffects(int EffNum, int EffParam);		// // //
 	virtual void ClearRegisters();
+	virtual CString GetCustomEffectString() const;		// // //
 private:
 	int m_iLinearCounter;
 };
@@ -113,6 +117,7 @@ public:
 	virtual void RefreshChannel();
 protected:
 	virtual void ClearRegisters();
+	virtual CString GetCustomEffectString() const;		// // //
 	virtual void HandleNote(int Note, int Octave);
 	virtual void SetupSlide();		// // //
 
@@ -134,6 +139,7 @@ protected:
 	virtual void HandleNote(int Note, int Octave);
 
 	virtual void ClearRegisters();
+	virtual CString GetCustomEffectString() const;		// // //
 private:
 	// DPCM variables
 	CSampleMem *m_pSampleMem;

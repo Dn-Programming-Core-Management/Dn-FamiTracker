@@ -180,3 +180,15 @@ void CChannelHandlerMMC5::ClearRegisters()
 	WriteExternalRegister(Offs + 2, 0);
 	WriteExternalRegister(Offs + 3, 0);
 }
+
+CString CChannelHandlerMMC5::GetCustomEffectString() const		// // //
+{
+	CString str = _T("");
+
+	if (!m_bEnvelopeLoop)
+		str.AppendFormat(_T(" E%02X"), m_iLengthCounter);
+	if (!m_bEnvelopeLoop || m_bHardwareEnvelope)
+		str.AppendFormat(_T(" EE%X"), !m_bEnvelopeLoop * 2 + m_bHardwareEnvelope);
+
+	return str;
+}

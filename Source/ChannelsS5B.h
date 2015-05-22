@@ -43,6 +43,7 @@ protected:
 	virtual void HandleNote(int Note, int Octave);
 
 	void ClearRegisters();
+	virtual CString GetCustomEffectString() const;		// // //
 
 protected:
 	void WriteReg(int Reg, int Value);

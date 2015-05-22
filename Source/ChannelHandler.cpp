@@ -435,9 +435,7 @@ CString CChannelHandler::GetEffectString() const		// // //
 	CString str = _T("");
 	
 	switch (m_iEffect) {
-	case EF_ARPEGGIO:
-		if (m_iArpeggio) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iArpeggio); break;
-	case EF_PORTA_UP: case EF_PORTA_DOWN: case EF_PORTAMENTO:
+	case EF_ARPEGGIO: case EF_PORTA_UP: case EF_PORTA_DOWN: case EF_PORTAMENTO:
 		if (m_iEffectParam) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iEffectParam); break;
 	}
 	if (m_iVibratoSpeed)
@@ -448,7 +446,7 @@ CString CChannelHandler::GetEffectString() const		// // //
 		str.AppendFormat(_T(" A%02X"), m_iVolSlide);
 	if (m_iFinePitch != 0x80)
 		str.AppendFormat(_T(" P%02X"), m_iFinePitch);
-	if (m_iDefaultDuty)
+	if ((m_iDefaultDuty && m_iChannelID < CHANID_S5B_CH1) || (m_iDefaultDuty != 0x40 && m_iChannelID >= CHANID_S5B_CH1))
 		str.AppendFormat(_T(" V%02X"), m_iDefaultDuty);
 
 	str.Append(GetCustomEffectString());

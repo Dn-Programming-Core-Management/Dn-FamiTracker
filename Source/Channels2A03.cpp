@@ -241,6 +241,18 @@ void CSquare1Chan::ClearRegisters()
 	m_iLastPeriod = 0xFFFF;
 }
 
+CString CSquare1Chan::GetCustomEffectString() const		// // //
+{
+	CString str = _T("");
+	
+	if (!m_bEnvelopeLoop)
+		str.AppendFormat(_T(" E%02X"), m_iLengthCounter);
+	if (!m_bEnvelopeLoop || m_bHardwareEnvelope)
+		str.AppendFormat(_T(" EE%X"), !m_bEnvelopeLoop * 2 + m_bHardwareEnvelope);
+
+	return str;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Square 2 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -295,6 +307,18 @@ void CSquare2Chan::ClearRegisters()
 	WriteRegister(0x4006, 0x00);
 	WriteRegister(0x4007, 0x00);
 	m_iLastPeriod = 0xFFFF;
+}
+
+CString CSquare2Chan::GetCustomEffectString() const		// // //
+{
+	CString str = _T("");
+	
+	if (!m_bEnvelopeLoop)
+		str.AppendFormat(_T(" E%02X"), m_iLengthCounter);
+	if (!m_bEnvelopeLoop || m_bHardwareEnvelope)
+		str.AppendFormat(_T(" EE%X"), !m_bEnvelopeLoop * 2 + m_bHardwareEnvelope);
+
+	return str;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -352,6 +376,20 @@ void CTriangleChan::ClearRegisters()
 	WriteRegister(0x4009, 0);
 	WriteRegister(0x400A, 0);
 	WriteRegister(0x400B, 0);
+}
+
+CString CTriangleChan::GetCustomEffectString() const		// // //
+{
+	CString str = _T("");
+	
+	if (m_iLinearCounter > -1)
+		str.AppendFormat(_T(" S%02X"), m_iLinearCounter | 0x80);
+	if (!m_bEnvelopeLoop)
+		str.AppendFormat(_T(" E%02X"), m_iLengthCounter);
+	if (!m_bEnvelopeLoop || m_bHardwareEnvelope)
+		str.AppendFormat(_T(" EE%X"), !m_bEnvelopeLoop * 2 + m_bHardwareEnvelope);
+
+	return str;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -434,6 +472,18 @@ void CNoiseChan::ClearRegisters()
 	WriteRegister(0x400D, 0);
 	WriteRegister(0x400E, 0);
 	WriteRegister(0x400F, 0);
+}
+
+CString CNoiseChan::GetCustomEffectString() const		// // //
+{
+	CString str = _T("");
+
+	if (!m_bEnvelopeLoop)
+		str.AppendFormat(_T(" E%02X"), m_iLengthCounter);
+	if (!m_bEnvelopeLoop || m_bHardwareEnvelope)
+		str.AppendFormat(_T(" EE%X"), !m_bEnvelopeLoop * 2 + m_bHardwareEnvelope);
+
+	return str;
 }
 
 int CNoiseChan::TriggerNote(int Note)
@@ -661,4 +711,14 @@ void CDPCMChan::ClearRegisters()
 
 	m_iOffset = 0;
 	m_cDAC = 255;
+}
+
+CString CDPCMChan::GetCustomEffectString() const		// // //
+{
+	CString str = _T("");
+
+	if (m_iOffset)
+		str.AppendFormat(_T(" Y%02X"), m_iOffset);
+
+	return str;
 }
