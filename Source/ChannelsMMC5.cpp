@@ -62,10 +62,10 @@ void CChannelHandlerMMC5::HandleCustomEffects(int EffNum, int EffParam)
 					m_bResetEnvelope = true;
 				}
 				else if (EffParam >= 0xE0 && EffParam < 0xE4) {
+					if (!m_bEnvelopeLoop || !m_bHardwareEnvelope)
+						m_bResetEnvelope = true;
 					m_bHardwareEnvelope = ((EffParam & 0x01) == 0x01);
 					m_bEnvelopeLoop = ((EffParam & 0x02) != 0x02);
-					if (!m_bEnvelopeLoop)
-						m_bResetEnvelope = true;
 				}
 				break;
 			case EF_DUTY_CYCLE:

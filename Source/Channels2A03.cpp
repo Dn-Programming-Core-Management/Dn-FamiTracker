@@ -68,10 +68,10 @@ void CChannelHandler2A03::HandleCustomEffects(int EffNum, int EffParam)
 					m_bResetEnvelope = true;
 				}
 				else if (EffParam >= 0xE0 && EffParam < 0xE4) {
+					if (!m_bEnvelopeLoop || !m_bHardwareEnvelope)
+						m_bResetEnvelope = true;
 					m_bHardwareEnvelope = ((EffParam & 0x01) == 0x01);
 					m_bEnvelopeLoop = ((EffParam & 0x02) != 0x02);
-					if (!m_bEnvelopeLoop)
-						m_bResetEnvelope = true;
 				}
 				break;
 			case EF_SWEEPUP:
@@ -318,6 +318,12 @@ void CTriangleChan::RefreshChannel()
 		WriteRegister(0x4008, 0);
 
 	m_bResetEnvelope = false;		// // //
+}
+
+void CTriangleChan::ResetChannel()
+{
+	CChannelHandler2A03::ResetChannel();
+	m_iLinearCounter = -1;
 }
 
 void CTriangleChan::HandleCustomEffects(int EffNum, int EffParam)		// // //
