@@ -117,6 +117,8 @@ inline void CAPU::Clock_240Hz()
 	m_pSquare2->EnvelopeUpdate();
 	m_pNoise->EnvelopeUpdate();
 	m_pTriangle->LinearCounterUpdate();
+	m_pMMC5->EnvelopeUpdate();		// // //
+	m_pMMC5->LengthCounterUpdate();		// // //
 }
 
 inline void CAPU::Clock_120Hz()
