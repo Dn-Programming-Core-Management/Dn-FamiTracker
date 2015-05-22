@@ -128,7 +128,8 @@ protected:
 
 	virtual int		CalculatePeriod() const;
 	virtual int		CalculateVolume(bool Subtract = false) const;
-
+	
+	virtual CString	GetEffectString() const;		// // //
 	virtual CString	GetCustomEffectString() const;		// // //
 
 	// 
@@ -168,7 +169,6 @@ protected:
 
 	void	WriteRegister(uint16 Reg, uint8 Value);
 	void	WriteExternalRegister(uint16 Reg, uint8 Value);
-	CString	GetEffectString() const;		// // //
 
 	// CSequenceHandler virtual methods
 protected:
@@ -280,4 +280,5 @@ protected:
 	CChannelHandlerInverted(int MaxPeriod, int MaxVolume) : CChannelHandler(MaxPeriod, MaxVolume) {}
 	// // //
 	virtual int CalculatePeriod() const;
+	virtual CString GetEffectString() const;		// // //
 };
