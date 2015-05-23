@@ -219,7 +219,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 		}
 		else 
 */
-		if (Instrument != LastInstrument && Instrument < 0x40 && Note != HALT && Note != RELEASE) {
+		if (Instrument != LastInstrument && Instrument < MAX_INSTRUMENTS && Note != HALT && Note != RELEASE) {		// // //
 
 			LastInstrument = Instrument;
 			// Write instrument change command
@@ -245,7 +245,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 			}
 		}
 #ifdef OPTIMIZE_DURATIONS
-		else if (Instrument == LastInstrument && Instrument < 0x40) {
+		else if (Instrument == LastInstrument && Instrument < MAX_INSTRUMENTS) {		// // //
 			if (ChanID != CHANID_DPCM) {
 				WriteDuration();
 				Action = true;
