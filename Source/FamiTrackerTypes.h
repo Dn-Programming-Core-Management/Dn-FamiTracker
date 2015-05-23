@@ -44,10 +44,10 @@ const int MAX_SEQUENCES	= 128;
 const int MAX_SEQUENCE_ITEMS = /*128*/ 253;		// TODO: need to check if this exports correctly
 
 // Maximum number of patterns per channel
-const int MAX_PATTERN = 128;
+const int MAX_PATTERN = 256;		// // //
 
 // Maximum number of frames
-const int MAX_FRAMES = 128;
+const int MAX_FRAMES = 256;		// // //
 
 // Maximum length of patterns (in rows). 256 is max in NSF
 const int MAX_PATTERN_LENGTH = 256;
