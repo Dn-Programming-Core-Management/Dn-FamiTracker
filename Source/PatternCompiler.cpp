@@ -91,6 +91,7 @@ enum command_t {
 	CMD_EFF_FDS_MOD_DEPTH,
 	CMD_EFF_FDS_MOD_RATE_HI,
 	CMD_EFF_FDS_MOD_RATE_LO,
+	CME_EFF_FDS_VOLUME,			// // //
 	CME_EFF_N163_FINE_PITCH,	// // //
 	CMD_EFF_S5B_ENV_TYPE,		// // //
 	CMD_EFF_S5B_ENV_RATE_HI,	// // //
@@ -545,6 +546,12 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 						WriteData(EffParam);
 					}
 					break;
+				case EF_FDS_VOLUME:		// // //
+					if (ChanID == CHANID_FDS) {
+						WriteData(Command(CME_EFF_FDS_VOLUME));
+						WriteData(EffParam == 0xE0 ? 0x80 : (EffParam ^ 0x40));
+					}
+					break;
 				// // // Sunsoft 5B
 				case EF_SUNSOFT_ENV_TYPE:
 					if (ChipID == SNDCHIP_S5B) {
@@ -606,7 +613,7 @@ unsigned char CPatternCompiler::Command(int cmd) const
 	// // // truncate values if some chips do not exist
 	if (!m_pDocument->ExpansionEnabled(SNDCHIP_N163) && cmd > CME_EFF_N163_FINE_PITCH) cmd -= 1;
 	// MMC5
-	if (!m_pDocument->ExpansionEnabled(SNDCHIP_FDS) && cmd > CMD_EFF_FDS_MOD_RATE_LO) cmd -= 3;
+	if (!m_pDocument->ExpansionEnabled(SNDCHIP_FDS) && cmd > CMD_EFF_FDS_MOD_RATE_LO) cmd -= 4;
 	// VRC7, VRC6
 	return (cmd << 1) | 0x80;
 }

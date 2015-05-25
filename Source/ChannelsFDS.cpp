@@ -195,7 +195,7 @@ void CChannelHandlerFDS::RefreshChannel()
 	WriteExternalRegister(0x4083, HiFreq);
 
 	// Write volume
-	if (m_iVolModMode) {
+	if (m_iVolModMode) {		// // //
 		if (m_bVolModTrigger) {
 			m_bVolModTrigger = false;
 			WriteExternalRegister(0x4080, 0x80 | Volume);
@@ -251,7 +251,7 @@ void CChannelHandlerFDS::ClearRegisters()
 
 	m_iVolModMode = 0;		// // //
 	m_iVolModRate = 0;
-	m_bVolModTrigger = 0;
+	m_bVolModTrigger = false;
 
 	memset(m_iModTable, 0, 32);
 	memset(m_iWaveTable, 0, 64);
