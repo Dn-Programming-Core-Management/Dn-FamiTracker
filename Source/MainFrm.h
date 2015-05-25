@@ -165,6 +165,7 @@ private:  // control bar embedded members
 	CLockedEdit			*m_pLockedEditFrames;
 	CLockedEdit			*m_pLockedEditStep;
 	CButton				*m_pButtonGroove;		// // //
+	CButton				*m_pButtonFixTempo;		// // //
 
 	CBannerEdit			*m_pBannerEditName;
 	CBannerEdit			*m_pBannerEditArtist;
@@ -339,6 +340,7 @@ public:
 	afx_msg LRESULT OnDisplayMessageID(WPARAM wParam, LPARAM lParam);
 	// // //
 	afx_msg void OnToggleGroove();
+	afx_msg void OnToggleFixTempo();
 	afx_msg void OnClickedCompact();
 	afx_msg void OnToggleCompact();
 	afx_msg void OnFileExportRows();
@@ -352,6 +354,7 @@ public:
 	afx_msg void OnToggleMultiplexer();
 	afx_msg void OnUpdateToggleFollow(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateToggleCompact(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateToggleFixTempo(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateGrooveEdit(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateEditFindToggle(CCmdUI *pCmdUI);
 

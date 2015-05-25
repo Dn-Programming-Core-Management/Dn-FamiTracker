@@ -1041,14 +1041,23 @@ void CSoundGen::ResetTempo()
 
 void CSoundGen::SetupSpeed()
 {
-	m_iTempoDecrement = (m_iTempo * 24) / m_iSpeed;
-	m_iTempoRemainder = (m_iTempo * 24) % m_iSpeed;
+	if (m_iTempo) {		// // //
+		m_iTempoDecrement = (m_iTempo * 24) / m_iSpeed;
+		m_iTempoRemainder = (m_iTempo * 24) % m_iSpeed;
+	}
+	else {
+		m_iTempoDecrement = 1;
+		m_iTempoRemainder = 0;
+	}
 }
 
 // Return current tempo setting in BPM
 float CSoundGen::GetTempo() const
 {
-	float Speed;		// // //
+	float Tempo = static_cast<float>(m_iTempo);		// // //
+	if (!m_iTempo) Tempo = 2.5 * static_cast<float>(m_iFrameRate);
+
+	float Speed;
 	if (m_iGrooveIndex != -1) {
 		if (m_pDocument->GetGroove(m_iGrooveIndex) == NULL)
 			Speed = DEFAULT_SPEED;
@@ -1056,7 +1065,7 @@ float CSoundGen::GetTempo() const
 	}
 	else Speed = static_cast<float>(m_iSpeed);
 
-	return !m_iSpeed ? 0 : float(m_iTempo * 6) / Speed;
+	return !m_iSpeed ? 0 : float(Tempo * 6) / Speed;
 }
 
 void CSoundGen::RunFrame()
@@ -1828,7 +1837,7 @@ void CSoundGen::UpdatePlayer()
 	if (m_bPlaying) {
 		if (m_iTempoAccum <= 0) {
 			int TicksPerSec = m_pDocument->GetFrameRate();
-			m_iTempoAccum += (60 * TicksPerSec) - m_iTempoRemainder;
+			m_iTempoAccum += (m_iTempo ? 60 * TicksPerSec : m_iSpeed) - m_iTempoRemainder;		// // //
 		}
 		m_iTempoAccum -= m_iTempoDecrement;
 		++m_iTempoFrames;

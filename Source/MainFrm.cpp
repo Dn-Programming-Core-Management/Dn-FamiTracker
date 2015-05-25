@@ -121,6 +121,7 @@ CMainFrame::CMainFrame() :
 	m_pLockedEditFrames(NULL),
 	m_pLockedEditStep(NULL),
 	m_pButtonGroove(NULL),		// // //
+	m_pButtonFixTempo(NULL),		// // //
 	m_pBannerEditName(NULL),
 	m_pBannerEditArtist(NULL),
 	m_pBannerEditCopyright(NULL),
@@ -146,6 +147,7 @@ CMainFrame::~CMainFrame()
 	SAFE_RELEASE(m_pLockedEditFrames);
 	SAFE_RELEASE(m_pLockedEditStep);
 	SAFE_RELEASE(m_pButtonGroove);		// // //
+	SAFE_RELEASE(m_pButtonFixTempo);		// // //
 	SAFE_RELEASE(m_pBannerEditName);
 	SAFE_RELEASE(m_pBannerEditArtist);
 	SAFE_RELEASE(m_pBannerEditCopyright);
@@ -302,6 +304,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 
 	// // //
 	ON_BN_CLICKED(IDC_BUTTON_GROOVE, OnToggleGroove)
+	ON_BN_CLICKED(IDC_BUTTON_FIXTEMPO, OnToggleFixTempo)
 	ON_BN_CLICKED(IDC_CHECK_COMPACT, OnClickedCompact)
 	ON_COMMAND(IDC_COMPACT_TOGGLE, OnToggleCompact)
 	ON_COMMAND(ID_FILE_EXPORTROWS, OnFileExportRows)
@@ -314,6 +317,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_TOGGLE_MULTIPLEXER, OnToggleMultiplexer)
 	ON_UPDATE_COMMAND_UI(IDC_FOLLOW_TOGGLE, OnUpdateToggleFollow)
 	ON_UPDATE_COMMAND_UI(IDC_COMPACT_TOGGLE, OnUpdateToggleCompact)
+	ON_UPDATE_COMMAND_UI(IDC_BUTTON_FIXTEMPO, OnUpdateToggleFixTempo)
 	ON_UPDATE_COMMAND_UI(IDC_BUTTON_GROOVE, OnUpdateGrooveEdit)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_FIND_TOGGLE, OnUpdateEditFindToggle)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_INTERPOLATE, OnUpdateSelectionEnabled)
@@ -548,6 +552,7 @@ bool CMainFrame::CreateDialogPanels()
 	m_pLockedEditFrames = new CLockedEdit();
 	m_pLockedEditStep	= new CLockedEdit();
 	m_pButtonGroove		= new CButton();		// // //
+	m_pButtonFixTempo	= new CButton();		// // //
 
 	m_pLockedEditSpeed->SubclassDlgItem(IDC_SPEED, &m_wndDialogBar);
 	m_pLockedEditTempo->SubclassDlgItem(IDC_TEMPO, &m_wndDialogBar);
@@ -555,6 +560,7 @@ bool CMainFrame::CreateDialogPanels()
 	m_pLockedEditFrames->SubclassDlgItem(IDC_FRAMES, &m_wndDialogBar);
 	m_pLockedEditStep->SubclassDlgItem(IDC_KEYSTEP, &m_wndDialogBar);
 	m_pButtonGroove->SubclassDlgItem(IDC_BUTTON_GROOVE, &m_wndDialogBar);		// // //
+	m_pButtonFixTempo->SubclassDlgItem(IDC_BUTTON_FIXTEMPO, &m_wndDialogBar);		// // //
 
 	// Subclass and setup the instrument list
 	
@@ -2907,6 +2913,32 @@ void CMainFrame::OnUpdateGrooveEdit(CCmdUI *pCmdUI)
 		if (Speed > pDoc->GetSpeedSplitPoint() - 1) Speed = pDoc->GetSpeedSplitPoint() - 1;
 		if (Speed < MIN_SPEED) Speed = MIN_SPEED;
 		pDoc->SetSongSpeed(m_iTrack, Speed);
+	}
+}
+
+void CMainFrame::OnToggleFixTempo()
+{
+	CFamiTrackerDoc *pDoc = (CFamiTrackerDoc*)GetActiveDocument();
+	pDoc->SetSongTempo(m_iTrack, pDoc->GetSongTempo(m_iTrack) ? 0 : 150);
+}
+
+void CMainFrame::OnUpdateToggleFixTempo(CCmdUI *pCmdUI)
+{
+	CFamiTrackerDoc *pDoc = (CFamiTrackerDoc*)GetActiveDocument();
+	int Tempo = pDoc->GetSongTempo(m_iTrack);
+	if (Tempo) {
+		m_pButtonFixTempo->SetWindowText(_T("Tempo"));
+		m_pLockedEditTempo->EnableWindow(true);
+		m_wndDialogBar.GetDlgItem(IDC_TEMPO_SPIN)->EnableWindow(true);
+	}
+	else {
+		m_pButtonFixTempo->SetWindowText(_T("Fixed"));
+		m_pLockedEditTempo->EnableWindow(false);
+		m_wndDialogBar.GetDlgItem(IDC_TEMPO_SPIN)->EnableWindow(false);
+		float Clock = pDoc->GetEngineSpeed();
+		CString str;
+		str.Format(_T("%.1f"), static_cast<float>(pDoc->GetFrameRate()) * 2.5);
+		m_pLockedEditTempo->SetWindowText(str);
 	}
 }
 

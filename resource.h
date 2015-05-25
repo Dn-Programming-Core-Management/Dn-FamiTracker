@@ -530,6 +530,7 @@
 #define IDC_EXPANSION_S5B               1335
 #define IDC_EXPANSION_N163              1336
 #define IDC_BUTTON_GROOVE               1337
+#define IDC_BUTTON_FIXTEMPO             1338
 #define IDC_LIST_GROOVE_TABLE           1343
 #define IDC_BUTTON_GROOVEL_UP           1344
 #define IDC_BUTTON_GROOVEL_DOWN         1345
