@@ -702,6 +702,7 @@ void CFindDlg::OnBnClickedButtonFindNext()
 	if (!GetSimpleFindTerm()) return;
 	m_bVisible = true;
 	Find(true);
+	m_pView->SetFocus();
 }
 
 void CFindDlg::OnBnClickedButtonReplace()
