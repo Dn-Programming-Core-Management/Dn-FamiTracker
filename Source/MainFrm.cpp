@@ -2896,6 +2896,7 @@ void CMainFrame::OnToggleGroove()
 {
 	CFamiTrackerDoc *pDoc = (CFamiTrackerDoc*)GetActiveDocument();
 	pDoc->SetSongGroove(m_iTrack, !pDoc->GetSongGroove(m_iTrack));
+	GetActiveView()->SetFocus();
 }
 
 void CMainFrame::OnUpdateGrooveEdit(CCmdUI *pCmdUI)
@@ -2920,6 +2921,7 @@ void CMainFrame::OnToggleFixTempo()
 {
 	CFamiTrackerDoc *pDoc = (CFamiTrackerDoc*)GetActiveDocument();
 	pDoc->SetSongTempo(m_iTrack, pDoc->GetSongTempo(m_iTrack) ? 0 : 150);
+	GetActiveView()->SetFocus();
 }
 
 void CMainFrame::OnUpdateToggleFixTempo(CCmdUI *pCmdUI)
@@ -2935,9 +2937,8 @@ void CMainFrame::OnUpdateToggleFixTempo(CCmdUI *pCmdUI)
 		m_pButtonFixTempo->SetWindowText(_T("Fixed"));
 		m_pLockedEditTempo->EnableWindow(false);
 		m_wndDialogBar.GetDlgItem(IDC_TEMPO_SPIN)->EnableWindow(false);
-		float Clock = pDoc->GetEngineSpeed();
 		CString str;
-		str.Format(_T("%.1f"), static_cast<float>(pDoc->GetFrameRate()) * 2.5);
+		str.Format(_T("%.2f"), static_cast<float>(pDoc->GetFrameRate()) * 2.5);
 		m_pLockedEditTempo->SetWindowText(str);
 	}
 }

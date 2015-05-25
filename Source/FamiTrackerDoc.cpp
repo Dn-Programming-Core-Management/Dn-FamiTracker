@@ -4923,6 +4923,8 @@ double CFamiTrackerDoc::GetStandardLength(int Track, unsigned int ExtraLoops) co
 	int Frame = 0;
 	bool IsGroove = GetSongGroove(Track);
 	double Tempo = GetSongTempo(Track), Speed = GetSongSpeed(Track);
+	if (!GetSongTempo(Track))
+		Tempo = 2.5 * GetFrameRate();
 	int GrooveIndex = GetSongSpeed(Track) * (m_pGrooveTable[GetSongSpeed(Track)] != NULL), GroovePointer = 0;
 	bool bScanning = true;
 	int FrameCount = GetFrameCount(Track);
@@ -4956,7 +4958,7 @@ double CFamiTrackerDoc::GetStandardLength(int Track, unsigned int ExtraLoops) co
 							bScanning = false;
 							break;
 						case EF_SPEED:
-							if (Note->EffParam[l] >= m_iSpeedSplitPoint)
+							if (GetSongTempo(Track) && Note->EffParam[l] >= m_iSpeedSplitPoint)
 								Tempo = Note->EffParam[l];
 							else {
 								IsGroove = false;

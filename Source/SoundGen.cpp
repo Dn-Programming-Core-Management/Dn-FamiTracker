@@ -1055,7 +1055,7 @@ void CSoundGen::SetupSpeed()
 float CSoundGen::GetTempo() const
 {
 	float Tempo = static_cast<float>(m_iTempo);		// // //
-	if (!m_iTempo) Tempo = 2.5 * static_cast<float>(m_iFrameRate);
+	if (!m_iTempo) Tempo = static_cast<float>(2.5 * m_iFrameRate);
 
 	float Speed;
 	if (m_iGrooveIndex != -1) {
@@ -1482,7 +1482,7 @@ void CSoundGen::EvaluateGlobalEffects(stChanNote *NoteData, int EffColumns)
 			case EF_SPEED:
 				if (!EffParam)
 					++EffParam;
-				if (EffParam >= m_iSpeedSplitPoint)
+				if (m_iTempo && EffParam >= m_iSpeedSplitPoint)		// // //
 					m_iTempo = EffParam;
 				else {		// // //
 					m_iSpeed = EffParam;

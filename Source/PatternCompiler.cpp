@@ -310,7 +310,10 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 
 			switch (Effect) {
 				case EF_SPEED:
-					WriteData((EffParam >= m_pDocument->GetSpeedSplitPoint()) ? Command(CMD_EFF_TEMPO) : Command(CMD_EFF_SPEED));
+					if (EffParam >= m_pDocument->GetSpeedSplitPoint() && m_pDocument->GetSongTempo(Track))		// // //
+						WriteData(Command(CMD_EFF_TEMPO));
+					else
+						WriteData(Command(CMD_EFF_SPEED));
 					WriteData(EffParam ? EffParam : 1); // NSF halts if 0 is exported
 					break;
 				case EF_JUMP:
