@@ -115,6 +115,7 @@ const char CCompiler::LABEL_INSTRUMENT_LIST[]	= "ft_instrument_list";
 const char CCompiler::LABEL_SAMPLES_LIST[]		= "ft_sample_list";
 const char CCompiler::LABEL_SAMPLES[]			= "ft_samples";
 const char CCompiler::LABEL_GROOVE_LIST[]		= "ft_groove_list";			// // //
+const char CCompiler::LABEL_GROOVE[]			= "ft_groove_%i";			// // // one argument
 const char CCompiler::LABEL_WAVETABLE[]			= "ft_wave_table";
 const char CCompiler::LABEL_SAMPLE[]			= "ft_sample_%i";			// one argument
 const char CCompiler::LABEL_WAVES[]				= "ft_waves_%i";			// one argument
@@ -1394,6 +1395,7 @@ void CCompiler::Cleanup()
 	m_vChunks.clear();
 	m_vSequenceChunks.clear();
 	m_vInstrumentChunks.clear();
+	m_vGrooveChunks.clear();		// // //
 	m_vSongChunks.clear();
 	m_vFrameChunks.clear();
 	m_vPatternChunks.clear();
@@ -1972,15 +1974,21 @@ void CCompiler::StoreGrooves()
 	 */
 
 	unsigned int Size = 1, Count = 0;
-
-	CChunk *pChunk = CreateChunk(CHUNK_GROOVE, LABEL_GROOVE_LIST);
-	pChunk->StoreByte(0); // padding; possibly used to disable groove
+	
+	CChunk *pGrooveListChunk = CreateChunk(CHUNK_GROOVE_LIST, LABEL_GROOVE_LIST);
+	pGrooveListChunk->StoreByte(0); // padding; possibly used to disable groove
 
 	for (int i = 0; i < MAX_GROOVE; i++) {
 		unsigned int Pos = Size;
 		CGroove *Groove = m_pDocument->GetGroove(i);
 		if (Groove == NULL) continue;
+		
+		CStringA label;
+		label.Format(LABEL_GROOVE, i);
+		// pGrooveListChunk->StoreReference(label);
 
+		CChunk *pChunk = CreateChunk(CHUNK_GROOVE, label);
+		m_vGrooveChunks.push_back(pChunk);
 		for (int j = 0; j < Groove->GetSize(); j++) {
 			pChunk->StoreByte(Groove->GetEntry(j));
 			Size++;

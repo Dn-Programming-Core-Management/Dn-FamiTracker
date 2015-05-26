@@ -176,7 +176,8 @@ public:
 	static const char LABEL_INSTRUMENT_LIST[];
 	static const char LABEL_SAMPLES_LIST[];
 	static const char LABEL_SAMPLES[];
-	static const char LABEL_GROOVE_LIST[];	// // //
+	static const char LABEL_GROOVE_LIST[];		// // //
+	static const char LABEL_GROOVE[];		// // //
 	static const char LABEL_WAVETABLE[];
 	static const char LABEL_SAMPLE[];
 	static const char LABEL_WAVES[];
@@ -210,7 +211,8 @@ private:
 	std::vector<CChunk*> m_vChunks;
 	std::vector<CChunk*> m_vSequenceChunks;
 	std::vector<CChunk*> m_vInstrumentChunks;
-	std::vector<CChunk*> m_vSongChunks;	
+	std::vector<CChunk*> m_vGrooveChunks;		// // //
+	std::vector<CChunk*> m_vSongChunks;
 	std::vector<CChunk*> m_vFrameChunks;
 	std::vector<CChunk*> m_vPatternChunks;
 	//std::vector<CChunk*> m_vWaveChunks;
