@@ -97,7 +97,7 @@ void CChunkRenderText::StoreChunks(const std::vector<CChunk*> &Chunks)
 	DumpStrings(CStringA("; DPCM samples list (location, size, bank)\n"), CStringA("\n"), m_samplePointersStrings, m_pFile);
 
 	// // // Grooves
-	DumpStrings(CStringA("; Groove list\n"), CStringA("\n"), m_grooveListStrings, m_pFile);
+	DumpStrings(CStringA("; Groove list\n"), CStringA(""), m_grooveListStrings, m_pFile);
 	DumpStrings(CStringA("; Grooves (size, terms)\n"), CStringA("\n"), m_grooveStrings, m_pFile);
 
 	// Songs
@@ -261,7 +261,9 @@ void CChunkRenderText::StoreSamplePointersChunk(CChunk *pChunk, CFile *pFile)
 				str.Append("\n\t.byte ");
 		}
 	}
-	// // //
+
+	str.Append("\n");
+
 	m_samplePointersStrings.Add(str);
 }
 
@@ -272,7 +274,7 @@ void CChunkRenderText::StoreGrooveListChunk(CChunk *pChunk, CFile *pFile)		// //
 	str.Format("%s:\n", pChunk->GetLabel());
 	
 	for (int i = 0; i < pChunk->GetLength(); ++i) {
-		str.AppendFormat("\t.byte %i\n", pChunk->GetData(i));
+		str.AppendFormat("\t.byte $%02X\n", pChunk->GetData(i));
 	}
 
 	m_grooveListStrings.Add(str);
@@ -282,15 +284,8 @@ void CChunkRenderText::StoreGrooveChunk(CChunk *pChunk, CFile *pFile)		// // //
 {
 	CStringA str;
 	
-	str.Format("%s:\n", pChunk->GetLabel());
-	
-	str.Append("\t.byte ");
-	int len = pChunk->GetLength();
-	for (int i = 0; i < len; ++i) {
-		str.AppendFormat("$%02X%s", pChunk->GetData(i), i == len - 3 ? "\n\t.byte " : (i == len - 1 ? "" : ", "));
-	}
-
-	str.Append("\n");
+	// str.Format("%s:\n", pChunk->GetLabel());
+	StoreByteString(pChunk, str, DEFAULT_LINE_BREAK);
 
 	m_grooveStrings.Add(str);
 }
