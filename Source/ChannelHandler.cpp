@@ -180,6 +180,9 @@ void CChannelHandler::ResetChannel()
 	m_iNoteRelease		= 0;		// // //
 	m_iNoteVolume		= -1;		// // //
 	m_iNewVolume		= m_iDefaultVolume;		// // //
+	m_iTranspose		= 0;
+	m_bTransposeDown	= false;
+	m_iTransposeTarget	= 0;
 	m_iVibratoDepth		= 0;
 	m_iTremoloDepth		= 0;
 
@@ -777,8 +780,9 @@ bool CChannelHandler::CheckCommonEffects(unsigned char EffCmd, unsigned char Eff
 			m_iNewVolume = (EffParam & 0x0F) << VOL_COLUMN_SHIFT;
 			break;
 		case EF_TRANSPOSE:		// // //
-			m_iTranspose = (EffParam >> 4) + 1;
+			m_iTranspose = ((EffParam & 0x70) >> 4) + 1;
 			m_iTransposeTarget = EffParam & 0x0F;
+			m_bTransposeDown = (EffParam & 0x80) != 0;
 			break;
 //		case EF_TARGET_VOLUME_SLIDE:
 			// TODO implement
@@ -870,11 +874,11 @@ void CChannelHandler::UpdateNoteVolume()		// // //
 void CChannelHandler::UpdateTranspose()		// // //
 {
 	// Delayed transpose (Txy)
-	if (m_iTranspose != 0 && m_iTranspose != 8) {
+	if (m_iTranspose != 0) {
 		m_iTranspose--;
-		if (!(m_iTranspose % 0x08)) {
+		if (!m_iTranspose) {
 			// trigger note
-			SetNote(GetNote() + m_iTransposeTarget * (m_iTranspose ? -1 : 1));
+			SetNote(GetNote() + m_iTransposeTarget * (m_bTransposeDown ? -1 : 1));
 			SetPeriod(TriggerNote(m_iNote));
 		}
 	}

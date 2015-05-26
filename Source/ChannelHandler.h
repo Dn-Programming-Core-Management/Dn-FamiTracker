@@ -252,8 +252,9 @@ protected:
 	unsigned char	m_iNoteRelease;					// // // Note release effect
 	char			m_iNoteVolume;					// // // Delayed channel volume effect
 	unsigned char	m_iNewVolume;					// // //
-	unsigned char	m_iTranspose;					// // // Delayed transpose counter
-	char			m_iTransposeTarget;				// // // transpose
+	unsigned char	m_iTranspose;					// // // Delayed transpose effect
+	bool			m_bTransposeDown;				// // //
+	char			m_iTransposeTarget;				// // //
 	unsigned int	m_iFinePitch;					// Fine pitch effect
 	unsigned char	m_iDefaultDuty;					// Duty effect
 	unsigned char	m_iVolSlide;					// Volume slide effect

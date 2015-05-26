@@ -91,7 +91,8 @@ const CString EFFECT_TEXTS[] = {		// // //
 	_T("J0x - 5B envelope shape, bit 3 = Continue, bit 2 = Attack, bit 1 = Alternate, bit 0 = Hold"),
 	_T("Lxx - Note release, XX = frames to wait"),
 	_T("Oxx - Set groove to XX"),
-	_T("Txy - Delayed transpose, bit 7 = direction, X = frames to wait, Y = semitone offset"),
+	_T("Txy - Delayed transpose (upward), X = frames to wait, Y = semitone offset"),
+	_T("Txy - Delayed transpose (downward), X - 8 = frames to wait, Y = semitone offset"),
 	_T("Zxx - N163 wave buffer access, XX = position in bytes"),
 	_T("Exx - FDS volume envelope (attack), XX = rate"),
 	_T("Exx - FDS volume envelope (decay), XX - 40 = rate"),
@@ -3624,6 +3625,7 @@ CString	CFamiTrackerView::GetEffectHint(const stChanNote &Note, int Column) cons
 	int Channel = m_pPatternEditor->GetChannel();
 	int Chip = GetDocument()->GetChannel(Channel)->GetChip();
 	if (Index > EF_FDS_VOLUME || (Index == EF_FDS_VOLUME && Param >= 0x40)) Index++;
+	if (Index > EF_TRANSPOSE || (Index == EF_TRANSPOSE && Param >= 0x80)) Index++;
 	if (Index > EF_NOTE_CUT || (Index == EF_NOTE_CUT && Param >= 0x80 && Channel == CHANID_TRIANGLE)) Index++;
 	if (Index > EF_DUTY_CYCLE || (Index == EF_DUTY_CYCLE && Chip == SNDCHIP_N163)) Index++;
 	if (Index > EF_VOLUME || (Index == EF_VOLUME && Param >= 0xE0)) Index++;
