@@ -334,7 +334,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 					case CHANID_SQUARE1: case CHANID_SQUARE2: case CHANID_TRIANGLE: case CHANID_NOISE:
 					case CHANID_MMC5_SQUARE1: case CHANID_MMC5_SQUARE2:
 						WriteData(Command(CMD_EFF_VOLUME));
-						if ((EffParam <= 0x1F && ChanID != CHANID_TRIANGLE) || (EffParam >= 0xE0 && EffParam <= 0xE3))
+						if ((EffParam <= 0x1F) || (EffParam >= 0xE0 && EffParam <= 0xE3))
 							WriteData(EffParam & 0x9F);
 					}
 					break;
