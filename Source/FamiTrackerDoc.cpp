@@ -5036,7 +5036,7 @@ void CFamiTrackerDoc::RemoveUnusedInstruments()
 				for (int k = 0; k < MAX_INSTRUMENTS; ++k) {
 					if (IsInstrumentUsed(k) && GetInstrumentType(k) == INST_2A03) {
 						CInstrument2A03 *pInstrument = static_cast<CInstrument2A03*>(GetInstrument(k));
-						if (pInstrument->GetSeqIndex(j) == i) {
+						if (pInstrument->GetSeqIndex(j) == i && pInstrument->GetSeqEnable(j)) {		// // //
 							Used = true;
 							break;
 						}
@@ -5052,7 +5052,7 @@ void CFamiTrackerDoc::RemoveUnusedInstruments()
 				for (int k = 0; k < MAX_INSTRUMENTS; ++k) {
 					if (IsInstrumentUsed(k) && GetInstrumentType(k) == INST_VRC6) {
 						CInstrumentVRC6 *pInstrument = static_cast<CInstrumentVRC6*>(GetInstrument(k));
-						if (pInstrument->GetSeqIndex(j) == i) {
+						if (pInstrument->GetSeqIndex(j) == i && pInstrument->GetSeqEnable(j)) {		// // //
 							Used = true;
 							break;
 						}
@@ -5068,7 +5068,7 @@ void CFamiTrackerDoc::RemoveUnusedInstruments()
 				for (int k = 0; k < MAX_INSTRUMENTS; ++k) {
 					if (IsInstrumentUsed(k) && GetInstrumentType(k) == INST_N163) {
 						CInstrumentN163 *pInstrument = static_cast<CInstrumentN163*>(GetInstrument(k));
-						if (pInstrument->GetSeqIndex(j) == i) {
+						if (pInstrument->GetSeqIndex(j) == i && pInstrument->GetSeqEnable(j)) {		// // //
 							Used = true;
 							break;
 						}
@@ -5084,7 +5084,7 @@ void CFamiTrackerDoc::RemoveUnusedInstruments()
 				for (int k = 0; k < MAX_INSTRUMENTS; ++k) {
 					if (IsInstrumentUsed(k) && GetInstrumentType(k) == INST_S5B) {
 						CInstrumentS5B *pInstrument = static_cast<CInstrumentS5B*>(GetInstrument(k));
-						if (pInstrument->GetSeqIndex(j) == i) {
+						if (pInstrument->GetSeqIndex(j) == i && pInstrument->GetSeqEnable(j)) {		// // //
 							Used = true;
 							break;
 						}
