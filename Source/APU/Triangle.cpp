@@ -89,20 +89,18 @@ uint8 CTriangle::ReadControl()
 
 void CTriangle::Process(uint32 Time)
 {
-	// Triangle skips if a wavelength less than 2 is used
-	// It takes to much CPU and it wouldn't be possible to hear anyway
-	//
-
 	if (!m_iLinearCounter || !m_iLengthCounter || !m_iEnabled) {
 		m_iTime += Time;
 		return;
 	}
 	else if (m_iPeriod <= 1) {
+		/*
 		// Frequency is too high to be audible
 		m_iTime += Time;
 		m_iStepGen = 7;
 		Mix(TRIANGLE_WAVE[m_iStepGen]);
 		return;
+		*/
 	}
 
 	while (Time >= m_iCounter) {
