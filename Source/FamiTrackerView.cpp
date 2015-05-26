@@ -2352,7 +2352,7 @@ void CFamiTrackerView::OnKeyInsert()
 	CFamiTrackerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	if (PreventRepeat(VK_INSERT, true))
+	if (PreventRepeat(VK_INSERT, true) || !m_bEditEnable)		// // //
 		return;
 
 	if (m_pPatternEditor->IsSelecting()) {
@@ -2368,6 +2368,9 @@ void CFamiTrackerView::OnKeyBackspace()
 	// Pull up row
 	CFamiTrackerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
+
+	if (!m_bEditEnable)		// // //
+		return;
 
 	if (m_pPatternEditor->IsSelecting()) {
 		AddAction(new CPatternAction(CPatternAction::ACT_EDIT_DELETE_ROWS));
@@ -2392,7 +2395,7 @@ void CFamiTrackerView::OnKeyDelete()
 
 	bool bShiftPressed = IsShiftPressed();
 
-	if (PreventRepeat(VK_DELETE, true))
+	if (PreventRepeat(VK_DELETE, true) || !m_bEditEnable)		// // //
 		return;
 
 	if (m_pPatternEditor->IsSelecting()) {
@@ -2410,11 +2413,17 @@ void CFamiTrackerView::OnKeyDelete()
 
 void CFamiTrackerView::KeyIncreaseAction()
 {
+	if (!m_bEditEnable)		// // //
+		return;
+
 	AddAction(new CPatternAction(CPatternAction::ACT_INCREASE));
 }
 
 void CFamiTrackerView::KeyDecreaseAction()
 {
+	if (!m_bEditEnable)		// // //
+		return;
+
 	AddAction(new CPatternAction(CPatternAction::ACT_DECREASE));
 }
 
