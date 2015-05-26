@@ -645,6 +645,7 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		}
 
 		if (Num != -1) {
+			m_iNewPattern = m_pDocument->GetPatternAtFrame(Track, Frame, Channel);		// // //
 			if (m_iCursorPos == 0)
 				m_iNewPattern = (m_iNewPattern & 0x0F) | (Num << 4);
 			else if (m_iCursorPos == 1)
