@@ -4825,94 +4825,71 @@ int CFamiTrackerDoc::GetSecondHighlight() const
 	return m_iSecondHighlight;
 }
 
-unsigned int CFamiTrackerDoc::ScanActualLength(unsigned int Track, unsigned int Count, unsigned int &RowCount) const 
+unsigned int CFamiTrackerDoc::ScanActualLength(unsigned int Track, unsigned int Count) const		// // //
 {
 	// Return number for frames played for a certain number of loops
 
-	int FrameVisited[MAX_FRAMES];
+	char RowVisited[MAX_FRAMES][MAX_PATTERN_LENGTH];		// // //
 	int JumpTo = -1;
 	int SkipTo = -1;
 	int FirstLoop = 0;
 	int SecondLoop = 0;
-	int Frame = 0;
+	unsigned int f = 0;		// // //
+	unsigned int r = 0;		// // //
 	bool bScanning = true;
-	int FrameCount = GetFrameCount(Track);
-	int FirstLoopRows = 0;
-	int SecondLoopRows = 0;
-	int Rows = 0;
-	int TotalFrames = 0;
-	bool InFirstLoop = true;
-	int PatternRowCount = 0;
+	unsigned int FrameCount = GetFrameCount(Track);
+	int RowCount = 0;
+	// // //
 
-	memset(FrameVisited, 0, sizeof(int) * MAX_FRAMES);
+	memset(RowVisited, 0, sizeof(char) * MAX_FRAMES * MAX_PATTERN_LENGTH);		// // //
 
 	while (bScanning) {
-
-		JumpTo = -1;
-		SkipTo = -1;
-
-		for (unsigned k = 0; k < GetPatternLength(Track) && JumpTo == -1 && SkipTo == -1; ++k) {
-			PatternRowCount = k + 1;
-			for (int j = 0; j < GetChannelCount(); ++j) {
-				stChanNote Note;
-				GetNoteData(Track, Frame, j, k, &Note);
-				for (unsigned l = 0; l < GetEffColumns(Track, j) + 1; ++l) {
-					switch (Note.EffNumber[l]) {
-						case EF_JUMP:
-							JumpTo = Note.EffParam[l];
-							break;
-						case EF_SKIP:
-							SkipTo = Frame + 1;
-							break;
-						case EF_HALT:
-							Count = 1;
-							bScanning = false;
-							break;
-					}
+		for (int j = 0; j < GetChannelCount(); ++j) {
+			stChanNote Note;
+			GetNoteData(Track, f, j, r, &Note);
+			for (unsigned l = 0; l < GetEffColumns(Track, j) + 1; ++l) {
+				switch (Note.EffNumber[l]) {
+					case EF_JUMP:
+						JumpTo = Note.EffParam[l];
+						SkipTo = 0;
+						break;
+					case EF_SKIP:
+						JumpTo = f + 1;
+						SkipTo = Note.EffParam[l];
+						break;
+					case EF_HALT:
+						Count = 1;
+						bScanning = false;
+						break;
 				}
 			}
 		}
 
-		if (FrameVisited[Frame] == 0) {
-			Rows += PatternRowCount;
-			++FirstLoop;
+		switch (RowVisited[f][r]) {
+		case 0: ++FirstLoop; break;
+		case 1: ++SecondLoop; break;
+		case 2: bScanning = false; break;
 		}
-		else if (FrameVisited[Frame] == 1) {
-			++SecondLoop;
-			if (InFirstLoop) {
-				FirstLoopRows = Rows;
-				Rows = 0;
-			}
-			Rows += PatternRowCount;
-			InFirstLoop = false;
+		
+		++RowVisited[f][r++];
+
+		if (JumpTo > -1) {
+			f = std::min(static_cast<unsigned int>(JumpTo), FrameCount - 1);
+			JumpTo = -1;
 		}
-		else if (FrameVisited[Frame] == 2)
-			bScanning = false;
-
-		++FrameVisited[Frame];
-
-		if (JumpTo != -1)
-			Frame = JumpTo;
-		else if (SkipTo != -1)
-			Frame = SkipTo;
-		else
-			++Frame;
-		if (Frame >= FrameCount)
-			Frame = 0;
+		if (SkipTo > -1) {
+			r = std::min(static_cast<unsigned int>(SkipTo), GetPatternLength(Track) - 1);
+			SkipTo = -1;
+		}
+		if (r >= GetPatternLength(Track)) {		// // //
+			++f;
+			r = 0;
+		}
+		if (f >= FrameCount)
+			f = 0;
 	}
 
-	SecondLoopRows = Rows;
-
-	if (Count > 1) {
-		RowCount = FirstLoopRows + SecondLoopRows * (Count - 1);
-		TotalFrames = FirstLoop + SecondLoop * (Count - 1);
-	}
-	else if (Count == 1) {
-		RowCount = Rows;//FirstLoopRows;
-		TotalFrames = FirstLoop;
-	}
-
-	return TotalFrames;
+	return FirstLoop + SecondLoop * (Count - 1);		// // //
 }
 
 double CFamiTrackerDoc::GetStandardLength(int Track, unsigned int ExtraLoops) const		// // //

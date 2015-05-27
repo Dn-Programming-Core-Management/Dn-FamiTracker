@@ -126,9 +126,9 @@ void CWavProgressDlg::OnTimer(UINT_PTR nIDEvent)
 		if (Frame > FramesToRender)
 			Frame = FramesToRender;
 		PercentDone = (Row * 100) / RowCount;
-		str1.Format(_T("%i / %i"), Frame, FramesToRender);
+		str1.Format(_T("%i / %i"), Row, FramesToRender);		// // //
 		str2.Format(_T("%i%%"), PercentDone, Row, RowCount);
-		AfxFormatString2(Text, IDS_WAVE_PROGRESS_FRAME_FORMAT, str1, str2);
+		AfxFormatString2(Text, IDS_WAVE_PROGRESS_ROW_FORMAT, str1, str2);		// // //
 		break;
 	case SONG_TIME_LIMIT:
 		int TotalSec = m_iSongEndParam % 60;

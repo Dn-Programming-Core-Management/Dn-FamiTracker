@@ -329,7 +329,8 @@ public:
 	unsigned int	GetTotalSampleSize() const;
 
 	// Other
-	unsigned int	ScanActualLength(unsigned int Track, unsigned int Count, unsigned int &RowCount) const;
+	unsigned int	ScanActualLength(unsigned int Track, unsigned int Count) const;		// // //
+	double			GetStandardLength(int Track, unsigned int ExtraLoops) const;		// // //
 	unsigned int	GetFirstFreePattern(unsigned int Track, unsigned int Channel) const;		// // //
 
 	// Operations
@@ -342,8 +343,6 @@ public:
 
 	// For file version compability
 	static void		ConvertSequence(stSequence *pOldSequence, CSequence *pNewSequence, int Type);
-	int				ScanActualLength(int Track, int Count) const;
-	double			GetStandardLength(int Track, unsigned int ExtraLoops) const;		// // //
 
 	bool			GetExceededFlag() { return m_bExceeded; };
 	void			SetExceededFlag(bool Exceed = 1);		// // //

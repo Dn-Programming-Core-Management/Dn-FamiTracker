@@ -895,6 +895,7 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 	m_bHaltRequest      = false;
 	m_iPlayTicks		= 0;
 	m_iFramesPlayed		= 0;
+	m_iRowsPlayed		= 0;		// // //
 	m_iJumpToPattern	= -1;
 	m_iSkipToRow		= -1;
 	m_bUpdateRow		= true;
@@ -1088,7 +1089,8 @@ void CSoundGen::RunFrame()
 					m_bRequestRenderStop = true;
 			}
 			else if (m_iRenderEndWhen == SONG_LOOP_LIMIT) {
-				if (m_iFramesPlayed >= m_iRenderEndParam)
+				//if (m_iFramesPlayed >= m_iRenderEndParam)
+				if (m_iRowsPlayed >= m_iRenderEndParam)		// // //
 					m_bRequestRenderStop = true;
 			}
 			if (m_bRequestRenderStop)
@@ -1549,7 +1551,8 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 		m_iRenderEndParam *= m_pDocument->GetFrameRate();
 	}
 	else if (m_iRenderEndWhen == SONG_LOOP_LIMIT) {
-		m_iRenderEndParam = m_pDocument->ScanActualLength(Track, m_iRenderEndParam, m_iRenderRowCount);
+		m_iRenderEndParam = m_pDocument->ScanActualLength(Track, m_iRenderEndParam);		// // //
+		m_iRenderRowCount = m_iRenderEndParam;
 	}
 
 	if (!m_wfWaveFile.OpenFile(pFile, theApp.GetSettings()->Sound.iSampleRate, theApp.GetSettings()->Sound.iSampleSize, 1)) {
@@ -2048,6 +2051,8 @@ void CSoundGen::PlayerStepRow()
 			PlayerStepFrame();
 	}
 
+	++m_iRowsPlayed;		// // //
+
 	m_bDirty = true;
 }
 
@@ -2103,7 +2108,7 @@ void CSoundGen::PlayerSkipTo(int Row)
 
 	if (m_iPlayRow >= Rows)
 		m_iPlayRow = Rows - 1;
-
+	
 	++m_iFramesPlayed;
 
 	m_bDirty = true;

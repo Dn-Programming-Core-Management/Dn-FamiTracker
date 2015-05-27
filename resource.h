@@ -224,6 +224,7 @@
 #define IDS_MIDI_MESSAGE_ON_FORMAT      316
 #define IDS_MIDI_MESSAGE_OFF            317
 #define IDI_RIGHT                       317
+#define IDS_WAVE_PROGRESS_ROW_FORMAT    318
 #define IDR_SEQUENCE_POPUP              319
 #define IDD_STRETCH                     323
 #define IDC_INSTRUMENTS                 1001

@@ -2202,6 +2202,7 @@ BEGIN
     IDS_MIDI_MESSAGE_ON_FORMAT 
                             "MIDI message: Note on (note = %1, octave = %2, velocity = %3)"
     IDS_MIDI_MESSAGE_OFF    "MIDI message: Note off"
+    IDS_WAVE_PROGRESS_ROW_FORMAT "Row: %1 (%2 done)"
 END
 
 STRINGTABLE
