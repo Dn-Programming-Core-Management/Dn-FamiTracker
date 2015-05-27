@@ -338,12 +338,20 @@ public:
 	afx_msg void OnToggleSpeed();
 	afx_msg LRESULT OnDisplayMessageString(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnDisplayMessageID(WPARAM wParam, LPARAM lParam);
+
 	// // //
 	afx_msg void OnToggleGroove();
 	afx_msg void OnToggleFixTempo();
 	afx_msg void OnClickedCompact();
 	afx_msg void OnToggleCompact();
 	afx_msg void OnFileExportRows();
+	afx_msg void OnEditSelectnone();
+	afx_msg void OnEditSelectrow();
+	afx_msg void OnEditSelectcolumn();
+	afx_msg void OnEditSelectpattern();
+	afx_msg void OnEditSelectframe();
+	afx_msg void OnEditSelectchannel();
+	afx_msg void OnEditSelecttrack();
 	afx_msg void OnEditFindToggle();
 	afx_msg void OnFindNext();
 	afx_msg void OnFindPrevious();

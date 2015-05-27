@@ -56,9 +56,16 @@ const stAccelEntry CAccelerator::DEFAULT_TABLE[] = {
 	{_T("Stop"),						MOD_NONE,		VK_F8,			ID_TRACKER_STOP},
 	{_T("Edit enable/disable"),			MOD_NONE,		VK_SPACE,		ID_TRACKER_EDIT},
 	{_T("Paste and mix"),				MOD_CONTROL,	'M',			ID_EDIT_PASTEMIX},
-	{_T("Paste and overwrite"),			MOD_NONE,		0,				ID_EDIT_PASTEOVERWRITE},		// // //
-	{_T("Paste and insert"),			MOD_NONE,		0,				ID_EDIT_PASTEINSERT},		// // //
+	{_T("Paste and overwrite"),			MOD_NONE,		0,				ID_EDIT_PASTEOVERWRITE},			// // //
+	{_T("Paste and insert"),			MOD_NONE,		0,				ID_EDIT_PASTEINSERT},				// // //
 	{_T("Select all"),					MOD_CONTROL,	'A',			ID_EDIT_SELECTALL},
+	{_T("Deselect"),					MOD_NONE,		VK_ESCAPE,		ID_SELECT_NONE},					// // //
+	{_T("Select row"),					MOD_NONE,		0,				ID_SELECT_ROW},						// // //
+	{_T("Select column"),				MOD_NONE,		0,				ID_SELECT_COLUMN},					// // //
+	{_T("Select pattern"),				MOD_NONE,		0,				ID_SELECT_PATTERN},					// // //
+	{_T("Select frame"),				MOD_NONE,		0,				ID_SELECT_FRAME},					// // //
+	{_T("Select channel"),				MOD_NONE,		0,				ID_SELECT_CHANNEL},					// // //
+	{_T("Select track"),				MOD_NONE,		0,				ID_SELECT_TRACK},					// // //
 	{_T("Toggle channel"),				MOD_ALT,		VK_F9,			ID_TRACKER_TOGGLECHANNEL},
 	{_T("Solo channel"),				MOD_ALT,		VK_F10,			ID_TRACKER_SOLOCHANNEL},
 	{_T("Interpolate"),					MOD_CONTROL,	'G',			ID_EDIT_INTERPOLATE},

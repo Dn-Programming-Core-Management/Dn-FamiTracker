@@ -172,6 +172,7 @@ public:
 	void SetBlockEnd();
 	CSelection GetSelection() const;
 	void SetSelection(const CSelection &selection);
+	void SetSelection(int Scope);		// // //
 
 	int GetSelectionSize() const;		// // //
 	sel_condition_t GetSelectionCondition() const;		// // //
@@ -413,7 +414,7 @@ private:
 	// Scrolling
 	CPoint	m_ptScrollMousePos;
 	UINT	m_nScrollFlags;
-	int		m_iScrolling;		// // // int for addition
+	unsigned int m_iScrolling;		// // //
 	int		m_iCurrentHScrollPos;
 
 	// Benchmarking

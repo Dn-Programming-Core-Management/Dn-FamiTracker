@@ -170,7 +170,7 @@ private:
 	void	OnKeyDirDown();
 	void	OnKeyDirLeft();
 	void	OnKeyDirRight();
-	void	OnKeyEscape();
+	// // //
 	void	OnKeyTab();
 	void	OnKeyPageUp();
 	void	OnKeyPageDown();
@@ -417,6 +417,13 @@ public:
 	afx_msg void OnUpdateFindNext(CCmdUI *pCmdUI);
 	afx_msg void OnCoarseDecreaseValues();
 	afx_msg void OnCoarseIncreaseValues();
+	afx_msg void OnEditSelectnone();
+	afx_msg void OnEditSelectrow();
+	afx_msg void OnEditSelectcolumn();
+	afx_msg void OnEditSelectpattern();
+	afx_msg void OnEditSelectframe();
+	afx_msg void OnEditSelectchannel();
+	afx_msg void OnEditSelecttrack();
 	afx_msg void OnEditExpandPatterns();
 	afx_msg void OnEditShrinkPatterns();
 	afx_msg void OnEditStretchPatterns();

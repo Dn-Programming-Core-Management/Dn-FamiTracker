@@ -134,10 +134,22 @@ BEGIN
         END
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
         MENUITEM SEPARATOR
-        MENUITEM "Select &All\tCtrl+A",         ID_EDIT_SELECTALL
-        MENUITEM SEPARATOR
         MENUITEM "&Find / Replace",             ID_EDIT_FIND_TOGGLE
         MENUITEM "Find &Next",                  ID_FIND_NEXT
+        MENUITEM SEPARATOR
+        POPUP "&Select"
+        BEGIN
+            MENUITEM "&All\tCtrl+A",                ID_EDIT_SELECTALL
+            MENUITEM "&None\tEsc",                  ID_SELECT_NONE
+            MENUITEM SEPARATOR
+            MENUITEM "&Row",                        ID_SELECT_ROW
+            MENUITEM "&Column",                     ID_SELECT_COLUMN
+            MENUITEM SEPARATOR
+            MENUITEM "&Pattern",                    ID_SELECT_PATTERN
+            MENUITEM "&Frame",                      ID_SELECT_FRAME
+            MENUITEM "C&hannel",                    ID_SELECT_CHANNEL
+            MENUITEM "&Track",                      ID_SELECT_TRACK
+        END
         MENUITEM SEPARATOR
         POPUP "Selection"
         BEGIN
@@ -2230,6 +2242,13 @@ STRINGTABLE
 BEGIN
     ID_EDIT_STRETCHPATTERNS "Stretch the current selection\nStretch"
     IDC_COMPACT_TOGGLE      "Hide all columns except the note column"
+    ID_SELECT_NONE          "Clear the current selection\nDeselect"
+    ID_SELECT_ROW           "Select the current row\nSelect Row"
+    ID_SELECT_PATTERN       "Select the current patterm\nSelect Pattern"
+    ID_SELECT_FRAME         "Select the current frame\nSelect Frame"
+    ID_SELECT_CHANNEL       "Select the current channel\nSelect Channel"
+    ID_SELECT_TRACK         "Select the entire track\nSelect Track"
+    ID_SELECT_COLUMN        "Select the entire column in the current pattern\nSelect Column"
 END
 
 STRINGTABLE

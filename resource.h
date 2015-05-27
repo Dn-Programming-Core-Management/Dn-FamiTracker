@@ -753,6 +753,13 @@
 #define ID_EDIT_STRETCHPATTERNS         33153
 #define ID_POPUP_STRETCHSELECTION       33154
 #define IDC_COMPACT_TOGGLE              33155
+#define ID_SELECT_NONE                  33157
+#define ID_SELECT_ROW                   33159
+#define ID_SELECT_PATTERN               33160
+#define ID_SELECT_FRAME                 33161
+#define ID_SELECT_CHANNEL               33162
+#define ID_SELECT_TRACK                 33163
+#define ID_SELECT_COLUMN                33164
 #define ID_INSTRUMENT_ADD_2A03          36864
 #define ID_INSTRUMENT_ADD_FDS           36865
 #define ID_INSTRUMENT_ADD_MMC5          36866
@@ -773,7 +780,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        324
-#define _APS_NEXT_COMMAND_VALUE         33156
+#define _APS_NEXT_COMMAND_VALUE         33165
 #define _APS_NEXT_CONTROL_VALUE         1415
 #define _APS_NEXT_SYMED_VALUE           179
 #endif

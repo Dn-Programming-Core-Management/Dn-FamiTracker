@@ -1359,9 +1359,8 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, int Column, int Channel, bool 
 	}
 
 	// // // effects too
-	if (!pTrackerChannel->IsEffectCompatible(EffNumber, EffParam)) {
+	if (EffNumber != EF_NONE) if (!pTrackerChannel->IsEffectCompatible(EffNumber, EffParam))
 		DimEff = EffColor = RED(255);		// // //
-	}
 
 	int PosY = m_iRowHeight - m_iRowHeight / 8;		// // //
 	// // // PosX -= 1;
@@ -4023,6 +4022,39 @@ void CPatternEditor::SetSelection(const CSelection &selection)
 	// Allow external set selection
 	m_selection = selection;
 	m_bSelecting = true;
+	m_bSelectionInvalidated = true;
+}
+
+void CPatternEditor::SetSelection(int Scope)		// // //
+{
+	int Vert = Scope & 0x0F;
+	int Horz = Scope & 0xF0;
+	if (!Vert || !Horz) {
+		CancelSelection();
+		return;
+	}
+
+	m_selection.m_cpStart = m_cpCursorPos;
+	m_selection.m_cpEnd = m_cpCursorPos;
+	if (Vert >= SEL_SCOPE_VTRACK) {
+		m_selection.m_cpStart.m_iFrame = 0;
+		m_selection.m_cpEnd.m_iFrame = GetFrameCount() - 1;
+	}
+	if (Vert >= SEL_SCOPE_VFRAME) {
+		m_selection.m_cpStart.m_iRow = 0;
+		m_selection.m_cpEnd.m_iRow = GetCurrentPatternLength(m_selection.m_cpEnd.m_iFrame) - 1;
+	}
+	if (Horz >= SEL_SCOPE_HFRAME) {
+		m_selection.m_cpStart.m_iChannel = 0;
+		m_selection.m_cpEnd.m_iChannel = GetChannelCount() - 1;
+	}
+	if (Horz >= SEL_SCOPE_HCHAN) {
+		m_selection.m_cpStart.m_iColumn = 0;
+		m_selection.m_cpEnd.m_iColumn = GetChannelColumns(m_selection.m_cpEnd.m_iChannel) - 1;
+	}
+
+	m_bSelecting = true;
+	m_iSelectionCondition = GetSelectionCondition();
 	m_bSelectionInvalidated = true;
 }
 

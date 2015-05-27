@@ -1210,6 +1210,48 @@ void CFamiTrackerView::OnEditSelectall()
 	InvalidateCursor();
 }
 
+void CFamiTrackerView::OnEditSelectnone()		// // //
+{
+	m_pPatternEditor->CancelSelection();
+	InvalidateCursor();
+}
+
+void CFamiTrackerView::OnEditSelectrow()		// // //
+{
+	m_pPatternEditor->SetSelection(SEL_SCOPE_VROW | SEL_SCOPE_HFRAME);
+	InvalidateCursor();
+}
+
+void CFamiTrackerView::OnEditSelectcolumn()		// // //
+{
+	m_pPatternEditor->SetSelection(SEL_SCOPE_VFRAME | SEL_SCOPE_HCOL);
+	InvalidateCursor();
+}
+
+void CFamiTrackerView::OnEditSelectpattern()		// // //
+{
+	m_pPatternEditor->SetSelection(SEL_SCOPE_VFRAME | SEL_SCOPE_HCHAN);
+	InvalidateCursor();
+}
+
+void CFamiTrackerView::OnEditSelectframe()		// // //
+{
+	m_pPatternEditor->SetSelection(SEL_SCOPE_VFRAME | SEL_SCOPE_HFRAME);
+	InvalidateCursor();
+}
+
+void CFamiTrackerView::OnEditSelectchannel()		// // //
+{
+	m_pPatternEditor->SetSelection(SEL_SCOPE_VTRACK | SEL_SCOPE_HCHAN);
+	InvalidateCursor();
+}
+
+void CFamiTrackerView::OnEditSelecttrack()		// // //
+{
+	m_pPatternEditor->SetSelection(SEL_SCOPE_VTRACK | SEL_SCOPE_HFRAME);
+	InvalidateCursor();
+}
+
 void CFamiTrackerView::OnTrackerPlayrow()
 {
 	CFamiTrackerDoc* pDoc = GetDocument();
@@ -2212,9 +2254,7 @@ void CFamiTrackerView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		case VK_BACK:
 			OnKeyBackspace();
 			break;
-		case VK_ESCAPE:
-			OnKeyEscape();
-			break;
+		// // //
 
 		// Octaves, unless overridden
 		case VK_F2: SetOctave(0); break;
@@ -2293,13 +2333,6 @@ void CFamiTrackerView::OnKeyDirRight()
 {
 	// Move right
 	m_pPatternEditor->MoveRight();
-	InvalidateCursor();
-}
-
-void CFamiTrackerView::OnKeyEscape()
-{
-	// ESC -> remove selection
-	m_pPatternEditor->CancelSelection();
 	InvalidateCursor();
 }
 

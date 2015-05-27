@@ -308,6 +308,13 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_BN_CLICKED(IDC_CHECK_COMPACT, OnClickedCompact)
 	ON_COMMAND(IDC_COMPACT_TOGGLE, OnToggleCompact)
 	ON_COMMAND(ID_FILE_EXPORTROWS, OnFileExportRows)
+	ON_COMMAND(ID_SELECT_NONE, OnEditSelectnone)
+	ON_COMMAND(ID_SELECT_ROW, OnEditSelectrow)
+	ON_COMMAND(ID_SELECT_COLUMN, OnEditSelectcolumn)
+	ON_COMMAND(ID_SELECT_PATTERN, OnEditSelectpattern)
+	ON_COMMAND(ID_SELECT_FRAME, OnEditSelectframe)
+	ON_COMMAND(ID_SELECT_CHANNEL, OnEditSelectchannel)
+	ON_COMMAND(ID_SELECT_TRACK, OnEditSelecttrack)
 	ON_COMMAND(ID_EDIT_FIND_TOGGLE, OnEditFindToggle)
 	ON_COMMAND(ID_FIND_NEXT, OnFindNext)
 	ON_COMMAND(ID_EDIT_STRETCHPATTERNS, OnEditStretchpatterns)
@@ -2639,6 +2646,64 @@ void CMainFrame::OnEditSelectall()
 {
 	if (GetFocus() == GetActiveView())
 		static_cast<CFamiTrackerView*>(GetActiveView())->OnEditSelectall();
+	//else if (GetFocus() == GetFrameEditor())		// // //
+	//	GetFrameEditor()->OnEditSelectall();
+}
+
+void CMainFrame::OnEditSelectnone()		// // //
+{
+	if (GetFocus() == GetActiveView())
+		static_cast<CFamiTrackerView*>(GetActiveView())->OnEditSelectnone();
+	//else if (GetFocus() == GetFrameEditor())
+	//	GetFrameEditor()->OnEditSelectnone();
+}
+
+void CMainFrame::OnEditSelectrow()
+{
+	if (GetFocus() == GetActiveView())
+		static_cast<CFamiTrackerView*>(GetActiveView())->OnEditSelectrow();
+	//else if (GetFocus() == GetFrameEditor())
+	//	GetFrameEditor()->OnEditSelectrow();
+}
+
+void CMainFrame::OnEditSelectcolumn()
+{
+	if (GetFocus() == GetActiveView())
+		static_cast<CFamiTrackerView*>(GetActiveView())->OnEditSelectcolumn();
+	//else if (GetFocus() == GetFrameEditor())
+	//	GetFrameEditor()->OnEditSelectcolumn();
+}
+
+void CMainFrame::OnEditSelectpattern()
+{
+	if (GetFocus() == GetActiveView())
+		static_cast<CFamiTrackerView*>(GetActiveView())->OnEditSelectpattern();
+	//else if (GetFocus() == GetFrameEditor())
+	//	GetFrameEditor()->OnEditSelectsingle();
+}
+
+void CMainFrame::OnEditSelectframe()
+{
+	if (GetFocus() == GetActiveView())
+		static_cast<CFamiTrackerView*>(GetActiveView())->OnEditSelectframe();
+	//else if (GetFocus() == GetFrameEditor())
+	//	GetFrameEditor()->OnEditSelectrow();
+}
+
+void CMainFrame::OnEditSelectchannel()
+{
+	if (GetFocus() == GetActiveView())
+		static_cast<CFamiTrackerView*>(GetActiveView())->OnEditSelectchannel();
+	//else if (GetFocus() == GetFrameEditor())
+	//	GetFrameEditor()->OnEditSelectcolumn();
+}
+
+void CMainFrame::OnEditSelecttrack()
+{
+	if (GetFocus() == GetActiveView())
+		static_cast<CFamiTrackerView*>(GetActiveView())->OnEditSelecttrack();
+	//else if (GetFocus() == GetFrameEditor())
+	//	GetFrameEditor()->OnEditSelectall();
 }
 
 void CMainFrame::OnDecayFast()
