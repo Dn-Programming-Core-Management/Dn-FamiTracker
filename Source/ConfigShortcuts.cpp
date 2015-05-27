@@ -55,6 +55,7 @@ void CConfigShortcuts::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CConfigShortcuts, CPropertyPage)
 	ON_NOTIFY(NM_CLICK, IDC_SHORTCUTS, OnNMClickShortcuts)
+	ON_NOTIFY(LVN_ITEMCHANGED, IDC_SHORTCUTS, OnNMClickShortcuts)
 	ON_BN_CLICKED(IDC_DEFAULT, OnBnClickedDefault)
 	ON_BN_CLICKED(IDC_CLEAR, &CConfigShortcuts::OnBnClickedClear)
 END_MESSAGE_MAP()
