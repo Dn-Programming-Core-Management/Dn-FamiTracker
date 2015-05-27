@@ -4841,21 +4841,22 @@ unsigned int CFamiTrackerDoc::ScanActualLength(unsigned int Track, unsigned int 
 	int RowCount = 0;
 	// // //
 
-	memset(RowVisited, 0, sizeof(char) * MAX_FRAMES * MAX_PATTERN_LENGTH);		// // //
+	memset(RowVisited, 0, MAX_FRAMES * MAX_PATTERN_LENGTH);		// // //
 
 	while (bScanning) {
 		for (int j = 0; j < GetChannelCount(); ++j) {
-			stChanNote Note;
-			GetNoteData(Track, f, j, r, &Note);
+			stChanNote *Note;
+			Note = m_pTracks[Track]->GetPatternData(j, m_pTracks[Track]->GetFramePattern(f, j), r);
+			GetNoteData(Track, f, j, r, Note);
 			for (unsigned l = 0; l < GetEffColumns(Track, j) + 1; ++l) {
-				switch (Note.EffNumber[l]) {
+				switch (Note->EffNumber[l]) {
 					case EF_JUMP:
-						JumpTo = Note.EffParam[l];
+						JumpTo = Note->EffParam[l];
 						SkipTo = 0;
 						break;
 					case EF_SKIP:
 						JumpTo = f + 1;
-						SkipTo = Note.EffParam[l];
+						SkipTo = Note->EffParam[l];
 						break;
 					case EF_HALT:
 						Count = 1;
@@ -4894,87 +4895,89 @@ unsigned int CFamiTrackerDoc::ScanActualLength(unsigned int Track, unsigned int 
 
 double CFamiTrackerDoc::GetStandardLength(int Track, unsigned int ExtraLoops) const		// // //
 {
-	int FrameVisited[MAX_FRAMES];
-	int JumpTo = -1, SkipTo = -1;
-	double FirstLoop = 0.0, SecondLoop = 0.0;
-	int Frame = 0;
+	char RowVisited[MAX_FRAMES][MAX_PATTERN_LENGTH];
+	int JumpTo = -1;
+	int SkipTo = -1;
+	double FirstLoop = 0.0;
+	double SecondLoop = 0.0;
 	bool IsGroove = GetSongGroove(Track);
-	double Tempo = GetSongTempo(Track), Speed = GetSongSpeed(Track);
+	double Tempo = GetSongTempo(Track);
+	double Speed = GetSongSpeed(Track);
 	if (!GetSongTempo(Track))
 		Tempo = 2.5 * GetFrameRate();
 	int GrooveIndex = GetSongSpeed(Track) * (m_pGrooveTable[GetSongSpeed(Track)] != NULL), GroovePointer = 0;
 	bool bScanning = true;
-	int FrameCount = GetFrameCount(Track);
+	unsigned int FrameCount = GetFrameCount(Track);
 
 	if (IsGroove && GetGroove(GetSongSpeed(Track)) == NULL) {
 		IsGroove = false;
 		Speed = DEFAULT_SPEED;
 	}
 
-	memset(FrameVisited, 0, sizeof(int) * MAX_FRAMES);
+	memset(RowVisited, 0, MAX_FRAMES * MAX_PATTERN_LENGTH);
 
+	unsigned int f = 0;
+	unsigned int r = 0;
 	while (bScanning) {
-
-		JumpTo = -1;
-		SkipTo = -1;
-
-		for (unsigned k = 0; k < GetPatternLength(Track) && JumpTo == -1 && SkipTo == -1; ++k) {
-			for (int j = 0; j < GetChannelCount(); ++j) {
-				stChanNote* Note;
-				Note = m_pTracks[Track]->GetPatternData(j, m_pTracks[Track]->GetFramePattern(Frame, j), k);
-				for (unsigned l = 0; l < GetEffColumns(Track, j) + 1; ++l) {
-					switch (Note->EffNumber[l]) {
-						case EF_JUMP:
-							JumpTo = Note->EffParam[l];
-							break;
-						case EF_SKIP:
-							SkipTo = Frame + 1;
-							break;
-						case EF_HALT:
-							ExtraLoops = 0;
-							bScanning = false;
-							break;
-						case EF_SPEED:
-							if (GetSongTempo(Track) && Note->EffParam[l] >= m_iSpeedSplitPoint)
-								Tempo = Note->EffParam[l];
-							else {
-								IsGroove = false;
-								Speed = Note->EffParam[l];
-							}
-							break;
-						case EF_GROOVE:
-							if (m_pGrooveTable[Note->EffParam[l]] == NULL) break;
-							IsGroove = true;
-							GrooveIndex = Note->EffParam[l];
-							GroovePointer = 0;
-							break;
+		for (int j = 0; j < GetChannelCount(); ++j) {
+			stChanNote* Note;
+			Note = m_pTracks[Track]->GetPatternData(j, m_pTracks[Track]->GetFramePattern(f, j), r);
+			for (unsigned l = 0; l < GetEffColumns(Track, j) + 1; ++l) {
+				switch (Note->EffNumber[l]) {
+				case EF_JUMP:
+					JumpTo = Note->EffParam[l];
+					SkipTo = 0;
+					break;
+				case EF_SKIP:
+					JumpTo = f + 1;
+					SkipTo = Note->EffParam[l];
+					break;
+				case EF_HALT:
+					ExtraLoops = 0;
+					bScanning = false;
+					break;
+				case EF_SPEED:
+					if (GetSongTempo(Track) && Note->EffParam[l] >= m_iSpeedSplitPoint)
+						Tempo = Note->EffParam[l];
+					else {
+						IsGroove = false;
+						Speed = Note->EffParam[l];
 					}
+					break;
+				case EF_GROOVE:
+					if (m_pGrooveTable[Note->EffParam[l]] == NULL) break;
+					IsGroove = true;
+					GrooveIndex = Note->EffParam[l];
+					GroovePointer = 0;
+					break;
 				}
 			}
-			if (IsGroove)
-				Speed = m_pGrooveTable[GrooveIndex]->GetEntry(GroovePointer);
-			if (FrameVisited[Frame] == 0)
-				FirstLoop += Speed / Tempo;
-			else if (FrameVisited[Frame] == 1)
-				SecondLoop += Speed / Tempo;
-			else if (FrameVisited[Frame] == 2)
-				bScanning = false;
-			GroovePointer++;
 		}
+		if (IsGroove)
+			Speed = m_pGrooveTable[GrooveIndex]->GetEntry(GroovePointer++);
+		
+		switch (RowVisited[f][r]) {
+		case 0: FirstLoop += Speed / Tempo; break;
+		case 1: SecondLoop += Speed / Tempo; break;
+		case 2: bScanning = false; break;
+		}
+		
+		++RowVisited[f][r++];
 
-		++FrameVisited[Frame];
-
-		if (JumpTo != -1) {
-			Frame = JumpTo;
+		if (JumpTo > -1) {
+			f = std::min(static_cast<unsigned int>(JumpTo), FrameCount - 1);
+			JumpTo = -1;
 		}
-		else if (SkipTo != -1) {
-			Frame = SkipTo;
+		if (SkipTo > -1) {
+			r = std::min(static_cast<unsigned int>(SkipTo), GetPatternLength(Track) - 1);
+			SkipTo = -1;
 		}
-		else
-			++Frame;
-		if (Frame >= FrameCount) {
-			Frame = 0;
+		if (r >= GetPatternLength(Track)) {		// // //
+			++f;
+			r = 0;
 		}
+		if (f >= FrameCount)
+			f = 0;
 	}
 
 	return (2.5 * (FirstLoop + SecondLoop * ExtraLoops));
