@@ -3510,6 +3510,7 @@ CPatternClipData *CPatternEditor::CopyRaw() const		// // //
 	CPatternIterator it = GetStartIterator();
 	CPatternIterator end = GetEndIterator();
 	const int Track		= GetSelectedTrack();
+	const int Frames	= m_pDocument->GetFrameCount(Track);
 	const int Length	= m_pDocument->GetPatternLength(Track);
 	const int Rows		= (end.m_iFrame - it.m_iFrame) * Length + (end.m_iRow - it.m_iRow) + 1;
 
@@ -3525,9 +3526,11 @@ CPatternClipData *CPatternEditor::CopyRaw() const		// // //
 	const int PackedPos = it.m_iFrame * Length + it.m_iRow;
 	int Channel = 0, Row = 0;
 	for (int r = 0; r < Rows; r++)
-		for (int i = 0; i < Channels; ++i)
-			m_pDocument->GetNoteData(Track, (PackedPos + r) / Length, i + cBegin, (PackedPos + r) % Length,
-				pClipData->GetPattern(i, r));
+		for (int i = 0; i < Channels; ++i) {
+			int f = (PackedPos + r) / Length;
+			f = (f + Frames) % Frames;
+			m_pDocument->GetNoteData(Track, f, i + cBegin, (PackedPos + r) % Length, pClipData->GetPattern(i, r));
+		}
 
 	return pClipData;
 }

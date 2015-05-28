@@ -892,8 +892,8 @@ void CPatternAction::Undo(CMainFrame *pMainFrm)
 		case ACT_REVERSE:
 		case ACT_REPLACE_INSTRUMENT:
 		case ACT_STRETCH_PATTERN:		// // //
-			RestoreSelection(pPatternEditor);
-			PasteSelection(pPatternEditor);		// // //
+			pPatternEditor->SetSelection(m_newSelection);		// // //
+			PasteSelection(pPatternEditor);
 			break;
 		case ACT_INSERT_SEL_ROWS:
 		case ACT_EDIT_DELETE_ROWS:
