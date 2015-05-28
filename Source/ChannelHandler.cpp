@@ -205,6 +205,7 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 {
 	CFamiTrackerDoc *pDoc = m_pSoundGen->GetDocument();
 	if (!pDoc) return;
+	if (pDoc->GetChannelIndex(m_iChannelID) == -1) return;
 
 	int Track = m_pSoundGen->GetPlayerTrack();
 	int Frame = m_pSoundGen->GetPlayerFrame();
@@ -297,7 +298,7 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 			if (Note.Vol != MAX_VOLUME)
 				Vol = Note.Vol << VOL_COLUMN_SHIFT;
 		
-		CTrackerChannel *ch = pDoc->GetChannel(pDoc->GetChannelPosition(m_iChannelID, pDoc->GetExpansionChip()));
+		CTrackerChannel *ch = pDoc->GetChannel(Channel);
 		for (int c = EffColumns; c >= 0; c--)
 			switch (Note.EffNumber[c]) {
 			case EF_NONE: case EF_PORTAOFF:
@@ -458,7 +459,7 @@ CString CChannelHandler::GetEffectString() const		// // //
 		str.AppendFormat(_T(" V%02X"), m_iDefaultDuty);
 
 	str.Append(GetCustomEffectString());
-	return str.IsEmpty() ? " None" : str;
+	return str.IsEmpty() ? _T(" None") : str;
 }
 
 CString CChannelHandler::GetCustomEffectString() const		// // //
@@ -1240,7 +1241,7 @@ CString CChannelHandlerInverted::GetEffectString() const		// // //
 		str.AppendFormat(_T(" V%02X"), m_iDefaultDuty);
 
 	str.Append(GetCustomEffectString());
-	return str.IsEmpty() ? " None" : str;
+	return str.IsEmpty() ? _T(" None") : str;
 }
 
 /*
