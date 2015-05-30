@@ -233,7 +233,7 @@ void CPatternAction::CopySelection(const CPatternEditor *pPatternEditor)		// // 
 
 void CPatternAction::PasteSelection(CPatternEditor *pPatternEditor)		// // //
 {
-	pPatternEditor->Paste(m_pUndoClipData, PASTE_DEFAULT, PASTE_SELECTION);
+	pPatternEditor->PasteRaw(m_pUndoClipData);
 }
 
 void CPatternAction::CopyAuxiliary(const CPatternEditor *pPatternEditor)		// // //
@@ -243,7 +243,7 @@ void CPatternAction::CopyAuxiliary(const CPatternEditor *pPatternEditor)		// // 
 
 void CPatternAction::PasteAuxiliary(CPatternEditor *pPatternEditor)		// // //
 {
-	pPatternEditor->Paste(m_pAuxiliaryClipData, PASTE_DEFAULT, PASTE_SELECTION);
+	pPatternEditor->PasteRaw(m_pAuxiliaryClipData);
 }
 
 void CPatternAction::IncreaseRowAction(CFamiTrackerDoc *pDoc) const

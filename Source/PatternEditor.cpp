@@ -3524,9 +3524,8 @@ CPatternClipData *CPatternEditor::CopyRaw() const		// // //
 	pClipData->ClipInfo.EndColumn	= GetSelectColumn(m_selection.GetColEnd());
 	
 	const int PackedPos = (it.m_iFrame + Frames) * Length + it.m_iRow;
-	int Channel = 0, Row = 0;
 	for (int r = 0; r < Rows; r++) for (int i = 0; i < Channels; ++i)
-		m_pDocument->GetNoteData(Track, (PackedPos + r) / Length, i + cBegin, (PackedPos + r) % Length, pClipData->GetPattern(i, r));
+		m_pDocument->GetNoteData(Track, (PackedPos + r) / Length % Frames, i + cBegin, (PackedPos + r) % Length, pClipData->GetPattern(i, r));
 
 	return pClipData;
 }
@@ -3581,7 +3580,7 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 				back.Get(i, &Source);
 				front.Get(i, &NoteData);
 				CopyNoteSection(&NoteData, &Source, PasteMode, (i == c) ? StartColumn : COLUMN_NOTE,
-					std::min((i == CEnd - 1) ? EndColumn : COLUMN_EFF4, COLUMN_EFF1 + m_pDocument->GetEffColumns(Track, i)));
+					std::min((i == Channels + c - 1) ? EndColumn : COLUMN_EFF4, COLUMN_EFF1 + m_pDocument->GetEffColumns(Track, i)));
 				front.Set(i, &NoteData);
 			}
 			front.m_iRow--;
@@ -3625,7 +3624,7 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 	for (unsigned int j = 0; j < Rows; ++j) {
 		for (unsigned int i = c; i < CEnd; ++i) {
 			int cGet = (i - c) % pClipData->ClipInfo.Channels;
-			const int ColEnd = std::min((i == CEnd - 1) ? EndColumn : COLUMN_EFF4,
+			const int ColEnd = std::min((i == Channels + c - 1) ? EndColumn : COLUMN_EFF4,
 				COLUMN_EFF1 + m_pDocument->GetEffColumns(Track, i));
 			it.Get(i, &NoteData);
 			Source = *(pClipData->GetPattern(cGet, j % pClipData->ClipInfo.Rows));
@@ -3637,6 +3636,32 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 				PasteMode == PASTE_INSERT) break;
 		}
 		if (!((it.m_iFrame - f) % GetFrameCount()) && it.m_iRow == r) break;
+	}
+}
+
+void CPatternEditor::PasteRaw(const CPatternClipData *pClipData)		// // //
+{
+	CPatternIterator it = GetStartIterator();
+	const int Track = GetSelectedTrack();
+	const int Frames = m_pDocument->GetFrameCount(Track);
+	const int Length = m_pDocument->GetPatternLength(Track);
+
+	const int Rows = pClipData->ClipInfo.Rows;
+	const int Channels = pClipData->ClipInfo.Channels;
+	const unsigned int StartColumn = pClipData->ClipInfo.StartColumn;
+	const unsigned int EndColumn = pClipData->ClipInfo.EndColumn;
+	const unsigned int CEnd = std::min(Channels + m_selection.GetChanStart(), GetChannelCount());
+
+	stChanNote Target = BLANK_NOTE;
+	stChanNote Source = BLANK_NOTE;
+	const int PackedPos = (m_selection.GetFrameStart() + GetFrameCount()) * Length + m_selection.GetRowStart();
+	for (int i = 0; i < Channels; ++i) for (int r = 0; r < pClipData->ClipInfo.Rows; r++) {
+		if (i + m_selection.GetChanStart() == GetChannelCount()) return;
+		m_pDocument->GetNoteData(Track, (PackedPos + r) / Length % Frames, i + m_selection.GetChanStart(), (PackedPos + r) % Length, &Target);
+		Source = *(pClipData->GetPattern(i, r));
+		CopyNoteSection(&Target, &Source, PASTE_DEFAULT, (i == 0) ? StartColumn : COLUMN_NOTE,
+			std::min((i == Channels + m_selection.GetChanStart() - 1) ? EndColumn : COLUMN_EFF4, COLUMN_EFF1 + m_pDocument->GetEffColumns(Track, i)));
+		m_pDocument->SetNoteData(Track, (PackedPos + r) / Length % Frames, i + m_selection.GetChanStart(), (PackedPos + r) % Length, &Target);
 	}
 }
 
