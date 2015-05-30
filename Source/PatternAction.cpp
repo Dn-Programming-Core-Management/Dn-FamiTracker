@@ -176,6 +176,7 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // /
 			4 + 3 * CFamiTrackerDoc::GetDoc()->GetEffColumns(m_iUndoTrack, End.m_iChannel));
 	}
 	else if (m_iPastePos == PASTE_DRAG) {
+		End.m_iChannel += m_pClipData->ClipInfo.Channels - 1;
 		Start.m_iColumn = m_dragTarget.GetColStart();
 		End.m_iColumn = m_dragTarget.GetColEnd();
 	}
