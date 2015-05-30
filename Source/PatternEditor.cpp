@@ -2981,9 +2981,6 @@ void CPatternEditor::OnMouseDownPattern(const CPoint &point)
 	CCursorPos PointPos = GetCursorAtPoint(point);
 	const int PatternLength = GetCurrentPatternLength(PointPos.m_iFrame);		// // //
 
-	m_iDragBeginWarp = PointPos.m_iFrame / GetFrameCount();		// // //
-	if (PointPos.m_iFrame % GetFrameCount() < 0) m_iDragBeginWarp--;
-
 	if (bShift && !IsInRange(m_selection, PointPos.m_iFrame, PointPos.m_iRow, PointPos.m_iChannel, PointPos.m_iColumn)) {		// // //
 		// Expand selection
 		if (!PointPos.IsValid(FrameCount, PatternLength, ChannelCount))		// // //
@@ -3000,6 +2997,9 @@ void CPatternEditor::OnMouseDownPattern(const CPoint &point)
 		if (IsInsideRowColumn(point)) {
 			// Row number column
 			CancelSelection();
+			m_iDragBeginWarp = PointPos.m_iFrame / GetFrameCount();		// // //
+			if (PointPos.m_iFrame % GetFrameCount() < 0) m_iDragBeginWarp--;
+
 			PointPos.m_iRow = std::max(PointPos.m_iRow, 0);
 			PointPos.m_iRow = std::min(PointPos.m_iRow, PatternLength - 1);		// // //
 			m_selection.m_cpStart = CCursorPos(PointPos.m_iRow, 0, 0, PointPos.m_iFrame);		// // //
@@ -3024,6 +3024,8 @@ void CPatternEditor::OnMouseDownPattern(const CPoint &point)
 					m_bDragStart = false;
 					m_bDragging = false;
 					CancelSelection();
+					m_iDragBeginWarp = PointPos.m_iFrame / GetFrameCount();		// // //
+					if (PointPos.m_iFrame % GetFrameCount() < 0) m_iDragBeginWarp--;
 				}
 			}
 
@@ -3650,12 +3652,11 @@ void CPatternEditor::PasteRaw(const CPatternClipData *pClipData)		// // //
 	const int Channels = pClipData->ClipInfo.Channels;
 	const unsigned int StartColumn = pClipData->ClipInfo.StartColumn;
 	const unsigned int EndColumn = pClipData->ClipInfo.EndColumn;
-	const unsigned int CEnd = std::min(Channels + m_selection.GetChanStart(), GetChannelCount());
 
 	stChanNote Target = BLANK_NOTE;
 	stChanNote Source = BLANK_NOTE;
 	const int PackedPos = (m_selection.GetFrameStart() + GetFrameCount()) * Length + m_selection.GetRowStart();
-	for (int i = 0; i < Channels; ++i) for (int r = 0; r < pClipData->ClipInfo.Rows; r++) {
+	for (int i = 0; i < Channels; ++i) for (int r = 0; r < Rows; r++) {
 		if (i + m_selection.GetChanStart() == GetChannelCount()) return;
 		m_pDocument->GetNoteData(Track, (PackedPos + r) / Length % Frames, i + m_selection.GetChanStart(), (PackedPos + r) % Length, &Target);
 		Source = *(pClipData->GetPattern(i, r));
