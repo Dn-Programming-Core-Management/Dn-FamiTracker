@@ -133,6 +133,7 @@ BEGIN_MESSAGE_MAP(CFamiTrackerView, CView)
 	ON_WM_LBUTTONUP()
 	ON_WM_LBUTTONDBLCLK()
 	ON_WM_RBUTTONUP()
+	ON_WM_XBUTTONDOWN()		// // //
 	ON_WM_MENUCHAR()
 	ON_WM_SYSKEYDOWN()
 	ON_COMMAND(ID_EDIT_PASTEMIX, OnEditPasteMix)
@@ -671,6 +672,33 @@ void CFamiTrackerView::OnLButtonDblClk(UINT nFlags, CPoint point)
 	m_pPatternEditor->OnMouseDblClk(point);
 	InvalidateCursor();
 	CView::OnLButtonDblClk(nFlags, point);
+}
+
+void CFamiTrackerView::OnXButtonDown(UINT nFlags, UINT nButton, CPoint point)		// // //
+{
+	/*
+	switch (nFlags & (MK_CONTROL | MK_SHIFT)) {
+	case MK_CONTROL:
+		if (nButton == XBUTTON2)
+			OnEditCopy();
+		else if (nButton == XBUTTON1)
+			OnEditPaste();
+		break;
+	case MK_SHIFT:
+		m_iMenuChannel = m_pPatternEditor->GetChannelAtPoint(point.x);
+		if (nButton == XBUTTON2)
+			OnTrackerToggleChannel();
+		else if (nButton == XBUTTON1)
+			OnTrackerSoloChannel();
+		break;
+	default:
+		if (nButton == XBUTTON2)
+			static_cast<CMainFrame*>(GetParentFrame())->OnEditRedo();
+		else if (nButton == XBUTTON1)
+			static_cast<CMainFrame*>(GetParentFrame())->OnEditUndo();
+	}
+	*/
+	CView::OnXButtonDown(nFlags, nButton, point);
 }
 
 void CFamiTrackerView::OnMouseMove(UINT nFlags, CPoint point)

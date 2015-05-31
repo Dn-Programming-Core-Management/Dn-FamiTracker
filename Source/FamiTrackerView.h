@@ -344,6 +344,7 @@ public:
 	afx_msg void OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnXButtonDown(UINT nFlags, UINT nButton, CPoint point);		// // //
 	afx_msg void OnEditCopy();
 	afx_msg void OnEditCut();
 	afx_msg void OnEditPaste();
