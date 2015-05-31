@@ -886,7 +886,6 @@ void CPatternAction::Undo(CMainFrame *pMainFrm)
 			pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, pDoc->GetPatternLength(m_iUndoTrack) - 1, &m_OldNote);
 			break;
 		case ACT_EDIT_PASTE:		// // //
-		case ACT_EDIT_DELETE:
 		case ACT_TRANSPOSE:
 		case ACT_SCROLL_VALUES:
 		case ACT_INTERPOLATE:
@@ -894,6 +893,10 @@ void CPatternAction::Undo(CMainFrame *pMainFrm)
 		case ACT_REPLACE_INSTRUMENT:
 		case ACT_STRETCH_PATTERN:		// // //
 			pPatternEditor->SetSelection(m_newSelection);		// // //
+			PasteSelection(pPatternEditor);
+			break;
+		case ACT_EDIT_DELETE:
+			pPatternEditor->SetSelection(m_selection);		// // //
 			PasteSelection(pPatternEditor);
 			break;
 		case ACT_INSERT_SEL_ROWS:
