@@ -40,4 +40,6 @@ FamiTracker.opensdf
 FamiTracker.sdf
 config.h
 apu_log.txt
+FamiTracker.vcproj
 FamiTracker.vcxproj
+FamiTracker.vcxproj.filters
