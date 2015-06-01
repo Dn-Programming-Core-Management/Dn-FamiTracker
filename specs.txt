@@ -1,7 +1,7 @@
 0CC-FamiTracker Mod
 Specification
 Written by HertzDevil
-Version 0.3.8 - Feeb 16 2015
+Version 0.3.9 - Apr 12 2015
 
 --------------------------------------------------------------------------------
 
@@ -13,6 +13,8 @@ The following changes to the FTM effect enumeration are made:
  - Mxy: 0x19: delayed channel volume
  - Lxx: 0x21: delayed note release
  - Oxx: 0x22: groove setting
+ - Txy: 0x23: delayed transpose
+ - Zxx: 0x24: N163 wave buffer
 
 The following effect command bytes are added to the NSF export format:
  - Lxx: 0xBA: delayed note release

@@ -1,7 +1,7 @@
 0CC-FamiTracker Mod
 Readme / Manual
 Written by HertzDevil
-Version 0.3.8 - Feb 16 2015
+Version 0.3.9 - Apr 12 2015
 
 --------------------------------------------------------------------------------
 
@@ -9,9 +9,9 @@ Version 0.3.8 - Feb 16 2015
 	About
 	===
 
-This is a modified version of FamiTracker that incorporates various new effects
-and bug fixes which work in exported NSFs as well. The name "0CC" comes from the
-author's favourite arpeggio effect. The current version includes:
+0CC-FamiTracker is a modified version of FamiTracker that incorporates various
+new effects and bug fixes which work in exported NSFs as well. The name "0CC"
+comes from the author's favourite arpeggio effect. The current version includes:
 
  - Complete Sunsoft 5B support
  - Arpeggio schemes
@@ -29,15 +29,32 @@ See also the change log for a list of various tweaks and improvements.
 This program and its source code are licensed under the GNU General Public
 License Version 2. Differences to the original FamiTracker source are marked
 with "// // //"; those to the ASM source with ";;; ;; ;" and "; ;; ;;;". The
-current build is based on the 0.4.6 official release of FamiTracker and the 2.11
-version of the NSF driver; 0CC-FamiTracker will continue to use that version in
-future updates unless there is great need for update, but its behaviour may not
-be identical if and when any of the features of this mod becomes part of the an
-official FamiTracker release.
+current build is based on the 0.4.6 official release of FamiTracker and an
+unknown version of the NSF driver used in that release; 0CC-FamiTracker will
+continue to use that version in future updates unless there is great need for
+update, but its behaviour may not be identical if and when any of the features
+of this mod becomes part of the an official FamiTracker release.
 
-0CC-FamiTracker accepts feature requests and bug reports at the official
-development log at http://0cc-famitracker.tumblr.com/ as well as the forum at
-http://hertzdevil.info/forum/ where users may also share their 0CC-FT creations.
+	===
+	Links
+	===
+
+- http://hertzdevil.info/programs/
+   The download site for all versions of 0CC-Famitracker.
+
+- http://0cc-famitracker.tumblr.com/
+   The official development log of 0CC-FamiTracker. Feature requests and bug
+   reports can be sent here.
+
+- http://hertzdevil.info/forum/
+   The current 0CC-FamiTracker forum. Members may share their 0CC-FT creations
+   and submti bug reports.
+
+- http://github.com/HertzDevil/0CC-FamiTracker
+   The Git source repository for the tracker.
+
+- http://github.com/HertzDevil/0CC-FT-NSF-Driver
+   The Git source repository for the NSF driver.
 
 	===
 	Sunsoft 5B Support
@@ -191,8 +208,7 @@ The find / replace tab contains a few options:
     first, then to the next channel;
  - Replace all: When checked, pressing the "Replace" button will iterate through
     the entire search area until all occurrences of the search query have been
-    replaced, or an internal limit of 10,000 replacements is reached, at which
-    point 0CC-FamiTracker stops the operation to avoid potential lockup;
+    replaced;
  - Remove original data: When checked, any field in the replacement query that
     is disabled will be treated as the corresponding blank pattern data.
 
@@ -360,19 +376,44 @@ menu:
  - Cut sub-volume: In NSFs exported with older versions of FamiTracker, volume
     values between 0 and 1 caused by the Axy and 7xy effects will be truncated,
     while in later versions these values round up to 1. When checked, the old
-    behaviour will be used for all channels. (As of version 2.11 of the NSF
+    behaviour will be used for all channels in the tracker. This option does not
+    affect the volume table in exported NSFs. (As of version 2.11 of the NSF
     driver, only some expansion chips use the rounding-up behaviour.)
  - Use old FDS volume table: Since 0CC-FamiTracker 0.3.8, the tracker uses the
     same volume table as in exported NSFs, which is slightly louder, especially
     at high instrument volume and low channel volume. When checked, the existing
-    volume table will be used.
+    volume table will be used in the tracker. This option does not affect the
+    table in exported NSFs.
+ - Retrieve channel state: When checked, 0CC-FamiTracker will search backward in
+    the FTM to restore the effect parameters of all effect commands that have
+    memory, and apply them at once before playing begins. This option does not
+    check for global effects that affect the playing order (such as Bxx or Dxx
+    with non-zero parameters) or the speed (Fxx and Oxx).
+ - Overflow paste mode: When checked, pattern data in the clipboard may be moved
+    to subsequent frames if the destination row exceeds the number of rows in
+    the current frame.
+ - Show skipped rows: In previous versions of FamiTracker, rows truncated by
+    skip effects are displayed if and only if "Preview next/previous frame" is
+    disabled. Since 0CC-FamiTracker 0.3.9 this behaviour is separated from the
+    preview option.
+ - Hexadecimal keypad: When checked, the following numpad keys are treated as
+    hexadecimal digits A - F in the pattern editor: Divide, Multiply, Subtract,
+    Add, Enter, Decimal. These keys are effective only if no shortcuts using
+    them are defined in the configuration menu (in particular, Enter / Return
+    must not be assigned to any shortcut).
 
-The following shortcuts have been added to 0CC-FamiTracker:
- - Mask volume (Alt+V by default)
- - Toggle find / replace tab (Ctrl+F by default)
- - Find next (none by default)
- - Duplicate current pattern (Alt+C by default)
- - Toggle N163 multiplexer emulation (Ctrl+Shift+M)
+The following shortcuts have been added to 0CC-FamiTracker: (parenthesized key
+combinations are the default hotkeys)
+ - Paste overwrite (None)
+ - Paste insert (None)
+ - Mask volume (Alt+V)
+ - Stretch patterns (None)
+ - Duplicate current pattern (Alt+D)
+ - Coarse decrease values (Shift+F3)
+ - Coarse increase values (Shift+F4)
+ - Toggle find / replace tab (Ctrl+F)
+ - Find next (None)
+ - Toggle N163 multiplexer emulation (Ctrl+Shift+M; not configurable)
 
 	===
 	Known issues
@@ -389,6 +430,8 @@ The following shortcuts have been added to 0CC-FamiTracker:
 - The behaviour of Qxy and Rxy on the noise channel is inconsistent between
    FamiTracker and NSF driver when the pitch overflows
 - FDS and N163 sometimes load incorrect waves in multichip NSFs
+- On long FTMs, retrieving the channel state often results in an audio buffer
+   underrun
 
 	===
 	Credits
@@ -398,7 +441,7 @@ The following shortcuts have been added to 0CC-FamiTracker:
 - ipi: Original implementation of the Lxx effect and expansion chip selector,
    "UsualDay.ftm" demo module
 - jsr: Partial implementation of the Sunsoft 5B chip
-- Xyz_39808: Bug testing
+- Xyz_39808, poodlecock: Bug testing
 - Flaminglog: Easter egg
 
 --------------------------------------------------------------------------------

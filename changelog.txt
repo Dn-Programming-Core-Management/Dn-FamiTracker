@@ -1,9 +1,108 @@
 0CC-FamiTracker Mod
 Change Log
 Written by HertzDevil
-Version 0.3.8 - Feb 16 2015
+Version 0.3.9 - Apr 12 2015
 
 --------------------------------------------------------------------------------
+
+V0.3.9 - 04/12/15
+Additions:
+ - Selection can now span across frame boundaries
+ - Added several special pasting modes
+ - Added an option in the configuration menu to retrieve the current state of
+    all channels from previous rows
+ - Added a compact view mode which displays only the note fields in the pattern
+    editor and hides all other columns
+Improvements:
+ - Ported to the version of NSF driver used in official FamiTracker 0.4.6
+ - The configuration menu's general tab is re-organized
+ - Added an option in the configuration menu to allow pasting to continuously
+    write to subsequent frames
+ - Added an option in the configuration menu to display rows skipped by global
+    effects
+ - Added an option in the configuration menu to use the extra keys on the
+    numpad as hexadecimal digits
+ - The colours of the current row in the pattern editor can now be configured
+ - The pattern editor's font size can now be set between 5 and 30 inclusive
+ - The pattern editor's rendering is slightly improved
+ - Added a cleanup command to populate all frames with unique pattern copies
+ - "Preview next/previous frames" now displays all frames above and below the
+    current frame
+ - The pattern editor now highlights inapplicable effects in red
+ - Automatic scrolling in the pattern editor can now move diagonally
+ - Clicking previous or next frames moves the cursor to the row below the mouse
+    cursor
+ - Ctrl+Clear key now deletes entire note
+ - Pasting now supports the Impulse Tracker edit style (any field on the note,
+    instrument or volume column registers as non-empty)
+ - Interpolation now works on all pattern columns, as well as effects that take
+    multiple parameters
+ - Added a stretch selection command which generalizes expanding and shrinking
+ - Added keyboard commands to scroll the values of current selection by 0x10
+    (data entry up/down coarse in ModPlug)
+ - The frequency displays below the register displays now use note values
+ - The tracker completely blocks all operations in the pattern editor that
+    modify pattern data when the edit mode is disabled
+ - The N163 wave memory is now graphically displayed along the wave registers
+ - Sequence MML field now accepts "L" for loop point and "R" for release point
+    (like NSDL)
+ - Sequence MML field now splits hexadecimal strings into signed bytes
+ - The N163 wave buffer effect is renamed to Zxx
+Bug fixes:
+ - Program now displays properly on higher DPI settings
+ - Fixed the register display showing notes below octave 1 improperly
+ - Fixed the register display evaluating incorrect notes for the 2A03 channels
+    when PAL is selected
+ - Fixed the register display drawing a bar for the DPCM channel even when no
+    note is being played
+ - The frequency displays below the register displays now use the correct order
+    of N163 channels
+ - Fixed "Remove unused DPCM samples" detecting sample usage incorrectly
+ - The pattern editor's cursor now moves by the correct number of steps across
+    frames that have been shortened when using arrow keys or the mouse wheel
+ - The pattern editor always displays the current frame up to the row being
+    played if follow mode is enabled, disregarding skip effects above the row
+ - Fixed incorrect behaviour of editing the instrument column when the ModPlug
+    Tracker edit style is enabled
+ - Fixed a bug where decreasing the number of effect columns hides the cursor if
+    it is on the effect column just removed
+ - Fixed full row selection selecting hidden effect columns of the last channel
+ - Fixed Shift + Mouse Wheel applying to an incorrect area after a selection is
+    cancelled by clicking within the selection
+ - Fixed Numpad Plus key incorrectly incrementing the cursor's data field to
+    blank data
+ - Pasting no longer applies to hidden effect columns and rows hidden by global
+    effects when "Preview next/previous frames" is enabled
+ - Interpolation no longer works on effect columns if the beginning and ending
+    effect commands do not match
+ - Transposing a selection no longer affects the echo buffer access notes
+ - Fixed "Expand selection" overwriting one row outside the selection if the
+    number of selected rows is odd
+ - Expand, shrink, Backspace delete, and Replace instrument now apply only to
+    columns within the selection
+ - Fixed Replace All crashing the tracker or not updating the pattern editor
+    view after replacement
+ - Fixed a bug where Replace All searches the same row more than once
+ - Fixed effect query on the Find / Replace tab not behaving properly when the
+    effect column scope is set to "All"
+ - Both the Find / Replace tab and the text importer now accept the N163 wave
+    buffer effect
+ - Disabled FTM import loading tracks with a different number of N163 channels
+    than the current module to incorrect channels when 5B or VRC7 is also used
+ - Fixed groove settings allowing negative speed values
+ - Fixed incompatible behaviour of Qxy and Rxy by realizing the portamento
+    effects as instantiations of 3xx automatic portamento
+ - Fixed Qxy and Rxy not working in Sunsoft 5B in the tracker
+ - Echo buffer no longer converts the note cut to an invalid note
+ - Echo buffer no longer converts blank entries to invalid notes when they are
+    modified by transposing effects
+ - Fixed 2A03 hardware sweep units not resetting properly for Hxy/Ixy effects
+ - Fixed FDS-only NSFs corrupting during export
+ - Fixed bankswitched multichip NSFs corrupting during export
+ - Fixed Txy not working in exported NSFs
+ - Fixed the tracker sometimes not exporting Mxy effects to NSFs
+ - Fixed the tracker exporting invalid pattern data when the N163 wave buffer
+    effect has an out-of-bound parameter
 
 V0.3.8 - 02/16/15
 Additions:
@@ -27,8 +126,8 @@ Improvements:
  - Added hotkey to duplicate the current pattern to the first unused pattern of
     the channel
  - FTM import now supports detune tables and groove tables
- - Sequence MML field now accepts "'" single quotation mark for repetition (like
-    XPMCK)
+ - Sequqnce MML field now accepts "L" for loop point, "R" for release point (in
+    accordance with NSDL), and "'" (single quotation mark) for repetition
  - The Sunsoft 5B's volume level can now be modified in the chip mixer
  - MMC5 can now output sound when the period register is below 0x008
  - The status bar now displays the current row and frame index in hexadecimal
@@ -50,7 +149,7 @@ Bug fixes:
 
 V0.3.7 - 01/18/15
 Additions:
- - Added Yxx wave buffer access for N163 channels
+ - Added Yxx sample buffer access for N163 channels
  - Added Find / Replace tab
 Improvements:
  - Added information panel for the detune settings dialog
