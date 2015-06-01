@@ -903,10 +903,12 @@ void CFamiTrackerView::DrawExportTestProgress()
 void CFamiTrackerView::OnEditCopy()
 {
 	// // // Copy volume values
+	/* disabled, use menu command
 	if (IsShiftPressed()) {
-		OnEditCopyAsVolumeSequence();		// // //
+		OnEditCopyAsVolumeSequence();
 		return;
 	}
+	*/
 
 	CClipboard Clipboard(this, m_iClipboard);
 

@@ -4089,7 +4089,7 @@ void CPatternEditor::GetVolumeColumn(CString &str) const
 	// Copy the volume column as text
 
 	const int Track = GetSelectedTrack();
-	const int Channel = m_selection.GetChanStart() + !m_selection.IsColumnSelected(COLUMN_VOLUME, m_selection.GetChanStart()); // // //
+	const int Channel = m_selection.GetChanStart();
 	const CPatternIterator End = GetEndIterator();
 	stChanNote NoteData;
 
@@ -4100,12 +4100,13 @@ void CPatternEditor::GetVolumeColumn(CString &str) const
 	CPatternIterator it = GetStartIterator();
 	do {
 		it--;
+		if (it.m_iFrame < 0) break;
 		it.Get(Channel, &NoteData);
 		if (NoteData.Vol != MAX_VOLUME) {
 			vol = NoteData.Vol;
 			break;
 		}
-	} while (it.m_iFrame || it.m_iRow);
+	} while (it.m_iFrame > 0 || it.m_iRow > 0);
 	
 	str.Empty();
 	for (CPatternIterator it = GetStartIterator(); it <= End; it++) {
@@ -4138,8 +4139,15 @@ void CPatternEditor::GetSelectionAsText(CString &str) const		// // //
 	str.Empty();
 
 	int Row = 0;
+	int Size = m_bSelecting ? (GetSelectionSize() - 1) : (end.m_iRow - it.m_iRow + 1);
+	int HexLength = 0;
+	do {
+		HexLength++;
+		Size >>= 4;
+	} while (Size);
+	if (HexLength < 2) HexLength = 2;
 	for (CPatternIterator it = GetStartIterator(); it <= end; it++) {
-		str.AppendFormat(_T("ROW %02X"), Row++);
+		str.AppendFormat(_T("ROW %0*X"), HexLength, Row++);
 		for (int i = it.m_iChannel; i <= end.m_iChannel; i++) {
 			it.Get(i, &NoteData);
 			str.AppendFormat(_T(" : %s"), CTextExport::ExportCellText(NoteData, m_pDocument->GetEffColumns(Track, i) + 1, i == CHANID_NOISE));
