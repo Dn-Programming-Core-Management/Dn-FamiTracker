@@ -4125,17 +4125,11 @@ void CPatternEditor::GetSelectionAsText(CString &str) const		// // //
 	const int Channel = m_selection.GetChanStart() + !m_selection.IsColumnSelected(COLUMN_VOLUME, m_selection.GetChanStart()); // // //
 	stChanNote NoteData;
 
-	if (Channel < 0 || Channel >= GetChannelCount())
+	if (Channel < 0 || Channel >= GetChannelCount() || !m_bSelecting)
 		return;
 
 	CPatternIterator it = GetStartIterator();
 	CPatternIterator end = GetEndIterator();
-	if (!m_bSelecting) { // should not happen
-		it.m_iFrame = end.m_iFrame = m_cpCursorPos.m_iFrame;
-		it.m_iRow = it.m_iChannel = 0;
-		end.m_iRow     = GetCurrentPatternLength(m_cpCursorPos.m_iFrame) - 1;
-		end.m_iChannel = GetChannelCount() - 1;
-	}
 	str.Empty();
 
 	int Row = 0;
@@ -4146,11 +4140,22 @@ void CPatternEditor::GetSelectionAsText(CString &str) const		// // //
 		Size >>= 4;
 	} while (Size);
 	if (HexLength < 2) HexLength = 2;
+	const int Last = static_cast<int>(m_pDocument->GetEffColumns(Track, end.m_iChannel)) + COLUMN_EFF1 - GetSelectColumn(end.m_iColumn);
 	for (CPatternIterator it = GetStartIterator(); it <= end; it++) {
-		str.AppendFormat(_T("ROW %0*X"), HexLength, Row++);
+		CString line;
+		line.AppendFormat(_T("ROW %0*X"), HexLength, Row++);
 		for (int i = it.m_iChannel; i <= end.m_iChannel; i++) {
 			it.Get(i, &NoteData);
-			str.AppendFormat(_T(" : %s"), CTextExport::ExportCellText(NoteData, m_pDocument->GetEffColumns(Track, i) + 1, i == CHANID_NOISE));
+			line.AppendFormat(_T(" : %s"), CTextExport::ExportCellText(NoteData, m_pDocument->GetEffColumns(Track, i) + 1, i == CHANID_NOISE));
+		}
+		for (int i = 0; i < std::max(3, GetSelectColumn(it.m_iColumn)); i++)
+			for (int j = 0; j < 3; j++) line.SetAt(7 + 3 * i + j + HexLength, ' ');
+		for (int i = 3; i < std::min(static_cast<int>(m_pDocument->GetEffColumns(Track, i)) + 4, GetSelectColumn(it.m_iColumn)); i++)
+			for (int j = 0; j < 3; j++) line.SetAt(4 * i + j + HexLength, ' ');
+		str.Append(line.Left(line.GetLength() - 4 * std::max(0, std::min(3, Last)) + std::max(0, 3 - GetSelectColumn(end.m_iColumn))));
+		str.Append(_T("\r\n"));
+	}
+}
 		}
 		str.Append(_T("\r\n"));
 	}
