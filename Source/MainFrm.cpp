@@ -308,6 +308,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_BN_CLICKED(IDC_CHECK_COMPACT, OnClickedCompact)
 	ON_COMMAND(IDC_COMPACT_TOGGLE, OnToggleCompact)
 	ON_COMMAND(ID_FILE_EXPORTROWS, OnFileExportRows)
+	ON_COMMAND(ID_COPYAS_TEXT, OnEditCopyAsText)
+	ON_COMMAND(ID_COPYAS_VOLUMESEQUENCE, OnEditCopyAsVolumeSequence)
 	ON_COMMAND(ID_SELECT_NONE, OnEditSelectnone)
 	ON_COMMAND(ID_SELECT_ROW, OnEditSelectrow)
 	ON_COMMAND(ID_SELECT_COLUMN, OnEditSelectcolumn)
@@ -326,6 +328,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(IDC_COMPACT_TOGGLE, OnUpdateToggleCompact)
 	ON_UPDATE_COMMAND_UI(IDC_BUTTON_FIXTEMPO, OnUpdateToggleFixTempo)
 	ON_UPDATE_COMMAND_UI(IDC_BUTTON_GROOVE, OnUpdateGrooveEdit)
+	ON_UPDATE_COMMAND_UI(ID_COPYAS_TEXT, OnUpdateEditCopySpecial)
+	ON_UPDATE_COMMAND_UI(ID_COPYAS_VOLUMESEQUENCE, OnUpdateEditCopySpecial)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_FIND_TOGGLE, OnUpdateEditFindToggle)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_INTERPOLATE, OnUpdateSelectionEnabled)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_REVERSE, OnUpdateSelectionEnabled)
@@ -2236,6 +2240,12 @@ void CMainFrame::OnUpdateEditCopy(CCmdUI *pCmdUI)
 	pCmdUI->Enable((pView->IsSelecting() || GetFocus() == m_pFrameEditor) ? 1 : 0);
 }
 
+void CMainFrame::OnUpdateEditCopySpecial(CCmdUI *pCmdUI)		// // //
+{
+	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(GetActiveView());
+	pCmdUI->Enable((pView->IsSelecting() && GetFocus() == GetActiveView()) ? 1 : 0);
+}
+
 void CMainFrame::OnUpdateEditPaste(CCmdUI *pCmdUI)
 {
 	if (GetFocus() == GetActiveView())
@@ -2624,6 +2634,20 @@ void CMainFrame::OnEditCopy()
 		static_cast<CFamiTrackerView*>(GetActiveView())->OnEditCopy();
 	else if (GetFocus() == GetFrameEditor())
 		GetFrameEditor()->OnEditCopy();
+}
+
+void CMainFrame::OnEditCopyAsText()		// // //
+{
+	if (GetFocus() == GetActiveView())
+		static_cast<CFamiTrackerView*>(GetActiveView())->OnEditCopyAsText();
+	//else if (GetFocus() == GetFrameEditor())
+	//	GetFrameEditor()->OnEditCopy();
+}
+
+void CMainFrame::OnEditCopyAsVolumeSequence()		// // //
+{
+	if (GetFocus() == GetActiveView())
+		static_cast<CFamiTrackerView*>(GetActiveView())->OnEditCopyAsVolumeSequence();
 }
 
 void CMainFrame::OnEditPaste()

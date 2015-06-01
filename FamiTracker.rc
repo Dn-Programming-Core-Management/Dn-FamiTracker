@@ -136,6 +136,11 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Find / Replace",             ID_EDIT_FIND_TOGGLE
         MENUITEM "Find &Next",                  ID_FIND_NEXT
+        POPUP "Copy As"
+        BEGIN
+            MENUITEM "Volume Sequence",             ID_COPYAS_VOLUMESEQUENCE
+            MENUITEM "Text",                        ID_COPYAS_TEXT
+        END
         MENUITEM SEPARATOR
         POPUP "&Select"
         BEGIN
@@ -2250,6 +2255,10 @@ BEGIN
     ID_SELECT_CHANNEL       "Select the current channel\nSelect Channel"
     ID_SELECT_TRACK         "Select the entire track\nSelect Track"
     ID_SELECT_COLUMN        "Select the entire column in the current pattern\nSelect Column"
+    ID_COPYAS_TEXT          "Copy the current selection as pretty-printed text\nCopy As Text"
+    ID_COPYAS_VOLUMESEQUENCE 
+                            "Copy the volume sequence in the first selected channel\nCopy As Volume Sequence"
+    ID_COPYAS_OPENMPT       "Copy the current selection as a MPT-compatible pattern data\nCopy As ModPlug Tracker"
 END
 
 STRINGTABLE

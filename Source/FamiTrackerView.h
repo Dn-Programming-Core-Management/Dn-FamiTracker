@@ -231,10 +231,7 @@ private:
 #ifdef EXPORT_TEST
 	void	DrawExportTestProgress();
 #endif /* EXPORT_TEST */
-
-	// Copy
-	void	CopyVolumeColumn();
-
+	// // //
 	// Keyboard
 	bool	IsShiftPressed() const;
 	bool	IsControlPressed() const;
@@ -418,6 +415,8 @@ public:
 	afx_msg void OnUpdateFindNext(CCmdUI *pCmdUI);
 	afx_msg void OnCoarseDecreaseValues();
 	afx_msg void OnCoarseIncreaseValues();
+	afx_msg void OnEditCopyAsText();
+	afx_msg void OnEditCopyAsVolumeSequence();
 	afx_msg void OnEditSelectnone();
 	afx_msg void OnEditSelectrow();
 	afx_msg void OnEditSelectcolumn();

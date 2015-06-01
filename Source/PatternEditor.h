@@ -150,8 +150,10 @@ public:
 	void SelectAllChannels();
 	void SelectAll();
 
-	// Various
 	void GetVolumeColumn(CString &str) const;
+	void GetSelectionAsText(CString &str) const;		// // //
+
+	// Various
 	int GetCurrentPatternLength(int Frame) const;		// // // allow negative frames
 	bool IsInRange(const CSelection &sel, int Frame, int Row, int Channel, int Column) const;		// // //
 

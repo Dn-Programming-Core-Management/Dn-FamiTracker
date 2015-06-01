@@ -345,6 +345,8 @@ public:
 	afx_msg void OnClickedCompact();
 	afx_msg void OnToggleCompact();
 	afx_msg void OnFileExportRows();
+	afx_msg void OnEditCopyAsText();
+	afx_msg void OnEditCopyAsVolumeSequence();
 	afx_msg void OnEditSelectnone();
 	afx_msg void OnEditSelectrow();
 	afx_msg void OnEditSelectcolumn();
@@ -360,6 +362,7 @@ public:
 	afx_msg void OnEditPopulateUniquePatterns();
 	afx_msg void OnModuleDuplicateCurrentPattern();
 	afx_msg void OnToggleMultiplexer();
+	afx_msg void OnUpdateEditCopySpecial(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateToggleFollow(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateToggleCompact(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateToggleFixTempo(CCmdUI *pCmdUI);

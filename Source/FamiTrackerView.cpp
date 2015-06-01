@@ -904,7 +904,7 @@ void CFamiTrackerView::OnEditCopy()
 {
 	// // // Copy volume values
 	if (IsShiftPressed()) {
-		CopyVolumeColumn();
+		OnEditCopyAsVolumeSequence();		// // //
 		return;
 	}
 
@@ -1300,10 +1300,27 @@ void CFamiTrackerView::OnTrackerPlayrow()
 	InvalidateCursor();
 }
 
-void CFamiTrackerView::CopyVolumeColumn()
+void CFamiTrackerView::OnEditCopyAsVolumeSequence()		// // //
 {
 	CString str;
 	m_pPatternEditor->GetVolumeColumn(str);
+
+	CClipboard Clipboard(this, CF_TEXT);
+
+	if (!Clipboard.IsOpened()) {
+		AfxMessageBox(IDS_CLIPBOARD_OPEN_ERROR);
+		return;
+	}
+
+	if (!Clipboard.SetDataPointer(str.GetBuffer(), str.GetLength() + 1)) {
+		AfxMessageBox(IDS_CLIPBOARD_COPY_ERROR);
+	}
+}
+
+void CFamiTrackerView::OnEditCopyAsText()		// // //
+{
+	CString str;
+	m_pPatternEditor->GetSelectionAsText(str);
 
 	CClipboard Clipboard(this, CF_TEXT);
 

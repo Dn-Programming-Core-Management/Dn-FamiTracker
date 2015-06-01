@@ -35,6 +35,7 @@
 #include "PatternAction.h"
 #include "ColorScheme.h"
 #include "Graphics.h"
+#include "TextExporter.h"		// // //
 #include "APU/APU.h"
 #include "APU/Noise.h"		// // //
 #include "APU/DPCM.h"		// // //
@@ -4112,6 +4113,38 @@ void CPatternEditor::GetVolumeColumn(CString &str) const
 		if (NoteData.Vol != MAX_VOLUME)
 			vol = NoteData.Vol;
 		str.AppendFormat(_T("%i "), vol);
+	}
+}
+
+void CPatternEditor::GetSelectionAsText(CString &str) const		// // //
+{
+	// Copy selection as text
+
+	const int Track = GetSelectedTrack();
+	const int Channel = m_selection.GetChanStart() + !m_selection.IsColumnSelected(COLUMN_VOLUME, m_selection.GetChanStart()); // // //
+	stChanNote NoteData;
+
+	if (Channel < 0 || Channel >= GetChannelCount())
+		return;
+
+	CPatternIterator it = GetStartIterator();
+	CPatternIterator end = GetEndIterator();
+	if (!m_bSelecting) { // should not happen
+		it.m_iFrame = end.m_iFrame = m_cpCursorPos.m_iFrame;
+		it.m_iRow = it.m_iChannel = 0;
+		end.m_iRow     = GetCurrentPatternLength(m_cpCursorPos.m_iFrame) - 1;
+		end.m_iChannel = GetChannelCount() - 1;
+	}
+	str.Empty();
+
+	int Row = 0;
+	for (CPatternIterator it = GetStartIterator(); it <= end; it++) {
+		str.AppendFormat(_T("ROW %02X"), Row++);
+		for (int i = it.m_iChannel; i <= end.m_iChannel; i++) {
+			it.Get(i, &NoteData);
+			str.AppendFormat(_T(" : %s"), CTextExport::ExportCellText(NoteData, m_pDocument->GetEffColumns(Track, i) + 1, i == CHANID_NOISE));
+		}
+		str.Append(_T("\r\n"));
 	}
 }
 

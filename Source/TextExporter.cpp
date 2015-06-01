@@ -21,6 +21,8 @@
 */
 
 #include "stdafx.h"
+#include "FamiTrackerTypes.h"		// // //
+#include "PatternData.h"		// // //
 #include "TextExporter.h"
 #include "FamiTrackerDoc.h"
 
@@ -344,7 +346,7 @@ public:
 
 // =============================================================================
 
-static bool ImportHex(CString& sToken, int& i, int line, int column, CString& sResult)
+bool CTextExport::ImportHex(CString& sToken, int& i, int line, int column, CString& sResult)
 {
 	i = 0;
 	for (int d=0; d < sToken.GetLength(); ++d)
@@ -368,7 +370,7 @@ static bool ImportHex(CString& sToken, int& i, int line, int column, CString& sR
 	return true;
 }
 
-CString ExportString(const CString& s)
+CString CTextExport::ExportString(const CString& s)
 {
 	// puts " at beginning and end of string, replace " with ""
 	CString r = _T("\"");
@@ -385,7 +387,7 @@ CString ExportString(const CString& s)
 
 // =============================================================================
 
-static bool ImportCellText(
+bool CTextExport::ImportCellText(		// // //
 	CFamiTrackerDoc* pDoc,
 	Tokenizer &t,
 	unsigned int track,
@@ -554,7 +556,7 @@ static bool ImportCellText(
 	return true;
 }
 
-static const CString& ExportCellText(const stChanNote& stCell, unsigned int nEffects, bool bNoise)
+const CString& CTextExport::ExportCellText(const stChanNote& stCell, unsigned int nEffects, bool bNoise)		// // //
 {
 	static CString s;
 	CString tmp;
@@ -629,7 +631,7 @@ CTextExport::~CTextExport()
 
 #define CHECK_COLON() CHECK_SYMBOL(":")
 
-const char* Charify(CString& s)
+const char* CTextExport::Charify(CString& s)		// // //
 {
 	// NOTE if Famitracker is switched to unicode, need to do a conversion here
 	return s.GetString();
