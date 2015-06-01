@@ -3177,7 +3177,7 @@ void CPatternEditor::ContinueMouseSelection(const CPoint &point)
 				m_selection.m_cpEnd.m_iFrame += FrameCount;
 			while (!GetSelectionSize()) // correction for overlapping selection
 				m_selection.m_cpEnd.m_iFrame -= FrameCount;
-			int ChanOffset = PointPos.m_iChannel - m_selection.GetChanStart();
+			int ChanOffset = PointPos.m_iChannel - Original.GetChanStart();
 			int RowOffset = GetSelectionSize() - 1;
 			m_selection = Original;
 			m_bDragStart = false;
