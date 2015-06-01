@@ -20,7 +20,6 @@
 ** must bear this legend.
 */
 
-#include <boost/scoped_ptr.hpp>
 #include <cmath>
 #include "stdafx.h"
 #include "FamiTracker.h"
@@ -923,8 +922,8 @@ void CFamiTrackerView::OnEditCopy()
 		pMainFrm->SetMessageText(IDS_SEL_NONTERMINAL_SKIP);
 		return;
 	}
-	
-	boost::scoped_ptr<CPatternClipData> pClipData(m_pPatternEditor->Copy());
+
+	std::shared_ptr<CPatternClipData> pClipData(m_pPatternEditor->Copy());		// // //
 
 	SIZE_T Size = pClipData->GetAllocSize();
 	HGLOBAL hMem = Clipboard.AllocMem(Size);
@@ -3544,7 +3543,7 @@ DROPEFFECT CFamiTrackerView::OnDragEnter(COleDataObject* pDataObject, DWORD dwKe
 		}
 
 		// Get drag rectangle
-		boost::scoped_ptr<CPatternClipData> pDragData(new CPatternClipData());
+		std::shared_ptr<CPatternClipData> pDragData(new CPatternClipData());		// // //
 
 		HGLOBAL hMem = pDataObject->GetGlobalData(m_iClipboard);
 		pDragData->FromMem(hMem);
@@ -3624,8 +3623,8 @@ void CFamiTrackerView::BeginDragData(int ChanOffset, int RowOffset)
 {
 	TRACE0("OLE: BeginDragData\n");
 
-	boost::scoped_ptr<COleDataSource> pSrc(new COleDataSource());
-	boost::scoped_ptr<CPatternClipData> pClipData(m_pPatternEditor->Copy());
+	std::shared_ptr<COleDataSource> pSrc(new COleDataSource());		// // //
+	std::shared_ptr<CPatternClipData> pClipData(m_pPatternEditor->Copy());
 	SIZE_T Size = pClipData->GetAllocSize();
 
 	pClipData->ClipInfo.OleInfo.ChanOffset = ChanOffset;
