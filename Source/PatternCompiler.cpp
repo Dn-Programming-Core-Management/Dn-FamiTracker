@@ -481,7 +481,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 						WriteData(Command(CMD_EFF_LINEAR_COUNTER));
 						WriteData(EffParam - 0x80);
 					}
-					else {
+					else if (EffParam < 0x80) {
 						WriteData(Command(CMD_EFF_NOTE_CUT));
 						WriteData(EffParam);
 					}
