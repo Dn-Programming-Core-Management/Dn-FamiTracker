@@ -421,4 +421,4 @@ const int DRIVER_FREQ_TABLE_2A03[] = {
 	0xF2, 0x16ED, SNDCHIP_2A07,
 };
 
-const unsigned int VIBRATO_TABLE_LOCATION_NONE = 0x17AD;
+const unsigned int VIBRATO_TABLE_LOCATION_2A03 = 0x17AD;

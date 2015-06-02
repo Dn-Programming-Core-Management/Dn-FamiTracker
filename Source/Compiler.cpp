@@ -1252,7 +1252,7 @@ bool CCompiler::CompileData()
 	switch (m_pDocument->GetExpansionChip()) {
 		case SNDCHIP_NONE:
 			m_pDriverData = &DRIVER_PACK_2A03;
-			m_iVibratoTableLocation = VIBRATO_TABLE_LOCATION_NONE;
+			m_iVibratoTableLocation = VIBRATO_TABLE_LOCATION_2A03;
 			Print(_T(" * No expansion chip\n"));
 			break;
 		case SNDCHIP_VRC6:
