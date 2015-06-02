@@ -2455,13 +2455,13 @@ CCursorPos CPatternEditor::GetCursorAtPoint(const CPoint &point) const
 
 CPatternIterator CPatternEditor::GetStartIterator() const		// // //
 {
-	const CCursorPos Pos = m_selection.m_cpStart < m_selection.m_cpEnd ? m_selection.m_cpStart : m_selection.m_cpEnd;
+	const CCursorPos Pos(m_selection.GetRowStart(), m_selection.GetChanStart(), m_selection.GetColStart(), m_selection.GetFrameStart());
 	return CPatternIterator(this, GetSelectedTrack(), m_bSelecting ? Pos : m_cpCursorPos);
 }
 
 CPatternIterator CPatternEditor::GetEndIterator() const
 {
-	CCursorPos Pos = m_selection.m_cpStart < m_selection.m_cpEnd ? m_selection.m_cpEnd : m_selection.m_cpStart;
+	const CCursorPos Pos(m_selection.GetRowEnd(), m_selection.GetChanEnd(), m_selection.GetColEnd(), m_selection.GetFrameEnd());
 	return CPatternIterator(this, GetSelectedTrack(), m_bSelecting ? Pos : m_cpCursorPos);
 }
 
@@ -2508,7 +2508,7 @@ int CPatternEditor::GetCursorEndColumn(int Column)
 int CPatternEditor::GetChannelColumns(int Channel) const
 {
 	// Return number of available columns in a channel
-	return m_pDocument->GetEffColumns(GetSelectedTrack(), Channel) * 3 + COLUMNS;
+	return m_bCompactMode ? 1 : m_pDocument->GetEffColumns(GetSelectedTrack(), Channel) * 3 + COLUMNS;		// // //
 }
 
 int CPatternEditor::GetSelectedTrack() const
@@ -2982,6 +2982,9 @@ void CPatternEditor::OnMouseDownPattern(const CPoint &point)
 	CCursorPos PointPos = GetCursorAtPoint(point);
 	const int PatternLength = GetCurrentPatternLength(PointPos.m_iFrame);		// // //
 
+	m_iDragBeginWarp = PointPos.m_iFrame / GetFrameCount();		// // //
+	if (PointPos.m_iFrame % GetFrameCount() < 0) m_iDragBeginWarp--;
+
 	if (bShift && !IsInRange(m_selection, PointPos.m_iFrame, PointPos.m_iRow, PointPos.m_iChannel, PointPos.m_iColumn)) {		// // //
 		// Expand selection
 		if (!PointPos.IsValid(FrameCount, PatternLength, ChannelCount))		// // //
@@ -2998,9 +3001,6 @@ void CPatternEditor::OnMouseDownPattern(const CPoint &point)
 		if (IsInsideRowColumn(point)) {
 			// Row number column
 			CancelSelection();
-			m_iDragBeginWarp = PointPos.m_iFrame / GetFrameCount();		// // //
-			if (PointPos.m_iFrame % GetFrameCount() < 0) m_iDragBeginWarp--;
-
 			PointPos.m_iRow = std::max(PointPos.m_iRow, 0);
 			PointPos.m_iRow = std::min(PointPos.m_iRow, PatternLength - 1);		// // //
 			m_selection.m_cpStart = CCursorPos(PointPos.m_iRow, 0, 0, PointPos.m_iFrame);		// // //
@@ -3188,13 +3188,13 @@ void CPatternEditor::ContinueMouseSelection(const CPoint &point)
 		// Expand selection
 		if (bControl) {
 			if (PointPos.m_iChannel >= m_selection.m_cpStart.m_iChannel) {
-				PointPos.m_iColumn = m_pDocument->GetEffColumns(Track, PointPos.m_iChannel) * 3 + 4;
+				PointPos.m_iColumn = GetChannelColumns(PointPos.m_iChannel) - 1;		// // //
 				m_selection.m_cpStart.m_iColumn = 0;
 				m_bSelectionInvalidated = true;
 			}
 			else {
 				PointPos.m_iColumn = 0;
-				m_selection.m_cpStart.m_iColumn = m_pDocument->GetEffColumns(Track, m_selection.m_cpStart.m_iChannel) * 3 + 4;
+				m_selection.m_cpStart.m_iColumn = GetChannelColumns(m_selection.m_cpStart.m_iChannel) - 1;		// // //
 				m_bSelectionInvalidated = true;
 			}
 		}
@@ -3203,7 +3203,7 @@ void CPatternEditor::ContinueMouseSelection(const CPoint &point)
 		if (m_bFullRowSelect) {
 			m_selection.m_cpEnd.m_iRow = PointPos.m_iRow;
 			m_selection.m_cpEnd.m_iFrame = PointPos.m_iFrame;		// // //
-			m_selection.m_cpEnd.m_iColumn = m_pDocument->GetEffColumns(Track, GetChannelCount() - 1) * 3 + 4;		// // //
+			m_selection.m_cpEnd.m_iColumn = GetChannelColumns(GetChannelCount() - 1) - 1;
 		}
 		else
 			SetSelectionEnd(PointPos);
