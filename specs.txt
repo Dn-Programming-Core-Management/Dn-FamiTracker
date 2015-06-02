@@ -1,7 +1,7 @@
 0CC-FamiTracker Mod
 Specification
 Written by HertzDevil
-Version 0.3.9 - Apr 12 2015
+Version 0.3.10 - Jun 2 2015
 
 --------------------------------------------------------------------------------
 
@@ -14,7 +14,8 @@ The following changes to the FTM effect enumeration are made:
  - Lxx: 0x21: delayed note release
  - Oxx: 0x22: groove setting
  - Txy: 0x23: delayed transpose
- - Zxx: 0x24: N163 wave buffer
+ - Zxx: 0x24: N163 wave buffer setting
+ - Exx: 0x25: FDS hardware volume envelope
 
 The following effect command bytes are added to the NSF export format:
  - Lxx: 0xBA: delayed note release
@@ -25,10 +26,11 @@ The following effect command bytes are added to the NSF export format:
  - Hxx: 0xC4: FDS FM depth
  - Ixx: 0xC6: FDS FM rate, high byte
  - Jxx: 0xC8: FDS FM rate, low byte
+ - Exx: 0xCA: FDS hardware volume envelope
  - Jxx: 0xC4: 5B envelope shape
  - Ixx: 0xC6: 5B envelope rate, high byte
  - Hxx: 0xC8: 5B envelope rate, low byte
-(+6 to 5B effect bytes if both FDS and 5B are present)
+(+8 to 5B effect bytes if both FDS and 5B are present)
 
 The following note bytes are added to the FTM format:
  -  ^x: 0x0F: Echo buffer access

@@ -1,9 +1,69 @@
 0CC-FamiTracker Mod
 Change Log
 Written by HertzDevil
-Version 0.3.9 - Apr 12 2015
+Version 0.3.10 - Jun 2 2015
 
 --------------------------------------------------------------------------------
+
+V0.3.10 - 06/02/15
+Additions:
+ - Added Exx effect for the FDS channel's hardware volume envelope control
+ - Added a hotkey to recall the current channel state on the status bar
+ - Added fixed tempo support, which ignores tempo and directly uses the speed
+    value as the number of ticks per row
+Improvements:
+ - Increased frame limit and pattern limit to 256
+ - Added menu commands to copy the current selection as volume sequence, text or
+    PPMCK MML (from official 0.3.5)
+ - Added keyboard shortcut and menu entry for compact view mode
+ - Added keyboard shortcuts and menu entries for selection in various scopes
+ - Echo buffer command "^0" is now allowed
+ - Moved DPCM states to "Display register state"
+Bug fixes:
+ - Application title is finally set to "0CC-FamiTracker"
+ - Fixed undo issues with paste command and drag/drop paste
+ - Fixed tracker initiating drag operations at an incorrect position if the
+    selection is created by dragging from right top to left buttom or vice versa
+ - Fixed tracker crashing while copying the selection as a volume sequence if
+    the selection begins at the first row of the track
+ - Fixed paste command not applying to all columns of the last channel in the
+    pattern editor
+ - Fixed paste operations applying an incorrect selection if the clip data only
+    contains effect commands
+ - Removed flicker in "Display register state"
+ - "Display register state" no longer shows information of non-existent N163
+    channels
+ - Tracker no longer retrieves channel states from non-existent channels
+ - Tracker no longer retrieves channel states from the current position before
+    switching to a new song while playing
+ - Fixed 2A03 channels incorrectly retrieving states of hardware effects
+ - Tracker properly retrieves states of the correct channels when some channels
+    are muted
+ - Tracker now blocks row insertion/deletion when edit mode is disabled
+ - Fixed reverse command crashing the tracker when a fx4 column is selected as
+    the last column
+ - "Remove Unused Instruments" now respects instruments with disabled sequences
+ - Fixed frame editor incorrectly updating the value of the current pattern if
+    the cursor is moved by the mouse before modifying the first digit
+ - Fixed detune dialog displaying FDS frequencies at the incorrect octave
+ - Fixed notes not producing sound after EE0 cancels the length counter until
+    the high frequency byte is updated
+ - Fixed length counter not working in MMC5 channels
+ - Exx effects no longer reset the linear counter on the triangle channel
+ - Triangle channel's linear counter value now resets to 0x7F before playing
+ - Fixed T7y effect not working in the tracker
+ - Fixed Txy effect not applying transpose to the echo buffer when the note
+    transposes downwards
+ - Fixed N163 channels inverting the 4xy vibrato pitch offset in the tracker
+ - Fixed the tracker exporting invalid pattern data when exporting the triangle
+    channel's length counter effect
+ - Fixed E00 - E1F length counter effects not working in exported NSFs
+ - Fixed A00 improperly resetting the channel volume when the Mxy effect is not
+    used in exported NSFs
+ - Fixed Sxx and Lxx effects being applied to future notes in exported NSFs
+ - ASM export no longer crashes 0CC-FamiTracker
+ - WAV and NSFe export now handle track durations properly when disjoint parts
+    of the same frame are visited twice in a loop
 
 V0.3.9 - 04/12/15
 Additions:
@@ -123,11 +183,10 @@ Improvements:
     Axy or 7xy is active on a channel
  - Pressing the Repeat key moves the cursor down on all pattern fields, except
     when using the Modplug tracker edit style
- - Added hotkey to duplicate the current pattern to the first unused pattern of
-    the channel
+ - Added hotkey to duplicate the current non-empty pattern below the cursor to
+    the first unused pattern of the channel
  - FTM import now supports detune tables and groove tables
- - Sequqnce MML field now accepts "L" for loop point, "R" for release point (in
-    accordance with NSDL), and "'" (single quotation mark) for repetition
+ - Sequence MML field now accepts "'" single quotation mark for repeating terms
  - The Sunsoft 5B's volume level can now be modified in the chip mixer
  - MMC5 can now output sound when the period register is below 0x008
  - The status bar now displays the current row and frame index in hexadecimal
@@ -142,14 +201,14 @@ Bug fixes:
     same row as the new note
  - Fixed a bug where Yxx on the DPCM channel affects the N163 chip when there
     are fewer than 8 N163 channels
- - S7F works properly in exported NSFs
+ - Effect S7F works properly in exported NSFs
  - Detune settings dialog no longer writes detune tables upon clicking "Cancel"
  - Fixed FTM import not accepting Sunsoft 5B instruments
  - Replacement query now handles expansion chip-specific effects correctly
 
 V0.3.7 - 01/18/15
 Additions:
- - Added Yxx sample buffer access for N163 channels
+ - Added Yxx wave buffer access for N163 channels
  - Added Find / Replace tab
 Improvements:
  - Added information panel for the detune settings dialog

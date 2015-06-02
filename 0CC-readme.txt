@@ -1,7 +1,7 @@
 0CC-FamiTracker Mod
 Readme / Manual
 Written by HertzDevil
-Version 0.3.9 - Apr 12 2015
+Version 0.3.10 - Jun 2 2015
 
 --------------------------------------------------------------------------------
 
@@ -48,7 +48,7 @@ of this mod becomes part of the an official FamiTracker release.
 
 - http://hertzdevil.info/forum/
    The current 0CC-FamiTracker forum. Members may share their 0CC-FT creations
-   and submti bug reports.
+   and submit bug reports.
 
 - http://github.com/HertzDevil/0CC-FamiTracker
    The Git source repository for the tracker.
@@ -146,8 +146,8 @@ EE0 - EE3: Bit 0 toggles the hardware envelope on the pulse channel or the noise
 
 E00 - E1F: Sets the length counter to the value listed below, and enables the
             length counter if it was disabled. Works on the pulse, triangle, or
-            noise channel. On the triangle channel, this effect also resets the
-            linear counter; whichever is shorter will terminate the triangle
+            noise channel. On the triangle channel, this effect also initializes
+            the linear counter; whichever is shorter will terminate the triangle
             output first. On initialization, this value is set to be 0x01 (254).
                |  0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
            ----+---------------------------------------------------------------
@@ -165,6 +165,27 @@ and the length counter at 120 Hz on 2A03 channels, 240 Hz on MMC5 channels. All
 are independent from the FTM's engine speed. Volume mixing between the channel
 volume and the instrument sequence still takes place while hardware envelope is
 enabled!
+
+The following effects have been added to access the volume envelope unit of the
+FDS sound hardware:
+
+E00 - E3F: Enables the hardware volume envelope, sets the direction to positive
+            (attack envelope), and sets the rate to the effect parameter. A
+            smaller rate value corresponds to a faster envelope.
+
+E40 - E7F: Enables the hardware volume envelope, sets the direction to negative
+            (decay envelope), and sets the rate to the effect parameter, minus
+            0x40. A smaller rate value corresponds to a faster envelope.
+
+EE0:       Disables the hardware volume envelope and returns volume control to
+            the tracker's sound driver.
+
+When the hardware volume envelope is enabled on the FDS, every time a note is
+triggered, the FDS channel returns to that initial volume, and then yields
+control to the envelope unit. The envelope can also be enabled during a note, so
+that the attack/decay takes effect immediately. All volume changes not due to
+the envelope unit still remain in the memory; as soon as the EE0 effect is
+issued, this volume value is instantly recalled.
 
 	===
 	Find / Replace Tab
@@ -262,7 +283,7 @@ Grooves may be copied and pasted as space-separated values.
 
 Expanding the groove halves the groove's average speed and works only if all
 entries are greater than or equal to 2. Shrinking the groove doubles the average
-speed and works only when the groove length is a multiple of n2.
+speed and works only when the groove length is a multiple of 2.
 
 Padding inserts the specified entry after each groove entry, so that the average
 speed is halved. All groove entries must be greater than the pad amount.
@@ -288,14 +309,14 @@ Each FTM may store up to:
 buffer is emptied; whenever the channel encounters a note or a note halt, that
 event is pushed into the echo buffer. Then, using the corresponding echo buffer
 access note (which must be manually assigned to a key in the configuration menu
-by default), entries in the echo buffer can be retrieved. Effectively, this is
-the same as skipping the number of notes above indicated by the access note and
-retrieving the note event. All access notes are processed during run-time in
-exported NSFs.
+by default), entries in the echo buffer can be retrieved. Effectively, "^x"
+skips x notes above and retrieves that note event. All access note events are
+processed during run-time in exported NSFs.
 
 The skip amount is determined by the octave number during inserting an echo
-buffer access note, and is restricted between 1 and 3. These notes cannot be
-modified while transposing in a selection.
+buffer access note, and is restricted between 0 and 3. These notes cannot be
+modified while transposing in a selection, but can be "transposed" if the
+selection contains only the access note.
 
 When a transposing effect is used, the first entry in the echo buffer will also
 change accordingly. Currently, these effects have this behaviour: Qxy, Rxy, Txy.
@@ -334,7 +355,7 @@ Txy: Transposes the channel by y semitones, upwards if bit 7 is clear, and
 0CC-FamiTracker has a new effect, Zxx, exclusive to the N163 channels, that
 allows controlling the wave buffer more effectively:
 
-Z00 - Y7E: Sets the channel's wave buffer position to the effect parameter,
+Z00 - Z7E: Sets the channel's wave buffer position to the effect parameter,
             overriding the wave position of N163 instruments. All read / write
             operations on the wave buffer use the sample position determined by
             the effect parameter times 2 (each byte holds 2 samples) until the
@@ -406,6 +427,8 @@ The following shortcuts have been added to 0CC-FamiTracker: (parenthesized key
 combinations are the default hotkeys)
  - Paste overwrite (None)
  - Paste insert (None)
+ - Deselect (Esc)
+ - Select row/column/pattern/frame/channel/track (None)
  - Mask volume (Alt+V)
  - Stretch patterns (None)
  - Duplicate current pattern (Alt+D)
@@ -413,6 +436,8 @@ combinations are the default hotkeys)
  - Coarse increase values (Shift+F4)
  - Toggle find / replace tab (Ctrl+F)
  - Find next (None)
+ - Recall channel state (None)
+ - Compact View (None)
  - Toggle N163 multiplexer emulation (Ctrl+Shift+M; not configurable)
 
 	===
@@ -426,23 +451,26 @@ combinations are the default hotkeys)
 - Pitch bend effects remove the 0xy parameters in NSFs (pitch bend effects do
    override arpeggio, however in the tracker the 0xy parameter is stored
    separately)
+- The 2A03 length counters are clocked at a slightly higher rate than 240 Hz
 - MMC5's length counter depends on the 2A03's frame counter
 - The behaviour of Qxy and Rxy on the noise channel is inconsistent between
    FamiTracker and NSF driver when the pitch overflows
 - FDS and N163 sometimes load incorrect waves in multichip NSFs
-- On long FTMs, retrieving the channel state often results in an audio buffer
-   underrun
+- On long FTMs with many channels, retrieving the channel state often results in
+ an audio buffer underrun
+- In exported NSFs, the echo buffer is updated as Txy effects are applied; in
+   the tracker this happens upon encountering Txy effects
+- "Recall channel state" does not display states of effects with no memory
 
 	===
 	Credits
 	===
 
-- ImATrackMan: Sunsoft 5B NSF hardware recordings
+- ImATrackMan: FDS / 5B NSF hardware recordings
 - ipi: Original implementation of the Lxx effect and expansion chip selector,
    "UsualDay.ftm" demo module
 - jsr: Partial implementation of the Sunsoft 5B chip
-- Xyz_39808, poodlecock: Bug testing
-- Flaminglog: Easter egg
+- Xyz_39808, retro_dpc: Bug testing
 
 --------------------------------------------------------------------------------
 
