@@ -3167,7 +3167,13 @@ void CFamiTrackerDoc::SetSongName(const char *pName)
 {
 	ASSERT(pName != NULL);
 	if (strcmp(m_strName, pName) != 0) {
-		strcpy_s(m_strName, 32, pName);
+		bool nul = false;		// // //
+		char str[32];
+		for (int i = 0; i < 32; i++) {
+			str[i] = nul ? 0 : pName[i];
+			if (!str[i]) nul = true;
+		}
+		memcpy_s(m_strName, 32, str, 32);
 		SetModifiedFlag();
 		SetExceededFlag();		// // //
 	}
@@ -3177,7 +3183,13 @@ void CFamiTrackerDoc::SetSongArtist(const char *pArtist)
 {
 	ASSERT(pArtist != NULL);
 	if (strcmp(m_strArtist, pArtist) != 0) {
-		strcpy_s(m_strArtist, 32, pArtist);
+		bool nul = false;		// // //
+		char str[32];
+		for (int i = 0; i < 32; i++) {
+			str[i] = nul ? 0 : pArtist[i];
+			if (!str[i]) nul = true;
+		}
+		memcpy_s(m_strArtist, 32, str, 32);
 		SetModifiedFlag();
 		SetExceededFlag();		// // //
 	}
@@ -3187,7 +3199,13 @@ void CFamiTrackerDoc::SetSongCopyright(const char *pCopyright)
 {
 	ASSERT(pCopyright != NULL);
 	if (strcmp(m_strCopyright, pCopyright) != 0) {
-		strcpy_s(m_strCopyright, 32, pCopyright);
+		bool nul = false;		// // //
+		char str[32];
+		for (int i = 0; i < 32; i++) {
+			str[i] = nul ? 0 : pCopyright[i];
+			if (!str[i]) nul = true;
+		}
+		memcpy_s(m_strCopyright, 32, str, 32);
 		SetModifiedFlag();
 		SetExceededFlag();		// // //
 	}
