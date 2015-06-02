@@ -1336,6 +1336,23 @@ void CFamiTrackerView::OnEditCopyAsText()		// // //
 	}
 }
 
+void CFamiTrackerView::OnEditCopyAsPPMCK()		// // //
+{
+	CString str;
+	m_pPatternEditor->GetSelectionAsPPMCK(str);
+
+	CClipboard Clipboard(this, CF_TEXT);
+
+	if (!Clipboard.IsOpened()) {
+		AfxMessageBox(IDS_CLIPBOARD_OPEN_ERROR);
+		return;
+	}
+
+	if (!Clipboard.SetDataPointer(str.GetBuffer(), str.GetLength() + 1)) {
+		AfxMessageBox(IDS_CLIPBOARD_COPY_ERROR);
+	}
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // UI updates

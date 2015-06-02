@@ -4156,7 +4156,114 @@ void CPatternEditor::GetSelectionAsText(CString &str) const		// // //
 		str.Append(_T("\r\n"));
 	}
 }
+
+void CPatternEditor::GetSelectionAsPPMCK(CString &str) const		// // //
+{
+	// Returns a PPMCK MML translation of copied pattern
+	AfxMessageBox(_T("This feature has been ported directly from official FamiTracker 0.3.5, and will be improved in a future version. Do NOT expect this feature to work properly."));
+
+	int i, j;
+	stChanNote NoteData;
+
+	str.Empty();
+
+	int Octave, Note, Duration;
+
+	for (i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); i++) {
+		if (i < 0 || i >(signed)m_pDocument->GetAvailableChannels())
+			continue;
+
+		switch (i) {
+		case 0: str.Append("A "); break;
+		case 1: str.Append("B "); break;
+		case 2: str.Append("C "); break;
+		case 3: str.Append("D "); break;
+		case 4: str.Append("E "); break;
 		}
+
+		Octave = -1;
+		Note = -1;
+
+		for (j = m_selection.GetRowStart(); j <= (m_selection.GetRowEnd() + 1); j++) {
+			if (j < 0 || j > m_iPatternLength)
+				continue;
+
+			m_pDocument->GetNoteData(GetSelectedTrack(), m_iCurrentFrame, i, j, &NoteData);
+			if (m_selection.IsColumnSelected(COLUMN_NOTE, i)) {
+				int n = NoteData.Note;
+				int o = NoteData.Octave;
+
+				bool DumpNote = false;
+
+				// First note
+				/*
+				if (Note == -1) {
+				Note = n;
+				Octave = o;
+				Duration = 0;
+				}
+				*/
+				if (j == m_selection.GetRowEnd())
+					DumpNote = true;
+
+				//if (n > 0 && n != Note) {
+				if (n > 0 || Note == -1) {
+					if (Note == -1) {
+						Note = n;
+						Octave = o;
+						Duration = 0;
+					}
+					else
+						DumpNote = true;
+				}
+				else {
+					Duration++;
+				}
+
+				if (DumpNote) {
+					/*
+					if (o != Octave && n > 0) {
+					MML.AppendFormat("o%i", Octave);
+					Octave = o;
+					}
+					*/
+					switch (Note) {
+					case 0:  str.Append("r"); break;
+					case 1:  str.Append("c"); break;
+					case 2:  str.Append("c#"); break;
+					case 3:  str.Append("d"); break;
+					case 4:  str.Append("d#"); break;
+					case 5:  str.Append("e"); break;
+					case 6:  str.Append("f"); break;
+					case 7:  str.Append("f#"); break;
+					case 8:  str.Append("g"); break;
+					case 9:  str.Append("g#"); break;
+					case 10: str.Append("a"); break;
+					case 11: str.Append("a#"); break;
+					case 12: str.Append("b"); break;
+					}
+
+					switch (Duration) {
+					case 0: str.Append("16"); break;		// 16th note
+					case 1: str.Append("8"); break;			// 8th note
+					case 2: str.Append("8."); break;		// 8th dotted
+					case 3: str.Append("4"); break;			// 4th note
+
+//					case 4: str.Append("4"); break;			// 4th note
+//					case 5: str.Append("4"); break;			// 4th note						
+//					case 6: str.Append("4"); break;			// 4th note
+
+					case 7: str.Append("2"); break;			// 2th note
+					case 15: str.Append("1"); break;		// 1th note
+
+					}
+
+					Note = n;
+					Duration = 0;
+				}
+			}
+		}
+
 		str.Append(_T("\r\n"));
 	}
 }

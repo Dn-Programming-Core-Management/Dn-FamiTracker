@@ -347,6 +347,7 @@ public:
 	afx_msg void OnFileExportRows();
 	afx_msg void OnEditCopyAsText();
 	afx_msg void OnEditCopyAsVolumeSequence();
+	afx_msg void OnEditCopyAsPPMCK();
 	afx_msg void OnEditSelectnone();
 	afx_msg void OnEditSelectrow();
 	afx_msg void OnEditSelectcolumn();

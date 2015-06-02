@@ -763,7 +763,7 @@
 #define ID_SELECT_COLUMN                33164
 #define ID_COPYAS_TEXT                  33165
 #define ID_COPYAS_VOLUMESEQUENCE        33166
-#define ID_COPYAS_OPENMPT               33167
+#define ID_COPYAS_PPMCK                 33167
 #define ID_INSTRUMENT_ADD_2A03          36864
 #define ID_INSTRUMENT_ADD_FDS           36865
 #define ID_INSTRUMENT_ADD_MMC5          36866

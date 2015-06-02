@@ -310,6 +310,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_FILE_EXPORTROWS, OnFileExportRows)
 	ON_COMMAND(ID_COPYAS_TEXT, OnEditCopyAsText)
 	ON_COMMAND(ID_COPYAS_VOLUMESEQUENCE, OnEditCopyAsVolumeSequence)
+	ON_COMMAND(ID_COPYAS_PPMCK, OnEditCopyAsPPMCK)
 	ON_COMMAND(ID_SELECT_NONE, OnEditSelectnone)
 	ON_COMMAND(ID_SELECT_ROW, OnEditSelectrow)
 	ON_COMMAND(ID_SELECT_COLUMN, OnEditSelectcolumn)
@@ -330,6 +331,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(IDC_BUTTON_GROOVE, OnUpdateGrooveEdit)
 	ON_UPDATE_COMMAND_UI(ID_COPYAS_TEXT, OnUpdateEditCopySpecial)
 	ON_UPDATE_COMMAND_UI(ID_COPYAS_VOLUMESEQUENCE, OnUpdateEditCopySpecial)
+	ON_UPDATE_COMMAND_UI(ID_COPYAS_PPMCK, OnUpdateEditCopySpecial)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_FIND_TOGGLE, OnUpdateEditFindToggle)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_INTERPOLATE, OnUpdateSelectionEnabled)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_REVERSE, OnUpdateSelectionEnabled)
@@ -2648,6 +2650,12 @@ void CMainFrame::OnEditCopyAsVolumeSequence()		// // //
 {
 	if (GetFocus() == GetActiveView())
 		static_cast<CFamiTrackerView*>(GetActiveView())->OnEditCopyAsVolumeSequence();
+}
+
+void CMainFrame::OnEditCopyAsPPMCK()		// // //
+{
+	if (GetFocus() == GetActiveView())
+		static_cast<CFamiTrackerView*>(GetActiveView())->OnEditCopyAsPPMCK();
 }
 
 void CMainFrame::OnEditPaste()

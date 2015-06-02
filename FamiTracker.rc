@@ -136,8 +136,9 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "Copy As"
         BEGIN
-            MENUITEM "Volume Sequence",             ID_COPYAS_VOLUMESEQUENCE
-            MENUITEM "Text",                        ID_COPYAS_TEXT
+            MENUITEM "&Volume Sequence",            ID_COPYAS_VOLUMESEQUENCE
+            MENUITEM "&Plain Text",                 ID_COPYAS_TEXT
+            MENUITEM "PPMCK &MML Data",             ID_COPYAS_PPMCK
         END
         MENUITEM SEPARATOR
         POPUP "&Select"
@@ -2259,7 +2260,7 @@ BEGIN
     ID_COPYAS_TEXT          "Copy the current selection as pretty-printed text\nCopy As Text"
     ID_COPYAS_VOLUMESEQUENCE 
                             "Copy the volume sequence in the first selected channel\nCopy As Volume Sequence"
-    ID_COPYAS_OPENMPT       "Copy the current selection as a MPT-compatible pattern data\nCopy As ModPlug Tracker"
+    ID_COPYAS_PPMCK         "Copy the current selection as a PPMCK-compatible MML data\nCopy As PPMCK Data"
 END
 
 STRINGTABLE

@@ -152,6 +152,7 @@ public:
 
 	void GetVolumeColumn(CString &str) const;
 	void GetSelectionAsText(CString &str) const;		// // //
+	void GetSelectionAsPPMCK(CString &str) const;		// // //
 
 	// Various
 	int GetCurrentPatternLength(int Frame) const;		// // // allow negative frames
