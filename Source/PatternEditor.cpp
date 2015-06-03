@@ -4163,12 +4163,111 @@ void CPatternEditor::GetSelectionAsPPMCK(CString &str) const		// // //
 	AfxMessageBox(_T("This feature has been ported directly from official FamiTracker 0.3.5, and will be improved in a future version. Do NOT expect this feature to work properly."));
 
 	int i, j;
-	stChanNote NoteData;
+	stChanNote NoteData = BLANK_NOTE;
 
 	str.Empty();
 
 	int Octave, Note, Duration;
 
+	const CPatternIterator End = GetEndIterator();
+	for (int c = m_selection.GetChanStart(); c <= m_selection.GetChanEnd(); c++) {
+		int Type = m_pDocument->GetChannelType(c);
+		switch (m_pDocument->GetChipType(c)) {
+		case SNDCHIP_NONE: Type += 'A' - CHANID_SQUARE1; break;
+		case SNDCHIP_VRC6: Type += 'M' - CHANID_VRC6_PULSE1; break;
+		case SNDCHIP_VRC7: Type += 'G' - CHANID_VRC7_CH1; break;
+		case SNDCHIP_FDS:  Type += 'F' - CHANID_FDS; break;
+		case SNDCHIP_MMC5: Type += 'a' - CHANID_MMC5_SQUARE1; break;
+		case SNDCHIP_N163: Type += 'P' - CHANID_N163_CH1; break;
+		case SNDCHIP_S5B:  Type += 'X' - CHANID_S5B_CH1; break;
+		}
+		str.AppendFormat(_T("%c\t"), Type);
+
+		int o = -1;
+		int len = -1;
+		bool first = true;
+		stChanNote current = BLANK_NOTE;
+		current.Note = HALT;
+		stChanNote echo[ECHO_BUFFER_LENGTH + 1];
+		for (int i = 0; i <= ECHO_BUFFER_LENGTH; i++)
+			echo[i] = BLANK_NOTE;
+
+		for (CPatternIterator it = GetStartIterator(); it <= End; it++) {
+			len++;
+			it.Get(c, &NoteData);
+			bool dump = NoteData.Note != NONE || NoteData.Vol != MAX_VOLUME;
+			bool fin = it.m_iFrame == End.m_iFrame && it.m_iRow == End.m_iRow;
+
+			if (dump || fin) {
+				bool push = current.Note != NONE && current.Note != RELEASE;
+
+				if (current.Vol != MAX_VOLUME)
+					str.AppendFormat(_T("v%i"), current.Vol);
+
+				if (current.Note == ECHO) {
+					current.Note   = echo[current.Octave].Note;
+					current.Octave = echo[current.Octave].Octave;
+				}
+
+				if (push) {
+					for (int i = ECHO_BUFFER_LENGTH - 1; i >= 0; i--)
+						echo[i + 1] = echo[i];
+					echo[0] = current;
+				}
+
+				if (!first || (NoteData.Note != NONE)) switch (current.Note) {
+				case NONE: str.Append(_T("w")); break;
+				case RELEASE: str.Append(_T("k")); break;
+				case HALT: str.Append(_T("r")); break;
+				default:
+					if (o == -1) {
+						o = current.Octave;
+						str.AppendFormat(_T("o%i"), o);
+					}
+					else {
+						while (o < current.Octave) {
+							o++;
+							str.Append(_T(">"));
+						}
+						while (o > current.Octave) {
+							o--;
+							str.Append(_T("<"));
+						}
+					}
+					str.AppendFormat(_T("%c"), (current.Note * 7 + 18) / 12 % 7 + 'a');
+					if ((current.Note * 7 + 6) % 12 >= 7) str.Append(_T("#"));
+				}
+
+				if (fin) len++;
+				while (len >= 32) {
+					len -= 16;
+					str.Append(_T("1^"));
+				}
+				int l = 16;
+				while (l) {
+					if (!(len & l)) {
+						l >>= 1;
+						continue;
+					}
+					str.AppendFormat(_T("%i"), 16 / l);
+					do {
+						len -= l;
+						l >>= 1;
+						if (len & l) {
+							str.Append(_T("."));
+						}
+					} while (len & l);
+					if (len) str.Append(_T("^"));
+				}
+
+				current = NoteData;
+			}
+
+			first = false;
+		}
+		str.Append(_T("\r\n"));
+	}
+	str.Append(_T(";;\r\n"));
 	for (i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); i++) {
 		if (i < 0 || i >(signed)m_pDocument->GetAvailableChannels())
 			continue;
