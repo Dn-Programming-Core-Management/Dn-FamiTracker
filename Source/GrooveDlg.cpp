@@ -119,7 +119,7 @@ void CGrooveDlg::SetGrooveIndex(int Index)
 
 void CGrooveDlg::OnBnClickedOk()
 {
-	DestroyWindow();
+	ShowWindow(SW_HIDE);
 	OnBnClickedApply();
 	CDialog::OnOK();
 }
@@ -127,7 +127,7 @@ void CGrooveDlg::OnBnClickedOk()
 void CGrooveDlg::OnBnClickedCancel()
 {
 	CDialog::OnCancel();
-	DestroyWindow();
+	ShowWindow(SW_HIDE);
 }
 
 void CGrooveDlg::OnBnClickedApply()

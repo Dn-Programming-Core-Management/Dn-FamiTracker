@@ -52,6 +52,7 @@
 #include "PatternEditor.h"
 #include "FrameEditor.h"
 #include "APU/APU.h"
+#include "GrooveDlg.h"		// // //
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -113,6 +114,7 @@ IMPLEMENT_DYNCREATE(CMainFrame, CFrameWnd)
 CMainFrame::CMainFrame() : 
 	m_pVisualizerWnd(NULL), 
 	m_pFrameEditor(NULL),
+	m_pGrooveDlg(NULL),			// // //
 	m_pFindDlg(NULL),			// // //
 	m_pImageList(NULL),
 	m_pLockedEditSpeed(NULL),
@@ -152,6 +154,7 @@ CMainFrame::~CMainFrame()
 	SAFE_RELEASE(m_pBannerEditArtist);
 	SAFE_RELEASE(m_pBannerEditCopyright);
 	SAFE_RELEASE(m_pFrameEditor);
+	SAFE_RELEASE(m_pGrooveDlg);			// // //
 	SAFE_RELEASE(m_pFindDlg);			// // //
 	SAFE_RELEASE(m_pInstrumentList);
 	SAFE_RELEASE(m_pVisualizerWnd);
@@ -324,6 +327,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_CLEANUP_REMOVEUNUSEDDPCMSAMPLES, OnEditRemoveUnusedSamples)
 	ON_COMMAND(ID_CLEANUP_POPULATEUNIQUEPATTERNS, OnEditPopulateUniquePatterns)
 	ON_COMMAND(ID_MODULE_DUPLICATECURRENTPATTERN, OnModuleDuplicateCurrentPattern)
+	ON_COMMAND(ID_MODULE_GROOVE, OnModuleGrooveSettings)
 	ON_COMMAND(ID_TOGGLE_MULTIPLEXER, OnToggleMultiplexer)
 	ON_UPDATE_COMMAND_UI(IDC_FOLLOW_TOGGLE, OnUpdateToggleFollow)
 	ON_UPDATE_COMMAND_UI(IDC_COMPACT_TOGGLE, OnUpdateToggleCompact)
@@ -1854,6 +1858,14 @@ void CMainFrame::CloseInstrumentEditor()
 		m_wndInstEdit.DestroyWindow();
 }
 
+void CMainFrame::CloseGrooveSettings()		// // //
+{
+	if (m_pGrooveDlg != NULL) {
+		m_pGrooveDlg->DestroyWindow();
+		SAFE_RELEASE(m_pGrooveDlg);
+	}
+}
+
 void CMainFrame::OnUpdateKeyRepeat(CCmdUI *pCmdUI)
 {
 	if (theApp.GetSettings()->General.bKeyRepeat)
@@ -2019,6 +2031,16 @@ void CMainFrame::OnModuleComments()
 {
 	CCommentsDlg commentsDlg;
 	commentsDlg.DoModal();
+}
+
+void CMainFrame::OnModuleGrooveSettings()		// // //
+{
+	if (m_pGrooveDlg == NULL) {
+		m_pGrooveDlg = new CGrooveDlg();
+		m_pGrooveDlg->Create(IDD_GROOVE, this);
+	}
+	m_pGrooveDlg->ShowWindow(SW_SHOW);
+	m_pGrooveDlg->SetFocus();
 }
 
 void CMainFrame::UpdateTrackBox()

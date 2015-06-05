@@ -39,7 +39,6 @@
 #include "Clipboard.h"
 #include "APU/APU.h"
 #include "DetuneDlg.h"		// // //
-#include "GrooveDlg.h"		// // //
 #include "StretchDlg.h"		// // //
 
 #ifdef _DEBUG
@@ -185,7 +184,6 @@ BEGIN_MESSAGE_MAP(CFamiTrackerView, CView)
 	ON_WM_DESTROY()
 	// // //
 	ON_COMMAND(ID_MODULE_DETUNE, OnTrackerDetune)
-	ON_COMMAND(ID_MODULE_GROOVE, OnTrackerGroove)
 	ON_UPDATE_COMMAND_UI(ID_FIND_NEXT, OnUpdateFindNext)
 	ON_COMMAND(ID_DECREASEVALUESCOARSE, OnCoarseDecreaseValues)
 	ON_COMMAND(ID_INCREASEVALUESCOARSE, OnCoarseIncreaseValues)
@@ -1139,16 +1137,6 @@ void CFamiTrackerView::OnTrackerDetune()			// // //
 	theApp.GetSoundGenerator()->LoadMachineSettings(pDoc->GetMachine(), pDoc->GetEngineSpeed(), pDoc->GetNamcoChannels());
 }
 
-void CFamiTrackerView::OnTrackerGroove()			// // //
-{
-	CFamiTrackerDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	CGrooveDlg *GrooveDlg = new CGrooveDlg();
-	GrooveDlg->Create(IDD_GROOVE, this);
-	GrooveDlg->ShowWindow(SW_SHOW);
-}
-
 void CFamiTrackerView::OnSpeedDefault()
 {
 	CFamiTrackerDoc* pDoc = GetDocument();
@@ -1503,6 +1491,7 @@ void CFamiTrackerView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* /*pHi
 	// Document is closing
 	case UPDATE_CLOSE:
 		// Old
+		pMainFrm->CloseGrooveSettings();		// // //
 		pMainFrm->CloseInstrumentEditor();
 		break;
 	}
