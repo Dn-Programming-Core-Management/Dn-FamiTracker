@@ -228,6 +228,7 @@
 #define IDR_SEQUENCE_POPUP              319
 #define IDD_STRETCH                     323
 #define IDD_BOOKMARKS                   324
+#define IDD_GOTO                        326
 #define IDC_INSTRUMENTS                 1001
 #define IDC_INSTSETTINGS                1002
 #define IDC_IMPORT_DETUNE               1002
@@ -464,6 +465,7 @@
 #define IDC_CHANNELS_NR                 1251
 #define IDC_COMBO1                      1255
 #define IDC_COMBO_STYLE                 1255
+#define IDC_COMBO_GOTO_CHIP             1255
 #define IDC_TRACKS                      1257
 #define IDC_ABOUT3                      1258
 #define IDC_SPIN1                       1263
@@ -490,10 +492,13 @@
 #define IDC_EDIT_CONFIG_DESC            1270
 #define IDC_EDIT_STRETCH_MAP            1270
 #define IDC_BUTTON_BOOKMARK_MOVEDOWN    1270
+#define IDC_EDIT_GOTO_FRAME             1270
 #define IDC_HEAD                        1271
 #define IDC_SPIN_BOOKMARK_HIGH2         1271
+#define IDC_EDIT_GOTO_ROW               1271
 #define IDC_COMBOBOXEX1                 1272
 #define IDC_ABOUT_LIB                   1272
+#define IDC_EDIT_GOTO_CHANNEL           1272
 #define IDC_LEVEL_APU1                  1273
 #define IDC_LEVEL_APU2                  1274
 #define IDC_LEVEL_N163                  1275
@@ -782,6 +787,7 @@
 #define ID_COPYAS_TEXT                  33165
 #define ID_COPYAS_VOLUMESEQUENCE        33166
 #define ID_COPYAS_PPMCK                 33167
+#define ID_EDIT_GOTO                    33168
 #define ID_INSTRUMENT_ADD_2A03          36864
 #define ID_INSTRUMENT_ADD_FDS           36865
 #define ID_INSTRUMENT_ADD_MMC5          36866
@@ -801,8 +807,8 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        326
-#define _APS_NEXT_COMMAND_VALUE         33168
+#define _APS_NEXT_RESOURCE_VALUE        329
+#define _APS_NEXT_COMMAND_VALUE         33169
 #define _APS_NEXT_CONTROL_VALUE         1424
 #define _APS_NEXT_SYMED_VALUE           179
 #endif

@@ -157,6 +157,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Find / Replace",             ID_EDIT_FIND_TOGGLE
         MENUITEM "Find &Next",                  ID_FIND_NEXT
+        MENUITEM "&Go To...",                   ID_EDIT_GOTO
         MENUITEM SEPARATOR
         MENUITEM "Instrument Mask",             ID_EDIT_INSTRUMENTMASK
         MENUITEM "Volume Mask",                 ID_EDIT_VOLUMEMASK, CHECKED
@@ -880,6 +881,14 @@ BEGIN
         RIGHTMARGIN, 150
         TOPMARGIN, 7
         BOTTOMMARGIN, 203
+    END
+
+    IDD_GOTO, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 152
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 53
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1681,6 +1690,23 @@ BEGIN
     LTEXT           "2nd",IDC_STATIC,96,54,13,8
 END
 
+IDD_GOTO DIALOGEX 0, 0, 159, 60
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Go To"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Frame:",IDC_STATIC,9,6,24,8
+    LTEXT           "Row:",IDC_STATIC,45,6,18,8
+    LTEXT           "Chip:",IDC_STATIC,81,6,18,8
+    LTEXT           "Channel:",IDC_STATIC,124,6,30,8
+    EDITTEXT        IDC_EDIT_GOTO_FRAME,8,19,28,14,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT_GOTO_ROW,44,19,28,14,ES_AUTOHSCROLL | ES_NUMBER
+    COMBOBOX        IDC_COMBO_GOTO_CHIP,80,19,35,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_GOTO_CHANNEL,123,19,28,14,ES_AUTOHSCROLL | ES_NUMBER
+    DEFPUSHBUTTON   "OK",IDOK,48,39,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,102,39,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1840,6 +1866,11 @@ END
 //
 
 IDD_BOOKMARKS AFX_DIALOG_LAYOUT
+BEGIN
+    0x0000
+END
+
+IDD_GOTO AFX_DIALOG_LAYOUT
 BEGIN
     0x0000
 END
@@ -2328,6 +2359,11 @@ END
 STRINGTABLE
 BEGIN
     IDC_FOLLOW_TOGGLE       "Make the cursor follow the currently played row"
+END
+
+STRINGTABLE
+BEGIN
+    ID_EDIT_GOTO            "Go to the specified position in the current track\nGo To"
 END
 
 #endif    // English (United States) resources

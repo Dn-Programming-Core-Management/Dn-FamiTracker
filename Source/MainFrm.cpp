@@ -53,6 +53,7 @@
 #include "FrameEditor.h"
 #include "APU/APU.h"
 #include "GrooveDlg.h"		// // //
+#include "GotoDlg.h"		// // //
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -323,6 +324,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_SELECT_TRACK, OnEditSelecttrack)
 	ON_COMMAND(ID_EDIT_FIND_TOGGLE, OnEditFindToggle)
 	ON_COMMAND(ID_FIND_NEXT, OnFindNext)
+	ON_COMMAND(ID_EDIT_GOTO, OnEditGoto)
 	ON_COMMAND(ID_EDIT_STRETCHPATTERNS, OnEditStretchpatterns)
 	ON_COMMAND(ID_CLEANUP_REMOVEUNUSEDDPCMSAMPLES, OnEditRemoveUnusedSamples)
 	ON_COMMAND(ID_CLEANUP_POPULATEUNIQUEPATTERNS, OnEditPopulateUniquePatterns)
@@ -3156,4 +3158,10 @@ void CMainFrame::OnEditPopulateUniquePatterns()
 	
 	pDoc->PopulateUniquePatterns();
 	pDoc->UpdateAllViews(NULL, UPDATE_FRAME);
+}
+
+void CMainFrame::OnEditGoto()
+{
+	CGotoDlg gotoDlg;
+	gotoDlg.DoModal();
 }

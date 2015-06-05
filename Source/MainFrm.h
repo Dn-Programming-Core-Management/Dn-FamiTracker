@@ -361,6 +361,7 @@ public:
 	afx_msg void OnEditFindToggle();
 	afx_msg void OnFindNext();
 	afx_msg void OnFindPrevious();
+	afx_msg void OnEditGoto();
 	afx_msg void OnEditStretchpatterns();
 	afx_msg void OnEditRemoveUnusedSamples();
 	afx_msg void OnEditPopulateUniquePatterns();

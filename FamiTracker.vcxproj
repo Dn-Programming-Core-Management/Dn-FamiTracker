@@ -445,6 +445,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
     </ClCompile>
     <ClCompile Include="Source\FindDlg.cpp" />
+    <ClCompile Include="Source\GotoDlg.cpp" />
     <ClCompile Include="Source\Groove.cpp" />
     <ClCompile Include="Source\GrooveDlg.cpp" />
     <ClCompile Include="Source\MainFrm.cpp">
@@ -654,6 +655,7 @@
     <ClInclude Include="Source\FamiTrackerTypes.h" />
     <ClInclude Include="Source\FamiTrackerView.h" />
     <ClInclude Include="Source\FindDlg.h" />
+    <ClInclude Include="Source\GotoDlg.h" />
     <ClInclude Include="Source\Groove.h" />
     <ClInclude Include="Source\GrooveDlg.h" />
     <ClInclude Include="Source\MainFrm.h" />
