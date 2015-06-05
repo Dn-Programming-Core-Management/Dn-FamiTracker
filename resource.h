@@ -227,6 +227,7 @@
 #define IDS_WAVE_PROGRESS_ROW_FORMAT    318
 #define IDR_SEQUENCE_POPUP              319
 #define IDD_STRETCH                     323
+#define IDD_BOOKMARKS                   324
 #define IDC_INSTRUMENTS                 1001
 #define IDC_INSTSETTINGS                1002
 #define IDC_IMPORT_DETUNE               1002
@@ -442,6 +443,7 @@
 #define IDC_COMMENTS                    1232
 #define IDC_CHECK1                      1233
 #define IDC_CHECK_COMPACT               1233
+#define IDC_CHECK_BOOKMARK_SORT         1233
 #define IDC_NTSC                        1234
 #define IDC_DUAL                        1236
 #define IDC_VOL_2A03                    1236
@@ -467,20 +469,29 @@
 #define IDC_SPIN1                       1263
 #define IDC_DELTA_SPIN                  1263
 #define IDC_SPIN_NOTE                   1263
+#define IDC_SPIN_BOOKMARK_FRAME         1263
 #define IDC_SPIN3                       1264
 #define IDC_SPIN_OFFSET                 1264
+#define IDC_SPIN_BOOKMARK_ROW           1264
 #define IDC_DELTA_COUNTER               1265
+#define IDC_SPIN_BOOKMARK_HIGH1         1265
 #define IDC_BUTTON1                     1266
 #define IDC_ABORT                       1266
 #define IDC_BUTTON_STRETCH_EXPAND       1266
+#define IDC_BUTTON_BOOKMARK_ADD         1266
 #define IDC_CONTINUE                    1267
+#define IDC_BUTTON_BOOKMARK_REMOVE      1267
 #define IDC_SLIDER1                     1268
 #define IDC_SLIDER_APU1                 1268
+#define IDC_BUTTON_BOOKMARK_CLEARALL    1268
+#define IDC_BUTTON_BOOKMARK_MOVEUP      1269
 #define IDC_EDIT1                       1270
 #define IDC_ABOUT_CONTRIB               1270
 #define IDC_EDIT_CONFIG_DESC            1270
 #define IDC_EDIT_STRETCH_MAP            1270
+#define IDC_BUTTON_BOOKMARK_MOVEDOWN    1270
 #define IDC_HEAD                        1271
+#define IDC_SPIN_BOOKMARK_HIGH2         1271
 #define IDC_COMBOBOXEX1                 1272
 #define IDC_ABOUT_LIB                   1272
 #define IDC_LEVEL_APU1                  1273
@@ -601,6 +612,13 @@
 #define IDC_STRETCH_TEST                1412
 #define IDC_BUTTON_STRETCH_RESET        1413
 #define IDC_BUTTON_STRETCH_INVERT       1414
+#define IDC_LIST_BOOKMARKS              1415
+#define IDC_BUTTON_BOOKMARK_UPDATE      1416
+#define IDC_EDIT_BOOKMARK_FRAME         1417
+#define IDC_EDIT_BOOKMARK_ROW           1418
+#define IDC_EDIT_BOOKMARK_NAME          1420
+#define IDC_EDIT_BOOKMARK_HIGH1         1421
+#define IDC_EDIT_BOOKMARK_HIGH2         1422
 #define ID_TRACKER_PLAY                 32771
 #define ID_TRACKER_PLAYPATTERN          32775
 #define ID_TRACKER_STOP                 32776
@@ -783,9 +801,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        324
+#define _APS_NEXT_RESOURCE_VALUE        326
 #define _APS_NEXT_COMMAND_VALUE         33168
-#define _APS_NEXT_CONTROL_VALUE         1415
+#define _APS_NEXT_CONTROL_VALUE         1424
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif
