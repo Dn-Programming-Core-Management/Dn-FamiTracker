@@ -336,8 +336,6 @@ void CBookmarkDlg::OnLbnSelchangeListBookmarks()
 	if (pos == LB_ERR) return;
 
 	stBookmark Mark = (*m_pBookmarkList)[pos];
-	m_cSpinFrame->SetPos(Mark.Frame);
-	m_cSpinRow->SetPos(Mark.Row);
 	static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_PERSIST))->SetCheck(Mark.Persist ? BST_CHECKED : BST_UNCHECKED);
 	GetDlgItem(IDC_EDIT_BOOKMARK_NAME)->SetWindowText(*Mark.Name);
 
@@ -350,6 +348,9 @@ void CBookmarkDlg::OnLbnSelchangeListBookmarks()
 	m_cSpinHighlight2->SetPos(m_bEnableHighlight2 ? Mark.Highlight.Second : m_pDocument->GetHighlight().Second);
 	static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_HIGH2))->SetCheck(m_bEnableHighlight2);
 	static_cast<CEdit*>(GetDlgItem(IDC_EDIT_BOOKMARK_HIGH2))->EnableWindow(m_bEnableHighlight2);
+
+	m_cSpinFrame->SetPos(Mark.Frame);
+	m_cSpinRow->SetPos(Mark.Row);
 }
 
 void CBookmarkDlg::OnLbnDblclkListBookmarks()
