@@ -447,9 +447,9 @@
 #define IDC_CHECK1                      1233
 #define IDC_CHECK_COMPACT               1233
 #define IDC_CHECK_BOOKMARK_SORT         1233
-#define IDC_CHECK_BOOKMARK_HIGH1        1233
+#define IDC_CHECK_BOOKMARK_HIGH1        1234
 #define IDC_NTSC                        1234
-#define IDC_CHECK_BOOKMARK_HIGH2        1234
+#define IDC_CHECK_BOOKMARK_HIGH2        1235
 #define IDC_DUAL                        1236
 #define IDC_VOL_2A03                    1236
 #define IDC_LEVEL_2A03                  1238
