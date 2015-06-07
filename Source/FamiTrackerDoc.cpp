@@ -4911,10 +4911,9 @@ stHighlight CFamiTrackerDoc::GetHighlight() const		// // //
 
 unsigned int CFamiTrackerDoc::GetHighlightAtRow(unsigned int Track, unsigned int Frame, unsigned int Row) const		// // //
 {
-	/*
-	bool bHighlight		  = (m_vHighlight.First > 0) ? !((Row - m_vHighlight.Offset) % m_vHighlight.First) : false;		// // //
-	bool bSecondHighlight = (m_vHighlight.Second > 0) ? !((Row - m_vHighlight.Offset) % m_vHighlight.Second) : false;
-	*/
+	while (Frame < 0) Frame += GetFrameCount(Track);
+	Frame %= GetFrameCount(Track);
+
 	stHighlight Hl = m_vHighlight;
 	stHighlight *New = NULL;
 	int RowOffs = 0;
@@ -4924,15 +4923,14 @@ unsigned int CFamiTrackerDoc::GetHighlightAtRow(unsigned int Track, unsigned int
 		int Min = MAX_FRAMES * MAX_PATTERN_LENGTH;
 		for (auto it = m_pBookmarkList[Track]->begin(); it < m_pBookmarkList[Track]->end(); it++) {
 			int NewPos = PackedPos - (it->Frame * MAX_PATTERN_LENGTH + it->Row);
-			if (NewPos < 0) NewPos += MAX_FRAMES * MAX_PATTERN_LENGTH;
-			if (NewPos < Min) {
+			if (NewPos >= 0 && NewPos < Min) {
 				Min = NewPos;
 				New = &it->Highlight;
 
 				RowOffs = it->Row;
-				if (New->First != -1)
+				if (New->First != -1 && (it->Persist || it->Frame == Frame))
 					Hl.First = New->First;
-				if (New->Second != -1)
+				if (New->Second != -1 && (it->Persist || it->Frame == Frame))
 					Hl.Second = New->Second;
 				Hl.Offset = New->Offset;
 			}

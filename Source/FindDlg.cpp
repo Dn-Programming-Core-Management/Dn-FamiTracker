@@ -743,8 +743,7 @@ void CFindDlg::OnBnClickedButtonReplace()
 			else PrevPos = ZipPos;
 		}
 
-		m_pView->SelectChannel(m_pView->GetSelectedChannel()); // 0CC: other better way to invalidate cursor?
-		m_pView->GetPatternEditor()->InvalidatePatternData();
+		m_pDocument->UpdateAllViews(NULL, UPDATE_PATTERN);
 
 		str.Format(_T("%d occurrence(s) replaced."), Count);
 		AfxMessageBox(str, MB_OK | MB_ICONINFORMATION);

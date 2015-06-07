@@ -44,6 +44,7 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
+	void UpdateBookmark(stBookmark & Mark) const;
 	void SetBookmarkList();
 	void LoadBookmarks();
 
@@ -56,7 +57,8 @@ protected:
 	CFamiTrackerDoc *m_pDocument;
 
 	std::vector<stBookmark> *m_pBookmarkList;
-	
+	bool m_bEnableHighlight1;
+	bool m_bEnableHighlight2;
 
 	DECLARE_MESSAGE_MAP()
 public:
@@ -72,4 +74,7 @@ public:
 	afx_msg void OnBnClickedButtonBookmarkSortn();
 	afx_msg void OnLbnSelchangeListBookmarks();
 	afx_msg void OnLbnDblclkListBookmarks();
+	afx_msg void OnBnClickedCheckBookmarkHigh1();
+	afx_msg void OnBnClickedCheckBookmarkHigh2();
+	afx_msg void OnEnChangeBookmarkProperties();
 };
