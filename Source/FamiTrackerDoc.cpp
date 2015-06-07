@@ -2618,8 +2618,8 @@ bool CFamiTrackerDoc::ReadBlock_Bookmarks(CDocumentFile *pDocFile)
 		unsigned int Track = pDocFile->GetBlockChar();
 		Mark.Frame = pDocFile->GetBlockChar();
 		Mark.Row = pDocFile->GetBlockChar();
-		Mark.Highlight1 = pDocFile->GetBlockInt();
-		Mark.Highlight2 = pDocFile->GetBlockInt();
+		Mark.Highlight.First = pDocFile->GetBlockInt();
+		Mark.Highlight.Second = pDocFile->GetBlockInt();
 		Mark.Persist = pDocFile->GetBlockChar() != 0;
 		Mark.Name = new CString(pDocFile->ReadString());
 		
@@ -2649,8 +2649,8 @@ bool CFamiTrackerDoc::WriteBlock_Bookmarks(CDocumentFile *pDocFile) const
 			pDocFile->WriteBlockChar(i);
 			pDocFile->WriteBlockChar(it->Frame);
 			pDocFile->WriteBlockChar(it->Row);
-			pDocFile->WriteBlockInt(it->Highlight1);
-			pDocFile->WriteBlockInt(it->Highlight2);
+			pDocFile->WriteBlockInt(it->Highlight.First);
+			pDocFile->WriteBlockInt(it->Highlight.Second);
 			pDocFile->WriteBlockChar(it->Persist);
 			//pDocFile->WriteBlockInt(it->Name->GetLength());
 			//pDocFile->WriteBlock(it->Name, (int)strlen(Name));	
@@ -4907,6 +4907,46 @@ void CFamiTrackerDoc::SetHighlight(stHighlight Hl)		// // //
 stHighlight CFamiTrackerDoc::GetHighlight() const		// // //
 {
 	return m_vHighlight;
+}
+
+unsigned int CFamiTrackerDoc::GetHighlightAtRow(unsigned int Track, unsigned int Frame, unsigned int Row) const		// // //
+{
+	/*
+	bool bHighlight		  = (m_vHighlight.First > 0) ? !((Row - m_vHighlight.Offset) % m_vHighlight.First) : false;		// // //
+	bool bSecondHighlight = (m_vHighlight.Second > 0) ? !((Row - m_vHighlight.Offset) % m_vHighlight.Second) : false;
+	*/
+	stHighlight Hl = m_vHighlight;
+	stHighlight *New = NULL;
+	int RowOffs = 0;
+	
+	if (m_pBookmarkList[Track]) {
+		const int PackedPos = Frame * MAX_PATTERN_LENGTH + Row;
+		int Min = MAX_FRAMES * MAX_PATTERN_LENGTH;
+		for (auto it = m_pBookmarkList[Track]->begin(); it < m_pBookmarkList[Track]->end(); it++) {
+			int NewPos = PackedPos - (it->Frame * MAX_PATTERN_LENGTH + it->Row);
+			if (NewPos < 0) NewPos += MAX_FRAMES * MAX_PATTERN_LENGTH;
+			if (NewPos < Min) {
+				Min = NewPos;
+				New = &it->Highlight;
+
+				RowOffs = it->Row;
+				if (New->First != -1)
+					Hl.First = New->First;
+				if (New->Second != -1)
+					Hl.Second = New->Second;
+				Hl.Offset = New->Offset;
+			}
+		}
+	}
+
+	if (Hl.Second > 0)
+		if (!((Row - Hl.Offset - RowOffs) % Hl.Second))
+		return 2;
+	if (Hl.First > 0)
+		if (!((Row - Hl.Offset - RowOffs) % Hl.First))
+		return 1;
+
+	return 0;
 }
 
 unsigned int CFamiTrackerDoc::ScanActualLength(unsigned int Track, unsigned int Count) const		// // //

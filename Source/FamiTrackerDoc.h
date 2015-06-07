@@ -257,6 +257,7 @@ public:
 
 	void			SetHighlight(const stHighlight Hl);		// // //
 	stHighlight		GetHighlight() const;
+	unsigned int	GetHighlightAtRow(unsigned int Track, unsigned int Frame, unsigned int Row) const;		// // //
 
 	void			SetDetuneOffset(int Chip, int Note, int Detune);		// // //
 	int				GetDetuneOffset(int Chip, int Note) const;

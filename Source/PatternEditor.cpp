@@ -1137,17 +1137,16 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 	}
 
 	// Highlight
-	bool bHighlight		  = (m_vHighlight.First > 0) ? !((Row - m_vHighlight.Offset) % m_vHighlight.First) : false;		// // //
-	bool bSecondHighlight = (m_vHighlight.Second > 0) ? !((Row - m_vHighlight.Offset) % m_vHighlight.Second) : false;
+	unsigned int Highlight = m_pDocument->GetHighlightAtRow(Track, Frame, Row);		// // //
 
 	// Clear
 	pDC->FillSolidRect(1, Line * m_iRowHeight, m_iRowColumnWidth - 2, m_iRowHeight, ColBg);
 
 	COLORREF TextColor;
 
-	if (bSecondHighlight)
+	if (Highlight == 2)
 		TextColor = theApp.GetSettings()->Appearance.iColPatternTextHilite2;
-	else if (bHighlight)
+	else if (Highlight == 1)
 		TextColor = theApp.GetSettings()->Appearance.iColPatternTextHilite;
 	else
 		TextColor = theApp.GetSettings()->Appearance.iColPatternText;
@@ -1181,9 +1180,9 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 	pDC->SetTextAlign(TA_LEFT);		// // //
 
 	COLORREF BackColor;
-	if (bSecondHighlight)
+	if (Highlight == 2)
 		BackColor = ColHiBg2;	// Highlighted row
-	else if (bHighlight)
+	else if (Highlight == 1)
 		BackColor = ColHiBg;	// Highlighted row
 	else
 		BackColor = ColBg;		// Normal
@@ -1210,9 +1209,9 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 
 	colorInfo.Note = TextColor;
 
-	if (bSecondHighlight)
+	if (Highlight == 2)
 		colorInfo.Back = pSettings->Appearance.iColBackgroundHilite2;
-	else if (bHighlight)
+	else if (Highlight == 1)
 		colorInfo.Back = pSettings->Appearance.iColBackgroundHilite;
 	else
 		colorInfo.Back = pSettings->Appearance.iColBackground;
