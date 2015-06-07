@@ -354,15 +354,23 @@ void CBookmarkDlg::OnLbnSelchangeListBookmarks()
 
 void CBookmarkDlg::OnLbnDblclkListBookmarks()
 {
-	int pos = m_cListBookmark->GetCurSel();
-	if (pos == LB_ERR) return;
-	stBookmark Mark = (*m_pBookmarkList)[pos];
+    CPoint cursor;
+    cursor.x = GetCurrentMessage()->pt.x;
+    cursor.y = GetCurrentMessage()->pt.y;
 
-	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(static_cast<CMainFrame*>(AfxGetMainWnd())->GetActiveView());
-	//static_cast<CMainFrame*>(AfxGetMainWnd())->SelectTrack(Mark.Track);
-	pView->SelectFrame(Mark.Frame);
-	pView->SelectRow(Mark.Row);
-	pView->SetFocus();
+    m_cListBookmark->ScreenToClient(&cursor);
+
+    BOOL is_outside = FALSE;
+    UINT item_index = m_cListBookmark->ItemFromPoint(cursor, is_outside);
+	if (!is_outside) {
+		CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(static_cast<CMainFrame*>(AfxGetMainWnd())->GetActiveView());
+		stBookmark Mark = (*m_pBookmarkList)[item_index];
+		
+		//static_cast<CMainFrame*>(AfxGetMainWnd())->SelectTrack(Mark.Track);
+		pView->SelectFrame(Mark.Frame);
+		pView->SelectRow(Mark.Row);
+		pView->SetFocus();
+	}
 }
 
 void CBookmarkDlg::OnBnClickedCheckBookmarkHigh1()
