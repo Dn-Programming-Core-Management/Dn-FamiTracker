@@ -27,6 +27,19 @@
 #include "MainFrm.h"
 #include "BookmarkDlg.h"
 
+static void ResolveBookmark(stBookmark &Mark)
+{
+	int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
+	while (true) {
+		unsigned int Len = CFamiTrackerDoc::GetDoc()->GetFrameLength(Track, Mark.Frame);
+		if (Mark.Row < Len) break;
+		Mark.Row -= Len;
+		Mark.Frame++;
+		if (Mark.Frame >= CFamiTrackerDoc::GetDoc()->GetFrameCount(Track))
+			Mark.Frame = 0;
+	}
+}
+
 // CBookmarkDlg dialog
 
 IMPLEMENT_DYNAMIC(CBookmarkDlg, CDialog)
@@ -177,7 +190,8 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkAdd()
 	Mark.Name = new CString();
 	GetDlgItem(IDC_EDIT_BOOKMARK_NAME)->GetWindowText(*Mark.Name);
 	Mark.Persist = static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_PERSIST))->GetCheck() == BST_CHECKED;
-
+	
+	ResolveBookmark(Mark);
 	m_pBookmarkList->push_back(Mark);
 	SetBookmarkList();
 
@@ -202,7 +216,8 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkUpdate()
 	it->Name = new CString();
 	GetDlgItem(IDC_EDIT_BOOKMARK_NAME)->GetWindowText(*it->Name);
 	it->Persist = static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_PERSIST))->GetCheck() == BST_CHECKED;
-
+	
+	ResolveBookmark(*it);
 	SetBookmarkList();
 	m_cListBookmark->SetCurSel(pos);
 }
