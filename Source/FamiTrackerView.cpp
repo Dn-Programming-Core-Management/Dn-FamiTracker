@@ -1492,6 +1492,7 @@ void CFamiTrackerView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* /*pHi
 	case UPDATE_CLOSE:
 		// Old
 		pMainFrm->CloseGrooveSettings();		// // //
+		pMainFrm->CloseBookmarkSettings();		// // //
 		pMainFrm->CloseInstrumentEditor();
 		break;
 	}

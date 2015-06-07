@@ -425,6 +425,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\BookmarkDlg.cpp" />
     <ClCompile Include="Source\DetuneDlg.cpp" />
     <ClCompile Include="Source\Exception.cpp" />
     <ClCompile Include="Source\FamiTracker.cpp" />
@@ -648,6 +649,7 @@
     <ClCompile Include="Source\WaveFile.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\BookmarkDlg.h" />
     <ClInclude Include="Source\DetuneDlg.h" />
     <ClInclude Include="Source\Exception.h" />
     <ClInclude Include="Source\FamiTracker.h" />

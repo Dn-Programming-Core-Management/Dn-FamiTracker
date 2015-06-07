@@ -48,6 +48,7 @@ class CAction;
 class CActionHandler;
 class CFrameEditor;
 class CGrooveDlg;		// // //
+class CBookmarkDlg;
 
 class CMainFrame : public CFrameWnd
 {
@@ -101,6 +102,7 @@ public:
 	bool	ChangeAllPatterns() const;
 	
 	void	CloseGrooveSettings();		// // //
+	void	CloseBookmarkSettings();		// // //
 	void	ResetFind();		// // //
 
 // Overrides
@@ -161,6 +163,7 @@ private:  // control bar embedded members
 	CVisualizerWnd		*m_pVisualizerWnd;
 	CGrooveDlg			*m_pGrooveDlg;			// // //
 	CFindDlg			*m_pFindDlg;			// // //
+	CBookmarkDlg		*m_pBookmarkDlg;		// // //
 
 	CLockedEdit			*m_pLockedEditSpeed;
 	CLockedEdit			*m_pLockedEditTempo;
@@ -367,6 +370,7 @@ public:
 	afx_msg void OnEditPopulateUniquePatterns();
 	afx_msg void OnModuleDuplicateCurrentPattern();
 	afx_msg void OnModuleGrooveSettings();
+	afx_msg void OnModuleBookmarkSettings();
 	afx_msg void OnToggleMultiplexer();
 	afx_msg void OnUpdateEditCopySpecial(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateToggleFollow(CCmdUI *pCmdUI);

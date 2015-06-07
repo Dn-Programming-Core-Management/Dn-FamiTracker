@@ -54,6 +54,7 @@
 #include "APU/APU.h"
 #include "GrooveDlg.h"		// // //
 #include "GotoDlg.h"		// // //
+#include "BookmarkDlg.h"	// // //
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -117,6 +118,7 @@ CMainFrame::CMainFrame() :
 	m_pFrameEditor(NULL),
 	m_pGrooveDlg(NULL),			// // //
 	m_pFindDlg(NULL),			// // //
+	m_pBookmarkDlg(NULL),		// // //
 	m_pImageList(NULL),
 	m_pLockedEditSpeed(NULL),
 	m_pLockedEditTempo(NULL),
@@ -157,6 +159,7 @@ CMainFrame::~CMainFrame()
 	SAFE_RELEASE(m_pFrameEditor);
 	SAFE_RELEASE(m_pGrooveDlg);			// // //
 	SAFE_RELEASE(m_pFindDlg);			// // //
+	SAFE_RELEASE(m_pBookmarkDlg);			// // //
 	SAFE_RELEASE(m_pInstrumentList);
 	SAFE_RELEASE(m_pVisualizerWnd);
 	SAFE_RELEASE(m_pActionHandler);
@@ -330,6 +333,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_CLEANUP_POPULATEUNIQUEPATTERNS, OnEditPopulateUniquePatterns)
 	ON_COMMAND(ID_MODULE_DUPLICATECURRENTPATTERN, OnModuleDuplicateCurrentPattern)
 	ON_COMMAND(ID_MODULE_GROOVE, OnModuleGrooveSettings)
+	ON_COMMAND(ID_MODULE_BOOKMARK, OnModuleBookmarkSettings)
 	ON_COMMAND(ID_TOGGLE_MULTIPLEXER, OnToggleMultiplexer)
 	ON_UPDATE_COMMAND_UI(IDC_FOLLOW_TOGGLE, OnUpdateToggleFollow)
 	ON_UPDATE_COMMAND_UI(IDC_COMPACT_TOGGLE, OnUpdateToggleCompact)
@@ -1868,6 +1872,14 @@ void CMainFrame::CloseGrooveSettings()		// // //
 	}
 }
 
+void CMainFrame::CloseBookmarkSettings()		// // //
+{
+	if (m_pBookmarkDlg != NULL) {
+		m_pBookmarkDlg->DestroyWindow();
+		SAFE_RELEASE(m_pBookmarkDlg);
+	}
+}
+
 void CMainFrame::OnUpdateKeyRepeat(CCmdUI *pCmdUI)
 {
 	if (theApp.GetSettings()->General.bKeyRepeat)
@@ -2041,8 +2053,22 @@ void CMainFrame::OnModuleGrooveSettings()		// // //
 		m_pGrooveDlg = new CGrooveDlg();
 		m_pGrooveDlg->Create(IDD_GROOVE, this);
 	}
+	if (!m_pGrooveDlg->IsWindowVisible())
+		m_pGrooveDlg->CenterWindow();
 	m_pGrooveDlg->ShowWindow(SW_SHOW);
 	m_pGrooveDlg->SetFocus();
+}
+
+void CMainFrame::OnModuleBookmarkSettings()		// // //
+{
+	if (m_pBookmarkDlg == NULL) {
+		m_pBookmarkDlg = new CBookmarkDlg();
+		m_pBookmarkDlg->Create(IDD_BOOKMARKS, this);
+	}
+	if (!m_pBookmarkDlg->IsWindowVisible())
+		m_pBookmarkDlg->CenterWindow();
+	m_pBookmarkDlg->ShowWindow(SW_SHOW);
+	m_pBookmarkDlg->SetFocus();
 }
 
 void CMainFrame::UpdateTrackBox()
@@ -2374,6 +2400,9 @@ void CMainFrame::SelectTrack(unsigned int Track)
 	//pDoc->UpdateAllViews(NULL, CHANGED_TRACK);
 	pView->TrackChanged(m_iTrack);
 	OnUpdateFrameTitle(TRUE);
+
+	if (m_pBookmarkDlg != NULL)		// // //
+		m_pBookmarkDlg->LoadBookmarks(m_iTrack);
 }
 
 BOOL CMainFrame::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)

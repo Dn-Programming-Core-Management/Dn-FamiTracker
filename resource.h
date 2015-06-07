@@ -624,6 +624,9 @@
 #define IDC_EDIT_BOOKMARK_NAME          1420
 #define IDC_EDIT_BOOKMARK_HIGH1         1421
 #define IDC_EDIT_BOOKMARK_HIGH2         1422
+#define IDC_CHECK_BOOKMARK_PERSIST      1424
+#define IDC_BUTTON_BOOKMARK_SORTP       1425
+#define IDC_BUTTON_BOOKMARK_SORTN       1426
 #define ID_TRACKER_PLAY                 32771
 #define ID_TRACKER_PLAYPATTERN          32775
 #define ID_TRACKER_STOP                 32776
@@ -788,6 +791,7 @@
 #define ID_COPYAS_VOLUMESEQUENCE        33166
 #define ID_COPYAS_PPMCK                 33167
 #define ID_EDIT_GOTO                    33168
+#define ID_MODULE_BOOKMARK              33170
 #define ID_INSTRUMENT_ADD_2A03          36864
 #define ID_INSTRUMENT_ADD_FDS           36865
 #define ID_INSTRUMENT_ADD_MMC5          36866
@@ -808,8 +812,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        329
-#define _APS_NEXT_COMMAND_VALUE         33169
-#define _APS_NEXT_CONTROL_VALUE         1424
+#define _APS_NEXT_COMMAND_VALUE         33171
+#define _APS_NEXT_CONTROL_VALUE         1426
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif
