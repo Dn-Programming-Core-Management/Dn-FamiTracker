@@ -1453,6 +1453,7 @@ void CFamiTrackerView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* /*pHi
 
 		m_pPatternEditor->InvalidatePatternData();
 		RedrawPatternEditor();
+		pMainFrm->UpdateBookmarkList();		// // //
 		break;
 	// Instrument has been added / removed
 	case UPDATE_INSTRUMENT:

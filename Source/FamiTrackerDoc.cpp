@@ -4180,6 +4180,13 @@ bool CFamiTrackerDoc::InsertFrame(unsigned int Track, unsigned int Frame)
 		SetPatternAtFrame(Track, Frame, i, GetFirstFreePattern(Track, i));
 	}
 
+	if (m_pBookmarkList[Track]) {		// // //
+		for (auto it = m_pBookmarkList[Track]->begin(); it < m_pBookmarkList[Track]->end(); it++) {
+			if (it->Frame >= Frame)
+				it->Frame++;
+		}
+	}
+
 	SetModifiedFlag();
 
 	return true;
@@ -4203,6 +4210,19 @@ bool CFamiTrackerDoc::RemoveFrame(unsigned int Track, unsigned int Frame)
 	for (int i = Frame; i < FrameCount - 1; ++i) {
 		for (int j = 0; j < Channels; ++j) {
 			SetPatternAtFrame(Track, i, j, GetPatternAtFrame(Track, i + 1, j));
+		}
+	}
+
+	if (m_pBookmarkList[Track]) {		// // //
+		auto it = m_pBookmarkList[Track]->begin();
+		while (it < m_pBookmarkList[Track]->end()) {
+			if (it->Frame == Frame)
+				it = m_pBookmarkList[Track]->erase(it);
+			else {
+				if (it->Frame > Frame)
+					it->Frame--;
+				it++;
+			}
 		}
 	}
 
@@ -4235,6 +4255,13 @@ bool CFamiTrackerDoc::DuplicateFrame(unsigned int Track, unsigned int Frame)
 
 	for (int i = 0; i < Channels; ++i) {
 		SetPatternAtFrame(Track, Frame + 1, i, GetPatternAtFrame(Track, Frame, i));
+	}
+
+	if (m_pBookmarkList[Track]) {		// // //
+		for (auto it = m_pBookmarkList[Track]->begin(); it < m_pBookmarkList[Track]->end(); it++) {
+			if (it->Frame >= Frame)
+				it->Frame++;
+		}
 	}
 
 	SetModifiedFlag();
@@ -4281,6 +4308,15 @@ bool CFamiTrackerDoc::MoveFrameDown(unsigned int Track, unsigned int Frame)
 		SetPatternAtFrame(Track, Frame + 1, i, Pattern);
 	}
 
+	if (m_pBookmarkList[Track]) {		// // //
+		for (auto it = m_pBookmarkList[Track]->begin(); it < m_pBookmarkList[Track]->end(); it++) {
+			if (it->Frame == Frame)
+				it->Frame++;
+			else if (it->Frame == Frame + 1)
+				it->Frame--;
+		}
+	}
+
 	SetModifiedFlag();
 
 	return true;
@@ -4297,6 +4333,15 @@ bool CFamiTrackerDoc::MoveFrameUp(unsigned int Track, unsigned int Frame)
 		int Pattern = GetPatternAtFrame(Track, Frame, i);
 		SetPatternAtFrame(Track, Frame, i, GetPatternAtFrame(Track, Frame - 1, i));
 		SetPatternAtFrame(Track, Frame - 1, i, Pattern);
+	}
+
+	if (m_pBookmarkList[Track]) {		// // //
+		for (auto it = m_pBookmarkList[Track]->begin(); it < m_pBookmarkList[Track]->end(); it++) {
+			if (it->Frame == Frame)
+				it->Frame--;
+			else if (it->Frame == Frame + 1)
+				it->Frame++;
+		}
 	}
 
 	SetModifiedFlag();
