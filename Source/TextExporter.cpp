@@ -25,6 +25,7 @@
 #include "PatternData.h"		// // //
 #include "TextExporter.h"
 #include "FamiTrackerDoc.h"
+#include "../version.h"		// // //
 
 #define DEBUG_OUT(...) { CString s__; s__.Format(__VA_ARGS__); OutputDebugString(s__); }
 
@@ -1237,7 +1238,8 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 
 	CString s;
 
-	f.WriteString(_T("# FamiTracker text export 0.4.2\n\n"));
+	s.Format(_T("# 0CC-FamiTracker text export %i.%i.%i\n\n"), VERSION_MAJ, VERSION_MIN, VERSION_REV);		// // //
+	f.WriteString(s);
 
 	s.Format(_T("# Song information\n"
 	            "%-15s %s\n"
