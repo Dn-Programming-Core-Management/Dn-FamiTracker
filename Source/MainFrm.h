@@ -103,6 +103,8 @@ public:
 	
 	void	CloseGrooveSettings();		// // //
 	void	CloseBookmarkSettings();		// // //
+	void	UpdateBookmarkList(int Pos = -1);		// // //
+
 	void	ResetFind();		// // //
 
 // Overrides

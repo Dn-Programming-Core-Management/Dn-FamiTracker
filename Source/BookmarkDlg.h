@@ -36,6 +36,7 @@ public:
 	virtual ~CBookmarkDlg();
 
 	void LoadBookmarks(int Track);
+	void SelectBookmark(int Pos) const;
 
 // Dialog Data
 	enum { IDD = IDD_BOOKMARKS };
@@ -45,7 +46,6 @@ protected:
 
 	void SetBookmarkList();
 	void LoadBookmarks();
-	void UpdateSpinControls();
 
 	CListBox *m_cListBookmark;
 	CSpinButtonCtrl *m_cSpinFrame;

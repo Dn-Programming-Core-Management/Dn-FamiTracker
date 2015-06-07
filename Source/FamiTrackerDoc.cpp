@@ -3701,6 +3701,14 @@ void CFamiTrackerDoc::SetFrameCount(unsigned int Track, unsigned int Count)
 		pTrack->SetFrameCount(Count);
 		SetModifiedFlag();
 		SetExceededFlag();			// // //
+		if (m_pBookmarkList[Track]) {
+			auto it = m_pBookmarkList[Track]->begin();
+			while (it != m_pBookmarkList[Track]->end()) {
+				if (it->Frame >= Count)
+					it = m_pBookmarkList[Track]->erase(it);
+				else it++;
+			}
+		}
 	}
 }
 

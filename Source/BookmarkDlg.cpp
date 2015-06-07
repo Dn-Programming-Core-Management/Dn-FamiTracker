@@ -30,6 +30,7 @@
 static void ResolveBookmark(stBookmark &Mark)
 {
 	int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
+	Mark.Frame %= CFamiTrackerDoc::GetDoc()->GetFrameCount(Track);
 	while (true) {
 		unsigned int Len = CFamiTrackerDoc::GetDoc()->GetFrameLength(Track, Mark.Frame);
 		if (Mark.Row < Len) break;
@@ -87,6 +88,7 @@ void CBookmarkDlg::SetBookmarkList()
 void CBookmarkDlg::LoadBookmarks()
 {
 	LoadBookmarks(static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack());
+	m_cListBookmark->SetFocus();
 }
 
 void CBookmarkDlg::LoadBookmarks(int Track)
@@ -100,20 +102,14 @@ void CBookmarkDlg::LoadBookmarks(int Track)
 		str.AppendFormat(_T(" (%02X,%02X)"), it->Frame, it->Row);
 		m_cListBookmark->AddString(str);
 	}
-	m_cListBookmark->SetFocus();
 }
 
-void CBookmarkDlg::UpdateSpinControls()
+void CBookmarkDlg::SelectBookmark(int Pos) const
 {
-	int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
-
-	m_cSpinFrame->SetRange(0, m_pDocument->GetFrameCount(Track) - 1);
-	if (m_cSpinFrame->GetPos() > static_cast<signed>(m_pDocument->GetFrameCount(Track) - 1))
-		m_cSpinFrame->SetPos(m_pDocument->GetFrameCount(Track) - 1);
-
-	m_cSpinRow->SetRange(0, m_pDocument->GetPatternLength(Track) - 1);
-	if (m_cSpinRow->GetPos() > static_cast<signed>(m_pDocument->GetPatternLength(Track) - 1))
-		m_cSpinRow->SetPos(m_pDocument->GetPatternLength(Track) - 1);
+	int n = m_cListBookmark->SetCurSel(Pos);
+	if (n == LB_ERR)
+		m_cListBookmark->SetCurSel(-1);
+	m_cListBookmark->SetFocus();
 }
 
 BOOL CBookmarkDlg::OnInitDialog()
@@ -133,7 +129,8 @@ BOOL CBookmarkDlg::OnInitDialog()
 	m_pDocument = CFamiTrackerDoc::GetDoc();
 
 	LoadBookmarks();
-	UpdateSpinControls();
+	m_cSpinFrame->SetRange(0, MAX_FRAMES - 1);
+	m_cSpinRow->SetRange(0, MAX_PATTERN_LENGTH - 1);
 	m_cSpinHighlight1->SetRange(0, MAX_PATTERN_LENGTH);
 	m_cSpinHighlight2->SetRange(0, MAX_PATTERN_LENGTH);
 
@@ -182,8 +179,6 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkAdd()
 	stBookmark Mark = {};
 	Mark.Frame = m_cSpinFrame->GetPos();
 	Mark.Row = m_cSpinRow->GetPos();
-	if (Mark.Frame >> 16) return;
-	if (Mark.Row >> 16) return;
 
 	Mark.Highlight1 = m_cSpinHighlight1->GetPos();
 	Mark.Highlight2 = m_cSpinHighlight2->GetPos();
@@ -205,8 +200,6 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkUpdate()
 		m_cListBookmark->SetFocus();
 		return;
 	}
-	if (m_cSpinFrame->GetPos() >> 16) return;
-	if (m_cSpinRow->GetPos() >> 16) return;
 	
 	auto it = m_pBookmarkList->begin() + pos;
 	it->Frame = m_cSpinFrame->GetPos();
@@ -235,7 +228,12 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkRemove()
 	m_pBookmarkList->erase(it);
 
 	SetBookmarkList();
-	m_cListBookmark->SetCurSel(pos - 1);
+	if (m_pBookmarkList->size()) {
+		if (pos == m_pBookmarkList->size())
+			m_cListBookmark->SetCurSel(pos - 1);
+		else
+			m_cListBookmark->SetCurSel(pos);
+	}
 }
 
 void CBookmarkDlg::OnBnClickedButtonBookmarkMoveup()

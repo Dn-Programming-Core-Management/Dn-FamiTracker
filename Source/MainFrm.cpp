@@ -1880,6 +1880,16 @@ void CMainFrame::CloseBookmarkSettings()		// // //
 	}
 }
 
+void CMainFrame::UpdateBookmarkList(int Pos)		// // //
+{
+	if (m_pBookmarkDlg != NULL) {
+		if (m_pBookmarkDlg->IsWindowVisible()) {
+			m_pBookmarkDlg->LoadBookmarks(m_iTrack);
+			m_pBookmarkDlg->SelectBookmark(Pos);
+		}
+	}
+}
+
 void CMainFrame::OnUpdateKeyRepeat(CCmdUI *pCmdUI)
 {
 	if (theApp.GetSettings()->General.bKeyRepeat)

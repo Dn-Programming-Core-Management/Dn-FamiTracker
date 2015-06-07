@@ -72,6 +72,9 @@ const stAccelEntry CAccelerator::DEFAULT_TABLE[] = {
 	{_T("Interpolate"),					MOD_CONTROL,	'G',			ID_EDIT_INTERPOLATE},
 	{_T("Go to next frame"),			MOD_CONTROL,	VK_RIGHT,		ID_NEXT_FRAME},
 	{_T("Go to previous frame"),		MOD_CONTROL,	VK_LEFT,		ID_PREV_FRAME},
+	{_T("Toggle bookmark"),				MOD_CONTROL,	'K',			ID_BOOKMARKS_TOGGLE},				// // //
+	{_T("Next bookmark"),				MOD_CONTROL,	VK_NEXT,		ID_BOOKMARKS_NEXT},					// // //
+	{_T("Previous bookmark"),			MOD_CONTROL,	VK_PRIOR,		ID_BOOKMARKS_PREVIOUS},				// // //
 	{_T("Transpose, decrease notes"),	MOD_CONTROL,	VK_F1,			ID_TRANSPOSE_DECREASENOTE},
 	{_T("Transpose, increase notes"),	MOD_CONTROL,	VK_F2,			ID_TRANSPOSE_INCREASENOTE},
 	{_T("Transpose, decrease octaves"),	MOD_CONTROL,	VK_F3,			ID_TRANSPOSE_DECREASEOCTAVE},

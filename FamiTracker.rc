@@ -158,6 +158,12 @@ BEGIN
         MENUITEM "&Find / Replace",             ID_EDIT_FIND_TOGGLE
         MENUITEM "Find &Next",                  ID_FIND_NEXT
         MENUITEM "&Go To...",                   ID_EDIT_GOTO
+        POPUP "Bookmarks"
+        BEGIN
+            MENUITEM "&Toggle",                     ID_BOOKMARKS_TOGGLE
+            MENUITEM "&Next",                       ID_BOOKMARKS_NEXT
+            MENUITEM "&Previous",                   ID_BOOKMARKS_PREVIOUS
+        END
         MENUITEM SEPARATOR
         MENUITEM "Instrument Mask",             ID_EDIT_INSTRUMENTMASK
         MENUITEM "Volume Mask",                 ID_EDIT_VOLUMEMASK, CHECKED
@@ -1924,7 +1930,9 @@ BEGIN
     IDS_PASTE_REPEATED_ROW  "Warning: Clip data may overwrite itself during pasting. Do you want to apply the paste operation?"
     IDS_PASTE_NONTERMINAL   "Warning: Clip data may alter frame lengths during pasting. Do you want to apply the paste operation?"
     IDS_DISABLE_SAVE        "Saving to external files is disabled in this build of 0CC-FamiTracker."
+    IDS_BOOKMARK_EMPTY      "The current track does not contain any bookmarks."
     IDS_POPULATE_PATTERNS   "Do you want to copy a unique pattern for all frames? There is no undo for this action."
+    IDS_BOOKMARK_FORMAT     "Moved to bookmark %1. (Highlight: %2, %3)"
     IDS_FIND_NONE           "Could not find the search query in the current search area."
     IDS_REPLACE_ALL         "Do you want to replace all occurrences of the search query? There is no undo for this action."
     ID_FIND_NEXT            "Find the next result of the search query\nFind Next"
@@ -2379,6 +2387,9 @@ STRINGTABLE
 BEGIN
     ID_EDIT_GOTO            "Go to the specified position in the current track\nGo To"
     ID_MODULE_BOOKMARK      "Open the bookmark settings dialog\nBookmark Manager"
+    ID_BOOKMARKS_TOGGLE     "Create or delete a bookmark on the current row\nToggle Bookmark"
+    ID_BOOKMARKS_PREVIOUS   "Navigate to the previous bookmark\nPrevious Bookmark"
+    ID_BOOKMARKS_NEXT       "Navigate to the next bookmark\nNext Bookmark"
 END
 
 #endif    // English (United States) resources

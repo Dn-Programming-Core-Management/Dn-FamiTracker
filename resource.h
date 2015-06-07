@@ -147,8 +147,10 @@
 #define ID_CLONE_SEQUENCE               181
 #define IDS_DISABLE_SAVE                181
 #define ID_RECALL_CHANNEL_STATE         182
+#define IDS_BOOKMARK_EMPTY              182
 #define IDD_CONFIG_GENERAL              183
 #define IDS_POPULATE_PATTERNS           183
+#define IDS_BOOKMARK_FORMAT             184
 #define IDD_PROPERTIES                  185
 #define IDS_FIND_END                    186
 #define IDS_FIND_NONE                   187
@@ -792,6 +794,9 @@
 #define ID_COPYAS_PPMCK                 33167
 #define ID_EDIT_GOTO                    33168
 #define ID_MODULE_BOOKMARK              33170
+#define ID_BOOKMARKS_TOGGLE             33171
+#define ID_BOOKMARKS_PREVIOUS           33173
+#define ID_BOOKMARKS_NEXT               33174
 #define ID_INSTRUMENT_ADD_2A03          36864
 #define ID_INSTRUMENT_ADD_FDS           36865
 #define ID_INSTRUMENT_ADD_MMC5          36866
@@ -812,7 +817,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        329
-#define _APS_NEXT_COMMAND_VALUE         33171
+#define _APS_NEXT_COMMAND_VALUE         33175
 #define _APS_NEXT_CONTROL_VALUE         1426
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
