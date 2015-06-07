@@ -43,6 +43,7 @@
 
 #include "stdafx.h"
 #include <algorithm>
+#include <vector>		// // //
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "TrackerChannel.h"
@@ -94,8 +95,9 @@ static const char *FILE_BLOCK_SEQUENCES_N106 = "SEQUENCES_N106";
 static const char *FILE_BLOCK_SEQUENCES_S5B = "SEQUENCES_S5B";
 
 // // // 0CC-FamiTracker specific
-const char *FILE_BLOCK_DETUNETABLES = "DETUNETABLES";
-const char *FILE_BLOCK_GROOVES = "GROOVES";
+const char *FILE_BLOCK_DETUNETABLES			= "DETUNETABLES";
+const char *FILE_BLOCK_GROOVES				= "GROOVES";
+const char *FILE_BLOCK_BOOKMARKS			= "BOOKMARKS";
 
 // FTI instruments files
 static const char INST_HEADER[] = "FTI";
@@ -213,6 +215,7 @@ CFamiTrackerDoc::CFamiTrackerDoc() :
 	memset(m_pSequencesN163, 0, sizeof(CSequence*) * MAX_SEQUENCES * SEQ_COUNT);
 	memset(m_pSequencesS5B, 0, sizeof(CSequence*) * MAX_SEQUENCES * SEQ_COUNT);
 	memset(m_pGrooveTable, 0, sizeof(CGroove*) * MAX_GROOVE);		// // //
+	memset(m_pBookmarkList, 0, sizeof(std::vector<stBookmark>*) * MAX_TRACKS);		// // //
 
 	// Register this object to the sound generator
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
@@ -256,6 +259,10 @@ CFamiTrackerDoc::~CFamiTrackerDoc()
 	// // // Grooves
 	for (int i = 0; i < MAX_GROOVE; ++i)
 		SAFE_RELEASE(m_pGrooveTable[i]);
+
+	// // // Bookmarks
+	for (int i = 0; i < MAX_TRACKS; ++i)
+		SAFE_RELEASE(m_pBookmarkList[i]);
 }
 
 //
@@ -424,6 +431,10 @@ void CFamiTrackerDoc::DeleteContents()
 	// // // Grooves
 	for (int i = 0; i < MAX_GROOVE; ++i)
 		SAFE_RELEASE(m_pGrooveTable[i]);
+
+	// // // Bookmarks
+	for (int i = 0; i < MAX_TRACKS; ++i)
+		SAFE_RELEASE(m_pBookmarkList[i]);
 
 	// Clear number of tracks
 	m_iTrackCount = 1;
@@ -807,6 +818,8 @@ bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 	if (!WriteBlock_DetuneTables(pDocFile))		// // //
 		return false;
 	if (!WriteBlock_Grooves(pDocFile))		// // //
+		return false;
+	if (!WriteBlock_Bookmarks(pDocFile))		// // //
 		return false;
 
 	return true;
@@ -1658,6 +1671,9 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 		}
 		else if (!strcmp(BlockID, FILE_BLOCK_GROOVES)) {		// // //
 			ErrorFlag = ReadBlock_Grooves(&DocumentFile);
+		}
+		else if (!strcmp(BlockID, FILE_BLOCK_BOOKMARKS)) {		// // //
+			ErrorFlag = ReadBlock_Bookmarks(&DocumentFile);
 		}
 		else if (!strcmp(BlockID, "END")) {
 			FileFinished = true;
@@ -2592,6 +2608,61 @@ bool CFamiTrackerDoc::WriteBlock_Grooves(CDocumentFile *pDocFile) const
 	pDocFile->WriteBlockChar(m_iTrackCount);
 	for (unsigned i = 0; i < m_iTrackCount; ++i)
 		pDocFile->WriteBlockChar(GetTrack(i)->GetSongGroove());
+
+	return pDocFile->FlushBlock();
+}
+
+// // // Bookmarks
+
+bool CFamiTrackerDoc::ReadBlock_Bookmarks(CDocumentFile *pDocFile)
+{
+	int Version = pDocFile->GetBlockVersion();	// Ver 1
+	int Count = pDocFile->GetBlockInt();
+
+	for (int i = 0; i < Count; i++) {
+		stBookmark Mark = {};
+		unsigned int Track = pDocFile->GetBlockChar();
+		Mark.Frame = pDocFile->GetBlockChar();
+		Mark.Row = pDocFile->GetBlockChar();
+		Mark.Highlight1 = pDocFile->GetBlockInt();
+		Mark.Highlight2 = pDocFile->GetBlockInt();
+		Mark.Persist = pDocFile->GetBlockChar() != 0;
+		Mark.Name = new CString(pDocFile->ReadString());
+		
+		ASSERT_FILE_DATA(Track < m_iTrackCount);
+		ASSERT_FILE_DATA(Mark.Frame < m_pTracks[Track]->GetFrameCount());
+		ASSERT_FILE_DATA(Mark.Row < m_pTracks[Track]->GetPatternLength());
+
+		if (m_pBookmarkList[Track] == NULL)
+			m_pBookmarkList[Track] = new std::vector<stBookmark>();
+		m_pBookmarkList[Track]->push_back(Mark);
+	}
+
+	return false;
+}
+
+bool CFamiTrackerDoc::WriteBlock_Bookmarks(CDocumentFile *pDocFile) const
+{
+	pDocFile->CreateBlock(FILE_BLOCK_BOOKMARKS, 1);
+	int Count = 0;
+	for (unsigned int i = 0; i < m_iTrackCount; i++)
+		if (m_pBookmarkList[i] != NULL) Count += m_pBookmarkList[i]->size();
+	if (!Count) return true;
+	pDocFile->WriteBlockInt(Count);
+	
+	for (unsigned int i = 0; i < m_iTrackCount; i++) {
+		for (auto it = m_pBookmarkList[i]->begin(); it < m_pBookmarkList[i]->end(); it++) {
+			pDocFile->WriteBlockChar(i);
+			pDocFile->WriteBlockChar(it->Frame);
+			pDocFile->WriteBlockChar(it->Row);
+			pDocFile->WriteBlockInt(it->Highlight1);
+			pDocFile->WriteBlockInt(it->Highlight2);
+			pDocFile->WriteBlockChar(it->Persist);
+			//pDocFile->WriteBlockInt(it->Name->GetLength());
+			//pDocFile->WriteBlock(it->Name, (int)strlen(Name));	
+			pDocFile->WriteString(*it->Name);
+		}
+	}
 
 	return pDocFile->FlushBlock();
 }
@@ -5293,6 +5364,19 @@ void CFamiTrackerDoc::SetGroove(int Index, const CGroove* Groove)
 	else m_pGrooveTable[Index] = new CGroove(*Groove);
 }
 
+std::vector<stBookmark> *const CFamiTrackerDoc::GetBookmarkList(unsigned int Track)		// // //
+{
+	if (m_pBookmarkList[Track] == NULL) {
+		m_pBookmarkList[Track] = new std::vector<stBookmark>();
+	}
+	return m_pBookmarkList[Track];
+}
+
+void CFamiTrackerDoc::SetBookmarkList(unsigned int Track, std::vector<stBookmark> *const List)
+{
+	m_pBookmarkList[Track] = List;
+}
+
 void CFamiTrackerDoc::SetExceededFlag(bool Exceed)
 {
 	m_bExceeded = Exceed;
@@ -5358,6 +5442,8 @@ void CFamiTrackerDoc::MakeKraid()			// // // Easter Egg
 	SetHighlight(DEFAULT_FIRST_HIGHLIGHT, DEFAULT_SECOND_HIGHLIGHT);
 	for (int i = 0; i < MAX_GROOVE; i++)
 		SAFE_RELEASE(m_pGrooveTable[i]);
+	for (int i = 0; i < MAX_TRACKS; ++i)
+		SAFE_RELEASE(m_pBookmarkList[i]);
 	ResetDetuneTables();
 
 	// Patterns

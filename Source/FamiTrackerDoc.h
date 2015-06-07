@@ -25,6 +25,7 @@
 
 // Synchronization objects
 #include <afxmt.h>
+#include <vector>
 
 // Get access to some APU constants
 #include "APU/Types.h"
@@ -61,6 +62,16 @@ enum cursor_column_t {
 	C_EFF4_NUM, 
 	C_EFF4_PARAM1, 
 	C_EFF4_PARAM2
+};
+
+// // // Bookmark
+struct stBookmark {
+	unsigned int Frame;
+	unsigned int Row;
+	unsigned int Highlight1;
+	unsigned int Highlight2;
+	bool Persist;
+	CString *Name;
 };
 
 const unsigned int COLUMNS = 7;
@@ -263,8 +274,11 @@ public:
 	int				GetDetuneOffset(int Chip, int Note) const;
 	void			ResetDetuneTables();
 
-	CGroove			*GetGroove(int Index) const;
+	CGroove			*GetGroove(int Index) const;		// // //
 	void			SetGroove(int Index, const CGroove* Groove);
+
+	std::vector<stBookmark> *const GetBookmarkList(unsigned int Track);
+	void			SetBookmarkList(unsigned int Track, std::vector<stBookmark> *const List);
 
 	int				GetFrameLength(unsigned int Track, unsigned int Frame) const;
 
@@ -411,6 +425,8 @@ private:
 	bool			ReadBlock_DetuneTables(CDocumentFile *pDocFile);
 	bool			WriteBlock_Grooves(CDocumentFile *pDocFile) const;
 	bool			ReadBlock_Grooves(CDocumentFile *pDocFile);
+	bool			WriteBlock_Bookmarks(CDocumentFile *pDocFile) const;
+	bool			ReadBlock_Bookmarks(CDocumentFile *pDocFile);
 	// For file version compability
 	void			ReorderSequences();
 	void			ConvertSequences();
@@ -478,6 +494,7 @@ private:
 	// Patterns and song data
 	CPatternData	*m_pTracks[MAX_TRACKS];						// List of all tracks
 	CString			m_sTrackNames[MAX_TRACKS];
+	std::vector<stBookmark> *m_pBookmarkList[MAX_TRACKS];			// // // Bookmarks
 
 	unsigned int	m_iTrackCount;								// Number of tracks added
 	unsigned int	m_iChannelsAvailable;						// Number of channels added
