@@ -73,14 +73,30 @@ END_MESSAGE_MAP()
 
 void CBookmarkDlg::UpdateBookmark(stBookmark &Mark) const
 {
+	int f = m_bEnableHighlight1 ? m_cSpinHighlight1->GetPos() : -1;
+	int s = m_bEnableHighlight2 ? m_cSpinHighlight2->GetPos() : -1;
+	bool p = static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_PERSIST))->GetCheck() == BST_CHECKED;
+	CString str;
+	GetDlgItem(IDC_EDIT_BOOKMARK_NAME)->GetWindowText(str);
+
+	if (Mark.Frame != m_cSpinFrame->GetPos() ||
+		Mark.Row != m_cSpinRow->GetPos() ||
+		Mark.Highlight.First != f ||
+		Mark.Highlight.Second != s ||
+		*Mark.Name != str ||
+		Mark.Persist != p) {
+		if (!m_bSwitching) {
+			m_pDocument->SetModifiedFlag();
+			m_pDocument->SetExceededFlag();
+		}
+	}
 	Mark.Frame = m_cSpinFrame->GetPos();
 	Mark.Row = m_cSpinRow->GetPos();
-	Mark.Highlight.First = m_bEnableHighlight1 ? m_cSpinHighlight1->GetPos() : -1;
-	Mark.Highlight.Second = m_bEnableHighlight2 ? m_cSpinHighlight2->GetPos() : -1;
+	Mark.Highlight.First = f;
+	Mark.Highlight.Second = s;
+	*Mark.Name = str;
+	Mark.Persist = p;
 	Mark.Highlight.Offset = 0;
-	Mark.Name = new CString();
-	GetDlgItem(IDC_EDIT_BOOKMARK_NAME)->GetWindowText(*Mark.Name);
-	Mark.Persist = static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_PERSIST))->GetCheck() == BST_CHECKED;
 
 	int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
 	Mark.Frame %= m_pDocument->GetFrameCount(Track);
@@ -99,7 +115,6 @@ void CBookmarkDlg::SetBookmarkList()
 	int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
 	m_pDocument->SetBookmarkList(Track, m_pBookmarkList);
 	LoadBookmarks();
-	m_pDocument->SetModifiedFlag();
 	m_pDocument->UpdateAllViews(NULL, UPDATE_PATTERN);
 }
 
@@ -153,6 +168,10 @@ BOOL CBookmarkDlg::OnInitDialog()
 
 	m_cListBookmark->SetCurSel(-1);
 
+	m_bEnableHighlight1 = false;
+	m_bEnableHighlight2 = false;
+	m_bSwitching = false;
+
 	return CDialog::OnInitDialog();
 }
 
@@ -163,9 +182,6 @@ BOOL CBookmarkDlg::PreTranslateMessage(MSG* pMsg)
 			switch (pMsg->wParam) {
 				case VK_INSERT:
 					OnBnClickedButtonBookmarkAdd();
-					break;
-				case VK_RETURN:
-					OnBnClickedButtonBookmarkUpdate();
 					break;
 				case VK_DELETE:
 					OnBnClickedButtonBookmarkRemove();
@@ -198,6 +214,8 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkAdd()
 	UpdateBookmark(Mark);
 	m_pBookmarkList->push_back(Mark);
 	SetBookmarkList();
+	m_pDocument->SetModifiedFlag();
+	m_pDocument->SetExceededFlag();
 	
 	m_cListBookmark->SetCurSel(m_pBookmarkList->size() - 1);
 }
@@ -223,7 +241,9 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkRemove()
 	auto it = m_pBookmarkList->begin() + pos;
 	delete it->Name;
 	m_pBookmarkList->erase(it);
-
+	
+	m_pDocument->SetModifiedFlag();
+	m_pDocument->SetExceededFlag();
 	SetBookmarkList();
 	m_cListBookmark->SetFocus();
 	if (m_pBookmarkList->size()) {
@@ -246,7 +266,9 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkMoveup()
 	stBookmark Temp = *it;
 	*it = *(it - 1);
 	*(it - 1) = Temp;
-
+	
+	m_pDocument->SetModifiedFlag();
+	m_pDocument->SetExceededFlag();
 	SetBookmarkList();
 	m_cListBookmark->SetFocus();
 	m_cListBookmark->SetCurSel(pos - 1);
@@ -264,7 +286,9 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkMovedown()
 	stBookmark Temp = *it;
 	*it = *(it + 1);
 	*(it + 1) = Temp;
-
+	
+	m_pDocument->SetModifiedFlag();
+	m_pDocument->SetExceededFlag();
 	SetBookmarkList();
 	m_cListBookmark->SetFocus();
 	m_cListBookmark->SetCurSel(pos + 1);
@@ -275,6 +299,8 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkClearall()
 	for (auto it = m_pBookmarkList->begin(); it < m_pBookmarkList->end(); it++)
 		delete it->Name;
 	m_pBookmarkList->clear();
+	m_pDocument->SetModifiedFlag();
+	m_pDocument->SetExceededFlag();
 	SetBookmarkList();
 }
 
@@ -299,6 +325,8 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkSortp()
 	
 	delete m_pBookmarkList;
 	m_pBookmarkList = List;
+	m_pDocument->SetModifiedFlag();
+	m_pDocument->SetExceededFlag();
 	SetBookmarkList();
 	m_cListBookmark->SetFocus();
 	m_cListBookmark->SetCurSel(Cursor);
@@ -325,6 +353,8 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkSortn()
 	
 	delete m_pBookmarkList;
 	m_pBookmarkList = List;
+	m_pDocument->SetModifiedFlag();
+	m_pDocument->SetExceededFlag();
 	SetBookmarkList();
 	m_cListBookmark->SetFocus();
 	m_cListBookmark->SetCurSel(Cursor);
@@ -334,6 +364,8 @@ void CBookmarkDlg::OnLbnSelchangeListBookmarks()
 {
 	int pos = m_cListBookmark->GetCurSel();
 	if (pos == LB_ERR) return;
+
+	m_bSwitching = true;
 
 	stBookmark Mark = (*m_pBookmarkList)[pos];
 	static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_PERSIST))->SetCheck(Mark.Persist ? BST_CHECKED : BST_UNCHECKED);
@@ -351,6 +383,8 @@ void CBookmarkDlg::OnLbnSelchangeListBookmarks()
 
 	m_cSpinFrame->SetPos(Mark.Frame);
 	m_cSpinRow->SetPos(Mark.Row);
+
+	m_bSwitching = false;
 }
 
 void CBookmarkDlg::OnLbnDblclkListBookmarks()

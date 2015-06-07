@@ -59,6 +59,7 @@ protected:
 	std::vector<stBookmark> *m_pBookmarkList;
 	bool m_bEnableHighlight1;
 	bool m_bEnableHighlight2;
+	bool m_bSwitching;
 
 	DECLARE_MESSAGE_MAP()
 public:
