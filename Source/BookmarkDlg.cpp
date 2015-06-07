@@ -180,8 +180,8 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkAdd()
 	Mark.Frame = m_cSpinFrame->GetPos();
 	Mark.Row = m_cSpinRow->GetPos();
 
-	Mark.Highlight1 = m_cSpinHighlight1->GetPos();
-	Mark.Highlight2 = m_cSpinHighlight2->GetPos();
+	Mark.Highlight.First = m_cSpinHighlight1->GetPos();
+	Mark.Highlight.Second = m_cSpinHighlight2->GetPos();
 	Mark.Name = new CString();
 	GetDlgItem(IDC_EDIT_BOOKMARK_NAME)->GetWindowText(*Mark.Name);
 	Mark.Persist = static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_PERSIST))->GetCheck() == BST_CHECKED;
@@ -204,8 +204,8 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkUpdate()
 	auto it = m_pBookmarkList->begin() + pos;
 	it->Frame = m_cSpinFrame->GetPos();
 	it->Row = m_cSpinRow->GetPos();
-	it->Highlight1 = m_cSpinHighlight1->GetPos();
-	it->Highlight2 = m_cSpinHighlight2->GetPos();
+	it->Highlight.First = m_cSpinHighlight1->GetPos();
+	it->Highlight.Second = m_cSpinHighlight2->GetPos();
 	it->Name = new CString();
 	GetDlgItem(IDC_EDIT_BOOKMARK_NAME)->GetWindowText(*it->Name);
 	it->Persist = static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_PERSIST))->GetCheck() == BST_CHECKED;
@@ -336,8 +336,8 @@ void CBookmarkDlg::OnLbnSelchangeListBookmarks()
 	stBookmark Mark = (*m_pBookmarkList)[pos];
 	m_cSpinFrame->SetPos(Mark.Frame);
 	m_cSpinRow->SetPos(Mark.Row);
-	m_cSpinHighlight1->SetPos(Mark.Highlight1);
-	m_cSpinHighlight2->SetPos(Mark.Highlight2);
+	m_cSpinHighlight1->SetPos(Mark.Highlight.First);
+	m_cSpinHighlight2->SetPos(Mark.Highlight.Second);
 	static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_PERSIST))->SetCheck(Mark.Persist ? BST_CHECKED : BST_UNCHECKED);
 	GetDlgItem(IDC_EDIT_BOOKMARK_NAME)->SetWindowText(*Mark.Name);
 }

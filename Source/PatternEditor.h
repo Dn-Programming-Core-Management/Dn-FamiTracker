@@ -159,7 +159,7 @@ public:
 	bool IsInRange(const CSelection &sel, int Frame, int Row, int Channel, int Column) const;		// // //
 
 	// Settings
-	void SetHighlight(int Rows, int SecondRows);
+	void SetHighlight(const stHighlight Hl);		// // //
 	void SetFollowMove(bool bEnable);
 	void SetCompactMode(bool bEnable);		// // //
 
@@ -358,8 +358,7 @@ private:
 	bool	m_bFollowMode;					// Follow mode enable/disable
 	bool	m_bCompactMode;					// // // display notes only
 	bool	m_bHasFocus;					// Pattern editor has focus
-	int		m_iHighlight;					// Pattern highlight settings
-	int		m_iHighlightSecond;
+	stHighlight m_vHighlight;				// // // Pattern highlight settings
 
 	// Colors
 	COLORREF m_colEmptyBg;

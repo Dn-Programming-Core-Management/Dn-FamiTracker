@@ -1386,13 +1386,8 @@ void CFamiTrackerView::OnInitialUpdate()
 	pMainFrame->ResizeFrameWindow();
 
 	// Fetch highlight
-	int FirstHighlight = pDoc->GetFirstHighlight();
-	int SecondHighlight = pDoc->GetSecondHighlight();
-
-	m_pPatternEditor->SetHighlight(FirstHighlight, SecondHighlight);
-
-	pMainFrame->SetFirstHighlightRow(FirstHighlight);
-	pMainFrame->SetSecondHighlightRow(SecondHighlight);
+	m_pPatternEditor->SetHighlight(pDoc->GetHighlight());		// // //
+	pMainFrame->SetHighlightRows(pDoc->GetHighlight());
 
 	// Follow mode
 	SetFollowMode(theApp.GetSettings()->FollowMode);
@@ -1480,7 +1475,7 @@ void CFamiTrackerView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* /*pHi
 		break;
 	// Row highlight option has changed
 	case UPDATE_HIGHLIGHT:
-		m_pPatternEditor->SetHighlight(GetDocument()->GetFirstHighlight(), GetDocument()->GetSecondHighlight());
+		m_pPatternEditor->SetHighlight(GetDocument()->GetHighlight());		// // //
 		m_pPatternEditor->InvalidatePatternData();
 		RedrawPatternEditor();
 		break;

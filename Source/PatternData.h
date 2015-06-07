@@ -33,6 +33,22 @@ struct stChanNote {
 	unsigned char EffParam[MAX_EFFECT_COLUMNS];
 };
 
+// // // Highlight settings
+struct stHighlight {
+	int First;
+	int Second;
+	int Offset;
+};
+
+// // // Bookmark
+struct stBookmark {
+	unsigned int Frame;
+	unsigned int Row;
+	stHighlight Highlight;
+	bool Persist;
+	CString *Name;
+};
+
 static const stChanNote BLANK_NOTE = {NONE, 0, MAX_VOLUME, MAX_INSTRUMENTS, {EF_NONE, EF_NONE, EF_NONE, EF_NONE}, {0, 0, 0, 0}}; // // //
 
 // TODO rename to CTrack perhaps?
@@ -135,9 +151,8 @@ public:
 	unsigned int GetFramePattern(unsigned int Frame, unsigned int Channel) const;
 	void SetFramePattern(unsigned int Frame, unsigned int Channel, unsigned int Pattern);
 
-	void SetHighlight(unsigned int First, unsigned int Second);
-	unsigned int GetFirstRowHighlight() const;
-	unsigned int GetSecondRowHighlight() const;
+	void SetHighlight(const stHighlight Hl);		// // //
+	stHighlight GetRowHighlight() const;
 
 private:
 	stChanNote *GetPatternData(unsigned int Channel, unsigned int Pattern, unsigned int Row) const;
@@ -154,8 +169,7 @@ private:
 	bool		 m_bUseGroove;				// // // Groove
 
 	// Row highlight settings
-	unsigned int m_iRowHighlight1;
-	unsigned int m_iRowHighlight2;
+	stHighlight  m_vRowHighlight;			// // //
 
 	// Number of visible effect columns for each channel
 	unsigned char m_iEffectColumns[MAX_CHANNELS];

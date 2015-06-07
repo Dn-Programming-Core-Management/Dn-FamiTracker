@@ -76,8 +76,7 @@ public:
 	void	UpdateControls();
 	void	ResizeFrameWindow();
 
-	void	SetFirstHighlightRow(int Rows);
-	void	SetSecondHighlightRow(int Rows);
+	void	SetHighlightRows(stHighlight Hl);		// // //
 
 	void	UpdateMenus();
 	void	UpdateMenu(CMenu *pMenu);		// // //

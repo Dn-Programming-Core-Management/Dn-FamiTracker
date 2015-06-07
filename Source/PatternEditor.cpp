@@ -179,8 +179,7 @@ CPatternEditor::CPatternEditor() :
 	m_iDrawFrame(0),
 	m_bFollowMode(true),
 	m_bHasFocus(false),
-	m_iHighlight(CFamiTrackerDoc::DEFAULT_FIRST_HIGHLIGHT),
-	m_iHighlightSecond(CFamiTrackerDoc::DEFAULT_SECOND_HIGHLIGHT),
+	m_vHighlight(CFamiTrackerDoc::DEFAULT_HIGHLIGHT),		// // //
 	m_iMouseHoverChan(-1),
 	m_iMouseHoverEffArrow(0),
 	m_bSelecting(false),
@@ -1138,8 +1137,8 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 	}
 
 	// Highlight
-	bool bHighlight		  = (m_iHighlight > 0) ? !(Row % m_iHighlight) : false;
-	bool bSecondHighlight = (m_iHighlightSecond > 0) ? !(Row % m_iHighlightSecond) : false;
+	bool bHighlight		  = (m_vHighlight.First > 0) ? !((Row - m_vHighlight.Offset) % m_vHighlight.First) : false;		// // //
+	bool bSecondHighlight = (m_vHighlight.Second > 0) ? !((Row - m_vHighlight.Offset) % m_vHighlight.Second) : false;
 
 	// Clear
 	pDC->FillSolidRect(1, Line * m_iRowHeight, m_iRowColumnWidth - 2, m_iRowHeight, ColBg);
@@ -3792,10 +3791,9 @@ int CPatternEditor::GetCurrentPatternLength(int Frame) const		// // //
 	}
 }
 
-void CPatternEditor::SetHighlight(int Rows, int SecondRows)
+void CPatternEditor::SetHighlight(const stHighlight Hl)		// // //
 {
-	m_iHighlight = Rows;
-	m_iHighlightSecond = SecondRows;
+	m_vHighlight = Hl;
 }
 
 void CPatternEditor::SetFollowMove(bool bEnable)

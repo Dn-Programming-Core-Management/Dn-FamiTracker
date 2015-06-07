@@ -69,6 +69,7 @@ const int	CFamiTrackerDoc::DEFAULT_NAMCO_CHANS = 1;
 
 const int	CFamiTrackerDoc::DEFAULT_FIRST_HIGHLIGHT = 4;
 const int	CFamiTrackerDoc::DEFAULT_SECOND_HIGHLIGHT = 16;
+const stHighlight CFamiTrackerDoc::DEFAULT_HIGHLIGHT = {DEFAULT_FIRST_HIGHLIGHT, DEFAULT_SECOND_HIGHLIGHT, 0};		// // //
 
 const bool	CFamiTrackerDoc::DEFAULT_LINEAR_PITCH = false;
 
@@ -459,8 +460,7 @@ void CFamiTrackerDoc::DeleteContents()
 	m_iChannelsAvailable = CHANNELS_DEFAULT;
 	m_iSpeedSplitPoint	 = DEFAULT_SPEED_SPLIT_POINT;
 
-	m_iFirstHighlight  = DEFAULT_FIRST_HIGHLIGHT;
-	m_iSecondHighlight = DEFAULT_SECOND_HIGHLIGHT;
+	m_vHighlight = DEFAULT_HIGHLIGHT;		// // //
 
 	ResetDetuneTables();		// // //
 
@@ -836,8 +836,8 @@ bool CFamiTrackerDoc::WriteBlock_Parameters(CDocumentFile *pDocFile) const
 	pDocFile->WriteBlockInt(m_iEngineSpeed);
 	pDocFile->WriteBlockInt(m_iVibratoStyle);		// ver 3 change
 	// TODO write m_bLinearPitch
-	pDocFile->WriteBlockInt(m_iFirstHighlight);		// ver 4 change
-	pDocFile->WriteBlockInt(m_iSecondHighlight);
+	pDocFile->WriteBlockInt(m_vHighlight.First);		// // // ver 4 change
+	pDocFile->WriteBlockInt(m_vHighlight.Second);
 
 	if (ExpansionEnabled(SNDCHIP_N163))
 		pDocFile->WriteBlockInt(m_iNamcoChannels);	// ver 5 change
@@ -1754,12 +1754,11 @@ bool CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile)
 
 	// TODO read m_bLinearPitch
 
-	m_iFirstHighlight  = DEFAULT_FIRST_HIGHLIGHT;
-	m_iSecondHighlight = DEFAULT_SECOND_HIGHLIGHT;
+	m_vHighlight = DEFAULT_HIGHLIGHT;		// // //
 
 	if (Version > 3) {
-		m_iFirstHighlight = pDocFile->GetBlockInt();
-		m_iSecondHighlight = pDocFile->GetBlockInt();
+		m_vHighlight.First = pDocFile->GetBlockInt();
+		m_vHighlight.Second = pDocFile->GetBlockInt();
 	}
 
 	// This is strange. Sometimes expansion chip is set to 0xFF in files
@@ -1848,19 +1847,14 @@ bool CFamiTrackerDoc::ReadBlock_Header(CDocumentFile *pDocFile)
 			for (unsigned int i = 0; i < m_iTrackCount; ++i) {
 				CPatternData *pTrack = GetTrack(i);
 				// TODO read highlight
-				int FirstHighlight = m_iFirstHighlight;
-				int SecondHighlight = m_iSecondHighlight;
-				//
-				pTrack->SetHighlight(FirstHighlight, SecondHighlight);
+				pTrack->SetHighlight(m_vHighlight);		// // //
 			}
 		}
 		else {
 			// Use global highlight
 			for (unsigned int i = 0; i < m_iTrackCount; ++i) {
 				CPatternData *pTrack = GetTrack(i);
-				int FirstHighlight = m_iFirstHighlight;
-				int SecondHighlight = m_iSecondHighlight;
-				pTrack->SetHighlight(FirstHighlight, SecondHighlight);
+				pTrack->SetHighlight(m_vHighlight);		// // //
 			}
 		}
 	}
@@ -4892,41 +4886,27 @@ int CFamiTrackerDoc::GetSpeedSplitPoint() const
 	return m_iSpeedSplitPoint;
 }
 
-void CFamiTrackerDoc::SetHighlight(unsigned int Track, int First, int Second)
+void CFamiTrackerDoc::SetHighlight(unsigned int Track, const stHighlight Hl)		// // //
 {
 	CPatternData *pTrack = GetTrack(Track);
-	pTrack->SetHighlight(First, Second);
+	pTrack->SetHighlight(Hl);
 }
 
-unsigned int CFamiTrackerDoc::GetFirstHighlight(unsigned int Track) const
+stHighlight CFamiTrackerDoc::GetHighlight(unsigned int Track) const		// // //
 {
 	CPatternData *pTrack = GetTrack(Track);
-	return pTrack->GetFirstRowHighlight();
+	return pTrack->GetRowHighlight();
 }
 
-unsigned int CFamiTrackerDoc::GetSecondHighlight(unsigned int Track) const
-{
-	CPatternData *pTrack = GetTrack(Track);
-	return pTrack->GetSecondRowHighlight();
-}
-
-void CFamiTrackerDoc::SetHighlight(int First, int Second)
+void CFamiTrackerDoc::SetHighlight(stHighlight Hl)		// // //
 {
 	// TODO remove
-	m_iFirstHighlight = First;
-	m_iSecondHighlight = Second;
+	m_vHighlight = Hl;
 }
 
-int CFamiTrackerDoc::GetFirstHighlight() const
+stHighlight CFamiTrackerDoc::GetHighlight() const		// // //
 {
-	// TODO remove
-	return m_iFirstHighlight;
-}
-
-int CFamiTrackerDoc::GetSecondHighlight() const
-{
-	// TODO remove
-	return m_iSecondHighlight;
+	return m_vHighlight;
 }
 
 unsigned int CFamiTrackerDoc::ScanActualLength(unsigned int Track, unsigned int Count) const		// // //
@@ -5454,7 +5434,7 @@ void CFamiTrackerDoc::MakeKraid()			// // // Easter Egg
 	SetEffColumns(0, 4, 0);
 	SetSpeedSplitPoint(32);
 	SelectExpansionChip(SNDCHIP_NONE);
-	SetHighlight(DEFAULT_FIRST_HIGHLIGHT, DEFAULT_SECOND_HIGHLIGHT);
+	SetHighlight(DEFAULT_HIGHLIGHT);
 	for (int i = 0; i < MAX_GROOVE; i++)
 		SAFE_RELEASE(m_pGrooveTable[i]);
 	for (int i = 0; i < MAX_TRACKS; ++i)

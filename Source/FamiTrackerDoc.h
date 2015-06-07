@@ -64,16 +64,6 @@ enum cursor_column_t {
 	C_EFF4_PARAM2
 };
 
-// // // Bookmark
-struct stBookmark {
-	unsigned int Frame;
-	unsigned int Row;
-	unsigned int Highlight1;
-	unsigned int Highlight2;
-	bool Persist;
-	CString *Name;
-};
-
 const unsigned int COLUMNS = 7;
 
 // Special assert used when loading files
@@ -262,13 +252,11 @@ public:
 	void			SetSpeedSplitPoint(int SplitPoint);
 	int				GetSpeedSplitPoint() const;
 
-	void			SetHighlight(unsigned int Track, int First, int Second);
-	unsigned int	GetFirstHighlight(unsigned int Track) const;
-	unsigned int	GetSecondHighlight(unsigned int Track) const;
+	void			SetHighlight(unsigned int Track, const stHighlight Hl);		// // //
+	stHighlight		GetHighlight(unsigned int Track) const;
 
-	void			SetHighlight(int First, int Second);
-	int				GetFirstHighlight() const;
-	int				GetSecondHighlight() const;
+	void			SetHighlight(const stHighlight Hl);		// // //
+	stHighlight		GetHighlight() const;
 
 	void			SetDetuneOffset(int Chip, int Note, int Detune);		// // //
 	int				GetDetuneOffset(int Chip, int Note) const;
@@ -371,6 +359,7 @@ public:
 
 	static const int	DEFAULT_FIRST_HIGHLIGHT;
 	static const int	DEFAULT_SECOND_HIGHLIGHT;
+	static const stHighlight DEFAULT_HIGHLIGHT;		// // //
 
 	static const bool	DEFAULT_LINEAR_PITCH;
 
@@ -528,8 +517,7 @@ private:
 	bool			m_bDisplayComment;
 
 	// Row highlight (TODO remove)
-	unsigned int	m_iFirstHighlight;
-	unsigned int	m_iSecondHighlight;
+	stHighlight		m_vHighlight;								// // //
 
 	// Things below are for compability with older files
 	CArray<stSequence> m_vTmpSequences;

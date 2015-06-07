@@ -892,14 +892,10 @@ void CMainFrame::UpdateControls()
 	m_wndDialogBar.UpdateDialogControls(&m_wndDialogBar, TRUE);
 }
 
-void CMainFrame::SetFirstHighlightRow(int Rows)
+void CMainFrame::SetHighlightRows(stHighlight Hl)
 {
-	m_wndOctaveBar.SetDlgItemInt(IDC_HIGHLIGHT1, Rows);
-}
-
-void CMainFrame::SetSecondHighlightRow(int Rows)
-{
-	m_wndOctaveBar.SetDlgItemInt(IDC_HIGHLIGHT2, Rows);
+	m_wndOctaveBar.SetDlgItemInt(IDC_HIGHLIGHT1, Hl.First);
+	m_wndOctaveBar.SetDlgItemInt(IDC_HIGHLIGHT2, Hl.Second);
 }
 
 void CMainFrame::DisplayOctave()
@@ -2233,7 +2229,8 @@ void CMainFrame::OnUpdateHighlight(CCmdUI *pCmdUI)
 
 		CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
 
-		pDoc->SetHighlight(Highlight1, Highlight2);
+		stHighlight Hl = {Highlight1, Highlight2, 0};		// // //
+		pDoc->SetHighlight(Hl);
 		pDoc->UpdateAllViews(NULL, UPDATE_HIGHLIGHT);
 
 		LastHighlight1 = Highlight1;
