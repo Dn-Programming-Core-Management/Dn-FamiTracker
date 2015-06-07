@@ -2914,6 +2914,13 @@ bool CFamiTrackerDoc::ImportTrack(int Track, CFamiTrackerDoc *pImported, int *pI
 		}
 	}
 
+	// // // Copy bookmarks
+	std::vector<stBookmark> *List = new std::vector<stBookmark>;
+	for (size_t i = 0; i < pImported->GetBookmarkList(Track)->size(); i++) {
+		List->push_back((*pImported->GetBookmarkList(Track))[i]);
+	}
+	SetBookmarkList(NewTrack, List);
+
 	stChanNote data;
 
 	// Copy patterns
