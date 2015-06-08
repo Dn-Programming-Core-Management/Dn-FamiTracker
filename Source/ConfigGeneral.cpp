@@ -251,7 +251,7 @@ BOOL CConfigGeneral::OnInitDialog()
 
 	CListCtrl *pList = static_cast<CListCtrl*>(GetDlgItem(IDC_CONFIG_LIST));
 	pList->DeleteAllItems();
-	pList->InsertColumn(0, _T(""), LVCFMT_LEFT, 18);
+	pList->InsertColumn(0, _T(""), LVCFMT_LEFT, 20);
 	pList->InsertColumn(1, _T("Option"), LVCFMT_LEFT, 160);
 	pList->SendMessage(LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT | LVS_EX_CHECKBOXES);
 	pList->SetItemState(0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
