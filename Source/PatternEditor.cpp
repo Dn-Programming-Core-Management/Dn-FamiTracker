@@ -4145,7 +4145,7 @@ void CPatternEditor::GetSelectionAsText(CString &str) const		// // //
 			it.Get(i, &NoteData);
 			line.AppendFormat(_T(" : %s"), CTextExport::ExportCellText(NoteData, m_pDocument->GetEffColumns(Track, i) + 1, i == CHANID_NOISE));
 		}
-		for (int i = 0; i < std::max(3, GetSelectColumn(it.m_iColumn)); i++)
+		for (int i = 0; i < std::min(3, GetSelectColumn(it.m_iColumn)); i++)
 			for (int j = 0; j < 3; j++) line.SetAt(7 + 3 * i + j + HexLength, ' ');
 		for (int i = 3; i < std::min(static_cast<int>(m_pDocument->GetEffColumns(Track, i)) + 4, GetSelectColumn(it.m_iColumn)); i++)
 			for (int j = 0; j < 3; j++) line.SetAt(4 * i + j + HexLength, ' ');
