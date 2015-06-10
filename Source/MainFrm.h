@@ -156,7 +156,6 @@ private:  // control bar embedded members
 	CToolBar			m_wndInstToolBar;
 	CReBarCtrl			m_wndInstToolReBar;
 	CInstrumentEditDlg	m_wndInstEdit;
-	CPerformanceDlg		m_wndPerformanceDlg;
 
 	CFrameEditor		*m_pFrameEditor;
 	CInstrumentList		*m_pInstrumentList;
@@ -165,6 +164,7 @@ private:  // control bar embedded members
 	CGrooveDlg			*m_pGrooveDlg;			// // //
 	CFindDlg			*m_pFindDlg;			// // //
 	CBookmarkDlg		*m_pBookmarkDlg;		// // //
+	CPerformanceDlg		*m_pPerformanceDlg;		// // //
 
 	CLockedEdit			*m_pLockedEditSpeed;
 	CLockedEdit			*m_pLockedEditTempo;
