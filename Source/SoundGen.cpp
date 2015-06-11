@@ -180,8 +180,14 @@ void CSoundGen::CreateChannels()
 	}
 
 	// 2A03/2A07
+#ifdef _DUAL_CH		// // //
+	CSquare1Chan *PU1 = new CSquare1Chan();
+	AssignChannel(new CTrackerChannel(_T("Pulse 1"), SNDCHIP_NONE, CHANID_SQUARE1), PU1);
+	AssignChannel(new CTrackerChannel(_T("Pulse 1 SFX"), SNDCHIP_NONE, CHANID_SQUARE2), PU1);
+#else
 	AssignChannel(new CTrackerChannel(_T("Pulse 1"), SNDCHIP_NONE, CHANID_SQUARE1), new CSquare1Chan());
 	AssignChannel(new CTrackerChannel(_T("Pulse 2"), SNDCHIP_NONE, CHANID_SQUARE2), new CSquare2Chan());
+#endif
 	AssignChannel(new CTrackerChannel(_T("Triangle"), SNDCHIP_NONE, CHANID_TRIANGLE), new CTriangleChan());
 	AssignChannel(new CTrackerChannel(_T("Noise"), SNDCHIP_NONE, CHANID_NOISE), new CNoiseChan());
 	AssignChannel(new CTrackerChannel(_T("DPCM"), SNDCHIP_NONE, CHANID_DPCM), new CDPCMChan(m_pSampleMem));
