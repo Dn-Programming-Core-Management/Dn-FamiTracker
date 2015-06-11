@@ -1846,7 +1846,7 @@ void CFamiTrackerView::OnBookmarksToggle()
 		stBookmark Mark = {};
 		Mark.Frame = Frame;
 		Mark.Row = Row;
-		Mark.Highlight.First = Mark.Highlight.Second = 0;
+		Mark.Highlight.First = Mark.Highlight.Second = -1;
 		Mark.Persist = false;
 		Mark.Name = new CString();
 		Mark.Name->Format(_T("Bookmark %i"), List->size() + 1);
@@ -1855,6 +1855,8 @@ void CFamiTrackerView::OnBookmarksToggle()
 	static_cast<CMainFrame*>(GetParentFrame())->UpdateBookmarkList();
 	SetFocus();
 	pDoc->SetModifiedFlag();
+	pDoc->SetExceededFlag();
+	m_pPatternEditor->InvalidatePatternData();
 }
 
 void CFamiTrackerView::OnBookmarksNext()

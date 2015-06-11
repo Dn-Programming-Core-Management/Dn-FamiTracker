@@ -4962,12 +4962,15 @@ unsigned int CFamiTrackerDoc::GetHighlightAtRow(unsigned int Track, unsigned int
 	stHighlight Hl = m_vHighlight;
 	stHighlight *New = NULL;
 	int RowOffs = 0;
+	bool Hit = false;
 	
 	if (m_pBookmarkList[Track]) {
 		const int PackedPos = Frame * MAX_PATTERN_LENGTH + Row;
 		int Min = MAX_FRAMES * MAX_PATTERN_LENGTH;
 		for (auto it = m_pBookmarkList[Track]->begin(); it < m_pBookmarkList[Track]->end(); it++) {
 			int NewPos = PackedPos - (it->Frame * MAX_PATTERN_LENGTH + it->Row);
+			if (NewPos == 0)
+				Hit = true;
 			if (NewPos >= 0 && NewPos < Min) {
 				Min = NewPos;
 				New = &it->Highlight;
@@ -4982,14 +4985,12 @@ unsigned int CFamiTrackerDoc::GetHighlightAtRow(unsigned int Track, unsigned int
 		}
 	}
 
-	if (Hl.Second > 0)
-		if (!((Row - Hl.Offset - RowOffs) % Hl.Second))
-		return 2;
-	if (Hl.First > 0)
-		if (!((Row - Hl.Offset - RowOffs) % Hl.First))
-		return 1;
+	if (Hl.Second > 0 && !((Row - Hl.Offset - RowOffs) % Hl.Second))
+		return 2 | (Hit << 7);
+	if (Hl.First > 0 && !((Row - Hl.Offset - RowOffs) % Hl.First))
+		return 1 | (Hit << 7);
 
-	return 0;
+	return Hit << 7;
 }
 
 unsigned int CFamiTrackerDoc::ScanActualLength(unsigned int Track, unsigned int Count) const		// // //
