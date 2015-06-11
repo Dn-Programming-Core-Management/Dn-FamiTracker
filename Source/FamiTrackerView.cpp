@@ -1890,9 +1890,9 @@ void CFamiTrackerView::OnBookmarksNext()
 		SelectFrame(Closest->Frame);
 		SelectRow(Closest->Row);
 		CString str1 = _T("None");
-		if (Closest->Highlight.First) str1.Format(_T("%i"), Closest->Highlight.First);
+		if (Closest->Highlight.First != -1) str1.Format(_T("%i"), Closest->Highlight.First);
 		CString str2 = _T("None");
-		if (Closest->Highlight.Second) str2.Format(_T("%i"), Closest->Highlight.Second);
+		if (Closest->Highlight.Second != -1) str2.Format(_T("%i"), Closest->Highlight.Second);
 		CString Text;
 		AfxFormatString3(Text, IDS_BOOKMARK_FORMAT, *Closest->Name, str1, str2);
 		pMainFrame->SetMessageText(Text);
@@ -1932,9 +1932,9 @@ void CFamiTrackerView::OnBookmarksPrevious()
 		SelectFrame(Closest->Frame);
 		SelectRow(Closest->Row);
 		CString str1 = _T("None");
-		if (Closest->Highlight.First) str1.Format(_T("%i"), Closest->Highlight.First);
+		if (Closest->Highlight.First != -1) str1.Format(_T("%i"), Closest->Highlight.First);
 		CString str2 = _T("None");
-		if (Closest->Highlight.Second) str2.Format(_T("%i"), Closest->Highlight.Second);
+		if (Closest->Highlight.Second != -1) str2.Format(_T("%i"), Closest->Highlight.Second);
 		CString Text;
 		AfxFormatString3(Text, IDS_BOOKMARK_FORMAT, *Closest->Name, str1, str2);
 		pMainFrame->SetMessageText(Text);
