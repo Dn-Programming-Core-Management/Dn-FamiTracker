@@ -79,6 +79,8 @@ void CBookmarkDlg::UpdateBookmark(stBookmark &Mark) const
 	CString str;
 	GetDlgItem(IDC_EDIT_BOOKMARK_NAME)->GetWindowText(str);
 
+	if (Mark.Name == NULL)
+		Mark.Name = new CString();
 	if (Mark.Frame != m_cSpinFrame->GetPos() ||
 		Mark.Row != m_cSpinRow->GetPos() ||
 		Mark.Highlight.First != f ||
@@ -252,6 +254,7 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkRemove()
 		else
 			m_cListBookmark->SetCurSel(pos);
 	}
+	OnLbnSelchangeListBookmarks();
 }
 
 void CBookmarkDlg::OnBnClickedButtonBookmarkMoveup()
