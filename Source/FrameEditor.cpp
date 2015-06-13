@@ -293,6 +293,14 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 
 	// Draw rows
 	for (int i = Start; i < End; ++i) {
+		// // // Highlight by bookmarks
+		for (auto it = m_pDocument->GetBookmarkList(Track)->begin(); it < m_pDocument->GetBookmarkList(Track)->end(); it++) {
+			if (it->Frame == Frame) {
+				GradientBar(&m_dcBack, 0, SY(i * ROW_HEIGHT + 4), SX(m_iWinWidth), SY(ROW_HEIGHT - 1),
+					theApp.GetSettings()->Appearance.iColBackgroundHilite, ColBackground);
+				break;
+			}
+		}
 		
 		// Play cursor
 		if (PlayFrame == Frame && !pView->GetFollowMode() && theApp.IsPlaying()) {
