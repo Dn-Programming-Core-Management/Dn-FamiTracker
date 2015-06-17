@@ -3651,7 +3651,8 @@ void CFamiTrackerView::OnPickupRow()
 
 	m_iLastVolume = Note.Vol;
 
-	SetInstrument(Note.Instrument);
+	if (Note.Instrument != MAX_INSTRUMENTS)		// // //
+		SetInstrument(Note.Instrument);
 }
 
 bool CFamiTrackerView::AddAction(CAction *pAction) const
