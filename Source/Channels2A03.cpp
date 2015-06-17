@@ -422,13 +422,12 @@ void CNoiseChan::HandleNote(int Note, int Octave)
 
 void CNoiseChan::SetupSlide()		// // //
 {
-	CChannelHandler::SetupSlide();
-
 	// Work-around for noise
 	if (m_iEffect == EF_SLIDE_DOWN)
 		m_iEffect = EF_SLIDE_UP;
 	else if (m_iEffect == EF_SLIDE_UP)		// // //
 		m_iEffect = EF_SLIDE_DOWN;
+	CChannelHandler::SetupSlide();
 }
 
 /*
