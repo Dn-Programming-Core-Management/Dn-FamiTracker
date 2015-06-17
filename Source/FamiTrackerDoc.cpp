@@ -2644,7 +2644,7 @@ bool CFamiTrackerDoc::WriteBlock_Bookmarks(CDocumentFile *pDocFile) const
 	if (!Count) return true;
 	pDocFile->WriteBlockInt(Count);
 	
-	for (unsigned int i = 0; i < m_iTrackCount; i++) {
+	for (unsigned int i = 0; i < m_iTrackCount; i++) if (m_pBookmarkList[i] != NULL) {
 		for (auto it = m_pBookmarkList[i]->begin(); it < m_pBookmarkList[i]->end(); it++) {
 			pDocFile->WriteBlockChar(i);
 			pDocFile->WriteBlockChar(it->Frame);
