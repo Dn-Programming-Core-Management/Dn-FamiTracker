@@ -677,7 +677,7 @@ bool CMainFrame::CreateInstrumentToolbar()
 	// Setup the instrument toolbar
 	REBARBANDINFO rbi;
 
-	if (!m_wndInstToolBarWnd.CreateEx(0, NULL, _T(""), WS_CHILD | WS_VISIBLE, CRect(SX(288), SY(173), SX(472), SY(199)), (CWnd*)&m_wndDialogBar, 0))
+	if (!m_wndInstToolBarWnd.CreateEx(0, NULL, _T(""), WS_CHILD | WS_VISIBLE, CRect(SX(330), SY(173), SX(514), SY(199)), (CWnd*)&m_wndDialogBar, 0))		// // //
 		return false;
 
 	if (!m_wndInstToolReBar.Create(WS_CHILD | WS_VISIBLE, CRect(0, 0, 0, 0), &m_wndInstToolBarWnd, AFX_IDW_REBAR))
@@ -776,8 +776,8 @@ void CMainFrame::ResizeFrameWindow()
 
 	m_wndDialogBar.MoveWindow(DialogStartPos, 2, ParentRect.Width() - DialogStartPos, ParentRect.Height() - 4);
 	m_wndDialogBar.GetWindowRect(&ChildRect);
-	m_wndDialogBar.GetDlgItem(IDC_INSTRUMENTS)->MoveWindow(SX(288), SY(10), ChildRect.Width() - SX(296), SY(158));
-	m_wndDialogBar.GetDlgItem(IDC_INSTNAME)->MoveWindow(SX(478), SY(175), ChildRect.Width() - SX(486), SY(22));
+	m_wndDialogBar.GetDlgItem(IDC_INSTRUMENTS)->MoveWindow(SX(330), SY(10), ChildRect.Width() - SX(338), SY(158));		// // //
+	m_wndDialogBar.GetDlgItem(IDC_INSTNAME)->MoveWindow(SX(520), SY(175), ChildRect.Width() - SX(528), SY(22));
 
 	m_pFrameEditor->RedrawWindow();
 }
