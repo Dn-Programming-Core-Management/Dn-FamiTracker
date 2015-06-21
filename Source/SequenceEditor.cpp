@@ -202,10 +202,10 @@ void CSequenceEditor::SequenceChangedMessage(bool Changed)
 	Text = "";
 
 	for (unsigned i = 0; i < m_pSequence->GetItemCount(); ++i) {
+		if (m_pSequence->GetReleasePoint() == i)		// // //
+			Text.Append(_T("/ "));
 		if (m_pSequence->GetLoopPoint() == i)
 			Text.Append(_T("| "));
-		else if (m_pSequence->GetReleasePoint() == i)
-			Text.Append(_T("/ "));
 		if (m_iSelectedSetting == SEQ_ARPEGGIO && m_pSequence->GetSetting() == SETTING_ARP_SCHEME) {		// // //
 			int value = m_pSequence->GetItem(i);
 			if (value < 0) value += 0x100;

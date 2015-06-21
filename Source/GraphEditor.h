@@ -54,6 +54,7 @@ protected:
 	void DrawBackground(CDC *pDC, int Lines, bool DrawMarks, int MarkOffset) const;
 	void DrawLoopPoint(CDC *pDC, int StepWidth) const;
 	void DrawReleasePoint(CDC *pDC, int StepWidth) const;
+	void DrawLoopRelease(CDC *pDC, int StepWidth) const;		// // //
 	void DrawLine(CDC *pDC) const;
 
 	void DrawRect(CDC *pDC, int x, int y, int w, int h) const;

@@ -275,6 +275,35 @@ void CGraphEditor::DrawReleasePoint(CDC *pDC, int StepWidth) const
 	pDC->SelectObject(pOldFont);
 }
 
+void CGraphEditor::DrawLoopRelease(CDC *pDC, int StepWidth) const		// // //
+{
+	int LoopPoint = m_pSequence->GetLoopPoint();
+	int ReleasePoint = m_pSequence->GetReleasePoint();
+
+	if (ReleasePoint > LoopPoint) {
+		DrawLoopPoint(pDC, StepWidth);
+		DrawReleasePoint(pDC, StepWidth);
+	}
+	else if (ReleasePoint < LoopPoint) {
+		DrawReleasePoint(pDC, StepWidth);
+		DrawLoopPoint(pDC, StepWidth);
+	}
+	else if (LoopPoint > -1) { // LoopPoint == ReleasePoint
+		CFont *pOldFont = pDC->SelectObject(m_pSmallFont);
+
+		int x = StepWidth * LoopPoint + GRAPH_LEFT + 1;
+
+		GradientBar(pDC, x + 1, m_BottomRect.top, m_BottomRect.right - x, m_BottomRect.Height(), 0x008080, 0x002020);
+		pDC->FillSolidRect(x, m_BottomRect.top, 1, m_BottomRect.bottom, 0x00F0F0);
+
+		pDC->SetTextColor(0xFFFFFF);
+		pDC->SetBkMode(TRANSPARENT);
+		pDC->TextOut(x + 4, m_BottomRect.top, _T("Loop, Release"));
+
+		pDC->SelectObject(pOldFont);
+	}
+}
+
 void CGraphEditor::DrawLine(CDC *pDC) const
 {
 	if (m_ptLineStart.x != 0 && m_ptLineStart.y != 0) {
@@ -598,8 +627,7 @@ void CBarGraphEditor::OnPaint()
 			DrawRect(m_pBackDC, x, y, w, h);
 	}
 	
-	DrawLoopPoint(m_pBackDC, StepWidth);
-	DrawReleasePoint(m_pBackDC, StepWidth);
+	DrawLoopRelease(m_pBackDC, StepWidth);		// // //
 	DrawLine(m_pBackDC);
 
 	PaintBuffer(m_pBackDC, &dc);
@@ -896,9 +924,8 @@ void CArpeggioGraphEditor::OnPaint()
 				DrawRect(m_pBackDC, x, y, w, h);
 		}
 	}
-
-	DrawLoopPoint(m_pBackDC, StepWidth);
-	DrawReleasePoint(m_pBackDC, StepWidth);
+	
+	DrawLoopRelease(m_pBackDC, StepWidth);		// // //
 	DrawLine(m_pBackDC);
 
 	PaintBuffer(m_pBackDC, &dc);
@@ -1114,9 +1141,8 @@ void CPitchGraphEditor::OnPaint()
 		else
 			DrawRect(m_pBackDC, x, y, w, h);
 	}
-
-	DrawLoopPoint(m_pBackDC, StepWidth);
-	DrawReleasePoint(m_pBackDC, StepWidth);
+	
+	DrawLoopRelease(m_pBackDC, StepWidth);		// // //
 	DrawLine(m_pBackDC);
 
 	PaintBuffer(m_pBackDC, &dc);
@@ -1257,8 +1283,7 @@ void CNoiseEditor::OnPaint()
 		}
 	}
 	
-	DrawLoopPoint(m_pBackDC, StepWidth);
-	DrawReleasePoint(m_pBackDC, StepWidth);
+	DrawLoopRelease(m_pBackDC, StepWidth);		// // //
 	DrawLine(m_pBackDC);
 
 	PaintBuffer(m_pBackDC, &dc);

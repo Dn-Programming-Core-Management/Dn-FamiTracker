@@ -1336,13 +1336,16 @@ void CSequenceHandler::UpdateSequenceRunning(int Index, const CSequence *pSequen
 
 	if (m_iSeqPointer[Index] == (Release + 1) || m_iSeqPointer[Index] >= Items) {
 		// End point reached
-		if (Loop != -1 && !(IsReleasing() && Release != -1)) {
+		if (Loop != -1 && !(IsReleasing() && Release != -1) && Loop < Release) {		// // //
 			m_iSeqPointer[Index] = Loop;
 		}
 		else {
 			if (m_iSeqPointer[Index] >= Items) {
 				// End of sequence 
-				m_iSeqState[Index] = SEQ_STATE_END;
+				if (Loop >= Release)		// // //
+					m_iSeqPointer[Index] = Loop;
+				else
+					m_iSeqState[Index] = SEQ_STATE_END;
 			}
 			else if (!IsReleasing()) {
 				// Waiting for release
