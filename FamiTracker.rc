@@ -465,8 +465,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,9,0
- PRODUCTVERSION 0,3,9,0
+ FILEVERSION 0,3,10,0
+ PRODUCTVERSION 0,3,10,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -483,12 +483,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "jsr software"
             VALUE "FileDescription", "NES/Famicom sound tracker"
-            VALUE "FileVersion", "0.3.9.0"
+            VALUE "FileVersion", "0.3.10.0"
             VALUE "InternalName", "FamiTracker.exe"
             VALUE "LegalCopyright", " (c) jsr 2005-2015 All rights reserved."
             VALUE "OriginalFilename", "FamiTracker.exe"
             VALUE "ProductName", "0CC-FamiTracker"
-            VALUE "ProductVersion", "0.3.9.0"
+            VALUE "ProductVersion", "0.3.10.0"
         END
     END
     BLOCK "VarFileInfo"
