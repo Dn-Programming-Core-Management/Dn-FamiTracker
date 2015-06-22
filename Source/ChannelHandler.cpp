@@ -1342,7 +1342,7 @@ void CSequenceHandler::UpdateSequenceRunning(int Index, const CSequence *pSequen
 		else {
 			if (m_iSeqPointer[Index] >= Items) {
 				// End of sequence 
-				if (Loop >= Release)		// // //
+				if (Loop >= Release && Loop != -1)		// // //
 					m_iSeqPointer[Index] = Loop;
 				else
 					m_iSeqState[Index] = SEQ_STATE_END;
