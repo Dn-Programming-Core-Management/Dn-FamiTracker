@@ -3650,9 +3650,23 @@ void CFamiTrackerView::OnPickupRow()
 	pDoc->GetNoteData(Track, Frame, Channel, Row, &Note);
 
 	m_iLastVolume = Note.Vol;
-
-	if (Note.Instrument != MAX_INSTRUMENTS)		// // //
+	m_iLastInstrument = Note.Instrument;		// // //
+	if (Note.Instrument != MAX_INSTRUMENTS)
 		SetInstrument(Note.Instrument);
+
+	switch (Note.Note) {
+	case NONE:    m_iLastNote = 0; break;
+	case HALT:    m_iLastNote = NOTE_HALT; break;
+	case RELEASE: m_iLastNote = NOTE_RELEASE; break;
+	case ECHO:    m_iLastNote = NOTE_ECHO + Note.Octave; break;
+	default:      m_iLastNote = (Note.Note - 1) + Note.Octave * 12;
+	}
+
+	int Col = m_pPatternEditor->GetSelectColumn(m_pPatternEditor->GetColumn());
+	if (Col >= COLUMN_EFF1) {
+		m_iLastEffect = Note.EffNumber[Col - COLUMN_EFF1];
+		m_iLastEffectParam = Note.EffParam[Col - COLUMN_EFF1];
+	}
 }
 
 bool CFamiTrackerView::AddAction(CAction *pAction) const
