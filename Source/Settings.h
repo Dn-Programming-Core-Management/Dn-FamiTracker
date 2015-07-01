@@ -124,6 +124,7 @@ public:
 		bool	bOverflowPaste;
 		bool	bShowSkippedRows;
 		bool	bHexKeypad;
+		bool	bMultiFrameSel;
 	} General;
 
 	struct {

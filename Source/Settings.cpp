@@ -106,6 +106,7 @@ void CSettings::SetupSettings()
 	SETTING_BOOL("General", "Overflow paste mode", false, &General.bOverflowPaste);
 	SETTING_BOOL("General", "Show skipped rows", false, &General.bShowSkippedRows);
 	SETTING_BOOL("General", "Hexadecimal keypad", false, &General.bHexKeypad);
+	SETTING_BOOL("General", "Multi-frame selection", false, &General.bMultiFrameSel);
 
 	// Keys
 	SETTING_INT("Keys", "Note cut",		0x31, &Keys.iKeyNoteCut);

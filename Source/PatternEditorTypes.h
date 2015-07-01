@@ -132,7 +132,7 @@ public:
 	bool operator !=(const CCursorPos &other) const;
 	bool operator <(const CCursorPos &other) const;
 	bool operator <=(const CCursorPos &other) const;
-	bool IsValid(int FrameCount, int RowCount, int ChannelCount) const;		// // //
+	bool IsValid(int RowCount, int ChannelCount) const;		// // //
 
 public:
 	int m_iFrame;		// // //

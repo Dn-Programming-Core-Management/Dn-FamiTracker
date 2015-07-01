@@ -47,7 +47,8 @@ const CString CConfigGeneral::CONFIG_STR[] = {		// // //
 	_T("Retrieve channel state"),
 	_T("Overflow paste mode"),
 	_T("Show skipped rows"),
-	_T("Hexadecimal keypad")
+	_T("Hexadecimal keypad"),
+	_T("Multi-frame selection"),
 };
 
 const CString CConfigGeneral::CONFIG_DESC[] = {		// // //
@@ -64,14 +65,15 @@ const CString CConfigGeneral::CONFIG_DESC[] = {		// // //
 	_T("Create a backup copy of the existing file when saving a module."),
 	_T("Only allow one single instance of the FamiTracker application."),
 	_T("Preview all channels when inserting notes in the pattern editor."),
-	_T("Don't select the whole channel when double-clicking in the pattern editor."),
+	_T("Do not select the whole channel when double-clicking in the pattern editor."),
 	_T("When using Shift + Mouse Wheel to modify a pattern value, allow the parameter to wrap around its limit values."),
-	_T("Always silent volume values below 1 caused by the Axy or 7xy effects."),
+	_T("Always silent volume values below 1 due to Axy or 7xy effects."),
 	_T("Use the existing volume table for the FDS channel which has higher precision than in exported NSFs."),
 	_T("Reconstruct the current channel's state from previous frames upon playing (except when playing one row)."),
 	_T("Move pasted pattern data outside the rows of the current frame to subsequent frames."),
 	_T("Display rows that are truncated by Bxx, Cxx, or Dxx effects."),
-	_T("Use the extra keys on the keypad as hexadecimal digits in the pattern editor.")
+	_T("Use the extra keys on the keypad as hexadecimal digits in the pattern editor."),
+	_T("Allow pattern selections to span across multiple frames."),
 };
 
 // CConfigGeneral dialog
@@ -151,6 +153,7 @@ BOOL CConfigGeneral::OnApply()
 	theApp.GetSettings()->General.bOverflowPaste	= m_bOverflowPaste;
 	theApp.GetSettings()->General.bShowSkippedRows	= m_bShowSkippedRows;
 	theApp.GetSettings()->General.bHexKeypad		= m_bHexKeypad;
+	theApp.GetSettings()->General.bMultiFrameSel	= m_bMultiFrameSel;
 
 	theApp.GetSettings()->Keys.iKeyNoteCut			= m_iKeyNoteCut;
 	theApp.GetSettings()->Keys.iKeyNoteRelease		= m_iKeyNoteRelease;
@@ -191,6 +194,7 @@ BOOL CConfigGeneral::OnInitDialog()
 	m_bOverflowPaste	= theApp.GetSettings()->General.bOverflowPaste;
 	m_bShowSkippedRows	= theApp.GetSettings()->General.bShowSkippedRows;
 	m_bHexKeypad		= theApp.GetSettings()->General.bHexKeypad;
+	m_bMultiFrameSel	= theApp.GetSettings()->General.bMultiFrameSel;
 
 	m_iKeyNoteCut		= theApp.GetSettings()->Keys.iKeyNoteCut; 
 	m_iKeyNoteRelease	= theApp.GetSettings()->Keys.iKeyNoteRelease; 
@@ -246,7 +250,8 @@ BOOL CConfigGeneral::OnInitDialog()
 		m_bRetrieveChanState,
 		m_bOverflowPaste,
 		m_bShowSkippedRows,
-		m_bHexKeypad
+		m_bHexKeypad,
+		m_bMultiFrameSel,
 	};
 
 	CListCtrl *pList = static_cast<CListCtrl*>(GetDlgItem(IDC_CONFIG_LIST));
@@ -308,7 +313,8 @@ void CConfigGeneral::OnLvnItemchangedConfigList(NMHDR *pNMHDR, LRESULT *pResult)
 		&m_bRetrieveChanState,
 		&m_bOverflowPaste,
 		&m_bShowSkippedRows,
-		&m_bHexKeypad
+		&m_bHexKeypad,
+		&m_bMultiFrameSel,
 	};
 	
 	if (pNMLV->uChanged & LVIF_STATE) {

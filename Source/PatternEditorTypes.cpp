@@ -62,11 +62,11 @@ bool CCursorPos::operator<=(const CCursorPos &other) const		// // //
 	return !(other < *this);
 }
 
-bool CCursorPos::IsValid(int FrameCount, int RowCount, int ChannelCount) const		// // //
+bool CCursorPos::IsValid(int RowCount, int ChannelCount) const		// // //
 {
 	// Check if a valid pattern position
-	if (m_iFrame < -FrameCount || m_iFrame >= 2 * FrameCount)		// // //
-		return false;
+	//if (m_iFrame < -FrameCount || m_iFrame >= 2 * FrameCount)		// // //
+	//	return false;
 	if (m_iChannel < 0 || m_iChannel >= ChannelCount)
 		return false;
 	if (m_iRow < 0 || m_iRow >= RowCount)

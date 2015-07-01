@@ -2975,7 +2975,6 @@ void CPatternEditor::OnMouseDownHeader(const CPoint &point)
 void CPatternEditor::OnMouseDownPattern(const CPoint &point)
 {
 	const int ChannelCount = GetChannelCount();
-	const int FrameCount = GetFrameCount();
 	const bool bShift = IsShiftPressed();
 	const bool bControl = IsControlPressed();
 
@@ -2988,7 +2987,7 @@ void CPatternEditor::OnMouseDownPattern(const CPoint &point)
 
 	if (bShift && !IsInRange(m_selection, PointPos.m_iFrame, PointPos.m_iRow, PointPos.m_iChannel, PointPos.m_iColumn)) {		// // //
 		// Expand selection
-		if (!PointPos.IsValid(FrameCount, PatternLength, ChannelCount))		// // //
+		if (!PointPos.IsValid(PatternLength, ChannelCount))
 			return;
 		if (!m_bSelecting)
 			SetSelectionStart(m_cpCursorPos);
@@ -3014,7 +3013,7 @@ void CPatternEditor::OnMouseDownPattern(const CPoint &point)
 			// Pattern area
 			m_bFullRowSelect = false;
 
-			if (!PointPos.IsValid(FrameCount, PatternLength, ChannelCount))		// // //
+			if (!PointPos.IsValid(PatternLength, ChannelCount))
 				return;
 
 			if (IsSelecting()) {
@@ -3127,7 +3126,7 @@ void CPatternEditor::OnMouseUp(const CPoint &point)
 			return;
 		}
 
-		if (PointPos.IsValid(GetFrameCount(), PatternLength, ChannelCount)) {		// // //
+		if (PointPos.IsValid(PatternLength, ChannelCount)) {		// // //
 			m_cpCursorPos = PointPos;
 			m_iCurrentFrame = PointPos.m_iFrame;		// // //
 			CancelSelection();		// // //
@@ -3227,6 +3226,17 @@ void CPatternEditor::ContinueMouseSelection(const CPoint &point)
 					m_selection.m_cpEnd.m_iFrame += FrameCount;
 					m_iWarpCount = 0;
 				}
+		}
+
+		if (!theApp.GetSettings()->General.bMultiFrameSel) {		// // //
+			if (m_selection.m_cpEnd.m_iFrame > m_selection.m_cpStart.m_iFrame) {
+				m_selection.m_cpEnd.m_iFrame = m_selection.m_cpStart.m_iFrame;
+				m_selection.m_cpEnd.m_iRow = GetCurrentPatternLength(m_iCurrentFrame) - 1;
+			}
+			else if (m_selection.m_cpEnd.m_iFrame < m_selection.m_cpStart.m_iFrame) {
+				m_selection.m_cpEnd.m_iFrame = m_selection.m_cpStart.m_iFrame;
+				m_selection.m_cpEnd.m_iRow = 0;
+			}
 		}
 
 		// Selection has changed
@@ -3345,7 +3355,7 @@ void CPatternEditor::OnMouseRDown(const CPoint &point)
 	if (IsOverPattern(point)) {
 		// Pattern area
 		CCursorPos PointPos = GetCursorAtPoint(point);
-		if (PointPos.IsValid(GetFrameCount(), GetCurrentPatternLength(PointPos.m_iFrame), ChannelCount)) {		// // //
+		if (PointPos.IsValid(GetCurrentPatternLength(PointPos.m_iFrame), ChannelCount)) {		// // //
 			m_cpCursorPos = PointPos;
 		}
 	}
