@@ -47,6 +47,7 @@ class IntQuery
 {
 public:
 	IntQuery() { Current = new IntRange(); Next = NULL; };
+	~IntQuery() { SAFE_RELEASE(Current); SAFE_RELEASE(Next); };
 	IntQuery(int a) { Current = new IntRange(a, a); Next = NULL; };
 	IntQuery(int a, int b) { Current = new IntRange(a, b); Next = NULL; };
 	IntQuery(IntRange *r) { Current = r; Next = NULL; };
@@ -57,7 +58,7 @@ public:
 	bool ParseTerm(IntQuery *target, CString &in, CString &err);
 	bool ParseFull(CString &in, CString &err);
 
-	IntQuery& operator=(int x) { Current->Min = x; Current->Max = x; Next = NULL; return *this; };
+	IntQuery& operator=(int x) { Current->Min = x; Current->Max = x; SAFE_RELEASE(Next); return *this; };
 	IntQuery& operator+=(int x) { Current->Min += x; Current->Max += x; return *this; };
 	IntQuery& operator-=(int x) { Current->Min -= x; Current->Max -= x; return *this; };
 	bool operator>(int x) { return Current->Max > x && Current->Min > x; };
@@ -72,6 +73,7 @@ class searchTerm
 {
 public:
 	searchTerm();
+	~searchTerm();
 
 	IntQuery *Note;
 	IntQuery *Oct;

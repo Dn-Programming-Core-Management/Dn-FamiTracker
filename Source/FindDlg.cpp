@@ -50,12 +50,25 @@ CFindDlg::CFindDlg(CWnd* pParent /*=NULL*/) : CDialog(CFindDlg::IDD, pParent),
 	m_iRow(0),
 	m_iChannel(0)
 {
-	memset(&m_searchTerm, 0, sizeof(searchTerm));
-	memset(&m_replaceTerm, 0, sizeof(replaceTerm));
+	//memset(&m_searchTerm, 0, sizeof(searchTerm));
+	//memset(&m_replaceTerm, 0, sizeof(replaceTerm));
 }
 
 CFindDlg::~CFindDlg()
 {
+	SAFE_RELEASE(m_cFindNoteField);
+	SAFE_RELEASE(m_cFindInstField);
+	SAFE_RELEASE(m_cFindVolField);
+	SAFE_RELEASE(m_cFindEffField);
+	SAFE_RELEASE(m_cReplaceNoteField);
+	SAFE_RELEASE(m_cReplaceInstField);
+	SAFE_RELEASE(m_cReplaceVolField);
+	SAFE_RELEASE(m_cReplaceEffField);
+	SAFE_RELEASE(m_cFindMacroField);
+	SAFE_RELEASE(m_cReplaceMacroField);
+	SAFE_RELEASE(m_cFilterMacroField);
+	SAFE_RELEASE(m_cSearchArea);
+	SAFE_RELEASE(m_cEffectColumn);
 }
 
 void CFindDlg::DoDataExchange(CDataExchange* pDX)
@@ -170,6 +183,18 @@ searchTerm::searchTerm() :
 	}
 	for (int i = 0; i < 6; i++)
 		Definite[i] = false;
+}
+
+searchTerm::~searchTerm()
+{
+	SAFE_RELEASE(Note);
+	SAFE_RELEASE(Oct);
+	SAFE_RELEASE(Inst);
+	SAFE_RELEASE(Vol);
+	for (int i = 0; i < MAX_EFFECT_COLUMNS; i++) {
+		SAFE_RELEASE(EffNumber[i]);
+		SAFE_RELEASE(EffParam[i]);
+	}
 }
 
 BOOL CFindDlg::OnInitDialog()
