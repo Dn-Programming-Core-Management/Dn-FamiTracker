@@ -386,6 +386,7 @@ void CPatternAction::PullUpRows(CFamiTrackerDoc *pDoc) const
 void CPatternAction::StretchPattern(CFamiTrackerDoc *pDoc) const		// // //
 {
 	CPatternIterator it = GetStartIterator();		// // //
+	CPatternIterator s = GetStartIterator();		// // //
 	const CPatternIterator End = GetEndIterator();
 	const int ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());		// // //
 	const int ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
@@ -393,9 +394,10 @@ void CPatternAction::StretchPattern(CFamiTrackerDoc *pDoc) const		// // //
 	
 	int Pos = 0;
 	int Offset = 0;
+	int oldRow = -1;
 	do {
 		for (int i = 0; i <= m_selection.GetChanEnd() - m_selection.GetChanStart(); ++i) {
-			if (Offset < m_iSelectionSize && m_iStretchMap[Pos] > 0)
+			if (Offset < m_pUndoClipData->ClipInfo.Rows && m_iStretchMap[Pos] > 0)
 				Source = *(m_pUndoClipData->GetPattern(i, Offset));
 			else 
 				Source = BLANK_NOTE;		// // //
@@ -404,7 +406,14 @@ void CPatternAction::StretchPattern(CFamiTrackerDoc *pDoc) const		// // //
 				i == m_selection.GetChanEnd() - m_selection.GetChanStart() ? ColEnd : COLUMN_EFF4);
 			it.Set(i + m_selection.GetChanStart(), &Target);
 		}
-		Offset += m_iStretchMap[Pos++];
+		int dist = m_iStretchMap[Pos++];
+		for (int i = 0; i < dist; i++) {
+			Offset++;
+			oldRow = s.m_iRow;
+			s++;
+			if (s.m_iRow <= oldRow)
+				Offset += pDoc->GetPatternLength(m_iUndoTrack) + s.m_iRow - oldRow - 1;
+		}
 		Pos %= m_iStretchMap.size();
 	} while (++it <= End);
 }
@@ -444,7 +453,11 @@ void CPatternAction::Transpose(CFamiTrackerDoc *pDoc) const
 	
 	const bool bSingular = (it == End) && (ChanStart == ChanEnd);
 	int Row = 0;		// // //
+	int oldRow = -1;
 	do {
+		if (it.m_iRow <= oldRow) {
+			Row += pDoc->GetPatternLength(m_iUndoTrack) + it.m_iRow - oldRow - 1;
+		}
 		for (int i = ChanStart; i <= ChanEnd; ++i) {
 			if (!m_selection.IsColumnSelected(COLUMN_NOTE, i))
 				continue;
@@ -475,6 +488,7 @@ void CPatternAction::Transpose(CFamiTrackerDoc *pDoc) const
 			it.Set(i, &Note);
 		}
 		Row++;
+		oldRow = it.m_iRow;
 	} while (++it <= End);
 }
 
@@ -622,7 +636,10 @@ void CPatternAction::ScrollValues(CFamiTrackerDoc *pDoc) const
 	const bool bSingular = (it == End) && (ChanStart == ChanEnd) && (ColStart == ColEnd) && (m_iScrollValue == -1 || m_iScrollValue == 1);
 	
 	int Row = 0;
+	int oldRow = -1;
 	do {
+		if (it.m_iRow <= oldRow)
+			Row += pDoc->GetPatternLength(m_iUndoTrack) + it.m_iRow - oldRow - 1;
 		for (int i = ChanStart; i <= ChanEnd; ++i) {
 			Note = *(m_pUndoClipData->GetPattern(i - ChanStart, Row));		// // //
 			for (int k = 1; k < COLUMNS; ++k) {
@@ -702,6 +719,7 @@ void CPatternAction::ScrollValues(CFamiTrackerDoc *pDoc) const
 			it.Set(i, &Note);
 		}
 		Row++;
+		oldRow = it.m_iRow;
 	} while (++it <= End);
 }
 
