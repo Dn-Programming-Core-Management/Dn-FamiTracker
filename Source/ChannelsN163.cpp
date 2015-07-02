@@ -141,8 +141,7 @@ bool CChannelHandlerN163::HandleInstrument(int Instrument, bool Trigger, bool Ne
 	if (!m_bLoadWave && NewInstrument)
 		m_iWaveIndex = 0;
 	
-	if (NewInstrument)		// // //
-		m_bLoadWave = true;
+	m_bLoadWave = true;
 
 	return true;
 }
@@ -226,8 +225,9 @@ void CChannelHandlerN163::RefreshChannel()
 	}
 
 	if (m_iLastInstrument != m_iInstrument) {		// // //
+		if (m_iInstrument != MAX_INSTRUMENTS)
+			LoadWave();
 		m_iLastInstrument = m_iInstrument;
-		LoadWave();
 	}
 
 	// Update channel
@@ -245,9 +245,6 @@ void CChannelHandlerN163::RefreshChannel()
 		WriteData(ChannelAddrBase + 3, 0);
 		WriteData(ChannelAddrBase + 5, 0);
 	}
-
-	// if (!m_bDisableLoad)		// // //
-		// LoadWave(); // 0CC: check if there are side effects
 }
 
 void CChannelHandlerN163::ClearRegisters()
@@ -331,6 +328,8 @@ void CChannelHandlerN163::LoadWave()
 void CChannelHandlerN163::CheckWaveUpdate()
 {
 	// Check wave changes
-	if (theApp.GetSoundGenerator()->HasWaveChanged())
+	if (theApp.GetSoundGenerator()->HasWaveChanged()) {
 		m_bLoadWave = true;
+		m_bDisableLoad = false;
+	}
 }
