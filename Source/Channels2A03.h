@@ -119,7 +119,6 @@ protected:
 	virtual void ClearRegisters();
 	virtual CString GetCustomEffectString() const;		// // //
 	virtual void HandleNote(int Note, int Octave);
-	virtual void SetupSlide();		// // //
 
 	int TriggerNote(int Note);
 };

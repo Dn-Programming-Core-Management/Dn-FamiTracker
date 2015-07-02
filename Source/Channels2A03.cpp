@@ -420,16 +420,6 @@ void CNoiseChan::HandleNote(int Note, int Octave)
 	m_iSeqVolume	= 0x0F;		// // //
 }
 
-void CNoiseChan::SetupSlide()		// // //
-{
-	// Work-around for noise
-	if (m_iEffect == EF_SLIDE_DOWN)
-		m_iEffect = EF_SLIDE_UP;
-	else if (m_iEffect == EF_SLIDE_UP)		// // //
-		m_iEffect = EF_SLIDE_DOWN;
-	CChannelHandler::SetupSlide();
-}
-
 /*
 int CNoiseChan::CalculatePeriod() const
 {
