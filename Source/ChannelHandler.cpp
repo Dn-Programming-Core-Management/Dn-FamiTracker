@@ -178,7 +178,7 @@ void CChannelHandler::ResetChannel()
 	m_bDelayEnabled		= false;
 	m_iNoteCut			= 0;
 	m_iNoteRelease		= 0;		// // //
-	m_iNoteVolume		= -1;		// // //
+	m_iNoteVolume		= 0;		// // //
 	m_iNewVolume		= m_iDefaultVolume;		// // //
 	m_iTranspose		= 0;
 	m_bTransposeDown	= false;
@@ -458,6 +458,18 @@ CString CChannelHandler::GetEffectString() const		// // //
 	if ((m_iDefaultDuty && m_iChannelID < CHANID_S5B_CH1) || (m_iDefaultDuty != 0x40 && m_iChannelID >= CHANID_S5B_CH1))
 		str.AppendFormat(_T(" V%02X"), m_iDefaultDuty);
 
+	// run-time effects
+	if (m_cDelayCounter >= 0 && m_bDelayEnabled)
+		str.AppendFormat(_T(" G%02X"), m_cDelayCounter + 1);
+	if (m_iNoteRelease)
+		str.AppendFormat(_T(" L%02X"), m_iNoteRelease);
+	if (m_iNoteVolume)
+		str.AppendFormat(_T(" M%X%X"), m_iNoteVolume, m_iNewVolume >> VOL_COLUMN_SHIFT);
+	if (m_iNoteCut)
+		str.AppendFormat(_T(" S%02X"), m_iNoteCut);
+	if (m_iTranspose)
+		str.AppendFormat(_T(" T%X%X"), m_iTranspose + (m_bTransposeDown ? 8 : 0), m_iTransposeTarget);
+
 	str.Append(GetCustomEffectString());
 	return str.IsEmpty() ? _T(" None") : str;
 }
@@ -552,7 +564,7 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 		m_iNoteRelease = 0;		// // //
 		if (Trigger && m_iNoteVolume == 0 && !m_iVolSlide) {		// // //
 			m_iVolume = m_iDefaultVolume;
-			m_iNoteVolume = -1;
+			m_iNoteVolume = 0;
 		}
 		m_iTranspose = 0;		// // //
 	}
@@ -569,7 +581,7 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 		// 0CC: remove this eventually like how the asm handles it
 		if (EffNum == EF_VOLUME_SLIDE && !EffParam && Trigger && m_iNoteVolume == 0) {		// // //
 			m_iVolume = m_iDefaultVolume;
-			m_iNoteVolume = -1;
+			m_iNoteVolume = 0;
 		}
 	}
 
@@ -875,7 +887,7 @@ void CChannelHandler::UpdateNoteVolume()		// // //
 void CChannelHandler::UpdateTranspose()		// // //
 {
 	// Delayed transpose (Txy)
-	if (m_iTranspose != 0) {
+	if (m_iTranspose > 0) {
 		m_iTranspose--;
 		if (!m_iTranspose) {
 			// trigger note
