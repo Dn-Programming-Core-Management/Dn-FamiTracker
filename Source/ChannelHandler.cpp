@@ -439,14 +439,8 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 
 CString CChannelHandler::GetEffectString() const		// // //
 {
-	CString str = _T("");
+	CString str = GetSlideEffectString();
 	
-	switch (m_iEffect) {
-	case EF_ARPEGGIO:
-		if (m_iEffectParam) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iEffectParam); break;
-	case EF_PORTA_UP: case EF_PORTA_DOWN: case EF_PORTAMENTO:
-		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iPortaSpeed); break;
-	}
 	if (m_iVibratoSpeed)
 		str.AppendFormat(_T(" 4%X%X"), m_iVibratoSpeed, m_iVibratoDepth >> 4);
 	if (m_iTremoloSpeed)
@@ -472,6 +466,20 @@ CString CChannelHandler::GetEffectString() const		// // //
 
 	str.Append(GetCustomEffectString());
 	return str.IsEmpty() ? _T(" None") : str;
+}
+
+CString CChannelHandler::GetSlideEffectString() const		// // //
+{
+	CString str = _T("");
+	
+	switch (m_iEffect) {
+	case EF_ARPEGGIO:
+		if (m_iEffectParam) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iEffectParam); break;
+	case EF_PORTA_UP: case EF_PORTA_DOWN: case EF_PORTAMENTO:
+		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iPortaSpeed); break;
+	}
+
+	return str;
 }
 
 CString CChannelHandler::GetCustomEffectString() const		// // //
@@ -1227,7 +1235,7 @@ int CChannelHandlerInverted::CalculatePeriod() const
 	return LimitPeriod(GetPeriod() + GetVibrato() - GetFinePitch() - GetPitch());
 }
 
-CString CChannelHandlerInverted::GetEffectString() const		// // //
+CString CChannelHandlerInverted::GetSlideEffectString() const		// // //
 {
 	CString str = _T("");
 	
@@ -1241,19 +1249,8 @@ CString CChannelHandlerInverted::GetEffectString() const		// // //
 	case EF_PORTAMENTO:
 		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iPortaSpeed); break;
 	}
-	if (m_iVibratoSpeed)
-		str.AppendFormat(_T(" 4%X%X"), m_iVibratoSpeed, m_iVibratoDepth >> 4);
-	if (m_iTremoloSpeed)
-		str.AppendFormat(_T(" 7%X%X"), m_iTremoloSpeed, m_iTremoloDepth >> 4);
-	if (m_iVolSlide)
-		str.AppendFormat(_T(" A%02X"), m_iVolSlide);
-	if (m_iFinePitch != 0x80)
-		str.AppendFormat(_T(" P%02X"), m_iFinePitch);
-	if ((m_iDefaultDuty && m_iChannelID < CHANID_S5B_CH1) || (m_iDefaultDuty != 0x40 && m_iChannelID >= CHANID_S5B_CH1))
-		str.AppendFormat(_T(" V%02X"), m_iDefaultDuty);
 
-	str.Append(GetCustomEffectString());
-	return str.IsEmpty() ? _T(" None") : str;
+	return str;
 }
 
 /*

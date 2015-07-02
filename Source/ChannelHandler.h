@@ -130,6 +130,7 @@ protected:
 	virtual int		CalculateVolume(bool Subtract = false) const;
 	
 	virtual CString	GetEffectString() const;		// // //
+	virtual CString	GetSlideEffectString() const;		// // //
 	virtual CString	GetCustomEffectString() const;		// // //
 
 	// 
@@ -281,5 +282,5 @@ protected:
 	CChannelHandlerInverted(int MaxPeriod, int MaxVolume) : CChannelHandler(MaxPeriod, MaxVolume) {}
 	// // //
 	virtual int CalculatePeriod() const;
-	virtual CString GetEffectString() const;		// // //
+	virtual CString GetSlideEffectString() const;		// // //
 };
