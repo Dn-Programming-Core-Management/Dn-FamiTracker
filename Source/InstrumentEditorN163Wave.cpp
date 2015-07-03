@@ -347,7 +347,7 @@ void CInstrumentEditorN163Wave::FillPosBox(int size)
 	CComboBox *pPosBox = static_cast<CComboBox*>(GetDlgItem(IDC_WAVE_POS));
 	pPosBox->ResetContent();
 
-	for (int i = 0; i < WAVE_SIZE_AVAILABLE - size; i += size) {		// // // prevent reading non-wave n163 registers
+	for (int i = 0; i <= WAVE_SIZE_AVAILABLE - size; i += size) {		// // // prevent reading non-wave n163 registers
 		pPosBox->AddString(MakeIntString(i));
 	}
 }
