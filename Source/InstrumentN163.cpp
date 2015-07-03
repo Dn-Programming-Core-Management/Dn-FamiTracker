@@ -46,12 +46,9 @@ CInstrumentN163::CInstrumentN163()
 		m_iSeqIndex[i] = 0;
 	}
 
-	memset(m_iSamples, 0, sizeof(int) * MAX_WAVE_SIZE);
-
-	for (int i = 0; i < MAX_WAVE_COUNT; ++i) {
-		for (int j = 0; j < DEFAULT_WAVE_SIZE; ++j) {
-			m_iSamples[i][j] = (i == 0 && j < 32) ? TRIANGLE_WAVE[j] : 0;	// // //
-		}
+	memset(m_iSamples, 0, sizeof(int) * MAX_WAVE_COUNT * MAX_WAVE_SIZE);		// // //
+	for (int j = 0; j < sizeof(TRIANGLE_WAVE) / sizeof(char); ++j) {
+		m_iSamples[0][j] = TRIANGLE_WAVE[j];
 	}
 
 	m_iWaveSize = DEFAULT_WAVE_SIZE;

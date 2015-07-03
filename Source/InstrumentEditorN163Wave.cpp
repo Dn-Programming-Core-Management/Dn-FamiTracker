@@ -171,7 +171,7 @@ void CInstrumentEditorN163Wave::OnPresetTriangle()
 	int size = m_pInstrument->GetWaveSize();
 
 	for (int i = 0; i < size; ++i) {
-		int sample = ((i < (size / 2) ? i : ((size - 1) - i))) * (16 / (size / 2));
+		int sample = ((i < (size / 2) ? i : ((size - 1) - i))) * 16 / (size / 2);		// // //
 		m_pInstrument->SetSample(m_iWaveIndex, i, sample);
 	}
 
