@@ -104,8 +104,6 @@ public:
 	void ClearEverything();
 	void ClearPattern(unsigned int Channel, unsigned int Pattern);
 
-	void CopyChannel(unsigned int Target, unsigned int Source);		// // //
-
 	stChanNote *GetPatternData(unsigned int Channel, unsigned int Pattern, unsigned int Row);
 
 	unsigned int GetPatternLength() const { 

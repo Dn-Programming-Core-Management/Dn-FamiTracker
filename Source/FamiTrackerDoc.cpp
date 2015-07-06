@@ -201,7 +201,7 @@ CFamiTrackerDoc::CFamiTrackerDoc() :
 	m_bFileLoaded(false), 
 	m_bFileLoadFailed(false), 
 	m_iRegisteredChannels(0), 
-	m_iNamcoChannels(DEFAULT_NAMCO_CHANS),
+	m_iNamcoChannels(0),		// // //
 	m_bDisplayComment(false)
 {
 	// Initialize document object
@@ -515,7 +515,7 @@ void CFamiTrackerDoc::CreateEmpty()
 	m_iVibratoStyle = VIBRATO_NEW;
 	m_bLinearPitch = DEFAULT_LINEAR_PITCH;
 
-	m_iNamcoChannels = DEFAULT_NAMCO_CHANS;
+	m_iNamcoChannels = 0;		// // //
 
 	// and select 2A03 only
 	SelectExpansionChip(SNDCHIP_NONE);
@@ -4490,102 +4490,34 @@ unsigned int CFamiTrackerDoc::GetTrackCount() const
 void CFamiTrackerDoc::SelectExpansionChip(unsigned char Chip, bool Move)
 {
 	// // // Move pattern data upon removing expansion chips
-	int OldChip = m_iExpansionChip, Current = OldChip;
-	int CH = m_iRegisteredChannels;
-	if (Move) {
-		if ((OldChip & SNDCHIP_VRC6) && !(Chip & SNDCHIP_VRC6)) {
-			for (int j = GetChannelPosition(CHANID_MMC5_SQUARE1, Current); j < CH; j++)
-				for (unsigned int i = 0; i < m_iTrackCount; ++i)
-					m_pTracks[i]->CopyChannel(j - 3, j);
-			Current &= ~SNDCHIP_VRC6;
-			CH -= 3;
-		}
-		if ((OldChip & SNDCHIP_MMC5) && !(Chip & SNDCHIP_MMC5)) {
-			for (int j = GetChannelPosition(CHANID_N163_CH1, Current); j < CH; j++)
-				for (unsigned int i = 0; i < m_iTrackCount; ++i)
-					m_pTracks[i]->CopyChannel(j - 2, j);
-			Current &= ~SNDCHIP_MMC5;
-			CH -= 2;
-		}
-		if ((OldChip & SNDCHIP_N163) && !(Chip & SNDCHIP_N163)) {
-			for (int j = GetChannelPosition(CHANID_FDS, Current); j < CH; j++)
-				for (unsigned int i = 0; i < m_iTrackCount; ++i)
-					m_pTracks[i]->CopyChannel(j - m_iNamcoChannels, j);
-			Current &= ~SNDCHIP_N163;
-			CH -= m_iNamcoChannels;
-		}
-		if ((OldChip & SNDCHIP_FDS) && !(Chip & SNDCHIP_FDS)) {
-			for (int j = GetChannelPosition(CHANID_VRC7_CH1, Current); j < CH; j++)
-				for (unsigned int i = 0; i < m_iTrackCount; ++i)
-					m_pTracks[i]->CopyChannel(j - 1, j);
-			Current &= ~SNDCHIP_FDS;
-			CH -= 1;
-		}
-		if ((OldChip & SNDCHIP_VRC7) && !(Chip & SNDCHIP_VRC7)) {
-			for (int j = GetChannelPosition(CHANID_S5B_CH1, Current); j < CH; j++)
-				for (unsigned int i = 0; i < m_iTrackCount; ++i)
-					m_pTracks[i]->CopyChannel(j - 6, j);
-			Current &= ~SNDCHIP_VRC7;
-			CH -= 6;
-		}
-	}
-	// // // Remove frames and patterns of unused channels
-	for (unsigned int i = 0; i < m_iTrackCount; ++i)
-		for (int j = GetChannelPosition(CHANNELS, Current); j < MAX_CHANNELS; j++) {
-			for (int k = 0; k < MAX_PATTERN; k++) {
-				m_pTracks[i]->SetEffectColumnCount(j, 0);
-				m_pTracks[i]->ClearPattern(j, k);
+	if (Move) for (unsigned int i = 0; i < m_iTrackCount; ++i) {
+		CPatternData *pTrack = m_pTracks[i];
+		CPatternData *pNew = new CPatternData(GetPatternLength(i));
+		pNew->SetHighlight(pTrack->GetRowHighlight());
+		pNew->SetSongTempo(pTrack->GetSongTempo());
+		pNew->SetSongSpeed(pTrack->GetSongSpeed());
+		pNew->SetSongGroove(pTrack->GetSongGroove());
+		pNew->SetFrameCount(pTrack->GetFrameCount());
+		for (int j = 0; j < CHANNELS; j++) {
+			int oldIndex = GetChannelIndex(j);
+			int newIndex = GetChannelPosition(j, Chip);
+			if (oldIndex != -1 && newIndex != -1) {
+				pNew->SetEffectColumnCount(newIndex, pTrack->GetEffectColumnCount(oldIndex));
+				for (int k = 0; k < MAX_FRAMES; k++)
+					pNew->SetFramePattern(k, newIndex, pTrack->GetFramePattern(k, oldIndex));
+				for (int p = 0; p < MAX_PATTERN; p++)
+					memcpy(pNew->GetPatternData(newIndex, p, 0), pTrack->GetPatternData(oldIndex, p, 0), MAX_PATTERN_LENGTH * sizeof(stChanNote));
 			}
-			for (int k = 0; k < MAX_FRAMES; k++)
-				m_pTracks[i]->SetFramePattern(k, j, 0);
 		}
+		SAFE_RELEASE(pTrack);
+		m_pTracks[i] = pNew;
+	}
 	// Complete sound chip setup
 	SetupChannels(Chip);
 	ApplyExpansionChip();
-	// // //
-	/*Current = OldChip;*/
-	if (Move) {
-		if ((Chip & SNDCHIP_VRC7) && !(OldChip & SNDCHIP_VRC7)) {
-			CH += 6;
-			for (int j = GetChannelCount() - 1; j >= GetChannelPosition(CHANID_S5B_CH1, Current) + 6; j--)
-				for (unsigned int i = 0; i < m_iTrackCount; ++i) {
-					m_pTracks[i]->CopyChannel(j, j - 6);
-				}
-			Current |= SNDCHIP_VRC7;
-		}
-		if ((Chip & SNDCHIP_FDS) && !(OldChip & SNDCHIP_FDS)) {
-			CH += 1;
-			for (int j = GetChannelCount() - 1; j >= GetChannelPosition(CHANID_VRC7_CH1, Current) + 1; j--)
-				for (unsigned int i = 0; i < m_iTrackCount; ++i) {
-					m_pTracks[i]->CopyChannel(j, j - 1);
-				}
-			Current |= SNDCHIP_FDS;
-		}
-		if ((Chip & SNDCHIP_N163) && !(OldChip & SNDCHIP_N163)) {
-			CH += m_iNamcoChannels;
-			for (int j = GetChannelCount() - 1; j >= GetChannelPosition(CHANID_FDS, Current) + static_cast<signed>(m_iNamcoChannels); j--)
-				for (unsigned int i = 0; i < m_iTrackCount; ++i) {
-					m_pTracks[i]->CopyChannel(j, j - m_iNamcoChannels);
-				}
-			Current |= SNDCHIP_N163;
-		}
-		if ((Chip & SNDCHIP_MMC5) && !(OldChip & SNDCHIP_MMC5)) {
-			CH += 2;
-			for (int j = GetChannelCount() - 1; j >= GetChannelPosition(CHANID_N163_CH1, Current) + 2; j--)
-				for (unsigned int i = 0; i < m_iTrackCount; ++i) {
-					m_pTracks[i]->CopyChannel(j, j - 2);
-				}
-			Current |= SNDCHIP_MMC5;
-		}
-		if ((Chip & SNDCHIP_VRC6) && !(OldChip & SNDCHIP_VRC6)) {
-			CH += 3;
-			for (int j = GetChannelCount() - 1; j >= GetChannelPosition(CHANID_MMC5_SQUARE1, Current) + 3; j--)
-				for (unsigned int i = 0; i < m_iTrackCount; ++i) {
-					m_pTracks[i]->CopyChannel(j, j - 3);
-				}
-			Current |= SNDCHIP_VRC6;
-		}
-	}
+
+	if (!(Chip & SNDCHIP_N163))		// // //
+		m_iNamcoChannels = 0;
 }
 
 void CFamiTrackerDoc::SetupChannels(unsigned char Chip)
@@ -4632,25 +4564,42 @@ bool CFamiTrackerDoc::ExpansionEnabled(int Chip) const
 
 void CFamiTrackerDoc::SetNamcoChannels(int Channels, bool Move)
 {
-	if (Channels == 0) {
+	if (Channels == 0) {		// // //
 		SelectExpansionChip(m_iExpansionChip & ~SNDCHIP_N163, true);
 		return;
 	}
-
-	// // // Move pattern data upon removing N163 channels
 	if (!ExpansionEnabled(SNDCHIP_N163))
 		SelectExpansionChip(m_iExpansionChip | SNDCHIP_N163, true);
-	int OldCount = m_iNamcoChannels;
-	if (Channels < OldCount && Move) for (unsigned int i = 0; i < m_iTrackCount; ++i) {
-		for (int j = GetChannelPosition(CHANID_FDS, m_iExpansionChip); j < GetChannelCount(); j++)
-			m_pTracks[i]->CopyChannel(j - (OldCount - Channels), j);
-	}
+
 	ASSERT(Channels <= 8);
 	m_iNamcoChannels = Channels;
-	// // //
-	if (Channels > OldCount && Move) for (unsigned int i = 0; i < m_iTrackCount; ++i) {
-		for (int j = GetChannelCount() + (Channels - OldCount) - 1; j >= GetChannelPosition(CHANID_FDS, m_iExpansionChip); j--)
-			m_pTracks[i]->CopyChannel(j, j - (Channels - OldCount));
+	
+	// // // Move pattern data upon removing N163 channels
+	int oldIndex[CHANNELS];
+	for (int j = 0; j < CHANNELS; j++)
+		oldIndex[j] = GetChannelIndex(j);
+	for (int j = CHANID_N163_CH1 + Channels; j <= CHANID_N163_CH8; j++)
+		oldIndex[j] = -1;
+	if (Move) for (unsigned int i = 0; i < m_iTrackCount; ++i) {
+		CPatternData *pTrack = m_pTracks[i];
+		CPatternData *pNew = new CPatternData(GetPatternLength(i));
+		pNew->SetHighlight(pTrack->GetRowHighlight());
+		pNew->SetSongTempo(pTrack->GetSongTempo());
+		pNew->SetSongSpeed(pTrack->GetSongSpeed());
+		pNew->SetSongGroove(pTrack->GetSongGroove());
+		pNew->SetFrameCount(pTrack->GetFrameCount());
+		for (unsigned int j = 0; j < CHANNELS; j++) {
+			int newIndex = GetChannelPosition(j, m_iExpansionChip);
+			if (oldIndex[j] != -1 && newIndex != -1) {
+				pNew->SetEffectColumnCount(newIndex, pTrack->GetEffectColumnCount(oldIndex[j]));
+				for (int k = 0; k < MAX_FRAMES; k++)
+					pNew->SetFramePattern(k, newIndex, pTrack->GetFramePattern(k, oldIndex[j]));
+				for (int p = 0; p < MAX_PATTERN; p++)
+					memcpy(pNew->GetPatternData(newIndex, p, 0), pTrack->GetPatternData(oldIndex[j], p, 0), MAX_PATTERN_LENGTH * sizeof(stChanNote));
+			}
+		}
+		SAFE_RELEASE(pTrack);
+		m_pTracks[i] = pNew;
 	}
 }
 

@@ -166,22 +166,3 @@ stHighlight CPatternData::GetRowHighlight() const
 {
 	return m_vRowHighlight;
 }
-
-void CPatternData::CopyChannel(unsigned int Target, unsigned int Source)		// // //
-{
-	if (Source == Target) return;
-	SetEffectColumnCount(Target, GetEffectColumnCount(Source));
-	SetEffectColumnCount(Source, 0);
-	for (unsigned int i = 0; i < m_iFrameCount; i++) {
-		m_iFrameList[i][Target] = m_iFrameList[i][Source];
-		m_iFrameList[i][Source] = 0;
-	}
-	for (unsigned int i = 0; i < MAX_PATTERN; i++) {
-		for (unsigned int j = 0; j < m_iPatternLength; j++) {
-			stChanNote *s = GetPatternData(Source, i, j);
-			stChanNote *t = GetPatternData(Target, i, j);
-			memcpy(t, s, sizeof(stChanNote));
-			*s = BLANK_NOTE;		// // //
-		}
-	}
-}
