@@ -36,6 +36,7 @@ public:
 
 	// Public
 	virtual void SelectInstrument(int Instrument);
+	virtual void SelectWave(int Index);		// // //
 
 // Dialog Data
 	enum { IDD = IDD_INSTRUMENT_N163_WAVE };
@@ -45,11 +46,16 @@ protected:
 
 	void ParseString(LPCTSTR pString);
 	void FillPosBox(int size);
+	void PopulateWaveBox();		// // //
+	void UpdateWaveBox(int Index);		// // //
+	void CreateWaveImage(char *const Pos, int Index) const;		// // //
 
 protected:
 	CInstrumentN163	*m_pInstrument;
 	CWaveEditorN163	*m_pWaveEditor;
 	int m_iWaveIndex;
+	CImageList m_WaveImage;		// // //
+	CListCtrl *m_pWaveListCtrl;		// // //
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
@@ -69,6 +75,7 @@ public:
 	afx_msg void OnWavePosChange();
 	afx_msg void OnWavePosSelChange();
 //	afx_msg void OnPositionClicked();
-	afx_msg void OnWavesChange();
-	afx_msg void OnIndexChange();
+	afx_msg void OnLvnItemchangedN163Waves(NMHDR *pNMHDR, LRESULT *pResult);		// // //
+	afx_msg void OnBnClickedN163Add();
+	afx_msg void OnBnClickedN163Delete();
 };

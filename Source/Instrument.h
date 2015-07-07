@@ -284,6 +284,9 @@ public:
 
 	int		StoreWave(CChunk *pChunk) const;
 	bool	IsWaveEqual(CInstrumentN163 *pInstrument);
+	
+	bool	InsertNewWave(int Index);		// // //
+	bool	RemoveWave(int Index);		// // //
 
 public:
 	static const int SEQUENCE_COUNT = 5;

@@ -53,6 +53,7 @@ CInstrumentEditorN163Wave::CInstrumentEditorN163Wave(CWnd* pParent) : CInstrumen
 CInstrumentEditorN163Wave::~CInstrumentEditorN163Wave()
 {
 	SAFE_RELEASE(m_pWaveEditor);
+	SAFE_RELEASE(m_pWaveListCtrl);
 
 	if (m_pInstrument)
 		m_pInstrument->Release();
@@ -94,16 +95,9 @@ void CInstrumentEditorN163Wave::SelectInstrument(int Instrument)
 		m_pWaveEditor->SetLength(m_pInstrument->GetWaveSize());
 	}
 
-	CSpinButtonCtrl *pIndexSpin = static_cast<CSpinButtonCtrl*>(GetDlgItem(IDC_INDEX_SPIN));
-	CSpinButtonCtrl *pWavesSpin = static_cast<CSpinButtonCtrl*>(GetDlgItem(IDC_WAVES_SPIN));
-
-	int WaveCount = m_pInstrument->GetWaveCount();
-
-	pIndexSpin->SetRange(0, WaveCount - 1);
-	pIndexSpin->SetPos(0);
-	pWavesSpin->SetPos(WaveCount - 1);
-
 	m_iWaveIndex = 0;
+
+	PopulateWaveBox();
 }
 
 BEGIN_MESSAGE_MAP(CInstrumentEditorN163Wave, CInstrumentEditPanel)
@@ -119,8 +113,9 @@ BEGIN_MESSAGE_MAP(CInstrumentEditorN163Wave, CInstrumentEditPanel)
 	ON_CBN_EDITCHANGE(IDC_WAVE_POS, OnWavePosChange)
 	ON_CBN_SELCHANGE(IDC_WAVE_POS, OnWavePosSelChange)
 //	ON_BN_CLICKED(IDC_POSITION, OnPositionClicked)
-	ON_EN_CHANGE(IDC_WAVES, OnWavesChange)
-	ON_EN_CHANGE(IDC_INDEX, OnIndexChange)
+	ON_NOTIFY(LVN_ITEMCHANGED, IDC_N163_WAVES, OnLvnItemchangedN163Waves)		// // //
+	ON_BN_CLICKED(IDC_N163_ADD, OnBnClickedN163Add)
+	ON_BN_CLICKED(IDC_N163_DELETE, OnBnClickedN163Delete)
 END_MESSAGE_MAP()
 
 // CInstrumentEditorN163Wave message handlers
@@ -135,18 +130,21 @@ BOOL CInstrumentEditorN163Wave::OnInitDialog()
 	m_pWaveEditor->CreateEx(WS_EX_CLIENTEDGE, NULL, _T(""), WS_CHILD | WS_VISIBLE, rect, this);
 	m_pWaveEditor->ShowWindow(SW_SHOW);
 	m_pWaveEditor->UpdateWindow();
-
-	CSpinButtonCtrl *pIndexSpin = static_cast<CSpinButtonCtrl*>(GetDlgItem(IDC_INDEX_SPIN));
-	CSpinButtonCtrl *pWavesSpin = static_cast<CSpinButtonCtrl*>(GetDlgItem(IDC_WAVES_SPIN));
-
-	pIndexSpin->SetRange(0, CInstrumentN163::MAX_WAVE_COUNT - 1);
-	pWavesSpin->SetRange(0, CInstrumentN163::MAX_WAVE_COUNT - 1);
 	
 	CComboBox *pWaveSize = static_cast<CComboBox*>(GetDlgItem(IDC_WAVE_SIZE));
 
 	for (int i = 0; i < WAVE_SIZE_AVAILABLE; i += 4) {
 		pWaveSize->AddString(MakeIntString(i + 4));
-	} 
+	}
+	
+	int order[2] = {1, 0};		// // //
+	m_pWaveListCtrl = new CListCtrl();
+	m_pWaveListCtrl->SubclassDlgItem(IDC_N163_WAVES, this);
+	m_pWaveListCtrl->InsertColumn(0, _T("Wave"), LVCFMT_LEFT, 120);
+	m_pWaveListCtrl->InsertColumn(1, _T("#"), LVCFMT_LEFT, 20);
+	m_pWaveListCtrl->SetColumnOrderArray(2, order);
+
+	m_WaveImage.Create(CInstrumentN163::MAX_WAVE_SIZE, 16, ILC_COLOR8, 0, CInstrumentN163::MAX_WAVE_COUNT);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE
@@ -291,6 +289,7 @@ LRESULT CInstrumentEditorN163Wave::OnWaveChanged(WPARAM wParam, LPARAM lParam)
 		str.AppendFormat(_T("%i "), m_pInstrument->GetSample(m_iWaveIndex, i));
 	}
 	SetDlgItemText(IDC_MML, str);
+	UpdateWaveBox(m_iWaveIndex);		// // //
 	return 0;
 }
 
@@ -311,6 +310,7 @@ void CInstrumentEditorN163Wave::OnWaveSizeChange()
 
 	m_pWaveEditor->SetLength(size);
 	m_pWaveEditor->WaveChanged();
+	PopulateWaveBox();		// // //
 }
 
 void CInstrumentEditorN163Wave::OnWavePosChange()
@@ -351,6 +351,58 @@ void CInstrumentEditorN163Wave::FillPosBox(int size)
 		pPosBox->AddString(MakeIntString(i));
 	}
 }
+
+void CInstrumentEditorN163Wave::PopulateWaveBox()		// // //
+{
+	int Width = m_pInstrument->GetWaveSize();
+
+	CBitmap Waveforms;
+	char WaveBits[CInstrumentN163::MAX_WAVE_COUNT][CInstrumentN163::MAX_WAVE_SIZE * 2];
+	for (int i = 0; i < CInstrumentN163::MAX_WAVE_COUNT; i++)
+		CreateWaveImage(WaveBits[i], i);
+	Waveforms.CreateBitmap(Width, 16, 1, 1, NULL);
+
+	m_WaveImage.DeleteImageList();
+	m_WaveImage.Create(Width, 16, ILC_COLOR8, 0, CInstrumentN163::MAX_WAVE_COUNT);
+	if (Width & 16) Width += 16 - Width % 16; // padding
+	for (int i = 0; i < CInstrumentN163::MAX_WAVE_COUNT; i++) {
+		Waveforms.SetBitmapBits(Width * 2, WaveBits[i]);
+		m_WaveImage.Add(&Waveforms, &Waveforms);
+	}
+	Waveforms.DeleteObject();
+	m_pWaveListCtrl->SetImageList(&m_WaveImage, LVSIL_SMALL);
+
+	m_pWaveListCtrl->DeleteAllItems();
+	for (int i = 0; i < m_pInstrument->GetWaveCount(); /*CInstrumentN163::MAX_WAVE_COUNT;*/ i++) {
+		CString hex;
+		hex.Format(_T("%X"), i);
+		m_pWaveListCtrl->InsertItem(i, _T(""), i);
+		m_pWaveListCtrl->SetItemText(i, 1, hex);
+	}
+	SelectWave(m_iWaveIndex);
+}
+
+void CInstrumentEditorN163Wave::UpdateWaveBox(int Index)		// // //
+{
+	CBitmap Waveform;
+	char WaveBits[CInstrumentN163::MAX_WAVE_SIZE * 2];
+	CreateWaveImage(WaveBits, Index);
+	Waveform.CreateBitmap(m_pInstrument->GetWaveSize(), 16, 1, 1, WaveBits);
+	m_WaveImage.Replace(Index, &Waveform, &Waveform);
+	m_pWaveListCtrl->RedrawWindow();
+}
+
+void CInstrumentEditorN163Wave::CreateWaveImage(char *const Pos, int Index) const		// // //
+{
+	memset(Pos, 0xFF, CInstrumentN163::MAX_WAVE_SIZE * 2);
+	int Width = m_pInstrument->GetWaveSize();
+	if (Width % 16) Width += 16 - Width % 16;
+	for (int j = 0; j < Width; j++) {
+		int b = Width * (15 - m_pInstrument->GetSample(Index, j)) + j;
+		Pos[b / 8] = Pos[b / 8] & ~static_cast<char>(1 << (7 - b % 8));
+	}
+}
+
 /*
 void CInstrumentEditorN163Wave::OnPositionClicked()
 {
@@ -364,36 +416,6 @@ void CInstrumentEditorN163Wave::OnPositionClicked()
 	}
 }
 */
-void CInstrumentEditorN163Wave::OnWavesChange()
-{
-	CSpinButtonCtrl *pIndexSpin = static_cast<CSpinButtonCtrl*>(GetDlgItem(IDC_INDEX_SPIN));
-
-	int count = GetDlgItemInt(IDC_WAVES) + 1;
-	
-	if (m_pInstrument != NULL)
-		m_pInstrument->SetWaveCount(count);
-
-	pIndexSpin->SetRange(0, count - 1);
-	pIndexSpin->RedrawWindow();
-
-	if (pIndexSpin->GetPos() > (count - 1))
-		pIndexSpin->SetPos(count - 1);
-
-	if (m_pWaveEditor != NULL) {
-		m_pWaveEditor->SetWave(m_iWaveIndex);
-		m_pWaveEditor->WaveChanged();
-	}
-}
-
-void CInstrumentEditorN163Wave::OnIndexChange()
-{
-	m_iWaveIndex = GetDlgItemInt(IDC_INDEX);
-
-	if (m_pWaveEditor != NULL) {
-		m_pWaveEditor->SetWave(m_iWaveIndex);
-		m_pWaveEditor->WaveChanged();
-	}
-}
 
 void CInstrumentEditorN163Wave::OnKeyReturn()
 {
@@ -401,4 +423,39 @@ void CInstrumentEditorN163Wave::OnKeyReturn()
 	CString text;
 	GetDlgItemText(IDC_MML, text);
 	ParseString(text);
+}
+
+void CInstrumentEditorN163Wave::OnLvnItemchangedN163Waves(NMHDR *pNMHDR, LRESULT *pResult)		// // //
+{
+	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
+	if (pNMLV->iItem != -1)
+		SelectWave(pNMLV->iItem);
+	*pResult = 0;
+}
+
+void CInstrumentEditorN163Wave::SelectWave(int Index)		// // //
+{
+	m_iWaveIndex = Index;
+	if (m_pWaveEditor != NULL) {
+		m_pWaveEditor->SetWave(m_iWaveIndex);
+		m_pWaveEditor->WaveChanged();
+	}
+}
+
+void CInstrumentEditorN163Wave::OnBnClickedN163Add()		// // //
+{
+	if (m_pInstrument->InsertNewWave(m_iWaveIndex + 1)) {
+		PopulateWaveBox();
+		m_pWaveListCtrl->SetItemState(++m_iWaveIndex, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
+	}
+}
+
+void CInstrumentEditorN163Wave::OnBnClickedN163Delete()		// // //
+{
+	if (m_pInstrument->RemoveWave(m_iWaveIndex)) {
+		PopulateWaveBox();
+		if (m_iWaveIndex == m_pInstrument->GetWaveCount())
+			m_iWaveIndex--;
+		m_pWaveListCtrl->SetItemState(m_iWaveIndex, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
+	}
 }

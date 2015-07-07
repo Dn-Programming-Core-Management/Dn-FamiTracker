@@ -324,6 +324,33 @@ bool CInstrumentN163::IsWaveEqual(CInstrumentN163 *pInstrument)
 	return true;
 }
 
+bool CInstrumentN163::InsertNewWave(int Index)		// // //
+{
+	if (m_iWaveCount >= CInstrumentN163::MAX_WAVE_COUNT)
+		return false;
+	if (Index < 0 || Index > m_iWaveCount || Index >= CInstrumentN163::MAX_WAVE_COUNT)
+		return false;
+
+	memmove(m_iSamples[Index + 1], m_iSamples[Index], CInstrumentN163::MAX_WAVE_SIZE * (m_iWaveCount - Index) * sizeof(int));
+	memset(m_iSamples[Index], 0, CInstrumentN163::MAX_WAVE_SIZE * sizeof(int));
+	m_iWaveCount++;
+	InstrumentChanged();
+	return true;
+}
+
+bool CInstrumentN163::RemoveWave(int Index)		// // //
+{
+	if (m_iWaveCount <= 1)
+		return false;
+	if (Index < 0 || Index >= m_iWaveCount)
+		return false;
+	
+	memmove(m_iSamples[Index], m_iSamples[Index + 1], CInstrumentN163::MAX_WAVE_SIZE * (m_iWaveCount - Index - 1) * sizeof(int));
+	m_iWaveCount--;
+	InstrumentChanged();
+	return true;
+}
+
 bool CInstrumentN163::CanRelease() const
 {
 	if (GetSeqEnable(0) != 0) {

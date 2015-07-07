@@ -441,6 +441,7 @@
 #define IDC_PASTE                       1226
 #define IDC_WAVE_SIZE                   1227
 #define IDC_WAVE_POS                    1228
+#define IDC_N163_DELETE                 1229
 #define IDC_KEY                         1230
 #define IDC_CLEAR                       1231
 #define IDC_COMMENTS                    1232
@@ -452,6 +453,7 @@
 #define IDC_CHECK_BOOKMARK_HIGH2        1235
 #define IDC_DUAL                        1236
 #define IDC_VOL_2A03                    1236
+#define IDC_N163_ADD                    1237
 #define IDC_LEVEL_2A03                  1238
 #define IDC_LEVEL_VRC6                  1239
 #define IDC_LEVEL_VRC7                  1240
@@ -631,6 +633,7 @@
 #define IDC_CHECK_BOOKMARK_PERSIST      1424
 #define IDC_BUTTON_BOOKMARK_SORTP       1425
 #define IDC_BUTTON_BOOKMARK_SORTN       1426
+#define IDC_N163_WAVES                  1427
 #define ID_TRACKER_PLAY                 32771
 #define ID_TRACKER_PLAYPATTERN          32775
 #define ID_TRACKER_STOP                 32776
@@ -818,9 +821,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        329
+#define _APS_NEXT_RESOURCE_VALUE        331
 #define _APS_NEXT_COMMAND_VALUE         33175
-#define _APS_NEXT_CONTROL_VALUE         1426
+#define _APS_NEXT_CONTROL_VALUE         1428
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif
