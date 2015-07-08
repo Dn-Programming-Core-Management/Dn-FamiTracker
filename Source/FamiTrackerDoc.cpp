@@ -2840,6 +2840,9 @@ bool CFamiTrackerDoc::ImportInstruments(CFamiTrackerDoc *pImported, int *pInstTa
 						}
 					}
 					break;
+				case INST_FDS: case INST_VRC7:		// // //
+					// no operations
+					break;
 				default:
 					AfxDebugBreak();	// Add code for this instrument
 			}

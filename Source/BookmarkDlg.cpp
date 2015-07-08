@@ -189,13 +189,13 @@ BOOL CBookmarkDlg::PreTranslateMessage(MSG* pMsg)
 					OnBnClickedButtonBookmarkRemove();
 					break;
 				case VK_UP:
-					if (GetKeyState(VK_CONTROL) & 0x8000) {
+					if ((::GetKeyState(VK_CONTROL) & 0x80) == 0x80) {
 						OnBnClickedButtonBookmarkMoveup();
 						return TRUE;
 					}
 					break;
 				case VK_DOWN:
-					if (GetKeyState(VK_CONTROL) & 0x8000) {
+					if ((::GetKeyState(VK_CONTROL) & 0x80) == 0x80) {
 						OnBnClickedButtonBookmarkMovedown();
 						return TRUE;
 					}
