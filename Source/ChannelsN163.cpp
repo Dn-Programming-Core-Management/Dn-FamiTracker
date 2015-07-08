@@ -232,11 +232,13 @@ void CChannelHandlerN163::RefreshChannel()
 
 	// Update channel
 	if (Channel + m_pSoundGen->GetDocument()->GetNamcoChannels() >= 8) {		// // //
+		WriteData(ChannelAddrBase + 7, (m_iChannels << 4) | Volume);
+		if (!m_bGate)
+			return;
 		WriteData(ChannelAddrBase + 0, Frequency & 0xFF);
 		WriteData(ChannelAddrBase + 2, (Frequency >> 8) & 0xFF);
 		WriteData(ChannelAddrBase + 4, (WaveSize << 2) | ((Frequency >> 16) & 0x03));
 		WriteData(ChannelAddrBase + 6, m_iWavePos);
-		WriteData(ChannelAddrBase + 7, (m_iChannels << 4) | Volume);
 	}
 
 	if (m_bResetPhase) {

@@ -163,8 +163,11 @@ void CChannelHandlerMMC5::RefreshChannel()		// // //
 	
 	if (m_bGate)		// // //
 		WriteExternalRegister(Offs, (DutyCycle << 6) | (m_bEnvelopeLoop << 5) | (!m_bHardwareEnvelope << 4) | Volume);
-	else
+	else {
 		WriteExternalRegister(Offs, 0x30);
+		m_iLastPeriod = 0xFFFF;
+		return;
+	}
 	WriteExternalRegister(Offs + 2, HiFreq);
 	if (LoFreq != LastLoFreq || m_bResetEnvelope)		// // //
 		WriteExternalRegister(Offs + 3, LoFreq + (m_iLengthCounter << 3));

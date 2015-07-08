@@ -187,8 +187,10 @@ void CChannelHandlerFDS::RefreshChannel()
 
 	unsigned char Volume = CalculateVolume();
 
-	if (!m_bGate)
-		Volume = 0;
+	if (!m_bGate) {		// // //
+		WriteExternalRegister(0x4080, 0x80 | Volume);
+		return;
+	}
 
 	// Write frequency
 	WriteExternalRegister(0x4082, LoFreq);

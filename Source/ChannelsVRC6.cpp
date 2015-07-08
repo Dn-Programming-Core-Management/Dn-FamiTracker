@@ -121,10 +121,9 @@ void CVRC6Square1::RefreshChannel()
 
 	unsigned char HiFreq = (Period & 0xFF);
 	unsigned char LoFreq = (Period >> 8);
-
-	if (!m_bGate || !Volume) {
-		WriteExternalRegister(0x9001, 0x00);		// // //
-		WriteExternalRegister(0x9002, 0x00);
+	
+	if (!m_bGate) {		// // //
+		WriteExternalRegister(0x9000, DutyCycle);
 		return;
 	}
 
@@ -152,10 +151,9 @@ void CVRC6Square2::RefreshChannel()
 
 	unsigned char HiFreq = (Period & 0xFF);
 	unsigned char LoFreq = (Period >> 8);
-
-	if (!m_bGate || !Volume) {
-		WriteExternalRegister(0xA001, 0x00);		// // //
-		WriteExternalRegister(0xA002, 0x00);
+	
+	if (!m_bGate) {		// // //
+		WriteExternalRegister(0xA000, DutyCycle);
 		return;
 	}
 
@@ -197,10 +195,9 @@ void CVRC6Sawtooth::RefreshChannel()
 
 	if (!m_bGate)
 		Volume = 0;
-
-	if (!m_bGate || !Volume) {
-		WriteExternalRegister(0xB001, 0x00);		// // //
-		WriteExternalRegister(0xB002, 0x00);
+	
+	if (!m_bGate) {		// // //
+		WriteExternalRegister(0xB000, 0);
 		return;
 	}
 
