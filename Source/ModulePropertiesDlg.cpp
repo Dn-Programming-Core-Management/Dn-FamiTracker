@@ -332,6 +332,15 @@ void CModulePropertiesDlg::OnBnClickedSongImport()
 	importDlg.DoModal();
 
 	FillSongList();
+
+	m_iExpansions = m_pDocument->GetExpansionChip();		// // //
+	m_iN163Channels = m_pDocument->GetNamcoChannels();
+	((CButton*)GetDlgItem(IDC_EXPANSION_VRC6))->SetCheck((m_iExpansions & SNDCHIP_VRC6) != 0);
+	((CButton*)GetDlgItem(IDC_EXPANSION_VRC7))->SetCheck((m_iExpansions & SNDCHIP_VRC7) != 0);
+	((CButton*)GetDlgItem(IDC_EXPANSION_FDS))->SetCheck((m_iExpansions & SNDCHIP_FDS) != 0);
+	((CButton*)GetDlgItem(IDC_EXPANSION_MMC5))->SetCheck((m_iExpansions & SNDCHIP_MMC5) != 0);
+	((CButton*)GetDlgItem(IDC_EXPANSION_N163))->SetCheck((m_iExpansions & SNDCHIP_N163) != 0);
+	((CButton*)GetDlgItem(IDC_EXPANSION_S5B))->SetCheck((m_iExpansions & SNDCHIP_S5B) != 0);
 }
 
 void CModulePropertiesDlg::OnCbnSelchangeExpansion()

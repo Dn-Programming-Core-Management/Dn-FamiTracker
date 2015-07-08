@@ -326,7 +326,7 @@ void CSoundGen::RegisterChannels(int Chip, CFamiTrackerDoc *pDoc)
 	// Expansion & internal channels
 	for (int i = 0; i < CHANNELS; ++i) {
 		if (m_pTrackerChannels[i] && ((m_pTrackerChannels[i]->GetChip() & Chip) || (i < 5))			// // //
-								  && (i >= CHANID_FDS || i < CHANID_N163_CH1 + m_pDocument->GetNamcoChannels())) {
+								  && (i >= CHANID_FDS || i < CHANID_N163_CH1 + pDoc->GetNamcoChannels())) {
 			pDoc->RegisterChannel(m_pTrackerChannels[i], i, m_pTrackerChannels[i]->GetChip());
 		}
 	}

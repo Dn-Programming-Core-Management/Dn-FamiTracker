@@ -1786,6 +1786,8 @@ bool CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile)
 		m_iNamcoChannels = pDocFile->GetBlockInt();
 		ASSERT_FILE_DATA(m_iNamcoChannels < 9);
 	}
+	else		// // //
+		m_iNamcoChannels = 0;
 
 	if (Version >= 6) {
 		m_iSpeedSplitPoint = pDocFile->GetBlockInt();

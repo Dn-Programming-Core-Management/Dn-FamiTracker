@@ -103,16 +103,19 @@ bool CModuleImportDlg::LoadFile(CString Path, CFamiTrackerDoc *pDoc)
 		return false;
 
 	// Check expansion chip match
-	// 0CC: import as superset of expansion chip configurations
-	if (m_pImportedDoc->GetExpansionChip() != m_pDocument->GetExpansionChip()) {
-		AfxMessageBox(IDS_IMPORT_CHIP_MISMATCH);
-		SAFE_RELEASE(m_pImportedDoc);
-		return false;
+	// // // import as superset of expansion chip configurations
+	if (m_pImportedDoc->GetNamcoChannels() != m_pDocument->GetNamcoChannels()) {
+		int Max = std::max(m_pImportedDoc->GetNamcoChannels(), m_pDocument->GetNamcoChannels());
+		m_pImportedDoc->SetNamcoChannels(Max, true);
+		m_pDocument->SetNamcoChannels(Max, true);
+		unsigned char Chip = m_pImportedDoc->GetExpansionChip() | m_pDocument->GetExpansionChip();
+		m_pImportedDoc->SelectExpansionChip(Chip, true);
+		m_pDocument->SelectExpansionChip(Chip, true);
 	}
-	else if (m_pImportedDoc->GetNamcoChannels() != m_pDocument->GetNamcoChannels()) {
-		AfxMessageBox(IDS_IMPORT_CHIP_MISMATCH);
-		SAFE_RELEASE(m_pImportedDoc);
-		return false;
+	if (m_pImportedDoc->GetExpansionChip() != m_pDocument->GetExpansionChip()) {
+		unsigned char Chip = m_pImportedDoc->GetExpansionChip() | m_pDocument->GetExpansionChip();
+		m_pImportedDoc->SelectExpansionChip(Chip, true);
+		m_pDocument->SelectExpansionChip(Chip, true);
 	}
 
 	return true;
