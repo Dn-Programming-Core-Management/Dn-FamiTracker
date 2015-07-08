@@ -182,9 +182,9 @@ void CCompiler::Print(LPCTSTR text, ...) const
 		return;
 
 	va_list argp;
-    va_start(argp, text);
+	va_start(argp, text);
 
-    if (!text)
+	if (!text)
 		return;
 
 	_vsntprintf_s(buf, sizeof(buf), _TRUNCATE, text, argp);
@@ -1404,8 +1404,8 @@ void CCompiler::Cleanup()
 
 	// // // Full chip export
 	if (m_pDocument->GetNamcoChannels() != m_iActualNamcoChannels ||
-        m_pDocument->GetExpansionChip() != m_iActualChip)
-    {
+		m_pDocument->GetExpansionChip() != m_iActualChip)
+	{
 		m_pDocument->SetNamcoChannels(m_iActualNamcoChannels, m_pDocument->GetNamcoChannels() != m_iActualNamcoChannels);
 		m_pDocument->SelectExpansionChip(m_iActualChip, m_pDocument->GetExpansionChip() != m_iActualChip);
 	}

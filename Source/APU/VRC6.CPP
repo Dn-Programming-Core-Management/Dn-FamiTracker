@@ -41,20 +41,20 @@ void CVRC6_Pulse::Write(uint16 Address, uint8 Value)
 {
 	switch (Address) {
 		case 0x00:
-            m_iGate = Value & 0x80;
-            m_iDutyCycle = ((Value & 0x70) >> 4) + 1;
-            m_iVolume = Value & 0x0F;
+			m_iGate = Value & 0x80;
+			m_iDutyCycle = ((Value & 0x70) >> 4) + 1;
+			m_iVolume = Value & 0x0F;
 			if (m_iGate)
 				Mix(m_iVolume);
   			break;
 		case 0x01:
-            m_iPeriodLow = Value;
-            m_iPeriod = m_iPeriodLow + (m_iPeriodHigh << 8);
+			m_iPeriodLow = Value;
+			m_iPeriod = m_iPeriodLow + (m_iPeriodHigh << 8);
 			break;
 		case 0x02:
-            m_iEnabled = (Value & 0x80);
-            m_iPeriodHigh = (Value & 0x0F);
-            m_iPeriod = m_iPeriodLow + (m_iPeriodHigh << 8);
+			m_iEnabled = (Value & 0x80);
+			m_iPeriodHigh = (Value & 0x0F);
+			m_iPeriod = m_iPeriodLow + (m_iPeriodHigh << 8);
 			break;
 	}
 }
@@ -96,16 +96,16 @@ void CVRC6_Sawtooth::Write(uint16 Address, uint8 Value)
 {
 	switch (Address) {
 		case 0x00:
-            m_iPhaseInput = (Value & 0x3F);
+			m_iPhaseInput = (Value & 0x3F);
 			break;
 		case 0x01:
-            m_iPeriodLow = Value;
-            m_iPeriod = m_iPeriodLow + (m_iPeriodHigh << 8);
+			m_iPeriodLow = Value;
+			m_iPeriod = m_iPeriodLow + (m_iPeriodHigh << 8);
 			break;
 		case 0x02:
-            m_iEnabled = (Value & 0x80);
-            m_iPeriodHigh = (Value & 0x0F);
-            m_iPeriod = m_iPeriodLow + (m_iPeriodHigh << 8);
+			m_iEnabled = (Value & 0x80);
+			m_iPeriodHigh = (Value & 0x0F);
+			m_iPeriod = m_iPeriodLow + (m_iPeriodHigh << 8);
 			break;
 	}
 }

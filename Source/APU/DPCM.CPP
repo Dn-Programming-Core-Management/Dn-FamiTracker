@@ -105,8 +105,8 @@ uint8 CDPCM::DidIRQ() const
 
 void CDPCM::Reload()
 {
-    m_iDMA_Address = (m_iDMA_LoadReg << 6) | 0x4000;
-    m_iDMA_BytesRemaining = (m_iDMA_LengthReg << 4) + 1;
+	m_iDMA_Address = (m_iDMA_LoadReg << 6) | 0x4000;
+	m_iDMA_BytesRemaining = (m_iDMA_LengthReg << 4) + 1;
 }
 
 void CDPCM::Process(uint32 Time)

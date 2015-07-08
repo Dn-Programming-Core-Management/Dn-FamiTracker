@@ -392,14 +392,14 @@ void CBookmarkDlg::OnLbnSelchangeListBookmarks()
 
 void CBookmarkDlg::OnLbnDblclkListBookmarks()
 {
-    CPoint cursor;
-    cursor.x = GetCurrentMessage()->pt.x;
-    cursor.y = GetCurrentMessage()->pt.y;
+	CPoint cursor;
+	cursor.x = GetCurrentMessage()->pt.x;
+	cursor.y = GetCurrentMessage()->pt.y;
 
-    m_cListBookmark->ScreenToClient(&cursor);
+	m_cListBookmark->ScreenToClient(&cursor);
 
-    BOOL is_outside = FALSE;
-    UINT item_index = m_cListBookmark->ItemFromPoint(cursor, is_outside);
+	BOOL is_outside = FALSE;
+	UINT item_index = m_cListBookmark->ItemFromPoint(cursor, is_outside);
 	if (!is_outside) {
 		CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(static_cast<CMainFrame*>(AfxGetMainWnd())->GetActiveView());
 		stBookmark Mark = (*m_pBookmarkList)[item_index];

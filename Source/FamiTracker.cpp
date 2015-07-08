@@ -191,12 +191,12 @@ BOOL CFamiTrackerApp::InitInstance()
 	AddDocTemplate(pDocTemplate);
 
 	// Determine windows version
-    OSVERSIONINFO osvi;
+	OSVERSIONINFO osvi;
 
-    ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
-    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+	ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
+	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 
-    GetVersionEx(&osvi);
+	GetVersionEx(&osvi);
 
 	// Work-around to enable file type registration in windows vista/7
 	if (osvi.dwMajorVersion >= 6) { 

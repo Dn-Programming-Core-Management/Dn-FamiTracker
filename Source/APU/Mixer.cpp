@@ -30,7 +30,7 @@
 
  VRC6 (Madara): 
 	Pulse channels has the same amplitude as internal-
-    pulse channels on equal volume levels.
+	pulse channels on equal volume levels.
 
  FDS: 
 	Square wave @ v = $1F: 2.4V

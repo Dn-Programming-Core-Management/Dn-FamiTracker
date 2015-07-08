@@ -1157,7 +1157,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					CHECK(t.ReadHex(i,0,MAX_PATTERN_LENGTH-1,&sResult));
 					for (int c=0; c < pDoc->GetChannelCount(); ++c)
 					{
-    					CHECK_COLON();
+						CHECK_COLON();
 						if (!ImportCellText(pDoc, t, track-1, pattern, c, i, sResult))
 						{
 							return sResult;

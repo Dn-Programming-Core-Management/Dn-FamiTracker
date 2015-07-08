@@ -5259,60 +5259,60 @@ void CFamiTrackerDoc::RemoveUnusedSamples()		// // //
 
 void CFamiTrackerDoc::MergeDuplicatedPatterns()
 {
-    for (unsigned int i = 0; i < m_iTrackCount; ++i)
-    for (unsigned int c = 0; c < m_iChannelsAvailable; ++c)
-    {
-        TRACE2("Trim: %d, %d\n", i, c);
+	for (unsigned int i = 0; i < m_iTrackCount; ++i)
+	for (unsigned int c = 0; c < m_iChannelsAvailable; ++c)
+	{
+		TRACE2("Trim: %d, %d\n", i, c);
 
-        unsigned int uiPatternUsed[MAX_PATTERN];
+		unsigned int uiPatternUsed[MAX_PATTERN];
 
-        // mark all as unused
-        for (unsigned int ui=0; ui < MAX_PATTERN; ++ui)
-        {
-            uiPatternUsed[ui] = MAX_PATTERN;
-        }
+		// mark all as unused
+		for (unsigned int ui=0; ui < MAX_PATTERN; ++ui)
+		{
+			uiPatternUsed[ui] = MAX_PATTERN;
+		}
 
-        // map used patterns to themselves
-        for (unsigned int f=0; f < m_pTracks[i]->GetFrameCount(); ++f)
-        {
-            unsigned int uiPattern = m_pTracks[i]->GetFramePattern(f,c);
-            uiPatternUsed[uiPattern] = uiPattern;
-        }
+		// map used patterns to themselves
+		for (unsigned int f=0; f < m_pTracks[i]->GetFrameCount(); ++f)
+		{
+			unsigned int uiPattern = m_pTracks[i]->GetFramePattern(f,c);
+			uiPatternUsed[uiPattern] = uiPattern;
+		}
 
-        // remap duplicates
-        for (unsigned int ui=0; ui < MAX_PATTERN; ++ui)
-        {
-            if (uiPatternUsed[ui] == MAX_PATTERN) continue;
-            for (unsigned int uj=0; uj < ui; ++uj)
-            {
-                unsigned int uiLen = m_pTracks[i]->GetPatternLength();
-                bool bSame = true;
-                for (unsigned int uk = 0; uk < uiLen; ++uk)
-                {
-                    stChanNote* a = m_pTracks[i]->GetPatternData(c, ui, uk);
-                    stChanNote* b = m_pTracks[i]->GetPatternData(c, uj, uk);
-                    if (0 != ::memcmp(a, b, sizeof(stChanNote)))
-                    {
-                        bSame = false;
-                        break;
-                    }
-                }
-                if (bSame)
-                {
-                    uiPatternUsed[ui] = uj;
-                    TRACE2("Duplicate: %d = %d\n", ui, uj);
-                    break;
-                }
-            }
-        }
+		// remap duplicates
+		for (unsigned int ui=0; ui < MAX_PATTERN; ++ui)
+		{
+			if (uiPatternUsed[ui] == MAX_PATTERN) continue;
+			for (unsigned int uj=0; uj < ui; ++uj)
+			{
+				unsigned int uiLen = m_pTracks[i]->GetPatternLength();
+				bool bSame = true;
+				for (unsigned int uk = 0; uk < uiLen; ++uk)
+				{
+					stChanNote* a = m_pTracks[i]->GetPatternData(c, ui, uk);
+					stChanNote* b = m_pTracks[i]->GetPatternData(c, uj, uk);
+					if (0 != ::memcmp(a, b, sizeof(stChanNote)))
+					{
+						bSame = false;
+						break;
+					}
+				}
+				if (bSame)
+				{
+					uiPatternUsed[ui] = uj;
+					TRACE2("Duplicate: %d = %d\n", ui, uj);
+					break;
+				}
+			}
+		}
 
-        // apply mapping
-        for (unsigned int f=0; f < m_pTracks[i]->GetFrameCount(); ++f)
-        {
-            unsigned int uiPattern = m_pTracks[i]->GetFramePattern(f,c);
-            m_pTracks[i]->SetFramePattern(f,c,uiPatternUsed[uiPattern]);
-        }
-    }
+		// apply mapping
+		for (unsigned int f=0; f < m_pTracks[i]->GetFrameCount(); ++f)
+		{
+			unsigned int uiPattern = m_pTracks[i]->GetFramePattern(f,c);
+			m_pTracks[i]->SetFramePattern(f,c,uiPatternUsed[uiPattern]);
+		}
+	}
 }
 
 void CFamiTrackerDoc::PopulateUniquePatterns()		// // //

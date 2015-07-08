@@ -928,14 +928,14 @@ void CMainFrame::Dump(CDumpContext& dc) const
 void CMainFrame::SetStatusText(LPCTSTR Text,...)
 {
 	char	Buf[512];
-    va_list argp;
-    
+	va_list argp;
+	
 	va_start(argp, Text);
-    
+	
 	if (!Text)
 		return;
 
-    vsprintf(Buf, Text, argp);
+	vsprintf(Buf, Text, argp);
 
 	m_wndStatusBar.SetWindowText(Buf);
 }
@@ -2424,7 +2424,7 @@ void CMainFrame::SelectTrack(unsigned int Track)
 
 BOOL CMainFrame::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 {
-    LPNMTOOLBAR lpnmtb = (LPNMTOOLBAR) lParam;
+	LPNMTOOLBAR lpnmtb = (LPNMTOOLBAR) lParam;
 	
 	// Handle new instrument menu
 	switch (((LPNMHDR)lParam)->code) {

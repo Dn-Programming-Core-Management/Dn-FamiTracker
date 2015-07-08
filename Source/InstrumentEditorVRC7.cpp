@@ -87,24 +87,24 @@ BOOL CInstrumentEditorVRC7::OnInitDialog()
 	CComboBox *pPatchBox = static_cast<CComboBox*>(GetDlgItem(IDC_PATCH));
 	CString Text;
 
-    const _TCHAR* const PATCH_NAME[16] = {
-        _T("(custom patch)"),
-        _T("Bell"),
-        _T("Guitar"),
-        _T("Piano"),
-        _T("Flute"),
-        _T("Clarinet"),
-        _T("Rattling Bell"),
-        _T("Trumpet"),
-        _T("Reed Organ"),
-        _T("Soft Bell"),
-        _T("Xylophone"),
-        _T("Vibraphone"),
-        _T("Brass"),
-        _T("Bass Guitar"),
-        _T("Synthesizer"),
-        _T("Chorus")
-    };
+	const _TCHAR* const PATCH_NAME[16] = {
+		_T("(custom patch)"),
+		_T("Bell"),
+		_T("Guitar"),
+		_T("Piano"),
+		_T("Flute"),
+		_T("Clarinet"),
+		_T("Rattling Bell"),
+		_T("Trumpet"),
+		_T("Reed Organ"),
+		_T("Soft Bell"),
+		_T("Xylophone"),
+		_T("Vibraphone"),
+		_T("Brass"),
+		_T("Bass Guitar"),
+		_T("Synthesizer"),
+		_T("Chorus")
+	};
 
 	for (int i = 0; i < 16; ++i) {
 		Text.Format(_T("Patch #%i - %s"), i, PATCH_NAME[i]);

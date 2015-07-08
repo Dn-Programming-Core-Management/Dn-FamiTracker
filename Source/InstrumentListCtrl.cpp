@@ -233,20 +233,20 @@ void CInstrumentList::OnLvnBegindrag(NMHDR *pNMHDR, LRESULT *pResult)
 	m_nDragIndex = pNMLV->iItem;
 	m_nDropIndex = -1;
 
-    // Create a drag image
-    POINT pt;
-    int nOffset = 10;
-    pt.x = nOffset;
-    pt.y = nOffset;
+	// Create a drag image
+	POINT pt;
+	int nOffset = 10;
+	pt.x = nOffset;
+	pt.y = nOffset;
 
-    m_pDragImage = CreateDragImage(m_nDragIndex, &pt);	// Delete this later
-    ASSERT(m_pDragImage);
+	m_pDragImage = CreateDragImage(m_nDragIndex, &pt);	// Delete this later
+	ASSERT(m_pDragImage);
 
-    m_pDragImage->BeginDrag(0, CPoint(nOffset, nOffset));
-    m_pDragImage->DragEnter(this, pNMLV->ptAction);
+	m_pDragImage->BeginDrag(0, CPoint(nOffset, nOffset));
+	m_pDragImage->DragEnter(this, pNMLV->ptAction);
 	
 	// Capture all mouse messages
-    SetCapture();
+	SetCapture();
 
 	*pResult = 0;
 }
@@ -254,10 +254,10 @@ void CInstrumentList::OnLvnBegindrag(NMHDR *pNMHDR, LRESULT *pResult)
 void CInstrumentList::OnMouseMove(UINT nFlags, CPoint point)
 {
 	// Handle drag operation
-    if (m_bDragging) {
-        // Move the drag image
-        m_pDragImage->DragMove(point);
-        m_pDragImage->DragShowNolock(false);
+	if (m_bDragging) {
+		// Move the drag image
+		m_pDragImage->DragMove(point);
+		m_pDragImage->DragShowNolock(false);
 
 		// Turn off hilight for previous drop target
 		SetItemState(m_nDropIndex, 0, LVIS_DROPHILITED);
@@ -289,7 +289,7 @@ void CInstrumentList::OnLButtonUp(UINT nFlags, CPoint point)
 		m_bDragging = false;
 
 		m_pDragImage->DragLeave(this);
-        m_pDragImage->EndDrag();
+		m_pDragImage->EndDrag();
 		SAFE_RELEASE(m_pDragImage);
 
 		// Remove highlight

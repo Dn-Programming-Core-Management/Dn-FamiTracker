@@ -64,12 +64,12 @@ BEGIN_MESSAGE_MAP(CModulePropertiesDlg, CDialog)
 	ON_CBN_SELCHANGE(IDC_EXPANSION, OnCbnSelchangeExpansion)
 	ON_WM_HSCROLL()
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_SONGLIST, OnLvnItemchangedSonglist)
-    ON_BN_CLICKED(IDC_EXPANSION_VRC6, OnBnClickedExpansionVRC6)
-    ON_BN_CLICKED(IDC_EXPANSION_VRC7, OnBnClickedExpansionVRC7)
-    ON_BN_CLICKED(IDC_EXPANSION_FDS, OnBnClickedExpansionFDS)
-    ON_BN_CLICKED(IDC_EXPANSION_MMC5, OnBnClickedExpansionMMC5)
-    ON_BN_CLICKED(IDC_EXPANSION_S5B, OnBnClickedExpansionS5B)
-    ON_BN_CLICKED(IDC_EXPANSION_N163, OnBnClickedExpansionN163)
+	ON_BN_CLICKED(IDC_EXPANSION_VRC6, OnBnClickedExpansionVRC6)
+	ON_BN_CLICKED(IDC_EXPANSION_VRC7, OnBnClickedExpansionVRC7)
+	ON_BN_CLICKED(IDC_EXPANSION_FDS, OnBnClickedExpansionFDS)
+	ON_BN_CLICKED(IDC_EXPANSION_MMC5, OnBnClickedExpansionMMC5)
+	ON_BN_CLICKED(IDC_EXPANSION_S5B, OnBnClickedExpansionS5B)
+	ON_BN_CLICKED(IDC_EXPANSION_N163, OnBnClickedExpansionN163)
 END_MESSAGE_MAP()
 
 
@@ -90,13 +90,13 @@ BOOL CModulePropertiesDlg::OnInitDialog()
 	FillSongList();
 
 	// Expansion chips
-    m_iExpansions = m_pDocument->GetExpansionChip();
-    ((CButton*)GetDlgItem(IDC_EXPANSION_VRC6))->SetCheck((m_iExpansions & SNDCHIP_VRC6) != 0);
-    ((CButton*)GetDlgItem(IDC_EXPANSION_VRC7))->SetCheck((m_iExpansions & SNDCHIP_VRC7) != 0);
-    ((CButton*)GetDlgItem(IDC_EXPANSION_FDS))->SetCheck((m_iExpansions & SNDCHIP_FDS) != 0);
-    ((CButton*)GetDlgItem(IDC_EXPANSION_MMC5))->SetCheck((m_iExpansions & SNDCHIP_MMC5) != 0);
-    ((CButton*)GetDlgItem(IDC_EXPANSION_N163))->SetCheck((m_iExpansions & SNDCHIP_N163) != 0);
-    ((CButton*)GetDlgItem(IDC_EXPANSION_S5B))->SetCheck((m_iExpansions & SNDCHIP_S5B) != 0);
+	m_iExpansions = m_pDocument->GetExpansionChip();
+	((CButton*)GetDlgItem(IDC_EXPANSION_VRC6))->SetCheck((m_iExpansions & SNDCHIP_VRC6) != 0);
+	((CButton*)GetDlgItem(IDC_EXPANSION_VRC7))->SetCheck((m_iExpansions & SNDCHIP_VRC7) != 0);
+	((CButton*)GetDlgItem(IDC_EXPANSION_FDS))->SetCheck((m_iExpansions & SNDCHIP_FDS) != 0);
+	((CButton*)GetDlgItem(IDC_EXPANSION_MMC5))->SetCheck((m_iExpansions & SNDCHIP_MMC5) != 0);
+	((CButton*)GetDlgItem(IDC_EXPANSION_N163))->SetCheck((m_iExpansions & SNDCHIP_N163) != 0);
+	((CButton*)GetDlgItem(IDC_EXPANSION_S5B))->SetCheck((m_iExpansions & SNDCHIP_S5B) != 0);
 
 	// Vibrato 
 	CComboBox *pVibratoBox = static_cast<CComboBox*>(GetDlgItem(IDC_VIBRATO));
@@ -104,7 +104,7 @@ BOOL CModulePropertiesDlg::OnInitDialog()
 
 	// Namco channel count
 	CSliderCtrl *pChanSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_CHANNELS));
-    CStatic *pChannelsLabel = (CStatic*)GetDlgItem(IDC_CHANNELS_NR);
+	CStatic *pChannelsLabel = (CStatic*)GetDlgItem(IDC_CHANNELS_NR);
 	pChanSlider->SetRange(1, 8);
 
 	CString channelsStr;
@@ -114,11 +114,11 @@ BOOL CModulePropertiesDlg::OnInitDialog()
 
 		pChanSlider->SetPos(m_iN163Channels);
 		pChanSlider->EnableWindow(TRUE);
-        pChannelsLabel->EnableWindow(TRUE);
+		pChannelsLabel->EnableWindow(TRUE);
 		channelsStr.AppendFormat(_T(" %i"), m_iN163Channels);
 	}
 	else {
-        m_iN163Channels = 1;
+		m_iN163Channels = 1;
 
 		pChanSlider->SetPos(0);
 		pChanSlider->EnableWindow(FALSE);
@@ -137,8 +137,8 @@ void CModulePropertiesDlg::OnBnClickedOk()
 	// Expansion chip
 	unsigned int iChannels = static_cast<CSliderCtrl*>(GetDlgItem(IDC_CHANNELS))->GetPos();
 
-    if (m_pDocument->GetNamcoChannels() != m_iN163Channels || m_pDocument->GetExpansionChip() != m_iExpansions)		// // //
-    {
+	if (m_pDocument->GetNamcoChannels() != m_iN163Channels || m_pDocument->GetExpansionChip() != m_iExpansions)		// // //
+	{
 		CString str;
 		unsigned int Gone = m_pDocument->GetExpansionChip() & ~m_iExpansions;
 		for (int i = 0; i < 6; i++) {
@@ -371,7 +371,7 @@ void CModulePropertiesDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrol
 {
 	CSliderCtrl *pSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_CHANNELS));
 
-    m_iN163Channels = pSlider->GetPos();
+	m_iN163Channels = pSlider->GetPos();
 
 	CString text;
 	text.LoadString(IDS_PROPERTIES_CHANNELS);
@@ -385,7 +385,7 @@ void CModulePropertiesDlg::OnLvnItemchangedSonglist(NMHDR *pNMHDR, LRESULT *pRes
 {
 	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
 
-    if ((pNMLV->uChanged & LVIF_STATE) && (pNMLV->uNewState & LVNI_SELECTED)) {
+	if ((pNMLV->uChanged & LVIF_STATE) && (pNMLV->uNewState & LVNI_SELECTED)) {
 		int Song = pNMLV->iItem;
 
 		m_iSelectedSong = Song;
@@ -394,7 +394,7 @@ void CModulePropertiesDlg::OnLvnItemchangedSonglist(NMHDR *pNMHDR, LRESULT *pRes
 		pName->SetWindowText(CString(m_pDocument->GetTrackTitle(Song).GetString()));
 
 		UpdateSongButtons();
-    }
+	}
 
 	*pResult = 0;
 }
@@ -444,81 +444,81 @@ BOOL CModulePropertiesDlg::PreTranslateMessage(MSG* pMsg)
 
 void CModulePropertiesDlg::OnBnClickedExpansionVRC6()
 {
-    CButton *pCheckBox = (CButton*)GetDlgItem(IDC_EXPANSION_VRC6);
+	CButton *pCheckBox = (CButton*)GetDlgItem(IDC_EXPANSION_VRC6);
 
-    if (pCheckBox->GetCheck() == BST_CHECKED)
-        m_iExpansions |= SNDCHIP_VRC6;
-    else
-        m_iExpansions &= ~SNDCHIP_VRC6;
+	if (pCheckBox->GetCheck() == BST_CHECKED)
+		m_iExpansions |= SNDCHIP_VRC6;
+	else
+		m_iExpansions &= ~SNDCHIP_VRC6;
 }
 
 void CModulePropertiesDlg::OnBnClickedExpansionVRC7()
 {
-    CButton *pCheckBox = (CButton*)GetDlgItem(IDC_EXPANSION_VRC7);
+	CButton *pCheckBox = (CButton*)GetDlgItem(IDC_EXPANSION_VRC7);
 
-    if (pCheckBox->GetCheck() == BST_CHECKED)
-        m_iExpansions |= SNDCHIP_VRC7;
-    else
-        m_iExpansions &= ~SNDCHIP_VRC7;
+	if (pCheckBox->GetCheck() == BST_CHECKED)
+		m_iExpansions |= SNDCHIP_VRC7;
+	else
+		m_iExpansions &= ~SNDCHIP_VRC7;
 }
 
 void CModulePropertiesDlg::OnBnClickedExpansionFDS()
 {
-    CButton *pCheckBox = (CButton*)GetDlgItem(IDC_EXPANSION_FDS);
+	CButton *pCheckBox = (CButton*)GetDlgItem(IDC_EXPANSION_FDS);
 
-    if (pCheckBox->GetCheck() == BST_CHECKED)
-        m_iExpansions |= SNDCHIP_FDS;
-    else
-        m_iExpansions &= ~SNDCHIP_FDS;
+	if (pCheckBox->GetCheck() == BST_CHECKED)
+		m_iExpansions |= SNDCHIP_FDS;
+	else
+		m_iExpansions &= ~SNDCHIP_FDS;
 }
 
 void CModulePropertiesDlg::OnBnClickedExpansionMMC5()
 {
-    CButton *pCheckBox = (CButton*)GetDlgItem(IDC_EXPANSION_MMC5);
+	CButton *pCheckBox = (CButton*)GetDlgItem(IDC_EXPANSION_MMC5);
 
-    if (pCheckBox->GetCheck() == BST_CHECKED)
-        m_iExpansions |= SNDCHIP_MMC5;
-    else
-        m_iExpansions &= ~SNDCHIP_MMC5;
+	if (pCheckBox->GetCheck() == BST_CHECKED)
+		m_iExpansions |= SNDCHIP_MMC5;
+	else
+		m_iExpansions &= ~SNDCHIP_MMC5;
 }
 
 void CModulePropertiesDlg::OnBnClickedExpansionS5B()
 {
-    CButton *pCheckBox = (CButton*)GetDlgItem(IDC_EXPANSION_S5B);
+	CButton *pCheckBox = (CButton*)GetDlgItem(IDC_EXPANSION_S5B);
 
-    if (pCheckBox->GetCheck() == BST_CHECKED)
-        m_iExpansions |= SNDCHIP_S5B;
-    else
-        m_iExpansions &= ~SNDCHIP_S5B;		// // //
+	if (pCheckBox->GetCheck() == BST_CHECKED)
+		m_iExpansions |= SNDCHIP_S5B;
+	else
+		m_iExpansions &= ~SNDCHIP_S5B;		// // //
 }
 
 void CModulePropertiesDlg::OnBnClickedExpansionN163()
 {
-    CButton *pCheckBox = (CButton*)GetDlgItem(IDC_EXPANSION_N163);
+	CButton *pCheckBox = (CButton*)GetDlgItem(IDC_EXPANSION_N163);
 
 	CSliderCtrl *pChanSlider = (CSliderCtrl*)GetDlgItem(IDC_CHANNELS);
-    CStatic *pChannelsLabel = (CStatic*)GetDlgItem(IDC_CHANNELS_NR);
+	CStatic *pChannelsLabel = (CStatic*)GetDlgItem(IDC_CHANNELS_NR);
 	CString channelsStr;
 	channelsStr.LoadString(IDS_PROPERTIES_CHANNELS);
 
 	// Expansion chip
 	if (pCheckBox->GetCheck() == BST_CHECKED)
-    {
-        m_iExpansions |= SNDCHIP_N163;
+	{
+		m_iExpansions |= SNDCHIP_N163;
 		
 		pChanSlider->SetPos(m_iN163Channels);
-        pChanSlider->EnableWindow(TRUE);
-        pChannelsLabel->EnableWindow(TRUE);
+		pChanSlider->EnableWindow(TRUE);
+		pChannelsLabel->EnableWindow(TRUE);
 		channelsStr.AppendFormat(_T(" %i"), m_iN163Channels);
-    }
-    else
-    {
-        m_iExpansions &= ~SNDCHIP_N163;
+	}
+	else
+	{
+		m_iExpansions &= ~SNDCHIP_N163;
 		
 		pChanSlider->SetPos(0);
-        pChanSlider->EnableWindow(FALSE);
-        pChannelsLabel->EnableWindow(FALSE);
+		pChanSlider->EnableWindow(FALSE);
+		pChannelsLabel->EnableWindow(FALSE);
 		channelsStr.Append(_T(" N/A"));
-    }
+	}
 	SetDlgItemText(IDC_CHANNELS_NR, channelsStr);
 }

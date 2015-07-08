@@ -29,9 +29,9 @@ void GetInterface(FamitrackerDocInterface* iface)
 
 	//instrument functions
 	iface->GetInstrumentCount = GetInstrumentCount;
-    iface->Get2A03Instrument = Get2A03Instrument;
+	iface->Get2A03Instrument = Get2A03Instrument;
 
-    iface->GetSeqEnable = GetSeqEnable;
+	iface->GetSeqEnable = GetSeqEnable;
 	iface->GetSeqIndex = GetSeqIndex;
 
 	//effect functions

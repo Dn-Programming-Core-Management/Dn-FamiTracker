@@ -101,16 +101,16 @@ struct FamitrackerDocInterface
 
 	//instrument functions
 	int (__cdecl *GetInstrumentCount)();
-    Instrument2A03Handle (__cdecl *Get2A03Instrument)(int Instrument);
+	Instrument2A03Handle (__cdecl *Get2A03Instrument)(int Instrument);
 
-    int (__cdecl *GetSeqEnable)(Instrument2A03Handle instrument, int Index);
+	int (__cdecl *GetSeqEnable)(Instrument2A03Handle instrument, int Index);
 	int (__cdecl *GetSeqIndex)(Instrument2A03Handle instrument, int Index);
 
 	//effect functions
 	unsigned int (__cdecl *GetNoteEffectType)(unsigned int Frame, unsigned int Channel, unsigned int Row, int Index);
 	unsigned int (__cdecl *GetNoteEffectParam)(unsigned int Frame, unsigned int Channel, unsigned int Row, int Index);
 
-    //DPCM functions
+	//DPCM functions
 	int (__cdecl *GetSampleCount)();
 	void (__cdecl *GetSampleName)(unsigned int Index, char *Name);
 	int (__cdecl *GetSampleSize)(unsigned int Sample);
