@@ -827,7 +827,7 @@ void CPatternEditor::CreateBackground(CDC *pDC)
 		InvalidateHeader();
 
 	// Allocate backbuffer area, only if window size or pattern width has changed
-	if (bCreateBuffers) {
+	if (bCreateBuffers || true) {		// // // very hacky
 
 		// Allocate backbuffer
 		SAFE_RELEASE(m_pPatternBmp);
