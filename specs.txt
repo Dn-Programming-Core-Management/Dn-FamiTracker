@@ -1,7 +1,7 @@
 0CC-FamiTracker Mod
 Specification
 Written by HertzDevil
-Version 0.3.10 - Jun 2 2015
+Version 0.3.11 - Jul 9 2015
 
 --------------------------------------------------------------------------------
 
@@ -16,6 +16,7 @@ The following changes to the FTM effect enumeration are made:
  - Txy: 0x23: delayed transpose
  - Zxx: 0x24: N163 wave buffer setting
  - Exx: 0x25: FDS hardware volume envelope
+The values above are subject to changes once the 0.5.0 source is released.
 
 The following effect command bytes are added to the NSF export format:
  - Lxx: 0xBA: delayed note release
@@ -63,6 +64,21 @@ Version 1:
   - flag: char[0,1] - 0 for default speed, 1 for default groove
 
 	===
+	BOOKMARKS Block
+	===
+
+Version 1:
+ - count: int[1,] - number of bookmarks in the FTM
+   Repeat [count] times:
+  - track: char[0,63] - track index
+  - frame: char[0,255] - frame index
+  - row: char[0,255] - row index
+  - high1: int[0,256] - first highlight
+  - high2: int[0,256] - second highlight
+  - flag: char[0,1] - 0 for highlight in current frame, 1 for following frames
+  - name: str[] - bookmark name
+
+	===
 	SEQUENCE_REGIONS Block
 	===
 
@@ -72,11 +88,12 @@ Version 1:
   - index: char[0,63] - instrument index
   - type: char[0,4] - sequence type. 0=volume, 1=arpeggio, 2=pitch, 3=hi-pitch,
                       4=duty 
-  - size: char[1,96] - number of sequence regions
+  - size: char[1,16] - number of sequence regions
     Repeat [size] times:
    - notelo: char[0,95] - lowest note of the region
    - notehi: char[0,95] - highest note of the region
    - sequence: char[0,127] - sequence index
+   - offset: char[-96,96] - transposition
 
 	===
 	Text exporter syntax
@@ -87,8 +104,8 @@ The text command syntax for a detune table entry is:
  - DETUNE [chip] [octave] [note] [offset]
   - chip: int[0,5] - index of the detune table. 0=2A03, 1=2A07, 2=VRC6 sawtooth,
                      3=VRC7, 4=FDS, 5=N163
-  - octave: int[0,7] - octave of key 
-  - note: int[0,11] - scale note of key 
+  - octave: int[0,7] - octave of key
+  - note: int[0,11] - scale note of key
   - offset: int[-32767,32767] - register offset
 
 The text command syntax for a groove is:
@@ -104,6 +121,8 @@ TRACK commands:
  - USEGROOVE : [track]
   - track: int_list[1,64] - list of one-based indices of tracks that use a
                             default groove
+
+Bookmarks are not exported to text files.
 
 --------------------------------------------------------------------------------
 

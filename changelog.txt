@@ -1,9 +1,42 @@
 0CC-FamiTracker Mod
 Change Log
 Written by HertzDevil
-Version 0.3.10 - Jun 2 2015
+Version 0.3.11 - Jul 9 2015
 
 --------------------------------------------------------------------------------
+
+Additions:
+ - Added pattern bookmark manager and go to dialog
+Improvements:
+ - Added a visual waveform manager for the N163 instrument editor
+ - Added an option in the configuration menu to disable selections across frames
+ - Importing FTMs with different expansion chip configurations is now supported
+ - "Pick Up Row" now updates the last used values of all columns for repeat key
+ - "Copy As Plain Text" now includes header row containing channel names
+ - "Recall Channel State" now respects several run-time effects while playing
+ - Loop points of instrument sequences can be placed after release points
+Bug fixes:
+ - Tracker can no longer open more than one performance dialog or groove
+    settings dialog
+ - Added temporary fix for the tracker not setting up painting buffers properly
+    after resizing
+ - Fixed pattern operations not working properly when the current selection
+    spans across any frame with only one row
+ - Fixed several pattern operations improperly applying undo to the first row of
+    the track
+ - Fixed stretching, transposition, and Shift + Mouse Wheel overwriting itself
+    incorrectly for selections spanning across truncated frames
+ - Fixed "Copy As Plain Text" removing first few columns from the first channel
+ - Implementation for "Copy As PPMCK MML" is complete
+ - Fixed period/frequency values being written to several expansion chips when
+    no note is active
+ - Fixed Qxy and Rxy being swapped on the noise channel
+ - Fixed N163 instrument editor not forcing the wave buffer to update
+ - Fixed Sxx effect on the DPCM channel resetting the 2A03 Pulse 1's period low
+    byte
+ - Fixed Vxx in any N163 channel affecting other N163 channels (reverted to the
+    Vxx behaviour in official builds)
+ - Fixed VRC7 detune table not being exported to NSFs
 
 V0.3.10 - 06/02/15
 Additions:

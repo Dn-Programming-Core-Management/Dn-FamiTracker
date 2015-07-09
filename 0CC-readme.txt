@@ -1,7 +1,7 @@
 0CC-FamiTracker Mod
 Readme / Manual
 Written by HertzDevil
-Version 0.3.10 - Jun 2 2015
+Version 0.3.11 - Jul 9 2015
 
 --------------------------------------------------------------------------------
 
@@ -19,6 +19,7 @@ comes from the author's favourite arpeggio effect. The current version includes:
  - Find / replace tab
  - Detune settings
  - Groove settings
+ - Bookmark manager
  - Echo buffer access
  - Delayed channel effects
  - N163 wave buffer access effect
@@ -240,7 +241,7 @@ The find / replace tab contains a few options:
 Since version 0.3.2, 0CC-FamiTracker is able to generate a detune settings block
 for each individual FTM, containing information on adjusting the period or
 frequency register of each individual note on each lookup table. Below "Module"
-on the menu bar, clicking "Detune settings" brings up a dialog where the detune
+on the menu bar, clicking "Detune Settings" brings up a dialog where the detune
 tables can be manipulated.
 
 The octave slider, note slider and chip radio buttons select the current detune
@@ -274,7 +275,7 @@ Since version 0.3.4, 0CC-FamiTracker FTMs store an extra data block which stores
 grooves as in Little Sound Dj, or speed sequences. While the sound engine is
 loaded with a groove, at each row update the sound engine cycles through the
 groove, reads a groove entry and then uses it as the song speed. Below "Module"
-on the menu bar, clicking "Groove settings" brings up a dialog where the grooves
+on the menu bar, clicking "Groove Settings" brings up a dialog where the grooves
 can be manipulated.
 
 The groove list is be used to reorder grooves, as well as delete one or all of
@@ -300,6 +301,41 @@ Each FTM may store up to:
  - 32 grooves;
  - 255 groove bytes; (each non-empty groove uses 1 byte per entry plus 2 bytes)
  - 128 entries per groove.
+
+	===
+	Bookmark Manager
+	===
+
+0CC-FamiTracker allows each FTM to contain its own list of bookmarks for quick
+navigation. Bookmarks of the current track can be accessed and manipulated by
+clicking "Bookmark Manager" below "Module" on the menu bar.
+
+Each bookmark contains:
+ - A name, which defaults to "Bookmark" and comes with an index if created from
+    the pattern editor directly;
+ - A frame index and a row index, which indicate the position of the bookmark.
+    Bookmarks reposition themselves upon performing frame actions such as
+    inserting or removing frames;
+ - Highlight settings which override the previous value of the track if enabled.
+    Using bookmarks, it is possible to change the row highlight intervals in the
+    middle of a track. Disabling "Apply to all following frames" will keep the
+    highlight distance to the current frame, so that the next frame will not use
+    the settings of this bookmark.
+
+Pressing "Create New" appends the current bookmark to the bookmark list of the
+current track, and the corresponding row of the pattern editor will be marked on
+the row index column. Each track of a FTM contains its own bookmark list, and
+there is no limit to how many bookmarks a module can contain. Bookmarks can be
+sorted by position or by name.
+
+The bookmark list supports these keyboard shortcuts:
+ - Ctrl + Up / Down for moving the currently selected bookmark;
+ - Insert for creating a new bookmark;
+ - Delete for removing the currently selected bookmark.
+
+0CC-FamiTracker also supports pattern editor shortcuts for toggling on/off the
+bookmark on the current row, and navigating to the next/previous bookmark. The
+respective menu commands are available under "Edit" -> "Bookmarks".
 
 	===
 	Echo Buffer Access
@@ -422,18 +458,21 @@ menu:
     Add, Enter, Decimal. These keys are effective only if no shortcuts using
     them are defined in the configuration menu (in particular, Enter / Return
     must not be assigned to any shortcut).
+ - Multi-frame selection: When checked, selections in the pattern editor can
+    span across multiple frames. This behaviour is always enabled since 0.3.9,
+    but requires manual enabling since 0.3.11.
 
 The following shortcuts have been added to 0CC-FamiTracker: (parenthesized key
 combinations are the default hotkeys)
- - Paste overwrite (None)
- - Paste insert (None)
+ - Paste overwrite / insert (None)
  - Deselect (Esc)
  - Select row/column/pattern/frame/channel/track (None)
+ - Go to row (Alt+G)
+ - Toggle / Next / Previous bookmark (Ctrl+K, Ctrl+PgDown, Ctrl+PgUp)
  - Mask volume (Alt+V)
  - Stretch patterns (None)
  - Duplicate current pattern (Alt+D)
- - Coarse decrease values (Shift+F3)
- - Coarse increase values (Shift+F4)
+ - Coarse decrease / increase values (Shift+F3 / Shift+F4)
  - Toggle find / replace tab (Ctrl+F)
  - Find next (None)
  - Recall channel state (None)
@@ -471,6 +510,7 @@ combinations are the default hotkeys)
    "UsualDay.ftm" demo module
 - jsr: Partial implementation of the Sunsoft 5B chip
 - Xyz_39808, retro_dpc: Bug testing
+- jfbillingsley: N163 waveform manager design
 
 --------------------------------------------------------------------------------
 
