@@ -178,7 +178,7 @@ void CChannelHandler::ResetChannel()
 	m_bDelayEnabled		= false;
 	m_iNoteCut			= 0;
 	m_iNoteRelease		= 0;		// // //
-	m_iNoteVolume		= 0;		// // //
+	m_iNoteVolume		= -1;		// // //
 	m_iNewVolume		= m_iDefaultVolume;		// // //
 	m_iTranspose		= 0;
 	m_bTransposeDown	= false;
@@ -572,7 +572,7 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 		m_iNoteRelease = 0;		// // //
 		if (Trigger && m_iNoteVolume == 0 && !m_iVolSlide) {		// // //
 			m_iVolume = m_iDefaultVolume;
-			m_iNoteVolume = 0;
+			m_iNoteVolume = -1;
 		}
 		m_iTranspose = 0;		// // //
 	}
@@ -589,7 +589,7 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 		// 0CC: remove this eventually like how the asm handles it
 		if (EffNum == EF_VOLUME_SLIDE && !EffParam && Trigger && m_iNoteVolume == 0) {		// // //
 			m_iVolume = m_iDefaultVolume;
-			m_iNoteVolume = 0;
+			m_iNoteVolume = -1;
 		}
 	}
 
