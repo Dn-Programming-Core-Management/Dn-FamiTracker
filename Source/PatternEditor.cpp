@@ -4151,11 +4151,12 @@ void CPatternEditor::GetSelectionAsText(CString &str) const		// // //
 	} while (Size);
 	if (HexLength < 2) HexLength = 2;
 
-	CString Header(_T(' '), HexLength + 6);
+	CString Header(_T(' '), HexLength + 3);
+	Header.Append(_T("# "));
 	for (int i = it.m_iChannel; i <= end.m_iChannel; i++) {
-		Header.AppendFormat(_T("%-*s"), 15 + 4 * m_pDocument->GetEffColumns(Track, i), m_pDocument->GetChannel(i)->GetChannelName());
+		Header.AppendFormat(_T(": %-*s"), 13 + 4 * m_pDocument->GetEffColumns(Track, i), m_pDocument->GetChannel(i)->GetChannelName());
 	}
-	str = _T("#") + Header.TrimRight() + _T("\r\n");
+	str = Header.TrimRight() + _T("\r\n");
 
 	const int Last = static_cast<int>(m_pDocument->GetEffColumns(Track, end.m_iChannel)) + COLUMN_EFF1 - GetSelectColumn(end.m_iColumn);
 	for (CPatternIterator it = GetStartIterator(); it <= end; it++) {
