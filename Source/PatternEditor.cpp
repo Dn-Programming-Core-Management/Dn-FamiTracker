@@ -4150,6 +4150,13 @@ void CPatternEditor::GetSelectionAsText(CString &str) const		// // //
 		Size >>= 4;
 	} while (Size);
 	if (HexLength < 2) HexLength = 2;
+
+	CString Header(_T(' '), HexLength + 6);
+	for (int i = it.m_iChannel; i <= end.m_iChannel; i++) {
+		Header.AppendFormat(_T("%-*s"), 15 + 4 * m_pDocument->GetEffColumns(Track, i), m_pDocument->GetChannel(i)->GetChannelName());
+	}
+	str = _T("#") + Header.TrimRight() + _T("\r\n");
+
 	const int Last = static_cast<int>(m_pDocument->GetEffColumns(Track, end.m_iChannel)) + COLUMN_EFF1 - GetSelectColumn(end.m_iColumn);
 	for (CPatternIterator it = GetStartIterator(); it <= end; it++) {
 		CString line;
@@ -4170,14 +4177,13 @@ void CPatternEditor::GetSelectionAsText(CString &str) const		// // //
 void CPatternEditor::GetSelectionAsPPMCK(CString &str) const		// // //
 {
 	// Returns a PPMCK MML translation of copied pattern
-	AfxMessageBox(_T("This feature has been ported directly from official FamiTracker 0.3.5, and will be improved in a future version. Do NOT expect this feature to work properly."));
 
-	int i, j;
+	// // // int i, j;
 	stChanNote NoteData = BLANK_NOTE;
 
 	str.Empty();
 
-	int Octave, Note, Duration;
+	// // // int Octave, Note, Duration;
 
 	const CPatternIterator End = GetEndIterator();
 	for (int c = m_selection.GetChanStart(); c <= m_selection.GetChanEnd(); c++) {
@@ -4277,6 +4283,7 @@ void CPatternEditor::GetSelectionAsPPMCK(CString &str) const		// // //
 		}
 		str.Append(_T("\r\n"));
 	}
+#if 0
 	str.Append(_T(";;\r\n"));
 	for (i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); i++) {
 		if (i < 0 || i >(signed)m_pDocument->GetAvailableChannels())
@@ -4375,6 +4382,7 @@ void CPatternEditor::GetSelectionAsPPMCK(CString &str) const		// // //
 
 		str.Append(_T("\r\n"));
 	}
+#endif
 }
 
 
