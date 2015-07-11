@@ -50,11 +50,12 @@ public:
 	~IntQuery() { SAFE_RELEASE(Current); SAFE_RELEASE(Next); };
 	IntQuery(int a) { Current = new IntRange(a, a); Next = NULL; };
 	IntQuery(int a, int b) { Current = new IntRange(a, b); Next = NULL; };
-	IntQuery(IntRange *r) { Current = r; Next = NULL; };
+	IntQuery(IntRange *r) { Current = new IntRange(r->Min, r->Max); Next = NULL; };
 	IntRange* Current;
 	IntQuery* Next;
 
-	bool IsMatch(int x);
+	bool IsMatch(int x) const;
+	bool IsSingle() const;
 	bool ParseTerm(IntQuery *target, CString &in, CString &err);
 	bool ParseFull(CString &in, CString &err);
 
@@ -80,9 +81,9 @@ public:
 	IntQuery *Oct;
 	IntQuery *Inst;
 	IntQuery *Vol;
-	IntQuery *EffNumber[4];
-	IntQuery *EffParam[4];
-	bool Definite[6];
+	IntQuery *EffNumber[MAX_EFFECT_COLUMNS];
+	IntQuery *EffParam[MAX_EFFECT_COLUMNS];
+	bool Definite[6]; // 12
 	unsigned char rowOffset;
 	unsigned char colOffset;
 	bool NoiseChan;
@@ -91,7 +92,7 @@ public:
 struct replaceTerm
 {
 	stChanNote Note;
-	bool Definite[6];
+	bool Definite[6]; // 12
 	unsigned char rowOffset;
 	unsigned char colOffset;
 	bool NoiseChan;

@@ -108,7 +108,7 @@ enum {
 
 class CPatternView;
 
-bool IntQuery::IsMatch(int x)
+bool IntQuery::IsMatch(int x) const
 {
 	if (x >= Current->Min && x <= Current->Max)
 		return true;
@@ -116,6 +116,11 @@ bool IntQuery::IsMatch(int x)
 		return false;
 	else
 		return Next->IsMatch(x);
+}
+
+bool IntQuery::IsSingle() const
+{
+	return Next == NULL && Current->Min == Current->Max;
 }
 
 bool IntQuery::ParseTerm(IntQuery *target, CString &in, CString &err)
@@ -273,13 +278,15 @@ void CFindDlg::OnUpdateFields(UINT nID)
 
 bool CFindDlg::ParseNote(searchTerm &Term, CString str, bool Simple, CString &err)
 {
+	Term.Definite[WC_NOTE] = false;
+	Term.Definite[WC_OCT] = false;
 	if (str.IsEmpty()) {
 		Term.Definite[WC_NOTE] = true;
 		Term.Definite[WC_OCT] = true;
 		*Term.Note = NONE;
 		*Term.Oct = 0;
 	}
-	if (str.Mid(1, 2) != _T("-#")) for (int i = 0; i < 7 && !Term.Definite[WC_NOTE]; i++) {
+	if (str.Mid(1, 2) != _T("-#")) for (int i = 0; i < 7; i++) {
 		if (str.Left(1).MakeUpper() == m_pNoteName[i]) {
 			CString Accidental = _T("");
 			Term.Definite[WC_NOTE] = true;
@@ -299,6 +306,7 @@ bool CFindDlg::ParseNote(searchTerm &Term, CString str, bool Simple, CString &er
 			if (*Term.Note < 1) { *Term.Note += NOTE_RANGE; *Term.Oct -= 1; }
 			FIND_RAISE_ERROR(Term.Definite[WC_OCT] && (*Term.Oct >= OCTAVE_RANGE),
 				_T("Actual note octave \"" + str + "\" is out of range, check if the note contains Cb or B#."));
+			return true;
 		}
 	}
 	if (!Term.Definite[WC_NOTE]) {
@@ -321,6 +329,11 @@ bool CFindDlg::ParseNote(searchTerm &Term, CString str, bool Simple, CString &er
 			Term.Definite[WC_OCT] = true;
 			*Term.Note = RELEASE;
 			*Term.Oct = 0;
+		}
+		else if (str == _T(".")) {
+			Term.Definite[WC_NOTE] = true;
+			Term.Note->Current->Min = NONE + 1;
+			Term.Note->Current->Max = ECHO;
 		}
 		else if (str.Left(1) == _T("^")) {
 			Term.Definite[WC_NOTE] = true;
@@ -353,6 +366,10 @@ bool CFindDlg::ParseInst(searchTerm &Term, CString str, bool Simple, CString &er
 	Term.Definite[WC_INST] = true;
 	if (str.IsEmpty())
 		*Term.Inst = MAX_INSTRUMENTS;
+	else if (str == _T(".")) {
+		Term.Inst->Current->Min = 0;
+		Term.Inst->Current->Max = MAX_INSTRUMENTS - 1;
+	}
 	else {
 		*Term.Inst = static_cast<unsigned char>(strtol(str, NULL, 16));
 		FIND_RAISE_ERROR(*Term.Inst >= MAX_INSTRUMENTS,
@@ -367,6 +384,10 @@ bool CFindDlg::ParseVol(searchTerm &Term, CString str, bool Simple, CString &err
 	Term.Definite[WC_VOL] = true;
 	if (str.IsEmpty())
 		*Term.Vol = MAX_VOLUME;
+	else if (str == _T(".")) {
+		Term.Vol->Current->Min = 0;
+		Term.Vol->Current->Max = MAX_VOLUME - 1;
+	}
 	else {
 		*Term.Vol = static_cast<unsigned char>(strtol(str, NULL, 16));
 		FIND_RAISE_ERROR(*Term.Vol >= MAX_VOLUME,
@@ -394,8 +415,10 @@ bool CFindDlg::ParseEff(searchTerm &Term, CString str, bool Simple, CString &err
 				_T("Effect \"") + str.Left(1) + _T("\" is too long."));
 			FIND_RAISE_ERROR(str.GetLength() == 2,
 				_T("Effect \"") + str.Left(1) + _T("\" is too short."));
-			Term.Definite[WC_PARAM] = true;
-			*Term.EffParam[0] = static_cast<unsigned char>(strtol(str.Right(2), NULL, 16));
+			if (str.GetLength() > 1) {
+				Term.Definite[WC_PARAM] = true;
+				*Term.EffParam[0] = static_cast<unsigned char>(strtol(str.Right(2), NULL, 16));
+			}
 			break;
 		}
 	}
@@ -403,120 +426,104 @@ bool CFindDlg::ParseEff(searchTerm &Term, CString str, bool Simple, CString &err
 	return true;
 }
 
+#define RETURN_ERROR(str) {AfxMessageBox(str, MB_OK | MB_ICONSTOP); m_searchTerm = old; return false; }
 bool CFindDlg::GetSimpleFindTerm()
 {
 	CString str = _T(""), err = _T("");
 	searchTerm old = m_searchTerm;
 	*m_searchTerm.Inst = MAX_INSTRUMENTS;
 	*m_searchTerm.Vol = MAX_VOLUME;
+	for (int i = 0; i <= 6; i++)
+		m_searchTerm.Definite[i] = false;
 
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_NOTE)) {
 		m_cFindNoteField->GetWindowText(str);
-		if (!ParseNote(m_searchTerm, str, true, err)) {
-			AfxMessageBox(err, MB_OK | MB_ICONSTOP);
-			m_searchTerm = old;
-			return false;
-		}
+		if (!ParseNote(m_searchTerm, str, true, err))
+			RETURN_ERROR(err);
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_INST)) {
 		m_cFindInstField->GetWindowText(str);
-		if (!ParseInst(m_searchTerm, str, true, err)) {
-			AfxMessageBox(err, MB_OK | MB_ICONSTOP);
-			m_searchTerm = old;
-			return false;
-		}
+		if (!ParseInst(m_searchTerm, str, true, err))
+			RETURN_ERROR(err);
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_VOL)) {
 		m_cFindVolField->GetWindowText(str);
-		if (!ParseVol(m_searchTerm, str, true, err)) {
-			AfxMessageBox(err, MB_OK | MB_ICONSTOP);
-			m_searchTerm = old;
-			return false;
-		}
+		if (!ParseVol(m_searchTerm, str, true, err))
+			RETURN_ERROR(err);
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_EFF)) {
 		m_cFindEffField->GetWindowText(str);
-		if (!ParseEff(m_searchTerm, str, true, err)) {
-			AfxMessageBox(err, MB_OK | MB_ICONSTOP);
-			m_searchTerm = old;
-			return false;
-		}
+		if (!ParseEff(m_searchTerm, str, true, err))
+			RETURN_ERROR(err);
 	}
 
 	for (int i = 0; i <= 6; i++) {
-		if (i == 6) {
-			AfxMessageBox(_T("Search query is empty."), MB_OK | MB_ICONSTOP);
-			m_searchTerm = old;
-			return false;
-		}
+		if (i == 6)
+			RETURN_ERROR(_T("Search query is empty."));
 		if (m_searchTerm.Definite[i]) break;
 	}
 
 	return true;
 }
+#undef RETURN_ERROR
 
+#define RETURN_ERROR(str) {AfxMessageBox(str, MB_OK | MB_ICONSTOP); m_replaceTerm = old; return false; }
 bool CFindDlg::GetSimpleReplaceTerm()
 {
 	CString str = _T(""), err = _T("");
 	searchTerm old = m_replaceTerm;
 	*m_replaceTerm.Inst = MAX_INSTRUMENTS;
-	*m_replaceTerm.Vol = 0x10;
+	*m_replaceTerm.Vol = MAX_VOLUME;
+	for (int i = 0; i <= 6; i++)
+		m_replaceTerm.Definite[i] = false;
 
 	if (IsDlgButtonChecked(IDC_CHECK_REPLACE_NOTE)) {
 		m_cReplaceNoteField->GetWindowText(str);
-		if (!ParseNote(m_replaceTerm, str, true, err)) {
-			AfxMessageBox(err, MB_OK | MB_ICONSTOP);
-			m_replaceTerm = old;
-			return false;
-		}
+		if (!ParseNote(m_replaceTerm, str, true, err))
+			RETURN_ERROR(err);
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_REPLACE_INST)) {
 		m_cReplaceInstField->GetWindowText(str);
-		if (!ParseInst(m_replaceTerm, str, true, err)) {
-			AfxMessageBox(err, MB_OK | MB_ICONSTOP);
-			m_replaceTerm = old;
-			return false;
-		}
+		if (!ParseInst(m_replaceTerm, str, true, err))
+			RETURN_ERROR(err);
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_REPLACE_VOL)) {
 		m_cReplaceVolField->GetWindowText(str);
-		if (!ParseVol(m_replaceTerm, str, true, err)) {
-			AfxMessageBox(err, MB_OK | MB_ICONSTOP);
-			m_replaceTerm = old;
-			return false;
-		}
+		if (!ParseVol(m_replaceTerm, str, true, err))
+			RETURN_ERROR(err);
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_REPLACE_EFF)) {
 		m_cReplaceEffField->GetWindowText(str);
-		if (!ParseEff(m_replaceTerm, str, true, err)) {
-			AfxMessageBox(err, MB_OK | MB_ICONSTOP);
-			m_replaceTerm = old;
-			return false;
-		}
+		if (!ParseEff(m_replaceTerm, str, true, err))
+			RETURN_ERROR(err);
 	}
 
 	for (int i = 0; i <= 6; i++) {
-		if (i == 6) {
-			AfxMessageBox(_T("Replacement query is empty."), MB_OK | MB_ICONSTOP);
-			return false;
-		}
+		if (i == 6)
+			RETURN_ERROR(_T("Replacement query is empty."));
 		if (m_replaceTerm.Definite[i]) break;
 	}
-	if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) {
-		if (m_replaceTerm.Definite[WC_NOTE] && !m_replaceTerm.Definite[WC_OCT]) {
-			AfxMessageBox(_T("Simple replacement query cannot contain a note with an unspecified octave if the option \"Remove original data\" is enabled."), MB_OK | MB_ICONSTOP);
-			m_replaceTerm = old;
-			return false;
-		}
-		if (m_replaceTerm.Definite[WC_EFF] && !m_replaceTerm.Definite[WC_PARAM]) {
-			AfxMessageBox(_T("Simple replacement query cannot contain an effect with an unspecified parameter if the option \"Remove original data\" is enabled."), MB_OK | MB_ICONSTOP);
-			m_replaceTerm = old;
-			return false;
-		}
+	bool Wildcard = false;
+	const IntQuery *Range[] = {m_replaceTerm.Note, m_replaceTerm.Oct, m_replaceTerm.Inst, m_replaceTerm.Vol};
+	for (int i = 0; i < sizeof(Range) / sizeof(IntQuery*); i++)
+		Wildcard = Wildcard | (!Range[i]->IsSingle());
+	for (int i = 0; i < MAX_EFFECT_COLUMNS; i++) {
+		Wildcard = Wildcard | (!m_replaceTerm.EffNumber[i]->IsSingle());
+		Wildcard = Wildcard | (!m_replaceTerm.EffParam[i]->IsSingle());
 	}
+	if (Wildcard)
+		RETURN_ERROR(_T("Replacement query cannot contain wildcards."));
 
+	if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) {
+		if (m_replaceTerm.Definite[WC_NOTE] && !m_replaceTerm.Definite[WC_OCT])
+			RETURN_ERROR(_T("Simple replacement query cannot contain a note with an unspecified octave if the option \"Remove original data\" is enabled."));
+		if (m_replaceTerm.Definite[WC_EFF] && !m_replaceTerm.Definite[WC_PARAM])
+			RETURN_ERROR(_T("Simple replacement query cannot contain an effect with an unspecified parameter if the option \"Remove original data\" is enabled."));
+	}
+	
 	return true;
 }
+#undef RETURN_ERROR
 
 replaceTerm CFindDlg::toReplace(const searchTerm x)
 {
@@ -572,20 +579,20 @@ bool CFindDlg::CompareFields(const stChanNote Target, bool Noise, int EffCount)
 		if (Term.NoiseChan) {
 			if (!Noise) return false;
 			if (Term.Note.Note < NOTE_C || Term.Note.Note > NOTE_B) {
-				if (Term.Note.Note != Target.Note) return false;
+				if (!m_searchTerm.Note->IsMatch(Target.Note)) return false;
 			}
 			else if (MIDI_NOTE(Term.Note.Octave, Term.Note.Note) != MIDI_NOTE(Target.Octave, Target.Note) % 16) return false;
 		}
 		else {
 			if (Noise && Term.Note.Note >= NOTE_C && Term.Note.Note <= NOTE_B) return false;
-			if (Term.Note.Note != Target.Note) return false;
-			if (Term.Definite[WC_OCT] && Term.Note.Octave != Target.Octave
+			if (!m_searchTerm.Note->IsMatch(Target.Note)) return false;
+			if (Term.Definite[WC_OCT] && !m_searchTerm.Oct->IsMatch(Target.Octave)
 				&& (Term.Note.Note >= NOTE_C && Term.Note.Note <= NOTE_B || Term.Note.Note == ECHO))
 					return false;
 		}
 	}
-	if (Term.Definite[WC_INST] && Term.Note.Instrument != Target.Instrument) return false;
-	if (Term.Definite[WC_VOL] && Term.Note.Vol != Target.Vol) return false;
+	if (Term.Definite[WC_INST] && !m_searchTerm.Inst->IsMatch(Target.Instrument)) return false;
+	if (Term.Definite[WC_VOL] && !m_searchTerm.Vol->IsMatch(Target.Vol)) return false;
 	for (int i = EffColumn % MAX_EFFECT_COLUMNS; i <= std::min(std::min(EffColumn, MAX_EFFECT_COLUMNS - 1), EffCount); i++) {
 		if ((!Term.Definite[WC_EFF] || EFF_CHAR[Term.Note.EffNumber[0] - 1] == EFF_CHAR[Target.EffNumber[i] - 1])
 		&& (!Term.Definite[WC_PARAM] || Term.Note.EffParam[0] == Target.EffParam[i]))
@@ -749,6 +756,7 @@ void CFindDlg::OnBnClickedButtonReplace()
 		return;
 	}
 	m_pView = static_cast<CFamiTrackerView*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveView());
+	if (!m_pView->GetEditMode()) return;
 	if (theApp.IsPlaying() && m_pView->GetFollowMode())
 		return;
 
