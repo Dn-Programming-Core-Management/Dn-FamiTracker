@@ -263,7 +263,7 @@ CFamiTrackerDoc::~CFamiTrackerDoc()
 
 	// // // Bookmarks
 	for (int i = 0; i < MAX_TRACKS; ++i)
-		SAFE_RELEASE(m_pBookmarkList[i]);
+		ClearBookmarkList(i);
 }
 
 //
@@ -435,7 +435,7 @@ void CFamiTrackerDoc::DeleteContents()
 
 	// // // Bookmarks
 	for (int i = 0; i < MAX_TRACKS; ++i)
-		SAFE_RELEASE(m_pBookmarkList[i]);
+		ClearBookmarkList(i);
 
 	// Clear number of tracks
 	m_iTrackCount = 1;
@@ -5410,6 +5410,15 @@ void CFamiTrackerDoc::SetBookmarkList(unsigned int Track, std::vector<stBookmark
 	m_pBookmarkList[Track] = List;
 }
 
+void CFamiTrackerDoc::ClearBookmarkList(unsigned int Track)
+{
+	auto List = m_pBookmarkList[Track];
+	if (List != NULL)
+		for (auto it = List->begin(); it < List->end(); it++)
+			SAFE_RELEASE(it->Name);
+	SAFE_RELEASE(List);
+}
+
 void CFamiTrackerDoc::SetExceededFlag(bool Exceed)
 {
 	m_bExceeded = Exceed;
@@ -5473,11 +5482,11 @@ void CFamiTrackerDoc::MakeKraid()			// // // Easter Egg
 	SetSpeedSplitPoint(32);
 	SelectExpansionChip(SNDCHIP_NONE);
 	SetHighlight(DEFAULT_HIGHLIGHT);
+	ResetDetuneTables();
 	for (int i = 0; i < MAX_GROOVE; i++)
 		SAFE_RELEASE(m_pGrooveTable[i]);
 	for (int i = 0; i < MAX_TRACKS; ++i)
-		SAFE_RELEASE(m_pBookmarkList[i]);
-	ResetDetuneTables();
+		ClearBookmarkList(i);
 
 	// Patterns
 	SetPatternAtFrame(0,  0, 0, 0); SetPatternAtFrame(0,  0, 1, 0); SetPatternAtFrame(0,  0, 2, 0);

@@ -52,6 +52,7 @@ CPatternAction::~CPatternAction()
 {
 	SAFE_RELEASE(m_pClipData);
 	SAFE_RELEASE(m_pUndoClipData);
+	SAFE_RELEASE(m_pAuxiliaryClipData);
 }
 
 void CPatternAction::SetNote(stChanNote &Note)
@@ -228,6 +229,7 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // /
 
 void CPatternAction::CopySelection(const CPatternEditor *pPatternEditor)		// // //
 {
+	SAFE_RELEASE(m_pUndoClipData);
 	m_pUndoClipData = pPatternEditor->CopyRaw();
 }
 
@@ -238,6 +240,7 @@ void CPatternAction::PasteSelection(CPatternEditor *pPatternEditor)		// // //
 
 void CPatternAction::CopyAuxiliary(const CPatternEditor *pPatternEditor)		// // //
 {
+	SAFE_RELEASE(m_pAuxiliaryClipData);
 	m_pAuxiliaryClipData = pPatternEditor->CopyRaw();
 }
 

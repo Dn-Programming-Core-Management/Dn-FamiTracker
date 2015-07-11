@@ -266,8 +266,9 @@ public:
 	CGroove			*GetGroove(int Index) const;		// // //
 	void			SetGroove(int Index, const CGroove* Groove);
 
-	std::vector<stBookmark> *const GetBookmarkList(unsigned int Track);
+	std::vector<stBookmark> *const GetBookmarkList(unsigned int Track);		// // //
 	void			SetBookmarkList(unsigned int Track, std::vector<stBookmark> *const List);
+	void			ClearBookmarkList(unsigned int Track);
 
 	int				GetFrameLength(unsigned int Track, unsigned int Frame) const;
 
