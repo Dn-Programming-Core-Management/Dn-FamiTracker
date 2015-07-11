@@ -134,9 +134,7 @@ void CModulePropertiesDlg::OnBnClickedOk()
 {
 	CMainFrame *pMainFrame = static_cast<CMainFrame*>(GetParentFrame());
 
-	// Expansion chip
-	unsigned int iChannels = static_cast<CSliderCtrl*>(GetDlgItem(IDC_CHANNELS))->GetPos();
-
+	if (!(m_iExpansions & SNDCHIP_N163)) m_iN163Channels = 0;
 	if (m_pDocument->GetNamcoChannels() != m_iN163Channels || m_pDocument->GetExpansionChip() != m_iExpansions)		// // //
 	{
 		CString str;
@@ -515,7 +513,7 @@ void CModulePropertiesDlg::OnBnClickedExpansionN163()
 	{
 		m_iExpansions &= ~SNDCHIP_N163;
 		
-		pChanSlider->SetPos(0);
+		pChanSlider->SetPos(m_iN163Channels = 0);
 		pChanSlider->EnableWindow(FALSE);
 		pChannelsLabel->EnableWindow(FALSE);
 		channelsStr.Append(_T(" N/A"));
