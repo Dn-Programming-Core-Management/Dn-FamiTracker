@@ -3605,7 +3605,7 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 
 	// Special, single channel and effect columns only
 	if (Channels == 1 && StartColumn >= COLUMN_EFF1) {
-		const unsigned int ColStart = GetSelectColumn(AtSel ? m_selection.GetColStart() : m_cpCursorPos.m_iColumn);
+		const unsigned int ColStart = std::max(GetSelectColumn(AtSel ? m_selection.GetColStart() : m_cpCursorPos.m_iColumn), static_cast<int>(COLUMN_EFF1));
 		for (unsigned int j = 0; j < Rows; ++j) {
 			it.Get(c, &NoteData);
 			Source = *(pClipData->GetPattern(0, j % pClipData->ClipInfo.Rows));
@@ -3669,12 +3669,13 @@ void CPatternEditor::PasteRaw(const CPatternClipData *pClipData)		// // //
 	stChanNote Source = BLANK_NOTE;
 	const int PackedPos = (m_selection.GetFrameStart() + GetFrameCount()) * Length + m_selection.GetRowStart();
 	for (int i = 0; i < Channels; ++i) for (int r = 0; r < Rows; r++) {
-		if (i + m_selection.GetChanStart() == GetChannelCount()) return;
-		m_pDocument->GetNoteData(Track, (PackedPos + r) / Length % Frames, i + m_selection.GetChanStart(), (PackedPos + r) % Length, &Target);
+		int c = i + m_selection.GetChanStart();
+		if (c == GetChannelCount()) return;
+		m_pDocument->GetNoteData(Track, (PackedPos + r) / Length % Frames, c, (PackedPos + r) % Length, &Target);
 		Source = *(pClipData->GetPattern(i, r));
 		CopyNoteSection(&Target, &Source, PASTE_DEFAULT, (i == 0) ? StartColumn : COLUMN_NOTE,
-			std::min((i == Channels + m_selection.GetChanStart() - 1) ? EndColumn : COLUMN_EFF4, COLUMN_EFF1 + m_pDocument->GetEffColumns(Track, i)));
-		m_pDocument->SetNoteData(Track, (PackedPos + r) / Length % Frames, i + m_selection.GetChanStart(), (PackedPos + r) % Length, &Target);
+			std::min((i == Channels + m_selection.GetChanStart() - 1) ? EndColumn : COLUMN_EFF4, COLUMN_EFF1 + m_pDocument->GetEffColumns(Track, c)));
+		m_pDocument->SetNoteData(Track, (PackedPos + r) / Length % Frames, c, (PackedPos + r) % Length, &Target);
 	}
 }
 

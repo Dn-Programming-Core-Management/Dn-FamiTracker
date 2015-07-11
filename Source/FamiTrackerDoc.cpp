@@ -5416,7 +5416,7 @@ void CFamiTrackerDoc::ClearBookmarkList(unsigned int Track)
 	if (List != NULL)
 		for (auto it = List->begin(); it < List->end(); it++)
 			SAFE_RELEASE(it->Name);
-	SAFE_RELEASE(List);
+	SAFE_RELEASE(m_pBookmarkList[Track]);
 }
 
 void CFamiTrackerDoc::SetExceededFlag(bool Exceed)

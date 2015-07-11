@@ -188,11 +188,11 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // /
 	}
 
 	const int EFBEGIN = CPatternEditor::GetCursorStartColumn(COLUMN_EFF1);
-	const int OFFS = 3 * (CPatternEditor::GetSelectColumn(m_iUndoColumn) - m_pClipData->ClipInfo.StartColumn);
+	const int OFFS = std::max(3 * (CPatternEditor::GetSelectColumn(m_iUndoColumn) - m_pClipData->ClipInfo.StartColumn), EFBEGIN - Start.m_iColumn);
 	if (Start.m_iChannel == End.m_iChannel && Start.m_iColumn >= EFBEGIN && End.m_iColumn >= EFBEGIN) {
 		if (m_iPastePos != PASTE_DRAG) {
-			End.m_iColumn += std::max(OFFS, EFBEGIN - Start.m_iColumn);
-			Start.m_iColumn += std::max(OFFS, EFBEGIN - Start.m_iColumn);
+			End.m_iColumn += OFFS;
+			Start.m_iColumn += OFFS;
 			End.m_iColumn = std::min(End.m_iColumn, 15);
 		}
 	}
