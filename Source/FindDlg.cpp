@@ -69,6 +69,8 @@ CFindDlg::~CFindDlg()
 	SAFE_RELEASE(m_cFilterMacroField);
 	SAFE_RELEASE(m_cSearchArea);
 	SAFE_RELEASE(m_cEffectColumn);
+	m_searchTerm.Release();
+	m_replaceTerm.Release();
 }
 
 void CFindDlg::DoDataExchange(CDataExchange* pDX)
@@ -185,7 +187,7 @@ searchTerm::searchTerm() :
 		Definite[i] = false;
 }
 
-searchTerm::~searchTerm()
+void searchTerm::Release()
 {
 	SAFE_RELEASE(Note);
 	SAFE_RELEASE(Oct);
@@ -404,36 +406,39 @@ bool CFindDlg::ParseEff(searchTerm &Term, CString str, bool Simple, CString &err
 bool CFindDlg::GetSimpleFindTerm()
 {
 	CString str = _T(""), err = _T("");
-	searchTerm out;
-	//memset(&out, 0, sizeof(searchTerm));
-	*out.Inst = MAX_INSTRUMENTS;
-	*out.Vol = MAX_VOLUME;
+	searchTerm old = m_searchTerm;
+	*m_searchTerm.Inst = MAX_INSTRUMENTS;
+	*m_searchTerm.Vol = MAX_VOLUME;
 
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_NOTE)) {
 		m_cFindNoteField->GetWindowText(str);
-		if (!ParseNote(out, str, true, err)) {
+		if (!ParseNote(m_searchTerm, str, true, err)) {
 			AfxMessageBox(err, MB_OK | MB_ICONSTOP);
+			m_searchTerm = old;
 			return false;
 		}
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_INST)) {
 		m_cFindInstField->GetWindowText(str);
-		if (!ParseInst(out, str, true, err)) {
+		if (!ParseInst(m_searchTerm, str, true, err)) {
 			AfxMessageBox(err, MB_OK | MB_ICONSTOP);
+			m_searchTerm = old;
 			return false;
 		}
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_VOL)) {
 		m_cFindVolField->GetWindowText(str);
-		if (!ParseVol(out, str, true, err)) {
+		if (!ParseVol(m_searchTerm, str, true, err)) {
 			AfxMessageBox(err, MB_OK | MB_ICONSTOP);
+			m_searchTerm = old;
 			return false;
 		}
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_EFF)) {
 		m_cFindEffField->GetWindowText(str);
-		if (!ParseEff(out, str, true, err)) {
+		if (!ParseEff(m_searchTerm, str, true, err)) {
 			AfxMessageBox(err, MB_OK | MB_ICONSTOP);
+			m_searchTerm = old;
 			return false;
 		}
 	}
@@ -441,53 +446,54 @@ bool CFindDlg::GetSimpleFindTerm()
 	for (int i = 0; i <= 6; i++) {
 		if (i == 6) {
 			AfxMessageBox(_T("Search query is empty."), MB_OK | MB_ICONSTOP);
+			m_searchTerm = old;
 			return false;
 		}
-		if (out.Definite[i]) break;
+		if (m_searchTerm.Definite[i]) break;
 	}
 
-	m_searchTerm = out;
 	return true;
 }
 
 bool CFindDlg::GetSimpleReplaceTerm()
 {
 	CString str = _T(""), err = _T("");
-	searchTerm out;
-	//memset(&out, 0, sizeof(searchTerm));
-	*out.Inst = MAX_INSTRUMENTS;
-	*out.Vol = 0x10;
+	searchTerm old = m_replaceTerm;
+	*m_replaceTerm.Inst = MAX_INSTRUMENTS;
+	*m_replaceTerm.Vol = 0x10;
 
 	if (IsDlgButtonChecked(IDC_CHECK_REPLACE_NOTE)) {
 		m_cReplaceNoteField->GetWindowText(str);
-		if (!ParseNote(out, str, true, err)) {
+		if (!ParseNote(m_replaceTerm, str, true, err)) {
 			AfxMessageBox(err, MB_OK | MB_ICONSTOP);
+			m_replaceTerm = old;
 			return false;
 		}
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_REPLACE_INST)) {
 		m_cReplaceInstField->GetWindowText(str);
-		if (!ParseInst(out, str, true, err)) {
+		if (!ParseInst(m_replaceTerm, str, true, err)) {
 			AfxMessageBox(err, MB_OK | MB_ICONSTOP);
+			m_replaceTerm = old;
 			return false;
 		}
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_REPLACE_VOL)) {
 		m_cReplaceVolField->GetWindowText(str);
-		if (!ParseVol(out, str, true, err)) {
+		if (!ParseVol(m_replaceTerm, str, true, err)) {
 			AfxMessageBox(err, MB_OK | MB_ICONSTOP);
+			m_replaceTerm = old;
 			return false;
 		}
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_REPLACE_EFF)) {
 		m_cReplaceEffField->GetWindowText(str);
-		if (!ParseEff(out, str, true, err)) {
+		if (!ParseEff(m_replaceTerm, str, true, err)) {
 			AfxMessageBox(err, MB_OK | MB_ICONSTOP);
+			m_replaceTerm = old;
 			return false;
 		}
 	}
-
-	m_replaceTerm = toReplace(out);
 
 	for (int i = 0; i <= 6; i++) {
 		if (i == 6) {
@@ -499,10 +505,12 @@ bool CFindDlg::GetSimpleReplaceTerm()
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) {
 		if (m_replaceTerm.Definite[WC_NOTE] && !m_replaceTerm.Definite[WC_OCT]) {
 			AfxMessageBox(_T("Simple replacement query cannot contain a note with an unspecified octave if the option \"Remove original data\" is enabled."), MB_OK | MB_ICONSTOP);
+			m_replaceTerm = old;
 			return false;
 		}
 		if (m_replaceTerm.Definite[WC_EFF] && !m_replaceTerm.Definite[WC_PARAM]) {
 			AfxMessageBox(_T("Simple replacement query cannot contain an effect with an unspecified parameter if the option \"Remove original data\" is enabled."), MB_OK | MB_ICONSTOP);
+			m_replaceTerm = old;
 			return false;
 		}
 	}
@@ -661,55 +669,57 @@ bool CFindDlg::Replace(bool CanUndo)
 
 	if (m_bReplaceMacro) return false; // 0CC: unimplemented
 
+	replaceTerm Replace = toReplace(m_replaceTerm);
+
 	if (m_bFound) {
 		m_pDocument->GetNoteData(Track, m_iFrame, m_iChannel, m_iRow, &Target);
 		int EffColumn = m_cEffectColumn->GetCurSel();
-		if (EffColumn == MAX_EFFECT_COLUMNS && (m_replaceTerm.Definite[WC_EFF] || m_replaceTerm.Definite[WC_PARAM])) {
+		if (EffColumn == MAX_EFFECT_COLUMNS && (Replace.Definite[WC_EFF] || Replace.Definite[WC_PARAM])) {
 			for (int i = 0; i < MAX_EFFECT_COLUMNS && EffColumn != MAX_EFFECT_COLUMNS; i++)
-				if (m_replaceTerm.Note.EffNumber[0] == Target.EffNumber[i] && m_replaceTerm.Note.EffParam[0] == Target.EffParam[i])
+				if (Replace.Note.EffNumber[0] == Target.EffNumber[i] && Replace.Note.EffParam[0] == Target.EffParam[i])
 					EffColumn = i;
 		}
 
-		if (m_replaceTerm.Definite[WC_NOTE])
-			Target.Note = m_replaceTerm.Note.Note;
+		if (Replace.Definite[WC_NOTE])
+			Target.Note = Replace.Note.Note;
 		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE))
 			Target.Note = NONE;
-		if (m_replaceTerm.Definite[WC_OCT])
-			Target.Octave = m_replaceTerm.Note.Octave;
+		if (Replace.Definite[WC_OCT])
+			Target.Octave = Replace.Note.Octave;
 		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE))
 			Target.Octave = 0;
-		if (m_replaceTerm.Definite[WC_INST])
-			Target.Instrument = m_replaceTerm.Note.Instrument;
+		if (Replace.Definite[WC_INST])
+			Target.Instrument = Replace.Note.Instrument;
 		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE))
 			Target.Instrument = MAX_INSTRUMENTS;
-		if (m_replaceTerm.Definite[WC_VOL])
-			Target.Vol = m_replaceTerm.Note.Vol;
+		if (Replace.Definite[WC_VOL])
+			Target.Vol = Replace.Note.Vol;
 		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE))
 			Target.Vol = MAX_VOLUME;
 
-		if (m_replaceTerm.Definite[WC_EFF]) {
+		if (Replace.Definite[WC_EFF]) {
 			switch (m_pDocument->GetChipType(m_pView->GetSelectedChannel())) {
 			case SNDCHIP_FDS:
-				switch (m_replaceTerm.Note.EffNumber[0]) {
-				case EF_SWEEPUP: m_replaceTerm.Note.EffNumber[0] = EF_FDS_MOD_DEPTH; break;
-				case EF_SWEEPDOWN: m_replaceTerm.Note.EffNumber[0] = EF_FDS_MOD_SPEED_HI; break;
-				case EF_VOLUME: m_replaceTerm.Note.EffNumber[0] = EF_FDS_VOLUME; break;
+				switch (Replace.Note.EffNumber[0]) {
+				case EF_SWEEPUP: Replace.Note.EffNumber[0] = EF_FDS_MOD_DEPTH; break;
+				case EF_SWEEPDOWN: Replace.Note.EffNumber[0] = EF_FDS_MOD_SPEED_HI; break;
+				case EF_VOLUME: Replace.Note.EffNumber[0] = EF_FDS_VOLUME; break;
 				} break;
 			case SNDCHIP_S5B:
-				switch (m_replaceTerm.Note.EffNumber[0]) {
-				case EF_SWEEPUP: m_replaceTerm.Note.EffNumber[0] = EF_SUNSOFT_ENV_LO; break;
-				case EF_SWEEPDOWN: m_replaceTerm.Note.EffNumber[0] = EF_SUNSOFT_ENV_HI; break;
-				case EF_FDS_MOD_SPEED_LO: m_replaceTerm.Note.EffNumber[0] = EF_SUNSOFT_ENV_TYPE; break;
+				switch (Replace.Note.EffNumber[0]) {
+				case EF_SWEEPUP: Replace.Note.EffNumber[0] = EF_SUNSOFT_ENV_LO; break;
+				case EF_SWEEPDOWN: Replace.Note.EffNumber[0] = EF_SUNSOFT_ENV_HI; break;
+				case EF_FDS_MOD_SPEED_LO: Replace.Note.EffNumber[0] = EF_SUNSOFT_ENV_TYPE; break;
 				} break;
 			case SNDCHIP_N163:
-				switch (m_replaceTerm.Note.EffNumber[0]) {
-				case EF_DAC: m_replaceTerm.Note.EffNumber[0] = EF_N163_WAVE_BUFFER; break;
+				switch (Replace.Note.EffNumber[0]) {
+				case EF_DAC: Replace.Note.EffNumber[0] = EF_N163_WAVE_BUFFER; break;
 				} break;
 			}
-			Target.EffNumber[EffColumn]	= m_replaceTerm.Note.EffNumber[0];
+			Target.EffNumber[EffColumn]	= Replace.Note.EffNumber[0];
 		}
 		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) Target.EffNumber[EffColumn] = EF_NONE;
-		if (m_replaceTerm.Definite[WC_PARAM]) Target.EffParam[EffColumn] = m_replaceTerm.Note.EffParam[0];
+		if (Replace.Definite[WC_PARAM]) Target.EffParam[EffColumn] = Replace.Note.EffParam[0];
 		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) Target.EffParam[EffColumn] = 0;
 		if (CanUndo) m_pView->EditReplace(Target);
 		m_pDocument->SetNoteData(Track, m_iFrame, m_iChannel, m_iRow, &Target);

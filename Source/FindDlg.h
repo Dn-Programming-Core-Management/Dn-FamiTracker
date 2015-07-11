@@ -73,7 +73,8 @@ class searchTerm
 {
 public:
 	searchTerm();
-	~searchTerm();
+
+	void Release();
 
 	IntQuery *Note;
 	IntQuery *Oct;
@@ -137,8 +138,7 @@ protected:
 	CEdit *m_cFindMacroField, *m_cReplaceMacroField, *m_cFilterMacroField;
 	CComboBox *m_cSearchArea, *m_cEffectColumn;
 
-	searchTerm m_searchTerm;
-	replaceTerm m_replaceTerm;
+	searchTerm m_searchTerm, m_replaceTerm;
 	bool m_bFindMacro, m_bReplaceMacro, m_bFilterMacro;
 	bool m_bFound, m_bSkipFirst, m_bVisible;
 	int m_iFrame, m_iRow, m_iChannel;
