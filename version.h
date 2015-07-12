@@ -33,7 +33,7 @@
 #define VERSION_MIN  3
 #define VERSION_REV  11
 
-#define VERSION_WIP  0
+#define VERSION_WIP  1
 
 #ifdef RELEASE_BUILD
 

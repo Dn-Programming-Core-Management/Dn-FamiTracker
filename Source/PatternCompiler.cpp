@@ -264,7 +264,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 			NESNote = 0x7F - 2;
 		}
 		else if (Note == ECHO) {		// // //
-			NESNote = 0x70 + Octave;
+			NESNote = 0x6F + Octave;
 		}
 		else {
 			if (ChanID == CHANID_DPCM) {

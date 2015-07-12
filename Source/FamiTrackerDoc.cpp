@@ -2639,11 +2639,11 @@ bool CFamiTrackerDoc::ReadBlock_Bookmarks(CDocumentFile *pDocFile)
 
 bool CFamiTrackerDoc::WriteBlock_Bookmarks(CDocumentFile *pDocFile) const
 {
-	pDocFile->CreateBlock(FILE_BLOCK_BOOKMARKS, 1);
 	int Count = 0;
 	for (unsigned int i = 0; i < m_iTrackCount; i++)
 		if (m_pBookmarkList[i] != NULL) Count += m_pBookmarkList[i]->size();
 	if (!Count) return true;
+	pDocFile->CreateBlock(FILE_BLOCK_BOOKMARKS, 1);
 	pDocFile->WriteBlockInt(Count);
 	
 	for (unsigned int i = 0; i < m_iTrackCount; i++) if (m_pBookmarkList[i] != NULL) {

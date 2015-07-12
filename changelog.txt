@@ -1,10 +1,30 @@
 0CC-FamiTracker Mod
 Change Log
 Written by HertzDevil
-Version 0.3.11 - Jul 9 2015
+Version 0.3.11r1 - Jul 12 2015
 
 --------------------------------------------------------------------------------
 
+V0.3.11r1 - 07/12/15
+Improvements:
+ - Added simple wildcard for search query ("." character)
+Bug fixes:
+ - Pasting single-channel pattern data that begins from a channel volume column
+    no longer moves the target selection area depending on the cursor position
+ - Pasting single-channel effect data no longer moves the target selection area
+    if the cursor is outside the effect columns
+ - Fixed paste undo applying to as many effect channels as 2A03 Pulse 1 has for
+    single-channel effect clip data
+ - Fixed Find / Replace dialog crashing upon any action
+ - Effect search queries without effect parameter now work properly
+ - Fixed Module Properties dialog removing the FDS channel upon confirmation
+ - Fixed Module Properties removing channels to the right of N163 when changing
+    only the number of N163 channels
+ - Fixed Mxy effect not resetting to the default channel volume in exported NSFs
+ - Fixed ^0 echo buffer access retrieving incorrect notes outside 2A03 Pulse 1
+    in exported NSFs
+
+V0.3.11 - 07/09/15
 Additions:
  - Added pattern bookmark manager and go to dialog
 Improvements:
