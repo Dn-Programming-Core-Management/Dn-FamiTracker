@@ -156,18 +156,12 @@ void CModulePropertiesDlg::OnBnClickedOk()
 		}
 		str = "You are going to remove channels from the following expansion chips:\n" + str;
 		str += "\nDo you want to proceed? There is no undo for this action.";
-		if (!Gone) {
-			m_pDocument->SetNamcoChannels(m_iN163Channels, m_pDocument->GetNamcoChannels() != m_iN163Channels);
-			m_pDocument->SelectExpansionChip(m_iExpansions, m_pDocument->GetExpansionChip() != m_iExpansions);
-			m_pDocument->UpdateAllViews(NULL, UPDATE_PROPERTIES);
-		}
-		else if (AfxMessageBox(str, MB_YESNO | MB_ICONEXCLAMATION) == IDNO)
-			return;
-		else {
-			m_pDocument->SetNamcoChannels(m_iN163Channels, m_pDocument->GetNamcoChannels() != m_iN163Channels);
-			m_pDocument->SelectExpansionChip(m_iExpansions, m_pDocument->GetExpansionChip() != m_iExpansions);
-			m_pDocument->UpdateAllViews(NULL, UPDATE_PROPERTIES);
-		}
+		if (Gone)
+			if (AfxMessageBox(str, MB_YESNO | MB_ICONEXCLAMATION) == IDNO)
+				return;
+		m_pDocument->SetNamcoChannels(m_iN163Channels, true);
+		m_pDocument->SelectExpansionChip(m_iExpansions, true);
+		m_pDocument->UpdateAllViews(NULL, UPDATE_PROPERTIES);
 	}
 
 	// Vibrato 

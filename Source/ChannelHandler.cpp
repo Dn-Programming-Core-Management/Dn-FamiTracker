@@ -210,8 +210,9 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 	int Track = m_pSoundGen->GetPlayerTrack();
 	int Frame = m_pSoundGen->GetPlayerFrame();
 	int Row = m_pSoundGen->GetPlayerRow();
-	int Channel = pDoc->GetChannelPosition(m_iChannelID, pDoc->GetExpansionChip());
+	int Channel = pDoc->GetChannelIndex(m_iChannelID);
 	int EffColumns = pDoc->GetEffColumns(Track, Channel);
+	if (!Channel) return;
 
 	if (!m_pSoundGen->IsPlaying()) {
 		Frame = CFamiTrackerView::GetView()->GetSelectedFrame();
