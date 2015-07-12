@@ -123,6 +123,16 @@ bool IntQuery::IsSingle() const
 	return Next == NULL && Current->Min == Current->Max;
 }
 
+void IntQuery::Join(IntRange *Range)
+{
+	if (Current == NULL)
+		Current = Range;
+	else if (Next == NULL)
+		Next = new IntQuery(Range);
+	else
+		Next->Join(Range);
+}
+
 bool IntQuery::ParseTerm(IntQuery *target, CString &in, CString &err)
 {
 	CString str;
@@ -399,28 +409,37 @@ bool CFindDlg::ParseVol(searchTerm &Term, CString str, bool Simple, CString &err
 
 bool CFindDlg::ParseEff(searchTerm &Term, CString str, bool Simple, CString &err)
 {
+	FIND_RAISE_ERROR(str.GetLength() > 3,
+		_T("Effect \"") + str.Left(1) + _T("\" is too long."));
+	FIND_RAISE_ERROR(str.GetLength() == 2,
+		_T("Effect \"") + str.Left(1) + _T("\" is too short."));
+
 	if (str.IsEmpty()) {
 		Term.Definite[WC_EFF] = true;
 		Term.Definite[WC_PARAM] = true;
 		*Term.EffNumber[0] = 0;
 		*Term.EffParam[0] = 0;
 	}
-	else for (unsigned char i = 0; i <= EF_COUNT; i++) {
-		FIND_RAISE_ERROR(i == EF_COUNT,
-			_T("Unknown effect \"") + str.Left(1) + _T("\" found in search query."));
-		if (str.Left(1) == EFF_CHAR[i]) {
-			Term.Definite[WC_EFF] = true;
-			*Term.EffNumber[0] = i + 1;
-			FIND_RAISE_ERROR(str.GetLength() > 3,
-				_T("Effect \"") + str.Left(1) + _T("\" is too long."));
-			FIND_RAISE_ERROR(str.GetLength() == 2,
-				_T("Effect \"") + str.Left(1) + _T("\" is too short."));
-			if (str.GetLength() > 1) {
-				Term.Definite[WC_PARAM] = true;
-				*Term.EffParam[0] = static_cast<unsigned char>(strtol(str.Right(2), NULL, 16));
+	else if (str == _T(".")) {
+		Term.Definite[WC_EFF] = true;
+		Term.EffNumber[0]->Current->Min = 1;
+		Term.EffNumber[0]->Current->Max = EF_COUNT - 1;
+	}
+	else {
+		SAFE_RELEASE(Term.EffNumber[0]->Next);
+		SAFE_RELEASE(Term.EffNumber[0]->Current);
+		for (unsigned char i = 0; i <= EF_COUNT; i++) {
+			if (str.Left(1) == EFF_CHAR[i]) {
+				Term.Definite[WC_EFF] = true;
+				Term.EffNumber[0]->Join(new IntRange(i + 1, i + 1));
 			}
-			break;
 		}
+		FIND_RAISE_ERROR(Term.EffNumber[0]->Current == NULL,
+			_T("Unknown effect \"") + str.Left(1) + _T("\" found in search query."));
+	}
+	if (str.GetLength() > 1) {
+		Term.Definite[WC_PARAM] = true;
+		*Term.EffParam[0] = static_cast<unsigned char>(strtol(str.Right(2), NULL, 16));
 	}
 
 	return true;
@@ -504,12 +523,15 @@ bool CFindDlg::GetSimpleReplaceTerm()
 		if (m_replaceTerm.Definite[i]) break;
 	}
 	bool Wildcard = false;
-	const IntQuery *Range[] = {m_replaceTerm.Note, m_replaceTerm.Oct, m_replaceTerm.Inst, m_replaceTerm.Vol};
-	for (int i = 0; i < sizeof(Range) / sizeof(IntQuery*); i++)
-		Wildcard = Wildcard | (!Range[i]->IsSingle());
-	for (int i = 0; i < MAX_EFFECT_COLUMNS; i++) {
-		Wildcard = Wildcard | (!m_replaceTerm.EffNumber[i]->IsSingle());
-		Wildcard = Wildcard | (!m_replaceTerm.EffParam[i]->IsSingle());
+	if (m_replaceTerm.Definite[WC_NOTE] && !m_replaceTerm.Note->IsSingle()) Wildcard = true;
+	if (m_replaceTerm.Definite[WC_OCT]  && !m_replaceTerm.Oct->IsSingle()) Wildcard = true;
+	if (m_replaceTerm.Definite[WC_INST] && !m_replaceTerm.Inst->IsSingle()) Wildcard = true;
+	if (m_replaceTerm.Definite[WC_VOL]  && !m_replaceTerm.Vol->IsSingle()) Wildcard = true;
+	//if (m_replaceTerm.Definite[WC_EFF]) for (int i = 0; i < MAX_EFFECT_COLUMNS; i++) {
+	//	if (!m_replaceTerm.EffNumber[i]->IsSingle()) Wildcard = false;
+	//}
+	if (m_replaceTerm.Definite[WC_PARAM]) for (int i = 0; i < MAX_EFFECT_COLUMNS; i++) {
+		if (!m_replaceTerm.EffParam[i]->IsSingle()) Wildcard = false;
 	}
 	if (Wildcard)
 		RETURN_ERROR(_T("Replacement query cannot contain wildcards."));
@@ -594,8 +616,8 @@ bool CFindDlg::CompareFields(const stChanNote Target, bool Noise, int EffCount)
 	if (Term.Definite[WC_INST] && !m_searchTerm.Inst->IsMatch(Target.Instrument)) return false;
 	if (Term.Definite[WC_VOL] && !m_searchTerm.Vol->IsMatch(Target.Vol)) return false;
 	for (int i = EffColumn % MAX_EFFECT_COLUMNS; i <= std::min(std::min(EffColumn, MAX_EFFECT_COLUMNS - 1), EffCount); i++) {
-		if ((!Term.Definite[WC_EFF] || EFF_CHAR[Term.Note.EffNumber[0] - 1] == EFF_CHAR[Target.EffNumber[i] - 1])
-		&& (!Term.Definite[WC_PARAM] || Term.Note.EffParam[0] == Target.EffParam[i]))
+		if ((!Term.Definite[WC_EFF] || m_searchTerm.EffNumber[0]->IsMatch(Target.EffNumber[i]))
+		&& (!Term.Definite[WC_PARAM] || m_searchTerm.EffParam[0]->IsMatch(Target.EffParam[i])))
 			EffectMatch = true;
 	}
 	if (!EffectMatch) return false;

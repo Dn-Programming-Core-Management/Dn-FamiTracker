@@ -47,7 +47,7 @@ class IntQuery
 {
 public:
 	IntQuery() { Current = new IntRange(); Next = NULL; };
-	~IntQuery() { SAFE_RELEASE(Current); SAFE_RELEASE(Next); };
+	~IntQuery() { if (Next) Next->~IntQuery(); SAFE_RELEASE(Current); };
 	IntQuery(int a) { Current = new IntRange(a, a); Next = NULL; };
 	IntQuery(int a, int b) { Current = new IntRange(a, b); Next = NULL; };
 	IntQuery(IntRange *r) { Current = new IntRange(r->Min, r->Max); Next = NULL; };
@@ -56,6 +56,7 @@ public:
 
 	bool IsMatch(int x) const;
 	bool IsSingle() const;
+	void Join(IntRange *Range);
 	bool ParseTerm(IntQuery *target, CString &in, CString &err);
 	bool ParseFull(CString &in, CString &err);
 
