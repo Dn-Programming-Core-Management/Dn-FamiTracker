@@ -458,7 +458,7 @@ CString CChannelHandler::GetEffectString() const		// // //
 		str.AppendFormat(_T(" G%02X"), m_cDelayCounter + 1);
 	if (m_iNoteRelease)
 		str.AppendFormat(_T(" L%02X"), m_iNoteRelease);
-	if (m_iNoteVolume)
+	if (m_iNoteVolume > 0)
 		str.AppendFormat(_T(" M%X%X"), m_iNoteVolume, m_iNewVolume >> VOL_COLUMN_SHIFT);
 	if (m_iNoteCut)
 		str.AppendFormat(_T(" S%02X"), m_iNoteCut);
