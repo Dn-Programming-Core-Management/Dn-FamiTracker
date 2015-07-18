@@ -4501,7 +4501,6 @@ void CFamiTrackerDoc::SelectExpansionChip(unsigned char Chip, bool Move)
 		for (int j = 0; j < CHANNELS; j++) {
 			oldIndex[j] = GetChannelPosition(j, m_iExpansionChip);
 			newIndex[j] = GetChannelPosition(j, Chip);
-			TRACE(_T("%2d   %2d\n"), oldIndex[j], newIndex[j]);
 		}
 		for (unsigned int i = 0; i < m_iTrackCount; ++i) {
 			CPatternData *pTrack = m_pTracks[i];
@@ -4593,10 +4592,8 @@ void CFamiTrackerDoc::SetNamcoChannels(int Channels, bool Move)
 	
 	// // // Move pattern data upon removing N163 channels
 	if (Move) {
-		for (int j = 0; j < CHANNELS; j++) {
+		for (int j = 0; j < CHANNELS; j++)
 			newIndex[j] = GetChannelPosition(j, m_iExpansionChip);
-			TRACE(_T("%2d   %2d\n"), oldIndex[j], newIndex[j]);
-		}
 		for (unsigned int i = 0; i < m_iTrackCount; ++i) {
 			CPatternData *pTrack = m_pTracks[i];
 			CPatternData *pNew = new CPatternData(GetPatternLength(i));
@@ -4612,7 +4609,6 @@ void CFamiTrackerDoc::SetNamcoChannels(int Channels, bool Move)
 						pNew->SetFramePattern(f, newIndex[j], pTrack->GetFramePattern(f, oldIndex[j]));
 					for (int p = 0; p < MAX_PATTERN; p++)
 						memcpy(pNew->GetPatternData(newIndex[j], p, 0), pTrack->GetPatternData(oldIndex[j], p, 0), MAX_PATTERN_LENGTH * sizeof(stChanNote));
-					TRACE("%d <- %d\n", newIndex[j], oldIndex[j]);
 				}
 			}
 			SAFE_RELEASE(pTrack);
@@ -4728,8 +4724,8 @@ int CFamiTrackerDoc::GetChannelPosition(int Channel, unsigned char Chip)		// // 
 		if (pos > CHANID_FDS) pos -= 1;
 		else if (pos >= CHANID_FDS) return -1;
 	}
-		if (pos > CHANID_N163_CH8) pos -= 8 - m_iNamcoChannels;
-		else if (pos > CHANID_MMC5_VOICE + m_iNamcoChannels) return -1;
+		if (pos > CHANID_N163_CH8) pos -= 8 - (!(Chip & SNDCHIP_N163) ? 0 : m_iNamcoChannels);
+		else if (pos > CHANID_MMC5_VOICE + (!(Chip & SNDCHIP_N163) ? 0 : m_iNamcoChannels)) return -1;
 	if (pos > CHANID_MMC5_VOICE) pos -= 1;
 	if (!(Chip & SNDCHIP_MMC5)) {
 		if (pos > CHANID_MMC5_SQUARE2) pos -= 2;
