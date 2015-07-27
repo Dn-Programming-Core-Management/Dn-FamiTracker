@@ -81,8 +81,10 @@ const CString EFFECT_TEXTS[] = {		// // //
 	_T("Xxx - DPCM retrigger, XX = frames to wait"),
 	_T("Mxy - Delayed channel volume, X = frames to wait, Y = channel volume"),
 	_T("Hxx - FDS modulation depth, XX = depth, 3F = highest"),
-	_T("I0x - FDS modulation rate, high byte"),
-	_T("Jxx - FDS modulation rate, low byte"),
+	_T("Hxx - Auto FDS modulation ratio, XX - 80 = multiplier"),
+	_T("I0x - FDS modulation rate, high byte; disable auto modulation"),
+	_T("Ixy - Auto FDS modulation, X = multiplier, Y + 1 = divider"),
+	_T("Jxx - FDS modulation rate, low byte / Auto FDS modulation rate offset"),
 	_T("W0x - DPCM pitch, F = highest"),
 	_T("Hxx - 5B envelope rate, low byte"),
 	_T("Ixx - 5B envelope rate, high byte"),
@@ -3858,6 +3860,8 @@ CString	CFamiTrackerView::GetEffectHint(const stChanNote &Note, int Column) cons
 	int Chip = GetDocument()->GetChannel(Channel)->GetChip();
 	if (Index > EF_FDS_VOLUME || (Index == EF_FDS_VOLUME && Param >= 0x40)) Index++;
 	if (Index > EF_TRANSPOSE || (Index == EF_TRANSPOSE && Param >= 0x80)) Index++;
+	if (Index > EF_FDS_MOD_SPEED_HI || (Index == EF_FDS_MOD_SPEED_HI && Param >= 0x10)) Index++;
+	if (Index > EF_FDS_MOD_DEPTH || (Index == EF_FDS_MOD_DEPTH && Param >= 0x80)) Index++;
 	if (Index > EF_NOTE_CUT || (Index == EF_NOTE_CUT && Param >= 0x80 && Channel == CHANID_TRIANGLE)) Index++;
 	if (Index > EF_DUTY_CYCLE || (Index == EF_DUTY_CYCLE && Chip == SNDCHIP_N163)) Index++;
 	if (Index > EF_VOLUME || (Index == EF_VOLUME && Param >= 0xE0)) Index++;
