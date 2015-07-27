@@ -232,7 +232,8 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 	int Inst = MAX_INSTRUMENTS, Vol = VOL_COLUMN_MAX;
 
 	int f = Frame, r = Row, BufferPos = -1, Transpose[ECHO_BUFFER_LENGTH + 1] = {};
-	int State[EF_COUNT], State_Exx = -1;
+	int State[EF_COUNT], State_Exx = -1, State_Hxx = -1;
+	bool maskJxx = false;
 	memset(State, -1, EF_COUNT * sizeof(int));
 
 	while (true) {
@@ -305,7 +306,6 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 			case EF_NONE: case EF_PORTAOFF:
 			case EF_DAC: case EF_DPCM_PITCH: case EF_RETRIGGER:
 			case EF_DELAY: case EF_DELAYED_VOLUME: case EF_NOTE_RELEASE: case EF_TRANSPOSE:
-			case EF_FDS_MOD_DEPTH: case EF_FDS_MOD_SPEED_HI: case EF_FDS_MOD_SPEED_LO:
 				continue; // ignore effects that cannot have memory
 			case EF_JUMP: case EF_SKIP: case EF_HALT:
 			case EF_SPEED: case EF_GROOVE:
@@ -328,7 +328,9 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 					if (State_Exx == -1) State_Exx = 0xE2;
 				}
 				continue;
-			case EF_SAMPLE_OFFSET: 
+			case EF_FDS_MOD_SPEED_LO:
+				if (maskJxx) continue;
+			case EF_SAMPLE_OFFSET:
 			case EF_FDS_VOLUME:
 			case EF_SUNSOFT_ENV_LO: case EF_SUNSOFT_ENV_HI: case EF_SUNSOFT_ENV_TYPE:
 			case EF_N163_WAVE_BUFFER:
@@ -336,6 +338,20 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 			case EF_VIBRATO: case EF_TREMOLO: case EF_PITCH: case EF_DUTY_CYCLE: case EF_VOLUME_SLIDE:
 				if (State[Note.EffNumber[c]] == -1)
 					State[Note.EffNumber[c]] = Note.EffParam[c];
+				continue;
+			case EF_FDS_MOD_DEPTH:
+				if (!ch->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
+				if (State[Note.EffNumber[c]] == -1 && Note.EffParam[c] < 0x40)
+					State[Note.EffNumber[c]] = Note.EffParam[c];
+				if (State_Hxx == -1 && Note.EffParam[c] >= 0x80)
+					State_Hxx = Note.EffParam[c];
+				continue;
+			case EF_FDS_MOD_SPEED_HI:
+				if (!ch->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
+				if (State[Note.EffNumber[c]] == -1) {
+					State[Note.EffNumber[c]] = Note.EffParam[c];
+					maskJxx = Note.EffParam[c] >= 0x10;
+				}
 				continue;
 			case EF_SWEEPUP: case EF_SWEEPDOWN: case EF_SLIDE_UP: case EF_SLIDE_DOWN:
 			case EF_PORTAMENTO: case EF_ARPEGGIO: case EF_PORTA_UP: case EF_PORTA_DOWN:
@@ -361,7 +377,7 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 		static const int LOG_EFFECT_PUL[] = {EF_VOLUME};
 		static const int LOG_EFFECT_TRI[] = {EF_VOLUME, EF_NOTE_CUT};
 		static const int LOG_EFFECT_DMC[] = {EF_SAMPLE_OFFSET};
-		static const int LOG_EFFECT_FDS[] = {EF_FDS_VOLUME};
+		static const int LOG_EFFECT_FDS[] = {EF_FDS_MOD_DEPTH, EF_FDS_MOD_SPEED_HI, EF_FDS_MOD_SPEED_LO, EF_FDS_VOLUME};
 		static const int LOG_EFFECT_S5B[] = {EF_SUNSOFT_ENV_LO, EF_SUNSOFT_ENV_HI, EF_SUNSOFT_ENV_TYPE};
 		static const int LOG_EFFECT_N163[] = {EF_N163_WAVE_BUFFER};
 
@@ -419,6 +435,8 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 			}
 		if (State_Exx >= 0)
 			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_VOLUME - 1], State_Exx);
+		if (State_Hxx >= 0)
+			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_FDS_MOD_DEPTH - 1], State_Hxx);
 
 		if (effStr.IsEmpty()) effStr = _T(" None");
 		log->Append(effStr);
@@ -433,6 +451,10 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 		for (unsigned int i = 0; i < EF_COUNT; i++)
 			if (State[i] >= 0)
 				HandleCustomEffects(i, State[i]);
+		if (State[EF_FDS_MOD_SPEED_HI] >= 0x10)
+			HandleCustomEffects(EF_FDS_MOD_SPEED_HI, State[EF_FDS_MOD_SPEED_HI]);
+		if (State_Hxx >= 0)
+			HandleCustomEffects(EF_FDS_MOD_DEPTH, State_Hxx);
 	}
 
 	return;

@@ -60,8 +60,11 @@ protected:
 	bool m_bResetMod;
 protected:
 	int m_iVolModMode;		// // // 0CC: make an enum for this
-	int m_iVolModRate;		// // //
-	bool m_bVolModTrigger;		// // //
+	int m_iVolModRate;
+	bool m_bVolModTrigger;
+
+	bool m_bAutoModulation;		// // //
+	int m_iModulationOffset;
 
 	int m_iEffModDepth;
 	int m_iEffModSpeedHi;

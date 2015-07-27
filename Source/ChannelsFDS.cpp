@@ -43,9 +43,11 @@ CChannelHandlerFDS::CChannelHandlerFDS() :
 
 void CChannelHandlerFDS::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 {
-	m_iEffModDepth = -1;
-	m_iEffModSpeedHi = -1;
-	m_iEffModSpeedLo = -1;
+	if (!m_bAutoModulation) {		// // //
+		m_iEffModDepth = -1;
+		m_iEffModSpeedHi = -1;
+		m_iEffModSpeedLo = -1;
+	}
 	m_bVolModTrigger = false;		// // //
 
 	CChannelHandler::HandleNoteData(pNoteData, EffColumns);
@@ -78,16 +80,34 @@ void CChannelHandlerFDS::HandleCustomEffects(int EffNum, int EffParam)
 		switch (EffNum) {
 			// // //
 			case EF_FDS_MOD_DEPTH:
-				m_iEffModDepth = EffParam & 0x3F;
+				if (EffParam < 0x40)		// // //
+					m_iEffModDepth = EffParam;
+				else if (EffParam >= 0x80 && m_bAutoModulation) {
+					m_iEffModSpeedHi = EffParam - 0x80;
+				}
 				break;
 			case EF_FDS_MOD_SPEED_HI:
-				m_iEffModSpeedHi = EffParam & 0x0F;
+				if (EffParam > 0x0F) {		// // //
+					m_iEffModSpeedHi = EffParam >> 4;
+					m_iEffModSpeedLo = (EffParam & 0x0F) + 1;
+					m_bAutoModulation = true;
+				}
+				else {
+					m_iEffModSpeedHi = EffParam & 0x0F;
+					if (m_bAutoModulation)
+						m_iEffModSpeedLo = 0;
+					m_iModulationOffset = 0;
+					m_bAutoModulation = false;
+				}
 				break;
 			case EF_FDS_MOD_SPEED_LO:
-				m_iEffModSpeedLo = EffParam;
+				if (m_bAutoModulation)
+					m_iModulationOffset = EffParam - 0x80;
+				else
+					m_iEffModSpeedLo = EffParam;
 				break;
 			case EF_FDS_VOLUME:
-				if (EffParam <= 0x7F) {
+				if (EffParam < 0x80) {
 					m_iVolModRate = EffParam & 0x3F;
 					m_iVolModMode = (EffParam >> 6) + 1;
 				}
@@ -184,6 +204,12 @@ void CChannelHandlerFDS::RefreshChannel()
 
 	unsigned char ModFreqLo = m_iModulationSpeed & 0xFF;
 	unsigned char ModFreqHi = (m_iModulationSpeed >> 8) & 0x0F;
+	if (m_bAutoModulation) {		// // //
+		int newFreq = Frequency * m_iEffModSpeedHi / m_iEffModSpeedLo + m_iModulationOffset;
+		newFreq = std::min(0xFFF, std::max(0, newFreq));
+		ModFreqLo = newFreq & 0xFF;
+		ModFreqHi = (newFreq >> 8) & 0x0F;
+	}
 
 	unsigned char Volume = CalculateVolume();
 
@@ -251,7 +277,9 @@ void CChannelHandlerFDS::ClearRegisters()
 
 	m_iSeqVolume = 0x20;
 
-	m_iVolModMode = 0;		// // //
+	m_bAutoModulation = false;		// // //
+	m_iModulationOffset = 0;		// // //
+	m_iVolModMode = 0;
 	m_iVolModRate = 0;
 	m_bVolModTrigger = false;
 
@@ -265,6 +293,21 @@ CString CChannelHandlerFDS::GetCustomEffectString() const		// // //
 
 	if (m_iVolModMode)
 		str.AppendFormat(_T(" E%02X"), ((m_iVolModMode - 1) << 6) | m_iVolModRate);
+	if (m_iModulationDepth)
+		str.AppendFormat(_T(" H%02X"), m_iModulationDepth);
+	if (m_bAutoModulation) {
+		str.AppendFormat(_T(" I%X%X"), m_iEffModSpeedHi > 0xF ? 1 : m_iEffModSpeedHi, m_iEffModSpeedLo - 1);
+		if (m_iEffModSpeedHi > 0xF)
+			str.AppendFormat(_T(" H%02X"), 0x80 + m_iEffModSpeedHi);
+		if (m_iModulationOffset != 0)
+			str.AppendFormat(_T(" J%02X"), m_iModulationOffset + 0x80);
+	}
+	else {
+		if (m_iModulationSpeed >> 8)
+			str.AppendFormat(_T(" I%02X"), m_iModulationSpeed >> 8);
+		if (m_iModulationSpeed & 0xFF)
+			str.AppendFormat(_T(" J%02X"), m_iModulationSpeed & 0xFF);
+	}
 
 	return str;
 }
