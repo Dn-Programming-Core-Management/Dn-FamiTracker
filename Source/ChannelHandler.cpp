@@ -341,9 +341,7 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 				continue;
 			case EF_FDS_MOD_DEPTH:
 				if (!ch->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
-				if (State[Note.EffNumber[c]] == -1 && Note.EffParam[c] < 0x40)
-					State[Note.EffNumber[c]] = Note.EffParam[c];
-				if (State_Hxx == -1 && Note.EffParam[c] >= 0x80)
+				if (State_Hxx == -1 && Note.EffParam[c] >= 0x80 && !maskJxx)
 					State_Hxx = Note.EffParam[c];
 				continue;
 			case EF_FDS_MOD_SPEED_HI:

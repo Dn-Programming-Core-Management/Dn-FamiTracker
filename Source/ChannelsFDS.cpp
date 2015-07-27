@@ -43,8 +43,8 @@ CChannelHandlerFDS::CChannelHandlerFDS() :
 
 void CChannelHandlerFDS::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 {
+	m_iEffModDepth = -1;
 	if (!m_bAutoModulation) {		// // //
-		m_iEffModDepth = -1;
 		m_iEffModSpeedHi = -1;
 		m_iEffModSpeedLo = -1;
 	}
@@ -293,8 +293,8 @@ CString CChannelHandlerFDS::GetCustomEffectString() const		// // //
 
 	if (m_iVolModMode)
 		str.AppendFormat(_T(" E%02X"), ((m_iVolModMode - 1) << 6) | m_iVolModRate);
-	if (m_iModulationDepth)
-		str.AppendFormat(_T(" H%02X"), m_iModulationDepth);
+	if (m_iEffModDepth != -1)
+		str.AppendFormat(_T(" H%02X"), m_iEffModDepth);
 	if (m_bAutoModulation) {
 		str.AppendFormat(_T(" I%X%X"), m_iEffModSpeedHi > 0xF ? 1 : m_iEffModSpeedHi, m_iEffModSpeedLo - 1);
 		if (m_iEffModSpeedHi > 0xF)
