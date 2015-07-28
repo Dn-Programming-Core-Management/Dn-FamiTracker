@@ -217,6 +217,7 @@ BEGIN
             MENUITEM "Merge Duplicated Patterns",   ID_CLEANUP_MERGEDUPLICATEDPATTERNS
             MENUITEM "Populate Unique Patterns",    ID_CLEANUP_POPULATEUNIQUEPATTERNS
         END
+        MENUITEM "Estimate Song Length",        ID_MODULE_ESTIMATESONGLENGTH
     END
     POPUP "&Instrument"
     BEGIN

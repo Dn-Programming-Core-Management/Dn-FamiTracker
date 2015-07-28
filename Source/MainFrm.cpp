@@ -336,6 +336,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_MODULE_DUPLICATECURRENTPATTERN, OnModuleDuplicateCurrentPattern)
 	ON_COMMAND(ID_MODULE_GROOVE, OnModuleGrooveSettings)
 	ON_COMMAND(ID_MODULE_BOOKMARK, OnModuleBookmarkSettings)
+	ON_COMMAND(ID_MODULE_ESTIMATESONGLENGTH, OnModuleEstimateSongLength)
 	ON_COMMAND(ID_TOGGLE_MULTIPLEXER, OnToggleMultiplexer)
 	ON_UPDATE_COMMAND_UI(IDC_FOLLOW_TOGGLE, OnUpdateToggleFollow)
 	ON_UPDATE_COMMAND_UI(IDC_COMPACT_TOGGLE, OnUpdateToggleCompact)
@@ -2085,6 +2086,22 @@ void CMainFrame::OnModuleBookmarkSettings()		// // //
 	}
 	m_pBookmarkDlg->ShowWindow(SW_SHOW);
 	m_pBookmarkDlg->SetFocus();
+}
+
+void CMainFrame::OnModuleEstimateSongLength()		// // //
+{
+	CFamiTrackerDoc	*pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
+	double Intro = pDoc->GetStandardLength(m_iTrack, 0);
+	double Loop = pDoc->GetStandardLength(m_iTrack, 1) - Intro;
+	Intro = Intro - Loop;
+	int Rate = pDoc->GetFrameRate();
+
+	CString str = _T("");
+	str.Format(_T("Estimated duration:\nIntro: %d:%02d.%02d (%d ticks)\nLoop: %d:%02d.%02d (%d ticks)\n"),
+		static_cast<int>(Intro) / 60, static_cast<int>(Intro) % 60, static_cast<int>(Intro * 100) % 100, static_cast<int>(Intro * Rate),
+		static_cast<int>(Loop) / 60, static_cast<int>(Loop) % 60, static_cast<int>(Loop * 100) % 100, static_cast<int>(Loop * Rate));
+	str.Append(_T("Tick counts are subject to rounding errors!"));
+	AfxMessageBox(str);
 }
 
 void CMainFrame::UpdateTrackBox()

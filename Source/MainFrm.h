@@ -372,6 +372,7 @@ public:
 	afx_msg void OnModuleDuplicateCurrentPattern();
 	afx_msg void OnModuleGrooveSettings();
 	afx_msg void OnModuleBookmarkSettings();
+	afx_msg void OnModuleEstimateSongLength();
 	afx_msg void OnToggleMultiplexer();
 	afx_msg void OnUpdateEditCopySpecial(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateToggleFollow(CCmdUI *pCmdUI);
