@@ -4994,6 +4994,7 @@ unsigned int CFamiTrackerDoc::ScanActualLength(unsigned int Track, unsigned int 
 	memset(RowVisited, 0, MAX_FRAMES * MAX_PATTERN_LENGTH);		// // //
 
 	while (bScanning) {
+		bool hasJump = false;
 		for (int j = 0; j < GetChannelCount(); ++j) {
 			stChanNote *Note;
 			Note = m_pTracks[Track]->GetPatternData(j, m_pTracks[Track]->GetFramePattern(f, j), r);
@@ -5003,9 +5004,11 @@ unsigned int CFamiTrackerDoc::ScanActualLength(unsigned int Track, unsigned int 
 					case EF_JUMP:
 						JumpTo = Note->EffParam[l];
 						SkipTo = 0;
+						hasJump = true;
 						break;
 					case EF_SKIP:
-						JumpTo = f + 1;
+						if (hasJump) break;
+						JumpTo = (f + 1) % FrameCount;
 						SkipTo = Note->EffParam[l];
 						break;
 					case EF_HALT:
@@ -5069,6 +5072,7 @@ double CFamiTrackerDoc::GetStandardLength(int Track, unsigned int ExtraLoops) co
 	unsigned int f = 0;
 	unsigned int r = 0;
 	while (bScanning) {
+		bool hasJump = false;
 		for (int j = 0; j < GetChannelCount(); ++j) {
 			stChanNote* Note;
 			Note = m_pTracks[Track]->GetPatternData(j, m_pTracks[Track]->GetFramePattern(f, j), r);
@@ -5077,9 +5081,11 @@ double CFamiTrackerDoc::GetStandardLength(int Track, unsigned int ExtraLoops) co
 				case EF_JUMP:
 					JumpTo = Note->EffParam[l];
 					SkipTo = 0;
+					hasJump = true;
 					break;
 				case EF_SKIP:
-					JumpTo = f + 1;
+					if (hasJump) break;
+					JumpTo = (f + 1) % FrameCount;
 					SkipTo = Note->EffParam[l];
 					break;
 				case EF_HALT:
