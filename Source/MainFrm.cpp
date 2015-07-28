@@ -2098,8 +2098,8 @@ void CMainFrame::OnModuleEstimateSongLength()		// // //
 
 	CString str = _T("");
 	str.Format(_T("Estimated duration:\nIntro: %d:%02d.%02d (%d ticks)\nLoop: %d:%02d.%02d (%d ticks)\n"),
-		static_cast<int>(Intro) / 60, static_cast<int>(Intro) % 60, static_cast<int>(Intro * 100) % 100, static_cast<int>(Intro * Rate),
-		static_cast<int>(Loop) / 60, static_cast<int>(Loop) % 60, static_cast<int>(Loop * 100) % 100, static_cast<int>(Loop * Rate));
+		static_cast<int>(Intro) / 60, static_cast<int>(Intro) % 60, static_cast<int>(Intro * 100 + .5) % 100, static_cast<int>(Intro * Rate + .5),
+		static_cast<int>(Loop) / 60, static_cast<int>(Loop) % 60, static_cast<int>(Loop * 100 + .5) % 100, static_cast<int>(Loop * Rate + .5));
 	str.Append(_T("Tick counts are subject to rounding errors!"));
 	AfxMessageBox(str);
 }
