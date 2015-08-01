@@ -162,7 +162,6 @@ BOOL CBookmarkDlg::OnInitDialog()
 
 	m_pDocument = CFamiTrackerDoc::GetDoc();
 
-	LoadBookmarks();
 	m_cSpinFrame->SetRange(0, MAX_FRAMES - 1);
 	m_cSpinRow->SetRange(0, MAX_PATTERN_LENGTH - 1);
 	m_cSpinHighlight1->SetRange(0, MAX_PATTERN_LENGTH);
@@ -224,6 +223,7 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkAdd()
 
 void CBookmarkDlg::OnBnClickedButtonBookmarkUpdate()
 {
+	if (!m_cListBookmark || !m_pBookmarkList) return;
 	int pos = m_cListBookmark->GetCurSel();
 	if (pos == LB_ERR) return;
 	
