@@ -2081,11 +2081,11 @@ void CMainFrame::OnModuleBookmarkSettings()		// // //
 		m_pBookmarkDlg->Create(IDD_BOOKMARKS, this);
 	}
 	if (!m_pBookmarkDlg->IsWindowVisible()) {
-		m_pBookmarkDlg->LoadBookmarks(m_iTrack);
 		m_pBookmarkDlg->CenterWindow();
 	}
 	m_pBookmarkDlg->ShowWindow(SW_SHOW);
 	m_pBookmarkDlg->SetFocus();
+	m_pBookmarkDlg->LoadBookmarks(m_iTrack);
 }
 
 void CMainFrame::OnModuleEstimateSongLength()		// // //

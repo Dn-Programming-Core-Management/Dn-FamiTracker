@@ -49,7 +49,7 @@ void CBookmarkDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CBookmarkDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_BOOKMARK_ADD, OnBnClickedButtonBookmarkAdd)
-	//ON_BN_CLICKED(IDC_BUTTON_BOOKMARK_UPDATE, OnBnClickedButtonBookmarkUpdate)
+	ON_BN_CLICKED(IDC_BUTTON_BOOKMARK_UPDATE, OnBnClickedButtonBookmarkUpdate)
 	ON_BN_CLICKED(IDC_BUTTON_BOOKMARK_REMOVE, OnBnClickedButtonBookmarkRemove)
 	ON_BN_CLICKED(IDC_BUTTON_BOOKMARK_MOVEUP, OnBnClickedButtonBookmarkMoveup)
 	ON_BN_CLICKED(IDC_BUTTON_BOOKMARK_MOVEDOWN, OnBnClickedButtonBookmarkMovedown)
@@ -60,12 +60,7 @@ BEGIN_MESSAGE_MAP(CBookmarkDlg, CDialog)
 	ON_LBN_DBLCLK(IDC_LIST_BOOKMARKS, OnLbnDblclkListBookmarks)
 	ON_BN_CLICKED(IDC_CHECK_BOOKMARK_HIGH1, OnBnClickedCheckBookmarkHigh1)
 	ON_BN_CLICKED(IDC_CHECK_BOOKMARK_HIGH2, OnBnClickedCheckBookmarkHigh2)
-	ON_EN_CHANGE(IDC_EDIT_BOOKMARK_NAME, OnEnChangeBookmarkProperties)
-	ON_EN_CHANGE(IDC_EDIT_BOOKMARK_FRAME, OnEnChangeBookmarkProperties)
-	ON_EN_CHANGE(IDC_EDIT_BOOKMARK_ROW, OnEnChangeBookmarkProperties)
-	ON_EN_CHANGE(IDC_EDIT_BOOKMARK_HIGH1, OnEnChangeBookmarkProperties)
-	ON_EN_CHANGE(IDC_EDIT_BOOKMARK_HIGH2, OnEnChangeBookmarkProperties)
-	ON_BN_CLICKED(IDC_CHECK_BOOKMARK_PERSIST, OnEnChangeBookmarkProperties)
+	ON_BN_CLICKED(IDC_CHECK_BOOKMARK_PERSIST, OnBnClickedCheckBookmarkPersist)
 END_MESSAGE_MAP()
 
 
@@ -75,7 +70,6 @@ void CBookmarkDlg::UpdateBookmark(stBookmark &Mark) const
 {
 	int f = m_bEnableHighlight1 ? m_cSpinHighlight1->GetPos() : -1;
 	int s = m_bEnableHighlight2 ? m_cSpinHighlight2->GetPos() : -1;
-	bool p = static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_PERSIST))->GetCheck() == BST_CHECKED;
 	CString str;
 	GetDlgItem(IDC_EDIT_BOOKMARK_NAME)->GetWindowText(str);
 
@@ -86,7 +80,7 @@ void CBookmarkDlg::UpdateBookmark(stBookmark &Mark) const
 		Mark.Highlight.First != f ||
 		Mark.Highlight.Second != s ||
 		*Mark.Name != str ||
-		Mark.Persist != p) {
+		Mark.Persist != m_bPersist) {
 		if (!m_bSwitching) {
 			m_pDocument->SetModifiedFlag();
 			m_pDocument->SetExceededFlag();
@@ -97,7 +91,7 @@ void CBookmarkDlg::UpdateBookmark(stBookmark &Mark) const
 	Mark.Highlight.First = f;
 	Mark.Highlight.Second = s;
 	*Mark.Name = str;
-	Mark.Persist = p;
+	Mark.Persist = m_bPersist;
 	Mark.Highlight.Offset = 0;
 
 	int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
@@ -161,6 +155,7 @@ BOOL CBookmarkDlg::OnInitDialog()
 	m_cSpinHighlight2->SubclassDlgItem(IDC_SPIN_BOOKMARK_HIGH2, this);
 
 	m_pDocument = CFamiTrackerDoc::GetDoc();
+	m_pBookmarkList = new std::vector<stBookmark>;
 
 	m_cSpinFrame->SetRange(0, MAX_FRAMES - 1);
 	m_cSpinRow->SetRange(0, MAX_PATTERN_LENGTH - 1);
@@ -171,6 +166,7 @@ BOOL CBookmarkDlg::OnInitDialog()
 
 	m_bEnableHighlight1 = false;
 	m_bEnableHighlight2 = false;
+	m_bPersist = false;
 	m_bSwitching = false;
 
 	return CDialog::OnInitDialog();
@@ -223,7 +219,6 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkAdd()
 
 void CBookmarkDlg::OnBnClickedButtonBookmarkUpdate()
 {
-	if (!m_cListBookmark || !m_pBookmarkList) return;
 	int pos = m_cListBookmark->GetCurSel();
 	if (pos == LB_ERR) return;
 	
@@ -384,6 +379,9 @@ void CBookmarkDlg::OnLbnSelchangeListBookmarks()
 	static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_HIGH2))->SetCheck(m_bEnableHighlight2);
 	static_cast<CEdit*>(GetDlgItem(IDC_EDIT_BOOKMARK_HIGH2))->EnableWindow(m_bEnableHighlight2);
 
+	m_bPersist = Mark.Persist;
+	static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_PERSIST))->SetCheck(m_bPersist);
+
 	m_cSpinFrame->SetPos(Mark.Frame);
 	m_cSpinRow->SetPos(Mark.Row);
 
@@ -415,17 +413,15 @@ void CBookmarkDlg::OnBnClickedCheckBookmarkHigh1()
 {
 	m_bEnableHighlight1 = static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_HIGH1))->GetCheck() == BST_CHECKED;
 	static_cast<CEdit*>(GetDlgItem(IDC_EDIT_BOOKMARK_HIGH1))->EnableWindow(m_bEnableHighlight1);
-	OnBnClickedButtonBookmarkUpdate();
 }
 
 void CBookmarkDlg::OnBnClickedCheckBookmarkHigh2()
 {
 	m_bEnableHighlight2 = static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_HIGH2))->GetCheck() == BST_CHECKED;
 	static_cast<CEdit*>(GetDlgItem(IDC_EDIT_BOOKMARK_HIGH2))->EnableWindow(m_bEnableHighlight2);
-	OnBnClickedButtonBookmarkUpdate();
 }
 
-void CBookmarkDlg::OnEnChangeBookmarkProperties()
+void CBookmarkDlg::OnBnClickedCheckBookmarkPersist()
 {
-	OnBnClickedButtonBookmarkUpdate();
+	m_bPersist = static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_PERSIST))->GetCheck() == BST_CHECKED;
 }

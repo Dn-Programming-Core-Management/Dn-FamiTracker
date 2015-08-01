@@ -59,6 +59,7 @@ protected:
 	std::vector<stBookmark> *m_pBookmarkList;
 	bool m_bEnableHighlight1;
 	bool m_bEnableHighlight2;
+	bool m_bPersist;
 	bool m_bSwitching;
 
 	DECLARE_MESSAGE_MAP()
@@ -77,5 +78,5 @@ public:
 	afx_msg void OnLbnDblclkListBookmarks();
 	afx_msg void OnBnClickedCheckBookmarkHigh1();
 	afx_msg void OnBnClickedCheckBookmarkHigh2();
-	afx_msg void OnEnChangeBookmarkProperties();
+	afx_msg void OnBnClickedCheckBookmarkPersist();
 };
