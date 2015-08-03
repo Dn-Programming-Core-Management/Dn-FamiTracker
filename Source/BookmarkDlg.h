@@ -36,7 +36,7 @@ public:
 	virtual ~CBookmarkDlg();
 
 	void LoadBookmarks(int Track);
-	void SelectBookmark(int Pos) const;
+	void SelectBookmark(int Pos);
 
 // Dialog Data
 	enum { IDD = IDD_BOOKMARKS };
