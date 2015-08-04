@@ -93,7 +93,7 @@ enum command_t {
 	CMD_EFF_FDS_MOD_RATE_LO,
 	CME_EFF_FDS_VOLUME,			// // //
 	CMD_EFF_FDS_MOD_BIAS,		// // //
-	CME_EFF_N163_FINE_PITCH,	// // //
+	CMD_EFF_N163_WAVE_BUFFER,	// // //
 	CMD_EFF_S5B_ENV_TYPE,		// // //
 	CMD_EFF_S5B_ENV_RATE_HI,	// // //
 	CMD_EFF_S5B_ENV_RATE_LO,	// // //
@@ -581,7 +581,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 				// // // N163
 				case EF_N163_WAVE_BUFFER:
 					if (ChipID == SNDCHIP_N163 && EffParam <= 0x7F) {
-						WriteData(Command(CMD_EFF_OFFSET));
+						WriteData(Command(CMD_EFF_N163_WAVE_BUFFER));
 						WriteData((EffParam + 1) & 0x7F);
 					}
 					break;
@@ -618,9 +618,9 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 unsigned char CPatternCompiler::Command(int cmd) const
 {
 	// // // truncate values if some chips do not exist
-	if (!m_pDocument->ExpansionEnabled(SNDCHIP_N163) && cmd > CME_EFF_N163_FINE_PITCH) cmd -= 1;
+	if (!m_pDocument->ExpansionEnabled(SNDCHIP_N163) && cmd > CMD_EFF_N163_WAVE_BUFFER) cmd -= sizeof(N163_EFFECTS);
 	// MMC5
-	if (!m_pDocument->ExpansionEnabled(SNDCHIP_FDS) && cmd > CMD_EFF_FDS_MOD_RATE_LO) cmd -= 4;
+	if (!m_pDocument->ExpansionEnabled(SNDCHIP_FDS) && cmd > CMD_EFF_FDS_MOD_RATE_LO) cmd -= sizeof(FDS_EFFECTS);
 	// VRC7, VRC6
 	return (cmd << 1) | 0x80;
 }
