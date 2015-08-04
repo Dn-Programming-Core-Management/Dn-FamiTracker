@@ -87,24 +87,23 @@ void CChannelHandlerFDS::HandleCustomEffects(int EffNum, int EffParam)
 				}
 				break;
 			case EF_FDS_MOD_SPEED_HI:
-				if (EffParam > 0x0F) {		// // //
+				if (EffParam >= 0x10) {		// // //
 					m_iEffModSpeedHi = EffParam >> 4;
 					m_iEffModSpeedLo = (EffParam & 0x0F) + 1;
 					m_bAutoModulation = true;
 				}
 				else {
-					m_iEffModSpeedHi = EffParam & 0x0F;
+					m_iEffModSpeedHi = EffParam;
 					if (m_bAutoModulation)
 						m_iEffModSpeedLo = 0;
-					m_iModulationOffset = 0;
 					m_bAutoModulation = false;
 				}
 				break;
 			case EF_FDS_MOD_SPEED_LO:
-				if (m_bAutoModulation)
-					m_iModulationOffset = EffParam - 0x80;
-				else
-					m_iEffModSpeedLo = EffParam;
+				m_iEffModSpeedLo = EffParam;
+				if (m_bAutoModulation)		// // //
+					m_iEffModSpeedHi = 0;
+				m_bAutoModulation = false;
 				break;
 			case EF_FDS_VOLUME:
 				if (EffParam < 0x80) {
@@ -113,6 +112,9 @@ void CChannelHandlerFDS::HandleCustomEffects(int EffNum, int EffParam)
 				}
 				else if (EffParam == 0xE0)
 					m_iVolModMode = 0;
+				break;
+			case EF_FDS_MOD_BIAS:		// // //
+				m_iModulationOffset = EffParam - 0x80;
 				break;
 		}
 	}
@@ -300,7 +302,7 @@ CString CChannelHandlerFDS::GetCustomEffectString() const		// // //
 		if (m_iEffModSpeedHi > 0xF)
 			str.AppendFormat(_T(" H%02X"), 0x80 + m_iEffModSpeedHi);
 		if (m_iModulationOffset != 0)
-			str.AppendFormat(_T(" J%02X"), m_iModulationOffset + 0x80);
+			str.AppendFormat(_T(" Z%02X"), m_iModulationOffset + 0x80);
 	}
 	else {
 		if (m_iModulationSpeed >> 8)

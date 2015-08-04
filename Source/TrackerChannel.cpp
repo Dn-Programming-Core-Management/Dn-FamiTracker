@@ -186,7 +186,7 @@ bool CTrackerChannel::IsEffectCompatible(int EffNumber, int EffParam) const		// 
 			return m_iChannelID != CHANID_DPCM && m_iChip != SNDCHIP_VRC7;
 		case EF_FDS_MOD_DEPTH:
 			return m_iChip == SNDCHIP_FDS && (EffParam <= 0x3F || EffParam >= 0x80);
-		case EF_FDS_MOD_SPEED_HI: case EF_FDS_MOD_SPEED_LO:
+		case EF_FDS_MOD_SPEED_HI: case EF_FDS_MOD_SPEED_LO: case EF_FDS_MOD_BIAS:
 			return m_iChip == SNDCHIP_FDS;
 		case EF_SUNSOFT_ENV_LO: case EF_SUNSOFT_ENV_HI:
 			return m_iChip == SNDCHIP_S5B;

@@ -523,21 +523,26 @@ bool CTextExport::ImportCellText(		// // //
 			// // //
 			switch (pDoc->GetChipType(channel)) {
 			case SNDCHIP_FDS:
-				switch (p - 1) {
-				case EF_SWEEPUP:	p = EF_FDS_MOD_DEPTH; break;
-				case EF_SWEEPDOWN:	p = EF_FDS_MOD_SPEED_HI; break;
-				case EF_VOLUME:		p = EF_FDS_VOLUME; break;
-				} break;
+				for (int i = 0; i < sizeof(FDS_EFFECTS); i++)
+					if (EFF_CHAR[p] == EFF_CHAR[FDS_EFFECTS[i] - 1]) {
+						p = FDS_EFFECTS[i];
+						break;
+					}
+				break;
 			case SNDCHIP_S5B:
-				switch (p - 1) {
-				case EF_SWEEPUP:			p = EF_SUNSOFT_ENV_LO; break;
-				case EF_SWEEPDOWN:			p = EF_SUNSOFT_ENV_HI; break;
-				case EF_FDS_MOD_SPEED_LO:	p = EF_SUNSOFT_ENV_TYPE; break;
-				} break;
+				for (int i = 0; i < sizeof(S5B_EFFECTS); i++)
+					if (EFF_CHAR[p] == EFF_CHAR[S5B_EFFECTS[i] - 1]) {
+						p = S5B_EFFECTS[i];
+						break;
+					}
+				break;
 			case SNDCHIP_N163:
-				switch (p - 1) {
-				case EF_DAC: case EF_SAMPLE_OFFSET: p = EF_N163_WAVE_BUFFER; break;
-				} break;
+				for (int i = 0; i < sizeof(N163_EFFECTS); i++)
+					if (EFF_CHAR[p] == EFF_CHAR[N163_EFFECTS[i] - 1]) {
+						p = N163_EFFECTS[i];
+						break;
+					}
+				break;
 			}
 			if (p >= EF_COUNT)
 			{

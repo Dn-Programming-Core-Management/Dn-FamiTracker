@@ -92,10 +92,11 @@ enum command_t {
 	CMD_EFF_FDS_MOD_RATE_HI,
 	CMD_EFF_FDS_MOD_RATE_LO,
 	CME_EFF_FDS_VOLUME,			// // //
+	CMD_EFF_FDS_MOD_BIAS,		// // //
 	CME_EFF_N163_FINE_PITCH,	// // //
 	CMD_EFF_S5B_ENV_TYPE,		// // //
 	CMD_EFF_S5B_ENV_RATE_HI,	// // //
-	CMD_EFF_S5B_ENV_RATE_LO		// // //
+	CMD_EFF_S5B_ENV_RATE_LO,	// // //
 };
 
 /*
@@ -537,12 +538,18 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 				case EF_FDS_MOD_SPEED_HI:
 					if (ChanID == CHANID_FDS) {
 						WriteData(Command(CMD_EFF_FDS_MOD_RATE_HI));
-						WriteData(EffParam & 0x0F);
+						WriteData(EffParam);		// // //
 					}
 					break;
 				case EF_FDS_MOD_SPEED_LO:
 					if (ChanID == CHANID_FDS) {
 						WriteData(Command(CMD_EFF_FDS_MOD_RATE_LO));
+						WriteData(EffParam);
+					}
+					break;
+				case EF_FDS_MOD_BIAS:		// // //
+					if (ChanID == CHANID_FDS) {
+						WriteData(Command(CMD_EFF_FDS_MOD_BIAS));
 						WriteData(EffParam);
 					}
 					break;

@@ -233,7 +233,7 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 
 	int f = Frame, r = Row, BufferPos = -1, Transpose[ECHO_BUFFER_LENGTH + 1] = {};
 	int State[EF_COUNT], State_Exx = -1, State_Hxx = -1;
-	bool maskJxx = false;
+	bool maskFDS = false;
 	memset(State, -1, EF_COUNT * sizeof(int));
 
 	while (true) {
@@ -321,17 +321,32 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 				}
 				continue;
 			case EF_NOTE_CUT:
-				if (Note.EffParam[c] <= 0x7F) continue;
 				if (!ch->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
+				if (Note.EffParam[c] <= 0x7F) continue;
 				if (State[Note.EffNumber[c]] == -1) {
 					State[Note.EffNumber[c]] = Note.EffParam[c];
 					if (State_Exx == -1) State_Exx = 0xE2;
 				}
 				continue;
+			case EF_FDS_MOD_DEPTH:
+				if (!ch->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
+				if (State_Hxx == -1 && Note.EffParam[c] >= 0x80)
+					State_Hxx = Note.EffParam[c];
+				continue;
+			case EF_FDS_MOD_SPEED_HI:
+				if (!ch->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
+				if (Note.EffParam[c] <= 0x0F)
+					maskFDS = true;
+				else if (!maskFDS && State[Note.EffNumber[c]] == -1) {
+					State[Note.EffNumber[c]] = Note.EffParam[c];
+					if (State_Hxx == -1) State_Hxx = -2;
+				}
+				continue;
 			case EF_FDS_MOD_SPEED_LO:
-				if (maskJxx) continue;
+				maskFDS = true;
+				continue;
 			case EF_SAMPLE_OFFSET:
-			case EF_FDS_VOLUME:
+			case EF_FDS_VOLUME: case EF_FDS_MOD_BIAS:
 			case EF_SUNSOFT_ENV_LO: case EF_SUNSOFT_ENV_HI: case EF_SUNSOFT_ENV_TYPE:
 			case EF_N163_WAVE_BUFFER:
 				if (!ch->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
@@ -339,18 +354,7 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 				if (State[Note.EffNumber[c]] == -1)
 					State[Note.EffNumber[c]] = Note.EffParam[c];
 				continue;
-			case EF_FDS_MOD_DEPTH:
-				if (!ch->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
-				if (State_Hxx == -1 && Note.EffParam[c] >= 0x80 && !maskJxx)
-					State_Hxx = Note.EffParam[c];
-				continue;
-			case EF_FDS_MOD_SPEED_HI:
-				if (!ch->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
-				if (State[Note.EffNumber[c]] == -1) {
-					State[Note.EffNumber[c]] = Note.EffParam[c];
-					maskJxx = Note.EffParam[c] >= 0x10;
-				}
-				continue;
+
 			case EF_SWEEPUP: case EF_SWEEPDOWN: case EF_SLIDE_UP: case EF_SLIDE_DOWN:
 			case EF_PORTAMENTO: case EF_ARPEGGIO: case EF_PORTA_UP: case EF_PORTA_DOWN:
 				if (State[EF_PORTAMENTO] == -1) { // anything else within can be used here
@@ -367,17 +371,14 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 	}
 
 	if (log) {
-		const int SLIDE_EFFECT = State[EF_ARPEGGIO] >= 0 ? EF_ARPEGGIO :
-								 State[EF_PORTA_UP] >= 0 ? EF_PORTA_UP :
-								 State[EF_PORTA_DOWN] >= 0 ? EF_PORTA_DOWN :
-								 EF_PORTAMENTO;
-		const int LOG_EFFECT[] = {SLIDE_EFFECT, EF_VIBRATO, EF_TREMOLO, EF_VOLUME_SLIDE, EF_PITCH, EF_DUTY_CYCLE};
-		static const int LOG_EFFECT_PUL[] = {EF_VOLUME};
-		static const int LOG_EFFECT_TRI[] = {EF_VOLUME, EF_NOTE_CUT};
-		static const int LOG_EFFECT_DMC[] = {EF_SAMPLE_OFFSET};
-		static const int LOG_EFFECT_FDS[] = {EF_FDS_MOD_DEPTH, EF_FDS_MOD_SPEED_HI, EF_FDS_MOD_SPEED_LO, EF_FDS_VOLUME};
-		static const int LOG_EFFECT_S5B[] = {EF_SUNSOFT_ENV_LO, EF_SUNSOFT_ENV_HI, EF_SUNSOFT_ENV_TYPE};
-		static const int LOG_EFFECT_N163[] = {EF_N163_WAVE_BUFFER};
+		const char SLIDE_EFFECT = State[EF_ARPEGGIO] >= 0 ? EF_ARPEGGIO :
+								  State[EF_PORTA_UP] >= 0 ? EF_PORTA_UP :
+								  State[EF_PORTA_DOWN] >= 0 ? EF_PORTA_DOWN :
+								  EF_PORTAMENTO;
+		const char LOG_EFFECT[] = {SLIDE_EFFECT, EF_VIBRATO, EF_TREMOLO, EF_VOLUME_SLIDE, EF_PITCH, EF_DUTY_CYCLE};
+		static const char LOG_EFFECT_PUL[] = {EF_VOLUME};
+		static const char LOG_EFFECT_TRI[] = {EF_VOLUME, EF_NOTE_CUT};
+		static const char LOG_EFFECT_DMC[] = {EF_SAMPLE_OFFSET};
 
 		log->Format(_T("Inst.: "));
 		if (Inst == MAX_INSTRUMENTS)
@@ -387,7 +388,7 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 		log->AppendFormat(_T("        Vol.: %X        Active effects:"), Vol >> VOL_COLUMN_SHIFT);
 
 		CString effStr = _T("");
-		for (int i = 0; i < sizeof(LOG_EFFECT) / sizeof(int); i++) {
+		for (int i = 0; i < sizeof(LOG_EFFECT); i++) {
 			int p = State[LOG_EFFECT[i]];
 			if (p < 0) continue;
 			if (p == 0 && LOG_EFFECT[i] != EF_PITCH) continue;
@@ -396,40 +397,40 @@ void CChannelHandler::RetrieveChannelState(CString *log)		// // //
 		}
 		if ((m_iChannelID >= CHANID_SQUARE1 && m_iChannelID <= CHANID_SQUARE2) || m_iChannelID == CHANID_NOISE ||
 			(m_iChannelID >= CHANID_MMC5_SQUARE1 && m_iChannelID <= CHANID_MMC5_SQUARE2))
-			for (int i = 0; i < sizeof(LOG_EFFECT_PUL) / sizeof(int); i++) {
+			for (int i = 0; i < sizeof(LOG_EFFECT_PUL); i++) {
 				int p = State[LOG_EFFECT_PUL[i]];
 				if (p < 0) continue;
 				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_PUL[i] - 1], p);
 			}
 		else if (m_iChannelID == CHANID_TRIANGLE)
-			for (int i = 0; i < sizeof(LOG_EFFECT_TRI) / sizeof(int); i++) {
+			for (int i = 0; i < sizeof(LOG_EFFECT_TRI); i++) {
 				int p = State[LOG_EFFECT_TRI[i]];
 				if (p < 0) continue;
 				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_TRI[i] - 1], p);
 			}
 		else if (m_iChannelID == CHANID_DPCM)
-			for (int i = 0; i < sizeof(LOG_EFFECT_DMC) / sizeof(int); i++) {
+			for (int i = 0; i < sizeof(LOG_EFFECT_DMC); i++) {
 				int p = State[LOG_EFFECT_DMC[i]];
 				if (p <= 0) continue;
 				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_DMC[i] - 1], p);
 			}
 		else if (m_iChannelID == CHANID_FDS)
-			for (int i = 0; i < sizeof(LOG_EFFECT_FDS) / sizeof(int); i++) {
-				int p = State[LOG_EFFECT_FDS[i]];
-				if (p < 0) continue;
-				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_FDS[i] - 1], p);
+			for (int i = 0; i < sizeof(FDS_EFFECTS); i++) {
+				int p = State[FDS_EFFECTS[i]];
+				if (p < 0 || (FDS_EFFECTS[i] == EF_FDS_MOD_BIAS && p == 0x80)) continue;
+				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[FDS_EFFECTS[i] - 1], p);
 			}
 		else if (m_iChannelID >= CHANID_S5B_CH1 && m_iChannelID <= CHANID_S5B_CH3)
-			for (int i = 0; i < sizeof(LOG_EFFECT_S5B) / sizeof(int); i++) {
-				int p = State[LOG_EFFECT_S5B[i]];
+			for (int i = 0; i < sizeof(S5B_EFFECTS); i++) {
+				int p = State[S5B_EFFECTS[i]];
 				if (p < 0) continue;
-				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_S5B[i] - 1], p);
+				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[S5B_EFFECTS[i] - 1], p);
 			}
 		else if (m_iChannelID >= CHANID_N163_CH1 && m_iChannelID <= CHANID_N163_CH8)
-			for (int i = 0; i < sizeof(LOG_EFFECT_N163) / sizeof(int); i++) {
-				int p = State[LOG_EFFECT_N163[i]];
-				if (p < 0 || p == 0x7F) continue;
-				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_N163[i] - 1], p);
+			for (int i = 0; i < sizeof(N163_EFFECTS); i++) {
+				int p = State[N163_EFFECTS[i]];
+				if (p < 0 || (N163_EFFECTS[i] == EF_N163_WAVE_BUFFER && p == 0x7F)) continue;
+				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[N163_EFFECTS[i] - 1], p);
 			}
 		if (State_Exx >= 0)
 			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_VOLUME - 1], State_Exx);

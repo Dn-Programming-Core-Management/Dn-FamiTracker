@@ -127,7 +127,7 @@ enum {
 //const int SEQ_SUNSOFT_NOISE = SEQ_DUTYCYCLE + 1;
 
 // Channel effects
-enum effect_t {
+enum effect_t : char {
 	EF_NONE = 0,
 	EF_SPEED,
 	EF_JUMP,
@@ -166,6 +166,7 @@ enum effect_t {
 	EF_TRANSPOSE,				// // //
 	EF_N163_WAVE_BUFFER,		// // //
 	EF_FDS_VOLUME,				// // //
+	EF_FDS_MOD_BIAS,				// // //
 //	EF_TARGET_VOLUME_SLIDE, 
 /*
 	EF_VRC7_MODULATOR,
@@ -184,6 +185,13 @@ enum effect_t {
 //const int EF_FDS_MOD_DEPTH = EF_SWEEPUP;	// FDS modulation depth, 'H'
 
 //const int EF_RETRIGGER = EF_SWEEPDOWN;
+
+// const char VRC6_EFFECTS[] = {};
+// const char VRC7_EFFECTS[] = {EF_VRC7_MODULATOR, EF_VRC7_CARRIER, EF_VRC7_LEVELS};
+const char FDS_EFFECTS[] = {EF_FDS_MOD_DEPTH, EF_FDS_MOD_SPEED_HI, EF_FDS_MOD_SPEED_LO, EF_FDS_VOLUME, EF_FDS_MOD_BIAS};
+// const char MMC5_EFFECTS[] = {};
+const char N163_EFFECTS[] = {EF_N163_WAVE_BUFFER};
+const char S5B_EFFECTS[] = {EF_SUNSOFT_ENV_LO, EF_SUNSOFT_ENV_HI, EF_SUNSOFT_ENV_TYPE};
 
 // Channel effect letters
 const char EFF_CHAR[] = {
@@ -224,6 +232,7 @@ const char EFF_CHAR[] = {
 	'T',	// // // Delayed transpose
 	'Z',	// // // N163 wave buffer
 	'E',	// // // FDS volume envelope
+	'Z',	// // // FDS auto-FM bias
 	//'9'	// Targeted volume slide
 	/*
 	'H',	// VRC7 modulator

@@ -729,21 +729,26 @@ bool CFindDlg::Replace(bool CanUndo)
 		if (Replace.Definite[WC_EFF]) {
 			switch (m_pDocument->GetChipType(m_pView->GetSelectedChannel())) {
 			case SNDCHIP_FDS:
-				switch (Replace.Note.EffNumber[0]) {
-				case EF_SWEEPUP: Replace.Note.EffNumber[0] = EF_FDS_MOD_DEPTH; break;
-				case EF_SWEEPDOWN: Replace.Note.EffNumber[0] = EF_FDS_MOD_SPEED_HI; break;
-				case EF_VOLUME: Replace.Note.EffNumber[0] = EF_FDS_VOLUME; break;
-				} break;
+				for (int i = 0; i < sizeof(FDS_EFFECTS); i++)
+					if (EFF_CHAR[Replace.Note.EffNumber[0] - 1] == EFF_CHAR[FDS_EFFECTS[i] - 1]) {
+						Replace.Note.EffNumber[0] = FDS_EFFECTS[i];
+						break;
+					}
+				break;
 			case SNDCHIP_S5B:
-				switch (Replace.Note.EffNumber[0]) {
-				case EF_SWEEPUP: Replace.Note.EffNumber[0] = EF_SUNSOFT_ENV_LO; break;
-				case EF_SWEEPDOWN: Replace.Note.EffNumber[0] = EF_SUNSOFT_ENV_HI; break;
-				case EF_FDS_MOD_SPEED_LO: Replace.Note.EffNumber[0] = EF_SUNSOFT_ENV_TYPE; break;
-				} break;
+				for (int i = 0; i < sizeof(S5B_EFFECTS); i++)
+					if (EFF_CHAR[Replace.Note.EffNumber[0] - 1] == EFF_CHAR[S5B_EFFECTS[i] - 1]) {
+						Replace.Note.EffNumber[0] = S5B_EFFECTS[i];
+						break;
+					}
+				break;
 			case SNDCHIP_N163:
-				switch (Replace.Note.EffNumber[0]) {
-				case EF_DAC: Replace.Note.EffNumber[0] = EF_N163_WAVE_BUFFER; break;
-				} break;
+				for (int i = 0; i < sizeof(N163_EFFECTS); i++)
+					if (EFF_CHAR[Replace.Note.EffNumber[0] - 1] == EFF_CHAR[N163_EFFECTS[i] - 1]) {
+						Replace.Note.EffNumber[0] = N163_EFFECTS[i];
+						break;
+					}
+				break;
 			}
 			Target.EffNumber[EffColumn]	= Replace.Note.EffNumber[0];
 		}

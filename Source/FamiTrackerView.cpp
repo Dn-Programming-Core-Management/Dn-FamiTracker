@@ -84,7 +84,7 @@ const CString EFFECT_TEXTS[] = {		// // //
 	_T("Hxx - Auto FDS modulation ratio, XX - 80 = multiplier"),
 	_T("I0x - FDS modulation rate, high byte; disable auto modulation"),
 	_T("Ixy - Auto FDS modulation, X = multiplier, Y + 1 = divider"),
-	_T("Jxx - FDS modulation rate, low byte / Auto FDS modulation rate offset"),
+	_T("Jxx - FDS modulation rate, low byte"),
 	_T("W0x - DPCM pitch, F = highest"),
 	_T("Hxx - 5B envelope rate, low byte"),
 	_T("Ixx - 5B envelope rate, high byte"),
@@ -96,6 +96,7 @@ const CString EFFECT_TEXTS[] = {		// // //
 	_T("Zxx - N163 wave buffer access, XX = position in bytes"),
 	_T("Exx - FDS volume envelope (attack), XX = rate"),
 	_T("Exx - FDS volume envelope (decay), XX - 40 = rate"),
+	_T("Zxx - Auto FDS modulation rate bias, XX - 80 = offset"),
 };
 
 // OLE copy and mix
@@ -2780,47 +2781,32 @@ bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, unsigned char nChar
 	if (nChar >= VK_NUMPAD0 && nChar <= VK_NUMPAD9)
 		nChar = '0' + nChar - VK_NUMPAD0;
 
-	if (Chip == SNDCHIP_FDS) {
-		// FDS effects
-		const char FDS_EFFECTS[] = {EF_FDS_MOD_DEPTH, EF_FDS_MOD_SPEED_HI, EF_FDS_MOD_SPEED_LO, EF_FDS_VOLUME};		// // //
+	switch (Chip) {
+	case SNDCHIP_FDS:
 		for (int i = 0; i < sizeof(FDS_EFFECTS) && !bValidEffect; ++i) {
 			if (nChar == EFF_CHAR[FDS_EFFECTS[i] - 1]) {
 				bValidEffect = true;
 				Effect = FDS_EFFECTS[i];
 			}
 		}
-	}
-	else if (Chip == SNDCHIP_VRC7) {
-		// VRC7 effects
-		/*
-		const char VRC7_EFFECTS[] = {EF_VRC7_MODULATOR, EF_VRC7_CARRIER, EF_VRC7_LEVELS};
-		for (int i = 0; i < sizeof(VRC7_EFFECTS) && !bValidEffect; ++i) {
-			if (nChar == EFF_CHAR[VRC7_EFFECTS[i] - 1]) {
-				bValidEffect = true;
-				Effect = VRC7_EFFECTS[i];
-			}
-		}
-		*/
-	}
-	else if (Chip == SNDCHIP_S5B) {
-		// Sunsoft effects
-		const char SUNSOFT_EFFECTS[] = {EF_SUNSOFT_ENV_LO, EF_SUNSOFT_ENV_HI, EF_SUNSOFT_ENV_TYPE};
-		for (int i = 0; i < sizeof(SUNSOFT_EFFECTS) && !bValidEffect; ++i) {
-			if (nChar == EFF_CHAR[SUNSOFT_EFFECTS[i] - 1]) {
-				bValidEffect = true;
-				Effect = SUNSOFT_EFFECTS[i];
-			}
-		}
-	}
-	else if (Chip == SNDCHIP_N163) {		// // //
-		// N163 effects
-		const char N163_EFFECTS[] = {EF_N163_WAVE_BUFFER};
+		break;
+	case SNDCHIP_N163:
 		for (int i = 0; i < sizeof(N163_EFFECTS) && !bValidEffect; ++i) {
 			if (nChar == EFF_CHAR[N163_EFFECTS[i] - 1]) {
 				bValidEffect = true;
 				Effect = N163_EFFECTS[i];
 			}
 		}
+		break;
+	case SNDCHIP_S5B:
+		for (int i = 0; i < sizeof(S5B_EFFECTS) && !bValidEffect; ++i) {
+			if (nChar == EFF_CHAR[S5B_EFFECTS[i] - 1]) {
+				bValidEffect = true;
+				Effect = S5B_EFFECTS[i];
+			}
+		}
+		break;
+	// case SNDCHIP_VRC7:
 	}
 
 	// Common effects
