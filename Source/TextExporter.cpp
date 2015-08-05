@@ -679,7 +679,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	unsigned int dpcm_pos = 0;
 	unsigned int track = 0;
 	unsigned int pattern = 0;
-	bool UseGroove[MAX_TRACKS];		// // //
+	bool UseGroove[MAX_TRACKS] = {};		// // //
 	while (!t.Finished())
 	{
 		// read first token on line
