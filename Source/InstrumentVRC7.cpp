@@ -130,13 +130,13 @@ unsigned int CInstrumentVRC7::GetPatch() const
 	return m_iPatch;
 }
 
-void CInstrumentVRC7::SetCustomReg(int Reg, unsigned int Value)
+void CInstrumentVRC7::SetCustomReg(int Reg, unsigned char Value)		// // //
 {
 	m_iRegs[Reg] = Value;
 	InstrumentChanged();
 }
 
-unsigned int CInstrumentVRC7::GetCustomReg(int Reg) const
+unsigned char CInstrumentVRC7::GetCustomReg(int Reg) const		// // //
 {
 	return m_iRegs[Reg];
 }

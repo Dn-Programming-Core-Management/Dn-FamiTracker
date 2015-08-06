@@ -282,7 +282,7 @@ void CInstrumentEditorVRC7::LoadInternalPatch(int Num)
 
 void CInstrumentEditorVRC7::LoadCustomPatch()
 {
-	unsigned int Reg;
+	unsigned char Reg;
 
 	GetDlgItem(IDC_PASTE)->EnableWindow(TRUE);
 
@@ -337,7 +337,7 @@ void CInstrumentEditorVRC7::LoadCustomPatch()
 
 void CInstrumentEditorVRC7::SaveCustomPatch()
 {
-	int Reg;
+	unsigned char Reg;
 
 	// Register 0
 	Reg  = (IsDlgButtonChecked(IDC_M_AM) ? 0x80 : 0);

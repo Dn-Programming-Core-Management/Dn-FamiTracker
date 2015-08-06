@@ -1467,14 +1467,14 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 						CT[CT_INSTVRC7],
 						i,
 						pDI->GetPatch(),
-						pDI->GetCustomReg(0) & 0xFF,
-						pDI->GetCustomReg(1) & 0xFF,
-						pDI->GetCustomReg(2) & 0xFF,
-						pDI->GetCustomReg(3) & 0xFF,
-						pDI->GetCustomReg(4) & 0xFF,
-						pDI->GetCustomReg(5) & 0xFF,
-						pDI->GetCustomReg(6) & 0xFF,
-						pDI->GetCustomReg(7) & 0xFF,
+						pDI->GetCustomReg(0),		// // //
+						pDI->GetCustomReg(1),
+						pDI->GetCustomReg(2),
+						pDI->GetCustomReg(3),
+						pDI->GetCustomReg(4),
+						pDI->GetCustomReg(5),
+						pDI->GetCustomReg(6),
+						pDI->GetCustomReg(7),
 						ExportString(pInst->GetName()));
 					f.WriteString(s);
 				}

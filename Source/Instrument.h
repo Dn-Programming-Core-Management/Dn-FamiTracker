@@ -186,12 +186,12 @@ public:
 public:
 	void		 SetPatch(unsigned int Patch);
 	unsigned int GetPatch() const;
-	void		 SetCustomReg(int Reg, unsigned int Value);
-	unsigned int GetCustomReg(int Reg) const;
+	void		 SetCustomReg(int Reg, unsigned char Value);		// // //
+	unsigned char GetCustomReg(int Reg) const;		// // //
 
 private:
 	unsigned int m_iPatch;
-	unsigned int m_iRegs[8];		// Custom patch settings
+	unsigned char m_iRegs[8];		// // // Custom patch settings
 };
 
 class CInstrumentFDS : public CInstrument {

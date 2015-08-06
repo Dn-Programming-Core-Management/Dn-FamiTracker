@@ -66,7 +66,7 @@ protected:
 	unsigned char m_iChannel;
 	unsigned char m_iPatch;
 
-	char	m_iRegs[8];
+	unsigned char m_iRegs[8];
 
 	bool	m_bHold;
 
