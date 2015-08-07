@@ -2578,6 +2578,8 @@ void CPatternEditor::UpdateSelectionBegin()		// // //
 	// Call before cursor has moved
 	if (IsShiftPressed() && !m_bCurrentlySelecting && !m_bSelecting) {
 		SetSelectionStart(m_cpCursorPos);
+		m_bCurrentlySelecting = true;
+		m_bSelecting = true;
 	}
 }
 
@@ -2590,11 +2592,8 @@ void CPatternEditor::UpdateSelectionEnd()		// // //
 	const bool bShift = IsShiftPressed();
 
 	if (bShift) {
-		m_bCurrentlySelecting = true;
-		m_bSelecting = true;
 		SetSelectionEnd(m_cpCursorPos);
 		m_iSelectionCondition = GetSelectionCondition();		// // //
-		m_bSelectionInvalidated = true;
 	}
 	else {
 		m_bCurrentlySelecting = false;
@@ -2783,17 +2782,6 @@ void CPatternEditor::MoveToRow(int Row)
 	if (theApp.IsPlaying() && m_bFollowMode)
 		return;
 
-	if (m_cpCursorPos.m_iFrame == 0 && m_cpCursorPos.m_iRow >= 0 && Row < 0) {		// // //
-		m_iWarpCount--;
-		if (!m_bSelecting && IsShiftPressed()) // special case
-			m_bSelecting = true;
-	}
-	if (m_cpCursorPos.m_iFrame == GetFrameCount() - 1 && m_cpCursorPos.m_iRow < m_iPatternLength && Row >= m_iPatternLength) {
-		m_iWarpCount++;
-		if (!m_bSelecting && IsShiftPressed())
-			m_bSelecting = true;
-	}
-
 	if (theApp.GetSettings()->General.bWrapFrames) {		// // //
 		while (Row < 0) {
 			MoveToFrame(m_iCurrentFrame - 1);
@@ -2818,17 +2806,14 @@ void CPatternEditor::MoveToFrame(int Frame)
 {
 	const int FrameCount = GetFrameCount();		// // //
 
-	if (!((m_iCurrentFrame - Frame) % FrameCount))
-		return;
-
-	/*if (m_bSelecting) {		// // //
+	if (m_bSelecting) {		// // //
 		if (Frame < 0)
 			m_iWarpCount--;
 		else if (Frame / FrameCount > m_iCurrentFrame / FrameCount)
 			m_iWarpCount++;
 	}
 	else
-		m_iWarpCount = 0;*/
+		m_iWarpCount = 0;
 
 	if (theApp.GetSettings()->General.bWrapFrames) {
 		Frame %= FrameCount;
