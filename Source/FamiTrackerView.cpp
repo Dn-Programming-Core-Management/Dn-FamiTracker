@@ -2248,7 +2248,8 @@ void CFamiTrackerView::TriggerMIDINote(unsigned int Channel, unsigned int MidiNo
 		}
 	}
 
-	PlayNote(Channel, Note, Octave, Velocity);
+	if (!theApp.IsPlaying() || !m_bEditEnable)		// // //
+		PlayNote(Channel, Note, Octave, Velocity);
 
 	if (Insert)
 		InsertNote(Note, Octave, Channel, Velocity + 1);
@@ -2292,7 +2293,7 @@ void CFamiTrackerView::CutMIDINote(unsigned int Channel, unsigned int MidiNote, 
 	UpdateArpDisplay();
 
 	// Cut note
-	if (m_iLastMIDINote == MidiNote)
+	if ((!theApp.IsPlaying() || !m_bEditEnable) && m_iLastMIDINote == MidiNote)		// // //
 		HaltNote(Channel);
 
 	if (InsertCut)
@@ -2323,7 +2324,7 @@ void CFamiTrackerView::ReleaseMIDINote(unsigned int Channel, unsigned int MidiNo
 	UpdateArpDisplay();
 
 	// Cut note
-	if (m_iLastMIDINote == MidiNote)
+	if ((!theApp.IsPlaying() || !m_bEditEnable) && m_iLastMIDINote == MidiNote)		// // //
 		ReleaseNote(Channel);
 
 	if (InsertCut)
@@ -3074,7 +3075,7 @@ void CFamiTrackerView::HandleKeyboardNote(char nChar, bool Pressed)
 		if (Note == -1)
 			return;
 		// IT doesn't cut the note when key is released
-		if (!theApp.IsPlaying() && theApp.GetSettings()->General.iEditStyle != EDIT_STYLE_IT) {		// // //
+		if (theApp.GetSettings()->General.iEditStyle != EDIT_STYLE_IT) {
 			// Find if note release should be used
 			// TODO: make this an option instead?
 			if (DoRelease())
