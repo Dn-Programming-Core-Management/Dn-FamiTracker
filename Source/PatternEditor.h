@@ -246,7 +246,8 @@ private:
 	CCursorPos GetCursorAtPoint(const CPoint &point) const;
 
 	// Selection methods
-	void UpdateSelection();
+	void UpdateSelectionBegin();		// // //
+	void UpdateSelectionEnd();		// // //
 
 	void SetSelectionStart(const CCursorPos &start);
 	void SetSelectionEnd(const CCursorPos &end);

@@ -2573,7 +2573,15 @@ void CPatternEditor::SetSelectionEnd(const CCursorPos &end)
 	m_selection.m_cpEnd = Pos;
 }
 
-void CPatternEditor::UpdateSelection()
+void CPatternEditor::UpdateSelectionBegin()		// // //
+{
+	// Call before cursor has moved
+	if (IsShiftPressed() && !m_bCurrentlySelecting && !m_bSelecting) {
+		SetSelectionStart(m_cpCursorPos);
+	}
+}
+
+void CPatternEditor::UpdateSelectionEnd()		// // //
 {
 	// Call after cursor has moved
 	// If shift is not pressed, set selection starting point to current cursor position
@@ -2582,10 +2590,6 @@ void CPatternEditor::UpdateSelection()
 	const bool bShift = IsShiftPressed();
 
 	if (bShift) {
-		if (!m_bCurrentlySelecting && !m_bSelecting) {
-			//SetSelectionStart(m_cpCursorPos);		// // //
-		}
-
 		m_bCurrentlySelecting = true;
 		m_bSelecting = true;
 		SetSelectionEnd(m_cpCursorPos);
@@ -2616,40 +2620,46 @@ void CPatternEditor::UpdateSelection()
 
 void CPatternEditor::MoveDown(int Step)
 {
+	UpdateSelectionBegin();		// // //
 	Step = (Step == 0) ? 1 : Step;
 	MoveToRow(m_cpCursorPos.m_iRow + Step);
-	UpdateSelection();
+	UpdateSelectionEnd();
 }
 
 void CPatternEditor::MoveUp(int Step)
 {
+	UpdateSelectionBegin();		// // //
 	Step = (Step == 0) ? 1 : Step;
 	MoveToRow(m_cpCursorPos.m_iRow - Step);
-	UpdateSelection();
+	UpdateSelectionEnd();
 }
 
 void CPatternEditor::MoveLeft()
 {
+	UpdateSelectionBegin();		// // //
 	ScrollLeft();
-	UpdateSelection();
+	UpdateSelectionEnd();
 }
 
 void CPatternEditor::MoveRight()
 {
+	UpdateSelectionBegin();		// // //
 	ScrollRight();
-	UpdateSelection();
+	UpdateSelectionEnd();
 }
 
 void CPatternEditor::MoveToTop()
 {
+	UpdateSelectionBegin();		// // //
 	MoveToRow(0);
-	UpdateSelection();
+	UpdateSelectionEnd();
 }
 
 void CPatternEditor::MoveToBottom()
 {
+	UpdateSelectionBegin();		// // //
 	MoveToRow(m_iPatternLength - 1);
-	UpdateSelection();
+	UpdateSelectionEnd();
 }
 
 void CPatternEditor::NextChannel()
@@ -2670,20 +2680,24 @@ void CPatternEditor::PreviousChannel()
 
 void CPatternEditor::FirstChannel()
 {
+	UpdateSelectionBegin();		// // //
 	MoveToChannel(0);
 	m_cpCursorPos.m_iColumn	= 0;
-	UpdateSelection();
+	UpdateSelectionEnd();
 }
 
 void CPatternEditor::LastChannel()
 {
+	UpdateSelectionBegin();		// // //
 	MoveToChannel(GetChannelCount() - 1);
 	m_cpCursorPos.m_iColumn	= 0;
-	UpdateSelection();
+	UpdateSelectionEnd();
 }
 
 void CPatternEditor::MoveChannelLeft()
 {
+	UpdateSelectionBegin();		// // //
+
 	const int ChannelCount = GetChannelCount();
 
 	// Wrapping
@@ -2695,11 +2709,13 @@ void CPatternEditor::MoveChannelLeft()
 	if (Columns < m_cpCursorPos.m_iColumn)
 		m_cpCursorPos.m_iColumn = Columns;
 
-	UpdateSelection();
+	UpdateSelectionEnd();
 }
 
 void CPatternEditor::MoveChannelRight()
 {
+	UpdateSelectionBegin();		// // //
+
 	const int ChannelCount = GetChannelCount();
 
 	// Wrapping
@@ -2711,11 +2727,13 @@ void CPatternEditor::MoveChannelRight()
 	if (Columns < m_cpCursorPos.m_iColumn)
 		m_cpCursorPos.m_iColumn = Columns;
 
-	UpdateSelection();
+	UpdateSelectionEnd();
 }
 
 void CPatternEditor::OnHomeKey()
 {
+	UpdateSelectionBegin();		// // //
+
 	const bool bControl = IsControlPressed();
 
 	if (bControl || theApp.GetSettings()->General.iEditStyle == EDIT_STYLE_FT2) {
@@ -2731,11 +2749,13 @@ void CPatternEditor::OnHomeKey()
 			MoveToRow(0);
 	}
 
-	UpdateSelection();
+	UpdateSelectionEnd();
 }
 
 void CPatternEditor::OnEndKey()
 {
+	UpdateSelectionBegin();		// // //
+
 	const bool bControl = IsControlPressed();
 	const int Channels = GetChannelCount();
 	const int Columns = GetChannelColumns(GetChannel());
@@ -2755,7 +2775,7 @@ void CPatternEditor::OnEndKey()
 			MoveToRow(m_iPatternLength - 1);
 	}
 
-	UpdateSelection();
+	UpdateSelectionEnd();
 }
 
 void CPatternEditor::MoveToRow(int Row)
@@ -2860,16 +2880,18 @@ void CPatternEditor::MoveToColumn(int Column)
 
 void CPatternEditor::NextFrame()
 {
+	UpdateSelectionBegin();		// // //
 	MoveToFrame(m_iCurrentFrame + 1);
 	CancelSelection();
-	UpdateSelection();
+	UpdateSelectionEnd();
 }
 
 void CPatternEditor::PreviousFrame()
 {
+	UpdateSelectionBegin();		// // //
 	MoveToFrame(m_iCurrentFrame - 1);
 	CancelSelection();
-	UpdateSelection();
+	UpdateSelectionEnd();
 }
 
 // Used by scrolling
