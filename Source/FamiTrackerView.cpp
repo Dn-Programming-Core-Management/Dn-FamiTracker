@@ -3074,7 +3074,7 @@ void CFamiTrackerView::HandleKeyboardNote(char nChar, bool Pressed)
 		if (Note == -1)
 			return;
 		// IT doesn't cut the note when key is released
-		if (theApp.GetSettings()->General.iEditStyle != EDIT_STYLE_IT) {
+		if (!theApp.IsPlaying() && theApp.GetSettings()->General.iEditStyle != EDIT_STYLE_IT) {		// // //
 			// Find if note release should be used
 			// TODO: make this an option instead?
 			if (DoRelease())
