@@ -2247,8 +2247,8 @@ void CFamiTrackerView::TriggerMIDINote(unsigned int Channel, unsigned int MidiNo
 			Velocity = m_iLastVolume * 8;
 		}
 	}
-
-	if (!theApp.IsPlaying() || !m_bEditEnable)		// // //
+	
+	if (!(theApp.IsPlaying() && m_bEditEnable && !m_bFollowMode))		// // //
 		PlayNote(Channel, Note, Octave, Velocity);
 
 	if (Insert)
@@ -2293,7 +2293,7 @@ void CFamiTrackerView::CutMIDINote(unsigned int Channel, unsigned int MidiNote, 
 	UpdateArpDisplay();
 
 	// Cut note
-	if ((!theApp.IsPlaying() || !m_bEditEnable) && m_iLastMIDINote == MidiNote)		// // //
+	if (!(theApp.IsPlaying() && m_bEditEnable && !m_bFollowMode) && m_iLastMIDINote == MidiNote)		// // //
 		HaltNote(Channel);
 
 	if (InsertCut)
@@ -2324,7 +2324,7 @@ void CFamiTrackerView::ReleaseMIDINote(unsigned int Channel, unsigned int MidiNo
 	UpdateArpDisplay();
 
 	// Cut note
-	if ((!theApp.IsPlaying() || !m_bEditEnable) && m_iLastMIDINote == MidiNote)		// // //
+	if (!(theApp.IsPlaying() && m_bEditEnable && !m_bFollowMode) && m_iLastMIDINote == MidiNote)		// // //
 		ReleaseNote(Channel);
 
 	if (InsertCut)
