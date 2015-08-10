@@ -759,7 +759,6 @@ bool CChannelHandler::CheckCommonEffects(unsigned char EffCmd, unsigned char Eff
 
 	switch (EffCmd) {
 		case EF_PORTAMENTO:
-			m_iPortaSpeed = EffParam;
 			m_iEffectParam = EffParam;		// // //
 			m_iEffect = EF_PORTAMENTO;
 			SetupSlide();
@@ -797,13 +796,13 @@ bool CChannelHandler::CheckCommonEffects(unsigned char EffCmd, unsigned char Eff
 			m_iEffect = EF_PORTA_UP;
 			break;
 		case EF_SLIDE_UP:		// // //
-			m_iEffect = EF_SLIDE_UP;
 			m_iEffectParam = EffParam;
+			m_iEffect = EF_SLIDE_UP;
 			SetupSlide();
 			break;
 		case EF_SLIDE_DOWN:		// // //
-			m_iEffect = EF_SLIDE_DOWN;
 			m_iEffectParam = EffParam;
+			m_iEffect = EF_SLIDE_DOWN;
 			SetupSlide();
 			break;
 		case EF_VOLUME_SLIDE:

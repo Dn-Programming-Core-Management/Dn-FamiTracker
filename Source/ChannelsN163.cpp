@@ -70,11 +70,6 @@ void CChannelHandlerN163::HandleCustomEffects(int EffNum, int EffParam)
 		m_iEffectParam = EffParam;		// // //
 		m_iEffect = EF_PORTA_DOWN;
 	}
-	else if (EffNum == EF_PORTAMENTO) {
-		m_iPortaSpeed = EffParam << N163_PITCH_SLIDE_SHIFT;
-		m_iEffectParam = EffParam;		// // //
-		m_iEffect = EF_PORTAMENTO;
-	}
 	else if (!CheckCommonEffects(EffNum, EffParam)) {
 		// Custom effects
 		switch (EffNum) {
