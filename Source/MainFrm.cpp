@@ -810,14 +810,14 @@ void CMainFrame::SetTempo(int Tempo)
 void CMainFrame::SetSpeed(int Speed)
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
-	int MaxSpeed = pDoc->GetSpeedSplitPoint() - 1;
+	int MaxSpeed = pDoc->GetSongTempo(m_iTrack) ? pDoc->GetSpeedSplitPoint() - 1 : 0xFF;
 	if (pDoc->GetSongGroove(m_iTrack)) {		// // //
 		Speed = std::max(Speed, 0);
 		Speed = std::min(Speed, MAX_GROOVE - 1);
 	}
 	else {
 		Speed = std::max(Speed, MIN_SPEED);
-		Speed = std::min(Speed, MaxSpeed);
+		Speed = std::min(Speed, MaxSpeed);		// // //
 	}
 	pDoc->SetSongSpeed(m_iTrack, Speed);
 	theApp.GetSoundGenerator()->ResetTempo();
@@ -3097,7 +3097,8 @@ void CMainFrame::OnUpdateGrooveEdit(CCmdUI *pCmdUI)
 	}
 	else {
 		m_pButtonGroove->SetWindowText(_T("Speed"));
-		if (Speed > pDoc->GetSpeedSplitPoint() - 1) Speed = pDoc->GetSpeedSplitPoint() - 1;
+		int MaxSpeed = pDoc->GetSongTempo(m_iTrack) ? pDoc->GetSpeedSplitPoint() - 1 : 0xFF;
+		if (Speed > MaxSpeed) Speed = MaxSpeed;
 		if (Speed < MIN_SPEED) Speed = MIN_SPEED;
 		pDoc->SetSongSpeed(m_iTrack, Speed);
 	}
