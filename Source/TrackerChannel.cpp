@@ -162,10 +162,10 @@ bool CTrackerChannel::IsEffectCompatible(int EffNumber, int EffParam) const		// 
 {
 	switch (EffNumber) {
 		case EF_NONE:
-		case EF_SPEED: case EF_SKIP: case EF_HALT:
+		case EF_SPEED: case EF_JUMP: case EF_SKIP: case EF_HALT:
 		case EF_DELAY:
 			return true;
-		case EF_JUMP: case EF_NOTE_CUT: case EF_NOTE_RELEASE:
+		case EF_NOTE_CUT: case EF_NOTE_RELEASE:
 			return EffParam <= 0x7F || m_iChannelID == CHANID_TRIANGLE;
 		case EF_GROOVE:
 			return EffParam < MAX_GROOVE;
