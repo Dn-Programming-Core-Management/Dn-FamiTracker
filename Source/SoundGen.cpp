@@ -2096,6 +2096,7 @@ void CSoundGen::PlayerJumpTo(int Frame)
 	m_iPlayRow = 0;
 
 	++m_iFramesPlayed;
+	++m_iRowsPlayed;		// // //
 
 	m_bDirty = true;
 }
@@ -2116,6 +2117,7 @@ void CSoundGen::PlayerSkipTo(int Row)
 		m_iPlayRow = Rows - 1;
 	
 	++m_iFramesPlayed;
+	++m_iRowsPlayed;		// // //
 
 	m_bDirty = true;
 }
