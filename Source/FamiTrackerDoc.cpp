@@ -2311,7 +2311,7 @@ bool CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile)
 		ASSERT_FILE_DATA(Track < MAX_TRACKS);
 		ASSERT_FILE_DATA(Channel < MAX_CHANNELS);
 		ASSERT_FILE_DATA(Pattern < MAX_PATTERN);
-		ASSERT_FILE_DATA((Items - 1) < MAX_PATTERN_LENGTH);
+		ASSERT_FILE_DATA(Items <= MAX_PATTERN_LENGTH);
 
 		CPatternData *pTrack = GetTrack(Track);
 
