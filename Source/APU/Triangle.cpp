@@ -51,6 +51,7 @@ void CTriangle::Reset()
 	Write(2, 0);
 	Write(3, 0);
 
+	Mix(0);		// // //
 	EndFrame();
 }
 

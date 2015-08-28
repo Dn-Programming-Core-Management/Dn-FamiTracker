@@ -62,7 +62,8 @@ void CNoise::Reset()
 	Write(1, 0);
 	Write(2, 0);
 	Write(3, 0);
-
+	
+	Mix(0);		// // //
 	EndFrame();
 }
 

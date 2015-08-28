@@ -75,6 +75,7 @@ void CSquare::Reset()
 
 	SweepUpdate(false);
 
+	Mix(0);		// // //
 	EndFrame();
 }
 
