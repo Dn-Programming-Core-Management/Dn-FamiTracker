@@ -457,7 +457,9 @@ void CInstrumentEditorVRC7::CopyAsPlainText()		// // //
 		reg[i] = (patch == 0) ? (unsigned char)(m_pInstrument->GetCustomReg(i)) : default_inst[patch * 16 + i];
 	
 	CString MML;
-	MML.Format(_T(";TL FB\r\n %2d,%2d,\r\n;AR DR SL RR KL MT AM VB EG KR DT\r\n"), reg[2] & 0x3F, reg[3] & 0x07);
+	GetDlgItemTextA(IDC_PATCH, MML);
+	MML.Format(_T(";%s\r\n;%s\r\n"), MML, m_pInstrument->GetName());
+	MML.AppendFormat(_T(";TL FB\r\n %2d,%2d,\r\n;AR DR SL RR KL MT AM VB EG KR DT\r\n"), reg[2] & 0x3F, reg[3] & 0x07);
 	for (int i = 0; i <= 1; i++)
 		MML.AppendFormat(_T(" %2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,\r\n"),
 			(reg[4 + i] >> 4) & 0x0F, reg[4 + i] & 0x0F, (reg[6 + i] >> 4) & 0x0F, reg[6 + i] & 0x0F,
