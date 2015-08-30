@@ -414,13 +414,17 @@ void CInstrumentEditorVRC7::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 	
 	menu.CreatePopupMenu();
 	menu.AppendMenu(MF_STRING, 1, _T("&Copy"));
-	menu.AppendMenu(MF_STRING, 2, _T("&Paste"));
+	menu.AppendMenu(MF_STRING, 2, _T("Copy as Plain &Text"));		// // //
+	menu.AppendMenu(MF_STRING, 3, _T("&Paste"));
 
 	switch (menu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD, point.x, point.y, this)) {
 		case 1: // Copy
 			OnCopy();
 			break;
-		case 2: // Paste
+		case 2: // // //
+			CopyAsPlainText();
+			break;
+		case 3: // Paste
 			OnPaste();
 			break;
 	}
@@ -434,6 +438,32 @@ void CInstrumentEditorVRC7::OnCopy()
 	// Assemble a MML string
 	for (int i = 0; i < 8; ++i)
 		MML.AppendFormat(_T("$%02X "), (patch == 0) ? (unsigned char)(m_pInstrument->GetCustomReg(i)) : default_inst[patch * 16 + i]);
+	
+	CClipboard Clipboard(this, CF_TEXT);
+
+	if (!Clipboard.IsOpened()) {
+		AfxMessageBox(IDS_CLIPBOARD_OPEN_ERROR);
+		return;
+	}
+
+	Clipboard.SetDataPointer(MML.GetBuffer(), MML.GetLength() + 1);
+}
+
+void CInstrumentEditorVRC7::CopyAsPlainText()		// // //
+{
+	int patch = m_pInstrument->GetPatch();
+	int reg[8] = {};
+	for (int i = 0; i < 8; ++i)
+		reg[i] = (patch == 0) ? (unsigned char)(m_pInstrument->GetCustomReg(i)) : default_inst[patch * 16 + i];
+	
+	CString MML;
+	MML.Format(_T(";TL FB\r\n %2d,%2d,\r\n;AR DR SL RR KL MT AM VB EG KR DT\r\n"), reg[2] & 0x3F, reg[3] & 0x07);
+	for (int i = 0; i <= 1; i++)
+		MML.AppendFormat(_T(" %2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,\r\n"),
+			(reg[4 + i] >> 4) & 0x0F, reg[4 + i] & 0x0F, (reg[6 + i] >> 4) & 0x0F, reg[6 + i] & 0x0F,
+			(reg[2 + i] >> 6) & 0x03, reg[i] & 0x0F,
+			(reg[i] >> 7) & 0x01, (reg[i] >> 6) & 0x01, (reg[i] >> 5) & 0x01, (reg[i] >> 4) & 0x01,
+			(reg[3] >> (4 - i)) & 0x01);
 	
 	CClipboard Clipboard(this, CF_TEXT);
 

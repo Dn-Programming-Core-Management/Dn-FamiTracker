@@ -48,6 +48,7 @@ protected:
 	void EnableControls(bool bEnable);
 	void SelectPatch(int Patch);
 	void PasteSettings(LPCTSTR pString);
+	void CopyAsPlainText();		// // //
 
 protected:
 	CInstrumentVRC7 *m_pInstrument;
