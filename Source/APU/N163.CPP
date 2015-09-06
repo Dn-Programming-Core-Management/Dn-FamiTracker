@@ -149,8 +149,11 @@ void CN163::Mix(int32 Value, uint32 Time, uint8 ChanID)
 
 void CN163::EndFrame()
 {
-	for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < 8; ++i) {
 		m_pChannels[i]->EndFrame();
+		if (i != m_iActiveChan)		// // //
+			m_pChannels[i]->ResetCounter();
+	}
 
 	m_iGlobalTime = 0;
 }
@@ -364,4 +367,9 @@ uint8 CN163Chan::ReadMem(uint8 Reg)
 	}
 
 	return 0;
+}
+
+void CN163Chan::ResetCounter()
+{
+	m_iCounter = 0;
 }

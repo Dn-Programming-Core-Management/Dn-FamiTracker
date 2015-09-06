@@ -41,6 +41,7 @@ public:
 	void ProcessClean(uint32 Time, uint8 ChannelsActive);		// // //
 
 	uint8 ReadMem(uint8 Reg);
+	void ResetCounter();
 
 private:
 	uint32	m_iCounter, m_iFrequency;
@@ -67,7 +68,6 @@ public:
 	void SetMixingMethod(bool bLinear);		// // //
 
 protected:
-	void ProcessNew(uint32 Time);		// // //
 	void ProcessOld(uint32 Time);		// // //
 
 private:
