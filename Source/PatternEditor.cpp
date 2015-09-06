@@ -1267,7 +1267,7 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 		// Draw each column
 		const int BorderWidth = (m_iSelectionCondition == SEL_NONTERMINAL_SKIP) ? 2 : 1;		// // //
 		for (int j = 0; j < Columns; ++j) {
-			int SelWidth = GetSelectWidth(j);		// // //
+			int SelWidth = GetSelectWidth(m_bCompactMode ? 0 : j);		// // //
 
 			// Selection
 			if (m_bSelecting) {		// // //
@@ -1279,9 +1279,9 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 						pDC->FillSolidRect(SelStart - m_iColumnSpacing, 0, SelWidth, BorderWidth, SelectEdgeCol);
 					if (Row == m_selection.GetRowEnd() && !((f - m_selection.GetFrameEnd()) % GetFrameCount()))
 						pDC->FillSolidRect(SelStart - m_iColumnSpacing, m_iRowHeight - BorderWidth, SelWidth, BorderWidth, SelectEdgeCol);
-					if (i == m_selection.GetChanStart() && j == m_selection.GetColStart())
+					if (i == m_selection.GetChanStart() && (j == m_selection.GetColStart() || m_bCompactMode))		// // //
 						pDC->FillSolidRect(SelStart - m_iColumnSpacing, 0, BorderWidth, m_iRowHeight, SelectEdgeCol);
-					if (i == m_selection.GetChanEnd() && j == m_selection.GetColEnd())
+					if (i == m_selection.GetChanEnd() && (j == m_selection.GetColEnd() || m_bCompactMode))		// // //
 						pDC->FillSolidRect(SelStart - m_iColumnSpacing + SelWidth - BorderWidth, 0, BorderWidth, m_iRowHeight, SelectEdgeCol);
 				}
 			}
@@ -1305,7 +1305,8 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 
 			DrawCell(pDC, PosX - m_iColumnSpacing / 2, j, i, bInvert, &NoteData, &colorInfo);		// // //
 			PosX += GetColumnSpace(j);
-			SelStart += GetSelectWidth(j);
+			if (!m_bCompactMode)		// // //
+				SelStart += GetSelectWidth(j);
 		}
 
 		OffsetX += m_iChannelWidths[i];
@@ -3193,15 +3194,17 @@ void CPatternEditor::ContinueMouseSelection(const CPoint &point)
 	}
 	else if (!m_pView->IsDragging()) {
 		// Expand selection
-		if (bControl) {
+		if (bControl || m_bCompactMode) {		// // //
 			if (PointPos.m_iChannel >= m_selection.m_cpStart.m_iChannel) {
-				PointPos.m_iColumn = GetChannelColumns(PointPos.m_iChannel) - 1;		// // //
+				unsigned rawCol = m_pDocument->GetEffColumns(GetSelectedTrack(), PointPos.m_iChannel) * 3 + COLUMNS - 1;		// / //
+				PointPos.m_iColumn = rawCol;
 				m_selection.m_cpStart.m_iColumn = 0;
 				m_bSelectionInvalidated = true;
 			}
 			else {
+				unsigned rawCol = m_pDocument->GetEffColumns(GetSelectedTrack(), m_selection.m_cpStart.m_iChannel) * 3 + COLUMNS - 1;
 				PointPos.m_iColumn = 0;
-				m_selection.m_cpStart.m_iColumn = GetChannelColumns(m_selection.m_cpStart.m_iChannel) - 1;		// // //
+				m_selection.m_cpStart.m_iColumn = rawCol;
 				m_bSelectionInvalidated = true;
 			}
 		}
