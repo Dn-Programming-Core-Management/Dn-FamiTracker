@@ -773,7 +773,7 @@ bool CPatternEditor::CursorUpdated()
 		
 		if (m_bFollowMode) {
 			m_cpCursorPos.m_iRow = m_iPlayRow;
-			m_iCurrentFrame = m_iPlayFrame;
+			m_cpCursorPos.m_iFrame = m_iCurrentFrame = m_iPlayFrame;		// // //
 		}
 	}
 	else {
