@@ -74,6 +74,14 @@ CAPU::CAPU(IAudioCallback *pCallback, CSampleMem *pSampleMem) :
 	m_pN163 = new CN163(m_pMixer);
 	m_pS5B = new CS5B(m_pMixer);
 
+	memset(m_iRegs, 0, sizeof(m_iRegs));		// // //
+	memset(m_iRegsVRC6, 0, sizeof(m_iRegsVRC6));
+	memset(m_iRegsFDS, 0, sizeof(m_iRegsFDS));
+	memset(m_iRegsMMC5, 0, sizeof(m_iRegsMMC5));
+	memset(m_iRegsVRC7, 0, sizeof(m_iRegsVRC7));
+	memset(m_iRegsS5B, 0, sizeof(m_iRegsS5B));
+	m_iPortVRC7 = m_iPortS5B = 0;
+
 	m_fLevelVRC7 = 1.0f;
 	m_fLevelS5B = 1.0f;
 
@@ -608,6 +616,16 @@ void CAPU::LogExternalWrite(uint16 Address, uint8 Value)
 		m_iRegsVRC6[Address - 0xB000 + 6] = Value;
 	else if (Address >= 0x4080 && Address <= 0x408F)
 		m_iRegsFDS[Address - 0x4080] = Value;
+	else if (Address >= 0x5000 && Address <= 0x501F)		// // //
+		m_iRegsMMC5[Address - 0x5000] = Value;
+	else if (Address == 0x9010)
+		m_iPortVRC7 = Value & 0x3F;
+	else if (Address == 0x9030)
+		m_iRegsVRC7[m_iPortVRC7] = Value;
+	else if (Address == 0xC000)
+		m_iPortS5B = Value & 0x0F;
+	else if (Address == 0xE000)
+		m_iRegsS5B[m_iPortS5B] = Value;
 }
 
 uint8 CAPU::GetReg(int Chip, int Reg) const 
@@ -618,15 +636,15 @@ uint8 CAPU::GetReg(int Chip, int Reg) const
 		case SNDCHIP_VRC6:
 			return m_iRegsVRC6[Reg & 0x0F]; 
 		case SNDCHIP_MMC5:		// // //
-			return m_pMMC5->GetLocalReg(Reg);
+			return m_iRegsMMC5[Reg & 0x1F];
 		case SNDCHIP_N163:
 			return m_pN163->ReadMem(Reg);
 		case SNDCHIP_FDS:
 			return m_iRegsFDS[Reg & 0x0F];
 		case SNDCHIP_VRC7:		// // //
-			return m_pVRC7->GetLocalReg(Reg);
+			return m_iRegsVRC7[Reg & 0x3F];
 		case SNDCHIP_S5B:		// // //
-			return m_pS5B->GetLocalReg(Reg);
+			return m_iRegsS5B[Reg & 0x0F];
 	}
 
 	return 0;

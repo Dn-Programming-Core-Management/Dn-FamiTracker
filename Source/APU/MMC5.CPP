@@ -2,8 +2,6 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
-**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -33,7 +31,6 @@ CMMC5::CMMC5(CMixer *pMixer) :
 	m_iMulLow(0),
 	m_iMulHigh(0)
 {
-	for (int i = 0; i < 8; i++) m_iLocalReg[i] = 0;		// // //
 }
 
 CMMC5::~CMMC5()
@@ -99,9 +96,6 @@ void CMMC5::Write(uint16 Address, uint8 Value)
 			m_iMulHigh = Value;
 			break;
 	}
-
-	if (Address >= 0x5000 && Address <= 0x5007)		// // //
-		m_iLocalReg[Address - 0x5000] = Value;
 }
 
 uint8 CMMC5::Read(uint16 Address, bool &Mapped)
@@ -121,11 +115,6 @@ uint8 CMMC5::Read(uint16 Address, bool &Mapped)
 	}
 
 	return 0;
-}
-
-uint8 CMMC5::GetLocalReg(uint8 Address)		// // //
-{
-	return m_iLocalReg[Address];
 }
 
 void CMMC5::EndFrame()

@@ -2,8 +2,6 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
-**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -38,9 +36,6 @@ CS5B::CS5B(CMixer *pMixer) : m_iRegister(0), m_iTime(0)
 	m_fVolume = AMPLIFY;
 
 	psg = NULL;
-
-	for (int i = 0; i < 16; i++)		// // //
-		m_iLocalReg[i] = 0;
 }
 
 CS5B::~CS5B()
@@ -95,7 +90,6 @@ void CS5B::Write(uint16 Address, uint8 Value)
 			break;
 		case 0xE000:
 			PSG_writeReg(psg, m_iRegister, Value);
-			m_iLocalReg[m_iRegister] = Value;		// // //
 			break;
 	}
 }
@@ -105,11 +99,6 @@ uint8 CS5B::Read(uint16 Address, bool &Mapped)
 	// No reads here
 	Mapped = false;
 	return 0;
-}
-
-uint8 CS5B::GetLocalReg(uint8 Address)		// // //
-{
-	return m_iLocalReg[Address];
 }
 
 void CS5B::SetSampleSpeed(uint32 SampleRate, double ClockRate, uint32 FrameRate)

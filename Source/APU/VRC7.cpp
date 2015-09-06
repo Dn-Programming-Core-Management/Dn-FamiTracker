@@ -2,8 +2,6 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
-**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -31,7 +29,6 @@ const uint32 CVRC7::OPL_CLOCK = 3579545;	// Clock frequency
 CVRC7::CVRC7(CMixer *pMixer) : CExternal(pMixer), m_pBuffer(NULL), m_pOPLLInt(NULL), m_fVolume(1.0f), m_iMaxSamples(0), m_iSoundReg(0)
 {
 	Reset();
-	memset(m_iLocalReg, 0, 64);		// // //
 }
 
 CVRC7::~CVRC7()
@@ -82,7 +79,6 @@ void CVRC7::Write(uint16 Address, uint8 Value)
 			break;
 		case 0x9030:
 			OPLL_writeReg(m_pOPLLInt, m_iSoundReg, Value);
-			m_iLocalReg[m_iSoundReg] = Value;		// // //
 			break;
 	}
 }
@@ -90,11 +86,6 @@ void CVRC7::Write(uint16 Address, uint8 Value)
 uint8 CVRC7::Read(uint16 Address, bool &Mapped)
 {
 	return 0;
-}
-
-uint8 CVRC7::GetLocalReg(uint8 Address)		// // //
-{
-	return m_iLocalReg[Address % 64];
 }
 
 void CVRC7::EndFrame()

@@ -148,6 +148,11 @@ private:
 	uint8		m_iRegs[0x20];
 	uint8		m_iRegsVRC6[0x10];
 	uint8		m_iRegsFDS[0x10];
+	uint16		m_iRegsMMC5[0x20];					// // //
+	uint8		m_iRegsVRC7[0x40];
+	uint8		m_iRegsS5B[0x10];
+	uint8		m_iPortVRC7;
+	uint8		m_iPortS5B;
 
 	float		m_fLevelVRC7;
 	float		m_fLevelS5B;
