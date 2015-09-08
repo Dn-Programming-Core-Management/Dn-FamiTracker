@@ -592,7 +592,7 @@ searchTerm CFindDlg::toSearch(const replaceTerm x)
 bool CFindDlg::CompareFields(const stChanNote Target, bool Noise, int EffCount)
 {
 	int EffColumn = m_cEffectColumn->GetCurSel();
-	if (EffColumn > EffCount) return false;
+	if (EffColumn > EffCount && EffColumn != 4) EffColumn = EffCount;
 	bool EffectMatch = false;
 
 	replaceTerm Term = toReplace(m_searchTerm);
