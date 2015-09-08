@@ -50,6 +50,7 @@ CN163::CN163(CMixer *pMixer) :
 	m_bOldMixing(0)		// // //
 {
 	m_pWaveData = new uint8[0x80];
+	memset(m_pWaveData, 0, 0x80 * sizeof(uint8));		// // //
 
 	m_pMixer = pMixer;
 

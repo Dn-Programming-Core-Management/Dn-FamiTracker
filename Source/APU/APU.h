@@ -73,7 +73,7 @@ public:
 	uint8	GetSamplePos() const;
 	uint8	GetDeltaCounter() const;
 	bool	DPCMPlaying() const;
-	uint8	GetReg(int Chip, int Reg) const;
+	uint16	GetReg(int Chip, int Reg) const;		// // //
 
 	void	SetChipLevel(chip_level_t Chip, float Level);
 
@@ -89,6 +89,7 @@ public:
 	static const uint32	BASE_FREQ_PAL;
 	static const uint8	FRAME_RATE_NTSC;
 	static const uint8	FRAME_RATE_PAL;
+	static const uint8	REG_DECAY_RATE;		// // //
 
 private:
 	static const int SEQUENCER_PERIOD;
@@ -145,13 +146,15 @@ private:
 	uint32		m_iBufferPointer;					// Fill pos in buffer
 	int16		*m_pSoundBuffer;					// Sound transfer buffer
 
-	uint8		m_iRegs[0x20];
-	uint8		m_iRegsVRC6[0x10];
-	uint8		m_iRegsFDS[0x10];
-	uint16		m_iRegsMMC5[0x20];					// // //
-	uint8		m_iRegsVRC7[0x40];
-	uint8		m_iRegsS5B[0x10];
-	uint8		m_iPortVRC7;
+	uint16		m_iRegs2A03[0x20];					// // // renamed
+	uint16		m_iRegsVRC6[0x10];
+	uint16		m_iRegsVRC7[0x40];
+	uint16		m_iRegsFDS[0x10];
+	uint16		m_iRegsMMC5[0x20];
+	uint16		m_iRegsN163[0x80];
+	uint16		m_iRegsS5B[0x10];
+	uint8		m_iPortVRC7;						// // //
+	uint8		m_iPortN163;
 	uint8		m_iPortS5B;
 
 	float		m_fLevelVRC7;

@@ -178,7 +178,7 @@ public:
 	void		AddCycles(int Count);
 
 	// Other
-	uint8		GetReg(int Chip, int Reg) const;
+	uint16		GetReg(int Chip, int Reg) const;		// // //
 	CString		RecallChannelState(int Channel) const;		// // //
 
 	// FDS & N163 wave preview
