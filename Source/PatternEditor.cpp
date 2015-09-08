@@ -1804,7 +1804,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		}
 
 		pDC->SetBkColor(m_colEmptyBg);
-		pDC->SetTextColor(0xC0C0C0);
+		pDC->SetTextColor(0xFFAFAF);
 
 		int x = 30;		// // //
 		int y = 30 + line++ * 13;
@@ -1902,7 +1902,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		CString text(_T("VRC6 registers"));
 		pDC->SetBkColor(m_colEmptyBg);
 		pDC->SetTextColor(0xFFAFAF);
-		pDC->TextOut(30, 30 + (line++) * 13, text);		// // //
+		pDC->TextOut(30, 30 + (line++) * 13, text);
 
 		// VRC6
 		for (int i = 0; i < 3; ++i) {
@@ -1912,7 +1912,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			}
 
 			pDC->SetBkColor(m_colEmptyBg);
-			pDC->SetTextColor(0xC0C0C0);
+			pDC->SetTextColor(0xFFAFAF);
 
 			int x = 30;		// // //
 			int y = 30 + line++ * 13;
@@ -1985,7 +1985,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			}
 
 			pDC->SetBkColor(m_colEmptyBg);
-			pDC->SetTextColor(0xC0C0C0);
+			pDC->SetTextColor(0xFFAFAF);
 
 			int x = 30;
 			int y = 30 + line++ * 13;
@@ -2033,7 +2033,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		CString text(_T("N163 registers"));
 		pDC->SetBkColor(m_colEmptyBg);
 		pDC->SetTextColor(0xFFAFAF);
-		pDC->TextOut(30, 30 + (line++) * 13, text);		// // //
+		pDC->TextOut(30, 30 + (line++) * 13, text);
 
 		// // // N163 wave
 		int Length = 0x80 - 8 * m_pDocument->GetNamcoChannels();
@@ -2065,7 +2065,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			int vol = (reg[7] & 0x0F);
 
 			pDC->SetBkColor(m_colEmptyBg);
-			pDC->SetTextColor(0xC0C0C0);
+			pDC->SetTextColor(0xFFAFAF);
 
 			int x = 30;		// // //
 			int y = 30 + line++ * 13;
@@ -2134,14 +2134,14 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		CString text(_T("FDS registers"));
 		pDC->SetBkColor(m_colEmptyBg);
 		pDC->SetTextColor(0xFFAFAF);
-		pDC->TextOut(30, 30 + (line++) * 13, text);		// // //
+		pDC->TextOut(30, 30 + (line++) * 13, text);
 
 		for (int i = 0; i < 11; ++i) {
 			reg[0] = static_cast<unsigned char>(pSoundGen->GetReg(SNDCHIP_FDS, i));
 			update[0] = pSoundGen->GetReg(SNDCHIP_FDS, i) >> 8;
 
 			pDC->SetBkColor(m_colEmptyBg);
-			pDC->SetTextColor(0xC0C0C0);
+			pDC->SetTextColor(0xFFAFAF);
 
 			int x = 30;		// // //
 			int y = 30 + line++ * 13;
@@ -2200,9 +2200,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		}
 
 		pDC->SetBkColor(m_colEmptyBg);
-		pDC->SetTextColor(0xC0C0C0);
+		pDC->SetTextColor(0xFFAFAF);
 
-		text.Format(_T("$00"));
+		text.Format(_T("$00:"));
 		pDC->SetTextAlign(TA_UPDATECP);
 		pDC->MoveTo(30, 30 + (line++) * 13);
 		pDC->TextOut(0, 0, text);
@@ -2219,7 +2219,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			}
 
 			pDC->SetBkColor(m_colEmptyBg);
-			pDC->SetTextColor(0xC0C0C0);
+			pDC->SetTextColor(0xFFAFAF);
 
 			int x = 30;
 			int y = 30 + line++ * 13;
@@ -2292,7 +2292,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			update[1] = pSoundGen->GetReg(SNDCHIP_S5B, i * 2 + 1) >> 8;
 
 			pDC->SetBkColor(m_colEmptyBg);
-			pDC->SetTextColor(0xC0C0C0);
+			pDC->SetTextColor(0xFFAFAF);
 
 			int x = 30;
 			int y = 30 + line++ * 13;
@@ -2349,7 +2349,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			}
 
 			pDC->SetBkColor(m_colEmptyBg);
-			pDC->SetTextColor(0xC0C0C0);
+			pDC->SetTextColor(0xFFAFAF);
 
 			int x = 30;
 			int y = 30 + line++ * 13;
