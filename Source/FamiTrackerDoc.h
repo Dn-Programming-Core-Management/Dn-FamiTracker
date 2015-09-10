@@ -206,6 +206,8 @@ public:
 	bool			PullUp(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row);
 	void			CopyPattern(unsigned int Track, int Target, int Source, int Channel);
 
+	void			SwapChannels(unsigned int Track, unsigned int First, unsigned int Second);		// // //
+
 	// Frame editing
 	bool			InsertFrame(unsigned int Track, unsigned int Frame);
 	bool			RemoveFrame(unsigned int Track, unsigned int Frame);

@@ -172,13 +172,13 @@ BEGIN
     END
     POPUP "&Pattern"
     BEGIN
-        MENUITEM "Interpolate",                 ID_EDIT_INTERPOLATE
+        MENUITEM "&Interpolate",                ID_EDIT_INTERPOLATE
         MENUITEM "&Reverse",                    ID_EDIT_REVERSE
         MENUITEM "R&eplace Instrument",         ID_EDIT_REPLACEINSTRUMENT
         MENUITEM SEPARATOR
-        MENUITEM "Expand",                      ID_EDIT_EXPANDPATTERNS
-        MENUITEM "Shrink",                      ID_EDIT_SHRINKPATTERNS
-        MENUITEM "Stretch...",                  ID_EDIT_STRETCHPATTERNS
+        MENUITEM "E&xpand",                     ID_EDIT_EXPANDPATTERNS
+        MENUITEM "S&hrink",                     ID_EDIT_SHRINKPATTERNS
+        MENUITEM "&Stretch...",                 ID_EDIT_STRETCHPATTERNS
         MENUITEM SEPARATOR
         POPUP "Transpose"
         BEGIN
@@ -187,6 +187,8 @@ BEGIN
             MENUITEM "Decrease Octave",             ID_TRANSPOSE_DECREASEOCTAVE
             MENUITEM "Increase Octave",             ID_TRANSPOSE_INCREASEOCTAVE
         END
+        MENUITEM SEPARATOR
+        MENUITEM "S&wap Channels...",           ID_EDIT_SWAPCHANNELS
     END
     POPUP "&Module"
     BEGIN
@@ -888,6 +890,14 @@ BEGIN
         RIGHTMARGIN, 152
         TOPMARGIN, 7
         BOTTOMMARGIN, 53
+    END
+
+    IDD_SWAP, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 80
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 105
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1706,6 +1716,23 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,102,39,50,14
 END
 
+IDD_SWAP DIALOGEX 0, 0, 87, 112
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Swap Channels"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,7,91,31,14
+    PUSHBUTTON      "Cancel",IDCANCEL,49,91,31,14
+    LTEXT           "Chip:",IDC_STATIC,9,6,18,8
+    LTEXT           "Channel:",IDC_STATIC,49,6,30,8
+    LTEXT           "Warning: Resets undo after swapping!",IDC_STATIC,7,70,73,17
+    COMBOBOX        IDC_COMBO_SWAP_CHIP1,7,19,34,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_SWAP_CHIP2,7,38,34,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_SWAP_CHAN1,49,19,28,14,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT_SWAP_CHAN2,49,38,28,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Apply to all tracks",IDC_CHECK_SWAP_ALL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,57,73,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1876,6 +1903,11 @@ BEGIN
 END
 
 IDD_INSTRUMENT_N163_WAVE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SWAP AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -2375,6 +2407,7 @@ BEGIN
     ID_BOOKMARKS_TOGGLE     "Create or delete a bookmark on the current row\nToggle Bookmark"
     ID_BOOKMARKS_PREVIOUS   "Navigate to the previous bookmark\nPrevious Bookmark"
     ID_BOOKMARKS_NEXT       "Navigate to the next bookmark\nNext Bookmark"
+    ID_EDIT_SWAPCHANNELS    "Exchange the position of two channels\nSwap Channels"
 END
 
 #endif    // English (United States) resources

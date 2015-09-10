@@ -533,6 +533,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
     </ClCompile>
     <ClCompile Include="Source\StretchDlg.cpp" />
+    <ClCompile Include="Source\SwapDlg.cpp" />
     <ClCompile Include="Source\WaveEditor.cpp" />
     <ClCompile Include="Source\GraphEditor.cpp" />
     <ClCompile Include="Source\SequenceEditor.cpp" />
@@ -779,6 +780,7 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(Filename)%(Extension)" &gt;&gt; "hlp\
     </CustomBuild>
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\StretchDlg.h" />
+    <ClInclude Include="Source\SwapDlg.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="Source\ChannelMap.h" />
     <ClInclude Include="Source\Common.h" />

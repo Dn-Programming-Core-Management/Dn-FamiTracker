@@ -152,6 +152,8 @@ public:
 	void SetHighlight(const stHighlight Hl);		// // //
 	stHighlight GetRowHighlight() const;
 
+	void SwapChannels(unsigned int First, unsigned int Second);		// // //
+
 private:
 	stChanNote *GetPatternData(unsigned int Channel, unsigned int Pattern, unsigned int Row) const;
 	void AllocatePattern(unsigned int Channel, unsigned int Patterns);

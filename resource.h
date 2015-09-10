@@ -231,6 +231,7 @@
 #define IDD_STRETCH                     323
 #define IDD_BOOKMARKS                   324
 #define IDD_GOTO                        326
+#define IDD_SWAP                        331
 #define IDC_INSTRUMENTS                 1001
 #define IDC_INSTSETTINGS                1002
 #define IDC_IMPORT_DETUNE               1002
@@ -448,6 +449,7 @@
 #define IDC_CHECK1                      1233
 #define IDC_CHECK_COMPACT               1233
 #define IDC_CHECK_BOOKMARK_SORT         1233
+#define IDC_CHECK_SWAP_ALL              1233
 #define IDC_CHECK_BOOKMARK_HIGH1        1234
 #define IDC_NTSC                        1234
 #define IDC_CHECK_BOOKMARK_HIGH2        1235
@@ -634,6 +636,10 @@
 #define IDC_BUTTON_BOOKMARK_SORTP       1425
 #define IDC_BUTTON_BOOKMARK_SORTN       1426
 #define IDC_N163_WAVES                  1427
+#define IDC_COMBO_SWAP_CHIP1            1428
+#define IDC_COMBO_SWAP_CHIP2            1429
+#define IDC_EDIT_SWAP_CHAN1             1430
+#define IDC_EDIT_SWAP_CHAN2             1431
 #define ID_TRACKER_PLAY                 32771
 #define ID_TRACKER_PLAYPATTERN          32775
 #define ID_TRACKER_STOP                 32776
@@ -803,6 +809,8 @@
 #define ID_BOOKMARKS_PREVIOUS           33173
 #define ID_BOOKMARKS_NEXT               33174
 #define ID_MODULE_ESTIMATESONGLENGTH    33175
+#define ID_PATTERN_SWAPCHANNELS         33176
+#define ID_EDIT_SWAPCHANNELS            33177
 #define ID_INSTRUMENT_ADD_2A03          36864
 #define ID_INSTRUMENT_ADD_FDS           36865
 #define ID_INSTRUMENT_ADD_MMC5          36866
@@ -822,9 +830,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        331
-#define _APS_NEXT_COMMAND_VALUE         33176
-#define _APS_NEXT_CONTROL_VALUE         1428
+#define _APS_NEXT_RESOURCE_VALUE        333
+#define _APS_NEXT_COMMAND_VALUE         33178
+#define _APS_NEXT_CONTROL_VALUE         1431
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif

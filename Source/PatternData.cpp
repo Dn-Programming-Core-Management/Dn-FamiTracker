@@ -166,3 +166,13 @@ stHighlight CPatternData::GetRowHighlight() const
 {
 	return m_vRowHighlight;
 }
+
+void CPatternData::SwapChannels(unsigned int First, unsigned int Second)		// // //
+{
+	for (int i = 0; i < MAX_FRAMES; i++) {
+		std::swap(m_iFrameList[i][First], m_iFrameList[i][Second]);
+	}
+	for (int i = 0; i < MAX_PATTERN; i++) {
+		std::swap(m_pPatternData[First][i], m_pPatternData[Second][i]);
+	}
+}

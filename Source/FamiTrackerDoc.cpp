@@ -4159,6 +4159,18 @@ void CFamiTrackerDoc::CopyPattern(unsigned int Track, int Target, int Source, in
 	SetModifiedFlag();
 }
 
+void CFamiTrackerDoc::SwapChannels(unsigned int Track, unsigned int First, unsigned int Second)		// // //
+{
+	ASSERT(Track < MAX_TRACKS);
+	ASSERT(First < MAX_CHANNELS);
+	ASSERT(Second < MAX_CHANNELS);
+
+	CPatternData *pTrack = GetTrack(Track);
+	pTrack->SwapChannels(First, Second);
+
+	SetModifiedFlag();
+}
+
 //// Frame functions //////////////////////////////////////////////////////////////////////////////////
 
 bool CFamiTrackerDoc::InsertFrame(unsigned int Track, unsigned int Frame)
