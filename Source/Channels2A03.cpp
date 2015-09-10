@@ -373,7 +373,6 @@ void CTriangleChan::HandleCustomEffects(int EffNum, int EffParam)		// // //
 void CTriangleChan::ClearRegisters()
 {
 	WriteRegister(0x4008, 0);
-	WriteRegister(0x4009, 0);
 	WriteRegister(0x400A, 0);
 	WriteRegister(0x400B, 0);
 }
@@ -447,7 +446,6 @@ void CNoiseChan::RefreshChannel()
 		WriteRegister(0x400C, 0x30);
 		return;
 	}
-	WriteRegister(0x400D, 0x00);
 	WriteRegister(0x400E, NoiseMode | Period);
 	if (m_bEnvelopeLoop || m_bResetEnvelope)		// // //
 		WriteRegister(0x400F, m_iLengthCounter << 3);
@@ -458,7 +456,6 @@ void CNoiseChan::RefreshChannel()
 void CNoiseChan::ClearRegisters()
 {
 	WriteRegister(0x400C, 0x30);
-	WriteRegister(0x400D, 0);
 	WriteRegister(0x400E, 0);
 	WriteRegister(0x400F, 0);
 }
