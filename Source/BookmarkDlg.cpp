@@ -171,6 +171,11 @@ BOOL CBookmarkDlg::OnInitDialog()
 	m_bPersist = false;
 	m_bSwitching = false;
 
+	static_cast<CEdit*>(GetDlgItem(IDC_EDIT_BOOKMARK_FRAME))->SetLimitText(3);
+	static_cast<CEdit*>(GetDlgItem(IDC_EDIT_BOOKMARK_ROW))->SetLimitText(3);
+	static_cast<CEdit*>(GetDlgItem(IDC_EDIT_BOOKMARK_HIGH1))->SetLimitText(3);
+	static_cast<CEdit*>(GetDlgItem(IDC_EDIT_BOOKMARK_HIGH2))->SetLimitText(3);
+
 	return CDialog::OnInitDialog();
 }
 

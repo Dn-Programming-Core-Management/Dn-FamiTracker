@@ -118,10 +118,13 @@ BOOL CGotoDlg::OnInitDialog()
 	CString str;
 	str.Format(_T("%d"), pEditor->GetFrame());
 	m_cFrameEdit->SetWindowText(str);
+	m_cFrameEdit->SetLimitText(3);
 	str.Format(_T("%d"), pEditor->GetRow());
 	m_cRowEdit->SetWindowText(str);
+	m_cRowEdit->SetLimitText(3);
 	str.Format(_T("%d"), Channel + 1);
 	m_cChannelEdit->SetWindowText(str);
+	m_cChannelEdit->SetLimitText(1);
 
 	m_cFrameEdit->SetFocus();
 

@@ -233,14 +233,14 @@ BOOL CFindDlg::OnInitDialog()
 	m_cReplaceMacroField = new CEdit();
 	m_cFilterMacroField  = new CEdit();
 
-	m_cFindNoteField   ->SubclassDlgItem(IDC_EDIT_FIND_NOTE, this);
-	m_cFindInstField   ->SubclassDlgItem(IDC_EDIT_FIND_INST, this);
-	m_cFindVolField    ->SubclassDlgItem(IDC_EDIT_FIND_VOL, this);
-	m_cFindEffField    ->SubclassDlgItem(IDC_EDIT_FIND_EFF, this);
-	m_cReplaceNoteField->SubclassDlgItem(IDC_EDIT_REPLACE_NOTE, this);
-	m_cReplaceInstField->SubclassDlgItem(IDC_EDIT_REPLACE_INST, this);
-	m_cReplaceVolField ->SubclassDlgItem(IDC_EDIT_REPLACE_VOL, this);
-	m_cReplaceEffField ->SubclassDlgItem(IDC_EDIT_REPLACE_EFF, this);
+	m_cFindNoteField    ->SubclassDlgItem(IDC_EDIT_FIND_NOTE, this);
+	m_cFindInstField    ->SubclassDlgItem(IDC_EDIT_FIND_INST, this);
+	m_cFindVolField     ->SubclassDlgItem(IDC_EDIT_FIND_VOL, this);
+	m_cFindEffField     ->SubclassDlgItem(IDC_EDIT_FIND_EFF, this);
+	m_cReplaceNoteField ->SubclassDlgItem(IDC_EDIT_REPLACE_NOTE, this);
+	m_cReplaceInstField ->SubclassDlgItem(IDC_EDIT_REPLACE_INST, this);
+	m_cReplaceVolField  ->SubclassDlgItem(IDC_EDIT_REPLACE_VOL, this);
+	m_cReplaceEffField  ->SubclassDlgItem(IDC_EDIT_REPLACE_EFF, this);
 	m_cFindMacroField   ->SubclassDlgItem(IDC_EDIT_FIND_MACRO, this);
 	m_cReplaceMacroField->SubclassDlgItem(IDC_EDIT_REPLACE_MACRO, this);
 	m_cFilterMacroField ->SubclassDlgItem(IDC_EDIT_FILTER_MACRO, this);
@@ -251,6 +251,15 @@ BOOL CFindDlg::OnInitDialog()
 	m_cEffectColumn->SubclassDlgItem(IDC_COMBO_EFFCOLUMN, this);
 	m_cSearchArea->SetCurSel(0);
 	m_cEffectColumn->SetCurSel(0);
+
+	m_cFindNoteField   ->SetLimitText(3);
+	m_cFindInstField   ->SetLimitText(2);
+	m_cFindVolField    ->SetLimitText(1);
+	m_cFindEffField    ->SetLimitText(3);
+	m_cReplaceNoteField->SetLimitText(3);
+	m_cReplaceInstField->SetLimitText(2);
+	m_cReplaceVolField ->SetLimitText(1);
+	m_cReplaceEffField ->SetLimitText(3);
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 }
