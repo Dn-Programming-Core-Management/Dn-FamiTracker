@@ -196,6 +196,7 @@ void CSwapDlg::OnBnClickedOk()
 						   GetFinalChannel(m_iDestChannel2, m_iDestChip2));
 	pDoc->UpdateAllViews(NULL, UPDATE_PATTERN);
 	pDoc->UpdateAllViews(NULL, UPDATE_FRAME);
+	pDoc->UpdateAllViews(NULL, UPDATE_COLUMNS);
 
 	CDialog::OnOK();
 }

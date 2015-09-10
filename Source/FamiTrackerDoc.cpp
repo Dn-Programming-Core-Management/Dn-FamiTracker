@@ -4168,6 +4168,10 @@ void CFamiTrackerDoc::SwapChannels(unsigned int Track, unsigned int First, unsig
 	CPatternData *pTrack = GetTrack(Track);
 	pTrack->SwapChannels(First, Second);
 
+	unsigned int Temp = GetEffColumns(Track, First);
+	SetEffColumns(Track, First, GetEffColumns(Track, Second));
+	SetEffColumns(Track, Second, Temp);
+
 	SetModifiedFlag();
 }
 
