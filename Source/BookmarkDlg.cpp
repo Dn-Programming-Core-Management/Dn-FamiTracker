@@ -112,6 +112,7 @@ void CBookmarkDlg::SetBookmarkList()
 	m_pDocument->SetBookmarkList(Track, m_pBookmarkList);
 	LoadBookmarks();
 	m_pDocument->UpdateAllViews(NULL, UPDATE_PATTERN);
+	m_pDocument->UpdateAllViews(NULL, UPDATE_FRAME);
 }
 
 void CBookmarkDlg::LoadBookmarks()

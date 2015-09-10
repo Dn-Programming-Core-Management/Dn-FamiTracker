@@ -94,6 +94,8 @@ BOOL CSwapDlg::OnInitDialog()
 	}
 	m_cChannelFirst->SetWindowText(_T("1"));
 	m_cChannelSecond->SetWindowText(_T("2"));
+	m_cChipFirst->SetCurSel(0);
+	m_cChipSecond->SetCurSel(0);
 	m_cSwapAll->SetCheck(BST_UNCHECKED);
 
 	m_cChannelFirst->SetFocus();
@@ -192,6 +194,8 @@ void CSwapDlg::OnBnClickedOk()
 		pDoc->SwapChannels(static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack(),
 						   GetFinalChannel(m_iDestChannel1, m_iDestChip1),
 						   GetFinalChannel(m_iDestChannel2, m_iDestChip2));
+	pDoc->UpdateAllViews(NULL, UPDATE_PATTERN);
+	pDoc->UpdateAllViews(NULL, UPDATE_FRAME);
 
 	CDialog::OnOK();
 }
