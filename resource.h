@@ -501,6 +501,7 @@
 #define IDC_EDIT_STRETCH_MAP            1270
 #define IDC_BUTTON_BOOKMARK_MOVEDOWN    1270
 #define IDC_EDIT_GOTO_FRAME             1270
+#define IDC_EDIT_GROOVE_FIELD           1270
 #define IDC_HEAD                        1271
 #define IDC_SPIN_BOOKMARK_HIGH2         1271
 #define IDC_EDIT_GOTO_ROW               1271
@@ -830,7 +831,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        333
+#define _APS_NEXT_RESOURCE_VALUE        334
 #define _APS_NEXT_COMMAND_VALUE         33178
 #define _APS_NEXT_CONTROL_VALUE         1431
 #define _APS_NEXT_SYMED_VALUE           179

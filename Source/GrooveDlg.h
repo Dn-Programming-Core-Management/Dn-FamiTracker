@@ -53,10 +53,12 @@ protected:
 
 	void UpdateCurrentGroove();
 	void UpdateIndicators();
+	void ParseGrooveField();
 
 	DECLARE_MESSAGE_MAP()
 public:
 	virtual BOOL OnInitDialog();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
 	afx_msg void OnLbnSelchangeListGrooveTable();
@@ -65,14 +67,9 @@ public:
 	afx_msg void OnBnClickedButtonGroovelDown();
 	afx_msg void OnBnClickedButtonGroovelClear();
 	afx_msg void OnBnClickedButtonGroovelClearall();
-	afx_msg void OnBnClickedButtonGroovePlus();
-	afx_msg void OnBnClickedButtonGrooveMinus();
-	afx_msg void OnBnClickedButtonGrooveInsert();
-	afx_msg void OnBnClickedButtonGrooveRemove();
 	afx_msg void OnBnClickedButtonGrooveUp();
 	afx_msg void OnBnClickedButtonGrooveDown();
-	afx_msg void OnBnClickedButtonGrooveCopy();
-	afx_msg void OnBnClickedButtonGroovePaste();
+	afx_msg void OnBnClickedButtonGrooveCopyFxx();
 	afx_msg void OnBnClickedButtonGrooveExpand();
 	afx_msg void OnBnClickedButtonGrooveShrink();
 	afx_msg void OnBnClickedButtonGrooveGenerate();

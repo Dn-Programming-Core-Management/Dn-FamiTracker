@@ -25,6 +25,8 @@
 #include "FamiTrackerDoc.h"
 #include "MainFrm.h"
 #include "GrooveDlg.h"
+#include "PatternEditorTypes.h"
+#include "Clipboard.h"
 
 
 // CGrooveDlg dialog
@@ -57,14 +59,9 @@ BEGIN_MESSAGE_MAP(CGrooveDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_GROOVEL_DOWN, OnBnClickedButtonGroovelDown)
 	ON_BN_CLICKED(IDC_BUTTON_GROOVEL_CLEAR, OnBnClickedButtonGroovelClear)
 	ON_BN_CLICKED(IDC_BUTTON_GROOVEL_CLEARALL, OnBnClickedButtonGroovelClearall)
-	ON_BN_CLICKED(IDC_BUTTON_GROOVE_PLUS, OnBnClickedButtonGroovePlus)
-	ON_BN_CLICKED(IDC_BUTTON_GROOVE_MINUS, OnBnClickedButtonGrooveMinus)
-	ON_BN_CLICKED(IDC_BUTTON_GROOVE_INSERT, OnBnClickedButtonGrooveInsert)
-	ON_BN_CLICKED(IDC_BUTTON_GROOVE_REMOVE, OnBnClickedButtonGrooveRemove)
 	ON_BN_CLICKED(IDC_BUTTON_GROOVE_UP, OnBnClickedButtonGrooveUp)
 	ON_BN_CLICKED(IDC_BUTTON_GROOVE_DOWN, OnBnClickedButtonGrooveDown)
-	ON_BN_CLICKED(IDC_BUTTON_GROOVE_COPY, OnBnClickedButtonGrooveCopy)
-	ON_BN_CLICKED(IDC_BUTTON_GROOVE_PASTE, OnBnClickedButtonGroovePaste)
+	ON_BN_CLICKED(IDC_BUTTON_GROOVE_COPY, OnBnClickedButtonGrooveCopyFxx)
 	ON_BN_CLICKED(IDC_BUTTON_GROOVE_EXPAND, OnBnClickedButtonGrooveExpand)
 	ON_BN_CLICKED(IDC_BUTTON_GROOVE_SHRINK, OnBnClickedButtonGrooveShrink)
 	ON_BN_CLICKED(IDC_BUTTON_GROOVE_GENERATE, OnBnClickedButtonGrooveGenerate)
@@ -105,6 +102,30 @@ BOOL CGrooveDlg::OnInitDialog()
 	SetGrooveIndex(0);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
+}
+
+BOOL CGrooveDlg::PreTranslateMessage(MSG* pMsg)
+{
+	switch (pMsg->message) {
+	case WM_KEYDOWN:
+		switch (pMsg->wParam) {
+		case VK_RETURN:	// Return
+			pMsg->wParam = 0;
+			ParseGrooveField();
+			return TRUE;
+		case VK_TAB:
+		case VK_DOWN:
+		case VK_UP:
+		case VK_LEFT:
+		case VK_RIGHT:
+		case VK_SPACE:
+			// Do nothing
+			break;
+		}
+		break;
+	}
+
+	return CDialog::PreTranslateMessage(pMsg);
 }
 
 void CGrooveDlg::SetGrooveIndex(int Index)
@@ -163,16 +184,19 @@ void CGrooveDlg::OnLbnSelchangeListCurrentGroove()
 void CGrooveDlg::UpdateCurrentGroove()
 {
 	CString String;
+	CString disp = "";
 	
 	Groove = GrooveTable[m_iGrooveIndex];
 	m_cCurrentGroove->ResetContent();
 	for (int i = 0; i < Groove->GetSize(); i++) {
 		String.Format(_T("%02X: %d"), i, Groove->GetEntry(i));
+		disp.AppendFormat(_T("%d "), Groove->GetEntry(i));
 		m_cCurrentGroove->InsertString(-1, String);
 	}
 	m_cCurrentGroove->InsertString(-1, _T("--"));
 
 	m_cCurrentGroove->SetCurSel(m_iGroovePos);
+	SetDlgItemText(IDC_EDIT_GROOVE_FIELD, disp);
 
 	UpdateIndicators();
 }
@@ -181,9 +205,9 @@ void CGrooveDlg::UpdateIndicators()
 {
 	CString String;
 
-	String.Format(_T("Average speed: %.3f"), Groove->GetSize() ? Groove->GetAverage() : DEFAULT_SPEED);
+	String.Format(_T("Speed: %.3f"), Groove->GetSize() ? Groove->GetAverage() : DEFAULT_SPEED);
 	SetDlgItemText(IDC_STATIC_GROOVE_AVERAGE, String);
-	String.Format(_T("Groove size: %d bytes"), Groove->GetSize() ? Groove->GetSize() + 2 : 0);
+	String.Format(_T("Size: %d bytes"), Groove->GetSize() ? Groove->GetSize() + 2 : 0);
 	SetDlgItemText(IDC_STATIC_GROOVE_SIZE, String);
 	int Total = 0;
 	for (int i = 0; i < MAX_GROOVE; i++) if (GrooveTable[i]->GetSize())
@@ -236,49 +260,6 @@ void CGrooveDlg::OnBnClickedButtonGroovelClearall()
 	UpdateCurrentGroove();
 }
 
-void CGrooveDlg::OnBnClickedButtonGroovePlus()
-{
-	if (m_iGroovePos != Groove->GetSize() && Groove->GetEntry(m_iGroovePos) < 255)
-		Groove->SetEntry(m_iGroovePos, Groove->GetEntry(m_iGroovePos) + 1);
-
-	UpdateCurrentGroove();
-}
-
-void CGrooveDlg::OnBnClickedButtonGrooveMinus()
-{
-	if (m_iGroovePos != Groove->GetSize() && Groove->GetEntry(m_iGroovePos) > 1)
-		Groove->SetEntry(m_iGroovePos, Groove->GetEntry(m_iGroovePos) - 1);
-
-	UpdateCurrentGroove();
-}
-
-void CGrooveDlg::OnBnClickedButtonGrooveInsert()
-{
-	if (Groove->GetEntry(m_iGroovePos) == MAX_GROOVE_SIZE) return;
-	Groove->SetSize(Groove->GetSize() + 1);
-	for (int i = Groove->GetSize() - 1; i > m_iGroovePos; i--)
-		Groove->SetEntry(i, Groove->GetEntry(i - 1));
-	if (m_iGroovePos == Groove->GetSize() - 1)
-		Groove->SetEntry(m_iGroovePos, Groove->GetEntry(m_iGroovePos - 1));
-	if (Groove->GetSize() == 1)
-		Groove->SetEntry(0, DEFAULT_SPEED);
-
-	m_iGroovePos++;
-	UpdateCurrentGroove();
-}
-
-void CGrooveDlg::OnBnClickedButtonGrooveRemove()
-{
-	if (m_iGroovePos > Groove->GetSize()) return;
-	if (m_iGroovePos == Groove->GetSize()) m_iGroovePos--;
-	for (int i = m_iGroovePos; i < Groove->GetSize() - 1; i++)
-		Groove->SetEntry(i, Groove->GetEntry(i + 1));
-	Groove->SetSize(Groove->GetSize() - 1);
-	if (!Groove->GetSize()) Groove->Clear(0);
-
-	UpdateCurrentGroove();
-}
-
 void CGrooveDlg::OnBnClickedButtonGrooveUp()
 {
 	if (m_iGroovePos == 0) return;
@@ -301,35 +282,51 @@ void CGrooveDlg::OnBnClickedButtonGrooveDown()
 	UpdateCurrentGroove();
 }
 
-void CGrooveDlg::OnBnClickedButtonGrooveCopy()
+void CGrooveDlg::OnBnClickedButtonGrooveCopyFxx()
 {
-	CString Str;
-
-	for (int i = 0; i < Groove->GetSize(); i++)
-		Str.AppendFormat(_T("%i "), Groove->GetEntry(i));
-
-	if (!OpenClipboard())
+	const unsigned char size = Groove->GetSize();
+	if (!size) {
+		MessageBeep(MB_ICONWARNING);
 		return;
-	EmptyClipboard();
-	int size = Str.GetLength() + 1;
-	HANDLE hMem = GlobalAlloc(GMEM_MOVEABLE, size);
-	LPTSTR lptstrCopy = (LPTSTR)GlobalLock(hMem);
-	strcpy_s(lptstrCopy, size, Str.GetBuffer());
-	GlobalUnlock(hMem);
-	SetClipboardData(CF_TEXT, hMem);
+	}
 
-	CloseClipboard();
+	CClipboard Clipboard(CFamiTrackerView::GetView(), ::RegisterClipboardFormat(CFamiTrackerView::CLIPBOARD_ID));
+	if (!Clipboard.IsOpened()) {
+		AfxMessageBox(IDS_CLIPBOARD_OPEN_ERROR);
+		return;
+	}
+	
+	CPatternClipData *Fxx = new CPatternClipData(1, size);
+	Fxx->ClipInfo.Channels    = 1;
+	Fxx->ClipInfo.Rows        = size;
+	Fxx->ClipInfo.StartColumn = COLUMN_EFF1;
+	Fxx->ClipInfo.EndColumn   = COLUMN_EFF1;
+	
+	stChanNote row = BLANK_NOTE;
+	row.EffNumber[0] = EF_SPEED;
+	unsigned char prev = 0;
+	for (unsigned char i = 0; i < Groove->GetSize(); i++) {
+		unsigned char x = Groove->GetEntry(i);
+		if (x == prev && i) continue;
+		else prev = x;
+		row.EffParam[0] = x;
+		memcpy(Fxx->GetPattern(0, i), &row, sizeof(stChanNote));
+	}
+	
+	std::shared_ptr<CPatternClipData> pClipData(Fxx);
+	SIZE_T Size = pClipData->GetAllocSize();
+	HGLOBAL hMem = Clipboard.AllocMem(Size);
+	if (hMem != NULL) {
+		pClipData->ToMem(hMem);
+		// Set clipboard for internal data, hMem may not be used after this point
+		Clipboard.SetData(hMem);
+	}
 }
 
-void CGrooveDlg::OnBnClickedButtonGroovePaste()
+void CGrooveDlg::ParseGrooveField()
 {
-	if (!OpenClipboard())
-		return;
-	HANDLE hMem = GetClipboardData(CF_TEXT);
-	LPTSTR lptstrCopy = (LPTSTR)GlobalLock(hMem);
-	CString Str(lptstrCopy);
-	GlobalUnlock(hMem);
-	CloseClipboard();
+	CString Str;
+	GetDlgItemText(IDC_EDIT_GROOVE_FIELD, Str);
 
 	Groove->Clear(0);
 	m_iGroovePos = 0;
