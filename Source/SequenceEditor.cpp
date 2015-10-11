@@ -150,11 +150,14 @@ LRESULT CSequenceEditor::OnCursorChange(WPARAM wParam, LPARAM lParam)
 
 	CString Text;
 	// Arpeggio
-	if (m_iSelectedSetting == SEQ_ARPEGGIO && m_pSequence->GetSetting() == 1) {
-		Text.Format(_T("{%i, %s}  "), wParam, static_cast<CArpeggioGraphEditor*>(m_pGraphEditor)->GetNoteString(lParam));
+	if (m_iSelectedSetting == SEQ_ARPEGGIO && m_pSequence->GetSetting() == SETTING_ARP_FIXED) {
+		Text.Format(_T("{%i, %s}    "), wParam, CArpeggioGraphEditor::GetNoteString(lParam));
+	}
+	else if (m_iSelectedSetting == SEQ_ARPEGGIO && m_pSequence->GetSetting() == SETTING_ARP_SCHEME) {		// // //
+		Text.Format(_T("{%i, %s}    "), wParam, CArpeggioGraphEditor::GetArpSchemeString(lParam));
 	}
 	else {
-		Text.Format(_T("{%i, %i}  "), wParam, lParam);
+		Text.Format(_T("{%i, %i}    "), wParam, lParam);
 	}
 	
 	pDC->TextOut(170, rect.bottom - 19, Text);
@@ -207,24 +210,8 @@ void CSequenceEditor::SequenceChangedMessage(bool Changed)
 		if (m_pSequence->GetLoopPoint() == i)
 			Text.Append(_T("| "));
 		if (m_iSelectedSetting == SEQ_ARPEGGIO && m_pSequence->GetSetting() == SETTING_ARP_SCHEME) {		// // //
-			int value = m_pSequence->GetItem(i);
-			if (value < 0) value += 0x100;
-			if (value % 0x40 == 0)
-				switch (value / 0x40) {
-				case 0: Text.Append(_T("0 ")); break;
-				case 1: Text.Append(_T("x ")); break;
-				case 2: Text.Append(_T("y ")); break;
-				case 3: Text.Append(_T("-y ")); break;
-				}
-			else {
-				Text.AppendFormat(_T("%i"), value % 0x40 > 36 ? value % 0x40 - 64 : value % 0x40);
-				switch (value / 0x40) {
-				case 1: Text.Append(_T("+x ")); break;
-				case 2: Text.Append(_T("+y ")); break;
-				case 3: Text.Append(_T("-y ")); break;
-				default: Text.Append(_T(" "));
-				}
-			}
+			Text.Append(CArpeggioGraphEditor::GetArpSchemeString(m_pSequence->GetItem(i)));
+			Text.Append(_T(" "));
 		}
 		else Text.AppendFormat(_T("%i "), m_pSequence->GetItem(i));
 	}

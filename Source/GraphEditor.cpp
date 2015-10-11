@@ -809,6 +809,26 @@ CString CArpeggioGraphEditor::GetNoteString(int Value)
 	return line;
 }
 
+CString CArpeggioGraphEditor::GetArpSchemeString(int Value)
+{
+	CString line = _T("");
+	int trsp = Value & 0x3F;
+
+	if (!trsp) {
+		static const CString SINGLE[] = {_T("0"), _T("x"), _T("y"), _T("-y")};
+		return SINGLE[(Value & 0xC0) >> 6];
+	}
+
+	line.Format(_T("%i"), trsp > 0x24 ? trsp - 64 : trsp);
+	switch (Value & 0xC0) {
+	case ARPSCHEME_MODE_X: line.Append(_T("+x")); break;
+	case ARPSCHEME_MODE_Y: line.Append(_T("+y")); break;
+	case ARPSCHEME_MODE_NEG_Y: line.Append(_T("-y")); break;
+	}
+
+	return line;
+}
+
 void CArpeggioGraphEditor::DrawRange(CDC *pDC, int Max, int Min)
 {
 	const char NOTES_A[] = {'C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'G', 'A', 'A', 'B'};
@@ -899,6 +919,10 @@ void CArpeggioGraphEditor::OnPaint()
 	}
 
 	// Draw items
+	CFont *pOldFont = m_pBackDC->SelectObject(m_pSmallFont);		// // //
+	m_pBackDC->SetTextAlign(TA_CENTER);
+	m_pBackDC->SetTextColor(0xFFFFFF);
+	m_pBackDC->SetBkMode(TRANSPARENT);
 	for (int i = 0; i < Count; i++) {
 		int item;			// // //
 		if (m_pSequence->GetSetting() == SETTING_ARP_SCHEME) {
@@ -922,8 +946,15 @@ void CArpeggioGraphEditor::OnPaint()
 				DrawCursorRect(m_pBackDC, x, y, w, h);
 			else
 				DrawRect(m_pBackDC, x, y, w, h);
+			
+			if (m_pSequence->GetSetting() == SETTING_ARP_SCHEME) {
+				static const CString HEAD[] = {_T(""), _T("x"), _T("y"), _T("-y")};
+				m_pBackDC->TextOut(x + w / 2, y - 2 * h, HEAD[(m_pSequence->GetItem(i) & 0xFF) >> 6]);
+			}
 		}
 	}
+	m_pBackDC->SetTextAlign(TA_LEFT);
+	m_pBackDC->SelectObject(pOldFont);
 	
 	DrawLoopRelease(m_pBackDC, StepWidth);		// // //
 	DrawLine(m_pBackDC);
@@ -946,8 +977,15 @@ void CArpeggioGraphEditor::ModifyItem(CPoint point, bool Redraw)
 	if (m_pSequence->GetSetting() == SETTING_ARP_SCHEME) {		// // //
 		int value = m_pSequence->GetItem(ItemIndex);
 		if (value < 0) value += 0x100;
-		if (ItemValue < 0) ItemValue += 0x40;
-		ItemValue += value & 0xC0;
+		if (::GetKeyState(VK_NUMPAD0) & 0x80)
+			value = 0;
+		else if (::GetKeyState(VK_NUMPAD1) & 0x80)
+			value = ARPSCHEME_MODE_X;
+		else if (::GetKeyState(VK_NUMPAD2) & 0x80)
+			value = ARPSCHEME_MODE_Y;
+		else if (::GetKeyState(VK_NUMPAD3) & 0x80)
+			value = ARPSCHEME_MODE_NEG_Y;
+		ItemValue = (ItemValue & 0x3F) | (value & 0xC0);
 	}
 	m_pSequence->SetItem(ItemIndex, ItemValue);
 
