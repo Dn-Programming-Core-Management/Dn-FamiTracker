@@ -4425,6 +4425,7 @@ void CFamiTrackerDoc::RemoveTrack(unsigned int Track)
 	}
 
 	m_pTracks[m_iTrackCount - 1] = NULL;
+	m_pBookmarkList[m_iTrackCount - 1] = NULL;
 
 	--m_iTrackCount;
 /*
@@ -5459,7 +5460,7 @@ void CFamiTrackerDoc::SetBookmarkList(unsigned int Track, std::vector<stBookmark
 
 void CFamiTrackerDoc::ClearBookmarkList(unsigned int Track)
 {
-	auto List = m_pBookmarkList[Track];
+	std::vector<stBookmark> *List = m_pBookmarkList[Track];
 	if (List != NULL)
 		for (auto it = List->begin(); it < List->end(); it++)
 			SAFE_RELEASE(it->Name);
