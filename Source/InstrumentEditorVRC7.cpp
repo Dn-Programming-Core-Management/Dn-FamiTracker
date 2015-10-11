@@ -452,9 +452,9 @@ void CInstrumentEditorVRC7::OnCopy()
 void CInstrumentEditorVRC7::CopyAsPlainText()		// // //
 {
 	int patch = m_pInstrument->GetPatch();
-	int reg[8] = {};
+	unsigned char reg[8] = {};
 	for (int i = 0; i < 8; ++i)
-		reg[i] = (patch == 0) ? (unsigned char)(m_pInstrument->GetCustomReg(i)) : default_inst[patch * 16 + i];
+		reg[i] = patch == 0 ? m_pInstrument->GetCustomReg(i) : default_inst[patch * 16 + i];
 	
 	CString MML;
 	GetDlgItemTextA(IDC_PATCH, MML);

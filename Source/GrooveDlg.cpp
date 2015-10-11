@@ -302,15 +302,16 @@ void CGrooveDlg::OnBnClickedButtonGrooveCopyFxx()
 	Fxx->ClipInfo.StartColumn = COLUMN_EFF1;
 	Fxx->ClipInfo.EndColumn   = COLUMN_EFF1;
 	
-	stChanNote row = BLANK_NOTE;
-	row.EffNumber[0] = EF_SPEED;
 	unsigned char prev = 0;
 	for (unsigned char i = 0; i < Groove->GetSize(); i++) {
+		stChanNote row = BLANK_NOTE;
 		unsigned char x = Groove->GetEntry(i);
-		if (x == prev && i) continue;
-		else prev = x;
-		row.EffParam[0] = x;
+		if (x != prev || !i) {
+			row.EffNumber[0] = EF_SPEED;
+			row.EffParam[0] = x;
+		}
 		memcpy(Fxx->GetPattern(0, i), &row, sizeof(stChanNote));
+		prev = x;
 	}
 	
 	std::shared_ptr<CPatternClipData> pClipData(Fxx);

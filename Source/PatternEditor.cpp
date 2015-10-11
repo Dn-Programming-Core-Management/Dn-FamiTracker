@@ -2155,7 +2155,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			pDC->TextOut(0, 0, text);
 		}
 
-		int period = pSoundGen->GetReg(SNDCHIP_FDS, 2) | ((pSoundGen->GetReg(SNDCHIP_FDS, 3) & 0x0F) << 8);
+		int period = (pSoundGen->GetReg(SNDCHIP_FDS, 2) & 0xFF) | ((pSoundGen->GetReg(SNDCHIP_FDS, 3) & 0x0F) << 8);
 		int vol = (pSoundGen->GetReg(SNDCHIP_FDS, 0) & 0x3F);
 
 		double freq = RegToFreq(period, SNDCHIP_FDS) / 4.0;		// // //
@@ -3606,7 +3606,6 @@ CPatternClipData *CPatternEditor::Copy() const
 	pClipData->ClipInfo.StartColumn	= GetSelectColumn(m_selection.GetColStart());		// // //
 	pClipData->ClipInfo.EndColumn	= GetSelectColumn(m_selection.GetColEnd());		// // //
 	
-	int Channel = 0, Row = 0;
 	for (int r = 0; r < Rows; r++) {		// // //
 		for (int i = 0; i < Channels; ++i) {
 			stChanNote *Target = pClipData->GetPattern(i, r);

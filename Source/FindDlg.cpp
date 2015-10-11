@@ -823,6 +823,7 @@ void CFindDlg::OnBnClickedButtonReplace()
 		}
 
 		m_pDocument->UpdateAllViews(NULL, UPDATE_PATTERN);
+		static_cast<CMainFrame*>(AfxGetMainWnd())->ResetUndo();
 
 		str.Format(_T("%d occurrence(s) replaced."), Count);
 		AfxMessageBox(str, MB_OK | MB_ICONINFORMATION);
