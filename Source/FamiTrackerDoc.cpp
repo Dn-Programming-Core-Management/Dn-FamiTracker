@@ -4421,6 +4421,7 @@ void CFamiTrackerDoc::RemoveTrack(unsigned int Track)
 	for (unsigned int i = Track; i < m_iTrackCount - 1; ++i) {
 		m_sTrackNames[i] = m_sTrackNames[i + 1];
 		m_pTracks[i] = m_pTracks[i + 1];
+		m_pBookmarkList[i] = m_pBookmarkList[i + 1];		// // //
 	}
 
 	m_pTracks[m_iTrackCount - 1] = NULL;
@@ -4466,13 +4467,9 @@ void CFamiTrackerDoc::MoveTrackDown(unsigned int Track)
 
 void CFamiTrackerDoc::SwapTracks(unsigned int Track1, unsigned int Track2)
 {
-	CString Temp = m_sTrackNames[Track1];
-	m_sTrackNames[Track1] = m_sTrackNames[Track2];
-	m_sTrackNames[Track2] = Temp;
-
-	CPatternData *pTemp = m_pTracks[Track1];
-	m_pTracks[Track1] = m_pTracks[Track2];
-	m_pTracks[Track2] = pTemp;
+	std::swap(m_sTrackNames[Track1], m_sTrackNames[Track2]);		// // //
+	std::swap(m_pTracks[Track1], m_pTracks[Track2]);
+	std::swap(m_pBookmarkList[Track1], m_pBookmarkList[Track2]);
 }
 
 void CFamiTrackerDoc::AllocateTrack(unsigned int Track)
