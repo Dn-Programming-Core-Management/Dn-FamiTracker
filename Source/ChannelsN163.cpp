@@ -298,7 +298,7 @@ void CChannelHandlerN163::LoadWave()
 {
 	CFamiTrackerDoc *pDocument = m_pSoundGen->GetDocument();
 
-	if (m_iInstrument == MAX_INSTRUMENTS)
+	if (m_iInstrument == MAX_INSTRUMENTS || !m_bGate)
 		return;
 
 	// Fill the wave RAM
