@@ -582,7 +582,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 				case EF_N163_WAVE_BUFFER:
 					if (ChipID == SNDCHIP_N163 && EffParam <= 0x7F) {
 						WriteData(Command(CMD_EFF_N163_WAVE_BUFFER));
-						WriteData((EffParam + 1) & 0x7F);
+						WriteData(EffParam == 0x7F ? 0x80 : EffParam);
 					}
 					break;
 			}
