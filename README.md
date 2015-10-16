@@ -10,8 +10,10 @@ author's favourite arpeggio effect. The current version includes:
  - Find / replace tab
  - Detune settings
  - Groove settings
+ - Bookmark manager
  - Echo buffer access
  - Delayed channel effects
+ - FDS automatic FM effects
  - N163 wave buffer access effect
  - Expansion chip selector & ad-doc multichip NSF export
 
