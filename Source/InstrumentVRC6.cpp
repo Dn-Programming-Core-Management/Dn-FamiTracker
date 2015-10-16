@@ -65,7 +65,7 @@ void CInstrumentVRC6::Setup()
 
 	for (int i = 0; i < SEQ_COUNT; ++i) {
 		SetSeqEnable(i, 0);
-		int Index = pDoc->GetFreeSequenceVRC6(i);
+		int Index = pDoc->GetFreeSequence(SNDCHIP_VRC6, i);
 		if (Index != -1)
 			SetSeqIndex(i, Index);
 	}
@@ -107,7 +107,7 @@ void CInstrumentVRC6::SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pD
 	for (int i = 0; i < SEQUENCE_COUNT; ++i) {
 		int Sequence = GetSeqIndex(i);
 		if (GetSeqEnable(i)) {
-			CSequence *pSeq = pDoc->GetSequenceVRC6(Sequence, i);
+			CSequence *pSeq = pDoc->GetSequence(SNDCHIP_VRC6, Sequence, i);
 
 			pFile->WriteChar(1);
 			pFile->WriteInt(pSeq->GetItemCount());
@@ -138,7 +138,7 @@ bool CInstrumentVRC6::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTracke
 		if (Enabled == 1) {
 			// Read the sequence
 			int Count = pFile->ReadInt();
-			int Index = pDoc->GetFreeSequenceVRC6(i);
+			int Index = pDoc->GetFreeSequence(SNDCHIP_VRC6, i);
 			if (Index != -1) {
 				CSequence *pSeq = pDoc->GetSequence(SNDCHIP_VRC6, Index, i);
 

@@ -51,7 +51,7 @@ unsigned int CFamiTrackerDocWrapper::GetSongSpeed() const
 
 CSequenceInterface const *CFamiTrackerDocWrapper::GetSequence(unsigned int Index, int Type) const
 {
-	return m_pDocument->GetSequence(Index, Type);
+	return m_pDocument->GetSequence(SNDCHIP_NONE, Index, Type);
 }
 
 int CFamiTrackerDocWrapper::GetSequenceCount(int Type) const

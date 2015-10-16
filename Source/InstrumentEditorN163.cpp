@@ -193,7 +193,7 @@ void CInstrumentEditorN163::OnEnChangeSeqIndex()
 
 void CInstrumentEditorN163::OnBnClickedFreeSeq()
 {
-	int FreeIndex = GetDocument()->GetFreeSequenceN163(m_iSelectedSetting);
+	int FreeIndex = GetDocument()->GetFreeSequence(SNDCHIP_N163, m_iSelectedSetting);
 	if (FreeIndex == -1)
 		FreeIndex = 0;
 	SetDlgItemInt(IDC_SEQ_INDEX, FreeIndex, FALSE);	// Things will update automatically by changing this
@@ -236,7 +236,7 @@ void CInstrumentEditorN163::OnKeyReturn()
 void CInstrumentEditorN163::OnCloneSequence()
 {
 	CFamiTrackerDoc *pDoc = GetDocument();
-	int FreeIndex = pDoc->GetFreeSequenceN163(m_iSelectedSetting);
+	int FreeIndex = pDoc->GetFreeSequence(SNDCHIP_N163, m_iSelectedSetting);
 	if (FreeIndex != -1) {
 		CSequence *pSeq = pDoc->GetSequence(SNDCHIP_N163, FreeIndex, m_iSelectedSetting);
 		pSeq->Copy(m_pSequence);

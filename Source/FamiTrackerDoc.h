@@ -303,27 +303,10 @@ public:
 
 	// Sequences functions
 	CSequence*		GetSequence(int Chip, unsigned int Index, int Type);
+	CSequence*		GetSequence(int Chip, unsigned int Index, int Type) const;		// // //
+	unsigned int	GetSequenceItemCount(int Chip, unsigned int Index, int Type) const;		// // //
+	int				GetFreeSequence(int Chip, int Type) const;		// // //
 	int				GetSequenceCount(int Type) const;
-
-	CSequence*		GetSequence(unsigned int Index, int Type);
-	CSequence*		GetSequence(unsigned int Index, int Type) const;
-	int				GetSequenceItemCount(unsigned int Index, int Type) const;
-	int				GetFreeSequence(int Type) const;
-
-	CSequence*		GetSequenceVRC6(unsigned int Index, int Type);
-	CSequence*		GetSequenceVRC6(unsigned int Index, int Type) const;
-	int				GetSequenceItemCountVRC6(unsigned int Index, int Type) const;
-	int				GetFreeSequenceVRC6(int Type) const;
-
-	CSequence*		GetSequenceN163(unsigned int Index, int Type);
-	CSequence*		GetSequenceN163(unsigned int Index, int Type) const;
-	int				GetSequenceItemCountN163(unsigned int Index, int Type) const;
-	int				GetFreeSequenceN163(int Type) const;
-
-	CSequence*		GetSequenceS5B(unsigned int Index, int Type);
-	CSequence*		GetSequenceS5B(unsigned int Index, int Type) const;
-	int				GetSequenceItemCountS5B(unsigned int Index, int Type) const;
-	int				GetFreeSequenceS5B(int Type) const;
 
 	// DPCM samples
 	CDSample*		GetSample(unsigned int Index);

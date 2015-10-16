@@ -87,7 +87,7 @@ void CInstrumentN163::Setup()
 
 	for (int i = 0; i < SEQ_COUNT; ++i) {
 		SetSeqEnable(i, 0);
-		int Index = pDoc->GetFreeSequenceN163(i);
+		int Index = pDoc->GetFreeSequence(SNDCHIP_N163, i);
 		if (Index != -1)
 			SetSeqIndex(i, Index);
 	}
@@ -160,7 +160,7 @@ void CInstrumentN163::SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pD
 		int Sequence = GetSeqIndex(i);
 
 		if (GetSeqEnable(i)) {
-			const CSequence *pSeq = pDoc->GetSequenceN163(Sequence, i);
+			const CSequence *pSeq = pDoc->GetSequence(SNDCHIP_N163, Sequence, i);
 			pFile->WriteChar(1);
 			pFile->WriteInt(pSeq->GetItemCount());
 			pFile->WriteInt(pSeq->GetLoopPoint());
@@ -206,9 +206,9 @@ bool CInstrumentN163::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTracke
 				return false;
 
 			// Find a free sequence
-			int Index = pDoc->GetFreeSequenceN163(i);
+			int Index = pDoc->GetFreeSequence(SNDCHIP_N163, i);
 			if (Index != -1) {
-				CSequence *pSeq = pDoc->GetSequenceN163(Index, i);
+				CSequence *pSeq = pDoc->GetSequence(SNDCHIP_N163, Index, i);
 	
 				pSeq->SetItemCount(Count);
 				pSeq->SetLoopPoint(pFile->ReadInt());

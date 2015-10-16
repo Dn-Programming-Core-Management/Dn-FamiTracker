@@ -58,7 +58,7 @@ void CInstrumentS5B::Setup()
 
 	for (int i = 0; i < SEQ_COUNT; ++i) {
 		SetSeqEnable(i, 0);
-		int Index = pDoc->GetFreeSequenceS5B(i);		// // //
+		int Index = pDoc->GetFreeSequence(SNDCHIP_S5B, i);		// // //
 		if (Index != -1)
 			SetSeqIndex(i, Index);
 	}
@@ -100,7 +100,7 @@ void CInstrumentS5B::SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDo
 	for (int i = 0; i < SEQUENCE_COUNT; ++i) {
 		int Sequence = GetSeqIndex(i);
 		if (GetSeqEnable(i)) {
-			const CSequence *pSeq = pDoc->GetSequenceS5B(Sequence, i);
+			const CSequence *pSeq = pDoc->GetSequence(SNDCHIP_S5B, Sequence, i);
 
 			pFile->WriteChar(1);
 			pFile->WriteInt(pSeq->GetItemCount());
@@ -131,7 +131,7 @@ bool CInstrumentS5B::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTracker
 		if (Enabled == 1) {
 			// Read the sequence
 			int Count = pFile->ReadInt();
-			int Index = pDoc->GetFreeSequenceS5B(i);
+			int Index = pDoc->GetFreeSequence(SNDCHIP_S5B, i);
 			if (Index != -1) {
 				CSequence *pSeq = pDoc->GetSequence(SNDCHIP_S5B, Index, i);
 

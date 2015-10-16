@@ -84,7 +84,7 @@ void CInstrument2A03::Setup()
 	// Select free sequences
 	for (int i = 0; i < SEQ_COUNT; ++i) {
 		SetSeqEnable(i, 0);
-		int Slot = pDoc->GetFreeSequence(i);
+		int Slot = pDoc->GetFreeSequence(SNDCHIP_NONE, i);
 		if (Slot != -1)
 			SetSeqIndex(i, Slot);
 	}
@@ -154,7 +154,7 @@ void CInstrument2A03::SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pD
 	for (int i = 0; i < SEQUENCE_COUNT; ++i) {
 		unsigned int Sequence = GetSeqIndex(i);
 		if (GetSeqEnable(i)) {
-			const CSequence *pSeq = pDoc->GetSequence(Sequence, i);
+			const CSequence *pSeq = pDoc->GetSequence(SNDCHIP_NONE, Sequence, i);
 			pFile->WriteChar(1);
 			pFile->WriteInt(pSeq->GetItemCount());
 			pFile->WriteInt(pSeq->GetLoopPoint());
@@ -245,9 +245,9 @@ bool CInstrument2A03::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTracke
 				return false;
 
 			// Find a free sequence
-			int Index = pDoc->GetFreeSequence(i);
+			int Index = pDoc->GetFreeSequence(SNDCHIP_NONE, i);
 			if (Index != -1) {
-				CSequence *pSeq = pDoc->GetSequence((unsigned)Index, i);
+				CSequence *pSeq = pDoc->GetSequence(SNDCHIP_NONE, (unsigned)Index, i);
 
 				if (iVersion < 20) {
 					OldSequence.Count = Count;
@@ -382,7 +382,7 @@ int CInstrument2A03::Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index)
 	int StoredBytes = 0;
 
 	for (unsigned int i = 0; i < SEQUENCE_COUNT; ++i) {
-		const CSequence *pSequence = pDoc->GetSequence(unsigned(GetSeqIndex(i)), i);
+		const CSequence *pSequence = pDoc->GetSequence(SNDCHIP_NONE, unsigned(GetSeqIndex(i)), i);
 		ModSwitch = (ModSwitch >> 1) | ((GetSeqEnable(i) && (pSequence->GetItemCount() > 0)) ? 0x10 : 0);
 	}
 	
@@ -390,7 +390,7 @@ int CInstrument2A03::Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index)
 	StoredBytes++;
 
 	for (int i = 0; i < SEQUENCE_COUNT; ++i) {
-		const CSequence *pSequence = pDoc->GetSequence(unsigned(GetSeqIndex(i)), i);
+		const CSequence *pSequence = pDoc->GetSequence(SNDCHIP_NONE, unsigned(GetSeqIndex(i)), i);
 		if (GetSeqEnable(i) != 0 && (pSequence->GetItemCount() != 0)) {
 			CStringA str;
 			str.Format(CCompiler::LABEL_SEQ_2A03, GetSeqIndex(i) * SEQUENCE_COUNT + i);

@@ -1614,71 +1614,22 @@ void CCompiler::CreateSequenceList()
 	//
 
 	unsigned int Size = 0, StoredCount = 0;
+	static const uint8 chip[] = {SNDCHIP_NONE, SNDCHIP_VRC6, SNDCHIP_N163, SNDCHIP_S5B};		// // //
+	static const bool *used[] = {*m_bSequencesUsed2A03, *m_bSequencesUsedVRC6, *m_bSequencesUsedN163, *m_bSequencesUsedS5B};
+	static const char *format[] = {LABEL_SEQ_2A03, LABEL_SEQ_VRC6, LABEL_SEQ_N163, LABEL_SEQ_S5B};
 
-	for (int i = 0; i < MAX_SEQUENCES; ++i) {
-		for (int j = 0; j < CInstrument2A03::SEQUENCE_COUNT; ++j) {
-			CSequence* pSeq = m_pDocument->GetSequence((unsigned)i, j);
-
-			if (m_bSequencesUsed2A03[i][j] && pSeq->GetItemCount() > 0) {
-				int Index = i * SEQ_COUNT + j;
+	for (size_t c = 0; c < sizeof(chip); c++) if (m_pDocument->ExpansionEnabled(chip[c])) {
+		for (int i = 0; i < MAX_SEQUENCES; ++i)  for (int j = 0; j < SEQ_COUNT; ++j) { // ::SEQUENCE_COUNT
+			CSequence* pSeq = m_pDocument->GetSequence(chip[c], i, j);
+			int Index = i * SEQ_COUNT + j;
+			if (*(used[c] + Index) && pSeq->GetItemCount() > 0) {
 				CStringA label;
-				label.Format(LABEL_SEQ_2A03, Index);
+				label.Format(format[c], Index);
 				Size += StoreSequence(pSeq, label);
 				++StoredCount;
 			}
 		}
 	}
-
-	if (m_pDocument->ExpansionEnabled(SNDCHIP_VRC6)) {
-		for (int i = 0; i < MAX_SEQUENCES; ++i) {
-			for (int j = 0; j < CInstrumentVRC6::SEQUENCE_COUNT; ++j) {
-				CSequence* pSeq = m_pDocument->GetSequence(SNDCHIP_VRC6, i, j);
-
-				if (m_bSequencesUsedVRC6[i][j] && pSeq->GetItemCount() > 0) {
-					int Index = i * SEQ_COUNT + j;
-					CStringA label;
-					label.Format(LABEL_SEQ_VRC6, Index);
-					Size += StoreSequence(pSeq, label);
-					++StoredCount;
-				}
-			}
-		}
-	}
-
-	
-	if (m_pDocument->ExpansionEnabled(SNDCHIP_N163)) {
-		for (int i = 0; i < MAX_SEQUENCES; ++i) {
-			for (int j = 0; j < CInstrumentN163::SEQUENCE_COUNT; ++j) {
-				CSequence* pSeq = m_pDocument->GetSequence(SNDCHIP_N163, i, j);
-
-				if (m_bSequencesUsedN163[i][j] && pSeq->GetItemCount() > 0) {
-					int Index = i * SEQ_COUNT + j;
-					CStringA label;
-					label.Format(LABEL_SEQ_N163, Index);
-					Size += StoreSequence(pSeq, label);
-					++StoredCount;
-				}
-			}
-		}
-	}
-
-	
-	if (m_pDocument->ExpansionEnabled(SNDCHIP_S5B)) {
-		for (int i = 0; i < MAX_SEQUENCES; ++i) {
-			for (int j = 0; j < CInstrumentS5B::SEQUENCE_COUNT; ++j) {
-				CSequence* pSeq = m_pDocument->GetSequence(SNDCHIP_S5B, i, j);
-
-				if (m_bSequencesUsedS5B[i][j] && pSeq->GetItemCount() > 0) {
-					int Index = i * SEQ_COUNT + j;
-					CStringA label;
-					label.Format(LABEL_SEQ_S5B, Index);
-					Size += StoreSequence(pSeq, label);
-					++StoredCount;
-				}
-			}
-		}
-	}
-	
 
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_FDS)) {
 		// TODO: this is bad, fds only uses 3 sequences
