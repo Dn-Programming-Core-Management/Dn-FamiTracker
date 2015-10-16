@@ -1487,6 +1487,11 @@ void CMainFrame::OnCreateNSF()
 
 void CMainFrame::OnCreateWAV()
 {
+#ifdef DISABLE_SAVE		// // //
+	SetMessageText(IDS_DISABLE_SAVE);
+	return;
+#endif
+
 	CCreateWaveDlg WaveDialog;
 	WaveDialog.ShowDialog();
 }

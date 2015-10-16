@@ -31,9 +31,9 @@
 // Version info
 #define VERSION_MAJ  0
 #define VERSION_MIN  3
-#define VERSION_REV  11
+#define VERSION_REV  12
 
-#define VERSION_WIP  1
+#define VERSION_WIP  0
 
 #ifdef RELEASE_BUILD
 

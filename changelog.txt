@@ -1,9 +1,55 @@
 0CC-FamiTracker Mod
 Change Log
 Written by HertzDevil
-Version 0.3.11r1 - Jul 12 2015
+Version 0.3.12 - Oct 17 2015
 
 --------------------------------------------------------------------------------
+
+V0.3.12 - 10/17/15
+Additions:
+ - Added FDS automatic frequency modulation effects
+ - Bookmark manager no longer crashes
+ - Added a menu command to swap pattern data of two channels in the FTM
+Improvements:
+ - Added a menu command that displays the estimated song duration
+ - Pattern editor does not play notes from keyboard input while playing with
+    edit mode enabled and follow mode disabled (experimental)
+ - Selections in compact view always include all columns in selected channels
+ - Arpeggio scheme sequence editor now displays the arpeggio type of the term
+    below the mouse cursor properly
+ - Arpeggio scheme sequence editor can now set the arpeggio type from the graph
+    editor (by holding numpad 0 - 3)
+ - Register display now highlights recent register writes, blue for new values,
+    red for old values
+ - Groove settings dialog allows direct text input and copying grooves as Fxx
+    effect pattern data
+ - Added a context menu command for the VRC7 instrument editor to copy the
+    current instrument as plain text values
+Bug fixes:
+ - Tracker no longer crashes upon loading FTMs that contain patterns with zero
+    non-empty rows
+ - Tracks using fixed tempo now always allow speed values up to 255
+ - Fixed pattern editor not resetting the selection area when using Shift key to
+    create a new selection
+ - Fixed pattern editor not resetting the selection area after cursor crosses
+    frames while playing with follow mode enabled
+ - Fixed tracker not moving bookmark tables appropriately after tracks are moved
+    or removed on the track list
+ - Fixed text importer erroneously enabling default groove for random tracks
+ - Fixed "Any" as effect column scope not working in Find / Replace dialog
+ - Fixed Module Properties dialog removing the FDS channel upon confirmation
+ - Fixed Module Properties removing channels to the right of N163 when changing
+    only the number of N163 channels
+ - Fixed 2A03's nonlinear mixing sometimes applying even while channel is muted
+ - Fixed inactive N163 channels loading the waveform of the currently selected
+    instrument upon playing
+ - Fixed wave export rendering extra rows upon encountering skip effects
+ - Fixed VRC7 instrument editor showing -6 dB / oct instead of -3 dB / oct for
+    the rate scale settings
+ - Fixed 2A03 Pulse 1's state not being retrieved
+ - Fixed NSFs with certain expansion chip configurations crashing
+ - Fixed Axy and Mxy resetting the channel volume incorrectly
+ - Fixed N163 Zxx effect not setting the correct wave position in exported NSFs
 
 V0.3.11r1 - 07/12/15
 Improvements:
@@ -17,9 +63,6 @@ Bug fixes:
     single-channel effect clip data
  - Fixed Find / Replace dialog crashing upon any action
  - Effect search queries without effect parameter now work properly
- - Fixed Module Properties dialog removing the FDS channel upon confirmation
- - Fixed Module Properties removing channels to the right of N163 when changing
-    only the number of N163 channels
  - Fixed Mxy effect not resetting to the default channel volume in exported NSFs
  - Fixed ^0 echo buffer access retrieving incorrect notes outside 2A03 Pulse 1
     in exported NSFs
@@ -30,7 +73,7 @@ Additions:
 Improvements:
  - Added a visual waveform manager for the N163 instrument editor
  - Added an option in the configuration menu to disable selections across frames
- - Importing FTMs with different expansion chip configurations is now supported
+ - FTM import now allows importing FTMs with different expansion chips
  - "Pick Up Row" now updates the last used values of all columns for repeat key
  - "Copy As Plain Text" now includes header row containing channel names
  - "Recall Channel State" now respects several run-time effects while playing

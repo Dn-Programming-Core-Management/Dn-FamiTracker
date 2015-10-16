@@ -1,7 +1,7 @@
 0CC-FamiTracker Mod
 Readme / Manual
 Written by HertzDevil
-Version 0.3.11 - Jul 9 2015
+Version 0.3.12 - Oct 17 2015
 
 --------------------------------------------------------------------------------
 
@@ -22,6 +22,7 @@ comes from the author's favourite arpeggio effect. The current version includes:
  - Bookmark manager
  - Echo buffer access
  - Delayed channel effects
+ - FDS automatic FM effects
  - N163 wave buffer access effect
  - Expansion chip selector & ad-doc multichip NSF export
 
@@ -32,9 +33,12 @@ License Version 2. Differences to the original FamiTracker source are marked
 with "// // //"; those to the ASM source with ";;; ;; ;" and "; ;; ;;;". The
 current build is based on the 0.4.6 official release of FamiTracker and an
 unknown version of the NSF driver used in that release; 0CC-FamiTracker will
-continue to use that version in future updates unless there is great need for
+continue to use this version in future updates unless there is great need for
 update, but its behaviour may not be identical if and when any of the features
-of this mod becomes part of the an official FamiTracker release.
+of this mod becomes part of an official FamiTracker release.
+
+Since version 0.3.12, the source code is no longer included within the download;
+always consult the Github page for up-to-date source code files.
 
 	===
 	Links
@@ -89,14 +93,14 @@ Arpeggio schemes are a generalization of the 0xy arpeggio effect command which
 allows the arpeggio sequences of instruments to carry variable entries modified
 by the 0xy effect.
 
-CAUTION: Arpeggio schemes WILL crash on official versions of FamiTracker!
-
 To use arpeggio schemes, they must be input using the MML field of the arpeggio
 sequence editor. (The use of the Sunsoft 5B noise sequence editor is planned.)
 The MML field accepts terms formed by "x" added to, "y" added to, or "y"
 subtracted from any numeral between -27 and +36 inclusive. These occurrences of
 "x" and "y" will be substituted with the respective parameters of the 0xy effect
-whenever FamiTracker encounters these in patterns.
+whenever FamiTracker encounters these in patterns. Alternatively, by holding any
+numpad key as below, a specific arpeggio type can be accessed from the graph:
+   0: None	   1: +x	   2: +y	   3: -y
 
 As an example, given the following absolute arpeggio sequences:
 {| 0 12 4 16 7 19}
@@ -385,6 +389,34 @@ Txy: Transposes the channel by y semitones, upwards if bit 7 is clear, and
       would be taken as downward.
 
 	===
+	FDS Automatic FM Effects
+	===
+
+0CC-FamiTracker overloads the FDS effects in FamiTracker so that the FM rate of
+the FDS channel may be realized as a multiple of the carrier frequency during
+run-time. These effects are:
+
+Ixy: When x is not equal to 0, enables auto-FM, and sets the modulator frequency
+      to the carrier frequency multiplied by x / (y + 1).
+
+Hxx: When xx is 0x80 or larger, sets the modulator multiplier's numerator to xx,
+      so that the multiplier becomes xx / (y + 1) where y is previously set by
+      an Ixy command. This effect command does nothing if auto-FM is disabled.
+      FamiTracker's effect evaluation order is from left to right (except for
+      Gxx), thus no Ixy effects should appear to the right of any Hxx effect on
+      the same row for it to become effective.
+
+Zxx: Sets the modulator frequency bias, which is an FM analog of the Pxx effect;
+      the bias is added to the value resulting from modulator multiplication as
+      the final register value. The default value of the modulator bias is 0x80.
+
+Automatic FM does not apply to the FDS channel if the current instrument uses a
+non-zero FM rate. All effects are stateful, so they do not have to be issued for
+each individual note; using the existing forms of the FDS effects will disable
+auto-FM immediately, but the modulator bias value remains effective once auto-FM
+is enabled again.
+
+	===
 	N163 Wave Buffer Access Effect
 	===
 
@@ -486,7 +518,6 @@ combinations are the default hotkeys)
 - When the triangle channel's linear counter is enabled, the high byte of the
    period cannot be changed; this is intended behaviour because any write will
    reset the linear counter
-- The arpeggio sequence editor cannot access "x" or "y" from the graph
 - Pitch bend effects remove the 0xy parameters in NSFs (pitch bend effects do
    override arpeggio, however in the tracker the 0xy parameter is stored
    separately)
@@ -495,11 +526,8 @@ combinations are the default hotkeys)
 - The behaviour of Qxy and Rxy on the noise channel is inconsistent between
    FamiTracker and NSF driver when the pitch overflows
 - FDS and N163 sometimes load incorrect waves in multichip NSFs
-- On long FTMs with many channels, retrieving the channel state often results in
- an audio buffer underrun
 - In exported NSFs, the echo buffer is updated as Txy effects are applied; in
    the tracker this happens upon encountering Txy effects
-- "Recall channel state" does not display states of effects with no memory
 
 	===
 	Credits
@@ -509,7 +537,7 @@ combinations are the default hotkeys)
 - ipi: Original implementation of the Lxx effect and expansion chip selector,
    "UsualDay.ftm" demo module
 - jsr: Partial implementation of the Sunsoft 5B chip
-- Xyz_39808, retro_dpc: Bug testing
+- Xyz_39808, retro_dpc, Threxx, w7n, Phroneris: Bug testing
 - jfbillingsley: N163 waveform manager design
 
 --------------------------------------------------------------------------------
