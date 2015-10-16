@@ -86,7 +86,7 @@ bool CChannelHandlerMMC5::HandleInstrument(int Instrument, bool Trigger, bool Ne
 		return false;
 
 	for (int i = 0; i < SEQ_COUNT; ++i) {
-		const CSequence *pSequence = pDocument->GetSequence(SNDCHIP_NONE, pInstrument->GetSeqIndex(i), i);
+		const CSequence *pSequence = pDocument->GetSequence(INST_2A03, pInstrument->GetSeqIndex(i), i);
 		if (Trigger || !IsSequenceEqual(i, pSequence) || pInstrument->GetSeqEnable(i) > GetSequenceState(i)) {
 			if (pInstrument->GetSeqEnable(i) == 1)
 				SetupSequence(i, pSequence);

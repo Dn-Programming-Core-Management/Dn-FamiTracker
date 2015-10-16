@@ -1450,6 +1450,9 @@ void CCompiler::ScanSong()
 	memset(m_bSequencesUsedVRC6, false, sizeof(bool) * MAX_SEQUENCES * SEQ_COUNT);
 	memset(m_bSequencesUsedN163, false, sizeof(bool) * MAX_SEQUENCES * SEQ_COUNT);
 	memset(m_bSequencesUsedS5B, false, sizeof(bool) * MAX_SEQUENCES * SEQ_COUNT);		// // //
+	
+	static const inst_type_t inst[] = {INST_2A03, INST_VRC6, INST_N163, INST_S5B};		// // //
+	static bool *used[] = {*m_bSequencesUsed2A03, *m_bSequencesUsedVRC6, *m_bSequencesUsedN163, *m_bSequencesUsedS5B};
 
 	for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
 		if (m_pDocument->IsInstrumentUsed(i) && IsInstrumentInPattern(i)) {
@@ -1458,47 +1461,13 @@ void CCompiler::ScanSong()
 			m_iAssignedInstruments[m_iInstruments++] = i;
 			
 			// Create a list of used sequences
-			switch (m_pDocument->GetInstrumentType(i)) {
-				case INST_2A03: 
-					{
-						CInstrumentContainer<CInstrument2A03> instContainer(m_pDocument, i);
-						CInstrument2A03 *pInstrument = instContainer();
-						for (int j = 0; j < SEQ_COUNT; ++j) {
-							if (pInstrument->GetSeqEnable(j))
-								m_bSequencesUsed2A03[pInstrument->GetSeqIndex(j)][j] = true;
-						}
-					}
-					break;
-				case INST_VRC6: 
-					{
-						CInstrumentContainer<CInstrumentVRC6> instContainer(m_pDocument, i);
-						CInstrumentVRC6 *pInstrument = instContainer();
-						for (int j = 0; j < SEQ_COUNT; ++j) {
-							if (pInstrument->GetSeqEnable(j))
-								m_bSequencesUsedVRC6[pInstrument->GetSeqIndex(j)][j] = true;
-						}
-					}
-					break;
-				case INST_N163:
-					{
-						CInstrumentContainer<CInstrumentN163> instContainer(m_pDocument, i);
-						CInstrumentN163 *pInstrument = instContainer();
-						for (int j = 0; j < SEQ_COUNT; ++j) {
-							if (pInstrument->GetSeqEnable(j))
-								m_bSequencesUsedN163[pInstrument->GetSeqIndex(j)][j] = true;
-						}
-					}
-					break;
-				case INST_S5B:
-					{
-						CInstrumentContainer<CInstrumentS5B> instContainer(m_pDocument, i);
-						CInstrumentS5B *pInstrument = instContainer();
-						for (int j = 0; j < SEQ_COUNT; ++j) {
-							if (pInstrument->GetSeqEnable(j))
-								m_bSequencesUsedS5B[pInstrument->GetSeqIndex(j)][j] = true;
-						}
-					}
-					break;
+			inst_type_t it = m_pDocument->GetInstrumentType(i);		// // //
+			for (size_t z = 0; z < sizeof(used) / sizeof(bool*); z++) if (it == inst[z]) {
+				CInstrumentContainer<CSeqInstrument> instContainer(m_pDocument, i);
+				CSeqInstrument *pInstrument = instContainer();
+				for (int j = 0; j < SEQ_COUNT; ++j) if (pInstrument->GetSeqEnable(j))
+					*(used[z] + pInstrument->GetSeqIndex(j) * SEQ_COUNT + j) = true;
+				break;
 			}
 		}
 	}
@@ -1614,13 +1583,14 @@ void CCompiler::CreateSequenceList()
 	//
 
 	unsigned int Size = 0, StoredCount = 0;
+	static const inst_type_t inst[] = {INST_2A03, INST_VRC6, INST_N163, INST_S5B};
 	static const uint8 chip[] = {SNDCHIP_NONE, SNDCHIP_VRC6, SNDCHIP_N163, SNDCHIP_S5B};		// // //
-	static const bool *used[] = {*m_bSequencesUsed2A03, *m_bSequencesUsedVRC6, *m_bSequencesUsedN163, *m_bSequencesUsedS5B};
+	const bool *used[] = {*m_bSequencesUsed2A03, *m_bSequencesUsedVRC6, *m_bSequencesUsedN163, *m_bSequencesUsedS5B};
 	static const char *format[] = {LABEL_SEQ_2A03, LABEL_SEQ_VRC6, LABEL_SEQ_N163, LABEL_SEQ_S5B};
 
 	for (size_t c = 0; c < sizeof(chip); c++) if (m_pDocument->ExpansionEnabled(chip[c])) {
 		for (int i = 0; i < MAX_SEQUENCES; ++i)  for (int j = 0; j < SEQ_COUNT; ++j) {
-			CSequence* pSeq = m_pDocument->GetSequence(chip[c], i, j);
+			CSequence* pSeq = m_pDocument->GetSequence(inst[c], i, j);
 			int Index = i * SEQ_COUNT + j;
 			if (*(used[c] + Index) && pSeq->GetItemCount() > 0) {
 				CStringA label;

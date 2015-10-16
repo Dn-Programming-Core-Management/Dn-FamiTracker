@@ -90,7 +90,8 @@ void CInstrumentEditorS5B::SelectInstrument(int Instrument)
 void CInstrumentEditorS5B::SelectSequence(int Sequence, int Type)
 {
 	// Selects the current sequence in the sequence editor
-	m_pSequence = GetDocument()->GetSequence(SNDCHIP_S5B, Sequence, Type);
+	m_pSequence = GetDocument()->GetSequence(INST_S5B, Sequence, Type);
+
 	m_pSequenceEditor->SelectSequence(m_pSequence, Type, INST_S5B);
 }
 
@@ -192,7 +193,7 @@ void CInstrumentEditorS5B::OnEnChangeSeqIndex()
 
 void CInstrumentEditorS5B::OnBnClickedFreeSeq()
 {
-	int FreeIndex = GetDocument()->GetFreeSequence(SNDCHIP_S5B, m_iSelectedSetting);
+	int FreeIndex = GetDocument()->GetFreeSequence(INST_S5B, m_iSelectedSetting);
 	if (FreeIndex == -1)
 		FreeIndex = 0;
 	SetDlgItemInt(IDC_SEQ_INDEX, FreeIndex, FALSE);	// Things will update automatically by changing this
@@ -235,9 +236,10 @@ void CInstrumentEditorS5B::OnKeyReturn()
 void CInstrumentEditorS5B::OnCloneSequence()
 {
 	CFamiTrackerDoc *pDoc = GetDocument();
-	int FreeIndex = pDoc->GetFreeSequence(SNDCHIP_S5B, m_iSelectedSetting);
+	int FreeIndex = pDoc->GetFreeSequence(INST_S5B, m_iSelectedSetting);
 	if (FreeIndex != -1) {
-		CSequence *pSeq = pDoc->GetSequence(SNDCHIP_S5B, FreeIndex, m_iSelectedSetting);
+		CSequence *pSeq = pDoc->GetSequence(INST_S5B, FreeIndex, m_iSelectedSetting);
+
 		pSeq->Copy(m_pSequence);
 		SetDlgItemInt(IDC_SEQ_INDEX, FreeIndex, FALSE);
 	}

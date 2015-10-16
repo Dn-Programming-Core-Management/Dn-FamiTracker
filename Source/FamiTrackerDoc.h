@@ -302,10 +302,11 @@ public:
 	int 			LoadInstrument(CString FileName);
 
 	// Sequences functions
-	CSequence*		GetSequence(int Chip, unsigned int Index, int Type);
-	CSequence*		GetSequence(int Chip, unsigned int Index, int Type) const;		// // //
-	unsigned int	GetSequenceItemCount(int Chip, unsigned int Index, int Type) const;		// // //
-	int				GetFreeSequence(int Chip, int Type) const;		// // //
+	// // // take instrument type as parameter rather than chip type
+	CSequence*		GetSequence(inst_type_t InstType, unsigned int Index, int Type);
+	CSequence*		GetSequence(inst_type_t InstType, unsigned int Index, int Type) const;		// // //
+	unsigned int	GetSequenceItemCount(inst_type_t InstType, unsigned int Index, int Type) const;		// // //
+	int				GetFreeSequence(inst_type_t InstType, int Type) const;		// // //
 	int				GetSequenceCount(int Type) const;
 
 	// DPCM samples

@@ -754,7 +754,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 			case CT_MACRON163:
 			case CT_MACROS5B:
 				{
-					const int CHIP_MACRO[4] = { SNDCHIP_NONE, SNDCHIP_VRC6, SNDCHIP_N163, SNDCHIP_S5B };
+					const inst_type_t CHIP_MACRO[4] = { INST_2A03, INST_VRC6, INST_N163, INST_S5B };		// // //
 					int chip = c - CT_MACRO;
 
 					int mt;
@@ -1304,13 +1304,12 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	f.WriteString(_T("# Macros\n"));
 	for (int c=0; c<4; ++c)
 	{
-		const int CHIP_MACRO[4] = { SNDCHIP_NONE, SNDCHIP_VRC6, SNDCHIP_N163, SNDCHIP_S5B };
-		int chip = CHIP_MACRO[c];
+		const inst_type_t CHIP_MACRO[4] = { INST_2A03, INST_VRC6, INST_N163, INST_S5B };
 
 		for (int st=0; st < SEQ_COUNT; ++st)
 		for (int seq=0; seq < MAX_SEQUENCES; ++seq)
 		{
-			CSequence* pSequence = pDoc->GetSequence(chip, seq, st);
+			CSequence* pSequence = pDoc->GetSequence(CHIP_MACRO[c], seq, st);
 			if (pSequence && pSequence->GetItemCount() > 0)
 			{
 				s.Format(_T("%-9s %3d %3d %3d %3d %3d :"),

@@ -664,7 +664,7 @@ void CFamiTrackerDoc::ConvertSequences()
 	for (int  i = 0; i < MAX_SEQUENCES; ++i) {
 		for (int j = 0; j < SEQ_COUNT; ++j) {
 			stSequence *pOldSeq = &m_vSequences[i][j];
-			CSequence *pNewSeq = GetSequence(SNDCHIP_NONE, i, j);
+			CSequence *pNewSeq = GetSequence(INST_2A03, i, j);
 			ConvertSequence(pOldSeq, pNewSeq, j);
 		}
 	}
@@ -970,7 +970,7 @@ bool CFamiTrackerDoc::WriteBlock_Sequences(CDocumentFile *pDocFile) const
 	// Count number of used sequences
 	for (int i = 0; i < MAX_SEQUENCES; ++i) {
 		for (int j = 0; j < SEQ_COUNT; ++j) {
-			if (GetSequenceItemCount(SNDCHIP_NONE, i, j) > 0)
+			if (GetSequenceItemCount(INST_2A03, i, j) > 0)
 				Count++;
 		}
 	}
@@ -979,9 +979,9 @@ bool CFamiTrackerDoc::WriteBlock_Sequences(CDocumentFile *pDocFile) const
 
 	for (int i = 0; i < MAX_SEQUENCES; ++i) {
 		for (int j = 0; j < SEQ_COUNT; ++j) {
-			Count = GetSequenceItemCount(SNDCHIP_NONE, i, j);
+			Count = GetSequenceItemCount(INST_2A03, i, j);
 			if (Count > 0) {
-				const CSequence *pSeq = reinterpret_cast<const CSequence*>(GetSequence(SNDCHIP_NONE, i, j));
+				const CSequence *pSeq = reinterpret_cast<const CSequence*>(GetSequence(INST_2A03, i, j));
 				// Store index
 				pDocFile->WriteBlockInt(i);
 				// Store type of sequence
@@ -1001,9 +1001,9 @@ bool CFamiTrackerDoc::WriteBlock_Sequences(CDocumentFile *pDocFile) const
 	// v6
 	for (int i = 0; i < MAX_SEQUENCES; ++i) {
 		for (int j = 0; j < SEQ_COUNT; ++j) {
-			Count = GetSequenceItemCount(SNDCHIP_NONE, i, j);
+			Count = GetSequenceItemCount(INST_2A03, i, j);
 			if (Count > 0) {
-				const CSequence *pSeq = reinterpret_cast<const CSequence*>(GetSequence(SNDCHIP_NONE, i, j));
+				const CSequence *pSeq = reinterpret_cast<const CSequence*>(GetSequence(INST_2A03, i, j));
 				// Store release point
 				pDocFile->WriteBlockInt(pSeq->GetReleasePoint());
 				// Store setting
@@ -1029,7 +1029,8 @@ bool CFamiTrackerDoc::WriteBlock_SequencesVRC6(CDocumentFile *pDocFile) const
 	// Count number of used sequences
 	for (int i = 0; i < MAX_SEQUENCES; ++i) {
 		for (int j = 0; j < SEQ_COUNT; ++j) {
-			if (GetSequenceItemCount(SNDCHIP_VRC6, i, j) > 0)
+			if (GetSequenceItemCount(INST_VRC6, i, j) > 0)
+
 				Count++;
 		}
 	}
@@ -1039,9 +1040,11 @@ bool CFamiTrackerDoc::WriteBlock_SequencesVRC6(CDocumentFile *pDocFile) const
 
 	for (int i = 0; i < MAX_SEQUENCES; ++i) {
 		for (int j = 0; j < SEQ_COUNT; ++j) {
-			Count = GetSequenceItemCount(SNDCHIP_VRC6, i, j);
+			Count = GetSequenceItemCount(INST_VRC6, i, j);
+
 			if (Count > 0) {
-				const CSequence *pSeq = GetSequence(SNDCHIP_VRC6, i, j);
+				const CSequence *pSeq = GetSequence(INST_VRC6, i, j);
+
 				// Store index
 				pDocFile->WriteBlockInt(i);
 				// Store type of sequence
@@ -1061,9 +1064,11 @@ bool CFamiTrackerDoc::WriteBlock_SequencesVRC6(CDocumentFile *pDocFile) const
 	// v6
 	for (int i = 0; i < MAX_SEQUENCES; ++i) {
 		for (int j = 0; j < SEQ_COUNT; ++j) {
-			Count = GetSequenceItemCount(SNDCHIP_VRC6, i, j);
+			Count = GetSequenceItemCount(INST_VRC6, i, j);
+
 			if (Count > 0) {
-				const CSequence *pSeq = GetSequence(SNDCHIP_VRC6, i, j);
+				const CSequence *pSeq = GetSequence(INST_VRC6, i, j);
+
 				// Store release point
 				pDocFile->WriteBlockInt(pSeq->GetReleasePoint());
 				// Store setting
@@ -1089,7 +1094,8 @@ bool CFamiTrackerDoc::WriteBlock_SequencesN163(CDocumentFile *pDocFile) const
 	// Count number of used sequences
 	for (int i = 0; i < MAX_SEQUENCES; ++i) {
 		for (int j = 0; j < SEQ_COUNT; ++j) {
-			if (GetSequenceItemCount(SNDCHIP_N163, i, j) > 0)
+			if (GetSequenceItemCount(INST_N163, i, j) > 0)
+
 				Count++;
 		}
 	}
@@ -1099,9 +1105,11 @@ bool CFamiTrackerDoc::WriteBlock_SequencesN163(CDocumentFile *pDocFile) const
 
 	for (int i = 0; i < MAX_SEQUENCES; ++i) {
 		for (int j = 0; j < SEQ_COUNT; ++j) {
-			Count = GetSequenceItemCount(SNDCHIP_N163, i, j);
+			Count = GetSequenceItemCount(INST_N163, i, j);
+
 			if (Count > 0) {
-				const CSequence *pSeq = GetSequence(SNDCHIP_N163, i, j);
+				const CSequence *pSeq = GetSequence(INST_N163, i, j);
+
 				// Store index
 				pDocFile->WriteBlockInt(i);
 				// Store type of sequence
@@ -1139,7 +1147,8 @@ bool CFamiTrackerDoc::WriteBlock_SequencesS5B(CDocumentFile *pDocFile) const
 	// Count number of used sequences
 	for (int i = 0; i < MAX_SEQUENCES; ++i) {
 		for (int j = 0; j < SEQ_COUNT; ++j) {
-			if (GetSequenceItemCount(SNDCHIP_S5B, i, j) > 0)
+			if (GetSequenceItemCount(INST_S5B, i, j) > 0)
+
 				Count++;
 		}
 	}
@@ -1149,9 +1158,11 @@ bool CFamiTrackerDoc::WriteBlock_SequencesS5B(CDocumentFile *pDocFile) const
 
 	for (int i = 0; i < MAX_SEQUENCES; ++i) {
 		for (int j = 0; j < SEQ_COUNT; ++j) {
-			Count = GetSequenceItemCount(SNDCHIP_S5B, i, j);
+			Count = GetSequenceItemCount(INST_S5B, i, j);
+
 			if (Count > 0) {
-				const CSequence *pSeq = GetSequence(SNDCHIP_S5B, i, j);
+				const CSequence *pSeq = GetSequence(INST_S5B, i, j);
+
 				// Store index
 				pDocFile->WriteBlockInt(i);
 				// Store type of sequence
@@ -1985,7 +1996,7 @@ bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 			ASSERT_FILE_DATA(Type < SEQ_COUNT);
 //			ASSERT_FILE_DATA(SeqCount <= MAX_SEQUENCE_ITEMS);
 
-			CSequence *pSeq = GetSequence(SNDCHIP_NONE, Index, Type);
+			CSequence *pSeq = GetSequence(INST_2A03, Index, Type);
 
 			pSeq->Clear();
 			pSeq->SetItemCount(SeqCount < MAX_SEQUENCE_ITEMS ? SeqCount : MAX_SEQUENCE_ITEMS);
@@ -2011,8 +2022,8 @@ bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 				for (int j = 0; j < SEQ_COUNT; ++j) {
 					ReleasePoint = pDocFile->GetBlockInt();
 					Settings = pDocFile->GetBlockInt();
-					if (GetSequenceItemCount(SNDCHIP_NONE, i, j) > 0) {
-						CSequence *pSeq = GetSequence(SNDCHIP_NONE, i, j);
+					if (GetSequenceItemCount(INST_2A03, i, j) > 0) {
+						CSequence *pSeq = GetSequence(INST_2A03, i, j);
 						pSeq->SetReleasePoint(ReleasePoint);
 						pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
 					}
@@ -2026,7 +2037,7 @@ bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 				Settings = pDocFile->GetBlockInt();
 				unsigned int Index = Indices[i];
 				unsigned int Type = Types[i];
-				CSequence *pSeq = GetSequence(SNDCHIP_NONE, Index, Type);
+				CSequence *pSeq = GetSequence(INST_2A03, Index, Type);
 				pSeq->SetReleasePoint(ReleasePoint);
 				pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
 			}
@@ -2055,7 +2066,8 @@ bool CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile)
 			ASSERT_FILE_DATA(Index < MAX_SEQUENCES);
 			ASSERT_FILE_DATA(Type < SEQ_COUNT);
 //			ASSERT_FILE_DATA(SeqCount <= MAX_SEQUENCE_ITEMS);
-			CSequence *pSeq = GetSequence(SNDCHIP_VRC6, Index, Type);
+			CSequence *pSeq = GetSequence(INST_VRC6, Index, Type);
+
 			pSeq->Clear();
 			pSeq->SetItemCount(SeqCount < MAX_SEQUENCE_ITEMS ? SeqCount : MAX_SEQUENCE_ITEMS);
 			pSeq->SetLoopPoint(LoopPoint);
@@ -2087,7 +2099,8 @@ bool CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile)
 			ASSERT_FILE_DATA(Type < SEQ_COUNT);
 //			ASSERT_FILE_DATA(SeqCount <= MAX_SEQUENCE_ITEMS);
 
-			CSequence *pSeq = GetSequence(SNDCHIP_VRC6, Index, Type);
+			CSequence *pSeq = GetSequence(INST_VRC6, Index, Type);
+
 
 			pSeq->Clear();
 			pSeq->SetItemCount(SeqCount);
@@ -2113,8 +2126,10 @@ bool CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile)
 				for (int j = 0; j < SEQ_COUNT; ++j) {
 					ReleasePoint = pDocFile->GetBlockInt();
 					Settings = pDocFile->GetBlockInt();
-					if (GetSequenceItemCount(SNDCHIP_VRC6, i, j) > 0) {
-						CSequence *pSeq = GetSequence(SNDCHIP_VRC6, i, j);
+					if (GetSequenceItemCount(INST_VRC6, i, j) > 0) {
+
+						CSequence *pSeq = GetSequence(INST_VRC6, i, j);
+
 						pSeq->SetReleasePoint(ReleasePoint);
 						pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
 					}
@@ -2127,7 +2142,8 @@ bool CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile)
 				Settings = pDocFile->GetBlockInt();
 				unsigned int Index = Indices[i];
 				unsigned int Type = Types[i];
-				CSequence *pSeq = GetSequence(SNDCHIP_VRC6, Index, Type);
+				CSequence *pSeq = GetSequence(INST_VRC6, Index, Type);
+
 				pSeq->SetReleasePoint(ReleasePoint);
 				pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
 			}
@@ -2155,7 +2171,8 @@ bool CFamiTrackerDoc::ReadBlock_SequencesN163(CDocumentFile *pDocFile)
 		ASSERT_FILE_DATA(Index < MAX_SEQUENCES);
 		ASSERT_FILE_DATA(Type < SEQ_COUNT);
 
-		CSequence *pSeq = GetSequence(SNDCHIP_N163, Index, Type);
+		CSequence *pSeq = GetSequence(INST_N163, Index, Type);
+
 
 		pSeq->Clear();
 		pSeq->SetItemCount(SeqCount);
@@ -2191,7 +2208,8 @@ bool CFamiTrackerDoc::ReadBlock_SequencesS5B(CDocumentFile *pDocFile)
 		ASSERT_FILE_DATA(Index < MAX_SEQUENCES);
 		ASSERT_FILE_DATA(Type < SEQ_COUNT);
 
-		CSequence *pSeq = GetSequence(SNDCHIP_S5B, Index, Type);
+		CSequence *pSeq = GetSequence(INST_S5B, Index, Type);
+
 
 		pSeq->Clear();
 		pSeq->SetItemCount(SeqCount);
@@ -2705,16 +2723,17 @@ bool CFamiTrackerDoc::ImportInstruments(CFamiTrackerDoc *pImported, int *pInstTa
 		return false;
 	}
 
-	static const uint8 chip[] = {SNDCHIP_NONE, SNDCHIP_VRC6, SNDCHIP_N163, SNDCHIP_S5B};		// // //
+	static const inst_type_t inst[] = {INST_2A03, INST_VRC6, INST_N163, INST_S5B};		// // //
+	static const uint8 chip[] = {SNDCHIP_NONE, SNDCHIP_VRC6, SNDCHIP_N163, SNDCHIP_S5B};
 	static int *seqTable[] = {*SequenceTable2A03, *SequenceTableVRC6, *SequenceTableN163, *SequenceTableS5B};
 
 	// Copy sequences
 	for (unsigned int s = 0; s < MAX_SEQUENCES; ++s) for (int t = 0; t < SEQ_COUNT; ++t) for (size_t i = 0; i < sizeof(chip); i++) {
-		if (pImported->GetSequenceItemCount(chip[i], s, t) > 0) {
-			CSequence *pImportSeq = pImported->GetSequence(chip[i], s, t);
-			int index = GetFreeSequence(chip[i], t);
+		if (pImported->GetSequenceItemCount(inst[i], s, t) > 0) {
+			CSequence *pImportSeq = pImported->GetSequence(inst[i], s, t);
+			int index = GetFreeSequence(inst[i], t);
 			if (index != -1) {
-				CSequence *pSeq = GetSequence(chip[i], unsigned(index), t);
+				CSequence *pSeq = GetSequence(inst[i], unsigned(index), t);
 				pSeq->Copy(pImportSeq);
 				// Save a reference to this sequence
 				*(seqTable[i] + s * SEQ_COUNT + t) = index;
@@ -2986,17 +3005,17 @@ unsigned int CFamiTrackerDoc::GetTotalSampleSize() const
 // Sequences
 //
 
-CSequence *CFamiTrackerDoc::GetSequence(int Chip, unsigned int Index, int Type)
+CSequence *CFamiTrackerDoc::GetSequence(inst_type_t InstType, unsigned int Index, int Type)		// // //
 {
 	ASSERT(Index < MAX_SEQUENCES);
 	ASSERT(Type >= 0 && Type < SEQ_COUNT);
 
 	CSequence **arr = NULL;		// // //
-	switch (Chip) {
-	case SNDCHIP_NONE: arr = m_pSequences2A03[0]; break;
-	case SNDCHIP_VRC6: arr = m_pSequencesVRC6[0]; break;
-	case SNDCHIP_N163: arr = m_pSequencesN163[0]; break;
-	case SNDCHIP_S5B: arr = m_pSequencesS5B[0]; break;
+	switch (InstType) {
+	case INST_2A03: arr = *m_pSequences2A03; break;
+	case INST_VRC6: arr = *m_pSequencesVRC6; break;
+	case INST_N163: arr = *m_pSequencesN163; break;
+	case INST_S5B: arr = *m_pSequencesS5B; break;
 	}
 	if (arr == NULL) return NULL;
 	if (*(arr + Index * SEQ_COUNT + Type) == NULL)
@@ -3004,40 +3023,40 @@ CSequence *CFamiTrackerDoc::GetSequence(int Chip, unsigned int Index, int Type)
 	return *(arr + Index * SEQ_COUNT + Type);
 }
 
-CSequence *CFamiTrackerDoc::GetSequence(int Chip, unsigned int Index, int Type) const		// // //
+CSequence *CFamiTrackerDoc::GetSequence(inst_type_t InstType, unsigned int Index, int Type) const		// // //
 {
 	ASSERT(Index < MAX_SEQUENCES);
 	ASSERT(Type >= 0 && Type < SEQ_COUNT);
 
 	CSequence *const *arr = NULL;
-	switch (Chip) { // use inst_type_t instead?
-	case SNDCHIP_NONE: arr = m_pSequences2A03[0]; break;
-	case SNDCHIP_VRC6: arr = m_pSequencesVRC6[0]; break;
-	case SNDCHIP_N163: arr = m_pSequencesN163[0]; break;
-	case SNDCHIP_S5B: arr = m_pSequencesS5B[0]; break;
+	switch (InstType) {
+	case INST_2A03: arr = *m_pSequences2A03; break;
+	case INST_VRC6: arr = *m_pSequencesVRC6; break;
+	case INST_N163: arr = *m_pSequencesN163; break;
+	case INST_S5B: arr = *m_pSequencesS5B; break;
 	}
 	if (arr == NULL) return NULL;
 	return *(arr + Index * SEQ_COUNT + Type);
 }
 
-unsigned int CFamiTrackerDoc::GetSequenceItemCount(int Chip, unsigned int Index, int Type) const		// // //
+unsigned int CFamiTrackerDoc::GetSequenceItemCount(inst_type_t InstType, unsigned int Index, int Type) const		// // //
 {
 	ASSERT(Index < MAX_SEQUENCES);
 	ASSERT(Type >= 0 && Type < SEQ_COUNT);
 
-	const CSequence *pSeq = GetSequence(Chip, Index, Type);
+	const CSequence *pSeq = GetSequence(InstType, Index, Type);
 	if (pSeq == NULL)
 		return 0;
 	return pSeq->GetItemCount();
 }
 
-int CFamiTrackerDoc::GetFreeSequence(int Chip, int Type) const		// // //
+int CFamiTrackerDoc::GetFreeSequence(inst_type_t InstType, int Type) const		// // //
 {
 	ASSERT(Type >= 0 && Type < SEQ_COUNT);
 
 	// Return a free sequence slot, or -1 otherwise
 	for (int i = 0; i < MAX_SEQUENCES; ++i) {
-		if (GetSequenceItemCount(Chip, i, Type) == 0)
+		if (GetSequenceItemCount(InstType, i, Type) == 0)
 			return i;
 	}
 	return -1;
@@ -3050,7 +3069,7 @@ int CFamiTrackerDoc::GetSequenceCount(int Type) const
 
 	int Count = 0;
 	for (int i = 0; i < MAX_SEQUENCES; ++i) {
-		if (GetSequenceItemCount(SNDCHIP_NONE, i, Type) > 0)
+		if (GetSequenceItemCount(INST_2A03, i, Type) > 0) // TODO: fix this and the instrument interface
 			++Count;
 	}
 	return Count;
@@ -3332,22 +3351,16 @@ int CFamiTrackerDoc::DeepCloneInstrument(unsigned int Index)
 
 	if (Slot != INVALID_INSTRUMENT) {
 		CInstrument *newInst = m_pInstruments[Slot];
-		switch (newInst->GetType()) {
+		const inst_type_t it = newInst->GetType();
+		switch (it) {
 		case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B:		// // //
 			CSeqInstrument *pInstrument = static_cast<CSeqInstrument*>(newInst);
 			for(int i = 0; i < SEQ_COUNT; i++) {
-				int freeSeq = GetFreeSequence(SNDCHIP_NONE, i);
+				int freeSeq = GetFreeSequence(it, i);
 				int oldSeq = pInstrument->GetSeqIndex(i);
 				if (freeSeq != -1) {
-					uint8 chip;
-					switch (newInst->GetType()) {
-					case INST_2A03: chip = SNDCHIP_NONE; break;
-					case INST_VRC6: chip = SNDCHIP_VRC6; break;
-					case INST_N163: chip = SNDCHIP_N163; break;
-					case INST_S5B:  chip = SNDCHIP_S5B; break;
-					}
 					if (pInstrument->GetSeqEnable(i))
-						this->GetSequence(chip, unsigned(freeSeq), i)->Copy(GetSequence(chip, unsigned(oldSeq), i));
+						GetSequence(it, unsigned(freeSeq), i)->Copy(GetSequence(it, unsigned(oldSeq), i));
 					pInstrument->SetSeqIndex(i, freeSeq);
 				}
 			}
@@ -4970,12 +4983,12 @@ void CFamiTrackerDoc::RemoveUnusedInstruments()
 		}
 	}
 
-	inst_type_t inst[] = {INST_2A03, INST_VRC6, INST_N163, INST_S5B};
-	uint8 chip[] = {SNDCHIP_NONE, SNDCHIP_VRC6, SNDCHIP_N163, SNDCHIP_S5B};
+	static const inst_type_t inst[] = {INST_2A03, INST_VRC6, INST_N163, INST_S5B};
+	static const uint8 chip[] = {SNDCHIP_NONE, SNDCHIP_VRC6, SNDCHIP_N163, SNDCHIP_S5B};
 
 	// Also remove unused sequences
 	for (unsigned int i = 0; i < MAX_SEQUENCES; ++i) for (int j = 0; j < SEQ_COUNT; ++j) {
-		for (size_t c = 0; c < sizeof(chip); c++) if (GetSequenceItemCount(chip[c], i, j) > 0) {		// // //
+		for (size_t c = 0; c < sizeof(chip); c++) if (GetSequenceItemCount(inst[c], i, j) > 0) {		// // //
 			bool Used = false;
 			for (int k = 0; k < MAX_INSTRUMENTS; ++k) {
 				if (IsInstrumentUsed(k) && GetInstrumentType(k) == inst[c]) {
@@ -4987,7 +5000,7 @@ void CFamiTrackerDoc::RemoveUnusedInstruments()
 				}
 			}
 			if (!Used)
-				GetSequence(chip[c], i, j)->Clear();
+				GetSequence(inst[c], i, j)->Clear();
 		}
 	}
 }
@@ -5320,17 +5333,17 @@ void CFamiTrackerDoc::MakeKraid()			// // // Easter Egg
 
 	// Sequences
 	CSequence *kraidSeq;
-	kraidSeq = GetSequence(SNDCHIP_NONE, 0, SEQ_VOLUME);
+	kraidSeq = GetSequence(INST_2A03, 0, SEQ_VOLUME);
 	kraidSeq->SetItemCount(1);
 	kraidSeq->SetItem(0, 6);
 	kraidSeq->SetLoopPoint(-1);
 	kraidSeq->SetReleasePoint(-1);
-	kraidSeq = GetSequence(SNDCHIP_NONE, 1, SEQ_VOLUME);
+	kraidSeq = GetSequence(INST_2A03, 1, SEQ_VOLUME);
 	kraidSeq->SetItemCount(1);
 	kraidSeq->SetItem(0, 2);
 	kraidSeq->SetLoopPoint(-1);
 	kraidSeq->SetReleasePoint(-1);
-	kraidSeq = GetSequence(SNDCHIP_NONE, 2, SEQ_VOLUME);
+	kraidSeq = GetSequence(INST_2A03, 2, SEQ_VOLUME);
 	kraidSeq->SetItemCount(1);
 	kraidSeq->SetItem(0, 15);
 	kraidSeq->SetLoopPoint(-1);

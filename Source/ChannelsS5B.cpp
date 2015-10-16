@@ -172,7 +172,8 @@ bool CChannelHandlerS5B::HandleInstrument(int Instrument, bool Trigger, bool New
 		return false;
 
 	for (int i = 0; i < SEQ_COUNT; ++i) {
-		const CSequence *pSequence = pDocument->GetSequence(SNDCHIP_S5B, pInstrument->GetSeqIndex(i), i);
+		const CSequence *pSequence = pDocument->GetSequence(INST_S5B, pInstrument->GetSeqIndex(i), i);
+
 		if (Trigger || !IsSequenceEqual(i, pSequence) || pInstrument->GetSeqEnable(i) > GetSequenceState(i)) {
 			if (pInstrument->GetSeqEnable(i) == 1)
 				SetupSequence(i, pSequence);
