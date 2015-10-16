@@ -23,6 +23,9 @@
 #include "stdafx.h"
 #include "FamiTrackerDoc.h"
 #include "Instrument.h"
+#include "DocumentFile.h"
+#include "Compiler.h"
+#include "Chunk.h"
 
 /*
  * Class CInstrument, base class for instruments
@@ -132,6 +135,164 @@ CSeqInstrument::CSeqInstrument()
 	}
 }
 
+CSeqInstrument *CSeqInstrument::CopySequences(const CSeqInstrument *const src)
+{
+	for (int i = 0; i < SEQ_COUNT; i++) {
+		SetSeqEnable(i, src->GetSeqEnable(i));
+		SetSeqIndex(i, src->GetSeqIndex(i));
+	}
+
+	SetName(src->GetName());
+
+	return this;
+}
+
+void CSeqInstrument::Setup()
+{
+	CFamiTrackerDoc *pDoc = CFamiTrackerDoc::GetDoc();
+	for (int i = 0; i < SEQ_COUNT; ++i) {
+		SetSeqEnable(i, 0);
+		int Index = pDoc->GetFreeSequence(GetType(), i);
+		if (Index != -1)
+			SetSeqIndex(i, Index);
+	}
+}
+
+void CSeqInstrument::Store(CDocumentFile *pDocFile)
+{
+	pDocFile->WriteBlockInt(SEQ_COUNT);
+
+	for (int i = 0; i < SEQ_COUNT; i++) {
+		pDocFile->WriteBlockChar(GetSeqEnable(i));
+		pDocFile->WriteBlockChar(GetSeqIndex(i));
+	}
+}
+
+bool CSeqInstrument::Load(CDocumentFile *pDocFile)
+{
+	int SeqCnt = pDocFile->GetBlockInt();
+	ASSERT_FILE_DATA(SeqCnt < (SEQ_COUNT + 1));
+	SeqCnt = SEQ_COUNT;
+
+	for (int i = 0; i < SeqCnt; i++) {
+		SetSeqEnable(i, pDocFile->GetBlockChar());
+		int Index = pDocFile->GetBlockChar();
+		ASSERT_FILE_DATA(Index < MAX_SEQUENCES);
+		SetSeqIndex(i, Index);
+	}
+
+	return true;
+}
+
+void CSeqInstrument::SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDoc)
+{
+	pFile->WriteChar(SEQ_COUNT);
+
+	for (int i = 0; i < SEQ_COUNT; ++i) {
+		unsigned Sequence = GetSeqIndex(i);
+		if (GetSeqEnable(i)) {
+			const CSequence *pSeq = pDoc->GetSequence(GetType(), Sequence, i);
+			pFile->WriteChar(1);
+			pFile->WriteInt(pSeq->GetItemCount());
+			pFile->WriteInt(pSeq->GetLoopPoint());
+			pFile->WriteInt(pSeq->GetReleasePoint());
+			pFile->WriteInt(pSeq->GetSetting());
+			for (unsigned j = 0; j < pSeq->GetItemCount(); j++) {
+				pFile->WriteChar(pSeq->GetItem(j));
+			}
+		}
+		else {
+			pFile->WriteChar(0);
+		}
+	}
+}
+
+bool CSeqInstrument::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTrackerDoc *pDoc)
+{
+	// Sequences
+	stSequence OldSequence;
+
+	unsigned char SeqCount = pFile->ReadChar();
+
+	// Loop through all instrument effects
+	for (unsigned i = 0; i < SeqCount; ++i) {
+		unsigned char Enabled = pFile->ReadChar();
+		if (Enabled == 1) {
+			// Read the sequence
+			int Count = pFile->ReadInt();
+			if (Count < 0 || Count > MAX_SEQUENCE_ITEMS)
+				return false;
+			
+			// Find a free sequence
+			int Index = pDoc->GetFreeSequence(GetType(), i);
+
+			if (Index != -1) {
+				CSequence *pSeq = pDoc->GetSequence(GetType(), static_cast<unsigned>(Index), i);
+
+				if (iVersion < 20) {
+					OldSequence.Count = Count;
+					for (int j = 0; j < Count; ++j) {
+						OldSequence.Length[j] = pFile->ReadChar();
+						OldSequence.Value[j] = pFile->ReadChar();
+					}
+					CFamiTrackerDoc::ConvertSequence(&OldSequence, pSeq, i);	// convert
+				}
+				else {
+					pSeq->SetItemCount(Count);
+					pSeq->SetLoopPoint(pFile->ReadInt());
+					if (iVersion > 20)
+						pSeq->SetReleasePoint(pFile->ReadInt());
+					if (iVersion >= 22)
+						pSeq->SetSetting(static_cast<seq_setting_t>(pFile->ReadInt()));
+					for (int j = 0; j < Count; ++j)
+						pSeq->SetItem(j, pFile->ReadChar());
+				}
+				SetSeqEnable(i, true);
+				SetSeqIndex(i, Index);
+			}
+		}
+		else {
+			SetSeqEnable(i, false);
+			SetSeqIndex(i, 0);
+		}
+	}
+
+	return true;
+}
+
+int CSeqInstrument::Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index)
+{
+	int ModSwitch = 0;
+	int StoredBytes = 0;
+
+	for (unsigned i = 0; i < SEQ_COUNT; ++i) {
+		const CSequence *pSequence = pDoc->GetSequence(GetType(), unsigned(GetSeqIndex(i)), i);
+		ModSwitch = ModSwitch | (GetSeqEnable(i) && pSequence != NULL && pSequence->GetItemCount() > 0 ? (1 << i) : 0);
+	}
+
+	pChunk->StoreByte(ModSwitch);
+	StoredBytes++;
+	
+	const char *label = NULL;		// // //
+	switch (GetType()) {
+	case INST_2A03: label = CCompiler::LABEL_SEQ_2A03; break;
+	case INST_VRC6: label = CCompiler::LABEL_SEQ_VRC6; break;
+	case INST_N163: label = CCompiler::LABEL_SEQ_N163; break;
+	case INST_S5B:  label = CCompiler::LABEL_SEQ_S5B;  break;
+	}
+	ASSERT(label != NULL);
+	for (unsigned i = 0; i < SEQ_COUNT; ++i) {
+		if (ModSwitch | (1 << i)) {
+			CStringA str;
+			str.Format(label, GetSeqIndex(i) * SEQ_COUNT + i);
+			pChunk->StoreReference(str);
+			StoredBytes += 2;
+		}
+	}
+	
+	return StoredBytes;
+}
+
 int	CSeqInstrument::GetSeqEnable(int Index) const
 {
 	ASSERT(Index < SEQ_COUNT);
@@ -150,6 +311,12 @@ void CSeqInstrument::SetSeqEnable(int Index, int Value)
 	if (m_iSeqEnable[Index] != Value)
 		InstrumentChanged();
 	m_iSeqEnable[Index] = Value;
+}
+
+bool CSeqInstrument::CanRelease() const
+{
+	return GetSeqEnable(SEQ_VOLUME) != 0
+		&& CFamiTrackerDoc::GetDoc()->GetSequence(GetType(), GetSeqIndex(SEQ_VOLUME), SEQ_VOLUME)->GetReleasePoint() != -1;
 }
 
 void CSeqInstrument::SetSeqIndex(int Index, int Value)
