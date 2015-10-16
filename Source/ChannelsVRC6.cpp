@@ -55,7 +55,7 @@ bool CChannelHandlerVRC6::HandleInstrument(int Instrument, bool Trigger, bool Ne
 		return false;
 
 	// Setup instrument
-	for (int i = 0; i < CInstrumentVRC6::SEQUENCE_COUNT; ++i) {
+	for (int i = 0; i < SEQ_COUNT; ++i) {
 		const CSequence *pSequence = pDocument->GetSequence(SNDCHIP_VRC6, pInstrument->GetSeqIndex(i), i);
 		if (Trigger || !IsSequenceEqual(i, pSequence) || pInstrument->GetSeqEnable(i) > GetSequenceState(i)) {
 			if (pInstrument->GetSeqEnable(i) == 1)
@@ -100,7 +100,7 @@ void CChannelHandlerVRC6::ProcessChannel()
 	CChannelHandler::ProcessChannel();
 
 	// Sequences
-	for (int i = 0; i < CInstrumentVRC6::SEQUENCE_COUNT; ++i)
+	for (int i = 0; i < SEQ_COUNT; ++i)
 		RunSequence(i);
 }
 

@@ -29,13 +29,10 @@
 #include "DocumentFile.h"
 
 const int CInstrumentS5B::SEQUENCE_TYPES[] = {SEQ_VOLUME, SEQ_ARPEGGIO, SEQ_PITCH, SEQ_HIPITCH, SEQ_DUTYCYCLE};
+const int SEQUENCE_COUNT = sizeof(CInstrumentS5B::SEQUENCE_TYPES) / sizeof(int);		// // //
 
-CInstrumentS5B::CInstrumentS5B()
+CInstrumentS5B::CInstrumentS5B() : CSeqInstrument()		// // //
 {
-	for (int i = 0; i < SEQUENCE_COUNT; ++i) {
-		m_iSeqEnable[i] = 0;
-		m_iSeqIndex[i] = 0;
-	}
 }
 
 CInstrument *CInstrumentS5B::Clone() const
@@ -201,28 +198,4 @@ bool CInstrumentS5B::CanRelease() const
 	}
 
 	return false;
-}
-
-int	CInstrumentS5B::GetSeqEnable(int Index) const
-{
-	return m_iSeqEnable[Index];
-}
-
-int	CInstrumentS5B::GetSeqIndex(int Index) const
-{
-	return m_iSeqIndex[Index];
-}
-
-void CInstrumentS5B::SetSeqEnable(int Index, int Value)
-{
-	if (m_iSeqEnable[Index] != Value)		// // //
-		InstrumentChanged();		
-	m_iSeqEnable[Index] = Value;
-}
-
-void CInstrumentS5B::SetSeqIndex(int Index, int Value)
-{
-	if (m_iSeqIndex[Index] != Value)		// // //
-		InstrumentChanged();
-	m_iSeqIndex[Index] = Value;
 }

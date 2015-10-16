@@ -47,7 +47,7 @@ protected:
 	void SelectSequence(int Sequence, int Type);
 
 protected:
-	static LPCTSTR INST_SETTINGS_2A03[CInstrument2A03::SEQUENCE_COUNT];
+	static LPCTSTR INST_SETTINGS_2A03[];
 
 protected:
 	CInstrument2A03	*m_pInstrument;

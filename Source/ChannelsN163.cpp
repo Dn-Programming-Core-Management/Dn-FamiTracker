@@ -188,7 +188,7 @@ void CChannelHandlerN163::ProcessChannel()
 	m_iChannels = pDocument->GetNamcoChannels() - 1;
 
 	// Sequences
-	for (int i = 0; i < CInstrumentN163::SEQUENCE_COUNT; ++i)
+	for (int i = 0; i < SEQ_COUNT; ++i)
 		RunSequence(i);
 
 	if (bUpdateWave) {

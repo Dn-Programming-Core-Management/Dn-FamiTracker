@@ -1463,7 +1463,7 @@ void CCompiler::ScanSong()
 					{
 						CInstrumentContainer<CInstrument2A03> instContainer(m_pDocument, i);
 						CInstrument2A03 *pInstrument = instContainer();
-						for (int j = 0; j < CInstrument2A03::SEQUENCE_COUNT; ++j) {
+						for (int j = 0; j < SEQ_COUNT; ++j) {
 							if (pInstrument->GetSeqEnable(j))
 								m_bSequencesUsed2A03[pInstrument->GetSeqIndex(j)][j] = true;
 						}
@@ -1473,7 +1473,7 @@ void CCompiler::ScanSong()
 					{
 						CInstrumentContainer<CInstrumentVRC6> instContainer(m_pDocument, i);
 						CInstrumentVRC6 *pInstrument = instContainer();
-						for (int j = 0; j < CInstrumentVRC6::SEQUENCE_COUNT; ++j) {
+						for (int j = 0; j < SEQ_COUNT; ++j) {
 							if (pInstrument->GetSeqEnable(j))
 								m_bSequencesUsedVRC6[pInstrument->GetSeqIndex(j)][j] = true;
 						}
@@ -1483,7 +1483,7 @@ void CCompiler::ScanSong()
 					{
 						CInstrumentContainer<CInstrumentN163> instContainer(m_pDocument, i);
 						CInstrumentN163 *pInstrument = instContainer();
-						for (int j = 0; j < CInstrumentN163::SEQUENCE_COUNT; ++j) {
+						for (int j = 0; j < SEQ_COUNT; ++j) {
 							if (pInstrument->GetSeqEnable(j))
 								m_bSequencesUsedN163[pInstrument->GetSeqIndex(j)][j] = true;
 						}
@@ -1493,7 +1493,7 @@ void CCompiler::ScanSong()
 					{
 						CInstrumentContainer<CInstrumentS5B> instContainer(m_pDocument, i);
 						CInstrumentS5B *pInstrument = instContainer();
-						for (int j = 0; j < CInstrumentS5B::SEQUENCE_COUNT; ++j) {
+						for (int j = 0; j < SEQ_COUNT; ++j) {
 							if (pInstrument->GetSeqEnable(j))
 								m_bSequencesUsedS5B[pInstrument->GetSeqIndex(j)][j] = true;
 						}
@@ -1619,7 +1619,7 @@ void CCompiler::CreateSequenceList()
 	static const char *format[] = {LABEL_SEQ_2A03, LABEL_SEQ_VRC6, LABEL_SEQ_N163, LABEL_SEQ_S5B};
 
 	for (size_t c = 0; c < sizeof(chip); c++) if (m_pDocument->ExpansionEnabled(chip[c])) {
-		for (int i = 0; i < MAX_SEQUENCES; ++i)  for (int j = 0; j < SEQ_COUNT; ++j) { // ::SEQUENCE_COUNT
+		for (int i = 0; i < MAX_SEQUENCES; ++i)  for (int j = 0; j < SEQ_COUNT; ++j) {
 			CSequence* pSeq = m_pDocument->GetSequence(chip[c], i, j);
 			int Index = i * SEQ_COUNT + j;
 			if (*(used[c] + Index) && pSeq->GetItemCount() > 0) {

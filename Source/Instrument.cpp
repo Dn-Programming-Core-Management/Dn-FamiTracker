@@ -118,3 +118,44 @@ unsigned char CInstrumentFile::ReadChar()
 	Read(&Value, sizeof(char));
 	return Value;
 }
+
+// // //
+/*
+ * Base class for instruments using sequences
+ */
+
+CSeqInstrument::CSeqInstrument()
+{
+	for (int i = 0; i < SEQ_COUNT; ++i) {
+		m_iSeqEnable[i] = 0;
+		m_iSeqIndex[i] = 0;
+	}
+}
+
+int	CSeqInstrument::GetSeqEnable(int Index) const
+{
+	ASSERT(Index < SEQ_COUNT);
+	return m_iSeqEnable[Index];
+}
+
+int	CSeqInstrument::GetSeqIndex(int Index) const
+{
+	ASSERT(Index < SEQ_COUNT);
+	return m_iSeqIndex[Index];
+}
+
+void CSeqInstrument::SetSeqEnable(int Index, int Value)
+{
+	ASSERT(Index < SEQ_COUNT);
+	if (m_iSeqEnable[Index] != Value)
+		InstrumentChanged();
+	m_iSeqEnable[Index] = Value;
+}
+
+void CSeqInstrument::SetSeqIndex(int Index, int Value)
+{
+	ASSERT(Index < SEQ_COUNT);
+	if (m_iSeqIndex[Index] != Value)
+		InstrumentChanged();
+	m_iSeqIndex[Index] = Value;
+}

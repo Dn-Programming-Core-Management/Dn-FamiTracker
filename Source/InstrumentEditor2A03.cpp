@@ -31,7 +31,7 @@
 #include "InstrumentEditor2A03.h"
 #include "MainFrm.h"
 
-LPCTSTR CInstrumentEditor2A03::INST_SETTINGS_2A03[CInstrument2A03::SEQUENCE_COUNT] = {
+LPCTSTR CInstrumentEditor2A03::INST_SETTINGS_2A03[] = {
 	_T("Volume"), 
 	_T("Arpeggio"), 
 	_T("Pitch"), 
@@ -189,7 +189,7 @@ void CInstrumentEditor2A03::SelectInstrument(int Instrument)
 	m_pInstrument = NULL;
 
 	// Update instrument setting list
-	for (int i = 0; i < CInstrument2A03::SEQUENCE_COUNT; ++i) {
+	for (int i = 0; i < SEQ_COUNT; ++i) {
 		pList->SetCheck(i, pInstrument->GetSeqEnable(i));
 		pList->SetItemText(i, 1, MakeIntString(pInstrument->GetSeqIndex(i)));
 	} 

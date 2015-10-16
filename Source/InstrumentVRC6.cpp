@@ -36,13 +36,10 @@
  */
 
 const int CInstrumentVRC6::SEQUENCE_TYPES[] = {SEQ_VOLUME, SEQ_ARPEGGIO, SEQ_PITCH, SEQ_HIPITCH, SEQ_DUTYCYCLE};
+const int SEQUENCE_COUNT = sizeof(CInstrumentVRC6::SEQUENCE_TYPES) / sizeof(int);		// // //
 
-CInstrumentVRC6::CInstrumentVRC6()
+CInstrumentVRC6::CInstrumentVRC6() : CSeqInstrument()		// // //
 {
-	for (int i = 0; i < SEQUENCE_COUNT; i++) {
-		m_iSeqEnable[i] = 0;
-		m_iSeqIndex[i] = 0;
-	}	
 }
 
 CInstrument *CInstrumentVRC6::Clone() const
@@ -87,7 +84,7 @@ bool CInstrumentVRC6::Load(CDocumentFile *pDocFile)
 
 	ASSERT_FILE_DATA(SeqCnt < (SEQUENCE_COUNT + 1));
 
-	SeqCnt = SEQUENCE_COUNT;//SEQ_COUNT;
+	SeqCnt = SEQUENCE_COUNT;
 
 	for (int i = 0; i < SeqCnt; i++) {
 		SetSeqEnable(i, pDocFile->GetBlockChar());
@@ -208,28 +205,4 @@ bool CInstrumentVRC6::CanRelease() const
 	}
 
 	return false;
-}
-
-int	CInstrumentVRC6::GetSeqEnable(int Index) const
-{
-	return m_iSeqEnable[Index];
-}
-
-int	CInstrumentVRC6::GetSeqIndex(int Index) const
-{
-	return m_iSeqIndex[Index];
-}
-
-void CInstrumentVRC6::SetSeqEnable(int Index, int Value)
-{
-	if (m_iSeqEnable[Index] != Value)
-		InstrumentChanged();		
-	m_iSeqEnable[Index] = Value;
-}
-
-void CInstrumentVRC6::SetSeqIndex(int Index, int Value)
-{
-	if (m_iSeqIndex[Index] != Value)
-		InstrumentChanged();
-	m_iSeqIndex[Index] = Value;
 }

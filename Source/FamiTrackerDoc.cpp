@@ -2687,13 +2687,13 @@ bool CFamiTrackerDoc::ImportInstruments(CFamiTrackerDoc *pImported, int *pInstTa
 	//
 
 	int SamplesTable[MAX_DSAMPLES];
-	int SequenceTable[MAX_SEQUENCES][SEQ_COUNT];
+	int SequenceTable2A03[MAX_SEQUENCES][SEQ_COUNT];
 	int SequenceTableVRC6[MAX_SEQUENCES][SEQ_COUNT];
 	int SequenceTableN163[MAX_SEQUENCES][SEQ_COUNT];
 	int SequenceTableS5B[MAX_SEQUENCES][SEQ_COUNT];		// // //
 
 	memset(SamplesTable, 0, sizeof(int) * MAX_DSAMPLES);
-	memset(SequenceTable, 0, sizeof(int) * MAX_SEQUENCES * SEQ_COUNT);
+	memset(SequenceTable2A03, 0, sizeof(int) * MAX_SEQUENCES * SEQ_COUNT);
 	memset(SequenceTableVRC6, 0, sizeof(int) * MAX_SEQUENCES * SEQ_COUNT);
 	memset(SequenceTableN163, 0, sizeof(int) * MAX_SEQUENCES * SEQ_COUNT);
 	memset(SequenceTableS5B, 0, sizeof(int) * MAX_SEQUENCES * SEQ_COUNT);		// // //
@@ -2706,7 +2706,7 @@ bool CFamiTrackerDoc::ImportInstruments(CFamiTrackerDoc *pImported, int *pInstTa
 	}
 
 	static const uint8 chip[] = {SNDCHIP_NONE, SNDCHIP_VRC6, SNDCHIP_N163, SNDCHIP_S5B};		// // //
-	static int *seqTable[] = {SequenceTable[0], SequenceTableVRC6[0], SequenceTableN163[0], SequenceTableS5B[0]};
+	static int *seqTable[] = {*SequenceTable2A03, *SequenceTableVRC6, *SequenceTableN163, *SequenceTableS5B};
 
 	// Copy sequences
 	for (unsigned int s = 0; s < MAX_SEQUENCES; ++s) for (int t = 0; t < SEQ_COUNT; ++t) for (size_t i = 0; i < sizeof(chip); i++) {
@@ -2760,7 +2760,7 @@ bool CFamiTrackerDoc::ImportInstruments(CFamiTrackerDoc *pImported, int *pInstTa
 						// Update sequence references
 						for (int t = 0; t < SEQ_COUNT; ++t) {
 							if (pInstrument->GetSeqEnable(t)) {
-								pInstrument->SetSeqIndex(t, SequenceTable[pInstrument->GetSeqIndex(t)][t]);
+								pInstrument->SetSeqIndex(t, SequenceTable2A03[pInstrument->GetSeqIndex(t)][t]);
 							}
 						}
 						// Update DPCM samples
@@ -3333,68 +3333,26 @@ int CFamiTrackerDoc::DeepCloneInstrument(unsigned int Index)
 	if (Slot != INVALID_INSTRUMENT) {
 		CInstrument *newInst = m_pInstruments[Slot];
 		switch (newInst->GetType()) {
-			case INST_2A03:
-				{
-					CInstrument2A03 *pInstrument = static_cast<CInstrument2A03*>(newInst);
-					for(unsigned int i = 0; i < CInstrument2A03::SEQUENCE_COUNT; i++) {
-						int freeSeq = this->GetFreeSequence(SNDCHIP_NONE, i);
-						int oldSeq = pInstrument->GetSeqIndex(i);
-						if (freeSeq != -1) {
-							if( pInstrument->GetSeqEnable(i) ) {
-								this->GetSequence(SNDCHIP_NONE, unsigned(freeSeq), i)->Copy( this->GetSequence(SNDCHIP_NONE, unsigned(oldSeq), i) );
-							}
-							pInstrument->SetSeqIndex(i, freeSeq);
-						}
+		case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B:		// // //
+			CSeqInstrument *pInstrument = static_cast<CSeqInstrument*>(newInst);
+			for(int i = 0; i < SEQ_COUNT; i++) {
+				int freeSeq = GetFreeSequence(SNDCHIP_NONE, i);
+				int oldSeq = pInstrument->GetSeqIndex(i);
+				if (freeSeq != -1) {
+					uint8 chip;
+					switch (newInst->GetType()) {
+					case INST_2A03: chip = SNDCHIP_NONE; break;
+					case INST_VRC6: chip = SNDCHIP_VRC6; break;
+					case INST_N163: chip = SNDCHIP_N163; break;
+					case INST_S5B:  chip = SNDCHIP_S5B; break;
 					}
+					if (pInstrument->GetSeqEnable(i))
+						this->GetSequence(chip, unsigned(freeSeq), i)->Copy(GetSequence(chip, unsigned(oldSeq), i));
+					pInstrument->SetSeqIndex(i, freeSeq);
 				}
-				break;
-			case INST_VRC6:
-				{
-					CInstrumentVRC6 *pInstrument = static_cast<CInstrumentVRC6*>(newInst);
-					for(unsigned int i = 0; i < CInstrumentVRC6::SEQUENCE_COUNT; i++) {
-						int freeSeq = this->GetFreeSequence(SNDCHIP_VRC6, i);
-						int oldSeq = pInstrument->GetSeqIndex(i);
-						if (freeSeq != -1) {
-							if( pInstrument->GetSeqEnable(i) ) {
-								this->GetSequence(SNDCHIP_VRC6, unsigned(freeSeq), i)->Copy( this->GetSequence(SNDCHIP_VRC6, unsigned(oldSeq), i) );
-							}
-							pInstrument->SetSeqIndex(i, freeSeq);
-						}
-					}
-				}
-				break;
-			case INST_N163:
-				{
-					CInstrumentN163 *pInstrument = static_cast<CInstrumentN163*>(newInst);
-					for(unsigned int i = 0; i < CInstrumentN163::SEQUENCE_COUNT; i++) {
-						int freeSeq = this->GetFreeSequence(SNDCHIP_N163, i);
-						int oldSeq = pInstrument->GetSeqIndex(i);
-						if (freeSeq != -1) {
-							if( pInstrument->GetSeqEnable(i) ) {
-								this->GetSequence(SNDCHIP_N163, unsigned(freeSeq), i)->Copy( this->GetSequence(SNDCHIP_N163, unsigned(oldSeq), i) );
-							}
-							pInstrument->SetSeqIndex(i, freeSeq);
-						}
-					}
-				}
-				break;
-			case INST_S5B:		// // //
-				{
-					CInstrumentS5B *pInstrument = static_cast<CInstrumentS5B*>(newInst);
-					for(unsigned int i = 0; i < CInstrumentS5B::SEQUENCE_COUNT; i++) {
-						int freeSeq = this->GetFreeSequence(SNDCHIP_S5B, i);
-						int oldSeq = pInstrument->GetSeqIndex(i);
-						if (freeSeq != -1) {
-							if( pInstrument->GetSeqEnable(i) ) {
-								this->GetSequence(SNDCHIP_S5B, unsigned(freeSeq), i)->Copy( this->GetSequence(SNDCHIP_S5B, unsigned(oldSeq), i) );
-							}
-							pInstrument->SetSeqIndex(i, freeSeq);
-						}
-					}
-				}
-				break;
+			}
+			break;
 		}
-
 	}
 
 	return Slot;
@@ -5012,73 +4970,24 @@ void CFamiTrackerDoc::RemoveUnusedInstruments()
 		}
 	}
 
+	inst_type_t inst[] = {INST_2A03, INST_VRC6, INST_N163, INST_S5B};
+	uint8 chip[] = {SNDCHIP_NONE, SNDCHIP_VRC6, SNDCHIP_N163, SNDCHIP_S5B};
+
 	// Also remove unused sequences
-	for (unsigned int i = 0; i < MAX_SEQUENCES; ++i) {
-		for (int j = 0; j < SEQ_COUNT; ++j) {
-			// Scan through all 2A03 sequences
-			if (GetSequenceItemCount(SNDCHIP_NONE, i, j)) {		// // //
-				bool Used = false;
-				for (int k = 0; k < MAX_INSTRUMENTS; ++k) {
-					if (IsInstrumentUsed(k) && GetInstrumentType(k) == INST_2A03) {
-						CInstrument2A03 *pInstrument = static_cast<CInstrument2A03*>(GetInstrument(k));
-						if (pInstrument->GetSeqIndex(j) == i && pInstrument->GetSeqEnable(j)) {		// // //
-							Used = true;
-							break;
-						}
-						pInstrument->Release();
+	for (unsigned int i = 0; i < MAX_SEQUENCES; ++i) for (int j = 0; j < SEQ_COUNT; ++j) {
+		for (size_t c = 0; c < sizeof(chip); c++) if (GetSequenceItemCount(chip[c], i, j) > 0) {		// // //
+			bool Used = false;
+			for (int k = 0; k < MAX_INSTRUMENTS; ++k) {
+				if (IsInstrumentUsed(k) && GetInstrumentType(k) == inst[c]) {
+					CSeqInstrument *pInstrument = static_cast<CSeqInstrument*>(GetInstrument(k));
+					if (pInstrument->GetSeqIndex(j) == i && pInstrument->GetSeqEnable(j)) {		// // //
+						Used = true; break;
 					}
+					pInstrument->Release();
 				}
-				if (!Used)
-					GetSequence(SNDCHIP_NONE, i, j)->Clear();
 			}
-			// Scan through all VRC6 sequences
-			if (GetSequenceItemCount(SNDCHIP_VRC6, i, j)) {
-				bool Used = false;
-				for (int k = 0; k < MAX_INSTRUMENTS; ++k) {
-					if (IsInstrumentUsed(k) && GetInstrumentType(k) == INST_VRC6) {
-						CInstrumentVRC6 *pInstrument = static_cast<CInstrumentVRC6*>(GetInstrument(k));
-						if (pInstrument->GetSeqIndex(j) == i && pInstrument->GetSeqEnable(j)) {		// // //
-							Used = true;
-							break;
-						}
-						pInstrument->Release();
-					}
-				}
-				if (!Used)
-					GetSequence(SNDCHIP_VRC6, i, j)->Clear();
-			}
-			// Scan through all N163 sequences
-			if (GetSequenceItemCount(SNDCHIP_N163, i, j)) {
-				bool Used = false;
-				for (int k = 0; k < MAX_INSTRUMENTS; ++k) {
-					if (IsInstrumentUsed(k) && GetInstrumentType(k) == INST_N163) {
-						CInstrumentN163 *pInstrument = static_cast<CInstrumentN163*>(GetInstrument(k));
-						if (pInstrument->GetSeqIndex(j) == i && pInstrument->GetSeqEnable(j)) {		// // //
-							Used = true;
-							break;
-						}
-						pInstrument->Release();
-					}
-				}
-				if (!Used)
-					GetSequence(SNDCHIP_N163, i, j)->Clear();
-			}
-			// // // Scan through all 5B sequences
-			if (GetSequenceItemCount(SNDCHIP_S5B, i, j)) {
-				bool Used = false;
-				for (int k = 0; k < MAX_INSTRUMENTS; ++k) {
-					if (IsInstrumentUsed(k) && GetInstrumentType(k) == INST_S5B) {
-						CInstrumentS5B *pInstrument = static_cast<CInstrumentS5B*>(GetInstrument(k));
-						if (pInstrument->GetSeqIndex(j) == i && pInstrument->GetSeqEnable(j)) {		// // //
-							Used = true;
-							break;
-						}
-						pInstrument->Release();
-					}
-				}
-				if (!Used)
-					GetSequence(SNDCHIP_S5B, i, j)->Clear();
-			}
+			if (!Used)
+				GetSequence(chip[c], i, j)->Clear();
 		}
 	}
 }

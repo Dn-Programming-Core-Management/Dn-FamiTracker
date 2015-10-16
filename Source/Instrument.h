@@ -92,7 +92,24 @@ private:
 	int	 m_iType;
 };
 
-class CInstrument2A03 : public CInstrument, public CInstrument2A03Interface {
+class CSeqInstrument : public CInstrument		// // //
+{
+public:
+	CSeqInstrument();
+	virtual int		GetSeqEnable(int Index) const;
+	virtual int		GetSeqIndex(int Index) const;
+	virtual void	SetSeqIndex(int Index, int Value);
+	virtual void	SetSeqEnable(int Index, int Value);
+
+public:
+	static const int SEQUENCE_TYPES[];
+
+protected:
+	int		m_iSeqEnable[SEQ_COUNT];		// // //
+	int		m_iSeqIndex[SEQ_COUNT];
+};
+
+class CInstrument2A03 : public CSeqInstrument/*, public CInstrument2A03Interface*/ {
 public:
 	CInstrument2A03();
 	virtual inst_type_t	GetType() const { return INST_2A03; };
@@ -107,11 +124,6 @@ public:
 	virtual bool CanRelease() const;
 
 public:
-	// Sequences
-	int		GetSeqEnable(int Index) const;
-	int		GetSeqIndex(int Index) const;
-	void	SetSeqIndex(int Index, int Value);
-	void	SetSeqEnable(int Index, int Value);
 	// Samples
 	char	GetSample(int Octave, int Note) const;
 	char	GetSamplePitch(int Octave, int Note) const;
@@ -127,12 +139,9 @@ public:
 	bool	AssignedSamples() const;
 
 public:
-	static const int SEQUENCE_COUNT = 5;
 	static const int SEQUENCE_TYPES[];
 
 private:
-	int		m_iSeqEnable[SEQ_COUNT];
-	int		m_iSeqIndex[SEQ_COUNT];
 	char	m_cSamples[OCTAVE_RANGE][12];				// Samples
 	char	m_cSamplePitch[OCTAVE_RANGE][12];			// Play pitch/loop
 	char	m_cSampleLoopOffset[OCTAVE_RANGE][12];		// Loop offset
@@ -140,7 +149,7 @@ private:
 
 };
 
-class CInstrumentVRC6 : public CInstrument {
+class CInstrumentVRC6 : public CSeqInstrument {
 public:
 	CInstrumentVRC6();
 	virtual inst_type_t	GetType() const { return INST_VRC6; };
@@ -155,18 +164,7 @@ public:
 	virtual bool CanRelease() const;
 
 public:
-	int		GetSeqEnable(int Index) const;
-	int		GetSeqIndex(int Index) const;
-	void	SetSeqEnable(int Index, int Value);
-	void	SetSeqIndex(int Index, int Value);
-
-public:
-	static const int SEQUENCE_COUNT = 5;
 	static const int SEQUENCE_TYPES[];
-
-private:
-	int		m_iSeqEnable[SEQ_COUNT];
-	int		m_iSeqIndex[SEQ_COUNT];
 };
 
 class CInstrumentVRC7 : public CInstrument {
@@ -250,7 +248,7 @@ private:
 	CSequence*	  m_pPitch;
 };
 
-class CInstrumentN163 : public CInstrument {
+class CInstrumentN163 : public CSeqInstrument {
 public:
 	CInstrumentN163();
 	virtual inst_type_t GetType() const { return INST_N163; };
@@ -264,11 +262,7 @@ public:
 	virtual int Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index);
 	virtual bool CanRelease() const;
 
-public:	
-	int		GetSeqEnable(int Index) const;
-	int		GetSeqIndex(int Index) const;
-	void	SetSeqEnable(int Index, int Value);
-	void	SetSeqIndex(int Index, int Value);
+public:
 	int		GetWaveSize() const;
 	void	SetWaveSize(int size);
 	int		GetWavePos() const;
@@ -289,14 +283,11 @@ public:
 	bool	RemoveWave(int Index);		// // //
 
 public:
-	static const int SEQUENCE_COUNT = 5;
 	static const int SEQUENCE_TYPES[];
 	static const int MAX_WAVE_SIZE = 240;		// Wave size (240 samples)		// // //
 	static const int MAX_WAVE_COUNT = 16;		// Number of waves
 
 private:
-	int		m_iSeqEnable[SEQ_COUNT];
-	int		m_iSeqIndex[SEQ_COUNT];
 	int		m_iSamples[MAX_WAVE_COUNT][MAX_WAVE_SIZE];
 	int		m_iWaveSize;
 	int		m_iWavePos;
@@ -304,7 +295,7 @@ private:
 	int		m_iWaveCount;
 };
 
-class CInstrumentS5B : public CInstrument {
+class CInstrumentS5B : public CSeqInstrument {
 public:
 	CInstrumentS5B();
 	virtual inst_type_t GetType() const { return INST_S5B; };
@@ -319,19 +310,7 @@ public:
 	virtual bool CanRelease() const;
 
 public:
-	int		GetSeqEnable(int Index) const;
-	int		GetSeqIndex(int Index) const;
-	void	SetSeqEnable(int Index, int Value);
-	void	SetSeqIndex(int Index, int Value);
-
-public:
-	static const int SEQUENCE_COUNT = 5;
 	static const int SEQUENCE_TYPES[];
-
-private:
-	int		m_iSeqEnable[SEQ_COUNT];
-	int		m_iSeqIndex[SEQ_COUNT];
-	// TODO
 };
 
 // This takes care of reference counting

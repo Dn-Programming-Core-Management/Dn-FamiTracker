@@ -48,7 +48,7 @@ protected:
 	CInstrumentN163	*m_pInstrument;
 
 protected:
-	static LPCTSTR INST_SETTINGS_N163[CInstrumentN163::SEQUENCE_COUNT];
+	static LPCTSTR INST_SETTINGS_N163[];
 
 	static const int MAX_VOLUME = 15;
 

@@ -30,8 +30,9 @@
 #include "Chunk.h"
 
 const int CInstrumentN163::SEQUENCE_TYPES[] = {SEQ_VOLUME, SEQ_ARPEGGIO, SEQ_PITCH, SEQ_HIPITCH, SEQ_DUTYCYCLE};
+const int SEQUENCE_COUNT = sizeof(CInstrumentN163::SEQUENCE_TYPES) / sizeof(int);		// // //
 
-CInstrumentN163::CInstrumentN163()
+CInstrumentN163::CInstrumentN163() : CSeqInstrument()		// // //
 {
 	// Default wave
 	const char TRIANGLE_WAVE[] = {
@@ -40,11 +41,6 @@ CInstrumentN163::CInstrumentN163()
 	};
 
 	const int DEFAULT_WAVE_SIZE = 32;
-
-	for (int i = 0; i < SEQUENCE_COUNT; ++i) {
-		m_iSeqEnable[i] = 0;
-		m_iSeqIndex[i] = 0;
-	}
 
 	memset(m_iSamples, 0, sizeof(int) * MAX_WAVE_COUNT * MAX_WAVE_SIZE);		// // //
 	for (int j = 0; j < sizeof(TRIANGLE_WAVE) / sizeof(char); ++j) {
@@ -359,34 +355,6 @@ bool CInstrumentN163::CanRelease() const
 	}
 
 	return false;
-}
-
-int	CInstrumentN163::GetSeqEnable(int Index) const
-{
-	ASSERT(Index < SEQ_COUNT);
-	return m_iSeqEnable[Index];
-}
-
-int	CInstrumentN163::GetSeqIndex(int Index) const
-{
-	ASSERT(Index < SEQ_COUNT);
-	return m_iSeqIndex[Index];
-}
-
-void CInstrumentN163::SetSeqEnable(int Index, int Value)
-{
-	ASSERT(Index < SEQ_COUNT);
-	if (m_iSeqEnable[Index] != Value)
-		InstrumentChanged();
-	m_iSeqEnable[Index] = Value;
-}
-
-void CInstrumentN163::SetSeqIndex(int Index, int Value)
-{
-	ASSERT(Index < SEQ_COUNT);
-	if (m_iSeqIndex[Index] != Value)
-		InstrumentChanged();
-	m_iSeqIndex[Index] = Value;
 }
 
 int CInstrumentN163::GetWaveSize() const

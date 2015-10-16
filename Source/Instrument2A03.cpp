@@ -31,21 +31,11 @@
 
 // 2A03 instruments
 
-const int CInstrument2A03::SEQUENCE_TYPES[] = {
-	SEQ_VOLUME, 
-	SEQ_ARPEGGIO, 
-	SEQ_PITCH, 
-	SEQ_HIPITCH, 
-	SEQ_DUTYCYCLE
-};
+const int CInstrument2A03::SEQUENCE_TYPES[] = {SEQ_VOLUME, SEQ_ARPEGGIO, SEQ_PITCH, SEQ_HIPITCH, SEQ_DUTYCYCLE};
+const int SEQUENCE_COUNT = sizeof(CInstrument2A03::SEQUENCE_TYPES) / sizeof(int);		// // //
 
-CInstrument2A03::CInstrument2A03()
+CInstrument2A03::CInstrument2A03() : CSeqInstrument()		// // //
 {
-	for (int i = 0; i < SEQUENCE_COUNT; ++i) {
-		m_iSeqEnable[i] = 0;
-		m_iSeqIndex[i] = 0;
-	}
-
 	for (int i = 0; i < OCTAVE_RANGE; ++i) {
 		for (int j = 0; j < NOTE_RANGE; ++j) {
 			m_cSamples[i][j] = 0;
@@ -410,30 +400,6 @@ bool CInstrument2A03::CanRelease() const
 	}
 
 	return false;
-}
-
-int	CInstrument2A03::GetSeqEnable(int Index) const
-{
-	return m_iSeqEnable[Index];
-}
-
-int	CInstrument2A03::GetSeqIndex(int Index) const
-{
-	return m_iSeqIndex[Index];
-}
-
-void CInstrument2A03::SetSeqEnable(int Index, int Value)
-{
-	if (m_iSeqEnable[Index] != Value)
-		InstrumentChanged();
-	m_iSeqEnable[Index] = Value;
-}
-
-void CInstrument2A03::SetSeqIndex(int Index, int Value)
-{
-	if (m_iSeqIndex[Index] != Value)
-		InstrumentChanged();
-	m_iSeqIndex[Index] = Value;
 }
 
 char CInstrument2A03::GetSample(int Octave, int Note) const

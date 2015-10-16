@@ -101,7 +101,7 @@ bool CChannelHandler2A03::HandleInstrument(int Instrument, bool Trigger, bool Ne
 	if (pInstrument == NULL)
 		return false;
 
-	for (int i = 0; i < CInstrument2A03::SEQUENCE_COUNT; ++i) {
+	for (int i = 0; i < SEQ_COUNT; ++i) {
 		const CSequence *pSequence = pDocument->GetSequence(SNDCHIP_NONE, pInstrument->GetSeqIndex(i), i);
 		if (Trigger || !IsSequenceEqual(i, pSequence) || pInstrument->GetSeqEnable(i) > GetSequenceState(i)) {
 			if (pInstrument->GetSeqEnable(i) == 1)
@@ -174,7 +174,7 @@ void CChannelHandler2A03::ProcessChannel()
 		return;
 
 	// Sequences
-	for (int i = 0; i < CInstrument2A03::SEQUENCE_COUNT; ++i)
+	for (int i = 0; i < SEQ_COUNT; ++i)
 		RunSequence(i);
 }
 
