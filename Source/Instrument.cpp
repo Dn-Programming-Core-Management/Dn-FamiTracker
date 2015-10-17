@@ -32,7 +32,7 @@
  *
  */
 
-CInstrument::CInstrument() : CRefCounter(), m_iType(0)
+CInstrument::CInstrument(inst_type_t type) : CRefCounter(), m_iType(type)		// // //
 {
 	memset(m_cName, 0, INST_NAME_MAX);
 }
@@ -54,6 +54,11 @@ void CInstrument::GetName(char *Name) const
 const char *CInstrument::GetName() const
 {
 	return m_cName;
+}
+
+inst_type_t CInstrument::GetType() const		// // //
+{
+	return m_iType;
 }
 
 void CInstrument::InstrumentChanged() const
@@ -127,7 +132,7 @@ unsigned char CInstrumentFile::ReadChar()
  * Base class for instruments using sequences
  */
 
-CSeqInstrument::CSeqInstrument()
+CSeqInstrument::CSeqInstrument(inst_type_t type) : CInstrument(type)
 {
 	for (int i = 0; i < SEQ_COUNT; ++i) {
 		m_iSeqEnable[i] = 0;
@@ -135,16 +140,18 @@ CSeqInstrument::CSeqInstrument()
 	}
 }
 
-CSeqInstrument *CSeqInstrument::CopySequences(const CSeqInstrument *const src)
+CInstrument *CSeqInstrument::Clone() const
 {
+	CSeqInstrument *inst = static_cast<CSeqInstrument*>(CreateNew());		// // //
+
 	for (int i = 0; i < SEQ_COUNT; i++) {
-		SetSeqEnable(i, src->GetSeqEnable(i));
-		SetSeqIndex(i, src->GetSeqIndex(i));
+		inst->SetSeqEnable(i, GetSeqEnable(i));
+		inst->SetSeqIndex(i, GetSeqIndex(i));
 	}
 
-	SetName(src->GetName());
+	inst->SetName(GetName());
 
-	return this;
+	return inst;
 }
 
 void CSeqInstrument::Setup()

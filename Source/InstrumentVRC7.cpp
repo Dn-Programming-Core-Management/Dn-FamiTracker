@@ -2,6 +2,8 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
+** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -31,17 +33,11 @@
  *
  */
 
-CInstrumentVRC7::CInstrumentVRC7() :
-	m_iPatch(0)
+static const unsigned char VRC7_SINE_PATCH[] = {0x01, 0x21, 0x00, 0x00, 0x00, 0xF0, 0x00, 0x0F};		// // //
+
+CInstrumentVRC7::CInstrumentVRC7() : CInstrument(INST_VRC7), m_iPatch(0)		// // //
 {
-	m_iRegs[0] = 0x01;
-	m_iRegs[1] = 0x21;
-	m_iRegs[2] = 0x00;
-	m_iRegs[3] = 0x00;
-	m_iRegs[4] = 0x00;
-	m_iRegs[5] = 0xF0;
-	m_iRegs[6] = 0x00;
-	m_iRegs[7] = 0x0F;
+	memcpy(m_iRegs, VRC7_SINE_PATCH, sizeof(VRC7_SINE_PATCH));
 }
 
 CInstrument *CInstrumentVRC7::Clone() const

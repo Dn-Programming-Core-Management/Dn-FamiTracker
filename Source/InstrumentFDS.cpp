@@ -38,7 +38,7 @@ const char TEST_WAVE[] = {
 
 const int FIXED_FDS_INST_SIZE = 1 + 16 + 4 + 1;
 
-CInstrumentFDS::CInstrumentFDS() : CInstrument()
+CInstrumentFDS::CInstrumentFDS() : CInstrument(INST_FDS)		// // //
 {
 	memcpy(m_iSamples, TEST_WAVE, WAVE_SIZE);	
 	memset(m_iModulation, 0, MOD_SIZE);

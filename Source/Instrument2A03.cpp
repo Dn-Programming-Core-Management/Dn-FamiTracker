@@ -28,7 +28,7 @@
 
 // 2A03 instruments
 
-CInstrument2A03::CInstrument2A03()		// // //
+CInstrument2A03::CInstrument2A03() : CSeqInstrument(INST_2A03)		// // //
 {
 	for (int i = 0; i < OCTAVE_RANGE; ++i) {
 		for (int j = 0; j < NOTE_RANGE; ++j) {
@@ -42,7 +42,7 @@ CInstrument2A03::CInstrument2A03()		// // //
 
 CInstrument *CInstrument2A03::Clone() const
 {
-	CInstrument2A03 *pNew = static_cast<CInstrument2A03*>((new CInstrument2A03())->CopySequences(this));		// // //
+	CInstrument2A03 *pNew = static_cast<CInstrument2A03*>(CSeqInstrument::Clone());		// // //
 
 	for (int i = 0; i < OCTAVE_RANGE; ++i) {
 		for (int j = 0; j < NOTE_RANGE; ++j) {

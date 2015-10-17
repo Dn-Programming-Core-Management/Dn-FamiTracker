@@ -67,13 +67,13 @@ public:
 // Instrument base class
 class CInstrument : public CRefCounter {
 public:
-	CInstrument();
+	CInstrument(inst_type_t type);		// // //
 	virtual ~CInstrument();
 	void SetName(const char *Name);
 	void GetName(char *Name) const;
 	const char* GetName() const;
 public:
-	virtual inst_type_t GetType() const = 0;										// Returns instrument type
+	virtual inst_type_t GetType() const;											// // // Returns instrument type
 	virtual CInstrument* CreateNew() const = 0;										// Creates a new object
 	virtual CInstrument* Clone() const = 0;											// Creates a copy
 	virtual void Setup() = 0;														// Setup some initial values
@@ -87,28 +87,29 @@ protected:
 	void InstrumentChanged() const;
 public:
 	static const int INST_NAME_MAX = 128;
-private:
+protected:
 	char m_cName[INST_NAME_MAX];
-	int	 m_iType;
+	inst_type_t m_iType;		// // //
 };
 
 class CSeqInstrument : public CInstrument		// // //
 {
 public:
-	CSeqInstrument();
-	//CInstrument *Clone() const;
-	void	Setup();
-	void	Store(CDocumentFile *pDocFile);
-	bool	Load(CDocumentFile *pDocFile);
-	void	SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDoc);
-	bool	LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTrackerDoc *pDoc);
-	int		Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index);
-	bool	CanRelease() const;
+	CSeqInstrument(inst_type_t type);
+	virtual CInstrument* CreateNew() const { return new CSeqInstrument(m_iType); };
+	virtual CInstrument* Clone() const;
+	virtual void	Setup();
+	virtual void	Store(CDocumentFile *pDocFile);
+	virtual bool	Load(CDocumentFile *pDocFile);
+	virtual void	SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDoc);
+	virtual bool	LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTrackerDoc *pDoc);
+	virtual int		Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index);
+	virtual bool	CanRelease() const;
 
-	int		GetSeqEnable(int Index) const;
-	int		GetSeqIndex(int Index) const;
-	void	SetSeqIndex(int Index, int Value);
-	void	SetSeqEnable(int Index, int Value);
+	virtual int		GetSeqEnable(int Index) const;
+	virtual int		GetSeqIndex(int Index) const;
+	virtual void	SetSeqIndex(int Index, int Value);
+	virtual void	SetSeqEnable(int Index, int Value);
 
 	// static const int SEQUENCE_TYPES[] = {SEQ_VOLUME, SEQ_ARPEGGIO, SEQ_PITCH, SEQ_HIPITCH, SEQ_DUTYCYCLE};
 
@@ -121,7 +122,6 @@ protected:
 class CInstrument2A03 : public CSeqInstrument /*, public CInstrument2A03Interface*/ {
 public:
 	CInstrument2A03();
-	inst_type_t	GetType() const { return INST_2A03; };
 	CInstrument* CreateNew() const { return new CInstrument2A03(); };
 	CInstrument* Clone() const;
 	void	Store(CDocumentFile *pFile);
@@ -154,24 +154,22 @@ private:
 
 class CInstrumentVRC6 : public CSeqInstrument {
 public:
-	inst_type_t	GetType() const { return INST_VRC6; };
+	CInstrumentVRC6() : CSeqInstrument(INST_VRC6) {};
 	CInstrument* CreateNew() const { return new CInstrumentVRC6(); };
-	CInstrument* Clone() const { return (new CInstrumentVRC6())->CopySequences(this); };
 };
 
 class CInstrumentVRC7 : public CInstrument {
 public:
 	CInstrumentVRC7();
-	virtual inst_type_t	GetType() const { return INST_VRC7; };
-	virtual CInstrument* CreateNew() const { return new CInstrumentVRC7(); };
-	virtual CInstrument* Clone() const;
-	virtual void Setup();
-	virtual void Store(CDocumentFile *pDocFile);
-	virtual bool Load(CDocumentFile *pDocFile);
-	virtual void SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDoc);
-	virtual bool LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTrackerDoc *pDoc);
-	virtual int Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index);
-	virtual bool CanRelease() const;
+	CInstrument* CreateNew() const { return new CInstrumentVRC7(); };
+	CInstrument* Clone() const;
+	void	Setup();
+	void	Store(CDocumentFile *pDocFile);
+	bool	Load(CDocumentFile *pDocFile);
+	void	SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDoc);
+	bool	LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTrackerDoc *pDoc);
+	int		Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index);
+	bool	CanRelease() const;
 
 public:
 	void		 SetPatch(unsigned int Patch);
@@ -187,17 +185,16 @@ private:
 class CInstrumentFDS : public CInstrument {
 public:
 	CInstrumentFDS();
-	virtual ~CInstrumentFDS();
-	virtual inst_type_t GetType() const { return INST_FDS; };
-	virtual CInstrument* CreateNew() const { return new CInstrumentFDS(); };
-	virtual CInstrument* Clone() const;
-	virtual void Setup();
-	virtual void Store(CDocumentFile *pDocFile);
-	virtual bool Load(CDocumentFile *pDocFile);
-	virtual void SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDoc);
-	virtual bool LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTrackerDoc *pDoc);
-	virtual int Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index);
-	virtual bool CanRelease() const;
+	~CInstrumentFDS();
+	CInstrument* CreateNew() const { return new CInstrumentFDS(); };
+	CInstrument* Clone() const;
+	void	Setup();
+	void	Store(CDocumentFile *pDocFile);
+	bool	Load(CDocumentFile *pDocFile);
+	void	SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDoc);
+	bool	LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTrackerDoc *pDoc);
+	int		Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index);
+	bool	CanRelease() const;
 
 public:
 	unsigned char GetSample(int Index) const;
@@ -243,7 +240,6 @@ private:
 class CInstrumentN163 : public CSeqInstrument {
 public:
 	CInstrumentN163();
-	inst_type_t GetType() const { return INST_N163; };
 	CInstrument* CreateNew() const { return new CInstrumentN163(); };
 	CInstrument* Clone() const;
 	void	Store(CDocumentFile *pDocFile);
@@ -286,9 +282,8 @@ private:
 
 class CInstrumentS5B : public CSeqInstrument {
 public:
-	inst_type_t GetType() const { return INST_S5B; };
+	CInstrumentS5B() : CSeqInstrument(INST_S5B) {};		// // //
 	CInstrument* CreateNew() const { return new CInstrumentS5B(); };
-	CInstrument* Clone() const { return (new CInstrumentS5B())->CopySequences(this); };
 };
 
 // This takes care of reference counting
