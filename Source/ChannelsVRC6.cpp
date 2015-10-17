@@ -48,16 +48,14 @@ void CChannelHandlerVRC6::HandleCustomEffects(int EffNum, int EffParam)
 bool CChannelHandlerVRC6::HandleInstrument(int Instrument, bool Trigger, bool NewInstrument)
 {
 	CFamiTrackerDoc *pDocument = m_pSoundGen->GetDocument();
-	CInstrumentContainer<CInstrumentVRC6> instContainer(pDocument, Instrument);
-	CInstrumentVRC6 *pInstrument = instContainer();
+	CInstrumentContainer<CSeqInstrument> instContainer(pDocument, Instrument);		// // //
+	CSeqInstrument *pInstrument = instContainer();
 
-	if (!pInstrument)
+	if (pInstrument == NULL)
 		return false;
 
-	// Setup instrument
 	for (int i = 0; i < SEQ_COUNT; ++i) {
-		const CSequence *pSequence = pDocument->GetSequence(INST_VRC6, pInstrument->GetSeqIndex(i), i);
-
+		const CSequence *pSequence = pDocument->GetSequence(pInstrument->GetType(), pInstrument->GetSeqIndex(i), i); // // //
 		if (Trigger || !IsSequenceEqual(i, pSequence) || pInstrument->GetSeqEnable(i) > GetSequenceState(i)) {
 			if (pInstrument->GetSeqEnable(i) == 1)
 				SetupSequence(i, pSequence);

@@ -159,7 +159,7 @@ void CSeqInstrument::Setup()
 	CFamiTrackerDoc *pDoc = CFamiTrackerDoc::GetDoc();
 	for (int i = 0; i < SEQ_COUNT; ++i) {
 		SetSeqEnable(i, 0);
-		int Index = pDoc->GetFreeSequence(GetType(), i);
+		int Index = pDoc->GetFreeSequence(m_iType, i);
 		if (Index != -1)
 			SetSeqIndex(i, Index);
 	}
@@ -198,7 +198,7 @@ void CSeqInstrument::SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDo
 	for (int i = 0; i < SEQ_COUNT; ++i) {
 		unsigned Sequence = GetSeqIndex(i);
 		if (GetSeqEnable(i)) {
-			const CSequence *pSeq = pDoc->GetSequence(GetType(), Sequence, i);
+			const CSequence *pSeq = pDoc->GetSequence(m_iType, Sequence, i);
 			pFile->WriteChar(1);
 			pFile->WriteInt(pSeq->GetItemCount());
 			pFile->WriteInt(pSeq->GetLoopPoint());
@@ -231,10 +231,10 @@ bool CSeqInstrument::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTracker
 				return false;
 			
 			// Find a free sequence
-			int Index = pDoc->GetFreeSequence(GetType(), i);
+			int Index = pDoc->GetFreeSequence(m_iType, i);
 
 			if (Index != -1) {
-				CSequence *pSeq = pDoc->GetSequence(GetType(), static_cast<unsigned>(Index), i);
+				CSequence *pSeq = pDoc->GetSequence(m_iType, static_cast<unsigned>(Index), i);
 
 				if (iVersion < 20) {
 					OldSequence.Count = Count;
@@ -273,7 +273,7 @@ int CSeqInstrument::Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index)
 	int StoredBytes = 0;
 
 	for (unsigned i = 0; i < SEQ_COUNT; ++i) {
-		const CSequence *pSequence = pDoc->GetSequence(GetType(), unsigned(GetSeqIndex(i)), i);
+		const CSequence *pSequence = pDoc->GetSequence(m_iType, unsigned(GetSeqIndex(i)), i);
 		ModSwitch = ModSwitch | (GetSeqEnable(i) && pSequence != NULL && pSequence->GetItemCount() > 0 ? (1 << i) : 0);
 	}
 
@@ -323,7 +323,7 @@ void CSeqInstrument::SetSeqEnable(int Index, int Value)
 bool CSeqInstrument::CanRelease() const
 {
 	return GetSeqEnable(SEQ_VOLUME) != 0
-		&& CFamiTrackerDoc::GetDoc()->GetSequence(GetType(), GetSeqIndex(SEQ_VOLUME), SEQ_VOLUME)->GetReleasePoint() != -1;
+		&& CFamiTrackerDoc::GetDoc()->GetSequence(m_iType, GetSeqIndex(SEQ_VOLUME), SEQ_VOLUME)->GetReleasePoint() != -1;
 }
 
 void CSeqInstrument::SetSeqIndex(int Index, int Value)

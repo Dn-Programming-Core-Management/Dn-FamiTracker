@@ -165,15 +165,14 @@ void CChannelHandlerS5B::HandleCustomEffects(int EffNum, int EffParam)
 bool CChannelHandlerS5B::HandleInstrument(int Instrument, bool Trigger, bool NewInstrument)
 {
 	CFamiTrackerDoc *pDocument = m_pSoundGen->GetDocument();
-	CInstrumentContainer<CInstrumentS5B> instContainer(pDocument, Instrument);
-	CInstrumentS5B *pInstrument = instContainer();
+	CInstrumentContainer<CSeqInstrument> instContainer(pDocument, Instrument);		// // //
+	CSeqInstrument *pInstrument = instContainer();
 
 	if (pInstrument == NULL)
 		return false;
 
 	for (int i = 0; i < SEQ_COUNT; ++i) {
-		const CSequence *pSequence = pDocument->GetSequence(INST_S5B, pInstrument->GetSeqIndex(i), i);
-
+		const CSequence *pSequence = pDocument->GetSequence(pInstrument->GetType(), pInstrument->GetSeqIndex(i), i); // // //
 		if (Trigger || !IsSequenceEqual(i, pSequence) || pInstrument->GetSeqEnable(i) > GetSequenceState(i)) {
 			if (pInstrument->GetSeqEnable(i) == 1)
 				SetupSequence(i, pSequence);

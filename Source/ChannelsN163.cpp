@@ -110,15 +110,14 @@ void CChannelHandlerN163::HandleCustomEffects(int EffNum, int EffParam)
 bool CChannelHandlerN163::HandleInstrument(int Instrument, bool Trigger, bool NewInstrument)
 {
 	CFamiTrackerDoc *pDocument = m_pSoundGen->GetDocument();
-	CInstrumentContainer<CInstrumentN163> instContainer(pDocument, Instrument);
-	CInstrumentN163 *pInstrument = instContainer();
+	CInstrumentContainer<CSeqInstrument> instContainer(pDocument, Instrument);		// // //
+	CSeqInstrument *pInstrument = instContainer();
 
 	if (pInstrument == NULL)
 		return false;
 
 	for (int i = 0; i < SEQ_COUNT; ++i) {
-		const CSequence *pSequence = pDocument->GetSequence(INST_N163, pInstrument->GetSeqIndex(i), i);
-
+		const CSequence *pSequence = pDocument->GetSequence(pInstrument->GetType(), pInstrument->GetSeqIndex(i), i); // // //
 		if (Trigger || !IsSequenceEqual(i, pSequence) || pInstrument->GetSeqEnable(i) > GetSequenceState(i)) {
 			if (pInstrument->GetSeqEnable(i) == 1)
 				SetupSequence(i, pSequence);
@@ -127,17 +126,21 @@ bool CChannelHandlerN163::HandleInstrument(int Instrument, bool Trigger, bool Ne
 		}
 	}
 
-	m_iWaveLen = pInstrument->GetWaveSize();
-	if (!m_bDisableLoad) {		// // //
-		m_iWavePos = /*pInstrument->GetAutoWavePos() ? GetIndex() * 16 :*/ pInstrument->GetWavePos();
-		m_iWavePosOld = m_iWavePos;
-	}
-	m_iWaveCount = pInstrument->GetWaveCount();
+	CInstrumentContainer<CInstrumentN163> N163instContainer(pDocument, Instrument);		// // //
+	CInstrumentN163 *pN163Inst = N163instContainer();
+	if (pN163Inst != NULL) {
+		m_iWaveLen = pN163Inst->GetWaveSize();
+		if (!m_bDisableLoad) {		// // //
+			m_iWavePos = /*pInstrument->GetAutoWavePos() ? GetIndex() * 16 :*/ pN163Inst->GetWavePos();
+			m_iWavePosOld = m_iWavePos;
+		}
+		m_iWaveCount = pN163Inst->GetWaveCount();
 
-	if (!m_bLoadWave && NewInstrument)
-		m_iWaveIndex = 0;
-	
-	m_bLoadWave = true;
+		if (!m_bLoadWave && NewInstrument)
+			m_iWaveIndex = 0;
+
+		m_bLoadWave = true;
+	}
 
 	return true;
 }
