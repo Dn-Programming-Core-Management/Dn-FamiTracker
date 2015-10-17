@@ -4994,7 +4994,7 @@ void CFamiTrackerDoc::RemoveUnusedInstruments()
 				if (IsInstrumentUsed(k) && GetInstrumentType(k) == inst[c]) {
 					CSeqInstrument *pInstrument = static_cast<CSeqInstrument*>(GetInstrument(k));
 					if (pInstrument->GetSeqIndex(j) == i && pInstrument->GetSeqEnable(j)) {		// // //
-						Used = true; break;
+						Used = true; pInstrument->Release(); break;
 					}
 					pInstrument->Release();
 				}
@@ -5041,9 +5041,9 @@ void CFamiTrackerDoc::RemoveUnusedSamples()		// // //
 						if (GetInstrumentType(Index) != INST_2A03) continue;
 						CInstrument2A03 *pInst = static_cast<CInstrument2A03*>(GetInstrument(Index));
 						AssignUsed[Index][pNote->Octave][pNote->Note - 1] = true;
-						if (pInst->GetSample(pNote->Octave, pNote->Note - 1) == i + 1) {
+						if (pInst->GetSample(pNote->Octave, pNote->Note - 1) == i + 1)
 							Used = true;
-						}
+						pInst->Release();
 					}
 				}
 			}
@@ -5059,6 +5059,7 @@ void CFamiTrackerDoc::RemoveUnusedSamples()		// // //
 			if (!AssignUsed[i][o][n])
 				pInst->SetSample(o, n, 0);
 		}
+		pInst->Release();
 	}
 }
 

@@ -983,6 +983,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					CHECK(t.ReadInt(i,-1,127,&sResult));
 					pInst->SetSampleDeltaValue(io, in, i);
 
+					pInst->Release();		// // //
 					CHECK(t.ReadEOL(&sResult));
 				}
 				break;
@@ -1002,6 +1003,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 						pInst->SetSample(s, i);
 					}
 					CHECK(t.ReadEOL(&sResult));
+					pInst->Release();		// // //
 				}
 				break;
 			case CT_FDSMOD:
@@ -1020,6 +1022,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 						pInst->SetModulation(s, i);
 					}
 					CHECK(t.ReadEOL(&sResult));
+					pInst->Release();		// // //
 				}
 				break;
 			case CT_FDSMACRO:
@@ -1049,6 +1052,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 							sResult.Format(_T("Line %d column %d: unexpected error."), t.line, t.GetColumn());
 							return sResult;
 					}
+					pInst->Release();		// // //
 					CHECK(t.ReadInt(i,-1,MAX_SEQUENCE_ITEMS,&sResult));
 					pSeq->SetLoopPoint(i);
 					CHECK(t.ReadInt(i,-1,MAX_SEQUENCE_ITEMS,&sResult));
@@ -1091,6 +1095,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 						CHECK(t.ReadInt(i,0,15,&sResult));
 						pInst->SetSample(iw, s, i);
 					}
+					pInst->Release();		// // //
 					CHECK(t.ReadEOL(&sResult));
 				}
 				break;
@@ -1580,6 +1585,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 				}
 				break;
 		}
+		pInst->Release();		// // //
 	}
 	f.WriteString(_T("\n"));
 
