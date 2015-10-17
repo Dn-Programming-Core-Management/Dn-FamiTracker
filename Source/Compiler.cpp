@@ -1452,7 +1452,7 @@ void CCompiler::ScanSong()
 	memset(m_bSequencesUsedS5B, false, sizeof(bool) * MAX_SEQUENCES * SEQ_COUNT);		// // //
 	
 	static const inst_type_t inst[] = {INST_2A03, INST_VRC6, INST_N163, INST_S5B};		// // //
-	static bool *used[] = {*m_bSequencesUsed2A03, *m_bSequencesUsedVRC6, *m_bSequencesUsedN163, *m_bSequencesUsedS5B};
+	bool *used[] = {*m_bSequencesUsed2A03, *m_bSequencesUsedVRC6, *m_bSequencesUsedN163, *m_bSequencesUsedS5B};
 
 	for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
 		if (m_pDocument->IsInstrumentUsed(i) && IsInstrumentInPattern(i)) {

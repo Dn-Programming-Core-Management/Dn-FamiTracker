@@ -620,7 +620,7 @@ unsigned char CPatternCompiler::Command(int cmd) const
 	// // // truncate values if some chips do not exist
 	if (!m_pDocument->ExpansionEnabled(SNDCHIP_N163) && cmd > CMD_EFF_N163_WAVE_BUFFER) cmd -= sizeof(N163_EFFECTS);
 	// MMC5
-	if (!m_pDocument->ExpansionEnabled(SNDCHIP_FDS) && cmd > CMD_EFF_FDS_MOD_RATE_LO) cmd -= sizeof(FDS_EFFECTS);
+	if (!m_pDocument->ExpansionEnabled(SNDCHIP_FDS) && cmd > CMD_EFF_FDS_MOD_BIAS) cmd -= sizeof(FDS_EFFECTS);
 	// VRC7, VRC6
 	return (cmd << 1) | 0x80;
 }

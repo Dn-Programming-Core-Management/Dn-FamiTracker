@@ -282,7 +282,7 @@ int CSeqInstrument::Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index)
 	}
 	ASSERT(label != NULL);
 	for (unsigned i = 0; i < SEQ_COUNT; ++i) {
-		if (ModSwitch | (1 << i)) {
+		if (ModSwitch & (1 << i)) {
 			CStringA str;
 			str.Format(label, GetSeqIndex(i) * SEQ_COUNT + i);
 			pChunk->StoreReference(str);
