@@ -29,6 +29,7 @@ class CWaveEditor : public CWnd
 public:
 	CWaveEditor(int sx, int sy, int lx, int ly);
 	virtual ~CWaveEditor();
+	void PhaseShift(int x);		// // //
 	DECLARE_DYNAMIC(CWaveEditor)
 private:
 	void EditWave(CPoint pt1, CPoint pt2);

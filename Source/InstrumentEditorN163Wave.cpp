@@ -150,6 +150,30 @@ BOOL CInstrumentEditorN163Wave::OnInitDialog()
 	// EXCEPTION: OCX Property Pages should return FALSE
 }
 
+BOOL CInstrumentEditorN163Wave::PreTranslateMessage(MSG* pMsg)		// // //
+{
+	if (pMsg->message == WM_KEYDOWN) {
+		switch (pMsg->wParam) {
+			case VK_LEFT:
+				if ((::GetKeyState(VK_CONTROL) & 0x80) == 0x80) {
+					m_pWaveEditor->PhaseShift(1);
+					UpdateWaveBox(m_iWaveIndex);
+					return TRUE;
+				}
+				break;
+			case VK_RIGHT:
+				if ((::GetKeyState(VK_CONTROL) & 0x80) == 0x80) {
+					m_pWaveEditor->PhaseShift(-1);
+					UpdateWaveBox(m_iWaveIndex);
+					return TRUE;
+				}
+				break;
+		}
+	}
+
+	return CDialog::PreTranslateMessage(pMsg);
+}
+
 void CInstrumentEditorN163Wave::OnPresetSine()
 {
 	int size = m_pInstrument->GetWaveSize();

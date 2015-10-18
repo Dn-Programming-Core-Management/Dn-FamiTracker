@@ -79,6 +79,21 @@ BOOL CWaveEditor::CreateEx(DWORD dwExStyle, LPCTSTR lpszClassName, LPCTSTR lpszW
 	return 0;
 }
 
+void CWaveEditor::PhaseShift(int x)		// // //
+{
+	const int Length = GetMaxSamples();
+	x %= Length;
+	if (x < 0) x += Length;
+	int *buffer = new int[Length];
+	for (int i = 0; i < Length; i++)
+		buffer[i] = GetSample(i);
+	for (int i = 0; i < Length; i++)
+		SetSample(i, buffer[(i + x) % Length]);
+	SAFE_RELEASE_ARRAY(buffer);
+	Invalidate();
+	RedrawWindow();
+}
+
 void CWaveEditor::OnPaint()
 {
 	const COLORREF GRAY1 = 0xA0A0A0;

@@ -60,6 +60,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	virtual BOOL OnInitDialog();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);		// // //
 	afx_msg void OnPresetSine();
 	afx_msg void OnPresetTriangle();
 	afx_msg void OnPresetPulse50();

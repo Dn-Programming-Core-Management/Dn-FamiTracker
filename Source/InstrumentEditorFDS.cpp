@@ -133,6 +133,28 @@ BOOL CInstrumentEditorFDS::OnInitDialog()
 	// EXCEPTION: OCX Property Pages should return FALSE
 }
 
+BOOL CInstrumentEditorFDS::PreTranslateMessage(MSG* pMsg)		// // //
+{
+	if (pMsg->message == WM_KEYDOWN) {
+		switch (pMsg->wParam) {
+			case VK_LEFT:
+				if ((::GetKeyState(VK_CONTROL) & 0x80) == 0x80) {
+					m_pWaveEditor->PhaseShift(1);
+					return TRUE;
+				}
+				break;
+			case VK_RIGHT:
+				if ((::GetKeyState(VK_CONTROL) & 0x80) == 0x80) {
+					m_pWaveEditor->PhaseShift(-1);
+					return TRUE;
+				}
+				break;
+		}
+	}
+
+	return CDialog::PreTranslateMessage(pMsg);
+}
+
 void CInstrumentEditorFDS::OnPresetSine()
 {
 	for (int i = 0; i < 64; ++i) {
