@@ -178,8 +178,8 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // /
 		End.m_iChannel = m_selection.GetChanEnd();
 		bool Cut = (End.m_iChannel - Start.m_iChannel + 1) % m_pClipData->ClipInfo.Channels == 0;
 		Start.m_iColumn = CPatternEditor::GetCursorStartColumn(m_pClipData->ClipInfo.StartColumn);
-		End.m_iColumn = CPatternEditor::GetCursorStartColumn(Cut ? m_pClipData->ClipInfo.EndColumn :
-			4 + 3 * CFamiTrackerDoc::GetDoc()->GetEffColumns(m_iUndoTrack, End.m_iChannel));
+		End.m_iColumn = CPatternEditor::GetCursorEndColumn(Cut ? m_pClipData->ClipInfo.EndColumn :
+			static_cast<column_t>(COLUMN_EFF1 + CFamiTrackerDoc::GetDoc()->GetEffColumns(m_iUndoTrack, End.m_iChannel)));
 	}
 	else if (m_iPastePos == PASTE_DRAG) {
 		End.m_iChannel += m_pClipData->ClipInfo.Channels - 1;
@@ -196,9 +196,9 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // /
 	const int OFFS = std::max(3 * (CPatternEditor::GetSelectColumn(m_iUndoColumn) - m_pClipData->ClipInfo.StartColumn), EFBEGIN - Start.m_iColumn);
 	if (Start.m_iChannel == End.m_iChannel && Start.m_iColumn >= EFBEGIN && End.m_iColumn >= EFBEGIN) {
 		if (m_iPastePos != PASTE_DRAG) {
-			End.m_iColumn += OFFS;
-			Start.m_iColumn += OFFS;
-			End.m_iColumn = std::min(End.m_iColumn, 15);
+			End.m_iColumn = static_cast<cursor_column_t>(End.m_iColumn + OFFS);
+			Start.m_iColumn = static_cast<cursor_column_t>(Start.m_iColumn + OFFS);
+			End.m_iColumn = std::min(End.m_iColumn, C_EFF4_PARAM2);
 		}
 	}
 
@@ -277,7 +277,7 @@ void CPatternAction::IncreaseRowAction(CFamiTrackerDoc *pDoc) const
 				bUpdate = true;
 			}
 			break;
-		case C_EFF_NUM: case C_EFF_PARAM1: case C_EFF_PARAM2: 
+		case C_EFF1_NUM: case C_EFF1_PARAM1: case C_EFF1_PARAM2: 
 			if (Note.EffParam[0] < 0xFF && Note.EffNumber[0] != EF_NONE) {		// // //
 				++Note.EffParam[0];
 				bUpdate = true;
@@ -328,7 +328,7 @@ void CPatternAction::DecreaseRowAction(CFamiTrackerDoc *pDoc) const
 				bUpdate = true;
 			}
 			break;
-		case C_EFF_NUM: case C_EFF_PARAM1: case C_EFF_PARAM2: 
+		case C_EFF1_NUM: case C_EFF1_PARAM1: case C_EFF1_PARAM2: 
 			if (Note.EffParam[0] > 0 && Note.EffNumber[0] != EF_NONE) {		// // //
 				--Note.EffParam[0];
 				bUpdate = true;
@@ -367,8 +367,8 @@ void CPatternAction::InsertRows(CFamiTrackerDoc *pDoc) const
 
 void CPatternAction::PullUpRows(CFamiTrackerDoc *pDoc) const
 {
-	const int ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());		// // //
-	const int ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
+	const column_t ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());		// // //
+	const column_t ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
 	stChanNote Target, Source;
 	
 	CPatternIterator it = GetStartIterator();		// // //
@@ -398,8 +398,8 @@ void CPatternAction::StretchPattern(CFamiTrackerDoc *pDoc) const		// // //
 	CPatternIterator it = GetStartIterator();		// // //
 	CPatternIterator s = GetStartIterator();		// // //
 	const CPatternIterator End = GetEndIterator();
-	const int ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());		// // //
-	const int ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
+	const column_t ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());		// // //
+	const column_t ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
 	stChanNote Target, Source;
 	
 	int Pos = 0;
@@ -519,7 +519,7 @@ void CPatternAction::Interpolate(CFamiTrackerDoc *pDoc) const
 			bool TwoParam = false;
 			int Effect;
 			switch (j) {
-			case 0: // // // Note
+			case COLUMN_NOTE:
 				if (!m_selection.IsColumnSelected(COLUMN_NOTE, i)
 					|| StartData.Note < NOTE_C || StartData.Note > NOTE_B
 					|| EndData.Note < NOTE_C || EndData.Note > NOTE_B)
@@ -527,25 +527,22 @@ void CPatternAction::Interpolate(CFamiTrackerDoc *pDoc) const
 				StartValLo = (float)MIDI_NOTE(StartData.Octave, StartData.Note);
 				EndValLo = (float)MIDI_NOTE(EndData.Octave, EndData.Note);
 				break;
-			case 1: // // // Instrument
+			case COLUMN_INSTRUMENT:
 				if (!m_selection.IsColumnSelected(COLUMN_INSTRUMENT, i)
 					|| StartData.Instrument == MAX_INSTRUMENTS || EndData.Instrument == MAX_INSTRUMENTS)
 					continue;
 				StartValLo = (float)StartData.Instrument;
 				EndValLo = (float)EndData.Instrument;
 				break;
-			case 2:	// // // Volume
+			case COLUMN_VOLUME:
 				if (!m_selection.IsColumnSelected(COLUMN_VOLUME, i)
 					|| StartData.Vol == MAX_VOLUME || EndData.Vol == MAX_VOLUME)
 					continue;
 				StartValLo = (float)StartData.Vol;
 				EndValLo = (float)EndData.Vol;
 				break;
-			case 3:	// // // Effects
-			case 4:
-			case 5:
-			case 6:
-				if (!m_selection.IsColumnSelected(COLUMN_EFF1 + j - 3, i)
+			case COLUMN_EFF1: case COLUMN_EFF2: case COLUMN_EFF3: case COLUMN_EFF4:
+				if (!m_selection.IsColumnSelected(static_cast<column_t>(COLUMN_EFF1 + j - 3), i)
 					|| StartData.EffNumber[j - 3] == EF_NONE || EndData.EffNumber[j - 3] == EF_NONE
 					|| StartData.EffNumber[j - 3] != EndData.EffNumber[j - 3])
 					continue;
@@ -605,8 +602,8 @@ void CPatternAction::Reverse(CFamiTrackerDoc *pDoc) const
 {
 	CPatternIterator itb = GetStartIterator();		// // //
 	CPatternIterator ite = GetEndIterator();
-	const int ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());
-	const int ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
+	const column_t ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());
+	const column_t ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
 	stChanNote NoteBegin, NoteEnd, Temp;
 	
 	while (itb < ite) {
@@ -615,13 +612,13 @@ void CPatternAction::Reverse(CFamiTrackerDoc *pDoc) const
 			ite.Get(c, &NoteEnd);
 			if (c == m_selection.GetChanStart() && ColStart > 0) {		// // //
 				Temp = NoteEnd;
-				CopyNoteSection(&NoteEnd, &NoteBegin, PASTE_DEFAULT, 0, ColStart - 1);
-				CopyNoteSection(&NoteBegin, &Temp, PASTE_DEFAULT, 0, ColStart - 1);
+				CopyNoteSection(&NoteEnd, &NoteBegin, PASTE_DEFAULT, COLUMN_NOTE, static_cast<column_t>(ColStart - 1));
+				CopyNoteSection(&NoteBegin, &Temp, PASTE_DEFAULT, COLUMN_NOTE, static_cast<column_t>(ColStart - 1));
 			}
 			if (c == m_selection.GetChanEnd() && ColEnd < COLUMN_EFF4) {
 				Temp = NoteEnd;
-				CopyNoteSection(&NoteEnd, &NoteBegin, PASTE_DEFAULT, ColEnd + 1, COLUMN_EFF4);
-				CopyNoteSection(&NoteBegin, &Temp, PASTE_DEFAULT, ColEnd + 1, COLUMN_EFF4);
+				CopyNoteSection(&NoteEnd, &NoteBegin, PASTE_DEFAULT, static_cast<column_t>(ColEnd + 1), COLUMN_EFF4);
+				CopyNoteSection(&NoteBegin, &Temp, PASTE_DEFAULT, static_cast<column_t>(ColEnd + 1), COLUMN_EFF4);
 			}
 			itb.Set(c, &NoteEnd);
 			ite.Set(c, &NoteBegin);
@@ -637,10 +634,10 @@ void CPatternAction::ScrollValues(CFamiTrackerDoc *pDoc) const
 	const CPatternIterator End = GetEndIterator();
 	stChanNote Note;
 
-	int ChanStart	= m_bSelecting ? m_selection.GetChanStart() : m_iUndoChannel;
-	int ChanEnd		= m_bSelecting ? m_selection.GetChanEnd() : m_iUndoChannel;
-	int ColStart	= CPatternEditor::GetSelectColumn(m_bSelecting ? m_selection.GetColStart() : m_iUndoColumn);
-	int ColEnd		= CPatternEditor::GetSelectColumn(m_bSelecting ? m_selection.GetColEnd() : m_iUndoColumn);
+	int ChanStart     = m_bSelecting ? m_selection.GetChanStart() : m_iUndoChannel;
+	int ChanEnd       = m_bSelecting ? m_selection.GetChanEnd() : m_iUndoChannel;
+	column_t ColStart = CPatternEditor::GetSelectColumn(m_bSelecting ? m_selection.GetColStart() : m_iUndoColumn);
+	column_t ColEnd   = CPatternEditor::GetSelectColumn(m_bSelecting ? m_selection.GetColEnd() : m_iUndoColumn);
 
 	const bool bWarp = theApp.GetSettings()->General.bWrapPatternValue;
 	const bool bSingular = (it == End) && (ChanStart == ChanEnd) && (ColStart == ColEnd) && (m_iScrollValue == -1 || m_iScrollValue == 1);
@@ -692,7 +689,7 @@ void CPatternAction::ScrollValues(CFamiTrackerDoc *pDoc) const
 							case EF_ARPEGGIO: case EF_VIBRATO: case EF_TREMOLO:
 							case EF_SLIDE_UP: case EF_SLIDE_DOWN: case EF_VOLUME_SLIDE:
 							case EF_DELAYED_VOLUME: case EF_TRANSPOSE:
-								int CurCol = CFamiTrackerView::GetView()->GetPatternEditor()->GetColumn();
+								int CurCol = static_cast<int>(CFamiTrackerView::GetView()->GetPatternEditor()->GetColumn());
 								if (CurCol % 3 != 2) { // y
 									if (bWarp)
 										Lo = (Lo + Type) & 0x0F;
@@ -738,8 +735,8 @@ void CPatternAction::DeleteSelection(CFamiTrackerDoc *pDoc) const
 	// Delete selection
 	CPatternIterator it = GetStartIterator();		// // //
 	const CPatternIterator End = GetEndIterator();
-	const int ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());		// // //
-	const int ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
+	const column_t ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());		// // //
+	const column_t ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
 
 	stChanNote NoteData, Blank = BLANK_NOTE;		// // //
 
@@ -886,6 +883,7 @@ void CPatternAction::Undo(CMainFrame *pMainFrm)
 	int UpdateHint = UPDATE_PATTERN;
 
 	// Save redo-position
+	m_iRedoTrack	= pMainFrm->GetSelectedTrack();		// // //
 	m_iRedoFrame	= pPatternEditor->GetFrame();
 	m_iRedoChannel  = pPatternEditor->GetChannel();
 	m_iRedoRow		= pPatternEditor->GetRow();

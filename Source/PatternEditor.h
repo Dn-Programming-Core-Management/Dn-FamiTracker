@@ -40,7 +40,7 @@ struct RowColorInfo_t {
 	COLORREF Compact;		// // //
 };
 
-void CopyNoteSection(stChanNote *Target, stChanNote *Source, paste_mode_t Mode, int Begin, int End);		// // //
+void CopyNoteSection(stChanNote *Target, stChanNote *Source, paste_mode_t Mode, column_t Begin, column_t End);		// // //
 
 // External classes
 class CFamiTrackerDoc;
@@ -102,7 +102,7 @@ public:
 	void MoveToRow(int Row);
 	void MoveToFrame(int Frame);
 	void MoveToChannel(int Channel);
-	void MoveToColumn(int Column);
+	void MoveToColumn(cursor_column_t Column);
 	void NextFrame();
 	void PreviousFrame();
 
@@ -115,7 +115,7 @@ public:
 	int GetFrame() const;
 	int GetChannel() const;
 	int GetRow() const;
-	int GetColumn() const;
+	cursor_column_t GetColumn() const;
 
 	// Mouse
 	void OnMouseDown(const CPoint &point);
@@ -156,7 +156,7 @@ public:
 
 	// Various
 	int GetCurrentPatternLength(int Frame) const;		// // // allow negative frames
-	bool IsInRange(const CSelection &sel, int Frame, int Row, int Channel, int Column) const;		// // //
+	bool IsInRange(const CSelection &sel, int Frame, int Row, int Channel, cursor_column_t Column) const;		// // //
 
 	// Settings
 	void SetHighlight(const stHighlight Hl);		// // //
@@ -195,9 +195,9 @@ public:
 
 	// Public class methods
 public:
-	static int GetSelectColumn(int Column);
-	static int GetCursorStartColumn(int Column);		// // //
-	static int GetCursorEndColumn(int Column);		// // //
+	static column_t GetSelectColumn(cursor_column_t Column);		// // //
+	static cursor_column_t GetCursorStartColumn(column_t Column);		// // //
+	static cursor_column_t GetCursorEndColumn(column_t Column);		// // //
 
 	// Private methods
 private:
@@ -206,9 +206,9 @@ private:
 	bool CalculatePatternLayout();
 	void CalcLayout();
 	// // //
-	unsigned int GetColumnWidth(int Column) const;
-	unsigned int GetColumnSpace(int Column) const;
-	unsigned int GetSelectWidth(int Column) const;
+	unsigned int GetColumnWidth(cursor_column_t Column) const;		// // //
+	unsigned int GetColumnSpace(cursor_column_t Column) const;
+	unsigned int GetSelectWidth(cursor_column_t Column) const;
 	unsigned int GetChannelWidth(int EffColumns) const;
 
 	// Main draw methods
@@ -223,7 +223,8 @@ private:
 	void ClearRow(CDC *pDC, int Line) const;
 	void PrintRow(CDC *pDC, int Row, int Line, int Frame) const;
 	void DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPreview) const;
-	void DrawCell(CDC *pDC, int PosX, int Column, int Channel, bool bInvert, stChanNote *pNoteData, RowColorInfo_t *pColorInfo) const;
+	// // //
+	void DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Channel, bool bInvert, stChanNote *pNoteData, RowColorInfo_t *pColorInfo) const;
 	void DrawChar(CDC *pDC, int x, int y, TCHAR c, COLORREF Color) const;
 
 	// Other drawing
@@ -236,8 +237,8 @@ private:
 	void UpdateHorizontalScroll();
 
 	// Translation
-	int  GetColumnAtPoint(int PointX) const;
-	int	 GetChannelColumns(int Channel) const;
+	cursor_column_t GetColumnAtPoint(int PointX) const;		// // //
+	cursor_column_t GetChannelColumns(int Channel) const;		// // //
 	int  GetSelectedTrack() const;
 	int  GetFrameCount() const;		// // //
 	int	 GetChannelCount() const;
@@ -349,7 +350,7 @@ private:
 
 	int		m_iChannelWidths[MAX_CHANNELS];	// Cached width in pixels of each channel
 	int		m_iChannelOffsets[MAX_CHANNELS];// Cached x position of channels
-	int		m_iColumns[MAX_CHANNELS];		// Cached number of columns in each channel
+	cursor_column_t	m_iColumns[MAX_CHANNELS]; // // // Cached *index of rightmost column* in each channel
 
 	// Drawing (TODO remove these)
 	int		m_iDrawCursorRow;
@@ -409,8 +410,8 @@ private:
 	// OLE support
 	int		m_iDragChannels;
 	int		m_iDragRows;
-	int		m_iDragStartCol;
-	int		m_iDragEndCol;
+	cursor_column_t m_iDragStartCol;		// // //
+	cursor_column_t m_iDragEndCol;		// // //
 
 	int		m_iDragOffsetChannel;
 	int		m_iDragOffsetRow;

@@ -26,11 +26,11 @@
 
 // CCursorPos /////////////////////////////////////////////////////////////////////
 
-CCursorPos::CCursorPos() : m_iRow(0), m_iChannel(0), m_iColumn(0), m_iFrame(0)		// // //
+CCursorPos::CCursorPos() : m_iRow(0), m_iChannel(0), m_iColumn(C_NOTE), m_iFrame(0)		// // //
 {
 }
 
-CCursorPos::CCursorPos(int Row, int Channel, int Column, int Frame) :		// // //
+CCursorPos::CCursorPos(int Row, int Channel, cursor_column_t Column, int Frame) :		// // //
 	m_iRow(Row), m_iChannel(Channel), m_iColumn(Column), m_iFrame(Frame)
 {
 }
@@ -45,7 +45,7 @@ const CCursorPos& CCursorPos::operator=(const CCursorPos &pos)
 	return *this;
 }
 
-bool CCursorPos::operator !=(const CCursorPos &other) const
+bool CCursorPos::operator!=(const CCursorPos &other) const
 {
 	// Unequality check
 	return (m_iRow != other.m_iRow) || (m_iChannel != other.m_iChannel)		// // //
@@ -71,7 +71,7 @@ bool CCursorPos::IsValid(int RowCount, int ChannelCount) const		// // //
 		return false;
 	if (m_iRow < 0 || m_iRow >= RowCount)
 		return false;
-	if (m_iColumn < 0 || m_iColumn > 15)		// // //
+	if (m_iColumn < C_NOTE || m_iColumn > C_EFF4_PARAM2)		// // //
 		return false;
 
 	return true;
@@ -99,9 +99,9 @@ int CSelection::GetRowEnd() const
 	return (m_cpEnd.m_iRow > m_cpStart.m_iRow ? m_cpEnd.m_iRow : m_cpStart.m_iRow);
 }
 
-int CSelection::GetColStart() const 
+cursor_column_t CSelection::GetColStart() const 
 {
-	int Col = 0;
+	cursor_column_t Col = C_NOTE;
 	if (m_cpStart.m_iChannel == m_cpEnd.m_iChannel)
 		Col = (m_cpEnd.m_iColumn > m_cpStart.m_iColumn ? m_cpStart.m_iColumn : m_cpEnd.m_iColumn); 
 	else if (m_cpEnd.m_iChannel > m_cpStart.m_iChannel)
@@ -109,18 +109,18 @@ int CSelection::GetColStart() const
 	else 
 		Col = m_cpEnd.m_iColumn;
 	switch (Col) {
-		case 2: Col = 1; break;
-		case 5: case 6: Col = 4; break;
-		case 8: case 9: Col = 7; break;
-		case 11: case 12: Col = 10; break;
-		case 14: case 15: Col = 13; break;
+		case C_INSTRUMENT2: Col = C_INSTRUMENT1; break;
+		case C_EFF1_PARAM1: case C_EFF1_PARAM2: Col = C_EFF1_NUM; break;
+		case C_EFF2_PARAM1: case C_EFF2_PARAM2: Col = C_EFF2_NUM; break;
+		case C_EFF3_PARAM1: case C_EFF3_PARAM2: Col = C_EFF3_NUM; break;
+		case C_EFF4_PARAM1: case C_EFF4_PARAM2: Col = C_EFF4_NUM; break;
 	}
 	return Col;
 }
 
-int CSelection::GetColEnd() const 
+cursor_column_t CSelection::GetColEnd() const 
 {
-	int Col = 0;
+	cursor_column_t Col = C_NOTE;
 	if (m_cpStart.m_iChannel == m_cpEnd.m_iChannel)
 		Col = (m_cpEnd.m_iColumn > m_cpStart.m_iColumn ? m_cpEnd.m_iColumn : m_cpStart.m_iColumn); 
 	else if (m_cpEnd.m_iChannel > m_cpStart.m_iChannel)
@@ -128,11 +128,11 @@ int CSelection::GetColEnd() const
 	else
 		Col = m_cpStart.m_iColumn;
 	switch (Col) {
-		case 1: Col = 2; break;					// Instrument
-		case 4: case 5: Col = 6; break;			// Eff 1
-		case 7: case 8: Col = 9; break;			// Eff 2
-		case 10: case 11: Col = 12; break;		// Eff 3
-		case 13: case 14: Col = 15; break;		// Eff 4
+		case C_INSTRUMENT1: Col = C_INSTRUMENT2; break;						// Instrument
+		case C_EFF1_NUM: case C_EFF1_PARAM1: Col = C_EFF1_PARAM2; break;	// Eff 1
+		case C_EFF2_NUM: case C_EFF2_PARAM1: Col = C_EFF2_PARAM2; break;	// Eff 2
+		case C_EFF3_NUM: case C_EFF3_PARAM1: Col = C_EFF3_PARAM2; break;	// Eff 3
+		case C_EFF4_NUM: case C_EFF4_PARAM1: Col = C_EFF4_PARAM2; break;	// Eff 4
 	}
 	return Col;	
 }
@@ -165,12 +165,10 @@ bool CSelection::IsSameStartPoint(const CSelection &selection) const
 		GetFrameStart() == selection.GetFrameStart();		// // //
 }
 
-bool CSelection::IsColumnSelected(int Column, int Channel) const
+bool CSelection::IsColumnSelected(column_t Column, int Channel) const
 {
-	int SelColStart = GetColStart();
-	int SelColEnd	= GetColEnd();
-	int SelStart = CPatternEditor::GetSelectColumn(SelColStart);		// // //
-	int SelEnd = CPatternEditor::GetSelectColumn(SelColEnd);
+	column_t SelStart = CPatternEditor::GetSelectColumn(GetColStart());		// // //
+	column_t SelEnd = CPatternEditor::GetSelectColumn(GetColEnd());
 
 	return (Channel > GetChanStart() || (Channel == GetChanStart() && Column >= SelStart))		// // //
 		&& (Channel < GetChanEnd() || (Channel == GetChanEnd() && Column <= SelEnd));

@@ -46,21 +46,21 @@ const unsigned int OLD_SPEED_SPLIT_POINT	 = 21;
 
 // Cursor columns
 enum cursor_column_t {
-	C_NOTE, 
-	C_INSTRUMENT1, 
-	C_INSTRUMENT2, 
-	C_VOLUME, 
-	C_EFF_NUM, 
-	C_EFF_PARAM1, 
-	C_EFF_PARAM2,
-	C_EFF2_NUM, 
-	C_EFF2_PARAM1, 
-	C_EFF2_PARAM2, 
-	C_EFF3_NUM, 
-	C_EFF3_PARAM1, 
-	C_EFF3_PARAM2, 
-	C_EFF4_NUM, 
-	C_EFF4_PARAM1, 
+	C_NOTE,
+	C_INSTRUMENT1,
+	C_INSTRUMENT2,
+	C_VOLUME,
+	C_EFF1_NUM,
+	C_EFF1_PARAM1,
+	C_EFF1_PARAM2,
+	C_EFF2_NUM,
+	C_EFF2_PARAM1,
+	C_EFF2_PARAM2,
+	C_EFF3_NUM,
+	C_EFF3_PARAM1,
+	C_EFF3_PARAM2,
+	C_EFF4_NUM,
+	C_EFF4_PARAM1,
 	C_EFF4_PARAM2
 };
 
@@ -199,9 +199,9 @@ public:
 	void			ClearPattern(unsigned int Track, unsigned int Frame, unsigned int Channel);
 
 	bool			InsertRow(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row);
-	bool			DeleteNote(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row, unsigned int Column);
+	bool			DeleteNote(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row, cursor_column_t Column);
 	bool			ClearRow(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row);
-	bool			ClearRowField(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row, unsigned int Column);
+	bool			ClearRowField(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row, cursor_column_t Column);
 	bool			RemoveNote(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row);
 	bool			PullUp(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row);
 	void			CopyPattern(unsigned int Track, int Target, int Source, int Channel);

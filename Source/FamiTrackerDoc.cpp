@@ -3749,7 +3749,7 @@ bool CFamiTrackerDoc::InsertRow(unsigned int Track, unsigned int Frame, unsigned
 	return true;
 }
 
-bool CFamiTrackerDoc::DeleteNote(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row, unsigned int Column)
+bool CFamiTrackerDoc::DeleteNote(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row, cursor_column_t Column)
 {
 	ASSERT(Track < MAX_TRACKS);
 	ASSERT(Frame < MAX_FRAMES);
@@ -3774,9 +3774,9 @@ bool CFamiTrackerDoc::DeleteNote(unsigned int Track, unsigned int Frame, unsigne
 	case C_VOLUME:
 		pNote->Vol = MAX_VOLUME;
 		break;
-	case C_EFF_NUM:
-	case C_EFF_PARAM1: 
-	case C_EFF_PARAM2:
+	case C_EFF1_NUM:
+	case C_EFF1_PARAM1: 
+	case C_EFF1_PARAM2:
 		pNote->EffNumber[0]	= 0;
 		pNote->EffParam[0]	= 0;
 		break;
@@ -3845,7 +3845,7 @@ bool CFamiTrackerDoc::ClearRow(unsigned int Track, unsigned int Frame, unsigned 
 	return true;
 }
 
-bool CFamiTrackerDoc::ClearRowField(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row, unsigned int Column)
+bool CFamiTrackerDoc::ClearRowField(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row, cursor_column_t Column)
 {
 	ASSERT(Track < MAX_TRACKS);
 	ASSERT(Frame < MAX_FRAMES);
@@ -3870,9 +3870,9 @@ bool CFamiTrackerDoc::ClearRowField(unsigned int Track, unsigned int Frame, unsi
 		case C_VOLUME:			// Volume
 			pNote->Vol = MAX_VOLUME;
 			break;
-		case C_EFF_NUM:			// Effect 1
-		case C_EFF_PARAM1:
-		case C_EFF_PARAM2:
+		case C_EFF1_NUM:			// Effect 1
+		case C_EFF1_PARAM1:
+		case C_EFF1_PARAM2:
 			pNote->EffNumber[0] = EF_NONE;
 			pNote->EffParam[0] = 0;
 			break;

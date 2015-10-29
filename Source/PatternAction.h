@@ -117,14 +117,14 @@ private:
 	int m_iUndoFrame;
 	int m_iUndoChannel;
 	int m_iUndoRow;
-	int m_iUndoColumn;
+	cursor_column_t m_iUndoColumn;		// // //
 	int m_iUndoColumnCount;
 
 	int m_iRedoTrack;
 	int m_iRedoFrame;
 	int m_iRedoChannel;
 	int m_iRedoRow;
-	int m_iRedoColumn;
+	cursor_column_t m_iRedoColumn;
 	int m_iRedoColumnCount;		// // //
 
 	int m_iPatternLen;

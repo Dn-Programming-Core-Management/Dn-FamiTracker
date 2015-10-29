@@ -735,6 +735,7 @@ BOOL CFamiTrackerView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 			m_pPatternEditor->NextFrame();
 		else
 			m_pPatternEditor->PreviousFrame();
+		InvalidateFrameEditor();		// // //
 	}
 	if (bControlPressed) {
 		if (zDelta > 0) {
@@ -2115,7 +2116,7 @@ void CFamiTrackerView::InsertNote(int Note, int Octave, int Channel, int Velocit
 		pAction->SetNote(Cell);
 		if (AddAction(pAction)) {
 			const CSettings *pSettings = theApp.GetSettings();
-			if ((m_pPatternEditor->GetColumn() == 0) && !theApp.IsPlaying() && (m_iInsertKeyStepping > 0) && !pSettings->Midi.bMidiMasterSync)
+			if (m_pPatternEditor->GetColumn() == C_NOTE && !theApp.IsPlaying() && m_iInsertKeyStepping > 0 && !pSettings->Midi.bMidiMasterSync)
 				StepDown();
 		}
 	}
@@ -2642,7 +2643,7 @@ void CFamiTrackerView::KeyDecreaseAction()
 bool CFamiTrackerView::EditInstrumentColumn(stChanNote &Note, int Key, bool &StepDown, bool &MoveRight, bool &MoveLeft)
 {
 	int EditStyle = theApp.GetSettings()->General.iEditStyle;
-	int Column = m_pPatternEditor->GetColumn();
+	const cursor_column_t Column = m_pPatternEditor->GetColumn();		// // //
 
 	if (!m_bEditEnable)
 		return false;
@@ -2842,7 +2843,7 @@ bool CFamiTrackerView::EditEffParamColumn(stChanNote &Note, int Key, int EffectI
 {
 
 	int EditStyle = theApp.GetSettings()->General.iEditStyle;
-	int Column = m_pPatternEditor->GetColumn();
+	const cursor_column_t Column = m_pPatternEditor->GetColumn();		// // //
 	int Value = ConvertKeyToHex(Key);
 
 	if (!m_bEditEnable)
@@ -2871,7 +2872,7 @@ bool CFamiTrackerView::EditEffParamColumn(stChanNote &Note, int Key, int EffectI
 		return false;
 
 	unsigned char Mask, Shift;
-	if (Column == C_EFF_PARAM1 || Column == C_EFF2_PARAM1 || Column == C_EFF3_PARAM1 || Column == C_EFF4_PARAM1) {
+	if (Column == C_EFF1_PARAM1 || Column == C_EFF2_PARAM1 || Column == C_EFF3_PARAM1 || Column == C_EFF4_PARAM1) {
 		Mask = 0x0F;
 		Shift = 4;
 	}
@@ -2922,7 +2923,7 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 	int Frame = m_pPatternEditor->GetFrame();
 	int Row = m_pPatternEditor->GetRow();
 	int Channel = m_pPatternEditor->GetChannel();
-	int Column = m_pPatternEditor->GetColumn();
+	cursor_column_t Column = m_pPatternEditor->GetColumn();
 
 	bool bStepDown = false;
 	bool bMoveRight = false;
@@ -2937,18 +2938,18 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 
 	// Make all effect columns look the same, save an index instead
 	switch (Column) {
-		case C_EFF_NUM:		Column = C_EFF_NUM;	Index = 0; break;
-		case C_EFF2_NUM:	Column = C_EFF_NUM;	Index = 1; break;
-		case C_EFF3_NUM:	Column = C_EFF_NUM;	Index = 2; break;
-		case C_EFF4_NUM:	Column = C_EFF_NUM;	Index = 3; break;
-		case C_EFF_PARAM1:	Column = C_EFF_PARAM1; Index = 0; break;
-		case C_EFF2_PARAM1:	Column = C_EFF_PARAM1; Index = 1; break;
-		case C_EFF3_PARAM1:	Column = C_EFF_PARAM1; Index = 2; break;
-		case C_EFF4_PARAM1:	Column = C_EFF_PARAM1; Index = 3; break;
-		case C_EFF_PARAM2:	Column = C_EFF_PARAM2; Index = 0; break;
-		case C_EFF2_PARAM2:	Column = C_EFF_PARAM2; Index = 1; break;
-		case C_EFF3_PARAM2:	Column = C_EFF_PARAM2; Index = 2; break;
-		case C_EFF4_PARAM2:	Column = C_EFF_PARAM2; Index = 3; break;			
+		case C_EFF1_NUM:	Column = C_EFF1_NUM;	Index = 0; break;
+		case C_EFF2_NUM:	Column = C_EFF1_NUM;	Index = 1; break;
+		case C_EFF3_NUM:	Column = C_EFF1_NUM;	Index = 2; break;
+		case C_EFF4_NUM:	Column = C_EFF1_NUM;	Index = 3; break;
+		case C_EFF1_PARAM1:	Column = C_EFF1_PARAM1; Index = 0; break;
+		case C_EFF2_PARAM1:	Column = C_EFF1_PARAM1; Index = 1; break;
+		case C_EFF3_PARAM1:	Column = C_EFF1_PARAM1; Index = 2; break;
+		case C_EFF4_PARAM1:	Column = C_EFF1_PARAM1; Index = 3; break;
+		case C_EFF1_PARAM2:	Column = C_EFF1_PARAM2; Index = 0; break;
+		case C_EFF2_PARAM2:	Column = C_EFF1_PARAM2; Index = 1; break;
+		case C_EFF3_PARAM2:	Column = C_EFF1_PARAM2; Index = 2; break;
+		case C_EFF4_PARAM2:	Column = C_EFF1_PARAM2; Index = 3; break;			
 	}
 
 	switch (Column) {
@@ -3007,13 +3008,13 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 				return;
 			break;
 		// Effect number
-		case C_EFF_NUM:
+		case C_EFF1_NUM:
 			if (!EditEffNumberColumn(Note, nChar, Index, bStepDown))
 				return;
 			break;
 		// Effect parameter
-		case C_EFF_PARAM1:
-		case C_EFF_PARAM2:
+		case C_EFF1_PARAM1:
+		case C_EFF1_PARAM2:
 			if (!EditEffParamColumn(Note, nChar, Index, bStepDown, bMoveRight, bMoveLeft))
 				return;
 			break;
@@ -3651,7 +3652,7 @@ void CFamiTrackerView::OnPickupRow()
 	default:      m_iLastNote = (Note.Note - 1) + Note.Octave * 12;
 	}
 
-	int Col = m_pPatternEditor->GetSelectColumn(m_pPatternEditor->GetColumn());
+	column_t Col = m_pPatternEditor->GetSelectColumn(m_pPatternEditor->GetColumn());
 	if (Col >= COLUMN_EFF1) {
 		m_iLastEffect = Note.EffNumber[Col - COLUMN_EFF1];
 		m_iLastEffectParam = Note.EffParam[Col - COLUMN_EFF1];

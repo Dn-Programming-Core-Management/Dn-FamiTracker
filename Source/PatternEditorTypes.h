@@ -43,12 +43,12 @@
 
 // Column layout
 enum column_t {
-	COLUMN_NOTE, 
-	COLUMN_INSTRUMENT, 
-	COLUMN_VOLUME, 
-	COLUMN_EFF1, 
-	COLUMN_EFF2, 
-	COLUMN_EFF3, 
+	COLUMN_NOTE,
+	COLUMN_INSTRUMENT,
+	COLUMN_VOLUME,
+	COLUMN_EFF1,
+	COLUMN_EFF2,
+	COLUMN_EFF3,
 	COLUMN_EFF4
 };
 
@@ -110,8 +110,8 @@ public:
 	struct {
 		int Channels;			// Number of channels
 		int Rows;				// Number of rows
-		int StartColumn;		// Start column in first channel
-		int EndColumn;			// End column in last channel
+		column_t StartColumn;	// // // Start column in first channel
+		column_t EndColumn;		// // // End column in last channel
 		struct {				// OLE drag and drop info
 			int ChanOffset;
 			int RowOffset;
@@ -127,7 +127,7 @@ public:
 class CCursorPos {
 public:
 	CCursorPos();
-	CCursorPos(int Row, int Channel, int Column, int Frame);		// // //
+	CCursorPos(int Row, int Channel, cursor_column_t Column, int Frame);		// // //
 	const CCursorPos& operator=(const CCursorPos &pos);
 	bool operator !=(const CCursorPos &other) const;
 	bool operator <(const CCursorPos &other) const;
@@ -137,7 +137,7 @@ public:
 public:
 	int m_iFrame;		// // //
 	int m_iRow;
-	int m_iColumn;
+	cursor_column_t m_iColumn;		// // //
 	int m_iChannel;
 };
 
@@ -174,15 +174,15 @@ class CSelection {
 public:
 	int  GetRowStart() const;
 	int  GetRowEnd() const;
-	int  GetColStart() const;
-	int  GetColEnd() const;
+	cursor_column_t GetColStart() const;		// // //
+	cursor_column_t GetColEnd() const;		// // //
 	int  GetChanStart() const;
 	int  GetChanEnd() const;
 	int  GetFrameStart() const;		// // //
 	int  GetFrameEnd() const;		// // //
 	// // // gone
 	bool IsSameStartPoint(const CSelection &selection) const;
-	bool IsColumnSelected(int Column, int Channel) const;
+	bool IsColumnSelected(column_t Column, int Channel) const;
 	// // //
 public:
 	CCursorPos m_cpStart;
