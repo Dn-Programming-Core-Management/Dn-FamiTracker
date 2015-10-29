@@ -94,6 +94,15 @@ void CWaveEditor::PhaseShift(int x)		// // //
 	RedrawWindow();
 }
 
+void CWaveEditor::Invert(int x)		// // //
+{
+	const int Length = GetMaxSamples();
+	for (int i = GetMaxSamples() - 1; i >= 0; i--)
+		SetSample(i, x - GetSample(i));
+	Invalidate();
+	RedrawWindow();
+}
+
 void CWaveEditor::OnPaint()
 {
 	const COLORREF GRAY1 = 0xA0A0A0;

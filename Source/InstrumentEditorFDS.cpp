@@ -136,19 +136,18 @@ BOOL CInstrumentEditorFDS::OnInitDialog()
 BOOL CInstrumentEditorFDS::PreTranslateMessage(MSG* pMsg)		// // //
 {
 	if (pMsg->message == WM_KEYDOWN) {
-		switch (pMsg->wParam) {
+		if ((::GetKeyState(VK_CONTROL) & 0x80) == 0x80) {
+			switch (pMsg->wParam) {
 			case VK_LEFT:
-				if ((::GetKeyState(VK_CONTROL) & 0x80) == 0x80) {
-					m_pWaveEditor->PhaseShift(1);
-					return TRUE;
-				}
-				break;
+				m_pWaveEditor->PhaseShift(1);
+				return TRUE;
 			case VK_RIGHT:
-				if ((::GetKeyState(VK_CONTROL) & 0x80) == 0x80) {
-					m_pWaveEditor->PhaseShift(-1);
-					return TRUE;
-				}
-				break;
+				m_pWaveEditor->PhaseShift(-1);
+				return TRUE;
+			case VK_DOWN:
+				m_pWaveEditor->Invert(63);
+				return TRUE;
+			}
 		}
 	}
 
