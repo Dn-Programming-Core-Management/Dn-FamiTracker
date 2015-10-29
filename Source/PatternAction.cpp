@@ -115,6 +115,11 @@ void CPatternAction::SetClickedChannel(int Channel)
 	m_iClickedChannel = Channel;
 }
 
+void CPatternAction::SetColumnCount(int Count)		// // //
+{
+	m_iRedoColumnCount = Count;
+}
+
 void CPatternAction::SetStretchMap(const std::vector<int> Map)		// // //
 {
 	m_iStretchMap = Map;
@@ -857,8 +862,7 @@ bool CPatternAction::SaveState(CMainFrame *pMainFrm)
 			// Change pattern length
 			m_iOldPatternLen = pDoc->GetPatternLength(m_iUndoTrack);
 			break;
-		case ACT_EXPAND_COLUMNS:
-		case ACT_SHRINK_COLUMNS:		// // //
+		case ACT_EFFECT_COLUMNS:		// // //
 			// Add / remove effect column
 			m_iUndoColumnCount = pDoc->GetEffColumns(m_iUndoTrack, m_iClickedChannel);
 			break;
@@ -938,8 +942,7 @@ void CPatternAction::Undo(CMainFrame *pMainFrm)
 			pDoc->SetPatternLength(m_iUndoTrack, m_iOldPatternLen);
 			pMainFrm->UpdateControls();
 			break;
-		case ACT_EXPAND_COLUMNS:
-		case ACT_SHRINK_COLUMNS:
+		case ACT_EFFECT_COLUMNS:		// // //
 			pDoc->SetEffColumns(m_iUndoTrack, m_iClickedChannel, m_iUndoColumnCount);
 			UpdateHint = UPDATE_COLUMNS;
 			break;
@@ -1031,12 +1034,8 @@ void CPatternAction::Redo(CMainFrame *pMainFrm)
 		case ACT_STRETCH_PATTERN:		// // //
 			StretchPattern(pDoc);
 			break;
-		case ACT_EXPAND_COLUMNS:
-			pDoc->SetEffColumns(m_iUndoTrack, m_iClickedChannel, m_iUndoColumnCount + 1);
-			UpdateHint = UPDATE_COLUMNS;
-			break;
-		case ACT_SHRINK_COLUMNS:
-			pDoc->SetEffColumns(m_iUndoTrack, m_iClickedChannel, m_iUndoColumnCount - 1);
+		case ACT_EFFECT_COLUMNS:		// // //
+			pDoc->SetEffColumns(m_iUndoTrack, m_iClickedChannel, m_iRedoColumnCount);
 			UpdateHint = UPDATE_COLUMNS;
 			break;
 #ifdef _DEBUG_

@@ -56,8 +56,7 @@ public:
 		ACT_DRAG_AND_DROP,
 		ACT_PATTERN_LENGTH,
 		ACT_STRETCH_PATTERN,		// // //
-		ACT_EXPAND_COLUMNS,
-		ACT_SHRINK_COLUMNS
+		ACT_EFFECT_COLUMNS,		// // //
 	};
 
 public:
@@ -81,7 +80,8 @@ public:
 	void SetPatternLength(int Length);
 	void Update(CMainFrame *pMainFrm);
 	void SetClickedChannel(int Channel);
-	void SetStretchMap(const std::vector<int> Map);
+	void SetColumnCount(int Count);		// // //
+	void SetStretchMap(const std::vector<int> Map);		// // //
 
 private:
 	void SaveEntire(const CPatternEditor *pPatternEditor);
@@ -125,6 +125,7 @@ private:
 	int m_iRedoChannel;
 	int m_iRedoRow;
 	int m_iRedoColumn;
+	int m_iRedoColumnCount;		// // //
 
 	int m_iPatternLen;
 	int m_iActualPatternLen;

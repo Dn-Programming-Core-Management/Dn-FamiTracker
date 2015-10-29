@@ -3936,7 +3936,8 @@ void CPatternEditor::IncreaseEffectColumn(int Channel)
 {
 	const int Columns = m_pDocument->GetEffColumns(GetSelectedTrack(), Channel);
 	if (Columns < (MAX_EFFECT_COLUMNS - 1)) {
-		CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EXPAND_COLUMNS);
+		CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EFFECT_COLUMNS);		// // //
+		pAction->SetColumnCount(Columns + 1);
 		pAction->SetClickedChannel(Channel);
 		GetMainFrame()->AddAction(pAction);
 	}
@@ -3946,7 +3947,8 @@ void CPatternEditor::DecreaseEffectColumn(int Channel)
 {
 	const int Columns = m_pDocument->GetEffColumns(GetSelectedTrack(), Channel);
 	if (Columns > 0) {
-		CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_SHRINK_COLUMNS);
+		CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EFFECT_COLUMNS);		// // //
+		pAction->SetColumnCount(Columns - 1);
 		pAction->SetClickedChannel(Channel);
 		GetMainFrame()->AddAction(pAction);
 		if (m_cpCursorPos.m_iColumn > Columns * 3 + 3)		// // //
