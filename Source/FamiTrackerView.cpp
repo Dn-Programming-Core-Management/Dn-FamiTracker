@@ -2952,6 +2952,8 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 		case C_EFF4_PARAM2:	Column = C_EFF1_PARAM2; Index = 3; break;			
 	}
 
+	if (Column != C_NOTE && !m_bEditEnable)		// // //
+		HandleKeyboardNote(nChar, true);
 	switch (Column) {
 		// Note & octave column
 		case C_NOTE:
