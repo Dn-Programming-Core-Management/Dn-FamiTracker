@@ -3749,62 +3749,6 @@ bool CFamiTrackerDoc::InsertRow(unsigned int Track, unsigned int Frame, unsigned
 	return true;
 }
 
-bool CFamiTrackerDoc::DeleteNote(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row, cursor_column_t Column)
-{
-	ASSERT(Track < MAX_TRACKS);
-	ASSERT(Frame < MAX_FRAMES);
-	ASSERT(Channel < MAX_CHANNELS);
-	ASSERT(Row < MAX_PATTERN_LENGTH);
-
-	CPatternData *pTrack = GetTrack(Track);
-	int Pattern = pTrack->GetFramePattern(Frame, Channel);
-	stChanNote *pNote = pTrack->GetPatternData(Channel, Pattern, Row);
-
-	switch (Column) {
-	case C_NOTE:
-		pNote->Note = 0;
-		pNote->Octave = 0;
-		pNote->Instrument = MAX_INSTRUMENTS;
-		pNote->Vol = MAX_VOLUME;
-		break;
-	case C_INSTRUMENT1:
-	case C_INSTRUMENT2:
-		pNote->Instrument = MAX_INSTRUMENTS;
-		break;
-	case C_VOLUME:
-		pNote->Vol = MAX_VOLUME;
-		break;
-	case C_EFF1_NUM:
-	case C_EFF1_PARAM1: 
-	case C_EFF1_PARAM2:
-		pNote->EffNumber[0]	= 0;
-		pNote->EffParam[0]	= 0;
-		break;
-	case C_EFF2_NUM:
-	case C_EFF2_PARAM1: 
-	case C_EFF2_PARAM2:
-		pNote->EffNumber[1]	= 0;
-		pNote->EffParam[1]	= 0;
-		break;
-	case C_EFF3_NUM:
-	case C_EFF3_PARAM1: 
-	case C_EFF3_PARAM2:
-		pNote->EffNumber[2]	= 0;
-		pNote->EffParam[2]	= 0;
-		break;
-	case C_EFF4_NUM: 
-	case C_EFF4_PARAM1: 
-	case C_EFF4_PARAM2:
-		pNote->EffNumber[3]	= 0;
-		pNote->EffParam[3]	= 0;
-		break;
-	}
-	
-	SetModifiedFlag();
-
-	return true;
-}
-
 void CFamiTrackerDoc::ClearPatterns(unsigned int Track)
 {
 	ASSERT(Track < MAX_TRACKS);
