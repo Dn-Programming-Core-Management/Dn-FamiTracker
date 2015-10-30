@@ -99,7 +99,8 @@ public:
 	virtual void	ProcessChannel() = 0;						// Run the instrument and effects
 	virtual void	RefreshChannel() = 0;						// Update channel registers
 	virtual void	ResetChannel();								// Resets all state variables to default
-	virtual void	RetrieveChannelState(CString *log);			// // // Retrieve current channel state from previous frames
+	virtual CString	GetStateString();							// // // Retrieve current channel state
+	virtual void	ApplyChannelState(stChannelState *State);	// // //
 
 	virtual void	SetNoteTable(unsigned int *pNoteLookupTable);
 	virtual void	UpdateSequencePlayPos() {};

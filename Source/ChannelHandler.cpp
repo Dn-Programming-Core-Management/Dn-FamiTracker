@@ -36,10 +36,6 @@
 #include "ChannelHandler.h"
 #include "APU/APU.h"
 
-const int BUFFER_NONE = -1;
-const int BUFFER_HALT = 0x7F;
-const int BUFFER_ECHO = 0x80; // used to retrieve the full echo buffer
-
 /*
  * Class CChannelHandler
  *
@@ -187,7 +183,7 @@ void CChannelHandler::ResetChannel()
 	m_iTremoloDepth		= 0;
 
 	for (int i = 0; i <= ECHO_BUFFER_LENGTH; i++)		// // //
-		m_iEchoBuffer[i] = BUFFER_NONE;
+		m_iEchoBuffer[i] = ECHO_BUFFER_NONE;
 
 	// States
 	m_bRelease			= false;
@@ -201,262 +197,35 @@ void CChannelHandler::ResetChannel()
 	ClearSequences();
 }
 
-void CChannelHandler::RetrieveChannelState(CString *log)		// // //
+CString CChannelHandler::GetStateString()		// // //
 {
-	CFamiTrackerDoc *pDoc = m_pSoundGen->GetDocument();
-	if (!pDoc) return;
-	if (pDoc->GetChannelIndex(m_iChannelID) == -1) return;
+	CString log = "";
+	log.Format(_T("Inst.: "));
+	if (m_iInstrument == MAX_INSTRUMENTS) // never happens because famitracker will switch to selected inst
+		log.Append("None");
+	else
+		log.AppendFormat(_T("%02X"), m_iInstrument);
+	log.AppendFormat(_T("        Vol.: %X        Active effects:"), m_iDefaultVolume >> VOL_COLUMN_SHIFT);
+	log.Append(GetEffectString());
+	return log;
+}
 
-	int Track = m_pSoundGen->GetPlayerTrack();
-	int Frame = m_pSoundGen->GetPlayerFrame();
-	int Row = m_pSoundGen->GetPlayerRow();
-	int Channel = pDoc->GetChannelIndex(m_iChannelID);
-	int EffColumns = pDoc->GetEffColumns(Track, Channel);
-	if (Channel == -1) return;
-
-	if (!m_pSoundGen->IsPlaying()) {
-		Frame = CFamiTrackerView::GetView()->GetSelectedFrame();
-		Row = CFamiTrackerView::GetView()->GetSelectedRow();
-	}
-	else if (log) {
-		log->Format(_T("Inst.: "));
-		if (m_iInstrument == MAX_INSTRUMENTS) // never happens because famitracker will switch to selected inst
-			log->Append("None");
-		else
-			log->AppendFormat(_T("%02X"), m_iInstrument);
-		log->AppendFormat(_T("        Vol.: %X        Active effects:"), m_iDefaultVolume >> VOL_COLUMN_SHIFT);
-		log->Append(GetEffectString());
-		return;
-	}
-
-	int Inst = MAX_INSTRUMENTS, Vol = VOL_COLUMN_MAX;
-
-	int f = Frame, r = Row, BufferPos = -1, Transpose[ECHO_BUFFER_LENGTH + 1] = {};
-	int State[EF_COUNT], State_Exx = -1, State_Hxx = -1;
-	bool maskFDS = false;
-	memset(State, -1, EF_COUNT * sizeof(int));
-
-	while (true) {
-		stChanNote Note;
-		pDoc->GetNoteData(Track, f, Channel, r, &Note);
-		
-		if (Note.Note != NONE && Note.Note != RELEASE) {
-			for (int i = 0; i < std::min(BufferPos, ECHO_BUFFER_LENGTH + 1); i++) {
-				if (m_iEchoBuffer[i] == BUFFER_ECHO) {
-					for (int j = EffColumns; j >= 0; j--) {
-						const int Param = Note.EffParam[j] & 0x0F;
-						if (Note.EffNumber[j] == EF_SLIDE_UP) {
-							Transpose[i] += Param; break;
-						}
-						else if (Note.EffNumber[j] == EF_SLIDE_DOWN) {
-							Transpose[i] -= Param; break;
-						}
-						else if (Note.EffNumber[j] == EF_TRANSPOSE) {
-							// Sometimes there are not enough ticks for the transpose to take place
-							if (Note.EffParam[j] & 0x80) Transpose[i] -= Param;
-							else Transpose[i] += Param;
-							break;
-						}
-					}
-					switch (Note.Note) {
-					case HALT: m_iEchoBuffer[i] = BUFFER_HALT; break;
-					case ECHO: m_iEchoBuffer[i] = BUFFER_ECHO + Note.Octave; break;
-					default:
-						int NewNote = MIDI_NOTE(Note.Octave, Note.Note) + Transpose[i];
-						NewNote = std::max(std::min(NewNote, NOTE_COUNT - 1), 0);
-						m_iEchoBuffer[i] = NewNote;
-					}
-				}
-				else if (m_iEchoBuffer[i] > BUFFER_ECHO && m_iEchoBuffer[i] <= BUFFER_ECHO + ECHO_BUFFER_LENGTH)
-					m_iEchoBuffer[i]--;
-			}
-			if (BufferPos >= 0 && BufferPos <= ECHO_BUFFER_LENGTH) {
-				WriteEchoBuffer(&Note, BufferPos, EffColumns);
-				for (int j = EffColumns; j >= 0; j--) { // 0CC: optimize this
-					const int Param = Note.EffParam[j] & 0x0F;
-					if (Note.EffNumber[j] == EF_SLIDE_UP) {
-						Transpose[BufferPos] += Param; break;
-					}
-					else if (Note.EffNumber[j] == EF_SLIDE_DOWN) {
-						Transpose[BufferPos] -= Param; break;
-					}
-					else if (Note.EffNumber[j] == EF_TRANSPOSE) {
-						if (Note.EffParam[j] & 0x80) Transpose[BufferPos] -= Param;
-						else Transpose[BufferPos] += Param;
-						break;
-					}
-				}
-			}
-			BufferPos++;
-		}
-		if (BufferPos < 0)
-			BufferPos = 0;
-
-		if (Inst == MAX_INSTRUMENTS)
-			if (Note.Instrument != MAX_INSTRUMENTS)
-				Inst = Note.Instrument;
-
-		if (Vol == VOL_COLUMN_MAX)
-			if (Note.Vol != MAX_VOLUME)
-				Vol = Note.Vol << VOL_COLUMN_SHIFT;
-		
-		CTrackerChannel *ch = pDoc->GetChannel(Channel);
-		for (int c = EffColumns; c >= 0; c--)
-			switch (Note.EffNumber[c]) {
-			case EF_NONE: case EF_PORTAOFF:
-			case EF_DAC: case EF_DPCM_PITCH: case EF_RETRIGGER:
-			case EF_DELAY: case EF_DELAYED_VOLUME: case EF_NOTE_RELEASE: case EF_TRANSPOSE:
-				continue; // ignore effects that cannot have memory
-			case EF_JUMP: case EF_SKIP: case EF_HALT:
-			case EF_SPEED: case EF_GROOVE:
-				if (true) continue; // ignore global effects
-			
-			case EF_VOLUME:
-				if (!ch->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
-				if (State_Exx == -1 && Note.EffParam[c] >= 0xE0 && Note.EffParam[c] <= 0xE3)
-					State_Exx = Note.EffParam[c];
-				else if (State[Note.EffNumber[c]] == -1 && Note.EffParam[c] <= 0x1F) {
-					State[Note.EffNumber[c]] = Note.EffParam[c];
-					if (State_Exx == -1) State_Exx = 0xE2;
-				}
-				continue;
-			case EF_NOTE_CUT:
-				if (!ch->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
-				if (Note.EffParam[c] <= 0x7F) continue;
-				if (State[Note.EffNumber[c]] == -1) {
-					State[Note.EffNumber[c]] = Note.EffParam[c];
-					if (State_Exx == -1) State_Exx = 0xE2;
-				}
-				continue;
-			case EF_FDS_MOD_DEPTH:
-				if (!ch->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
-				if (State_Hxx == -1 && Note.EffParam[c] >= 0x80)
-					State_Hxx = Note.EffParam[c];
-				continue;
-			case EF_FDS_MOD_SPEED_HI:
-				if (!ch->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
-				if (Note.EffParam[c] <= 0x0F)
-					maskFDS = true;
-				else if (!maskFDS && State[Note.EffNumber[c]] == -1) {
-					State[Note.EffNumber[c]] = Note.EffParam[c];
-					if (State_Hxx == -1) State_Hxx = -2;
-				}
-				continue;
-			case EF_FDS_MOD_SPEED_LO:
-				maskFDS = true;
-				continue;
-			case EF_SAMPLE_OFFSET:
-			case EF_FDS_VOLUME: case EF_FDS_MOD_BIAS:
-			case EF_SUNSOFT_ENV_LO: case EF_SUNSOFT_ENV_HI: case EF_SUNSOFT_ENV_TYPE:
-			case EF_N163_WAVE_BUFFER:
-				if (!ch->IsEffectCompatible(Note.EffNumber[c], Note.EffParam[c])) continue;
-			case EF_VIBRATO: case EF_TREMOLO: case EF_PITCH: case EF_DUTY_CYCLE: case EF_VOLUME_SLIDE:
-				if (State[Note.EffNumber[c]] == -1)
-					State[Note.EffNumber[c]] = Note.EffParam[c];
-				continue;
-
-			case EF_SWEEPUP: case EF_SWEEPDOWN: case EF_SLIDE_UP: case EF_SLIDE_DOWN:
-			case EF_PORTAMENTO: case EF_ARPEGGIO: case EF_PORTA_UP: case EF_PORTA_DOWN:
-				if (State[EF_PORTAMENTO] == -1) { // anything else within can be used here
-					State[EF_PORTAMENTO] = Note.EffNumber[c] == EF_PORTAMENTO ? Note.EffParam[c] : -2;
-					State[EF_ARPEGGIO] = Note.EffNumber[c] == EF_ARPEGGIO ? Note.EffParam[c] : -2;
-					State[EF_PORTA_UP] = Note.EffNumber[c] == EF_PORTA_UP ? Note.EffParam[c] : -2;
-					State[EF_PORTA_DOWN] = Note.EffNumber[c] == EF_PORTA_DOWN ? Note.EffParam[c] : -2;
-				}
-				continue;
-			}
-		if (r) r--;
-		else if (f) r = pDoc->GetFrameLength(Track, --f) - 1;
-		else break;
-	}
-
-	if (log) {
-		const char SLIDE_EFFECT = State[EF_ARPEGGIO] >= 0 ? EF_ARPEGGIO :
-								  State[EF_PORTA_UP] >= 0 ? EF_PORTA_UP :
-								  State[EF_PORTA_DOWN] >= 0 ? EF_PORTA_DOWN :
-								  EF_PORTAMENTO;
-		const char LOG_EFFECT[] = {SLIDE_EFFECT, EF_VIBRATO, EF_TREMOLO, EF_VOLUME_SLIDE, EF_PITCH, EF_DUTY_CYCLE};
-		static const char LOG_EFFECT_PUL[] = {EF_VOLUME};
-		static const char LOG_EFFECT_TRI[] = {EF_VOLUME, EF_NOTE_CUT};
-		static const char LOG_EFFECT_DMC[] = {EF_SAMPLE_OFFSET};
-
-		log->Format(_T("Inst.: "));
-		if (Inst == MAX_INSTRUMENTS)
-			log->Append("None");
-		else
-			log->AppendFormat(_T("%02X"), Inst);
-		log->AppendFormat(_T("        Vol.: %X        Active effects:"), Vol >> VOL_COLUMN_SHIFT);
-
-		CString effStr = _T("");
-		for (int i = 0; i < sizeof(LOG_EFFECT); i++) {
-			int p = State[LOG_EFFECT[i]];
-			if (p < 0) continue;
-			if (p == 0 && LOG_EFFECT[i] != EF_PITCH) continue;
-			if (p == 0x80 && LOG_EFFECT[i] == EF_PITCH) continue;
-			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT[i] - 1], p);
-		}
-		if ((m_iChannelID >= CHANID_SQUARE1 && m_iChannelID <= CHANID_SQUARE2) || m_iChannelID == CHANID_NOISE ||
-			(m_iChannelID >= CHANID_MMC5_SQUARE1 && m_iChannelID <= CHANID_MMC5_SQUARE2))
-			for (int i = 0; i < sizeof(LOG_EFFECT_PUL); i++) {
-				int p = State[LOG_EFFECT_PUL[i]];
-				if (p < 0) continue;
-				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_PUL[i] - 1], p);
-			}
-		else if (m_iChannelID == CHANID_TRIANGLE)
-			for (int i = 0; i < sizeof(LOG_EFFECT_TRI); i++) {
-				int p = State[LOG_EFFECT_TRI[i]];
-				if (p < 0) continue;
-				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_TRI[i] - 1], p);
-			}
-		else if (m_iChannelID == CHANID_DPCM)
-			for (int i = 0; i < sizeof(LOG_EFFECT_DMC); i++) {
-				int p = State[LOG_EFFECT_DMC[i]];
-				if (p <= 0) continue;
-				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_DMC[i] - 1], p);
-			}
-		else if (m_iChannelID == CHANID_FDS)
-			for (int i = 0; i < sizeof(FDS_EFFECTS); i++) {
-				int p = State[FDS_EFFECTS[i]];
-				if (p < 0 || (FDS_EFFECTS[i] == EF_FDS_MOD_BIAS && p == 0x80)) continue;
-				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[FDS_EFFECTS[i] - 1], p);
-			}
-		else if (m_iChannelID >= CHANID_S5B_CH1 && m_iChannelID <= CHANID_S5B_CH3)
-			for (int i = 0; i < sizeof(S5B_EFFECTS); i++) {
-				int p = State[S5B_EFFECTS[i]];
-				if (p < 0) continue;
-				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[S5B_EFFECTS[i] - 1], p);
-			}
-		else if (m_iChannelID >= CHANID_N163_CH1 && m_iChannelID <= CHANID_N163_CH8)
-			for (int i = 0; i < sizeof(N163_EFFECTS); i++) {
-				int p = State[N163_EFFECTS[i]];
-				if (p < 0 || (N163_EFFECTS[i] == EF_N163_WAVE_BUFFER && p == 0x7F)) continue;
-				effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[N163_EFFECTS[i] - 1], p);
-			}
-		if (State_Exx >= 0)
-			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_VOLUME - 1], State_Exx);
-		if (State_Hxx >= 0)
-			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_FDS_MOD_DEPTH - 1], State_Hxx);
-
-		if (effStr.IsEmpty()) effStr = _T(" None");
-		log->Append(effStr);
-	}
-	else {
-		m_iInstrument = Inst;
-		m_iDefaultVolume = m_iVolume = Vol;
-		if (m_iInstrument != MAX_INSTRUMENTS)
-			HandleInstrument(m_iInstrument, true, true);
-		if (State_Exx >= 0)
-			HandleCustomEffects(EF_VOLUME, State_Exx);
-		for (unsigned int i = 0; i < EF_COUNT; i++)
-			if (State[i] >= 0)
-				HandleCustomEffects(i, State[i]);
-		if (State[EF_FDS_MOD_SPEED_HI] >= 0x10)
-			HandleCustomEffects(EF_FDS_MOD_SPEED_HI, State[EF_FDS_MOD_SPEED_HI]);
-		if (State_Hxx >= 0)
-			HandleCustomEffects(EF_FDS_MOD_DEPTH, State_Hxx);
-	}
-
-	return;
+void CChannelHandler::ApplyChannelState(stChannelState *State)
+{
+	m_iInstrument = State->Instrument;
+	m_iDefaultVolume = m_iVolume = (State->Volume == MAX_VOLUME) ? VOL_COLUMN_MAX : (State->Volume << VOL_COLUMN_SHIFT);
+	memcpy(m_iEchoBuffer, State->Echo, sizeof(int) * (ECHO_BUFFER_LENGTH + 1));
+	if (m_iInstrument != MAX_INSTRUMENTS)
+		HandleInstrument(m_iInstrument, true, true);
+	if (State->Effect_LengthCounter >= 0)
+		HandleCustomEffects(EF_VOLUME, State->Effect_LengthCounter);
+	for (unsigned int i = 0; i < EF_COUNT; i++)
+		if (State->Effect[i] >= 0)
+			HandleCustomEffects(i, State->Effect[i]);
+	if (State->Effect[EF_FDS_MOD_SPEED_HI] >= 0x10)
+		HandleCustomEffects(EF_FDS_MOD_SPEED_HI, State->Effect[EF_FDS_MOD_SPEED_HI]);
+	if (State->Effect_AutoFMMult >= 0)
+		HandleCustomEffects(EF_FDS_MOD_DEPTH, State->Effect_AutoFMMult);
 }
 
 CString CChannelHandler::GetEffectString() const		// // //
@@ -530,9 +299,9 @@ void CChannelHandler::WriteEchoBuffer(stChanNote *NoteData, int Pos, int EffColu
 	if (Pos < 0 || Pos > ECHO_BUFFER_LENGTH) return;
 	int Value;
 	switch (NoteData->Note) {
-	case NONE: Value = BUFFER_NONE; break;
-	case HALT: Value = BUFFER_HALT; break;
-	case ECHO: Value = BUFFER_ECHO + NoteData->Octave; break;
+	case NONE: Value = ECHO_BUFFER_NONE; break;
+	case HALT: Value = ECHO_BUFFER_HALT; break;
+	case ECHO: Value = ECHO_BUFFER_ECHO + NoteData->Octave; break;
 	default:
 		Value = MIDI_NOTE(NoteData->Octave, NoteData->Note);
 		for (int i = EffColumns; i >= 0; i--) {
@@ -571,11 +340,11 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	if (pNoteData->Note == ECHO && pNoteData->Octave <= ECHO_BUFFER_LENGTH)
 	{ // retrieve buffer
 		int NewNote = m_iEchoBuffer[pNoteData->Octave];
-		if (NewNote == BUFFER_NONE) {
+		if (NewNote == ECHO_BUFFER_NONE) {
 			pNoteData->Note = NONE;
 			pushNone = true;
 		}
-		else if (NewNote == BUFFER_HALT) pNoteData->Note = HALT;
+		else if (NewNote == ECHO_BUFFER_HALT) pNoteData->Note = HALT;
 		else {
 			pNoteData->Note = GET_NOTE(NewNote);
 			pNoteData->Octave = GET_OCTAVE(NewNote);

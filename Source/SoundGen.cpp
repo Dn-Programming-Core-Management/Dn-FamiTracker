@@ -918,18 +918,120 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 
 	m_pTrackerView->MakeSilent();
 
-	if (theApp.GetSettings()->General.bRetrieveChanState) for (int i = 0; i < CHANNELS; ++i) {		// // //
-		int id = m_pDocument->GetChannelIndex(i);
-		if (id != -1 && !m_pTrackerView->IsChannelMuted(id)) {
-			m_pChannels[i]->RetrieveChannelState(NULL);
+	if (theApp.GetSettings()->General.bRetrieveChanState) {		// // //
+		int Frame = IsPlaying() ? GetPlayerFrame() : m_pTrackerView->GetSelectedFrame();
+		int Row = IsPlaying() ? GetPlayerRow() : m_pTrackerView->GetSelectedRow();
+		stFullState State = m_pDocument->RetrieveSoundState(GetPlayerTrack(), Frame, Row, -1);
+		if (State.Tempo != -1)
+			m_iTempo = State.Tempo;
+		if (State.GroovePos >= 0) {
+			m_iGroovePosition = State.GroovePos;
+			if (State.Speed >= 0)
+				m_iGrooveIndex = State.Speed;
+			if (m_pDocument->GetGroove(m_iGrooveIndex) != NULL)
+				m_iSpeed = m_pDocument->GetGroove(m_iGrooveIndex)->GetEntry(m_iGroovePosition);
 		}
+		else {
+			if (State.Speed >= 0)
+				m_iSpeed = State.Speed;
+			m_iGrooveIndex = -1;
+		}
+		SetupSpeed();
+		for (int i = 0; i < m_pDocument->GetChannelCount(); i++)
+			m_pChannels[State.State[i].ChannelIndex]->ApplyChannelState(&State.State[i]);
+		SAFE_RELEASE_ARRAY(State.State);
 	}
+}
+
+static CString GetStateString(stChannelState State)
+{
+	const char SLIDE_EFFECT = State.Effect[EF_ARPEGGIO] >= 0 ? EF_ARPEGGIO :
+							  State.Effect[EF_PORTA_UP] >= 0 ? EF_PORTA_UP :
+							  State.Effect[EF_PORTA_DOWN] >= 0 ? EF_PORTA_DOWN :
+							  EF_PORTAMENTO;
+	const char LOG_EFFECT[] = {SLIDE_EFFECT, EF_VIBRATO, EF_TREMOLO, EF_VOLUME_SLIDE, EF_PITCH, EF_DUTY_CYCLE};
+	static const char LOG_EFFECT_PUL[] = {EF_VOLUME};
+	static const char LOG_EFFECT_TRI[] = {EF_VOLUME, EF_NOTE_CUT};
+	static const char LOG_EFFECT_DMC[] = {EF_SAMPLE_OFFSET};
+	
+	CString log = _T("");
+	log.Format(_T("Inst.: "));
+	if (State.Instrument == MAX_INSTRUMENTS)
+		log.Append("None");
+	else
+		log.AppendFormat(_T("%02X"), State.Instrument);
+	log.AppendFormat(_T("        Vol.: %X        Active effects:"), State.Volume >= MAX_VOLUME ? 0xF : State.Volume);
+	
+	CString effStr = _T("");
+	for (int i = 0; i < sizeof(LOG_EFFECT); i++) {
+		int p = State.Effect[LOG_EFFECT[i]];
+		if (p < 0) continue;
+		if (p == 0 && LOG_EFFECT[i] != EF_PITCH) continue;
+		if (p == 0x80 && LOG_EFFECT[i] == EF_PITCH) continue;
+		effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT[i] - 1], p);
+	}
+	if ((State.ChannelIndex >= CHANID_SQUARE1 && State.ChannelIndex <= CHANID_SQUARE2) ||
+			State.ChannelIndex == CHANID_NOISE ||
+		(State.ChannelIndex >= CHANID_MMC5_SQUARE1 && State.ChannelIndex <= CHANID_MMC5_SQUARE2))
+		for (size_t i = 0; i < sizeof(LOG_EFFECT_PUL); i++) {
+			int p = State.Effect[LOG_EFFECT_PUL[i]];
+			if (p < 0) continue;
+			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_PUL[i] - 1], p);
+		}
+	else if (State.ChannelIndex == CHANID_TRIANGLE)
+		for (size_t i = 0; i < sizeof(LOG_EFFECT_TRI); i++) {
+			int p = State.Effect[LOG_EFFECT_TRI[i]];
+			if (p < 0) continue;
+			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_TRI[i] - 1], p);
+		}
+	else if (State.ChannelIndex == CHANID_DPCM)
+		for (size_t i = 0; i < sizeof(LOG_EFFECT_DMC); i++) {
+			int p = State.Effect[LOG_EFFECT_DMC[i]];
+			if (p <= 0) continue;
+			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[LOG_EFFECT_DMC[i] - 1], p);
+		}
+	else if (State.ChannelIndex == CHANID_FDS)
+		for (size_t i = 0; i < sizeof(FDS_EFFECTS); i++) {
+			int p = State.Effect[FDS_EFFECTS[i]];
+			if (p < 0 || (FDS_EFFECTS[i] == EF_FDS_MOD_BIAS && p == 0x80)) continue;
+			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[FDS_EFFECTS[i] - 1], p);
+		}
+	else if (State.ChannelIndex >= CHANID_S5B_CH1 && State.ChannelIndex <= CHANID_S5B_CH3)
+		for (size_t i = 0; i < sizeof(S5B_EFFECTS); i++) {
+			int p = State.Effect[S5B_EFFECTS[i]];
+			if (p < 0) continue;
+			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[S5B_EFFECTS[i] - 1], p);
+		}
+	else if (State.ChannelIndex >= CHANID_N163_CH1 && State.ChannelIndex <= CHANID_N163_CH8)
+		for (size_t i = 0; i < sizeof(N163_EFFECTS); i++) {
+			int p = State.Effect[N163_EFFECTS[i]];
+			if (p < 0 || (N163_EFFECTS[i] == EF_N163_WAVE_BUFFER && p == 0x7F)) continue;
+			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[N163_EFFECTS[i] - 1], p);
+		}
+	if (State.Effect_LengthCounter >= 0)
+		effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_VOLUME - 1], State.Effect_LengthCounter);
+	if (State.Effect_AutoFMMult >= 0)
+		effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_FDS_MOD_DEPTH - 1], State.Effect_AutoFMMult);
+
+	if (effStr.IsEmpty()) effStr = _T(" None");
+	log.Append(effStr);
+	return log;
 }
 
 CString CSoundGen::RecallChannelState(int Channel) const		// // //
 {
-	CString str;
-	m_pChannels[Channel]->RetrieveChannelState(&str);
+	if (IsPlaying()) return m_pChannels[Channel]->GetStateString();
+	int Frame = m_pTrackerView->GetSelectedFrame();
+	int Row = m_pTrackerView->GetSelectedRow();
+	stFullState State = m_pDocument->RetrieveSoundState(GetPlayerTrack(), Frame, Row, Channel);
+	CString str = GetStateString(State.State[m_pDocument->GetChannelIndex(Channel)]);
+	SAFE_RELEASE_ARRAY(State.State);
+	if (State.Tempo >= 0)
+		str.AppendFormat(_T("        Tempo: %d"), State.Tempo);
+	if (State.GroovePos >= 0)
+		str.AppendFormat(_T("        Groove: %d"), State.Speed);
+	else if (State.Speed >= 0)
+		str.AppendFormat(_T("        Speed: %d"), State.Speed);
 	return str;
 }
 
@@ -1034,7 +1136,8 @@ void CSoundGen::ResetTempo()
 	if (m_pDocument->GetSongGroove(m_iPlayTrack) && m_pDocument->GetGroove(m_iSpeed) != NULL) {		// // //
 		m_iGrooveIndex = m_iSpeed;
 		m_iGroovePosition = 0;
-		m_iSpeed = m_pDocument->GetGroove(m_iGrooveIndex)->GetEntry(m_iGroovePosition);
+		if (m_pDocument->GetGroove(m_iGrooveIndex) != NULL)
+			m_iSpeed = m_pDocument->GetGroove(m_iGrooveIndex)->GetEntry(m_iGroovePosition);
 	}
 	else {
 		m_iGrooveIndex = -1;
