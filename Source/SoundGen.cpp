@@ -1028,10 +1028,8 @@ CString CSoundGen::RecallChannelState(int Channel) const		// // //
 	SAFE_RELEASE_ARRAY(State.State);
 	if (State.Tempo >= 0)
 		str.AppendFormat(_T("        Tempo: %d"), State.Tempo);
-	if (State.GroovePos >= 0)
-		str.AppendFormat(_T("        Groove: %d"), State.Speed);
-	else if (State.Speed >= 0)
-		str.AppendFormat(_T("        Speed: %d"), State.Speed);
+	if (State.Speed >= 0)
+		str.AppendFormat(_T("        %s: %d"), State.GroovePos >= 0 ? _T("Groove") : _T("Speed"), State.Speed);
 	return str;
 }
 
