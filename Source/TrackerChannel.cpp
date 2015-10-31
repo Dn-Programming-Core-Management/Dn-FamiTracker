@@ -142,13 +142,17 @@ bool CTrackerChannel::IsInstrumentCompatible(int Instrument, CFamiTrackerDoc *pD
 	switch (m_iChip) {
 		case SNDCHIP_NONE:
 		case SNDCHIP_MMC5:
-			return InstType == INST_2A03;
-		case SNDCHIP_N163:
-			return InstType == INST_N163;
+		case SNDCHIP_N163:		// // //
 		case SNDCHIP_S5B:
-			return InstType == INST_S5B;
 		case SNDCHIP_VRC6:
-			return InstType == INST_VRC6;
+			switch (InstType) {
+			case INST_2A03:
+			case INST_VRC6:
+			case INST_N163:
+			case INST_S5B:
+				return true;
+			default: return false;
+			}
 		case SNDCHIP_VRC7:
 			return InstType == INST_VRC7;
 		case SNDCHIP_FDS:
