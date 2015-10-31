@@ -42,7 +42,7 @@
 #define SEL_SCOPE_HFRAME 0x30
 
 // Column layout
-enum column_t {
+enum column_t : unsigned int {
 	COLUMN_NOTE,
 	COLUMN_INSTRUMENT,
 	COLUMN_VOLUME,

@@ -63,9 +63,17 @@ const int CPatternEditor::DEFAULT_HEADER_FONT_SIZE	= 11;
 
 void CopyNoteSection(stChanNote *Target, stChanNote *Source, paste_mode_t Mode, column_t Begin, column_t End)		// // //
 {
-	bool Protected[7] = {};
-	static const char Offset[7] = {0, 3, 2, 4, 5, 6, 7};
-	for (int i = 0; i < 7; i++) {
+	static const char Offset[] = {
+		offsetof(stChanNote, Note),
+		offsetof(stChanNote, Instrument),
+		offsetof(stChanNote, Vol),
+		offsetof(stChanNote, EffNumber),
+		offsetof(stChanNote, EffNumber) + 1,
+		offsetof(stChanNote, EffNumber) + 2,
+		offsetof(stChanNote, EffNumber) + 3,
+	};
+	bool Protected[sizeof(Offset)] = {};
+	for (size_t i = 0; i < sizeof(Offset); i++) {
 		const unsigned char TByte = *(reinterpret_cast<unsigned char*>(Target) + Offset[i]); // skip octave byte
 		const unsigned char SByte = *(reinterpret_cast<unsigned char*>(Source) + Offset[i]);
 		switch (Mode) {
@@ -117,7 +125,7 @@ void CopyNoteSection(stChanNote *Target, stChanNote *Source, paste_mode_t Mode, 
 		column_t Temp = End; End = Begin; Begin = Temp;
 	}
 
-	for (int i = Begin; i <= End; i++) if (!Protected[i]) switch (i) {
+	for (unsigned i = Begin; i <= End; i++) if (!Protected[i]) switch (i) {
 	case COLUMN_NOTE:
 		Target->Note = Source->Note;
 		Target->Octave = Source->Octave;
@@ -2523,7 +2531,7 @@ cursor_column_t CPatternEditor::GetColumnAtPoint(int PointX) const		// // //
 
 	const int Offset = PointX - m_iRowColumnWidth + m_iChannelOffsets[m_iFirstChannel];
 	int ColumnOffset = m_iChannelOffsets[Channel];
-	for (int i = 0; i <= GetChannelColumns(Channel); ++i) {
+	for (unsigned i = 0; i <= GetChannelColumns(Channel); ++i) {
 		ColumnOffset += GetColumnSpace(static_cast<cursor_column_t>(i));		// // //
 		if (Offset <= ColumnOffset)
 			return static_cast<cursor_column_t>(i);
@@ -3726,7 +3734,7 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 		for (unsigned int j = 0; j < Rows; ++j) {
 			it.Get(c, &NoteData);
 			Source = *(pClipData->GetPattern(0, j % pClipData->ClipInfo.Rows));
-			for (int i = StartColumn - COLUMN_EFF1; i <= EndColumn - COLUMN_EFF1; ++i) {		// // //
+			for (unsigned int i = StartColumn - COLUMN_EFF1; i <= EndColumn - COLUMN_EFF1; ++i) {		// // //
 				const unsigned int Offset = i - StartColumn + ColStart;
 				if (Offset > m_pDocument->GetEffColumns(Track, c)) break;
 				bool Protected = false;
@@ -3960,7 +3968,7 @@ void CPatternEditor::IncreaseEffectColumn(int Channel)
 
 void CPatternEditor::DecreaseEffectColumn(int Channel)
 {
-	const int Columns = m_pDocument->GetEffColumns(GetSelectedTrack(), Channel);
+	const unsigned Columns = m_pDocument->GetEffColumns(GetSelectedTrack(), Channel);
 	if (Columns > 0) {
 		CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EFFECT_COLUMNS);		// // //
 		pAction->SetColumnCount(Columns - 1);
@@ -4135,7 +4143,7 @@ void CPatternEditor::OnHScroll(UINT nSBCode, UINT nPos)
 		case SB_THUMBPOSITION:
 		case SB_THUMBTRACK:
 			for (int i = 0; i < Channels; ++i) {
-				for (int j = 0; j <= GetChannelColumns(i); ++j) {
+				for (unsigned j = 0; j <= GetChannelColumns(i); ++j) {
 					if (count++ == nPos) {
 						MoveToChannel(i);
 						MoveToColumn(static_cast<cursor_column_t>(j));
@@ -4287,11 +4295,12 @@ void CPatternEditor::GetSelectionAsText(CString &str) const		// // //
 			it.Get(i, &NoteData);
 			line.AppendFormat(_T(" : %s"), CTextExport::ExportCellText(NoteData, m_pDocument->GetEffColumns(Track, i) + 1, i == CHANID_NOISE));
 		}
-		for (int i = 0; i < std::min(COLUMN_EFF1, GetSelectColumn(it.m_iColumn)); i++)
+		for (unsigned i = 0; i < std::min(COLUMN_EFF1, GetSelectColumn(it.m_iColumn)); i++)
 			for (int j = 0; j < 3; j++) line.SetAt(7 + 3 * i + j + HexLength, ' ');
-		for (int i = 3; i < std::min(static_cast<column_t>(m_pDocument->GetEffColumns(Track, i) + 4), GetSelectColumn(it.m_iColumn)); i++)
+		for (unsigned i = 3; i < std::min(static_cast<column_t>(m_pDocument->GetEffColumns(Track, i) + 4), GetSelectColumn(it.m_iColumn)); i++)
 			for (int j = 0; j < 3; j++) line.SetAt(4 * i + j + HexLength, ' ');
-		str.Append(line.Left(line.GetLength() - 4 * std::max(0, std::min(3, Last)) + std::max(0, 3 - GetSelectColumn(end.m_iColumn))));
+		str.Append(line.Left(line.GetLength() - 4 * std::max(0, std::min(3, Last)) +
+				   std::max(C_NOTE, static_cast<cursor_column_t>(3 - GetSelectColumn(end.m_iColumn)))));
 		str.Append(_T("\r\n"));
 	}
 }

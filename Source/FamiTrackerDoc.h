@@ -45,7 +45,7 @@ const unsigned int DEFAULT_SPEED_SPLIT_POINT = 32;
 const unsigned int OLD_SPEED_SPLIT_POINT	 = 21;
 
 // Cursor columns
-enum cursor_column_t {
+enum cursor_column_t : unsigned int {
 	C_NOTE,
 	C_INSTRUMENT1,
 	C_INSTRUMENT2,
