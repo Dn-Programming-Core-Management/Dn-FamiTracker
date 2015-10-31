@@ -1370,6 +1370,9 @@ bool CCompiler::CompileData()
 	if ((m_iMusicDataSize + m_iSamplesSize + m_iDriverSize) > 0x8000)
 		m_bBankSwitched = true;
 
+	if (Chip != m_iActualChip)		// // // enforce absolute address for multichip due to FDS
+		m_bBankSwitched = true;
+
 	if (m_bBankSwitched)
 		m_iSampleStart = PAGE_SAMPLES;
 
