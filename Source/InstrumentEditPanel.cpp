@@ -314,16 +314,16 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 				if (term[0] == 'x') {
 					HasTerm = true; term += 1; Mode = ARPSCHEME_MODE_X;
 				}
-				if (term[0] == 'y') {
+				else if (term[0] == 'y') {
 					HasTerm = true; term += 1; Mode = ARPSCHEME_MODE_Y;
 				}
-				if (term[0] == '+' && term[1] == 'x') {
+				else if (term[0] == '+' && term[1] == 'x') {
 					HasTerm = true; term += 2; Mode = ARPSCHEME_MODE_X;
 				}
-				if (term[0] == '+' && term[1] == 'y') {
+				else if (term[0] == '+' && term[1] == 'y') {
 					HasTerm = true; term += 2; Mode = ARPSCHEME_MODE_Y;
 				}
-				if (term[0] == '-' && term[1] == 'y') {
+				else if (term[0] == '-' && term[1] == 'y') {
 					HasTerm = true; term += 2; Mode = ARPSCHEME_MODE_NEG_Y;
 				}
 				if (HasTerm) {
@@ -360,7 +360,7 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 							if (term[1] == 'x') {
 								term += 2; Mode = ARPSCHEME_MODE_X;
 							}
-							if (term[1] == 'y') {
+							else if (term[1] == 'y') {
 								term += 2; Mode = ARPSCHEME_MODE_Y;
 							}
 						}
