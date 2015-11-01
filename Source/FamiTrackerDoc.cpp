@@ -316,6 +316,7 @@ BOOL CFamiTrackerDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	// This function is called by the GUI to load a file
 
 	//DeleteContents();
+	theApp.GetSoundGenerator()->ResetDumpInstrument();		// // //
 
 	m_csDocumentLock.Lock();
 
@@ -3061,10 +3062,20 @@ int CFamiTrackerDoc::GetFreeSequence(inst_type_t InstType, int Type) const		// /
 	ASSERT(Type >= 0 && Type < SEQ_COUNT);
 
 	// Return a free sequence slot, or -1 otherwise
+	/*
 	for (int i = 0; i < MAX_SEQUENCES; ++i) {
 		if (GetSequenceItemCount(InstType, i, Type) == 0)
 			return i;
 	}
+	*/
+	bool Used[MAX_SEQUENCES] = {};		// // //
+	for (int i = 0; i < MAX_INSTRUMENTS; i++) if (IsInstrumentUsed(i) && GetInstrumentType(i) == InstType) {
+		CSeqInstrument *pInstrument = static_cast<CSeqInstrument*>(GetInstrument(i));
+		if (pInstrument->GetSeqEnable(Type))
+			Used[pInstrument->GetSeqIndex(Type)] = true;
+		pInstrument->Release();
+	}
+	for (int i = 0; i < MAX_SEQUENCES; ++i) if (!Used[i]) return i;
 	return -1;
 }
 

@@ -32,7 +32,8 @@
 enum {
 	WM_USER_PLAYER = WM_USER,		// Pattern play row has changed
 	WM_USER_MIDI_EVENT,				// There is a new MIDI command	
-	WM_USER_NOTE_EVENT				// There is a new note command (by player)
+	WM_USER_NOTE_EVENT,				// There is a new note command (by player)
+	WM_USER_DUMP_INST,				// // // End of track, add instrument
 };
 
 // External classes
@@ -410,6 +411,7 @@ public:
 	virtual BOOL OnDrop(COleDataObject* pDataObject, DROPEFFECT dropEffect, CPoint point);
 	afx_msg void OnDestroy();
 	// // //
+	afx_msg LRESULT OnUserDumpInst(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnTrackerDetune();
 	afx_msg void OnTrackerGroove();
 	afx_msg void OnUpdateFindNext(CCmdUI *pCmdUI);

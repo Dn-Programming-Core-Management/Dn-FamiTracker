@@ -121,9 +121,6 @@ public:
 	bool		WaitForStop() const;
 	bool		IsRunning() const;
 
-	int			FindNote(unsigned int Period) const;
-	unsigned int GetPeriod(int Note) const;
-
 	CChannelHandler *GetChannel(int Index) const;
 
 	void		DocumentPropertiesChanged(CFamiTrackerDoc *pDocument);
@@ -176,6 +173,11 @@ public:
 
 	// Used by channels
 	void		AddCycles(int Count);
+
+	// // // Record instrument
+	CInstrument *GetRecordInstrument() const;
+	void		ResetDumpInstrument();
+	void		SetRecordChannel(int Channel);
 
 	// Other
 	uint16		GetReg(int Chip, int Reg) const;		// // //
@@ -245,6 +247,10 @@ private:
 	void		HaltPlayer();
 	void		MakeSilent();
 	void		SetupSpeed();
+
+	// // // Record instrument from registers
+	void		RecordInstrument();
+	void		InitRecordInstrument();
 
 	// Misc
 	void		PlaySample(const CDSample *pSample, int Offset, int Pitch);
@@ -324,6 +330,9 @@ private:
 	bool				m_bPlayLooping;
 	int					m_iFrameCounter;
 
+	int					m_iRecordChannel;					// // //
+	CInstrument			*m_pDumpInstrument;
+
 	int					m_iUpdateCycles;					// Number of cycles/APU update
 	int					m_iConsumedCycles;					// Cycles consumed by the update registers functions
 
@@ -336,7 +345,6 @@ private:
 	int					m_iStepRows;						// # of rows skipped last update
 	play_mode_t			m_iPlayMode;
 
-	unsigned int		*m_pNoteLookupTable;				// NTSC or PAL
 	unsigned int		m_iNoteLookupTableNTSC[96];			// For 2A03
 	unsigned int		m_iNoteLookupTablePAL[96];			// For 2A07
 	unsigned int		m_iNoteLookupTableSaw[96];			// For VRC6 sawtooth

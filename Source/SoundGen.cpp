@@ -118,6 +118,7 @@ CSoundGen::CSoundGen() :
 	m_iTempo(0),
 	m_iGrooveIndex(-1),		// // //
 	m_iGroovePosition(0),		// // //
+	m_pDumpInstrument(NULL),		// // //
 	m_bWaveChanged(0),
 	m_iMachineType(NTSC),
 	m_bRunning(false),
@@ -283,6 +284,7 @@ void CSoundGen::RemoveDocument()
 	ASSERT(m_hThread != NULL);
 
 	// Player cannot play when removing the document
+	m_pDumpInstrument = NULL;		// // //
 	StopPlayer();
 	WaitForStop();
 
@@ -336,8 +338,10 @@ void CSoundGen::RegisterChannels(int Chip, CFamiTrackerDoc *pDoc)
 
 void CSoundGen::SelectChip(int Chip)
 {
-	if (IsPlaying())
+	if (IsPlaying()) {
+		m_pDumpInstrument = NULL;		// // //
 		StopPlayer();
+	}
 
 	if (!WaitForStop()) {
 		TRACE0("CSoundGen: Could not stop player!");
@@ -941,6 +945,22 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 			m_pChannels[State.State[i].ChannelIndex]->ApplyChannelState(&State.State[i]);
 		SAFE_RELEASE_ARRAY(State.State);
 	}
+
+	// test
+	SetRecordChannel(m_pDocument->GetChannelType(m_pTrackerView->GetSelectedChannel()));
+	if (m_iRecordChannel != -1) {
+		inst_type_t Type = INST_NONE; // optimize this
+		switch (m_pTrackerChannels[m_iRecordChannel]->GetChip()) {
+		case SNDCHIP_NONE: case SNDCHIP_2A07: case SNDCHIP_MMC5: Type = INST_2A03; break;
+		case SNDCHIP_VRC6: Type = INST_VRC6; break;
+		case SNDCHIP_VRC7: Type = INST_VRC7; break;
+		case SNDCHIP_FDS:  Type = INST_FDS; break;
+		case SNDCHIP_N163: Type = INST_N163; break;
+		case SNDCHIP_S5B:  Type = INST_S5B; break;
+		}
+		m_pDumpInstrument = m_pDocument->CreateInstrument(Type);
+		InitRecordInstrument();
+	}
 }
 
 static CString GetStateString(stChannelState State)
@@ -1058,8 +1078,12 @@ void CSoundGen::HaltPlayer()
 #endif
 
 	// Signal that playback has stopped
-	if (m_pTrackerView != NULL)
+	if (m_pTrackerView != NULL) {
 		m_pTrackerView->PostMessage(WM_USER_PLAYER, m_iPlayFrame, m_iPlayRow);
+		if (m_pDumpInstrument != NULL && m_iRecordChannel != -1) {		// // //
+			m_pTrackerView->PostMessage(WM_USER_DUMP_INST);
+		}
+	}
 }
 
 void CSoundGen::ResetAPU()
@@ -1157,6 +1181,175 @@ void CSoundGen::SetupSpeed()
 		m_iTempoDecrement = 1;
 		m_iTempoRemainder = 0;
 	}
+}
+
+void CSoundGen::RecordInstrument()		// // //
+{
+	if (m_iPlayTicks > MAX_SEQUENCE_ITEMS || m_iRecordChannel == -1) return;
+	if (m_pChannels[m_iRecordChannel] == NULL || m_pDumpInstrument == NULL) return;
+	int Pos = m_iPlayTicks - 1;
+
+	CSeqInstrument *Inst = NULL;
+	CSequence *Seq = NULL;
+	signed char Val = 0;
+	inst_type_t InstType = m_pDumpInstrument->GetType();
+	char Chip = m_pTrackerChannels[m_iRecordChannel]->GetChip();
+	
+	int PitchReg = 0;
+	int Detune = 0x7FFFFFFF;
+	unsigned int *PitchTable = NULL;
+	int ID = m_iRecordChannel;
+
+	switch (Chip) {
+	case SNDCHIP_NONE: case SNDCHIP_MMC5:
+		ID -= Chip == SNDCHIP_MMC5 ? CHANID_MMC5_SQUARE1 : CHANID_SQUARE1;
+		PitchReg = m_iRecordChannel == CHANID_NOISE ? (0x0F & GetReg(Chip, 0x0E)) :
+					(0xFF & GetReg(Chip, 2 + (ID << 2)) | (0x07 & GetReg(Chip, 3 + (ID << 2))) << 8);
+		PitchTable = Chip == SNDCHIP_NONE && m_iMachineType == PAL ? m_iNoteLookupTablePAL : m_iNoteLookupTableNTSC; break;
+	case SNDCHIP_VRC6:
+		ID -= CHANID_VRC6_PULSE1;
+		PitchReg = 0xFF & GetReg(Chip, 1 + (ID << 2)) | (0x0F & GetReg(Chip, 2 + (ID << 2))) << 8;
+		PitchTable = m_iRecordChannel == CHANID_VRC6_SAWTOOTH ? m_iNoteLookupTableSaw : m_iNoteLookupTableNTSC; break;
+	case SNDCHIP_FDS:
+		ID -= CHANID_FDS; // ID = 0;
+		PitchReg = 0xFF & GetReg(Chip, 2) | (0x0F & GetReg(Chip, 3)) << 8;
+		PitchTable = m_iNoteLookupTableFDS; break;
+	case SNDCHIP_N163:
+		ID -= CHANID_N163_CH1;
+		PitchReg = (0xFF & GetReg(Chip, 0x78 - (ID << 3))
+					| (0xFF & GetReg(Chip, 0x7A - (ID << 3))) << 8
+					| (0x03 & GetReg(Chip, 0x7C - (ID << 3))) << 16) >> 2; // N163_PITCH_SLIDE_SHIFT;
+		PitchTable = m_iNoteLookupTableN163; break;
+	case SNDCHIP_S5B:
+		ID -= CHANID_S5B_CH1;
+		PitchReg = (0xFF & GetReg(Chip, ID << 1) | (0x0F & GetReg(Chip, 1 + (ID << 1))) << 8);
+		PitchTable = m_iNoteLookupTableS5B; break;
+	}
+
+	int Note = 0;
+	for (int i = 0; i < NOTE_COUNT; i++) {
+		int diff = PitchReg - PitchTable[i];
+		if (std::abs(diff) < std::abs(Detune)) {
+			Note = i; Detune = diff;
+		}
+	}
+
+	switch (InstType) {
+	case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B:
+		Inst = dynamic_cast<CSeqInstrument*>(m_pDumpInstrument);
+		ASSERT(Inst != NULL);
+		
+		for (int i = 0; i < SEQ_COUNT; i++) {
+			sequence_t s = static_cast<sequence_t>(i);
+			Seq = m_pDocument->GetSequence(InstType, Inst->GetSeqIndex(s), s);
+			Seq->SetItemCount(m_iPlayTicks);
+			switch (s) {
+			case SEQ_VOLUME:
+				switch (Chip) {
+				case SNDCHIP_NONE: case SNDCHIP_MMC5:
+					Val = m_iRecordChannel == CHANID_TRIANGLE ? ((0x7F & GetReg(Chip, 0x08)) ? 15 : 0) :
+						(0x0F & GetReg(Chip, ID << 2)); break;
+				case SNDCHIP_VRC6:
+					Val = m_iRecordChannel == CHANID_VRC6_SAWTOOTH ? (0x0F & GetReg(Chip, 0x08) >> 1) :
+						(0x0F & GetReg(Chip, ID << 2)); break;
+				case SNDCHIP_N163:
+					Val = 0x0F & GetReg(Chip, 0x7F - (ID << 3)); break;
+				case SNDCHIP_S5B:
+					Val = 0x0F & GetReg(Chip, 0x08 + ID); break;
+				}
+				break;
+			case SEQ_ARPEGGIO: Val = static_cast<char>(Note); break;
+			case SEQ_PITCH: Val = static_cast<char>(Detune % 16); break;
+			case SEQ_HIPITCH: Val = static_cast<char>(Detune / 16); break;
+			case SEQ_DUTYCYCLE:
+				switch (Chip) {
+				case SNDCHIP_NONE: case SNDCHIP_MMC5:
+					Val = m_iRecordChannel == CHANID_TRIANGLE ? 0 :
+						m_iRecordChannel == CHANID_NOISE ? (0x01 & GetReg(Chip, 0x0E) >> 7) :
+						(0x03 & GetReg(Chip, ID << 2) >> 6);
+					break;
+				case SNDCHIP_VRC6:
+					Val = m_iRecordChannel == CHANID_VRC6_SAWTOOTH ?
+						(0x01 & GetReg(Chip, 0x08) >> 5) :
+						(0x07 & GetReg(Chip, ID << 2) >> 4); break;
+				case SNDCHIP_N163: // todo
+					Val = 0; break;
+				case SNDCHIP_S5B:
+					Val = 0x1F & GetReg(Chip, 0x06)
+						| (0x10 & GetReg(Chip, 0x08 + ID)) << 1
+						| (0x01 << ID & ~GetReg(Chip, 0x07)) << (6 - ID)
+						| (0x08 << ID & ~GetReg(Chip, 0x07)) << (4 - ID); break;
+				}
+				break;
+			}
+			Seq->SetItem(Pos, Val);
+			Seq->SetLoopPoint(Pos);
+		}
+		break;
+	case INST_FDS:
+		CInstrumentFDS *FDSInst = dynamic_cast<CInstrumentFDS*>(m_pDumpInstrument);
+		ASSERT(FDSInst != NULL);
+		Val = 0x3F & GetReg(Chip, 0);
+		if (Val > 0x20) Val = 0x20;
+		FDSInst->GetVolumeSeq()->SetItemCount(m_iPlayTicks);
+		FDSInst->GetVolumeSeq()->SetItem(Pos, Val);
+		FDSInst->GetVolumeSeq()->SetLoopPoint(Pos);
+		FDSInst->GetArpSeq()->SetItemCount(m_iPlayTicks);
+		FDSInst->GetArpSeq()->SetItem(Pos, static_cast<char>(Note));
+		FDSInst->GetArpSeq()->SetLoopPoint(Pos);
+		FDSInst->GetPitchSeq()->SetItemCount(m_iPlayTicks);
+		FDSInst->GetPitchSeq()->SetItem(Pos, static_cast<char>(Detune));
+		FDSInst->GetPitchSeq()->SetLoopPoint(Pos);
+	}
+}
+
+void CSoundGen::InitRecordInstrument()
+{
+	if (m_pDumpInstrument == NULL) return;
+
+	CString str;
+	str.Format(_T("from %s"), m_pTrackerChannels[m_iRecordChannel]->GetChannelName());
+	m_pDumpInstrument->SetName(str);
+
+	if (m_pDumpInstrument->GetType() == INST_FDS) {
+		CInstrumentFDS *FDSInst = dynamic_cast<CInstrumentFDS*>(m_pDumpInstrument);
+		ASSERT(FDSInst != NULL);
+		FDSInst->GetArpSeq()->SetSetting(SETTING_ARP_FIXED);
+		return;
+	}
+	switch (m_pDumpInstrument->GetType()) {
+	case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B:
+		CSeqInstrument *Inst = dynamic_cast<CSeqInstrument*>(m_pDumpInstrument);
+		ASSERT(Inst != NULL);
+		for (int i = 0; i < SEQ_COUNT; i++) {
+			Inst->SetSeqEnable(i, 1);
+			Inst->SetSeqIndex(i, m_pDocument->GetFreeSequence(m_pDumpInstrument->GetType(), i));
+		}
+		CSequence *Seq = m_pDocument->GetSequence(m_pDumpInstrument->GetType(), Inst->GetSeqIndex(SEQ_ARPEGGIO), SEQ_ARPEGGIO);
+		Seq->SetSetting(SETTING_ARP_FIXED);
+		// Seq = m_pDocument->GetSequence(m_pDumpInstrument->GetType(), Inst->GetSeqIndex(SEQ_PITCH), SEQ_PITCH);
+		// Seq->SetSetting(SETTING_PITCH_ABSOLUTE);
+		// if (m_iRecordChannel == CHANID_VRC6_SAWTOOTH) {} // 64-step volume
+		break;
+	}
+}
+
+void CSoundGen::SetRecordChannel(int Channel)
+{
+	m_iRecordChannel = Channel;
+}
+
+CInstrument* CSoundGen::GetRecordInstrument() const
+{
+	return m_pDumpInstrument;
+}
+
+void CSoundGen::ResetDumpInstrument()
+{
+	SetRecordChannel(-1);
+	if (IsPlaying() && m_pDumpInstrument != NULL)
+		m_pDumpInstrument->Release();
+	m_pDumpInstrument = NULL;
 }
 
 // Return current tempo setting in BPM
@@ -1525,20 +1718,6 @@ void CSoundGen::SetLookupTable(int Chip)		// // //
 	}
 }
 
-int CSoundGen::FindNote(unsigned int Period) const
-{
-	for (int i = 0; i < NOTE_COUNT; ++i) {
-		if (Period >= m_pNoteLookupTable[i])
-			return i;
-	}
-	return 0;
-}
-
-unsigned int CSoundGen::GetPeriod(int Note) const
-{
-	return m_pNoteLookupTable[Note];
-}
-
 stDPCMState CSoundGen::GetDPCMState() const
 {
 	stDPCMState State;
@@ -1863,6 +2042,9 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 	// Update APU registers
 	UpdateAPU();
 
+	if (IsPlaying())		// // //
+		RecordInstrument();
+
 #ifdef EXPORT_TEST
 	if (m_bExportTesting && !m_bHaltRequest)
 		CompareRegisters();
@@ -2097,6 +2279,7 @@ void CSoundGen::OnRemoveDocument(WPARAM wParam, LPARAM lParam)
 	// Remove document and view pointers
 	m_pDocument = NULL;
 	m_pTrackerView = NULL;
+	m_pDumpInstrument = NULL;		// // //
 	TRACE0("SoundGen: Document removed\n");
 }
 

@@ -186,6 +186,7 @@ BEGIN_MESSAGE_MAP(CFamiTrackerView, CView)
 	ON_WM_CLOSE()
 	ON_WM_DESTROY()
 	// // //
+	ON_MESSAGE(WM_USER_DUMP_INST, OnUserDumpInst)
 	ON_COMMAND(ID_MODULE_DETUNE, OnTrackerDetune)
 	ON_UPDATE_COMMAND_UI(ID_FIND_NEXT, OnUpdateFindNext)
 	ON_COMMAND(ID_DECREASEVALUESCOARSE, OnCoarseDecreaseValues)
@@ -1130,6 +1131,19 @@ void CFamiTrackerView::OnSpeedCustom()
 
 	pDoc->SetEngineSpeed(Speed);
 	theApp.GetSoundGenerator()->LoadMachineSettings(Machine, Speed, pDoc->GetNamcoChannels());
+}
+
+LRESULT CFamiTrackerView::OnUserDumpInst(WPARAM wParam, LPARAM lParam)		// // //
+{
+	CFamiTrackerDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	pDoc->AddInstrument(theApp.GetSoundGenerator()->GetRecordInstrument());
+	CMainFrame *pMainFrm = static_cast<CMainFrame*>(GetParentFrame());
+	ASSERT_VALID(pMainFrm);
+	pMainFrm->UpdateInstrumentList();
+	theApp.GetSoundGenerator()->SetRecordChannel(-1);
+
+	return 0;
 }
 
 void CFamiTrackerView::OnTrackerDetune()			// // //
@@ -3497,7 +3511,7 @@ int CFamiTrackerView::GetSelectedChipType() const
 
 void CFamiTrackerView::OnIncreaseStepSize()
 {
-	if (m_iInsertKeyStepping < 256)
+	if (m_iInsertKeyStepping < MAX_PATTERN_LENGTH)		// // //
 		SetStepping(m_iInsertKeyStepping + 1);
 }
 
