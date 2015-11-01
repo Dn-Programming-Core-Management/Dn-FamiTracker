@@ -2902,12 +2902,14 @@ void CMainFrame::OnEditRemoveUnusedPatterns()
 		return;
 
 	pDoc->RemoveUnusedPatterns();
+	ResetUndo();		// // //
 	pDoc->UpdateAllViews(NULL, UPDATE_PATTERN);
 }
 
 void CMainFrame::OnEditMergeDuplicatedPatterns()
 {
 	AddAction(new CFrameAction(CFrameAction::ACT_MERGE_DUPLICATED_PATTERNS));
+	ResetUndo();		// // //
 }
 
 void CMainFrame::OnUpdateSelectionEnabled(CCmdUI *pCmdUI)
@@ -3217,10 +3219,11 @@ void CMainFrame::OnEditRemoveUnusedSamples()
 	
 	CloseInstrumentEditor();
 	pDoc->RemoveUnusedSamples();
+	ResetUndo();		// // //
 	pDoc->UpdateAllViews(NULL, UPDATE_PATTERN);
 }
 
-void CMainFrame::OnEditPopulateUniquePatterns()
+void CMainFrame::OnEditPopulateUniquePatterns()		// // //
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
 
@@ -3228,6 +3231,7 @@ void CMainFrame::OnEditPopulateUniquePatterns()
 		return;
 	
 	pDoc->PopulateUniquePatterns();
+	ResetUndo();
 	pDoc->UpdateAllViews(NULL, UPDATE_FRAME);
 }
 
