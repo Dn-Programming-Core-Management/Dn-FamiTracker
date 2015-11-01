@@ -189,11 +189,12 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // /
 	else {
 		End.m_iChannel += m_pClipData->ClipInfo.Channels - 1;
 		Start.m_iColumn = CPatternEditor::GetCursorStartColumn(m_pClipData->ClipInfo.StartColumn);
-		End.m_iColumn = CPatternEditor::GetCursorStartColumn(m_pClipData->ClipInfo.EndColumn);
+		End.m_iColumn = CPatternEditor::GetCursorEndColumn(m_pClipData->ClipInfo.EndColumn);
 	}
 
 	const unsigned EFBEGIN = CPatternEditor::GetCursorStartColumn(COLUMN_EFF1);
-	const unsigned OFFS = std::max(3 * (CPatternEditor::GetSelectColumn(m_iUndoColumn) - m_pClipData->ClipInfo.StartColumn), EFBEGIN - Start.m_iColumn);
+	const int OFFS = std::max(static_cast<int>(3 * (CPatternEditor::GetSelectColumn(m_iUndoColumn) - m_pClipData->ClipInfo.StartColumn)),
+							  static_cast<int>(EFBEGIN - Start.m_iColumn));
 	if (Start.m_iChannel == End.m_iChannel && Start.m_iColumn >= EFBEGIN && End.m_iColumn >= EFBEGIN) {
 		if (m_iPastePos != PASTE_DRAG) {
 			End.m_iColumn = static_cast<cursor_column_t>(End.m_iColumn + OFFS);
