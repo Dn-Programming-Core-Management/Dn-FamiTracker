@@ -106,7 +106,7 @@ public:
 	// Multiple times initialization
 	void		RegisterChannels(int Chip, CFamiTrackerDoc *pDoc);
 	void		SelectChip(int Chip);
-	void		LoadMachineSettings(int Machine, int Rate, int NamcoChannels);
+	void		LoadMachineSettings(machine_t Machine, int Rate, int NamcoChannels);
 
 	// Sound
 	bool		InitializeSound(HWND hWnd);
@@ -130,8 +130,8 @@ public:
 
 public:
 	// Vibrato
-	void		 GenerateVibratoTable(int Type);
-	void		 SetupVibratoTable(int Type);
+	void		 GenerateVibratoTable(vibrato_t Type);
+	void		 SetupVibratoTable(vibrato_t Type);
 	int			 ReadVibratoTable(int index) const;
 	int			 ReadPeriodTable(int index, int Chip) const;		// // //
 	void		 SetLookupTable(int Chip);		// // //
@@ -346,7 +346,7 @@ private:
 	unsigned int		m_iNoteLookupTableS5B[96];			// // // For 5B, internal use only
 	int					m_iVibratoTable[VIBRATO_LENGTH];
 
-	unsigned int		m_iMachineType;						// NTSC/PAL
+	machine_t			m_iMachineType;						// // // NTSC/PAL
 
 	// Rendering
 	bool				m_bRendering;

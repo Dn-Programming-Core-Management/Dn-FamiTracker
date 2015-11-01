@@ -1097,7 +1097,7 @@ void CFamiTrackerView::OnTrackerPal()
 	CFamiTrackerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	int Machine = PAL;
+	machine_t Machine = PAL;
 	pDoc->SetMachine(Machine);
 	theApp.GetSoundGenerator()->LoadMachineSettings(Machine, pDoc->GetEngineSpeed(), pDoc->GetNamcoChannels());
 }
@@ -1107,7 +1107,7 @@ void CFamiTrackerView::OnTrackerNtsc()
 	CFamiTrackerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	int Machine = NTSC;
+	machine_t Machine = NTSC;
 	pDoc->SetMachine(Machine);
 	theApp.GetSoundGenerator()->LoadMachineSettings(Machine, pDoc->GetEngineSpeed(), pDoc->GetNamcoChannels());
 }
@@ -1119,7 +1119,7 @@ void CFamiTrackerView::OnSpeedCustom()
 
 	CSpeedDlg SpeedDlg;
 
-	int Machine = pDoc->GetMachine();
+	machine_t Machine = pDoc->GetMachine();
 	int Speed = pDoc->GetEngineSpeed();
 	if (Speed == 0)
 		Speed = (Machine == NTSC) ? CAPU::FRAME_RATE_NTSC : CAPU::FRAME_RATE_PAL;

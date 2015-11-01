@@ -256,7 +256,7 @@ enum machine_t {
 	PAL
 };
 
-enum vibrato_t {
+enum vibrato_t : unsigned char {
 	VIBRATO_OLD = 0,
 	VIBRATO_NEW,
 };

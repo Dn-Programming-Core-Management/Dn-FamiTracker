@@ -832,7 +832,7 @@ bool CFamiTrackerDoc::WriteBlock_Parameters(CDocumentFile *pDocFile) const
 	
 	pDocFile->WriteBlockChar(m_iExpansionChip);		// ver 2 change
 	pDocFile->WriteBlockInt(m_iChannelsAvailable);
-	pDocFile->WriteBlockInt(m_iMachine);
+	pDocFile->WriteBlockInt(static_cast<int>(m_iMachine));
 	pDocFile->WriteBlockInt(m_iEngineSpeed);
 	pDocFile->WriteBlockInt(m_iVibratoStyle);		// ver 3 change
 	// TODO write m_bLinearPitch
@@ -1749,7 +1749,7 @@ bool CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile)
 		m_iExpansionChip = pDocFile->GetBlockChar();
 
 	m_iChannelsAvailable	= pDocFile->GetBlockInt();
-	m_iMachine				= pDocFile->GetBlockInt();
+	m_iMachine				= static_cast<machine_t>(pDocFile->GetBlockInt());
 	m_iEngineSpeed			= pDocFile->GetBlockInt();
 
 	ASSERT_FILE_DATA(m_iMachine == NTSC || m_iMachine == PAL);
@@ -3635,7 +3635,7 @@ void CFamiTrackerDoc::SetEngineSpeed(unsigned int Speed)
 	SetExceededFlag();		// // //
 }
 
-void CFamiTrackerDoc::SetMachine(unsigned int Machine)
+void CFamiTrackerDoc::SetMachine(machine_t Machine)
 {
 	ASSERT(Machine == PAL || Machine == NTSC);
 	m_iMachine = Machine;

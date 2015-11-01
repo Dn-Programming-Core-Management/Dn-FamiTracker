@@ -1538,7 +1538,7 @@ void CMainFrame::OnUpdateSBOctave(CCmdUI *pCmdUI)
 void CMainFrame::OnUpdateSBFrequency(CCmdUI *pCmdUI)
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
-	int Machine = pDoc->GetMachine();
+	machine_t Machine = pDoc->GetMachine();
 	int EngineSpeed = pDoc->GetEngineSpeed();
 	CString String;
 

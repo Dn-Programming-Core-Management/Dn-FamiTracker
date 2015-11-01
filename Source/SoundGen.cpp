@@ -794,7 +794,7 @@ unsigned int CSoundGen::GetFrameRate()
 
 //// Tracker playing routines //////////////////////////////////////////////////////////////////////////////
 
-void CSoundGen::GenerateVibratoTable(int Type)
+void CSoundGen::GenerateVibratoTable(vibrato_t Type)
 {
 	for (int i = 0; i < 16; ++i) {	// depth 
 		for (int j = 0; j < 16; ++j) {	// phase
@@ -831,7 +831,7 @@ void CSoundGen::GenerateVibratoTable(int Type)
 #endif
 }
 
-void CSoundGen::SetupVibratoTable(int Type)
+void CSoundGen::SetupVibratoTable(vibrato_t Type)
 {
 	GenerateVibratoTable(Type);
 }
@@ -1281,7 +1281,7 @@ void CSoundGen::CheckControl()
 	}
 }
 
-void CSoundGen::LoadMachineSettings(int Machine, int Rate, int NamcoChannels)
+void CSoundGen::LoadMachineSettings(machine_t Machine, int Rate, int NamcoChannels)
 {
 	// Setup machine-type and speed
 	//
@@ -1470,11 +1470,7 @@ void CSoundGen::LoadMachineSettings(int Machine, int Rate, int NamcoChannels)
 	m_iUpdateCycles = BaseFreq / Rate;
 	
 	// // // Setup note tables
-	if (Machine == NTSC)
-		SetLookupTable(SNDCHIP_NONE);
-	else
-		SetLookupTable(SNDCHIP_2A07);
-
+	SetLookupTable(Machine == PAL ? SNDCHIP_2A07 : SNDCHIP_NONE);
 	SetLookupTable(SNDCHIP_VRC6);
 	SetLookupTable(SNDCHIP_VRC7);
 	SetLookupTable(SNDCHIP_FDS);

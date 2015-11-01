@@ -40,7 +40,7 @@
 const unsigned int DEFAULT_TEMPO_NTSC		 = 150;
 const unsigned int DEFAULT_TEMPO_PAL		 = 125;
 const unsigned int DEFAULT_SPEED			 = 6;
-const unsigned int DEFAULT_MACHINE_TYPE		 = NTSC;
+const machine_t    DEFAULT_MACHINE_TYPE		 = NTSC;
 const unsigned int DEFAULT_SPEED_SPLIT_POINT = 32;
 const unsigned int OLD_SPEED_SPLIT_POINT	 = 21;
 
@@ -247,8 +247,8 @@ public:
 
 	// Global (module) data
 	void			SetEngineSpeed(unsigned int Speed);
-	void			SetMachine(unsigned int Machine);
-	unsigned int	GetMachine() const		{ return m_iMachine; };
+	void			SetMachine(machine_t Machine);		// // //
+	machine_t		GetMachine() const		{ return m_iMachine; };		// // //
 	unsigned int	GetEngineSpeed() const	{ return m_iEngineSpeed; };
 	unsigned int	GetFrameRate() const;
 
@@ -519,7 +519,7 @@ private:
 	unsigned int	m_iNamcoChannels;
 	vibrato_t		m_iVibratoStyle;							// 0 = old style, 1 = new style
 	bool			m_bLinearPitch;
-	unsigned int	m_iMachine;									// NTSC / PAL
+	machine_t		m_iMachine;									// // // NTSC / PAL
 	unsigned int	m_iEngineSpeed;								// Refresh rate
 	unsigned int	m_iSpeedSplitPoint;							// Speed/tempo split-point
 	int				m_iDetuneTable[6][96];						// // // Detune tables

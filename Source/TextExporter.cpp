@@ -720,7 +720,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 				break;
 			case CT_MACHINE:
 				CHECK(t.ReadInt(i,0,PAL,&sResult));
-				pDoc->SetMachine(i);
+				pDoc->SetMachine(static_cast<machine_t>(i));
 				CHECK(t.ReadEOL(&sResult));
 				break;
 			case CT_FRAMERATE:
