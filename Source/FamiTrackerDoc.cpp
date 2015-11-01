@@ -4971,6 +4971,8 @@ void CFamiTrackerDoc::RemoveUnusedPatterns()
 			}
 		}
 	}
+	SetModifiedFlag();		// // //
+	SetExceededFlag();
 }
 
 void CFamiTrackerDoc::RemoveUnusedSamples()		// // //
@@ -5011,6 +5013,9 @@ void CFamiTrackerDoc::RemoveUnusedSamples()		// // //
 		}
 		pInst->Release();
 	}
+
+	SetModifiedFlag();		// // //
+	SetExceededFlag();
 }
 
 void CFamiTrackerDoc::MergeDuplicatedPatterns()
@@ -5069,6 +5074,9 @@ void CFamiTrackerDoc::MergeDuplicatedPatterns()
 			m_pTracks[i]->SetFramePattern(f,c,uiPatternUsed[uiPattern]);
 		}
 	}
+
+	SetModifiedFlag();		// // //
+	SetExceededFlag();
 }
 
 void CFamiTrackerDoc::PopulateUniquePatterns()		// // //
@@ -5097,6 +5105,9 @@ void CFamiTrackerDoc::PopulateUniquePatterns()		// // //
 		SAFE_RELEASE(pTrack);
 		m_pTracks[i] = pNew;
 	}
+
+	SetModifiedFlag();
+	SetExceededFlag();
 }
 
 void CFamiTrackerDoc::SwapInstruments(int First, int Second)
