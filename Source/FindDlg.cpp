@@ -108,7 +108,7 @@ enum {
 
 class CPatternView;
 
-bool IntQuery::IsMatch(int x) const
+bool CharQuery::IsMatch(unsigned char x) const
 {
 	if (x >= Current->Min && x <= Current->Max)
 		return true;
@@ -118,22 +118,22 @@ bool IntQuery::IsMatch(int x) const
 		return Next->IsMatch(x);
 }
 
-bool IntQuery::IsSingle() const
+bool CharQuery::IsSingle() const
 {
 	return Next == NULL && Current->Min == Current->Max;
 }
 
-void IntQuery::Join(IntRange *Range)
+void CharQuery::Join(CharRange *Range)
 {
 	if (Current == NULL)
 		Current = Range;
 	else if (Next == NULL)
-		Next = new IntQuery(Range);
+		Next = new CharQuery(Range);
 	else
 		Next->Join(Range);
 }
 
-bool IntQuery::ParseTerm(IntQuery *target, CString &in, CString &err)
+bool CharQuery::ParseTerm(CharQuery *target, CString &in, CString &err)
 {
 	CString str;
 
@@ -162,10 +162,10 @@ bool IntQuery::ParseTerm(IntQuery *target, CString &in, CString &err)
 	return true;
 }
 
-bool IntQuery::ParseFull(CString &in, CString &err)
+bool CharQuery::ParseFull(CString &in, CString &err)
 {
 	int pos = 0;
-	IntQuery *now = Next;
+	CharQuery *now = Next;
 
 	if (in[0] != _T('(')) {
 		if (!ParseTerm(this, in, err)) return false;
@@ -176,7 +176,7 @@ bool IntQuery::ParseFull(CString &in, CString &err)
 	if (!ParseTerm(this, in, err)) return false;
 	while (in[0] == _T(',')) {
 		in.Delete(0);
-		now->Next = new IntQuery();
+		now->Next = new CharQuery();
 		if (!ParseTerm(now, in, err)) return false;
 		now = now->Next;
 	}
@@ -190,13 +190,13 @@ searchTerm::searchTerm() :
 	colOffset(0),
 	NoiseChan(false)
 {
-	Note = new IntQuery();
-	Oct  = new IntQuery();
-	Inst = new IntQuery();
-	Vol  = new IntQuery();
+	Note = new CharQuery();
+	Oct  = new CharQuery();
+	Inst = new CharQuery();
+	Vol  = new CharQuery();
 	for (int i = 0; i < MAX_EFFECT_COLUMNS; i++) {
-		EffNumber[i] = new IntQuery();
-		EffParam[i]  = new IntQuery();
+		EffNumber[i] = new CharQuery();
+		EffParam[i]  = new CharQuery();
 	}
 	for (int i = 0; i < 6; i++)
 		Definite[i] = false;
@@ -440,7 +440,7 @@ bool CFindDlg::ParseEff(searchTerm &Term, CString str, bool Simple, CString &err
 		for (unsigned char i = 0; i <= EF_COUNT; i++) {
 			if (str.Left(1) == EFF_CHAR[i]) {
 				Term.Definite[WC_EFF] = true;
-				Term.EffNumber[0]->Join(new IntRange(i + 1, i + 1));
+				Term.EffNumber[0]->Join(new CharRange(i + 1, i + 1));
 			}
 		}
 		FIND_RAISE_ERROR(Term.EffNumber[0]->Current == NULL,
@@ -567,7 +567,7 @@ replaceTerm CFindDlg::toReplace(const searchTerm x)
 	Term.colOffset = x.colOffset;
 	Term.NoiseChan = x.NoiseChan;
 	for (int i = 0; i < MAX_EFFECT_COLUMNS; i++) {
-		Term.Note.EffNumber[i] = x.EffNumber[i]->Current->Min;
+		Term.Note.EffNumber[i] = static_cast<effect_t>(x.EffNumber[i]->Current->Min);
 		Term.Note.EffParam[i] = x.EffParam[i]->Current->Min;
 	}
 	for (int i = 0; i < 6; i++) {

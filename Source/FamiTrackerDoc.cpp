@@ -1234,6 +1234,8 @@ bool CFamiTrackerDoc::WriteBlock_Patterns(CDocumentFile *pDocFile) const
 	pDocFile->CreateBlock(FILE_BLOCK_PATTERNS, 4);
 #endif
 
+	stChanNote *Note;		// // //
+
 	for (unsigned t = 0; t < m_iTrackCount; ++t) {
 		for (unsigned i = 0; i < m_iChannelsAvailable; ++i) {
 			for (unsigned x = 0; x < MAX_PATTERN; ++x) {
@@ -1257,18 +1259,20 @@ bool CFamiTrackerDoc::WriteBlock_Patterns(CDocumentFile *pDocFile) const
 
 					for (unsigned y = 0; y < PatternLen; y++) {
 						if (!m_pTracks[t]->IsCellFree(i, x, y)) {
+							Note = m_pTracks[t]->GetPatternData(i, x, y);		// // //
+							ASSERT_FILE_DATA(Note != NULL);
 							pDocFile->WriteBlockInt(y);
 
-							pDocFile->WriteBlockChar(m_pTracks[t]->GetNote(i, x, y));
-							pDocFile->WriteBlockChar(m_pTracks[t]->GetOctave(i, x, y));
-							pDocFile->WriteBlockChar(m_pTracks[t]->GetInstrument(i, x, y));
-							pDocFile->WriteBlockChar(m_pTracks[t]->GetVolume(i, x, y));
+							pDocFile->WriteBlockChar(Note->Note);
+							pDocFile->WriteBlockChar(Note->Octave);
+							pDocFile->WriteBlockChar(Note->Instrument);
+							pDocFile->WriteBlockChar(Note->Vol);
 
 							int EffColumns = (m_pTracks[t]->GetEffectColumnCount(i) + 1);
 
 							for (int n = 0; n < EffColumns; n++) {
-								pDocFile->WriteBlockChar(m_pTracks[t]->GetEffect(i, x, y, n));
-								pDocFile->WriteBlockChar(m_pTracks[t]->GetEffectParam(i, x, y, n));
+								pDocFile->WriteBlockChar(Note->EffNumber[n]);
+								pDocFile->WriteBlockChar(Note->EffParam[n]);
 							}
 						}
 					}
@@ -1532,7 +1536,7 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 							}
 							stChanNote *Note;
 							Note = pTrack->GetPatternData(x, c, i);
-							Note->EffNumber[0]	= ImportedNote.ExtraStuff1;
+							Note->EffNumber[0]	= static_cast<effect_t>(ImportedNote.ExtraStuff1);
 							Note->EffParam[0]	= ImportedNote.ExtraStuff2;
 							Note->Instrument	= ImportedNote.Instrument;
 							Note->Note			= ImportedNote.Note;
@@ -2351,8 +2355,9 @@ bool CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile)
 			Note->Vol		 = pDocFile->GetBlockChar();
 
 			if (m_iFileVersion == 0x0200) {
-				unsigned char EffectNumber, EffectParam;
-				EffectNumber = pDocFile->GetBlockChar();
+				effect_t EffectNumber;
+				unsigned char EffectParam;
+				EffectNumber = static_cast<effect_t>(pDocFile->GetBlockChar());
 				EffectParam = pDocFile->GetBlockChar();
 				if (Version < 3) {
 					if (EffectNumber == EF_PORTAOFF) {
@@ -2372,8 +2377,9 @@ bool CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile)
 			}
 			else {
 				for (int n = 0; n < (pTrack->GetEffectColumnCount(Channel) + 1); ++n) {
-					unsigned char EffectNumber, EffectParam;
-					EffectNumber = pDocFile->GetBlockChar();
+					effect_t EffectNumber;
+					unsigned char EffectParam;
+					EffectNumber = static_cast<effect_t>(pDocFile->GetBlockChar());
 					EffectParam = pDocFile->GetBlockChar();
 
 					if (Version < 3) {

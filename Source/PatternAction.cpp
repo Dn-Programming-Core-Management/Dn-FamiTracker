@@ -517,7 +517,7 @@ void CPatternAction::Interpolate(CFamiTrackerDoc *pDoc) const
 			double EndValHi, EndValLo;
 			double DeltaHi, DeltaLo;
 			bool TwoParam = false;
-			int Effect;
+			effect_t Effect;
 			switch (j) {
 			case COLUMN_NOTE:
 				if (!m_selection.IsColumnSelected(COLUMN_NOTE, i)

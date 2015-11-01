@@ -29,7 +29,7 @@ struct stChanNote {
 	unsigned char Octave;
 	unsigned char Vol;
 	unsigned char Instrument;
-	unsigned char EffNumber[MAX_EFFECT_COLUMNS];
+	effect_t      EffNumber[MAX_EFFECT_COLUMNS];		// // //
 	unsigned char EffParam[MAX_EFFECT_COLUMNS];
 };
 
@@ -58,7 +58,7 @@ class CPatternData {
 public:
 	CPatternData(unsigned int PatternLength);		// // //
 	~CPatternData();
-
+	/*
 	char GetNote(unsigned int Channel, unsigned int Pattern, unsigned int Row) const { 
 		stChanNote *pNote = GetPatternData(Channel, Pattern, Row);
 		return pNote == NULL ? 0 : pNote->Note; 
@@ -71,24 +71,24 @@ public:
 
 	char GetInstrument(unsigned int Channel, unsigned int Pattern, unsigned int Row) const { 
 		stChanNote *pNote = GetPatternData(Channel, Pattern, Row);
-		return pNote == NULL ? 0 : pNote->Instrument; 
+		return pNote == NULL ? MAX_INSTRUMENTS : pNote->Instrument; 
 	};
 
 	char GetVolume(unsigned int Channel, unsigned int Pattern, unsigned int Row) const { 
 		stChanNote *pNote = GetPatternData(Channel, Pattern, Row);
-		return pNote == NULL ? 0 : pNote->Vol; 
+		return pNote == NULL ? MAX_VOLUME : pNote->Vol; 
 	};
 
 	char GetEffect(unsigned int Channel, unsigned int Pattern, unsigned int Row, unsigned int Column) const { 
 		stChanNote *pNote = GetPatternData(Channel, Pattern, Row);
-		return pNote == NULL ? 0 : pNote->EffNumber[Column]; 
+		return pNote == NULL ? EF_NONE : pNote->EffNumber[Column]; 
 	};
-
+	
 	char GetEffectParam(unsigned int Channel, unsigned int Pattern, unsigned int Row, unsigned int Column) const { 
 		stChanNote *pNote = GetPatternData(Channel, Pattern, Row);
 		return pNote == NULL ? 0 : pNote->EffParam[Column]; 
 	};
-
+	*/
 	bool IsCellFree(unsigned int Channel, unsigned int Pattern, unsigned int Row) const;
 	bool IsPatternEmpty(unsigned int Channel, unsigned int Pattern) const;
 	bool IsPatternInUse(unsigned int Channel, unsigned int Pattern) const;

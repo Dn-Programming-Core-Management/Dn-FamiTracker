@@ -173,12 +173,12 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 					if (ChanNote.EffNumber[k] == EF_SKIP) {
 						WriteData(Command(CMD_EFF_SKIP));
 						WriteData(ChanNote.EffParam[k] + 1);
-						ChanNote.EffNumber[k] = 0;
+						ChanNote.EffNumber[k] = EF_NONE;
 					}
 					else if (ChanNote.EffNumber[k] == EF_JUMP) {
 						WriteData(Command(CMD_EFF_JUMP));
 						WriteData(ChanNote.EffParam[k] + 1);
-						ChanNote.EffNumber[k] = 0;
+						ChanNote.EffNumber[k] = EF_NONE;
 					}
 				}
 				Action = true;

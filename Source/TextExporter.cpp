@@ -549,7 +549,7 @@ bool CTextExport::ImportCellText(		// // //
 				sResult.Format(_T("Line %d column %d: unrecognized effect '%s'."), t.line, t.GetColumn(), sEff);
 				return false;
 			}
-			Cell.EffNumber[e] = p+1;
+			Cell.EffNumber[e] = static_cast<effect_t>(p+1);		// // //
 
 			int h;
 			if (!ImportHex(sEff.Right(2), h, t.line, t.GetColumn(), sResult))

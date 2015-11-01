@@ -2778,7 +2778,7 @@ bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, unsigned char nChar
 	int Chip = pDoc->GetChannel(m_pPatternEditor->GetChannel())->GetChip();
 
 	bool bValidEffect = false;
-	int Effect;
+	effect_t Effect;		// // //
 
 	if (nChar >= VK_NUMPAD0 && nChar <= VK_NUMPAD9)
 		nChar = '0' + nChar - VK_NUMPAD0;
@@ -2815,7 +2815,7 @@ bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, unsigned char nChar
 	for (int i = 0; i < EF_COUNT && !bValidEffect; ++i) {
 		if (nChar == EFF_CHAR[i]) {
 			bValidEffect = true;
-			Effect = i + 1;
+			Effect = static_cast<effect_t>(i + 1);
 		}
 	}
 

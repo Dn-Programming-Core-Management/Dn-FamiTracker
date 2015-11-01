@@ -34,41 +34,41 @@ struct searchTerm
 };
 */
 
-class IntRange
+class CharRange
 {
 public:
-	IntRange() { Min = 0x00; Max = 0xFF; };
-	IntRange(int a, int b) { Min = a; Max = b; };
-	int Min;
-	int Max;
+	CharRange() { Min = 0x00; Max = 0xFF; };
+	CharRange(unsigned char a, unsigned char b) { Min = a; Max = b; };
+	unsigned char Min;
+	unsigned char Max;
 };
 
-class IntQuery
+class CharQuery
 {
 public:
-	IntQuery() { Current = new IntRange(); Next = NULL; };
-	~IntQuery() { if (Next) Next->~IntQuery(); SAFE_RELEASE(Current); };
-	IntQuery(int a) { Current = new IntRange(a, a); Next = NULL; };
-	IntQuery(int a, int b) { Current = new IntRange(a, b); Next = NULL; };
-	IntQuery(IntRange *r) { Current = new IntRange(r->Min, r->Max); Next = NULL; };
-	IntRange* Current;
-	IntQuery* Next;
+	CharQuery() { Current = new CharRange(); Next = NULL; };
+	~CharQuery() { if (Next) Next->~CharQuery(); SAFE_RELEASE(Current); };
+	CharQuery(unsigned char a) { Current = new CharRange(a, a); Next = NULL; };
+	CharQuery(unsigned char a, unsigned char b) { Current = new CharRange(a, b); Next = NULL; };
+	CharQuery(CharRange *r) { Current = new CharRange(r->Min, r->Max); Next = NULL; };
+	CharRange* Current;
+	CharQuery* Next;
 
-	bool IsMatch(int x) const;
+	bool IsMatch(unsigned char x) const;
 	bool IsSingle() const;
-	void Join(IntRange *Range);
-	bool ParseTerm(IntQuery *target, CString &in, CString &err);
+	void Join(CharRange *Range);
+	bool ParseTerm(CharQuery *target, CString &in, CString &err);
 	bool ParseFull(CString &in, CString &err);
 
-	IntQuery& operator=(int x) { Current->Min = x; Current->Max = x; SAFE_RELEASE(Next); return *this; };
-	IntQuery& operator+=(int x) { Current->Min += x; Current->Max += x; return *this; };
-	IntQuery& operator-=(int x) { Current->Min -= x; Current->Max -= x; return *this; };
-	bool operator>(int x) { return Current->Max > x && Current->Min > x; };
-	bool operator<(int x) { return Current->Max < x && Current->Min < x; };
-	bool operator>=(int x) { return Current->Max >= x && Current->Min >= x; };
-	bool operator<=(int x) { return Current->Max <= x && Current->Min <= x; };
-	bool operator==(int x) { return Current->Max == x && Current->Min == x; };
-	bool operator!=(int x) { return Current->Max != x || Current->Min != x; };
+	CharQuery& operator=(unsigned char x) { Current->Min = x; Current->Max = x; SAFE_RELEASE(Next); return *this; };
+	CharQuery& operator+=(unsigned char x) { Current->Min += x; Current->Max += x; return *this; };
+	CharQuery& operator-=(unsigned char x) { Current->Min -= x; Current->Max -= x; return *this; };
+	bool operator>(unsigned char x) { return Current->Max > x && Current->Min > x; };
+	bool operator<(unsigned char x) { return Current->Max < x && Current->Min < x; };
+	bool operator>=(unsigned char x) { return Current->Max >= x && Current->Min >= x; };
+	bool operator<=(unsigned char x) { return Current->Max <= x && Current->Min <= x; };
+	bool operator==(unsigned char x) { return Current->Max == x && Current->Min == x; };
+	bool operator!=(unsigned char x) { return Current->Max != x || Current->Min != x; };
 };
 
 class searchTerm
@@ -78,12 +78,12 @@ public:
 
 	void Release();
 
-	IntQuery *Note;
-	IntQuery *Oct;
-	IntQuery *Inst;
-	IntQuery *Vol;
-	IntQuery *EffNumber[MAX_EFFECT_COLUMNS];
-	IntQuery *EffParam[MAX_EFFECT_COLUMNS];
+	CharQuery *Note;
+	CharQuery *Oct;
+	CharQuery *Inst;
+	CharQuery *Vol;
+	CharQuery *EffNumber[MAX_EFFECT_COLUMNS];
+	CharQuery *EffParam[MAX_EFFECT_COLUMNS];
 	bool Definite[6]; // 12
 	unsigned char rowOffset;
 	unsigned char colOffset;
