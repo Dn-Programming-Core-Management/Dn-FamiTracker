@@ -151,7 +151,7 @@ BOOL CInstrumentEditorFDS::PreTranslateMessage(MSG* pMsg)		// // //
 		}
 	}
 
-	return CDialog::PreTranslateMessage(pMsg);
+	return CInstrumentEditPanel::PreTranslateMessage(pMsg);
 }
 
 void CInstrumentEditorFDS::OnPresetSine()

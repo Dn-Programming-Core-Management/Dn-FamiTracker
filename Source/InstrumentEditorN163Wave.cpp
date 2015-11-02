@@ -171,7 +171,7 @@ BOOL CInstrumentEditorN163Wave::PreTranslateMessage(MSG* pMsg)		// // //
 		}
 	}
 
-	return CDialog::PreTranslateMessage(pMsg);
+	return CInstrumentEditPanel::PreTranslateMessage(pMsg);
 }
 
 void CInstrumentEditorN163Wave::OnPresetSine()
