@@ -1143,12 +1143,14 @@ LRESULT CFamiTrackerView::OnUserDumpInst(WPARAM wParam, LPARAM lParam)		// // //
 {
 	CFamiTrackerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-	pDoc->AddInstrument(theApp.GetSoundGenerator()->GetRecordInstrument());
+	int Slot = pDoc->AddInstrument(theApp.GetSoundGenerator()->GetRecordInstrument());
 	CMainFrame *pMainFrm = static_cast<CMainFrame*>(GetParentFrame());
 	ASSERT_VALID(pMainFrm);
 	pMainFrm->UpdateInstrumentList();
 	theApp.GetSoundGenerator()->ResetDumpInstrument();
 	InvalidateHeader();
+	if (Slot != INVALID_INSTRUMENT)
+		pMainFrm->SelectInstrument(Slot);
 
 	return 0;
 }
