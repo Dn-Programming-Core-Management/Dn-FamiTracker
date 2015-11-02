@@ -149,7 +149,7 @@ private:
 	uint16		m_iRegs2A03[0x20];					// // // renamed
 	uint16		m_iRegsVRC6[0x10];
 	uint16		m_iRegsVRC7[0x40];
-	uint16		m_iRegsFDS[0x10];
+	uint16		m_iRegsFDS[0x50];
 	uint16		m_iRegsMMC5[0x20];
 	uint16		m_iRegsN163[0x80];
 	uint16		m_iRegsS5B[0x10];

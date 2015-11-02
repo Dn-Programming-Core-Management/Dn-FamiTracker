@@ -2153,8 +2153,8 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		pDC->TextOut(30, 30 + (line++) * 13, text);
 
 		for (int i = 0; i < 11; ++i) {
-			reg[0] = static_cast<unsigned char>(pSoundGen->GetReg(SNDCHIP_FDS, i));
-			update[0] = pSoundGen->GetReg(SNDCHIP_FDS, i) >> 8;
+			reg[0] = static_cast<unsigned char>(pSoundGen->GetReg(SNDCHIP_FDS, i | 0x40));
+			update[0] = pSoundGen->GetReg(SNDCHIP_FDS, i | 0x40) >> 8;
 
 			pDC->SetBkColor(m_colEmptyBg);
 			pDC->SetTextColor(0xFFAFAF);
@@ -2171,8 +2171,8 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			pDC->TextOut(0, 0, text);
 		}
 
-		int period = (pSoundGen->GetReg(SNDCHIP_FDS, 2) & 0xFF) | ((pSoundGen->GetReg(SNDCHIP_FDS, 3) & 0x0F) << 8);
-		int vol = (pSoundGen->GetReg(SNDCHIP_FDS, 0) & 0x3F);
+		int period = (pSoundGen->GetReg(SNDCHIP_FDS, 0x42) & 0xFF) | ((pSoundGen->GetReg(SNDCHIP_FDS, 0x43) & 0x0F) << 8);
+		int vol = (pSoundGen->GetReg(SNDCHIP_FDS, 0x40) & 0x3F);
 
 		double freq = RegToFreq(period, SNDCHIP_FDS) / 4.0;		// // //
 		double note;

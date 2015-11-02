@@ -397,6 +397,7 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 	}
 
 	pSequence->SetItemCount(AddedItems);
+	delete[] str2;
 }
 
 void CSequenceInstrumentEditPanel::OnRClickInstSettings(NMHDR* pNMHDR, LRESULT* pResult)

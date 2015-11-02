@@ -270,7 +270,7 @@ void CAPU::EndFrame()
 									  sizeof(m_iRegsMMC5), sizeof(m_iRegsN163), sizeof(m_iRegsS5B)};
 	for (int i = 0; i < sizeof(REG_ARRAY) / sizeof(uint16*); i++) {
 		for (size_t j = 0; j < REG_SIZE[i] / sizeof(uint16); j++) {
-			if (i == 5 && j >= 0x78 - ((m_iRegsN163[0x7F] & 0x70) >> 1) && (j & 0x01) && (j & 0x07) != 0x07) { // N163 phase registers
+			if (i == 5 && j >= 0x78U - ((m_iRegsN163[0x7F] & 0x70) >> 1) && (j & 0x01) && (j & 0x07) != 0x07) { // N163 phase registers
 				REG_ARRAY[i][j] = (REG_ARRAY[i][j] & 0xFF) | (CAPU::REG_DECAY_RATE << 8) | (CAPU::REG_DECAY_RATE << 12);
 				continue;
 			}
@@ -640,7 +640,7 @@ void CAPU::LogExternalWrite(uint16 Address, uint8 Value)
 		 if (Address >= 0x9000 && Address <= 0x9003) { UpdateReg(m_iRegsVRC6, Address - 0x9000); }
 	else if (Address >= 0xA000 && Address <= 0xA003) { UpdateReg(m_iRegsVRC6, Address - 0xA000 + 4); }
 	else if (Address >= 0xB000 && Address <= 0xB003) { UpdateReg(m_iRegsVRC6, Address - 0xB000 + 8); }
-	else if (Address >= 0x4080 && Address <= 0x408F) { UpdateReg(m_iRegsFDS , Address - 0x4080); }
+	else if (Address >= 0x4040 && Address <= 0x408F) { UpdateReg(m_iRegsFDS , Address - 0x4040); }
 	else if (Address >= 0x5000 && Address <= 0x501F) { UpdateReg(m_iRegsMMC5, Address - 0x5000); }
 	else if (Address == 0x9010) m_iPortVRC7 = Value & 0x3F;
 	else if (Address == 0xF800) m_iPortN163 = Value;
@@ -666,7 +666,7 @@ uint16 CAPU::GetReg(int Chip, int Reg) const		// // //
 		case SNDCHIP_N163:
 			return m_pN163->ReadMem(Reg & 0x7F) | (m_iRegsN163[Reg & 0x7F] & 0xFF00);
 		case SNDCHIP_FDS:
-			return m_iRegsFDS[Reg & 0x0F];
+			return m_iRegsFDS[Reg < 0 ? 0 : Reg % (sizeof(m_iRegsFDS) / 2)];
 		case SNDCHIP_VRC7:
 			return m_iRegsVRC7[Reg & 0x3F];
 		case SNDCHIP_S5B:

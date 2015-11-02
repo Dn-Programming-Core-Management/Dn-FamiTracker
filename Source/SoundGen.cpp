@@ -1191,6 +1191,27 @@ void CSoundGen::RecordInstrument()		// // //
 	if (m_iPlayTicks % Intv == 1 && m_iPlayTicks > Intv) {
 		if (*m_pDumpInstrument != NULL && m_pTrackerView != NULL) {
 			m_pTrackerView->PostMessage(WM_USER_DUMP_INST);
+			// Finalize instrument here
+			CInstrumentFDS *FDSInst = dynamic_cast<CInstrumentFDS*>(*m_pDumpInstrument);
+			CInstrumentN163 *N163Inst = dynamic_cast<CInstrumentN163*>(*m_pDumpInstrument);
+			switch ((*m_pDumpInstrument)->GetType()) {
+			case INST_FDS:
+				ASSERT(FDSInst != NULL);
+				for (int i = 0; i < CInstrumentFDS::WAVE_SIZE; i++)
+					FDSInst->SetSample(i, 0x3F & GetReg(SNDCHIP_FDS, i));
+				FDSInst->SetModulationDepth(0x3F & GetReg(SNDCHIP_FDS, 0x44));
+				FDSInst->SetModulationSpeed(0xFF & GetReg(SNDCHIP_FDS, 0x46) | (0x0F & GetReg(SNDCHIP_FDS, 0x47)) << 8);
+				break;
+			case INST_N163:
+				ASSERT(N163Inst != NULL);
+				int offs = (m_iRecordChannel - CHANID_N163_CH1) << 3;
+				int pos = 0xFF & GetReg(SNDCHIP_N163, 0x7E - offs);
+				N163Inst->SetWavePos(pos);
+				N163Inst->SetWaveSize(0x100 - (0xFC & GetReg(SNDCHIP_N163, 0x7C - offs)));
+				for (int i = N163Inst->GetWaveSize() - 1; i >= 0; i--)
+					N163Inst->SetSample(0, i, 0x0F & GetReg(SNDCHIP_N163, (pos + i) >> 1) >> ((pos + (i & 0x01)) ? 4 : 0));
+				break;
+			}
 			m_pDumpInstrument++;
 		}
 		--m_iDumpCount;
@@ -1221,7 +1242,7 @@ void CSoundGen::RecordInstrument()		// // //
 		PitchTable = m_iRecordChannel == CHANID_VRC6_SAWTOOTH ? m_iNoteLookupTableSaw : m_iNoteLookupTableNTSC; break;
 	case SNDCHIP_FDS:
 		ID -= CHANID_FDS; // ID = 0;
-		PitchReg = 0xFF & GetReg(Chip, 2) | (0x0F & GetReg(Chip, 3)) << 8;
+		PitchReg = 0xFF & GetReg(Chip, 0x42) | (0x0F & GetReg(Chip, 0x43)) << 8;
 		PitchTable = m_iNoteLookupTableFDS; break;
 	case SNDCHIP_N163:
 		ID -= CHANID_N163_CH1;
@@ -1321,7 +1342,7 @@ void CSoundGen::RecordInstrument()		// // //
 			if (Temp) Seq = m_pSequenceCache[k];
 			switch (k) {
 			case 0: if (!Temp) Seq = FDSInst->GetVolumeSeq();
-				Val = 0x3F & GetReg(Chip, 0); if (Val > 0x20) Val = 0x20; break;
+				Val = 0x3F & GetReg(Chip, 0x40); if (Val > 0x20) Val = 0x20; break;
 			case 1: if (!Temp) Seq = FDSInst->GetArpSeq();
 				Val = static_cast<char>(Note); break;
 			case 2: if (!Temp) Seq = FDSInst->GetPitchSeq();
