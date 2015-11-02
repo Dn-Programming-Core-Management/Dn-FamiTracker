@@ -5247,8 +5247,9 @@ stFullState CFamiTrackerDoc::RetrieveSoundState(unsigned int Track, unsigned int
 				case EF_DAC: case EF_DPCM_PITCH: case EF_RETRIGGER:
 				case EF_DELAY: case EF_DELAYED_VOLUME: case EF_NOTE_RELEASE: case EF_TRANSPOSE:
 				case EF_JUMP: case EF_SKIP: // no true backward iterator
-				case EF_HALT: // TODO: reset
 					continue;
+				case EF_HALT:
+					Row = Frame = 0; goto outer;
 				case EF_SPEED:
 					if (S.Speed == -1 && (xy < GetSpeedSplitPoint() || GetSongTempo(Track) == 0)) {
 						S.Speed = xy; if (S.Speed < 1) S.Speed = 1;
@@ -5320,6 +5321,7 @@ stFullState CFamiTrackerDoc::RetrieveSoundState(unsigned int Track, unsigned int
 			}
 			// if (Channel != -1) break;
 		}
+	outer:
 		if (Row) Row--;
 		else if (Frame) Row = GetFrameLength(Track, --Frame) - 1;
 		else break;
