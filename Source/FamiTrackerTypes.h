@@ -41,7 +41,7 @@ const int MAX_INSTRUMENTS = 64;
 const int MAX_SEQUENCES	= 128;
 
 // Maximum number of items in each sequence
-const int MAX_SEQUENCE_ITEMS = /*128*/ 253;		// TODO: need to check if this exports correctly
+const int MAX_SEQUENCE_ITEMS = /*128*/ 252;		// TODO: need to check if this exports correctly
 
 // Maximum number of patterns per channel
 const int MAX_PATTERN = 256;		// // //

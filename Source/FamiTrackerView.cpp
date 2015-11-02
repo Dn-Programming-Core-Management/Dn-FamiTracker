@@ -38,8 +38,10 @@
 #include "TrackerChannel.h"
 #include "Clipboard.h"
 #include "APU/APU.h"
-#include "DetuneDlg.h"		// // //
-#include "StretchDlg.h"		// // //
+// // //
+#include "DetuneDlg.h"
+#include "StretchDlg.h"
+#include "RecordSettingsDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -205,7 +207,9 @@ BEGIN_MESSAGE_MAP(CFamiTrackerView, CView)
 	ON_COMMAND(ID_BOOKMARKS_NEXT, OnBookmarksNext)
 	ON_COMMAND(ID_BOOKMARKS_PREVIOUS, OnBookmarksPrevious)
 	ON_COMMAND(ID_TRACKER_RECORDTOINST, OnTrackerRecordToInst)
+	ON_COMMAND(ID_TRACKER_RECORDERSETTINGS, OnTrackerRecorderSettings)
 	ON_UPDATE_COMMAND_UI(ID_TRACKER_RECORDTOINST, OnUpdateDisableWhilePlaying)
+	ON_UPDATE_COMMAND_UI(ID_TRACKER_RECORDERSETTINGS, OnUpdateDisableWhilePlaying)
 	ON_COMMAND(ID_RECALL_CHANNEL_STATE, OnRecallChannelState)
 END_MESSAGE_MAP()
 
@@ -1143,7 +1147,6 @@ LRESULT CFamiTrackerView::OnUserDumpInst(WPARAM wParam, LPARAM lParam)		// // //
 	CMainFrame *pMainFrm = static_cast<CMainFrame*>(GetParentFrame());
 	ASSERT_VALID(pMainFrm);
 	pMainFrm->UpdateInstrumentList();
-	theApp.GetSoundGenerator()->SetRecordChannel(-1);
 	theApp.GetSoundGenerator()->ResetDumpInstrument();
 	InvalidateHeader();
 
@@ -3527,6 +3530,14 @@ void CFamiTrackerView::OnTrackerRecordToInst()		// // //
 	if (IsChannelMuted(m_pPatternEditor->GetChannel()))
 		ToggleChannel(m_pPatternEditor->GetChannel());
 	theApp.GetSoundGenerator()->SetRecordChannel(Channel == theApp.GetSoundGenerator()->GetRecordChannel() ? -1 : Channel);
+}
+
+void CFamiTrackerView::OnTrackerRecorderSettings()
+{
+	CRecordSettingsDlg dlg;
+	stRecordSetting Setting = dlg.GetRecordSetting();
+	if (Setting.InstCount > 0)
+		theApp.GetSoundGenerator()->SetRecordSetting(Setting);
 }
 
 void CFamiTrackerView::OnNextOctave()

@@ -64,6 +64,12 @@ enum render_end_t {
 	SONG_LOOP_LIMIT 
 };
 
+struct stRecordSetting {
+	int Interval;
+	int InstCount;
+	bool Reset;
+};
+
 struct stChanNote;
 
 enum note_prio_t;
@@ -71,6 +77,8 @@ enum note_prio_t;
 class CChannelHandler;
 class CFamiTrackerView;
 class CFamiTrackerDoc;
+class CInstrument;		// // //
+class CSequence;		// // //
 class CAPU;
 class CDSound;
 class CDSoundChannel;
@@ -179,6 +187,8 @@ public:
 	void		ResetDumpInstrument();
 	int			GetRecordChannel() const;
 	void		SetRecordChannel(int Channel);
+	stRecordSetting GetRecordSetting() const;
+	void		SetRecordSetting(stRecordSetting Setting);
 
 	// Other
 	uint16		GetReg(int Chip, int Reg) const;		// // //
@@ -332,7 +342,11 @@ private:
 	int					m_iFrameCounter;
 
 	int					m_iRecordChannel;					// // //
-	CInstrument			*m_pDumpInstrument;
+	int					m_iDumpCount;
+	CInstrument			**m_pDumpInstrument;
+	CInstrument			*m_pDumpCache[MAX_INSTRUMENTS];
+	CSequence			*m_pSequenceCache[SEQ_COUNT];
+	stRecordSetting		m_stRecordSetting;
 
 	int					m_iUpdateCycles;					// Number of cycles/APU update
 	int					m_iConsumedCycles;					// Cycles consumed by the update registers functions
