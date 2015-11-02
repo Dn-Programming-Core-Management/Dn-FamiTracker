@@ -1590,7 +1590,7 @@ void CFamiTrackerView::OnUpdateTrackerPal(CCmdUI *pCmdUI)
 	CFamiTrackerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	pCmdUI->Enable(pDoc->GetExpansionChip() == SNDCHIP_NONE);
+	pCmdUI->Enable(pDoc->GetExpansionChip() == SNDCHIP_NONE && !theApp.IsPlaying());		// // //
 	UINT item = pDoc->GetMachine() == PAL ? ID_TRACKER_PAL : ID_TRACKER_NTSC;
 	if (pCmdUI->m_pMenu != NULL)
 		pCmdUI->m_pMenu->CheckMenuRadioItem(ID_TRACKER_NTSC, ID_TRACKER_PAL, item, MF_BYCOMMAND);
@@ -1601,6 +1601,7 @@ void CFamiTrackerView::OnUpdateTrackerNtsc(CCmdUI *pCmdUI)
 	CFamiTrackerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
+	pCmdUI->Enable(!theApp.IsPlaying());		// // //
 	UINT item = pDoc->GetMachine() == NTSC ? ID_TRACKER_NTSC : ID_TRACKER_PAL;
 	if (pCmdUI->m_pMenu != NULL)
 		pCmdUI->m_pMenu->CheckMenuRadioItem(ID_TRACKER_NTSC, ID_TRACKER_PAL, item, MF_BYCOMMAND);
@@ -1611,6 +1612,7 @@ void CFamiTrackerView::OnUpdateSpeedDefault(CCmdUI *pCmdUI)
 	CFamiTrackerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
+	pCmdUI->Enable(!theApp.IsPlaying());		// // //
 	pCmdUI->SetCheck(pDoc->GetEngineSpeed() == 0);
 }
 
@@ -1619,6 +1621,7 @@ void CFamiTrackerView::OnUpdateSpeedCustom(CCmdUI *pCmdUI)
 	CFamiTrackerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);	
 
+	pCmdUI->Enable(!theApp.IsPlaying());		// // //
 	pCmdUI->SetCheck(pDoc->GetEngineSpeed() != 0);
 }
 
