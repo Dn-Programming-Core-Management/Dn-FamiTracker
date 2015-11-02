@@ -303,6 +303,7 @@ void CPatternEditor::ApplyColorScheme()
 	m_colHead2 = GetSysColor(COLOR_BTNHIGHLIGHT);
 	m_colHead3 = GetSysColor(COLOR_APPWORKSPACE);
 	m_colHead4 = BLEND(m_colHead3, 0x4040F0, 80);
+	m_colHead5 = BLEND(m_colHead3, 0x40F040, 80);		// // //
 
 	InvalidateBackground();
 	InvalidatePatternData();
@@ -1520,7 +1521,8 @@ void CPatternEditor::DrawHeader(CDC *pDC)
 	pDC->SetBkMode(TRANSPARENT);
 
 	// Channel header background
-	GradientRectTriple(pDC, 0, HEADER_CHAN_START, m_iWinWidth, HEADER_CHAN_HEIGHT, m_colHead1, m_colHead2, m_pView->GetEditMode() ? m_colHead4 : m_colHead3);		// // //
+	GradientRectTriple(pDC, 0, HEADER_CHAN_START, m_iWinWidth, HEADER_CHAN_HEIGHT,
+					   m_colHead1, m_colHead2, m_pView->GetEditMode() ? m_colHead4 : m_colHead3);		// // //
 
 	// Corner box
 	pDC->Draw3dRect(0, HEADER_CHAN_START, m_iRowColumnWidth, HEADER_CHAN_HEIGHT, STATIC_COLOR_SCHEME.FRAME_LIGHT, STATIC_COLOR_SCHEME.FRAME_DARK);
@@ -1533,11 +1535,16 @@ void CPatternEditor::DrawHeader(CDC *pDC)
 
 		// Frame
 		if (Pushed) {
-			GradientRectTriple(pDC, Offset, HEADER_CHAN_START, m_iChannelWidths[Channel], HEADER_CHAN_HEIGHT, m_colHead1, m_colHead1, m_pView->GetEditMode() ? m_colHead4 : m_colHead3);
+			GradientRectTriple(pDC, Offset, HEADER_CHAN_START, m_iChannelWidths[Channel], HEADER_CHAN_HEIGHT,
+							   m_colHead1, m_colHead1, m_pView->GetEditMode() ? m_colHead4 : m_colHead3);
 			pDC->Draw3dRect(Offset, HEADER_CHAN_START, m_iChannelWidths[Channel], HEADER_CHAN_HEIGHT, BLEND(STATIC_COLOR_SCHEME.FRAME_LIGHT, STATIC_COLOR_SCHEME.FRAME_DARK, 50), STATIC_COLOR_SCHEME.FRAME_DARK); 
 		}
-		else
+		else {
+			if (m_pDocument->GetChannelType(Channel) == theApp.GetSoundGenerator()->GetRecordChannel())		// // //
+				GradientRectTriple(pDC, Offset, HEADER_CHAN_START, m_iChannelWidths[Channel], HEADER_CHAN_HEIGHT,
+								   m_colHead1, m_colHead2, m_colHead5);
 			pDC->Draw3dRect(Offset, HEADER_CHAN_START, m_iChannelWidths[Channel], HEADER_CHAN_HEIGHT, STATIC_COLOR_SCHEME.FRAME_LIGHT, STATIC_COLOR_SCHEME.FRAME_DARK);
+		}
 
 		// Text
 		CTrackerChannel *pChannel = m_pDocument->GetChannel(Channel);

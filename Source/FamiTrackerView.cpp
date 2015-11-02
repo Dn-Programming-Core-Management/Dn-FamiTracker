@@ -204,6 +204,8 @@ BEGIN_MESSAGE_MAP(CFamiTrackerView, CView)
 	ON_COMMAND(ID_BOOKMARKS_TOGGLE, OnBookmarksToggle)
 	ON_COMMAND(ID_BOOKMARKS_NEXT, OnBookmarksNext)
 	ON_COMMAND(ID_BOOKMARKS_PREVIOUS, OnBookmarksPrevious)
+	ON_COMMAND(ID_TRACKER_RECORDTOINST, OnTrackerRecordToInst)
+	ON_UPDATE_COMMAND_UI(ID_TRACKER_RECORDTOINST, OnUpdateDisableWhilePlaying)
 	ON_COMMAND(ID_RECALL_CHANNEL_STATE, OnRecallChannelState)
 END_MESSAGE_MAP()
 
@@ -1142,6 +1144,8 @@ LRESULT CFamiTrackerView::OnUserDumpInst(WPARAM wParam, LPARAM lParam)		// // //
 	ASSERT_VALID(pMainFrm);
 	pMainFrm->UpdateInstrumentList();
 	theApp.GetSoundGenerator()->SetRecordChannel(-1);
+	theApp.GetSoundGenerator()->ResetDumpInstrument();
+	InvalidateHeader();
 
 	return 0;
 }
@@ -1636,6 +1640,11 @@ void CFamiTrackerView::OnUpdatePasteSpecial(CCmdUI *pCmdUI)
 		pCmdUI->m_pMenu->CheckMenuRadioItem(ID_PASTESPECIAL_CURSOR, ID_PASTESPECIAL_FILL, ID_PASTESPECIAL_CURSOR + m_iPastePos, MF_BYCOMMAND);
 }
 
+void CFamiTrackerView::OnUpdateDisableWhilePlaying(CCmdUI *pCmdUI)
+{
+	pCmdUI->Enable(!theApp.IsPlaying());
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Tracker playing routines
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2036,6 +2045,8 @@ bool CFamiTrackerView::IsChannelSolo(unsigned int Channel) const
 void CFamiTrackerView::SetChannelMute(int Channel, bool bMute)
 {
 	m_bMuteChannels[Channel] = bMute;
+	if (bMute && GetDocument()->GetChannelType(Channel) == theApp.GetSoundGenerator()->GetRecordChannel())
+		theApp.GetSoundGenerator()->SetRecordChannel(-1);
 }
 
 bool CFamiTrackerView::IsChannelMuted(unsigned int Channel) const
@@ -3481,6 +3492,41 @@ void CFamiTrackerView::OnTrackerSoloChannel()
 void CFamiTrackerView::OnTrackerUnmuteAllChannels()
 {
 	UnmuteAllChannels();
+}
+
+void CFamiTrackerView::OnTrackerRecordToInst()		// // //
+{
+	if (m_iMenuChannel == -1)
+		m_iMenuChannel = m_pPatternEditor->GetChannel();
+
+	CFamiTrackerDoc	*pDoc = GetDocument();
+	int Channel = pDoc->GetChannelType(m_iMenuChannel);
+	int Chip = pDoc->GetChipType(m_iMenuChannel);
+	m_iMenuChannel = -1;
+
+	if (Channel == CHANID_DPCM || Chip == SNDCHIP_VRC7) {
+		AfxMessageBox(IDS_DUMP_NOT_SUPPORTED, MB_ICONERROR); return;
+	}
+	if (pDoc->GetInstrumentCount() >= MAX_INSTRUMENTS) {
+		AfxMessageBox(IDS_INST_LIMIT, MB_ICONERROR); return;
+	}
+	if (Chip != SNDCHIP_FDS) {
+		inst_type_t Type = INST_NONE;
+		switch (Chip) {
+		case SNDCHIP_NONE: case SNDCHIP_MMC5: Type = INST_2A03; break;
+		case SNDCHIP_VRC6: Type = INST_VRC6; break;
+		case SNDCHIP_N163: Type = INST_N163; break;
+		case SNDCHIP_S5B:  Type = INST_S5B; break;
+		}
+		if (Type != INST_NONE) for (int i = 0; i < SEQ_COUNT; i++)
+			if (pDoc->GetFreeSequence(Type, i) == -1) {
+				AfxMessageBox(IDS_SEQUENCE_LIMIT, MB_ICONERROR); return;
+			}
+	}
+
+	if (IsChannelMuted(m_pPatternEditor->GetChannel()))
+		ToggleChannel(m_pPatternEditor->GetChannel());
+	theApp.GetSoundGenerator()->SetRecordChannel(Channel == theApp.GetSoundGenerator()->GetRecordChannel() ? -1 : Channel);
 }
 
 void CFamiTrackerView::OnNextOctave()

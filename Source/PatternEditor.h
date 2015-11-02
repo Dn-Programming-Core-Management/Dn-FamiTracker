@@ -369,6 +369,7 @@ private:
 	COLORREF m_colHead2;
 	COLORREF m_colHead3;
 	COLORREF m_colHead4;
+	COLORREF m_colHead5;		// // //
 
 	// Meters and DPCM
 	stDPCMState m_DPCMState;

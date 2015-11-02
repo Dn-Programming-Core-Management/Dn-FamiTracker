@@ -152,7 +152,9 @@
 #define IDS_POPULATE_PATTERNS           183
 #define IDS_BOOKMARK_FORMAT             184
 #define IDD_PROPERTIES                  185
+#define IDS_DUMP_NOT_SUPPORTED          185
 #define IDS_FIND_END                    186
+#define IDS_SEQUENCE_LIMIT              186
 #define IDS_FIND_NONE                   187
 #define IDS_REPLACE_ALL                 188
 #define IDC_MAIL2                       189
@@ -812,6 +814,7 @@
 #define ID_MODULE_ESTIMATESONGLENGTH    33175
 #define ID_PATTERN_SWAPCHANNELS         33176
 #define ID_EDIT_SWAPCHANNELS            33177
+#define ID_TRACKER_RECORDTOINST         33179
 #define ID_INSTRUMENT_ADD_2A03          36864
 #define ID_INSTRUMENT_ADD_FDS           36865
 #define ID_INSTRUMENT_ADD_MMC5          36866
@@ -832,7 +835,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        334
-#define _APS_NEXT_COMMAND_VALUE         33178
+#define _APS_NEXT_COMMAND_VALUE         33181
 #define _APS_NEXT_CONTROL_VALUE         1431
 #define _APS_NEXT_SYMED_VALUE           179
 #endif

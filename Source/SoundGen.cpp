@@ -119,6 +119,7 @@ CSoundGen::CSoundGen() :
 	m_iGrooveIndex(-1),		// // //
 	m_iGroovePosition(0),		// // //
 	m_pDumpInstrument(NULL),		// // //
+	m_iRecordChannel(-1),		// // //
 	m_bWaveChanged(0),
 	m_iMachineType(NTSC),
 	m_bRunning(false),
@@ -946,12 +947,10 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 		SAFE_RELEASE_ARRAY(State.State);
 	}
 
-	// test
-	SetRecordChannel(m_pDocument->GetChannelType(m_pTrackerView->GetSelectedChannel()));
 	if (m_iRecordChannel != -1) {
 		inst_type_t Type = INST_NONE; // optimize this
 		switch (m_pTrackerChannels[m_iRecordChannel]->GetChip()) {
-		case SNDCHIP_NONE: case SNDCHIP_2A07: case SNDCHIP_MMC5: Type = INST_2A03; break;
+		case SNDCHIP_NONE: case SNDCHIP_MMC5: Type = INST_2A03; break;
 		case SNDCHIP_VRC6: Type = INST_VRC6; break;
 		case SNDCHIP_VRC7: Type = INST_VRC7; break;
 		case SNDCHIP_FDS:  Type = INST_FDS; break;
@@ -1227,7 +1226,10 @@ void CSoundGen::RecordInstrument()		// // //
 	}
 
 	int Note = 0;
-	for (int i = 0; i < NOTE_COUNT; i++) {
+	if (m_iRecordChannel == CHANID_NOISE) {
+		Note = PitchReg ^ 0xF; Detune = 0;
+	}
+	else for (int i = 0; i < NOTE_COUNT; i++) {
 		int diff = PitchReg - PitchTable[i];
 		if (std::abs(diff) < std::abs(Detune)) {
 			Note = i; Detune = diff;
@@ -1239,8 +1241,9 @@ void CSoundGen::RecordInstrument()		// // //
 		Inst = dynamic_cast<CSeqInstrument*>(m_pDumpInstrument);
 		ASSERT(Inst != NULL);
 		
-		for (int i = 0; i < SEQ_COUNT; i++) {
+		for (int i = 0; i < SEQ_COUNT; i++) if (Inst->GetSeqEnable(i)) {
 			sequence_t s = static_cast<sequence_t>(i);
+			if (!Inst->GetSeqEnable(s)) continue;
 			Seq = m_pDocument->GetSequence(InstType, Inst->GetSeqIndex(s), s);
 			Seq->SetItemCount(m_iPlayTicks);
 			switch (s) {
@@ -1334,6 +1337,11 @@ void CSoundGen::InitRecordInstrument()
 	}
 }
 
+int CSoundGen::GetRecordChannel() const
+{
+	return m_iRecordChannel;
+}
+
 void CSoundGen::SetRecordChannel(int Channel)
 {
 	m_iRecordChannel = Channel;
@@ -1346,7 +1354,6 @@ CInstrument* CSoundGen::GetRecordInstrument() const
 
 void CSoundGen::ResetDumpInstrument()
 {
-	SetRecordChannel(-1);
 	if (IsPlaying() && m_pDumpInstrument != NULL)
 		m_pDumpInstrument->Release();
 	m_pDumpInstrument = NULL;

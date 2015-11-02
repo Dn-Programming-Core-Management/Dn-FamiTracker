@@ -177,6 +177,7 @@ public:
 	// // // Record instrument
 	CInstrument *GetRecordInstrument() const;
 	void		ResetDumpInstrument();
+	int			GetRecordChannel() const;
 	void		SetRecordChannel(int Channel);
 
 	// Other

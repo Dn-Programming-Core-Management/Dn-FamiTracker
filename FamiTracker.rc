@@ -246,6 +246,7 @@ BEGIN
         MENUITEM "Solo Channel",                ID_TRACKER_SOLOCHANNEL
         MENUITEM SEPARATOR
         MENUITEM "Switch to Track Instrument",  ID_TRACKER_SWITCHTOTRACKINSTRUMENT
+        MENUITEM "Record to Instrument",        ID_TRACKER_RECORDTOINST
         MENUITEM SEPARATOR
         MENUITEM "Display Register State",      ID_TRACKER_DISPLAYREGISTERSTATE
         MENUITEM SEPARATOR
@@ -394,6 +395,7 @@ BEGIN
         MENUITEM "&Toggle Channel\tAlt+F9",     ID_TRACKER_TOGGLECHANNEL
         MENUITEM "&Solo Channel\tAlt+F10",      ID_TRACKER_SOLOCHANNEL
         MENUITEM "&Unmute All Channels",        ID_POPUP_UNMUTEALLCHANNELS
+        MENUITEM "Record to Instrument",        ID_TRACKER_RECORDTOINST
     END
 END
 
@@ -1955,6 +1957,8 @@ BEGIN
     IDS_BOOKMARK_EMPTY      "The current track does not contain any bookmarks."
     IDS_POPULATE_PATTERNS   "Do you want to copy a unique pattern for all frames? There is no undo for this action."
     IDS_BOOKMARK_FORMAT     "Moved to bookmark %1. (Highlight: %2, %3)"
+    IDS_DUMP_NOT_SUPPORTED  "This channel does not support logging output to create a new instrument."
+    IDS_SEQUENCE_LIMIT      "You cannot add more instrument sequences"
     IDS_FIND_NONE           "Could not find the search query in the current search area."
     IDS_REPLACE_ALL         "Do you want to replace all occurrences of the search query? There is no undo for this action."
     ID_FIND_NEXT            "Find the next result of the search query\nFind Next"

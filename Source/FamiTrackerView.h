@@ -436,9 +436,11 @@ public:
 	afx_msg void OnEditPasteSpecialSelection();
 	afx_msg void OnEditPasteSpecialFill();
 	afx_msg void OnUpdatePasteSpecial(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateDisableWhilePlaying(CCmdUI *pCmdUI);
 	afx_msg void OnBookmarksToggle();
 	afx_msg void OnBookmarksNext();
 	afx_msg void OnBookmarksPrevious();
+	afx_msg void OnTrackerRecordToInst();
 	afx_msg void OnRecallChannelState();
 };
 
