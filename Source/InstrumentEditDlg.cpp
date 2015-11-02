@@ -326,37 +326,24 @@ void CInstrumentEditDlg::SwitchOnNote(int x, int y)
 
 	// TODO: remove hardcoded numbers
 	// // // Send to respective channels whenever cursor is outside instrument chip
-	switch (m_iSelectedInstType) {
-	case INST_2A03:
+	if (m_iSelectedInstType == INST_2A03) {
 		if (m_pPanels[0]->IsWindowVisible() && Channel > CHANID_NOISE)
-			pView->SelectChannel(CHANID_SQUARE1);
+			pView->SelectChannel(pDoc->GetChannelIndex(CHANID_SQUARE1));
 		if (m_pPanels[1]->IsWindowVisible())
-			pView->SelectChannel(CHANID_DPCM);
-		break;
-	case INST_VRC6:
-		if (!pDoc->ExpansionEnabled(SNDCHIP_VRC6)) break;
-		if (pDoc->GetChipType(Channel) != SNDCHIP_VRC6)
-			pView->SelectChannel(pDoc->GetChannelPosition(CHANID_VRC6_PULSE1, Chip));
-		break;
-	case INST_N163:
-		if (!pDoc->ExpansionEnabled(SNDCHIP_N163)) break;
-		if (pDoc->GetChipType(Channel) != SNDCHIP_N163)
-			pView->SelectChannel(pDoc->GetChannelPosition(CHANID_N163_CH1, Chip));
-		break;
-	case INST_FDS:
-		if (!pDoc->ExpansionEnabled(SNDCHIP_FDS)) break;
-		pView->SelectChannel(pDoc->GetChannelPosition(CHANID_FDS, Chip));
-		break;
-	case INST_VRC7:
-		if (!pDoc->ExpansionEnabled(SNDCHIP_VRC7)) break;
-		if (pDoc->GetChipType(Channel) != SNDCHIP_VRC7)
-			pView->SelectChannel(pDoc->GetChannelPosition(CHANID_VRC7_CH1, Chip));
-		break;
-	case INST_S5B:
-		if (!pDoc->ExpansionEnabled(SNDCHIP_S5B)) break;
-		if (pDoc->GetChipType(Channel) != SNDCHIP_S5B)
-			pView->SelectChannel(pDoc->GetChannelPosition(CHANID_S5B_CH1, Chip));
-		break;
+			pView->SelectChannel(pDoc->GetChannelIndex(CHANID_DPCM));
+	}
+	else {
+		uint8 Source = SNDCHIP_NONE;
+		chan_id_t First = CHANNELS;
+		switch (m_iSelectedInstType) {
+		case INST_VRC6: Source = SNDCHIP_VRC6; First = CHANID_VRC6_PULSE1; break;
+		case INST_N163: Source = SNDCHIP_N163; First = CHANID_N163_CH1; break;
+		case INST_FDS:  Source = SNDCHIP_FDS;  First = CHANID_FDS; break;
+		case INST_VRC7: Source = SNDCHIP_VRC7; First = CHANID_VRC7_CH1; break;
+		case INST_S5B:  Source = SNDCHIP_S5B;  First = CHANID_S5B_CH1; break;
+		}
+		if (pDoc->ExpansionEnabled(Source) && pDoc->GetChipType(Channel) != Source)
+			pView->SelectChannel(pDoc->GetChannelIndex(First));
 	}
 
 	Channel = pView->GetSelectedChannel();		// // //
@@ -528,6 +515,7 @@ bool CInstrumentEditDlg::IsOpened() const
 
 void CInstrumentEditDlg::PostNcDestroy()
 {
-	// TODO Use this function to destroy the panels so it won't be visible when closing the editor
+	for (int i = 0; i < PANEL_COUNT; i++)		// // //
+		SAFE_RELEASE(m_pPanels[i]);
 	CDialog::PostNcDestroy();
 }
