@@ -3535,6 +3535,7 @@ void CFamiTrackerView::OnTrackerRecordToInst()		// // //
 	if (IsChannelMuted(m_pPatternEditor->GetChannel()))
 		ToggleChannel(m_pPatternEditor->GetChannel());
 	theApp.GetSoundGenerator()->SetRecordChannel(Channel == theApp.GetSoundGenerator()->GetRecordChannel() ? -1 : Channel);
+	InvalidateHeader();
 }
 
 void CFamiTrackerView::OnTrackerRecorderSettings()

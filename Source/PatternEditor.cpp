@@ -303,7 +303,7 @@ void CPatternEditor::ApplyColorScheme()
 	m_colHead2 = GetSysColor(COLOR_BTNHIGHLIGHT);
 	m_colHead3 = GetSysColor(COLOR_APPWORKSPACE);
 	m_colHead4 = BLEND(m_colHead3, 0x4040F0, 80);
-	m_colHead5 = BLEND(m_colHead3, 0x40F040, 80);		// // //
+	m_colHead5 = BLEND(m_colHead3, 0x40F040, 60);		// // //
 
 	InvalidateBackground();
 	InvalidatePatternData();
