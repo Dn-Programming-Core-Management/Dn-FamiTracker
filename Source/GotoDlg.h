@@ -48,10 +48,7 @@ protected:
 	unsigned int m_iDestChip;
 	unsigned int m_iDestChannel;
 
-	CEdit *m_cFrameEdit;
-	CEdit *m_cRowEdit;
 	CComboBox *m_cChipEdit;
-	CEdit *m_cChannelEdit;
 
 	DECLARE_MESSAGE_MAP()
 public:

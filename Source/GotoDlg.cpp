@@ -59,15 +59,8 @@ END_MESSAGE_MAP()
 
 BOOL CGotoDlg::OnInitDialog()
 {
-	m_cFrameEdit   = new CEdit();
-	m_cRowEdit     = new CEdit();
-	m_cChipEdit    = new CComboBox();
-	m_cChannelEdit = new CEdit();
-
-	m_cFrameEdit->SubclassDlgItem(IDC_EDIT_GOTO_FRAME, this);
-	m_cRowEdit->SubclassDlgItem(IDC_EDIT_GOTO_ROW, this);
+	m_cChipEdit = new CComboBox();
 	m_cChipEdit->SubclassDlgItem(IDC_COMBO_GOTO_CHIP, this);
-	m_cChannelEdit->SubclassDlgItem(IDC_EDIT_GOTO_CHANNEL, this);
 
 	CFamiTrackerDoc *pDoc = CFamiTrackerDoc::GetDoc();
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveView());
@@ -115,18 +108,17 @@ BOOL CGotoDlg::OnInitDialog()
 	else
 		m_cChipEdit->SelectString(-1, _T("2A03"));
 
-	CString str;
-	str.Format(_T("%d"), pEditor->GetFrame());
-	m_cFrameEdit->SetWindowText(str);
-	m_cFrameEdit->SetLimitText(3);
-	str.Format(_T("%d"), pEditor->GetRow());
-	m_cRowEdit->SetWindowText(str);
-	m_cRowEdit->SetLimitText(3);
-	str.Format(_T("%d"), Channel + 1);
-	m_cChannelEdit->SetWindowText(str);
-	m_cChannelEdit->SetLimitText(1);
+	SetDlgItemInt(IDC_EDIT_GOTO_FRAME, pEditor->GetFrame());
+	SetDlgItemInt(IDC_EDIT_GOTO_ROW, pEditor->GetRow());
+	SetDlgItemInt(IDC_EDIT_GOTO_CHANNEL, Channel + 1);
 
-	m_cFrameEdit->SetFocus();
+	CEdit *pEdit = static_cast<CEdit*>(GetDlgItem(IDC_EDIT_GOTO_CHANNEL));
+	pEdit->SetLimitText(1);
+	pEdit = static_cast<CEdit*>(GetDlgItem(IDC_EDIT_GOTO_ROW));
+	pEdit->SetLimitText(3);
+	pEdit = static_cast<CEdit*>(GetDlgItem(IDC_EDIT_GOTO_FRAME));
+	pEdit->SetLimitText(3);
+	pEdit->SetFocus();
 
 	return CDialog::OnInitDialog();
 }
@@ -186,25 +178,19 @@ int CGotoDlg::GetFinalChannel() const
 
 void CGotoDlg::OnEnChangeEditGotoFrame()
 {
-	CString str;
-	m_cFrameEdit->GetWindowText(str);
-	m_iDestFrame = atoi(str);
+	m_iDestFrame = GetDlgItemInt(IDC_EDIT_GOTO_FRAME);
 	CheckDestination();
 }
 
 void CGotoDlg::OnEnChangeEditGotoRow()
 {
-	CString str;
-	m_cRowEdit->GetWindowText(str);
-	m_iDestRow = atoi(str);
+	m_iDestRow = GetDlgItemInt(IDC_EDIT_GOTO_ROW);
 	CheckDestination();
 }
 
 void CGotoDlg::OnEnChangeEditGotoChannel()
 {
-	CString str;
-	m_cChannelEdit->GetWindowText(str);
-	m_iDestChannel = atoi(str) - 1;
+	m_iDestChannel = GetDlgItemInt(IDC_EDIT_GOTO_CHANNEL) - 1;
 	CheckDestination();
 }
 
