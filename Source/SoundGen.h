@@ -262,6 +262,7 @@ private:
 	// // // Record instrument from registers
 	void		RecordInstrument();
 	void		InitRecordInstrument();
+	void		ResetRecordCache();
 
 	// Misc
 	void		PlaySample(const CDSample *pSample, int Offset, int Pitch);

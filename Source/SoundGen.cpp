@@ -152,10 +152,9 @@ CSoundGen::CSoundGen() :
 	m_stRecordSetting.Interval = MAX_SEQUENCE_ITEMS;		// // //
 	m_stRecordSetting.InstCount = 1;
 	m_stRecordSetting.Reset = true;
-	memset(m_pDumpCache, 0, sizeof(CInstrument*) * MAX_INSTRUMENTS);
-	m_pDumpInstrument = &m_pDumpCache[0];
 	for (int i = 0; i < SEQ_COUNT; i++)
 		m_pSequenceCache[i] = new CSequence();
+	ResetRecordCache();
 
 #ifdef EXPORT_TEST
 	m_bExportTesting = false;
@@ -296,8 +295,7 @@ void CSoundGen::RemoveDocument()
 	ASSERT(m_hThread != NULL);
 
 	// Player cannot play when removing the document
-	memset(m_pDumpCache, 0, sizeof(CInstrument*) * MAX_INSTRUMENTS);		// // //
-	m_pDumpInstrument = &m_pDumpCache[0];
+	ResetRecordCache();		// // //
 	StopPlayer();
 	WaitForStop();
 
@@ -352,8 +350,7 @@ void CSoundGen::RegisterChannels(int Chip, CFamiTrackerDoc *pDoc)
 void CSoundGen::SelectChip(int Chip)
 {
 	if (IsPlaying()) {
-		memset(m_pDumpCache, 0, sizeof(CInstrument*) * MAX_INSTRUMENTS);		// // //
-		m_pDumpInstrument = &m_pDumpCache[0];
+		ResetRecordCache();		// // //
 		StopPlayer();
 	}
 
@@ -962,7 +959,7 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 
 	if (m_iRecordChannel != -1) {
 		m_iDumpCount = m_stRecordSetting.InstCount;
-		m_pDumpInstrument = &m_pDumpCache[0];
+		ResetRecordCache();
 		InitRecordInstrument();
 	}
 }
@@ -1189,8 +1186,9 @@ void CSoundGen::SetupSpeed()
 
 void CSoundGen::RecordInstrument()		// // //
 {
-	if (m_iRecordChannel == -1 || m_iPlayTicks > m_stRecordSetting.Interval * m_stRecordSetting.InstCount + 1) return;
-	if (m_iPlayTicks % m_stRecordSetting.Interval == 1 && m_iPlayTicks > m_stRecordSetting.Interval) {
+	unsigned int Intv = static_cast<unsigned>(m_stRecordSetting.Interval);
+	if (m_iRecordChannel == -1 || m_iPlayTicks > Intv * m_stRecordSetting.InstCount + 1) return;
+	if (m_iPlayTicks % Intv == 1 && m_iPlayTicks > Intv) {
 		if (*m_pDumpInstrument != NULL && m_pTrackerView != NULL) {
 			m_pTrackerView->PostMessage(WM_USER_DUMP_INST);
 			m_pDumpInstrument++;
@@ -1199,7 +1197,7 @@ void CSoundGen::RecordInstrument()		// // //
 	}
 	if (m_pChannels[m_iRecordChannel] == NULL) return;
 	bool Temp = *m_pDumpInstrument == NULL;
-	int Pos = (m_iPlayTicks - 1) % m_stRecordSetting.Interval;
+	int Pos = (m_iPlayTicks - 1) % Intv;
 
 	CSeqInstrument *Inst = NULL;
 	CSequence *Seq = NULL;
@@ -1344,7 +1342,7 @@ void CSoundGen::RecordInstrument()		// // //
 void CSoundGen::InitRecordInstrument()
 {
 	if (m_pDocument->GetInstrumentCount() >= MAX_INSTRUMENTS) {
-		return;
+		m_iDumpCount = 0; m_iRecordChannel = -1; return;
 	}
 	inst_type_t Type = INST_NONE; // optimize this
 	switch (m_pTrackerChannels[m_iRecordChannel]->GetChip()) {
@@ -1380,9 +1378,21 @@ void CSoundGen::InitRecordInstrument()
 		Seq->SetSetting(SETTING_ARP_FIXED);
 		// Seq = m_pDocument->GetSequence(m_pDumpInstrument->GetType(), Inst->GetSeqIndex(SEQ_PITCH), SEQ_PITCH);
 		// Seq->SetSetting(SETTING_PITCH_ABSOLUTE);
-		// if (m_iRecordChannel == CHANID_VRC6_SAWTOOTH) {} // 64-step volume
+		switch (m_iRecordChannel) {
+		case CHANID_TRIANGLE:
+			Inst->SetSeqEnable(SEQ_DUTYCYCLE, 0); break;
+		// case CHANID_VRC6_SAWTOOTH: // 64-step volume
+		}
 		break;
 	}
+}
+
+void CSoundGen::ResetRecordCache()
+{
+	memset(m_pDumpCache, 0, sizeof(CInstrument*) * MAX_INSTRUMENTS);
+	m_pDumpInstrument = &m_pDumpCache[0];
+	for (int i = 0; i < SEQ_COUNT; i++)
+		m_pSequenceCache[i]->Clear();
 }
 
 int CSoundGen::GetRecordChannel() const
@@ -1415,15 +1425,13 @@ void CSoundGen::ResetDumpInstrument()
 	if (m_iDumpCount < 0) return;
 	if (m_iDumpCount && !*m_pDumpInstrument)
 		InitRecordInstrument();
-	else if (m_stRecordSetting.Reset || !IsPlaying()) {
-		m_stRecordSetting.Interval = MAX_SEQUENCE_ITEMS;
-		m_stRecordSetting.InstCount = 1;
+	else {
 		m_iRecordChannel = -1;
+		if (!IsPlaying() && m_stRecordSetting.Reset) {
+			m_stRecordSetting.Interval = MAX_SEQUENCE_ITEMS;
+			m_stRecordSetting.InstCount = 1;
+		}
 	}
-	// only when closing
-	//if (IsPlaying() && m_pDumpInstrument != NULL)
-	//	m_pDumpInstrument->Release();
-	//m_pDumpCache[m_iPlayTicks / m_stRecordSetting.Interval - (IsPlaying() ? 1 : 0)] = NULL;
 }
 
 // Return current tempo setting in BPM
@@ -2353,8 +2361,7 @@ void CSoundGen::OnRemoveDocument(WPARAM wParam, LPARAM lParam)
 	// Remove document and view pointers
 	m_pDocument = NULL;
 	m_pTrackerView = NULL;
-	memset(m_pDumpCache, 0, sizeof(CInstrument*) * MAX_INSTRUMENTS);		// // //
-	m_pDumpInstrument = &m_pDumpCache[0];
+	ResetRecordCache();
 	TRACE0("SoundGen: Document removed\n");
 }
 
