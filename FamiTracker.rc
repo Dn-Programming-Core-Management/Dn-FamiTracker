@@ -2451,6 +2451,9 @@ BEGIN
     ID_BOOKMARKS_PREVIOUS   "Navigate to the previous bookmark\nPrevious Bookmark"
     ID_BOOKMARKS_NEXT       "Navigate to the next bookmark\nNext Bookmark"
     ID_EDIT_SWAPCHANNELS    "Exchange the position of two channels\nSwap Channels"
+    ID_TRACKER_RECORDTOINST "Create a new instrument by logging output from current channel\nRecord to Instrument"
+    ID_TRACKER_RECORDERSETTINGS 
+                            "Open the instrument recorder settings dialog\nRecorder Settings"
 END
 
 #endif    // English (United States) resources
