@@ -137,11 +137,9 @@ protected:
 
 	CEdit *m_cFindNoteField, *m_cFindInstField, *m_cFindVolField, *m_cFindEffField;
 	CEdit *m_cReplaceNoteField, *m_cReplaceInstField, *m_cReplaceVolField, *m_cReplaceEffField;
-	CEdit *m_cFindMacroField, *m_cReplaceMacroField, *m_cFilterMacroField;
 	CComboBox *m_cSearchArea, *m_cEffectColumn;
 
 	searchTerm m_searchTerm, m_replaceTerm;
-	bool m_bFindMacro, m_bReplaceMacro, m_bFilterMacro;
 	bool m_bFound, m_bSkipFirst, m_bVisible;
 	int m_iFrame, m_iRow, m_iChannel;
 	static const CString m_pNoteName[7];

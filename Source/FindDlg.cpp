@@ -40,9 +40,6 @@
 IMPLEMENT_DYNAMIC(CFindDlg, CDialog)
 
 CFindDlg::CFindDlg(CWnd* pParent /*=NULL*/) : CDialog(CFindDlg::IDD, pParent),
-	m_bFindMacro(false),
-	m_bReplaceMacro(false),
-	m_bFilterMacro(false),
 	m_bFound(false),
 	m_bSkipFirst(true),
 	m_bVisible(true),
@@ -64,9 +61,6 @@ CFindDlg::~CFindDlg()
 	SAFE_RELEASE(m_cReplaceInstField);
 	SAFE_RELEASE(m_cReplaceVolField);
 	SAFE_RELEASE(m_cReplaceEffField);
-	SAFE_RELEASE(m_cFindMacroField);
-	SAFE_RELEASE(m_cReplaceMacroField);
-	SAFE_RELEASE(m_cFilterMacroField);
 	SAFE_RELEASE(m_cSearchArea);
 	SAFE_RELEASE(m_cEffectColumn);
 	m_searchTerm.Release();
@@ -80,10 +74,6 @@ void CFindDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CFindDlg, CDialog)
-	ON_BN_CLICKED(IDC_RADIO_FIND_SIMPLE, UpdateFields)
-	ON_BN_CLICKED(IDC_RADIO_FIND_MACRO, UpdateFields)
-	ON_BN_CLICKED(IDC_RADIO_REPLACE_SIMPLE, UpdateFields)
-	ON_BN_CLICKED(IDC_RADIO_REPLACE_MACRO, UpdateFields)
 	ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_FIND_NOTE, IDC_CHECK_FIND_EFF, OnUpdateFields)
 	ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_REPLACE_NOTE, IDC_CHECK_REPLACE_EFF, OnUpdateFields)
 	ON_BN_CLICKED(IDC_BUTTON_FIND_NEXT, OnBnClickedButtonFindNext)
@@ -218,9 +208,6 @@ BOOL CFindDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	CheckRadioButton(IDC_RADIO_FIND_SIMPLE, IDC_RADIO_FIND_MACRO, IDC_RADIO_FIND_SIMPLE);
-	CheckRadioButton(IDC_RADIO_REPLACE_SIMPLE, IDC_RADIO_REPLACE_MACRO, IDC_RADIO_REPLACE_SIMPLE);
-
 	m_cFindNoteField     = new CEdit();
 	m_cFindInstField     = new CEdit();
 	m_cFindVolField      = new CEdit();
@@ -229,9 +216,6 @@ BOOL CFindDlg::OnInitDialog()
 	m_cReplaceInstField  = new CEdit();
 	m_cReplaceVolField   = new CEdit();
 	m_cReplaceEffField   = new CEdit();
-	m_cFindMacroField    = new CEdit();
-	m_cReplaceMacroField = new CEdit();
-	m_cFilterMacroField  = new CEdit();
 
 	m_cFindNoteField    ->SubclassDlgItem(IDC_EDIT_FIND_NOTE, this);
 	m_cFindInstField    ->SubclassDlgItem(IDC_EDIT_FIND_INST, this);
@@ -241,9 +225,6 @@ BOOL CFindDlg::OnInitDialog()
 	m_cReplaceInstField ->SubclassDlgItem(IDC_EDIT_REPLACE_INST, this);
 	m_cReplaceVolField  ->SubclassDlgItem(IDC_EDIT_REPLACE_VOL, this);
 	m_cReplaceEffField  ->SubclassDlgItem(IDC_EDIT_REPLACE_EFF, this);
-	m_cFindMacroField   ->SubclassDlgItem(IDC_EDIT_FIND_MACRO, this);
-	m_cReplaceMacroField->SubclassDlgItem(IDC_EDIT_REPLACE_MACRO, this);
-	m_cFilterMacroField ->SubclassDlgItem(IDC_EDIT_FILTER_MACRO, this);
 
 	m_cSearchArea = new CComboBox();
 	m_cEffectColumn = new CComboBox();
@@ -266,28 +247,14 @@ BOOL CFindDlg::OnInitDialog()
 
 void CFindDlg::UpdateFields()
 {
-	m_bFindMacro = IsDlgButtonChecked(IDC_RADIO_FIND_MACRO) ? true : false;
-	if (m_bFindMacro) {
-		CheckRadioButton(IDC_RADIO_REPLACE_SIMPLE, IDC_RADIO_REPLACE_MACRO, IDC_RADIO_REPLACE_MACRO);
-		GetDlgItem(IDC_RADIO_REPLACE_SIMPLE)->EnableWindow(false);
-	}
-	else
-		GetDlgItem(IDC_RADIO_REPLACE_SIMPLE)->EnableWindow(true);
-	m_bReplaceMacro = m_bFindMacro || IsDlgButtonChecked(IDC_RADIO_REPLACE_MACRO) ? true : false;
-	m_bFilterMacro = m_cSearchArea->GetCurSel() == 4 ? true : false;
-
-	m_cFindNoteField->EnableWindow((!m_bFindMacro) && IsDlgButtonChecked(IDC_CHECK_FIND_NOTE));
-	m_cFindInstField->EnableWindow((!m_bFindMacro) && IsDlgButtonChecked(IDC_CHECK_FIND_INST));
-	m_cFindVolField->EnableWindow((!m_bFindMacro) && IsDlgButtonChecked(IDC_CHECK_FIND_VOL));
-	m_cFindEffField->EnableWindow((!m_bFindMacro) && IsDlgButtonChecked(IDC_CHECK_FIND_EFF));
-	m_cReplaceNoteField->EnableWindow(!m_bReplaceMacro && IsDlgButtonChecked(IDC_CHECK_REPLACE_NOTE));
-	m_cReplaceInstField->EnableWindow(!m_bReplaceMacro && IsDlgButtonChecked(IDC_CHECK_REPLACE_INST));
-	m_cReplaceVolField->EnableWindow(!m_bReplaceMacro && IsDlgButtonChecked(IDC_CHECK_REPLACE_VOL));
-	m_cReplaceEffField->EnableWindow(!m_bReplaceMacro && IsDlgButtonChecked(IDC_CHECK_REPLACE_EFF));
-
-	m_cFindMacroField->EnableWindow(m_bFindMacro);
-	m_cReplaceMacroField->EnableWindow(m_bReplaceMacro);
-	m_cFilterMacroField->EnableWindow(m_bFilterMacro);
+	m_cFindNoteField->EnableWindow(IsDlgButtonChecked(IDC_CHECK_FIND_NOTE));
+	m_cFindInstField->EnableWindow(IsDlgButtonChecked(IDC_CHECK_FIND_INST));
+	m_cFindVolField->EnableWindow(IsDlgButtonChecked(IDC_CHECK_FIND_VOL));
+	m_cFindEffField->EnableWindow(IsDlgButtonChecked(IDC_CHECK_FIND_EFF));
+	m_cReplaceNoteField->EnableWindow(IsDlgButtonChecked(IDC_CHECK_REPLACE_NOTE));
+	m_cReplaceInstField->EnableWindow(IsDlgButtonChecked(IDC_CHECK_REPLACE_INST));
+	m_cReplaceVolField->EnableWindow(IsDlgButtonChecked(IDC_CHECK_REPLACE_VOL));
+	m_cReplaceEffField->EnableWindow(IsDlgButtonChecked(IDC_CHECK_REPLACE_EFF));
 }
 
 void CFindDlg::OnUpdateFields(UINT nID)
@@ -642,8 +609,6 @@ bool CFindDlg::Find(bool ShowEnd)
 	unsigned int Filter = m_cSearchArea->GetCurSel();
 	int Track = static_cast<CMainFrame*>(theApp.m_pMainWnd)->GetSelectedTrack();
 
-	if (m_bFindMacro) { m_bFound = false; return false; } // 0CC: unimplemented
-
 	unsigned int BeginFrame = m_bVisible ? m_pView->GetSelectedFrame() : m_iFrame,
 				 BeginRow   = m_bVisible ? m_pView->GetSelectedRow() : m_iRow,
 				 BeginChan  = m_bVisible ? m_pView->GetSelectedChannel() : m_iChannel;
@@ -704,8 +669,6 @@ bool CFindDlg::Replace(bool CanUndo)
 	m_pView = static_cast<CFamiTrackerView*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveView());
 	stChanNote Target;
 	int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
-
-	if (m_bReplaceMacro) return false; // 0CC: unimplemented
 
 	replaceTerm Replace = toReplace(m_replaceTerm);
 

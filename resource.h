@@ -590,10 +590,6 @@
 #define IDC_SPIN_PAD                    1368
 #define IDC_BUTTON_FIND_NEXT            1370
 #define IDC_BUTTON_REPLACE              1371
-#define IDC_RADIO_FIND_SIMPLE           1372
-#define IDC_RADIO_FIND_MACRO            1373
-#define IDC_RADIO_REPLACE_SIMPLE        1374
-#define IDC_RADIO_REPLACE_MACRO         1375
 #define IDC_CHECK_FIND_NOTE             1376
 #define IDC_CHECK_FIND_VOL              1377
 #define IDC_CHECK_FIND_INST             1378
@@ -602,15 +598,10 @@
 #define IDC_EDIT_FIND_VOL               1381
 #define IDC_EDIT_FIND_INST              1382
 #define IDC_EDIT_FIND_EFF               1383
-#define IDC_EDIT_FIND_MACRO             1384
-#define IDC_EDIT_REPLACE_MACRO          1385
 #define IDC_COMBO_FIND_IN               1386
-#define IDC_EDIT_REPLACE_MACRO2         1387
-#define IDC_EDIT_FILTER_MACRO           1387
 #define IDC_CHECK_FIND_KEEP             1388
 #define IDC_COMBO_EFFCOLUMN             1389
 #define IDC_CHECK_REPLACE_ALL           1390
-#define IDC_CHECK_RANDOM_MACRO          1391
 #define IDC_CHECK_VERTICAL_SEARCH       1392
 #define IDC_CHECK_REPLACE_NOTE          1393
 #define IDC_CHECK_REPLACE_VOL           1394
