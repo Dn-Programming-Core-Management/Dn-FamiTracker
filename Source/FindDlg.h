@@ -23,52 +23,17 @@
 #pragma once
 
 #include "FamiTrackerView.h"
-/*
-struct searchTerm
-{
-	stChanNote Note;
-	bool Definite[6];
-	unsigned char rowOffset;
-	unsigned char colOffset;
-	bool NoiseChan;
-};
-*/
 
 class CharRange
 {
 public:
-	CharRange() { Min = 0x00; Max = 0xFF; };
+	CharRange() { Min = '\x00'; Max = '\xFF'; };
 	CharRange(unsigned char a, unsigned char b) { Min = a; Max = b; };
+	void Set(unsigned char x, bool Half = false) { if (!Half) Min = x; Max = x; };
+	bool IsMatch(unsigned char x) const { return (x >= Min && x <= Max) || (x >= Max && x <= Min); };
+	bool IsSingle() const { return Min == Max; };
 	unsigned char Min;
 	unsigned char Max;
-};
-
-class CharQuery
-{
-public:
-	CharQuery() { Current = new CharRange(); Next = NULL; };
-	~CharQuery() { if (Next) Next->~CharQuery(); SAFE_RELEASE(Current); };
-	CharQuery(unsigned char a) { Current = new CharRange(a, a); Next = NULL; };
-	CharQuery(unsigned char a, unsigned char b) { Current = new CharRange(a, b); Next = NULL; };
-	CharQuery(CharRange *r) { Current = new CharRange(r->Min, r->Max); Next = NULL; };
-	CharRange* Current;
-	CharQuery* Next;
-
-	bool IsMatch(unsigned char x) const;
-	bool IsSingle() const;
-	void Join(CharRange *Range);
-	bool ParseTerm(CharQuery *target, CString &in, CString &err);
-	bool ParseFull(CString &in, CString &err);
-
-	CharQuery& operator=(unsigned char x) { Current->Min = x; Current->Max = x; SAFE_RELEASE(Next); return *this; };
-	CharQuery& operator+=(unsigned char x) { Current->Min += x; Current->Max += x; return *this; };
-	CharQuery& operator-=(unsigned char x) { Current->Min -= x; Current->Max -= x; return *this; };
-	bool operator>(unsigned char x) { return Current->Max > x && Current->Min > x; };
-	bool operator<(unsigned char x) { return Current->Max < x && Current->Min < x; };
-	bool operator>=(unsigned char x) { return Current->Max >= x && Current->Min >= x; };
-	bool operator<=(unsigned char x) { return Current->Max <= x && Current->Min <= x; };
-	bool operator==(unsigned char x) { return Current->Max == x && Current->Min == x; };
-	bool operator!=(unsigned char x) { return Current->Max != x || Current->Min != x; };
 };
 
 class searchTerm
@@ -78,24 +43,20 @@ public:
 
 	void Release();
 
-	CharQuery *Note;
-	CharQuery *Oct;
-	CharQuery *Inst;
-	CharQuery *Vol;
-	CharQuery *EffNumber[MAX_EFFECT_COLUMNS];
-	CharQuery *EffParam[MAX_EFFECT_COLUMNS];
-	bool Definite[6]; // 12
-	unsigned char rowOffset;
-	unsigned char colOffset;
+	CharRange *Note;
+	CharRange *Oct;
+	CharRange *Inst;
+	CharRange *Vol;
+	bool EffNumber[EF_COUNT];
+	CharRange *EffParam;
+	bool Definite[6];
 	bool NoiseChan;
 };
 
 struct replaceTerm
 {
 	stChanNote Note;
-	bool Definite[6]; // 12
-	unsigned char rowOffset;
-	unsigned char colOffset;
+	bool Definite[6];
 	bool NoiseChan;
 };
 
@@ -120,10 +81,10 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-	bool ParseNote(searchTerm &Term, CString str, bool Simple, CString &err);
-	bool ParseInst(searchTerm &Term, CString str, bool Simple, CString &err);
-	bool ParseVol(searchTerm &Term, CString str, bool Simple, CString &err);
-	bool ParseEff(searchTerm &Term, CString str, bool Simple, CString &err);
+	bool ParseNote(searchTerm &Term, CString str, bool Half, CString &err);
+	bool ParseInst(searchTerm &Term, CString str, bool Half, CString &err);
+	bool ParseVol(searchTerm &Term, CString str, bool Half, CString &err);
+	bool ParseEff(searchTerm &Term, CString str, bool Half, CString &err);
 
 	bool GetSimpleFindTerm();
 	bool GetSimpleReplaceTerm();
@@ -136,6 +97,7 @@ protected:
 	CFamiTrackerView *m_pView;
 
 	CEdit *m_cFindNoteField, *m_cFindInstField, *m_cFindVolField, *m_cFindEffField;
+	CEdit *m_cFindNoteField2, *m_cFindInstField2, *m_cFindVolField2;
 	CEdit *m_cReplaceNoteField, *m_cReplaceInstField, *m_cReplaceVolField, *m_cReplaceEffField;
 	CComboBox *m_cSearchArea, *m_cEffectColumn;
 

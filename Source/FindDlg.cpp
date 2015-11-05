@@ -98,98 +98,20 @@ enum {
 
 class CPatternView;
 
-bool CharQuery::IsMatch(unsigned char x) const
-{
-	if (x >= Current->Min && x <= Current->Max)
-		return true;
-	else if (Next == NULL)
-		return false;
-	else
-		return Next->IsMatch(x);
-}
-
-bool CharQuery::IsSingle() const
-{
-	return Next == NULL && Current->Min == Current->Max;
-}
-
-void CharQuery::Join(CharRange *Range)
-{
-	if (Current == NULL)
-		Current = Range;
-	else if (Next == NULL)
-		Next = new CharQuery(Range);
-	else
-		Next->Join(Range);
-}
-
-bool CharQuery::ParseTerm(CharQuery *target, CString &in, CString &err)
-{
-	CString str;
-
-	if (in[0] == _T('[')) {
-		in.Delete(0);
-		str = in.SpanIncluding(_T("0123456789"));
-		FIND_RAISE_ERROR(str.GetLength() != in.Find(_T(',')), _T("Unexpected characters found in integer range."));
-		target->Current->Min = atoi(str);
-		in.Delete(0, str.GetLength() + 1);
-		str = in.SpanIncluding(_T("0123456789"));
-		FIND_RAISE_ERROR(str.GetLength() != in.Find(_T(']')), _T("Unexpected characters found in integer range."));
-		target->Current->Max = atoi(str);
-		in.Delete(0, str.GetLength() + 1);
-	}
-	else {
-		str = in.SpanIncluding(_T("0123456789"));
-		FIND_RAISE_ERROR(str.GetLength() != in.GetLength(), _T("Unexpected characters found in integer."));
-		target->Current->Min = atoi(str);
-		target->Current->Max = atoi(str);
-		in.Delete(0, str.GetLength());
-	}
-
-	FIND_RAISE_ERROR(target->Current->Min < 0 || target->Current->Min > 0xFF || target->Current->Max < 0 || target->Current->Max > 0xFF,
-		_T("Integer range must not exceed 0 and 255."));
-
-	return true;
-}
-
-bool CharQuery::ParseFull(CString &in, CString &err)
-{
-	int pos = 0;
-	CharQuery *now = Next;
-
-	if (in[0] != _T('(')) {
-		if (!ParseTerm(this, in, err)) return false;
-		FIND_RAISE_ERROR(in.GetLength(), _T("Unexpected characters found in integer query."));
-		return true;
-	}
-	in.Delete(0);
-	if (!ParseTerm(this, in, err)) return false;
-	while (in[0] == _T(',')) {
-		in.Delete(0);
-		now->Next = new CharQuery();
-		if (!ParseTerm(now, in, err)) return false;
-		now = now->Next;
-	}
-	FIND_RAISE_ERROR(in != _T(")"), _T("Incomplete integer query."));
-
-	return true;
-}
-
 searchTerm::searchTerm() :
-	rowOffset(0),
-	colOffset(0),
 	NoiseChan(false)
 {
-	Note = new CharQuery();
-	Oct  = new CharQuery();
-	Inst = new CharQuery();
-	Vol  = new CharQuery();
-	for (int i = 0; i < MAX_EFFECT_COLUMNS; i++) {
-		EffNumber[i] = new CharQuery();
-		EffParam[i]  = new CharQuery();
-	}
+	Note = new CharRange();
+	Oct  = new CharRange();
+	Inst = new CharRange();
+	Vol  = new CharRange();
+	for (size_t i = 0; i < EF_COUNT; i++)
+		EffNumber[i] = false;
+	EffParam = new CharRange();
 	for (int i = 0; i < 6; i++)
 		Definite[i] = false;
+	Inst->Set(MAX_INSTRUMENTS);
+	Vol->Set(MAX_VOLUME);
 }
 
 void searchTerm::Release()
@@ -198,10 +120,7 @@ void searchTerm::Release()
 	SAFE_RELEASE(Oct);
 	SAFE_RELEASE(Inst);
 	SAFE_RELEASE(Vol);
-	for (int i = 0; i < MAX_EFFECT_COLUMNS; i++) {
-		SAFE_RELEASE(EffNumber[i]);
-		SAFE_RELEASE(EffParam[i]);
-	}
+	SAFE_RELEASE(EffParam);
 }
 
 BOOL CFindDlg::OnInitDialog()
@@ -209,8 +128,11 @@ BOOL CFindDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	m_cFindNoteField     = new CEdit();
+	m_cFindNoteField2    = new CEdit();
 	m_cFindInstField     = new CEdit();
+	m_cFindInstField2    = new CEdit();
 	m_cFindVolField      = new CEdit();
+	m_cFindVolField2     = new CEdit();
 	m_cFindEffField      = new CEdit();
 	m_cReplaceNoteField  = new CEdit();
 	m_cReplaceInstField  = new CEdit();
@@ -218,8 +140,11 @@ BOOL CFindDlg::OnInitDialog()
 	m_cReplaceEffField   = new CEdit();
 
 	m_cFindNoteField    ->SubclassDlgItem(IDC_EDIT_FIND_NOTE, this);
+	m_cFindNoteField2   ->SubclassDlgItem(IDC_EDIT_FIND_NOTE2, this);
 	m_cFindInstField    ->SubclassDlgItem(IDC_EDIT_FIND_INST, this);
+	m_cFindInstField2   ->SubclassDlgItem(IDC_EDIT_FIND_INST2, this);
 	m_cFindVolField     ->SubclassDlgItem(IDC_EDIT_FIND_VOL, this);
+	m_cFindVolField2    ->SubclassDlgItem(IDC_EDIT_FIND_VOL2, this);
 	m_cFindEffField     ->SubclassDlgItem(IDC_EDIT_FIND_EFF, this);
 	m_cReplaceNoteField ->SubclassDlgItem(IDC_EDIT_REPLACE_NOTE, this);
 	m_cReplaceInstField ->SubclassDlgItem(IDC_EDIT_REPLACE_INST, this);
@@ -234,8 +159,11 @@ BOOL CFindDlg::OnInitDialog()
 	m_cEffectColumn->SetCurSel(0);
 
 	m_cFindNoteField   ->SetLimitText(3);
+	m_cFindNoteField2  ->SetLimitText(3);
 	m_cFindInstField   ->SetLimitText(2);
+	m_cFindInstField2  ->SetLimitText(2);
 	m_cFindVolField    ->SetLimitText(1);
+	m_cFindVolField2   ->SetLimitText(1);
 	m_cFindEffField    ->SetLimitText(3);
 	m_cReplaceNoteField->SetLimitText(3);
 	m_cReplaceInstField->SetLimitText(2);
@@ -248,8 +176,11 @@ BOOL CFindDlg::OnInitDialog()
 void CFindDlg::UpdateFields()
 {
 	m_cFindNoteField->EnableWindow(IsDlgButtonChecked(IDC_CHECK_FIND_NOTE));
+	m_cFindNoteField2->EnableWindow(IsDlgButtonChecked(IDC_CHECK_FIND_NOTE));
 	m_cFindInstField->EnableWindow(IsDlgButtonChecked(IDC_CHECK_FIND_INST));
+	m_cFindInstField2->EnableWindow(IsDlgButtonChecked(IDC_CHECK_FIND_INST));
 	m_cFindVolField->EnableWindow(IsDlgButtonChecked(IDC_CHECK_FIND_VOL));
+	m_cFindVolField2->EnableWindow(IsDlgButtonChecked(IDC_CHECK_FIND_VOL));
 	m_cFindEffField->EnableWindow(IsDlgButtonChecked(IDC_CHECK_FIND_EFF));
 	m_cReplaceNoteField->EnableWindow(IsDlgButtonChecked(IDC_CHECK_REPLACE_NOTE));
 	m_cReplaceInstField->EnableWindow(IsDlgButtonChecked(IDC_CHECK_REPLACE_INST));
@@ -262,160 +193,209 @@ void CFindDlg::OnUpdateFields(UINT nID)
 	UpdateFields();
 }
 
-bool CFindDlg::ParseNote(searchTerm &Term, CString str, bool Simple, CString &err)
+bool CFindDlg::ParseNote(searchTerm &Term, CString str, bool Half, CString &err)
 {
-	Term.Definite[WC_NOTE] = false;
-	Term.Definite[WC_OCT] = false;
+	if (!Half) Term.Definite[WC_NOTE] = Term.Definite[WC_OCT] = false;
+
 	if (str.IsEmpty()) {
+		if (!Half) {
+			Term.Definite[WC_NOTE] = true;
+			Term.Definite[WC_OCT] = true;
+			Term.Note->Set(NONE);
+			Term.Oct->Set(0);
+		}
+		else {
+			Term.Note->Max = Term.Note->Min;
+			Term.Oct->Max = Term.Oct->Min;
+		}
+		return true;
+	}
+
+	FIND_RAISE_ERROR(Half && (!Term.Note->IsSingle() || !Term.Oct->IsSingle()),
+		_T("Cannot use wildcards in a range search query."));
+
+	if (str == _T("-") || str == _T("---")) {
+		FIND_RAISE_ERROR(Half, _T("Cannot use note cut in a range search query."));
 		Term.Definite[WC_NOTE] = true;
 		Term.Definite[WC_OCT] = true;
-		*Term.Note = NONE;
-		*Term.Oct = 0;
+		Term.Note->Set(HALT);
+		Term.Oct->Min = 0; Term.Oct->Max = 7;
+		return true;
 	}
+
+	if (str == _T("=") || str == _T("===")) {
+		FIND_RAISE_ERROR(Half, _T("Cannot use note release in a range search query."));
+		Term.Definite[WC_NOTE] = true;
+		Term.Definite[WC_OCT] = true;
+		Term.Note->Set(RELEASE);
+		Term.Oct->Min = 0; Term.Oct->Max = 7;
+		return true;
+	}
+
+	if (str == _T(".")) {
+		FIND_RAISE_ERROR(Half, _T("Cannot use wildcards in a range search query."));
+		Term.Definite[WC_NOTE] = true;
+		Term.Note->Min = NONE + 1;
+		Term.Note->Max = ECHO;
+		return true;
+	}
+
+	if (str.Left(1) == _T("^")) {
+		FIND_RAISE_ERROR(Half, _T("Cannot use echo buffer in a range search query."));
+		Term.Definite[WC_NOTE] = true;
+		Term.Definite[WC_OCT] = true;
+		Term.Note->Set(ECHO);
+		if (str.Delete(0)) {
+			FIND_RAISE_ERROR(atoi(str) > ECHO_BUFFER_LENGTH,
+				_T("Echo buffer access \"^") + str + _T("\" is out of range, maximum is %d."), ECHO_BUFFER_LENGTH);
+			Term.Oct->Set(atoi(str), Half);
+		}
+		else {
+			Term.Oct->Min = 0; Term.Oct->Max = ECHO_BUFFER_LENGTH;
+		}
+		return true;
+	}
+
 	if (str.Mid(1, 2) != _T("-#")) for (int i = 0; i < 7; i++) {
 		if (str.Left(1).MakeUpper() == m_pNoteName[i]) {
-			CString Accidental = _T("");
 			Term.Definite[WC_NOTE] = true;
-			*Term.Note = m_iNoteOffset[i];
-			for (int j = 0; j < 3; j++)
-				if (str[1] == m_pNoteSign[j]) {
-					*Term.Note += j - 1;
-					Accidental = str[1];
-				}
-			if (str.Delete(0, 1 + Accidental.GetLength())) {
-				Term.Definite[WC_OCT] = true;
-				*Term.Oct = atoi(str);
-				FIND_RAISE_ERROR(*Term.Oct >= OCTAVE_RANGE || *Term.Oct < 0,
-					_T("Note octave \"") + str + _T("\" is out of range, maximum is 7."));
+			int Note = m_iNoteOffset[i];
+			int Oct = 0;
+			for (int j = 0; j < 3; j++) if (str[1] == m_pNoteSign[j]) {
+				Note += j - 1;
+				str.Delete(0); break;
 			}
-			if (*Term.Note > NOTE_RANGE) { *Term.Note -= NOTE_RANGE; *Term.Oct += 1; }
-			if (*Term.Note < 1) { *Term.Note += NOTE_RANGE; *Term.Oct -= 1; }
-			FIND_RAISE_ERROR(Term.Definite[WC_OCT] && (*Term.Oct >= OCTAVE_RANGE),
-				_T("Actual note octave \"" + str + "\" is out of range, check if the note contains Cb or B#."));
+			if (str.Delete(0)) {
+				Term.Definite[WC_OCT] = true;
+				FIND_RAISE_ERROR(str.SpanIncluding("0123456789") != str,
+					_T("Unknown note octave."));
+				Oct = atoi(str);
+				FIND_RAISE_ERROR(Oct >= OCTAVE_RANGE || Oct < 0,
+					_T("Note octave \"") + str + _T("\" is out of range, maximum is %d."), OCTAVE_RANGE - 1);
+				Term.Oct->Set(Oct, Half);
+			}
+			else FIND_RAISE_ERROR(Half, _T("Cannot use wildcards in a range search query.")); 
+			while (Note > NOTE_RANGE) { Note -= NOTE_RANGE; if (Term.Definite[WC_OCT]) Term.Oct->Set(++Oct, Half); }
+			while (Note < NOTE_C) { Note += NOTE_RANGE; if (Term.Definite[WC_OCT]) Term.Oct->Set(--Oct, Half); }
+			Term.Note->Set(Note, Half);
+			FIND_RAISE_ERROR(Term.Definite[WC_OCT] && (Oct >= OCTAVE_RANGE || Oct < 0),
+				_T("Note octave \"" + str + "\" is out of range, check if the note contains Cb or B#."));
 			return true;
 		}
 	}
-	if (!Term.Definite[WC_NOTE]) {
-		if (str.Right(2) == _T("-#") && str.GetLength() == 3) {
-			int NoteValue = static_cast<unsigned char>(strtol(str.Left(1), NULL, 16));
-			Term.Definite[WC_NOTE] = true;
-			Term.Definite[WC_OCT] = true;
-			*Term.Note = NoteValue % NOTE_RANGE + 1;
-			*Term.Oct = NoteValue / NOTE_RANGE;
-			Term.NoiseChan = true;
-		}
-		else if (str == _T("-") || str == _T("---")) {
-			Term.Definite[WC_NOTE] = true;
-			Term.Definite[WC_OCT] = true;
-			*Term.Note = HALT;
-			*Term.Oct = 0;
-		}
-		else if (str == _T("=") || str == _T("===")) {
-			Term.Definite[WC_NOTE] = true;
-			Term.Definite[WC_OCT] = true;
-			*Term.Note = RELEASE;
-			*Term.Oct = 0;
-		}
-		else if (str == _T(".")) {
-			Term.Definite[WC_NOTE] = true;
-			Term.Note->Current->Min = NONE + 1;
-			Term.Note->Current->Max = ECHO;
-		}
-		else if (str.Left(1) == _T("^")) {
-			Term.Definite[WC_NOTE] = true;
-			*Term.Note = ECHO;
-			if (str.Delete(0)) {
-				Term.Definite[WC_OCT] = true;
-				*Term.Oct = atoi(str);
-				FIND_RAISE_ERROR(*Term.Oct > ECHO_BUFFER_LENGTH,
-					_T("Echo buffer access \"^") + str + _T("\" is out of range, maximum is %d."), ECHO_BUFFER_LENGTH);
-			}
+
+	if (str.Right(2) == _T("-#") && str.GetLength() == 3) {
+		int NoteValue = static_cast<unsigned char>(strtol(str.Left(1), NULL, 16));
+		Term.Definite[WC_NOTE] = true;
+		Term.Definite[WC_OCT] = true;
+		if (str.Left(1) == _T(".")) {
+			Term.Note->Min = 1; Term.Note->Max = 4;
+			Term.Oct->Min = 0; Term.Oct->Max = 1;
 		}
 		else {
-			int NoteValue = atoi(str);
-			FIND_RAISE_ERROR(NoteValue == 0 && str.Left(1) != _T("0"),
-				_T("Invalid note \"" + str + "\"."));
-			FIND_RAISE_ERROR(NoteValue >= NOTE_COUNT || NoteValue < 0,
-				_T("Note value \"") + str + _T("\" is out of range, maximum is 95."));
-			Term.Definite[WC_NOTE] = true;
-			Term.Definite[WC_OCT] = true;
-			*Term.Note = NoteValue % NOTE_RANGE + 1;
-			*Term.Oct = NoteValue / NOTE_RANGE;
+			Term.Note->Set(NoteValue % NOTE_RANGE + 1, Half);
+			Term.Oct->Set(NoteValue / NOTE_RANGE, Half);
 		}
+		Term.NoiseChan = true;
+		return true;
 	}
 
-	return true;
+	if (str.SpanIncluding("0123456789") == str) {
+		int NoteValue = atoi(str);
+		FIND_RAISE_ERROR(NoteValue == 0 && str.Left(1) != _T("0"),
+						 _T("Invalid note \"" + str + "\"."));
+		FIND_RAISE_ERROR(NoteValue >= NOTE_COUNT || NoteValue < 0,
+						 _T("Note value \"") + str + _T("\" is out of range, maximum is 95."));
+		Term.Definite[WC_NOTE] = true;
+		Term.Definite[WC_OCT] = true;
+		Term.Note->Set(NoteValue % NOTE_RANGE + 1, Half);
+		Term.Oct->Set(NoteValue / NOTE_RANGE, Half);
+		return true;
+	}
+
+	FIND_RAISE_ERROR(true, _T("Unknown note query."));
 }
 
-bool CFindDlg::ParseInst(searchTerm &Term, CString str, bool Simple, CString &err)
+bool CFindDlg::ParseInst(searchTerm &Term, CString str, bool Half, CString &err)
 {
 	Term.Definite[WC_INST] = true;
-	if (str.IsEmpty())
-		*Term.Inst = MAX_INSTRUMENTS;
-	else if (str == _T(".")) {
-		Term.Inst->Current->Min = 0;
-		Term.Inst->Current->Max = MAX_INSTRUMENTS - 1;
+	if (str.IsEmpty() && !Half) {
+		Term.Inst->Set(MAX_INSTRUMENTS);
+		return true;
+	}
+	FIND_RAISE_ERROR(Half && !Term.Inst->IsSingle(),
+		_T("Cannot use wildcards in a range search query."));
+
+	if (str == _T(".")) {
+		FIND_RAISE_ERROR(Half, _T("Cannot use wildcards in a range search query."));
+		Term.Inst->Min = 0;
+		Term.Inst->Max = MAX_INSTRUMENTS - 1;
 	}
 	else {
-		*Term.Inst = static_cast<unsigned char>(strtol(str, NULL, 16));
-		FIND_RAISE_ERROR(*Term.Inst >= MAX_INSTRUMENTS,
-			_T("Instrument \"") + str + _T("\" is out of range, maximum is %2X."), MAX_INSTRUMENTS - 1);
+		unsigned char Val = static_cast<unsigned char>(strtol(str, NULL, 16));
+		FIND_RAISE_ERROR(Val >= MAX_INSTRUMENTS,
+			_T("Instrument \"") + str + _T("\" is out of range, maximum is %X."), MAX_INSTRUMENTS - 1);
+		Term.Inst->Set(Val, Half);
 	}
 
 	return true;
 }
 
-bool CFindDlg::ParseVol(searchTerm &Term, CString str, bool Simple, CString &err)
+bool CFindDlg::ParseVol(searchTerm &Term, CString str, bool Half, CString &err)
 {
 	Term.Definite[WC_VOL] = true;
-	if (str.IsEmpty())
-		*Term.Vol = MAX_VOLUME;
-	else if (str == _T(".")) {
-		Term.Vol->Current->Min = 0;
-		Term.Vol->Current->Max = MAX_VOLUME - 1;
+	if (str.IsEmpty() && !Half) {
+		Term.Vol->Set(MAX_VOLUME);
+		return true;
+	}
+	FIND_RAISE_ERROR(Half && !Term.Vol->IsSingle(),
+		_T("Cannot use wildcards in a range search query."));
+
+	if (str == _T(".")) {
+		FIND_RAISE_ERROR(Half, _T("Cannot use wildcards in a range search query."));
+		Term.Vol->Min = 0;
+		Term.Vol->Max = MAX_VOLUME - 1;
 	}
 	else {
-		*Term.Vol = static_cast<unsigned char>(strtol(str, NULL, 16));
-		FIND_RAISE_ERROR(*Term.Vol >= MAX_VOLUME,
-			_T("Channel volume \"") + str + _T("\" is out of range, maximum is F."));
+		unsigned char Val = static_cast<unsigned char>(strtol(str, NULL, 16));
+		FIND_RAISE_ERROR(Val >= MAX_VOLUME,
+			_T("Channel volume \"") + str + _T("\" is out of range, maximum is %X."), MAX_VOLUME - 1);
+		Term.Vol->Set(Val, Half);
 	}
 
 	return true;
 }
 
-bool CFindDlg::ParseEff(searchTerm &Term, CString str, bool Simple, CString &err)
+bool CFindDlg::ParseEff(searchTerm &Term, CString str, bool Half, CString &err)
 {
-	FIND_RAISE_ERROR(str.GetLength() > 3,
-		_T("Effect \"") + str.Left(1) + _T("\" is too long."));
 	FIND_RAISE_ERROR(str.GetLength() == 2,
 		_T("Effect \"") + str.Left(1) + _T("\" is too short."));
 
 	if (str.IsEmpty()) {
 		Term.Definite[WC_EFF] = true;
 		Term.Definite[WC_PARAM] = true;
-		*Term.EffNumber[0] = 0;
-		*Term.EffParam[0] = 0;
+		Term.EffNumber[EF_NONE] = true;
+		Term.EffParam->Set(0);
 	}
 	else if (str == _T(".")) {
 		Term.Definite[WC_EFF] = true;
-		Term.EffNumber[0]->Current->Min = 1;
-		Term.EffNumber[0]->Current->Max = EF_COUNT - 1;
+		for (size_t i = 1; i < EF_COUNT; i++)
+			Term.EffNumber[i] = true;
 	}
 	else {
-		SAFE_RELEASE(Term.EffNumber[0]->Next);
-		SAFE_RELEASE(Term.EffNumber[0]->Current);
-		for (unsigned char i = 0; i <= EF_COUNT; i++) {
-			if (str.Left(1) == EFF_CHAR[i]) {
+		char Name = str[0];
+		for (size_t i = 1; i < EF_COUNT; i++) {
+			if (Name == EFF_CHAR[i - 1]) {
 				Term.Definite[WC_EFF] = true;
-				Term.EffNumber[0]->Join(new CharRange(i + 1, i + 1));
+				Term.EffNumber[i] = true;
 			}
 		}
-		FIND_RAISE_ERROR(Term.EffNumber[0]->Current == NULL,
+		FIND_RAISE_ERROR(Term.EffNumber[EF_NONE],
 			_T("Unknown effect \"") + str.Left(1) + _T("\" found in search query."));
 	}
 	if (str.GetLength() > 1) {
 		Term.Definite[WC_PARAM] = true;
-		*Term.EffParam[0] = static_cast<unsigned char>(strtol(str.Right(2), NULL, 16));
+		Term.EffParam->Set(static_cast<unsigned char>(strtol(str.Right(2), NULL, 16)));
 	}
 
 	return true;
@@ -426,29 +406,32 @@ bool CFindDlg::GetSimpleFindTerm()
 {
 	CString str = _T(""), err = _T("");
 	searchTerm old = m_searchTerm;
-	*m_searchTerm.Inst = MAX_INSTRUMENTS;
-	*m_searchTerm.Vol = MAX_VOLUME;
+	m_searchTerm.Inst->Set(MAX_INSTRUMENTS);
+	m_searchTerm.Vol->Set(MAX_VOLUME);
 	for (int i = 0; i <= 6; i++)
 		m_searchTerm.Definite[i] = false;
 
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_NOTE)) {
 		m_cFindNoteField->GetWindowText(str);
+		if (!ParseNote(m_searchTerm, str, false, err))
+			RETURN_ERROR(err);
+		m_cFindNoteField2->GetWindowText(str);
 		if (!ParseNote(m_searchTerm, str, true, err))
 			RETURN_ERROR(err);
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_INST)) {
 		m_cFindInstField->GetWindowText(str);
-		if (!ParseInst(m_searchTerm, str, true, err))
+		if (!ParseInst(m_searchTerm, str, false, err))
 			RETURN_ERROR(err);
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_VOL)) {
 		m_cFindVolField->GetWindowText(str);
-		if (!ParseVol(m_searchTerm, str, true, err))
+		if (!ParseVol(m_searchTerm, str, false, err))
 			RETURN_ERROR(err);
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_EFF)) {
 		m_cFindEffField->GetWindowText(str);
-		if (!ParseEff(m_searchTerm, str, true, err))
+		if (!ParseEff(m_searchTerm, str, false, err))
 			RETURN_ERROR(err);
 	}
 
@@ -467,29 +450,29 @@ bool CFindDlg::GetSimpleReplaceTerm()
 {
 	CString str = _T(""), err = _T("");
 	searchTerm old = m_replaceTerm;
-	*m_replaceTerm.Inst = MAX_INSTRUMENTS;
-	*m_replaceTerm.Vol = MAX_VOLUME;
+	m_replaceTerm.Inst->Set(MAX_INSTRUMENTS);
+	m_replaceTerm.Vol->Set(MAX_VOLUME);
 	for (int i = 0; i <= 6; i++)
 		m_replaceTerm.Definite[i] = false;
 
 	if (IsDlgButtonChecked(IDC_CHECK_REPLACE_NOTE)) {
 		m_cReplaceNoteField->GetWindowText(str);
-		if (!ParseNote(m_replaceTerm, str, true, err))
+		if (!ParseNote(m_replaceTerm, str, false, err))
 			RETURN_ERROR(err);
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_REPLACE_INST)) {
 		m_cReplaceInstField->GetWindowText(str);
-		if (!ParseInst(m_replaceTerm, str, true, err))
+		if (!ParseInst(m_replaceTerm, str, false, err))
 			RETURN_ERROR(err);
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_REPLACE_VOL)) {
 		m_cReplaceVolField->GetWindowText(str);
-		if (!ParseVol(m_replaceTerm, str, true, err))
+		if (!ParseVol(m_replaceTerm, str, false, err))
 			RETURN_ERROR(err);
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_REPLACE_EFF)) {
 		m_cReplaceEffField->GetWindowText(str);
-		if (!ParseEff(m_replaceTerm, str, true, err))
+		if (!ParseEff(m_replaceTerm, str, false, err))
 			RETURN_ERROR(err);
 	}
 
@@ -498,18 +481,11 @@ bool CFindDlg::GetSimpleReplaceTerm()
 			RETURN_ERROR(_T("Replacement query is empty."));
 		if (m_replaceTerm.Definite[i]) break;
 	}
-	bool Wildcard = false;
-	if (m_replaceTerm.Definite[WC_NOTE] && !m_replaceTerm.Note->IsSingle()) Wildcard = true;
-	if (m_replaceTerm.Definite[WC_OCT]  && !m_replaceTerm.Oct->IsSingle()) Wildcard = true;
-	if (m_replaceTerm.Definite[WC_INST] && !m_replaceTerm.Inst->IsSingle()) Wildcard = true;
-	if (m_replaceTerm.Definite[WC_VOL]  && !m_replaceTerm.Vol->IsSingle()) Wildcard = true;
-	//if (m_replaceTerm.Definite[WC_EFF]) for (int i = 0; i < MAX_EFFECT_COLUMNS; i++) {
-	//	if (!m_replaceTerm.EffNumber[i]->IsSingle()) Wildcard = false;
-	//}
-	if (m_replaceTerm.Definite[WC_PARAM]) for (int i = 0; i < MAX_EFFECT_COLUMNS; i++) {
-		if (!m_replaceTerm.EffParam[i]->IsSingle()) Wildcard = false;
-	}
-	if (Wildcard)
+	if (m_replaceTerm.Definite[WC_NOTE] && !m_replaceTerm.Note->IsSingle() ||
+		m_replaceTerm.Definite[WC_OCT]  && !m_replaceTerm.Oct->IsSingle() ||
+		m_replaceTerm.Definite[WC_INST] && !m_replaceTerm.Inst->IsSingle() ||
+		m_replaceTerm.Definite[WC_VOL]  && !m_replaceTerm.Vol->IsSingle() ||
+		m_replaceTerm.Definite[WC_PARAM]&& !m_replaceTerm.EffParam->IsSingle())
 		RETURN_ERROR(_T("Replacement query cannot contain wildcards."));
 
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) {
@@ -526,20 +502,18 @@ bool CFindDlg::GetSimpleReplaceTerm()
 replaceTerm CFindDlg::toReplace(const searchTerm x)
 {
 	replaceTerm Term;
-	Term.Note.Note = x.Note->Current->Min;
-	Term.Note.Octave = x.Oct->Current->Min;
-	Term.Note.Instrument = x.Inst->Current->Min;
-	Term.Note.Vol = x.Vol->Current->Min;
-	Term.rowOffset = x.rowOffset;
-	Term.colOffset = x.colOffset;
+	Term.Note.Note = x.Note->Min;
+	Term.Note.Octave = x.Oct->Min;
+	Term.Note.Instrument = x.Inst->Min;
+	Term.Note.Vol = x.Vol->Min;
 	Term.NoiseChan = x.NoiseChan;
-	for (int i = 0; i < MAX_EFFECT_COLUMNS; i++) {
-		Term.Note.EffNumber[i] = static_cast<effect_t>(x.EffNumber[i]->Current->Min);
-		Term.Note.EffParam[i] = x.EffParam[i]->Current->Min;
-	}
-	for (int i = 0; i < 6; i++) {
-		Term.Definite[i] = x.Definite[i];
-	}
+	for (size_t i = 0; i < EF_COUNT; i++)
+		if (x.EffNumber[i]) {
+			Term.Note.EffNumber[0] = static_cast<effect_t>(i);
+			break;
+		}
+	Term.Note.EffParam[0] = x.EffParam->Min;
+	memcpy(Term.Definite, x.Definite, sizeof(bool) * 6);
 
 	return Term;
 }
@@ -547,20 +521,15 @@ replaceTerm CFindDlg::toReplace(const searchTerm x)
 searchTerm CFindDlg::toSearch(const replaceTerm x)
 {
 	searchTerm Term;
-	*Term.Note = x.Note.Note;
-	*Term.Oct = x.Note.Octave;
-	*Term.Inst = x.Note.Instrument;
-	*Term.Vol = x.Note.Vol;
-	Term.rowOffset = x.rowOffset;
-	Term.colOffset = x.colOffset;
+	Term.Note->Set(x.Note.Note);
+	Term.Oct->Set(x.Note.Octave);
+	Term.Inst->Set(x.Note.Instrument);
+	Term.Vol->Set(x.Note.Vol);
 	Term.NoiseChan = x.NoiseChan;
-	for (int i = 0; i < MAX_EFFECT_COLUMNS; i++) {
-		*Term.EffNumber[i] = x.Note.EffNumber[i];
-		*Term.EffParam[i] = x.Note.EffParam[i];
-	}
-	for (int i = 0; i < 6; i++) {
-		Term.Definite[i] = x.Definite[i];
-	}
+	for (size_t i = 0; i < EF_COUNT; i++)
+		Term.EffNumber[i] = i == x.Note.EffNumber[0];
+	Term.EffParam->Set(x.Note.EffParam[0]);
+	memcpy(Term.Definite, x.Definite, sizeof(bool) * 6);
 
 	return Term;
 }
@@ -569,36 +538,44 @@ bool CFindDlg::CompareFields(const stChanNote Target, bool Noise, int EffCount)
 {
 	int EffColumn = m_cEffectColumn->GetCurSel();
 	if (EffColumn > EffCount && EffColumn != 4) EffColumn = EffCount;
+	bool Negate = IsDlgButtonChecked(IDC_CHECK_FIND_NEGATE) == BST_CHECKED;
 	bool EffectMatch = false;
 
 	replaceTerm Term = toReplace(m_searchTerm);
 
-	if (Term.Definite[WC_NOTE]) {
-		if (Term.NoiseChan) {
-			if (!Noise) return false;
-			if (Term.Note.Note < NOTE_C || Term.Note.Note > NOTE_B) {
-				if (!m_searchTerm.Note->IsMatch(Target.Note)) return false;
+	if (m_searchTerm.Definite[WC_NOTE]) {
+		if (m_searchTerm.NoiseChan) {
+			if (!Noise && Term.Note.Note >= NOTE_C && Term.Note.Note <= NOTE_B) return Negate;
+			if (m_searchTerm.Note->Min < NOTE_C || m_searchTerm.Note->Min > NOTE_B ||
+				m_searchTerm.Note->Max < NOTE_C || m_searchTerm.Note->Max > NOTE_B) {
+				if (!m_searchTerm.Note->IsMatch(Target.Note)) return Negate;
 			}
-			else if (MIDI_NOTE(Term.Note.Octave, Term.Note.Note) != MIDI_NOTE(Target.Octave, Target.Note) % 16) return false;
+			else {
+				int NoiseNote = MIDI_NOTE(Target.Octave, Target.Note) % 16;
+				int Low = MIDI_NOTE(m_searchTerm.Oct->Min, m_searchTerm.Note->Min) % 16;
+				int High = MIDI_NOTE(m_searchTerm.Oct->Max, m_searchTerm.Note->Max) % 16;
+				if ((NoiseNote < Low && NoiseNote < High) || (NoiseNote > Low && NoiseNote > High))
+					return Negate;
+			}
 		}
 		else {
-			if (Noise && Term.Note.Note >= NOTE_C && Term.Note.Note <= NOTE_B) return false;
-			if (!m_searchTerm.Note->IsMatch(Target.Note)) return false;
-			if (Term.Definite[WC_OCT] && !m_searchTerm.Oct->IsMatch(Target.Octave)
+			if (Noise && Term.Note.Note >= NOTE_C && Term.Note.Note <= NOTE_B) return Negate;
+			if (!m_searchTerm.Note->IsMatch(Target.Note)) return Negate;
+			if (m_searchTerm.Definite[WC_OCT] && !m_searchTerm.Oct->IsMatch(Target.Octave)
 				&& (Term.Note.Note >= NOTE_C && Term.Note.Note <= NOTE_B || Term.Note.Note == ECHO))
-					return false;
+					return Negate;
 		}
 	}
-	if (Term.Definite[WC_INST] && !m_searchTerm.Inst->IsMatch(Target.Instrument)) return false;
-	if (Term.Definite[WC_VOL] && !m_searchTerm.Vol->IsMatch(Target.Vol)) return false;
+	if (m_searchTerm.Definite[WC_INST] && !m_searchTerm.Inst->IsMatch(Target.Instrument)) return Negate;
+	if (m_searchTerm.Definite[WC_VOL] && !m_searchTerm.Vol->IsMatch(Target.Vol)) return Negate;
 	for (int i = EffColumn % MAX_EFFECT_COLUMNS; i <= std::min(std::min(EffColumn, MAX_EFFECT_COLUMNS - 1), EffCount); i++) {
-		if ((!Term.Definite[WC_EFF] || m_searchTerm.EffNumber[0]->IsMatch(Target.EffNumber[i]))
-		&& (!Term.Definite[WC_PARAM] || m_searchTerm.EffParam[0]->IsMatch(Target.EffParam[i])))
+		if ((!m_searchTerm.Definite[WC_EFF] || m_searchTerm.EffNumber[Target.EffNumber[i]])
+		&& (!m_searchTerm.Definite[WC_PARAM] || m_searchTerm.EffParam->IsMatch(Target.EffParam[i])))
 			EffectMatch = true;
 	}
-	if (!EffectMatch) return false;
+	if (!EffectMatch) return Negate;
 
-	return true;
+	return !Negate;
 }
 
 bool CFindDlg::Find(bool ShowEnd)
@@ -612,7 +589,7 @@ bool CFindDlg::Find(bool ShowEnd)
 	unsigned int BeginFrame = m_bVisible ? m_pView->GetSelectedFrame() : m_iFrame,
 				 BeginRow   = m_bVisible ? m_pView->GetSelectedRow() : m_iRow,
 				 BeginChan  = m_bVisible ? m_pView->GetSelectedChannel() : m_iChannel;
-	bool bFirst = true, bSecond = false, bVertical = IsDlgButtonChecked(IDC_CHECK_VERTICAL_SEARCH) == 1;
+	bool bFirst = true, bSecond = false, bVertical = IsDlgButtonChecked(IDC_CHECK_VERTICAL_SEARCH) == BST_CHECKED;
 
 	const unsigned int EndFrame = FIND_SINGLE_FRAME(Filter) ? BeginFrame + 1 : m_pDocument->GetFrameCount(Track);
 	for (unsigned int i = FIND_SINGLE_FRAME(Filter) ? BeginFrame : 0; i <= EndFrame; i++) {

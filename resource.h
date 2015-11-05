@@ -598,7 +598,10 @@
 #define IDC_EDIT_FIND_VOL               1381
 #define IDC_EDIT_FIND_INST              1382
 #define IDC_EDIT_FIND_EFF               1383
+#define IDC_EDIT_FIND_NOTE2             1384
+#define IDC_EDIT_FIND_INST2             1385
 #define IDC_COMBO_FIND_IN               1386
+#define IDC_EDIT_FIND_VOL2              1387
 #define IDC_CHECK_FIND_KEEP             1388
 #define IDC_COMBO_EFFCOLUMN             1389
 #define IDC_CHECK_REPLACE_ALL           1390
@@ -613,6 +616,7 @@
 #define IDC_EDIT_REPLACE_EFF            1400
 #define IDC_CHECK_FIND_REMOVE           1401
 #define IDC_DETUNE_INFO_NTSC            1402
+#define IDC_CHECK_FIND_NEGATE           1402
 #define IDC_DETUNE_INFO_PAL             1403
 #define IDC_DETUNE_INFO_SAW             1404
 #define IDC_DETUNE_INFO_VRC7            1405
