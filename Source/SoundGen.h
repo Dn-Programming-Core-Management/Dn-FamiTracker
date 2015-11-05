@@ -262,6 +262,7 @@ private:
 	// // // Record instrument from registers
 	void		RecordInstrument();
 	void		InitRecordInstrument();
+	void		FinalizeRecordInstrument();
 	void		ResetRecordCache();
 
 	// Misc
@@ -348,6 +349,9 @@ private:
 	CInstrument			*m_pDumpCache[MAX_INSTRUMENTS];
 	CSequence			*m_pSequenceCache[SEQ_COUNT];
 	stRecordSetting		m_stRecordSetting;
+	char				*m_iRecordWaveCache;
+	int					m_iRecordWaveSize;
+	int					m_iRecordWaveCount;
 
 	int					m_iUpdateCycles;					// Number of cycles/APU update
 	int					m_iConsumedCycles;					// Cycles consumed by the update registers functions
