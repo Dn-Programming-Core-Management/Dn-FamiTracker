@@ -260,7 +260,7 @@ void CCompiler::ExportNSF(LPCTSTR lpszFileName, int MachineType)
 	unsigned short MusicDataAddress;
 
 	// Find out load address
-	if ((PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize) < 0x8000 || m_bBankSwitched)
+	if ((PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize) < 0x8000 || m_bBankSwitched || m_iActualChip != m_pDocument->GetExpansionChip()) // // //
 		bCompressedMode = false;
 	else
 		bCompressedMode = true;
@@ -392,7 +392,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	unsigned short MusicDataAddress;
 
 	// Find out load address
-	if ((PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize) < 0x8000 || m_bBankSwitched)
+	if ((PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize) < 0x8000 || m_bBankSwitched || m_iActualChip != m_pDocument->GetExpansionChip()) // // //
 		bCompressedMode = false;
 	else
 		bCompressedMode = true;
@@ -1368,9 +1368,6 @@ bool CCompiler::CompileData()
 		m_bBankSwitched = true;
 
 	if ((m_iMusicDataSize + m_iSamplesSize + m_iDriverSize) > 0x8000)
-		m_bBankSwitched = true;
-
-	if (Chip != m_iActualChip)		// // // enforce absolute address for multichip due to FDS
 		m_bBankSwitched = true;
 
 	if (m_bBankSwitched)
