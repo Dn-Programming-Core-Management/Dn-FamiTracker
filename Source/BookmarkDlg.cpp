@@ -39,6 +39,12 @@ CBookmarkDlg::CBookmarkDlg(CWnd* pParent /*=NULL*/)
 
 CBookmarkDlg::~CBookmarkDlg()
 {
+	SAFE_RELEASE(m_cListBookmark);
+	SAFE_RELEASE(m_cSpinFrame);
+	SAFE_RELEASE(m_cSpinRow);
+	SAFE_RELEASE(m_cSpinHighlight1);
+	SAFE_RELEASE(m_cSpinHighlight2);
+	SAFE_RELEASE(m_pBookmarkList);
 }
 
 void CBookmarkDlg::DoDataExchange(CDataExchange* pDX)
@@ -122,6 +128,8 @@ void CBookmarkDlg::LoadBookmarks()
 
 void CBookmarkDlg::LoadBookmarks(int Track)
 {
+	if (m_pBookmarkList != NULL)
+		SAFE_RELEASE(m_pBookmarkList);
 	m_pBookmarkList = m_pDocument->GetBookmarkList(Track);
 	m_cListBookmark->ResetContent();
 

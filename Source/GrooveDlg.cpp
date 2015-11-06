@@ -41,6 +41,10 @@ CGrooveDlg::CGrooveDlg(CWnd* pParent /*=NULL*/)
 
 CGrooveDlg::~CGrooveDlg()
 {
+	SAFE_RELEASE(m_cGrooveTable);
+	SAFE_RELEASE(m_cCurrentGroove);
+	for (int i = 0; i < MAX_GROOVE; i++)
+		SAFE_RELEASE(GrooveTable[i]);
 }
 
 void CGrooveDlg::DoDataExchange(CDataExchange* pDX)
@@ -156,16 +160,16 @@ void CGrooveDlg::OnBnClickedApply()
 	m_pDocument->SetModifiedFlag();
 	m_pDocument->SetExceededFlag();
 
-	int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
-
 	for (int i = 0; i < MAX_GROOVE; i++)
 		if (GrooveTable[i]->GetSize())
 			m_pDocument->SetGroove(i, GrooveTable[i]);
 		else {
 			m_pDocument->SetGroove(i, NULL);
-			if (m_pDocument->GetSongSpeed(Track) == i && m_pDocument->GetSongGroove(Track)) {
-				m_pDocument->SetSongSpeed(Track, DEFAULT_SPEED);
-				m_pDocument->SetSongGroove(Track, false);
+			const unsigned Tracks = m_pDocument->GetTrackCount();
+			for (unsigned j = 0; j < Tracks; j++)
+			if (m_pDocument->GetSongSpeed(j) == i && m_pDocument->GetSongGroove(j)) {
+				m_pDocument->SetSongSpeed(j, DEFAULT_SPEED);
+				m_pDocument->SetSongGroove(j, false);
 			}
 		}
 }

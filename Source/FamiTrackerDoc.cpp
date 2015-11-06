@@ -2908,11 +2908,7 @@ bool CFamiTrackerDoc::ImportTrack(int Track, CFamiTrackerDoc *pImported, int *pI
 	}
 
 	// // // Copy bookmarks
-	std::vector<stBookmark> *List = new std::vector<stBookmark>;
-	for (size_t i = 0; i < pImported->GetBookmarkList(Track)->size(); i++) {
-		List->push_back((*pImported->GetBookmarkList(Track))[i]);
-	}
-	SetBookmarkList(NewTrack, List);
+	SetBookmarkList(NewTrack, new std::vector<stBookmark>(*pImported->GetBookmarkList(Track)));
 
 	stChanNote data;
 
@@ -5370,21 +5366,23 @@ std::vector<stBookmark> *const CFamiTrackerDoc::GetBookmarkList(unsigned int Tra
 	if (m_pBookmarkList[Track] == NULL) {
 		m_pBookmarkList[Track] = new std::vector<stBookmark>();
 	}
-	return m_pBookmarkList[Track];
+	return new std::vector<stBookmark>(*m_pBookmarkList[Track]);
 }
 
 void CFamiTrackerDoc::SetBookmarkList(unsigned int Track, std::vector<stBookmark> *const List)
 {
-	m_pBookmarkList[Track] = List;
+	SAFE_RELEASE(m_pBookmarkList[Track]);
+	m_pBookmarkList[Track] = new std::vector<stBookmark>(*List);
 }
 
 void CFamiTrackerDoc::ClearBookmarkList(unsigned int Track)
 {
 	std::vector<stBookmark> *List = m_pBookmarkList[Track];
-	if (List != NULL)
-		for (auto it = List->begin(); it < List->end(); it++)
-			SAFE_RELEASE(it->Name);
-	SAFE_RELEASE(m_pBookmarkList[Track]);
+	if (List != NULL) {
+		for (int i = 0; i < List->size(); i++)
+			SAFE_RELEASE((*List)[i].Name);
+		SAFE_RELEASE(m_pBookmarkList[Track]);
+	}
 }
 
 void CFamiTrackerDoc::SetExceededFlag(bool Exceed)

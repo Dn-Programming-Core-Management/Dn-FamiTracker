@@ -54,8 +54,11 @@ CFindDlg::CFindDlg(CWnd* pParent /*=NULL*/) : CDialog(CFindDlg::IDD, pParent),
 CFindDlg::~CFindDlg()
 {
 	SAFE_RELEASE(m_cFindNoteField);
+	SAFE_RELEASE(m_cFindNoteField2);
 	SAFE_RELEASE(m_cFindInstField);
+	SAFE_RELEASE(m_cFindInstField2);
 	SAFE_RELEASE(m_cFindVolField);
+	SAFE_RELEASE(m_cFindVolField2);
 	SAFE_RELEASE(m_cFindEffField);
 	SAFE_RELEASE(m_cReplaceNoteField);
 	SAFE_RELEASE(m_cReplaceInstField);

@@ -38,6 +38,7 @@ CGotoDlg::CGotoDlg(CWnd* pParent /*=NULL*/)
 
 CGotoDlg::~CGotoDlg()
 {
+	SAFE_RELEASE(m_cChipEdit);
 }
 
 void CGotoDlg::DoDataExchange(CDataExchange* pDX)

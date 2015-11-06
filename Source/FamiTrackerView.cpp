@@ -1896,6 +1896,7 @@ void CFamiTrackerView::OnBookmarksToggle()
 	pDoc->SetModifiedFlag();
 	pDoc->SetExceededFlag();
 	m_pPatternEditor->InvalidatePatternData();
+	SAFE_RELEASE(List);
 }
 
 void CFamiTrackerView::OnBookmarksNext()
@@ -1911,7 +1912,7 @@ void CFamiTrackerView::OnBookmarksNext()
 	if (!List->size()) {
 		MessageBeep(MB_ICONINFORMATION);
 		pMainFrame->SetMessageText(IDS_BOOKMARK_EMPTY);
-		return;
+		SAFE_RELEASE(List); return;
 	}
 
 	const int PackedPos = GetSelectedFrame() * MAX_PATTERN_LENGTH + GetSelectedRow();
@@ -1938,6 +1939,7 @@ void CFamiTrackerView::OnBookmarksNext()
 		pMainFrame->UpdateBookmarkList(Closest - List->begin());
 		SetFocus();
 	}
+	SAFE_RELEASE(List);
 }
 
 void CFamiTrackerView::OnBookmarksPrevious()
@@ -1953,7 +1955,7 @@ void CFamiTrackerView::OnBookmarksPrevious()
 	if (!List->size()) {
 		MessageBeep(MB_ICONINFORMATION);
 		pMainFrame->SetMessageText(IDS_BOOKMARK_EMPTY);
-		return;
+		SAFE_RELEASE(List); return;
 	}
 	
 	const int PackedPos = GetSelectedFrame() * MAX_PATTERN_LENGTH + GetSelectedRow();
@@ -1980,6 +1982,7 @@ void CFamiTrackerView::OnBookmarksPrevious()
 		pMainFrame->UpdateBookmarkList(Closest - List->begin());
 		SetFocus();
 	}
+	SAFE_RELEASE(List);
 }
 
 void CFamiTrackerView::ToggleChannel(unsigned int Channel)
