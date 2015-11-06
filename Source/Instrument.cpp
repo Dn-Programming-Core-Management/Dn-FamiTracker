@@ -269,25 +269,25 @@ bool CSeqInstrument::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTracker
 
 int CSeqInstrument::Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index)
 {
-	int ModSwitch = 0;
 	int StoredBytes = 0;
 
+	const char *label = NULL;		// // //
+	switch (GetType()) {
+	case INST_2A03: pChunk->StoreByte(0);  label = CCompiler::LABEL_SEQ_2A03; break;
+	case INST_VRC6: pChunk->StoreByte(4);  label = CCompiler::LABEL_SEQ_VRC6; break;
+	case INST_N163: pChunk->StoreByte(9);  label = CCompiler::LABEL_SEQ_N163; break;
+	case INST_S5B:  pChunk->StoreByte(10); label = CCompiler::LABEL_SEQ_S5B;  break;
+	}
+	ASSERT(label != NULL);
+
+	int ModSwitch = 0;
 	for (unsigned i = 0; i < SEQ_COUNT; ++i) {
 		const CSequence *pSequence = pDoc->GetSequence(m_iType, unsigned(GetSeqIndex(i)), i);
 		ModSwitch = ModSwitch | (GetSeqEnable(i) && pSequence != NULL && pSequence->GetItemCount() > 0 ? (1 << i) : 0);
 	}
-
 	pChunk->StoreByte(ModSwitch);
-	StoredBytes++;
+	StoredBytes += 2;
 	
-	const char *label = NULL;		// // //
-	switch (GetType()) {
-	case INST_2A03: label = CCompiler::LABEL_SEQ_2A03; break;
-	case INST_VRC6: label = CCompiler::LABEL_SEQ_VRC6; break;
-	case INST_N163: label = CCompiler::LABEL_SEQ_N163; break;
-	case INST_S5B:  label = CCompiler::LABEL_SEQ_S5B;  break;
-	}
-	ASSERT(label != NULL);
 	for (unsigned i = 0; i < SEQ_COUNT; ++i) {
 		if (ModSwitch & (1 << i)) {
 			CStringA str;

@@ -36,7 +36,7 @@ const char TEST_WAVE[] = {
 	54, 58, 54, 51, 48, 50, 47, 47, 42, 39, 39, 36, 32, 22, 12, 01
 };
 
-const int FIXED_FDS_INST_SIZE = 1 + 16 + 4 + 1;
+const int FIXED_FDS_INST_SIZE = 2 + 16 + 4 + 1;		// // //
 
 CInstrumentFDS::CInstrumentFDS() : CInstrument(INST_FDS)		// // //
 {
@@ -301,6 +301,7 @@ int CInstrumentFDS::Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index)
 //	int Table = 0;
 //	pChunk->StoreByte(Table);
 
+	pChunk->StoreByte(7);		// // // CHAN_FDS
 	// Store modulation table, two entries/byte
 	for (int i = 0; i < 16; ++i) {
 		char Data = GetModulation(i << 1) | (GetModulation((i << 1) + 1) << 3);

@@ -98,6 +98,7 @@ int CInstrumentVRC7::Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index)
 {
 	int Patch = GetPatch();
 
+	pChunk->StoreByte(6);		// // // CHAN_VRC7
 	pChunk->StoreByte(Patch << 4);	// Shift up by 4 to make room for volume
 
 	if (Patch == 0) {
@@ -107,7 +108,7 @@ int CInstrumentVRC7::Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index)
 		}
 	}
 
-	return (Patch == 0) ? 9 : 1;
+	return (Patch == 0) ? 10 : 2;		// // //
 }
 
 bool CInstrumentVRC7::CanRelease() const
