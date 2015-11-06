@@ -33,8 +33,6 @@
 
 //#define NOISE_PITCH_SCALE
 
-static const int DUTY_2A03_FROM_VRC6[] = {0, 0, 1, 1, 1, 1, 2, 2};		// // //
-
 CChannelHandler2A03::CChannelHandler2A03() : 
 	CChannelHandler(0x7FF, 0x0F),
 	m_cSweep(0),

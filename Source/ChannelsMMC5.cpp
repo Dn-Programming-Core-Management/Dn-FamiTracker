@@ -177,6 +177,16 @@ void CChannelHandlerMMC5::RefreshChannel()		// // //
 	m_bResetEnvelope = false;
 }
 
+int CChannelHandlerMMC5::ConvertDuty(int Duty) const		// // //
+{
+	switch (m_iInstTypeCurrent) {
+	case INST_VRC6:	return DUTY_2A03_FROM_VRC6[Duty & 0x07];
+	case INST_N163:	return Duty;
+	case INST_S5B:	return 0x02;
+	default:		return Duty;
+	}
+}
+
 void CChannelHandlerMMC5::ClearRegisters()
 {
 	unsigned char Offs = 0x5000 + 4 * (m_iChannelID - CHANID_MMC5_SQUARE1);		// // //

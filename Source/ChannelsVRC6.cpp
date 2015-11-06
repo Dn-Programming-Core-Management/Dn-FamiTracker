@@ -29,8 +29,6 @@
 #include "ChannelsVRC6.h"
 #include "SoundGen.h"
 
-static const int DUTY_VRC6_FROM_2A03[] = {1, 3, 7, 3};		// // //
-
 CChannelHandlerVRC6::CChannelHandlerVRC6() : CChannelHandler(0xFFF, 0x0F)
 {
 }

@@ -32,6 +32,9 @@ enum seq_state_t {
 	SEQ_STATE_HALT
 };
 
+static const int DUTY_2A03_FROM_VRC6[] = {0, 0, 1, 1, 1, 1, 2, 2};		// // //
+static const int DUTY_VRC6_FROM_2A03[] = {1, 3, 7, 3};		// // //
+
 //
 // Sequence handler class
 //
