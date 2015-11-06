@@ -171,6 +171,8 @@ protected:
 
 	void	WriteRegister(uint16 Reg, uint8 Value);
 	void	WriteExternalRegister(uint16 Reg, uint8 Value);
+	
+	virtual int ConvertDuty(int Duty) const { return Duty; };		// // //
 
 	// CSequenceHandler virtual methods
 protected:
@@ -269,12 +271,13 @@ protected:
 	int				*m_pVibratoTable;				// Vibrato table
 
 	int				m_iPitch;						// Used by the pitch wheel
+	
+	inst_type_t		m_iInstTypeCurrent;				// // // Used for duty conversions
 
 	// Private variables
 private:
 	int				m_iMaxPeriod;					// Period register limit
 	int				m_iMaxVolume;					// Max channel volume
-
 };
 
 // Channel handler for channels with frequency registers

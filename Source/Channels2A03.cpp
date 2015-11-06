@@ -33,6 +33,8 @@
 
 //#define NOISE_PITCH_SCALE
 
+static const int DUTY_2A03_FROM_VRC6[] = {0, 0, 1, 1, 1, 1, 2, 2};		// // //
+
 CChannelHandler2A03::CChannelHandler2A03() : 
 	CChannelHandler(0x7FF, 0x0F),
 	m_cSweep(0),
@@ -101,6 +103,7 @@ bool CChannelHandler2A03::HandleInstrument(int Instrument, bool Trigger, bool Ne
 	if (pInstrument == NULL)
 		return false;
 
+	m_iInstTypeCurrent = pInstrument->GetType();		// // //
 	for (int i = 0; i < SEQ_COUNT; ++i) {
 		const CSequence *pSequence = pDocument->GetSequence(pInstrument->GetType(), pInstrument->GetSeqIndex(i), i); // // //
 		if (Trigger || !IsSequenceEqual(i, pSequence) || pInstrument->GetSeqEnable(i) > GetSequenceState(i)) {
@@ -232,6 +235,16 @@ void CSquare1Chan::RefreshChannel()
 	m_bResetEnvelope = false;		// // //
 }
 
+int CSquare1Chan::ConvertDuty(int Duty) const		// // //
+{
+	switch (m_iInstTypeCurrent) {
+	case INST_VRC6:	return DUTY_2A03_FROM_VRC6[Duty & 0x07];
+	case INST_N163:	return Duty;
+	case INST_S5B:	return 0x02;
+	default:		return Duty;
+	}
+}
+
 void CSquare1Chan::ClearRegisters()
 {
 	WriteRegister(0x4000, 0x30);
@@ -298,6 +311,16 @@ void CSquare2Chan::RefreshChannel()
 
 	m_iLastPeriod = Period;
 	m_bResetEnvelope = false;		// // //
+}
+
+int CSquare2Chan::ConvertDuty(int Duty) const		// // //
+{
+	switch (m_iInstTypeCurrent) {
+	case INST_VRC6:	return DUTY_2A03_FROM_VRC6[Duty & 0x07];
+	case INST_N163:	return Duty;
+	case INST_S5B:	return 0x02;
+	default:		return Duty;
+	}
 }
 
 void CSquare2Chan::ClearRegisters()

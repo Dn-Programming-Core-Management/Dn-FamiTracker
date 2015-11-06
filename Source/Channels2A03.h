@@ -65,6 +65,7 @@ public:
 	};
 	virtual void RefreshChannel();
 protected:
+	virtual int ConvertDuty(int Duty) const;		// // //
 	virtual void ClearRegisters();
 	virtual CString GetCustomEffectString() const;		// // //
 };
@@ -81,6 +82,7 @@ public:
 	};
 	virtual void RefreshChannel();
 protected:
+	virtual int ConvertDuty(int Duty) const;		// // //
 	virtual void ClearRegisters();
 	virtual CString GetCustomEffectString() const;		// // //
 };

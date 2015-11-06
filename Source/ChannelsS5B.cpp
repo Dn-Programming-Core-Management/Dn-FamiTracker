@@ -171,6 +171,7 @@ bool CChannelHandlerS5B::HandleInstrument(int Instrument, bool Trigger, bool New
 	if (pInstrument == NULL)
 		return false;
 
+	m_iInstTypeCurrent = pInstrument->GetType();		// // //
 	for (int i = 0; i < SEQ_COUNT; ++i) {
 		const CSequence *pSequence = pDocument->GetSequence(pInstrument->GetType(), pInstrument->GetSeqIndex(i), i); // // //
 		if (Trigger || !IsSequenceEqual(i, pSequence) || pInstrument->GetSeqEnable(i) > GetSequenceState(i)) {
@@ -240,6 +241,16 @@ void CChannelHandlerS5B::ResetChannel()
 	m_iEnvFreqHi = 0;
 	m_iEnvFreqLo = 0;
 	m_iEnvType = 0;
+}
+
+int CChannelHandlerS5B::ConvertDuty(int Duty) const		// // //
+{
+	switch (m_iInstTypeCurrent) {
+	case INST_2A03: case INST_VRC6: case INST_N163:
+		return S5B_MODE_SQUARE;
+	default:
+		return Duty;
+	}
 }
 
 void CChannelHandlerS5B::ClearRegisters()

@@ -48,6 +48,7 @@ public:
 	CVRC6Square1() : CChannelHandlerVRC6() { m_iDefaultDuty = 0; };
 	void RefreshChannel();
 protected:
+	virtual int ConvertDuty(int Duty) const;		// // //
 	void ClearRegisters();
 private:
 };
@@ -57,6 +58,7 @@ public:
 	CVRC6Square2() : CChannelHandlerVRC6() { m_iDefaultDuty = 0; };
 	void RefreshChannel();
 protected:
+	virtual int ConvertDuty(int Duty) const;		// // //
 	void ClearRegisters();
 private:
 };

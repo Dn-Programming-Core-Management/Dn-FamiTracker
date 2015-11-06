@@ -85,6 +85,7 @@ bool CChannelHandlerMMC5::HandleInstrument(int Instrument, bool Trigger, bool Ne
 	if (pInstrument == NULL)
 		return false;
 
+	m_iInstTypeCurrent = pInstrument->GetType();		// // //
 	for (int i = 0; i < SEQ_COUNT; ++i) {
 		const CSequence *pSequence = pDocument->GetSequence(pInstrument->GetType(), pInstrument->GetSeqIndex(i), i); // // //
 		if (Trigger || !IsSequenceEqual(i, pSequence) || pInstrument->GetSeqEnable(i) > GetSequenceState(i)) {

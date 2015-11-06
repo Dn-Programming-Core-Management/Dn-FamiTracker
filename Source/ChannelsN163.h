@@ -42,6 +42,7 @@ protected:
 	virtual void HandleRelease();
 	virtual void HandleNote(int Note, int Octave);
 	virtual void SetupSlide();		// // //
+	virtual int ConvertDuty(int Duty) const;		// // //
 	virtual void ClearRegisters();
 	virtual CString GetCustomEffectString() const;		// // //
 

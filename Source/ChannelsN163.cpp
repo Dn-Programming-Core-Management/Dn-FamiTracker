@@ -35,7 +35,7 @@ CChannelHandlerN163::CChannelHandlerN163() :
 	m_bLoadWave(false),
 	m_bDisableLoad(false),		// // //
 	m_bResetPhase(false),
-	m_iWaveLen(0),
+	m_iWaveLen(4),		// // //
 	m_iWaveIndex(0),
 	m_iWaveCount(0)
 {
@@ -116,6 +116,7 @@ bool CChannelHandlerN163::HandleInstrument(int Instrument, bool Trigger, bool Ne
 	if (pInstrument == NULL)
 		return false;
 
+	m_iInstTypeCurrent = pInstrument->GetType();		// // //
 	for (int i = 0; i < SEQ_COUNT; ++i) {
 		const CSequence *pSequence = pDocument->GetSequence(pInstrument->GetType(), pInstrument->GetSeqIndex(i), i); // // //
 		if (Trigger || !IsSequenceEqual(i, pSequence) || pInstrument->GetSeqEnable(i) > GetSequenceState(i)) {
@@ -248,6 +249,16 @@ void CChannelHandlerN163::RefreshChannel()
 	}
 }
 
+int CChannelHandlerN163::ConvertDuty(int Duty) const		// // //
+{
+	switch (m_iInstTypeCurrent) {
+	case INST_2A03: case INST_VRC6: case INST_S5B:
+		return -1;
+	default:
+		return Duty;
+	}
+}
+
 void CChannelHandlerN163::ClearRegisters()
 {
 	int Channel = GetIndex();
@@ -304,6 +315,7 @@ void CChannelHandlerN163::LoadWave()
 
 	if (m_iInstrument == MAX_INSTRUMENTS || !m_bGate)
 		return;
+	if (m_iWaveIndex < 0) return;		// // //
 
 	// Fill the wave RAM
 	CInstrumentContainer<CInstrumentN163> instContainer(pDocument, m_iInstrument);

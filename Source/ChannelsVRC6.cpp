@@ -29,6 +29,8 @@
 #include "ChannelsVRC6.h"
 #include "SoundGen.h"
 
+static const int DUTY_VRC6_FROM_2A03[] = {1, 3, 7, 3};		// // //
+
 CChannelHandlerVRC6::CChannelHandlerVRC6() : CChannelHandler(0xFFF, 0x0F)
 {
 }
@@ -54,6 +56,7 @@ bool CChannelHandlerVRC6::HandleInstrument(int Instrument, bool Trigger, bool Ne
 	if (pInstrument == NULL)
 		return false;
 
+	m_iInstTypeCurrent = pInstrument->GetType();		// // //
 	for (int i = 0; i < SEQ_COUNT; ++i) {
 		const CSequence *pSequence = pDocument->GetSequence(pInstrument->GetType(), pInstrument->GetSeqIndex(i), i); // // //
 		if (Trigger || !IsSequenceEqual(i, pSequence) || pInstrument->GetSeqEnable(i) > GetSequenceState(i)) {
@@ -131,6 +134,16 @@ void CVRC6Square1::RefreshChannel()
 	WriteExternalRegister(0x9002, 0x80 | LoFreq);
 }
 
+int CVRC6Square1::ConvertDuty(int Duty) const		// // //
+{
+	switch (m_iInstTypeCurrent) {
+	case INST_2A03:	return DUTY_VRC6_FROM_2A03[Duty & 0x03]; break;
+	case INST_N163:	return Duty; break;
+	case INST_S5B:	return 0x07; break;
+	default:		return Duty;
+	}
+}
+
 void CVRC6Square1::ClearRegisters()
 {
 	WriteExternalRegister(0x9000, 0);
@@ -159,6 +172,16 @@ void CVRC6Square2::RefreshChannel()
 	WriteExternalRegister(0xA000, DutyCycle | Volume);
 	WriteExternalRegister(0xA001, HiFreq);
 	WriteExternalRegister(0xA002, 0x80 | LoFreq);
+}
+
+int CVRC6Square2::ConvertDuty(int Duty) const		// // //
+{
+	switch (m_iInstTypeCurrent) {
+	case INST_2A03:	return DUTY_VRC6_FROM_2A03[Duty & 0x03];
+	case INST_N163:	return Duty;
+	case INST_S5B:	return 0x07;
+	default:		return Duty;
+	}
 }
 
 void CVRC6Square2::ClearRegisters()
