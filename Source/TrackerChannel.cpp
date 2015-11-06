@@ -30,7 +30,8 @@
  *
  */
 
-CTrackerChannel::CTrackerChannel(LPCTSTR pName, const int iChip, const int iID) : 
+CTrackerChannel::CTrackerChannel(LPCTSTR pName, LPCTSTR pShort, const int iChip, const int iID) :		// // //
+	m_pShortName(pShort),		// // //
 	m_pChannelName(pName),
 	m_iChip(iChip),
 	m_iChannelID(iID),
@@ -49,6 +50,11 @@ CTrackerChannel::~CTrackerChannel(void)
 LPCTSTR CTrackerChannel::GetChannelName() const
 {
 	return m_pChannelName;
+}
+
+LPCTSTR CTrackerChannel::GetShortName() const
+{
+	return m_pShortName;
 }
 
 const char CTrackerChannel::GetChip() const

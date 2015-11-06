@@ -197,52 +197,53 @@ void CSoundGen::CreateChannels()
 	}
 
 	// 2A03/2A07
+	// // // Short header names
 #ifdef _DUAL_CH		// // //
 	CSquare1Chan *PU1 = new CSquare1Chan();
-	AssignChannel(new CTrackerChannel(_T("Pulse 1"), SNDCHIP_NONE, CHANID_SQUARE1), PU1);
-	AssignChannel(new CTrackerChannel(_T("Pulse 1 SFX"), SNDCHIP_NONE, CHANID_SQUARE2), PU1);
+	AssignChannel(new CTrackerChannel(_T("Pulse 1"), _T("PU1"), SNDCHIP_NONE, CHANID_SQUARE1), PU1);
+	AssignChannel(new CTrackerChannel(_T("Pulse 1 SFX"), _T("PU1*"), SNDCHIP_NONE, CHANID_SQUARE2), PU1);
 #else
-	AssignChannel(new CTrackerChannel(_T("Pulse 1"), SNDCHIP_NONE, CHANID_SQUARE1), new CSquare1Chan());
-	AssignChannel(new CTrackerChannel(_T("Pulse 2"), SNDCHIP_NONE, CHANID_SQUARE2), new CSquare2Chan());
+	AssignChannel(new CTrackerChannel(_T("Pulse 1"), _T("PU1"), SNDCHIP_NONE, CHANID_SQUARE1), new CSquare1Chan());
+	AssignChannel(new CTrackerChannel(_T("Pulse 2"), _T("PU2"), SNDCHIP_NONE, CHANID_SQUARE2), new CSquare2Chan());
 #endif
-	AssignChannel(new CTrackerChannel(_T("Triangle"), SNDCHIP_NONE, CHANID_TRIANGLE), new CTriangleChan());
-	AssignChannel(new CTrackerChannel(_T("Noise"), SNDCHIP_NONE, CHANID_NOISE), new CNoiseChan());
-	AssignChannel(new CTrackerChannel(_T("DPCM"), SNDCHIP_NONE, CHANID_DPCM), new CDPCMChan(m_pSampleMem));
+	AssignChannel(new CTrackerChannel(_T("Triangle"), _T("TRI"), SNDCHIP_NONE, CHANID_TRIANGLE), new CTriangleChan());
+	AssignChannel(new CTrackerChannel(_T("Noise"), _T("NOI"), SNDCHIP_NONE, CHANID_NOISE), new CNoiseChan());
+	AssignChannel(new CTrackerChannel(_T("DPCM"), _T("DMC"), SNDCHIP_NONE, CHANID_DPCM), new CDPCMChan(m_pSampleMem));
 
 	// Konami VRC6
-	AssignChannel(new CTrackerChannel(_T("VRC6 Pulse 1"), SNDCHIP_VRC6, CHANID_VRC6_PULSE1), new CVRC6Square1());		// // //
-	AssignChannel(new CTrackerChannel(_T("VRC6 Pulse 2"), SNDCHIP_VRC6, CHANID_VRC6_PULSE2), new CVRC6Square2());		// // //
-	AssignChannel(new CTrackerChannel(_T("Sawtooth"), SNDCHIP_VRC6, CHANID_VRC6_SAWTOOTH), new CVRC6Sawtooth());
+	AssignChannel(new CTrackerChannel(_T("VRC6 Pulse 1"), _T("V1"), SNDCHIP_VRC6, CHANID_VRC6_PULSE1), new CVRC6Square1());		// // //
+	AssignChannel(new CTrackerChannel(_T("VRC6 Pulse 2"), _T("V2"), SNDCHIP_VRC6, CHANID_VRC6_PULSE2), new CVRC6Square2());		// // //
+	AssignChannel(new CTrackerChannel(_T("Sawtooth"), _T("SAW"), SNDCHIP_VRC6, CHANID_VRC6_SAWTOOTH), new CVRC6Sawtooth());
 
 	// Konami VRC7
-	AssignChannel(new CTrackerChannel(_T("FM Channel 1"), SNDCHIP_VRC7, CHANID_VRC7_CH1), new CVRC7Channel());
-	AssignChannel(new CTrackerChannel(_T("FM Channel 2"), SNDCHIP_VRC7, CHANID_VRC7_CH2), new CVRC7Channel());
-	AssignChannel(new CTrackerChannel(_T("FM Channel 3"), SNDCHIP_VRC7, CHANID_VRC7_CH3), new CVRC7Channel());
-	AssignChannel(new CTrackerChannel(_T("FM Channel 4"), SNDCHIP_VRC7, CHANID_VRC7_CH4), new CVRC7Channel());
-	AssignChannel(new CTrackerChannel(_T("FM Channel 5"), SNDCHIP_VRC7, CHANID_VRC7_CH5), new CVRC7Channel());
-	AssignChannel(new CTrackerChannel(_T("FM Channel 6"), SNDCHIP_VRC7, CHANID_VRC7_CH6), new CVRC7Channel());
+	AssignChannel(new CTrackerChannel(_T("FM Channel 1"), _T("FM1"), SNDCHIP_VRC7, CHANID_VRC7_CH1), new CVRC7Channel());
+	AssignChannel(new CTrackerChannel(_T("FM Channel 2"), _T("FM2"), SNDCHIP_VRC7, CHANID_VRC7_CH2), new CVRC7Channel());
+	AssignChannel(new CTrackerChannel(_T("FM Channel 3"), _T("FM3"), SNDCHIP_VRC7, CHANID_VRC7_CH3), new CVRC7Channel());
+	AssignChannel(new CTrackerChannel(_T("FM Channel 4"), _T("FM4"), SNDCHIP_VRC7, CHANID_VRC7_CH4), new CVRC7Channel());
+	AssignChannel(new CTrackerChannel(_T("FM Channel 5"), _T("FM5"), SNDCHIP_VRC7, CHANID_VRC7_CH5), new CVRC7Channel());
+	AssignChannel(new CTrackerChannel(_T("FM Channel 6"), _T("FM6"), SNDCHIP_VRC7, CHANID_VRC7_CH6), new CVRC7Channel());
 
 	// Nintendo FDS
-	AssignChannel(new CTrackerChannel(_T("FDS"), SNDCHIP_FDS, CHANID_FDS), new CChannelHandlerFDS());
+	AssignChannel(new CTrackerChannel(_T("FDS"), _T("FDS"), SNDCHIP_FDS, CHANID_FDS), new CChannelHandlerFDS());
 
 	// // // Nintendo MMC5
-	AssignChannel(new CTrackerChannel(_T("MMC5 Pulse 1"), SNDCHIP_MMC5, CHANID_MMC5_SQUARE1), new CChannelHandlerMMC5());
-	AssignChannel(new CTrackerChannel(_T("MMC5 Pulse 2"), SNDCHIP_MMC5, CHANID_MMC5_SQUARE2), new CChannelHandlerMMC5());
+	AssignChannel(new CTrackerChannel(_T("MMC5 Pulse 1"), _T("PU3"), SNDCHIP_MMC5, CHANID_MMC5_SQUARE1), new CChannelHandlerMMC5());
+	AssignChannel(new CTrackerChannel(_T("MMC5 Pulse 2"), _T("PU4"), SNDCHIP_MMC5, CHANID_MMC5_SQUARE2), new CChannelHandlerMMC5());
 
 	// Namco N163
-	AssignChannel(new CTrackerChannel(_T("Namco 1"), SNDCHIP_N163, CHANID_N163_CH1), new CChannelHandlerN163());
-	AssignChannel(new CTrackerChannel(_T("Namco 2"), SNDCHIP_N163, CHANID_N163_CH2), new CChannelHandlerN163());
-	AssignChannel(new CTrackerChannel(_T("Namco 3"), SNDCHIP_N163, CHANID_N163_CH3), new CChannelHandlerN163());
-	AssignChannel(new CTrackerChannel(_T("Namco 4"), SNDCHIP_N163, CHANID_N163_CH4), new CChannelHandlerN163());
-	AssignChannel(new CTrackerChannel(_T("Namco 5"), SNDCHIP_N163, CHANID_N163_CH5), new CChannelHandlerN163());
-	AssignChannel(new CTrackerChannel(_T("Namco 6"), SNDCHIP_N163, CHANID_N163_CH6), new CChannelHandlerN163());
-	AssignChannel(new CTrackerChannel(_T("Namco 7"), SNDCHIP_N163, CHANID_N163_CH7), new CChannelHandlerN163());
-	AssignChannel(new CTrackerChannel(_T("Namco 8"), SNDCHIP_N163, CHANID_N163_CH8), new CChannelHandlerN163());
+	AssignChannel(new CTrackerChannel(_T("Namco 1"), _T("N1"), SNDCHIP_N163, CHANID_N163_CH1), new CChannelHandlerN163());
+	AssignChannel(new CTrackerChannel(_T("Namco 2"), _T("N2"), SNDCHIP_N163, CHANID_N163_CH2), new CChannelHandlerN163());
+	AssignChannel(new CTrackerChannel(_T("Namco 3"), _T("N3"), SNDCHIP_N163, CHANID_N163_CH3), new CChannelHandlerN163());
+	AssignChannel(new CTrackerChannel(_T("Namco 4"), _T("N4"), SNDCHIP_N163, CHANID_N163_CH4), new CChannelHandlerN163());
+	AssignChannel(new CTrackerChannel(_T("Namco 5"), _T("N5"), SNDCHIP_N163, CHANID_N163_CH5), new CChannelHandlerN163());
+	AssignChannel(new CTrackerChannel(_T("Namco 6"), _T("N6"), SNDCHIP_N163, CHANID_N163_CH6), new CChannelHandlerN163());
+	AssignChannel(new CTrackerChannel(_T("Namco 7"), _T("N7"), SNDCHIP_N163, CHANID_N163_CH7), new CChannelHandlerN163());
+	AssignChannel(new CTrackerChannel(_T("Namco 8"), _T("N8"), SNDCHIP_N163, CHANID_N163_CH8), new CChannelHandlerN163());
 
 	// // // Sunsoft 5B
-	AssignChannel(new CTrackerChannel(_T("5B Square 1"), SNDCHIP_S5B, CHANID_S5B_CH1), new CChannelHandlerS5B());
-	AssignChannel(new CTrackerChannel(_T("5B Square 2"), SNDCHIP_S5B, CHANID_S5B_CH2), new CChannelHandlerS5B());
-	AssignChannel(new CTrackerChannel(_T("5B Square 3"), SNDCHIP_S5B, CHANID_S5B_CH3), new CChannelHandlerS5B());
+	AssignChannel(new CTrackerChannel(_T("5B Square 1"), _T("5B1"), SNDCHIP_S5B, CHANID_S5B_CH1), new CChannelHandlerS5B());
+	AssignChannel(new CTrackerChannel(_T("5B Square 2"), _T("5B2"), SNDCHIP_S5B, CHANID_S5B_CH2), new CChannelHandlerS5B());
+	AssignChannel(new CTrackerChannel(_T("5B Square 3"), _T("5B3"), SNDCHIP_S5B, CHANID_S5B_CH3), new CChannelHandlerS5B());
 }
 
 void CSoundGen::AssignChannel(CTrackerChannel *pTrackerChannel, CChannelHandler *pRenderer)

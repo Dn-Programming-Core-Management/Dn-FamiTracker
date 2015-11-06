@@ -36,9 +36,10 @@ enum note_prio_t {
 class CTrackerChannel
 {
 public:
-	CTrackerChannel(LPCTSTR pName, const int iChip, const int iID);
+	CTrackerChannel(LPCTSTR pName, LPCTSTR pShort, const int iChip, const int iID);		// // //
 	~CTrackerChannel(void);
 	LPCTSTR GetChannelName() const;
+	LPCTSTR GetShortName() const;		// // //
 	const char GetChip() const;
 	const int GetID() const;
 	const int GetColumnCount() const;
@@ -59,7 +60,7 @@ public:
 	bool IsEffectCompatible(int EffNumber, int EffParam) const;		// // //
 
 private:
-	LPCTSTR m_pChannelName;
+	LPCTSTR m_pChannelName, m_pShortName;		// // //
 
 private:
 	int m_iChip;

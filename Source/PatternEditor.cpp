@@ -1548,29 +1548,8 @@ void CPatternEditor::DrawHeader(CDC *pDC)
 
 		// Text
 		CTrackerChannel *pChannel = m_pDocument->GetChannel(Channel);
-		CString pChanName;		// // //
-		if (m_bCompactMode) {
-			switch (pChannel->GetID()) {
-			case CHANID_SQUARE1: pChanName = _T("PU1"); break;
-			case CHANID_SQUARE2: pChanName = _T("PU2"); break;
-			case CHANID_TRIANGLE: pChanName = _T("TRI"); break;
-			case CHANID_NOISE: pChanName = _T("NOI"); break;
-			case CHANID_DPCM: pChanName = _T("DMC"); break;
-			case CHANID_VRC6_SAWTOOTH: pChanName = _T("SAW"); break;
-			case CHANID_FDS: pChanName = _T("WAV"); break;
-			default:
-				int Type = m_pDocument->GetChannelType(Channel);
-				switch (pChannel->GetChip()) {
-				case SNDCHIP_VRC6: pChanName.Format(_T("V%d"), Type - CHANID_VRC6_PULSE1 + 1); break;
-				case SNDCHIP_MMC5: pChanName.Format(_T("PU%d"), Type - CHANID_MMC5_SQUARE1 + 3); break;
-				case SNDCHIP_N163: pChanName.Format(_T("N%d"), Type - CHANID_N163_CH1 + 1); break;
-				case SNDCHIP_VRC7: pChanName.Format(_T("FM%d"), Type - CHANID_VRC7_CH1 + 1); break;
-				case SNDCHIP_S5B: pChanName.Format(_T("5B%d"), Type - CHANID_S5B_CH1 + 1); break;
-				}
-			}
-		}
-		else
-			pChanName = pChannel->GetChannelName();
+		CString pChanName = (m_bCompactMode && m_iCharWidth < 6) ? _T("") :
+			(m_bCompactMode || m_iCharWidth < 9) ? pChannel->GetShortName() : pChannel->GetChannelName();		// // //
 
 		COLORREF HeadTextCol = bMuted ? STATIC_COLOR_SCHEME.CHANNEL_MUTED : STATIC_COLOR_SCHEME.CHANNEL_NORMAL;
 
@@ -1579,13 +1558,13 @@ void CPatternEditor::DrawHeader(CDC *pDC)
 			pDC->SetTextAlign(TA_CENTER);
 
 		pDC->SetTextColor(BLEND(HeadTextCol, 0x00FFFFFF, SHADE_LEVEL.TEXT_SHADOW));
-		pDC->TextOut(Offset + (m_bCompactMode ? GetColumnSpace(C_NOTE) / 2 : 10) + 1, HEADER_CHAN_START + 6 + (bMuted ? 1 : 0), pChanName);
+		pDC->TextOut(Offset + (m_bCompactMode ? GetColumnSpace(C_NOTE) / 2 + 1 : 10) + 1, HEADER_CHAN_START + 6 + (bMuted ? 1 : 0), pChanName);
 		
 		// Foreground
 		if (m_iMouseHoverChan == Channel)
 			HeadTextCol = BLEND(HeadTextCol, 0x0000FFFF, SHADE_LEVEL.HOVER);
 		pDC->SetTextColor(HeadTextCol);
-		pDC->TextOut(Offset + (m_bCompactMode ? GetColumnSpace(C_NOTE) / 2 : 10), HEADER_CHAN_START + 5, pChanName);		// // //
+		pDC->TextOut(Offset + (m_bCompactMode ? GetColumnSpace(C_NOTE) / 2 + 1 : 10), HEADER_CHAN_START + 5, pChanName);		// // //
 		
 		if (!m_bCompactMode) {		// // //
 			// Effect columns
