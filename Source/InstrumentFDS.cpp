@@ -302,15 +302,6 @@ int CInstrumentFDS::Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index)
 //	pChunk->StoreByte(Table);
 
 	pChunk->StoreByte(7);		// // // CHAN_FDS
-	// Store modulation table, two entries/byte
-	for (int i = 0; i < 16; ++i) {
-		char Data = GetModulation(i << 1) | (GetModulation((i << 1) + 1) << 3);
-		pChunk->StoreByte(Data);
-	}
-	
-	pChunk->StoreByte(GetModulationDelay());
-	pChunk->StoreByte(GetModulationDepth());
-	pChunk->StoreWord(GetModulationSpeed());
 
 	// Store sequences
 	char Switch = (m_pVolume->GetItemCount() > 0 ? 1 : 0) | (m_pArpeggio->GetItemCount() > 0 ? 2 : 0) | (m_pPitch->GetItemCount() > 0 ? 4 : 0);
@@ -334,6 +325,16 @@ int CInstrumentFDS::Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index)
 		str.Format(CCompiler::LABEL_SEQ_FDS, Index * 5 + 2);
 		pChunk->StoreReference(str);
 	}
+
+	// // // Store modulation table, two entries/byte
+	for (int i = 0; i < 16; ++i) {
+		char Data = GetModulation(i << 1) | (GetModulation((i << 1) + 1) << 3);
+		pChunk->StoreByte(Data);
+	}
+	
+	pChunk->StoreByte(GetModulationDelay());
+	pChunk->StoreByte(GetModulationDepth());
+	pChunk->StoreWord(GetModulationSpeed());
 
 	int size = FIXED_FDS_INST_SIZE;
 	size += (m_pVolume->GetItemCount() > 0 ? 2 : 0);

@@ -159,9 +159,8 @@ bool CInstrumentN163::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTracke
 
 int CInstrumentN163::Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index)
 {
-	int StoredBytes = 0;
-	// // //
 	ASSERT(pDoc != NULL);
+	int StoredBytes = CSeqInstrument::Compile(pDoc, pChunk, Index);		// // //;
 
 	// Store wave info
 	pChunk->StoreByte(m_iWaveSize >> 1);
@@ -173,9 +172,6 @@ int CInstrumentN163::Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index)
 	waveLabel.Format(CCompiler::LABEL_WAVES, Index);
 	pChunk->StoreReference(waveLabel);
 	StoredBytes += 2;
-
-	// Store sequences
-	StoredBytes += CSeqInstrument::Compile(pDoc, pChunk, Index);		// // //
 	
 	return StoredBytes;
 }
