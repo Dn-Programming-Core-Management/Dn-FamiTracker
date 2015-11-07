@@ -802,20 +802,12 @@ bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 	if (!WriteBlock_Comments(pDocFile))
 		return false;
 
-	if (m_iExpansionChip & SNDCHIP_VRC6) {
-		if (!WriteBlock_SequencesVRC6(pDocFile))
-			return false;
-	}
-
-	if (m_iExpansionChip & SNDCHIP_N163) {
-		if (!WriteBlock_SequencesN163(pDocFile))
-			return false;
-	}
-
-	if (m_iExpansionChip & SNDCHIP_S5B) {		// // //
-		if (!WriteBlock_SequencesS5B(pDocFile))
-			return false;
-	}
+	if (!WriteBlock_SequencesVRC6(pDocFile))		// // //
+		return false;
+	if (!WriteBlock_SequencesN163(pDocFile))
+		return false;
+	if (!WriteBlock_SequencesS5B(pDocFile))
+		return false;
 	
 	if (!WriteBlock_DetuneTables(pDocFile))		// // //
 		return false;
@@ -964,18 +956,17 @@ bool CFamiTrackerDoc::WriteBlock_Sequences(CDocumentFile *pDocFile) const
 	 * Store 2A03 sequences
 	 */ 
 
-	// Sequences, version 6
-	pDocFile->CreateBlock(FILE_BLOCK_SEQUENCES, 6);
-
 	int Count = 0;
 
 	// Count number of used sequences
-	for (int i = 0; i < MAX_SEQUENCES; ++i) {
-		for (int j = 0; j < SEQ_COUNT; ++j) {
+	for (int i = 0; i < MAX_SEQUENCES; ++i)
+		for (int j = 0; j < SEQ_COUNT; ++j)
 			if (GetSequenceItemCount(INST_2A03, i, j) > 0)
 				Count++;
-		}
-	}
+
+	if (!Count) return true;		// // //
+	// Sequences, version 6
+	pDocFile->CreateBlock(FILE_BLOCK_SEQUENCES, 6);
 
 	pDocFile->WriteBlockInt(Count);
 
@@ -1023,19 +1014,17 @@ bool CFamiTrackerDoc::WriteBlock_SequencesVRC6(CDocumentFile *pDocFile) const
 	 * Store VRC6 sequences
 	 */ 
 
-	// Sequences, version 6
-	pDocFile->CreateBlock(FILE_BLOCK_SEQUENCES_VRC6, 6);
-
 	int Count = 0;
 
 	// Count number of used sequences
-	for (int i = 0; i < MAX_SEQUENCES; ++i) {
-		for (int j = 0; j < SEQ_COUNT; ++j) {
+	for (int i = 0; i < MAX_SEQUENCES; ++i)
+		for (int j = 0; j < SEQ_COUNT; ++j)
 			if (GetSequenceItemCount(INST_VRC6, i, j) > 0)
-
 				Count++;
-		}
-	}
+
+	if (!Count) return true;		// // //
+	// Sequences, version 6
+	pDocFile->CreateBlock(FILE_BLOCK_SEQUENCES_VRC6, 6);
 
 	// Write it
 	pDocFile->WriteBlockInt(Count);
@@ -1088,19 +1077,17 @@ bool CFamiTrackerDoc::WriteBlock_SequencesN163(CDocumentFile *pDocFile) const
 	 * Store N163 sequences
 	 */ 
 
-	// Sequences, version 0
-	pDocFile->CreateBlock(FILE_BLOCK_SEQUENCES_N163, 1);
-
 	int Count = 0;
 
 	// Count number of used sequences
-	for (int i = 0; i < MAX_SEQUENCES; ++i) {
-		for (int j = 0; j < SEQ_COUNT; ++j) {
+	for (int i = 0; i < MAX_SEQUENCES; ++i)
+		for (int j = 0; j < SEQ_COUNT; ++j)
 			if (GetSequenceItemCount(INST_N163, i, j) > 0)
-
 				Count++;
-		}
-	}
+
+	if (!Count) return true;		// // //
+	// Sequences, version 0
+	pDocFile->CreateBlock(FILE_BLOCK_SEQUENCES_N163, 1);
 
 	// Write it
 	pDocFile->WriteBlockInt(Count);
@@ -1138,22 +1125,20 @@ bool CFamiTrackerDoc::WriteBlock_SequencesN163(CDocumentFile *pDocFile) const
 bool CFamiTrackerDoc::WriteBlock_SequencesS5B(CDocumentFile *pDocFile) const
 {
 	/* 
-	 * Store N163 sequences
+	 * Store 5B sequences
 	 */ 
-
-	// Sequences, version 0
-	pDocFile->CreateBlock(FILE_BLOCK_SEQUENCES_S5B, 1);
 
 	int Count = 0;
 
 	// Count number of used sequences
-	for (int i = 0; i < MAX_SEQUENCES; ++i) {
-		for (int j = 0; j < SEQ_COUNT; ++j) {
+	for (int i = 0; i < MAX_SEQUENCES; ++i)
+		for (int j = 0; j < SEQ_COUNT; ++j)
 			if (GetSequenceItemCount(INST_S5B, i, j) > 0)
-
 				Count++;
-		}
-	}
+
+	if (!Count) return true;		// // //
+	// Sequences, version 0
+	pDocFile->CreateBlock(FILE_BLOCK_SEQUENCES_S5B, 1);
 
 	// Write it
 	pDocFile->WriteBlockInt(Count);

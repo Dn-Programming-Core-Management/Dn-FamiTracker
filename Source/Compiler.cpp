@@ -1584,11 +1584,10 @@ void CCompiler::CreateSequenceList()
 
 	unsigned int Size = 0, StoredCount = 0;
 	static const inst_type_t inst[] = {INST_2A03, INST_VRC6, INST_N163, INST_S5B};
-	static const uint8 chip[] = {SNDCHIP_NONE, SNDCHIP_VRC6, SNDCHIP_N163, SNDCHIP_S5B};		// // //
 	const bool *used[] = {*m_bSequencesUsed2A03, *m_bSequencesUsedVRC6, *m_bSequencesUsedN163, *m_bSequencesUsedS5B};
 	static const char *format[] = {LABEL_SEQ_2A03, LABEL_SEQ_VRC6, LABEL_SEQ_N163, LABEL_SEQ_S5B};
 
-	for (size_t c = 0; c < sizeof(chip); c++) if (m_pDocument->ExpansionEnabled(chip[c])) {
+	for (size_t c = 0; c < sizeof(inst) / sizeof(inst_type_t); c++) {
 		for (int i = 0; i < MAX_SEQUENCES; ++i)  for (int j = 0; j < SEQ_COUNT; ++j) {
 			CSequence* pSeq = m_pDocument->GetSequence(inst[c], i, j);
 			int Index = i * SEQ_COUNT + j;
