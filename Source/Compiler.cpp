@@ -1732,13 +1732,6 @@ void CCompiler::CreateInstrumentList()
 		int iIndex = m_iAssignedInstruments[i];
 		CInstrumentContainer<CInstrument> instContainer(m_pDocument, iIndex);
 		CInstrument *pInstrument = instContainer();
-
-		// Check if FDS
-		if (pInstrument->GetType() == INST_FDS && pWavetableChunk != NULL) {
-			// Store wave
-			AddWavetable(static_cast<CInstrumentFDS*>(pInstrument), pWavetableChunk);
-			pChunk->StoreByte(m_iWaveTables - 1);
-		}
 /*
 		if (pInstrument->GetType() == INST_N163) {
 			CString label;
@@ -1756,6 +1749,13 @@ void CCompiler::CreateInstrumentList()
 
 		// Returns number of bytes 
 		iTotalSize += pInstrument->Compile(m_pDocument, pChunk, iIndex);
+
+		// // // Check if FDS
+		if (pInstrument->GetType() == INST_FDS && pWavetableChunk != NULL) {
+			// Store wave
+			AddWavetable(static_cast<CInstrumentFDS*>(pInstrument), pWavetableChunk);
+			pChunk->StoreByte(m_iWaveTables - 1);
+		}
 	}
 
 	Print(_T(" * Instruments used: %i (%i bytes)\n"), m_iInstruments, iTotalSize);
