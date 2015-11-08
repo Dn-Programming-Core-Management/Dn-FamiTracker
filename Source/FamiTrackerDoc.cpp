@@ -5364,7 +5364,7 @@ void CFamiTrackerDoc::ClearBookmarkList(unsigned int Track)
 {
 	std::vector<stBookmark> *List = m_pBookmarkList[Track];
 	if (List != NULL) {
-		for (int i = 0; i < List->size(); i++)
+		for (size_t i = 0; i < List->size(); i++)
 			SAFE_RELEASE((*List)[i].Name);
 		SAFE_RELEASE(m_pBookmarkList[Track]);
 	}

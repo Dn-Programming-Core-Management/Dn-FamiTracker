@@ -547,7 +547,6 @@ bool CFindDlg::CompareFields(const stChanNote Target, bool Noise, int EffCount)
 	bool Negate = IsDlgButtonChecked(IDC_CHECK_FIND_NEGATE) == BST_CHECKED;
 	bool EffectMatch = false;
 
-	replaceTerm Term = toReplace(m_searchTerm);
 	bool Melodic = m_searchTerm.Note->Min >= NOTE_C && m_searchTerm.Note->Min <= NOTE_B && // ||
 				   m_searchTerm.Note->Max >= NOTE_C && m_searchTerm.Note->Max <= NOTE_B;
 
@@ -577,9 +576,8 @@ bool CFindDlg::CompareFields(const stChanNote Target, bool Noise, int EffCount)
 			}
 			else {
 				if (!m_searchTerm.Note->IsMatch(Target.Note)) return Negate;
-				if (m_searchTerm.Definite[WC_OCT] && !m_searchTerm.Oct->IsMatch(Target.Octave)
-					&& (Term.Note.Note >= NOTE_C && Term.Note.Note <= NOTE_B || Term.Note.Note == ECHO))
-						return Negate;
+				if (m_searchTerm.Definite[WC_OCT] && !m_searchTerm.Oct->IsMatch(Target.Octave))
+					return Negate;
 			}
 		}
 	}
