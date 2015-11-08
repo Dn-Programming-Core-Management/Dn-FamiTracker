@@ -48,6 +48,7 @@ void CChannelHandlerN163::ResetChannel()
 
 	m_iWaveIndex = 0;
 	m_iWavePos = m_iWavePosOld = 0;		// // //
+	m_iWaveLen = 4;
 }
 
 void CChannelHandlerN163::HandleNoteData(stChanNote *pNoteData, int EffColumns)
