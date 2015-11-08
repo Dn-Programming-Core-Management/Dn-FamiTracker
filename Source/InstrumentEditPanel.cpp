@@ -276,7 +276,7 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 	char *str2 = new char[String.GetLength() + 1];
 	strcpy_s(str2, String.GetLength() + 1, str.c_str());
 	char *context = NULL;
-	char *term = strtok_s(str2, " ", &context);
+	char *term = strtok_s(str2, " \t", &context);
 
 	bool HexStr = false, ForceHex = false, Invalid = false;		// // //
 	while (term != NULL && AddedItems < MAX_SEQUENCE_ITEMS) {
@@ -391,7 +391,7 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 		if (term[0] == '\0')
 			HexStr = false;
 		if (!HexStr || Invalid) {
-			term = strtok_s(NULL, " ", &context);
+			term = strtok_s(NULL, " \t", &context);
 			Invalid = false;
 		}
 	}
