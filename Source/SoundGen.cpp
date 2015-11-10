@@ -1299,11 +1299,14 @@ void CSoundGen::RecordInstrument()		// // //
 				case SNDCHIP_N163:
 					Val = 0;
 					if (m_iRecordWaveCache == NULL) {
-						m_iRecordWaveSize = 0x100 - (0xFC & GetReg(SNDCHIP_N163, 0x7C - (ID << 3)));
-						m_iRecordWaveCache = new char[m_iRecordWaveSize * CInstrumentN163::MAX_WAVE_COUNT]();
-						m_iRecordWaveCount = 0;
+						int Size = 0x100 - (0xFC & GetReg(SNDCHIP_N163, 0x7C - (ID << 3)));
+						if (Size <= CInstrumentN163::MAX_WAVE_SIZE) {
+							m_iRecordWaveSize = Size;
+							m_iRecordWaveCache = new char[m_iRecordWaveSize * CInstrumentN163::MAX_WAVE_COUNT]();
+							m_iRecordWaveCount = 0;
+						}
 					}
-					{
+					if (m_iRecordWaveCache != NULL) {
 						int Count = 0x100 - (0xFC & GetReg(SNDCHIP_N163, 0x7C - (ID << 3)));
 						if (Count == m_iRecordWaveSize) {
 							int pos = 0xFF & GetReg(SNDCHIP_N163, 0x7E - (ID << 3));
@@ -1397,6 +1400,8 @@ void CSoundGen::InitRecordInstrument()
 			Inst->SetSeqEnable(SEQ_DUTYCYCLE, 0);
 		break;
 	}
+	m_iRecordWaveSize = 32; // DEFAULT_WAVE_SIZE
+	m_iRecordWaveCount = 0;
 }
 
 void CSoundGen::FinalizeRecordInstrument()
@@ -1440,10 +1445,13 @@ void CSoundGen::FinalizeRecordInstrument()
 		N163Inst->SetWavePos(pos);
 		N163Inst->SetWaveSize(m_iRecordWaveSize);
 		N163Inst->SetWaveCount(m_iRecordWaveCount + 1);
-		for (int i = 0; i <= m_iRecordWaveCount; i++) for (int j = 0; j < m_iRecordWaveSize; j++)
-			N163Inst->SetSample(i, j, m_iRecordWaveCache[m_iRecordWaveSize * i + j]);
-		SAFE_RELEASE(m_iRecordWaveCache);
-		m_iRecordWaveSize = 0;
+		if (m_iRecordWaveCache != NULL) {
+			for (int i = 0; i <= m_iRecordWaveCount; i++) for (int j = 0; j < m_iRecordWaveSize; j++)
+				N163Inst->SetSample(i, j, m_iRecordWaveCache[m_iRecordWaveSize * i + j]);
+			SAFE_RELEASE(m_iRecordWaveCache);
+		}
+		else for (int j = 0; j < m_iRecordWaveSize; j++) // fallback for blank recording
+			N163Inst->SetSample(0, j, 0);
 		break;
 	}
 }
