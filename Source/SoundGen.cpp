@@ -1309,7 +1309,7 @@ void CSoundGen::RecordInstrument()		// // //
 							int pos = 0xFF & GetReg(SNDCHIP_N163, 0x7E - (ID << 3));
 							char *Wave = new char[Count];
 							for (int j = 0; j < Count; j++)
-								Wave[j] = 0x0F & GetReg(SNDCHIP_N163, (pos + j) >> 1) >> ((pos + (j & 0x01)) ? 4 : 0);
+								Wave[j] = 0x0F & GetReg(SNDCHIP_N163, (pos + j) >> 1) >> ((j & 0x01) ? 4 : 0);
 							for (int j = 1; j <= m_iRecordWaveCount; j++) {
 								if (!memcmp(Wave, m_iRecordWaveCache + j * Count, Count)) {
 									Val = j; goto outer;
