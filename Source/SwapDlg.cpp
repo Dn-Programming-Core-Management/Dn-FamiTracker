@@ -37,6 +37,10 @@ CSwapDlg::CSwapDlg(CWnd* pParent /*=NULL*/)
 
 CSwapDlg::~CSwapDlg()
 {
+	SAFE_RELEASE(m_cChannelFirst);
+	SAFE_RELEASE(m_cChannelSecond);
+	SAFE_RELEASE(m_cChipFirst);
+	SAFE_RELEASE(m_cChipSecond);
 }
 
 void CSwapDlg::DoDataExchange(CDataExchange* pDX)
@@ -50,7 +54,6 @@ BEGIN_MESSAGE_MAP(CSwapDlg, CDialog)
 	ON_EN_CHANGE(IDC_EDIT_SWAP_CHAN2, OnEnChangeEditSwapChan2)
 	ON_CBN_SELCHANGE(IDC_COMBO_SWAP_CHIP1, OnCbnSelchangeComboSwapChip1)
 	ON_CBN_SELCHANGE(IDC_COMBO_SWAP_CHIP2, OnCbnSelchangeComboSwapChip2)
-	ON_BN_CLICKED(IDC_CHECK_SWAP_ALL, OnBnClickedCheckSwapAll)
 	ON_BN_CLICKED(IDOK, &CSwapDlg::OnBnClickedOk)
 END_MESSAGE_MAP()
 
@@ -63,13 +66,11 @@ BOOL CSwapDlg::OnInitDialog()
 	m_cChannelSecond = new CEdit();
 	m_cChipFirst = new CComboBox();
 	m_cChipSecond = new CComboBox();
-	m_cSwapAll = new CButton();
-
+	
 	m_cChannelFirst->SubclassDlgItem(IDC_EDIT_SWAP_CHAN1, this);
 	m_cChannelSecond->SubclassDlgItem(IDC_EDIT_SWAP_CHAN2, this);
 	m_cChipFirst->SubclassDlgItem(IDC_COMBO_SWAP_CHIP1, this);
 	m_cChipSecond->SubclassDlgItem(IDC_COMBO_SWAP_CHIP2, this);
-	m_cSwapAll->SubclassDlgItem(IDC_CHECK_SWAP_ALL, this);
 	
 	CFamiTrackerDoc *pDoc = CFamiTrackerDoc::GetDoc();
 	m_cChipFirst->AddString(_T("2A03"));
@@ -96,7 +97,7 @@ BOOL CSwapDlg::OnInitDialog()
 	m_cChannelSecond->SetWindowText(_T("2"));
 	m_cChipFirst->SetCurSel(0);
 	m_cChipSecond->SetCurSel(0);
-	m_cSwapAll->SetCheck(BST_UNCHECKED);
+	CheckDlgButton(IDC_CHECK_SWAP_ALL, BST_UNCHECKED);
 
 	m_cChannelFirst->SetFocus();
 
@@ -178,15 +179,10 @@ void CSwapDlg::OnCbnSelchangeComboSwapChip2()
 	CheckDestination();
 }
 
-void CSwapDlg::OnBnClickedCheckSwapAll()
-{
-	m_bSwapAll = m_cSwapAll->GetCheck() == BST_CHECKED;
-}
-
 void CSwapDlg::OnBnClickedOk()
 {
 	CFamiTrackerDoc *pDoc = CFamiTrackerDoc::GetDoc();
-	if (m_bSwapAll)
+	if (IsDlgButtonChecked(IDC_CHECK_SWAP_ALL) == BST_CHECKED)
 		for (unsigned int i = 0; i < pDoc->GetTrackCount(); i++)
 			pDoc->SwapChannels(i, GetFinalChannel(m_iDestChannel1, m_iDestChip1),
 								  GetFinalChannel(m_iDestChannel2, m_iDestChip2));

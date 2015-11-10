@@ -93,6 +93,8 @@ void CDSample::Clear()
 void CDSample::SetData(unsigned int Size, char *pData)
 {
 	ASSERT(pData != NULL);
+	
+	SAFE_RELEASE_ARRAY(m_pSampleData);		// // //
 
 	m_pSampleData = pData;
 	m_iSampleSize = Size;

@@ -45,11 +45,9 @@ protected:
 	
 	unsigned int m_iDestChannel1, m_iDestChannel2;
 	unsigned int m_iDestChip1, m_iDestChip2;
-	bool m_bSwapAll;
 	
 	CEdit *m_cChannelFirst, *m_cChannelSecond;
 	CComboBox *m_cChipFirst, *m_cChipSecond;
-	CButton *m_cSwapAll;
 
 	DECLARE_MESSAGE_MAP()
 public:
@@ -58,6 +56,5 @@ public:
 	afx_msg void OnEnChangeEditSwapChan2();
 	afx_msg void OnCbnSelchangeComboSwapChip1();
 	afx_msg void OnCbnSelchangeComboSwapChip2();
-	afx_msg void OnBnClickedCheckSwapAll();
 	afx_msg void OnBnClickedOk();
 };
