@@ -1866,7 +1866,8 @@ void CFamiTrackerView::OnBookmarksToggle()
 
 	CFamiTrackerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-	std::vector<stBookmark> *List = pDoc->GetBookmarkList(static_cast<CMainFrame*>(GetParentFrame())->GetSelectedTrack());
+	int Track = static_cast<CMainFrame*>(GetParentFrame())->GetSelectedTrack();
+	std::vector<stBookmark> *List = pDoc->GetBookmarkList(Track);
 	ASSERT(List != NULL);
 
 	const int Frame = GetSelectedFrame();
@@ -1877,6 +1878,7 @@ void CFamiTrackerView::OnBookmarksToggle()
 	while (it < List->end()) {
 		if (it->Frame == Frame && it->Row == Row) {
 			Found = true;
+			SAFE_RELEASE(it->Name);
 			it = List->erase(it);
 		}
 		else it++;
@@ -1891,6 +1893,7 @@ void CFamiTrackerView::OnBookmarksToggle()
 		Mark.Name->Format(_T("Bookmark %i"), List->size() + 1);
 		List->push_back(Mark);
 	}
+	pDoc->SetBookmarkList(Track, List);
 	static_cast<CMainFrame*>(GetParentFrame())->UpdateBookmarkList();
 	SetFocus();
 	pDoc->SetModifiedFlag();
