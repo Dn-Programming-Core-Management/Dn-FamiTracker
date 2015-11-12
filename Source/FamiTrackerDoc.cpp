@@ -916,14 +916,15 @@ bool CFamiTrackerDoc::WriteBlock_Instruments(CDocumentFile *pDocFile) const
 	char Name[CInstrument::INST_NAME_MAX];
 	char Type;
 
-	// Instruments block
-	pDocFile->CreateBlock(FILE_BLOCK_INSTRUMENTS, Version);
-
 	// Count number of instruments
 	for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
 		if (m_pInstruments[i] != NULL)
 			Count++;
 	}
+
+	if (!Count) return true;		// // //
+	// Instruments block
+	pDocFile->CreateBlock(FILE_BLOCK_INSTRUMENTS, Version);
 
 	pDocFile->WriteBlockInt(Count);
 
@@ -1275,12 +1276,13 @@ bool CFamiTrackerDoc::WriteBlock_DSamples(CDocumentFile *pDocFile) const
 {
 	int Count = 0;
 
-	pDocFile->CreateBlock(FILE_BLOCK_DSAMPLES, 1);
-
 	for (int i = 0; i < MAX_DSAMPLES; ++i) {
 		if (m_DSamples[i].GetSize() > 0)
 			Count++;
 	}
+
+	if (!Count) return true;		// // //
+	pDocFile->CreateBlock(FILE_BLOCK_DSAMPLES, 1);
 
 	// Write sample count
 	pDocFile->WriteBlockChar(Count);
@@ -2597,11 +2599,11 @@ bool CFamiTrackerDoc::ReadBlock_Grooves(CDocumentFile *pDocFile)
 
 bool CFamiTrackerDoc::WriteBlock_Grooves(CDocumentFile *pDocFile) const
 {
-	pDocFile->CreateBlock(FILE_BLOCK_GROOVES, 1);
 	int Count = 0;
 	for (int i = 0; i < MAX_GROOVE; i++)
 		if (m_pGrooveTable[i] != NULL) Count++;
 	if (!Count) return true;
+	pDocFile->CreateBlock(FILE_BLOCK_GROOVES, 1);
 	pDocFile->WriteBlockChar(Count);
 	
 	for (int i = 0; i < MAX_GROOVE; i++) if (m_pGrooveTable[i] != NULL) {
