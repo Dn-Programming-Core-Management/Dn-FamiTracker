@@ -2723,8 +2723,12 @@ bool CFamiTrackerDoc::ImportInstruments(CFamiTrackerDoc *pImported, int *pInstTa
 	int (*seqTable[])[SEQ_COUNT] = {SequenceTable2A03, SequenceTableVRC6, SequenceTableN163, SequenceTableS5B};
 
 	// Copy sequences
-	for (size_t i = 0; i < sizeof(chip); i++) for (int t = 0; t < SEQ_COUNT; ++t) for (unsigned int s = 0; s < MAX_SEQUENCES; ++s) {
-		if (pImported->GetSequenceItemCount(inst[i], s, t) > 0) {
+	for (size_t i = 0; i < sizeof(chip); i++) for (int t = 0; t < SEQ_COUNT; ++t) {
+		if (GetSequenceCount(inst[i], t) + pImported->GetSequenceCount(inst[i], t) > MAX_SEQUENCES) {		// // //
+			AfxMessageBox(IDS_IMPORT_SEQUENCE_COUNT, MB_ICONERROR);
+			return false;
+		}
+		for (unsigned int s = 0; s < MAX_SEQUENCES; ++s) if (pImported->GetSequenceItemCount(inst[i], s, t) > 0) {
 			CSequence *pImportSeq = pImported->GetSequence(inst[i], s, t);
 			int index = -1;
 			for (int j = 0; j < MAX_SEQUENCES; ++j) {
@@ -3036,14 +3040,14 @@ int CFamiTrackerDoc::GetFreeSequence(inst_type_t InstType, int Type) const		// /
 	return -1;
 }
 
-int CFamiTrackerDoc::GetSequenceCount(int Type) const
+int CFamiTrackerDoc::GetSequenceCount(inst_type_t InstType, int Type) const		// // //
 {
 	// Return number of allocated sequences of Type
 	ASSERT(Type >= 0 && Type < SEQ_COUNT);
 
 	int Count = 0;
 	for (int i = 0; i < MAX_SEQUENCES; ++i) {
-		if (GetSequenceItemCount(INST_2A03, i, Type) > 0) // TODO: fix this and the instrument interface
+		if (GetSequenceItemCount(InstType, i, Type) > 0) // TODO: fix this and the instrument interface
 			++Count;
 	}
 	return Count;

@@ -158,6 +158,7 @@
 #define IDS_FIND_NONE                   187
 #define IDS_REPLACE_ALL                 188
 #define IDC_MAIL2                       189
+#define IDS_IMPORT_SEQUENCE_COUNT       189
 #define ID_FIND_NEXT                    190
 #define ID_FIND_PREVIOUS                191
 #define IDD_CONFIG_MIDI                 194

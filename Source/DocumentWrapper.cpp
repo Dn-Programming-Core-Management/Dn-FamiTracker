@@ -51,12 +51,12 @@ unsigned int CFamiTrackerDocWrapper::GetSongSpeed() const
 
 CSequenceInterface const *CFamiTrackerDocWrapper::GetSequence(unsigned int Index, int Type) const
 {
-	return m_pDocument->GetSequence(INST_2A03, Index, Type);
+	return m_pDocument->GetSequence(INST_2A03, Index, Type);		// // //
 }
 
 int CFamiTrackerDocWrapper::GetSequenceCount(int Type) const
 {
-	return m_pDocument->GetSequenceCount(Type);
+	return m_pDocument->GetSequenceCount(INST_2A03, Type);		// // //
 }
 
 int CFamiTrackerDocWrapper::GetInstrumentCount() const
