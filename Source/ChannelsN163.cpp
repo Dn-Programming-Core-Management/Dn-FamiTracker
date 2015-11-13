@@ -132,9 +132,9 @@ bool CChannelHandlerN163::HandleInstrument(int Instrument, bool Trigger, bool Ne
 	CInstrumentN163 *pN163Inst = N163instContainer();
 	if (pN163Inst != NULL) {
 		m_iWaveLen = pN163Inst->GetWaveSize();
-		if (!m_bDisableLoad) {		// // //
-			m_iWavePos = /*pInstrument->GetAutoWavePos() ? GetIndex() * 16 :*/ pN163Inst->GetWavePos();
-			m_iWavePosOld = m_iWavePos;
+		m_iWavePosOld = pN163Inst->GetWavePos();		// // //
+		if (!m_bDisableLoad) {
+			m_iWavePos = /*pInstrument->GetAutoWavePos() ? GetIndex() * 16 :*/ m_iWavePosOld;
 		}
 		m_iWaveCount = pN163Inst->GetWaveCount();
 
