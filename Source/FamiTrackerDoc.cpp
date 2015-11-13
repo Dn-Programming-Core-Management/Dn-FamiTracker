@@ -2895,7 +2895,9 @@ bool CFamiTrackerDoc::ImportTrack(int Track, CFamiTrackerDoc *pImported, int *pI
 	}
 
 	// // // Copy bookmarks
-	SetBookmarkList(NewTrack, new std::vector<stBookmark>(*pImported->GetBookmarkList(Track)));
+	auto List = pImported->GetBookmarkList(Track);
+	SetBookmarkList(NewTrack, List);
+	SAFE_RELEASE(List);
 
 	stChanNote data;
 
