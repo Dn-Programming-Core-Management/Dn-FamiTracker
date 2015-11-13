@@ -2720,18 +2720,20 @@ bool CFamiTrackerDoc::ImportInstruments(CFamiTrackerDoc *pImported, int *pInstTa
 
 	static const inst_type_t inst[] = {INST_2A03, INST_VRC6, INST_N163, INST_S5B};		// // //
 	static const uint8 chip[] = {SNDCHIP_NONE, SNDCHIP_VRC6, SNDCHIP_N163, SNDCHIP_S5B};
-	static int *seqTable[] = {*SequenceTable2A03, *SequenceTableVRC6, *SequenceTableN163, *SequenceTableS5B};
+	int (*seqTable[])[SEQ_COUNT] = {SequenceTable2A03, SequenceTableVRC6, SequenceTableN163, SequenceTableS5B};
 
 	// Copy sequences
-	for (unsigned int s = 0; s < MAX_SEQUENCES; ++s) for (int t = 0; t < SEQ_COUNT; ++t) for (size_t i = 0; i < sizeof(chip); i++) {
+	for (size_t i = 0; i < sizeof(chip); i++) for (int t = 0; t < SEQ_COUNT; ++t) for (unsigned int s = 0; s < MAX_SEQUENCES; ++s) {
 		if (pImported->GetSequenceItemCount(inst[i], s, t) > 0) {
 			CSequence *pImportSeq = pImported->GetSequence(inst[i], s, t);
-			int index = GetFreeSequence(inst[i], t);
-			if (index != -1) {
-				CSequence *pSeq = GetSequence(inst[i], unsigned(index), t);
+			int index = -1;
+			for (int j = 0; j < MAX_SEQUENCES; ++j) {
+				if (GetSequenceItemCount(inst[i], j, t)) continue;
+				CSequence *pSeq = GetSequence(inst[i], unsigned(j), t);
 				pSeq->Copy(pImportSeq);
 				// Save a reference to this sequence
-				*(seqTable[i] + s * SEQ_COUNT + t) = index;
+				seqTable[i][s][t] = j;
+				break;
 			}
 		}
 	}
@@ -2765,67 +2767,36 @@ bool CFamiTrackerDoc::ImportInstruments(CFamiTrackerDoc *pImported, int *pInstTa
 		if (pImported->IsInstrumentUsed(i)) {
 			CInstrument *pImportInst = pImported->GetInstrument(i);
 			CInstrument *pInst = pImportInst->Clone();
+			inst_type_t Type = pInst->GetType();
 			pImportInst->Release();
 			// Update references
-			switch (pInst->GetType()) {
-				case INST_2A03: 
-					{
-						CInstrument2A03 *pInstrument = static_cast<CInstrument2A03*>(pInst);
-						// Update sequence references
-						for (int t = 0; t < SEQ_COUNT; ++t) {
-							if (pInstrument->GetSeqEnable(t)) {
-								pInstrument->SetSeqIndex(t, SequenceTable2A03[pInstrument->GetSeqIndex(t)][t]);
-							}
-						}
-						// Update DPCM samples
-						for (int o = 0; o < OCTAVE_RANGE; ++o) {
-							for (int n = 0; n < NOTE_RANGE; ++n) {
-								int Sample = pInstrument->GetSample(o, n);
-								if (Sample != 0) {
-									pInstrument->SetSample(o, n, SamplesTable[Sample - 1] + 1);
-								}
-							}
+			switch (Type) {
+			case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B:		// // //
+				{
+					// Update sequence references
+					CSeqInstrument *pInstrument = static_cast<CSeqInstrument*>(pInst);
+					for (int t = 0; t < SEQ_COUNT; ++t) if (pInstrument->GetSeqEnable(t)) {
+						for (size_t j = 0; j < sizeof(chip); j++) if (inst[j] == Type) {
+							pInstrument->SetSeqIndex(t, seqTable[j][pInstrument->GetSeqIndex(t)][t]);
+							break;
 						}
 					}
-					break;
-				case INST_VRC6: 
-					{
-						CInstrumentVRC6 *pInstrument = static_cast<CInstrumentVRC6*>(pInst);
-						// Update sequence references
-						for (int t = 0; t < SEQ_COUNT; ++t) {
-							if (pInstrument->GetSeqEnable(t)) {
-								pInstrument->SetSeqIndex(t, SequenceTableVRC6[pInstrument->GetSeqIndex(t)][t]);
-							}
-						}
-					}
-					break;
-				case INST_N163:
-					{
-						CInstrumentN163 *pInstrument = static_cast<CInstrumentN163*>(pInst);
-						// Update sequence references
-						for (int t = 0; t < SEQ_COUNT; ++t) {
-							if (pInstrument->GetSeqEnable(t)) {
-								pInstrument->SetSeqIndex(t, SequenceTableN163[pInstrument->GetSeqIndex(t)][t]);
-							}
-						}
-					}
-					break;
-				case INST_S5B:		// // //
-					{
-						CInstrumentS5B *pInstrument = static_cast<CInstrumentS5B*>(pInst);
-						// Update sequence references
-						for (int t = 0; t < SEQ_COUNT; ++t) {
-							if (pInstrument->GetSeqEnable(t)) {
-								pInstrument->SetSeqIndex(t, SequenceTableS5B[pInstrument->GetSeqIndex(t)][t]);
-							}
-						}
-					}
-					break;
-				case INST_FDS: case INST_VRC7:		// // //
-					// no operations
-					break;
-				default:
-					AfxDebugBreak();	// Add code for this instrument
+				}
+				break;
+			case INST_FDS: case INST_VRC7:		// // //
+				// no operations
+				break;
+			default:
+				AfxDebugBreak();	// Add code for this instrument
+			}
+			if (Type == INST_2A03) {
+				CInstrument2A03 *pInstrument = static_cast<CInstrument2A03*>(pInst);
+				// Update DPCM samples
+				for (int o = 0; o < OCTAVE_RANGE; ++o) for (int n = 0; n < NOTE_RANGE; ++n) {
+					int Sample = pInstrument->GetSample(o, n);
+					if (Sample != 0)
+						pInstrument->SetSample(o, n, SamplesTable[Sample - 1] + 1);
+				}
 			}
 			// Update samples
 			int Index = AddInstrument(pInst);
