@@ -1297,12 +1297,16 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	            CT[CT_SPLIT],     pDoc->GetSpeedSplitPoint() );
 	f.WriteString(s);
 
+	int N163count = -1;		// // //
 	if (pDoc->ExpansionEnabled(SNDCHIP_N163))
 	{
+		N163count = pDoc->GetNamcoChannels();
+		pDoc->SetNamcoChannels(8, true);
+		pDoc->SelectExpansionChip(pDoc->GetExpansionChip()); // calls ApplyExpansionChip()
 		s.Format(_T("# Namco 163 global settings\n"
 		            "%-15s %d\n"
 		            "\n"),
-		            CT[CT_N163CHANNELS], pDoc->GetNamcoChannels());
+		            CT[CT_N163CHANNELS], N163count);
 		f.WriteString(s);
 	}
 
@@ -1660,6 +1664,10 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 		}
 	}
 
+	if (N163count != -1) {		// // //
+		pDoc->SetNamcoChannels(N163count, true);
+		pDoc->SelectExpansionChip(pDoc->GetExpansionChip()); // calls ApplyExpansionChip()
+	}
 	f.WriteString(_T("# End of export\n"));
 	return sResult;
 }
