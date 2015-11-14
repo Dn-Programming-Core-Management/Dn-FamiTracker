@@ -498,6 +498,7 @@ void CModulePropertiesDlg::OnBnClickedExpansionN163()
 	{
 		m_iExpansions |= SNDCHIP_N163;
 		
+		if (!m_iN163Channels) m_iN163Channels = 1;		// // //
 		pChanSlider->SetPos(m_iN163Channels);
 		pChanSlider->EnableWindow(TRUE);
 		pChannelsLabel->EnableWindow(TRUE);

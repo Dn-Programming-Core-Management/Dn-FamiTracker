@@ -2731,9 +2731,10 @@ bool CFamiTrackerDoc::ImportInstruments(CFamiTrackerDoc *pImported, int *pInstTa
 		for (unsigned int s = 0; s < MAX_SEQUENCES; ++s) if (pImported->GetSequenceItemCount(inst[i], s, t) > 0) {
 			CSequence *pImportSeq = pImported->GetSequence(inst[i], s, t);
 			int index = -1;
-			for (int j = 0; j < MAX_SEQUENCES; ++j) {
+			for (unsigned j = 0; j < MAX_SEQUENCES; ++j) {
 				if (GetSequenceItemCount(inst[i], j, t)) continue;
-				CSequence *pSeq = GetSequence(inst[i], unsigned(j), t);
+				// TODO: continue if blank sequence is used by some instrument
+				CSequence *pSeq = GetSequence(inst[i], j, t);
 				pSeq->Copy(pImportSeq);
 				// Save a reference to this sequence
 				seqTable[i][s][t] = j;

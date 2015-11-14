@@ -424,7 +424,7 @@ bool CTextExport::ImportCellText(		// // //
 		}
 		else if (sNote.GetAt(0) == TCHAR('^') && sNote.GetAt(1) == TCHAR('-')) {		// // //
 			int o = sNote.GetAt(2) - TCHAR('0');
-			if (o < 1 || o > ECHO_BUFFER_LENGTH) {
+			if (o < 0 || o > ECHO_BUFFER_LENGTH) {
 				sResult.Format(_T("Line %d column %d: out-of-bound echo buffer accessed."), t.line, t.GetColumn());
 				return false;
 			}
@@ -679,6 +679,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	unsigned int dpcm_pos = 0;
 	unsigned int track = 0;
 	unsigned int pattern = 0;
+	int N163count = -1;		// // //
 	bool UseGroove[MAX_TRACKS] = {};		// // //
 	while (!t.Finished())
 	{
@@ -745,7 +746,8 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 				break;
 			case CT_N163CHANNELS:
 				CHECK(t.ReadInt(i,1,8,&sResult));
-				pDoc->SetNamcoChannels(i);
+				N163count = i;		// // //
+				pDoc->SetNamcoChannels(8);
 				pDoc->SelectExpansionChip(pDoc->GetExpansionChip());
 				CHECK(t.ReadEOL(&sResult));
 				break;
@@ -842,6 +844,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 						Groove->SetEntry(j, entry);
 					}
 					pDoc->SetGroove(i, Groove);
+					SAFE_RELEASE(Groove);
 					CHECK(t.ReadEOL(&sResult));
 				}
 				break;
@@ -1183,6 +1186,10 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 		}
 	}
 
+	if (N163count != -1) {		// // //
+		pDoc->SetNamcoChannels(N163count, true);
+		pDoc->SelectExpansionChip(pDoc->GetExpansionChip()); // calls ApplyExpansionChip()
+	}
 	return sResult;
 }
 
