@@ -278,6 +278,24 @@ void CChannelHandlerN163::ClearRegisters()
 	m_iDutyPeriod = 0;
 }
 
+CString CChannelHandlerN163::GetSlideEffectString() const		// // //
+{
+	CString str = _T("");
+	
+	switch (m_iEffect) {
+	case EF_ARPEGGIO:
+		if (m_iEffectParam) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iEffectParam); break;
+	case EF_PORTA_UP:
+		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_PORTA_DOWN - 1], m_iPortaSpeed >> N163_PITCH_SLIDE_SHIFT); break;
+	case EF_PORTA_DOWN:
+		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_PORTA_UP - 1], m_iPortaSpeed >> N163_PITCH_SLIDE_SHIFT); break;
+	case EF_PORTAMENTO:
+		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iPortaSpeed >> N163_PITCH_SLIDE_SHIFT); break;
+	}
+
+	return str;
+}
+
 CString CChannelHandlerN163::GetCustomEffectString() const		// // //
 {
 	CString str = _T("");

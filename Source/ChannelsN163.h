@@ -44,6 +44,7 @@ protected:
 	virtual void SetupSlide();		// // //
 	virtual int ConvertDuty(int Duty) const;		// // //
 	virtual void ClearRegisters();
+	virtual CString	GetSlideEffectString() const;		// // //
 	virtual CString GetCustomEffectString() const;		// // //
 
 private:
