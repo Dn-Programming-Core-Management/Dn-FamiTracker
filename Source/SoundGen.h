@@ -100,6 +100,10 @@ public:
 	CSoundGen();
 	virtual ~CSoundGen();
 
+private:		// // //
+	class InstrumentRecorder;
+	CSoundGen::InstrumentRecorder *m_pInstRecorder;
+
 	//
 	// Public functions
 	//
@@ -182,14 +186,6 @@ public:
 	// Used by channels
 	void		AddCycles(int Count);
 
-	// // // Record instrument
-	CInstrument *GetRecordInstrument() const;
-	void		ResetDumpInstrument();
-	int			GetRecordChannel() const;
-	void		SetRecordChannel(int Channel);
-	stRecordSetting GetRecordSetting() const;
-	void		SetRecordSetting(stRecordSetting Setting);
-
 	// Other
 	uint16		GetReg(int Chip, int Reg) const;		// // //
 	CString		RecallChannelState(int Channel) const;		// // //
@@ -214,6 +210,14 @@ public:
 	void		MoveToFrame(int Frame);
 	void		SetQueueFrame(int Frame);
 	int			GetQueueFrame() const;
+
+	// // // Instrument recorder
+	CInstrument		*GetRecordInstrument() const;
+	void			ResetDumpInstrument();
+	int				GetRecordChannel() const;
+	void			SetRecordChannel(int Channel);
+	stRecordSetting GetRecordSetting() const;
+	void			SetRecordSetting(stRecordSetting Setting);
 
 #ifdef EXPORT_TEST
 	bool		IsTestingExport() const { return m_bExportTesting; }
@@ -259,12 +263,6 @@ private:
 	void		MakeSilent();
 	void		SetupSpeed();
 
-	// // // Record instrument from registers
-	void		RecordInstrument();
-	void		InitRecordInstrument();
-	void		FinalizeRecordInstrument();
-	void		ResetRecordCache();
-
 	// Misc
 	void		PlaySample(const CDSample *pSample, int Offset, int Pitch);
 	
@@ -274,6 +272,9 @@ private:
 	void		PlayerStepFrame();
 	void		PlayerJumpTo(int Frame);
 	void		PlayerSkipTo(int Row);
+
+	// // // Instrument recorder
+	void		ResetRecordCache();
 
 	// Verification
 #ifdef EXPORT_TEST
@@ -342,16 +343,6 @@ private:
 	bool				m_bHaltRequest;						// True when a halt is requested
 	bool				m_bPlayLooping;
 	int					m_iFrameCounter;
-
-	int					m_iRecordChannel;					// // //
-	int					m_iDumpCount;
-	CInstrument			**m_pDumpInstrument;
-	CInstrument			*m_pDumpCache[MAX_INSTRUMENTS];
-	CSequence			*m_pSequenceCache[SEQ_COUNT];
-	stRecordSetting		m_stRecordSetting;
-	char				*m_iRecordWaveCache;
-	int					m_iRecordWaveSize;
-	int					m_iRecordWaveCount;
 
 	int					m_iUpdateCycles;					// Number of cycles/APU update
 	int					m_iConsumedCycles;					// Cycles consumed by the update registers functions
