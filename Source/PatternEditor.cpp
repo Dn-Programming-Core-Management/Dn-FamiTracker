@@ -4260,10 +4260,7 @@ void CPatternEditor::GetSelectionAsText(CString &str) const		// // //
 	int Row = 0;
 	int Size = m_bSelecting ? (GetSelectionSize() - 1) : (end.m_iRow - it.m_iRow + 1);
 	int HexLength = 0;
-	do {
-		HexLength++;
-		Size >>= 4;
-	} while (Size);
+	do HexLength++; while (Size >>= 4);
 	if (HexLength < 2) HexLength = 2;
 
 	CString Header(_T(' '), HexLength + 3);

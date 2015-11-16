@@ -2979,33 +2979,33 @@ CSequence *CFamiTrackerDoc::GetSequence(inst_type_t InstType, unsigned int Index
 	ASSERT(Index < MAX_SEQUENCES);
 	ASSERT(Type >= 0 && Type < SEQ_COUNT);
 
-	CSequence **arr = NULL;		// // //
+	CSequence *(*arr)[SEQ_COUNT] = NULL;		// // //
 	switch (InstType) {
-	case INST_2A03: arr = *m_pSequences2A03; break;
-	case INST_VRC6: arr = *m_pSequencesVRC6; break;
-	case INST_N163: arr = *m_pSequencesN163; break;
-	case INST_S5B: arr = *m_pSequencesS5B; break;
+	case INST_2A03: arr = m_pSequences2A03; break;
+	case INST_VRC6: arr = m_pSequencesVRC6; break;
+	case INST_N163: arr = m_pSequencesN163; break;
+	case INST_S5B: arr = m_pSequencesS5B; break;
 	}
 	if (arr == NULL) return NULL;
-	if (*(arr + Index * SEQ_COUNT + Type) == NULL)
-		*(arr + Index * SEQ_COUNT + Type) = new CSequence();
-	return *(arr + Index * SEQ_COUNT + Type);
+	if (arr[Index][Type] == NULL)
+		arr[Index][Type] = new CSequence();
+	return arr[Index][Type];
 }
 
 CSequence *CFamiTrackerDoc::GetSequence(inst_type_t InstType, unsigned int Index, int Type) const		// // //
 {
 	ASSERT(Index < MAX_SEQUENCES);
 	ASSERT(Type >= 0 && Type < SEQ_COUNT);
-
-	CSequence *const *arr = NULL;
+	
+	CSequence *const (*arr)[SEQ_COUNT] = NULL;		// // //
 	switch (InstType) {
-	case INST_2A03: arr = *m_pSequences2A03; break;
-	case INST_VRC6: arr = *m_pSequencesVRC6; break;
-	case INST_N163: arr = *m_pSequencesN163; break;
-	case INST_S5B: arr = *m_pSequencesS5B; break;
+	case INST_2A03: arr = m_pSequences2A03; break;
+	case INST_VRC6: arr = m_pSequencesVRC6; break;
+	case INST_N163: arr = m_pSequencesN163; break;
+	case INST_S5B: arr = m_pSequencesS5B; break;
 	}
 	if (arr == NULL) return NULL;
-	return *(arr + Index * SEQ_COUNT + Type);
+	return arr[Index][Type];
 }
 
 unsigned int CFamiTrackerDoc::GetSequenceItemCount(inst_type_t InstType, unsigned int Index, int Type) const		// // //

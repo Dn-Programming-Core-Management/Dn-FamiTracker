@@ -1476,11 +1476,6 @@ void CMainFrame::OnEnKeyStepChange()
 
 void CMainFrame::OnCreateNSF()
 {
-#ifdef DISABLE_SAVE		// // //
-	SetMessageText(IDS_DISABLE_SAVE);
-	return;
-#endif
-
 	CExportDialog ExportDialog(this);
 	ExportDialog.DoModal();
 }

@@ -473,8 +473,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,12,0
- PRODUCTVERSION 0,3,12,0
+ FILEVERSION 0,3,13,0
+ PRODUCTVERSION 0,3,13,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -491,12 +491,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "HertzDevil"
             VALUE "FileDescription", "NES/Famicom sound tracker"
-            VALUE "FileVersion", "0.3.12.0"
+            VALUE "FileVersion", "0.3.13.0"
             VALUE "InternalName", "FamiTracker.exe"
             VALUE "LegalCopyright", " (c) jsr, HertzDevil 2005-2015 All rights reserved."
             VALUE "OriginalFilename", "FamiTracker.exe"
             VALUE "ProductName", "0CC-FamiTracker"
-            VALUE "ProductVersion", "0.3.12.0"
+            VALUE "ProductVersion", "0.3.13.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -1997,6 +1997,8 @@ BEGIN
     IDS_SEQUENCE_LIMIT      "You cannot add more instrument sequences"
     IDS_FIND_NONE           "Could not find the search query in the current search area."
     IDS_REPLACE_ALL         "Do you want to replace all occurrences of the search query? There is no undo for this action."
+    IDS_IMPORT_SEQUENCE_COUNT 
+                            "Could not import all sequences, out of sequence slots!"
     ID_FIND_NEXT            "Find the next result of the search query\nFind Next"
 END
 
@@ -2212,7 +2214,8 @@ BEGIN
     IDS_IMPORT_FAILED       "Import module failed"
     IDS_IMPORT_CHIP_MISMATCH 
                             "Imported file must be of the same expansion chip type as current file."
-    IDS_IMPORT_INSTRUMENT_COUNT "Can't import file, out of instrument slots!"
+    IDS_IMPORT_INSTRUMENT_COUNT 
+                            "Could not import all instruments, out of instrument slots!"
     IDS_IMPORT_SAMPLE_SLOTS "Could not import all samples, out of sample slots!"
     IDS_DPCM_IMPORT_TITLE_FORMAT "PCM Import (%1)"
     IDS_DPCM_IMPORT_WAVE_FORMAT "%1 Hz, %2 bits, %3"

@@ -1,9 +1,48 @@
 0CC-FamiTracker Mod
 Change Log
 Written by HertzDevil
-Version 0.3.12 - Oct 17 2015
+Version 0.3.13 - Nov 16 2015
 
 --------------------------------------------------------------------------------
+
+V0.3.13 - 11/16/15
+Additions:
+ - Added a command to create new instruments by recording the output of certain
+    channels as instrument sequences
+ - Instruments of all sound chips (except FDS and VRC7) are compatible
+Improvements:
+ - "Retrieve channel state" now respects Fxx and Oxx effects, as well as current
+    groove position
+ - Tracker now stops retrieving channel states after encountering a Cxx effect
+ - Added ranges to the search query and the ability to search fields that do not
+    match parts of the query
+ - Pressing a note key always previews the current instrument even when cursor
+    is not on the note column when edit mode is disabled
+ - Ctrl + Left/Right now shifts the phase of the current wave in the FDS / N163
+    wave editor, Ctrl + Down inverts the wave
+Bug fixes:
+ - Cleanup actions that alter the pattern data always reset the undo history
+ - Fixed various memory leaks
+ - Copying selection as plain text now empties unselected columns properly
+ - Text export now writes unused N163 channels to output file according to the
+    behaviour of official build
+ - Fixed text importer not allowing "^-0" in pattern note field
+ - Added ".-#" wildcard for search query for the noise channel
+ - Fixed horizontal tab character not working in sequence editor MML field
+ - Fixed arpeggio scheme text field parsing "+x y..." as "+y y..."
+ - Fixed FDS instrument editor registering a file change on opening if the
+    current instrument uses any non-zero FM parameter
+ - 7xy effect on VRC6 sawtooth channel matches NSF behaviour (clip at volume 34
+    if V01 is set and volume underflows)
+ - N163 Z7F command now takes effect immediately
+ - Fixed incorrect slide effect parameters from recalling N163 channel state
+ - Multichip NSFs no longer crash due to FDS allowing VRC6 and VRC7 to modify
+    the driver code
+ - Fixed Zxx on N163 channels in exported NSFs being cancelled by loading new
+    instruments
+ - Fixed MMC5 Pulse 2 not halting when MMC5 Pulse 1 is muted in multichip NSFs
+ - Fixed the above bug crashing NSFs containing the FDS chip
+ - Fixed 1xx, 2xx, 3xx effects becoming 1/4 as fast on N163 in exported NSFs
 
 V0.3.12 - 10/17/15
 Additions:

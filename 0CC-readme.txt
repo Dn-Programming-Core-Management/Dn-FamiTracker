@@ -1,7 +1,7 @@
 0CC-FamiTracker Mod
 Readme / Manual
 Written by HertzDevil
-Version 0.3.12 - Oct 17 2015
+Version 0.3.13 - Nov 16 2015
 
 --------------------------------------------------------------------------------
 
@@ -20,10 +20,12 @@ comes from the author's favourite arpeggio effect. The current version includes:
  - Detune settings
  - Groove settings
  - Bookmark manager
+ - Compatible sequence instruments
  - Echo buffer access
  - Delayed channel effects
  - FDS automatic FM effects
  - N163 wave buffer access effect
+ - Instrument recorder
  - Expansion chip selector & ad-doc multichip NSF export
 
 See also the change log for a list of various tweaks and improvements.
@@ -197,10 +199,9 @@ issued, this volume value is instantly recalled.
 	===
 
 The Find / Replace tab is an addition to 0CC-FamiTracker, toggled by Ctrl+F by
-default, that allows quick search and replacement of pattern data in a FTM.
-Currently, 0CC-FamiTracker only allows simple search and replacement queries.
+default, that allows quick searching and replacement of pattern data in a FTM.
 
-The simple query fields are:
+The four query fields are:
  - Note, the note field, which could be one of the following:
   - The note as notated in the pattern editor, possibly without an octave. The
      noise channel can be searched if and only if the note field is identical to
@@ -208,18 +209,33 @@ The simple query fields are:
   - "-" or "---" for note rest;
   - "=" or "===" for note release;
   - "^", possibly followed by a buffer index, for echo buffer access;
-  - "-" or "---" for note rest;
-  - an integer between 0 and 95 representing the absolute note from C-0 to B-7.
+  - an integer between 0 and 95 representing the absolute note from C-0 to B-7;
+  - "." for any note event, or ".-#" for any note on the noise channel.
  - Inst, the instrument index, which could be any hexadecimal number between 0
-    and 3F;
- - Vol, the channel volume, which could be any hexadecimal digit;
+    and 3F, or "." for any non-empty index;
+ - Vol, the channel volume, which could be any hexadecimal digit, or "." for any
+    non-empty value;
  - FX, the effect command, which could be any valid effect character, possibly
-    followed by a hexadecimal effect parameter.
+    followed by a hexadecimal effect parameter, as well as the single character
+    ".", for any non-blank effect.
 
 Above each field is a button which, when not depressed, indicates that the
-respective field will be ignored (treated like a wildcard) in the query. If the
-field is enabled and empty, it will be regarded as the corresponding blank
-pattern data.
+respective field will be ignored in the query. If the field is enabled and
+empty, it will be regarded as the corresponding blank pattern data. For the
+search query, both fields are required to be blank in order to search blank
+fields.
+
+Below three of the search query fields are optional fields that allow one to
+specify the range of the respective query. Either field can be used if range
+searching is not need; the top field does not necessarily have to represent a
+greater value than the bottom field. For example, the query below finds all rows
+with a note between A-3 and G-4, using instrument 05 and a volume of 7 or less:
+	Note	Inst	Vol	FX
+	A-3	(blank)	7	(disabled)
+	G-4	05	0
+There is currently no range searching for the effect parameter. Range search
+queries do not allow wildcards of any form; for the note query this includes
+commands with no specified octave value.
 
 The search scope can be modified by using the dropdown menu, which can limit the
 search area to the current track, channel, frame, or pattern. The menu to the
@@ -234,9 +250,13 @@ The find / replace tab contains a few options:
     first, then to the next channel;
  - Replace all: When checked, pressing the "Replace" button will iterate through
     the entire search area until all occurrences of the search query have been
-    replaced;
+    replaced, and reset the undo history;
  - Remove original data: When checked, any field in the replacement query that
-    is disabled will be treated as the corresponding blank pattern data.
+    is disabled will be treated as the corresponding blank pattern data;
+ - Negate search: When checked, the tracker finds rows that do not match any
+    enabled part of the search query. If the note query is used, the tracker
+    never matches notes on a noise channel with a melodic note and vice versa,
+    regardless of whether this option is enabled.
 
 	===
 	Detune settings
@@ -342,6 +362,45 @@ bookmark on the current row, and navigating to the next/previous bookmark. The
 respective menu commands are available under "Edit" -> "Bookmarks".
 
 	===
+	Compatible Sequence Instruments
+	===
+
+The NSF driver already allows instruments to be used interchangeably on several
+chips to a certain degree in exported NSFs, namely those from 2A03, VRC6, N163,
+or 5B; these sound chips and MMC5 share a unified sequence instrument type.
+(N163 does not actually work because it injects data before sequence settings.)
+Since version 0.3.13, 0CC-FamiTracker adds full tracker-side support for using
+these sequence instruments across expansion chips, while handling the duty/wave
+setting for the respective chip appropriately.
+
+Instruments from the sound chips listed above can be used across these chips.
+Their volume, arpeggio, and (hi)-pitch sequences are processed according to the
+target chip configuration. The following rules for duty cycle conversion apply:
+ - 2A03, MMC5:
+    VRC6 duty cycles from 6.25% to 12.5% become 12.5%, duty cycles from 43.75%
+    to 50% become 50%, and the rest become 25%. N163 wave indices are processed
+    as is. 5B duty cycles always become 50%. There is no special handling of the
+    duty cycle value regarding the noise generator of 2A03 or 5B.
+ - VRC6:
+    2A03 75% becomes 25%, the rest remain the same. N163 wave indices are
+    processed as is. 5B duty cycles always become 50%. There is no special
+    handling related to the sawtooth channel.
+ - N163:
+    Non-N163 sequence instruments do not write to the wave buffer nor alter the
+    current channel's wave parameters. N163 instruments on non-N163 channels do
+    not affect the wave buffer.
+ - 5B:
+    All non-5B instrument duty values enable tone output, plus disable the noise
+    and envelope outputs. 5B intruments on non-5B channels do not affect the
+    envelope/noise generator.
+
+Duty conversion occurs only through duty/wave instrument sequences; the Vxx
+effect always modifies the duty cycle/wave index directly, without invoking any
+conversion method. Instruments may work even if the respective sound chip is
+absent from the current FTM/NSF, and for this reason instrument sequences on
+unused sound chips remain in the current FTM file when saved.
+
+	===
 	Echo Buffer Access
 	===
 
@@ -433,10 +492,67 @@ Z00 - Z7E: Sets the channel's wave buffer position to the effect parameter,
             Use this effect at your own risk.
 
 Z7F	 : Returns the wave buffer control to N163 instruments, allowing N163
-            instruments to read and write to their default wave positions.
+            instruments to read and write to their default wave positions. This
+            command takes effect immediately; the current instrument will write
+            to the wave buffer at the position designated by the current
+            instrument as soon as this effect command is encountered.
 
 This effect is shown as Yxx in version 0.3.7 and 0.3.8. These will be converted
 to the chip-specific form of Zxx automatically upon loading an FTM.
+
+	===
+	Instrument Recorder
+	===
+
+0CC-FamiTracker allows logging the output of sound channels to new instruments,
+providing a new way to create instruments from pattern data. Right-clicking any
+channel header or going to the Tracker menu from the main menu bar shows an
+option to mark the current channel as ready for recording; the next time the
+tracker plays the song, temporary instruments are created, whereas data will be
+continuously appended to the sequences used by these instruments, which are
+added to the instrument list once the song stops or the sequence size reaches
+the designated amount.
+
+The final volume and pitch are logged to the current instrument on every tick;
+except for the features listed below, this instrument would replicate the output
+of the recorded channel by assuming a channel volume of F and the current detune
+settings. Inconsistent tracker settings might produce different results.
+
+The instrument recorder only allows logging output that may be represented by
+the respective instrument type of the sound chip; in particular, only sequence
+instruments are supported as of the latest official build of FamiTracker. The
+following features are recorded only once on the _final_ tick of each instrument
+upon playing:
+ - The FDS instrument waveform;
+ - The frequency modulation parameters for an FDS instrument;
+ - The wave position for an N163 instrument.
+The following features will not be recorded:
+ - The DPCM channel and any VRC7 channel;
+ - Half of the volume values for the VRC6 sawtooth channel, if accessible
+    otherwise;
+ - Hardware features accessible only by pattern effect commands;
+ - The FDS modulation table; (might be cached in the future)
+ - FDS waveform changes;
+ - More than 63 waveforms per N163 instrument, as well as any waveform whose
+    size is different from the first recorded value, in which case the waveform
+    of the previous tick is used.
+
+Below the "Record to Instrument" option, "Recorder Settings" brings up a dialog
+where parameters for the instrument recorder can be changed:
+ - Sequence length: The maximum number of sequence terms per instrument logged.
+    This value is limited below the maximum sequence size (252 ticks), and
+    customarily limited above 24 ticks.
+ - Maximum instrument count: The number of instruments generated by the recorder
+    before logging automatically stops during playing. The recorder may emit as
+    many new instruments as possible until the current module cannot contain any
+    more data.
+ - Re-initialize settings upon stopping: If checked, the recorder resets to 252
+    ticks and 1 maximum instrument after the current recording session ends.
+ - 
+
+Extremely high refresh rates may cause the recorder to discharge instruments too
+quickly or crash the tracker; excessive use of this feature can easily lead to
+instrument data overflow during NSF export. Use with care.
 
 	===
 	Expansion Chip Selector
@@ -495,20 +611,21 @@ menu:
     but requires manual enabling since 0.3.11.
 
 The following shortcuts have been added to 0CC-FamiTracker: (parenthesized key
-combinations are the default hotkeys)
- - Paste overwrite / insert (None)
+combinations are the default hotkeys if provided)
+ - Paste overwrite / insert
  - Deselect (Esc)
- - Select row/column/pattern/frame/channel/track (None)
+ - Select row/column/pattern/frame/channel/track
  - Go to row (Alt+G)
+ - Record to instrument
  - Toggle / Next / Previous bookmark (Ctrl+K, Ctrl+PgDown, Ctrl+PgUp)
  - Mask volume (Alt+V)
- - Stretch patterns (None)
+ - Stretch patterns
  - Duplicate current pattern (Alt+D)
  - Coarse decrease / increase values (Shift+F3 / Shift+F4)
  - Toggle find / replace tab (Ctrl+F)
- - Find next (None)
- - Recall channel state (None)
- - Compact View (None)
+ - Find next
+ - Recall channel state
+ - Compact View
  - Toggle N163 multiplexer emulation (Ctrl+Shift+M; not configurable)
 
 	===
@@ -525,9 +642,9 @@ combinations are the default hotkeys)
 - MMC5's length counter depends on the 2A03's frame counter
 - The behaviour of Qxy and Rxy on the noise channel is inconsistent between
    FamiTracker and NSF driver when the pitch overflows
-- FDS and N163 sometimes load incorrect waves in multichip NSFs
 - In exported NSFs, the echo buffer is updated as Txy effects are applied; in
    the tracker this happens upon encountering Txy effects
+- CInstrument2A03Interface is no longer used
 
 	===
 	Credits
