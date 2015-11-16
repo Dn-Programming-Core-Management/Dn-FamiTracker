@@ -163,21 +163,12 @@ void CVRC6Sawtooth::RefreshChannel()
 	unsigned char HiFreq = (Period & 0xFF);
 	unsigned char LoFreq = (Period >> 8);
 
-	unsigned int TremVol = GetTremolo();
-	int Volume = (m_iSeqVolume * (m_iVolume >> VOL_COLUMN_SHIFT)) / 15 - TremVol;
-
-	Volume = (Volume << 1) | ((m_iDutyPeriod & 1) << 5);
+	int Volume = (CalculateVolume() << 1) | ((m_iDutyPeriod & 1) << 5);		// // //
 
 	if (Volume < 0)
 		Volume = 0;
 	if (Volume > 63)
 		Volume = 63;
-
-	if (m_iSeqVolume > 0 && m_iVolume > 0 && Volume == 0)
-		Volume = 2;
-
-	if (!m_bGate)
-		Volume = 0;
 	
 	if (!m_bGate) {		// // //
 		WriteExternalRegister(0xB000, 0);
