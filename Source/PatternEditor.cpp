@@ -4269,24 +4269,33 @@ void CPatternEditor::GetSelectionAsText(CString &str) const		// // //
 	CString Header(_T(' '), HexLength + 3);
 	Header.Append(_T("# "));
 	for (int i = it.m_iChannel; i <= end.m_iChannel; i++) {
-		Header.AppendFormat(_T(": %-*s"), 13 + 4 * m_pDocument->GetEffColumns(Track, i), m_pDocument->GetChannel(i)->GetChannelName());
+		Header.AppendFormat(_T(": %-13s"), m_pDocument->GetChannel(i)->GetChannelName());
+		unsigned Columns = m_pDocument->GetEffColumns(Track, i);
+		if (i == end.m_iChannel)
+			Columns = std::min(Columns, static_cast<unsigned>(std::max(0, static_cast<int>(GetSelectColumn(end.m_iColumn)) - 3)));
+		for (unsigned j = 0; j < Columns; j++)
+			Header.AppendFormat(_T("fx%d "), j + 2);
 	}
 	str = Header.TrimRight() + _T("\r\n");
-
-	const int Last = static_cast<int>(m_pDocument->GetEffColumns(Track, end.m_iChannel)) + COLUMN_EFF1 - GetSelectColumn(end.m_iColumn);
+	
+	static const int COLUMN_CHAR_POS[] = {0, 4, 7, 9, 13, 17, 21};
+	static const int COLUMN_CHAR_LEN[] = {3, 2, 1, 3, 3, 3, 3};
+	const int Last = m_pDocument->GetEffColumns(Track, end.m_iChannel) + 3;
+	const unsigned BegCol = GetSelectColumn(it.m_iColumn);
+	const unsigned EndCol = GetSelectColumn(end.m_iColumn);
 	for (CPatternIterator it = GetStartIterator(); it <= end; it++) {
 		CString line;
 		line.AppendFormat(_T("ROW %0*X"), HexLength, Row++);
 		for (int i = it.m_iChannel; i <= end.m_iChannel; i++) {
 			it.Get(i, &NoteData);
-			line.AppendFormat(_T(" : %s"), CTextExport::ExportCellText(NoteData, m_pDocument->GetEffColumns(Track, i) + 1, i == CHANID_NOISE));
+			CString Row = CTextExport::ExportCellText(NoteData, m_pDocument->GetEffColumns(Track, i) + 1, i == CHANID_NOISE);
+			if (i == it.m_iChannel) for (unsigned c = 0; c < BegCol; c++)
+				for (int j = 0; j < COLUMN_CHAR_LEN[c]; j++) Row.SetAt(COLUMN_CHAR_POS[c] + j, ' ');
+			if (i == end.m_iChannel && EndCol < COLUMN_EFF4)
+				Row = Row.Left(COLUMN_CHAR_POS[EndCol + 1] - 1);
+			line.AppendFormat(_T(" : %s"), Row);
 		}
-		for (unsigned i = 0; i < std::min(COLUMN_EFF1, GetSelectColumn(it.m_iColumn)); i++)
-			for (int j = 0; j < 3; j++) line.SetAt(7 + 3 * i + j + HexLength, ' ');
-		for (unsigned i = 3; i < std::min(static_cast<column_t>(m_pDocument->GetEffColumns(Track, i) + 4), GetSelectColumn(it.m_iColumn)); i++)
-			for (int j = 0; j < 3; j++) line.SetAt(4 * i + j + HexLength, ' ');
-		str.Append(line.Left(line.GetLength() - 4 * std::max(0, std::min(3, Last)) +
-				   std::max(C_NOTE, static_cast<cursor_column_t>(3 - GetSelectColumn(end.m_iColumn)))));
+		str.Append(line);
 		str.Append(_T("\r\n"));
 	}
 }
