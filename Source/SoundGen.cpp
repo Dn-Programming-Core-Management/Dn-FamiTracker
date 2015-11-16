@@ -578,8 +578,8 @@ void CSoundGen::CreateChannels()
 	AssignChannel(new CTrackerChannel(_T("DPCM"), _T("DMC"), SNDCHIP_NONE, CHANID_DPCM), new CDPCMChan(m_pSampleMem));
 
 	// Konami VRC6
-	AssignChannel(new CTrackerChannel(_T("VRC6 Pulse 1"), _T("V1"), SNDCHIP_VRC6, CHANID_VRC6_PULSE1), new CVRC6Square1());		// // //
-	AssignChannel(new CTrackerChannel(_T("VRC6 Pulse 2"), _T("V2"), SNDCHIP_VRC6, CHANID_VRC6_PULSE2), new CVRC6Square2());		// // //
+	AssignChannel(new CTrackerChannel(_T("VRC6 Pulse 1"), _T("V1"), SNDCHIP_VRC6, CHANID_VRC6_PULSE1), new CVRC6Square());		// // //
+	AssignChannel(new CTrackerChannel(_T("VRC6 Pulse 2"), _T("V2"), SNDCHIP_VRC6, CHANID_VRC6_PULSE2), new CVRC6Square());		// // //
 	AssignChannel(new CTrackerChannel(_T("Sawtooth"), _T("SAW"), SNDCHIP_VRC6, CHANID_VRC6_SAWTOOTH), new CVRC6Sawtooth());
 
 	// Konami VRC7

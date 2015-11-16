@@ -109,12 +109,22 @@ void CChannelHandlerVRC6::ResetChannel()
 	CChannelHandler::ResetChannel();
 }
 
+void CChannelHandlerVRC6::ClearRegisters()		// // //
+{
+	uint16 Address = ((m_iChannelID - CHANID_VRC6_PULSE1) << 12) + 0x9000;
+	WriteExternalRegister(Address, 0);
+	WriteExternalRegister(Address + 1, 0);
+	WriteExternalRegister(Address + 2, 0);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-// VRC6 Square 1
+// // // VRC6 Squares
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void CVRC6Square1::RefreshChannel()
+void CVRC6Square::RefreshChannel()
 {
+	uint16 Address = ((m_iChannelID - CHANID_VRC6_PULSE1) << 12) + 0x9000;
+
 	unsigned int Period = CalculatePeriod();
 	unsigned int Volume = CalculateVolume();
 	unsigned char DutyCycle = m_iDutyPeriod << 4;
@@ -123,56 +133,16 @@ void CVRC6Square1::RefreshChannel()
 	unsigned char LoFreq = (Period >> 8);
 	
 	if (!m_bGate) {		// // //
-		WriteExternalRegister(0x9000, DutyCycle);
+		WriteExternalRegister(Address, DutyCycle);
 		return;
 	}
 
-	WriteExternalRegister(0x9000, DutyCycle | Volume);
-	WriteExternalRegister(0x9001, HiFreq);
-	WriteExternalRegister(0x9002, 0x80 | LoFreq);
+	WriteExternalRegister(Address, DutyCycle | Volume);
+	WriteExternalRegister(Address + 1, HiFreq);
+	WriteExternalRegister(Address + 2, 0x80 | LoFreq);
 }
 
-int CVRC6Square1::ConvertDuty(int Duty) const		// // //
-{
-	switch (m_iInstTypeCurrent) {
-	case INST_2A03:	return DUTY_VRC6_FROM_2A03[Duty & 0x03]; break;
-	case INST_N163:	return Duty; break;
-	case INST_S5B:	return 0x07; break;
-	default:		return Duty;
-	}
-}
-
-void CVRC6Square1::ClearRegisters()
-{
-	WriteExternalRegister(0x9000, 0);
-	WriteExternalRegister(0x9001, 0);
-	WriteExternalRegister(0x9002, 0);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-// VRC6 Square 2
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void CVRC6Square2::RefreshChannel()
-{
-	unsigned int Period = CalculatePeriod();
-	unsigned int Volume = CalculateVolume();
-	unsigned char DutyCycle = m_iDutyPeriod << 4;
-
-	unsigned char HiFreq = (Period & 0xFF);
-	unsigned char LoFreq = (Period >> 8);
-	
-	if (!m_bGate) {		// // //
-		WriteExternalRegister(0xA000, DutyCycle);
-		return;
-	}
-
-	WriteExternalRegister(0xA000, DutyCycle | Volume);
-	WriteExternalRegister(0xA001, HiFreq);
-	WriteExternalRegister(0xA002, 0x80 | LoFreq);
-}
-
-int CVRC6Square2::ConvertDuty(int Duty) const		// // //
+int CVRC6Square::ConvertDuty(int Duty) const		// // //
 {
 	switch (m_iInstTypeCurrent) {
 	case INST_2A03:	return DUTY_VRC6_FROM_2A03[Duty & 0x03];
@@ -180,13 +150,6 @@ int CVRC6Square2::ConvertDuty(int Duty) const		// // //
 	case INST_S5B:	return 0x07;
 	default:		return Duty;
 	}
-}
-
-void CVRC6Square2::ClearRegisters()
-{
-	WriteExternalRegister(0xA000, 0);
-	WriteExternalRegister(0xA001, 0);
-	WriteExternalRegister(0xA002, 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -224,11 +187,4 @@ void CVRC6Sawtooth::RefreshChannel()
 	WriteExternalRegister(0xB000, Volume);
 	WriteExternalRegister(0xB001, HiFreq);
 	WriteExternalRegister(0xB002, 0x80 | LoFreq);
-}
-
-void CVRC6Sawtooth::ClearRegisters()
-{
-	WriteExternalRegister(0xB000, 0);
-	WriteExternalRegister(0xB001, 0);
-	WriteExternalRegister(0xB002, 0);
 }

@@ -41,25 +41,15 @@ protected:
 	virtual void HandleRelease();
 	virtual void HandleNote(int Note, int Octave);
 	// // //
+	void ClearRegisters();		// // //
 };
 
-class CVRC6Square1 : public CChannelHandlerVRC6 {
+class CVRC6Square : public CChannelHandlerVRC6 {
 public:
-	CVRC6Square1() : CChannelHandlerVRC6() { m_iDefaultDuty = 0; };
+	CVRC6Square() : CChannelHandlerVRC6() { m_iDefaultDuty = 0; };
 	void RefreshChannel();
 protected:
 	virtual int ConvertDuty(int Duty) const;		// // //
-	void ClearRegisters();
-private:
-};
-
-class CVRC6Square2 : public CChannelHandlerVRC6 {
-public:
-	CVRC6Square2() : CChannelHandlerVRC6() { m_iDefaultDuty = 0; };
-	void RefreshChannel();
-protected:
-	virtual int ConvertDuty(int Duty) const;		// // //
-	void ClearRegisters();
 private:
 };
 
@@ -68,6 +58,5 @@ public:
 	CVRC6Sawtooth() : CChannelHandlerVRC6() { m_iDefaultDuty = 0; };
 	void RefreshChannel();
 protected:
-	void ClearRegisters();
 private:
 };
