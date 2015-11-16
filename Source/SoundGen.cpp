@@ -112,15 +112,17 @@ public:
 	void			StartRecording();
 	void			StopRecording(CFamiTrackerView *pView);
 	void			RecordInstrument(const unsigned Tick, CFamiTrackerView *pView);
-	void			ResetDumpInstrument();
 
 	CInstrument		*GetRecordInstrument(unsigned Tick) const;
 	int				GetRecordChannel() const { return m_iRecordChannel; }
 	void			SetRecordChannel(int Channel) { m_iRecordChannel = Channel; };
-	stRecordSetting GetRecordSetting() const;
-	void			SetRecordSetting(stRecordSetting Setting);
+	stRecordSetting GetRecordSetting() const { return m_stRecordSetting; };
+	void			SetRecordSetting(stRecordSetting Setting) { m_stRecordSetting = Setting; };
 	void			SetDumpCount(int Count) { m_iDumpCount = Count; };
+
+	void			ResetDumpInstrument();
 	void			ResetRecordCache();
+	void			ReleaseCurrent();
 
 private:
 	void			InitRecordInstrument();
@@ -153,6 +155,7 @@ CSoundGen::InstrumentRecorder::InstrumentRecorder(CSoundGen *pSG) :
 	m_stRecordSetting.Reset = true;
 	for (int i = 0; i < SEQ_COUNT; i++)
 		m_pSequenceCache[i] = new CSequence();
+	memset(m_pDumpCache, 0, sizeof(CInstrument*) * MAX_INSTRUMENTS);
 	ResetRecordCache();
 }
 
@@ -187,7 +190,7 @@ void CSoundGen::InstrumentRecorder::RecordInstrument(const unsigned Tick, CFamiT
 	if (Tick % Intv == 1 && Tick > Intv) {
 		if (*m_pDumpInstrument != nullptr && pView != nullptr) {
 			pView->PostMessage(WM_USER_DUMP_INST);
-			//m_pDumpInstrument++;
+			m_pDumpInstrument++;
 		}
 		--m_iDumpCount;
 	}
@@ -281,7 +284,7 @@ void CSoundGen::InstrumentRecorder::RecordInstrument(const unsigned Tick, CFamiT
 							m_iRecordWaveCount = 0;
 						}
 					}
-					if (m_iRecordWaveCache != NULL) {
+					if (m_iRecordWaveCache != nullptr) {
 						int Count = 0x100 - (0xFC & REG(0x7C - (ID << 3)));
 						if (Count == m_iRecordWaveSize) {
 							int pos = 0xFF & REG(0x7E - (ID << 3));
@@ -331,16 +334,6 @@ void CSoundGen::InstrumentRecorder::RecordInstrument(const unsigned Tick, CFamiT
 }
 #undef REG
 
-stRecordSetting CSoundGen::InstrumentRecorder::GetRecordSetting() const
-{
-	return m_stRecordSetting;
-}
-
-void CSoundGen::InstrumentRecorder::SetRecordSetting(stRecordSetting Setting)
-{
-	m_stRecordSetting = Setting;
-}
-
 CInstrument* CSoundGen::InstrumentRecorder::GetRecordInstrument(unsigned Tick) const
 {
 	return m_pDumpCache[Tick / m_stRecordSetting.Interval - (m_pSoundGen->IsPlaying() ? 1 : 0)];
@@ -349,20 +342,42 @@ CInstrument* CSoundGen::InstrumentRecorder::GetRecordInstrument(unsigned Tick) c
 void CSoundGen::InstrumentRecorder::ResetDumpInstrument()
 {
 	if (m_iDumpCount < 0) return;
-	if (m_iDumpCount && *m_pDumpInstrument == nullptr)
+	if (m_pSoundGen->IsPlaying()) {
+		--m_pDumpInstrument;
+		if (m_pDumpInstrument >= m_pDumpCache)
+			ReleaseCurrent();
+		++m_pDumpInstrument;
+	}
+	if (m_iDumpCount && *m_pDumpInstrument == nullptr) {
 		InitRecordInstrument();
+	}
 	else {
 		if (*m_pDumpInstrument != nullptr)
 			FinalizeRecordInstrument();
-		m_iRecordChannel = -1;
-		if ((!m_iDumpCount || !m_pSoundGen->IsPlaying()) && m_stRecordSetting.Reset) {
-			m_stRecordSetting.Interval = MAX_SEQUENCE_ITEMS;
-			m_stRecordSetting.InstCount = 1;
+		if (!m_iDumpCount || !m_pSoundGen->IsPlaying()) {
+			m_iRecordChannel = -1;
+			if (m_stRecordSetting.Reset) {
+				m_stRecordSetting.Interval = MAX_SEQUENCE_ITEMS;
+				m_stRecordSetting.InstCount = 1;
+			}
+			ReleaseCurrent();
 		}
-		if (*m_pDumpInstrument != nullptr) {
-			(*m_pDumpInstrument)->Release();
-			*m_pDumpInstrument++ = nullptr;
-		}
+	}
+}
+
+void CSoundGen::InstrumentRecorder::ResetRecordCache()
+{
+	memset(m_pDumpCache, 0, sizeof(CInstrument*) * MAX_INSTRUMENTS);
+	m_pDumpInstrument = &m_pDumpCache[0];
+	for (int i = 0; i < SEQ_COUNT; i++)
+		m_pSequenceCache[i]->Clear();
+}
+
+void CSoundGen::InstrumentRecorder::ReleaseCurrent()
+{
+	if (*m_pDumpInstrument != nullptr) {
+		(*m_pDumpInstrument)->Release();
+		*m_pDumpInstrument = nullptr;
 	}
 }
 
@@ -462,14 +477,6 @@ void CSoundGen::InstrumentRecorder::FinalizeRecordInstrument()
 			N163Inst->SetSample(0, j, 0);
 		break;
 	}
-}
-
-void CSoundGen::InstrumentRecorder::ResetRecordCache()
-{
-	memset(m_pDumpCache, 0, sizeof(CInstrument*) * MAX_INSTRUMENTS);
-	m_pDumpInstrument = &m_pDumpCache[0];
-	for (int i = 0; i < SEQ_COUNT; i++)
-		m_pSequenceCache[i]->Clear();
 }
 
 CInstrument* CSoundGen::GetRecordInstrument() const { return m_pInstRecorder->GetRecordInstrument(m_iPlayTicks); }
@@ -2482,7 +2489,8 @@ void CSoundGen::OnRemoveDocument(WPARAM wParam, LPARAM lParam)
 	m_pDocument = NULL;
 	m_pTrackerView = NULL;
 	m_pInstRecorder->SetDumpCount(0);		// // //
-	m_pInstRecorder->ResetDumpInstrument();
+	m_pInstRecorder->ReleaseCurrent();
+	// m_pInstRecorder->ResetDumpInstrument();
 	//if (*m_pDumpInstrument)		// // //
 	//	(*m_pDumpInstrument)->Release();
 	m_pInstRecorder->ResetRecordCache();
