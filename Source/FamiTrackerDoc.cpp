@@ -316,8 +316,8 @@ BOOL CFamiTrackerDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	// This function is called by the GUI to load a file
 
 	//DeleteContents();
-	theApp.GetSoundGenerator()->SetRecordChannel(-1);		// // //
 	theApp.GetSoundGenerator()->ResetDumpInstrument();
+	theApp.GetSoundGenerator()->SetRecordChannel(-1);		// // //
 
 	m_csDocumentLock.Lock();
 

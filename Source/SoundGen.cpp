@@ -180,6 +180,7 @@ void CSoundGen::InstrumentRecorder::StopRecording(CFamiTrackerView *pView)
 {
 	if (*m_pDumpInstrument != nullptr && pView != nullptr)
 		pView->PostMessage(WM_USER_DUMP_INST);
+	--m_iDumpCount;
 }
 
 #define REG(x) ( m_pSoundGen->GetReg(Chip, (x)) )
