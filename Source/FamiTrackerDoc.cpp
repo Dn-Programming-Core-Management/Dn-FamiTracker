@@ -5288,8 +5288,10 @@ stFullState CFamiTrackerDoc::RetrieveSoundState(unsigned int Track, unsigned int
 		else break;
 		totalRows++;
 	}
-	if (S.GroovePos == -1 && GetSongGroove(Track))
+	if (S.GroovePos == -1 && GetSongGroove(Track)) {
 		S.GroovePos = totalRows;
+		S.Speed = GetSongSpeed(Track);
+	}
 	
 	SAFE_RELEASE_ARRAY(BufferPos);
 	SAFE_RELEASE_ARRAY(Transpose);
