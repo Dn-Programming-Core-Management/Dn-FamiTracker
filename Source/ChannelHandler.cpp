@@ -578,6 +578,8 @@ bool CChannelHandler::CheckCommonEffects(unsigned char EffCmd, unsigned char Eff
 			break;
 		case EF_VOLUME_SLIDE:
 			m_iVolSlide = EffParam;
+			if (!EffParam)		// // //
+				m_iDefaultVolume = m_iVolume;
 			break;
 		case EF_NOTE_CUT:
 			if (EffParam >= 0x80) return false;		// // //
