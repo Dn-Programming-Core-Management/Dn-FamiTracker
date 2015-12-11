@@ -30,6 +30,21 @@
 
 const int N163_PITCH_SLIDE_SHIFT = 2;	// Increase amplitude of pitch slides
 
+class CChannelInterfaceN163 : public CChannelInterface
+{
+public:
+	CChannelInterfaceN163(CChannelHandlerN163 *pChan) :
+		CChannelInterface(pChan), m_pChannel(pChan) {}
+
+	// TODO: bad, combine into a single container for channel parameters
+	void SetWaveLength(int Length) { m_pChannel->m_iWaveLen = Length; };
+	void SetWavePosition(int Pos) { m_pChannel->m_iWavePosOld = Pos; };
+	void SetWaveCount(int Count) { m_pChannel->m_iWaveCount = Count; };
+
+private:
+	CChannelHandlerN163 *const m_pChannel;
+};
+
 CChannelHandlerN163::CChannelHandlerN163() : 
 	CChannelHandlerInverted(0xFFFF, 0x0F), 
 	m_bLoadWave(false),
@@ -40,6 +55,8 @@ CChannelHandlerN163::CChannelHandlerN163() :
 	m_iWaveCount(0)
 {
 	m_iDutyPeriod = 0;
+	SAFE_RELEASE(m_pInstInterface);
+	m_pInstInterface = new CChannelInterfaceN163(this);
 }
 
 void CChannelHandlerN163::ResetChannel()
@@ -110,39 +127,17 @@ void CChannelHandlerN163::HandleCustomEffects(int EffNum, int EffParam)
 
 bool CChannelHandlerN163::HandleInstrument(int Instrument, bool Trigger, bool NewInstrument)
 {
-	CFamiTrackerDoc *pDocument = m_pSoundGen->GetDocument();
-	CInstrumentContainer<CSeqInstrument> instContainer(pDocument, Instrument);		// // //
-	CSeqInstrument *pInstrument = instContainer();
-
-	if (pInstrument == NULL)
+	if (!CChannelHandler::HandleInstrument(Instrument, Trigger, NewInstrument))		// // //
 		return false;
 
-	m_iInstTypeCurrent = pInstrument->GetType();		// // //
-	for (int i = 0; i < SEQ_COUNT; ++i) {
-		const CSequence *pSequence = pDocument->GetSequence(pInstrument->GetType(), pInstrument->GetSeqIndex(i), i); // // //
-		if (Trigger || !IsSequenceEqual(i, pSequence) || pInstrument->GetSeqEnable(i) > GetSequenceState(i)) {
-			if (pInstrument->GetSeqEnable(i) == 1)
-				SetupSequence(i, pSequence);
-			else
-				ClearSequence(i);
-		}
+	if (!m_bDisableLoad) {
+		m_iWavePos = /*pInstrument->GetAutoWavePos() ? GetIndex() * 16 :*/ m_iWavePosOld;
 	}
 
-	CInstrumentContainer<CInstrumentN163> N163instContainer(pDocument, Instrument);		// // //
-	CInstrumentN163 *pN163Inst = N163instContainer();
-	if (pN163Inst != NULL) {
-		m_iWaveLen = pN163Inst->GetWaveSize();
-		m_iWavePosOld = pN163Inst->GetWavePos();		// // //
-		if (!m_bDisableLoad) {
-			m_iWavePos = /*pInstrument->GetAutoWavePos() ? GetIndex() * 16 :*/ m_iWavePosOld;
-		}
-		m_iWaveCount = pN163Inst->GetWaveCount();
+	if (!m_bLoadWave && NewInstrument)
+		m_iWaveIndex = 0;
 
-		if (!m_bLoadWave && NewInstrument)
-			m_iWaveIndex = 0;
-
-		m_bLoadWave = true;
-	}
+	m_bLoadWave = true;
 
 	return true;
 }
@@ -160,20 +155,29 @@ void CChannelHandlerN163::HandleCut()
 
 void CChannelHandlerN163::HandleRelease()
 {
-	if (!m_bRelease) {
+	if (!m_bRelease)
 		ReleaseNote();
-		ReleaseSequences();
-	}
 }
 
 void CChannelHandlerN163::HandleNote(int Note, int Octave)
 {
 	// New note
 	m_iNote	= RunNote(Octave, Note);
-	m_iSeqVolume = 0x0F;
+	m_iInstVolume = 0x0F;
 	m_bRelease = false;
 
 //	m_bResetPhase = true;
+}
+
+bool CChannelHandlerN163::CreateInstHandler(inst_type_t Type)
+{
+	switch (Type) {
+	case INST_2A03: case INST_VRC6: case INST_S5B:
+		CREATE_INST_HANDLER(CSeqInstHandler, 0x0F, Type == INST_S5B ? 0x40 : 0); return true;
+	case INST_N163:
+		CREATE_INST_HANDLER(CSeqInstHandlerN163, 0x0F, 0); return true;
+	}
+	return false;
 }
 
 void CChannelHandlerN163::SetupSlide()		// // //
@@ -184,22 +188,18 @@ void CChannelHandlerN163::SetupSlide()		// // //
 
 void CChannelHandlerN163::ProcessChannel()
 {
-	CFamiTrackerDoc *pDocument = m_pSoundGen->GetDocument();
-
 	// Default effects
 	CChannelHandler::ProcessChannel();
-
-	bool bUpdateWave = GetSequenceState(SEQ_DUTYCYCLE) != SEQ_STATE_DISABLED;
-
+	
+	CFamiTrackerDoc *pDocument = m_pSoundGen->GetDocument();
 	m_iChannels = pDocument->GetNamcoChannels() - 1;
-
-	// Sequences
-	for (int i = 0; i < SEQ_COUNT; ++i)
-		RunSequence(i);
-
-	if (bUpdateWave) {
-		m_iWaveIndex = m_iDutyPeriod;
-		m_bLoadWave = true;
+	// // //
+	CSeqInstHandler *pHandler = dynamic_cast<CSeqInstHandler*>(m_pInstHandler);
+	if (pHandler != nullptr) {
+		if (pHandler->GetSequenceState(SEQ_DUTYCYCLE) != SEQ_STATE_DISABLED) {
+			m_iWaveIndex = m_iDutyPeriod;
+			m_bLoadWave = true;
+		}
 	}
 }
 
@@ -364,4 +364,20 @@ void CChannelHandlerN163::CheckWaveUpdate()
 		m_bLoadWave = true;
 		m_bDisableLoad = false;
 	}
+}
+
+/*
+ * Class CSeqInstHandlerN163
+ */
+
+void CSeqInstHandlerN163::LoadInstrument(CInstrument *pInst)		// // //
+{
+	CSeqInstHandler::LoadInstrument(pInst);
+	CChannelInterfaceN163 *pInterface = dynamic_cast<CChannelInterfaceN163*>(m_pInterface);
+	if (pInterface == nullptr) return;
+	CInstrumentN163 *pN163Inst = dynamic_cast<CInstrumentN163*>(pInst);
+	if (pN163Inst == nullptr) return;
+	pInterface->SetWaveLength(pN163Inst->GetWaveSize());
+	pInterface->SetWavePosition(pN163Inst->GetWavePos());
+	pInterface->SetWaveCount(pN163Inst->GetWaveCount());
 }

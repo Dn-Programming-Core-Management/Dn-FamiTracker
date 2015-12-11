@@ -26,12 +26,15 @@
 // Derived channels, N163
 //
 
+class CChannelInterfaceN163;
+
 class CChannelHandlerN163 : public CChannelHandlerInverted {
 public:
 	CChannelHandlerN163();
 	virtual void ResetChannel();
 	virtual void ProcessChannel();
 	virtual void RefreshChannel();
+	friend CChannelInterfaceN163;
 
 protected:
 	virtual void HandleNoteData(stChanNote *pNoteData, int EffColumns);
@@ -41,6 +44,7 @@ protected:
 	virtual void HandleCut();
 	virtual void HandleRelease();
 	virtual void HandleNote(int Note, int Octave);
+	bool         CreateInstHandler(inst_type_t Type);		// // //
 	virtual void SetupSlide();		// // //
 	virtual int ConvertDuty(int Duty) const;		// // //
 	virtual void ClearRegisters();

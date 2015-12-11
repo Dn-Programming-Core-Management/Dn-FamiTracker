@@ -29,18 +29,17 @@
 class CChannelHandlerS5B : public CChannelHandler {
 public:
 	CChannelHandlerS5B();
-	virtual void ProcessChannel();
 	virtual void ResetChannel();
 	virtual void RefreshChannel();
 
 protected:
 	// // //
 	virtual void HandleCustomEffects(int EffNum, int EffParam);
-	virtual bool HandleInstrument(int Instrument, bool Trigger, bool NewInstrument);
 	virtual void HandleEmptyNote();
 	virtual void HandleCut();
 	virtual void HandleRelease();
 	virtual void HandleNote(int Note, int Octave);
+	bool         CreateInstHandler(inst_type_t Type);		// // //
 	
 	virtual int ConvertDuty(int Duty) const;		// // //
 	void ClearRegisters();
@@ -73,8 +72,6 @@ protected:
 	bool m_bEnvEnable;		// unused
 
 	bool m_bUpdate;
-
-//	void RunSequence(int Index, CSequence *pSequence);
 /*
 	unsigned char m_cSweep;
 	unsigned char m_cDutyCycle, m_iDefaultDuty;

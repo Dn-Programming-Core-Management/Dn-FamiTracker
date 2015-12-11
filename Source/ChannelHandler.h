@@ -22,6 +22,11 @@
 
 #pragma once
 
+#define CREATE_INST_HANDLER(T, ...) { if (typeid(m_pInstHandler) != typeid(T)) \
+                                         SAFE_RELEASE(m_pInstHandler); \
+                                    if (dynamic_cast<T*>(m_pInstHandler) == nullptr) \
+                                         m_pInstHandler = new T(m_pInstInterface, __VA_ARGS__); }		// // //
+
 class CAPU;
 
 // Sequence states
@@ -35,52 +40,13 @@ enum seq_state_t {
 static const int DUTY_2A03_FROM_VRC6[] = {0, 0, 1, 1, 1, 1, 2, 2};		// // //
 static const int DUTY_VRC6_FROM_2A03[] = {1, 3, 7, 3};		// // //
 
-//
-// Sequence handler class
-//
-class CSequenceHandler {
-protected:
-	CSequenceHandler();
-
-	// Virtual methods
-	virtual	int  TriggerNote(int Note) = 0;
-	virtual void SetVolume(int Volume) = 0;
-	virtual void SetPeriod(int Period) = 0;
-	virtual int  GetPeriod() const = 0;
-	virtual void SetNote(int Note) = 0;
-	virtual int  GetNote() const = 0;
-	virtual void SetDutyPeriod(int Period) = 0;
-	virtual bool IsActive() const = 0;
-	virtual bool IsReleasing() const = 0;
-
-	// Sequence functions
-	void SetupSequence(int Index, const CSequence *pSequence);
-	void ClearSequence(int Index);
-	void RunSequence(int Index);
-	void ClearSequences();
-	void ReleaseSequences();
-	bool IsSequenceEqual(int Index, const CSequence *pSequence) const;
-	seq_state_t GetSequenceState(int Index) const;
-
-	unsigned char	m_iArpeggio;		// // // for arp schemes
-	// 0CC: hack
-
-private:
-	void UpdateSequenceRunning(int Index, const CSequence *pSequence);
-	void UpdateSequenceEnd(int Index, const CSequence *pSequence);
-	void ReleaseSequence(int Index, const CSequence *pSeq);
-
-	// Sequence variables
-private:
-	const CSequence	*m_pSequence[SEQ_COUNT];
-	seq_state_t		m_iSeqState[SEQ_COUNT];
-	int				m_iSeqPointer[SEQ_COUNT];
-};
+class CInstHandler;
+class CChannelInterface;
 
 //
 // Base class for channel renderers
 //
-class CChannelHandler : public CSequenceHandler {
+class CChannelHandler {
 protected:
 	CChannelHandler(int MaxPeriod, int MaxVolume);
 
@@ -92,6 +58,7 @@ public:
 	// Public functions
 	void	InitChannel(CAPU *pAPU, int *pVibTable, CSoundGen *pSoundGen);
 	void	Arpeggiate(unsigned int Note);
+	void	ForceReloadInstrument();		// // //
 
 	void	DocumentPropertiesChanged(CFamiTrackerDoc *pDoc);
 
@@ -99,7 +66,7 @@ public:
 	// Public virtual functions
 	//
 public:
-	virtual void	ProcessChannel() = 0;						// Run the instrument and effects
+	virtual void	ProcessChannel();							// Run the instrument and effects // // // no longer pure
 	virtual void	RefreshChannel() = 0;						// Update channel registers
 	virtual void	ResetChannel();								// Resets all state variables to default
 	virtual CString	GetStateString();							// // // Retrieve current channel state
@@ -111,6 +78,8 @@ public:
 
 	virtual void	SetChannelID(int ID) { m_iChannelID = ID; }
 
+	unsigned char	GetEffectParam() const;						// // //
+
 	// 
 	// Internal virtual functions
 	//
@@ -119,10 +88,11 @@ protected:
 	virtual	int		TriggerNote(int Note);
 
 	virtual void	HandleNoteData(stChanNote *pNoteData, int EffColumns);
+	virtual bool	HandleInstrument(int Instrument, bool Trigger, bool NewInstrument);		// // // not pure virtual
+	virtual bool	CreateInstHandler(inst_type_t Type);		// // //
 
 	// Pure virtual functions for handling notes
 	virtual void	HandleCustomEffects(int EffNum, int EffParam) = 0;
-	virtual bool	HandleInstrument(int Instrument, bool Trigger, bool NewInstrument) = 0;
 	virtual void	HandleEmptyNote() = 0;
 	virtual void	HandleCut() = 0;
 	virtual void	HandleRelease() = 0;
@@ -167,9 +137,6 @@ protected:
 	void	LinearAdd(int Step);
 	void	LinearRemove(int Step);
 
-	bool	IsActive() const;
-	bool	IsReleasing() const;
-
 	void	WriteEchoBuffer(stChanNote *NoteData, int Pos, int EffColumns);		// // //
 
 	void	WriteRegister(uint16 Reg, uint8 Value);
@@ -179,7 +146,6 @@ protected:
 
 	// CSequenceHandler virtual methods
 protected:
-	void	SetVolume(int Volume);
 	void	SetPeriod(int Period);
 	int		GetPeriod() const;
 	void	SetNote(int Note);
@@ -215,11 +181,12 @@ protected:
 
 	unsigned int	m_iInstrument;					// Instrument
 	unsigned int	m_iLastInstrument;				// Previous instrument
+	bool			m_bForceReload;					// // //
 
 	int				m_iNote;						// Active note
 	int				m_iPeriod;						// Channel period/frequency
 	int				m_iLastPeriod;					// Previous period
-	int				m_iSeqVolume;					// Sequence volume
+	int				m_iInstVolume;					// Sequence volume
 	int				m_iVolume;						// Volume
 	char			m_iDefaultVolume;				// // // for the delayed volume
 	char			m_iDutyPeriod;
@@ -250,7 +217,6 @@ protected:
 
 	unsigned char	m_iEffect;						// arpeggio & portamento
 	unsigned char	m_iEffectParam;					// // // single effect parameter as in nsf driver
-													// 0CC: replace m_iArpeggio in CSequenceHandler with this
 	unsigned char	m_iArpState;
 	int				m_iPortaTo;
 	int				m_iPortaSpeed;
@@ -276,6 +242,9 @@ protected:
 	int				m_iPitch;						// Used by the pitch wheel
 	
 	inst_type_t		m_iInstTypeCurrent;				// // // Used for duty conversions
+	CInstHandler	*m_pInstHandler;				// // //
+	friend			CChannelInterface;			// // //
+	CChannelInterface *m_pInstInterface;
 
 	// Private variables
 private:
@@ -290,4 +259,113 @@ protected:
 	// // //
 	virtual int CalculatePeriod() const;
 	virtual CString GetSlideEffectString() const;		// // //
+};
+
+// // //
+// Instrument handler base class
+// // //
+class CInstHandler {
+protected:
+	CInstHandler(CChannelInterface *pInterface, int Vol);
+
+public:
+	virtual ~CInstHandler();
+	virtual void LoadInstrument(CInstrument *pInst) = 0;
+	virtual void UpdateInstrument() = 0;
+	virtual void TriggerInstrument() = 0;
+	virtual void ReleaseInstrument() = 0;
+
+protected:
+	CChannelInterface *m_pInterface;
+	const CInstrument *m_pInstrument;
+	int m_iVolume;
+	int m_iNoteOffset;
+	int m_iPitchOffset;
+	const int m_iDefaultVolume;
+};
+
+class CSeqInstHandler : public CInstHandler
+{
+public:
+	CSeqInstHandler(CChannelInterface *pInterface, int Vol, int Duty);
+	virtual void LoadInstrument(CInstrument *pInst);
+	virtual void TriggerInstrument();
+	virtual void ReleaseInstrument();
+	virtual void UpdateInstrument();
+
+	seq_state_t GetSequenceState(int Index) const { return m_iSeqState[Index]; }
+
+protected:
+	void SetupSequence(int Index, const CSequence *pSequence);
+	void ClearSequence(int Index);
+
+protected:
+	const CSequence	*m_pSequence[SEQ_COUNT];
+	seq_state_t		m_iSeqState[SEQ_COUNT];
+	int				m_iSeqPointer[SEQ_COUNT];
+	int				m_iDutyParam;
+	const int		m_iDefaultDuty;
+};
+
+class CSeqInstHandlerFDS : public CSeqInstHandler
+{
+public:
+	CSeqInstHandlerFDS(CChannelInterface *pInterface, int Vol, int Duty) :
+		CSeqInstHandler(pInterface, Vol, Duty) {}
+	void LoadInstrument(CInstrument *pInst); // sequences are bound to instruments rather than document
+	void TriggerInstrument();
+};
+
+class CSeqInstHandlerN163 : public CSeqInstHandler
+{
+public:
+	CSeqInstHandlerN163(CChannelInterface *pInterface, int Vol, int Duty) :
+		CSeqInstHandler(pInterface, Vol, Duty) {}
+	void LoadInstrument(CInstrument *pInst);
+};
+
+class CInstHandlerVRC7 : public CInstHandler
+{
+public:
+	CInstHandlerVRC7(CChannelInterface *pInterface, int Vol) :
+		CInstHandler(pInterface, Vol), m_bUpdate(false) {}
+	void LoadInstrument(CInstrument *pInst);
+	void TriggerInstrument();
+	void ReleaseInstrument();
+	void UpdateInstrument();
+private:
+	void UpdateRegs();
+	bool m_bUpdate;
+};
+
+//
+// Base class for channel interface
+//
+// move to separate file?
+class CChannelInterface		// // //
+{
+public:
+	CChannelInterface(CChannelHandler *pChan) : m_pChannel(pChan) {}
+	CChannelInterface() : m_pChannel(nullptr) {}
+	virtual ~CChannelInterface() {};
+
+	inline int TriggerNote(int Note) { return m_pChannel->TriggerNote(Note); }
+
+	inline void SetVolume(int Volume) { m_pChannel->m_iInstVolume = Volume; }
+	inline void SetPeriod(int Period) { m_pChannel->SetPeriod(Period); }
+	inline void SetNote(int Note) { m_pChannel->SetNote(Note); }
+	inline void SetDutyPeriod(int Duty) { m_pChannel->m_iDutyPeriod = m_pChannel->ConvertDuty(Duty); }
+
+	inline int GetVolume() const { return m_pChannel->m_iInstVolume; }
+	inline int GetPeriod() const { return m_pChannel->GetPeriod(); }
+	inline int GetNote() const { return m_pChannel->GetNote(); }
+	inline int GetDutyPeriod() const { return m_pChannel->m_iDutyPeriod; } // getter?
+
+	inline unsigned char GetArpParam() const { return m_pChannel->m_iEffect == EF_ARPEGGIO ? m_pChannel->m_iEffectParam : 0U; }
+	
+	inline bool IsActive() const { return m_pChannel->m_bGate; }
+	inline bool IsReleasing() const { return m_pChannel->m_bRelease; }
+
+private:
+	CChannelHandler *const m_pChannel;
 };

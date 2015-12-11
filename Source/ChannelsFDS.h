@@ -22,26 +22,28 @@
 
 #pragma once
 
+class CChannelInterfaceFDS;
+
 class CChannelHandlerFDS : public CChannelHandlerInverted {
 public:
 	CChannelHandlerFDS();
-	virtual void ProcessChannel();
 	virtual void RefreshChannel();
+	friend CChannelInterfaceFDS;
 protected:
 	virtual void HandleNoteData(stChanNote *pNoteData, int EffColumns);
 	virtual void HandleCustomEffects(int EffNum, int EffParam);
-	virtual bool HandleInstrument(int Instrument, bool Trigger, bool NewInstrument);
 	virtual void HandleEmptyNote();
 	virtual void HandleCut();
 	virtual void HandleRelease();
 	virtual void HandleNote(int Note, int Octave);
+	bool         CreateInstHandler(inst_type_t Type);		// // //
 	virtual void ClearRegisters();
 	virtual CString GetCustomEffectString() const;		// // //
 
 protected:
 	// FDS functions
-	void FillWaveRAM(CInstrumentFDS *pInst);
-	void FillModulationTable(CInstrumentFDS *pInst);
+	void FillWaveRAM(const CInstrumentFDS *pInst);
+	void FillModulationTable(const CInstrumentFDS *pInst);
 private:
 	void CheckWaveUpdate();
 protected:

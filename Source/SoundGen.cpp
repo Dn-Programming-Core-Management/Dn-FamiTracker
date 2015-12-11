@@ -2636,6 +2636,13 @@ void CSoundGen::QueueNote(int Channel, stChanNote &NoteData, note_prio_t Priorit
 	theApp.GetMIDI()->WriteNote(Channel, NoteData.Note, NoteData.Octave, NoteData.Vol);
 }
 
+void CSoundGen::ForceReloadInstrument(int Channel)		// // //
+{
+	if (m_pDocument == NULL)
+		return;
+	m_pChannels[m_pDocument->GetChannel(Channel)->GetID()]->ForceReloadInstrument();
+}
+
 int	CSoundGen::GetPlayerRow() const
 {
 	return m_iPlayRow;

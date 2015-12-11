@@ -92,29 +92,6 @@ void CChannelHandler2A03::HandleCustomEffects(int EffNum, int EffParam)
 	}
 }
 
-bool CChannelHandler2A03::HandleInstrument(int Instrument, bool Trigger, bool NewInstrument)
-{
-	CFamiTrackerDoc *pDocument = m_pSoundGen->GetDocument();
-	CInstrumentContainer<CSeqInstrument> instContainer(pDocument, Instrument);		// // //
-	CSeqInstrument *pInstrument = instContainer();
-
-	if (pInstrument == NULL)
-		return false;
-
-	m_iInstTypeCurrent = pInstrument->GetType();		// // //
-	for (int i = 0; i < SEQ_COUNT; ++i) {
-		const CSequence *pSequence = pDocument->GetSequence(pInstrument->GetType(), pInstrument->GetSeqIndex(i), i); // // //
-		if (Trigger || !IsSequenceEqual(i, pSequence) || pInstrument->GetSeqEnable(i) > GetSequenceState(i)) {
-			if (pInstrument->GetSeqEnable(i) == 1)
-				SetupSequence(i, pSequence);
-			else
-				ClearSequence(i);
-		}
-	}
-
-	return true;
-}
-
 void CChannelHandler2A03::HandleEmptyNote()
 {
 	// // //
@@ -129,10 +106,8 @@ void CChannelHandler2A03::HandleCut()
 
 void CChannelHandler2A03::HandleRelease()
 {
-	if (!m_bRelease) {
+	if (!m_bRelease)
 		ReleaseNote();
-		ReleaseSequences();
-	}
 /*
 	if (!m_bSweeping && (m_cSweep != 0 || m_iSweep != 0)) {
 		m_iSweep = 0;
@@ -150,7 +125,7 @@ void CChannelHandler2A03::HandleNote(int Note, int Octave)
 {
 	m_iNote			= RunNote(Octave, Note);
 	m_iDutyPeriod	= m_iDefaultDuty;
-	m_iSeqVolume	= 0x0F;		// // //
+	m_iInstVolume	= 0x0F;		// // //
 
 	m_iArpState = 0;
 
@@ -165,6 +140,23 @@ void CChannelHandler2A03::HandleNote(int Note, int Octave)
 	}
 }
 
+bool CChannelHandler2A03::CreateInstHandler(inst_type_t Type)
+{
+	switch (Type) {
+	case INST_2A03: case INST_VRC6: case INST_S5B:
+		CREATE_INST_HANDLER(CSeqInstHandler, 0x0F, Type == INST_S5B ? 0x40 : 0); return true;
+	case INST_N163:
+		CREATE_INST_HANDLER(CSeqInstHandlerN163, 0x0F, 0); return true;
+		/*
+	case INST_FDS:
+		CREATE_INST_HANDLER(CSeqInstHandlerFDS, 0x1F, 0); return true;
+	case INST_VRC7:
+		CREATE_INST_HANDLER(CInstHandlerVRC7, 0x0F); return true;
+		*/
+	}
+	return false;
+}
+
 void CChannelHandler2A03::ProcessChannel()
 {
 	// Default effects
@@ -173,10 +165,6 @@ void CChannelHandler2A03::ProcessChannel()
 	// Skip when DPCM
 	if (m_iChannelID == CHANID_DPCM)
 		return;
-
-	// Sequences
-	for (int i = 0; i < SEQ_COUNT; ++i)
-		RunSequence(i);
 }
 
 void CChannelHandler2A03::ResetChannel()
@@ -353,7 +341,7 @@ void CTriangleChan::RefreshChannel()
 	unsigned char HiFreq = (Freq & 0xFF);
 	unsigned char LoFreq = (Freq >> 8);
 	
-	if (m_iSeqVolume > 0 && m_iVolume > 0 && m_bGate) {
+	if (m_iInstVolume > 0 && m_iVolume > 0 && m_bGate) {
 		WriteRegister(0x4008, (m_bEnvelopeLoop << 7) | m_iLinearCounter);		// // //
 		WriteRegister(0x400A, HiFreq);
 		if (m_bEnvelopeLoop || m_bResetEnvelope)		// // //
@@ -437,7 +425,7 @@ void CNoiseChan::HandleNote(int Note, int Octave)
 
 	m_iNote			= NewNote;
 	m_iDutyPeriod	= m_iDefaultDuty;
-	m_iSeqVolume	= 0x0F;		// // //
+	m_iInstVolume	= 0x0F;		// // //
 }
 
 /*

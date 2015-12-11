@@ -207,6 +207,7 @@ public:
 	int			GetPlayerTrack() const;
 	int			GetPlayerTicks() const;
 	void		QueueNote(int Channel, stChanNote &NoteData, note_prio_t Priority) const;
+	void		ForceReloadInstrument(int Channel);		// // //
 	void		MoveToFrame(int Frame);
 	void		SetQueueFrame(int Frame);
 	int			GetQueueFrame() const;

@@ -30,17 +30,16 @@ class CChannelHandlerMMC5 : public CChannelHandler {
 public:
 	CChannelHandlerMMC5();
 	virtual void ResetChannel();
-	virtual void ProcessChannel();
 	virtual void RefreshChannel();
 
 protected:
 	virtual void HandleNoteData(stChanNote *pNoteData, int EffColumns);
 	virtual void HandleCustomEffects(int EffNum, int EffParam);
-	virtual bool HandleInstrument(int Instrument, bool Trigger, bool NewInstrument);
 	virtual void HandleEmptyNote();
 	virtual void HandleCut();
 	virtual void HandleRelease();
 	virtual void HandleNote(int Note, int Octave);
+	bool         CreateInstHandler(inst_type_t Type);		// // //
 	virtual int ConvertDuty(int Duty) const;		// // //
 	virtual void ClearRegisters();
 	virtual CString GetCustomEffectString() const;		// // //

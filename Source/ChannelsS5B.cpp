@@ -162,29 +162,6 @@ void CChannelHandlerS5B::HandleCustomEffects(int EffNum, int EffParam)
 	}
 }
 
-bool CChannelHandlerS5B::HandleInstrument(int Instrument, bool Trigger, bool NewInstrument)
-{
-	CFamiTrackerDoc *pDocument = m_pSoundGen->GetDocument();
-	CInstrumentContainer<CSeqInstrument> instContainer(pDocument, Instrument);		// // //
-	CSeqInstrument *pInstrument = instContainer();
-
-	if (pInstrument == NULL)
-		return false;
-
-	m_iInstTypeCurrent = pInstrument->GetType();		// // //
-	for (int i = 0; i < SEQ_COUNT; ++i) {
-		const CSequence *pSequence = pDocument->GetSequence(pInstrument->GetType(), pInstrument->GetSeqIndex(i), i); // // //
-		if (Trigger || !IsSequenceEqual(i, pSequence) || pInstrument->GetSeqEnable(i) > GetSequenceState(i)) {
-			if (pInstrument->GetSeqEnable(i) == 1)
-				SetupSequence(i, pSequence);
-			else
-				ClearSequence(i);
-		}
-	}
-
-	return true;
-}
-
 void CChannelHandlerS5B::HandleEmptyNote()
 {
 }
@@ -207,23 +184,22 @@ void CChannelHandlerS5B::HandleRelease()
 void CChannelHandlerS5B::HandleNote(int Note, int Octave)
 {
 	m_iNote	= RunNote(Octave, Note);
-	m_iSeqVolume = 0x0F;
+	m_iInstVolume = 0x0F;
 
 	m_iDutyPeriod = m_iDefaultDuty;		// // //
 
 	m_bUpdate = true;
 }
 
-void CChannelHandlerS5B::ProcessChannel()
+bool CChannelHandlerS5B::CreateInstHandler(inst_type_t Type)
 {
-	CFamiTrackerDoc *pDocument = m_pSoundGen->GetDocument();
-
-	// Default effects
-	CChannelHandler::ProcessChannel();
-
-	// Sequences
-	for (int i = 0; i < SEQ_COUNT; ++i)
-		RunSequence(i);
+	switch (Type) {
+	case INST_2A03: case INST_VRC6: case INST_S5B:
+		CREATE_INST_HANDLER(CSeqInstHandler, 0x0F, Type == INST_S5B ? 0x40 : 0); return true;
+	case INST_N163:
+		CREATE_INST_HANDLER(CSeqInstHandlerN163, 0x0F, 0); return true;
+	}
+	return false;
 }
 
 void CChannelHandlerS5B::WriteReg(int Reg, int Value)

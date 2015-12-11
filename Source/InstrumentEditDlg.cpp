@@ -412,6 +412,7 @@ void CInstrumentEditDlg::SwitchOnNote(int x, int y)
 			memset(NoteData.EffParam, 0, 4);
 
 			theApp.GetSoundGenerator()->QueueNote(Channel, NoteData, NOTE_PRIO_2);
+			theApp.GetSoundGenerator()->ForceReloadInstrument(Channel);		// // //
 		}
 
 		m_iLastKey = Note + (Octave * NOTE_RANGE);

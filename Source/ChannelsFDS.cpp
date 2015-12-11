@@ -30,15 +30,32 @@
 #include "ChannelsFDS.h"
 #include "SoundGen.h"
 
+class CChannelInterfaceFDS : public CChannelInterface
+{
+public:
+	CChannelInterfaceFDS(CChannelHandlerFDS *pChan) :
+		CChannelInterface(pChan), m_pChannel(pChan) {}
+
+	// TODO: bad, combine into a single container for channel parameters
+	void SetFMSpeed(int Speed) { m_pChannel->m_iModulationSpeed = Speed; };
+	void SetFMDepth(int Depth) { m_pChannel->m_iModulationDepth = Depth; };
+	void SetFMDelay(int Delay) { m_pChannel->m_iModulationDelay = Delay; };
+	void FillWaveRAM(const CInstrumentFDS *pInst) { m_pChannel->FillWaveRAM(pInst); };
+	void FillModulationTable(const CInstrumentFDS *pInst) { m_pChannel->FillModulationTable(pInst); };
+
+private:
+	CChannelHandlerFDS *const m_pChannel;
+};
+
 CChannelHandlerFDS::CChannelHandlerFDS() : 
 	CChannelHandlerInverted(0xFFF, 32)
 { 
-	ClearSequences();
-
 	memset(m_iModTable, 0, 32);
 	memset(m_iWaveTable, 0, 64);
 
 	m_bResetMod = false;
+	SAFE_RELEASE(m_pInstInterface);		// // //
+	m_pInstInterface = new CChannelInterfaceFDS(this);
 }
 
 void CChannelHandlerFDS::HandleNoteData(stChanNote *pNoteData, int EffColumns)
@@ -120,39 +137,6 @@ void CChannelHandlerFDS::HandleCustomEffects(int EffNum, int EffParam)
 	}
 }
 
-bool CChannelHandlerFDS::HandleInstrument(int Instrument, bool Trigger, bool NewInstrument)
-{
-	CFamiTrackerDoc *pDocument = m_pSoundGen->GetDocument();
-	CInstrumentContainer<CInstrumentFDS> instContainer(pDocument, Instrument);	// TODO check this
-	CInstrumentFDS *pInstrument = instContainer();
-
-	if (pInstrument == NULL)
-		return false;
-
-	if (Trigger || NewInstrument) {
-		FillWaveRAM(pInstrument);
-		FillModulationTable(pInstrument);
-	}
-
-	if (Trigger) {
-		CSequence *pVolSeq = pInstrument->GetVolumeSeq();
-		CSequence *pArpSeq = pInstrument->GetArpSeq();
-		CSequence *pPitchSeq = pInstrument->GetPitchSeq();
-
-		(pVolSeq->GetItemCount() > 0) ? SetupSequence(SEQ_VOLUME, pVolSeq) : ClearSequence(SEQ_VOLUME);
-		(pArpSeq->GetItemCount() > 0) ? SetupSequence(SEQ_ARPEGGIO, pArpSeq) : ClearSequence(SEQ_ARPEGGIO);
-		(pPitchSeq->GetItemCount() > 0) ? SetupSequence(SEQ_PITCH, pPitchSeq) : ClearSequence(SEQ_PITCH);
-
-//			if (pInstrument->GetModulationEnable()) {
-			m_iModulationSpeed = pInstrument->GetModulationSpeed();
-			m_iModulationDepth = pInstrument->GetModulationDepth();
-			m_iModulationDelay = pInstrument->GetModulationDelay();
-//			}
-	}
-
-	return true;
-}
-
 void CChannelHandlerFDS::HandleEmptyNote()
 {
 }
@@ -166,7 +150,6 @@ void CChannelHandlerFDS::HandleRelease()
 {
 	if (!m_bRelease) {
 		ReleaseNote();
-		ReleaseSequences();
 	}
 }
 
@@ -177,23 +160,16 @@ void CChannelHandlerFDS::HandleNote(int Note, int Octave)
 	m_bResetMod = true;
 	m_iLastInstrument = m_iInstrument;
 
-	m_iSeqVolume = 0x1F;
+	m_iInstVolume = 0x1F;
 }
 
-void CChannelHandlerFDS::ProcessChannel()
+bool CChannelHandlerFDS::CreateInstHandler(inst_type_t Type)
 {
-	// Default effects
-	CChannelHandler::ProcessChannel();	
-
-	// Sequences
-	if (GetSequenceState(SEQ_VOLUME) != SEQ_STATE_DISABLED)
-		RunSequence(SEQ_VOLUME);
-
-	if (GetSequenceState(SEQ_ARPEGGIO) != SEQ_STATE_DISABLED)
-		RunSequence(SEQ_ARPEGGIO);
-
-	if (GetSequenceState(SEQ_PITCH) != SEQ_STATE_DISABLED)
-		RunSequence(SEQ_PITCH);
+	switch (Type) {
+	case INST_FDS:
+		CREATE_INST_HANDLER(CSeqInstHandlerFDS, 0x1F, 0); return true;
+	}
+	return false;
 }
 
 void CChannelHandlerFDS::RefreshChannel()
@@ -277,7 +253,7 @@ void CChannelHandlerFDS::ClearRegisters()
 	WriteExternalRegister(0x4087, 0x00);
 	WriteExternalRegister(0x4084, 0x00);		// // //
 
-	m_iSeqVolume = 0x20;
+	m_iInstVolume = 0x20;
 
 	m_bAutoModulation = false;		// // //
 	m_iModulationOffset = 0;		// // //
@@ -314,7 +290,7 @@ CString CChannelHandlerFDS::GetCustomEffectString() const		// // //
 	return str;
 }
 
-void CChannelHandlerFDS::FillWaveRAM(CInstrumentFDS *pInstrument)
+void CChannelHandlerFDS::FillWaveRAM(const CInstrumentFDS *pInstrument)
 {
 	bool bNew(false);
 
@@ -345,7 +321,7 @@ void CChannelHandlerFDS::FillWaveRAM(CInstrumentFDS *pInstrument)
 	}
 }
 
-void CChannelHandlerFDS::FillModulationTable(CInstrumentFDS *pInstrument)
+void CChannelHandlerFDS::FillModulationTable(const CInstrumentFDS *pInstrument)
 {
 	// Fills the 32 byte modulation table
 
@@ -390,4 +366,40 @@ void CChannelHandlerFDS::CheckWaveUpdate()
 			FillModulationTable(pInstrument);
 		}
 	}
+}
+
+/*
+ * Class CSeqInstHandlerFDS
+ */
+
+void CSeqInstHandlerFDS::LoadInstrument(CInstrument *pInst)		// // //
+{
+	m_pInstrument = pInst;
+	CInstrumentFDS *pSeqInst = dynamic_cast<CInstrumentFDS*>(pInst);
+	ASSERT(pInst == nullptr || pSeqInst != nullptr);
+	CSequence *pSeq[] = {pSeqInst->GetVolumeSeq(), pSeqInst->GetArpSeq(), pSeqInst->GetPitchSeq()};
+	for (size_t i = 0; i < sizeof(pSeq) / sizeof(CSequence*); i++)
+		pSeq[i]->GetItemCount() > 0 ? SetupSequence(i, pSeq[i]) : ClearSequence(i);
+	
+	CChannelInterfaceFDS *pInterface = dynamic_cast<CChannelInterfaceFDS*>(m_pInterface);
+	if (pInterface == nullptr) return;
+	const CInstrumentFDS *pFDSInst = dynamic_cast<const CInstrumentFDS*>(m_pInstrument);
+	if (pFDSInst == nullptr) return;
+	pInterface->FillWaveRAM(pFDSInst);
+	pInterface->FillModulationTable(pFDSInst);
+}
+
+void CSeqInstHandlerFDS::TriggerInstrument()
+{
+	CSeqInstHandler::TriggerInstrument();
+	
+	CChannelInterfaceFDS *pInterface = dynamic_cast<CChannelInterfaceFDS*>(m_pInterface);
+	if (pInterface == nullptr) return;
+	const CInstrumentFDS *pFDSInst = dynamic_cast<const CInstrumentFDS*>(m_pInstrument);
+	if (pFDSInst == nullptr) return;
+	pInterface->SetFMSpeed(pFDSInst->GetModulationSpeed());
+	pInterface->SetFMDepth(pFDSInst->GetModulationDepth());
+	pInterface->SetFMDelay(pFDSInst->GetModulationDelay());
+	pInterface->FillWaveRAM(pFDSInst);
+	pInterface->FillModulationTable(pFDSInst);
 }

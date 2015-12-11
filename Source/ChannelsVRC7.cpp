@@ -32,6 +32,20 @@
 #define OPL_NOTE_ON 0x10
 #define OPL_SUSTAIN_ON 0x20
 
+class CChannelInterfaceVRC7 : public CChannelInterface
+{
+public:
+	CChannelInterfaceVRC7(CChannelHandlerVRC7 *pChan) :
+		CChannelInterface(pChan), m_pChannel(pChan) {}
+
+	// TODO: bad, combine into a single container for channel parameters
+	void SetPatch(unsigned char Index) { m_pChannel->m_iPatch = Index; };
+	void SetCustomReg(size_t Reg, unsigned char Val) { m_pChannel->m_iRegs[Reg] = Val; };
+
+private:
+	CChannelHandlerVRC7 *const m_pChannel;
+};
+
 // True if custom instrument registers needs to be updated, shared among all channels
 bool CChannelHandlerVRC7::m_bRegsDirty = false;
 
@@ -41,6 +55,8 @@ CChannelHandlerVRC7::CChannelHandlerVRC7() :
 	m_iTriggeredNote(0)
 {
 	m_iVolume = VOL_COLUMN_MAX;
+	SAFE_RELEASE(m_pInstInterface);
+	m_pInstInterface = new CChannelInterfaceVRC7(this);
 }
 
 void CChannelHandlerVRC7::SetChannelID(int ID)
@@ -110,29 +126,6 @@ void CChannelHandlerVRC7::HandleCustomEffects(int EffNum, int EffParam)
 	}
 }
 
-bool CChannelHandlerVRC7::HandleInstrument(int Instrument, bool Trigger, bool NewInstrument)
-{
-	CFamiTrackerDoc *pDocument = m_pSoundGen->GetDocument();
-	CInstrumentContainer<CInstrumentVRC7> instContainer(pDocument, Instrument);
-	CInstrumentVRC7 *pInstrument = instContainer();
-
-	if (pInstrument == NULL)
-		return false;
-
-	if (Trigger || NewInstrument) {
-		// Patch number
-		m_iPatch = pInstrument->GetPatch();
-
-		// Load custom parameters
-		if (m_iPatch == 0) {
-			for (int i = 0; i < 8; ++i)
-				m_iRegs[i] = pInstrument->GetCustomReg(i);
-		}
-	}
-
-	return true;
-}
-
 void CChannelHandlerVRC7::HandleEmptyNote()
 {
 }
@@ -192,6 +185,15 @@ void CChannelHandlerVRC7::HandleNote(int Note, int Octave)
 	}
 }
 
+bool CChannelHandlerVRC7::CreateInstHandler(inst_type_t Type)
+{
+	switch (Type) {
+	case INST_VRC7:
+		CREATE_INST_HANDLER(CInstHandlerVRC7, 0x0F); return true;
+	}
+	return false;
+}
+
 void CChannelHandlerVRC7::SetupSlide()		// // //
 {
 	int OldOctave = m_iOctave;
@@ -205,12 +207,6 @@ void CChannelHandlerVRC7::SetupSlide()		// // //
 		m_iPortaTo >>= (OldOctave - m_iOctave);
 		m_iOctave = OldOctave;
 	}
-}
-
-void CChannelHandlerVRC7::ProcessChannel()
-{
-	// Default effects
-	CChannelHandler::ProcessChannel();
 }
 
 void CChannelHandlerVRC7::ResetChannel()
@@ -313,4 +309,38 @@ void CVRC7Channel::RegWrite(unsigned char Reg, unsigned char Value)
 {
 	WriteExternalRegister(0x9010, Reg);
 	WriteExternalRegister(0x9030, Value);
+}
+
+void CInstHandlerVRC7::LoadInstrument(CInstrument *pInst)
+{
+	m_pInstrument = pInst;
+	UpdateRegs();
+}
+
+void CInstHandlerVRC7::TriggerInstrument()
+{
+	UpdateRegs();
+}
+
+void CInstHandlerVRC7::ReleaseInstrument()
+{
+}
+
+void CInstHandlerVRC7::UpdateInstrument()
+{
+	if (!m_bUpdate) return;
+	CChannelInterfaceVRC7 *pInterface = dynamic_cast<CChannelInterfaceVRC7*>(m_pInterface);
+	if (pInterface == nullptr) return;
+	const CInstrumentVRC7 *pVRC7Inst = dynamic_cast<const CInstrumentVRC7*>(m_pInstrument);
+	if (pVRC7Inst == nullptr) return;
+	pInterface->SetPatch(pVRC7Inst->GetPatch());
+	if (!pVRC7Inst->GetPatch())
+		for (size_t i = 0; i < 8; i++)
+			pInterface->SetCustomReg(i, pVRC7Inst->GetCustomReg(i));
+	m_bUpdate = false;
+}
+
+void CInstHandlerVRC7::UpdateRegs()
+{
+	m_bUpdate = true;
 }

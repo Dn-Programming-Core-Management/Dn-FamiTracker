@@ -29,17 +29,15 @@
 class CChannelHandlerVRC6 : public CChannelHandler {
 public:
 	CChannelHandlerVRC6();
-	virtual void ProcessChannel();
-	virtual void ResetChannel();
 
 protected:
 	// // //
 	virtual void HandleCustomEffects(int EffNum, int EffParam);
-	virtual bool HandleInstrument(int Instrument, bool Trigger, bool NewInstrument);
 	virtual void HandleEmptyNote();
 	virtual void HandleCut();
 	virtual void HandleRelease();
 	virtual void HandleNote(int Note, int Octave);
+	bool         CreateInstHandler(inst_type_t Type);		// // //
 	// // //
 	void ClearRegisters();		// // //
 };

@@ -49,9 +49,10 @@ CChannelHandler::CChannelHandler(int MaxPeriod, int MaxVolume) :
 	m_pNoteLookupTable(NULL),
 	m_pVibratoTable(NULL),
 	m_pAPU(NULL),
+	m_pInstHandler(nullptr),		// // //
 	m_iPitch(0),
 	m_iNote(0),
-	m_iSeqVolume(0),
+	m_iInstVolume(0),
 	m_iDefaultDuty(0),
 	m_iDutyPeriod(0),
 	m_iMaxPeriod(MaxPeriod),
@@ -61,12 +62,15 @@ CChannelHandler::CChannelHandler(int MaxPeriod, int MaxVolume) :
 	m_bLinearPitch(false),
 	m_bPeriodUpdated(false),
 	m_bVolumeUpdate(false),
+	m_bForceReload(false),		// // //
 	m_iEffectParam(0)		// // //
-{ 
+{
+	m_pInstInterface = new CChannelInterface(this);
 }
 
 CChannelHandler::~CChannelHandler()
 {
+	SAFE_RELEASE(m_pInstInterface);
 }
 
 void CChannelHandler::InitChannel(CAPU *pAPU, int *pVibTable, CSoundGen *pSoundGen)
@@ -136,6 +140,11 @@ void CChannelHandler::Arpeggiate(unsigned int Note)
 	SetPeriod(TriggerNote(Note));
 }
 
+void CChannelHandler::ForceReloadInstrument()		// // //
+{
+	m_bForceReload = true;
+}
+
 void CChannelHandler::ResetChannel()
 {
 	// Resets the channel states (volume, instrument & duty)
@@ -151,7 +160,7 @@ void CChannelHandler::ResetChannel()
 	m_iDefaultVolume	= (VOL_COLUMN_MAX >> VOL_COLUMN_SHIFT) << VOL_COLUMN_SHIFT;		// // //
 
 	m_iDefaultDuty		= 0;
-	m_iSeqVolume		= 0;
+	m_iInstVolume		= 0;
 
 	// Period
 	m_iPeriod			= 0;
@@ -164,7 +173,6 @@ void CChannelHandler::ResetChannel()
 
 	m_iPortaSpeed		= 0;
 	m_iPortaTo			= 0;
-	m_iArpeggio			= 0;
 	m_iArpState			= 0;
 	m_iVibratoSpeed		= 0;
 	m_iVibratoPhase		= !m_bNewVibratoMode ? 48 : 0;
@@ -196,7 +204,7 @@ void CChannelHandler::ResetChannel()
 	// Clear channel registers
 	ClearRegisters();
 
-	ClearSequences();
+	SAFE_RELEASE(m_pInstHandler);		// // //
 }
 
 CString CChannelHandler::GetStateString()		// // //
@@ -399,7 +407,7 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	if (Instrument != MAX_INSTRUMENTS)
 		m_iInstrument = Instrument;
 
-	bool NewInstrument = (m_iInstrument != LastInstrument) || (m_iInstrument == MAX_INSTRUMENTS);
+	bool NewInstrument = (m_iInstrument != LastInstrument) || (m_iInstrument == MAX_INSTRUMENTS) || m_bForceReload;
 
 	if (m_iInstrument == MAX_INSTRUMENTS) {
 		// No instrument selected, default to 0
@@ -408,9 +416,12 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	}
 
 	if (NewInstrument || Trigger) {
-		if (!HandleInstrument(m_iInstrument, Trigger, NewInstrument))
+		if (!HandleInstrument(m_iInstrument, Trigger, NewInstrument)) {
+			m_bForceReload = false;		// // //
 			return;
+		}
 	}
+	m_bForceReload = false;		// // //
 
 	// Clear release flag
 	if (pNoteData->Note != RELEASE && pNoteData->Note != NONE) {
@@ -435,6 +446,36 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 
 	if (Trigger && (m_iEffect == EF_SLIDE_DOWN || m_iEffect == EF_SLIDE_UP))		// // //
 		SetupSlide();
+}
+
+bool CChannelHandler::HandleInstrument(int Instrument, bool Trigger, bool NewInstrument)		// // //
+{
+	CFamiTrackerDoc *pDocument = m_pSoundGen->GetDocument();
+	CInstrumentContainer<CInstrument> instContainer(pDocument, Instrument);		// // //
+	CInstrument *pInstrument = instContainer();
+	if (pInstrument == nullptr)
+		return false;
+	
+	// load instrument here
+	inst_type_t instType = pInstrument->GetType();
+	if (NewInstrument)
+		if (!CreateInstHandler(instType) && m_bForceReload)
+			return false;
+	m_iInstTypeCurrent = instType;
+
+	if (m_pInstHandler == nullptr)
+		return false;
+	if (NewInstrument)
+		m_pInstHandler->LoadInstrument(pInstrument);
+	if (Trigger)
+		m_pInstHandler->TriggerInstrument();
+
+	return true;
+}
+
+bool CChannelHandler::CreateInstHandler(inst_type_t Type)
+{
+	return false;
 }
 
 void CChannelHandler::SetNoteTable(unsigned int *pNoteLookupTable)
@@ -474,6 +515,7 @@ void CChannelHandler::ReleaseNote()
 
 	RegisterKeyState(-1);
 
+	if (m_pInstHandler != nullptr) m_pInstHandler->ReleaseInstrument();		// // //
 	m_bRelease = true;
 }
 
@@ -549,7 +591,6 @@ bool CChannelHandler::CheckCommonEffects(unsigned char EffCmd, unsigned char Eff
 				m_iTremoloPhase = 0;
 			break;
 		case EF_ARPEGGIO:
-			m_iArpeggio = EffParam;
 			m_iEffectParam = EffParam;		// // //
 			m_iEffect = EF_ARPEGGIO;
 			break;
@@ -654,48 +695,34 @@ bool CChannelHandler::HandleDelay(stChanNote *pNoteData, int EffColumns)
 
 void CChannelHandler::UpdateNoteCut()
 {
-	// Note cut ()
-	if (m_iNoteCut > 0) {
-		m_iNoteCut--;
-		if (m_iNoteCut == 0) {
-			HandleCut();
-		}
-	}
+	// Note cut (Sxx)
+	if (m_iNoteCut > 0) if (!--m_iNoteCut)
+		HandleCut();
 }
 
 void CChannelHandler::UpdateNoteRelease()		// // //
 {
 	// Note release (Lxx)
-	if (m_iNoteRelease > 0) {
-		m_iNoteRelease--;
-		if (m_iNoteRelease == 0) {
-			HandleRelease();
-			ReleaseNote();
-		}
+	if (m_iNoteRelease > 0) if (!--m_iNoteRelease) {
+		HandleRelease();
+		ReleaseNote();
 	}
 }
 
 void CChannelHandler::UpdateNoteVolume()		// // //
 {
 	// Delayed channel volume (Mxy)
-	if (m_iNoteVolume > 0) {
-		m_iNoteVolume--;
-		if (m_iNoteVolume == 0) {
-			m_iVolume = m_iNewVolume;
-		}
-	}
+	if (m_iNoteVolume > 0) if (!--m_iNoteVolume)
+		m_iVolume = m_iNewVolume;
 }
 
 void CChannelHandler::UpdateTranspose()		// // //
 {
 	// Delayed transpose (Txy)
-	if (m_iTranspose > 0) {
-		m_iTranspose--;
-		if (!m_iTranspose) {
-			// trigger note
-			SetNote(GetNote() + m_iTransposeTarget * (m_bTransposeDown ? -1 : 1));
-			SetPeriod(TriggerNote(m_iNote));
-		}
+	if (m_iTranspose > 0) if (!--m_iTranspose) {
+		// trigger note
+		SetNote(m_iNote + m_iTransposeTarget * (m_bTransposeDown ? -1 : 1));
+		SetPeriod(TriggerNote(m_iNote));
 	}
 }
 
@@ -714,7 +741,7 @@ void CChannelHandler::UpdateDelay()
 
 void CChannelHandler::UpdateVolumeSlide()
 {
-	// Volume slide (Axx)
+	// Volume slide (Axy)
 	m_iVolume -= (m_iVolSlide & 0x0F);
 	if (m_iVolume < 0)
 		m_iVolume = 0;
@@ -779,18 +806,18 @@ void CChannelHandler::UpdateEffects()
 	// Handle other effects
 	switch (m_iEffect) {
 		case EF_ARPEGGIO:
-			if (m_iArpeggio != 0) {
+			if (m_iEffectParam != 0) {
 				switch (m_iArpState) {
 					case 0:
 						SetPeriod(TriggerNote(m_iNote));
 						break;
 					case 1:
-						SetPeriod(TriggerNote(m_iNote + (m_iArpeggio >> 4)));
-						if ((m_iArpeggio & 0x0F) == 0)
+						SetPeriod(TriggerNote(m_iNote + (m_iEffectParam >> 4)));
+						if ((m_iEffectParam & 0x0F) == 0)
 							++m_iArpState;
 						break;
 					case 2:
-						SetPeriod(TriggerNote(m_iNote + (m_iArpeggio & 0x0F)));
+						SetPeriod(TriggerNote(m_iNote + (m_iEffectParam & 0x0F)));
 						break;
 				}
 				m_iArpState = (m_iArpState + 1) % 3;
@@ -825,7 +852,8 @@ void CChannelHandler::UpdateEffects()
 				}
 			}
 			break;
-		// case EF_SLIDE_UP:
+			/*
+		case EF_SLIDE_UP:
 			if (m_iPortaSpeed > 0) {
 				if (m_iPeriod > m_iPortaTo) {
 					PeriodRemove(m_iPortaSpeed);
@@ -837,7 +865,7 @@ void CChannelHandler::UpdateEffects()
 				}
 			}
 			break;
-		// case EF_SLIDE_DOWN:
+		case EF_SLIDE_DOWN:
 			if (m_iPortaSpeed > 0) {
 				PeriodAdd(m_iPortaSpeed);
 				if (m_iPeriod > m_iPortaTo) {
@@ -847,6 +875,7 @@ void CChannelHandler::UpdateEffects()
 				}
 			}
 			break;
+			*/
 		case EF_PORTA_DOWN:
 			if (GetPeriod() > 0)
 				PeriodAdd(m_iPortaSpeed);
@@ -863,7 +892,7 @@ void CChannelHandler::ProcessChannel()
 	// Run all default and common channel processing
 	// This gets called each frame
 	//
-
+	
 	UpdateDelay();
 	UpdateNoteCut();
 	UpdateNoteRelease();		// // //
@@ -872,16 +901,8 @@ void CChannelHandler::ProcessChannel()
 	UpdateVolumeSlide();
 	UpdateVibratoTremolo();
 	UpdateEffects();
-}
-
-bool CChannelHandler::IsActive() const
-{
-	return m_bGate;
-}
-
-bool CChannelHandler::IsReleasing() const
-{
-	return m_bRelease;
+	if (m_pInstHandler != nullptr) m_pInstHandler->UpdateInstrument();		// // //
+	// instruments are updated after running effects and before writing to sound registers
 }
 
 int CChannelHandler::GetVibrato() const
@@ -940,20 +961,20 @@ int CChannelHandler::CalculateVolume(bool Subtract) const
 	int Volume = m_iVolume >> VOL_COLUMN_SHIFT;
 	
 	if (m_iChannelID == CHANID_FDS && !theApp.GetSettings()->General.bFDSOldVolume) {		// // // match NSF setting
-		if (!m_iSeqVolume || !m_iVolume)
+		if (!m_iInstVolume || !m_iVolume)
 			Volume = 0;
 		else
-			Volume = (m_iSeqVolume * (Volume + 1)) / 16;
+			Volume = (m_iInstVolume * (Volume + 1)) / 16;
 	}
 	else if (Subtract)
-		Volume = Volume + m_iSeqVolume - 15;
+		Volume = Volume + m_iInstVolume - 15;
 	else
-		Volume = (m_iSeqVolume * Volume) / 15;
+		Volume = (m_iInstVolume * Volume) / 15;
 	Volume -= GetTremolo();
 	Volume = std::max(Volume, 0);
 	Volume = std::min(Volume, m_iMaxVolume);
 
-	if (m_iSeqVolume > 0 && m_iVolume > 0 && Volume == 0 && !theApp.GetSettings()->General.bCutVolume)		// // //
+	if (m_iInstVolume > 0 && m_iVolume > 0 && Volume == 0 && !theApp.GetSettings()->General.bCutVolume)		// // //
 		Volume = 1;
 
 	if (!m_bGate)
@@ -982,11 +1003,6 @@ void CChannelHandler::WriteExternalRegister(uint16 Reg, uint8 Value)
 void CChannelHandler::RegisterKeyState(int Note)
 {
 	m_pSoundGen->RegisterKeyState(m_iChannelID, Note);
-}
-
-void CChannelHandler::SetVolume(int Volume)
-{
-	m_iSeqVolume = Volume;
 }
 
 void CChannelHandler::SetPeriod(int Period)
@@ -1020,6 +1036,11 @@ void CChannelHandler::SetDutyPeriod(int Period)
 	//m_iDutyPeriod = Period;
 }
 
+unsigned char CChannelHandler::GetEffectParam() const		// // //
+{
+	return m_iEffectParam;
+}
+
 /*
  * Class CChannelHandlerInverted
  *
@@ -1049,188 +1070,186 @@ CString CChannelHandlerInverted::GetSlideEffectString() const		// // //
 }
 
 /*
- * Class CSequenceHandler
- *
+ * Class CInstHandler
  */
 
-CSequenceHandler::CSequenceHandler()
+CInstHandler::CInstHandler(CChannelInterface *pInterface, int Vol) :		// // //
+	m_pInterface(pInterface),
+	m_iNoteOffset(0),
+	m_iVolume(Vol),
+	m_iPitchOffset(0),
+	m_iDefaultVolume(Vol),
+	m_pInstrument(nullptr)
 {
-	ClearSequences();
 }
 
-// Sequence routines
+CInstHandler::~CInstHandler()
+{
+}
 
-void CSequenceHandler::SetupSequence(int Index, const CSequence *pSequence)
+/*
+ * Class CSeqInstHandler
+ */
+
+CSeqInstHandler::CSeqInstHandler(CChannelInterface *pInterface, int Vol, int Duty) :
+	CInstHandler(pInterface, Vol),
+	m_iDefaultDuty(Duty)
+{
+	for (size_t i = 0; i < sizeof(m_pSequence) / sizeof(CSequence*); i++)
+		ClearSequence(i);
+}
+
+void CSeqInstHandler::LoadInstrument(CInstrument *pInst)
+{
+	m_pInstrument = pInst;
+	CSeqInstrument *pSeqInst = dynamic_cast<CSeqInstrument*>(pInst);
+	CFamiTrackerDoc *pDoc = theApp.GetSoundGenerator()->GetDocument();
+	if (pSeqInst == nullptr) return;
+	for (size_t i = 0; i < sizeof(m_pSequence) / sizeof(CSequence*); i++) {
+		const CSequence *pSequence = pDoc->GetSequence(pInst->GetType(), pSeqInst->GetSeqIndex(i), i);
+		bool Enable = pSeqInst->GetSeqEnable(i) == SEQ_STATE_RUNNING;
+		if (pSequence != m_pSequence[i] || Enable && m_iSeqState[i] == SEQ_STATE_DISABLED)
+			Enable ? SetupSequence(i, pSequence) : ClearSequence(i);
+	}
+}
+
+void CSeqInstHandler::TriggerInstrument()
+{
+	for (size_t i = 0; i < sizeof(m_pSequence) / sizeof(CInstrument*); i++) if (m_pSequence[i] != nullptr) {
+		m_iSeqState[i] = SEQ_STATE_RUNNING;
+		m_iSeqPointer[i] = 0;
+	}
+	m_iVolume = m_iDefaultVolume;
+	m_iNoteOffset = 0;
+	m_iPitchOffset = 0;
+	m_iDutyParam = m_iDefaultDuty;
+}
+
+void CSeqInstHandler::ReleaseInstrument()
+{
+	if (m_pInterface->IsReleasing()) return;
+	for (size_t i = 0; i < sizeof(m_pSequence) / sizeof(CInstrument*); i++)
+		if (m_pSequence[i] != nullptr && (m_iSeqState[i] == SEQ_STATE_RUNNING || m_iSeqState[i] == SEQ_STATE_END)) {
+			int ReleasePoint = m_pSequence[i]->GetReleasePoint();
+			if (ReleasePoint != -1) {
+				m_iSeqPointer[i] = ReleasePoint;
+				m_iSeqState[i] = SEQ_STATE_RUNNING;
+			}
+		}
+}
+
+void CSeqInstHandler::UpdateInstrument()
+{
+	if (!m_pInterface->IsActive()) return;
+	for (size_t i = 0; i < sizeof(m_pSequence) / sizeof(CSequence*); i++) {
+		if (m_pSequence[i] == nullptr || m_pSequence[i]->GetItemCount() == 0) continue;
+		int Value = m_pSequence[i]->GetItem(m_iSeqPointer[i]);
+		switch (m_iSeqState[i]) {
+		case SEQ_STATE_RUNNING:
+			switch (i) {
+			// Volume modifier
+			case SEQ_VOLUME:
+				m_pInterface->SetVolume(Value);
+				break;
+			// Arpeggiator
+			case SEQ_ARPEGGIO:
+				switch (m_pSequence[i]->GetSetting()) {
+				case SETTING_ARP_ABSOLUTE:
+					m_pInterface->SetPeriod(m_pInterface->TriggerNote(m_pInterface->GetNote() + Value));
+					break;
+				case SETTING_ARP_FIXED:
+					m_pInterface->SetPeriod(m_pInterface->TriggerNote(Value));
+					break;
+				case SETTING_ARP_RELATIVE:
+					m_pInterface->SetNote(m_pInterface->GetNote() + Value);
+					m_pInterface->SetPeriod(m_pInterface->TriggerNote(m_pInterface->GetNote()));
+					break;
+				case SETTING_ARP_SCHEME: // // //
+					if (Value < 0) Value += 256;
+					int lim = Value % 0x40, scheme = Value / 0x40;
+					if (lim > 36)
+						lim -= 64;
+					{
+						unsigned char Param = m_pInterface->GetArpParam();
+						switch (scheme) {
+						case 0: break;
+						case 1: lim += Param >> 4;   break;
+						case 2: lim += Param & 0x0F; break;
+						case 3: lim -= Param & 0x0F; break;
+						}
+					}
+					m_pInterface->SetPeriod(m_pInterface->TriggerNote(m_pInterface->GetNote() + lim));
+					break;
+				}
+				break;
+			// Pitch
+			case SEQ_PITCH:
+				m_pInterface->SetPeriod(m_pInterface->GetPeriod() + Value);
+				break;
+			// Hi-pitch
+			case SEQ_HIPITCH:
+				m_pInterface->SetPeriod(m_pInterface->GetPeriod() + (Value << 4));
+				break;
+			// Duty cycling
+			case SEQ_DUTYCYCLE:
+				m_pInterface->SetDutyPeriod(Value);
+				break;
+			}
+
+			{
+				++m_iSeqPointer[i];
+				int Release = m_pSequence[i]->GetReleasePoint();
+				int Items = m_pSequence[i]->GetItemCount();
+				int Loop = m_pSequence[i]->GetLoopPoint();
+				if (m_iSeqPointer[i] == (Release + 1) || m_iSeqPointer[i] >= Items) {
+					// End point reached
+					if (Loop != -1 && !(m_pInterface->IsReleasing() && Release != -1) && Loop < Release) {		// // //
+						m_iSeqPointer[i] = Loop;
+					}
+					else if (m_iSeqPointer[i] >= Items) {
+						// End of sequence 
+						if (Loop >= Release && Loop != -1)		// // //
+							m_iSeqPointer[i] = Loop;
+						else
+							m_iSeqState[i] = SEQ_STATE_END;
+					}
+					else if (!m_pInterface->IsReleasing()) {
+						// Waiting for release
+						--m_iSeqPointer[i];
+					}
+				}
+				theApp.GetSoundGenerator()->SetSequencePlayPos(m_pSequence[i], m_iSeqPointer[i]);
+			}
+			break;
+
+		case SEQ_STATE_END:
+			switch (i) {
+			case SEQ_ARPEGGIO:
+				if (m_pSequence[i]->GetSetting() == SETTING_ARP_FIXED)
+					m_pInterface->SetPeriod(m_pInterface->TriggerNote(m_pInterface->GetNote()));
+				break;
+			}
+			m_iSeqState[i] = SEQ_STATE_HALT;
+			theApp.GetSoundGenerator()->SetSequencePlayPos(m_pSequence[i], -1);
+			break;
+
+		case SEQ_STATE_HALT:
+		case SEQ_STATE_DISABLED:
+			break;
+		}
+	}
+}
+
+void CSeqInstHandler::SetupSequence(int Index, const CSequence *pSequence)
 {
 	m_iSeqState[Index]	 = SEQ_STATE_RUNNING;
 	m_iSeqPointer[Index] = 0;
 	m_pSequence[Index]	 = pSequence;
 }
 
-void CSequenceHandler::ClearSequence(int Index)
+void CSeqInstHandler::ClearSequence(int Index)
 {
 	m_iSeqState[Index]	 = SEQ_STATE_DISABLED;
 	m_iSeqPointer[Index] = 0;
-	m_pSequence[Index]	 = NULL;
-}
-
-void CSequenceHandler::UpdateSequenceRunning(int Index, const CSequence *pSequence)
-{
-	int Value = pSequence->GetItem(m_iSeqPointer[Index]);
-
-	switch (Index) {
-		// Volume modifier
-		case SEQ_VOLUME:
-			SetVolume(Value);
-			break;
-		// Arpeggiator
-		case SEQ_ARPEGGIO:
-			switch (pSequence->GetSetting()) {
-				case SETTING_ARP_ABSOLUTE:
-					SetPeriod(TriggerNote(GetNote() + Value));
-					break;
-				case SETTING_ARP_FIXED:
-					SetPeriod(TriggerNote(Value));
-					break;
-				case SETTING_ARP_RELATIVE:
-					SetNote(GetNote() + Value);
-					SetPeriod(TriggerNote(GetNote()));
-					break;
-					case SETTING_ARP_SCHEME: // // //
-						if (Value < 0) Value += 256;
-						int lim = Value % 0x40, scheme = Value / 0x40;
-						if (lim > 36)
-							lim -= 64;
-						switch (scheme) {
-							case 0:
-								break;
-							case 1:
-								lim += m_iArpeggio >> 4;
-								break;
-							case 2:
-								lim += m_iArpeggio & 0x0F;
-								break;
-							case 3:			// -y
-								lim -= m_iArpeggio & 0x0F;
-								break;
-						}
-						SetPeriod(TriggerNote(GetNote() + lim));
-						break;
-			}
-			break;
-		// Pitch
-		case SEQ_PITCH:
-			SetPeriod(GetPeriod() + Value);
-			break;
-		// Hi-pitch
-		case SEQ_HIPITCH:
-			SetPeriod(GetPeriod() + (Value << 4));
-			break;
-		// Duty cycling
-		case SEQ_DUTYCYCLE:
-			SetDutyPeriod(Value);
-			break;
-	}
-
-	++m_iSeqPointer[Index];
-
-	int Release = pSequence->GetReleasePoint();
-	int Items = pSequence->GetItemCount();
-	int Loop = pSequence->GetLoopPoint();
-
-	if (m_iSeqPointer[Index] == (Release + 1) || m_iSeqPointer[Index] >= Items) {
-		// End point reached
-		if (Loop != -1 && !(IsReleasing() && Release != -1) && Loop < Release) {		// // //
-			m_iSeqPointer[Index] = Loop;
-		}
-		else {
-			if (m_iSeqPointer[Index] >= Items) {
-				// End of sequence 
-				if (Loop >= Release && Loop != -1)		// // //
-					m_iSeqPointer[Index] = Loop;
-				else
-					m_iSeqState[Index] = SEQ_STATE_END;
-			}
-			else if (!IsReleasing()) {
-				// Waiting for release
-				--m_iSeqPointer[Index];
-			}
-		}
-	}
-
-	theApp.GetSoundGenerator()->SetSequencePlayPos(pSequence, m_iSeqPointer[Index]);
-}
-
-void CSequenceHandler::UpdateSequenceEnd(int Index, const CSequence *pSequence)
-{
-	switch (Index) {
-		case SEQ_ARPEGGIO:
-			if (pSequence->GetSetting() == SETTING_ARP_FIXED) {
-				SetPeriod(TriggerNote(GetNote()));
-			}
-			break;
-	}
-
-	m_iSeqState[Index] = SEQ_STATE_HALT;
-
-	theApp.GetSoundGenerator()->SetSequencePlayPos(pSequence, -1);
-}
-
-void CSequenceHandler::RunSequence(int Index)
-{
-	const CSequence *pSequence = m_pSequence[Index];
-
-	if (!pSequence || pSequence->GetItemCount() == 0 || !IsActive())
-		return;
-
-	switch (m_iSeqState[Index]) {
-		case SEQ_STATE_RUNNING:
-			UpdateSequenceRunning(Index, pSequence);
-			break;
-		case SEQ_STATE_END:
-			UpdateSequenceEnd(Index, pSequence);
-			break;
-		case SEQ_STATE_DISABLED:
-		case SEQ_STATE_HALT:
-			// Do nothing
-			break;
-	}
-}
-
-void CSequenceHandler::ClearSequences()
-{
-	for (int i = 0; i < SEQ_COUNT; ++i) {
-		m_iSeqState[i]	 = SEQ_STATE_DISABLED;
-		m_iSeqPointer[i] = 0;
-		m_pSequence[i]	 = NULL;
-	}
-}
-
-void CSequenceHandler::ReleaseSequences()
-{
-	for (int i = 0; i < SEQ_COUNT; ++i) {
-		if (m_iSeqState[i] == SEQ_STATE_RUNNING || m_iSeqState[i] == SEQ_STATE_END) {
-			ReleaseSequence(i, m_pSequence[i]);
-		}
-	}
-}
-
-void CSequenceHandler::ReleaseSequence(int Index, const CSequence *pSeq)
-{
-	int ReleasePoint = pSeq->GetReleasePoint();
-
-	if (ReleasePoint != -1) {
-		m_iSeqPointer[Index] = ReleasePoint;
-		m_iSeqState[Index] = SEQ_STATE_RUNNING;
-	}
-}
-
-bool CSequenceHandler::IsSequenceEqual(int Index, const CSequence *pSequence) const
-{
-	return pSequence == m_pSequence[Index];
-}
-
-seq_state_t CSequenceHandler::GetSequenceState(int Index) const
-{
-	return m_iSeqState[Index];
+	m_pSequence[Index]	 = nullptr;
 }

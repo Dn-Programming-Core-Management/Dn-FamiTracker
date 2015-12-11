@@ -2292,8 +2292,10 @@ void CFamiTrackerView::TriggerMIDINote(unsigned int Channel, unsigned int MidiNo
 		}
 	}
 	
-	if (!(theApp.IsPlaying() && m_bEditEnable && !m_bFollowMode))		// // //
+	if (!(theApp.IsPlaying() && m_bEditEnable && !m_bFollowMode)) {		// // //
 		PlayNote(Channel, Note, Octave, Velocity);
+		theApp.GetSoundGenerator()->ForceReloadInstrument(Channel);		// // //
+	}
 
 	if (Insert)
 		InsertNote(Note, Octave, Channel, Velocity + 1);
