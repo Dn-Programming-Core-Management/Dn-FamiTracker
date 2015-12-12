@@ -30,6 +30,8 @@
 #include "ChannelsS5B.h"
 #include "SoundGen.h"
 #include "APU/APU.h"
+#include "InstHandler.h"		// // //
+#include "SeqInstHandler.h"		// // //
 
 // Static member variables, for the shared stuff in 5B
 int			  CChannelHandlerS5B::m_iModes		= 0;
@@ -194,10 +196,8 @@ void CChannelHandlerS5B::HandleNote(int Note, int Octave)
 bool CChannelHandlerS5B::CreateInstHandler(inst_type_t Type)
 {
 	switch (Type) {
-	case INST_2A03: case INST_VRC6: case INST_S5B:
+	case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B:
 		CREATE_INST_HANDLER(CSeqInstHandler, 0x0F, Type == INST_S5B ? 0x40 : 0); return true;
-	case INST_N163:
-		CREATE_INST_HANDLER(CSeqInstHandlerN163, 0x0F, 0); return true;
 	}
 	return false;
 }

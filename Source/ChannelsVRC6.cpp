@@ -28,6 +28,8 @@
 #include "ChannelHandler.h"
 #include "ChannelsVRC6.h"
 #include "SoundGen.h"
+#include "InstHandler.h"		// // //
+#include "SeqInstHandler.h"		// // //
 
 CChannelHandlerVRC6::CChannelHandlerVRC6() : CChannelHandler(0xFFF, 0x0F)
 {
@@ -70,10 +72,8 @@ void CChannelHandlerVRC6::HandleNote(int Note, int Octave)
 bool CChannelHandlerVRC6::CreateInstHandler(inst_type_t Type)
 {
 	switch (Type) {
-	case INST_2A03: case INST_VRC6: case INST_S5B:
+	case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B:
 		CREATE_INST_HANDLER(CSeqInstHandler, 0x0F, Type == INST_S5B ? 0x40 : 0); return true;
-	case INST_N163:
-		CREATE_INST_HANDLER(CSeqInstHandlerN163, 0x0F, 0); return true;
 	}
 	return false;
 }

@@ -448,6 +448,8 @@
     <ClCompile Include="Source\GotoDlg.cpp" />
     <ClCompile Include="Source\Groove.cpp" />
     <ClCompile Include="Source\GrooveDlg.cpp" />
+    <ClCompile Include="Source\InstHandler.cpp" />
+    <ClCompile Include="Source\InstHandlerVRC7.cpp" />
     <ClCompile Include="Source\MainFrm.cpp">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
@@ -457,6 +459,9 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
     </ClCompile>
     <ClCompile Include="Source\RecordSettingsDlg.cpp" />
+    <ClCompile Include="Source\SeqInstHandler.cpp" />
+    <ClCompile Include="Source\SeqInstHandlerFDS.cpp" />
+    <ClCompile Include="Source\SeqInstHandlerN163.cpp" />
     <ClCompile Include="Source\stdafx.cpp">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
@@ -661,6 +666,8 @@
     <ClInclude Include="Source\GotoDlg.h" />
     <ClInclude Include="Source\Groove.h" />
     <ClInclude Include="Source\GrooveDlg.h" />
+    <ClInclude Include="Source\InstHandler.h" />
+    <ClInclude Include="Source\InstHandlerVRC7.h" />
     <ClInclude Include="Source\MainFrm.h" />
     <CustomBuild Include="resource.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating map file for help compiler...</Message>
@@ -779,6 +786,9 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(Filename)%(Extension)" &gt;&gt; "hlp\
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">hlp\HTMLDefines.h;%(Outputs)</Outputs>
     </CustomBuild>
     <ClInclude Include="Source\RecordSettingsDlg.h" />
+    <ClInclude Include="Source\SeqInstHandler.h" />
+    <ClInclude Include="Source\SeqInstHandlerFDS.h" />
+    <ClInclude Include="Source\SeqInstHandlerN163.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\StretchDlg.h" />
     <ClInclude Include="Source\SwapDlg.h" />

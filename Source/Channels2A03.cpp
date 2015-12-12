@@ -30,6 +30,8 @@
 #include "Channels2A03.h"
 #include "Settings.h"
 #include "SoundGen.h"
+#include "InstHandler.h"		// // //
+#include "SeqInstHandler.h"		// // //
 
 //#define NOISE_PITCH_SCALE
 
@@ -143,10 +145,8 @@ void CChannelHandler2A03::HandleNote(int Note, int Octave)
 bool CChannelHandler2A03::CreateInstHandler(inst_type_t Type)
 {
 	switch (Type) {
-	case INST_2A03: case INST_VRC6: case INST_S5B:
+	case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B:
 		CREATE_INST_HANDLER(CSeqInstHandler, 0x0F, Type == INST_S5B ? 0x40 : 0); return true;
-	case INST_N163:
-		CREATE_INST_HANDLER(CSeqInstHandlerN163, 0x0F, 0); return true;
 		/*
 	case INST_FDS:
 		CREATE_INST_HANDLER(CSeqInstHandlerFDS, 0x1F, 0); return true;

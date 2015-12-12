@@ -28,23 +28,11 @@
 #include "ChannelHandler.h"
 #include "ChannelsVRC7.h"
 #include "SoundGen.h"
+#include "InstHandler.h"		// // //
+#include "InstHandlerVRC7.h"		// // //
 
 #define OPL_NOTE_ON 0x10
 #define OPL_SUSTAIN_ON 0x20
-
-class CChannelInterfaceVRC7 : public CChannelInterface
-{
-public:
-	CChannelInterfaceVRC7(CChannelHandlerVRC7 *pChan) :
-		CChannelInterface(pChan), m_pChannel(pChan) {}
-
-	// TODO: bad, combine into a single container for channel parameters
-	void SetPatch(unsigned char Index) { m_pChannel->m_iPatch = Index; };
-	void SetCustomReg(size_t Reg, unsigned char Val) { m_pChannel->m_iRegs[Reg] = Val; };
-
-private:
-	CChannelHandlerVRC7 *const m_pChannel;
-};
 
 // True if custom instrument registers needs to be updated, shared among all channels
 bool CChannelHandlerVRC7::m_bRegsDirty = false;
@@ -309,38 +297,4 @@ void CVRC7Channel::RegWrite(unsigned char Reg, unsigned char Value)
 {
 	WriteExternalRegister(0x9010, Reg);
 	WriteExternalRegister(0x9030, Value);
-}
-
-void CInstHandlerVRC7::LoadInstrument(CInstrument *pInst)
-{
-	m_pInstrument = pInst;
-	UpdateRegs();
-}
-
-void CInstHandlerVRC7::TriggerInstrument()
-{
-	UpdateRegs();
-}
-
-void CInstHandlerVRC7::ReleaseInstrument()
-{
-}
-
-void CInstHandlerVRC7::UpdateInstrument()
-{
-	if (!m_bUpdate) return;
-	CChannelInterfaceVRC7 *pInterface = dynamic_cast<CChannelInterfaceVRC7*>(m_pInterface);
-	if (pInterface == nullptr) return;
-	const CInstrumentVRC7 *pVRC7Inst = dynamic_cast<const CInstrumentVRC7*>(m_pInstrument);
-	if (pVRC7Inst == nullptr) return;
-	pInterface->SetPatch(pVRC7Inst->GetPatch());
-	if (!pVRC7Inst->GetPatch())
-		for (size_t i = 0; i < 8; i++)
-			pInterface->SetCustomReg(i, pVRC7Inst->GetCustomReg(i));
-	m_bUpdate = false;
-}
-
-void CInstHandlerVRC7::UpdateRegs()
-{
-	m_bUpdate = true;
 }

@@ -29,6 +29,8 @@
 #include "ChannelHandler.h"
 #include "ChannelsMMC5.h"
 #include "SoundGen.h"
+#include "InstHandler.h"		// // //
+#include "SeqInstHandler.h"		// // //
 
 const int CChannelHandlerMMC5::SEQ_TYPES[] = {SEQ_VOLUME, SEQ_ARPEGGIO, SEQ_PITCH, SEQ_HIPITCH, SEQ_DUTYCYCLE};
 
@@ -101,10 +103,8 @@ void CChannelHandlerMMC5::HandleNote(int Note, int Octave)
 bool CChannelHandlerMMC5::CreateInstHandler(inst_type_t Type)
 {
 	switch (Type) {
-	case INST_2A03: case INST_VRC6: case INST_S5B:
+	case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B:
 		CREATE_INST_HANDLER(CSeqInstHandler, 0x0F, Type == INST_S5B ? 0x40 : 0); return true;
-	case INST_N163:
-		CREATE_INST_HANDLER(CSeqInstHandlerN163, 0x0F, 0); return true;
 	}
 	return false;
 }

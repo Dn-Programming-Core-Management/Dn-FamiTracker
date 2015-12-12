@@ -27,23 +27,11 @@
 #include "ChannelHandler.h"
 #include "ChannelsN163.h"
 #include "SoundGen.h"
+#include "InstHandler.h"		// // //
+#include "SeqInstHandler.h"		// // //
+#include "SeqInstHandlerN163.h"		// // //
 
 const int N163_PITCH_SLIDE_SHIFT = 2;	// Increase amplitude of pitch slides
-
-class CChannelInterfaceN163 : public CChannelInterface
-{
-public:
-	CChannelInterfaceN163(CChannelHandlerN163 *pChan) :
-		CChannelInterface(pChan), m_pChannel(pChan) {}
-
-	// TODO: bad, combine into a single container for channel parameters
-	void SetWaveLength(int Length) { m_pChannel->m_iWaveLen = Length; };
-	void SetWavePosition(int Pos) { m_pChannel->m_iWavePosOld = Pos; };
-	void SetWaveCount(int Count) { m_pChannel->m_iWaveCount = Count; };
-
-private:
-	CChannelHandlerN163 *const m_pChannel;
-};
 
 CChannelHandlerN163::CChannelHandlerN163() : 
 	CChannelHandlerInverted(0xFFFF, 0x0F), 
@@ -364,20 +352,4 @@ void CChannelHandlerN163::CheckWaveUpdate()
 		m_bLoadWave = true;
 		m_bDisableLoad = false;
 	}
-}
-
-/*
- * Class CSeqInstHandlerN163
- */
-
-void CSeqInstHandlerN163::LoadInstrument(CInstrument *pInst)		// // //
-{
-	CSeqInstHandler::LoadInstrument(pInst);
-	CChannelInterfaceN163 *pInterface = dynamic_cast<CChannelInterfaceN163*>(m_pInterface);
-	if (pInterface == nullptr) return;
-	CInstrumentN163 *pN163Inst = dynamic_cast<CInstrumentN163*>(pInst);
-	if (pN163Inst == nullptr) return;
-	pInterface->SetWaveLength(pN163Inst->GetWaveSize());
-	pInterface->SetWavePosition(pN163Inst->GetWavePos());
-	pInterface->SetWaveCount(pN163Inst->GetWaveCount());
 }

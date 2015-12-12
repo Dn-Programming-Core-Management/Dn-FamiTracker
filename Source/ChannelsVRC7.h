@@ -88,3 +88,17 @@ protected:
 private:
 	void RegWrite(unsigned char Reg, unsigned char Value);
 };
+
+class CChannelInterfaceVRC7 : public CChannelInterface
+{
+public:
+	CChannelInterfaceVRC7(CChannelHandlerVRC7 *pChan) :
+		CChannelInterface(pChan), m_pChannel(pChan) {}
+
+	// TODO: bad, combine into a single container for channel parameters
+	inline void SetPatch(unsigned char Index) { m_pChannel->m_iPatch = Index; };
+	inline void SetCustomReg(size_t Reg, unsigned char Val) { m_pChannel->m_iRegs[Reg] = Val; };
+
+private:
+	CChannelHandlerVRC7 *const m_pChannel;
+};

@@ -72,3 +72,20 @@ protected:
 	int m_iEffModSpeedHi;
 	int m_iEffModSpeedLo;
 };
+
+class CChannelInterfaceFDS : public CChannelInterface
+{
+public:
+	CChannelInterfaceFDS(CChannelHandlerFDS *pChan) :
+		CChannelInterface(pChan), m_pChannel(pChan) {}
+
+	// TODO: bad, combine into a single container for channel parameters
+	inline void SetFMSpeed(int Speed) { m_pChannel->m_iModulationSpeed = Speed; };
+	inline void SetFMDepth(int Depth) { m_pChannel->m_iModulationDepth = Depth; };
+	inline void SetFMDelay(int Delay) { m_pChannel->m_iModulationDelay = Delay; };
+	inline void FillWaveRAM(const CInstrumentFDS *pInst) { m_pChannel->FillWaveRAM(pInst); };
+	inline void FillModulationTable(const CInstrumentFDS *pInst) { m_pChannel->FillModulationTable(pInst); };
+
+private:
+	CChannelHandlerFDS *const m_pChannel;
+};

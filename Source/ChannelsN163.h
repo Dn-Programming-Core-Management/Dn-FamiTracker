@@ -74,3 +74,18 @@ protected:
 
 	bool m_bResetPhase;
 };
+
+class CChannelInterfaceN163 : public CChannelInterface
+{
+public:
+	CChannelInterfaceN163(CChannelHandlerN163 *pChan) :
+		CChannelInterface(pChan), m_pChannel(pChan) {}
+
+	// TODO: bad, combine into a single container for channel parameters
+	void SetWaveLength(int Length) { m_pChannel->m_iWaveLen = Length; };
+	void SetWavePosition(int Pos) { m_pChannel->m_iWavePosOld = Pos; };
+	void SetWaveCount(int Count) { m_pChannel->m_iWaveCount = Count; };
+
+private:
+	CChannelHandlerN163 *const m_pChannel;
+};

@@ -29,23 +29,9 @@
 #include "ChannelHandler.h"
 #include "ChannelsFDS.h"
 #include "SoundGen.h"
-
-class CChannelInterfaceFDS : public CChannelInterface
-{
-public:
-	CChannelInterfaceFDS(CChannelHandlerFDS *pChan) :
-		CChannelInterface(pChan), m_pChannel(pChan) {}
-
-	// TODO: bad, combine into a single container for channel parameters
-	void SetFMSpeed(int Speed) { m_pChannel->m_iModulationSpeed = Speed; };
-	void SetFMDepth(int Depth) { m_pChannel->m_iModulationDepth = Depth; };
-	void SetFMDelay(int Delay) { m_pChannel->m_iModulationDelay = Delay; };
-	void FillWaveRAM(const CInstrumentFDS *pInst) { m_pChannel->FillWaveRAM(pInst); };
-	void FillModulationTable(const CInstrumentFDS *pInst) { m_pChannel->FillModulationTable(pInst); };
-
-private:
-	CChannelHandlerFDS *const m_pChannel;
-};
+#include "InstHandler.h"		// // //
+#include "SeqInstHandler.h"		// // //
+#include "SeqInstHandlerFDS.h"		// // //
 
 CChannelHandlerFDS::CChannelHandlerFDS() : 
 	CChannelHandlerInverted(0xFFF, 32)
@@ -366,40 +352,4 @@ void CChannelHandlerFDS::CheckWaveUpdate()
 			FillModulationTable(pInstrument);
 		}
 	}
-}
-
-/*
- * Class CSeqInstHandlerFDS
- */
-
-void CSeqInstHandlerFDS::LoadInstrument(CInstrument *pInst)		// // //
-{
-	m_pInstrument = pInst;
-	CInstrumentFDS *pSeqInst = dynamic_cast<CInstrumentFDS*>(pInst);
-	ASSERT(pInst == nullptr || pSeqInst != nullptr);
-	CSequence *pSeq[] = {pSeqInst->GetVolumeSeq(), pSeqInst->GetArpSeq(), pSeqInst->GetPitchSeq()};
-	for (size_t i = 0; i < sizeof(pSeq) / sizeof(CSequence*); i++)
-		pSeq[i]->GetItemCount() > 0 ? SetupSequence(i, pSeq[i]) : ClearSequence(i);
-	
-	CChannelInterfaceFDS *pInterface = dynamic_cast<CChannelInterfaceFDS*>(m_pInterface);
-	if (pInterface == nullptr) return;
-	const CInstrumentFDS *pFDSInst = dynamic_cast<const CInstrumentFDS*>(m_pInstrument);
-	if (pFDSInst == nullptr) return;
-	pInterface->FillWaveRAM(pFDSInst);
-	pInterface->FillModulationTable(pFDSInst);
-}
-
-void CSeqInstHandlerFDS::TriggerInstrument()
-{
-	CSeqInstHandler::TriggerInstrument();
-	
-	CChannelInterfaceFDS *pInterface = dynamic_cast<CChannelInterfaceFDS*>(m_pInterface);
-	if (pInterface == nullptr) return;
-	const CInstrumentFDS *pFDSInst = dynamic_cast<const CInstrumentFDS*>(m_pInstrument);
-	if (pFDSInst == nullptr) return;
-	pInterface->SetFMSpeed(pFDSInst->GetModulationSpeed());
-	pInterface->SetFMDepth(pFDSInst->GetModulationDepth());
-	pInterface->SetFMDelay(pFDSInst->GetModulationDelay());
-	pInterface->FillWaveRAM(pFDSInst);
-	pInterface->FillModulationTable(pFDSInst);
 }
