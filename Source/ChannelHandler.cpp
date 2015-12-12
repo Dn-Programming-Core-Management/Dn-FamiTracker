@@ -61,8 +61,6 @@ CChannelHandler::CChannelHandler(int MaxPeriod, int MaxVolume) :
 	m_bGate(false),
 	m_bNewVibratoMode(false),
 	m_bLinearPitch(false),
-	m_bPeriodUpdated(false),
-	m_bVolumeUpdate(false),
 	m_bForceReload(false),		// // //
 	m_iEffectParam(0)		// // //
 {
@@ -83,9 +81,6 @@ void CChannelHandler::InitChannel(CAPU *pAPU, int *pVibTable, CSoundGen *pSoundG
 	m_pSoundGen = pSoundGen;
 
 	m_bDelayEnabled = false;
-
-	m_iEffect = 0;
-	m_iEffectParam = 0;		// // //
 
 	DocumentPropertiesChanged(pSoundGen->GetDocument());
 
@@ -165,7 +160,6 @@ void CChannelHandler::ResetChannel()
 
 	// Period
 	m_iPeriod			= 0;
-	m_iLastPeriod		= 0xFFFF;
 	m_iPeriodPart		= 0;
 
 	// Effect states
@@ -1011,7 +1005,6 @@ void CChannelHandler::SetPeriod(int Period)
 	m_iPeriod = LimitPeriod(Period);
 	if (m_iChannelID == CHANID_NOISE)		// // //
 		m_iPeriod = (m_iPeriod & 0x0F) | 0x100;
-	m_bPeriodUpdated = true;
 }
 
 int CChannelHandler::GetPeriod() const
@@ -1029,17 +1022,6 @@ void CChannelHandler::SetNote(int Note)
 int CChannelHandler::GetNote() const
 {
 	return m_iNote;
-}
-
-void CChannelHandler::SetDutyPeriod(int Period)
-{
-	m_iDutyPeriod = ConvertDuty(Period);		// // //
-	//m_iDutyPeriod = Period;
-}
-
-unsigned char CChannelHandler::GetEffectParam() const		// // //
-{
-	return m_iEffectParam;
 }
 
 /*

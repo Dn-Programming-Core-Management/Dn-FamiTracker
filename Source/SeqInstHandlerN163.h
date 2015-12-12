@@ -22,10 +22,26 @@
 
 #pragma once
 
+/*!
+	\brief Class for N163 sequence instrument handlers.
+	\details N163 instruments contain waveforms apart from sequence data.
+*/
 class CSeqInstHandlerN163 : public CSeqInstHandler
 {
 public:
+	/*! \brief Constructor of the N163 sequence instrument handler.
+		\warning As of now, the actual loading of instrument waveforms takes place in the channel handler
+		rather than through its interface.
+		\param pInterface Pointer to the channel interface.
+		\param Vol Default volume for instruments used by this handler.
+		\param Duty Default duty cycle for instruments used by this handler.
+	*/
 	CSeqInstHandlerN163(CChannelInterface *pInterface, int Vol, int Duty) :
 		CSeqInstHandler(pInterface, Vol, Duty) {}
+	/*! \brief Loads a new instrument into the instrument handler.
+		\details This reimplementation sets up the wave size, wave position, and wave count of the channel
+		handler.
+		\param pInst Pointer to the instrument to be loaded.
+	*/
 	void LoadInstrument(CInstrument *pInst);
 };

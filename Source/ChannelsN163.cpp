@@ -184,7 +184,7 @@ void CChannelHandlerN163::ProcessChannel()
 	// // //
 	CSeqInstHandler *pHandler = dynamic_cast<CSeqInstHandler*>(m_pInstHandler);
 	if (pHandler != nullptr) {
-		if (pHandler->GetSequenceState(SEQ_DUTYCYCLE) != SEQ_STATE_DISABLED) {
+		if (pHandler->GetSequenceState(SEQ_DUTYCYCLE) != CSeqInstHandler::SEQ_STATE_DISABLED) {
 			m_iWaveIndex = m_iDutyPeriod;
 			m_bLoadWave = true;
 		}

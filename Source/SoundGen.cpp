@@ -1313,35 +1313,46 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 
 	m_pTrackerView->MakeSilent();
 
-	if (theApp.GetSettings()->General.bRetrieveChanState) {		// // //
-		int Frame = IsPlaying() ? GetPlayerFrame() : m_pTrackerView->GetSelectedFrame();
-		int Row = IsPlaying() ? GetPlayerRow() : m_pTrackerView->GetSelectedRow();
-		stFullState State = m_pDocument->RetrieveSoundState(GetPlayerTrack(), Frame, Row, -1);
-		if (State.Tempo != -1)
-			m_iTempo = State.Tempo;
-		if (State.GroovePos >= 0) {
-			m_iGroovePosition = State.GroovePos;
-			if (State.Speed >= 0)
-				m_iGrooveIndex = State.Speed;
-			if (m_pDocument->GetGroove(m_iGrooveIndex) != NULL)
-				m_iSpeed = m_pDocument->GetGroove(m_iGrooveIndex)->GetEntry(m_iGroovePosition);
-		}
-		else {
-			if (State.Speed >= 0)
-				m_iSpeed = State.Speed;
-			m_iGrooveIndex = -1;
-		}
-		SetupSpeed();
-		for (int i = 0; i < m_pDocument->GetChannelCount(); i++)
-			m_pChannels[State.State[i].ChannelIndex]->ApplyChannelState(&State.State[i]);
-		SAFE_RELEASE_ARRAY(State.State);
-	}
+	if (theApp.GetSettings()->General.bRetrieveChanState)		// // //
+		ApplyGlobalState();
 
 	if (m_pInstRecorder->GetRecordChannel() != -1)		// // //
 		m_pInstRecorder->StartRecording();
 }
 
-static CString GetStateString(stChannelState State)
+void CSoundGen::ApplyGlobalState()		// // //
+{
+	int Frame = IsPlaying() ? GetPlayerFrame() : m_pTrackerView->GetSelectedFrame();
+	int Row = IsPlaying() ? GetPlayerRow() : m_pTrackerView->GetSelectedRow();
+	stFullState State = m_pDocument->RetrieveSoundState(GetPlayerTrack(), Frame, Row, -1);
+	if (State.Tempo != -1)
+		m_iTempo = State.Tempo;
+	if (State.GroovePos >= 0) {
+		m_iGroovePosition = State.GroovePos;
+		if (State.Speed >= 0)
+			m_iGrooveIndex = State.Speed;
+		if (m_pDocument->GetGroove(m_iGrooveIndex) != NULL)
+			m_iSpeed = m_pDocument->GetGroove(m_iGrooveIndex)->GetEntry(m_iGroovePosition);
+	}
+	else {
+		if (State.Speed >= 0)
+			m_iSpeed = State.Speed;
+		m_iGrooveIndex = -1;
+	}
+	SetupSpeed();
+	for (int i = 0; i < m_pDocument->GetChannelCount(); i++)
+		m_pChannels[State.State[i].ChannelIndex]->ApplyChannelState(&State.State[i]);
+	SAFE_RELEASE_ARRAY(State.State);
+}
+
+/*! \brief Obtains a human-readable form of a channel state object.
+	\warning The output of this method is neither guaranteed nor required to match that of
+	CChannelHandler::GetStateString.
+	\param State A reference to the channel state object.
+	\return A string representing the channel's state.
+	\relates CChannelHandler
+*/
+static CString GetStateString(const stChannelState &State)
 {
 	const char SLIDE_EFFECT = State.Effect[EF_ARPEGGIO] >= 0 ? EF_ARPEGGIO :
 							  State.Effect[EF_PORTA_UP] >= 0 ? EF_PORTA_UP :
@@ -2328,10 +2339,7 @@ void CSoundGen::PlayChannelNotes()
 	}
 
 	// Instrument sequence visualization
-	int SelectedChan = m_pTrackerView->GetSelectedChannel();
-	if (m_pChannels[SelectedChan])
-		m_pChannels[SelectedChan]->UpdateSequencePlayPos();
-
+	// // //
 }
 
 void CSoundGen::UpdatePlayer()

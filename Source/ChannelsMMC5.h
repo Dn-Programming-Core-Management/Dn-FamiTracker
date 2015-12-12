@@ -52,5 +52,6 @@ protected:
 	bool m_bHardwareEnvelope;	// // // (constant volume flag, bit 4)
 	bool m_bEnvelopeLoop;		// // // (halt length counter flag, bit 5 / triangle bit 7)
 	bool m_bResetEnvelope;		// // //
-	int m_iLengthCounter;		// // //
+	int  m_iLengthCounter;		// // //
+	int	 m_iLastPeriod;			// // // moved to subclass
 };

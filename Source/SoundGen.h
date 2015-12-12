@@ -274,6 +274,8 @@ private:
 	void		PlayerJumpTo(int Frame);
 	void		PlayerSkipTo(int Row);
 
+	void		ApplyGlobalState();		// // //
+
 	// // // Instrument recorder
 	void		ResetRecordCache();
 

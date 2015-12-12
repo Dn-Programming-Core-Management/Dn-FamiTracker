@@ -22,11 +22,32 @@
 
 #pragma once
 
+/*!
+	\brief Class for FDS sequence instrument handlers.
+	\details FDS instruments use a slightly different internal format than other seuqnece instruments
+	in that sequences are bound to instruments rather than the underlying FamiTracker module.
+*/
 class CSeqInstHandlerFDS : public CSeqInstHandler
 {
 public:
+	/*! \brief Constructor of the FDS sequence instrument handler.
+		\warning Because FDS instruments have no duty cycles or wave indices, the duty cycle
+		parameter is unused.
+		\param pInterface Pointer to the channel interface.
+		\param Vol Default volume for instruments used by this handler.
+		\param Duty Default duty cycle for instruments used by this handler.
+	*/
 	CSeqInstHandlerFDS(CChannelInterface *pInterface, int Vol, int Duty) :
 		CSeqInstHandler(pInterface, Vol, Duty) {}
-	void LoadInstrument(CInstrument *pInst); // sequences are bound to instruments rather than document
+	/*! \brief Loads a new instrument into the instrument handler.
+		\details This reimplementation calls the channel interface to write the contents of the
+		instrument waveform to the FDS sound channel.
+		\param pInst Pointer to the instrument to be loaded.
+	*/
+	void LoadInstrument(CInstrument *pInst);
+	/*! \brief Starts a new note for the instrument handler.
+		\details This reimplementation calls the channel interface to write the contents of the
+		instrument waveform to the FDS sound channel.
+	*/
 	void TriggerInstrument();
 };

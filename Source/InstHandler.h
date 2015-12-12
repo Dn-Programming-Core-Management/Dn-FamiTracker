@@ -34,7 +34,10 @@ class CChannelInterface;
 */
 class CInstHandler {
 protected:
-	/*! \brief Constructor of the instrument handler. */
+	/*! \brief Constructor of the sequence instrument handler.
+		\param pInterface Pointer to the channel interface.
+		\param Vol Default volume for instruments used by this handler.
+	*/
 	CInstHandler(CChannelInterface *pInterface, int Vol);
 
 public:
@@ -44,9 +47,12 @@ public:
 		\details All relevant instrument parameters should be initialized in this method. This method
 		might be called more than once from the same object, when a new instrument is issued by the
 		channel handler, but the instrument type remains identical. This method is never called when
-		the same instrument is used on successive notes.
+		the same instrument is used on successive notes in the pattern data, but may be called with
+		the same instrument while previewing notes, so that changes to the instruments would be
+		reflected immediately.
 		\param pInst Pointer to the instrument to be loaded.
 		\sa CChannelHandler::CreateInstHandler
+		\sa CChannelHandler::m_bForceReload
 	*/
 	virtual void LoadInstrument(CInstrument *pInst) = 0;
 	/*! \brief Runs the instrument by one tick and updates the channel state.
