@@ -92,7 +92,7 @@ protected:
 	virtual bool	CreateInstHandler(inst_type_t Type);		// // //
 
 	// Pure virtual functions for handling notes
-	virtual void	HandleCustomEffects(int EffNum, int EffParam) = 0;
+	virtual void	HandleCustomEffects(effect_t EffNum, int EffParam) = 0;
 	virtual void	HandleEmptyNote() = 0;
 	virtual void	HandleCut() = 0;
 	virtual void	HandleRelease() = 0;
@@ -122,7 +122,7 @@ protected:
 	int		RunNote(int Octave, int Note);
 	int		GetPitch() const;
 
-	bool	CheckCommonEffects(unsigned char EffCmd, unsigned char EffParam);
+	bool	CheckCommonEffects(effect_t EffCmd, unsigned char EffParam);
 	bool	HandleDelay(stChanNote *NoteData, int EffColumns);
 
 	int		GetVibrato() const;

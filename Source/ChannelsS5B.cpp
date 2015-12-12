@@ -133,7 +133,7 @@ bool NoteValid(int Note)
 }
 */
 
-void CChannelHandlerS5B::HandleCustomEffects(int EffNum, int EffParam)
+void CChannelHandlerS5B::HandleCustomEffects(effect_t EffNum, int EffParam)
 {
 	if (!CheckCommonEffects(EffNum, EffParam)) {
 		switch (EffNum) {

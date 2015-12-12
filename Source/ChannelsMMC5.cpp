@@ -53,7 +53,7 @@ void CChannelHandlerMMC5::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	}
 }
 
-void CChannelHandlerMMC5::HandleCustomEffects(int EffNum, int EffParam)
+void CChannelHandlerMMC5::HandleCustomEffects(effect_t EffNum, int EffParam)
 {
 	if (!CheckCommonEffects(EffNum, EffParam)) {
 		switch (EffNum) {

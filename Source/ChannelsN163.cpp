@@ -64,7 +64,7 @@ void CChannelHandlerN163::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	// // //
 }
 
-void CChannelHandlerN163::HandleCustomEffects(int EffNum, int EffParam)
+void CChannelHandlerN163::HandleCustomEffects(effect_t EffNum, int EffParam)
 {
 	if (EffNum == EF_PORTA_DOWN) {
 		m_iPortaSpeed = EffParam << N163_PITCH_SLIDE_SHIFT;

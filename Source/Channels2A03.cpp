@@ -56,7 +56,7 @@ void CChannelHandler2A03::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	}
 }
 
-void CChannelHandler2A03::HandleCustomEffects(int EffNum, int EffParam)
+void CChannelHandler2A03::HandleCustomEffects(effect_t EffNum, int EffParam)
 {
 	#define GET_SLIDE_SPEED(x) (((x & 0xF0) >> 3) + 1)
 
@@ -359,7 +359,7 @@ void CTriangleChan::ResetChannel()
 	m_iLinearCounter = -1;
 }
 
-void CTriangleChan::HandleCustomEffects(int EffNum, int EffParam)		// // //
+void CTriangleChan::HandleCustomEffects(effect_t EffNum, int EffParam)		// // //
 {
 	CChannelHandler2A03::HandleCustomEffects(EffNum, EffParam);
 	switch (EffNum) {
@@ -530,7 +530,7 @@ void CDPCMChan::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	CChannelHandler::HandleNoteData(pNoteData, EffColumns);
 }
 
-void CDPCMChan::HandleCustomEffects(int EffNum, int EffParam)
+void CDPCMChan::HandleCustomEffects(effect_t EffNum, int EffParam)
 {
 	switch (EffNum) {
 	case EF_DAC:

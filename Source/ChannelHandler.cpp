@@ -232,7 +232,7 @@ void CChannelHandler::ApplyChannelState(stChannelState *State)
 		HandleCustomEffects(EF_VOLUME, State->Effect_LengthCounter);
 	for (unsigned int i = 0; i < EF_COUNT; i++)
 		if (State->Effect[i] >= 0)
-			HandleCustomEffects(i, State->Effect[i]);
+			HandleCustomEffects(static_cast<effect_t>(i), State->Effect[i]);
 	if (State->Effect[EF_FDS_MOD_SPEED_HI] >= 0x10)
 		HandleCustomEffects(EF_FDS_MOD_SPEED_HI, State->Effect[EF_FDS_MOD_SPEED_HI]);
 	if (State->Effect_AutoFMMult >= 0)
@@ -384,7 +384,7 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 
 	// Effects
 	for (int n = 0; n < EffColumns; n++) {
-		unsigned char EffNum   = pNoteData->EffNumber[n];
+		effect_t      EffNum   = pNoteData->EffNumber[n];
 		unsigned char EffParam = pNoteData->EffParam[n];
 		HandleCustomEffects(EffNum, EffParam);
 		
@@ -567,7 +567,7 @@ void CChannelHandler::SetupSlide()		// // //
 	m_iPortaTo = TriggerNote(m_iNote);
 }
 
-bool CChannelHandler::CheckCommonEffects(unsigned char EffCmd, unsigned char EffParam)
+bool CChannelHandler::CheckCommonEffects(effect_t EffCmd, unsigned char EffParam)
 {
 	// Handle common effects for all channels
 

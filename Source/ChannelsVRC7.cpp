@@ -53,7 +53,7 @@ void CChannelHandlerVRC7::SetChannelID(int ID)
 	m_iChannel = ID - CHANID_VRC7_CH1;
 }
 
-void CChannelHandlerVRC7::HandleCustomEffects(int EffNum, int EffParam)
+void CChannelHandlerVRC7::HandleCustomEffects(effect_t EffNum, int EffParam)
 {
 	if (EffNum == EF_PORTA_DOWN) {
 		m_iEffect = EF_PORTA_UP;

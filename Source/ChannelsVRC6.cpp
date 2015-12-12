@@ -35,7 +35,7 @@ CChannelHandlerVRC6::CChannelHandlerVRC6() : CChannelHandler(0xFFF, 0x0F)
 {
 }
 
-void CChannelHandlerVRC6::HandleCustomEffects(int EffNum, int EffParam)
+void CChannelHandlerVRC6::HandleCustomEffects(effect_t EffNum, int EffParam)
 {
 	if (!CheckCommonEffects(EffNum, EffParam)) {
 		switch (EffNum) {

@@ -34,7 +34,7 @@ public:
 
 protected:
 	virtual void HandleNoteData(stChanNote *pNoteData, int EffColumns);
-	virtual void HandleCustomEffects(int EffNum, int EffParam);
+	virtual void HandleCustomEffects(effect_t EffNum, int EffParam);
 	virtual void HandleEmptyNote();
 	virtual void HandleCut();
 	virtual void HandleRelease();
@@ -99,7 +99,7 @@ public:
 	virtual void RefreshChannel();
 	virtual void ResetChannel();		// // //
 protected:
-	virtual void HandleCustomEffects(int EffNum, int EffParam);		// // //
+	virtual void HandleCustomEffects(effect_t EffNum, int EffParam);		// // //
 	virtual void ClearRegisters();
 	virtual CString GetCustomEffectString() const;		// // //
 private:
@@ -132,7 +132,7 @@ public:
 	virtual void RefreshChannel();
 protected:
 	virtual void HandleNoteData(stChanNote *pNoteData, int EffColumns);
-	virtual void HandleCustomEffects(int EffNum, int EffParam);
+	virtual void HandleCustomEffects(effect_t EffNum, int EffParam);
 	virtual bool HandleInstrument(int Instrument, bool Trigger, bool NewInstrument);
 	virtual void HandleEmptyNote();
 	virtual void HandleCut();

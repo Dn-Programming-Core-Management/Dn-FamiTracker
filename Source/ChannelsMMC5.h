@@ -34,7 +34,7 @@ public:
 
 protected:
 	virtual void HandleNoteData(stChanNote *pNoteData, int EffColumns);
-	virtual void HandleCustomEffects(int EffNum, int EffParam);
+	virtual void HandleCustomEffects(effect_t EffNum, int EffParam);
 	virtual void HandleEmptyNote();
 	virtual void HandleCut();
 	virtual void HandleRelease();

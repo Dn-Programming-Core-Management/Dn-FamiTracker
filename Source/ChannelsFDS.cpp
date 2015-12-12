@@ -68,7 +68,7 @@ void CChannelHandlerFDS::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 		m_iModulationSpeed = (m_iModulationSpeed & 0xF00) | m_iEffModSpeedLo;
 }
 
-void CChannelHandlerFDS::HandleCustomEffects(int EffNum, int EffParam)
+void CChannelHandlerFDS::HandleCustomEffects(effect_t EffNum, int EffParam)
 {
 	if (EffNum == EF_PORTA_DOWN) {
 		m_iPortaSpeed = EffParam;
