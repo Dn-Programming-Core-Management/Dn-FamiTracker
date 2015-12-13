@@ -22,8 +22,8 @@
 
 #include "stdafx.h"
 #include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
-#include "FamiTrackerView.h"
+#include "FamiTrackerTypes.h"
+#include "APU\Types.h"
 #include "SoundGen.h"
 #include "WavProgressDlg.h"
 
@@ -82,7 +82,7 @@ BOOL CWavProgressDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	static_cast<CProgressCtrl*>(GetDlgItem(IDC_PROGRESS_BAR))->SetRange(0, 100);
-	CFamiTrackerView *pView = CFamiTrackerView::GetView();
+	CView *pView = static_cast<CFrameWnd*>(AfxGetMainWnd())->GetActiveView();		// // //
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 
 	pView->Invalidate();
