@@ -66,9 +66,9 @@ int CFamiTrackerDocWrapper::GetInstrumentCount() const
 
 CInstrument2A03Interface const *CFamiTrackerDocWrapper::Get2A03Instrument(int Instrument) const
 {
-	CInstrument *pInstrument = m_pDocument->GetInstrument(Instrument);
-	pInstrument->Release(); // Prevent memory leak, no instrument will be removed during export
-	return dynamic_cast<CInstrument2A03Interface const *>(pInstrument);
+	CInstrumentContainer<CInstrument2A03> instContainer(m_pDocument, Instrument);		// // //
+	CInstrument2A03 *pInstrument = instContainer();
+	return dynamic_cast<const CInstrument2A03Interface*>(pInstrument);
 }
 
 unsigned int CFamiTrackerDocWrapper::GetNoteEffectType(unsigned int Frame, unsigned int Channel, unsigned int Row, int Index) const
