@@ -22,9 +22,6 @@
 
 #pragma once
 
-
-#include "CustomExporterInterfaces.h"
-
 class CDocumentFile;
 
 // // // Settings
@@ -53,6 +50,8 @@ enum arp_scheme_mode_t {
 	ARPSCHEME_MODE_NEG_Y = 0xC0
 };
 
+#include "CustomExporterInterfaces.h"		// // //
+
 /*
 ** This class is used to store instrument sequences
 */
@@ -65,7 +64,7 @@ public:
 	unsigned int GetItemCount() const;
 	unsigned int GetLoopPoint() const;
 	unsigned int GetReleasePoint() const;
-	seq_setting_t GetSetting() const;		// // //
+	unsigned int GetSetting() const; // not seq_setting_t due to CSequenceInterface
 	void		 SetItem(int Index, signed char Value);
 	void		 SetItemCount(unsigned int Count);
 	void		 SetLoopPoint(unsigned int Point);

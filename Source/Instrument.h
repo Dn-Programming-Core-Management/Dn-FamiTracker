@@ -119,7 +119,7 @@ protected:
 	int		m_iSeqIndex[SEQ_COUNT];
 };
 
-class CInstrument2A03 : public CSeqInstrument /*, public CInstrument2A03Interface*/ {
+class CInstrument2A03 : public CSeqInstrument, public CInstrument2A03Interface {
 public:
 	CInstrument2A03();
 	CInstrument* CreateNew() const { return new CInstrument2A03(); };
@@ -128,6 +128,9 @@ public:
 	bool	Load(CDocumentFile *pDocFile);
 	void	SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDoc);
 	bool	LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTrackerDoc *pDoc);
+	// // // for the instrument interface
+	int		GetSeqEnable(int Index) const { return CSeqInstrument::GetSeqEnable(Index); }
+	int		GetSeqIndex(int Index) const { return CSeqInstrument::GetSeqIndex(Index); }
 
 public:
 	// Samples

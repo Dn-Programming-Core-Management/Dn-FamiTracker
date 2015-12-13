@@ -33,6 +33,9 @@ public:
 	virtual signed char		GetItem(int Index) const = 0;
 	virtual unsigned int	GetItemCount() const = 0;
 	virtual unsigned int    GetLoopPoint() const = 0;
+	// // //
+	virtual unsigned int    GetReleasePoint() const = 0;
+	virtual unsigned int	GetSetting() const = 0;
 };
 
 class CInstrument2A03Interface
