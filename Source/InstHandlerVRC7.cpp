@@ -20,13 +20,9 @@
 ** must bear this legend.
 */
 
-// required by ChannelHandler.h
 #include "stdafx.h"
-#include "FamiTrackerDoc.h"
-#include "SoundGen.h"
-
-#include "ChannelHandler.h"
-#include "ChannelsVRC7.h"
+#include "Instrument.h"
+#include "ChannelHandlerInterface.h"
 #include "InstHandler.h"
 #include "InstHandlerVRC7.h"
 
@@ -48,7 +44,7 @@ void CInstHandlerVRC7::ReleaseInstrument()
 void CInstHandlerVRC7::UpdateInstrument()
 {
 	if (!m_bUpdate) return;
-	CChannelInterfaceVRC7 *pInterface = dynamic_cast<CChannelInterfaceVRC7*>(m_pInterface);
+	CChannelHandlerInterfaceVRC7 *pInterface = dynamic_cast<CChannelHandlerInterfaceVRC7*>(m_pInterface);
 	if (pInterface == nullptr) return;
 	const CInstrumentVRC7 *pVRC7Inst = dynamic_cast<const CInstrumentVRC7*>(m_pInstrument);
 	if (pVRC7Inst == nullptr) return;

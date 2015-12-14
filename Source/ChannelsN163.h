@@ -26,15 +26,16 @@
 // Derived channels, N163
 //
 
-class CChannelInterfaceN163;
-
-class CChannelHandlerN163 : public CChannelHandlerInverted {
+class CChannelHandlerN163 : public CChannelHandlerInverted, public CChannelHandlerInterfaceN163 {
 public:
 	CChannelHandlerN163();
 	virtual void ResetChannel();
 	virtual void ProcessChannel();
 	virtual void RefreshChannel();
-	friend CChannelInterfaceN163;
+
+	void SetWaveLength(int Length);		// // //
+	void SetWavePosition(int Pos);
+	void SetWaveCount(int Count);
 
 protected:
 	virtual void HandleNoteData(stChanNote *pNoteData, int EffColumns);
@@ -73,19 +74,4 @@ protected:
 	// // //
 
 	bool m_bResetPhase;
-};
-
-class CChannelInterfaceN163 : public CChannelInterface
-{
-public:
-	CChannelInterfaceN163(CChannelHandlerN163 *pChan) :
-		CChannelInterface(pChan), m_pChannel(pChan) {}
-
-	// TODO: bad, combine into a single container for channel parameters
-	void SetWaveLength(int Length) { m_pChannel->m_iWaveLen = Length; };
-	void SetWavePosition(int Pos) { m_pChannel->m_iWavePosOld = Pos; };
-	void SetWaveCount(int Count) { m_pChannel->m_iWaveCount = Count; };
-
-private:
-	CChannelHandlerN163 *const m_pChannel;
 };

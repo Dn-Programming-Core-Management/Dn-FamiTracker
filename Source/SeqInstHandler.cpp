@@ -26,7 +26,7 @@
 #include "SoundGen.h"
 
 #include "Instrument.h"
-#include "ChannelHandler.h"
+#include "ChannelHandlerInterface.h"
 #include "InstHandler.h"
 #include "SeqInstHandler.h"
 
@@ -34,7 +34,7 @@
  * Class CSeqInstHandler
  */
 
-CSeqInstHandler::CSeqInstHandler(CChannelInterface *pInterface, int Vol, int Duty) :
+CSeqInstHandler::CSeqInstHandler(CChannelHandlerInterface *pInterface, int Vol, int Duty) :
 	CInstHandler(pInterface, Vol),
 	m_iDefaultDuty(Duty)
 {

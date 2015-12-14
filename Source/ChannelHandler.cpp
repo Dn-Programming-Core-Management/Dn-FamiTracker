@@ -33,6 +33,7 @@
 #include "TrackerChannel.h"		// // //
 #include "SoundGen.h"
 #include "Settings.h"		// // //
+//#include "ChannelHandlerInterface.h"		// // //
 #include "ChannelHandler.h"
 #include "APU/APU.h"
 #include "InstHandler.h"		// // //
@@ -64,12 +65,10 @@ CChannelHandler::CChannelHandler(int MaxPeriod, int MaxVolume) :
 	m_bForceReload(false),		// // //
 	m_iEffectParam(0)		// // //
 {
-	m_pInstInterface = new CChannelInterface(this);
 }
 
 CChannelHandler::~CChannelHandler()
 {
-	SAFE_RELEASE(m_pInstInterface);
 }
 
 void CChannelHandler::InitChannel(CAPU *pAPU, int *pVibTable, CSoundGen *pSoundGen)
@@ -1022,6 +1021,41 @@ void CChannelHandler::SetNote(int Note)
 int CChannelHandler::GetNote() const
 {
 	return m_iNote;
+}
+
+void CChannelHandler::SetVolume(int Volume)
+{
+	m_iInstVolume = Volume;
+}
+
+int CChannelHandler::GetVolume() const
+{
+	return m_iInstVolume;
+}
+
+void CChannelHandler::SetDutyPeriod(int Duty)
+{
+	m_iDutyPeriod = ConvertDuty(Duty);		// // //
+}
+
+int CChannelHandler::GetDutyPeriod() const
+{
+	return m_iDutyPeriod;
+}
+
+unsigned char CChannelHandler::GetArpParam() const
+{
+	return m_iEffect == EF_ARPEGGIO ? m_iEffectParam : 0U;
+}
+
+bool CChannelHandler::IsActive() const
+{
+	return m_bGate;
+}
+
+bool CChannelHandler::IsReleasing() const
+{
+	return m_bRelease;
 }
 
 /*

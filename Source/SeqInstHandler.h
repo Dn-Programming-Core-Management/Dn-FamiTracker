@@ -44,7 +44,7 @@ public:
 		\param Vol Default volume for instruments used by this handler.
 		\param Duty Default duty cycle for instruments used by this handler.
 	*/
-	CSeqInstHandler(CChannelInterface *pInterface, int Vol, int Duty);
+	CSeqInstHandler(CChannelHandlerInterface *pInterface, int Vol, int Duty);
 	virtual void LoadInstrument(CInstrument *pInst);
 	virtual void TriggerInstrument();
 	virtual void ReleaseInstrument();

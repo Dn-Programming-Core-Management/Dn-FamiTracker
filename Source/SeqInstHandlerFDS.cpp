@@ -20,13 +20,10 @@
 ** must bear this legend.
 */
 
-// required by ChannelHandler.h
 #include "stdafx.h"
-#include "FamiTrackerDoc.h"
-#include "SoundGen.h"
-
-#include "ChannelHandler.h"
-#include "ChannelsFDS.h"
+#include "Sequence.h"
+#include "Instrument.h"
+#include "ChannelHandlerInterface.h"
 #include "InstHandler.h"
 #include "SeqInstHandler.h"
 #include "SeqInstHandlerFDS.h"
@@ -44,25 +41,34 @@ void CSeqInstHandlerFDS::LoadInstrument(CInstrument *pInst)		// // //
 	for (size_t i = 0; i < sizeof(pSeq) / sizeof(CSequence*); i++)
 		pSeq[i]->GetItemCount() > 0 ? SetupSequence(i, pSeq[i]) : ClearSequence(i);
 	
-	CChannelInterfaceFDS *pInterface = dynamic_cast<CChannelInterfaceFDS*>(m_pInterface);
-	if (pInterface == nullptr) return;
 	const CInstrumentFDS *pFDSInst = dynamic_cast<const CInstrumentFDS*>(m_pInstrument);
 	if (pFDSInst == nullptr) return;
-	pInterface->FillWaveRAM(pFDSInst);
-	pInterface->FillModulationTable(pFDSInst);
+	UpdateTables(pFDSInst);
 }
 
 void CSeqInstHandlerFDS::TriggerInstrument()
 {
 	CSeqInstHandler::TriggerInstrument();
 	
-	CChannelInterfaceFDS *pInterface = dynamic_cast<CChannelInterfaceFDS*>(m_pInterface);
+	CChannelHandlerInterfaceFDS *pInterface = dynamic_cast<CChannelHandlerInterfaceFDS*>(m_pInterface);
 	if (pInterface == nullptr) return;
 	const CInstrumentFDS *pFDSInst = dynamic_cast<const CInstrumentFDS*>(m_pInstrument);
 	if (pFDSInst == nullptr) return;
 	pInterface->SetFMSpeed(pFDSInst->GetModulationSpeed());
 	pInterface->SetFMDepth(pFDSInst->GetModulationDepth());
 	pInterface->SetFMDelay(pFDSInst->GetModulationDelay());
-	pInterface->FillWaveRAM(pFDSInst);
-	pInterface->FillModulationTable(pFDSInst);
+	UpdateTables(pFDSInst);
+}
+
+void CSeqInstHandlerFDS::UpdateTables(const CInstrumentFDS *pInst)
+{
+	CChannelHandlerInterfaceFDS *pInterface = dynamic_cast<CChannelHandlerInterfaceFDS*>(m_pInterface);
+	if (pInterface == nullptr) return;
+	char Buffer[0x40];		// // //
+	for (int i = 0; i < 0x40; i++)
+		Buffer[i] = pInst->GetSample(i);
+	pInterface->FillWaveRAM(Buffer);
+	for (int i = 0; i < 0x20; i++)
+		Buffer[i] = pInst->GetModulation(i);
+	pInterface->FillModulationTable(Buffer);
 }

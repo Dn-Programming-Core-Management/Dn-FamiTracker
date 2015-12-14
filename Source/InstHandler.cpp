@@ -20,19 +20,16 @@
 ** must bear this legend.
 */
 
-// required by ChannelHandler.h
 #include "stdafx.h"
-#include "FamiTrackerDoc.h"
-#include "SoundGen.h"
-
+#include "Instrument.h"
 #include "InstHandler.h"
-#include "ChannelHandler.h"
+#include "ChannelHandlerInterface.h"
 
 /*
  * Class CInstHandler
  */
 
-CInstHandler::CInstHandler(CChannelInterface *pInterface, int Vol) :		// // //
+CInstHandler::CInstHandler(CChannelHandlerInterface *pInterface, int Vol) :		// // //
 	m_pInterface(pInterface),
 	m_iNoteOffset(0),
 	m_iVolume(Vol),

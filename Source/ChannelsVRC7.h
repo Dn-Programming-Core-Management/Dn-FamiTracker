@@ -35,14 +35,17 @@ enum vrc7_command_t {
 	CMD_NOTE_RELEASE
 };
 
-class CChannelInterfaceVRC7;
+class CChannelHandlerInterfaceVRC7;
 
-class CChannelHandlerVRC7 : public CChannelHandlerInverted {		// // //
+class CChannelHandlerVRC7 : public CChannelHandlerInverted, public CChannelHandlerInterfaceVRC7 {		// // //
 public:
 	CChannelHandlerVRC7();
 	virtual void ResetChannel();
 	virtual void SetChannelID(int ID);
-	friend CChannelInterfaceVRC7;
+
+	void	SetPatch(unsigned char Patch);		// // //
+	void	SetCustomReg(size_t Index, unsigned char Val);		// // //
+
 protected:
 	// // //
 	virtual void HandleCustomEffects(effect_t EffNum, int EffParam);
@@ -89,16 +92,3 @@ private:
 	void RegWrite(unsigned char Reg, unsigned char Value);
 };
 
-class CChannelInterfaceVRC7 : public CChannelInterface
-{
-public:
-	CChannelInterfaceVRC7(CChannelHandlerVRC7 *pChan) :
-		CChannelInterface(pChan), m_pChannel(pChan) {}
-
-	// TODO: bad, combine into a single container for channel parameters
-	inline void SetPatch(unsigned char Index) { m_pChannel->m_iPatch = Index; };
-	inline void SetCustomReg(size_t Reg, unsigned char Val) { m_pChannel->m_iRegs[Reg] = Val; };
-
-private:
-	CChannelHandlerVRC7 *const m_pChannel;
-};

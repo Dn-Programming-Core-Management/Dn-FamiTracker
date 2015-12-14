@@ -37,7 +37,7 @@ public:
 		\param Vol Default volume for instruments used by this handler.
 		\param Duty Default duty cycle for instruments used by this handler.
 	*/
-	CSeqInstHandlerFDS(CChannelInterface *pInterface, int Vol, int Duty) :
+	CSeqInstHandlerFDS(CChannelHandlerInterface *pInterface, int Vol, int Duty) :
 		CSeqInstHandler(pInterface, Vol, Duty) {}
 	/*! \brief Loads a new instrument into the instrument handler.
 		\details This reimplementation calls the channel interface to write the contents of the
@@ -50,4 +50,8 @@ public:
 		instrument waveform to the FDS sound channel.
 	*/
 	void TriggerInstrument();
+private:
+	/*! \brief Updates the waveform and the frequency modulation table of the sound channel.
+	*/
+	void UpdateTables(const CInstrumentFDS *pInst);
 };

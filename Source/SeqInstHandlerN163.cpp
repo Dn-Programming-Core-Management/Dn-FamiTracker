@@ -20,13 +20,9 @@
 ** must bear this legend.
 */
 
-// required by ChannelHandler.h
 #include "stdafx.h"
-#include "FamiTrackerDoc.h"
-#include "SoundGen.h"
-
-#include "ChannelHandler.h"
-#include "ChannelsN163.h"
+#include "Instrument.h"
+#include "ChannelHandlerInterface.h"
 #include "InstHandler.h"
 #include "SeqInstHandler.h"
 #include "SeqInstHandlerN163.h"
@@ -38,7 +34,7 @@
 void CSeqInstHandlerN163::LoadInstrument(CInstrument *pInst)		// // //
 {
 	CSeqInstHandler::LoadInstrument(pInst);
-	CChannelInterfaceN163 *pInterface = dynamic_cast<CChannelInterfaceN163*>(m_pInterface);
+	CChannelHandlerInterfaceN163 *pInterface = dynamic_cast<CChannelHandlerInterfaceN163*>(m_pInterface);
 	if (pInterface == nullptr) return;
 	CInstrumentN163 *pN163Inst = dynamic_cast<CInstrumentN163*>(pInst);
 	if (pN163Inst == nullptr) return;

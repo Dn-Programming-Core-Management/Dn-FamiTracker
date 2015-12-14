@@ -22,7 +22,7 @@
 
 #pragma once
 
-class CChannelInterface;
+class CChannelHandlerInterface;
 
 /*!
 	\brief Base class for instrument handlers.
@@ -38,7 +38,7 @@ protected:
 		\param pInterface Pointer to the channel interface.
 		\param Vol Default volume for instruments used by this handler.
 	*/
-	CInstHandler(CChannelInterface *pInterface, int Vol);
+	CInstHandler(CChannelHandlerInterface *pInterface, int Vol);
 
 public:
 	/*! \brief Destructor of the instrument handler. */
@@ -73,9 +73,9 @@ public:
 protected:
 	/*! \brief An interface to the underlying channel handler.
 		\details The instrument handler may control the channel only through methods provided by
-		this interface or any subclass of CChannelInterface.
+		this interface.
 	*/
-	CChannelInterface *m_pInterface;
+	CChannelHandlerInterface *m_pInterface;
 	/*! \brief A const pointer to the current instrument used by this instrument handler.
 		\warning This pointer does not participate in reference counting provided by CRefCounter.
 	*/

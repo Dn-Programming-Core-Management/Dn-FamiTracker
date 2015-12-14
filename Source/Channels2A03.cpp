@@ -157,16 +157,6 @@ bool CChannelHandler2A03::CreateInstHandler(inst_type_t Type)
 	return false;
 }
 
-void CChannelHandler2A03::ProcessChannel()
-{
-	// Default effects
-	CChannelHandler::ProcessChannel();
-	
-	// Skip when DPCM
-	if (m_iChannelID == CHANID_DPCM)
-		return;
-}
-
 void CChannelHandler2A03::ResetChannel()
 {
 	CChannelHandler::ResetChannel();

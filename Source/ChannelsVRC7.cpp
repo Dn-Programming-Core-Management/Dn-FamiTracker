@@ -25,9 +25,9 @@
 #include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
+#include "ChannelHandlerInterface.h"
 #include "ChannelHandler.h"
 #include "ChannelsVRC7.h"
-#include "SoundGen.h"
 #include "InstHandler.h"		// // //
 #include "InstHandlerVRC7.h"		// // //
 
@@ -43,14 +43,23 @@ CChannelHandlerVRC7::CChannelHandlerVRC7() :
 	m_iTriggeredNote(0)
 {
 	m_iVolume = VOL_COLUMN_MAX;
-	SAFE_RELEASE(m_pInstInterface);
-	m_pInstInterface = new CChannelInterfaceVRC7(this);
 }
 
 void CChannelHandlerVRC7::SetChannelID(int ID)
 {
 	CChannelHandler::SetChannelID(ID);
 	m_iChannel = ID - CHANID_VRC7_CH1;
+}
+
+void CChannelHandlerVRC7::SetPatch(unsigned char Patch)		// // //
+{
+	m_iPatch = Patch;
+}
+
+void CChannelHandlerVRC7::SetCustomReg(size_t Index, unsigned char Val)		// // //
+{
+	ASSERT(Index < sizeof(m_iRegs));
+	m_iRegs[Index] = Val;
 }
 
 void CChannelHandlerVRC7::HandleCustomEffects(effect_t EffNum, int EffParam)

@@ -26,6 +26,7 @@
 #include <cmath>
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
+#include "ChannelHandlerInterface.h"
 #include "ChannelHandler.h"
 #include "ChannelsFDS.h"
 #include "SoundGen.h"
@@ -40,8 +41,6 @@ CChannelHandlerFDS::CChannelHandlerFDS() :
 	memset(m_iWaveTable, 0, 64);
 
 	m_bResetMod = false;
-	SAFE_RELEASE(m_pInstInterface);		// // //
-	m_pInstInterface = new CChannelInterfaceFDS(this);
 }
 
 void CChannelHandlerFDS::HandleNoteData(stChanNote *pNoteData, int EffColumns)
@@ -276,20 +275,28 @@ CString CChannelHandlerFDS::GetCustomEffectString() const		// // //
 	return str;
 }
 
-void CChannelHandlerFDS::FillWaveRAM(const CInstrumentFDS *pInstrument)
+void CChannelHandlerFDS::SetFMSpeed(int Speed)		// // //
 {
-	bool bNew(false);
+	ASSERT(Speed >= 0 && Speed <= 0x3F);
+	m_iModulationSpeed = Speed;
+}
 
-	for (int i = 0; i < 64; ++i) {
-		if (m_iWaveTable[i] != pInstrument->GetSample(i)) {
-			bNew = true;
-			break;
-		}
-	}
+void CChannelHandlerFDS::SetFMDepth(int Depth)		// // //
+{
+	ASSERT(Depth >= 0 && Depth <= 0xFFF);
+	m_iModulationDepth = Depth;
+}
 
-	if (bNew) {
-		for (int i = 0; i < 64; ++i)
-			m_iWaveTable[i] = pInstrument->GetSample(i);
+void CChannelHandlerFDS::SetFMDelay(int Delay)		// // //
+{
+	ASSERT(Delay >= 0 && Delay <= 0xFF);
+	m_iModulationDelay = Delay;
+}
+
+void CChannelHandlerFDS::FillWaveRAM(const char *pBuffer)		// // //
+{
+	if (memcmp(m_iWaveTable, pBuffer, sizeof(m_iWaveTable))) {
+		memcpy(m_iWaveTable, pBuffer, sizeof(m_iWaveTable));
 
 		// Fills the 64 byte waveform table
 		// Enable write for waveform RAM
@@ -300,30 +307,17 @@ void CChannelHandlerFDS::FillWaveRAM(const CInstrumentFDS *pInstrument)
 
 		// Wave ram
 		for (int i = 0; i < 0x40; ++i)
-			WriteExternalRegister(0x4040 + i, pInstrument->GetSample(i));
+			WriteExternalRegister(0x4040 + i, m_iWaveTable[i]);
 
 		// Disable write for waveform RAM, master volume = full
 		WriteExternalRegister(0x4089, 0x00);
 	}
 }
 
-void CChannelHandlerFDS::FillModulationTable(const CInstrumentFDS *pInstrument)
+void CChannelHandlerFDS::FillModulationTable(const char *pBuffer)		// // //
 {
-	// Fills the 32 byte modulation table
-
-	bool bNew(true);
-
-	for (int i = 0; i < 32; ++i) {
-		if (m_iModTable[i] != pInstrument->GetModulation(i)) {
-			bNew = true;
-			break;
-		}
-	}
-
-	if (bNew) {
-		// Copy table
-		for (int i = 0; i < 32; ++i)
-			m_iModTable[i] = pInstrument->GetModulation(i);
+	if (memcmp(m_iModTable, pBuffer, sizeof(m_iModTable))) {
+		memcpy(m_iModTable, pBuffer, sizeof(m_iModTable));
 
 		// Disable modulation
 		WriteExternalRegister(0x4087, 0x80);
@@ -333,6 +327,24 @@ void CChannelHandlerFDS::FillModulationTable(const CInstrumentFDS *pInstrument)
 		for (int i = 0; i < 32; ++i)
 			WriteExternalRegister(0x4088, m_iModTable[i]);
 	}
+}
+
+void CChannelHandlerFDS::FillWaveRAM(const CInstrumentFDS *pInstrument)
+{
+	// Fills the 64 byte waveform table
+	char Buffer[sizeof(m_iWaveTable)];		// // //
+	for (int i = 0; i < sizeof(m_iWaveTable); i++)
+		Buffer[i] = pInstrument->GetSample(i);
+	FillWaveRAM(Buffer);
+}
+
+void CChannelHandlerFDS::FillModulationTable(const CInstrumentFDS *pInstrument)
+{
+	// Fills the 32 byte modulation table
+	char Buffer[sizeof(m_iModTable)];		// // //
+	for (int i = 0; i < sizeof(m_iModTable); i++)
+		Buffer[i] = pInstrument->GetModulation(i);
+	FillModulationTable(Buffer);
 }
 
 void CChannelHandlerFDS::CheckWaveUpdate()
@@ -346,6 +358,7 @@ void CChannelHandlerFDS::CheckWaveUpdate()
 		CInstrumentFDS *pInstrument = instContainer();
 		if (pInstrument != NULL) {
 			// Realtime update
+			// TODO: use CChannelHandler::ForceReloadInstrument()
 			m_iModulationSpeed = pInstrument->GetModulationSpeed();
 			m_iModulationDepth = pInstrument->GetModulationDepth();
 			FillWaveRAM(pInstrument);

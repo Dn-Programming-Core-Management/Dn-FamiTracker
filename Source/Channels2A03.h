@@ -29,7 +29,6 @@
 class CChannelHandler2A03 : public CChannelHandler {
 public:
 	CChannelHandler2A03();
-	virtual void ProcessChannel();
 	virtual void ResetChannel();
 
 protected:

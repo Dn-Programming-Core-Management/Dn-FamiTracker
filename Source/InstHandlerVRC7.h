@@ -25,7 +25,7 @@
 class CInstHandlerVRC7 : public CInstHandler
 {
 public:
-	CInstHandlerVRC7(CChannelInterface *pInterface, int Vol) :
+	CInstHandlerVRC7(CChannelHandlerInterface *pInterface, int Vol) :
 		CInstHandler(pInterface, Vol), m_bUpdate(false) {}
 	void LoadInstrument(CInstrument *pInst);
 	void TriggerInstrument();

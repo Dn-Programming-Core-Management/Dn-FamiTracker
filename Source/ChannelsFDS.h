@@ -22,13 +22,10 @@
 
 #pragma once
 
-class CChannelInterfaceFDS;
-
-class CChannelHandlerFDS : public CChannelHandlerInverted {
+class CChannelHandlerFDS : public CChannelHandlerInverted, public CChannelHandlerInterfaceFDS {
 public:
 	CChannelHandlerFDS();
 	virtual void RefreshChannel();
-	friend CChannelInterfaceFDS;
 protected:
 	virtual void HandleNoteData(stChanNote *pNoteData, int EffColumns);
 	virtual void HandleCustomEffects(effect_t EffNum, int EffParam);
@@ -40,8 +37,15 @@ protected:
 	virtual void ClearRegisters();
 	virtual CString GetCustomEffectString() const;		// // //
 
-protected:
+public:		// // //
 	// FDS functions
+	void SetFMSpeed(int Speed);
+	void SetFMDepth(int Depth);
+	void SetFMDelay(int Delay);
+	// void SetFMEnable(bool Enable);
+	void FillWaveRAM(const char *pBuffer);		// // //
+	void FillModulationTable(const char *pBuffer);		// // //
+protected:
 	void FillWaveRAM(const CInstrumentFDS *pInst);
 	void FillModulationTable(const CInstrumentFDS *pInst);
 private:
@@ -51,10 +55,6 @@ protected:
 	int m_iModulationSpeed;
 	int m_iModulationDepth;
 	int m_iModulationDelay;
-	// FDS sequences
-	//CSequence *m_pVolumeSeq;
-	//CSequence *m_pArpeggioSeq;
-	//CSequence *m_pPitchSeq;
 	// Modulation table
 	char m_iModTable[32];
 	char m_iWaveTable[64];
@@ -71,21 +71,4 @@ protected:
 	int m_iEffModDepth;
 	int m_iEffModSpeedHi;
 	int m_iEffModSpeedLo;
-};
-
-class CChannelInterfaceFDS : public CChannelInterface
-{
-public:
-	CChannelInterfaceFDS(CChannelHandlerFDS *pChan) :
-		CChannelInterface(pChan), m_pChannel(pChan) {}
-
-	// TODO: bad, combine into a single container for channel parameters
-	inline void SetFMSpeed(int Speed) { m_pChannel->m_iModulationSpeed = Speed; };
-	inline void SetFMDepth(int Depth) { m_pChannel->m_iModulationDepth = Depth; };
-	inline void SetFMDelay(int Delay) { m_pChannel->m_iModulationDelay = Delay; };
-	inline void FillWaveRAM(const CInstrumentFDS *pInst) { m_pChannel->FillWaveRAM(pInst); };
-	inline void FillModulationTable(const CInstrumentFDS *pInst) { m_pChannel->FillModulationTable(pInst); };
-
-private:
-	CChannelHandlerFDS *const m_pChannel;
 };

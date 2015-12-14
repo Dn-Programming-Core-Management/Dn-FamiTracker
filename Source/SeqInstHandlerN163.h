@@ -36,7 +36,7 @@ public:
 		\param Vol Default volume for instruments used by this handler.
 		\param Duty Default duty cycle for instruments used by this handler.
 	*/
-	CSeqInstHandlerN163(CChannelInterface *pInterface, int Vol, int Duty) :
+	CSeqInstHandlerN163(CChannelHandlerInterface *pInterface, int Vol, int Duty) :
 		CSeqInstHandler(pInterface, Vol, Duty) {}
 	/*! \brief Loads a new instrument into the instrument handler.
 		\details This reimplementation sets up the wave size, wave position, and wave count of the channel

@@ -24,6 +24,7 @@
 #include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
+#include "ChannelHandlerInterface.h"
 #include "ChannelHandler.h"
 #include "ChannelsN163.h"
 #include "SoundGen.h"
@@ -43,8 +44,6 @@ CChannelHandlerN163::CChannelHandlerN163() :
 	m_iWaveCount(0)
 {
 	m_iDutyPeriod = 0;
-	SAFE_RELEASE(m_pInstInterface);
-	m_pInstInterface = new CChannelInterfaceN163(this);
 }
 
 void CChannelHandlerN163::ResetChannel()
@@ -236,6 +235,24 @@ void CChannelHandlerN163::RefreshChannel()
 		WriteData(ChannelAddrBase + 3, 0);
 		WriteData(ChannelAddrBase + 5, 0);
 	}
+}
+
+void CChannelHandlerN163::SetWaveLength(int Length)		// // //
+{
+	ASSERT(Length >= 4 && Length <= CInstrumentN163::MAX_WAVE_SIZE && !(Length % 4));
+	m_iWaveLen = Length;
+}
+
+void CChannelHandlerN163::SetWavePosition(int Pos)		// // //
+{
+	ASSERT(Pos >= 0 && Pos <= 0xFF);
+	m_iWavePosOld = Pos;
+}
+
+void CChannelHandlerN163::SetWaveCount(int Count)		// // //
+{
+	ASSERT(Count > 0 && Count <= CInstrumentN163::MAX_WAVE_COUNT);
+	m_iWaveCount = Count;
 }
 
 int CChannelHandlerN163::ConvertDuty(int Duty) const		// // //

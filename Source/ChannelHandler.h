@@ -28,7 +28,7 @@
 #define CREATE_INST_HANDLER(T, ...) { if (typeid(m_pInstHandler) != typeid(T)) \
                                          SAFE_RELEASE(m_pInstHandler); \
                                     if (dynamic_cast<T*>(m_pInstHandler) == nullptr) \
-                                         m_pInstHandler = new T(m_pInstInterface, __VA_ARGS__); }		// // //
+                                         m_pInstHandler = new T(this, __VA_ARGS__); }		// // //
 
 class CAPU;
 
@@ -36,12 +36,13 @@ static const int DUTY_2A03_FROM_VRC6[] = {0, 0, 1, 1, 1, 1, 2, 2};		// // //
 static const int DUTY_VRC6_FROM_2A03[] = {1, 3, 7, 3};		// // //
 
 class CInstHandler;
-class CChannelInterface;
 
-//
-// Base class for channel renderers
-//
-class CChannelHandler {
+#include "ChannelHandlerInterface.h"
+
+/*!
+	\brief An implementation of the channel handler.
+*/
+class CChannelHandler : public CChannelHandlerInterface {
 protected:
 	/*! \brief Constructor of the channel handler.
 		\param MaxPeriod The maximum pitch register value that the channel handler can attain.
@@ -71,7 +72,7 @@ public:
 	*/
 	void	Arpeggiate(unsigned int Note);
 	/*! \brief Forces the instrument handler to load an instrument for the next note.
-		\details This method overrides the case where the same insturment is used to play
+		\details This method overrides the case where the same instrument is used to play
 		successive notes.
 	*/
 	void	ForceReloadInstrument();		// // //
@@ -137,7 +138,7 @@ protected:
 	/*! \brief Processes an instrument.
 		\details This method sets up the instrument handler, creating a new one if necessary, then
 		forwards calls to the handler if it exists.
-		\param Insturment The instrument index.
+		\param Instrument The instrument index.
 		\param Trigger Whether the instrument handler needs to trigger the current instrument.
 		\param NewInstrument Whether the instrument handler needs to load an instrument.
 		\return Whether the instrument with the given index is loaded to the instrument handler.
@@ -336,11 +337,11 @@ protected:
 		interface, and does not affect the Vxx duty cycle effect.
 		\param Duty Input duty value from the instrument.
 		\return The converted duty value, or -1 if no sensible value exists.
-		\sa CChannelInterface::SetDutyPeriod
+		\sa CChannelHandler::SetDutyPeriod
 	*/
 	virtual int ConvertDuty(int Duty) const { return Duty; };		// // //
 
-protected:
+public:		// // //
 	/*! \brief Sets the current pitch register of the channel.
 		\warning This method overrides the current pitch register value of the channel. The channel
 		handler currently has no way to allow changes due to CChannelHandler::m_iEffect and its
@@ -360,10 +361,31 @@ protected:
 	*/
 	void	SetNote(int Note);
 	/*! \brief Obtains the current note value of the channel.
-		\details This includes pitch changes due to transposing effects and the insturment handler.
+		\details This includes pitch changes due to transposing effects and the instrument handler.
 		\return The note value.
 	*/
 	int		GetNote() const;
+	/*! \brief Sets the current instrument volume of the channel.
+		\details The channel interface never controls the channel volume.
+		\param Volume The instrument volume level.
+	*/
+	void	SetVolume(int Volume);
+	/*! \brief Obtains the current instrument volume of the channel.
+		\return The instrument volume level.
+	*/
+	int		GetVolume() const;
+	/*! \brief Sets the current duty cycle value of the channel.
+		\details The value received by the channel is converted according to the current instrument type.
+		\param Duty The duty cycle value.
+	*/
+	void	SetDutyPeriod(int Duty);
+	/*! \brief Obtains the current duty cycle value of the channel.
+		\return The duty cycle value.
+	*/
+	int		GetDutyPeriod() const;
+	unsigned char GetArpParam() const;		// // //
+	bool	IsActive() const;
+	bool	IsReleasing() const;
 
 private:
 	void	UpdateNoteCut();
@@ -581,13 +603,6 @@ protected:
 	inst_type_t		m_iInstTypeCurrent;
 	/*! \brief A pointer to the currently installed instrument handler. */
 	CInstHandler	*m_pInstHandler;				// // //
-	/*! \brief Grants private access to the channel's interface. */
-	friend			CChannelInterface;				// // //
-	/*! \brief A pointer to the channel's private interface.
-		\details During its construction, an instrument handler receives a pointer to this interface
-		to allow control over the channel handler.
-	*/
-	CChannelInterface *m_pInstInterface;
 
 	// Private variables
 private:
@@ -604,67 +619,3 @@ protected:
 	virtual CString GetSlideEffectString() const;		// // //
 };
 
-//
-// Base class for channel interface
-//
-// move to separate file?
-class CChannelInterface		// // //
-{
-public:
-	CChannelInterface(CChannelHandler *pChan) : m_pChannel(pChan) {}
-	CChannelInterface() : m_pChannel(nullptr) {}
-	virtual ~CChannelInterface() {};
-
-	inline int TriggerNote(int Note) { return m_pChannel->TriggerNote(Note); }
-
-	/*! \brief Sets the current instrument volume of the channel.
-		\details The channel interface never controls the channel volume.
-		\param Volume The instrument volume level.
-	*/
-	inline void SetVolume(int Volume) { m_pChannel->m_iInstVolume = Volume; }
-	/*! \brief Sets the current pitch register of the channel.
-		\warning This method overrides the current pitch register value of the channel. The channel
-		handler currently has no way to allow changes due to CChannelHandler::m_iEffect and its
-		interface orthogonally.
-		\param Period The period or frequency register.
-	*/
-	inline void SetPeriod(int Period) { m_pChannel->SetPeriod(Period); }
-	/*! \brief Sets the current note value of the channel.
-		\warning This method overrides the current note value of the channel, and hence effect commands
-		that depend on changing the note value.
-		\param Note The absolute note value.
-	*/
-	inline void SetNote(int Note) { m_pChannel->SetNote(Note); }
-	/*! \brief Sets the current duty cycle value of the channel.
-		\details The value received by the channel is converted according to the current instrument type.
-		\param Duty The duty cycle value.
-	*/
-	inline void SetDutyPeriod(int Duty) { m_pChannel->m_iDutyPeriod = m_pChannel->ConvertDuty(Duty); }
-
-	/*! \brief Obtains the current instrument volume of the channel.
-		\return The instrument volume level.
-	*/
-	inline int GetVolume() const { return m_pChannel->m_iInstVolume; }
-	/*! \brief Obtains the current pitch register of the channel.
-		\details This includes pitch changes due to slide effects and CChannelHandler::SetNote.
-		\return The pitch register value.
-	*/
-	inline int GetPeriod() const { return m_pChannel->GetPeriod(); }
-	/*! \brief Obtains the current note value of the channel.
-		\details This includes pitch changes due to transposing effects and the insturment handler.
-		\return The note value.
-	*/
-	inline int GetNote() const { return m_pChannel->GetNote(); }
-	/*! \brief Obtains the current duty cycle value of the channel.
-		\return The duty cycle value.
-	*/
-	inline int GetDutyPeriod() const { return m_pChannel->m_iDutyPeriod; }
-
-	inline unsigned char GetArpParam() const { return m_pChannel->m_iEffect == EF_ARPEGGIO ? m_pChannel->m_iEffectParam : 0U; }
-	
-	inline bool IsActive() const { return m_pChannel->m_bGate; }
-	inline bool IsReleasing() const { return m_pChannel->m_bRelease; }
-
-private:
-	CChannelHandler *const m_pChannel;
-};
