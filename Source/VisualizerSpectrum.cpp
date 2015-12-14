@@ -30,7 +30,8 @@
  *
  */
 
-CVisualizerSpectrum::CVisualizerSpectrum() :
+CVisualizerSpectrum::CVisualizerSpectrum(int Size) :		// // //
+	m_iBarSize(Size),
 	m_pBlitBuffer(NULL),
 	m_pFftObject(NULL)
 {
@@ -110,17 +111,16 @@ void CVisualizerSpectrum::Draw()
 {
 	ASSERT(m_pFftObject != NULL);
 
-	static const int BAR_SIZE = 4;
 	static const float SCALING = 250.0f;
 	static const int OFFSET = 1;
 	static const float DECAY = 3.0f;
 
-	float Step = 0.20f * (float(FFT_POINTS) / float(m_iWidth)) * BAR_SIZE;
+	float Step = 0.2f * (float(FFT_POINTS) / float(m_iWidth)) * m_iBarSize;		// // //
 	float Pos = 2;	// Add a small offset to remove note on/off actions
 
 	int LastStep = 0;
 
-	for (int i = 0; i < m_iWidth / BAR_SIZE; i++) {
+	for (int i = 0; i < m_iWidth / m_iBarSize; i++) {		// // //
 		int iStep = int(Pos + 0.5f);
 		
 		float level = 0;
@@ -128,7 +128,6 @@ void CVisualizerSpectrum::Draw()
 		for (int j = 0; j < steps; ++j)
 			level += float(m_pFftObject->GetIntensity(LastStep + j)) / SCALING;
 		level /= steps;
-		LastStep = iStep;
 		
 		// linear -> db
 		level = (20 * logf(level / 4.0f)) * 0.8f;
@@ -138,13 +137,15 @@ void CVisualizerSpectrum::Draw()
 		if (level > float(m_iHeight))
 			level = float(m_iHeight);
 
-		if (level >= m_fFftPoint[iStep])
-			m_fFftPoint[iStep] = level;
-		else 
-			m_fFftPoint[iStep] -= DECAY;
+		if (iStep != LastStep) {
+			if (level >= m_fFftPoint[iStep])
+				m_fFftPoint[iStep] = level;
+			else
+				m_fFftPoint[iStep] -= DECAY;
 
-		if (m_fFftPoint[iStep] < 1.0f)
-			m_fFftPoint[iStep] = 0.0f;
+			if (m_fFftPoint[iStep] < 1.0f)
+				m_fFftPoint[iStep] = 0.0f;
+		}
 
 		level = m_fFftPoint[iStep];
 
@@ -152,18 +153,16 @@ void CVisualizerSpectrum::Draw()
 			COLORREF Color = BLEND(0x6060FF, 0xFFFFFF, (y * 100) / int(level + 1));
 			if (y == 0)
 				Color = DIM(Color, 90);
-			if (y & 1)
+			if (m_iBarSize > 1 && (y & 1))		// // //
 				Color = DIM(Color, 40);
-			for (int x = 0; x < BAR_SIZE; ++x) {
-				if (x == BAR_SIZE - 1)
+			for (int x = 0; x < m_iBarSize; ++x) {		// // //
+				if (m_iBarSize > 1 && x == m_iBarSize - 1)
 					Color = DIM(Color, 50);
-				if (y < level)
-					m_pBlitBuffer[(m_iHeight - y - 1) * m_iWidth + i * BAR_SIZE + x + OFFSET] = Color;
-				else
-					m_pBlitBuffer[(m_iHeight - y - 1) * m_iWidth + i * BAR_SIZE + x + OFFSET] = BG_COLOR;
+				m_pBlitBuffer[(m_iHeight - y - 1) * m_iWidth + i * m_iBarSize + x + OFFSET] = y < level ? Color : BG_COLOR;
 			}
 		}	
-
+		
+		LastStep = iStep;
 		Pos += Step;
 	}
 }

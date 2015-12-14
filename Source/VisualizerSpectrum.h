@@ -30,7 +30,7 @@ const int FFT_POINTS = 256;
 class CVisualizerSpectrum : public CVisualizerBase
 {
 public:
-	CVisualizerSpectrum();
+	CVisualizerSpectrum(int Size);		// // //
 	virtual ~CVisualizerSpectrum();
 
 	void Create(int Width, int Height);
@@ -44,6 +44,7 @@ protected:
 
 private:
 	static const COLORREF BG_COLOR = 0;
+	const int m_iBarSize;
 
 	COLORREF *m_pBlitBuffer;
 	Fft	*m_pFftObject;

@@ -73,7 +73,7 @@ private:
 	UINT ThreadProc();
 
 private:
-	static const int STATE_COUNT = 4;
+	static const int STATE_COUNT = 5;		// // //
 
 private:
 	CVisualizerBase *m_pStates[STATE_COUNT];
