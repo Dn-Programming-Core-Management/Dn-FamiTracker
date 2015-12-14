@@ -19,10 +19,9 @@
 */
 
 #include "stdafx.h"
-#include "FamiTracker.h"
+#include "resource.h"
 #include "FamiTrackerDoc.h"
-#include "MainFrm.h"
-#include "Source\CommentsDlg.h"
+#include "CommentsDlg.h"
 
 // CCommentsDlg dialog
 
