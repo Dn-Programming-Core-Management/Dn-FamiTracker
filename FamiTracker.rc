@@ -385,6 +385,7 @@ BEGIN
         MENUITEM "Sample scope",                ID_POPUP_SAMPLESCOPE1
         MENUITEM "Sample scope (blur)",         ID_POPUP_SAMPLESCOPE2
         MENUITEM "Spectrum analyzer",           ID_POPUP_SPECTRUMANALYZER
+        MENUITEM "Spectrum analyzer (fine)",    ID_POPUP_SPECTRUMANALYZER2
         MENUITEM "Nothing",                     ID_POPUP_NOTHING
     END
 END
