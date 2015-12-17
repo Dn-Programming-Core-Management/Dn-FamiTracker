@@ -3037,7 +3037,7 @@ int CFamiTrackerDoc::GetFreeSequence(inst_type_t InstType, int Type) const		// /
 			Used[pInstrument->GetSeqIndex(Type)] = true;
 		pInstrument->Release();
 	}
-	for (int i = 0; i < MAX_SEQUENCES; ++i) if (!Used[i]) return i;
+	for (int i = 0; i < MAX_SEQUENCES; ++i) if (!Used[i] && GetSequenceItemCount(InstType, i, Type) == 0) return i;
 	return -1;
 }
 
