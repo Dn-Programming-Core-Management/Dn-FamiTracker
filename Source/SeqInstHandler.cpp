@@ -51,8 +51,10 @@ void CSeqInstHandler::LoadInstrument(CInstrument *pInst)
 	for (size_t i = 0; i < sizeof(m_pSequence) / sizeof(CSequence*); i++) {
 		const CSequence *pSequence = pDoc->GetSequence(pInst->GetType(), pSeqInst->GetSeqIndex(i), i);
 		bool Enable = pSeqInst->GetSeqEnable(i) == SEQ_STATE_RUNNING;
-		if (pSequence != m_pSequence[i] || Enable && m_iSeqState[i] == SEQ_STATE_DISABLED)
-			Enable ? SetupSequence(i, pSequence) : ClearSequence(i);
+		if (!Enable)
+			ClearSequence(i);
+		else if (pSequence != m_pSequence[i] || m_iSeqState[i] == SEQ_STATE_DISABLED)
+			SetupSequence(i, pSequence);
 	}
 }
 

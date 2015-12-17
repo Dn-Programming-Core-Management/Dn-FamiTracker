@@ -184,7 +184,6 @@ void CChannelHandlerVRC7::HandleNote(int Note, int Octave)
 
 bool CChannelHandlerVRC7::CreateInstHandler(inst_type_t Type)
 {
-	if (CInstHandler::GetType(m_iInstTypeCurrent) == CInstHandler::GetType(Type)) return false;
 	switch (Type) {
 	case INST_VRC7:
 		SAFE_RELEASE(m_pInstHandler);

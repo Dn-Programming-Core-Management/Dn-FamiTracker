@@ -150,7 +150,6 @@ void CChannelHandlerFDS::HandleNote(int Note, int Octave)
 
 bool CChannelHandlerFDS::CreateInstHandler(inst_type_t Type)
 {
-	if (CInstHandler::GetType(m_iInstTypeCurrent) == CInstHandler::GetType(Type)) return false;
 	switch (Type) {
 	case INST_FDS:
 		SAFE_RELEASE(m_pInstHandler);

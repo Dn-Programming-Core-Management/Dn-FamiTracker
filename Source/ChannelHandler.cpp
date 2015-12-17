@@ -452,16 +452,15 @@ bool CChannelHandler::HandleInstrument(int Instrument, bool Trigger, bool NewIns
 	
 	// load instrument here
 	inst_type_t instType = pInstrument->GetType();
-	if (NewInstrument)
-		if (!CreateInstHandler(instType) && m_bForceReload)
-			return false;
+	if (NewInstrument && CInstHandler::GetType(m_iInstTypeCurrent) != CInstHandler::GetType(instType))
+		CreateInstHandler(instType);
 	m_iInstTypeCurrent = instType;
 
 	if (m_pInstHandler == nullptr)
 		return false;
 	if (NewInstrument)
 		m_pInstHandler->LoadInstrument(pInstrument);
-	if (Trigger)
+	if (Trigger || m_bForceReload)
 		m_pInstHandler->TriggerInstrument();
 
 	return true;
