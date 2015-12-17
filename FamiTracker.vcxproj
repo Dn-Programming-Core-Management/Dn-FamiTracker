@@ -656,6 +656,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\BookmarkDlg.h" />
+    <ClInclude Include="Source\ChannelHandlerInterface.h" />
     <ClInclude Include="Source\DetuneDlg.h" />
     <ClInclude Include="Source\Exception.h" />
     <ClInclude Include="Source\FamiTracker.h" />

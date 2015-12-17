@@ -25,7 +25,6 @@
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
 #include "MainFrm.h"
-#include "PatternEditor.h"
 #include "Action.h"
 
 // CAction ////////////////////////////////////////////////////////////////////////

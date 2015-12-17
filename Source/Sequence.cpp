@@ -80,7 +80,7 @@ void CSequence::SetSetting(seq_setting_t Setting)		// // //
 
 signed char CSequence::GetItem(int Index) const
 {
-	ASSERT(Index <= MAX_SEQUENCE_ITEMS);
+	ASSERT(Index < MAX_SEQUENCE_ITEMS);
 	return m_cValues[Index];
 }
 

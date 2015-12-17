@@ -1121,13 +1121,13 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 
 	const unsigned int PREVIEW_SHADE_LEVEL = 70;
 
-	const CSettings *pSettings = theApp.GetSettings();
+	const CSettings *pSettings = theApp.GetSettings();		// // //
 
-	COLORREF ColCursor	= theApp.GetSettings()->Appearance.iColCursor;
-	COLORREF ColBg		= theApp.GetSettings()->Appearance.iColBackground;
-	COLORREF ColHiBg	= theApp.GetSettings()->Appearance.iColBackgroundHilite;
-	COLORREF ColHiBg2	= theApp.GetSettings()->Appearance.iColBackgroundHilite2;
-	COLORREF ColSelect	= theApp.GetSettings()->Appearance.iColSelection;
+	COLORREF ColCursor	= pSettings->Appearance.iColCursor;
+	COLORREF ColBg		= pSettings->Appearance.iColBackground;
+	COLORREF ColHiBg	= pSettings->Appearance.iColBackgroundHilite;
+	COLORREF ColHiBg2	= pSettings->Appearance.iColBackgroundHilite2;
+	COLORREF ColSelect	= pSettings->Appearance.iColSelection;
 
 	const bool bEditMode = m_pView->GetEditMode();
 
@@ -1140,7 +1140,7 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 	// Start at row number column
 	pDC->SetWindowOrg(0, 0);
 
-	if (Frame != m_iCurrentFrame && !theApp.GetSettings()->General.bFramePreview) {
+	if (Frame != m_iCurrentFrame && !pSettings->General.bFramePreview) {
 		ClearRow(pDC, Line);
 		return;
 	}
@@ -1157,11 +1157,11 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 	COLORREF TextColor;
 
 	if (Highlight == 2)
-		TextColor = theApp.GetSettings()->Appearance.iColPatternTextHilite2;
+		TextColor = pSettings->Appearance.iColPatternTextHilite2;
 	else if (Highlight == 1)
-		TextColor = theApp.GetSettings()->Appearance.iColPatternTextHilite;
+		TextColor = pSettings->Appearance.iColPatternTextHilite;
 	else
-		TextColor = theApp.GetSettings()->Appearance.iColPatternText;
+		TextColor = pSettings->Appearance.iColPatternText;
 
 	if (bPreview) {
 		ColHiBg2 = DIM(ColHiBg2, PREVIEW_SHADE_LEVEL);
@@ -1175,7 +1175,7 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 
 	CString Text;
 
-	if (theApp.GetSettings()->General.bRowInHex) {
+	if (pSettings->General.bRowInHex) {
 		// // // Hex display
 		Text.Format(_T("%02X"), Row);
 		DrawChar(pDC, (m_iRowColumnWidth - m_iCharWidth) / 2, (Line + 1) * m_iRowHeight - m_iRowHeight / 8, Text[0], TextColor);
@@ -1367,7 +1367,8 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 
 	// Make non-available instruments red in the pattern editor
 	if (pNoteData->Instrument < MAX_INSTRUMENTS && 
-		(!m_pDocument->IsInstrumentUsed(pNoteData->Instrument) || !pTrackerChannel->IsInstrumentCompatible(pNoteData->Instrument, m_pDocument))) {
+		(!m_pDocument->IsInstrumentUsed(pNoteData->Instrument) ||
+		!pTrackerChannel->IsInstrumentCompatible(pNoteData->Instrument, m_pDocument->GetInstrumentType(pNoteData->Instrument)))) { // // //
 		DimInst = InstColor = RED(255);
 	}
 

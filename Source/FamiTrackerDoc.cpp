@@ -3161,8 +3161,8 @@ unsigned int CFamiTrackerDoc::GetInstrumentCount() const
 
 bool CFamiTrackerDoc::IsInstrumentUsed(unsigned int Index) const
 {
-	ASSERT(Index < MAX_INSTRUMENTS);
-	return m_pInstruments[Index] != NULL;
+	ASSERT(Index <= MAX_INSTRUMENTS);		// // //
+	return Index != MAX_INSTRUMENTS && m_pInstruments[Index] != NULL;
 }
 
 CInstrument *CFamiTrackerDoc::CreateInstrument(inst_type_t InstType) const
@@ -3316,7 +3316,7 @@ void CFamiTrackerDoc::SetInstrumentName(unsigned int Index, const char *pName)
 
 inst_type_t CFamiTrackerDoc::GetInstrumentType(unsigned int Index) const
 {
-	ASSERT(Index < MAX_INSTRUMENTS);
+	ASSERT(Index <= MAX_INSTRUMENTS);		// // //
 
 	if (!IsInstrumentUsed(Index))
 		return INST_NONE;

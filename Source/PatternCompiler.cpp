@@ -155,7 +155,8 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 		int ChipID = pTrackerChannel->GetChip();
 
 		if (ChanNote.Instrument != MAX_INSTRUMENTS && Note != HALT && Note != NONE && Note != RELEASE) {
-			if (!pTrackerChannel->IsInstrumentCompatible(ChanNote.Instrument, m_pDocument)) {
+			if (!pTrackerChannel->IsInstrumentCompatible(ChanNote.Instrument,
+				m_pDocument->GetInstrumentType(ChanNote.Instrument))) {		// // //
 				CString str;
 				str.Format(_T("Error: Missing or incompatible instrument (on row %i, channel %i, pattern %i)\n"), i, Channel, Pattern);
 				Print(str);

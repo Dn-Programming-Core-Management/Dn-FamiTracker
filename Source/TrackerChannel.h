@@ -56,7 +56,7 @@ public:
 	void SetPitch(int Pitch);
 	int GetPitch() const;
 
-	bool IsInstrumentCompatible(int Instrument, CFamiTrackerDoc *pDoc) const;
+	bool IsInstrumentCompatible(int Instrument, inst_type_t Type) const;		// // //
 	bool IsEffectCompatible(int EffNumber, int EffParam) const;		// // //
 
 private:

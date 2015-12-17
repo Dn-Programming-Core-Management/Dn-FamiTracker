@@ -141,17 +141,15 @@ int CTrackerChannel::GetPitch() const
 	return m_iPitch;
 }
 
-bool CTrackerChannel::IsInstrumentCompatible(int Instrument, CFamiTrackerDoc *pDoc) const
+bool CTrackerChannel::IsInstrumentCompatible(int Instrument, inst_type_t Type) const
 {
-	int InstType = pDoc->GetInstrumentType(Instrument);
-
 	switch (m_iChip) {
 		case SNDCHIP_NONE:
 		case SNDCHIP_MMC5:
 		case SNDCHIP_N163:		// // //
 		case SNDCHIP_S5B:
 		case SNDCHIP_VRC6:
-			switch (InstType) {
+			switch (Type) {
 			case INST_2A03:
 			case INST_VRC6:
 			case INST_N163:
@@ -160,9 +158,9 @@ bool CTrackerChannel::IsInstrumentCompatible(int Instrument, CFamiTrackerDoc *pD
 			default: return false;
 			}
 		case SNDCHIP_VRC7:
-			return InstType == INST_VRC7;
+			return Type == INST_VRC7;
 		case SNDCHIP_FDS:
-			return InstType == INST_FDS;
+			return Type == INST_FDS;
 	}
 
 	return false;
