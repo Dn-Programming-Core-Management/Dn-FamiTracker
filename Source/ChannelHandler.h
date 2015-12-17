@@ -22,14 +22,6 @@
 
 #pragma once
 
-/*! \brief Macro for creating a new instrument handler.
-	\sa CChannelHandler::CreateInstHandler
-*/
-#define CREATE_INST_HANDLER(T, ...) { if (typeid(m_pInstHandler) != typeid(T)) \
-                                         SAFE_RELEASE(m_pInstHandler); \
-                                    if (dynamic_cast<T*>(m_pInstHandler) == nullptr) \
-                                         m_pInstHandler = new T(this, __VA_ARGS__); }		// // //
-
 class CAPU;
 
 static const int DUTY_2A03_FROM_VRC6[] = {0, 0, 1, 1, 1, 1, 2, 2};		// // //

@@ -43,6 +43,14 @@ protected:
 public:
 	/*! \brief Destructor of the instrument handler. */
 	virtual ~CInstHandler();
+	/*! \brief Unique numerical values representing each type of instrument handler. */
+	enum {
+		TYPE_NONE = 0,
+		TYPE_SEQ = 1,
+		TYPE_FDS,
+		TYPE_N163,
+		TYPE_VRC7,
+	};
 	/*! \brief Loads a new instrument into the instrument handler.
 		\details All relevant instrument parameters should be initialized in this method. This method
 		might be called more than once from the same object, when a new instrument is issued by the
@@ -69,6 +77,11 @@ public:
 		\details A note can only be released once until another new note is triggered.
 	*/
 	virtual void ReleaseInstrument() = 0;
+	/*! \brief Obtains the instrument handler type of a given instrument type.
+		\param The instrument type.
+		\return A unique numerical index commonly shared by instruments using the same handler type.
+	*/
+	static int GetType(inst_type_t Type);
 
 protected:
 	/*! \brief An interface to the underlying channel handler.

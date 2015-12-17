@@ -42,3 +42,18 @@ CInstHandler::CInstHandler(CChannelHandlerInterface *pInterface, int Vol) :		// 
 CInstHandler::~CInstHandler()
 {
 }
+
+int CInstHandler::GetType(inst_type_t Type)
+{
+	switch (Type) {
+	case INST_2A03: case INST_VRC6: case INST_S5B:
+		return CInstHandler::TYPE_SEQ;
+	case INST_N163:
+		return CInstHandler::TYPE_N163;
+	case INST_FDS:
+		return CInstHandler::TYPE_FDS;
+	case INST_VRC7:
+		return CInstHandler::TYPE_VRC7;
+	}
+	return CInstHandler::TYPE_NONE;
+}

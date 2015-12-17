@@ -184,9 +184,12 @@ void CChannelHandlerVRC7::HandleNote(int Note, int Octave)
 
 bool CChannelHandlerVRC7::CreateInstHandler(inst_type_t Type)
 {
+	if (CInstHandler::GetType(m_iInstTypeCurrent) == CInstHandler::GetType(Type)) return false;
 	switch (Type) {
 	case INST_VRC7:
-		CREATE_INST_HANDLER(CInstHandlerVRC7, 0x0F); return true;
+		SAFE_RELEASE(m_pInstHandler);
+		m_pInstHandler = new CInstHandlerVRC7(this, 0x0F);
+		return true;
 	}
 	return false;
 }

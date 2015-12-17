@@ -144,15 +144,12 @@ void CChannelHandler2A03::HandleNote(int Note, int Octave)
 
 bool CChannelHandler2A03::CreateInstHandler(inst_type_t Type)
 {
+	if (CInstHandler::GetType(m_iInstTypeCurrent) == CInstHandler::GetType(Type)) return false;
 	switch (Type) {
 	case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B:
-		CREATE_INST_HANDLER(CSeqInstHandler, 0x0F, Type == INST_S5B ? 0x40 : 0); return true;
-		/*
-	case INST_FDS:
-		CREATE_INST_HANDLER(CSeqInstHandlerFDS, 0x1F, 0); return true;
-	case INST_VRC7:
-		CREATE_INST_HANDLER(CInstHandlerVRC7, 0x0F); return true;
-		*/
+		SAFE_RELEASE(m_pInstHandler);
+		m_pInstHandler = new CSeqInstHandler(this, 0x0F, Type == INST_S5B ? 0x40 : 0);
+		return true;
 	}
 	return false;
 }
