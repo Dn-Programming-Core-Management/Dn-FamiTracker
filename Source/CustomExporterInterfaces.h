@@ -38,6 +38,13 @@ public:
 	virtual unsigned int	GetSetting() const = 0;
 };
 
+class CSeqInstrumentInterface		// // //
+{
+public:
+	virtual int GetSeqEnable(int Index) const = 0;
+	virtual int GetSeqIndex(int Index) const = 0;
+};
+
 class CInstrument2A03Interface
 {
 public:
@@ -50,6 +57,7 @@ public:
 };
 
 typedef const void* SequenceHandle;
+typedef const void* SeqInstrumentHandle;		// // //
 typedef const void* Instrument2A03Handle;
 
 //
@@ -69,6 +77,7 @@ public:
 	virtual int				  GetSequenceCount(int Type) const = 0;
 	virtual int               GetInstrumentCount() const = 0;
 	virtual CInstrument2A03Interface const *Get2A03Instrument(int Instrument) const = 0;
+	virtual CSeqInstrumentInterface const *GetSeqInstrument(int Instrument) const = 0;		// // //
 	virtual unsigned int	GetNoteEffectType(unsigned int Frame, unsigned int Channel, unsigned int Row, int Index) const = 0;
 	virtual unsigned int	GetNoteEffectParam(unsigned int Frame, unsigned int Channel, unsigned int Row, int Index) const = 0;
 	virtual int				GetSampleCount() const = 0;
@@ -105,9 +114,10 @@ struct FamitrackerDocInterface
 	//instrument functions
 	int (__cdecl *GetInstrumentCount)();
 	Instrument2A03Handle (__cdecl *Get2A03Instrument)(int Instrument);
+	SeqInstrumentHandle (__cdecl *GetSeqInstrument)(int Instrument);		// // //
 
-	int (__cdecl *GetSeqEnable)(Instrument2A03Handle instrument, int Index);
-	int (__cdecl *GetSeqIndex)(Instrument2A03Handle instrument, int Index);
+	int (__cdecl *GetSeqEnable)(SeqInstrumentHandle instrument, int Index);
+	int (__cdecl *GetSeqIndex)(SeqInstrumentHandle instrument, int Index);
 
 	//effect functions
 	unsigned int (__cdecl *GetNoteEffectType)(unsigned int Frame, unsigned int Channel, unsigned int Row, int Index);

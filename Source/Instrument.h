@@ -92,7 +92,7 @@ protected:
 	inst_type_t m_iType;		// // //
 };
 
-class CSeqInstrument : public CInstrument		// // //
+class CSeqInstrument : public CInstrument, public CSeqInstrumentInterface		// // //
 {
 public:
 	CSeqInstrument(inst_type_t type);

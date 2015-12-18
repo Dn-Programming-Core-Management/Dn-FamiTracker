@@ -25,9 +25,10 @@ unsigned int GetLoopPoint(SequenceHandle sequence);
 //instrument functions
 int GetInstrumentCount();
 Instrument2A03Handle Get2A03Instrument(int Instrument);
+SeqInstrumentHandle GetSeqInstrument(int Instrument);		// // //
 
-int GetSeqEnable(Instrument2A03Handle instrument, int Index);
-int GetSeqIndex(Instrument2A03Handle instrument, int Index);
+int GetSeqEnable(SeqInstrumentHandle instrument, int Index);
+int GetSeqIndex(SeqInstrumentHandle instrument, int Index);
 
 //effect functions
 unsigned int GetNoteEffectType(unsigned int Frame, unsigned int Channel, unsigned int Row, int Index);

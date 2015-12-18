@@ -71,6 +71,13 @@ CInstrument2A03Interface const *CFamiTrackerDocWrapper::Get2A03Instrument(int In
 	return dynamic_cast<const CInstrument2A03Interface*>(pInstrument);
 }
 
+CSeqInstrumentInterface const *CFamiTrackerDocWrapper::GetSeqInstrument(int Instrument) const		// // //
+{
+	CInstrumentContainer<CSeqInstrument> instContainer(m_pDocument, Instrument);
+	CSeqInstrument *pInstrument = instContainer();
+	return dynamic_cast<const CSeqInstrumentInterface*>(pInstrument);
+}
+
 unsigned int CFamiTrackerDocWrapper::GetNoteEffectType(unsigned int Frame, unsigned int Channel, unsigned int Row, int Index) const
 {
 	stChanNote Note;
