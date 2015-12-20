@@ -30,6 +30,7 @@
 #define LCTRL_CHECKBOX_UNCHECKED	0x1000
 
 class CSequence;
+class CFamiTrackerDoc;
 
 class CInstrumentEditPanel : public CDialog
 {

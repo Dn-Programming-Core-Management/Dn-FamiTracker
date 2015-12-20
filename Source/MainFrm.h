@@ -347,6 +347,16 @@ public:
 	afx_msg LRESULT OnDisplayMessageString(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnDisplayMessageID(WPARAM wParam, LPARAM lParam);
 
+	// // // Moved from CFamiTrackerView
+	afx_msg void OnTrackerPal();
+	afx_msg void OnTrackerNtsc();
+	afx_msg void OnSpeedDefault();
+	afx_msg void OnSpeedCustom();
+	afx_msg void OnUpdateTrackerPal(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateTrackerNtsc(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateSpeedDefault(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateSpeedCustom(CCmdUI *pCmdUI);
+
 	// // //
 	afx_msg void OnToggleGroove();
 	afx_msg void OnToggleFixTempo();

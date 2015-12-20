@@ -20,12 +20,6 @@
 
 #pragma once
 
-enum {
-	WM_SIZE_CHANGE = WM_USER, 
-	WM_CURSOR_CHANGE, 
-	WM_SEQUENCE_CHANGED
-};
-
 class CSequence;
 class CGraphEditor;
 class CSizeEditor;
@@ -36,19 +30,17 @@ class CSequenceEditor : public CWnd
 {
 	DECLARE_DYNAMIC(CSequenceEditor)
 public:
-	CSequenceEditor(CFamiTrackerDoc *pDoc);
+	CSequenceEditor();		// // //
 	virtual ~CSequenceEditor();
 	
 	BOOL CreateEditor(CWnd *pParentWnd, const RECT &rect);
 	void SelectSequence(CSequence *pSequence, int Type, int InstrumentType);
 	void SetMaxValues(int MaxVol, int MaxDuty);
-	void ChangedSetting();
 
 public:
 	static const int SEQUENCE_EDIT_WIDTH = 540;
 	static const int SEQUENCE_EDIT_HEIGHT = 237;
 private:
-	CFamiTrackerDoc  *m_pDocument;
 	CWnd			 *m_pParent;
 	CFont			 *m_pFont;
 	CSizeEditor		 *m_pSizeEditor;
@@ -73,4 +65,5 @@ public:
 	afx_msg LRESULT OnSizeChange(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnCursorChange(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnSequenceChanged(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnSettingChanged(WPARAM wParam, LPARAM lParam);		// // //
 };

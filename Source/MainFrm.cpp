@@ -56,6 +56,7 @@
 #include "GotoDlg.h"		// // //
 #include "BookmarkDlg.h"	// // //
 #include "SwapDlg.h"		// // //
+#include "SpeedDlg.h"		// // //
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -357,6 +358,15 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_KRAID3, OnEasterEggKraid3)
 	ON_COMMAND(ID_KRAID4, OnEasterEggKraid4)
 	ON_COMMAND(ID_KRAID5, OnEasterEggKraid5)
+	// // // From CFamiTrackerView
+	ON_COMMAND(ID_TRACKER_PAL, OnTrackerPal)
+	ON_COMMAND(ID_TRACKER_NTSC, OnTrackerNtsc)
+	ON_COMMAND(ID_SPEED_DEFAULT, OnSpeedDefault)
+	ON_COMMAND(ID_SPEED_CUSTOM, OnSpeedCustom)
+	ON_UPDATE_COMMAND_UI(ID_TRACKER_PAL, OnUpdateTrackerPal)
+	ON_UPDATE_COMMAND_UI(ID_TRACKER_NTSC, OnUpdateTrackerNtsc)
+	ON_UPDATE_COMMAND_UI(ID_SPEED_DEFAULT, OnUpdateSpeedDefault)
+	ON_UPDATE_COMMAND_UI(ID_SPEED_CUSTOM, OnUpdateSpeedCustom)
 	END_MESSAGE_MAP()
 
 
@@ -3240,4 +3250,100 @@ void CMainFrame::OnEditSwapChannels()
 {
 	CSwapDlg swapDlg;
 	swapDlg.DoModal();
+}
+
+// // // Moved from CFamiTrackerView
+
+void CMainFrame::OnTrackerPal()
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);
+
+	machine_t Machine = PAL;
+	pDoc->SetMachine(Machine);
+	theApp.GetSoundGenerator()->LoadMachineSettings(Machine, pDoc->GetEngineSpeed(), pDoc->GetNamcoChannels());
+	m_wndInstEdit.SetRefreshRate(pDoc->GetFrameRate());		// // //
+}
+
+void CMainFrame::OnTrackerNtsc()
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);
+
+	machine_t Machine = NTSC;
+	pDoc->SetMachine(Machine);
+	theApp.GetSoundGenerator()->LoadMachineSettings(Machine, pDoc->GetEngineSpeed(), pDoc->GetNamcoChannels());
+	m_wndInstEdit.SetRefreshRate(pDoc->GetFrameRate());		// // //
+}
+
+void CMainFrame::OnSpeedDefault()
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);
+
+	int Speed = 0;
+	pDoc->SetEngineSpeed(Speed);
+	theApp.GetSoundGenerator()->LoadMachineSettings(pDoc->GetMachine(), Speed, pDoc->GetNamcoChannels());
+	m_wndInstEdit.SetRefreshRate(pDoc->GetFrameRate());		// // //
+}
+
+void CMainFrame::OnSpeedCustom()
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);
+
+	CSpeedDlg SpeedDlg;
+
+	machine_t Machine = pDoc->GetMachine();
+	int Speed = pDoc->GetEngineSpeed();
+	if (Speed == 0)
+		Speed = (Machine == NTSC) ? CAPU::FRAME_RATE_NTSC : CAPU::FRAME_RATE_PAL;
+	Speed = SpeedDlg.GetSpeedFromDlg(Speed);
+
+	if (Speed == 0)
+		return;
+
+	pDoc->SetEngineSpeed(Speed);
+	theApp.GetSoundGenerator()->LoadMachineSettings(Machine, Speed, pDoc->GetNamcoChannels());
+	m_wndInstEdit.SetRefreshRate(pDoc->GetFrameRate());		// // //
+}
+
+void CMainFrame::OnUpdateTrackerPal(CCmdUI *pCmdUI)
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);
+
+	pCmdUI->Enable(pDoc->GetExpansionChip() == SNDCHIP_NONE && !theApp.IsPlaying());		// // //
+	UINT item = pDoc->GetMachine() == PAL ? ID_TRACKER_PAL : ID_TRACKER_NTSC;
+	if (pCmdUI->m_pMenu != NULL)
+		pCmdUI->m_pMenu->CheckMenuRadioItem(ID_TRACKER_NTSC, ID_TRACKER_PAL, item, MF_BYCOMMAND);
+}
+
+void CMainFrame::OnUpdateTrackerNtsc(CCmdUI *pCmdUI)
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);
+
+	pCmdUI->Enable(!theApp.IsPlaying());		// // //
+	UINT item = pDoc->GetMachine() == NTSC ? ID_TRACKER_NTSC : ID_TRACKER_PAL;
+	if (pCmdUI->m_pMenu != NULL)
+		pCmdUI->m_pMenu->CheckMenuRadioItem(ID_TRACKER_NTSC, ID_TRACKER_PAL, item, MF_BYCOMMAND);
+}
+
+void CMainFrame::OnUpdateSpeedDefault(CCmdUI *pCmdUI)
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);
+
+	pCmdUI->Enable(!theApp.IsPlaying());		// // //
+	pCmdUI->SetCheck(pDoc->GetEngineSpeed() == 0);
+}
+
+void CMainFrame::OnUpdateSpeedCustom(CCmdUI *pCmdUI)
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
+	ASSERT_VALID(pDoc);	
+
+	pCmdUI->Enable(!theApp.IsPlaying());		// // //
+	pCmdUI->SetCheck(pDoc->GetEngineSpeed() != 0);
 }

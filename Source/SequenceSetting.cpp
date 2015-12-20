@@ -24,15 +24,10 @@
  * The sequence setting button. Used only by arpeggio at the moment
  */
 
-#include <string>
 #include "stdafx.h"
-#include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
 #include "Sequence.h"
-#include "SequenceEditor.h"
-#include "GraphEditor.h"
-#include "InstrumentEditPanel.h"
 #include "SequenceSetting.h"
+#include "SequenceEditorMessage.h"		// // //
 
 // Arpeggio menu
 enum {
@@ -148,22 +143,35 @@ void CSequenceSetting::SelectSequence(CSequence *pSequence, int Type, int Instru
 	RedrawWindow();
 }
 
+void CSequenceSetting::RemoveArpScheme()		// // //
+{
+	if (m_pSequence->GetSetting() != SETTING_ARP_SCHEME) return;
+	for (unsigned int i = 0; i < m_pSequence->GetItemCount(); ++i) {
+		int Item = m_pSequence->GetItem(i) & 0x3F;
+		if (Item > 0x24) Item -= 0x40;
+		m_pSequence->SetItem(i, Item);
+	}
+}
+
 void CSequenceSetting::OnMenuArpAbsolute()
 {
+	RemoveArpScheme();		// // //
 	m_pSequence->SetSetting(SETTING_ARP_ABSOLUTE);
-	static_cast<CSequenceEditor*>(m_pParent)->ChangedSetting();
+	m_pParent->PostMessage(WM_SETTING_CHANGED);		// // //
 }
 
 void CSequenceSetting::OnMenuArpRelative()
 {
+	RemoveArpScheme();		// // //
 	m_pSequence->SetSetting(SETTING_ARP_RELATIVE);
-	static_cast<CSequenceEditor*>(m_pParent)->ChangedSetting();
+	m_pParent->PostMessage(WM_SETTING_CHANGED);		// // //
 }
 
 void CSequenceSetting::OnMenuArpFixed()
 {
+	RemoveArpScheme();		// // //
 	m_pSequence->SetSetting(SETTING_ARP_FIXED);
-	static_cast<CSequenceEditor*>(m_pParent)->ChangedSetting();
+	m_pParent->PostMessage(WM_SETTING_CHANGED);		// // //
 
 	// Prevent invalid sequence items
 	for (unsigned int i = 0; i < m_pSequence->GetItemCount(); ++i) {
@@ -177,7 +185,7 @@ void CSequenceSetting::OnMenuArpFixed()
 void CSequenceSetting::OnMenuArpScheme()		// // //
 {
 	m_pSequence->SetSetting(SETTING_ARP_SCHEME);
-	static_cast<CSequenceEditor*>(m_pParent)->ChangedSetting();
+	m_pParent->PostMessage(WM_SETTING_CHANGED);		// // //
 }
 
 void CSequenceSetting::OnMouseMove(UINT nFlags, CPoint point)

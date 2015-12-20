@@ -34,6 +34,8 @@ public:
 
 	void ChangeNoteState(int Note);
 	void SetCurrentInstrument(int Index);
+	float GetRefreshRate() const;		// // //
+	void SetRefreshRate(float Rate);		// // //
 	bool IsOpened() const;
 	void EndDialog(int nResult);
 
@@ -73,6 +75,7 @@ protected:
 	int m_iSelectedInstType;
 	int m_iPanels;
 	int	m_iInstrument;
+	float m_fRefreshRate;		// // //
 
 	DECLARE_MESSAGE_MAP()
 public:

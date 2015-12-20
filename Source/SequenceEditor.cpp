@@ -22,14 +22,16 @@
 
 #include <string>
 #include "stdafx.h"
-#include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
+#include "Instrument.h"		// // // inst_type_t
 #include "Sequence.h"
-#include "SequenceEditor.h"
-#include "GraphEditor.h"
+#include "resource.h"		// // // CInstrumentEditDlg
+#include "InstrumentEditDlg.h"		// // // GetRefreshRate()
 #include "InstrumentEditPanel.h"
+#include "SequenceEditor.h"
 #include "SizeEditor.h"
+#include "GraphEditor.h"
 #include "SequenceSetting.h"
+#include "SequenceEditorMessage.h"		// // //
 
 // This file contains the sequence editor and sequence size control
 
@@ -37,14 +39,13 @@
 
 IMPLEMENT_DYNAMIC(CSequenceEditor, CWnd)
 
-CSequenceEditor::CSequenceEditor(CFamiTrackerDoc *pDoc) : CWnd(), 
+CSequenceEditor::CSequenceEditor() : CWnd(),		// // //
 	m_pGraphEditor(NULL), 
 	m_pSizeEditor(NULL),
 	m_pSetting(NULL),
 	m_pFont(NULL),
 	m_iMaxVol(15), 
 	m_iMaxDuty(3),
-	m_pDocument(pDoc),
 	m_pParent(NULL),
 	m_pSequence(NULL),
 	m_iSelectedSetting(0),
@@ -66,6 +67,7 @@ BEGIN_MESSAGE_MAP(CSequenceEditor, CWnd)
 	ON_MESSAGE(WM_SIZE_CHANGE, OnSizeChange)
 	ON_MESSAGE(WM_CURSOR_CHANGE, OnCursorChange)
 	ON_MESSAGE(WM_SEQUENCE_CHANGED, OnSequenceChanged)
+	ON_MESSAGE(WM_SETTING_CHANGED, OnSettingChanged)
 END_MESSAGE_MAP()
 
 BOOL CSequenceEditor::CreateEditor(CWnd *pParentWnd, const RECT &rect)
@@ -123,7 +125,9 @@ void CSequenceEditor::OnPaint()
 	dc.TextOut(10, rect.bottom - 19, _T("Size:"));
 
 	CString LengthStr;
-	LengthStr.Format(_T("%i ms  "), (1000 * m_pSizeEditor->GetValue()) / m_pDocument->GetFrameRate());
+	float Rate;		// // //
+	Rate = static_cast<CInstrumentEditDlg*>(static_cast<CSequenceInstrumentEditPanel*>(m_pParent)->GetParent())->GetRefreshRate();
+	LengthStr.Format(_T("%.0f ms  "), (1000.0f * m_pSizeEditor->GetValue()) / Rate);
 
 	dc.TextOut(120, rect.bottom - 19, LengthStr);
 }
@@ -176,7 +180,7 @@ LRESULT CSequenceEditor::OnSequenceChanged(WPARAM wParam, LPARAM lParam)
 	return TRUE;
 }
 
-void CSequenceEditor::ChangedSetting()
+LRESULT CSequenceEditor::OnSettingChanged(WPARAM wParam, LPARAM lParam)		// // //
 {
 	// Called when the setting selector has changed
 	SelectSequence(m_pSequence, m_iSelectedSetting, m_iInstrumentType);
@@ -189,6 +193,8 @@ void CSequenceEditor::ChangedSetting()
 
 	m_pSetting->RedrawWindow();
 	RedrawWindow();
+
+	return TRUE;
 }
 
 void CSequenceEditor::SetMaxValues(int MaxVol, int MaxDuty)
@@ -219,12 +225,9 @@ void CSequenceEditor::SequenceChangedMessage(bool Changed)
 	static_cast<CSequenceInstrumentEditPanel*>(m_pParent)->SetSequenceString(Text, Changed);
 
 	// Set flag in document
-	if (Changed) {
-		CFrameWnd *pMainFrame = dynamic_cast<CFrameWnd*>(theApp.m_pMainWnd);
-		if (pMainFrame) {
+	if (Changed)
+		if (CFrameWnd *pMainFrame = dynamic_cast<CFrameWnd*>(AfxGetMainWnd()))		// // //
 			pMainFrame->GetActiveDocument()->SetModifiedFlag();
-		}
-	}
 }
 
 //const int SEQ_SUNSOFT_NOISE = SEQ_DUTYCYCLE + 1;

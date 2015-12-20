@@ -352,10 +352,6 @@ public:
 	afx_msg void OnEditVolumeMask();
 	afx_msg void OnEditPasteoverwrite();
 	afx_msg void OnTrackerEdit();
-	afx_msg void OnTrackerPal();
-	afx_msg void OnTrackerNtsc();
-	afx_msg void OnSpeedCustom();
-	afx_msg void OnSpeedDefault();
 	afx_msg void OnTransposeDecreasenote();
 	afx_msg void OnTransposeDecreaseoctave();
 	afx_msg void OnTransposeIncreasenote();
@@ -367,10 +363,6 @@ public:
 	afx_msg void OnUpdateEditPaste(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateEditDelete(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateTrackerEdit(CCmdUI *pCmdUI);
-	afx_msg void OnUpdateTrackerPal(CCmdUI *pCmdUI);
-	afx_msg void OnUpdateTrackerNtsc(CCmdUI *pCmdUI);
-	afx_msg void OnUpdateSpeedDefault(CCmdUI *pCmdUI);
-	afx_msg void OnUpdateSpeedCustom(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateEditPasteoverwrite(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateEditInstrumentMask(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateEditVolumeMask(CCmdUI *pCmdUI);

@@ -28,7 +28,6 @@
 #include "MainFrm.h"
 #include "MIDI.h"
 #include "InstrumentEditDlg.h"
-#include "SpeedDlg.h"
 #include "SoundGen.h"
 #include "PatternAction.h"
 #include "PatternEditor.h"
@@ -153,10 +152,6 @@ BEGIN_MESSAGE_MAP(CFamiTrackerView, CView)
 	ON_COMMAND(ID_INCREASEVALUES, OnIncreaseValues)
 	ON_COMMAND(ID_TRACKER_PLAYROW, OnTrackerPlayrow)
 	ON_COMMAND(ID_TRACKER_EDIT, OnTrackerEdit)
-	ON_COMMAND(ID_TRACKER_PAL, OnTrackerPal)
-	ON_COMMAND(ID_TRACKER_NTSC, OnTrackerNtsc)
-	ON_COMMAND(ID_SPEED_CUSTOM, OnSpeedCustom)
-	ON_COMMAND(ID_SPEED_DEFAULT, OnSpeedDefault)
 	ON_COMMAND(ID_TRACKER_TOGGLECHANNEL, OnTrackerToggleChannel)
 	ON_COMMAND(ID_TRACKER_SOLOCHANNEL, OnTrackerSoloChannel)
 	ON_COMMAND(ID_CMD_OCTAVE_NEXT, OnNextOctave)
@@ -173,10 +168,6 @@ BEGIN_MESSAGE_MAP(CFamiTrackerView, CView)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_INSTRUMENTMASK, OnUpdateEditInstrumentMask)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_VOLUMEMASK, OnUpdateEditVolumeMask)
 	ON_UPDATE_COMMAND_UI(ID_TRACKER_EDIT, OnUpdateTrackerEdit)
-	ON_UPDATE_COMMAND_UI(ID_TRACKER_PAL, OnUpdateTrackerPal)
-	ON_UPDATE_COMMAND_UI(ID_TRACKER_NTSC, OnUpdateTrackerNtsc)
-	ON_UPDATE_COMMAND_UI(ID_SPEED_DEFAULT, OnUpdateSpeedDefault)
-	ON_UPDATE_COMMAND_UI(ID_SPEED_CUSTOM, OnUpdateSpeedCustom)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_PASTEMIX, OnUpdateEditPaste)
 	ON_WM_NCMOUSEMOVE()
 	ON_COMMAND(ID_BLOCK_START, OnBlockStart)	
@@ -1101,46 +1092,6 @@ void CFamiTrackerView::OnTrackerEdit()
 	RedrawPatternEditor();
 }
 
-void CFamiTrackerView::OnTrackerPal()
-{
-	CFamiTrackerDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	machine_t Machine = PAL;
-	pDoc->SetMachine(Machine);
-	theApp.GetSoundGenerator()->LoadMachineSettings(Machine, pDoc->GetEngineSpeed(), pDoc->GetNamcoChannels());
-}
-
-void CFamiTrackerView::OnTrackerNtsc()
-{
-	CFamiTrackerDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	machine_t Machine = NTSC;
-	pDoc->SetMachine(Machine);
-	theApp.GetSoundGenerator()->LoadMachineSettings(Machine, pDoc->GetEngineSpeed(), pDoc->GetNamcoChannels());
-}
-
-void CFamiTrackerView::OnSpeedCustom()
-{
-	CFamiTrackerDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	CSpeedDlg SpeedDlg;
-
-	machine_t Machine = pDoc->GetMachine();
-	int Speed = pDoc->GetEngineSpeed();
-	if (Speed == 0)
-		Speed = (Machine == NTSC) ? CAPU::FRAME_RATE_NTSC : CAPU::FRAME_RATE_PAL;
-	Speed = SpeedDlg.GetSpeedFromDlg(Speed);
-
-	if (Speed == 0)
-		return;
-
-	pDoc->SetEngineSpeed(Speed);
-	theApp.GetSoundGenerator()->LoadMachineSettings(Machine, Speed, pDoc->GetNamcoChannels());
-}
-
 LRESULT CFamiTrackerView::OnUserDumpInst(WPARAM wParam, LPARAM lParam)		// // //
 {
 	CFamiTrackerDoc* pDoc = GetDocument();
@@ -1169,16 +1120,6 @@ void CFamiTrackerView::OnTrackerDetune()			// // //
 	for (int i = 0; i < 6; i++) for (int j = 0; j < NOTE_COUNT; j++)
 		pDoc->SetDetuneOffset(i, j, *(Table + j + i * NOTE_COUNT));
 	theApp.GetSoundGenerator()->LoadMachineSettings(pDoc->GetMachine(), pDoc->GetEngineSpeed(), pDoc->GetNamcoChannels());
-}
-
-void CFamiTrackerView::OnSpeedDefault()
-{
-	CFamiTrackerDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	int Speed = 0;
-	pDoc->SetEngineSpeed(Speed);
-	theApp.GetSoundGenerator()->LoadMachineSettings(pDoc->GetMachine(), Speed, pDoc->GetNamcoChannels());
 }
 
 void CFamiTrackerView::OnTransposeDecreasenote()
@@ -1589,46 +1530,6 @@ void CFamiTrackerView::OnUpdateEditDelete(CCmdUI *pCmdUI)
 void CFamiTrackerView::OnUpdateTrackerEdit(CCmdUI *pCmdUI)
 {
 	pCmdUI->SetCheck(m_bEditEnable ? 1 : 0);
-}
-
-void CFamiTrackerView::OnUpdateTrackerPal(CCmdUI *pCmdUI)
-{
-	CFamiTrackerDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	pCmdUI->Enable(pDoc->GetExpansionChip() == SNDCHIP_NONE && !theApp.IsPlaying());		// // //
-	UINT item = pDoc->GetMachine() == PAL ? ID_TRACKER_PAL : ID_TRACKER_NTSC;
-	if (pCmdUI->m_pMenu != NULL)
-		pCmdUI->m_pMenu->CheckMenuRadioItem(ID_TRACKER_NTSC, ID_TRACKER_PAL, item, MF_BYCOMMAND);
-}
-
-void CFamiTrackerView::OnUpdateTrackerNtsc(CCmdUI *pCmdUI)
-{
-	CFamiTrackerDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	pCmdUI->Enable(!theApp.IsPlaying());		// // //
-	UINT item = pDoc->GetMachine() == NTSC ? ID_TRACKER_NTSC : ID_TRACKER_PAL;
-	if (pCmdUI->m_pMenu != NULL)
-		pCmdUI->m_pMenu->CheckMenuRadioItem(ID_TRACKER_NTSC, ID_TRACKER_PAL, item, MF_BYCOMMAND);
-}
-
-void CFamiTrackerView::OnUpdateSpeedDefault(CCmdUI *pCmdUI)
-{
-	CFamiTrackerDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	pCmdUI->Enable(!theApp.IsPlaying());		// // //
-	pCmdUI->SetCheck(pDoc->GetEngineSpeed() == 0);
-}
-
-void CFamiTrackerView::OnUpdateSpeedCustom(CCmdUI *pCmdUI)
-{
-	CFamiTrackerDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);	
-
-	pCmdUI->Enable(!theApp.IsPlaying());		// // //
-	pCmdUI->SetCheck(pDoc->GetEngineSpeed() != 0);
 }
 
 void CFamiTrackerView::OnEditPasteSpecialCursor()		// // //

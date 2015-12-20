@@ -22,33 +22,14 @@
 
 #pragma once
 
-class CSequenceSetting : public CWnd
-{
-	DECLARE_DYNAMIC(CSequenceSetting)
-	CSequenceSetting(CWnd *pParent);
-	virtual ~CSequenceSetting();
-public:
-	void Setup(CFont *pFont);
-	void SelectSequence(CSequence *pSequence, int Type, int InstrumentType);
+#ifndef __INST_EDITOR_MESSAGE_H
+#define __INST_EDITOR_MESSAGE_H
+#include "stdafx.h"
+#endif
 
-private:
-	void RemoveArpScheme();		// // //
-	CWnd *m_pParent;
-	CMenu m_menuPopup;
-	CFont *m_pFont;
-	CSequence *m_pSequence;
-	int m_iInstType;
-	int m_iType;
-	bool m_bMouseOver;
-protected:
-	DECLARE_MESSAGE_MAP()
-public:
-	afx_msg void OnPaint();
-	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
-	afx_msg void OnMenuArpAbsolute();
-	afx_msg void OnMenuArpRelative();
-	afx_msg void OnMenuArpFixed();
-	afx_msg void OnMenuArpScheme();		// // //
-	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
-	afx_msg void OnMouseLeave();
+enum {
+	WM_SIZE_CHANGE = WM_USER, 
+	WM_CURSOR_CHANGE, 
+	WM_SEQUENCE_CHANGED,
+	WM_SETTING_CHANGED,		// // //
 };

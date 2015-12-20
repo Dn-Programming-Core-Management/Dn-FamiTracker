@@ -24,9 +24,8 @@
 #include <string>
 #include <sstream>
 #include "stdafx.h"
-#include "FamiTracker.h"
+#include "resource.h"		// // //
 #include "FamiTrackerDoc.h"
-#include "FamiTrackerView.h"
 #include "InstrumentEditPanel.h"
 #include "InstrumentEditorVRC7.h"
 #include "Clipboard.h"

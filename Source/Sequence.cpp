@@ -22,7 +22,6 @@
 
 #include "stdafx.h"
 #include "Sequence.h"
-#include "DocumentFile.h"
 
 CSequence::CSequence()
 {

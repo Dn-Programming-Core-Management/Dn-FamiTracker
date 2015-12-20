@@ -23,10 +23,9 @@
  */
 
 #include "stdafx.h"
-#include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
-#include "SequenceEditor.h"
+#include "Sequence.h"		// // // MAX_SEQUENCE_ITEMS
 #include "SizeEditor.h"
+#include "SequenceEditorMessage.h"		// // //
 
 const int CHANGE_DELAY = 400;
 const int CHANGE_SPEED = 50;
@@ -110,9 +109,11 @@ void CSizeEditor::OnPaint()
 	textRect.DeflateRect(rect.bottom + 6, 1, rect.bottom + 6, 0);
 
 	// Text
+	CString str;
+	str.Format(_T("%i"), m_iValue);		// // //
 	dc.SetBkMode(TRANSPARENT);
 	dc.SetTextColor(0xFFFFFF);
-	dc.DrawText(MakeIntString(m_iValue), &textRect, DT_RIGHT);
+	dc.DrawText(str, &textRect, DT_RIGHT);
 	dc.SetTextColor(0);
 	dc.TextOut(6, 1 + ((m_iButtonPressed == 1) ? 1 : 0), _T("-"));
 	dc.TextOut(rect.right - 14, 1 + ((m_iButtonPressed == 2) ? 1 : 0), _T("+"));

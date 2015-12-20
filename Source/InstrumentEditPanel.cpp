@@ -28,7 +28,6 @@
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
 #include "InstrumentEditPanel.h"
-#include "InstrumentEditDlg.h"
 #include "SequenceEditor.h"
 
 // CInstrumentEditPanel dialog
@@ -100,7 +99,7 @@ BOOL CInstrumentEditPanel::PreTranslateMessage(MSG* pMsg)
 					OnKeyReturn();
 					return TRUE;
 				case VK_ESCAPE:	// Esc, close the dialog
-					static_cast<CInstrumentEditDlg*>(GetParent())->DestroyWindow();
+					GetParent()->DestroyWindow();		// // // no need for static_cast
 					return TRUE;
 				case VK_TAB:
 				case VK_DOWN:
@@ -221,7 +220,7 @@ void CSequenceInstrumentEditPanel::SetupDialog(LPCTSTR *pListItems)
 
 	CRect rect(190 - 2, 30 - 2, CSequenceEditor::SEQUENCE_EDIT_WIDTH, CSequenceEditor::SEQUENCE_EDIT_HEIGHT);
 	
-	m_pSequenceEditor = new CSequenceEditor(GetDocument());	
+	m_pSequenceEditor = new CSequenceEditor();		// // //
 	m_pSequenceEditor->CreateEditor(this, rect);
 	m_pSequenceEditor->ShowWindow(SW_SHOW);
 }

@@ -19,10 +19,9 @@
 */
 
 #include "stdafx.h"
+#include "resource.h"
 #include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
 #include "DialogReBar.h"
-#include "MainFrm.h"
 
 // COctaveDlgBar dialog
 

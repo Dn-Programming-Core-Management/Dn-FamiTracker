@@ -21,12 +21,13 @@
 */
 
 #include "stdafx.h"
-#include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
+#include "Sequence.h"		// // //
 #include "GraphEditor.h"
-#include "SequenceEditor.h"
 #include "Graphics.h"
+#include "FamiTracker.h"
+#include "APU/Types.h"		// // //
 #include "SoundGen.h"
+#include "SequenceEditorMessage.h"		// // //
 
 // CGraphEditor
 

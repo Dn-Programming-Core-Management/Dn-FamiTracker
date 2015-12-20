@@ -64,6 +64,7 @@ IMPLEMENT_DYNAMIC(CInstrumentEditDlg, CDialog)
 CInstrumentEditDlg::CInstrumentEditDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CInstrumentEditDlg::IDD, pParent),
 	m_bOpened(false),
+	m_fRefreshRate(60.0f),		// // //
 	m_iInstrument(-1)
 {
 }
@@ -207,6 +208,16 @@ void CInstrumentEditDlg::SetCurrentInstrument(int Index)
 	UpdateWindow();
 
 	m_iSelectedInstType = InstType;
+}
+
+float CInstrumentEditDlg::GetRefreshRate() const		// // //
+{
+	return m_fRefreshRate;
+}
+
+void CInstrumentEditDlg::SetRefreshRate(float Rate)		// // //
+{
+	m_fRefreshRate = Rate;
 }
 
 void CInstrumentEditDlg::OnTcnSelchangeInstTab(NMHDR *pNMHDR, LRESULT *pResult)

@@ -20,10 +20,8 @@
 ** must bear this legend.
 */
 
-#include <string>
 #include "stdafx.h"
-#include <cmath>
-#include "FamiTracker.h"
+#include "resource.h"		// // //
 #include "FamiTrackerDoc.h"
 #include "InstrumentEditPanel.h"
 #include "SequenceEditor.h"
@@ -78,7 +76,7 @@ BOOL CInstrumentEditorFDSEnvelope::OnInitDialog()
 	GetClientRect(&rect);
 	rect.DeflateRect(10, 10, 10, 45);
 
-	m_pSequenceEditor = new CSequenceEditor(GetDocument());
+	m_pSequenceEditor = new CSequenceEditor();		// // //
 	m_pSequenceEditor->CreateEditor(this, rect);
 	m_pSequenceEditor->SetMaxValues(MAX_VOLUME, 0);
 

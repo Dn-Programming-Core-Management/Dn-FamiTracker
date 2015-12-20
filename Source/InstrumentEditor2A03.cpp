@@ -20,16 +20,12 @@
 ** must bear this legend.
 */
 
-#include <string>
 #include "stdafx.h"
-#include "FamiTracker.h"
+#include "resource.h"		// // //
 #include "FamiTrackerDoc.h"
-#include "FamiTrackerView.h"
-#include "InstrumentEditDlg.h"
-#include "SequenceEditor.h"
 #include "InstrumentEditPanel.h"
+#include "SequenceEditor.h"
 #include "InstrumentEditor2A03.h"
-#include "MainFrm.h"
 
 LPCTSTR CInstrumentEditor2A03::INST_SETTINGS_2A03[] = {
 	_T("Volume"), 
@@ -125,8 +121,9 @@ void CInstrumentEditor2A03::OnEnChangeSeqIndex()
 
 	if (m_pInstrument != NULL) {
 		// Update list
-		pList->SetItemText(m_iSelectedSetting, 1, MakeIntString(Index));
-
+		CString str;		// // //
+		str.Format(_T("%i"), Index);
+		pList->SetItemText(m_iSelectedSetting, 1, str);
 		if (m_pInstrument->GetSeqIndex(m_iSelectedSetting) != Index)
 			m_pInstrument->SetSeqIndex(m_iSelectedSetting, Index);
 
@@ -189,10 +186,12 @@ void CInstrumentEditor2A03::SelectInstrument(int Instrument)
 	m_pInstrument = NULL;
 
 	// Update instrument setting list
+	CString str;		// // //
 	for (int i = 0; i < SEQ_COUNT; ++i) {
 		pList->SetCheck(i, pInstrument->GetSeqEnable(i));
-		pList->SetItemText(i, 1, MakeIntString(pInstrument->GetSeqIndex(i)));
-	} 
+		str.Format(_T("%i"), pInstrument->GetSeqIndex(i));
+		pList->SetItemText(i, 1, str);
+	}
 
 	// Setting text box
 	SetDlgItemInt(IDC_SEQ_INDEX, pInstrument->GetSeqIndex(m_iSelectedSetting));
