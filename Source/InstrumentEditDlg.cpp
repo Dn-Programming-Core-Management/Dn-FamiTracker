@@ -27,16 +27,13 @@
 #include "FamiTrackerView.h"
 #include "SequenceEditor.h"
 #include "InstrumentEditPanel.h"
+#include "InstrumentEditorSeq.h"		// // //
 #include "InstrumentEditDlg.h"
-#include "InstrumentEditor2A03.h"
 #include "InstrumentEditorDPCM.h"
-#include "InstrumentEditorVRC6.h"
 #include "InstrumentEditorVRC7.h"
 #include "InstrumentEditorFDS.h"
 #include "InstrumentEditorFDSEnvelope.h"
-#include "InstrumentEditorN163.h"
 #include "InstrumentEditorN163Wave.h"
-#include "InstrumentEditorS5B.h"
 #include "MainFrm.h"
 #include "SoundGen.h"
 #include "TrackerChannel.h"
@@ -56,6 +53,12 @@ const TCHAR *CInstrumentEditDlg::CHIP_NAMES[] = {
 	_T("Namco"), 
 	_T("Sunsoft")
 };
+
+// // //
+static LPCTSTR INST_SETTINGS_2A03[] = {_T("Volume"), _T("Arpeggio"), _T("Pitch"), _T("Hi-pitch"), _T("Duty / Noise")};
+static LPCTSTR INST_SETTINGS_VRC6[] = {_T("Volume"), _T("Arpeggio"), _T("Pitch"), _T("Hi-pitch"), _T("Pulse Width")};
+static LPCTSTR INST_SETTINGS_N163[] = {_T("Volume"), _T("Arpeggio"), _T("Pitch"), _T("Hi-pitch"), _T("Wave Index")};
+static LPCTSTR INST_SETTINGS_S5B[]  = {_T("Volume"), _T("Arpeggio"), _T("Pitch"), _T("Hi-pitch"), _T("Noise / Mode")};
 
 // CInstrumentEditDlg dialog
 
@@ -172,12 +175,12 @@ void CInstrumentEditDlg::SetCurrentInstrument(int Index)
 					int Channel = CFamiTrackerView::GetView()->GetSelectedChannel();
 					int Type = pDoc->GetChannelType(Channel);
 					bool bShowDPCM = (Type == CHANID_DPCM) || (static_cast<CInstrument2A03*>(pInstrument)->AssignedSamples());
-					InsertPane(new CInstrumentEditor2A03(), !bShowDPCM);
+					InsertPane(new CInstrumentEditorSeq(NULL, _T("2A03 settings"), INST_SETTINGS_2A03, 15, 3, INST_2A03), !bShowDPCM); // // //
 					InsertPane(new CInstrumentEditorDPCM(), bShowDPCM);
 				}
 				break;
 			case INST_VRC6:
-				InsertPane(new CInstrumentEditorVRC6(), true);
+				InsertPane(new CInstrumentEditorSeq(NULL, _T("Konami VRC6"), INST_SETTINGS_VRC6, 15, 7, INST_VRC6), true);
 				break;
 			case INST_VRC7:
 				InsertPane(new CInstrumentEditorVRC7(), true);
@@ -187,11 +190,13 @@ void CInstrumentEditDlg::SetCurrentInstrument(int Index)
 				InsertPane(new CInstrumentEditorFDSEnvelope(), false);
 				break;
 			case INST_N163:
-				InsertPane(new CInstrumentEditorN163(), true);
+				InsertPane(new CInstrumentEditorSeq(
+					NULL, _T("Envelopes"), INST_SETTINGS_N163, 15, CInstrumentN163::MAX_WAVE_COUNT - 1, INST_N163
+				), true);
 				InsertPane(new CInstrumentEditorN163Wave(), false);
 				break;
 			case INST_S5B:
-				InsertPane(new CInstrumentEditorS5B(), true);
+				InsertPane(new CInstrumentEditorSeq(NULL, _T("Sunsoft 5B"), INST_SETTINGS_S5B, 15, 255, INST_S5B), true);
 				break;
 		}
 

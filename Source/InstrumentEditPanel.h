@@ -83,6 +83,7 @@ protected:
 	CSequenceEditor	*m_pSequenceEditor;
 	CSequence *m_pSequence;
 	CWnd *m_pParentWin;
+	CSeqInstrument *m_pInstrument;		// // //
 
 	unsigned int m_iSelectedSetting;
 

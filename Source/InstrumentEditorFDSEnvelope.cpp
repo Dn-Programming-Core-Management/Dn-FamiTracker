@@ -31,7 +31,8 @@
 
 IMPLEMENT_DYNAMIC(CInstrumentEditorFDSEnvelope, CSequenceInstrumentEditPanel)
 
-CInstrumentEditorFDSEnvelope::CInstrumentEditorFDSEnvelope(CWnd* pParent) : CSequenceInstrumentEditPanel(CInstrumentEditorFDSEnvelope::IDD, pParent),
+CInstrumentEditorFDSEnvelope::CInstrumentEditorFDSEnvelope(CWnd* pParent) :
+	CSequenceInstrumentEditPanel(CInstrumentEditorFDSEnvelope::IDD, pParent),
 	m_pInstrument(NULL),
 	m_iSelectedType(0)
 {
@@ -39,10 +40,6 @@ CInstrumentEditorFDSEnvelope::CInstrumentEditorFDSEnvelope(CWnd* pParent) : CSeq
 
 CInstrumentEditorFDSEnvelope::~CInstrumentEditorFDSEnvelope()
 {
-	SAFE_RELEASE(m_pSequenceEditor);
-
-	if (m_pInstrument)
-		m_pInstrument->Release();
 }
 
 void CInstrumentEditorFDSEnvelope::DoDataExchange(CDataExchange* pDX)
@@ -52,13 +49,20 @@ void CInstrumentEditorFDSEnvelope::DoDataExchange(CDataExchange* pDX)
 
 void CInstrumentEditorFDSEnvelope::SelectInstrument(int Instrument)
 {
-	if (m_pInstrument)
-		m_pInstrument->Release();
-
 	m_pInstrument = static_cast<CInstrumentFDS*>(GetDocument()->GetInstrument(Instrument));
 	ASSERT(m_pInstrument->GetType() == INST_FDS);
+	CInstrumentFDS *pInstrument = static_cast<CInstrumentFDS*>(GetDocument()->GetInstrument(Instrument));
+	ASSERT(pInstrument->GetType() == INST_FDS);
+	
+	if (m_pInstrument != nullptr)
+		m_pInstrument->Release();
+	m_pInstrument = nullptr;
+
+	m_pInstrument = pInstrument;
 	
 	LoadSequence();
+
+	SetFocus();
 }
 
 

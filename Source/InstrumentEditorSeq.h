@@ -1,6 +1,8 @@
 /*
 ** FamiTracker - NES/Famicom sound tracker
-** Copyright (C) 2005-2012  Jonathan Liss
+** Copyright (C) 2005-2014  Jonathan Liss
+**
+** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -20,15 +22,17 @@
 
 #pragma once
 
-class CInstrumentEditorN163 : public CSequenceInstrumentEditPanel
+/*!
+	\brief Specialization of the instrument sequence editor panel class for CSeqInstrument.
+*/
+class CInstrumentEditorSeq : public CSequenceInstrumentEditPanel
 {
-	DECLARE_DYNAMIC(CInstrumentEditorN163)
+	DECLARE_DYNAMIC(CInstrumentEditorSeq)
 
 public:
-	CInstrumentEditorN163(CWnd* pParent = NULL);   // standard constructor
-	virtual ~CInstrumentEditorN163();
+	CInstrumentEditorSeq(CWnd* pParent, TCHAR *Title, LPCTSTR *SeqName, int Vol, int Duty, inst_type_t Type);
 	virtual int GetIDD() const { return IDD; };
-	virtual TCHAR *GetTitle() const { return _T("Envelopes"); };
+	virtual TCHAR *GetTitle() const { return m_pTitle; };
 
 	// Public
 	virtual void SelectInstrument(int Instrument);
@@ -38,20 +42,19 @@ public:
 	enum { IDD = IDD_INSTRUMENT_INTERNAL };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual void OnKeyReturn();
 
 	void SelectSequence(int Sequence, int Type);
 	void TranslateMML(CString String, int Max, int Min);
 
 protected:
-	CInstrumentN163	*m_pInstrument;
+	LPCTSTR *m_pSequenceName;
+	TCHAR *m_pTitle;
+	const int m_iMaxVolume;
+	const int m_iMaxDuty;
+	const inst_type_t m_iInstType;
 
 protected:
-	static LPCTSTR INST_SETTINGS_N163[];
-
-	static const int MAX_VOLUME = 15;
-
 	DECLARE_MESSAGE_MAP()
 public:
 	virtual BOOL OnInitDialog();

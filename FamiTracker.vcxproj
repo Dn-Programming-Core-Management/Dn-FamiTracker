@@ -450,6 +450,7 @@
     <ClCompile Include="Source\GrooveDlg.cpp" />
     <ClCompile Include="Source\InstHandler.cpp" />
     <ClCompile Include="Source\InstHandlerVRC7.cpp" />
+    <ClCompile Include="Source\InstrumentEditorSeq.cpp" />
     <ClCompile Include="Source\MainFrm.cpp">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
@@ -548,7 +549,6 @@
     <ClCompile Include="Source\resampler\sinc.cpp" />
     <ClCompile Include="Source\SampleEditorDlg.cpp" />
     <ClCompile Include="Source\SampleEditorView.cpp" />
-    <ClCompile Include="Source\InstrumentEditor2A03.cpp" />
     <ClCompile Include="Source\InstrumentEditorDPCM.cpp">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
@@ -559,10 +559,7 @@
     </ClCompile>
     <ClCompile Include="Source\InstrumentEditorFDS.cpp" />
     <ClCompile Include="Source\InstrumentEditorFDSEnvelope.cpp" />
-    <ClCompile Include="Source\InstrumentEditorN163.cpp" />
     <ClCompile Include="Source\InstrumentEditorN163Wave.cpp" />
-    <ClCompile Include="Source\InstrumentEditorS5B.cpp" />
-    <ClCompile Include="Source\InstrumentEditorVRC6.cpp" />
     <ClCompile Include="Source\InstrumentEditorVRC7.cpp" />
     <ClCompile Include="Source\InstrumentEditPanel.cpp" />
     <ClCompile Include="Source\CreateWaveDlg.cpp" />
@@ -669,6 +666,7 @@
     <ClInclude Include="Source\GrooveDlg.h" />
     <ClInclude Include="Source\InstHandler.h" />
     <ClInclude Include="Source\InstHandlerVRC7.h" />
+    <ClInclude Include="Source\InstrumentEditorSeq.h" />
     <ClInclude Include="Source\SequenceEditorMessage.h" />
     <ClInclude Include="Source\MainFrm.h" />
     <CustomBuild Include="resource.h">
@@ -858,14 +856,10 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(Filename)%(Extension)" &gt;&gt; "hlp\
     <ClInclude Include="Source\resampler\sinc.hpp" />
     <ClInclude Include="Source\SampleEditorDlg.h" />
     <ClInclude Include="Source\SampleEditorView.h" />
-    <ClInclude Include="Source\InstrumentEditor2A03.h" />
     <ClInclude Include="Source\InstrumentEditorDPCM.h" />
     <ClInclude Include="Source\InstrumentEditorFDS.h" />
     <ClInclude Include="Source\InstrumentEditorFDSEnvelope.h" />
-    <ClInclude Include="Source\InstrumentEditorN163.h" />
     <ClInclude Include="Source\InstrumentEditorN163Wave.h" />
-    <ClInclude Include="Source\InstrumentEditorS5B.h" />
-    <ClInclude Include="Source\InstrumentEditorVRC6.h" />
     <ClInclude Include="Source\InstrumentEditorVRC7.h" />
     <ClInclude Include="Source\InstrumentEditPanel.h" />
     <ClInclude Include="Source\VisualizerWnd.h" />

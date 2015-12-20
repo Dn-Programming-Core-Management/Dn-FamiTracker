@@ -175,6 +175,7 @@ CSequenceInstrumentEditPanel::CSequenceInstrumentEditPanel(UINT nIDTemplate, CWn
 	CInstrumentEditPanel(nIDTemplate, pParent), 
 	m_pSequenceEditor(NULL),
 	m_pSequence(NULL),
+	m_pInstrument(nullptr),		// // //
 	m_pParentWin(pParent),
 	m_iSelectedSetting(0)
 {
@@ -182,6 +183,10 @@ CSequenceInstrumentEditPanel::CSequenceInstrumentEditPanel(UINT nIDTemplate, CWn
 
 CSequenceInstrumentEditPanel::~CSequenceInstrumentEditPanel()
 {
+	SAFE_RELEASE(m_pSequenceEditor);
+
+	if (m_pInstrument)
+		m_pInstrument->Release();
 }
 
 void CSequenceInstrumentEditPanel::DoDataExchange(CDataExchange* pDX)
@@ -397,6 +402,8 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 
 	pSequence->SetItemCount(AddedItems);
 	delete[] str2;
+
+
 }
 
 void CSequenceInstrumentEditPanel::OnRClickInstSettings(NMHDR* pNMHDR, LRESULT* pResult)
