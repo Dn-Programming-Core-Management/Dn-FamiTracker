@@ -21,11 +21,16 @@
 */
 
 #include "stdafx.h"
-#include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
+#include "FamiTracker.h" // theApp.getSoundGenerator()
+#include "FTMComponentInterface.h"		// // //
+#include "SequenceCollection.h"		// // //
+#include "SequenceManager.h"		// // //
+#include "APU/Types.h"
+#include "FamiTrackerTypes.h"
 #include "SoundGen.h"
 
 #include "Instrument.h"
+#include "Sequence.h"
 #include "ChannelHandlerInterface.h"
 #include "InstHandler.h"
 #include "SeqInstHandler.h"
@@ -46,10 +51,10 @@ void CSeqInstHandler::LoadInstrument(CInstrument *pInst)
 {
 	m_pInstrument = pInst;
 	CSeqInstrument *pSeqInst = dynamic_cast<CSeqInstrument*>(pInst);
-	CFamiTrackerDoc *pDoc = theApp.GetSoundGenerator()->GetDocument();
+	CSequenceManager *pManager = theApp.GetSoundGenerator()->GetDocumentInterface()->GetSequenceManager(pInst->GetType());
 	if (pSeqInst == nullptr) return;
 	for (size_t i = 0; i < sizeof(m_pSequence) / sizeof(CSequence*); i++) {
-		const CSequence *pSequence = pDoc->GetSequence(pInst->GetType(), pSeqInst->GetSeqIndex(i), i);
+		const CSequence *pSequence = pManager->GetCollection(i)->GetSequence(pSeqInst->GetSeqIndex(i));
 		bool Enable = pSeqInst->GetSeqEnable(i) == SEQ_STATE_RUNNING;
 		if (!Enable)
 			ClearSequence(i);
