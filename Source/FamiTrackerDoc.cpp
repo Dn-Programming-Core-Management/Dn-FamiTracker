@@ -52,6 +52,8 @@
 #include "Settings.h"
 #include "SoundGen.h"
 #include "ChannelMap.h"
+#include "SequenceCollection.h"		// // //
+#include "SequenceManager.h"		// // //
 #include "APU/APU.h"
 
 #ifdef _DEBUG
@@ -72,6 +74,8 @@ const int	CFamiTrackerDoc::DEFAULT_SECOND_HIGHLIGHT = 16;
 const stHighlight CFamiTrackerDoc::DEFAULT_HIGHLIGHT = {DEFAULT_FIRST_HIGHLIGHT, DEFAULT_SECOND_HIGHLIGHT, 0};		// // //
 
 const bool	CFamiTrackerDoc::DEFAULT_LINEAR_PITCH = false;
+
+const int	CFamiTrackerDoc::SEQ_MANAGER_COUNT = 5;		// // //
 
 // File I/O constants
 static const char *FILE_HEADER				= "FamiTracker Module";
@@ -217,6 +221,9 @@ CFamiTrackerDoc::CFamiTrackerDoc() :
 	memset(m_pSequencesS5B, 0, sizeof(CSequence*) * MAX_SEQUENCES * SEQ_COUNT);
 	memset(m_pGrooveTable, 0, sizeof(CGroove*) * MAX_GROOVE);		// // //
 	memset(m_pBookmarkList, 0, sizeof(std::vector<stBookmark>*) * MAX_TRACKS);		// // //
+	m_pSequenceManager = new CSequenceManager*[SEQ_MANAGER_COUNT]();		// // //
+	for (int i = 0; i < SEQ_MANAGER_COUNT; i++)
+		m_pSequenceManager[i] = new CSequenceManager(i == INST_FDS ? 3 : SEQ_COUNT);
 
 	// Register this object to the sound generator
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
@@ -264,6 +271,8 @@ CFamiTrackerDoc::~CFamiTrackerDoc()
 	// // // Bookmarks
 	for (int i = 0; i < MAX_TRACKS; ++i)
 		ClearBookmarkList(i);
+
+	SAFE_RELEASE_ARRAY(m_pSequenceManager);		// // //
 }
 
 //
@@ -1935,6 +1944,8 @@ bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 	unsigned int Count = pDocFile->GetBlockInt();
 	ASSERT_FILE_DATA(Count < (MAX_SEQUENCES * SEQ_COUNT));
 
+	CSequenceManager *pManager = GetSequenceManager(INST_2A03);		// // //
+
 	if (Version == 1) {
 		m_vTmpSequences.SetSize(MAX_SEQUENCES);
 		for (unsigned int i = 0; i < Count; ++i) {
@@ -1989,7 +2000,7 @@ bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 			ASSERT_FILE_DATA(Type < SEQ_COUNT);
 //			ASSERT_FILE_DATA(SeqCount <= MAX_SEQUENCE_ITEMS);
 
-			CSequence *pSeq = GetSequence(INST_2A03, Index, Type);
+			CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);// GetSequence(INST_2A03, Index, Type);
 
 			pSeq->Clear();
 			pSeq->SetItemCount(SeqCount < MAX_SEQUENCE_ITEMS ? SeqCount : MAX_SEQUENCE_ITEMS);
@@ -2016,7 +2027,7 @@ bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 					ReleasePoint = pDocFile->GetBlockInt();
 					Settings = pDocFile->GetBlockInt();
 					if (GetSequenceItemCount(INST_2A03, i, j) > 0) {
-						CSequence *pSeq = GetSequence(INST_2A03, i, j);
+						CSequence *pSeq = pManager->GetCollection(j)->GetSequence(i);// GetSequence(INST_2A03, i, j);
 						pSeq->SetReleasePoint(ReleasePoint);
 						pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
 					}
@@ -2030,7 +2041,7 @@ bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 				Settings = pDocFile->GetBlockInt();
 				unsigned int Index = Indices[i];
 				unsigned int Type = Types[i];
-				CSequence *pSeq = GetSequence(INST_2A03, Index, Type);
+				CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);// GetSequence(INST_2A03, Index, Type);
 				pSeq->SetReleasePoint(ReleasePoint);
 				pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
 			}
@@ -4308,6 +4319,20 @@ void CFamiTrackerDoc::ApplyExpansionChip()
 
 	SetModifiedFlag();
 	SetExceededFlag();			// // //
+}
+
+CSequenceManager *const CFamiTrackerDoc::GetSequenceManager(int InstType) const
+{
+	int Index = -1;
+	switch (InstType) {
+	case INST_2A03: Index = 0; break;
+	case INST_VRC6: Index = 1; break;
+	case INST_FDS:  Index = 2; break;
+	case INST_N163: Index = 3; break;
+	case INST_S5B:  Index = 4; break;
+	default: return nullptr;
+	}
+	return m_pSequenceManager[Index];
 }
 
 bool CFamiTrackerDoc::ExpansionEnabled(int Chip) const

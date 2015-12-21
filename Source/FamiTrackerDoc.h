@@ -31,6 +31,8 @@
 #include "APU/Types.h"
 // Constants, types and enums
 #include "FamiTrackerTypes.h"
+// // //
+#include "FTMComponentInterface.h"
 
 #define TRANSPOSE_FDS
 
@@ -136,7 +138,7 @@ class CDocumentFile;
 // I'll try to organize this class, things are quite messy right now!
 //
 
-class CFamiTrackerDoc : public CDocument
+class CFamiTrackerDoc : public CDocument, public CFTMComponentInterface
 {
 protected: // create from serialization only
 	CFamiTrackerDoc();
@@ -454,7 +456,8 @@ private:
 	void			SetupChannels(unsigned char Chip);
 	void			ApplyExpansionChip();
 
-
+	// // // from the component interface
+	CSequenceManager *const GetSequenceManager(int InstType) const;
 
 	//
 	// Private variables
@@ -508,6 +511,7 @@ private:
 	// Instruments, samples and sequences
 	CInstrument		*m_pInstruments[MAX_INSTRUMENTS];
 	CDSample		m_DSamples[MAX_DSAMPLES];					// The DPCM sample list
+	CSequenceManager **m_pSequenceManager;						// // //
 	CSequence		*m_pSequences2A03[MAX_SEQUENCES][SEQ_COUNT];
 	CSequence		*m_pSequencesVRC6[MAX_SEQUENCES][SEQ_COUNT];
 	CSequence		*m_pSequencesN163[MAX_SEQUENCES][SEQ_COUNT];
@@ -535,6 +539,8 @@ private:
 
 	// Row highlight (TODO remove)
 	stHighlight		m_vHighlight;								// // //
+
+	static const int SEQ_MANAGER_COUNT;
 
 	// Things below are for compability with older files
 	CArray<stSequence> m_vTmpSequences;

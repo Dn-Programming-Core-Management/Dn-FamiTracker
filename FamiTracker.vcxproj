@@ -463,6 +463,8 @@
     <ClCompile Include="Source\SeqInstHandler.cpp" />
     <ClCompile Include="Source\SeqInstHandlerFDS.cpp" />
     <ClCompile Include="Source\SeqInstHandlerN163.cpp" />
+    <ClCompile Include="Source\SequenceCollection.cpp" />
+    <ClCompile Include="Source\SequenceManager.cpp" />
     <ClCompile Include="Source\stdafx.cpp">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
@@ -661,6 +663,7 @@
     <ClInclude Include="Source\FamiTrackerTypes.h" />
     <ClInclude Include="Source\FamiTrackerView.h" />
     <ClInclude Include="Source\FindDlg.h" />
+    <ClInclude Include="Source\FTMComponentInterface.h" />
     <ClInclude Include="Source\GotoDlg.h" />
     <ClInclude Include="Source\Groove.h" />
     <ClInclude Include="Source\GrooveDlg.h" />
@@ -789,6 +792,8 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(Filename)%(Extension)" &gt;&gt; "hlp\
     <ClInclude Include="Source\SeqInstHandler.h" />
     <ClInclude Include="Source\SeqInstHandlerFDS.h" />
     <ClInclude Include="Source\SeqInstHandlerN163.h" />
+    <ClInclude Include="Source\SequenceCollection.h" />
+    <ClInclude Include="Source\SequenceManager.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\StretchDlg.h" />
     <ClInclude Include="Source\SwapDlg.h" />

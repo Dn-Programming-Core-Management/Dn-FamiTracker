@@ -85,6 +85,7 @@ class CDSoundChannel;
 class CVisualizerWnd;
 class CDSample;
 class CTrackerChannel;
+class CFTMComponentInterface;		// // //
 
 #ifdef EXPORT_TEST
 class CExportTest;
@@ -226,6 +227,7 @@ public:
 
 	bool HasDocument() const { return m_pDocument != NULL; };
 	CFamiTrackerDoc *GetDocument() const { return m_pDocument; };
+	CFTMComponentInterface *GetDocumentInterface() const;
 
 	// Sequence play position
 	void SetSequencePlayPos(const CSequence *pSequence, int Pos);

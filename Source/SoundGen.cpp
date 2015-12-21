@@ -34,6 +34,7 @@
 #include <cmath>
 #include <afxmt.h>
 #include "FamiTracker.h"
+#include "FTMComponentInterface.h"		// // //
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
 #include "VisualizerWnd.h"
@@ -2781,6 +2782,11 @@ void CSoundGen::CompareRegisters()
 }
 
 #endif /* EXPORT_TEST */
+
+CFTMComponentInterface *CSoundGen::GetDocumentInterface() const
+{
+	return static_cast<CFTMComponentInterface*>(m_pDocument);
+}
 
 void CSoundGen::SetSequencePlayPos(const CSequence *pSequence, int Pos)
 {
