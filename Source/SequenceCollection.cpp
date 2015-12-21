@@ -53,11 +53,18 @@ const CSequence *CSequenceCollection::GetSequence(unsigned int Index) const
 
 unsigned int CSequenceCollection::GetFirstFree() const
 {
-	for (int i = 0; i < MAX_SEQUENCES; ++i)
+	for (int i = 0; i < MAX_SEQUENCES; i++)
 		if (m_pSequence[i] == nullptr || !m_pSequence[i]->GetItemCount())
 			return i;
 	return -1;
 }
+
+void CSequenceCollection::RemoveAll()
+{
+	for (int i = 0; i < MAX_SEQUENCES; i++)
+		SAFE_RELEASE(m_pSequence[i]);
+}
+
 /*
 unsigned int CSequenceCollection::GetFirstUnused(CFamiTrackerDocInterface *pDoc) const
 {

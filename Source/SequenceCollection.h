@@ -59,7 +59,9 @@ public:
 		sequence instrument, or -1 if all of the sequences are used.
 	*/
 	// unsigned int GetFirstUnused(CFamiTrackerDocInterface *pDoc) const;
-
+	
+	/*! \brief Removes all sequence objects contained in the collection. */
+	void RemoveAll();
 	/*! \brief The maximum number of sequences a collection can contain.
 		\todo Replace MAX_SEQUENCES defined in FamiTrackerTypes.h with this
 	*/

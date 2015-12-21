@@ -32,6 +32,11 @@ CSequenceManager::CSequenceManager(int Count) :
 
 CSequenceManager::~CSequenceManager()
 {
+	for (int i = 0; i < m_iCount; i++) {
+		if (m_pCollection[i] != nullptr)
+			m_pCollection[i]->RemoveAll();
+		SAFE_RELEASE(m_pCollection[i]);
+	}
 	SAFE_RELEASE_ARRAY(m_pCollection);
 }
 

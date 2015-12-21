@@ -272,6 +272,8 @@ CFamiTrackerDoc::~CFamiTrackerDoc()
 	for (int i = 0; i < MAX_TRACKS; ++i)
 		ClearBookmarkList(i);
 
+	for (int i = 0; i < SEQ_MANAGER_COUNT; ++i)
+		SAFE_RELEASE(m_pSequenceManager[i]);
 	SAFE_RELEASE_ARRAY(m_pSequenceManager);		// // //
 }
 
