@@ -21,8 +21,8 @@
 */
 
 #include "stdafx.h"
-#include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
+#include "APU/Types.h"
+#include "Instrument.h"
 #include "TrackerChannel.h"
 #include "ChannelMap.h"
 

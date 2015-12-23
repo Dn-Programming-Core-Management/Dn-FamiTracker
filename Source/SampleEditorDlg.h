@@ -22,6 +22,8 @@
 
 // CSampleEditorDlg dialog
 
+class CSoundGen;
+
 class CSampleEditorDlg : public CDialog
 {
 	DECLARE_DYNAMIC(CSampleEditorDlg)

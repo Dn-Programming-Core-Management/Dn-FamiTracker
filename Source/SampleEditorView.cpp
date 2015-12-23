@@ -20,8 +20,8 @@
 
 #include <cmath>
 #include "stdafx.h"
-#include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
+#include "resource.h"
+#include "DSample.h"
 #include "SampleEditorView.h"
 #include "SampleEditorDlg.h"
 
@@ -382,8 +382,10 @@ void CSampleEditorView::UpdateInfo()
 	if (!m_iSize)
 		return;
 
-	CString Text;
-	AfxFormatString2(Text, IDS_DPCM_EDIT_INFO_FORMAT, MakeIntString(m_pSamples[m_iSize - 1]), MakeIntString(m_iSize / 8));
+	CString Text, num1, num2;		// // //
+	num1.Format(_T("%i"), m_pSamples[m_iSize - 1]);
+	num2.Format(_T("%i"), m_iSize / 8);
+	AfxFormatString2(Text, IDS_DPCM_EDIT_INFO_FORMAT, num1, num2);
 	GetParent()->SetDlgItemText(IDC_INFO, Text);
 }
 
