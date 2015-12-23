@@ -108,13 +108,8 @@ searchTerm::searchTerm() :
 	Oct  = new CharRange();
 	Inst = new CharRange();
 	Vol  = new CharRange();
-	for (size_t i = 0; i < EF_COUNT; i++)
-		EffNumber[i] = false;
 	EffParam = new CharRange();
-	for (int i = 0; i < 6; i++)
-		Definite[i] = false;
-	Inst->Set(MAX_INSTRUMENTS);
-	Vol->Set(MAX_VOLUME);
+	Reset();
 }
 
 void searchTerm::Release()
@@ -124,6 +119,16 @@ void searchTerm::Release()
 	SAFE_RELEASE(Inst);
 	SAFE_RELEASE(Vol);
 	SAFE_RELEASE(EffParam);
+}
+
+void searchTerm::Reset()
+{
+	Inst->Set(MAX_INSTRUMENTS);
+	Vol->Set(MAX_VOLUME);
+	for (size_t i = 0; i < sizeof(Definite) / sizeof(bool); i++)
+		Definite[i] = false;
+	for (size_t i = 0; i < EF_COUNT; i++)
+		EffNumber[i] = false;
 }
 
 BOOL CFindDlg::OnInitDialog()
@@ -409,10 +414,7 @@ bool CFindDlg::GetSimpleFindTerm()
 {
 	CString str = _T(""), err = _T("");
 	searchTerm old = m_searchTerm;
-	m_searchTerm.Inst->Set(MAX_INSTRUMENTS);
-	m_searchTerm.Vol->Set(MAX_VOLUME);
-	for (int i = 0; i <= 6; i++)
-		m_searchTerm.Definite[i] = false;
+	m_searchTerm.Reset();
 
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_NOTE)) {
 		m_cFindNoteField->GetWindowText(str);
@@ -460,10 +462,7 @@ bool CFindDlg::GetSimpleReplaceTerm()
 {
 	CString str = _T(""), err = _T("");
 	searchTerm old = m_replaceTerm;
-	m_replaceTerm.Inst->Set(MAX_INSTRUMENTS);
-	m_replaceTerm.Vol->Set(MAX_VOLUME);
-	for (int i = 0; i <= 6; i++)
-		m_replaceTerm.Definite[i] = false;
+	m_replaceTerm.Reset();
 
 	if (IsDlgButtonChecked(IDC_CHECK_REPLACE_NOTE)) {
 		m_cReplaceNoteField->GetWindowText(str);

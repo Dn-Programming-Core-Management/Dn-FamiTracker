@@ -42,6 +42,7 @@ public:
 	searchTerm();
 
 	void Release();
+	void Reset();
 
 	CharRange *Note;
 	CharRange *Oct;
