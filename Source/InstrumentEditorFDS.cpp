@@ -31,6 +31,8 @@
 #include "MainFrm.h"
 #include "SoundGen.h"
 #include "Clipboard.h"
+#include "WaveEditor.h"		// // //
+#include "ModSequenceEditor.h"
 
 // CInstrumentEditorFDS dialog
 
@@ -57,13 +59,13 @@ void CInstrumentEditorFDS::DoDataExchange(CDataExchange* pDX)
 	CInstrumentEditPanel::DoDataExchange(pDX);
 }
 
-void CInstrumentEditorFDS::SelectInstrument(int Instrument)
+void CInstrumentEditorFDS::SelectInstrument(CInstrument *pInst)
 {
-	if (m_pInstrument)
+	if (m_pInstrument != nullptr)
 		m_pInstrument->Release();
-
-	m_pInstrument = static_cast<CInstrumentFDS*>(GetDocument()->GetInstrument(Instrument));
-	ASSERT(m_pInstrument->GetType() == INST_FDS);
+	m_pInstrument = dynamic_cast<CInstrumentFDS*>(pInst);
+	ASSERT(pInst != nullptr);
+	m_pInstrument->Retain();
 	
 	if (m_pWaveEditor)
 		m_pWaveEditor->SetInstrument(m_pInstrument);

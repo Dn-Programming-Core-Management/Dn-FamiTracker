@@ -402,8 +402,14 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 
 	pSequence->SetItemCount(AddedItems);
 	delete[] str2;
+	
+	// Update editor
+	if (m_pSequenceEditor != nullptr)
+		m_pSequenceEditor->RedrawWindow();
 
-
+	// Register a document change
+	GetDocument()->SetModifiedFlag();
+	GetDocument()->SetExceededFlag();		// // //
 }
 
 void CSequenceInstrumentEditPanel::OnRClickInstSettings(NMHDR* pNMHDR, LRESULT* pResult)

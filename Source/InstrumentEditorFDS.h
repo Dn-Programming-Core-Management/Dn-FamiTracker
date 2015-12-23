@@ -20,8 +20,8 @@
 
 #pragma once
 
-#include "WaveEditor.h"
-#include "ModSequenceEditor.h"
+class CWaveEditorFDS;
+class CModSequenceEditor;
 
 // CInstrumentEditorFDS dialog
 
@@ -36,7 +36,7 @@ public:
 	virtual TCHAR *GetTitle() const { return _T("Nintendo FDS"); };
 
 	// Public
-	virtual void SelectInstrument(int Instrument);
+	virtual void SelectInstrument(CInstrument *pInst);
 
 	// Dialog Data
 	enum { IDD = IDD_INSTRUMENT_FDS };

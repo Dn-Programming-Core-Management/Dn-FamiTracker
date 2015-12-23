@@ -42,7 +42,7 @@ public:
 	virtual TCHAR *GetTitle() const = 0;
 
 	// Select instrument for the editing
-	virtual void SelectInstrument(int Instrument) = 0;
+	virtual void SelectInstrument(CInstrument *pInst) = 0;		// // //
 
 protected:
 	CFamiTrackerDoc *GetDocument() const;

@@ -25,7 +25,7 @@
 #include <sstream>
 #include "stdafx.h"
 #include "resource.h"		// // //
-#include "FamiTrackerDoc.h"
+#include "Instrument.h"
 #include "InstrumentEditPanel.h"
 #include "InstrumentEditorVRC7.h"
 #include "Clipboard.h"
@@ -174,15 +174,15 @@ void CInstrumentEditorVRC7::EnableControls(bool bEnable)
 		GetDlgItem(SLIDER_IDS[i])->EnableWindow(bEnable ? TRUE : FALSE);
 }
 
-void CInstrumentEditorVRC7::SelectInstrument(int Instrument)
+void CInstrumentEditorVRC7::SelectInstrument(CInstrument *pInst)
 {
 	CComboBox *pPatchBox = static_cast<CComboBox*>(GetDlgItem(IDC_PATCH));
 
 	if (m_pInstrument)
 		m_pInstrument->Release();
-
-	m_pInstrument = static_cast<CInstrumentVRC7*>(GetDocument()->GetInstrument(Instrument));
-	ASSERT(m_pInstrument->GetType() == INST_VRC7);
+	m_pInstrument = dynamic_cast<CInstrumentVRC7*>(pInst);
+	ASSERT(m_pInstrument != nullptr);
+	m_pInstrument->Retain();
 
 	int Patch = m_pInstrument->GetPatch();
 

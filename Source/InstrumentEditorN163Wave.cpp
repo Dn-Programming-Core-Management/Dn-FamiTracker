@@ -64,13 +64,13 @@ void CInstrumentEditorN163Wave::DoDataExchange(CDataExchange* pDX)
 	CInstrumentEditPanel::DoDataExchange(pDX);
 }
 
-void CInstrumentEditorN163Wave::SelectInstrument(int Instrument)
+void CInstrumentEditorN163Wave::SelectInstrument(CInstrument *pInst)
 {
 	if (m_pInstrument)
 		m_pInstrument->Release();
-
-	m_pInstrument = static_cast<CInstrumentN163*>(GetDocument()->GetInstrument(Instrument));
-	ASSERT(m_pInstrument->GetType() == INST_N163);
+	m_pInstrument = dynamic_cast<CInstrumentN163*>(pInst);
+	ASSERT(m_pInstrument != nullptr);
+	m_pInstrument->Retain();
 
 	CComboBox *pSizeBox = static_cast<CComboBox*>(GetDlgItem(IDC_WAVE_SIZE));
 	CComboBox *pPosBox = static_cast<CComboBox*>(GetDlgItem(IDC_WAVE_POS));

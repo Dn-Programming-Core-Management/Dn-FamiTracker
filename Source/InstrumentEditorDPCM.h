@@ -37,8 +37,7 @@ public:
 // Dialog Data
 	enum { IDD = IDD_INSTRUMENT_DPCM };
 
-	// Overloaded
-	void SelectInstrument(int Instrument);
+	virtual void SelectInstrument(CInstrument *pInst);
 
 protected:
 	static const char *KEY_NAMES[];

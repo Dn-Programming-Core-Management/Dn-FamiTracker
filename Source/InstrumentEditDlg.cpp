@@ -205,7 +205,7 @@ void CInstrumentEditDlg::SetCurrentInstrument(int Index)
 
 	for (int i = 0; i < PANEL_COUNT; ++i) {
 		if (m_pPanels[i] != NULL) {
-			m_pPanels[i]->SelectInstrument(Index);
+			m_pPanels[i]->SelectInstrument(pInstrument);
 		}
 	}
 

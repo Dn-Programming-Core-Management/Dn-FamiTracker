@@ -33,7 +33,7 @@ public:
 	virtual TCHAR *GetTitle() const { return _T("Envelopes"); };
 
 	// Public
-	virtual void SelectInstrument(int Instrument);
+	virtual void SelectInstrument(CInstrument *pInst);
 	virtual void SetSequenceString(CString Sequence, bool Changed);
 
 // Dialog Data

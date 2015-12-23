@@ -20,9 +20,11 @@
 ** must bear this legend.
 */
 
+#include <string>
 #include "stdafx.h"
 #include "resource.h"		// // //
-#include "FamiTrackerDoc.h"
+#include "Instrument.h"
+#include "Sequence.h"
 #include "InstrumentEditPanel.h"
 #include "SequenceEditor.h"
 #include "InstrumentEditorFDSEnvelope.h"
@@ -47,21 +49,16 @@ void CInstrumentEditorFDSEnvelope::DoDataExchange(CDataExchange* pDX)
 	CInstrumentEditPanel::DoDataExchange(pDX);
 }
 
-void CInstrumentEditorFDSEnvelope::SelectInstrument(int Instrument)
+void CInstrumentEditorFDSEnvelope::SelectInstrument(CInstrument *pInst)
 {
-	m_pInstrument = static_cast<CInstrumentFDS*>(GetDocument()->GetInstrument(Instrument));
-	ASSERT(m_pInstrument->GetType() == INST_FDS);
-	CInstrumentFDS *pInstrument = static_cast<CInstrumentFDS*>(GetDocument()->GetInstrument(Instrument));
-	ASSERT(pInstrument->GetType() == INST_FDS);
-	
 	if (m_pInstrument != nullptr)
 		m_pInstrument->Release();
-	m_pInstrument = nullptr;
-
-	m_pInstrument = pInstrument;
+	m_pInstrument = dynamic_cast<CInstrumentFDS*>(pInst);
+	ASSERT(pInst != nullptr);
+	m_pInstrument->Retain();
 	
 	LoadSequence();
-
+	
 	SetFocus();
 }
 
@@ -137,11 +134,4 @@ void CInstrumentEditorFDSEnvelope::OnKeyReturn()
 			TranslateMML(string, m_pInstrument->GetPitchSeq(), 126, -127);
 			break;
 	}
-
-	// Update editor
-	m_pSequenceEditor->RedrawWindow();
-
-	// Register a document change
-	GetDocument()->SetModifiedFlag();
-	GetDocument()->SetExceededFlag();		// // //
 }

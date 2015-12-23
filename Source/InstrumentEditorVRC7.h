@@ -30,7 +30,7 @@ public:
 	virtual int GetIDD() const { return IDD; };
 	virtual TCHAR *GetTitle() const { return _T("Konami VRC7"); };
 
-	virtual void SelectInstrument(int Instrument);
+	virtual void SelectInstrument(CInstrument *pInst);
 
 // Dialog Data
 	enum { IDD = IDD_INSTRUMENT_VRC7 };

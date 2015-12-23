@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "resource.h"		// // //
 #include "FamiTrackerDoc.h"
+//#include "Instrument.h"
 #include "InstrumentEditPanel.h"
 #include "SequenceEditor.h"
 #include "InstrumentEditorSeq.h"
@@ -47,30 +48,29 @@ CInstrumentEditorSeq::CInstrumentEditorSeq(CWnd* pParent, TCHAR *Title, LPCTSTR 
 {
 }
 
-void CInstrumentEditorSeq::SelectInstrument(int Instrument)
+void CInstrumentEditorSeq::SelectInstrument(CInstrument *pInst)
 {
-	CSeqInstrument *pInstrument = static_cast<CSeqInstrument*>(GetDocument()->GetInstrument(Instrument));
-	ASSERT(pInstrument->GetType() == m_iInstType);		// // //
-
 	if (m_pInstrument != nullptr)
 		m_pInstrument->Release();
-	m_pInstrument = pInstrument;
+	m_pInstrument = dynamic_cast<CSeqInstrument*>(pInst);
+	ASSERT(m_pInstrument != nullptr && m_pInstrument->GetType() == m_iInstType);		// // //
+	m_pInstrument->Retain();
 
 	// Update instrument setting list
 	if (CListCtrl *pList = static_cast<CListCtrl*>(GetDlgItem(IDC_INSTSETTINGS))) {		// // //
 		CString str;
 		for (int i = 0; i < SEQ_COUNT; ++i) {
-			pList->SetCheck(i, pInstrument->GetSeqEnable(i));
-			str.Format(_T("%i"), pInstrument->GetSeqIndex(i));
+			pList->SetCheck(i, m_pInstrument->GetSeqEnable(i));
+			str.Format(_T("%i"), m_pInstrument->GetSeqIndex(i));
 			pList->SetItemText(i, 1, str);
 		}
 	}
 
 	// Setting text box
-	SetDlgItemInt(IDC_SEQ_INDEX, pInstrument->GetSeqIndex(m_iSelectedSetting));
+	SetDlgItemInt(IDC_SEQ_INDEX, m_pInstrument->GetSeqIndex(m_iSelectedSetting));
 
 	// Select new sequence
-	SelectSequence(pInstrument->GetSeqIndex(m_iSelectedSetting), m_iSelectedSetting);
+	SelectSequence(m_pInstrument->GetSeqIndex(m_iSelectedSetting), m_iSelectedSetting);
 
 	SetFocus();
 }
@@ -85,13 +85,6 @@ void CInstrumentEditorSeq::SelectSequence(int Sequence, int Type)
 void CInstrumentEditorSeq::TranslateMML(CString String, int Max, int Min)
 {
 	CSequenceInstrumentEditPanel::TranslateMML(String, m_pSequence, Max, Min);
-
-	// Update editor
-	m_pSequenceEditor->RedrawWindow();
-
-	// Register a document change
-	GetDocument()->SetModifiedFlag();
-	GetDocument()->SetExceededFlag();		// // //
 
 	// Enable setting
 	static_cast<CListCtrl*>(GetDlgItem(IDC_INSTSETTINGS))->SetCheck(m_iSelectedSetting, 1);

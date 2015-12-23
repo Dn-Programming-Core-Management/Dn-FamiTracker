@@ -35,7 +35,7 @@ public:
 	virtual TCHAR *GetTitle() const { return _T("Wave"); };
 
 	// Public
-	virtual void SelectInstrument(int Instrument);
+	virtual void SelectInstrument(CInstrument *pInst);
 	virtual void SelectWave(int Index);		// // //
 
 // Dialog Data

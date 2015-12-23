@@ -572,13 +572,13 @@ void CInstrumentEditorDPCM::OnBnClickedLoop()
 	UpdateKey(m_iSelectedKey);
 }
 
-void CInstrumentEditorDPCM::SelectInstrument(int Instrument)
-{	
-	if (m_pInstrument)
+void CInstrumentEditorDPCM::SelectInstrument(CInstrument *pInst)
+{
+	if (m_pInstrument != nullptr)
 		m_pInstrument->Release();
-
-	m_pInstrument = static_cast<CInstrument2A03*>(GetDocument()->GetInstrument(Instrument));
-	ASSERT(m_pInstrument->GetType() == INST_2A03);
+	m_pInstrument = dynamic_cast<CInstrument2A03*>(pInst);
+	ASSERT(pInst != nullptr);
+	m_pInstrument->Retain();
 
 	BuildKeyList();
 }
