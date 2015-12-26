@@ -27,6 +27,8 @@
 // Change MAX_LEVELS in the class CActionHandler if you want more undo levels
 //
 
+class CMainFrame;		// // //
+
 // Base class for action commands
 class CAction
 {
@@ -49,10 +51,6 @@ public:
 protected:
 	int m_iAction;
 };
-
-class CPatternEditor;
-class CFrameClipData;
-class CPatternClipData;
 
 // Stores action objects (a dual-stack, kind of)
 class CActionHandler
