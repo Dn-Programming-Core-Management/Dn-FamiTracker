@@ -19,10 +19,6 @@
 */
 
 #include "stdafx.h"
-#include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
-#include "FamiTrackerView.h"
-#include "MainFrm.h"
 #include "CustomControls.h"
 
 /*
@@ -150,7 +146,7 @@ void CLockedEdit::OnSetFocus(CWnd* pOldWnd)
 	CEdit::OnSetFocus(pOldWnd);
 
 	if (!IsEditable())
-		CFamiTrackerView::GetView()->SetFocus();
+		static_cast<CFrameWnd*>(AfxGetMainWnd())->GetActiveView()->SetFocus();		// // //
 }
 
 void CLockedEdit::OnKillFocus(CWnd* pNewWnd)
@@ -169,7 +165,7 @@ BOOL CLockedEdit::PreTranslateMessage(MSG* pMsg)
 {
 	// For some reason OnKeyDown won't work
 	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_RETURN) {
-		CFamiTrackerView::GetView()->SetFocus();
+		static_cast<CFrameWnd*>(AfxGetMainWnd())->GetActiveView()->SetFocus();		// // //
 		return TRUE;
 	}
 
