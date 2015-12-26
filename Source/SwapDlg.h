@@ -31,6 +31,7 @@ class CSwapDlg : public CDialog
 
 public:
 	CSwapDlg(CWnd* pParent = NULL);   // standard constructor
+	void SetTrack(unsigned int Track);
 	virtual ~CSwapDlg();
 
 // Dialog Data
@@ -45,6 +46,7 @@ protected:
 	
 	unsigned int m_iDestChannel1, m_iDestChannel2;
 	unsigned int m_iDestChip1, m_iDestChip2;
+	unsigned int m_iTrack;
 	
 	CEdit *m_cChannelFirst, *m_cChannelSecond;
 	CComboBox *m_cChipFirst, *m_cChipSecond;

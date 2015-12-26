@@ -22,7 +22,6 @@
 
 #include "stdafx.h"
 #include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
 #include "ConfigGeneral.h"
 #include "Settings.h"
 
@@ -126,8 +125,8 @@ BOOL CConfigGeneral::OnApply()
 	
 	if (Trans == FALSE)
 		m_iPageStepSize = 4;
-	else if (m_iPageStepSize > MAX_PATTERN_LENGTH)
-		m_iPageStepSize = MAX_PATTERN_LENGTH;
+	else if (m_iPageStepSize > 256 /*MAX_PATTERN_LENGTH*/)
+		m_iPageStepSize = 256 /*MAX_PATTERN_LENGTH*/;
 
 	theApp.GetSettings()->General.bWrapCursor		= m_bWrapCursor;
 	theApp.GetSettings()->General.bWrapFrames		= m_bWrapFrames;

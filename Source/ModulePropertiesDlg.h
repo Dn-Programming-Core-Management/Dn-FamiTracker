@@ -62,7 +62,7 @@ public:
 	afx_msg void OnEnChangeSongname();
 	afx_msg void OnClickSongList(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnBnClickedSongImport();
-	afx_msg void OnCbnSelchangeExpansion();
+	// afx_msg void OnCbnSelchangeExpansion();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnLvnItemchangedSonglist(NMHDR *pNMHDR, LRESULT *pResult);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);

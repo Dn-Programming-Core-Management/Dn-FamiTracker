@@ -21,7 +21,8 @@
 #include "stdafx.h"
 #include "FamiTracker.h"
 #include "PerformanceDlg.h"
-#include "FamiTrackerDoc.h"
+#include "FamiTrackerTypes.h"
+#include "APU/Types.h"
 #include "SoundGen.h"
 
 

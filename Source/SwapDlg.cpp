@@ -21,9 +21,8 @@
 */
 
 #include "stdafx.h"
-#include "FamiTracker.h"
+#include "resource.h"
 #include "FamiTrackerDoc.h"
-#include "MainFrm.h"
 #include "SwapDlg.h"
 
 // CSwapDlg dialog
@@ -33,6 +32,11 @@ IMPLEMENT_DYNAMIC(CSwapDlg, CDialog)
 CSwapDlg::CSwapDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(IDD_SWAP, pParent)
 {
+}
+
+void CSwapDlg::SetTrack(unsigned int Track)
+{
+	m_iTrack = Track;
 }
 
 CSwapDlg::~CSwapDlg()
@@ -54,7 +58,7 @@ BEGIN_MESSAGE_MAP(CSwapDlg, CDialog)
 	ON_EN_CHANGE(IDC_EDIT_SWAP_CHAN2, OnEnChangeEditSwapChan2)
 	ON_CBN_SELCHANGE(IDC_COMBO_SWAP_CHIP1, OnCbnSelchangeComboSwapChip1)
 	ON_CBN_SELCHANGE(IDC_COMBO_SWAP_CHIP2, OnCbnSelchangeComboSwapChip2)
-	ON_BN_CLICKED(IDOK, &CSwapDlg::OnBnClickedOk)
+	ON_BN_CLICKED(IDOK, OnBnClickedOk)
 END_MESSAGE_MAP()
 
 
@@ -187,7 +191,7 @@ void CSwapDlg::OnBnClickedOk()
 			pDoc->SwapChannels(i, GetFinalChannel(m_iDestChannel1, m_iDestChip1),
 								  GetFinalChannel(m_iDestChannel2, m_iDestChip2));
 	else
-		pDoc->SwapChannels(static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack(),
+		pDoc->SwapChannels(m_iTrack,
 						   GetFinalChannel(m_iDestChannel1, m_iDestChip1),
 						   GetFinalChannel(m_iDestChannel2, m_iDestChip2));
 	pDoc->UpdateAllViews(NULL, UPDATE_PATTERN);

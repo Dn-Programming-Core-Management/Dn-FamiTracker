@@ -3249,6 +3249,7 @@ void CMainFrame::OnEditGoto()
 void CMainFrame::OnEditSwapChannels()
 {
 	CSwapDlg swapDlg;
+	swapDlg.SetTrack(GetSelectedTrack());
 	swapDlg.DoModal();
 }
 

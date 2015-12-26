@@ -21,7 +21,7 @@
 */
 
 #include "stdafx.h"
-#include "FamiTracker.h"
+#include "resource.h"
 #include "FamiTrackerDoc.h"
 #include "ModuleImportDlg.h"
 

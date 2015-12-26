@@ -25,7 +25,6 @@
 #include "FamiTrackerDoc.h"
 #include "MainFrm.h"
 #include "ModulePropertiesDlg.h"
-#include "ChannelMap.h"
 #include "ModuleImportDlg.h"
 #include "SoundGen.h"
 
@@ -61,7 +60,7 @@ BEGIN_MESSAGE_MAP(CModulePropertiesDlg, CDialog)
 	ON_BN_CLICKED(IDC_SONG_DOWN, OnBnClickedSongDown)
 	ON_EN_CHANGE(IDC_SONGNAME, OnEnChangeSongname)
 	ON_BN_CLICKED(IDC_SONG_IMPORT, OnBnClickedSongImport)
-	ON_CBN_SELCHANGE(IDC_EXPANSION, OnCbnSelchangeExpansion)
+	// ON_CBN_SELCHANGE(IDC_EXPANSION, OnCbnSelchangeExpansion)
 	ON_WM_HSCROLL()
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_SONGLIST, OnLvnItemchangedSonglist)
 	ON_BN_CLICKED(IDC_EXPANSION_VRC6, OnBnClickedExpansionVRC6)
@@ -335,7 +334,7 @@ void CModulePropertiesDlg::OnBnClickedSongImport()
 	((CButton*)GetDlgItem(IDC_EXPANSION_S5B))->SetCheck((m_iExpansions & SNDCHIP_S5B) != 0);
 	m_pDocument->UpdateAllViews(NULL, UPDATE_PROPERTIES);
 }
-
+/*
 void CModulePropertiesDlg::OnCbnSelchangeExpansion()
 {
 	CComboBox *pExpansionChipBox = static_cast<CComboBox*>(GetDlgItem(IDC_EXPANSION));
@@ -358,7 +357,7 @@ void CModulePropertiesDlg::OnCbnSelchangeExpansion()
 	}
 	SetDlgItemText(IDC_CHANNELS_NR, channelsStr);
 }
-
+*/
 void CModulePropertiesDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
 	CSliderCtrl *pSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_CHANNELS));
