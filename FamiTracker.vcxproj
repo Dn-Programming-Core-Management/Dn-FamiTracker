@@ -565,6 +565,8 @@
     <ClCompile Include="Source\InstrumentEditorVRC7.cpp" />
     <ClCompile Include="Source\InstrumentEditPanel.cpp" />
     <ClCompile Include="Source\CreateWaveDlg.cpp" />
+    <ClCompile Include="Source\WaveformGenerator.cpp" />
+    <ClCompile Include="Source\WavegenBuiltin.cpp" />
     <ClCompile Include="Source\WavProgressDlg.cpp" />
     <ClCompile Include="Source\CommandLineExport.cpp" />
     <ClCompile Include="Source\Compiler.cpp" />
@@ -797,6 +799,8 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(Filename)%(Extension)" &gt;&gt; "hlp\
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\StretchDlg.h" />
     <ClInclude Include="Source\SwapDlg.h" />
+    <ClInclude Include="Source\WaveformGenerator.h" />
+    <ClInclude Include="Source\WavegenBuiltin.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="Source\ChannelMap.h" />
     <ClInclude Include="Source\Common.h" />

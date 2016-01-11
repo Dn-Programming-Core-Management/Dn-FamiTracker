@@ -34,6 +34,7 @@
 #include "MainFrm.h"
 #include "SoundGen.h"
 #include "Clipboard.h"
+#include "WavegenBuiltin.h" // test
 
 using namespace std;
 
@@ -178,11 +179,16 @@ void CInstrumentEditorN163Wave::OnPresetSine()
 {
 	int size = m_pInstrument->GetWaveSize();
 
+	float *Buffer = new float[size]; // test
+	CWavegenSine *Generator = new CWavegenSine();
+	Generator->CreateWaves(Buffer, size, Generator->GetCount());
 	for (int i = 0; i < size; ++i) {
-		float angle = (float(i) * 3.141592f * 2.0f) / float(size) + 0.049087375f;
-		int sample = int((sinf(angle) + 1.0f) * 7.5f + 0.5f);
-		m_pInstrument->SetSample(m_iWaveIndex, i, sample);
+		int Sample = static_cast<int>(Buffer[i] * 7.5f + 8);
+		Sample = Sample < 0 ? 0 : Sample > 0xF ? 0xF : Sample;
+		m_pInstrument->SetSample(m_iWaveIndex, i, Sample);
 	}
+	SAFE_RELEASE_ARRAY(Buffer);
+	SAFE_RELEASE(Generator);
 
 	m_pWaveEditor->WaveChanged();
 	theApp.GetSoundGenerator()->WaveChanged();
@@ -192,10 +198,16 @@ void CInstrumentEditorN163Wave::OnPresetTriangle()
 {
 	int size = m_pInstrument->GetWaveSize();
 
+	float *Buffer = new float[size]; // test
+	CWavegenTriangle *Generator = new CWavegenTriangle();
+	Generator->CreateWaves(Buffer, size, Generator->GetCount());
 	for (int i = 0; i < size; ++i) {
-		int sample = ((i < (size / 2) ? i : ((size - 1) - i))) * 16 / (size / 2);		// // //
-		m_pInstrument->SetSample(m_iWaveIndex, i, sample);
+		int Sample = static_cast<int>(Buffer[i] * 7.5f + 8);
+		Sample = Sample < 0 ? 0 : Sample > 0xF ? 0xF : Sample;
+		m_pInstrument->SetSample(m_iWaveIndex, i, Sample);
 	}
+	SAFE_RELEASE_ARRAY(Buffer);
+	SAFE_RELEASE(Generator);
 
 	m_pWaveEditor->WaveChanged();
 	theApp.GetSoundGenerator()->WaveChanged();
@@ -205,10 +217,18 @@ void CInstrumentEditorN163Wave::OnPresetPulse50()
 {
 	int size = m_pInstrument->GetWaveSize();
 
+	float *Buffer = new float[size]; // test
+	CWavegenPulse *Generator = new CWavegenPulse();
+	float duty = .5f;
+	Generator->GetParameter(0)->SetValue(&duty);
+	Generator->CreateWaves(Buffer, size, Generator->GetCount());
 	for (int i = 0; i < size; ++i) {
-		int sample = (i < (size / 2) ? 0 : 15);
-		m_pInstrument->SetSample(m_iWaveIndex, i, sample);
+		int Sample = static_cast<int>(Buffer[i] * 7.5f + 8);
+		Sample = Sample < 0 ? 0 : Sample > 0xF ? 0xF : Sample;
+		m_pInstrument->SetSample(m_iWaveIndex, i, Sample);
 	}
+	SAFE_RELEASE_ARRAY(Buffer);
+	SAFE_RELEASE(Generator);
 
 	m_pWaveEditor->WaveChanged();
 	theApp.GetSoundGenerator()->WaveChanged();
@@ -218,10 +238,18 @@ void CInstrumentEditorN163Wave::OnPresetPulse25()
 {
 	int size = m_pInstrument->GetWaveSize();
 
+	float *Buffer = new float[size]; // test
+	CWavegenPulse *Generator = new CWavegenPulse();
+	float duty = .25f;
+	Generator->GetParameter(0)->SetValue(&duty);
+	Generator->CreateWaves(Buffer, size, Generator->GetCount());
 	for (int i = 0; i < size; ++i) {
-		int sample = (i < (size / 4) ? 0 : 15);
-		m_pInstrument->SetSample(m_iWaveIndex, i, sample);
+		int Sample = static_cast<int>(Buffer[i] * 7.5f + 8);
+		Sample = Sample < 0 ? 0 : Sample > 0xF ? 0xF : Sample;
+		m_pInstrument->SetSample(m_iWaveIndex, i, Sample);
 	}
+	SAFE_RELEASE_ARRAY(Buffer);
+	SAFE_RELEASE(Generator);
 
 	m_pWaveEditor->WaveChanged();
 	theApp.GetSoundGenerator()->WaveChanged();
@@ -231,10 +259,16 @@ void CInstrumentEditorN163Wave::OnPresetSawtooth()
 {
 	int size = m_pInstrument->GetWaveSize();
 
+	float *Buffer = new float[size]; // test
+	CWavegenSawtooth *Generator = new CWavegenSawtooth();
+	Generator->CreateWaves(Buffer, size, Generator->GetCount());
 	for (int i = 0; i < size; ++i) {
-		int sample = (i * 16) / size;
-		m_pInstrument->SetSample(m_iWaveIndex, i, sample);
+		int Sample = static_cast<int>(Buffer[i] * 7.5f + 8);
+		Sample = Sample < 0 ? 0 : Sample > 0xF ? 0xF : Sample;
+		m_pInstrument->SetSample(m_iWaveIndex, i, Sample);
 	}
+	SAFE_RELEASE_ARRAY(Buffer);
+	SAFE_RELEASE(Generator);
 
 	m_pWaveEditor->WaveChanged();
 	theApp.GetSoundGenerator()->WaveChanged();
