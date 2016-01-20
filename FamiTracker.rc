@@ -25,15 +25,25 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 
 IDR_MAINFRAME           BITMAP                  "res\\MainToolbar-16.bmp"
+
 IDR_INSTRUMENT_TOOLBAR  BITMAP                  "res\\InstrumentToolbar-16.bmp"
+
 IDB_SAMPLEBG            BITMAP                  "res\\VisualizerBg.bmp"
+
 IDB_KEY_BLACK           BITMAP                  "res\\key_black_unpressed.bmp"
+
 IDB_KEY_BLACK_MARK      BITMAP                  "res\\key_black_pressed.bmp"
+
 IDB_KEY_WHITE           BITMAP                  "res\\key_white_unpressed.bmp"
+
 IDB_KEY_WHITE_MARK      BITMAP                  "res\\key_white_pressed.bmp"
+
 IDB_TOOLBAR_256         BITMAP                  "res\\MainToolbar-256.bmp"
+
 IDB_TOOLBAR_INST_256    BITMAP                  "res\\InstrumentToolbar-256.bmp"
+
 IDB_ABOUT               BITMAP                  "res\\About.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -186,6 +196,8 @@ BEGIN
             MENUITEM "Increase Note",               ID_TRANSPOSE_INCREASENOTE
             MENUITEM "Decrease Octave",             ID_TRANSPOSE_DECREASEOCTAVE
             MENUITEM "Increase Octave",             ID_TRANSPOSE_INCREASEOCTAVE
+            MENUITEM SEPARATOR
+            MENUITEM "Song...",                     ID_TRANSPOSE_CUSTOM
         END
         MENUITEM SEPARATOR
         MENUITEM "S&wap Channels...",           ID_EDIT_SWAPCHANNELS
@@ -917,6 +929,14 @@ BEGIN
         RIGHTMARGIN, 160
         TOPMARGIN, 7
         BOTTOMMARGIN, 98
+    END
+
+    IDD_TRANSPOSE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 210
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 199
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1762,6 +1782,25 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,111,85,50,14
 END
 
+IDD_TRANSPOSE DIALOGEX 0, 0, 217, 206
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Transpose"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Transpose",IDC_STATIC,7,7,203,172
+    LTEXT           "Semitones:",IDC_STATIC,16,20,36,8
+    EDITTEXT        IDC_EDIT_TRSP_SEMITONE,56,18,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_SPIN_TRSP_SEMITONE,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,85,18,11,14
+    CONTROL         "Raise",IDC_RADIO_SEMITONE_INC,"Button",BS_AUTORADIOBUTTON | WS_GROUP,103,20,33,10
+    CONTROL         "Lower",IDC_RADIO_SEMITONE_DEC,"Button",BS_AUTORADIOBUTTON,138,20,32,10
+    CONTROL         "Remap DPCM notes",IDC_CHECK_TRSP_DPCM,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,103,36,79,10
+    LTEXT           "Exclude these instruments:",IDC_STATIC,15,52,88,8
+    LTEXT           "Warning: Resets undo history!",IDC_STATIC,15,164,99,8
+    DEFPUSHBUTTON   "OK",IDOK,106,185,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,160,185,50,14
+    CONTROL         "Transpose all tracks",IDC_CHECK_TRSP_ALL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,36,79,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1771,16 +1810,27 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\Application.ico"
+
 IDI_INST_2A03           ICON                    "res\\Inst_2A03.ico"
+
 IDI_INST_VRC6           ICON                    "res\\Inst_VRC6.ico"
+
 IDI_INST_VRC7           ICON                    "res\\Inst_VRC7.ico"
+
 IDR_FamiTrackerTYPE     ICON                    "res\\Document.ico"
+
 IDI_INST_N163           ICON                    "res\\Inst_N163.ico"
+
 IDI_INST_FDS            ICON                    "res\\Inst_FDS.ico"
+
 IDI_INST_S5B            ICON                    "res\\Inst_S5B.ico"
+
 IDI_INST_2A07           ICON                    "res\\Inst_2A07.ico"
+
 IDI_LEFT                ICON                    "res\\LeftArrow.ico"
+
 IDI_RIGHT               ICON                    "res\\RightArrow.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1952,6 +2002,11 @@ BEGIN
 END
 
 IDD_FIND AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_TRANSPOSE AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -2460,6 +2515,7 @@ BEGIN
     ID_TRACKER_RECORDTOINST "Create a new instrument by logging output from current channel\nRecord to Instrument"
     ID_TRACKER_RECORDERSETTINGS 
                             "Open the instrument recorder settings dialog\nRecorder Settings"
+    ID_TRANSPOSE_CUSTOM     "Transpose song by custom amount\nTranspose Song"
 END
 
 #endif    // English (United States) resources

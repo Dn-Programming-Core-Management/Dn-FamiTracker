@@ -236,6 +236,7 @@
 #define IDD_GOTO                        326
 #define IDD_SWAP                        331
 #define IDD_RECORD_SETTINGS             334
+#define IDD_TRANSPOSE                   337
 #define IDC_INSTRUMENTS                 1001
 #define IDC_INSTSETTINGS                1002
 #define IDC_IMPORT_DETUNE               1002
@@ -455,8 +456,10 @@
 #define IDC_CHECK_BOOKMARK_SORT         1233
 #define IDC_CHECK_SWAP_ALL              1233
 #define IDC_CHECK_RECORDER_RESET        1233
+#define IDC_CHECK_TRSP_DPCM             1233
 #define IDC_CHECK_BOOKMARK_HIGH1        1234
 #define IDC_NTSC                        1234
+#define IDC_CHECK_TRSP_ALL              1234
 #define IDC_CHECK_BOOKMARK_HIGH2        1235
 #define IDC_DUAL                        1236
 #define IDC_VOL_2A03                    1236
@@ -486,6 +489,7 @@
 #define IDC_SPIN_NOTE                   1263
 #define IDC_SPIN_BOOKMARK_FRAME         1263
 #define IDC_SPIN_RECORDER_INTERVAL      1263
+#define IDC_SPIN_TRSP_SEMITONE          1263
 #define IDC_SPIN3                       1264
 #define IDC_SPIN_OFFSET                 1264
 #define IDC_SPIN_BOOKMARK_ROW           1264
@@ -509,6 +513,7 @@
 #define IDC_EDIT_GOTO_FRAME             1270
 #define IDC_EDIT_GROOVE_FIELD           1270
 #define IDC_EDIT_RECORDER_INTERVAL      1270
+#define IDC_EDIT_TRSP_SEMITONE          1270
 #define IDC_HEAD                        1271
 #define IDC_SPIN_BOOKMARK_HIGH2         1271
 #define IDC_EDIT_GOTO_ROW               1271
@@ -645,6 +650,8 @@
 #define IDC_EDIT_SWAP_CHAN2             1431
 #define IDC_EDIT_RECORDER_COUNT         1431
 #define IDC_SPIN_RECORDER_COUNT         1432
+#define IDC_RADIO_SEMITONE_INC          1436
+#define IDC_RADIO_SEMITONE_DEC          1437
 #define ID_TRACKER_PLAY                 32771
 #define ID_TRACKER_PLAYPATTERN          32775
 #define ID_TRACKER_STOP                 32776
@@ -820,6 +827,7 @@
 #define ID_TRACKER_RECORDERSETTINGS     33179
 #define ID_POPUP_RECORDERSETTINGS       33180
 #define ID_POPUP_SPECTRUMANALYZER2      33182
+#define ID_TRANSPOSE_CUSTOM             33183
 #define ID_INSTRUMENT_ADD_2A03          36864
 #define ID_INSTRUMENT_ADD_FDS           36865
 #define ID_INSTRUMENT_ADD_MMC5          36866
@@ -839,9 +847,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        336
-#define _APS_NEXT_CONTROL_VALUE         1433
-#define _APS_NEXT_COMMAND_VALUE         33183
+#define _APS_NEXT_RESOURCE_VALUE        339
+#define _APS_NEXT_COMMAND_VALUE         33184
+#define _APS_NEXT_CONTROL_VALUE         1437
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif

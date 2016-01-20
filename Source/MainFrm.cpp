@@ -57,6 +57,7 @@
 #include "BookmarkDlg.h"	// // //
 #include "SwapDlg.h"		// // //
 #include "SpeedDlg.h"		// // //
+#include "TransposeDlg.h"	// // //
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -334,6 +335,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_EDIT_GOTO, OnEditGoto)
 	ON_COMMAND(ID_EDIT_SWAPCHANNELS, OnEditSwapChannels)
 	ON_COMMAND(ID_EDIT_STRETCHPATTERNS, OnEditStretchpatterns)
+	ON_COMMAND(ID_TRANSPOSE_CUSTOM, OnEditTransposeCustom)
 	ON_COMMAND(ID_CLEANUP_REMOVEUNUSEDDPCMSAMPLES, OnEditRemoveUnusedSamples)
 	ON_COMMAND(ID_CLEANUP_POPULATEUNIQUEPATTERNS, OnEditPopulateUniquePatterns)
 	ON_COMMAND(ID_MODULE_DUPLICATECURRENTPATTERN, OnModuleDuplicateCurrentPattern)
@@ -2865,6 +2867,14 @@ void CMainFrame::OnEditStretchpatterns()		// // //
 		static_cast<CFamiTrackerView*>(GetActiveView())->OnEditStretchPatterns();
 }
 
+void CMainFrame::OnEditTransposeCustom()		// // //
+{
+	CTransposeDlg TrspDlg;
+	TrspDlg.SetTrack(GetSelectedTrack());
+	if (TrspDlg.DoModal() == IDOK)
+		ResetUndo();
+}
+
 void CMainFrame::OnEditClearPatterns()
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
@@ -3250,7 +3260,8 @@ void CMainFrame::OnEditSwapChannels()
 {
 	CSwapDlg swapDlg;
 	swapDlg.SetTrack(GetSelectedTrack());
-	swapDlg.DoModal();
+	if (swapDlg.DoModal() == IDOK)
+		ResetUndo();
 }
 
 // // // Moved from CFamiTrackerView
@@ -3263,7 +3274,7 @@ void CMainFrame::OnTrackerPal()
 	machine_t Machine = PAL;
 	pDoc->SetMachine(Machine);
 	theApp.GetSoundGenerator()->LoadMachineSettings(Machine, pDoc->GetEngineSpeed(), pDoc->GetNamcoChannels());
-	m_wndInstEdit.SetRefreshRate(pDoc->GetFrameRate());		// // //
+	m_wndInstEdit.SetRefreshRate(static_cast<float>(pDoc->GetFrameRate()));		// // //
 }
 
 void CMainFrame::OnTrackerNtsc()
@@ -3274,7 +3285,7 @@ void CMainFrame::OnTrackerNtsc()
 	machine_t Machine = NTSC;
 	pDoc->SetMachine(Machine);
 	theApp.GetSoundGenerator()->LoadMachineSettings(Machine, pDoc->GetEngineSpeed(), pDoc->GetNamcoChannels());
-	m_wndInstEdit.SetRefreshRate(pDoc->GetFrameRate());		// // //
+	m_wndInstEdit.SetRefreshRate(static_cast<float>(pDoc->GetFrameRate()));		// // //
 }
 
 void CMainFrame::OnSpeedDefault()
@@ -3285,7 +3296,7 @@ void CMainFrame::OnSpeedDefault()
 	int Speed = 0;
 	pDoc->SetEngineSpeed(Speed);
 	theApp.GetSoundGenerator()->LoadMachineSettings(pDoc->GetMachine(), Speed, pDoc->GetNamcoChannels());
-	m_wndInstEdit.SetRefreshRate(pDoc->GetFrameRate());		// // //
+	m_wndInstEdit.SetRefreshRate(static_cast<float>(pDoc->GetFrameRate()));		// // //
 }
 
 void CMainFrame::OnSpeedCustom()
@@ -3306,7 +3317,7 @@ void CMainFrame::OnSpeedCustom()
 
 	pDoc->SetEngineSpeed(Speed);
 	theApp.GetSoundGenerator()->LoadMachineSettings(Machine, Speed, pDoc->GetNamcoChannels());
-	m_wndInstEdit.SetRefreshRate(pDoc->GetFrameRate());		// // //
+	m_wndInstEdit.SetRefreshRate(static_cast<float>(pDoc->GetFrameRate()));		// // //
 }
 
 void CMainFrame::OnUpdateTrackerPal(CCmdUI *pCmdUI)

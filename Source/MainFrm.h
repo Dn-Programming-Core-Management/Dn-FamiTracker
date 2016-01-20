@@ -379,6 +379,7 @@ public:
 	afx_msg void OnEditGoto();
 	afx_msg void OnEditSwapChannels();
 	afx_msg void OnEditStretchpatterns();
+	afx_msg void OnEditTransposeCustom();
 	afx_msg void OnEditRemoveUnusedSamples();
 	afx_msg void OnEditPopulateUniquePatterns();
 	afx_msg void OnModuleDuplicateCurrentPattern();
