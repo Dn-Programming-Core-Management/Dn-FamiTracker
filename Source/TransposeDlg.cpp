@@ -88,6 +88,8 @@ BEGIN_MESSAGE_MAP(CTransposeDlg, CDialog)
 	ON_BN_CLICKED(IDOK, &CTransposeDlg::OnBnClickedOk)
 	ON_CONTROL_RANGE(BN_CLICKED, BUTTON_ID, BUTTON_ID + MAX_INSTRUMENTS, OnBnClickedInst)
 	ON_BN_CLICKED(IDC_CHECK_TRSP_ALL, OnBnClickedCheckTrspAll)
+	ON_BN_CLICKED(IDC_BUTTON_TRSP_REVERSE, &CTransposeDlg::OnBnClickedButtonTrspReverse)
+	ON_BN_CLICKED(IDC_BUTTON_TRSP_CLEAR, &CTransposeDlg::OnBnClickedButtonTrspClear)
 END_MESSAGE_MAP()
 
 
@@ -161,4 +163,16 @@ void CTransposeDlg::OnBnClickedCheckTrspAll()
 {
 	CButton *pButton = static_cast<CButton*>(GetDlgItem(IDC_CHECK_TRSP_DPCM));
 	pButton->EnableWindow(IsDlgButtonChecked(IDC_CHECK_TRSP_ALL) != 0);
+}
+
+void CTransposeDlg::OnBnClickedButtonTrspReverse()
+{
+	for (int i = 0; i < MAX_INSTRUMENTS; ++i)
+		CheckDlgButton(BUTTON_ID + i, IsDlgButtonChecked(BUTTON_ID + i) == BST_UNCHECKED);
+}
+
+void CTransposeDlg::OnBnClickedButtonTrspClear()
+{
+	for (int i = 0; i < MAX_INSTRUMENTS; ++i)
+		CheckDlgButton(BUTTON_ID + i, BST_UNCHECKED);
 }
