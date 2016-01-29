@@ -215,15 +215,11 @@ CFamiTrackerDoc::CFamiTrackerDoc() :
 	// Clear pointer arrays
 	memset(m_pTracks, 0, sizeof(CPatternData*) * MAX_TRACKS);
 	memset(m_pInstruments, 0, sizeof(CInstrument*) * MAX_INSTRUMENTS);
-	memset(m_pSequences2A03, 0, sizeof(CSequence*) * MAX_SEQUENCES * SEQ_COUNT);
-	memset(m_pSequencesVRC6, 0, sizeof(CSequence*) * MAX_SEQUENCES * SEQ_COUNT);
-	memset(m_pSequencesN163, 0, sizeof(CSequence*) * MAX_SEQUENCES * SEQ_COUNT);
-	memset(m_pSequencesS5B, 0, sizeof(CSequence*) * MAX_SEQUENCES * SEQ_COUNT);
 	memset(m_pGrooveTable, 0, sizeof(CGroove*) * MAX_GROOVE);		// // //
 	memset(m_pBookmarkList, 0, sizeof(std::vector<stBookmark>*) * MAX_TRACKS);		// // //
 	m_pSequenceManager = new CSequenceManager*[SEQ_MANAGER_COUNT]();		// // //
 	for (int i = 0; i < SEQ_MANAGER_COUNT; i++)
-		m_pSequenceManager[i] = new CSequenceManager(i == INST_FDS ? 3 : SEQ_COUNT);
+		m_pSequenceManager[i] = new CSequenceManager(i == 2 ? 3 : SEQ_COUNT);
 
 	// Register this object to the sound generator
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
@@ -251,16 +247,6 @@ CFamiTrackerDoc::~CFamiTrackerDoc()
 		if (m_pInstruments[i] != NULL) {
 			m_pInstruments[i]->Release();
 			m_pInstruments[i] = NULL;
-		}
-	}
-
-	// Sequences
-	for (int i = 0; i < MAX_SEQUENCES; ++i) {
-		for (int j = 0; j < SEQ_COUNT; ++j) {
-			SAFE_RELEASE(m_pSequences2A03[i][j]);
-			SAFE_RELEASE(m_pSequencesVRC6[i][j]);
-			SAFE_RELEASE(m_pSequencesN163[i][j]);
-			SAFE_RELEASE(m_pSequencesS5B[i][j]);
 		}
 	}
 
@@ -433,14 +419,8 @@ void CFamiTrackerDoc::DeleteContents()
 	}
 
 	// Clear sequences
-	for (int i = 0; i < MAX_SEQUENCES; ++i) {
-		for (int j = 0; j < SEQ_COUNT; ++j) {
-			SAFE_RELEASE(m_pSequences2A03[i][j]);
-			SAFE_RELEASE(m_pSequencesVRC6[i][j]);
-			SAFE_RELEASE(m_pSequencesN163[i][j]);
-			SAFE_RELEASE(m_pSequencesS5B[i][j]);
-		}
-	}
+//	for (int i = 0; i < SEQ_MANAGER_COUNT; ++i) {
+//		m_pSequenceManager[i]->ClearAll();
 
 	// // // Grooves
 	for (int i = 0; i < MAX_GROOVE; ++i)
@@ -978,19 +958,22 @@ bool CFamiTrackerDoc::WriteBlock_Sequences(CDocumentFile *pDocFile) const
 
 	if (!Count) return true;		// // //
 	// Sequences, version 6
-	pDocFile->CreateBlock(FILE_BLOCK_SEQUENCES, 6);
-
+	int Version = 6;
+	pDocFile->CreateBlock(FILE_BLOCK_SEQUENCES, Version);
 	pDocFile->WriteBlockInt(Count);
+	
+	CSequenceManager *pManager = GetSequenceManager(INST_2A03);		// // //
 
-	for (int i = 0; i < MAX_SEQUENCES; ++i) {
-		for (int j = 0; j < SEQ_COUNT; ++j) {
-			Count = GetSequenceItemCount(INST_2A03, i, j);
-			if (Count > 0) {
-				const CSequence *pSeq = reinterpret_cast<const CSequence*>(GetSequence(INST_2A03, i, j));
+	for (int i = 0; i < SEQ_COUNT; ++i) {
+		const CSequenceCollection *pCol = pManager->GetCollection(i);
+		for (int j = 0; j < MAX_SEQUENCES; ++j) {
+			const CSequence *pSeq = pCol->GetSequence(j);
+			Count = pSeq->GetItemCount();
+			if (pSeq != nullptr && Count) {
 				// Store index
-				pDocFile->WriteBlockInt(i);
-				// Store type of sequence
 				pDocFile->WriteBlockInt(j);
+				// Store type of sequence
+				pDocFile->WriteBlockInt(i);
 				// Store number of items in this sequence
 				pDocFile->WriteBlockChar(Count);
 				// Store loop point
@@ -1004,11 +987,12 @@ bool CFamiTrackerDoc::WriteBlock_Sequences(CDocumentFile *pDocFile) const
 	}
 
 	// v6
-	for (int i = 0; i < MAX_SEQUENCES; ++i) {
-		for (int j = 0; j < SEQ_COUNT; ++j) {
-			Count = GetSequenceItemCount(INST_2A03, i, j);
-			if (Count > 0) {
-				const CSequence *pSeq = reinterpret_cast<const CSequence*>(GetSequence(INST_2A03, i, j));
+	for (int i = 0; i < SEQ_COUNT; ++i) {
+		const CSequenceCollection *pCol = pManager->GetCollection(i);
+		for (int j = 0; j < MAX_SEQUENCES; ++j) {
+			const CSequence *pSeq = pCol->GetSequence(j);
+			Count = pSeq->GetItemCount();
+			if (pSeq != nullptr && Count) {
 				// Store release point
 				pDocFile->WriteBlockInt(pSeq->GetReleasePoint());
 				// Store setting
@@ -1946,8 +1930,6 @@ bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 	unsigned int Count = pDocFile->GetBlockInt();
 	ASSERT_FILE_DATA(Count < (MAX_SEQUENCES * SEQ_COUNT));
 
-	CSequenceManager *pManager = GetSequenceManager(INST_2A03);		// // //
-
 	if (Version == 1) {
 		m_vTmpSequences.SetSize(MAX_SEQUENCES);
 		for (unsigned int i = 0; i < Count; ++i) {
@@ -1973,10 +1955,8 @@ bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 			ASSERT_FILE_DATA(SeqCount < MAX_SEQUENCE_ITEMS);
 			m_vSequences[Index][Type].Count = SeqCount;
 			for (int j = 0; j < SeqCount; ++j) {
-				char Value = pDocFile->GetBlockChar();
-				char Length = pDocFile->GetBlockChar();
-				m_vSequences[Index][Type].Value[j] = Value;
-				m_vSequences[Index][Type].Length[j] = Length;
+				m_vSequences[Index][Type].Value[j] = pDocFile->GetBlockChar();
+				m_vSequences[Index][Type].Length[j] = pDocFile->GetBlockChar();
 			}
 
 		}
@@ -1984,6 +1964,8 @@ bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 	else if (Version >= 3) {
 		int Indices[MAX_SEQUENCES * SEQ_COUNT];
 		int Types[MAX_SEQUENCES * SEQ_COUNT];
+
+		CSequenceManager *pManager = GetSequenceManager(INST_2A03);		// // //
 
 		for (unsigned int i = 0; i < Count; ++i) {
 			unsigned int Index = pDocFile->GetBlockInt();
@@ -2002,7 +1984,7 @@ bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 			ASSERT_FILE_DATA(Type < SEQ_COUNT);
 //			ASSERT_FILE_DATA(SeqCount <= MAX_SEQUENCE_ITEMS);
 
-			CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);// GetSequence(INST_2A03, Index, Type);
+			CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);
 
 			pSeq->Clear();
 			pSeq->SetItemCount(SeqCount < MAX_SEQUENCE_ITEMS ? SeqCount : MAX_SEQUENCE_ITEMS);
@@ -2028,8 +2010,8 @@ bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 				for (int j = 0; j < SEQ_COUNT; ++j) {
 					ReleasePoint = pDocFile->GetBlockInt();
 					Settings = pDocFile->GetBlockInt();
-					if (GetSequenceItemCount(INST_2A03, i, j) > 0) {
-						CSequence *pSeq = pManager->GetCollection(j)->GetSequence(i);// GetSequence(INST_2A03, i, j);
+					CSequence *pSeq = pManager->GetCollection(j)->GetSequence(i);
+					if (pSeq->GetItemCount() > 0) {
 						pSeq->SetReleasePoint(ReleasePoint);
 						pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
 					}
@@ -2043,7 +2025,7 @@ bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 				Settings = pDocFile->GetBlockInt();
 				unsigned int Index = Indices[i];
 				unsigned int Type = Types[i];
-				CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);// GetSequence(INST_2A03, Index, Type);
+				CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);
 				pSeq->SetReleasePoint(ReleasePoint);
 				pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
 			}
@@ -2061,6 +2043,8 @@ bool CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile)
 	unsigned int Count = pDocFile->GetBlockInt();
 	ASSERT_FILE_DATA(Count < (MAX_SEQUENCES * SEQ_COUNT));
 
+	CSequenceManager *pManager = GetSequenceManager(INST_VRC6);		// // //
+
 	if (Version < 4) {
 		for (unsigned int i = 0; i < Count; ++i) {
 			unsigned int Index	  = pDocFile->GetBlockInt();
@@ -2072,7 +2056,7 @@ bool CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile)
 			ASSERT_FILE_DATA(Index < MAX_SEQUENCES);
 			ASSERT_FILE_DATA(Type < SEQ_COUNT);
 //			ASSERT_FILE_DATA(SeqCount <= MAX_SEQUENCE_ITEMS);
-			CSequence *pSeq = GetSequence(INST_VRC6, Index, Type);
+			CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);
 
 			pSeq->Clear();
 			pSeq->SetItemCount(SeqCount < MAX_SEQUENCE_ITEMS ? SeqCount : MAX_SEQUENCE_ITEMS);
@@ -2105,7 +2089,7 @@ bool CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile)
 			ASSERT_FILE_DATA(Type < SEQ_COUNT);
 //			ASSERT_FILE_DATA(SeqCount <= MAX_SEQUENCE_ITEMS);
 
-			CSequence *pSeq = GetSequence(INST_VRC6, Index, Type);
+			CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);
 
 
 			pSeq->Clear();
@@ -2134,7 +2118,7 @@ bool CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile)
 					Settings = pDocFile->GetBlockInt();
 					if (GetSequenceItemCount(INST_VRC6, i, j) > 0) {
 
-						CSequence *pSeq = GetSequence(INST_VRC6, i, j);
+						CSequence *pSeq = pManager->GetCollection(j)->GetSequence(i);
 
 						pSeq->SetReleasePoint(ReleasePoint);
 						pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
@@ -2148,7 +2132,7 @@ bool CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile)
 				Settings = pDocFile->GetBlockInt();
 				unsigned int Index = Indices[i];
 				unsigned int Type = Types[i];
-				CSequence *pSeq = GetSequence(INST_VRC6, Index, Type);
+				CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);
 
 				pSeq->SetReleasePoint(ReleasePoint);
 				pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
@@ -2166,6 +2150,8 @@ bool CFamiTrackerDoc::ReadBlock_SequencesN163(CDocumentFile *pDocFile)
 	unsigned int Count = pDocFile->GetBlockInt();
 	ASSERT_FILE_DATA(Count < (MAX_SEQUENCES * SEQ_COUNT));
 
+	CSequenceManager *pManager = GetSequenceManager(INST_N163);		// // //
+
 	for (unsigned int i = 0; i < Count; i++) {
 		unsigned int  Index		   = pDocFile->GetBlockInt();
 		unsigned int  Type		   = pDocFile->GetBlockInt();
@@ -2177,7 +2163,7 @@ bool CFamiTrackerDoc::ReadBlock_SequencesN163(CDocumentFile *pDocFile)
 		ASSERT_FILE_DATA(Index < MAX_SEQUENCES);
 		ASSERT_FILE_DATA(Type < SEQ_COUNT);
 
-		CSequence *pSeq = GetSequence(INST_N163, Index, Type);
+		CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);
 
 
 		pSeq->Clear();
@@ -2203,6 +2189,8 @@ bool CFamiTrackerDoc::ReadBlock_SequencesS5B(CDocumentFile *pDocFile)
 	unsigned int Count = pDocFile->GetBlockInt();
 	ASSERT_FILE_DATA(Count < (MAX_SEQUENCES * SEQ_COUNT));
 
+	CSequenceManager *pManager = GetSequenceManager(INST_S5B);		// // //
+
 	for (unsigned int i = 0; i < Count; i++) {
 		unsigned int  Index		   = pDocFile->GetBlockInt();
 		unsigned int  Type		   = pDocFile->GetBlockInt();
@@ -2214,7 +2202,7 @@ bool CFamiTrackerDoc::ReadBlock_SequencesS5B(CDocumentFile *pDocFile)
 		ASSERT_FILE_DATA(Index < MAX_SEQUENCES);
 		ASSERT_FILE_DATA(Type < SEQ_COUNT);
 
-		CSequence *pSeq = GetSequence(INST_S5B, Index, Type);
+		CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);
 
 
 		pSeq->Clear();
@@ -2989,36 +2977,20 @@ unsigned int CFamiTrackerDoc::GetTotalSampleSize() const
 
 CSequence *CFamiTrackerDoc::GetSequence(inst_type_t InstType, unsigned int Index, int Type)		// // //
 {
-	ASSERT(Index < MAX_SEQUENCES);
-	ASSERT(Type >= 0 && Type < SEQ_COUNT);
-
-	CSequence *(*arr)[SEQ_COUNT] = NULL;		// // //
-	switch (InstType) {
-	case INST_2A03: arr = m_pSequences2A03; break;
-	case INST_VRC6: arr = m_pSequencesVRC6; break;
-	case INST_N163: arr = m_pSequencesN163; break;
-	case INST_S5B: arr = m_pSequencesS5B; break;
+	switch (InstType) {		// // //
+	case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B:
+		return GetSequenceManager(InstType)->GetCollection(Type)->GetSequence(Index);
 	}
-	if (arr == NULL) return NULL;
-	if (arr[Index][Type] == NULL)
-		arr[Index][Type] = new CSequence();
-	return arr[Index][Type];
+	return nullptr;
 }
 
 CSequence *CFamiTrackerDoc::GetSequence(inst_type_t InstType, unsigned int Index, int Type) const		// // //
 {
-	ASSERT(Index < MAX_SEQUENCES);
-	ASSERT(Type >= 0 && Type < SEQ_COUNT);
-	
-	CSequence *const (*arr)[SEQ_COUNT] = NULL;		// // //
-	switch (InstType) {
-	case INST_2A03: arr = m_pSequences2A03; break;
-	case INST_VRC6: arr = m_pSequencesVRC6; break;
-	case INST_N163: arr = m_pSequencesN163; break;
-	case INST_S5B: arr = m_pSequencesS5B; break;
+	switch (InstType) {		// // //
+	case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B:
+		return GetSequenceManager(InstType)->GetCollection(Type)->GetSequence(Index);
 	}
-	if (arr == NULL) return NULL;
-	return arr[Index][Type];
+	return nullptr;
 }
 
 unsigned int CFamiTrackerDoc::GetSequenceItemCount(inst_type_t InstType, unsigned int Index, int Type) const		// // //

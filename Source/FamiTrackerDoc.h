@@ -512,10 +512,6 @@ private:
 	CInstrument		*m_pInstruments[MAX_INSTRUMENTS];
 	CDSample		m_DSamples[MAX_DSAMPLES];					// The DPCM sample list
 	CSequenceManager **m_pSequenceManager;						// // //
-	CSequence		*m_pSequences2A03[MAX_SEQUENCES][SEQ_COUNT];
-	CSequence		*m_pSequencesVRC6[MAX_SEQUENCES][SEQ_COUNT];
-	CSequence		*m_pSequencesN163[MAX_SEQUENCES][SEQ_COUNT];
-	CSequence		*m_pSequencesS5B[MAX_SEQUENCES][SEQ_COUNT];
 	CGroove			*m_pGrooveTable[MAX_GROOVE];				// // // Grooves
 
 	// Module properties
