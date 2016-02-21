@@ -216,7 +216,6 @@ CFamiTrackerDoc::CFamiTrackerDoc() :
 
 	// Clear pointer arrays
 	memset(m_pTracks, 0, sizeof(CPatternData*) * MAX_TRACKS);
-	memset(m_pInstruments, 0, sizeof(CInstrument*) * MAX_INSTRUMENTS);
 	memset(m_pGrooveTable, 0, sizeof(CGroove*) * MAX_GROOVE);		// // //
 	memset(m_pBookmarkList, 0, sizeof(std::vector<stBookmark>*) * MAX_TRACKS);		// // //
 	m_pSequenceManager = new CSequenceManager*[SEQ_MANAGER_COUNT]();		// // //
@@ -602,37 +601,34 @@ void CFamiTrackerDoc::ReorderSequences()
 
 	// Organize sequences
 	for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
-		if (m_pInstruments[i] != NULL) {
-			CInstrument2A03 *pInst = dynamic_cast<CInstrument2A03*>(m_pInstruments[i]);
-			if (pInst != NULL) {
-				for (int j = 0; j < SEQ_COUNT; ++j) {
-					if (pInst->GetSeqEnable(j)) {
-						int Index = pInst->GetSeqIndex(j);
-						if (Indices[Index][j] >= 0 && Indices[Index][j] != -1) {
-							pInst->SetSeqIndex(j, Indices[Index][j]);
-						}
-						else {
-							memcpy(&m_vSequences[Slots[j]][j], &m_vTmpSequences[Index], sizeof(stSequence));
-							for (unsigned int k = 0; k < m_vSequences[Slots[j]][j].Count; ++k) {
-								switch (j) {
-									case SEQ_VOLUME: 
-										m_vSequences[Slots[j]][j].Value[k] = std::max<int>(m_vSequences[Slots[j]][j].Value[k], 0);
-										m_vSequences[Slots[j]][j].Value[k] = std::min<int>(m_vSequences[Slots[j]][j].Value[k], 15);
-										break;
-									case SEQ_DUTYCYCLE: 
-										m_vSequences[Slots[j]][j].Value[k] = std::max<int>(m_vSequences[Slots[j]][j].Value[k], 0);
-										m_vSequences[Slots[j]][j].Value[k] = std::min<int>(m_vSequences[Slots[j]][j].Value[k], 3);
-										break;
-								}
-							}
-							Indices[Index][j] = Slots[j];
-							pInst->SetSeqIndex(j, Slots[j]);
-							Slots[j]++;
-						}
+		if (auto pInst = std::dynamic_pointer_cast<CInstrument2A03>(m_pInstrumentManager->GetInstrument(i))) {		// // //
+			for (int j = 0; j < SEQ_COUNT; ++j) {
+				if (pInst->GetSeqEnable(j)) {
+					int Index = pInst->GetSeqIndex(j);
+					if (Indices[Index][j] >= 0 && Indices[Index][j] != -1) {
+						pInst->SetSeqIndex(j, Indices[Index][j]);
 					}
-					else
-						pInst->SetSeqIndex(j, 0);
+					else {
+						memcpy(&m_vSequences[Slots[j]][j], &m_vTmpSequences[Index], sizeof(stSequence));
+						for (unsigned int k = 0; k < m_vSequences[Slots[j]][j].Count; ++k) {
+							switch (j) {
+								case SEQ_VOLUME: 
+									m_vSequences[Slots[j]][j].Value[k] = std::max<int>(m_vSequences[Slots[j]][j].Value[k], 0);
+									m_vSequences[Slots[j]][j].Value[k] = std::min<int>(m_vSequences[Slots[j]][j].Value[k], 15);
+									break;
+								case SEQ_DUTYCYCLE: 
+									m_vSequences[Slots[j]][j].Value[k] = std::max<int>(m_vSequences[Slots[j]][j].Value[k], 0);
+									m_vSequences[Slots[j]][j].Value[k] = std::min<int>(m_vSequences[Slots[j]][j].Value[k], 3);
+									break;
+							}
+						}
+						Indices[Index][j] = Slots[j];
+						pInst->SetSeqIndex(j, Slots[j]);
+						Slots[j]++;
+					}
 				}
+				else
+					pInst->SetSeqIndex(j, 0);
 			}
 		}
 	}
@@ -888,10 +884,8 @@ bool CFamiTrackerDoc::WriteBlock_Instruments(CDocumentFile *pDocFile) const
 		Version = 4;
 
 	for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
-		if (m_pInstruments[i] != NULL) {
-			if (m_pInstruments[i]->GetType() == INST_FDS)
-				Version = 4;
-		}
+		if (m_pInstrumentManager->GetInstrument(i)->GetType() == INST_FDS)
+			Version = 4;
 	}
 */
 	char Name[CInstrument::INST_NAME_MAX];
@@ -1877,7 +1871,7 @@ bool CFamiTrackerDoc::ReadBlock_Instruments(CDocumentFile *pDocFile)
 
 		// Read instrument type and create an instrument
 		inst_type_t Type = (inst_type_t)pDocFile->GetBlockChar();
-		auto pInstrument = CreateInstrument(Type);
+		auto pInstrument = CInstrumentManager::CreateNew(Type);
 		ASSERT_FILE_DATA(pInstrument);
 
 		// Load the instrument
@@ -3103,31 +3097,25 @@ std::shared_ptr<CInstrument> CFamiTrackerDoc::CreateInstrument(inst_type_t InstT
 	return CInstrumentManager::CreateNew(InstType);
 }
 
-int CFamiTrackerDoc::FindFreeInstrumentSlot() const
-{
-	return m_pInstrumentManager->GetFirstUnused();
-}
-
 int CFamiTrackerDoc::AddInstrument(CInstrument *pInstrument)
 {
 	const int Slot = m_pInstrumentManager->GetFirstUnused();
 
 	if (Slot == INVALID_INSTRUMENT)
 		return INVALID_INSTRUMENT;
-
-	m_pInstrumentManager->InsertInstrument(Slot, pInstrument);
-
-	SetModifiedFlag();
-	SetExceededFlag();		// // //
-
+	if (m_pInstrumentManager->InsertInstrument(Slot, pInstrument)) {
+		SetModifiedFlag();
+		SetExceededFlag();		// // //
+	}
 	return Slot;
 }
 
 void CFamiTrackerDoc::AddInstrument(CInstrument *pInstrument, unsigned int Slot)
 {
-	m_pInstrumentManager->InsertInstrument(Slot, pInstrument);
-	SetModifiedFlag();
-	SetExceededFlag();		// // //
+	if (m_pInstrumentManager->InsertInstrument(Slot, pInstrument)) {
+		SetModifiedFlag();
+		SetExceededFlag();		// // //
+	}
 }
 
 int CFamiTrackerDoc::AddInstrument(const char *pName, int ChipType)
@@ -3147,8 +3135,7 @@ int CFamiTrackerDoc::AddInstrument(const char *pName, int ChipType)
 
 void CFamiTrackerDoc::RemoveInstrument(unsigned int Index)
 {
-	if (m_pInstrumentManager->IsInstrumentUsed(Index)) {
-		m_pInstrumentManager->RemoveInstrument(Index);
+	if (m_pInstrumentManager->RemoveInstrument(Index)) {
 		SetModifiedFlag();
 		SetExceededFlag();		// // //
 	}
@@ -3161,7 +3148,7 @@ int CFamiTrackerDoc::CloneInstrument(unsigned int Index)
 	if (!IsInstrumentUsed(Index))
 		return INVALID_INSTRUMENT;
 
-	int Slot = FindFreeInstrumentSlot();
+	const int Slot = m_pInstrumentManager->GetFirstUnused();
 
 	if (Slot != INVALID_INSTRUMENT) {
 		m_pInstrumentManager->InsertInstrument(Slot, m_pInstrumentManager->GetInstrument(Index)->Clone());
@@ -3212,6 +3199,8 @@ int CFamiTrackerDoc::DeepCloneInstrument(unsigned int Index)
 				}
 			}
 		}
+		SetModifiedFlag();
+		SetExceededFlag();		// // //
 	}
 
 	return Slot;
@@ -3256,7 +3245,7 @@ int CFamiTrackerDoc::LoadInstrument(CString FileName)
 	// Loads an instrument from file, return allocated slot or INVALID_INSTRUMENT if failed
 	//
 
-	int Slot = FindFreeInstrumentSlot();
+	int Slot = m_pInstrumentManager->GetFirstUnused();
 
 	if (Slot == INVALID_INSTRUMENT) {
 		AfxMessageBox(IDS_INST_LIMIT, MB_ICONERROR);
@@ -3307,7 +3296,7 @@ int CFamiTrackerDoc::LoadInstrument(CString FileName)
 	if (InstType == INST_NONE)
 		InstType = INST_2A03;
 
-	auto pInstrument = CreateInstrument(InstType);
+	auto pInstrument = CInstrumentManager::CreateNew(InstType);
 
 	// Name
 	unsigned int NameLen = file.ReadInt();

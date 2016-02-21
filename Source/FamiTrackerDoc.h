@@ -325,7 +325,6 @@ public:
 	void			GetInstrumentName(unsigned int Index, char *pName) const;		// Get the name of an instrument
 	int				CloneInstrument(unsigned int Index);							// Create a copy of an instrument
 	std::shared_ptr<CInstrument>	CreateInstrument(inst_type_t InstType) const;	// Creates a new instrument of InstType
-	int				FindFreeInstrumentSlot() const;
 	inst_type_t		GetInstrumentType(unsigned int Index) const;
 	int				DeepCloneInstrument(unsigned int Index);
 	void			SaveInstrument(unsigned int Index, CString FileName) const;
@@ -510,7 +509,6 @@ private:
 	unsigned int	m_iChannelsAvailable;						// Number of channels added
 
 	// Instruments, samples and sequences
-	CInstrument		*m_pInstruments[MAX_INSTRUMENTS];
 	CDSample		m_DSamples[MAX_DSAMPLES];					// The DPCM sample list
 	CInstrumentManager *m_pInstrumentManager;					// // //
 	CSequenceManager **m_pSequenceManager;						// // //
