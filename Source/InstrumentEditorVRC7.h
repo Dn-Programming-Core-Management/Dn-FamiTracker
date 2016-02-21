@@ -30,7 +30,7 @@ public:
 	virtual int GetIDD() const { return IDD; };
 	virtual TCHAR *GetTitle() const { return _T("Konami VRC7"); };
 
-	virtual void SelectInstrument(CInstrument *pInst);
+	virtual void SelectInstrument(std::shared_ptr<CInstrument> pInst);
 
 // Dialog Data
 	enum { IDD = IDD_INSTRUMENT_VRC7 };
@@ -51,7 +51,7 @@ protected:
 	void CopyAsPlainText();		// // //
 
 protected:
-	CInstrumentVRC7 *m_pInstrument;
+	std::shared_ptr<CInstrumentVRC7> m_pInstrument;
 
 	DECLARE_MESSAGE_MAP()
 public:

@@ -20,6 +20,7 @@
 ** must bear this legend.
 */
 
+#include <memory>
 #include <string>
 #include "stdafx.h"
 #include "resource.h"		// // //
@@ -35,7 +36,6 @@ IMPLEMENT_DYNAMIC(CInstrumentEditorFDSEnvelope, CSequenceInstrumentEditPanel)
 
 CInstrumentEditorFDSEnvelope::CInstrumentEditorFDSEnvelope(CWnd* pParent) :
 	CSequenceInstrumentEditPanel(CInstrumentEditorFDSEnvelope::IDD, pParent),
-	m_pInstrument(NULL),
 	m_iSelectedType(0)
 {
 }
@@ -49,13 +49,10 @@ void CInstrumentEditorFDSEnvelope::DoDataExchange(CDataExchange* pDX)
 	CInstrumentEditPanel::DoDataExchange(pDX);
 }
 
-void CInstrumentEditorFDSEnvelope::SelectInstrument(CInstrument *pInst)
+void CInstrumentEditorFDSEnvelope::SelectInstrument(std::shared_ptr<CInstrument> pInst)
 {
-	if (m_pInstrument != nullptr)
-		m_pInstrument->Release();
-	m_pInstrument = dynamic_cast<CInstrumentFDS*>(pInst);
-	ASSERT(pInst != nullptr);
-	m_pInstrument->Retain();
+	m_pInstrument = std::dynamic_pointer_cast<CInstrumentFDS>(pInst);
+	ASSERT(m_pInstrument);
 	
 	LoadSequence();
 	

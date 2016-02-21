@@ -20,6 +20,7 @@
 ** must bear this legend.
 */
 
+#include <memory>		// // //
 #include <string>
 #include "stdafx.h"
 #include "Instrument.h"		// // // inst_type_t

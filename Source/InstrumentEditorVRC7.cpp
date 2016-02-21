@@ -20,7 +20,8 @@
 ** must bear this legend.
 */
 
-#include <iterator> 
+#include <memory>		// // //
+#include <iterator>
 #include <string>
 #include <sstream>
 #include "stdafx.h"
@@ -42,13 +43,10 @@ IMPLEMENT_DYNAMIC(CInstrumentEditorVRC7, CInstrumentEditPanel)
 CInstrumentEditorVRC7::CInstrumentEditorVRC7(CWnd* pParent /*=NULL*/)
 	: CInstrumentEditPanel(CInstrumentEditorVRC7::IDD, pParent)
 {
-	m_pInstrument = NULL;
 }
 
 CInstrumentEditorVRC7::~CInstrumentEditorVRC7()
 {
-	if (m_pInstrument)
-		m_pInstrument->Release();
 }
 
 void CInstrumentEditorVRC7::DoDataExchange(CDataExchange* pDX)
@@ -174,15 +172,12 @@ void CInstrumentEditorVRC7::EnableControls(bool bEnable)
 		GetDlgItem(SLIDER_IDS[i])->EnableWindow(bEnable ? TRUE : FALSE);
 }
 
-void CInstrumentEditorVRC7::SelectInstrument(CInstrument *pInst)
+void CInstrumentEditorVRC7::SelectInstrument(std::shared_ptr<CInstrument> pInst)
 {
-	CComboBox *pPatchBox = static_cast<CComboBox*>(GetDlgItem(IDC_PATCH));
+	m_pInstrument = std::dynamic_pointer_cast<CInstrumentVRC7>(pInst);
+	ASSERT(m_pInstrument);
 
-	if (m_pInstrument)
-		m_pInstrument->Release();
-	m_pInstrument = dynamic_cast<CInstrumentVRC7*>(pInst);
-	ASSERT(m_pInstrument != nullptr);
-	m_pInstrument->Retain();
+	CComboBox *pPatchBox = static_cast<CComboBox*>(GetDlgItem(IDC_PATCH));
 
 	int Patch = m_pInstrument->GetPatch();
 

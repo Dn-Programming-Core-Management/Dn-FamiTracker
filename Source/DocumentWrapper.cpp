@@ -66,16 +66,12 @@ int CFamiTrackerDocWrapper::GetInstrumentCount() const
 
 CInstrument2A03Interface const *CFamiTrackerDocWrapper::Get2A03Instrument(int Instrument) const
 {
-	CInstrumentContainer<CInstrument2A03> instContainer(m_pDocument, Instrument);		// // //
-	CInstrument2A03 *pInstrument = instContainer();
-	return dynamic_cast<const CInstrument2A03Interface*>(pInstrument);
+	return std::dynamic_pointer_cast<const CInstrument2A03Interface>(m_pDocument->GetInstrument(Instrument)).get();
 }
 
 CSeqInstrumentInterface const *CFamiTrackerDocWrapper::GetSeqInstrument(int Instrument) const		// // //
 {
-	CInstrumentContainer<CSeqInstrument> instContainer(m_pDocument, Instrument);
-	CSeqInstrument *pInstrument = instContainer();
-	return dynamic_cast<const CSeqInstrumentInterface*>(pInstrument);
+	return std::dynamic_pointer_cast<const CSeqInstrumentInterface>(m_pDocument->GetInstrument(Instrument)).get();
 }
 
 unsigned int CFamiTrackerDocWrapper::GetNoteEffectType(unsigned int Frame, unsigned int Channel, unsigned int Row, int Index) const

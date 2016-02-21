@@ -874,7 +874,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					case CT_INSTS5B:  Type = INST_S5B; break;
 					}
 					CHECK(t.ReadInt(i,0,MAX_INSTRUMENTS-1,&sResult));
-					CSeqInstrument *seqInst = dynamic_cast<CSeqInstrument*>(pDoc->CreateInstrument(Type));
+					CSeqInstrument *seqInst = std::dynamic_pointer_cast<CSeqInstrument>(pDoc->CreateInstrument(Type)).get();
 					pDoc->AddInstrument(seqInst, i);
 					for (int s=0; s < SEQ_COUNT; ++s)
 					{
@@ -898,7 +898,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 			case CT_INSTVRC7:
 				{
 					CHECK(t.ReadInt(i,0,MAX_INSTRUMENTS-1,&sResult));
-					CInstrumentVRC7* pInst = (CInstrumentVRC7*)pDoc->CreateInstrument(INST_VRC7);
+					CInstrumentVRC7 *pInst = new CInstrumentVRC7();
 					pDoc->AddInstrument(pInst, i);
 					CHECK(t.ReadInt(i,0,15,&sResult));
 					pInst->SetPatch(i);
@@ -914,7 +914,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 			case CT_INSTFDS:
 				{
 					CHECK(t.ReadInt(i,0,MAX_INSTRUMENTS-1,&sResult));
-					CInstrumentFDS* pInst = (CInstrumentFDS*)pDoc->CreateInstrument(INST_FDS);
+					CInstrumentFDS *pInst = new CInstrumentFDS();
 					pDoc->AddInstrument(pInst, i);
 					CHECK(t.ReadInt(i,0,1,&sResult));
 					pInst->SetModulationEnable(i==1);
@@ -936,7 +936,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 						sResult.Format(_T("Line %d column %d: instrument %d is not defined as a 2A03 instrument."), t.line, t.GetColumn(), i);
 						return sResult;
 					}
-					CInstrument2A03* pInst = (CInstrument2A03*)pDoc->GetInstrument(i);
+					auto pInst = std::static_pointer_cast<CInstrument2A03>(pDoc->GetInstrument(i));
 
 					int io, in;
 					CHECK(t.ReadInt(io,0,OCTAVE_RANGE,&sResult));
@@ -952,8 +952,6 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					pInst->SetSampleLoopOffset(io, in, i);
 					CHECK(t.ReadInt(i,-1,127,&sResult));
 					pInst->SetSampleDeltaValue(io, in, i);
-
-					pInst->Release();		// // //
 					CHECK(t.ReadEOL(&sResult));
 				}
 				break;
@@ -965,7 +963,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 						sResult.Format(_T("Line %d column %d: instrument %d is not defined as an FDS instrument."), t.line, t.GetColumn(), i);
 						return sResult;
 					}
-					CInstrumentFDS* pInst = (CInstrumentFDS*)pDoc->GetInstrument(i);
+					auto pInst = std::static_pointer_cast<CInstrumentFDS>(pDoc->GetInstrument(i));
 					CHECK_COLON();
 					for (int s=0; s < CInstrumentFDS::WAVE_SIZE; ++s)
 					{
@@ -973,7 +971,6 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 						pInst->SetSample(s, i);
 					}
 					CHECK(t.ReadEOL(&sResult));
-					pInst->Release();		// // //
 				}
 				break;
 			case CT_FDSMOD:
@@ -984,7 +981,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 						sResult.Format(_T("Line %d column %d: instrument %d is not defined as an FDS instrument."), t.line, t.GetColumn(), i);
 						return sResult;
 					}
-					CInstrumentFDS* pInst = (CInstrumentFDS*)pDoc->GetInstrument(i);
+					auto pInst = std::static_pointer_cast<CInstrumentFDS>(pDoc->GetInstrument(i));
 					CHECK_COLON();
 					for (int s=0; s < CInstrumentFDS::MOD_SIZE; ++s)
 					{
@@ -992,7 +989,6 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 						pInst->SetModulation(s, i);
 					}
 					CHECK(t.ReadEOL(&sResult));
-					pInst->Release();		// // //
 				}
 				break;
 			case CT_FDSMACRO:
@@ -1003,7 +999,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 						sResult.Format(_T("Line %d column %d: instrument %d is not defined as an FDS instrument."), t.line, t.GetColumn(), i);
 						return sResult;
 					}
-					CInstrumentFDS* pInst = (CInstrumentFDS*)pDoc->GetInstrument(i);
+					auto pInst = std::static_pointer_cast<CInstrumentFDS>(pDoc->GetInstrument(i));
 
 					CHECK(t.ReadInt(i,0,2,&sResult));
 					CSequence * pSeq = NULL;
@@ -1022,7 +1018,6 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 							sResult.Format(_T("Line %d column %d: unexpected error."), t.line, t.GetColumn());
 							return sResult;
 					}
-					pInst->Release();		// // //
 					CHECK(t.ReadInt(i,-1,MAX_SEQUENCE_ITEMS,&sResult));
 					pSeq->SetLoopPoint(i);
 					CHECK(t.ReadInt(i,-1,MAX_SEQUENCE_ITEMS,&sResult));
@@ -1055,7 +1050,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 						sResult.Format(_T("Line %d column %d: instrument %d is not defined as an N163 instrument."), t.line, t.GetColumn(), i);
 						return sResult;
 					}
-					CInstrumentN163* pInst = (CInstrumentN163*)pDoc->GetInstrument(i);
+					auto pInst = std::static_pointer_cast<CInstrumentN163>(pDoc->GetInstrument(i));
 
 					int iw;
 					CHECK(t.ReadInt(iw,0,CInstrumentN163::MAX_WAVE_COUNT-1,&sResult));
@@ -1065,7 +1060,6 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 						CHECK(t.ReadInt(i,0,15,&sResult));
 						pInst->SetSample(iw, s, i);
 					}
-					pInst->Release();		// // //
 					CHECK(t.ReadEOL(&sResult));
 				}
 				break;
@@ -1384,7 +1378,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	f.WriteString(_T("# Instruments\n"));
 	for (unsigned int i=0; i<MAX_INSTRUMENTS; ++i)
 	{
-		CInstrument* pInst = pDoc->GetInstrument(i);
+		auto pInst = pDoc->GetInstrument(i);
 		if (!pInst) continue;
 
 		const TCHAR *CTstr = nullptr;		// // //
@@ -1396,13 +1390,12 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 		case INST_N163:	CTstr = CT[CT_INSTN163]; break;
 		case INST_S5B:	CTstr = CT[CT_INSTS5B];  break;
 		case INST_NONE: default:
-			pInst->Release(); continue;
+			pDoc->GetInstrument(i).reset(); continue;
 		}
 		s.Format(_T("%-8s %3d   "), CTstr, i);
 		f.WriteString(s);
 
-		CSeqInstrument *seqInst = dynamic_cast<CSeqInstrument*>(pInst);
-		if (seqInst != nullptr) {
+		if (auto seqInst = std::dynamic_pointer_cast<CSeqInstrument>(pInst)) {
 			s.Empty();
 			for (int j = 0; j < SEQ_COUNT; j++)
 				s.AppendFormat(_T("%3d "), seqInst->GetSeqEnable(j) ? seqInst->GetSeqIndex(j) : -1);
@@ -1413,7 +1406,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 		{
 		case INST_N163:
 			{
-				CInstrumentN163* pDI = (CInstrumentN163*)pInst;
+				auto pDI = std::static_pointer_cast<CInstrumentN163>(pInst);
 				s.Format(_T("%3d %3d %3d "),
 					pDI->GetWaveSize(),
 					pDI->GetWavePos(),
@@ -1423,7 +1416,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 			break;
 		case INST_VRC7:
 			{
-				CInstrumentVRC7* pDI = (CInstrumentVRC7*)pInst;
+				auto pDI = std::static_pointer_cast<CInstrumentVRC7>(pInst);
 				s.Format(_T("%3d "), pDI->GetPatch());
 				for (int j = 0; j < 8; j++)
 					s.AppendFormat(_T("%02X "), pDI->GetCustomReg(j));
@@ -1432,7 +1425,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 			break;
 		case INST_FDS:
 			{
-				CInstrumentFDS* pDI = (CInstrumentFDS*)pInst;
+				auto pDI = std::static_pointer_cast<CInstrumentFDS>(pInst);
 				s.Format(_T("%3d %3d %3d %3d "),
 					pDI->GetModulationEnable(),
 					pDI->GetModulationSpeed(),
@@ -1450,7 +1443,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 		{
 		case INST_2A03:
 			{
-				CInstrument2A03* pDI = (CInstrument2A03*)pInst;
+				auto pDI = std::static_pointer_cast<CInstrument2A03>(pInst);
 				for (int oct = 0; oct < OCTAVE_RANGE; ++oct)
 				for (int key = 0; key < NOTE_RANGE; ++key)
 				{
@@ -1474,7 +1467,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 			break;
 		case INST_N163:
 			{
-				CInstrumentN163* pDI = (CInstrumentN163*)pInst;
+				auto pDI = std::static_pointer_cast<CInstrumentN163>(pInst);
 				for (int w=0; w < pDI->GetWaveCount(); ++w)
 				{
 					s.Format(_T("%s %3d %3d :"),
@@ -1492,7 +1485,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 			break;
 		case INST_FDS:
 			{
-				CInstrumentFDS* pDI = (CInstrumentFDS*)pInst;
+				auto pDI = std::static_pointer_cast<CInstrumentFDS>(pInst);
 				s.Format(_T("%-8s %3d :"), CT[CT_FDSWAVE], i);
 				f.WriteString(s);
 				for (int smp=0; smp < CInstrumentFDS::WAVE_SIZE; ++smp)
@@ -1535,8 +1528,6 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 			}
 			break;
 		}
-
-		pInst->Release();		// // //
 	}
 	f.WriteString(_T("\n"));
 

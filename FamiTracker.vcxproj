@@ -451,6 +451,7 @@
     <ClCompile Include="Source\InstHandler.cpp" />
     <ClCompile Include="Source\InstHandlerVRC7.cpp" />
     <ClCompile Include="Source\InstrumentEditorSeq.cpp" />
+    <ClCompile Include="Source\InstrumentManager.cpp" />
     <ClCompile Include="Source\MainFrm.cpp">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
@@ -673,6 +674,7 @@
     <ClInclude Include="Source\InstHandler.h" />
     <ClInclude Include="Source\InstHandlerVRC7.h" />
     <ClInclude Include="Source\InstrumentEditorSeq.h" />
+    <ClInclude Include="Source\InstrumentManager.h" />
     <ClInclude Include="Source\SequenceEditorMessage.h" />
     <ClInclude Include="Source\MainFrm.h" />
     <CustomBuild Include="resource.h">

@@ -314,7 +314,7 @@ public:
 	void			MoveTrackDown(unsigned int Track);
 
 	// Instruments functions
-	CInstrument*	GetInstrument(unsigned int Index) const;
+	std::shared_ptr<CInstrument>	GetInstrument(unsigned int Index) const;
 	unsigned int	GetInstrumentCount() const;
 	bool			IsInstrumentUsed(unsigned int Index) const;
 	int				AddInstrument(const char *pName, int ChipType);					// Add a new instrument
@@ -324,7 +324,7 @@ public:
 	void			SetInstrumentName(unsigned int Index, const char *pName);		// Set the name of an instrument
 	void			GetInstrumentName(unsigned int Index, char *pName) const;		// Get the name of an instrument
 	int				CloneInstrument(unsigned int Index);							// Create a copy of an instrument
-	CInstrument*	CreateInstrument(inst_type_t InstType) const;					// Creates a new instrument of InstType
+	std::shared_ptr<CInstrument>	CreateInstrument(inst_type_t InstType) const;	// Creates a new instrument of InstType
 	int				FindFreeInstrumentSlot() const;
 	inst_type_t		GetInstrumentType(unsigned int Index) const;
 	int				DeepCloneInstrument(unsigned int Index);
@@ -458,6 +458,7 @@ private:
 
 	// // // from the component interface
 	CSequenceManager *const GetSequenceManager(int InstType) const;
+	CInstrumentManager *const GetInstrumentManager() const;
 
 	//
 	// Private variables
@@ -511,6 +512,7 @@ private:
 	// Instruments, samples and sequences
 	CInstrument		*m_pInstruments[MAX_INSTRUMENTS];
 	CDSample		m_DSamples[MAX_DSAMPLES];					// The DPCM sample list
+	CInstrumentManager *m_pInstrumentManager;					// // //
 	CSequenceManager **m_pSequenceManager;						// // //
 	CGroove			*m_pGrooveTable[MAX_GROOVE];				// // // Grooves
 

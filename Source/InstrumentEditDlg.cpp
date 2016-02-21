@@ -20,6 +20,7 @@
 ** must bear this legend.
 */
 
+#include <memory>		// // //
 #include <string>
 #include "stdafx.h"
 #include "FamiTracker.h"
@@ -153,8 +154,7 @@ void CInstrumentEditDlg::ClearPanels()
 void CInstrumentEditDlg::SetCurrentInstrument(int Index)
 {
 	CFamiTrackerDoc *pDoc = CFamiTrackerDoc::GetDoc();
-	CInstrumentContainer<CInstrument> instContainer(pDoc, Index);
-	CInstrument *pInstrument = instContainer();
+	std::shared_ptr<CInstrument> pInstrument = pDoc->GetInstrument(Index);
 	int InstType = pInstrument->GetType();
 
 	// Dialog title
@@ -174,7 +174,7 @@ void CInstrumentEditDlg::SetCurrentInstrument(int Index)
 			case INST_2A03: {
 					int Channel = CFamiTrackerView::GetView()->GetSelectedChannel();
 					int Type = pDoc->GetChannelType(Channel);
-					bool bShowDPCM = (Type == CHANID_DPCM) || (static_cast<CInstrument2A03*>(pInstrument)->AssignedSamples());
+					bool bShowDPCM = (Type == CHANID_DPCM) || (std::static_pointer_cast<CInstrument2A03>(pInstrument)->AssignedSamples());
 					InsertPane(new CInstrumentEditorSeq(NULL, _T("2A03 settings"), INST_SETTINGS_2A03, 15, 3, INST_2A03), !bShowDPCM); // // //
 					InsertPane(new CInstrumentEditorDPCM(), bShowDPCM);
 				}

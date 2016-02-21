@@ -1463,8 +1463,7 @@ void CCompiler::ScanSong()
 			// Create a list of used sequences
 			inst_type_t it = m_pDocument->GetInstrumentType(i);		// // //
 			for (size_t z = 0; z < sizeof(used) / sizeof(bool*); z++) if (it == inst[z]) {
-				CInstrumentContainer<CSeqInstrument> instContainer(m_pDocument, i);
-				CSeqInstrument *pInstrument = instContainer();
+				auto pInstrument = std::static_pointer_cast<CSeqInstrument>(m_pDocument->GetInstrument(i));
 				for (int j = 0; j < SEQ_COUNT; ++j) if (pInstrument->GetSeqEnable(j))
 					*(used[z] + pInstrument->GetSeqIndex(j) * SEQ_COUNT + j) = true;
 				break;
@@ -1600,28 +1599,22 @@ void CCompiler::CreateSequenceList()
 		}
 	}
 
-	if (m_pDocument->ExpansionEnabled(SNDCHIP_FDS)) {
-		// TODO: this is bad, fds only uses 3 sequences
-
-		for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
-			CInstrumentContainer<CInstrumentFDS> instContainer(m_pDocument, i);
-			CInstrumentFDS *pInstrument = instContainer();
-
-			if (pInstrument != NULL && pInstrument->GetType() == INST_FDS) {
-				for (int j = 0; j < 3; ++j) {
-					CSequence* pSeq;
-					switch (j) {
-						case 0: pSeq = pInstrument->GetVolumeSeq(); break;
-						case 1: pSeq = pInstrument->GetArpSeq(); break;
-						case 2: pSeq = pInstrument->GetPitchSeq(); break;
-					}
-					if (pSeq->GetItemCount() > 0) {
-						int Index = i * SEQ_COUNT + j;
-						CStringA label;
-						label.Format(LABEL_SEQ_FDS, Index);
-						Size += StoreSequence(pSeq, label);
-						++StoredCount;
-					}
+	// TODO: this is bad, fds only uses 3 sequences
+	for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
+		if (auto pInstrument = std::dynamic_pointer_cast<CInstrumentFDS>(m_pDocument->GetInstrument(i))) {
+			for (int j = 0; j < 3; ++j) {
+				CSequence* pSeq;
+				switch (j) {
+					case 0: pSeq = pInstrument->GetVolumeSeq(); break;
+					case 1: pSeq = pInstrument->GetArpSeq(); break;
+					case 2: pSeq = pInstrument->GetPitchSeq(); break;
+				}
+				if (pSeq->GetItemCount() > 0) {
+					int Index = i * SEQ_COUNT + j;
+					CStringA label;
+					label.Format(LABEL_SEQ_FDS, Index);
+					Size += StoreSequence(pSeq, label);
+					++StoredCount;
 				}
 			}
 		}
@@ -1690,16 +1683,12 @@ void CCompiler::CreateInstrumentList()
 	for (unsigned int i = 0; i < m_iInstruments; ++i) {
 		int iIndex = m_iAssignedInstruments[i];
 		if (m_pDocument->GetInstrumentType(iIndex) == INST_N163 && m_iWaveBanks[i] == -1) {
-
-			CInstrumentContainer<CInstrumentN163> instContainer(m_pDocument, iIndex);
-			CInstrumentN163 *pInstrument = instContainer();
-
+			auto pInstrument = std::static_pointer_cast<CInstrumentN163>(m_pDocument->GetInstrument(iIndex));
 			for (unsigned int j = i + 1; j < m_iInstruments; ++j) {
 				int inst = m_iAssignedInstruments[j];
 				if (m_pDocument->GetInstrumentType(inst) == INST_N163 && m_iWaveBanks[j] == -1) {
-					CInstrumentContainer<CInstrumentN163> instContainer(m_pDocument, inst);
-					CInstrumentN163 *pNewInst = instContainer();
-					if (pInstrument->IsWaveEqual(pNewInst)) {
+					auto pNewInst = std::static_pointer_cast<CInstrumentN163>(m_pDocument->GetInstrument(inst));
+					if (pInstrument->IsWaveEqual(pNewInst.get())) {
 						m_iWaveBanks[j] = iIndex;
 					}
 				}
@@ -1729,8 +1718,7 @@ void CCompiler::CreateInstrumentList()
 		m_vInstrumentChunks.push_back(pChunk);
 
 		int iIndex = m_iAssignedInstruments[i];
-		CInstrumentContainer<CInstrument> instContainer(m_pDocument, iIndex);
-		CInstrument *pInstrument = instContainer();
+		auto pInstrument = m_pDocument->GetInstrument(iIndex);
 /*
 		if (pInstrument->GetType() == INST_N163) {
 			CString label;
@@ -1752,7 +1740,7 @@ void CCompiler::CreateInstrumentList()
 		// // // Check if FDS
 		if (pInstrument->GetType() == INST_FDS && pWavetableChunk != NULL) {
 			// Store wave
-			AddWavetable(static_cast<CInstrumentFDS*>(pInstrument), pWavetableChunk);
+			AddWavetable(std::static_pointer_cast<CInstrumentFDS>(pInstrument).get(), pWavetableChunk);
 			pChunk->StoreByte(m_iWaveTables - 1);
 		}
 	}
@@ -1785,8 +1773,7 @@ void CCompiler::CreateSampleList()
 	unsigned int Item = 0;
 	for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
 		if (m_pDocument->IsInstrumentUsed(i) && m_pDocument->GetInstrumentType(i) == INST_2A03) {
-			CInstrumentContainer<CInstrument2A03> instContainer(m_pDocument, i);
-			CInstrument2A03 *pInstrument = instContainer();
+			auto pInstrument = std::static_pointer_cast<CInstrument2A03>(m_pDocument->GetInstrument(i));
 
 			for (int j = 0; j < OCTAVE_RANGE; ++j) {
 				for (int k = 0; k < NOTE_RANGE; ++k) {

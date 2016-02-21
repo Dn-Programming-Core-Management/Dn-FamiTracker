@@ -346,11 +346,8 @@ void CChannelHandlerN163::LoadWave()
 	if (m_iWaveIndex < 0) return;		// // //
 
 	// Fill the wave RAM
-	CInstrumentContainer<CInstrumentN163> instContainer(pDocument, m_iInstrument);
-	CInstrumentN163 *pInstrument = instContainer();
-
-	if (pInstrument == NULL)
-		return;
+	auto pInstrument = std::dynamic_pointer_cast<CInstrumentN163>(pDocument->GetInstrument(m_iInstrument));
+	if (!pInstrument) return;
 
 	// Start of wave in memory
 	int Channel = GetIndex();

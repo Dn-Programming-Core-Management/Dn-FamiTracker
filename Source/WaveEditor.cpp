@@ -325,7 +325,7 @@ void CWaveEditor::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 
 // FDS wave
 
-void CWaveEditorFDS::SetInstrument(CInstrumentFDS *pInst)
+void CWaveEditorFDS::SetInstrument(std::shared_ptr<CInstrumentFDS> pInst)
 {
 	m_pInstrument = pInst;
 	WaveChanged();
@@ -356,7 +356,7 @@ void CWaveEditorFDS::DrawRect(CDC *pDC, int x, int y, int sx, int sy) const
 
 // N163 wave
 
-void CWaveEditorN163::SetInstrument(CInstrumentN163 *pInst)
+void CWaveEditorN163::SetInstrument(std::shared_ptr<CInstrumentN163> pInst)
 {
 	m_pInstrument = pInst;
 	WaveChanged();

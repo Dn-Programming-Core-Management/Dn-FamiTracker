@@ -80,7 +80,7 @@ class CWaveEditorFDS : public CWaveEditor
 {
 public:
 	CWaveEditorFDS(int sx, int sy, int lx, int ly) : CWaveEditor(sx, sy, lx, ly), m_pInstrument(NULL) {};
-	void SetInstrument(CInstrumentFDS *pInst);
+	void SetInstrument(std::shared_ptr<CInstrumentFDS> pInst);
 protected:
 	virtual int GetSample(int i) const;
 	virtual void SetSample(int i, int s);
@@ -93,7 +93,7 @@ protected:
 	static bool m_bLineMode;
 
 protected:
-	CInstrumentFDS *m_pInstrument;
+	std::shared_ptr<CInstrumentFDS> m_pInstrument;
 };
 
 // N163 wave
@@ -102,7 +102,7 @@ class CWaveEditorN163 : public CWaveEditor
 public:
 	CWaveEditorN163(int sx, int sy, int lx, int ly) : CWaveEditor(sx, sy, lx, ly), m_pInstrument(NULL), m_iWaveIndex(0) {};
 	void SetLength(int Length);
-	void SetInstrument(CInstrumentN163 *pInst);
+	void SetInstrument(std::shared_ptr<CInstrumentN163> pInst);
 	void SetWave(int i);
 protected:
 	virtual int GetSample(int i) const;
@@ -116,6 +116,6 @@ protected:
 	static bool m_bLineMode;
 
 protected:
-	CInstrumentN163 *m_pInstrument;
+	std::shared_ptr<CInstrumentN163> m_pInstrument;
 	int m_iWaveIndex;
 };

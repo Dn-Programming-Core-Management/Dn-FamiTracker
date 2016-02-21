@@ -1098,7 +1098,7 @@ LRESULT CFamiTrackerView::OnUserDumpInst(WPARAM wParam, LPARAM lParam)		// // //
 	ASSERT_VALID(pDoc);
 	CInstrument *Inst = theApp.GetSoundGenerator()->GetRecordInstrument();
 	int Slot = pDoc->AddInstrument(Inst);
-	Inst->Retain();
+	// Inst->Retain();
 	CMainFrame *pMainFrm = static_cast<CMainFrame*>(GetParentFrame());
 	ASSERT_VALID(pMainFrm);
 	pMainFrm->UpdateInstrumentList();
@@ -2990,12 +2990,8 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 bool CFamiTrackerView::DoRelease() const
 {
 	// Return true if there are a valid release sequence for selected instrument
-	CInstrumentContainer<CInstrument> instContainer(GetDocument(), GetInstrument());
-	CInstrument *pInstrument = instContainer();
-
-	if (pInstrument == NULL)
-		return false;
-	
+	auto pInstrument = GetDocument()->GetInstrument(GetInstrument());
+	if (!pInstrument) return false;
 	return pInstrument->CanRelease();
 }
 

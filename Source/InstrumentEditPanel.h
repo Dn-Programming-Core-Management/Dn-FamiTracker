@@ -42,7 +42,7 @@ public:
 	virtual TCHAR *GetTitle() const = 0;
 
 	// Select instrument for the editing
-	virtual void SelectInstrument(CInstrument *pInst) = 0;		// // //
+	virtual void SelectInstrument(std::shared_ptr<CInstrument> pInst) = 0;		// // //
 
 protected:
 	CFamiTrackerDoc *GetDocument() const;
@@ -83,7 +83,7 @@ protected:
 	CSequenceEditor	*m_pSequenceEditor;
 	CSequence *m_pSequence;
 	CWnd *m_pParentWin;
-	CSeqInstrument *m_pInstrument;		// // //
+	std::shared_ptr<CSeqInstrument> m_pInstrument;		// // //
 
 	unsigned int m_iSelectedSetting;
 

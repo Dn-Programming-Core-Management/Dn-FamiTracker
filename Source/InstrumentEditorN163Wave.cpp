@@ -20,6 +20,7 @@
 ** must bear this legend.
 */
 
+#include <memory>		// // //
 #include <string>
 #include <iterator> 
 #include <string>
@@ -46,7 +47,6 @@ IMPLEMENT_DYNAMIC(CInstrumentEditorN163Wave, CInstrumentEditPanel)
 
 CInstrumentEditorN163Wave::CInstrumentEditorN163Wave(CWnd* pParent) : CInstrumentEditPanel(CInstrumentEditorN163Wave::IDD, pParent),
 	m_pWaveEditor(NULL), 
-	m_pInstrument(NULL),
 	m_iWaveIndex(0)
 {
 }
@@ -55,9 +55,6 @@ CInstrumentEditorN163Wave::~CInstrumentEditorN163Wave()
 {
 	SAFE_RELEASE(m_pWaveEditor);
 	SAFE_RELEASE(m_pWaveListCtrl);
-
-	if (m_pInstrument)
-		m_pInstrument->Release();
 }
 
 void CInstrumentEditorN163Wave::DoDataExchange(CDataExchange* pDX)
@@ -65,13 +62,10 @@ void CInstrumentEditorN163Wave::DoDataExchange(CDataExchange* pDX)
 	CInstrumentEditPanel::DoDataExchange(pDX);
 }
 
-void CInstrumentEditorN163Wave::SelectInstrument(CInstrument *pInst)
+void CInstrumentEditorN163Wave::SelectInstrument(std::shared_ptr<CInstrument> pInst)
 {
-	if (m_pInstrument)
-		m_pInstrument->Release();
-	m_pInstrument = dynamic_cast<CInstrumentN163*>(pInst);
-	ASSERT(m_pInstrument != nullptr);
-	m_pInstrument->Retain();
+	m_pInstrument = std::dynamic_pointer_cast<CInstrumentN163>(pInst);
+	ASSERT(m_pInstrument);
 
 	CComboBox *pSizeBox = static_cast<CComboBox*>(GetDlgItem(IDC_WAVE_SIZE));
 	CComboBox *pPosBox = static_cast<CComboBox*>(GetDlgItem(IDC_WAVE_POS));

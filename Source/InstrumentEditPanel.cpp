@@ -20,6 +20,7 @@
 ** must bear this legend.
 */
 
+#include <memory>		// // //
 #include <iterator> 
 #include <string>
 #include <sstream>
@@ -175,7 +176,6 @@ CSequenceInstrumentEditPanel::CSequenceInstrumentEditPanel(UINT nIDTemplate, CWn
 	CInstrumentEditPanel(nIDTemplate, pParent), 
 	m_pSequenceEditor(NULL),
 	m_pSequence(NULL),
-	m_pInstrument(nullptr),		// // //
 	m_pParentWin(pParent),
 	m_iSelectedSetting(0)
 {
@@ -184,9 +184,6 @@ CSequenceInstrumentEditPanel::CSequenceInstrumentEditPanel(UINT nIDTemplate, CWn
 CSequenceInstrumentEditPanel::~CSequenceInstrumentEditPanel()
 {
 	SAFE_RELEASE(m_pSequenceEditor);
-
-	if (m_pInstrument)
-		m_pInstrument->Release();
 }
 
 void CSequenceInstrumentEditPanel::DoDataExchange(CDataExchange* pDX)

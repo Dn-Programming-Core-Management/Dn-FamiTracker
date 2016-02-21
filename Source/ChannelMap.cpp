@@ -20,6 +20,8 @@
 ** must bear this legend.
 */
 
+#include <vector>		// // //
+#include <memory>		// // //
 #include "stdafx.h"
 #include "APU/Types.h"
 #include "Instrument.h"
@@ -39,10 +41,6 @@ CChannelMap::CChannelMap() :
 
 CChannelMap::~CChannelMap()
 {
-	for (int i = 0; i < m_iAddedChips; ++i) {
-		m_pChipInst[i]->Release();
-		m_pChipInst[i] = NULL;
-	}
 }
 
 void CChannelMap::SetupSoundChips()
@@ -75,7 +73,7 @@ void CChannelMap::AddChip(int Ident, CInstrument *pInst, LPCTSTR pName)
 
 	m_pChipNames[m_iAddedChips] = pName;
 	m_iChipIdents[m_iAddedChips] = Ident;
-	m_pChipInst[m_iAddedChips] = pInst;
+	m_pChipInst.emplace_back(std::unique_ptr<CInstrument>(std::move(pInst)));
 	++m_iAddedChips;
 }
 
@@ -112,10 +110,10 @@ CInstrument* CChannelMap::GetChipInstrument(int Chip) const
 	// Get instrument from chip ID
 	int Index = GetChipIndex(Chip);
 
-	if (m_pChipInst[Index] == NULL)
-		return NULL;
+	if (!m_pChipInst[Index])
+		return nullptr;
 
-	return m_pChipInst[Index]->CreateNew();
+	return m_pChipInst[Index]->Clone();
 }
 
 // Todo move enabled module channels here

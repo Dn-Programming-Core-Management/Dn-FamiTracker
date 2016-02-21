@@ -54,7 +54,7 @@ protected:
 	int				m_iAddedChips;
 	int				m_iChipIdents[CHIP_COUNT];
 	LPCTSTR			m_pChipNames[CHIP_COUNT];
-	CInstrument		*m_pChipInst[CHIP_COUNT];
+	std::vector<std::unique_ptr<CInstrument>> m_pChipInst;
 
 	// Current set
 	CTrackerChannel	*m_pChannels[CHANNELS];

@@ -36,7 +36,7 @@ public:
 	virtual TCHAR *GetTitle() const { return _T("Nintendo FDS"); };
 
 	// Public
-	virtual void SelectInstrument(CInstrument *pInst);
+	virtual void SelectInstrument(std::shared_ptr<CInstrument> pInst);
 
 	// Dialog Data
 	enum { IDD = IDD_INSTRUMENT_FDS };
@@ -50,7 +50,7 @@ protected:
 	void ParseTableString(LPCTSTR pString);
 
 protected:
-	CInstrumentFDS		*m_pInstrument;
+	std::shared_ptr<CInstrumentFDS> m_pInstrument;
 	CWaveEditorFDS		*m_pWaveEditor;
 	CModSequenceEditor	*m_pModSequenceEditor;
 

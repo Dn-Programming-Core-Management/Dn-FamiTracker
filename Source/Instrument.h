@@ -43,16 +43,6 @@ class CFamiTrackerDoc;
 
 class CChunk;
 
-class CRefCounter {
-public:
-	CRefCounter();
-	virtual ~CRefCounter();
-	void Retain();
-	void Release();
-private:
-	volatile int m_iRefCounter;
-};
-
 // Instrument file load/store
 class CInstrumentFile : public CFile
 {
@@ -65,7 +55,7 @@ public:
 };
 
 // Instrument base class
-class CInstrument : public CRefCounter {
+class CInstrument {
 public:
 	CInstrument(inst_type_t type);		// // //
 	virtual ~CInstrument();
@@ -287,24 +277,4 @@ class CInstrumentS5B : public CSeqInstrument {
 public:
 	CInstrumentS5B() : CSeqInstrument(INST_S5B) {};		// // //
 	CInstrument* CreateNew() const { return new CInstrumentS5B(); };
-};
-
-// This takes care of reference counting
-// TODO replace this with boost shared_ptr
-template <class T>
-class CInstrumentContainer {
-public:
-	CInstrumentContainer(CFamiTrackerDoc *pDoc, int Index) {
-		ASSERT(Index < MAX_INSTRUMENTS);
-		m_pInstrument = pDoc->GetInstrument(Index);
-	}
-	~CInstrumentContainer() {
-		if (m_pInstrument != NULL)
-			m_pInstrument->Release();
-	}
-	T* operator()() const {
-		return dynamic_cast<T*>(m_pInstrument);
-	}
-private:
-	CInstrument *m_pInstrument;
 };

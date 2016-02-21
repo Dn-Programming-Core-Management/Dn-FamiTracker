@@ -23,9 +23,11 @@
 #pragma once
 
 class CSequenceManager;
+class CInstrumentManager;
 
 class CFTMComponentInterface
 {
 public:
-	virtual CSequenceManager *const GetSequenceManager(int Chip) const = 0;
+	virtual CSequenceManager *const GetSequenceManager(int InstType) const = 0;
+	virtual CInstrumentManager *const GetInstrumentManager() const = 0;
 };

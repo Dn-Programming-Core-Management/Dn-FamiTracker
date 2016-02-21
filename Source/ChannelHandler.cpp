@@ -445,10 +445,8 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 bool CChannelHandler::HandleInstrument(int Instrument, bool Trigger, bool NewInstrument)		// // //
 {
 	CFamiTrackerDoc *pDocument = m_pSoundGen->GetDocument();
-	CInstrumentContainer<CInstrument> instContainer(pDocument, Instrument);		// // //
-	CInstrument *pInstrument = instContainer();
-	if (pInstrument == nullptr)
-		return false;
+	std::shared_ptr<CInstrument> pInstrument = pDocument->GetInstrument(m_iInstrument);
+	if (!pInstrument) return false;
 	
 	// load instrument here
 	inst_type_t instType = pInstrument->GetType();
@@ -459,7 +457,7 @@ bool CChannelHandler::HandleInstrument(int Instrument, bool Trigger, bool NewIns
 	if (m_pInstHandler == nullptr)
 		return false;
 	if (NewInstrument)
-		m_pInstHandler->LoadInstrument(pInstrument);
+		m_pInstHandler->LoadInstrument(pInstrument.get());
 	if (Trigger || m_bForceReload)
 		m_pInstHandler->TriggerInstrument();
 

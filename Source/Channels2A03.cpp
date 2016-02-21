@@ -571,14 +571,8 @@ void CDPCMChan::HandleRelease()
 void CDPCMChan::HandleNote(int Note, int Octave)
 {
 	CFamiTrackerDoc *pDocument = m_pSoundGen->GetDocument();
-	CInstrumentContainer<CInstrument2A03> instContainer(pDocument, m_iInstrument);
-	CInstrument2A03 *pInstrument = instContainer();
-
-	if (pInstrument == NULL)
-		return;
-
-	if (pInstrument->GetType() != INST_2A03)
-		return;
+	auto pInstrument = std::dynamic_pointer_cast<CInstrument2A03>(pDocument->GetInstrument(m_iInstrument));
+	if (!pInstrument) return;
 
 	int SampleIndex = pInstrument->GetSample(Octave, Note - 1);
 

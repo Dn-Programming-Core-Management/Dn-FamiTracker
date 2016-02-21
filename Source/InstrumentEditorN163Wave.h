@@ -35,7 +35,7 @@ public:
 	virtual TCHAR *GetTitle() const { return _T("Wave"); };
 
 	// Public
-	virtual void SelectInstrument(CInstrument *pInst);
+	virtual void SelectInstrument(std::shared_ptr<CInstrument> pInst);
 	virtual void SelectWave(int Index);		// // //
 
 // Dialog Data
@@ -51,7 +51,7 @@ protected:
 	void CreateWaveImage(char *const Pos, int Index) const;		// // //
 
 protected:
-	CInstrumentN163	*m_pInstrument;
+	std::shared_ptr<CInstrumentN163> m_pInstrument;
 	CWaveEditorN163	*m_pWaveEditor;
 	int m_iWaveIndex;
 	CImageList m_WaveImage;		// // //

@@ -35,7 +35,7 @@ public:
 	virtual TCHAR *GetTitle() const { return m_pTitle; };
 
 	// Public
-	virtual void SelectInstrument(CInstrument *pInst);
+	virtual void SelectInstrument(std::shared_ptr<CInstrument> pInst);
 	virtual void SetSequenceString(CString Sequence, bool Changed);
 
 // Dialog Data

@@ -20,6 +20,7 @@
 ** must bear this legend.
 */
 
+#include <memory>		// // //
 #include <string>
 #include "stdafx.h"
 #include "FamiTracker.h"
@@ -93,8 +94,6 @@ CInstrumentEditorDPCM::CInstrumentEditorDPCM(CWnd* pParent) : CInstrumentEditPan
 
 CInstrumentEditorDPCM::~CInstrumentEditorDPCM()
 {
-	if (m_pInstrument)
-		m_pInstrument->Release();
 }
 
 void CInstrumentEditorDPCM::DoDataExchange(CDataExchange* pDX)
@@ -572,13 +571,10 @@ void CInstrumentEditorDPCM::OnBnClickedLoop()
 	UpdateKey(m_iSelectedKey);
 }
 
-void CInstrumentEditorDPCM::SelectInstrument(CInstrument *pInst)
+void CInstrumentEditorDPCM::SelectInstrument(std::shared_ptr<CInstrument> pInst)
 {
-	if (m_pInstrument != nullptr)
-		m_pInstrument->Release();
-	m_pInstrument = dynamic_cast<CInstrument2A03*>(pInst);
-	ASSERT(pInst != nullptr);
-	m_pInstrument->Retain();
+	m_pInstrument = std::dynamic_pointer_cast<CInstrument2A03>(pInst);
+	ASSERT(m_pInstrument);
 
 	BuildKeyList();
 }

@@ -356,15 +356,13 @@ void CChannelHandlerFDS::CheckWaveUpdate()
 	bool bWaveChanged = theApp.GetSoundGenerator()->HasWaveChanged();
 
 	if (m_iInstrument != MAX_INSTRUMENTS && bWaveChanged) {
-		CInstrumentContainer<CInstrumentFDS> instContainer(pDocument, m_iInstrument);
-		CInstrumentFDS *pInstrument = instContainer();
-		if (pInstrument != NULL) {
+		if (auto pInstrument = std::dynamic_pointer_cast<CInstrumentFDS>(pDocument->GetInstrument(m_iInstrument))) {
 			// Realtime update
 			// TODO: use CChannelHandler::ForceReloadInstrument()
 			m_iModulationSpeed = pInstrument->GetModulationSpeed();
 			m_iModulationDepth = pInstrument->GetModulationDepth();
-			FillWaveRAM(pInstrument);
-			FillModulationTable(pInstrument);
+			FillWaveRAM(pInstrument.get());
+			FillModulationTable(pInstrument.get());
 		}
 	}
 }

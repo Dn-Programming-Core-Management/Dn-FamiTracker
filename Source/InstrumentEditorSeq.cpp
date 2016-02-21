@@ -48,13 +48,10 @@ CInstrumentEditorSeq::CInstrumentEditorSeq(CWnd* pParent, TCHAR *Title, LPCTSTR 
 {
 }
 
-void CInstrumentEditorSeq::SelectInstrument(CInstrument *pInst)
+void CInstrumentEditorSeq::SelectInstrument(std::shared_ptr<CInstrument> pInst)
 {
-	if (m_pInstrument != nullptr)
-		m_pInstrument->Release();
-	m_pInstrument = dynamic_cast<CSeqInstrument*>(pInst);
-	ASSERT(m_pInstrument != nullptr && m_pInstrument->GetType() == m_iInstType);		// // //
-	m_pInstrument->Retain();
+	m_pInstrument = std::dynamic_pointer_cast<CSeqInstrument>(pInst);
+	ASSERT(m_pInstrument && m_pInstrument->GetType() == m_iInstType);
 
 	// Update instrument setting list
 	if (CListCtrl *pList = static_cast<CListCtrl*>(GetDlgItem(IDC_INSTSETTINGS))) {		// // //

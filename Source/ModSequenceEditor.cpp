@@ -20,6 +20,7 @@
 
 // This is the modulation editor for FDS
 
+#include <memory>		// // //
 #include "stdafx.h"
 #include "FamiTrackerDoc.h"
 #include "instrument.h"
@@ -36,7 +37,7 @@ BEGIN_MESSAGE_MAP(CModSequenceEditor, CWnd)
 END_MESSAGE_MAP()
 
 
-CModSequenceEditor::CModSequenceEditor() : m_pInstrument(NULL)
+CModSequenceEditor::CModSequenceEditor()
 {
 }
 
@@ -93,7 +94,7 @@ void CModSequenceEditor::OnPaint()
 
 }
 
-void CModSequenceEditor::SetInstrument(CInstrumentFDS *pInst)
+void CModSequenceEditor::SetInstrument(std::shared_ptr<CInstrumentFDS> pInst)
 {
 	m_pInstrument = pInst;
 	Invalidate();

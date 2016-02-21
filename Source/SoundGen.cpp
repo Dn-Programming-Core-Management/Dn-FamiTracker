@@ -31,6 +31,7 @@
 //
 
 #include "stdafx.h"
+#include <memory>		// // //
 #include <cmath>
 #include <afxmt.h>
 #include "FamiTracker.h"
@@ -378,7 +379,7 @@ void CSoundGen::InstrumentRecorder::ResetRecordCache()
 void CSoundGen::InstrumentRecorder::ReleaseCurrent()
 {
 	if (*m_pDumpInstrument != nullptr) {
-		(*m_pDumpInstrument)->Release();
+		//(*m_pDumpInstrument)->Release();
 		*m_pDumpInstrument = nullptr;
 	}
 }
@@ -398,8 +399,8 @@ void CSoundGen::InstrumentRecorder::InitRecordInstrument()
 	case SNDCHIP_N163: Type = INST_N163; break;
 	case SNDCHIP_S5B:  Type = INST_S5B; break;
 	}
-	*m_pDumpInstrument = m_pDocument->CreateInstrument(Type);
-	if (*m_pDumpInstrument == NULL) return;
+	*m_pDumpInstrument = m_pDocument->CreateInstrument(Type).get();
+	if (!*m_pDumpInstrument) return;
 
 	CString str;
 	str.Format(_T("from %s"), pChan->GetChannelName());

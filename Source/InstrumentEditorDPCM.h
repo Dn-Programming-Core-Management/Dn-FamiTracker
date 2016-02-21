@@ -37,7 +37,7 @@ public:
 // Dialog Data
 	enum { IDD = IDD_INSTRUMENT_DPCM };
 
-	virtual void SelectInstrument(CInstrument *pInst);
+	virtual void SelectInstrument(std::shared_ptr<CInstrument> pInst);
 
 protected:
 	static const char *KEY_NAMES[];
@@ -54,7 +54,7 @@ protected:
 	CDSample *GetSelectedSample();
 
 protected:
-	CInstrument2A03	*m_pInstrument;
+	std::shared_ptr<CInstrument2A03> m_pInstrument;
 
 	int	m_iSelectedSample;
 	int	m_iOctave;

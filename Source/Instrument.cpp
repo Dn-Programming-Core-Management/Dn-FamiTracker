@@ -32,7 +32,7 @@
  *
  */
 
-CInstrument::CInstrument(inst_type_t type) : CRefCounter(), m_iType(type)		// // //
+CInstrument::CInstrument(inst_type_t type) : m_iType(type)		// // //
 {
 	memset(m_cName, 0, INST_NAME_MAX);
 }
@@ -44,6 +44,7 @@ CInstrument::~CInstrument()
 void CInstrument::SetName(const char *Name)
 {
 	strncpy(m_cName, Name, INST_NAME_MAX);
+	InstrumentChanged();		// // //
 }
 
 void CInstrument::GetName(char *Name) const
@@ -71,34 +72,6 @@ void CInstrument::InstrumentChanged() const
 			pDoc->SetModifiedFlag();
 			pDoc->SetExceededFlag();		// // //
 	}
-}
-
-// Reference counting
-
-CRefCounter::CRefCounter() : m_iRefCounter(1)
-{
-}
-
-CRefCounter::~CRefCounter()
-{
-	ASSERT(m_iRefCounter == 0);
-}
-
-void CRefCounter::Retain()
-{
-	ASSERT(m_iRefCounter > 0);
-
-	InterlockedIncrement((volatile LONG*)&m_iRefCounter);
-}
-
-void CRefCounter::Release()
-{
-	ASSERT(m_iRefCounter > 0);
-
-	InterlockedDecrement((volatile LONG*)&m_iRefCounter);
-
-	if (!m_iRefCounter)
-		delete this;
 }
 
 // File load / store

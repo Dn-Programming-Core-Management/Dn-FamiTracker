@@ -18,6 +18,7 @@
 ** must bear this legend.
 */
 
+#include <memory>		// // //
 #include <iterator> 
 #include <string>
 #include <sstream>
@@ -40,8 +41,7 @@ IMPLEMENT_DYNAMIC(CInstrumentEditorFDS, CInstrumentEditPanel)
 
 CInstrumentEditorFDS::CInstrumentEditorFDS(CWnd* pParent) : CInstrumentEditPanel(CInstrumentEditorFDS::IDD, pParent),
 	m_pWaveEditor(NULL), 
-	m_pModSequenceEditor(NULL), 
-	m_pInstrument(NULL)
+	m_pModSequenceEditor(NULL)
 {
 }
 
@@ -49,9 +49,6 @@ CInstrumentEditorFDS::~CInstrumentEditorFDS()
 {
 	SAFE_RELEASE(m_pModSequenceEditor);
 	SAFE_RELEASE(m_pWaveEditor);
-
-	if (m_pInstrument)
-		m_pInstrument->Release();
 }
 
 void CInstrumentEditorFDS::DoDataExchange(CDataExchange* pDX)
@@ -59,13 +56,10 @@ void CInstrumentEditorFDS::DoDataExchange(CDataExchange* pDX)
 	CInstrumentEditPanel::DoDataExchange(pDX);
 }
 
-void CInstrumentEditorFDS::SelectInstrument(CInstrument *pInst)
+void CInstrumentEditorFDS::SelectInstrument(std::shared_ptr<CInstrument> pInst)
 {
-	if (m_pInstrument != nullptr)
-		m_pInstrument->Release();
-	m_pInstrument = dynamic_cast<CInstrumentFDS*>(pInst);
-	ASSERT(pInst != nullptr);
-	m_pInstrument->Retain();
+	m_pInstrument = std::dynamic_pointer_cast<CInstrumentFDS>(pInst);
+	ASSERT(m_pInstrument);
 	
 	if (m_pWaveEditor)
 		m_pWaveEditor->SetInstrument(m_pInstrument);
