@@ -84,4 +84,7 @@
 		p = NULL;	\
 	}	\
 
+// Calling member function
+#define CALL_MEMBER_FN(obj, ptr) ((obj)->*(ptr))
+
 #define new DEBUG_NEW

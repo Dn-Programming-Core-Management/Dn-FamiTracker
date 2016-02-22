@@ -45,6 +45,8 @@
 #include "stdafx.h"
 #include <algorithm>
 #include <vector>		// // //
+#include <string>		// // //
+#include <unordered_map>		// // //
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "TrackerChannel.h"
@@ -761,39 +763,28 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 
 bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 {
-	if (!WriteBlock_Parameters(pDocFile))
-		return false;
-	if (!WriteBlock_SongInfo(pDocFile))
-		return false;
-	if (!WriteBlock_Header(pDocFile))
-		return false;
-	if (!WriteBlock_Instruments(pDocFile))
-		return false;
-	if (!WriteBlock_Sequences(pDocFile))
-		return false;
-	if (!WriteBlock_Frames(pDocFile))
-		return false;
-	if (!WriteBlock_Patterns(pDocFile))
-		return false;
-	if (!WriteBlock_DSamples(pDocFile))
-		return false;
-	if (!WriteBlock_Comments(pDocFile))
-		return false;
+	static bool (CFamiTrackerDoc::*FTM_WRITE_FUNC[])(CDocumentFile*) const = {		// // //
+		&CFamiTrackerDoc::WriteBlock_Parameters,
+		&CFamiTrackerDoc::WriteBlock_SongInfo,
+		&CFamiTrackerDoc::WriteBlock_Header,
+		&CFamiTrackerDoc::WriteBlock_Instruments,
+		&CFamiTrackerDoc::WriteBlock_Sequences,
+		&CFamiTrackerDoc::WriteBlock_Frames,
+		&CFamiTrackerDoc::WriteBlock_Patterns,
+		&CFamiTrackerDoc::WriteBlock_DSamples,
+		&CFamiTrackerDoc::WriteBlock_Comments,
+		&CFamiTrackerDoc::WriteBlock_SequencesVRC6,		// // //
+		&CFamiTrackerDoc::WriteBlock_SequencesN163,
+		&CFamiTrackerDoc::WriteBlock_SequencesS5B,
+		&CFamiTrackerDoc::WriteBlock_DetuneTables,		// // //
+		&CFamiTrackerDoc::WriteBlock_Grooves,			// // //
+		&CFamiTrackerDoc::WriteBlock_Bookmarks,			// // //
+	};
 
-	if (!WriteBlock_SequencesVRC6(pDocFile))		// // //
-		return false;
-	if (!WriteBlock_SequencesN163(pDocFile))
-		return false;
-	if (!WriteBlock_SequencesS5B(pDocFile))
-		return false;
-	
-	if (!WriteBlock_DetuneTables(pDocFile))		// // //
-		return false;
-	if (!WriteBlock_Grooves(pDocFile))		// // //
-		return false;
-	if (!WriteBlock_Bookmarks(pDocFile))		// // //
-		return false;
-
+	for (size_t i = 0; i < sizeof(FTM_WRITE_FUNC) / sizeof(*FTM_WRITE_FUNC); ++i) {
+		if (!CALL_MEMBER_FN(this, FTM_WRITE_FUNC[i])(pDocFile))
+			return false;
+	}
 	return true;
 }
 
@@ -1558,6 +1549,24 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
  */
 BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 {
+	static std::unordered_map<std::string, bool (CFamiTrackerDoc::*)(CDocumentFile*)> FTM_READ_FUNC;
+	FTM_READ_FUNC[FILE_BLOCK_PARAMS]			= &CFamiTrackerDoc::ReadBlock_Parameters;
+	FTM_READ_FUNC[FILE_BLOCK_INFO]				= &CFamiTrackerDoc::ReadBlock_SongInfo;
+	FTM_READ_FUNC[FILE_BLOCK_INSTRUMENTS]		= &CFamiTrackerDoc::ReadBlock_Instruments;
+	FTM_READ_FUNC[FILE_BLOCK_SEQUENCES]			= &CFamiTrackerDoc::ReadBlock_Sequences;
+	FTM_READ_FUNC[FILE_BLOCK_FRAMES]			= &CFamiTrackerDoc::ReadBlock_Frames;
+	FTM_READ_FUNC[FILE_BLOCK_PATTERNS]			= &CFamiTrackerDoc::ReadBlock_Patterns;
+	FTM_READ_FUNC[FILE_BLOCK_DSAMPLES]			= &CFamiTrackerDoc::ReadBlock_DSamples;
+	FTM_READ_FUNC[FILE_BLOCK_HEADER]			= &CFamiTrackerDoc::ReadBlock_Header;
+	FTM_READ_FUNC[FILE_BLOCK_COMMENTS]			= &CFamiTrackerDoc::ReadBlock_Comments;
+	FTM_READ_FUNC[FILE_BLOCK_SEQUENCES_VRC6]	= &CFamiTrackerDoc::ReadBlock_SequencesVRC6;
+	FTM_READ_FUNC[FILE_BLOCK_SEQUENCES_N163]	= &CFamiTrackerDoc::ReadBlock_SequencesN163;
+	FTM_READ_FUNC[FILE_BLOCK_SEQUENCES_N106]	= &CFamiTrackerDoc::ReadBlock_SequencesN163;	// Backward compatibility
+	FTM_READ_FUNC[FILE_BLOCK_SEQUENCES_S5B]		= &CFamiTrackerDoc::ReadBlock_SequencesS5B;		// // //
+	FTM_READ_FUNC[FILE_BLOCK_DETUNETABLES]		= &CFamiTrackerDoc::ReadBlock_DetuneTables;		// // //
+	FTM_READ_FUNC[FILE_BLOCK_GROOVES]			= &CFamiTrackerDoc::ReadBlock_Grooves;			// // //
+	FTM_READ_FUNC[FILE_BLOCK_BOOKMARKS]			= &CFamiTrackerDoc::ReadBlock_Bookmarks;		// // //
+	
 	const char *BlockID;
 	bool FileFinished = false;
 	bool ErrorFlag = false;
@@ -1600,66 +1609,23 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 		ErrorFlag = DocumentFile.ReadBlock();
 		BlockID = DocumentFile.GetBlockHeaderID();
 
-		if (!strcmp(BlockID, FILE_BLOCK_PARAMS)) {
-			ErrorFlag = ReadBlock_Parameters(&DocumentFile);
-		}
-		else if (!strcmp(BlockID, FILE_BLOCK_INFO)) {
-			DocumentFile.GetBlock(m_strName, 32);
-			DocumentFile.GetBlock(m_strArtist, 32);
-			DocumentFile.GetBlock(m_strCopyright, 32);
-		}
-		else if (!strcmp(BlockID, FILE_BLOCK_INSTRUMENTS)) {
-			ErrorFlag = ReadBlock_Instruments(&DocumentFile);
-		}
-		else if (!strcmp(BlockID, FILE_BLOCK_SEQUENCES)) {
-			ErrorFlag = ReadBlock_Sequences(&DocumentFile);
-		}
-		else if (!strcmp(BlockID, FILE_BLOCK_FRAMES)) {
-			ErrorFlag = ReadBlock_Frames(&DocumentFile);
-		}
-		else if (!strcmp(BlockID, FILE_BLOCK_PATTERNS)) {
-			ErrorFlag = ReadBlock_Patterns(&DocumentFile);
-		}
-		else if (!strcmp(BlockID, FILE_BLOCK_DSAMPLES)) {
-			ErrorFlag = ReadBlock_DSamples(&DocumentFile);
-		}
-		else if (!strcmp(BlockID, FILE_BLOCK_HEADER)) {
-			ErrorFlag = ReadBlock_Header(&DocumentFile);
-		}
-		else if (!strcmp(BlockID, FILE_BLOCK_COMMENTS)) {
-			ErrorFlag = ReadBlock_Comments(&DocumentFile);
-		}
-		else if (!strcmp(BlockID, FILE_BLOCK_SEQUENCES_VRC6)) {
-			ErrorFlag = ReadBlock_SequencesVRC6(&DocumentFile);
-		}
-		else if (!strcmp(BlockID, FILE_BLOCK_SEQUENCES_N163) || 
-				 !strcmp(BlockID, FILE_BLOCK_SEQUENCES_N106)) {	// Backward compatibility
-			ErrorFlag = ReadBlock_SequencesN163(&DocumentFile);
-		}
-		else if (!strcmp(BlockID, FILE_BLOCK_SEQUENCES_S5B)) {		// // //
-			ErrorFlag = ReadBlock_SequencesS5B(&DocumentFile);
-		}
-		else if (!strcmp(BlockID, FILE_BLOCK_DETUNETABLES)) {		// // //
-			ErrorFlag = ReadBlock_DetuneTables(&DocumentFile);
-		}
-		else if (!strcmp(BlockID, FILE_BLOCK_GROOVES)) {		// // //
-			ErrorFlag = ReadBlock_Grooves(&DocumentFile);
-		}
-		else if (!strcmp(BlockID, FILE_BLOCK_BOOKMARKS)) {		// // //
-			ErrorFlag = ReadBlock_Bookmarks(&DocumentFile);
-		}
-		else if (!strcmp(BlockID, "END")) {
+		if (!strcmp(BlockID, "END")) {
 			FileFinished = true;
 		}
 		else {
+			try {
+				auto fn = FTM_READ_FUNC.at(BlockID);
+				ErrorFlag = CALL_MEMBER_FN(this, fn)(&DocumentFile);
+			}
+			catch (std::out_of_range) {
 			// This shouldn't show up in release (debug only)
 #ifdef _DEBUG
-			_msgs_++;
-			if (_msgs_ < 5)
-				AfxMessageBox(_T("Unknown file block!"));
+				if (++_msgs_ < 5)
+					AfxMessageBox(_T("Unknown file block!"));
 #endif
-			if (DocumentFile.IsFileIncomplete())
-				ErrorFlag = true;
+				if (DocumentFile.IsFileIncomplete())
+					ErrorFlag = true;
+			}
 		}
 	}
 
@@ -1767,6 +1733,15 @@ bool CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile)
 	}
 
 	SetupChannels(m_iExpansionChip);
+
+	return false;
+}
+
+bool CFamiTrackerDoc::ReadBlock_SongInfo(CDocumentFile *pDocFile)		// // //
+{
+	pDocFile->GetBlock(m_strName, 32);
+	pDocFile->GetBlock(m_strArtist, 32);
+	pDocFile->GetBlock(m_strCopyright, 32);
 
 	return false;
 }

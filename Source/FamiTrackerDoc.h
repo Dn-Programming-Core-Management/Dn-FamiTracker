@@ -415,6 +415,7 @@ private:
 	bool			WriteBlock_SequencesS5B(CDocumentFile *pDocFile) const;
 
 	bool			ReadBlock_Parameters(CDocumentFile *pDocFile);
+	bool			ReadBlock_SongInfo(CDocumentFile *pDocFile);		// // //
 	bool			ReadBlock_Header(CDocumentFile *pDocFile);
 	bool			ReadBlock_Instruments(CDocumentFile *pDocFile);
 	bool			ReadBlock_Sequences(CDocumentFile *pDocFile);
