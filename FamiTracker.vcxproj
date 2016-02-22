@@ -460,6 +460,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="Source\ModuleException.cpp" />
     <ClCompile Include="Source\RecordSettingsDlg.cpp" />
     <ClCompile Include="Source\SeqInstHandler.cpp" />
     <ClCompile Include="Source\SeqInstHandlerFDS.cpp" />
@@ -675,6 +676,7 @@
     <ClInclude Include="Source\InstHandlerVRC7.h" />
     <ClInclude Include="Source\InstrumentEditorSeq.h" />
     <ClInclude Include="Source\InstrumentManager.h" />
+    <ClInclude Include="Source\ModuleException.h" />
     <ClInclude Include="Source\SequenceEditorMessage.h" />
     <ClInclude Include="Source\MainFrm.h" />
     <CustomBuild Include="resource.h">

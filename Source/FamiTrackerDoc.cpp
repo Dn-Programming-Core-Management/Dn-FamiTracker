@@ -49,6 +49,7 @@
 #include <unordered_map>		// // //
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
+#include "ModuleException.h"		// // //
 #include "TrackerChannel.h"
 #include "MainFrm.h"
 #include "DocumentFile.h"
@@ -320,9 +321,14 @@ BOOL CFamiTrackerDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	// Load file
 	if (!OpenDocument(lpszPathName)) {
 		// Loading failed, create empty document
-		//CreateEmpty();
-		// and tell doctemplate that loading failed
 		m_csDocumentLock.Unlock();
+		/*
+		DeleteContents();
+		CreateEmpty();
+		for (int i = UPDATE_TRACK; i <= UPDATE_COLUMNS; ++i)		// // // test
+			UpdateAllViews(NULL, i);
+		*/
+		// and tell doctemplate that loading failed
 		return FALSE;
 	}
 
@@ -655,6 +661,15 @@ void CFamiTrackerDoc::ConvertSequences()
 	m_vSequences.RemoveAll();
 }
 
+void CFamiTrackerDoc::AssertFileData(bool Cond, std::string Msg) const
+{
+	if (!Cond) {
+		CModuleException e = m_pCurrentDocument ? m_pCurrentDocument->GetException() : CModuleException();
+		e.add_string(Msg);
+		e.raise();
+	}
+}
+
 /*** File format description ***
 
 0000: "FamiTracker Module"					id string
@@ -685,6 +700,7 @@ void CFamiTrackerDoc::ConvertSequences()
 BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 {
 	CDocumentFile DocumentFile;
+	m_pCurrentDocument = &DocumentFile;		// // //
 	CFileException ex;
 	TCHAR TempPath[MAX_PATH], TempFile[MAX_PATH];
 	ULONGLONG FileSize;
@@ -700,6 +716,7 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 		ex.GetErrorMessage(szCause, 255);
 		AfxFormatString1(strFormatted, IDS_SAVE_FILE_ERROR, szCause);
 		AfxMessageBox(strFormatted, MB_OK | MB_ICONERROR);
+		m_pCurrentDocument = nullptr;		// // //
 		return FALSE;
 	}
 
@@ -713,6 +730,7 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 		CString	ErrorMsg;
 		ErrorMsg.LoadString(IDS_SAVE_ERROR);
 		AfxMessageBox(ErrorMsg, MB_OK | MB_ICONERROR);
+		m_pCurrentDocument = nullptr;		// // //
 		return FALSE;
 	}
 
@@ -721,6 +739,7 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 	FileSize = DocumentFile.GetLength();
 
 	DocumentFile.Close();
+	m_pCurrentDocument = nullptr;		// // //
 
 	// Save old creation date
 	HANDLE hOldFile;
@@ -1287,8 +1306,6 @@ BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 {
 	CFileException ex;
 	CDocumentFile  OpenFile;
-	unsigned int   iVersion;
-//	bool		   bForceBackup = false;
 
 	m_bBackupDone = false;
 	m_bFileLoadFailed = true;
@@ -1311,49 +1328,44 @@ BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 		CreateEmpty();
 		return TRUE;
 	}
+	
+	m_pCurrentDocument = &OpenFile;		// // // closure
+	try {		// // //
+		// Read header ID and version
+		OpenFile.ValidateFile();
 
-	// Read header ID and version
-	if (!OpenFile.ValidateFile()) {
-		AfxMessageBox(IDS_FILE_VALID_ERROR, MB_ICONERROR);
+		m_iFileVersion = OpenFile.GetFileVersion();
+
+		if (m_iFileVersion < 0x0200U) {
+			if (!OpenDocumentOld(&OpenFile))
+				OpenFile.RaiseModuleException("General error");
+
+			// Create a backup of this file, since it's an old version 
+			// and something might go wrong when converting
+			m_bForceBackup = true;
+
+			// Auto-select old style vibrato for old files
+			m_iVibratoStyle = VIBRATO_OLD;
+			m_bLinearPitch = false;
+		}
+		else {
+			if (!OpenDocumentNew(OpenFile))
+				OpenFile.RaiseModuleException("General error");
+
+			// Backup if files was of an older version
+			m_bForceBackup = m_iFileVersion < CDocumentFile::FILE_VER;
+		}
+	}
+	catch (CModuleException &e) {
+		AfxMessageBox(e.get_error().c_str(), MB_ICONERROR);
+		m_pCurrentDocument = nullptr;		// // //
 		return FALSE;
 	}
 
-	iVersion = OpenFile.GetFileVersion();
-
-	if (iVersion < 0x0200) {
-		// Older file version
-		if (iVersion < CDocumentFile::COMPATIBLE_VER) {
-			AfxMessageBox(IDS_FILE_VERSION_ERROR, MB_ICONERROR);
-			return FALSE;
-		}
-
-		if (!OpenDocumentOld(&OpenFile))
-			return FALSE;
-
-		// Create a backup of this file, since it's an old version 
-		// and something might go wrong when converting
-		//bForceBackup = true;
-		m_bForceBackup = true;
-
-		// Auto-select old style vibrato for old files
-		m_iVibratoStyle = VIBRATO_OLD;
-		m_bLinearPitch = false;
-	}
-	else if (iVersion >= 0x0200) {
-		// New file version
-
-		// Try to open file, create new if it fails
-		if (!OpenDocumentNew(OpenFile))
-			return FALSE;
-
-		// Backup if files was of an older version
-		//bForceBackup = m_iFileVersion < CDocumentFile::FILE_VER;
-		m_bForceBackup = m_iFileVersion < CDocumentFile::FILE_VER;
-	}
+	m_pCurrentDocument = nullptr;		// // //
 
 #ifdef WIP
 	// Force backups if compiled as beta
-//	bForceBackup = true;
 //	m_bForceBackup = true;
 #endif
 
@@ -1581,20 +1593,6 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 
 	// File version checking
 	m_iFileVersion = DocumentFile.GetFileVersion();
-
-	// From version 2.0, all files should be compatible (though individual blocks may not)
-	if (m_iFileVersion < 0x0200) {
-		AfxMessageBox(IDS_FILE_VERSION_ERROR, MB_ICONERROR);
-		DocumentFile.Close();
-		return FALSE;
-	}
-
-	// File version is too new
-	if (m_iFileVersion > CDocumentFile::FILE_VER) {
-		AfxMessageBox(IDS_FILE_VERSION_TOO_NEW, MB_ICONERROR);
-		DocumentFile.Close();
-		return FALSE;
-	}
 
 	// Delete loaded document
 	DeleteContents();

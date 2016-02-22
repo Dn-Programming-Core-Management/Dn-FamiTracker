@@ -439,6 +439,43 @@ private:
 	void			ReorderSequences();
 	void			ConvertSequences();
 
+	/*!	\brief Validates a given condition and throws an exception otherwise.
+		\details This method replaces the previous ASSERT_FILE_DATA preprocessor macro.
+		\param Cond The condition to check against.
+		\param Msg The error message.
+	*/
+	void			AssertFileData(bool Cond, std::string Msg) const;		// // //
+	/*!	\brief Validates a numerical value so that it lies within the interval [Min, Max).
+		\details This method may throw a CModuleException object and automatically supply a suitable
+		error message based on the value description. This method handles signed and unsigned types
+		properly.
+		\param Value The value to check against.
+		\param Min The minimum value permitted, inclusive.
+		\param Max The maximum value permitted, exclusive.
+		\param Desc A description of the checked value.
+		\return The value argument, if the method returns.
+	*/
+	template <typename T> typename std::enable_if<!std::is_unsigned<T>::value, T>::type
+	AssertRange(T Value, T Min, T Max, std::string Desc) const
+	{
+		if (!(Value >= Min && Value < Max)) {
+			char Buffer[512];
+			sprintf_s(Buffer, sizeof(Buffer), "%s out of range: expected [%d,%d), got %d", Desc.c_str(), Min, Max, Value);
+			AssertFileData(false, std::string(Buffer));
+		}
+		return Value;
+	}
+	template <typename T> typename std::enable_if<std::is_unsigned<T>::value, T>::type
+	AssertRange(T Value, T Min, T Max, std::string Desc) const
+	{
+		if (!(Value >= Min && Value < Max)) {
+			char Buffer[512];
+			sprintf_s(Buffer, sizeof(Buffer), "%s out of range: expected [%u,%u), got %u", Desc.c_str(), Min, Max, Value);
+			AssertFileData(false, std::string(Buffer));
+		}
+		return Value;
+	}
+	
 #ifdef AUTOSAVE
 	void			SetupAutoSave();
 	void			ClearAutoSave();
@@ -542,6 +579,8 @@ private:
 	// Things below are for compability with older files
 	CArray<stSequence> m_vTmpSequences;
 	CArray<stSequence[SEQ_COUNT]> m_vSequences;
+
+	mutable CDocumentFile *m_pCurrentDocument;		// // //
 
 	//
 	// End of document data
