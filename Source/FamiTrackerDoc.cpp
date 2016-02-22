@@ -2275,9 +2275,7 @@ bool CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile)
 			if (m_iFileVersion == 0x0200)
 				Row = pDocFile->GetBlockChar();
 			else
-				Row = pDocFile->GetBlockInt();
-
-			ASSERT_FILE_DATA(Row < MAX_PATTERN_LENGTH);
+				Row = AssertRange(pDocFile->GetBlockInt(), 0, 0x100, "Row index");		// // //
 
 			stChanNote *Note = pTrack->GetPatternData(Channel, Pattern, Row);
 			*Note = BLANK_NOTE;		// // //
