@@ -22,10 +22,10 @@
 
 #include "ModuleException.h"
 
-CModuleException::CModuleException(std::string Footer) :
+CModuleException::CModuleException() :
 	std::exception(),
 	m_strError(),
-	m_strFooter(std::make_shared<std::string>(std::move(Footer)))
+	m_strFooter()
 {
 }
 
@@ -48,4 +48,9 @@ const std::string CModuleException::get_error() const
 void CModuleException::add_string(std::string line)
 {
 	m_strError.push_back(std::make_shared<std::string>(std::move(line)));
+}
+
+void CModuleException::set_footer(std::string footer)
+{
+	m_strFooter.reset(&footer);
 }

@@ -34,10 +34,8 @@
 class CModuleException : std::exception
 {
 public:
-	/*! \brief Constructor of the exception object with a footer message.
-		\param Footer The error footer message. Defaults to the empty string.
-	*/
-	CModuleException(std::string Footer = "");
+	/*! \brief Constructor of the exception object with an empty message. */
+	CModuleException();
 
 	/*! \brief Raises the exception object.
 		\details All derived classes must override this method with the exact same function body in order
@@ -56,6 +54,10 @@ public:
 		\param line A string representing one line of the error description.
 	*/
 	void add_string(std::string line);
+	/*!	\brief Sets the footer string of the error message.
+		\param footer The new footer string.
+	*/
+	void set_footer(std::string footer);
 
 private:
 	std::vector<std::shared_ptr<std::string>> m_strError;

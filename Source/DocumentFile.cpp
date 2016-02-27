@@ -358,11 +358,18 @@ bool CDocumentFile::IsFileIncomplete() const
 
 CModuleException CDocumentFile::GetException() const		// // //
 {
+	CModuleException e;
+	SetDefaultFooter(e);
+	return e;
+}
+
+void CDocumentFile::SetDefaultFooter(CModuleException &e) const		// // //
+{
 	char Buffer[128] = {};
 	sprintf_s(Buffer, sizeof(Buffer), "At address 0x%X in %s block,\naddress 0x%llX in file",
 			  m_iPreviousPointer, m_cBlockID, m_iPreviousPosition);
 	std::string str(Buffer);
-	return CModuleException(str);
+	e.set_footer(str);
 }
 
 void CDocumentFile::RaiseModuleException(std::string Msg) const		// // //

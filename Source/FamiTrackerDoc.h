@@ -445,37 +445,42 @@ private:
 		\param Msg The error message.
 	*/
 	void			AssertFileData(bool Cond, std::string Msg) const;		// // //
-	/*!	\brief Validates a numerical value so that it lies within the interval [Min, Max).
+	/*!	\brief Validates a numerical value so that it lies within the interval [Min, Max].
 		\details This method may throw a CModuleException object and automatically supply a suitable
 		error message based on the value description. This method handles signed and unsigned types
 		properly.
 		\param Value The value to check against.
 		\param Min The minimum value permitted, inclusive.
-		\param Max The maximum value permitted, exclusive.
+		\param Max The maximum value permitted, inclusive.
 		\param Desc A description of the checked value.
 		\return The value argument, if the method returns.
 	*/
-	template <typename T> typename std::enable_if<!std::is_unsigned<T>::value, T>::type
-	AssertRange(T Value, T Min, T Max, std::string Desc) const
+	template <typename T, typename U, typename V>
+	typename std::enable_if<std::is_unsigned<T>::value, T>::type
+	AssertRange(T Value, U Min, V Max, std::string Desc) const
 	{
-		if (!(Value >= Min && Value < Max)) {
+		return AssertRangeFmt(Value, Min, Max, Desc, "%u");
+	}
+
+	template <typename T, typename U, typename V>
+	typename std::enable_if<std::is_signed<T>::value, T>::type
+	AssertRange(T Value, U Min, V Max, std::string Desc) const
+	{
+		return AssertRangeFmt(Value, Min, Max, Desc, "%d");
+	}
+
+	template <typename T, typename U, typename V>
+	T AssertRangeFmt(T Value, U Min, V Max, std::string Desc, const char *fmt) const
+	{
+		if (!(Value >= Min && Value <= Max)) {
+			char Format[128];
+			sprintf_s(Format, sizeof(Format), "%%s out of range: expected [%s,%s], got %s", fmt, fmt, fmt);
 			char Buffer[512];
-			sprintf_s(Buffer, sizeof(Buffer), "%s out of range: expected [%d,%d), got %d", Desc.c_str(), Min, Max, Value);
+			sprintf_s(Buffer, sizeof(Buffer), Format, Desc.c_str(), Min, Max, Value);
 			AssertFileData(false, std::string(Buffer));
 		}
 		return Value;
 	}
-	template <typename T> typename std::enable_if<std::is_unsigned<T>::value, T>::type
-	AssertRange(T Value, T Min, T Max, std::string Desc) const
-	{
-		if (!(Value >= Min && Value < Max)) {
-			char Buffer[512];
-			sprintf_s(Buffer, sizeof(Buffer), "%s out of range: expected [%u,%u), got %u", Desc.c_str(), Min, Max, Value);
-			AssertFileData(false, std::string(Buffer));
-		}
-		return Value;
-	}
-	
 #ifdef AUTOSAVE
 	void			SetupAutoSave();
 	void			ClearAutoSave();
