@@ -664,9 +664,9 @@ void CFamiTrackerDoc::ConvertSequences()
 void CFamiTrackerDoc::AssertFileData(bool Cond, std::string Msg) const
 {
 	if (!Cond) {
-		CModuleException e = m_pCurrentDocument ? m_pCurrentDocument->GetException() : CModuleException();
-		e.add_string(Msg);
-		e.raise();
+		CModuleException *e = m_pCurrentDocument ? m_pCurrentDocument->GetException() : new CModuleException();
+		e->add_string(Msg);
+		e->raise();
 	}
 }
 
@@ -1227,7 +1227,7 @@ bool CFamiTrackerDoc::WriteBlock_Patterns(CDocumentFile *pDocFile) const
 					for (unsigned y = 0; y < PatternLen; y++) {
 						if (!m_pTracks[t]->IsCellFree(i, x, y)) {
 							Note = m_pTracks[t]->GetPatternData(i, x, y);		// // //
-							ASSERT_FILE_DATA(Note != NULL);
+							// AssertFileData(Note, "Cannot create note");
 							pDocFile->WriteBlockInt(y);
 
 							pDocFile->WriteBlockChar(Note->Note);
@@ -1356,9 +1356,10 @@ BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 			m_bForceBackup = m_iFileVersion < CDocumentFile::FILE_VER;
 		}
 	}
-	catch (CModuleException &e) {
-		AfxMessageBox(e.get_error().c_str(), MB_ICONERROR);
+	catch (CModuleException *e) {
+		AfxMessageBox(e->get_error().c_str(), MB_ICONERROR);
 		m_pCurrentDocument = nullptr;		// // //
+		delete e;
 		return FALSE;
 	}
 
@@ -1841,7 +1842,7 @@ bool CFamiTrackerDoc::ReadBlock_Instruments(CDocumentFile *pDocFile)
 		try {
 			pInstrument->Load(pDocFile);
 		}
-		catch (CModuleException &e) {
+		catch (CModuleException *e) {
 			pDocFile->SetDefaultFooter(e);
 			throw e;
 		}

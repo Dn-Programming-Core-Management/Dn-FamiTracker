@@ -52,5 +52,5 @@ void CModuleException::add_string(std::string line)
 
 void CModuleException::set_footer(std::string footer)
 {
-	m_strFooter.reset(&footer);
+	m_strFooter.reset(new std::string(footer));
 }

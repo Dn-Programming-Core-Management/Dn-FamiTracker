@@ -66,8 +66,8 @@ public:
 	bool		IsFileIncomplete() const;
 
 	// // // exception
-	CModuleException GetException() const;
-	void SetDefaultFooter(CModuleException &e) const;
+	CModuleException *GetException() const;
+	void SetDefaultFooter(CModuleException *e) const;
 	__declspec(noreturn) void RaiseModuleException(std::string Msg) const;
 
 	// // // Overrides

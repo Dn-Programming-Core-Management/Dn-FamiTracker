@@ -356,27 +356,27 @@ bool CDocumentFile::IsFileIncomplete() const
 	return m_bIncomplete;
 }
 
-CModuleException CDocumentFile::GetException() const		// // //
+CModuleException *CDocumentFile::GetException() const		// // //
 {
-	CModuleException e;
+	CModuleException *e = new CModuleException();
 	SetDefaultFooter(e);
 	return e;
 }
 
-void CDocumentFile::SetDefaultFooter(CModuleException &e) const		// // //
+void CDocumentFile::SetDefaultFooter(CModuleException *e) const		// // //
 {
 	char Buffer[128] = {};
 	sprintf_s(Buffer, sizeof(Buffer), "At address 0x%X in %s block,\naddress 0x%llX in file",
 			  m_iPreviousPointer, m_cBlockID, m_iPreviousPosition);
 	std::string str(Buffer);
-	e.set_footer(str);
+	e->set_footer(str);
 }
 
 void CDocumentFile::RaiseModuleException(std::string Msg) const		// // //
 {
-	CModuleException e = GetException();
-	e.add_string(Msg);
-	e.raise();
+	CModuleException *e = GetException();
+	e->add_string(Msg);
+	e->raise();
 }
 
 UINT CDocumentFile::Read(void *lpBuf, UINT nCount)		// // //
