@@ -552,7 +552,8 @@ void CFamiTrackerDoc::OnFileSaveAs()
 	// Overloaded in order to save the ftm-path
 	CString newName = GetPathName();
 
-	if (!AfxGetApp()->DoPromptFileName(newName, AFX_IDS_SAVEFILE, OFN_HIDEREADONLY | OFN_PATHMUSTEXIST, FALSE, GetDocTemplate()))
+	if (!theApp.DoPromptFileName(newName, theApp.GetSettings()->GetPath(PATH_FTM) + _T("\\"), AFX_IDS_SAVEFILE,
+		OFN_HIDEREADONLY | OFN_PATHMUSTEXIST, FALSE, NULL))		// // // overridden
 		return;
 
 	theApp.GetSettings()->SetPath(newName, PATH_FTM);

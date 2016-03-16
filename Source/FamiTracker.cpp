@@ -179,7 +179,7 @@ BOOL CFamiTrackerApp::InitInstance()
 
 	// Register the application's document templates.  Document templates
 	//  serve as the connection between documents, frame windows and views
-	CSingleDocTemplate* pDocTemplate = new CSingleDocTemplate(
+	CDocTemplate0CC* pDocTemplate = new CDocTemplate0CC(		// // //
 		IDR_MAINFRAME, 
 		RUNTIME_CLASS(CFamiTrackerDoc), 
 		RUNTIME_CLASS(CMainFrame), 
@@ -212,7 +212,9 @@ BOOL CFamiTrackerApp::InitInstance()
 	// Skip this if in wip/beta mode
 #if /*!defined(WIP) &&*/ !defined(_DEBUG)
 	// Add shell options
-	RegisterShellFileTypes(TRUE);
+	RegisterShellFileTypes();		// // //
+	static const LPCTSTR FILE_ASSOC_NAME = _T("0CC-FamiTracker Module");
+	AfxRegSetValue(HKEY_CLASSES_ROOT, "0CCFamiTracker.Document", REG_SZ, FILE_ASSOC_NAME, lstrlen(FILE_ASSOC_NAME) * sizeof(TCHAR));
 	// Add an option to play files
 	CString strPathName, strTemp, strFileTypeId;
 	AfxGetModuleShortFileName(AfxGetInstanceHandle(), strPathName);
@@ -743,17 +745,30 @@ BOOL CFamiTrackerApp::DoPromptFileName(CString& fileName, CString& filePath, UIN
 	if (pTemplate == NULL) {
 		POSITION pos = GetFirstDocTemplatePosition();
 		while (pos != NULL) {
-			CString strFilterExt;
 			CString strFilterName;
 			pTemplate = GetNextDocTemplate(pos);
-			pTemplate->GetDocString(strFilterExt, CDocTemplate::filterExt);
 			pTemplate->GetDocString(strFilterName, CDocTemplate::filterName);
 
 			// Add extension
 			strFilter += strFilterName;
 			strFilter += (TCHAR)'\0';
-			strFilter += _T("*");
-			strFilter += strFilterExt;
+			int Beg = strFilterName.ReverseFind('(');		// // //
+			int End = strFilterName.ReverseFind(')');
+			if (Beg > -1 && End > -1 && Beg < End) {
+				strFilter += strFilterName.Mid(Beg + 1, End - Beg - 1);
+			}
+			else {
+				CString strFilterExt;
+				pTemplate->GetDocString(strFilterExt, CDocTemplate::filterExt);
+				int curPos = 0;
+				CString tok = strFilterExt.Tokenize(_T(";"), curPos);
+				while (!tok.IsEmpty()) {
+					strFilter += _T("*");
+					strFilter += tok;
+					tok = strFilterExt.Tokenize(_T(";"), curPos);
+					if (!tok.IsEmpty()) strFilter += _T(";");
+				}
+			}
 			strFilter += (TCHAR)'\0';
 			dlgFile.m_ofn.nMaxCustFilter++;
 		}
@@ -763,13 +778,15 @@ BOOL CFamiTrackerApp::DoPromptFileName(CString& fileName, CString& filePath, UIN
 	dlgFile.m_ofn.nFilterIndex = 1;
 
 	// append the "*.*" all files filter
-	CString allFilter;
-	VERIFY(allFilter.LoadString(AFX_IDS_ALLFILTER));
-	strFilter += allFilter;
-	strFilter += (TCHAR)'\0';   // next string please
-	strFilter += _T("*.*");
-	strFilter += (TCHAR)'\0';   // last string
-	dlgFile.m_ofn.nMaxCustFilter++;
+	if (bOpenFileDialog) {
+		CString allFilter;
+		VERIFY(allFilter.LoadString(AFX_IDS_ALLFILTER));
+		strFilter += allFilter;
+		strFilter += (TCHAR)'\0';   // next string please
+		strFilter += _T("*.*");
+		strFilter += (TCHAR)'\0';   // last string
+		dlgFile.m_ofn.nMaxCustFilter++;
+	}
 
 	dlgFile.m_ofn.lpstrFilter = strFilter;
 	dlgFile.m_ofn.lpstrTitle = title;
@@ -990,4 +1007,67 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 
 	// Call default implementation
 	CCommandLineInfo::ParseParam(pszParam, bFlag, bLast);
+}
+
+//
+// CDocTemplate0CC class
+//
+
+// copied from http://support.microsoft.com/en-us/kb/141921
+
+CDocTemplate0CC::CDocTemplate0CC(UINT nIDResource, CRuntimeClass *pDocClass, CRuntimeClass *pFrameClass, CRuntimeClass *pViewClass) :
+	CSingleDocTemplate(nIDResource, pDocClass, pFrameClass, pViewClass)
+{
+}
+
+BOOL CDocTemplate0CC::GetDocString(CString &rString, DocStringIndex i) const
+{
+	CString strTemp, strLeft, strRight;
+	int nFindPos;
+	AfxExtractSubString(strTemp, m_strDocStrings, (int)i);
+	if (i == CDocTemplate::filterExt) {
+		nFindPos = strTemp.Find(';');
+		if (-1 != nFindPos) {
+			//string contains two extensions
+			strLeft = strTemp.Left(nFindPos + 1);
+			strRight = strTemp.Right(lstrlen((const char*)strTemp) - nFindPos - 1);
+			strTemp = strLeft + strRight;
+		}
+	}
+	rString = strTemp;
+	return TRUE;
+}
+
+CDocTemplate::Confidence CDocTemplate0CC::MatchDocType(const char *pszPathName, CDocument *&rpDocMatch)
+{
+	ASSERT(pszPathName != NULL);
+	rpDocMatch = NULL;
+
+	// go through all documents
+	POSITION pos = GetFirstDocPosition();
+	while (pos != NULL) {
+		CDocument* pDoc = GetNextDoc(pos);
+		if (pDoc->GetPathName() == pszPathName) {
+		   // already open
+			rpDocMatch = pDoc;
+			return yesAlreadyOpen;
+		}
+	}  // end while
+
+	// // // see if it matches one of the suffixes
+	CString strFilterExt;
+	if (GetDocString(strFilterExt, CDocTemplate::filterExt) && !strFilterExt.IsEmpty()) {
+		 // see if extension matches
+		int nDot = CString(pszPathName).ReverseFind('.');
+		int curPos = 0;
+		CString tok = strFilterExt.Tokenize(_T(";"), curPos);
+		while (!tok.IsEmpty()) {
+			TRACE("%s %s\n", tok, pszPathName + nDot);
+			ASSERT(tok[0] == '.');
+			if (nDot >= 0 && lstrcmpi(pszPathName + nDot, tok) == 0)
+				return yesAttemptNative; // extension matches
+			tok = strFilterExt.Tokenize(_T(";"), curPos);
+		}
+	}
+	return yesAttemptForeign; //unknown document type
 }

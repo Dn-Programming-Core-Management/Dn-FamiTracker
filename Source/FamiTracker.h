@@ -76,6 +76,17 @@ class CMutex;
 
 enum play_mode_t;	// Defined in soundgen.h
 
+/*!
+	\brief A MFC document template supporting both .0cc and .ftm file extensions.
+*/
+class CDocTemplate0CC : public CSingleDocTemplate
+{
+public:
+	CDocTemplate0CC(UINT nIDResource, CRuntimeClass* pDocClass, CRuntimeClass* pFrameClass, CRuntimeClass* pViewClass);
+	BOOL GetDocString(CString& rString, enum DocStringIndex i) const;
+	CDocTemplate::Confidence MatchDocType(const char* pszPathName, CDocument*& rpDocMatch);
+};
+
 // CFamiTrackerApp:
 // See FamiTracker.cpp for the implementation of this class
 //
@@ -135,7 +146,7 @@ private:
 	void CheckNewVersion();
 	void LoadLocalization();
 
-protected:
+public: // as it is
 	BOOL DoPromptFileName(CString& fileName, CString& filePath, UINT nIDSTitle, DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* pTemplate);
 
 	// Private variables and objects
