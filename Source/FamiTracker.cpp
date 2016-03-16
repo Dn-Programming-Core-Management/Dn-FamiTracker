@@ -732,7 +732,7 @@ void CFamiTrackerApp::OnFileOpen()
 BOOL CFamiTrackerApp::DoPromptFileName(CString& fileName, CString& filePath, UINT nIDSTitle, DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* pTemplate)
 {
 	// Copied from MFC
-	CFileDialog dlgFile(bOpenFileDialog, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, NULL, 0);
+	CFileDialog dlgFile(bOpenFileDialog, _T(".0cc"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, NULL, 0);		// // //
 
 	CString title;
 	ENSURE(title.LoadString(nIDSTitle));
