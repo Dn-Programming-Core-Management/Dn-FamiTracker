@@ -554,7 +554,6 @@ private:
 	// Instruments, samples and sequences
 	CDSample		m_DSamples[MAX_DSAMPLES];					// The DPCM sample list
 	CInstrumentManager *m_pInstrumentManager;					// // //
-	CSequenceManager **m_pSequenceManager;						// // //
 	CGroove			*m_pGrooveTable[MAX_GROOVE];				// // // Grooves
 
 	// Module properties
@@ -578,8 +577,6 @@ private:
 
 	// Row highlight (TODO remove)
 	stHighlight		m_vHighlight;								// // //
-
-	static const int SEQ_MANAGER_COUNT;
 
 	// Things below are for compability with older files
 	CArray<stSequence> m_vTmpSequences;

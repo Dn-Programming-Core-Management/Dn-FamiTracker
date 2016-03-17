@@ -26,7 +26,7 @@
 #include <afxmt.h>
 #include "Instrument.h"
 #include "InstrumentManager.h"
-//#include "SequenceManager.h"
+#include "SequenceManager.h"
 
 const int CInstrumentManager::MAX_INSTRUMENTS = 64;
 const int CInstrumentManager::SEQ_MANAGER_COUNT = 5;
@@ -34,6 +34,9 @@ const int CInstrumentManager::SEQ_MANAGER_COUNT = 5;
 CInstrumentManager::CInstrumentManager()
 {
 	m_pInstruments.resize(MAX_INSTRUMENTS);
+
+	for (int i = 0; i < SEQ_MANAGER_COUNT; i++)
+		m_pSequenceManager.push_back(std::unique_ptr<CSequenceManager>(new CSequenceManager(i == 2 ? 3 : SEQ_COUNT)));
 }
 
 CInstrumentManager::~CInstrumentManager()
@@ -100,6 +103,8 @@ void CInstrumentManager::ClearAll()
 	const auto End = m_pInstruments.end();
 	for (auto it = m_pInstruments.begin(); it < End; ++it)
 		it->reset();
+	for (int i = 0; i < SEQ_MANAGER_COUNT; i++)
+		m_pSequenceManager[i].reset(new CSequenceManager(i == 2 ? 3 : SEQ_COUNT));
 }
 
 bool CInstrumentManager::IsInstrumentUsed(unsigned int Index) const
@@ -152,5 +157,5 @@ CSequenceManager *const CInstrumentManager::GetSequenceManager(int InstType) con
 	case INST_S5B:  Index = 4; break;
 	default: return nullptr;
 	}
-	return m_pSequenceManager[Index];
+	return m_pSequenceManager[Index].get();
 }

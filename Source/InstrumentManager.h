@@ -38,11 +38,12 @@ public:
 	CInstrumentManager();
 	~CInstrumentManager();
 
+	void ClearAll();
+
 	std::shared_ptr<CInstrument> GetInstrument(unsigned int Index) const;
 	bool InsertInstrument(unsigned int Index, CInstrument *pInst);
 	bool InsertInstrument(unsigned int Index, std::shared_ptr<CInstrument> pInst);
 	bool RemoveInstrument(unsigned int Index);
-	void ClearAll();
 	
 	bool IsInstrumentUsed(unsigned int Index) const;
 	unsigned int GetInstrumentCount() const;
@@ -61,8 +62,9 @@ public:
 
 private:
 	std::vector<std::shared_ptr<CInstrument>> m_pInstruments;
+	std::vector<std::unique_ptr<CSequenceManager>> m_pSequenceManager;
+
 	mutable CCriticalSection m_InstrumentLock;
-	CSequenceManager **m_pSequenceManager;
 
 private:
 	static const int SEQ_MANAGER_COUNT;

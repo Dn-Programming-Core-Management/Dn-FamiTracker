@@ -80,8 +80,6 @@ const stHighlight CFamiTrackerDoc::DEFAULT_HIGHLIGHT = {DEFAULT_FIRST_HIGHLIGHT,
 
 const bool	CFamiTrackerDoc::DEFAULT_LINEAR_PITCH = false;
 
-const int	CFamiTrackerDoc::SEQ_MANAGER_COUNT = 5;		// // //
-
 // File I/O constants
 static const char *FILE_HEADER				= "FamiTracker Module";
 static const char *FILE_BLOCK_PARAMS		= "PARAMS";
@@ -221,9 +219,6 @@ CFamiTrackerDoc::CFamiTrackerDoc() :
 	memset(m_pTracks, 0, sizeof(CPatternData*) * MAX_TRACKS);
 	memset(m_pGrooveTable, 0, sizeof(CGroove*) * MAX_GROOVE);		// // //
 	memset(m_pBookmarkList, 0, sizeof(std::vector<stBookmark>*) * MAX_TRACKS);		// // //
-	m_pSequenceManager = new CSequenceManager*[SEQ_MANAGER_COUNT]();		// // //
-	for (int i = 0; i < SEQ_MANAGER_COUNT; i++)
-		m_pSequenceManager[i] = new CSequenceManager(i == 2 ? 3 : SEQ_COUNT);
 	m_pInstrumentManager = new CInstrumentManager();
 
 	// Register this object to the sound generator
@@ -254,10 +249,6 @@ CFamiTrackerDoc::~CFamiTrackerDoc()
 	// // // Bookmarks
 	for (int i = 0; i < MAX_TRACKS; ++i)
 		ClearBookmarkList(i);
-
-	for (int i = 0; i < SEQ_MANAGER_COUNT; ++i)
-		SAFE_RELEASE(m_pSequenceManager[i]);
-	SAFE_RELEASE_ARRAY(m_pSequenceManager);		// // //
 	
 	m_pInstrumentManager->ClearAll();		// // //
 	SAFE_RELEASE(m_pInstrumentManager);
@@ -415,10 +406,7 @@ void CFamiTrackerDoc::DeleteContents()
 		m_DSamples[i].Clear();
 	}
 
-	m_pInstrumentManager->ClearAll();
-	// Clear sequences
-//	for (int i = 0; i < SEQ_MANAGER_COUNT; ++i) {
-//		m_pSequenceManager[i]->ClearAll();
+	m_pInstrumentManager->ClearAll();		// // //
 
 	// // // Grooves
 	for (int i = 0; i < MAX_GROOVE; ++i)
@@ -4050,16 +4038,7 @@ void CFamiTrackerDoc::ApplyExpansionChip()
 
 CSequenceManager *const CFamiTrackerDoc::GetSequenceManager(int InstType) const
 {
-	int Index = -1;
-	switch (InstType) {
-	case INST_2A03: Index = 0; break;
-	case INST_VRC6: Index = 1; break;
-	case INST_FDS:  Index = 2; break;
-	case INST_N163: Index = 3; break;
-	case INST_S5B:  Index = 4; break;
-	default: return nullptr;
-	}
-	return m_pSequenceManager[Index];
+	return m_pInstrumentManager->GetSequenceManager(InstType);
 }
 
 CInstrumentManager *const CFamiTrackerDoc::GetInstrumentManager() const
