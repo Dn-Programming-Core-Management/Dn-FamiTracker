@@ -57,15 +57,7 @@ std::shared_ptr<CInstrument> CInstrumentManager::GetInstrument(unsigned int Inde
 
 std::shared_ptr<CInstrument> CInstrumentManager::CreateNew(inst_type_t InstType)
 {
-	switch (InstType) {
-	case INST_2A03: return std::make_shared<CInstrument2A03>(CInstrument2A03());
-	case INST_VRC6: return std::make_shared<CInstrumentVRC6>(CInstrumentVRC6());
-	case INST_VRC7: return std::make_shared<CInstrumentVRC7>(CInstrumentVRC7());
-	case INST_N163: return std::make_shared<CInstrumentN163>(CInstrumentN163());
-	case INST_FDS:  return std::make_shared<CInstrumentFDS>(CInstrumentFDS());
-	case INST_S5B:  return std::make_shared<CInstrumentS5B>(CInstrumentS5B());
-	}
-	return nullptr;
+	return std::shared_ptr<CInstrument>(CInstrument::CreateNew(InstType));
 }
 
 bool CInstrumentManager::InsertInstrument(unsigned int Index, CInstrument *pInst)

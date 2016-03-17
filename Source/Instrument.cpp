@@ -37,6 +37,19 @@ CInstrument::CInstrument(inst_type_t type) : m_iType(type)		// // //
 	memset(m_cName, 0, INST_NAME_MAX);
 }
 
+CInstrument *CInstrument::CreateNew(inst_type_t Type)		// // //
+{
+	switch (Type) {
+	case INST_2A03: return new CInstrument2A03();
+	case INST_VRC6: return new CInstrumentVRC6();
+	case INST_VRC7: return new CInstrumentVRC7();
+	case INST_N163: return new CInstrumentN163();
+	case INST_FDS:  return new CInstrumentFDS();
+	case INST_S5B:  return new CInstrumentS5B();
+	}
+	return nullptr;
+}
+
 CInstrument::~CInstrument()
 {
 }
@@ -66,9 +79,9 @@ void CInstrument::InstrumentChanged() const
 {
 	// Set modified flag
 	CFrameWnd *pFrameWnd = dynamic_cast<CFrameWnd*>(AfxGetMainWnd());
-	if (pFrameWnd != NULL) {
+	if (pFrameWnd != nullptr) {
 		CFamiTrackerDoc *pDoc = (CFamiTrackerDoc*)pFrameWnd->GetActiveDocument();		// // //
-		if (pDoc != NULL)
+		if (pDoc != nullptr)
 			pDoc->SetModifiedFlag();
 			pDoc->SetExceededFlag();		// // //
 	}
@@ -115,7 +128,7 @@ CSeqInstrument::CSeqInstrument(inst_type_t type) : CInstrument(type)
 
 CInstrument *CSeqInstrument::Clone() const
 {
-	CSeqInstrument *inst = static_cast<CSeqInstrument*>(CreateNew());		// // //
+	CSeqInstrument *inst = static_cast<CSeqInstrument*>(CInstrument::CreateNew(m_iType));		// // //
 
 	for (int i = 0; i < SEQ_COUNT; i++) {
 		inst->SetSeqEnable(i, GetSeqEnable(i));

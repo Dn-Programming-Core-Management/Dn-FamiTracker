@@ -58,13 +58,13 @@ public:
 class CInstrument {
 public:
 	CInstrument(inst_type_t type);		// // //
+	static CInstrument *CreateNew(inst_type_t Type);		// // // static factory method
 	virtual ~CInstrument();
 	void SetName(const char *Name);
 	void GetName(char *Name) const;
 	const char* GetName() const;
 public:
 	virtual inst_type_t GetType() const;											// // // Returns instrument type
-	virtual CInstrument* CreateNew() const = 0;										// Creates a new object
 	virtual CInstrument* Clone() const = 0;											// Creates a copy
 	virtual void Setup() = 0;														// Setup some initial values
 	virtual void Store(CDocumentFile *pDocFile) = 0;								// Saves the instrument to the module
@@ -86,7 +86,6 @@ class CSeqInstrument : public CInstrument, public CSeqInstrumentInterface		// //
 {
 public:
 	CSeqInstrument(inst_type_t type);
-	virtual CInstrument* CreateNew() const { return new CSeqInstrument(m_iType); };
 	virtual CInstrument* Clone() const;
 	virtual void	Setup();
 	virtual void	Store(CDocumentFile *pDocFile);
@@ -112,7 +111,6 @@ protected:
 class CInstrument2A03 : public CSeqInstrument, public CInstrument2A03Interface {
 public:
 	CInstrument2A03();
-	CInstrument* CreateNew() const { return new CInstrument2A03(); };
 	CInstrument* Clone() const;
 	void	Store(CDocumentFile *pFile);
 	bool	Load(CDocumentFile *pDocFile);
@@ -148,13 +146,11 @@ private:
 class CInstrumentVRC6 : public CSeqInstrument {
 public:
 	CInstrumentVRC6() : CSeqInstrument(INST_VRC6) {};
-	CInstrument* CreateNew() const { return new CInstrumentVRC6(); };
 };
 
 class CInstrumentVRC7 : public CInstrument {
 public:
 	CInstrumentVRC7();
-	CInstrument* CreateNew() const { return new CInstrumentVRC7(); };
 	CInstrument* Clone() const;
 	void	Setup();
 	void	Store(CDocumentFile *pDocFile);
@@ -179,7 +175,6 @@ class CInstrumentFDS : public CInstrument {
 public:
 	CInstrumentFDS();
 	~CInstrumentFDS();
-	CInstrument* CreateNew() const { return new CInstrumentFDS(); };
 	CInstrument* Clone() const;
 	void	Setup();
 	void	Store(CDocumentFile *pDocFile);
@@ -233,7 +228,6 @@ private:
 class CInstrumentN163 : public CSeqInstrument {
 public:
 	CInstrumentN163();
-	CInstrument* CreateNew() const { return new CInstrumentN163(); };
 	CInstrument* Clone() const;
 	void	Store(CDocumentFile *pDocFile);
 	bool	Load(CDocumentFile *pDocFile);
@@ -276,5 +270,4 @@ private:
 class CInstrumentS5B : public CSeqInstrument {
 public:
 	CInstrumentS5B() : CSeqInstrument(INST_S5B) {};		// // //
-	CInstrument* CreateNew() const { return new CInstrumentS5B(); };
 };
