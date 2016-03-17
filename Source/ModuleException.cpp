@@ -38,7 +38,7 @@ const std::string CModuleException::get_error() const
 		if (++i == COUNT) break;
 		out += '\n';
 	}
-	if (!m_strFooter->empty()) {
+	if (m_strFooter) {
 		out += '\n';
 		out += *m_strFooter;
 	}

@@ -190,6 +190,8 @@ void CDocumentFile::ValidateFile()
 	// Check ident string
 	Read(Buffer, int(strlen(FILE_HEADER_ID)));
 
+	CModuleException *e = new CModuleException();		// // // blank
+
 	if (memcmp(Buffer, FILE_HEADER_ID, strlen(FILE_HEADER_ID)) != 0)
 		RaiseModuleException("File is not a FamiTracker module");
 
@@ -201,17 +203,20 @@ void CDocumentFile::ValidateFile()
 	if (GetFileVersion() < COMPATIBLE_VER) {
 		char Buffer[128];
 		sprintf_s(Buffer, sizeof(Buffer), "FamiTracker module version too old (0x%X), expected 0x%X or above", GetFileVersion(), COMPATIBLE_VER);
-		RaiseModuleException(Buffer);
+		e->add_string(Buffer);
+		e->raise();
 	}
 	// // // File version is too new
 	if (GetFileVersion() > FILE_VER) {
 		char Buffer[128];
 		sprintf_s(Buffer, sizeof(Buffer), "FamiTracker module version too new (0x%X), expected 0x%X or below", GetFileVersion(), FILE_VER);
-		RaiseModuleException(Buffer);
+		e->add_string(Buffer);
+		e->raise();
 	}
 
 	m_bFileDone = false;
 	m_bIncomplete = false;
+	delete e;
 }
 
 unsigned int CDocumentFile::GetFileVersion() const
