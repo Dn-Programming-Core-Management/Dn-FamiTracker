@@ -47,14 +47,14 @@ public:
 	static const int CHIP_COUNT = 8;	// Number of allowed expansion chips
 
 protected:
-	void AddChip(int Ident, CInstrument *pInst, LPCTSTR pName);
+	void AddChip(int Ident, inst_type_t Inst, LPCTSTR pName);
 
 protected:
 	// Chips
 	int				m_iAddedChips;
 	int				m_iChipIdents[CHIP_COUNT];
 	LPCTSTR			m_pChipNames[CHIP_COUNT];
-	std::vector<std::unique_ptr<CInstrument>> m_pChipInst;
+	inst_type_t		m_iChipInstType[CHIP_COUNT];		// // //
 
 	// Current set
 	CTrackerChannel	*m_pChannels[CHANNELS];
