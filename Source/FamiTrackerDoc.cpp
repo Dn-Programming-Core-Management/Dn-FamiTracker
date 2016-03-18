@@ -1638,7 +1638,7 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 		for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
 			if (IsInstrumentUsed(i) && GetInstrumentType(i) == INST_FDS) {
 				auto pInstrument = std::static_pointer_cast<CInstrumentFDS>(GetInstrument(i));
-				CSequence *pSeq = pInstrument->GetArpSeq();
+				CSequence *pSeq = pInstrument->GetSequence(SEQ_ARPEGGIO);
 				if (pSeq->GetItemCount() > 0 && pSeq->GetSetting() == SETTING_ARP_FIXED)
 					for (unsigned int j = 0; j < pSeq->GetItemCount(); ++j)
 						pSeq->SetItem(j, pSeq->GetItem(j) + 24);

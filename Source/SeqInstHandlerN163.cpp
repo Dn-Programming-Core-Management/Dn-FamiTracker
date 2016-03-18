@@ -20,6 +20,7 @@
 ** must bear this legend.
 */
 
+#include <memory> // TODO: remove
 #include "stdafx.h"
 #include "Instrument.h"
 #include "ChannelHandlerInterface.h"

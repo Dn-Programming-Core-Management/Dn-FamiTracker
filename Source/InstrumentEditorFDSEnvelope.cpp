@@ -98,17 +98,7 @@ void CInstrumentEditorFDSEnvelope::OnCbnSelchangeType()
 
 void CInstrumentEditorFDSEnvelope::LoadSequence()
 {
-	switch (m_iSelectedType) {
-		case SEQ_VOLUME:
-			m_pSequenceEditor->SelectSequence(m_pInstrument->GetVolumeSeq(), SEQ_VOLUME, INST_FDS);	
-			break;
-		case SEQ_ARPEGGIO:
-			m_pSequenceEditor->SelectSequence(m_pInstrument->GetArpSeq(), SEQ_ARPEGGIO, INST_FDS);
-			break;
-		case SEQ_PITCH:
-			m_pSequenceEditor->SelectSequence(m_pInstrument->GetPitchSeq(), SEQ_PITCH, INST_FDS);
-			break;
-	}
+	m_pSequenceEditor->SelectSequence(m_pInstrument->GetSequence(m_iSelectedType), m_iSelectedType, INST_FDS);		// // //
 }
 
 void CInstrumentEditorFDSEnvelope::OnKeyReturn()
@@ -117,18 +107,19 @@ void CInstrumentEditorFDSEnvelope::OnKeyReturn()
 
 	GetDlgItemText(IDC_SEQUENCE_STRING, string);
 
+	CSequence *pSeq = m_pInstrument->GetSequence(m_iSelectedType);		// // //
 	switch (m_iSelectedType) {
 		case SEQ_VOLUME:
-			TranslateMML(string, m_pInstrument->GetVolumeSeq(), MAX_VOLUME, 0);
+			TranslateMML(string, pSeq, MAX_VOLUME, 0);
 			break;
 		case SEQ_ARPEGGIO:
-			if (m_pInstrument->GetArpSeq()->GetSetting() == SETTING_ARP_SCHEME)	// // //
-				TranslateMML(string, m_pInstrument->GetArpSeq(), 36, -27);
+			if (pSeq->GetSetting() == SETTING_ARP_SCHEME)	// // //
+				TranslateMML(string, pSeq, 36, -27);
 			else
-				TranslateMML(string, m_pInstrument->GetArpSeq(), 96, m_pInstrument->GetArpSeq()->GetSetting()== SETTING_ARP_FIXED ? 0 : -96);
+				TranslateMML(string, pSeq, 96, pSeq->GetSetting()== SETTING_ARP_FIXED ? 0 : -96);
 			break;
 		case SEQ_PITCH:
-			TranslateMML(string, m_pInstrument->GetPitchSeq(), 126, -127);
+			TranslateMML(string, pSeq, 126, -127);
 			break;
 	}
 }

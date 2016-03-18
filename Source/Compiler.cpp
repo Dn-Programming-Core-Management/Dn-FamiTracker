@@ -1446,6 +1446,7 @@ void CCompiler::ScanSong()
 	m_iInstruments = 0;
 
 	memset(m_iAssignedInstruments, 0, sizeof(int) * MAX_INSTRUMENTS);
+	// TODO: remove these
 	memset(m_bSequencesUsed2A03, false, sizeof(bool) * MAX_SEQUENCES * SEQ_COUNT);
 	memset(m_bSequencesUsedVRC6, false, sizeof(bool) * MAX_SEQUENCES * SEQ_COUNT);
 	memset(m_bSequencesUsedN163, false, sizeof(bool) * MAX_SEQUENCES * SEQ_COUNT);
@@ -1586,6 +1587,8 @@ void CCompiler::CreateSequenceList()
 	const bool *used[] = {*m_bSequencesUsed2A03, *m_bSequencesUsedVRC6, *m_bSequencesUsedN163, *m_bSequencesUsedS5B};
 	static const char *format[] = {LABEL_SEQ_2A03, LABEL_SEQ_VRC6, LABEL_SEQ_N163, LABEL_SEQ_S5B};
 
+	// TODO: use the CSeqInstrument::GetSequence
+	// TODO: merge identical sequences from all chips
 	for (size_t c = 0; c < sizeof(inst) / sizeof(inst_type_t); c++) {
 		for (int i = 0; i < MAX_SEQUENCES; ++i)  for (int j = 0; j < SEQ_COUNT; ++j) {
 			CSequence* pSeq = m_pDocument->GetSequence(inst[c], i, j);
@@ -1599,16 +1602,10 @@ void CCompiler::CreateSequenceList()
 		}
 	}
 
-	// TODO: this is bad, fds only uses 3 sequences
 	for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
 		if (auto pInstrument = std::dynamic_pointer_cast<CInstrumentFDS>(m_pDocument->GetInstrument(i))) {
-			for (int j = 0; j < 3; ++j) {
-				CSequence* pSeq;
-				switch (j) {
-					case 0: pSeq = pInstrument->GetVolumeSeq(); break;
-					case 1: pSeq = pInstrument->GetArpSeq(); break;
-					case 2: pSeq = pInstrument->GetPitchSeq(); break;
-				}
+			for (int j = 0; j < CInstrumentFDS::SEQUENCE_COUNT; ++j) {
+				CSequence* pSeq = pInstrument->GetSequence(j);		// // //
 				if (pSeq->GetItemCount() > 0) {
 					int Index = i * SEQ_COUNT + j;
 					CStringA label;

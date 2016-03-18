@@ -447,13 +447,8 @@ void CSoundGen::InstrumentRecorder::FinalizeRecordInstrument()
 	switch (InstType) {
 	case INST_FDS:
 		ASSERT(FDSInst != NULL);
-		for (int i = 0; i <= 2; i++) {
-			CSequence *Seq = NULL;
-			switch (i) {
-			case 0: Seq = FDSInst->GetVolumeSeq(); break;
-			case 1: Seq = FDSInst->GetArpSeq(); break;
-			case 2: Seq = FDSInst->GetPitchSeq(); break;
-			}
+		for (int i = 0; i < CInstrumentFDS::SEQUENCE_COUNT; i++) {
+			CSequence *Seq = FDSInst->GetSequence(i);
 			ASSERT(Seq != NULL);
 			m_pSequenceCache[i]->SetLoopPoint(m_pSequenceCache[i]->GetItemCount() - 1);
 			Seq->Copy(m_pSequenceCache[i]);

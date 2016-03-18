@@ -103,7 +103,7 @@ public:
 	virtual void	SetSeqIndex(int Index, int Value);
 	virtual void	SetSeqEnable(int Index, int Value);
 
-	CSequence		*GetSequence(int SeqType) const;		// // //
+	virtual CSequence *GetSequence(int SeqType) const;		// // //
 
 	// static const int SEQUENCE_TYPES[] = {SEQ_VOLUME, SEQ_ARPEGGIO, SEQ_PITCH, SEQ_HIPITCH, SEQ_DUTYCYCLE};
 
@@ -179,7 +179,6 @@ private:
 class CInstrumentFDS : public CSeqInstrument {
 public:
 	CInstrumentFDS();
-	~CInstrumentFDS();
 	CInstrument* Clone() const;
 	void	Setup();
 	void	Store(CDocumentFile *pDocFile);
@@ -202,9 +201,6 @@ public:
 	void	SetModulationDelay(int Delay);
 	bool	GetModulationEnable() const;
 	void	SetModulationEnable(bool Enable);
-	CSequence* GetVolumeSeq() const;
-	CSequence* GetArpSeq() const;
-	CSequence* GetPitchSeq() const;
 
 private:
 	void StoreSequence(CDocumentFile *pDocFile, CSequence *pSeq);
@@ -219,16 +215,13 @@ public:
 
 private:
 	// Instrument data
+	std::unique_ptr<CSequence[]> m_pSequence;
 	unsigned char m_iSamples[64];
 	unsigned char m_iModulation[32];
 	int			  m_iModulationSpeed;
 	int			  m_iModulationDepth;
 	int			  m_iModulationDelay;
 	bool		  m_bModulationEnable;
-
-	CSequence*	  m_pVolume;
-	CSequence*	  m_pArpeggio;
-	CSequence*	  m_pPitch;
 	
 public: // // // porting CSeqInstrument
 	virtual int		GetSeqEnable(int Index) const;

@@ -20,6 +20,7 @@
 ** must bear this legend.
 */
 
+#include <memory>
 #include "stdafx.h"
 #include "Sequence.h"
 #include "Instrument.h"
@@ -34,12 +35,7 @@
 
 void CSeqInstHandlerFDS::LoadInstrument(CInstrument *pInst)		// // //
 {
-	m_pInstrument = pInst;
-	CInstrumentFDS *pSeqInst = dynamic_cast<CInstrumentFDS*>(pInst);
-	ASSERT(pInst == nullptr || pSeqInst != nullptr);
-	CSequence *pSeq[] = {pSeqInst->GetVolumeSeq(), pSeqInst->GetArpSeq(), pSeqInst->GetPitchSeq()};
-	for (size_t i = 0; i < sizeof(pSeq) / sizeof(CSequence*); i++)
-		pSeq[i]->GetItemCount() > 0 ? SetupSequence(i, pSeq[i]) : ClearSequence(i);
+	CSeqInstHandler::LoadInstrument(pInst);
 	
 	const CInstrumentFDS *pFDSInst = dynamic_cast<const CInstrumentFDS*>(m_pInstrument);
 	if (pFDSInst == nullptr) return;

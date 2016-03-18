@@ -90,7 +90,7 @@ protected:
 	*/
 	CChannelHandlerInterface *m_pInterface;
 	/*! \brief A const pointer to the current instrument used by this instrument handler.
-		\warning This pointer does not participate in reference counting provided by CRefCounter.
+		\warning This pointer does not participate in reference counting provided by std::shared_ptr.
 	*/
 	const CInstrument *m_pInstrument;
 	/*! \brief The current volume of the instrument.

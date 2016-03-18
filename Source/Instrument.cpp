@@ -20,6 +20,7 @@
 ** must bear this legend.
 */
 
+#include <memory>
 #include "stdafx.h"
 #include "FamiTrackerDoc.h"
 #include "InstrumentManagerInterface.h"		// // //
@@ -57,13 +58,13 @@ CInstrument::~CInstrument()
 
 void CInstrument::SetName(const char *Name)
 {
-	strncpy(m_cName, Name, INST_NAME_MAX);
+	strncpy_s(m_cName, Name, INST_NAME_MAX);
 	InstrumentChanged();		// // //
 }
 
 void CInstrument::GetName(char *Name) const
 {
-	strncpy(Name, m_cName, INST_NAME_MAX);
+	strncpy_s(Name, INST_NAME_MAX, m_cName, INST_NAME_MAX);
 }
 
 const char *CInstrument::GetName() const

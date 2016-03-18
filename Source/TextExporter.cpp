@@ -1001,23 +1001,8 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					}
 					auto pInst = std::static_pointer_cast<CInstrumentFDS>(pDoc->GetInstrument(i));
 
-					CHECK(t.ReadInt(i,0,2,&sResult));
-					CSequence * pSeq = NULL;
-					switch(i)
-					{
-						case 0:
-							pSeq = pInst->GetVolumeSeq();
-							break;
-						case 1:
-							pSeq = pInst->GetArpSeq();
-							break;
-						case 2:
-							pSeq = pInst->GetPitchSeq();
-							break;
-						default:
-							sResult.Format(_T("Line %d column %d: unexpected error."), t.line, t.GetColumn());
-							return sResult;
-					}
+					CHECK(t.ReadInt(i,0,CInstrumentFDS::SEQUENCE_COUNT-1,&sResult));
+					CSequence *pSeq = pInst->GetSequence(i);		// // //
 					CHECK(t.ReadInt(i,-1,MAX_SEQUENCE_ITEMS,&sResult));
 					pSeq->SetLoopPoint(i);
 					CHECK(t.ReadInt(i,-1,MAX_SEQUENCE_ITEMS,&sResult));
@@ -1504,10 +1489,9 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 				}
 				f.WriteString(_T("\n"));
 
-				CSequence* pSeq[3] = { pDI->GetVolumeSeq(), pDI->GetArpSeq(), pDI->GetPitchSeq() };
 				for (int seq=0; seq < 3; ++seq)
 				{
-					CSequence* pSequence = pSeq[seq];
+					CSequence* pSequence = pDI->GetSequence(seq);		// // //
 					if (!pSequence || pSequence->GetItemCount() < 1) continue;
 
 					s.Format(_T("%-8s %3d %3d %3d %3d %3d :"),

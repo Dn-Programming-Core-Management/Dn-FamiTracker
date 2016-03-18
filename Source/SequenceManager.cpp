@@ -43,7 +43,7 @@ CSequenceManager::~CSequenceManager()
 
 CSequenceCollection *CSequenceManager::GetCollection(int Index)
 {
-	ASSERT(Index >= 0 && Index < m_iCount);
+	if (Index >= m_iCount) return nullptr;
 	if (m_pCollection[Index] == nullptr)
 		m_pCollection[Index] = new CSequenceCollection();
 	return m_pCollection[Index];
@@ -51,6 +51,6 @@ CSequenceCollection *CSequenceManager::GetCollection(int Index)
 
 const CSequenceCollection *CSequenceManager::GetCollection(int Index) const
 {
-	ASSERT(Index >= 0 && Index < m_iCount);
+	if (Index >= m_iCount) return nullptr;
 	return m_pCollection[Index];
 }

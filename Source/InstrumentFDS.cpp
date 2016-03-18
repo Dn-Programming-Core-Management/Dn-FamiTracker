@@ -22,6 +22,7 @@
 
 #include <map>
 #include <vector>
+#include <memory>
 #include "stdafx.h"
 #include "FamiTrackerDoc.h"
 #include "Instrument.h"
@@ -38,26 +39,15 @@ const char TEST_WAVE[] = {
 
 const int FIXED_FDS_INST_SIZE = 2 + 16 + 4 + 1;		// // //
 
-CInstrumentFDS::CInstrumentFDS() : CSeqInstrument(INST_FDS)		// // //
+CInstrumentFDS::CInstrumentFDS() : CSeqInstrument(INST_FDS),		// // //
+	m_iModulationSpeed(0),
+	m_iModulationDepth(0),
+	m_iModulationDelay(0),
+	m_bModulationEnable(true)
 {
+	m_pSequence = std::unique_ptr<CSequence[]>(new CSequence[5]());
 	memcpy(m_iSamples, TEST_WAVE, WAVE_SIZE);	
 	memset(m_iModulation, 0, MOD_SIZE);
-
-	m_iModulationSpeed = 0;
-	m_iModulationDepth = 0;
-	m_iModulationDelay = 0;
-	m_bModulationEnable = true;
-
-	m_pVolume = new CSequence();
-	m_pArpeggio = new CSequence();
-	m_pPitch = new CSequence();
-}
-
-CInstrumentFDS::~CInstrumentFDS()
-{
-	SAFE_RELEASE(m_pVolume);
-	SAFE_RELEASE(m_pArpeggio);
-	SAFE_RELEASE(m_pPitch);
 }
 
 CInstrument *CInstrumentFDS::Clone() const
@@ -393,21 +383,6 @@ void CInstrumentFDS::SetModulationDelay(int Delay)
 	m_iModulationDelay = Delay;
 }
 
-CSequence* CInstrumentFDS::GetVolumeSeq() const
-{
-	return GetSequence(SEQ_VOLUME);
-}
-
-CSequence* CInstrumentFDS::GetArpSeq() const
-{
-	return GetSequence(SEQ_ARPEGGIO);
-}
-
-CSequence* CInstrumentFDS::GetPitchSeq() const
-{
-	return GetSequence(SEQ_PITCH);
-}
-
 bool CInstrumentFDS::GetModulationEnable() const
 {
 	return m_bModulationEnable;
@@ -422,7 +397,7 @@ void CInstrumentFDS::SetModulationEnable(bool Enable)
 
 int	CInstrumentFDS::GetSeqEnable(int Index) const
 {
-	return Index < SEQUENCE_COUNT && m_iSeqEnable[Index];
+	return Index < SEQUENCE_COUNT; // && m_iSeqEnable[Index];
 }
 
 int	CInstrumentFDS::GetSeqIndex(int Index) const
@@ -438,10 +413,5 @@ void CInstrumentFDS::SetSeqIndex(int Index, int Value)
 
 CSequence *CInstrumentFDS::GetSequence(int SeqType) const		// // //
 {
-	switch (SeqType) {
-	case SEQ_VOLUME: return m_pVolume;
-	case SEQ_ARPEGGIO: return m_pArpeggio;
-	case SEQ_PITCH: return m_pPitch;
-	}
-	return nullptr;
+	return &m_pSequence[SeqType];
 }
