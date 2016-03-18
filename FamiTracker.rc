@@ -936,7 +936,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 210
         TOPMARGIN, 7
-        BOTTOMMARGIN, 199
+        BOTTOMMARGIN, 219
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1782,12 +1782,12 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,111,85,50,14
 END
 
-IDD_TRANSPOSE DIALOGEX 0, 0, 217, 206
+IDD_TRANSPOSE DIALOGEX 0, 0, 217, 226
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Transpose"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Transpose",IDC_STATIC,7,7,203,172
+    GROUPBOX        "Transpose",IDC_STATIC,7,7,203,193
     LTEXT           "Semitones:",IDC_STATIC,16,20,36,8
     EDITTEXT        IDC_EDIT_TRSP_SEMITONE,56,18,40,14,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_SPIN_TRSP_SEMITONE,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,85,18,11,14
@@ -1795,10 +1795,12 @@ BEGIN
     CONTROL         "Lower",IDC_RADIO_SEMITONE_DEC,"Button",BS_AUTORADIOBUTTON,138,20,32,10
     CONTROL         "Remap DPCM notes",IDC_CHECK_TRSP_DPCM,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,103,36,79,10
     LTEXT           "Exclude these instruments:",IDC_STATIC,15,52,88,8
-    LTEXT           "Warning: Resets undo history!",IDC_STATIC,15,164,99,8
-    DEFPUSHBUTTON   "OK",IDOK,106,185,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,160,185,50,14
+    LTEXT           "Warning: Resets undo history!",IDC_STATIC,15,185,99,8
+    DEFPUSHBUTTON   "OK",IDOK,106,205,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,160,205,50,14
     CONTROL         "Transpose all tracks",IDC_CHECK_TRSP_ALL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,36,79,10
+    PUSHBUTTON      "Reverse",IDC_BUTTON_TRSP_REVERSE,47,166,50,14
+    PUSHBUTTON      "Clear All",IDC_BUTTON_TRSP_CLEAR,120,166,50,14
 END
 
 
@@ -1839,12 +1841,14 @@ IDI_RIGHT               ICON                    "res\\RightArrow.ico"
 
 ID_MANIFEST             RT_MANIFEST             "res\\FamiTracker.manifest"
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // HTML
 //
 
 IDR_EXPORT_TEST_REPORT  HTML                    "res\\export_report.htm"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

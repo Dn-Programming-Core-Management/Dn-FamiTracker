@@ -499,6 +499,7 @@
 #define IDC_ABORT                       1266
 #define IDC_BUTTON_STRETCH_EXPAND       1266
 #define IDC_BUTTON_BOOKMARK_ADD         1266
+#define IDC_BUTTON_TRSP_REVERSE         1266
 #define IDC_CONTINUE                    1267
 #define IDC_BUTTON_BOOKMARK_REMOVE      1267
 #define IDC_SLIDER1                     1268
@@ -652,6 +653,7 @@
 #define IDC_SPIN_RECORDER_COUNT         1432
 #define IDC_RADIO_SEMITONE_INC          1436
 #define IDC_RADIO_SEMITONE_DEC          1437
+#define IDC_BUTTON_TRSP_CLEAR           1438
 #define ID_TRACKER_PLAY                 32771
 #define ID_TRACKER_PLAYPATTERN          32775
 #define ID_TRACKER_STOP                 32776
@@ -849,7 +851,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        339
 #define _APS_NEXT_COMMAND_VALUE         33184
-#define _APS_NEXT_CONTROL_VALUE         1437
+#define _APS_NEXT_CONTROL_VALUE         1439
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif
