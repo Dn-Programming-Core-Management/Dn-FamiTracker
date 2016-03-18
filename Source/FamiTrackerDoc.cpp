@@ -2823,20 +2823,12 @@ unsigned int CFamiTrackerDoc::GetTotalSampleSize() const
 
 CSequence *CFamiTrackerDoc::GetSequence(inst_type_t InstType, unsigned int Index, int Type)		// // //
 {
-	switch (InstType) {		// // //
-	case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B:
-		return GetSequenceManager(InstType)->GetCollection(Type)->GetSequence(Index);
-	}
-	return nullptr;
+	return m_pInstrumentManager->GetSequence(InstType, Type, Index);
 }
 
 CSequence *CFamiTrackerDoc::GetSequence(inst_type_t InstType, unsigned int Index, int Type) const		// // //
 {
-	switch (InstType) {		// // //
-	case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B:
-		return GetSequenceManager(InstType)->GetCollection(Type)->GetSequence(Index);
-	}
-	return nullptr;
+	return m_pInstrumentManager->GetSequence(InstType, Type, Index);
 }
 
 unsigned int CFamiTrackerDoc::GetSequenceItemCount(inst_type_t InstType, unsigned int Index, int Type) const		// // //

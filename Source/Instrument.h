@@ -176,7 +176,7 @@ private:
 	unsigned char m_iRegs[8];		// // // Custom patch settings
 };
 
-class CInstrumentFDS : public CInstrument {
+class CInstrumentFDS : public CSeqInstrument {
 public:
 	CInstrumentFDS();
 	~CInstrumentFDS();
@@ -215,6 +215,7 @@ private:
 public:
 	static const int WAVE_SIZE = 64;
 	static const int MOD_SIZE = 32;
+	static const int SEQUENCE_COUNT = 3;		// // //
 
 private:
 	// Instrument data
@@ -228,6 +229,12 @@ private:
 	CSequence*	  m_pVolume;
 	CSequence*	  m_pArpeggio;
 	CSequence*	  m_pPitch;
+	
+public: // // // porting CSeqInstrument
+	virtual int		GetSeqEnable(int Index) const;
+	virtual int		GetSeqIndex(int Index) const;
+	virtual void	SetSeqIndex(int Index, int Value);
+	CSequence		*GetSequence(int SeqType) const;		// // //
 };
 
 class CInstrumentN163 : public CSeqInstrument {
