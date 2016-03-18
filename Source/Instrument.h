@@ -40,6 +40,7 @@ class CCompiler;
 class CDocumentFile;
 class CSequence;
 class CFamiTrackerDoc;
+class CInstrumentManagerInterface;		// // // break cyclic dependencies
 
 class CChunk;
 
@@ -63,6 +64,7 @@ public:
 	void SetName(const char *Name);
 	void GetName(char *Name) const;
 	const char* GetName() const;
+	void RegisterManager(CInstrumentManagerInterface *pManager);		// // //
 public:
 	virtual inst_type_t GetType() const;											// // // Returns instrument type
 	virtual CInstrument* Clone() const = 0;											// Creates a copy
@@ -80,6 +82,7 @@ public:
 protected:
 	char m_cName[INST_NAME_MAX];
 	inst_type_t m_iType;		// // //
+	CInstrumentManagerInterface *m_pInstManager;		// // //
 };
 
 class CSeqInstrument : public CInstrument, public CSeqInstrumentInterface		// // //
@@ -99,6 +102,8 @@ public:
 	virtual int		GetSeqIndex(int Index) const;
 	virtual void	SetSeqIndex(int Index, int Value);
 	virtual void	SetSeqEnable(int Index, int Value);
+
+	CSequence		*GetSequence(int SeqType) const;		// // //
 
 	// static const int SEQUENCE_TYPES[] = {SEQ_VOLUME, SEQ_ARPEGGIO, SEQ_PITCH, SEQ_HIPITCH, SEQ_DUTYCYCLE};
 

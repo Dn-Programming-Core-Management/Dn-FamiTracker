@@ -22,7 +22,10 @@
 
 #pragma once
 
+#include "InstrumentManagerInterface.h"
+
 class CInstrument;
+class CDSample;
 class CSequenceManager;
 
 enum inst_type_t;
@@ -32,7 +35,7 @@ enum inst_type_t;
 	\details This class implements common facilities for manipulating a fixed-length array of
 	instrument objects. 
 */
-class CInstrumentManager
+class CInstrumentManager : CInstrumentManagerInterface
 {
 public:
 	CInstrumentManager();
@@ -55,6 +58,10 @@ public:
 	void CloneInstrumentDeep(unsigned int Old, unsigned int New);
 
 	CSequenceManager *const GetSequenceManager(int InstType) const;
+
+	// from interface
+	CSequence *GetSequence(int InstType, int SeqType, int Index) const;
+	CDSample *GetDSample(int Index) const;
 
 public:
 	static std::shared_ptr<CInstrument> CreateNew(inst_type_t InstType);

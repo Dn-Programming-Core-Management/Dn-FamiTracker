@@ -676,6 +676,7 @@
     <ClInclude Include="Source\InstHandlerVRC7.h" />
     <ClInclude Include="Source\InstrumentEditorSeq.h" />
     <ClInclude Include="Source\InstrumentManager.h" />
+    <ClInclude Include="Source\InstrumentManagerInterface.h" />
     <ClInclude Include="Source\ModuleException.h" />
     <ClInclude Include="Source\SequenceEditorMessage.h" />
     <ClInclude Include="Source\MainFrm.h" />

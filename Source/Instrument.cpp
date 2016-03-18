@@ -22,6 +22,7 @@
 
 #include "stdafx.h"
 #include "FamiTrackerDoc.h"
+#include "InstrumentManagerInterface.h"		// // //
 #include "Instrument.h"
 #include "DocumentFile.h"
 #include "Compiler.h"
@@ -32,7 +33,7 @@
  *
  */
 
-CInstrument::CInstrument(inst_type_t type) : m_iType(type)		// // //
+CInstrument::CInstrument(inst_type_t type) : m_iType(type), m_pInstManager(nullptr)		// // //
 {
 	memset(m_cName, 0, INST_NAME_MAX);
 }
@@ -68,6 +69,11 @@ void CInstrument::GetName(char *Name) const
 const char *CInstrument::GetName() const
 {
 	return m_cName;
+}
+
+void CInstrument::RegisterManager(CInstrumentManagerInterface *pManager)		// // //
+{
+	m_pInstManager = pManager;
 }
 
 inst_type_t CInstrument::GetType() const		// // //
@@ -306,10 +312,14 @@ void CSeqInstrument::SetSeqEnable(int Index, int Value)
 	m_iSeqEnable[Index] = Value;
 }
 
+CSequence *CSeqInstrument::GetSequence(int SeqType) const		// // //
+{
+	return m_pInstManager->GetSequence(m_iType, SeqType, m_iSeqIndex[SeqType]);
+}
+
 bool CSeqInstrument::CanRelease() const
 {
-	return GetSeqEnable(SEQ_VOLUME) != 0
-		&& CFamiTrackerDoc::GetDoc()->GetSequence(m_iType, GetSeqIndex(SEQ_VOLUME), SEQ_VOLUME)->GetReleasePoint() != -1;
+	return GetSeqEnable(SEQ_VOLUME) != 0 && GetSequence(SEQ_VOLUME)->GetReleasePoint() != -1;
 }
 
 void CSeqInstrument::SetSeqIndex(int Index, int Value)
