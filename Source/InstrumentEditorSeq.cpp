@@ -44,7 +44,8 @@ CInstrumentEditorSeq::CInstrumentEditorSeq(CWnd* pParent, TCHAR *Title, LPCTSTR 
 	m_pSequenceName(SeqName),
 	m_iMaxVolume(Vol),
 	m_iMaxDuty(Duty),
-	m_iInstType(Type)
+	m_iInstType(Type),
+	m_bUpdating(false)
 {
 }
 
@@ -53,7 +54,10 @@ void CInstrumentEditorSeq::SelectInstrument(std::shared_ptr<CInstrument> pInst)
 	m_pInstrument = std::dynamic_pointer_cast<CSeqInstrument>(pInst);
 	ASSERT(m_pInstrument && m_pInstrument->GetType() == m_iInstType);
 
+	int Sel = m_iSelectedSetting;
+
 	// Update instrument setting list
+	m_bUpdating = true;
 	if (CListCtrl *pList = static_cast<CListCtrl*>(GetDlgItem(IDC_INSTSETTINGS))) {		// // //
 		CString str;
 		for (int i = 0; i < SEQ_COUNT; ++i) {
@@ -64,9 +68,9 @@ void CInstrumentEditorSeq::SelectInstrument(std::shared_ptr<CInstrument> pInst)
 	}
 
 	// Setting text box
-	SetDlgItemInt(IDC_SEQ_INDEX, m_pInstrument->GetSeqIndex(m_iSelectedSetting));
+	SetDlgItemInt(IDC_SEQ_INDEX, m_pInstrument->GetSeqIndex(m_iSelectedSetting = Sel));
 
-	// Select new sequence
+	m_bUpdating = false;
 	SelectSequence(m_pInstrument->GetSeqIndex(m_iSelectedSetting), m_iSelectedSetting);
 
 	SetFocus();
@@ -75,7 +79,9 @@ void CInstrumentEditorSeq::SelectInstrument(std::shared_ptr<CInstrument> pInst)
 void CInstrumentEditorSeq::SelectSequence(int Sequence, int Type)
 {
 	// Selects the current sequence in the sequence editor
-	m_pSequence = GetDocument()->GetSequence(m_iInstType, Sequence, Type);		// // //
+	m_pSequence = m_pInstrument->GetSequence(Type);		// // //
+	if (CListCtrl *pList = static_cast<CListCtrl*>(GetDlgItem(IDC_INSTSETTINGS)))
+		pList->SetItemState(Type, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
 	m_pSequenceEditor->SelectSequence(m_pSequence, Type, m_iInstType);
 }
 
@@ -119,18 +125,20 @@ BOOL CInstrumentEditorSeq::OnInitDialog()
 
 void CInstrumentEditorSeq::OnLvnItemchangedInstsettings(NMHDR *pNMHDR, LRESULT *pResult)
 {
+	if (m_bUpdating) return;
 	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
 	CListCtrl *pList = static_cast<CListCtrl*>(GetDlgItem(IDC_INSTSETTINGS));
 
 	if (pNMLV->uChanged & LVIF_STATE && m_pInstrument != NULL) {
 		// Selected new setting
-		if (pNMLV->uNewState & LVNI_SELECTED || pNMLV->uNewState & LCTRL_CHECKBOX_STATE) {
+		if (pNMLV->uNewState & LVIS_SELECTED || pNMLV->uNewState & LCTRL_CHECKBOX_STATE) {
+			TRACE("%i %04X %04X\n", pNMLV->iItem, pNMLV->uOldState, pNMLV->uNewState);
 			m_iSelectedSetting = pNMLV->iItem;
 			int Sequence = m_pInstrument->GetSeqIndex(m_iSelectedSetting);
 			SetDlgItemInt(IDC_SEQ_INDEX, Sequence);
 			SelectSequence(Sequence, m_iSelectedSetting);
 			pList->SetSelectionMark(m_iSelectedSetting);
-			pList->SetItemState(m_iSelectedSetting, LVIS_SELECTED, LVIS_SELECTED);
+			pList->SetItemState(m_iSelectedSetting, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
 		}
 
 		// Changed checkbox
@@ -216,8 +224,7 @@ void CInstrumentEditorSeq::OnCloneSequence()
 	CFamiTrackerDoc *pDoc = GetDocument();
 	int FreeIndex = pDoc->GetFreeSequence(m_iInstType, m_iSelectedSetting);		// // //
 	if (FreeIndex != -1) {
-		CSequence *pSeq = pDoc->GetSequence(m_iInstType, FreeIndex, m_iSelectedSetting);
-		pSeq->Copy(m_pSequence);
+		pDoc->GetSequence(m_iInstType, FreeIndex, m_iSelectedSetting)->Copy(m_pSequence);
 		SetDlgItemInt(IDC_SEQ_INDEX, FreeIndex, FALSE);
 	}
 }

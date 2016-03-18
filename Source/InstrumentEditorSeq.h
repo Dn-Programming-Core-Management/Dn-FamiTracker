@@ -53,6 +53,7 @@ protected:
 	const int m_iMaxVolume;
 	const int m_iMaxDuty;
 	const inst_type_t m_iInstType;
+	bool m_bUpdating;
 
 protected:
 	DECLARE_MESSAGE_MAP()

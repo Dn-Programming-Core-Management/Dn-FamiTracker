@@ -440,7 +440,7 @@ void CSoundGen::InstrumentRecorder::FinalizeRecordInstrument()
 	if (Inst != NULL) for (int i = 0; i < SEQ_COUNT; i++) {
 		if (Inst->GetSeqEnable(i) != 0) {
 			m_pSequenceCache[i]->SetLoopPoint(m_pSequenceCache[i]->GetItemCount() - 1);
-			m_pDocument->GetSequence(InstType, Inst->GetSeqIndex(i), i)->Copy(m_pSequenceCache[i]);
+			Inst->GetSequence(i)->Copy(m_pSequenceCache[i]);
 		}
 		m_pSequenceCache[i]->Clear();
 	}

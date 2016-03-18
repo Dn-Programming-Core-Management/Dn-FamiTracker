@@ -264,19 +264,20 @@ int CSeqInstrument::Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index)
 {
 	int StoredBytes = 0;
 
-	const char *label = NULL;		// // //
+	const char *label = nullptr;		// // //
 	switch (GetType()) {
 	case INST_2A03: pChunk->StoreByte(0);  label = CCompiler::LABEL_SEQ_2A03; break;
 	case INST_VRC6: pChunk->StoreByte(4);  label = CCompiler::LABEL_SEQ_VRC6; break;
 	case INST_N163: pChunk->StoreByte(9);  label = CCompiler::LABEL_SEQ_N163; break;
 	case INST_S5B:  pChunk->StoreByte(10); label = CCompiler::LABEL_SEQ_S5B;  break;
 	}
-	ASSERT(label != NULL);
+	ASSERT(label != nullptr);
 
 	int ModSwitch = 0;
 	for (unsigned i = 0; i < SEQ_COUNT; ++i) {
-		const CSequence *pSequence = pDoc->GetSequence(m_iType, unsigned(GetSeqIndex(i)), i);
-		ModSwitch = ModSwitch | (GetSeqEnable(i) && pSequence != NULL && pSequence->GetItemCount() > 0 ? (1 << i) : 0);
+		const CSequence *pSequence = GetSequence(i);
+		if (GetSeqEnable(i) && pSequence != nullptr && pSequence->GetItemCount() > 0)
+			ModSwitch |= 1 << i;
 	}
 	pChunk->StoreByte(ModSwitch);
 	StoredBytes += 2;

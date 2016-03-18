@@ -179,29 +179,6 @@ BEGIN_MESSAGE_MAP(CFamiTrackerDoc, CDocument)
 	ON_COMMAND(ID_FILE_SAVE, OnFileSave)
 END_MESSAGE_MAP()
 
-//
-// Convert an instrument type to sound chip
-//
-static int GetChipFromInstrument(int Type)
-{
-	switch (Type) {
-		case INST_2A03:
-			return SNDCHIP_NONE;
-		case INST_VRC6:
-			return SNDCHIP_VRC6;
-		case INST_VRC7:
-			return SNDCHIP_VRC7;
-		case INST_S5B:
-			return SNDCHIP_S5B;
-		case INST_FDS:
-			return SNDCHIP_FDS;
-		case INST_N163:
-			return SNDCHIP_N163;
-	}
-
-	return SNDCHIP_NONE;
-}
-
 // CFamiTrackerDoc construction/destruction
 
 CFamiTrackerDoc::CFamiTrackerDoc() : 
@@ -3064,7 +3041,7 @@ int CFamiTrackerDoc::DeepCloneInstrument(unsigned int Index)
 				int freeSeq = GetFreeSequence(it, i);
 				if (freeSeq != -1) {
 					if (pInstrument->GetSeqEnable(i))
-						GetSequence(it, unsigned(freeSeq), i)->Copy(GetSequence(it, unsigned(pInstrument->GetSeqIndex(i)), i));
+						GetSequence(it, unsigned(freeSeq), i)->Copy(pInstrument->GetSequence(i));
 					pInstrument->SetSeqIndex(i, freeSeq);
 				}
 			}
