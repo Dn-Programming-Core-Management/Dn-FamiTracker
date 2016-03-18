@@ -771,7 +771,17 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 
 bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 {
-	static bool (CFamiTrackerDoc::*FTM_WRITE_FUNC[])(CDocumentFile*) const = {		// // //
+	static const int DEFAULT_BLOCK_VERSION[] = {		// // // TODO: use version info
+#ifdef TRANSPOSE_FDS
+		6, 1, 3, 6, 6, 3, 5, 1, 1,	// internal
+#else
+		6, 1, 3, 6, 6, 3, 4, 1, 1,
+#endif
+		6, 1, 1,					// expansion
+		1, 1, 1						// 0cc-ft
+	};
+
+	static bool (CFamiTrackerDoc::*FTM_WRITE_FUNC[])(CDocumentFile*, const int) const = {		// // //
 		&CFamiTrackerDoc::WriteBlock_Parameters,
 		&CFamiTrackerDoc::WriteBlock_SongInfo,
 		&CFamiTrackerDoc::WriteBlock_Header,
@@ -790,16 +800,16 @@ bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 	};
 
 	for (size_t i = 0; i < sizeof(FTM_WRITE_FUNC) / sizeof(*FTM_WRITE_FUNC); ++i) {
-		if (!CALL_MEMBER_FN(this, FTM_WRITE_FUNC[i])(pDocFile))
+		if (!CALL_MEMBER_FN(this, FTM_WRITE_FUNC[i])(pDocFile, DEFAULT_BLOCK_VERSION[i]))
 			return false;
 	}
 	return true;
 }
 
-bool CFamiTrackerDoc::WriteBlock_Parameters(CDocumentFile *pDocFile) const
+bool CFamiTrackerDoc::WriteBlock_Parameters(CDocumentFile *pDocFile, const int Version) const
 {
 	// Module parameters
-	pDocFile->CreateBlock(FILE_BLOCK_PARAMS, 6);
+	pDocFile->CreateBlock(FILE_BLOCK_PARAMS, Version);
 	
 	pDocFile->WriteBlockChar(m_iExpansionChip);		// ver 2 change
 	pDocFile->WriteBlockInt(m_iChannelsAvailable);
@@ -818,10 +828,10 @@ bool CFamiTrackerDoc::WriteBlock_Parameters(CDocumentFile *pDocFile) const
 	return pDocFile->FlushBlock();
 }
 
-bool CFamiTrackerDoc::WriteBlock_SongInfo(CDocumentFile *pDocFile) const
+bool CFamiTrackerDoc::WriteBlock_SongInfo(CDocumentFile *pDocFile, const int Version) const
 {
 	// Song info
-	pDocFile->CreateBlock(FILE_BLOCK_INFO, 1);
+	pDocFile->CreateBlock(FILE_BLOCK_INFO, Version);
 	
 	pDocFile->WriteBlock(m_strName, 32);
 	pDocFile->WriteBlock(m_strArtist, 32);
@@ -830,7 +840,7 @@ bool CFamiTrackerDoc::WriteBlock_SongInfo(CDocumentFile *pDocFile) const
 	return pDocFile->FlushBlock();
 }
 
-bool CFamiTrackerDoc::WriteBlock_Header(CDocumentFile *pDocFile) const
+bool CFamiTrackerDoc::WriteBlock_Header(CDocumentFile *pDocFile, const int Version) const
 {
 	/* 
 	 *  Header data
@@ -843,7 +853,7 @@ bool CFamiTrackerDoc::WriteBlock_Header(CDocumentFile *pDocFile) const
 	// Version 3 adds song names
 
 	// Header data
-	pDocFile->CreateBlock(FILE_BLOCK_HEADER, 3);
+	pDocFile->CreateBlock(FILE_BLOCK_HEADER, Version);
 
 	// Write number of tracks
 	pDocFile->WriteBlockChar(m_iTrackCount - 1);
@@ -866,17 +876,15 @@ bool CFamiTrackerDoc::WriteBlock_Header(CDocumentFile *pDocFile) const
 	return pDocFile->FlushBlock();
 }
 
-bool CFamiTrackerDoc::WriteBlock_Instruments(CDocumentFile *pDocFile) const
+bool CFamiTrackerDoc::WriteBlock_Instruments(CDocumentFile *pDocFile, const int Version) const
 {
 	// A bug in v0.3.0 causes a crash if this is not 2, so change only when that ver is obsolete!
 	//
 	// Log:
 	// - v6: adds DPCM delta settings
 	//
-	const int BLOCK_VERSION = 6;
 
 	// If FDS is used then version must be at least 4 or recent files won't load
-	int Version = BLOCK_VERSION;
 
 	// Fix for FDS instruments
 /*	if (m_iExpansionChip & SNDCHIP_FDS)
@@ -915,7 +923,7 @@ bool CFamiTrackerDoc::WriteBlock_Instruments(CDocumentFile *pDocFile) const
 	return pDocFile->FlushBlock();
 }
 
-bool CFamiTrackerDoc::WriteBlock_Sequences(CDocumentFile *pDocFile) const
+bool CFamiTrackerDoc::WriteBlock_Sequences(CDocumentFile *pDocFile, const int Version) const
 {
 	/* 
 	 * Store 2A03 sequences
@@ -931,7 +939,6 @@ bool CFamiTrackerDoc::WriteBlock_Sequences(CDocumentFile *pDocFile) const
 
 	if (!Count) return true;		// // //
 	// Sequences, version 6
-	int Version = 6;
 	pDocFile->CreateBlock(FILE_BLOCK_SEQUENCES, Version);
 	pDocFile->WriteBlockInt(Count);
 	
@@ -977,7 +984,7 @@ bool CFamiTrackerDoc::WriteBlock_Sequences(CDocumentFile *pDocFile) const
 	return pDocFile->FlushBlock();
 }
 
-bool CFamiTrackerDoc::WriteBlock_SequencesVRC6(CDocumentFile *pDocFile) const
+bool CFamiTrackerDoc::WriteBlock_SequencesVRC6(CDocumentFile *pDocFile, const int Version) const
 {
 	/* 
 	 * Store VRC6 sequences
@@ -993,7 +1000,7 @@ bool CFamiTrackerDoc::WriteBlock_SequencesVRC6(CDocumentFile *pDocFile) const
 
 	if (!Count) return true;		// // //
 	// Sequences, version 6
-	pDocFile->CreateBlock(FILE_BLOCK_SEQUENCES_VRC6, 6);
+	pDocFile->CreateBlock(FILE_BLOCK_SEQUENCES_VRC6, Version);
 
 	// Write it
 	pDocFile->WriteBlockInt(Count);
@@ -1040,7 +1047,7 @@ bool CFamiTrackerDoc::WriteBlock_SequencesVRC6(CDocumentFile *pDocFile) const
 	return pDocFile->FlushBlock();
 }
 
-bool CFamiTrackerDoc::WriteBlock_SequencesN163(CDocumentFile *pDocFile) const
+bool CFamiTrackerDoc::WriteBlock_SequencesN163(CDocumentFile *pDocFile, const int Version) const
 {
 	/* 
 	 * Store N163 sequences
@@ -1056,7 +1063,7 @@ bool CFamiTrackerDoc::WriteBlock_SequencesN163(CDocumentFile *pDocFile) const
 
 	if (!Count) return true;		// // //
 	// Sequences, version 0
-	pDocFile->CreateBlock(FILE_BLOCK_SEQUENCES_N163, 1);
+	pDocFile->CreateBlock(FILE_BLOCK_SEQUENCES_N163, Version);
 
 	// Write it
 	pDocFile->WriteBlockInt(Count);
@@ -1091,7 +1098,7 @@ bool CFamiTrackerDoc::WriteBlock_SequencesN163(CDocumentFile *pDocFile) const
 	return pDocFile->FlushBlock();
 }
 
-bool CFamiTrackerDoc::WriteBlock_SequencesS5B(CDocumentFile *pDocFile) const
+bool CFamiTrackerDoc::WriteBlock_SequencesS5B(CDocumentFile *pDocFile, const int Version) const
 {
 	/* 
 	 * Store 5B sequences
@@ -1107,7 +1114,7 @@ bool CFamiTrackerDoc::WriteBlock_SequencesS5B(CDocumentFile *pDocFile) const
 
 	if (!Count) return true;		// // //
 	// Sequences, version 0
-	pDocFile->CreateBlock(FILE_BLOCK_SEQUENCES_S5B, 1);
+	pDocFile->CreateBlock(FILE_BLOCK_SEQUENCES_S5B, Version);
 
 	// Write it
 	pDocFile->WriteBlockInt(Count);
@@ -1142,7 +1149,7 @@ bool CFamiTrackerDoc::WriteBlock_SequencesS5B(CDocumentFile *pDocFile) const
 	return pDocFile->FlushBlock();
 }
 
-bool CFamiTrackerDoc::WriteBlock_Frames(CDocumentFile *pDocFile) const
+bool CFamiTrackerDoc::WriteBlock_Frames(CDocumentFile *pDocFile, const int Version) const
 {
 	/* Store frame count
 	 *
@@ -1151,7 +1158,7 @@ bool CFamiTrackerDoc::WriteBlock_Frames(CDocumentFile *pDocFile) const
 	 * 
 	 */ 
 
-	pDocFile->CreateBlock(FILE_BLOCK_FRAMES, 3);
+	pDocFile->CreateBlock(FILE_BLOCK_FRAMES, Version);
 
 	for (unsigned i = 0; i < m_iTrackCount; ++i) {
 		CPatternData *pTune = m_pTracks[i];
@@ -1171,7 +1178,7 @@ bool CFamiTrackerDoc::WriteBlock_Frames(CDocumentFile *pDocFile) const
 	return pDocFile->FlushBlock();
 }
 
-bool CFamiTrackerDoc::WriteBlock_Patterns(CDocumentFile *pDocFile) const
+bool CFamiTrackerDoc::WriteBlock_Patterns(CDocumentFile *pDocFile, const int Version) const
 {
 	/*
 	 * Version changes: 
@@ -1184,11 +1191,7 @@ bool CFamiTrackerDoc::WriteBlock_Patterns(CDocumentFile *pDocFile) const
 	 *
 	 */ 
 
-#ifdef TRANSPOSE_FDS
-	pDocFile->CreateBlock(FILE_BLOCK_PATTERNS, 5);
-#else
-	pDocFile->CreateBlock(FILE_BLOCK_PATTERNS, 4);
-#endif
+	pDocFile->CreateBlock(FILE_BLOCK_PATTERNS, Version);
 
 	stChanNote *Note;		// // //
 
@@ -1240,17 +1243,16 @@ bool CFamiTrackerDoc::WriteBlock_Patterns(CDocumentFile *pDocFile) const
 	return pDocFile->FlushBlock();
 }
 
-bool CFamiTrackerDoc::WriteBlock_DSamples(CDocumentFile *pDocFile) const
+bool CFamiTrackerDoc::WriteBlock_DSamples(CDocumentFile *pDocFile, const int Version) const
 {
 	int Count = 0;
-
 	for (int i = 0; i < MAX_DSAMPLES; ++i) {
 		if (m_DSamples[i].GetSize() > 0)
 			Count++;
 	}
-
 	if (!Count) return true;		// // //
-	pDocFile->CreateBlock(FILE_BLOCK_DSAMPLES, 1);
+
+	pDocFile->CreateBlock(FILE_BLOCK_DSAMPLES, Version);
 
 	// Write sample count
 	pDocFile->WriteBlockChar(Count);
@@ -1269,20 +1271,20 @@ bool CFamiTrackerDoc::WriteBlock_DSamples(CDocumentFile *pDocFile) const
 	return pDocFile->FlushBlock();
 }
 
-bool CFamiTrackerDoc::WriteBlock_Comments(CDocumentFile *pDocFile) const
+bool CFamiTrackerDoc::WriteBlock_Comments(CDocumentFile *pDocFile, const int Version) const
 {
-	if (m_strComment.GetLength() == 0)
+	if (m_strComment.IsEmpty())
 		return true;
 
-	pDocFile->CreateBlock(FILE_BLOCK_COMMENTS, 1);
+	pDocFile->CreateBlock(FILE_BLOCK_COMMENTS, Version);
 	pDocFile->WriteBlockInt(m_bDisplayComment ? 1 : 0);
 	pDocFile->WriteString(m_strComment);
 	return pDocFile->FlushBlock();
 }
 
-bool CFamiTrackerDoc::WriteBlock_ChannelLayout(CDocumentFile *pDocFile) const
+bool CFamiTrackerDoc::WriteBlock_ChannelLayout(CDocumentFile *pDocFile, const int Version) const
 {
-//	pDocFile->CreateBlock(FILE_CHANNEL_LAYOUT, 1);
+//	pDocFile->CreateBlock(FILE_CHANNEL_LAYOUT, Version);
 	// Todo
 	return pDocFile->FlushBlock();
 }
@@ -2385,7 +2387,7 @@ bool CFamiTrackerDoc::ReadBlock_DetuneTables(CDocumentFile *pDocFile)
 	return false;
 }
 
-bool CFamiTrackerDoc::WriteBlock_DetuneTables(CDocumentFile *pDocFile) const
+bool CFamiTrackerDoc::WriteBlock_DetuneTables(CDocumentFile *pDocFile, const int Version) const
 {
 	int NoteUsed[6], ChipCount = 0;
 	for (int i = 0; i < 6; i++) {
@@ -2397,7 +2399,7 @@ bool CFamiTrackerDoc::WriteBlock_DetuneTables(CDocumentFile *pDocFile) const
 	}
 	if (!ChipCount) return true;
 
-	pDocFile->CreateBlock(FILE_BLOCK_DETUNETABLES, 1);
+	pDocFile->CreateBlock(FILE_BLOCK_DETUNETABLES, Version);
 	pDocFile->WriteBlockChar(ChipCount);
 	
 	for (int i = 0; i < 6; i++) {
@@ -2446,13 +2448,13 @@ bool CFamiTrackerDoc::ReadBlock_Grooves(CDocumentFile *pDocFile)
 	return false;
 }
 
-bool CFamiTrackerDoc::WriteBlock_Grooves(CDocumentFile *pDocFile) const
+bool CFamiTrackerDoc::WriteBlock_Grooves(CDocumentFile *pDocFile, const int Version) const
 {
 	int Count = 0;
 	for (int i = 0; i < MAX_GROOVE; i++)
 		if (m_pGrooveTable[i] != NULL) Count++;
 	if (!Count) return true;
-	pDocFile->CreateBlock(FILE_BLOCK_GROOVES, 1);
+	pDocFile->CreateBlock(FILE_BLOCK_GROOVES, Version);
 	pDocFile->WriteBlockChar(Count);
 	
 	for (int i = 0; i < MAX_GROOVE; i++) if (m_pGrooveTable[i] != NULL) {
@@ -2497,13 +2499,13 @@ bool CFamiTrackerDoc::ReadBlock_Bookmarks(CDocumentFile *pDocFile)
 	return false;
 }
 
-bool CFamiTrackerDoc::WriteBlock_Bookmarks(CDocumentFile *pDocFile) const
+bool CFamiTrackerDoc::WriteBlock_Bookmarks(CDocumentFile *pDocFile, const int Version) const
 {
 	int Count = 0;
 	for (unsigned int i = 0; i < m_iTrackCount; i++)
 		if (m_pBookmarkList[i] != NULL) Count += m_pBookmarkList[i]->size();
 	if (!Count) return true;
-	pDocFile->CreateBlock(FILE_BLOCK_BOOKMARKS, 1);
+	pDocFile->CreateBlock(FILE_BLOCK_BOOKMARKS, Version);
 	pDocFile->WriteBlockInt(Count);
 	
 	for (unsigned int i = 0; i < m_iTrackCount; i++) if (m_pBookmarkList[i] != NULL) {

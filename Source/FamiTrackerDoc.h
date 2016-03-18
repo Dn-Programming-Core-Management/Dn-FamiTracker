@@ -400,19 +400,24 @@ private:
 	BOOL			OpenDocumentNew(CDocumentFile &DocumentFile);
 
 	bool			WriteBlocks(CDocumentFile *pDocFile) const;
-	bool			WriteBlock_Parameters(CDocumentFile *pDocFile) const;
-	bool			WriteBlock_SongInfo(CDocumentFile *pDocFile) const;
-	bool			WriteBlock_Header(CDocumentFile *pDocFile) const;
-	bool			WriteBlock_Instruments(CDocumentFile *pDocFile) const;
-	bool			WriteBlock_Sequences(CDocumentFile *pDocFile) const;
-	bool			WriteBlock_Frames(CDocumentFile *pDocFile) const;
-	bool			WriteBlock_Patterns(CDocumentFile *pDocFile) const;
-	bool			WriteBlock_DSamples(CDocumentFile *pDocFile) const;
-	bool			WriteBlock_Comments(CDocumentFile *pDocFile) const;
-	bool			WriteBlock_ChannelLayout(CDocumentFile *pDocFile) const;
-	bool			WriteBlock_SequencesVRC6(CDocumentFile *pDocFile) const;
-	bool			WriteBlock_SequencesN163(CDocumentFile *pDocFile) const;
-	bool			WriteBlock_SequencesS5B(CDocumentFile *pDocFile) const;
+
+	bool			WriteBlock_Parameters(CDocumentFile *pDocFile, const int Version) const;		// // // version
+	bool			WriteBlock_SongInfo(CDocumentFile *pDocFile, const int Version) const;
+	bool			WriteBlock_Header(CDocumentFile *pDocFile, const int Version) const;
+	bool			WriteBlock_Instruments(CDocumentFile *pDocFile, const int Version) const;
+	bool			WriteBlock_Sequences(CDocumentFile *pDocFile, const int Version) const;
+	bool			WriteBlock_Frames(CDocumentFile *pDocFile, const int Version) const;
+	bool			WriteBlock_Patterns(CDocumentFile *pDocFile, const int Version) const;
+	bool			WriteBlock_DSamples(CDocumentFile *pDocFile, const int Version) const;
+	bool			WriteBlock_Comments(CDocumentFile *pDocFile, const int Version) const;
+	bool			WriteBlock_ChannelLayout(CDocumentFile *pDocFile, const int Version) const;
+	bool			WriteBlock_SequencesVRC6(CDocumentFile *pDocFile, const int Version) const;
+	bool			WriteBlock_SequencesN163(CDocumentFile *pDocFile, const int Version) const;
+	bool			WriteBlock_SequencesS5B(CDocumentFile *pDocFile, const int Version) const;
+	// // //
+	bool			WriteBlock_DetuneTables(CDocumentFile *pDocFile, const int Version) const;
+	bool			WriteBlock_Grooves(CDocumentFile *pDocFile, const int Version) const;
+	bool			WriteBlock_Bookmarks(CDocumentFile *pDocFile, const int Version) const;
 
 	bool			ReadBlock_Parameters(CDocumentFile *pDocFile);
 	bool			ReadBlock_SongInfo(CDocumentFile *pDocFile);		// // //
@@ -427,14 +432,11 @@ private:
 	bool			ReadBlock_SequencesVRC6(CDocumentFile *pDocFile);
 	bool			ReadBlock_SequencesN163(CDocumentFile *pDocFile);
 	bool			ReadBlock_SequencesS5B(CDocumentFile *pDocFile);
-
 	// // //
-	bool			WriteBlock_DetuneTables(CDocumentFile *pDocFile) const;
 	bool			ReadBlock_DetuneTables(CDocumentFile *pDocFile);
-	bool			WriteBlock_Grooves(CDocumentFile *pDocFile) const;
 	bool			ReadBlock_Grooves(CDocumentFile *pDocFile);
-	bool			WriteBlock_Bookmarks(CDocumentFile *pDocFile) const;
 	bool			ReadBlock_Bookmarks(CDocumentFile *pDocFile);
+
 	// For file version compability
 	void			ReorderSequences();
 	void			ConvertSequences();
