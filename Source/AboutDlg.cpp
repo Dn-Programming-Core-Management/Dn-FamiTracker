@@ -28,6 +28,7 @@
 // CAboutDlg dialog used for App About
 
 LPCTSTR LINK_WEB  = _T("http://hertzdevil.info/programs/");
+LPCTSTR LINK_BUG  = _T("http://hertzdevil.info/bug/main_page.php");		// // //
 LPCTSTR LINK_MAIL = _T("mailto:nicetas.c@gmail.com");
 
 // CLinkLabel
@@ -119,12 +120,13 @@ END_MESSAGE_MAP()
 
 CAboutDlg::CAboutDlg() : 
 	CDialog(CAboutDlg::IDD), 
-	m_pMail(NULL), 
-	m_pWeb(NULL), 
-	m_pLinkFont(NULL), 
-	m_pBoldFont(NULL),
-	m_pTitleFont(NULL),
-	m_pHead(NULL)
+	m_pMail(nullptr), 
+	m_pWeb(nullptr), 
+	m_pBug(nullptr),
+	m_pLinkFont(nullptr), 
+	m_pBoldFont(nullptr),
+	m_pTitleFont(nullptr),
+	m_pHead(nullptr)
 {
 }
 
@@ -132,6 +134,8 @@ CAboutDlg::~CAboutDlg()
 {
 	SAFE_RELEASE(m_pMail);
 	SAFE_RELEASE(m_pWeb);
+	SAFE_RELEASE(m_pHead);
+	SAFE_RELEASE(m_pBug);
 	SAFE_RELEASE(m_pLinkFont);
 	SAFE_RELEASE(m_pBoldFont);
 	SAFE_RELEASE(m_pTitleFont);
@@ -156,6 +160,7 @@ BOOL CAboutDlg::OnInitDialog()
 
 	SetDlgItemText(IDC_ABOUT1, aboutString);
 	SetDlgItemText(IDC_ABOUT_CONTRIB,
+		_T("- Original software by jsr\r\n")
 		_T("- Export plugin support by Gradualore\r\n")
 		_T("- Icon is made by Kuhneghetz\r\n")
 		_T("- Toolbar icons are made by ilkke\r\n")
@@ -170,9 +175,11 @@ BOOL CAboutDlg::OnInitDialog()
 
 	m_pMail = new CLinkLabel(LINK_MAIL);
 	m_pWeb = new CLinkLabel(LINK_WEB);
+	m_pBug = new CLinkLabel(LINK_BUG);		// // //
 
 	m_pMail->SubclassDlgItem(IDC_MAIL, this);
 	m_pWeb->SubclassDlgItem(IDC_WEBPAGE, this);
+	m_pBug->SubclassDlgItem(IDC_BUG, this);		// // //
 
 	m_pHead = new CHead();
 	m_pHead->SubclassDlgItem(IDC_HEAD, this);

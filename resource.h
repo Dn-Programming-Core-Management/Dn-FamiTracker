@@ -436,6 +436,7 @@
 #define IDC_FB                          1202
 #define IDC_MAIL                        1208
 #define IDC_WEBPAGE                     1209
+#define IDC_BUG                         1210
 #define IDC_ADDED_LIST                  1217
 #define IDC_FONT_SIZE                   1219
 #define IDC_COPY_WAVE                   1220
@@ -495,7 +496,6 @@
 #define IDC_SPIN_BOOKMARK_ROW           1264
 #define IDC_DELTA_COUNTER               1265
 #define IDC_SPIN_BOOKMARK_HIGH1         1265
-#define IDC_BUTTON1                     1266
 #define IDC_ABORT                       1266
 #define IDC_BUTTON_STRETCH_EXPAND       1266
 #define IDC_BUTTON_BOOKMARK_ADD         1266

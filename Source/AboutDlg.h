@@ -64,7 +64,7 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-	CLinkLabel *m_pMail, *m_pMail2, *m_pWeb;
+	CLinkLabel *m_pMail, *m_pMail2, *m_pWeb, *m_pBug;		// // //
 	CToolTipCtrl m_wndToolTip;
 	
 	CFont *m_pLinkFont, *m_pBoldFont, *m_pTitleFont;

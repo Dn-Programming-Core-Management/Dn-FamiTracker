@@ -952,16 +952,16 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTI
 CAPTION "About FamiTracker"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LTEXT           "Copyright (C) 2005 - 2015 jsr, 2014 - 2015 HertzDevil",IDC_ABOUT3,54,92,215,11
+    LTEXT           "Copyright (C) 2005 - 2015 jsr, 2014 - 2016 HertzDevil",IDC_ABOUT3,54,92,215,11
     DEFPUSHBUTTON   "OK",IDOK,228,64,50,16,WS_GROUP
-    LTEXT           "E-mail:",IDC_STATIC,54,108,24,10
+    LTEXT           "E-mail:",IDC_STATIC,54,107,24,10
     LTEXT           "This software is licensed under the GNU General Public\n License. Source is available on the webpage.",IDC_STATIC,54,167,224,17
     ICON            IDR_MAINFRAME,IDC_STATIC,7,63,20,20,SS_REALSIZEIMAGE
     LTEXT           "Contributions:",IDC_STATIC,54,191,224,9
     LTEXT           "All comments and feedback are welcome\nGreets to everyone who has helped spread information about this mod or contributed with bug reports and suggestions!",IDC_STATIC,54,137,224,26
-    LTEXT           "nicetas.c@gmail.com",IDC_MAIL,84,108,70,10,SS_NOTIFY
-    LTEXT           "http://hertzdevil.info/programs/",IDC_WEBPAGE,84,121,154,9,SS_NOTIFY
-    LTEXT           "Web:",IDC_STATIC,54,121,24,9
+    LTEXT           "nicetas.c@gmail.com",IDC_MAIL,84,107,70,10,SS_NOTIFY
+    LTEXT           "http://hertzdevil.info/programs/",IDC_WEBPAGE,84,117,154,9,SS_NOTIFY
+    LTEXT           "Web:",IDC_STATIC,54,117,24,9
     LTEXT           "Libraries:",IDC_STATIC,54,248,224,8
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,54,259,215,1
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,54,201,211,1
@@ -971,6 +971,7 @@ BEGIN
     CONTROL         "",IDC_HEAD,"Static",SS_OWNERDRAW,0,0,287,49
     EDITTEXT        IDC_ABOUT_CONTRIB,54,204,225,45,ES_MULTILINE | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
     EDITTEXT        IDC_ABOUT_LIB,54,261,225,45,ES_MULTILINE | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
+    LTEXT           "http://hertzdevil.info/bug/main_page.php",IDC_BUG,84,126,154,9,SS_NOTIFY
 END
 
 IDD_MAINFRAME DIALOGEX 0, 0, 518, 126
@@ -2011,6 +2012,11 @@ BEGIN
 END
 
 IDD_TRANSPOSE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_ABOUTBOX AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
