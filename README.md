@@ -23,8 +23,13 @@ This program and its source code are licensed under the GNU General Public Licen
 
 # Links
 
-- http://hertzdevil.info/programs/<br>The download site for all versions of 0CC-Famitracker.
-- http://0cc-famitracker.tumblr.com/<br>The official development log of 0CC-FamiTracker. Feature requests and bug reports can be sent here.
-- http://hertzdevil.info/forum/<br>The current 0CC-FamiTracker forum. Members may share their 0CC-FT creations and submti bug reports.
-- http://github.com/HertzDevil/0CC-FamiTracker<br>The Git source repository for the tracker.
-- http://github.com/HertzDevil/0CC-FT-NSF-Driver<br>The Git source repository for the NSF driver.
+- http://hertzdevil.info/programs/  
+  The download site for all versions of 0CC-Famitracker.
+- http://0cc-famitracker.tumblr.com/  
+  The official development log of 0CC-FamiTracker.
+- http://hertzdevil.info/bug/main_page.php  
+  The official bug tracker for all of HertzDevil's programs.
+- http://github.com/HertzDevil/0CC-FamiTracker  
+  The Git source repository for the tracker (this page).
+- http://github.com/HertzDevil/0CC-FT-NSF-Driver  
+  The Git source repository for the NSF driver.
