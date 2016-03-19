@@ -161,6 +161,7 @@
 #define IDS_IMPORT_SEQUENCE_COUNT       189
 #define ID_FIND_NEXT                    190
 #define ID_FIND_PREVIOUS                191
+#define IDS_ABOUT_TOOLTIP_BUG           191
 #define IDD_CONFIG_MIDI                 194
 #define IDR_PATTERN_POPUP               198
 #define IDD_CONFIG_SOUND                201
