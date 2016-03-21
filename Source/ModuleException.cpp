@@ -48,19 +48,14 @@ const std::string CModuleException::get_error() const
 	return out;
 }
 
-void CModuleException::add_string(std::string line)
-{
-	m_strError.push_back(std::unique_ptr<std::string>(new std::string(line)));
-}
-
-void CModuleException::add_fmt(std::string fmt, ...)
+void CModuleException::add_string(std::string fmt, ...)
 {
 	va_list argp;
 	va_start(argp, fmt);
 	char *buf = new char[MAX_ERROR_STRLEN]();
 	vsprintf_s(buf, MAX_ERROR_STRLEN, fmt.c_str(), argp);
 	va_end(argp);
-	add_string(buf);
+	m_strError.push_back(std::unique_ptr<std::string>(new std::string(buf)));
 	delete[] buf;
 }
 

@@ -2222,7 +2222,7 @@ bool CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile)
 					if (m_iFileVersion == 0x200) break;		// // //
 				}
 				catch (CModuleException *e) {
-					e->add_fmt("At effect column fx%d", n + 1);
+					e->add_string("At effect column fx%d,", n + 1);
 					throw;
 				}
 
@@ -2317,12 +2317,12 @@ bool CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile)
 				*/
 			}
 			catch (CModuleException *e) {
-				e->add_fmt("At row %02X", Row);
+				e->add_string("At row %02X,", Row);
 				throw;
 			}
 		}
 		catch (CModuleException *e) {
-			e->add_fmt("At pattern %02X, channel %d, track %d", Pattern, Channel, Track + 1);
+			e->add_string("At pattern %02X, channel %d, track %d,", Pattern, Channel, Track + 1);
 			throw;
 		}
 	}
@@ -2378,7 +2378,7 @@ bool CFamiTrackerDoc::ReadBlock_DetuneTables(CDocumentFile *pDocFile)
 			}
 		}
 		catch (CModuleException *e) {
-			e->add_fmt("In %s detune table", CDetuneDlg::CHIP_STR[Chip]);
+			e->add_string("In %s detune table,", CDetuneDlg::CHIP_STR[Chip]);
 			throw;
 		}
 	}
