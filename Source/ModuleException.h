@@ -54,12 +54,18 @@ public:
 		\param line A string representing one line of the error description.
 	*/
 	void add_string(std::string line);
+	/*!	\brief Appends a formatted error string to the exception.
+		\param line A string representing one line of the error description.
+	*/
+	void add_fmt(std::string fmt, ...);
 	/*!	\brief Sets the footer string of the error message.
-		\param footer The new footer string.
+		\param fmt The format specifier.
+		\param ... Extra arguments for the formatted string.
 	*/
 	void set_footer(std::string footer);
 
 private:
 	std::vector<std::unique_ptr<std::string>> m_strError;
 	std::unique_ptr<std::string> m_strFooter;
+	static const int MAX_ERROR_STRLEN;
 };

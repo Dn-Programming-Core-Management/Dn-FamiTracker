@@ -20,7 +20,10 @@
 ** must bear this legend.
 */
 
+#include <cstdarg>
 #include "ModuleException.h"
+
+const int CModuleException::MAX_ERROR_STRLEN = 128;
 
 CModuleException::CModuleException() :
 	std::exception(),
@@ -48,6 +51,17 @@ const std::string CModuleException::get_error() const
 void CModuleException::add_string(std::string line)
 {
 	m_strError.push_back(std::unique_ptr<std::string>(new std::string(line)));
+}
+
+void CModuleException::add_fmt(std::string fmt, ...)
+{
+	va_list argp;
+	va_start(argp, fmt);
+	char *buf = new char[MAX_ERROR_STRLEN]();
+	vsprintf_s(buf, MAX_ERROR_STRLEN, fmt.c_str(), argp);
+	va_end(argp);
+	add_string(buf);
+	delete[] buf;
 }
 
 void CModuleException::set_footer(std::string footer)
