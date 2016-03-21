@@ -60,6 +60,6 @@ public:
 	void set_footer(std::string footer);
 
 private:
-	std::vector<std::shared_ptr<std::string>> m_strError;
-	std::shared_ptr<std::string> m_strFooter;
+	std::vector<std::unique_ptr<std::string>> m_strError;
+	std::unique_ptr<std::string> m_strFooter;
 };

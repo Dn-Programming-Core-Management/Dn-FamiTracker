@@ -47,7 +47,7 @@ const std::string CModuleException::get_error() const
 
 void CModuleException::add_string(std::string line)
 {
-	m_strError.push_back(std::make_shared<std::string>(std::move(line)));
+	m_strError.push_back(std::unique_ptr<std::string>(new std::string(line)));
 }
 
 void CModuleException::set_footer(std::string footer)
