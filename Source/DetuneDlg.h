@@ -34,6 +34,7 @@ public:
 	virtual ~CDetuneDlg();
 
 	int* GetDetuneTable();
+	static const CString CHIP_STR[6];
 
 // Dialog Data
 	enum { IDD = IDD_DETUNE };
@@ -49,7 +50,6 @@ protected:
 	
 	static const TCHAR *m_pNote[12];
 	static const TCHAR *m_pNoteFlat[12];
-	static const CString chipStr[6];
 
 	int    m_iOctave;
 	int    m_iNote;

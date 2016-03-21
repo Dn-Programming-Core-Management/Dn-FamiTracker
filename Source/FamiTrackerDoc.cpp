@@ -2188,128 +2188,142 @@ bool CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile)
 
 		CPatternData *pTrack = GetTrack(Track);
 
-		for (unsigned i = 0; i < Items; ++i) {
+		for (unsigned i = 0; i < Items; ++i) try {
 			unsigned Row;
 			if (m_iFileVersion == 0x0200)
 				Row = pDocFile->GetBlockChar();
 			else
 				Row = AssertRange(pDocFile->GetBlockInt(), 0, 0xFF, "Row index");		// // //
 
-			stChanNote *Note = pTrack->GetPatternData(Channel, Pattern, Row);
-			*Note = BLANK_NOTE;		// // //
+			try {
+				stChanNote *Note = pTrack->GetPatternData(Channel, Pattern, Row);
+				*Note = BLANK_NOTE;		// // //
 
-			Note->Note		 = AssertRange(pDocFile->GetBlockChar(), NONE, ECHO, "Note value");
-			Note->Octave	 = AssertRange(pDocFile->GetBlockChar(), 0, OCTAVE_RANGE - 1, "Octave value");
-			Note->Instrument = AssertRange(pDocFile->GetBlockChar(), 0, m_pInstrumentManager->MAX_INSTRUMENTS, "Instrument index");
-			Note->Vol		 = AssertRange(pDocFile->GetBlockChar(), 0, MAX_VOLUME, "Channel volume");
+				Note->Note = AssertRange(pDocFile->GetBlockChar(), NONE, ECHO, "Note value");
+				Note->Octave = AssertRange(pDocFile->GetBlockChar(), 0, OCTAVE_RANGE - 1, "Octave value");
+				Note->Instrument = AssertRange(pDocFile->GetBlockChar(), 0, m_pInstrumentManager->MAX_INSTRUMENTS, "Instrument index");
+				Note->Vol = AssertRange(pDocFile->GetBlockChar(), 0, MAX_VOLUME, "Channel volume");
 
-			for (int n = 0; n < (pTrack->GetEffectColumnCount(Channel) + 1); ++n) {
-				unsigned char EffectNumber = pDocFile->GetBlockChar();
-				unsigned char EffectParam = pDocFile->GetBlockChar();
-				if (Version < 3) {
-					if (EffectNumber == EF_PORTAOFF) {
-						EffectNumber = EF_PORTAMENTO;
-						EffectParam = 0;
+				for (int n = 0; n < (pTrack->GetEffectColumnCount(Channel) + 1); ++n) try {
+					unsigned char EffectNumber = pDocFile->GetBlockChar();
+					unsigned char EffectParam = pDocFile->GetBlockChar();
+					if (Version < 3) {
+						if (EffectNumber == EF_PORTAOFF) {
+							EffectNumber = EF_PORTAMENTO;
+							EffectParam = 0;
+						}
+						else if (EffectNumber == EF_PORTAMENTO) {
+							if (EffectParam < 0xFF)
+								EffectParam++;
+						}
 					}
-					else if (EffectNumber == EF_PORTAMENTO) {
-						if (EffectParam < 0xFF)
-							EffectParam++;
-					}
+					if (Note->EffNumber[n] = static_cast<effect_t>(AssertRange(EffectNumber, EF_NONE, EF_COUNT - 1, "Effect index")))
+						Note->EffParam[n] = EffectParam; // skip on no effect
+					if (m_iFileVersion == 0x200) break;		// // //
 				}
-				if (Note->EffNumber[n] = static_cast<effect_t>(AssertRange(EffectNumber, EF_NONE, EF_COUNT - 1, "Effect index")))
-					Note->EffParam[n] = EffectParam; // skip on no effect
-				if (m_iFileVersion == 0x200) break;		// // //
-			}
-
-//			if (Note->Vol > MAX_VOLUME)
-//				Note->Vol &= 0x0F;
-
-			// Specific for version 2.0
-			if (m_iFileVersion == 0x0200) {
-
-				if (Note->EffNumber[0] == EF_SPEED && Note->EffParam[0] < 20)
-					Note->EffParam[0]++;
-				
-				if (Note->Vol == 0)
-					Note->Vol = MAX_VOLUME;
-				else {
-					Note->Vol--;
-					Note->Vol &= 0x0F;
+				catch (CModuleException *e) {
+					e->add_fmt("At effect column fx%d", n + 1);
+					throw;
 				}
 
-				if (Note->Note == 0)
-					Note->Instrument = MAX_INSTRUMENTS;
-			}
+	//			if (Note->Vol > MAX_VOLUME)
+	//				Note->Vol &= 0x0F;
 
-			if (ExpansionEnabled(SNDCHIP_N163) && GetChipType(Channel) == SNDCHIP_N163) {		// // //
-				for (int n = 0; n < MAX_EFFECT_COLUMNS; ++n)
-					if (Note->EffNumber[n] == EF_SAMPLE_OFFSET)
-						Note->EffNumber[n] = EF_N163_WAVE_BUFFER;
-			}
+				// Specific for version 2.0
+				if (m_iFileVersion == 0x0200) {
 
-			if (Version == 3) {
-				// Fix for VRC7 portamento
-				if (ExpansionEnabled(SNDCHIP_VRC7) && Channel > 4) {
-					for (int n = 0; n < MAX_EFFECT_COLUMNS; ++n) {
-						switch (Note->EffNumber[n]) {
+					if (Note->EffNumber[0] == EF_SPEED && Note->EffParam[0] < 20)
+						Note->EffParam[0]++;
+
+					if (Note->Vol == 0)
+						Note->Vol = MAX_VOLUME;
+					else {
+						Note->Vol--;
+						Note->Vol &= 0x0F;
+					}
+
+					if (Note->Note == 0)
+						Note->Instrument = MAX_INSTRUMENTS;
+				}
+
+				if (ExpansionEnabled(SNDCHIP_N163) && GetChipType(Channel) == SNDCHIP_N163) {		// // //
+					for (int n = 0; n < MAX_EFFECT_COLUMNS; ++n)
+						if (Note->EffNumber[n] == EF_SAMPLE_OFFSET)
+							Note->EffNumber[n] = EF_N163_WAVE_BUFFER;
+				}
+
+				if (Version == 3) {
+					// Fix for VRC7 portamento
+					if (ExpansionEnabled(SNDCHIP_VRC7) && Channel > 4) {
+						for (int n = 0; n < MAX_EFFECT_COLUMNS; ++n) {
+							switch (Note->EffNumber[n]) {
 							case EF_PORTA_DOWN:
 								Note->EffNumber[n] = EF_PORTA_UP;
 								break;
 							case EF_PORTA_UP:
 								Note->EffNumber[n] = EF_PORTA_DOWN;
 								break;
+							}
 						}
 					}
-				}
-				// FDS pitch effect fix
-				else if (ExpansionEnabled(SNDCHIP_FDS) && GetChannelType(Channel) == CHANID_FDS) {
-					for (int n = 0; n < MAX_EFFECT_COLUMNS; ++n) {
-						switch (Note->EffNumber[n]) {
+					// FDS pitch effect fix
+					else if (ExpansionEnabled(SNDCHIP_FDS) && GetChannelType(Channel) == CHANID_FDS) {
+						for (int n = 0; n < MAX_EFFECT_COLUMNS; ++n) {
+							switch (Note->EffNumber[n]) {
 							case EF_PITCH:
 								if (Note->EffParam[n] != 0x80)
 									Note->EffParam[n] = (0x100 - Note->EffParam[n]) & 0xFF;
 								break;
+							}
 						}
 					}
 				}
-			}
 #ifdef TRANSPOSE_FDS
-			if (Version < 5) {
-				// FDS octave
-				if (ExpansionEnabled(SNDCHIP_FDS) && GetChannelType(Channel) == CHANID_FDS && Note->Octave < 6) {
-					Note->Octave += 2;
-					m_bAdjustFDSArpeggio = true;
+				if (Version < 5) {
+					// FDS octave
+					if (ExpansionEnabled(SNDCHIP_FDS) && GetChannelType(Channel) == CHANID_FDS && Note->Octave < 6) {
+						Note->Octave += 2;
+						m_bAdjustFDSArpeggio = true;
+					}
 				}
-			}
 #endif /* TRANSPOSE_FDS */
-			/*
-			if (Version < 6) {
-				// Noise pitch slide fix
-				if (GetChannelType(Channel) == CHANID_NOISE) {
-					for (int n = 0; n < MAX_EFFECT_COLUMNS; ++n) {
-						switch (Note->EffNumber[n]) {
-							case EF_PORTA_DOWN:
-								Note->EffNumber[n] = EF_PORTA_UP;
-								Note->EffParam[n] = Note->EffParam[n] << 4;
-								break;
-							case EF_PORTA_UP:
-								Note->EffNumber[n] = EF_PORTA_DOWN;
-								Note->EffParam[n] = Note->EffParam[n] << 4;
-								break;
-							case EF_PORTAMENTO:
-								Note->EffParam[n] = Note->EffParam[n] << 4;
-								break;
-							case EF_SLIDE_UP:
-								Note->EffParam[n] = Note->EffParam[n] + 0x70;
-								break;
-							case EF_SLIDE_DOWN:
-								Note->EffParam[n] = Note->EffParam[n] + 0x70;
-								break;
+				/*
+				if (Version < 6) {
+					// Noise pitch slide fix
+					if (GetChannelType(Channel) == CHANID_NOISE) {
+						for (int n = 0; n < MAX_EFFECT_COLUMNS; ++n) {
+							switch (Note->EffNumber[n]) {
+								case EF_PORTA_DOWN:
+									Note->EffNumber[n] = EF_PORTA_UP;
+									Note->EffParam[n] = Note->EffParam[n] << 4;
+									break;
+								case EF_PORTA_UP:
+									Note->EffNumber[n] = EF_PORTA_DOWN;
+									Note->EffParam[n] = Note->EffParam[n] << 4;
+									break;
+								case EF_PORTAMENTO:
+									Note->EffParam[n] = Note->EffParam[n] << 4;
+									break;
+								case EF_SLIDE_UP:
+									Note->EffParam[n] = Note->EffParam[n] + 0x70;
+									break;
+								case EF_SLIDE_DOWN:
+									Note->EffParam[n] = Note->EffParam[n] + 0x70;
+									break;
+							}
 						}
 					}
 				}
+				*/
 			}
-			*/
+			catch (CModuleException *e) {
+				e->add_fmt("At row %02X", Row);
+				throw;
+			}
+		}
+		catch (CModuleException *e) {
+			e->add_fmt("At pattern %02X, channel %d, track %d", Pattern, Channel, Track + 1);
+			throw;
 		}
 	}
 	
@@ -2347,17 +2361,25 @@ bool CFamiTrackerDoc::ReadBlock_DSamples(CDocumentFile *pDocFile)
 
 // // // Detune tables
 
+#include "DetuneDlg.h" // TODO: bad, encapsulate detune tables
+
 bool CFamiTrackerDoc::ReadBlock_DetuneTables(CDocumentFile *pDocFile)
 {
 	int Version = pDocFile->GetBlockVersion();	// Ver 1
 	int Count = AssertRange(pDocFile->GetBlockChar(), 0, 6, "Detune table count");
 	for (int i = 0; i < Count; i++) {
 		int Chip = AssertRange(pDocFile->GetBlockChar(), 0, 5, "Detune table index");
-		int Item = AssertRange(pDocFile->GetBlockChar(), 0, NOTE_COUNT, "Detune table note count");
-		for (int j = 0; j < Item; j++) {
-			int Note = AssertRange(pDocFile->GetBlockChar(), 0, NOTE_COUNT - 1, "Detune table note index");
-			int Offset = pDocFile->GetBlockInt();
-			m_iDetuneTable[Chip][Note] = Offset;
+		try {
+			int Item = AssertRange(pDocFile->GetBlockChar(), 0, NOTE_COUNT, "Detune table note count");
+			for (int j = 0; j < Item; j++) {
+				int Note = AssertRange(pDocFile->GetBlockChar(), 0, NOTE_COUNT - 1, "Detune table note index");
+				int Offset = pDocFile->GetBlockInt();
+				m_iDetuneTable[Chip][Note] = Offset;
+			}
+		}
+		catch (CModuleException *e) {
+			e->add_fmt("In %s detune table", CDetuneDlg::CHIP_STR[Chip]);
+			throw;
 		}
 	}
 

@@ -79,7 +79,7 @@ const TCHAR *CDetuneDlg::m_pNote[12]	 = {_T("C") , _T("C#"), _T("D") , _T("D#")
 const TCHAR *CDetuneDlg::m_pNoteFlat[12] = {_T("C") , _T("D-"), _T("D") , _T("E-")
 										  , _T("E") , _T("F") , _T("G-"), _T("G")
 										  , _T("A-"), _T("A") , _T("B-"), _T("B")};
-const CString CDetuneDlg::chipStr[6] = {_T("NTSC"), _T("PAL"), _T("Saw"), _T("VRC7"), _T("FDS"), _T("N163")};
+const CString CDetuneDlg::CHIP_STR[6] = {_T("NTSC"), _T("PAL"), _T("Saw"), _T("VRC7"), _T("FDS"), _T("N163")};
 
 BOOL CDetuneDlg::OnInitDialog()
 {
@@ -238,11 +238,11 @@ void CDetuneDlg::UpdateOffset()
 		}
 
 		if (i == 5 && !m_pDocument->GetNamcoChannels()) {
-			str.Format(_T("%s\n-\n-\n-\n-\n-\n-"), chipStr[i]);
+			str.Format(_T("%s\n-\n-\n-\n-\n-\n-"), CHIP_STR[i]);
 			SetDlgItemText(IDC_DETUNE_INFO_N163, str);
 			continue;
 		}
-		str.Format(fmt, chipStr[i], oldReg, newReg, values[0], values[1], values[2], values[3]);
+		str.Format(fmt, CHIP_STR[i], oldReg, newReg, values[0], values[1], values[2], values[3]);
 		SetDlgItemText(IDC_DETUNE_INFO_NTSC + i, str);
 	}
 }
