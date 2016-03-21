@@ -48,7 +48,7 @@ const std::string CModuleException::GetErrorString() const
 	return out;
 }
 
-void CModuleException::AddErrorLine(std::string fmt, ...)
+void CModuleException::AppendError(std::string fmt, ...)
 {
 	va_list argp;
 	va_start(argp, fmt);

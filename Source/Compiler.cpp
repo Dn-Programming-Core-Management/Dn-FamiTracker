@@ -188,6 +188,7 @@ void CCompiler::Print(LPCTSTR text, ...) const
 		return;
 
 	_vsntprintf_s(buf, sizeof(buf), _TRUNCATE, text, argp);
+	va_end(argp);		// // //
 
 	size_t len = _tcslen(buf);
 
