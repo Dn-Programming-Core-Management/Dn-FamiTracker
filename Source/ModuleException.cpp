@@ -32,7 +32,7 @@ CModuleException::CModuleException() :
 {
 }
 
-const std::string CModuleException::get_error() const
+const std::string CModuleException::GetErrorString() const
 {
 	std::string out;
 	const int COUNT = m_strError.size();
@@ -48,7 +48,7 @@ const std::string CModuleException::get_error() const
 	return out;
 }
 
-void CModuleException::add_string(std::string fmt, ...)
+void CModuleException::AddErrorLine(std::string fmt, ...)
 {
 	va_list argp;
 	va_start(argp, fmt);
@@ -59,7 +59,7 @@ void CModuleException::add_string(std::string fmt, ...)
 	delete[] buf;
 }
 
-void CModuleException::set_footer(std::string footer)
+void CModuleException::SetFooter(std::string footer)
 {
 	m_strFooter.reset(new std::string(footer));
 }

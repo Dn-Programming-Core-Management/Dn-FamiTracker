@@ -49,16 +49,16 @@ public:
 		constructor. This exception object does not use std::exception::what.
 		\return The error string.
 	*/
-	const std::string get_error() const;
+	const std::string GetErrorString() const;
 	/*!	\brief Appends a formatted error string to the exception.
 		\param fmt The format specifier.
 		\param ... Extra arguments for the formatted string.
 	*/
-	void add_string(std::string fmt, ...);
+	void AppendError(std::string fmt, ...);
 	/*!	\brief Sets the footer string of the error message.
 		\param footer The new footer string.
 	*/
-	void set_footer(std::string footer);
+	void SetFooter(std::string footer);
 
 private:
 	std::vector<std::unique_ptr<std::string>> m_strError;

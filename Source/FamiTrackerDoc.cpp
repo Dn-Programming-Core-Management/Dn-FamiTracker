@@ -631,7 +631,7 @@ void CFamiTrackerDoc::AssertFileData(bool Cond, std::string Msg) const
 {
 	if (!Cond) {
 		CModuleException *e = m_pCurrentDocument ? m_pCurrentDocument->GetException() : new CModuleException();
-		e->add_string(Msg);
+		e->AppendError(Msg);
 		e->raise();
 	}
 }
@@ -1325,7 +1325,7 @@ BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 		}
 	}
 	catch (CModuleException *e) {
-		AfxMessageBox(e->get_error().c_str(), MB_ICONERROR);
+		AfxMessageBox(e->GetErrorString().c_str(), MB_ICONERROR);
 		m_pCurrentDocument = nullptr;		// // //
 		delete e;
 		return FALSE;
@@ -2222,7 +2222,7 @@ bool CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile)
 					if (m_iFileVersion == 0x200) break;		// // //
 				}
 				catch (CModuleException *e) {
-					e->add_string("At effect column fx%d,", n + 1);
+					e->AppendError("At effect column fx%d,", n + 1);
 					throw;
 				}
 
@@ -2317,12 +2317,12 @@ bool CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile)
 				*/
 			}
 			catch (CModuleException *e) {
-				e->add_string("At row %02X,", Row);
+				e->AppendError("At row %02X,", Row);
 				throw;
 			}
 		}
 		catch (CModuleException *e) {
-			e->add_string("At pattern %02X, channel %d, track %d,", Pattern, Channel, Track + 1);
+			e->AppendError("At pattern %02X, channel %d, track %d,", Pattern, Channel, Track + 1);
 			throw;
 		}
 	}
@@ -2378,7 +2378,7 @@ bool CFamiTrackerDoc::ReadBlock_DetuneTables(CDocumentFile *pDocFile)
 			}
 		}
 		catch (CModuleException *e) {
-			e->add_string("In %s detune table,", CDetuneDlg::CHIP_STR[Chip]);
+			e->AppendError("In %s detune table,", CDetuneDlg::CHIP_STR[Chip]);
 			throw;
 		}
 	}

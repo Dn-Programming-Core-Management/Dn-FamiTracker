@@ -201,12 +201,12 @@ void CDocumentFile::ValidateFile()
 	
 	// // // Older file version
 	if (GetFileVersion() < COMPATIBLE_VER) {
-		e->add_string("FamiTracker module version too old (0x%X), expected 0x%X or above", GetFileVersion(), COMPATIBLE_VER);
+		e->AppendError("FamiTracker module version too old (0x%X), expected 0x%X or above", GetFileVersion(), COMPATIBLE_VER);
 		e->raise();
 	}
 	// // // File version is too new
 	if (GetFileVersion() > FILE_VER) {
-		e->add_string("FamiTracker module version too new (0x%X), expected 0x%X or below", GetFileVersion(), FILE_VER);
+		e->AppendError("FamiTracker module version too new (0x%X), expected 0x%X or below", GetFileVersion(), FILE_VER);
 		e->raise();
 	}
 
@@ -370,13 +370,13 @@ void CDocumentFile::SetDefaultFooter(CModuleException *e) const		// // //
 	sprintf_s(Buffer, sizeof(Buffer), "At address 0x%X in %s block,\naddress 0x%llX in file",
 			  m_iPreviousPointer, m_cBlockID, m_iPreviousPosition);
 	std::string str(Buffer);
-	e->set_footer(str);
+	e->SetFooter(str);
 }
 
 void CDocumentFile::RaiseModuleException(std::string Msg) const		// // //
 {
 	CModuleException *e = GetException();
-	e->add_string(Msg);
+	e->AppendError(Msg);
 	e->raise();
 }
 
