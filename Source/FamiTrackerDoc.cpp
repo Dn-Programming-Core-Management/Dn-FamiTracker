@@ -1610,17 +1610,33 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 		ConvertSequences();
 
 #ifdef TRANSPOSE_FDS
-	if (m_bAdjustFDSArpeggio)
-		for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
-			if (IsInstrumentUsed(i) && GetInstrumentType(i) == INST_FDS) {
-				auto pInstrument = std::static_pointer_cast<CInstrumentFDS>(GetInstrument(i));
-				CSequence *pSeq = pInstrument->GetSequence(SEQ_ARPEGGIO);
-				if (pSeq->GetItemCount() > 0 && pSeq->GetSetting() == SETTING_ARP_FIXED)
-					for (unsigned int j = 0; j < pSeq->GetItemCount(); ++j)
-						pSeq->SetItem(j, pSeq->GetItem(j) + 24);
+	if (m_bAdjustFDSArpeggio) {
+		int Channel = GetChannelIndex(CHANID_FDS);
+		if (Channel != -1) {
+			stChanNote Note;
+			for (int t = 0; t < m_iTrackCount; ++t) for (int p = 0; p < MAX_PATTERN; ++p) for (int r = 0; r < MAX_PATTERN_LENGTH; ++r) {
+				GetDataAtPattern(t, p, Channel, r, &Note);
+				if (Note.Note >= NOTE_C && Note.Note <= NOTE_B) {
+					int Trsp = MIDI_NOTE(Note.Octave, Note.Note) + NOTE_RANGE * 2;
+					Trsp = Trsp >= NOTE_COUNT ? NOTE_COUNT - 1 : Trsp;
+					Note.Note = GET_NOTE(Trsp);
+					Note.Octave = GET_OCTAVE(Trsp);
+					SetDataAtPattern(t, p, Channel, r, &Note);
+				}
 			}
 		}
-#endif /* TRANSPOSE_FDS */
+		for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
+			if (auto pInstrument = std::dynamic_pointer_cast<CInstrumentFDS>(GetInstrument(i))) {
+				CSequence *pSeq = pInstrument->GetSequence(SEQ_ARPEGGIO);
+				if (pSeq != nullptr && pSeq->GetItemCount() > 0 && pSeq->GetSetting() == SETTING_ARP_FIXED)
+					for (unsigned int j = 0; j < pSeq->GetItemCount(); ++j) {
+						int Trsp = pSeq->GetItem(j) + NOTE_RANGE * 2;
+						pSeq->SetItem(j, Trsp >= NOTE_COUNT ? NOTE_COUNT - 1 : Trsp);
+					}
+			}
+		}
+	}
+#endif
 
 	return TRUE;
 }
@@ -2168,6 +2184,10 @@ bool CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile)
 {
 	unsigned int Version = pDocFile->GetBlockVersion();
 
+#ifdef TRANSPOSE_FDS
+	m_bAdjustFDSArpeggio = Version < 5;
+#endif
+
 	if (Version == 1) {
 		int PatternLen = AssertRange(pDocFile->GetBlockInt(), 0, MAX_PATTERN_LENGTH, "Pattern data count");
 		CPatternData *pTrack = GetTrack(0);
@@ -2277,15 +2297,6 @@ bool CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile)
 						}
 					}
 				}
-#ifdef TRANSPOSE_FDS
-				if (Version < 5) {
-					// FDS octave
-					if (ExpansionEnabled(SNDCHIP_FDS) && GetChannelType(Channel) == CHANID_FDS && Note->Octave < 6) {
-						Note->Octave += 2;
-						m_bAdjustFDSArpeggio = true;
-					}
-				}
-#endif /* TRANSPOSE_FDS */
 				/*
 				if (Version < 6) {
 					// Noise pitch slide fix
