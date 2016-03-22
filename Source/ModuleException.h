@@ -42,7 +42,7 @@ public:
 		to throw polymorphically.
 		\warning Visual C++ 2010 does not support the `[[noreturn]]` attribute.
 	*/
-	__declspec(noreturn) virtual void raise() { throw this; }; // microsoft
+	__declspec(noreturn) virtual void Raise() { throw this; }; // microsoft
 
 	/*!	\brief Obtains the error description.
 		\details The description consists of zero or more lines followed by the footer specified in the

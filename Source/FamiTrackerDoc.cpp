@@ -632,7 +632,7 @@ void CFamiTrackerDoc::AssertFileData(bool Cond, std::string Msg) const
 	if (!Cond) {
 		CModuleException *e = m_pCurrentDocument ? m_pCurrentDocument->GetException() : new CModuleException();
 		e->AppendError(Msg);
-		e->raise();
+		e->Raise();
 	}
 }
 
@@ -1581,8 +1581,7 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 		}
 		else {
 			try {
-				auto fn = FTM_READ_FUNC.at(BlockID);
-				ErrorFlag = CALL_MEMBER_FN(this, fn)(&DocumentFile);
+				ErrorFlag = CALL_MEMBER_FN(this, FTM_READ_FUNC.at(BlockID))(&DocumentFile);
 			}
 			catch (std::out_of_range) {
 			// This shouldn't show up in release (debug only)

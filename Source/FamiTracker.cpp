@@ -1062,7 +1062,6 @@ CDocTemplate::Confidence CDocTemplate0CC::MatchDocType(const char *pszPathName, 
 		int curPos = 0;
 		CString tok = strFilterExt.Tokenize(_T(";"), curPos);
 		while (!tok.IsEmpty()) {
-			TRACE("%s %s\n", tok, pszPathName + nDot);
 			ASSERT(tok[0] == '.');
 			if (nDot >= 0 && lstrcmpi(pszPathName + nDot, tok) == 0)
 				return yesAttemptNative; // extension matches

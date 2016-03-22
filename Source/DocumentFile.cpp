@@ -202,12 +202,12 @@ void CDocumentFile::ValidateFile()
 	// // // Older file version
 	if (GetFileVersion() < COMPATIBLE_VER) {
 		e->AppendError("FamiTracker module version too old (0x%X), expected 0x%X or above", GetFileVersion(), COMPATIBLE_VER);
-		e->raise();
+		e->Raise();
 	}
 	// // // File version is too new
 	if (GetFileVersion() > FILE_VER) {
 		e->AppendError("FamiTracker module version too new (0x%X), expected 0x%X or below", GetFileVersion(), FILE_VER);
-		e->raise();
+		e->Raise();
 	}
 
 	m_bFileDone = false;
@@ -377,7 +377,7 @@ void CDocumentFile::RaiseModuleException(std::string Msg) const		// // //
 {
 	CModuleException *e = GetException();
 	e->AppendError(Msg);
-	e->raise();
+	e->Raise();
 }
 
 UINT CDocumentFile::Read(void *lpBuf, UINT nCount)		// // //

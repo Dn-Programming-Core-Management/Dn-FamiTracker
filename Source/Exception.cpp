@@ -21,7 +21,7 @@
 #include "stdafx.h"
 #include <Dbghelp.h>
 #include "Exception.h"
-#include "FamiTracker.h"
+#include "../version.h"
 
 //
 // This file contains an unhandled exception handler
