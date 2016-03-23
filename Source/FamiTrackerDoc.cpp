@@ -320,7 +320,7 @@ BOOL CFamiTrackerDoc::OnOpenDocument(LPCTSTR lpszPathName)
 BOOL CFamiTrackerDoc::OnSaveDocument(LPCTSTR lpszPathName)
 {
 #ifdef DISABLE_SAVE		// // //
-	static_cast<CMainFrame*>(AfxGetMainWnd())->SetMessageText(IDS_DISABLE_SAVE);
+	static_cast<CFrameWnd*>(AfxGetMainWnd())->SetMessageText(IDS_DISABLE_SAVE);
 	return FALSE;
 #endif
 
@@ -497,7 +497,7 @@ void CFamiTrackerDoc::CreateEmpty()
 void CFamiTrackerDoc::OnFileSave()
 {
 #ifdef DISABLE_SAVE		// // //
-	static_cast<CMainFrame*>(AfxGetMainWnd())->SetMessageText(IDS_DISABLE_SAVE);
+	static_cast<CFrameWnd*>(AfxGetMainWnd())->SetMessageText(IDS_DISABLE_SAVE);
 	return;
 #endif
 
@@ -510,7 +510,7 @@ void CFamiTrackerDoc::OnFileSave()
 void CFamiTrackerDoc::OnFileSaveAs()
 {
 #ifdef DISABLE_SAVE		// // //
-	static_cast<CMainFrame*>(AfxGetMainWnd())->SetMessageText(IDS_DISABLE_SAVE);
+	static_cast<CFrameWnd*>(AfxGetMainWnd())->SetMessageText(IDS_DISABLE_SAVE);
 	return;
 #endif
 
@@ -1881,73 +1881,76 @@ bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 		}
 	}
 	else if (Version >= 3) {
+		CSequenceManager *pManager = GetSequenceManager(INST_2A03);		// // //
 		int Indices[MAX_SEQUENCES * SEQ_COUNT];
 		int Types[MAX_SEQUENCES * SEQ_COUNT];
 
-		CSequenceManager *pManager = GetSequenceManager(INST_2A03);		// // //
-
 		for (unsigned int i = 0; i < Count; ++i) {
-			unsigned int Index = AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES - 1, "Sequence index");
-			unsigned int Type = AssertRange(pDocFile->GetBlockInt(), 0, SEQ_COUNT - 1, "Sequence type");
-			unsigned char SeqCount = pDocFile->GetBlockChar();
-			unsigned int LoopPoint = pDocFile->GetBlockInt();
+			unsigned int Index = Indices[i] = AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES - 1, "Sequence index");
+			unsigned int Type = Types[i] = AssertRange(pDocFile->GetBlockInt(), 0, SEQ_COUNT - 1, "Sequence type");
+			try {
+				unsigned char SeqCount = pDocFile->GetBlockChar();
+				CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);
+				pSeq->Clear();
+				pSeq->SetItemCount(SeqCount < MAX_SEQUENCE_ITEMS ? SeqCount : MAX_SEQUENCE_ITEMS);
 
-			// Work-around for some older files
-			if (LoopPoint == SeqCount)
-				LoopPoint = -1;
+				unsigned int LoopPoint = AssertRange(pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount), "Sequence loop point");
+				// Work-around for some older files
+				if (LoopPoint != SeqCount)
+					pSeq->SetLoopPoint(LoopPoint);
 
-			Indices[i] = Index;
-			Types[i] = Type;
-			
-			// AssertRange(SeqCount, 0, MAX_SEQUENCE_ITEMS, "Sequence item count");
+				if (Version == 4) {
+					ReleasePoint = pDocFile->GetBlockInt();
+					Settings = pDocFile->GetBlockInt();
+					pSeq->SetReleasePoint(ReleasePoint);
+					pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
+				}
 
-			CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);
-
-			pSeq->Clear();
-			pSeq->SetItemCount(SeqCount < MAX_SEQUENCE_ITEMS ? SeqCount : MAX_SEQUENCE_ITEMS);
-			pSeq->SetLoopPoint(LoopPoint);
-
-			if (Version == 4) {
-				ReleasePoint = pDocFile->GetBlockInt();
-				Settings = pDocFile->GetBlockInt();
-				pSeq->SetReleasePoint(ReleasePoint);
-				pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
+				// AssertRange(SeqCount, 0, MAX_SEQUENCE_ITEMS, "Sequence item count");
+				for (int j = 0; j < SeqCount; ++j) {
+					char Value = pDocFile->GetBlockChar();
+					if (j < MAX_SEQUENCE_ITEMS)		// // //
+						pSeq->SetItem(j, Value);
+				}
 			}
-
-			for (int j = 0; j < SeqCount; ++j) {
-				char Value = pDocFile->GetBlockChar();
-				if (j < MAX_SEQUENCE_ITEMS)		// // //
-					pSeq->SetItem(j, Value);
+			catch (CModuleException *e) {
+				e->AppendError("At 2A03 %d sequence %d,", Type, Index);
+				throw;
 			}
 		}
 
 		if (Version == 5) {
 			// Version 5 saved the release points incorrectly, this is fixed in ver 6
 			for (unsigned int i = 0; i < MAX_SEQUENCES; ++i) {
-				for (int j = 0; j < SEQ_COUNT; ++j) {
-					ReleasePoint = pDocFile->GetBlockInt();
-					Settings = pDocFile->GetBlockInt();
+				for (int j = 0; j < SEQ_COUNT; ++j) try {
+					int ReleasePoint = pDocFile->GetBlockInt();
+					int Settings = pDocFile->GetBlockInt();
 					CSequence *pSeq = pManager->GetCollection(j)->GetSequence(i);
-					if (pSeq->GetItemCount() > 0) {
-						pSeq->SetReleasePoint(ReleasePoint);
+					int Length = pSeq->GetItemCount();
+					if (Length > 0) {
+						pSeq->SetReleasePoint(AssertRange(ReleasePoint, -1, Length - 1, "Sequence release point"));
 						pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
 					}
+				}
+				catch (CModuleException *e) {
+					e->AppendError("At 2A03 %d sequence %d,", j, i);
+					throw;
 				}
 			}
 		}
 		else if (Version >= 6) {
 			// Read release points correctly stored
-			for (unsigned int i = 0; i < Count; ++i) {
-				ReleasePoint = pDocFile->GetBlockInt();
-				Settings = pDocFile->GetBlockInt();
-				unsigned int Index = Indices[i];
-				unsigned int Type = Types[i];
-				CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);
-				pSeq->SetReleasePoint(ReleasePoint);
-				pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
+			for (unsigned int i = 0; i < Count; ++i) try {
+				CSequence *pSeq = pManager->GetCollection(Types[i])->GetSequence(Indices[i]);
+				pSeq->SetReleasePoint(AssertRange(
+					pDocFile->GetBlockInt(), -1, static_cast<int>(pSeq->GetItemCount()) - 1, "Sequence release point"));
+				pSeq->SetSetting(static_cast<seq_setting_t>(pDocFile->GetBlockInt()));		// // //
+			}
+			catch (CModuleException *e) {
+				e->AppendError("At 2A03 %d sequence %d,", Types[i], Indices[i]);
+				throw;
 			}
 		}
-
 	}
 
 	return false;
@@ -1961,89 +1964,65 @@ bool CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile)
 
 	CSequenceManager *pManager = GetSequenceManager(INST_VRC6);		// // //
 
-	if (Version < 4) {
-		for (unsigned int i = 0; i < Count; ++i) {
-			unsigned int Index		= AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES - 1, "Sequence index");
-			unsigned int Type		= AssertRange(pDocFile->GetBlockInt(), 0, SEQ_COUNT - 1, "Sequence type");
-			unsigned char SeqCount	= pDocFile->GetBlockChar();
-			unsigned int LoopPoint	= pDocFile->GetBlockInt();
-//			if (SeqCount > MAX_SEQUENCE_ITEMS)
-//				SeqCount = MAX_SEQUENCE_ITEMS;
-//			AssertRange(SeqCount, 0, MAX_SEQUENCE_ITEMS, "Sequence item count");
+	int Indices[MAX_SEQUENCES * SEQ_COUNT];
+	int Types[MAX_SEQUENCES * SEQ_COUNT];
+	for (unsigned int i = 0; i < Count; ++i) {
+		unsigned int Index = Indices[i] = AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES - 1, "Sequence index");
+		unsigned int Type = Types[i] = AssertRange(pDocFile->GetBlockInt(), 0, SEQ_COUNT - 1, "Sequence type");
+		try {
+			unsigned char SeqCount = pDocFile->GetBlockChar();
 			CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);
-
 			pSeq->Clear();
 			pSeq->SetItemCount(SeqCount < MAX_SEQUENCE_ITEMS ? SeqCount : MAX_SEQUENCE_ITEMS);
-			pSeq->SetLoopPoint(LoopPoint);
+
+			pSeq->SetLoopPoint(AssertRange(pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence loop point"));
+
+			if (Version == 4) {
+				pSeq->SetReleasePoint(AssertRange(pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence release point"));
+				pSeq->SetSetting(static_cast<seq_setting_t>(pDocFile->GetBlockInt()));		// // //
+			}
+
+			// AssertRange(SeqCount, 0, MAX_SEQUENCE_ITEMS, "Sequence item count");
 			for (unsigned int j = 0; j < SeqCount; ++j) {
 				char Value = pDocFile->GetBlockChar();
 				if (j < MAX_SEQUENCE_ITEMS)		// // //
 					pSeq->SetItem(j, Value);
+			}
+		}
+		catch (CModuleException *e) {
+			e->AppendError("At VRC6 %d sequence %d,", Type, Index);
+			throw;
+		}
+	}
+
+	if (Version == 5) {
+		// Version 5 saved the release points incorrectly, this is fixed in ver 6
+		for (int i = 0; i < MAX_SEQUENCES; ++i) {
+			for (int j = 0; j < SEQ_COUNT; ++j) try {
+				int ReleasePoint = pDocFile->GetBlockInt();
+				int Settings = pDocFile->GetBlockInt();
+				CSequence *pSeq = pManager->GetCollection(j)->GetSequence(i);
+				int Length = pSeq->GetItemCount();
+				if (Length > 0) {
+					pSeq->SetReleasePoint(AssertRange(ReleasePoint, -1, Length - 1, "Sequence release point"));
+					pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
+				}
+			}
+			catch (CModuleException *e) {
+				e->AppendError("At VRC6 %d sequence %d,", j, i);
+				throw;
 			}
 		}
 	}
-	else {
-		int Indices[MAX_SEQUENCES];
-		int Types[MAX_SEQUENCES];
-		unsigned int ReleasePoint = -1, Settings = 0;
-
-		for (unsigned int i = 0; i < Count; ++i) {
-			unsigned int Index		= AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES - 1, "Sequence index");
-			unsigned int Type		= AssertRange(pDocFile->GetBlockInt(), 0, SEQ_COUNT - 1, "Sequence type");
-			unsigned char SeqCount	= pDocFile->GetBlockChar();
-			unsigned int LoopPoint	= pDocFile->GetBlockInt();
-
-			Indices[i] = Index;
-			Types[i] = Type;
-			// AssertRange(SeqCount, 0, MAX_SEQUENCE_ITEMS, "Sequence item count");
-
-			CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);
-
-			pSeq->Clear();
-			pSeq->SetItemCount(SeqCount);
-			pSeq->SetLoopPoint(LoopPoint);
-
-			if (Version == 4) {
-				ReleasePoint = pDocFile->GetBlockInt();
-				Settings = pDocFile->GetBlockInt();
-				pSeq->SetReleasePoint(ReleasePoint);
-				pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
-			}
-
-			for (unsigned int j = 0; j < SeqCount; ++j) {
-				char Value = pDocFile->GetBlockChar();
-				if (j < MAX_SEQUENCE_ITEMS)		// // //
-					pSeq->SetItem(j, Value);
-			}
+	else if (Version >= 6) {
+		for (unsigned int i = 0; i < Count; ++i) try {
+			CSequence *pSeq = pManager->GetCollection(Types[i])->GetSequence(Indices[i]);
+			pSeq->SetReleasePoint(AssertRange(pDocFile->GetBlockInt(), -1, static_cast<int>(pSeq->GetItemCount()) - 1, "Sequence release point"));
+			pSeq->SetSetting(static_cast<seq_setting_t>(pDocFile->GetBlockInt()));		// // //
 		}
-
-		if (Version == 5) {
-			// Version 5 saved the release points incorrectly, this is fixed in ver 6
-			for (int i = 0; i < MAX_SEQUENCES; ++i) {
-				for (int j = 0; j < SEQ_COUNT; ++j) {
-					ReleasePoint = pDocFile->GetBlockInt();
-					Settings = pDocFile->GetBlockInt();
-					if (GetSequenceItemCount(INST_VRC6, i, j) > 0) {
-
-						CSequence *pSeq = pManager->GetCollection(j)->GetSequence(i);
-
-						pSeq->SetReleasePoint(ReleasePoint);
-						pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
-					}
-				}
-			}
-		}
-		else if (Version >= 6) {
-			for (unsigned int i = 0; i < Count; ++i) {
-				ReleasePoint = pDocFile->GetBlockInt();
-				Settings = pDocFile->GetBlockInt();
-				unsigned int Index = Indices[i];
-				unsigned int Type = Types[i];
-				CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);
-
-				pSeq->SetReleasePoint(ReleasePoint);
-				pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
-			}
+		catch (CModuleException *e) {
+			e->AppendError("At VRC6 %d sequence %d,", Types[i], Indices[i]);
+			throw;
 		}
 	}
 
@@ -2061,25 +2040,26 @@ bool CFamiTrackerDoc::ReadBlock_SequencesN163(CDocumentFile *pDocFile)
 	for (unsigned int i = 0; i < Count; i++) {
 		unsigned int  Index		   = AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES - 1, "Sequence index");
 		unsigned int  Type		   = AssertRange(pDocFile->GetBlockInt(), 0, SEQ_COUNT - 1, "Sequence type");
-		unsigned char SeqCount	   = pDocFile->GetBlockChar();
-		unsigned int  LoopPoint	   = pDocFile->GetBlockInt();
-		unsigned int  ReleasePoint = pDocFile->GetBlockInt();
-		unsigned int  Setting	   = pDocFile->GetBlockInt();
+		try {
+			unsigned char SeqCount = pDocFile->GetBlockChar();
+			CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);
+			pSeq->Clear();
+			pSeq->SetItemCount(SeqCount < MAX_SEQUENCE_ITEMS ? SeqCount : MAX_SEQUENCE_ITEMS);
 
-		// AssertRange(SeqCount, 0, MAX_SEQUENCE_ITEMS, "Sequence item count");
+			pSeq->SetLoopPoint(AssertRange(pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence loop point"));
+			pSeq->SetReleasePoint(AssertRange(pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence release point"));
+			pSeq->SetSetting(static_cast<seq_setting_t>(pDocFile->GetBlockInt()));		// // //
 
-		CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);
-
-		pSeq->Clear();
-		pSeq->SetItemCount(SeqCount);
-		pSeq->SetLoopPoint(LoopPoint);
-		pSeq->SetReleasePoint(ReleasePoint);
-		pSeq->SetSetting(static_cast<seq_setting_t>(Setting));		// // //
-
-		for (int j = 0; j < SeqCount; ++j) {
-			char Value = pDocFile->GetBlockChar();
-			if (j < MAX_SEQUENCE_ITEMS)		// // //
-				pSeq->SetItem(j, Value);
+			// AssertRange(SeqCount, 0, MAX_SEQUENCE_ITEMS, "Sequence item count");
+			for (int j = 0; j < SeqCount; ++j) {
+				char Value = pDocFile->GetBlockChar();
+				if (j < MAX_SEQUENCE_ITEMS)		// // //
+					pSeq->SetItem(j, Value);
+			}
+		}
+		catch (CModuleException *e) {
+			e->AppendError("At N163 %d sequence %d,", Type, Index);
+			throw;
 		}
 	}
 
@@ -2097,25 +2077,26 @@ bool CFamiTrackerDoc::ReadBlock_SequencesS5B(CDocumentFile *pDocFile)
 	for (unsigned int i = 0; i < Count; i++) {
 		unsigned int  Index		   = AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES - 1, "Sequence index");
 		unsigned int  Type		   = AssertRange(pDocFile->GetBlockInt(), 0, SEQ_COUNT - 1, "Sequence type");
-		unsigned char SeqCount	   = pDocFile->GetBlockChar();
-		unsigned int  LoopPoint	   = pDocFile->GetBlockInt();
-		unsigned int  ReleasePoint = pDocFile->GetBlockInt();
-		unsigned int  Setting	   = pDocFile->GetBlockInt();
+		try {
+			unsigned char SeqCount = pDocFile->GetBlockChar();
+			CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);
+			pSeq->Clear();
+			pSeq->SetItemCount(SeqCount < MAX_SEQUENCE_ITEMS ? SeqCount : MAX_SEQUENCE_ITEMS);
 
-		// AssertRange(SeqCount, 0, MAX_SEQUENCE_ITEMS, "Sequence item count");
+			pSeq->SetLoopPoint(AssertRange(pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence loop point"));
+			pSeq->SetReleasePoint(AssertRange(pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence release point"));
+			pSeq->SetSetting(static_cast<seq_setting_t>(pDocFile->GetBlockInt()));		// // //
 
-		CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);
-
-		pSeq->Clear();
-		pSeq->SetItemCount(SeqCount);
-		pSeq->SetLoopPoint(LoopPoint);
-		pSeq->SetReleasePoint(ReleasePoint);
-		pSeq->SetSetting(static_cast<seq_setting_t>(Setting));		// // //
-
-		for (int j = 0; j < SeqCount; ++j) {
-			char Value = pDocFile->GetBlockChar();
-			if (j < MAX_SEQUENCE_ITEMS)		// // //
-				pSeq->SetItem(j, Value);
+			// AssertRange(SeqCount, 0, MAX_SEQUENCE_ITEMS, "Sequence item count");
+			for (int j = 0; j < SeqCount; ++j) {
+				char Value = pDocFile->GetBlockChar();
+				if (j < MAX_SEQUENCE_ITEMS)		// // //
+					pSeq->SetItem(j, Value);
+			}
+		}
+		catch (CModuleException *e) {
+			e->AppendError("At 5B %d sequence %d,", Type, Index);
+			throw;
 		}
 	}
 
