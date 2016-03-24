@@ -399,7 +399,7 @@ void CSoundGen::InstrumentRecorder::InitRecordInstrument()
 	case SNDCHIP_N163: Type = INST_N163; break;
 	case SNDCHIP_S5B:  Type = INST_S5B; break;
 	}
-	*m_pDumpInstrument = m_pDocument->CreateInstrument(Type).get();
+	*m_pDumpInstrument = CInstrument::CreateNew(Type);		// // //
 	if (!*m_pDumpInstrument) return;
 
 	CString str;

@@ -2932,21 +2932,12 @@ bool CFamiTrackerDoc::IsInstrumentUsed(unsigned int Index) const
 	return m_pInstrumentManager->IsInstrumentUsed(Index);
 }
 
-std::shared_ptr<CInstrument> CFamiTrackerDoc::CreateInstrument(inst_type_t InstType) const
-{
-	return CInstrumentManager::CreateNew(InstType);
-}
-
 int CFamiTrackerDoc::AddInstrument(CInstrument *pInstrument)
 {
 	const int Slot = m_pInstrumentManager->GetFirstUnused();
-
 	if (Slot == INVALID_INSTRUMENT)
 		return INVALID_INSTRUMENT;
-	if (m_pInstrumentManager->InsertInstrument(Slot, pInstrument)) {
-		SetModifiedFlag();
-		SetExceededFlag();		// // //
-	}
+	AddInstrument(pInstrument, Slot);		// // //
 	return Slot;
 }
 

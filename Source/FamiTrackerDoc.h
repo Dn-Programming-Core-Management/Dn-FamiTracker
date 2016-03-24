@@ -324,7 +324,6 @@ public:
 	void			SetInstrumentName(unsigned int Index, const char *pName);		// Set the name of an instrument
 	void			GetInstrumentName(unsigned int Index, char *pName) const;		// Get the name of an instrument
 	int				CloneInstrument(unsigned int Index);							// Create a copy of an instrument
-	std::shared_ptr<CInstrument>	CreateInstrument(inst_type_t InstType) const;	// Creates a new instrument of InstType
 	inst_type_t		GetInstrumentType(unsigned int Index) const;
 	int				DeepCloneInstrument(unsigned int Index);
 	void			SaveInstrument(unsigned int Index, CString FileName) const;

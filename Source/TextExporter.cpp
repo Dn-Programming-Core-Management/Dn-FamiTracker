@@ -875,7 +875,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					case CT_INSTS5B:  Type = INST_S5B; break;
 					}
 					CHECK(t.ReadInt(i,0,MAX_INSTRUMENTS-1,&sResult));
-					CSeqInstrument *seqInst = std::dynamic_pointer_cast<CSeqInstrument>(pDoc->CreateInstrument(Type)).get();
+					auto seqInst = dynamic_cast<CSeqInstrument*>(CInstrument::CreateNew(Type));		// // //
 					pDoc->AddInstrument(seqInst, i);
 					for (int s=0; s < SEQ_COUNT; ++s)
 					{
@@ -884,7 +884,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 						seqInst->SetSeqIndex(s, (i == -1) ? 0 : i);
 					}
 					if (c == CT_INSTN163) {
-						CInstrumentN163 *pInst = static_cast<CInstrumentN163*>(seqInst);
+						auto pInst = static_cast<CInstrumentN163*>(seqInst);
 						CHECK(t.ReadInt(i,0,256-16*N163count,&sResult));		// // //
 						pInst->SetWaveSize(i);
 						CHECK(t.ReadInt(i,0,256-16*N163count-1,&sResult));		// // //
