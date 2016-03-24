@@ -178,7 +178,7 @@ public:
 	bool		 IsBackgroundTask() const;
 
 	// Sample previewing
-	void		 PreviewSample(CDSample *pSample, int Offset, int Pitch);
+	void		 PreviewSample(const CDSample *pSample, int Offset, int Pitch);		// // //
 	void		 CancelPreviewSample();
 	bool		 PreviewDone() const;
 

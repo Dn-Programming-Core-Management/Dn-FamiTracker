@@ -798,8 +798,8 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					CHECK(t.ReadInt(i,0,CDSample::MAX_SIZE,&sResult));
 					dpcm_sample = new CDSample();		// // //
 					pDoc->SetSample(dpcm_index, dpcm_sample);
-					dpcm_sample->Allocate(i, NULL);
-					::memset(dpcm_sample->GetData(), 0, i);
+					char *blank = new char[i]();
+					dpcm_sample->SetData(i, blank);
 					dpcm_sample->SetName(Charify(t.ReadToken()));
 
 					CHECK(t.ReadEOL(&sResult));

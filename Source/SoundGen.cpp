@@ -809,7 +809,7 @@ void CSoundGen::WriteAPU(int Address, char Value)
 	PostThreadMessage(WM_USER_WRITE_APU, (WPARAM)Address, (LPARAM)Value);
 }
 
-void CSoundGen::PreviewSample(CDSample *pSample, int Offset, int Pitch)
+void CSoundGen::PreviewSample(const CDSample *pSample, int Offset, int Pitch)		// // //
 {
 	if (!m_hThread)
 		return;

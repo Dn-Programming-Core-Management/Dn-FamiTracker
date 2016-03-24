@@ -20,31 +20,18 @@
 
 #pragma once
 
+#include <memory>		// // //
 
 // DPCM sample class
 
 class CDSample {
 public:
-	// Empty constructor
-	CDSample();
-
-	// Unnamed sample constructor
-	CDSample(unsigned int Size, char *pData = NULL);
+	// Constructor
+	CDSample(unsigned int Size = 0U);		// // //
 
 	// Copy constructor
-	CDSample(CDSample &sample);
-
-	// Destructor
-	~CDSample();
-
-	// Copy from existing sample
-	void Copy(const CDSample *pDSample);
-	
-	// Allocate memory, optionally copy data
-	void Allocate(unsigned int iSize, const char *pData = NULL);
-
-	// Clear sample data
-	void Clear();
+	CDSample(const CDSample &sample);
+	CDSample &operator=(const CDSample &sample);
 
 	// Set sample data and size, the object will own the memory area assigned
 	void SetData(unsigned int Size, char *pData);
@@ -70,6 +57,6 @@ public:
 private:
 	// Sample data
 	unsigned int m_iSampleSize;
-	char		 *m_pSampleData;
-	char		 m_Name[MAX_NAME_SIZE];
+	std::unique_ptr<char[]> m_pSampleData;		// // //
+	std::unique_ptr<char[]> m_pName;		// // //
 };

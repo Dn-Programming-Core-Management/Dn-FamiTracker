@@ -460,7 +460,9 @@ CDSample *CPCMImport::ConvertFile()
 #endif
 
 	// Return a sample object
-	return new CDSample(iSamples, pSamples);
+	CDSample *pSamp = new CDSample();
+	pSamp->SetData(iSamples, pSamples);
+	return pSamp;
 }
 
 bool CPCMImport::OpenWaveFile()

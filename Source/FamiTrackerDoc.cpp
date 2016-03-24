@@ -2334,8 +2334,9 @@ bool CFamiTrackerDoc::ReadBlock_DSamples(CDocumentFile *pDocFile)
 				e->AppendError("Invalid DPCM sample size (0x%X bytes)", Size);
 				e->Raise();
 			}
-			pSample->Allocate(Size);
-			pDocFile->GetBlock(pSample->GetData(), Size);
+			char *pData = new char[Size];
+			pDocFile->GetBlock(pData, Size);
+			pSample->SetData(Size, pData);
 		}
 		catch (CModuleException *e) {
 			e->AppendError("At DPCM sample %d,", Index);
@@ -2583,13 +2584,11 @@ bool CFamiTrackerDoc::ImportInstruments(CFamiTrackerDoc *pImported, int *pInstTa
 
 	// Copy DPCM samples
 	for (int i = 0; i < MAX_DSAMPLES; ++i) {
-		const CDSample *pImportDSample = pImported->GetSample(i);
-		if (pImportDSample->GetSize() > 0) {
+		if (const CDSample *pImportDSample = pImported->GetSample(i)) {		// // //
 			int Index = GetFreeSampleSlot();
 			if (Index != -1) {
-				CDSample *pDSample = new CDSample();		// // //
+				CDSample *pDSample = new CDSample(*pImportDSample);		// // //
 				SetSample(Index, pDSample);
-				pDSample->Copy(pImportDSample);
 				// Save a reference to this DPCM sample
 				SamplesTable[i] = Index;
 			}

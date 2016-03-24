@@ -661,8 +661,7 @@ void CInstrumentEditorDPCM::OnBnClickedEdit()
 	if (pSample == NULL)
 		return;
 
-	CDSample *Clone = new CDSample();		// // //
-	Clone->Copy(pSample);
+	CDSample *Clone = new CDSample(*pSample);		// // //
 	CSampleEditorDlg Editor(this, Clone);
 
 	INT_PTR nRes = Editor.DoModal();

@@ -32,7 +32,6 @@ public:
 	CSampleEditorDlg(CWnd* pParent = NULL, CDSample *pSample = NULL);   // standard constructor
 	virtual ~CSampleEditorDlg();
 
-	void CopySample(CDSample *pTarget);
 	void SelectionChanged();
 
 // Dialog Data
@@ -45,7 +44,6 @@ protected:
 	void UpdateSampleView();
 
 	CDSample		  *m_pSample;
-	CDSample		  *m_pOriginalSample;
 	CSampleEditorView *m_pSampleEditorView;
 	CSoundGen		  *m_pSoundGen;
 
