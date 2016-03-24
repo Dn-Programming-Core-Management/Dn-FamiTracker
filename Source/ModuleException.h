@@ -60,6 +60,33 @@ public:
 	*/
 	void SetFooter(std::string footer);
 
+public:
+	/*!	\brief Validates a numerical value so that it lies within the interval [Min, Max].
+		\details This method may throw a CModuleException object and automatically supply a suitable
+		error message based on the value description. This method handles signed and unsigned types
+		properly.
+		\param Value The value to check against.
+		\param Min The minimum value permitted, inclusive.
+		\param Max The maximum value permitted, inclusive.
+		\param Desc A description of the checked value.
+		\param fmt Format specifier for the value type.
+		\return The value argument, if the method returns.
+	*/
+	template <typename T, typename U, typename V>
+	static T AssertRangeFmt(T Value, U Min, V Max, std::string Desc, const char *fmt)
+	{
+		if (!(Value >= Min && Value <= Max)) {
+			char Format[128];
+			sprintf_s(Format, sizeof(Format), "%%s out of range: expected [%s,%s], got %s", fmt, fmt, fmt);
+			char Buffer[512];
+			sprintf_s(Buffer, sizeof(Buffer), Format, Desc.c_str(), Min, Max, Value);
+			CModuleException *e = new CModuleException();
+			e->AppendError(std::string(Buffer));
+			e->Raise();
+		}
+		return Value;
+	}
+
 private:
 	std::vector<std::unique_ptr<std::string>> m_strError;
 	std::unique_ptr<std::string> m_strFooter;
