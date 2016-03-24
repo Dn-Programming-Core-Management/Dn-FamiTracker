@@ -201,8 +201,7 @@ bool CInstrument2A03::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTracke
 		char *SampleData = new char[Size];
 		pFile->Read(SampleData, Size);
 		bool Found = false;
-		for (int j = 0; j < MAX_DSAMPLES; ++j) {
-			CDSample *pSample = pDoc->GetSample(j);
+		for (int j = 0; j < MAX_DSAMPLES; ++j) if (const CDSample *pSample = pDoc->GetSample(j)) {		// // //
 			// Compare size and name to see if identical sample exists
 			if (pSample->GetSize() == Size && !strcmp(pSample->GetName(), SampleNames[Index])) {
 				Found = true;
@@ -223,9 +222,10 @@ bool CInstrument2A03::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTracke
 			int FreeSample = pDoc->GetFreeSampleSlot();
 			if (FreeSample != -1) {
 				if ((pDoc->GetTotalSampleSize() + Size) <= MAX_SAMPLE_SPACE) {
-					CDSample *pSample = pDoc->GetSample(FreeSample);
+					CDSample *pSample = new CDSample();		// // //
 					pSample->SetName(SampleNames[Index]);
 					pSample->SetData(Size, SampleData);
+					pDoc->SetSample(FreeSample, pSample);
 					// Assign it
 					for (int o = 0; o < OCTAVE_RANGE; ++o) {
 						for (int n = 0; n < NOTE_RANGE; ++n) {

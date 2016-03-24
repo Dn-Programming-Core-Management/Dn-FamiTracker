@@ -298,8 +298,6 @@ bool CInstrumentEditorDPCM::InsertSample(CDSample *pNewSample)
 		return false;
 	}
 
-	CDSample *pFreeSample = GetDocument()->GetSample(FreeSlot);
-
 	int Size = GetDocument()->GetTotalSampleSize();
 	
 	if ((Size + pNewSample->GetSize()) > MAX_SAMPLE_SPACE) {
@@ -307,13 +305,8 @@ bool CInstrumentEditorDPCM::InsertSample(CDSample *pNewSample)
 		AfxFormatString1(message, IDS_OUT_OF_SAMPLEMEM_FORMAT, MakeIntString(MAX_SAMPLE_SPACE / 1024));
 		AfxMessageBox(message, MB_ICONERROR);
 	}
-	else {
-		pFreeSample->Copy(pNewSample);
-		GetDocument()->SetModifiedFlag();
-		GetDocument()->SetExceededFlag();		// // //
-	}
-
-	delete pNewSample;
+	else
+		GetDocument()->SetSample(FreeSlot, pNewSample);		// // //
 
 	return true;
 }
@@ -498,7 +491,7 @@ void CInstrumentEditorDPCM::OnCbnSelchangeSamples()
 	UpdateKey(m_iSelectedKey);
 }
 
-CDSample *CInstrumentEditorDPCM::GetSelectedSample()
+const CDSample *CInstrumentEditorDPCM::GetSelectedSample()
 {
 	CListCtrl *pSampleListCtrl = static_cast<CListCtrl*>(GetDlgItem(IDC_SAMPLE_LIST));
 
@@ -511,9 +504,7 @@ CDSample *CInstrumentEditorDPCM::GetSelectedSample()
 	pSampleListCtrl->GetItemText(Index, 0, Text, 256);
 	Index = _tstoi(Text);
 	
-	CDSample *pSample = GetDocument()->GetSample(Index);
-
-	return pSample;
+	return GetDocument()->GetSample(Index);
 }
 
 void CInstrumentEditorDPCM::OnBnClickedSave()
@@ -666,18 +657,18 @@ void CInstrumentEditorDPCM::OnEnChangeLoopPoint()
 
 void CInstrumentEditorDPCM::OnBnClickedEdit()
 {
-	CDSample *pSample = GetSelectedSample();
-
+	const CDSample *pSample = GetSelectedSample();
 	if (pSample == NULL)
 		return;
 
-	CSampleEditorDlg Editor(this, pSample);
+	CDSample *Clone = new CDSample();		// // //
+	Clone->Copy(pSample);
+	CSampleEditorDlg Editor(this, Clone);
 
 	INT_PTR nRes = Editor.DoModal();
 	
 	if (nRes == IDOK) {
 		// Save edited sample
-		Editor.CopySample(pSample);
 		GetDocument()->SetModifiedFlag();
 		GetDocument()->SetExceededFlag();		// // //
 	}
@@ -695,7 +686,7 @@ void CInstrumentEditorDPCM::OnNMDblclkSampleList(NMHDR *pNMHDR, LRESULT *pResult
 
 void CInstrumentEditorDPCM::OnBnClickedPreview()
 {
-	CDSample *pSample = GetSelectedSample();
+	const CDSample *pSample = GetSelectedSample();
 	if (pSample != NULL)
 		theApp.GetSoundGenerator()->PreviewSample(pSample, 0, 15);
 }
@@ -768,7 +759,7 @@ void CInstrumentEditorDPCM::OnNMDblclkTable(NMHDR *pNMHDR, LRESULT *pResult)
 	if (Sample == 0)
 		return;
 
-	CDSample *pSample = GetDocument()->GetSample(Sample - 1);
+	const CDSample *pSample = GetDocument()->GetSample(Sample - 1);
 	int Pitch = m_pInstrument->GetSamplePitch(m_iOctave, m_iSelectedKey) & 0x0F;
 
 	CListCtrl *pTableListCtrl = static_cast<CListCtrl*>(GetDlgItem(IDC_TABLE));

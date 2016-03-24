@@ -51,7 +51,7 @@ protected:
 	bool LoadSample(const CString &FilePath, const CString &FileName);
 	bool InsertSample(CDSample *pNewSample);
 
-	CDSample *GetSelectedSample();
+	const CDSample *GetSelectedSample();		// // //
 
 protected:
 	std::shared_ptr<CInstrument2A03> m_pInstrument;

@@ -339,8 +339,7 @@ public:
 	int				GetSequenceCount(inst_type_t InstType, int Type) const;		// // //
 
 	// DPCM samples
-	CDSample*		GetSample(unsigned int Index);
-	const CDSample*	GetSample(unsigned int Index) const;
+	const CDSample*	GetSample(unsigned int Index) const;		// // // non-const getter removed
 	void			SetSample(unsigned int Index, CDSample *pSamp);		// // //
 	bool			IsSampleUsed(unsigned int Index) const;
 	unsigned int	GetSampleCount() const;

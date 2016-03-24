@@ -2583,11 +2583,12 @@ bool CFamiTrackerDoc::ImportInstruments(CFamiTrackerDoc *pImported, int *pInstTa
 
 	// Copy DPCM samples
 	for (int i = 0; i < MAX_DSAMPLES; ++i) {
-		CDSample *pImportDSample = pImported->GetSample(i);
+		const CDSample *pImportDSample = pImported->GetSample(i);
 		if (pImportDSample->GetSize() > 0) {
 			int Index = GetFreeSampleSlot();
 			if (Index != -1) {
-				CDSample *pDSample = GetSample(Index);
+				CDSample *pDSample = new CDSample();		// // //
+				SetSample(Index, pDSample);
 				pDSample->Copy(pImportDSample);
 				// Save a reference to this DPCM sample
 				SamplesTable[i] = Index;
@@ -2740,12 +2741,6 @@ bool CFamiTrackerDoc::ImportTrack(int Track, CFamiTrackerDoc *pImported, int *pI
 // End of file load/save
 
 // DMC Stuff
-
-CDSample *CFamiTrackerDoc::GetSample(unsigned int Index)
-{
-	ASSERT(Index < MAX_DSAMPLES);
-	return const_cast<CDSample*>(m_pInstrumentManager->GetDSampleManager()->GetDSample(Index));		// // //
-}
 
 const CDSample *CFamiTrackerDoc::GetSample(unsigned int Index) const
 {

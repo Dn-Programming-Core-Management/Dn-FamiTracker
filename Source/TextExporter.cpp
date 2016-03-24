@@ -677,6 +677,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	int i; // generic integer for reading
 	unsigned int dpcm_index = 0;
 	unsigned int dpcm_pos = 0;
+	CDSample *dpcm_sample = nullptr;
 	unsigned int track = 0;
 	unsigned int pattern = 0;
 	int N163count = -1;		// // //
@@ -795,27 +796,27 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					dpcm_pos = 0;
 
 					CHECK(t.ReadInt(i,0,CDSample::MAX_SIZE,&sResult));
-					CDSample* pSample = pDoc->GetSample(dpcm_index);
-					pSample->Allocate(i, NULL);
-					::memset(pSample->GetData(), 0, i);
-					pSample->SetName(Charify(t.ReadToken()));
+					dpcm_sample = new CDSample();		// // //
+					pDoc->SetSample(dpcm_index, dpcm_sample);
+					dpcm_sample->Allocate(i, NULL);
+					::memset(dpcm_sample->GetData(), 0, i);
+					dpcm_sample->SetName(Charify(t.ReadToken()));
 
 					CHECK(t.ReadEOL(&sResult));
 				}
 				break;
 			case CT_DPCM:
 				{
-					CDSample* pSample = pDoc->GetSample(dpcm_index);
 					CHECK_COLON();
 					while (!t.IsEOL())
 					{
 						CHECK(t.ReadHex(i,0x00,0xFF,&sResult));
-						if (dpcm_pos >= pSample->GetSize())
+						if (dpcm_pos >= dpcm_sample->GetSize())
 						{
 							sResult.Format(_T("Line %d column %d: DPCM sample %d overflow, increase size used in %s."), t.line, t.GetColumn(), dpcm_index, CT[CT_DPCMDEF]);
 							return sResult;
 						}
-						*(pSample->GetData() + dpcm_pos) = (char)(i);
+						*(dpcm_sample->GetData() + dpcm_pos) = (char)(i);
 						++dpcm_pos;
 					}
 				}
