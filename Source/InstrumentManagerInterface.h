@@ -27,12 +27,14 @@ class CSequence;
 class CDSample;
 
 /*
-	\brief A getter-only interface which allows instrument resources to be obtained from themselves,
+	\brief A resource interface which allows instrument resources to be obtained from themselves,
 	allowing uniform access regardless of the mechanism that actually owns these resources.
 */
 class CInstrumentManagerInterface
 {
 public:
 	virtual CSequence *GetSequence(int InstType, int SeqType, int Index) const = 0;
+	virtual void SetSequence(int InstType, int SeqType, int Index, CSequence *pSeq) = 0;
 	virtual const CDSample *GetDSample(int Index) const = 0;
+	virtual void SetDSample(int Index, CDSample *pSamp) = 0;
 };

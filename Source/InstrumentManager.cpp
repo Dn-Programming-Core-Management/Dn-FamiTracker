@@ -172,7 +172,19 @@ CSequence *CInstrumentManager::GetSequence(int InstType, int SeqType, int Index)
 	return pCol->GetSequence(Index);
 }
 
+void CInstrumentManager::SetSequence(int InstType, int SeqType, int Index, CSequence *pSeq)
+{
+	if (auto pManager = GetSequenceManager(InstType))
+		if (auto pCol = pManager->GetCollection(SeqType))
+			pCol->SetSequence(Index, pSeq);
+}
+
 const CDSample *CInstrumentManager::GetDSample(int Index) const
 {
 	return m_pDSampleManager->GetDSample(Index);
+}
+
+void CInstrumentManager::SetDSample(int Index, CDSample *pSamp)
+{
+	m_pDSampleManager->SetDSample(Index, pSamp);
 }

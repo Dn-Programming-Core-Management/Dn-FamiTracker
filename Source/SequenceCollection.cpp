@@ -45,6 +45,13 @@ CSequence *CSequenceCollection::GetSequence(unsigned int Index)
 	return m_pSequence[Index];
 }
 
+void CSequenceCollection::SetSequence(unsigned int Index, CSequence *Seq)
+{
+	ASSERT(Index < MAX_SEQUENCES);
+	SAFE_RELEASE(m_pSequence[Index]);
+	m_pSequence[Index] = Seq;
+}
+
 const CSequence *CSequenceCollection::GetSequence(unsigned int Index) const
 {
 	ASSERT(Index < MAX_SEQUENCES);

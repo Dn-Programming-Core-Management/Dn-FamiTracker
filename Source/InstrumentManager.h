@@ -62,7 +62,9 @@ public:
 
 	// from interface
 	CSequence *GetSequence(int InstType, int SeqType, int Index) const; // TODO: use SetSequence and provide const getter
+	void SetSequence(int InstType, int SeqType, int Index, CSequence *pSeq);
 	const CDSample *GetDSample(int Index) const;
+	void SetDSample(int Index, CDSample *pSamp);
 
 public:
 	static std::shared_ptr<CInstrument> CreateNew(inst_type_t InstType);

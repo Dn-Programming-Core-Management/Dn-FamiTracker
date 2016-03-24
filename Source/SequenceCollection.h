@@ -43,6 +43,11 @@ public:
 		\returns A pointer to the sequence object.
 	*/
 	CSequence *GetSequence(unsigned int Index);
+	/*!	\brief Replaces a sequence in the collection.
+		\param Index The index value of the sequence.
+		\param Seq A pointer to the new sequence object.
+	*/
+	void SetSequence(unsigned int Index, CSequence *Seq);
 	/*! \brief Obtains a constant sequence at a given index.
 		\param Index The index value of the sequence.
 		\returns A pointer to the sequence object, or \b nullptr if it does not exist.
