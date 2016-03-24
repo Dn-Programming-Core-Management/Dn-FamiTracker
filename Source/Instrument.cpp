@@ -23,7 +23,9 @@
 #include <memory>
 #include "stdafx.h"
 #include "FamiTrackerDoc.h"
+#include "ModuleException.h"		// // //
 #include "InstrumentManagerInterface.h"		// // //
+#include "Sequence.h"		// // //
 #include "Instrument.h"
 #include "DocumentFile.h"
 #include "Compiler.h"
@@ -152,7 +154,7 @@ void CSeqInstrument::Setup()
 	CFamiTrackerDoc *pDoc = CFamiTrackerDoc::GetDoc();
 	for (int i = 0; i < SEQ_COUNT; ++i) {
 		SetSeqEnable(i, 0);
-		int Index = pDoc->GetFreeSequence(m_iType, i);
+		int Index = pDoc->GetFreeSequence(m_iType, i, this);
 		if (Index != -1)
 			SetSeqIndex(i, Index);
 	}
@@ -170,28 +172,26 @@ void CSeqInstrument::Store(CDocumentFile *pDocFile)
 
 bool CSeqInstrument::Load(CDocumentFile *pDocFile)
 {
-	int SeqCnt = pDocFile->GetBlockInt();
-	ASSERT_FILE_DATA(SeqCnt < (SEQ_COUNT + 1));
+	int SeqCnt = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), 0, SEQ_COUNT, "Instrument sequence count", "%i");
 	SeqCnt = SEQ_COUNT;
 
 	for (int i = 0; i < SeqCnt; i++) {
 		SetSeqEnable(i, pDocFile->GetBlockChar());
-		int Index = pDocFile->GetBlockChar();
-		ASSERT_FILE_DATA(Index < MAX_SEQUENCES);
-		SetSeqIndex(i, Index);
+		SetSeqIndex(i, CModuleException::AssertRangeFmt(
+			pDocFile->GetBlockChar(), 0, MAX_SEQUENCES - 1, "Instrument sequence index", "%i"));
 	}
 
 	return true;
 }
 
-void CSeqInstrument::SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDoc)
+void CSeqInstrument::SaveFile(CInstrumentFile *pFile)
 {
 	pFile->WriteChar(SEQ_COUNT);
 
 	for (int i = 0; i < SEQ_COUNT; ++i) {
 		unsigned Sequence = GetSeqIndex(i);
 		if (GetSeqEnable(i)) {
-			const CSequence *pSeq = pDoc->GetSequence(m_iType, Sequence, i);
+			const CSequence *pSeq = GetSequence(i);
 			pFile->WriteChar(1);
 			pFile->WriteInt(pSeq->GetItemCount());
 			pFile->WriteInt(pSeq->GetLoopPoint());
@@ -207,60 +207,69 @@ void CSeqInstrument::SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDo
 	}
 }
 
-bool CSeqInstrument::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTrackerDoc *pDoc)
+bool CSeqInstrument::LoadFile(CInstrumentFile *pFile, int iVersion)
 {
 	// Sequences
 	stSequence OldSequence;
+	CSequence *pSeq;
 
-	unsigned char SeqCount = pFile->ReadChar();
+	unsigned char SeqCount = CModuleException::AssertRangeFmt(pFile->ReadChar(), 0, SEQ_COUNT, "Sequence count", "%i");
 
 	// Loop through all instrument effects
-	for (unsigned i = 0; i < SeqCount; ++i) {
-		unsigned char Enabled = pFile->ReadChar();
-		if (Enabled == 1) {
-			// Read the sequence
-			int Count = pFile->ReadInt();
-			if (Count < 0 || Count > MAX_SEQUENCE_ITEMS)
-				return false;
-			
-			// Find a free sequence
-			int Index = pDoc->GetFreeSequence(m_iType, i);
-
-			if (Index != -1) {
-				CSequence *pSeq = pDoc->GetSequence(m_iType, static_cast<unsigned>(Index), i);
-
-				if (iVersion < 20) {
-					OldSequence.Count = Count;
-					for (int j = 0; j < Count; ++j) {
-						OldSequence.Length[j] = pFile->ReadChar();
-						OldSequence.Value[j] = pFile->ReadChar();
-					}
-					CFamiTrackerDoc::ConvertSequence(&OldSequence, pSeq, i);	// convert
-				}
-				else {
-					pSeq->SetItemCount(Count);
-					pSeq->SetLoopPoint(pFile->ReadInt());
-					if (iVersion > 20)
-						pSeq->SetReleasePoint(pFile->ReadInt());
-					if (iVersion >= 22)
-						pSeq->SetSetting(static_cast<seq_setting_t>(pFile->ReadInt()));
-					for (int j = 0; j < Count; ++j)
-						pSeq->SetItem(j, pFile->ReadChar());
-				}
-				SetSeqEnable(i, true);
-				SetSeqIndex(i, Index);
-			}
-		}
-		else {
+	for (unsigned i = 0; i < SeqCount; ++i) try {
+		if (pFile->ReadChar() != 1) {
 			SetSeqEnable(i, false);
 			SetSeqIndex(i, 0);
+			continue;
 		}
+		SetSeqEnable(i, true);
+
+		// Read the sequence
+		int Count = CModuleException::AssertRangeFmt(pFile->ReadInt(), 0U, 0xFFU, "Sequence item count", "%i");
+
+		pSeq = new CSequence();		// // //
+		if (iVersion < 20) {
+			OldSequence.Count = Count;
+			for (int j = 0; j < Count; ++j) {
+				OldSequence.Length[j] = pFile->ReadChar();
+				OldSequence.Value[j] = pFile->ReadChar();
+			}
+			CFamiTrackerDoc::ConvertSequence(&OldSequence, pSeq, i);	// convert
+		}
+		else {
+			int Count2 = Count > MAX_SEQUENCE_ITEMS ? MAX_SEQUENCE_ITEMS : Count;
+			pSeq->SetItemCount(Count2);
+			pSeq->SetLoopPoint(CModuleException::AssertRangeFmt(
+				static_cast<int>(pFile->ReadInt()), -1, Count2 - 1, "Sequence loop point", "%i"));
+			if (iVersion > 20) {
+				pSeq->SetReleasePoint(CModuleException::AssertRangeFmt(
+					static_cast<int>(pFile->ReadInt()), -1, Count2 - 1, "Sequence release point", "%i"));
+				if (iVersion >= 22)
+					pSeq->SetSetting(static_cast<seq_setting_t>(pFile->ReadInt()));
+			}
+			for (int j = 0; j < Count; ++j)
+				if (j < Count2) pSeq->SetItem(j, pFile->ReadChar());
+		}
+		int Index = m_pInstManager->AddSequence(m_iType, i, pSeq, this);
+		if (Index == -1) {
+			for (unsigned int j = 0; j < i; ++j)
+				SetSequence(j, nullptr);
+			CModuleException *e = new CModuleException();
+			e->AppendError("Document has no free sequence slot");
+			e->Raise();
+		}
+		SetSeqIndex(i, Index);
+	}
+	catch (CModuleException *e) {
+		e->AppendError("At %d sequence,", i);
+		if (pSeq) delete pSeq;
+		throw;
 	}
 
 	return true;
 }
 
-int CSeqInstrument::Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index)
+int CSeqInstrument::Compile(CChunk *pChunk, int Index)
 {
 	int StoredBytes = 0;
 
@@ -317,6 +326,11 @@ void CSeqInstrument::SetSeqEnable(int Index, int Value)
 CSequence *CSeqInstrument::GetSequence(int SeqType) const		// // //
 {
 	return m_pInstManager->GetSequence(m_iType, SeqType, m_iSeqIndex[SeqType]);
+}
+
+void CSeqInstrument::SetSequence(int SeqType, CSequence *pSeq)		// // //
+{
+	m_pInstManager->SetSequence(m_iType, SeqType, m_iSeqIndex[SeqType], pSeq);
 }
 
 bool CSeqInstrument::CanRelease() const

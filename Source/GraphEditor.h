@@ -74,7 +74,7 @@ protected:
 
 protected:
 	CWnd *m_pParentWnd;
-	CSequence *m_pSequence;
+	CSequence *const m_pSequence;
 	CFont *m_pSmallFont;
 	CRect m_GraphRect;
 	CRect m_BottomRect;

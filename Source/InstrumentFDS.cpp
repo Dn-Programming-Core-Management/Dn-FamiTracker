@@ -43,9 +43,9 @@ CInstrumentFDS::CInstrumentFDS() : CSeqInstrument(INST_FDS),		// // //
 	m_iModulationSpeed(0),
 	m_iModulationDepth(0),
 	m_iModulationDelay(0),
-	m_bModulationEnable(true)
+	m_bModulationEnable(true),
+	m_pSequence(new CSequence[5]())
 {
-	m_pSequence = std::unique_ptr<CSequence[]>(new CSequence[5]());
 	memcpy(m_iSamples, TEST_WAVE, WAVE_SIZE);	
 	memset(m_iModulation, 0, MOD_SIZE);
 }
@@ -223,7 +223,7 @@ bool CInstrumentFDS::Load(CDocumentFile *pDocFile)
 	return true;
 }
 
-void CInstrumentFDS::SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDoc)
+void CInstrumentFDS::SaveFile(CInstrumentFile *pFile)
 {
 	// Write wave
 	for (int i = 0; i < WAVE_SIZE; ++i) {
@@ -245,7 +245,7 @@ void CInstrumentFDS::SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDo
 		StoreInstSequence(pFile, GetSequence(i));
 }
 
-bool CInstrumentFDS::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTrackerDoc *pDoc)
+bool CInstrumentFDS::LoadFile(CInstrumentFile *pFile, int iVersion)
 {
 	// Read wave
 	for (int i = 0; i < WAVE_SIZE; ++i) {
@@ -275,7 +275,7 @@ bool CInstrumentFDS::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTracker
 	return true;
 }
 
-int CInstrumentFDS::Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index)
+int CInstrumentFDS::Compile(CChunk *pChunk, int Index)
 {
 	CStringA str;
 

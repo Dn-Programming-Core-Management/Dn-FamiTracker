@@ -36,7 +36,7 @@ enum inst_type_t;
 	\details This class implements common facilities for manipulating a fixed-length array of
 	instrument objects. 
 */
-class CInstrumentManager : CInstrumentManagerInterface
+class CInstrumentManager : public CInstrumentManagerInterface
 {
 public:
 	CInstrumentManager();
@@ -51,6 +51,7 @@ public:
 	bool IsInstrumentUsed(unsigned int Index) const;
 	unsigned int GetInstrumentCount() const;
 	unsigned int GetFirstUnused() const;
+	int GetFreeSequenceIndex(inst_type_t InstType, int Type, CSeqInstrument *pInst = nullptr) const;
 
 	inst_type_t GetInstrumentType(unsigned int Index) const;
 	
@@ -63,8 +64,10 @@ public:
 	// from interface
 	CSequence *GetSequence(int InstType, int SeqType, int Index) const; // TODO: use SetSequence and provide const getter
 	void SetSequence(int InstType, int SeqType, int Index, CSequence *pSeq);
+	int AddSequence(int InstType, int SeqType, CSequence *pSeq, CSeqInstrument *pInst = nullptr);
 	const CDSample *GetDSample(int Index) const;
 	void SetDSample(int Index, CDSample *pSamp);
+	int AddDSample(CDSample *pSamp);
 
 public:
 	static std::shared_ptr<CInstrument> CreateNew(inst_type_t InstType);

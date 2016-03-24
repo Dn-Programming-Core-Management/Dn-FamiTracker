@@ -108,10 +108,10 @@ bool CInstrumentN163::Load(CDocumentFile *pDocFile)
 	return true;
 }
 
-void CInstrumentN163::SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDoc)
+void CInstrumentN163::SaveFile(CInstrumentFile *pFile)
 {
 	// Sequences
-	CSeqInstrument::SaveFile(pFile, pDoc);		// // //
+	CSeqInstrument::SaveFile(pFile);		// // //
 
 	// Write wave config
 	int WaveCount = GetWaveCount();
@@ -128,10 +128,10 @@ void CInstrumentN163::SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pD
 	}
 }
 
-bool CInstrumentN163::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTrackerDoc *pDoc)
+bool CInstrumentN163::LoadFile(CInstrumentFile *pFile, int iVersion)
 {
 	// Sequences
-	if (!CSeqInstrument::LoadFile(pFile, iVersion, pDoc))		// // //
+	if (!CSeqInstrument::LoadFile(pFile, iVersion))		// // //
 		return false;
 
 	// Read wave config
@@ -157,10 +157,9 @@ bool CInstrumentN163::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTracke
 	return true;
 }
 
-int CInstrumentN163::Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index)
+int CInstrumentN163::Compile(CChunk *pChunk, int Index)
 {
-	ASSERT(pDoc != NULL);
-	int StoredBytes = CSeqInstrument::Compile(pDoc, pChunk, Index);		// // //;
+	int StoredBytes = CSeqInstrument::Compile(pChunk, Index);		// // //;
 
 	// Store wave info
 	pChunk->StoreByte(m_iWaveSize >> 1);

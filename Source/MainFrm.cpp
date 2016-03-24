@@ -1293,6 +1293,7 @@ void CMainFrame::OnLoadInstrument()
 		int Index = pDoc->LoadInstrument(csFileName);
 		if (Index == -1)
 			return;
+		SelectInstrument(Index);		// // //
 		m_pInstrumentList->InsertInstrument(Index);
 	}
 
@@ -2561,9 +2562,9 @@ void CMainFrame::OnLoadInstrumentMenu(NMHDR * pNotifyStruct, LRESULT * result)
 
 		if (Index == -1)
 			return;
-
-		m_pInstrumentList->InsertInstrument(Index);
+		
 		SelectInstrument(Index);
+		m_pInstrumentList->InsertInstrument(Index);
 	}
 }
 

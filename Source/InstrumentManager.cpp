@@ -26,6 +26,7 @@
 #include <afxmt.h>
 #include "Instrument.h"
 #include "InstrumentManager.h"
+#include "Sequence.h"
 #include "SequenceCollection.h"
 #include "SequenceManager.h"
 #include "DSampleManager.h"
@@ -123,6 +124,23 @@ unsigned int CInstrumentManager::GetFirstUnused() const
 	return -1;
 }
 
+int CInstrumentManager::GetFreeSequenceIndex(inst_type_t InstType, int Type, CSeqInstrument *pInst) const
+{
+	// moved from CFamiTrackerDoc
+	std::vector<bool> Used(CSequenceCollection::MAX_SEQUENCES, false);
+	for (int i = 0; i < MAX_INSTRUMENTS; i++) if (GetInstrumentType(i) == InstType) {		// // //
+		auto pInstrument = std::static_pointer_cast<CSeqInstrument>(GetInstrument(i));
+		if (pInstrument->GetSeqEnable(Type) && (pInst->GetSequence(Type)->GetItemCount() || pInst != pInstrument.get()))
+			Used[pInstrument->GetSeqIndex(Type)] = true;
+	}
+	for (int i = 0; i < CSequenceCollection::MAX_SEQUENCES; ++i) if (!Used[i]) {
+		const CSequence *pSeq = GetSequence(InstType, Type, i);
+		if (!pSeq || !pSeq->GetItemCount())
+			return i;
+	}
+	return -1;
+}
+
 inst_type_t CInstrumentManager::GetInstrumentType(unsigned int Index) const
 {
 	return !IsInstrumentUsed(Index) ? INST_NONE : m_pInstruments[Index]->GetType();
@@ -179,6 +197,13 @@ void CInstrumentManager::SetSequence(int InstType, int SeqType, int Index, CSequ
 			pCol->SetSequence(Index, pSeq);
 }
 
+int CInstrumentManager::AddSequence(int InstType, int SeqType, CSequence *pSeq, CSeqInstrument *pInst)
+{
+	int Index = GetFreeSequenceIndex(static_cast<inst_type_t>(InstType), SeqType, pInst);
+	if (Index != -1) SetSequence(InstType, SeqType, Index, pSeq);
+	return Index;
+}
+
 const CDSample *CInstrumentManager::GetDSample(int Index) const
 {
 	return m_pDSampleManager->GetDSample(Index);
@@ -187,4 +212,11 @@ const CDSample *CInstrumentManager::GetDSample(int Index) const
 void CInstrumentManager::SetDSample(int Index, CDSample *pSamp)
 {
 	m_pDSampleManager->SetDSample(Index, pSamp);
+}
+
+int CInstrumentManager::AddDSample(CDSample *pSamp)
+{
+	int Index = m_pDSampleManager->GetFirstFree();
+	if (Index != -1) SetDSample(Index, pSamp);
+	return Index;
 }

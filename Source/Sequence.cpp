@@ -61,15 +61,15 @@ void CSequence::SetItemCount(unsigned int Count)
 void CSequence::SetLoopPoint(unsigned int Point)
 {
 	m_iLoopPoint = Point;
-	// // // if (m_iLoopPoint >= m_iReleasePoint)
-	//	m_iLoopPoint = -1;
+	if (m_iLoopPoint > m_iItemCount)		// // //
+		m_iLoopPoint = -1;
 }
 
 void CSequence::SetReleasePoint(unsigned int Point)
 {
 	m_iReleasePoint = Point;
-	// // // if (m_iLoopPoint >= m_iReleasePoint)
-	//	m_iLoopPoint = -1;
+	if (m_iReleasePoint > m_iItemCount)		// // //
+		m_iReleasePoint = -1;
 }
 
 void CSequence::SetSetting(seq_setting_t Setting)		// // //

@@ -20,37 +20,34 @@
 ** must bear this legend.
 */
 
+#include <vector>
 #include <memory>
-#include "stdafx.h"
-#include "SequenceManager.h"
+#include "Sequence.h"
 #include "SequenceCollection.h"
+#include "SequenceManager.h"
 
-CSequenceManager::CSequenceManager(int Count) :
-	m_iCount(Count)
+CSequenceManager::CSequenceManager(int Count)
 {
-	m_pCollection = new CSequenceCollection*[Count]();
+	m_pCollection.resize(Count);
+	for (int i = 0; i < Count; ++i)
+		m_pCollection[i].reset(new CSequenceCollection());
 }
 
-CSequenceManager::~CSequenceManager()
+int CSequenceManager::GetCount() const
 {
-	for (int i = 0; i < m_iCount; i++) {
-		if (m_pCollection[i] != nullptr)
-			m_pCollection[i]->RemoveAll();
-		SAFE_RELEASE(m_pCollection[i]);
-	}
-	SAFE_RELEASE_ARRAY(m_pCollection);
+	return m_pCollection.size();
 }
 
-CSequenceCollection *CSequenceManager::GetCollection(int Index)
+CSequenceCollection *CSequenceManager::GetCollection(unsigned int Index)
 {
-	if (Index >= m_iCount) return nullptr;
-	if (m_pCollection[Index] == nullptr)
-		m_pCollection[Index] = new CSequenceCollection();
-	return m_pCollection[Index];
+	if (Index >= m_pCollection.size()) return nullptr;
+	if (!m_pCollection[Index])
+		m_pCollection[Index].reset(new CSequenceCollection());
+	return m_pCollection[Index].get();
 }
 
-const CSequenceCollection *CSequenceManager::GetCollection(int Index) const
+const CSequenceCollection *CSequenceManager::GetCollection(unsigned int Index) const
 {
-	if (Index >= m_iCount) return nullptr;
-	return m_pCollection[Index];
+	if (Index >= m_pCollection.size()) return nullptr;
+	return m_pCollection[Index].get();
 }

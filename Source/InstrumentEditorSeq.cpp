@@ -132,7 +132,6 @@ void CInstrumentEditorSeq::OnLvnItemchangedInstsettings(NMHDR *pNMHDR, LRESULT *
 	if (pNMLV->uChanged & LVIF_STATE && m_pInstrument != NULL) {
 		// Selected new setting
 		if (pNMLV->uNewState & LVIS_SELECTED || pNMLV->uNewState & LCTRL_CHECKBOX_STATE) {
-			TRACE("%i %04X %04X\n", pNMLV->iItem, pNMLV->uOldState, pNMLV->uNewState);
 			m_iSelectedSetting = pNMLV->iItem;
 			int Sequence = m_pInstrument->GetSeqIndex(m_iSelectedSetting);
 			SetDlgItemInt(IDC_SEQ_INDEX, Sequence);

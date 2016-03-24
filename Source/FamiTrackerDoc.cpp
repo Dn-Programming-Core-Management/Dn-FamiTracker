@@ -1808,27 +1808,26 @@ bool CFamiTrackerDoc::ReadBlock_Instruments(CDocumentFile *pDocFile)
 		// Read instrument type and create an instrument
 		inst_type_t Type = (inst_type_t)pDocFile->GetBlockChar();
 		auto pInstrument = CInstrumentManager::CreateNew(Type);
-		AssertFileData(pInstrument, "Failed to create instrument");
+		m_pInstrumentManager->InsertInstrument(index, pInstrument); // this registers the instrument content provider
 
-		// Load the instrument
 		try {
+			// Load the instrument
+			AssertFileData(pInstrument, "Failed to create instrument");
 			pInstrument->Load(pDocFile);
+			// Read name
+			int size = AssertRange(pDocFile->GetBlockInt(), 0, CInstrument::INST_NAME_MAX, "Instrument name length");
+			char Name[CInstrument::INST_NAME_MAX + 1];
+			pDocFile->GetBlock(Name, size);
+			Name[size] = 0;
+			pInstrument->SetName(Name);
 		}
 		catch (CModuleException *e) {
 			pDocFile->SetDefaultFooter(e);
-			throw e;
+			e->AppendError("At instrument %02X,", index);
+			m_pInstrumentManager->RemoveInstrument(index);
+			throw;
 		}
 
-		// Read name
-		int size = pDocFile->GetBlockInt();
-		AssertRange(size, 0, CInstrument::INST_NAME_MAX, "Instrument name length");
-		char Name[CInstrument::INST_NAME_MAX + 1];
-		pDocFile->GetBlock(Name, size);
-		Name[size] = 0;
-		pInstrument->SetName(Name);
-
-		// Store instrument
-		m_pInstrumentManager->InsertInstrument(index, pInstrument);
 	}
 
 	return false;
@@ -2814,18 +2813,7 @@ unsigned int CFamiTrackerDoc::GetSequenceItemCount(inst_type_t InstType, unsigne
 int CFamiTrackerDoc::GetFreeSequence(inst_type_t InstType, int Type, CSeqInstrument *pInst) const		// // //
 {
 	ASSERT(Type >= 0 && Type < SEQ_COUNT);
-
-	bool Used[MAX_SEQUENCES] = {};		// // //
-	for (int i = 0; i < MAX_INSTRUMENTS; i++) if (GetInstrumentType(i) == InstType) {		// // //
-		auto pInstrument = std::static_pointer_cast<CSeqInstrument>(GetInstrument(i));
-		if (pInstrument->GetSeqEnable(Type) && pInst != pInstrument.get())
-			Used[pInstrument->GetSeqIndex(Type)] = true;
-	}
-	for (int i = 0; i < MAX_SEQUENCES; ++i) if (!Used[i]) {
-		const CSequence *pSeq = GetSequence(InstType, i, Type);
-		if (!pSeq || !pSeq->GetItemCount()) return i;
-	}
-	return -1;
+	return m_pInstrumentManager->GetFreeSequenceIndex(InstType, Type, pInst);
 }
 
 int CFamiTrackerDoc::GetSequenceCount(inst_type_t InstType, int Type) const		// // //
@@ -2953,6 +2941,7 @@ int CFamiTrackerDoc::AddInstrument(const char *pName, int ChipType)
 #endif
 		return INVALID_INSTRUMENT;
 	}
+	pInst->RegisterManager(m_pInstrumentManager);
 	pInst->Setup();
 	pInst->SetName(pName);
 
@@ -3061,7 +3050,7 @@ void CFamiTrackerDoc::SaveInstrument(unsigned int Index, CString FileName) const
 	file.Write(Name, NameLen);
 
 	// Write instrument data
-	pInstrument->SaveFile(&file, this);
+	pInstrument->SaveFile(&file);
 
 	file.Close();
 }
@@ -3070,88 +3059,66 @@ int CFamiTrackerDoc::LoadInstrument(CString FileName)
 {
 	// Loads an instrument from file, return allocated slot or INVALID_INSTRUMENT if failed
 	//
-
-	int Slot = m_pInstrumentManager->GetFirstUnused();
-
-	if (Slot == INVALID_INSTRUMENT) {
-		AfxMessageBox(IDS_INST_LIMIT, MB_ICONERROR);
-		return INVALID_INSTRUMENT;
-	}
-
-	// Open file
-	CInstrumentFile file(FileName, CFile::modeRead);
-
-	if (file.m_hFile == CFile::hFileNull) {
-		AfxMessageBox(IDS_FILE_OPEN_ERROR, MB_ICONERROR);
-		file.Close();
-		return INVALID_INSTRUMENT;
-	}
-
-	// Signature
-	char Text[256];
-	file.Read(Text, (UINT)strlen(INST_HEADER));
-	Text[strlen(INST_HEADER)] = 0;
-
-	if (strcmp(Text, INST_HEADER) != 0) {
-		AfxMessageBox(IDS_INSTRUMENT_FILE_FAIL, MB_ICONERROR);
-		file.Close();
-		return INVALID_INSTRUMENT;
-	}
-
-	// Version
-	file.Read(Text, (UINT)strlen(INST_VERSION));
-
 	int iInstMaj, iInstMin;
-	sscanf_s(Text, "%i.%i", &iInstMaj, &iInstMin);		// // //
-	int iInstVer = iInstMaj * 10 + iInstMin;
-	
 	sscanf_s(INST_VERSION, "%i.%i", &iInstMaj, &iInstMin);
-	int iCurrentVer = iInstMaj * 10 + iInstMin;
-
-	if (iInstVer > iCurrentVer) {
-		AfxMessageBox(IDS_INST_VERSION_UNSUPPORTED, MB_OK);
-		file.Close();
-		return INVALID_INSTRUMENT;
-	}
-
-	m_csDocumentLock.Lock();
-
-	// Type
-	inst_type_t InstType = (inst_type_t)file.ReadChar();
-
-	if (InstType == INST_NONE)
-		InstType = INST_2A03;
-
-	auto pInstrument = CInstrumentManager::CreateNew(InstType);
-
-	// Name
-	unsigned int NameLen = file.ReadInt();
-
-	if (NameLen >= 256) {
-		m_csDocumentLock.Unlock();
-		AfxMessageBox(IDS_INST_FILE_ERROR, MB_OK);
-		file.Close();
-		return INVALID_INSTRUMENT;
-	}
-
-	file.Read(Text, NameLen);
-	Text[NameLen] = 0;
-
-	pInstrument->SetName(Text);
-
-	if (!pInstrument->LoadFile(&file, iInstVer, this)) {
-		m_csDocumentLock.Unlock();
-		AfxMessageBox(IDS_INST_FILE_ERROR, MB_OK);
-		file.Close();
-		return INVALID_INSTRUMENT;
-	}
+	static const int I_CURRENT_VER = iInstMaj * 10 + iInstMin;
 	
-	m_pInstrumentManager->InsertInstrument(Slot, pInstrument);
-	m_csDocumentLock.Unlock();
+	int Slot = m_pInstrumentManager->GetFirstUnused();
+	try {
+		if (Slot == INVALID_INSTRUMENT)
+			throw IDS_INST_LIMIT;
 
-	file.Close();
+		// Open file
+		// // // CFile implements RAII
+		CInstrumentFile file(FileName, CFile::modeRead);
+		if (file.m_hFile == CFile::hFileNull)
+			throw IDS_FILE_OPEN_ERROR;
 
-	return Slot;
+		// Signature
+		const UINT HEADER_LEN = strlen(INST_HEADER);
+		char Text[256] = {};
+		file.Read(Text, HEADER_LEN);
+		if (strcmp(Text, INST_HEADER) != 0)
+			throw IDS_INSTRUMENT_FILE_FAIL;
+		
+		// Version
+		file.Read(Text, static_cast<UINT>(strlen(INST_VERSION)));
+		sscanf_s(Text, "%i.%i", &iInstMaj, &iInstMin);		// // //
+		int iInstVer = iInstMaj * 10 + iInstMin;
+		if (iInstVer > I_CURRENT_VER)
+			throw IDS_INST_VERSION_UNSUPPORTED;
+		
+		m_csDocumentLock.Lock();
+
+		inst_type_t InstType = static_cast<inst_type_t>(file.ReadChar());
+		if (InstType == INST_NONE)
+			InstType = INST_2A03;
+		auto pInstrument = CInstrumentManager::CreateNew(InstType);
+		AssertFileData(pInstrument, "Failed to create instrument");
+		m_pInstrumentManager->InsertInstrument(Slot, pInstrument);
+		
+		// Name
+		unsigned int NameLen = AssertRange(static_cast<int>(file.ReadInt()), 0, CInstrument::INST_NAME_MAX, "Instrument name length");
+		file.Read(Text, NameLen);
+		Text[NameLen] = 0;
+		pInstrument->SetName(Text);
+
+		pInstrument->LoadFile(&file, iInstVer);		// // //
+		m_csDocumentLock.Unlock();
+		return Slot;
+	}
+	catch (int ID) {		// // // TODO: put all error messages into string table then add exception ctor
+		m_csDocumentLock.Unlock();
+		AfxMessageBox(ID, MB_ICONERROR);
+		return INVALID_INSTRUMENT;
+	}
+	catch (CModuleException *e) {
+		m_csDocumentLock.Unlock();
+		m_pInstrumentManager->RemoveInstrument(Slot);
+		AfxMessageBox(e->GetErrorString().c_str(), MB_ICONERROR);
+		delete e;
+		return INVALID_INSTRUMENT;
+	}
 }
 
 //

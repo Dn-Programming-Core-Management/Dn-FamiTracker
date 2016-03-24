@@ -1733,7 +1733,7 @@ void CCompiler::CreateInstrumentList()
 		}
 
 		// Returns number of bytes 
-		iTotalSize += pInstrument->Compile(m_pDocument, pChunk, iIndex);
+		iTotalSize += pInstrument->Compile(pChunk, iIndex);		// // //
 
 		// // // Check if FDS
 		if (pInstrument->GetType() == INST_FDS && pWavetableChunk != NULL) {

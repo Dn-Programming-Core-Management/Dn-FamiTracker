@@ -55,11 +55,10 @@ CGraphEditor::CGraphEditor(CSequence *pSequence) :
 	m_pSmallFont(NULL),
 	m_iHighlightedItem(-1),
 	m_iHighlightedValue(0),
-	m_bButtonState(false)
+	m_bButtonState(false),
+	m_pSequence(pSequence),
+	m_iLastPlayPos(0)
 {
-	m_pSequence = pSequence;
-	m_iLastPlayPos = 0;
-
 	m_ptLineStart = m_ptLineEnd = CPoint(0, 0);
 }
 

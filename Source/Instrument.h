@@ -39,7 +39,6 @@ enum inst_type_t {
 class CCompiler;
 class CDocumentFile;
 class CSequence;
-class CFamiTrackerDoc;
 class CInstrumentManagerInterface;		// // // break cyclic dependencies
 
 class CChunk;
@@ -66,14 +65,14 @@ public:
 	const char* GetName() const;
 	void RegisterManager(CInstrumentManagerInterface *pManager);		// // //
 public:
-	virtual inst_type_t GetType() const;											// // // Returns instrument type
-	virtual CInstrument* Clone() const = 0;											// Creates a copy
-	virtual void Setup() = 0;														// Setup some initial values
-	virtual void Store(CDocumentFile *pDocFile) = 0;								// Saves the instrument to the module
-	virtual bool Load(CDocumentFile *pDocFile) = 0;									// Loads the instrument from a module
-	virtual void SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDoc) = 0;	// Saves to an FTI file
-	virtual bool LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTrackerDoc *pDoc) = 0;	// Loads from an FTI file
-	virtual int Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index) = 0;		// Compiles the instrument for NSF generation
+	virtual inst_type_t GetType() const;								// // // Returns instrument type
+	virtual CInstrument* Clone() const = 0;								// Creates a copy
+	virtual void Setup() = 0;											// Setup some initial values
+	virtual void Store(CDocumentFile *pDocFile) = 0;					// Saves the instrument to the module
+	virtual bool Load(CDocumentFile *pDocFile) = 0;						// Loads the instrument from a module
+	virtual void SaveFile(CInstrumentFile *pFile) = 0;					// Saves to an FTI file
+	virtual bool LoadFile(CInstrumentFile *pFile, int iVersion) = 0;	// Loads from an FTI file
+	virtual int Compile(CChunk *pChunk, int Index) = 0;					// // // Compiles the instrument for NSF generation
 	virtual bool CanRelease() const = 0;
 protected:
 	void InstrumentChanged() const;
@@ -93,9 +92,9 @@ public:
 	virtual void	Setup();
 	virtual void	Store(CDocumentFile *pDocFile);
 	virtual bool	Load(CDocumentFile *pDocFile);
-	virtual void	SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDoc);
-	virtual bool	LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTrackerDoc *pDoc);
-	virtual int		Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index);
+	virtual void	SaveFile(CInstrumentFile *pFile);
+	virtual bool	LoadFile(CInstrumentFile *pFile, int iVersion);
+	virtual int		Compile(CChunk *pChunk, int Index);
 	virtual bool	CanRelease() const;
 
 	virtual int		GetSeqEnable(int Index) const;
@@ -104,6 +103,7 @@ public:
 	virtual void	SetSeqEnable(int Index, int Value);
 
 	virtual CSequence *GetSequence(int SeqType) const;		// // //
+	virtual void	SetSequence(int SeqType, CSequence *pSeq);		// // // register sequence in document
 
 	// static const int SEQUENCE_TYPES[] = {SEQ_VOLUME, SEQ_ARPEGGIO, SEQ_PITCH, SEQ_HIPITCH, SEQ_DUTYCYCLE};
 
@@ -119,8 +119,8 @@ public:
 	CInstrument* Clone() const;
 	void	Store(CDocumentFile *pFile);
 	bool	Load(CDocumentFile *pDocFile);
-	void	SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDoc);
-	bool	LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTrackerDoc *pDoc);
+	void	SaveFile(CInstrumentFile *pFile);
+	bool	LoadFile(CInstrumentFile *pFile, int iVersion);
 	// // // for the instrument interface
 	int		GetSeqEnable(int Index) const { return CSeqInstrument::GetSeqEnable(Index); }
 	int		GetSeqIndex(int Index) const { return CSeqInstrument::GetSeqIndex(Index); }
@@ -160,9 +160,9 @@ public:
 	void	Setup();
 	void	Store(CDocumentFile *pDocFile);
 	bool	Load(CDocumentFile *pDocFile);
-	void	SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDoc);
-	bool	LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTrackerDoc *pDoc);
-	int		Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index);
+	void	SaveFile(CInstrumentFile *pFile);
+	bool	LoadFile(CInstrumentFile *pFile, int iVersion);
+	int		Compile(CChunk *pChunk, int Index);
 	bool	CanRelease() const;
 
 public:
@@ -183,9 +183,9 @@ public:
 	void	Setup();
 	void	Store(CDocumentFile *pDocFile);
 	bool	Load(CDocumentFile *pDocFile);
-	void	SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDoc);
-	bool	LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTrackerDoc *pDoc);
-	int		Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index);
+	void	SaveFile(CInstrumentFile *pFile);
+	bool	LoadFile(CInstrumentFile *pFile, int iVersion);
+	int		Compile(CChunk *pChunk, int Index);
 	bool	CanRelease() const;
 
 public:
@@ -236,9 +236,9 @@ public:
 	CInstrument* Clone() const;
 	void	Store(CDocumentFile *pDocFile);
 	bool	Load(CDocumentFile *pDocFile);
-	void	SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDoc);
-	bool	LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTrackerDoc *pDoc);
-	int		Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index);
+	void	SaveFile(CInstrumentFile *pFile);
+	bool	LoadFile(CInstrumentFile *pFile, int iVersion);
+	int		Compile(CChunk *pChunk, int Index);
 
 public:
 	int		GetWaveSize() const;

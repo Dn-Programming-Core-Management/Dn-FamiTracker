@@ -76,7 +76,7 @@ bool CInstrumentVRC7::Load(CDocumentFile *pDocFile)
 	return true;
 }
 
-void CInstrumentVRC7::SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pDoc)
+void CInstrumentVRC7::SaveFile(CInstrumentFile *pFile)
 {
 	pFile->WriteInt(m_iPatch);
 
@@ -84,7 +84,7 @@ void CInstrumentVRC7::SaveFile(CInstrumentFile *pFile, const CFamiTrackerDoc *pD
 		pFile->WriteChar(GetCustomReg(i));
 }
 
-bool CInstrumentVRC7::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTrackerDoc *pDoc)
+bool CInstrumentVRC7::LoadFile(CInstrumentFile *pFile, int iVersion)
 {
 	m_iPatch = pFile->ReadInt();
 
@@ -94,7 +94,7 @@ bool CInstrumentVRC7::LoadFile(CInstrumentFile *pFile, int iVersion, CFamiTracke
 	return true;
 }
 
-int CInstrumentVRC7::Compile(CFamiTrackerDoc *pDoc, CChunk *pChunk, int Index)
+int CInstrumentVRC7::Compile(CChunk *pChunk, int Index)
 {
 	int Patch = GetPatch();
 

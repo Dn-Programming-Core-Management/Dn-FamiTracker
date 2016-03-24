@@ -129,6 +129,7 @@ void CInstrumentList::InsertInstrument(int Index)
 	CString Text;
 	Text.Format(_T("%02X - %s"), Index, A2T(Name));
 	InsertItem(Index, Text, Type - 1);
+	SelectInstrument(Index);		// // //
 }
 
 void CInstrumentList::RemoveInstrument(int Index)

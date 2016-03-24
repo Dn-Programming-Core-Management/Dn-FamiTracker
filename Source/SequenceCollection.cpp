@@ -20,42 +20,33 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-//#include "CustomExporterInterfaces.h"
-#include "SequenceCollection.h"
+#include <vector>
+#include <memory>
 #include "Sequence.h"
+#include "SequenceCollection.h"
 
 const int CSequenceCollection::MAX_SEQUENCES = 128;
 
 CSequenceCollection::CSequenceCollection()
 {
-	m_pSequence = new CSequence*[MAX_SEQUENCES]();
-}
-
-CSequenceCollection::~CSequenceCollection()
-{
-	SAFE_RELEASE_ARRAY(m_pSequence);
+	m_pSequence.resize(MAX_SEQUENCES);
 }
 
 CSequence *CSequenceCollection::GetSequence(unsigned int Index)
 {
-	ASSERT(Index < MAX_SEQUENCES);
-	if (m_pSequence[Index] == nullptr)
-		m_pSequence[Index] = new CSequence();
-	return m_pSequence[Index];
+	if (!m_pSequence[Index])
+		m_pSequence[Index].reset(new CSequence());
+	return m_pSequence[Index].get();
 }
 
 void CSequenceCollection::SetSequence(unsigned int Index, CSequence *Seq)
 {
-	ASSERT(Index < MAX_SEQUENCES);
-	SAFE_RELEASE(m_pSequence[Index]);
-	m_pSequence[Index] = Seq;
+	m_pSequence[Index].reset(Seq);
 }
 
 const CSequence *CSequenceCollection::GetSequence(unsigned int Index) const
 {
-	ASSERT(Index < MAX_SEQUENCES);
-	return m_pSequence[Index];
+	return m_pSequence[Index].get();
 }
 
 unsigned int CSequenceCollection::GetFirstFree() const
@@ -68,18 +59,6 @@ unsigned int CSequenceCollection::GetFirstFree() const
 
 void CSequenceCollection::RemoveAll()
 {
-	for (int i = 0; i < MAX_SEQUENCES; i++)
-		SAFE_RELEASE(m_pSequence[i]);
+	for (auto it = m_pSequence.begin(); it < m_pSequence.end(); ++it)
+		it->reset();
 }
-
-/*
-unsigned int CSequenceCollection::GetFirstUnused(CFamiTrackerDocInterface *pDoc) const
-{
-	// use CInstrumentCollection instead
-	for (int i = 0; i < MAX_SEQUENCES; ++i) {
-		if (m_pSequence[i] == nullptr || !m_pSequence[i]->GetItemCount())
-			return i;
-	}
-	return -1;
-}
-*/

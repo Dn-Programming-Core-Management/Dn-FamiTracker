@@ -28,11 +28,9 @@ class CSequenceManager
 {
 public:
 	CSequenceManager(int Count);
-	~CSequenceManager();
-	
-	CSequenceCollection *GetCollection(int Type);
-	const CSequenceCollection *GetCollection(int Type) const;
+	int GetCount() const;
+	CSequenceCollection *GetCollection(unsigned int Type);
+	const CSequenceCollection *GetCollection(unsigned int Type) const;
 private:
-	CSequenceCollection **m_pCollection;
-	const int m_iCount;
+	std::vector<std::unique_ptr<CSequenceCollection>> m_pCollection;
 };
