@@ -58,6 +58,7 @@
 #include "ChannelMap.h"
 #include "SequenceCollection.h"		// // //
 #include "SequenceManager.h"		// // //
+#include "DSampleManager.h"			// // //
 #include "InstrumentManager.h"		// // //
 #include "APU/APU.h"
 
@@ -208,11 +209,6 @@ CFamiTrackerDoc::CFamiTrackerDoc() :
 CFamiTrackerDoc::~CFamiTrackerDoc()
 {
 	// Clean up
-
-	// DPCM samples
-	for (int i = 0; i < MAX_DSAMPLES; ++i) {
-		m_DSamples[i].Clear();
-	}
 
 	// Patterns
 	for (int i = 0; i < MAX_TRACKS; ++i) {
@@ -377,11 +373,6 @@ void CFamiTrackerDoc::DeleteContents()
 	m_bBackupDone = true;	// No backup on new modules
 
 	UpdateAllViews(NULL, UPDATE_CLOSE);	// TODO remove
-
-	// DPCM samples
-	for (int i = 0; i < MAX_DSAMPLES; ++i) {
-		m_DSamples[i].Clear();
-	}
 
 	m_pInstrumentManager->ClearAll();		// // //
 
@@ -1222,26 +1213,23 @@ bool CFamiTrackerDoc::WriteBlock_Patterns(CDocumentFile *pDocFile, const int Ver
 
 bool CFamiTrackerDoc::WriteBlock_DSamples(CDocumentFile *pDocFile, const int Version) const
 {
-	int Count = 0;
-	for (int i = 0; i < MAX_DSAMPLES; ++i) {
-		if (m_DSamples[i].GetSize() > 0)
-			Count++;
-	}
-	if (!Count) return true;		// // //
+	int Count = GetSampleCount();		// // //
+	if (!Count) return true;
 
 	pDocFile->CreateBlock(FILE_BLOCK_DSAMPLES, Version);
 
 	// Write sample count
 	pDocFile->WriteBlockChar(Count);
 
-	for (int i = 0; i < MAX_DSAMPLES; ++i) {
-		if (m_DSamples[i].GetSize() > 0) {
+	for (unsigned int i = 0; i < CDSampleManager::MAX_DSAMPLES; ++i) {
+		if (const CDSample *pSamp = GetSample(i)) {
 			// Write sample
 			pDocFile->WriteBlockChar(i);
-			pDocFile->WriteBlockInt((int)strlen(m_DSamples[i].GetName()));
-			pDocFile->WriteBlock(m_DSamples[i].GetName(), (int)strlen(m_DSamples[i].GetName()));
-			pDocFile->WriteBlockInt(m_DSamples[i].GetSize());
-			pDocFile->WriteBlock(m_DSamples[i].GetData(), m_DSamples[i].GetSize());
+			int Length = strlen(pSamp->GetName());
+			pDocFile->WriteBlockInt(Length);
+			pDocFile->WriteBlock(pSamp->GetName(), Length);
+			pDocFile->WriteBlockInt(pSamp->GetSize());
+			pDocFile->WriteBlock(pSamp->GetData(), pSamp->GetSize());
 		}
 	}
 
@@ -1482,7 +1470,6 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 				break;
 
 			case FB_DSAMPLES:
-				memset(m_DSamples, 0, sizeof(CDSample) * MAX_DSAMPLES);
 				pOpenFile->Read(&ReadCount, sizeof(int));
 				for (i = 0; i < ReadCount; i++) {
 					pOpenFile->Read(&ImportedDSample, sizeof(stDSampleImport));
@@ -1492,8 +1479,10 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 					}
 					else
 						ImportedDSample.SampleData = NULL;
-					m_DSamples[i].SetName(ImportedDSample.Name);
-					m_DSamples[i].SetData(ImportedDSample.SampleSize, ImportedDSample.SampleData);
+					CDSample *pSamp = new CDSample();		// // //
+					pSamp->SetName(ImportedDSample.Name);
+					pSamp->SetData(ImportedDSample.SampleSize, ImportedDSample.SampleData);
+					SetSample(i, pSamp);
 				}
 				break;
 
@@ -2325,26 +2314,34 @@ bool CFamiTrackerDoc::ReadBlock_DSamples(CDocumentFile *pDocFile)
 {
 	int Version = pDocFile->GetBlockVersion();
 
-	int Count = AssertRange(pDocFile->GetBlockChar(), 0, MAX_DSAMPLES, "DPCM sample count");
-	
-	memset(m_DSamples, 0, sizeof(CDSample) * MAX_DSAMPLES);
+	unsigned int Count = AssertRange(
+		static_cast<unsigned char>(pDocFile->GetBlockChar()), 0U, CDSampleManager::MAX_DSAMPLES, "DPCM sample count");
 
-	for (int i = 0; i < Count; ++i) {
-		int Index = AssertRange(pDocFile->GetBlockChar(), 0, MAX_DSAMPLES - 1, "DPCM sample index");
-		CDSample *pSample = GetSample(Index);
-		int Len	= AssertRange(pDocFile->GetBlockInt(), 0, CDSample::MAX_NAME_SIZE - 1, "DPCM sample name length");
-		char Name[CDSample::MAX_NAME_SIZE];
-		pDocFile->GetBlock(Name, Len);
-		Name[Len] = 0;
-		pSample->SetName(Name);
-		int Size = pDocFile->GetBlockInt();
-		if (Size > 0x3FF1 || (Size & 0x0F) != 0x01 || Size < 1) {
-			char Buffer[128];
-			sprintf_s(Buffer, sizeof(Buffer), "Invalid size for DPCM sample %d (0x%X bytes)", Index, Size);
-			AssertFileData(false, Buffer);
+	for (unsigned int i = 0; i < Count; ++i) {
+		unsigned int Index = AssertRange(
+			static_cast<unsigned char>(pDocFile->GetBlockChar()), 0U, CDSampleManager::MAX_DSAMPLES - 1, "DPCM sample index");
+		CDSample *pSample = nullptr;
+		try {
+			pSample = new CDSample();		// // //
+			unsigned int Len = AssertRange(pDocFile->GetBlockInt(), 0, CDSample::MAX_NAME_SIZE - 1, "DPCM sample name length");
+			char Name[CDSample::MAX_NAME_SIZE] = {};
+			pDocFile->GetBlock(Name, Len);
+			Name[Len] = 0;
+			pSample->SetName(Name);
+			int Size = AssertRange(pDocFile->GetBlockInt(), 0, CDSample::MAX_SIZE, "DPCM sample size");
+			if ((Size & 0x0F) != 0x01) {
+				CModuleException *e = m_pCurrentDocument->GetException();
+				e->AppendError("Invalid DPCM sample size (0x%X bytes)", Size);
+				e->Raise();
+			}
+			pSample->Allocate(Size);
+			pDocFile->GetBlock(pSample->GetData(), Size);
 		}
-		pSample->Allocate(Size);
-		pDocFile->GetBlock(pSample->GetData(), Size);
+		catch (CModuleException *e) {
+			e->AppendError("At DPCM sample %d,", Index);
+			throw;
+		}
+		SetSample(Index, pSample);
 	}
 
 	return false;
@@ -2747,60 +2744,48 @@ bool CFamiTrackerDoc::ImportTrack(int Track, CFamiTrackerDoc *pImported, int *pI
 CDSample *CFamiTrackerDoc::GetSample(unsigned int Index)
 {
 	ASSERT(Index < MAX_DSAMPLES);
-	return &m_DSamples[Index];
+	return const_cast<CDSample*>(m_pInstrumentManager->GetDSampleManager()->GetDSample(Index));		// // //
 }
 
 const CDSample *CFamiTrackerDoc::GetSample(unsigned int Index) const
 {
 	ASSERT(Index < MAX_DSAMPLES);
-	return &m_DSamples[Index];
+	return m_pInstrumentManager->GetDSampleManager()->GetDSample(Index);		// // //
 }
 
-bool CFamiTrackerDoc::IsSampleUsed(unsigned int Index) const
+void CFamiTrackerDoc::SetSample(unsigned int Index, CDSample *pSamp)		// // //
 {
 	ASSERT(Index < MAX_DSAMPLES);
-	return m_DSamples[Index].GetSize() > 0;
-}
-
-unsigned int CFamiTrackerDoc::GetSampleCount() const
-{
-	unsigned int Count = 0;
-	for (int i = 0; i < MAX_DSAMPLES; ++i) {
-		if (m_DSamples[i].GetSize() > 0)
-			++Count;
-	}
-	return Count;
-}
-
-int CFamiTrackerDoc::GetFreeSampleSlot() const
-{
-	for (int i = 0; i < MAX_DSAMPLES; ++i) {
-		if (!IsSampleUsed(i))
-			return i;
-	}
-	// Out of free samples
-	return -1;
-}
-
-void CFamiTrackerDoc::RemoveSample(unsigned int Index)
-{
-	ASSERT(Index < MAX_DSAMPLES);
-
-	if (m_DSamples[Index].GetSize() != 0) {
-		m_DSamples[Index].Clear();
+	if (m_pInstrumentManager->GetDSampleManager()->SetDSample(Index, pSamp)) {
 		SetModifiedFlag();
 		SetExceededFlag();		// // //
 	}
 }
 
+bool CFamiTrackerDoc::IsSampleUsed(unsigned int Index) const
+{
+	ASSERT(Index < MAX_DSAMPLES);
+	return m_pInstrumentManager->GetDSampleManager()->IsSampleUsed(Index);		// // //
+}
+
+unsigned int CFamiTrackerDoc::GetSampleCount() const
+{
+	return m_pInstrumentManager->GetDSampleManager()->GetSampleCount();
+}
+
+int CFamiTrackerDoc::GetFreeSampleSlot() const
+{
+	return m_pInstrumentManager->GetDSampleManager()->GetFirstFree();
+}
+
+void CFamiTrackerDoc::RemoveSample(unsigned int Index)
+{
+	SetSample(Index, nullptr);		// // //
+}
+
 unsigned int CFamiTrackerDoc::GetTotalSampleSize() const
 {
-	// Return total size of all loaded samples
-	unsigned int Size = 0;
-	for (int i = 0; i < MAX_DSAMPLES; ++i) {
-		Size += m_DSamples[i].GetSize();
-	}
-	return Size;
+	return m_pInstrumentManager->GetDSampleManager()->GetTotalSize();
 }
 
 // ---------------------------------------------------------------------------------------------------------

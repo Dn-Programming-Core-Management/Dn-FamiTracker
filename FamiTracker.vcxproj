@@ -425,6 +425,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\BookmarkDlg.cpp" />
+    <ClCompile Include="Source\DSampleManager.cpp" />
     <ClCompile Include="Source\DetuneDlg.cpp" />
     <ClCompile Include="Source\Exception.cpp" />
     <ClCompile Include="Source\FamiTracker.cpp" />
@@ -660,6 +661,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\BookmarkDlg.h" />
+    <ClInclude Include="Source\DSampleManager.h" />
     <ClInclude Include="Source\ChannelHandlerInterface.h" />
     <ClInclude Include="Source\DetuneDlg.h" />
     <ClInclude Include="Source\Exception.h" />

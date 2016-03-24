@@ -1296,21 +1296,21 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	f.WriteString(_T("# DPCM samples\n"));
 	for (int smp=0; smp < MAX_DSAMPLES; ++smp)
 	{
-		const CDSample* pSample = pDoc->GetSample(smp);
-		if (pSample && pSample->GetSize() > 0)
+		if (const CDSample* pSample = pDoc->GetSample(smp))		// // //
 		{
+			const unsigned int size = pSample->GetSize();
 			s.Format(_T("%s %3d %5d %s\n"),
 				CT[CT_DPCMDEF],
 				smp,
-				pSample->GetSize(),
+				size,
 				ExportString(pSample->GetName()));
 			f.WriteString(s);
 
-			for (unsigned int i=0; i < pSample->GetSize(); i += 32)
+			for (unsigned int i=0; i < size; i += 32)
 			{
 				s.Format(_T("%s :"), CT[CT_DPCM]);
 				f.WriteString(s);
-				for (unsigned int j=0; j<32 && (i+j)<pSample->GetSize(); ++j)
+				for (unsigned int j=0; j<32 && (i+j)<size; ++j)
 				{
 					s.Format(_T(" %02X"), (unsigned char)(*(pSample->GetData() + (i+j))));
 					f.WriteString(s);

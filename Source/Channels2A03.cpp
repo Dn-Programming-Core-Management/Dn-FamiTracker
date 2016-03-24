@@ -586,11 +586,8 @@ void CDPCMChan::HandleNote(int Note, int Octave)
 	
 		m_iLoopOffset = pInstrument->GetSampleLoopOffset(Octave, Note - 1);
 
-		const CDSample *pDSample = pDocument->GetSample(SampleIndex - 1);
-
-		int SampleSize = pDSample->GetSize();
-
-		if (SampleSize > 0) {
+		if (const CDSample *pDSample = pDocument->GetSample(SampleIndex - 1)) {
+			int SampleSize = pDSample->GetSize();
 			m_pSampleMem->SetMem(pDSample->GetData(), SampleSize);
 			m_iPeriod = Pitch & 0x0F;
 			m_iSampleLength = (SampleSize >> 4) - (m_iOffset << 2);

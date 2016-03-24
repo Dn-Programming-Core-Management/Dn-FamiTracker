@@ -341,6 +341,7 @@ public:
 	// DPCM samples
 	CDSample*		GetSample(unsigned int Index);
 	const CDSample*	GetSample(unsigned int Index) const;
+	void			SetSample(unsigned int Index, CDSample *pSamp);		// // //
 	bool			IsSampleUsed(unsigned int Index) const;
 	unsigned int	GetSampleCount() const;
 	int				GetFreeSampleSlot() const;
@@ -554,7 +555,6 @@ private:
 	unsigned int	m_iChannelsAvailable;						// Number of channels added
 
 	// Instruments, samples and sequences
-	CDSample		m_DSamples[MAX_DSAMPLES];					// The DPCM sample list
 	CInstrumentManager *m_pInstrumentManager;					// // //
 	CGroove			*m_pGrooveTable[MAX_GROOVE];				// // // Grooves
 

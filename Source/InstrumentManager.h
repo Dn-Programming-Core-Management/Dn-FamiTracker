@@ -27,6 +27,7 @@
 class CInstrument;
 class CDSample;
 class CSequenceManager;
+class CDSampleManager;
 
 enum inst_type_t;
 
@@ -39,7 +40,6 @@ class CInstrumentManager : CInstrumentManagerInterface
 {
 public:
 	CInstrumentManager();
-	~CInstrumentManager();
 
 	void ClearAll();
 
@@ -58,10 +58,11 @@ public:
 	void CloneInstrumentDeep(unsigned int Old, unsigned int New);
 
 	CSequenceManager *const GetSequenceManager(int InstType) const;
+	CDSampleManager *const GetDSampleManager() const;
 
 	// from interface
-	CSequence *GetSequence(int InstType, int SeqType, int Index) const;
-	CDSample *GetDSample(int Index) const;
+	CSequence *GetSequence(int InstType, int SeqType, int Index) const; // TODO: use SetSequence and provide const getter
+	const CDSample *GetDSample(int Index) const;
 
 public:
 	static std::shared_ptr<CInstrument> CreateNew(inst_type_t InstType);
@@ -70,6 +71,7 @@ public:
 private:
 	std::vector<std::shared_ptr<CInstrument>> m_pInstruments;
 	std::vector<std::unique_ptr<CSequenceManager>> m_pSequenceManager;
+	std::unique_ptr<CDSampleManager> m_pDSampleManager;
 
 	mutable CCriticalSection m_InstrumentLock;
 

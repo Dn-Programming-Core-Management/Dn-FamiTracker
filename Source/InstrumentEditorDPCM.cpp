@@ -202,7 +202,7 @@ void CInstrumentEditorDPCM::UpdateKey(int Index)
 		int Item = m_pInstrument->GetSample(m_iOctave, Index) - 1;
 		int Pitch = m_pInstrument->GetSamplePitch(m_iOctave, Index);
 		const CDSample *pSample = GetDocument()->GetSample(Item);
-		NameStr = (pSample->GetSize() == 0) ? _T("(n/a)") : pSample->GetName();
+		NameStr = !pSample ? _T("(n/a)") : pSample->GetName();
 		PitchStr.Format(_T("%i %s"), Pitch & 0x0F, (Pitch & 0x80) ? "L" : "");
 	}
 
@@ -224,8 +224,7 @@ void CInstrumentEditorDPCM::BuildSampleList()
 	pSampleBox->AddString(NO_SAMPLE_STR);
 
 	for (int i = 0; i < MAX_DSAMPLES; ++i) {
-		const CDSample *pDSample = GetDocument()->GetSample(i);
-		if (pDSample->GetSize() > 0) {
+		if (const CDSample *pDSample = GetDocument()->GetSample(i)) {		// // //
 			pSampleListCtrl->InsertItem(Index, MakeIntString(i));
 			Text.Format(_T("%s"), pDSample->GetName());
 			pSampleListCtrl->SetItemText(Index, 1, Text);
@@ -535,8 +534,7 @@ void CInstrumentEditorDPCM::OnBnClickedSave()
 	
 	const CDSample *pDSample = GetDocument()->GetSample(Index);
 
-	if (pDSample->GetSize() == 0)
-		return;
+	if (!pDSample) return;
 
 	CString fileFilter = LoadDefaultFilter(IDS_FILTER_DMC, _T(".dmc"));
 	CFileDialog SaveFileDialog(FALSE, _T("dmc"), (LPCSTR)pDSample->GetName(), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, fileFilter);
@@ -735,8 +733,7 @@ void CInstrumentEditorDPCM::OnNMRClickTable(NMHDR *pNMHDR, LRESULT *pResult)
 
 	// Fill menu
 	for (int i = 0; i < MAX_DSAMPLES; i++) {
-		CDSample *pDSample = GetDocument()->GetSample(i);
-		if (pDSample->GetSize() > 0) {
+		if (const CDSample *pDSample = GetDocument()->GetSample(i)) {
 			PopupMenu.AppendMenu(MF_STRING, i + 2, pDSample->GetName());
 		}
 	}

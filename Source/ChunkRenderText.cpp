@@ -123,8 +123,7 @@ void CChunkRenderText::StoreSamples(const std::vector<const CDSample*> &Samples)
 	}
 
 	unsigned int Address = CCompiler::PAGE_SAMPLES;
-	for (size_t i = 0; i < Samples.size(); ++i) {
-		const CDSample *pDSample = Samples[i];
+	for (size_t i = 0; i < Samples.size(); ++i) if (const CDSample *pDSample = Samples[i]) {		// // //
 		const unsigned int SampleSize = pDSample->GetSize();
 		const char *pData = pDSample->GetData();
 		

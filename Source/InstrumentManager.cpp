@@ -28,20 +28,18 @@
 #include "InstrumentManager.h"
 #include "SequenceCollection.h"
 #include "SequenceManager.h"
+#include "DSampleManager.h"
 
 const int CInstrumentManager::MAX_INSTRUMENTS = 64;
 const int CInstrumentManager::SEQ_MANAGER_COUNT = 5;
 
-CInstrumentManager::CInstrumentManager()
+CInstrumentManager::CInstrumentManager() :
+	m_pDSampleManager(std::unique_ptr<CDSampleManager>(new CDSampleManager()))
 {
 	m_pInstruments.resize(MAX_INSTRUMENTS);
 
 	for (int i = 0; i < SEQ_MANAGER_COUNT; i++)
 		m_pSequenceManager.push_back(std::unique_ptr<CSequenceManager>(new CSequenceManager(i == 2 ? 3 : SEQ_COUNT)));
-}
-
-CInstrumentManager::~CInstrumentManager()
-{
 }
 
 //
@@ -100,6 +98,7 @@ void CInstrumentManager::ClearAll()
 	}
 	for (int i = 0; i < SEQ_MANAGER_COUNT; i++)
 		m_pSequenceManager[i].reset(new CSequenceManager(i == 2 ? 3 : SEQ_COUNT));
+	m_pDSampleManager.reset(new CDSampleManager());
 }
 
 bool CInstrumentManager::IsInstrumentUsed(unsigned int Index) const
@@ -155,6 +154,11 @@ CSequenceManager *const CInstrumentManager::GetSequenceManager(int InstType) con
 	return m_pSequenceManager[Index].get();
 }
 
+CDSampleManager *const CInstrumentManager::GetDSampleManager() const
+{
+	return m_pDSampleManager.get();
+}
+
 //
 // from interface
 //
@@ -168,7 +172,7 @@ CSequence *CInstrumentManager::GetSequence(int InstType, int SeqType, int Index)
 	return pCol->GetSequence(Index);
 }
 
-CDSample *CInstrumentManager::GetDSample(int Index) const
+const CDSample *CInstrumentManager::GetDSample(int Index) const
 {
-	return nullptr;
+	return m_pDSampleManager->GetDSample(Index);
 }

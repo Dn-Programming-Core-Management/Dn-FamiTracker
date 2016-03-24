@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -23,16 +23,20 @@
 #pragma once
 
 
-class CSequence;
 class CDSample;
 
-/*
-	\brief A getter-only interface which allows instrument resources to be obtained from themselves,
-	allowing uniform access regardless of the mechanism that actually owns these resources.
-*/
-class CInstrumentManagerInterface
+class CDSampleManager
 {
 public:
-	virtual CSequence *GetSequence(int InstType, int SeqType, int Index) const = 0;
-	virtual const CDSample *GetDSample(int Index) const = 0;
+	CDSampleManager();
+	const CDSample *GetDSample(unsigned Index) const;
+	bool SetDSample(unsigned Index, CDSample *pSamp);
+	bool IsSampleUsed(unsigned Index) const;
+	unsigned int GetSampleCount() const;
+	unsigned int GetFirstFree() const;
+	unsigned int GetTotalSize() const;
+	static const unsigned MAX_DSAMPLES;
+private:
+	std::vector<std::unique_ptr<CDSample>> m_pDSample;
+	unsigned int m_iTotalSize;
 };
