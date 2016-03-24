@@ -129,6 +129,7 @@ struct stFullState {
 #include "Instrument.h"
 #include "Sequence.h"
 #include "Groove.h"		// // //
+#include "Bookmark.h"		// // //
 
 // External classes
 class CTrackerChannel;

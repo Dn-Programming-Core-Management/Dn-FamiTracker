@@ -25,6 +25,7 @@
 #include "FamiTrackerDoc.h"
 #include "FamiTracker.h"
 #include "MainFrm.h"
+#include "Bookmark.h"		// // //
 #include "BookmarkDlg.h"
 
 // CBookmarkDlg dialog

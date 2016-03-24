@@ -40,15 +40,6 @@ struct stHighlight {
 	int Offset;
 };
 
-// // // Bookmark
-struct stBookmark {
-	unsigned int Frame;
-	unsigned int Row;
-	stHighlight Highlight;
-	bool Persist;
-	CString *Name;
-};
-
 static const stChanNote BLANK_NOTE = {NONE, 0, MAX_VOLUME, MAX_INSTRUMENTS, {EF_NONE, EF_NONE, EF_NONE, EF_NONE}, {0, 0, 0, 0}}; // // //
 
 // TODO rename to CTrack perhaps?
