@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -2811,24 +2811,20 @@ unsigned int CFamiTrackerDoc::GetSequenceItemCount(inst_type_t InstType, unsigne
 	return pSeq->GetItemCount();
 }
 
-int CFamiTrackerDoc::GetFreeSequence(inst_type_t InstType, int Type) const		// // //
+int CFamiTrackerDoc::GetFreeSequence(inst_type_t InstType, int Type, CSeqInstrument *pInst) const		// // //
 {
 	ASSERT(Type >= 0 && Type < SEQ_COUNT);
 
-	// Return a free sequence slot, or -1 otherwise
-	/*
-	for (int i = 0; i < MAX_SEQUENCES; ++i) {
-		if (GetSequenceItemCount(InstType, i, Type) == 0)
-			return i;
-	}
-	*/
 	bool Used[MAX_SEQUENCES] = {};		// // //
-	for (int i = 0; i < MAX_INSTRUMENTS; i++) if (IsInstrumentUsed(i) && GetInstrumentType(i) == InstType) {
+	for (int i = 0; i < MAX_INSTRUMENTS; i++) if (GetInstrumentType(i) == InstType) {		// // //
 		auto pInstrument = std::static_pointer_cast<CSeqInstrument>(GetInstrument(i));
-		if (pInstrument->GetSeqEnable(Type))
+		if (pInstrument->GetSeqEnable(Type) && pInst != pInstrument.get())
 			Used[pInstrument->GetSeqIndex(Type)] = true;
 	}
-	for (int i = 0; i < MAX_SEQUENCES; ++i) if (!Used[i] && GetSequenceItemCount(InstType, i, Type) == 0) return i;
+	for (int i = 0; i < MAX_SEQUENCES; ++i) if (!Used[i]) {
+		const CSequence *pSeq = GetSequence(InstType, i, Type);
+		if (!pSeq || !pSeq->GetItemCount()) return i;
+	}
 	return -1;
 }
 

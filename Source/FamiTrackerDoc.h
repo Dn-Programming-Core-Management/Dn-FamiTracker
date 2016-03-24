@@ -334,7 +334,7 @@ public:
 	CSequence*		GetSequence(inst_type_t InstType, unsigned int Index, int Type);
 	CSequence*		GetSequence(inst_type_t InstType, unsigned int Index, int Type) const;		// // //
 	unsigned int	GetSequenceItemCount(inst_type_t InstType, unsigned int Index, int Type) const;		// // //
-	int				GetFreeSequence(inst_type_t InstType, int Type) const;		// // //
+	int				GetFreeSequence(inst_type_t InstType, int Type, CSeqInstrument *pInst = nullptr) const;		// // //
 	int				GetSequenceCount(inst_type_t InstType, int Type) const;		// // //
 
 	// DPCM samples

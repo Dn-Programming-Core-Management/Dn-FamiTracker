@@ -179,7 +179,7 @@ void CInstrumentEditorSeq::OnEnChangeSeqIndex()
 
 void CInstrumentEditorSeq::OnBnClickedFreeSeq()
 {
-	int FreeIndex = GetDocument()->GetFreeSequence(m_iInstType, m_iSelectedSetting);		// // //
+	int FreeIndex = GetDocument()->GetFreeSequence(m_iInstType, m_iSelectedSetting, m_pInstrument.get());		// // //
 	if (FreeIndex == -1)
 		FreeIndex = 0;
 	SetDlgItemInt(IDC_SEQ_INDEX, FreeIndex, FALSE);	// Things will update automatically by changing this
