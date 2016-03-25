@@ -80,7 +80,9 @@ bool CInstrument2A03::Load(CDocumentFile *pDocFile)
 			if (Index > MAX_DSAMPLES)
 				Index = 0;
 			SetSample(i, j, Index);
-			SetSamplePitch(i, j, CModuleException::AssertRangeFmt(pDocFile->GetBlockChar(), 0, 0xF, "DPCM sample pitch", "%i"));
+			char Pitch = pDocFile->GetBlockChar();
+			CModuleException::AssertRangeFmt(Pitch & 0x7F, 0, 0xF, "DPCM sample pitch", "%i");
+			SetSamplePitch(i, j, Pitch);
 			if (Version > 5) {
 				char Value = pDocFile->GetBlockChar();
 				if (Value < -1) // not validated
@@ -177,7 +179,9 @@ bool CInstrument2A03::LoadFile(CInstrumentFile *pFile, int iVersion)
 			unsigned char Sample = CModuleException::AssertRangeFmt(pFile->ReadChar(), 0U, 0x7FU, "DPCM sample assignment index", "%u");
 			if (Sample > MAX_DSAMPLES)
 				Sample = 0;
-			SetSamplePitch(Octave, Note, CModuleException::AssertRangeFmt(pFile->ReadChar(), 0U, 0xFU, "DPCM sample pitch", "%u"));
+			unsigned char Pitch = pFile->ReadChar();
+			CModuleException::AssertRangeFmt(Pitch & 0x7FU, 0U, 0xFU, "DPCM sample pitch", "%u");
+			SetSamplePitch(Octave, Note, Pitch);
 			SetSample(Octave, Note, Sample);
 			SetSampleDeltaValue(Octave, Note, CModuleException::AssertRangeFmt(
 				static_cast<char>(iVersion >= 24 ? pFile->ReadChar() : -1), -1, 0x7F, "DPCM sample delta value", "%i"));
