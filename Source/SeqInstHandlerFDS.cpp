@@ -20,7 +20,6 @@
 ** must bear this legend.
 */
 
-#include <memory>
 #include "stdafx.h"
 #include "Sequence.h"
 #include "Instrument.h"

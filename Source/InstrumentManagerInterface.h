@@ -72,4 +72,8 @@ public:
 		\return The index of the sample, or -1 if it is not insered.
 	*/
 	virtual int AddDSample(CDSample *pSamp) = 0;
+	/*!	\brief Notifies that an instrument has been changed.
+		\details This method does nothing if the instrument manager is not linked to a document.
+	*/
+	virtual void InstrumentChanged() const = 0;
 };

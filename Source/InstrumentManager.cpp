@@ -24,6 +24,7 @@
 #include <vector>
 #include <memory>
 #include <afxmt.h>
+#include "FTMComponentInterface.h"
 #include "Instrument.h"
 #include "SeqInstrument.h"
 #include "InstrumentFactory.h"
@@ -36,9 +37,10 @@
 const int CInstrumentManager::MAX_INSTRUMENTS = 64;
 const int CInstrumentManager::SEQ_MANAGER_COUNT = 5;
 
-CInstrumentManager::CInstrumentManager() :
+CInstrumentManager::CInstrumentManager(CFTMComponentInterface *pInterface) :
 	m_pDSampleManager(new CDSampleManager()),
-	m_pInstruments(MAX_INSTRUMENTS)
+	m_pInstruments(MAX_INSTRUMENTS),
+	m_pDocInterface(pInterface)
 {
 	for (int i = 0; i < SEQ_MANAGER_COUNT; i++)
 		m_pSequenceManager.push_back(std::unique_ptr<CSequenceManager>(new CSequenceManager(i == 2 ? 3 : SEQ_COUNT)));
@@ -220,4 +222,10 @@ int CInstrumentManager::AddDSample(CDSample *pSamp)
 	int Index = m_pDSampleManager->GetFirstFree();
 	if (Index != -1) SetDSample(Index, pSamp);
 	return Index;
+}
+
+void CInstrumentManager::InstrumentChanged() const
+{
+	if (m_pDocInterface)
+		m_pDocInterface->ModifyIrreversible();
 }

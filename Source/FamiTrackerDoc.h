@@ -128,7 +128,6 @@ struct stFullState {
 // External classes
 class CTrackerChannel;
 class CDocumentFile;
-class COldSequence;
 
 //
 // I'll try to organize this class, things are quite messy right now!
@@ -490,6 +489,9 @@ private:
 	// // // from the component interface
 	CSequenceManager *const GetSequenceManager(int InstType) const;
 	CInstrumentManager *const GetInstrumentManager() const;
+	CDSampleManager *const GetDSampleManager() const;
+	void			Modify(bool Change);
+	void			ModifyIrreversible();
 
 	//
 	// Private variables

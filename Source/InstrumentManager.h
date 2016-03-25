@@ -28,6 +28,7 @@ class CInstrument;
 class CDSample;
 class CSequenceManager;
 class CDSampleManager;
+class CFTMComponentInterface;
 
 enum inst_type_t;
 
@@ -39,7 +40,7 @@ enum inst_type_t;
 class CInstrumentManager : public CInstrumentManagerInterface
 {
 public:
-	CInstrumentManager();
+	CInstrumentManager(CFTMComponentInterface *pInterface = nullptr);
 
 	void ClearAll();
 
@@ -68,6 +69,7 @@ public:
 	const CDSample *GetDSample(int Index) const;
 	void SetDSample(int Index, CDSample *pSamp);
 	int AddDSample(CDSample *pSamp);
+	void InstrumentChanged() const;
 
 public:
 	static std::shared_ptr<CInstrument> CreateNew(inst_type_t InstType);
@@ -79,6 +81,7 @@ private:
 	std::unique_ptr<CDSampleManager> m_pDSampleManager;
 
 	mutable CCriticalSection m_InstrumentLock;
+	CFTMComponentInterface *m_pDocInterface;
 
 private:
 	static const int SEQ_MANAGER_COUNT;

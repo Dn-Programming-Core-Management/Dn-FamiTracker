@@ -26,7 +26,6 @@
 #include "FamiTrackerTypes.h"
 #include "SoundGen.h"
 
-#include <memory> // TODO: remove
 #include "Instrument.h"
 #include "SeqInstrument.h"
 #include "Sequence.h"

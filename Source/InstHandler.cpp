@@ -20,11 +20,9 @@
 ** must bear this legend.
 */
 
-#include <memory> // TODO: remove
 #include "stdafx.h"
 #include "Instrument.h"
 #include "InstHandler.h"
-#include "ChannelHandlerInterface.h"
 
 /*
  * Class CInstHandler

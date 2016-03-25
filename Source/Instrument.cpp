@@ -20,13 +20,9 @@
 ** must bear this legend.
 */
 
-#include <memory>
 #include "stdafx.h"
-#include "FamiTrackerDoc.h"
 #include "InstrumentManagerInterface.h"		// // //
-#include "Sequence.h"		// // //
 #include "Instrument.h"
-#include "DocumentFile.h"
 
 /*
  * Class CInstrument, base class for instruments
@@ -71,13 +67,8 @@ inst_type_t CInstrument::GetType() const		// // //
 void CInstrument::InstrumentChanged() const
 {
 	// Set modified flag
-	CFrameWnd *pFrameWnd = dynamic_cast<CFrameWnd*>(AfxGetMainWnd());
-	if (pFrameWnd != nullptr) {
-		CFamiTrackerDoc *pDoc = (CFamiTrackerDoc*)pFrameWnd->GetActiveDocument();		// // //
-		if (pDoc != nullptr)
-			pDoc->SetModifiedFlag();
-			pDoc->SetExceededFlag();		// // //
-	}
+	if (m_pInstManager)		// // //
+		m_pInstManager->InstrumentChanged();
 }
 
 // File load / store

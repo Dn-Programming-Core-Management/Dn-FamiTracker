@@ -156,7 +156,8 @@ CFamiTrackerDoc::CFamiTrackerDoc() :
 	m_bFileLoadFailed(false), 
 	m_iRegisteredChannels(0), 
 	m_iNamcoChannels(0),		// // //
-	m_bDisplayComment(false)
+	m_bDisplayComment(false),
+	m_pInstrumentManager(new CInstrumentManager(this))
 {
 	// Initialize document object
 
@@ -166,7 +167,6 @@ CFamiTrackerDoc::CFamiTrackerDoc() :
 	memset(m_pTracks, 0, sizeof(CPatternData*) * MAX_TRACKS);
 	memset(m_pGrooveTable, 0, sizeof(CGroove*) * MAX_GROOVE);		// // //
 	memset(m_pBookmarkList, 0, sizeof(std::vector<stBookmark>*) * MAX_TRACKS);		// // //
-	m_pInstrumentManager = new CInstrumentManager();
 
 	// Register this object to the sound generator
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
@@ -3911,6 +3911,10 @@ void CFamiTrackerDoc::ApplyExpansionChip()
 	SetExceededFlag();			// // //
 }
 
+//
+// from the compoment interface
+//
+
 CSequenceManager *const CFamiTrackerDoc::GetSequenceManager(int InstType) const
 {
 	return m_pInstrumentManager->GetSequenceManager(InstType);
@@ -3919,6 +3923,22 @@ CSequenceManager *const CFamiTrackerDoc::GetSequenceManager(int InstType) const
 CInstrumentManager *const CFamiTrackerDoc::GetInstrumentManager() const
 {
 	return m_pInstrumentManager;
+}
+
+CDSampleManager *const CFamiTrackerDoc::GetDSampleManager() const
+{
+	return m_pInstrumentManager->GetDSampleManager();
+}
+
+void CFamiTrackerDoc::Modify(bool Change)
+{
+	SetModifiedFlag(Change ? TRUE : FALSE);
+}
+
+void CFamiTrackerDoc::ModifyIrreversible()
+{
+	SetModifiedFlag();
+	SetExceededFlag();
 }
 
 bool CFamiTrackerDoc::ExpansionEnabled(int Chip) const
