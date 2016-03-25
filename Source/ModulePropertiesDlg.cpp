@@ -312,7 +312,9 @@ void CModulePropertiesDlg::OnBnClickedSongImport()
 	CModuleImportDlg importDlg(m_pDocument);
 
 	// TODO use string table
-	CFileDialog OpenFileDlg(TRUE, _T("ftm"), 0, OFN_HIDEREADONLY, _T("FamiTracker files (*.ftm)|*.ftm|All files (*.*)|*.*||"), theApp.GetMainWnd(), 0);
+	CFileDialog OpenFileDlg(TRUE, _T("0cc"), 0, OFN_HIDEREADONLY,
+							_T("0CC-FamiTracker modules (*.0cc;*.ftm)|*.0cc; *.ftm|All files (*.*)|*.*||"),		// // //
+							theApp.GetMainWnd(), 0);
 
 	if (OpenFileDlg.DoModal() == IDCANCEL)
 		return;

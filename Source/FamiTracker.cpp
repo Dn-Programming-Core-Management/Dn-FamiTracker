@@ -732,6 +732,22 @@ void CFamiTrackerApp::OnFileOpen()
 BOOL CFamiTrackerApp::DoPromptFileName(CString& fileName, CString& filePath, UINT nIDSTitle, DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* pTemplate)
 {
 	// Copied from MFC
+	{		// // // disregard doc template
+		CFileDialog OpenFileDlg(bOpenFileDialog, _T("0cc"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
+								_T("0CC-FamiTracker modules (*.0cc;*.ftm)|*.0cc; *.ftm|All files (*.*)|*.*||"),		// // //
+								GetMainWnd(), 0);
+		OpenFileDlg.m_ofn.Flags |= lFlags;
+		OpenFileDlg.m_ofn.lpstrFile = fileName.GetBuffer(_MAX_PATH);
+		OpenFileDlg.m_ofn.lpstrInitialDir = filePath.GetBuffer(_MAX_PATH);
+		CString title;
+		ENSURE(title.LoadString(nIDSTitle));
+		OpenFileDlg.m_ofn.lpstrTitle = title;
+		INT_PTR nResult = OpenFileDlg.DoModal();
+		fileName.ReleaseBuffer();
+		filePath.ReleaseBuffer();
+		return nResult == IDOK;
+	}
+	/*
 	CFileDialog dlgFile(bOpenFileDialog, _T(".0cc"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, NULL, 0);		// // //
 
 	CString title;
@@ -798,6 +814,7 @@ BOOL CFamiTrackerApp::DoPromptFileName(CString& fileName, CString& filePath, UIN
 	filePath.ReleaseBuffer();
 
 	return nResult == IDOK;
+	*/
 }
 
 #ifdef EXPORT_TEST
