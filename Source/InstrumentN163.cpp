@@ -97,7 +97,7 @@ bool CInstrumentN163::Load(CDocumentFile *pDocFile)
 			m_iSamples[i][j] = CModuleException::AssertRangeFmt(pDocFile->GetBlockChar(), 0, 15, "N163 wave sample", "%i");
 		}
 		catch (CModuleException *e) {
-			e->AppendError("At wave %i, sample %i", i, j);
+			e->AppendError("At wave %i, sample %i,", i, j);
 			throw;
 		}
 	}
@@ -140,8 +140,13 @@ bool CInstrumentN163::LoadFile(CInstrumentFile *pFile, int iVersion)
 	SetWaveCount(WaveCount);
 
 	for (int i = 0; i < WaveCount; ++i)
-		for (int j = 0; j < WaveSize; ++j)
-			SetSample(i, j, pFile->ReadChar());
+		for (int j = 0; j < WaveSize; ++j) try {
+			SetSample(i, j, CModuleException::AssertRangeFmt(pFile->ReadChar(), 0U, 15U, "N163 wave sample", "%u"));
+		}
+	catch (CModuleException *e) {
+		e->AppendError("At wave %i, sample %i,", i, j);
+		throw;
+	}
 
 	return true;
 }

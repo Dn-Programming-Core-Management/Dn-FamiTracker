@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "Instrument.h"
 #include "InstrumentVRC7.h"		// // //
+#include "ModuleException.h"		// // //
 #include "Chunk.h"
 #include "DocumentFile.h"
 
@@ -66,7 +67,7 @@ void CInstrumentVRC7::Store(CDocumentFile *pDocFile)
 
 bool CInstrumentVRC7::Load(CDocumentFile *pDocFile)
 {
-	m_iPatch = pDocFile->GetBlockInt();
+	m_iPatch = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), 0, 0xF, "VRC7 patch number", "%i");
 
 	for (int i = 0; i < 8; ++i)
 		SetCustomReg(i, pDocFile->GetBlockChar());

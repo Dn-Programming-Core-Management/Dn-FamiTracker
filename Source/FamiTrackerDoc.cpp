@@ -1384,7 +1384,7 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 				for (i = 0; i < ReadCount; i++) {
 					pOpenFile->Read(&ImportedSequence, sizeof(ImportedSequence));
 					if (ImportedSequence.Count > 0 && ImportedSequence.Count < MAX_SEQUENCE_ITEMS)
-						for (int i = 0; i < ImportedSequence.Count; ++i)		// // //
+						for (unsigned int i = 0; i < ImportedSequence.Count; ++i)		// // //
 							m_vTmpSequences[i].AddItem(ImportedSequence.Length[i], ImportedSequence.Value[i]);
 				}
 				break;
@@ -1563,7 +1563,7 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 		int Channel = GetChannelIndex(CHANID_FDS);
 		if (Channel != -1) {
 			stChanNote Note;
-			for (int t = 0; t < m_iTrackCount; ++t) for (int p = 0; p < MAX_PATTERN; ++p) for (int r = 0; r < MAX_PATTERN_LENGTH; ++r) {
+			for (unsigned int t = 0; t < m_iTrackCount; ++t) for (int p = 0; p < MAX_PATTERN; ++p) for (int r = 0; r < MAX_PATTERN_LENGTH; ++r) {
 				GetDataAtPattern(t, p, Channel, r, &Note);
 				if (Note.Note >= NOTE_C && Note.Note <= NOTE_B) {
 					int Trsp = MIDI_NOTE(Note.Octave, Note.Note) + NOTE_RANGE * 2;
@@ -1657,6 +1657,8 @@ bool CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile)
 		m_iSpeedSplitPoint = OLD_SPEED_SPLIT_POINT;
 	}
 
+	AssertRange(m_iExpansionChip, 0, 0x3F, "Expansion chip flag");
+
 	SetupChannels(m_iExpansionChip);
 
 	return false;
@@ -1679,11 +1681,15 @@ bool CFamiTrackerDoc::ReadBlock_Header(CDocumentFile *pDocFile)
 		// Single track
 		m_iTrackCount = 1;
 		CPatternData *pTrack = GetTrack(0);
-		for (unsigned int i = 0; i < m_iChannelsAvailable; ++i) {
+		for (unsigned int i = 0; i < m_iChannelsAvailable; ++i) try {
 			// Channel type (unused)
-			pDocFile->GetBlockChar();
+			AssertRange(pDocFile->GetBlockChar(), 0, CHANNELS - 1, "Channel type index");
 			// Effect columns
-			pTrack->SetEffectColumnCount(i, pDocFile->GetBlockChar());
+			pTrack->SetEffectColumnCount(i, AssertRange(pDocFile->GetBlockChar(), 0, MAX_EFFECT_COLUMNS - 1, "Effect column count"));
+		}
+		catch (CModuleException *e) {
+			e->AppendError("At channel %d", i + 1);
+			throw;
 		}
 	}
 	else if (Version >= 2) {
@@ -1691,41 +1697,36 @@ bool CFamiTrackerDoc::ReadBlock_Header(CDocumentFile *pDocFile)
 		m_iTrackCount = AssertRange(pDocFile->GetBlockChar() + 1, 1, static_cast<int>(MAX_TRACKS), "Track count");	// 0 means one track
 
 		// Add tracks to document
-		for (unsigned i = 0; i < m_iTrackCount; ++i) {
+		for (unsigned i = 0; i < m_iTrackCount; ++i)
 			AllocateTrack(i);
-		}
 
 		// Track names
-		if (Version >= 3) {
-			for (unsigned i = 0; i < m_iTrackCount; ++i) {
+		if (Version >= 3)
+			for (unsigned i = 0; i < m_iTrackCount; ++i)
 				m_sTrackNames[i] = pDocFile->ReadString();
+
+		for (unsigned i = 0; i < m_iChannelsAvailable; ++i) try {
+			AssertRange(pDocFile->GetBlockChar(), 0, CHANNELS - 1, "Channel type index"); // Channel type (unused)
+			for (unsigned j = 0; j < m_iTrackCount; ++j) try {
+				GetTrack(j)->SetEffectColumnCount(i, AssertRange(
+					pDocFile->GetBlockChar(), 0, MAX_EFFECT_COLUMNS - 1, "Effect column count"));
 			}
+			catch (CModuleException *e) {
+				e->AppendError("At effect column fx%d,", j + 1);
+				throw;
+			}
+		}
+		catch (CModuleException *e) {
+			e->AppendError("At channel %d,", i + 1);
+			throw;
 		}
 
-		for (unsigned i = 0; i < m_iChannelsAvailable; ++i) {
-			unsigned char ChannelType = pDocFile->GetBlockChar();					// Channel type (unused)
-			for (unsigned j = 0; j < m_iTrackCount; ++j) {
-				CPatternData *pTrack = GetTrack(j);
-				unsigned char ColumnCount = pDocFile->GetBlockChar();
-				pTrack->SetEffectColumnCount(i, ColumnCount);		// Effect columns
-			}
-		}
-
-		if (Version >= 4) {
-			// Read highlight settings for tracks
-			for (unsigned int i = 0; i < m_iTrackCount; ++i) {
-				CPatternData *pTrack = GetTrack(i);
-				// TODO read highlight
-				pTrack->SetHighlight(m_vHighlight);		// // //
-			}
-		}
-		else {
-			// Use global highlight
-			for (unsigned int i = 0; i < m_iTrackCount; ++i) {
-				CPatternData *pTrack = GetTrack(i);
-				pTrack->SetHighlight(m_vHighlight);		// // //
-			}
-		}
+		if (Version >= 4)
+			for (unsigned int i = 0; i < m_iTrackCount; ++i) // TODO read highlight
+				GetTrack(i)->SetHighlight(m_vHighlight);		// // //
+		else
+			for (unsigned int i = 0; i < m_iTrackCount; ++i) // Use global highlight
+				GetTrack(i)->SetHighlight(m_vHighlight);		// // //
 	}
 
 	return false;
@@ -1795,7 +1796,6 @@ bool CFamiTrackerDoc::ReadBlock_Instruments(CDocumentFile *pDocFile)
 
 bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 {
-	unsigned int ReleasePoint = -1, Settings = 0;
 	int Version = pDocFile->GetBlockVersion();
 	
 	unsigned int Count = AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES * SEQ_COUNT, "2A03 sequence count");
@@ -1846,9 +1846,9 @@ bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 					pSeq->SetLoopPoint(LoopPoint);
 
 				if (Version == 4) {
-					ReleasePoint = pDocFile->GetBlockInt();
-					Settings = pDocFile->GetBlockInt();
-					pSeq->SetReleasePoint(ReleasePoint);
+					int ReleasePoint = pDocFile->GetBlockInt();
+					int Settings = pDocFile->GetBlockInt();
+					pSeq->SetReleasePoint(AssertRange(ReleasePoint, -1, static_cast<int>(SeqCount) - 1, "Sequence release point"));
 					pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
 				}
 
@@ -2324,7 +2324,7 @@ bool CFamiTrackerDoc::ReadBlock_DetuneTables(CDocumentFile *pDocFile)
 			}
 		}
 		catch (CModuleException *e) {
-			e->AppendError("In %s detune table,", CDetuneDlg::CHIP_STR[Chip]);
+			e->AppendError("At %s detune table,", CDetuneDlg::CHIP_STR[Chip]);
 			throw;
 		}
 	}
@@ -2369,18 +2369,30 @@ bool CFamiTrackerDoc::ReadBlock_Grooves(CDocumentFile *pDocFile)
 	const int Count = AssertRange(pDocFile->GetBlockChar(), 0, MAX_GROOVE, "Groove count");
 
 	for (int i = 0; i < Count; i++) {
-		int Index = pDocFile->GetBlockChar();
-		int Size = pDocFile->GetBlockChar();
-		if (m_pGrooveTable[Index] == NULL)
-			m_pGrooveTable[Index] = new CGroove();
-		m_pGrooveTable[Index]->SetSize(Size);
-		for (int j = 0; j < Size; j++)
-			m_pGrooveTable[Index]->SetEntry(j, pDocFile->GetBlockChar());
+		int Index = AssertRange(pDocFile->GetBlockChar(), 0, MAX_GROOVE - 1, "Groove index");
+		try {
+			int Size = AssertRange(pDocFile->GetBlockChar(), 1, MAX_GROOVE_SIZE, "Groove size");
+			if (m_pGrooveTable[Index] == NULL)
+				m_pGrooveTable[Index] = new CGroove();
+			m_pGrooveTable[Index]->SetSize(Size);
+			for (int j = 0; j < Size; j++) try {
+				m_pGrooveTable[Index]->SetEntry(j, AssertRange(
+					static_cast<unsigned char>(pDocFile->GetBlockChar()), 1U, 0xFFU, "Groove item"));
+			}
+			catch (CModuleException *e) {
+				e->AppendError("At position %i,", j);
+				throw;
+			}
+		}
+		catch (CModuleException *e) {
+			e->AppendError("At groove %i,", Index);
+			throw;
+		}
 	}
 
 	//Count = pDocFile->GetBlockChar();
 	AssertFileData(pDocFile->GetBlockChar() == m_iTrackCount, "Use-groove flag count does not match track count");
-	for (unsigned i = 0; i < m_iTrackCount; ++i) {
+	for (unsigned i = 0; i < m_iTrackCount; ++i) try {
 		CPatternData *pTrack = GetTrack(i);
 		pTrack->SetSongGroove(pDocFile->GetBlockChar() == 1);
 		int Speed = pTrack->GetSongSpeed();
@@ -2388,6 +2400,10 @@ bool CFamiTrackerDoc::ReadBlock_Grooves(CDocumentFile *pDocFile)
 			AssertRange(Speed, 0, MAX_GROOVE - 1, "Track default groove index");
 		else
 			AssertRange(Speed, 1, MAX_TEMPO, "Track default speed");
+	}
+	catch (CModuleException *e) {
+		e->AppendError("At track %d,", i + 1);
+		throw;
 	}
 
 	return false;
