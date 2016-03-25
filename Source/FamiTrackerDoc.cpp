@@ -120,37 +120,6 @@ static const char INST_VERSION[] = "2.4";
 	 * 2.4 - DPCM delta counter setting
 */
 
-// Structures for loading older versions of files
-
-struct stInstrumentImport {
-	char Name[256];
-	bool Free;
-	int	 ModEnable[SEQ_COUNT];
-	int	 ModIndex[SEQ_COUNT];
-	int	 AssignedSample;				// For DPCM
-};
-
-struct stSequenceImport {
-	signed char Length[64];	// locked to 64
-	signed char Value[64];
-	int	Count;
-};
-
-struct stDSampleImport {
-	char *SampleData;
-	int	 SampleSize;
-	char Name[256];
-};
-
-struct stChanNoteImport {
-	int	Note;
-	int	Octave;
-	int	Vol;
-	int	Instrument;
-	int	ExtraStuff1;
-	int	ExtraStuff2;
-};
-
 // File blocks
 
 enum {
@@ -412,7 +381,6 @@ void CFamiTrackerDoc::DeleteContents()
 	ResetDetuneTables();		// // //
 
 	// Used for loading older files
-	m_vSequences.RemoveAll();
 	m_vTmpSequences.RemoveAll();
 
 	// Auto save
@@ -562,8 +530,6 @@ void CFamiTrackerDoc::ReorderSequences()
 
 	memset(Indices, 0xFF, MAX_SEQUENCES * SEQ_COUNT * sizeof(int));
 
-	m_vSequences.SetSize(MAX_SEQUENCES);
-
 	// Organize sequences
 	for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
 		if (auto pInst = std::dynamic_pointer_cast<CInstrument2A03>(m_pInstrumentManager->GetInstrument(i))) {		// // //
@@ -574,22 +540,16 @@ void CFamiTrackerDoc::ReorderSequences()
 						pInst->SetSeqIndex(j, Indices[Index][j]);
 					}
 					else {
-						memcpy(&m_vSequences[Slots[j]][j], &m_vTmpSequences[Index], sizeof(stSequence));
-						for (unsigned int k = 0; k < m_vSequences[Slots[j]][j].Count; ++k) {
-							switch (j) {
-								case SEQ_VOLUME: 
-									m_vSequences[Slots[j]][j].Value[k] = std::max<int>(m_vSequences[Slots[j]][j].Value[k], 0);
-									m_vSequences[Slots[j]][j].Value[k] = std::min<int>(m_vSequences[Slots[j]][j].Value[k], 15);
-									break;
-								case SEQ_DUTYCYCLE: 
-									m_vSequences[Slots[j]][j].Value[k] = std::max<int>(m_vSequences[Slots[j]][j].Value[k], 0);
-									m_vSequences[Slots[j]][j].Value[k] = std::min<int>(m_vSequences[Slots[j]][j].Value[k], 3);
-									break;
-							}
-						}
+						COldSequence Seq(m_vTmpSequences[Index]);		// // //
+						if (j == SEQ_VOLUME)
+							for (unsigned int k = 0; k < Seq.GetLength(); ++k)
+								Seq.Value[k] = std::max(std::min<int>(Seq.Value[k], 15), 0);
+						else if (j == SEQ_DUTYCYCLE)
+							for (unsigned int k = 0; k < Seq.GetLength(); ++k)
+								Seq.Value[k] = std::max(std::min<int>(Seq.Value[k], 3), 0);
 						Indices[Index][j] = Slots[j];
 						pInst->SetSeqIndex(j, Slots[j]);
-						Slots[j]++;
+						m_pInstrumentManager->SetSequence(INST_2A03, j, Slots[j]++, Seq.Convert(j));
 					}
 				}
 				else
@@ -600,22 +560,6 @@ void CFamiTrackerDoc::ReorderSequences()
 
 	// De-allocate memory
 	m_vTmpSequences.RemoveAll();
-}
-
-void CFamiTrackerDoc::ConvertSequences()
-{
-	// This function is used to convert the old type sequences to new type
-
-	for (int  i = 0; i < MAX_SEQUENCES; ++i) {
-		for (int j = 0; j < SEQ_COUNT; ++j) {
-			stSequence *pOldSeq = &m_vSequences[i][j];
-			CSequence *pNewSeq = GetSequence(INST_2A03, i, j);
-			ConvertSequence(pOldSeq, pNewSeq, j);
-		}
-	}
-
-	// De-allocate memory
-	m_vSequences.RemoveAll();
 }
 
 void CFamiTrackerDoc::AssertFileData(bool Cond, std::string Msg) const
@@ -1353,10 +1297,32 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 	m_iVibratoStyle = VIBRATO_OLD;
 	m_bLinearPitch = false;
 
-	stInstrumentImport	ImportedInstruments;
-	stSequenceImport	ImportedSequence;
-	stDSampleImport		ImportedDSample;
-	stChanNoteImport	ImportedNote;
+	// // // local structs
+	struct {
+		char Name[256];
+		bool Free;
+		int	 ModEnable[SEQ_COUNT];
+		int	 ModIndex[SEQ_COUNT];
+		int	 AssignedSample;				// For DPCM
+	} ImportedInstruments;
+	struct {
+		char Length[64];
+		char Value[64];
+		unsigned int Count;
+	} ImportedSequence;
+	struct {
+		char *SampleData;
+		int	 SampleSize;
+		char Name[256];
+	} ImportedDSample;
+	struct {
+		int	Note;
+		int	Octave;
+		int	Vol;
+		int	Instrument;
+		int	ExtraStuff1;
+		int	ExtraStuff2;
+	} ImportedNote;
 
 	while (FileBlock != FB_EOF) {
 		if (pOpenFile->Read(&FileBlock, sizeof(int)) == 0)
@@ -1387,7 +1353,7 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 				if (ReadCount > MAX_INSTRUMENTS)
 					ReadCount = MAX_INSTRUMENTS - 1;
 				for (i = 0; i < ReadCount; i++) {
-					pOpenFile->Read(&ImportedInstruments, sizeof(stInstrumentImport));
+					pOpenFile->Read(&ImportedInstruments, sizeof(ImportedInstruments));
 					if (ImportedInstruments.Free == false) {
 						CInstrument2A03 *pInst = new CInstrument2A03();
 						for (int j = 0; j < SEQ_COUNT; j++) {
@@ -1416,12 +1382,10 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 				pOpenFile->Read(&ReadCount, sizeof(int));
 				m_vTmpSequences.SetSize(ReadCount);
 				for (i = 0; i < ReadCount; i++) {
-					pOpenFile->Read(&ImportedSequence, sizeof(stSequenceImport));
-					if (ImportedSequence.Count > 0 && ImportedSequence.Count < MAX_SEQUENCE_ITEMS) {
-						m_vTmpSequences[i].Count = ImportedSequence.Count;
-						memcpy(m_vTmpSequences[i].Length, ImportedSequence.Length, ImportedSequence.Count);
-						memcpy(m_vTmpSequences[i].Value, ImportedSequence.Value, ImportedSequence.Count);
-					}
+					pOpenFile->Read(&ImportedSequence, sizeof(ImportedSequence));
+					if (ImportedSequence.Count > 0 && ImportedSequence.Count < MAX_SEQUENCE_ITEMS)
+						for (int i = 0; i < ImportedSequence.Count; ++i)		// // //
+							m_vTmpSequences[i].AddItem(ImportedSequence.Length[i], ImportedSequence.Value[i]);
 				}
 				break;
 
@@ -1443,7 +1407,7 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 				for (unsigned int x = 0; x < m_iChannelsAvailable; x++) {
 					for (c = 0; c < ReadCount; c++) {
 						for (i = 0; i < PatternLength; i++) {
-							pOpenFile->Read(&ImportedNote, sizeof(stChanNoteImport));
+							pOpenFile->Read(&ImportedNote, sizeof(ImportedNote));
 							if (ImportedNote.ExtraStuff1 == EF_PORTAOFF) {
 								ImportedNote.ExtraStuff1 = EF_PORTAMENTO;
 								ImportedNote.ExtraStuff2 = 0;
@@ -1472,7 +1436,7 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 			case FB_DSAMPLES:
 				pOpenFile->Read(&ReadCount, sizeof(int));
 				for (i = 0; i < ReadCount; i++) {
-					pOpenFile->Read(&ImportedDSample, sizeof(stDSampleImport));
+					pOpenFile->Read(&ImportedDSample, sizeof(ImportedDSample));
 					if (ImportedDSample.SampleSize != 0 && ImportedDSample.SampleSize < 0x4000) {
 						ImportedDSample.SampleData = new char[ImportedDSample.SampleSize];
 						pOpenFile->Read(ImportedDSample.SampleData, ImportedDSample.SampleSize);
@@ -1506,7 +1470,6 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 	SetupChannels(m_iExpansionChip);
 
 	ReorderSequences();
-	ConvertSequences();
 
 	pOpenFile->Close();
 
@@ -1594,9 +1557,6 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 
 	if (m_iFileVersion <= 0x0201)
 		ReorderSequences();
-
-	if (m_iFileVersion < 0x0300)
-		ConvertSequences();
 
 #ifdef TRANSPOSE_FDS
 	if (m_bAdjustFDSArpeggio) {
@@ -1846,26 +1806,24 @@ bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 			unsigned int Index = AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES - 1, "Sequence index");
 			unsigned int SeqCount = static_cast<unsigned char>(pDocFile->GetBlockChar());
 			AssertRange(SeqCount, 0U, static_cast<unsigned>(MAX_SEQUENCE_ITEMS - 1), "Sequence item count");
-			m_vTmpSequences[Index].Count = SeqCount;
 			for (unsigned int j = 0; j < SeqCount; ++j) {
-				m_vTmpSequences[Index].Value[j] = pDocFile->GetBlockChar();
-				m_vTmpSequences[Index].Length[j] = pDocFile->GetBlockChar();
+				char Value = pDocFile->GetBlockChar();
+				m_vTmpSequences[Index].AddItem(pDocFile->GetBlockChar(), Value);
 			}
 		}
 	}
 	else if (Version == 2) {
-		m_vSequences.SetSize(MAX_SEQUENCES);
 		for (unsigned int i = 0; i < Count; ++i) {
+			COldSequence Seq;		// // //
 			unsigned int Index = AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES - 1, "Sequence index");
 			unsigned int Type = AssertRange(pDocFile->GetBlockInt(), 0, SEQ_COUNT - 1, "Sequence type");
 			unsigned int SeqCount = static_cast<unsigned char>(pDocFile->GetBlockChar());
 			AssertRange(SeqCount, 0U, static_cast<unsigned>(MAX_SEQUENCE_ITEMS - 1), "Sequence item count");
-			m_vSequences[Index][Type].Count = SeqCount;
 			for (unsigned int j = 0; j < SeqCount; ++j) {
-				m_vSequences[Index][Type].Value[j] = pDocFile->GetBlockChar();
-				m_vSequences[Index][Type].Length[j] = pDocFile->GetBlockChar();
+				char Value = pDocFile->GetBlockChar();
+				Seq.AddItem(pDocFile->GetBlockChar(), Value);
 			}
-
+			m_pInstrumentManager->SetSequence(INST_2A03, Type, Index, Seq.Convert(Type));		// // //
 		}
 	}
 	else if (Version >= 3) {

@@ -121,12 +121,14 @@ struct stFullState {
 #include "PatternData.h"
 #include "InstrumentFactory.h"		// // // TODO: use Instrument.h
 #include "Sequence.h"
+#include "OldSequence.h"		// // //
 #include "Groove.h"		// // //
 #include "Bookmark.h"		// // //
 
 // External classes
 class CTrackerChannel;
 class CDocumentFile;
+class COldSequence;
 
 //
 // I'll try to organize this class, things are quite messy right now!
@@ -432,7 +434,6 @@ private:
 
 	// For file version compability
 	void			ReorderSequences();
-	void			ConvertSequences();
 
 	/*!	\brief Validates a given condition and throws an exception otherwise.
 		\details This method replaces the previous ASSERT_FILE_DATA preprocessor macro.
@@ -566,8 +567,7 @@ private:
 	stHighlight		m_vHighlight;								// // //
 
 	// Things below are for compability with older files
-	CArray<stSequence> m_vTmpSequences;
-	CArray<stSequence[SEQ_COUNT]> m_vSequences;
+	CArray<COldSequence> m_vTmpSequences;		// // //
 
 	mutable CDocumentFile *m_pCurrentDocument;		// // //
 
