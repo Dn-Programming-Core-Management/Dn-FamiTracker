@@ -20,7 +20,14 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+class CChannelHandlerInterface;
+class CInstrument;
+class CSequence;
+class CSeqInstrument;
+class CInstrumentFDS;
 
 /*!
 	\brief Class for FDS sequence instrument handlers.

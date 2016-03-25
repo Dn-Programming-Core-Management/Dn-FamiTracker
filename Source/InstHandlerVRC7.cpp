@@ -23,6 +23,7 @@
 #include <memory> // TODO: remove
 #include "stdafx.h"
 #include "Instrument.h"
+#include "InstrumentVRC7.h"
 #include "ChannelHandlerInterface.h"
 #include "InstHandler.h"
 #include "InstHandlerVRC7.h"

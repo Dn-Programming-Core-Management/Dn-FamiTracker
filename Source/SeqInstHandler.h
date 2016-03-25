@@ -20,7 +20,13 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+class CChannelHandlerInterface;
+class CInstrument;
+class CSequence;
+class CSeqInstrument;
 
 /*!
 	\brief Class for sequence instrument handlers.

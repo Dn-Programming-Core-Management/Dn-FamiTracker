@@ -20,9 +20,9 @@
 ** must bear this legend.
 */
 
-#include <vector>
 #include "stdafx.h"
 #include "Instrument.h"
+#include "InstrumentVRC7.h"		// // //
 #include "Chunk.h"
 #include "DocumentFile.h"
 

@@ -25,6 +25,7 @@
 #include "PatternData.h"		// // //
 #include "TextExporter.h"
 #include "FamiTrackerDoc.h"
+#include "InstrumentFactory.h"		// // //
 #include "../version.h"		// // //
 
 #define DEBUG_OUT(...) { CString s__; s__.Format(__VA_ARGS__); OutputDebugString(s__); }
@@ -875,7 +876,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					case CT_INSTS5B:  Type = INST_S5B; break;
 					}
 					CHECK(t.ReadInt(i,0,MAX_INSTRUMENTS-1,&sResult));
-					auto seqInst = dynamic_cast<CSeqInstrument*>(CInstrument::CreateNew(Type));		// // //
+					auto seqInst = dynamic_cast<CSeqInstrument*>(CInstrumentFactory::CreateNew(Type));		// // //
 					pDoc->AddInstrument(seqInst, i);
 					for (int s=0; s < SEQ_COUNT; ++s)
 					{
@@ -1003,7 +1004,8 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					auto pInst = std::static_pointer_cast<CInstrumentFDS>(pDoc->GetInstrument(i));
 
 					CHECK(t.ReadInt(i,0,CInstrumentFDS::SEQUENCE_COUNT-1,&sResult));
-					CSequence *pSeq = pInst->GetSequence(i);		// // //
+					CSequence *pSeq = new CSequence();		// // //
+					pInst->SetSequence(i, pSeq);
 					CHECK(t.ReadInt(i,-1,MAX_SEQUENCE_ITEMS,&sResult));
 					pSeq->SetLoopPoint(i);
 					CHECK(t.ReadInt(i,-1,MAX_SEQUENCE_ITEMS,&sResult));
@@ -1492,7 +1494,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 
 				for (int seq=0; seq < 3; ++seq)
 				{
-					CSequence* pSequence = pDI->GetSequence(seq);		// // //
+					const CSequence* pSequence = pDI->GetSequence(seq);		// // //
 					if (!pSequence || pSequence->GetItemCount() < 1) continue;
 
 					s.Format(_T("%-8s %3d %3d %3d %3d %3d :"),

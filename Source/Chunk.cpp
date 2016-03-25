@@ -19,7 +19,6 @@
 */
 
 #include <map>
-#include <vector>
 #include "stdafx.h"
 #include "chunk.h"
 

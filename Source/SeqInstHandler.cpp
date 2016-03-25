@@ -28,6 +28,7 @@
 
 #include <memory> // TODO: remove
 #include "Instrument.h"
+#include "SeqInstrument.h"
 #include "Sequence.h"
 #include "ChannelHandlerInterface.h"
 #include "InstHandler.h"

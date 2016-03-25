@@ -22,6 +22,12 @@
 
 #pragma once
 
+class CChannelHandlerInterface;
+class CInstrument;
+class CSequence;
+class CSeqInstrument;
+class CInstrumentN163;
+
 /*!
 	\brief Class for N163 sequence instrument handlers.
 	\details N163 instruments contain waveforms apart from sequence data.

@@ -23,6 +23,7 @@
 #pragma once
 
 class CChannelHandlerInterface;
+class CInstrument;
 
 /*!
 	\brief Base class for instrument handlers.

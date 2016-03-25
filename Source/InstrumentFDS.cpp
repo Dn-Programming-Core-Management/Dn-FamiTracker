@@ -24,7 +24,10 @@
 #include <memory>
 #include "stdafx.h"
 #include "Sequence.h"		// // //
+#include "ModuleException.h"		// // //
 #include "Instrument.h"
+#include "SeqInstrument.h"		// // //
+#include "InstrumentFDS.h"		// // //
 #include "Chunk.h"
 #include "ChunkRenderText.h"		// // //
 #include "DocumentFile.h"
@@ -43,10 +46,12 @@ CInstrumentFDS::CInstrumentFDS() : CSeqInstrument(INST_FDS),		// // //
 	m_iModulationDepth(0),
 	m_iModulationDelay(0),
 	m_bModulationEnable(true),
-	m_pSequence(new CSequence[5]()),
 	m_iModulation()
 {
 	memcpy(m_iSamples, TEST_WAVE, WAVE_SIZE);	
+	m_pSequence.resize(SEQ_COUNT);
+	for (int i = 0; i < SEQ_COUNT; ++i)
+		m_pSequence[i].reset(new CSequence());
 }
 
 CInstrument *CInstrumentFDS::Clone() const
@@ -62,7 +67,7 @@ CInstrument *CInstrumentFDS::Clone() const
 
 	// Copy sequences
 	for (int i = 0; i < SEQUENCE_COUNT; ++i)		// // //
-		pNewInst->GetSequence(i)->Copy(GetSequence(i));
+		m_pSequence[i]->Copy(pNewInst->GetSequence(i));
 
 	// Copy name
 	pNewInst->SetName(GetName());
@@ -74,7 +79,7 @@ void CInstrumentFDS::Setup()
 {
 }
 
-void CInstrumentFDS::StoreInstSequence(CInstrumentFile *pFile, CSequence *pSeq)
+void CInstrumentFDS::StoreInstSequence(CInstrumentFile *pFile, const CSequence *pSeq)
 {
 	// Store number of items in this sequence
 	pFile->WriteInt(pSeq->GetItemCount());
@@ -89,25 +94,25 @@ void CInstrumentFDS::StoreInstSequence(CInstrumentFile *pFile, CSequence *pSeq)
 		pFile->WriteChar(pSeq->GetItem(i));
 }
 
-bool CInstrumentFDS::LoadInstSequence(CInstrumentFile *pFile, CSequence *pSeq)
+CSequence *CInstrumentFDS::LoadInstSequence(CInstrumentFile *pFile) const
 {
-	unsigned SeqCount = pFile->ReadInt();
-	if (SeqCount > MAX_SEQUENCE_ITEMS)
-		SeqCount = MAX_SEQUENCE_ITEMS;
+	int SeqCount = CModuleException::AssertRangeFmt(pFile->ReadInt(), 0U, 0xFFU, "Sequence item count", "%u");
+	int Loop = CModuleException::AssertRangeFmt(static_cast<int>(pFile->ReadInt()), -1, SeqCount - 1, "Sequence loop point", "%u");
+	int Release = CModuleException::AssertRangeFmt(static_cast<int>(pFile->ReadInt()), -1, SeqCount - 1, "Sequence release point", "%u");
 
-	pSeq->Clear();
-	pSeq->SetItemCount(SeqCount);
-	pSeq->SetLoopPoint(pFile->ReadInt());
-	pSeq->SetReleasePoint(pFile->ReadInt());
+	CSequence *pSeq = new CSequence();
+	pSeq->SetItemCount(SeqCount > MAX_SEQUENCE_ITEMS ? MAX_SEQUENCE_ITEMS : SeqCount);
+	pSeq->SetLoopPoint(Loop);
+	pSeq->SetReleasePoint(Release);
 	pSeq->SetSetting(static_cast<seq_setting_t>(pFile->ReadInt()));		// // //
 
-	for (unsigned i = 0; i < SeqCount; ++i)
+	for (int i = 0; i < SeqCount; ++i)
 		pSeq->SetItem(i, pFile->ReadChar());
 
-	return true;
+	return pSeq;
 }
 
-void CInstrumentFDS::StoreSequence(CDocumentFile *pDocFile, CSequence *pSeq)
+void CInstrumentFDS::StoreSequence(CDocumentFile *pDocFile, const CSequence *pSeq)
 {
 	// Store number of items in this sequence
 	pDocFile->WriteBlockChar(pSeq->GetItemCount());
@@ -123,27 +128,33 @@ void CInstrumentFDS::StoreSequence(CDocumentFile *pDocFile, CSequence *pSeq)
 	}
 }
 
-bool CInstrumentFDS::LoadSequence(CDocumentFile *pDocFile, CSequence *pSeq)
+CSequence *CInstrumentFDS::LoadSequence(CDocumentFile *pDocFile) const
 {
 	int SeqCount = static_cast<unsigned char>(pDocFile->GetBlockChar());
-	unsigned int LoopPoint = pDocFile->GetBlockInt();
-	unsigned int ReleasePoint = pDocFile->GetBlockInt();
-	unsigned int Settings = pDocFile->GetBlockInt();
+	unsigned int LoopPoint = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), -1, SeqCount - 1, "Sequence loop point", "%i");;
+	unsigned int ReleasePoint = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), -1, SeqCount - 1, "Sequence release point", "%i");;
 
-	ASSERT_FILE_DATA(SeqCount <= MAX_SEQUENCE_ITEMS);
+	// CModuleException::AssertRangeFmt(SeqCount, 0, MAX_SEQUENCE_ITEMS, "Sequence item count", "%i");
 
-	pSeq->Clear();
-	pSeq->SetItemCount(SeqCount);
+	CSequence *pSeq = new CSequence();
+	pSeq->SetItemCount(SeqCount > MAX_SEQUENCE_ITEMS ? MAX_SEQUENCE_ITEMS : SeqCount);
 	pSeq->SetLoopPoint(LoopPoint);
 	pSeq->SetReleasePoint(ReleasePoint);
-	pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
+	pSeq->SetSetting(static_cast<seq_setting_t>(pDocFile->GetBlockInt()));		// // //
 
 	for (int x = 0; x < SeqCount; ++x) {
 		char Value = pDocFile->GetBlockChar();
 		pSeq->SetItem(x, Value);
 	}
 
-	return true;
+	return pSeq;
+}
+
+void CInstrumentFDS::DoubleVolume() const
+{
+	CSequence *pVol = m_pSequence[SEQ_VOLUME].get();
+	for (unsigned int i = 0; i < pVol->GetItemCount(); ++i)
+		pVol->SetItem(i, pVol->GetItem(i) * 2);
 }
 
 void CInstrumentFDS::Store(CDocumentFile *pDocFile)
@@ -199,25 +210,21 @@ bool CInstrumentFDS::Load(CDocumentFile *pDocFile)
 	if (a < 256 && (b & 0xFF) != 0x00) {
 	}
 	else {
-		LoadSequence(pDocFile, GetSequence(SEQ_VOLUME));
-		LoadSequence(pDocFile, GetSequence(SEQ_ARPEGGIO));
+		SetSequence(SEQ_VOLUME, LoadSequence(pDocFile));
+		SetSequence(SEQ_ARPEGGIO, LoadSequence(pDocFile));
 		//
 		// Note: Remove this line when files are unable to load 
 		// (if a file contains FDS instruments but FDS is disabled)
 		// this was a problem in an earlier version.
 		//
 		if (pDocFile->GetBlockVersion() > 2)
-			LoadSequence(pDocFile, GetSequence(SEQ_PITCH));
+			SetSequence(SEQ_PITCH, LoadSequence(pDocFile));
 	}
 
 //	}
 
 	// Older files was 0-15, new is 0-31
-	if (pDocFile->GetBlockVersion() <= 3) {
-		CSequence *pVol = GetSequence(SEQ_VOLUME);
-		for (unsigned int i = 0; i < pVol->GetItemCount(); ++i)
-			pVol->SetItem(i, pVol->GetItem(i) * 2);
-	}
+	if (pDocFile->GetBlockVersion() <= 3) DoubleVolume();
 
 	return true;
 }
@@ -263,13 +270,9 @@ bool CInstrumentFDS::LoadFile(CInstrumentFile *pFile, int iVersion)
 
 	// Sequences
 	for (int i = 0; i < SEQUENCE_COUNT; ++i)		// // //
-		LoadInstSequence(pFile, GetSequence(i));
+		SetSequence(i, LoadInstSequence(pFile));
 
-	if (iVersion <= 22) {
-		CSequence *pVol = GetSequence(SEQ_VOLUME);
-		for (unsigned int i = 0; i < pVol->GetItemCount(); ++i)
-			pVol->SetItem(i, pVol->GetItem(i) * 2);
-	}
+	if (iVersion <= 22) DoubleVolume();
 
 	return true;
 }
@@ -316,7 +319,7 @@ int CInstrumentFDS::Compile(CChunk *pChunk, int Index)
 
 bool CInstrumentFDS::CanRelease() const
 {
-	CSequence *pVol = GetSequence(SEQ_VOLUME);
+	const CSequence *pVol = GetSequence(SEQ_VOLUME);
 	return pVol && pVol->GetItemCount() && pVol->GetReleasePoint() != -1;
 }
 
@@ -412,5 +415,10 @@ void CInstrumentFDS::SetSeqIndex(int Index, int Value)
 
 CSequence *CInstrumentFDS::GetSequence(int SeqType) const		// // //
 {
-	return &m_pSequence[SeqType];
+	return m_pSequence[SeqType].get();
+}
+
+void CInstrumentFDS::SetSequence(int SeqType, CSequence *pSeq)
+{
+	m_pSequence[SeqType].reset(pSeq);
 }

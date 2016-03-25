@@ -24,7 +24,7 @@
 #include <memory>		// // //
 #include "stdafx.h"
 #include "APU/Types.h"
-#include "Instrument.h"
+#include "InstrumentFactory.h"		// // //
 #include "TrackerChannel.h"
 #include "ChannelMap.h"
 
@@ -98,7 +98,7 @@ CInstrument* CChannelMap::GetChipInstrument(int Chip) const
 	// Get instrument from chip ID
 	int Index = GetChipIndex(Chip);
 
-	return CInstrument::CreateNew(m_iChipInstType[Index]);		// // //
+	return CInstrumentFactory::CreateNew(m_iChipInstType[Index]);		// // //
 }
 
 // Todo move enabled module channels here

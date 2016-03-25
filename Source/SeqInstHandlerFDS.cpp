@@ -24,6 +24,8 @@
 #include "stdafx.h"
 #include "Sequence.h"
 #include "Instrument.h"
+#include "SeqInstrument.h"
+#include "InstrumentFDS.h"
 #include "ChannelHandlerInterface.h"
 #include "InstHandler.h"
 #include "SeqInstHandler.h"

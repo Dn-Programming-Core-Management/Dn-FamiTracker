@@ -25,6 +25,8 @@
 #include "stdafx.h"
 #include "resource.h"		// // //
 #include "Instrument.h"
+#include "SeqInstrument.h"		// // //
+#include "InstrumentFDS.h"		// // //
 #include "Sequence.h"
 #include "InstrumentEditPanel.h"
 #include "SequenceEditor.h"

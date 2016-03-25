@@ -24,6 +24,8 @@
 #include "ModuleException.h"		// // //
 #include "InstrumentManagerInterface.h"		// // //
 #include "Instrument.h"
+#include "SeqInstrument.h"
+#include "Instrument2A03.h"
 #include "DocumentFile.h"
 
 // 2A03 instruments
@@ -240,7 +242,7 @@ bool CInstrument2A03::LoadFile(CInstrumentFile *pFile, int iVersion)
 		pSample->SetData(Size, SampleData);
 		int FreeSample = m_pInstManager->AddDSample(pSample);
 		if (FreeSample == -1) {
-			delete pSample;
+			SAFE_RELEASE(pSample);
 			CModuleException *e = new CModuleException();
 			e->AppendError("Document has no free DPCM sample slot");
 			e->Raise();

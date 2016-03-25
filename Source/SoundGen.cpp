@@ -50,6 +50,7 @@
 #include "ChannelsFDS.h"
 #include "ChannelsN163.h"
 #include "ChannelsS5B.h"
+#include "InstrumentFactory.h"		// // //
 #include "SoundGen.h"
 #include "Settings.h"
 #include "TrackerChannel.h"
@@ -399,7 +400,7 @@ void CSoundGen::InstrumentRecorder::InitRecordInstrument()
 	case SNDCHIP_N163: Type = INST_N163; break;
 	case SNDCHIP_S5B:  Type = INST_S5B; break;
 	}
-	*m_pDumpInstrument = CInstrument::CreateNew(Type);		// // //
+	*m_pDumpInstrument = CInstrumentFactory::CreateNew(Type);		// // //
 	if (!*m_pDumpInstrument) return;
 
 	CString str;
@@ -440,20 +441,22 @@ void CSoundGen::InstrumentRecorder::FinalizeRecordInstrument()
 	if (Inst != NULL) for (int i = 0; i < SEQ_COUNT; i++) {
 		if (Inst->GetSeqEnable(i) != 0) {
 			m_pSequenceCache[i]->SetLoopPoint(m_pSequenceCache[i]->GetItemCount() - 1);
-			Inst->GetSequence(i)->Copy(m_pSequenceCache[i]);
+			Inst->SetSequence(i, m_pSequenceCache[i]);
 		}
-		m_pSequenceCache[i]->Clear();
+		m_pSequenceCache[i] = new CSequence();
 	}
 	switch (InstType) {
 	case INST_FDS:
 		ASSERT(FDSInst != NULL);
+		/*
 		for (int i = 0; i < CInstrumentFDS::SEQUENCE_COUNT; i++) {
-			CSequence *Seq = FDSInst->GetSequence(i);
+			const CSequence *Seq = FDSInst->GetSequence(i);
 			ASSERT(Seq != NULL);
 			m_pSequenceCache[i]->SetLoopPoint(m_pSequenceCache[i]->GetItemCount() - 1);
-			Seq->Copy(m_pSequenceCache[i]);
-			m_pSequenceCache[i]->Clear();
+			FDSInst->SetSequence(i, m_pSequenceCache[i]);
+			m_pSequenceCache[i] = new CSequence();
 		}
+		*/
 		for (int i = 0; i < CInstrumentFDS::WAVE_SIZE; i++)
 			FDSInst->SetSample(i, 0x3F & m_pSoundGen->GetReg(SNDCHIP_FDS, i));
 		FDSInst->SetModulationDepth(0x3F & m_pSoundGen->GetReg(SNDCHIP_FDS, 0x44));

@@ -27,6 +27,7 @@
 #include "stdafx.h"
 #include "resource.h"		// // //
 #include "Instrument.h"
+#include "InstrumentVRC7.h"		// // //
 #include "InstrumentEditPanel.h"
 #include "InstrumentEditorVRC7.h"
 #include "Clipboard.h"

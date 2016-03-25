@@ -3006,7 +3006,7 @@ int CFamiTrackerDoc::DeepCloneInstrument(unsigned int Index)
 		const inst_type_t it = newInst->GetType();
 		if (auto pInstrument = std::dynamic_pointer_cast<CSeqInstrument>(newInst)) {
 			for (int i = 0; i < SEQ_COUNT; i++) {
-				int freeSeq = GetFreeSequence(it, i);
+				int freeSeq = m_pInstrumentManager->GetFreeSequenceIndex(it, i, pInstrument.get());
 				if (freeSeq != -1) {
 					if (pInstrument->GetSeqEnable(i))
 						GetSequence(it, unsigned(freeSeq), i)->Copy(pInstrument->GetSequence(i));

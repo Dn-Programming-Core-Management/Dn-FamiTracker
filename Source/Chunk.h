@@ -23,6 +23,7 @@
 #pragma once
 
 // std::vector is required by this header file
+#include <vector>		// // //
 
 
 // Helper classes/objects for NSF compiling

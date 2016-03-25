@@ -20,7 +20,12 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+class CChannelHandlerInterface;
+class CInstrument;
+class CInstrumentVRC7;
 
 class CInstHandlerVRC7 : public CInstHandler
 {

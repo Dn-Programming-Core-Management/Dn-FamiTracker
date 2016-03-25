@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -20,8 +20,28 @@
 ** must bear this legend.
 */
 
-// // // CInstrumentVRC6 is a subtype of CSeqInstrument.
-#include "stdafx.h" // CFile
-#include "Instrument.h"
-#include "SeqInstrument.h"
-#include "InstrumentVRC6.h"
+#pragma once
+
+
+class CInstrumentVRC7 : public CInstrument {
+public:
+	CInstrumentVRC7();
+	CInstrument* Clone() const;
+	void	Setup();
+	void	Store(CDocumentFile *pDocFile);
+	bool	Load(CDocumentFile *pDocFile);
+	void	SaveFile(CInstrumentFile *pFile);
+	bool	LoadFile(CInstrumentFile *pFile, int iVersion);
+	int		Compile(CChunk *pChunk, int Index);
+	bool	CanRelease() const;
+
+public:
+	void		 SetPatch(unsigned int Patch);
+	unsigned int GetPatch() const;
+	void		 SetCustomReg(int Reg, unsigned char Value);		// // //
+	unsigned char GetCustomReg(int Reg) const;		// // //
+
+private:
+	unsigned int m_iPatch;
+	unsigned char m_iRegs[8];		// // // Custom patch settings
+};

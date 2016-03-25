@@ -126,7 +126,7 @@ private:
 	void	CreateSampleList();
 	void	CreateFrameList(unsigned int Track);
 
-	int		StoreSequence(CSequence *pSeq, CStringA &label);
+	int		StoreSequence(const CSequence *pSeq, CStringA &label);
 	void	StoreSamples();
 	void	StoreGrooves();		// // //
 	void	StoreSongs();

@@ -25,6 +25,8 @@
 #include <memory>
 #include <afxmt.h>
 #include "Instrument.h"
+#include "SeqInstrument.h"
+#include "InstrumentFactory.h"
 #include "InstrumentManager.h"
 #include "Sequence.h"
 #include "SequenceCollection.h"
@@ -35,10 +37,9 @@ const int CInstrumentManager::MAX_INSTRUMENTS = 64;
 const int CInstrumentManager::SEQ_MANAGER_COUNT = 5;
 
 CInstrumentManager::CInstrumentManager() :
-	m_pDSampleManager(std::unique_ptr<CDSampleManager>(new CDSampleManager()))
+	m_pDSampleManager(new CDSampleManager()),
+	m_pInstruments(MAX_INSTRUMENTS)
 {
-	m_pInstruments.resize(MAX_INSTRUMENTS);
-
 	for (int i = 0; i < SEQ_MANAGER_COUNT; i++)
 		m_pSequenceManager.push_back(std::unique_ptr<CSequenceManager>(new CSequenceManager(i == 2 ? 3 : SEQ_COUNT)));
 }
@@ -57,7 +58,7 @@ std::shared_ptr<CInstrument> CInstrumentManager::GetInstrument(unsigned int Inde
 
 std::shared_ptr<CInstrument> CInstrumentManager::CreateNew(inst_type_t InstType)
 {
-	return std::shared_ptr<CInstrument>(CInstrument::CreateNew(InstType));
+	return std::shared_ptr<CInstrument>(CInstrumentFactory::CreateNew(InstType));
 }
 
 bool CInstrumentManager::InsertInstrument(unsigned int Index, CInstrument *pInst)

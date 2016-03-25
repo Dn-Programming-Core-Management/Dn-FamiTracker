@@ -68,13 +68,6 @@ enum cursor_column_t : unsigned int {
 
 const unsigned int COLUMNS = 7;
 
-// Special assert used when loading files
-#ifdef _DEBUG
-	#define ASSERT_FILE_DATA(Statement) ASSERT(Statement)
-#else
-	#define ASSERT_FILE_DATA(Statement) if (!(Statement)) return true
-#endif
-
 // View update modes (TODO check these and remove inappropriate flags)
 enum {
 	UPDATE_NONE = 0,		// No update
@@ -126,7 +119,7 @@ struct stFullState {
 
 // Access data types used by the document class
 #include "PatternData.h"
-#include "Instrument.h"
+#include "InstrumentFactory.h"		// // // TODO: use Instrument.h
 #include "Sequence.h"
 #include "Groove.h"		// // //
 #include "Bookmark.h"		// // //

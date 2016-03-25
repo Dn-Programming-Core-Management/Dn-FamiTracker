@@ -1588,7 +1588,7 @@ void CCompiler::CreateSequenceList()
 	for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
 		if (auto pInstrument = std::dynamic_pointer_cast<CInstrumentFDS>(m_pDocument->GetInstrument(i))) {
 			for (int j = 0; j < CInstrumentFDS::SEQUENCE_COUNT; ++j) {
-				CSequence* pSeq = pInstrument->GetSequence(j);		// // //
+				const CSequence* pSeq = pInstrument->GetSequence(j);		// // //
 				if (pSeq->GetItemCount() > 0) {
 					int Index = i * SEQ_COUNT + j;
 					CStringA label;
@@ -1603,7 +1603,7 @@ void CCompiler::CreateSequenceList()
 	Print(_T(" * Sequences used: %i (%i bytes)\n"), StoredCount, Size);
 }
 
-int CCompiler::StoreSequence(CSequence *pSeq, CStringA &label)
+int CCompiler::StoreSequence(const CSequence *pSeq, CStringA &label)
 {
 	CChunk *pChunk = CreateChunk(CHUNK_SEQUENCE, label);
 	m_vSequenceChunks.push_back(pChunk);

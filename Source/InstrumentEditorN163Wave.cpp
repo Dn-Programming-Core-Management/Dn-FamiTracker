@@ -32,6 +32,7 @@
 #include "FamiTrackerView.h"
 #include "InstrumentEditPanel.h"
 #include "InstrumentEditorN163Wave.h"
+#include "InstrumentN163.h"		// // //
 #include "MainFrm.h"
 #include "SoundGen.h"
 #include "Clipboard.h"

@@ -23,7 +23,8 @@
 #include "stdafx.h"
 #include "resource.h"		// // //
 #include "FamiTrackerDoc.h"
-//#include "Instrument.h"
+#include "Instrument.h"
+#include "SeqInstrument.h"		// // //
 #include "InstrumentEditPanel.h"
 #include "SequenceEditor.h"
 #include "InstrumentEditorSeq.h"
