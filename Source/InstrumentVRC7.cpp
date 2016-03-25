@@ -22,9 +22,7 @@
 
 #include <vector>
 #include "stdafx.h"
-#include "FamiTrackerDoc.h"
 #include "Instrument.h"
-#include "Compiler.h"
 #include "Chunk.h"
 #include "DocumentFile.h"
 

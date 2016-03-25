@@ -20,14 +20,13 @@
 ** must bear this legend.
 */
 
-#include <map>
 #include <vector>
 #include <memory>
 #include "stdafx.h"
-#include "FamiTrackerDoc.h"
+#include "Sequence.h"		// // //
 #include "Instrument.h"
-#include "Compiler.h"
 #include "Chunk.h"
+#include "ChunkRenderText.h"		// // //
 #include "DocumentFile.h"
 
 const char TEST_WAVE[] = {
@@ -44,10 +43,10 @@ CInstrumentFDS::CInstrumentFDS() : CSeqInstrument(INST_FDS),		// // //
 	m_iModulationDepth(0),
 	m_iModulationDelay(0),
 	m_bModulationEnable(true),
-	m_pSequence(new CSequence[5]())
+	m_pSequence(new CSequence[5]()),
+	m_iModulation()
 {
 	memcpy(m_iSamples, TEST_WAVE, WAVE_SIZE);	
-	memset(m_iModulation, 0, MOD_SIZE);
 }
 
 CInstrument *CInstrumentFDS::Clone() const
@@ -298,7 +297,7 @@ int CInstrumentFDS::Compile(CChunk *pChunk, int Index)
 
 	for (int i = 0; i < SEQUENCE_COUNT; ++i)
 		if (Switch & (1 << i)) {
-			str.Format(CCompiler::LABEL_SEQ_FDS, Index * 5 + i);
+			str.Format(CChunkRenderText::LABEL_SEQ_FDS, Index * 5 + i);
 			pChunk->StoreReference(str);
 		}
 

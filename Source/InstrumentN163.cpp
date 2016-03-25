@@ -22,30 +22,27 @@
 
 #include "stdafx.h"
 #include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
+#include "FamiTrackerDoc.h" // ASSERT_FILE_DATA
 #include "DocumentFile.h"
 #include "Instrument.h"
-#include "Compiler.h"
 #include "Chunk.h"
+#include "ChunkRenderText.h"		// // //
 
-CInstrumentN163::CInstrumentN163() : CSeqInstrument(INST_N163)		// // //
+// // // Default wave
+static const char TRIANGLE_WAVE[] = {
+	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 
+	15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+};
+static const int DEFAULT_WAVE_SIZE = sizeof(TRIANGLE_WAVE) / sizeof(char);
+
+CInstrumentN163::CInstrumentN163() : CSeqInstrument(INST_N163),		// // //
+	m_iSamples(),
+	m_iWaveSize(DEFAULT_WAVE_SIZE),
+	m_iWavePos(0),
+	m_iWaveCount(1)
 {
-	// Default wave
-	static const char TRIANGLE_WAVE[] = {
-		0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 
-		15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
-	};
-
-	const int DEFAULT_WAVE_SIZE = 32;
-
-	memset(m_iSamples, 0, sizeof(int) * MAX_WAVE_COUNT * MAX_WAVE_SIZE);		// // //
-	for (int j = 0; j < sizeof(TRIANGLE_WAVE) / sizeof(char); ++j) {
+	for (int j = 0; j < DEFAULT_WAVE_SIZE; ++j)
 		m_iSamples[0][j] = TRIANGLE_WAVE[j];
-	}
-
-	m_iWaveSize = DEFAULT_WAVE_SIZE;
-	m_iWavePos = 0;
-	m_iWaveCount = 1;
 }
 
 CInstrument *CInstrumentN163::Clone() const
@@ -168,7 +165,7 @@ int CInstrumentN163::Compile(CChunk *pChunk, int Index)
 
 	// Store reference to wave
 	CStringA waveLabel;
-	waveLabel.Format(CCompiler::LABEL_WAVES, Index);
+	waveLabel.Format(CChunkRenderText::LABEL_WAVES, Index);
 	pChunk->StoreReference(waveLabel);
 	StoredBytes += 2;
 	

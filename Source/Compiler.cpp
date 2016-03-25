@@ -108,27 +108,6 @@ const int CCompiler::DPCM_SWITCH_ADDRESS		= 0xF000;	// Switch to new banks when 
 
 const bool CCompiler::LAST_BANK_FIXED			= true;		// Fix for TNS carts
 
-// Assembly labels
-const char CCompiler::LABEL_SONG_LIST[]			= "ft_song_list";
-const char CCompiler::LABEL_INSTRUMENT_LIST[]	= "ft_instrument_list";
-const char CCompiler::LABEL_SAMPLES_LIST[]		= "ft_sample_list";
-const char CCompiler::LABEL_SAMPLES[]			= "ft_samples";
-const char CCompiler::LABEL_GROOVE_LIST[]		= "ft_groove_list";			// // //
-const char CCompiler::LABEL_GROOVE[]			= "ft_groove_%i";			// // // one argument
-const char CCompiler::LABEL_WAVETABLE[]			= "ft_wave_table";
-const char CCompiler::LABEL_SAMPLE[]			= "ft_sample_%i";			// one argument
-const char CCompiler::LABEL_WAVES[]				= "ft_waves_%i";			// one argument
-const char CCompiler::LABEL_SEQ_2A03[]			= "ft_seq_2a03_%i";			// one argument
-const char CCompiler::LABEL_SEQ_VRC6[]			= "ft_seq_vrc6_%i";			// one argument
-const char CCompiler::LABEL_SEQ_FDS[]			= "ft_seq_fds_%i";			// one argument
-const char CCompiler::LABEL_SEQ_N163[]			= "ft_seq_n163_%i";			// one argument
-const char CCompiler::LABEL_SEQ_S5B[]			= "ft_seq_s5b_%i";			// // // one argument
-const char CCompiler::LABEL_INSTRUMENT[]		= "ft_inst_%i";				// one argument
-const char CCompiler::LABEL_SONG[]				= "ft_song_%i";				// one argument
-const char CCompiler::LABEL_SONG_FRAMES[]		= "ft_s%i_frames";			// one argument
-const char CCompiler::LABEL_SONG_FRAME[]		= "ft_s%if%i";				// two arguments
-const char CCompiler::LABEL_PATTERN[]			= "ft_s%ip%ic%i";			// three arguments
-
 // Flag byte flags
 const int CCompiler::FLAG_BANKSWITCHED	= 1 << 0;
 const int CCompiler::FLAG_VIBRATO		= 1 << 1;
@@ -1550,18 +1529,18 @@ void CCompiler::CreateMainHeader()
 
 	// Write header
 
-	pChunk->StoreReference(LABEL_SONG_LIST);
-	pChunk->StoreReference(LABEL_INSTRUMENT_LIST);
-	pChunk->StoreReference(LABEL_SAMPLES_LIST);
-	pChunk->StoreReference(LABEL_SAMPLES);
-	pChunk->StoreReference(LABEL_GROOVE_LIST);		// // //
+	pChunk->StoreReference(CChunkRenderText::LABEL_SONG_LIST);
+	pChunk->StoreReference(CChunkRenderText::LABEL_INSTRUMENT_LIST);
+	pChunk->StoreReference(CChunkRenderText::LABEL_SAMPLES_LIST);
+	pChunk->StoreReference(CChunkRenderText::LABEL_SAMPLES);
+	pChunk->StoreReference(CChunkRenderText::LABEL_GROOVE_LIST);		// // //
 	
 	m_iHeaderFlagOffset = pChunk->GetLength();		// Save the flags offset
 	pChunk->StoreByte(Flags);
 
 	// FDS table, only if FDS is enabled
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_FDS))
-		pChunk->StoreReference(LABEL_WAVETABLE);
+		pChunk->StoreReference(CChunkRenderText::LABEL_WAVETABLE);
 
 	pChunk->StoreWord(DividerNTSC);
 	pChunk->StoreWord(DividerPAL);
@@ -1586,7 +1565,10 @@ void CCompiler::CreateSequenceList()
 	unsigned int Size = 0, StoredCount = 0;
 	static const inst_type_t inst[] = {INST_2A03, INST_VRC6, INST_N163, INST_S5B};
 	const bool *used[] = {*m_bSequencesUsed2A03, *m_bSequencesUsedVRC6, *m_bSequencesUsedN163, *m_bSequencesUsedS5B};
-	static const char *format[] = {LABEL_SEQ_2A03, LABEL_SEQ_VRC6, LABEL_SEQ_N163, LABEL_SEQ_S5B};
+	static const char *format[] = {
+		CChunkRenderText::LABEL_SEQ_2A03, CChunkRenderText::LABEL_SEQ_VRC6,
+		CChunkRenderText::LABEL_SEQ_N163, CChunkRenderText::LABEL_SEQ_S5B
+	};
 
 	// TODO: use the CSeqInstrument::GetSequence
 	// TODO: merge identical sequences from all chips
@@ -1610,7 +1592,7 @@ void CCompiler::CreateSequenceList()
 				if (pSeq->GetItemCount() > 0) {
 					int Index = i * SEQ_COUNT + j;
 					CStringA label;
-					label.Format(LABEL_SEQ_FDS, Index);
+					label.Format(CChunkRenderText::LABEL_SEQ_FDS, Index);
 					Size += StoreSequence(pSeq, label);
 					++StoredCount;
 				}
@@ -1669,10 +1651,10 @@ void CCompiler::CreateInstrumentList()
 	CChunk *pWavesChunk = NULL;		// N163
 	int iWaveSize = 0;				// N163 waves size
 
-	CChunk *pInstListChunk = CreateChunk(CHUNK_INSTRUMENT_LIST, LABEL_INSTRUMENT_LIST);
+	CChunk *pInstListChunk = CreateChunk(CHUNK_INSTRUMENT_LIST, CChunkRenderText::LABEL_INSTRUMENT_LIST);
 	
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_FDS)) {
-		pWavetableChunk = CreateChunk(CHUNK_WAVETABLE, LABEL_WAVETABLE);
+		pWavetableChunk = CreateChunk(CHUNK_WAVETABLE, CChunkRenderText::LABEL_WAVETABLE);
 	}
 
 	memset(m_iWaveBanks, -1, MAX_INSTRUMENTS * sizeof(int));
@@ -1695,7 +1677,7 @@ void CCompiler::CreateInstrumentList()
 				m_iWaveBanks[i] = iIndex;
 				// Store wave
 				CStringA label;
-				label.Format(LABEL_WAVES, iIndex);
+				label.Format(CChunkRenderText::LABEL_WAVES, iIndex);
 				pWavesChunk = CreateChunk(CHUNK_WAVES, label);
 				// Store waves
 				iWaveSize += pInstrument->StoreWave(pWavesChunk);
@@ -1707,7 +1689,7 @@ void CCompiler::CreateInstrumentList()
 	for (unsigned int i = 0; i < m_iInstruments; ++i) {
 		// Add reference to instrument list
 		CStringA label;
-		label.Format(LABEL_INSTRUMENT, i);
+		label.Format(CChunkRenderText::LABEL_INSTRUMENT, i);
 		pInstListChunk->StoreReference(label);
 		iTotalSize += 2;
 
@@ -1765,7 +1747,7 @@ void CCompiler::CreateSampleList()
 	// Clear the sample list
 	memset(m_iSampleBank, 0xFF, MAX_DSAMPLES);
 	
-	CChunk *pChunk = CreateChunk(CHUNK_SAMPLE_LIST, LABEL_SAMPLES_LIST);
+	CChunk *pChunk = CreateChunk(CHUNK_SAMPLE_LIST, CChunkRenderText::LABEL_SAMPLES_LIST);
 
 	// Store sample instruments
 	unsigned int Item = 0;
@@ -1815,7 +1797,7 @@ void CCompiler::StoreSamples()
 	// Get sample start address
 	m_iSamplesSize = 0;
 
-	CChunk *pChunk = CreateChunk(CHUNK_SAMPLE_POINTERS, LABEL_SAMPLES);
+	CChunk *pChunk = CreateChunk(CHUNK_SAMPLE_POINTERS, CChunkRenderText::LABEL_SAMPLES);
 	m_pSamplePointersChunk = pChunk;
 
 	// Store DPCM samples in a separate array
@@ -1879,7 +1861,7 @@ void CCompiler::StoreGrooves()
 
 	unsigned int Size = 1, Count = 0;
 	
-	CChunk *pGrooveListChunk = CreateChunk(CHUNK_GROOVE_LIST, LABEL_GROOVE_LIST);
+	CChunk *pGrooveListChunk = CreateChunk(CHUNK_GROOVE_LIST, CChunkRenderText::LABEL_GROOVE_LIST);
 	pGrooveListChunk->StoreByte(0); // padding; possibly used to disable groove
 
 	for (int i = 0; i < MAX_GROOVE; i++) {
@@ -1888,7 +1870,7 @@ void CCompiler::StoreGrooves()
 		if (Groove == NULL) continue;
 		
 		CStringA label;
-		label.Format(LABEL_GROOVE, i);
+		label.Format(CChunkRenderText::LABEL_GROOVE, i);
 		// pGrooveListChunk->StoreReference(label);
 
 		CChunk *pChunk = CreateChunk(CHUNK_GROOVE, label);
@@ -1917,7 +1899,7 @@ void CCompiler::StoreSongs()
 
 	const int TrackCount = m_pDocument->GetTrackCount();
 
-	CChunk *pSongListChunk = CreateChunk(CHUNK_SONG_LIST, LABEL_SONG_LIST);
+	CChunk *pSongListChunk = CreateChunk(CHUNK_SONG_LIST, CChunkRenderText::LABEL_SONG_LIST);
 
 	m_iDuplicatePatterns = 0;
 
@@ -1925,7 +1907,7 @@ void CCompiler::StoreSongs()
 	for (int i = 0; i < TrackCount; ++i) {
 		// Add reference to song list
 		CStringA label;
-		label.Format(LABEL_SONG, i);
+		label.Format(CChunkRenderText::LABEL_SONG, i);
 		pSongListChunk->StoreReference(label);
 
 		// Create song
@@ -1933,7 +1915,7 @@ void CCompiler::StoreSongs()
 		m_vSongChunks.push_back(pChunk);
 
 		// Store reference to song
-		label.Format(LABEL_SONG_FRAMES, i);
+		label.Format(CChunkRenderText::LABEL_SONG_FRAMES, i);
 		pChunk->StoreReference(label);
 		pChunk->StoreByte(m_pDocument->GetFrameCount(i));
 		pChunk->StoreByte(m_pDocument->GetPatternLength(i));
@@ -2004,7 +1986,7 @@ void CCompiler::CreateFrameList(unsigned int Track)
 
 	// Create frame list
 	CStringA label;
-	label.Format(LABEL_SONG_FRAMES, Track);
+	label.Format(CChunkRenderText::LABEL_SONG_FRAMES, Track);
 	CChunk *pFrameListChunk = CreateChunk(CHUNK_FRAME_LIST, label);
 
 	unsigned int TotalSize = 0;
@@ -2012,7 +1994,7 @@ void CCompiler::CreateFrameList(unsigned int Track)
 	// Store addresses to patterns
 	for (int i = 0; i < FrameCount; ++i) {
 		// Add reference to frame list
-		label.Format(LABEL_SONG_FRAME, Track, i);
+		label.Format(CChunkRenderText::LABEL_SONG_FRAME, Track, i);
 		pFrameListChunk->StoreReference(label);
 		TotalSize += 2;
 
@@ -2024,7 +2006,7 @@ void CCompiler::CreateFrameList(unsigned int Track)
 		for (int j = 0; j < ChannelCount; ++j) {
 			int Chan = m_vChanOrder[j];
 			int Pattern = m_pDocument->GetPatternAtFrame(Track, i, Chan);
-			label.Format(LABEL_PATTERN, Track, Pattern, Chan);
+			label.Format(CChunkRenderText::LABEL_PATTERN, Track, Pattern, Chan);
 			pChunk->StoreReference(label);
 			TotalSize += 2;
 		}
@@ -2061,7 +2043,7 @@ void CCompiler::StorePatterns(unsigned int Track)
 				PatternCompiler.CompileData(Track, i, j);
 
 				CStringA label;
-				label.Format(LABEL_PATTERN, Track, i, j);
+				label.Format(CChunkRenderText::LABEL_PATTERN, Track, i, j);
 
 				bool StoreNew = true;
 

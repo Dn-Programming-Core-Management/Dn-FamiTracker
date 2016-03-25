@@ -42,6 +42,28 @@ public:
 	void StoreChunks(const std::vector<CChunk*> &Chunks);
 	void StoreSamples(const std::vector<const CDSample*> &Samples);
 
+	// Labels
+	// // // moved from CCompiler
+	static const char LABEL_SONG_LIST[];
+	static const char LABEL_INSTRUMENT_LIST[];
+	static const char LABEL_SAMPLES_LIST[];
+	static const char LABEL_SAMPLES[];
+	static const char LABEL_GROOVE_LIST[];		// // //
+	static const char LABEL_GROOVE[];		// // //
+	static const char LABEL_WAVETABLE[];
+	static const char LABEL_SAMPLE[];
+	static const char LABEL_WAVES[];
+	static const char LABEL_SEQ_2A03[];
+	static const char LABEL_SEQ_VRC6[];
+	static const char LABEL_SEQ_FDS[];
+	static const char LABEL_SEQ_N163[];
+	static const char LABEL_SEQ_S5B[];		// // //
+	static const char LABEL_INSTRUMENT[];
+	static const char LABEL_SONG[];
+	static const char LABEL_SONG_FRAMES[];
+	static const char LABEL_SONG_FRAME[];
+	static const char LABEL_PATTERN[];
+
 private:
 	static const stChunkRenderFunc RENDER_FUNCTIONS[];
 

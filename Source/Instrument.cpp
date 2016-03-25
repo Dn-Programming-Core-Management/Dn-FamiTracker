@@ -28,8 +28,8 @@
 #include "Sequence.h"		// // //
 #include "Instrument.h"
 #include "DocumentFile.h"
-#include "Compiler.h"
 #include "Chunk.h"
+#include "ChunkRenderText.h"		// // //
 
 /*
  * Class CInstrument, base class for instruments
@@ -127,12 +127,10 @@ unsigned char CInstrumentFile::ReadChar()
  * Base class for instruments using sequences
  */
 
-CSeqInstrument::CSeqInstrument(inst_type_t type) : CInstrument(type)
+CSeqInstrument::CSeqInstrument(inst_type_t type) : CInstrument(type),
+	m_iSeqEnable(),
+	m_iSeqIndex()
 {
-	for (int i = 0; i < SEQ_COUNT; ++i) {
-		m_iSeqEnable[i] = 0;
-		m_iSeqIndex[i] = 0;
-	}
 }
 
 CInstrument *CSeqInstrument::Clone() const
@@ -275,10 +273,10 @@ int CSeqInstrument::Compile(CChunk *pChunk, int Index)
 
 	const char *label = nullptr;		// // //
 	switch (GetType()) {
-	case INST_2A03: pChunk->StoreByte(0);  label = CCompiler::LABEL_SEQ_2A03; break;
-	case INST_VRC6: pChunk->StoreByte(4);  label = CCompiler::LABEL_SEQ_VRC6; break;
-	case INST_N163: pChunk->StoreByte(9);  label = CCompiler::LABEL_SEQ_N163; break;
-	case INST_S5B:  pChunk->StoreByte(10); label = CCompiler::LABEL_SEQ_S5B;  break;
+	case INST_2A03: pChunk->StoreByte(0);  label = CChunkRenderText::LABEL_SEQ_2A03; break;
+	case INST_VRC6: pChunk->StoreByte(4);  label = CChunkRenderText::LABEL_SEQ_VRC6; break;
+	case INST_N163: pChunk->StoreByte(9);  label = CChunkRenderText::LABEL_SEQ_N163; break;
+	case INST_S5B:  pChunk->StoreByte(10); label = CChunkRenderText::LABEL_SEQ_S5B;  break;
 	}
 	ASSERT(label != nullptr);
 

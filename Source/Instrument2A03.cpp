@@ -21,8 +21,6 @@
 */
 
 #include "stdafx.h"
-#include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
 #include "ModuleException.h"		// // //
 #include "InstrumentManagerInterface.h"		// // //
 #include "Instrument.h"
@@ -30,16 +28,14 @@
 
 // 2A03 instruments
 
-CInstrument2A03::CInstrument2A03() : CSeqInstrument(INST_2A03)		// // //
+CInstrument2A03::CInstrument2A03() : CSeqInstrument(INST_2A03),		// // //
+	m_cSamples(),
+	m_cSamplePitch(),
+	m_cSampleLoopOffset()
 {
-	for (int i = 0; i < OCTAVE_RANGE; ++i) {
-		for (int j = 0; j < NOTE_RANGE; ++j) {
-			m_cSamples[i][j] = 0;
-			m_cSamplePitch[i][j] = 0;
-			m_cSampleLoopOffset[i][j] = 0;
+	for (int i = 0; i < OCTAVE_RANGE; ++i)
+		for (int j = 0; j < NOTE_RANGE; ++j)
 			m_cSampleDelta[i][j] = -1;
-		}
-	}
 }
 
 CInstrument *CInstrument2A03::Clone() const

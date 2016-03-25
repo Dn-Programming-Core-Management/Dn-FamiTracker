@@ -28,6 +28,28 @@
 #include "Chunk.h"
 #include "ChunkRenderText.h"
 
+// Assembly labels
+// // // moved from CCompiler
+const char CChunkRenderText::LABEL_SONG_LIST[]			= "ft_song_list";
+const char CChunkRenderText::LABEL_INSTRUMENT_LIST[]	= "ft_instrument_list";
+const char CChunkRenderText::LABEL_SAMPLES_LIST[]		= "ft_sample_list";
+const char CChunkRenderText::LABEL_SAMPLES[]			= "ft_samples";
+const char CChunkRenderText::LABEL_GROOVE_LIST[]		= "ft_groove_list";			// // //
+const char CChunkRenderText::LABEL_GROOVE[]				= "ft_groove_%i";			// // // one argument
+const char CChunkRenderText::LABEL_WAVETABLE[]			= "ft_wave_table";
+const char CChunkRenderText::LABEL_SAMPLE[]				= "ft_sample_%i";			// one argument
+const char CChunkRenderText::LABEL_WAVES[]				= "ft_waves_%i";			// one argument
+const char CChunkRenderText::LABEL_SEQ_2A03[]			= "ft_seq_2a03_%i";			// one argument
+const char CChunkRenderText::LABEL_SEQ_VRC6[]			= "ft_seq_vrc6_%i";			// one argument
+const char CChunkRenderText::LABEL_SEQ_FDS[]			= "ft_seq_fds_%i";			// one argument
+const char CChunkRenderText::LABEL_SEQ_N163[]			= "ft_seq_n163_%i";			// one argument
+const char CChunkRenderText::LABEL_SEQ_S5B[]			= "ft_seq_s5b_%i";			// // // one argument
+const char CChunkRenderText::LABEL_INSTRUMENT[]			= "ft_inst_%i";				// one argument
+const char CChunkRenderText::LABEL_SONG[]				= "ft_song_%i";				// one argument
+const char CChunkRenderText::LABEL_SONG_FRAMES[]		= "ft_s%i_frames";			// one argument
+const char CChunkRenderText::LABEL_SONG_FRAME[]			= "ft_s%if%i";				// two arguments
+const char CChunkRenderText::LABEL_PATTERN[]			= "ft_s%ip%ic%i";			// three arguments
+
 /**
  * Text chunk render, these methods will always output single byte strings
  *
@@ -64,7 +86,7 @@ void CChunkRenderText::StoreChunks(const std::vector<CChunk*> &Chunks)
 	for (std::vector<CChunk*>::const_iterator it = Chunks.begin(); it != Chunks.end(); ++it) {
 		for (int j = 0; j < sizeof(RENDER_FUNCTIONS) / sizeof(stChunkRenderFunc); ++j) {
 			if ((*it)->GetType() == RENDER_FUNCTIONS[j].type)
-				(this->*RENDER_FUNCTIONS[j].function)(*it, m_pFile);
+				CALL_MEMBER_FN(this, RENDER_FUNCTIONS[j].function)(*it, m_pFile);
 		}
 	}
 
@@ -128,7 +150,7 @@ void CChunkRenderText::StoreSamples(const std::vector<const CDSample*> &Samples)
 		const char *pData = pDSample->GetData();
 		
 		CStringA label;
-		label.Format(CCompiler::LABEL_SAMPLE, i);
+		label.Format(LABEL_SAMPLE, i);		// // //
 		str.Format("%s: ; %s\n", LPCSTR(label), pDSample->GetName());
 		StoreByteString(pData, SampleSize, str, DEFAULT_LINE_BREAK);
 		Address += SampleSize;
