@@ -68,11 +68,14 @@ void CInstrument2A03::Store(CDocumentFile *pDocFile)
 {
 	CSeqInstrument::Store(pDocFile);		// // //
 
-	for (int i = 0; i < OCTAVE_RANGE; ++i) {
+	int Version = 6;
+	int Octaves = Version >= 2 ? OCTAVE_RANGE : 6;
+	for (int i = 0; i < Octaves; ++i) {
 		for (int j = 0; j < NOTE_RANGE; ++j) {
 			pDocFile->WriteBlockChar(GetSample(i, j));
 			pDocFile->WriteBlockChar(GetSamplePitch(i, j));
-			pDocFile->WriteBlockChar(GetSampleDeltaValue(i, j));
+			if (Version >= 6)
+				pDocFile->WriteBlockChar(GetSampleDeltaValue(i, j));
 		}
 	}
 }

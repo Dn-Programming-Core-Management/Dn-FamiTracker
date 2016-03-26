@@ -723,19 +723,32 @@ bool CFamiTrackerDoc::WriteBlock_Parameters(CDocumentFile *pDocFile, const int V
 	// Module parameters
 	pDocFile->CreateBlock(FILE_BLOCK_PARAMS, Version);
 	
-	pDocFile->WriteBlockChar(m_iExpansionChip);		// ver 2 change
+	if (Version >= 2)
+		pDocFile->WriteBlockChar(m_iExpansionChip);		// ver 2 change
+	else
+		pDocFile->WriteBlockInt(GetTrack(0)->GetSongSpeed());
+
 	pDocFile->WriteBlockInt(m_iChannelsAvailable);
 	pDocFile->WriteBlockInt(static_cast<int>(m_iMachine));
 	pDocFile->WriteBlockInt(m_iEngineSpeed);
-	pDocFile->WriteBlockInt(m_iVibratoStyle);		// ver 3 change
-	// TODO write m_bLinearPitch
-	pDocFile->WriteBlockInt(m_vHighlight.First);		// // // ver 4 change
-	pDocFile->WriteBlockInt(m_vHighlight.Second);
+	
+	if (Version >= 3) {
+		pDocFile->WriteBlockInt(m_iVibratoStyle);
+		// TODO write m_bLinearPitch
 
-	if (ExpansionEnabled(SNDCHIP_N163))
-		pDocFile->WriteBlockInt(m_iNamcoChannels);	// ver 5 change
+		if (Version >= 4) {
+			pDocFile->WriteBlockInt(m_vHighlight.First);
+			pDocFile->WriteBlockInt(m_vHighlight.Second);
 
-	pDocFile->WriteBlockInt(m_iSpeedSplitPoint);	// ver 6 change
+			if (Version >= 5) {
+				if (ExpansionEnabled(SNDCHIP_N163))
+					pDocFile->WriteBlockInt(m_iNamcoChannels);
+
+				if (Version >= 6)
+					pDocFile->WriteBlockInt(m_iSpeedSplitPoint);
+			}
+		}
+	}
 
 	return pDocFile->FlushBlock();
 }
@@ -768,12 +781,13 @@ bool CFamiTrackerDoc::WriteBlock_Header(CDocumentFile *pDocFile, const int Versi
 	pDocFile->CreateBlock(FILE_BLOCK_HEADER, Version);
 
 	// Write number of tracks
-	pDocFile->WriteBlockChar(m_iTrackCount - 1);
+	if (Version >= 2)
+		pDocFile->WriteBlockChar(m_iTrackCount - 1);
 
 	// Ver 3, store track names
-	for (unsigned int i = 0; i < m_iTrackCount; ++i) {
-		pDocFile->WriteString(m_sTrackNames[i]);
-	}
+	if (Version >= 3)
+		for (unsigned int i = 0; i < m_iTrackCount; ++i)
+			pDocFile->WriteString(m_sTrackNames[i]);
 
 	for (unsigned int i = 0; i < m_iChannelsAvailable; ++i) {
 		// Channel type
@@ -782,6 +796,7 @@ bool CFamiTrackerDoc::WriteBlock_Header(CDocumentFile *pDocFile, const int Versi
 			ASSERT(m_pTracks[j] != NULL);
 			// Effect columns
 			pDocFile->WriteBlockChar(m_pTracks[j]->GetEffectColumnCount(i));
+			if (Version <= 1) break;
 		}
 	}
 
