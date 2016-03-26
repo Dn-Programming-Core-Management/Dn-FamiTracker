@@ -1482,7 +1482,7 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
  */
 BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 {
-	static std::unordered_map<std::string, bool (CFamiTrackerDoc::*)(CDocumentFile*)> FTM_READ_FUNC;
+	static std::unordered_map<std::string, void (CFamiTrackerDoc::*)(CDocumentFile*, const int)> FTM_READ_FUNC;
 	FTM_READ_FUNC[FILE_BLOCK_PARAMS]			= &CFamiTrackerDoc::ReadBlock_Parameters;
 	FTM_READ_FUNC[FILE_BLOCK_INFO]				= &CFamiTrackerDoc::ReadBlock_SongInfo;
 	FTM_READ_FUNC[FILE_BLOCK_INSTRUMENTS]		= &CFamiTrackerDoc::ReadBlock_Instruments;
@@ -1501,7 +1501,6 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 	FTM_READ_FUNC[FILE_BLOCK_BOOKMARKS]			= &CFamiTrackerDoc::ReadBlock_Bookmarks;		// // //
 	
 	const char *BlockID;
-	bool FileFinished = false;
 	bool ErrorFlag = false;
 
 #ifdef _DEBUG
@@ -1524,26 +1523,22 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 	}
 
 	// Read all blocks
-	while (!DocumentFile.Finished() && !FileFinished && !ErrorFlag) {
+	while (!DocumentFile.Finished() && !ErrorFlag) {
 		ErrorFlag = DocumentFile.ReadBlock();
 		BlockID = DocumentFile.GetBlockHeaderID();
+		if (!strcmp(BlockID, "END")) break;
 
-		if (!strcmp(BlockID, "END")) {
-			FileFinished = true;
+		try {
+			CALL_MEMBER_FN(this, FTM_READ_FUNC.at(BlockID))(&DocumentFile, DocumentFile.GetBlockVersion());		// // //
 		}
-		else {
-			try {
-				ErrorFlag = CALL_MEMBER_FN(this, FTM_READ_FUNC.at(BlockID))(&DocumentFile);
-			}
-			catch (std::out_of_range) {
-			// This shouldn't show up in release (debug only)
+		catch (std::out_of_range) {
+		// This shouldn't show up in release (debug only)
 #ifdef _DEBUG
-				if (++_msgs_ < 5)
-					AfxMessageBox(_T("Unknown file block!"));
+			if (++_msgs_ < 5)
+				AfxMessageBox(_T("Unknown file block!"));
 #endif
-				if (DocumentFile.IsFileIncomplete())
-					ErrorFlag = true;
-			}
+			if (DocumentFile.IsFileIncomplete())
+				ErrorFlag = true;
 		}
 	}
 
@@ -1590,10 +1585,8 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 	return TRUE;
 }
 
-bool CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile)
+void CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile, const int Version)
 {
-	int Version = pDocFile->GetBlockVersion();
-
 	// Get first track for module versions that require that
 	CPatternData *pTrack = GetTrack(0);
 
@@ -1660,23 +1653,17 @@ bool CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile)
 	AssertRange(m_iExpansionChip, 0, 0x3F, "Expansion chip flag");
 
 	SetupChannels(m_iExpansionChip);
-
-	return false;
 }
 
-bool CFamiTrackerDoc::ReadBlock_SongInfo(CDocumentFile *pDocFile)		// // //
+void CFamiTrackerDoc::ReadBlock_SongInfo(CDocumentFile *pDocFile, const int Version)		// // //
 {
 	pDocFile->GetBlock(m_strName, 32);
 	pDocFile->GetBlock(m_strArtist, 32);
 	pDocFile->GetBlock(m_strCopyright, 32);
-
-	return false;
 }
 
-bool CFamiTrackerDoc::ReadBlock_Header(CDocumentFile *pDocFile)
+void CFamiTrackerDoc::ReadBlock_Header(CDocumentFile *pDocFile, const int Version)
 {
-	int Version = pDocFile->GetBlockVersion();
-
 	if (Version == 1) {
 		// Single track
 		m_iTrackCount = 1;
@@ -1728,26 +1715,20 @@ bool CFamiTrackerDoc::ReadBlock_Header(CDocumentFile *pDocFile)
 			for (unsigned int i = 0; i < m_iTrackCount; ++i) // Use global highlight
 				GetTrack(i)->SetHighlight(m_vHighlight);		// // //
 	}
-
-	return false;
 }
 
-bool CFamiTrackerDoc::ReadBlock_Comments(CDocumentFile *pDocFile)
+void CFamiTrackerDoc::ReadBlock_Comments(CDocumentFile *pDocFile, const int Version)
 {
-	int Version = pDocFile->GetBlockVersion();
 	m_bDisplayComment = (pDocFile->GetBlockInt() == 1) ? true : false;
 	m_strComment = pDocFile->ReadString();
-	return false;
 }
 
-bool CFamiTrackerDoc::ReadBlock_ChannelLayout(CDocumentFile *pDocFile)
+void CFamiTrackerDoc::ReadBlock_ChannelLayout(CDocumentFile *pDocFile, const int Version)
 {
-	int Version = pDocFile->GetBlockVersion();
 	// Todo
-	return false;
 }
 
-bool CFamiTrackerDoc::ReadBlock_Instruments(CDocumentFile *pDocFile)
+void CFamiTrackerDoc::ReadBlock_Instruments(CDocumentFile *pDocFile, const int Version)
 {
 	/*
 	 * Version changes
@@ -1757,8 +1738,6 @@ bool CFamiTrackerDoc::ReadBlock_Instruments(CDocumentFile *pDocFile)
 	 *
 	 */
 	
-	int Version = pDocFile->GetBlockVersion();
-
 	// Number of instruments
 	const int Count = AssertRange(pDocFile->GetBlockInt(), 0, CInstrumentManager::MAX_INSTRUMENTS, "Instrument count");
 
@@ -1788,16 +1767,11 @@ bool CFamiTrackerDoc::ReadBlock_Instruments(CDocumentFile *pDocFile)
 			m_pInstrumentManager->RemoveInstrument(index);
 			throw;
 		}
-
 	}
-
-	return false;
 }
 
-bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
+void CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile, const int Version)
 {
-	int Version = pDocFile->GetBlockVersion();
-	
 	unsigned int Count = AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES * SEQ_COUNT, "2A03 sequence count");
 
 	if (Version == 1) {
@@ -1898,14 +1872,10 @@ bool CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile)
 			}
 		}
 	}
-
-	return false;
 }
 
-bool CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile)
+void CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile, const int Version)
 {
-	int Version = pDocFile->GetBlockVersion();
-	
 	unsigned int Count = AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES * SEQ_COUNT, "VRC6 sequence count");
 
 	CSequenceManager *pManager = GetSequenceManager(INST_VRC6);		// // //
@@ -1971,14 +1941,10 @@ bool CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile)
 			throw;
 		}
 	}
-
-	return false;
 }
 
-bool CFamiTrackerDoc::ReadBlock_SequencesN163(CDocumentFile *pDocFile)
+void CFamiTrackerDoc::ReadBlock_SequencesN163(CDocumentFile *pDocFile, const int Version)
 {
-	int Version = pDocFile->GetBlockVersion();
-
 	unsigned int Count = AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES * SEQ_COUNT, "N163 sequence count");
 
 	CSequenceManager *pManager = GetSequenceManager(INST_N163);		// // //
@@ -2008,14 +1974,10 @@ bool CFamiTrackerDoc::ReadBlock_SequencesN163(CDocumentFile *pDocFile)
 			throw;
 		}
 	}
-
-	return false;
 }
 
-bool CFamiTrackerDoc::ReadBlock_SequencesS5B(CDocumentFile *pDocFile)
+void CFamiTrackerDoc::ReadBlock_SequencesS5B(CDocumentFile *pDocFile, const int Version)
 {
-	int Version = pDocFile->GetBlockVersion();
-
 	unsigned int Count = AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES * SEQ_COUNT, "5B sequence count");
 
 	CSequenceManager *pManager = GetSequenceManager(INST_S5B);		// // //
@@ -2045,14 +2007,10 @@ bool CFamiTrackerDoc::ReadBlock_SequencesS5B(CDocumentFile *pDocFile)
 			throw;
 		}
 	}
-
-	return false;
 }
 
-bool CFamiTrackerDoc::ReadBlock_Frames(CDocumentFile *pDocFile)
+void CFamiTrackerDoc::ReadBlock_Frames(CDocumentFile *pDocFile, const int Version)
 {
-	unsigned int Version = pDocFile->GetBlockVersion();
-
 	if (Version == 1) {
 		unsigned int FrameCount = AssertRange(pDocFile->GetBlockInt(), 1, MAX_FRAMES, "Track frame count");
 		m_iChannelsAvailable = AssertRange(pDocFile->GetBlockInt(), 0, MAX_CHANNELS, "Channel count");
@@ -2103,14 +2061,10 @@ bool CFamiTrackerDoc::ReadBlock_Frames(CDocumentFile *pDocFile)
 			}
 		}
 	}
-
-	return false;
 }
 
-bool CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile)
+void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Version)
 {
-	unsigned int Version = pDocFile->GetBlockVersion();
-
 #ifdef TRANSPOSE_FDS
 	m_bAdjustFDSArpeggio = Version < 5;
 #endif
@@ -2263,14 +2217,10 @@ bool CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile)
 			throw;
 		}
 	}
-	
-	return false;
 }
 
-bool CFamiTrackerDoc::ReadBlock_DSamples(CDocumentFile *pDocFile)
+void CFamiTrackerDoc::ReadBlock_DSamples(CDocumentFile *pDocFile, const int Version)
 {
-	int Version = pDocFile->GetBlockVersion();
-
 	unsigned int Count = AssertRange(
 		static_cast<unsigned char>(pDocFile->GetBlockChar()), 0U, CDSampleManager::MAX_DSAMPLES, "DPCM sample count");
 
@@ -2301,17 +2251,14 @@ bool CFamiTrackerDoc::ReadBlock_DSamples(CDocumentFile *pDocFile)
 		}
 		SetSample(Index, pSample);
 	}
-
-	return false;
 }
 
 // // // Detune tables
 
 #include "DetuneDlg.h" // TODO: bad, encapsulate detune tables
 
-bool CFamiTrackerDoc::ReadBlock_DetuneTables(CDocumentFile *pDocFile)
+void CFamiTrackerDoc::ReadBlock_DetuneTables(CDocumentFile *pDocFile, const int Version)
 {
-	int Version = pDocFile->GetBlockVersion();	// Ver 1
 	int Count = AssertRange(pDocFile->GetBlockChar(), 0, 6, "Detune table count");
 	for (int i = 0; i < Count; i++) {
 		int Chip = AssertRange(pDocFile->GetBlockChar(), 0, 5, "Detune table index");
@@ -2328,8 +2275,6 @@ bool CFamiTrackerDoc::ReadBlock_DetuneTables(CDocumentFile *pDocFile)
 			throw;
 		}
 	}
-
-	return false;
 }
 
 bool CFamiTrackerDoc::WriteBlock_DetuneTables(CDocumentFile *pDocFile, const int Version) const
@@ -2363,9 +2308,8 @@ bool CFamiTrackerDoc::WriteBlock_DetuneTables(CDocumentFile *pDocFile, const int
 
 // // // Groove table
 
-bool CFamiTrackerDoc::ReadBlock_Grooves(CDocumentFile *pDocFile)
+void CFamiTrackerDoc::ReadBlock_Grooves(CDocumentFile *pDocFile, const int Version)
 {
-	const int Version = pDocFile->GetBlockVersion();	// Ver 1
 	const int Count = AssertRange(pDocFile->GetBlockChar(), 0, MAX_GROOVE, "Groove count");
 
 	for (int i = 0; i < Count; i++) {
@@ -2405,8 +2349,6 @@ bool CFamiTrackerDoc::ReadBlock_Grooves(CDocumentFile *pDocFile)
 		e->AppendError("At track %d,", i + 1);
 		throw;
 	}
-
-	return false;
 }
 
 bool CFamiTrackerDoc::WriteBlock_Grooves(CDocumentFile *pDocFile, const int Version) const
@@ -2435,9 +2377,8 @@ bool CFamiTrackerDoc::WriteBlock_Grooves(CDocumentFile *pDocFile, const int Vers
 
 // // // Bookmarks
 
-bool CFamiTrackerDoc::ReadBlock_Bookmarks(CDocumentFile *pDocFile)
+void CFamiTrackerDoc::ReadBlock_Bookmarks(CDocumentFile *pDocFile, const int Version)
 {
-	int Version = pDocFile->GetBlockVersion();	// Ver 1
 	int Count = pDocFile->GetBlockInt();
 
 	for (int i = 0; i < Count; i++) {
@@ -2456,8 +2397,6 @@ bool CFamiTrackerDoc::ReadBlock_Bookmarks(CDocumentFile *pDocFile)
 			m_pBookmarkList[Track] = new std::vector<stBookmark>();
 		m_pBookmarkList[Track]->push_back(Mark);
 	}
-
-	return false;
 }
 
 bool CFamiTrackerDoc::WriteBlock_Bookmarks(CDocumentFile *pDocFile, const int Version) const

@@ -413,23 +413,23 @@ private:
 	bool			WriteBlock_Grooves(CDocumentFile *pDocFile, const int Version) const;
 	bool			WriteBlock_Bookmarks(CDocumentFile *pDocFile, const int Version) const;
 
-	bool			ReadBlock_Parameters(CDocumentFile *pDocFile);
-	bool			ReadBlock_SongInfo(CDocumentFile *pDocFile);		// // //
-	bool			ReadBlock_Header(CDocumentFile *pDocFile);
-	bool			ReadBlock_Instruments(CDocumentFile *pDocFile);
-	bool			ReadBlock_Sequences(CDocumentFile *pDocFile);
-	bool			ReadBlock_Frames(CDocumentFile *pDocFile);
-	bool			ReadBlock_Patterns(CDocumentFile *pDocFile);
-	bool			ReadBlock_DSamples(CDocumentFile *pDocFile);
-	bool			ReadBlock_Comments(CDocumentFile *pDocFile);
-	bool			ReadBlock_ChannelLayout(CDocumentFile *pDocFile);
-	bool			ReadBlock_SequencesVRC6(CDocumentFile *pDocFile);
-	bool			ReadBlock_SequencesN163(CDocumentFile *pDocFile);
-	bool			ReadBlock_SequencesS5B(CDocumentFile *pDocFile);
+	void			ReadBlock_Parameters(CDocumentFile *pDocFile, const int Version);
+	void			ReadBlock_SongInfo(CDocumentFile *pDocFile, const int Version);		// // //
+	void			ReadBlock_Header(CDocumentFile *pDocFile, const int Version);
+	void			ReadBlock_Instruments(CDocumentFile *pDocFile, const int Version);
+	void			ReadBlock_Sequences(CDocumentFile *pDocFile, const int Version);
+	void			ReadBlock_Frames(CDocumentFile *pDocFile, const int Version);
+	void			ReadBlock_Patterns(CDocumentFile *pDocFile, const int Version);
+	void			ReadBlock_DSamples(CDocumentFile *pDocFile, const int Version);
+	void			ReadBlock_Comments(CDocumentFile *pDocFile, const int Version);
+	void			ReadBlock_ChannelLayout(CDocumentFile *pDocFile, const int Version);
+	void			ReadBlock_SequencesVRC6(CDocumentFile *pDocFile, const int Version);
+	void			ReadBlock_SequencesN163(CDocumentFile *pDocFile, const int Version);
+	void			ReadBlock_SequencesS5B(CDocumentFile *pDocFile, const int Version);
 	// // //
-	bool			ReadBlock_DetuneTables(CDocumentFile *pDocFile);
-	bool			ReadBlock_Grooves(CDocumentFile *pDocFile);
-	bool			ReadBlock_Bookmarks(CDocumentFile *pDocFile);
+	void			ReadBlock_DetuneTables(CDocumentFile *pDocFile, const int Version);
+	void			ReadBlock_Grooves(CDocumentFile *pDocFile, const int Version);
+	void			ReadBlock_Bookmarks(CDocumentFile *pDocFile, const int Version);
 
 	// For file version compability
 	void			ReorderSequences();
