@@ -111,16 +111,16 @@ BEGIN
         MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
         MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
         MENUITEM SEPARATOR
-        MENUITEM "Create NSF...\tCtrl+E",       ID_FILE_CREATE_NSF
-        MENUITEM "Create WAV...",               ID_FILE_CREATEWAV
+        MENUITEM "Create NS&F...\tCtrl+E",      ID_FILE_CREATE_NSF
+        MENUITEM "Create WA&V...",              ID_FILE_CREATEWAV
         MENUITEM SEPARATOR
-        MENUITEM "Import Text...",              ID_FILE_IMPORTTEXT
-        MENUITEM "Export Text...",              ID_FILE_EXPORTTEXT
-        MENUITEM "Export Rows...",              ID_FILE_EXPORTROWS
+        MENUITEM "&Import Text...",             ID_FILE_IMPORTTEXT
+        MENUITEM "&Export Text...",             ID_FILE_EXPORTTEXT
+        MENUITEM "Export Ro&ws...",             ID_FILE_EXPORTROWS
         MENUITEM SEPARATOR
         MENUITEM "&Configuration...",           ID_FILE_GENERALSETTINGS
         MENUITEM SEPARATOR
-        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1
+        MENUITEM "&Recent File",                ID_FILE_MRU_FILE1
         MENUITEM SEPARATOR
         MENUITEM "E&xit\tAlt+F4",               ID_APP_EXIT
     END
@@ -132,19 +132,19 @@ BEGIN
         MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
         MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
-        POPUP "Paste Special"
+        POPUP "Paste Specia&l"
         BEGIN
             MENUITEM "&Mix",                        ID_EDIT_PASTEMIX
             MENUITEM "&Overwrite",                  ID_EDIT_PASTEOVERWRITE
             MENUITEM "&Insert",                     ID_EDIT_PASTEINSERT
             MENUITEM SEPARATOR
-            MENUITEM "Cursor",                      ID_PASTESPECIAL_CURSOR, CHECKED
-            MENUITEM "Selection",                   ID_PASTESPECIAL_SELECTION
-            MENUITEM "Fill",                        ID_PASTESPECIAL_FILL
+            MENUITEM "&Cursor",                     ID_PASTESPECIAL_CURSOR, CHECKED
+            MENUITEM "&Selection",                  ID_PASTESPECIAL_SELECTION
+            MENUITEM "&Fill",                       ID_PASTESPECIAL_FILL
         END
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
         MENUITEM SEPARATOR
-        POPUP "Copy As"
+        POPUP "Copy &As"
         BEGIN
             MENUITEM "&Volume Sequence",            ID_COPYAS_VOLUMESEQUENCE
             MENUITEM "&Plain Text",                 ID_COPYAS_TEXT
@@ -168,17 +168,17 @@ BEGIN
         MENUITEM "&Find / Replace",             ID_EDIT_FIND_TOGGLE
         MENUITEM "Find &Next",                  ID_FIND_NEXT
         MENUITEM "&Go To...",                   ID_EDIT_GOTO
-        POPUP "Bookmarks"
+        POPUP "&Bookmarks"
         BEGIN
             MENUITEM "&Toggle",                     ID_BOOKMARKS_TOGGLE
             MENUITEM "&Next",                       ID_BOOKMARKS_NEXT
             MENUITEM "&Previous",                   ID_BOOKMARKS_PREVIOUS
         END
         MENUITEM SEPARATOR
-        MENUITEM "Instrument Mask",             ID_EDIT_INSTRUMENTMASK
-        MENUITEM "Volume Mask",                 ID_EDIT_VOLUMEMASK, CHECKED
+        MENUITEM "&Instrument Mask",            ID_EDIT_INSTRUMENTMASK
+        MENUITEM "&Volume Mask",                ID_EDIT_VOLUMEMASK, CHECKED
         MENUITEM SEPARATOR
-        MENUITEM "Enable MIDI",                 ID_EDIT_ENABLEMIDI
+        MENUITEM "Enable &MIDI",                ID_EDIT_ENABLEMIDI
     END
     POPUP "&Pattern"
     BEGIN
@@ -190,88 +190,89 @@ BEGIN
         MENUITEM "S&hrink",                     ID_EDIT_SHRINKPATTERNS
         MENUITEM "&Stretch...",                 ID_EDIT_STRETCHPATTERNS
         MENUITEM SEPARATOR
-        POPUP "Transpose"
+        POPUP "&Transpose"
         BEGIN
-            MENUITEM "Decrease Note",               ID_TRANSPOSE_DECREASENOTE
-            MENUITEM "Increase Note",               ID_TRANSPOSE_INCREASENOTE
-            MENUITEM "Decrease Octave",             ID_TRANSPOSE_DECREASEOCTAVE
-            MENUITEM "Increase Octave",             ID_TRANSPOSE_INCREASEOCTAVE
-            MENUITEM SEPARATOR
-            MENUITEM "Song...",                     ID_TRANSPOSE_CUSTOM
+            MENUITEM "&Decrease Note",              ID_TRANSPOSE_DECREASENOTE
+            MENUITEM "&Increase Note",              ID_TRANSPOSE_INCREASENOTE
+            MENUITEM "D&ecrease Octave",            ID_TRANSPOSE_DECREASEOCTAVE
+            MENUITEM "I&ncrease Octave",            ID_TRANSPOSE_INCREASEOCTAVE
         END
         MENUITEM SEPARATOR
         MENUITEM "S&wap Channels...",           ID_EDIT_SWAPCHANNELS
     END
-    POPUP "&Module"
+    POPUP "&Track"
     BEGIN
-        MENUITEM "Insert Frame",                ID_MODULE_INSERTFRAME
+        MENUITEM "&Insert Frame",               ID_MODULE_INSERTFRAME
         MENUITEM "&Remove Frame",               ID_MODULE_REMOVEFRAME
         MENUITEM "&Duplicate Frame",            ID_MODULE_DUPLICATEFRAME
-        MENUITEM "Clone Pattern",               ID_MODULE_DUPLICATECURRENTPATTERN
-        MENUITEM "Duplicate Patterns",          ID_MODULE_DUPLICATEFRAMEPATTERNS
+        MENUITEM "Move Frame &Up",              ID_MODULE_MOVEFRAMEUP
+        MENUITEM "Move Frame Do&wn",            ID_MODULE_MOVEFRAMEDOWN
         MENUITEM SEPARATOR
-        MENUITEM "Move Frame Up",               ID_MODULE_MOVEFRAMEUP
-        MENUITEM "Move Frame Down",             ID_MODULE_MOVEFRAMEDOWN
+        MENUITEM "&Clone Pattern",              ID_MODULE_DUPLICATECURRENTPATTERN
+        MENUITEM "Duplicate &Patterns",         ID_MODULE_DUPLICATEFRAMEPATTERNS
+        MENUITEM "C&lear Patterns",             ID_EDIT_CLEARPATTERNS
         MENUITEM SEPARATOR
-        MENUITEM "Comments...",                 ID_MODULE_COMMENTS
-        MENUITEM "Module Properties...\tCtrl+P", ID_MODULE_MODULEPROPERTIES
-        POPUP "Region"
+        MENUITEM "&Transpose Song...",          ID_TRANSPOSE_CUSTOM
+        MENUITEM SEPARATOR
+        MENUITEM "&Estimate Song Length",       ID_MODULE_ESTIMATESONGLENGTH
+    END
+    POPUP "&Module"
+    BEGIN
+        MENUITEM "&Comments...",                ID_MODULE_COMMENTS
+        MENUITEM "&Module Properties...\tCtrl+P", ID_MODULE_MODULEPROPERTIES
+        POPUP "&Region"
         BEGIN
-            MENUITEM "NTSC",                        ID_TRACKER_NTSC
-            MENUITEM "PAL",                         ID_TRACKER_PAL
+            MENUITEM "&NTSC",                       ID_TRACKER_NTSC
+            MENUITEM "&PAL",                        ID_TRACKER_PAL
         END
-        POPUP "Engine Speed"
+        POPUP "&Engine Speed"
         BEGIN
-            MENUITEM "Default",                     ID_SPEED_DEFAULT
-            MENUITEM SEPARATOR
-            MENUITEM "Custom...",                   ID_SPEED_CUSTOM
+            MENUITEM "&Default",                    ID_SPEED_DEFAULT
+            MENUITEM "&Custom...",                  ID_SPEED_CUSTOM
         END
         MENUITEM SEPARATOR
-        MENUITEM "Detune Settings...",          ID_MODULE_DETUNE
-        MENUITEM "Groove Settings",             ID_MODULE_GROOVE
-        MENUITEM "Bookmark Manager",            ID_MODULE_BOOKMARK
-        MENUITEM "Channels",                    ID_MODULE_CHANNELS
+        MENUITEM "&Detune Settings...",         ID_MODULE_DETUNE
+        MENUITEM "&Groove Settings",            ID_MODULE_GROOVE
+        MENUITEM "&Bookmark Manager",           ID_MODULE_BOOKMARK
+        MENUITEM "C&hannels",                   ID_MODULE_CHANNELS
         MENUITEM SEPARATOR
-        POPUP "Cleanup"
+        POPUP "Clean&up"
         BEGIN
-            MENUITEM "Clear Patterns",              ID_EDIT_CLEARPATTERNS
+            MENUITEM "Remove Unused &Instruments",  ID_CLEANUP_REMOVEUNUSEDINSTRUMENTS
+            MENUITEM "Remove Unused &DPCM Samples", ID_CLEANUP_REMOVEUNUSEDDPCMSAMPLES
+            MENUITEM "Remove Unused &Patterns",     ID_CLEANUP_REMOVEUNUSEDPATTERNS
             MENUITEM SEPARATOR
-            MENUITEM "Remove Unused Instruments",   ID_CLEANUP_REMOVEUNUSEDINSTRUMENTS
-            MENUITEM "Remove Unused DPCM Samples",  ID_CLEANUP_REMOVEUNUSEDDPCMSAMPLES
-            MENUITEM "Remove Unused Patterns",      ID_CLEANUP_REMOVEUNUSEDPATTERNS
-            MENUITEM SEPARATOR
-            MENUITEM "Merge Duplicated Patterns",   ID_CLEANUP_MERGEDUPLICATEDPATTERNS
-            MENUITEM "Populate Unique Patterns",    ID_CLEANUP_POPULATEUNIQUEPATTERNS
+            MENUITEM "&Merge Duplicated Patterns",  ID_CLEANUP_MERGEDUPLICATEDPATTERNS
+            MENUITEM "Populate &Unique Patterns",   ID_CLEANUP_POPULATEUNIQUEPATTERNS
         END
-        MENUITEM "Estimate Song Length",        ID_MODULE_ESTIMATESONGLENGTH
     END
     POPUP "&Instrument"
     BEGIN
-        MENUITEM "New Instrument",              ID_INSTRUMENT_NEW
-        MENUITEM "Remove Instrument",           ID_INSTRUMENT_REMOVE
-        MENUITEM "Clone Instrument",            ID_INSTRUMENT_CLONE
-        MENUITEM "Deep Clone Instrument",       ID_INSTRUMENT_DEEPCLONE
+        MENUITEM "&New Instrument",             ID_INSTRUMENT_NEW
+        MENUITEM "&Remove Instrument",          ID_INSTRUMENT_REMOVE
+        MENUITEM "&Clone Instrument",           ID_INSTRUMENT_CLONE
+        MENUITEM "&Deep Clone Instrument",      ID_INSTRUMENT_DEEPCLONE
         MENUITEM SEPARATOR
-        MENUITEM "Load from File...",           ID_INSTRUMENT_LOAD
-        MENUITEM "Save to File...",             ID_INSTRUMENT_SAVE
+        MENUITEM "&Load from File...",          ID_INSTRUMENT_LOAD
+        MENUITEM "&Save to File...",            ID_INSTRUMENT_SAVE
         MENUITEM SEPARATOR
-        MENUITEM "Edit\tCtrl+I",                ID_INSTRUMENT_EDIT
+        MENUITEM "&Edit\tCtrl+I",               ID_INSTRUMENT_EDIT
     END
     POPUP "T&racker"
     BEGIN
         MENUITEM "&Play",                       ID_TRACKER_PLAY
         MENUITEM "P&lay Pattern",               ID_TRACKER_PLAYPATTERN
-        MENUITEM "Play from Start",             ID_TRACKER_PLAY_START
-        MENUITEM "Play from Cursor",            ID_TRACKER_PLAY_CURSOR
+        MENUITEM "Play from S&tart",            ID_TRACKER_PLAY_START
+        MENUITEM "Play from C&ursor",           ID_TRACKER_PLAY_CURSOR
         MENUITEM "&Stop",                       ID_TRACKER_STOP
         MENUITEM "Toggle &Edit Mode",           ID_TRACKER_EDIT
         MENUITEM SEPARATOR
-        MENUITEM "Toggle Channel",              ID_TRACKER_TOGGLECHANNEL
-        MENUITEM "Solo Channel",                ID_TRACKER_SOLOCHANNEL
+        MENUITEM "To&ggle Channel",             ID_TRACKER_TOGGLECHANNEL
+        MENUITEM "S&olo Channel",               ID_TRACKER_SOLOCHANNEL
         MENUITEM SEPARATOR
-        MENUITEM "Switch to Track Instrument",  ID_TRACKER_SWITCHTOTRACKINSTRUMENT
-        MENUITEM "Record to Instrument",        ID_TRACKER_RECORDTOINST
-        MENUITEM "Recorder Settings...",        ID_TRACKER_RECORDERSETTINGS
+        MENUITEM "Switch to Track &Instrument", ID_TRACKER_SWITCHTOTRACKINSTRUMENT
+        MENUITEM "&Record to Instrument",       ID_TRACKER_RECORDTOINST
+        MENUITEM "Re&corder Settings...",       ID_TRACKER_RECORDERSETTINGS
         MENUITEM SEPARATOR
         MENUITEM "&Kill Sound\tF12",            ID_TRACKER_KILLSOUND
     END
@@ -284,21 +285,21 @@ BEGIN
         MENUITEM "&Follow Mode",                IDC_FOLLOW_TOGGLE, CHECKED
         MENUITEM "Co&mpact View",               IDC_COMPACT_TOGGLE
         MENUITEM SEPARATOR
-        MENUITEM "Register State",              ID_TRACKER_DISPLAYREGISTERSTATE
+        MENUITEM "&Register State",             ID_TRACKER_DISPLAYREGISTERSTATE
         MENUITEM SEPARATOR
-        POPUP "Frame Editor Position"
+        POPUP "Frame Editor &Position"
         BEGIN
-            MENUITEM "Top",                         ID_FRAMEEDITOR_TOP, CHECKED
-            MENUITEM "Left",                        ID_FRAMEEDITOR_LEFT
+            MENUITEM "&Top",                        ID_FRAMEEDITOR_TOP, CHECKED
+            MENUITEM "&Left",                       ID_FRAMEEDITOR_LEFT
         END
     END
     POPUP "&Help"
     BEGIN
         MENUITEM "&Help Topics\tF1",            ID_HELP_FINDER
-        MENUITEM "Effect Table",                ID_HELP_EFFECTTABLE
-        MENUITEM "FAQ",                         ID_HELP_FAQ
+        MENUITEM "&Effect Table",               ID_HELP_EFFECTTABLE
+        MENUITEM "&FAQ",                        ID_HELP_FAQ
         MENUITEM SEPARATOR
-        MENUITEM "Performance",                 ID_HELP_PERFORMANCE
+        MENUITEM "&Performance",                ID_HELP_PERFORMANCE
         MENUITEM SEPARATOR
         MENUITEM "&About 0CC-FamiTracker...",   ID_APP_ABOUT
     END
