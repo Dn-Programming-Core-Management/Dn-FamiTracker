@@ -1564,12 +1564,15 @@ void CMainFrame::OnUpdateSBTempo(CCmdUI *pCmdUI)
 {
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 	if (pSoundGen && !pSoundGen->IsBackgroundTask()) {
+		CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());		// // //
 		int Highlight = m_wndOctaveBar.GetDlgItemInt(IDC_HIGHLIGHT1);
+		// Highlight = pDoc->GetHighlight(m_iTrack).First;
 		if (Highlight == 0)
 			Highlight = 4;
-		float BPM = (pSoundGen->GetTempo() * 4.0f) / float(Highlight);
+		float BPM = std::min(pSoundGen->GetTempo(), static_cast<float>(pDoc->GetEngineSpeed() * 15));
+		
 		CString String;
-		String.Format(_T("%.2f BPM"), BPM);
+		String.Format(_T("%.2f BPM"), BPM * 4.f / Highlight);
 		pCmdUI->Enable();
 		pCmdUI->SetText(String);
 	}
