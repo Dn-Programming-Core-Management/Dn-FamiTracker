@@ -33,14 +33,16 @@ const char *CWavegenImp::DEFAULT_ERROR = "Waveform generation failed.";
 CWavegenImp::CWavegenImp(const char *Name) :
 	m_bSuccess(false),
 	m_pName(Name),
-	m_pError(const_cast<char*>(DEFAULT_ERROR))
+	m_pError(&DEFAULT_ERROR)
 {
 }
 
 bool CWavegenImp::CreateWaves(float *const Dest, unsigned int Size, unsigned int Count)
 {
-	m_pError = const_cast<char*>(CreateWavesInternal(Dest, Size, Count));
-	return (m_bSuccess = m_pError == nullptr);
+	const char *err = CreateWavesInternal(Dest, Size, Count);
+	if (err != nullptr)
+		m_pError = &err;
+	return (m_bSuccess = err == nullptr);
 }
 
 const char *CWavegenImp::GetGeneratorName() const
@@ -50,12 +52,14 @@ const char *CWavegenImp::GetGeneratorName() const
 
 const char *CWavegenImp::GetStatus() const
 {
-	return m_bSuccess ? nullptr : m_pError;
+	return m_bSuccess ? nullptr : *m_pError;
 }
 
 //
 // CWavegenSingle class
 //
+
+const char *CWavegenSingle::COUNT_ERROR = "Wave count of this waveform generator must be 1.";
 
 CWavegenSingle::CWavegenSingle(const char *Name) :
 	CWavegenImp(Name)
@@ -65,7 +69,7 @@ CWavegenSingle::CWavegenSingle(const char *Name) :
 bool CWavegenSingle::CreateWaves(float *const Dest, unsigned int Size, unsigned int Index)
 {
 	if (Index != 1 && Index != -1) {
-		m_pError = "Wave count of this waveform generator must be 1.";
+		m_pError = &COUNT_ERROR;
 		return (m_bSuccess = false);
 	}
 	return CWavegenImp::CreateWaves(Dest, Size, Index);
@@ -153,6 +157,8 @@ CWavegenParam *CWavegenTriangle::GetParameter(unsigned int Index) const
 // CWavegenPulse class
 //
 
+const char *CWavegenPulse::PULSE_WIDTH_ERROR = "Pulse width must be between 0 and 1.";
+
 CWavegenPulse::CWavegenPulse() :
 	CWavegenSingle("Pulse wave")
 {
@@ -167,6 +173,9 @@ CWavegenPulse::~CWavegenPulse()
 
 const char *CWavegenPulse::CreateWavesInternal(float *const Dest, unsigned int Size, unsigned int Index) const
 {
+	float width = m_pPulseWidth->GetValue();
+	if (width > 1 || width < 0)
+		return PULSE_WIDTH_ERROR;
 	float *t = Dest;
 	const float thresh = Size - m_pPulseWidth->GetValue() * Size;
 	for (unsigned int i = 0; i < Size; ++i)

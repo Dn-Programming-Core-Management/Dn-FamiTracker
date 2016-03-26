@@ -23,7 +23,6 @@
 #pragma once
 
 
-// TODO: remove this
 #include "WaveformGenerator.h"
 
 /**
@@ -42,7 +41,7 @@ protected:
 protected:
 	bool m_bSuccess;
 	const char *m_pName;
-	char *m_pError;
+	const char **m_pError;
 
 private:
 	static const char *DEFAULT_ERROR;
@@ -53,13 +52,14 @@ public:
 	CWavegenSingle(const char *Name);
 	virtual bool CreateWaves(float *const Dest, unsigned int Size, unsigned int Index);
 	unsigned int GetCount() const;
+private:
+	static const char *COUNT_ERROR;
 };
 
 class CWavegenSine : public CWavegenSingle {
 public:
 	CWavegenSine();
 	CWavegenParam *GetParameter(unsigned int Index) const;
-
 protected:
 	const char *CreateWavesInternal(float *const Dest, unsigned int Size, unsigned int Index) const;
 };
@@ -68,7 +68,6 @@ class CWavegenSawtooth : public CWavegenSingle {
 public:
 	CWavegenSawtooth();
 	CWavegenParam *GetParameter(unsigned int Index) const;
-
 protected:
 	const char *CreateWavesInternal(float *const Dest, unsigned int Size, unsigned int Index) const;
 };
@@ -77,7 +76,6 @@ class CWavegenTriangle : public CWavegenSingle {
 public:
 	CWavegenTriangle();
 	CWavegenParam *GetParameter(unsigned int Index) const;
-
 protected:
 	const char *CreateWavesInternal(float *const Dest, unsigned int Size, unsigned int Index) const;
 };
@@ -87,10 +85,9 @@ public:
 	CWavegenPulse();
 	virtual ~CWavegenPulse();
 	CWavegenParam *GetParameter(unsigned int Index) const;
-
 protected:
 	const char *CreateWavesInternal(float *const Dest, unsigned int Size, unsigned int Index) const;
-
 private:
 	CWavegenParamFloat *m_pPulseWidth;
+	static const char *PULSE_WIDTH_ERROR;
 };
