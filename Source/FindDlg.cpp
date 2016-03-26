@@ -20,7 +20,9 @@
 ** must bear this legend.
 */
 
-#include <algorithm>
+#include <memory>
+#include <cstdarg>
+#include <stdexcept>
 #include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
@@ -29,7 +31,6 @@
 #include "PatternEditor.h"
 #include "FindDlg.h"
 
-#define FIND_RAISE_ERROR(cond,...) {if (cond) { err.Format(__VA_ARGS__); return false; }}
 #define FIND_SINGLE_CHANNEL(x) ( ((x) & 0x01) == 0x01 )
 #define FIND_SINGLE_FRAME(x) ( ((x) & 0x02) == 0x02 )
 #define FIND_WILD _T("*")
@@ -66,8 +67,6 @@ CFindDlg::~CFindDlg()
 	SAFE_RELEASE(m_cReplaceEffField);
 	SAFE_RELEASE(m_cSearchArea);
 	SAFE_RELEASE(m_cEffectColumn);
-	m_searchTerm.Release();
-	m_replaceTerm.Release();
 }
 
 void CFindDlg::DoDataExchange(CDataExchange* pDX)
@@ -101,34 +100,45 @@ enum {
 
 class CPatternView;
 
+#pragma warning ( disable : 4351 ) // "new behaviour: elements of array [...] will be default initialized"
+
 searchTerm::searchTerm() :
-	NoiseChan(false)
+	NoiseChan(false),
+	Note(new CharRange()),
+	Oct(new CharRange()),
+	Inst(new CharRange(0, MAX_INSTRUMENTS)),
+	Vol(new CharRange(0, MAX_VOLUME)),
+	EffParam(new CharRange()),
+	Definite(),
+	EffNumber()
 {
-	Note = new CharRange();
-	Oct  = new CharRange();
-	Inst = new CharRange();
-	Vol  = new CharRange();
-	EffParam = new CharRange();
-	Reset();
 }
 
-void searchTerm::Release()
+searchTerm::searchTerm(searchTerm &&other) :
+	NoiseChan(other.NoiseChan),
+	Note(std::move(other.Note)),
+	Oct(std::move(other.Oct)),
+	Inst(std::move(other.Inst)),
+	Vol(std::move(other.Vol)),
+	EffParam(std::move(other.EffParam))
 {
-	SAFE_RELEASE(Note);
-	SAFE_RELEASE(Oct);
-	SAFE_RELEASE(Inst);
-	SAFE_RELEASE(Vol);
-	SAFE_RELEASE(EffParam);
+	memcpy(Definite, other.Definite, sizeof(Definite));
+	memcpy(EffNumber, other.EffNumber, sizeof(EffNumber));
 }
 
-void searchTerm::Reset()
+searchTerm& searchTerm::operator=(searchTerm &&other)
 {
-	Inst->Set(MAX_INSTRUMENTS);
-	Vol->Set(MAX_VOLUME);
-	for (size_t i = 0; i < sizeof(Definite) / sizeof(bool); i++)
-		Definite[i] = false;
-	for (size_t i = 0; i < EF_COUNT; i++)
-		EffNumber[i] = false;
+	NoiseChan = other.NoiseChan;
+	Note.swap(other.Note);
+	Oct.swap(other.Oct);
+	Inst.swap(other.Inst);
+	Vol.swap(other.Vol);
+	EffParam.swap(other.EffParam);
+
+	memcpy(Definite, other.Definite, sizeof(Definite));
+	memcpy(EffNumber, other.EffNumber, sizeof(EffNumber));
+
+	return *this;
 }
 
 BOOL CFindDlg::OnInitDialog()
@@ -201,7 +211,7 @@ void CFindDlg::OnUpdateFields(UINT nID)
 	UpdateFields();
 }
 
-bool CFindDlg::ParseNote(searchTerm &Term, CString str, bool Half, CString &err)
+void CFindDlg::ParseNote(searchTerm &Term, CString str, bool Half)
 {
 	if (!Half) Term.Definite[WC_NOTE] = Term.Definite[WC_OCT] = false;
 
@@ -216,52 +226,52 @@ bool CFindDlg::ParseNote(searchTerm &Term, CString str, bool Half, CString &err)
 			//Term.Note->Max = Term.Note->Min;
 			//Term.Oct->Max = Term.Oct->Min;
 		}
-		return true;
+		return;
 	}
 
-	FIND_RAISE_ERROR(Half && (!Term.Note->IsSingle() || !Term.Oct->IsSingle()),
+	RaiseIf(Half && (!Term.Note->IsSingle() || !Term.Oct->IsSingle()),
 		_T("Cannot use wildcards in a range search query."));
 
 	if (str == _T("-") || str == _T("---")) {
-		FIND_RAISE_ERROR(Half, _T("Cannot use note cut in a range search query."));
+		RaiseIf(Half, _T("Cannot use note cut in a range search query."));
 		Term.Definite[WC_NOTE] = true;
 		Term.Definite[WC_OCT] = true;
 		Term.Note->Set(HALT);
 		Term.Oct->Min = 0; Term.Oct->Max = 7;
-		return true;
+		return;
 	}
 
 	if (str == _T("=") || str == _T("===")) {
-		FIND_RAISE_ERROR(Half, _T("Cannot use note release in a range search query."));
+		RaiseIf(Half, _T("Cannot use note release in a range search query."));
 		Term.Definite[WC_NOTE] = true;
 		Term.Definite[WC_OCT] = true;
 		Term.Note->Set(RELEASE);
 		Term.Oct->Min = 0; Term.Oct->Max = 7;
-		return true;
+		return;
 	}
 
 	if (str == _T(".")) {
-		FIND_RAISE_ERROR(Half, _T("Cannot use wildcards in a range search query."));
+		RaiseIf(Half, _T("Cannot use wildcards in a range search query."));
 		Term.Definite[WC_NOTE] = true;
 		Term.Note->Min = NONE + 1;
 		Term.Note->Max = ECHO;
-		return true;
+		return;
 	}
 
 	if (str.Left(1) == _T("^")) {
-		FIND_RAISE_ERROR(Half && !Term.Definite[WC_OCT], _T("Cannot use wildcards in a range search query."));
+		RaiseIf(Half && !Term.Definite[WC_OCT], _T("Cannot use wildcards in a range search query."));
 		Term.Definite[WC_NOTE] = true;
 		Term.Definite[WC_OCT] = true;
 		Term.Note->Set(ECHO);
 		if (str.Delete(0)) {
-			FIND_RAISE_ERROR(atoi(str) > ECHO_BUFFER_LENGTH,
-				_T("Echo buffer access \"^") + str + _T("\" is out of range, maximum is %d."), ECHO_BUFFER_LENGTH);
+			RaiseIf(atoi(str) > ECHO_BUFFER_LENGTH,
+				_T("Echo buffer access \"^%s\" is out of range, maximum is %d."), str, ECHO_BUFFER_LENGTH);
 			Term.Oct->Set(atoi(str), Half);
 		}
 		else {
 			Term.Oct->Min = 0; Term.Oct->Max = ECHO_BUFFER_LENGTH;
 		}
-		return true;
+		return;
 	}
 
 	if (str.Mid(1, 2) != _T("-#")) for (int i = 0; i < 7; i++) {
@@ -275,20 +285,19 @@ bool CFindDlg::ParseNote(searchTerm &Term, CString str, bool Half, CString &err)
 			}
 			if (str.Delete(0)) {
 				Term.Definite[WC_OCT] = true;
-				FIND_RAISE_ERROR(str.SpanIncluding("0123456789") != str,
-					_T("Unknown note octave."));
+				RaiseIf(str.SpanIncluding("0123456789") != str, _T("Unknown note octave."));
 				Oct = atoi(str);
-				FIND_RAISE_ERROR(Oct >= OCTAVE_RANGE || Oct < 0,
-					_T("Note octave \"") + str + _T("\" is out of range, maximum is %d."), OCTAVE_RANGE - 1);
+				RaiseIf(Oct >= OCTAVE_RANGE || Oct < 0,
+					_T("Note octave \"%s\" is out of range, maximum is %d."), str, OCTAVE_RANGE - 1);
 				Term.Oct->Set(Oct, Half);
 			}
-			else FIND_RAISE_ERROR(Half, _T("Cannot use wildcards in a range search query.")); 
+			else RaiseIf(Half, _T("Cannot use wildcards in a range search query.")); 
 			while (Note > NOTE_RANGE) { Note -= NOTE_RANGE; if (Term.Definite[WC_OCT]) Term.Oct->Set(++Oct, Half); }
 			while (Note < NOTE_C) { Note += NOTE_RANGE; if (Term.Definite[WC_OCT]) Term.Oct->Set(--Oct, Half); }
 			Term.Note->Set(Note, Half);
-			FIND_RAISE_ERROR(Term.Definite[WC_OCT] && (Oct >= OCTAVE_RANGE || Oct < 0),
-				_T("Note octave \"" + str + "\" is out of range, check if the note contains Cb or B#."));
-			return true;
+			RaiseIf(Term.Definite[WC_OCT] && (Oct >= OCTAVE_RANGE || Oct < 0),
+				_T("Note octave \"%s\" is out of range, check if the note contains Cb or B#."), str);
+			return;
 		}
 	}
 
@@ -305,79 +314,71 @@ bool CFindDlg::ParseNote(searchTerm &Term, CString str, bool Half, CString &err)
 			Term.Oct->Set(NoteValue / NOTE_RANGE, Half);
 		}
 		Term.NoiseChan = true;
-		return true;
+		return;
 	}
 
 	if (str.SpanIncluding("0123456789") == str) {
 		int NoteValue = atoi(str);
-		FIND_RAISE_ERROR(NoteValue == 0 && str.Left(1) != _T("0"),
-						 _T("Invalid note \"" + str + "\"."));
-		FIND_RAISE_ERROR(NoteValue >= NOTE_COUNT || NoteValue < 0,
-						 _T("Note value \"") + str + _T("\" is out of range, maximum is %d."), NOTE_COUNT - 1);
+		RaiseIf(NoteValue == 0 && str.Left(1) != _T("0"), _T("Invalid note \"%s\"."), str);
+		RaiseIf(NoteValue >= NOTE_COUNT || NoteValue < 0,
+			_T("Note value \"%s\" is out of range, maximum is %d."), str, NOTE_COUNT - 1);
 		Term.Definite[WC_NOTE] = true;
 		Term.Definite[WC_OCT] = true;
 		Term.Note->Set(NoteValue % NOTE_RANGE + 1, Half);
 		Term.Oct->Set(NoteValue / NOTE_RANGE, Half);
-		return true;
+		return;
 	}
 
-	FIND_RAISE_ERROR(true, _T("Unknown note query."));
+	RaiseIf(true, _T("Unknown note query."));
 }
 
-bool CFindDlg::ParseInst(searchTerm &Term, CString str, bool Half, CString &err)
+void CFindDlg::ParseInst(searchTerm &Term, CString str, bool Half)
 {
 	Term.Definite[WC_INST] = true;
 	if (str.IsEmpty() && !Half) {
 		Term.Inst->Set(MAX_INSTRUMENTS);
-		return true;
+		return;
 	}
-	FIND_RAISE_ERROR(Half && !Term.Inst->IsSingle(),
-		_T("Cannot use wildcards in a range search query."));
+	RaiseIf(Half && !Term.Inst->IsSingle(), _T("Cannot use wildcards in a range search query."));
 
 	if (str == _T(".")) {
-		FIND_RAISE_ERROR(Half, _T("Cannot use wildcards in a range search query."));
+		RaiseIf(Half, _T("Cannot use wildcards in a range search query."));
 		Term.Inst->Min = 0;
 		Term.Inst->Max = MAX_INSTRUMENTS - 1;
 	}
 	else if (!str.IsEmpty()) {
 		unsigned char Val = static_cast<unsigned char>(strtol(str, NULL, 16));
-		FIND_RAISE_ERROR(Val >= MAX_INSTRUMENTS,
-			_T("Instrument \"") + str + _T("\" is out of range, maximum is %X."), MAX_INSTRUMENTS - 1);
+		RaiseIf(Val >= MAX_INSTRUMENTS,
+			_T("Instrument \"%s\" is out of range, maximum is %X."), str, MAX_INSTRUMENTS - 1);
 		Term.Inst->Set(Val, Half);
 	}
-
-	return true;
 }
 
-bool CFindDlg::ParseVol(searchTerm &Term, CString str, bool Half, CString &err)
+void CFindDlg::ParseVol(searchTerm &Term, CString str, bool Half)
 {
 	Term.Definite[WC_VOL] = true;
 	if (str.IsEmpty() && !Half) {
 		Term.Vol->Set(MAX_VOLUME);
-		return true;
+		return;
 	}
-	FIND_RAISE_ERROR(Half && !Term.Vol->IsSingle(),
-		_T("Cannot use wildcards in a range search query."));
+	RaiseIf(Half && !Term.Vol->IsSingle(), _T("Cannot use wildcards in a range search query."));
 
 	if (str == _T(".")) {
-		FIND_RAISE_ERROR(Half, _T("Cannot use wildcards in a range search query."));
+		RaiseIf(Half, _T("Cannot use wildcards in a range search query."));
 		Term.Vol->Min = 0;
 		Term.Vol->Max = MAX_VOLUME - 1;
 	}
 	else if (!str.IsEmpty()) {
 		unsigned char Val = static_cast<unsigned char>(strtol(str, NULL, 16));
-		FIND_RAISE_ERROR(Val >= MAX_VOLUME,
-			_T("Channel volume \"") + str + _T("\" is out of range, maximum is %X."), MAX_VOLUME - 1);
+		RaiseIf(Val >= MAX_VOLUME,
+			_T("Channel volume \"%s\" is out of range, maximum is %X."), str, MAX_VOLUME - 1);
 		Term.Vol->Set(Val, Half);
 	}
-
-	return true;
 }
 
-bool CFindDlg::ParseEff(searchTerm &Term, CString str, bool Half, CString &err)
+void CFindDlg::ParseEff(searchTerm &Term, CString str, bool Half)
 {
-	FIND_RAISE_ERROR(str.GetLength() == 2,
-		_T("Effect \"") + str.Left(1) + _T("\" is too short."));
+	RaiseIf(str.GetLength() == 2, _T("Effect \"%s\" is too short."), str.Left(1));
 
 	if (str.IsEmpty()) {
 		Term.Definite[WC_EFF] = true;
@@ -398,143 +399,118 @@ bool CFindDlg::ParseEff(searchTerm &Term, CString str, bool Half, CString &err)
 				Term.EffNumber[i] = true;
 			}
 		}
-		FIND_RAISE_ERROR(Term.EffNumber[EF_NONE],
-			_T("Unknown effect \"") + str.Left(1) + _T("\" found in search query."));
+		RaiseIf(Term.EffNumber[EF_NONE], _T("Unknown effect \"%s\" found in search query."), str.Left(1));
 	}
 	if (str.GetLength() > 1) {
 		Term.Definite[WC_PARAM] = true;
 		Term.EffParam->Set(static_cast<unsigned char>(strtol(str.Right(2), NULL, 16)));
 	}
-
-	return true;
 }
 
-#define RETURN_ERROR(str) {AfxMessageBox(str, MB_OK | MB_ICONSTOP); m_searchTerm = old; return false; }
-bool CFindDlg::GetSimpleFindTerm()
+void CFindDlg::GetFindTerm()
 {
-	CString str = _T(""), err = _T("");
-	searchTerm old = m_searchTerm;
-	m_searchTerm.Reset();
+	CString str = _T("");
+	searchTerm newTerm;
 
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_NOTE)) {
-		m_cFindNoteField->GetWindowText(str);
-		if (!ParseNote(m_searchTerm, str, false, err)) RETURN_ERROR(err);
 		bool empty = str.IsEmpty();
+		m_cFindNoteField->GetWindowText(str);
+		ParseNote(newTerm, str, false);
 		m_cFindNoteField2->GetWindowText(str);
-		if (!ParseNote(m_searchTerm, str, !empty, err)) RETURN_ERROR(err);
-		if ((m_searchTerm.Note->Min == ECHO && m_searchTerm.Note->Max >= NOTE_C && m_searchTerm.Note->Max <= NOTE_B ||
-			m_searchTerm.Note->Max == ECHO && m_searchTerm.Note->Min >= NOTE_C && m_searchTerm.Note->Min <= NOTE_B) &&
-			m_searchTerm.Definite[WC_OCT])
-			RETURN_ERROR(_T("Cannot use both notes and echo buffer in a range search query."));
-			
+		ParseNote(newTerm, str, !empty);
+		RaiseIf((newTerm.Note->Min == ECHO && newTerm.Note->Max >= NOTE_C && newTerm.Note->Max <= NOTE_B ||
+			newTerm.Note->Max == ECHO && newTerm.Note->Min >= NOTE_C && newTerm.Note->Min <= NOTE_B) &&
+			newTerm.Definite[WC_OCT],
+			_T("Cannot use both notes and echo buffer in a range search query."));
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_INST)) {
-		m_cFindInstField->GetWindowText(str);
-		if (!ParseInst(m_searchTerm, str, false, err)) RETURN_ERROR(err);
 		bool empty = str.IsEmpty();
+		m_cFindInstField->GetWindowText(str);
+		ParseInst(newTerm, str, false);
 		m_cFindInstField2->GetWindowText(str);
-		if (!ParseInst(m_searchTerm, str, !empty, err)) RETURN_ERROR(err);
+		ParseInst(newTerm, str, !empty);
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_VOL)) {
-		m_cFindVolField->GetWindowText(str);
-		if (!ParseVol(m_searchTerm, str, false, err)) RETURN_ERROR(err);
 		bool empty = str.IsEmpty();
+		m_cFindVolField->GetWindowText(str);
+		ParseVol(newTerm, str, false);
 		m_cFindVolField2->GetWindowText(str);
-		if (!ParseVol(m_searchTerm, str, !empty, err)) RETURN_ERROR(err);
+		ParseVol(newTerm, str, !empty);
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_EFF)) {
 		m_cFindEffField->GetWindowText(str);
-		if (!ParseEff(m_searchTerm, str, false, err)) RETURN_ERROR(err);
+		ParseEff(newTerm, str, false);
 	}
 
 	for (int i = 0; i <= 6; i++) {
-		if (i == 6)
-			RETURN_ERROR(_T("Search query is empty."));
-		if (m_searchTerm.Definite[i]) break;
+		RaiseIf(i == 6, _T("Search query is empty."));
+		if (newTerm.Definite[i]) break;
 	}
 
-	return true;
+	m_searchTerm = std::move(newTerm);
 }
-#undef RETURN_ERROR
 
-#define RETURN_ERROR(str) {AfxMessageBox(str, MB_OK | MB_ICONSTOP); m_replaceTerm = old; return false; }
-bool CFindDlg::GetSimpleReplaceTerm()
+void CFindDlg::GetReplaceTerm()
 {
-	CString str = _T(""), err = _T("");
-	searchTerm old = m_replaceTerm;
-	m_replaceTerm.Reset();
+	CString str = _T("");
+	searchTerm newTerm;
 
 	if (IsDlgButtonChecked(IDC_CHECK_REPLACE_NOTE)) {
 		m_cReplaceNoteField->GetWindowText(str);
-		if (!ParseNote(m_replaceTerm, str, false, err)) RETURN_ERROR(err);
+		ParseNote(newTerm, str, false);
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_REPLACE_INST)) {
 		m_cReplaceInstField->GetWindowText(str);
-		if (!ParseInst(m_replaceTerm, str, false, err)) RETURN_ERROR(err);
+		ParseInst(newTerm, str, false);
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_REPLACE_VOL)) {
 		m_cReplaceVolField->GetWindowText(str);
-		if (!ParseVol(m_replaceTerm, str, false, err)) RETURN_ERROR(err);
+		ParseVol(newTerm, str, false);
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_REPLACE_EFF)) {
 		m_cReplaceEffField->GetWindowText(str);
-		if (!ParseEff(m_replaceTerm, str, false, err)) RETURN_ERROR(err);
+		ParseEff(newTerm, str, false);
 	}
 
 	for (int i = 0; i <= 6; i++) {
-		if (i == 6)
-			RETURN_ERROR(_T("Replacement query is empty."));
-		if (m_replaceTerm.Definite[i]) break;
+		RaiseIf(i == 6, _T("Replacement query is empty."));
+		if (newTerm.Definite[i]) break;
 	}
-	if (m_replaceTerm.Definite[WC_NOTE] && !m_replaceTerm.Note->IsSingle() ||
-		m_replaceTerm.Definite[WC_OCT]  && !m_replaceTerm.Oct->IsSingle() ||
-		m_replaceTerm.Definite[WC_INST] && !m_replaceTerm.Inst->IsSingle() ||
-		m_replaceTerm.Definite[WC_VOL]  && !m_replaceTerm.Vol->IsSingle() ||
-		m_replaceTerm.Definite[WC_PARAM]&& !m_replaceTerm.EffParam->IsSingle())
-		RETURN_ERROR(_T("Replacement query cannot contain wildcards."));
 
+	RaiseIf(newTerm.Definite[WC_NOTE] && !newTerm.Note->IsSingle() ||
+			newTerm.Definite[WC_OCT] && !newTerm.Oct->IsSingle() ||
+			newTerm.Definite[WC_INST] && !newTerm.Inst->IsSingle() ||
+			newTerm.Definite[WC_VOL] && !newTerm.Vol->IsSingle() ||
+			newTerm.Definite[WC_PARAM] && !newTerm.EffParam->IsSingle(),
+			_T("Replacement query cannot contain wildcards."));
+		
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) {
-		if (m_replaceTerm.Definite[WC_NOTE] && !m_replaceTerm.Definite[WC_OCT])
-			RETURN_ERROR(_T("Simple replacement query cannot contain a note with an unspecified octave if the option \"Remove original data\" is enabled."));
-		if (m_replaceTerm.Definite[WC_EFF] && !m_replaceTerm.Definite[WC_PARAM])
-			RETURN_ERROR(_T("Simple replacement query cannot contain an effect with an unspecified parameter if the option \"Remove original data\" is enabled."));
+		RaiseIf(newTerm.Definite[WC_NOTE] && !newTerm.Definite[WC_OCT],
+				_T("Replacement query cannot contain a note with an unspecified octave if ")
+				_T("the option \"Remove original data\" is enabled."));
+		RaiseIf(newTerm.Definite[WC_EFF] && !newTerm.Definite[WC_PARAM],
+				_T("Replacement query cannot contain an effect with an unspecified parameter if ")
+				_T("the option \"Remove original data\" is enabled."));
 	}
-	
-	return true;
-}
-#undef RETURN_ERROR
 
-replaceTerm CFindDlg::toReplace(const searchTerm x)
+	m_replaceTerm = std::move(newTerm);
+}
+
+replaceTerm CFindDlg::toReplace(const searchTerm *x)
 {
 	replaceTerm Term;
-	Term.Note.Note = x.Note->Min;
-	Term.Note.Octave = x.Oct->Min;
-	Term.Note.Instrument = x.Inst->Min;
-	Term.Note.Vol = x.Vol->Min;
-	Term.NoiseChan = x.NoiseChan;
+	Term.Note.Note = x->Note->Min;
+	Term.Note.Octave = x->Oct->Min;
+	Term.Note.Instrument = x->Inst->Min;
+	Term.Note.Vol = x->Vol->Min;
+	Term.NoiseChan = x->NoiseChan;
 	for (size_t i = 0; i < EF_COUNT; i++)
-		if (x.EffNumber[i]) {
+		if (x->EffNumber[i]) {
 			Term.Note.EffNumber[0] = static_cast<effect_t>(i);
 			break;
 		}
-	Term.Note.EffParam[0] = x.EffParam->Min;
-	memcpy(Term.Definite, x.Definite, sizeof(bool) * 6);
-
-	return Term;
-}
-
-searchTerm CFindDlg::toSearch(const replaceTerm x)
-{
-	searchTerm Term;
-	Term.Note->Set(x.Note.Note);
-	Term.Oct->Set(x.Note.Octave);
-	Term.Inst->Set(x.Note.Instrument);
-	Term.Vol->Set(x.Note.Vol);
-	Term.NoiseChan = x.NoiseChan;
-	for (size_t i = 0; i < EF_COUNT; i++)
-		Term.EffNumber[i] = i == x.Note.EffNumber[0];
-	Term.EffParam->Set(x.Note.EffParam[0]);
-	memcpy(Term.Definite, x.Definite, sizeof(bool) * 6);
+	Term.Note.EffParam[0] = x->EffParam->Min;
+	memcpy(Term.Definite, x->Definite, sizeof(bool) * 6);
 
 	return Term;
 }
@@ -590,6 +566,17 @@ bool CFindDlg::CompareFields(const stChanNote Target, bool Noise, int EffCount)
 	if (!EffectMatch) return Negate;
 
 	return !Negate;
+}
+
+void CFindDlg::RaiseIf(bool Check, LPCTSTR Str, ...)
+{
+	if (!Check) return;
+	static TCHAR buf[512];
+	va_list arg;
+	va_start(arg, Str);
+	_vsntprintf_s(buf, sizeof(buf), _TRUNCATE, Str, arg);
+	va_end(arg);
+	throw new CFindException(buf);
 }
 
 bool CFindDlg::Find(bool ShowEnd)
@@ -661,7 +648,7 @@ bool CFindDlg::Replace(bool CanUndo)
 	stChanNote Target;
 	int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
 
-	replaceTerm Replace = toReplace(m_replaceTerm);
+	replaceTerm Replace = toReplace(&m_replaceTerm);
 
 	if (m_bFound) {
 		m_pDocument->GetNoteData(Track, m_iFrame, m_iChannel, m_iRow, &Target);
@@ -731,7 +718,15 @@ bool CFindDlg::Replace(bool CanUndo)
 
 void CFindDlg::OnBnClickedButtonFindNext()
 {
-	if (!GetSimpleFindTerm()) return;
+	try {
+		GetFindTerm();
+	}
+	catch (CFindException *e) {
+		AfxMessageBox(e->what(), MB_OK | MB_ICONSTOP);
+		delete e;
+		return;
+	}
+
 	m_bVisible = true;
 	Find(true);
 	m_pView->SetFocus();
@@ -739,12 +734,18 @@ void CFindDlg::OnBnClickedButtonFindNext()
 
 void CFindDlg::OnBnClickedButtonReplace()
 {
-	if (!GetSimpleFindTerm()) return;
-	if (!GetSimpleReplaceTerm()) return;
-	if (m_cEffectColumn->GetCurSel() == MAX_EFFECT_COLUMNS) {
-		AfxMessageBox(_T("\"Any\" cannot be used as the effect column scope for replacing."), MB_OK | MB_ICONSTOP);
+	try {
+		RaiseIf(m_cEffectColumn->GetCurSel() == MAX_EFFECT_COLUMNS,
+				_T("\"Any\" cannot be used as the effect column scope for replacing."));
+		GetFindTerm();
+		GetReplaceTerm();
+	}
+	catch (CFindException *e) {
+		AfxMessageBox(e->what(), MB_OK | MB_ICONSTOP);
+		delete e;
 		return;
 	}
+
 	m_pView = static_cast<CFamiTrackerView*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveView());
 	if (!m_pView->GetEditMode()) return;
 	if (theApp.IsPlaying() && m_pView->GetFollowMode())

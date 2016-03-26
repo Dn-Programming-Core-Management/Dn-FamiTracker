@@ -157,15 +157,11 @@ void CCompiler::Print(LPCTSTR text, ...) const
 {
  	static TCHAR buf[256];
 
-	if (m_pLogger == NULL)
+	if (m_pLogger == NULL || !text)
 		return;
 
 	va_list argp;
 	va_start(argp, text);
-
-	if (!text)
-		return;
-
 	_vsntprintf_s(buf, sizeof(buf), _TRUNCATE, text, argp);
 	va_end(argp);		// // //
 

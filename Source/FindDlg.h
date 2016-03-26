@@ -40,16 +40,12 @@ class searchTerm
 {
 public:
 	searchTerm();
+	searchTerm(searchTerm &&other);
+	searchTerm& operator=(searchTerm &&other);
 
-	void Release();
-	void Reset();
-
-	CharRange *Note;
-	CharRange *Oct;
-	CharRange *Inst;
-	CharRange *Vol;
+	std::unique_ptr<CharRange> Note, Oct, Inst, Vol;
 	bool EffNumber[EF_COUNT];
-	CharRange *EffParam;
+	std::unique_ptr<CharRange> EffParam;
 	bool Definite[6];
 	bool NoiseChan;
 };
@@ -59,6 +55,14 @@ struct replaceTerm
 	stChanNote Note;
 	bool Definite[6];
 	bool NoiseChan;
+};
+
+// Exception for find dialog
+
+class CFindException : public std::runtime_error
+{
+public:
+	CFindException(const char *msg) : std::runtime_error(msg) { }
 };
 
 // CFindDlg dialog
@@ -82,17 +86,18 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-	bool ParseNote(searchTerm &Term, CString str, bool Half, CString &err);
-	bool ParseInst(searchTerm &Term, CString str, bool Half, CString &err);
-	bool ParseVol(searchTerm &Term, CString str, bool Half, CString &err);
-	bool ParseEff(searchTerm &Term, CString str, bool Half, CString &err);
+	void ParseNote(searchTerm &Term, CString str, bool Half);
+	void ParseInst(searchTerm &Term, CString str, bool Half);
+	void ParseVol(searchTerm &Term, CString str, bool Half);
+	void ParseEff(searchTerm &Term, CString str, bool Half);
+	void GetFindTerm();
+	void GetReplaceTerm();
 
-	bool GetSimpleFindTerm();
-	bool GetSimpleReplaceTerm();
 	bool CompareFields(const stChanNote Target, bool Noise, int EffCount);
 
-	replaceTerm toReplace(const searchTerm x);
-	searchTerm toSearch(const replaceTerm x);
+	void RaiseIf(bool Check, LPCTSTR Str, ...);
+
+	replaceTerm toReplace(const searchTerm *x);
 	
 	CFamiTrackerDoc *m_pDocument;
 	CFamiTrackerView *m_pView;
