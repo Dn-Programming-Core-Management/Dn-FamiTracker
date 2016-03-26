@@ -1098,6 +1098,7 @@ LRESULT CFamiTrackerView::OnUserDumpInst(WPARAM wParam, LPARAM lParam)		// // //
 	ASSERT_VALID(pDoc);
 	CInstrument *Inst = theApp.GetSoundGenerator()->GetRecordInstrument();
 	int Slot = pDoc->AddInstrument(Inst);
+	// use unique_ptr here
 	// Inst->Retain();
 	CMainFrame *pMainFrm = static_cast<CMainFrame*>(GetParentFrame());
 	ASSERT_VALID(pMainFrm);

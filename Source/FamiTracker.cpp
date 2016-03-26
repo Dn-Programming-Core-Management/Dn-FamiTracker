@@ -289,7 +289,7 @@ BOOL CFamiTrackerApp::InitInstance()
 
 #ifndef _DEBUG
 	// WIP
-	m_pMainWnd->GetMenu()->GetSubMenu(3)->RemoveMenu(ID_MODULE_CHANNELS, MF_BYCOMMAND);		// // //
+	m_pMainWnd->GetMenu()->GetSubMenu(4)->RemoveMenu(ID_MODULE_CHANNELS, MF_BYCOMMAND);		// // //
 #endif
 
 	// Initialization is done

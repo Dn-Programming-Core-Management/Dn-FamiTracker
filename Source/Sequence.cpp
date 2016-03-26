@@ -40,9 +40,17 @@ void CSequence::Clear()
 	m_iPlaying = -1;
 }
 
+bool CSequence::operator==(const CSequence &other)		// // //
+{
+	return m_iItemCount == other.m_iItemCount &&
+		m_iLoopPoint == other.m_iLoopPoint &&
+		m_iReleasePoint == other.m_iReleasePoint &&
+		m_iSetting == other.m_iSetting &&
+		memcmp(m_cValues, other.m_cValues, m_iItemCount * sizeof(*m_cValues)) == 0;
+}
+
 void CSequence::SetItem(int Index, signed char Value)
 {
-	ASSERT(Index <= MAX_SEQUENCE_ITEMS);
 	m_cValues[Index] = Value;
 }
 
@@ -79,7 +87,6 @@ void CSequence::SetSetting(seq_setting_t Setting)		// // //
 
 signed char CSequence::GetItem(int Index) const
 {
-	ASSERT(Index < MAX_SEQUENCE_ITEMS);
 	return m_cValues[Index];
 }
 

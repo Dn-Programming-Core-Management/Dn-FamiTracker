@@ -59,6 +59,8 @@ class CSequence: public CSequenceInterface {
 public:
 	CSequence();
 
+	bool         operator==(const CSequence &other);		// // //
+
 	void		 Clear();
 	signed char	 GetItem(int Index) const;
 	unsigned int GetItemCount() const;
@@ -79,5 +81,5 @@ private:
 	unsigned int m_iReleasePoint;
 	seq_setting_t m_iSetting;		// // //
 	signed char	 m_cValues[MAX_SEQUENCE_ITEMS];
-	int			 m_iPlaying;
+	int			 m_iPlaying; // unused
 };

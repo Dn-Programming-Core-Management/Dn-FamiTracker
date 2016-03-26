@@ -20,7 +20,8 @@
 
 #include "stdafx.h"
 #include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
+#include "FamiTrackerTypes.h"		// // //
+#include "APU/Types.h"		// // //
 #include "ConfigSound.h"
 #include "SoundGen.h"
 #include "Settings.h"
