@@ -24,6 +24,8 @@
 
 // CInstrumentEditorN163Wave dialog
 
+class CWaveformGenerator;		// // //
+
 class CInstrumentEditorN163Wave : public CInstrumentEditPanel
 {
 	DECLARE_DYNAMIC(CInstrumentEditorN163Wave)
@@ -49,6 +51,8 @@ protected:
 	void PopulateWaveBox();		// // //
 	void UpdateWaveBox(int Index);		// // //
 	void CreateWaveImage(char *const Pos, int Index) const;		// // //
+
+	void GenerateWaves(CWaveformGenerator *pWaveGen);		// // // test
 
 protected:
 	std::shared_ptr<CInstrumentN163> m_pInstrument;
