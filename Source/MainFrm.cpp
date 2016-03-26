@@ -34,6 +34,7 @@
 #include "VisualizerWnd.h"
 #include "TextExporter.h"
 #include "ConfigGeneral.h"
+#include "ConfigVersion.h"		// // //
 #include "ConfigAppearance.h"
 #include "ConfigMIDI.h"
 #include "ConfigSound.h"
@@ -1801,6 +1802,7 @@ void CMainFrame::OnFileGeneralsettings()
 	CPropertySheet ConfigWindow(Title, this, 0);
 
 	CConfigGeneral		TabGeneral;
+	CConfigVersion		TabVersion;		// // //
 	CConfigAppearance	TabAppearance;
 	CConfigMIDI			TabMIDI;
 	CConfigSound		TabSound;
@@ -1809,6 +1811,7 @@ void CMainFrame::OnFileGeneralsettings()
 
 	ConfigWindow.m_psh.dwFlags	&= ~PSH_HASHELP;
 	TabGeneral.m_psp.dwFlags	&= ~PSP_HASHELP;
+	TabVersion.m_psp.dwFlags	&= ~PSP_HASHELP;
 	TabAppearance.m_psp.dwFlags &= ~PSP_HASHELP;
 	TabMIDI.m_psp.dwFlags		&= ~PSP_HASHELP;
 	TabSound.m_psp.dwFlags		&= ~PSP_HASHELP;
@@ -1816,6 +1819,9 @@ void CMainFrame::OnFileGeneralsettings()
 	TabMixer.m_psp.dwFlags		&= ~PSP_HASHELP;
 	
 	ConfigWindow.AddPage(&TabGeneral);
+#ifdef _DEBUG
+	ConfigWindow.AddPage(&TabVersion);
+#endif
 	ConfigWindow.AddPage(&TabAppearance);
 	ConfigWindow.AddPage(&TabMIDI);
 	ConfigWindow.AddPage(&TabSound);

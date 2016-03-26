@@ -237,6 +237,7 @@
 #define IDD_GOTO                        326
 #define IDD_SWAP                        331
 #define IDD_RECORD_SETTINGS             334
+#define IDD_CONFIG_VERSION              335
 #define IDD_TRANSPOSE                   337
 #define IDC_INSTRUMENTS                 1001
 #define IDC_INSTSETTINGS                1002
@@ -458,6 +459,7 @@
 #define IDC_CHECK_BOOKMARK_SORT         1233
 #define IDC_CHECK_SWAP_ALL              1233
 #define IDC_CHECK_RECORDER_RESET        1233
+#define IDC_CHECK_VERSION_LOAD          1233
 #define IDC_CHECK_TRSP_DPCM             1233
 #define IDC_CHECK_BOOKMARK_HIGH1        1234
 #define IDC_NTSC                        1234
@@ -484,6 +486,7 @@
 #define IDC_COMBO1                      1255
 #define IDC_COMBO_STYLE                 1255
 #define IDC_COMBO_GOTO_CHIP             1255
+#define IDC_COMBO_VERSION_SELECT        1255
 #define IDC_TRACKS                      1257
 #define IDC_ABOUT3                      1258
 #define IDC_SPIN1                       1263
@@ -652,6 +655,9 @@
 #define IDC_EDIT_SWAP_CHAN2             1431
 #define IDC_EDIT_RECORDER_COUNT         1431
 #define IDC_SPIN_RECORDER_COUNT         1432
+#define IDC_CHECK_VERSION_EDIT          1433
+#define IDC_CHECK_VERSION_SAVE          1434
+#define IDC_CHECK_VERSION_BLOCK         1435
 #define IDC_RADIO_SEMITONE_INC          1436
 #define IDC_RADIO_SEMITONE_DEC          1437
 #define IDC_BUTTON_TRSP_CLEAR           1438
@@ -850,7 +856,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        339
+#define _APS_NEXT_RESOURCE_VALUE        340
 #define _APS_NEXT_COMMAND_VALUE         33184
 #define _APS_NEXT_CONTROL_VALUE         1439
 #define _APS_NEXT_SYMED_VALUE           179

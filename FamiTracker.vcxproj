@@ -39,6 +39,7 @@
     <RootNamespace>FamiTracker</RootNamespace>
     <Keyword>MFCProj</Keyword>
     <TargetPlatformVersion>8.1</TargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release 64|Win32'" Label="Configuration">
@@ -427,6 +428,7 @@
     <ClCompile Include="Source\Bookmark.cpp" />
     <ClCompile Include="Source\BookmarkDlg.cpp" />
     <ClCompile Include="Source\DSampleManager.cpp" />
+    <ClCompile Include="Source\ConfigVersion.cpp" />
     <ClCompile Include="Source\DetuneDlg.cpp" />
     <ClCompile Include="Source\Exception.cpp" />
     <ClCompile Include="Source\FamiTracker.cpp" />
@@ -668,6 +670,7 @@
     <ClInclude Include="Source\BookmarkDlg.h" />
     <ClInclude Include="Source\DSampleManager.h" />
     <ClInclude Include="Source\ChannelHandlerInterface.h" />
+    <ClInclude Include="Source\ConfigVersion.h" />
     <ClInclude Include="Source\DetuneDlg.h" />
     <ClInclude Include="Source\Exception.h" />
     <ClInclude Include="Source\FamiTracker.h" />
