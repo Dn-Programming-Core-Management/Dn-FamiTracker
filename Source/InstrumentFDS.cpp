@@ -58,23 +58,29 @@ CInstrumentFDS::CInstrumentFDS() : CSeqInstrument(INST_FDS),		// // //
 
 CInstrument *CInstrumentFDS::Clone() const
 {
-	CInstrumentFDS *pNewInst = new CInstrumentFDS();
+	CInstrumentFDS *inst = new CInstrumentFDS();		// // //
+	inst->CloneFrom(this);
+	return inst;
+}
 
+void CInstrumentFDS::CloneFrom(const CInstrument *pInst)
+{
+	CInstrument::CloneFrom(pInst);
+	
+	if (auto pNew = dynamic_cast<const CInstrumentFDS*>(pInst)) {
 	// Copy parameters
-	memcpy(pNewInst->m_iSamples, m_iSamples, WAVE_SIZE);
-	memcpy(pNewInst->m_iModulation, m_iModulation, MOD_SIZE);
-	pNewInst->m_iModulationDelay = m_iModulationDelay;
-	pNewInst->m_iModulationDepth = m_iModulationDepth;
-	pNewInst->m_iModulationSpeed = m_iModulationSpeed;
+		for (int i = 0; i < WAVE_SIZE; ++i)
+			SetSample(i, pNew->GetSample(i));
+		for (int i = 0; i < MOD_SIZE; ++i)
+			SetModulation(i, pNew->GetModulation(i));
+		SetModulationDelay(pNew->GetModulationDelay());
+		SetModulationDepth(pNew->GetModulationDepth());
+		SetModulationSpeed(pNew->GetModulationSpeed());
 
-	// Copy sequences
-	for (int i = 0; i < SEQUENCE_COUNT; ++i)		// // //
-		m_pSequence[i]->Copy(pNewInst->GetSequence(i));
-
-	// Copy name
-	pNewInst->SetName(GetName());
-
-	return pNewInst;
+		// Copy sequences
+		for (int i = 0; i < SEQUENCE_COUNT; ++i)		// // //
+			SetSequence(i, new CSequence(*pNew->GetSequence(i)));
+	}
 }
 
 void CInstrumentFDS::Setup()

@@ -38,6 +38,12 @@ CInstrument::~CInstrument()
 {
 }
 
+void CInstrument::CloneFrom(const CInstrument *pSeq)
+{
+	SetName(pSeq->GetName());
+	m_iType = pSeq->GetType();
+}
+
 void CInstrument::SetName(const char *Name)
 {
 	strncpy_s(m_cName, Name, INST_NAME_MAX);

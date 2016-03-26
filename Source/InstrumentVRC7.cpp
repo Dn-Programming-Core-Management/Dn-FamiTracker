@@ -41,16 +41,20 @@ CInstrumentVRC7::CInstrumentVRC7() : CInstrument(INST_VRC7), m_iPatch(0)		// // 
 
 CInstrument *CInstrumentVRC7::Clone() const
 {
-	CInstrumentVRC7 *pNew = new CInstrumentVRC7();
+	CInstrumentVRC7 *inst = new CInstrumentVRC7();		// // //
+	inst->CloneFrom(this);
+	return inst;
+}
 
-	pNew->SetPatch(GetPatch());
-
-	for (int i = 0; i < 8; ++i)
-		pNew->SetCustomReg(i, GetCustomReg(i));
-
-	pNew->SetName(GetName());
-
-	return pNew;
+void CInstrumentVRC7::CloneFrom(const CInstrument *pInst)
+{
+	CInstrument::CloneFrom(pInst);
+	
+	if (auto pNew = dynamic_cast<const CInstrumentVRC7*>(pInst)) {
+		SetPatch(pNew->GetPatch());
+		for (int i = 0; i < 8; ++i)
+			SetCustomReg(i, pNew->GetCustomReg(i));
+	}
 }
 
 void CInstrumentVRC7::Setup()

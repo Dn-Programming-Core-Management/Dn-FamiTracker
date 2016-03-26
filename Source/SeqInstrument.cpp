@@ -47,15 +47,19 @@ CSeqInstrument::CSeqInstrument(inst_type_t type) : CInstrument(type),
 CInstrument *CSeqInstrument::Clone() const
 {
 	CSeqInstrument *inst = new CSeqInstrument(m_iType);		// // //
-
-	for (int i = 0; i < SEQ_COUNT; i++) {
-		inst->SetSeqEnable(i, GetSeqEnable(i));
-		inst->SetSeqIndex(i, GetSeqIndex(i));
-	}
-
-	inst->SetName(GetName());
-
+	inst->CloneFrom(this);
 	return inst;
+}
+
+void CSeqInstrument::CloneFrom(const CInstrument *pInst)
+{
+	CInstrument::CloneFrom(pInst);
+	
+	if (auto pNew = dynamic_cast<const CSeqInstrument*>(pInst))
+		for (int i = 0; i < SEQ_COUNT; i++) {
+			SetSeqEnable(i, pNew->GetSeqEnable(i));
+			SetSeqIndex(i, pNew->GetSeqIndex(i));
+		}
 }
 
 void CSeqInstrument::Setup()

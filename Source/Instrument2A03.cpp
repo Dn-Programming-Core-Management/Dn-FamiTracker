@@ -44,16 +44,24 @@ CInstrument2A03::CInstrument2A03() : CSeqInstrument(INST_2A03),		// // //
 
 CInstrument *CInstrument2A03::Clone() const
 {
-	CInstrument2A03 *pNew = static_cast<CInstrument2A03*>(CSeqInstrument::Clone());		// // //
+	CInstrument2A03 *inst = new CInstrument2A03();		// // //
+	inst->CloneFrom(this);
+	return inst;
+}
 
-	for (int i = 0; i < OCTAVE_RANGE; ++i) {
-		for (int j = 0; j < NOTE_RANGE; ++j) {
-			pNew->SetSample(i, j, GetSample(i, j));
-			pNew->SetSamplePitch(i, j, GetSamplePitch(i, j));
+void CInstrument2A03::CloneFrom(const CInstrument *pInst)
+{
+	CSeqInstrument::CloneFrom(pInst);
+
+	if (auto pNew = dynamic_cast<const CInstrument2A03*>(pInst)) {
+		for (int i = 0; i < OCTAVE_RANGE; ++i) {
+			for (int j = 0; j < NOTE_RANGE; ++j) {
+				SetSample(i, j, pNew->GetSample(i, j));
+				SetSamplePitch(i, j, pNew->GetSamplePitch(i, j));
+				SetSampleDeltaValue(i, j, pNew->GetSampleDeltaValue(i, j));
+			}
 		}
 	}
-
-	return pNew;
 }
 
 void CInstrument2A03::Store(CDocumentFile *pDocFile)

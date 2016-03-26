@@ -52,6 +52,9 @@ public:
 	bool	GetModulationEnable() const;
 	void	SetModulationEnable(bool Enable);
 
+protected:
+	virtual void	CloneFrom(const CInstrument *pInst);		// // //
+
 private:
 	void StoreSequence(CDocumentFile *pDocFile, const CSequence *pSeq);		// // //
 	CSequence *LoadSequence(CDocumentFile *pDocFile) const;

@@ -50,6 +50,7 @@ public:
 	virtual LPCTSTR	GetSequenceName(int Index) const { return nullptr; }		// // //
 
 protected:
+	virtual void	CloneFrom(const CInstrument *pSeq);		// // //
 	CSeqInstrument *CopySequences(const CSeqInstrument *const src);		// // //
 	int		m_iSeqEnable[SEQ_COUNT];
 	int		m_iSeqIndex[SEQ_COUNT];

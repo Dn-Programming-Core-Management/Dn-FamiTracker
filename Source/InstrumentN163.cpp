@@ -50,20 +50,25 @@ CInstrumentN163::CInstrumentN163() : CSeqInstrument(INST_N163),		// // //
 
 CInstrument *CInstrumentN163::Clone() const
 {
-	CInstrumentN163 *pNew = static_cast<CInstrumentN163*>(CSeqInstrument::Clone());		// // //
+	CInstrumentN163 *inst = new CInstrumentN163();		// // //
+	inst->CloneFrom(this);
+	return inst;
+}
 
-	pNew->SetWaveSize(GetWaveSize());
-	pNew->SetWavePos(GetWavePos());
-//	pNew->SetAutoWavePos(GetAutoWavePos());
-	pNew->SetWaveCount(GetWaveCount());
+void CInstrumentN163::CloneFrom(const CInstrument *pInst)
+{
+	CSeqInstrument::CloneFrom(pInst);
+	
+	if (auto pNew = dynamic_cast<const CInstrumentN163*>(pInst)) {
+		SetWaveSize(pNew->GetWaveSize());
+		SetWavePos(pNew->GetWavePos());
+	//	SetAutoWavePos(pInst->GetAutoWavePos());
+		SetWaveCount(pNew->GetWaveCount());
 
-	for (int i = 0; i < MAX_WAVE_COUNT; ++i) {
-		for (int j = 0; j < MAX_WAVE_SIZE; ++j) {
-			pNew->SetSample(i, j, GetSample(i, j));
-		}
+		for (int i = 0; i < MAX_WAVE_COUNT; ++i)
+			for (int j = 0; j < MAX_WAVE_SIZE; ++j)
+				SetSample(i, j, pNew->GetSample(i, j));
 	}
-
-	return pNew;
 }
 
 void CInstrumentN163::Store(CDocumentFile *pDocFile)

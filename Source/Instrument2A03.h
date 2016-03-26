@@ -50,6 +50,9 @@ public:
 
 	bool	AssignedSamples() const;
 
+protected:
+	virtual void	CloneFrom(const CInstrument *pInst);		// // //
+
 public:
 	static LPCTSTR SEQUENCE_NAME[];
 	LPCTSTR	GetSequenceName(int Index) const { return SEQUENCE_NAME[Index]; }		// // //

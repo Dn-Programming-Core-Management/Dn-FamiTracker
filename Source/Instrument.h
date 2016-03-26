@@ -56,7 +56,8 @@ public:
 // Instrument base class
 class CInstrument {
 public:
-	CInstrument(inst_type_t type);		// // //
+	CInstrument(inst_type_t type);										// // // ctor with instrument type
+	virtual CInstrument* Clone() const = 0;								// // // virtual copy ctor
 	virtual ~CInstrument();
 	void SetName(const char *Name);
 	void GetName(char *Name) const;
@@ -64,7 +65,6 @@ public:
 	void RegisterManager(CInstrumentManagerInterface *pManager);		// // //
 public:
 	virtual inst_type_t GetType() const;								// // // Returns instrument type
-	virtual CInstrument* Clone() const = 0;								// Creates a copy
 	virtual void Setup() = 0;											// Setup some initial values
 	virtual void Store(CDocumentFile *pDocFile) = 0;					// Saves the instrument to the module
 	virtual bool Load(CDocumentFile *pDocFile) = 0;						// Loads the instrument from a module
@@ -73,6 +73,7 @@ public:
 	virtual int Compile(CChunk *pChunk, int Index) = 0;					// // // Compiles the instrument for NSF generation
 	virtual bool CanRelease() const = 0;
 protected:
+	virtual void CloneFrom(const CInstrument *pInst);					// // // virtual copying
 	void InstrumentChanged() const;
 public:
 	static const int INST_NAME_MAX = 128;

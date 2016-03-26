@@ -53,6 +53,9 @@ public:
 	bool	InsertNewWave(int Index);		// // //
 	bool	RemoveWave(int Index);		// // //
 
+protected:
+	virtual void	CloneFrom(const CInstrument *pInst);		// // //
+
 public:
 	static const int MAX_WAVE_SIZE = 240;		// Wave size (240 samples)		// // //
 	static const int MAX_WAVE_COUNT = 64;		// Number of waves

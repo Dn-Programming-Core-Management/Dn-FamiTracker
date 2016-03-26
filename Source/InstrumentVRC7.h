@@ -41,6 +41,9 @@ public:
 	void		 SetCustomReg(int Reg, unsigned char Value);		// // //
 	unsigned char GetCustomReg(int Reg) const;		// // //
 
+protected:
+	virtual void	CloneFrom(const CInstrument *pInst);		// // //
+
 private:
 	unsigned int m_iPatch;
 	unsigned char m_iRegs[8];		// // // Custom patch settings
