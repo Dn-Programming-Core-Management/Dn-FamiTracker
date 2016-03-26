@@ -168,7 +168,7 @@ bool CSeqInstrument::LoadFile(CInstrumentFile *pFile, int iVersion)
 		SetSeqIndex(i, Index);
 	}
 	catch (CModuleException *e) {
-		e->AppendError("At %d sequence,", GetSequenceName(i));
+		e->AppendError("At %s sequence,", GetSequenceName(i));
 		if (pSeq) delete pSeq;
 		throw;
 	}

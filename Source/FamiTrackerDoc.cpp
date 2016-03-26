@@ -1906,7 +1906,7 @@ void CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile, const int
 			}
 		}
 		catch (CModuleException *e) {
-			e->AppendError("At VRC6 %d sequence %d,", CInstrumentVRC6::SEQUENCE_NAME[Type], Index);
+			e->AppendError("At VRC6 %s sequence %d,", CInstrumentVRC6::SEQUENCE_NAME[Type], Index);
 			throw;
 		}
 	}
@@ -1925,7 +1925,7 @@ void CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile, const int
 				}
 			}
 			catch (CModuleException *e) {
-				e->AppendError("At VRC6 %d sequence %d,", CInstrumentVRC6::SEQUENCE_NAME[j], i);
+				e->AppendError("At VRC6 %s sequence %d,", CInstrumentVRC6::SEQUENCE_NAME[j], i);
 				throw;
 			}
 		}
@@ -1937,7 +1937,7 @@ void CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile, const int
 			pSeq->SetSetting(static_cast<seq_setting_t>(pDocFile->GetBlockInt()));		// // //
 		}
 		catch (CModuleException *e) {
-			e->AppendError("At VRC6 %d sequence %d,", CInstrumentVRC6::SEQUENCE_NAME[Types[i]], Indices[i]);
+			e->AppendError("At VRC6 %s sequence %d,", CInstrumentVRC6::SEQUENCE_NAME[Types[i]], Indices[i]);
 			throw;
 		}
 	}
@@ -1970,7 +1970,7 @@ void CFamiTrackerDoc::ReadBlock_SequencesN163(CDocumentFile *pDocFile, const int
 			}
 		}
 		catch (CModuleException *e) {
-			e->AppendError("At N163 %d sequence %d,", CInstrumentN163::SEQUENCE_NAME[Type], Index);
+			e->AppendError("At N163 %s sequence %d,", CInstrumentN163::SEQUENCE_NAME[Type], Index);
 			throw;
 		}
 	}
@@ -2003,7 +2003,7 @@ void CFamiTrackerDoc::ReadBlock_SequencesS5B(CDocumentFile *pDocFile, const int 
 			}
 		}
 		catch (CModuleException *e) {
-			e->AppendError("At 5B %d sequence %d,", CInstrumentS5B::SEQUENCE_NAME[Type], Index);
+			e->AppendError("At 5B %s sequence %d,", CInstrumentS5B::SEQUENCE_NAME[Type], Index);
 			throw;
 		}
 	}
