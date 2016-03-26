@@ -138,7 +138,6 @@ void CPatternAction::RestoreEntire(CPatternEditor *pPatternEditor)
 bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // //
 {
 	CCursorPos Start;
-	CSelection New;
 
 	if ((m_iPastePos == PASTE_SELECTION || m_iPastePos == PASTE_FILL) && !m_bSelecting)
 		m_iPastePos = PASTE_CURSOR;
@@ -171,24 +170,32 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // /
 	else
 		End += m_pClipData->ClipInfo.Rows - 1;
 
-	if (m_iPastePos == PASTE_FILL) {
+	switch (m_iPastePos) {
+	case PASTE_FILL:
 		End.m_iFrame = m_selection.GetFrameEnd();
 		End.m_iRow = m_selection.GetRowEnd();
 		End.m_iChannel = m_selection.GetChanEnd();
-		bool Cut = (End.m_iChannel - Start.m_iChannel + 1) % m_pClipData->ClipInfo.Channels == 0;
 		Start.m_iColumn = CPatternEditor::GetCursorStartColumn(m_pClipData->ClipInfo.StartColumn);
-		End.m_iColumn = CPatternEditor::GetCursorEndColumn(Cut ? m_pClipData->ClipInfo.EndColumn :
+		End.m_iColumn = CPatternEditor::GetCursorEndColumn(
+			!((End.m_iChannel - Start.m_iChannel + 1) % m_pClipData->ClipInfo.Channels) ?
+			m_pClipData->ClipInfo.EndColumn :
 			static_cast<column_t>(COLUMN_EFF1 + CFamiTrackerDoc::GetDoc()->GetEffColumns(m_iUndoTrack, End.m_iChannel)));
-	}
-	else if (m_iPastePos == PASTE_DRAG) {
+		break;
+	case PASTE_DRAG:
 		End.m_iChannel += m_pClipData->ClipInfo.Channels - 1;
 		Start.m_iColumn = m_dragTarget.GetColStart();
 		End.m_iColumn = m_dragTarget.GetColEnd();
-	}
-	else {
+		break;
+	default:
 		End.m_iChannel += m_pClipData->ClipInfo.Channels - 1;
 		Start.m_iColumn = CPatternEditor::GetCursorStartColumn(m_pClipData->ClipInfo.StartColumn);
 		End.m_iColumn = CPatternEditor::GetCursorEndColumn(m_pClipData->ClipInfo.EndColumn);
+	}
+
+	const bool bOverflow = theApp.GetSettings()->General.bOverflowPaste;
+	if (!bOverflow && End.m_iFrame > Start.m_iFrame) {
+		End.m_iFrame = Start.m_iFrame;
+		End.m_iRow = pPatternEditor->GetCurrentPatternLength(End.m_iFrame) - 1;
 	}
 
 	const unsigned EFBEGIN = CPatternEditor::GetCursorStartColumn(COLUMN_EFF1);
@@ -201,7 +208,8 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // /
 			End.m_iColumn = std::min(End.m_iColumn, C_EFF4_PARAM2);
 		}
 	}
-
+	
+	CSelection New;
 	New.m_cpStart = Start;
 	New.m_cpEnd = End;
 	pPatternEditor->SetSelection(New);
@@ -214,12 +222,13 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // /
 	else {
 		pPatternEditor->SetSelection(m_selection);
 		if (!m_bSelecting) pPatternEditor->CancelSelection();
-		int Confirm;
+		int Confirm = IDYES;
 		switch (Cond) {
 		case SEL_REPEATED_ROW:
 			Confirm = AfxMessageBox(IDS_PASTE_REPEATED_ROW, MB_YESNO | MB_ICONEXCLAMATION | MB_DEFBUTTON2);
 			break;
 		case SEL_NONTERMINAL_SKIP: case SEL_TERMINAL_SKIP:
+			if (!bOverflow) break;
 			Confirm = AfxMessageBox(IDS_PASTE_NONTERMINAL, MB_YESNO | MB_ICONEXCLAMATION | MB_DEFBUTTON2);
 			break;
 		}

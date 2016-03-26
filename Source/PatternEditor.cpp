@@ -2906,22 +2906,27 @@ void CPatternEditor::MoveToFrame(int Frame)
 {
 	const int FrameCount = GetFrameCount();		// // //
 
-	if (m_bSelecting) {		// // //
-		if (Frame < 0)
-			m_iWarpCount--;
-		else if (Frame / FrameCount > m_iCurrentFrame / FrameCount)
-			m_iWarpCount++;
-	}
-	else
-		m_iWarpCount = 0;
+	if (!m_bSelecting)
+		m_iWarpCount = 0;		// // //
 
 	if (theApp.GetSettings()->General.bWrapFrames) {
+		if (m_bSelecting) {		// // //
+			if (theApp.GetSettings()->General.bMultiFrameSel) {		// // //
+				if (Frame < 0)
+					m_iWarpCount--;
+				else if (Frame / FrameCount > m_iCurrentFrame / FrameCount)
+					m_iWarpCount++;
+			}
+		}
 		Frame %= FrameCount;
 		if (Frame < 0)
 			Frame += FrameCount;
 	}
 	else
 		Frame = std::min(std::max(Frame, 0), FrameCount - 1);
+
+	if (m_bSelecting && !theApp.GetSettings()->General.bMultiFrameSel)		// // //
+		m_selection.m_cpStart.m_iFrame = m_selection.m_cpEnd.m_iFrame = Frame;
 	
 	if (theApp.IsPlaying() && m_bFollowMode) {
 		if (m_iPlayFrame != Frame) {
@@ -3341,6 +3346,11 @@ void CPatternEditor::ContinueMouseSelection(const CPoint &point)
 		}
 
 		if (!theApp.GetSettings()->General.bMultiFrameSel) {		// // //
+			m_selection.m_cpEnd.m_iFrame %= FrameCount;
+			if (m_selection.m_cpEnd.m_iFrame < 0) m_selection.m_cpEnd.m_iFrame += FrameCount;
+			m_selection.m_cpStart.m_iFrame %= FrameCount;
+			if (m_selection.m_cpStart.m_iFrame < 0) m_selection.m_cpStart.m_iFrame += FrameCount;
+
 			if (m_selection.m_cpEnd.m_iFrame > m_selection.m_cpStart.m_iFrame) {
 				m_selection.m_cpEnd.m_iFrame = m_selection.m_cpStart.m_iFrame;
 				m_selection.m_cpEnd.m_iRow = GetCurrentPatternLength(m_iCurrentFrame) - 1;
@@ -3354,6 +3364,8 @@ void CPatternEditor::ContinueMouseSelection(const CPoint &point)
 		// Selection has changed
 		m_bSelectionInvalidated = true;
 	}
+	TRACE("%d %d; %d %d\n", m_selection.m_cpStart.m_iFrame, m_selection.m_cpStart.m_iRow,
+		  m_selection.m_cpEnd.m_iFrame, m_selection.m_cpEnd.m_iRow);
 }
 
 void CPatternEditor::OnMouseMove(UINT nFlags, const CPoint &point)
