@@ -47,6 +47,7 @@ public:
 	virtual void	SetSequence(int SeqType, CSequence *pSeq);		// // // register sequence in document
 
 	// static const int SEQUENCE_TYPES[] = {SEQ_VOLUME, SEQ_ARPEGGIO, SEQ_PITCH, SEQ_HIPITCH, SEQ_DUTYCYCLE};
+	virtual LPCTSTR	GetSequenceName(int Index) const { return nullptr; }		// // //
 
 protected:
 	CSeqInstrument *CopySequences(const CSeqInstrument *const src);		// // //

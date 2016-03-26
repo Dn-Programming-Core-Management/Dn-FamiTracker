@@ -26,4 +26,8 @@
 class CInstrumentVRC6 : public CSeqInstrument {
 public:
 	CInstrumentVRC6() : CSeqInstrument(INST_VRC6) {};
+
+public:
+	static LPCTSTR SEQUENCE_NAME[];
+	LPCTSTR	GetSequenceName(int Index) const { return SEQUENCE_NAME[Index]; }		// // //
 };

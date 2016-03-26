@@ -57,6 +57,10 @@ public:
 	static const int MAX_WAVE_SIZE = 240;		// Wave size (240 samples)		// // //
 	static const int MAX_WAVE_COUNT = 64;		// Number of waves
 
+public:
+	static LPCTSTR SEQUENCE_NAME[];
+	LPCTSTR	GetSequenceName(int Index) const { return SEQUENCE_NAME[Index]; }		// // //
+
 private:
 	int		m_iSamples[MAX_WAVE_COUNT][MAX_WAVE_SIZE];
 	int		m_iWaveSize;

@@ -36,6 +36,8 @@ static const char TRIANGLE_WAVE[] = {
 };
 static const int DEFAULT_WAVE_SIZE = sizeof(TRIANGLE_WAVE) / sizeof(char);
 
+LPCTSTR CInstrumentN163::SEQUENCE_NAME[] = {_T("Volume"), _T("Arpeggio"), _T("Pitch"), _T("Hi-pitch"), _T("Wave Index")};
+
 CInstrumentN163::CInstrumentN163() : CSeqInstrument(INST_N163),		// // //
 	m_iSamples(),
 	m_iWaveSize(DEFAULT_WAVE_SIZE),

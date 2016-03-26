@@ -50,6 +50,10 @@ public:
 
 	bool	AssignedSamples() const;
 
+public:
+	static LPCTSTR SEQUENCE_NAME[];
+	LPCTSTR	GetSequenceName(int Index) const { return SEQUENCE_NAME[Index]; }		// // //
+
 private:
 	char	m_cSamples[OCTAVE_RANGE][12];				// Samples
 	char	m_cSamplePitch[OCTAVE_RANGE][12];			// Play pitch/loop

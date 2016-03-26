@@ -41,6 +41,8 @@ const char TEST_WAVE[] = {
 
 const int FIXED_FDS_INST_SIZE = 2 + 16 + 4 + 1;		// // //
 
+LPCTSTR CInstrumentFDS::SEQUENCE_NAME[] = {_T("Volume"), _T("Arpeggio"), _T("Pitch"), _T("Hi-pitch"), _T("(N/A)")};
+
 CInstrumentFDS::CInstrumentFDS() : CSeqInstrument(INST_FDS),		// // //
 	m_iModulationSpeed(0),
 	m_iModulationDepth(0),

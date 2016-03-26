@@ -63,6 +63,8 @@ public:
 	static const int WAVE_SIZE = 64;
 	static const int MOD_SIZE = 32;
 	static const int SEQUENCE_COUNT = 3;		// // //
+	static LPCTSTR SEQUENCE_NAME[];
+	LPCTSTR	GetSequenceName(int Index) const { return SEQUENCE_NAME[Index]; }		// // //
 
 private:
 	// Instrument data

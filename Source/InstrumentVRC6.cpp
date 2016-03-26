@@ -25,3 +25,5 @@
 #include "Instrument.h"
 #include "SeqInstrument.h"
 #include "InstrumentVRC6.h"
+
+LPCTSTR CInstrumentVRC6::SEQUENCE_NAME[] = {_T("Volume"), _T("Arpeggio"), _T("Pitch"), _T("Hi-pitch"), _T("Pulse Width")};
