@@ -20,7 +20,6 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "FamiTrackerDoc.h"
 #include "CommentsDlg.h"
 
 // CCommentsDlg dialog
@@ -33,14 +32,40 @@ RECT CCommentsDlg::WinRect;
 
 IMPLEMENT_DYNAMIC(CCommentsDlg, CDialog)
 
-CCommentsDlg::CCommentsDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CCommentsDlg::IDD, pParent), m_pFont(NULL)
+CCommentsDlg::CCommentsDlg(CWnd* pParent /*=NULL*/) :
+	CDialog(CCommentsDlg::IDD, pParent), m_pFont(NULL),
+	m_sComment(""), m_bShowOnLoad(false)		// // //
 {
 }
 
 CCommentsDlg::~CCommentsDlg()
 {
 	SAFE_RELEASE(m_pFont);
+}
+
+CString CCommentsDlg::GetComment() const		// // //
+{
+	return m_sComment;
+}
+
+void CCommentsDlg::SetComment(CString Str)
+{
+	m_sComment = Str;
+}
+
+bool CCommentsDlg::GetShowOnLoad() const
+{
+	return m_bShowOnLoad;
+}
+
+void CCommentsDlg::SetShowOnLoad(bool Enable)
+{
+	m_bShowOnLoad = Enable;
+}
+
+bool CCommentsDlg::IsChanged() const
+{
+	return m_bChanged;
 }
 
 void CCommentsDlg::DoDataExchange(CDataExchange* pDX)
@@ -50,11 +75,10 @@ void CCommentsDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CCommentsDlg, CDialog)
-	ON_BN_CLICKED(IDOK, &CCommentsDlg::OnBnClickedOk)
-	ON_BN_CLICKED(IDCANCEL, &CCommentsDlg::OnBnClickedCancel)
+	ON_BN_CLICKED(IDOK, OnBnClickedOk)
 	ON_WM_SIZE()
-	ON_EN_CHANGE(IDC_COMMENTS, &CCommentsDlg::OnEnChangeComments)
-	ON_BN_CLICKED(IDC_SHOWONOPEN, &CCommentsDlg::OnBnClickedShowonopen)
+	ON_EN_CHANGE(IDC_COMMENTS, OnEnChangeComments)
+	ON_BN_CLICKED(IDC_SHOWONOPEN, OnBnClickedShowonopen)
 	ON_WM_GETMINMAXINFO()
 END_MESSAGE_MAP()
 
@@ -63,25 +87,14 @@ END_MESSAGE_MAP()
 
 void CCommentsDlg::SaveComment()
 {
-	CFamiTrackerDoc *pDoc = CFamiTrackerDoc::GetDoc();
-	CString comment;
-
-	GetDlgItemText(IDC_COMMENTS, comment);
-
-	pDoc->SetComment(comment, IsDlgButtonChecked(IDC_SHOWONOPEN) == BST_CHECKED);
+	GetDlgItemText(IDC_COMMENTS, m_sComment);		// // //
+	m_bShowOnLoad = IsDlgButtonChecked(IDC_SHOWONOPEN) == BST_CHECKED;
 }
 
 void CCommentsDlg::OnBnClickedOk()
 {
-	if (m_bChanged)
-		SaveComment();
-
-	EndDialog(0);
-}
-
-void CCommentsDlg::OnBnClickedCancel()
-{
-	EndDialog(0);
+	SaveComment();
+	CDialog::OnOK();		// // //
 }
 
 void CCommentsDlg::OnSize(UINT nType, int cx, int cy)
@@ -119,11 +132,8 @@ BOOL CCommentsDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	CFamiTrackerDoc *pDoc = CFamiTrackerDoc::GetDoc();
-	CString comment = pDoc->GetComment();
-
-	SetDlgItemText(IDC_COMMENTS, comment);
-
+	SetDlgItemText(IDC_COMMENTS, m_sComment);		// // //
+	CheckDlgButton(IDC_SHOWONOPEN, m_bShowOnLoad ? BST_CHECKED : BST_UNCHECKED);
 	m_bChanged = false;
 
 	m_pFont = new CFont();
@@ -132,14 +142,10 @@ BOOL CCommentsDlg::OnInitDialog()
 	CEdit *pEdit = (CEdit*)GetDlgItem(IDC_COMMENTS);
 	pEdit->SetFont(m_pFont);
 
-	CheckDlgButton(IDC_SHOWONOPEN, pDoc->ShowCommentOnOpen() ? BST_CHECKED : BST_UNCHECKED);
-
-	if (WinRect.top == 0 && WinRect.bottom == 0) {
+	if (WinRect.top == 0 && WinRect.bottom == 0)
 		GetWindowRect(&WinRect);
-	}
-	else {
+	else
 		MoveWindow(WinRect.left, WinRect.top, WinRect.right - WinRect.left, WinRect.bottom - WinRect.top);
-	}
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE

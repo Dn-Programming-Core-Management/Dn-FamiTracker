@@ -30,6 +30,12 @@ class CCommentsDlg : public CDialog
 public:
 	CCommentsDlg(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CCommentsDlg();
+	// // //
+	CString GetComment() const;
+	void SetComment(CString Str);
+	bool GetShowOnLoad() const;
+	void SetShowOnLoad(bool Enable);
+	bool IsChanged() const;
 
 // Dialog Data
 	enum { IDD = IDD_COMMENTS };
@@ -48,11 +54,13 @@ protected:
 protected:
 	bool m_bChanged;
 	CFont *m_pFont;
+	// // //
+	CString m_sComment;
+	bool m_bShowOnLoad;
 
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedOk();
-	afx_msg void OnBnClickedCancel();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	virtual BOOL OnInitDialog();
 	virtual BOOL DestroyWindow();
