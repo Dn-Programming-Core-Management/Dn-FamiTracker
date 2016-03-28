@@ -1381,7 +1381,7 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 							int Pitch = 0;
 							for (int y = 0; y < 6; y++) {
 								for (int x = 0; x < 12; x++) {
-									pInst->SetSample(y, x, ImportedInstruments.AssignedSample);
+									pInst->SetSampleIndex(y, x, ImportedInstruments.AssignedSample);
 									pInst->SetSamplePitch(y, x, Pitch);
 									Pitch = (Pitch + 1) % 16;
 								}
@@ -2559,9 +2559,9 @@ bool CFamiTrackerDoc::ImportInstruments(CFamiTrackerDoc *pImported, int *pInstTa
 				CInstrument2A03 *pInstrument = static_cast<CInstrument2A03*>(pInst);
 				// Update DPCM samples
 				for (int o = 0; o < OCTAVE_RANGE; ++o) for (int n = 0; n < NOTE_RANGE; ++n) {
-					int Sample = pInstrument->GetSample(o, n);
+					int Sample = pInstrument->GetSampleIndex(o, n);
 					if (Sample != 0)
-						pInstrument->SetSample(o, n, SamplesTable[Sample - 1] + 1);
+						pInstrument->SetSampleIndex(o, n, SamplesTable[Sample - 1] + 1);
 				}
 			}
 			// Update samples
@@ -4571,7 +4571,7 @@ void CFamiTrackerDoc::RemoveUnusedSamples()		// // //
 						if (GetInstrumentType(Index) != INST_2A03) continue;
 						AssignUsed[Index][pNote->Octave][pNote->Note - 1] = true;
 						auto pInst = std::static_pointer_cast<CInstrument2A03>(GetInstrument(Index));
-						if (pInst->GetSample(pNote->Octave, pNote->Note - 1) == i + 1)
+						if (pInst->GetSampleIndex(pNote->Octave, pNote->Note - 1) == i + 1)
 							Used = true;
 					}
 				}
@@ -4585,7 +4585,7 @@ void CFamiTrackerDoc::RemoveUnusedSamples()		// // //
 		if (auto pInst = std::dynamic_pointer_cast<CInstrument2A03>(GetInstrument(i)))
 			for (int o = 0; o < OCTAVE_RANGE; o++) for (int n = 0; n < NOTE_RANGE; n++)
 				if (!AssignUsed[i][o][n])
-					pInst->SetSample(o, n, 0);
+					pInst->SetSampleIndex(o, n, 0);
 
 	SetModifiedFlag();		// // //
 	SetExceededFlag();

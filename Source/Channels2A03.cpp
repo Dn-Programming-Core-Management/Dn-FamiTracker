@@ -574,7 +574,7 @@ void CDPCMChan::HandleNote(int Note, int Octave)
 	auto pInstrument = std::dynamic_pointer_cast<CInstrument2A03>(pDocument->GetInstrument(m_iInstrument));
 	if (!pInstrument) return;
 
-	int SampleIndex = pInstrument->GetSample(Octave, Note - 1);
+	int SampleIndex = pInstrument->GetSampleIndex(Octave, Note - 1);
 
 	if (SampleIndex > 0) {
 

@@ -35,20 +35,24 @@ public:
 	int		GetSeqEnable(int Index) const { return CSeqInstrument::GetSeqEnable(Index); }
 	int		GetSeqIndex(int Index) const { return CSeqInstrument::GetSeqIndex(Index); }
 
+private:
+	char	GetSample(int Octave, int Note) const { return GetSampleIndex(Octave, Note); };		// // //
+
 public:
 	// Samples
-	char	GetSample(int Octave, int Note) const;
+	char	GetSampleIndex(int Octave, int Note) const;
 	char	GetSamplePitch(int Octave, int Note) const;
 	bool	GetSampleLoop(int Octave, int Note) const;
 	char	GetSampleLoopOffset(int Octave, int Note) const;
 	char	GetSampleDeltaValue(int Octave, int Note) const;
-	void	SetSample(int Octave, int Note, char Sample);
+	void	SetSampleIndex(int Octave, int Note, char Sample);
 	void	SetSamplePitch(int Octave, int Note, char Pitch);
 	void	SetSampleLoop(int Octave, int Note, bool Loop);
 	void	SetSampleLoopOffset(int Octave, int Note, char Offset);
 	void	SetSampleDeltaValue(int Octave, int Note, char Offset);
 
 	bool	AssignedSamples() const;
+	const CDSample *GetDSample(int Octave, int Note) const;		// // //
 
 protected:
 	virtual void	CloneFrom(const CInstrument *pInst);		// // //

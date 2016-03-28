@@ -1767,7 +1767,7 @@ void CCompiler::CreateSampleList()
 			for (int j = 0; j < OCTAVE_RANGE; ++j) {
 				for (int k = 0; k < NOTE_RANGE; ++k) {
 					// Get sample
-					unsigned char iSample = pInstrument->GetSample(j, k);
+					unsigned char iSample = pInstrument->GetSampleIndex(j, k);
 					if ((iSample > 0) && m_bSamplesAccessed[i][j][k] && m_pDocument->IsSampleUsed(iSample - 1)) {
 
 						unsigned char SamplePitch = pInstrument->GetSamplePitch(j, k);

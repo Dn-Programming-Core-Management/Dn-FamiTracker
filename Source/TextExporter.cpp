@@ -945,7 +945,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					CHECK(t.ReadInt(in,0,12,&sResult));
 
 					CHECK(t.ReadInt(i,0,MAX_DSAMPLES-1,&sResult));
-					pInst->SetSample(io, in, i+1);
+					pInst->SetSampleIndex(io, in, i+1);
 					CHECK(t.ReadInt(i,0,15,&sResult));
 					pInst->SetSamplePitch(io, in, i);
 					CHECK(t.ReadInt(i,0,1,&sResult));
@@ -1435,7 +1435,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 				for (int oct = 0; oct < OCTAVE_RANGE; ++oct)
 				for (int key = 0; key < NOTE_RANGE; ++key)
 				{
-					int smp = pDI->GetSample(oct, key);
+					int smp = pDI->GetSampleIndex(oct, key);
 					if (smp != 0)
 					{
 						int d = pDI->GetSampleDeltaValue(oct, key);

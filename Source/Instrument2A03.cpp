@@ -56,7 +56,7 @@ void CInstrument2A03::CloneFrom(const CInstrument *pInst)
 	if (auto pNew = dynamic_cast<const CInstrument2A03*>(pInst)) {
 		for (int i = 0; i < OCTAVE_RANGE; ++i) {
 			for (int j = 0; j < NOTE_RANGE; ++j) {
-				SetSample(i, j, pNew->GetSample(i, j));
+				SetSampleIndex(i, j, pNew->GetSampleIndex(i, j));
 				SetSamplePitch(i, j, pNew->GetSamplePitch(i, j));
 				SetSampleDeltaValue(i, j, pNew->GetSampleDeltaValue(i, j));
 			}
@@ -72,7 +72,7 @@ void CInstrument2A03::Store(CDocumentFile *pDocFile)
 	int Octaves = Version >= 2 ? OCTAVE_RANGE : 6;
 	for (int i = 0; i < Octaves; ++i) {
 		for (int j = 0; j < NOTE_RANGE; ++j) {
-			pDocFile->WriteBlockChar(GetSample(i, j));
+			pDocFile->WriteBlockChar(GetSampleIndex(i, j));
 			pDocFile->WriteBlockChar(GetSamplePitch(i, j));
 			if (Version >= 6)
 				pDocFile->WriteBlockChar(GetSampleDeltaValue(i, j));
@@ -92,7 +92,7 @@ bool CInstrument2A03::Load(CDocumentFile *pDocFile)
 			int Index = CModuleException::AssertRangeFmt(pDocFile->GetBlockChar(), 0, 0x7F, "DPCM sample assignment index", "%i");
 			if (Index > MAX_DSAMPLES)
 				Index = 0;
-			SetSample(i, j, Index);
+			SetSampleIndex(i, j, Index);
 			char Pitch = pDocFile->GetBlockChar();
 			CModuleException::AssertRangeFmt(Pitch & 0x7F, 0, 0xF, "DPCM sample pitch", "%i");
 			SetSamplePitch(i, j, Pitch);
@@ -125,7 +125,7 @@ void CInstrument2A03::SaveFile(CInstrumentFile *pFile)
 	// Count assigned keys
 	for (int i = 0; i < OCTAVE_RANGE; ++i) {	// octaves
 		for (int j = 0; j < NOTE_RANGE; ++j) {	// notes
-			Count += (GetSample(i, j) > 0) ? 1 : 0;
+			Count += (GetSampleIndex(i, j) > 0) ? 1 : 0;
 		}
 	}
 	pFile->WriteInt(Count);
@@ -142,7 +142,7 @@ void CInstrument2A03::SaveFile(CInstrumentFile *pFile)
 	int SampleCount = 0;
 	for (int i = 0; i < OCTAVE_RANGE; ++i) {	// octaves
 		for (int j = 0; j < NOTE_RANGE; ++j) {	// notes
-			if (unsigned char Sample = GetSample(i, j)) {
+			if (unsigned char Sample = GetSampleIndex(i, j)) {
 				unsigned char Index = i * NOTE_RANGE + j;
 				pFile->WriteChar(Index);
 				pFile->WriteChar(Sample);
@@ -195,7 +195,7 @@ bool CInstrument2A03::LoadFile(CInstrumentFile *pFile, int iVersion)
 			unsigned char Pitch = pFile->ReadChar();
 			CModuleException::AssertRangeFmt(Pitch & 0x7FU, 0U, 0xFU, "DPCM sample pitch", "%u");
 			SetSamplePitch(Octave, Note, Pitch);
-			SetSample(Octave, Note, Sample);
+			SetSampleIndex(Octave, Note, Sample);
 			SetSampleDeltaValue(Octave, Note, CModuleException::AssertRangeFmt(
 				static_cast<char>(iVersion >= 24 ? pFile->ReadChar() : -1), -1, 0x7F, "DPCM sample delta value", "%i"));
 		}
@@ -232,8 +232,8 @@ bool CInstrument2A03::LoadFile(CInstrumentFile *pFile, int iVersion)
 				// Assign sample
 				for (int o = 0; o < OCTAVE_RANGE; ++o) {
 					for (int n = 0; n < NOTE_RANGE; ++n) {
-						if (GetSample(o, n) == (Index + 1) && !bAssigned[o][n]) {
-							SetSample(o, n, j + 1);
+						if (GetSampleIndex(o, n) == (Index + 1) && !bAssigned[o][n]) {
+							SetSampleIndex(o, n, j + 1);
 							bAssigned[o][n] = true;
 						}
 					}
@@ -268,8 +268,8 @@ bool CInstrument2A03::LoadFile(CInstrumentFile *pFile, int iVersion)
 		// Assign it
 		for (int o = 0; o < OCTAVE_RANGE; ++o) {
 			for (int n = 0; n < NOTE_RANGE; ++n) {
-				if (GetSample(o, n) == (Index + 1) && !bAssigned[o][n]) {
-					SetSample(o, n, FreeSample + 1);
+				if (GetSampleIndex(o, n) == (Index + 1) && !bAssigned[o][n]) {
+					SetSampleIndex(o, n, FreeSample + 1);
 					bAssigned[o][n] = true;
 				}
 			}
@@ -279,7 +279,7 @@ bool CInstrument2A03::LoadFile(CInstrumentFile *pFile, int iVersion)
 	return true;
 }
 
-char CInstrument2A03::GetSample(int Octave, int Note) const
+char CInstrument2A03::GetSampleIndex(int Octave, int Note) const
 {
 	return m_cSamples[Octave][Note];
 }
@@ -304,7 +304,7 @@ char CInstrument2A03::GetSampleDeltaValue(int Octave, int Note) const
 	return m_cSampleDelta[Octave][Note];
 }
 
-void CInstrument2A03::SetSample(int Octave, int Note, char Sample)
+void CInstrument2A03::SetSampleIndex(int Octave, int Note, char Sample)
 {
 	m_cSamples[Octave][Note] = Sample;
 	InstrumentChanged();
@@ -340,10 +340,18 @@ bool CInstrument2A03::AssignedSamples() const
 
 	for (int i = 0; i < OCTAVE_RANGE; ++i) {
 		for (int j = 0; j < NOTE_RANGE; ++j) {
-			if (GetSample(i, j) != 0)
+			if (GetSampleIndex(i, j) != 0)
 				return true;
 		}
 	}
 
 	return false;
+}
+
+const CDSample *CInstrument2A03::GetDSample(int Octave, int Note) const		// // //
+{
+	if (!m_pInstManager) return nullptr;
+	char Index = GetSampleIndex(Octave, Note);
+	if (!Index) return nullptr;
+	return m_pInstManager->GetDSample(Index - 1);
 }
