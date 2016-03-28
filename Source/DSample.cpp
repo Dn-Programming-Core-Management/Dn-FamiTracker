@@ -32,7 +32,7 @@
 CDSample::CDSample(unsigned int Size) :
 	m_iSampleSize(Size),
 	m_pSampleData(new char[Size]),
-	m_pName(new char[MAX_NAME_SIZE])
+	m_pName(new char[MAX_NAME_SIZE]())
 {
 }
 
@@ -42,7 +42,7 @@ CDSample::CDSample(const CDSample &sample) :		// // //
 	m_pName(new char[MAX_NAME_SIZE])
 {
 	memcpy(m_pSampleData.get(), sample.m_pSampleData.get(), m_iSampleSize);
-	strncpy(m_pName.get(), sample.m_pName.get(), MAX_NAME_SIZE);
+	strncpy_s(m_pName.get(), MAX_NAME_SIZE, sample.m_pName.get(), MAX_NAME_SIZE);
 }
 
 #pragma warning ( disable : 4717 ) // "recursive on all control paths, function will cause runtime stack overflow"
@@ -78,7 +78,7 @@ char *CDSample::GetData() const
 
 void CDSample::SetName(const char *pName)
 {
-	strncpy(m_pName.get(), pName, MAX_NAME_SIZE);
+	strncpy_s(m_pName.get(), MAX_NAME_SIZE, pName, MAX_NAME_SIZE);
 }
 
 const char *CDSample::GetName() const
