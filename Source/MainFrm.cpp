@@ -2083,7 +2083,11 @@ void CMainFrame::OnModuleChannels()
 void CMainFrame::OnModuleComments()
 {
 	CCommentsDlg commentsDlg;
-	commentsDlg.DoModal();
+	CFamiTrackerDoc	*pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());		// // //
+	commentsDlg.SetComment(pDoc->GetComment());
+	commentsDlg.SetShowOnLoad(pDoc->ShowCommentOnOpen());
+	if (commentsDlg.DoModal() == IDOK && commentsDlg.IsChanged())
+		pDoc->SetComment(commentsDlg.GetComment(), commentsDlg.GetShowOnLoad());
 }
 
 void CMainFrame::OnModuleGrooveSettings()		// // //
