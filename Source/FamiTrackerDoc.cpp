@@ -421,6 +421,7 @@ void CFamiTrackerDoc::CreateEmpty()
 	m_csDocumentLock.Lock();
 
 	// Allocate first song
+	DeleteContents();		// // //
 	AllocateTrack(0);
 
 	// Auto-select new style vibrato for new modules
@@ -1216,17 +1217,16 @@ bool CFamiTrackerDoc::WriteBlock_ChannelLayout(CDocumentFile *pDocFile, const in
 
 BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 {
+	m_bFileLoadFailed = true;
+
 	CFileException ex;
 	CDocumentFile  OpenFile;
 
-	m_bBackupDone = false;
-	m_bFileLoadFailed = true;
-
 	// Open file
 	if (!OpenFile.Open(lpszPathName, CFile::modeRead | CFile::shareDenyWrite, &ex)) {
-		TCHAR   szCause[255];
+		TCHAR   szCause[1024];		// // //
 		CString strFormatted;
-		ex.GetErrorMessage(szCause, 255);
+		ex.GetErrorMessage(szCause, sizeof(szCause));
 		strFormatted = _T("Could not open file.\n\n");
 		strFormatted += szCause;
 		AfxMessageBox(strFormatted);
@@ -1286,6 +1286,7 @@ BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 	// File is loaded
 	m_bFileLoaded = true;
 	m_bFileLoadFailed = false;
+	m_bBackupDone = false;		// // //
 
 	theApp.GetSoundGenerator()->DocumentPropertiesChanged(this);
 
