@@ -490,8 +490,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,13,0
- PRODUCTVERSION 0,3,13,0
+ FILEVERSION 0,3,14,0
+ PRODUCTVERSION 0,3,14,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -508,12 +508,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "HertzDevil"
             VALUE "FileDescription", "NES/Famicom sound tracker"
-            VALUE "FileVersion", "0.3.13.0"
+            VALUE "FileVersion", "0.3.14.0"
             VALUE "InternalName", "FamiTracker.exe"
-            VALUE "LegalCopyright", " (c) jsr, HertzDevil 2005-2015 All rights reserved."
+            VALUE "LegalCopyright", " (c) jsr, HertzDevil 2005-2016 All rights reserved."
             VALUE "OriginalFilename", "FamiTracker.exe"
             VALUE "ProductName", "0CC-FamiTracker"
-            VALUE "ProductVersion", "0.3.13.0"
+            VALUE "ProductVersion", "0.3.14.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -966,8 +966,8 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_HEAD,"Static",SS_OWNERDRAW,0,0,287,49
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,49,287,1
-    ICON            IDR_MAINFRAME,IDC_STATIC,7,63,20,20,SS_REALSIZEIMAGE
-    LTEXT           "0CC-FamiTracker",IDC_ABOUT1,54,58,167,11,SS_NOPREFIX
+    ICON            IDR_MAINFRAME,IDC_STATIC,10,63,21,20,SS_REALSIZEIMAGE
+    LTEXT           "0CC-FamiTracker",IDC_ABOUT1,54,58,219,11,SS_NOPREFIX
     LTEXT           "A Famicom/NES music tracker",IDC_ABOUT2,54,76,167,11,SS_NOPREFIX
     LTEXT           "Copyright (C) 2005 - 2015 jsr, 2014 - 2016 HertzDevil",IDC_ABOUT3,54,92,215,11
     LTEXT           "E-mail:",IDC_STATIC,54,107,24,10
@@ -983,7 +983,7 @@ BEGIN
     LTEXT           "Libraries:",IDC_STATIC,54,266,224,8
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,54,277,215,1
     EDITTEXT        IDC_ABOUT_LIB,54,279,225,45,ES_MULTILINE | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
-    DEFPUSHBUTTON   "OK",IDOK,228,64,50,16,WS_GROUP
+    DEFPUSHBUTTON   "OK",IDOK,7,105,39,16,WS_GROUP
 END
 
 IDD_MAINFRAME DIALOGEX 0, 0, 518, 126
@@ -1824,7 +1824,6 @@ BEGIN
     CONTROL         "",IDC_SPIN_TRSP_SEMITONE,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,85,18,11,14
     CONTROL         "Raise",IDC_RADIO_SEMITONE_INC,"Button",BS_AUTORADIOBUTTON | WS_GROUP,103,20,33,10
     CONTROL         "Lower",IDC_RADIO_SEMITONE_DEC,"Button",BS_AUTORADIOBUTTON,138,20,32,10
-    CONTROL         "Remap DPCM notes",IDC_CHECK_TRSP_DPCM,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,103,36,79,10
     LTEXT           "Exclude these instruments:",IDC_STATIC,15,52,88,8
     LTEXT           "Warning: Resets undo history!",IDC_STATIC,15,185,99,8
     DEFPUSHBUTTON   "OK",IDOK,106,205,50,14
