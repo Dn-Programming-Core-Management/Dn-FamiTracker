@@ -36,6 +36,8 @@
 #include <afxmt.h>
 #include "FamiTracker.h"
 #include "FTMComponentInterface.h"		// // //
+#include <vector>		// // //
+#include "InstrumentManager.h"		// // //
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
 #include "VisualizerWnd.h"
@@ -441,6 +443,7 @@ void CSoundGen::InstrumentRecorder::FinalizeRecordInstrument()
 	if (Inst != NULL) for (int i = 0; i < SEQ_COUNT; i++) {
 		if (Inst->GetSeqEnable(i) != 0) {
 			m_pSequenceCache[i]->SetLoopPoint(m_pSequenceCache[i]->GetItemCount() - 1);
+			(*m_pDumpInstrument)->RegisterManager(m_pDocument->GetInstrumentManager());
 			Inst->SetSequence(i, m_pSequenceCache[i]);
 		}
 		m_pSequenceCache[i] = new CSequence();
