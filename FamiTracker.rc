@@ -210,7 +210,10 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Clone Pattern",              ID_MODULE_DUPLICATECURRENTPATTERN
         MENUITEM "Duplicate &Patterns",         ID_MODULE_DUPLICATEFRAMEPATTERNS
+        MENUITEM SEPARATOR
         MENUITEM "C&lear Patterns",             ID_EDIT_CLEARPATTERNS
+        MENUITEM "&Merge Duplicated Patterns",  ID_CLEANUP_MERGEDUPLICATEDPATTERNS
+        MENUITEM "Populate Uni&que Patterns",   ID_CLEANUP_POPULATEUNIQUEPATTERNS
         MENUITEM SEPARATOR
         MENUITEM "&Transpose Song...",          ID_TRANSPOSE_CUSTOM
         MENUITEM SEPARATOR
@@ -218,8 +221,8 @@ BEGIN
     END
     POPUP "&Module"
     BEGIN
-        MENUITEM "&Comments...",                ID_MODULE_COMMENTS
         MENUITEM "&Module Properties...\tCtrl+P", ID_MODULE_MODULEPROPERTIES
+        MENUITEM "&Comments...",                ID_MODULE_COMMENTS
         POPUP "&Region"
         BEGIN
             MENUITEM "&NTSC",                       ID_TRACKER_NTSC
@@ -241,9 +244,6 @@ BEGIN
             MENUITEM "Remove Unused &Instruments",  ID_CLEANUP_REMOVEUNUSEDINSTRUMENTS
             MENUITEM "Remove Unused &DPCM Samples", ID_CLEANUP_REMOVEUNUSEDDPCMSAMPLES
             MENUITEM "Remove Unused &Patterns",     ID_CLEANUP_REMOVEUNUSEDPATTERNS
-            MENUITEM SEPARATOR
-            MENUITEM "&Merge Duplicated Patterns",  ID_CLEANUP_MERGEDUPLICATEDPATTERNS
-            MENUITEM "Populate &Unique Patterns",   ID_CLEANUP_POPULATEUNIQUEPATTERNS
         END
     END
     POPUP "&Instrument"
