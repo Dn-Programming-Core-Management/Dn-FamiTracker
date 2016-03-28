@@ -46,8 +46,7 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 private:
-	void Transpose(int Trsp, unsigned int Track, bool Remap);
-	void RemapDPCM(int Trsp);
+	void Transpose(int Trsp, unsigned int Track);
 	
 	CFamiTrackerDoc *m_pDocument;
 	int m_iTrack;

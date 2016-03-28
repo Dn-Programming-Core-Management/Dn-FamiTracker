@@ -58,30 +58,24 @@ void CTransposeDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 }
 
-void CTransposeDlg::Transpose(int Trsp, unsigned int Track, bool Remap)
+void CTransposeDlg::Transpose(int Trsp, unsigned int Track)
 {
 	stChanNote Note;
 	for (int c = m_pDocument->GetChannelCount() - 1; c >= 0; --c) {
-		if (m_pDocument->GetChannelType(c) == CHANID_NOISE) continue;
+		int Type = m_pDocument->GetChannelType(c);
+		if (Type == CHANID_NOISE || Type == CHANID_DPCM) continue;
 		for (int p = 0; p < MAX_PATTERN; ++p) for (int r = 0; r < MAX_PATTERN_LENGTH; ++r) {
-			if (/*Remap || */m_pDocument->GetChannelType(c) != CHANID_DPCM) {
-				m_pDocument->GetDataAtPattern(Track, p, c, r, &Note);
-				if (Note.Note >= NOTE_C && Note.Note <= NOTE_B && !s_bDisableInst[Note.Instrument]) {
-					int MIDI = MIDI_NOTE(Note.Octave, Note.Note) + Trsp;
-					if (MIDI < 0) MIDI = 0;
-					else if (MIDI >= NOTE_COUNT) MIDI = NOTE_COUNT - 1;
-					Note.Octave = GET_OCTAVE(MIDI);
-					Note.Note = GET_NOTE(MIDI);
-					m_pDocument->SetDataAtPattern(Track, p, c, r, &Note);
-				}
+			m_pDocument->GetDataAtPattern(Track, p, c, r, &Note);
+			if (Note.Note >= NOTE_C && Note.Note <= NOTE_B && !s_bDisableInst[Note.Instrument]) {
+				int MIDI = MIDI_NOTE(Note.Octave, Note.Note) + Trsp;
+				if (MIDI < 0) MIDI = 0;
+				else if (MIDI >= NOTE_COUNT) MIDI = NOTE_COUNT - 1;
+				Note.Octave = GET_OCTAVE(MIDI);
+				Note.Note = GET_NOTE(MIDI);
+				m_pDocument->SetDataAtPattern(Track, p, c, r, &Note);
 			}
 		}
 	}
-}
-
-void CTransposeDlg::RemapDPCM(int Trsp)
-{
-	// TODO: Do we need this?
 }
 
 BEGIN_MESSAGE_MAP(CTransposeDlg, CDialog)
@@ -141,19 +135,16 @@ void CTransposeDlg::OnBnClickedOk()
 {
 	int Trsp = GetDlgItemInt(IDC_EDIT_TRSP_SEMITONE);
 	bool All = IsDlgButtonChecked(IDC_CHECK_TRSP_ALL) != 0;
-	bool Remap = All && IsDlgButtonChecked(IDC_CHECK_TRSP_DPCM) != 0;
 	if (GetCheckedRadioButton(IDC_RADIO_SEMITONE_INC, IDC_RADIO_SEMITONE_DEC) == IDC_RADIO_SEMITONE_DEC)
 		Trsp = -Trsp;
 
 	if (All) {
 		const unsigned int Tracks = m_pDocument->GetTrackCount();
 		for (unsigned int t = 0; t < Tracks; ++t)
-			Transpose(Trsp, t, Remap);
+			Transpose(Trsp, t);
 	}
 	else
-		Transpose(Trsp, m_iTrack, false);
-	if (Remap)
-		RemapDPCM(Trsp);
+		Transpose(Trsp, m_iTrack);
 
 	m_pDocument->UpdateAllViews(NULL, UPDATE_PATTERN);
 	CDialog::OnOK();
