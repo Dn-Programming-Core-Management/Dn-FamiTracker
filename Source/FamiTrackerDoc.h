@@ -361,6 +361,13 @@ public:
 	bool			GetExceededFlag() { return m_bExceeded; };
 	void			SetExceededFlag(bool Exceed = 1);		// // //
 
+	// // // from the component interface
+	CSequenceManager *const GetSequenceManager(int InstType) const;
+	CInstrumentManager *const GetInstrumentManager() const;
+	CDSampleManager *const GetDSampleManager() const;
+	void			Modify(bool Change);
+	void			ModifyIrreversible();
+
 	// Constants
 public:
 	static const char*	DEFAULT_TRACK_NAME;
@@ -485,13 +492,6 @@ private:
 
 	void			SetupChannels(unsigned char Chip);
 	void			ApplyExpansionChip();
-
-	// // // from the component interface
-	CSequenceManager *const GetSequenceManager(int InstType) const;
-	CInstrumentManager *const GetInstrumentManager() const;
-	CDSampleManager *const GetDSampleManager() const;
-	void			Modify(bool Change);
-	void			ModifyIrreversible();
 
 	//
 	// Private variables
