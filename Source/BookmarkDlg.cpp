@@ -26,7 +26,6 @@
 #include "FamiTracker.h"
 #include "MainFrm.h"
 #include "Bookmark.h"		// // //
-#include "Bookmark2.h"		// // //
 #include "BookmarkCollection.h"		// // //
 #include "BookmarkManager.h"		// // // TODO: night not need this
 #include "BookmarkDlg.h"

@@ -21,5 +21,41 @@
 */
 
 #include "stdafx.h"
-#include "FamiTrackerTypes.h"
+#include <string>
 #include "Bookmark.h"
+#include "FamiTrackerTypes.h"
+
+CBookmark::CBookmark(unsigned Frame, unsigned Row) :
+	m_iFrame(Frame),
+	m_iRow(Row),
+	m_bPersist(false),
+	m_sName("Bookmark")
+{
+	m_Highlight.First = 4;
+	m_Highlight.Second = 16;
+	m_Highlight.Offset = 0;
+}
+
+unsigned CBookmark::Distance(const CBookmark &other) const
+{
+	const int ALL_ROWS = MAX_PATTERN * MAX_PATTERN_LENGTH;
+	int Dist = ((m_iFrame - other.m_iFrame) * MAX_PATTERN_LENGTH + m_iRow - other.m_iRow) % ALL_ROWS;
+	if (Dist < 0) Dist += ALL_ROWS;
+	return static_cast<unsigned>(Dist);
+}
+
+bool CBookmark::IsEqual(const CBookmark &other) const
+{
+	return *this == other && m_bPersist == other.m_bPersist && m_sName == other.m_sName &&
+		!memcmp(&m_Highlight, &other.m_Highlight, sizeof(stHighlight));
+}
+
+bool CBookmark::operator==(const CBookmark &other) const
+{
+	return m_iFrame == other.m_iFrame && m_iRow == other.m_iRow;
+}
+
+bool CBookmark::operator<(const CBookmark &other) const
+{
+	return m_iFrame < other.m_iFrame || (m_iFrame == other.m_iFrame && m_iRow < other.m_iRow);
+}

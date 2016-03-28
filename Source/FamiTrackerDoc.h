@@ -123,7 +123,6 @@ struct stFullState {
 #include "Sequence.h"
 #include "OldSequence.h"		// // //
 #include "Groove.h"		// // //
-#include "Bookmark.h"		// // //
 
 // External classes
 class CTrackerChannel;
@@ -292,10 +291,6 @@ public:
 
 	CGroove			*GetGroove(int Index) const;		// // //
 	void			SetGroove(int Index, const CGroove* Groove);
-
-	std::vector<stBookmark> *const GetBookmarkList(unsigned int Track);		// // //
-	void			SetBookmarkList(unsigned int Track, std::vector<stBookmark> *const List);
-	void			ClearBookmarkList(unsigned int Track);
 
 	int				GetFrameLength(unsigned int Track, unsigned int Frame) const;
 
@@ -538,7 +533,6 @@ private:
 	// Patterns and song data
 	CPatternData	*m_pTracks[MAX_TRACKS];						// List of all tracks
 	CString			m_sTrackNames[MAX_TRACKS];
-	std::vector<stBookmark> *m_pBookmarkList[MAX_TRACKS];			// // // Bookmarks
 
 	unsigned int	m_iTrackCount;								// Number of tracks added
 	unsigned int	m_iChannelsAvailable;						// Number of channels added

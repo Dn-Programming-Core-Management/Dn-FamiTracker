@@ -60,7 +60,7 @@
 #include "SequenceManager.h"		// // //
 #include "DSampleManager.h"			// // //
 #include "InstrumentManager.h"		// // //
-#include "Bookmark2.h"		// // //
+#include "Bookmark.h"		// // //
 #include "BookmarkCollection.h"		// // //
 #include "BookmarkManager.h"		// // //
 #include "APU/APU.h"
@@ -170,7 +170,6 @@ CFamiTrackerDoc::CFamiTrackerDoc() :
 	// Clear pointer arrays
 	memset(m_pTracks, 0, sizeof(CPatternData*) * MAX_TRACKS);
 	memset(m_pGrooveTable, 0, sizeof(CGroove*) * MAX_GROOVE);		// // //
-	memset(m_pBookmarkList, 0, sizeof(std::vector<stBookmark>*) * MAX_TRACKS);		// // //
 
 	// Register this object to the sound generator
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
@@ -345,14 +344,11 @@ void CFamiTrackerDoc::DeleteContents()
 	UpdateAllViews(NULL, UPDATE_CLOSE);	// TODO remove
 
 	m_pInstrumentManager->ClearAll();		// // //
+	m_pBookmarkManager->ClearAll();		// // //
 
 	// // // Grooves
 	for (int i = 0; i < MAX_GROOVE; ++i)
 		SAFE_RELEASE(m_pGrooveTable[i]);
-
-	// // // Bookmarks
-	for (int i = 0; i < MAX_TRACKS; ++i)
-		ClearBookmarkList(i);
 
 	// Clear number of tracks
 	m_iTrackCount = 1;
@@ -4872,25 +4868,6 @@ void CFamiTrackerDoc::SetGroove(int Index, const CGroove* Groove)
 	else m_pGrooveTable[Index] = new CGroove(*Groove);
 }
 
-std::vector<stBookmark> *const CFamiTrackerDoc::GetBookmarkList(unsigned int Track)		// // //
-{
-	if (m_pBookmarkList[Track] == NULL) {
-		m_pBookmarkList[Track] = new std::vector<stBookmark>();
-	}
-	return new std::vector<stBookmark>(*m_pBookmarkList[Track]);
-}
-
-void CFamiTrackerDoc::SetBookmarkList(unsigned int Track, std::vector<stBookmark> *const List)
-{
-	SAFE_RELEASE(m_pBookmarkList[Track]);
-	m_pBookmarkList[Track] = new std::vector<stBookmark>(*List);
-}
-
-void CFamiTrackerDoc::ClearBookmarkList(unsigned int Track)
-{
-	m_pBookmarkManager->GetCollection(Track)->ClearBookmarks();
-}
-
 void CFamiTrackerDoc::SetExceededFlag(bool Exceed)
 {
 	m_bExceeded = Exceed;
@@ -4957,8 +4934,7 @@ void CFamiTrackerDoc::MakeKraid()			// // // Easter Egg
 	ResetDetuneTables();
 	for (int i = 0; i < MAX_GROOVE; i++)
 		SAFE_RELEASE(m_pGrooveTable[i]);
-	for (int i = 0; i < MAX_TRACKS; ++i)
-		ClearBookmarkList(i);
+	m_pBookmarkManager->ClearAll();
 
 	// Patterns
 	SetPatternAtFrame(0,  0, 0, 0); SetPatternAtFrame(0,  0, 1, 0); SetPatternAtFrame(0,  0, 2, 0);

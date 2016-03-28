@@ -38,7 +38,7 @@
 #include "Clipboard.h"
 #include "APU/APU.h"
 // // //
-#include "Bookmark2.h"
+#include "Bookmark.h"
 #include "BookmarkCollection.h"
 #include "BookmarkManager.h"
 #include "DetuneDlg.h"

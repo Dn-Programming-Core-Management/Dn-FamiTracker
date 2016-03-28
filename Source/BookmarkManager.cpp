@@ -22,7 +22,7 @@
 
 #include <vector>
 #include <memory>
-#include "Bookmark2.h"
+#include "Bookmark.h"
 #include "BookmarkCollection.h"
 #include "BookmarkManager.h"
 

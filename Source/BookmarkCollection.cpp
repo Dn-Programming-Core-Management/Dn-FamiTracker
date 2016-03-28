@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include "Bookmark2.h"
+#include "Bookmark.h"
 #include "BookmarkCollection.h"
 #include "FamiTrackerTypes.h" // constants
 
@@ -105,7 +105,7 @@ int CBookmarkCollection::GetBookmarkIndex(const CBookmark *const pMark) const
 
 CBookmark *CBookmarkCollection::FindAt(unsigned Frame, unsigned Row) const
 {
-	CBookmark tmp(Frame, Row);
+	const CBookmark tmp(Frame, Row);
 	auto it = std::find_if(m_pBookmark.begin(), m_pBookmark.end(), [&] (const std::unique_ptr<CBookmark> &a) {
 		return *a.get() == tmp;
 	});
@@ -114,9 +114,11 @@ CBookmark *CBookmarkCollection::FindAt(unsigned Frame, unsigned Row) const
 
 void CBookmarkCollection::RemoveAt(unsigned Frame, unsigned Row)
 {
-	CBookmark tmp(Frame, Row);
-	std::remove_if(m_pBookmark.begin(), m_pBookmark.end(),
-				  [&] (const std::unique_ptr<CBookmark> &a) { return *a.get() == tmp; });
+	const CBookmark tmp(Frame, Row);
+	m_pBookmark.erase(
+		std::remove_if(m_pBookmark.begin(), m_pBookmark.end(),
+			[&] (const std::unique_ptr<CBookmark> &a) { return *a.get() == tmp; }),
+		m_pBookmark.end());
 }
 
 CBookmark *CBookmarkCollection::FindNext(unsigned Frame, unsigned Row) const

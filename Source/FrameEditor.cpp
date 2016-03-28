@@ -35,7 +35,7 @@
 #include "Settings.h"
 #include "Graphics.h"
 #include "Clipboard.h"
-#include "Bookmark2.h"		// // //
+#include "Bookmark.h"		// // //
 #include "BookmarkCollection.h"		// // //
 #include "BookmarkManager.h"		// // //
 

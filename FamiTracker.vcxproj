@@ -426,7 +426,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\Bookmark.cpp" />
-    <ClCompile Include="Source\Bookmark2.cpp" />
     <ClCompile Include="Source\BookmarkCollection.cpp" />
     <ClCompile Include="Source\BookmarkDlg.cpp" />
     <ClCompile Include="Source\BookmarkManager.cpp" />
@@ -669,10 +668,9 @@
     <ClCompile Include="Source\WaveFile.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source\Bookmark2.h" />
+    <ClInclude Include="Source\Bookmark.h" />
     <ClInclude Include="Source\BookmarkCollection.h" />
     <ClInclude Include="Source\BookmarkManager.h" />
-    <ClInclude Include="Source\Bookmark.h" />
     <ClInclude Include="Source\BookmarkDlg.h" />
     <ClInclude Include="Source\DSampleManager.h" />
     <ClInclude Include="Source\ChannelHandlerInterface.h" />
