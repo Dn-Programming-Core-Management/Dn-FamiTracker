@@ -202,7 +202,7 @@ void CInstrumentEditorDPCM::UpdateKey(int Index)
 	if (m_pInstrument->GetSampleIndex(m_iOctave, Index) > 0) {
 		int Item = m_pInstrument->GetSampleIndex(m_iOctave, Index) - 1;
 		int Pitch = m_pInstrument->GetSamplePitch(m_iOctave, Index);
-		const CDSample *pSample = GetDocument()->GetSample(Item);
+		const CDSample *pSample = m_pInstrument->GetDSample(m_iOctave, Index);		// // //
 		NameStr = !pSample ? _T("(n/a)") : pSample->GetName();
 		PitchStr.Format(_T("%i %s"), Pitch & 0x0F, (Pitch & 0x80) ? "L" : "");
 	}

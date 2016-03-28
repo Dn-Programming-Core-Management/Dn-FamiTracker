@@ -200,7 +200,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "S&wap Channels...",           ID_EDIT_SWAPCHANNELS
     END
-    POPUP "&Track"
+    POPUP "&Song"
     BEGIN
         MENUITEM "&Insert Frame",               ID_MODULE_INSERTFRAME
         MENUITEM "&Remove Frame",               ID_MODULE_REMOVEFRAME

@@ -133,7 +133,7 @@ int CInstrumentManager::GetFreeSequenceIndex(inst_type_t InstType, int Type, CSe
 	std::vector<bool> Used(CSequenceCollection::MAX_SEQUENCES, false);
 	for (int i = 0; i < MAX_INSTRUMENTS; i++) if (GetInstrumentType(i) == InstType) {		// // //
 		auto pInstrument = std::static_pointer_cast<CSeqInstrument>(GetInstrument(i));
-		if (pInstrument->GetSeqEnable(Type) && (pInst->GetSequence(Type)->GetItemCount() || pInst != pInstrument.get()))
+		if (pInstrument->GetSeqEnable(Type) && (pInst && pInst->GetSequence(Type)->GetItemCount() || pInst != pInstrument.get()))
 			Used[pInstrument->GetSeqIndex(Type)] = true;
 	}
 	for (int i = 0; i < CSequenceCollection::MAX_SEQUENCES; ++i) if (!Used[i]) {

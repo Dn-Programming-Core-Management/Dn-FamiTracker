@@ -60,6 +60,7 @@ void CTransposeDlg::DoDataExchange(CDataExchange* pDX)
 
 void CTransposeDlg::Transpose(int Trsp, unsigned int Track)
 {
+	if (!Trsp) return;
 	stChanNote Note;
 	for (int c = m_pDocument->GetChannelCount() - 1; c >= 0; --c) {
 		int Type = m_pDocument->GetChannelType(c);
