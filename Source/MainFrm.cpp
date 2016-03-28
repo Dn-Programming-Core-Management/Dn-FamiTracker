@@ -1569,7 +1569,10 @@ void CMainFrame::OnUpdateSBTempo(CCmdUI *pCmdUI)
 		// Highlight = pDoc->GetHighlight(m_iTrack).First;
 		if (Highlight == 0)
 			Highlight = 4;
-		float BPM = std::min(pSoundGen->GetTempo(), static_cast<float>(pDoc->GetEngineSpeed() * 15));
+		int EngineSpeed = pDoc->GetEngineSpeed();
+		if (EngineSpeed == 0)
+			EngineSpeed = (pDoc->GetMachine() == NTSC) ? CAPU::FRAME_RATE_NTSC : CAPU::FRAME_RATE_PAL;
+		float BPM = std::min(pSoundGen->GetTempo(), static_cast<float>(EngineSpeed * 15));
 		
 		CString String;
 		String.Format(_T("%.2f BPM"), BPM * 4.f / Highlight);
