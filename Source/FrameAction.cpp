@@ -396,7 +396,7 @@ void CFrameAction::Redo(CMainFrame *pMainFrm)
 			pMainFrm->UpdateControls();
 			break;
 		case ACT_MERGE_DUPLICATED_PATTERNS:
-			pDocument->MergeDuplicatedPatterns();
+			pDocument->MergeDuplicatedPatterns(m_iUndoTrack);		// // //
 			break;
 	}
 

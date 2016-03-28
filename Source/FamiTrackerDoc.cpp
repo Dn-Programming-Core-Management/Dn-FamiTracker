@@ -4528,48 +4528,39 @@ void CFamiTrackerDoc::RemoveUnusedSamples()		// // //
 	SetExceededFlag();
 }
 
-void CFamiTrackerDoc::MergeDuplicatedPatterns()
+void CFamiTrackerDoc::MergeDuplicatedPatterns(unsigned int Track)		// // //
 {
-	for (unsigned int i = 0; i < m_iTrackCount; ++i)
-	for (unsigned int c = 0; c < m_iChannelsAvailable; ++c)
-	{
-		TRACE2("Trim: %d, %d\n", i, c);
+	for (unsigned int c = 0; c < m_iChannelsAvailable; ++c) {
+		TRACE2("Trim: %d, %d\n", Track, c);
 
 		unsigned int uiPatternUsed[MAX_PATTERN];
 
 		// mark all as unused
-		for (unsigned int ui=0; ui < MAX_PATTERN; ++ui)
-		{
+		for (unsigned int ui = 0; ui < MAX_PATTERN; ++ui) {
 			uiPatternUsed[ui] = MAX_PATTERN;
 		}
 
 		// map used patterns to themselves
-		for (unsigned int f=0; f < m_pTracks[i]->GetFrameCount(); ++f)
-		{
-			unsigned int uiPattern = m_pTracks[i]->GetFramePattern(f,c);
+		for (unsigned int f = 0; f < m_pTracks[Track]->GetFrameCount(); ++f) {
+			unsigned int uiPattern = m_pTracks[Track]->GetFramePattern(f, c);
 			uiPatternUsed[uiPattern] = uiPattern;
 		}
 
 		// remap duplicates
-		for (unsigned int ui=0; ui < MAX_PATTERN; ++ui)
-		{
+		for (unsigned int ui = 0; ui < MAX_PATTERN; ++ui) {
 			if (uiPatternUsed[ui] == MAX_PATTERN) continue;
-			for (unsigned int uj=0; uj < ui; ++uj)
-			{
-				unsigned int uiLen = m_pTracks[i]->GetPatternLength();
+			for (unsigned int uj = 0; uj < ui; ++uj) {
+				unsigned int uiLen = m_pTracks[Track]->GetPatternLength();
 				bool bSame = true;
-				for (unsigned int uk = 0; uk < uiLen; ++uk)
-				{
-					stChanNote* a = m_pTracks[i]->GetPatternData(c, ui, uk);
-					stChanNote* b = m_pTracks[i]->GetPatternData(c, uj, uk);
-					if (0 != ::memcmp(a, b, sizeof(stChanNote)))
-					{
+				for (unsigned int uk = 0; uk < uiLen; ++uk) {
+					stChanNote* a = m_pTracks[Track]->GetPatternData(c, ui, uk);
+					stChanNote* b = m_pTracks[Track]->GetPatternData(c, uj, uk);
+					if (0 != ::memcmp(a, b, sizeof(stChanNote))) {
 						bSame = false;
 						break;
 					}
 				}
-				if (bSame)
-				{
+				if (bSame) {
 					uiPatternUsed[ui] = uj;
 					TRACE2("Duplicate: %d = %d\n", ui, uj);
 					break;
@@ -4578,10 +4569,9 @@ void CFamiTrackerDoc::MergeDuplicatedPatterns()
 		}
 
 		// apply mapping
-		for (unsigned int f=0; f < m_pTracks[i]->GetFrameCount(); ++f)
-		{
-			unsigned int uiPattern = m_pTracks[i]->GetFramePattern(f,c);
-			m_pTracks[i]->SetFramePattern(f,c,uiPatternUsed[uiPattern]);
+		for (unsigned int f = 0; f < m_pTracks[Track]->GetFrameCount(); ++f) {
+			unsigned int uiPattern = m_pTracks[Track]->GetFramePattern(f, c);
+			m_pTracks[Track]->SetFramePattern(f, c, uiPatternUsed[uiPattern]);
 		}
 	}
 
@@ -4589,32 +4579,30 @@ void CFamiTrackerDoc::MergeDuplicatedPatterns()
 	SetExceededFlag();
 }
 
-void CFamiTrackerDoc::PopulateUniquePatterns()		// // //
+void CFamiTrackerDoc::PopulateUniquePatterns(unsigned int Track)		// // //
 {
-	for (unsigned int i = 0; i < m_iTrackCount; i++) {
-		const int Rows = GetPatternLength(i);
-		const int Frames = GetFrameCount(i);
-		CPatternData *pTrack = m_pTracks[i];
-		CPatternData *pNew = new CPatternData(Rows);
+	const int Rows = GetPatternLength(Track);
+	const int Frames = GetFrameCount(Track);
+	CPatternData *pTrack = m_pTracks[Track];
+	CPatternData *pNew = new CPatternData(Rows);
 
-		pNew->SetSongSpeed(GetSongSpeed(i));
-		pNew->SetSongTempo(GetSongTempo(i));
-		pNew->SetFrameCount(Frames);
-		pNew->SetSongGroove(GetSongGroove(i));
+	pNew->SetSongSpeed(GetSongSpeed(Track));
+	pNew->SetSongTempo(GetSongTempo(Track));
+	pNew->SetFrameCount(Frames);
+	pNew->SetSongGroove(GetSongGroove(Track));
 
-		for (int c = 0; c < GetChannelCount(); c++) {
-			pNew->SetEffectColumnCount(c, GetEffColumns(i, c));
-			for (int f = 0; f < Frames; f++) {
-				pNew->SetFramePattern(f, c, f);
-				for (int r = 0; r < Rows; r++)
-					memcpy(pNew->GetPatternData(c, f, r),
-					pTrack->GetPatternData(c, pTrack->GetFramePattern(f, c), r), sizeof(stChanNote));
-			}
+	for (int c = 0; c < GetChannelCount(); c++) {
+		pNew->SetEffectColumnCount(c, GetEffColumns(Track, c));
+		for (int f = 0; f < Frames; f++) {
+			pNew->SetFramePattern(f, c, f);
+			for (int r = 0; r < Rows; r++)
+				memcpy(pNew->GetPatternData(c, f, r),
+				pTrack->GetPatternData(c, pTrack->GetFramePattern(f, c), r), sizeof(stChanNote));
 		}
-
-		SAFE_RELEASE(pTrack);
-		m_pTracks[i] = pNew;
 	}
+
+	SAFE_RELEASE(pTrack);
+	m_pTracks[Track] = pNew;
 
 	SetModifiedFlag();
 	SetExceededFlag();

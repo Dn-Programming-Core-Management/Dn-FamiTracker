@@ -2939,7 +2939,6 @@ void CMainFrame::OnEditRemoveUnusedPatterns()
 void CMainFrame::OnEditMergeDuplicatedPatterns()
 {
 	AddAction(new CFrameAction(CFrameAction::ACT_MERGE_DUPLICATED_PATTERNS));
-	ResetUndo();		// // //
 }
 
 void CMainFrame::OnUpdateSelectionEnabled(CCmdUI *pCmdUI)
@@ -3260,7 +3259,7 @@ void CMainFrame::OnEditPopulateUniquePatterns()		// // //
 	if (AfxMessageBox(IDS_POPULATE_PATTERNS, MB_YESNO | MB_ICONINFORMATION) == IDNO)
 		return;
 	
-	pDoc->PopulateUniquePatterns();
+	pDoc->PopulateUniquePatterns(m_iTrack);
 	ResetUndo();
 	pDoc->UpdateAllViews(NULL, UPDATE_FRAME);
 }

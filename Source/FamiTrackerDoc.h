@@ -222,6 +222,9 @@ public:
 
 	void			ClearPatterns(unsigned int Track);
 	void			ClearPattern(unsigned int Track, unsigned int Frame, unsigned int Channel);
+	
+	void			MergeDuplicatedPatterns(unsigned int Track);		// // //
+	void			PopulateUniquePatterns(unsigned int Track);
 
 	bool			InsertRow(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row);
 	bool			ClearRow(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row);
@@ -345,8 +348,6 @@ public:
 	void			RemoveUnusedInstruments();
 	void			RemoveUnusedSamples();		// // //
 	void			RemoveUnusedPatterns();
-	void			MergeDuplicatedPatterns();
-	void			PopulateUniquePatterns();		// // //
 	void			SwapInstruments(int First, int Second);
 	stFullState		RetrieveSoundState(unsigned int Track, unsigned int Frame, unsigned int Row, int Channel);		// // //
 
