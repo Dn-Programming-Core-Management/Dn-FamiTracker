@@ -35,6 +35,9 @@
 #include "Settings.h"
 #include "Graphics.h"
 #include "Clipboard.h"
+#include "Bookmark2.h"		// // //
+#include "BookmarkCollection.h"		// // //
+#include "BookmarkManager.h"		// // //
 
 /*
  * CFrameEditor
@@ -292,17 +295,15 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 		End = Start + FrameCount - ((FirstVisibleFrame > 0) ? FirstVisibleFrame : 0);
 
 	// Draw rows
+	CBookmarkCollection *pCol = m_pDocument->GetBookmarkManager()->GetCollection(Track);		// // //
 	for (int i = Start; i < End; ++i) {
 		// // // Highlight by bookmarks
-		auto List = m_pDocument->GetBookmarkList(Track);
-		if (i != m_iMiddleRow) for (auto it = List->begin(); it < List->end(); it++) {
-			if (it->Frame == Frame) {
+		if (i != m_iMiddleRow) if (const unsigned Count = pCol->GetCount()) for (unsigned j = 0; j < Count; ++j)
+			if (pCol->GetBookmark(j)->m_iFrame == Frame) {
 				GradientBar(&m_dcBack, 0, SY(i * ROW_HEIGHT + 4), SX(m_iWinWidth), SY(ROW_HEIGHT - 1),
-					theApp.GetSettings()->Appearance.iColBackgroundHilite, ColBackground);
+							theApp.GetSettings()->Appearance.iColBackgroundHilite, ColBackground);
 				break;
 			}
-		}
-		SAFE_RELEASE(List);
 		
 		// Play cursor
 		if (PlayFrame == Frame && !pView->GetFollowMode() && theApp.IsPlaying()) {

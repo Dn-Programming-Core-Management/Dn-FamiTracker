@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -22,19 +22,22 @@
 
 #pragma once
 
-class CSequenceManager;
-class CInstrumentManager;
-class CDSampleManager;
-class CBookmarkManager;
 
-class CFTMComponentInterface
+class CBookmark
 {
 public:
-	virtual CSequenceManager *const GetSequenceManager(int InstType) const = 0;
-	virtual CInstrumentManager *const GetInstrumentManager() const = 0;
-	virtual CDSampleManager *const GetDSampleManager() const = 0;
-	virtual CBookmarkManager *const GetBookmarkManager() const = 0;
+	CBookmark(unsigned Frame = 0, unsigned Row = 0);
+	unsigned Distance(const CBookmark &other) const;
+	bool operator==(const CBookmark &other) const;
+	bool operator<(const CBookmark &other) const;
 
-	virtual void Modify(bool Change) = 0;
-	virtual void ModifyIrreversible() = 0;
+	unsigned	m_iFrame;
+	unsigned	m_iRow;
+	struct {
+		int		First;
+		int		Second;
+		int		Offset;
+	}			m_Highlight; // merge with stHighlight later
+	bool		m_bPersist;
+	std::string	m_sName;
 };

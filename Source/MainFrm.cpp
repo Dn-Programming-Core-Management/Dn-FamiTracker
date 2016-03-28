@@ -2109,11 +2109,11 @@ void CMainFrame::OnModuleBookmarkSettings()		// // //
 		m_pBookmarkDlg = new CBookmarkDlg();
 		m_pBookmarkDlg->Create(IDD_BOOKMARKS, this);
 	}
-	if (!m_pBookmarkDlg->IsWindowVisible()) {
+	if (!m_pBookmarkDlg->IsWindowVisible())
 		m_pBookmarkDlg->CenterWindow();
-	}
 	m_pBookmarkDlg->ShowWindow(SW_SHOW);
 	m_pBookmarkDlg->SetFocus();
+	m_pBookmarkDlg->SetManager(static_cast<CFamiTrackerDoc*>(GetActiveDocument())->GetBookmarkManager());
 	m_pBookmarkDlg->LoadBookmarks(m_iTrack);
 }
 

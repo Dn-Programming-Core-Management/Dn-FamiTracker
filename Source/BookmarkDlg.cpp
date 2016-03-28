@@ -21,11 +21,14 @@
 */
 
 #include "stdafx.h"
-#include <vector>
+#include <string>
 #include "FamiTrackerDoc.h"
 #include "FamiTracker.h"
 #include "MainFrm.h"
 #include "Bookmark.h"		// // //
+#include "Bookmark2.h"		// // //
+#include "BookmarkCollection.h"		// // //
+#include "BookmarkManager.h"		// // // TODO: night not need this
 #include "BookmarkDlg.h"
 
 // CBookmarkDlg dialog
@@ -45,7 +48,6 @@ CBookmarkDlg::~CBookmarkDlg()
 	SAFE_RELEASE(m_cSpinRow);
 	SAFE_RELEASE(m_cSpinHighlight1);
 	SAFE_RELEASE(m_cSpinHighlight2);
-	SAFE_RELEASE(m_pBookmarkList);
 }
 
 void CBookmarkDlg::DoDataExchange(CDataExchange* pDX)
@@ -73,71 +75,47 @@ END_MESSAGE_MAP()
 
 // CBookmarkDlg message handlers
 
-void CBookmarkDlg::UpdateBookmark(stBookmark &Mark) const
+CBookmark *CBookmarkDlg::MakeBookmark() const
 {
-	int f = m_bEnableHighlight1 ? m_cSpinHighlight1->GetPos() : -1;
-	int s = m_bEnableHighlight2 ? m_cSpinHighlight2->GetPos() : -1;
 	CString str;
 	GetDlgItem(IDC_EDIT_BOOKMARK_NAME)->GetWindowText(str);
 
-	if (Mark.Name == NULL)
-		Mark.Name = new CString();
-	if (Mark.Frame != m_cSpinFrame->GetPos() ||
-		Mark.Row != m_cSpinRow->GetPos() ||
-		Mark.Highlight.First != f ||
-		Mark.Highlight.Second != s ||
-		*Mark.Name != str ||
-		Mark.Persist != m_bPersist) {
-		if (!m_bSwitching) {
-			m_pDocument->SetModifiedFlag();
-			m_pDocument->SetExceededFlag();
-		}
-	}
-	Mark.Frame = m_cSpinFrame->GetPos();
-	Mark.Row = m_cSpinRow->GetPos();
-	Mark.Highlight.First = f;
-	Mark.Highlight.Second = s;
-	*Mark.Name = str;
-	Mark.Persist = m_bPersist;
-	Mark.Highlight.Offset = 0;
+	CBookmark *pMark = new CBookmark(m_cSpinFrame->GetPos(), m_cSpinRow->GetPos());
+	pMark->m_Highlight.First = m_bEnableHighlight1 ? m_cSpinHighlight1->GetPos() : -1;
+	pMark->m_Highlight.Second = m_bEnableHighlight2 ? m_cSpinHighlight2->GetPos() : -1;
+	pMark->m_Highlight.Offset = 0;
+	pMark->m_bPersist = m_bPersist;
+	pMark->m_sName = std::string(str);
 
-	int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
-	Mark.Frame %= m_pDocument->GetFrameCount(Track);
+	pMark->m_iFrame %= m_pDocument->GetFrameCount(m_iTrack);
 	while (true) {
-		unsigned int Len = m_pDocument->GetFrameLength(Track, Mark.Frame);
-		if (Mark.Row < Len) break;
-		Mark.Row -= Len;
-		Mark.Frame++;
-		if (Mark.Frame >= m_pDocument->GetFrameCount(Track))
-			Mark.Frame = 0;
+		unsigned int Len = m_pDocument->GetFrameLength(m_iTrack, pMark->m_iFrame);
+		if (pMark->m_iRow < Len) break;
+		pMark->m_iRow -= Len;
+		if (++pMark->m_iFrame >= m_pDocument->GetFrameCount(m_iTrack))
+			pMark->m_iFrame = 0;
 	}
+
+	return pMark;
 }
 
-void CBookmarkDlg::SetBookmarkList()
+void CBookmarkDlg::UpdateBookmarkList()
 {
-	int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
-	m_pDocument->SetBookmarkList(Track, m_pBookmarkList);
-	LoadBookmarks();
+	LoadBookmarks(m_iTrack);
 	m_pDocument->UpdateAllViews(NULL, UPDATE_PATTERN);
 	m_pDocument->UpdateAllViews(NULL, UPDATE_FRAME);
 }
 
-void CBookmarkDlg::LoadBookmarks()
-{
-	LoadBookmarks(static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack());
-}
-
 void CBookmarkDlg::LoadBookmarks(int Track)
 {
-	if (m_pBookmarkList != NULL)
-		SAFE_RELEASE(m_pBookmarkList);
-	m_pBookmarkList = m_pDocument->GetBookmarkList(Track);
-	m_cListBookmark->ResetContent();
+	m_pCollection = m_pManager->GetCollection(m_iTrack = Track);
 
-	if (m_pBookmarkList != NULL) for (auto it = m_pBookmarkList->begin(); it < m_pBookmarkList->end(); it++) {
-		CString str = *it->Name;
+	m_cListBookmark->ResetContent();
+	if (m_pCollection) for (unsigned i = 0; i < m_pCollection->GetCount(); ++i) {
+		const CBookmark *pMark = m_pCollection->GetBookmark(i);
+		CString str(pMark->m_sName.c_str());
 		if (str.IsEmpty()) str = _T("Bookmark");
-		str.AppendFormat(_T(" (%02X,%02X)"), it->Frame, it->Row);
+		str.AppendFormat(_T(" (%02X,%02X)"), pMark->m_iFrame, pMark->m_iRow);
 		m_cListBookmark->AddString(str);
 	}
 }
@@ -149,6 +127,11 @@ void CBookmarkDlg::SelectBookmark(int Pos)
 		m_cListBookmark->SetCurSel(-1);
 	m_cListBookmark->SetFocus();
 	OnLbnSelchangeListBookmarks();
+}
+
+void CBookmarkDlg::SetManager(CBookmarkManager *const pManager)
+{
+	m_pManager = pManager;
 }
 
 BOOL CBookmarkDlg::OnInitDialog()
@@ -166,7 +149,8 @@ BOOL CBookmarkDlg::OnInitDialog()
 	m_cSpinHighlight2->SubclassDlgItem(IDC_SPIN_BOOKMARK_HIGH2, this);
 
 	m_pDocument = CFamiTrackerDoc::GetDoc();
-	m_pBookmarkList = new std::vector<stBookmark>;
+	m_pManager = nullptr;
+	m_iTrack = 0U;
 
 	m_cSpinFrame->SetRange(0, MAX_FRAMES - 1);
 	m_cSpinRow->SetRange(0, MAX_PATTERN_LENGTH - 1);
@@ -178,7 +162,6 @@ BOOL CBookmarkDlg::OnInitDialog()
 	m_bEnableHighlight1 = false;
 	m_bEnableHighlight2 = false;
 	m_bPersist = false;
-	m_bSwitching = false;
 
 	static_cast<CEdit*>(GetDlgItem(IDC_EDIT_BOOKMARK_FRAME))->SetLimitText(3);
 	static_cast<CEdit*>(GetDlgItem(IDC_EDIT_BOOKMARK_ROW))->SetLimitText(3);
@@ -222,15 +205,10 @@ BOOL CBookmarkDlg::PreTranslateMessage(MSG* pMsg)
 
 void CBookmarkDlg::OnBnClickedButtonBookmarkAdd()
 {
-	stBookmark Mark = {};
-	
-	UpdateBookmark(Mark);
-	m_pBookmarkList->push_back(Mark);
-	SetBookmarkList();
-	m_pDocument->SetModifiedFlag();
-	m_pDocument->SetExceededFlag();
-	
-	m_cListBookmark->SetCurSel(m_pBookmarkList->size() - 1);
+	CBookmark *pMark = MakeBookmark();
+	m_pCollection->AddBookmark(pMark);
+	UpdateBookmarkList();
+	m_cListBookmark->SetCurSel(m_pCollection->GetCount() - 1);
 }
 
 void CBookmarkDlg::OnBnClickedButtonBookmarkUpdate()
@@ -238,140 +216,75 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkUpdate()
 	int pos = m_cListBookmark->GetCurSel();
 	if (pos == LB_ERR) return;
 	
-	UpdateBookmark((*m_pBookmarkList)[pos]);
-	SetBookmarkList();
+	CBookmark *pMark = MakeBookmark();
+	m_pCollection->SetBookmark(pos, pMark);
+	UpdateBookmarkList();
 	m_cListBookmark->SetCurSel(pos);
 }
 
 void CBookmarkDlg::OnBnClickedButtonBookmarkRemove()
 {
 	int pos = m_cListBookmark->GetCurSel();
-	if (pos == LB_ERR) {
-		m_cListBookmark->SetFocus();
-		return;
-	}
-
-	auto it = m_pBookmarkList->begin() + pos;
-	delete it->Name;
-	m_pBookmarkList->erase(it);
-	
-	m_pDocument->SetModifiedFlag();
-	m_pDocument->SetExceededFlag();
-	SetBookmarkList();
-	m_cListBookmark->SetFocus();
-	if (m_pBookmarkList->size()) {
-		if (pos == m_pBookmarkList->size())
-			m_cListBookmark->SetCurSel(pos - 1);
-		else
+	if (pos != LB_ERR) {
+		m_pCollection->RemoveBookmark(pos);
+		UpdateBookmarkList();
+		if (int Count = m_pCollection->GetCount()) {
+			if (pos == Count) --pos;
 			m_cListBookmark->SetCurSel(pos);
+		}
+		OnLbnSelchangeListBookmarks();
 	}
-	OnLbnSelchangeListBookmarks();
+	m_cListBookmark->SetFocus();
 }
 
 void CBookmarkDlg::OnBnClickedButtonBookmarkMoveup()
 {
 	int pos = m_cListBookmark->GetCurSel();
-	if (pos == LB_ERR || pos == 0) {
-		m_cListBookmark->SetFocus();
-		return;
+	if (pos != LB_ERR && pos != 0) {
+		m_pCollection->SwapBookmarks(pos, pos - 1);
+		UpdateBookmarkList();
+		m_cListBookmark->SetCurSel(pos - 1);
 	}
-	
-	auto it = m_pBookmarkList->begin() + pos;
-	stBookmark Temp = *it;
-	*it = *(it - 1);
-	*(it - 1) = Temp;
-	
-	m_pDocument->SetModifiedFlag();
-	m_pDocument->SetExceededFlag();
-	SetBookmarkList();
 	m_cListBookmark->SetFocus();
-	m_cListBookmark->SetCurSel(pos - 1);
 }
 
 void CBookmarkDlg::OnBnClickedButtonBookmarkMovedown()
 {
 	int pos = m_cListBookmark->GetCurSel();
-	if (pos == LB_ERR || pos == m_pBookmarkList->size() - 1) {
-		m_cListBookmark->SetFocus();
-		return;
+	if (pos != LB_ERR && pos != m_pCollection->GetCount() - 1) {
+		m_pCollection->SwapBookmarks(pos, pos + 1);
+		UpdateBookmarkList();
+		m_cListBookmark->SetCurSel(pos + 1);
 	}
-	
-	auto it = m_pBookmarkList->begin() + pos;
-	stBookmark Temp = *it;
-	*it = *(it + 1);
-	*(it + 1) = Temp;
-	
-	m_pDocument->SetModifiedFlag();
-	m_pDocument->SetExceededFlag();
-	SetBookmarkList();
 	m_cListBookmark->SetFocus();
-	m_cListBookmark->SetCurSel(pos + 1);
 }
 
 void CBookmarkDlg::OnBnClickedButtonBookmarkClearall()
 {
-	for (auto it = m_pBookmarkList->begin(); it < m_pBookmarkList->end(); it++)
-		delete it->Name;
-	m_pBookmarkList->clear();
-	m_pDocument->SetModifiedFlag();
-	m_pDocument->SetExceededFlag();
-	SetBookmarkList();
+	m_pCollection->ClearBookmarks();
+	UpdateBookmarkList();
 }
 
 void CBookmarkDlg::OnBnClickedButtonBookmarkSortp()
 {
-	std::vector<stBookmark> *List = new std::vector<stBookmark>();
-
-	int Cursor = -1;
-	for (auto it = m_pBookmarkList->begin(); it < m_pBookmarkList->end(); it++) {
-		auto pos = List->begin();
-		while (pos < List->end()) {
-			if (pos->Frame > it->Frame || (pos->Frame == it->Frame && pos->Row > it->Row))
-				break;
-			pos++;
-		}
-		if (Cursor != -1 && pos - List->begin() <= Cursor)
-			Cursor++;
-		if (m_cListBookmark->GetCurSel() != LB_ERR && it - m_pBookmarkList->begin() == m_cListBookmark->GetCurSel())
-			Cursor = pos - List->begin();
-		List->insert(pos, *it);
+	if (m_pCollection->GetCount()) {
+		const CBookmark *pMark = m_pCollection->GetBookmark(m_cListBookmark->GetCurSel());
+		m_pCollection->SortByPosition(false);
+		UpdateBookmarkList();
+		m_cListBookmark->SetCurSel(m_pCollection->GetBookmarkIndex(pMark));
 	}
-	
-	delete m_pBookmarkList;
-	m_pBookmarkList = List;
-	m_pDocument->SetModifiedFlag();
-	m_pDocument->SetExceededFlag();
-	SetBookmarkList();
 	m_cListBookmark->SetFocus();
-	m_cListBookmark->SetCurSel(Cursor);
 }
 
 void CBookmarkDlg::OnBnClickedButtonBookmarkSortn()
 {
-	std::vector<stBookmark> *List = new std::vector<stBookmark>();
-	
-	int Cursor = -1;
-	for (auto it = m_pBookmarkList->begin(); it < m_pBookmarkList->end(); it++) {
-		auto pos = List->begin();
-		while (pos < List->end()) {
-			if (pos->Name->CollateNoCase(*it->Name) > 0)
-				break;
-			pos++;
-		}
-		if (Cursor != -1 && pos - List->begin() <= Cursor)
-			Cursor++;
-		if (m_cListBookmark->GetCurSel() != LB_ERR && it - m_pBookmarkList->begin() == m_cListBookmark->GetCurSel())
-			Cursor = pos - List->begin();
-		List->insert(pos, *it);
+	if (m_pCollection->GetCount()) {
+		const CBookmark *pMark = m_pCollection->GetBookmark(m_cListBookmark->GetCurSel());
+		m_pCollection->SortByName(false);
+		UpdateBookmarkList();
+		m_cListBookmark->SetCurSel(m_pCollection->GetBookmarkIndex(pMark));
 	}
-	
-	delete m_pBookmarkList;
-	m_pBookmarkList = List;
-	m_pDocument->SetModifiedFlag();
-	m_pDocument->SetExceededFlag();
-	SetBookmarkList();
 	m_cListBookmark->SetFocus();
-	m_cListBookmark->SetCurSel(Cursor);
 }
 
 void CBookmarkDlg::OnLbnSelchangeListBookmarks()
@@ -379,29 +292,25 @@ void CBookmarkDlg::OnLbnSelchangeListBookmarks()
 	int pos = m_cListBookmark->GetCurSel();
 	if (pos == LB_ERR) return;
 
-	m_bSwitching = true;
+	const CBookmark *pMark = m_pCollection->GetBookmark(pos);
+	m_bPersist = pMark->m_bPersist;
+	static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_PERSIST))->SetCheck(m_bPersist ? BST_CHECKED : BST_UNCHECKED);
+	GetDlgItem(IDC_EDIT_BOOKMARK_NAME)->SetWindowText(pMark->m_sName.c_str());
 
-	stBookmark Mark = (*m_pBookmarkList)[pos];
-	static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_PERSIST))->SetCheck(Mark.Persist ? BST_CHECKED : BST_UNCHECKED);
-	GetDlgItem(IDC_EDIT_BOOKMARK_NAME)->SetWindowText(*Mark.Name);
-
-	m_bEnableHighlight1 = Mark.Highlight.First != -1;
-	m_cSpinHighlight1->SetPos(m_bEnableHighlight1 ? Mark.Highlight.First : m_pDocument->GetHighlight().First);
+	m_bEnableHighlight1 = pMark->m_Highlight.First != -1;
+	m_cSpinHighlight1->SetPos(m_bEnableHighlight1 ? pMark->m_Highlight.First : m_pDocument->GetHighlight().First);
 	static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_HIGH1))->SetCheck(m_bEnableHighlight1);
 	static_cast<CEdit*>(GetDlgItem(IDC_EDIT_BOOKMARK_HIGH1))->EnableWindow(m_bEnableHighlight1);
 
-	m_bEnableHighlight2 = Mark.Highlight.Second != -1;
-	m_cSpinHighlight2->SetPos(m_bEnableHighlight2 ? Mark.Highlight.Second : m_pDocument->GetHighlight().Second);
+	m_bEnableHighlight2 = pMark->m_Highlight.Second != -1;
+	m_cSpinHighlight2->SetPos(m_bEnableHighlight2 ? pMark->m_Highlight.Second : m_pDocument->GetHighlight().Second);
 	static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_HIGH2))->SetCheck(m_bEnableHighlight2);
 	static_cast<CEdit*>(GetDlgItem(IDC_EDIT_BOOKMARK_HIGH2))->EnableWindow(m_bEnableHighlight2);
 
-	m_bPersist = Mark.Persist;
 	static_cast<CButton*>(GetDlgItem(IDC_CHECK_BOOKMARK_PERSIST))->SetCheck(m_bPersist);
 
-	m_cSpinFrame->SetPos(Mark.Frame);
-	m_cSpinRow->SetPos(Mark.Row);
-
-	m_bSwitching = false;
+	m_cSpinFrame->SetPos(pMark->m_iFrame);
+	m_cSpinRow->SetPos(pMark->m_iRow);
 }
 
 void CBookmarkDlg::OnLbnDblclkListBookmarks()
@@ -416,11 +325,11 @@ void CBookmarkDlg::OnLbnDblclkListBookmarks()
 	UINT item_index = m_cListBookmark->ItemFromPoint(cursor, is_outside);
 	if (!is_outside) {
 		CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(static_cast<CMainFrame*>(AfxGetMainWnd())->GetActiveView());
-		stBookmark Mark = (*m_pBookmarkList)[item_index];
+		CBookmark *pMark = m_pCollection->GetBookmark(item_index);
 		
-		//static_cast<CMainFrame*>(AfxGetMainWnd())->SelectTrack(Mark.Track);
-		pView->SelectFrame(Mark.Frame);
-		pView->SelectRow(Mark.Row);
+		pView->SelectFrame(pMark->m_iFrame);
+		pView->SelectRow(pMark->m_iRow);
+		//static_cast<CMainFrame*>(AfxGetMainWnd())->SelectTrack(pMark->m_iTrack);
 		pView->SetFocus();
 	}
 }

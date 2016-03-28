@@ -60,6 +60,9 @@
 #include "SequenceManager.h"		// // //
 #include "DSampleManager.h"			// // //
 #include "InstrumentManager.h"		// // //
+#include "Bookmark2.h"		// // //
+#include "BookmarkCollection.h"		// // //
+#include "BookmarkManager.h"		// // //
 #include "APU/APU.h"
 
 #ifdef _DEBUG
@@ -157,7 +160,8 @@ CFamiTrackerDoc::CFamiTrackerDoc() :
 	m_iRegisteredChannels(0), 
 	m_iNamcoChannels(0),		// // //
 	m_bDisplayComment(false),
-	m_pInstrumentManager(new CInstrumentManager(this))
+	m_pInstrumentManager(new CInstrumentManager(this)),
+	m_pBookmarkManager(new CBookmarkManager(MAX_TRACKS))
 {
 	// Initialize document object
 
@@ -187,13 +191,10 @@ CFamiTrackerDoc::~CFamiTrackerDoc()
 	// // // Grooves
 	for (int i = 0; i < MAX_GROOVE; ++i)
 		SAFE_RELEASE(m_pGrooveTable[i]);
-
-	// // // Bookmarks
-	for (int i = 0; i < MAX_TRACKS; ++i)
-		ClearBookmarkList(i);
 	
 	m_pInstrumentManager->ClearAll();		// // //
 	SAFE_RELEASE(m_pInstrumentManager);
+	SAFE_RELEASE(m_pBookmarkManager);
 }
 
 //
@@ -1250,6 +1251,7 @@ BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 		OpenFile.ValidateFile();
 
 		m_iFileVersion = OpenFile.GetFileVersion();
+		DeleteContents();		// // //
 
 		if (m_iFileVersion < 0x0200U) {
 			if (!OpenDocumentOld(&OpenFile))
@@ -1300,9 +1302,6 @@ BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 {
 	unsigned int i, c, ReadCount, FileBlock;
-
-	// Delete loaded document
-	DeleteContents();
 
 	FileBlock = 0;
 
@@ -1525,12 +1524,6 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 #ifdef TRANSPOSE_FDS
 	m_bAdjustFDSArpeggio = false;
 #endif
-
-	// File version checking
-	m_iFileVersion = DocumentFile.GetFileVersion();
-
-	// Delete loaded document
-	DeleteContents();
 
 	if (m_iFileVersion < 0x0210) {
 		// This has to be done for older files
@@ -2397,43 +2390,41 @@ void CFamiTrackerDoc::ReadBlock_Bookmarks(CDocumentFile *pDocFile, const int Ver
 	int Count = pDocFile->GetBlockInt();
 
 	for (int i = 0; i < Count; i++) {
-		stBookmark Mark = {};
+		CBookmark *pMark = new CBookmark();
 		unsigned int Track = AssertRange(static_cast<unsigned char>(pDocFile->GetBlockChar()), 0, m_iTrackCount - 1, "Bookmark track index");
 		int Frame = static_cast<unsigned char>(pDocFile->GetBlockChar());
 		int Row = static_cast<unsigned char>(pDocFile->GetBlockChar());
-		Mark.Frame = AssertRange(Frame, 0, static_cast<int>(m_pTracks[Track]->GetFrameCount()) - 1, "Bookmark frame index");
-		Mark.Row = AssertRange(Row, 0, static_cast<int>(m_pTracks[Track]->GetPatternLength()) - 1, "Bookmark row index");
-		Mark.Highlight.First = pDocFile->GetBlockInt();
-		Mark.Highlight.Second = pDocFile->GetBlockInt();
-		Mark.Persist = pDocFile->GetBlockChar() != 0;
-		Mark.Name = new CString(pDocFile->ReadString());
-		
-		if (m_pBookmarkList[Track] == NULL)
-			m_pBookmarkList[Track] = new std::vector<stBookmark>();
-		m_pBookmarkList[Track]->push_back(Mark);
+		pMark->m_iFrame = AssertRange(Frame, 0, static_cast<int>(m_pTracks[Track]->GetFrameCount()) - 1, "Bookmark frame index");
+		pMark->m_iRow = AssertRange(Row, 0, static_cast<int>(m_pTracks[Track]->GetPatternLength()) - 1, "Bookmark row index");
+		pMark->m_Highlight.First = pDocFile->GetBlockInt();
+		pMark->m_Highlight.Second = pDocFile->GetBlockInt();
+		pMark->m_bPersist = pDocFile->GetBlockChar() != 0;
+		pMark->m_sName = std::string(pDocFile->ReadString());
+		m_pBookmarkManager->GetCollection(Track)->AddBookmark(pMark);
 	}
 }
 
 bool CFamiTrackerDoc::WriteBlock_Bookmarks(CDocumentFile *pDocFile, const int Version) const
 {
-	int Count = 0;
-	for (unsigned int i = 0; i < m_iTrackCount; i++)
-		if (m_pBookmarkList[i] != NULL) Count += m_pBookmarkList[i]->size();
+	int Count = m_pBookmarkManager->GetBookmarkCount();
 	if (!Count) return true;
 	pDocFile->CreateBlock(FILE_BLOCK_BOOKMARKS, Version);
 	pDocFile->WriteBlockInt(Count);
 	
-	for (unsigned int i = 0; i < m_iTrackCount; i++) if (m_pBookmarkList[i] != NULL) {
-		for (auto it = m_pBookmarkList[i]->begin(); it < m_pBookmarkList[i]->end(); it++) {
+	for (unsigned int i = 0; i < m_iTrackCount; i++) {
+		CBookmarkCollection *pCol = m_pBookmarkManager->GetCollection(i);
+		unsigned int Count = pCol->GetCount();
+		if (Count) for (unsigned int j = 0; j < Count; ++j) {
+			CBookmark *pMark = pCol->GetBookmark(j);
 			pDocFile->WriteBlockChar(i);
-			pDocFile->WriteBlockChar(it->Frame);
-			pDocFile->WriteBlockChar(it->Row);
-			pDocFile->WriteBlockInt(it->Highlight.First);
-			pDocFile->WriteBlockInt(it->Highlight.Second);
-			pDocFile->WriteBlockChar(it->Persist);
-			//pDocFile->WriteBlockInt(it->Name->GetLength());
-			//pDocFile->WriteBlock(it->Name, (int)strlen(Name));	
-			pDocFile->WriteString(*it->Name);
+			pDocFile->WriteBlockChar(pMark->m_iFrame);
+			pDocFile->WriteBlockChar(pMark->m_iRow);
+			pDocFile->WriteBlockInt(pMark->m_Highlight.First);
+			pDocFile->WriteBlockInt(pMark->m_Highlight.Second);
+			pDocFile->WriteBlockChar(pMark->m_bPersist);
+			//pDocFile->WriteBlockInt(pMark->m_sName.size());
+			//pDocFile->WriteBlock(pMark->m_sName, (int)strlen(Name));	
+			pDocFile->WriteString(CString(pMark->m_sName.c_str()));
 		}
 	}
 
@@ -2632,9 +2623,7 @@ bool CFamiTrackerDoc::ImportTrack(int Track, CFamiTrackerDoc *pImported, int *pI
 	}
 
 	// // // Copy bookmarks
-	auto List = pImported->GetBookmarkList(Track);
-	SetBookmarkList(NewTrack, List);
-	SAFE_RELEASE(List);
+	m_pBookmarkManager->SetCollection(NewTrack, pImported->GetBookmarkManager()->PopCollection(Track));
 
 	stChanNote data;
 
@@ -3059,18 +3048,13 @@ void CFamiTrackerDoc::SetFrameCount(unsigned int Track, unsigned int Count)
 	ASSERT(Count <= MAX_FRAMES);
 
 	CPatternData *pTrack = GetTrack(Track);
-	if (pTrack->GetFrameCount() != Count) {
+	unsigned int Old = pTrack->GetFrameCount();
+	if (Old != Count) {
 		pTrack->SetFrameCount(Count);
+		if (Count < Old)
+			m_pBookmarkManager->GetCollection(Track)->RemoveFrames(Count, Old - Count);
 		SetModifiedFlag();
-		SetExceededFlag();			// // //
-		if (m_pBookmarkList[Track]) {
-			auto it = m_pBookmarkList[Track]->begin();
-			while (it != m_pBookmarkList[Track]->end()) {
-				if (it->Frame >= Count)
-					it = m_pBookmarkList[Track]->erase(it);
-				else it++;
-			}
-		}
+		SetExceededFlag();			// // // TODO: is this needed?
 	}
 }
 
@@ -3482,33 +3466,23 @@ bool CFamiTrackerDoc::InsertFrame(unsigned int Track, unsigned int Frame)
 	ASSERT(Track < MAX_TRACKS);
 	ASSERT(Frame < MAX_FRAMES);
 
-	int FrameCount = GetFrameCount(Track);
-	int Channels = GetAvailableChannels();
+	const int FrameCount = GetFrameCount(Track);
+	const int Channels = GetAvailableChannels();
 
 	if (FrameCount == MAX_FRAMES)
 		return false;
 
 	SetFrameCount(Track, FrameCount + 1);
 
-	for (unsigned int i = FrameCount; i > Frame; --i) {
-		for (int j = 0; j < Channels; ++j) {
+	for (unsigned int i = FrameCount; i > Frame; --i)
+		for (int j = 0; j < Channels; ++j)
 			SetPatternAtFrame(Track, i, j, GetPatternAtFrame(Track, i - 1, j));
-		}
-	}
 
 	// Select free patterns 
-	for (int i = 0; i < Channels; ++i) {
+	for (int i = 0; i < Channels; ++i)
 		SetPatternAtFrame(Track, Frame, i, GetFirstFreePattern(Track, i));
-	}
 
-	if (m_pBookmarkList[Track]) {		// // //
-		for (auto it = m_pBookmarkList[Track]->begin(); it < m_pBookmarkList[Track]->end(); it++) {
-			if (it->Frame >= Frame)
-				it->Frame++;
-		}
-	}
-
-	SetModifiedFlag();
+	m_pBookmarkManager->GetCollection(Track)->InsertFrames(Frame, 1U);		// // //
 
 	return true;
 }
@@ -3518,38 +3492,22 @@ bool CFamiTrackerDoc::RemoveFrame(unsigned int Track, unsigned int Frame)
 	ASSERT(Track < MAX_TRACKS);
 	ASSERT(Frame < MAX_FRAMES);
 
-	int FrameCount = GetFrameCount(Track);
-	int Channels = GetAvailableChannels();
-
-	for (int i = 0; i < Channels; ++i) {
-		SetPatternAtFrame(Track, Frame, i, 0);
-	}
+	const int FrameCount = GetFrameCount(Track);
+	const int Channels = GetAvailableChannels();
 
 	if (FrameCount == 1)
 		return false;
 
-	for (int i = Frame; i < FrameCount - 1; ++i) {
-		for (int j = 0; j < Channels; ++j) {
+	for (int i = Frame; i < FrameCount - 1; ++i)
+		for (int j = 0; j < Channels; ++j)
 			SetPatternAtFrame(Track, i, j, GetPatternAtFrame(Track, i + 1, j));
-		}
-	}
 
-	if (m_pBookmarkList[Track]) {		// // //
-		auto it = m_pBookmarkList[Track]->begin();
-		while (it < m_pBookmarkList[Track]->end()) {
-			if (it->Frame == Frame)
-				it = m_pBookmarkList[Track]->erase(it);
-			else {
-				if (it->Frame > Frame)
-					it->Frame--;
-				it++;
-			}
-		}
-	}
+	for (int i = 0; i < Channels; ++i)
+		SetPatternAtFrame(Track, FrameCount - 1, i, 0);		// // //
+	
+	m_pBookmarkManager->GetCollection(Track)->RemoveFrames(Frame, 1U);		// // //
 
 	SetFrameCount(Track, FrameCount - 1);
-
-	SetModifiedFlag();
 
 	return true;
 }
@@ -3560,32 +3518,22 @@ bool CFamiTrackerDoc::DuplicateFrame(unsigned int Track, unsigned int Frame)
 	ASSERT(Track < MAX_TRACKS);
 	ASSERT(Frame < MAX_FRAMES);
 
-	int Frames = GetFrameCount(Track);
-	int Channels = GetAvailableChannels();
+	const int Frames = GetFrameCount(Track);
+	const int Channels = GetAvailableChannels();
 
 	if (Frames == MAX_FRAMES)
 		return false;
 
 	SetFrameCount(Track, Frames + 1);
 
-	for (unsigned int i = Frames; i > (Frame + 1); --i) {
-		for (int j = 0; j < Channels; ++j) {
+	for (unsigned int i = Frames; i > (Frame + 1); --i)
+		for (int j = 0; j < Channels; ++j)
 			SetPatternAtFrame(Track, i, j, GetPatternAtFrame(Track, i - 1, j));
-		}
-	}
 
-	for (int i = 0; i < Channels; ++i) {
+	for (int i = 0; i < Channels; ++i) 
 		SetPatternAtFrame(Track, Frame + 1, i, GetPatternAtFrame(Track, Frame, i));
-	}
 
-	if (m_pBookmarkList[Track]) {		// // //
-		for (auto it = m_pBookmarkList[Track]->begin(); it < m_pBookmarkList[Track]->end(); it++) {
-			if (it->Frame >= Frame)
-				it->Frame++;
-		}
-	}
-
-	SetModifiedFlag();
+	m_pBookmarkManager->GetCollection(Track)->InsertFrames(Frame + 1, 1U);		// // //
 
 	return true;
 }
@@ -3629,14 +3577,7 @@ bool CFamiTrackerDoc::MoveFrameDown(unsigned int Track, unsigned int Frame)
 		SetPatternAtFrame(Track, Frame + 1, i, Pattern);
 	}
 
-	if (m_pBookmarkList[Track]) {		// // //
-		for (auto it = m_pBookmarkList[Track]->begin(); it < m_pBookmarkList[Track]->end(); it++) {
-			if (it->Frame == Frame)
-				it->Frame++;
-			else if (it->Frame == Frame + 1)
-				it->Frame--;
-		}
-	}
+	m_pBookmarkManager->GetCollection(Track)->SwapFrames(Frame, Frame + 1);		// // //
 
 	SetModifiedFlag();
 
@@ -3655,15 +3596,8 @@ bool CFamiTrackerDoc::MoveFrameUp(unsigned int Track, unsigned int Frame)
 		SetPatternAtFrame(Track, Frame, i, GetPatternAtFrame(Track, Frame - 1, i));
 		SetPatternAtFrame(Track, Frame - 1, i, Pattern);
 	}
-
-	if (m_pBookmarkList[Track]) {		// // //
-		for (auto it = m_pBookmarkList[Track]->begin(); it < m_pBookmarkList[Track]->end(); it++) {
-			if (it->Frame == Frame)
-				it->Frame--;
-			else if (it->Frame == Frame + 1)
-				it->Frame++;
-		}
-	}
+	
+	m_pBookmarkManager->GetCollection(Track)->SwapFrames(Frame, Frame - 1);		// // //
 
 	SetModifiedFlag();
 
@@ -3702,6 +3636,7 @@ int CFamiTrackerDoc::AddTrack()
 	AllocateTrack(NewTrack);
 
 	++m_iTrackCount;
+	m_pBookmarkManager->InsertTrack(NewTrack);		// // //
 
 	SetModifiedFlag();
 	SetExceededFlag();		// // //
@@ -3716,18 +3651,17 @@ void CFamiTrackerDoc::RemoveTrack(unsigned int Track)
 	ASSERT(m_pTracks[Track] != NULL);
 
 	delete m_pTracks[Track];
-
+	
 	// Move down all other tracks
 	for (unsigned int i = Track; i < m_iTrackCount - 1; ++i) {
 		m_sTrackNames[i] = m_sTrackNames[i + 1];
 		m_pTracks[i] = m_pTracks[i + 1];
-		m_pBookmarkList[i] = m_pBookmarkList[i + 1];		// // //
 	}
 
 	m_pTracks[m_iTrackCount - 1] = NULL;
-	m_pBookmarkList[m_iTrackCount - 1] = NULL;
 
 	--m_iTrackCount;
+	m_pBookmarkManager->RemoveTrack(Track);		// // //
 /*
 	if (m_iTrack >= m_iTrackCount)
 		m_iTrack = m_iTrackCount - 1;	// Last track was removed
@@ -3753,6 +3687,7 @@ void CFamiTrackerDoc::MoveTrackUp(unsigned int Track)
 	ASSERT(Track > 0);
 
 	SwapTracks(Track, Track - 1);
+	m_pBookmarkManager->SwapTracks(Track, Track - 1);		// // //
 	SetModifiedFlag();
 	SetExceededFlag();		// // //
 }
@@ -3762,6 +3697,7 @@ void CFamiTrackerDoc::MoveTrackDown(unsigned int Track)
 	ASSERT(Track < MAX_TRACKS);
 
 	SwapTracks(Track, Track + 1);
+	m_pBookmarkManager->SwapTracks(Track, Track + 1);		// // //
 	SetModifiedFlag();
 	SetExceededFlag();		// // //
 }
@@ -3770,7 +3706,7 @@ void CFamiTrackerDoc::SwapTracks(unsigned int Track1, unsigned int Track2)
 {
 	std::swap(m_sTrackNames[Track1], m_sTrackNames[Track2]);		// // //
 	std::swap(m_pTracks[Track1], m_pTracks[Track2]);
-	std::swap(m_pBookmarkList[Track1], m_pBookmarkList[Track2]);
+	m_pBookmarkManager->SwapTracks(Track1, Track2);		// // //
 }
 
 void CFamiTrackerDoc::AllocateTrack(unsigned int Track)
@@ -3781,6 +3717,7 @@ void CFamiTrackerDoc::AllocateTrack(unsigned int Track)
 		m_pTracks[Track] = new CPatternData(DEFAULT_ROW_COUNT);		// // //
 		m_pTracks[Track]->SetSongTempo(Tempo);
 		m_sTrackNames[Track] = DEFAULT_TRACK_NAME;
+		m_pBookmarkManager->GetCollection(Track)->ClearBookmarks();
 	}
 }
 
@@ -3898,6 +3835,11 @@ CInstrumentManager *const CFamiTrackerDoc::GetInstrumentManager() const
 CDSampleManager *const CFamiTrackerDoc::GetDSampleManager() const
 {
 	return m_pInstrumentManager->GetDSampleManager();
+}
+
+CBookmarkManager *const CFamiTrackerDoc::GetBookmarkManager() const
+{
+	return m_pBookmarkManager;
 }
 
 void CFamiTrackerDoc::Modify(bool Change)
@@ -4291,27 +4233,26 @@ unsigned int CFamiTrackerDoc::GetHighlightAtRow(unsigned int Track, unsigned int
 	Frame %= GetFrameCount(Track);
 
 	stHighlight Hl = m_vHighlight;
-	stHighlight *New = NULL;
 	int RowOffs = 0;
 	bool Hit = false;
 	
-	if (m_pBookmarkList[Track]) {
-		const int PackedPos = Frame * MAX_PATTERN_LENGTH + Row;
-		int Min = MAX_FRAMES * MAX_PATTERN_LENGTH;
-		for (auto it = m_pBookmarkList[Track]->begin(); it < m_pBookmarkList[Track]->end(); it++) {
-			int NewPos = PackedPos - (it->Frame * MAX_PATTERN_LENGTH + it->Row);
-			if (NewPos == 0)
-				Hit = true;
-			if (NewPos >= 0 && NewPos < Min) {
-				Min = NewPos;
-				New = &it->Highlight;
-
-				RowOffs = it->Row;
-				if (New->First != -1 && (it->Persist || it->Frame == Frame))
-					Hl.First = New->First;
-				if (New->Second != -1 && (it->Persist || it->Frame == Frame))
-					Hl.Second = New->Second;
-				Hl.Offset = New->Offset;
+	CBookmarkCollection *pCol = m_pBookmarkManager->GetCollection(Track);
+	if (const unsigned Count = pCol->GetCount()) {
+		CBookmark tmp(Frame, Row);
+		unsigned int Min = tmp.Distance(CBookmark());
+		for (unsigned i = 0; i < Count; ++i) {
+			CBookmark *pMark = pCol->GetBookmark(i);
+			unsigned Dist = tmp.Distance(*pMark);
+			if (Dist <= Min) {
+				Min = Dist;
+				RowOffs = pMark->m_iRow;
+				if (pMark->m_Highlight.First != -1 && (pMark->m_bPersist || pMark->m_iFrame == Frame))
+					Hl.First = pMark->m_Highlight.First;
+				if (pMark->m_Highlight.Second != -1 && (pMark->m_bPersist || pMark->m_iFrame == Frame))
+					Hl.Second = pMark->m_Highlight.Second;
+				Hl.Offset = pMark->m_Highlight.Offset;
+				if (!Dist)
+					Hit = true;
 			}
 		}
 	}
@@ -4947,12 +4888,7 @@ void CFamiTrackerDoc::SetBookmarkList(unsigned int Track, std::vector<stBookmark
 
 void CFamiTrackerDoc::ClearBookmarkList(unsigned int Track)
 {
-	std::vector<stBookmark> *List = m_pBookmarkList[Track];
-	if (List != NULL) {
-		for (size_t i = 0; i < List->size(); i++)
-			SAFE_RELEASE((*List)[i].Name);
-		SAFE_RELEASE(m_pBookmarkList[Track]);
-	}
+	m_pBookmarkManager->GetCollection(Track)->ClearBookmarks();
 }
 
 void CFamiTrackerDoc::SetExceededFlag(bool Exceed)

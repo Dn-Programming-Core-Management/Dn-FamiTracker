@@ -365,6 +365,7 @@ public:
 	CSequenceManager *const GetSequenceManager(int InstType) const;
 	CInstrumentManager *const GetInstrumentManager() const;
 	CDSampleManager *const GetDSampleManager() const;
+	CBookmarkManager *const GetBookmarkManager() const;
 	void			Modify(bool Change);
 	void			ModifyIrreversible();
 
@@ -544,6 +545,7 @@ private:
 
 	// Instruments, samples and sequences
 	CInstrumentManager *m_pInstrumentManager;					// // //
+	CBookmarkManager *m_pBookmarkManager;						// // //
 	CGroove			*m_pGrooveTable[MAX_GROOVE];				// // // Grooves
 
 	// Module properties

@@ -38,6 +38,9 @@
 #include "Clipboard.h"
 #include "APU/APU.h"
 // // //
+#include "Bookmark2.h"
+#include "BookmarkCollection.h"
+#include "BookmarkManager.h"
 #include "DetuneDlg.h"
 #include "StretchDlg.h"
 #include "RecordSettingsDlg.h"
@@ -1464,6 +1467,7 @@ void CFamiTrackerView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* /*pHi
 	case UPDATE_CLOSE:
 		// Old
 		pMainFrm->CloseGrooveSettings();		// // //
+		pMainFrm->CloseBookmarkSettings();		// // //
 		pMainFrm->UpdateBookmarkList();		// // //
 		pMainFrm->CloseInstrumentEditor();
 		break;
@@ -1761,6 +1765,8 @@ void CFamiTrackerView::SelectFrameChannel(unsigned int Frame, unsigned int Chann
 	// This method does no redrawing
 }
 
+// // // TODO: move these to CMainFrame?
+
 void CFamiTrackerView::OnBookmarksToggle()
 {
 	if ((theApp.IsPlaying() && m_bFollowMode) || !m_bEditEnable)
@@ -1769,39 +1775,28 @@ void CFamiTrackerView::OnBookmarksToggle()
 	CFamiTrackerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	int Track = static_cast<CMainFrame*>(GetParentFrame())->GetSelectedTrack();
-	std::vector<stBookmark> *List = pDoc->GetBookmarkList(Track);
-	ASSERT(List != NULL);
-
 	const int Frame = GetSelectedFrame();
 	const int Row = GetSelectedRow();
-	bool Found = false;
-	
-	auto it = List->begin();
-	while (it < List->end()) {
-		if (it->Frame == Frame && it->Row == Row) {
-			Found = true;
-			SAFE_RELEASE(it->Name);
-			it = List->erase(it);
-		}
-		else it++;
+
+	CBookmarkCollection *pCol = pDoc->GetBookmarkManager()->GetCollection(Track);
+	ASSERT(pCol);
+	if (CBookmark *pMark = pCol->FindAt(Frame, Row))
+		pCol->RemoveAt(Frame, Row);
+	else {
+		pMark = new CBookmark(Frame, Row);
+		pMark->m_Highlight.First = pMark->m_Highlight.Second = -1;
+		pMark->m_bPersist = false;
+		char buf[32] = {};
+		sprintf_s(buf, sizeof(buf), _T("Bookmark %i"), pCol->GetCount() + 1);
+		pMark->m_sName = buf;
+		pCol->AddBookmark(pMark);
 	}
-	if (!Found) {
-		stBookmark Mark = {};
-		Mark.Frame = Frame;
-		Mark.Row = Row;
-		Mark.Highlight.First = Mark.Highlight.Second = -1;
-		Mark.Persist = false;
-		Mark.Name = new CString();
-		Mark.Name->Format(_T("Bookmark %i"), List->size() + 1);
-		List->push_back(Mark);
-	}
-	pDoc->SetBookmarkList(Track, List);
+
 	static_cast<CMainFrame*>(GetParentFrame())->UpdateBookmarkList();
 	SetFocus();
 	pDoc->SetModifiedFlag();
 	pDoc->SetExceededFlag();
 	m_pPatternEditor->InvalidatePatternData();
-	SAFE_RELEASE(List);
 }
 
 void CFamiTrackerView::OnBookmarksNext()
@@ -1812,39 +1807,26 @@ void CFamiTrackerView::OnBookmarksNext()
 	CFamiTrackerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	CMainFrame *pMainFrame = static_cast<CMainFrame*>(GetParentFrame());
-	std::vector<stBookmark> *List = pDoc->GetBookmarkList(pMainFrame->GetSelectedTrack());
-	ASSERT(List != NULL);
-	if (!List->size()) {
-		MessageBeep(MB_ICONINFORMATION);
-		pMainFrame->SetMessageText(IDS_BOOKMARK_EMPTY);
-		SAFE_RELEASE(List); return;
-	}
+	CBookmarkCollection *pCol = pDoc->GetBookmarkManager()->GetCollection(pMainFrame->GetSelectedTrack());
+	ASSERT(pCol);
 
-	const int PackedPos = GetSelectedFrame() * MAX_PATTERN_LENGTH + GetSelectedRow();
-	int Min = MAX_FRAMES * MAX_PATTERN_LENGTH;
-	std::vector<stBookmark>::iterator Closest = List->end();
-	for (auto it = List->begin(); it < List->end(); it++) {
-		int NewPos = it->Frame * MAX_PATTERN_LENGTH + it->Row - PackedPos;
-		if (NewPos <= 0) NewPos += MAX_FRAMES * MAX_PATTERN_LENGTH;
-		if (NewPos < Min) {
-			Min = NewPos;
-			Closest = it;
-		}
-	}
-	if (Closest != List->end()) {
-		SelectFrame(Closest->Frame);
-		SelectRow(Closest->Row);
+	if (CBookmark *pMark = pCol->FindNext(GetSelectedFrame(), GetSelectedRow())) {
+		SelectFrame(pMark->m_iFrame);
+		SelectRow(pMark->m_iRow);
 		CString str1 = _T("None");
-		if (Closest->Highlight.First != -1) str1.Format(_T("%i"), Closest->Highlight.First);
+		if (pMark->m_Highlight.First != -1) str1.Format(_T("%i"), pMark->m_Highlight.First);
 		CString str2 = _T("None");
-		if (Closest->Highlight.Second != -1) str2.Format(_T("%i"), Closest->Highlight.Second);
+		if (pMark->m_Highlight.Second != -1) str2.Format(_T("%i"), pMark->m_Highlight.Second);
 		CString Text;
-		AfxFormatString3(Text, IDS_BOOKMARK_FORMAT, *Closest->Name, str1, str2);
+		AfxFormatString3(Text, IDS_BOOKMARK_FORMAT, pMark->m_sName.c_str(), str1, str2);
 		pMainFrame->SetMessageText(Text);
-		pMainFrame->UpdateBookmarkList(Closest - List->begin());
+		pMainFrame->UpdateBookmarkList(pCol->GetBookmarkIndex(pMark));
 		SetFocus();
 	}
-	SAFE_RELEASE(List);
+	else {
+		MessageBeep(MB_ICONINFORMATION);
+		pMainFrame->SetMessageText(IDS_BOOKMARK_EMPTY);
+	}
 }
 
 void CFamiTrackerView::OnBookmarksPrevious()
@@ -1855,39 +1837,26 @@ void CFamiTrackerView::OnBookmarksPrevious()
 	CFamiTrackerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	CMainFrame *pMainFrame = static_cast<CMainFrame*>(GetParentFrame());
-	std::vector<stBookmark> *List = pDoc->GetBookmarkList(pMainFrame->GetSelectedTrack());
-	ASSERT(List != NULL);
-	if (!List->size()) {
-		MessageBeep(MB_ICONINFORMATION);
-		pMainFrame->SetMessageText(IDS_BOOKMARK_EMPTY);
-		SAFE_RELEASE(List); return;
-	}
-	
-	const int PackedPos = GetSelectedFrame() * MAX_PATTERN_LENGTH + GetSelectedRow();
-	int Min = MAX_FRAMES * MAX_PATTERN_LENGTH;
-	std::vector<stBookmark>::iterator Closest = List->end();
-	for (auto it = List->begin(); it < List->end(); it++) {
-		int NewPos = PackedPos - (it->Frame * MAX_PATTERN_LENGTH + it->Row);
-		if (NewPos <= 0) NewPos += MAX_FRAMES * MAX_PATTERN_LENGTH;
-		if (NewPos < Min) {
-			Min = NewPos;
-			Closest = it;
-		}
-	}
-	if (Closest != List->end()) {
-		SelectFrame(Closest->Frame);
-		SelectRow(Closest->Row);
+	CBookmarkCollection *pCol = pDoc->GetBookmarkManager()->GetCollection(pMainFrame->GetSelectedTrack());
+	ASSERT(pCol);
+
+	if (CBookmark *pMark = pCol->FindPrevious(GetSelectedFrame(), GetSelectedRow())) {
+		SelectFrame(pMark->m_iFrame);
+		SelectRow(pMark->m_iRow);
 		CString str1 = _T("None");
-		if (Closest->Highlight.First != -1) str1.Format(_T("%i"), Closest->Highlight.First);
+		if (pMark->m_Highlight.First != -1) str1.Format(_T("%i"), pMark->m_Highlight.First);
 		CString str2 = _T("None");
-		if (Closest->Highlight.Second != -1) str2.Format(_T("%i"), Closest->Highlight.Second);
+		if (pMark->m_Highlight.Second != -1) str2.Format(_T("%i"), pMark->m_Highlight.Second);
 		CString Text;
-		AfxFormatString3(Text, IDS_BOOKMARK_FORMAT, *Closest->Name, str1, str2);
+		AfxFormatString3(Text, IDS_BOOKMARK_FORMAT, pMark->m_sName.c_str(), str1, str2);
 		pMainFrame->SetMessageText(Text);
-		pMainFrame->UpdateBookmarkList(Closest - List->begin());
+		pMainFrame->UpdateBookmarkList(pCol->GetBookmarkIndex(pMark));
 		SetFocus();
 	}
-	SAFE_RELEASE(List);
+	else {
+		MessageBeep(MB_ICONINFORMATION);
+		pMainFrame->SetMessageText(IDS_BOOKMARK_EMPTY);
+	}
 }
 
 void CFamiTrackerView::ToggleChannel(unsigned int Channel)

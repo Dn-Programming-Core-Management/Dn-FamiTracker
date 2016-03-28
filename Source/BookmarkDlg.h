@@ -23,6 +23,9 @@
 #pragma once
 
 class CFamiTrackerDoc;
+class CBookmark;
+class CBookmarkCollection;
+class CBookmarkManager;
 
 
 // CBookmarkDlg dialog
@@ -37,6 +40,7 @@ public:
 
 	void LoadBookmarks(int Track);
 	void SelectBookmark(int Pos);
+	void SetManager(CBookmarkManager *const pManager);
 
 // Dialog Data
 	enum { IDD = IDD_BOOKMARKS };
@@ -44,9 +48,8 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-	void UpdateBookmark(stBookmark & Mark) const;
-	void SetBookmarkList();
-	void LoadBookmarks();
+	CBookmark *MakeBookmark() const;
+	void UpdateBookmarkList();
 
 	CListBox *m_cListBookmark;
 	CSpinButtonCtrl *m_cSpinFrame;
@@ -55,12 +58,13 @@ protected:
 	CSpinButtonCtrl *m_cSpinHighlight2;
 
 	CFamiTrackerDoc *m_pDocument;
+	CBookmarkManager *m_pManager;
+	unsigned m_iTrack;
 
-	std::vector<stBookmark> *m_pBookmarkList;
+	CBookmarkCollection *m_pCollection;
 	bool m_bEnableHighlight1;
 	bool m_bEnableHighlight2;
 	bool m_bPersist;
-	bool m_bSwitching;
 
 	DECLARE_MESSAGE_MAP()
 public:
