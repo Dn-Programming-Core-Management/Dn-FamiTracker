@@ -32,6 +32,7 @@
 class CSequence;
 class CSeqInstrument;
 class CFamiTrackerDoc;
+class CInstrumentManager;		// // //
 
 class CInstrumentEditPanel : public CDialog
 {
@@ -44,6 +45,7 @@ public:
 
 	// Select instrument for the editing
 	virtual void SelectInstrument(std::shared_ptr<CInstrument> pInst) = 0;		// // //
+	void SetInstrumentManager(CInstrumentManager *pManager);		// // //
 
 protected:
 	CFamiTrackerDoc *GetDocument() const;
@@ -53,6 +55,9 @@ protected:
 	virtual void OnKeyReturn();
 
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+
+protected:
+	CInstrumentManager *m_pInstManager;		// // //
 
 	DECLARE_MESSAGE_MAP()
 public:

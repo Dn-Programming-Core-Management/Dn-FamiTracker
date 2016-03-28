@@ -21,6 +21,7 @@
 #pragma once
 
 class CInstrumentEditPanel;
+class CInstrumentManager;		// // //
 
 // CInstrumentEditDlg dialog
 
@@ -38,6 +39,7 @@ public:
 	void SetRefreshRate(float Rate);		// // //
 	bool IsOpened() const;
 	void EndDialog(int nResult);
+	void SetInstrumentManager(CInstrumentManager *pManager);		// // //
 
 // Dialog Data
 	enum { IDD = IDD_INSTRUMENT };
@@ -70,6 +72,7 @@ protected:
 	// Variables for windows
 	CInstrumentEditPanel *m_pPanels[PANEL_COUNT];
 	CInstrumentEditPanel *m_pFocusPanel;
+	CInstrumentManager *m_pInstManager;		// // //
 
 	bool m_bOpened;
 	int m_iSelectedInstType;

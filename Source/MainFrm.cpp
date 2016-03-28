@@ -1876,6 +1876,7 @@ void CMainFrame::OpenInstrumentEditor()
 
 	if (pDoc->IsInstrumentUsed(Instrument)) {
 		if (m_wndInstEdit.IsOpened() == false) {
+			m_wndInstEdit.SetInstrumentManager(pDoc->GetInstrumentManager());		// // //
 			m_wndInstEdit.Create(IDD_INSTRUMENT, this);
 			m_wndInstEdit.SetCurrentInstrument(Instrument);
 			m_wndInstEdit.ShowWindow(SW_SHOW);

@@ -20,12 +20,15 @@
 ** must bear this legend.
 */
 
+#include <vector>
+#include <afxmt.h>
 #include "stdafx.h"
 #include "resource.h"		// // //
-#include "FamiTrackerDoc.h"
 #include "Instrument.h"
 #include "SeqInstrument.h"		// // //
 #include "InstrumentEditPanel.h"
+#include "Sequence.h"		// // //
+#include "InstrumentManager.h"		// // //
 #include "SequenceEditor.h"
 #include "InstrumentEditorSeq.h"
 
@@ -179,7 +182,7 @@ void CInstrumentEditorSeq::OnEnChangeSeqIndex()
 
 void CInstrumentEditorSeq::OnBnClickedFreeSeq()
 {
-	int FreeIndex = GetDocument()->GetFreeSequence(m_iInstType, m_iSelectedSetting, m_pInstrument.get());		// // //
+	int FreeIndex = m_pInstManager->AddSequence(m_iInstType, m_iSelectedSetting, nullptr, m_pInstrument.get());		// // //
 	if (FreeIndex == -1)
 		FreeIndex = 0;
 	SetDlgItemInt(IDC_SEQ_INDEX, FreeIndex, FALSE);	// Things will update automatically by changing this
@@ -221,10 +224,10 @@ void CInstrumentEditorSeq::OnKeyReturn()
 
 void CInstrumentEditorSeq::OnCloneSequence()
 {
-	CFamiTrackerDoc *pDoc = GetDocument();
-	int FreeIndex = pDoc->GetFreeSequence(m_iInstType, m_iSelectedSetting);		// // //
-	if (FreeIndex != -1) {
-		pDoc->GetSequence(m_iInstType, FreeIndex, m_iSelectedSetting)->Copy(m_pSequence);
+	CSequence *pSeq = new CSequence(*m_pSequence);		// // // default copy ctor
+	int FreeIndex = m_pInstManager->AddSequence(m_iInstType, m_iSelectedSetting, pSeq, m_pInstrument.get());
+	if (FreeIndex != -1)
 		SetDlgItemInt(IDC_SEQ_INDEX, FreeIndex, FALSE);
-	}
+	else if (pSeq)
+		delete pSeq;
 }

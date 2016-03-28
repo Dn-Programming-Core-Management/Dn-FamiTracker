@@ -28,7 +28,6 @@
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
-#include "SeqInstrument.h"
 #include "InstrumentEditPanel.h"
 #include "SequenceEditor.h"
 
@@ -38,7 +37,8 @@
 //
 
 IMPLEMENT_DYNAMIC(CInstrumentEditPanel, CDialog)
-CInstrumentEditPanel::CInstrumentEditPanel(UINT nIDTemplate, CWnd* pParent) : CDialog(nIDTemplate, pParent)//, m_bShow(false)
+CInstrumentEditPanel::CInstrumentEditPanel(UINT nIDTemplate, CWnd* pParent) : CDialog(nIDTemplate, pParent),
+	m_pInstManager(nullptr)		// // //, m_bShow(false)
 {
 }
 
@@ -147,6 +147,11 @@ void CInstrumentEditPanel::OnSetFocus(CWnd* pOldWnd)
 	// Kill the default handler to avoid setting focus to a child control
 	//Invalidate();
 	CDialog::OnSetFocus(pOldWnd);
+}
+
+void CInstrumentEditPanel::SetInstrumentManager(CInstrumentManager *pManager)		// // //
+{
+	m_pInstManager = pManager;
 }
 
 CFamiTrackerDoc *CInstrumentEditPanel::GetDocument() const

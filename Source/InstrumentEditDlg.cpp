@@ -63,7 +63,8 @@ CInstrumentEditDlg::CInstrumentEditDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CInstrumentEditDlg::IDD, pParent),
 	m_bOpened(false),
 	m_fRefreshRate(60.0f),		// // //
-	m_iInstrument(-1)
+	m_iInstrument(-1),
+	m_pInstManager(nullptr)		// // //
 {
 }
 
@@ -109,6 +110,8 @@ void CInstrumentEditDlg::InsertPane(CInstrumentEditPanel *pPanel, bool Show)
 {
 	CRect Rect, ParentRect;
 	CTabCtrl *pTabControl = static_cast<CTabCtrl*>(GetDlgItem(IDC_INST_TAB));
+
+	pPanel->SetInstrumentManager(m_pInstManager);		// // //
 
 	pTabControl->GetWindowRect(&ParentRect);
 	pTabControl->InsertItem(m_iPanels, pPanel->GetTitle());
@@ -522,6 +525,11 @@ void CInstrumentEditDlg::OnNcLButtonUp(UINT nHitTest, CPoint point)
 bool CInstrumentEditDlg::IsOpened() const
 {
 	return m_bOpened;
+}
+
+void CInstrumentEditDlg::SetInstrumentManager(CInstrumentManager *pManager)
+{
+	m_pInstManager = pManager;
 }
 
 void CInstrumentEditDlg::PostNcDestroy()

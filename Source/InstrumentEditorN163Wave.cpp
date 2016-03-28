@@ -22,14 +22,11 @@
 
 #include <memory>		// // //
 #include <string>
-#include <iterator> 
-#include <string>
+#include <iterator>
 #include <sstream>
-#include <cmath>
 #include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
-#include "FamiTrackerView.h"
 #include "InstrumentEditPanel.h"
 #include "InstrumentEditorN163Wave.h"
 #include "InstrumentN163.h"		// // //
