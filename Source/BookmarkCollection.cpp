@@ -24,42 +24,13 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <exception>
 #include "Bookmark.h"
 #include "BookmarkCollection.h"
 #include "FamiTrackerTypes.h" // constants
 
 CBookmarkCollection::CBookmarkCollection()
 {
-}
-
-void CBookmarkCollection::AddBookmark(CBookmark *const pMark)
-{
-	m_pBookmark.emplace_back(std::unique_ptr<CBookmark>(pMark));
-}
-
-void CBookmarkCollection::SetBookmark(unsigned Index, CBookmark *const pMark)
-{
-	m_pBookmark[Index].reset(pMark);
-}
-
-void CBookmarkCollection::InsertBookmark(unsigned Index, CBookmark *const pMark)
-{
-	m_pBookmark.insert(m_pBookmark.begin() + Index, std::unique_ptr<CBookmark>(pMark));
-}
-
-void CBookmarkCollection::RemoveBookmark(unsigned Index)
-{
-	m_pBookmark.erase(m_pBookmark.begin() + Index);
-}
-
-void CBookmarkCollection::ClearBookmarks()
-{
-	m_pBookmark.clear();
-}
-
-void CBookmarkCollection::SwapBookmarks(unsigned A, unsigned B)
-{
-	m_pBookmark[A].swap(m_pBookmark[B]);
 }
 
 unsigned CBookmarkCollection::GetCount() const
@@ -70,6 +41,52 @@ unsigned CBookmarkCollection::GetCount() const
 CBookmark *CBookmarkCollection::GetBookmark(unsigned Index) const
 {
 	return m_pBookmark[Index].get();
+}
+
+bool CBookmarkCollection::AddBookmark(CBookmark *const pMark)
+{
+	try {
+		m_pBookmark.emplace_back(std::unique_ptr<CBookmark>(pMark));
+		return true;
+	}
+	catch (std::exception) {
+		return false;
+	}
+}
+
+bool CBookmarkCollection::SetBookmark(unsigned Index, CBookmark *const pMark)
+{
+	if (m_pBookmark[Index].get()->IsEqual(*pMark)) return false;
+	m_pBookmark[Index].reset(pMark);
+	return true;
+}
+
+bool CBookmarkCollection::InsertBookmark(unsigned Index, CBookmark *const pMark)
+{
+	if (Index > m_pBookmark.size()) return false;
+	m_pBookmark.insert(m_pBookmark.begin() + Index, std::unique_ptr<CBookmark>(pMark));
+	return true;
+}
+
+bool CBookmarkCollection::RemoveBookmark(unsigned Index)
+{
+	if (Index >= m_pBookmark.size()) return false;
+	m_pBookmark.erase(m_pBookmark.begin() + Index);
+	return true;
+}
+
+bool CBookmarkCollection::ClearBookmarks()
+{
+	if (m_pBookmark.empty()) return false;
+	m_pBookmark.clear();
+	return true;
+}
+
+bool CBookmarkCollection::SwapBookmarks(unsigned A, unsigned B)
+{
+	if (A == B) return false;
+	m_pBookmark[A].swap(m_pBookmark[B]);
+	return true;
 }
 
 void CBookmarkCollection::InsertFrames(unsigned Frame, unsigned Count)
@@ -141,63 +158,27 @@ CBookmark *CBookmarkCollection::FindPrevious(unsigned Frame, unsigned Row) const
 	})->get();
 }
 
-void CBookmarkCollection::SortByName(bool Desc)
+bool CBookmarkCollection::SortByName(bool Desc)
 {
-	std::sort(m_pBookmark.begin(), m_pBookmark.end(),
-			  [] (std::unique_ptr<CBookmark> &a, std::unique_ptr<CBookmark> &b) { return a->m_sName < b->m_sName; });
-	if (Desc)
-		std::reverse(m_pBookmark.begin(), m_pBookmark.end());
+	static auto sortFunc = [] (const std::unique_ptr<CBookmark> &a, const std::unique_ptr<CBookmark> &b)
+		{ return a->m_sName < b->m_sName; };
+	
+	if (Desc) std::reverse(m_pBookmark.begin(), m_pBookmark.end());
+	bool Change = !std::is_sorted(m_pBookmark.begin(), m_pBookmark.end(), sortFunc);
+	if (Desc) std::reverse(m_pBookmark.begin(), m_pBookmark.end());
+	if (!Change) return false;
+	std::stable_sort(m_pBookmark.begin(), m_pBookmark.end(), sortFunc);
+	if (Desc) std::reverse(m_pBookmark.begin(), m_pBookmark.end());
+	return true;
 }
 
-void CBookmarkCollection::SortByPosition(bool Desc)
+bool CBookmarkCollection::SortByPosition(bool Desc)
 {
-	std::sort(m_pBookmark.begin(), m_pBookmark.end()); // &CBookmark::operator<
-	if (Desc)
-		std::reverse(m_pBookmark.begin(), m_pBookmark.end());
+	if (Desc) std::reverse(m_pBookmark.begin(), m_pBookmark.end());
+	bool Change = !std::is_sorted(m_pBookmark.begin(), m_pBookmark.end());
+	if (Desc) std::reverse(m_pBookmark.begin(), m_pBookmark.end());
+	if (!Change) return false;
+	std::stable_sort(m_pBookmark.begin(), m_pBookmark.end());
+	if (Desc) std::reverse(m_pBookmark.begin(), m_pBookmark.end());
+	return true;
 }
-
-/*
-CBookmarkIterator CBookmarkCollection::GetIterator() const
-{
-	return CBookmarkIterator(this);
-}
-
-CBookmarkIterator::CBookmarkIterator(const CBookmarkCollection *pCol) :
-	Begin(pCol->m_pBookmark.rbegin()),
-	End(pCol->m_pBookmark.rend()),
-	Index(0U),
-	Valid(pCol != nullptr)
-{
-	if (Begin == End) Valid = false;
-}
-
-CBookmarkIterator &CBookmarkIterator::operator++()
-{
-	if (!Valid) return *this;
-	if (++Begin > End)
-		Valid = false;
-	++Index;
-	return *this;
-}
-
-CBookmark *CBookmarkIterator::operator()()
-{
-	if (!Valid) return nullptr;
-	return Begin->get();
-}
-
-bool CBookmarkIterator::operator!() const
-{
-	return Valid;
-}
-
-unsigned CBookmarkIterator::GetIndex() const
-{
-	return Index;
-}
-
-CBookmarkCollection::iter_t CBookmarkIterator::_iter() const
-{
-	return Begin;
-}
-*/

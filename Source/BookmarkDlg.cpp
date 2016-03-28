@@ -205,7 +205,10 @@ BOOL CBookmarkDlg::PreTranslateMessage(MSG* pMsg)
 void CBookmarkDlg::OnBnClickedButtonBookmarkAdd()
 {
 	CBookmark *pMark = MakeBookmark();
-	m_pCollection->AddBookmark(pMark);
+	if (m_pCollection->AddBookmark(pMark))
+		m_pDocument->ModifyIrreversible();
+	else
+		delete pMark;
 	UpdateBookmarkList();
 	m_cListBookmark->SetCurSel(m_pCollection->GetCount() - 1);
 }
@@ -216,7 +219,10 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkUpdate()
 	if (pos == LB_ERR) return;
 	
 	CBookmark *pMark = MakeBookmark();
-	m_pCollection->SetBookmark(pos, pMark);
+	if (m_pCollection->SetBookmark(pos, pMark))
+		m_pDocument->ModifyIrreversible();
+	else
+		delete pMark;
 	UpdateBookmarkList();
 	m_cListBookmark->SetCurSel(pos);
 }
@@ -225,7 +231,8 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkRemove()
 {
 	int pos = m_cListBookmark->GetCurSel();
 	if (pos != LB_ERR) {
-		m_pCollection->RemoveBookmark(pos);
+		if (m_pCollection->RemoveBookmark(pos))
+			m_pDocument->ModifyIrreversible();
 		UpdateBookmarkList();
 		if (int Count = m_pCollection->GetCount()) {
 			if (pos == Count) --pos;
@@ -240,7 +247,8 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkMoveup()
 {
 	int pos = m_cListBookmark->GetCurSel();
 	if (pos != LB_ERR && pos != 0) {
-		m_pCollection->SwapBookmarks(pos, pos - 1);
+		if (m_pCollection->SwapBookmarks(pos, pos - 1))
+			m_pDocument->ModifyIrreversible();
 		UpdateBookmarkList();
 		m_cListBookmark->SetCurSel(pos - 1);
 	}
@@ -251,7 +259,8 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkMovedown()
 {
 	int pos = m_cListBookmark->GetCurSel();
 	if (pos != LB_ERR && pos != m_pCollection->GetCount() - 1) {
-		m_pCollection->SwapBookmarks(pos, pos + 1);
+		if (m_pCollection->SwapBookmarks(pos, pos + 1))
+			m_pDocument->ModifyIrreversible();
 		UpdateBookmarkList();
 		m_cListBookmark->SetCurSel(pos + 1);
 	}
@@ -260,7 +269,8 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkMovedown()
 
 void CBookmarkDlg::OnBnClickedButtonBookmarkClearall()
 {
-	m_pCollection->ClearBookmarks();
+	if (m_pCollection->ClearBookmarks())
+		m_pDocument->ModifyIrreversible();
 	UpdateBookmarkList();
 }
 
@@ -268,7 +278,8 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkSortp()
 {
 	if (m_pCollection->GetCount()) {
 		const CBookmark *pMark = m_pCollection->GetBookmark(m_cListBookmark->GetCurSel());
-		m_pCollection->SortByPosition(false);
+		if (m_pCollection->SortByPosition(false))
+			m_pDocument->ModifyIrreversible();
 		UpdateBookmarkList();
 		m_cListBookmark->SetCurSel(m_pCollection->GetBookmarkIndex(pMark));
 	}
@@ -279,7 +290,8 @@ void CBookmarkDlg::OnBnClickedButtonBookmarkSortn()
 {
 	if (m_pCollection->GetCount()) {
 		const CBookmark *pMark = m_pCollection->GetBookmark(m_cListBookmark->GetCurSel());
-		m_pCollection->SortByName(false);
+		if (m_pCollection->SortByName(false))
+			m_pDocument->ModifyIrreversible();
 		UpdateBookmarkList();
 		m_cListBookmark->SetCurSel(m_pCollection->GetBookmarkIndex(pMark));
 	}

@@ -33,33 +33,6 @@ class CBookmarkCollection
 public:
 	/*! \brief Constructor of the bookmark collection. */
 	CBookmarkCollection();
-
-	/*!	\brief Adds a bookmark to the collection.
-		\param pMark Pointer to the bookmark.
-	*/
-	void AddBookmark(CBookmark *const pMark);
-	/*!	\brief Replaces a bookmark to the collection at a given position.
-		\param Index Position index.
-		\param pMark Pointer to the bookmark.
-	*/
-	void SetBookmark(unsigned Index, CBookmark *const pMark);
-	/*!	\brief Inserts a bookmark to the collection at a given position.
-		\param Index Position index.
-		\param pMark Pointer to the bookmark.
-	*/
-	void InsertBookmark(unsigned Index, CBookmark *const pMark);
-	/*!	\brief Removes a bookmark to the collection at a given position.
-		\param Index Position index.
-	*/
-	void RemoveBookmark(unsigned Index);
-	/*!	\brief Removes all bookmarks in the collection.
-	*/
-	void ClearBookmarks();
-	/*!	\brief Swaps the positions of two bookmarks in the collection.
-		\param A Position index.
-		\param B Position index.
-	*/
-	void SwapBookmarks(unsigned A, unsigned B);
 	
 	/*!	\brief Gets the number of bookmarks in the collection.
 		\return The number of bookmarks stored.
@@ -72,6 +45,39 @@ public:
 		\return Pointer to the bookmark.
 	*/
 	CBookmark *GetBookmark(unsigned Index) const;
+
+	/*!	\brief Adds a bookmark to the collection.
+		\param pMark Pointer to the bookmark.
+		\return Whether the bookmark is successfully added.
+	*/
+	bool AddBookmark(CBookmark *const pMark);
+	/*!	\brief Replaces a bookmark to the collection at a given position.
+		\param Index Position index.
+		\param pMark Pointer to the bookmark.
+		\return Whether the bookmark is different from the original one at the given position.
+	*/
+	bool SetBookmark(unsigned Index, CBookmark *const pMark);
+	/*!	\brief Inserts a bookmark to the collection at a given position.
+		\param Index Position index.
+		\param pMark Pointer to the bookmark.
+		\return Whether the bookmark is added.
+	*/
+	bool InsertBookmark(unsigned Index, CBookmark *const pMark);
+	/*!	\brief Removes a bookmark to the collection at a given position.
+		\param Index Position index.
+		\return Whether a bookmark is removed.
+	*/
+	bool RemoveBookmark(unsigned Index);
+	/*!	\brief Removes all bookmarks in the collection.
+		\return Whether any bookmark is removed.
+	*/
+	bool ClearBookmarks();
+	/*!	\brief Swaps the positions of two bookmarks in the collection.
+		\param A Position index.
+		\param B Position index.
+		\return Whether the position of any bookmark is changed.
+	*/
+	bool SwapBookmarks(unsigned A, unsigned B);
 	
 	/*!	\brief Inserts frames into the current track, shifting the positions of all bookmarks below.
 		\details This method does not perform validation on the frame values.
@@ -130,42 +136,20 @@ public:
 	void RemoveAt(unsigned Frame, unsigned Row);
 
 	/*!	\brief Sorts the contained bookmarks by their names.
+		\details The method performs a stable sort; relative positions of equal bookmarks remain
+		unchanged after calling this method.
 		\param Desc Whether bookmarks are sorted descending (true) or ascending (false).
+		\return Whether the position of any bookmark is changed.
 	*/
-	void SortByName(bool Desc);
+	bool SortByName(bool Desc);
 	/*!	\brief Sorts the contained bookmarks by their positions.
+		\details The method performs a stable sort; relative positions of equal bookmarks remain
+		unchanged after calling this method.
 		\param Desc Whether bookmarks are sorted descending (true) or ascending (false).
+		\return Whether the position of any bookmark is changed.
 	*/
-	void SortByPosition(bool Desc);
-
-//	friend class CBookmarkIterator;
-//	CBookmarkIterator GetIterator() const;
-//	typedef std::vector<std::unique_ptr<CBookmark>>::const_reverse_iterator iter_t;
+	bool SortByPosition(bool Desc);
 
 private:
 	std::vector<std::unique_ptr<CBookmark>> m_pBookmark;
 };
-
-
-/*!
-	\brief A single-use iterator for traversing a bookmark collection.
-*/
-/*
-class CBookmarkIterator
-{
-public:
-	CBookmarkIterator(const CBookmarkCollection *pCol);
-	CBookmarkIterator& operator++();
-	CBookmark* operator()();
-	bool operator!() const; // TODO: use explicit operator bool
-
-	unsigned GetIndex() const;
-	CBookmarkCollection::iter_t _iter() const;
-
-private:
-	bool Valid;
-	unsigned Index;
-	CBookmarkCollection::iter_t Begin;
-	const CBookmarkCollection::iter_t End;
-};
-*/
