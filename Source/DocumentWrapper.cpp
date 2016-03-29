@@ -95,15 +95,20 @@ int CFamiTrackerDocWrapper::GetSampleCount() const
 
 void CFamiTrackerDocWrapper::GetSampleName(unsigned int Index, char *Name) const
 {
-	strncpy(Name, m_pDocument->GetSample(Index)->GetName(), CDSample::MAX_NAME_SIZE);
+	if (const CDSample *pSamp = m_pDocument->GetSample(Index))		// // //
+		strncpy(Name, pSamp->GetName(), CDSample::MAX_NAME_SIZE);
 }
 
 int CFamiTrackerDocWrapper::GetSampleSize(unsigned int Sample) const
 {
-	return m_pDocument->GetSample(Sample)->GetSize();
+	const CDSample *pSamp = m_pDocument->GetSample(Sample);		// // //
+	if (!pSamp) return 0;
+	return pSamp->GetSize();
 }
 
 char CFamiTrackerDocWrapper::GetSampleData(unsigned int Sample, unsigned int Offset) const
 {
-	return *(m_pDocument->GetSample(Sample)->GetData() + Offset);
+	const CDSample *pSamp = m_pDocument->GetSample(Sample);		// // //
+	if (!pSamp) return 0;
+	return *(pSamp->GetData() + Offset);
 }
