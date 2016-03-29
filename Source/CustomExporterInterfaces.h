@@ -77,13 +77,14 @@ public:
 	virtual int				  GetSequenceCount(int Type) const = 0;
 	virtual int               GetInstrumentCount() const = 0;
 	virtual CInstrument2A03Interface const *Get2A03Instrument(int Instrument) const = 0;
-	virtual CSeqInstrumentInterface const *GetSeqInstrument(int Instrument) const = 0;		// // //
 	virtual unsigned int	GetNoteEffectType(unsigned int Frame, unsigned int Channel, unsigned int Row, int Index) const = 0;
 	virtual unsigned int	GetNoteEffectParam(unsigned int Frame, unsigned int Channel, unsigned int Row, int Index) const = 0;
 	virtual int				GetSampleCount() const = 0;
 	virtual void			GetSampleName(unsigned int Index, char *Name) const = 0;
 	virtual int				GetSampleSize(unsigned int Sample) const = 0;
 	virtual char			GetSampleData(unsigned int Sample, unsigned int Offset) const = 0;
+	
+	virtual CSeqInstrumentInterface const *GetSeqInstrument(int Instrument) const = 0;		// // //
 };
 
 //
@@ -114,7 +115,6 @@ struct FamitrackerDocInterface
 	//instrument functions
 	int (__cdecl *GetInstrumentCount)();
 	Instrument2A03Handle (__cdecl *Get2A03Instrument)(int Instrument);
-	SeqInstrumentHandle (__cdecl *GetSeqInstrument)(int Instrument);		// // //
 
 	int (__cdecl *GetSeqEnable)(SeqInstrumentHandle instrument, int Index);
 	int (__cdecl *GetSeqIndex)(SeqInstrumentHandle instrument, int Index);
@@ -133,4 +133,6 @@ struct FamitrackerDocInterface
 	char (__cdecl *GetSample)(Instrument2A03Handle instrument, int Octave, int Note);
 	char (__cdecl *GetSamplePitch)(Instrument2A03Handle instrument, int Octave, int Note);
 	char (__cdecl *GetSampleLoopOffset)(Instrument2A03Handle instrument, int Octave, int Note);
+	
+	SeqInstrumentHandle (__cdecl *GetSeqInstrument)(int Instrument);		// // //
 };
