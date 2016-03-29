@@ -2600,8 +2600,8 @@ cursor_column_t CPatternEditor::GetCursorEndColumn(column_t Column)
 cursor_column_t CPatternEditor::GetChannelColumns(int Channel) const
 {
 	// Return number of available columns in a channel
-	unsigned int Col = m_pDocument->GetEffColumns(GetSelectedTrack(), Channel);
 	if (m_bCompactMode) return C_NOTE;
+	unsigned int Col = m_pDocument->GetEffColumns(GetSelectedTrack(), Channel);
 	switch (Col) {
 	case 0: return C_EFF1_PARAM2;
 	case 1: return C_EFF2_PARAM2;
@@ -2693,6 +2693,18 @@ void CPatternEditor::UpdateSelectionEnd()		// // //
 
 	if (bShift) {
 		SetSelectionEnd(m_cpCursorPos);
+		if (m_bCompactMode) {		// // //
+			m_bCompactMode = false;
+			if (m_selection.m_cpEnd.m_iChannel >= m_selection.m_cpStart.m_iChannel) {
+				m_selection.m_cpEnd.m_iColumn = GetChannelColumns(m_selection.m_cpEnd.m_iChannel);
+				m_selection.m_cpStart.m_iColumn = C_NOTE;
+			}
+			else {
+				m_selection.m_cpEnd.m_iColumn = C_NOTE;
+				m_selection.m_cpStart.m_iColumn = GetChannelColumns(m_selection.m_cpStart.m_iChannel);
+			}
+			m_bCompactMode = true;
+		}
 		m_iSelectionCondition = GetSelectionCondition();		// // //
 	}
 	else {
@@ -3306,13 +3318,12 @@ void CPatternEditor::ContinueMouseSelection(const CPoint &point)
 			if (PointPos.m_iChannel >= m_selection.m_cpStart.m_iChannel) {
 				PointPos.m_iColumn = GetChannelColumns(PointPos.m_iChannel);
 				m_selection.m_cpStart.m_iColumn = C_NOTE;
-				m_bSelectionInvalidated = true;
 			}
 			else {
 				PointPos.m_iColumn = C_NOTE;
 				m_selection.m_cpStart.m_iColumn = GetChannelColumns(m_selection.m_cpStart.m_iChannel);
-				m_bSelectionInvalidated = true;
 			}
+			m_bSelectionInvalidated = true;
 			m_bCompactMode = Compact;
 		}
 
