@@ -430,7 +430,7 @@ void CFamiTrackerApp::LoadLocalization()
 	WORD Major, Minor, Build, Revision;
 
 	if (GetFileVersion(DLL_NAME, Major, Minor, Revision, Build)) {
-		if (Major != VERSION_MAJ || Minor != VERSION_MIN || Revision != VERSION_REV)
+		if (Major != VERSION_MAJ || Minor != VERSION_MIN || Revision != VERSION_REV || Build != VERSION_WIP)		// // //
 			return;
 
 		m_hInstResDLL = ::LoadLibrary(DLL_NAME);
@@ -987,7 +987,7 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 			FILE *f;
 			AttachConsole(ATTACH_PARENT_PROCESS);
 			errno_t err = freopen_s(&f, "CON", "w", stdout);
-			printf("FamiTracker v%i.%i.%i\n", VERSION_MAJ, VERSION_MIN, VERSION_REV);
+			printf("FamiTracker v%i.%i.%i.%i\n", VERSION);		// // //
 			return;
 		}
 	}

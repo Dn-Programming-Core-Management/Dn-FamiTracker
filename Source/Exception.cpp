@@ -52,7 +52,7 @@ static CString GetDumpFilename(int counter)
 	filename.AppendFormat(_T("_%02i%02i%02i-%02i%02i"), t.GetYear(), t.GetMonth(), t.GetDay(), t.GetHour(), t.GetMinute());
 
 	// App version
-	filename.AppendFormat(_T("-v%i_%i_%i"), VERSION_MAJ, VERSION_MIN, VERSION_REV);
+	filename.AppendFormat(_T("-v%i_%i_%i_%i"), VERSION);		// // //
 #ifdef WIP
 	filename.AppendFormat(_T("_b%i"), VERSION_WIP);
 #endif
