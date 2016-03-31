@@ -1,7 +1,7 @@
 0CC-FamiTracker Mod
 Specification
 Written by HertzDevil
-Version 0.3.12 - Oct 17 2015
+Version 0.3.14.0 - Mar 29 2016
 
 --------------------------------------------------------------------------------
 
@@ -45,19 +45,21 @@ The following note bytes are added to the FTM format:
 	===
 
 Version 1:
- - chip: char[0,5] - index of the detune table. 0=2A03, 1=2A07, 2=VRC6 sawtooth,
-                     3=VRC7, 4=FDS, 5=N163
- - count: char[1,96] - number of notes in the specified detune table
-   Repeat [count] times:
-  - note: char[0,95] - zero-based note index of the detune table entry
-  - offset: int[-32767,32767] - register offset of the detune table entry
+ - total: char[0,6] - number of detune tables
+   Repeat [total] times:
+  - chip: char[0,5] - index of the detune table. 0=2A03, 1=2A07,
+                      2=VRC6 sawtooth, 3=VRC7, 4=FDS, 5=N163
+  - count: char[1,96] - number of notes in the specified detune table
+    Repeat [count] times:
+   - note: char[0,95] - zero-based note index of the detune table entry
+   - offset: int[-32767,32767] - register offset of the detune table entry
 
 	===
 	GROOVES Block
 	===
 
 Version 1:
- - count: char[1,32] - number of grooves
+ - count: char[0,32] - number of grooves
    Repeat [count] times:
   - index: char[0,31] - index of the groove
   - size: char[1,128] - size of the groove
@@ -72,7 +74,7 @@ Version 1:
 	===
 
 Version 1:
- - count: int[1,] - number of bookmarks in the FTM
+ - count: int[0,] - number of bookmarks in the FTM
    Repeat [count] times:
   - track: char[0,63] - track index
   - frame: char[0,255] - frame index
@@ -81,23 +83,6 @@ Version 1:
   - high2: int[0,256] - second highlight
   - flag: char[0,1] - 0 for highlight in current frame, 1 for following frames
   - name: str[] - bookmark name
-
-	===
-	SEQUENCE_REGIONS Block
-	===
-
-Version 1:
- - count: int[1,320] - number of sequences using regions
-   Repeat [count] times:
-  - index: char[0,63] - instrument index
-  - type: char[0,4] - sequence type. 0=volume, 1=arpeggio, 2=pitch, 3=hi-pitch,
-                      4=duty 
-  - size: char[1,16] - number of sequence regions
-    Repeat [size] times:
-   - notelo: char[0,95] - lowest note of the region
-   - notehi: char[0,95] - highest note of the region
-   - sequence: char[0,127] - sequence index
-   - offset: char[-96,96] - transposition
 
 	===
 	Text exporter syntax

@@ -1,7 +1,7 @@
 0CC-FamiTracker Mod
 Readme / Manual
 Written by HertzDevil
-Version 0.3.13 - Nov 16 2015
+Version 0.3.14.0 - Mar 29 2016
 
 --------------------------------------------------------------------------------
 
@@ -26,6 +26,7 @@ comes from the author's favourite arpeggio effect. The current version includes:
  - FDS automatic FM effects
  - N163 wave buffer access effect
  - Instrument recorder
+ - Transpose dialog
  - Expansion chip selector & ad-doc multichip NSF export
 
 See also the change log for a list of various tweaks and improvements.
@@ -50,12 +51,11 @@ always consult the Github page for up-to-date source code files.
    The download site for all versions of 0CC-Famitracker.
 
 - http://0cc-famitracker.tumblr.com/
-   The official development log of 0CC-FamiTracker. Feature requests and bug
-   reports can be sent here.
+   The official development log of 0CC-FamiTracker.
 
-- http://hertzdevil.info/forum/
-   The current 0CC-FamiTracker forum. Members may share their 0CC-FT creations
-   and submit bug reports.
+- http://hertzdevil.info/bug/main_page.php
+   The official bug tracker for all of HertzDevil's projects, including this
+   tracker. Feature requests and bug reports can be sent here.
 
 - http://github.com/HertzDevil/0CC-FamiTracker
    The Git source repository for the tracker.
@@ -367,7 +367,7 @@ respective menu commands are available under "Edit" -> "Bookmarks".
 
 The NSF driver already allows instruments to be used interchangeably on several
 chips to a certain degree in exported NSFs, namely those from 2A03, VRC6, N163,
-or 5B; these sound chips and MMC5 share a unified sequence instrument type.
+FDS, or 5B; these sound chips and MMC5 share a unified sequence instrument type.
 (N163 does not actually work because it injects data before sequence settings.)
 Since version 0.3.13, 0CC-FamiTracker adds full tracker-side support for using
 these sequence instruments across expansion chips, while handling the duty/wave
@@ -385,20 +385,29 @@ target chip configuration. The following rules for duty cycle conversion apply:
     2A03 75% becomes 25%, the rest remain the same. N163 wave indices are
     processed as is. 5B duty cycles always become 50%. There is no special
     handling related to the sawtooth channel.
+ - FDS:
+    Non-FDS sequence instruments do not write to the wave buffer nor alter the
+    FDS channel's frequency modulation parameters. FDS instruments on non-FDS
+    channels do not affect the wave buffer.
  - N163:
     Non-N163 sequence instruments do not write to the wave buffer nor alter the
     current channel's wave parameters. N163 instruments on non-N163 channels do
-    not affect the wave buffer.
+    not affect the wave buffer. Duty cycle does not affect the current channel
+    when the currently playing instrument is not from N163.
  - 5B:
     All non-5B instrument duty values enable tone output, plus disable the noise
     and envelope outputs. 5B intruments on non-5B channels do not affect the
     envelope/noise generator.
 
 Duty conversion occurs only through duty/wave instrument sequences; the Vxx
-effect always modifies the duty cycle/wave index directly, without invoking any
+effect modifies the duty cycle/wave index directly, without invoking any
 conversion method. Instruments may work even if the respective sound chip is
 absent from the current FTM/NSF, and for this reason instrument sequences on
 unused sound chips remain in the current FTM file when saved.
+
+Except for the duty sequences, all other sequence types are raw; no conversion
+takes place to account for the differences in the volume and pitch registers
+between sound channels.
 
 	===
 	Echo Buffer Access
@@ -548,11 +557,39 @@ where parameters for the instrument recorder can be changed:
     more data.
  - Re-initialize settings upon stopping: If checked, the recorder resets to 252
     ticks and 1 maximum instrument after the current recording session ends.
- - 
 
 Extremely high refresh rates may cause the recorder to discharge instruments too
-quickly or crash the tracker; excessive use of this feature can easily lead to
-instrument data overflow during NSF export. Use with care.
+quickly or crash the tracker; Excessive use of this feature can easily lead to
+instrument data overflow during NSF export; use with care.
+
+	===
+	Transpose Dialog
+	===
+
+0CC-FamiTracker 0.3.14 adds a transpose dialog under the Song menu, which allows
+quickly transposing entire songs while keeping most non-melodic notes unchanged.
+This is achieved by ignoring the noise and DPCM channels, as well as selected
+instruments.
+
+The following options are available:
+ - Semitones: The number of half-steps to transpose.
+ - Raise / Lower: Whether the track(s) is/are to be transposed up or down.
+ - Transpose all tracks: If enabled, the transposition applies to all tracks in
+    the current module; otherwise only the current track is transposed.
+ - Exclude these instruments: An array of checkboxes next to instrument indices.
+    If an instrument with a given index exists in the module, the corresponding
+    checkbox will be enabled; checking the box will cause the transposition to
+    ignore all notes containing the given instrument index, regardless of the
+    channels these notes are on. These settings are remembered even after the
+    dialog is closed.
+ - Reverse: Changes all indices from enabled to disabled, and vice versa,
+    including disabled checkboxes.
+ - Clear All: Enables transposition for all instruments, including disabled
+    checkboxes.
+
+Out-of-bound notes clip at C-0 or B-7. The undo history will be reset after
+transposition. (For transposition on selected channels, enable multi-frame
+selection in the configuration menu or select [Edit] -> [Select] -> [Channel].)
 
 	===
 	Expansion Chip Selector
@@ -628,6 +665,8 @@ combinations are the default hotkeys if provided)
  - Compact View
  - Toggle N163 multiplexer emulation (Ctrl+Shift+M; not configurable)
 
+"Merge Duplicated Patterns" now applies only to the current track.
+
 	===
 	Known issues
 	===
@@ -635,16 +674,12 @@ combinations are the default hotkeys if provided)
 - When the triangle channel's linear counter is enabled, the high byte of the
    period cannot be changed; this is intended behaviour because any write will
    reset the linear counter
-- Pitch bend effects remove the 0xy parameters in NSFs (pitch bend effects do
-   override arpeggio, however in the tracker the 0xy parameter is stored
-   separately)
 - The 2A03 length counters are clocked at a slightly higher rate than 240 Hz
 - MMC5's length counter depends on the 2A03's frame counter
 - The behaviour of Qxy and Rxy on the noise channel is inconsistent between
    FamiTracker and NSF driver when the pitch overflows
 - In exported NSFs, the echo buffer is updated as Txy effects are applied; in
    the tracker this happens upon encountering Txy effects
-- CInstrument2A03Interface is no longer used
 
 	===
 	Credits

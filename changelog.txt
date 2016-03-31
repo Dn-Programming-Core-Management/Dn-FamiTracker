@@ -1,9 +1,45 @@
 0CC-FamiTracker Mod
 Change Log
 Written by HertzDevil
-Version 0.3.13 - Nov 16 2015
+Version 0.3.14.0 - Mar 29 2016
 
 --------------------------------------------------------------------------------
+
+V0.3.14.0 - 03/29/16
+Additions:
+ - Added the *.0cc file extension
+ - Added diagnostic information when loading invalid modules
+ - Added transpose dialog
+Improvements:
+ - 2A03 instruments now implement the instrument interface
+ - FDS instruments are compatible with other channels (as untyped sequence
+    instruments)
+ - Multichip NSFs now skip writing to registers of unused sound chips
+ - Implemented FDS Zxx in exported NSFs
+ - Reordered main frame menu for clearer organization
+ - Re-added fine spectrum visualizer
+Bug fixes:
+ - Fixed document wrapper for custom exporters crashing when retrieving a non-
+    existent instrument
+ - Fixed tracker crashing after importing any FTM containing bookmarks
+ - Fixed custom exporters crashing due to incompatible interface layouts
+ - Fixed DPCM functions in document wrapper crashing the tracker if the queried
+    sample does not exist
+ - Fixed certain multichip exported NSFs crashing due to VRC6 overwriting the
+    driver code in presence of FDS
+ - Fixed tracker ignoring "Backup files" option
+ - Fixed find / replace dialog not clearing wildcard effect name cache on new
+    searches
+ - Selection now always moves to current frame if multi-frame selection is
+    disabled (according to official build)
+ - Fixed selection with Shift + arrow keys allowing selection across frame
+    boundaries when option is disabled
+ - Fixed Shift + arrow keys not selecting entire rows when compact mode is
+    enabled
+ - Fixed selection errors when overflow paste mode is disabled
+ - Fixed 2A03 instrument not copying delta offset values on cloning
+ - Fixed BPM display showing values above maximum tempo at current refresh rate
+ - Fixed VRC6 channels sometimes generating an extra click on starting
 
 V0.3.13 - 11/16/15
 Additions:
@@ -21,6 +57,14 @@ Improvements:
  - Ctrl + Left/Right now shifts the phase of the current wave in the FDS / N163
     wave editor, Ctrl + Down inverts the wave
 Bug fixes:
+ - [11/30/15 interim build] A00 command now updates the channel default volume
+    for subsequent Axy and Mxy effects
+ - [11/28/15 interim build] Multichip NSFs no longer crash due to FDS allowing
+    VRC6 and VRC7 to modify the driver code
+ - [11/26/15 interim build] Fixed VRC6 and 5B channels not silencing when the
+    insturment sequence volume is 0 in exported NSFs
+ - [11/21/15 interim build] Fixed instrument recorder crashing when a new FTM
+    is loaded
  - Cleanup actions that alter the pattern data always reset the undo history
  - Fixed various memory leaks
  - Copying selection as plain text now empties unselected columns properly
@@ -36,8 +80,6 @@ Bug fixes:
     if V01 is set and volume underflows)
  - N163 Z7F command now takes effect immediately
  - Fixed incorrect slide effect parameters from recalling N163 channel state
- - Multichip NSFs no longer crash due to FDS allowing VRC6 and VRC7 to modify
-    the driver code
  - Fixed Zxx on N163 channels in exported NSFs being cancelled by loading new
     instruments
  - Fixed MMC5 Pulse 2 not halting when MMC5 Pulse 1 is muted in multichip NSFs
