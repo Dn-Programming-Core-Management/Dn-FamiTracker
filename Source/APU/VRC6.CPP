@@ -2,6 +2,8 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
+** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -35,6 +37,9 @@ void CVRC6_Pulse::Reset()
 	m_iPeriod = m_iPeriodLow = m_iPeriodHigh = 0;
 	m_iCounter = 0;
 	m_iDutyCycleCounter = 0;
+	
+	Mix(0);		// // //
+	EndFrame();
 }
 
 void CVRC6_Pulse::Write(uint16 Address, uint8 Value)
@@ -90,6 +95,9 @@ void CVRC6_Sawtooth::Reset()
 	m_iPeriod = 0;
 	m_iPeriodLow = m_iPeriodHigh = 0;
 	m_iCounter = 0;
+	
+	Mix(0);		// // //
+	EndFrame();
 }
 
 void CVRC6_Sawtooth::Write(uint16 Address, uint8 Value)
