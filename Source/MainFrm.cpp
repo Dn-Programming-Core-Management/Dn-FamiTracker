@@ -459,12 +459,10 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_strTitle.Append(_T(" [BETA]"));
 #endif
 
-#ifndef RELEASE_BUILD
-	if (AfxGetResourceHandle() != AfxGetInstanceHandle()) {
+	if (AfxGetResourceHandle() != AfxGetInstanceHandle()) {		// // //
 		// Prevent confusing bugs while developing
 		m_strTitle.Append(_T(" [Localization enabled]"));
 	}
-#endif
 
 	return 0;
 }

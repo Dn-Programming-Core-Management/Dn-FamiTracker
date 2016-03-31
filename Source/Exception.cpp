@@ -54,16 +54,12 @@ static CString GetDumpFilename(int counter)
 	// App version
 	filename.AppendFormat(_T("-v%i_%i_%i_%i"), VERSION);		// // //
 #ifdef WIP
-	filename.AppendFormat(_T("_b%i"), VERSION_WIP);
+	filename.Append(_T("_beta"));
 #endif
 
 	// Counter
 	if (counter > 0)
 		filename.AppendFormat(_T("(%i)"), counter);
-
-#ifndef RELEASE_BUILD
-	filename.Append(_T("-custom"));
-#endif /* RELEASE_BUILD */
 
 	filename.Append(MINIDUMP_FILE_END);
 

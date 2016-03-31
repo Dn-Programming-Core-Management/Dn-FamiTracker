@@ -542,12 +542,6 @@ void CPatternEditor::DrawScreen(CDC *pDC, CFamiTrackerView *pView)
 	pDC->TextOut(m_iWinWidth - 70, 42, _T("DEBUG"));
 	pDC->TextOut(m_iWinWidth - 70, 62, _T("DEBUG"));
 	pDC->TextOut(m_iWinWidth - 70, 82, _T("DEBUG"));
-#else 
-#ifndef RELEASE_BUILD
-	//pDC->SetBkColor(DEFAULT_COLOR_SCHEME.CURSOR);
-	//pDC->SetTextColor(DEFAULT_COLOR_SCHEME.TEXT_HILITE);
-	//pDC->TextOut(m_iWinWidth - 110, m_iWinHeight - 20 * Line++, _T("Release build"));
-#endif
 #endif
 #ifdef BENCHMARK
 
@@ -600,16 +594,11 @@ void CPatternEditor::DrawScreen(CDC *pDC, CFamiTrackerView *pView)
 	// Display the BETA text
 	CString Text;
 	int line = 0;
-	int offset = m_iWinWidth - 160;
-	Text.Format(_T("BETA %i (%s)"), VERSION_WIP, __DATE__);
+	int offset = m_iWinWidth - 200;		// // //
+	Text.Format(_T("Revision %i beta (%s)"), VERSION_REV, __DATE__);
 	pDC->SetTextColor(0x00FFFF);
 	pDC->SetBkMode(TRANSPARENT);
 	pDC->TextOut(offset, m_iWinHeight - 24 - 18 * line++, Text);
-
-#ifndef RELEASE_BUILD
-	Text.Format(_T("Dev build"));
-	pDC->TextOut(offset, m_iWinHeight - 24 - 18 * line++, Text);
-#endif
 
 #endif
 

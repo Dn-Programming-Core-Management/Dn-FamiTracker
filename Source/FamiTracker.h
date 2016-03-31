@@ -40,10 +40,7 @@ enum {
 	IPC_LOAD_PLAY
 };
 
-#ifdef RELEASE_BUILD
-// Always disable export test for release builds
-#undef EXPORT_TEST
-#endif /* RELEASE_BUILD */
+// #define EXPORT_TEST
 
 // Custom command line reader
 class CFTCommandLineInfo : public CCommandLineInfo

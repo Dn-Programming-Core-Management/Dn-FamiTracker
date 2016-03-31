@@ -47,10 +47,6 @@ const DWORD	SHARED_MEM_SIZE			= 256;
 #define new DEBUG_NEW
 #endif
 
-#ifdef RELEASE_BUILD
-#pragma message("Building SVN release build...")
-#endif /* RELEASE_BUILD */
-
 // CFamiTrackerApp
 
 BEGIN_MESSAGE_MAP(CFamiTrackerApp, CWinApp)
@@ -210,7 +206,7 @@ BOOL CFamiTrackerApp::InitInstance()
 	EnableShellOpen();
 
 	// Skip this if in wip/beta mode
-#if /*!defined(WIP) &&*/ !defined(_DEBUG)
+#if !defined(WIP) && !defined(_DEBUG)
 	// Add shell options
 	RegisterShellFileTypes();		// // //
 	static const LPCTSTR FILE_ASSOC_NAME = _T("0CC-FamiTracker Module");
@@ -288,7 +284,6 @@ BOOL CFamiTrackerApp::InitInstance()
 	RegisterSingleInstance();
 
 #ifndef _DEBUG
-	// WIP
 	m_pMainWnd->GetMenu()->GetSubMenu(4)->RemoveMenu(ID_MODULE_CHANNELS, MF_BYCOMMAND);		// // //
 #endif
 
@@ -430,7 +425,7 @@ void CFamiTrackerApp::LoadLocalization()
 	WORD Major, Minor, Build, Revision;
 
 	if (GetFileVersion(DLL_NAME, Major, Minor, Revision, Build)) {
-		if (Major != VERSION_MAJ || Minor != VERSION_MIN || Revision != VERSION_REV || Build != VERSION_WIP)		// // //
+		if (Major != VERSION_API || Minor != VERSION_MAJ || Revision != VERSION_MIN || Build != VERSION_REV)		// // //
 			return;
 
 		m_hInstResDLL = ::LoadLibrary(DLL_NAME);
