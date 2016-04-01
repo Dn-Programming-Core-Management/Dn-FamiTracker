@@ -508,6 +508,21 @@ const CDSample *CInstrumentEditorDPCM::GetSelectedSample()
 	return GetDocument()->GetSample(Index);
 }
 
+void CInstrumentEditorDPCM::SetSelectedSample(CDSample *pSamp) const
+{
+	CListCtrl *pSampleListCtrl = static_cast<CListCtrl*>(GetDlgItem(IDC_SAMPLE_LIST));
+
+	int Index = pSampleListCtrl->GetSelectionMark();
+
+	if (Index == -1) return;
+
+	TCHAR Text[256];
+	pSampleListCtrl->GetItemText(Index, 0, Text, 256);
+	Index = _tstoi(Text);
+	
+	GetDocument()->SetSample(Index, pSamp);
+}
+
 void CInstrumentEditorDPCM::OnBnClickedSave()
 {
 	CString	Path;
@@ -662,13 +677,13 @@ void CInstrumentEditorDPCM::OnBnClickedEdit()
 	if (pSample == NULL)
 		return;
 
-	CDSample *Clone = new CDSample(*pSample);		// // //
-	CSampleEditorDlg Editor(this, Clone);
+	CSampleEditorDlg Editor(this, new CDSample(*pSample));		// // // copy sample here
 
 	INT_PTR nRes = Editor.DoModal();
 	
 	if (nRes == IDOK) {
 		// Save edited sample
+		SetSelectedSample(new CDSample(*Editor.GetDSample()));		// // //
 		GetDocument()->SetModifiedFlag();
 		GetDocument()->SetExceededFlag();		// // //
 	}

@@ -41,10 +41,9 @@ enum {
 IMPLEMENT_DYNAMIC(CSampleEditorDlg, CDialog)
 
 CSampleEditorDlg::CSampleEditorDlg(CWnd* pParent /*=NULL*/, CDSample *pSample)
-	: CDialog(CSampleEditorDlg::IDD, pParent), m_pSampleEditorView(NULL)
+	: CDialog(CSampleEditorDlg::IDD, pParent), m_pSampleEditorView(NULL),
+	m_pSample(pSample)		// // //
 {
-	// Create a copy of the sample
-	m_pSample = new CDSample(*pSample);
 	m_pSoundGen = theApp.GetSoundGenerator();
 }
 
@@ -52,6 +51,11 @@ CSampleEditorDlg::~CSampleEditorDlg()
 {
 	SAFE_RELEASE(m_pSampleEditorView);
 	SAFE_RELEASE(m_pSample);
+}
+
+CDSample *CSampleEditorDlg::GetDSample() const		// // //
+{
+	return m_pSample;
 }
 
 void CSampleEditorDlg::DoDataExchange(CDataExchange* pDX)

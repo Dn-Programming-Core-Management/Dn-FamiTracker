@@ -31,6 +31,7 @@ class CSampleEditorDlg : public CDialog
 public:
 	CSampleEditorDlg(CWnd* pParent = NULL, CDSample *pSample = NULL);   // standard constructor
 	virtual ~CSampleEditorDlg();
+	CDSample *GetDSample() const;
 
 	void SelectionChanged();
 

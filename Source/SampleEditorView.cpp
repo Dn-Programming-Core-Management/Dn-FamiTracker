@@ -18,7 +18,6 @@
 ** must bear this legend.
 */
 
-#include <cmath>
 #include "stdafx.h"
 #include "resource.h"
 #include "DSample.h"
