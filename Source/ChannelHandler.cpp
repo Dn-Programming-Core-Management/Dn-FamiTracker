@@ -90,20 +90,6 @@ void CChannelHandler::DocumentPropertiesChanged(CFamiTrackerDoc *pDoc)
 	m_bLinearPitch = pDoc->GetLinearPitch();
 }
 
-int CChannelHandler::LimitPeriod(int Period) const
-{
-	Period = std::min(Period, m_iMaxPeriod);
-	Period = std::max(Period, 0);
-	return Period;
-}
-
-int CChannelHandler::LimitVolume(int Volume) const
-{
-	Volume = std::min(Volume, 15);
-	Volume = std::max(Volume, 0);
-	return Volume;
-}
-
 void CChannelHandler::SetPitch(int Pitch)
 {
 	// Pitch ranges from -511 to +512
@@ -512,8 +498,6 @@ int CChannelHandler::RunNote(int Octave, int Note)
 {
 	// Run the note and handle portamento
 	int NewNote = MIDI_NOTE(Octave, Note);
-	if (m_iChannelID == CHANID_NOISE)		// // //
-		NewNote = (NewNote & 0x0F) | 0x100;
 
 	int NesFreq = TriggerNote(NewNote);
 
@@ -546,10 +530,6 @@ void CChannelHandler::SetupSlide()		// // //
 		m_iNote = m_iNote - (m_iEffectParam & 0xF);
 		m_iPortaSpeed = GET_SLIDE_SPEED(m_iEffectParam);
 		break;
-	}
-	
-	if (m_iChannelID == CHANID_NOISE) {		// // //
-		m_iNote = m_iNote % 0x10 + 0x100;
 	}
 
 	m_iPortaTo = TriggerNote(m_iNote);
@@ -866,12 +846,10 @@ void CChannelHandler::UpdateEffects()
 			break;
 			*/
 		case EF_PORTA_DOWN:
-			if (GetPeriod() > 0)
-				PeriodAdd(m_iPortaSpeed);
+			PeriodAdd(m_iPortaSpeed);
 			break;
 		case EF_PORTA_UP:
-			if (GetPeriod() > 0)
-				PeriodRemove(m_iPortaSpeed);
+			PeriodRemove(m_iPortaSpeed);
 			break;
 	}
 }
@@ -972,6 +950,13 @@ int CChannelHandler::CalculateVolume(bool Subtract) const
 	return Volume;
 }
 
+int CChannelHandler::LimitPeriod(int Period) const		// // // virtual
+{
+	Period = std::min(Period, m_iMaxPeriod);
+	Period = std::max(Period, 0);
+	return Period;
+}
+
 void CChannelHandler::AddCycles(int count)
 {
 	m_pSoundGen->AddCycles(count);
@@ -997,8 +982,6 @@ void CChannelHandler::RegisterKeyState(int Note)
 void CChannelHandler::SetPeriod(int Period)
 {
 	m_iPeriod = LimitPeriod(Period);
-	if (m_iChannelID == CHANID_NOISE)		// // //
-		m_iPeriod = (m_iPeriod & 0x0F) | 0x100;
 }
 
 int CChannelHandler::GetPeriod() const
@@ -1009,8 +992,6 @@ int CChannelHandler::GetPeriod() const
 void CChannelHandler::SetNote(int Note)
 {
 	m_iNote = Note;
-	if (m_iChannelID == CHANID_NOISE)		// // //
-		m_iNote = (m_iNote & 0x0F) | 0x100;
 }
 
 int CChannelHandler::GetNote() const

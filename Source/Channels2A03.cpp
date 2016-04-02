@@ -414,6 +414,33 @@ void CNoiseChan::HandleNote(int Note, int Octave)
 	m_iInstVolume	= 0x0F;		// // //
 }
 
+void CNoiseChan::SetupSlide()		// // //
+{
+	#define GET_SLIDE_SPEED(x) (((x & 0xF0) >> 3) + 1)
+
+	switch (m_iEffect) {
+	case EF_PORTAMENTO:
+		m_iPortaSpeed = m_iEffectParam;
+		break;
+	case EF_SLIDE_UP:
+		m_iNote += (m_iEffectParam & 0xF);
+		m_iPortaSpeed = GET_SLIDE_SPEED(m_iEffectParam);
+		break;
+	case EF_SLIDE_DOWN:
+		m_iNote -= (m_iEffectParam & 0xF);
+		m_iPortaSpeed = GET_SLIDE_SPEED(m_iEffectParam);
+		break;
+	}
+
+	RegisterKeyState(m_iNote);
+	m_iPortaTo = m_iNote;
+}
+
+int CNoiseChan::LimitPeriod(int Period) const		// // //
+{
+	return Period; // no limit
+}
+
 /*
 int CNoiseChan::CalculatePeriod() const
 {
@@ -423,6 +450,16 @@ int CNoiseChan::CalculatePeriod() const
 
 void CNoiseChan::RefreshChannel()
 {
+	static bool On = false;
+	if (GetPeriod()) {
+		On = true;
+		TRACE("%d ", GetPeriod());
+	}
+	else if (On) {
+		TRACE("\n");
+		On = false;
+	}
+
 	int Period = CalculatePeriod();
 	int Volume = CalculateVolume();
 	char NoiseMode = (m_iDutyPeriod & 0x01) << 7;

@@ -121,6 +121,9 @@ protected:
 	virtual void ClearRegisters();
 	virtual CString GetCustomEffectString() const;		// // //
 	virtual void HandleNote(int Note, int Octave);
+	virtual void SetupSlide();		// // //
+
+	virtual int LimitPeriod(int Period) const;		// // //
 
 	int TriggerNote(int Note);
 };

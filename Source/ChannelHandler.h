@@ -181,6 +181,11 @@ protected:
 		\return The current volume register, restricted within the range of the sound channel.
 	*/
 	virtual int		CalculateVolume(bool Subtract = false) const;
+	/*! \brief Restricts the pitch value within the limits of the sound channel.
+		\param Period Input period or frequency register value.
+		\return The restricted period or frequency register value.
+	*/
+	virtual int		LimitPeriod(int Period) const;
 	
 	/*! \brief Retrieves information about common effects of the channel handler.
 		\return A string representing active effects and their parameters.
@@ -215,17 +220,6 @@ protected:
 		\details A note can only be released once until another new note is triggered.
 	*/
 	void	ReleaseNote();
-
-	/*! \brief Restricts the pitch value within the limits of the sound channel.
-		\param Period Input period or frequency register value.
-		\return The restricted period or frequency register value.
-	*/
-	int		LimitPeriod(int Period) const;
-	/*! \brief Restricts the volume within the limits of the sound channel.
-		\param Period Input volume register value.
-		\return The restricted volume register value.
-	*/
-	int		LimitVolume(int Volume) const;
 
 	/*! \brief Notifies the tracker view that the current channel handler is playing a note.
 		\param Note The note value, or -1 if no note is active.
