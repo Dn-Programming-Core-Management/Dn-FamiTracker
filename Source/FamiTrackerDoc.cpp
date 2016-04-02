@@ -2241,14 +2241,11 @@ void CFamiTrackerDoc::ReadBlock_DSamples(CDocumentFile *pDocFile, const int Vers
 			Name[Len] = 0;
 			pSample->SetName(Name);
 			int Size = AssertRange(pDocFile->GetBlockInt(), 0, CDSample::MAX_SIZE, "DPCM sample size");
-			if ((Size & 0x0F) != 0x01) {
-				CModuleException *e = m_pCurrentDocument->GetException();
-				e->AppendError("Invalid DPCM sample size (0x%X bytes)", Size);
-				e->Raise();
-			}
-			char *pData = new char[Size];
+			int TrueSize = Size + ((1 - Size) & 0x0F);		// // //
+			char *pData = new char[TrueSize];
 			pDocFile->GetBlock(pData, Size);
-			pSample->SetData(Size, pData);
+			memset(pData + Size, 0xAA, TrueSize - Size);
+			pSample->SetData(TrueSize, pData);
 		}
 		catch (CModuleException *e) {
 			e->AppendError("At DPCM sample %d,", Index);
