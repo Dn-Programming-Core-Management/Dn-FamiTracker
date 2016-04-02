@@ -63,7 +63,6 @@ public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnBnClickedInst(UINT nID);
 	afx_msg void OnBnClickedOk();
-	afx_msg void OnBnClickedCheckTrspAll();
 	afx_msg void OnBnClickedButtonTrspReverse();
 	afx_msg void OnBnClickedButtonTrspClear();
 };

@@ -82,7 +82,6 @@ void CTransposeDlg::Transpose(int Trsp, unsigned int Track)
 BEGIN_MESSAGE_MAP(CTransposeDlg, CDialog)
 	ON_BN_CLICKED(IDOK, &CTransposeDlg::OnBnClickedOk)
 	ON_CONTROL_RANGE(BN_CLICKED, BUTTON_ID, BUTTON_ID + MAX_INSTRUMENTS, OnBnClickedInst)
-	ON_BN_CLICKED(IDC_CHECK_TRSP_ALL, OnBnClickedCheckTrspAll)
 	ON_BN_CLICKED(IDC_BUTTON_TRSP_REVERSE, &CTransposeDlg::OnBnClickedButtonTrspReverse)
 	ON_BN_CLICKED(IDC_BUTTON_TRSP_CLEAR, &CTransposeDlg::OnBnClickedButtonTrspClear)
 END_MESSAGE_MAP()
@@ -149,12 +148,6 @@ void CTransposeDlg::OnBnClickedOk()
 
 	m_pDocument->UpdateAllViews(NULL, UPDATE_PATTERN);
 	CDialog::OnOK();
-}
-
-void CTransposeDlg::OnBnClickedCheckTrspAll()
-{
-	CButton *pButton = static_cast<CButton*>(GetDlgItem(IDC_CHECK_TRSP_DPCM));
-	pButton->EnableWindow(IsDlgButtonChecked(IDC_CHECK_TRSP_ALL) != 0);
 }
 
 void CTransposeDlg::OnBnClickedButtonTrspReverse()
