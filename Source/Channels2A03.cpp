@@ -37,16 +37,16 @@
 
 CChannelHandler2A03::CChannelHandler2A03() : 
 	CChannelHandler(0x7FF, 0x0F),
-	m_cSweep(0),
-	m_bSweeping(0),
-	m_iSweep(0)
+	m_bHardwareEnvelope(false),
+	m_bEnvelopeLoop(true),
+	m_bResetEnvelope(false),
+	m_iLengthCounter(1)
 {
+	m_iDefaultDuty = 0;
 }
 
 void CChannelHandler2A03::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 {
-	m_iSweep = 0;
-	m_bSweeping = false;
 	// // //
 	CChannelHandler::HandleNoteData(pNoteData, EffColumns);
 
@@ -58,8 +58,6 @@ void CChannelHandler2A03::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 
 void CChannelHandler2A03::HandleCustomEffects(effect_t EffNum, int EffParam)
 {
-	#define GET_SLIDE_SPEED(x) (((x & 0xF0) >> 3) + 1)
-
 	if (!CheckCommonEffects(EffNum, EffParam)) {
 		// Custom effects
 		switch (EffNum) {
@@ -76,16 +74,6 @@ void CChannelHandler2A03::HandleCustomEffects(effect_t EffNum, int EffParam)
 					m_bEnvelopeLoop = ((EffParam & 0x02) != 0x02);
 				}
 				break;
-			case EF_SWEEPUP:
-				m_iSweep = 0x88 | (EffParam & 0x77);
-				m_iLastPeriod = 0xFFFF;
-				m_bSweeping = true;
-				break;
-			case EF_SWEEPDOWN:
-				m_iSweep = 0x80 | (EffParam & 0x77);
-				m_iLastPeriod = 0xFFFF;
-				m_bSweeping = true;
-				break;
 			case EF_DUTY_CYCLE:
 				m_iDefaultDuty = m_iDutyPeriod = EffParam;
 				break;
@@ -97,8 +85,6 @@ void CChannelHandler2A03::HandleCustomEffects(effect_t EffNum, int EffParam)
 void CChannelHandler2A03::HandleEmptyNote()
 {
 	// // //
-	if (m_bSweeping)
-		m_cSweep = m_iSweep;
 }
 
 void CChannelHandler2A03::HandleCut()
@@ -128,18 +114,6 @@ void CChannelHandler2A03::HandleNote(int Note, int Octave)
 	m_iNote			= RunNote(Octave, Note);
 	m_iDutyPeriod	= m_iDefaultDuty;
 	m_iInstVolume	= 0x0F;		// // //
-
-	m_iArpState = 0;
-
-	if (!m_bSweeping && (m_cSweep != 0 || m_iSweep != 0)) {
-		m_iSweep = 0;
-		m_cSweep = 0;
-		m_iLastPeriod = 0xFFFF;
-	}
-	else if (m_bSweeping) {
-		m_cSweep = m_iSweep;
-		m_iLastPeriod = 0xFFFF;
-	}
 }
 
 bool CChannelHandler2A03::CreateInstHandler(inst_type_t Type)
@@ -162,10 +136,18 @@ void CChannelHandler2A03::ResetChannel()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Square 1 
+// // // 2A03 Square
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void CSquare1Chan::RefreshChannel()
+C2A03Square::C2A03Square() :
+	CChannelHandler2A03(),
+	m_cSweep(0),
+	m_bSweeping(0),
+	m_iSweep(0)
+{
+}
+
+void C2A03Square::RefreshChannel()
 {
 	int Period = CalculatePeriod();
 	int Volume = CalculateVolume();
@@ -174,40 +156,47 @@ void CSquare1Chan::RefreshChannel()
 	unsigned char HiFreq = (Period & 0xFF);
 	unsigned char LoFreq = (Period >> 8);
 	
+	int Address = 0x4000 + m_iChannel * 4;		// // //
 	if (m_bGate)		// // //
-		WriteRegister(0x4000, (DutyCycle << 6) | (m_bEnvelopeLoop << 5) | (!m_bHardwareEnvelope << 4) | Volume);		// // //
+		WriteRegister(Address, (DutyCycle << 6) | (m_bEnvelopeLoop << 5) | (!m_bHardwareEnvelope << 4) | Volume);		// // //
 	else {
-		WriteRegister(0x4000, 0x30);
+		WriteRegister(Address, 0x30);
 		m_iLastPeriod = 0xFFFF;
 		return;
 	}
 
 	if (m_cSweep) {
 		if (m_cSweep & 0x80) {
-			WriteRegister(0x4001, m_cSweep);
+			WriteRegister(Address + 1, m_cSweep);
 			m_cSweep &= 0x7F;
 			WriteRegister(0x4017, 0x80);	// Clear sweep unit
 			WriteRegister(0x4017, 0x00);
-			WriteRegister(0x4002, HiFreq);
-			WriteRegister(0x4003, LoFreq + (m_iLengthCounter << 3));		// // //
+			WriteRegister(Address + 2, HiFreq);
+			WriteRegister(Address + 3, LoFreq + (m_iLengthCounter << 3));		// // //
 			m_iLastPeriod = 0xFFFF;
 		}
 	}
 	else {
-		WriteRegister(0x4001, 0x08);
+		WriteRegister(Address + 1, 0x08);
 		//WriteRegister(0x4017, 0x80);	// Manually execute one APU frame sequence to kill the sweep unit
 		//WriteRegister(0x4017, 0x00);
-		WriteRegister(0x4002, HiFreq);
+		WriteRegister(Address + 2, HiFreq);
 		
 		if (LoFreq != (m_iLastPeriod >> 8) || m_bResetEnvelope)		// // //
-			WriteRegister(0x4003, LoFreq + (m_iLengthCounter << 3));
+			WriteRegister(Address + 3, LoFreq + (m_iLengthCounter << 3));
 	}
 
 	m_iLastPeriod = Period;
 	m_bResetEnvelope = false;		// // //
 }
 
-int CSquare1Chan::ConvertDuty(int Duty) const		// // //
+void C2A03Square::SetChannelID(int ID)		// // //
+{
+	CChannelHandler::SetChannelID(ID);
+	m_iChannel = ID - CHANID_SQUARE1;
+}
+
+int C2A03Square::ConvertDuty(int Duty) const		// // //
 {
 	switch (m_iInstTypeCurrent) {
 	case INST_VRC6:	return DUTY_2A03_FROM_VRC6[Duty & 0x07];
@@ -217,94 +206,62 @@ int CSquare1Chan::ConvertDuty(int Duty) const		// // //
 	}
 }
 
-void CSquare1Chan::ClearRegisters()
+void C2A03Square::ClearRegisters()
 {
-	WriteRegister(0x4000, 0x30);
-	WriteRegister(0x4001, 0x08);
-	WriteRegister(0x4002, 0x00);
-	WriteRegister(0x4003, 0x00);
+	int Address = 0x4000 + m_iChannel * 4;		// // //
+	WriteRegister(Address + 0, 0x30);
+	WriteRegister(Address + 1, 0x08);
+	WriteRegister(Address + 2, 0x00);
+	WriteRegister(Address + 3, 0x00);
 	m_iLastPeriod = 0xFFFF;
 }
 
-CString CSquare1Chan::GetCustomEffectString() const		// // //
+void C2A03Square::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 {
-	CString str = _T("");
-	
-	if (!m_bEnvelopeLoop)
-		str.AppendFormat(_T(" E%02X"), m_iLengthCounter);
-	if (!m_bEnvelopeLoop || m_bHardwareEnvelope)
-		str.AppendFormat(_T(" EE%X"), !m_bEnvelopeLoop * 2 + m_bHardwareEnvelope);
-
-	return str;
+	m_iSweep = 0;
+	m_bSweeping = false;
+	CChannelHandler2A03::HandleNoteData(pNoteData, EffColumns);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Square 2 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void CSquare2Chan::RefreshChannel()
+void C2A03Square::HandleCustomEffects(effect_t EffNum, int EffParam)
 {
-	int Period = CalculatePeriod();
-	int Volume = CalculateVolume();
-	char DutyCycle = (m_iDutyPeriod & 0x03);
-
-	unsigned char HiFreq		= (Period & 0xFF);
-	unsigned char LoFreq		= (Period >> 8);
-	unsigned char LastLoFreq	= (m_iLastPeriod >> 8);
-	
-	if (m_bGate)		// // //
-		WriteRegister(0x4004, (DutyCycle << 6) | (m_bEnvelopeLoop << 5) | (!m_bHardwareEnvelope << 4) | Volume);		// // //
-	else {
-		WriteRegister(0x4004, 0x30);
+	CChannelHandler2A03::HandleCustomEffects(EffNum, EffParam);
+	switch (EffNum) {
+	case EF_SWEEPUP:
+		m_iSweep = 0x88 | (EffParam & 0x77);
 		m_iLastPeriod = 0xFFFF;
-		return;
+		m_bSweeping = true;
+		break;
+	case EF_SWEEPDOWN:
+		m_iSweep = 0x80 | (EffParam & 0x77);
+		m_iLastPeriod = 0xFFFF;
+		m_bSweeping = true;
+		break;
 	}
-
-	if (m_cSweep) {
-		if (m_cSweep & 0x80) {
-			WriteRegister(0x4005, m_cSweep);
-			m_cSweep &= 0x7F;
-			WriteRegister(0x4017, 0x80);		// Clear sweep unit
-			WriteRegister(0x4017, 0x00);
-			WriteRegister(0x4006, HiFreq);
-			WriteRegister(0x4007, LoFreq + (m_iLengthCounter << 3));		// // //
-			m_iLastPeriod = 0xFFFF;
-		}
-	}
-	else {
-		WriteRegister(0x4005, 0x08);
-		//WriteRegister(0x4017, 0x80);
-		//WriteRegister(0x4017, 0x00);
-		WriteRegister(0x4006, HiFreq);
-		
-		if (LoFreq != LastLoFreq || m_bResetEnvelope)		// // //
-			WriteRegister(0x4007, LoFreq + (m_iLengthCounter << 3));
-	}
-
-	m_iLastPeriod = Period;
-	m_bResetEnvelope = false;		// // //
 }
 
-int CSquare2Chan::ConvertDuty(int Duty) const		// // //
+void C2A03Square::HandleEmptyNote()
 {
-	switch (m_iInstTypeCurrent) {
-	case INST_VRC6:	return DUTY_2A03_FROM_VRC6[Duty & 0x07];
-	case INST_N163:	return Duty;
-	case INST_S5B:	return 0x02;
-	default:		return Duty;
+	if (m_bSweeping)
+		m_cSweep = m_iSweep;
+}
+
+void C2A03Square::HandleNote(int Note, int Octave)		// // //
+{
+	CChannelHandler2A03::HandleNote(Note, Octave);
+
+	if (!m_bSweeping && (m_cSweep != 0 || m_iSweep != 0)) {
+		m_iSweep = 0;
+		m_cSweep = 0;
+		m_iLastPeriod = 0xFFFF;
+	}
+	else if (m_bSweeping) {
+		m_cSweep = m_iSweep;
+		m_iLastPeriod = 0xFFFF;
 	}
 }
 
-void CSquare2Chan::ClearRegisters()
-{
-	WriteRegister(0x4004, 0x30);
-	WriteRegister(0x4005, 0x08);
-	WriteRegister(0x4006, 0x00);
-	WriteRegister(0x4007, 0x00);
-	m_iLastPeriod = 0xFFFF;
-}
-
-CString CSquare2Chan::GetCustomEffectString() const		// // //
+CString C2A03Square::GetCustomEffectString() const		// // //
 {
 	CString str = _T("");
 	
@@ -319,6 +276,12 @@ CString CSquare2Chan::GetCustomEffectString() const		// // //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Triangle 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CTriangleChan::CTriangleChan() :		// // //
+	CChannelHandler2A03(),
+	m_iLinearCounter(-1)
+{
+}
 
 void CTriangleChan::RefreshChannel()
 {
@@ -380,8 +343,8 @@ CString CTriangleChan::GetCustomEffectString() const		// // //
 		str.AppendFormat(_T(" S%02X"), m_iLinearCounter | 0x80);
 	if (!m_bEnvelopeLoop)
 		str.AppendFormat(_T(" E%02X"), m_iLengthCounter);
-	if (!m_bEnvelopeLoop || m_bHardwareEnvelope)
-		str.AppendFormat(_T(" EE%X"), !m_bEnvelopeLoop * 2 + m_bHardwareEnvelope);
+	if (!m_bEnvelopeLoop)
+		str.AppendFormat(_T(" EE%X"), !m_bEnvelopeLoop * 2);
 
 	return str;
 }
@@ -432,6 +395,8 @@ void CNoiseChan::SetupSlide()		// // //
 		break;
 	}
 
+	#undef GET_SLIDE_SPEED
+
 	RegisterKeyState(m_iNote);
 	m_iPortaTo = m_iNote;
 }
@@ -448,18 +413,12 @@ int CNoiseChan::CalculatePeriod() const
 }
 */
 
+CNoiseChan::CNoiseChan() : CChannelHandler2A03()		// // //
+{
+}
+
 void CNoiseChan::RefreshChannel()
 {
-	static bool On = false;
-	if (GetPeriod()) {
-		On = true;
-		TRACE("%d ", GetPeriod());
-	}
-	else if (On) {
-		TRACE("\n");
-		On = false;
-	}
-
 	int Period = CalculatePeriod();
 	int Volume = CalculateVolume();
 	char NoiseMode = (m_iDutyPeriod & 0x01) << 7;
@@ -530,7 +489,7 @@ int CNoiseChan::TriggerNote(int Note)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 CDPCMChan::CDPCMChan(CSampleMem *pSampleMem) : 
-	CChannelHandler2A03(), 
+	CChannelHandler(0xF, 0x3F),		// // // does not use these anyway
 	m_pSampleMem(pSampleMem),
 	m_bEnabled(false),
 	m_bTrigger(false),
