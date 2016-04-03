@@ -23,12 +23,14 @@
 // Famicom disk sound
 
 #include "stdafx.h"
-#include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
+#include "FamiTrackerTypes.h"		// // //
+#include "APU/Types.h"		// // //
+#include "Instrument.h"		// // //
+#include "SeqInstrument.h"		// // //
+#include "InstrumentFDS.h"		// // //
 #include "ChannelHandlerInterface.h"
 #include "ChannelHandler.h"
 #include "ChannelsFDS.h"
-#include "SoundGen.h"
 #include "InstHandler.h"		// // //
 #include "SeqInstHandler.h"		// // //
 #include "SeqInstHandlerFDS.h"		// // //
@@ -341,17 +343,5 @@ void CChannelHandlerFDS::FillModulationTable(const CInstrumentFDS *pInstrument)
 void CChannelHandlerFDS::CheckWaveUpdate()
 {
 	// Check wave changes
-	CFamiTrackerDoc *pDocument = m_pSoundGen->GetDocument();
-	bool bWaveChanged = theApp.GetSoundGenerator()->HasWaveChanged();
-
-	if (m_iInstrument != MAX_INSTRUMENTS && bWaveChanged) {
-		if (auto pInstrument = std::dynamic_pointer_cast<CInstrumentFDS>(pDocument->GetInstrument(m_iInstrument))) {
-			// Realtime update
-			// TODO: use CChannelHandler::ForceReloadInstrument()
-			m_iModulationSpeed = pInstrument->GetModulationSpeed();
-			m_iModulationDepth = pInstrument->GetModulationDepth();
-			FillWaveRAM(pInstrument.get());
-			FillModulationTable(pInstrument.get());
-		}
-	}
+	// // // nothing
 }

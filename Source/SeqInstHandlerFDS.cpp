@@ -57,6 +57,17 @@ void CSeqInstHandlerFDS::TriggerInstrument()
 	UpdateTables(pFDSInst);
 }
 
+void CSeqInstHandlerFDS::UpdateInstrument()
+{
+	CSeqInstHandler::UpdateInstrument();
+	
+	if (auto pInterface = dynamic_cast<CChannelHandlerInterfaceFDS*>(m_pInterface)) {
+		if (auto pFDSInst = dynamic_cast<const CInstrumentFDS*>(m_pInstrument)) {
+			UpdateTables(pFDSInst);
+		}
+	}
+}
+
 void CSeqInstHandlerFDS::UpdateTables(const CInstrumentFDS *pInst)
 {
 	CChannelHandlerInterfaceFDS *pInterface = dynamic_cast<CChannelHandlerInterfaceFDS*>(m_pInterface);

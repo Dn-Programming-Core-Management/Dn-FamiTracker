@@ -57,6 +57,11 @@ public:
 		instrument waveform to the FDS sound channel.
 	*/
 	void TriggerInstrument();
+	/*! \brief Runs the instrument by one tick and updates the channel state.
+		\details This reimplementation calls the channel interface to write the contents of the
+		instrument waveform to the FDS sound channel.
+	*/
+	void UpdateInstrument();
 
 private:
 	void UpdateTables(const CInstrumentFDS *pInst);
