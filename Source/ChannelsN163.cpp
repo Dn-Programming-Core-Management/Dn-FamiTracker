@@ -63,53 +63,44 @@ void CChannelHandlerN163::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	// // //
 }
 
-void CChannelHandlerN163::HandleCustomEffects(effect_t EffNum, int EffParam)
+bool CChannelHandlerN163::HandleEffect(effect_t EffNum, unsigned char EffParam)
 {
-	if (EffNum == EF_PORTA_DOWN) {
+	switch (EffNum) {
+	case EF_PORTA_DOWN:
 		m_iPortaSpeed = EffParam << N163_PITCH_SLIDE_SHIFT;
 		m_iEffectParam = EffParam;		// // //
 		m_iEffect = EF_PORTA_UP;
-	}
-	else if (EffNum == EF_PORTA_UP) {
+		break;
+	case EF_PORTA_UP:
 		m_iPortaSpeed = EffParam << N163_PITCH_SLIDE_SHIFT;
 		m_iEffectParam = EffParam;		// // //
 		m_iEffect = EF_PORTA_DOWN;
-	}
-	else if (!CheckCommonEffects(EffNum, EffParam)) {
-		// Custom effects
-		switch (EffNum) {
-			case EF_DUTY_CYCLE:
-				// Duty effect controls wave
-				m_iWaveIndex = EffParam;
-				m_bLoadWave = true;
-				break;
-			case EF_N163_WAVE_BUFFER:		// // //
-				if (EffParam == 0x7F) {
-					m_iWavePos = m_iWavePosOld;
-					LoadWave();
-					// m_bLoadWave = true;
-					m_bDisableLoad = false;
-				}
-				else {
-					CFamiTrackerDoc *pDocument = m_pSoundGen->GetDocument();
-					if (EffParam + (m_iWaveLen >> 1) > 0x80 - 8 * pDocument->GetNamcoChannels()) break;
-					m_iWavePos = EffParam << 1;
-					LoadWave();
-					// m_bLoadWave = false;
-					m_bDisableLoad = true;
-				}
-				break;
+		break;
+	case EF_DUTY_CYCLE:
+		// Duty effect controls wave
+		m_iWaveIndex = EffParam;
+		m_bLoadWave = true;
+		break;
+	case EF_N163_WAVE_BUFFER:		// // //
+		if (EffParam == 0x7F) {
+			m_iWavePos = m_iWavePosOld;
+			LoadWave();
+			// m_bLoadWave = true;
+			m_bDisableLoad = false;
 		}
+		else {
+			CFamiTrackerDoc *pDocument = m_pSoundGen->GetDocument();
+			if (EffParam + (m_iWaveLen >> 1) > 0x80 - 8 * pDocument->GetNamcoChannels()) break;
+			m_iWavePos = EffParam << 1;
+			LoadWave();
+			// m_bLoadWave = false;
+			m_bDisableLoad = true;
+		}
+		break;
+	default: return CChannelHandlerInverted::HandleEffect(EffNum, EffParam);
 	}
 
-	/*
-	switch (m_iEffect) {
-	case EF_PORTA_DOWN: case EF_PORTA_UP: case EF_PORTAMENTO:
-	case EF_SLIDE_UP: case EF_SLIDE_DOWN:
-		m_iPortaSpeed <<= N163_PITCH_SLIDE_SHIFT;
-		break;
-	}
-	*/
+	return true;
 }
 
 bool CChannelHandlerN163::HandleInstrument(int Instrument, bool Trigger, bool NewInstrument)

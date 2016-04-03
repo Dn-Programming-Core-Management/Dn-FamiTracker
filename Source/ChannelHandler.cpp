@@ -206,14 +206,14 @@ void CChannelHandler::ApplyChannelState(stChannelState *State)
 	if (m_iInstrument != MAX_INSTRUMENTS)
 		HandleInstrument(m_iInstrument, true, true);
 	if (State->Effect_LengthCounter >= 0)
-		HandleCustomEffects(EF_VOLUME, State->Effect_LengthCounter);
+		HandleEffect(EF_VOLUME, State->Effect_LengthCounter);
 	for (unsigned int i = 0; i < EF_COUNT; i++)
 		if (State->Effect[i] >= 0)
-			HandleCustomEffects(static_cast<effect_t>(i), State->Effect[i]);
+			HandleEffect(static_cast<effect_t>(i), State->Effect[i]);
 	if (State->Effect[EF_FDS_MOD_SPEED_HI] >= 0x10)
-		HandleCustomEffects(EF_FDS_MOD_SPEED_HI, State->Effect[EF_FDS_MOD_SPEED_HI]);
+		HandleEffect(EF_FDS_MOD_SPEED_HI, State->Effect[EF_FDS_MOD_SPEED_HI]);
 	if (State->Effect_AutoFMMult >= 0)
-		HandleCustomEffects(EF_FDS_MOD_DEPTH, State->Effect_AutoFMMult);
+		HandleEffect(EF_FDS_MOD_DEPTH, State->Effect_AutoFMMult);
 }
 
 CString CChannelHandler::GetEffectString() const		// // //
@@ -363,7 +363,7 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	for (int n = 0; n < EffColumns; n++) {
 		effect_t      EffNum   = pNoteData->EffNumber[n];
 		unsigned char EffParam = pNoteData->EffParam[n];
-		HandleCustomEffects(EffNum, EffParam);
+		HandleEffect(EffNum, EffParam);		// // // single method
 		
 		// 0CC: remove this eventually like how the asm handles it
 		if (EffNum == EF_VOLUME_SLIDE && !EffParam && Trigger && m_iNoteVolume == 0) {		// // //
@@ -535,85 +535,85 @@ void CChannelHandler::SetupSlide()		// // //
 	m_iPortaTo = TriggerNote(m_iNote);
 }
 
-bool CChannelHandler::CheckCommonEffects(effect_t EffCmd, unsigned char EffParam)
+bool CChannelHandler::HandleEffect(effect_t EffCmd, unsigned char EffParam)
 {
 	// Handle common effects for all channels
 
 	switch (EffCmd) {
-		case EF_PORTAMENTO:
-			m_iEffectParam = EffParam;		// // //
-			m_iEffect = EF_PORTAMENTO;
-			SetupSlide();
-			if (!EffParam)
-				m_iPortaTo = 0;
-			break;
-		case EF_VIBRATO:
-			m_iVibratoDepth = (EffParam & 0x0F) << 4;
-			m_iVibratoSpeed = EffParam >> 4;
-			if (!EffParam)
-				m_iVibratoPhase = !m_bNewVibratoMode ? 48 : 0;
-			break;
-		case EF_TREMOLO:
-			m_iTremoloDepth = (EffParam & 0x0F) << 4;
-			m_iTremoloSpeed = EffParam >> 4;
-			if (!EffParam)
-				m_iTremoloPhase = 0;
-			break;
-		case EF_ARPEGGIO:
-			m_iEffectParam = EffParam;		// // //
-			m_iEffect = EF_ARPEGGIO;
-			break;
-		case EF_PITCH:
-			m_iFinePitch = EffParam;
-			break;
-		case EF_PORTA_DOWN:
-			m_iPortaSpeed = EffParam;
-			m_iEffectParam = EffParam;		// // //
-			m_iEffect = EF_PORTA_DOWN;
-			break;
-		case EF_PORTA_UP:
-			m_iPortaSpeed = EffParam;
-			m_iEffectParam = EffParam;		// // //
-			m_iEffect = EF_PORTA_UP;
-			break;
-		case EF_SLIDE_UP:		// // //
-			m_iEffectParam = EffParam;
-			m_iEffect = EF_SLIDE_UP;
-			SetupSlide();
-			break;
-		case EF_SLIDE_DOWN:		// // //
-			m_iEffectParam = EffParam;
-			m_iEffect = EF_SLIDE_DOWN;
-			SetupSlide();
-			break;
-		case EF_VOLUME_SLIDE:
-			m_iVolSlide = EffParam;
-			if (!EffParam)		// // //
-				m_iDefaultVolume = m_iVolume;
-			break;
-		case EF_NOTE_CUT:
-			if (EffParam >= 0x80) return false;		// // //
-			m_iNoteCut = EffParam + 1;
-			break;
-		case EF_NOTE_RELEASE:		// // //
-			if (EffParam >= 0x80) return false;
-			m_iNoteRelease = EffParam + 1;
-			break;
-		case EF_DELAYED_VOLUME:		// // //
-			if (!(EffParam >> 4) || !(EffParam & 0xF)) break;
-			m_iNoteVolume = (EffParam >> 4) + 1;
-			m_iNewVolume = (EffParam & 0x0F) << VOL_COLUMN_SHIFT;
-			break;
-		case EF_TRANSPOSE:		// // //
-			m_iTranspose = ((EffParam & 0x70) >> 4) + 1;
-			m_iTransposeTarget = EffParam & 0x0F;
-			m_bTransposeDown = (EffParam & 0x80) != 0;
-			break;
-//		case EF_TARGET_VOLUME_SLIDE:
-			// TODO implement
-//			break;
-		default:
-			return false;
+	case EF_PORTAMENTO:
+		m_iEffectParam = EffParam;		// // //
+		m_iEffect = EF_PORTAMENTO;
+		SetupSlide();
+		if (!EffParam)
+			m_iPortaTo = 0;
+		break;
+	case EF_VIBRATO:
+		m_iVibratoDepth = (EffParam & 0x0F) << 4;
+		m_iVibratoSpeed = EffParam >> 4;
+		if (!EffParam)
+			m_iVibratoPhase = !m_bNewVibratoMode ? 48 : 0;
+		break;
+	case EF_TREMOLO:
+		m_iTremoloDepth = (EffParam & 0x0F) << 4;
+		m_iTremoloSpeed = EffParam >> 4;
+		if (!EffParam)
+			m_iTremoloPhase = 0;
+		break;
+	case EF_ARPEGGIO:
+		m_iEffectParam = EffParam;		// // //
+		m_iEffect = EF_ARPEGGIO;
+		break;
+	case EF_PITCH:
+		m_iFinePitch = EffParam;
+		break;
+	case EF_PORTA_DOWN:
+		m_iPortaSpeed = EffParam;
+		m_iEffectParam = EffParam;		// // //
+		m_iEffect = EF_PORTA_DOWN;
+		break;
+	case EF_PORTA_UP:
+		m_iPortaSpeed = EffParam;
+		m_iEffectParam = EffParam;		// // //
+		m_iEffect = EF_PORTA_UP;
+		break;
+	case EF_SLIDE_UP:		// // //
+		m_iEffectParam = EffParam;
+		m_iEffect = EF_SLIDE_UP;
+		SetupSlide();
+		break;
+	case EF_SLIDE_DOWN:		// // //
+		m_iEffectParam = EffParam;
+		m_iEffect = EF_SLIDE_DOWN;
+		SetupSlide();
+		break;
+	case EF_VOLUME_SLIDE:
+		m_iVolSlide = EffParam;
+		if (!EffParam)		// // //
+			m_iDefaultVolume = m_iVolume;
+		break;
+	case EF_NOTE_CUT:
+		if (EffParam >= 0x80) return false;		// // //
+		m_iNoteCut = EffParam + 1;
+		break;
+	case EF_NOTE_RELEASE:		// // //
+		if (EffParam >= 0x80) return false;
+		m_iNoteRelease = EffParam + 1;
+		break;
+	case EF_DELAYED_VOLUME:		// // //
+		if (!(EffParam >> 4) || !(EffParam & 0xF)) break;
+		m_iNoteVolume = (EffParam >> 4) + 1;
+		m_iNewVolume = (EffParam & 0x0F) << VOL_COLUMN_SHIFT;
+		break;
+	case EF_TRANSPOSE:		// // //
+		m_iTranspose = ((EffParam & 0x70) >> 4) + 1;
+		m_iTransposeTarget = EffParam & 0x0F;
+		m_bTransposeDown = (EffParam & 0x80) != 0;
+		break;
+//	case EF_TARGET_VOLUME_SLIDE:
+		// TODO implement
+//		break;
+	default:
+		return false;
 	}
 	
 	return true;
@@ -796,7 +796,7 @@ void CChannelHandler::UpdateEffects()
 		case EF_SLIDE_UP:		// // //
 		case EF_SLIDE_DOWN:		// // //
 			// Automatic portamento
-			if (m_iPortaSpeed > 0 && m_iPortaTo > 0) {
+			if (m_iPortaSpeed > 0 && m_iPortaTo) {		// // //
 				if (m_iPeriod > m_iPortaTo) {
 					PeriodRemove(m_iPortaSpeed);
 					if (m_iPeriod <= m_iPortaTo) {
@@ -1039,7 +1039,16 @@ bool CChannelHandler::IsReleasing() const
  *
  */
 
-int CChannelHandlerInverted::CalculatePeriod() const 
+bool CChannelHandlerInverted::HandleEffect(effect_t EffNum, unsigned char EffParam)
+{
+	switch (EffNum) {
+	case EF_PORTA_UP: EffNum = EF_PORTA_DOWN; break;
+	case EF_PORTA_DOWN: EffNum = EF_PORTA_UP; break;
+	}
+	return CChannelHandler::HandleEffect(EffNum, EffParam);
+}
+
+int CChannelHandlerInverted::CalculatePeriod() const
 {
 	return LimitPeriod(GetPeriod() + GetVibrato() - GetFinePitch() - GetPitch());
 }

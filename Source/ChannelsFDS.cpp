@@ -67,59 +67,50 @@ void CChannelHandlerFDS::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 		m_iModulationSpeed = (m_iModulationSpeed & 0xF00) | m_iEffModSpeedLo;
 }
 
-void CChannelHandlerFDS::HandleCustomEffects(effect_t EffNum, int EffParam)
+bool CChannelHandlerFDS::HandleEffect(effect_t EffNum, unsigned char EffParam)
 {
-	if (EffNum == EF_PORTA_DOWN) {
-		m_iPortaSpeed = EffParam;
-		m_iEffect = EF_PORTA_UP;
-	}
-	else if (EffNum == EF_PORTA_UP) {
-		m_iPortaSpeed = EffParam;
-		m_iEffect = EF_PORTA_DOWN;
-	}
-	else if (!CheckCommonEffects(EffNum, EffParam)) {
-		// Custom effects
-		switch (EffNum) {
-			// // //
-			case EF_FDS_MOD_DEPTH:
-				if (EffParam < 0x40)		// // //
-					m_iEffModDepth = EffParam;
-				else if (EffParam >= 0x80 && m_bAutoModulation) {
-					m_iEffModSpeedHi = EffParam - 0x80;
-				}
-				break;
-			case EF_FDS_MOD_SPEED_HI:
-				if (EffParam >= 0x10) {		// // //
-					m_iEffModSpeedHi = EffParam >> 4;
-					m_iEffModSpeedLo = (EffParam & 0x0F) + 1;
-					m_bAutoModulation = true;
-				}
-				else {
-					m_iEffModSpeedHi = EffParam;
-					if (m_bAutoModulation)
-						m_iEffModSpeedLo = 0;
-					m_bAutoModulation = false;
-				}
-				break;
-			case EF_FDS_MOD_SPEED_LO:
-				m_iEffModSpeedLo = EffParam;
-				if (m_bAutoModulation)		// // //
-					m_iEffModSpeedHi = 0;
-				m_bAutoModulation = false;
-				break;
-			case EF_FDS_VOLUME:
-				if (EffParam < 0x80) {
-					m_iVolModRate = EffParam & 0x3F;
-					m_iVolModMode = (EffParam >> 6) + 1;
-				}
-				else if (EffParam == 0xE0)
-					m_iVolModMode = 0;
-				break;
-			case EF_FDS_MOD_BIAS:		// // //
-				m_iModulationOffset = EffParam - 0x80;
-				break;
+	switch (EffNum) {
+	case EF_FDS_MOD_DEPTH:
+		if (EffParam < 0x40)		// // //
+			m_iEffModDepth = EffParam;
+		else if (EffParam >= 0x80 && m_bAutoModulation) {
+			m_iEffModSpeedHi = EffParam - 0x80;
 		}
+		break;
+	case EF_FDS_MOD_SPEED_HI:
+		if (EffParam >= 0x10) {		// // //
+			m_iEffModSpeedHi = EffParam >> 4;
+			m_iEffModSpeedLo = (EffParam & 0x0F) + 1;
+			m_bAutoModulation = true;
+		}
+		else {
+			m_iEffModSpeedHi = EffParam;
+			if (m_bAutoModulation)
+				m_iEffModSpeedLo = 0;
+			m_bAutoModulation = false;
+		}
+		break;
+	case EF_FDS_MOD_SPEED_LO:
+		m_iEffModSpeedLo = EffParam;
+		if (m_bAutoModulation)		// // //
+			m_iEffModSpeedHi = 0;
+		m_bAutoModulation = false;
+		break;
+	case EF_FDS_VOLUME:
+		if (EffParam < 0x80) {
+			m_iVolModRate = EffParam & 0x3F;
+			m_iVolModMode = (EffParam >> 6) + 1;
+		}
+		else if (EffParam == 0xE0)
+			m_iVolModMode = 0;
+		break;
+	case EF_FDS_MOD_BIAS:		// // //
+		m_iModulationOffset = EffParam - 0x80;
+		break;
+	default: return CChannelHandlerInverted::HandleEffect(EffNum, EffParam);
 	}
+
+	return true;
 }
 
 void CChannelHandlerFDS::HandleEmptyNote()

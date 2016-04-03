@@ -56,30 +56,29 @@ void CChannelHandler2A03::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	}
 }
 
-void CChannelHandler2A03::HandleCustomEffects(effect_t EffNum, int EffParam)
+bool CChannelHandler2A03::HandleEffect(effect_t EffNum, unsigned char EffParam)
 {
-	if (!CheckCommonEffects(EffNum, EffParam)) {
-		// Custom effects
-		switch (EffNum) {
-			case EF_VOLUME:
-				if (EffParam < 0x20) {		// // //
-					m_iLengthCounter = EffParam;
-					m_bEnvelopeLoop = false;
-					m_bResetEnvelope = true;
-				}
-				else if (EffParam >= 0xE0 && EffParam < 0xE4) {
-					if (!m_bEnvelopeLoop || !m_bHardwareEnvelope)
-						m_bResetEnvelope = true;
-					m_bHardwareEnvelope = ((EffParam & 0x01) == 0x01);
-					m_bEnvelopeLoop = ((EffParam & 0x02) != 0x02);
-				}
-				break;
-			case EF_DUTY_CYCLE:
-				m_iDefaultDuty = m_iDutyPeriod = EffParam;
-				break;
-			// // //
+	switch (EffNum) {
+	case EF_VOLUME:
+		if (EffParam < 0x20) {		// // //
+			m_iLengthCounter = EffParam;
+			m_bEnvelopeLoop = false;
+			m_bResetEnvelope = true;
 		}
+		else if (EffParam >= 0xE0 && EffParam < 0xE4) {
+			if (!m_bEnvelopeLoop || !m_bHardwareEnvelope)
+				m_bResetEnvelope = true;
+			m_bHardwareEnvelope = ((EffParam & 0x01) == 0x01);
+			m_bEnvelopeLoop = ((EffParam & 0x02) != 0x02);
+		}
+		break;
+	case EF_DUTY_CYCLE:
+		m_iDefaultDuty = m_iDutyPeriod = EffParam;
+		break;
+	default: return CChannelHandler::HandleEffect(EffNum, EffParam);
 	}
+
+	return true;
 }
 
 void CChannelHandler2A03::HandleEmptyNote()
@@ -223,9 +222,8 @@ void C2A03Square::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	CChannelHandler2A03::HandleNoteData(pNoteData, EffColumns);
 }
 
-void C2A03Square::HandleCustomEffects(effect_t EffNum, int EffParam)
+bool C2A03Square::HandleEffect(effect_t EffNum, unsigned char EffParam)
 {
-	CChannelHandler2A03::HandleCustomEffects(EffNum, EffParam);
 	switch (EffNum) {
 	case EF_SWEEPUP:
 		m_iSweep = 0x88 | (EffParam & 0x77);
@@ -237,7 +235,10 @@ void C2A03Square::HandleCustomEffects(effect_t EffNum, int EffParam)
 		m_iLastPeriod = 0xFFFF;
 		m_bSweeping = true;
 		break;
+	default: return CChannelHandler2A03::HandleEffect(EffNum, EffParam);
 	}
+
+	return true;
 }
 
 void C2A03Square::HandleEmptyNote()
@@ -308,24 +309,27 @@ void CTriangleChan::ResetChannel()
 	m_iLinearCounter = -1;
 }
 
-void CTriangleChan::HandleCustomEffects(effect_t EffNum, int EffParam)		// // //
+bool CTriangleChan::HandleEffect(effect_t EffNum, unsigned char EffParam)
 {
-	CChannelHandler2A03::HandleCustomEffects(EffNum, EffParam);
 	switch (EffNum) {
-		case EF_VOLUME:
-			if (m_iLinearCounter == -1)	m_iLinearCounter = 0x7F;
-			break;
-		case EF_NOTE_CUT:
-			if (EffParam >= 0x80) {
-				m_iLinearCounter = EffParam - 0x80;
-				m_bEnvelopeLoop = false;
-				m_bResetEnvelope = true;
-			}
-			else {
-				m_bEnvelopeLoop = true;
-			}
-			break;
+	case EF_VOLUME:
+		if (m_iLinearCounter == -1)	m_iLinearCounter = 0x7F;
+		break;
+	case EF_NOTE_CUT:
+		if (EffParam >= 0x80) {
+			m_iLinearCounter = EffParam - 0x80;
+			m_bEnvelopeLoop = false;
+			m_bResetEnvelope = true;
+		}
+		else {
+			m_bEnvelopeLoop = true;
+			return CChannelHandler2A03::HandleEffect(EffNum, EffParam); // true
+		}
+		break;
+	default: return CChannelHandler2A03::HandleEffect(EffNum, EffParam);
 	}
+
+	return true;
 }
 
 void CTriangleChan::ClearRegisters()
@@ -512,7 +516,7 @@ void CDPCMChan::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	CChannelHandler::HandleNoteData(pNoteData, EffColumns);
 }
 
-void CDPCMChan::HandleCustomEffects(effect_t EffNum, int EffParam)
+bool CDPCMChan::HandleEffect(effect_t EffNum, unsigned char EffParam)
 {
 	switch (EffNum) {
 	case EF_DAC:
@@ -525,22 +529,20 @@ void CDPCMChan::HandleCustomEffects(effect_t EffNum, int EffParam)
 		m_iCustomPitch = EffParam;
 		break;
 	case EF_RETRIGGER:
-//			if (NoteData->EffParam[i] > 0) {
+//		if (NoteData->EffParam[i] > 0) {
 			m_iRetrigger = EffParam + 1;
 			if (m_iRetriggerCntr == 0)
 				m_iRetriggerCntr = m_iRetrigger;
-//			}
-//			m_iEnableRetrigger = 1;
+//		}
+//		m_iEnableRetrigger = 1;
 		break;
 	case EF_NOTE_CUT:
-		if (EffParam >= 0x80) break;		// // //
-		m_iNoteCut = EffParam + 1;
-		break;
-	case EF_NOTE_RELEASE:		// // //
-		if (EffParam >= 0x80) break;
-		m_iNoteRelease = EffParam + 1;
-		break;
+	case EF_NOTE_RELEASE:
+		return CChannelHandler::HandleEffect(EffNum, EffParam);
+	default: return false; // unless WAVE_CHAN analog for CChannelHandler exists
 	}
+
+	return true;
 }
 
 bool CDPCMChan::HandleInstrument(int Instrument, bool Trigger, bool NewInstrument)

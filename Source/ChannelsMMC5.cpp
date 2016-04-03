@@ -53,29 +53,29 @@ void CChannelHandlerMMC5::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	}
 }
 
-void CChannelHandlerMMC5::HandleCustomEffects(effect_t EffNum, int EffParam)
+bool CChannelHandlerMMC5::HandleEffect(effect_t EffNum, unsigned char EffParam)
 {
-	if (!CheckCommonEffects(EffNum, EffParam)) {
-		switch (EffNum) {
-			case EF_VOLUME:
-				if (EffParam < 0x20) {		// // //
-					m_iLengthCounter = EffParam;
-					m_bEnvelopeLoop = false;
-					m_bResetEnvelope = true;
-				}
-				else if (EffParam >= 0xE0 && EffParam < 0xE4) {
-					if (!m_bEnvelopeLoop || !m_bHardwareEnvelope)
-						m_bResetEnvelope = true;
-					m_bHardwareEnvelope = ((EffParam & 0x01) == 0x01);
-					m_bEnvelopeLoop = ((EffParam & 0x02) != 0x02);
-				}
-				break;
-			case EF_DUTY_CYCLE:
-				m_iDefaultDuty = m_iDutyPeriod = EffParam;
-				break;
-			// // //
+	switch (EffNum) {
+	case EF_VOLUME:
+		if (EffParam < 0x20) {		// // //
+			m_iLengthCounter = EffParam;
+			m_bEnvelopeLoop = false;
+			m_bResetEnvelope = true;
 		}
+		else if (EffParam >= 0xE0 && EffParam < 0xE4) {
+			if (!m_bEnvelopeLoop || !m_bHardwareEnvelope)
+				m_bResetEnvelope = true;
+			m_bHardwareEnvelope = ((EffParam & 0x01) == 0x01);
+			m_bEnvelopeLoop = ((EffParam & 0x02) != 0x02);
+		}
+		break;
+	case EF_DUTY_CYCLE:
+		m_iDefaultDuty = m_iDutyPeriod = EffParam;
+		break;
+	default: return CChannelHandler::HandleEffect(EffNum, EffParam);
 	}
+
+	return true;
 }
 
 void CChannelHandlerMMC5::HandleEmptyNote()

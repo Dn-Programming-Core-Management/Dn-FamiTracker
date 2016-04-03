@@ -133,35 +133,27 @@ bool NoteValid(int Note)
 }
 */
 
-void CChannelHandlerS5B::HandleCustomEffects(effect_t EffNum, int EffParam)
+bool CChannelHandlerS5B::HandleEffect(effect_t EffNum, unsigned char EffParam)
 {
-	if (!CheckCommonEffects(EffNum, EffParam)) {
-		switch (EffNum) {
-			case EF_SUNSOFT_ENV_HI: // I
-				SetEnvelopeHigh(EffParam);
-				break;
-			case EF_SUNSOFT_ENV_LO: // H
-				SetEnvelopeLow(EffParam);
-				break;
-			case EF_SUNSOFT_ENV_TYPE: // J
-				SetEnvelopeType(EffParam);
-				//m_bEnvEnable = true;
-				//m_bUpdate = true;
-				break;
-			case EF_DUTY_CYCLE:
-				m_iDefaultDuty = m_iDutyPeriod = EffParam;
-				break;
-
-				/*
-			case EF_SLIDE_UP:
-			case EF_SLIDE_DOWN:
-				PostEffect = EffCmd;
-				PostEffectParam = EffParam;
-				SetupSlide(EffCmd, EffParam);
-				break;
-				*/
-		}
+	switch (EffNum) {
+	case EF_SUNSOFT_ENV_HI: // I
+		SetEnvelopeHigh(EffParam);
+		break;
+	case EF_SUNSOFT_ENV_LO: // H
+		SetEnvelopeLow(EffParam);
+		break;
+	case EF_SUNSOFT_ENV_TYPE: // J
+		SetEnvelopeType(EffParam);
+		//m_bEnvEnable = true;
+		//m_bUpdate = true;
+		break;
+	case EF_DUTY_CYCLE:
+		m_iDefaultDuty = m_iDutyPeriod = EffParam;
+		break;
+	default: return CChannelHandler::HandleEffect(EffNum, EffParam);
 	}
+
+	return true;
 }
 
 void CChannelHandlerS5B::HandleEmptyNote()

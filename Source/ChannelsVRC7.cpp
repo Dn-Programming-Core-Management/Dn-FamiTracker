@@ -62,65 +62,53 @@ void CChannelHandlerVRC7::SetCustomReg(size_t Index, unsigned char Val)		// // /
 	m_iRegs[Index] = Val;
 }
 
-void CChannelHandlerVRC7::HandleCustomEffects(effect_t EffNum, int EffParam)
+bool CChannelHandlerVRC7::HandleEffect(effect_t EffNum, unsigned char EffParam)
 {
-	if (EffNum == EF_PORTA_DOWN) {
-		m_iEffect = EF_PORTA_UP;
-		m_iEffectParam = EffParam;		// // //
-		m_iPortaSpeed = EffParam;
-	}
-	else if (EffNum == EF_PORTA_UP) {
-		m_iEffect = EF_PORTA_DOWN;
-		m_iEffectParam = EffParam;		// // //
-		m_iPortaSpeed = EffParam;
-	}
-	else {
-		if (!CheckCommonEffects(EffNum, EffParam)) {
-			switch (EffNum) {
-				// // //
-				case EF_DUTY_CYCLE:
-//					Patch = EffParam;		// TODO add this
-					break;
+	switch (EffNum) {
+	case EF_DUTY_CYCLE:
+//		Patch = EffParam;		// TODO add this
+		break;
 /*
-				case EF_VRC7_MODULATOR:
-					switch (EffParam & 0xF0) {
-						case 0x00:	// Amplitude modulation on/off
-							break;
-						case 0x10:	// Vibrato on/off
-							break;
-						case 0x20:	// Sustain on/off
-							break;
-						case 0x30:	// Wave rectification on/off
-							break;
-						case 0x40:	// Key rate scaling on/off
-							break;
-						case 0x50:	// Key rate level
-							break;
-						case 0x60:	// Mult factor
-							break;
-						case 0x70:	// Attack
-							break;
-						case 0x80:	// Decay
-							break;
-						case 0x90:	// Sustain
-							break;
-						case 0xA0:	// Release
-							break;
-					}
-					break;
-				case EF_VRC7_CARRIER:
-					break;
-				case EF_VRC7_LEVELS:
-					if (EffParam & 0x80)	// Feedback
-						m_iRegs[0x03] = (m_iRegs[0x03] & 0xF8) | (EffParam & 0x07);
-					else
-						m_iRegs[0x02] = (m_iRegs[0x02] & 0xC0) | (EffParam & 0x3F);
-					m_bRegsDirty = true;
-					break;
-					*/
-			}
+	case EF_VRC7_MODULATOR:
+		switch (EffParam & 0xF0) {
+			case 0x00:	// Amplitude modulation on/off
+				break;
+			case 0x10:	// Vibrato on/off
+				break;
+			case 0x20:	// Sustain on/off
+				break;
+			case 0x30:	// Wave rectification on/off
+				break;
+			case 0x40:	// Key rate scaling on/off
+				break;
+			case 0x50:	// Key rate level
+				break;
+			case 0x60:	// Mult factor
+				break;
+			case 0x70:	// Attack
+				break;
+			case 0x80:	// Decay
+				break;
+			case 0x90:	// Sustain
+				break;
+			case 0xA0:	// Release
+				break;
 		}
+		break;
+	case EF_VRC7_CARRIER:
+		break;
+	case EF_VRC7_LEVELS:
+		if (EffParam & 0x80)	// Feedback
+			m_iRegs[0x03] = (m_iRegs[0x03] & 0xF8) | (EffParam & 0x07);
+		else
+			m_iRegs[0x02] = (m_iRegs[0x02] & 0xC0) | (EffParam & 0x3F);
+		m_bRegsDirty = true;
+		break;
+		*/
+	default: return CChannelHandlerInverted::HandleEffect(EffNum, EffParam);
 	}
+
+	return true;
 }
 
 void CChannelHandlerVRC7::HandleEmptyNote()
