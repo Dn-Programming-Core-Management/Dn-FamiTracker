@@ -358,6 +358,7 @@ private:
 	// Play control
 	int					m_iJumpToPattern;
 	int					m_iSkipToRow;
+	bool				m_bDoHalt;							// // // Cxx effect
 	int					m_iStepRows;						// # of rows skipped last update
 	play_mode_t			m_iPlayMode;
 
@@ -375,6 +376,7 @@ private:
 	// Rendering
 	bool				m_bRendering;
 	bool				m_bRequestRenderStop;
+	bool				m_bStoppingRender;					// // //
 	render_end_t		m_iRenderEndWhen;
 	unsigned int		m_iRenderEndParam;
 	int					m_iDelayedStart;

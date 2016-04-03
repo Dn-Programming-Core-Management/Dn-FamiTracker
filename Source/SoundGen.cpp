@@ -504,6 +504,7 @@ CSoundGen::CSoundGen() :
 	m_bRendering(false),
 	m_bPlaying(false),
 	m_bHaltRequest(false),
+	m_bDoHalt(false),		// // //
 	m_pPreviewSample(NULL),
 	m_pVisualizerWnd(NULL),
 	m_iSpeed(0),
@@ -1297,6 +1298,7 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 
 	m_bPlaying			= true;
 	m_bHaltRequest      = false;
+	m_bDoHalt			= false;		// // //
 	m_iPlayTicks		= 0;
 	m_iFramesPlayed		= 0;
 	m_iRowsPlayed		= 0;		// // //
@@ -1462,6 +1464,7 @@ void CSoundGen::HaltPlayer()
 	// Move player to non-playing state
 	m_bPlaying = false;
 	m_bHaltRequest = false;
+	m_bDoHalt = false;		// // //
 
 	MakeSilent();
 
@@ -1616,15 +1619,13 @@ void CSoundGen::RunFrame()
 		if (m_bRendering) {
 			if (m_iRenderEndWhen == SONG_TIME_LIMIT) {
 				if (m_iPlayTicks >= (unsigned int)m_iRenderEndParam)
-					m_bRequestRenderStop = true;
+					m_bRequestRenderStop = m_bHaltRequest = true;		// // //
 			}
 			else if (m_iRenderEndWhen == SONG_LOOP_LIMIT) {
 				//if (m_iFramesPlayed >= m_iRenderEndParam)
-				if (m_iRowsPlayed >= m_iRenderEndParam)		// // //
-					m_bRequestRenderStop = true;
+				if (m_iRowsPlayed >= m_iRenderEndParam && m_iTempoAccum <= 0)		// // //
+					m_bRequestRenderStop = m_bHaltRequest = true;
 			}
-			if (m_bRequestRenderStop)
-				m_bHaltRequest = true;
 		}
 
 #ifdef EXPORT_TEST
@@ -1665,14 +1666,15 @@ void CSoundGen::CheckControl()
 	ASSERT(m_pTrackerView != NULL);
 
 	if (IsPlaying()) {
-		// If looping, halt when a jump or skip command are encountered
-		if (m_bPlayLooping) {
+		if (m_bDoHalt) {		// // //
+			++m_iRowsPlayed;
+		}
+		else if (m_bPlayLooping) {
 			if (m_iJumpToPattern != -1 || m_iSkipToRow != -1)
 				m_iPlayRow = 0;
-			else {
+			else
 				while (m_iStepRows--)
 					PlayerStepRow();
-			}
 		}
 		else {
 			// Jump
@@ -1682,10 +1684,9 @@ void CSoundGen::CheckControl()
 			else if (m_iSkipToRow != -1)
 				PlayerSkipTo(m_iSkipToRow);
 			// or just move on
-			else {
+			else
 				while (m_iStepRows--)
 					PlayerStepRow();
-			}
 		}
 
 		m_iJumpToPattern = -1;
@@ -2027,11 +2028,10 @@ void CSoundGen::EvaluateGlobalEffects(stChanNote *NoteData, int EffColumns)
 
 			// Cxx: Halt playback
 			case EF_HALT:
-				m_bHaltRequest = true;
+				m_bDoHalt = true;		// // //
 				if (m_bRendering) {
 					// Unconditional stop
 					++m_iFramesPlayed;
-					m_bRequestRenderStop = true;
 				}
 				break;
 		}
@@ -2088,12 +2088,14 @@ void CSoundGen::StopRendering()
 
 	m_bPlaying = false;
 	m_bRendering = false;
+	m_bStoppingRender = false;		// // //
+	m_bRequestRenderStop = false;		// // //
 	m_iPlayFrame = 0;
 	m_iPlayRow = 0;
 	m_wfWaveFile.CloseFile();
 
-	MakeSilent();
 	ResetBuffer();
+	ResetAPU();		// // //
 }
 
 void CSoundGen::GetRenderStat(int &Frame, int &Time, bool &Done, int &FramesToRender, int &Row, int &RowCount) const
@@ -2289,7 +2291,9 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 	}
 
 	// Rendering
-	if (m_bRendering && m_bRequestRenderStop) {
+	if (m_bRendering && m_bRequestRenderStop)
+		m_bStoppingRender = true;
+	if (m_bStoppingRender) {
 		if (!m_iDelayedEnd)
 			StopRendering();
 		else
@@ -2450,6 +2454,7 @@ void CSoundGen::OnStartRender(WPARAM wParam, LPARAM lParam)
 {
 	ResetBuffer();
 	m_bRequestRenderStop = false;
+	m_bStoppingRender = false;		// // //
 	m_bRendering = true;
 	m_iDelayedStart = 5;	// Wait 5 frames until player starts
 	m_iDelayedEnd = 5;
@@ -2559,6 +2564,9 @@ void CSoundGen::ReadPatternRow()
 	for (int i = 0; i < Channels; ++i) {
 		if (m_pTrackerView->PlayerGetNote(m_iPlayTrack, m_iPlayFrame, i, m_iPlayRow, NoteData))
 			QueueNote(i, NoteData, NOTE_PRIO_1);
+	}
+	if (m_bDoHalt) {		// // //
+		m_bHaltRequest = true;
 	}
 }
 
