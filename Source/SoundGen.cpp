@@ -1618,7 +1618,7 @@ void CSoundGen::RunFrame()
 
 		if (m_bRendering) {
 			if (m_iRenderEndWhen == SONG_TIME_LIMIT) {
-				if (m_iPlayTicks >= (unsigned int)m_iRenderEndParam)
+				if (m_iPlayTicks > (unsigned int)m_iRenderEndParam)
 					m_bRequestRenderStop = m_bHaltRequest = true;		// // //
 			}
 			else if (m_iRenderEndWhen == SONG_LOOP_LIMIT) {
