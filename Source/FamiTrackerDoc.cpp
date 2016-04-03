@@ -48,6 +48,7 @@
 #include <string>		// // //
 #include <unordered_map>		// // //
 #include "FamiTracker.h"
+#include "ChannelState.h"		// // //
 #include "FamiTrackerDoc.h"
 #include "ModuleException.h"		// // //
 #include "TrackerChannel.h"
@@ -4652,14 +4653,12 @@ static void UpdateEchoTranspose(stChanNote *Note, int *Value, unsigned int EffCo
 	}
 }
 
-stFullState CFamiTrackerDoc::RetrieveSoundState(unsigned int Track, unsigned int Frame, unsigned int Row, int Channel)
+stFullState *CFamiTrackerDoc::RetrieveSoundState(unsigned int Track, unsigned int Frame, unsigned int Row, int Channel)
 {
-	stFullState S = {};
-	S.State = new stChannelState[m_iRegisteredChannels]();
-	S.Tempo = S.Speed = S.GroovePos = -1;
+	stFullState *S = new stFullState(m_iRegisteredChannels);
 
 	for (int c = 0; c < m_iRegisteredChannels; c++) {
-		stChannelState *State = &S.State[c];
+		stChannelState *State = &S->State[c];
 		State->ChannelIndex = GetChannelType(c);
 		memset(State->Effect, -1, EF_COUNT * sizeof(int));
 		memset(State->Echo, -1, ECHO_BUFFER_LENGTH * sizeof(int));
@@ -4677,7 +4676,7 @@ stFullState CFamiTrackerDoc::RetrieveSoundState(unsigned int Track, unsigned int
 	while (true) {
 		for (int c = m_iRegisteredChannels - 1; c >= 0; c--) {
 			// if (Channel != -1) c = GetChannelIndex(Channel);
-			stChannelState *State = &S.State[c];
+			stChannelState *State = &S->State[c];
 			int EffColumns = GetEffColumns(Track, c);
 			GetNoteData(Track, Frame, c, Row, &Note);
 		
@@ -4738,16 +4737,16 @@ stFullState CFamiTrackerDoc::RetrieveSoundState(unsigned int Track, unsigned int
 				case EF_HALT:
 					Row = Frame = 0; goto outer;
 				case EF_SPEED:
-					if (S.Speed == -1 && (xy < GetSpeedSplitPoint() || GetSongTempo(Track) == 0)) {
-						S.Speed = xy; if (S.Speed < 1) S.Speed = 1;
-						S.GroovePos = -2;
+					if (S->Speed == -1 && (xy < GetSpeedSplitPoint() || GetSongTempo(Track) == 0)) {
+						S->Speed = xy; if (S->Speed < 1) S->Speed = 1;
+						S->GroovePos = -2;
 					}
-					else if (S.Tempo == -1 && xy >= GetSpeedSplitPoint()) S.Tempo = xy;
+					else if (S->Tempo == -1 && xy >= GetSpeedSplitPoint()) S->Tempo = xy;
 					continue;
 				case EF_GROOVE:
-					if (S.GroovePos == -1 && xy < MAX_GROOVE) {
-						S.GroovePos = totalRows;
-						S.Speed = xy;
+					if (S->GroovePos == -1 && xy < MAX_GROOVE) {
+						S->GroovePos = totalRows;
+						S->Speed = xy;
 					}
 					continue;
 				case EF_VOLUME:
@@ -4814,9 +4813,9 @@ stFullState CFamiTrackerDoc::RetrieveSoundState(unsigned int Track, unsigned int
 		else break;
 		totalRows++;
 	}
-	if (S.GroovePos == -1 && GetSongGroove(Track)) {
-		S.GroovePos = totalRows;
-		S.Speed = GetSongSpeed(Track);
+	if (S->GroovePos == -1 && GetSongGroove(Track)) {
+		S->GroovePos = totalRows;
+		S->Speed = GetSongSpeed(Track);
 	}
 	
 	SAFE_RELEASE_ARRAY(BufferPos);

@@ -23,11 +23,11 @@
 // This file handles playing of VRC6 channels
 
 #include "stdafx.h"
-#include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
+#include "FamiTrackerTypes.h"		// // //
+#include "APU/Types.h"		// // //
+#include "Instrument.h"		// // //
 #include "ChannelHandler.h"
 #include "ChannelsVRC6.h"
-#include "SoundGen.h"
 #include "InstHandler.h"		// // //
 #include "SeqInstHandler.h"		// // //
 

@@ -36,6 +36,7 @@
 #include <afxmt.h>
 #include "FamiTracker.h"
 #include "FTMComponentInterface.h"		// // //
+#include "ChannelState.h"		// // //
 #include <vector>		// // //
 #include "InstrumentManager.h"		// // //
 #include "FamiTrackerDoc.h"
@@ -657,6 +658,7 @@ void CSoundGen::AssignDocument(CFamiTrackerDoc *pDoc)
 		if (m_pChannels[i])
 			m_pChannels[i]->InitChannel(m_pAPU, m_iVibratoTable, this);
 	}
+	DocumentPropertiesChanged(pDoc);		// // //
 }
 
 void CSoundGen::AssignView(CFamiTrackerView *pView)
@@ -756,8 +758,10 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 	ASSERT(pDocument != NULL);
 
 	for (int i = 0; i < CHANNELS; ++i) {
-		if (m_pChannels[i])
-			m_pChannels[i]->DocumentPropertiesChanged(pDocument);
+		if (m_pChannels[i]) {
+			m_pChannels[i]->SetVibratoStyle(pDocument->GetVibratoStyle());		// // //
+			m_pChannels[i]->SetLinearPitch(pDocument->GetLinearPitch());
+		}
 	}
 	
 	m_iSpeedSplitPoint = pDocument->GetSpeedSplitPoint();
@@ -1329,25 +1333,26 @@ void CSoundGen::ApplyGlobalState()		// // //
 {
 	int Frame = IsPlaying() ? GetPlayerFrame() : m_pTrackerView->GetSelectedFrame();
 	int Row = IsPlaying() ? GetPlayerRow() : m_pTrackerView->GetSelectedRow();
-	stFullState State = m_pDocument->RetrieveSoundState(GetPlayerTrack(), Frame, Row, -1);
-	if (State.Tempo != -1)
-		m_iTempo = State.Tempo;
-	if (State.GroovePos >= 0) {
-		m_iGroovePosition = State.GroovePos;
-		if (State.Speed >= 0)
-			m_iGrooveIndex = State.Speed;
-		if (m_pDocument->GetGroove(m_iGrooveIndex) != NULL)
-			m_iSpeed = m_pDocument->GetGroove(m_iGrooveIndex)->GetEntry(m_iGroovePosition);
+	if (stFullState *State = m_pDocument->RetrieveSoundState(GetPlayerTrack(), Frame, Row, -1)) {
+		if (State->Tempo != -1)
+			m_iTempo = State->Tempo;
+		if (State->GroovePos >= 0) {
+			m_iGroovePosition = State->GroovePos;
+			if (State->Speed >= 0)
+				m_iGrooveIndex = State->Speed;
+			if (m_pDocument->GetGroove(m_iGrooveIndex) != NULL)
+				m_iSpeed = m_pDocument->GetGroove(m_iGrooveIndex)->GetEntry(m_iGroovePosition);
+		}
+		else {
+			if (State->Speed >= 0)
+				m_iSpeed = State->Speed;
+			m_iGrooveIndex = -1;
+		}
+		SetupSpeed();
+		for (int i = 0; i < m_pDocument->GetChannelCount(); i++)
+			m_pChannels[State->State[i].ChannelIndex]->ApplyChannelState(&State->State[i]);
+		delete State;
 	}
-	else {
-		if (State.Speed >= 0)
-			m_iSpeed = State.Speed;
-		m_iGrooveIndex = -1;
-	}
-	SetupSpeed();
-	for (int i = 0; i < m_pDocument->GetChannelCount(); i++)
-		m_pChannels[State.State[i].ChannelIndex]->ApplyChannelState(&State.State[i]);
-	SAFE_RELEASE_ARRAY(State.State);
 }
 
 /*! \brief Obtains a human-readable form of a channel state object.
@@ -1437,21 +1442,23 @@ CString CSoundGen::RecallChannelState(int Channel) const		// // //
 	if (IsPlaying()) return m_pChannels[Channel]->GetStateString();
 	int Frame = m_pTrackerView->GetSelectedFrame();
 	int Row = m_pTrackerView->GetSelectedRow();
-	stFullState State = m_pDocument->RetrieveSoundState(GetPlayerTrack(), Frame, Row, Channel);
-	CString str = GetStateString(State.State[m_pDocument->GetChannelIndex(Channel)]);
-	SAFE_RELEASE_ARRAY(State.State);
-	if (State.Tempo >= 0)
-		str.AppendFormat(_T("        Tempo: %d"), State.Tempo);
-	if (State.Speed >= 0) {
-		if (State.GroovePos >= 0) {
-			str.AppendFormat(_T("        Groove: %02X <-"), State.Speed);
-			CGroove *Groove = m_pDocument->GetGroove(State.Speed);
-			const unsigned char Size = Groove->GetSize();
-			for (unsigned char i = 0; i < Size; i++)
-				str.AppendFormat(_T(" %d"), Groove->GetEntry((i + State.GroovePos) % Size));
+	CString str = _T("");
+	if (stFullState *State = m_pDocument->RetrieveSoundState(GetPlayerTrack(), Frame, Row, Channel)) {
+		str = GetStateString(State->State[m_pDocument->GetChannelIndex(Channel)]);
+		if (State->Tempo >= 0)
+			str.AppendFormat(_T("        Tempo: %d"), State->Tempo);
+		if (State->Speed >= 0) {
+			if (State->GroovePos >= 0) {
+				str.AppendFormat(_T("        Groove: %02X <-"), State->Speed);
+				CGroove *Groove = m_pDocument->GetGroove(State->Speed);
+				const unsigned char Size = Groove->GetSize();
+				for (unsigned char i = 0; i < Size; i++)
+					str.AppendFormat(_T(" %d"), Groove->GetEntry((i + State->GroovePos) % Size));
+			}
+			else
+				str.AppendFormat(_T("        Speed: %d"), State->Speed);
 		}
-		else
-			str.AppendFormat(_T("        Speed: %d"), State.Speed);
+		delete State;
 	}
 	return str;
 }

@@ -82,7 +82,7 @@ const int MAX_GROOVE = 32;
 // // // Maximum number of entries in the echo buffer
 const int ECHO_BUFFER_LENGTH = 3;
 
-// Number of avaliable channels (max) TODO: should not be used anymore!
+// Number of available channels (max) TODO: should not be used anymore!
 // instead, check the channelsavailable variable and allocate dynamically
 const int MAX_CHANNELS	 = 5 + 3 + 2 + 6 + 1 + 8 + 3;		
 
@@ -250,6 +250,11 @@ enum note_t : unsigned char {
 	HALT,		// Halt, stops note
 	ECHO,		// // // Echo buffer access, octave determines position
 };
+
+// // // special echo buffer constants
+const char ECHO_BUFFER_NONE = '\xFF';
+const char ECHO_BUFFER_HALT = '\x7F';
+const char ECHO_BUFFER_ECHO = '\x80';
 
 enum machine_t {
 	NTSC,

@@ -22,13 +22,13 @@
 
 // Sunsoft 5B (YM2149/AY-3-8910)
 
-#include <cmath>
 #include "stdafx.h"
-#include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
+#include "FamiTrackerTypes.h"		// // //
+#include "APU/Types.h"		// // //
+#include "Sequence.h"		// // //
+#include "Instrument.h"		// // //
 #include "ChannelHandler.h"
 #include "ChannelsS5B.h"
-#include "SoundGen.h"
 #include "APU/APU.h"
 #include "InstHandler.h"		// // //
 #include "SeqInstHandler.h"		// // //

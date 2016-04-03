@@ -23,9 +23,9 @@
 // This file handles playing of VRC7 channels
 
 #include "stdafx.h"
-#include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
-#include "ChannelHandlerInterface.h"
+#include "FamiTrackerTypes.h"		// // //
+#include "APU/Types.h"		// // //
+#include "Instrument.h"		// // //
 #include "ChannelHandler.h"
 #include "ChannelsVRC7.h"
 #include "InstHandler.h"		// // //

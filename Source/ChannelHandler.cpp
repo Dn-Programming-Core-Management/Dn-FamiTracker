@@ -27,8 +27,13 @@
 
 #include "stdafx.h"
 #include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
+#include "FamiTrackerTypes.h"		// // //
+#include "ChannelState.h"		// // //
+#include "FTMComponentInterface.h"
+#include "Instrument.h"
+#include "InstrumentManager.h"
 #include "TrackerChannel.h"		// // //
+#include "APU/Types.h"		// // //
 #include "SoundGen.h"
 #include "Settings.h"		// // //
 //#include "ChannelHandlerInterface.h"		// // //
@@ -79,15 +84,17 @@ void CChannelHandler::InitChannel(CAPU *pAPU, int *pVibTable, CSoundGen *pSoundG
 
 	m_bDelayEnabled = false;
 
-	DocumentPropertiesChanged(pSoundGen->GetDocument());
-
 	ResetChannel();
 }
 
-void CChannelHandler::DocumentPropertiesChanged(CFamiTrackerDoc *pDoc)
+void CChannelHandler::SetLinearPitch(bool bEnable)		// // //
 {
-	m_bNewVibratoMode = (pDoc->GetVibratoStyle() == VIBRATO_NEW);
-	m_bLinearPitch = pDoc->GetLinearPitch();
+	m_bLinearPitch = bEnable;
+}
+
+void CChannelHandler::SetVibratoStyle(vibrato_t Style)		// // //
+{
+	m_bNewVibratoMode = Style == VIBRATO_NEW;
 }
 
 void CChannelHandler::SetPitch(int Pitch)
@@ -428,8 +435,9 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 
 bool CChannelHandler::HandleInstrument(int Instrument, bool Trigger, bool NewInstrument)		// // //
 {
-	CFamiTrackerDoc *pDocument = m_pSoundGen->GetDocument();
-	std::shared_ptr<CInstrument> pInstrument = pDocument->GetInstrument(m_iInstrument);
+	auto pDoc = m_pSoundGen->GetDocumentInterface();
+	if (!pDoc) return false;
+	std::shared_ptr<CInstrument> pInstrument = pDoc->GetInstrumentManager()->GetInstrument(m_iInstrument);
 	if (!pInstrument) return false;
 	
 	// load instrument here

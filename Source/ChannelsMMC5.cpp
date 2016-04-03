@@ -22,13 +22,12 @@
 
 // MMC5 file
 
-#include <cmath>
 #include "stdafx.h"
-#include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
+#include "FamiTrackerTypes.h"		// // //
+#include "APU/Types.h"		// // //
+#include "Instrument.h"		// // //
 #include "ChannelHandler.h"
 #include "ChannelsMMC5.h"
-#include "SoundGen.h"
 #include "InstHandler.h"		// // //
 #include "SeqInstHandler.h"		// // //
 

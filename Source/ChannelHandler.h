@@ -28,6 +28,8 @@ static const int DUTY_2A03_FROM_VRC6[] = {0, 0, 1, 1, 1, 1, 2, 2};		// // //
 static const int DUTY_VRC6_FROM_2A03[] = {1, 3, 7, 3};		// // //
 
 class CInstHandler;
+class stChannelState;
+class CSoundGen;		// // //
 
 #include "ChannelHandlerInterface.h"
 
@@ -70,7 +72,14 @@ public:
 	void	ForceReloadInstrument();		// // //
 
 	/*! \brief Updates properties of the channel handler that are obtained from the current module file. */
-	void	DocumentPropertiesChanged(CFamiTrackerDoc *pDoc);
+	/*! \brief Chooses between linear pitch space and the default pitch space provided by the sound chip.
+		\param bEnable Whether linear pitch space is used.
+	*/
+	void	SetLinearPitch(bool bEnable);		// // //
+	/*! \brief Chooses between the new and old vibrato behaviour.
+		\param vibrato_t The vibrato style.
+	*/
+	void	SetVibratoStyle(vibrato_t bEnable);		// // //
 
 	//
 	// Public virtual functions

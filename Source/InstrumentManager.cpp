@@ -21,9 +21,6 @@
 */
 
 #include "stdafx.h"
-#include <vector>
-#include <memory>
-#include <afxmt.h>
 #include "FTMComponentInterface.h"
 #include "Instrument.h"
 #include "SeqInstrument.h"
