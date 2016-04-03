@@ -829,16 +829,16 @@ char* CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 		pData[m_iDriverSize - 2 - 0x100 - 0xC0 * 2 - 8 - 1 - 8 + m_iActualNamcoChannels] = 3;
 	}
 	if (m_pDocument->GetExpansionChip() == 0x3F) {		// // // // special processing
-		int FT_UPDATE_EXT_ADR = 0x4D3 + DATA_HEADER_SIZE;
+		int ptr = FT_UPDATE_EXT_ADR;
 		for (int i = 0; i < 6; ++i) {
-			ASSERT(pData[FT_UPDATE_EXT_ADR] == 0x20); // jsr
+			ASSERT(pData[ptr] == 0x20); // jsr
 			if (!(m_iActualChip & (1 << i))) {
-				pData[FT_UPDATE_EXT_ADR++] = 0xEA; // nop
-				pData[FT_UPDATE_EXT_ADR++] = 0xEA;
-				pData[FT_UPDATE_EXT_ADR++] = 0xEA;
+				pData[ptr++] = 0xEA; // nop
+				pData[ptr++] = 0xEA;
+				pData[ptr++] = 0xEA;
 			}
 			else
-				FT_UPDATE_EXT_ADR += 3;
+				ptr += 3;
 		}
 	}
 
