@@ -22,10 +22,15 @@
 
 // This file handles playing of 2A03 channels
 
-#include <cmath>
 #include "stdafx.h"
 #include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
+#include "FamiTrackerTypes.h"		// // //
+#include "APU/Types.h"
+#include "Instrument.h"
+#include "SeqInstrument.h"
+#include "Instrument2A03.h" // TODO: remove
+#include "FTMComponentInterface.h"
+#include "InstrumentManager.h"
 #include "ChannelHandler.h"
 #include "Channels2A03.h"
 #include "Settings.h"
@@ -568,14 +573,12 @@ void CDPCMChan::HandleRelease()
 
 void CDPCMChan::HandleNote(int Note, int Octave)
 {
-	CFamiTrackerDoc *pDocument = m_pSoundGen->GetDocument();
-	auto pInstrument = std::dynamic_pointer_cast<CInstrument2A03>(pDocument->GetInstrument(m_iInstrument));
+	auto pDoc = m_pSoundGen->GetDocumentInterface();
+	if (!pDoc) return;
+	auto pInstrument = std::dynamic_pointer_cast<CInstrument2A03>(pDoc->GetInstrumentManager()->GetInstrument(m_iInstrument));
 	if (!pInstrument) return;
 
-	int SampleIndex = pInstrument->GetSampleIndex(Octave, Note - 1);
-
-	if (SampleIndex > 0) {
-
+	if (int SampleIndex = pInstrument->GetSampleIndex(Octave, Note - 1)) {
 		int Pitch = pInstrument->GetSamplePitch(Octave, Note - 1);
 		m_iLoop = (Pitch & 0x80) >> 1;
 
@@ -583,8 +586,8 @@ void CDPCMChan::HandleNote(int Note, int Octave)
 			Pitch = m_iCustomPitch;
 	
 		m_iLoopOffset = pInstrument->GetSampleLoopOffset(Octave, Note - 1);
-
-		if (const CDSample *pDSample = pDocument->GetSample(SampleIndex - 1)) {
+		
+		if (const CDSample *pDSample = pInstrument->GetDSample(Octave, Note - 1)) {		// // //
 			int SampleSize = pDSample->GetSize();
 			m_pSampleMem->SetMem(pDSample->GetData(), SampleSize);
 			m_iPeriod = Pitch & 0x0F;
@@ -604,7 +607,7 @@ void CDPCMChan::HandleNote(int Note, int Octave)
 		}
 	}
 
-	RegisterKeyState((Note - 1) + (Octave * NOTE_RANGE));
+	RegisterKeyState(MIDI_NOTE(Octave, Note));
 }
 
 void CDPCMChan::RefreshChannel()
