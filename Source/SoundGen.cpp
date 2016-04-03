@@ -762,6 +762,8 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 			m_pChannels[i]->SetVibratoStyle(pDocument->GetVibratoStyle());		// // //
 			m_pChannels[i]->SetLinearPitch(pDocument->GetLinearPitch());
 		}
+		if (auto pChan = dynamic_cast<CChannelHandlerN163*>(m_pChannels[i]))
+			pChan->SetChannelCount(pDocument->GetNamcoChannels());
 	}
 	
 	m_iSpeedSplitPoint = pDocument->GetSpeedSplitPoint();

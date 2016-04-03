@@ -3364,8 +3364,6 @@ void CPatternEditor::ContinueMouseSelection(const CPoint &point)
 		// Selection has changed
 		m_bSelectionInvalidated = true;
 	}
-	TRACE("%d %d; %d %d\n", m_selection.m_cpStart.m_iFrame, m_selection.m_cpStart.m_iRow,
-		  m_selection.m_cpEnd.m_iFrame, m_selection.m_cpEnd.m_iRow);
 }
 
 void CPatternEditor::OnMouseMove(UINT nFlags, const CPoint &point)

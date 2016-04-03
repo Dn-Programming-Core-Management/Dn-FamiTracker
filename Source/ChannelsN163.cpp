@@ -20,7 +20,6 @@
 ** must bear this legend.
 */
 
-#include <cmath>
 #include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerTypes.h"		// // //
@@ -30,7 +29,6 @@
 #include "InstrumentN163.h"		// // //
 #include "ChannelHandler.h"
 #include "ChannelsN163.h"
-#include "SoundGen.h"
 #include "InstHandler.h"		// // //
 #include "SeqInstHandler.h"		// // //
 #include "SeqInstHandlerN163.h"		// // //
@@ -154,8 +152,6 @@ void CChannelHandlerN163::SetupSlide()		// // //
 
 void CChannelHandlerN163::RefreshChannel()
 {
-	CheckWaveUpdate();
-
 	int Channel = 7 - GetIndex();		// Channel #
 	int WaveSize = 256 - (m_iWaveLen >> 2);
 	int Frequency = LimitPeriod(GetPeriod() - ((-GetVibrato() + GetFinePitch() + GetPitch()) << 4)) << 2;		// // //
@@ -293,11 +289,4 @@ void CChannelHandlerN163::WriteData(int Addr, char Data)
 {
 	SetAddress(Addr, false);
 	WriteData(Data);
-}
-
-void CChannelHandlerN163::CheckWaveUpdate()
-{
-	// Check wave changes
-	if (theApp.GetSoundGenerator()->HasWaveChanged())
-		m_bDisableLoad = false;
 }

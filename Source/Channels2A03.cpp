@@ -34,7 +34,7 @@
 #include "ChannelHandler.h"
 #include "Channels2A03.h"
 #include "Settings.h"
-#include "SoundGen.h"
+#include "SoundGen.h" // TODO: remove
 #include "InstHandler.h"		// // //
 #include "SeqInstHandler.h"		// // //
 

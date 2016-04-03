@@ -28,7 +28,6 @@
 #include "Instrument.h"		// // //
 #include "SeqInstrument.h"		// // //
 #include "InstrumentFDS.h"		// // //
-#include "ChannelHandlerInterface.h"
 #include "ChannelHandler.h"
 #include "ChannelsFDS.h"
 #include "InstHandler.h"		// // //
@@ -152,8 +151,6 @@ bool CChannelHandlerFDS::CreateInstHandler(inst_type_t Type)
 
 void CChannelHandlerFDS::RefreshChannel()
 {
-	CheckWaveUpdate();	
-
 	int Frequency = CalculatePeriod();
 	unsigned char LoFreq = Frequency & 0xFF;
 	unsigned char HiFreq = (Frequency >> 8) & 0x0F;
@@ -338,10 +335,4 @@ void CChannelHandlerFDS::FillModulationTable(const CInstrumentFDS *pInstrument)
 	for (int i = 0; i < sizeof(m_iModTable); i++)
 		Buffer[i] = pInstrument->GetModulation(i);
 	FillModulationTable(Buffer);
-}
-
-void CChannelHandlerFDS::CheckWaveUpdate()
-{
-	// Check wave changes
-	// // // nothing
 }

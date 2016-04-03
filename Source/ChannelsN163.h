@@ -58,7 +58,6 @@ private:
 	void SetAddress(char Addr, bool AutoInc);
 	void WriteData(char Data);
 	void WriteData(int Addr, char Data);
-	void CheckWaveUpdate();
 private:
 	inline int GetIndex() const { return m_iChannelID - CHANID_N163_CH1; }
 private:

@@ -2701,11 +2701,6 @@ unsigned int CFamiTrackerDoc::GetTotalSampleSize() const
 // Sequences
 //
 
-CSequence *CFamiTrackerDoc::GetSequence(inst_type_t InstType, unsigned int Index, int Type)		// // //
-{
-	return m_pInstrumentManager->GetSequence(InstType, Type, Index);
-}
-
 CSequence *CFamiTrackerDoc::GetSequence(inst_type_t InstType, unsigned int Index, int Type) const		// // //
 {
 	return m_pInstrumentManager->GetSequence(InstType, Type, Index);

@@ -36,7 +36,6 @@
 #include "APU/Types.h"		// // //
 #include "SoundGen.h"
 #include "Settings.h"		// // //
-//#include "ChannelHandlerInterface.h"		// // //
 #include "ChannelHandler.h"
 #include "APU/APU.h"
 #include "InstHandler.h"		// // //

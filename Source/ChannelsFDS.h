@@ -48,8 +48,6 @@ public:		// // //
 protected:
 	void FillWaveRAM(const CInstrumentFDS *pInst);
 	void FillModulationTable(const CInstrumentFDS *pInst);
-private:
-	void CheckWaveUpdate();
 protected:
 	// FDS control variables
 	int m_iModulationSpeed;
