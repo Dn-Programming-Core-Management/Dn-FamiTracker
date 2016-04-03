@@ -75,7 +75,8 @@ public:
 	*/
 	virtual void TriggerInstrument() = 0;
 	/*! \brief Releases the current note for the instrument handler.
-		\details A note can only be released once until another new note is triggered.
+		\details The method does not specify whether a note can be released for multiple times until
+		another new note is triggered.
 	*/
 	virtual void ReleaseInstrument() = 0;
 	/*! \brief Obtains the instrument handler type of a given instrument type.

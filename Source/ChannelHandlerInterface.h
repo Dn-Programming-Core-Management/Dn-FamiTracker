@@ -72,5 +72,5 @@ public:
 	virtual void	SetWaveLength(int) = 0;
 	virtual void	SetWavePosition(int) = 0;
 	virtual void	SetWaveCount(int) = 0;
-	// virtual void	FillWaveRAM(const char*, int, int) = 0;
+	virtual void	FillWaveRAM(const char*, int) = 0;
 };

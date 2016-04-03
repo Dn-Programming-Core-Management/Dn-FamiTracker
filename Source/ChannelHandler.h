@@ -412,11 +412,6 @@ protected:
 
 	/*! \brief The current instrument index of the channel. */
 	unsigned int	m_iInstrument;
-	/*! \brief A cache of the previous instrument index of the channel.
-		\details When this value is different from the current instrument index, the instrument handler
-		loads a new instrument.
-	*/
-	unsigned int	m_iLastInstrument;
 	/*! \brief A flag indicating that the current instrument should be reloaded by the instrument handler. */
 	bool			m_bForceReload;					// // //
 

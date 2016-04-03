@@ -24,8 +24,6 @@
 
 class CChannelHandlerInterface;
 class CInstrument;
-class CSequence;
-class CSeqInstrument;
 class CInstrumentN163;
 
 /*!
@@ -42,12 +40,31 @@ public:
 		\param Vol Default volume for instruments used by this handler.
 		\param Duty Default duty cycle for instruments used by this handler.
 	*/
-	CSeqInstHandlerN163(CChannelHandlerInterface *pInterface, int Vol, int Duty) :
-		CSeqInstHandler(pInterface, Vol, Duty) {}
+	CSeqInstHandlerN163(CChannelHandlerInterface *pInterface, int Vol, int Duty);
 	/*! \brief Loads a new instrument into the instrument handler.
 		\details This reimplementation sets up the wave size, wave position, and wave count of the channel
 		handler.
 		\param pInst Pointer to the instrument to be loaded.
 	*/
 	void LoadInstrument(CInstrument *pInst);
+	/*! \brief Starts a new note for the instrument handler.
+		\details This reimplementation may update the channel's wave buffer.
+	*/
+	void TriggerInstrument();
+	/*! \brief Runs the instrument by one tick and updates the channel state.
+		\details This reimplementation may update the channel's wave buffer.
+	*/
+	void UpdateInstrument();
+
+	/*!	\brief Requests the instrument handler to overwrite the wave buffer for the next tick.
+	*/
+	void RequestWaveUpdate();
+
+private:
+	void UpdateWave(const CInstrumentN163 *pInst);
+
+private:
+	char m_cBuffer[CInstrumentN163::MAX_WAVE_SIZE * 2];
+	char *m_pBufferCurrent, *m_pBufferPrevious;
+	bool m_bForceUpdate;
 };

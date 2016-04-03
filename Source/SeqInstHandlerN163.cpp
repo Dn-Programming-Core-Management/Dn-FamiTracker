@@ -33,14 +33,67 @@
  * Class CSeqInstHandlerN163
  */
 
+CSeqInstHandlerN163::CSeqInstHandlerN163(CChannelHandlerInterface *pInterface, int Vol, int Duty) :
+	CSeqInstHandler(pInterface, Vol, Duty),
+	m_cBuffer(),
+	m_pBufferCurrent(m_cBuffer),
+	m_bForceUpdate(false),
+	m_pBufferPrevious(m_cBuffer + CInstrumentN163::MAX_WAVE_SIZE)
+{
+}
+
 void CSeqInstHandlerN163::LoadInstrument(CInstrument *pInst)		// // //
 {
 	CSeqInstHandler::LoadInstrument(pInst);
 	CChannelHandlerInterfaceN163 *pInterface = dynamic_cast<CChannelHandlerInterfaceN163*>(m_pInterface);
 	if (pInterface == nullptr) return;
-	CInstrumentN163 *pN163Inst = dynamic_cast<CInstrumentN163*>(pInst);
+	const CInstrumentN163 *pN163Inst = dynamic_cast<const CInstrumentN163*>(pInst);
 	if (pN163Inst == nullptr) return;
 	pInterface->SetWaveLength(pN163Inst->GetWaveSize());
 	pInterface->SetWavePosition(pN163Inst->GetWavePos());
 	pInterface->SetWaveCount(pN163Inst->GetWaveCount());
+	m_pInterface->SetDutyPeriod(0);
+	RequestWaveUpdate();
+}
+
+void CSeqInstHandlerN163::TriggerInstrument()
+{
+	CSeqInstHandler::TriggerInstrument();
+	RequestWaveUpdate();
+}
+
+void CSeqInstHandlerN163::UpdateInstrument()
+{
+	CSeqInstHandler::UpdateInstrument();
+	
+	if (auto pInterface = dynamic_cast<CChannelHandlerInterfaceN163*>(m_pInterface)) {
+		if (auto pN163Inst = dynamic_cast<const CInstrumentN163*>(m_pInstrument)) {
+			UpdateWave(pN163Inst);
+		}
+	}
+	m_bForceUpdate = false;
+}
+
+void CSeqInstHandlerN163::RequestWaveUpdate()
+{
+	m_bForceUpdate = true;
+}
+
+void CSeqInstHandlerN163::UpdateWave(const CInstrumentN163 *pInst)
+{
+	char *Temp = m_pBufferPrevious;
+	m_pBufferPrevious = m_pBufferCurrent;
+	m_pBufferCurrent = Temp;
+	
+	// raw position and count
+	// int Duty = m_pInterface->GetDutyPeriod();
+	// if (Duty < 0) return;
+	int Index = std::min<int>(m_pInterface->GetDutyPeriod(), pInst->GetWaveCount() - 1);
+	const int Count = pInst->GetWaveSize() >> 1;
+	for (int i = 0; i < Count; ++i)
+		m_pBufferCurrent[i] = pInst->GetSample(Index, 2 * i) | (pInst->GetSample(Index, 2 * i + 1) << 4);
+
+	if (auto pInterface = dynamic_cast<CChannelHandlerInterfaceN163*>(m_pInterface))
+		if (memcmp(m_pBufferCurrent, m_pBufferPrevious, Count) != 0 || m_bForceUpdate)
+			pInterface->FillWaveRAM(m_pBufferCurrent, pInst->GetWaveSize() >> 1);
 }

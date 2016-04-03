@@ -49,8 +49,7 @@
 CChannelHandler::CChannelHandler(int MaxPeriod, int MaxVolume) : 
 	m_iChannelID(0), 
 	m_iInstTypeCurrent(INST_NONE),		// // //
-	m_iInstrument(0), 
-	m_iLastInstrument(MAX_INSTRUMENTS),
+	m_iInstrument(0),
 	m_pNoteLookupTable(NULL),
 	m_pVibratoTable(NULL),
 	m_pAPU(NULL),
@@ -138,7 +137,6 @@ void CChannelHandler::ResetChannel()
 
 	// Instrument 
 	m_iInstrument		= MAX_INSTRUMENTS;
-	m_iLastInstrument	= MAX_INSTRUMENTS;
 	m_iInstTypeCurrent	= INST_NONE;		// // //
 
 	// Volume 

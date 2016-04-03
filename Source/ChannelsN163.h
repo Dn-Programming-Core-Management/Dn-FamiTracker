@@ -30,15 +30,16 @@ class CChannelHandlerN163 : public CChannelHandlerInverted, public CChannelHandl
 public:
 	CChannelHandlerN163();
 	virtual void ResetChannel();
-	virtual void ProcessChannel();
 	virtual void RefreshChannel();
 
 	void SetWaveLength(int Length);		// // //
 	void SetWavePosition(int Pos);
 	void SetWaveCount(int Count);
+	void FillWaveRAM(const char *Buffer, int Count);
+
+	void SetChannelCount(int Count);		// // //
 
 protected:
-	virtual void HandleNoteData(stChanNote *pNoteData, int EffColumns);
 	virtual bool HandleEffect(effect_t EffNum, unsigned char EffParam);		// // //
 	virtual bool HandleInstrument(int Instrument, bool Trigger, bool NewInstrument);
 	virtual void HandleEmptyNote();
@@ -57,7 +58,6 @@ private:
 	void SetAddress(char Addr, bool AutoInc);
 	void WriteData(char Data);
 	void WriteData(int Addr, char Data);
-	void LoadWave();
 	void CheckWaveUpdate();
 private:
 	inline int GetIndex() const { return m_iChannelID - CHANID_N163_CH1; }
@@ -68,7 +68,6 @@ private:
 	int m_iWaveLen;
 	int m_iWavePos;
 	int m_iWavePosOld;			// // //
-	int m_iWaveIndex;
 	int m_iWaveCount;
 protected:
 	// // //

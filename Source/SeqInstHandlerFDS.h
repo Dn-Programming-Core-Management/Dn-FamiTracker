@@ -57,8 +57,7 @@ public:
 		instrument waveform to the FDS sound channel.
 	*/
 	void TriggerInstrument();
+
 private:
-	/*! \brief Updates the waveform and the frequency modulation table of the sound channel.
-	*/
 	void UpdateTables(const CInstrumentFDS *pInst);
 };
