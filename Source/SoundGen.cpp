@@ -48,11 +48,18 @@
 #include "ChannelHandler.h"
 #include "Channels2A03.h" // DPCM sample memory
 #include "ChannelsN163.h" // N163 channel count
-#include "InstrumentFactory.h"		// // //
 #include "SoundGen.h"
 #include "Settings.h"
 #include "TrackerChannel.h"
 #include "MIDI.h"
+
+// // //
+#include "Instrument.h"
+#include "SeqInstrument.h"
+#include "Instrument2A03.h"
+#include "InstrumentFDS.h"
+#include "InstrumentN163.h"
+#include "InstrumentFactory.h"
 
 #include "ChannelFactory.h"		// // // test
 

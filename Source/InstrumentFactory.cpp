@@ -24,14 +24,29 @@
 #include "stdafx.h"
 #include "InstrumentFactory.h"
 
-CInstrument *CInstrumentFactory::CreateNew(int Type) {
-	switch (Type) {
-	case INST_2A03: return new CInstrument2A03();
-	case INST_VRC6: return new CSeqInstrument(INST_VRC6);
-	case INST_VRC7: return new CInstrumentVRC7();
-	case INST_N163: return new CInstrumentN163();
-	case INST_FDS:  return new CInstrumentFDS();
-	case INST_S5B:  return new CSeqInstrument(INST_S5B);
-	}
-	return nullptr;
+#include "Sequence.h"
+#include "DSample.h"
+
+#include "SeqInstrument.h"
+#include "Instrument2A03.h"
+#include "InstrumentVRC6.h"
+#include "InstrumentFDS.h"
+#include "InstrumentVRC7.h"
+#include "InstrumentN163.h"
+#include "InstrumentS5B.h"
+
+CInstrumentFactory::CInstrumentFactory() : CFactory()
+{
+	AddProduct<CInstrument2A03>(INST_2A03);
+	AddProduct<CSeqInstrument, inst_type_t>(INST_VRC6, INST_VRC6);
+	AddProduct<CInstrumentVRC7>(INST_VRC7);
+	AddProduct<CInstrumentN163>(INST_N163);
+	AddProduct<CInstrumentFDS>(INST_FDS);
+	AddProduct<CSeqInstrument, inst_type_t>(INST_S5B, INST_S5B);
+}
+
+CInstrument *CInstrumentFactory::CreateNew(inst_type_t Type)		// // // TODO: make this non-static
+{
+	static CInstrumentFactory a {};
+	return a.Produce(Type);
 }

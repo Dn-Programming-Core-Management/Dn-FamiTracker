@@ -25,24 +25,23 @@
 
 #include "stdafx.h" // new
 #include <memory>
+#include <functional>
 #include <unordered_map>
-
-template <typename T> using ctor_sig = T* (*) ();
 
 template <typename Key, typename Base>
 class CFactory
 {
 public:
-	using FuncType = std::shared_ptr<ctor_sig<Base>>;
+	using FuncType = std::shared_ptr<std::function<Base*()>>; // std::shared_ptr<Base* (*) ()>;
 	CFactory();
 	virtual ~CFactory();
 
-	template <typename T> void AddProduct(Key Index);
+	template <typename T, typename... Arg> void AddProduct(Key Index, Arg&&... x);
 	void RemoveProduct(Key Index);
 	Base *Produce(Key Type) const;
 
 protected:
-	template <typename T> static FuncType MakeCtor();
+	template <typename T, typename... Arg> static FuncType MakeCtor(Arg&&... x);
 
 protected:
 	std::unordered_map<Key, FuncType> m_pMakeFunc;
@@ -59,15 +58,11 @@ inline CFactory<Key, Base>::~CFactory()
 }
 
 template<typename Key, typename Base>
-template<typename T>
-inline void CFactory<Key, Base>::AddProduct(Key Index)
+template<typename T, typename... Arg>
+inline void CFactory<Key, Base>::AddProduct(Key Index, Arg&&... x)
 {
-	try {
-		m_pMakeFunc.at(Index);
-	}
-	catch (std::out_of_range) {
-		m_pMakeFunc[Index] = MakeCtor<T>();
-	}
+	if (m_pMakeFunc.find(Index) == m_pMakeFunc.end())
+		m_pMakeFunc[Index] = MakeCtor<T>(std::forward<Arg>(x)...);
 }
 
 template<typename Key, typename Base>
@@ -79,19 +74,17 @@ inline void CFactory<Key, Base>::RemoveProduct(Key Index)
 template<typename Key, typename Base>
 inline Base *CFactory<Key, Base>::Produce(Key Index) const
 {
-	try {
-		return (*m_pMakeFunc.at(Index).get())();
-	}
-	catch (std::out_of_range) {
-		return nullptr;
-	}
+	auto it = m_pMakeFunc.find(Index);
+	if (it != m_pMakeFunc.end()) return (*it->second.get())();
+	return nullptr;
 }
 
 template<typename Key, typename Base>
-template<typename T>
-inline typename CFactory<Key, Base>::FuncType CFactory<Key, Base>::MakeCtor()
+template<typename T, typename... Arg>
+inline typename CFactory<Key, Base>::FuncType CFactory<Key, Base>::MakeCtor(Arg&&... x)
 {
-	return std::make_shared<ctor_sig<Base>>(
-		[] () {	return static_cast<Base*>(new T {}); }
-	);
+	return std::make_shared<std::function<Base*()>>(std::bind(
+		[] (auto&&... y) -> Base* { return new T {y...}; },
+		std::forward<Arg>(x)...
+	));
 }

@@ -104,7 +104,7 @@ protected:
 // DPCM
 class CDPCMChan : public CChannelHandler, public CChannelHandlerInterfaceDPCM {		// // //
 public:
-	CDPCMChan(CSampleMem *pSampleMem = nullptr);
+	CDPCMChan(CSampleMem *pSampleMem);
 	void RefreshChannel();
 
 	void SetSampleMemory(CSampleMem *pSampleMem);		// // //
