@@ -351,12 +351,15 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequ
 			else value = ReadStringValue(term, ForceHex);
 			// Check for invalid chars
 			if (!(HasTerm && HexStr) && !Invalid) {
-				value = std::min<int>(std::max<int>(value, Min), Max);
+				if (value < Min) value = Min;
+				if (value > Max) value = Max;
 				if (pSequence->GetSetting() == SETTING_ARP_SCHEME && value < 0)		// // //
 					value += 64;
 				term += std::strspn(term, "$-");
-				if (HexStr)
-					term += std::min(2, static_cast<int>(std::strspn(term, "0123456789abcdef")));
+				if (HexStr) {
+					int Count = std::strspn(term, "0123456789abcdef");
+					term += Count > 2 ? 2 : Count;
+				}
 				else
 					term += std::strspn(term, "0123456789abcdef");
 				if (pSequence->GetSetting() == SETTING_ARP_SCHEME) {

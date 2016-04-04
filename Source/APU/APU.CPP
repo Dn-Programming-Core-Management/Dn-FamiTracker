@@ -20,6 +20,7 @@
 ** must bear this legend.
 */
 
+#include <algorithm>		// // //
 #include <vector>
 #include "../stdafx.h"
 #include <cstdio>

@@ -156,7 +156,8 @@ void CChannelHandlerFDS::RefreshChannel()
 	unsigned char ModFreqHi = (m_iModulationSpeed >> 8) & 0x0F;
 	if (m_bAutoModulation) {		// // //
 		int newFreq = Frequency * m_iEffModSpeedHi / m_iEffModSpeedLo + m_iModulationOffset;
-		newFreq = std::min(0xFFF, std::max(0, newFreq));
+		if (newFreq < 0) newFreq = 0;
+		if (newFreq > 0xFFF) newFreq = 0xFFF;
 		ModFreqLo = newFreq & 0xFF;
 		ModFreqHi = (newFreq >> 8) & 0x0F;
 	}

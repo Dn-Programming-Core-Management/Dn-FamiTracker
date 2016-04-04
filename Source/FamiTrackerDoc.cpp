@@ -1764,7 +1764,7 @@ void CFamiTrackerDoc::ReadBlock_Instruments(CDocumentFile *pDocFile, const int V
 
 		try {
 			// Load the instrument
-			AssertFileData(pInstrument, "Failed to create instrument");
+			AssertFileData(pInstrument.get() != nullptr, "Failed to create instrument");
 			pInstrument->Load(pDocFile);
 			// Read name
 			int size = AssertRange(pDocFile->GetBlockInt(), 0, CInstrument::INST_NAME_MAX, "Instrument name length");
@@ -3007,7 +3007,7 @@ int CFamiTrackerDoc::LoadInstrument(CString FileName)
 		if (InstType == INST_NONE)
 			InstType = INST_2A03;
 		auto pInstrument = CInstrumentManager::CreateNew(InstType);
-		AssertFileData(pInstrument, "Failed to create instrument");
+		AssertFileData(pInstrument.get() != nullptr, "Failed to create instrument");
 		m_pInstrumentManager->InsertInstrument(Slot, pInstrument);
 		
 		// Name

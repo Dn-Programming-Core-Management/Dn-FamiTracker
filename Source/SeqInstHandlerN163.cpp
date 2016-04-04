@@ -88,7 +88,9 @@ void CSeqInstHandlerN163::UpdateWave(const CInstrumentN163 *pInst)
 	// raw position and count
 	// int Duty = m_pInterface->GetDutyPeriod();
 	// if (Duty < 0) return;
-	int Index = std::min<int>(m_pInterface->GetDutyPeriod(), pInst->GetWaveCount() - 1);
+	int Index = m_pInterface->GetDutyPeriod();
+	if (Index >= pInst->GetWaveCount())
+		Index = pInst->GetWaveCount() - 1;
 	const int Count = pInst->GetWaveSize() >> 1;
 	for (int i = 0; i < Count; ++i)
 		m_pBufferCurrent[i] = pInst->GetSample(Index, 2 * i) | (pInst->GetSample(Index, 2 * i + 1) << 4);

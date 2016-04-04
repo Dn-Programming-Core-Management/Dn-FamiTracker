@@ -558,7 +558,10 @@ bool CFindDlg::CompareFields(const stChanNote Target, bool Noise, int EffCount)
 	}
 	if (m_searchTerm.Definite[WC_INST] && !m_searchTerm.Inst->IsMatch(Target.Instrument)) return Negate;
 	if (m_searchTerm.Definite[WC_VOL] && !m_searchTerm.Vol->IsMatch(Target.Vol)) return Negate;
-	for (int i = EffColumn % MAX_EFFECT_COLUMNS; i <= std::min(std::min(EffColumn, MAX_EFFECT_COLUMNS - 1), EffCount); i++) {
+	int Limit = MAX_EFFECT_COLUMNS - 1;
+	if (EffCount < Limit) Limit = EffCount;
+	if (EffColumn < Limit) Limit = EffColumn;
+	for (int i = EffColumn % MAX_EFFECT_COLUMNS; i <= Limit; i++) {
 		if ((!m_searchTerm.Definite[WC_EFF] || m_searchTerm.EffNumber[Target.EffNumber[i]])
 		&& (!m_searchTerm.Definite[WC_PARAM] || m_searchTerm.EffParam->IsMatch(Target.EffParam[i])))
 			EffectMatch = true;

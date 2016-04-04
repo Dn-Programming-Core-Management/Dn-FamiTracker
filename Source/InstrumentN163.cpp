@@ -268,7 +268,8 @@ int CInstrumentN163::GetWavePos() const
 
 void CInstrumentN163::SetWavePos(int pos)
 {
-	m_iWavePos = std::min(pos, MAX_WAVE_SIZE - m_iWaveSize);		// // // prevent reading non-wave n163 registers
+	m_iWavePos = MAX_WAVE_SIZE - m_iWaveSize;		// // // prevent reading non-wave n163 registers
+	if (pos < m_iWavePos) m_iWavePos = pos;
 	InstrumentChanged();
 }
 /*

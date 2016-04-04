@@ -58,6 +58,9 @@
 // turns off MFC's hiding of some common and often safely ignored warning messages
 #define _AFX_ALL_WARNINGS
 
+#define NO_WARN_MBCS_MFC_DEPRECATION		// // // MBCS
+
+#include <afx.h>
 #include <afxwin.h>         // MFC core and standard components
 #include <afxext.h>         // MFC extensions
 
@@ -65,7 +68,6 @@
 #ifndef _AFX_NO_AFXCMN_SUPPORT
 #include <afxcmn.h>			// MFC support for Windows Common Controls
 #endif // _AFX_NO_AFXCMN_SUPPORT
-#include <afx.h>
 #include <afxdhtml.h>
 #include <afxdlgs.h>
 

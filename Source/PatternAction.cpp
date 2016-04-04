@@ -199,13 +199,15 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // /
 	}
 
 	const unsigned EFBEGIN = CPatternEditor::GetCursorStartColumn(COLUMN_EFF1);
-	const int OFFS = std::max(static_cast<int>(3 * (CPatternEditor::GetSelectColumn(m_iUndoColumn) - m_pClipData->ClipInfo.StartColumn)),
-							  static_cast<int>(EFBEGIN - Start.m_iColumn));
+	int OFFS = 3 * (CPatternEditor::GetSelectColumn(m_iUndoColumn) - m_pClipData->ClipInfo.StartColumn);
+	if (static_cast<int>(EFBEGIN - Start.m_iColumn) > OFFS)
+		OFFS = EFBEGIN - Start.m_iColumn;
 	if (Start.m_iChannel == End.m_iChannel && Start.m_iColumn >= EFBEGIN && End.m_iColumn >= EFBEGIN) {
 		if (m_iPastePos != PASTE_DRAG) {
 			End.m_iColumn = static_cast<cursor_column_t>(End.m_iColumn + OFFS);
 			Start.m_iColumn = static_cast<cursor_column_t>(Start.m_iColumn + OFFS);
-			End.m_iColumn = std::min(End.m_iColumn, C_EFF4_PARAM2);
+			if (End.m_iColumn > C_EFF4_PARAM2)
+				End.m_iColumn = C_EFF4_PARAM2;
 		}
 	}
 	
@@ -500,7 +502,8 @@ void CPatternAction::Transpose(CFamiTrackerDoc *pDoc) const
 			else {		// // //
 				static const int AMOUNT[] = {-1, 1, -12, 12};
 				int NewNote = MIDI_NOTE(Note.Octave, Note.Note) + AMOUNT[m_iTransposeMode];
-				NewNote = std::max(std::min(NewNote, NOTE_COUNT - 1), 0);
+				if (NewNote < 0) NewNote = 0;
+				if (NewNote >= NOTE_COUNT) NewNote = NOTE_COUNT - 1;
 				Note.Note = GET_NOTE(NewNote);
 				Note.Octave = GET_OCTAVE(NewNote);
 			}
@@ -670,7 +673,9 @@ void CPatternAction::ScrollValues(CFamiTrackerDoc *pDoc) const
 							Note.Instrument = (Note.Instrument + m_iScrollValue + MAX_INSTRUMENTS) % MAX_INSTRUMENTS;
 						else {
 							int Val = Note.Instrument + m_iScrollValue;
-							Note.Instrument = std::max(std::min(Val, MAX_INSTRUMENTS - 1), 0);
+							if (Val < 0) Val = 0;
+							if (Val >= MAX_INSTRUMENTS) Val = MAX_INSTRUMENTS - 1;
+							Note.Instrument = Val;
 						}
 					}
 					break;
@@ -680,7 +685,9 @@ void CPatternAction::ScrollValues(CFamiTrackerDoc *pDoc) const
 							Note.Vol = (Note.Vol + m_iScrollValue + MAX_VOLUME) % MAX_VOLUME;
 						else {
 							int Val = Note.Vol + m_iScrollValue;
-							Note.Vol = std::max(std::min(Val, MAX_VOLUME - 1), 0);
+							if (Val < 0) Val = 0;
+							if (Val >= MAX_VOLUME) Val = MAX_VOLUME - 1;
+							Note.Vol = Val;
 						}
 					}
 					break;

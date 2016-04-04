@@ -1,3 +1,4 @@
+#define NO_WARN_MBCS_MFC_DEPRECATION		// // // MBCS
 #include <afx.h>
 #include "CustomExporterInterfaces.h"
 #include "CustomExporter_C_Interface.h"

@@ -105,7 +105,8 @@ bool CModuleImportDlg::LoadFile(CString Path, CFamiTrackerDoc *pDoc)
 	// Check expansion chip match
 	// // // import as superset of expansion chip configurations
 	if (m_pImportedDoc->GetNamcoChannels() != m_pDocument->GetNamcoChannels()) {
-		int Max = std::max(m_pImportedDoc->GetNamcoChannels(), m_pDocument->GetNamcoChannels());
+		int Max = m_pImportedDoc->GetNamcoChannels();
+		if (m_pDocument->GetNamcoChannels() > Max) Max = m_pDocument->GetNamcoChannels();
 		m_pImportedDoc->SetNamcoChannels(Max, true);
 		m_pDocument->SetNamcoChannels(Max, true);
 		unsigned char Chip = m_pImportedDoc->GetExpansionChip() | m_pDocument->GetExpansionChip();
