@@ -27,7 +27,6 @@
 #include "FamiTrackerTypes.h"		// // //
 #include "APU/Types.h"
 #include "Instrument.h"
-#include "FTMComponentInterface.h"
 #include "ChannelHandler.h"
 #include "Channels2A03.h"
 #include "Settings.h"
