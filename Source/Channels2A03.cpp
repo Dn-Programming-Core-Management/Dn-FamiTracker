@@ -641,6 +641,11 @@ void CDPCMChan::RefreshChannel()
 	}
 }
 
+void CDPCMChan::SetSampleMemory(CSampleMem *pSampleMem)		// // //
+{
+	m_pSampleMem = pSampleMem;
+}
+
 void CDPCMChan::WriteDCOffset(unsigned char Delta)		// // //
 {
 	// Initial delta counter value
@@ -656,7 +661,8 @@ void CDPCMChan::SetLoopOffset(unsigned char Loop)		// // //
 void CDPCMChan::PlaySample(const CDSample *pSamp, int Pitch)		// // //
 {
 	int SampleSize = pSamp->GetSize();
-	m_pSampleMem->SetMem(pSamp->GetData(), SampleSize);
+	if (m_pSampleMem)
+		m_pSampleMem->SetMem(pSamp->GetData(), SampleSize);
 	m_iPeriod = m_iCustomPitch != -1 ? m_iCustomPitch : Pitch;
 	m_iSampleLength = (SampleSize >> 4) - (m_iOffset << 2);
 	m_iLoopLength = SampleSize - m_iLoopOffset;

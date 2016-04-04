@@ -1,0 +1,97 @@
+/*
+** FamiTracker - NES/Famicom sound tracker
+** Copyright (C) 2005-2014  Jonathan Liss
+**
+** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
+**
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful, 
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+** Library General Public License for more details.  To obtain a 
+** copy of the GNU Library General Public License, write to the Free 
+** Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+**
+** Any permitted reproduction of these routines, in whole or in part,
+** must bear this legend.
+*/
+
+
+#pragma once
+
+#include "stdafx.h" // new
+#include <memory>
+#include <unordered_map>
+
+template <typename T> using ctor_sig = T* (*) ();
+
+template <typename Key, typename Base>
+class CFactory
+{
+public:
+	using FuncType = std::shared_ptr<ctor_sig<Base>>;
+	CFactory();
+	virtual ~CFactory();
+
+	template <typename T> void AddProduct(Key Index);
+	void RemoveProduct(Key Index);
+	Base *Produce(Key Type) const;
+
+protected:
+	template <typename T> static FuncType MakeCtor();
+
+protected:
+	std::unordered_map<Key, FuncType> m_pMakeFunc;
+};
+
+template<typename Key, typename Base>
+inline CFactory<Key, Base>::CFactory()
+{
+}
+
+template<typename Key, typename Base>
+inline CFactory<Key, Base>::~CFactory()
+{
+}
+
+template<typename Key, typename Base>
+template<typename T>
+inline void CFactory<Key, Base>::AddProduct(Key Index)
+{
+	try {
+		m_pMakeFunc.at(Index);
+	}
+	catch (std::out_of_range) {
+		m_pMakeFunc[Index] = MakeCtor<T>();
+	}
+}
+
+template<typename Key, typename Base>
+inline void CFactory<Key, Base>::RemoveProduct(Key Index)
+{
+	m_pMakeFunc.erase(Index);
+}
+
+template<typename Key, typename Base>
+inline Base *CFactory<Key, Base>::Produce(Key Index) const
+{
+	try {
+		return (*m_pMakeFunc.at(Index).get())();
+	}
+	catch (std::out_of_range) {
+		return nullptr;
+	}
+}
+
+template<typename Key, typename Base>
+template<typename T>
+inline typename CFactory<Key, Base>::FuncType CFactory<Key, Base>::MakeCtor()
+{
+	return std::make_shared<ctor_sig<Base>>(
+		[] () {	return static_cast<Base*>(new T {}); }
+	);
+}

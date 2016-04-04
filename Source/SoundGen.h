@@ -241,7 +241,7 @@ public:
 private:
 	// Internal initialization
 	void		CreateChannels();
-	void		AssignChannel(CTrackerChannel *pTrackerChannel, CChannelHandler *pRenderer);
+	void		AssignChannel(CTrackerChannel *pTrackerChannel);		// // //
 	void		ResetAPU();
 	void		GeneratePeriodTables(int BaseFreq);
 

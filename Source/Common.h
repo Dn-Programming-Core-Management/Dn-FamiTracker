@@ -33,10 +33,6 @@ typedef signed __int64		int64;
 
 #define SAMPLES_IN_BYTES(x) (x << SampleSizeShift)
 
-const int SPEED_AUTO	= 0;
-const int SPEED_NTSC	= 1;
-const int SPEED_PAL		= 2;
-
 
 // Used to get the DPCM state
 struct stDPCMState {

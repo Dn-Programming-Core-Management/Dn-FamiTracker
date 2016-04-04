@@ -26,6 +26,7 @@
 // CTrackerChannel
 
 #include <afxmt.h>	// For CMutex
+#include "APU/Types.h"		// // //
 
 enum note_prio_t {
 	NOTE_PRIO_0, 
@@ -36,12 +37,12 @@ enum note_prio_t {
 class CTrackerChannel
 {
 public:
-	CTrackerChannel(LPCTSTR pName, LPCTSTR pShort, const int iChip, const int iID);		// // //
+	CTrackerChannel(LPCTSTR pName, LPCTSTR pShort, const int iChip, chan_id_t iID);		// // //
 	~CTrackerChannel(void);
 	LPCTSTR GetChannelName() const;
 	LPCTSTR GetShortName() const;		// // //
 	const char GetChip() const;
-	const int GetID() const;
+	chan_id_t GetID() const;		// // //
 	const int GetColumnCount() const;
 	void SetColumnCount(int Count);
 
@@ -64,7 +65,7 @@ private:
 
 private:
 	int m_iChip;
-	int m_iChannelID;
+	chan_id_t m_iChannelID;		// // //
 	int m_iColumnCount;
 
 	stChanNote m_Note;
