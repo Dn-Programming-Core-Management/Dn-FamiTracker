@@ -33,6 +33,7 @@
 #include "ChannelMap.h"
 #include "CustomExporters.h"
 #include "CommandLineExport.h"
+#include "VersionHelpers.h"		// // //
 
 #ifdef EXPORT_TEST
 #include "ExportTest/ExportTest.h"
@@ -186,16 +187,8 @@ BOOL CFamiTrackerApp::InitInstance()
 	
 	AddDocTemplate(pDocTemplate);
 
-	// Determine windows version
-	OSVERSIONINFO osvi;
-
-	ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
-	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-
-	GetVersionEx(&osvi);
-
 	// Work-around to enable file type registration in windows vista/7
-	if (osvi.dwMajorVersion >= 6) { 
+	if (IsWindowsVistaOrGreater()) {		// // //
 		HKEY HKCU;
 		long res_reg = ::RegOpenKey(HKEY_CURRENT_USER, _T("Software\\Classes"), &HKCU);
 		if(res_reg == ERROR_SUCCESS)
@@ -240,7 +233,7 @@ BOOL CFamiTrackerApp::InitInstance()
 	}
 
 	// Move root key back to default
-	if (osvi.dwMajorVersion >= 6) { 
+	if (IsWindowsVistaOrGreater()) {		// // //
 		::RegOverridePredefKey(HKEY_CLASSES_ROOT, NULL);
 	}
 
