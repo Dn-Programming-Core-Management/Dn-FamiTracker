@@ -21,6 +21,7 @@
 #pragma once
 
 class CFamiTrackerView;
+class CInstrument2A03;		// // //
 
 // CInstrumentDPCM dialog
 

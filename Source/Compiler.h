@@ -62,6 +62,7 @@ struct stNSFeHeader {		// // //
 struct driver_t;
 class CChunk;
 enum chunk_type_t;
+class CInstrumentFDS;		// // //
 
 /*
  * Logger class

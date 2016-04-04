@@ -23,7 +23,9 @@
 #include <memory>		// // //
 #include "stdafx.h"
 #include "FamiTrackerDoc.h"
-#include "instrument.h"
+#include "Instrument.h"
+#include "SeqInstrument.h"		// // //
+#include "InstrumentFDS.h"		// // //
 #include "ModSequenceEditor.h"
 
 int SIZE_X = 12;

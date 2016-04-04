@@ -30,6 +30,7 @@
 #include "InstrumentEditorDPCM.h"
 #include "SampleEditorView.h"
 #include "SampleEditorDlg.h"
+#include "SeqInstrument.h"		// // //
 #include "Instrument2A03.h"		// // //
 #include "PCMImport.h"
 #include "Settings.h"

@@ -20,6 +20,8 @@
 
 #pragma once
 
+class CInstrumentFDS;		// // //
+
 class CModSequenceEditor : public CWnd
 {
 public:

@@ -46,9 +46,6 @@ public:		// // //
 	void FillWaveRAM(const char *pBuffer);		// // //
 	void FillModulationTable(const char *pBuffer);		// // //
 protected:
-	void FillWaveRAM(const CInstrumentFDS *pInst);
-	void FillModulationTable(const CInstrumentFDS *pInst);
-protected:
 	// FDS control variables
 	int m_iModulationSpeed;
 	int m_iModulationDepth;

@@ -90,7 +90,7 @@ struct stSequence {
 
 // Access data types used by the document class
 #include "PatternData.h"
-#include "InstrumentFactory.h"		// // // TODO: use Instrument.h
+#include "Instrument.h"
 #include "Sequence.h"
 #include "OldSequence.h"		// // //
 #include "Groove.h"		// // //
@@ -99,6 +99,7 @@ struct stSequence {
 class CTrackerChannel;
 class CDocumentFile;
 class stFullState;		// // //
+class CSeqInstrument;		// // // TODO: move to instrument manager
 
 //
 // I'll try to organize this class, things are quite messy right now!

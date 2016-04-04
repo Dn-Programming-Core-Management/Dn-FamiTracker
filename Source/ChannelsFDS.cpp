@@ -25,9 +25,7 @@
 #include "stdafx.h"
 #include "FamiTrackerTypes.h"		// // //
 #include "APU/Types.h"		// // //
-#include "Instrument.h"		// // //
-#include "SeqInstrument.h"		// // //
-#include "InstrumentFDS.h"		// // //
+#include "Instrument.h"
 #include "ChannelHandler.h"
 #include "ChannelsFDS.h"
 #include "InstHandler.h"		// // //
@@ -317,22 +315,4 @@ void CChannelHandlerFDS::FillModulationTable(const char *pBuffer)		// // //
 		for (int i = 0; i < 32; ++i)
 			WriteExternalRegister(0x4088, m_iModTable[i]);
 	}
-}
-
-void CChannelHandlerFDS::FillWaveRAM(const CInstrumentFDS *pInstrument)
-{
-	// Fills the 64 byte waveform table
-	char Buffer[sizeof(m_iWaveTable)];		// // //
-	for (int i = 0; i < sizeof(m_iWaveTable); i++)
-		Buffer[i] = pInstrument->GetSample(i);
-	FillWaveRAM(Buffer);
-}
-
-void CChannelHandlerFDS::FillModulationTable(const CInstrumentFDS *pInstrument)
-{
-	// Fills the 32 byte modulation table
-	char Buffer[sizeof(m_iModTable)];		// // //
-	for (int i = 0; i < sizeof(m_iModTable); i++)
-		Buffer[i] = pInstrument->GetModulation(i);
-	FillModulationTable(Buffer);
 }

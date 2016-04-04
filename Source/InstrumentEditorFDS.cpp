@@ -29,6 +29,7 @@
 #include "FamiTrackerView.h"
 #include "InstrumentEditPanel.h"
 #include "InstrumentEditorFDS.h"
+#include "SeqInstrument.h"		// // //
 #include "InstrumentFDS.h"		// // //
 #include "MainFrm.h"
 #include "SoundGen.h"

@@ -25,6 +25,13 @@
 #include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
+#include "SeqInstrument.h"		// // //
+#include "Instrument2A03.h"		// // //
+#include "InstrumentVRC6.h"		// // //
+#include "InstrumentN163.h"		// // //
+#include "InstrumentS5B.h"		// // //
+#include "InstrumentFDS.h"		// // //
+#include "InstrumentVRC7.h"		// // //
 #include "FamiTrackerView.h"
 #include "SequenceEditor.h"
 #include "InstrumentEditPanel.h"

@@ -75,6 +75,9 @@ public:
 
 // Templates would be better but doesn't work well with MFC unfortunately
 
+class CInstrumentFDS;
+class CInstrumentN163;
+
 // FDS wave
 class CWaveEditorFDS : public CWaveEditor
 {

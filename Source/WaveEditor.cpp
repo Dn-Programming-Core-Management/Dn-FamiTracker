@@ -25,6 +25,9 @@
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "Instrument.h"
+#include "SeqInstrument.h"
+#include "InstrumentFDS.h"		// // //
+#include "InstrumentN163.h"		// // //
 #include "WaveEditor.h"
 #include "Resource.h"
 #include "Graphics.h"

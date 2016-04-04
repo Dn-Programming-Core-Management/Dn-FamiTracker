@@ -29,6 +29,7 @@
 #include "FamiTrackerDoc.h"
 #include "InstrumentEditPanel.h"
 #include "InstrumentEditorN163Wave.h"
+#include "SeqInstrument.h"		// // //
 #include "InstrumentN163.h"		// // //
 #include "MainFrm.h"
 #include "SoundGen.h"

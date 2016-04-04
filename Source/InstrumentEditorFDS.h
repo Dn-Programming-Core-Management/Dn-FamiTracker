@@ -22,6 +22,7 @@
 
 class CWaveEditorFDS;
 class CModSequenceEditor;
+class CInstrumentFDS;
 
 // CInstrumentEditorFDS dialog
 

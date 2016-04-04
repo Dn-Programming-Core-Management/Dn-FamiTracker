@@ -25,6 +25,7 @@
 // CInstrumentEditorN163Wave dialog
 
 class CWaveformGenerator;		// // //
+class CInstrumentN163;		// // //
 
 class CInstrumentEditorN163Wave : public CInstrumentEditPanel
 {

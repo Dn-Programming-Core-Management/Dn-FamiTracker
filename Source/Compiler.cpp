@@ -25,6 +25,10 @@
 #include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
+#include "SeqInstrument.h"		// // //
+#include "Instrument2A03.h"		// // //
+#include "InstrumentFDS.h"		// // //
+#include "InstrumentN163.h"		// // //
 #include "PatternCompiler.h"
 #include "Compiler.h"
 #include "Chunk.h"

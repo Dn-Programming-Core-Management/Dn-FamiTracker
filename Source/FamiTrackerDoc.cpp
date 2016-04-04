@@ -49,6 +49,12 @@
 #include <unordered_map>		// // //
 #include "FamiTracker.h"
 #include "ChannelState.h"		// // //
+#include "Instrument.h"		// // //
+#include "SeqInstrument.h"		// // //
+#include "Instrument2A03.h"		// // //
+#include "InstrumentVRC6.h"		// // // for error messages only
+#include "InstrumentN163.h"		// // // for error messages only
+#include "InstrumentS5B.h"		// // // for error messages only
 #include "FamiTrackerDoc.h"
 #include "ModuleException.h"		// // //
 #include "TrackerChannel.h"
@@ -1576,8 +1582,8 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 			}
 		}
 		for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
-			if (auto pInstrument = std::dynamic_pointer_cast<CInstrumentFDS>(GetInstrument(i))) {
-				CSequence *pSeq = pInstrument->GetSequence(SEQ_ARPEGGIO);
+			if (GetInstrumentType(i) == INST_FDS) {
+				CSequence *pSeq = std::static_pointer_cast<CSeqInstrument>(GetInstrument(i))->GetSequence(SEQ_ARPEGGIO);
 				if (pSeq != nullptr && pSeq->GetItemCount() > 0 && pSeq->GetSetting() == SETTING_ARP_FIXED)
 					for (unsigned int j = 0; j < pSeq->GetItemCount(); ++j) {
 						int Trsp = pSeq->GetItem(j) + NOTE_RANGE * 2;
