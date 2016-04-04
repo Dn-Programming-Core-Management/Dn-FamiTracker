@@ -464,6 +464,7 @@
     <ClCompile Include="Source\InstrumentEditorSeq.cpp" />
     <ClCompile Include="Source\InstrumentFactory.cpp" />
     <ClCompile Include="Source\InstrumentManager.cpp" />
+    <ClCompile Include="Source\InstrumentRecorder.cpp" />
     <ClCompile Include="Source\MainFrm.cpp">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
@@ -712,6 +713,7 @@
     <ClInclude Include="Source\InstrumentManager.h" />
     <ClInclude Include="Source\InstrumentManagerInterface.h" />
     <ClInclude Include="Source\InstrumentN163.h" />
+    <ClInclude Include="Source\InstrumentRecorder.h" />
     <ClInclude Include="Source\InstrumentS5B.h" />
     <ClInclude Include="Source\InstrumentVRC6.h" />
     <ClInclude Include="Source\InstrumentVRC7.h" />

@@ -25,6 +25,7 @@
 #include "FamiTrackerTypes.h"
 #include "APU/Types.h"
 #include "SoundGen.h"
+#include "InstrumentRecorder.h"
 #include "RecordSettingsDlg.h"
 
 #define MIN_INTERVAL 24
@@ -53,7 +54,8 @@ BEGIN_MESSAGE_MAP(CRecordSettingsDlg, CDialog)
 	ON_EN_CHANGE(IDC_EDIT_RECORDER_INTERVAL, OnEnChangeEditRecorderInterval)
 	ON_EN_CHANGE(IDC_EDIT_RECORDER_COUNT, OnEnChangeEditRecorderCount)
 	ON_BN_CLICKED(IDC_CHECK_RECORDER_RESET, OnBnClickedCheckRecorderReset)
-	ON_BN_CLICKED(IDCANCEL, OnBnClickedCancel)
+	ON_EN_KILLFOCUS(IDC_EDIT_RECORDER_INTERVAL, &CRecordSettingsDlg::OnEnKillfocusEditRecorderInterval)
+	ON_EN_KILLFOCUS(IDC_EDIT_RECORDER_COUNT, &CRecordSettingsDlg::OnEnKillfocusEditRecorderCount)
 END_MESSAGE_MAP()
 
 
@@ -61,57 +63,62 @@ END_MESSAGE_MAP()
 
 BOOL CRecordSettingsDlg::OnInitDialog()
 {
-	m_stSetting = theApp.GetSoundGenerator()->GetRecordSetting();
+	stRecordSetting *Setting = theApp.GetSoundGenerator()->GetRecordSetting();
 
 	CSpinButtonCtrl *pSpin = static_cast<CSpinButtonCtrl*>(GetDlgItem(IDC_SPIN_RECORDER_INTERVAL));
 	pSpin->SetRange(MIN_INTERVAL, MAX_SEQUENCE_ITEMS);
 	pSpin = static_cast<CSpinButtonCtrl*>(GetDlgItem(IDC_SPIN_RECORDER_COUNT));
 	pSpin->SetRange(1, MAX_INSTRUMENTS);
 
-	CheckDlgButton(IDC_CHECK_RECORDER_RESET, m_stSetting.Reset ? BST_CHECKED : BST_UNCHECKED);
+	CheckDlgButton(IDC_CHECK_RECORDER_RESET, Setting->Reset ? BST_CHECKED : BST_UNCHECKED);
 
 	CEdit *pEdit = static_cast<CEdit*>(GetDlgItem(IDC_EDIT_RECORDER_COUNT));
 	pEdit->SetLimitText(2);
-	SetDlgItemInt(IDC_EDIT_RECORDER_COUNT, m_stSetting.InstCount);
+	SetDlgItemInt(IDC_EDIT_RECORDER_COUNT, Setting->InstCount);
 	pEdit = static_cast<CEdit*>(GetDlgItem(IDC_EDIT_RECORDER_INTERVAL));
 	pEdit->SetLimitText(3);
-	SetDlgItemInt(IDC_EDIT_RECORDER_INTERVAL, m_stSetting.Interval);
+	SetDlgItemInt(IDC_EDIT_RECORDER_INTERVAL, Setting->Interval);
 	pEdit->SetFocus();
+
+	delete Setting;
 
 	return CDialog::OnInitDialog();
 }
 
-stRecordSetting CRecordSettingsDlg::GetRecordSetting()
+stRecordSetting *CRecordSettingsDlg::GetRecordSetting()
 {
-	CDialog::DoModal();
-	return m_stSetting;
+	return new stRecordSetting {m_iInterval, m_iCount, m_bReset};
 }
 
 void CRecordSettingsDlg::OnEnChangeEditRecorderInterval()
 {
-	m_stSetting.Interval = GetDlgItemInt(IDC_EDIT_RECORDER_INTERVAL);
-	if (m_stSetting.Interval < MIN_INTERVAL)
-		m_stSetting.Interval = MIN_INTERVAL;
-	if (m_stSetting.Interval > MAX_SEQUENCE_ITEMS)
-		m_stSetting.Interval = MAX_SEQUENCE_ITEMS;
+	m_iInterval = GetDlgItemInt(IDC_EDIT_RECORDER_INTERVAL);
 }
 
 void CRecordSettingsDlg::OnEnChangeEditRecorderCount()
 {
-	m_stSetting.InstCount = GetDlgItemInt(IDC_EDIT_RECORDER_COUNT);
-	if (m_stSetting.InstCount < 1)
-		m_stSetting.InstCount = 1;
-	if (m_stSetting.InstCount > MAX_INSTRUMENTS)
-		m_stSetting.InstCount = MAX_INSTRUMENTS;
+	m_iCount = GetDlgItemInt(IDC_EDIT_RECORDER_COUNT);
 }
 
 void CRecordSettingsDlg::OnBnClickedCheckRecorderReset()
 {
-	m_stSetting.Reset = IsDlgButtonChecked(IDC_CHECK_RECORDER_RESET) == BST_CHECKED;
+	m_bReset = IsDlgButtonChecked(IDC_CHECK_RECORDER_RESET) == BST_CHECKED;
 }
 
-void CRecordSettingsDlg::OnBnClickedCancel()
+
+void CRecordSettingsDlg::OnEnKillfocusEditRecorderInterval()
 {
-	m_stSetting.Interval = m_stSetting.InstCount = 0;
-	CDialog::OnCancel();
+	if (m_iInterval < MIN_INTERVAL)
+		SetDlgItemInt(IDC_EDIT_RECORDER_INTERVAL, MIN_INTERVAL);
+	if (m_iInterval > MAX_SEQUENCE_ITEMS)
+		SetDlgItemInt(IDC_EDIT_RECORDER_INTERVAL, MAX_SEQUENCE_ITEMS);
+}
+
+
+void CRecordSettingsDlg::OnEnKillfocusEditRecorderCount()
+{
+	if (m_iCount < 1)
+		SetDlgItemInt(IDC_EDIT_RECORDER_COUNT, 1);
+	if (m_iCount > MAX_INSTRUMENTS)
+		SetDlgItemInt(IDC_EDIT_RECORDER_COUNT, MAX_INSTRUMENTS);
 }

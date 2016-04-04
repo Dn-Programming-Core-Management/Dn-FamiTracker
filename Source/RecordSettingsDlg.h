@@ -25,6 +25,8 @@
 
 // CRecordSettingsDlg dialog
 
+struct stRecordSetting;
+
 class CRecordSettingsDlg : public CDialog
 {
 	DECLARE_DYNAMIC(CRecordSettingsDlg)
@@ -33,15 +35,18 @@ public:
 	CRecordSettingsDlg(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CRecordSettingsDlg();
 
-	stRecordSetting GetRecordSetting();
+	stRecordSetting *GetRecordSetting();
 
 // Dialog Data
 	enum { IDD = IDD_RECORD_SETTINGS };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	int m_iInterval;
+	int m_iCount;
+	bool m_bReset;
 
-	stRecordSetting m_stSetting;
+protected:
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
 public:
@@ -49,5 +54,6 @@ public:
 	afx_msg void OnEnChangeEditRecorderInterval();
 	afx_msg void OnEnChangeEditRecorderCount();
 	afx_msg void OnBnClickedCheckRecorderReset();
-	afx_msg void OnBnClickedCancel();
+	afx_msg void OnEnKillfocusEditRecorderInterval();
+	afx_msg void OnEnKillfocusEditRecorderCount();
 };

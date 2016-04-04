@@ -64,13 +64,8 @@ enum render_end_t {
 	SONG_LOOP_LIMIT 
 };
 
-struct stRecordSetting {
-	int Interval;
-	int InstCount;
-	bool Reset;
-};
-
 struct stChanNote;
+struct stRecordSetting;
 
 enum note_prio_t;
 
@@ -86,6 +81,7 @@ class CVisualizerWnd;
 class CDSample;
 class CTrackerChannel;
 class CFTMComponentInterface;		// // //
+class CInstrumentRecorder;		// // //
 
 #ifdef EXPORT_TEST
 class CExportTest;
@@ -102,8 +98,7 @@ public:
 	virtual ~CSoundGen();
 
 private:		// // //
-	class InstrumentRecorder;
-	CSoundGen::InstrumentRecorder *m_pInstRecorder;
+	CInstrumentRecorder *m_pInstRecorder;
 
 	//
 	// Public functions
@@ -218,8 +213,8 @@ public:
 	void			ResetDumpInstrument();
 	int				GetRecordChannel() const;
 	void			SetRecordChannel(int Channel);
-	stRecordSetting GetRecordSetting() const;
-	void			SetRecordSetting(stRecordSetting Setting);
+	stRecordSetting *GetRecordSetting() const;
+	void			SetRecordSetting(stRecordSetting *Setting);
 
 #ifdef EXPORT_TEST
 	bool		IsTestingExport() const { return m_bExportTesting; }

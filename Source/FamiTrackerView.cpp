@@ -3420,9 +3420,8 @@ void CFamiTrackerView::OnTrackerRecordToInst()		// // //
 void CFamiTrackerView::OnTrackerRecorderSettings()
 {
 	CRecordSettingsDlg dlg;
-	stRecordSetting Setting = dlg.GetRecordSetting();
-	if (Setting.InstCount > 0)
-		theApp.GetSoundGenerator()->SetRecordSetting(Setting);
+	if (dlg.DoModal() == IDOK)
+		theApp.GetSoundGenerator()->SetRecordSetting(dlg.GetRecordSetting());
 }
 
 void CFamiTrackerView::OnNextOctave()
