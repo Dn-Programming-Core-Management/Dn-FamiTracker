@@ -102,18 +102,22 @@ protected:
 };
 
 // DPCM
-class CDPCMChan : public CChannelHandler {		// // //
+class CDPCMChan : public CChannelHandler, public CChannelHandlerInterfaceDPCM {		// // //
 public:
 	CDPCMChan(CSampleMem *pSampleMem);
 	void RefreshChannel();
+
+	void WriteDCOffset(unsigned char Delta);		// // //
+	void SetLoopOffset(unsigned char Loop);		// // //
+	void PlaySample(const CDSample *pSamp, int Pitch);		// // //
 protected:
 	void HandleNoteData(stChanNote *pNoteData, int EffColumns);
 	bool HandleEffect(effect_t EffNum, unsigned char EffParam);		// // //
-	bool HandleInstrument(int Instrument, bool Trigger, bool NewInstrument);
 	void HandleEmptyNote();
 	void HandleCut();
 	void HandleRelease();
 	void HandleNote(int Note, int Octave);
+	bool CreateInstHandler(inst_type_t Type);		// // //
 
 	void ClearRegisters();
 	CString GetCustomEffectString() const;		// // //

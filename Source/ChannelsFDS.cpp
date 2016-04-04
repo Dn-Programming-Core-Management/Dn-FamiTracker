@@ -130,7 +130,6 @@ void CChannelHandlerFDS::HandleRelease()
 void CChannelHandlerFDS::HandleNote(int Note, int Octave)
 {
 	// Trigger a new note
-	m_iNote	= RunNote(Octave, Note);
 	m_bResetMod = true;
 
 	m_iInstVolume = 0x1F;

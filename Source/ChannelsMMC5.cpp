@@ -94,7 +94,6 @@ void CChannelHandlerMMC5::HandleRelease()
 
 void CChannelHandlerMMC5::HandleNote(int Note, int Octave)
 {
-	m_iNote		  = RunNote(Octave, Note);
 	m_iDutyPeriod = m_iDefaultDuty;
 	m_iInstVolume  = 0x0F;		// // //
 }

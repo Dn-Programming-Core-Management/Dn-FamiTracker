@@ -123,7 +123,6 @@ void CChannelHandlerN163::HandleRelease()
 void CChannelHandlerN163::HandleNote(int Note, int Octave)
 {
 	// New note
-	m_iNote	= RunNote(Octave, Note);
 	m_iInstVolume = 0x0F;
 	m_bRelease = false;
 //	m_bResetPhase = true;

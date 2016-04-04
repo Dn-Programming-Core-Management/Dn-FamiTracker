@@ -143,7 +143,6 @@ void CChannelHandlerVRC7::HandleRelease()
 
 void CChannelHandlerVRC7::HandleNote(int Note, int Octave)
 {
-	int OldNote = m_iNote;
 	int OldOctave = m_iOctave;
 
 	// Portamento fix
@@ -151,7 +150,6 @@ void CChannelHandlerVRC7::HandleNote(int Note, int Octave)
 		m_iPeriod = 0;
 
 	// Trigger note
-	m_iNote	= CChannelHandler::RunNote(Octave, Note);
 	m_bHold	= true;
 
 	if ((m_iEffect != EF_PORTAMENTO || m_iPortaSpeed == 0) || m_iCommand == CMD_NOTE_HALT)

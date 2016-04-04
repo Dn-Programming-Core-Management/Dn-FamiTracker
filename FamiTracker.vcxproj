@@ -456,6 +456,7 @@
     <ClCompile Include="Source\Groove.cpp" />
     <ClCompile Include="Source\GrooveDlg.cpp" />
     <ClCompile Include="Source\InstHandler.cpp" />
+    <ClCompile Include="Source\InstHandlerDPCM.cpp" />
     <ClCompile Include="Source\InstHandlerVRC7.cpp" />
     <ClCompile Include="Source\InstrumentEditorSeq.cpp" />
     <ClCompile Include="Source\InstrumentFactory.cpp" />
@@ -697,6 +698,7 @@
     <ClInclude Include="Source\Groove.h" />
     <ClInclude Include="Source\GrooveDlg.h" />
     <ClInclude Include="Source\InstHandler.h" />
+    <ClInclude Include="Source\InstHandlerDPCM.h" />
     <ClInclude Include="Source\InstHandlerVRC7.h" />
     <ClInclude Include="Source\Instrument2A03.h" />
     <ClInclude Include="Source\InstrumentEditorSeq.h" />

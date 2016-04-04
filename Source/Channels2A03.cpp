@@ -27,16 +27,13 @@
 #include "FamiTrackerTypes.h"		// // //
 #include "APU/Types.h"
 #include "Instrument.h"
-#include "SeqInstrument.h"
-#include "Instrument2A03.h" // TODO: remove
 #include "FTMComponentInterface.h"
-#include "InstrumentManager.h"
 #include "ChannelHandler.h"
 #include "Channels2A03.h"
 #include "Settings.h"
-#include "SoundGen.h" // TODO: remove
 #include "InstHandler.h"		// // //
 #include "SeqInstHandler.h"		// // //
+#include "InstHandlerDPCM.h"		// // //
 
 //#define NOISE_PITCH_SCALE
 
@@ -115,7 +112,6 @@ void CChannelHandler2A03::HandleRelease()
 
 void CChannelHandler2A03::HandleNote(int Note, int Octave)
 {
-	m_iNote			= RunNote(Octave, Note);
 	m_iDutyPeriod	= m_iDefaultDuty;
 	m_iInstVolume	= 0x0F;		// // //
 }
@@ -528,10 +524,10 @@ bool CDPCMChan::HandleEffect(effect_t EffNum, unsigned char EffParam)
 		m_cDAC = EffParam & 0x7F;
 		break;
 	case EF_SAMPLE_OFFSET:
-		m_iOffset = EffParam;
+		m_iOffset = EffParam & 0x3F;		// // //
 		break;
 	case EF_DPCM_PITCH:
-		m_iCustomPitch = EffParam;
+		m_iCustomPitch = EffParam & 0x0F;		// // //
 		break;
 	case EF_RETRIGGER:
 //		if (NoteData->EffParam[i] > 0) {
@@ -547,12 +543,6 @@ bool CDPCMChan::HandleEffect(effect_t EffNum, unsigned char EffParam)
 	default: return false; // unless WAVE_CHAN analog for CChannelHandler exists
 	}
 
-	return true;
-}
-
-bool CDPCMChan::HandleInstrument(int Instrument, bool Trigger, bool NewInstrument)
-{
-	// Instruments are accessed in the note routine
 	return true;
 }
 
@@ -573,41 +563,20 @@ void CDPCMChan::HandleRelease()
 
 void CDPCMChan::HandleNote(int Note, int Octave)
 {
-	auto pDoc = m_pSoundGen->GetDocumentInterface();
-	if (!pDoc) return;
-	auto pInstrument = std::dynamic_pointer_cast<CInstrument2A03>(pDoc->GetInstrumentManager()->GetInstrument(m_iInstrument));
-	if (!pInstrument) return;
+	m_iNote = MIDI_NOTE(Octave, Note);		// // //
+	TriggerNote(m_iNote);
+	m_bGate = true;
+}
 
-	if (int SampleIndex = pInstrument->GetSampleIndex(Octave, Note - 1)) {
-		int Pitch = pInstrument->GetSamplePitch(Octave, Note - 1);
-		m_iLoop = (Pitch & 0x80) >> 1;
-
-		if (m_iCustomPitch != -1)
-			Pitch = m_iCustomPitch;
-	
-		m_iLoopOffset = pInstrument->GetSampleLoopOffset(Octave, Note - 1);
-		
-		if (const CDSample *pDSample = pInstrument->GetDSample(Octave, Note - 1)) {		// // //
-			int SampleSize = pDSample->GetSize();
-			m_pSampleMem->SetMem(pDSample->GetData(), SampleSize);
-			m_iPeriod = Pitch & 0x0F;
-			m_iSampleLength = (SampleSize >> 4) - (m_iOffset << 2);
-			m_iLoopLength = SampleSize - m_iLoopOffset;
-			m_bEnabled = true;
-			m_bTrigger = true;
-			m_bGate = true;
-
-			// Initial delta counter value
-			unsigned char Delta = pInstrument->GetSampleDeltaValue(Octave, Note - 1);
-			
-			if (Delta != 255 && m_cDAC == 255)
-				m_cDAC = Delta;
-
-			m_iRetriggerCntr = m_iRetrigger;
-		}
+bool CDPCMChan::CreateInstHandler(inst_type_t Type)
+{
+	switch (Type) {
+	case INST_2A03:
+		SAFE_RELEASE(m_pInstHandler);
+		m_pInstHandler = new CInstHandlerDPCM(this);
+		return true;
 	}
-
-	RegisterKeyState(MIDI_NOTE(Octave, Note));
+	return false;
 }
 
 void CDPCMChan::RefreshChannel()
@@ -671,6 +640,32 @@ void CDPCMChan::RefreshChannel()
 
 		m_bTrigger = false;
 	}
+}
+
+void CDPCMChan::WriteDCOffset(unsigned char Delta)		// // //
+{
+	// Initial delta counter value
+	if (Delta != 255 && m_cDAC == 255)
+		m_cDAC = Delta;
+}
+
+void CDPCMChan::SetLoopOffset(unsigned char Loop)		// // //
+{
+	m_iLoopOffset = Loop;
+}
+
+void CDPCMChan::PlaySample(const CDSample *pSamp, int Pitch)		// // //
+{
+	int SampleSize = pSamp->GetSize();
+	m_pSampleMem->SetMem(pSamp->GetData(), SampleSize);
+	m_iPeriod = m_iCustomPitch != -1 ? m_iCustomPitch : Pitch;
+	m_iSampleLength = (SampleSize >> 4) - (m_iOffset << 2);
+	m_iLoopLength = SampleSize - m_iLoopOffset;
+	m_bEnabled = true;
+	m_bTrigger = true;
+	m_bGate = true;
+	m_iLoop = (Pitch & 0x80) >> 1;
+	m_iRetriggerCntr = m_iRetrigger;
 }
 
 void CDPCMChan::ClearRegisters()

@@ -146,6 +146,7 @@ void CChannelHandler::ResetChannel()
 	m_iInstVolume		= 0;
 
 	// Period
+	m_iNote				= 0;		// // //
 	m_iPeriod			= 0;
 	m_iPeriodPart		= 0;
 
@@ -396,6 +397,11 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 		// 0CC: retrieve
 		m_iInstrument = m_pSoundGen->GetDefaultInstrument();
 	}
+	
+	switch (pNoteData->Note) {		// // // set note value before loading instrument
+	case NONE: case HALT: case RELEASE: break;
+	default: m_iNote = RunNote(pNoteData->Octave, pNoteData->Note);
+	}
 
 	if (NewInstrument || Trigger) {
 		if (!HandleInstrument(m_iInstrument, Trigger, NewInstrument)) {
@@ -405,23 +411,20 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	}
 	m_bForceReload = false;		// // //
 
-	// Clear release flag
-	if (pNoteData->Note != RELEASE && pNoteData->Note != NONE) {
-		m_bRelease = false;
-	}
-
 	// Note
 	switch (pNoteData->Note) {
 		case NONE:
 			HandleEmptyNote();
 			break;
 		case HALT:
+			m_bRelease = false;
 			HandleCut();
 			break;
 		case RELEASE:
 			HandleRelease();
 			break;
 		default:
+			m_bRelease = false;
 			HandleNote(pNoteData->Note, pNoteData->Octave);
 			break;
 	}
