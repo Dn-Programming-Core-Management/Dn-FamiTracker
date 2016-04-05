@@ -276,12 +276,13 @@ void CChannelHandler::PlayNote(stChanNote *pNoteData, int EffColumns)
 {
 	ASSERT (pNoteData != NULL);
 
+	// Handle global effects
+	// // // global effects are removed there first
+	m_pSoundGen->EvaluateGlobalEffects(pNoteData, EffColumns);
+
 	// Handle delay commands
 	if (HandleDelay(pNoteData, EffColumns))
 		return;
-
-	// Handle global effects
-	m_pSoundGen->EvaluateGlobalEffects(pNoteData, EffColumns);
 
 	// Let the channel play
 	HandleNoteData(pNoteData, EffColumns);
@@ -642,27 +643,16 @@ bool CChannelHandler::HandleDelay(stChanNote *pNoteData, int EffColumns)
 			m_bDelayEnabled = true;
 			m_cDelayCounter = pNoteData->EffParam[i];
 			m_iDelayEffColumns = EffColumns;
-			memcpy(&m_cnDelayed, pNoteData, sizeof(stChanNote));
 
-			// Only one delay/row is allowed. Remove global effects
+			// Only one delay/row is allowed
 			for (int j = 0; j < EffColumns; ++j) {
-				switch (m_cnDelayed.EffNumber[j]) {
-					case EF_DELAY:
-						m_cnDelayed.EffNumber[j] = EF_NONE;
-						m_cnDelayed.EffParam[j] = 0;
-						break;
-					case EF_JUMP:
-						m_pSoundGen->SetJumpPattern(m_cnDelayed.EffParam[j]);
-						m_cnDelayed.EffNumber[j] = EF_NONE;
-						m_cnDelayed.EffParam[j] = 0;
-						break;
-					case EF_SKIP:
-						m_pSoundGen->SetSkipRow(m_cnDelayed.EffParam[j]);
-						m_cnDelayed.EffNumber[j] = EF_NONE;
-						m_cnDelayed.EffParam[j] = 0;
-						break;
+				if (pNoteData->EffNumber[j] == EF_DELAY) {		// // //
+					pNoteData->EffNumber[j] = EF_NONE;
+					pNoteData->EffParam[j] = 0;
 				}
 			}
+			
+			memcpy(&m_cnDelayed, pNoteData, sizeof(stChanNote));
 			return true;
 		}
 	}

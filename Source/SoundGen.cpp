@@ -31,14 +31,9 @@
 //
 
 #include "stdafx.h"
-#include <memory>		// // //
-#include <cmath>
-#include <afxmt.h>
 #include "FamiTracker.h"
 #include "FTMComponentInterface.h"		// // //
 #include "ChannelState.h"		// // //
-#include <vector>		// // //
-#include "InstrumentManager.h"		// // //
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
 #include "VisualizerWnd.h"
@@ -53,15 +48,6 @@
 #include "Settings.h"
 #include "TrackerChannel.h"
 #include "MIDI.h"
-
-// // //
-#include "Instrument.h"
-#include "SeqInstrument.h"
-#include "Instrument2A03.h"
-#include "InstrumentFDS.h"
-#include "InstrumentN163.h"
-#include "InstrumentFactory.h"
-
 #include "ChannelFactory.h"		// // // test
 
 #ifdef EXPORT_TEST
@@ -1668,7 +1654,12 @@ void CSoundGen::EvaluateGlobalEffects(stChanNote *NoteData, int EffColumns)
 					++m_iFramesPlayed;
 				}
 				break;
+
+			default: continue;		// // //
 		}
+
+		NoteData->EffNumber[i] = EF_NONE;
+		NoteData->EffParam[i] = 0;
 	}
 }
 
