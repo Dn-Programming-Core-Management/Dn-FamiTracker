@@ -462,7 +462,7 @@ bool CChannelHandler::CreateInstHandler(inst_type_t Type)
 	return false;
 }
 
-void CChannelHandler::SetNoteTable(unsigned int *pNoteLookupTable)
+void CChannelHandler::SetNoteTable(const unsigned int *pNoteLookupTable)
 {
 	// Installs the note lookup table
 	m_pNoteLookupTable = pNoteLookupTable;

@@ -1514,58 +1514,30 @@ void CSoundGen::LoadMachineSettings(machine_t Machine, int Rate, int NamcoChanne
 	m_iUpdateCycles = BaseFreq / Rate;
 	
 	// // // Setup note tables
-	SetLookupTable(Machine == PAL ? SNDCHIP_2A07 : SNDCHIP_NONE);
-	SetLookupTable(SNDCHIP_VRC6);
-	SetLookupTable(SNDCHIP_VRC7);
-	SetLookupTable(SNDCHIP_FDS);
-	SetLookupTable(SNDCHIP_MMC5);
-	SetLookupTable(SNDCHIP_N163);
-	SetLookupTable(SNDCHIP_S5B);
-}
-
-void CSoundGen::SetLookupTable(int Chip)		// // //
-{
-	ASSERT(m_pAPU != NULL);
-
-	switch (Chip) {
-	case SNDCHIP_NONE:
-		m_pChannels[CHANID_SQUARE1]->SetNoteTable(m_iNoteLookupTableNTSC);
-		m_pChannels[CHANID_SQUARE2]->SetNoteTable(m_iNoteLookupTableNTSC);
-		m_pChannels[CHANID_TRIANGLE]->SetNoteTable(m_iNoteLookupTableNTSC); break;
-	case SNDCHIP_2A07:
-		m_pChannels[CHANID_SQUARE1]->SetNoteTable(m_iNoteLookupTablePAL);
-		m_pChannels[CHANID_SQUARE2]->SetNoteTable(m_iNoteLookupTablePAL);
-		m_pChannels[CHANID_TRIANGLE]->SetNoteTable(m_iNoteLookupTablePAL); break;
-	case SNDCHIP_VRC6:
-		m_pChannels[CHANID_VRC6_PULSE1]->SetNoteTable(m_iNoteLookupTableNTSC);
-		m_pChannels[CHANID_VRC6_PULSE2]->SetNoteTable(m_iNoteLookupTableNTSC);
-		m_pChannels[CHANID_VRC6_SAWTOOTH]->SetNoteTable(m_iNoteLookupTableSaw); break;
-	case SNDCHIP_VRC7:
-		m_pChannels[CHANID_VRC7_CH1]->SetNoteTable(m_iNoteLookupTableVRC7);
-		m_pChannels[CHANID_VRC7_CH2]->SetNoteTable(m_iNoteLookupTableVRC7);
-		m_pChannels[CHANID_VRC7_CH3]->SetNoteTable(m_iNoteLookupTableVRC7);
-		m_pChannels[CHANID_VRC7_CH4]->SetNoteTable(m_iNoteLookupTableVRC7);
-		m_pChannels[CHANID_VRC7_CH5]->SetNoteTable(m_iNoteLookupTableVRC7);
-		m_pChannels[CHANID_VRC7_CH6]->SetNoteTable(m_iNoteLookupTableVRC7); break;
-	case SNDCHIP_FDS:
-		m_pChannels[CHANID_FDS]->SetNoteTable(m_iNoteLookupTableFDS); break;
-	case SNDCHIP_MMC5:
-		m_pChannels[CHANID_MMC5_SQUARE1]->SetNoteTable(m_iNoteLookupTableNTSC);
-		m_pChannels[CHANID_MMC5_SQUARE2]->SetNoteTable(m_iNoteLookupTableNTSC); break;
-	case SNDCHIP_N163:
-		m_pChannels[CHANID_N163_CH1]->SetNoteTable(m_iNoteLookupTableN163);
-		m_pChannels[CHANID_N163_CH2]->SetNoteTable(m_iNoteLookupTableN163);
-		m_pChannels[CHANID_N163_CH3]->SetNoteTable(m_iNoteLookupTableN163);
-		m_pChannels[CHANID_N163_CH4]->SetNoteTable(m_iNoteLookupTableN163);
-		m_pChannels[CHANID_N163_CH5]->SetNoteTable(m_iNoteLookupTableN163);
-		m_pChannels[CHANID_N163_CH6]->SetNoteTable(m_iNoteLookupTableN163);
-		m_pChannels[CHANID_N163_CH7]->SetNoteTable(m_iNoteLookupTableN163);
-		m_pChannels[CHANID_N163_CH8]->SetNoteTable(m_iNoteLookupTableN163); break;
-	case SNDCHIP_S5B:
-		m_pChannels[CHANID_S5B_CH1]->SetNoteTable(m_iNoteLookupTableS5B);
-		m_pChannels[CHANID_S5B_CH2]->SetNoteTable(m_iNoteLookupTableS5B);
-		m_pChannels[CHANID_S5B_CH3]->SetNoteTable(m_iNoteLookupTableS5B); break;
-	default: break;
+	for (int i = 0; i < CHANNELS; ++i) {
+		if (!m_pTrackerChannels[i]) continue;
+		const unsigned int *Table = nullptr;
+		switch (m_pTrackerChannels[i]->GetID()) {
+		case CHANID_SQUARE1: case CHANID_SQUARE2: case CHANID_TRIANGLE:
+			Table = Machine == PAL ? m_iNoteLookupTablePAL : m_iNoteLookupTableNTSC; break;
+		case CHANID_VRC6_PULSE1: case CHANID_VRC6_PULSE2:
+		case CHANID_MMC5_SQUARE1: case CHANID_MMC5_SQUARE2:
+			Table = m_iNoteLookupTableNTSC; break;
+		case CHANID_VRC6_SAWTOOTH:
+			Table = m_iNoteLookupTableSaw; break;
+		case CHANID_VRC7_CH1: case CHANID_VRC7_CH2: case CHANID_VRC7_CH3:
+		case CHANID_VRC7_CH4: case CHANID_VRC7_CH5: case CHANID_VRC7_CH6:
+			Table = m_iNoteLookupTableVRC7; break;
+		case CHANID_FDS:
+			Table = m_iNoteLookupTableFDS; break;
+		case CHANID_N163_CH1: case CHANID_N163_CH2: case CHANID_N163_CH3: case CHANID_N163_CH4:
+		case CHANID_N163_CH5: case CHANID_N163_CH6: case CHANID_N163_CH7: case CHANID_N163_CH8:
+			Table = m_iNoteLookupTableN163; break;
+		case CHANID_S5B_CH1: case CHANID_S5B_CH2: case CHANID_S5B_CH3:
+			Table = m_iNoteLookupTableS5B; break;
+		default: continue;
+		}
+		m_pChannels[i]->SetNoteTable(Table);
 	}
 }
 

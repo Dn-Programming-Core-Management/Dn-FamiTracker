@@ -106,7 +106,7 @@ public:
 	/*! \brief Sets the channel handler's note lookup table.
 		\param pNoteLookupTable Pointer to the note lookup table.
 	*/
-	virtual void	SetNoteTable(unsigned int *pNoteLookupTable);
+	virtual void	SetNoteTable(const unsigned int *pNoteLookupTable);
 	/*! \brief Sets the MIDI pitch wheel offset.
 		\param Pitch The new offset value.
 	*/
@@ -563,7 +563,7 @@ protected:
 		single octave, all other lookup tables should contain at least as many entries as the number
 		of notes available in the tracker.
 	*/
-	unsigned int	*m_pNoteLookupTable;
+	const unsigned int *m_pNoteLookupTable;
 	/*! \brief A pointer to the channel's vibrato lookup table.
 		\details A vibrato lookup table contains as many rows as the number of vibrato depths
 		available, each row containing the first quarter of the vibrato amplitude values; values for

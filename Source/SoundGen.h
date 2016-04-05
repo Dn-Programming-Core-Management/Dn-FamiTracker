@@ -139,7 +139,6 @@ public:
 	void		 SetupVibratoTable(vibrato_t Type);
 	int			 ReadVibratoTable(int index) const;
 	int			 ReadPeriodTable(int index, int Chip) const;		// // //
-	void		 SetLookupTable(int Chip);		// // //
 
 	int			 ReadNamcoPeriodTable(int index) const;
 
