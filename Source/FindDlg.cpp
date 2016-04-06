@@ -413,8 +413,8 @@ void CFindDlg::GetFindTerm()
 	searchTerm newTerm;
 
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_NOTE)) {
-		bool empty = str.IsEmpty();
 		m_cFindNoteField->GetWindowText(str);
+		bool empty = str.IsEmpty();
 		ParseNote(newTerm, str, false);
 		m_cFindNoteField2->GetWindowText(str);
 		ParseNote(newTerm, str, !empty);
@@ -424,15 +424,15 @@ void CFindDlg::GetFindTerm()
 			_T("Cannot use both notes and echo buffer in a range search query."));
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_INST)) {
-		bool empty = str.IsEmpty();
 		m_cFindInstField->GetWindowText(str);
+		bool empty = str.IsEmpty();
 		ParseInst(newTerm, str, false);
 		m_cFindInstField2->GetWindowText(str);
 		ParseInst(newTerm, str, !empty);
 	}
 	if (IsDlgButtonChecked(IDC_CHECK_FIND_VOL)) {
-		bool empty = str.IsEmpty();
 		m_cFindVolField->GetWindowText(str);
+		bool empty = str.IsEmpty();
 		ParseVol(newTerm, str, false);
 		m_cFindVolField2->GetWindowText(str);
 		ParseVol(newTerm, str, !empty);
