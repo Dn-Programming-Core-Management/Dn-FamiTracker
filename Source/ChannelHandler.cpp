@@ -81,8 +81,6 @@ void CChannelHandler::InitChannel(CAPU *pAPU, int *pVibTable, CSoundGen *pSoundG
 	m_pSoundGen = pSoundGen;
 
 	m_bDelayEnabled = false;
-
-	ResetChannel();
 }
 
 void CChannelHandler::SetLinearPitch(bool bEnable)		// // //

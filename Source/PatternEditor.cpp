@@ -2500,7 +2500,7 @@ cursor_column_t CPatternEditor::GetColumnAtPoint(int PointX) const		// // //
 	const int ChannelCount = GetChannelCount();
 	const int Channel = GetChannelAtPoint(PointX);
 
-	if (Channel < 0)
+	if (Channel < 0 || ChannelCount <= 0)		// // //
 		return C_NOTE;
 	if (Channel >= ChannelCount)
 		return GetChannelColumns(ChannelCount - 1);

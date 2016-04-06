@@ -4038,15 +4038,12 @@ void CFamiTrackerDoc::RegisterChannel(CTrackerChannel *pChannel, int ChannelType
 
 CTrackerChannel *CFamiTrackerDoc::GetChannel(int Index) const
 {
-	ASSERT(m_iRegisteredChannels != 0 && Index < m_iRegisteredChannels);
-	ASSERT(m_pChannels[Index] != NULL);
 	return m_pChannels[Index];
 }
 
 int CFamiTrackerDoc::GetChannelIndex(int Channel) const
 {
 	// Translate channel ID to index, returns -1 if not found
-	ASSERT(m_iRegisteredChannels != 0);
 	for (int i = 0; i < m_iRegisteredChannels; ++i) {
 		if (m_pChannels[i]->GetID() == Channel)
 			return i;

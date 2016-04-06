@@ -353,17 +353,17 @@ void CInstrumentEditDlg::SwitchOnNote(int x, int y)
 			pView->SelectChannel(pDoc->GetChannelIndex(CHANID_DPCM));
 	}
 	else {
-		uint8 Source = SNDCHIP_NONE;
 		chan_id_t First = CHANNELS;
 		switch (m_iSelectedInstType) {
-		case INST_VRC6: Source = SNDCHIP_VRC6; First = CHANID_VRC6_PULSE1; break;
-		case INST_N163: Source = SNDCHIP_N163; First = CHANID_N163_CH1; break;
-		case INST_FDS:  Source = SNDCHIP_FDS;  First = CHANID_FDS; break;
-		case INST_VRC7: Source = SNDCHIP_VRC7; First = CHANID_VRC7_CH1; break;
-		case INST_S5B:  Source = SNDCHIP_S5B;  First = CHANID_S5B_CH1; break;
+		case INST_VRC6: First = CHANID_VRC6_PULSE1; break;
+		case INST_N163: First = CHANID_N163_CH1; break;
+		case INST_FDS:  First = CHANID_FDS; break;
+		case INST_VRC7: First = CHANID_VRC7_CH1; break;
+		case INST_S5B:  First = CHANID_S5B_CH1; break;
 		}
-		if (pDoc->ExpansionEnabled(Source) && pDoc->GetChipType(Channel) != Source)
-			pView->SelectChannel(pDoc->GetChannelIndex(First));
+		int Index = pDoc->GetChannelIndex(First);
+		if (Index != -1)
+			pView->SelectChannel(Index);
 	}
 
 	Channel = pView->GetSelectedChannel();		// // //
