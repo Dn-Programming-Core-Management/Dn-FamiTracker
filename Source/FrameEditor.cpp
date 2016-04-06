@@ -739,7 +739,9 @@ int CFrameEditor::GetRowFromPoint(const CPoint &point, bool DropTarget) const
 int CFrameEditor::GetChannelFromPoint(const CPoint &point) const
 {
 	// Translate a point value to a channel
-	return (point.x - ROW_COLUMN_WIDTH - 2) / FRAME_ITEM_WIDTH;
+	int Offs = point.x - ROW_COLUMN_WIDTH - 2;		// // //
+	if (Offs < 0) return -1;
+	return Offs / FRAME_ITEM_WIDTH;
 }
 
 unsigned int CFrameEditor::CalcWidth(int Channels) const
@@ -823,8 +825,10 @@ void CFrameEditor::OnLButtonUp(UINT nFlags, CPoint point)
 		else {
 			// Switch to frame
 			m_pView->SelectFrame(NewFrame);
-			if (Channel >= m_pDocument->GetChannelCount()) Channel = m_pDocument->GetChannelCount() - 1;
-			m_pView->SelectChannel(Channel < 0 ? 0 : Channel);		// // //
+			if (Channel >= 0) {
+				if (Channel >= m_pDocument->GetChannelCount()) Channel = m_pDocument->GetChannelCount() - 1;
+				m_pView->SelectChannel(Channel);		// // //
+			}
 		}
 	}
 
