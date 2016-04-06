@@ -1758,8 +1758,6 @@ void CFamiTrackerView::SelectChannel(unsigned int Channel)
 
 void CFamiTrackerView::SelectFrameChannel(unsigned int Frame, unsigned int Channel)
 {
-	ASSERT(Frame < MAX_FRAMES);
-	ASSERT(Channel < MAX_CHANNELS);
 	m_pPatternEditor->MoveToFrame(Frame);
 	m_pPatternEditor->MoveToChannel(Channel);
 	// This method does no redrawing

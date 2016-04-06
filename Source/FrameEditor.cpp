@@ -823,8 +823,8 @@ void CFrameEditor::OnLButtonUp(UINT nFlags, CPoint point)
 		else {
 			// Switch to frame
 			m_pView->SelectFrame(NewFrame);
-			if (Channel >= 0)
-				m_pView->SelectChannel(Channel);
+			if (Channel >= m_pDocument->GetChannelCount()) Channel = m_pDocument->GetChannelCount() - 1;
+			m_pView->SelectChannel(Channel < 0 ? 0 : Channel);		// // //
 		}
 	}
 
