@@ -27,11 +27,11 @@ stChannelState::stChannelState() :
 	ChannelIndex(-1),
 	Instrument(MAX_INSTRUMENTS),
 	Volume(MAX_VOLUME),
-	Effect(),
 	Effect_LengthCounter(-1),
-	Effect_AutoFMMult(-1),
-	Echo()
+	Effect_AutoFMMult(-1)
 {
+	memset(Effect, -1, EF_COUNT * sizeof(int));
+	memset(Echo, -1, ECHO_BUFFER_LENGTH * sizeof(int));
 }
 
 stFullState::stFullState(int Count) :

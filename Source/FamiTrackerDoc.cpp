@@ -4659,11 +4659,8 @@ stFullState *CFamiTrackerDoc::RetrieveSoundState(unsigned int Track, unsigned in
 	stFullState *S = new stFullState(m_iRegisteredChannels);
 
 	for (int c = 0; c < m_iRegisteredChannels; c++) {
-		stChannelState *State = &S->State[c];
-		State->ChannelIndex = GetChannelType(c);
-		memset(State->Effect, -1, EF_COUNT * sizeof(int));
-		memset(State->Echo, -1, ECHO_BUFFER_LENGTH * sizeof(int));
-		// State->Mute = CFamiTrackerView::GetView()->IsChannelMuted(i);
+		S->State[c].ChannelIndex = GetChannelType(c);
+		// S->State[c].Mute = CFamiTrackerView::GetView()->IsChannelMuted(i);
 	}
 	
 	stChanNote Note;

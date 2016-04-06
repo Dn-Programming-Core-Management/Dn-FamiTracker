@@ -21,7 +21,6 @@
 */
 
 #pragma once
-#pragma warning ( disable : 4351 )		// // // "new behaviour: elements of array [...] will be default initialized"
 
 
 #include "FamiTrackerTypes.h" // constants

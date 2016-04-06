@@ -335,10 +335,11 @@ void CSoundGen::RegisterChannels(int Chip, CFamiTrackerDoc *pDoc)
 
 	// Register the channels in the document
 	// Expansion & internal channels
-	for (int i = 0; i < CHANNELS; ++i) {
-		if (m_pTrackerChannels[i] && ((m_pTrackerChannels[i]->GetChip() & Chip) || (i < 5))			// // //
-								  && (i >= CHANID_FDS || i < CHANID_N163_CH1 + pDoc->GetNamcoChannels())) {
-			pDoc->RegisterChannel(m_pTrackerChannels[i], i, m_pTrackerChannels[i]->GetChip());
+	for (int i = 0; i < sizeof(m_pTrackerChannels) / sizeof(CTrackerChannel*); ++i) {
+		int ID = m_pTrackerChannels[i]->GetID();		// // //
+		if (m_pChannels[i] && ((m_pTrackerChannels[i]->GetChip() & Chip) || (i < 5))			// // //
+						   && (i >= CHANID_FDS || i < CHANID_N163_CH1 + pDoc->GetNamcoChannels())) {
+			pDoc->RegisterChannel(m_pTrackerChannels[i], ID, m_pTrackerChannels[i]->GetChip());
 		}
 	}
 
@@ -962,8 +963,12 @@ void CSoundGen::ApplyGlobalState()		// // //
 			m_iGrooveIndex = -1;
 		}
 		SetupSpeed();
-		for (int i = 0; i < m_pDocument->GetChannelCount(); i++)
-			m_pChannels[State->State[i].ChannelIndex]->ApplyChannelState(&State->State[i]);
+		for (int i = 0; i < m_pDocument->GetChannelCount(); i++) {
+			for (int j = 0; j < sizeof(m_pTrackerChannels) / sizeof(CTrackerChannel*); ++j)		// // // pick this out later
+				if (m_pChannels[j] && m_pTrackerChannels[j]->GetID() == State->State[i].ChannelIndex) {
+					m_pChannels[j]->ApplyChannelState(&State->State[i]); break;
+				}
+		}
 		delete State;
 	}
 }
@@ -1915,31 +1920,30 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 
 void CSoundGen::PlayChannelNotes()
 {
-	// Feed queued notes into channels
-	const int Channels = m_pDocument->GetChannelCount();
-
 	// Read notes
-	for (int i = 0; i < Channels; ++i) {
-		int Channel = m_pDocument->GetChannelType(i);
+	for (int i = 0; i < CHANNELS; ++i) {		// // //
+		int Index = m_pTrackerChannels[i]->GetID();
+		int Channel = m_pDocument->GetChannelIndex(m_pTrackerChannels[Index]->GetID());
+		if (Channel == -1) continue;
 		
 		// Run auto-arpeggio, if enabled
-		int Arpeggio = m_pTrackerView->GetAutoArpeggio(i);
+		int Arpeggio = m_pTrackerView->GetAutoArpeggio(Channel);
 		if (Arpeggio > 0) {
-			m_pChannels[Channel]->Arpeggiate(Arpeggio);
+			m_pChannels[Index]->Arpeggiate(Arpeggio);
 		}
 
 		// Check if new note data has been queued for playing
-		if (m_pTrackerChannels[Channel]->NewNoteData()) {
-			stChanNote Note = m_pTrackerChannels[Channel]->GetNote();
-			PlayNote(Channel, &Note, m_pDocument->GetEffColumns(m_iPlayTrack, i) + 1);
+		if (m_pTrackerChannels[Index]->NewNoteData()) {
+			stChanNote Note = m_pTrackerChannels[Index]->GetNote();
+			PlayNote(Index, &Note, m_pDocument->GetEffColumns(m_iPlayTrack, Channel) + 1);
 		}
 
 		// Pitch wheel
-		int Pitch = m_pTrackerChannels[Channel]->GetPitch();
-		m_pChannels[Channel]->SetPitch(Pitch);
+		int Pitch = m_pTrackerChannels[Index]->GetPitch();
+		m_pChannels[Index]->SetPitch(Pitch);
 
 		// Update volume meters
-		m_pTrackerChannels[Channel]->SetVolumeMeter(m_pAPU->GetVol(Channel));
+		m_pTrackerChannels[Index]->SetVolumeMeter(m_pAPU->GetVol(m_pTrackerChannels[Index]->GetID()));
 	}
 
 	// Instrument sequence visualization
