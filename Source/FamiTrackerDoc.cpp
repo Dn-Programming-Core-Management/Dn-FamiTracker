@@ -3683,7 +3683,6 @@ void CFamiTrackerDoc::MoveTrackUp(unsigned int Track)
 	ASSERT(Track > 0);
 
 	SwapTracks(Track, Track - 1);
-	m_pBookmarkManager->SwapTracks(Track, Track - 1);		// // //
 	SetModifiedFlag();
 	SetExceededFlag();		// // //
 }
@@ -3693,7 +3692,6 @@ void CFamiTrackerDoc::MoveTrackDown(unsigned int Track)
 	ASSERT(Track < MAX_TRACKS);
 
 	SwapTracks(Track, Track + 1);
-	m_pBookmarkManager->SwapTracks(Track, Track + 1);		// // //
 	SetModifiedFlag();
 	SetExceededFlag();		// // //
 }
