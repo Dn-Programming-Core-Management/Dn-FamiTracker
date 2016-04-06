@@ -150,6 +150,7 @@ void CChannelHandlerVRC7::HandleNote(int Note, int Octave)
 		m_iPeriod = 0;
 
 	// Trigger note
+	m_iNote	= CChannelHandler::RunNote(Octave, Note); // m_iPeriod altered
 	m_bHold	= true;
 
 	if ((m_iEffect != EF_PORTAMENTO || m_iPortaSpeed == 0) || m_iCommand == CMD_NOTE_HALT)
