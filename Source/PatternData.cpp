@@ -21,11 +21,15 @@
 */
 
 #include "stdafx.h"
-#include "FamiTrackerDoc.h"
+#include "FamiTrackerTypes.h"		// // //
 #include "PatternData.h"
 
 // This class contains pattern data
 // A list of these objects exists inside the document one for each song
+
+const int CPatternData::DEFAULT_FIRST_HIGHLIGHT = 4;
+const int CPatternData::DEFAULT_SECOND_HIGHLIGHT = 16;
+const stHighlight CPatternData::DEFAULT_HIGHLIGHT = {DEFAULT_FIRST_HIGHLIGHT, DEFAULT_SECOND_HIGHLIGHT, 0};
 
 CPatternData::CPatternData(unsigned int PatternLength) :		// // //
 	m_iPatternLength(PatternLength),
@@ -33,7 +37,7 @@ CPatternData::CPatternData(unsigned int PatternLength) :		// // //
 	m_iSongSpeed(DEFAULT_SPEED),
 	m_iSongTempo(DEFAULT_TEMPO_NTSC),
 	m_bUseGroove(false),		// // //
-	m_vRowHighlight(CFamiTrackerDoc::DEFAULT_HIGHLIGHT)		// // //
+	m_vRowHighlight(DEFAULT_HIGHLIGHT)		// // //
 {
 	// Clear memory
 	memset(m_iFrameList, 0, sizeof(char) * MAX_FRAMES * MAX_CHANNELS);

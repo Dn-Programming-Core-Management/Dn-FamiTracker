@@ -40,6 +40,11 @@ struct stHighlight {
 	int Offset;
 };
 
+// // // moved from FamiTrackerDoc.h
+const unsigned int DEFAULT_TEMPO_NTSC		 = 150;
+const unsigned int DEFAULT_TEMPO_PAL		 = 125;
+const unsigned int DEFAULT_SPEED			 = 6;
+
 static const stChanNote BLANK_NOTE = {NONE, 0, MAX_VOLUME, MAX_INSTRUMENTS, {EF_NONE, EF_NONE, EF_NONE, EF_NONE}, {0, 0, 0, 0}}; // // //
 
 // TODO rename to CTrack perhaps?
@@ -144,6 +149,12 @@ public:
 	stHighlight GetRowHighlight() const;
 
 	void SwapChannels(unsigned int First, unsigned int Second);		// // //
+
+public:
+	// // // moved from CFamiTrackerDoc
+	static const int DEFAULT_FIRST_HIGHLIGHT;
+	static const int DEFAULT_SECOND_HIGHLIGHT;
+	static const stHighlight DEFAULT_HIGHLIGHT;
 
 private:
 	stChanNote *GetPatternData(unsigned int Channel, unsigned int Pattern, unsigned int Row) const;

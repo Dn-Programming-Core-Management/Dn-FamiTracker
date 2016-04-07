@@ -39,9 +39,6 @@
 // #define DISABLE_SAVE		// // //
 
 // Default song settings
-const unsigned int DEFAULT_TEMPO_NTSC		 = 150;
-const unsigned int DEFAULT_TEMPO_PAL		 = 125;
-const unsigned int DEFAULT_SPEED			 = 6;
 const machine_t    DEFAULT_MACHINE_TYPE		 = NTSC;
 const unsigned int DEFAULT_SPEED_SPLIT_POINT = 32;
 const unsigned int OLD_SPEED_SPLIT_POINT	 = 21;
@@ -344,10 +341,6 @@ public:
 	static const char*	NEW_INST_NAME;
 
 	static const int	DEFAULT_NAMCO_CHANS;
-
-	static const int	DEFAULT_FIRST_HIGHLIGHT;
-	static const int	DEFAULT_SECOND_HIGHLIGHT;
-	static const stHighlight DEFAULT_HIGHLIGHT;		// // //
 
 	static const bool	DEFAULT_LINEAR_PITCH;
 

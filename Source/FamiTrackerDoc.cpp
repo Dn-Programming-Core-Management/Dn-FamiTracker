@@ -85,10 +85,6 @@ const char* CFamiTrackerDoc::NEW_INST_NAME = "New instrument";
 // Make 1 channel default since 8 sounds bad
 const int	CFamiTrackerDoc::DEFAULT_NAMCO_CHANS = 1;
 
-const int	CFamiTrackerDoc::DEFAULT_FIRST_HIGHLIGHT = 4;
-const int	CFamiTrackerDoc::DEFAULT_SECOND_HIGHLIGHT = 16;
-const stHighlight CFamiTrackerDoc::DEFAULT_HIGHLIGHT = {DEFAULT_FIRST_HIGHLIGHT, DEFAULT_SECOND_HIGHLIGHT, 0};		// // //
-
 const bool	CFamiTrackerDoc::DEFAULT_LINEAR_PITCH = false;
 
 // File I/O constants
@@ -380,7 +376,7 @@ void CFamiTrackerDoc::DeleteContents()
 	m_iChannelsAvailable = CHANNELS_DEFAULT;
 	m_iSpeedSplitPoint	 = DEFAULT_SPEED_SPLIT_POINT;
 
-	m_vHighlight = DEFAULT_HIGHLIGHT;		// // //
+	m_vHighlight = CPatternData::DEFAULT_HIGHLIGHT;		// // //
 
 	ResetDetuneTables();		// // //
 
@@ -659,6 +655,7 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 	// Replace the original
 	if (!MoveFileEx(TempFile, lpszPathName, MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED)) {
 		// Display message if saving failed
+		AfxDebugBreak();		// // //
 		TCHAR *lpMsgBuf;
 		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
 		CString	strFormatted;
@@ -1621,7 +1618,7 @@ void CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile, const int Ve
 
 	// TODO read m_bLinearPitch
 
-	m_vHighlight = DEFAULT_HIGHLIGHT;		// // //
+	m_vHighlight = CPatternData::DEFAULT_HIGHLIGHT;		// // //
 
 	if (Version > 3) {
 		m_vHighlight.First = pDocFile->GetBlockInt();
@@ -4908,7 +4905,7 @@ void CFamiTrackerDoc::MakeKraid()			// // // Easter Egg
 	SetEffColumns(0, 4, 0);
 	SetSpeedSplitPoint(32);
 	SelectExpansionChip(SNDCHIP_NONE);
-	SetHighlight(DEFAULT_HIGHLIGHT);
+	SetHighlight(CPatternData::DEFAULT_HIGHLIGHT);
 	ResetDetuneTables();
 	for (int i = 0; i < MAX_GROOVE; i++)
 		SAFE_RELEASE(m_pGrooveTable[i]);
