@@ -336,8 +336,6 @@ public:
 
 	// Constants
 public:
-	static const char*	DEFAULT_TRACK_NAME;
-	static const int	DEFAULT_ROW_COUNT;
 	static const char*	NEW_INST_NAME;
 
 	static const int	DEFAULT_NAMCO_CHANS;
@@ -498,7 +496,6 @@ private:
 
 	// Patterns and song data
 	CPatternData	*m_pTracks[MAX_TRACKS];						// List of all tracks
-	CString			m_sTrackNames[MAX_TRACKS];
 
 	unsigned int	m_iTrackCount;								// Number of tracks added
 	unsigned int	m_iChannelsAvailable;						// Number of channels added

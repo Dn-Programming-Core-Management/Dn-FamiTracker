@@ -24,26 +24,25 @@
 #include "FamiTrackerTypes.h"		// // //
 #include "PatternData.h"
 
+// Defaults when creating new modules
+const unsigned CPatternData::DEFAULT_ROW_COUNT	= 64;
+const stHighlight CPatternData::DEFAULT_HIGHLIGHT = {4, 16, 0};		// // //
+
 // This class contains pattern data
 // A list of these objects exists inside the document one for each song
 
-const int CPatternData::DEFAULT_FIRST_HIGHLIGHT = 4;
-const int CPatternData::DEFAULT_SECOND_HIGHLIGHT = 16;
-const stHighlight CPatternData::DEFAULT_HIGHLIGHT = {DEFAULT_FIRST_HIGHLIGHT, DEFAULT_SECOND_HIGHLIGHT, 0};
-
 CPatternData::CPatternData(unsigned int PatternLength) :		// // //
+	m_sTrackName(_T("New song")),		// // //
 	m_iPatternLength(PatternLength),
 	m_iFrameCount(1),
 	m_iSongSpeed(DEFAULT_SPEED),
 	m_iSongTempo(DEFAULT_TEMPO_NTSC),
 	m_bUseGroove(false),		// // //
-	m_vRowHighlight(DEFAULT_HIGHLIGHT)		// // //
+	m_vRowHighlight(DEFAULT_HIGHLIGHT),		// // //
+	m_iFrameList(),		// // //
+	m_pPatternData(),
+	m_iEffectColumns()
 {
-	// Clear memory
-	memset(m_iFrameList, 0, sizeof(char) * MAX_FRAMES * MAX_CHANNELS);
-	memset(m_pPatternData, 0, sizeof(stChanNote*) * MAX_CHANNELS * MAX_PATTERN);
-	memset(m_iEffectColumns, 0, sizeof(char) * MAX_CHANNELS);
-
 	// // // Pre-allocate pattern 0 for all channels
 	for (int i = 0; i < MAX_CHANNELS; ++i)
 		AllocatePattern(i, 0);
@@ -61,17 +60,12 @@ CPatternData::~CPatternData()
 
 bool CPatternData::IsCellFree(unsigned int Channel, unsigned int Pattern, unsigned int Row) const
 {
-	stChanNote *pNote = GetPatternData(Channel, Pattern, Row);
+	const stChanNote *pNote = GetPatternData(Channel, Pattern, Row);
 
-	if (pNote == NULL)
-		return true;
-
-	bool IsFree = pNote->Note == NONE && 
-		pNote->EffNumber[0] == 0 && pNote->EffNumber[1] == 0 && 
-		pNote->EffNumber[2] == 0 && pNote->EffNumber[3] == 0 && 
+	return !pNote || pNote->Note == NONE &&		// // //
+		pNote->EffNumber[0] == EF_NONE && pNote->EffNumber[1] == EF_NONE &&
+		pNote->EffNumber[2] == EF_NONE && pNote->EffNumber[3] == EF_NONE &&
 		pNote->Vol == MAX_VOLUME && pNote->Instrument == MAX_INSTRUMENTS;
-
-	return IsFree;
 }
 
 bool CPatternData::IsPatternEmpty(unsigned int Channel, unsigned int Pattern) const
@@ -104,7 +98,7 @@ stChanNote *CPatternData::GetPatternData(unsigned int Channel, unsigned int Patt
 {
 	// Private method, may return NULL
 	if (!m_pPatternData[Channel][Pattern])
-		return NULL;
+		return nullptr;
 
 	return m_pPatternData[Channel][Pattern] + Row;
 }
@@ -146,9 +140,7 @@ void CPatternData::ClearEverything()
 void CPatternData::ClearPattern(unsigned int Channel, unsigned int Pattern)
 {
 	// Deletes a specified pattern in a channel
-	if (m_pPatternData[Channel][Pattern] != NULL) {
-		SAFE_RELEASE_ARRAY(m_pPatternData[Channel][Pattern]);
-	}
+	SAFE_RELEASE_ARRAY(m_pPatternData[Channel][Pattern]);
 }
 
 unsigned int CPatternData::GetFramePattern(unsigned int Frame, unsigned int Channel) const
