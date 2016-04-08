@@ -47,5 +47,11 @@
 void GradientRectTriple(CDC *pDC, int x, int y, int w, int h, COLORREF c1, COLORREF c2, COLORREF c3);
 void GradientBar(CDC *pDC, int x, int y, int w, int h, COLORREF col_fg, COLORREF col_bg);
 void GradientRect(CDC *pDC, int x, int y, int w, int h, COLORREF top_col, COLORREF bottom_col);
+
+// // // support for rectangles
+void GradientRectTriple(CDC *pDC, const CRect &r, COLORREF c1, COLORREF c2, COLORREF c3);
+void GradientBar(CDC *pDC, const CRect &r, COLORREF col_fg, COLORREF col_bg);
+void GradientRect(CDC *pDC, const CRect &r, COLORREF top_col, COLORREF bottom_col);
+
 void BlurBuffer(COLORREF *pBuffer, int Width, int Height, const int *pColorDecay);
 void PutPixel(COLORREF *pBuffer, int Width, int Height, float x, float y, COLORREF col);

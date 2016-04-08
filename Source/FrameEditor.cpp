@@ -279,7 +279,7 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 	}
 
 	// Draw selected row
-	GradientBar(&m_dcBack, 0, DPI::SY(m_iMiddleRow * ROW_HEIGHT + 3), m_iWinWidth, DPI::SY(ROW_HEIGHT + 1), RowColor, ColBackground);	
+	GradientBar(&m_dcBack, DPI::Rect(0, m_iMiddleRow * ROW_HEIGHT + 3, m_iWinWidth, ROW_HEIGHT + 1), RowColor, ColBackground);	
 
 	int FirstVisibleFrame = ActiveFrame - m_iMiddleRow;
 	int Frame = 0;
@@ -298,34 +298,34 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 	// Draw rows
 	CBookmarkCollection *pCol = m_pDocument->GetBookmarkManager()->GetCollection(Track);		// // //
 	for (int i = Start; i < End; ++i) {
+		CRect RowRect = DPI::Rect(0, i * ROW_HEIGHT + 4, m_iWinWidth, ROW_HEIGHT - 1);		// // //
+
 		// // // Highlight by bookmarks
 		if (i != m_iMiddleRow) if (const unsigned Count = pCol->GetCount()) for (unsigned j = 0; j < Count; ++j)
 			if (pCol->GetBookmark(j)->m_iFrame == Frame) {
-				GradientBar(&m_dcBack, 0, DPI::SY(i * ROW_HEIGHT + 4), DPI::SX(m_iWinWidth), DPI::SY(ROW_HEIGHT - 1),
-							theApp.GetSettings()->Appearance.iColBackgroundHilite, ColBackground);
+				GradientBar(&m_dcBack, RowRect, theApp.GetSettings()->Appearance.iColBackgroundHilite, ColBackground);
 				break;
 			}
 		
 		// Play cursor
 		if (PlayFrame == Frame && !pView->GetFollowMode() && theApp.IsPlaying()) {
-			GradientBar(&m_dcBack, 0, DPI::SY(i * ROW_HEIGHT + 4), DPI::SX(m_iWinWidth), DPI::SY(ROW_HEIGHT - 1),
-				theApp.GetSettings()->Appearance.iColCurrentRowPlaying, ColBackground);		// // //
+			GradientBar(&m_dcBack, RowRect, theApp.GetSettings()->Appearance.iColCurrentRowPlaying, ColBackground);		// // //
 		}
 
 		// Queue cursor
 		if (theApp.GetSoundGenerator()->GetQueueFrame() == Frame) {
-			GradientBar(&m_dcBack, 0, DPI::SY(i * ROW_HEIGHT + 4), DPI::SX(m_iWinWidth), DPI::SY(ROW_HEIGHT - 1), QUEUE_COLOR, ColBackground);
+			GradientBar(&m_dcBack, RowRect, QUEUE_COLOR, ColBackground);
 		}
 
 		bool bSelectedRow = m_bSelecting && (Frame >= SelectStart) && (Frame <= SelectEnd);
 
 		// Selection
 		if (bSelectedRow) {
-			m_dcBack.FillSolidRect(DPI::SX(ROW_COLUMN_WIDTH), DPI::SY(i * ROW_HEIGHT + 3), DPI::SX(m_iWinWidth - ROW_COLUMN_WIDTH), DPI::SY(ROW_HEIGHT), ColSelect);
+			m_dcBack.FillSolidRect(DPI::Rect(ROW_COLUMN_WIDTH, i * ROW_HEIGHT + 3, m_iWinWidth - ROW_COLUMN_WIDTH, ROW_HEIGHT), ColSelect);
 			if (Frame == SelectStart)
-				m_dcBack.FillSolidRect(DPI::SX(ROW_COLUMN_WIDTH), DPI::SY(i * ROW_HEIGHT + 3), DPI::SX(PatternAreaWidth), DPI::SY(1), ColSelectEdge);
+				m_dcBack.FillSolidRect(DPI::Rect(ROW_COLUMN_WIDTH, i * ROW_HEIGHT + 3, PatternAreaWidth, 1), ColSelectEdge);
 			if (Frame == SelectEnd) 
-				m_dcBack.FillSolidRect(DPI::SX(ROW_COLUMN_WIDTH), DPI::SY((i + 1) * ROW_HEIGHT + 3 - 1), DPI::SX(PatternAreaWidth), DPI::SY(1), ColSelectEdge);
+				m_dcBack.FillSolidRect(DPI::Rect(ROW_COLUMN_WIDTH, (i + 1) * ROW_HEIGHT + 3 - 1, PatternAreaWidth, 1), ColSelectEdge);
 		}
 
 		if (i == m_iMiddleRow) {
@@ -333,12 +333,12 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 			int x = ((ActiveChannel - m_iFirstChannel) * FRAME_ITEM_WIDTH);
 			int y = m_iMiddleRow * ROW_HEIGHT + 3;
 			
-			GradientBar(&m_dcBack, DPI::SX(ROW_COLUMN_WIDTH + 2 + x), DPI::SY(y), DPI::SX(FRAME_ITEM_WIDTH), DPI::SY(ROW_HEIGHT + 1), ColCursor, ColBackground);
-			m_dcBack.Draw3dRect(DPI::SX(ROW_COLUMN_WIDTH + 2 + x), DPI::SY(y), DPI::SX(FRAME_ITEM_WIDTH), DPI::SY(ROW_HEIGHT + 1), BLEND(ColCursor, 0xFFFFFF, 90), BLEND(ColCursor, ColBackground, 60));
+			GradientBar(&m_dcBack, DPI::Rect(ROW_COLUMN_WIDTH + 2 + x, y, FRAME_ITEM_WIDTH, ROW_HEIGHT + 1), ColCursor, ColBackground);
+			m_dcBack.Draw3dRect(DPI::Rect(ROW_COLUMN_WIDTH + 2 + x, y, FRAME_ITEM_WIDTH, ROW_HEIGHT + 1), BLEND(ColCursor, 0xFFFFFF, 90), BLEND(ColCursor, ColBackground, 60));
 
 			if (m_bInputEnable && m_bCursor) {
 				// Flashing black box indicating that input is active
-				m_dcBack.FillSolidRect(DPI::SX(ROW_COLUMN_WIDTH + 4 + x + CURSOR_WIDTH * m_iCursorPos), DPI::SY(y + 2), DPI::SX(CURSOR_WIDTH), DPI::SY(ROW_HEIGHT - 3), ColBackground);
+				m_dcBack.FillSolidRect(DPI::Rect(ROW_COLUMN_WIDTH + 4 + x + CURSOR_WIDTH * m_iCursorPos, y + 2, CURSOR_WIDTH, ROW_HEIGHT - 3), ColBackground);
 			}
 		}
 
@@ -356,8 +356,8 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 			else
 				m_dcBack.SetTextColor(DIM(CurrentColor, 70));
 
-			CRect rect(DPI::SX(30 + j * FRAME_ITEM_WIDTH), DPI::SY(i * ROW_HEIGHT + 3), DPI::SX(28 + j * FRAME_ITEM_WIDTH + FRAME_ITEM_WIDTH), DPI::SY(i * ROW_HEIGHT + 3 + 20));
-			m_dcBack.DrawText(MakeIntString(pDoc->GetPatternAtFrame(Track, Frame, Chan), _T("%02X")), rect, DT_LEFT | DT_TOP | DT_NOCLIP);
+			m_dcBack.DrawText(MakeIntString(pDoc->GetPatternAtFrame(Track, Frame, Chan), _T("%02X")),		// // //
+							  DPI::Rect(30 + j * FRAME_ITEM_WIDTH, i * ROW_HEIGHT + 3, FRAME_ITEM_WIDTH - 2, 20), DT_LEFT | DT_TOP | DT_NOCLIP);
 		}
 
 		Frame++;
@@ -368,7 +368,7 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 		if (!m_bSelecting || (m_iDragRow <= SelectStart || m_iDragRow >= (SelectEnd + 1))) {
 			if (m_iDragRow >= FirstVisibleFrame && m_iDragRow <= FirstVisibleFrame + m_iRowsVisible) {
 				int y = m_iDragRow - FirstVisibleFrame;
-				m_dcBack.FillSolidRect(DPI::SX(ROW_COLUMN_WIDTH), DPI::SY(y * ROW_HEIGHT + 3), DPI::SX(m_iWinWidth), DPI::SY(2), ColDragCursor);
+				m_dcBack.FillSolidRect(DPI::Rect(ROW_COLUMN_WIDTH, y * ROW_HEIGHT + 3, m_iWinWidth, 2), ColDragCursor);
 			}
 		}
 	}

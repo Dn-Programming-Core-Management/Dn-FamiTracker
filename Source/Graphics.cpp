@@ -23,7 +23,9 @@
 #include "stdafx.h"
 #include "Graphics.h"
 
-void GradientRectTriple(CDC *pDC, int x, int y, int w, int h, COLORREF c1, COLORREF c2, COLORREF c3)
+// // // local methods using right/bottom instead of width/height
+
+static void __GradientRectTriple(CDC *pDC, int x, int y, int r, int b, COLORREF c1, COLORREF c2, COLORREF c3)
 {
 	// c1 -> c2 -> c3
 	TRIVERTEX Vertices[4];
@@ -36,22 +38,22 @@ void GradientRectTriple(CDC *pDC, int x, int y, int w, int h, COLORREF c1, COLOR
 	Vertices[0].Blue = BLUE(c1) << 8;
 	Vertices[0].Alpha = 0xFF00;
 
-	Vertices[1].x = x + w;
-	Vertices[1].y = y + h / 3;
+	Vertices[1].x = r;
+	Vertices[1].y = (2 * y + b) / 3;
 	Vertices[1].Red = RED(c2) << 8;
 	Vertices[1].Green = GREEN(c2) << 8;
 	Vertices[1].Blue = BLUE(c2) << 8;
 	Vertices[1].Alpha = 0xFF00;
 
 	Vertices[2].x = x;
-	Vertices[2].y = y + h / 3;
+	Vertices[2].y = (2 * y + b) / 3;
 	Vertices[2].Red = RED(c2) << 8;
 	Vertices[2].Green = GREEN(c2) << 8;
 	Vertices[2].Blue = BLUE(c2) << 8;
 	Vertices[2].Alpha = 0xFF00;
 
-	Vertices[3].x = x + w;
-	Vertices[3].y = y + h;
+	Vertices[3].x = r;
+	Vertices[3].y = b;
 	Vertices[3].Red = RED(c3) << 8;
 	Vertices[3].Green = GREEN(c3) << 8;
 	Vertices[3].Blue = BLUE(c3) << 8;
@@ -65,7 +67,7 @@ void GradientRectTriple(CDC *pDC, int x, int y, int w, int h, COLORREF c1, COLOR
 	pDC->GradientFill(Vertices, 4, Rects, 2, GRADIENT_FILL_RECT_V);
 }
 
-void GradientBar(CDC *pDC, int x, int y, int w, int h, COLORREF col_fg, COLORREF col_bg)
+static void __GradientBar(CDC *pDC, int x, int y, int r, int b, COLORREF col_fg, COLORREF col_bg)
 {
 	TRIVERTEX Vertices[2];
 	GRADIENT_RECT Rect;
@@ -80,8 +82,8 @@ void GradientBar(CDC *pDC, int x, int y, int w, int h, COLORREF col_fg, COLORREF
 	Vertices[0].Blue = BLUE(col_fg) << 8;
 	Vertices[0].Alpha = 0xFF00;
 
-	Vertices[1].x = x + w;
-	Vertices[1].y = y + h;
+	Vertices[1].x = r;
+	Vertices[1].y = b;
 	Vertices[1].Red = RED(col2) << 8;
 	Vertices[1].Green = GREEN(col2) << 8;
 	Vertices[1].Blue = BLUE(col2) << 8;
@@ -90,11 +92,11 @@ void GradientBar(CDC *pDC, int x, int y, int w, int h, COLORREF col_fg, COLORREF
 	Rect.UpperLeft = 0;
 	Rect.LowerRight = 1;
 
-	pDC->FillSolidRect(x, y, w, 1, top_col);
+	pDC->FillSolidRect(x, y, r - x, 1, top_col);
 	pDC->GradientFill(Vertices, 2, &Rect, 1, GRADIENT_FILL_RECT_V);
 }
 
-void GradientRect(CDC *pDC, int x, int y, int w, int h, COLORREF top_col, COLORREF bottom_col)
+static void __GradientRect(CDC *pDC, int x, int y, int r, int b, COLORREF top_col, COLORREF bottom_col)
 {
 	TRIVERTEX Vertices[2];
 	GRADIENT_RECT Rect;
@@ -106,8 +108,8 @@ void GradientRect(CDC *pDC, int x, int y, int w, int h, COLORREF top_col, COLORR
 	Vertices[0].Blue = BLUE(top_col) << 8;
 	Vertices[0].Alpha = 0xFF00;
 
-	Vertices[1].x = x + w;
-	Vertices[1].y = y + h;
+	Vertices[1].x = r;
+	Vertices[1].y = b;
 	Vertices[1].Red = RED(bottom_col) << 8;
 	Vertices[1].Green = GREEN(bottom_col) << 8;
 	Vertices[1].Blue = BLUE(bottom_col) << 8;
@@ -117,6 +119,36 @@ void GradientRect(CDC *pDC, int x, int y, int w, int h, COLORREF top_col, COLORR
 	Rect.LowerRight = 1;
 
 	pDC->GradientFill(Vertices, 2, &Rect, 1, GRADIENT_FILL_RECT_V);
+}
+
+void GradientRectTriple(CDC *pDC, int x, int y, int w, int h, COLORREF c1, COLORREF c2, COLORREF c3)
+{
+	__GradientRectTriple(pDC, x, y, x + w, y + h, c1, c2, c3);		// // //
+}
+
+void GradientBar(CDC *pDC, int x, int y, int w, int h, COLORREF col_fg, COLORREF col_bg)
+{
+	__GradientBar(pDC, x, y, x + w, y + h, col_fg, col_bg);		// // //
+}
+
+void GradientRect(CDC *pDC, int x, int y, int w, int h, COLORREF top_col, COLORREF bottom_col)
+{
+	__GradientRect(pDC, x, y, x + w, y + h, top_col, bottom_col);		// // //
+}
+
+void GradientRectTriple(CDC *pDC, const CRect &r, COLORREF c1, COLORREF c2, COLORREF c3)		// // //
+{
+	__GradientRectTriple(pDC, r.left, r.top, r.right, r.bottom, c1, c2, c3);
+}
+
+void GradientBar(CDC *pDC, const CRect &r, COLORREF col_fg, COLORREF col_bg)		// // //
+{
+	__GradientBar(pDC, r.left, r.top, r.right, r.bottom, col_fg, col_bg);
+}
+
+void GradientRect(CDC *pDC, const CRect &r, COLORREF top_col, COLORREF bottom_col)		// // //
+{
+	__GradientRect(pDC, r.left, r.top, r.right, r.bottom, top_col, bottom_col);
 }
 
 void BlurBuffer(COLORREF *pBuffer, int Width, int Height, const int *pColorDecay)
