@@ -875,11 +875,6 @@ int CSoundGen::ReadPeriodTable(int index, int Chip) const		// // //
 	}
 }
 
-int CSoundGen::ReadNamcoPeriodTable(int index) const
-{
-	return m_iNoteLookupTableN163[index];
-}
-
 void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 {
 	// Called from player thread

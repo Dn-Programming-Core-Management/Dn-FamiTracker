@@ -58,7 +58,6 @@
 #include "FamiTrackerDoc.h"
 #include "ModuleException.h"		// // //
 #include "TrackerChannel.h"
-#include "MainFrm.h"
 #include "DocumentFile.h"
 #include "Settings.h"
 #include "SoundGen.h"
@@ -182,16 +181,14 @@ CFamiTrackerDoc::~CFamiTrackerDoc()
 	// Clean up
 
 	// Patterns
-	for (int i = 0; i < MAX_TRACKS; ++i) {
+	for (int i = 0; i < MAX_TRACKS; ++i)
 		SAFE_RELEASE(m_pTracks[i]);
-	}
 
 	// // // Grooves
 	for (int i = 0; i < MAX_GROOVE; ++i)
 		SAFE_RELEASE(m_pGrooveTable[i]);
 	
-	m_pInstrumentManager->ClearAll();		// // //
-	SAFE_RELEASE(m_pInstrumentManager);
+	SAFE_RELEASE(m_pInstrumentManager);		// // //
 	SAFE_RELEASE(m_pBookmarkManager);
 }
 
@@ -342,19 +339,19 @@ void CFamiTrackerDoc::DeleteContents()
 
 	UpdateAllViews(NULL, UPDATE_CLOSE);	// TODO remove
 
-	m_pInstrumentManager->ClearAll();		// // //
-	m_pBookmarkManager->ClearAll();		// // //
+	// Delete all patterns
+	for (int i = 0; i < MAX_TRACKS; ++i)
+		SAFE_RELEASE(m_pTracks[i]);
 
 	// // // Grooves
 	for (int i = 0; i < MAX_GROOVE; ++i)
 		SAFE_RELEASE(m_pGrooveTable[i]);
 
+	m_pInstrumentManager->ClearAll();		// // //
+	m_pBookmarkManager->ClearAll();		// // //
+
 	// Clear number of tracks
 	m_iTrackCount = 1;
-
-	// Delete all patterns
-	for (int i = 0; i < MAX_TRACKS; ++i)
-		SAFE_RELEASE(m_pTracks[i]);
 
 	// Clear song info
 	memset(m_strName, 0, 32);
@@ -599,7 +596,6 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 	m_pCurrentDocument = &DocumentFile;		// // //
 	CFileException ex;
 	TCHAR TempPath[MAX_PATH], TempFile[MAX_PATH];
-	ULONGLONG FileSize;
 
 	// First write to a temp file (if saving fails, the original is not destroyed)
 	GetTempPath(MAX_PATH, TempPath);
@@ -632,7 +628,7 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 
 	DocumentFile.EndDocument();
 
-	FileSize = DocumentFile.GetLength();
+	ULONGLONG FileSize = DocumentFile.GetLength();
 
 	DocumentFile.Close();
 	m_pCurrentDocument = nullptr;		// // //
@@ -667,10 +663,10 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 	CloseHandle(hOldFile);
 
 	// Todo: avoid calling the main window from document class
-	CMainFrame *pMainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
-	if (pMainFrame != NULL) {
+	if (CFrameWnd *pMainFrame = static_cast<CFrameWnd*>(AfxGetMainWnd())) {		// // //
 		CString text;
-		AfxFormatString1(text, IDS_FILE_SAVED, MakeIntString(static_cast<int>(FileSize)));
+		text.Format("%i", FileSize);
+		AfxFormatString1(text, IDS_FILE_SAVED, text);
 		pMainFrame->SetMessageText(text);
 	}
 

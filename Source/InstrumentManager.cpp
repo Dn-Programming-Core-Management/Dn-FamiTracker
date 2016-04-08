@@ -43,6 +43,14 @@ CInstrumentManager::CInstrumentManager(CFTMComponentInterface *pInterface) :
 		m_pSequenceManager.push_back(std::unique_ptr<CSequenceManager>(new CSequenceManager(i == 2 ? 3 : SEQ_COUNT)));
 }
 
+CInstrumentManager::~CInstrumentManager()
+{
+	const auto End = m_pInstruments.end();
+	for (auto it = m_pInstruments.begin(); it < End; ++it)
+		if (*it != nullptr)
+			(*it)->RegisterManager(nullptr);
+}
+
 //
 // Instrument methods
 //

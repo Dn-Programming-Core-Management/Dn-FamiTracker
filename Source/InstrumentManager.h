@@ -44,6 +44,7 @@ class CInstrumentManager : public CInstrumentManagerInterface
 {
 public:
 	CInstrumentManager(CFTMComponentInterface *pInterface = nullptr);
+	~CInstrumentManager();
 
 	void ClearAll();
 

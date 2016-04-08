@@ -23,7 +23,6 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "FamiTrackerDoc.h"
-// #include "InstrumentManager.h"
 #include "Instrument.h"
 #include "TransposeDlg.h"
 

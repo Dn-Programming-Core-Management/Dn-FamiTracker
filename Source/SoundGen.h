@@ -140,8 +140,6 @@ public:
 	int			 ReadVibratoTable(int index) const;
 	int			 ReadPeriodTable(int index, int Chip) const;		// // //
 
-	int			 ReadNamcoPeriodTable(int index) const;
-
 	// Player interface
 	void		 StartPlayer(play_mode_t Mode, int Track);	
 	void		 StopPlayer();

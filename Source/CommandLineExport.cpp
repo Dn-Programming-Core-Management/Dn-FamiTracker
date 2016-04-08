@@ -20,7 +20,6 @@
 ** must bear this legend.
 */
 
-#include <vector>		// needed for Complier.h > Chunk.h
 #include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
