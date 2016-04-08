@@ -59,6 +59,7 @@
 #include "SwapDlg.h"		// // //
 #include "SpeedDlg.h"		// // //
 #include "TransposeDlg.h"	// // //
+#include "DPI.h"		// // //
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -89,27 +90,6 @@ enum {
 // Repeat config
 const int REPEAT_DELAY = 20;
 const int REPEAT_TIME = 200;
-
-// DPI variables
-static const int DEFAULT_DPI = 96;
-static int _dpiX, _dpiY;
-
-// DPI scaling functions
-int SX(int pt)
-{
-	return MulDiv(pt, _dpiX, DEFAULT_DPI);
-}
-
-int SY(int pt)
-{
-	return MulDiv(pt, _dpiY, DEFAULT_DPI);
-}
-
-void ScaleMouse(CPoint &pt)
-{
-	pt.x = MulDiv(pt.x, DEFAULT_DPI, _dpiX);
-	pt.y = MulDiv(pt.y, DEFAULT_DPI, _dpiY);
-}
 
 // CMainFrame
 
@@ -144,8 +124,6 @@ CMainFrame::CMainFrame() :
 	m_iOctave(3),
 	m_iKraidCounter(0)		// // // Easter Egg
 {
-	_dpiX = DEFAULT_DPI;
-	_dpiY = DEFAULT_DPI;
 }
 
 CMainFrame::~CMainFrame()
@@ -390,10 +368,8 @@ BOOL CMainFrame::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwS
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	// Get the DPI setting
-	CDC *pDC = GetDC();
-	if (pDC) {
-		_dpiX = pDC->GetDeviceCaps(LOGPIXELSX);
-		_dpiY = pDC->GetDeviceCaps(LOGPIXELSY);
+	if (CDC *pDC = GetDC()) {		// // //
+		DPI::SetScale(pDC->GetDeviceCaps(LOGPIXELSX), pDC->GetDeviceCaps(LOGPIXELSY));
 		ReleaseDC(pDC);
 	}
 
@@ -494,9 +470,9 @@ bool CMainFrame::CreateToolbars()
 	rbi1.fMask		= RBBIM_CHILD | RBBIM_CHILDSIZE | RBBIM_STYLE | RBBIM_SIZE;
 	rbi1.fStyle		= RBBS_NOGRIPPER;
 	rbi1.hwndChild	= m_wndToolBar;
-	rbi1.cxMinChild	= SX(554);
-	rbi1.cyMinChild	= SY(22);
-	rbi1.cx			= SX(496);
+	rbi1.cxMinChild	= DPI::SX(554);
+	rbi1.cyMinChild	= DPI::SY(22);
+	rbi1.cx			= DPI::SX(496);
 
 	if (!m_wndToolBarReBar.GetReBarCtrl().InsertBand(-1, &rbi1)) {
 		TRACE0("Failed to create rebar\n");
@@ -507,9 +483,9 @@ bool CMainFrame::CreateToolbars()
 	rbi1.fMask		= RBBIM_CHILD | RBBIM_CHILDSIZE | RBBIM_STYLE | RBBIM_SIZE;
 	rbi1.fStyle		= RBBS_NOGRIPPER;
 	rbi1.hwndChild	= m_wndOctaveBar;
-	rbi1.cxMinChild	= SX(120);
-	rbi1.cyMinChild	= SY(22);
-	rbi1.cx			= SX(100);
+	rbi1.cxMinChild	= DPI::SX(120);
+	rbi1.cyMinChild	= DPI::SY(22);
+	rbi1.cx			= DPI::SX(100);
 
 	if (!m_wndToolBarReBar.GetReBarCtrl().InsertBand(-1, &rbi1)) {
 		TRACE0("Failed to create rebar\n");
@@ -555,7 +531,8 @@ bool CMainFrame::CreateDialogPanels()
 	// Create frame editor
 	m_pFrameEditor = new CFrameEditor(this);
 
-	CRect rect(SX(12), SY(10), SX(162), SY(173));
+	CRect rect(12, 10, 162, 173);
+	DPI::ScaleRect(rect);		// // //
 
 	if (!m_pFrameEditor->CreateEx(WS_EX_STATICEDGE, NULL, _T(""), WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL, rect, (CWnd*)&m_wndControlBar, 0)) {
 		TRACE0("Failed to create pattern window\n");
@@ -669,7 +646,8 @@ bool CMainFrame::CreateVisualizerWindow()
 	const int WIDTH = 143;
 	const int HEIGHT = 40;
 
-	CRect rect(SX(POS_X), SY(POS_Y), SX(POS_X) + WIDTH, SY(POS_Y) + HEIGHT);
+	CRect rect(POS_X, POS_Y, POS_X + WIDTH, POS_Y + HEIGHT);
+	DPI::ScaleRect(rect);		// // //
 
 	// Create the sample graph window
 	m_pVisualizerWnd = new CVisualizerWnd();
@@ -691,7 +669,9 @@ bool CMainFrame::CreateInstrumentToolbar()
 	// Setup the instrument toolbar
 	REBARBANDINFO rbi;
 
-	if (!m_wndInstToolBarWnd.CreateEx(0, NULL, _T(""), WS_CHILD | WS_VISIBLE, CRect(SX(330), SY(173), SX(514), SY(199)), (CWnd*)&m_wndDialogBar, 0))		// // //
+	CRect r(330, 173, 514, 199);		// // //
+	DPI::ScaleRect(r);
+	if (!m_wndInstToolBarWnd.CreateEx(0, NULL, _T(""), WS_CHILD | WS_VISIBLE, r, (CWnd*)&m_wndDialogBar, 0))
 		return false;
 
 	if (!m_wndInstToolReBar.Create(WS_CHILD | WS_VISIBLE, CRect(0, 0, 0, 0), &m_wndInstToolBarWnd, AFX_IDW_REBAR))
@@ -712,11 +692,11 @@ bool CMainFrame::CreateInstrumentToolbar()
 	rbi.cbSize		= sizeof(REBARBANDINFO);
 	rbi.fMask		= RBBIM_CHILD | RBBIM_CHILDSIZE | RBBIM_STYLE | RBBIM_TEXT;
 	rbi.fStyle		= RBBS_NOGRIPPER;
-	rbi.cxMinChild	= SX(300);
-	rbi.cyMinChild	= SY(30);
+	rbi.cxMinChild	= DPI::SX(300);
+	rbi.cyMinChild	= DPI::SY(30);
 	rbi.lpText		= "";
 	rbi.cch			= 7;
-	rbi.cx			= SX(300);
+	rbi.cx			= DPI::SX(300);
 	rbi.hwndChild	= m_wndInstToolBar;
 
 	m_wndInstToolReBar.InsertBand(-1, &rbi);
@@ -742,7 +722,7 @@ void CMainFrame::ResizeFrameWindow()
 	if (pDocument != NULL) {
 
 		int Channels = pDocument->GetAvailableChannels();
-		int Height(0), Width(0);
+		int Height {0}, Width {0};
 
 		// Located to the right
 		if (m_iFrameEditorPos == FRAME_EDIT_POS_TOP) {
@@ -750,10 +730,10 @@ void CMainFrame::ResizeFrameWindow()
 			Height = CFrameEditor::DEFAULT_HEIGHT;
 			Width = m_pFrameEditor->CalcWidth(Channels);
 
-			m_pFrameEditor->MoveWindow(SX(12), SY(12), SX(Width), SY(Height));
+			m_pFrameEditor->MoveWindow(DPI::Rect(12, 12, Width, Height));		// // //
 
 			// Move frame controls
-			m_wndFrameControls.MoveWindow(SX(10), SY(Height) + SY(21), SX(150), SY(26));
+			m_wndFrameControls.MoveWindow(DPI::Rect(10, Height + 21, 150, 26));		// // //
 		}
 		// Located to the left
 		else {
@@ -764,10 +744,10 @@ void CMainFrame::ResizeFrameWindow()
 			Height = rect.Height() - CPatternEditor::HEADER_HEIGHT - 2;
 			Width = m_pFrameEditor->CalcWidth(Channels);
 
-			m_pFrameEditor->MoveWindow(SX(2), SY(CPatternEditor::HEADER_HEIGHT + 1), SX(Width), SY(Height));
+			m_pFrameEditor->MoveWindow(DPI::Rect(2, CPatternEditor::HEADER_HEIGHT + 1, Width, Height));
 
 			// Move frame controls
-			m_wndFrameControls.MoveWindow(SX(4), SY(10), SX(150), SY(26));
+			m_wndFrameControls.MoveWindow(DPI::Rect(4, 10, 150, 26));
 		}
 
 		// Vertical control bar
@@ -790,8 +770,8 @@ void CMainFrame::ResizeFrameWindow()
 
 	m_wndDialogBar.MoveWindow(DialogStartPos, 2, ParentRect.Width() - DialogStartPos, ParentRect.Height() - 4);
 	m_wndDialogBar.GetWindowRect(&ChildRect);
-	m_wndDialogBar.GetDlgItem(IDC_INSTRUMENTS)->MoveWindow(SX(330), SY(10), ChildRect.Width() - SX(338), SY(158));		// // //
-	m_wndDialogBar.GetDlgItem(IDC_INSTNAME)->MoveWindow(SX(520), SY(175), ChildRect.Width() - SX(528), SY(22));
+	m_wndDialogBar.GetDlgItem(IDC_INSTRUMENTS)->MoveWindow(DPI::SX(330), DPI::SY(10), ChildRect.Width() - DPI::SX(338), DPI::SY(158));		// // //
+	m_wndDialogBar.GetDlgItem(IDC_INSTNAME)->MoveWindow(DPI::SX(520), DPI::SY(175), ChildRect.Width() - DPI::SX(528), DPI::SY(22));
 
 	m_pFrameEditor->RedrawWindow();
 }

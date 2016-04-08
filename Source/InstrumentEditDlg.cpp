@@ -45,6 +45,7 @@
 #include "MainFrm.h"
 #include "SoundGen.h"
 #include "TrackerChannel.h"
+#include "DPI.h"		// // //
 
 // Constants
 const int CInstrumentEditDlg::KEYBOARD_TOP	  = 323;
@@ -125,9 +126,9 @@ void CInstrumentEditDlg::InsertPane(CInstrumentEditPanel *pPanel, bool Show)
 
 	pPanel->Create(pPanel->GetIDD(), this);
 	pPanel->GetWindowRect(&Rect);
-	Rect.MoveToXY(ParentRect.left - Rect.left + SX(1), ParentRect.top - Rect.top + SY(21));
-	Rect.bottom -= SY(2);
-	Rect.right += SX(1);
+	Rect.MoveToXY(ParentRect.left - Rect.left + DPI::SX(1), ParentRect.top - Rect.top + DPI::SY(21));
+	Rect.bottom -= DPI::SY(2);
+	Rect.right += DPI::SX(1);
 	pPanel->MoveWindow(Rect);
 	pPanel->ShowWindow(Show ? SW_SHOW : SW_HIDE);
 
@@ -319,7 +320,7 @@ void CInstrumentEditDlg::OnPaint()
 	WhiteKey.SelectObject(pOldWhite);
 	BlackKey.SelectObject(pOldBlack);
 
-	dc.BitBlt(SX(KEYBOARD_LEFT - 6) + 6, SY(KEYBOARD_TOP - 12) + 12, KEYBOARD_WIDTH, KEYBOARD_HEIGHT, &BackDC, 0, 0, SRCCOPY);
+	dc.BitBlt(DPI::SX(KEYBOARD_LEFT - 6) + 6, DPI::SY(KEYBOARD_TOP - 12) + 12, KEYBOARD_WIDTH, KEYBOARD_HEIGHT, &BackDC, 0, 0, SRCCOPY);
 
 	BackDC.SelectObject(pOldBmp);
 }
@@ -473,7 +474,7 @@ void CInstrumentEditDlg::SwitchOffNote(bool ForceHalt)
 
 void CInstrumentEditDlg::OnLButtonDown(UINT nFlags, CPoint point)
 {
-	ScaleMouse(point);
+	DPI::ScaleMouse(point);
 	SwitchOnNote(point.x, point.y);
 	CDialog::OnLButtonDown(nFlags, point);
 }
@@ -486,7 +487,7 @@ void CInstrumentEditDlg::OnLButtonUp(UINT nFlags, CPoint point)
 
 void CInstrumentEditDlg::OnMouseMove(UINT nFlags, CPoint point)
 {
-	ScaleMouse(point);
+	DPI::ScaleMouse(point);
 
 	if (nFlags & MK_LBUTTON)
 		SwitchOnNote(point.x, point.y);

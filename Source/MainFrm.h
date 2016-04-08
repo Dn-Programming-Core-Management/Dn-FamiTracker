@@ -406,8 +406,3 @@ protected:
 public:
 	afx_msg void OnViewToolbar();
 };
-
-// Global DPI functions
-int  SX(int pt);
-int  SY(int pt);
-void ScaleMouse(CPoint &pt);

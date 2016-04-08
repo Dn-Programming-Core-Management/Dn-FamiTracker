@@ -26,6 +26,7 @@
 #include "SeqInstrument.h"		// // //
 #include "InstrumentFDS.h"		// // //
 #include "ModSequenceEditor.h"
+#include "DPI.h"		// // //
 
 int SIZE_X = 12;
 
@@ -54,6 +55,8 @@ BOOL CModSequenceEditor::CreateEx(DWORD dwExStyle, LPCTSTR lpszClassName, LPCTST
 	newRect.left = rect.left;
 	newRect.bottom = rect.top + 61 + 4;
 	newRect.right = rect.left + 32 * (SIZE_X + 2) + 4 + 4;
+
+	DPI::ScaleRect(newRect);		// // //
 
 	if (CWnd::CreateEx(dwExStyle, lpszClassName, lpszWindowName, dwStyle, newRect, pParentWnd, 0) == -1)
 		return -1;
