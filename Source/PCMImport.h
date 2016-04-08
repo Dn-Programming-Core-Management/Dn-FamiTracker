@@ -59,8 +59,6 @@ protected:
 	jarh::sinc *m_psinc;
 
 protected:
-	static const int SAMPLES_MAX;
-
 	static const int QUALITY_RANGE;
 	static const int VOLUME_RANGE;
 

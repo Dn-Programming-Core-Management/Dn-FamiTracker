@@ -576,6 +576,13 @@ void CFamiTrackerApp::LoadSoundConfig()
 	static_cast<CFrameWnd*>(GetMainWnd())->SetMessageText(IDS_NEW_SOUND_CONFIG);
 }
 
+void CFamiTrackerApp::UpdateMenuShortcuts()		// // //
+{
+	CMainFrame *pMainFrm = dynamic_cast<CMainFrame*>(GetMainWnd());
+	if (pMainFrm != nullptr)
+		pMainFrm->UpdateMenus();
+}
+
 // Silences everything
 void CFamiTrackerApp::SilentEverything()
 {

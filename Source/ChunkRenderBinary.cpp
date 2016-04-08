@@ -23,7 +23,7 @@
 #include <functional>
 #include <algorithm>
 #include "stdafx.h"
-#include "FamiTrackerDoc.h"
+#include "FamiTrackerTypes.h"		// // //
 #include "Compiler.h"
 #include "Chunk.h"
 #include "ChunkRenderBinary.h"

@@ -26,7 +26,7 @@
 #include "APU/Types.h"		// // //
 #include "Instrument.h"		// // //
 #include "SeqInstrument.h"		// // //
-#include "InstrumentN163.h"		// // //
+#include "InstrumentN163.h"		// // // constants
 #include "ChannelHandler.h"
 #include "ChannelsN163.h"
 #include "InstHandler.h"		// // //

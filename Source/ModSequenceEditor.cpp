@@ -22,7 +22,6 @@
 
 #include <memory>		// // //
 #include "stdafx.h"
-#include "FamiTrackerDoc.h"
 #include "Instrument.h"
 #include "SeqInstrument.h"		// // //
 #include "InstrumentFDS.h"		// // //

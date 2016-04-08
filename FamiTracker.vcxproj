@@ -1243,6 +1243,7 @@ echo.
     <None Include="changelog.txt" />
     <None Include="FamiTracker.reg" />
     <None Include="gpl.txt" />
+    <None Include="Source\resampler\resample.inl" />
     <None Include="specs.txt" />
   </ItemGroup>
   <ItemGroup>

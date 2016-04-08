@@ -23,8 +23,6 @@
 
 #include "stdafx.h"
 #include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
-#include "MainFrm.h"
 #include "ConfigShortcuts.h"
 #include "Accelerator.h"
 #include "Settings.h"
@@ -131,9 +129,7 @@ BOOL CConfigShortcuts::OnApply()
 
 	pAccel->Setup();
 
-	CMainFrame* pMainFrame = dynamic_cast<CMainFrame*>(theApp.m_pMainWnd);
-	if (pMainFrame != NULL)
-		pMainFrame->UpdateMenus();
+	theApp.UpdateMenuShortcuts();		// // //
 
 	return CPropertyPage::OnApply();
 }

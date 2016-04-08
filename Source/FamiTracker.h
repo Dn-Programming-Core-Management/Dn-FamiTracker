@@ -99,6 +99,7 @@ public:
 	//
 public:
 	void			LoadSoundConfig();
+	void			UpdateMenuShortcuts();		// // //
 	void			ReloadColorScheme();
 	int				GetCPUUsage() const;
 	bool			IsThemeActive() const;

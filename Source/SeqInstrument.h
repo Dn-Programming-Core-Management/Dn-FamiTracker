@@ -24,6 +24,8 @@
 
 
 class CSequence;
+class CInstrument;
+class CSeqInstrumentInterface;
 
 class CSeqInstrument : public CInstrument, public CSeqInstrumentInterface		// // //
 {

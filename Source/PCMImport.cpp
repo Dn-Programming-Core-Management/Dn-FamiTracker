@@ -18,22 +18,18 @@
 ** must bear this legend.
 */
 
-#include <numeric>
-#include <algorithm>
-#include <cmath>
-#include "resampler/resample.hpp"
 #include "stdafx.h"
-#include <mmsystem.h>
 #include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
+#include "DSample.h"		// // //
+#include "FamiTrackerTypes.h"		// // //
+#include "APU/Types.h"		// // //
 #include "PCMImport.h"
 #include "Settings.h"
 #include "SoundGen.h"
 #include "APU/APU.h"
 #include "APU/DPCM.h"
+#include "resampler/resample.hpp"
 #include "resampler/resample.inl"
-
-const int CPCMImport::SAMPLES_MAX = 0x0FF1;		// Max size of a DPCM sample
 
 const int CPCMImport::QUALITY_RANGE = 16;
 const int CPCMImport::VOLUME_RANGE = 12;		// +/- dB
@@ -389,7 +385,7 @@ CDSample *CPCMImport::ConvertFile()
 	m_fSampleFile.Seek(m_ullSampleStart, CFile::begin);
 
 	// Allocate space
-	char *pSamples = new char[SAMPLES_MAX];
+	char *pSamples = new char[CDSample::MAX_SIZE];		// // //
 	int iSamples = 0;
 
 	// Determine resampling factor
@@ -399,7 +395,7 @@ CDSample *CPCMImport::ConvertFile()
 	resampler resmpler(*m_psinc, resample_factor, m_iChannels, m_iSampleSize, m_iWaveSize, m_fSampleFile);
 	float val;
 	// Conversion
-	while (resmpler.get(val) && (iSamples < SAMPLES_MAX)) {
+	while (resmpler.get(val) && (iSamples < CDSample::MAX_SIZE)) {		// // //
 
 		// when resampling we must clip because of possible ringing.
 		static const int MAX_AMP =  (1 << 16) - 1;
@@ -436,7 +432,7 @@ CDSample *CPCMImport::ConvertFile()
 	//      throw ?? or something else.
 
 	// Adjust sample until size is x * $10 + 1 bytes
-	while (iSamples < SAMPLES_MAX && ((iSamples & 0x0F) - 1) != 0)
+	while (iSamples < CDSample::MAX_SIZE && ((iSamples & 0x0F) - 1) != 0)		// // //
 		pSamples[iSamples++] = 0x55;
 
 	// Center end of sample (not yet working)
