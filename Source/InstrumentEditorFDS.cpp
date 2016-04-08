@@ -281,11 +281,6 @@ void CInstrumentEditorFDS::OnModDelayChange()
 	theApp.GetSoundGenerator()->WaveChanged();
 }
 
-void CInstrumentEditorFDS::PreviewNote(unsigned char Key)
-{
-	CFamiTrackerView::GetView()->PreviewNote(Key);
-}
-
 void CInstrumentEditorFDS::OnBnClickedCopyWave()
 {
 	CString Str;

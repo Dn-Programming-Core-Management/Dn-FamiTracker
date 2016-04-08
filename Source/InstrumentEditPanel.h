@@ -100,7 +100,6 @@ protected:
 	// Virtual methods
 	virtual void TranslateMML(CString String, CSequence *pSequence, int Max, int Min) const;
 	virtual void PreviewNote(unsigned char Key);
-	virtual void PreviewRelease(unsigned char Key);
 
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 

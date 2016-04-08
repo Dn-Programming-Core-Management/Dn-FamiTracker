@@ -260,12 +260,7 @@ void CSequenceInstrumentEditPanel::PreviewNote(unsigned char Key)
 {
 	// Skip if MML window has focus
 	if (GetDlgItem(IDC_SEQUENCE_STRING) != GetFocus())
-		CFamiTrackerView::GetView()->PreviewNote(Key);
-}
-
-void CSequenceInstrumentEditPanel::PreviewRelease(unsigned char Key)
-{
-	CFamiTrackerView::GetView()->PreviewRelease(Key);
+		CInstrumentEditPanel::PreviewNote(Key);
 }
 
 void CSequenceInstrumentEditPanel::TranslateMML(CString String, CSequence *pSequence, int Max, int Min) const

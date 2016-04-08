@@ -595,13 +595,13 @@ BOOL CInstrumentEditorDPCM::PreTranslateMessage(MSG* pMsg)
 				if (GetFocus() != GetDlgItem(IDC_DELTA_COUNTER)) {
 					// Select DPCM channel
 					CFamiTrackerView::GetView()->SelectChannel(4);
-					CFamiTrackerView::GetView()->PreviewNote((unsigned char)pMsg->wParam);
+					PreviewNote((unsigned char)pMsg->wParam);		// // //
 					return TRUE;
 				}
 				break;
 			case WM_KEYUP:
 				if (GetFocus() != GetDlgItem(IDC_DELTA_COUNTER)) {
-					CFamiTrackerView::GetView()->PreviewRelease((unsigned char)pMsg->wParam);
+					PreviewRelease((unsigned char)pMsg->wParam);		// // //
 					return TRUE;
 				}
 				break;
