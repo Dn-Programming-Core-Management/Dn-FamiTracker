@@ -60,6 +60,9 @@
 // Write period tables to files
 //#define WRITE_PERIOD_FILES
 
+// // // Write vibrato table to file
+//#define WRITE_VIBRATO_FILE
+
 // Write a file with the volume table
 //#define WRITE_VOLUME_FILE
 
@@ -990,23 +993,20 @@ void CSoundGen::GenerateVibratoTable(vibrato_t Type)
 		}
 	}
 
-#ifdef _DEBUG
-/*
-	CFile a("vibrato.txt", CFile::modeWrite | CFile::modeCreate);
-	CString b;
+#ifdef WRITE_VIBRATO_FILE
+	CStdioFile a("..\\nsf driver\\vibrato.s", CFile::modeWrite | CFile::modeCreate);
+	a.WriteString("; Vibrato table (256 bytes)\n"
+				  "ft_vibrato_table: ;; Patch\n");
 	for (int i = 0; i < 16; i++) {	// depth 
-		b = "\t.byte ";
-		a.Write(b.GetBuffer(), b.GetLength());
+		a.WriteString("\t.byte ");
 		for (int j = 0; j < 16; j++) {	// phase
-			int value = m_iVibratoTable[i * 16 + j];
-			b.Format("$%02X, ", value);
-			a.Write(b.GetBuffer(), b.GetLength());
+			CString b;
+			b.Format("$%02X%s", m_iVibratoTable[i * 16 + j], j < 15 ? ", " : "");
+			a.WriteString(b);
 		}
-		b = "\n";
-		a.Write(b.GetBuffer(), b.GetLength());
+		a.WriteString("\n");
 	}
 	a.Close();
-*/
 #endif
 }
 
