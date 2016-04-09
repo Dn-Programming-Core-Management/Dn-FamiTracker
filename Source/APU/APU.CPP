@@ -58,7 +58,8 @@ CAPU::CAPU(IAudioCallback *pCallback, CSampleMem *pSampleMem) :
 	m_pSoundBuffer(NULL),
 	m_pMixer(new CMixer()),
 	m_iExternalSoundChip(0),
-	m_iCyclesToRun(0)
+	m_iCyclesToRun(0),
+	m_iSampleRate(44100)		// // //
 {
 	m_p2A03 = new C2A03(m_pMixer);		// // //
 	m_pMMC5 = new CMMC5(m_pMixer);

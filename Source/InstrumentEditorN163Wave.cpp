@@ -134,8 +134,8 @@ BOOL CInstrumentEditorN163Wave::OnInitDialog()
 	int order[2] = {1, 0};		// // //
 	m_pWaveListCtrl = new CListCtrl();
 	m_pWaveListCtrl->SubclassDlgItem(IDC_N163_WAVES, this);
-	m_pWaveListCtrl->InsertColumn(0, _T("Wave"), LVCFMT_LEFT, 120);
-	m_pWaveListCtrl->InsertColumn(1, _T("#"), LVCFMT_LEFT, 20);
+	m_pWaveListCtrl->InsertColumn(0, _T("Wave"), LVCFMT_LEFT, 114);
+	m_pWaveListCtrl->InsertColumn(1, _T("#"), LVCFMT_LEFT, 26);
 	m_pWaveListCtrl->SetColumnOrderArray(2, order);
 
 	m_WaveImage.Create(CInstrumentN163::MAX_WAVE_SIZE, 16, ILC_COLOR8, 0, CInstrumentN163::MAX_WAVE_COUNT);
