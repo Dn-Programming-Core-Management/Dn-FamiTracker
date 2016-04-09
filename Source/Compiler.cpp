@@ -803,9 +803,9 @@ char* CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 				int Reg;
 				if (m_iActualChip & ~SNDCHIP_N163) {
 					if (j > 82) // avoid clipping
-						Reg = pSoundGen->ReadPeriodTable(j - 24, Chip) * m_iActualNamcoChannels / 2;
+						Reg = pSoundGen->ReadPeriodTable(j - 24, Chip);// *m_iActualNamcoChannels / 2;
 					else
-						Reg = pSoundGen->ReadPeriodTable(j, Chip) * m_iActualNamcoChannels / 8;
+						Reg = pSoundGen->ReadPeriodTable(j, Chip);// *m_iActualNamcoChannels / 8;
 				}
 				else
 					Reg = pSoundGen->ReadPeriodTable(j, Chip);
