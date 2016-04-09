@@ -4040,6 +4040,8 @@ vibrato_t CFamiTrackerDoc::GetVibratoStyle() const
 
 void CFamiTrackerDoc::SetVibratoStyle(vibrato_t Style)
 {
+	if (m_iVibratoStyle != Style)		// // //
+		ModifyIrreversible();
 	m_iVibratoStyle = Style;
 	theApp.GetSoundGenerator()->SetupVibratoTable(Style);
 }
@@ -4053,6 +4055,8 @@ bool CFamiTrackerDoc::GetLinearPitch() const
 
 void CFamiTrackerDoc::SetLinearPitch(bool Enable)
 {
+	if (m_bLinearPitch != Enable)		// // //
+		ModifyIrreversible();
 	m_bLinearPitch = Enable;
 }
 

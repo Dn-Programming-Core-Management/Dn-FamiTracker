@@ -2263,11 +2263,10 @@ void CMainFrame::OnUpdateHighlight(CCmdUI *pCmdUI)
 	Highlight1 = m_wndOctaveBar.GetDlgItemInt(IDC_HIGHLIGHT1);
 	Highlight2 = m_wndOctaveBar.GetDlgItemInt(IDC_HIGHLIGHT2);
 	if (Highlight1 != LastHighlight1 || Highlight2 != LastHighlight2) {
-
 		CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
 
-		stHighlight Hl = {Highlight1, Highlight2, 0};		// // //
-		pDoc->SetHighlight(Hl);
+		pDoc->SetHighlight(stHighlight {Highlight1, Highlight2, 0});		// // //
+		pDoc->ModifyIrreversible();		// // //
 		pDoc->UpdateAllViews(NULL, UPDATE_HIGHLIGHT);
 
 		LastHighlight1 = Highlight1;
