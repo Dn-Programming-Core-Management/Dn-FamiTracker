@@ -456,8 +456,8 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 	// One possible optimization is to store the PAL table as the difference from the NTSC table
 
 	period_file.WriteString("; 2A03 NTSC\n");
-	period_file.WriteString(".ifdef NTSC_PERIOD_TABLE\n");
-	period_file.WriteString("ft_periods_ntsc:\n\t.word\t");
+	period_file.WriteString(".if .defined(NTSC_PERIOD_TABLE)\n");
+	period_file.WriteString("ft_periods_ntsc: ;; Patch\n\t.word\t");
 
 	for (int i = 0; i < NOTE_COUNT; ++i) {
 		CString str;
@@ -467,8 +467,8 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 
 	period_file.WriteString(".endif\n\n");
 	period_file.WriteString("; 2A03 PAL\n");
-	period_file.WriteString(".ifdef PAL_PERIOD_TABLE\n");
-	period_file.WriteString("ft_periods_pal:\n\t.word\t");
+	period_file.WriteString(".if .defined(PAL_PERIOD_TABLE)\n");
+	period_file.WriteString("ft_periods_pal: ;; Patch\n\t.word\t");
 
 	for (int i = 0; i < NOTE_COUNT; ++i) {
 		CString str;
@@ -478,8 +478,8 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 
 	period_file.WriteString(".endif\n\n");
 	period_file.WriteString("; VRC6 Sawtooth\n");
-	period_file.WriteString(".ifdef VRC6_PERIOD_TABLE\n");
-	period_file.WriteString("ft_periods_sawtooth:\n\t.word\t");
+	period_file.WriteString(".if .defined(USE_VRC6)\n");
+	period_file.WriteString("ft_periods_sawtooth: ;; Patch\n\t.word\t");
 
 	for (int i = 0; i < NOTE_COUNT; ++i) {
 		CString str;
@@ -489,8 +489,8 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 
 	period_file.WriteString(".endif\n\n");
 	period_file.WriteString("; FDS\n");
-	period_file.WriteString(".ifdef FDS_PERIOD_TABLE\n");
-	period_file.WriteString("ft_periods_fds:\n\t.word\t");
+	period_file.WriteString(".if .defined(USE_FDS)\n");
+	period_file.WriteString("ft_periods_fds: ;; Patch\n\t.word\t");
 
 	for (int i = 0; i < NOTE_COUNT; ++i) {
 		CString str;
@@ -500,8 +500,8 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 
 	period_file.WriteString(".endif\n\n");
 	period_file.WriteString("; N163\n");
-	period_file.WriteString(".ifdef N163_PERIOD_TABLE\n");
-	period_file.WriteString("ft_periods_n163:\n\t.word\t");
+	period_file.WriteString(".if .defined(USE_N163)\n");
+	period_file.WriteString("ft_periods_n163: ;; Patch\n\t.word\t");
 
 	for (int i = 0; i < NOTE_COUNT; ++i) {
 		CString str;
@@ -510,6 +510,22 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 	}
 
 	period_file.WriteString(".endif\n\n");
+	period_file.WriteString("; VRC7\n");
+	period_file.WriteString(".if .defined(USE_VRC7)\n");
+	period_file.WriteString("; Fnum table, multiplied by 4 for higher resolution\n");
+	period_file.WriteString(".define ft_vrc7_table ");
+
+	for (int i = 0; i < NOTE_RANGE; ++i) {
+		CString str;
+		str.Format("$%04X%s", m_iNoteLookupTableVRC7[i] * 4, (i < 11) ? ", " : "\n\n");
+		period_file.WriteString(str);
+	}
+	
+	period_file.WriteString("ft_note_table_vrc7_l: ;; Patch\n");
+	period_file.WriteString("\t.lobytes ft_vrc7_table\n");
+	period_file.WriteString("ft_note_table_vrc7_h:\n");
+	period_file.WriteString("\t.hibytes ft_vrc7_table\n");
+	period_file.WriteString(".endif\n");
 
 	period_file.Close();
 
