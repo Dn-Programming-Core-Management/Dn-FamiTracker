@@ -1,11 +1,47 @@
 0CC-FamiTracker Mod
 Change Log
 Written by HertzDevil
-Version 0.3.14.0 - Mar 29 2016
+Version 0.3.14.1 - Apr 9 2016
 
 --------------------------------------------------------------------------------
 
-V0.3.14.0 - 03/29/16
+V0.3.14.1 - 04/09/16
+Improvements:
+ - Tracker now pads DPCM samples with invalid size on opening a module
+ - Added shortcuts to toggle or solo the currently selected sound chip
+ - Vxx effect commands on muted N163 channels now write to the wave buffer when
+    retrieving channel state
+ - Noise channel now performs slide effects with no pitch limits
+ - Cxx effect now finishes playing the current row before halting
+ - The 2A03 frame counter is now clocked at exactly 240 Hz (slightly more
+    accurate than before)
+Bug fixes:
+ - Tracker no longer validates invalid notes (according to official build)
+ - Fixed frame editor not moving the cursor to the clicked channel when clicking
+    on its left/right edges
+ - Fixed module properties dialog not moving bookmark lists when moving songs up
+    or down
+ - Fixed transpose dialog crashing on selecting "Transpose all tracks"
+ - Fixed tracker not updating the vibrato table after loading a new module
+ - Changing the module's highlight settings or vibrato style is now recognized
+    as a file change
+ - Fixed DPCM editor not saving changes
+ - Fixed VRC7 and 5B not using the refresh rate of the current module
+ - Fixed tracker not producing sound after rendering a WAV file until player
+    begins
+ - Fixed WAV render omitting last tick when rendering by a time amount
+ - Fixed find dialog not working properly when some ranges are omitted
+ - Fixed FDS and MMC5 not producing sound in exported multichip NSFs unless both
+    are enabled
+ - Fixed relative instrument arpeggio sequences clipping the channel note at A#7
+    in exported NSFs
+ - Fixed noise channel clipping at 0-# of an octave below in exported NSFs when
+    using download portamentos
+ - N163 channels no longer update the wave buffer on every frame
+ - Fixed new notes on N163 channels not updating the wave buffer in exported
+    NSFs if instrument does not use a wave instrument sequence
+
+V0.3.14.0 - 03/31/16
 Additions:
  - Added the *.0cc file extension
  - Added diagnostic information when loading invalid modules

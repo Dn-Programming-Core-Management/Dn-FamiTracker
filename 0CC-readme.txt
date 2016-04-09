@@ -1,7 +1,7 @@
 0CC-FamiTracker Mod
 Readme / Manual
 Written by HertzDevil
-Version 0.3.14.0 - Mar 29 2016
+Version 0.3.14.1 - Apr 9 2016
 
 --------------------------------------------------------------------------------
 
@@ -653,6 +653,8 @@ combinations are the default hotkeys if provided)
  - Deselect (Esc)
  - Select row/column/pattern/frame/channel/track
  - Go to row (Alt+G)
+ - Toggle chip (Ctrl+Alt+F9)
+ - Solo chip (Ctrl+Alt+F10)
  - Record to instrument
  - Toggle / Next / Previous bookmark (Ctrl+K, Ctrl+PgDown, Ctrl+PgUp)
  - Mask volume (Alt+V)
@@ -674,7 +676,6 @@ combinations are the default hotkeys if provided)
 - When the triangle channel's linear counter is enabled, the high byte of the
    period cannot be changed; this is intended behaviour because any write will
    reset the linear counter
-- The 2A03 length counters are clocked at a slightly higher rate than 240 Hz
 - MMC5's length counter depends on the 2A03's frame counter
 - The behaviour of Qxy and Rxy on the noise channel is inconsistent between
    FamiTracker and NSF driver when the pitch overflows
