@@ -32,9 +32,6 @@
 
 // // // 2A03 sound chip class
 
-const int C2A03::SEQUENCER_PERIOD     = 7458;
-//const int C2A03::SEQUENCER_PERIOD_PAL = 7458;			// ????
-
 C2A03::C2A03(CMixer *pMixer) :
 	CExternal(pMixer),
 	m_pSquare1(new CSquare(m_pMixer, CHANID_SQUARE1, SNDCHIP_NONE)),

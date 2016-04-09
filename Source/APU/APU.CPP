@@ -35,12 +35,11 @@
 #include "VRC7.h"
 #include "S5B.h"
 
-const int	 CAPU::SEQUENCER_PERIOD		= 7458;
-const int	 CAPU::SEQUENCER_PERIOD_PAL	= 7458;			// ????
-const uint32_t CAPU::BASE_FREQ_NTSC		= 1789773;		// 72.667
-const uint32_t CAPU::BASE_FREQ_PAL		= 1662607;
-const uint8_t	 CAPU::FRAME_RATE_NTSC		= 60;
-const uint8_t	 CAPU::FRAME_RATE_PAL		= 50;
+const int		CAPU::SEQUENCER_FREQUENCY	= 240;		// // //
+const uint32_t	CAPU::BASE_FREQ_NTSC		= 1789773;		// 72.667
+const uint32_t	CAPU::BASE_FREQ_PAL			= 1662607;
+const uint8_t	CAPU::FRAME_RATE_NTSC		= 60;
+const uint8_t	CAPU::FRAME_RATE_PAL		= 50;
 
 const uint8_t  CAPU::REG_DECAY_RATE		= 15;			// // //
 
@@ -117,26 +116,32 @@ void CAPU::Process()
 	while (m_iCyclesToRun > 0) {
 
 		uint32_t Time = m_iCyclesToRun;
-		Time = std::min(Time, m_iSequencerClock);
+		Time = std::min(Time, m_iSequencerNext - m_iSequencerClock);		// // //
 		Time = std::min(Time, m_iFrameClock);
 
 		for (auto Chip : ExChips)		// // //
 			Chip->Process(Time);
 
 		m_iFrameCycles	  += Time;
-		m_iSequencerClock -= Time;
+		m_iSequencerClock += Time;
 		m_iFrameClock	  -= Time;
 		m_iCyclesToRun	  -= Time;
 
-		if (m_iSequencerClock == 0) {
-			m_iSequencerClock += C2A03::SEQUENCER_PERIOD;
-			m_p2A03->ClockSequence();
-			m_pMMC5->ClockSequence();		// // //
-		}
+		if (m_iSequencerClock == m_iSequencerNext)
+			StepSequence();		// // //
 
 		if (m_iFrameClock == 0)
 			EndFrame();
 	}
+}
+
+void CAPU::StepSequence()		// // //
+{
+	if (++m_iSequencerCount == SEQUENCER_FREQUENCY)
+		m_iSequencerClock = m_iSequencerCount = 0;
+	m_iSequencerNext = (uint64_t)BASE_FREQ_NTSC * (m_iSequencerCount + 1) / SEQUENCER_FREQUENCY;
+	m_p2A03->ClockSequence();
+	m_pMMC5->ClockSequence();		// // //
 }
 
 // End of audio frame, flush the buffer if enough samples has been produced, and start a new frame
@@ -183,7 +188,9 @@ void CAPU::Reset()
 	// Reset APU
 	//
 	
-	m_iSequencerClock	= C2A03::SEQUENCER_PERIOD;
+	m_iSequencerCount	= 0;		// // //
+	m_iSequencerClock	= 0;		// // //
+	m_iSequencerNext	= BASE_FREQ_NTSC / SEQUENCER_FREQUENCY;
 	
 	m_iCyclesToRun		= 0;
 	m_iFrameCycles		= 0;

@@ -64,10 +64,6 @@ private:
 	inline void RunAPU1(uint32_t Time);
 	inline void RunAPU2(uint32_t Time);
 
-public:
-	static const int SEQUENCER_PERIOD;
-	// static const int SEQUENCER_PERIOD_PAL;
-
 private:
 	CSquare		*m_pSquare1;
 	CSquare		*m_pSquare2;

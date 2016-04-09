@@ -84,9 +84,9 @@ public:
 	static const uint8_t	REG_DECAY_RATE;		// // //
 
 private:
-	static const int SEQUENCER_PERIOD;
-	static const int SEQUENCER_PERIOD_PAL;
+	static const int SEQUENCER_FREQUENCY;		// // //
 	
+	void StepSequence();		// // //
 	void EndFrame();
 	
 	void LogWrite(uint16_t Address, uint8_t Value);
@@ -106,32 +106,34 @@ private:
 
 	uint8_t		m_iExternalSoundChip;				// External sound chip, if used
 
-	uint32_t		m_iSampleRate;						// // //
-	uint32_t		m_iFrameCycleCount;
-	uint32_t		m_iFrameClock;
-	uint32_t		m_iCyclesToRun;						// Number of cycles to process
+	uint32_t	m_iSampleRate;						// // //
+	uint32_t	m_iFrameCycleCount;
+	uint32_t	m_iFrameClock;
+	uint32_t	m_iCyclesToRun;						// Number of cycles to process
 
-	uint32_t		m_iSoundBufferSamples;				// Size of buffer, in samples
+	uint32_t	m_iSoundBufferSamples;				// Size of buffer, in samples
 	bool		m_bStereoEnabled;					// If stereo is enabled
 
-	uint32_t		m_iSampleSizeShift;					// To convert samples to bytes
-	uint32_t		m_iSoundBufferSize;					// Size of buffer, in samples
-	uint32_t		m_iBufferPointer;					// Fill pos in buffer
+	uint32_t	m_iSampleSizeShift;					// To convert samples to bytes
+	uint32_t	m_iSoundBufferSize;					// Size of buffer, in samples
+	uint32_t	m_iBufferPointer;					// Fill pos in buffer
 	int16_t		*m_pSoundBuffer;					// Sound transfer buffer
 
-	uint16_t		m_iRegs2A03[0x20];					// // // renamed
-	uint16_t		m_iRegsVRC6[0x10];
-	uint16_t		m_iRegsVRC7[0x40];
-	uint16_t		m_iRegsFDS[0x50];
-	uint16_t		m_iRegsMMC5[0x20];
-	uint16_t		m_iRegsN163[0x80];
-	uint16_t		m_iRegsS5B[0x10];
+	uint16_t	m_iRegs2A03[0x20];					// // // renamed
+	uint16_t	m_iRegsVRC6[0x10];
+	uint16_t	m_iRegsVRC7[0x40];
+	uint16_t	m_iRegsFDS[0x50];
+	uint16_t	m_iRegsMMC5[0x20];
+	uint16_t	m_iRegsN163[0x80];
+	uint16_t	m_iRegsS5B[0x10];
 	uint8_t		m_iPortVRC7;						// // //
 	uint8_t		m_iPortN163;
 	uint8_t		m_iPortS5B;
 
-	uint32_t		m_iFrameCycles;						// Cycles emulated from start of frame
-	uint32_t		m_iSequencerClock;					// Clock for frame sequencer
+	uint32_t	m_iFrameCycles;						// Cycles emulated from start of frame
+	uint32_t	m_iSequencerClock;					// Clock for frame sequencer
+	uint32_t	m_iSequencerNext;					// // // Next value for sequencer
+	uint8_t		m_iSequencerCount;					// // // Step count for sequencer
 
 	float		m_fLevelVRC7;
 	float		m_fLevelS5B;
