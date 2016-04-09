@@ -56,7 +56,7 @@ public:
 	void	ExternalWrite(uint16 Address, uint8 Value);
 	uint8	ExternalRead(uint16 Address);
 	
-	void	ChangeMachine(int Machine);
+	void	ChangeMachineRate(int Machine, int Rate);		// // //
 	bool	SetupSound(int SampleRate, int NrChannels, int Speed);
 	void	SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume) const;
 
@@ -106,6 +106,7 @@ private:
 
 	uint8		m_iExternalSoundChip;				// External sound chip, if used
 
+	uint32		m_iSampleRate;						// // //
 	uint32		m_iFrameCycleCount;
 	uint32		m_iFrameClock;
 	uint32		m_iCyclesToRun;						// Number of cycles to process

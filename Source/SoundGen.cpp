@@ -1346,11 +1346,11 @@ void CSoundGen::LoadMachineSettings(machine_t Machine, int Rate, int NamcoChanne
 
 	m_iMachineType = Machine;
 
-	m_pAPU->ChangeMachine(Machine == NTSC ? MACHINE_NTSC : MACHINE_PAL);
-
 	// Choose a default rate if not predefined
 	if (Rate == 0)
 		Rate = DefaultRate;
+
+	m_pAPU->ChangeMachineRate(Machine == NTSC ? MACHINE_NTSC : MACHINE_PAL, Rate);		// // //
 
 	double clock_ntsc = CAPU::BASE_FREQ_NTSC / 16.0;
 	double clock_pal = CAPU::BASE_FREQ_PAL / 16.0;

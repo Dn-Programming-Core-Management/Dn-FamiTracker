@@ -232,15 +232,20 @@ void CAPU::SetExternalSound(uint8 Chip)
 	Reset();
 }
 
-void CAPU::ChangeMachine(int Machine)
+void CAPU::ChangeMachineRate(int Machine, int Rate)		// // //
 {
 	// Allow to change speed on the fly
 	//
+	
+	uint32 BaseFreq = (Machine == MACHINE_NTSC) ? BASE_FREQ_NTSC : BASE_FREQ_PAL;
+	m_p2A03->ChangeMachine(Machine);
 
-	m_p2A03->ChangeMachine(Machine);		// // //
+	m_pVRC7->SetSampleSpeed(m_iSampleRate, BaseFreq, Rate);
+	m_pS5B->SetSampleSpeed(m_iSampleRate, BaseFreq, Rate);
+	m_iFrameCycleCount = BaseFreq / Rate;
 }
 
-bool CAPU::SetupSound(int SampleRate, int NrChannels, int Machine)
+bool CAPU::SetupSound(int SampleRate, int NrChannels, int Machine)		// // //
 {
 	// Allocate a sound buffer
 	//
@@ -249,14 +254,15 @@ bool CAPU::SetupSound(int SampleRate, int NrChannels, int Machine)
 	
 	uint32 BaseFreq = (Machine == MACHINE_NTSC) ? BASE_FREQ_NTSC : BASE_FREQ_PAL;
 	uint8 FrameRate = (Machine == MACHINE_NTSC) ? FRAME_RATE_NTSC : FRAME_RATE_PAL;
+	m_iSampleRate = SampleRate;		// // //
 
-	m_iSoundBufferSamples = uint32(SampleRate / FRAME_RATE_PAL);	// Samples / frame. Allocate for PAL, since it's more
+	m_iSoundBufferSamples = uint32(m_iSampleRate / FRAME_RATE_PAL);	// Samples / frame. Allocate for PAL, since it's more
 	m_bStereoEnabled	  = (NrChannels == 2);	
 	m_iSoundBufferSize	  = m_iSoundBufferSamples * NrChannels;		// Total amount of samples to allocate
 	m_iSampleSizeShift	  = (NrChannels == 2) ? 1 : 0;
 	m_iBufferPointer	  = 0;
 
-	if (!m_pMixer->AllocateBuffer(m_iSoundBufferSamples, SampleRate, NrChannels))
+	if (!m_pMixer->AllocateBuffer(m_iSoundBufferSamples, m_iSampleRate, NrChannels))		// // //
 		return false;
 
 	m_pMixer->SetClockRate(BaseFreq);
@@ -268,16 +274,7 @@ bool CAPU::SetupSound(int SampleRate, int NrChannels, int Machine)
 	if (m_pSoundBuffer == NULL)
 		return false;
 
-	ChangeMachine(Machine);
-
-	// VRC7 generates samples on it's own
-	m_pVRC7->SetSampleSpeed(SampleRate, BaseFreq, FrameRate);
-
-	// Same for sunsoft
-	m_pS5B->SetSampleSpeed(SampleRate, BaseFreq, FrameRate);
-
-	// Numbers of cycles/audio frame
-	m_iFrameCycleCount = BaseFreq / FrameRate;
+	ChangeMachineRate(Machine, FrameRate);		// // //
 
 	return true;
 }
