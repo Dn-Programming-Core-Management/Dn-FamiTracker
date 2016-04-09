@@ -2266,7 +2266,6 @@ void CMainFrame::OnUpdateHighlight(CCmdUI *pCmdUI)
 		CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
 
 		pDoc->SetHighlight(stHighlight {Highlight1, Highlight2, 0});		// // //
-		pDoc->ModifyIrreversible();		// // //
 		pDoc->UpdateAllViews(NULL, UPDATE_HIGHLIGHT);
 
 		LastHighlight1 = Highlight1;

@@ -4196,6 +4196,8 @@ stHighlight CFamiTrackerDoc::GetHighlight(unsigned int Track) const		// // //
 void CFamiTrackerDoc::SetHighlight(stHighlight Hl)		// // //
 {
 	// TODO remove
+	if (memcmp(&Hl, &m_vHighlight, sizeof(stHighlight)) != 0)		// // //
+		ModifyIrreversible();
 	m_vHighlight = Hl;
 }
 
