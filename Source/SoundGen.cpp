@@ -138,8 +138,7 @@ CSoundGen::CSoundGen() :
 	m_iClipCounter(0),
 	m_pSequencePlayPos(NULL),
 	m_iSequencePlayPos(0),
-	m_iSequenceTimeout(0),
-	m_bUpdatingAPU(false)		// // //
+	m_iSequenceTimeout(0)
 {
 	TRACE0("SoundGen: Object created\n");
 
@@ -1510,8 +1509,9 @@ void CSoundGen::LoadMachineSettings(machine_t Machine, int Rate, int NamcoChanne
 	if (Rate == 0)
 		Rate = DefaultRate;
 
-	while (m_bUpdatingAPU);		// // //
+	m_csAPULock.Lock();		// // //
 	m_pAPU->ChangeMachineRate(Machine == NTSC ? MACHINE_NTSC : MACHINE_PAL, Rate);		// // //
+	m_csAPULock.Unlock();		// // //
 
 	// Number of cycles between each APU update
 	m_iUpdateCycles = BaseFreq / Rate;
@@ -1865,8 +1865,7 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 	}
 
 	// Update APU registers
-	if (!m_bUpdatingAPU)		// // //
-		UpdateAPU();
+	UpdateAPU();
 
 	if (IsPlaying()) {		// // //
 		int Channel = m_pInstRecorder->GetRecordChannel();
@@ -1984,7 +1983,7 @@ void CSoundGen::UpdateAPU()
 	m_bInternalWaveChanged = m_bWaveChanged;
 	m_bWaveChanged = false;
 
-	m_bUpdatingAPU = true;		// // //
+	m_csAPULock.Lock();		// // //
 
 	// Update APU channel registers
 	for (int i = 0; i < CHANNELS; ++i) {
@@ -2001,7 +2000,7 @@ void CSoundGen::UpdateAPU()
 	m_pAPU->AddTime(m_iUpdateCycles - m_iConsumedCycles);
 	m_pAPU->Process();
 
-	m_bUpdatingAPU = false;		// // //
+	m_csAPULock.Unlock();		// // //
 
 #ifdef LOGGING
 	if (m_bPlaying)

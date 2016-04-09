@@ -307,6 +307,7 @@ private:
 
 	// Thread synchronization
 private:
+	mutable CCriticalSection m_csAPULock;		// // //
 	mutable CCriticalSection m_csVisualizerWndLock;
 
 	// Handles
