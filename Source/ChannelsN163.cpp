@@ -51,6 +51,7 @@ void CChannelHandlerN163::ResetChannel()
 
 	m_iWavePos = m_iWavePosOld = 0;		// // //
 	m_iWaveLen = 4;
+	m_bLoadWave = false;
 }
 
 bool CChannelHandlerN163::HandleEffect(effect_t EffNum, unsigned char EffParam)
@@ -69,6 +70,7 @@ bool CChannelHandlerN163::HandleEffect(effect_t EffNum, unsigned char EffParam)
 	case EF_DUTY_CYCLE:
 		// Duty effect controls wave
 		m_iDefaultDuty = m_iDutyPeriod = EffParam;
+		m_bLoadWave = true;
 		if (auto pHandler = dynamic_cast<CSeqInstHandlerN163*>(m_pInstHandler))
 			pHandler->RequestWaveUpdate();
 		break;
@@ -95,6 +97,9 @@ bool CChannelHandlerN163::HandleInstrument(int Instrument, bool Trigger, bool Ne
 {
 	if (!CChannelHandler::HandleInstrument(Instrument, Trigger, NewInstrument))		// // //
 		return false;
+
+	if (!m_bLoadWave && NewInstrument)
+		m_iDefaultDuty = 0;
 
 	if (!m_bDisableLoad) {
 		m_iWavePos = /*pInstrument->GetAutoWavePos() ? GetIndex() * 16 :*/ m_iWavePosOld;
@@ -123,6 +128,8 @@ void CChannelHandlerN163::HandleRelease()
 void CChannelHandlerN163::HandleNote(int Note, int Octave)
 {
 	// New note
+	m_bLoadWave = false;
+	m_iDutyPeriod = m_iDefaultDuty;
 	m_iInstVolume = 0x0F;
 	m_bRelease = false;
 //	m_bResetPhase = true;

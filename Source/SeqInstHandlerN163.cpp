@@ -52,7 +52,6 @@ void CSeqInstHandlerN163::LoadInstrument(CInstrument *pInst)		// // //
 	pInterface->SetWaveLength(pN163Inst->GetWaveSize());
 	pInterface->SetWavePosition(pN163Inst->GetWavePos());
 	pInterface->SetWaveCount(pN163Inst->GetWaveCount());
-	m_pInterface->SetDutyPeriod(0);
 	RequestWaveUpdate();
 }
 
