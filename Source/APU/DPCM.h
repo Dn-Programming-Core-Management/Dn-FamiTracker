@@ -25,7 +25,7 @@
 
 class CDPCM : public CChannel {
 public:
-	CDPCM(CMixer *pMixer, CSampleMem *pSampleMem, int ID);
+	CDPCM(CMixer *pMixer, int ID, CSampleMem *pSampleMem);		// // //
 	~CDPCM();
 
 	void	Reset();
@@ -36,6 +36,7 @@ public:
 	void	Process(uint32 Time);
 	void	Reload();
 
+	void	SetSampleMemory(CSampleMem *pMem);		// // //
 	uint8	GetSamplePos() const { return  (m_iDMA_Address - (m_iDMA_LoadReg << 6 | 0x4000)) >> 6; };
 	uint8	GetDeltaCounter() const { return m_iDeltaCounter; };
 	bool	IsPlaying() const { return (m_iDMA_BytesRemaining > 0); };

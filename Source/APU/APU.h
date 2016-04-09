@@ -29,11 +29,7 @@
 #include "Mixer.h"
 
 // External classes
-class CSquare;
-class CTriangle;
-class CNoise;
-class CDPCM;
-
+class C2A03;		// // //
 class CVRC6;
 class CVRC7;
 class CFDS;
@@ -56,11 +52,6 @@ public:
 	void	Process();
 	void	AddTime(int32 Cycles);
 
-	uint8	Read4015();
-	void	Write4017(uint8 Value);
-	void	Write4015(uint8 Value);
-	void	Write(uint16 Address, uint8 Value);
-
 	void	SetExternalSound(uint8 Chip);
 	void	ExternalWrite(uint16 Address, uint8 Value);
 	uint8	ExternalRead(uint16 Address);
@@ -70,10 +61,11 @@ public:
 	void	SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume) const;
 
 	int32	GetVol(uint8 Chan) const;
+	uint16	GetReg(int Chip, int Reg) const;		// // //
+	
 	uint8	GetSamplePos() const;
 	uint8	GetDeltaCounter() const;
 	bool	DPCMPlaying() const;
-	uint16	GetReg(int Chip, int Reg) const;		// // //
 
 	void	SetChipLevel(chip_level_t Chip, float Level);
 
@@ -93,16 +85,8 @@ public:
 
 private:
 	static const int SEQUENCER_PERIOD;
+	static const int SEQUENCER_PERIOD_PAL;
 	
-private:
-	inline void Clock_240Hz();
-	inline void	Clock_120Hz();
-	inline void	Clock_60Hz();
-	inline void	ClockSequence();
-
-	inline void RunAPU1(uint32 Time);
-	inline void RunAPU2(uint32 Time);
-
 	void EndFrame();
 	
 	void LogExternalWrite(uint16 Address, uint8 Value);
@@ -111,14 +95,8 @@ private:
 	CMixer		*m_pMixer;
 	IAudioCallback *m_pParent;
 
-	// Internal channels
-	CSquare		*m_pSquare1;
-	CSquare		*m_pSquare2;
-	CTriangle	*m_pTriangle;
-	CNoise		*m_pNoise;
-	CDPCM		*m_pDPCM;
-
 	// Expansion chips
+	C2A03		*m_p2A03;		// // //
 	CVRC6		*m_pVRC6;
 	CMMC5		*m_pMMC5;
 	CFDS		*m_pFDS;
@@ -127,12 +105,6 @@ private:
 	CS5B		*m_pS5B;
 
 	uint8		m_iExternalSoundChip;				// External sound chip, if used
-
-	uint32		m_iFramePeriod;						// Cycles per frame
-	uint32		m_iFrameCycles;						// Cycles emulated from start of frame
-	uint32		m_iSequencerClock;						// Clock for frame sequencer
-	uint8		m_iFrameSequence;					// Frame sequence
-	uint8		m_iFrameMode;						// 4 or 5-steps frame sequence
 
 	uint32		m_iFrameCycleCount;
 	uint32		m_iFrameClock;
@@ -156,6 +128,9 @@ private:
 	uint8		m_iPortVRC7;						// // //
 	uint8		m_iPortN163;
 	uint8		m_iPortS5B;
+
+	uint32		m_iFrameCycles;						// Cycles emulated from start of frame
+	uint32		m_iSequencerClock;					// Clock for frame sequencer
 
 	float		m_fLevelVRC7;
 	float		m_fLevelS5B;

@@ -24,6 +24,8 @@
 #include "external.h"
 #include "channel.h"
 
+class CSquare;		// // //
+
 class CMMC5 : public CExternal {
 public:
 	CMMC5(CMixer *pMixer);
@@ -36,6 +38,7 @@ public:
 	void Process(uint32 Time);
 	void LengthCounterUpdate();
 	void EnvelopeUpdate();
+	void ClockSequence();		// // //
 
 private:	
 	CSquare	*m_pSquare1;

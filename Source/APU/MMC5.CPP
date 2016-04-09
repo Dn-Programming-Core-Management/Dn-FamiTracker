@@ -18,13 +18,17 @@
 ** must bear this legend.
 */
 
-#include "APU.h"
+//#include "APU.h"
+#include "../Common.h"
+#include "Types.h"
+#include "Mixer.h"
 #include "MMC5.h"
 #include "Square.h"
 
 // MMC5 external sound
 
-CMMC5::CMMC5(CMixer *pMixer) : 
+CMMC5::CMMC5(CMixer *pMixer) :
+	CExternal(pMixer),		// // //
 	m_pEXRAM(new uint8[0x400]),
 	m_pSquare1(new CSquare(pMixer, CHANID_MMC5_SQUARE1, SNDCHIP_MMC5)),
 	m_pSquare2(new CSquare(pMixer, CHANID_MMC5_SQUARE2, SNDCHIP_MMC5)),
@@ -139,4 +143,10 @@ void CMMC5::EnvelopeUpdate()
 {
 	m_pSquare1->EnvelopeUpdate();
 	m_pSquare2->EnvelopeUpdate();
+}
+
+void CMMC5::ClockSequence()
+{
+	EnvelopeUpdate();		// // //
+	LengthCounterUpdate();		// // //
 }

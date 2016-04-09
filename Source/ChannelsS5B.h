@@ -55,7 +55,7 @@ protected:
 	static void SetEnvelopeType(int Val);
 	static void SetMode(int Chan, int Square, int Noise);
 	static void SetNoiseFreq(int Freq);
-	static void UpdateRegs(CAPU *pAPU);
+	void UpdateRegs(CAPU *pAPU);		// // //
 
 	// Static memebers
 protected:

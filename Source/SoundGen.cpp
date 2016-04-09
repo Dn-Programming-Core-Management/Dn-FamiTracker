@@ -1120,8 +1120,8 @@ void CSoundGen::ResetAPU()
 	m_pAPU->Reset();
 
 	// Enable all channels
-	m_pAPU->Write(0x4015, 0x0F);
-	m_pAPU->Write(0x4017, 0x00);
+	m_pAPU->ExternalWrite(0x4015, 0x0F);
+	m_pAPU->ExternalWrite(0x4017, 0x00);
 
 	// MMC5
 	m_pAPU->ExternalWrite(0x5015, 0x03);
@@ -1734,11 +1734,11 @@ void CSoundGen::PlaySample(const CDSample *pSample, int Offset, int Pitch)
 	int Loop = 0;
 	int Length = ((pSample->GetSize() - 1) >> 4) - (Offset << 2);
 
-	m_pAPU->Write(0x4010, Pitch | Loop);
-	m_pAPU->Write(0x4012, Offset);			// load address, start at $C000
-	m_pAPU->Write(0x4013, Length);			// length
-	m_pAPU->Write(0x4015, 0x0F);
-	m_pAPU->Write(0x4015, 0x1F);			// fire sample
+	m_pAPU->ExternalWrite(0x4010, Pitch | Loop);
+	m_pAPU->ExternalWrite(0x4012, Offset);			// load address, start at $C000
+	m_pAPU->ExternalWrite(0x4013, Length);			// length
+	m_pAPU->ExternalWrite(0x4015, 0x0F);
+	m_pAPU->ExternalWrite(0x4015, 0x1F);			// fire sample
 	
 	// Auto-delete samples with no name
 	if (*pSample->GetName() == 0)
@@ -2071,7 +2071,7 @@ void CSoundGen::OnPreviewSample(WPARAM wParam, LPARAM lParam)
 
 void CSoundGen::OnWriteAPU(WPARAM wParam, LPARAM lParam)
 {
-	m_pAPU->Write((uint16)wParam, (uint8)lParam);
+	m_pAPU->ExternalWrite((uint16)wParam, (uint8)lParam);
 }
 
 void CSoundGen::OnCloseSound(WPARAM wParam, LPARAM lParam)
@@ -2091,8 +2091,8 @@ void CSoundGen::OnSetChip(WPARAM wParam, LPARAM lParam)
 	m_pAPU->SetExternalSound(Chip);
 
 	// Enable internal channels after reset
-	m_pAPU->Write(0x4015, 0x0F);
-	m_pAPU->Write(0x4017, 0x00);
+	m_pAPU->ExternalWrite(0x4015, 0x0F);
+	m_pAPU->ExternalWrite(0x4017, 0x00);
 
 	// MMC5
 	if (Chip & SNDCHIP_MMC5)

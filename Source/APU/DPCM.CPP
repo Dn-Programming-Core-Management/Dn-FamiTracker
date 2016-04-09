@@ -31,7 +31,7 @@ const uint16 CDPCM::DMC_PERIODS_PAL[]  = {
 	398, 354, 316, 298, 276, 236, 210, 198, 176, 148, 132, 118, 98, 78, 66, 50
 };
 
-CDPCM::CDPCM(CMixer *pMixer, CSampleMem *pSampleMem, int ID) : CChannel(pMixer, ID, SNDCHIP_NONE), m_pSampleMem(pSampleMem)
+CDPCM::CDPCM(CMixer *pMixer, int ID, CSampleMem *pSampleMem) : CChannel(pMixer, ID, SNDCHIP_NONE), m_pSampleMem(pSampleMem)
 {
 	PERIOD_TABLE = DMC_PERIODS_NTSC;
 
@@ -110,6 +110,11 @@ void CDPCM::Reload()
 {
 	m_iDMA_Address = (m_iDMA_LoadReg << 6) | 0x4000;
 	m_iDMA_BytesRemaining = (m_iDMA_LengthReg << 4) + 1;
+}
+
+void CDPCM::SetSampleMemory(CSampleMem *pMem)		 // // //
+{
+	m_pSampleMem = pMem;
 }
 
 void CDPCM::Process(uint32 Time)

@@ -98,20 +98,20 @@ void CChannelHandlerS5B::UpdateRegs(CAPU *pAPU)
 		return;
 
 	// Done only once
-	pAPU->ExternalWrite(0xC000, 0x07);
-	pAPU->ExternalWrite(0xE000, m_iModes);
+	WriteExternalRegister(0xC000, 0x07);
+	WriteExternalRegister(0xE000, m_iModes);
 
-	pAPU->ExternalWrite(0xC000, 0x06);
-	pAPU->ExternalWrite(0xE000, m_iNoiseFreq);
+	WriteExternalRegister(0xC000, 0x06);
+	WriteExternalRegister(0xE000, m_iNoiseFreq);
 
-	pAPU->ExternalWrite(0xC000, 0x0B);
-	pAPU->ExternalWrite(0xE000, m_iEnvFreqLo);
+	WriteExternalRegister(0xC000, 0x0B);
+	WriteExternalRegister(0xE000, m_iEnvFreqLo);
 
-	pAPU->ExternalWrite(0xC000, 0x0C);
-	pAPU->ExternalWrite(0xE000, m_iEnvFreqHi);
+	WriteExternalRegister(0xC000, 0x0C);
+	WriteExternalRegister(0xE000, m_iEnvFreqHi);
 
-	pAPU->ExternalWrite(0xC000, 0x0D);
-	pAPU->ExternalWrite(0xE000, m_iEnvType);
+	WriteExternalRegister(0xC000, 0x0D);
+	WriteExternalRegister(0xE000, m_iEnvType);
 
 	m_bRegsDirty = false;
 }

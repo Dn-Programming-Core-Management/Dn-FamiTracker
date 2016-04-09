@@ -39,7 +39,8 @@
 // Namco 163 (previously called N106)
 //
 
-CN163::CN163(CMixer *pMixer) : 
+CN163::CN163(CMixer *pMixer) :
+	CExternal(pMixer),		// // //
 	m_iChansInUse(0), 
 	m_iExpandAddr(0), 
 	m_iLastValue(0), 
@@ -47,13 +48,9 @@ CN163::CN163(CMixer *pMixer) :
 	m_iChannelCntr(0),
 	m_iActiveChan(0),
 	m_iCycle(0),
+	m_pWaveData(new uint8[0x80]()),		// // //
 	m_bOldMixing(0)		// // //
 {
-	m_pWaveData = new uint8[0x80];
-	memset(m_pWaveData, 0, 0x80 * sizeof(uint8));		// // //
-
-	m_pMixer = pMixer;
-
 	m_pChannels[0] = new CN163Chan(pMixer, CHANID_N163_CH1, m_pWaveData);
 	m_pChannels[1] = new CN163Chan(pMixer, CHANID_N163_CH2, m_pWaveData);
 	m_pChannels[2] = new CN163Chan(pMixer, CHANID_N163_CH3, m_pWaveData);

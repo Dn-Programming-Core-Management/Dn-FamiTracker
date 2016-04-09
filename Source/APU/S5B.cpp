@@ -29,12 +29,12 @@ PSG *psg;
 
 float CS5B::AMPLIFY = 2.0f;
 
-CS5B::CS5B(CMixer *pMixer) : m_iRegister(0), m_iTime(0)
+CS5B::CS5B(CMixer *pMixer) :
+	CExternal(pMixer),		// // //
+	m_iRegister(0),
+	m_iTime(0),
+	m_fVolume(AMPLIFY)
 {
-	m_pMixer = pMixer;
-
-	m_fVolume = AMPLIFY;
-
 	psg = NULL;
 }
 
