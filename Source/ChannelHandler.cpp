@@ -52,7 +52,7 @@ CChannelHandler::CChannelHandler(int MaxPeriod, int MaxVolume) :
 	m_pNoteLookupTable(NULL),
 	m_pVibratoTable(NULL),
 	m_pAPU(NULL),
-	m_pInstHandler(nullptr),		// // //
+	m_pInstHandler(),		// // //
 	m_iPitch(0),
 	m_iNote(0),
 	m_iInstVolume(0),
@@ -184,8 +184,6 @@ void CChannelHandler::ResetChannel()
 
 	// Clear channel registers
 	ClearRegisters();
-
-	SAFE_RELEASE(m_pInstHandler);		// // //
 }
 
 CString CChannelHandler::GetStateString()		// // //
@@ -445,7 +443,7 @@ bool CChannelHandler::HandleInstrument(int Instrument, bool Trigger, bool NewIns
 		CreateInstHandler(instType);
 	m_iInstTypeCurrent = instType;
 
-	if (m_pInstHandler == nullptr)
+	if (!m_pInstHandler)
 		return false;
 	if (NewInstrument)
 		m_pInstHandler->LoadInstrument(pInstrument.get());
@@ -497,7 +495,7 @@ void CChannelHandler::ReleaseNote()
 
 	RegisterKeyState(-1);
 
-	if (m_pInstHandler != nullptr) m_pInstHandler->ReleaseInstrument();		// // //
+	if (m_pInstHandler) m_pInstHandler->ReleaseInstrument();		// // //
 	m_bRelease = true;
 }
 
@@ -864,7 +862,7 @@ void CChannelHandler::ProcessChannel()
 	UpdateVolumeSlide();
 	UpdateVibratoTremolo();
 	UpdateEffects();
-	if (m_pInstHandler != nullptr) m_pInstHandler->UpdateInstrument();		// // //
+	if (m_pInstHandler) m_pInstHandler->UpdateInstrument();		// // //
 	// instruments are updated after running effects and before writing to sound registers
 }
 

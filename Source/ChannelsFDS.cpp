@@ -139,8 +139,7 @@ bool CChannelHandlerFDS::CreateInstHandler(inst_type_t Type)
 {
 	switch (Type) {
 	case INST_FDS:
-		SAFE_RELEASE(m_pInstHandler);
-		m_pInstHandler = new CSeqInstHandlerFDS(this, 0x1F, 0);
+		m_pInstHandler.reset(new CSeqInstHandlerFDS(this, 0x1F, 0));
 		return true;
 	}
 	return false;

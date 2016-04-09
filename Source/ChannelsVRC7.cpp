@@ -173,8 +173,7 @@ bool CChannelHandlerVRC7::CreateInstHandler(inst_type_t Type)
 {
 	switch (Type) {
 	case INST_VRC7:
-		SAFE_RELEASE(m_pInstHandler);
-		m_pInstHandler = new CInstHandlerVRC7(this, 0x0F);
+		m_pInstHandler.reset(new CInstHandlerVRC7(this, 0x0F));
 		return true;
 	}
 	return false;

@@ -582,8 +582,8 @@ protected:
 	*/
 	inst_type_t		m_iInstTypeCurrent;
 	/*! \brief A pointer to the currently installed instrument handler. */
-	CInstHandler	*m_pInstHandler;				// // //
-
+	std::unique_ptr<CInstHandler>	m_pInstHandler;				// // //
+	
 	// Private variables
 private:
 	int				m_iMaxPeriod;

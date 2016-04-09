@@ -71,7 +71,7 @@ bool CChannelHandlerN163::HandleEffect(effect_t EffNum, unsigned char EffParam)
 		// Duty effect controls wave
 		m_iDefaultDuty = m_iDutyPeriod = EffParam;
 		m_bLoadWave = true;
-		if (auto pHandler = dynamic_cast<CSeqInstHandlerN163*>(m_pInstHandler))
+		if (auto pHandler = dynamic_cast<CSeqInstHandlerN163*>(m_pInstHandler.get()))
 			pHandler->RequestWaveUpdate();
 		break;
 	case EF_N163_WAVE_BUFFER:		// // //
@@ -84,7 +84,7 @@ bool CChannelHandlerN163::HandleEffect(effect_t EffNum, unsigned char EffParam)
 			m_iWavePos = EffParam << 1;
 			m_bDisableLoad = true;
 		}
-		if (auto pHandler = dynamic_cast<CSeqInstHandlerN163*>(m_pInstHandler))
+		if (auto pHandler = dynamic_cast<CSeqInstHandlerN163*>(m_pInstHandler.get()))
 			pHandler->RequestWaveUpdate();
 		break;
 	default: return CChannelHandlerInverted::HandleEffect(EffNum, EffParam);
@@ -139,12 +139,10 @@ bool CChannelHandlerN163::CreateInstHandler(inst_type_t Type)
 {
 	switch (Type) {
 	case INST_2A03: case INST_VRC6: case INST_S5B: case INST_FDS:
-		SAFE_RELEASE(m_pInstHandler);
-		m_pInstHandler = new CSeqInstHandler(this, 0x0F, Type == INST_S5B ? 0x40 : 0);
+		m_pInstHandler.reset(new CSeqInstHandler(this, 0x0F, Type == INST_S5B ? 0x40 : 0));
 		return true;
 	case INST_N163:
-		SAFE_RELEASE(m_pInstHandler);
-		m_pInstHandler = new CSeqInstHandlerN163(this, 0x0F, 0);
+		m_pInstHandler.reset(new CSeqInstHandlerN163(this, 0x0F, 0));
 		return true;
 	}
 	return false;
