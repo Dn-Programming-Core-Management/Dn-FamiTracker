@@ -293,6 +293,6 @@ void CVRC7Channel::ClearRegisters()
 
 void CVRC7Channel::RegWrite(unsigned char Reg, unsigned char Value)
 {
-	WriteExternalRegister(0x9010, Reg);
-	WriteExternalRegister(0x9030, Value);
+	WriteRegister(0x9010, Reg);
+	WriteRegister(0x9030, Value);
 }

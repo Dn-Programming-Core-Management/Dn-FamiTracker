@@ -270,18 +270,18 @@ CString CChannelHandlerN163::GetCustomEffectString() const		// // //
 
 void CChannelHandlerN163::WriteReg(int Reg, int Value)
 {
-	WriteExternalRegister(0xF800, Reg);
-	WriteExternalRegister(0x4800, Value);
+	WriteRegister(0xF800, Reg);
+	WriteRegister(0x4800, Value);
 }
 
 void CChannelHandlerN163::SetAddress(char Addr, bool AutoInc)
 {
-	WriteExternalRegister(0xF800, (AutoInc ? 0x80 : 0) | Addr);
+	WriteRegister(0xF800, (AutoInc ? 0x80 : 0) | Addr);
 }
 
 void CChannelHandlerN163::WriteData(char Data)
 {
-	WriteExternalRegister(0x4800, Data);
+	WriteRegister(0x4800, Data);
 }
 
 void CChannelHandlerN163::WriteData(int Addr, char Data)

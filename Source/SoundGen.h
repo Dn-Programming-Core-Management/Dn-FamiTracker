@@ -189,7 +189,6 @@ public:
 	void		ResetWaveChanged();
 
 	void		WriteRegister(uint16 Reg, uint8 Value);
-	void		WriteExternalRegister(uint16 Reg, uint8 Value);
 
 	void		RegisterKeyState(int Channel, int Note);
 	void		SetNamcoMixing(bool bLinear);			// // //

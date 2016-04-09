@@ -286,21 +286,19 @@ void CAPU::AddTime(int32 Cycles)
 	m_iCyclesToRun += Cycles;
 }
 
-void CAPU::ExternalWrite(uint16 Address, uint8 Value)
+void CAPU::Write(uint16 Address, uint8 Value)
 {
-	// Data was written to an external sound chip 
-	// (this doesn't really belong in the APU but are here for convenience)
-	//
+	// Data was written to an external sound chip
 
 	Process();
 	
 	for (auto Chip : ExChips)		// // //
 		Chip->Write(Address, Value);
 
-	LogExternalWrite(Address, Value);
+	LogWrite(Address, Value);
 }
 
-uint8 CAPU::ExternalRead(uint16 Address)
+uint8 CAPU::Read(uint16 Address)
 {
 	// Data read from an external chip
 	//
@@ -407,7 +405,7 @@ void CAPU::SetNamcoMixing(bool bLinear)		// // //
 	m_pN163->SetMixingMethod(bLinear);
 }
 
-void CAPU::LogExternalWrite(uint16 Address, uint8 Value)
+void CAPU::LogWrite(uint16 Address, uint8 Value)
 {
 #define UpdateReg(tbl, adr) uint16 old = tbl[adr] & 0xFF; \
 							tbl[adr] = Value | (CAPU::REG_DECAY_RATE << 8) | (tbl[adr] & 0xF000); \

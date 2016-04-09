@@ -677,7 +677,7 @@ void CDPCMChan::ClearRegisters()
 {
 	WriteRegister(0x4015, 0x0F);
 
-	WriteRegister(0x4010, 0);	
+	WriteRegister(0x4010, 0);
 	WriteRegister(0x4011, 0);
 	WriteRegister(0x4012, 0);
 	WriteRegister(0x4013, 0);

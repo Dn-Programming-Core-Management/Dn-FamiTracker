@@ -165,42 +165,42 @@ void CChannelHandlerFDS::RefreshChannel()
 	unsigned char Volume = CalculateVolume();
 
 	if (!m_bGate) {		// // //
-		WriteExternalRegister(0x4080, 0x80 | Volume);
+		WriteRegister(0x4080, 0x80 | Volume);
 		return;
 	}
 
 	// Write frequency
-	WriteExternalRegister(0x4082, LoFreq);
-	WriteExternalRegister(0x4083, HiFreq);
+	WriteRegister(0x4082, LoFreq);
+	WriteRegister(0x4083, HiFreq);
 
 	// Write volume
 	if (m_iVolModMode) {		// // //
 		if (m_bVolModTrigger) {
 			m_bVolModTrigger = false;
-			WriteExternalRegister(0x4080, 0x80 | Volume);
+			WriteRegister(0x4080, 0x80 | Volume);
 		}
-		WriteExternalRegister(0x4080, ((2 - m_iVolModMode) << 6) | m_iVolModRate);
+		WriteRegister(0x4080, ((2 - m_iVolModMode) << 6) | m_iVolModRate);
 	}
 	else
-		WriteExternalRegister(0x4080, 0x80 | Volume);
+		WriteRegister(0x4080, 0x80 | Volume);
 
 	if (m_bResetMod)
-		WriteExternalRegister(0x4085, 0);
+		WriteRegister(0x4085, 0);
 
 	m_bResetMod = false;
 
 	// Update modulation unit
 	if (m_iModulationDelay == 0) {
 		// Modulation frequency
-		WriteExternalRegister(0x4086, ModFreqLo);
-		WriteExternalRegister(0x4087, ModFreqHi);
+		WriteRegister(0x4086, ModFreqLo);
+		WriteRegister(0x4087, ModFreqHi);
 
 		// Sweep depth, disable sweep envelope
-		WriteExternalRegister(0x4084, 0x80 | m_iModulationDepth); 
+		WriteRegister(0x4084, 0x80 | m_iModulationDepth); 
 	}
 	else {
 		// Delayed modulation
-		WriteExternalRegister(0x4087, 0x80);
+		WriteRegister(0x4087, 0x80);
 		m_iModulationDelay--;
 	}
 
@@ -209,22 +209,22 @@ void CChannelHandlerFDS::RefreshChannel()
 void CChannelHandlerFDS::ClearRegisters()
 {	
 	// Clear gain
-	WriteExternalRegister(0x4090, 0x00);
+	WriteRegister(0x4090, 0x00);
 
 	// Clear volume
-	WriteExternalRegister(0x4080, 0x80);
+	WriteRegister(0x4080, 0x80);
 
 	// Silence channel
-	WriteExternalRegister(0x4082, 0x00);		// // //
-	WriteExternalRegister(0x4083, 0x80);
+	WriteRegister(0x4082, 0x00);		// // //
+	WriteRegister(0x4083, 0x80);
 
 	// Default speed
-	WriteExternalRegister(0x408A, 0xFF);
+	WriteRegister(0x408A, 0xFF);
 
 	// Disable modulation
-	WriteExternalRegister(0x4086, 0x00);		// // //
-	WriteExternalRegister(0x4087, 0x00);
-	WriteExternalRegister(0x4084, 0x00);		// // //
+	WriteRegister(0x4086, 0x00);		// // //
+	WriteRegister(0x4087, 0x00);
+	WriteRegister(0x4084, 0x00);		// // //
 
 	m_iInstVolume = 0x20;
 
@@ -288,17 +288,17 @@ void CChannelHandlerFDS::FillWaveRAM(const char *pBuffer)		// // //
 
 		// Fills the 64 byte waveform table
 		// Enable write for waveform RAM
-		WriteExternalRegister(0x4089, 0x80);
+		WriteRegister(0x4089, 0x80);
 
 		// This is the time the loop takes in NSF code
 		AddCycles(1088);
 
 		// Wave ram
 		for (int i = 0; i < 0x40; ++i)
-			WriteExternalRegister(0x4040 + i, m_iWaveTable[i]);
+			WriteRegister(0x4040 + i, m_iWaveTable[i]);
 
 		// Disable write for waveform RAM, master volume = full
-		WriteExternalRegister(0x4089, 0x00);
+		WriteRegister(0x4089, 0x00);
 	}
 }
 
@@ -308,11 +308,11 @@ void CChannelHandlerFDS::FillModulationTable(const char *pBuffer)		// // //
 		memcpy(m_iModTable, pBuffer, sizeof(m_iModTable));
 
 		// Disable modulation
-		WriteExternalRegister(0x4087, 0x80);
+		WriteRegister(0x4087, 0x80);
 		// Reset modulation table pointer, set bias to zero
-		WriteExternalRegister(0x4085, 0x00);
+		WriteRegister(0x4085, 0x00);
 		// Fill the table
 		for (int i = 0; i < 32; ++i)
-			WriteExternalRegister(0x4088, m_iModTable[i]);
+			WriteRegister(0x4088, m_iModTable[i]);
 	}
 }

@@ -82,9 +82,9 @@ bool CChannelHandlerVRC6::CreateInstHandler(inst_type_t Type)
 void CChannelHandlerVRC6::ClearRegisters()		// // //
 {
 	uint16 Address = ((m_iChannelID - CHANID_VRC6_PULSE1) << 12) + 0x9000;
-	WriteExternalRegister(Address, 0);
-	WriteExternalRegister(Address + 1, 0);
-	WriteExternalRegister(Address + 2, 0);
+	WriteRegister(Address, 0);
+	WriteRegister(Address + 1, 0);
+	WriteRegister(Address + 2, 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -103,13 +103,13 @@ void CVRC6Square::RefreshChannel()
 	unsigned char LoFreq = (Period >> 8);
 	
 	if (!m_bGate) {		// // //
-		WriteExternalRegister(Address, DutyCycle);
+		WriteRegister(Address, DutyCycle);
 		return;
 	}
 
-	WriteExternalRegister(Address, DutyCycle | Volume);
-	WriteExternalRegister(Address + 1, HiFreq);
-	WriteExternalRegister(Address + 2, 0x80 | LoFreq);
+	WriteRegister(Address, DutyCycle | Volume);
+	WriteRegister(Address + 1, HiFreq);
+	WriteRegister(Address + 2, 0x80 | LoFreq);
 }
 
 int CVRC6Square::ConvertDuty(int Duty) const		// // //
@@ -141,11 +141,11 @@ void CVRC6Sawtooth::RefreshChannel()
 		Volume = 63;
 	
 	if (!m_bGate) {		// // //
-		WriteExternalRegister(0xB000, 0);
+		WriteRegister(0xB000, 0);
 		return;
 	}
 
-	WriteExternalRegister(0xB000, Volume);
-	WriteExternalRegister(0xB001, HiFreq);
-	WriteExternalRegister(0xB002, 0x80 | LoFreq);
+	WriteRegister(0xB000, Volume);
+	WriteRegister(0xB001, HiFreq);
+	WriteRegister(0xB002, 0x80 | LoFreq);
 }

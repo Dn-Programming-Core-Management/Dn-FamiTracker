@@ -960,14 +960,8 @@ void CChannelHandler::AddCycles(int count)
 
 void CChannelHandler::WriteRegister(uint16 Reg, uint8 Value)
 {
-	m_pAPU->ExternalWrite(Reg, Value);		// // //
+	m_pAPU->Write(Reg, Value);
 	m_pSoundGen->WriteRegister(Reg, Value);
-}
-
-void CChannelHandler::WriteExternalRegister(uint16 Reg, uint8 Value)
-{
-	m_pAPU->ExternalWrite(Reg, Value);
-	m_pSoundGen->WriteExternalRegister(Reg, Value);
 }
 
 void CChannelHandler::RegisterKeyState(int Note)

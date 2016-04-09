@@ -53,8 +53,8 @@ public:
 	void	AddTime(int32 Cycles);
 
 	void	SetExternalSound(uint8 Chip);
-	void	ExternalWrite(uint16 Address, uint8 Value);
-	uint8	ExternalRead(uint16 Address);
+	void	Write(uint16 Address, uint8 Value);		// // //
+	uint8	Read(uint16 Address);
 	
 	void	ChangeMachineRate(int Machine, int Rate);		// // //
 	bool	SetupSound(int SampleRate, int NrChannels, int Speed);
@@ -89,7 +89,7 @@ private:
 	
 	void EndFrame();
 	
-	void LogExternalWrite(uint16 Address, uint8 Value);
+	void LogWrite(uint16 Address, uint8 Value);
 
 private:
 	CMixer		*m_pMixer;

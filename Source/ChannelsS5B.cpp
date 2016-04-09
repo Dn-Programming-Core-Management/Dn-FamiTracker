@@ -98,20 +98,20 @@ void CChannelHandlerS5B::UpdateRegs(CAPU *pAPU)
 		return;
 
 	// Done only once
-	WriteExternalRegister(0xC000, 0x07);
-	WriteExternalRegister(0xE000, m_iModes);
+	WriteRegister(0xC000, 0x07);
+	WriteRegister(0xE000, m_iModes);
 
-	WriteExternalRegister(0xC000, 0x06);
-	WriteExternalRegister(0xE000, m_iNoiseFreq);
+	WriteRegister(0xC000, 0x06);
+	WriteRegister(0xE000, m_iNoiseFreq);
 
-	WriteExternalRegister(0xC000, 0x0B);
-	WriteExternalRegister(0xE000, m_iEnvFreqLo);
+	WriteRegister(0xC000, 0x0B);
+	WriteRegister(0xE000, m_iEnvFreqLo);
 
-	WriteExternalRegister(0xC000, 0x0C);
-	WriteExternalRegister(0xE000, m_iEnvFreqHi);
+	WriteRegister(0xC000, 0x0C);
+	WriteRegister(0xE000, m_iEnvFreqHi);
 
-	WriteExternalRegister(0xC000, 0x0D);
-	WriteExternalRegister(0xE000, m_iEnvType);
+	WriteRegister(0xC000, 0x0D);
+	WriteRegister(0xE000, m_iEnvType);
 
 	m_bRegsDirty = false;
 }
@@ -197,8 +197,8 @@ bool CChannelHandlerS5B::CreateInstHandler(inst_type_t Type)
 
 void CChannelHandlerS5B::WriteReg(int Reg, int Value)
 {
-	m_pAPU->ExternalWrite(0xC000, Reg);
-	m_pAPU->ExternalWrite(0xE000, Value);
+	m_pAPU->Write(0xC000, Reg);
+	m_pAPU->Write(0xE000, Value);
 }
 
 void CChannelHandlerS5B::ResetChannel()

@@ -134,18 +134,18 @@ void CChannelHandlerMMC5::RefreshChannel()		// // //
 
 	m_iLastPeriod = Period;
 
-	WriteExternalRegister(0x5015, 0x03);
+	WriteRegister(0x5015, 0x03);
 	
 	if (m_bGate)		// // //
-		WriteExternalRegister(Offs, (DutyCycle << 6) | (m_bEnvelopeLoop << 5) | (!m_bHardwareEnvelope << 4) | Volume);
+		WriteRegister(Offs, (DutyCycle << 6) | (m_bEnvelopeLoop << 5) | (!m_bHardwareEnvelope << 4) | Volume);
 	else {
-		WriteExternalRegister(Offs, 0x30);
+		WriteRegister(Offs, 0x30);
 		m_iLastPeriod = 0xFFFF;
 		return;
 	}
-	WriteExternalRegister(Offs + 2, HiFreq);
+	WriteRegister(Offs + 2, HiFreq);
 	if (LoFreq != LastLoFreq || m_bResetEnvelope)		// // //
-		WriteExternalRegister(Offs + 3, LoFreq + (m_iLengthCounter << 3));
+		WriteRegister(Offs + 3, LoFreq + (m_iLengthCounter << 3));
 
 	m_iLastPeriod = Period;		// // //
 	m_bResetEnvelope = false;
@@ -164,9 +164,9 @@ int CChannelHandlerMMC5::ConvertDuty(int Duty) const		// // //
 void CChannelHandlerMMC5::ClearRegisters()
 {
 	unsigned char Offs = 0x5000 + 4 * (m_iChannelID - CHANID_MMC5_SQUARE1);		// // //
-	WriteExternalRegister(Offs, 0x30);
-	WriteExternalRegister(Offs + 2, 0);
-	WriteExternalRegister(Offs + 3, 0);
+	WriteRegister(Offs, 0x30);
+	WriteRegister(Offs + 2, 0);
+	WriteRegister(Offs + 3, 0);
 }
 
 CString CChannelHandlerMMC5::GetCustomEffectString() const		// // //
