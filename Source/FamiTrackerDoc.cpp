@@ -2098,10 +2098,16 @@ void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Vers
 				stChanNote *Note = pTrack->GetPatternData(Channel, Pattern, Row);
 				*Note = BLANK_NOTE;		// // //
 
+				/*
 				Note->Note = AssertRange(pDocFile->GetBlockChar(), NONE, ECHO, "Note value");
 				Note->Octave = AssertRange(pDocFile->GetBlockChar(), 0, OCTAVE_RANGE - 1, "Octave value");
 				Note->Instrument = AssertRange(pDocFile->GetBlockChar(), 0, m_pInstrumentManager->MAX_INSTRUMENTS, "Instrument index");
 				Note->Vol = AssertRange(pDocFile->GetBlockChar(), 0, MAX_VOLUME, "Channel volume");
+				*/
+				Note->Note = pDocFile->GetBlockChar();
+				Note->Octave = pDocFile->GetBlockChar();
+				Note->Instrument = pDocFile->GetBlockChar();
+				Note->Vol = pDocFile->GetBlockChar();
 
 				for (int n = 0; n < (pTrack->GetEffectColumnCount(Channel) + 1); ++n) try {
 					unsigned char EffectNumber = pDocFile->GetBlockChar();
@@ -2116,7 +2122,8 @@ void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Vers
 								EffectParam++;
 						}
 					}
-					if (Note->EffNumber[n] = static_cast<effect_t>(AssertRange(EffectNumber, EF_NONE, EF_COUNT - 1, "Effect index")))
+					if (Note->EffNumber[n] = static_cast<effect_t>(EffectNumber))
+//					if (Note->EffNumber[n] = static_cast<effect_t>(AssertRange(EffectNumber, EF_NONE, EF_COUNT - 1, "Effect index")))
 						Note->EffParam[n] = EffectParam; // skip on no effect
 					if (m_iFileVersion == 0x200) break;		// // //
 				}
