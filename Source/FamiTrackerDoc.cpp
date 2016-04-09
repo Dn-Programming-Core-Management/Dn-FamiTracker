@@ -4043,7 +4043,6 @@ void CFamiTrackerDoc::SetVibratoStyle(vibrato_t Style)
 	if (m_iVibratoStyle != Style)		// // //
 		ModifyIrreversible();
 	m_iVibratoStyle = Style;
-	theApp.GetSoundGenerator()->SetupVibratoTable(Style);
 }
 
 // Linear pitch slides

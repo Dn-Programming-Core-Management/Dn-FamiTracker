@@ -371,6 +371,8 @@ CChannelHandler *CSoundGen::GetChannel(int Index) const
 void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 {
 	ASSERT(pDocument != NULL);
+	
+	SetupVibratoTable(pDocument->GetVibratoStyle());		// // //
 
 	for (int i = 0; i < CHANNELS; ++i) {
 		if (m_pChannels[i]) {
