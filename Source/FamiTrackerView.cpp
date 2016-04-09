@@ -200,6 +200,8 @@ BEGIN_MESSAGE_MAP(CFamiTrackerView, CView)
 	ON_COMMAND(ID_BOOKMARKS_TOGGLE, OnBookmarksToggle)
 	ON_COMMAND(ID_BOOKMARKS_NEXT, OnBookmarksNext)
 	ON_COMMAND(ID_BOOKMARKS_PREVIOUS, OnBookmarksPrevious)
+	ON_COMMAND(ID_TRACKER_TOGGLECHIP, OnTrackerToggleChip)
+	ON_COMMAND(ID_TRACKER_SOLOCHIP, OnTrackerSoloChip)
 	ON_COMMAND(ID_TRACKER_RECORDTOINST, OnTrackerRecordToInst)
 	ON_COMMAND(ID_TRACKER_RECORDERSETTINGS, OnTrackerRecorderSettings)
 	ON_UPDATE_COMMAND_UI(ID_TRACKER_RECORDTOINST, OnUpdateDisableWhilePlaying)
@@ -1865,7 +1867,7 @@ void CFamiTrackerView::ToggleChannel(unsigned int Channel)
 	if (Channel >= pDoc->GetAvailableChannels())
 		return;
 
-	SetChannelMute(Channel, !m_bMuteChannels[Channel]);
+	SetChannelMute(Channel, !IsChannelMuted(Channel));
 	HaltNoteSingle(Channel);
 	InvalidateHeader();
 }
@@ -1889,12 +1891,68 @@ void CFamiTrackerView::SoloChannel(unsigned int Channel)
 	else {
 		// Solo selected channel
 		for (int i = 0; i < channels; ++i) {
-			if (i != Channel) {
+			if (i == Channel)
+				SetChannelMute(i, false);
+			else {
 				SetChannelMute(i, true);
 				HaltNote(i);
 			}
 		}
-		SetChannelMute(Channel, false);
+	}
+
+	InvalidateHeader();
+}
+
+void CFamiTrackerView::ToggleChip(unsigned int Channel)		// // //
+{
+	CFamiTrackerDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+	int channels = pDoc->GetAvailableChannels();
+
+	if (Channel >= unsigned(channels))
+		return;
+	
+	int Chip = pDoc->GetChipType(Channel);
+	for (int i = 0; i < channels; ++i)
+		if (pDoc->GetChipType(i) == Chip && !IsChannelMuted(i)) {
+			for (int j = 0; j < channels; ++j) if (pDoc->GetChipType(j) == Chip) {
+				SetChannelMute(j, true);
+				HaltNoteSingle(j);
+			}
+			InvalidateHeader();
+			return;
+		}
+	
+	for (int j = 0; j < channels; ++j) if (pDoc->GetChipType(j) == Chip)
+		SetChannelMute(j, false);
+
+	InvalidateHeader();
+}
+
+void CFamiTrackerView::SoloChip(unsigned int Channel)		// // //
+{
+	CFamiTrackerDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+	int channels = pDoc->GetAvailableChannels();
+
+	if (Channel >= unsigned(channels))
+		return;
+
+	int Chip = pDoc->GetChipType(Channel);
+	if (IsChipSolo(Chip))
+		for (int i = 0; i < channels; ++i)
+			SetChannelMute(i, false);
+	else {
+		for (int i = 0; i < channels; ++i) {
+			if (pDoc->GetChipType(i) == Chip)
+				SetChannelMute(i, false);
+			else {
+				SetChannelMute(i, true);
+				HaltNote(i);
+			}
+		}
 	}
 
 	InvalidateHeader();
@@ -1922,10 +1980,22 @@ bool CFamiTrackerView::IsChannelSolo(unsigned int Channel) const
 
 	int channels = pDoc->GetAvailableChannels();
 
-	for (int i = 0; i < channels; ++i) {
-		if (m_bMuteChannels[i] == false && i != Channel)
+	for (int i = 0; i < channels; ++i)
+		if (!IsChannelMuted(i) && i != Channel)		// // //
 			return false;
-	}
+	return true;
+}
+
+bool CFamiTrackerView::IsChipSolo(unsigned int Chip) const		// // //
+{
+	CFamiTrackerDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+	int channels = pDoc->GetAvailableChannels();
+	
+	for (int i = 0; i < channels; ++i)
+		if (!IsChannelMuted(i) && pDoc->GetChipType(i) != Chip)
+			return false;
 	return true;
 }
 
@@ -3370,6 +3440,26 @@ void CFamiTrackerView::OnTrackerSoloChannel()
 		m_iMenuChannel = m_pPatternEditor->GetChannel();
 
 	SoloChannel(m_iMenuChannel);
+
+	m_iMenuChannel = -1;
+}
+
+void CFamiTrackerView::OnTrackerToggleChip()		// // //
+{
+	if (m_iMenuChannel == -1)
+		m_iMenuChannel = m_pPatternEditor->GetChannel();
+
+	ToggleChip(m_iMenuChannel);
+
+	m_iMenuChannel = -1;
+}
+
+void CFamiTrackerView::OnTrackerSoloChip()		// // //
+{
+	if (m_iMenuChannel == -1)
+		m_iMenuChannel = m_pPatternEditor->GetChannel();
+
+	SoloChip(m_iMenuChannel);
 
 	m_iMenuChannel = -1;
 }

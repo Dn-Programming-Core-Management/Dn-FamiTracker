@@ -109,6 +109,8 @@ public:
 	// Mute methods
 	void		 SoloChannel(unsigned int Channel);
 	void		 ToggleChannel(unsigned int Channel);
+	void		 SoloChip(unsigned int Channel);		// // //
+	void		 ToggleChip(unsigned int Channel);		// // //
 	void		 UnmuteAllChannels();
 	bool		 IsChannelMuted(unsigned int Channel) const;
 	void		 SetChannelMute(int Channel, bool bMute);
@@ -224,6 +226,7 @@ private:
 	
 	// Mute methods
 	bool	IsChannelSolo(unsigned int Channel) const;
+	bool	IsChipSolo(unsigned int Chip) const;		// // //
 
 	// Other
 	bool	AddAction(CAction *pAction) const;
@@ -432,6 +435,8 @@ public:
 	afx_msg void OnBookmarksToggle();
 	afx_msg void OnBookmarksNext();
 	afx_msg void OnBookmarksPrevious();
+	afx_msg void OnTrackerToggleChip();
+	afx_msg void OnTrackerSoloChip();
 	afx_msg void OnTrackerRecordToInst();
 	afx_msg void OnTrackerRecorderSettings();
 	afx_msg void OnRecallChannelState();

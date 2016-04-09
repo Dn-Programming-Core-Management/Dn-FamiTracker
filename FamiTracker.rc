@@ -261,14 +261,16 @@ BEGIN
     POPUP "T&racker"
     BEGIN
         MENUITEM "&Play",                       ID_TRACKER_PLAY
-        MENUITEM "P&lay Pattern",               ID_TRACKER_PLAYPATTERN
-        MENUITEM "Play from S&tart",            ID_TRACKER_PLAY_START
+        MENUITEM "Play P&attern",               ID_TRACKER_PLAYPATTERN
+        MENUITEM "Play &from Start",            ID_TRACKER_PLAY_START
         MENUITEM "Play from C&ursor",           ID_TRACKER_PLAY_CURSOR
         MENUITEM "&Stop",                       ID_TRACKER_STOP
         MENUITEM "Toggle &Edit Mode",           ID_TRACKER_EDIT
         MENUITEM SEPARATOR
-        MENUITEM "To&ggle Channel",             ID_TRACKER_TOGGLECHANNEL
-        MENUITEM "S&olo Channel",               ID_TRACKER_SOLOCHANNEL
+        MENUITEM "&Toggle Channel",             ID_TRACKER_TOGGLECHANNEL
+        MENUITEM "So&lo Channel",               ID_TRACKER_SOLOCHANNEL
+        MENUITEM "To&ggle Chip",                ID_TRACKER_TOGGLECHIP
+        MENUITEM "Solo &Chip",                  ID_TRACKER_SOLOCHIP
         MENUITEM SEPARATOR
         MENUITEM "Switch to Track &Instrument", ID_TRACKER_SWITCHTOTRACKINSTRUMENT
         MENUITEM "&Record to Instrument",       ID_TRACKER_RECORDTOINST
@@ -318,26 +320,31 @@ BEGIN
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
         MENUITEM "Select &All\tCtrl+A",         ID_EDIT_SELECTALL
         MENUITEM SEPARATOR
-        POPUP "Transpose"
+        POPUP "Patter&n"
         BEGIN
-            MENUITEM "Decrease Note",               ID_TRANSPOSE_DECREASENOTE
-            MENUITEM "Increase Note",               ID_TRANSPOSE_INCREASENOTE
-            MENUITEM "Decrease Octave",             ID_TRANSPOSE_DECREASEOCTAVE
-            MENUITEM "Increase Octave",             ID_TRANSPOSE_INCREASEOCTAVE
+            MENUITEM "&Interpolate",                ID_EDIT_INTERPOLATE
+            MENUITEM "&Reverse",                    ID_EDIT_REVERSE
+            MENUITEM "R&eplace Instrument",         ID_EDIT_REPLACEINSTRUMENT
+            MENUITEM SEPARATOR
+            MENUITEM "E&xpand",                     ID_EDIT_EXPANDPATTERNS
+            MENUITEM "S&hrink",                     ID_EDIT_SHRINKPATTERNS
+            MENUITEM "&Stretch...",                 ID_EDIT_STRETCHPATTERNS
+            MENUITEM SEPARATOR
+            POPUP "&Transpose"
+            BEGIN
+                MENUITEM "&Decrease Note",              ID_TRANSPOSE_DECREASENOTE
+                MENUITEM "&Increase Note",              ID_TRANSPOSE_INCREASENOTE
+                MENUITEM "D&ecrease Octave",            ID_TRANSPOSE_DECREASEOCTAVE
+                MENUITEM "I&ncrease Octave",            ID_TRANSPOSE_INCREASEOCTAVE
+            END
         END
         MENUITEM SEPARATOR
-        MENUITEM "&Interpolate",                ID_EDIT_INTERPOLATE
-        MENUITEM "&Reverse",                    ID_EDIT_REVERSE
-        MENUITEM "Pick Up Row",                 ID_POPUP_PICKUPROW
+        MENUITEM "Pic&k Up Row",                ID_POPUP_PICKUPROW
         MENUITEM SEPARATOR
-        MENUITEM "Expand",                      ID_EDIT_EXPANDPATTERNS
-        MENUITEM "Shrink",                      ID_EDIT_SHRINKPATTERNS
-        MENUITEM "Stretch...",                  ID_EDIT_STRETCHPATTERNS
-        MENUITEM SEPARATOR
-        MENUITEM "R&eplace Instrument",         ID_EDIT_REPLACEINSTRUMENT
-        MENUITEM SEPARATOR
-        MENUITEM "&Toggle Channel",             ID_TRACKER_TOGGLECHANNEL
+        MENUITEM "T&oggle Channel",             ID_TRACKER_TOGGLECHANNEL
         MENUITEM "&Solo Channel",               ID_TRACKER_SOLOCHANNEL
+        MENUITEM "To&ggle Chip",                ID_TRACKER_TOGGLECHIP
+        MENUITEM "So&lo Chip",                  ID_TRACKER_SOLOCHIP
     END
 END
 
@@ -412,10 +419,12 @@ BEGIN
     BEGIN
         MENUITEM "&Toggle Channel\tAlt+F9",     ID_TRACKER_TOGGLECHANNEL
         MENUITEM "&Solo Channel\tAlt+F10",      ID_TRACKER_SOLOCHANNEL
+        MENUITEM "To&ggle Chip",                ID_TRACKER_TOGGLECHIP
+        MENUITEM "So&lo Chip",                  ID_TRACKER_SOLOCHIP
         MENUITEM "&Unmute All Channels",        ID_POPUP_UNMUTEALLCHANNELS
         MENUITEM SEPARATOR
-        MENUITEM "Record to Instrument",        ID_TRACKER_RECORDTOINST
-        MENUITEM "Recorder Settings...",        ID_TRACKER_RECORDERSETTINGS
+        MENUITEM "&Record to Instrument",       ID_TRACKER_RECORDTOINST
+        MENUITEM "R&ecorder Settings...",       ID_TRACKER_RECORDERSETTINGS
     END
 END
 
@@ -2566,6 +2575,12 @@ BEGIN
     ID_TRACKER_RECORDERSETTINGS 
                             "Open the instrument recorder settings dialog\nRecorder Settings"
     ID_TRANSPOSE_CUSTOM     "Transpose song by custom amount\nTranspose Song"
+END
+
+STRINGTABLE
+BEGIN
+    ID_TRACKER_TOGGLECHIP   "Mute / unmute selected sound chip\nToggle Chip"
+    ID_TRACKER_SOLOCHIP     "Mute / unmute all but the selected sound chip\nSolo Chip"
 END
 
 #endif    // English (United States) resources

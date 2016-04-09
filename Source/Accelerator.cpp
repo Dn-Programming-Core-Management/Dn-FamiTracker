@@ -69,6 +69,8 @@ const stAccelEntry CAccelerator::DEFAULT_TABLE[] = {
 	{_T("Go to row"),					MOD_ALT,		'G',			ID_EDIT_GOTO},						// // //
 	{_T("Toggle channel"),				MOD_ALT,		VK_F9,			ID_TRACKER_TOGGLECHANNEL},
 	{_T("Solo channel"),				MOD_ALT,		VK_F10,			ID_TRACKER_SOLOCHANNEL},
+	{_T("Toggle chip"),					MOD_CONTROL|MOD_ALT, VK_F9,		ID_TRACKER_TOGGLECHIP},				// // //
+	{_T("Solo chip"),					MOD_CONTROL|MOD_ALT, VK_F10,	ID_TRACKER_SOLOCHIP},				// // //
 	{_T("Record to instrument"),		MOD_NONE,		0,				ID_TRACKER_RECORDTOINST},			// // //
 	{_T("Interpolate"),					MOD_CONTROL,	'G',			ID_EDIT_INTERPOLATE},
 	{_T("Go to next frame"),			MOD_CONTROL,	VK_RIGHT,		ID_NEXT_FRAME},
