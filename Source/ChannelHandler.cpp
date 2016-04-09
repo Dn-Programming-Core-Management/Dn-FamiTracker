@@ -135,6 +135,7 @@ void CChannelHandler::ResetChannel()
 	// Instrument 
 	m_iInstrument		= MAX_INSTRUMENTS;
 	m_iInstTypeCurrent	= INST_NONE;		// // //
+	m_pInstHandler.reset();		// // //
 
 	// Volume 
 	m_iVolume			= VOL_COLUMN_MAX;
