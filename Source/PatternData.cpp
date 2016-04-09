@@ -26,13 +26,14 @@
 
 // Defaults when creating new modules
 const unsigned CPatternData::DEFAULT_ROW_COUNT	= 64;
+const CString CPatternData::DEFAULT_TITLE = _T("New song");		// // //
 const stHighlight CPatternData::DEFAULT_HIGHLIGHT = {4, 16, 0};		// // //
 
 // This class contains pattern data
 // A list of these objects exists inside the document one for each song
 
 CPatternData::CPatternData(unsigned int PatternLength) :		// // //
-	m_sTrackName(_T("New song")),		// // //
+	m_sTrackName(DEFAULT_TITLE),		// // //
 	m_iPatternLength(PatternLength),
 	m_iFrameCount(1),
 	m_iSongSpeed(DEFAULT_SPEED),

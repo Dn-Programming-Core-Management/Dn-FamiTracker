@@ -167,6 +167,7 @@ private:
 
 public:
 	// // // moved from CFamiTrackerDoc
+	static const CString DEFAULT_TITLE;
 	static const stHighlight DEFAULT_HIGHLIGHT;
 
 private:

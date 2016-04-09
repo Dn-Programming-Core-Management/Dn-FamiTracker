@@ -3603,7 +3603,9 @@ void CFamiTrackerDoc::DeleteFrames(unsigned int Track, unsigned int Frame, int C
 
 CString CFamiTrackerDoc::GetTrackTitle(unsigned int Track) const
 {
-	return m_pTracks[Track]->GetTitle();		// // //
+	if (!m_pTracks[Track])		// // //
+		return CPatternData::DEFAULT_TITLE;
+	return m_pTracks[Track]->GetTitle();
 }
 
 int CFamiTrackerDoc::AddTrack()
@@ -4872,7 +4874,7 @@ void CFamiTrackerDoc::MakeKraid()			// // // Easter Egg
 {
 	// Basic info
 	for (int i = GetTrackCount() - 1; i > 0; i--) RemoveTrack(i);
-	SetTrackTitle(0, _T("New song"));
+	SetTrackTitle(0, CPatternData::DEFAULT_TITLE);
 	m_pTracks[0]->ClearEverything();
 	SetEngineSpeed(0);
 	SetMachine(NTSC);
