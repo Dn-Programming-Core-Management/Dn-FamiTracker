@@ -33,7 +33,7 @@ const uint8_t CSquare::DUTY_TABLE[4][16] = {
 	{1, 1, 0, 0,  0, 0, 1, 1,  1, 1, 1, 1,  1, 1, 1, 1}
 };
 
-CSquare::CSquare(CMixer *pMixer, int ID, int Chip) : CChannel(pMixer, ID, Chip)
+CSquare::CSquare(CMixer *pMixer, int ID, int Chip) : C2A03Chan(pMixer, Chip, ID)		// // //
 {
 	m_iDutyLength = 0;
 	m_iDutyCycle = 0;

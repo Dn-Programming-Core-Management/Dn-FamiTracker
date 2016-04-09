@@ -21,9 +21,9 @@
 #ifndef DPCM_H
 #define DPCM_H
 
-#include "Channel.h"
+#include "2A03Chan.h"		// // //
 
-class CDPCM : public CChannel {
+class CDPCM : public C2A03Chan {
 public:
 	CDPCM(CMixer *pMixer, int ID, CSampleMem *pSampleMem);		// // //
 	~CDPCM();

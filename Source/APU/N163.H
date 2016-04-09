@@ -28,14 +28,12 @@
 
 class CMixer;
 
-class CN163Chan : public CExChannel {
+class CN163Chan : public CChannel {
 public:
 	CN163Chan(CMixer *pMixer, int ID, uint8_t *pWaveData);
 	virtual ~CN163Chan();
 	void Reset();
 	void Write(uint16_t Address, uint8_t Value);
-
-	virtual inline void EndFrame();
 
 	void Process(uint32_t Time, uint8_t ChannelsActive, CN163 *pParent);
 	void ProcessClean(uint32_t Time, uint8_t ChannelsActive);		// // //

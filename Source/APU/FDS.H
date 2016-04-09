@@ -24,7 +24,7 @@
 #include "External.h"
 #include "Channel.h"
 
-class CFDS : public CExternal, CExChannel {
+class CFDS : public CExternal, CChannel {
 public:
 	CFDS(CMixer *pMixer);
 	virtual ~CFDS();

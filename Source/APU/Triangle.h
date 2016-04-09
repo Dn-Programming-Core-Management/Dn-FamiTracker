@@ -26,9 +26,9 @@
 #ifndef TRIANGLE_H
 #define TRIANGLE_H
 
-#include "Channel.h"
+#include "2A03Chan.h"		// // //
 
-class CTriangle : public CChannel {
+class CTriangle : public C2A03Chan {
 public:
 	CTriangle(CMixer *pMixer, int ID);
 	~CTriangle();

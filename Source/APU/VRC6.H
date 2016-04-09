@@ -24,7 +24,7 @@
 #include "external.h"
 #include "channel.h"
 
-class CVRC6_Pulse : public CExChannel {
+class CVRC6_Pulse : public CChannel {
 public:
 	CVRC6_Pulse(CMixer *pMixer, int ID);
 	void Reset();
@@ -43,7 +43,7 @@ private:
 	uint8_t	m_iDutyCycleCounter;
 };
 
-class CVRC6_Sawtooth : public CExChannel {
+class CVRC6_Sawtooth : public CChannel {
 public:
 	CVRC6_Sawtooth(CMixer *pMixer, int ID);
 	void Reset();

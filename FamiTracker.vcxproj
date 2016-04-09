@@ -678,6 +678,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\APU\2A03.h" />
+    <ClInclude Include="Source\APU\2A03Chan.h" />
     <ClInclude Include="Source\Bookmark.h" />
     <ClInclude Include="Source\BookmarkCollection.h" />
     <ClInclude Include="Source\BookmarkManager.h" />

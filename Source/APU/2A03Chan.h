@@ -2,6 +2,8 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
+** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -18,45 +20,32 @@
 ** must bear this legend.
 */
 
-#ifndef CHANNEL_H
-#define CHANNEL_H
 
-class CMixer;
+#pragma once
 
-//
-// This class is used to derive the audio channels
-//
+#include "Channel.h"
 
-class CChannel {
+class C2A03Chan : public CChannel {		// // //
 public:
-	CChannel(CMixer *pMixer, uint8_t Chip, uint8_t ID) :
-		m_pMixer(pMixer),
-		m_iChip(Chip),
-		m_iChanId(ID),
-		m_iTime(0),
-		m_iLastValue(0) 
-	{
-	}
+	C2A03Chan(CMixer *pMixer, uint8_t Chip, uint8_t ID) : CChannel(pMixer, Chip, ID) { }
 
-	virtual inline void EndFrame() {
-		m_iTime = 0;
+	inline uint16_t GetPeriod() const {
+		return m_iPeriod;
 	}
 
 protected:
-	virtual inline void Mix(int32_t Value) {
-		int32_t Delta = Value - m_iLastValue;
-		if (Delta)
-			m_pMixer->AddValue(m_iChanId, m_iChip, Delta, Value, m_iTime);
-		m_iLastValue = Value;
-	}
+	inline void Mix(int32_t Value) {
+		if (m_iLastValue != Value) {
+			m_pMixer->AddValue(m_iChanId, m_iChip, Value, Value, m_iTime);
+			m_iLastValue = Value;
+		}
+	};
 
 protected:
-	CMixer		*m_pMixer;			// The mixer
-
-	uint32_t	m_iTime;			// Cycle counter, resets every new frame
-	int32_t		m_iLastValue;		// Last value sent to mixer
-	uint8_t		m_iChanId;			// This channels unique ID
-	uint8_t		m_iChip;			// Chip
+	// Variables used by channels
+	uint8_t		m_iControlReg;
+	uint8_t		m_iEnabled;
+	uint16_t	m_iPeriod;
+	uint16_t	m_iLengthCounter;
+	uint32_t	m_iCounter;
 };
-
-#endif /* CHANNEL_H */

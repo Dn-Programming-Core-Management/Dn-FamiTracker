@@ -26,11 +26,11 @@
 #ifndef NOISE_H
 #define NOISE_H
 
-#include "Channel.h"
+#include "2A03Chan.h"		// // //
 
-class CNoise : public CChannel {
+class CNoise : public C2A03Chan {
 public:
-	CNoise(CMixer *pMixer, int ID);
+	CNoise(CMixer *pMixer, int ID);		// // //
 	~CNoise();
 
 	void	Reset();

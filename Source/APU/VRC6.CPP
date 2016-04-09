@@ -26,7 +26,7 @@
 
 // Konami VRC6 external sound chip emulation
 
-CVRC6_Pulse::CVRC6_Pulse(CMixer *pMixer, int ID) : CExChannel(pMixer, SNDCHIP_VRC6, ID) 
+CVRC6_Pulse::CVRC6_Pulse(CMixer *pMixer, int ID) : CChannel(pMixer, SNDCHIP_VRC6, ID) 
 {
 	Reset();
 }
@@ -84,7 +84,7 @@ void CVRC6_Pulse::Process(int Time)
 	m_iTime += Time;
 }
 
-CVRC6_Sawtooth::CVRC6_Sawtooth(CMixer *pMixer, int ID) : CExChannel(pMixer, SNDCHIP_VRC6, ID) 
+CVRC6_Sawtooth::CVRC6_Sawtooth(CMixer *pMixer, int ID) : CChannel(pMixer, SNDCHIP_VRC6, ID) 
 {
 	Reset();
 }

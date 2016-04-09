@@ -26,9 +26,9 @@
 #ifndef SQUARE_H
 #define SQUARE_H
 
-#include "Channel.h"
+#include "2A03Chan.h"		// // //
 
-class CSquare : public CChannel {
+class CSquare : public C2A03Chan {
 public:
 	CSquare(CMixer *pMixer, int ID, int Chip);
 	~CSquare();

@@ -219,7 +219,7 @@ uint8_t CN163::ReadMem(uint8_t Reg)
 //
 
 CN163Chan::CN163Chan(CMixer *pMixer, int ID, uint8_t *pWaveData) : 
-	CExChannel(pMixer, SNDCHIP_N163, ID),
+	CChannel(pMixer, SNDCHIP_N163, ID),
 	m_pWaveData(pWaveData)
 {
 	Reset();
@@ -240,11 +240,6 @@ void CN163Chan::Reset()
 	m_iFrequency  = 0;
 
 	EndFrame();
-}
-
-void CN163Chan::EndFrame()
-{
-	m_iTime = 0;
 }
 
 void CN163Chan::Write(uint16_t Address, uint8_t Value)

@@ -28,7 +28,7 @@ const uint8_t CTriangle::TRIANGLE_WAVE[] = {
 	0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00
 };
 
-CTriangle::CTriangle(CMixer *pMixer, int ID) : CChannel(pMixer, ID, SNDCHIP_NONE)
+CTriangle::CTriangle(CMixer *pMixer, int ID) : C2A03Chan(pMixer, SNDCHIP_NONE, ID)		// // //
 {
 	m_iStepGen = 0;
 	m_iLoop = 0;
