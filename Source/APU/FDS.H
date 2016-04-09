@@ -29,10 +29,10 @@ public:
 	CFDS(CMixer *pMixer);
 	virtual ~CFDS();
 	void	Reset();
-	void	Write(uint16 Address, uint8 Value);
-	uint8	Read(uint16 Address, bool &Mapped);
+	void	Write(uint16_t Address, uint8_t Value);
+	uint8_t	Read(uint16_t Address, bool &Mapped);
 	void	EndFrame();
-	void	Process(uint32 Time);
+	void	Process(uint32_t Time);
 };
 
 #endif /* FDS_H */

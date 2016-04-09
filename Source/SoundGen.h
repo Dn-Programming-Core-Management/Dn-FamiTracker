@@ -118,7 +118,7 @@ public:
 
 	// Sound
 	bool		InitializeSound(HWND hWnd);
-	void		FlushBuffer(int16 *Buffer, uint32 Size);
+	void		FlushBuffer(int16_t *Buffer, uint32_t Size);
 	CDSound		*GetSoundInterface() const { return m_pDSound; };
 
 	void		Interrupt() const;
@@ -180,7 +180,7 @@ public:
 	void		AddCycles(int Count);
 
 	// Other
-	uint16		GetReg(int Chip, int Reg) const;		// // //
+	uint16_t		GetReg(int Chip, int Reg) const;		// // //
 	CString		RecallChannelState(int Channel) const;		// // //
 
 	// FDS & N163 wave preview
@@ -188,7 +188,7 @@ public:
 	bool		HasWaveChanged() const;
 	void		ResetWaveChanged();
 
-	void		WriteRegister(uint16 Reg, uint8 Value);
+	void		WriteRegister(uint16_t Reg, uint8_t Value);
 
 	void		RegisterKeyState(int Channel, int Note);
 	void		SetNamcoMixing(bool bLinear);			// // //
@@ -240,7 +240,7 @@ private:
 	bool		ResetAudioDevice();
 	void		CloseAudioDevice();
 	void		CloseAudio();
-	template<class T, int SHIFT> void FillBuffer(int16 *pBuffer, uint32 Size);
+	template<class T, int SHIFT> void FillBuffer(int16_t *pBuffer, uint32_t Size);
 	bool		PlayBuffer();
 
 	// Player
@@ -345,6 +345,8 @@ private:
 
 	unsigned int		m_iSpeedSplitPoint;					// Speed/tempo split point fetched from the module
 	unsigned int		m_iFrameRate;						// Module frame rate
+
+	bool				m_bUpdatingAPU;						// // //
 
 	// Play control
 	int					m_iJumpToPattern;

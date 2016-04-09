@@ -30,26 +30,26 @@ public:
 	virtual ~CVRC7();
 
 	void Reset();
-	void SetSampleSpeed(uint32 SampleRate, double ClockRate, uint32 FrameRate);
+	void SetSampleSpeed(uint32_t SampleRate, double ClockRate, uint32_t FrameRate);
 	void SetVolume(float Volume);
-	void Write(uint16 Address, uint8 Value);
-	uint8 Read(uint16 Address, bool &Mapped);
+	void Write(uint16_t Address, uint8_t Value);
+	uint8_t Read(uint16_t Address, bool &Mapped);
 	void EndFrame();
-	void Process(uint32 Time);
+	void Process(uint32_t Time);
 
 protected:
 	static const float  AMPLIFY;
-	static const uint32 OPL_CLOCK;
+	static const uint32_t OPL_CLOCK;
 
 private:
 	OPLL	*m_pOPLLInt;
-	uint32	m_iTime;
-	uint32	m_iMaxSamples;
+	uint32_t	m_iTime;
+	uint32_t	m_iMaxSamples;
 
-	int16	*m_pBuffer;
-	uint32	m_iBufferPtr;
+	int16_t	*m_pBuffer;
+	uint32_t	m_iBufferPtr;
 
-	uint8	m_iSoundReg;
+	uint8_t	m_iSoundReg;
 
 	float	m_fVolume;
 };

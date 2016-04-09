@@ -40,11 +40,11 @@ public:
 	virtual ~C2A03();
 
 	void Reset();
-	void Process(uint32 Time);
+	void Process(uint32_t Time);
 	void EndFrame();
 
-	void Write(uint16 Address, uint8 Value);
-	uint8 Read(uint16 Address, bool &Mapped);
+	void Write(uint16_t Address, uint8_t Value);
+	uint8_t Read(uint16_t Address, bool &Mapped);
 
 public:
 	void	ClockSequence();		// // //
@@ -52,8 +52,8 @@ public:
 	void	ChangeMachine(int Machine);
 	
 	void	SetSampleMemory(CSampleMem *pMem) const;		// // //
-	uint8	GetSamplePos() const;
-	uint8	GetDeltaCounter() const;
+	uint8_t	GetSamplePos() const;
+	uint8_t	GetDeltaCounter() const;
 	bool	DPCMPlaying() const;
 
 private:
@@ -61,8 +61,8 @@ private:
 	inline void Clock_120Hz() const;		// // //
 	inline void Clock_60Hz() const;		// // //
 
-	inline void RunAPU1(uint32 Time);
-	inline void RunAPU2(uint32 Time);
+	inline void RunAPU1(uint32_t Time);
+	inline void RunAPU2(uint32_t Time);
 
 public:
 	static const int SEQUENCER_PERIOD;

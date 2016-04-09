@@ -29,35 +29,35 @@ public:
 	~CDPCM();
 
 	void	Reset();
-	void	Write(uint16 Address, uint8 Value);
-	void	WriteControl(uint8 Value);
-	uint8	ReadControl() const;
-	uint8	DidIRQ() const;
-	void	Process(uint32 Time);
+	void	Write(uint16_t Address, uint8_t Value);
+	void	WriteControl(uint8_t Value);
+	uint8_t	ReadControl() const;
+	uint8_t	DidIRQ() const;
+	void	Process(uint32_t Time);
 	void	Reload();
 
 	void	SetSampleMemory(CSampleMem *pMem);		// // //
-	uint8	GetSamplePos() const { return  (m_iDMA_Address - (m_iDMA_LoadReg << 6 | 0x4000)) >> 6; };
-	uint8	GetDeltaCounter() const { return m_iDeltaCounter; };
+	uint8_t	GetSamplePos() const { return  (m_iDMA_Address - (m_iDMA_LoadReg << 6 | 0x4000)) >> 6; };
+	uint8_t	GetDeltaCounter() const { return m_iDeltaCounter; };
 	bool	IsPlaying() const { return (m_iDMA_BytesRemaining > 0); };
 
 public:
-	static const uint16	DMC_PERIODS_NTSC[];
-	static const uint16	DMC_PERIODS_PAL[];
+	static const uint16_t	DMC_PERIODS_NTSC[];
+	static const uint16_t	DMC_PERIODS_PAL[];
 
-	const uint16 *PERIOD_TABLE;
+	const uint16_t *PERIOD_TABLE;
 
 private:
-	uint8	m_iBitDivider;
-	uint8	m_iShiftReg;
-	uint8	m_iPlayMode;
-	uint8	m_iDeltaCounter;
-	uint8	m_iSampleBuffer;
+	uint8_t	m_iBitDivider;
+	uint8_t	m_iShiftReg;
+	uint8_t	m_iPlayMode;
+	uint8_t	m_iDeltaCounter;
+	uint8_t	m_iSampleBuffer;
 
-	uint16	m_iDMA_LoadReg;
-	uint16	m_iDMA_LengthReg;
-	uint16	m_iDMA_Address;
-	uint16	m_iDMA_BytesRemaining;
+	uint16_t	m_iDMA_LoadReg;
+	uint16_t	m_iDMA_LengthReg;
+	uint16_t	m_iDMA_Address;
+	uint16_t	m_iDMA_BytesRemaining;
 
 	bool	m_bTriggeredIRQ, m_bSampleFilled, m_bSilenceFlag;
 

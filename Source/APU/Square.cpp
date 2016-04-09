@@ -26,7 +26,7 @@
 
 // This is also shared with MMC5
 
-const uint8 CSquare::DUTY_TABLE[4][16] = {
+const uint8_t CSquare::DUTY_TABLE[4][16] = {
 	{0, 0, 1, 1,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0},
 	{0, 0, 1, 1,  1, 1, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0},
 	{0, 0, 1, 1,  1, 1, 1, 1,  1, 1, 0, 0,  0, 0, 0, 0},
@@ -79,7 +79,7 @@ void CSquare::Reset()
 	EndFrame();
 }
 
-void CSquare::Write(uint16 Address, uint8 Value)
+void CSquare::Write(uint16_t Address, uint8_t Value)
 {
 	switch (Address) {
 	case 0x00:
@@ -111,7 +111,7 @@ void CSquare::Write(uint16 Address, uint8 Value)
 	}
 }
 
-void CSquare::WriteControl(uint8 Value)
+void CSquare::WriteControl(uint8_t Value)
 {
 	m_iControlReg = Value & 0x01;
 
@@ -119,12 +119,12 @@ void CSquare::WriteControl(uint8 Value)
 		m_iEnabled = 0;
 }
 
-uint8 CSquare::ReadControl()
+uint8_t CSquare::ReadControl()
 {
 	return ((m_iLengthCounter > 0) && (m_iEnabled == 1));
 }
 
-void CSquare::Process(uint32 Time)
+void CSquare::Process(uint32_t Time)
 {
 	if (!m_iPeriod) {
 		m_iTime += Time;
@@ -138,7 +138,7 @@ void CSquare::Process(uint32 Time)
 		Time		-= m_iCounter;
 		m_iTime		+= m_iCounter;
 		m_iCounter	 = m_iPeriod + 1;
-		uint8 Volume = m_iEnvelopeFix ? m_iFixedVolume : m_iEnvelopeVolume;
+		uint8_t Volume = m_iEnvelopeFix ? m_iFixedVolume : m_iEnvelopeVolume;
 		Mix(Valid && DUTY_TABLE[m_iDutyLength][m_iDutyCycle] ? Volume : 0);
 		m_iDutyCycle = (m_iDutyCycle + 1) & 0x0F;
 	}

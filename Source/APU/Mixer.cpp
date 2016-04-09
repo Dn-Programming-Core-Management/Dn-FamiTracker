@@ -69,9 +69,9 @@ static const int   LEVEL_FALL_OFF_DELAY = 3;
 
 CMixer::CMixer()
 {
-	memset(m_iChannels, 0, sizeof(int32) * CHANNELS);
+	memset(m_iChannels, 0, sizeof(int32_t) * CHANNELS);
 	memset(m_fChannelLevels, 0, sizeof(float) * CHANNELS);
-	memset(m_iChanLevelFallOff, 0, sizeof(uint32) * CHANNELS);
+	memset(m_iChanLevelFallOff, 0, sizeof(uint32_t) * CHANNELS);
 
 	m_fLevelAPU1 = 1.0f;
 	m_fLevelAPU2 = 1.0f;
@@ -241,25 +241,25 @@ void CMixer::SetNamcoVolume(float fVol)
 	SynthN163.volume(fVolume * 1.1f * m_fLevelN163);
 }
 
-void CMixer::MixSamples(blip_sample_t *pBuffer, uint32 Count)
+void CMixer::MixSamples(blip_sample_t *pBuffer, uint32_t Count)
 {
 	// For VRC7
 	BlipBuffer.mix_samples(pBuffer, Count);
 }
 
-uint32 CMixer::GetMixSampleCount(int t) const
+uint32_t CMixer::GetMixSampleCount(int t) const
 {
 	return BlipBuffer.count_samples(t);
 }
 
-bool CMixer::AllocateBuffer(unsigned int BufferLength, uint32 SampleRate, uint8 NrChannels)
+bool CMixer::AllocateBuffer(unsigned int BufferLength, uint32_t SampleRate, uint8_t NrChannels)
 {
 	m_iSampleRate = SampleRate;
 	BlipBuffer.sample_rate(SampleRate, (BufferLength * 1000 * 2) / SampleRate);
 	return true;
 }
 
-void CMixer::SetClockRate(uint32 Rate)
+void CMixer::SetClockRate(uint32_t Rate)
 {
 	// Change the clockrate
 	BlipBuffer.clock_rate(Rate);
@@ -406,9 +406,9 @@ int CMixer::ReadBuffer(int Size, void *Buffer, bool Stereo)
 	return BlipBuffer.read_samples((blip_sample_t*)Buffer, Size);
 }
 
-int32 CMixer::GetChanOutput(uint8 Chan) const
+int32_t CMixer::GetChanOutput(uint8_t Chan) const
 {
-	return (int32)m_fChannelLevels[Chan];
+	return (int32_t)m_fChannelLevels[Chan];
 }
 
 void CMixer::StoreChannelLevel(int Channel, int Value)
@@ -447,10 +447,10 @@ void CMixer::StoreChannelLevel(int Channel, int Value)
 void CMixer::ClearChannelLevels()
 {
 	memset(m_fChannelLevels, 0, sizeof(float) * CHANNELS);
-	memset(m_iChanLevelFallOff, 0, sizeof(uint32) * CHANNELS);
+	memset(m_iChanLevelFallOff, 0, sizeof(uint32_t) * CHANNELS);
 }
 
-uint32 CMixer::ResampleDuration(uint32 Time) const
+uint32_t CMixer::ResampleDuration(uint32_t Time) const
 {
-	return (uint32)BlipBuffer.resampled_duration((blip_time_t)Time);
+	return (uint32_t)BlipBuffer.resampled_duration((blip_time_t)Time);
 }

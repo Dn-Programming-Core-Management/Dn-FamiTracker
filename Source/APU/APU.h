@@ -50,21 +50,21 @@ public:
 
 	void	Reset();
 	void	Process();
-	void	AddTime(int32 Cycles);
+	void	AddTime(int32_t Cycles);
 
-	void	SetExternalSound(uint8 Chip);
-	void	Write(uint16 Address, uint8 Value);		// // //
-	uint8	Read(uint16 Address);
+	void	SetExternalSound(uint8_t Chip);
+	void	Write(uint16_t Address, uint8_t Value);		// // //
+	uint8_t	Read(uint16_t Address);
 	
 	void	ChangeMachineRate(int Machine, int Rate);		// // //
 	bool	SetupSound(int SampleRate, int NrChannels, int Speed);
 	void	SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume) const;
 
-	int32	GetVol(uint8 Chan) const;
-	uint16	GetReg(int Chip, int Reg) const;		// // //
+	int32_t	GetVol(uint8_t Chan) const;
+	uint16_t	GetReg(int Chip, int Reg) const;		// // //
 	
-	uint8	GetSamplePos() const;
-	uint8	GetDeltaCounter() const;
+	uint8_t	GetSamplePos() const;
+	uint8_t	GetDeltaCounter() const;
 	bool	DPCMPlaying() const;
 
 	void	SetChipLevel(chip_level_t Chip, float Level);
@@ -76,12 +76,12 @@ public:
 #endif
 
 public:
-	static const uint8	LENGTH_TABLE[];
-	static const uint32	BASE_FREQ_NTSC;
-	static const uint32	BASE_FREQ_PAL;
-	static const uint8	FRAME_RATE_NTSC;
-	static const uint8	FRAME_RATE_PAL;
-	static const uint8	REG_DECAY_RATE;		// // //
+	static const uint8_t	LENGTH_TABLE[];
+	static const uint32_t	BASE_FREQ_NTSC;
+	static const uint32_t	BASE_FREQ_PAL;
+	static const uint8_t	FRAME_RATE_NTSC;
+	static const uint8_t	FRAME_RATE_PAL;
+	static const uint8_t	REG_DECAY_RATE;		// // //
 
 private:
 	static const int SEQUENCER_PERIOD;
@@ -89,7 +89,7 @@ private:
 	
 	void EndFrame();
 	
-	void LogWrite(uint16 Address, uint8 Value);
+	void LogWrite(uint16_t Address, uint8_t Value);
 
 private:
 	CMixer		*m_pMixer;
@@ -104,34 +104,34 @@ private:
 	CVRC7		*m_pVRC7;
 	CS5B		*m_pS5B;
 
-	uint8		m_iExternalSoundChip;				// External sound chip, if used
+	uint8_t		m_iExternalSoundChip;				// External sound chip, if used
 
-	uint32		m_iSampleRate;						// // //
-	uint32		m_iFrameCycleCount;
-	uint32		m_iFrameClock;
-	uint32		m_iCyclesToRun;						// Number of cycles to process
+	uint32_t		m_iSampleRate;						// // //
+	uint32_t		m_iFrameCycleCount;
+	uint32_t		m_iFrameClock;
+	uint32_t		m_iCyclesToRun;						// Number of cycles to process
 
-	uint32		m_iSoundBufferSamples;				// Size of buffer, in samples
+	uint32_t		m_iSoundBufferSamples;				// Size of buffer, in samples
 	bool		m_bStereoEnabled;					// If stereo is enabled
 
-	uint32		m_iSampleSizeShift;					// To convert samples to bytes
-	uint32		m_iSoundBufferSize;					// Size of buffer, in samples
-	uint32		m_iBufferPointer;					// Fill pos in buffer
-	int16		*m_pSoundBuffer;					// Sound transfer buffer
+	uint32_t		m_iSampleSizeShift;					// To convert samples to bytes
+	uint32_t		m_iSoundBufferSize;					// Size of buffer, in samples
+	uint32_t		m_iBufferPointer;					// Fill pos in buffer
+	int16_t		*m_pSoundBuffer;					// Sound transfer buffer
 
-	uint16		m_iRegs2A03[0x20];					// // // renamed
-	uint16		m_iRegsVRC6[0x10];
-	uint16		m_iRegsVRC7[0x40];
-	uint16		m_iRegsFDS[0x50];
-	uint16		m_iRegsMMC5[0x20];
-	uint16		m_iRegsN163[0x80];
-	uint16		m_iRegsS5B[0x10];
-	uint8		m_iPortVRC7;						// // //
-	uint8		m_iPortN163;
-	uint8		m_iPortS5B;
+	uint16_t		m_iRegs2A03[0x20];					// // // renamed
+	uint16_t		m_iRegsVRC6[0x10];
+	uint16_t		m_iRegsVRC7[0x40];
+	uint16_t		m_iRegsFDS[0x50];
+	uint16_t		m_iRegsMMC5[0x20];
+	uint16_t		m_iRegsN163[0x80];
+	uint16_t		m_iRegsS5B[0x10];
+	uint8_t		m_iPortVRC7;						// // //
+	uint8_t		m_iPortN163;
+	uint8_t		m_iPortS5B;
 
-	uint32		m_iFrameCycles;						// Cycles emulated from start of frame
-	uint32		m_iSequencerClock;					// Clock for frame sequencer
+	uint32_t		m_iFrameCycles;						// Cycles emulated from start of frame
+	uint32_t		m_iSequencerClock;					// Clock for frame sequencer
 
 	float		m_fLevelVRC7;
 	float		m_fLevelS5B;

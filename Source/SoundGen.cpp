@@ -138,7 +138,8 @@ CSoundGen::CSoundGen() :
 	m_iClipCounter(0),
 	m_pSequencePlayPos(NULL),
 	m_iSequencePlayPos(0),
-	m_iSequenceTimeout(0)
+	m_iSequenceTimeout(0),
+	m_bUpdatingAPU(false)		// // //
 {
 	TRACE0("SoundGen: Object created\n");
 
@@ -825,7 +826,7 @@ void CSoundGen::ResetBuffer()
 	m_pAPU->Reset();
 }
 
-void CSoundGen::FlushBuffer(int16 *pBuffer, uint32 Size)
+void CSoundGen::FlushBuffer(int16_t *pBuffer, uint32_t Size)
 {
 	// Callback method from emulation
 
@@ -841,9 +842,9 @@ void CSoundGen::FlushBuffer(int16 *pBuffer, uint32 Size)
 #endif /* EXPORT_TEST */
 
 	if (m_iSampleSize == 8)
-		FillBuffer<uint8, 8>(pBuffer, Size);
+		FillBuffer<uint8_t, 8>(pBuffer, Size);
 	else
-		FillBuffer<int16, 0>(pBuffer, Size);
+		FillBuffer<int16_t, 0>(pBuffer, Size);
 
 	if (m_iClipCounter > 50) {
 		// Ignore some clipping to allow the HP-filter adjust itself
@@ -855,7 +856,7 @@ void CSoundGen::FlushBuffer(int16 *pBuffer, uint32 Size)
 }
 
 template <class T, int SHIFT>
-void CSoundGen::FillBuffer(int16 *pBuffer, uint32 Size)
+void CSoundGen::FillBuffer(int16_t *pBuffer, uint32_t Size)
 {
 	// Called when the APU audio buffer is full and
 	// ready for playing
@@ -864,13 +865,13 @@ void CSoundGen::FillBuffer(int16 *pBuffer, uint32 Size)
 
 	T *pConversionBuffer = (T*)m_pAccumBuffer;
 
-	for (uint32 i = 0; i < Size; ++i) {
-		int16 Sample = pBuffer[i];
+	for (uint32_t i = 0; i < Size; ++i) {
+		int16_t Sample = pBuffer[i];
 
 		// 1000 Hz test tone
 #ifdef AUDIO_TEST
 		static double sine_phase = 0;
-		Sample = int32(sin(sine_phase) * 10000.0);
+		Sample = int32_t(sin(sine_phase) * 10000.0);
 
 		static double freq = 1000;
 		// Sweep
@@ -1298,7 +1299,7 @@ void CSoundGen::AddCycles(int Count)
 	m_pAPU->AddTime(Count);
 }
 
-uint16 CSoundGen::GetReg(int Chip, int Reg) const		// // //
+uint16_t CSoundGen::GetReg(int Chip, int Reg) const		// // //
 { 
 	return m_pAPU->GetReg(Chip, Reg);
 }
@@ -1509,6 +1510,7 @@ void CSoundGen::LoadMachineSettings(machine_t Machine, int Rate, int NamcoChanne
 	if (Rate == 0)
 		Rate = DefaultRate;
 
+	while (m_bUpdatingAPU);		// // //
 	m_pAPU->ChangeMachineRate(Machine == NTSC ? MACHINE_NTSC : MACHINE_PAL, Rate);		// // //
 
 	// Number of cycles between each APU update
@@ -1863,7 +1865,8 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 	}
 
 	// Update APU registers
-	UpdateAPU();
+	if (!m_bUpdatingAPU)		// // //
+		UpdateAPU();
 
 	if (IsPlaying()) {		// // //
 		int Channel = m_pInstRecorder->GetRecordChannel();
@@ -1981,6 +1984,8 @@ void CSoundGen::UpdateAPU()
 	m_bInternalWaveChanged = m_bWaveChanged;
 	m_bWaveChanged = false;
 
+	m_bUpdatingAPU = true;		// // //
+
 	// Update APU channel registers
 	for (int i = 0; i < CHANNELS; ++i) {
 		if (m_pChannels[i] != NULL) {
@@ -1995,6 +2000,8 @@ void CSoundGen::UpdateAPU()
 	// Finish the audio frame
 	m_pAPU->AddTime(m_iUpdateCycles - m_iConsumedCycles);
 	m_pAPU->Process();
+
+	m_bUpdatingAPU = false;		// // //
 
 #ifdef LOGGING
 	if (m_bPlaying)
@@ -2062,7 +2069,7 @@ void CSoundGen::OnPreviewSample(WPARAM wParam, LPARAM lParam)
 
 void CSoundGen::OnWriteAPU(WPARAM wParam, LPARAM lParam)
 {
-	m_pAPU->Write((uint16)wParam, (uint8)lParam);
+	m_pAPU->Write((uint16_t)wParam, (uint8_t)lParam);
 }
 
 void CSoundGen::OnCloseSound(WPARAM wParam, LPARAM lParam)
@@ -2295,7 +2302,7 @@ int CSoundGen::GetQueueFrame() const
 
 static stRegs InternalRegs;
 
-void CSoundGen::WriteRegister(uint16 Reg, uint8 Value)
+void CSoundGen::WriteRegister(uint16_t Reg, uint8_t Value)
 {
 	if (Reg >= 0x4000 && Reg <= 0x401F)		// // //
 		InternalRegs.R_2A03[Reg & 0x1F] = Value;
@@ -2310,7 +2317,7 @@ void CSoundGen::WriteRegister(uint16 Reg, uint8 Value)
 
 #else /* EXPORT_TEST */
 
-void CSoundGen::WriteRegister(uint16 Reg, uint8 Value)
+void CSoundGen::WriteRegister(uint16_t Reg, uint8_t Value)
 {
 	// Empty
 }

@@ -50,13 +50,13 @@ void CS5B::Reset()
 //	PSG_reset(psg);
 }
 
-void CS5B::Process(uint32 Time)
+void CS5B::Process(uint32_t Time)
 {
 	m_iTime += Time;
 }
 
-int16 m_pBuffer[4000];
-uint32 m_iBufferPtr = 0;
+int16_t m_pBuffer[4000];
+uint32_t m_iBufferPtr = 0;
 
 void CS5B::EndFrame()
 {
@@ -65,14 +65,14 @@ void CS5B::EndFrame()
 
 void CS5B::GetMixMono()
 {
-	static int32 LastSample = 0;
+	static int32_t LastSample = 0;
 
-	uint32 WantSamples = m_pMixer->GetMixSampleCount(m_iTime);
+	uint32_t WantSamples = m_pMixer->GetMixSampleCount(m_iTime);
 
 	// Generate samples
 	while (m_iBufferPtr < WantSamples) {
-		int32 Sample = int32(float(PSG_calc(psg)) * m_fVolume);
-		m_pBuffer[m_iBufferPtr++] = int16((Sample + LastSample) >> 1);
+		int32_t Sample = int32_t(float(PSG_calc(psg)) * m_fVolume);
+		m_pBuffer[m_iBufferPtr++] = int16_t((Sample + LastSample) >> 1);
 		LastSample = Sample;
 	}
 
@@ -82,7 +82,7 @@ void CS5B::GetMixMono()
 	m_iTime = 0;
 }
 
-void CS5B::Write(uint16 Address, uint8 Value)
+void CS5B::Write(uint16_t Address, uint8_t Value)
 {
 	switch (Address) {
 		case 0xC000:
@@ -94,21 +94,21 @@ void CS5B::Write(uint16 Address, uint8 Value)
 	}
 }
 
-uint8 CS5B::Read(uint16 Address, bool &Mapped)
+uint8_t CS5B::Read(uint16_t Address, bool &Mapped)
 {
 	// No reads here
 	Mapped = false;
 	return 0;
 }
 
-void CS5B::SetSampleSpeed(uint32 SampleRate, double ClockRate, uint32 FrameRate)
+void CS5B::SetSampleSpeed(uint32_t SampleRate, double ClockRate, uint32_t FrameRate)
 {
 	if (psg != NULL) {
 		PSG_delete(psg);
 	}
 
-	//PSG_init((uint32)ClockRate, SampleRate);
-	psg = PSG_new((uint32)ClockRate, SampleRate);
+	//PSG_init((uint32_t)ClockRate, SampleRate);
+	psg = PSG_new((uint32_t)ClockRate, SampleRate);
 	PSG_setVolumeMode(psg, 1);
 	PSG_reset(psg);
 

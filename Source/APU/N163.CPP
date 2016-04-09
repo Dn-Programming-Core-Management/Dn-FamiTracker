@@ -48,7 +48,7 @@ CN163::CN163(CMixer *pMixer) :
 	m_iChannelCntr(0),
 	m_iActiveChan(0),
 	m_iCycle(0),
-	m_pWaveData(new uint8[0x80]()),		// // //
+	m_pWaveData(new uint8_t[0x80]()),		// // //
 	m_bOldMixing(0)		// // //
 {
 	m_pChannels[0] = new CN163Chan(pMixer, CHANID_N163_CH1, m_pWaveData);
@@ -89,20 +89,20 @@ void CN163::SetMixingMethod(bool bLinear)		// // //
 	m_bOldMixing = bLinear;
 }
 
-void CN163::Process(uint32 Time)
+void CN163::Process(uint32_t Time)
 {
 	if (m_bOldMixing) {		// // //
 		ProcessOld(Time);
 		return;
 	}
 
-	const uint32 CHAN_PERIOD = 15;		// 15 cycles/channel
+	const uint32_t CHAN_PERIOD = 15;		// 15 cycles/channel
 
 	m_pMixer->SetNamcoVolume((m_iChansInUse == 0) ? 1.3f : (1.5f + float(m_iChansInUse - 1) / 1.5f));
 
 	while (Time > 0) {
 
-		uint32 TimeToRun = CHAN_PERIOD - m_iChannelCntr;
+		uint32_t TimeToRun = CHAN_PERIOD - m_iChannelCntr;
 
 		if (TimeToRun > Time)
 			TimeToRun = Time;
@@ -122,7 +122,7 @@ void CN163::Process(uint32 Time)
 	}
 }
 
-void CN163::ProcessOld(uint32 Time)		// // //
+void CN163::ProcessOld(uint32_t Time)		// // //
 {
 	m_pMixer->SetNamcoVolume((m_iChansInUse == 0) ? 1.0f : 0.75f);
 
@@ -130,14 +130,14 @@ void CN163::ProcessOld(uint32 Time)		// // //
 		m_pChannels[i]->ProcessClean(Time, m_iChansInUse + 1);
 }
 
-void CN163::Mix(int32 Value, uint32 Time, uint8 ChanID)
+void CN163::Mix(int32_t Value, uint32_t Time, uint8_t ChanID)
 {
 	// N163 amplitude:
 	// One channel: 1.1V P-P
 	// Two-eight channels: 800mV P-P
 	// 2A03 triangle: 330mV P-P
 
-	int32 Delta = Value - m_iLastValue;
+	int32_t Delta = Value - m_iLastValue;
 
 	if (Delta)
 		m_pMixer->AddValue(ChanID, SNDCHIP_N163, Delta, Value, Time + m_iGlobalTime);
@@ -156,7 +156,7 @@ void CN163::EndFrame()
 	m_iGlobalTime = 0;
 }
 
-void CN163::Write(uint16 Address, uint8 Value)
+void CN163::Write(uint16_t Address, uint8_t Value)
 {
 	int Area = m_iExpandAddr & 0x7F;
 
@@ -184,9 +184,9 @@ void CN163::Write(uint16 Address, uint8 Value)
 
 }
 
-uint8 CN163::Read(uint16 Address, bool &Mapped)
+uint8_t CN163::Read(uint16_t Address, bool &Mapped)
 {
-	uint16 ReadAddr;
+	uint16_t ReadAddr;
 
 	switch (Address) {
 		case 0x4800:
@@ -200,7 +200,7 @@ uint8 CN163::Read(uint16 Address, bool &Mapped)
 	return 0;
 }
 
-uint8 CN163::ReadMem(uint8 Reg)
+uint8_t CN163::ReadMem(uint8_t Reg)
 {
 	int ChanArea = 0x80 - ((m_iChansInUse + 1) << 3);
 	int Chan = (Reg & 0x3F) >> 3;
@@ -218,7 +218,7 @@ uint8 CN163::ReadMem(uint8 Reg)
 // N163 channels
 //
 
-CN163Chan::CN163Chan(CMixer *pMixer, int ID, uint8 *pWaveData) : 
+CN163Chan::CN163Chan(CMixer *pMixer, int ID, uint8_t *pWaveData) : 
 	CExChannel(pMixer, SNDCHIP_N163, ID),
 	m_pWaveData(pWaveData)
 {
@@ -247,7 +247,7 @@ void CN163Chan::EndFrame()
 	m_iTime = 0;
 }
 
-void CN163Chan::Write(uint16 Address, uint8 Value)
+void CN163Chan::Write(uint16_t Address, uint8_t Value)
 {
 	switch (Address) {
 		case 0x00:
@@ -278,9 +278,9 @@ void CN163Chan::Write(uint16 Address, uint8 Value)
 	}
 }
 
-void CN163Chan::Process(uint32 Time, uint8 ChannelsActive, CN163 *pParent)
+void CN163Chan::Process(uint32_t Time, uint8_t ChannelsActive, CN163 *pParent)
 {
-	uint32 TimeStamp = 0;
+	uint32_t TimeStamp = 0;
 
 	pParent->Mix(m_iLastSample, TimeStamp, m_iChanId);
 
@@ -300,7 +300,7 @@ void CN163Chan::Process(uint32 Time, uint8 ChannelsActive, CN163 *pParent)
 
 		int WavePtr = m_iPhase >> 16;
 
-		uint8 Sample = m_pWaveData[((WavePtr + m_iWaveOffset) & 0xFF) >> 1];
+		uint8_t Sample = m_pWaveData[((WavePtr + m_iWaveOffset) & 0xFF) >> 1];
 
 		if (WavePtr & 1)
 			Sample >>= 4;
@@ -313,7 +313,7 @@ void CN163Chan::Process(uint32 Time, uint8 ChannelsActive, CN163 *pParent)
 	m_iTime += Time;
 }
 
-void CN163Chan::ProcessClean(uint32 Time, uint8 ChannelsActive)
+void CN163Chan::ProcessClean(uint32_t Time, uint8_t ChannelsActive)
 {
 	// legacy
 
@@ -331,7 +331,7 @@ void CN163Chan::ProcessClean(uint32 Time, uint8 ChannelsActive)
 
 		int WavePtr = m_iPhase >> 16;
 
-		uint8 Sample = m_pWaveData[((WavePtr + m_iWaveOffset) & 0xFF) >> 1];
+		uint8_t Sample = m_pWaveData[((WavePtr + m_iWaveOffset) & 0xFF) >> 1];
 
 		if (WavePtr & 1)
 			Sample >>= 4;
@@ -343,7 +343,7 @@ void CN163Chan::ProcessClean(uint32 Time, uint8 ChannelsActive)
 	m_iTime += Time;
 }
 
-uint8 CN163Chan::ReadMem(uint8 Reg)
+uint8_t CN163Chan::ReadMem(uint8_t Reg)
 {
 	switch (Reg & 7) {
 		case 0:
@@ -355,7 +355,7 @@ uint8 CN163Chan::ReadMem(uint8 Reg)
 		case 3:
 			return (m_iPhase >> 8) & 0xFF;
 		case 4:
-			return (uint8)(((m_iFrequency >> 16) & 0x03) | (256 - (m_iWaveLength >> 16)));
+			return (uint8_t)(((m_iFrequency >> 16) & 0x03) | (256 - (m_iWaveLength >> 16)));
 		case 5:
 			return (m_iPhase >> 16) & 0xFF;
 		case 6:

@@ -30,28 +30,28 @@ class CMixer;
 
 class CN163Chan : public CExChannel {
 public:
-	CN163Chan(CMixer *pMixer, int ID, uint8 *pWaveData);
+	CN163Chan(CMixer *pMixer, int ID, uint8_t *pWaveData);
 	virtual ~CN163Chan();
 	void Reset();
-	void Write(uint16 Address, uint8 Value);
+	void Write(uint16_t Address, uint8_t Value);
 
 	virtual inline void EndFrame();
 
-	void Process(uint32 Time, uint8 ChannelsActive, CN163 *pParent);
-	void ProcessClean(uint32 Time, uint8 ChannelsActive);		// // //
+	void Process(uint32_t Time, uint8_t ChannelsActive, CN163 *pParent);
+	void ProcessClean(uint32_t Time, uint8_t ChannelsActive);		// // //
 
-	uint8 ReadMem(uint8 Reg);
+	uint8_t ReadMem(uint8_t Reg);
 	void ResetCounter();
 
 private:
-	uint32	m_iCounter, m_iFrequency;
-	uint32	m_iPhase;
-	uint8	m_iVolume;
-	uint32	m_iWaveLength;
-	uint8	m_iWaveOffset;
-	uint8	*m_pWaveData;
+	uint32_t	m_iCounter, m_iFrequency;
+	uint32_t	m_iPhase;
+	uint8_t	m_iVolume;
+	uint32_t	m_iWaveLength;
+	uint8_t	m_iWaveOffset;
+	uint8_t	*m_pWaveData;
 
-	uint8 m_iLastSample;
+	uint8_t m_iLastSample;
 };
 
 class CN163 : public CExternal {
@@ -59,31 +59,31 @@ public:
 	CN163(CMixer *pMixer);
 	virtual ~CN163();
 	void Reset();
-	void Process(uint32 Time);
+	void Process(uint32_t Time);
 	void EndFrame();
-	void Write(uint16 Address, uint8 Value);
-	uint8 Read(uint16 Address, bool &Mapped);
-	uint8 ReadMem(uint8 Reg);
-	void Mix(int32 Value, uint32 Time, uint8 ChanID);
+	void Write(uint16_t Address, uint8_t Value);
+	uint8_t Read(uint16_t Address, bool &Mapped);
+	uint8_t ReadMem(uint8_t Reg);
+	void Mix(int32_t Value, uint32_t Time, uint8_t ChanID);
 	void SetMixingMethod(bool bLinear);		// // //
 
 protected:
-	void ProcessOld(uint32 Time);		// // //
+	void ProcessOld(uint32_t Time);		// // //
 
 private:
 	CN163Chan	*m_pChannels[8];
 
-	uint8		*m_pWaveData;
-	uint8		m_iExpandAddr;
-	uint8		m_iChansInUse;
+	uint8_t		*m_pWaveData;
+	uint8_t		m_iExpandAddr;
+	uint8_t		m_iChansInUse;
 
-	int32		m_iLastValue;
+	int32_t		m_iLastValue;
 
-	uint32		m_iGlobalTime;
+	uint32_t		m_iGlobalTime;
 
-	uint32		m_iChannelCntr;
-	uint32		m_iActiveChan;
-	uint32		m_iCycle;
+	uint32_t		m_iChannelCntr;
+	uint32_t		m_iActiveChan;
+	uint32_t		m_iCycle;
 
 	bool		m_bOldMixing;		// // //
 };

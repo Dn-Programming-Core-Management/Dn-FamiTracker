@@ -1763,7 +1763,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 	}
 
 	COLORREF *DECAY_COL = new COLORREF[CAPU::REG_DECAY_RATE + 1];		// // //
-	for (uint8 i = 0; i <= CAPU::REG_DECAY_RATE; i++)
+	for (uint8_t i = 0; i <= CAPU::REG_DECAY_RATE; i++)
 		DECAY_COL[i] = i * 3 / 2 >= CAPU::REG_DECAY_RATE
 					 ? BLEND(0xFFFF80, 0x80E0E0, 300 * i / CAPU::REG_DECAY_RATE - 200)
 					 : BLEND(0x80E0E0, 0x80A0FF, 150 * i / CAPU::REG_DECAY_RATE);

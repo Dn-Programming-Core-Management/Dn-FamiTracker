@@ -22,11 +22,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>		// // //
 #include "emu2149.h"
 
 #define INLINE
 
-static uint32 voltbl[2][32] = {
+static uint32_t voltbl[2][32] = {
   {0x00, 0x01, 0x01, 0x02, 0x02, 0x03, 0x03, 0x04, 0x05, 0x06, 0x07, 0x09,
    0x0B, 0x0D, 0x0F, 0x12,
    0x16, 0x1A, 0x1F, 0x25, 0x2D, 0x35, 0x3F, 0x4C, 0x5A, 0x6A, 0x7F, 0x97,
@@ -39,7 +40,7 @@ static uint32 voltbl[2][32] = {
 
 #define GETA_BITS 24
 
-int32 psg_volumes[3];
+int32_t psg_volumes[3];
 
 static void
 internal_refresh (PSG * psg)
@@ -47,33 +48,33 @@ internal_refresh (PSG * psg)
   if (psg->quality)
   {
     psg->base_incr = 1 << GETA_BITS;
-    psg->realstep = (uint32) ((1 << 31) / psg->rate);
-    psg->psgstep = (uint32) ((1 << 31) / (psg->clk / 16));
+    psg->realstep = (uint32_t) ((1 << 31) / psg->rate);
+    psg->psgstep = (uint32_t) ((1 << 31) / (psg->clk / 16));
     psg->psgtime = 0;
   }
   else
   {
     psg->base_incr =
-      (uint32) ((double) psg->clk * (1 << GETA_BITS) / (16 * psg->rate));
+      (uint32_t) ((double) psg->clk * (1 << GETA_BITS) / (16 * psg->rate));
   }
 }
 
 EMU2149_API void
-PSG_set_rate (PSG * psg, uint32 r)
+PSG_set_rate (PSG * psg, uint32_t r)
 {
   psg->rate = r ? r : 44100;
   internal_refresh (psg);
 }
 
 EMU2149_API void
-PSG_set_quality (PSG * psg, uint32 q)
+PSG_set_quality (PSG * psg, uint32_t q)
 {
   psg->quality = q;
   internal_refresh (psg);
 }
 
 EMU2149_API PSG *
-PSG_new (uint32 c, uint32 r)
+PSG_new (uint32_t c, uint32_t r)
 {
   PSG *psg;
 
@@ -106,10 +107,10 @@ PSG_setVolumeMode (PSG * psg, int type)
   }
 }
 
-EMU2149_API uint32
-PSG_setMask (PSG *psg, uint32 mask)
+EMU2149_API uint32_t
+PSG_setMask (PSG *psg, uint32_t mask)
 {
-  uint32 ret = 0;
+  uint32_t ret = 0;
   if(psg)
   {
     ret = psg->mask;
@@ -118,10 +119,10 @@ PSG_setMask (PSG *psg, uint32 mask)
   return ret;
 }
 
-EMU2149_API uint32
-PSG_toggleMask (PSG *psg, uint32 mask)
+EMU2149_API uint32_t
+PSG_toggleMask (PSG *psg, uint32_t mask)
 {
-  uint32 ret = 0;
+  uint32_t ret = 0;
   if(psg)
   {
     ret = psg->mask;
@@ -171,21 +172,21 @@ PSG_delete (PSG * psg)
   free (psg);
 }
 
-EMU2149_API uint8
+EMU2149_API uint8_t
 PSG_readIO (PSG * psg)
 {
-  return (uint8) (psg->reg[psg->adr]);
+  return (uint8_t) (psg->reg[psg->adr]);
 }
 
-EMU2149_API uint8
-PSG_readReg (PSG * psg, uint32 reg)
+EMU2149_API uint8_t
+PSG_readReg (PSG * psg, uint32_t reg)
 {
-  return (uint8) (psg->reg[reg & 0x1f]);
+  return (uint8_t) (psg->reg[reg & 0x1f]);
 
 }
 
 EMU2149_API void
-PSG_writeIO (PSG * psg, uint32 adr, uint32 val)
+PSG_writeIO (PSG * psg, uint32_t adr, uint32_t val)
 {
   if (adr & 1)
     PSG_writeReg (psg, psg->adr, val);
@@ -193,13 +194,13 @@ PSG_writeIO (PSG * psg, uint32 adr, uint32 val)
     psg->adr = val & 0x1f;
 }
 
-INLINE static int16
+INLINE static int16_t
 calc (PSG * psg)
 {
 
   int i, noise;
-  uint32 incr;
-  int32 mix = 0;
+  uint32_t incr;
+  int32_t mix = 0;
 
   psg->base_count += psg->base_incr;
   incr = (psg->base_count >> GETA_BITS);
@@ -279,14 +280,14 @@ calc (PSG * psg)
 
   }
 
-  return (int16) mix;
+  return (int16_t) mix;
 }
 
-EMU2149_API int16
+EMU2149_API int16_t
 PSG_calc (PSG * psg)
 {
   if (!psg->quality)
-    return (int16) (calc (psg) << 4);
+    return (int16_t) (calc (psg) << 4);
 
   /* Simple rate converter */
   while (psg->realstep > psg->psgtime)
@@ -298,17 +299,17 @@ PSG_calc (PSG * psg)
 
   psg->psgtime = psg->psgtime - psg->realstep;
 
-  return (int16) (psg->out << 4);
+  return (int16_t) (psg->out << 4);
 }
 
 EMU2149_API void
-PSG_writeReg (PSG * psg, uint32 reg, uint32 val)
+PSG_writeReg (PSG * psg, uint32_t reg, uint32_t val)
 {
   int c;
 
   if (reg > 15) return;
 
-  psg->reg[reg] = (uint8) (val & 0xff);
+  psg->reg[reg] = (uint8_t) (val & 0xff);
   switch (reg)
   {
   case 0:
@@ -367,7 +368,7 @@ PSG_writeReg (PSG * psg, uint32 reg, uint32 val)
 }
 
 
-int32 PSG_getchanvol(int i)
+int32_t PSG_getchanvol(int i)
 {
 	return psg_volumes[i];
 }

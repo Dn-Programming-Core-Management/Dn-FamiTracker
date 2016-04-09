@@ -26,6 +26,7 @@
 #include "FamiTracker.h"
 #include "FamiTrackerTypes.h"		// // //
 #include "APU/Types.h"
+#include "Common.h"		// // //
 #include "Instrument.h"
 #include "ChannelHandler.h"
 #include "Channels2A03.h"

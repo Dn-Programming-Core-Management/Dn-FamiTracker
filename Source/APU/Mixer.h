@@ -48,20 +48,20 @@ public:
 	void	AddValue(int ChanID, int Chip, int Value, int AbsValue, int FrameCycles);
 	void	UpdateSettings(int LowCut,	int HighCut, int HighDamp, float OverallVol);
 
-	bool	AllocateBuffer(unsigned int Size, uint32 SampleRate, uint8 NrChannels);
-	void	SetClockRate(uint32 Rate);
+	bool	AllocateBuffer(unsigned int Size, uint32_t SampleRate, uint8_t NrChannels);
+	void	SetClockRate(uint32_t Rate);
 	void	ClearBuffer();
 	int		FinishBuffer(int t);
 	int		SamplesAvail() const;
-	void	MixSamples(blip_sample_t *pBuffer, uint32 Count);
-	uint32	GetMixSampleCount(int t) const;
+	void	MixSamples(blip_sample_t *pBuffer, uint32_t Count);
+	uint32_t	GetMixSampleCount(int t) const;
 
 	void	AddSample(int ChanID, int Value);
 	int		ReadBuffer(int Size, void *Buffer, bool Stereo);
 
-	int32	GetChanOutput(uint8 Chan) const;
+	int32_t	GetChanOutput(uint8_t Chan) const;
 	void	SetChipLevel(chip_level_t Chip, float Level);
-	uint32	ResampleDuration(uint32 Time) const;
+	uint32_t	ResampleDuration(uint32_t Time) const;
 	void	SetNamcoMixing(bool bLinear);		// // //
 	void	SetNamcoVolume(float fVol);
 
@@ -98,12 +98,12 @@ private:
 	double		m_dSumSS;
 	double		m_dSumTND;
 
-	int32		m_iChannels[CHANNELS];
-	uint8		m_iExternalChip;
-	uint32		m_iSampleRate;
+	int32_t		m_iChannels[CHANNELS];
+	uint8_t		m_iExternalChip;
+	uint32_t		m_iSampleRate;
 
 	float		m_fChannelLevels[CHANNELS];
-	uint32		m_iChanLevelFallOff[CHANNELS];
+	uint32_t		m_iChanLevelFallOff[CHANNELS];
 
 	int			m_iLowCut;
 	int			m_iHighCut;

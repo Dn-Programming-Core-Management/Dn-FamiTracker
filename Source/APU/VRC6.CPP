@@ -42,7 +42,7 @@ void CVRC6_Pulse::Reset()
 	EndFrame();
 }
 
-void CVRC6_Pulse::Write(uint16 Address, uint8 Value)
+void CVRC6_Pulse::Write(uint16_t Address, uint8_t Value)
 {
 	switch (Address) {
 		case 0x00:
@@ -100,7 +100,7 @@ void CVRC6_Sawtooth::Reset()
 	EndFrame();
 }
 
-void CVRC6_Sawtooth::Write(uint16 Address, uint8 Value)
+void CVRC6_Sawtooth::Write(uint16_t Address, uint8_t Value)
 {
 	switch (Address) {
 		case 0x00:
@@ -175,7 +175,7 @@ void CVRC6::Reset()
 	m_pSawtooth->Reset();
 }
 
-void CVRC6::Write(uint16 Address, uint8 Value)
+void CVRC6::Write(uint16_t Address, uint8_t Value)
 {
 	switch (Address) {
 		case 0x9000:
@@ -196,7 +196,7 @@ void CVRC6::Write(uint16 Address, uint8 Value)
 	}
 }
 
-uint8 CVRC6::Read(uint16 Address, bool &Mapped)
+uint8_t CVRC6::Read(uint16_t Address, bool &Mapped)
 {
 	Mapped = false;
 	return 0;
@@ -209,7 +209,7 @@ void CVRC6::EndFrame()
 	m_pSawtooth->EndFrame();
 }
 
-void CVRC6::Process(uint32 Time)
+void CVRC6::Process(uint32_t Time)
 {
 	m_pPulse1->Process(Time);
 	m_pPulse2->Process(Time);

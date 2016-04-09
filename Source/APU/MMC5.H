@@ -32,10 +32,10 @@ public:
 	virtual ~CMMC5();
 
 	void Reset();
-	void Write(uint16 Address, uint8 Value);
-	uint8 Read(uint16 Address, bool &Mapped);
+	void Write(uint16_t Address, uint8_t Value);
+	uint8_t Read(uint16_t Address, bool &Mapped);
 	void EndFrame();
-	void Process(uint32 Time);
+	void Process(uint32_t Time);
 	void LengthCounterUpdate();
 	void EnvelopeUpdate();
 	void ClockSequence();		// // //
@@ -43,9 +43,9 @@ public:
 private:	
 	CSquare	*m_pSquare1;
 	CSquare	*m_pSquare2;
-	uint8	*m_pEXRAM;
-	uint8	m_iMulLow;
-	uint8	m_iMulHigh;
+	uint8_t	*m_pEXRAM;
+	uint8_t	m_iMulLow;
+	uint8_t	m_iMulHigh;
 };
 
 #endif /* MMC5_H */

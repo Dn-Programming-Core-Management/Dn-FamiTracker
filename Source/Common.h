@@ -20,14 +20,7 @@
 
 #pragma once
 
-typedef unsigned char		uint8;
-typedef unsigned short		uint16;
-typedef unsigned long		uint32;
-typedef unsigned __int64	uint64;
-typedef signed char			int8;
-typedef signed short		int16;
-typedef signed long			int32;
-typedef signed __int64		int64;
+#include <cstdint>
 
 #define _MAIN_H_
 
@@ -43,7 +36,7 @@ struct stDPCMState {
 // Used to play the audio when the buffer is full
 class IAudioCallback {
 public:
-	virtual void FlushBuffer(int16 *Buffer, uint32 Size) = 0;
+	virtual void FlushBuffer(int16_t *Buffer, uint32_t Size) = 0;
 };
 
 
@@ -54,17 +47,17 @@ public:
 	CSampleMem() : m_pMemory(0), m_iMemSize(0) {
 	};
 
-	uint8 Read(uint16 Address) const {
+	uint8_t Read(uint16_t Address) const {
 		if (!m_pMemory)
 			return 0;
-		uint16 Addr = (Address - 0xC000);// % m_iMemSize;
+		uint16_t Addr = (Address - 0xC000);// % m_iMemSize;
 		if (Addr >= m_iMemSize)
 			return 0;
 		return m_pMemory[Addr];
 	};
 
 	void SetMem(const char *pPtr, int Size) {
-		m_pMemory = (uint8*)pPtr;
+		m_pMemory = (uint8_t*)pPtr;
 		m_iMemSize = Size;
 	};
 
@@ -74,6 +67,6 @@ public:
 	}
 
 private:
-	const uint8 *m_pMemory;
-	uint16 m_iMemSize;
+	const uint8_t *m_pMemory;
+	uint16_t m_iMemSize;
 };

@@ -23,7 +23,6 @@
 #include "../stdafx.h"
 #include "../common.h"
 #include <algorithm>
-#include <cstdint>		// TODO: remove
 #include "Mixer.h"
 #include "Square.h"
 #include "Triangle.h"
@@ -67,7 +66,7 @@ void C2A03::Reset()
 	m_pDPCM->Reset();
 }
 
-void C2A03::Process(uint32 Time)
+void C2A03::Process(uint32_t Time)
 {
 	RunAPU1(Time);
 	RunAPU2(Time);
@@ -82,7 +81,7 @@ void C2A03::EndFrame()
 	m_pDPCM->EndFrame();
 }
 
-void C2A03::Write(uint16 Address, uint8 Value)
+void C2A03::Write(uint16_t Address, uint8_t Value)
 {
 	if (Address < 0x4000U || Address > 0x401FU) return;
 	switch (Address) {
@@ -115,12 +114,12 @@ void C2A03::Write(uint16 Address, uint8 Value)
 	}
 }
 
-uint8 C2A03::Read(uint16 Address, bool &Mapped)
+uint8_t C2A03::Read(uint16_t Address, bool &Mapped)
 {
 	switch (Address) {
 	case 0x4015:
 	{
-		uint8 RetVal;
+		uint8_t RetVal;
 
 		RetVal = m_pSquare1->ReadControl();
 		RetVal |= m_pSquare2->ReadControl() << 1;
@@ -199,25 +198,25 @@ inline void C2A03::Clock_60Hz() const
 	// IRQ
 }
 
-inline void C2A03::RunAPU1(uint32 Time)
+inline void C2A03::RunAPU1(uint32_t Time)
 {
 	// APU pin 1
 	while (Time > 0) {
-		uint32 Period = std::min(m_pSquare1->GetPeriod(), m_pSquare2->GetPeriod());
-		Period = std::min<uint32>(std::max<uint32>(Period, 7), Time);
+		uint32_t Period = std::min(m_pSquare1->GetPeriod(), m_pSquare2->GetPeriod());
+		Period = std::min<uint32_t>(std::max<uint32_t>(Period, 7), Time);
 		m_pSquare1->Process(Period);
 		m_pSquare2->Process(Period);
 		Time -= Period;
 	}
 }
 
-inline void C2A03::RunAPU2(uint32 Time)
+inline void C2A03::RunAPU2(uint32_t Time)
 {
 	// APU pin 2
 	while (Time > 0) {
-		uint32 Period = std::min(m_pTriangle->GetPeriod(), m_pNoise->GetPeriod());
-		Period = std::min<uint32>(Period, m_pDPCM->GetPeriod());
-		Period = std::min<uint32>(std::max<uint32>(Period, 7), Time);
+		uint32_t Period = std::min(m_pTriangle->GetPeriod(), m_pNoise->GetPeriod());
+		Period = std::min<uint32_t>(Period, m_pDPCM->GetPeriod());
+		Period = std::min<uint32_t>(std::max<uint32_t>(Period, 7), Time);
 		m_pTriangle->Process(Period);
 		m_pNoise->Process(Period);
 		m_pDPCM->Process(Period);
@@ -230,12 +229,12 @@ void C2A03::SetSampleMemory(CSampleMem *pMem) const		// // //
 	m_pDPCM->SetSampleMemory(pMem);
 }
 
-uint8 C2A03::GetSamplePos() const
+uint8_t C2A03::GetSamplePos() const
 {
 	return m_pDPCM->GetSamplePos();
 }
 
-uint8 C2A03::GetDeltaCounter() const
+uint8_t C2A03::GetDeltaCounter() const
 {
 	return m_pDPCM->GetDeltaCounter();
 }

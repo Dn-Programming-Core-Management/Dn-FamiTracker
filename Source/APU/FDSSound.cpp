@@ -1,5 +1,6 @@
 #include <cmath>
 #include <memory>
+#include <cstdint>		// // //
 #include "apu.h"
 
 // Code is from nezplug via nintendulator
@@ -8,22 +9,22 @@
 #define LIN_BITS 7
 #define LOG_LIN_BITS 30
 
-uint32 LinearToLog(int32 l);
-int32 LogToLinear(uint32 l, uint32 sft);
+uint32_t LinearToLog(int32_t l);
+int32_t LogToLinear(uint32_t l, uint32_t sft);
 void LogTableInitialize(void);
 
-static uint32 lineartbl[(1 << LIN_BITS) + 1];
-static uint32 logtbl[1 << LOG_BITS];
+static uint32_t lineartbl[(1 << LIN_BITS) + 1];
+static uint32_t logtbl[1 << LOG_BITS];
 
-uint32 LinearToLog(int32 l)
+uint32_t LinearToLog(int32_t l)
 {
 	return (l < 0) ? (lineartbl[-l] + 1) : lineartbl[l];
 }
 
-int32 LogToLinear(uint32 l, uint32 sft)
+int32_t LogToLinear(uint32_t l, uint32_t sft)
 {
-	int32 ret;
-	uint32 ofs;
+	int32_t ret;
+	uint32_t ofs;
 	l += sft << (LOG_BITS + 1);
 	sft = l >> (LOG_BITS + 1);
 	if (sft >= LOG_LIN_BITS) return 0;
@@ -34,22 +35,22 @@ int32 LogToLinear(uint32 l, uint32 sft)
 
 void LogTableInitialize(void)
 {
-	static volatile uint32 initialized = 0;
-	uint32 i;
+	static volatile uint32_t initialized = 0;
+	uint32_t i;
 	double a;
 	if (initialized) return;
 	initialized = 1;
 	for (i = 0; i < (1 << LOG_BITS); i++)
 	{
 		a = (1 << LOG_LIN_BITS) / pow(2, i / (double)(1 << LOG_BITS));
-		logtbl[i] = (uint32)a;
+		logtbl[i] = (uint32_t)a;
 	}
 	lineartbl[0] = LOG_LIN_BITS << LOG_BITS;
 	for (i = 1; i < (1 << LIN_BITS) + 1; i++)
 	{
-		uint32 ua;
+		uint32_t ua;
 		a = i << (LOG_LIN_BITS - LIN_BITS);
-		ua = (uint32)((LOG_LIN_BITS - (double(log(a)) / double(log(2.0)))) * (1 << LOG_BITS));
+		ua = (uint32_t)((LOG_LIN_BITS - (double(log(a)) / double(log(2.0)))) * (1 << LOG_BITS));
 		lineartbl[i] = ua << 1;
 	}
 }
@@ -66,46 +67,46 @@ void FDSSelect(unsigned type);
 #define VOL_BITS 12
 
 typedef struct {
-	uint8 spd;
-	uint8 cnt;
-	uint8 mode;
-	uint8 volume;
+	uint8_t spd;
+	uint8_t cnt;
+	uint8_t mode;
+	uint8_t volume;
 } FDS_EG;
 typedef struct {
-	uint32 spdbase;
-	uint32 spd;
-	uint32 freq;
+	uint32_t spdbase;
+	uint32_t spd;
+	uint32_t freq;
 } FDS_PG;
 typedef struct {
-	uint32 phase;
-	int8 wave[0x40];
-	uint8 wavptr;
-	int8 output;
-	uint8 disable;
-	uint8 disable2;
+	uint32_t phase;
+	int8_t wave[0x40];
+	uint8_t wavptr;
+	int8_t output;
+	uint8_t disable;
+	uint8_t disable2;
 } FDS_WG;
 typedef struct {
 	FDS_EG eg;
 	FDS_PG pg;
 	FDS_WG wg;
-	int32 bias;
-	uint8 wavebase;
-	uint8 d[2];
+	int32_t bias;
+	uint8_t wavebase;
+	uint8_t d[2];
 } FDS_OP;
 
 typedef struct FDSSOUND_tag {
 	FDS_OP op[2];
-	uint32 phasecps;
-	uint32 envcnt;
-	uint32 envspd;
-	uint32 envcps;
-	uint8 envdisable;
-	uint8 d[3];
-	uint32 lvl;
-	int32 mastervolumel[4];
-	uint32 mastervolume;
-	uint32 srate;
-	uint8 reg[0x10];
+	uint32_t phasecps;
+	uint32_t envcnt;
+	uint32_t envspd;
+	uint32_t envcps;
+	uint8_t envdisable;
+	uint8_t d[3];
+	uint32_t lvl;
+	int32_t mastervolumel[4];
+	uint32_t mastervolume;
+	uint32_t srate;
+	uint8_t reg[0x10];
 } FDSSOUND;
 
 static FDSSOUND fdssound;
@@ -135,9 +136,9 @@ static void FDSSoundEGStep(FDS_EG *peg)
 }
 
 
-int32 __fastcall FDSSoundRender(void)
+int32_t __fastcall FDSSoundRender(void)
 {
-	int32 output;
+	int32_t output;
 	/* Wave Generator */
 	FDSSoundWGStep(&fdssound.op[0].wg);
 	// EDIT not using FDSSoundWGStep for modulator (op[1]), need to adjust bias when sample changes
@@ -151,12 +152,12 @@ int32 __fastcall FDSSoundRender(void)
 		// EDIT this step has been entirely rewritten to match FDS.txt by Disch
 
 		// advance the mod table wave and adjust the bias when/if next table entry is reached
-		const uint32 ENTRY_WIDTH = 1 << (PGCPS_BITS + 16);
-		uint32 spd = fdssound.op[1].pg.spd; // phase to add
+		const uint32_t ENTRY_WIDTH = 1 << (PGCPS_BITS + 16);
+		uint32_t spd = fdssound.op[1].pg.spd; // phase to add
 		while (spd)
 		{
-			uint32 left = ENTRY_WIDTH - (fdssound.op[1].wg.phase & (ENTRY_WIDTH-1));
-			uint32 advance = spd;
+			uint32_t left = ENTRY_WIDTH - (fdssound.op[1].wg.phase & (ENTRY_WIDTH-1));
+			uint32_t advance = spd;
 			if (spd >= left) // advancing to the next entry
 			{
 				advance = left;
@@ -164,8 +165,8 @@ int32 __fastcall FDSSoundRender(void)
 				fdssound.op[1].wg.output = fdssound.op[1].wg.wave[(fdssound.op[1].wg.phase >> (PGCPS_BITS+16)) & 0x3f];
 
 				// adjust bias
-				int8 value = fdssound.op[1].wg.output & 7;
-				const int8 MOD_ADJUST[8] = { 0, 1, 2, 4, 0, -4, -2, -1 };
+				int8_t value = fdssound.op[1].wg.output & 7;
+				const int8_t MOD_ADJUST[8] = { 0, 1, 2, 4, 0, -4, -2, -1 };
 				if (value == 4)
 					fdssound.op[1].bias = 0;
 				else
@@ -181,7 +182,7 @@ int32 __fastcall FDSSoundRender(void)
 		}
 
 		// modulation calculation
-		int32 mod = fdssound.op[1].bias * (int32)(fdssound.op[1].eg.volume);
+		int32_t mod = fdssound.op[1].bias * (int32_t)(fdssound.op[1].eg.volume);
 		mod >>= 4;
 		if (mod & 0x0F)
 		{
@@ -190,12 +191,12 @@ int32 __fastcall FDSSoundRender(void)
 		}
 		if (mod > 193) mod -= 258;
 		if (mod < -64) mod += 256;
-		mod = (mod * (int32)(fdssound.op[0].pg.freq)) >> 6;
+		mod = (mod * (int32_t)(fdssound.op[0].pg.freq)) >> 6;
 
 		// calculate new frequency with modulation
-		int32 new_freq = fdssound.op[0].pg.freq + mod;
+		int32_t new_freq = fdssound.op[0].pg.freq + mod;
 		if (new_freq < 0) new_freq = 0;
-		fdssound.op[0].pg.spd = (uint32)(new_freq) * fdssound.phasecps;
+		fdssound.op[0].pg.spd = (uint32_t)(new_freq) * fdssound.phasecps;
 	}
 
 	/* Accumulator */
@@ -232,12 +233,12 @@ void __fastcall FDSSoundVolume(unsigned int volume)
 	fdssound.mastervolumel[3] = LogToLinear(fdssound.mastervolume, LOG_LIN_BITS - LIN_BITS - VOL_BITS) * 8 / 10;
 }
 
-static const uint8 wave_delta_table[8] = {
+static const uint8_t wave_delta_table[8] = {
 	0,(1 << FM_DEPTH),(2 << FM_DEPTH),(4 << FM_DEPTH),
 	0,256 - (4 << FM_DEPTH),256 - (2 << FM_DEPTH),256 - (1 << FM_DEPTH),
 };
 
-void __fastcall FDSSoundWrite(uint16 address, uint8 value)
+void __fastcall FDSSoundWrite(uint16_t address, uint8_t value)
 {
 	if (0x4040 <= address && address <= 0x407F)
 	{
@@ -293,7 +294,7 @@ void __fastcall FDSSoundWrite(uint16 address, uint8 value)
 				// EDIT rewrote modulator/bias code
 				if (fdssound.op[1].wg.disable)
 				{
-					int8 append = value & 0x07;
+					int8_t append = value & 0x07;
 					for (int i=0; i < 0x3E; ++i)
 					{
 						fdssound.op[1].wg.wave[i] = fdssound.op[1].wg.wave[i+2];
@@ -315,7 +316,7 @@ void __fastcall FDSSoundWrite(uint16 address, uint8 value)
 	}
 }
 
-uint8 __fastcall FDSSoundRead(uint16 address)
+uint8_t __fastcall FDSSoundRead(uint16_t address)
 {
 	if (0x4040 <= address && address <= 0x407f)
 	{
@@ -328,9 +329,9 @@ uint8 __fastcall FDSSoundRead(uint16 address)
 	return 0;
 }
 
-static uint32 DivFix(uint32 p1, uint32 p2, uint32 fix)
+static uint32_t DivFix(uint32_t p1, uint32_t p2, uint32_t fix)
 {
-	uint32 ret;
+	uint32_t ret;
 	ret = p1 / p2;
 	p1  = p1 % p2;/* p1 = p1 - p2 * ret; */
 	while (fix--)
@@ -348,7 +349,7 @@ static uint32 DivFix(uint32 p1, uint32 p2, uint32 fix)
 
 void __fastcall FDSSoundReset(void)
 {
-	uint32 i;
+	uint32_t i;
 	memset(&fdssound, 0, sizeof(FDSSOUND));
 	// TODO: Fix srate
 	fdssound.srate = CAPU::BASE_FREQ_NTSC; ///NESAudioFrequencyGet();

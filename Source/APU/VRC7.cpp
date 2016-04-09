@@ -24,7 +24,7 @@
 #include "VRC7.h"
 
 const float  CVRC7::AMPLIFY	  = 4.6f;		// Mixing amplification, VRC7 patch 14 is 4,88 times stronger than a 50% square @ v=15
-const uint32 CVRC7::OPL_CLOCK = 3579545;	// Clock frequency
+const uint32_t CVRC7::OPL_CLOCK = 3579545;	// Clock frequency
 
 CVRC7::CVRC7(CMixer *pMixer) : CExternal(pMixer), m_pBuffer(NULL), m_pOPLLInt(NULL), m_fVolume(1.0f), m_iMaxSamples(0), m_iSoundReg(0)
 {
@@ -47,11 +47,10 @@ void CVRC7::Reset()
 	m_iTime = 0;
 }
 
-void CVRC7::SetSampleSpeed(uint32 SampleRate, double ClockRate, uint32 FrameRate)
+void CVRC7::SetSampleSpeed(uint32_t SampleRate, double ClockRate, uint32_t FrameRate)
 {
 	if (m_pOPLLInt != NULL) {
 		OPLL_delete(m_pOPLLInt);
-		m_pOPLLInt = NULL;
 	}
 
 	m_pOPLLInt = OPLL_new(OPL_CLOCK, SampleRate);
@@ -62,8 +61,8 @@ void CVRC7::SetSampleSpeed(uint32 SampleRate, double ClockRate, uint32 FrameRate
 	m_iMaxSamples = (SampleRate / FrameRate) * 2;	// Allow some overflow
 
 	SAFE_RELEASE_ARRAY(m_pBuffer);
-	m_pBuffer = new int16[m_iMaxSamples];
-	memset(m_pBuffer, 0, sizeof(int16) * m_iMaxSamples);
+	m_pBuffer = new int16_t[m_iMaxSamples];
+	memset(m_pBuffer, 0, sizeof(int16_t) * m_iMaxSamples);
 }
 
 void CVRC7::SetVolume(float Volume)
@@ -71,7 +70,7 @@ void CVRC7::SetVolume(float Volume)
 	m_fVolume = Volume * AMPLIFY;
 }
 
-void CVRC7::Write(uint16 Address, uint8 Value)
+void CVRC7::Write(uint16_t Address, uint8_t Value)
 {
 	switch (Address) {
 		case 0x9010:
@@ -83,20 +82,20 @@ void CVRC7::Write(uint16 Address, uint8 Value)
 	}
 }
 
-uint8 CVRC7::Read(uint16 Address, bool &Mapped)
+uint8_t CVRC7::Read(uint16_t Address, bool &Mapped)
 {
 	return 0;
 }
 
 void CVRC7::EndFrame()
 {
-	uint32 WantSamples = m_pMixer->GetMixSampleCount(m_iTime);
+	uint32_t WantSamples = m_pMixer->GetMixSampleCount(m_iTime);
 
-	static int32 LastSample = 0;
+	static int32_t LastSample = 0;
 
 	// Generate VRC7 samples
 	while (m_iBufferPtr < WantSamples) {
-		int32 RawSample = OPLL_calc(m_pOPLLInt);
+		int32_t RawSample = OPLL_calc(m_pOPLLInt);
 		
 		// Clipping is slightly asymmetric
 		if (RawSample > 3600)
@@ -105,14 +104,14 @@ void CVRC7::EndFrame()
 			RawSample = -3200;
 
 		// Apply volume
-		int32 Sample = int(float(RawSample) * m_fVolume);
+		int32_t Sample = int(float(RawSample) * m_fVolume);
 
 		if (Sample > 32767)
 			Sample = 32767;
 		if (Sample < -32768)
 			Sample = -32768;
 
-		m_pBuffer[m_iBufferPtr++] = int16((Sample + LastSample) >> 1);
+		m_pBuffer[m_iBufferPtr++] = int16_t((Sample + LastSample) >> 1);
 		LastSample = Sample;
 	}
 
@@ -122,7 +121,7 @@ void CVRC7::EndFrame()
 	m_iTime = 0;
 }
 
-void CVRC7::Process(uint32 Time)
+void CVRC7::Process(uint32_t Time)
 {
 	// This cannot run in sync, fetch all samples at end of frame instead
 	m_iTime += Time;

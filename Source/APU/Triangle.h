@@ -34,21 +34,21 @@ public:
 	~CTriangle();
 
 	void	Reset();
-	void	Write(uint16 Address, uint8 Value);
-	void	WriteControl(uint8 Value);
-	uint8	ReadControl();
-	void	Process(uint32 Time);
+	void	Write(uint16_t Address, uint8_t Value);
+	void	WriteControl(uint8_t Value);
+	uint8_t	ReadControl();
+	void	Process(uint32_t Time);
 
 	void	LengthCounterUpdate();
 	void	LinearCounterUpdate();
 
 private:
-	static const uint8 TRIANGLE_WAVE[];
+	static const uint8_t TRIANGLE_WAVE[];
 
 private:
-	uint8	m_iLoop, m_iLinearLoad, m_iHalt;
-	uint16	m_iLinearCounter;
-	int8	m_iStepGen;
+	uint8_t	m_iLoop, m_iLinearLoad, m_iHalt;
+	uint16_t	m_iLinearCounter;
+	int8_t	m_iStepGen;
 };
 
 #endif /* TRIANGLE_H */

@@ -22,16 +22,16 @@
 
 #pragma once
 
-#include "../Common.h"
+#include <cstdint>
 
-const uint8 SNDCHIP_NONE  = 0;
-const uint8 SNDCHIP_VRC6  = 1;			// Konami VRCVI
-const uint8 SNDCHIP_VRC7  = 2;			// Konami VRCVII
-const uint8 SNDCHIP_FDS	  = 4;			// Famicom Disk Sound
-const uint8 SNDCHIP_MMC5  = 8;			// Nintendo MMC5
-const uint8 SNDCHIP_N163  = 16;			// Namco N-106
-const uint8 SNDCHIP_S5B	  = 32;			// Sunsoft 5B
-const uint8 SNDCHIP_2A07  = 128;		// // // compatibility
+const uint8_t SNDCHIP_NONE  = 0;
+const uint8_t SNDCHIP_VRC6  = 1;			// Konami VRCVI
+const uint8_t SNDCHIP_VRC7  = 2;			// Konami VRCVII
+const uint8_t SNDCHIP_FDS	  = 4;			// Famicom Disk Sound
+const uint8_t SNDCHIP_MMC5  = 8;			// Nintendo MMC5
+const uint8_t SNDCHIP_N163  = 16;			// Namco N-106
+const uint8_t SNDCHIP_S5B	  = 32;			// Sunsoft 5B
+const uint8_t SNDCHIP_2A07  = 128;		// // // compatibility
 
 enum chan_id_t {
 	CHANID_SQUARE1,

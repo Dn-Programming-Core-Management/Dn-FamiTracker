@@ -314,7 +314,7 @@ protected:
 		\param Reg The register port.
 		\param Value The value to be written.
 	*/
-	void	WriteRegister(uint16 Reg, uint8 Value);
+	void	WriteRegister(uint16_t Reg, uint8_t Value);
 	
 	/*! \brief Converts a duty value from the current instrument into an equivalent value for the
 		current sound channel.

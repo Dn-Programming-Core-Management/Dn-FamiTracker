@@ -23,7 +23,7 @@
 #include "APU.h"
 #include "Triangle.h"
 
-const uint8 CTriangle::TRIANGLE_WAVE[] = {
+const uint8_t CTriangle::TRIANGLE_WAVE[] = {
 	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 
 	0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00
 };
@@ -55,7 +55,7 @@ void CTriangle::Reset()
 	EndFrame();
 }
 
-void CTriangle::Write(uint16 Address, uint8 Value)
+void CTriangle::Write(uint16_t Address, uint8_t Value)
 {
 	switch (Address) {
 		case 0x00:
@@ -77,7 +77,7 @@ void CTriangle::Write(uint16 Address, uint8 Value)
 	}
 }
 
-void CTriangle::WriteControl(uint8 Value)
+void CTriangle::WriteControl(uint8_t Value)
 {
 	m_iControlReg = Value & 1;
 	
@@ -85,12 +85,12 @@ void CTriangle::WriteControl(uint8 Value)
 		m_iEnabled = 0;
 }
 
-uint8 CTriangle::ReadControl()
+uint8_t CTriangle::ReadControl()
 {
 	return ((m_iLengthCounter > 0) && (m_iEnabled == 1));
 }
 
-void CTriangle::Process(uint32 Time)
+void CTriangle::Process(uint32_t Time)
 {
 	if (!m_iLinearCounter || !m_iLengthCounter || !m_iEnabled) {
 		m_iTime += Time;
