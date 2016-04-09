@@ -1123,7 +1123,7 @@ void CFamiTrackerView::OnTrackerDetune()			// // //
 	if (Table == NULL) return;
 	for (int i = 0; i < 6; i++) for (int j = 0; j < NOTE_COUNT; j++)
 		pDoc->SetDetuneOffset(i, j, *(Table + j + i * NOTE_COUNT));
-	theApp.GetSoundGenerator()->LoadMachineSettings(pDoc->GetMachine(), pDoc->GetEngineSpeed(), pDoc->GetNamcoChannels());
+	theApp.GetSoundGenerator()->DocumentPropertiesChanged(pDoc);
 }
 
 void CFamiTrackerView::OnTransposeDecreasenote()

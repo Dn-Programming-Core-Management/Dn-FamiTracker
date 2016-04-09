@@ -373,6 +373,147 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 	ASSERT(pDocument != NULL);
 	
 	SetupVibratoTable(pDocument->GetVibratoStyle());		// // //
+	
+	machine_t Machine = m_pDocument->GetMachine();
+	const int A440_NOTE = 45;
+	double clock_ntsc = CAPU::BASE_FREQ_NTSC / 16.0;
+	double clock_pal = CAPU::BASE_FREQ_PAL / 16.0;
+
+	for (int i = 0; i < NOTE_COUNT; ++i) {
+		// Frequency (in Hz)
+		double Freq = 440. * pow(2.0, double(i - A440_NOTE) / 12.);
+		double Pitch;
+
+		// 2A07
+		Pitch = (clock_pal / Freq) - 0.5;
+		m_iNoteLookupTablePAL[i] = (unsigned int)(Pitch - m_pDocument->GetDetuneOffset(1, i));		// // //
+		
+		// 2A03 / MMC5 / VRC6
+		Pitch = (clock_ntsc / Freq) - 0.5;
+		m_iNoteLookupTableNTSC[i] = (unsigned int)(Pitch - m_pDocument->GetDetuneOffset(0, i));		// // //
+		m_iNoteLookupTableS5B[i] = m_iNoteLookupTableNTSC[i] + 1;		// correction
+
+		// VRC6 Saw
+		Pitch = ((clock_ntsc * 16.0) / (Freq * 14.0)) - 0.5;
+		m_iNoteLookupTableSaw[i] = (unsigned int)(Pitch - m_pDocument->GetDetuneOffset(2, i));		// // //
+
+		// FDS
+#ifdef TRANSPOSE_FDS
+		Pitch = (Freq * 65536.0) / (clock_ntsc / 1.0) + 0.5;
+#else
+		Pitch = (Freq * 65536.0) / (clock_ntsc / 4.0) + 0.5;
+#endif
+		m_iNoteLookupTableFDS[i] = (unsigned int)(Pitch + m_pDocument->GetDetuneOffset(4, i));		// // //
+
+		// N163
+		Pitch = ((Freq * m_pDocument->GetNamcoChannels() * 983040.0) / clock_ntsc + 0.5) / 4;		// // //
+		m_iNoteLookupTableN163[i] = (unsigned int)(Pitch + m_pDocument->GetDetuneOffset(5, i));		// // //
+
+		if (m_iNoteLookupTableN163[i] > 0xFFFF)	// 0x3FFFF
+			m_iNoteLookupTableN163[i] = 0xFFFF;	// 0x3FFFF
+
+		// // // Sunsoft 5B uses NTSC table
+
+		// // // VRC7
+		if (i < NOTE_RANGE) {
+			Pitch = Freq * 262144.0 / 49716.0 + 0.5;
+			m_iNoteLookupTableVRC7[i] = (unsigned int)(Pitch + m_pDocument->GetDetuneOffset(3, i));		// // //
+		}
+	}
+	
+	// // // Setup note tables
+	for (int i = 0; i < CHANNELS; ++i) {
+		if (!m_pChannels[i]) continue;
+		const unsigned int *Table = nullptr;
+		switch (m_pTrackerChannels[i]->GetID()) {
+		case CHANID_SQUARE1: case CHANID_SQUARE2: case CHANID_TRIANGLE:
+			Table = Machine == PAL ? m_iNoteLookupTablePAL : m_iNoteLookupTableNTSC; break;
+		case CHANID_VRC6_PULSE1: case CHANID_VRC6_PULSE2:
+		case CHANID_MMC5_SQUARE1: case CHANID_MMC5_SQUARE2:
+			Table = m_iNoteLookupTableNTSC; break;
+		case CHANID_VRC6_SAWTOOTH:
+			Table = m_iNoteLookupTableSaw; break;
+		case CHANID_VRC7_CH1: case CHANID_VRC7_CH2: case CHANID_VRC7_CH3:
+		case CHANID_VRC7_CH4: case CHANID_VRC7_CH5: case CHANID_VRC7_CH6:
+			Table = m_iNoteLookupTableVRC7; break;
+		case CHANID_FDS:
+			Table = m_iNoteLookupTableFDS; break;
+		case CHANID_N163_CH1: case CHANID_N163_CH2: case CHANID_N163_CH3: case CHANID_N163_CH4:
+		case CHANID_N163_CH5: case CHANID_N163_CH6: case CHANID_N163_CH7: case CHANID_N163_CH8:
+			Table = m_iNoteLookupTableN163; break;
+		case CHANID_S5B_CH1: case CHANID_S5B_CH2: case CHANID_S5B_CH3:
+			Table = m_iNoteLookupTableS5B; break;
+		default: continue;
+		}
+		m_pChannels[i]->SetNoteTable(Table);
+	}
+
+#ifdef WRITE_PERIOD_FILES
+
+	// Write periods to a single file with assembly formatting
+	CStdioFile period_file("..\\nsf driver\\periods.s", CStdioFile::modeWrite | CStdioFile::modeCreate);
+
+	// One possible optimization is to store the PAL table as the difference from the NTSC table
+
+	period_file.WriteString("; 2A03 NTSC\n");
+	period_file.WriteString(".ifdef NTSC_PERIOD_TABLE\n");
+	period_file.WriteString("ft_periods_ntsc:\n\t.word\t");
+
+	for (int i = 0; i < NOTE_COUNT; ++i) {
+		CString str;
+		str.Format("$%04X%s", m_iNoteLookupTableNTSC[i], ((i % 12) < 11) && (i < 95) ? ", " : ((i < 95) ? "\n\t.word\t" : "\n"));
+		period_file.WriteString(str);
+	}
+
+	period_file.WriteString(".endif\n\n");
+	period_file.WriteString("; 2A03 PAL\n");
+	period_file.WriteString(".ifdef PAL_PERIOD_TABLE\n");
+	period_file.WriteString("ft_periods_pal:\n\t.word\t");
+
+	for (int i = 0; i < NOTE_COUNT; ++i) {
+		CString str;
+		str.Format("$%04X%s", m_iNoteLookupTablePAL[i], ((i % 12) < 11) && (i < 95) ? ", " : ((i < 95) ? "\n\t.word\t" : "\n"));
+		period_file.WriteString(str);
+	}
+
+	period_file.WriteString(".endif\n\n");
+	period_file.WriteString("; VRC6 Sawtooth\n");
+	period_file.WriteString(".ifdef VRC6_PERIOD_TABLE\n");
+	period_file.WriteString("ft_periods_sawtooth:\n\t.word\t");
+
+	for (int i = 0; i < NOTE_COUNT; ++i) {
+		CString str;
+		str.Format("$%04X%s", m_iNoteLookupTableSaw[i], ((i % 12) < 11) && (i < 95) ? ", " : ((i < 95) ? "\n\t.word\t" : "\n"));
+		period_file.WriteString(str);
+	}
+
+	period_file.WriteString(".endif\n\n");
+	period_file.WriteString("; FDS\n");
+	period_file.WriteString(".ifdef FDS_PERIOD_TABLE\n");
+	period_file.WriteString("ft_periods_fds:\n\t.word\t");
+
+	for (int i = 0; i < NOTE_COUNT; ++i) {
+		CString str;
+		str.Format("$%04X%s", m_iNoteLookupTableFDS[i], ((i % 12) < 11) && (i < 95) ? ", " : ((i < 95) ? "\n\t.word\t" : "\n"));
+		period_file.WriteString(str);
+	}
+
+	period_file.WriteString(".endif\n\n");
+	period_file.WriteString("; N163\n");
+	period_file.WriteString(".ifdef N163_PERIOD_TABLE\n");
+	period_file.WriteString("ft_periods_n163:\n\t.word\t");
+
+	for (int i = 0; i < NOTE_COUNT; ++i) {
+		CString str;
+		str.Format("$%04X%s", m_iNoteLookupTableN163[i] & 0xFFFF, ((i % 12) < 11) && (i < 95) ? ", " : ((i < 95) ? "\n\t.word\t" : "\n"));
+		period_file.WriteString(str);
+	}
+
+	period_file.WriteString(".endif\n\n");
+
+	period_file.Close();
+
+#endif
 
 	for (int i = 0; i < CHANNELS; ++i) {
 		if (m_pChannels[i]) {
@@ -1354,146 +1495,8 @@ void CSoundGen::LoadMachineSettings(machine_t Machine, int Rate, int NamcoChanne
 
 	m_pAPU->ChangeMachineRate(Machine == NTSC ? MACHINE_NTSC : MACHINE_PAL, Rate);		// // //
 
-	double clock_ntsc = CAPU::BASE_FREQ_NTSC / 16.0;
-	double clock_pal = CAPU::BASE_FREQ_PAL / 16.0;
-
-	for (int i = 0; i < NOTE_COUNT; ++i) {
-		// Frequency (in Hz)
-		double Freq = BASE_FREQ * pow(2.0, double(i) / 12.0);
-		double Pitch;
-
-		// 2A07
-		Pitch = (clock_pal / Freq) - 0.5;
-		m_iNoteLookupTablePAL[i] = (unsigned int)(Pitch - m_pDocument->GetDetuneOffset(1, i));		// // //
-		
-		// 2A03 / MMC5 / VRC6
-		Pitch = (clock_ntsc / Freq) - 0.5;
-		m_iNoteLookupTableNTSC[i] = (unsigned int)(Pitch - m_pDocument->GetDetuneOffset(0, i));		// // //
-		m_iNoteLookupTableS5B[i] = m_iNoteLookupTableNTSC[i] + 1;		// correction
-
-		// VRC6 Saw
-		Pitch = ((clock_ntsc * 16.0) / (Freq * 14.0)) - 0.5;
-		m_iNoteLookupTableSaw[i] = (unsigned int)(Pitch - m_pDocument->GetDetuneOffset(2, i));		// // //
-
-		// FDS
-#ifdef TRANSPOSE_FDS
-		Pitch = (Freq * 65536.0) / (clock_ntsc / 1.0) + 0.5;
-#else
-		Pitch = (Freq * 65536.0) / (clock_ntsc / 4.0) + 0.5;
-#endif
-		m_iNoteLookupTableFDS[i] = (unsigned int)(Pitch + m_pDocument->GetDetuneOffset(4, i));		// // //
-
-		// N163
-		Pitch = ((Freq * NamcoChannels * 983040.0) / clock_ntsc + 0.5) / 4;		// // //
-		m_iNoteLookupTableN163[i] = (unsigned int)(Pitch + m_pDocument->GetDetuneOffset(5, i));		// // //
-
-		if (m_iNoteLookupTableN163[i] > 0xFFFF)	// 0x3FFFF
-			m_iNoteLookupTableN163[i] = 0xFFFF;	// 0x3FFFF
-
-		// // // Sunsoft 5B uses NTSC table
-
-		// // // VRC7
-		if (i < NOTE_RANGE) {
-			Pitch = Freq * 262144.0 / 49716.0 + 0.5;
-			m_iNoteLookupTableVRC7[i] = (unsigned int)(Pitch + m_pDocument->GetDetuneOffset(3, i));		// // //
-		}
-	}
-/*
-	CStdioFile period_file("periods.txt", CStdioFile::modeWrite | CStdioFile::modeCreate);
-
-	const char NOTES_A[] = {'C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'G', 'A', 'A', 'B'};
-	const char NOTES_B[] = {'-', '#', '-', '#', '-', '-', '#', '-', '#', '-', '#', '-'};
-	const char NOTES_C[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-
-	double total_diff = 0;
-
-	for (int i = 0; i < NOTE_COUNT; ++i) {
-		CString str;
-		int period = m_iNoteLookupTableNTSC[i];
-		double freq;
-		if (period > 0x7FF)
-			period = 0x7FF;
-		double real_freq = BASE_FREQ * pow(2.0, double(i) / 12.0);
-
-		freq = clock_ntsc / (1 + period);
-		str.Format("%c%c%c: $%04X (%f Hz),\t%f Hz\t(diff = %f Hz)\n", NOTES_A[i % 12], NOTES_B[i % 12], NOTES_C[i / 12], period, freq, real_freq, (freq - real_freq));
-		period_file.WriteString(str);
-
-		total_diff += abs(freq - real_freq);
-	}
-
-	CString str;
-	str.Format("total diff: %f\n", total_diff);
-	period_file.WriteString(str);
-
-	period_file.Close();
-*/
-#ifdef WRITE_PERIOD_FILES
-
-	// Write periods to a single file with assembly formatting
-	CStdioFile period_file("..\\nsf driver\\periods.s", CStdioFile::modeWrite | CStdioFile::modeCreate);
-
-	// One possible optimization is to store the PAL table as the difference from the NTSC table
-
-	period_file.WriteString("; 2A03 NTSC\n");
-	period_file.WriteString(".ifdef NTSC_PERIOD_TABLE\n");
-	period_file.WriteString("ft_periods_ntsc:\n\t.word\t");
-
-	for (int i = 0; i < NOTE_COUNT; ++i) {
-		CString str;
-		str.Format("$%04X%s", m_iNoteLookupTableNTSC[i], ((i % 12) < 11) && (i < 95) ? ", " : ((i < 95) ? "\n\t.word\t" : "\n"));
-		period_file.WriteString(str);
-	}
-
-	period_file.WriteString(".endif\n\n");
-	period_file.WriteString("; 2A03 PAL\n");
-	period_file.WriteString(".ifdef PAL_PERIOD_TABLE\n");
-	period_file.WriteString("ft_periods_pal:\n\t.word\t");
-
-	for (int i = 0; i < NOTE_COUNT; ++i) {
-		CString str;
-		str.Format("$%04X%s", m_iNoteLookupTablePAL[i], ((i % 12) < 11) && (i < 95) ? ", " : ((i < 95) ? "\n\t.word\t" : "\n"));
-		period_file.WriteString(str);
-	}
-
-	period_file.WriteString(".endif\n\n");
-	period_file.WriteString("; VRC6 Sawtooth\n");
-	period_file.WriteString(".ifdef VRC6_PERIOD_TABLE\n");
-	period_file.WriteString("ft_periods_sawtooth:\n\t.word\t");
-
-	for (int i = 0; i < NOTE_COUNT; ++i) {
-		CString str;
-		str.Format("$%04X%s", m_iNoteLookupTableSaw[i], ((i % 12) < 11) && (i < 95) ? ", " : ((i < 95) ? "\n\t.word\t" : "\n"));
-		period_file.WriteString(str);
-	}
-
-	period_file.WriteString(".endif\n\n");
-	period_file.WriteString("; FDS\n");
-	period_file.WriteString(".ifdef FDS_PERIOD_TABLE\n");
-	period_file.WriteString("ft_periods_fds:\n\t.word\t");
-
-	for (int i = 0; i < NOTE_COUNT; ++i) {
-		CString str;
-		str.Format("$%04X%s", m_iNoteLookupTableFDS[i], ((i % 12) < 11) && (i < 95) ? ", " : ((i < 95) ? "\n\t.word\t" : "\n"));
-		period_file.WriteString(str);
-	}
-
-	period_file.WriteString(".endif\n\n");
-	period_file.WriteString("; N163\n");
-	period_file.WriteString(".ifdef N163_PERIOD_TABLE\n");
-	period_file.WriteString("ft_periods_n163:\n\t.word\t");
-
-	for (int i = 0; i < NOTE_COUNT; ++i) {
-		CString str;
-		str.Format("$%04X%s", m_iNoteLookupTableN163[i] & 0xFFFF, ((i % 12) < 11) && (i < 95) ? ", " : ((i < 95) ? "\n\t.word\t" : "\n"));
-		period_file.WriteString(str);
-	}
-
-	period_file.WriteString(".endif\n\n");
-
-	period_file.Close();
-
-#endif
+	// Number of cycles between each APU update
+	m_iUpdateCycles = BaseFreq / Rate;
 
 #if WRITE_VOLUME_FILE
 	CFile file("vol.txt", CFile::modeWrite | CFile::modeCreate);
@@ -1514,36 +1517,6 @@ void CSoundGen::LoadMachineSettings(machine_t Machine, int Rate, int NamcoChanne
 
 	file.Close();
 #endif /* WRITE_VOLUME_FILE */
-
-	// Number of cycles between each APU update
-	m_iUpdateCycles = BaseFreq / Rate;
-	
-	// // // Setup note tables
-	for (int i = 0; i < CHANNELS; ++i) {
-		if (!m_pChannels[i]) continue;
-		const unsigned int *Table = nullptr;
-		switch (m_pTrackerChannels[i]->GetID()) {
-		case CHANID_SQUARE1: case CHANID_SQUARE2: case CHANID_TRIANGLE:
-			Table = Machine == PAL ? m_iNoteLookupTablePAL : m_iNoteLookupTableNTSC; break;
-		case CHANID_VRC6_PULSE1: case CHANID_VRC6_PULSE2:
-		case CHANID_MMC5_SQUARE1: case CHANID_MMC5_SQUARE2:
-			Table = m_iNoteLookupTableNTSC; break;
-		case CHANID_VRC6_SAWTOOTH:
-			Table = m_iNoteLookupTableSaw; break;
-		case CHANID_VRC7_CH1: case CHANID_VRC7_CH2: case CHANID_VRC7_CH3:
-		case CHANID_VRC7_CH4: case CHANID_VRC7_CH5: case CHANID_VRC7_CH6:
-			Table = m_iNoteLookupTableVRC7; break;
-		case CHANID_FDS:
-			Table = m_iNoteLookupTableFDS; break;
-		case CHANID_N163_CH1: case CHANID_N163_CH2: case CHANID_N163_CH3: case CHANID_N163_CH4:
-		case CHANID_N163_CH5: case CHANID_N163_CH6: case CHANID_N163_CH7: case CHANID_N163_CH8:
-			Table = m_iNoteLookupTableN163; break;
-		case CHANID_S5B_CH1: case CHANID_S5B_CH2: case CHANID_S5B_CH3:
-			Table = m_iNoteLookupTableS5B; break;
-		default: continue;
-		}
-		m_pChannels[i]->SetNoteTable(Table);
-	}
 }
 
 stDPCMState CSoundGen::GetDPCMState() const
