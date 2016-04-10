@@ -272,6 +272,7 @@ CFamiTrackerView::CFamiTrackerView() :
 	m_iSwitchToInstrument(-1),
 	m_bFollowMode(true),
 	m_bCompactMode(false),		// // //
+	m_iAutoArpNotes(),		// // //
 	m_iAutoArpPtr(0),
 	m_iLastAutoArpPtr(0),
 	m_iAutoArpKeyCount(0),
