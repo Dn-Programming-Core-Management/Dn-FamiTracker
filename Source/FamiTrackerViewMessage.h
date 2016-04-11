@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -20,13 +20,15 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
 #include "WinUser.h"
 
+// Custom window messages for CFamiTrackerView
 enum {
-	WM_SIZE_CHANGE = WM_USER, 
-	WM_CURSOR_CHANGE, 
-	WM_SEQUENCE_CHANGED,
-	WM_SETTING_CHANGED,		// // //
+	WM_USER_PLAYER = WM_USER,		// Pattern play row has changed
+	WM_USER_MIDI_EVENT,				// There is a new MIDI command	
+	WM_USER_NOTE_EVENT,				// There is a new note command (by player)
+	WM_USER_DUMP_INST,				// // // End of track, add instrument
 };

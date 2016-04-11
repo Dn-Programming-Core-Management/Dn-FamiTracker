@@ -118,8 +118,9 @@ void CPatternData::AllocatePattern(unsigned int Channel, unsigned int Pattern)
 	m_pPatternData[Channel][Pattern] = new stChanNote[MAX_PATTERN_LENGTH];
 
 	// Clear memory
+	stChanNote Blank { };		// // //
 	for (int i = 0; i < MAX_PATTERN_LENGTH; ++i)
-		*(m_pPatternData[Channel][Pattern] + i) = BLANK_NOTE;		// // //
+		memcpy(m_pPatternData[Channel][Pattern] + i, &Blank, sizeof(stChanNote));
 }
 
 void CPatternData::ClearEverything()

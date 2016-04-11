@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -20,13 +20,16 @@
 ** must bear this legend.
 */
 
-#pragma once
+#include "stdafx.h"
+#include "PatternNote.h"
 
-#include "WinUser.h"
-
-enum {
-	WM_SIZE_CHANGE = WM_USER, 
-	WM_CURSOR_CHANGE, 
-	WM_SEQUENCE_CHANGED,
-	WM_SETTING_CHANGED,		// // //
+const CString stChanNote::NOTE_NAME[NOTE_RANGE] = {
+	_T("C-"), _T("C#"), _T("D-"), _T("D#"),
+	_T("E-"), _T("F-"), _T("F#"), _T("G-"),
+	_T("G#"), _T("A-"), _T("A#"), _T("B-"),
 };
+
+CString stChanNote::ToString() const
+{
+	return _T("...");
+}

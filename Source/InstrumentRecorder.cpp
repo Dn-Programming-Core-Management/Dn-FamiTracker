@@ -24,7 +24,7 @@
 #include "InstrumentManager.h"
 #include "FamiTrackerDoc.h"
 #include "TrackerChannel.h"
-#include "FamiTrackerView.h"
+#include "FamiTrackerViewMessage.h"
 #include "SoundGen.h"
 #include "InstrumentRecorder.h"
 #include "SeqInstrument.h"
@@ -64,7 +64,7 @@ void CInstrumentRecorder::StartRecording()
 	InitRecordInstrument();
 }
 
-void CInstrumentRecorder::StopRecording(CFamiTrackerView *pView)
+void CInstrumentRecorder::StopRecording(CView *pView)
 {
 	if (*m_pDumpInstrument != nullptr && pView != nullptr)
 		pView->PostMessage(WM_USER_DUMP_INST);
@@ -72,7 +72,7 @@ void CInstrumentRecorder::StopRecording(CFamiTrackerView *pView)
 }
 
 #define REG(x) ( m_pSoundGen->GetReg(Chip, (x)) )
-void CInstrumentRecorder::RecordInstrument(const unsigned Tick, CFamiTrackerView *pView)		// // //
+void CInstrumentRecorder::RecordInstrument(const unsigned Tick, CView *pView)		// // //
 {
 	unsigned int Intv = static_cast<unsigned>(m_stRecordSetting.Interval);
 	if (m_iRecordChannel == -1 || Tick > Intv * m_stRecordSetting.InstCount + 1) return;

@@ -21,7 +21,8 @@
 */
 
 #include "stdafx.h"
-#include "FamiTrackerDoc.h"
+#include "PatternNote.h"		// // //
+#include "Instrument.h"		// // //
 #include "TrackerChannel.h"
 
 /*

@@ -394,7 +394,7 @@ void CPatternAction::PullUpRows(CFamiTrackerDoc *pDoc) const
 			if (front.m_iFrame == m_iUndoFrame)
 				front.Get(i, &Source);
 			else
-				Source = BLANK_NOTE;
+				Source = stChanNote { };
 			CopyNoteSection(&Target, &Source, PASTE_DEFAULT, (i == m_selection.GetChanStart()) ? ColStart : COLUMN_NOTE,
 				(i == m_selection.GetChanEnd()) ? ColEnd : COLUMN_EFF4);
 			it.Set(i, &Target);
@@ -421,7 +421,7 @@ void CPatternAction::StretchPattern(CFamiTrackerDoc *pDoc) const		// // //
 			if (Offset < m_pUndoClipData->ClipInfo.Rows && m_iStretchMap[Pos] > 0)
 				Source = *(m_pUndoClipData->GetPattern(i, Offset));
 			else 
-				Source = BLANK_NOTE;		// // //
+				Source = stChanNote { };		// // //
 			it.Get(i + m_selection.GetChanStart(), &Target);
 			CopyNoteSection(&Target, &Source, PASTE_DEFAULT, i == 0 ? ColStart : COLUMN_NOTE,
 				i == m_selection.GetChanEnd() - m_selection.GetChanStart() ? ColEnd : COLUMN_EFF4);
@@ -754,7 +754,7 @@ void CPatternAction::DeleteSelection(CFamiTrackerDoc *pDoc) const
 	const column_t ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());		// // //
 	const column_t ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
 
-	stChanNote NoteData, Blank = BLANK_NOTE;		// // //
+	stChanNote NoteData, Blank { };		// // //
 
 	do {
 		for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); ++i) {

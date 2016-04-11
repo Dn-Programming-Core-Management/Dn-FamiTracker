@@ -3787,8 +3787,7 @@ void CPatternEditor::PasteRaw(const CPatternClipData *pClipData)		// // //
 	const column_t StartColumn = pClipData->ClipInfo.StartColumn;
 	const column_t EndColumn = pClipData->ClipInfo.EndColumn;
 
-	stChanNote Target = BLANK_NOTE;
-	stChanNote Source = BLANK_NOTE;
+	stChanNote Target { }, Source { };
 	const int PackedPos = (m_selection.GetFrameStart() + GetFrameCount()) * Length + m_selection.GetRowStart();
 	for (int i = 0; i < Channels; ++i) for (int r = 0; r < Rows; r++) {
 		int c = i + m_selection.GetChanStart();
@@ -4313,7 +4312,7 @@ void CPatternEditor::GetSelectionAsPPMCK(CString &str) const		// // //
 	// Returns a PPMCK MML translation of copied pattern
 
 	// // // int i, j;
-	stChanNote NoteData = BLANK_NOTE;
+	stChanNote NoteData { };
 
 	str.Empty();
 
@@ -4336,11 +4335,9 @@ void CPatternEditor::GetSelectionAsPPMCK(CString &str) const		// // //
 		int o = -1;
 		int len = -1;
 		bool first = true;
-		stChanNote current = BLANK_NOTE;
+		stChanNote current { };
 		current.Note = HALT;
-		stChanNote echo[ECHO_BUFFER_LENGTH + 1];
-		for (int i = 0; i <= ECHO_BUFFER_LENGTH; i++)
-			echo[i] = BLANK_NOTE;
+		stChanNote echo[ECHO_BUFFER_LENGTH + 1] { };
 
 		for (CPatternIterator it = GetStartIterator(); it <= End; it++) {
 			len++;

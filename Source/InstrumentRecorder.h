@@ -28,7 +28,6 @@
 class CSequence;
 class CInstrument;
 class CFamiTrackerDoc;
-class CFamiTrackerView;
 class CSoundGen;
 
 struct stRecordSetting {
@@ -45,8 +44,8 @@ public:
 
 public:
 	void			StartRecording();
-	void			StopRecording(CFamiTrackerView *pView);
-	void			RecordInstrument(const unsigned Tick, CFamiTrackerView *pView);
+	void			StopRecording(CView *pView);
+	void			RecordInstrument(const unsigned Tick, CView *pView);
 
 	CInstrument		*GetRecordInstrument(unsigned Tick) const;
 	int				GetRecordChannel() const;

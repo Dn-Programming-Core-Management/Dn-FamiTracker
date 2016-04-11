@@ -64,7 +64,7 @@ enum render_end_t {
 	SONG_LOOP_LIMIT 
 };
 
-struct stChanNote;
+class stChanNote;		// // //
 struct stRecordSetting;
 
 enum note_prio_t;

@@ -2112,7 +2112,7 @@ void CFamiTrackerView::InsertNote(int Note, int Octave, int Channel, int Velocit
 void CFamiTrackerView::PlayNote(unsigned int Channel, unsigned int Note, unsigned int Octave, unsigned int Velocity)
 {
 	// Play a note in a channel
-	stChanNote NoteData = BLANK_NOTE;		// // //
+	stChanNote NoteData { };		// // //
 
 	NoteData.Note		= Note;
 	NoteData.Octave		= Octave;
@@ -2146,7 +2146,7 @@ void CFamiTrackerView::PlayNote(unsigned int Channel, unsigned int Note, unsigne
 void CFamiTrackerView::ReleaseNote(unsigned int Channel)
 {
 	// Releases a channel
-	stChanNote NoteData = BLANK_NOTE;		// // //
+	stChanNote NoteData { };		// // //
 
 	NoteData.Note = RELEASE;
 	NoteData.Instrument = GetInstrument();
@@ -2167,7 +2167,7 @@ void CFamiTrackerView::ReleaseNote(unsigned int Channel)
 void CFamiTrackerView::HaltNote(unsigned int Channel)
 {
 	// Halts a channel
-	stChanNote NoteData = BLANK_NOTE;		// // //
+	stChanNote NoteData { };		// // //
 
 	NoteData.Note = HALT;
 	NoteData.Instrument = GetInstrument();
@@ -2187,7 +2187,7 @@ void CFamiTrackerView::HaltNote(unsigned int Channel)
 void CFamiTrackerView::HaltNoteSingle(unsigned int Channel)
 {
 	// Halts one single channel only
-	stChanNote NoteData = BLANK_NOTE;		// // //
+	stChanNote NoteData { };		// // //
 
 	NoteData.Note = HALT;
 	NoteData.Instrument = GetInstrument();
@@ -3008,7 +3008,7 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 	}
 
 	if (CheckClearKey(nChar) && IsControlPressed())		// // //
-		Note = BLANK_NOTE;
+		Note = stChanNote { };
 
 	// Something changed, store pattern data in document and update screen
 	if (m_bEditEnable) {

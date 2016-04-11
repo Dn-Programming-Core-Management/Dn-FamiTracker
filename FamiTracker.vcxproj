@@ -479,6 +479,7 @@
     </ClCompile>
     <ClCompile Include="Source\ModuleException.cpp" />
     <ClCompile Include="Source\OldSequence.cpp" />
+    <ClCompile Include="Source\PatternNote.cpp" />
     <ClCompile Include="Source\RecordSettingsDlg.cpp" />
     <ClCompile Include="Source\SeqInstHandler.cpp" />
     <ClCompile Include="Source\SeqInstHandlerFDS.cpp" />
@@ -706,6 +707,7 @@
     <ClInclude Include="Source\FamiTrackerDoc.h" />
     <ClInclude Include="Source\FamiTrackerTypes.h" />
     <ClInclude Include="Source\FamiTrackerView.h" />
+    <ClInclude Include="Source\FamiTrackerViewMessage.h" />
     <ClInclude Include="Source\FindDlg.h" />
     <ClInclude Include="Source\FTMComponentInterface.h" />
     <ClInclude Include="Source\GotoDlg.h" />
@@ -727,6 +729,7 @@
     <ClInclude Include="Source\InstrumentVRC7.h" />
     <ClInclude Include="Source\ModuleException.h" />
     <ClInclude Include="Source\OldSequence.h" />
+    <ClInclude Include="Source\PatternNote.h" />
     <ClInclude Include="Source\SeqInstrument.h" />
     <ClInclude Include="Source\SequenceEditorMessage.h" />
     <ClInclude Include="Source\MainFrm.h" />

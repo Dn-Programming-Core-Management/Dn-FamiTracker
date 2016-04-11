@@ -23,15 +23,7 @@
 #pragma once
 
 
-// Channel note struct, holds the data for each row in patterns
-struct stChanNote {
-	unsigned char Note;
-	unsigned char Octave;
-	unsigned char Vol;
-	unsigned char Instrument;
-	effect_t      EffNumber[MAX_EFFECT_COLUMNS];		// // //
-	unsigned char EffParam[MAX_EFFECT_COLUMNS];
-};
+#include "PatternNote.h"		// // //
 
 // // // Highlight settings
 struct stHighlight {
@@ -44,8 +36,6 @@ struct stHighlight {
 const unsigned int DEFAULT_TEMPO_NTSC		 = 150;
 const unsigned int DEFAULT_TEMPO_PAL		 = 125;
 const unsigned int DEFAULT_SPEED			 = 6;
-
-static const stChanNote BLANK_NOTE = {NONE, 0, MAX_VOLUME, MAX_INSTRUMENTS, {EF_NONE, EF_NONE, EF_NONE, EF_NONE}, {0, 0, 0, 0}}; // // //
 
 // TODO rename to CTrack perhaps?
 

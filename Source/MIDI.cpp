@@ -20,8 +20,8 @@
 
 #include "stdafx.h"
 #include "FamiTracker.h"
-#include "FamiTrackerDoc.h"
-#include "FamiTrackerView.h"
+#include "PatternNote.h"		// // //
+#include "FamiTrackerViewMessage.h"		// // //
 #include "MIDI.h"
 #include "Settings.h"
 

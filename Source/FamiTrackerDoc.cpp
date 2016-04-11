@@ -2096,7 +2096,7 @@ void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Vers
 
 			try {
 				stChanNote *Note = pTrack->GetPatternData(Channel, Pattern, Row);
-				*Note = BLANK_NOTE;		// // //
+				*Note = stChanNote { };		// // //
 
 				/*
 				Note->Note = AssertRange(pDocFile->GetBlockChar(), NONE, ECHO, "Note value");
@@ -3257,7 +3257,7 @@ bool CFamiTrackerDoc::InsertRow(unsigned int Track, unsigned int Frame, unsigned
 	CPatternData *pTrack = GetTrack(Track);
 	int Pattern = pTrack->GetFramePattern(Frame, Channel);
 	int PatternLen = pTrack->GetPatternLength();
-	stChanNote Note = BLANK_NOTE;		// // //
+	stChanNote Note { };		// // //
 
 	for (unsigned int i = PatternLen - 1; i > Row; i--) {
 		memcpy(
@@ -3306,7 +3306,7 @@ bool CFamiTrackerDoc::ClearRow(unsigned int Track, unsigned int Frame, unsigned 
 
 	CPatternData *pTrack = GetTrack(Track);
 	int Pattern = pTrack->GetFramePattern(Frame, Channel);
-	*pTrack->GetPatternData(Channel, Pattern, Row) = BLANK_NOTE;		// // //
+	*pTrack->GetPatternData(Channel, Pattern, Row) = stChanNote { };		// // //
 	
 	SetModifiedFlag();
 
@@ -3378,7 +3378,7 @@ bool CFamiTrackerDoc::RemoveNote(unsigned int Track, unsigned int Frame, unsigne
 
 	CPatternData *pTrack = GetTrack(Track);
 	int Pattern = pTrack->GetFramePattern(Frame, Channel);
-	stChanNote Note = BLANK_NOTE;		// // //
+	stChanNote Note { };		// // //
 
 	unsigned int PatternLen = pTrack->GetPatternLength();
 
@@ -4965,8 +4965,7 @@ void CFamiTrackerDoc::MakeKraid()			// // // Easter Egg
 	kraidSeq->SetReleasePoint(-1);
 
 	// Triangle
-	stChanNote* kraidRow = new stChanNote;
-	*kraidRow = BLANK_NOTE;
+	stChanNote* kraidRow = new stChanNote { };
 	kraidRow->Instrument = 2;
 	for (int i = 0; i < 24; i += 6) {
 		kraidRow->Note = NOTE_E; kraidRow->Octave = 2; SetDataAtPattern(0, 0, 2, i    , kraidRow);

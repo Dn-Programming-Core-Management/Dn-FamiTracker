@@ -343,7 +343,7 @@ void CInstrumentEditDlg::SwitchOnNote(int x, int y)
 	int Channel = pView->GetSelectedChannel();		// // //
 	int Chip = pDoc->GetExpansionChip();
 
-	stChanNote NoteData;
+	stChanNote NoteData { };
 
 	// TODO: remove hardcoded numbers
 	// // // Send to respective channels whenever cursor is outside instrument chip
@@ -427,7 +427,7 @@ void CInstrumentEditDlg::SwitchOnNote(int x, int y)
 		if (Note + (Octave * NOTE_RANGE) != m_iLastKey) {
 			NoteData.Note			= Note + 1;
 			NoteData.Octave			= Octave;
-			NoteData.Vol			= 0x0F;
+			NoteData.Vol			= MAX_VOLUME - 1;
 			NoteData.Instrument		= pFrameWnd->GetSelectedInstrument();
 			memset(NoteData.EffNumber, 0, 4);
 			memset(NoteData.EffParam, 0, 4);
@@ -440,8 +440,7 @@ void CInstrumentEditDlg::SwitchOnNote(int x, int y)
 	}
 	else {
 		NoteData.Note			= pView->DoRelease() ? RELEASE : HALT;//HALT;
-		NoteData.Octave			= 0;
-		NoteData.Vol			= 0x10;
+		NoteData.Vol			= MAX_VOLUME;
 		NoteData.Instrument		= pFrameWnd->GetSelectedInstrument();;
 		memset(NoteData.EffNumber, 0, 4);
 		memset(NoteData.EffParam, 0, 4);
@@ -454,17 +453,14 @@ void CInstrumentEditDlg::SwitchOnNote(int x, int y)
 
 void CInstrumentEditDlg::SwitchOffNote(bool ForceHalt)
 {
-	stChanNote NoteData;
+	stChanNote NoteData { };		// // //
 
 	CFamiTrackerView *pView = CFamiTrackerView::GetView();
 	CMainFrame *pFrameWnd = static_cast<CMainFrame*>(GetParent());
 
 	int Channel = pView->GetSelectedChannel();
 
-	NoteData = BLANK_NOTE;		// // //
-
 	NoteData.Note			= (pView->DoRelease() && !ForceHalt) ? RELEASE : HALT;
-	NoteData.Vol			= 0x10;
 	NoteData.Instrument		= pFrameWnd->GetSelectedInstrument();
 
 	theApp.GetSoundGenerator()->QueueNote(Channel, NoteData, NOTE_PRIO_2);
