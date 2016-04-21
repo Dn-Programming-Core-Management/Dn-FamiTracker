@@ -86,6 +86,7 @@ const stAccelEntry CAccelerator::DEFAULT_TABLE[] = {
 	{_T("Decrease pattern"),			MOD_NONE,		VK_SUBTRACT,	IDC_FRAME_DEC},
 	{_T("Next instrument"),				MOD_CONTROL,	VK_DOWN,		ID_CMD_NEXT_INSTRUMENT},
 	{_T("Previous instrument"),			MOD_CONTROL,	VK_UP,			ID_CMD_PREV_INSTRUMENT},
+	{_T("Type instrument number"),		MOD_NONE,		0,				ID_CMD_INST_NUM},					// // //
 	{_T("Mask instruments"),			MOD_ALT,		'T',			ID_EDIT_INSTRUMENTMASK},
 	{_T("Mask volume"),					MOD_ALT,		'V',			ID_EDIT_VOLUMEMASK},				// // //
 	{_T("Edit instrument"),				MOD_CONTROL,	'I',			ID_INSTRUMENT_EDIT},

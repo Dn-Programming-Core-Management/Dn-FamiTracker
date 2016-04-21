@@ -107,6 +107,8 @@ public:
 
 	void	ResetFind();		// // //
 
+	bool	TypeInstrumentNumber(int Digit);		// // //
+
 // Overrides
 public:
 
@@ -140,6 +142,8 @@ private:
 	bool	CheckRepeat() const;
 
 	void	CheckAudioStatus();
+
+	void	ShowInstrumentNumberText();		// // //
 
 private:  // control bar embedded members
 	CStatusBar			m_wndStatusBar;
@@ -195,6 +199,9 @@ private:  // control bar embedded members
 	int					m_iOctave;					// Selected octave
 	int					m_iInstrument;				// Selected instrument
 	int					m_iTrack;					// Selected track
+
+	int					m_iInstNumDigit;			// // //
+	int					m_iInstNumCurrent;
 
 public:
 	virtual BOOL Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle = WS_OVERLAPPEDWINDOW, const RECT& rect = rectDefault, CWnd* pParentWnd = NULL, LPCTSTR lpszMenuName = NULL, DWORD dwExStyle = 0, CCreateContext* pContext = NULL);
@@ -361,6 +368,7 @@ public:
 	afx_msg void OnToggleGroove();
 	afx_msg void OnToggleFixTempo();
 	afx_msg void OnClickedCompact();
+	afx_msg void OnTypeInstrumentNumber();
 	afx_msg void OnToggleCompact();
 	afx_msg void OnFileExportRows();
 	afx_msg void OnEditCopyAsText();

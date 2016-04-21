@@ -122,6 +122,8 @@ CMainFrame::CMainFrame() :
 	m_iInstrument(0),
 	m_iTrack(0),
 	m_iOctave(3),
+	m_iInstNumDigit(0),		// // //
+	m_iInstNumCurrent(MAX_INSTRUMENTS),		// // //
 	m_iKraidCounter(0)		// // // Easter Egg
 {
 }
@@ -297,6 +299,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_BN_CLICKED(IDC_BUTTON_GROOVE, OnToggleGroove)
 	ON_BN_CLICKED(IDC_BUTTON_FIXTEMPO, OnToggleFixTempo)
 	ON_BN_CLICKED(IDC_CHECK_COMPACT, OnClickedCompact)
+	ON_COMMAND(ID_CMD_INST_NUM, OnTypeInstrumentNumber)
 	ON_COMMAND(IDC_COMPACT_TOGGLE, OnToggleCompact)
 	ON_COMMAND(ID_FILE_EXPORTROWS, OnFileExportRows)
 	ON_COMMAND(ID_COPYAS_TEXT, OnEditCopyAsText)
@@ -1045,6 +1048,51 @@ void CMainFrame::OnPrevInstrument()
 {
 	// Select previous instrument in the list
 	m_pInstrumentList->SelectPreviousItem();
+}
+
+static const int INST_DIGITS = 2;		// // //
+
+void CMainFrame::OnTypeInstrumentNumber()		// // //
+{
+	m_iInstNumDigit = 1;
+	m_iInstNumCurrent = 0;
+	ShowInstrumentNumberText();
+}
+
+bool CMainFrame::TypeInstrumentNumber(int Digit)		// // //
+{
+	if (!m_iInstNumDigit) return false;
+	if (Digit != -1) {
+		m_iInstNumCurrent |= Digit << (4 * (INST_DIGITS - m_iInstNumDigit++));
+		ShowInstrumentNumberText();
+		if (m_iInstNumDigit > INST_DIGITS) {
+			if (m_iInstNumCurrent >= 0 && m_iInstNumCurrent < MAX_INSTRUMENTS)
+				SelectInstrument(m_iInstNumCurrent);
+			else {
+				SetMessageText(IDS_INVALID_INST_NUM);
+				MessageBeep(MB_ICONWARNING);
+			}
+			m_iInstNumDigit = 0;
+		}
+	}
+	else {
+		SetMessageText(IDS_INVALID_INST_NUM);
+		MessageBeep(MB_ICONWARNING);
+		m_iInstNumDigit = 0;
+	}
+	return true;
+}
+
+void CMainFrame::ShowInstrumentNumberText()
+{
+	CString msg, digit;
+	for (int i = 0; i < INST_DIGITS; ++i)
+		if (i >= m_iInstNumDigit - 1)
+			digit.AppendChar(_T('_'));
+		else
+			digit.AppendFormat("%X", (m_iInstNumCurrent >> (4 * (INST_DIGITS - i - 1))) & 0xF);
+	AfxFormatString1(msg, IDS_TYPE_INST_NUM, digit);
+	SetMessageText(msg);
 }
 
 void CMainFrame::GetInstrumentName(char *pText) const
@@ -3048,6 +3096,7 @@ void CMainFrame::CheckAudioStatus()
 		DisplayedError = TRUE;
 		MessageTimeout = GetTickCount() + TIMEOUT;
 	}
+#ifndef _DEBUG
 	else if (pSoundGen->IsBufferUnderrun()) {
 		// Buffer underrun
 		SetMessageText(IDS_UNDERRUN_MESSAGE);
@@ -3060,6 +3109,7 @@ void CMainFrame::CheckAudioStatus()
 		DisplayedError = TRUE;
 		MessageTimeout = GetTickCount() + TIMEOUT;
 	}
+#endif
 	else {
 		if (DisplayedError == TRUE && MessageTimeout < GetTickCount()) {
 			// Restore message

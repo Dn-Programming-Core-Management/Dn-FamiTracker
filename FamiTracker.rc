@@ -2276,6 +2276,8 @@ END
 
 STRINGTABLE
 BEGIN
+    IDS_TYPE_INST_NUM       "Instrument number: %1"
+    IDS_INVALID_INST_NUM    "Invalid instrument number!"
     IDS_FILE_LOAD_ERROR     "Couldn't load file properly. Make sure you have the latest version of FamiTracker."
     IDS_CONFIG_WINDOW       "FamiTracker configuration"
 END

@@ -2366,6 +2366,10 @@ void CFamiTrackerView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	if (GetFocus() != this)
 		return;
 
+	if (auto pFrame = static_cast<CMainFrame*>(GetParentFrame()))		// // //
+		if (pFrame->TypeInstrumentNumber(ConvertKeyToHex(nChar)))
+			return;
+
 	if (nChar >= VK_NUMPAD0 && nChar <= VK_NUMPAD9) {
 		// Switch instrument
 		if (m_pPatternEditor->GetColumn() == C_NOTE) {

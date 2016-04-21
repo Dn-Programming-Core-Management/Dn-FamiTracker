@@ -70,6 +70,7 @@
 #define ID_CMD_STEP_DOWN                142
 #define IDS_SAVE_FILE_ERROR             142
 #define IDS_START_ERROR                 143
+#define ID_CMD_INST_NUM                 143
 #define ID_BLOCK_START                  144
 #define IDS_INFO_TITLE                  144
 #define IDD_PERFORMANCE                 145
@@ -145,6 +146,8 @@
 #define IDS_IMPORT_SEQUENCE_COUNT       189
 #define ID_FIND_NEXT                    190
 #define IDS_ABOUT_TOOLTIP_BUG           191
+#define IDS_TYPE_INST_NUM               192
+#define IDS_INVALID_INST_NUM            193
 #define IDD_CONFIG_MIDI                 194
 #define IDR_PATTERN_POPUP               198
 #define IDD_CONFIG_SOUND                201
