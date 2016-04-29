@@ -233,8 +233,8 @@ int CChannelHandlerVRC7::CalculatePeriod() const
 	if (m_bLinearPitch && m_pNoteLookupTable != nullptr) {
 		Period = LimitPeriod(GetPeriod() + Detune);		// // //
 		int Note = (Period >> LINEAR_PITCH_AMOUNT) % NOTE_RANGE;
-		int Offset = (Note < NOTE_RANGE - 1 ? m_pNoteLookupTable[Note + 1] : m_pNoteLookupTable[0] << 1) - m_pNoteLookupTable[Note];
-		Period = (m_pNoteLookupTable[Note] << 2) + ((Offset << 2) * (Period % (1 << LINEAR_PITCH_AMOUNT)) >> LINEAR_PITCH_AMOUNT);
+		int Offset = (GetFnum(Note + 1) << ((Note < NOTE_RANGE - 1) ? 0 : 1)) - GetFnum(Note);
+		Period = GetFnum(Note) + (Offset * (Period % (1 << LINEAR_PITCH_AMOUNT)) >> LINEAR_PITCH_AMOUNT);
 	}
 	return LimitRawPeriod(Period) >> 2;
 }
