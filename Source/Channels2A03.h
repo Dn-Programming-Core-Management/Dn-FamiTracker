@@ -97,6 +97,7 @@ protected:
 	void SetupSlide();		// // //
 
 	int LimitPeriod(int Period) const;		// // //
+	int LimitRawPeriod(int Period) const;		// // //
 
 	int TriggerNote(int Note);
 };

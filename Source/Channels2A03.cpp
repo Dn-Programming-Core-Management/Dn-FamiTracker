@@ -410,6 +410,11 @@ int CNoiseChan::LimitPeriod(int Period) const		// // //
 	return Period; // no limit
 }
 
+int CNoiseChan::LimitRawPeriod(int Period) const		// // //
+{
+	return Period; // no limit
+}
+
 /*
 int CNoiseChan::CalculatePeriod() const
 {

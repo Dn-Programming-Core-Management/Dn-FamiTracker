@@ -56,6 +56,7 @@ protected:
 	bool         CreateInstHandler(inst_type_t Type);		// // //
 	virtual void SetupSlide();		// // //
 	virtual int CalculateVolume() const;
+	virtual int CalculatePeriod() const;		// // //
 
 	virtual void UpdateNoteRelease();		// // //
 

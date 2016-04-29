@@ -206,6 +206,8 @@ int CChannelHandlerVRC7::TriggerNote(int Note)
 	if (m_iCommand != CMD_NOTE_TRIGGER && m_iCommand != CMD_NOTE_HALT)
 		m_iCommand = CMD_NOTE_ON;
 	m_iOctave = Note / NOTE_RANGE;
+	if (m_bLinearPitch)		// // //
+		return Note << LINEAR_PITCH_AMOUNT;
 	return GetFnum(Note);
 }
 
@@ -224,6 +226,19 @@ int CChannelHandlerVRC7::CalculateVolume() const
 	return 15 - Volume;
 }
 
+int CChannelHandlerVRC7::CalculatePeriod() const
+{
+	int Detune = GetVibrato() - GetFinePitch() - GetPitch();
+	int Period = LimitPeriod(GetPeriod() + (Detune << 2));		// // //
+	if (m_bLinearPitch && m_pNoteLookupTable != nullptr) {
+		Period = LimitPeriod(GetPeriod() + Detune);		// // //
+		int Note = (Period >> LINEAR_PITCH_AMOUNT) % NOTE_RANGE;
+		int Offset = (Note < NOTE_RANGE - 1 ? m_pNoteLookupTable[Note + 1] : m_pNoteLookupTable[0] << 1) - m_pNoteLookupTable[Note];
+		Period = (m_pNoteLookupTable[Note] << 2) + ((Offset << 2) * (Period % (1 << LINEAR_PITCH_AMOUNT)) >> LINEAR_PITCH_AMOUNT);
+	}
+	return LimitRawPeriod(Period) >> 2;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // VRC7 Channels
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -233,8 +248,9 @@ void CVRC7Channel::RefreshChannel()
 	int Note = m_iTriggeredNote;
 	int Patch = m_iPatch;
 	int Volume = CalculateVolume();
-	int Bnum = m_iOctave;
-	int Fnum = (m_iPeriod >> 2) - GetVibrato() - GetFinePitch();// (m_iFinePitch - 0x80);
+	int Fnum = CalculatePeriod();		// // //
+	int Bnum = !m_bLinearPitch ? m_iOctave :
+		((GetPeriod() + GetVibrato() - GetFinePitch() - GetPitch()) >> LINEAR_PITCH_AMOUNT) / NOTE_RANGE;
 
 	// Write custom instrument
 	if (Patch == 0 && (m_iCommand == CMD_NOTE_TRIGGER || m_bRegsDirty)) {
