@@ -422,13 +422,13 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 							WriteData(Command(CMD_EFF_RESET_PITCH));
 						else {
 							switch (ChipID) {
-								case SNDCHIP_VRC7:
-								case SNDCHIP_FDS:
-								case SNDCHIP_N163:
-									EffParam = (char)(256 - (int)EffParam);
-									if (EffParam == 0)
-										EffParam = 0xFF;
-									break;
+							case SNDCHIP_NONE: case SNDCHIP_VRC6: case SNDCHIP_MMC5: case SNDCHIP_S5B:		// // //
+								if (!m_pDocument->GetLinearPitch()) break;
+							default:
+								EffParam = (char)(256 - (int)EffParam);
+								if (EffParam == 0)
+									EffParam = 0xFF;
+								break;
 							}
 							WriteData(Command(CMD_EFF_PITCH));
 							WriteData(EffParam);

@@ -860,8 +860,8 @@ int CChannelHandler::GetVibrato() const
 		VibFreq >>= 1;
 	}
 
-	if (m_bLinearPitch)
-		VibFreq <<= 1;		// // //
+//	if (m_bLinearPitch)
+//		VibFreq <<= 1;		// // //
 
 	return VibFreq;
 }
