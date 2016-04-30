@@ -34,11 +34,13 @@
 #define OPL_NOTE_ON 0x10
 #define OPL_SUSTAIN_ON 0x20
 
+const int VRC7_PITCH_RESOLUTION = 2;		// // // extra bits for internal pitch
+
 // True if custom instrument registers needs to be updated, shared among all channels
 bool CChannelHandlerVRC7::m_bRegsDirty = false;
 
 CChannelHandlerVRC7::CChannelHandlerVRC7() : 
-	CChannelHandlerInverted(2047, 15),		// // //
+	CChannelHandlerInverted((1 << (VRC7_PITCH_RESOLUTION + 9)) - 1, 15),		// // //
 	m_iCommand(CMD_NONE),
 	m_iTriggeredNote(0)
 {
@@ -213,7 +215,7 @@ int CChannelHandlerVRC7::TriggerNote(int Note)
 
 unsigned int CChannelHandlerVRC7::GetFnum(int Note) const
 {
-	return m_pNoteLookupTable[Note % NOTE_RANGE] << 2;		// // //
+	return m_pNoteLookupTable[Note % NOTE_RANGE] << VRC7_PITCH_RESOLUTION;		// // //
 }
 
 int CChannelHandlerVRC7::CalculateVolume() const
@@ -229,14 +231,17 @@ int CChannelHandlerVRC7::CalculateVolume() const
 int CChannelHandlerVRC7::CalculatePeriod() const
 {
 	int Detune = GetVibrato() - GetFinePitch() - GetPitch();
-	int Period = LimitPeriod(GetPeriod() + (Detune << 2));		// // //
+	int Period = LimitPeriod(GetPeriod() + (Detune << VRC7_PITCH_RESOLUTION));		// // //
 	if (m_bLinearPitch && m_pNoteLookupTable != nullptr) {
 		Period = LimitPeriod(GetPeriod() + Detune);		// // //
 		int Note = (Period >> LINEAR_PITCH_AMOUNT) % NOTE_RANGE;
+		int Sub = Period % (1 << LINEAR_PITCH_AMOUNT);
 		int Offset = (GetFnum(Note + 1) << ((Note < NOTE_RANGE - 1) ? 0 : 1)) - GetFnum(Note);
-		Period = GetFnum(Note) + (Offset * (Period % (1 << LINEAR_PITCH_AMOUNT)) >> LINEAR_PITCH_AMOUNT);
+		Offset = Offset * Sub >> LINEAR_PITCH_AMOUNT;
+		if (Sub && Offset < (1 << VRC7_PITCH_RESOLUTION)) Offset = 1 << VRC7_PITCH_RESOLUTION;
+		Period = GetFnum(Note) + Offset;
 	}
-	return LimitRawPeriod(Period) >> 2;
+	return LimitRawPeriod(Period) >> VRC7_PITCH_RESOLUTION;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
