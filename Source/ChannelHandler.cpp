@@ -391,8 +391,8 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 
 	if (m_iInstrument == MAX_INSTRUMENTS) {
 		// No instrument selected, default to 0
-		// 0CC: retrieve
-		m_iInstrument = m_pSoundGen->GetDefaultInstrument();
+		m_iInstrument = 0;		// // //
+		// m_iInstrument = m_pSoundGen->GetDefaultInstrument();
 	}
 	
 	switch (pNoteData->Note) {		// // // set note value before loading instrument
@@ -439,7 +439,7 @@ bool CChannelHandler::HandleInstrument(int Instrument, bool Trigger, bool NewIns
 	
 	// load instrument here
 	inst_type_t instType = pInstrument->GetType();
-	if (NewInstrument && CInstHandler::GetType(m_iInstTypeCurrent) != CInstHandler::GetType(instType))
+	if (NewInstrument)
 		CreateInstHandler(instType);
 	m_iInstTypeCurrent = instType;
 

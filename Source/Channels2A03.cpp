@@ -120,8 +120,12 @@ bool CChannelHandler2A03::CreateInstHandler(inst_type_t Type)
 {
 	switch (Type) {
 	case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B: case INST_FDS:
-		m_pInstHandler.reset(new CSeqInstHandler(this, 0x0F, Type == INST_S5B ? 0x40 : 0));
-		return true;
+		switch (m_iInstTypeCurrent) {
+		case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B: case INST_FDS: break;
+		default:
+			m_pInstHandler.reset(new CSeqInstHandler(this, 0x0F, Type == INST_S5B ? 0x40 : 0));
+			return true;
+		}
 	}
 	return false;
 }
@@ -576,8 +580,12 @@ bool CDPCMChan::CreateInstHandler(inst_type_t Type)
 {
 	switch (Type) {
 	case INST_2A03:
-		m_pInstHandler.reset(new CInstHandlerDPCM(this));
-		return true;
+		switch (m_iInstTypeCurrent) {
+		case INST_2A03: break;
+		default:
+			m_pInstHandler.reset(new CInstHandlerDPCM(this));
+			return true;
+		}
 	}
 	return false;
 }

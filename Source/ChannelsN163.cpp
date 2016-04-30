@@ -141,11 +141,20 @@ bool CChannelHandlerN163::CreateInstHandler(inst_type_t Type)
 {
 	switch (Type) {
 	case INST_2A03: case INST_VRC6: case INST_S5B: case INST_FDS:
-		m_pInstHandler.reset(new CSeqInstHandler(this, 0x0F, Type == INST_S5B ? 0x40 : 0));
-		return true;
+		switch (m_iInstTypeCurrent) {
+		case INST_2A03: case INST_VRC6: case INST_S5B: case INST_FDS: break;
+		default:
+			m_pInstHandler.reset(new CSeqInstHandler(this, 0x0F, Type == INST_S5B ? 0x40 : 0));
+			return true;
+		}
+		break;
 	case INST_N163:
-		m_pInstHandler.reset(new CSeqInstHandlerN163(this, 0x0F, 0));
-		return true;
+		switch (m_iInstTypeCurrent) {
+		case INST_N163: break;
+		default:
+			m_pInstHandler.reset(new CSeqInstHandlerN163(this, 0x0F, 0));
+			return true;
+		}
 	}
 	return false;
 }

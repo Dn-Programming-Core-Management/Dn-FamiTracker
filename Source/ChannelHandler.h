@@ -155,6 +155,7 @@ protected:
 	*/
 	virtual bool	HandleEffect(effect_t EffNum, unsigned char EffParam);		// // // not pure virtual either
 	/*! \brief Creates an instrument handler of an appropriate type.
+		\param Type The new instrument type.
 		\return Whether an instrument handler is created.
 	*/
 	virtual bool	CreateInstHandler(inst_type_t Type);		// // //
