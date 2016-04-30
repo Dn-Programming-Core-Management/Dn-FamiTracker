@@ -115,6 +115,7 @@ const bool CCompiler::LAST_BANK_FIXED			= true;		// Fix for TNS carts
 // Flag byte flags
 const int CCompiler::FLAG_BANKSWITCHED	= 1 << 0;
 const int CCompiler::FLAG_VIBRATO		= 1 << 1;
+const int CCompiler::FLAG_LINEARPITCH	= 1 << 2;		// // //
 
 CCompiler *CCompiler::pCompiler = NULL;
 
@@ -1539,7 +1540,9 @@ void CCompiler::CreateMainHeader()
 		DividerPAL = TicksPerSec * 60;
 	}
 
-	unsigned char Flags = ((m_pDocument->GetVibratoStyle() == VIBRATO_OLD) ? FLAG_VIBRATO : 0);	// bankswitch flag is set later
+	unsigned char Flags = 0; // bankswitch flag is set later
+	if (m_pDocument->GetVibratoStyle() == VIBRATO_OLD) Flags |= FLAG_VIBRATO;
+	if (m_pDocument->GetLinearPitch()) Flags |= FLAG_LINEARPITCH;		// // //
 
 	// Write header
 
