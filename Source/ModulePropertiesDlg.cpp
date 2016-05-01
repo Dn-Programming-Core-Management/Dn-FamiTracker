@@ -156,7 +156,7 @@ void CModulePropertiesDlg::OnBnClickedOk()
 		str = "You are going to remove channels from the following expansion chips:\n" + str;
 		str += "\nDo you want to proceed? There is no undo for this action.";
 		if (Gone)
-			if (AfxMessageBox(str, MB_YESNO | MB_ICONEXCLAMATION) == IDNO)
+			if (AfxMessageBox(str, MB_YESNO | MB_ICONEXCLAMATION | MB_DEFBUTTON2) == IDNO)
 				return;
 		m_pDocument->SetNamcoChannels(m_iN163Channels, true);
 		m_pDocument->SelectExpansionChip(m_iExpansions, true);
