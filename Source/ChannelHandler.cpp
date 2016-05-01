@@ -529,18 +529,20 @@ void CChannelHandler::SetupSlide()		// // //
 	switch (m_iEffect) {
 	case EF_PORTAMENTO:
 		m_iPortaSpeed = m_iEffectParam;
+		if (m_bGate)		// // //
+			m_iPortaTo = TriggerNote(m_iNote);
 		break;
 	case EF_SLIDE_UP:
 		m_iNote = m_iNote + (m_iEffectParam & 0xF);
 		m_iPortaSpeed = GET_SLIDE_SPEED(m_iEffectParam);
+		m_iPortaTo = TriggerNote(m_iNote);
 		break;
 	case EF_SLIDE_DOWN:
 		m_iNote = m_iNote - (m_iEffectParam & 0xF);
 		m_iPortaSpeed = GET_SLIDE_SPEED(m_iEffectParam);
+		m_iPortaTo = TriggerNote(m_iNote);
 		break;
 	}
-
-	m_iPortaTo = TriggerNote(m_iNote);
 }
 
 bool CChannelHandler::HandleEffect(effect_t EffCmd, unsigned char EffParam)
