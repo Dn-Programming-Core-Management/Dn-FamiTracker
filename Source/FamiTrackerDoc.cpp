@@ -2433,8 +2433,6 @@ bool CFamiTrackerDoc::WriteBlock_Bookmarks(CDocumentFile *pDocFile, const int Ve
 
 void CFamiTrackerDoc::ReadBlock_ParamsExtra(CDocumentFile *pDocFile, const int Version)
 {
-	int Count = pDocFile->GetBlockInt();
-
 	m_bLinearPitch = pDocFile->GetBlockInt() != 0;
 }
 

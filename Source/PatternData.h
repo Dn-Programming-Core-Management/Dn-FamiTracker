@@ -33,9 +33,9 @@ struct stHighlight {
 };
 
 // // // moved from FamiTrackerDoc.h
-const unsigned int DEFAULT_TEMPO_NTSC		 = 150;
-const unsigned int DEFAULT_TEMPO_PAL		 = 125;
-const unsigned int DEFAULT_SPEED			 = 6;
+const unsigned int DEFAULT_TEMPO_NTSC = 150;
+const unsigned int DEFAULT_TEMPO_PAL  = 125;
+const unsigned int DEFAULT_SPEED      = 6;
 
 // TODO rename to CTrack perhaps?
 

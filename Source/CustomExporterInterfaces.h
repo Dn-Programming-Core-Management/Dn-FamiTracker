@@ -22,7 +22,7 @@
 
 
 #include "FamiTrackerTypes.h"
-#include "PatternData.h"
+#include "PatternNote.h"		// // //
 
 /*
 ** This class is a pure virtual interface to CSequence, which can be used by custom exporters
