@@ -3998,6 +3998,7 @@ int CFamiTrackerDoc::GetChannelCount() const
 
 int CFamiTrackerDoc::GetChannelPosition(int Channel, unsigned char Chip)		// // //
 {
+	// TODO: use information from the current channel map instead
 	unsigned int pos = Channel;
 	if (pos == CHANID_MMC5_VOICE) return -1;
 

@@ -149,7 +149,6 @@ public:
 	int				GetChannelType(int Channel) const;
 	int				GetChipType(int Channel) const;
 	int				GetChannelCount() const;
-	int				GetChannelPosition(int Channel, unsigned char Chip);		// // //
 
 	// Synchronization
 	BOOL			LockDocument() const;
@@ -454,6 +453,7 @@ private:
 
 	void			SetupChannels(unsigned char Chip);
 	void			ApplyExpansionChip();
+	int				GetChannelPosition(int Channel, unsigned char Chip);		// // //
 
 	//
 	// Private variables

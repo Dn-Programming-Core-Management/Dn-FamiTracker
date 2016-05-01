@@ -1297,35 +1297,35 @@ bool CCompiler::CompileData()
 	const int Chip = m_pDocument->GetExpansionChip(); // 0CC: use m_iActualChip once cc65 is embedded
 	int Channel = 0;
 	for (int i = 0; i < 4; i++) {
-		int Channel = m_pDocument->GetChannelPosition(CHANID_SQUARE1 + i, Chip);
+		int Channel = m_pDocument->GetChannelIndex(CHANID_SQUARE1 + i);
 		m_vChanOrder.push_back(Channel);
 	}
 	if (Chip & SNDCHIP_MMC5) for (int i = 0; i < 2; i++) {
-		int Channel = m_pDocument->GetChannelPosition(CHANID_MMC5_SQUARE1 + i, Chip);
+		int Channel = m_pDocument->GetChannelIndex(CHANID_MMC5_SQUARE1 + i);
 		m_vChanOrder.push_back(Channel);
 	}
 	if (Chip & SNDCHIP_VRC6) for (int i = 0; i < 3; i++) {
-		int Channel = m_pDocument->GetChannelPosition(CHANID_VRC6_PULSE1 + i, Chip);
+		int Channel = m_pDocument->GetChannelIndex(CHANID_VRC6_PULSE1 + i);
 		m_vChanOrder.push_back(Channel);
 	}
 	if (Chip & SNDCHIP_N163) {
 		int lim = m_iActualNamcoChannels;
 		if (Chip & ~SNDCHIP_N163) lim = 8;
 		for (int i = 0; i < lim; i++) { // 0CC: use m_iActualNamcoChannels once cc65 is embedded
-			int Channel = m_pDocument->GetChannelPosition(CHANID_N163_CH1 + i, Chip);
+			int Channel = m_pDocument->GetChannelIndex(CHANID_N163_CH1 + i);
 			m_vChanOrder.push_back(Channel);
 		}
 	}
 	if (Chip & SNDCHIP_FDS) {
-		int Channel = m_pDocument->GetChannelPosition(CHANID_FDS, Chip);
+		int Channel = m_pDocument->GetChannelIndex(CHANID_FDS);
 		m_vChanOrder.push_back(Channel);
 	}
 	if (Chip & SNDCHIP_S5B) for (int i = 0; i < 3; i++) {
-		int Channel = m_pDocument->GetChannelPosition(CHANID_S5B_CH1 + i, Chip);
+		int Channel = m_pDocument->GetChannelIndex(CHANID_S5B_CH1 + i);
 		m_vChanOrder.push_back(Channel);
 	}
 	if (Chip & SNDCHIP_VRC7) for (int i = 0; i < 6; i++) {
-		int Channel = m_pDocument->GetChannelPosition(CHANID_VRC7_CH1 + i, Chip);
+		int Channel = m_pDocument->GetChannelIndex(CHANID_VRC7_CH1 + i);
 		m_vChanOrder.push_back(Channel);
 	}
 	m_vChanOrder.push_back(CHANID_DPCM);
