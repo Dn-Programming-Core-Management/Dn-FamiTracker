@@ -145,30 +145,19 @@ void CChannelHandlerVRC7::HandleRelease()
 
 void CChannelHandlerVRC7::HandleNote(int Note, int Octave)
 {
-	int OldOctave = m_iOctave;
-
 	// Portamento fix
 	if (m_iCommand == CMD_NOTE_HALT)
 		m_iPeriod = 0;
 
 	// Trigger note
-	m_iNote	= CChannelHandler::RunNote(Octave, Note); // m_iPeriod altered
+	m_iNote	= RunNote(Octave, Note); // m_iPeriod altered
 	m_bHold	= true;
 
 	if ((m_iEffect != EF_PORTAMENTO || m_iPortaSpeed == 0) || m_iCommand == CMD_NOTE_HALT)
 		m_iCommand = CMD_NOTE_TRIGGER;
 
-	if (m_iPortaSpeed > 0 && m_iEffect == EF_PORTAMENTO && m_iCommand != CMD_NOTE_HALT) {
-		// Set current frequency to the one with highest octave
-		if (m_iOctave > OldOctave) {
-			m_iPeriod >>= (m_iOctave - OldOctave);
-		}
-		else if (OldOctave > m_iOctave) {
-			// Do nothing
-			m_iPortaTo >>= (OldOctave - m_iOctave);
-			m_iOctave = OldOctave;
-		}
-	}
+	if (m_iPortaSpeed > 0 && m_iEffect == EF_PORTAMENTO && m_iCommand != CMD_NOTE_HALT)
+		CorrectOctave();
 }
 
 bool CChannelHandlerVRC7::CreateInstHandler(inst_type_t Type)
@@ -184,22 +173,30 @@ bool CChannelHandlerVRC7::CreateInstHandler(inst_type_t Type)
 
 void CChannelHandlerVRC7::SetupSlide()		// // //
 {
-	int OldOctave = m_iOctave;
-
 	CChannelHandler::SetupSlide();		// // //
-
-	if (m_iOctave > OldOctave) {
-		m_iPeriod >>= (m_iOctave - OldOctave);
-	}
-	else if (m_iOctave < OldOctave) {
-		m_iPortaTo >>= (OldOctave - m_iOctave);
-		m_iOctave = OldOctave;
-	}
+	
+	CorrectOctave();
 }
 
-void CChannelHandlerVRC7::ResetChannel()
+void CChannelHandlerVRC7::CorrectOctave()		// // //
 {
-	CChannelHandler::ResetChannel();
+	// Set current frequency to the one with highest octave
+	if (m_bLinearPitch)
+		return;
+	if (m_iOldOctave == -1) {
+		if (m_bGate)
+			m_iOldOctave = m_iOctave;
+		return;
+	}
+	if (m_iOctave > m_iOldOctave) {
+		m_iPeriod >>= m_iOctave - m_iOldOctave;
+		m_iOldOctave = m_iOctave;
+	}
+	else if (m_iOldOctave > m_iOctave) {
+		// Do nothing
+		m_iPortaTo >>= (m_iOldOctave - m_iOctave);
+		m_iOctave = m_iOldOctave;
+	}
 }
 
 int CChannelHandlerVRC7::TriggerNote(int Note)
@@ -306,10 +303,10 @@ void CVRC7Channel::ClearRegisters()
 	RegWrite(0x30 + m_iChannel, 0x0F);		// // //
 
 	m_iNote = 0;
+	m_iOctave = m_iOldOctave = -1;		// // //
 	m_iEffect = EF_NONE;
 
 	m_iCommand = CMD_NOTE_HALT;
-
 }
 
 void CVRC7Channel::RegWrite(unsigned char Reg, unsigned char Value)
