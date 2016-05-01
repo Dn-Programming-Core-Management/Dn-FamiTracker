@@ -352,10 +352,16 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 						if (EffParam == 0)
 							WriteData(Command(CMD_EFF_CLEAR));
 						else {
-							if (ChipID == SNDCHIP_FDS || ChipID == SNDCHIP_VRC7 || ChipID == SNDCHIP_N163)
-								WriteData(Command(CMD_EFF_PORTADOWN));	// Pitch is inverted for these chips
-							else
-								WriteData(Command(CMD_EFF_PORTAUP));
+							switch (ChipID) {		// // //
+							case SNDCHIP_NONE: case SNDCHIP_VRC6: case SNDCHIP_MMC5: case SNDCHIP_S5B:
+								if (!m_pDocument->GetLinearPitch()) {
+									WriteData(Command(CMD_EFF_PORTAUP));
+									break;
+								}
+							default:
+								WriteData(Command(CMD_EFF_PORTADOWN));
+								break;
+							}
 							WriteData(EffParam);
 						}
 					}
@@ -365,10 +371,16 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 						if (EffParam == 0)
 							WriteData(Command(CMD_EFF_CLEAR));
 						else {
-							if (ChipID == SNDCHIP_FDS || ChipID == SNDCHIP_VRC7 || ChipID == SNDCHIP_N163)
+							switch (ChipID) {		// // //
+							case SNDCHIP_NONE: case SNDCHIP_VRC6: case SNDCHIP_MMC5: case SNDCHIP_S5B:
+								if (!m_pDocument->GetLinearPitch()) {
+									WriteData(Command(CMD_EFF_PORTADOWN));
+									break;
+								}
+							default:
 								WriteData(Command(CMD_EFF_PORTAUP));
-							else
-								WriteData(Command(CMD_EFF_PORTADOWN));
+								break;
+							}
 							WriteData(EffParam);
 						}
 					}
