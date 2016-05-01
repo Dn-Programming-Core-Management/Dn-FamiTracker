@@ -755,6 +755,8 @@ void CFindDlg::OnBnClickedButtonReplace()
 		return;
 
 	if (IsDlgButtonChecked(IDC_CHECK_REPLACE_ALL)) {
+		if (AfxMessageBox(IDS_REPLACE_ALL, MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2) == IDNO)
+			return;
 		unsigned int Count = 0;
 		CString str;
 		

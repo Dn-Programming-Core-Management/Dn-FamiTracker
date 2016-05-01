@@ -154,9 +154,9 @@ void CModulePropertiesDlg::OnBnClickedOk()
 			}
 		}
 		str = "You are going to remove channels from the following expansion chips:\n" + str;
-		str += "\nDo you want to proceed? There is no undo for this action.";
+		str += "\nDo you want to proceed? There is no undo for this command.";
 		if (Gone)
-			if (AfxMessageBox(str, MB_YESNO | MB_ICONEXCLAMATION | MB_DEFBUTTON2) == IDNO)
+			if (AfxMessageBox(str, MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2) == IDNO)
 				return;
 		m_pDocument->SetNamcoChannels(m_iN163Channels, true);
 		m_pDocument->SelectExpansionChip(m_iExpansions, true);
@@ -208,7 +208,7 @@ void CModulePropertiesDlg::OnBnClickedSongRemove()
 		return; // Single track
 
 	// Display warning first
-	if (AfxMessageBox(IDS_SONG_DELETE, MB_OKCANCEL | MB_ICONWARNING) == IDCANCEL)
+	if (AfxMessageBox(IDS_SONG_DELETE, MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2) == IDNO)
 		return;
 
 	pSongList->DeleteItem(m_iSelectedSong);

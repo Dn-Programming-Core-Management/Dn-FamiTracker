@@ -2922,7 +2922,7 @@ void CMainFrame::OnEditClearPatterns()
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
 	int Track = GetSelectedTrack();
 
-	if (AfxMessageBox(IDS_CLEARPATTERN, MB_OKCANCEL | MB_ICONINFORMATION | MB_DEFBUTTON2) == IDCANCEL)
+	if (AfxMessageBox(IDS_CLEARPATTERN, MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2) == IDNO)
 		return;
 
 	pDoc->ClearPatterns(Track);
@@ -2937,7 +2937,7 @@ void CMainFrame::OnEditRemoveUnusedInstruments()
 
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
 
-	if (AfxMessageBox(IDS_REMOVE_INSTRUMENTS, MB_YESNO | MB_ICONINFORMATION | MB_DEFBUTTON2) == IDNO)
+	if (AfxMessageBox(IDS_REMOVE_INSTRUMENTS, MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2) == IDNO)
 		return;
 
 	// Current instrument might disappear
@@ -2955,7 +2955,7 @@ void CMainFrame::OnEditRemoveUnusedPatterns()
 
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
 
-	if (AfxMessageBox(IDS_REMOVE_PATTERNS, MB_YESNO | MB_ICONINFORMATION | MB_DEFBUTTON2) == IDNO)
+	if (AfxMessageBox(IDS_REMOVE_PATTERNS, MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2) == IDNO)
 		return;
 
 	pDoc->RemoveUnusedPatterns();
@@ -3224,7 +3224,7 @@ void CMainFrame::OnEasterEggKraid4()
 void CMainFrame::OnEasterEggKraid5()
 {
 	if (m_iKraidCounter == 4) {
-		if (AfxMessageBox(IDS_KRAID, MB_YESNO | MB_ICONINFORMATION | MB_DEFBUTTON2) == IDNO) {
+		if (AfxMessageBox(IDS_KRAID, MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2) == IDNO) {
 			m_iKraidCounter = 0;
 			return;}
 		CFamiTrackerDoc *pDoc = (CFamiTrackerDoc*)GetActiveDocument();
@@ -3272,7 +3272,7 @@ void CMainFrame::OnEditRemoveUnusedSamples()
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
 
-	if (AfxMessageBox(IDS_REMOVE_SAMPLES, MB_YESNO | MB_ICONINFORMATION | MB_DEFBUTTON2) == IDNO)
+	if (AfxMessageBox(IDS_REMOVE_SAMPLES, MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2) == IDNO)
 		return;
 	
 	CloseInstrumentEditor();
@@ -3285,7 +3285,7 @@ void CMainFrame::OnEditPopulateUniquePatterns()		// // //
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
 
-	if (AfxMessageBox(IDS_POPULATE_PATTERNS, MB_YESNO | MB_ICONINFORMATION | MB_DEFBUTTON2) == IDNO)
+	if (AfxMessageBox(IDS_POPULATE_PATTERNS, MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2) == IDNO)
 		return;
 	
 	pDoc->PopulateUniquePatterns(m_iTrack);

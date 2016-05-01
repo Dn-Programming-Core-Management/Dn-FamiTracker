@@ -2105,12 +2105,12 @@ BEGIN
     IDS_PASTE_NONTERMINAL   "Warning: Clip data may alter frame lengths during pasting. Do you want to apply the paste operation?"
     IDS_DISABLE_SAVE        "Saving to external files is disabled in this build of 0CC-FamiTracker."
     IDS_BOOKMARK_EMPTY      "The current track does not contain any bookmarks."
-    IDS_POPULATE_PATTERNS   "Do you want to copy a unique pattern for all frames? There is no undo for this action."
+    IDS_POPULATE_PATTERNS   "Do you want to copy a unique pattern for all frames? There is no undo for this command."
     IDS_BOOKMARK_FORMAT     "Moved to bookmark %1. (Highlight: %2, %3)"
     IDS_DUMP_NOT_SUPPORTED  "This channel does not support logging output to create a new instrument."
     IDS_SEQUENCE_LIMIT      "You cannot add more instrument sequences"
     IDS_FIND_NONE           "Could not find the search query in the current search area."
-    IDS_REPLACE_ALL         "Do you want to replace all occurrences of the search query? There is no undo for this action."
+    IDS_REPLACE_ALL         "Do you want to replace all occurrences of the search query? There is no undo for this command."
     IDS_IMPORT_SEQUENCE_COUNT 
                             "Could not import all sequences, out of sequence slots!"
     ID_FIND_NEXT            "Find the next result of the search query\nFind Next"
@@ -2428,9 +2428,9 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_REMOVE_INSTRUMENTS  "Do you want to remove all unused instruments? There is no undo for this action."
-    IDS_REMOVE_PATTERNS     "Do you want to remove all unused patterns? There is no undo for this action."
-    IDS_SONG_DELETE         "Do you want to delete this song? There is no undo for this action."
+    IDS_REMOVE_INSTRUMENTS  "Do you want to remove all unused instruments? There is no undo for this command."
+    IDS_REMOVE_PATTERNS     "Do you want to remove all unused patterns? There is no undo for this command."
+    IDS_SONG_DELETE         "Do you want to delete this song? There is no undo for this command."
     IDS_SOUND_FAIL          "It appears the current sound settings aren't working, change settings and try again."
     IDS_UNDERRUN_MESSAGE    "Warning: Audio buffer underrun, increase the audio buffer size!"
     IDS_WELCOME_VER_FORMAT  "Welcome to 0CC-FamiTracker %1, press F1 for help"
@@ -2516,7 +2516,7 @@ BEGIN
     IDS_DPCM_IMPORT_SIZE_FORMAT "Converted size: %1 bytes"
     IDS_INSTRUMENT_FOLDER   "Choose a folder where you have instrument files"
     IDS_IMPORT_GROOVE_SLOTS "Could not import all grooves, out of groove slots!"
-    IDS_REMOVE_SAMPLES      "Do you want to remove all unused DPCM samples and DPCM assignments? There is no undo for this action."
+    IDS_REMOVE_SAMPLES      "Do you want to remove all unused DPCM samples and DPCM assignments? There is no undo for this command."
 END
 
 STRINGTABLE
