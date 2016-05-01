@@ -205,7 +205,7 @@ void CChannelHandler::ApplyChannelState(stChannelState *State)
 	m_iDefaultVolume = m_iVolume = (State->Volume == MAX_VOLUME) ? VOL_COLUMN_MAX : (State->Volume << VOL_COLUMN_SHIFT);
 	memcpy(m_iEchoBuffer, State->Echo, sizeof(int) * (ECHO_BUFFER_LENGTH + 1));
 	if (m_iInstrument != MAX_INSTRUMENTS)
-		HandleInstrument(m_iInstrument, true, true);
+		HandleInstrument(true, true);
 	if (State->Effect_LengthCounter >= 0)
 		HandleEffect(EF_VOLUME, State->Effect_LengthCounter);
 	for (unsigned int i = 0; i < EF_COUNT; i++)
@@ -389,9 +389,7 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 
 	bool NewInstrument = (m_iInstrument != LastInstrument) || (m_iInstrument == MAX_INSTRUMENTS) || m_bForceReload;
 
-	if (m_iInstrument == MAX_INSTRUMENTS) {
-		// No instrument selected, default to 0
-		m_iInstrument = 0;		// // //
+	if (m_iInstrument == MAX_INSTRUMENTS) {		// // // do nothing
 		// m_iInstrument = m_pSoundGen->GetDefaultInstrument();
 	}
 	
@@ -401,7 +399,7 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	}
 
 	if (NewInstrument || Trigger) {
-		if (!HandleInstrument(m_iInstrument, Trigger, NewInstrument)) {
+		if (m_iInstrument != MAX_INSTRUMENTS && !HandleInstrument(Trigger, NewInstrument)) {
 			m_bForceReload = false;		// // //
 			return;
 		}
@@ -430,7 +428,7 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 		SetupSlide();
 }
 
-bool CChannelHandler::HandleInstrument(int Instrument, bool Trigger, bool NewInstrument)		// // //
+bool CChannelHandler::HandleInstrument(bool Trigger, bool NewInstrument)		// // //
 {
 	auto pDoc = m_pSoundGen->GetDocumentInterface();
 	if (!pDoc) return false;

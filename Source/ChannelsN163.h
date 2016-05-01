@@ -41,7 +41,7 @@ public:
 
 protected:
 	virtual bool HandleEffect(effect_t EffNum, unsigned char EffParam);		// // //
-	virtual bool HandleInstrument(int Instrument, bool Trigger, bool NewInstrument);
+	virtual bool HandleInstrument(bool Trigger, bool NewInstrument);		// // //
 	virtual void HandleEmptyNote();
 	virtual void HandleCut();
 	virtual void HandleRelease();

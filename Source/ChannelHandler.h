@@ -136,15 +136,14 @@ protected:
 		\param EffColumns The number of used effect columns of the note data.
 	*/
 	virtual void	HandleNoteData(stChanNote *pNoteData, int EffColumns);
-	/*! \brief Processes an instrument.
+	/*! \brief Processes the current instrument.
 		\details This method sets up the instrument handler, creating a new one if necessary, then
 		forwards calls to the handler if it exists.
-		\param Instrument The instrument index.
 		\param Trigger Whether the instrument handler needs to trigger the current instrument.
 		\param NewInstrument Whether the instrument handler needs to load an instrument.
 		\return Whether the instrument with the given index is loaded to the instrument handler.
 	*/
-	virtual bool	HandleInstrument(int Instrument, bool Trigger, bool NewInstrument);		// // // not pure virtual
+	virtual bool	HandleInstrument(bool Trigger, bool NewInstrument);		// // // not pure virtual
 	/*! \brief Processes an effect command.
 		\details Implementations of this method in subclasses should use the return value of the
 		superclass method to determine whether an effect requires handling. Global effects are not

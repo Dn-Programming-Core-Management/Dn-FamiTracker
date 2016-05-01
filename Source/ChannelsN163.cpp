@@ -95,9 +95,9 @@ bool CChannelHandlerN163::HandleEffect(effect_t EffNum, unsigned char EffParam)
 	return true;
 }
 
-bool CChannelHandlerN163::HandleInstrument(int Instrument, bool Trigger, bool NewInstrument)
+bool CChannelHandlerN163::HandleInstrument(bool Trigger, bool NewInstrument)
 {
-	if (!CChannelHandler::HandleInstrument(Instrument, Trigger, NewInstrument))		// // //
+	if (!CChannelHandler::HandleInstrument(Trigger, NewInstrument))		// // //
 		return false;
 
 	if (!m_bLoadWave && NewInstrument)
