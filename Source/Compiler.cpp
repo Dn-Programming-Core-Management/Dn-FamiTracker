@@ -791,9 +791,12 @@ char* CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 			} break;
 		case SNDCHIP_VRC7:
 			for (int j = 0; j < NOTE_RANGE; j++) {
-				pData[pDriver->freq_table_reloc[i + 1] + j             ] = pSoundGen->ReadPeriodTable(j, Chip) * 4 & 0xFF;
-				pData[pDriver->freq_table_reloc[i + 1] + j + NOTE_RANGE] = pSoundGen->ReadPeriodTable(j, Chip) * 4 >> 8;
-			} break;
+				pData[pDriver->freq_table_reloc[i + 1] + j                 ] = pSoundGen->ReadPeriodTable(j, Chip) * 4 & 0xFF;
+				pData[pDriver->freq_table_reloc[i + 1] + j + NOTE_RANGE + 1] = pSoundGen->ReadPeriodTable(j, Chip) * 4 >> 8;
+			}
+			pData[pDriver->freq_table_reloc[i + 1] + NOTE_RANGE        ] = pSoundGen->ReadPeriodTable(0, Chip) * 8 & 0xFF;
+			pData[pDriver->freq_table_reloc[i + 1] + NOTE_RANGE * 2 + 1] = pSoundGen->ReadPeriodTable(0, Chip) * 8 >> 8;
+			break;
 		case SNDCHIP_FDS:
 			for (int j = 0; j < NOTE_COUNT; j++) {
 				pData[pDriver->freq_table_reloc[i + 1] + 2 * j    ] = pSoundGen->ReadPeriodTable(j, Chip) & 0xFF;
