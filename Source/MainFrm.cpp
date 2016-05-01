@@ -2184,7 +2184,7 @@ void CMainFrame::OnModuleLinearPitch()		// // //
 		AfxMessageBox(_T(
 			"Because linear pitch mode is a planned feature in the official build, "
 			"changes to this setting might not be reflected when the current module is loaded from "
-			"a future official release."
+			"a future official release that implements this feature."
 		), MB_OK | MB_ICONINFORMATION);
 	}
 }

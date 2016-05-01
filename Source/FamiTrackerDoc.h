@@ -376,6 +376,7 @@ private:
 	bool			WriteBlock_SequencesN163(CDocumentFile *pDocFile, const int Version) const;
 	bool			WriteBlock_SequencesS5B(CDocumentFile *pDocFile, const int Version) const;
 	// // //
+	bool			WriteBlock_ParamsExtra(CDocumentFile *pDocFile, const int Version) const;
 	bool			WriteBlock_DetuneTables(CDocumentFile *pDocFile, const int Version) const;
 	bool			WriteBlock_Grooves(CDocumentFile *pDocFile, const int Version) const;
 	bool			WriteBlock_Bookmarks(CDocumentFile *pDocFile, const int Version) const;
@@ -394,6 +395,7 @@ private:
 	void			ReadBlock_SequencesN163(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_SequencesS5B(CDocumentFile *pDocFile, const int Version);
 	// // //
+	void			ReadBlock_ParamsExtra(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_DetuneTables(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_Grooves(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_Bookmarks(CDocumentFile *pDocFile, const int Version);
