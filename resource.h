@@ -310,6 +310,7 @@
 #define IDC_EXPANSION                   1135
 #define IDC_VIBRATO                     1136
 #define IDC_CLOSE                       1137
+#define IDC_COMBO_LINEARPITCH           1137
 #define IDC_EXPORT                      1142
 #define IDC_OUTPUT                      1143
 #define IDC_ADD                         1146
@@ -739,7 +740,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        340
+#define _APS_NEXT_RESOURCE_VALUE        341
 #define _APS_NEXT_COMMAND_VALUE         33190
 #define _APS_NEXT_CONTROL_VALUE         1439
 #define _APS_NEXT_SYMED_VALUE           179

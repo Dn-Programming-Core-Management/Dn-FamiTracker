@@ -69,6 +69,7 @@ BEGIN_MESSAGE_MAP(CModulePropertiesDlg, CDialog)
 	ON_BN_CLICKED(IDC_EXPANSION_MMC5, OnBnClickedExpansionMMC5)
 	ON_BN_CLICKED(IDC_EXPANSION_S5B, OnBnClickedExpansionS5B)
 	ON_BN_CLICKED(IDC_EXPANSION_N163, OnBnClickedExpansionN163)
+	ON_CBN_SELCHANGE(IDC_COMBO_LINEARPITCH, OnCbnSelchangeComboLinearpitch)
 END_MESSAGE_MAP()
 
 
@@ -100,6 +101,8 @@ BOOL CModulePropertiesDlg::OnInitDialog()
 	// Vibrato 
 	CComboBox *pVibratoBox = static_cast<CComboBox*>(GetDlgItem(IDC_VIBRATO));
 	pVibratoBox->SetCurSel((m_pDocument->GetVibratoStyle() == VIBRATO_NEW) ? 0 : 1);
+	CComboBox *pPitchBox = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_LINEARPITCH));		// // //
+	pPitchBox->SetCurSel(m_pDocument->GetLinearPitch() ? 1 : 0);
 
 	// Namco channel count
 	CSliderCtrl *pChanSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_CHANNELS));
@@ -166,6 +169,8 @@ void CModulePropertiesDlg::OnBnClickedOk()
 	// Vibrato 
 	CComboBox *pVibratoBox = static_cast<CComboBox*>(GetDlgItem(IDC_VIBRATO));
 	m_pDocument->SetVibratoStyle((pVibratoBox->GetCurSel() == 0) ? VIBRATO_NEW : VIBRATO_OLD);
+	CComboBox *pPitchBox = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_LINEARPITCH));		// // //
+	m_pDocument->SetLinearPitch(pPitchBox->GetCurSel() == 1);
 
 	if (pMainFrame->GetSelectedTrack() != m_iSelectedSong)
 		pMainFrame->SelectTrack(m_iSelectedSong);
@@ -515,4 +520,17 @@ void CModulePropertiesDlg::OnBnClickedExpansionN163()
 		channelsStr.Append(_T(" N/A"));
 	}
 	SetDlgItemText(IDC_CHANNELS_NR, channelsStr);
+}
+
+void CModulePropertiesDlg::OnCbnSelchangeComboLinearpitch()
+{
+	static bool First = true;
+	if (First) {
+		First = false;
+		AfxMessageBox(_T(
+			"Because linear pitch mode is a planned feature in the official build, "
+			"changes to this setting might not be reflected when the current module is loaded from "
+			"a future official release that implements this feature."
+		), MB_OK | MB_ICONINFORMATION);
+	}
 }

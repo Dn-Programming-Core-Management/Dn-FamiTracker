@@ -72,4 +72,5 @@ public:
 	afx_msg void OnBnClickedExpansionMMC5();
 	afx_msg void OnBnClickedExpansionS5B();
 	afx_msg void OnBnClickedExpansionN163();
+	afx_msg void OnCbnSelchangeComboLinearpitch();
 };

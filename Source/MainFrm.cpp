@@ -324,7 +324,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_MODULE_GROOVE, OnModuleGrooveSettings)
 	ON_COMMAND(ID_MODULE_BOOKMARK, OnModuleBookmarkSettings)
 	ON_COMMAND(ID_MODULE_ESTIMATESONGLENGTH, OnModuleEstimateSongLength)
-	ON_COMMAND(ID_MODULE_LINEARPITCH, OnModuleLinearPitch)
 	ON_COMMAND(ID_TOGGLE_MULTIPLEXER, OnToggleMultiplexer)
 	ON_UPDATE_COMMAND_UI(IDC_FOLLOW_TOGGLE, OnUpdateToggleFollow)
 	ON_UPDATE_COMMAND_UI(IDC_COMPACT_TOGGLE, OnUpdateToggleCompact)
@@ -338,7 +337,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_REVERSE, OnUpdateSelectionEnabled)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_REPLACEINSTRUMENT, OnUpdateSelectionEnabled)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_STRETCHPATTERNS, OnUpdateSelectionEnabled)
-	ON_UPDATE_COMMAND_UI(ID_MODULE_LINEARPITCH, OnUpdateModuleLinearPitch)
 	ON_COMMAND(ID_KRAID1, OnEasterEggKraid1)		// Easter Egg
 	ON_COMMAND(ID_KRAID2, OnEasterEggKraid2)
 	ON_COMMAND(ID_KRAID3, OnEasterEggKraid3)
@@ -2168,34 +2166,6 @@ void CMainFrame::OnModuleEstimateSongLength()		// // //
 			   static_cast<int>(Loop * Rate + .5));
 	str.Append(_T("Tick counts are subject to rounding errors!"));
 	AfxMessageBox(str);
-}
-
-void CMainFrame::OnModuleLinearPitch()		// // //
-{
-	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
-	ASSERT_VALID(pDoc);
-
-	pDoc->SetLinearPitch(!pDoc->GetLinearPitch());
-	theApp.GetSoundGenerator()->DocumentPropertiesChanged(pDoc);
-
-	static bool First = true;
-	if (First) {
-		First = false;
-		AfxMessageBox(_T(
-			"Because linear pitch mode is a planned feature in the official build, "
-			"changes to this setting might not be reflected when the current module is loaded from "
-			"a future official release that implements this feature."
-		), MB_OK | MB_ICONINFORMATION);
-	}
-}
-
-void CMainFrame::OnUpdateModuleLinearPitch(CCmdUI *pCmdUI)		// // //
-{
-	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
-	ASSERT_VALID(pDoc);
-
-//	pCmdUI->Enable(!theApp.IsPlaying());
-	pCmdUI->SetCheck(pDoc->GetLinearPitch() ? BST_CHECKED : BST_UNCHECKED);
 }
 
 void CMainFrame::UpdateTrackBox()
