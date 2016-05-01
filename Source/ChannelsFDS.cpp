@@ -276,13 +276,13 @@ CString CChannelHandlerFDS::GetCustomEffectString() const		// // //
 
 void CChannelHandlerFDS::SetFMSpeed(int Speed)		// // //
 {
-	ASSERT(Speed >= 0 && Speed <= 0x3F);
+	ASSERT(Speed >= 0 && Speed <= 0xFFF);
 	m_iModulationSpeed = Speed;
 }
 
 void CChannelHandlerFDS::SetFMDepth(int Depth)		// // //
 {
-	ASSERT(Depth >= 0 && Depth <= 0xFFF);
+	ASSERT(Depth >= 0 && Depth <= 0x3F);
 	m_iModulationDepth = Depth;
 }
 
