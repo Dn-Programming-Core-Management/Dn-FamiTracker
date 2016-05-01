@@ -233,6 +233,7 @@ BEGIN
             MENUITEM "&Default",                    ID_SPEED_DEFAULT
             MENUITEM "&Custom...",                  ID_SPEED_CUSTOM
         END
+        MENUITEM "&Linear Pitch Mode",          ID_MODULE_LINEARPITCH
         MENUITEM SEPARATOR
         MENUITEM "&Detune Settings...",         ID_MODULE_DETUNE
         MENUITEM "&Groove Settings",            ID_MODULE_GROOVE
@@ -2584,6 +2585,7 @@ STRINGTABLE
 BEGIN
     ID_TRACKER_TOGGLECHIP   "Mute / unmute selected sound chip\nToggle Chip"
     ID_TRACKER_SOLOCHIP     "Mute / unmute all but the selected sound chip\nSolo Chip"
+    ID_MODULE_LINEARPITCH   "Enable linear pitch bends\nLinear Pitch Mode"
 END
 
 #endif    // English (United States) resources
