@@ -149,6 +149,7 @@
 #define IDS_TYPE_INST_NUM               192
 #define IDS_INVALID_INST_NUM            193
 #define IDD_CONFIG_MIDI                 194
+#define IDS_EXPORT_SAMPLES_FILE         194
 #define IDR_PATTERN_POPUP               198
 #define IDD_CONFIG_SOUND                201
 #define IDS_FILE_LOAD_ERROR             204

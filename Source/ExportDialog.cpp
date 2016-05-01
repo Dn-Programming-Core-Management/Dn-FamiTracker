@@ -309,23 +309,39 @@ void CExportDialog::CreateBIN()
 	CString MusicFilter = LoadDefaultFilter(RAW_FILTER[0], RAW_FILTER[1]);
 	CString DPCMFilter = LoadDefaultFilter(DPCMS_FILTER[0], DPCMS_FILTER[1]);
 
-	CFileDialog FileDialogMusic(FALSE, RAW_FILTER[1], _T("music.bin"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, MusicFilter);
-	CFileDialog FileDialogSamples(FALSE, DPCMS_FILTER[1], _T("samples.bin"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, DPCMFilter);
+	const CString DEFAULT_MUSIC_NAME = _T("music.bin");		// // //
+	const CString DEFAULT_SAMPLE_NAME = _T("samples.bin");
+
+	CFileDialog FileDialogMusic(FALSE, RAW_FILTER[1], DEFAULT_MUSIC_NAME, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, MusicFilter);
+	CFileDialog FileDialogSamples(FALSE, DPCMS_FILTER[1], DEFAULT_SAMPLE_NAME, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, DPCMFilter);
 
 	FileDialogMusic.m_pOFN->lpstrInitialDir = theApp.GetSettings()->GetPath(PATH_NSF);
 
 	if (FileDialogMusic.DoModal() == IDCANCEL)
 		return;
 
+	CString SampleDir = FileDialogMusic.GetPathName();		// // //
 	if (pDoc->GetSampleCount() > 0) {
 		if (FileDialogSamples.DoModal() == IDCANCEL)
 			return;
+		SampleDir = FileDialogSamples.GetPathName();
+	}
+	else {
+		int Pos = SampleDir.ReverseFind(_T('\\'));
+		ASSERT(Pos != -1);
+		SampleDir = SampleDir.Left(Pos + 1) + DEFAULT_SAMPLE_NAME;
+		if (PathFileExists(SampleDir)) {
+			CString msg;
+			AfxFormatString1(msg, IDS_EXPORT_SAMPLES_FILE, DEFAULT_SAMPLE_NAME);
+			if (AfxMessageBox(msg, MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2) == IDNO)
+				return;
+		}
 	}
 
 	// Display wait cursor
 	CWaitCursor wait;
 
-	Compiler.ExportBIN(FileDialogMusic.GetPathName(), FileDialogSamples.GetPathName());
+	Compiler.ExportBIN(FileDialogMusic.GetPathName(), SampleDir);
 
 	theApp.GetSettings()->SetPath(FileDialogMusic.GetPathName(), PATH_NSF);
 }
