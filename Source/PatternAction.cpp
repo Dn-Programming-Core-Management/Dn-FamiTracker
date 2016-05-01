@@ -43,7 +43,7 @@ CPatternAction::CPatternAction(int iAction) :
 	m_pClipData(NULL), 
 	m_pUndoClipData(NULL),
 	m_pAuxiliaryClipData(NULL),		// // //
-	m_iStretchMap(std::vector<int>())		// // //
+	m_iStretchMap()		// // //
 {
 }
 
@@ -57,6 +57,13 @@ CPatternAction::~CPatternAction()
 void CPatternAction::SetNote(stChanNote &Note)
 {
 	m_NewNote = Note;
+}
+
+void CPatternAction::SetReplacePosition(int Frame, int Channel, int Row)		// // //
+{
+	m_iReplaceFrame = Frame;
+	m_iReplaceChannel = Channel;
+	m_iReplaceRow = Row;
 }
 
 void CPatternAction::SetDelete(bool PullUp, bool Back)
@@ -808,6 +815,10 @@ bool CPatternAction::SaveState(CMainFrame *pMainFrm)
 			// Edit note
 			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow, &m_OldNote);
 			break;
+		case ACT_REPLACE_NOTE:		// // //
+			// Replace note
+			pDoc->GetNoteData(m_iUndoTrack, m_iReplaceFrame, m_iReplaceChannel, m_iReplaceRow, &m_OldNote);
+			break;
 		case ACT_DELETE_ROW:
 			// Delete row
 			if (m_bBack && m_iUndoRow == 0)
@@ -917,6 +928,9 @@ void CPatternAction::Undo(CMainFrame *pMainFrm)
 		case ACT_DECREASE:		// // //
 			pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow, &m_OldNote);
 			break;
+		case ACT_REPLACE_NOTE:		// // //
+			pDoc->SetNoteData(m_iUndoTrack, m_iReplaceFrame, m_iReplaceChannel, m_iReplaceRow, &m_OldNote);
+			break;
 		case ACT_DELETE_ROW:
 			if (m_bPullUp)
 				pDoc->InsertRow(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow - (m_bBack ? 1 : 0));
@@ -986,6 +1000,9 @@ void CPatternAction::Redo(CMainFrame *pMainFrm)
 	switch (m_iAction) {
 		case ACT_EDIT_NOTE:
 			pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow, &m_NewNote);
+			break;
+		case ACT_REPLACE_NOTE:		// // //
+			pDoc->SetNoteData(m_iUndoTrack, m_iReplaceFrame, m_iReplaceChannel, m_iReplaceRow, &m_NewNote);
 			break;
 		case ACT_DELETE_ROW:
 			pDoc->ClearRowField(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow - (m_bBack ? 1 : 0), m_iUndoColumn);

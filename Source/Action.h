@@ -33,7 +33,7 @@ class CMainFrame;		// // //
 class CAction
 {
 public:
-	CAction(int iAction);
+	CAction(int iAction = -1);		// // //
 	virtual ~CAction();
 
 	// Save the undo state and perform the action. This method may reject the action by returning false

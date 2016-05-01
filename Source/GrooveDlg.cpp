@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
+#include "FamiTrackerView.h"
 #include "MainFrm.h"
 #include "GrooveDlg.h"
 #include "PatternEditorTypes.h"

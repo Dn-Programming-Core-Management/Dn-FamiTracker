@@ -28,8 +28,10 @@
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
 #include "MainFrm.h"
-#include "PatternEditor.h"
 #include "FindDlg.h"
+#include "PatternEditor.h"
+#include "PatternAction.h"
+#include "CompoundAction.h"
 
 #define FIND_SINGLE_CHANNEL(x) ( ((x) & 0x01) == 0x01 )
 #define FIND_SINGLE_FRAME(x) ( ((x) & 0x02) == 0x02 )
@@ -644,7 +646,7 @@ bool CFindDlg::Find(bool ShowEnd)
 	m_bFound = false; return m_bFound;
 }
 
-bool CFindDlg::Replace(bool CanUndo)
+bool CFindDlg::Replace(CCompoundAction *pAction)
 {
 	m_pDocument = static_cast<CFamiTrackerDoc*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveDocument());
 	m_pView = static_cast<CFamiTrackerView*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveView());
@@ -708,8 +710,15 @@ bool CFindDlg::Replace(bool CanUndo)
 		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) Target.EffNumber[EffColumn] = EF_NONE;
 		if (Replace.Definite[WC_PARAM]) Target.EffParam[EffColumn] = Replace.Note.EffParam[0];
 		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) Target.EffParam[EffColumn] = 0;
-		if (CanUndo) m_pView->EditReplace(Target);
-		m_pDocument->SetNoteData(Track, m_iFrame, m_iChannel, m_iRow, &Target);
+		if (pAction) {
+			CPatternAction *pNoteAction = new CPatternAction {CPatternAction::ACT_REPLACE_NOTE};
+			pNoteAction->SetReplacePosition(m_iFrame, m_iChannel, m_iRow);
+			pNoteAction->SetNote(Target);
+			pAction->JoinAction(pNoteAction);
+		}
+		else
+			m_pView->EditReplace(Target);
+//		m_pDocument->SetNoteData(Track, m_iFrame, m_iChannel, m_iRow, &Target);
 		m_bFound = false;
 		return true;
 	}
@@ -769,11 +778,13 @@ void CFindDlg::OnBnClickedButtonReplace()
 		m_bSkipFirst = false;
 		m_bVisible = false;
 
-		Find();
+		CCompoundAction *pAction = new CCompoundAction { };
+
+		Find(false);
 		while (m_bFound) {
-			Replace();
+			Replace(pAction);
 			Count++;
-			Find();
+			Find(false);
 			if (IsDlgButtonChecked(IDC_CHECK_VERTICAL_SEARCH))
 				ZipPos = (m_iFrame << 16) + (m_iChannel << 8) + m_iRow;
 			else
@@ -782,16 +793,17 @@ void CFindDlg::OnBnClickedButtonReplace()
 			else PrevPos = ZipPos;
 		}
 
+		static_cast<CMainFrame*>(AfxGetMainWnd())->AddAction(pAction);
 		m_pDocument->UpdateAllViews(NULL, UPDATE_PATTERN);
-		static_cast<CMainFrame*>(AfxGetMainWnd())->ResetUndo();
+//		static_cast<CMainFrame*>(AfxGetMainWnd())->ResetUndo();
 
 		str.Format(_T("%d occurrence(s) replaced."), Count);
 		AfxMessageBox(str, MB_OK | MB_ICONINFORMATION);
 	}
 	else {
 		m_bVisible = true;
-		Replace(true);
-		Find();
+		Replace();
+		Find(false);
 	}
 }
 

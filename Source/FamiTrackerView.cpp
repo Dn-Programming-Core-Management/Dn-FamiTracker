@@ -3591,10 +3591,8 @@ void CFamiTrackerView::OnEditExpandPatterns()		// // //
 {
 	if (!m_bEditEnable) return;
 
-	std::vector<int> Map(2, 0);
-	Map[0] = 1;
 	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_STRETCH_PATTERN);
-	pAction->SetStretchMap(Map);
+	pAction->SetStretchMap({1, 0});
 	AddAction(pAction);
 }
 
@@ -3603,7 +3601,7 @@ void CFamiTrackerView::OnEditShrinkPatterns()		// // //
 	if (!m_bEditEnable) return;
 
 	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_STRETCH_PATTERN);
-	pAction->SetStretchMap(std::vector<int>(1, 2));
+	pAction->SetStretchMap({2});
 	AddAction(pAction);
 }
 

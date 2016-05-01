@@ -26,6 +26,7 @@
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "DetuneDlg.h"
+#include "DetuneTable.h"
 
 
 // CDetuneDlg dialog

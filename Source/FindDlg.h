@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "FamiTrackerView.h"
+#include "PatternNote.h"
 
 class CharRange
 {
@@ -65,6 +65,10 @@ public:
 	CFindException(const char *msg) : std::runtime_error(msg) { }
 };
 
+class CFamiTrackerDoc;
+class CFamiTrackerView;
+class CCompoundAction;
+
 // CFindDlg dialog
 
 class CFindDlg : public CDialog
@@ -75,9 +79,8 @@ public:
 	CFindDlg(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CFindDlg();
 
-	CString ConvertFindSimple(); // 0CC: unimplemented
-	bool Find(bool ShowEnd = false);
-	bool Replace(bool CanUndo = false);
+	bool Find(bool ShowEnd);
+	bool Replace(CCompoundAction *pAction = nullptr);
 	void Reset();
 
 // Dialog Data

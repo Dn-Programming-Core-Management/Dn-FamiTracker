@@ -22,12 +22,13 @@
 
 #include "stdafx.h"
 #include <string>
-#include "FamiTrackerDoc.h"
 #include "FamiTracker.h"
+#include "FamiTrackerDoc.h"
+#include "FamiTrackerView.h"
 #include "MainFrm.h"
-#include "Bookmark.h"		// // //
-#include "BookmarkCollection.h"		// // //
-#include "BookmarkManager.h"		// // // TODO: night not need this
+#include "Bookmark.h"
+#include "BookmarkCollection.h"
+#include "BookmarkManager.h" // TODO: night not need this
 #include "BookmarkDlg.h"
 
 // CBookmarkDlg dialog

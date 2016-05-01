@@ -25,9 +25,8 @@
 
 // CAction ////////////////////////////////////////////////////////////////////////
 
-CAction::CAction(int iAction)
+CAction::CAction(int iAction) : m_iAction(iAction)
 {
-	m_iAction = iAction;
 }
 
 CAction::~CAction()

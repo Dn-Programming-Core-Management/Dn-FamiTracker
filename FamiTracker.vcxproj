@@ -435,6 +435,7 @@
     <ClCompile Include="Source\BookmarkManager.cpp" />
     <ClCompile Include="Source\ChannelFactory.cpp" />
     <ClCompile Include="Source\ChannelState.cpp" />
+    <ClCompile Include="Source\CompoundAction.cpp" />
     <ClCompile Include="Source\DetuneTable.cpp" />
     <ClCompile Include="Source\DPI.cpp" />
     <ClCompile Include="Source\DSampleManager.cpp" />
@@ -686,6 +687,7 @@
     <ClInclude Include="Source\BookmarkCollection.h" />
     <ClInclude Include="Source\BookmarkManager.h" />
     <ClInclude Include="Source\BookmarkDlg.h" />
+    <ClInclude Include="Source\CompoundAction.h" />
     <ClInclude Include="Source\DetuneTable.h" />
     <ClInclude Include="Source\DPI.h" />
     <ClInclude Include="Source\Factory.h" />
