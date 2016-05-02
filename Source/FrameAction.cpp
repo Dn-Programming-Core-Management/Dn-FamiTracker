@@ -228,17 +228,33 @@ void CFrameAction::SaveRedoState(CMainFrame *pMainFrm)		// // //
 	m_iRedoChannelPos = pView->GetSelectedChannel();
 }
 
+void CFrameAction::RestoreState(CMainFrame *pMainFrm)		// // //
+{
+	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
+	CFamiTrackerDoc *pDocument = pView->GetDocument();
+
+	pView->SelectFrame(m_iUndoFramePos);
+	pView->SelectChannel(m_iUndoChannelPos);
+
+	pDocument->UpdateAllViews(NULL, UPDATE_FRAME);
+}
+
+void CFrameAction::RestoreRedoState(CMainFrame *pMainFrm)		// // //
+{
+	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
+	CFamiTrackerDoc *pDocument = pView->GetDocument();
+
+	pView->SelectFrame(m_iRedoFramePos);
+	pView->SelectChannel(m_iRedoChannelPos);
+
+	pDocument->UpdateAllViews(NULL, UPDATE_FRAME);
+}
+
 void CFrameAction::Undo(CMainFrame *pMainFrm)
 {
-	// Undo action
-
 	CFrameEditor *pFrameEditor = pMainFrm->GetFrameEditor();
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
 	CFamiTrackerDoc *pDocument = pView->GetDocument();
-	const int Channels = pDocument->GetAvailableChannels();
-	int UpdateHint = UPDATE_FRAME;
-
-	pView->SelectFrameChannel(m_iUndoFramePos, m_iUndoChannelPos);
 
 	pFrameEditor->SetSelectInfo(m_oSelInfo);
 
@@ -254,9 +270,8 @@ void CFrameAction::Undo(CMainFrame *pMainFrm)
 			pDocument->RemoveFrame(m_iUndoTrack, m_iUndoFramePos);
 			break;
 		case ACT_DUPLICATE_PATTERNS:
-			for (int i = 0; i < Channels; ++i) {
+			for (unsigned int i = 0; i < pDocument->GetAvailableChannels(); ++i)
 				pDocument->ClearPattern(m_iUndoTrack, m_iUndoFramePos + 1, i);
-			}
 			pDocument->RemoveFrame(m_iUndoTrack, m_iUndoFramePos + 1);
 			break;
 		case ACT_DUPLICATE_CURRENT:		// // //
@@ -308,21 +323,13 @@ void CFrameAction::Undo(CMainFrame *pMainFrm)
 			RestoreAllFrames(pDocument);
 			break;
 	}
-
-	pDocument->UpdateAllViews(NULL, UpdateHint);
 }
 
 void CFrameAction::Redo(CMainFrame *pMainFrm)
 {
-	// Redo action
-
 	CFrameEditor *pFrameEditor = pMainFrm->GetFrameEditor();
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
 	CFamiTrackerDoc *pDocument = pView->GetDocument();
-	const int Channels = pDocument->GetAvailableChannels();
-	int UpdateHint = UPDATE_FRAME;
-	
-	pView->SelectFrameChannel(m_iUndoFramePos, m_iUndoChannelPos);		// // //
 	
 	switch (m_iAction) {
 		case ACT_ADD:
@@ -351,7 +358,7 @@ void CFrameAction::Redo(CMainFrame *pMainFrm)
 			pDocument->SetPatternAtFrame(m_iUndoTrack, m_iUndoFramePos, m_iUndoChannelPos, m_iNewPattern);
 			break;
 		case ACT_SET_PATTERN_ALL:
-			for (int i = 0; i < Channels; ++i) {
+			for (unsigned int i = 0; i < pDocument->GetAvailableChannels(); ++i) {
 				pDocument->SetPatternAtFrame(m_iUndoTrack, m_iUndoFramePos, i, m_iNewPattern);
 			}
 			break;
@@ -359,7 +366,7 @@ void CFrameAction::Redo(CMainFrame *pMainFrm)
 			pDocument->SetPatternAtFrame(m_iUndoTrack, m_iUndoFramePos, m_iUndoChannelPos, ClipPattern(m_iOldPattern + m_iPatternDelta));
 			break;
 		case ACT_CHANGE_PATTERN_ALL:
-			for (int i = 0; i < Channels; ++i) {
+			for (unsigned int i = 0; i < pDocument->GetAvailableChannels(); ++i) {
 				pDocument->SetPatternAtFrame(m_iUndoTrack, m_iUndoFramePos, i, ClipPattern(m_iPatterns[i] + m_iPatternDelta));
 			}
 			break;
@@ -401,8 +408,6 @@ void CFrameAction::Redo(CMainFrame *pMainFrm)
 			pDocument->MergeDuplicatedPatterns(m_iUndoTrack);		// // //
 			break;
 	}
-
-	pDocument->UpdateAllViews(NULL, UpdateHint);
 }
 
 void CFrameAction::Update(CMainFrame *pMainFrm)

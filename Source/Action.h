@@ -42,7 +42,13 @@ public:
 	// // // Save the redo state after performing the action
 	virtual void SaveRedoState(CMainFrame *pMainFrm) = 0;
 
-	// Undo the operation, using the saved state
+	// // // Restore the state just before the action
+	virtual void RestoreState(CMainFrame *pMainFrm) = 0;
+
+	// // // Restore the state just after the action
+	virtual void RestoreRedoState(CMainFrame *pMainFrm) = 0;
+
+	// Undo the operation
 	virtual void Undo(CMainFrame *pMainFrm) = 0;
 
 	// Redo the operation

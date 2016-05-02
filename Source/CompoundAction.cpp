@@ -32,11 +32,6 @@ CCompoundAction::CCompoundAction() : m_pActionList()
 
 bool CCompoundAction::SaveState(CMainFrame *pMainFrm)
 {
-	// TODO: only the first state is necessary
-//	if (m_pActionList.empty())
-//		return false;
-//	return m_pActionList[0]->SaveState(pMainFrm);
-
 	for (auto it = m_pActionList.begin(); it != m_pActionList.end(); ++it)
 		if (!(*it)->SaveState(pMainFrm))
 			return false;
@@ -45,8 +40,19 @@ bool CCompoundAction::SaveState(CMainFrame *pMainFrm)
 
 void CCompoundAction::SaveRedoState(CMainFrame *pMainFrm)		// // //
 {
-	for (auto it = m_pActionList.begin(); it != m_pActionList.end(); ++it)
-		(*it)->SaveRedoState(pMainFrm);
+	(*m_pActionList.rbegin())->SaveRedoState(pMainFrm);
+//	for (auto it = m_pActionList.begin(); it != m_pActionList.end(); ++it)
+//		(*it)->SaveRedoState(pMainFrm);
+}
+
+void CCompoundAction::RestoreState(CMainFrame *pMainFrm)		// // //
+{
+	(*m_pActionList.begin())->RestoreState(pMainFrm);
+}
+
+void CCompoundAction::RestoreRedoState(CMainFrame *pMainFrm)		// // //
+{
+	(*m_pActionList.rbegin())->RestoreRedoState(pMainFrm);
 }
 
 void CCompoundAction::Undo(CMainFrame *pMainFrm)

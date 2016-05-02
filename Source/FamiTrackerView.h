@@ -70,7 +70,6 @@ public:
 	void		 SelectFrame(unsigned int Frame);
 	void		 SelectRow(unsigned int Row);		// // //
 	void		 SelectChannel(unsigned int Channel);
-	void		 SelectFrameChannel(unsigned int Frame, unsigned int Channel);
 	 
 	unsigned int GetSelectedFrame() const;
 	unsigned int GetSelectedChannel() const;

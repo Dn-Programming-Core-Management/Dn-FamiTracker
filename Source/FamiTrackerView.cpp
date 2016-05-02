@@ -1759,13 +1759,6 @@ void CFamiTrackerView::SelectChannel(unsigned int Channel)
 	InvalidateCursor();
 }
 
-void CFamiTrackerView::SelectFrameChannel(unsigned int Frame, unsigned int Channel)
-{
-	m_pPatternEditor->MoveToFrame(Frame);
-	m_pPatternEditor->MoveToChannel(Channel);
-	// This method does no redrawing
-}
-
 // // // TODO: move these to CMainFrame?
 
 void CFamiTrackerView::OnBookmarksToggle()

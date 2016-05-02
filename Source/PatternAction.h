@@ -66,6 +66,8 @@ public:
 
 	bool SaveState(CMainFrame *pMainFrm);
 	void SaveRedoState(CMainFrame *pMainFrm);		// // //
+	void RestoreState(CMainFrame *pMainFrm);		// // //
+	void RestoreRedoState(CMainFrame *pMainFrm);		// // //
 	void Undo(CMainFrame *pMainFrm);
 	void Redo(CMainFrame *pMainFrm);
 

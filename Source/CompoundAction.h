@@ -36,10 +36,12 @@ class CCompoundAction final : public CAction
 public:
 	CCompoundAction();
 
-	virtual bool SaveState(CMainFrame *pMainFrm);
-	virtual void SaveRedoState(CMainFrame *pMainFrm);		// // //
-	virtual void Undo(CMainFrame *pMainFrm);
-	virtual void Redo(CMainFrame *pMainFrm);
+	bool SaveState(CMainFrame *pMainFrm);
+	void SaveRedoState(CMainFrame *pMainFrm);		// // //
+	void RestoreState(CMainFrame *pMainFrm);		// // //
+	void RestoreRedoState(CMainFrame *pMainFrm);		// // //
+	void Undo(CMainFrame *pMainFrm);
+	void Redo(CMainFrame *pMainFrm);
 
 	/*!	\brief Adds an action to the compound to be performed last (and undoed first).
 		\param pAction Pointer to the action object. */

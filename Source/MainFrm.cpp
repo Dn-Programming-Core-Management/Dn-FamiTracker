@@ -2703,8 +2703,10 @@ void CMainFrame::OnEditUndo()
 
 	CAction *pAction = m_pActionHandler->PopUndo();
 
-	if (pAction != NULL)
+	if (pAction != NULL) {
 		pAction->Undo(this);
+		pAction->RestoreState(this);		// // //
+	}
 
 	CFamiTrackerDoc	*pDoc = (CFamiTrackerDoc*)GetActiveDocument();			// // //
 	if (!m_pActionHandler->CanUndo() && !pDoc->GetExceededFlag())
@@ -2717,8 +2719,10 @@ void CMainFrame::OnEditRedo()
 
 	CAction *pAction = m_pActionHandler->PopRedo();
 
-	if (pAction != NULL)
+	if (pAction != NULL) {
 		pAction->Redo(this);
+		pAction->RestoreRedoState(this);		// // //
+	}
 }
 
 void CMainFrame::OnUpdateEditUndo(CCmdUI *pCmdUI)
