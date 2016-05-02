@@ -84,6 +84,18 @@ public:
 	CDocTemplate::Confidence MatchDocType(const char* pszPathName, CDocument*& rpDocMatch);
 };
 
+/*!
+	\brief A MFC document manager allowing both .0cc and .ftm file extensions to be displayed while
+	opening or saving documents.
+	\details This class also saves the FTM path of the last load/save operation to the registry.
+*/
+class CDocManager0CC : public CDocManager
+{
+public:
+	virtual BOOL DoPromptFileName(CString& fileName, UINT nIDSTitle,
+								  DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* pTemplate);
+};
+
 // CFamiTrackerApp:
 // See FamiTracker.cpp for the implementation of this class
 //
@@ -143,9 +155,6 @@ private:
 	void UnregisterSingleInstance();
 	void CheckNewVersion();
 	void LoadLocalization();
-
-public: // as it is
-	BOOL DoPromptFileName(CString& fileName, CString& filePath, UINT nIDSTitle, DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* pTemplate);
 
 	// Private variables and objects
 private:

@@ -185,7 +185,9 @@ BOOL CFamiTrackerApp::InitInstance()
 	if (!pDocTemplate)
 		return FALSE;
 	
-	AddDocTemplate(pDocTemplate);
+	if (m_pDocManager == NULL)		// // //
+		m_pDocManager = new CDocManager0CC { };
+	m_pDocManager->AddDocTemplate(pDocTemplate);
 
 	// Work-around to enable file type registration in windows vista/7
 	if (IsWindowsVistaOrGreater()) {		// // //
@@ -700,20 +702,12 @@ void CFamiTrackerApp::ResetPlayer()
 
 void CFamiTrackerApp::OnFileOpen() 
 {
-	// Overloaded in order to save the file path
-	CString newName, path;
+	CString newName = _T("");		// // //
 
-	// Get path
-	path = m_pSettings->GetPath(PATH_FTM) + _T("\\");
-	newName = _T("");
-
-	if (!DoPromptFileName(newName, path, AFX_IDS_OPENFILE, OFN_HIDEREADONLY | OFN_FILEMUSTEXIST, TRUE, NULL))
+	if (!AfxGetApp()->DoPromptFileName(newName, AFX_IDS_OPENFILE, OFN_HIDEREADONLY | OFN_FILEMUSTEXIST, TRUE, NULL))
 		return; // open cancelled
 
 	CFrameWnd *pFrameWnd = (CFrameWnd*)GetMainWnd();
-
-	// Save path
-	m_pSettings->SetPath(newName, PATH_FTM);
 	
 	if (pFrameWnd)
 		pFrameWnd->SetMessageText(IDS_LOADING_FILE);
@@ -722,94 +716,6 @@ void CFamiTrackerApp::OnFileOpen()
 
 	if (pFrameWnd)
 		pFrameWnd->SetMessageText(IDS_LOADING_DONE);
-}
-
-BOOL CFamiTrackerApp::DoPromptFileName(CString& fileName, CString& filePath, UINT nIDSTitle, DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* pTemplate)
-{
-	// Copied from MFC
-	{		// // // disregard doc template
-		CFileDialog OpenFileDlg(bOpenFileDialog, _T("0cc"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-								_T("0CC-FamiTracker modules (*.0cc;*.ftm)|*.0cc; *.ftm|All files (*.*)|*.*||"),		// // //
-								GetMainWnd(), 0);
-		OpenFileDlg.m_ofn.Flags |= lFlags;
-		OpenFileDlg.m_ofn.lpstrFile = fileName.GetBuffer(_MAX_PATH);
-		OpenFileDlg.m_ofn.lpstrInitialDir = filePath.GetBuffer(_MAX_PATH);
-		CString title;
-		ENSURE(title.LoadString(nIDSTitle));
-		OpenFileDlg.m_ofn.lpstrTitle = title;
-		INT_PTR nResult = OpenFileDlg.DoModal();
-		fileName.ReleaseBuffer();
-		filePath.ReleaseBuffer();
-		return nResult == IDOK;
-	}
-	/*
-	CFileDialog dlgFile(bOpenFileDialog, _T(".0cc"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, NULL, 0);		// // //
-
-	CString title;
-	ENSURE(title.LoadString(nIDSTitle));
-
-	dlgFile.m_ofn.Flags |= lFlags;
-
-	CString strFilter;
-	CString strDefault;
-
-	if (pTemplate == NULL) {
-		POSITION pos = GetFirstDocTemplatePosition();
-		while (pos != NULL) {
-			CString strFilterName;
-			pTemplate = GetNextDocTemplate(pos);
-			pTemplate->GetDocString(strFilterName, CDocTemplate::filterName);
-
-			// Add extension
-			strFilter += strFilterName;
-			strFilter += (TCHAR)'\0';
-			int Beg = strFilterName.ReverseFind('(');		// // //
-			int End = strFilterName.ReverseFind(')');
-			if (Beg > -1 && End > -1 && Beg < End) {
-				strFilter += strFilterName.Mid(Beg + 1, End - Beg - 1);
-			}
-			else {
-				CString strFilterExt;
-				pTemplate->GetDocString(strFilterExt, CDocTemplate::filterExt);
-				int curPos = 0;
-				CString tok = strFilterExt.Tokenize(_T(";"), curPos);
-				while (!tok.IsEmpty()) {
-					strFilter += _T("*");
-					strFilter += tok;
-					tok = strFilterExt.Tokenize(_T(";"), curPos);
-					if (!tok.IsEmpty()) strFilter += _T(";");
-				}
-			}
-			strFilter += (TCHAR)'\0';
-			dlgFile.m_ofn.nMaxCustFilter++;
-		}
-	}
-
-	// Select first filter
-	dlgFile.m_ofn.nFilterIndex = 1;
-
-	// append the "*.*" all files filter
-	if (bOpenFileDialog) {
-		CString allFilter;
-		VERIFY(allFilter.LoadString(AFX_IDS_ALLFILTER));
-		strFilter += allFilter;
-		strFilter += (TCHAR)'\0';   // next string please
-		strFilter += _T("*.*");
-		strFilter += (TCHAR)'\0';   // last string
-		dlgFile.m_ofn.nMaxCustFilter++;
-	}
-
-	dlgFile.m_ofn.lpstrFilter = strFilter;
-	dlgFile.m_ofn.lpstrTitle = title;
-	dlgFile.m_ofn.lpstrInitialDir = filePath.GetBuffer(_MAX_PATH);
-	dlgFile.m_ofn.lpstrFile = fileName.GetBuffer(_MAX_PATH);
-
-	INT_PTR nResult = dlgFile.DoModal();
-	fileName.ReleaseBuffer();
-	filePath.ReleaseBuffer();
-
-	return nResult == IDOK;
-	*/
 }
 
 #ifdef EXPORT_TEST
@@ -1081,4 +987,34 @@ CDocTemplate::Confidence CDocTemplate0CC::MatchDocType(const char *pszPathName, 
 		}
 	}
 	return yesAttemptForeign; //unknown document type
+}
+
+//
+// CDocManager0CC class
+//
+
+BOOL CDocManager0CC::DoPromptFileName(CString &fileName, UINT nIDSTitle, DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate *pTemplate)
+{
+	// Copied from MFC
+	// // // disregard doc template
+	CString path = theApp.GetSettings()->GetPath(PATH_FTM) + _T("\\");
+
+	CFileDialog OpenFileDlg(bOpenFileDialog, _T("0cc"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
+							_T("0CC-FamiTracker modules (*.0cc;*.ftm)|*.0cc; *.ftm|All files (*.*)|*.*||"),		// // //
+							AfxGetMainWnd(), 0);
+	OpenFileDlg.m_ofn.Flags |= lFlags;
+	OpenFileDlg.m_ofn.lpstrFile = fileName.GetBuffer(_MAX_PATH);
+	OpenFileDlg.m_ofn.lpstrInitialDir = path.GetBuffer(_MAX_PATH);
+	CString title;
+	ENSURE(title.LoadString(nIDSTitle));
+	OpenFileDlg.m_ofn.lpstrTitle = title;
+	INT_PTR nResult = OpenFileDlg.DoModal();
+	fileName.ReleaseBuffer();
+	path.ReleaseBuffer();
+
+	if (nResult == IDOK) {
+		theApp.GetSettings()->SetPath(fileName, PATH_FTM);
+		return true;
+	}
+	return false;
 }
