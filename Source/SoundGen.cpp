@@ -1084,6 +1084,10 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 
 	memset(m_bFramePlayed, false, sizeof(bool) * MAX_FRAMES);
 
+#ifdef WRITE_VGM		// // //
+	std::queue<int>().swap(m_iRegisterStream);
+#endif
+
 	ResetTempo();
 	ResetAPU();
 
@@ -2059,7 +2063,8 @@ void CSoundGen::UpdateAPU()
 		}
 	}
 #ifdef WRITE_VGM		// // //
-	m_iRegisterStream.push(0x62);		// // //
+	if (m_bPlaying)
+		m_iRegisterStream.push(0x62);		// // //
 #endif
 
 	// Finish the audio frame
