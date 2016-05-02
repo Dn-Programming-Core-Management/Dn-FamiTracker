@@ -219,9 +219,6 @@ void CChannelHandlerFDS::RefreshChannel()
 
 void CChannelHandlerFDS::ClearRegisters()
 {	
-	// Clear gain
-	WriteRegister(0x4090, 0x00);
-
 	// Clear volume
 	WriteRegister(0x4080, 0x80);
 

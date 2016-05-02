@@ -67,7 +67,7 @@
 //#define WRITE_VOLUME_FILE
 
 // // // Log VGM output (experimental)
-//#define WRITE_VGM
+#define WRITE_VGM
 
 // Enable audio dithering
 //#define DITHERING
@@ -1280,7 +1280,7 @@ void CSoundGen::HaltPlayer()
 	int DelayTotal = 0;
 	const long long VGM_SAMPLE_RATE = 44100;
 
-	while (!m_iRegisterStream.empty()) {
+	while (!m_iRegisterStream.empty()) { // TODO: move this to a separate thread
 		int Val = m_iRegisterStream.front();
 		m_iRegisterStream.pop();
 		if (Val == 0x62) {
@@ -1329,6 +1329,8 @@ void CSoundGen::HaltPlayer()
 	*reinterpret_cast<int*>(Header + 0x24) = 60;
 	*reinterpret_cast<int*>(Header + 0x34) = 0xCC;
 	*reinterpret_cast<int*>(Header + 0x84) = CAPU::BASE_FREQ_NTSC; // | 0x80000000
+	if (m_pDocument->ExpansionEnabled(SNDCHIP_FDS))
+		*reinterpret_cast<int*>(Header + 0x84) |= 0x80000000;
 	vgm.Write(Header, 256);
 	vgm.Close();
 #endif
@@ -1348,6 +1350,11 @@ void CSoundGen::ResetAPU()
 	// Enable all channels
 	m_pAPU->Write(0x4015, 0x0F);
 	m_pAPU->Write(0x4017, 0x00);
+	
+	// // // for VGM
+	WriteRegister(0x4015, 0x0F);
+	WriteRegister(0x4017, 0x00);
+	WriteRegister(0x4023, 0x02); // FDS enable
 
 	// MMC5
 	m_pAPU->Write(0x5015, 0x03);
