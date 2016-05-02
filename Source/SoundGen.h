@@ -27,6 +27,7 @@
 //
 
 #include <afxmt.h>		// Synchronization objects
+#include <queue>		// // //
 #include "WaveFile.h"
 #include "Common.h"
 
@@ -382,6 +383,8 @@ private:
 	int					m_iTempoDecrement;
 	int					m_iTempoRemainder;
 	bool				m_bUpdateRow;
+
+	std::queue<int>		m_iRegisterStream;					// // // vgm export
 
 	CWaveFile			m_wfWaveFile;
 

@@ -66,6 +66,9 @@
 // Write a file with the volume table
 //#define WRITE_VOLUME_FILE
 
+// // // Log VGM output (experimental)
+//#define WRITE_VGM
+
 // Enable audio dithering
 //#define DITHERING
 
@@ -133,6 +136,7 @@ CSoundGen::CSoundGen() :
 	m_iPlayRow(0),
 	m_iPlayTrack(0),
 	m_iPlayTicks(0),
+	m_iRegisterStream(),		// // //
 	m_bBufferUnderrun(false),
 	m_bAudioClipping(false),
 	m_iClipCounter(0),
@@ -1262,6 +1266,71 @@ void CSoundGen::HaltPlayer()
 		m_pTrackerView->PostMessage(WM_USER_PLAYER, m_iPlayFrame, m_iPlayRow);
 		m_pInstRecorder->StopRecording(m_pTrackerView);		// // //
 	}
+
+#ifdef WRITE_VGM		// // //
+	CFile vgm("test.vgm", CFile::modeCreate | CFile::modeWrite | CFile::typeBinary);
+	int c = 0;
+	for (int i = 0; i < 0x100; ++i)
+		vgm.Write(&c, 1);
+	int Delay = 0;
+	int DelayTotal = 0;
+	const long long VGM_SAMPLE_RATE = 44100;
+
+	while (!m_iRegisterStream.empty()) {
+		int Val = m_iRegisterStream.front();
+		m_iRegisterStream.pop();
+		if (Val == 0x62) {
+			++Delay;
+			++DelayTotal;
+		}
+		else {
+			if (Delay) {
+				int Samples = static_cast<int>(VGM_SAMPLE_RATE * Delay / m_iFrameRate);
+				while (Samples > 0xFFFF) {
+					Samples -= 0xFFFF;
+					c = 0xFFFF61;
+					vgm.Write(&c, 3);
+				}
+				if (Samples == static_cast<int>(VGM_SAMPLE_RATE / CAPU::FRAME_RATE_NTSC)) { // 735
+					c = 0x62;
+					vgm.Write(&c, 1);
+				}
+				else if (Samples == static_cast<int>(VGM_SAMPLE_RATE / CAPU::FRAME_RATE_PAL)) { // 882
+					c = 0x63;
+					vgm.Write(&c, 1);
+				}
+				else {
+					c = 0x61 | (Samples << 8);
+					vgm.Write(&c, 3);
+				}
+				Delay = 0;
+			}
+			vgm.Write(&Val, 1);
+			Val = m_iRegisterStream.front();
+			m_iRegisterStream.pop();
+			vgm.Write(&Val, 1);
+			Val = m_iRegisterStream.front();
+			m_iRegisterStream.pop();
+			vgm.Write(&Val, 1);
+		}
+	}
+	c = 0x66;
+	vgm.Write(&c, 1);
+
+	vgm.Seek(0, CFile::begin);
+	char Header[256] = {'V', 'g', 'm', ' '};
+	*reinterpret_cast<int*>(Header + 0x04) = static_cast<int>(vgm.GetLength()) - 4;
+	*reinterpret_cast<int*>(Header + 0x08) = 0x161;
+	*reinterpret_cast<int*>(Header + 0x18) = static_cast<int>(VGM_SAMPLE_RATE * DelayTotal / 60);
+	*reinterpret_cast<int*>(Header + 0x24) = 60;
+	*reinterpret_cast<int*>(Header + 0x34) = 0xCC;
+	*reinterpret_cast<int*>(Header + 0x84) = CAPU::BASE_FREQ_NTSC; // | 0x80000000
+	vgm.Write(Header, 256);
+	vgm.Close();
+#endif
+
+	WriteRegister(0x4015, 0x0F);
+	WriteRegister(0x4017, 0x00);
 }
 
 void CSoundGen::ResetAPU()
@@ -1989,6 +2058,9 @@ void CSoundGen::UpdateAPU()
 				AddCycles(CHANNEL_DELAY);
 		}
 	}
+#ifdef WRITE_VGM		// // //
+	m_iRegisterStream.push(0x62);		// // //
+#endif
 
 	// Finish the audio frame
 	m_pAPU->AddTime(m_iUpdateCycles - m_iConsumedCycles);
@@ -2312,7 +2384,28 @@ void CSoundGen::WriteRegister(uint16_t Reg, uint8_t Value)
 
 void CSoundGen::WriteRegister(uint16_t Reg, uint8_t Value)
 {
-	// Empty
+#ifdef WRITE_VGM		// // //
+	if (Reg >= 0x4000U && Reg <= 0x401FU) {		// // //
+		m_iRegisterStream.push(0xB4);
+		m_iRegisterStream.push(Reg & 0x1F);
+		m_iRegisterStream.push(Value);
+	}
+	else if (Reg >= 0x4040U && Reg <= 0x407FU) {
+		m_iRegisterStream.push(0xB4);
+		m_iRegisterStream.push(Reg & 0x7F);
+		m_iRegisterStream.push(Value);
+	}
+	else if (Reg >= 0x4080U && Reg <= 0x409EU) {
+		m_iRegisterStream.push(0xB4);
+		m_iRegisterStream.push((Reg & 0x1F) | 0x20);
+		m_iRegisterStream.push(Value);
+	}
+	else if (Reg == 0x4023U) {
+		m_iRegisterStream.push(0xB4);
+		m_iRegisterStream.push(0x3F);
+		m_iRegisterStream.push(Value);
+	}
+#endif
 }
 
 #endif /* EXPORT_TEST */
