@@ -890,16 +890,26 @@ bool CPatternAction::SaveState(CMainFrame *pMainFrm)
 			// Add / remove effect column
 			m_iUndoColumnCount = pDoc->GetEffColumns(m_iUndoTrack, m_iClickedChannel);
 			break;
-#ifdef _DEBUG_
+#ifdef _DEBUG
 		default:
 			AfxMessageBox(_T("TODO Implement action for this command"));
 #endif
 	}
 
-	// Redo will perform the action
-	Redo(pMainFrm);
-
 	return true;
+}
+
+void CPatternAction::SaveRedoState(CMainFrame *pMainFrm)		// // //
+{
+	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
+	CPatternEditor *pPatternEditor = pView->GetPatternEditor();
+
+	m_iRedoTrack	= pMainFrm->GetSelectedTrack();
+	m_iRedoFrame	= pPatternEditor->GetFrame();
+	m_iRedoChannel  = pPatternEditor->GetChannel();
+	m_iRedoRow		= pPatternEditor->GetRow();
+	m_iRedoColumn   = pPatternEditor->GetColumn();
+	// m_RedoSelection = pPatternEditor->GetSelection();
 }
 
 void CPatternAction::Undo(CMainFrame *pMainFrm)
@@ -908,13 +918,6 @@ void CPatternAction::Undo(CMainFrame *pMainFrm)
 	CFamiTrackerDoc *pDoc = pView->GetDocument();
 	CPatternEditor *pPatternEditor = pView->GetPatternEditor();
 	int UpdateHint = UPDATE_PATTERN;
-
-	// Save redo-position
-	m_iRedoTrack	= pMainFrm->GetSelectedTrack();		// // //
-	m_iRedoFrame	= pPatternEditor->GetFrame();
-	m_iRedoChannel  = pPatternEditor->GetChannel();
-	m_iRedoRow		= pPatternEditor->GetRow();
-	m_iRedoColumn   = pPatternEditor->GetColumn();
 
 	pPatternEditor->MoveToFrame(m_iUndoFrame);
 	pPatternEditor->MoveToChannel(m_iUndoChannel);
@@ -974,8 +977,7 @@ void CPatternAction::Undo(CMainFrame *pMainFrm)
 			pDoc->SetEffColumns(m_iUndoTrack, m_iClickedChannel, m_iUndoColumnCount);
 			UpdateHint = UPDATE_COLUMNS;
 			break;
-
-#ifdef _DEBUG_
+#ifdef _DEBUG
 		default:
 			AfxMessageBox(_T("TODO Undo for this action is not implemented"));
 #endif
@@ -1069,7 +1071,7 @@ void CPatternAction::Redo(CMainFrame *pMainFrm)
 			pDoc->SetEffColumns(m_iUndoTrack, m_iClickedChannel, m_iRedoColumnCount);
 			UpdateHint = UPDATE_COLUMNS;
 			break;
-#ifdef _DEBUG_
+#ifdef _DEBUG
 		default:
 			AfxMessageBox(_T("TODO: Redo for this action is not implemented"));
 #endif

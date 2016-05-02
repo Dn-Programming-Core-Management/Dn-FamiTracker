@@ -37,10 +37,16 @@ bool CCompoundAction::SaveState(CMainFrame *pMainFrm)
 //		return false;
 //	return m_pActionList[0]->SaveState(pMainFrm);
 
-	for (auto it = m_pActionList.rbegin(); it != m_pActionList.rend(); ++it)
+	for (auto it = m_pActionList.begin(); it != m_pActionList.end(); ++it)
 		if (!(*it)->SaveState(pMainFrm))
 			return false;
 	return true;
+}
+
+void CCompoundAction::SaveRedoState(CMainFrame *pMainFrm)		// // //
+{
+	for (auto it = m_pActionList.begin(); it != m_pActionList.end(); ++it)
+		(*it)->SaveRedoState(pMainFrm);
 }
 
 void CCompoundAction::Undo(CMainFrame *pMainFrm)

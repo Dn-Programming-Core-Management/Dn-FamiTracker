@@ -1475,7 +1475,7 @@ void CMainFrame::OnBnClickedIncFrame()
 	int Add = (CheckRepeat() ? 4 : 1);
 	bool bChangeAll = ChangeAllPatterns() != 0;
 	CFrameAction *pAction = new CFrameAction(bChangeAll ? CFrameAction::ACT_CHANGE_PATTERN_ALL : CFrameAction::ACT_CHANGE_PATTERN);
-	pAction->SetPatternDelta(Add, bChangeAll);
+	pAction->SetPatternDelta(Add);		// // //
 	AddAction(pAction);
 }
 
@@ -1484,7 +1484,7 @@ void CMainFrame::OnBnClickedDecFrame()
 	int Remove = -(CheckRepeat() ? 4 : 1);
 	bool bChangeAll = ChangeAllPatterns() != 0;
 	CFrameAction *pAction = new CFrameAction(bChangeAll ? CFrameAction::ACT_CHANGE_PATTERN_ALL : CFrameAction::ACT_CHANGE_PATTERN);
-	pAction->SetPatternDelta(Remove, bChangeAll);
+	pAction->SetPatternDelta(Remove);		// // //
 	AddAction(pAction);
 }
 
@@ -2670,9 +2670,11 @@ bool CMainFrame::AddAction(CAction *pAction)
 		SAFE_RELEASE(pAction);
 		return false;
 	}
+	pAction->Redo(this);		// // //
+	pAction->SaveRedoState(this);
 
 	CFamiTrackerDoc	*pDoc = (CFamiTrackerDoc*)GetActiveDocument();			// // //
-	if (m_pActionHandler->GetUndoLevel() == m_pActionHandler->MAX_LEVELS)
+	if (m_pActionHandler->GetUndoLevel() == CActionHandler::MAX_LEVELS)
 		pDoc->SetExceededFlag();
 	
 	// 0CC: merge previous action if possible

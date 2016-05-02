@@ -56,10 +56,9 @@ void CFrameAction::SetPattern(unsigned int Pattern)
 	m_iNewPattern = Pattern;
 }
 
-void CFrameAction::SetPatternDelta(int Delta, bool ChangeAll)
+void CFrameAction::SetPatternDelta(int Delta)		// // //
 {
 	m_iPatternDelta = Delta;
-	m_bChangeAll = ChangeAll;
 }
 
 void CFrameAction::SetPasteData(CFrameClipData *pClipData)
@@ -153,8 +152,8 @@ bool CFrameAction::SaveState(CMainFrame *pMainFrm)
 	const int Channels = pDocument->GetAvailableChannels();
 
 	m_iUndoTrack = pMainFrm->GetSelectedTrack();
-	m_iUndoFramePos = m_iRedoFramePos = pView->GetSelectedFrame();
-	m_iUndoChannelPos = m_iRedoChannelPos = pView->GetSelectedChannel();
+	m_iUndoFramePos = pView->GetSelectedFrame();
+	m_iUndoChannelPos = pView->GetSelectedChannel();
 
 	pFrameEditor->GetSelectInfo(m_oSelInfo);
 
@@ -205,12 +204,10 @@ bool CFrameAction::SaveState(CMainFrame *pMainFrm)
 		case ACT_MOVE_DOWN:
 			if (pDocument->GetFrameCount(m_iUndoTrack) == m_iUndoFramePos + 1)
 				return false;
-			m_iRedoFramePos++;
 			break;
 		case ACT_MOVE_UP:
 			if (m_iUndoFramePos == 0)
 				return false;
-			m_iRedoFramePos--;
 			break;
 		case ACT_DRAG_AND_DROP_MOVE:
 		case ACT_DRAG_AND_DROP_COPY:
@@ -221,10 +218,14 @@ bool CFrameAction::SaveState(CMainFrame *pMainFrm)
 			break;
 	}
 
-	// Perform the action
-	Redo(pMainFrm);
-
 	return true;
+}
+
+void CFrameAction::SaveRedoState(CMainFrame *pMainFrm)		// // //
+{
+	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
+	m_iRedoFramePos = pView->GetSelectedFrame();
+	m_iRedoChannelPos = pView->GetSelectedChannel();
 }
 
 void CFrameAction::Undo(CMainFrame *pMainFrm)
@@ -236,9 +237,6 @@ void CFrameAction::Undo(CMainFrame *pMainFrm)
 	CFamiTrackerDoc *pDocument = pView->GetDocument();
 	const int Channels = pDocument->GetAvailableChannels();
 	int UpdateHint = UPDATE_FRAME;
-
-	m_iRedoFramePos = pView->GetSelectedFrame();
-	m_iRedoChannelPos = pView->GetSelectedChannel();
 
 	pView->SelectFrameChannel(m_iUndoFramePos, m_iUndoChannelPos);
 
@@ -324,7 +322,7 @@ void CFrameAction::Redo(CMainFrame *pMainFrm)
 	const int Channels = pDocument->GetAvailableChannels();
 	int UpdateHint = UPDATE_FRAME;
 	
-	pView->SelectFrameChannel(m_iRedoFramePos, m_iRedoChannelPos);
+	pView->SelectFrameChannel(m_iUndoFramePos, m_iUndoChannelPos);		// // //
 	
 	switch (m_iAction) {
 		case ACT_ADD:
@@ -367,9 +365,13 @@ void CFrameAction::Redo(CMainFrame *pMainFrm)
 			break;
 		case ACT_MOVE_DOWN:
 			pDocument->MoveFrameDown(m_iUndoTrack, m_iUndoFramePos);
+			pView->SelectFrame(m_iUndoFramePos + 1);		// // //
+			pMainFrm->UpdateControls();
 			break;
 		case ACT_MOVE_UP:
 			pDocument->MoveFrameUp(m_iUndoTrack, m_iUndoFramePos);
+			pView->SelectFrame(m_iUndoFramePos - 1);		// // //
+			pMainFrm->UpdateControls();
 			break;
 		case ACT_PASTE:
 			pFrameEditor->Paste(m_iUndoTrack, m_pClipData);

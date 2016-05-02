@@ -39,6 +39,9 @@ public:
 	// Save the undo state and perform the action. This method may reject the action by returning false
 	virtual bool SaveState(CMainFrame *pMainFrm) = 0;
 
+	// // // Save the redo state after performing the action
+	virtual void SaveRedoState(CMainFrame *pMainFrm) = 0;
+
 	// Undo the operation, using the saved state
 	virtual void Undo(CMainFrame *pMainFrm) = 0;
 

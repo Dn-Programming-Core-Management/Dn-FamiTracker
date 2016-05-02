@@ -37,6 +37,7 @@ public:
 	CCompoundAction();
 
 	virtual bool SaveState(CMainFrame *pMainFrm);
+	virtual void SaveRedoState(CMainFrame *pMainFrm);		// // //
 	virtual void Undo(CMainFrame *pMainFrm);
 	virtual void Redo(CMainFrame *pMainFrm);
 

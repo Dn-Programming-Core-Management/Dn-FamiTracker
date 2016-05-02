@@ -65,6 +65,7 @@ public:
 	virtual ~CPatternAction();
 
 	bool SaveState(CMainFrame *pMainFrm);
+	void SaveRedoState(CMainFrame *pMainFrm);		// // //
 	void Undo(CMainFrame *pMainFrm);
 	void Redo(CMainFrame *pMainFrm);
 
