@@ -107,8 +107,8 @@ void CBookmarkCollection::RemoveFrames(unsigned Frame, unsigned Count)
 void CBookmarkCollection::SwapFrames(unsigned A, unsigned B)
 {
 	std::for_each(m_pBookmark.begin(), m_pBookmark.end(), [&] (std::unique_ptr<CBookmark> &a) {
-		if (a->m_iFrame >= A) a->m_iFrame = B;
-		else if (a->m_iFrame >= B) a->m_iFrame = A;
+		if (a->m_iFrame == A) a->m_iFrame = B;
+		else if (a->m_iFrame == B) a->m_iFrame = A;
 	});
 }
 
