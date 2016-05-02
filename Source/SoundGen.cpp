@@ -1325,18 +1325,22 @@ void CSoundGen::HaltPlayer()
 	char Header[256] = {'V', 'g', 'm', ' '};
 	*reinterpret_cast<int*>(Header + 0x04) = static_cast<int>(vgm.GetLength()) - 4;
 	*reinterpret_cast<int*>(Header + 0x08) = 0x161;
-	*reinterpret_cast<int*>(Header + 0x18) = static_cast<int>(VGM_SAMPLE_RATE * DelayTotal / 60);
-	*reinterpret_cast<int*>(Header + 0x24) = 60;
+	*reinterpret_cast<int*>(Header + 0x18) = static_cast<int>(VGM_SAMPLE_RATE * DelayTotal / m_iFrameRate);
+	*reinterpret_cast<int*>(Header + 0x24) = m_iFrameRate;
 	*reinterpret_cast<int*>(Header + 0x34) = 0xCC;
-	*reinterpret_cast<int*>(Header + 0x84) = CAPU::BASE_FREQ_NTSC; // | 0x80000000
-	if (m_pDocument->ExpansionEnabled(SNDCHIP_FDS))
-		*reinterpret_cast<int*>(Header + 0x84) |= 0x80000000;
+	*reinterpret_cast<int*>(Header + 0x84) = CAPU::BASE_FREQ_NTSC;
+	if (m_pDocument) { // TODO: do this in BeginPlayer
+		if (m_pDocument->ExpansionEnabled(SNDCHIP_FDS))
+			*reinterpret_cast<int*>(Header + 0x84) |= 0x80000000;
+		if (m_pDocument->ExpansionEnabled(SNDCHIP_S5B)) {
+			*reinterpret_cast<int*>(Header + 0x74) = CAPU::BASE_FREQ_NTSC / 2;
+			*reinterpret_cast<int*>(Header + 0x78) = 0x0110;
+		}
+	}
+	
 	vgm.Write(Header, 256);
 	vgm.Close();
 #endif
-
-	WriteRegister(0x4015, 0x0F);
-	WriteRegister(0x4017, 0x00);
 }
 
 void CSoundGen::ResetAPU()
@@ -2397,11 +2401,13 @@ void CSoundGen::WriteRegister(uint16_t Reg, uint8_t Value)
 void CSoundGen::WriteRegister(uint16_t Reg, uint8_t Value)
 {
 #ifdef WRITE_VGM		// // //
-	if (Reg >= 0x4000U && Reg <= 0x401FU) {		// // //
+	static int S5B_Port = 0; // TODO: elevate to full object status
+	if (Reg >= 0x4000U && Reg <= 0x401FU) {
 		m_iRegisterStream.push(0xB4);
 		m_iRegisterStream.push(Reg & 0x1F);
 		m_iRegisterStream.push(Value);
 	}
+
 	else if (Reg >= 0x4040U && Reg <= 0x407FU) {
 		m_iRegisterStream.push(0xB4);
 		m_iRegisterStream.push(Reg & 0x7F);
@@ -2415,6 +2421,14 @@ void CSoundGen::WriteRegister(uint16_t Reg, uint8_t Value)
 	else if (Reg == 0x4023U) {
 		m_iRegisterStream.push(0xB4);
 		m_iRegisterStream.push(0x3F);
+		m_iRegisterStream.push(Value);
+	}
+
+	else if (Reg == 0xC000)
+		S5B_Port = Value;
+	else if (Reg == 0xE000) {
+		m_iRegisterStream.push(0xA0);
+		m_iRegisterStream.push(S5B_Port);
 		m_iRegisterStream.push(Value);
 	}
 #endif

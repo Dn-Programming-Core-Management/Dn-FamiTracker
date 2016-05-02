@@ -200,8 +200,8 @@ bool CChannelHandlerS5B::CreateInstHandler(inst_type_t Type)
 
 void CChannelHandlerS5B::WriteReg(int Reg, int Value)
 {
-	m_pAPU->Write(0xC000, Reg);
-	m_pAPU->Write(0xE000, Value);
+	WriteRegister(0xC000, Reg);
+	WriteRegister(0xE000, Value);
 }
 
 void CChannelHandlerS5B::ResetChannel()
