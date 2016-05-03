@@ -85,7 +85,6 @@ public:
 	static const uint32_t	BASE_FREQ_PAL;
 	static const uint8_t	FRAME_RATE_NTSC;
 	static const uint8_t	FRAME_RATE_PAL;
-	static const uint8_t	REG_DECAY_RATE;		// // //
 
 private:
 	static const int SEQUENCER_FREQUENCY;		// // //
@@ -122,17 +121,6 @@ private:
 	uint32_t	m_iSoundBufferSize;					// Size of buffer, in samples
 	uint32_t	m_iBufferPointer;					// Fill pos in buffer
 	int16_t		*m_pSoundBuffer;					// Sound transfer buffer
-
-	uint16_t	m_iRegs2A03[0x20];					// // // renamed
-	uint16_t	m_iRegsVRC6[0x10];
-	uint16_t	m_iRegsVRC7[0x40];
-	uint16_t	m_iRegsFDS[0x50];
-	uint16_t	m_iRegsMMC5[0x20];
-	uint16_t	m_iRegsN163[0x80];
-	uint16_t	m_iRegsS5B[0x10];
-	uint8_t		m_iPortVRC7;						// // //
-	uint8_t		m_iPortN163;
-	uint8_t		m_iPortS5B;
 
 	uint32_t	m_iFrameCycles;						// Cycles emulated from start of frame
 	uint32_t	m_iSequencerClock;					// Clock for frame sequencer

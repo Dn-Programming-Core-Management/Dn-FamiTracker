@@ -67,7 +67,7 @@
 //#define WRITE_VOLUME_FILE
 
 // // // Log VGM output (experimental)
-#define WRITE_VGM
+//#define WRITE_VGM
 
 // Enable audio dithering
 //#define DITHERING

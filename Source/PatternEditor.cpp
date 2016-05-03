@@ -1807,10 +1807,14 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		}
 	};
 
-	const auto DrawVolFunc = [&] (int Freq, int Volume) {
+	const auto DrawVolFunc = [&] (double Freq, int Volume) {
+		pDC->FillSolidRect(x - 1, BAR_OFFSET + vis_line * 10 - 1, 6 * 108 + 3, 9, 0x808080);
+		pDC->FillSolidRect(x, BAR_OFFSET + vis_line * 10, 6 * 108 + 1, 7, 0);
+		for (int i = 0; i < 10; i++)
+			pDC->SetPixelV(x + 72 * i, BAR_OFFSET + vis_line * 10 + 3, i == 4 ? 0x808080 : 0x303030);
+
 		const double note = NoteFromFreq(Freq);
 		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
-		DrawNoteBar(pDC, 30, BAR_OFFSET + vis_line * 10);
 		if (Volume > 0xFF) Volume = 0xFF;
 		if (note_conv >= -12 && note_conv <= 96 && Volume)		// // //
 			pDC->FillSolidRect(29 + 6 * (note_conv + 12), BAR_OFFSET + vis_line * 10, 3, 7, RGB(Volume, Volume, Volume));
@@ -1857,21 +1861,24 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		text.Format(_T("$%04X:"), 0x4000 + i * 4);		// // //
 		DrawRegFunc(text, 4);
 
-		int period = (reg[2] | ((reg[3] & 7) << 8));
-		int vol = (reg[0] & 0x0F);
+		int period, vol;
 		double freq;		// // //
 //		pDC->FillSolidRect(x + 200, y, x + 400, y + 18, m_colEmptyBg);
 
 		switch (i) {
 		case 0: case 1:
+			period = reg[2] | ((reg[3] & 7) << 8);
+			vol = reg[0] & 0x0F;
 			freq = RegToFreq(period, m_pDocument->GetMachine() == PAL ? SNDCHIP_2A07 : SNDCHIP_NONE);
 			text.Format(_T("%s, vol = %02i, duty = %i"), GetPitchTextFunc(3, period, freq, period >= 8), vol, reg[0] >> 6); break;
 		case 2:
-			freq = RegToFreq(period, m_pDocument->GetMachine() == PAL ? SNDCHIP_2A07 : SNDCHIP_NONE) / 2.;
+			period = reg[2] | ((reg[3] & 7) << 8);
 			vol = reg[0] ? 15 : 0;
+			freq = RegToFreq(period, m_pDocument->GetMachine() == PAL ? SNDCHIP_2A07 : SNDCHIP_NONE) / 2.;
 			text.Format(_T("%s"), GetPitchTextFunc(3, period, freq, period > 0)); break;
 		case 3:
 			period = reg[2] & 0x0F;
+			vol = reg[0] & 0x0F;
 			freq = 4 * (m_pDocument->GetMachine() == PAL ? CNoise::NOISE_PERIODS_PAL[0x0F - period] : CNoise::NOISE_PERIODS_NTSC[0x0F - period]);
 			text.Format(_T("pitch = $%01X, vol = %02i, mode = %i"), period, vol, reg[2] >> 7);
 			period = (period << 4) | ((reg[2] & 0x80) >> 4); break;
@@ -1946,8 +1953,8 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		pDC->FillSolidRect(x + 300, y, 2 * Length, 15, 0);
 		for (int i = 0; i < Length; i++) {
 			auto pState = pSoundGen->GetRegState(SNDCHIP_N163, i);
-			int Hi = (pState->GetValue() >> 4) & 0x0F;
-			int Lo = pState->GetValue() & 0x0F;
+			const int Hi = (pState->GetValue() >> 4) & 0x0F;
+			const int Lo = pState->GetValue() & 0x0F;
 			COLORREF Col = BLEND(
 				0xC0C0C0, DECAY_COLOR[pState->GetNewValueTime()], 100 * pState->GetLastUpdatedTime() / CRegisterState::DECAY_RATE
 			);
@@ -1957,10 +1964,10 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		for (int i = 0; i < N163_CHANS; ++i) {
 			auto pPosState = pSoundGen->GetRegState(SNDCHIP_N163, 0x78 - i * 8 + 6);
 			auto pLenState = pSoundGen->GetRegState(SNDCHIP_N163, 0x78 - i * 8 + 4);
-			int WavePos = pPosState->GetValue();
-			int WaveLen = 0x100 - (pLenState->GetValue() & 0xFC);
-			int NewTime = std::min(pPosState->GetNewValueTime(), pLenState->GetNewValueTime());
-			int UpdateTime = std::min(pPosState->GetLastUpdatedTime(), pLenState->GetLastUpdatedTime());
+			const int WavePos = pPosState->GetValue();
+			const int WaveLen = 0x100 - (pLenState->GetValue() & 0xFC);
+			const int NewTime = std::min(pPosState->GetNewValueTime(), pLenState->GetNewValueTime());
+			const int UpdateTime = std::min(pPosState->GetLastUpdatedTime(), pLenState->GetLastUpdatedTime());
 			pDC->FillSolidRect(x + 300, y + 20 + i * 5, Length * 2, 3, 0);
 			pDC->FillSolidRect(x + 300 + WavePos, y + 20 + i * 5, WaveLen, 3,
 							   BLEND(0xC0C0C0, DECAY_COLOR[NewTime], 100 * UpdateTime / CRegisterState::DECAY_RATE));
@@ -2085,14 +2092,6 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 	// Surrounding frame
 //	pDC->Draw3dRect(20, 20, 200, line * 18 + 20, 0xA0A0A0, 0x505050);		// // //
 
-}
-
-void CPatternEditor::DrawNoteBar(CDC *pDC, int x, int y)		// // //
-{
-	pDC->FillSolidRect(x - 1, y - 1, 6 * 108 + 3, 9, 0x808080);
-	pDC->FillSolidRect(x, y, 6 * 108 + 1, 7, 0);
-	for (int i = 0; i < 10; i++)
-		pDC->SetPixelV(x + 72 * i, y + 3, i == 4 ? 0x808080 : 0x303030);
 }
 
 // Draws a colored character

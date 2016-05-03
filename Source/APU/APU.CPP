@@ -42,8 +42,6 @@ const uint32_t	CAPU::BASE_FREQ_PAL			= 1662607;
 const uint8_t	CAPU::FRAME_RATE_NTSC		= 60;
 const uint8_t	CAPU::FRAME_RATE_PAL		= 50;
 
-const uint8_t  CAPU::REG_DECAY_RATE		= 15;			// // //
-
 const uint8_t CAPU::LENGTH_TABLE[] = {
 	0x0A, 0xFE, 0x14, 0x02, 0x28, 0x04, 0x50, 0x06,
 	0xA0, 0x08, 0x3C, 0x0A, 0x0E, 0x0C, 0x1A, 0x0E,
@@ -399,7 +397,7 @@ void CAPU::SetNamcoMixing(bool bLinear)		// // //
 	m_pN163->SetMixingMethod(bLinear);
 }
 
-void CAPU::LogWrite(uint16_t Address, uint8_t Value)		// // //
+void CAPU::LogWrite(uint16_t Address, uint8_t Value)
 {
 	for (auto &r : ExChips)
 		r->Log(Address, Value);

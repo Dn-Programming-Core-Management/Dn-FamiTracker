@@ -230,7 +230,6 @@ private:
 	// Other drawing
 	void DrawChannelStates(CDC *pDC);
 	void DrawRegisters(CDC *pDC);
-	void DrawNoteBar(CDC *pDC, int x, int y);		// // //
 
 	// Scrolling
 	void UpdateVerticalScroll();
