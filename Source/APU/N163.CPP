@@ -145,7 +145,7 @@ void CN163::EndFrame()
 	CRegisterLoggerBlock b {m_pRegisterLogger};
 	for (int i = 0; i < 8; ++i) {
 		m_pChannels[i]->EndFrame();
-		for (int j : {1, 3, 5}) {		// // // log phase
+		if (i <= m_iChansInUse) for (int j : {1, 3, 5}) {		// // // log phase
 			int Address = 0x78 - i * 8 + j;
 			m_pRegisterLogger->SetPort(Address);
 			m_pRegisterLogger->Write(ReadMem(Address));
