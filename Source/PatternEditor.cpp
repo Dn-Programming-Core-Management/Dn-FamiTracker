@@ -1756,7 +1756,6 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 
 	unsigned char reg[8] = {};
 	unsigned char update[8] = {};
-	int line = -1, vis_line = 0;
 	CFont *pOldFont = pDC->SelectObject(&m_fontCourierNew);
 	pDC->FillSolidRect(0, 0, m_iWinWidth, m_iWinHeight, m_colEmptyBg);		// // //
 
@@ -1769,32 +1768,33 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 
 	const CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 
-	COLORREF *DECAY_COL = new COLORREF[CRegisterState::DECAY_RATE + 1];		// // //
-	for (uint8_t i = 0; i <= CRegisterState::DECAY_RATE; i++)
-		DECAY_COL[i] = i * 3 / 2 >= CRegisterState::DECAY_RATE
-					 ? BLEND(0xFFFF80, 0x80E0E0, 300 * i / CRegisterState::DECAY_RATE - 200)
-					 : BLEND(0x80E0E0, 0x80A0FF, 150 * i / CRegisterState::DECAY_RATE);
-
+	const int LINE_HEIGHT = 13;
 	int x = 30;		// // //
-	int y = 30 - 13 * 2;
+	int y = 30 - LINE_HEIGHT * 2;
+	int line = -1;		// // //
 	CString text;
 
-	vis_line = 15 + m_pDocument->ExpansionEnabled(SNDCHIP_VRC6) * 6
-				  + m_pDocument->ExpansionEnabled(SNDCHIP_MMC5) * 5
-				  + m_pDocument->ExpansionEnabled(SNDCHIP_N163) * 22
-				  + m_pDocument->ExpansionEnabled(SNDCHIP_FDS) * 16
-				  + m_pDocument->ExpansionEnabled(SNDCHIP_VRC7) * 11
-				  + m_pDocument->ExpansionEnabled(SNDCHIP_S5B) * 10;		// // //
+	const int BAR_OFFSET = LINE_HEIGHT * (3 + 8 +
+		m_pDocument->ExpansionEnabled(SNDCHIP_VRC6) * 5 +
+		m_pDocument->ExpansionEnabled(SNDCHIP_MMC5) * 4 +
+		m_pDocument->ExpansionEnabled(SNDCHIP_N163) * 18 +
+		m_pDocument->ExpansionEnabled(SNDCHIP_FDS) * 13 +
+		m_pDocument->ExpansionEnabled(SNDCHIP_VRC7) * 9 +
+		m_pDocument->ExpansionEnabled(SNDCHIP_S5B) * 8);		// // //
+	int vis_line = 0;
 
 	const auto DrawHeaderFunc = [&] (CString Text) {
-		++line; y += 13;
-		++line; y += 13;
+		line += 2; y += LINE_HEIGHT * 2;
+		pDC->MoveTo(x, y);
 		pDC->SetBkColor(m_colEmptyBg);
 		pDC->SetTextColor(0xFFAFAF);
 		pDC->TextOut(x, y, Text + _T(" registers"));
 	};
 
-	const auto DrawRegFunc = [&] (CString Header, int Count, int x, int y) {
+	const auto DrawRegFunc = [&] (CString Header, int Count) {
+		++line; y += LINE_HEIGHT;
+		pDC->SetBkColor(m_colEmptyBg);
+		pDC->SetTextColor(0xFFAFAF);
 		pDC->SetTextAlign(TA_UPDATECP);
 		pDC->MoveTo(x, y);
 		pDC->TextOut(0, 0, Header);
@@ -1807,11 +1807,17 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 	};
 
 	const auto DrawVolFunc = [&] (int Note, int Volume) {
-		DrawNoteBar(pDC, 30, vis_line * 10);
+		DrawNoteBar(pDC, 30, BAR_OFFSET + vis_line * 10);
 		if (Volume > 0xFF) Volume = 0xFF;
 		if (Note >= -12 && Note <= 96 && Volume)		// // //
-			pDC->FillSolidRect(29 + 6 * (Note + 12), vis_line * 10, 3, 7, RGB(Volume, Volume, Volume));
+			pDC->FillSolidRect(29 + 6 * (Note + 12), BAR_OFFSET + vis_line * 10, 3, 7, RGB(Volume, Volume, Volume));
 		++vis_line;
+	};
+
+	const auto DrawTextFunc = [&] (int xOffs, CString text) {
+		pDC->SetTextColor(0x808080);
+		pDC->SetTextAlign(TA_NOUPDATECP);
+		pDC->TextOut(x + xOffs, y, text);
 	};
 
 	// 2A03
@@ -1824,13 +1830,8 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
 		}
 
-		pDC->SetBkColor(m_colEmptyBg);
-		pDC->SetTextColor(0xFFAFAF);
-
-		++line; y += 13;		// // //
-
 		text.Format(_T("$%04X:"), 0x4000 + i * 4);		// // //
-		DrawRegFunc(text, 4, x, y);
+		DrawRegFunc(text, 4);
 
 		int period = (reg[2] | ((reg[3] & 7) << 8));
 		int vol = (reg[0] & 0x0F);
@@ -1848,7 +1849,6 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		int cents = int((note - double(note_conv)) * 100.0);
 
 //		pDC->FillSolidRect(x + 200, y, x + 400, y + 18, m_colEmptyBg);
-		pDC->SetTextColor(0x808080);
 
 		switch (i) {
 			case 0:
@@ -1881,19 +1881,17 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			default:
 				text.Format(_T(""));
 		}
-		
-		pDC->SetTextAlign(TA_NOUPDATECP);		// // //
-		pDC->TextOut(x + 180, y, text);
 /*
 		pDC->FillSolidRect(250 + i * 30, 0, 20, m_iWinHeight - HEADER_CHAN_HEIGHT, 0);
 		pDC->FillSolidRect(250 + i * 30, (period >> 1), 20, 5, RGB(vol << 4, vol << 4, vol << 4));
 */
+		DrawTextFunc(180, text);
 		DrawVolFunc(note_conv, vol << 4);
 	}
 
 	text.Format(_T("position: %02i, delta = $%02X"), m_DPCMState.SamplePos, m_DPCMState.DeltaCntr);		// // //
-	++line; y += 13;		// // //
-	pDC->TextOut(x + 180, y, text);
+	++line; y += LINE_HEIGHT;		// // //
+	DrawTextFunc(180, text);
 
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_VRC6)) {
 		DrawHeaderFunc(_T("VRC6"));		// // //
@@ -1906,13 +1904,8 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 				update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
 			}
 
-			pDC->SetBkColor(m_colEmptyBg);
-			pDC->SetTextColor(0xFFAFAF);
-			
-			++line; y += 13;		// // //
-
 			text.Format(_T("$%04X:"), 0x9000 + i * 0x1000);		// // //
-			DrawRegFunc(text, 3, x, y);
+			DrawRegFunc(text, 3);
 
 			int period = (reg[1] | ((reg[2] & 15) << 8));
 			int vol = (reg[0] & (i == 2 ? 0x3F : 0x0F));
@@ -1921,7 +1914,6 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			double note = NoteFromFreq(freq);
 			int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);		// // //
 			int cents = int((note - double(note_conv)) * 100.0);
-			pDC->SetTextColor(0x808080);
 
 			if (!period)
 				freq = note_conv = cents = 0;
@@ -1938,9 +1930,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 					vol = reg[0] >> 1;
 					break;
 			}
-			pDC->SetTextAlign(TA_NOUPDATECP);		// // //
-			pDC->TextOut(x + 180, y, text);
-			
+			DrawTextFunc(180, text);
 			DrawVolFunc(note_conv, vol << 4);
 		}
 	}
@@ -1956,13 +1946,8 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 				update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
 			}
 
-			pDC->SetBkColor(m_colEmptyBg);
-			pDC->SetTextColor(0xFFAFAF);
-			
-			++line; y += 13;		// // //
-
 			text.Format(_T("$%04X:"), 0x5000 + i * 4);
-			DrawRegFunc(text, 4, x, y);
+			DrawRegFunc(text, 4);
 			
 			int period = (reg[2] | ((reg[3] & 7) << 8));
 			int vol = (reg[0] & 0x0F);
@@ -1971,15 +1956,12 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			double note = NoteFromFreq(freq);
 			int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
 			int cents = int((note - double(note_conv)) * 100.0);
-			pDC->SetTextColor(0x808080);
 
 			if (period == 0)
 				freq = note_conv = cents = 0;
 			text.Format(_T("pitch = $%03X (%7.2fHz %s %+03i), vol = %02i, duty = %i"), 
 				period, freq, NoteToStr(note_conv), cents, vol, reg[0] >> 6);
-			pDC->SetTextAlign(TA_NOUPDATECP);		// // //
-			pDC->TextOut(x + 180, y, text);
-			
+			DrawTextFunc(180, text);
 			DrawVolFunc(note_conv, vol << 4);
 		}
 	}
@@ -2027,13 +2009,8 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			int period = (reg[0] | (reg[2] << 8) | ((reg[4] & 0x03) << 16));
 			int vol = (reg[7] & 0x0F);
 
-			pDC->SetBkColor(m_colEmptyBg);
-			pDC->SetTextColor(0xFFAFAF);
-			
-			++line; y += 13;		// // //
-
 			text.Format(_T("$%02X:"), i * 8);
-			DrawRegFunc(text, 8, x, y);
+			DrawRegFunc(text, 8);
 
 			if (i < 16 - m_pDocument->GetNamcoChannels()) continue;		// // //
 
@@ -2048,11 +2025,8 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			else {
 				note = note_conv = cents = 0;
 			}
-			pDC->SetTextColor(0x808080);
-			text.Format(_T("pitch = $%05X (%7.2fHz %s %+03i), vol = %02i"),
-				period, freq, NoteToStr(note_conv), cents, vol);
-			pDC->SetTextAlign(TA_NOUPDATECP);		// // //
-			pDC->TextOut(x + 300, y, text);
+			text.Format(_T("pitch = $%05X (%7.2fHz %s %+03i), vol = %02i"), period, freq, NoteToStr(note_conv), cents, vol);
+			DrawTextFunc(300, text);
 		}
 		
 		for (int i = 0; i < m_pDocument->GetNamcoChannels(); ++i) {		// // //
@@ -2083,20 +2057,6 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_FDS)) {
 		DrawHeaderFunc(_T("FDS"));		// // //
 
-		for (int i = 0; i < 11; ++i) {
-			auto pState = pSoundGen->GetRegState(SNDCHIP_FDS, 0x4080 + i);		// // //
-			reg[0] = pState->GetValue();
-			update[0] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
-
-			pDC->SetBkColor(m_colEmptyBg);
-			pDC->SetTextColor(0xFFAFAF);
-			
-			++line; y += 13;		// // //
-
-			text.Format(_T("$%04X:"), 0x4080 + i);
-			DrawRegFunc(text, 1, x, y);
-		}
-
 		int period = (pSoundGen->GetReg(SNDCHIP_FDS, 0x4082) & 0xFF) | ((pSoundGen->GetReg(SNDCHIP_FDS, 0x4083) & 0x0F) << 8);
 		int vol = (pSoundGen->GetReg(SNDCHIP_FDS, 0x4080) & 0x3F);
 
@@ -2111,11 +2071,19 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		else {
 			note = note_conv = cents = 0;
 		}
-		pDC->SetTextColor(0x808080);
-		text.Format(_T("pitch = $%03X (%7.2fHz %s %+03i), vol = %02i"),
+		CString FDStext;
+		FDStext.Format(_T("pitch = $%03X (%7.2fHz %s %+03i), vol = %02i"),
 			period, freq, NoteToStr(note_conv), cents, vol);
-		pDC->SetTextAlign(TA_NOUPDATECP);		// // //
-		pDC->TextOut(30 + 180, HEADER_HEIGHT + 30 + (line - 11) * 13, text);
+
+		for (int i = 0; i < 11; ++i) {
+			auto pState = pSoundGen->GetRegState(SNDCHIP_FDS, 0x4080 + i);		// // //
+			reg[0] = pState->GetValue();
+			update[0] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
+
+			text.Format(_T("$%04X:"), 0x4080 + i);
+			DrawRegFunc(text, 1);
+			if (!i) DrawTextFunc(180, FDStext);
+		}
 		
 		DrawVolFunc(note_conv, vol << 3);
 	}
@@ -2128,12 +2096,8 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			reg[j] = pState->GetValue();
 			update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
 		}
-
-		pDC->SetBkColor(m_colEmptyBg);
-		pDC->SetTextColor(0xFFAFAF);
 		
-		++line; y += 13;		// // //
-		DrawRegFunc(_T("$00:"), 8, x, y);
+		DrawRegFunc(_T("$00:"), 8);		// // //
 
 		for (int i = 0; i < 6; ++i) {
 			for (int j = 0; j < 3; j++) {
@@ -2142,13 +2106,8 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 				update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
 			}
 
-			pDC->SetBkColor(m_colEmptyBg);
-			pDC->SetTextColor(0xFFAFAF);
-			
-			++line; y += 13;		// // //
-
 			text.Format(_T("$x%01X:"), i);
-			DrawRegFunc(text, 3, x, y);
+			DrawRegFunc(text, 3);
 
 			int period = reg[0] | ((reg[1] & 0x01) << 8);
 			int octave = (reg[1] & 0x0E) >> 1;
@@ -2178,11 +2137,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			else {
 				note = note_conv = cents = 0;
 			}
-			pDC->SetTextColor(0x808080);
 			text.Format(_T("pitch = $%03X (%7.2fHz %s %+03i), vol = %02i, patch = $%01X"),
 				period, freq, NoteToStr(note_conv), cents, vol, inst);
-			pDC->SetTextAlign(TA_NOUPDATECP);		// // //
-			pDC->TextOut(x + 180, y, text);
+			DrawTextFunc(180, text);
 			
 			DrawVolFunc(note_conv, vol << 4);
 		}
@@ -2199,13 +2156,8 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 				update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
 			}
 
-			pDC->SetBkColor(m_colEmptyBg);
-			pDC->SetTextColor(0xFFAFAF);
-			
-			++line; y += 13;		// // //
-
 			text.Format(_T("$%02X:"), i * 2);
-			DrawRegFunc(text, 2, x, y);
+			DrawRegFunc(text, 2);
 
 			int period = (reg[0] | ((reg[1] & 0x0F) << 8));
 			int vol = pSoundGen->GetReg(SNDCHIP_S5B, 8 + i) & 0x0F;
@@ -2214,13 +2166,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			double note = NoteFromFreq(freq);
 			int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
 			int cents = int((note - double(note_conv)) * 100.0);
-			pDC->SetTextColor(0x808080);
 
-			if (period == 0) {
-				freq = 0;
-				note_conv = 0;
-				cents = 0;
-			}
+			if (!period)
+				freq = note_conv = cents = 0;
 
 			if (i < 3) {
 				text.Format(_T("pitch = $%03X (%7.2fHz %s %+03i), vol = %02i, mode = %c%c%c"),
@@ -2232,8 +2180,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			else {
 				text.Format(_T("pitch = $%02X"), reg[0] & 0x1F);
 			}
-			pDC->SetTextAlign(TA_NOUPDATECP);		// // //
-			pDC->TextOut(x + 180, y, text);
+			DrawTextFunc(180, text);
 
 			if (i < 3)
 				DrawVolFunc(note_conv, vol << 4);
@@ -2246,16 +2193,10 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 				update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
 			}
 
-			pDC->SetBkColor(m_colEmptyBg);
-			pDC->SetTextColor(0xFFAFAF);
-
-			int y = 30 + line++ * 13;
-
 			text.Format(_T("$%02X:"), i * 3 + 8);
-			DrawRegFunc(text, 3, x, y);
+			DrawRegFunc(text, 3);
 			
 			if (i == 1) {
-				pDC->SetTextColor(0x808080);
 				int period = (reg[0] | (reg[1] << 8));
 				double freq, note;
 				int note_conv, cents;
@@ -2273,13 +2214,11 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 				else
 					text.Format(_T("period = $%04X, shape = $%01X"), period, reg[2]);
 				
-				pDC->SetTextAlign(TA_NOUPDATECP);		// // //
-				pDC->TextOut(x + 180, y, text);
+				DrawTextFunc(180, text);
 			}
 		}
 	}
 
-	SAFE_RELEASE_ARRAY(DECAY_COL);
 	pDC->SelectObject(pOldFont);
 
 	// Surrounding frame
