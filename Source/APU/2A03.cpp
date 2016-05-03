@@ -38,7 +38,7 @@ C2A03::C2A03(CMixer *pMixer) :
 	m_pSquare2(new CSquare(m_pMixer, CHANID_SQUARE2, SNDCHIP_NONE)),
 	m_pTriangle(new CTriangle(m_pMixer, CHANID_TRIANGLE)),
 	m_pNoise(new CNoise(m_pMixer, CHANID_NOISE)),
-	m_pDPCM(new CDPCM(m_pMixer, CHANID_DPCM, nullptr))
+	m_pDPCM(new CDPCM(m_pMixer, CHANID_DPCM))		// // //
 {
 }
 
@@ -221,9 +221,9 @@ inline void C2A03::RunAPU2(uint32_t Time)
 	}
 }
 
-void C2A03::SetSampleMemory(CSampleMem *pMem) const		// // //
+CSampleMem *C2A03::GetSampleMemory() const		// // //
 {
-	m_pDPCM->SetSampleMemory(pMem);
+	return m_pDPCM->GetSampleMemory();
 }
 
 uint8_t C2A03::GetSamplePos() const

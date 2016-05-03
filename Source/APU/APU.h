@@ -45,7 +45,7 @@ class CFile;
 
 class CAPU {
 public:
-	CAPU(IAudioCallback *pCallback, CSampleMem *pSampleMem);
+	CAPU(IAudioCallback *pCallback);		// // //
 	~CAPU();
 
 	void	Reset();
@@ -66,6 +66,8 @@ public:
 	uint8_t	GetSamplePos() const;
 	uint8_t	GetDeltaCounter() const;
 	bool	DPCMPlaying() const;
+	void	WriteSample(const char *pBuf, int Size);		// // //
+	void	ClearSample();		// // //
 
 	void	SetChipLevel(chip_level_t Chip, float Level);
 

@@ -107,7 +107,6 @@ int dither(long size);
 
 CSoundGen::CSoundGen() : 
 	m_pAPU(NULL),
-	m_pSampleMem(NULL),
 	m_pDSound(NULL),
 	m_pDSoundChannel(NULL),
 	m_pAccumBuffer(NULL),
@@ -146,11 +145,8 @@ CSoundGen::CSoundGen() :
 {
 	TRACE0("SoundGen: Object created\n");
 
-	// DPCM sample interface
-	m_pSampleMem = new CSampleMem();
-
 	// Create APU
-	m_pAPU = new CAPU(this, m_pSampleMem);
+	m_pAPU = new CAPU(this);		// // //
 
 	// Create all kinds of channels
 	CreateChannels();
@@ -164,7 +160,6 @@ CSoundGen::~CSoundGen()
 {
 	// Delete APU
 	SAFE_RELEASE(m_pAPU);
-	SAFE_RELEASE(m_pSampleMem);
 
 	// Remove channels
 	for (int i = 0; i < CHANNELS; ++i) {
@@ -246,11 +241,8 @@ void CSoundGen::AssignChannel(CTrackerChannel *pTrackerChannel)		// // //
 	chan_id_t ID = pTrackerChannel->GetID();
 
 	CChannelHandler *pRenderer = F.Produce(ID);
-	if (pRenderer) {
-		if (ID == CHANID_DPCM)
-			static_cast<CDPCMChan*>(pRenderer)->SetSampleMemory(m_pSampleMem);
+	if (pRenderer)
 		pRenderer->SetChannelID(ID);
-	}
 
 	static size_t Pos = 0;		// // // test
 	m_pTrackerChannels[Pos] = pTrackerChannel;
@@ -611,7 +603,7 @@ void CSoundGen::CancelPreviewSample()
 {
 	// Remove references to selected sample.
 	// This must be done if a sample is about to be deleted!
-	m_pSampleMem->Clear();
+	m_pAPU->ClearSample();		// // //
 }
 
 bool CSoundGen::IsRunning() const
@@ -1251,8 +1243,8 @@ void CSoundGen::HaltPlayer()
 	m_bDoHalt = false;		// // //
 
 	MakeSilent();
-
-	m_pSampleMem->SetMem(0, 0);
+	
+	m_pAPU->ClearSample();		// // //
 /*
 	for (int i = 0; i < CHANNELS; ++i) {
 		if (m_pChannels[i] != NULL) {
@@ -1363,7 +1355,7 @@ void CSoundGen::ResetAPU()
 	// MMC5
 	m_pAPU->Write(0x5015, 0x03);
 
-	m_pSampleMem->Clear();
+	m_pAPU->ClearSample();		// // //
 }
 
 void CSoundGen::AddCycles(int Count)
@@ -1387,7 +1379,7 @@ void CSoundGen::MakeSilent()
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
 
 	m_pAPU->Reset();
-	m_pSampleMem->Clear();
+	m_pAPU->ClearSample();		// // //
 
 	for (int i = 0; i < CHANNELS; ++i) {
 		if (m_pChannels[i])
@@ -1800,7 +1792,7 @@ void CSoundGen::PlaySample(const CDSample *pSample, int Offset, int Pitch)
 	SAFE_RELEASE(m_pPreviewSample);
 
 	// Sample may not be removed when used by the sample memory class!
-	m_pSampleMem->SetMem(pSample->GetData(), pSample->GetSize());
+	m_pAPU->WriteSample(pSample->GetData(), pSample->GetSize());		// // //
 
 	int Loop = 0;
 	int Length = ((pSample->GetSize() - 1) >> 4) - (Offset << 2);

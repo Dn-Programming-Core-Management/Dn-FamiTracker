@@ -31,9 +31,9 @@ const uint16_t CDPCM::DMC_PERIODS_PAL[]  = {
 	398, 354, 316, 298, 276, 236, 210, 198, 176, 148, 132, 118, 98, 78, 66, 50
 };
 
-CDPCM::CDPCM(CMixer *pMixer, int ID, CSampleMem *pSampleMem) :
-	C2A03Chan(pMixer, SNDCHIP_NONE, ID),		// // //
-	m_pSampleMem(pSampleMem)
+CDPCM::CDPCM(CMixer *pMixer, int ID) :		// // //
+	C2A03Chan(pMixer, SNDCHIP_NONE, ID),
+	m_pSampleMem(new CSampleMem { })
 {
 	PERIOD_TABLE = DMC_PERIODS_NTSC;
 
@@ -42,6 +42,8 @@ CDPCM::CDPCM(CMixer *pMixer, int ID, CSampleMem *pSampleMem) :
 
 CDPCM::~CDPCM()
 {
+	if (m_pSampleMem)		// // //
+		delete m_pSampleMem;
 }
 
 void CDPCM::Reset()
@@ -114,9 +116,9 @@ void CDPCM::Reload()
 	m_iDMA_BytesRemaining = (m_iDMA_LengthReg << 4) + 1;
 }
 
-void CDPCM::SetSampleMemory(CSampleMem *pMem)		 // // //
+CSampleMem *CDPCM::GetSampleMemory() const
 {
-	m_pSampleMem = pMem;
+	return m_pSampleMem;
 }
 
 void CDPCM::Process(uint32_t Time)

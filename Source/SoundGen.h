@@ -300,7 +300,6 @@ private:
 	CDSoundChannel		*m_pDSoundChannel;
 	CVisualizerWnd		*m_pVisualizerWnd;
 	CAPU				*m_pAPU;
-	CSampleMem			*m_pSampleMem;
 
 	const CDSample		*m_pPreviewSample;
 

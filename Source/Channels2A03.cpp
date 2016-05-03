@@ -25,8 +25,8 @@
 #include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerTypes.h"		// // //
-#include "APU/Types.h"
-#include "Common.h"		// // //
+#include "APU/Types.h"		// // //
+#include "APU/APU.h"		// // // for DPCM
 #include "Instrument.h"
 #include "ChannelHandler.h"
 #include "Channels2A03.h"
@@ -501,9 +501,8 @@ int CNoiseChan::TriggerNote(int Note)
 // DPCM
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-CDPCMChan::CDPCMChan(CSampleMem *pSampleMem) : 
+CDPCMChan::CDPCMChan() :		// // //
 	CChannelHandler(0xF, 0x3F),		// // // does not use these anyway
-	m_pSampleMem(pSampleMem),
 	m_bEnabled(false),
 	m_bTrigger(false),
 	m_cDAC(255),
@@ -653,11 +652,6 @@ void CDPCMChan::RefreshChannel()
 	}
 }
 
-void CDPCMChan::SetSampleMemory(CSampleMem *pSampleMem)		// // //
-{
-	m_pSampleMem = pSampleMem;
-}
-
 void CDPCMChan::WriteDCOffset(unsigned char Delta)		// // //
 {
 	// Initial delta counter value
@@ -673,8 +667,7 @@ void CDPCMChan::SetLoopOffset(unsigned char Loop)		// // //
 void CDPCMChan::PlaySample(const CDSample *pSamp, int Pitch)		// // //
 {
 	int SampleSize = pSamp->GetSize();
-	if (m_pSampleMem)
-		m_pSampleMem->SetMem(pSamp->GetData(), SampleSize);
+	m_pAPU->WriteSample(pSamp->GetData(), SampleSize);		// // //
 	m_iPeriod = m_iCustomPitch != -1 ? m_iCustomPitch : Pitch;
 	m_iSampleLength = (SampleSize >> 4) - (m_iOffset << 2);
 	m_iLoopLength = SampleSize - m_iLoopOffset;

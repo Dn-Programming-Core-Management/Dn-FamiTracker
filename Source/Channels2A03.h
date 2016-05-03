@@ -105,10 +105,8 @@ protected:
 // DPCM
 class CDPCMChan : public CChannelHandler, public CChannelHandlerInterfaceDPCM {		// // //
 public:
-	CDPCMChan(CSampleMem *pSampleMem);
+	CDPCMChan();		// // //
 	void RefreshChannel();
-
-	void SetSampleMemory(CSampleMem *pSampleMem);		// // //
 
 	void WriteDCOffset(unsigned char Delta);		// // //
 	void SetLoopOffset(unsigned char Loop);		// // //
@@ -126,8 +124,6 @@ protected:
 	CString GetCustomEffectString() const;		// // //
 private:
 	// DPCM variables
-	CSampleMem *m_pSampleMem;
-
 	unsigned char m_cDAC;
 	unsigned char m_iLoop;
 	unsigned char m_iOffset;

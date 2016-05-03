@@ -52,7 +52,7 @@ const uint8_t CAPU::LENGTH_TABLE[] = {
 
 static std::vector<CExternal*> ExChips;
 
-CAPU::CAPU(IAudioCallback *pCallback, CSampleMem *pSampleMem) : 
+CAPU::CAPU(IAudioCallback *pCallback) :		// // //
 	m_pParent(pCallback),
 	m_iFrameCycles(0),
 	m_pSoundBuffer(NULL),
@@ -76,8 +76,6 @@ CAPU::CAPU(IAudioCallback *pCallback, CSampleMem *pSampleMem) :
 	memset(m_iRegsMMC5, 0, sizeof(m_iRegsMMC5));
 	memset(m_iRegsN163, 0, sizeof(m_iRegsN163));
 	memset(m_iRegsS5B, 0, sizeof(m_iRegsS5B));
-
-	m_p2A03->SetSampleMemory(pSampleMem);		// // //
 
 	m_iPortVRC7 = m_iPortS5B = 0;
 	m_fLevelVRC7 = m_fLevelS5B = 1.0f;
@@ -346,6 +344,16 @@ uint8_t CAPU::GetDeltaCounter() const
 bool CAPU::DPCMPlaying() const
 {
 	return m_p2A03->DPCMPlaying();
+}
+
+void CAPU::WriteSample(const char *pBuf, int Size)		// // //
+{
+	m_p2A03->GetSampleMemory()->SetMem(pBuf, Size);
+}
+
+void CAPU::ClearSample()		// // //
+{
+	m_p2A03->GetSampleMemory()->Clear();
 }
 
 #ifdef LOGGING

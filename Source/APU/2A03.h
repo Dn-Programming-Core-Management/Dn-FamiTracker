@@ -51,7 +51,7 @@ public:
 	
 	void	ChangeMachine(int Machine);
 	
-	void	SetSampleMemory(CSampleMem *pMem) const;		// // //
+	CSampleMem *GetSampleMemory() const;		// // //
 	uint8_t	GetSamplePos() const;
 	uint8_t	GetDeltaCounter() const;
 	bool	DPCMPlaying() const;

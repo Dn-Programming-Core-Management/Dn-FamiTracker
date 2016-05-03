@@ -21,8 +21,7 @@
 */
 
 #include "stdafx.h"
-#include "Common.h"		// // // TODO: remove
-#include "Instrument.h"
+#include "Instrument.h" // TODO: remove
 #include "ChannelHandler.h"
 #include "ChannelFactory.h"
 
@@ -36,8 +35,6 @@
 
 // // // Default implementation for channel factory
 
-class CSampleMem;
-
 CChannelFactory::CChannelFactory() : CFactory()
 {
 	FuncType Func;
@@ -47,7 +44,7 @@ CChannelFactory::CChannelFactory() : CFactory()
 	m_pMakeFunc[CHANID_SQUARE2] = Func;
 	AddProduct<CTriangleChan>(CHANID_TRIANGLE);
 	AddProduct<CNoiseChan>(CHANID_NOISE);
-	AddProduct<CDPCMChan, CSampleMem*>(CHANID_DPCM, nullptr);
+	AddProduct<CDPCMChan>(CHANID_DPCM);
 	
 	Func = MakeCtor<CVRC6Square>();
 	m_pMakeFunc[CHANID_VRC6_PULSE1] = Func;
