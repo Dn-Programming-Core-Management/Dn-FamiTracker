@@ -97,22 +97,22 @@ void CInstrumentRecorder::RecordInstrument(const unsigned Tick, CView *pView)		/
 	case SNDCHIP_NONE: case SNDCHIP_MMC5:
 		ID -= Chip == SNDCHIP_MMC5 ? CHANID_MMC5_SQUARE1 : CHANID_SQUARE1;
 		PitchReg = m_iRecordChannel == CHANID_NOISE ? (0x0F & REG(0x0E)) :
-					(0xFF & REG(2 + (ID << 2)) | (0x07 & REG(3 + (ID << 2))) << 8); break;
+					(REG(2 + (ID << 2)) | (0x07 & REG(3 + (ID << 2))) << 8); break;
 	case SNDCHIP_VRC6:
 		ID -= CHANID_VRC6_PULSE1;
-		PitchReg = 0xFF & REG(1 + (ID << 2)) | (0x0F & REG(2 + (ID << 2))) << 8; break;
+		PitchReg = REG(1 + (ID << 2)) | (0x0F & REG(2 + (ID << 2))) << 8; break;
 	case SNDCHIP_FDS:
 		ID -= CHANID_FDS; // ID = 0;
-		PitchReg = 0xFF & REG(0x42) | (0x0F & REG(0x43)) << 8; break;
+		PitchReg = REG(0x42) | (0x0F & REG(0x43)) << 8; break;
 	case SNDCHIP_N163:
 		ID -= CHANID_N163_CH1;
-		PitchReg = (0xFF & REG(0x78 - (ID << 3))
-					| (0xFF & REG(0x7A - (ID << 3))) << 8
+		PitchReg = (REG(0x78 - (ID << 3))
+					| (REG(0x7A - (ID << 3))) << 8
 					| (0x03 & REG(0x7C - (ID << 3))) << 16) >> 2; // N163_PITCH_SLIDE_SHIFT;
 		break;
 	case SNDCHIP_S5B:
 		ID -= CHANID_S5B_CH1;
-		PitchReg = (0xFF & REG(ID << 1) | (0x0F & REG(1 + (ID << 1))) << 8); break;
+		PitchReg = (REG(ID << 1) | (0x0F & REG(1 + (ID << 1))) << 8); break;
 	}
 
 	int Note = 0;
@@ -176,7 +176,7 @@ void CInstrumentRecorder::RecordInstrument(const unsigned Tick, CView *pView)		/
 					if (m_iRecordWaveCache != nullptr) {
 						int Count = 0x100 - (0xFC & REG(0x7C - (ID << 3)));
 						if (Count == m_iRecordWaveSize) {
-							int pos = 0xFF & REG(0x7E - (ID << 3));
+							int pos = REG(0x7E - (ID << 3));
 							char *Wave = new char[Count];
 							for (int j = 0; j < Count; j++)
 								Wave[j] = 0x0F & REG((pos + j) >> 1) >> ((j & 0x01) ? 4 : 0);
@@ -366,12 +366,12 @@ void CInstrumentRecorder::FinalizeRecordInstrument()
 		for (int i = 0; i < CInstrumentFDS::WAVE_SIZE; i++)
 			FDSInst->SetSample(i, 0x3F & m_pSoundGen->GetReg(SNDCHIP_FDS, 0x4040 + i));
 		FDSInst->SetModulationDepth(0x3F & m_pSoundGen->GetReg(SNDCHIP_FDS, 0x4084));
-		FDSInst->SetModulationSpeed(0xFF & m_pSoundGen->GetReg(SNDCHIP_FDS, 0x4086) | (0x0F & m_pSoundGen->GetReg(SNDCHIP_FDS, 0x4087)) << 8);
+		FDSInst->SetModulationSpeed(m_pSoundGen->GetReg(SNDCHIP_FDS, 0x4086) | (0x0F & m_pSoundGen->GetReg(SNDCHIP_FDS, 0x4087)) << 8);
 		break;
 	case INST_N163:
 		ASSERT(N163Inst != NULL);
 		int offs = (m_iRecordChannel - CHANID_N163_CH1) << 3;
-		int pos = 0xFF & m_pSoundGen->GetReg(SNDCHIP_N163, 0x7E - offs);
+		int pos = m_pSoundGen->GetReg(SNDCHIP_N163, 0x7E - offs);
 		N163Inst->SetWavePos(pos);
 		N163Inst->SetWaveSize(m_iRecordWaveSize);
 		N163Inst->SetWaveCount(m_iRecordWaveCount + 1);

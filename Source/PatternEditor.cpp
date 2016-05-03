@@ -21,6 +21,7 @@
 */
 
 #include <algorithm>
+#include <functional>		// // //
 #include <vector>		// // //
 #include <cmath>
 #include "stdafx.h"
@@ -1806,11 +1807,13 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		}
 	};
 
-	const auto DrawVolFunc = [&] (int Note, int Volume) {
+	const auto DrawVolFunc = [&] (int Freq, int Volume) {
+		const double note = NoteFromFreq(Freq);
+		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
 		DrawNoteBar(pDC, 30, BAR_OFFSET + vis_line * 10);
 		if (Volume > 0xFF) Volume = 0xFF;
-		if (Note >= -12 && Note <= 96 && Volume)		// // //
-			pDC->FillSolidRect(29 + 6 * (Note + 12), BAR_OFFSET + vis_line * 10, 3, 7, RGB(Volume, Volume, Volume));
+		if (note_conv >= -12 && note_conv <= 96 && Volume)		// // //
+			pDC->FillSolidRect(29 + 6 * (note_conv + 12), BAR_OFFSET + vis_line * 10, 3, 7, RGB(Volume, Volume, Volume));
 		++vis_line;
 	};
 
@@ -1820,73 +1823,71 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		pDC->TextOut(x + xOffs, y, text);
 	};
 
+	const auto GetRegsFunc = [&] (unsigned Chip, std::function<int(int)> F, int Count) {
+		for (int j = 0; j < Count; j++) {
+			auto pState = pSoundGen->GetRegState(Chip, F(j));		// // //
+			reg[j] = pState->GetValue();
+			update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
+		}
+	};
+
+	const auto GetGenericPitchText = [] (CString unit, int digits, int period, double freq, bool UsePeriod) {
+		const CString fmt = _T("pitch = $%0*X (%7.2f") + unit + _T(" %s %+03i)");
+		const double note = NoteFromFreq(freq);
+		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
+		const int cents = int((note - double(note_conv)) * 100.0);
+		
+		CString str;
+		if (UsePeriod)
+			str.Format(fmt, digits, period, freq, NoteToStr(note_conv), cents);
+		else
+			str.Format(fmt, digits, period, 0., _T("---"), 0);
+		return str;
+	};
+	const auto GetPitchTextFunc = std::bind(GetGenericPitchText, _T("Hz"),
+		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+	const auto GetDPCMTextFunc = std::bind(GetGenericPitchText, _T("Bps"),
+		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+
 	// 2A03
 	DrawHeaderFunc(_T("2A03"));		// // //
 
 	for (int i = 0; i < 5; ++i) {
-		for (int j = 0; j < 4; j++) {	// // //
-			auto pState = pSoundGen->GetRegState(SNDCHIP_NONE, 0x4000 + i * 4 + j);		// // //
-			reg[j] = pState->GetValue();
-			update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
-		}
-
+		GetRegsFunc(SNDCHIP_NONE, [&] (int x) { return 0x4000 + i * 4 + x; }, 4);
 		text.Format(_T("$%04X:"), 0x4000 + i * 4);		// // //
 		DrawRegFunc(text, 4);
 
 		int period = (reg[2] | ((reg[3] & 7) << 8));
 		int vol = (reg[0] & 0x0F);
-
 		double freq;		// // //
-		if (i == 4)
-			freq = 236250000.0 / 1056.0 / CDPCM::DMC_PERIODS_NTSC[reg[0] & 0x0F];
-		else if (i == 3)
-			freq = 4 * (m_pDocument->GetMachine() == PAL ? CNoise::NOISE_PERIODS_PAL[0x0F - period] : CNoise::NOISE_PERIODS_NTSC[0x0F - period]);
-		else
-			freq = RegToFreq(period, m_pDocument->GetMachine() == PAL ? SNDCHIP_2A07 : SNDCHIP_NONE);
-		if (i == 2) freq /= 2;
-		double note = NoteFromFreq(freq);
-		int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);		// // //
-		int cents = int((note - double(note_conv)) * 100.0);
-
 //		pDC->FillSolidRect(x + 200, y, x + 400, y + 18, m_colEmptyBg);
 
 		switch (i) {
-			case 0:
-			case 1:
-				if (period < 8)
-					freq = note_conv = cents = 0;
-				text.Format(_T("pitch = $%03X (%7.2fHz %s %+03i), vol = %02i, duty = %i"),		// // //
-					period, freq, NoteToStr(note_conv), cents, vol, reg[0] >> 6);
-				break;
-			case 2:
-				if (!period)
-					freq = note_conv = cents = 0;
-				vol = (reg[0] != 0) ? 15 : 0;
-				text.Format(_T("pitch = $%03X (%7.2fHz %s %+03i)"), period, freq, NoteToStr(note_conv), cents);
-				break;
-			case 3:
-				period = reg[2] & 0x0F;
-				text.Format(_T("pitch = $%01X, vol = %02i, mode = %i"), period, vol, reg[2] >> 7);
-				period = (period << 4) | ((reg[2] & 0x80) >> 4);
-				break;
-			case 4:
-				period = reg[0] & 0x0F;
-				vol = 15 * !pSoundGen->PreviewDone();
-				text.Format(_T("pitch = $%01X"), period);
-				if (reg[0] & 0x40)
-					text.AppendFormat(_T(" (%7.2fBps %s %+03i)"), freq, NoteToStr(note_conv), cents);
-				text.AppendFormat(_T(", size = %i byte%c"), (reg[3] << 4) | 1, reg[3] ? 's' : ' ');
-				period <<= 4;
-				break;
-			default:
-				text.Format(_T(""));
+		case 0: case 1:
+			freq = RegToFreq(period, m_pDocument->GetMachine() == PAL ? SNDCHIP_2A07 : SNDCHIP_NONE);
+			text.Format(_T("%s, vol = %02i, duty = %i"), GetPitchTextFunc(3, period, freq, period >= 8), vol, reg[0] >> 6); break;
+		case 2:
+			freq = RegToFreq(period, m_pDocument->GetMachine() == PAL ? SNDCHIP_2A07 : SNDCHIP_NONE) / 2.;
+			vol = reg[0] ? 15 : 0;
+			text.Format(_T("%s"), GetPitchTextFunc(3, period, freq, period > 0)); break;
+		case 3:
+			period = reg[2] & 0x0F;
+			freq = 4 * (m_pDocument->GetMachine() == PAL ? CNoise::NOISE_PERIODS_PAL[0x0F - period] : CNoise::NOISE_PERIODS_NTSC[0x0F - period]);
+			text.Format(_T("pitch = $%01X, vol = %02i, mode = %i"), period, vol, reg[2] >> 7);
+			period = (period << 4) | ((reg[2] & 0x80) >> 4); break;
+		case 4:
+			period = reg[0] & 0x0F;
+			freq = 236250000.0 / 1056.0 / CDPCM::DMC_PERIODS_NTSC[reg[0] & 0x0F];
+			vol = 15 * !pSoundGen->PreviewDone();
+			text.Format(_T("%s, %s, size = %i byte%c"), GetDPCMTextFunc(1, period & 0x0F, freq, vol > 0),
+				(reg[0] & 0x40) ? _T("looped") : _T("once"), (reg[3] << 4) | 1, reg[3] ? 's' : ' '); break;
 		}
 /*
 		pDC->FillSolidRect(250 + i * 30, 0, 20, m_iWinHeight - HEADER_CHAN_HEIGHT, 0);
 		pDC->FillSolidRect(250 + i * 30, (period >> 1), 20, 5, RGB(vol << 4, vol << 4, vol << 4));
 */
 		DrawTextFunc(180, text);
-		DrawVolFunc(note_conv, vol << 4);
+		DrawVolFunc(freq, vol << 4);
 	}
 
 	text.Format(_T("position: %02i, delta = $%02X"), m_DPCMState.SamplePos, m_DPCMState.DeltaCntr);		// // //
@@ -1898,40 +1899,19 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 
 		// VRC6
 		for (int i = 0; i < 3; ++i) {
-			for (int j = 0; j < 3; j++) {
-				auto pState = pSoundGen->GetRegState(SNDCHIP_VRC6, 0x9000 + i * 0x1000 + j);		// // //
-				reg[j] = pState->GetValue();
-				update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
-			}
-
+			GetRegsFunc(SNDCHIP_VRC6, [&] (int x) { return 0x9000 + i * 0x1000 + x; }, 3);
 			text.Format(_T("$%04X:"), 0x9000 + i * 0x1000);		// // //
 			DrawRegFunc(text, 3);
 
 			int period = (reg[1] | ((reg[2] & 15) << 8));
 			int vol = (reg[0] & (i == 2 ? 0x3F : 0x0F));
-
 			double freq = RegToFreq(period, (i == 2) ? SNDCHIP_VRC6 : SNDCHIP_NONE);		// // //
-			double note = NoteFromFreq(freq);
-			int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);		// // //
-			int cents = int((note - double(note_conv)) * 100.0);
 
-			if (!period)
-				freq = note_conv = cents = 0;
-
-			switch (i) {		// // //
-				case 0:
-				case 1:
-					text.Format(_T("pitch = $%03X (%7.2fHz %s %+03i), vol = %02i, duty = %i"),
-						period, freq, NoteToStr(note_conv), cents, vol, (reg[0] >> 4) & 0x07);
-					break;
-				case 2:
-					text.Format(_T("pitch = $%03X (%7.2fHz %s %+03i), vol = %02i"),
-						period, freq, NoteToStr(note_conv), cents, vol);
-					vol = reg[0] >> 1;
-					break;
-			}
+			text.Format(_T("%s, vol = %02i"), GetPitchTextFunc(3, period, freq, period > 0), vol);
+			if (i != 2)
+				text.AppendFormat(_T(", duty = %i"), (reg[0] >> 4) & 0x07);
 			DrawTextFunc(180, text);
-			DrawVolFunc(note_conv, vol << 4);
+			DrawVolFunc(freq, vol << (i == 2 ? 3 : 4));
 		}
 	}
 
@@ -1940,29 +1920,17 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 
 		// MMC5
 		for (int i = 0; i < 2; ++i) {
-			for (int j = 0; j < 4; j++) {
-				auto pState = pSoundGen->GetRegState(SNDCHIP_MMC5, 0x5000 + i * 4 + j);		// // //
-				reg[j] = pState->GetValue();
-				update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
-			}
-
+			GetRegsFunc(SNDCHIP_MMC5, [&] (int x) { return 0x5000 + i * 4 + x; }, 4);
 			text.Format(_T("$%04X:"), 0x5000 + i * 4);
 			DrawRegFunc(text, 4);
 			
 			int period = (reg[2] | ((reg[3] & 7) << 8));
 			int vol = (reg[0] & 0x0F);
-
 			double freq = RegToFreq(period, SNDCHIP_NONE);
-			double note = NoteFromFreq(freq);
-			int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
-			int cents = int((note - double(note_conv)) * 100.0);
 
-			if (period == 0)
-				freq = note_conv = cents = 0;
-			text.Format(_T("pitch = $%03X (%7.2fHz %s %+03i), vol = %02i, duty = %i"), 
-				period, freq, NoteToStr(note_conv), cents, vol, reg[0] >> 6);
+			text.Format(_T("%s, vol = %02i, duty = %i"), GetPitchTextFunc(3, period, freq, period > 0), vol, reg[0] >> 6);
 			DrawTextFunc(180, text);
-			DrawVolFunc(note_conv, vol << 4);
+			DrawVolFunc(freq, vol << 4);
 		}
 	}
 
@@ -1970,9 +1938,10 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		DrawHeaderFunc(_T("N163"));		// // //
 
 		// // // N163 wave
-		int Length = 0x80 - 8 * m_pDocument->GetNamcoChannels();
+		const int N163_CHANS = m_pDocument->GetNamcoChannels();
+		const int Length = 0x80 - 8 * N163_CHANS;
 
-		y += HEADER_HEIGHT;
+		y += 18;
 		pDC->FillSolidRect(x + 300 - 1, y - 1, 2 * Length + 2, 17, 0x808080);
 		pDC->FillSolidRect(x + 300, y, 2 * Length, 15, 0);
 		for (int i = 0; i < Length; i++) {
@@ -1985,7 +1954,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			pDC->FillSolidRect(x + 300 + i * 2    , y + 15 - Lo, 1, Lo, Col);
 			pDC->FillSolidRect(x + 300 + i * 2 + 1, y + 15 - Hi, 1, Hi, Col);
 		}
-		for (int i = 0; i < m_pDocument->GetNamcoChannels(); i++) {
+		for (int i = 0; i < N163_CHANS; ++i) {
 			auto pPosState = pSoundGen->GetRegState(SNDCHIP_N163, 0x78 - i * 8 + 6);
 			auto pLenState = pSoundGen->GetRegState(SNDCHIP_N163, 0x78 - i * 8 + 4);
 			int WavePos = pPosState->GetValue();
@@ -1996,152 +1965,72 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			pDC->FillSolidRect(x + 300 + WavePos, y + 20 + i * 5, WaveLen, 3,
 							   BLEND(0xC0C0C0, DECAY_COLOR[NewTime], 100 * UpdateTime / CRegisterState::DECAY_RATE));
 		}
-		y -= HEADER_HEIGHT;
+		y -= 18;
+
+		double FreqCache[8] = { };
+		int VolCache[8] = { };
 
 		// N163
 		for (int i = 0; i < 16; ++i) {
-			for (int j = 0; j < 8; j++) {		// // //
-				auto pState = pSoundGen->GetRegState(SNDCHIP_N163, i * 8 + j);		// // //
-				reg[j] = pState->GetValue();
-				update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
-			}
-
-			int period = (reg[0] | (reg[2] << 8) | ((reg[4] & 0x03) << 16));
-			int vol = (reg[7] & 0x0F);
-
+			GetRegsFunc(SNDCHIP_N163, [&] (int x) { return i * 8 + x; }, 8);
 			text.Format(_T("$%02X:"), i * 8);
 			DrawRegFunc(text, 8);
 
-			if (i < 16 - m_pDocument->GetNamcoChannels()) continue;		// // //
-
-			double freq = RegToFreqN163(period, m_pDocument->GetNamcoChannels() * (256 - (reg[4] & 0xFC)));		// // //
-			double note;
-			int note_conv, cents;
-			if (period) {
-				note = NoteFromFreq(freq);
-				note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);		// // //
-				cents = int((note - double(note_conv)) * 100.0);
-			}
-			else {
-				note = note_conv = cents = 0;
-			}
-			text.Format(_T("pitch = $%05X (%7.2fHz %s %+03i), vol = %02i"), period, freq, NoteToStr(note_conv), cents, vol);
-			DrawTextFunc(300, text);
-		}
-		
-		for (int i = 0; i < m_pDocument->GetNamcoChannels(); ++i) {		// // //
-			for (int j = 0; j < 8; j++) {		// // //
-				auto pState = pSoundGen->GetRegState(SNDCHIP_N163, 0x78 - i * 8 + j);
-				reg[j] = pState->GetValue();
-				update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
-			}
 			int period = (reg[0] | (reg[2] << 8) | ((reg[4] & 0x03) << 16));
 			int vol = (reg[7] & 0x0F);
-
-			double freq = RegToFreqN163(period, m_pDocument->GetNamcoChannels() * (256 - (reg[4] & 0xFC)));
-			double note;
-			int note_conv, cents;
-			if (period) {
-				note = NoteFromFreq(freq);
-				note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
-				cents = int((note - double(note_conv)) * 100.0);
+			double freq = RegToFreqN163(period, N163_CHANS * (256 - (reg[4] & 0xFC)));		// // //
+			
+			if (i >= 16 - N163_CHANS) {
+				text.Format(_T("%s, vol = %02i"), GetPitchTextFunc(5, period, freq, period > 0), vol);
+				DrawTextFunc(300, text);
+				FreqCache[15 - i] = freq;
+				VolCache[15 - i] = vol << 4;
 			}
-			else {
-				note = note_conv = cents = 0;
-			}
-
-			DrawVolFunc(note_conv, vol << 4);
 		}
+		
+		for (int i = 0; i < N163_CHANS; ++i)		// // //
+			DrawVolFunc(FreqCache[i], VolCache[i]);
 	}
 
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_FDS)) {
 		DrawHeaderFunc(_T("FDS"));		// // //
-
+		
 		int period = (pSoundGen->GetReg(SNDCHIP_FDS, 0x4082) & 0xFF) | ((pSoundGen->GetReg(SNDCHIP_FDS, 0x4083) & 0x0F) << 8);
 		int vol = (pSoundGen->GetReg(SNDCHIP_FDS, 0x4080) & 0x3F);
-
 		double freq = RegToFreq(period, SNDCHIP_FDS) / 4.0;		// // //
-		double note;
-		int note_conv, cents;
-		if (period) {
-			note = NoteFromFreq(freq);
-			note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);		// // //
-			cents = int((note - double(note_conv)) * 100.0);
-		}
-		else {
-			note = note_conv = cents = 0;
-		}
+
 		CString FDStext;
-		FDStext.Format(_T("pitch = $%03X (%7.2fHz %s %+03i), vol = %02i"),
-			period, freq, NoteToStr(note_conv), cents, vol);
+		FDStext.Format(_T("%s, vol = %02i"), GetPitchTextFunc(3, period, freq, period > 0), vol);
 
 		for (int i = 0; i < 11; ++i) {
-			auto pState = pSoundGen->GetRegState(SNDCHIP_FDS, 0x4080 + i);		// // //
-			reg[0] = pState->GetValue();
-			update[0] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
-
+			GetRegsFunc(SNDCHIP_FDS, [] (int x) { return 0x4080 + x; }, 1);
 			text.Format(_T("$%04X:"), 0x4080 + i);
 			DrawRegFunc(text, 1);
 			if (!i) DrawTextFunc(180, FDStext);
 		}
 		
-		DrawVolFunc(note_conv, vol << 3);
+		DrawVolFunc(freq, vol << 3);
 	}
 
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_VRC7)) {		// // //
 		DrawHeaderFunc(_T("VRC7"));		// // //
 		
-		for (int j = 0; j < 8; j++) {
-			auto pState = pSoundGen->GetRegState(SNDCHIP_VRC7, j);		// // //
-			reg[j] = pState->GetValue();
-			update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
-		}
-		
+		GetRegsFunc(SNDCHIP_VRC7, [] (int x) { return x; }, 8);
 		DrawRegFunc(_T("$00:"), 8);		// // //
 
 		for (int i = 0; i < 6; ++i) {
-			for (int j = 0; j < 3; j++) {
-				auto pState = pSoundGen->GetRegState(SNDCHIP_VRC7, i + ((j + 1) << 4));		// // //
-				reg[j] = pState->GetValue();
-				update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
-			}
-
+			GetRegsFunc(SNDCHIP_VRC7, [&] (int x) { return i + (++x << 4); }, 3);
 			text.Format(_T("$x%01X:"), i);
 			DrawRegFunc(text, 3);
 
 			int period = reg[0] | ((reg[1] & 0x01) << 8);
-			int octave = (reg[1] & 0x0E) >> 1;
 			int vol = 0x0F - (pSoundGen->GetReg(SNDCHIP_VRC7, i + 0x30) & 0x0F);
-			int inst = reg[2] >> 4;
+			double freq = RegToFreqVRC7(period, (reg[1] & 0x0E) >> 1);
 
-			double freq = RegToFreqVRC7(period, octave);
-			double note;
-			int note_conv, cents;
-			if (period) {
-				if (!inst) {
-					/* frequency correction
-					const int freqMult[] = {1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 20, 24, 24, 30, 30};
-					int Modulator = freqMult[pSoundGen->GetReg(SNDCHIP_VRC7, 0) & 0x0F];
-					int Carrier = freqMult[pSoundGen->GetReg(SNDCHIP_VRC7, 1) & 0x0F];
-					int c;
-					while ( Modulator != 0 ) {
-						c = Modulator; Modulator = Carrier % Modulator; Carrier = c;
-					}
-					freq *= Carrier / 2.0;
-					*/
-				}
-				note = NoteFromFreq(freq);
-				note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
-				cents = int((note - double(note_conv)) * 100.0);
-			}
-			else {
-				note = note_conv = cents = 0;
-			}
-			text.Format(_T("pitch = $%03X (%7.2fHz %s %+03i), vol = %02i, patch = $%01X"),
-				period, freq, NoteToStr(note_conv), cents, vol, inst);
+			text.Format(_T("%s, vol = %02i, patch = $%01X"), GetPitchTextFunc(3, period, freq, period > 0), vol, reg[2] >> 4);
 			DrawTextFunc(180, text);
 			
-			DrawVolFunc(note_conv, vol << 4);
+			DrawVolFunc(freq, vol << 4);
 		}
 	}
 
@@ -2150,67 +2039,39 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 
 		// S5B
 		for (int i = 0; i < 4; ++i) {
-			for (int j = 0; j < 2; ++j) {
-				auto pState = pSoundGen->GetRegState(SNDCHIP_S5B, i * 2 + j);		// // //
-				reg[j] = pState->GetValue();
-				update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
-			}
-
+			GetRegsFunc(SNDCHIP_S5B, [&] (int x) { return i * 2 + x; }, 2);
 			text.Format(_T("$%02X:"), i * 2);
 			DrawRegFunc(text, 2);
 
-			int period = (reg[0] | ((reg[1] & 0x0F) << 8));
+			int period = reg[0] | ((reg[1] & 0x0F) << 8);
 			int vol = pSoundGen->GetReg(SNDCHIP_S5B, 8 + i) & 0x0F;
-
 			double freq = RegToFreq(period - 1, SNDCHIP_NONE) / 2;
-			double note = NoteFromFreq(freq);
-			int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
-			int cents = int((note - double(note_conv)) * 100.0);
 
-			if (!period)
-				freq = note_conv = cents = 0;
-
-			if (i < 3) {
-				text.Format(_T("pitch = $%03X (%7.2fHz %s %+03i), vol = %02i, mode = %c%c%c"),
-					period, freq, NoteToStr(note_conv), cents, vol,
+			if (i < 3)
+				text.Format(_T("%s, vol = %02i, mode = %c%c%c"), GetPitchTextFunc(3, period, freq, period > 0), vol,
 					(pSoundGen->GetReg(SNDCHIP_S5B, 7) & (1 << i)) ? _T('-') : _T('T'),
 					(pSoundGen->GetReg(SNDCHIP_S5B, 7) & (8 << i)) ? _T('-') : _T('N'),
 					(pSoundGen->GetReg(SNDCHIP_S5B, 8 + i) & 0x10) ? _T('E') : _T('-'));
-			}
-			else {
+			else
 				text.Format(_T("pitch = $%02X"), reg[0] & 0x1F);
-			}
 			DrawTextFunc(180, text);
 
 			if (i < 3)
-				DrawVolFunc(note_conv, vol << 4);
+				DrawVolFunc(freq, vol << 4);
 		}
 
 		for (int i = 0; i < 2; ++i) {
-			for (int j = 0; j < 3; j++) {
-				auto pState = pSoundGen->GetRegState(SNDCHIP_S5B, i * 3 + j + 8);		// // //
-				reg[j] = pState->GetValue();
-				update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
-			}
-
+			GetRegsFunc(SNDCHIP_S5B, [&] (int x) { return i * 3 + x + 8; }, 3);
 			text.Format(_T("$%02X:"), i * 3 + 8);
 			DrawRegFunc(text, 3);
 			
 			if (i == 1) {
 				int period = (reg[0] | (reg[1] << 8));
-				double freq, note;
-				int note_conv, cents;
-				if ((reg[2] & 0x08) && !(reg[2] & 0x01) && reg[0] && !reg[1]) {
-					freq = RegToFreq(period - 1, SNDCHIP_NONE) / 2;
-					if (reg[2] & 0x02) freq /= 32;	// triangle
-					else freq /= 16;				// sawtooth
-					note = NoteFromFreq(freq);
-					note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
-					cents = int((note - double(note_conv)) * 100.0);
-
-					text.Format(_T("pitch = $%04X (%7.2fHz %s %+03i), shape = $%01X"),
-						period, freq, NoteToStr(note_conv), cents, reg[2]);
-				}
+				double freq = RegToFreq(period - 1, SNDCHIP_NONE) / 2;
+				if (reg[2] & 0x02) freq /= 32;	// triangle
+				else freq /= 16;				// sawtooth
+				if ((reg[2] & 0x08) && !(reg[2] & 0x01) && reg[0] && !reg[1])
+					text.Format(_T("%s, shape = $%01X"), GetPitchTextFunc(4, period, freq, true), reg[2]);
 				else
 					text.Format(_T("period = $%04X, shape = $%01X"), period, reg[2]);
 				
