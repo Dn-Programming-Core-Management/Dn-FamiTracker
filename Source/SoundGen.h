@@ -182,7 +182,7 @@ public:
 	void		AddCycles(int Count);
 
 	// Other
-	uint16_t		GetReg(int Chip, int Reg) const;		// // //
+	uint8_t		GetReg(int Chip, int Reg) const;
 	CRegisterState *GetRegState(unsigned Chip, unsigned Reg) const;		// // //
 	CString		RecallChannelState(int Channel) const;		// // //
 

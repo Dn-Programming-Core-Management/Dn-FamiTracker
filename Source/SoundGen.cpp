@@ -1368,7 +1368,7 @@ void CSoundGen::AddCycles(int Count)
 	m_pAPU->AddTime(Count);
 }
 
-uint16_t CSoundGen::GetReg(int Chip, int Reg) const		// // //
+uint8_t CSoundGen::GetReg(int Chip, int Reg) const
 { 
 	return m_pAPU->GetReg(Chip, Reg);
 }

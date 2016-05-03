@@ -364,9 +364,9 @@ void CInstrumentRecorder::FinalizeRecordInstrument()
 		}
 		*/
 		for (int i = 0; i < CInstrumentFDS::WAVE_SIZE; i++)
-			FDSInst->SetSample(i, 0x3F & m_pSoundGen->GetReg(SNDCHIP_FDS, i));
-		FDSInst->SetModulationDepth(0x3F & m_pSoundGen->GetReg(SNDCHIP_FDS, 0x44));
-		FDSInst->SetModulationSpeed(0xFF & m_pSoundGen->GetReg(SNDCHIP_FDS, 0x46) | (0x0F & m_pSoundGen->GetReg(SNDCHIP_FDS, 0x47)) << 8);
+			FDSInst->SetSample(i, 0x3F & m_pSoundGen->GetReg(SNDCHIP_FDS, 0x4040 + i));
+		FDSInst->SetModulationDepth(0x3F & m_pSoundGen->GetReg(SNDCHIP_FDS, 0x4084));
+		FDSInst->SetModulationSpeed(0xFF & m_pSoundGen->GetReg(SNDCHIP_FDS, 0x4086) | (0x0F & m_pSoundGen->GetReg(SNDCHIP_FDS, 0x4087)) << 8);
 		break;
 	case INST_N163:
 		ASSERT(N163Inst != NULL);

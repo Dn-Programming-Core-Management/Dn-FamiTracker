@@ -2147,8 +2147,8 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			pDC->TextOut(0, 0, text);
 		}
 
-		int period = (pSoundGen->GetReg(SNDCHIP_FDS, 0x42) & 0xFF) | ((pSoundGen->GetReg(SNDCHIP_FDS, 0x43) & 0x0F) << 8);
-		int vol = (pSoundGen->GetReg(SNDCHIP_FDS, 0x40) & 0x3F);
+		int period = (pSoundGen->GetReg(SNDCHIP_FDS, 0x4082) & 0xFF) | ((pSoundGen->GetReg(SNDCHIP_FDS, 0x4083) & 0x0F) << 8);
+		int vol = (pSoundGen->GetReg(SNDCHIP_FDS, 0x4080) & 0x3F);
 
 		double freq = RegToFreq(period, SNDCHIP_FDS) / 4.0;		// // //
 		double note;

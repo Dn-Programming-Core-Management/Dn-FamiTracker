@@ -66,19 +66,10 @@ CAPU::CAPU(IAudioCallback *pCallback) :		// // //
 	m_pMMC5 = new CMMC5(m_pMixer);
 	m_pVRC6 = new CVRC6(m_pMixer);
 	m_pVRC7 = new CVRC7(m_pMixer);
-	m_pFDS = new CFDS(m_pMixer);
+	m_pFDS  = new CFDS(m_pMixer);
 	m_pN163 = new CN163(m_pMixer);
-	m_pS5B = new CS5B(m_pMixer);
+	m_pS5B  = new CS5B(m_pMixer);
 
-	memset(m_iRegs2A03, 0, sizeof(m_iRegs2A03));
-	memset(m_iRegsVRC6, 0, sizeof(m_iRegsVRC6));
-	memset(m_iRegsVRC7, 0, sizeof(m_iRegsVRC7));
-	memset(m_iRegsFDS, 0, sizeof(m_iRegsFDS));
-	memset(m_iRegsMMC5, 0, sizeof(m_iRegsMMC5));
-	memset(m_iRegsN163, 0, sizeof(m_iRegsN163));
-	memset(m_iRegsS5B, 0, sizeof(m_iRegsS5B));
-
-	m_iPortVRC7 = m_iPortS5B = 0;
 	m_fLevelVRC7 = m_fLevelS5B = 1.0f;
 
 #ifdef LOGGING
@@ -350,36 +341,36 @@ void CAPU::Log()
 	str.Format("Frame %08i: ", m_iFrame - 1);
 	str.Append("2A03 ");
 	for (int i = 0; i < 0x14; ++i)
-		str.AppendFormat("%02X ", GetReg(SNDCHIP_NONE, i) & 0xFF);
+		str.AppendFormat("%02X ", GetReg(SNDCHIP_NONE, i));
 	if (m_iExternalSoundChip & SNDCHIP_VRC6) {		// // //
 		str.Append("VRC6 ");
-		for (int i = 0; i < 0x09; ++i)
-			str.AppendFormat("%02X ", GetReg(SNDCHIP_VRC6, i) & 0xFF);
+		for (int i = 0; i < 0x03; ++i) for (int j = 0; j < 0x03; ++j)
+			str.AppendFormat("%02X ", GetReg(SNDCHIP_VRC6, 0x9000 + i * 0x1000 + j));
 	}
 	if (m_iExternalSoundChip & SNDCHIP_MMC5) {
 		str.Append("MMC5 ");
 		for (int i = 0; i < 0x08; ++i)
-			str.AppendFormat("%02X ", GetReg(SNDCHIP_MMC5, i) & 0xFF);
+			str.AppendFormat("%02X ", GetReg(SNDCHIP_MMC5, 0x5000 + i));
 	}
 	if (m_iExternalSoundChip & SNDCHIP_N163) {
 		str.Append("N163 ");
 		for (int i = 0; i < 0x80; ++i)
-			str.AppendFormat("%02X ", GetReg(SNDCHIP_N163, i) & 0xFF);
+			str.AppendFormat("%02X ", GetReg(SNDCHIP_N163, i));
 	}
 	if (m_iExternalSoundChip & SNDCHIP_FDS) {
 		str.Append("FDS ");
 		for (int i = 0; i < 0x0B; ++i)
-			str.AppendFormat("%02X ", GetReg(SNDCHIP_FDS, i) & 0xFF);
+			str.AppendFormat("%02X ", GetReg(SNDCHIP_FDS, 0x4080 + i));
 	}
 	if (m_iExternalSoundChip & SNDCHIP_VRC7) {
 		str.Append("VRC7 ");
 		for (int i = 0; i < 0x40; ++i)
-			str.AppendFormat("%02X ", GetReg(SNDCHIP_VRC7, i) & 0xFF);
+			str.AppendFormat("%02X ", GetReg(SNDCHIP_VRC7, i));
 	}
 	if (m_iExternalSoundChip & SNDCHIP_S5B) {
 		str.Append("S5B ");
 		for (int i = 0; i < 0x10; ++i)
-			str.AppendFormat("%02X ", GetReg(SNDCHIP_S5B, i) & 0xFF);
+			str.AppendFormat("%02X ", GetReg(SNDCHIP_S5B, i));
 	}
 	str.Append("\r\n");
 	m_pLog->Write(str, str.GetLength());
@@ -408,35 +399,17 @@ void CAPU::SetNamcoMixing(bool bLinear)		// // //
 	m_pN163->SetMixingMethod(bLinear);
 }
 
-void CAPU::LogWrite(uint16_t Address, uint8_t Value)
+void CAPU::LogWrite(uint16_t Address, uint8_t Value)		// // //
 {
 	for (auto &r : ExChips)
 		r->Log(Address, Value);
 }
 
-uint16_t CAPU::GetReg(int Chip, int Reg) const		// // //
+uint8_t CAPU::GetReg(int Chip, int Reg) const
 {
-//	if (auto r = GetRegState(Chip, Reg))
-//		return r->GetValue();
-//	return static_cast<uint8_t>(0);
-	switch (Chip) {
-		case SNDCHIP_NONE:
-			return m_iRegs2A03[Reg & 0x1F];
-		case SNDCHIP_VRC6:
-			return m_iRegsVRC6[Reg & 0x0F];
-		case SNDCHIP_MMC5:
-			return m_iRegsMMC5[Reg & 0x1F];
-		case SNDCHIP_N163:
-			return m_pN163->ReadMem(Reg & 0x7F) | (m_iRegsN163[Reg & 0x7F] & 0xFF00);
-		case SNDCHIP_FDS:
-			return m_iRegsFDS[Reg < 0 ? 0 : Reg % (sizeof(m_iRegsFDS) / 2)];
-		case SNDCHIP_VRC7:
-			return m_iRegsVRC7[Reg & 0x3F];
-		case SNDCHIP_S5B:
-			return m_iRegsS5B[Reg & 0x0F];
-	}
-
-	return 0;
+	if (auto r = GetRegState(Chip, Reg))		// // //
+		return r->GetValue();
+	return static_cast<uint8_t>(0);
 }
 
 CRegisterState *CAPU::GetRegState(int Chip, int Reg) const		// // //
@@ -446,10 +419,10 @@ CRegisterState *CAPU::GetRegState(int Chip, int Reg) const		// // //
 	case SNDCHIP_NONE: pChip = m_p2A03; break;
 	case SNDCHIP_VRC6: pChip = m_pVRC6; break;
 	case SNDCHIP_VRC7: pChip = m_pVRC7; break;
-	case SNDCHIP_FDS: pChip = m_pFDS; break;
+	case SNDCHIP_FDS:  pChip = m_pFDS; break;
 	case SNDCHIP_MMC5: pChip = m_pMMC5; break;
 	case SNDCHIP_N163: pChip = m_pN163; break;
-	case SNDCHIP_S5B: pChip = m_pS5B; break;
+	case SNDCHIP_S5B:  pChip = m_pS5B; break;
 	default: AfxDebugBreak();
 	}
 

@@ -62,7 +62,7 @@ public:
 	void	SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume) const;
 
 	int32_t	GetVol(uint8_t Chan) const;
-	uint16_t	GetReg(int Chip, int Reg) const;		// // //
+	uint8_t	GetReg(int Chip, int Reg) const;
 	CRegisterState *GetRegState(int Chip, int Reg) const;		// // //
 	
 	uint8_t	GetSamplePos() const;
