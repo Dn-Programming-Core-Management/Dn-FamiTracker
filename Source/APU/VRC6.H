@@ -21,7 +21,7 @@
 #ifndef VRC6_H
 #define VRC6_H
 
-#include "external.h"
+#include "SoundChip.h"
 #include "channel.h"
 
 class CVRC6_Pulse : public CChannel {
@@ -61,7 +61,7 @@ private:
 	int32_t	m_iCounter;
 };
 
-class CVRC6 : public CExternal {
+class CVRC6 : public CSoundChip {
 public:
 	CVRC6(CMixer *pMixer);
 	virtual ~CVRC6();

@@ -2,6 +2,8 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
+** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -18,16 +20,16 @@
 ** must bear this legend.
 */
 
-#ifndef EXTERNAL_H
-#define EXTERNAL_H
+
+#pragma once
 
 class CMixer;
 
-class CExternal {
+class CSoundChip {
 public:
-	CExternal() {};
-	CExternal(CMixer *pMixer) : m_pMixer(pMixer) {};
-	virtual ~CExternal() {};
+	CSoundChip() {};
+	CSoundChip(CMixer *pMixer) : m_pMixer(pMixer) {};
+	virtual ~CSoundChip() {};
 
 	virtual void	Reset() = 0;
 	virtual void	Process(uint32_t Time) = 0;
@@ -39,5 +41,3 @@ public:
 protected:
 	CMixer *m_pMixer;
 };
-
-#endif /* EXTERNAL_H */

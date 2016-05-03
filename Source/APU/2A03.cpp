@@ -33,7 +33,7 @@
 // // // 2A03 sound chip class
 
 C2A03::C2A03(CMixer *pMixer) :
-	CExternal(pMixer),
+	CSoundChip(pMixer),
 	m_pSquare1(new CSquare(m_pMixer, CHANID_SQUARE1, SNDCHIP_NONE)),
 	m_pSquare2(new CSquare(m_pMixer, CHANID_SQUARE2, SNDCHIP_NONE)),
 	m_pTriangle(new CTriangle(m_pMixer, CHANID_TRIANGLE)),

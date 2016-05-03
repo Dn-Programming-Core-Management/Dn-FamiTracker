@@ -21,10 +21,10 @@
 #ifndef VRC7_H
 #define VRC7_H
 
-#include "external.h"
+#include "SoundChip.h"
 #include "emu2413.h"
 
-class CVRC7 : public CExternal {
+class CVRC7 : public CSoundChip {
 public:
 	CVRC7(CMixer *pMixer);
 	virtual ~CVRC7();

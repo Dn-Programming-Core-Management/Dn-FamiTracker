@@ -21,10 +21,10 @@
 #ifndef S5B_H
 #define S5B_H
 
-#include "external.h"
+#include "SoundChip.h"
 #include "channel.h"
 
-class CS5B : public CExternal {
+class CS5B : public CSoundChip {
 public:
 	CS5B(CMixer *pMixer);
 	virtual ~CS5B();

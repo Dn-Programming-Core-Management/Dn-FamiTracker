@@ -21,12 +21,12 @@
 #ifndef MMC5_H
 #define MMC5_H
 
-#include "external.h"
+#include "SoundChip.h"
 #include "channel.h"
 
 class CSquare;		// // //
 
-class CMMC5 : public CExternal {
+class CMMC5 : public CSoundChip {
 public:
 	CMMC5(CMixer *pMixer);
 	virtual ~CMMC5();

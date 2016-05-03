@@ -50,7 +50,7 @@ const uint8_t CAPU::LENGTH_TABLE[] = {
 	0xC0, 0x18, 0x48, 0x1A, 0x10, 0x1C, 0x20, 0x1E
 };
 
-static std::vector<CExternal*> ExChips;
+static std::vector<CSoundChip*> ExChips;
 
 CAPU::CAPU(IAudioCallback *pCallback) :		// // //
 	m_pParent(pCallback),

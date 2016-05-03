@@ -21,10 +21,10 @@
 #ifndef FDS_H
 #define FDS_H
 
-#include "External.h"
+#include "SoundChip.h"
 #include "Channel.h"
 
-class CFDS : public CExternal, CChannel {
+class CFDS : public CSoundChip, CChannel {
 public:
 	CFDS(CMixer *pMixer);
 	virtual ~CFDS();

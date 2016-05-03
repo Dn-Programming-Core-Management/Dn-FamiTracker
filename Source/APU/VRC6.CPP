@@ -149,7 +149,7 @@ void CVRC6_Sawtooth::Process(int Time)
 }
 
 CVRC6::CVRC6(CMixer *pMixer) :
-	CExternal(pMixer),		// // //
+	CSoundChip(pMixer),		// // //
 	m_pPulse1(new CVRC6_Pulse(pMixer, CHANID_VRC6_PULSE1)),
 	m_pPulse2(new CVRC6_Pulse(pMixer, CHANID_VRC6_PULSE2)),
 	m_pSawtooth(new CVRC6_Sawtooth(pMixer, CHANID_VRC6_SAWTOOTH))

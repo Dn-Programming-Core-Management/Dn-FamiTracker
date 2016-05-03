@@ -28,7 +28,7 @@
 // MMC5 external sound
 
 CMMC5::CMMC5(CMixer *pMixer) :
-	CExternal(pMixer),		// // //
+	CSoundChip(pMixer),		// // //
 	m_pEXRAM(new uint8_t[0x400]),
 	m_pSquare1(new CSquare(pMixer, CHANID_MMC5_SQUARE1, SNDCHIP_MMC5)),
 	m_pSquare2(new CSquare(pMixer, CHANID_MMC5_SQUARE2, SNDCHIP_MMC5)),

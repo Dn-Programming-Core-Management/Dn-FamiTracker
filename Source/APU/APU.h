@@ -37,7 +37,7 @@ class CMMC5;
 class CN163;
 class CS5B;
 
-class CExternal;
+class CSoundChip;
 
 #ifdef LOGGING
 class CFile;

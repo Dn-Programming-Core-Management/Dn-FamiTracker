@@ -25,7 +25,7 @@
 
 class CMixer;
 
-#include "External.h"
+#include "SoundChip.h"
 #include "Channel.h"
 
 class CSquare;
@@ -33,7 +33,7 @@ class CTriangle;
 class CNoise;
 class CDPCM;
 
-class C2A03 : public CExternal
+class C2A03 : public CSoundChip
 {
 public:
 	C2A03(CMixer *pMixer);

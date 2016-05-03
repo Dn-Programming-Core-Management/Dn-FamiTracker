@@ -40,7 +40,7 @@
 //
 
 CN163::CN163(CMixer *pMixer) :
-	CExternal(pMixer),		// // //
+	CSoundChip(pMixer),		// // //
 	m_iChansInUse(0), 
 	m_iExpandAddr(0), 
 	m_iLastValue(0), 

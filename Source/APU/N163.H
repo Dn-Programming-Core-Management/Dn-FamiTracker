@@ -23,7 +23,7 @@
 #ifndef N163_H
 #define N163_H
 
-#include "external.h"
+#include "SoundChip.h"
 #include "Channel.h"
 
 class CMixer;
@@ -52,7 +52,7 @@ private:
 	uint8_t m_iLastSample;
 };
 
-class CN163 : public CExternal {
+class CN163 : public CSoundChip {
 public:
 	CN163(CMixer *pMixer);
 	virtual ~CN163();
