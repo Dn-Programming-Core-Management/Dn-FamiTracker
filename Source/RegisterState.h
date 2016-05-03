@@ -74,6 +74,9 @@ private:
 class CRegisterLogger
 {
 public:
+	friend class CRegisterLoggerBlock;
+
+	/*! \brief Constructor of the register logger. */
 	CRegisterLogger();
 
 	/*! \brief Resets the values of all registers. */
@@ -115,4 +118,24 @@ protected:
 	std::unordered_map<unsigned, unsigned> m_mWarpValues;
 	unsigned int m_iPort;
 	bool m_bAutoIncrement;
+	bool m_bBlocked;
+};
+
+/*!
+	\brief A class which allows internal changes to the register state without causing external changes
+	due to logging.
+	\details A register logger is blocked during the lifetime of a CRegisterLoggerBlock object. The
+	address port of the logger before blocking remains after the block's destruction.
+*/
+class CRegisterLoggerBlock
+{
+public:
+	CRegisterLoggerBlock(CRegisterLogger *Logger);
+	~CRegisterLoggerBlock();
+
+private:
+	CRegisterLogger *m_pLogger;
+	unsigned int m_iPort;
+	bool m_bAutoIncrement;
+	bool m_bBlocked;
 };

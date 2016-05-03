@@ -26,7 +26,8 @@
 CRegisterLogger::CRegisterLogger() :
 	m_mRegister(),
 	m_iPort(0),
-	m_bAutoIncrement(false)
+	m_bAutoIncrement(false),
+	m_bBlocked(false)
 {
 }
 
@@ -83,4 +84,20 @@ void CRegisterLogger::Step()
 {
 	for (auto &r : m_mRegister)
 		r.second.Step();
+}
+
+CRegisterLoggerBlock::CRegisterLoggerBlock(CRegisterLogger *Logger) :
+	m_pLogger(Logger),
+	m_iPort(Logger->m_iPort),
+	m_bAutoIncrement(Logger->m_bAutoIncrement),
+	m_bBlocked(Logger->m_bBlocked)
+{
+	Logger->m_bBlocked = true;
+}
+
+CRegisterLoggerBlock::~CRegisterLoggerBlock()
+{
+	m_pLogger->m_iPort = m_iPort;
+	m_pLogger->m_bAutoIncrement = m_bAutoIncrement;
+	m_pLogger->m_bBlocked = m_bBlocked;
 }

@@ -142,6 +142,7 @@ void CN163::Mix(int32_t Value, uint32_t Time, uint8_t ChanID)
 
 void CN163::EndFrame()
 {
+	CRegisterLoggerBlock b {m_pRegisterLogger};
 	for (int i = 0; i < 8; ++i) {
 		m_pChannels[i]->EndFrame();
 		for (int j : {1, 3, 5}) {		// // // log phase
@@ -187,7 +188,7 @@ void CN163::Log(uint16_t Address, uint8_t Value)		// // //
 	switch (Address) {
 	case 0xF800:
 		m_pRegisterLogger->SetPort(Value & 0x7F);
-		m_pRegisterLogger->SetAutoincrement(Value & 0x80);
+		m_pRegisterLogger->SetAutoincrement((Value & 0x80) != 0);
 		break;
 	case 0x4800:
 		m_pRegisterLogger->Write(Value);
