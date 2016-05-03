@@ -23,13 +23,15 @@
 
 #pragma once
 
+#include <cstdint>		// // //
+
 class CMixer;
+class CRegisterLogger;		// // //
 
 class CSoundChip {
 public:
-	CSoundChip() {};
-	CSoundChip(CMixer *pMixer) : m_pMixer(pMixer) {};
-	virtual ~CSoundChip() {};
+	CSoundChip(CMixer *pMixer = nullptr);		// // //
+	virtual ~CSoundChip();
 
 	virtual void	Reset() = 0;
 	virtual void	Process(uint32_t Time) = 0;
@@ -38,6 +40,10 @@ public:
 	virtual void	Write(uint16_t Address, uint8_t Value) = 0;
 	virtual uint8_t	Read(uint16_t Address, bool &Mapped) = 0;
 
+	virtual void	Log(uint16_t Address, uint8_t Value);		// // //
+	CRegisterLogger *GetRegisterLogger() const;		// // //
+
 protected:
 	CMixer *m_pMixer;
+	CRegisterLogger *m_pRegisterLogger;		// // //
 };

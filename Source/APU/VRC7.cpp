@@ -19,15 +19,19 @@
 */
 
 #include "../stdafx.h"
-#include <memory>
 #include "APU.h"
 #include "VRC7.h"
+#include "../RegisterState.h"		// // //
 
 const float  CVRC7::AMPLIFY	  = 4.6f;		// Mixing amplification, VRC7 patch 14 is 4,88 times stronger than a 50% square @ v=15
 const uint32_t CVRC7::OPL_CLOCK = 3579545;	// Clock frequency
 
 CVRC7::CVRC7(CMixer *pMixer) : CSoundChip(pMixer), m_pBuffer(NULL), m_pOPLLInt(NULL), m_fVolume(1.0f), m_iMaxSamples(0), m_iSoundReg(0)
 {
+	m_pRegisterLogger->AddRegisterRange(0x00, 0x07);		// // //
+	m_pRegisterLogger->AddRegisterRange(0x10, 0x15);
+	m_pRegisterLogger->AddRegisterRange(0x20, 0x25);
+	m_pRegisterLogger->AddRegisterRange(0x30, 0x35);
 	Reset();
 }
 
@@ -79,6 +83,14 @@ void CVRC7::Write(uint16_t Address, uint8_t Value)
 		case 0x9030:
 			OPLL_writeReg(m_pOPLLInt, m_iSoundReg, Value);
 			break;
+	}
+}
+
+void CVRC7::Log(uint16_t Address, uint8_t Value)		// // //
+{
+	switch (Address) {
+	case 0x9010: m_pRegisterLogger->SetPort(Value); break;
+	case 0x9030: m_pRegisterLogger->Write(Value); break;
 	}
 }
 

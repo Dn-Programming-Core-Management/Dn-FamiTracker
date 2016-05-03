@@ -1373,6 +1373,11 @@ uint16_t CSoundGen::GetReg(int Chip, int Reg) const		// // //
 	return m_pAPU->GetReg(Chip, Reg);
 }
 
+CRegisterState *CSoundGen::GetRegState(unsigned Chip, unsigned Reg) const		// // //
+{
+	return m_pAPU->GetRegState(Chip, Reg);
+}
+
 void CSoundGen::MakeSilent()
 {
 	// Called from player thread

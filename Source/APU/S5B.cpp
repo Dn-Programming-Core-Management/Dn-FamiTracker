@@ -18,10 +18,10 @@
 ** must bear this legend.
 */
 
-#include <cstdio>
 #include "APU.h"
 #include "S5B.h"
 #include "emu2149.h"
+#include "../RegisterState.h"		// // //
 
 // Sunsoft 5B (YM2149)
 
@@ -35,6 +35,7 @@ CS5B::CS5B(CMixer *pMixer) :
 	m_iTime(0),
 	m_fVolume(AMPLIFY)
 {
+	m_pRegisterLogger->AddRegisterRange(0x00, 0x0F);		// // //
 	psg = NULL;
 }
 
@@ -91,6 +92,14 @@ void CS5B::Write(uint16_t Address, uint8_t Value)
 		case 0xE000:
 			PSG_writeReg(psg, m_iRegister, Value);
 			break;
+	}
+}
+
+void CS5B::Log(uint16_t Address, uint8_t Value)		// // //
+{
+	switch (Address) {
+	case 0xC000: m_pRegisterLogger->SetPort(Value); break;
+	case 0xE000: m_pRegisterLogger->Write(Value); break;
 	}
 }
 

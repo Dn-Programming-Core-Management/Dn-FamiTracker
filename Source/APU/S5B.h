@@ -32,6 +32,7 @@ public:
 	void	Process(uint32_t Time);
 	void	EndFrame();
 	void	Write(uint16_t Address, uint8_t Value);
+	void	Log(uint16_t Address, uint8_t Value);		// // //
 	uint8_t 	Read(uint16_t Address, bool &Mapped);
 	void	SetSampleSpeed(uint32_t SampleRate, double ClockRate, uint32_t FrameRate);
 	void	SetVolume(float fVol);

@@ -24,6 +24,7 @@
 #include "Mixer.h"
 #include "MMC5.h"
 #include "Square.h"
+#include "../RegisterState.h"		// // //
 
 // MMC5 external sound
 
@@ -35,6 +36,8 @@ CMMC5::CMMC5(CMixer *pMixer) :
 	m_iMulLow(0),
 	m_iMulHigh(0)
 {
+	m_pRegisterLogger->AddRegisterRange(0x5000, 0x5007);		// // //
+	m_pRegisterLogger->AddRegisterRange(0x5015, 0x5015);
 }
 
 CMMC5::~CMMC5()

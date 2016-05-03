@@ -29,6 +29,7 @@
 #include "Noise.h"
 #include "DPCM.h"
 #include "2A03.h"
+#include "../RegisterState.h"		// // //
 
 // // // 2A03 sound chip class
 
@@ -40,6 +41,7 @@ C2A03::C2A03(CMixer *pMixer) :
 	m_pNoise(new CNoise(m_pMixer, CHANID_NOISE)),
 	m_pDPCM(new CDPCM(m_pMixer, CHANID_DPCM))		// // //
 {
+	m_pRegisterLogger->AddRegisterRange(0x4000, 0x4017);		// // //
 }
 
 C2A03::~C2A03()

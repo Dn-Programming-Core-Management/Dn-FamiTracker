@@ -83,6 +83,7 @@ class CDSample;
 class CTrackerChannel;
 class CFTMComponentInterface;		// // //
 class CInstrumentRecorder;		// // //
+class CRegisterState;		// // //
 
 #ifdef EXPORT_TEST
 class CExportTest;
@@ -182,6 +183,7 @@ public:
 
 	// Other
 	uint16_t		GetReg(int Chip, int Reg) const;		// // //
+	CRegisterState *GetRegState(unsigned Chip, unsigned Reg) const;		// // //
 	CString		RecallChannelState(int Channel) const;		// // //
 
 	// FDS & N163 wave preview

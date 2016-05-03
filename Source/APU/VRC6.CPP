@@ -20,9 +20,9 @@
 ** must bear this legend.
 */
 
-#include <memory>
 #include "APU.h"
 #include "VRC6.h"
+#include "../RegisterState.h"		// // //
 
 // Konami VRC6 external sound chip emulation
 
@@ -154,6 +154,9 @@ CVRC6::CVRC6(CMixer *pMixer) :
 	m_pPulse2(new CVRC6_Pulse(pMixer, CHANID_VRC6_PULSE2)),
 	m_pSawtooth(new CVRC6_Sawtooth(pMixer, CHANID_VRC6_SAWTOOTH))
 {
+	m_pRegisterLogger->AddRegisterRange(0x9000, 0x9003);		// // //
+	m_pRegisterLogger->AddRegisterRange(0xA000, 0xA002);
+	m_pRegisterLogger->AddRegisterRange(0xB000, 0xB002);
 }
 
 CVRC6::~CVRC6()

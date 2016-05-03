@@ -60,6 +60,7 @@ public:
 	void Process(uint32_t Time);
 	void EndFrame();
 	void Write(uint16_t Address, uint8_t Value);
+	void Log(uint16_t Address, uint8_t Value);		// // //
 	uint8_t Read(uint16_t Address, bool &Mapped);
 	uint8_t ReadMem(uint8_t Reg);
 	void Mix(int32_t Value, uint32_t Time, uint8_t ChanID);

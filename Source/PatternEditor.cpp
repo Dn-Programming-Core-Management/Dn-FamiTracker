@@ -39,6 +39,7 @@
 #include "APU/APU.h"
 #include "APU/Noise.h"		// // //
 #include "APU/DPCM.h"		// // //
+#include "RegisterState.h"		// // //
 
 /*
  * CPatternEditor
@@ -1784,8 +1785,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 	// 2A03
 	for (int i = 0; i < 5; ++i) {
 		for (int j = 0; j < 4; j++) {	// // //
-			reg[j] = static_cast<unsigned char>(pSoundGen->GetReg(SNDCHIP_NONE, i * 4 + j));
-			update[j] = pSoundGen->GetReg(SNDCHIP_NONE, i * 4 + j) >> 8;
+			auto pState = pSoundGen->GetRegState(SNDCHIP_NONE, 0x4000 + i * 4 + j);		// // //
+			reg[j] = pState->GetValue();
+			update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
 		}
 
 		pDC->SetBkColor(m_colEmptyBg);
@@ -1892,8 +1894,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		// VRC6
 		for (int i = 0; i < 3; ++i) {
 			for (int j = 0; j < 3; j++) {
-				reg[j] = static_cast<unsigned char>(pSoundGen->GetReg(SNDCHIP_VRC6, i * 4 + j));		// // //
-				update[j] = pSoundGen->GetReg(SNDCHIP_VRC6, i * 4 + j) >> 8;
+				auto pState = pSoundGen->GetRegState(SNDCHIP_VRC6, 0x9000 + i * 0x1000 + j);		// // //
+				reg[j] = pState->GetValue();
+				update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
 			}
 
 			pDC->SetBkColor(m_colEmptyBg);
@@ -1965,8 +1968,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		// MMC5
 		for (int i = 0; i < 2; ++i) {
 			for (int j = 0; j < 4; j++) {
-				reg[j] = static_cast<unsigned char>(pSoundGen->GetReg(SNDCHIP_MMC5, i * 4 + j));
-				update[j] = pSoundGen->GetReg(SNDCHIP_MMC5, i * 4 + j) >> 8;
+				auto pState = pSoundGen->GetRegState(SNDCHIP_MMC5, 0x5000 + i * 4 + j);		// // //
+				reg[j] = pState->GetValue();
+				update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
 			}
 
 			pDC->SetBkColor(m_colEmptyBg);
@@ -2042,8 +2046,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		// N163
 		for (int i = 0; i < 16; ++i) {
 			for (int j = 0; j < 8; j++) {		// // //
-				reg[j] = static_cast<unsigned char>(pSoundGen->GetReg(SNDCHIP_N163, i * 8 + j));
-				update[j] = pSoundGen->GetReg(SNDCHIP_N163, i * 8 + j) >> 8;
+				auto pState = pSoundGen->GetRegState(SNDCHIP_N163, i * 8 + j);		// // //
+				reg[j] = pState->GetValue();
+				update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
 			}
 
 			int period = (reg[0] | (reg[2] << 8) | ((reg[4] & 0x03) << 16));
@@ -2087,8 +2092,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		
 		for (int i = 0; i < m_pDocument->GetNamcoChannels(); ++i) {		// // //
 			for (int j = 0; j < 8; j++) {		// // //
-				reg[j] = static_cast<unsigned char>(pSoundGen->GetReg(SNDCHIP_N163, 0x78 - i * 8 + j));
-				update[j] = pSoundGen->GetReg(SNDCHIP_N163, 0x78 - i * 8 + j) >> 8;
+				auto pState = pSoundGen->GetRegState(SNDCHIP_N163, 0x78 - i * 8 + j);
+				reg[j] = pState->GetValue();
+				update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
 			}
 			int period = (reg[0] | (reg[2] << 8) | ((reg[4] & 0x03) << 16));
 			int vol = (reg[7] & 0x0F);
@@ -2122,8 +2128,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		pDC->TextOut(30, 30 + (line++) * 13, text);
 
 		for (int i = 0; i < 11; ++i) {
-			reg[0] = static_cast<unsigned char>(pSoundGen->GetReg(SNDCHIP_FDS, i | 0x40));
-			update[0] = pSoundGen->GetReg(SNDCHIP_FDS, i | 0x40) >> 8;
+			auto pState = pSoundGen->GetRegState(SNDCHIP_FDS, 0x4080 + i);		// // //
+			reg[0] = pState->GetValue();
+			update[0] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
 
 			pDC->SetBkColor(m_colEmptyBg);
 			pDC->SetTextColor(0xFFAFAF);
@@ -2180,8 +2187,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		pDC->TextOut(30, 30 + (line++) * 13, text);
 		
 		for (int j = 0; j < 8; j++) {
-			reg[j] = static_cast<unsigned char>(pSoundGen->GetReg(SNDCHIP_VRC7, j));
-			update[j] = pSoundGen->GetReg(SNDCHIP_VRC7, j) >> 8;
+			auto pState = pSoundGen->GetRegState(SNDCHIP_VRC7, j);		// // //
+			reg[j] = pState->GetValue();
+			update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
 		}
 
 		pDC->SetBkColor(m_colEmptyBg);
@@ -2199,8 +2207,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 
 		for (int i = 0; i < 6; ++i) {
 			for (int j = 0; j < 3; j++) {
-				reg[j] = static_cast<unsigned char>(pSoundGen->GetReg(SNDCHIP_VRC7, i + 0x10 * (j + 1)));
-				update[j] = pSoundGen->GetReg(SNDCHIP_VRC7, i + 0x10 * (j + 1)) >> 8;
+				auto pState = pSoundGen->GetRegState(SNDCHIP_VRC7, i + ((j + 1) << 4));		// // //
+				reg[j] = pState->GetValue();
+				update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
 			}
 
 			pDC->SetBkColor(m_colEmptyBg);
@@ -2271,10 +2280,11 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 
 		// S5B
 		for (int i = 0; i < 4; ++i) {
-			reg[0] = static_cast<unsigned char>(pSoundGen->GetReg(SNDCHIP_S5B, i * 2 + 0));
-			reg[1] = static_cast<unsigned char>(pSoundGen->GetReg(SNDCHIP_S5B, i * 2 + 1));
-			update[0] = pSoundGen->GetReg(SNDCHIP_S5B, i * 2 + 0) >> 8;
-			update[1] = pSoundGen->GetReg(SNDCHIP_S5B, i * 2 + 1) >> 8;
+			for (int j = 0; j < 2; ++j) {
+				auto pState = pSoundGen->GetRegState(SNDCHIP_S5B, i * 2 + j);		// // //
+				reg[j] = pState->GetValue();
+				update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
+			}
 
 			pDC->SetBkColor(m_colEmptyBg);
 			pDC->SetTextColor(0xFFAFAF);
@@ -2329,8 +2339,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 
 		for (int i = 0; i < 2; ++i) {
 			for (int j = 0; j < 3; j++) {
-				reg[j] = static_cast<unsigned char>(pSoundGen->GetReg(SNDCHIP_S5B, i * 3 + 8 + j));
-				update[j] = pSoundGen->GetReg(SNDCHIP_S5B, i * 3 + 8 + j) >> 8;
+				auto pState = pSoundGen->GetRegState(SNDCHIP_S5B, i * 3 + j + 8);		// // //
+				reg[j] = pState->GetValue();
+				update[j] = pState->GetLastUpdatedTime() | (pState->GetNewValueTime() << 4);
 			}
 
 			pDC->SetBkColor(m_colEmptyBg);

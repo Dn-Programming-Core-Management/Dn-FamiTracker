@@ -37,7 +37,8 @@ class CMMC5;
 class CN163;
 class CS5B;
 
-class CSoundChip;
+class CSoundChip;		// // //
+class CRegisterState;		// // //
 
 #ifdef LOGGING
 class CFile;
@@ -62,6 +63,7 @@ public:
 
 	int32_t	GetVol(uint8_t Chan) const;
 	uint16_t	GetReg(int Chip, int Reg) const;		// // //
+	CRegisterState *GetRegState(int Chip, int Reg) const;		// // //
 	
 	uint8_t	GetSamplePos() const;
 	uint8_t	GetDeltaCounter() const;

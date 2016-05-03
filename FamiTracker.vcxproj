@@ -429,12 +429,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\APU\2A03.cpp" />
+    <ClCompile Include="Source\APU\SoundChip.cpp" />
     <ClCompile Include="Source\Bookmark.cpp" />
     <ClCompile Include="Source\BookmarkCollection.cpp" />
     <ClCompile Include="Source\BookmarkDlg.cpp" />
     <ClCompile Include="Source\BookmarkManager.cpp" />
     <ClCompile Include="Source\ChannelFactory.cpp" />
     <ClCompile Include="Source\ChannelState.cpp" />
+    <ClCompile Include="Source\RegisterState.cpp" />
     <ClCompile Include="Source\CompoundAction.cpp" />
     <ClCompile Include="Source\DetuneTable.cpp" />
     <ClCompile Include="Source\DPI.cpp" />
@@ -687,6 +689,7 @@
     <ClInclude Include="Source\BookmarkCollection.h" />
     <ClInclude Include="Source\BookmarkManager.h" />
     <ClInclude Include="Source\BookmarkDlg.h" />
+    <ClInclude Include="Source\RegisterState.h" />
     <ClInclude Include="Source\CompoundAction.h" />
     <ClInclude Include="Source\DetuneTable.h" />
     <ClInclude Include="Source\DPI.h" />

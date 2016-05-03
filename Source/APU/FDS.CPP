@@ -19,16 +19,16 @@
 */
 
 #include "../stdafx.h"
-#include <cmath>
-#include <memory>
 #include "APU.h"
 #include "FDS.h"
 #include "FDSSound.h"
+#include "../RegisterState.h"		// // //
 
 // FDS interface, actual FDS emulation is in FDSSound.cpp
 
 CFDS::CFDS(CMixer *pMixer) : CChannel(pMixer, SNDCHIP_FDS, CHANID_FDS)
 {
+	m_pRegisterLogger->AddRegisterRange(0x4040, 0x408F);		// // //
 	FDSSoundInstall3();
 }
 

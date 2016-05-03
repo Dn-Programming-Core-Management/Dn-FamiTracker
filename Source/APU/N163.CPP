@@ -20,10 +20,10 @@
 ** must bear this legend.
 */
 
-#include <memory>
 #include "../Common.h"
 #include "APU.h"
 #include "N163.h"
+#include "../RegisterState.h"		// // //
 
 /*
 
@@ -51,14 +51,9 @@ CN163::CN163(CMixer *pMixer) :
 	m_pWaveData(new uint8_t[0x80]()),		// // //
 	m_bOldMixing(0)		// // //
 {
-	m_pChannels[0] = new CN163Chan(pMixer, CHANID_N163_CH1, m_pWaveData);
-	m_pChannels[1] = new CN163Chan(pMixer, CHANID_N163_CH2, m_pWaveData);
-	m_pChannels[2] = new CN163Chan(pMixer, CHANID_N163_CH3, m_pWaveData);
-	m_pChannels[3] = new CN163Chan(pMixer, CHANID_N163_CH4, m_pWaveData);
-	m_pChannels[4] = new CN163Chan(pMixer, CHANID_N163_CH5, m_pWaveData);
-	m_pChannels[5] = new CN163Chan(pMixer, CHANID_N163_CH6, m_pWaveData);
-	m_pChannels[6] = new CN163Chan(pMixer, CHANID_N163_CH7, m_pWaveData);
-	m_pChannels[7] = new CN163Chan(pMixer, CHANID_N163_CH8, m_pWaveData);
+	m_pRegisterLogger->AddRegisterRange(0x00, 0x7F);		// // //
+	for (int i = 0; i < 8; ++i)
+		m_pChannels[i] = new CN163Chan(pMixer, CHANID_N163_CH1 + i, m_pWaveData);
 }
 
 CN163::~CN163()
@@ -149,6 +144,11 @@ void CN163::EndFrame()
 {
 	for (int i = 0; i < 8; ++i) {
 		m_pChannels[i]->EndFrame();
+		for (int j : {1, 3, 5}) {		// // // log phase
+			int Address = 0x78 - i * 8 + j;
+			m_pRegisterLogger->SetPort(Address);
+			m_pRegisterLogger->Write(ReadMem(Address));
+		}
 		if (i != m_iActiveChan)		// // //
 			m_pChannels[i]->ResetCounter();
 	}
@@ -162,8 +162,7 @@ void CN163::Write(uint16_t Address, uint8_t Value)
 
 	switch (Address) {
 		case 0x4800:
-			if (Area < 0x80)
-				m_pWaveData[Area] = Value;
+			m_pWaveData[Area] = Value;
 
 			if (Area >= 0x40) {
 				int Channel = (Area & 0x3F) >> 3;
@@ -174,14 +173,26 @@ void CN163::Write(uint16_t Address, uint8_t Value)
 			}
 
 			if (m_iExpandAddr & 0x80)
-				m_iExpandAddr = (m_iExpandAddr + 1) | 0x80;
+				m_iExpandAddr = ((m_iExpandAddr + 1) & 0x7F) | 0x80;		// // //
 			break;
 
 		case 0xF800:
 			m_iExpandAddr = Value;
 			break;
 	}
+}
 
+void CN163::Log(uint16_t Address, uint8_t Value)		// // //
+{
+	switch (Address) {
+	case 0xF800:
+		m_pRegisterLogger->SetPort(Value & 0x7F);
+		m_pRegisterLogger->SetAutoincrement(Value & 0x80);
+		break;
+	case 0x4800:
+		m_pRegisterLogger->Write(Value);
+		break;
+	}
 }
 
 uint8_t CN163::Read(uint16_t Address, bool &Mapped)
