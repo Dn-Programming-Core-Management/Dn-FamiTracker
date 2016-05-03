@@ -2010,7 +2010,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		FDStext.Format(_T("%s, vol = %02i"), GetPitchTextFunc(3, period, freq, period > 0), vol);
 
 		for (int i = 0; i < 11; ++i) {
-			GetRegsFunc(SNDCHIP_FDS, [] (int x) { return 0x4080 + x; }, 1);
+			GetRegsFunc(SNDCHIP_FDS, [&] (int) { return 0x4080 + i; }, 1);
 			text.Format(_T("$%04X:"), 0x4080 + i);
 			DrawRegFunc(text, 1);
 			if (!i) DrawTextFunc(180, FDStext);
