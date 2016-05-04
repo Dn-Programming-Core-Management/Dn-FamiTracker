@@ -27,6 +27,7 @@
 #include "Compiler.h"
 #include "Chunk.h"
 #include "ChunkRenderBinary.h"
+#include "DSample.h"		// // //
 
 /**
  * Binary file writer, base class binary renderers

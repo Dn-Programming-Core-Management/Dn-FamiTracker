@@ -20,10 +20,11 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
-
 #include "FamiTrackerTypes.h" // constants
+#include <memory>
 
 // // // Channel state information
 class stChannelState {

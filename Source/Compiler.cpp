@@ -30,6 +30,7 @@
 #include "InstrumentFDS.h"		// // //
 #include "InstrumentN163.h"		// // //
 #include "PatternCompiler.h"
+#include "DSample.h"		// // //
 #include "Compiler.h"
 #include "Chunk.h"
 #include "ChunkRenderText.h"

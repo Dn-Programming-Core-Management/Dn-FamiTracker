@@ -22,12 +22,6 @@
 
 #pragma once
 
-#include "DSample.h"
-
-#define MIDI_NOTE(octave, note)		((octave) * 12 + (note) - 1)
-#define GET_OCTAVE(midi_note)		((midi_note) / 12)
-#define GET_NOTE(midi_note)			((midi_note) % 12 + 1)
-
 /*
  * Here are the constants that defines the limits in the tracker
  * change if needed (some might cause side effects)
@@ -265,3 +259,22 @@ enum vibrato_t : unsigned char {
 	VIBRATO_OLD = 0,
 	VIBRATO_NEW,
 };
+
+inline int MIDI_NOTE(int octave, int note)		// // //
+{
+	return octave * NOTE_RANGE + note - 1;
+}
+
+inline int GET_OCTAVE(int midi_note)
+{
+	int x = midi_note / NOTE_RANGE;
+	if (midi_note < 0 && !(midi_note % NOTE_RANGE)) --x;
+	return x;
+}
+
+inline int GET_NOTE(int midi_note)
+{
+	int x = midi_note % NOTE_RANGE;
+	if (x < 0) x += NOTE_RANGE;
+	return x;
+}

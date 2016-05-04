@@ -20,8 +20,6 @@
 ** must bear this legend.
 */
 
-#include <memory>		// // //
-#include <string>
 #include <iterator>
 #include <sstream>
 #include "stdafx.h"

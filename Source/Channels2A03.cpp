@@ -27,6 +27,7 @@
 #include "FamiTrackerTypes.h"		// // //
 #include "APU/Types.h"		// // //
 #include "APU/APU.h"		// // // for DPCM
+#include "DSample.h"		// // //
 #include "Instrument.h"
 #include "ChannelHandler.h"
 #include "Channels2A03.h"

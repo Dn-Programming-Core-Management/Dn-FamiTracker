@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "FamiTrackerTypes.h"		// // //
 #include "PatternData.h"
+#include <algorithm>		// // // std::swap
 
 // Defaults when creating new modules
 const unsigned CPatternData::DEFAULT_ROW_COUNT	= 64;

@@ -20,8 +20,10 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
+class CDSample;
 
 class CInstrument2A03 : public CSeqInstrument, public CInstrument2A03Interface {
 public:

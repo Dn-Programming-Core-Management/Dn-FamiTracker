@@ -19,7 +19,6 @@
 */
 
 #include <iterator> 
-#include <string>
 #include <sstream>
 #include "stdafx.h"
 #include "FamiTracker.h"

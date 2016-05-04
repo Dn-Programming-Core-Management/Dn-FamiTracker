@@ -41,8 +41,8 @@
 #include "DirectSound.h"
 #include "APU/APU.h"
 #include "ChannelHandler.h"
-#include "Channels2A03.h" // DPCM sample memory
 #include "ChannelsN163.h" // N163 channel count
+#include "DSample.h"		// // //
 #include "SoundGen.h"
 #include "InstrumentRecorder.h"		// // //
 #include "Settings.h"

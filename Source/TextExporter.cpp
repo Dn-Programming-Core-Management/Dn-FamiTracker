@@ -27,6 +27,7 @@
 #include "FamiTrackerDoc.h"
 #include "../version.h"		// // //
 
+#include "DSample.h"		// // //
 #include "SeqInstrument.h"		// // //
 #include "Instrument2A03.h"
 #include "InstrumentFDS.h"

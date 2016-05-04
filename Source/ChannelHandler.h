@@ -32,6 +32,8 @@ class stChannelState;
 class CSoundGen;		// // //
 
 #include "ChannelHandlerInterface.h"
+#include <memory>		// // //
+#include <cstdint>
 
 /*!
 	\brief An implementation of the channel handler.

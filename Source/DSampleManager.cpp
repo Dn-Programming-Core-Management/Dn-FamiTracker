@@ -22,7 +22,6 @@
 
 #include <vector>
 #include <memory>
-#include "DSample.h"
 #include "DSampleManager.h"
 
 const unsigned int CDSampleManager::MAX_DSAMPLES = 64;

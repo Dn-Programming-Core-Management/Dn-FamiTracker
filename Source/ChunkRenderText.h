@@ -27,6 +27,7 @@
 //
 
 class CChunkRenderText;
+class CDSample;		// // //
 
 typedef void (CChunkRenderText::*renderFunc_t)(CChunk *pChunk, CFile *pFile);
 

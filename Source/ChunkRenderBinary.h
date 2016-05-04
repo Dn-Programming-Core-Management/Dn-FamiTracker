@@ -24,6 +24,8 @@
 // Binary chunk renderers
 //
 
+class CDSample;		// // //
+
 // Base class
 class CBinaryFileWriter
 {

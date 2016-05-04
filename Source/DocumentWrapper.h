@@ -22,6 +22,7 @@
 
 // Document wrapper class for custom exporters
 
+#include "DSample.h"		// // //
 #include "FamiTrackerDoc.h"
 
 class CFamiTrackerDocWrapper : public CFamiTrackerDocInterface

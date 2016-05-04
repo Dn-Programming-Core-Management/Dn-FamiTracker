@@ -23,6 +23,7 @@
 #include <map>
 #include <vector>
 #include "stdafx.h"
+#include "DSample.h"		// // //
 #include "FamiTrackerDoc.h"		// // // output title
 #include "Compiler.h"
 #include "Chunk.h"

@@ -20,10 +20,10 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
-
-class CDSample;
+#include "DSample.h"
 
 class CDSampleManager
 {

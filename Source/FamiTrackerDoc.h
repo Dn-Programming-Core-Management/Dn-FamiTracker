@@ -25,7 +25,9 @@
 
 // Synchronization objects
 #include <afxmt.h>
+
 #include <vector>
+#include <memory>		// // //
 
 // Get access to some APU constants
 #include "APU/Types.h"
@@ -97,6 +99,7 @@ class CTrackerChannel;
 class CDocumentFile;
 class stFullState;		// // //
 class CSeqInstrument;		// // // TODO: move to instrument manager
+class CDSample;		// // //
 
 //
 // I'll try to organize this class, things are quite messy right now!

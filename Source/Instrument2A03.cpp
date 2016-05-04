@@ -26,6 +26,7 @@
 #include "Instrument.h"
 #include "SeqInstrument.h"
 #include "Instrument2A03.h"
+#include "DSample.h"		// // //
 #include "DocumentFile.h"
 
 // 2A03 instruments

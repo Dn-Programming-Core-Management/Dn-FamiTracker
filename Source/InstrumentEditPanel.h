@@ -22,7 +22,8 @@
 
 #pragma once
 
-// std::string is required by this header file
+#include <string>		// // //
+#include <memory>		// // //
 
 // List control states
 #define LCTRL_CHECKBOX_STATE		0x3000

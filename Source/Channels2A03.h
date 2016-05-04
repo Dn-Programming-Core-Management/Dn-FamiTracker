@@ -102,6 +102,8 @@ protected:
 	int TriggerNote(int Note);
 };
 
+class CDSample;		// // //
+
 // DPCM
 class CDPCMChan : public CChannelHandler, public CChannelHandlerInterfaceDPCM {		// // //
 public:
