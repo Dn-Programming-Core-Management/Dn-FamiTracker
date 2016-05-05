@@ -276,5 +276,5 @@ inline int GET_NOTE(int midi_note)
 {
 	int x = midi_note % NOTE_RANGE;
 	if (x < 0) x += NOTE_RANGE;
-	return x;
+	return ++x;
 }
