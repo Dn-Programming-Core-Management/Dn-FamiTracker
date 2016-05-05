@@ -33,7 +33,7 @@ class CInstrumentN163;
 class CSeqInstHandlerN163 : public CSeqInstHandler
 {
 public:
-	/*! \brief Constructor of the N163 sequence instrument handler.
+	/*!	\brief Constructor of the N163 sequence instrument handler.
 		\warning As of now, the actual loading of instrument waveforms takes place in the channel handler
 		rather than through its interface.
 		\param pInterface Pointer to the channel interface.
@@ -41,17 +41,17 @@ public:
 		\param Duty Default duty cycle for instruments used by this handler.
 	*/
 	CSeqInstHandlerN163(CChannelHandlerInterface *pInterface, int Vol, int Duty);
-	/*! \brief Loads a new instrument into the instrument handler.
+	/*!	\brief Loads a new instrument into the instrument handler.
 		\details This reimplementation sets up the wave size, wave position, and wave count of the channel
 		handler.
 		\param pInst Pointer to the instrument to be loaded.
 	*/
 	void LoadInstrument(CInstrument *pInst);
-	/*! \brief Starts a new note for the instrument handler.
+	/*!	\brief Starts a new note for the instrument handler.
 		\details This reimplementation may update the channel's wave buffer.
 	*/
 	void TriggerInstrument();
-	/*! \brief Runs the instrument by one tick and updates the channel state.
+	/*!	\brief Runs the instrument by one tick and updates the channel state.
 		\details This reimplementation may update the channel's wave buffer.
 	*/
 	void UpdateInstrument();

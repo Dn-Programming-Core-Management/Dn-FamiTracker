@@ -31,7 +31,7 @@ class CBookmark;
 class CBookmarkCollection
 {
 public:
-	/*! \brief Constructor of the bookmark collection. */
+	/*!	\brief Constructor of the bookmark collection. */
 	CBookmarkCollection();
 	
 	/*!	\brief Gets the number of bookmarks in the collection.

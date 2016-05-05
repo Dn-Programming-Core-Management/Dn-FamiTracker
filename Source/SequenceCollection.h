@@ -31,10 +31,10 @@ class CSequence;
 class CSequenceCollection
 {
 public:
-	/*! \brief Constructor of the sequence collection. */
+	/*!	\brief Constructor of the sequence collection. */
 	CSequenceCollection();
 	
-	/*! \brief Obtains a modifiable sequence at a given index, creating the object if it
+	/*!	\brief Obtains a modifiable sequence at a given index, creating the object if it
 		does not exist.
 		\param Index The index value of the sequence.
 		\returns A pointer to the sequence object.
@@ -45,26 +45,26 @@ public:
 		\param Seq A pointer to the new sequence object.
 	*/
 	void SetSequence(unsigned int Index, CSequence *Seq);
-	/*! \brief Obtains a constant sequence at a given index.
+	/*!	\brief Obtains a constant sequence at a given index.
 		\param Index The index value of the sequence.
 		\returns A pointer to the sequence object, or \b nullptr if it does not exist.
 	*/
 	const CSequence *GetSequence(unsigned int Index) const;
-	/*! \brief Obtains a free sequence.
+	/*!	\brief Obtains a free sequence.
 		\returns An index to the first sequence which has no entries, or -1 if none of the
 		sequences is free.
 	*/
 	unsigned int GetFirstFree() const;
-	/*! \brief Obtains an unused sequence.
+	/*!	\brief Obtains an unused sequence.
 		\param pDoc A pointer to a document containing instrument definitions.
 		\returns An index to the first sequence which has no entries and is not used by any
 		sequence instrument, or -1 if all of the sequences are used.
 	*/
 	// unsigned int GetFirstUnused(CFamiTrackerDocInterface *pDoc) const;
 	
-	/*! \brief Removes all sequence objects contained in the collection. */
+	/*!	\brief Removes all sequence objects contained in the collection. */
 	void RemoveAll();
-	/*! \brief The maximum number of sequences a collection can contain.
+	/*!	\brief The maximum number of sequences a collection can contain.
 		\todo Replace MAX_SEQUENCES defined in FamiTrackerTypes.h with this
 	*/
 	static const int MAX_SEQUENCES;

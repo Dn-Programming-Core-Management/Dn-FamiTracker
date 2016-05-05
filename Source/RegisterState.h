@@ -31,32 +31,32 @@
 class CRegisterState
 {
 public:
-	/*! \brief Constructor of the register state. */
+	/*!	\brief Constructor of the register state. */
 	CRegisterState() : m_iValue(0), m_iWriteClock(0), m_iNewClock(0) { }
 
-	/*! \brief Resets the register's content. */
+	/*!	\brief Resets the register's content. */
 	void Reset() { m_iValue = m_iWriteClock = m_iNewClock = 0; }
 
-	/*! \brief Writes a value to the register.
+	/*!	\brief Writes a value to the register.
 		\param Val The new register value. */
 	void Update(uint8_t Val) {
 		if (m_iValue != Val) m_iNewClock = DECAY_RATE;
 		m_iValue = Val; m_iWriteClock = DECAY_RATE;
 	}
 
-	/*! \brief Obtains the register value.
+	/*!	\brief Obtains the register value.
 		\return The register value. */
 	uint8_t GetValue() const { return m_iValue; }
 
-	/*! \brief Obtains the number of ticks since the last time the register value was updated.
+	/*!	\brief Obtains the number of ticks since the last time the register value was updated.
 		\return Number of elapsed ticks. */
 	unsigned int GetLastUpdatedTime() const { return DECAY_RATE - m_iWriteClock; }
 
-	/*! \brief Obtains the number of ticks since the last time a new register value was written.
+	/*!	\brief Obtains the number of ticks since the last time a new register value was written.
 		\return Number of elapsed ticks. */
 	unsigned int GetNewValueTime() const { return DECAY_RATE - m_iNewClock; }
 
-	/*! \brief Steps one tick and updates the register state's time information. */
+	/*!	\brief Steps one tick and updates the register state's time information. */
 	void Step() { if (m_iWriteClock) --m_iWriteClock; if (m_iNewClock) --m_iNewClock; }
 
 public:
@@ -76,13 +76,13 @@ class CRegisterLogger
 public:
 	friend class CRegisterLoggerBlock;
 
-	/*! \brief Constructor of the register logger. */
+	/*!	\brief Constructor of the register logger. */
 	CRegisterLogger();
 
-	/*! \brief Resets the values of all registers. */
+	/*!	\brief Resets the values of all registers. */
 	void Reset();
 
-	/*! \brief Adds a range of register addresses, creating a state object for each register.
+	/*!	\brief Adds a range of register addresses, creating a state object for each register.
 		\details The added addresses are not allowed to overlap previously added addresses. Each
 		contiguous address range added in this way forms a region for the address port to wrap
 		around when auto-incrementing after writes.
@@ -91,26 +91,26 @@ public:
 		\return Whether the registers were successfully added. */
 	bool AddRegisterRange(unsigned Low, unsigned High);
 
-	/*! \brief Changes the address value for all future register writes.
+	/*!	\brief Changes the address value for all future register writes.
 		\param Address The new address value.
 		\return True if the register at the given address exists. */
 	bool SetPort(unsigned Address);
 
-	/*! \brief Changes the auto-increment setting of the register logger.
+	/*!	\brief Changes the auto-increment setting of the register logger.
 		\param Whether new writes increment the address port. */
 	void SetAutoincrement(bool Enable);
 
-	/*! \brief Writes a value to the current port.
+	/*!	\brief Writes a value to the current port.
 		\param Value The new register value.
 		\return Whether the write succeeded. */
 	bool Write(uint8_t Value);
 
-	/*! \brief Obtains a register object.
+	/*!	\brief Obtains a register object.
 		\param Address The address value of the register.
 		\param The register state object, or nullptr if the given address does not exist. */
 	CRegisterState *GetRegister(unsigned Address);
 
-	/*! \brief Steps one tick and updates the time information of all registers. */
+	/*!	\brief Steps one tick and updates the time information of all registers. */
 	void Step();
 
 protected:

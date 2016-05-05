@@ -33,9 +33,9 @@ class CBookmarkCollection;
 class CBookmarkManager
 {
 public:
-	/*! \brief Constructor of the bookmark manager. */
+	/*!	\brief Constructor of the bookmark manager. */
 	CBookmarkManager(unsigned Count = 0U);
-	/*! \brief Removes all bookmarks from the collections. */
+	/*!	\brief Removes all bookmarks from the collections. */
 	void ClearAll();
 
 	/*!	\brief Obtains a bookmark collection.

@@ -36,7 +36,7 @@ class CSeqInstrument;
 class CSeqInstHandler : public CInstHandler
 {
 public:
-	/*! \brief Constants representing the state of each sequence. */
+	/*!	\brief Constants representing the state of each sequence. */
 	enum seq_state_t {		// // //
 		SEQ_STATE_DISABLED, /*!< Current sequence is not enabled. */
 		SEQ_STATE_RUNNING,	/*!< Current sequence is running. */
@@ -44,7 +44,7 @@ public:
 		SEQ_STATE_HALT		/*!< Current sequence has finished running until the next note. */
 	};
 
-	/*! \brief Constructor of the sequence instrument handler.
+	/*!	\brief Constructor of the sequence instrument handler.
 		\details A default duty value must be provided in the parameters.
 		\param pInterface Pointer to the channel interface.
 		\param Vol Default volume for instruments used by this handler.
@@ -56,30 +56,30 @@ public:
 	virtual void ReleaseInstrument();
 	virtual void UpdateInstrument();
 
-	/*! \brief Obtains the current sequence state of a given sequence type.
+	/*!	\brief Obtains the current sequence state of a given sequence type.
 		\param Index The sequence type, which should be a member of sequence_t.
 		\return The sequence state of the given sequence type.
 	*/
 	seq_state_t GetSequenceState(int Index) const { return m_iSeqState[Index]; }
 
 protected:
-	/*! \brief Prepares a sequence type for use by CSeqInstHandler::UpdateInstrument. */
+	/*!	\brief Prepares a sequence type for use by CSeqInstHandler::UpdateInstrument. */
 	void SetupSequence(int Index, const CSequence *pSequence);
-	/*! \brief Clears a sequence type from use. */
+	/*!	\brief Clears a sequence type from use. */
 	void ClearSequence(int Index);
 
 protected:
-	/*! \brief An array holding pointers to the sequences used by the current instrument. */
+	/*!	\brief An array holding pointers to the sequences used by the current instrument. */
 	const CSequence	*m_pSequence[SEQ_COUNT];
-	/*! \brief An array holding the states of each sequence type used in sequence instruments. */
+	/*!	\brief An array holding the states of each sequence type used in sequence instruments. */
 	seq_state_t		m_iSeqState[SEQ_COUNT];
-	/*! \brief An array holding the tick index of each sequence type used in sequence instruments. */
+	/*!	\brief An array holding the tick index of each sequence type used in sequence instruments. */
 	int				m_iSeqPointer[SEQ_COUNT];
-	/*! \brief The current duty cycle of the instrument.
+	/*!	\brief The current duty cycle of the instrument.
 		\details The exact interpretation of this member may not be identical across sound channels.
 		\warning Currently unused. */
 	int				m_iDutyParam;
-	/*! \brief The default duty cycle of the instrument.
+	/*!	\brief The default duty cycle of the instrument.
 		\details On triggering a new note, the duty cycle value is reset to this value.
 		\warning Currently unused. */
 	const int		m_iDefaultDuty;

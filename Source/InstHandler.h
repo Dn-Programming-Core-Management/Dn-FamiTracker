@@ -35,17 +35,17 @@ class CInstrument;
 */
 class CInstHandler {
 protected:
-	/*! \brief Constructor of the sequence instrument handler.
+	/*!	\brief Constructor of the sequence instrument handler.
 		\param pInterface Pointer to the channel interface.
 		\param Vol Default volume for instruments used by this handler.
 	*/
 	CInstHandler(CChannelHandlerInterface *pInterface, int Vol);
 
 public:
-	/*! \brief Destructor of the instrument handler. */
+	/*!	\brief Destructor of the instrument handler. */
 	virtual ~CInstHandler();
 
-	/*! \brief Loads a new instrument into the instrument handler.
+	/*!	\brief Loads a new instrument into the instrument handler.
 		\details All relevant instrument parameters should be initialized in this method. This method
 		might be called more than once from the same object, when a new instrument is issued by the
 		channel handler, but the instrument type remains identical. This method is never called when
@@ -57,47 +57,47 @@ public:
 		\sa CChannelHandler::m_bForceReload
 	*/
 	virtual void LoadInstrument(CInstrument *pInst) = 0;
-	/*! \brief Runs the instrument by one tick and updates the channel state.
+	/*!	\brief Runs the instrument by one tick and updates the channel state.
 		\details The channel handler calls this method on every tick to allow continuous control of
 		the channel state from the instrument handler.
 	*/
 	virtual void UpdateInstrument() = 0;
-	/*! \brief Starts a new note for the instrument handler.
+	/*!	\brief Starts a new note for the instrument handler.
 		\details The next call to CInstHandler::UpdateInstrument should generate the first tick of
 		the instrument or a suitable default sound state.
 	*/
 	virtual void TriggerInstrument() = 0;
-	/*! \brief Releases the current note for the instrument handler.
+	/*!	\brief Releases the current note for the instrument handler.
 		\details The method does not specify whether a note can be released for multiple times until
 		another new note is triggered.
 	*/
 	virtual void ReleaseInstrument() = 0;
 
 protected:
-	/*! \brief An interface to the underlying channel handler.
+	/*!	\brief An interface to the underlying channel handler.
 		\details The instrument handler may control the channel only through methods provided by
 		this interface.
 	*/
 	CChannelHandlerInterface *m_pInterface;
-	/*! \brief A const pointer to the current instrument used by this instrument handler.
+	/*!	\brief A const pointer to the current instrument used by this instrument handler.
 		\warning This pointer does not participate in reference counting provided by std::shared_ptr.
 	*/
 	const CInstrument *m_pInstrument;
-	/*! \brief The current volume of the instrument.
+	/*!	\brief The current volume of the instrument.
 		\warning Currently unused.
 	*/
 	int m_iVolume;
-	/*! \brief The current note value of the instrument.
+	/*!	\brief The current note value of the instrument.
 		\warning Currently unused.
 	*/
 	int m_iNoteOffset;
-	/*! \brief The current pitch deviation of the instrument.
+	/*!	\brief The current pitch deviation of the instrument.
 		\details The pitch offset is handled in the same way as the fine pitch offset of the
 		underlying channel handler.
 		\warning Currently unused.
 	*/
 	int m_iPitchOffset;
-	/*! \brief The default volume of the instrument.
+	/*!	\brief The default volume of the instrument.
 		\details On triggering a new note, the instrument volume is reset to this value.
 		\warning Currently unused.
 	*/

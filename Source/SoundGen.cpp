@@ -1124,7 +1124,7 @@ void CSoundGen::ApplyGlobalState()		// // //
 	}
 }
 
-/*! \brief Obtains a human-readable form of a channel state object.
+/*!	\brief Obtains a human-readable form of a channel state object.
 	\warning The output of this method is neither guaranteed nor required to match that of
 	CChannelHandler::GetStateString.
 	\param State A reference to the channel state object.

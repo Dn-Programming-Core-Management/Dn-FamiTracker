@@ -34,10 +34,10 @@
 class CModuleException : std::exception
 {
 public:
-	/*! \brief Constructor of the exception object with an empty message. */
+	/*!	\brief Constructor of the exception object with an empty message. */
 	CModuleException();
 
-	/*! \brief Raises the exception object.
+	/*!	\brief Raises the exception object.
 		\details All derived classes must override this method with the exact same function body in order
 		to throw polymorphically.
 		\warning Visual C++ 2010 does not support the `[[noreturn]]` attribute.
