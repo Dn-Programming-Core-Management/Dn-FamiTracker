@@ -22,6 +22,7 @@
 
 class CFamiTrackerView;
 class CInstrument2A03;		// // //
+class CDSample;		// // //
 
 // CInstrumentDPCM dialog
 

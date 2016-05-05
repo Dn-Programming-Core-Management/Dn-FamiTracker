@@ -20,8 +20,8 @@
 ** must bear this legend.
 */
 
-#ifndef MIXER_H
-#define MIXER_H
+
+#pragma once
 
 #include "Types.h"
 #include "../Common.h"
@@ -119,5 +119,3 @@ private:
 
 	bool		m_bNamcoMixing;		// // //
 };
-
-#endif /* MIXER_H */

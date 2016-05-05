@@ -18,8 +18,8 @@
 ** must bear this legend.
 */
 
-#ifndef VRC7_H
-#define VRC7_H
+
+#pragma once
 
 #include "SoundChip.h"
 #include "emu2413.h"
@@ -55,6 +55,3 @@ private:
 
 	float	m_fVolume;
 };
-
-
-#endif /* VRC7_H */

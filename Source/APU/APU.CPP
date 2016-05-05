@@ -399,7 +399,7 @@ void CAPU::SetNamcoMixing(bool bLinear)		// // //
 
 void CAPU::LogWrite(uint16_t Address, uint8_t Value)
 {
-	for (auto &r : ExChips)
+	for (auto &r : ExChips)		// // //
 		r->Log(Address, Value);
 }
 

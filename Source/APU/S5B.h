@@ -18,11 +18,11 @@
 ** must bear this legend.
 */
 
-#ifndef S5B_H
-#define S5B_H
+
+#pragma once
 
 #include "SoundChip.h"
-#include "channel.h"
+#include "Channel.h"
 
 class CS5B : public CSoundChip {
 public:
@@ -49,5 +49,3 @@ private:
 	float	m_fVolume;
 
 };
-
-#endif /* S5B_H */

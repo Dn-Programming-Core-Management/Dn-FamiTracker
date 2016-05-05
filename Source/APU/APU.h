@@ -20,8 +20,8 @@
 ** must bear this legend.
 */
 
-#ifndef APU_H
-#define APU_H
+
+#pragma once
 
 //#define LOGGING
 
@@ -137,5 +137,3 @@ private:
 #endif
 
 };
-
-#endif /* APU_H */

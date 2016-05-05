@@ -18,11 +18,11 @@
 ** must bear this legend.
 */
 
-#ifndef MMC5_H
-#define MMC5_H
+
+#pragma once
 
 #include "SoundChip.h"
-#include "channel.h"
+#include "Channel.h"
 
 class CSquare;		// // //
 
@@ -47,5 +47,3 @@ private:
 	uint8_t	m_iMulLow;
 	uint8_t	m_iMulHigh;
 };
-
-#endif /* MMC5_H */

@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef NOISE_H
-#define NOISE_H
+
+#pragma once
 
 #include "2A03Chan.h"		// // //
 
@@ -56,5 +56,3 @@ private:
 	uint8_t	m_iSampleRate;
 	uint16_t	m_iShiftReg;
 };
-
-#endif /* NOISE_H */

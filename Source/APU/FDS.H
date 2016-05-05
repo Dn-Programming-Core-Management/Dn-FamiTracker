@@ -18,13 +18,13 @@
 ** must bear this legend.
 */
 
-#ifndef FDS_H
-#define FDS_H
+
+#pragma once
 
 #include "SoundChip.h"
 #include "Channel.h"
 
-class CFDS : public CSoundChip, CChannel {
+class CFDS : public CSoundChip, public CChannel {
 public:
 	CFDS(CMixer *pMixer);
 	virtual ~CFDS();
@@ -34,5 +34,3 @@ public:
 	void	EndFrame();
 	void	Process(uint32_t Time);
 };
-
-#endif /* FDS_H */

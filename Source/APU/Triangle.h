@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef TRIANGLE_H
-#define TRIANGLE_H
+
+#pragma once
 
 #include "2A03Chan.h"		// // //
 
@@ -50,5 +50,3 @@ private:
 	uint16_t	m_iLinearCounter;
 	int8_t	m_iStepGen;
 };
-
-#endif /* TRIANGLE_H */

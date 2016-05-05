@@ -20,8 +20,8 @@
 ** must bear this legend.
 */
 
-#ifndef DPCM_H
-#define DPCM_H
+
+#pragma once
 
 #include "2A03Chan.h"		// // //
 
@@ -66,5 +66,3 @@ private:
 	// Needed by FamiTracker 
 	CSampleMem	*m_pSampleMem;
 };
-
-#endif /* DPCM_H */

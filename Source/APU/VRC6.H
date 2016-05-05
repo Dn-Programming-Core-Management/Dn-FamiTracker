@@ -18,11 +18,11 @@
 ** must bear this legend.
 */
 
-#ifndef VRC6_H
-#define VRC6_H
+
+#pragma once
 
 #include "SoundChip.h"
-#include "channel.h"
+#include "Channel.h"
 
 class CVRC6_Pulse : public CChannel {
 public:
@@ -75,5 +75,3 @@ private:
 	CVRC6_Pulse	*m_pPulse1, *m_pPulse2;
 	CVRC6_Sawtooth *m_pSawtooth;
 };
-
-#endif /* VRC6_H */

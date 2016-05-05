@@ -18,8 +18,8 @@
 ** must bear this legend.
 */
 
-#ifndef CHANNEL_H
-#define CHANNEL_H
+
+#pragma once
 
 class CMixer;
 
@@ -30,20 +30,14 @@ class CMixer;
 class CChannel {
 public:
 	CChannel(CMixer *pMixer, uint8_t Chip, uint8_t ID) :
-		m_pMixer(pMixer),
-		m_iChip(Chip),
-		m_iChanId(ID),
-		m_iTime(0),
-		m_iLastValue(0) 
+		m_pMixer(pMixer), m_iChip(Chip), m_iChanId(ID), m_iTime(0), m_iLastValue(0) 
 	{
 	}
 
-	virtual inline void EndFrame() {
-		m_iTime = 0;
-	}
+	virtual void EndFrame() { m_iTime = 0; }
 
 protected:
-	virtual inline void Mix(int32_t Value) {
+	virtual void Mix(int32_t Value) {
 		int32_t Delta = Value - m_iLastValue;
 		if (Delta)
 			m_pMixer->AddValue(m_iChanId, m_iChip, Delta, Value, m_iTime);
@@ -58,5 +52,3 @@ protected:
 	uint8_t		m_iChanId;			// This channels unique ID
 	uint8_t		m_iChip;			// Chip
 };
-
-#endif /* CHANNEL_H */

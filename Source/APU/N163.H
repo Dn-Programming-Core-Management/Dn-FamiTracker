@@ -20,8 +20,8 @@
 ** must bear this legend.
 */
 
-#ifndef N163_H
-#define N163_H
+
+#pragma once
 
 #include "SoundChip.h"
 #include "Channel.h"
@@ -86,5 +86,3 @@ private:
 
 	bool		m_bOldMixing;		// // //
 };
-
-#endif /* N163_H */

@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef SQUARE_H
-#define SQUARE_H
+
+#pragma once
 
 #include "2A03Chan.h"		// // //
 
@@ -57,5 +57,3 @@ private:
 	int16_t	m_iSweepCounter, m_iSweepResult;
 	bool	m_bSweepWritten;
 };
-
-#endif /* SQUARE_H */
