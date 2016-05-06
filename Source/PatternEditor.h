@@ -99,6 +99,7 @@ public:
 	void OnHomeKey();
 	void OnEndKey();
 
+	void MoveCursor(const CCursorPos &Pos);		// // // primitive cursor setter
 	void MoveToRow(int Row);
 	void MoveToFrame(int Frame);
 	void MoveToChannel(int Channel);
@@ -116,6 +117,7 @@ public:
 	int GetChannel() const;
 	int GetRow() const;
 	cursor_column_t GetColumn() const;
+	CCursorPos GetCursor() const;		// // //
 
 	// Mouse
 	void OnMouseDown(const CPoint &point);

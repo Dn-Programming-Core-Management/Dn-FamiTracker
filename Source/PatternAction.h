@@ -33,6 +33,37 @@ enum transpose_t {
 	TRANSPOSE_INC_OCTAVES
 };
 
+/*
+	\brief A structure responsible for recording the cursor and selection state of the pattern
+	editor for use by pattern actions.
+*/
+struct CPatternEditorState		// // // TODO: might be moved to PatternEditor.h
+{
+	/*!	\brief Constructor of the pattern editor state.
+		\details On construction, the object retrieves the current state of the pattern editor
+		immediately. Once created, a state object remains constant and can be applied back to the
+		pattern editor as many times as desired.
+		\param pEditor Pointer to the pattern editor.
+		\param Track The track number. */
+	CPatternEditorState(const CPatternEditor *pEditor, int Track);
+
+	/*!	\brief Applies the state to a pattern editor.
+		\param pEditor Pointer to the pattern editor. */
+	void ApplyState(CPatternEditor *pEditor) const;
+
+	/*!	\brief The current track number at the time of the state's creation. */
+	const int Track;
+
+	/*!	\brief The current cursor position at the time of the state's creation. */
+	const CCursorPos Cursor;
+
+	/*!	\brief The current selection position at the time of the state's creation. */
+	const CSelection Selection;
+
+	/*!	\brief Whether a selection is active at the time of the state's creation. */
+	const bool IsSelecting;
+};
+
 // Pattern commands
 class CPatternAction : public CAction
 {
@@ -123,14 +154,12 @@ private:
 	int m_iUndoChannel;
 	int m_iUndoRow;
 	cursor_column_t m_iUndoColumn;		// // //
-	int m_iUndoColumnCount;
 
-	int m_iRedoTrack;
-	int m_iRedoFrame;
-	int m_iRedoChannel;
-	int m_iRedoRow;
-	cursor_column_t m_iRedoColumn;
-	int m_iRedoColumnCount;		// // //
+	CPatternEditorState *m_pUndoState;		// // //
+	CPatternEditorState *m_pRedoState;
+
+	int m_iUndoColumnCount;		// // //
+	int m_iRedoColumnCount;
 
 	int m_iReplaceFrame, m_iReplaceChannel, m_iReplaceRow;		// // //
 

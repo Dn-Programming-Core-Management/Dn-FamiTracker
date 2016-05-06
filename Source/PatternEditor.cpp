@@ -2582,6 +2582,11 @@ void CPatternEditor::OnEndKey()
 	UpdateSelectionEnd();
 }
 
+void CPatternEditor::MoveCursor(const CCursorPos &Pos)		// // //
+{
+	m_cpCursorPos = Pos;
+}
+
 void CPatternEditor::MoveToRow(int Row)
 {
 	if (theApp.IsPlaying() && m_bFollowMode)
@@ -3290,6 +3295,11 @@ int CPatternEditor::GetRow() const
 cursor_column_t CPatternEditor::GetColumn() const
 {
 	return m_cpCursorPos.m_iColumn;
+}
+
+CCursorPos CPatternEditor::GetCursor() const		// // //
+{
+	return m_cpCursorPos;
 }
 
 // Copy and paste ///////////////////////////////////////////////////////////////////////////////////////////

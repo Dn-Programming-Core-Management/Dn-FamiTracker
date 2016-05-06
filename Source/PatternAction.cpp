@@ -30,6 +30,27 @@
 #include "PatternEditor.h"
 #include "PatternAction.h"
 
+// // // Pattern editor state class
+
+CPatternEditorState::CPatternEditorState(const CPatternEditor *pEditor, int Track) :
+	// Track {pEditor->GetTrack()},
+	Track(Track),
+	Cursor(pEditor->GetCursor()),
+	Selection(pEditor->GetSelection()),
+	IsSelecting(pEditor->IsSelecting())
+{
+}
+
+void CPatternEditorState::ApplyState(CPatternEditor *pEditor) const
+{
+	pEditor->MoveCursor(Cursor);
+	if (IsSelecting)
+		pEditor->SetSelection(Selection);
+	else
+		pEditor->CancelSelection();
+	pEditor->InvalidateCursor();
+}
+
 // CPatternAction /////////////////////////////////////////////////////////////////
 //
 // Undo/redo commands for pattern editor
@@ -49,6 +70,9 @@ CPatternAction::CPatternAction(int iAction) :
 
 CPatternAction::~CPatternAction()
 {
+	SAFE_RELEASE(m_pUndoState);		// // //
+	SAFE_RELEASE(m_pRedoState);		// // //
+
 	SAFE_RELEASE(m_pClipData);
 	SAFE_RELEASE(m_pUndoClipData);
 	SAFE_RELEASE(m_pAuxiliaryClipData);
@@ -776,17 +800,19 @@ void CPatternAction::DeleteSelection(CFamiTrackerDoc *pDoc) const
 CPatternIterator CPatternAction::GetStartIterator() const		// // //
 {
 	CMainFrame *pMainFrm = static_cast<CMainFrame*>(AfxGetMainWnd());
-	CCursorPos Pos = m_selection.m_cpStart < m_selection.m_cpEnd ? m_selection.m_cpStart : m_selection.m_cpEnd;
-	if (!m_bSelecting) Pos = CCursorPos(m_iUndoRow, m_iUndoChannel, m_iUndoColumn, m_iUndoFrame);
-	return CPatternIterator(static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor(), m_iUndoTrack, Pos);
+	CCursorPos Pos = m_bSelecting ?
+		(m_selection.m_cpStart < m_selection.m_cpEnd ? m_selection.m_cpStart : m_selection.m_cpEnd) :
+		CCursorPos(m_pUndoState->Cursor);
+	return CPatternIterator(static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor(), m_pUndoState->Track, Pos);
 }
 
 CPatternIterator CPatternAction::GetEndIterator() const
 {
 	CMainFrame *pMainFrm = static_cast<CMainFrame*>(AfxGetMainWnd());
-	CCursorPos Pos = m_selection.m_cpStart < m_selection.m_cpEnd ? m_selection.m_cpEnd : m_selection.m_cpStart;
-	if (!m_bSelecting) Pos = CCursorPos(m_iUndoRow, m_iUndoChannel, m_iUndoColumn, m_iUndoFrame);
-	return CPatternIterator(static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor(), m_iUndoTrack, Pos);
+	CCursorPos Pos = m_bSelecting ?
+		(m_selection.m_cpEnd < m_selection.m_cpStart ? m_selection.m_cpStart : m_selection.m_cpEnd) :
+		CCursorPos(m_pUndoState->Cursor);
+	return CPatternIterator(static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor(), m_pUndoState->Track, Pos);
 }
 
 // Undo / Redo base methods
@@ -798,11 +824,18 @@ bool CPatternAction::SaveState(CMainFrame *pMainFrm)
 	CPatternEditor *pPatternEditor = pView->GetPatternEditor();
 
 	// Save undo cursor position
-	m_iUndoTrack	= pMainFrm->GetSelectedTrack();
-	m_iUndoFrame	= pPatternEditor->GetFrame();
-	m_iUndoChannel  = pPatternEditor->GetChannel();
-	m_iUndoRow		= pPatternEditor->GetRow();
-	m_iUndoColumn   = pPatternEditor->GetColumn();
+	const int Track = pMainFrm->GetSelectedTrack(); // m_pUndoState->Track;
+	m_pUndoState = new CPatternEditorState {pPatternEditor, Track};		// // //
+	const int Frame = m_pUndoState->Cursor.m_iFrame;
+	const int Row = m_pUndoState->Cursor.m_iRow;
+	const int Channel = m_pUndoState->Cursor.m_iChannel;
+	const cursor_column_t Column = m_pUndoState->Cursor.m_iColumn;
+	
+	m_iUndoTrack	= Track; // TODO: remove
+	m_iUndoFrame	= Frame;
+	m_iUndoChannel  = Channel;
+	m_iUndoRow		= Row;
+	m_iUndoColumn   = Column;
 
 	m_bSelecting = pPatternEditor->IsSelecting();
 	m_selection = pPatternEditor->GetSelection();
@@ -813,21 +846,21 @@ bool CPatternAction::SaveState(CMainFrame *pMainFrm)
 	switch (m_iAction) {
 		case ACT_EDIT_NOTE:
 			// Edit note
-			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow, &m_OldNote);
+			pDoc->GetNoteData(Track, Frame, Channel, Row, &m_OldNote);
 			break;
 		case ACT_REPLACE_NOTE:		// // //
 			// Replace note
-			pDoc->GetNoteData(m_iUndoTrack, m_iReplaceFrame, m_iReplaceChannel, m_iReplaceRow, &m_OldNote);
+			pDoc->GetNoteData(Track, m_iReplaceFrame, m_iReplaceChannel, m_iReplaceRow, &m_OldNote);
 			break;
 		case ACT_DELETE_ROW:
 			// Delete row
-			if (m_bBack && m_iUndoRow == 0)
+			if (m_bBack && !Row)
 				return false;
-			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow - (m_bBack ? 1 : 0), &m_OldNote);
+			pDoc->GetNoteData(Track, Frame, Channel, Row - (m_bBack ? 1 : 0), &m_OldNote);
 			break;
 		case ACT_INSERT_ROW:
 			// Insert empty row
-			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, pDoc->GetPatternLength(m_iUndoTrack) - 1, &m_OldNote);
+			pDoc->GetNoteData(Track, Frame, Channel, pDoc->GetPatternLength(Track) - 1, &m_OldNote);
 			break;
 		case ACT_DRAG_AND_DROP:
 			if (m_bDragDelete)
@@ -842,7 +875,7 @@ bool CPatternAction::SaveState(CMainFrame *pMainFrm)
 			CopySelection(pPatternEditor);		// // //
 			break;
 		case ACT_EDIT_DELETE_ROWS:
-			if (!(m_selection.GetFrameStart() <= m_iUndoFrame && m_selection.GetFrameEnd() >= m_iUndoFrame))
+			if (!(m_selection.GetFrameStart() <= Frame && m_selection.GetFrameEnd() >= Frame))
 				return false;
 			// continue
 		case ACT_INSERT_SEL_ROWS:
@@ -880,15 +913,15 @@ bool CPatternAction::SaveState(CMainFrame *pMainFrm)
 		case ACT_INCREASE:
 		case ACT_DECREASE:		// // //
 			// Increase action
-			pDoc->GetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow, &m_OldNote);
+			pDoc->GetNoteData(Track, Frame, Channel, Row, &m_OldNote);
 			break;
 		case ACT_PATTERN_LENGTH:
 			// Change pattern length
-			m_iOldPatternLen = pDoc->GetPatternLength(m_iUndoTrack);
+			m_iOldPatternLen = pDoc->GetPatternLength(Track);
 			break;
 		case ACT_EFFECT_COLUMNS:		// // //
 			// Add / remove effect column
-			m_iUndoColumnCount = pDoc->GetEffColumns(m_iUndoTrack, m_iClickedChannel);
+			m_iUndoColumnCount = pDoc->GetEffColumns(Track, m_iClickedChannel);
 			break;
 #ifdef _DEBUG
 		default:
@@ -902,15 +935,7 @@ bool CPatternAction::SaveState(CMainFrame *pMainFrm)
 void CPatternAction::SaveRedoState(CMainFrame *pMainFrm)		// // //
 {
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
-	CPatternEditor *pPatternEditor = pView->GetPatternEditor();
-
-	m_iRedoTrack	= pMainFrm->GetSelectedTrack();
-	m_iRedoFrame	= pPatternEditor->GetFrame();
-	m_iRedoChannel  = pPatternEditor->GetChannel();
-	m_iRedoRow		= pPatternEditor->GetRow();
-	m_iRedoColumn   = pPatternEditor->GetColumn();
-	// m_bRedoSelecting = pPatternEditor->IsSelecting();
-	// m_RedoSelection = pPatternEditor->GetSelection();
+	m_pRedoState = new CPatternEditorState {pView->GetPatternEditor(), pMainFrm->GetSelectedTrack()};
 }
 
 void CPatternAction::RestoreState(CMainFrame *pMainFrm)		// // //
@@ -919,11 +944,12 @@ void CPatternAction::RestoreState(CMainFrame *pMainFrm)		// // //
 	CFamiTrackerDoc *pDoc = pView->GetDocument();
 	CPatternEditor *pPatternEditor = pView->GetPatternEditor();
 
-	pPatternEditor->MoveToFrame(m_iUndoFrame);
-	pPatternEditor->MoveToChannel(m_iUndoChannel);
-	pPatternEditor->MoveToRow(m_iUndoRow);
-	pPatternEditor->MoveToColumn(m_iUndoColumn);
-	pPatternEditor->InvalidateCursor();
+//	pPatternEditor->MoveToFrame(m_iUndoFrame);
+//	pPatternEditor->MoveToChannel(m_iUndoChannel);
+//	pPatternEditor->MoveToRow(m_iUndoRow);
+//	pPatternEditor->MoveToColumn(m_iUndoColumn);
+//	pPatternEditor->InvalidateCursor();
+	if (m_pUndoState) m_pUndoState->ApplyState(pPatternEditor);
 
 	pDoc->UpdateAllViews(NULL, m_iAction == ACT_EFFECT_COLUMNS ? UPDATE_COLUMNS : UPDATE_PATTERN);
 }
@@ -934,11 +960,7 @@ void CPatternAction::RestoreRedoState(CMainFrame *pMainFrm)		// // //
 	CFamiTrackerDoc *pDoc = pView->GetDocument();
 	CPatternEditor *pPatternEditor = pView->GetPatternEditor();
 
-	pPatternEditor->MoveToFrame(m_iRedoFrame);
-	pPatternEditor->MoveToChannel(m_iRedoChannel);
-	pPatternEditor->MoveToRow(m_iRedoRow);
-	pPatternEditor->MoveToColumn(m_iRedoColumn);
-	pPatternEditor->InvalidateCursor();
+	if (m_pRedoState) m_pRedoState->ApplyState(pPatternEditor);
 
 	pDoc->UpdateAllViews(NULL, m_iAction == ACT_EFFECT_COLUMNS ? UPDATE_COLUMNS : UPDATE_PATTERN);
 }
@@ -949,23 +971,29 @@ void CPatternAction::Undo(CMainFrame *pMainFrm)
 	CFamiTrackerDoc *pDoc = pView->GetDocument();
 	CPatternEditor *pPatternEditor = pView->GetPatternEditor();
 
+	const int Track = m_pUndoState->Track;		// // //
+	const int Frame = m_pUndoState->Cursor.m_iFrame;
+	const int Row = m_pUndoState->Cursor.m_iRow;
+	const int Channel = m_pUndoState->Cursor.m_iChannel;
+	const cursor_column_t Column = m_pUndoState->Cursor.m_iColumn;
+
 	switch (m_iAction) {
 		case ACT_EDIT_NOTE:
 		case ACT_INCREASE:		// // //
 		case ACT_DECREASE:		// // //
-			pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow, &m_OldNote);
+			pDoc->SetNoteData(Track, Frame, Channel, Row, &m_OldNote);
 			break;
 		case ACT_REPLACE_NOTE:		// // //
-			pDoc->SetNoteData(m_iUndoTrack, m_iReplaceFrame, m_iReplaceChannel, m_iReplaceRow, &m_OldNote);
+			pDoc->SetNoteData(Track, m_iReplaceFrame, m_iReplaceChannel, m_iReplaceRow, &m_OldNote);
 			break;
 		case ACT_DELETE_ROW:
 			if (m_bPullUp)
-				pDoc->InsertRow(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow - (m_bBack ? 1 : 0));
-			pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow - (m_bBack ? 1 : 0), &m_OldNote);
+				pDoc->InsertRow(Track, Frame, Channel, Row - (m_bBack ? 1 : 0));
+			pDoc->SetNoteData(Track, Frame, Channel, Row - (m_bBack ? 1 : 0), &m_OldNote);
 			break;
 		case ACT_INSERT_ROW:
-			pDoc->PullUp(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow);
-			pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, pDoc->GetPatternLength(m_iUndoTrack) - 1, &m_OldNote);
+			pDoc->PullUp(Track, Frame, Channel, Row);
+			pDoc->SetNoteData(Track, Frame, Channel, pDoc->GetPatternLength(Track) - 1, &m_OldNote);
 			break;
 		case ACT_EDIT_PASTE:		// // //
 			pPatternEditor->SetSelection(m_newSelection);		// // //
@@ -994,11 +1022,11 @@ void CPatternAction::Undo(CMainFrame *pMainFrm)
 				PasteAuxiliary(pPatternEditor);
 			break;
 		case ACT_PATTERN_LENGTH:
-			pDoc->SetPatternLength(m_iUndoTrack, m_iOldPatternLen);
+			pDoc->SetPatternLength(Track, m_iOldPatternLen);
 			pMainFrm->UpdateControls();
 			break;
 		case ACT_EFFECT_COLUMNS:		// // //
-			pDoc->SetEffColumns(m_iUndoTrack, m_iClickedChannel, m_iUndoColumnCount);
+			pDoc->SetEffColumns(Track, m_iClickedChannel, m_iUndoColumnCount);
 			break;
 #ifdef _DEBUG
 		default:
@@ -1013,20 +1041,26 @@ void CPatternAction::Redo(CMainFrame *pMainFrm)
 	CFamiTrackerDoc *pDoc = pView->GetDocument();
 	CPatternEditor *pPatternEditor = pView->GetPatternEditor();
 
+	const int Track = m_pUndoState->Track;		// // //
+	const int Frame = m_pUndoState->Cursor.m_iFrame;
+	const int Row = m_pUndoState->Cursor.m_iRow;
+	const int Channel = m_pUndoState->Cursor.m_iChannel;
+	const cursor_column_t Column = m_pUndoState->Cursor.m_iColumn;
+
 	switch (m_iAction) {
 		case ACT_EDIT_NOTE:
-			pDoc->SetNoteData(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow, &m_NewNote);
+			pDoc->SetNoteData(Track, Frame, Channel, Row, &m_NewNote);
 			break;
 		case ACT_REPLACE_NOTE:		// // //
-			pDoc->SetNoteData(m_iUndoTrack, m_iReplaceFrame, m_iReplaceChannel, m_iReplaceRow, &m_NewNote);
+			pDoc->SetNoteData(Track, m_iReplaceFrame, m_iReplaceChannel, m_iReplaceRow, &m_NewNote);
 			break;
 		case ACT_DELETE_ROW:
-			pDoc->ClearRowField(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow - (m_bBack ? 1 : 0), m_iUndoColumn);
+			pDoc->ClearRowField(Track, Frame, Channel, Row - (m_bBack ? 1 : 0), Column);
 			if (m_bPullUp)
-				pDoc->PullUp(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow - (m_bBack ? 1 : 0));
+				pDoc->PullUp(Track, Frame, Channel, Row - (m_bBack ? 1 : 0));
 			break;
 		case ACT_INSERT_ROW:
-			pDoc->InsertRow(m_iUndoTrack, m_iUndoFrame, m_iUndoChannel, m_iUndoRow);
+			pDoc->InsertRow(Track, Frame, Channel, Row);
 			break;
 		case ACT_EDIT_PASTE:
 			pPatternEditor->Paste(m_pClipData, m_iPasteMode, m_iPastePos);		// // //
@@ -1075,14 +1109,14 @@ void CPatternAction::Redo(CMainFrame *pMainFrm)
 			pPatternEditor->DragPaste(m_pClipData, &m_dragTarget, m_bDragMix);
 			break;
 		case ACT_PATTERN_LENGTH:
-			pDoc->SetPatternLength(m_iUndoTrack, m_iNewPatternLen);
+			pDoc->SetPatternLength(Track, m_iNewPatternLen);
 			pMainFrm->UpdateControls();
 			break;
 		case ACT_STRETCH_PATTERN:		// // //
 			StretchPattern(pDoc);
 			break;
 		case ACT_EFFECT_COLUMNS:		// // //
-			pDoc->SetEffColumns(m_iUndoTrack, m_iClickedChannel, m_iRedoColumnCount);
+			pDoc->SetEffColumns(Track, m_iClickedChannel, m_iRedoColumnCount);
 			break;
 #ifdef _DEBUG
 		default:
@@ -1098,7 +1132,7 @@ void CPatternAction::Update(CMainFrame *pMainFrm)
 
 	switch (m_iAction) {
 		case ACT_PATTERN_LENGTH:
-			pDoc->SetPatternLength(m_iUndoTrack, m_iNewPatternLen);
+			pDoc->SetPatternLength(m_pUndoState->Track, m_iNewPatternLen);		// // //
 			pDoc->UpdateAllViews(NULL, UPDATE_PATTERN);
 			pMainFrm->UpdateControls();
 			break;
