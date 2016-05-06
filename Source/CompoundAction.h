@@ -36,7 +36,7 @@ class CCompoundAction final : public CAction
 public:
 	CCompoundAction();
 
-	bool SaveState(CMainFrame *pMainFrm);
+	bool SaveState(const CMainFrame *pMainFrm);
 	void Undo(CMainFrame *pMainFrm) const;
 	void Redo(CMainFrame *pMainFrm) const;
 

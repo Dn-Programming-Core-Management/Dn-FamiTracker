@@ -36,7 +36,7 @@ public:
 	virtual ~CAction();
 
 	// // // Save the action-specific state information. This method may reject the action by returning false
-	virtual bool SaveState(CMainFrame *pMainFrm) = 0;
+	virtual bool SaveState(const CMainFrame *pMainFrm) = 0;
 
 	// Undo the operation
 	virtual void Undo(CMainFrame *pMainFrm) const = 0;

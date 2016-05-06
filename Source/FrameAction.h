@@ -56,7 +56,7 @@ public:
 	CFrameAction(int iAction);
 	virtual ~CFrameAction();
 
-	virtual bool SaveState(CMainFrame *pMainFrm);
+	virtual bool SaveState(const CMainFrame *pMainFrm);
 	virtual void Undo(CMainFrame *pMainFrm) const;
 	virtual void Redo(CMainFrame *pMainFrm) const;
 

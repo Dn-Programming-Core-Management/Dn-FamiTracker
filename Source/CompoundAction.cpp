@@ -30,7 +30,7 @@ CCompoundAction::CCompoundAction() : m_pActionList()
 {
 }
 
-bool CCompoundAction::SaveState(CMainFrame *pMainFrm)
+bool CCompoundAction::SaveState(const CMainFrame *pMainFrm)
 {
 	for (auto it = m_pActionList.begin(); it != m_pActionList.end(); ++it)
 		if (!(*it)->SaveState(pMainFrm)) // TODO: check if all compound actions can be undone in any order

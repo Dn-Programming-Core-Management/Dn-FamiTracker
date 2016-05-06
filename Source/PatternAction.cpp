@@ -818,7 +818,7 @@ CPatternIterator CPatternAction::GetEndIterator() const
 
 // Undo / Redo base methods
 
-bool CPatternAction::SaveState(CMainFrame *pMainFrm)
+bool CPatternAction::SaveState(const CMainFrame *pMainFrm)
 {
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
 	CFamiTrackerDoc *pDoc = pView->GetDocument();
@@ -882,11 +882,11 @@ bool CPatternAction::SaveState(CMainFrame *pMainFrm)
 				return false;
 			switch (Cond) {
 			case SEL_REPEATED_ROW:
-				pMainFrm->SetMessageText(IDS_SEL_REPEATED_ROW); break;
+				static_cast<CFrameWnd*>(AfxGetMainWnd())->SetMessageText(IDS_SEL_REPEATED_ROW); break;
 			case SEL_NONTERMINAL_SKIP:
-				pMainFrm->SetMessageText(IDS_SEL_NONTERMINAL_SKIP); break;
+				static_cast<CFrameWnd*>(AfxGetMainWnd())->SetMessageText(IDS_SEL_NONTERMINAL_SKIP); break;
 			case SEL_TERMINAL_SKIP:
-				pMainFrm->SetMessageText(IDS_SEL_TERMINAL_SKIP); break;
+				static_cast<CFrameWnd*>(AfxGetMainWnd())->SetMessageText(IDS_SEL_TERMINAL_SKIP); break;
 			}
 			if (Cond != SEL_CLEAN) {
 				MessageBeep(MB_ICONWARNING);

@@ -95,7 +95,7 @@ public:
 	CPatternAction(int iAction);
 	virtual ~CPatternAction();
 
-	virtual bool SaveState(CMainFrame *pMainFrm);
+	virtual bool SaveState(const CMainFrame *pMainFrm);
 	virtual void Undo(CMainFrame *pMainFrm) const;
 	virtual void Redo(CMainFrame *pMainFrm) const;
 

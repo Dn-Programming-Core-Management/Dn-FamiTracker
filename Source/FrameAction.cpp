@@ -142,7 +142,7 @@ void CFrameAction::ClearPatterns(CFamiTrackerDoc *pDoc, int Target) const
 	pDoc->DeleteFrames(m_iUndoTrack, Target, Rows);
 }
 
-bool CFrameAction::SaveState(CMainFrame *pMainFrm)
+bool CFrameAction::SaveState(const CMainFrame *pMainFrm)
 {
 	// Save action state for undo
 
