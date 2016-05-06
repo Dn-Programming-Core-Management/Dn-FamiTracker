@@ -122,16 +122,6 @@ void CPatternAction::SetPatternLength(int Length)
 	m_iNewPatternLen = Length;
 }
 
-void CPatternAction::SetClickedChannel(int Channel)
-{
-	m_iClickedChannel = Channel;
-}
-
-void CPatternAction::SetColumnCount(int Count)		// // //
-{
-	m_iRedoColumnCount = Count;
-}
-
 void CPatternAction::SetStretchMap(const std::vector<int> Map)		// // //
 {
 	m_iStretchMap = Map;
@@ -276,108 +266,6 @@ void CPatternAction::CopyAuxiliary(const CPatternEditor *pPatternEditor)		// // 
 void CPatternAction::PasteAuxiliary(CPatternEditor *pPatternEditor) const		// // //
 {
 	pPatternEditor->PasteRaw(m_pAuxiliaryClipData);
-}
-
-void CPatternAction::IncreaseRowAction(CFamiTrackerDoc *pDoc) const
-{
-	stChanNote Note;
-	bool bUpdate = false;
-	
-	pDoc->GetNoteData(STATE_EXPAND(m_pUndoState), &Note);
-
-	switch (m_pUndoState->Cursor.m_iColumn) {
-		case C_INSTRUMENT1:
-		case C_INSTRUMENT2: 
-			if (Note.Instrument < MAX_INSTRUMENTS - 1) {		// // //
-				++Note.Instrument;
-				bUpdate = true;
-			}
-			break;
-		case C_VOLUME: 
-			if (Note.Vol < MAX_VOLUME - 1) {		// // //
-				++Note.Vol;
-				bUpdate = true;
-			}
-			break;
-		case C_EFF1_NUM: case C_EFF1_PARAM1: case C_EFF1_PARAM2: 
-			if (Note.EffParam[0] < 0xFF && Note.EffNumber[0] != EF_NONE) {		// // //
-				++Note.EffParam[0];
-				bUpdate = true;
-			}
-			break;
-		case C_EFF2_NUM: case C_EFF2_PARAM1: case C_EFF2_PARAM2: 
-			if (Note.EffParam[1] < 0xFF && Note.EffNumber[1] != EF_NONE) {		// // //
-				++Note.EffParam[1];
-				bUpdate = true;
-			}
-			break;
-		case C_EFF3_NUM: case C_EFF3_PARAM1: case C_EFF3_PARAM2: 
-			if (Note.EffParam[2] < 0xFF && Note.EffNumber[2] != EF_NONE) {		// // //
-				++Note.EffParam[2];
-				bUpdate = true;
-			}
-			break;
-		case C_EFF4_NUM: case C_EFF4_PARAM1: case C_EFF4_PARAM2: 
-			if (Note.EffParam[3] < 0xFF && Note.EffNumber[3] != EF_NONE) {		// // //
-				++Note.EffParam[3];
-				bUpdate = true;
-			}
-			break;
-	}
-
-	if (bUpdate)
-		pDoc->SetNoteData(STATE_EXPAND(m_pUndoState), &Note);
-}
-
-void CPatternAction::DecreaseRowAction(CFamiTrackerDoc *pDoc) const
-{
-	stChanNote Note;
-	bool bUpdate = false;
-	
-	pDoc->GetNoteData(STATE_EXPAND(m_pUndoState), &Note);
-
-	switch (m_pUndoState->Cursor.m_iColumn) {
-		case C_INSTRUMENT1:
-		case C_INSTRUMENT2:
-			if (Note.Instrument > 0 && Note.Instrument != MAX_INSTRUMENTS) {		// // //
-				--Note.Instrument;
-				bUpdate = true;
-			}
-			break;
-		case C_VOLUME: 
-			if (Note.Vol > 0 && Note.Vol != MAX_VOLUME) {		// // //
-				--Note.Vol;
-				bUpdate = true;
-			}
-			break;
-		case C_EFF1_NUM: case C_EFF1_PARAM1: case C_EFF1_PARAM2: 
-			if (Note.EffParam[0] > 0 && Note.EffNumber[0] != EF_NONE) {		// // //
-				--Note.EffParam[0];
-				bUpdate = true;
-			}
-			break;
-		case C_EFF2_NUM: case C_EFF2_PARAM1: case C_EFF2_PARAM2: 
-			if (Note.EffParam[1] > 0 && Note.EffNumber[1] != EF_NONE) {		// // //
-				--Note.EffParam[1];
-				bUpdate = true;
-			}
-			break;
-		case C_EFF3_NUM: case C_EFF3_PARAM1: case C_EFF3_PARAM2: 
-			if (Note.EffParam[2] > 0 && Note.EffNumber[2] != EF_NONE) {		// // //
-				--Note.EffParam[2];
-				bUpdate = true;
-			}
-			break;
-		case C_EFF4_NUM: case C_EFF4_PARAM1: case C_EFF4_PARAM2: 	
-			if (Note.EffParam[3] > 0 && Note.EffNumber[3] != EF_NONE) {		// // //
-				--Note.EffParam[3];
-				bUpdate = true;
-			}
-			break;
-	}
-
-	if (bUpdate)
-		pDoc->SetNoteData(STATE_EXPAND(m_pUndoState), &Note);
 }
 
 void CPatternAction::InsertRows(CFamiTrackerDoc *pDoc) const
@@ -759,7 +647,7 @@ void CPatternAction::DeleteSelection(CFamiTrackerDoc *pDoc) const
 
 void CPatternAction::UpdateView(CFamiTrackerDoc *pDoc) const		// // //
 {
-	pDoc->UpdateAllViews(NULL, m_iAction == ACT_EFFECT_COLUMNS ? UPDATE_COLUMNS : UPDATE_PATTERN);
+	pDoc->UpdateAllViews(NULL, UPDATE_PATTERN);
 	pDoc->UpdateAllViews(NULL, UPDATE_FRAME); // cursor might have moved to different channel
 }
 
@@ -797,10 +685,6 @@ bool CPatternAction::SaveState(const CMainFrame *pMainFrm)
 
 	// Save old state
 	switch (m_iAction) {
-		case ACT_INSERT_ROW:
-			// Insert empty row
-			pDoc->GetNoteData(Track, Frame, Channel, pDoc->GetPatternLength(Track) - 1, &m_OldNote);
-			break;
 		case ACT_DRAG_AND_DROP:
 			if (m_bDragDelete)
 				CopyAuxiliary(pPatternEditor);
@@ -845,18 +729,9 @@ bool CPatternAction::SaveState(const CMainFrame *pMainFrm)
 			}
 			CopySelection(pPatternEditor);
 		}	break;
-		case ACT_INCREASE:
-		case ACT_DECREASE:		// // //
-			// Increase action
-			pDoc->GetNoteData(Track, Frame, Channel, Row, &m_OldNote);
-			break;
 		case ACT_PATTERN_LENGTH:
 			// Change pattern length
 			m_iOldPatternLen = pDoc->GetPatternLength(Track);
-			break;
-		case ACT_EFFECT_COLUMNS:		// // //
-			// Add / remove effect column
-			m_iUndoColumnCount = pDoc->GetEffColumns(Track, m_iClickedChannel);
 			break;
 #ifdef _DEBUG
 		default:
@@ -917,14 +792,6 @@ void CPatternAction::Undo(CMainFrame *pMainFrm) const
 	const cursor_column_t Column = m_pUndoState->Cursor.m_iColumn;
 
 	switch (m_iAction) {
-		case ACT_INCREASE:		// // //
-		case ACT_DECREASE:		// // //
-			pDoc->SetNoteData(Track, Frame, Channel, Row, &m_OldNote);
-			break;
-		case ACT_INSERT_ROW:
-			pDoc->PullUp(Track, Frame, Channel, Row);
-			pDoc->SetNoteData(Track, Frame, Channel, pDoc->GetPatternLength(Track) - 1, &m_OldNote);
-			break;
 		case ACT_EDIT_PASTE:		// // //
 			pPatternEditor->SetSelection(m_newSelection);		// // //
 			PasteSelection(pPatternEditor);
@@ -954,9 +821,6 @@ void CPatternAction::Undo(CMainFrame *pMainFrm) const
 			pDoc->SetPatternLength(Track, m_iOldPatternLen);
 			pMainFrm->UpdateControls();
 			break;
-		case ACT_EFFECT_COLUMNS:		// // //
-			pDoc->SetEffColumns(Track, m_iClickedChannel, m_iUndoColumnCount);
-			break;
 #ifdef _DEBUG
 		default:
 			AfxMessageBox(_T("TODO Undo for this action is not implemented"));
@@ -977,9 +841,6 @@ void CPatternAction::Redo(CMainFrame *pMainFrm) const
 	const cursor_column_t Column = m_pUndoState->Cursor.m_iColumn;
 
 	switch (m_iAction) {
-		case ACT_INSERT_ROW:
-			pDoc->InsertRow(Track, Frame, Channel, Row);
-			break;
 		case ACT_EDIT_PASTE:
 			pPatternEditor->Paste(m_pClipData, m_iPasteMode, m_iPastePos);		// // //
 			break;		// // //
@@ -1010,12 +871,6 @@ void CPatternAction::Redo(CMainFrame *pMainFrm) const
 			pPatternEditor->SetSelection(m_selection);
 			Reverse(pDoc);
 			break;
-		case ACT_INCREASE:
-			IncreaseRowAction(pDoc);
-			break;
-		case ACT_DECREASE:
-			DecreaseRowAction(pDoc);
-			break;
 		case ACT_DRAG_AND_DROP:
 			RestoreSelection(pPatternEditor);
 			if (m_bDragDelete)
@@ -1028,9 +883,6 @@ void CPatternAction::Redo(CMainFrame *pMainFrm) const
 			break;
 		case ACT_STRETCH_PATTERN:		// // //
 			StretchPattern(pDoc);
-			break;
-		case ACT_EFFECT_COLUMNS:		// // //
-			pDoc->SetEffColumns(Track, m_iClickedChannel, m_iRedoColumnCount);
 			break;
 #ifdef _DEBUG
 		default:
@@ -1120,6 +972,35 @@ void CPActionReplaceNote::Redo(CMainFrame *pMainFrm) const
 
 
 
+CPActionInsertRow::CPActionInsertRow() :
+	CPatternAction(ACT_INSERT_ROW)
+{
+}
+
+bool CPActionInsertRow::SaveState(const CMainFrame *pMainFrm)
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	pDoc->GetNoteData(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, m_pUndoState->Cursor.m_iChannel,
+					  pDoc->GetPatternLength(m_pUndoState->Track) - 1, &m_OldNote);
+	return true;
+}
+
+void CPActionInsertRow::Undo(CMainFrame *pMainFrm) const
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	pDoc->PullUp(STATE_EXPAND(m_pUndoState));
+	pDoc->SetNoteData(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, m_pUndoState->Cursor.m_iChannel,
+					  pDoc->GetPatternLength(m_pUndoState->Track) - 1, &m_OldNote);
+}
+
+void CPActionInsertRow::Redo(CMainFrame *pMainFrm) const
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	pDoc->InsertRow(STATE_EXPAND(m_pUndoState));
+}
+
+
+
 CPActionDeleteRow::CPActionDeleteRow(bool PullUp, bool Backspace) :
 	CPatternAction(ACT_DELETE_ROW), m_bPullUp(PullUp), m_bBack(Backspace)
 {
@@ -1147,6 +1028,83 @@ void CPActionDeleteRow::Redo(CMainFrame *pMainFrm) const
 	pDoc->ClearRowField(STATE_EXPAND(m_pUndoState) - (m_bBack ? 1 : 0), m_pUndoState->Cursor.m_iColumn);
 	if (m_bPullUp)
 		pDoc->PullUp(STATE_EXPAND(m_pUndoState) - (m_bBack ? 1 : 0));
+}
+
+
+
+CPActionScrollField::CPActionScrollField(int Amount) :		// // //
+	CPatternAction(ACT_INCREASE), m_iAmount(Amount)
+{
+}
+
+bool CPActionScrollField::SaveState(const CMainFrame *pMainFrm)
+{
+	const CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	pDoc->GetNoteData(STATE_EXPAND(m_pUndoState), &m_OldNote);
+	
+	switch (m_pUndoState->Cursor.m_iColumn) {
+	case C_INSTRUMENT1: case C_INSTRUMENT2:
+		return m_OldNote.Instrument < MAX_INSTRUMENTS;
+	case C_VOLUME:
+		return m_OldNote.Vol < MAX_VOLUME;
+	case C_EFF1_NUM: case C_EFF1_PARAM1: case C_EFF1_PARAM2:
+		return m_OldNote.EffNumber[0] != EF_NONE;
+	case C_EFF2_NUM: case C_EFF2_PARAM1: case C_EFF2_PARAM2:
+		return m_OldNote.EffNumber[1] != EF_NONE;
+	case C_EFF3_NUM: case C_EFF3_PARAM1: case C_EFF3_PARAM2:
+		return m_OldNote.EffNumber[2] != EF_NONE;
+	case C_EFF4_NUM: case C_EFF4_PARAM1: case C_EFF4_PARAM2:
+		return m_OldNote.EffNumber[3] != EF_NONE;
+	}
+
+	return false;
+}
+
+void CPActionScrollField::Undo(CMainFrame *pMainFrm) const
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	pDoc->SetNoteData(STATE_EXPAND(m_pUndoState), &m_OldNote);
+}
+
+void CPActionScrollField::Redo(CMainFrame *pMainFrm) const
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	stChanNote Note = m_OldNote;
+	bool bUpdate = false;
+	int Val;
+
+	const auto ScrollFunc = [&] (unsigned char &Old, int Limit) {
+		int New = static_cast<int>(Old) + m_iAmount;
+		if (theApp.GetSettings()->General.bWrapPatternValue) {
+			New %= Limit;
+			if (New < 0) Val += Limit;
+		}
+		else {
+			if (New < 0) New = 0;
+			if (New >= Limit) New = Limit - 1;
+		}
+		New = static_cast<unsigned char>(New);
+		bUpdate = New != Old;
+		Old = New;
+	};
+
+	switch (m_pUndoState->Cursor.m_iColumn) {
+	case C_INSTRUMENT1: case C_INSTRUMENT2:
+		ScrollFunc(Note.Instrument, MAX_INSTRUMENTS); break;
+	case C_VOLUME:
+		ScrollFunc(Note.Vol, MAX_VOLUME); break;
+	case C_EFF1_NUM: case C_EFF1_PARAM1: case C_EFF1_PARAM2:
+		ScrollFunc(Note.EffParam[0], 0x100); break;
+	case C_EFF2_NUM: case C_EFF2_PARAM1: case C_EFF2_PARAM2:
+		ScrollFunc(Note.EffParam[1], 0x100); break;
+	case C_EFF3_NUM: case C_EFF3_PARAM1: case C_EFF3_PARAM2:
+		ScrollFunc(Note.EffParam[2], 0x100); break;
+	case C_EFF4_NUM: case C_EFF4_PARAM1: case C_EFF4_PARAM2:
+		ScrollFunc(Note.EffParam[3], 0x100); break;
+	}
+
+	if (bUpdate)
+		pDoc->SetNoteData(STATE_EXPAND(m_pUndoState), &Note);
 }
 
 
@@ -1192,4 +1150,36 @@ void CPActionReplaceInst::Redo(CMainFrame *pMainFrm) const
 			it.Set(i, &Note);
 		}
 	} while (++it <= End);
+}
+
+
+
+CPActionEffColumn::CPActionEffColumn(int Channel, int Count) :		// // //
+	CPatternAction(ACT_EFFECT_COLUMNS), m_iChannel(Channel), m_iNewColumns(Count)
+{
+}
+
+bool CPActionEffColumn::SaveState(const CMainFrame *pMainFrm)
+{
+	if (m_iNewColumns >= static_cast<int>(MAX_EFFECT_COLUMNS)) return false;
+	const CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	m_iOldColumns = pDoc->GetEffColumns(m_pUndoState->Track, m_iChannel);
+	return true;
+}
+
+void CPActionEffColumn::Undo(CMainFrame *pMainFrm) const
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	pDoc->SetEffColumns(m_pUndoState->Track, m_iChannel, m_iOldColumns);
+}
+
+void CPActionEffColumn::Redo(CMainFrame *pMainFrm) const
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	pDoc->SetEffColumns(m_pUndoState->Track, m_iChannel, m_iNewColumns);
+}
+
+void CPActionEffColumn::UpdateView(CFamiTrackerDoc *pDoc) const		// // //
+{
+	pDoc->UpdateAllViews(NULL, UPDATE_COLUMNS);
 }

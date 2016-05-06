@@ -91,8 +91,11 @@ public:
 		ACT_EFFECT_COLUMNS,		// // //
 	};
 
+// protected:
 public:
 	CPatternAction(int iAction);
+
+public:
 	virtual ~CPatternAction();
 
 	virtual bool SaveState(const CMainFrame *pMainFrm);
@@ -113,8 +116,6 @@ public:
 	void SetDragAndDrop(const CPatternClipData *pClipData, bool bDelete, bool bMix, const CSelection *pDragTarget);
 	void SetPatternLength(int Length);
 	void Update(CMainFrame *pMainFrm);
-	void SetClickedChannel(int Channel);
-	void SetColumnCount(int Count);		// // //
 	void SetStretchMap(const std::vector<int> Map);		// // //
 
 private:
@@ -125,8 +126,6 @@ private:
 	void PasteSelection(CPatternEditor *pPatternEditor) const;		// // //
 	void CopyAuxiliary(const CPatternEditor *pPatternEditor);		// // //
 	void PasteAuxiliary(CPatternEditor *pPatternEditor) const;		// // //
-	void IncreaseRowAction(CFamiTrackerDoc *pDoc) const;
-	void DecreaseRowAction(CFamiTrackerDoc *pDoc) const;
 
 	void RestoreSelection(CPatternEditor *pPatternEditor) const;
 
@@ -139,28 +138,16 @@ private:
 	void ScrollValues(CFamiTrackerDoc *pDoc) const;
 	void DeleteSelection(CFamiTrackerDoc *pDoc) const;
 
-	void UpdateView(CFamiTrackerDoc *pDoc) const;		// // //
-
 protected:
 	CPatternIterator GetStartIterator() const;		// // //
 	CPatternIterator GetEndIterator() const;
+	virtual void UpdateView(CFamiTrackerDoc *pDoc) const;		// // //
 
 protected:
 	CPatternEditorState *m_pUndoState;		// // //
 	CPatternEditorState *m_pRedoState;
 
 private:
-	stChanNote m_NewNote;
-	stChanNote m_OldNote;
-
-	int m_iUndoColumnCount;		// // //
-	int m_iRedoColumnCount;
-
-	int m_iReplaceFrame, m_iReplaceChannel, m_iReplaceRow;		// // //
-
-	int m_iPatternLen;
-	int m_iActualPatternLen;
-
 	int m_iNewPatternLen;
 	int m_iOldPatternLen;
 
@@ -180,8 +167,6 @@ private:
 	bool m_bDragMix;
 	CSelection m_dragTarget;
 
-	int m_iClickedChannel;
-
 	std::vector<int> m_iStretchMap;		// // //
 };
 
@@ -191,12 +176,10 @@ class CPActionEditNote : public CPatternAction
 {
 public:
 	CPActionEditNote(const stChanNote &Note);
-
 private:
 	bool SaveState(const CMainFrame *pMainFrm);
 	void Undo(CMainFrame *pMainFrm) const;
 	void Redo(CMainFrame *pMainFrm) const;
-
 private:
 	stChanNote m_NewNote, m_OldNote;
 };
@@ -205,43 +188,76 @@ class CPActionReplaceNote : public CPatternAction
 {
 public:
 	CPActionReplaceNote(const stChanNote &Note, int Frame, int Row, int Channel);
-
 private:
 	bool SaveState(const CMainFrame *pMainFrm);
 	void Undo(CMainFrame *pMainFrm) const;
 	void Redo(CMainFrame *pMainFrm) const;
-
 private:
 	stChanNote m_NewNote, m_OldNote;
 	int m_iFrame, m_iRow, m_iChannel;
+};
+
+class CPActionInsertRow : public CPatternAction
+{
+public:
+	CPActionInsertRow();
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+private:
+	stChanNote m_OldNote;
 };
 
 class CPActionDeleteRow : public CPatternAction
 {
 public:
 	CPActionDeleteRow(bool PullUp, bool Backspace);
-
 private:
 	bool SaveState(const CMainFrame *pMainFrm);
 	void Undo(CMainFrame *pMainFrm) const;
 	void Redo(CMainFrame *pMainFrm) const;
-
 private:
 	stChanNote m_OldNote;
 	bool m_bPullUp, m_bBack;
+};
+
+class CPActionScrollField : public CPatternAction		// // //
+{
+public:
+	CPActionScrollField(int Amount);
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+private:
+	stChanNote m_OldNote;
+	int m_iAmount;
 };
 
 class CPActionReplaceInst : public CPatternAction
 {
 public:
 	CPActionReplaceInst(unsigned Index);
-
 private:
 	bool SaveState(const CMainFrame *pMainFrm);
 	void Undo(CMainFrame *pMainFrm) const;
 	void Redo(CMainFrame *pMainFrm) const;
-
 private:
 	unsigned m_iInstrumentIndex;
 	CPatternClipData *m_pUndoClipData;
+};
+
+class CPActionEffColumn : public CPatternAction
+{
+public:
+	CPActionEffColumn(int Channel, int Count);
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+	void UpdateView(CFamiTrackerDoc *pDoc) const;
+private:
+	unsigned m_iChannel;
+	unsigned m_iOldColumns, m_iNewColumns;
 };

@@ -2551,12 +2551,7 @@ void CFamiTrackerView::OnKeyInsert()
 	if (PreventRepeat(VK_INSERT, true) || !m_bEditEnable)		// // //
 		return;
 
-	if (m_pPatternEditor->IsSelecting()) {
-		AddAction(new CPatternAction(CPatternAction::ACT_INSERT_SEL_ROWS));
-	}
-	else {
-		AddAction(new CPatternAction(CPatternAction::ACT_INSERT_ROW));
-	}
+	AddAction(m_pPatternEditor->IsSelecting() ? new CPatternAction(CPatternAction::ACT_INSERT_SEL_ROWS) : new CPActionInsertRow { });
 }
 
 void CFamiTrackerView::OnKeyBackspace()
@@ -2613,15 +2608,15 @@ void CFamiTrackerView::KeyIncreaseAction()
 	if (!m_bEditEnable)		// // //
 		return;
 
-	AddAction(new CPatternAction(CPatternAction::ACT_INCREASE));
+	AddAction(new CPActionScrollField {1});		// // //
 }
 
 void CFamiTrackerView::KeyDecreaseAction()
 {
 	if (!m_bEditEnable)		// // //
 		return;
-
-	AddAction(new CPatternAction(CPatternAction::ACT_DECREASE));
+	
+	AddAction(new CPActionScrollField {-1});		// // //
 }
 
 bool CFamiTrackerView::EditInstrumentColumn(stChanNote &Note, int Key, bool &StepDown, bool &MoveRight, bool &MoveLeft)
