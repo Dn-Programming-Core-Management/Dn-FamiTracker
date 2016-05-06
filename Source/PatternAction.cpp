@@ -834,10 +834,6 @@ bool CPatternAction::SaveState(const CMainFrame *pMainFrm)
 
 	// Save old state
 	switch (m_iAction) {
-		case ACT_EDIT_NOTE:
-			// Edit note
-			pDoc->GetNoteData(Track, Frame, Channel, Row, &m_OldNote);
-			break;
 		case ACT_REPLACE_NOTE:		// // //
 			// Replace note
 			pDoc->GetNoteData(Track, m_iReplaceFrame, m_iReplaceChannel, m_iReplaceRow, &m_OldNote);
@@ -972,7 +968,6 @@ void CPatternAction::Undo(CMainFrame *pMainFrm) const
 	const cursor_column_t Column = m_pUndoState->Cursor.m_iColumn;
 
 	switch (m_iAction) {
-		case ACT_EDIT_NOTE:
 		case ACT_INCREASE:		// // //
 		case ACT_DECREASE:		// // //
 			pDoc->SetNoteData(Track, Frame, Channel, Row, &m_OldNote);
@@ -1042,9 +1037,6 @@ void CPatternAction::Redo(CMainFrame *pMainFrm) const
 	const cursor_column_t Column = m_pUndoState->Cursor.m_iColumn;
 
 	switch (m_iAction) {
-		case ACT_EDIT_NOTE:
-			pDoc->SetNoteData(Track, Frame, Channel, Row, &m_NewNote);
-			break;
 		case ACT_REPLACE_NOTE:		// // //
 			pDoc->SetNoteData(Track, m_iReplaceFrame, m_iReplaceChannel, m_iReplaceRow, &m_NewNote);
 			break;
@@ -1139,4 +1131,30 @@ void CPatternAction::RestoreSelection(CPatternEditor *pPatternEditor) const
 		pPatternEditor->SetSelection(m_selection);
 	else
 		pPatternEditor->CancelSelection();
+}
+
+// // // built-in pattern action subtypes
+
+CPActionEditNote::CPActionEditNote(const stChanNote &Note) :
+	CPatternAction(ACT_EDIT_NOTE), m_NewNote(Note)
+{
+}
+
+bool CPActionEditNote::SaveState(const CMainFrame *pMainFrm)
+{
+	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
+	pView->GetDocument()->GetNoteData(STATE_EXPAND(m_pUndoState), &m_OldNote);
+	return true;
+}
+
+void CPActionEditNote::Undo(CMainFrame *pMainFrm) const
+{
+	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
+	pView->GetDocument()->SetNoteData(STATE_EXPAND(m_pUndoState), &m_OldNote);
+}
+
+void CPActionEditNote::Redo(CMainFrame *pMainFrm) const
+{
+	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
+	pView->GetDocument()->SetNoteData(STATE_EXPAND(m_pUndoState), &m_NewNote);
 }

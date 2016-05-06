@@ -190,3 +190,20 @@ private:
 
 	std::vector<int> m_iStretchMap;		// // //
 };
+
+// // // built-in pattern action subtypes
+
+class CPActionEditNote : public CPatternAction
+{
+public:
+	CPActionEditNote(const stChanNote &Note);
+
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+
+private:
+	stChanNote m_NewNote;
+	stChanNote m_OldNote;
+};
