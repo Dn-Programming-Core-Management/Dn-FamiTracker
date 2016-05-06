@@ -2366,104 +2366,104 @@ void CPatternEditor::SetSelectionEnd(const CCursorPos &end)
 	m_selection.m_cpEnd = Pos;
 }
 
-void CPatternEditor::UpdateSelectionBegin()		// // //
+CPatternEditor::CSelectionGuard::CSelectionGuard(CPatternEditor *pEditor) : m_pPatternEditor(pEditor)		// // //
 {
 	// Call before cursor has moved
-	if (IsShiftPressed() && !m_bCurrentlySelecting && !m_bSelecting) {
-		SetSelectionStart(m_cpCursorPos);
-		m_bCurrentlySelecting = true;
-		m_bSelecting = true;
+	if (IsShiftPressed() && !pEditor->m_bCurrentlySelecting && !pEditor->m_bSelecting) {
+		pEditor->SetSelectionStart(pEditor->m_cpCursorPos);
+		pEditor->m_bCurrentlySelecting = true;
+		pEditor->m_bSelecting = true;
 	}
 }
 
-void CPatternEditor::UpdateSelectionEnd()		// // //
+CPatternEditor::CSelectionGuard::~CSelectionGuard()		// // //
 {
 	// Call after cursor has moved
 	// If shift is not pressed, set selection starting point to current cursor position
 	// If shift is pressed, update selection end point
 
-	const bool bShift = IsShiftPressed();
+	CSelection &Sel = m_pPatternEditor->m_selection;
 
-	if (bShift) {
-		SetSelectionEnd(m_cpCursorPos);
-		if (m_bCompactMode) {		// // //
-			m_bCompactMode = false;
-			if (m_selection.m_cpEnd.m_iChannel >= m_selection.m_cpStart.m_iChannel) {
-				m_selection.m_cpEnd.m_iColumn = GetChannelColumns(m_selection.m_cpEnd.m_iChannel);
-				m_selection.m_cpStart.m_iColumn = C_NOTE;
+	if (IsShiftPressed()) {
+		m_pPatternEditor->SetSelectionEnd(m_pPatternEditor->m_cpCursorPos);
+		if (m_pPatternEditor->m_bCompactMode) {		// // //
+			m_pPatternEditor->m_bCompactMode = false;
+			if (Sel.m_cpEnd.m_iChannel >= Sel.m_cpStart.m_iChannel) {
+				Sel.m_cpEnd.m_iColumn = m_pPatternEditor->	GetChannelColumns(Sel.m_cpEnd.m_iChannel);
+				Sel.m_cpStart.m_iColumn = C_NOTE;
 			}
 			else {
-				m_selection.m_cpEnd.m_iColumn = C_NOTE;
-				m_selection.m_cpStart.m_iColumn = GetChannelColumns(m_selection.m_cpStart.m_iChannel);
+				Sel.m_cpEnd.m_iColumn = C_NOTE;
+				Sel.m_cpStart.m_iColumn = m_pPatternEditor->GetChannelColumns(Sel.m_cpStart.m_iChannel);
 			}
-			m_bCompactMode = true;
+			m_pPatternEditor->m_bCompactMode = true;
 		}
-		m_iSelectionCondition = GetSelectionCondition();		// // //
+		m_pPatternEditor->m_iSelectionCondition = m_pPatternEditor->GetSelectionCondition();		// // //
 	}
 	else {
-		m_bCurrentlySelecting = false;
+		m_pPatternEditor->m_bCurrentlySelecting = false;
 
-		if (theApp.GetSettings()->General.iEditStyle != EDIT_STYLE_IT || m_bSelecting == false)
-			CancelSelection();
+		if (theApp.GetSettings()->General.iEditStyle != EDIT_STYLE_IT || !m_pPatternEditor->m_bSelecting)
+			m_pPatternEditor->CancelSelection();
 	}
 
-	const int Frames = GetFrameCount();
-	if (m_selection.GetFrameEnd() - m_selection.GetFrameStart() > Frames ||		// // //
-		(m_selection.GetFrameEnd() - m_selection.GetFrameStart() == Frames &&
-		m_selection.GetRowEnd() >= m_selection.GetRowStart())) { // selection touches itself
-			if (m_selection.m_cpEnd.m_iFrame >= Frames) {
-				m_selection.m_cpEnd.m_iFrame -= Frames;
-				m_iWarpCount = 0;
+	const int Frames = m_pPatternEditor->GetFrameCount();
+	if (Sel.GetFrameEnd() - Sel.GetFrameStart() > Frames ||		// // //
+		(Sel.GetFrameEnd() - Sel.GetFrameStart() == Frames &&
+		Sel.GetRowEnd() >= Sel.GetRowStart())) { // selection touches itself
+			if (Sel.m_cpEnd.m_iFrame >= Frames) {
+				Sel.m_cpEnd.m_iFrame -= Frames;
+				m_pPatternEditor->m_iWarpCount = 0;
 			}
-			if (m_selection.m_cpEnd.m_iFrame < 0) {
-				m_selection.m_cpEnd.m_iFrame += Frames;
-				m_iWarpCount = 0;
+			if (Sel.m_cpEnd.m_iFrame < 0) {
+				Sel.m_cpEnd.m_iFrame += Frames;
+				m_pPatternEditor->m_iWarpCount = 0;
 			}
 	}
 }
 
 void CPatternEditor::MoveDown(int Step)
 {
-	UpdateSelectionBegin();		// // //
+	CSelectionGuard Guard {this};		// // //
+
 	Step = (Step == 0) ? 1 : Step;
 	MoveToRow(m_cpCursorPos.m_iRow + Step);
-	UpdateSelectionEnd();
 }
 
 void CPatternEditor::MoveUp(int Step)
 {
-	UpdateSelectionBegin();		// // //
+	CSelectionGuard Guard {this};		// // //
+
 	Step = (Step == 0) ? 1 : Step;
 	MoveToRow(m_cpCursorPos.m_iRow - Step);
-	UpdateSelectionEnd();
 }
 
 void CPatternEditor::MoveLeft()
 {
-	UpdateSelectionBegin();		// // //
+	CSelectionGuard Guard {this};		// // //
+
 	ScrollLeft();
-	UpdateSelectionEnd();
 }
 
 void CPatternEditor::MoveRight()
 {
-	UpdateSelectionBegin();		// // //
+	CSelectionGuard Guard {this};		// // //
+
 	ScrollRight();
-	UpdateSelectionEnd();
 }
 
 void CPatternEditor::MoveToTop()
 {
-	UpdateSelectionBegin();		// // //
+	CSelectionGuard Guard {this};		// // //
+
 	MoveToRow(0);
-	UpdateSelectionEnd();
 }
 
 void CPatternEditor::MoveToBottom()
 {
-	UpdateSelectionBegin();		// // //
+	CSelectionGuard Guard {this};		// // //
+
 	MoveToRow(m_iPatternLength - 1);
-	UpdateSelectionEnd();
 }
 
 void CPatternEditor::NextChannel()
@@ -2484,23 +2484,23 @@ void CPatternEditor::PreviousChannel()
 
 void CPatternEditor::FirstChannel()
 {
-	UpdateSelectionBegin();		// // //
+	CSelectionGuard Guard {this};		// // //
+
 	MoveToChannel(0);
 	m_cpCursorPos.m_iColumn	= C_NOTE;
-	UpdateSelectionEnd();
 }
 
 void CPatternEditor::LastChannel()
 {
-	UpdateSelectionBegin();		// // //
+	CSelectionGuard Guard {this};		// // //
+
 	MoveToChannel(GetChannelCount() - 1);
 	m_cpCursorPos.m_iColumn	= C_NOTE;
-	UpdateSelectionEnd();
 }
 
 void CPatternEditor::MoveChannelLeft()
 {
-	UpdateSelectionBegin();		// // //
+	CSelectionGuard Guard {this};		// // //
 
 	const int ChannelCount = GetChannelCount();
 
@@ -2512,13 +2512,11 @@ void CPatternEditor::MoveChannelLeft()
 
 	if (Columns < m_cpCursorPos.m_iColumn)
 		m_cpCursorPos.m_iColumn = Columns;
-
-	UpdateSelectionEnd();
 }
 
 void CPatternEditor::MoveChannelRight()
 {
-	UpdateSelectionBegin();		// // //
+	CSelectionGuard Guard {this};		// // //
 
 	const int ChannelCount = GetChannelCount();
 
@@ -2530,13 +2528,11 @@ void CPatternEditor::MoveChannelRight()
 
 	if (Columns < m_cpCursorPos.m_iColumn)
 		m_cpCursorPos.m_iColumn = Columns;
-
-	UpdateSelectionEnd();
 }
 
 void CPatternEditor::OnHomeKey()
 {
-	UpdateSelectionBegin();		// // //
+	CSelectionGuard Guard {this};		// // //
 
 	const bool bControl = IsControlPressed();
 
@@ -2552,13 +2548,11 @@ void CPatternEditor::OnHomeKey()
 		else if (GetRow() != 0)
 			MoveToRow(0);
 	}
-
-	UpdateSelectionEnd();
 }
 
 void CPatternEditor::OnEndKey()
 {
-	UpdateSelectionBegin();		// // //
+	CSelectionGuard Guard {this};		// // //
 
 	const bool bControl = IsControlPressed();
 	const int Channels = GetChannelCount();
@@ -2578,8 +2572,6 @@ void CPatternEditor::OnEndKey()
 		else if (GetRow() != m_iPatternLength - 1)
 			MoveToRow(m_iPatternLength - 1);
 	}
-
-	UpdateSelectionEnd();
 }
 
 void CPatternEditor::MoveCursor(const CCursorPos &Pos)		// // //
@@ -2680,18 +2672,18 @@ void CPatternEditor::MoveToColumn(cursor_column_t Column)
 
 void CPatternEditor::NextFrame()
 {
-	UpdateSelectionBegin();		// // //
+	CSelectionGuard Guard {this};		// // //
+
 	MoveToFrame(m_iCurrentFrame + 1);
 	CancelSelection();
-	UpdateSelectionEnd();
 }
 
 void CPatternEditor::PreviousFrame()
 {
-	UpdateSelectionBegin();		// // //
+	CSelectionGuard Guard {this};		// // //
+
 	MoveToFrame(m_iCurrentFrame - 1);
 	CancelSelection();
-	UpdateSelectionEnd();
 }
 
 // Used by scrolling
@@ -4356,12 +4348,12 @@ void CPatternEditor::UpdateDrag(const CPoint &point)
 	AutoScroll(point, 0);
 }
 
-bool CPatternEditor::IsShiftPressed() const
+bool CPatternEditor::IsShiftPressed()
 {
 	return (::GetKeyState(VK_SHIFT) & 0x80) == 0x80;
 }
 
-bool CPatternEditor::IsControlPressed() const
+bool CPatternEditor::IsControlPressed()
 {
 	return (::GetKeyState(VK_CONTROL) & 0x80) == 0x80;
 }
