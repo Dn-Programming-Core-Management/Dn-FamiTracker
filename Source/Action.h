@@ -39,10 +39,10 @@ public:
 	virtual bool SaveState(CMainFrame *pMainFrm) = 0;
 
 	// Undo the operation
-	virtual void Undo(CMainFrame *pMainFrm) = 0;
+	virtual void Undo(CMainFrame *pMainFrm) const = 0;
 
 	// Redo the operation
-	virtual void Redo(CMainFrame *pMainFrm) = 0;
+	virtual void Redo(CMainFrame *pMainFrm) const = 0;
 
 	// // // Save the undo state before performing the action
 	virtual void SaveUndoState(const CMainFrame *pMainFrm) = 0;

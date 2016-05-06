@@ -164,7 +164,7 @@ void CPatternAction::SaveEntire(const CPatternEditor *pPatternEditor)
 	m_pUndoClipData = pPatternEditor->CopyEntire();
 }
 
-void CPatternAction::RestoreEntire(CPatternEditor *pPatternEditor)
+void CPatternAction::RestoreEntire(CPatternEditor *pPatternEditor) const
 {
 	pPatternEditor->PasteEntire(m_pUndoClipData);
 }
@@ -283,7 +283,7 @@ void CPatternAction::CopySelection(const CPatternEditor *pPatternEditor)		// // 
 	m_pUndoClipData = pPatternEditor->CopyRaw();
 }
 
-void CPatternAction::PasteSelection(CPatternEditor *pPatternEditor)		// // //
+void CPatternAction::PasteSelection(CPatternEditor *pPatternEditor) const		// // //
 {
 	pPatternEditor->PasteRaw(m_pUndoClipData);
 }
@@ -294,7 +294,7 @@ void CPatternAction::CopyAuxiliary(const CPatternEditor *pPatternEditor)		// // 
 	m_pAuxiliaryClipData = pPatternEditor->CopyRaw();
 }
 
-void CPatternAction::PasteAuxiliary(CPatternEditor *pPatternEditor)		// // //
+void CPatternAction::PasteAuxiliary(CPatternEditor *pPatternEditor) const		// // //
 {
 	pPatternEditor->PasteRaw(m_pAuxiliaryClipData);
 }
@@ -955,7 +955,7 @@ void CPatternAction::RestoreRedoState(CMainFrame *pMainFrm) const		// // //
 	pView->GetDocument()->UpdateAllViews(NULL, UPDATE_FRAME); // cursor might have moved to different channel
 }
 
-void CPatternAction::Undo(CMainFrame *pMainFrm)
+void CPatternAction::Undo(CMainFrame *pMainFrm) const
 {
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
 	CFamiTrackerDoc *pDoc = pView->GetDocument();
@@ -1025,7 +1025,7 @@ void CPatternAction::Undo(CMainFrame *pMainFrm)
 	}
 }
 
-void CPatternAction::Redo(CMainFrame *pMainFrm)
+void CPatternAction::Redo(CMainFrame *pMainFrm) const
 {
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
 	CFamiTrackerDoc *pDoc = pView->GetDocument();
@@ -1129,7 +1129,7 @@ void CPatternAction::Update(CMainFrame *pMainFrm)
 	}
 }
 
-void CPatternAction::RestoreSelection(CPatternEditor *pPatternEditor)
+void CPatternAction::RestoreSelection(CPatternEditor *pPatternEditor) const
 {
 	if (m_bSelecting)
 		pPatternEditor->SetSelection(m_selection);

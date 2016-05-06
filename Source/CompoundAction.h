@@ -37,8 +37,8 @@ public:
 	CCompoundAction();
 
 	bool SaveState(CMainFrame *pMainFrm);
-	void Undo(CMainFrame *pMainFrm);
-	void Redo(CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
 
 	void SaveUndoState(const CMainFrame *pMainFrm);		// // //
 	void SaveRedoState(const CMainFrame *pMainFrm);		// // //

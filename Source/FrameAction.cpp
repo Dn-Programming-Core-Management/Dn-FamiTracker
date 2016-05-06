@@ -73,7 +73,7 @@ void CFrameAction::SaveFrame(CFamiTrackerDoc *pDoc)
 	}
 }
 
-void CFrameAction::RestoreFrame(CFamiTrackerDoc *pDoc)
+void CFrameAction::RestoreFrame(CFamiTrackerDoc *pDoc) const
 {
 	for (unsigned int i = 0; i < pDoc->GetAvailableChannels(); ++i) {
 		pDoc->SetPatternAtFrame(m_iUndoTrack, m_iUndoFramePos, i, m_iPatterns[i]);
@@ -103,7 +103,7 @@ void CFrameAction::SaveAllFrames(CFamiTrackerDoc *pDoc)
 	m_iUndoFrameCount = Frames;
 }
 
-void CFrameAction::RestoreAllFrames(CFamiTrackerDoc *pDoc)
+void CFrameAction::RestoreAllFrames(CFamiTrackerDoc *pDoc) const
 {
 	pDoc->SetFrameCount(m_iUndoTrack, m_iUndoFrameCount);
 
@@ -127,7 +127,7 @@ int CFrameAction::ClipPattern(int Pattern) const
 	return Pattern;
 }
 
-void CFrameAction::ClearPatterns(CFamiTrackerDoc *pDoc, int Target)
+void CFrameAction::ClearPatterns(CFamiTrackerDoc *pDoc, int Target) const
 {
 	const int Rows = m_pClipData->ClipInfo.Rows;
 	const int Channels = m_pClipData->ClipInfo.Channels;
@@ -254,7 +254,7 @@ void CFrameAction::RestoreRedoState(CMainFrame *pMainFrm) const		// // //
 	pDocument->UpdateAllViews(NULL, UPDATE_FRAME);
 }
 
-void CFrameAction::Undo(CMainFrame *pMainFrm)
+void CFrameAction::Undo(CMainFrame *pMainFrm) const
 {
 	CFrameEditor *pFrameEditor = pMainFrm->GetFrameEditor();
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
@@ -327,7 +327,7 @@ void CFrameAction::Undo(CMainFrame *pMainFrm)
 	}
 }
 
-void CFrameAction::Redo(CMainFrame *pMainFrm)
+void CFrameAction::Redo(CMainFrame *pMainFrm) const
 {
 	CFrameEditor *pFrameEditor = pMainFrm->GetFrameEditor();
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());

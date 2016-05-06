@@ -96,8 +96,8 @@ public:
 	virtual ~CPatternAction();
 
 	virtual bool SaveState(CMainFrame *pMainFrm);
-	virtual void Undo(CMainFrame *pMainFrm);
-	virtual void Redo(CMainFrame *pMainFrm);
+	virtual void Undo(CMainFrame *pMainFrm) const;
+	virtual void Redo(CMainFrame *pMainFrm) const;
 
 	void SaveUndoState(const CMainFrame *pMainFrm);		// // //
 	void SaveRedoState(const CMainFrame *pMainFrm);		// // //
@@ -123,16 +123,16 @@ public:
 
 private:
 	void SaveEntire(const CPatternEditor *pPatternEditor);
-	void RestoreEntire(CPatternEditor *pPatternEditor);
+	void RestoreEntire(CPatternEditor *pPatternEditor) const;
 	bool SetTargetSelection(CPatternEditor *pPatternEditor);		// // //
 	void CopySelection(const CPatternEditor *pPatternEditor);		// // //
-	void PasteSelection(CPatternEditor *pPatternEditor);		// // //
+	void PasteSelection(CPatternEditor *pPatternEditor) const;		// // //
 	void CopyAuxiliary(const CPatternEditor *pPatternEditor);		// // //
-	void PasteAuxiliary(CPatternEditor *pPatternEditor);		// // //
+	void PasteAuxiliary(CPatternEditor *pPatternEditor) const;		// // //
 	void IncreaseRowAction(CFamiTrackerDoc *pDoc) const;
 	void DecreaseRowAction(CFamiTrackerDoc *pDoc) const;
 
-	void RestoreSelection(CPatternEditor *pPatternEditor);
+	void RestoreSelection(CPatternEditor *pPatternEditor) const;
 
 	void InsertRows(CFamiTrackerDoc *pDoc) const;
 	void PullUpRows(CFamiTrackerDoc *pDoc) const;

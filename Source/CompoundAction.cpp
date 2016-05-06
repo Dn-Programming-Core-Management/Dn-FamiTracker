@@ -38,13 +38,13 @@ bool CCompoundAction::SaveState(CMainFrame *pMainFrm)
 	return true;
 }
 
-void CCompoundAction::Undo(CMainFrame *pMainFrm)
+void CCompoundAction::Undo(CMainFrame *pMainFrm) const
 {
 	for (auto it = m_pActionList.rbegin(); it != m_pActionList.rend(); ++it)
 		(*it)->Undo(pMainFrm);
 }
 
-void CCompoundAction::Redo(CMainFrame *pMainFrm)
+void CCompoundAction::Redo(CMainFrame *pMainFrm) const
 {
 	for (auto it = m_pActionList.begin(); it != m_pActionList.end(); ++it)
 		(*it)->Redo(pMainFrm);
