@@ -56,12 +56,14 @@ public:
 	CFrameAction(int iAction);
 	virtual ~CFrameAction();
 
-	bool SaveState(CMainFrame *pMainFrm);
-	void SaveRedoState(CMainFrame *pMainFrm);		// // //
-	void RestoreState(CMainFrame *pMainFrm);		// // //
-	void RestoreRedoState(CMainFrame *pMainFrm);		// // //
-	void Undo(CMainFrame *pMainFrm);
-	void Redo(CMainFrame *pMainFrm);
+	virtual bool SaveState(CMainFrame *pMainFrm);
+	virtual void Undo(CMainFrame *pMainFrm);
+	virtual void Redo(CMainFrame *pMainFrm);
+
+	void SaveUndoState(const CMainFrame *pMainFrm);		// // //
+	void SaveRedoState(const CMainFrame *pMainFrm);		// // //
+	void RestoreUndoState(CMainFrame *pMainFrm) const;		// // //
+	void RestoreRedoState(CMainFrame *pMainFrm) const;		// // //
 
 public:
 	void SetFrameCount(unsigned int FrameCount);

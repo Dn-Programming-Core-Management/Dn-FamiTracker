@@ -95,12 +95,14 @@ public:
 	CPatternAction(int iAction);
 	virtual ~CPatternAction();
 
-	bool SaveState(CMainFrame *pMainFrm);
-	void SaveRedoState(CMainFrame *pMainFrm);		// // //
-	void RestoreState(CMainFrame *pMainFrm);		// // //
-	void RestoreRedoState(CMainFrame *pMainFrm);		// // //
-	void Undo(CMainFrame *pMainFrm);
-	void Redo(CMainFrame *pMainFrm);
+	virtual bool SaveState(CMainFrame *pMainFrm);
+	virtual void Undo(CMainFrame *pMainFrm);
+	virtual void Redo(CMainFrame *pMainFrm);
+
+	void SaveUndoState(const CMainFrame *pMainFrm);		// // //
+	void SaveRedoState(const CMainFrame *pMainFrm);		// // //
+	void RestoreUndoState(CMainFrame *pMainFrm) const;		// // //
+	void RestoreRedoState(CMainFrame *pMainFrm) const;		// // //
 
 public:
 	void SetNote(stChanNote &Note);
@@ -145,18 +147,13 @@ private:
 	CPatternIterator GetStartIterator() const;		// // //
 	CPatternIterator GetEndIterator() const;
 
+protected:
+	CPatternEditorState *m_pUndoState;		// // //
+	CPatternEditorState *m_pRedoState;
+
 private:
 	stChanNote m_NewNote;
 	stChanNote m_OldNote;
-
-	int m_iUndoTrack;
-	int m_iUndoFrame;
-	int m_iUndoChannel;
-	int m_iUndoRow;
-	cursor_column_t m_iUndoColumn;		// // //
-
-	CPatternEditorState *m_pUndoState;		// // //
-	CPatternEditorState *m_pRedoState;
 
 	int m_iUndoColumnCount;		// // //
 	int m_iRedoColumnCount;

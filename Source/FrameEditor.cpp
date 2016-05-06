@@ -1400,7 +1400,7 @@ void CFrameEditor::GetSelectInfo(stSelectInfo &Info) const
 	Info.iRowEnd = std::max(m_iSelStartRow, m_iSelEndRow);
 }
 
-void CFrameEditor::SetSelectInfo(stSelectInfo &Info)
+void CFrameEditor::SetSelectInfo(const stSelectInfo &Info)		// // //
 {
 	m_bSelecting = Info.bSelecting;
 	m_iSelStartRow = Info.iRowStart;

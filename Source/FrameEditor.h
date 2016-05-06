@@ -120,7 +120,7 @@ public:
 	// Selection, copy & paste, drag & drop
 	void CancelSelection();
 	void GetSelectInfo(stSelectInfo &Info) const;
-	void SetSelectInfo(stSelectInfo &Info);
+	void SetSelectInfo(const stSelectInfo &Info);		// // //
 
 	bool IsClipboardAvailable() const;
 	bool IsCopyValid(COleDataObject* pDataObject) const;

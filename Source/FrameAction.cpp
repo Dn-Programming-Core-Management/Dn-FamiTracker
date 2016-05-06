@@ -151,12 +151,6 @@ bool CFrameAction::SaveState(CMainFrame *pMainFrm)
 	CFamiTrackerDoc *pDocument = pView->GetDocument();
 	const int Channels = pDocument->GetAvailableChannels();
 
-	m_iUndoTrack = pMainFrm->GetSelectedTrack();
-	m_iUndoFramePos = pView->GetSelectedFrame();
-	m_iUndoChannelPos = pView->GetSelectedChannel();
-
-	pFrameEditor->GetSelectInfo(m_oSelInfo);
-
 	switch (m_iAction) {
 		case ACT_ADD:
 			if (pDocument->GetFrameCount(m_iUndoTrack) == MAX_FRAMES)
@@ -221,25 +215,35 @@ bool CFrameAction::SaveState(CMainFrame *pMainFrm)
 	return true;
 }
 
-void CFrameAction::SaveRedoState(CMainFrame *pMainFrm)		// // //
+void CFrameAction::SaveUndoState(const CMainFrame *pMainFrm)		// // //
+{
+	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
+	m_iUndoTrack = pMainFrm->GetSelectedTrack();
+	m_iUndoFramePos = pView->GetSelectedFrame();
+	m_iUndoChannelPos = pView->GetSelectedChannel();
+	pMainFrm->GetFrameEditor()->GetSelectInfo(m_oSelInfo);
+}
+
+void CFrameAction::SaveRedoState(const CMainFrame *pMainFrm)		// // //
 {
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
 	m_iRedoFramePos = pView->GetSelectedFrame();
 	m_iRedoChannelPos = pView->GetSelectedChannel();
 }
 
-void CFrameAction::RestoreState(CMainFrame *pMainFrm)		// // //
+void CFrameAction::RestoreUndoState(CMainFrame *pMainFrm) const		// // //
 {
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
 	CFamiTrackerDoc *pDocument = pView->GetDocument();
 
 	pView->SelectFrame(m_iUndoFramePos);
 	pView->SelectChannel(m_iUndoChannelPos);
+	pMainFrm->GetFrameEditor()->SetSelectInfo(m_oSelInfo);
 
 	pDocument->UpdateAllViews(NULL, UPDATE_FRAME);
 }
 
-void CFrameAction::RestoreRedoState(CMainFrame *pMainFrm)		// // //
+void CFrameAction::RestoreRedoState(CMainFrame *pMainFrm) const		// // //
 {
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
 	CFamiTrackerDoc *pDocument = pView->GetDocument();
@@ -255,8 +259,6 @@ void CFrameAction::Undo(CMainFrame *pMainFrm)
 	CFrameEditor *pFrameEditor = pMainFrm->GetFrameEditor();
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
 	CFamiTrackerDoc *pDocument = pView->GetDocument();
-
-	pFrameEditor->SetSelectInfo(m_oSelInfo);
 
 	switch (m_iAction) {
 		case ACT_ADD:

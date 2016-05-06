@@ -37,11 +37,13 @@ public:
 	CCompoundAction();
 
 	bool SaveState(CMainFrame *pMainFrm);
-	void SaveRedoState(CMainFrame *pMainFrm);		// // //
-	void RestoreState(CMainFrame *pMainFrm);		// // //
-	void RestoreRedoState(CMainFrame *pMainFrm);		// // //
 	void Undo(CMainFrame *pMainFrm);
 	void Redo(CMainFrame *pMainFrm);
+
+	void SaveUndoState(const CMainFrame *pMainFrm);		// // //
+	void SaveRedoState(const CMainFrame *pMainFrm);		// // //
+	void RestoreUndoState(CMainFrame *pMainFrm) const;		// // //
+	void RestoreRedoState(CMainFrame *pMainFrm) const;		// // //
 
 	/*!	\brief Adds an action to the compound to be performed last (and undoed first).
 		\param pAction Pointer to the action object. */

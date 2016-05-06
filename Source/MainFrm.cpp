@@ -2664,7 +2664,8 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 bool CMainFrame::AddAction(CAction *pAction)
 {
 	ASSERT(m_pActionHandler != NULL);
-
+	
+	pAction->SaveUndoState(this);		// // //
 	if (!pAction->SaveState(this)) {
 		// Operation cancelled
 		SAFE_RELEASE(pAction);
@@ -2705,7 +2706,7 @@ void CMainFrame::OnEditUndo()
 
 	if (pAction != NULL) {
 		pAction->Undo(this);
-		pAction->RestoreState(this);		// // //
+		pAction->RestoreUndoState(this);		// // //
 	}
 
 	CFamiTrackerDoc	*pDoc = (CFamiTrackerDoc*)GetActiveDocument();			// // //
