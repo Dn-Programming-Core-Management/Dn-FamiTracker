@@ -846,7 +846,7 @@ void CMainFrame::SetRowCount(int Count)
 		else {
 			// Update existing action
 			pAction->SetPatternLength(Count);
-			pAction->Update(this);
+			pAction->Update(this); // TODO: extend this to all CAction objects
 		}
 	}
 
@@ -2702,9 +2702,8 @@ void CMainFrame::OnEditUndo()
 {
 	ASSERT(m_pActionHandler != NULL);
 
-	CAction *pAction = m_pActionHandler->PopUndo();
-
-	if (pAction != NULL) {
+	if (CAction *pAction = m_pActionHandler->PopUndo()) {
+		pAction->RestoreRedoState(this);		// // //
 		pAction->Undo(this);
 		pAction->RestoreUndoState(this);		// // //
 	}
@@ -2718,9 +2717,8 @@ void CMainFrame::OnEditRedo()
 {
 	ASSERT(m_pActionHandler != NULL);
 
-	CAction *pAction = m_pActionHandler->PopRedo();
-
-	if (pAction != NULL) {
+	if (CAction *pAction = m_pActionHandler->PopRedo()) {
+		pAction->RestoreUndoState(this);		// // //
 		pAction->Redo(this);
 		pAction->RestoreRedoState(this);		// // //
 	}

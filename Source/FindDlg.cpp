@@ -710,12 +710,8 @@ bool CFindDlg::Replace(CCompoundAction *pAction)
 		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) Target.EffNumber[EffColumn] = EF_NONE;
 		if (Replace.Definite[WC_PARAM]) Target.EffParam[EffColumn] = Replace.Note.EffParam[0];
 		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) Target.EffParam[EffColumn] = 0;
-		if (pAction) {
-			CPatternAction *pNoteAction = new CPatternAction {CPatternAction::ACT_REPLACE_NOTE};
-			pNoteAction->SetReplacePosition(m_iFrame, m_iChannel, m_iRow);
-			pNoteAction->SetNote(Target);
-			pAction->JoinAction(pNoteAction);
-		}
+		if (pAction)
+			pAction->JoinAction(new CPActionReplaceNote(Target, m_iFrame, m_iRow, m_iChannel));
 		else
 			m_pView->EditReplace(Target);
 //		m_pDocument->SetNoteData(Track, m_iFrame, m_iChannel, m_iRow, &Target);

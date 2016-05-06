@@ -105,15 +105,11 @@ public:
 	void RestoreRedoState(CMainFrame *pMainFrm) const;		// // //
 
 public:
-	void SetNote(stChanNote &Note);
-	void SetReplacePosition(int Frame, int Channel, int Row);		// // //
-	void SetDelete(bool PullUp, bool Back);
 	void SetPaste(CPatternClipData *pClipData);
 	void SetPasteMode(paste_mode_t Mode);		// // //
 	void SetPastePos(paste_pos_t Pos);		// // //
 	void SetTranspose(transpose_t Mode);
 	void SetScroll(int Scroll);
-	void SetInstrument(int Instrument);
 	void SetDragAndDrop(const CPatternClipData *pClipData, bool bDelete, bool bMix, const CSelection *pDragTarget);
 	void SetPatternLength(int Length);
 	void Update(CMainFrame *pMainFrm);
@@ -137,13 +133,15 @@ private:
 	void InsertRows(CFamiTrackerDoc *pDoc) const;
 	void PullUpRows(CFamiTrackerDoc *pDoc) const;
 	void StretchPattern(CFamiTrackerDoc *pDoc) const;		// // //
-	void ReplaceInstrument(CFamiTrackerDoc *pDoc) const;
 	void Transpose(CFamiTrackerDoc *pDoc) const;
 	void Interpolate(CFamiTrackerDoc *pDoc) const;
 	void Reverse(CFamiTrackerDoc *pDoc) const;
 	void ScrollValues(CFamiTrackerDoc *pDoc) const;
 	void DeleteSelection(CFamiTrackerDoc *pDoc) const;
 
+	void UpdateView(CFamiTrackerDoc *pDoc) const;		// // //
+
+protected:
 	CPatternIterator GetStartIterator() const;		// // //
 	CPatternIterator GetEndIterator() const;
 
@@ -166,9 +164,6 @@ private:
 	int m_iNewPatternLen;
 	int m_iOldPatternLen;
 
-	bool m_bPullUp;
-	bool m_bBack;
-
 	const CPatternClipData *m_pClipData;
 	CPatternClipData *m_pUndoClipData, *m_pAuxiliaryClipData;		// // //
 	paste_mode_t m_iPasteMode;		// // //
@@ -180,7 +175,6 @@ private:
 
 	transpose_t m_iTransposeMode;
 	int m_iScrollValue;
-	int m_iInstrument;
 
 	bool m_bDragDelete;
 	bool m_bDragMix;
@@ -204,6 +198,50 @@ private:
 	void Redo(CMainFrame *pMainFrm) const;
 
 private:
-	stChanNote m_NewNote;
+	stChanNote m_NewNote, m_OldNote;
+};
+
+class CPActionReplaceNote : public CPatternAction
+{
+public:
+	CPActionReplaceNote(const stChanNote &Note, int Frame, int Row, int Channel);
+
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+
+private:
+	stChanNote m_NewNote, m_OldNote;
+	int m_iFrame, m_iRow, m_iChannel;
+};
+
+class CPActionDeleteRow : public CPatternAction
+{
+public:
+	CPActionDeleteRow(bool PullUp, bool Backspace);
+
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+
+private:
 	stChanNote m_OldNote;
+	bool m_bPullUp, m_bBack;
+};
+
+class CPActionReplaceInst : public CPatternAction
+{
+public:
+	CPActionReplaceInst(unsigned Index);
+
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+
+private:
+	unsigned m_iInstrumentIndex;
+	CPatternClipData *m_pUndoClipData;
 };

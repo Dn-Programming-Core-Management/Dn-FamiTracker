@@ -2574,8 +2574,7 @@ void CFamiTrackerView::OnKeyBackspace()
 	else {
 		if (PreventRepeat(VK_BACK, true))
 			return;
-		CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_DELETE_ROW);
-		pAction->SetDelete(true, true);
+		CPatternAction *pAction = new CPActionDeleteRow(true, true);		// // //
 		if (AddAction(pAction)) {
 			m_pPatternEditor->MoveUp(1);
 			InvalidateCursor();
@@ -2599,9 +2598,8 @@ void CFamiTrackerView::OnKeyDelete()
 		OnEditDelete();
 	}
 	else {
-		CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_DELETE_ROW);
 		bool bPullUp = theApp.GetSettings()->General.bPullUpDelete || bShiftPressed;
-		pAction->SetDelete(bPullUp, false);
+		CPatternAction *pAction = new CPActionDeleteRow(bPullUp, false);		// // //
 		AddAction(pAction);
 		if (!bPullUp) {
 			StepDown();
@@ -3579,9 +3577,7 @@ void CFamiTrackerView::OnEditReverse()
 void CFamiTrackerView::OnEditReplaceInstrument()
 {
 	if (!m_bEditEnable) return;		// // //
-	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_REPLACE_INSTRUMENT);
-	pAction->SetInstrument(GetInstrument());
-	AddAction(pAction);	
+	AddAction(new CPActionReplaceInst {GetInstrument()});
 }
 
 void CFamiTrackerView::OnEditExpandPatterns()		// // //
