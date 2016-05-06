@@ -63,7 +63,9 @@ void CPatternEditorState::ApplyState(CPatternEditor *pEditor) const
 #define STATE_EXPAND(st) (st)->Track, (st)->Cursor.m_iFrame, (st)->Cursor.m_iChannel, (st)->Cursor.m_iRow
 
 CPatternAction::CPatternAction(int iAction) : 
-	CAction(iAction), 
+	CAction(iAction),
+	m_pUndoState(nullptr),
+	m_pRedoState(nullptr),
 	m_pClipData(NULL), 
 	m_pUndoClipData(NULL),
 	m_pAuxiliaryClipData(NULL),		// // //
@@ -925,6 +927,7 @@ void CPatternAction::SaveUndoState(const CMainFrame *pMainFrm)		// // //
 {
 	// Save undo cursor position
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
+	SAFE_RELEASE(m_pUndoState);
 	m_pUndoState = new CPatternEditorState {pView->GetPatternEditor(), pMainFrm->GetSelectedTrack()};
 	
 	const CPatternEditor *pPatternEditor = pView->GetPatternEditor(); // TODO: remove
@@ -936,6 +939,7 @@ void CPatternAction::SaveUndoState(const CMainFrame *pMainFrm)		// // //
 void CPatternAction::SaveRedoState(const CMainFrame *pMainFrm)		// // //
 {
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
+	SAFE_RELEASE(m_pRedoState);
 	m_pRedoState = new CPatternEditorState {pView->GetPatternEditor(), pMainFrm->GetSelectedTrack()};
 }
 

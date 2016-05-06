@@ -2577,6 +2577,7 @@ void CPatternEditor::OnEndKey()
 void CPatternEditor::MoveCursor(const CCursorPos &Pos)		// // //
 {
 	m_cpCursorPos = Pos;
+	m_iCurrentFrame = Pos.m_iFrame;
 }
 
 void CPatternEditor::MoveToRow(int Row)
