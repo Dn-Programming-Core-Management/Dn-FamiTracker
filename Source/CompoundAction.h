@@ -50,5 +50,6 @@ public:
 	void JoinAction(CAction *const pAction);
 
 private:
-	std::vector<std::unique_ptr<CAction>> m_pActionList;
+	std::unique_ptr<std::vector<std::unique_ptr<CAction>>> m_pActionList;
+	mutable bool m_bFirst;
 };

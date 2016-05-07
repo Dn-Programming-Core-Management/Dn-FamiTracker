@@ -20,57 +20,68 @@
 ** must bear this legend.
 */
 
+#include "stdafx.h"
 #include "CompoundAction.h"
 
 // // //
 // Compound action class
 // // //
 
-CCompoundAction::CCompoundAction() : m_pActionList()
+CCompoundAction::CCompoundAction() :
+	m_pActionList(new std::vector<std::unique_ptr<CAction>>()),
+	m_bFirst(true)
 {
 }
 
 bool CCompoundAction::SaveState(const CMainFrame *pMainFrm)
 {
-	for (auto it = m_pActionList.begin(); it != m_pActionList.end(); ++it)
-		if (!(*it)->SaveState(pMainFrm)) // TODO: check if all compound actions can be undone in any order
-			return false;
-	return true;
+	return (*m_pActionList->begin())->SaveState(pMainFrm);;
 }
 
 void CCompoundAction::Undo(CMainFrame *pMainFrm) const
 {
-	for (auto it = m_pActionList.rbegin(); it != m_pActionList.rend(); ++it)
+	for (auto it = m_pActionList->rbegin(); it != m_pActionList->rend(); ++it)
 		(*it)->Undo(pMainFrm);
 }
 
 void CCompoundAction::Redo(CMainFrame *pMainFrm) const
 {
-	for (auto it = m_pActionList.begin(); it != m_pActionList.end(); ++it)
+	auto it = m_pActionList->begin();
+	const auto end = m_pActionList->end();
+	while (true) {
 		(*it)->Redo(pMainFrm);
+		if (++it == end) break;
+		if (!m_bFirst) continue;
+		(*it)->SaveUndoState(pMainFrm);
+		if (!(*it)->SaveState(pMainFrm)) {
+			m_pActionList->erase(it, end);
+			throw new std::runtime_error(_T("Unable to create action."));
+		}
+	}
+	m_bFirst = false;
 }
 
 void CCompoundAction::SaveUndoState(const CMainFrame *pMainFrm)		// // //
 {
-	(*m_pActionList.begin())->SaveUndoState(pMainFrm);
+	(*m_pActionList->begin())->SaveUndoState(pMainFrm);
 }
 
 void CCompoundAction::SaveRedoState(const CMainFrame *pMainFrm)		// // //
 {
-	(*m_pActionList.rbegin())->SaveRedoState(pMainFrm);
+	(*m_pActionList->rbegin())->SaveRedoState(pMainFrm);
 }
 
 void CCompoundAction::RestoreUndoState(CMainFrame *pMainFrm) const		// // //
 {
-	(*m_pActionList.begin())->RestoreUndoState(pMainFrm);
+	(*m_pActionList->begin())->RestoreUndoState(pMainFrm);
 }
 
 void CCompoundAction::RestoreRedoState(CMainFrame *pMainFrm) const		// // //
 {
-	(*m_pActionList.rbegin())->RestoreRedoState(pMainFrm);
+	(*m_pActionList->rbegin())->RestoreRedoState(pMainFrm);
 }
 
 void CCompoundAction::JoinAction(CAction *const pAction)
 {
-	m_pActionList.push_back(std::unique_ptr<CAction>(pAction));
+	m_pActionList->push_back(std::unique_ptr<CAction>(pAction));
 }

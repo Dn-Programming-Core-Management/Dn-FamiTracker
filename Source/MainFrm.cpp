@@ -2671,7 +2671,16 @@ bool CMainFrame::AddAction(CAction *pAction)
 		SAFE_RELEASE(pAction);
 		return false;
 	}
-	pAction->Redo(this);		// // //
+	try {		// // //
+		pAction->Redo(this);
+	}
+	catch (std::runtime_error *e) {
+		AfxMessageBox(e->what());
+		pAction->Undo(this);
+		SAFE_RELEASE(pAction);
+		SAFE_RELEASE(e);
+		return false;
+	}
 	pAction->SaveRedoState(this);
 
 	CFamiTrackerDoc	*pDoc = (CFamiTrackerDoc*)GetActiveDocument();			// // //
