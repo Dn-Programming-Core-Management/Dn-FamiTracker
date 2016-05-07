@@ -2240,25 +2240,20 @@ CCursorPos CPatternEditor::GetCursorAtPoint(const CPoint &point) const
 
 CPatternIterator CPatternEditor::GetStartIterator() const		// // //
 {
-	const CCursorPos Pos(m_selection.GetRowStart(), m_selection.GetChanStart(), m_selection.GetColStart(), m_selection.GetFrameStart());
-	return CPatternIterator(this, GetSelectedTrack(), m_bSelecting ? Pos : m_cpCursorPos);
+	return GetIterators().first;
 }
 
 CPatternIterator CPatternEditor::GetEndIterator() const
 {
-	const CCursorPos Pos(m_selection.GetRowEnd(), m_selection.GetChanEnd(), m_selection.GetColEnd(), m_selection.GetFrameEnd());
-	return CPatternIterator(this, GetSelectedTrack(), m_bSelecting ? Pos : m_cpCursorPos);
+	return GetIterators().second;
 }
 
 std::pair<CPatternIterator, CPatternIterator> CPatternEditor::GetIterators() const
 {
 	CCursorPos c_it {m_cpCursorPos}, c_end {m_cpCursorPos};
-	if (IsSelecting())
-		m_selection.Normalize(c_it, c_end);
-	return std::make_pair(
-		CPatternIterator {this, static_cast<unsigned>(GetSelectedTrack()), c_it},
-		CPatternIterator {this, static_cast<unsigned>(GetSelectedTrack()), c_end}
-	);
+	return IsSelecting() ?
+		m_selection.GetIterators(this, GetSelectedTrack()) :
+		m_cpCursorPos.GetIterators(this, GetSelectedTrack());
 }
 
 column_t CPatternEditor::GetSelectColumn(cursor_column_t Column)
@@ -3365,7 +3360,7 @@ CPatternClipData *CPatternEditor::CopyRaw() const		// // //
 
 CPatternClipData *CPatternEditor::CopyRaw(const CSelection &Sel) const		// // //
 {
-	const unsigned int Track = GetSelectedTrack();
+	const int Track = GetSelectedTrack();
 	CCursorPos c_it, c_end;
 	Sel.Normalize(c_it, c_end);
 	CPatternIterator it {this, Track, c_it};
@@ -3508,7 +3503,7 @@ void CPatternEditor::PasteRaw(const CPatternClipData *pClipData)		// // //
 
 void CPatternEditor::PasteRaw(const CPatternClipData *pClipData, const CCursorPos &Pos)		// // //
 {
-	const unsigned Track = GetSelectedTrack();
+	const int Track = GetSelectedTrack();
 	CPatternIterator it {this, Track, Pos};
 	const int Frames = m_pDocument->GetFrameCount(Track);
 	const int Length = m_pDocument->GetPatternLength(Track);

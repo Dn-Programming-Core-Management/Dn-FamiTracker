@@ -134,6 +134,8 @@ public:
 	bool operator <(const CCursorPos &other) const;
 	bool operator <=(const CCursorPos &other) const;
 	bool IsValid(int RowCount, int ChannelCount) const;		// // //
+	
+	std::pair<CPatternIterator, CPatternIterator> GetIterators(const CPatternEditor *pEditor, int Track) const;		// // //
 
 public:
 	int m_iFrame;		// // //
@@ -145,8 +147,8 @@ public:
 class CPatternIterator : public CCursorPos {		// // //
 public:
 	CPatternIterator(const CPatternIterator &it);
-	CPatternIterator(CPatternEditor *pEditor, unsigned int Track, const CCursorPos &Pos);
-	CPatternIterator(const CPatternEditor *const pEditor, unsigned int Track, const CCursorPos &Pos);
+	CPatternIterator(CPatternEditor *pEditor, int Track, const CCursorPos &Pos);
+	CPatternIterator(const CPatternEditor *const pEditor, int Track, const CCursorPos &Pos);
 	
 	void Get(int Channel, stChanNote *pNote) const;
 	void Set(int Channel, const stChanNote *pNote);
@@ -182,11 +184,13 @@ public:
 	int  GetChanEnd() const;
 	int  GetFrameStart() const;		// // //
 	int  GetFrameEnd() const;		// // //
-	// // // gone
+
 	bool IsSameStartPoint(const CSelection &selection) const;
 	bool IsColumnSelected(column_t Column, int Channel) const;
+
 	void Normalize(CCursorPos &Begin, CCursorPos &End) const;		// // //
-	// // //
+	CSelection GetNormalized() const;		// // //
+	std::pair<CPatternIterator, CPatternIterator> GetIterators(const CPatternEditor *pEditor, int Track) const;		// // //
 public:
 	CCursorPos m_cpStart;
 	CCursorPos m_cpEnd;

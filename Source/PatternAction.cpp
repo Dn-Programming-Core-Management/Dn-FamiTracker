@@ -36,7 +36,7 @@ CPatternEditorState::CPatternEditorState(const CPatternEditor *pEditor, int Trac
 	// Track {pEditor->GetTrack()},
 	Track(Track),
 	Cursor(pEditor->GetCursor()),
-	Selection(pEditor->GetSelection()),
+	Selection(pEditor->GetSelection().GetNormalized()),
 	IsSelecting(pEditor->IsSelecting())
 {
 }
@@ -606,32 +606,20 @@ void CPatternAction::UpdateView(CFamiTrackerDoc *pDoc) const		// // //
 
 CPatternIterator CPatternAction::GetStartIterator() const		// // //
 {
-	CMainFrame *pMainFrm = static_cast<CMainFrame*>(AfxGetMainWnd());
-	CCursorPos Pos = m_bSelecting ?
-		(m_selection.m_cpStart < m_selection.m_cpEnd ? m_selection.m_cpStart : m_selection.m_cpEnd) :
-		CCursorPos(m_pUndoState->Cursor);
-	return CPatternIterator(static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor(), m_pUndoState->Track, Pos);
+	return GetIterators(static_cast<CMainFrame*>(AfxGetMainWnd())).first;
 }
 
 CPatternIterator CPatternAction::GetEndIterator() const
 {
-	CMainFrame *pMainFrm = static_cast<CMainFrame*>(AfxGetMainWnd());
-	CCursorPos Pos = m_bSelecting ?
-		(m_selection.m_cpEnd < m_selection.m_cpStart ? m_selection.m_cpStart : m_selection.m_cpEnd) :
-		CCursorPos(m_pUndoState->Cursor);
-	return CPatternIterator(static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor(), m_pUndoState->Track, Pos);
+	return GetIterators(static_cast<CMainFrame*>(AfxGetMainWnd())).second;
 }
 
 std::pair<CPatternIterator, CPatternIterator> CPatternAction::GetIterators(const CMainFrame *pMainFrm) const
 {
-	CCursorPos c_it {m_pUndoState->Cursor}, c_end {m_pUndoState->Cursor};
-	if (m_pUndoState->IsSelecting)
-		m_pUndoState->Selection.Normalize(c_it, c_end);
 	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
-	return std::make_pair(
-		CPatternIterator {pPatternEditor, static_cast<unsigned>(m_pUndoState->Track), c_it},
-		CPatternIterator {pPatternEditor, static_cast<unsigned>(m_pUndoState->Track), c_end}
-	);
+	return m_pUndoState->IsSelecting ?
+		m_pUndoState->Selection.GetIterators(pPatternEditor, m_pUndoState->Track) :
+		m_pUndoState->Cursor.GetIterators(pPatternEditor, m_pUndoState->Track);
 }
 
 // Undo / Redo base methods
