@@ -578,24 +578,23 @@ void CPatternAction::ScrollValues(CFamiTrackerDoc *pDoc) const
 	} while (++it <= End);
 }
 
-void CPatternAction::DeleteSelection(CFamiTrackerDoc *pDoc) const
+void CPatternAction::DeleteSelection(CMainFrame *pMainFrm, const CSelection &Sel) const		// // //
 {
-	// Delete selection
-	CPatternIterator it = GetStartIterator();		// // //
-	const CPatternIterator End = GetEndIterator();
-	const column_t ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());		// // //
-	const column_t ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
+	auto it = Sel.GetIterators(
+		static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor(),
+		pMainFrm->GetSelectedTrack());
+	const column_t ColStart = CPatternEditor::GetSelectColumn(it.first.m_iColumn);
+	const column_t ColEnd = CPatternEditor::GetSelectColumn(it.second.m_iColumn);
 
-	stChanNote NoteData, Blank { };		// // //
+	stChanNote NoteData, Blank;
 
-	do {
-		for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); ++i) {
-			it.Get(i, &NoteData);
-			CopyNoteSection(&NoteData, &Blank, PASTE_DEFAULT, i == m_selection.GetChanStart() ? ColStart : COLUMN_NOTE,
-				i == m_selection.GetChanEnd() ? ColEnd : COLUMN_EFF4);		// // //
-			it.Set(i, &NoteData);
-		}
-	} while (++it <= End);
+	do for (int i = it.first.m_iChannel; i <= it.second.m_iChannel; ++i) {
+		it.first.Get(i, &NoteData);
+		CopyNoteSection(&NoteData, &Blank, PASTE_DEFAULT,
+						i == it.first.m_iChannel ? ColStart : COLUMN_NOTE,
+						i == it.second.m_iChannel ? ColEnd : COLUMN_EFF4);
+		it.first.Set(i, &NoteData);
+	} while (++it.first <= it.second);
 }
 
 void CPatternAction::UpdateView(CFamiTrackerDoc *pDoc) const		// // //
@@ -800,7 +799,7 @@ void CPatternAction::Redo(CMainFrame *pMainFrm) const
 		case ACT_DRAG_AND_DROP:
 			RestoreSelection(pPatternEditor);
 			if (m_bDragDelete)
-				DeleteSelection(pDoc);
+				DeleteSelection(pMainFrm, m_selection);		// // //
 			pPatternEditor->DragPaste(m_pClipData, &m_dragTarget, m_bDragMix);
 			break;
 		case ACT_PATTERN_LENGTH:
@@ -1036,7 +1035,7 @@ void CPActionScrollField::Redo(CMainFrame *pMainFrm) const
 
 
 CPActionClearSel::CPActionClearSel() :
-	CPatternAction(ACT_EDIT_DELETE)
+	CPatternAction(ACT_EDIT_DELETE), m_pUndoClipData(nullptr)
 {
 }
 
@@ -1055,44 +1054,45 @@ void CPActionClearSel::Undo(CMainFrame *pMainFrm) const
 
 void CPActionClearSel::Redo(CMainFrame *pMainFrm) const
 {
-	auto it = GetIterators(pMainFrm);		// // //
-	const column_t ColStart = CPatternEditor::GetSelectColumn(it.first.m_iColumn);		// // //
-	const column_t ColEnd = CPatternEditor::GetSelectColumn(it.second.m_iColumn);
-
-	stChanNote NoteData, Blank { };		// // //
-
-	do {
-		for (int i = it.first.m_iChannel; i <= it.second.m_iChannel; ++i) {
-			it.first.Get(i, &NoteData);
-			CopyNoteSection(&NoteData, &Blank, PASTE_DEFAULT,
-							i == it.first.m_iChannel ? ColStart : COLUMN_NOTE,
-							i == it.second.m_iChannel ? ColEnd : COLUMN_EFF4);		// // //
-			it.first.Set(i, &NoteData);
-		}
-	} while (++it.first <= it.second);
+	DeleteSelection(pMainFrm, m_pUndoState->Selection);
 }
 
 
 
 CPActionDeleteAtSel::CPActionDeleteAtSel() :
-	CPatternAction(ACT_EDIT_DELETE_ROWS)
+	CPatternAction(ACT_EDIT_DELETE_ROWS), m_pUndoHead(nullptr), m_pUndoTail(nullptr)
 {
 }
 
 bool CPActionDeleteAtSel::SaveState(const CMainFrame *pMainFrm)
 {
-	int Frame = m_pUndoState->Cursor.m_iFrame;
-	if (!(m_pUndoState->Selection.GetFrameStart() <= Frame && m_pUndoState->Selection.GetFrameEnd() >= Frame))
-		return false;
+	if (!m_pUndoState->IsSelecting) return false;
+
 	const CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
-	m_pUndoClipData = pPatternEditor->CopyEntire();
+	m_cpTailPos = CCursorPos {
+		m_pUndoState->Selection.m_cpEnd.m_iRow + 1,
+		m_pUndoState->Selection.m_cpStart.m_iChannel,
+		m_pUndoState->Selection.m_cpStart.m_iColumn,
+		m_pUndoState->Selection.m_cpEnd.m_iFrame
+	};
+	m_pUndoHead = pPatternEditor->CopyRaw(m_pUndoState->Selection);
+	int Length = pPatternEditor->GetCurrentPatternLength(m_cpTailPos.m_iFrame) - 1;
+	if (m_cpTailPos.m_iRow <= Length)
+		m_pUndoTail = pPatternEditor->CopyRaw(CSelection {m_cpTailPos, CCursorPos {
+			Length,
+			m_pUndoState->Selection.m_cpEnd.m_iChannel,
+			m_pUndoState->Selection.m_cpEnd.m_iColumn,
+			m_cpTailPos.m_iFrame
+		}});
 	return true;
 }
 
 void CPActionDeleteAtSel::Undo(CMainFrame *pMainFrm) const
 {
 	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
-	pPatternEditor->PasteEntire(m_pUndoClipData);
+	pPatternEditor->PasteRaw(m_pUndoHead, m_pUndoState->Selection.m_cpStart);
+	if (m_pUndoTail)
+		pPatternEditor->PasteRaw(m_pUndoTail, m_cpTailPos);
 }
 
 void CPActionDeleteAtSel::Redo(CMainFrame *pMainFrm) const
@@ -1100,40 +1100,18 @@ void CPActionDeleteAtSel::Redo(CMainFrame *pMainFrm) const
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
 	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
 
-	const CSelection &Sel = m_pUndoState->Selection;
-	const int Frame = m_pUndoState->Cursor.m_iFrame;		// // //
-	const column_t ColStart = CPatternEditor::GetSelectColumn(Sel.GetColStart());		// // //
-	const column_t ColEnd = CPatternEditor::GetSelectColumn(Sel.GetColEnd());
-	stChanNote Target, Source;
-	
-	CPatternIterator it = GetStartIterator();		// // //
-	it.m_iFrame = Frame;
-	it.m_iRow = (Sel.GetFrameStart() < Frame) ? 0 : Sel.GetRowStart();
-	CPatternIterator front {it};
-	front.m_iRow = (Sel.GetFrameEnd() > Frame) ? pDoc->GetPatternLength(m_pUndoState->Track) : Sel.GetRowEnd() + 1;
-
-	while (it.m_iFrame == Frame) {
-		for (int i = Sel.GetChanStart(); i <= Sel.GetChanEnd(); ++i) {
-			it.Get(i, &Target);
-			if (front.m_iFrame == Frame)
-				front.Get(i, &Source);
-			else
-				Source = stChanNote { };
-			CopyNoteSection(&Target, &Source, PASTE_DEFAULT, (i == Sel.GetChanStart()) ? ColStart : COLUMN_NOTE,
-				(i == Sel.GetChanEnd()) ? ColEnd : COLUMN_EFF4);
-			it.Set(i, &Target);
-		}
-		++it;
-		++front;
-	}
-
+	CSelection Sel(m_pUndoState->Selection);
+	Sel.m_cpEnd.m_iRow = pPatternEditor->GetCurrentPatternLength(Sel.m_cpEnd.m_iFrame) - 1;
+	DeleteSelection(pMainFrm, Sel);
+	if (m_pUndoTail)
+		pPatternEditor->PasteRaw(m_pUndoTail, m_pUndoState->Selection.m_cpStart);
 	pPatternEditor->CancelSelection();
 }
 
 
 
 CPActionInsertAtSel::CPActionInsertAtSel() :
-	CPatternAction(ACT_INSERT_SEL_ROWS)
+	CPatternAction(ACT_INSERT_SEL_ROWS), m_pUndoClipData(nullptr)
 {
 }
 
@@ -1160,7 +1138,7 @@ void CPActionInsertAtSel::Redo(CMainFrame *pMainFrm) const
 
 
 CPActionReplaceInst::CPActionReplaceInst(unsigned Index) :
-	CPatternAction(ACT_REPLACE_INSTRUMENT), m_iInstrumentIndex(Index)
+	CPatternAction(ACT_REPLACE_INSTRUMENT), m_iInstrumentIndex(Index), m_pUndoClipData(nullptr)
 {
 }
 

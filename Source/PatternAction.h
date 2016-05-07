@@ -132,9 +132,11 @@ private:
 	void Interpolate(CFamiTrackerDoc *pDoc) const;
 	void Reverse(CFamiTrackerDoc *pDoc) const;
 	void ScrollValues(CFamiTrackerDoc *pDoc) const;
-	void DeleteSelection(CFamiTrackerDoc *pDoc) const;
 
 	virtual void UpdateView(CFamiTrackerDoc *pDoc) const;		// // //
+
+protected:
+	void DeleteSelection(CMainFrame *pMainFrm, const CSelection &Sel) const;		// // //
 
 protected:
 	CPatternIterator GetStartIterator() const;		// // //
@@ -254,7 +256,8 @@ private:
 	void Undo(CMainFrame *pMainFrm) const;
 	void Redo(CMainFrame *pMainFrm) const;
 private:
-	CPatternClipData *m_pUndoClipData;
+	CCursorPos m_cpTailPos;
+	CPatternClipData *m_pUndoHead, *m_pUndoTail;
 };
 
 class CPActionInsertAtSel : public CPatternAction

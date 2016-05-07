@@ -63,7 +63,7 @@ const int CPatternEditor::DEFAULT_HEADER_FONT_SIZE	= 11;
 
 // // //
 
-void CopyNoteSection(stChanNote *Target, stChanNote *Source, paste_mode_t Mode, column_t Begin, column_t End)		// // //
+void CopyNoteSection(stChanNote *Target, const stChanNote *Source, paste_mode_t Mode, column_t Begin, column_t End)		// // //
 {
 	static const char Offset[] = {
 		offsetof(stChanNote, Note),
@@ -77,7 +77,7 @@ void CopyNoteSection(stChanNote *Target, stChanNote *Source, paste_mode_t Mode, 
 	bool Protected[sizeof(Offset)] = {};
 	for (size_t i = 0; i < sizeof(Offset); i++) {
 		const unsigned char TByte = *(reinterpret_cast<unsigned char*>(Target) + Offset[i]); // skip octave byte
-		const unsigned char SByte = *(reinterpret_cast<unsigned char*>(Source) + Offset[i]);
+		const unsigned char SByte = *(reinterpret_cast<const unsigned char*>(Source) + Offset[i]);
 		switch (Mode) {
 		case PASTE_MIX:
 			switch (i) {

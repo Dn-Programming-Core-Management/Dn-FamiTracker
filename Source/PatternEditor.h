@@ -40,7 +40,7 @@ struct RowColorInfo_t {
 	COLORREF Compact;		// // //
 };
 
-void CopyNoteSection(stChanNote *Target, stChanNote *Source, paste_mode_t Mode, column_t Begin, column_t End);		// // //
+extern void CopyNoteSection(stChanNote *Target, const stChanNote *Source, paste_mode_t Mode, column_t Begin, column_t End);		// // //
 
 // External classes
 class CFamiTrackerDoc;
