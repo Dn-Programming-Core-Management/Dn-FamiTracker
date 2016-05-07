@@ -45,103 +45,31 @@ class CPatternData
 public:
 	CPatternData(unsigned int PatternLength = DEFAULT_ROW_COUNT);		// // //
 	~CPatternData();
-	/*
-	char GetNote(unsigned int Channel, unsigned int Pattern, unsigned int Row) const {
-		stChanNote *pNote = GetPatternData(Channel, Pattern, Row);
-		return pNote == NULL ? 0 : pNote->Note;
-	};
 
-	char GetOctave(unsigned int Channel, unsigned int Pattern, unsigned int Row) const {
-		stChanNote *pNote = GetPatternData(Channel, Pattern, Row);
-		return pNote == NULL ? 0 : pNote->Octave;
-	};
-
-	char GetInstrument(unsigned int Channel, unsigned int Pattern, unsigned int Row) const {
-		stChanNote *pNote = GetPatternData(Channel, Pattern, Row);
-		return pNote == NULL ? MAX_INSTRUMENTS : pNote->Instrument;
-	};
-
-	char GetVolume(unsigned int Channel, unsigned int Pattern, unsigned int Row) const {
-		stChanNote *pNote = GetPatternData(Channel, Pattern, Row);
-		return pNote == NULL ? MAX_VOLUME : pNote->Vol;
-	};
-
-	char GetEffect(unsigned int Channel, unsigned int Pattern, unsigned int Row, unsigned int Column) const {
-		stChanNote *pNote = GetPatternData(Channel, Pattern, Row);
-		return pNote == NULL ? EF_NONE : pNote->EffNumber[Column];
-	};
-
-	char GetEffectParam(unsigned int Channel, unsigned int Pattern, unsigned int Row, unsigned int Column) const {
-		stChanNote *pNote = GetPatternData(Channel, Pattern, Row);
-		return pNote == NULL ? 0 : pNote->EffParam[Column];
-	};
-	*/
 	bool IsCellFree(unsigned int Channel, unsigned int Pattern, unsigned int Row) const;
 	bool IsPatternEmpty(unsigned int Channel, unsigned int Pattern) const;
 	bool IsPatternInUse(unsigned int Channel, unsigned int Pattern) const;
-
-	int GetEffectColumnCount(int Channel) const
-	{
-		return m_iEffectColumns[Channel];
-	};
-
-	void SetEffectColumnCount(int Channel, int Count)
-	{
-		m_iEffectColumns[Channel] = Count;
-	};
 
 	void ClearEverything();
 	void ClearPattern(unsigned int Channel, unsigned int Pattern);
 
 	stChanNote *GetPatternData(unsigned int Channel, unsigned int Pattern, unsigned int Row);
 
-	CString GetTitle() const {		// // //
-		return m_sTrackName;
-	}
+	CString GetTitle() const;
+	unsigned int GetPatternLength() const;
+	unsigned int GetFrameCount() const;
+	unsigned int GetSongSpeed() const;
+	unsigned int GetSongTempo() const;
+	int GetEffectColumnCount(int Channel) const;;
+	bool GetSongGroove() const;		// // //
 
-	unsigned int GetPatternLength() const { 
-		return m_iPatternLength;
-	}
-
-	unsigned int GetFrameCount() const { 
-		return m_iFrameCount;
-	}
-
-	unsigned int GetSongSpeed() const { 
-		return m_iSongSpeed;
-	}
-
-	unsigned int GetSongTempo() const { 
-		return m_iSongTempo;
-	}
-
-	bool GetSongGroove() const {		// // //
-		return m_bUseGroove;
-	}
-
-	void SetTitle(CString str) {		// // //
-		m_sTrackName = str;
-	}
-
-	void SetPatternLength(unsigned int Length) {
-		m_iPatternLength = Length; 
-	}
-
-	void SetFrameCount(unsigned int Count) {
-		m_iFrameCount = Count;
-	}
-
-	void SetSongSpeed(unsigned int Speed) {
-		m_iSongSpeed = Speed;
-	}
-
-	void SetSongTempo(unsigned int Tempo) {
-		m_iSongTempo = Tempo;
-	}
-
-	void SetSongGroove(bool Groove) {		// // //
-		m_bUseGroove = Groove;
-	}
+	void SetTitle(CString str);
+	void SetPatternLength(unsigned int Length);
+	void SetFrameCount(unsigned int Count);
+	void SetSongSpeed(unsigned int Speed);
+	void SetSongTempo(unsigned int Tempo);
+	void SetEffectColumnCount(int Channel, int Count);;
+	void SetSongGroove(bool Groove);		// // //
 
 	unsigned int GetFramePattern(unsigned int Frame, unsigned int Channel) const;
 	void SetFramePattern(unsigned int Frame, unsigned int Channel, unsigned int Pattern);

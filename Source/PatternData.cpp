@@ -146,6 +146,76 @@ void CPatternData::ClearPattern(unsigned int Channel, unsigned int Pattern)
 	SAFE_RELEASE_ARRAY(m_pPatternData[Channel][Pattern]);
 }
 
+CString CPatternData::GetTitle() const
+{
+	return m_sTrackName;
+}
+
+unsigned int CPatternData::GetPatternLength() const
+{
+	return m_iPatternLength;
+}
+
+unsigned int CPatternData::GetFrameCount() const
+{
+	return m_iFrameCount;
+}
+
+unsigned int CPatternData::GetSongSpeed() const
+{
+	return m_iSongSpeed;
+}
+
+unsigned int CPatternData::GetSongTempo() const
+{
+	return m_iSongTempo;
+}
+
+int CPatternData::GetEffectColumnCount(int Channel) const
+{
+	return m_iEffectColumns[Channel];
+}
+
+bool CPatternData::GetSongGroove() const		// // //
+{
+	return m_bUseGroove;
+}
+
+void CPatternData::SetTitle(CString str)
+{
+	m_sTrackName = str;
+}
+
+void CPatternData::SetPatternLength(unsigned int Length)
+{
+	m_iPatternLength = Length;
+}
+
+void CPatternData::SetFrameCount(unsigned int Count)
+{
+	m_iFrameCount = Count;
+}
+
+void CPatternData::SetSongSpeed(unsigned int Speed)
+{
+	m_iSongSpeed = Speed;
+}
+
+void CPatternData::SetSongTempo(unsigned int Tempo)
+{
+	m_iSongTempo = Tempo;
+}
+
+void CPatternData::SetEffectColumnCount(int Channel, int Count)
+{
+	m_iEffectColumns[Channel] = Count;
+}
+
+void CPatternData::SetSongGroove(bool Groove)		// // //
+{
+	m_bUseGroove = Groove;
+}
+
 unsigned int CPatternData::GetFramePattern(unsigned int Frame, unsigned int Channel) const
 { 
 	return m_iFrameList[Frame][Channel]; 
