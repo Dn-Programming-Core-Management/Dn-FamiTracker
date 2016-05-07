@@ -108,14 +108,13 @@ public:
 	void RestoreRedoState(CMainFrame *pMainFrm) const;		// // //
 
 public:
+	void Update(CMainFrame *pMainFrm);
+
 	void SetPaste(CPatternClipData *pClipData);
 	void SetPasteMode(paste_mode_t Mode);		// // //
 	void SetPastePos(paste_pos_t Pos);		// // //
-	void SetTranspose(transpose_t Mode);
-	void SetScroll(int Scroll);
 	void SetDragAndDrop(const CPatternClipData *pClipData, bool bDelete, bool bMix, const CSelection *pDragTarget);
 	void SetPatternLength(int Length);
-	void Update(CMainFrame *pMainFrm);
 	void SetStretchMap(const std::vector<int> Map);		// // //
 
 private:
@@ -128,10 +127,8 @@ private:
 	void RestoreSelection(CPatternEditor *pPatternEditor) const;
 
 	void StretchPattern(CFamiTrackerDoc *pDoc) const;		// // //
-	void Transpose(CFamiTrackerDoc *pDoc) const;
 	void Interpolate(CFamiTrackerDoc *pDoc) const;
 	void Reverse(CFamiTrackerDoc *pDoc) const;
-	void ScrollValues(CFamiTrackerDoc *pDoc) const;
 
 	virtual void UpdateView(CFamiTrackerDoc *pDoc) const;		// // //
 
@@ -159,9 +156,6 @@ private:
 	bool m_bSelecting;
 	CSelection m_selection, m_newSelection;		// // //
 	int m_iSelectionSize;		// // //
-
-	transpose_t m_iTransposeMode;
-	int m_iScrollValue;
 
 	bool m_bDragDelete;
 	bool m_bDragMix;
@@ -282,6 +276,32 @@ private:
 	void Redo(CMainFrame *pMainFrm) const;
 private:
 	unsigned m_iInstrumentIndex;
+	CPatternClipData *m_pUndoClipData;
+};
+
+class CPActionTranspose : public CPatternAction
+{
+public:
+	CPActionTranspose(transpose_t Type);
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+private:
+	transpose_t m_iTransposeMode;
+	CPatternClipData *m_pUndoClipData;
+};
+
+class CPActionScrollValues : public CPatternAction
+{
+public:
+	CPActionScrollValues(int Amount);
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+private:
+	int m_iAmount;
 	CPatternClipData *m_pUndoClipData;
 };
 

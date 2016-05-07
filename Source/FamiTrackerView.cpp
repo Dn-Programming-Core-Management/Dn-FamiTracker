@@ -743,26 +743,10 @@ BOOL CFamiTrackerView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 			m_pPatternEditor->PreviousFrame();
 		InvalidateFrameEditor();		// // //
 	}
-	if (bControlPressed) {
-		if (zDelta > 0) {
-			pAction = new CPatternAction(CPatternAction::ACT_TRANSPOSE);
-			pAction->SetTranspose(TRANSPOSE_INC_NOTES);
-		}
-		else {
-			pAction = new CPatternAction(CPatternAction::ACT_TRANSPOSE);
-			pAction->SetTranspose(TRANSPOSE_DEC_NOTES);
-		}
-	}
-	else if (bShiftPressed) {
-		if (zDelta > 0) {
-			pAction = new CPatternAction(CPatternAction::ACT_SCROLL_VALUES);
-			pAction->SetScroll(1);
-		}
-		else {
-			pAction = new CPatternAction(CPatternAction::ACT_SCROLL_VALUES);
-			pAction->SetScroll(-1);
-		}
-	}
+	if (bControlPressed)
+		pAction = new CPActionTranspose {zDelta > 0 ? TRANSPOSE_INC_NOTES : TRANSPOSE_DEC_NOTES};		// // //
+	else if (bShiftPressed)
+		pAction = new CPActionScrollValues {zDelta > 0 ? 1 : -1};		// // //
 	else
 		m_pPatternEditor->OnMouseScroll(zDelta);
 
@@ -1132,65 +1116,49 @@ void CFamiTrackerView::OnTrackerDetune()			// // //
 void CFamiTrackerView::OnTransposeDecreasenote()
 {
 	if (!m_bEditEnable) return;		// // //
-	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_TRANSPOSE);
-	pAction->SetTranspose(TRANSPOSE_DEC_NOTES);
-	AddAction(pAction);
+	AddAction(new CPActionTranspose {TRANSPOSE_DEC_NOTES});
 }
 
 void CFamiTrackerView::OnTransposeDecreaseoctave()
 {
 	if (!m_bEditEnable) return;		// // //
-	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_TRANSPOSE);
-	pAction->SetTranspose(TRANSPOSE_DEC_OCTAVES);
-	AddAction(pAction);
+	AddAction(new CPActionTranspose {TRANSPOSE_DEC_OCTAVES});
 }
 
 void CFamiTrackerView::OnTransposeIncreasenote()
 {
 	if (!m_bEditEnable) return;		// // //
-	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_TRANSPOSE);
-	pAction->SetTranspose(TRANSPOSE_INC_NOTES);
-	AddAction(pAction);
+	AddAction(new CPActionTranspose {TRANSPOSE_INC_NOTES});
 }
 
 void CFamiTrackerView::OnTransposeIncreaseoctave()
 {
 	if (!m_bEditEnable) return;		// // //
-	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_TRANSPOSE);
-	pAction->SetTranspose(TRANSPOSE_INC_OCTAVES);
-	AddAction(pAction);
+	AddAction(new CPActionTranspose {TRANSPOSE_INC_OCTAVES});
 }
 
 void CFamiTrackerView::OnDecreaseValues()
 {
 	if (!m_bEditEnable) return;		// // //
-	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_SCROLL_VALUES);
-	pAction->SetScroll(-1);
-	AddAction(pAction);
+	AddAction(new CPActionScrollValues {-1});
 }
 
 void CFamiTrackerView::OnIncreaseValues()
 {
 	if (!m_bEditEnable) return;		// // //
-	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_SCROLL_VALUES);
-	pAction->SetScroll(1);
-	AddAction(pAction);
+	AddAction(new CPActionScrollValues {1});
 }
 
 void CFamiTrackerView::OnCoarseDecreaseValues()		// // //
 {
 	if (!m_bEditEnable) return;
-	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_SCROLL_VALUES);
-	pAction->SetScroll(-16);
-	AddAction(pAction);
+	AddAction(new CPActionScrollValues {-16});
 }
 
 void CFamiTrackerView::OnCoarseIncreaseValues()		// // //
 {
 	if (!m_bEditEnable) return;
-	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_SCROLL_VALUES);
-	pAction->SetScroll(16);
-	AddAction(pAction);
+	AddAction(new CPActionScrollValues {16});
 }
 
 void CFamiTrackerView::OnEditInstrumentMask()
