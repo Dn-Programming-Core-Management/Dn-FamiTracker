@@ -1183,7 +1183,7 @@ bool CPActionReplaceInst::SaveState(const CMainFrame *pMainFrm)
 	const CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
 	if (!m_pUndoState->IsSelecting)
 		return false;
-	m_pUndoClipData = pPatternEditor->CopyRaw();
+	m_pUndoClipData = pPatternEditor->CopyRaw(m_pUndoState->Selection);
 	return true;
 }
 
@@ -1196,22 +1196,19 @@ void CPActionReplaceInst::Undo(CMainFrame *pMainFrm) const
 void CPActionReplaceInst::Redo(CMainFrame *pMainFrm) const
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	CPatternIterator it = GetStartIterator();		// // //
-	const CPatternIterator End = GetEndIterator();
+	auto it = GetIterators(pMainFrm);
 	const CSelection &Sel = m_pUndoState->Selection;
 
 	const int cBegin = Sel.GetChanStart() + (Sel.IsColumnSelected(COLUMN_INSTRUMENT, Sel.GetChanStart()) ? 0 : 1);
 	const int cEnd = Sel.GetChanEnd() - (Sel.IsColumnSelected(COLUMN_INSTRUMENT, Sel.GetChanEnd()) ? 0 : 1);
 
 	stChanNote Note;
-	do {
-		for (int i = cBegin; i <= cEnd; ++i) {
-			it.Get(i, &Note);
-			if (Note.Instrument != MAX_INSTRUMENTS)
-				Note.Instrument = m_iInstrumentIndex;
-			it.Set(i, &Note);
-		}
-	} while (++it <= End);
+	do for (int i = cBegin; i <= cEnd; ++i) {
+		it.first.Get(i, &Note);
+		if (Note.Instrument != MAX_INSTRUMENTS)
+			Note.Instrument = m_iInstrumentIndex;
+		it.first.Set(i, &Note);
+	} while (++it.first <= it.second);
 }
 
 

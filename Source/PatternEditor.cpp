@@ -2250,6 +2250,17 @@ CPatternIterator CPatternEditor::GetEndIterator() const
 	return CPatternIterator(this, GetSelectedTrack(), m_bSelecting ? Pos : m_cpCursorPos);
 }
 
+std::pair<CPatternIterator, CPatternIterator> CPatternEditor::GetIterators() const
+{
+	CCursorPos c_it {m_cpCursorPos}, c_end {m_cpCursorPos};
+	if (IsSelecting())
+		m_selection.Normalize(c_it, c_end);
+	return std::make_pair(
+		CPatternIterator {this, static_cast<unsigned>(GetSelectedTrack()), c_it},
+		CPatternIterator {this, static_cast<unsigned>(GetSelectedTrack()), c_end}
+	);
+}
+
 column_t CPatternEditor::GetSelectColumn(cursor_column_t Column)
 {
 	// Return first column for a specific column field
@@ -3492,8 +3503,13 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 
 void CPatternEditor::PasteRaw(const CPatternClipData *pClipData)		// // //
 {
-	CPatternIterator it = GetStartIterator();
-	const int Track = GetSelectedTrack();
+	PasteRaw(pClipData, GetIterators().first);
+}
+
+void CPatternEditor::PasteRaw(const CPatternClipData *pClipData, const CCursorPos &Pos)		// // //
+{
+	const unsigned Track = GetSelectedTrack();
+	CPatternIterator it {this, Track, Pos};
 	const int Frames = m_pDocument->GetFrameCount(Track);
 	const int Length = m_pDocument->GetPatternLength(Track);
 
@@ -3503,14 +3519,14 @@ void CPatternEditor::PasteRaw(const CPatternClipData *pClipData)		// // //
 	const column_t EndColumn = pClipData->ClipInfo.EndColumn;
 
 	stChanNote Target { }, Source { };
-	const int PackedPos = (m_selection.GetFrameStart() + GetFrameCount()) * Length + m_selection.GetRowStart();
+	const int PackedPos = (Pos.m_iFrame + GetFrameCount()) * Length + Pos.m_iRow;
 	for (int i = 0; i < Channels; ++i) for (int r = 0; r < Rows; r++) {
-		int c = i + m_selection.GetChanStart();
+		int c = i + Pos.m_iChannel;
 		if (c == GetChannelCount()) return;
 		m_pDocument->GetNoteData(Track, (PackedPos + r) / Length % Frames, c, (PackedPos + r) % Length, &Target);
 		Source = *(pClipData->GetPattern(i, r));
 		CopyNoteSection(&Target, &Source, PASTE_DEFAULT, (i == 0) ? StartColumn : COLUMN_NOTE,
-			std::min((i == Channels + m_selection.GetChanStart() - 1) ? EndColumn : COLUMN_EFF4,
+			std::min((i == Channels + Pos.m_iChannel - 1) ? EndColumn : COLUMN_EFF4,
 						static_cast<column_t>(COLUMN_EFF1 + m_pDocument->GetEffColumns(Track, c))));
 		m_pDocument->SetNoteData(Track, (PackedPos + r) / Length % Frames, c, (PackedPos + r) % Length, &Target);
 	}

@@ -147,6 +147,7 @@ public:
 	void PasteEntire(const CPatternClipData *pClipData);
 	void Paste(const CPatternClipData *pClipData, const paste_mode_t PasteMode, const paste_pos_t PastePos);		// // //
 	void PasteRaw(const CPatternClipData *pClipData);		// // //
+	void PasteRaw(const CPatternClipData *pClipData, const CCursorPos &Pos);		// // //
 
 	bool IsSelecting() const;
 	void SelectChannel();
@@ -266,6 +267,7 @@ private:
 
 	CPatternIterator GetStartIterator() const;		// // //
 	CPatternIterator GetEndIterator() const;
+	std::pair<CPatternIterator, CPatternIterator> GetIterators() const;		// // //
 
 	// Editing
 	void IncreaseEffectColumn(int Channel);
