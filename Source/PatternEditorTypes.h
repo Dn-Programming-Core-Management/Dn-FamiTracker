@@ -78,6 +78,7 @@ enum sel_condition_t {
 };
 
 class CPatternEditor;		// // //
+class CPatternIterator;		// // //
 
 // Class used by clipboard
 class CPatternClipData
@@ -150,6 +151,7 @@ public:
 	void Get(int Channel, stChanNote *pNote) const;
 	void Set(int Channel, const stChanNote *pNote);
 	void Step();
+
 	CPatternIterator &operator+=(const int Rows);
 	CPatternIterator &operator-=(const int Rows);
 	CPatternIterator &operator++();
@@ -183,6 +185,7 @@ public:
 	// // // gone
 	bool IsSameStartPoint(const CSelection &selection) const;
 	bool IsColumnSelected(column_t Column, int Channel) const;
+	void Normalize(CCursorPos &Begin, CCursorPos &End) const;		// // //
 	// // //
 public:
 	CCursorPos m_cpStart;

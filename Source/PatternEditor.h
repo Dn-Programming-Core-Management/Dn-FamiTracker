@@ -142,6 +142,7 @@ public:
 	CPatternClipData *CopyEntire() const;
 	CPatternClipData *Copy() const;
 	CPatternClipData *CopyRaw() const;		// // //
+	CPatternClipData *CopyRaw(const CSelection &Sel) const;		// // //
 	void Cut();
 	void PasteEntire(const CPatternClipData *pClipData);
 	void Paste(const CPatternClipData *pClipData, const paste_mode_t PasteMode, const paste_pos_t PastePos);		// // //

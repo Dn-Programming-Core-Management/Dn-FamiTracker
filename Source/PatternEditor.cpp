@@ -3349,21 +3349,29 @@ CPatternClipData *CPatternEditor::Copy() const
 
 CPatternClipData *CPatternEditor::CopyRaw() const		// // //
 {
-	CPatternIterator it = GetStartIterator();
-	CPatternIterator end = GetEndIterator();
-	const int Track		= GetSelectedTrack();
+	return CopyRaw(m_selection);
+}
+
+CPatternClipData *CPatternEditor::CopyRaw(const CSelection &Sel) const		// // //
+{
+	const unsigned int Track = GetSelectedTrack();
+	CCursorPos c_it, c_end;
+	Sel.Normalize(c_it, c_end);
+	CPatternIterator it {this, Track, c_it};
+	CPatternIterator end {this, Track, c_end};
+
 	const int Frames	= m_pDocument->GetFrameCount(Track);
 	const int Length	= m_pDocument->GetPatternLength(Track);
 	const int Rows		= (end.m_iFrame - it.m_iFrame) * Length + (end.m_iRow - it.m_iRow) + 1;
 
-	const int cBegin	= m_selection.GetChanStart();
-	const int Channels	= m_selection.GetChanEnd() - cBegin + 1;
+	const int cBegin	= it.m_iChannel;
+	const int Channels	= end.m_iChannel - cBegin + 1;
 
 	CPatternClipData *pClipData = new CPatternClipData(Channels, Rows);
 	pClipData->ClipInfo.Channels	= Channels;
 	pClipData->ClipInfo.Rows		= Rows;
-	pClipData->ClipInfo.StartColumn	= GetSelectColumn(m_selection.GetColStart());
-	pClipData->ClipInfo.EndColumn	= GetSelectColumn(m_selection.GetColEnd());
+	pClipData->ClipInfo.StartColumn	= GetSelectColumn(it.m_iColumn);
+	pClipData->ClipInfo.EndColumn	= GetSelectColumn(end.m_iColumn);
 	
 	const int PackedPos = (it.m_iFrame + Frames) * Length + it.m_iRow;
 	for (int r = 0; r < Rows; r++) for (int i = 0; i < Channels; ++i)

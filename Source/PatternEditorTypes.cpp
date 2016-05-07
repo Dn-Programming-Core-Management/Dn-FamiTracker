@@ -174,6 +174,19 @@ bool CSelection::IsColumnSelected(column_t Column, int Channel) const
 		&& (Channel < GetChanEnd() || (Channel == GetChanEnd() && Column <= SelEnd));
 }
 
+void CSelection::Normalize(CCursorPos &Begin, CCursorPos &End) const		// // //
+{
+	Begin.m_iFrame = GetFrameStart();
+	Begin.m_iRow = GetRowStart();
+	Begin.m_iChannel = GetChanStart();
+	Begin.m_iColumn = GetColStart();
+	
+	End.m_iFrame = m_cpStart.m_iFrame + m_cpEnd.m_iFrame - Begin.m_iFrame;
+	End.m_iRow = m_cpStart.m_iRow + m_cpEnd.m_iRow - Begin.m_iRow;
+	End.m_iChannel = m_cpStart.m_iChannel + m_cpEnd.m_iChannel - Begin.m_iChannel;
+	End.m_iColumn = static_cast<cursor_column_t>(m_cpStart.m_iColumn + m_cpEnd.m_iColumn - Begin.m_iColumn);
+}
+
 // CPatternClipData ////////////////////////////////////////////////////////////
 
 SIZE_T CPatternClipData::GetAllocSize() const
@@ -233,40 +246,30 @@ const stChanNote *CPatternClipData::GetPattern(int Channel, int Row) const
 }
 
 // // // CPatternIterator //////////////////////////////////////////////////////
-// does not use m_iChannel
 
 CPatternIterator::CPatternIterator(const CPatternIterator &it) :
 	m_iTrack(it.m_iTrack),
 	m_pDocument(it.m_pDocument),
-	m_pPatternEditor(it.m_pPatternEditor)
+	m_pPatternEditor(it.m_pPatternEditor),
+	CCursorPos(static_cast<const CCursorPos &>(it))
 {
-	m_iFrame = it.m_iFrame;
-	m_iRow = it.m_iRow;
-	m_iChannel = it.m_iChannel; // init these anyway
-	m_iColumn = it.m_iColumn;
 }
 
 CPatternIterator::CPatternIterator(CPatternEditor *pEditor, unsigned int Track, const CCursorPos &Pos) :
 	m_iTrack(Track),
 	m_pDocument(CFamiTrackerDoc::GetDoc()),
-	m_pPatternEditor(pEditor)
+	m_pPatternEditor(pEditor),
+	CCursorPos(Pos)
 {
-	m_iFrame = Pos.m_iFrame;
-	m_iRow = Pos.m_iRow;
-	m_iChannel = Pos.m_iChannel;
-	m_iColumn = Pos.m_iColumn;
 	Warp();
 }
 
 CPatternIterator::CPatternIterator(const CPatternEditor *pEditor, unsigned int Track, const CCursorPos &Pos) :
 	m_iTrack(Track),
 	m_pDocument(CFamiTrackerDoc::GetDoc()),
-	m_pPatternEditor(pEditor)
+	m_pPatternEditor(pEditor),
+	CCursorPos(Pos)
 {
-	m_iFrame = Pos.m_iFrame;
-	m_iRow = Pos.m_iRow;
-	m_iChannel = Pos.m_iChannel;
-	m_iColumn = Pos.m_iColumn;
 	Warp();
 }
 
@@ -288,9 +291,9 @@ void CPatternIterator::Step() // resolves skip effects
 {
 	stChanNote Note;
 
-	for (int i = m_pDocument->GetChannelCount() - 1; i >= 0; i--) {
+	for (int i = m_pDocument->GetChannelCount() - 1; i >= 0; --i) {
 		Get(i, &Note);
-		for (int c = m_pDocument->GetEffColumns(m_iTrack, i); c >= 0; c--) {
+		for (int c = m_pDocument->GetEffColumns(m_iTrack, i); c >= 0; --c) {
 			if (Note.EffNumber[c] == EF_JUMP) {
 				m_iFrame = Note.EffParam[c];
 				if (m_iFrame >= static_cast<int>(m_pDocument->GetFrameCount(m_iTrack)))
@@ -302,15 +305,16 @@ void CPatternIterator::Step() // resolves skip effects
 	}
 	for (int i = m_pDocument->GetChannelCount() - 1; i >= 0; i--) {
 		Get(i, &Note);
-		for (int c = m_pDocument->GetEffColumns(m_iTrack, i); c >= 0; c--) {
+		for (int c = m_pDocument->GetEffColumns(m_iTrack, i); c >= 0; --c) {
 			if (Note.EffNumber[c] == EF_SKIP) {
-				m_iFrame++;
+				++m_iFrame;
 				m_iRow = 0;
 				return;
 			}
 		}
 	}
-	operator+=(1);
+	++m_iRow;
+	Warp();
 }
 
 CPatternIterator& CPatternIterator::operator+=(const int Rows)
