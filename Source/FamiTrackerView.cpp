@@ -1080,7 +1080,7 @@ void CFamiTrackerView::OnEditPasteInsert()		// // //
 void CFamiTrackerView::OnEditDelete()
 {
 	if (!m_bEditEnable) return;		// // //
-	AddAction(new CPatternAction(CPatternAction::ACT_EDIT_DELETE));
+	AddAction(new CPActionClearSel { });		// // //
 }
 
 void CFamiTrackerView::OnTrackerEdit()
@@ -2551,7 +2551,10 @@ void CFamiTrackerView::OnKeyInsert()
 	if (PreventRepeat(VK_INSERT, true) || !m_bEditEnable)		// // //
 		return;
 
-	AddAction(m_pPatternEditor->IsSelecting() ? new CPatternAction(CPatternAction::ACT_INSERT_SEL_ROWS) : new CPActionInsertRow { });
+	if (m_pPatternEditor->IsSelecting())
+		AddAction(new CPActionInsertAtSel { });		// // //
+	else
+		AddAction(new CPActionInsertRow { });
 }
 
 void CFamiTrackerView::OnKeyBackspace()
@@ -2564,7 +2567,7 @@ void CFamiTrackerView::OnKeyBackspace()
 		return;
 
 	if (m_pPatternEditor->IsSelecting()) {
-		AddAction(new CPatternAction(CPatternAction::ACT_EDIT_DELETE_ROWS));
+		AddAction(new CPActionDeleteAtSel { });
 	}
 	else {
 		if (PreventRepeat(VK_BACK, true))
@@ -3836,8 +3839,7 @@ void CFamiTrackerView::BeginDragData(int ChanOffset, int RowOffset)
 			switch (res) {
 				case DROPEFFECT_MOVE:
 					// Delete data
-					CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EDIT_DELETE);
-					AddAction(pAction);
+					AddAction(new CPActionClearSel { });		// // //
 					break;
 			}
 

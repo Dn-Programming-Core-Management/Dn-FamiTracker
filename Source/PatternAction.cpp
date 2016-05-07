@@ -127,17 +127,6 @@ void CPatternAction::SetStretchMap(const std::vector<int> Map)		// // //
 	m_iStretchMap = Map;
 }
 
-void CPatternAction::SaveEntire(const CPatternEditor *pPatternEditor)
-{
-	// (avoid when possible)
-	m_pUndoClipData = pPatternEditor->CopyEntire();
-}
-
-void CPatternAction::RestoreEntire(CPatternEditor *pPatternEditor) const
-{
-	pPatternEditor->PasteEntire(m_pUndoClipData);
-}
-
 bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // //
 {
 	CCursorPos Start;
@@ -266,42 +255,6 @@ void CPatternAction::CopyAuxiliary(const CPatternEditor *pPatternEditor)		// // 
 void CPatternAction::PasteAuxiliary(CPatternEditor *pPatternEditor) const		// // //
 {
 	pPatternEditor->PasteRaw(m_pAuxiliaryClipData);
-}
-
-void CPatternAction::InsertRows(CFamiTrackerDoc *pDoc) const
-{
-	for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); ++i) {
-		pDoc->InsertRow(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, i, m_selection.GetRowStart());
-	}
-}
-
-void CPatternAction::PullUpRows(CFamiTrackerDoc *pDoc) const
-{
-	const int Frame = m_pUndoState->Cursor.m_iFrame;		// // //
-	const column_t ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());		// // //
-	const column_t ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
-	stChanNote Target, Source;
-	
-	CPatternIterator it = GetStartIterator();		// // //
-	it.m_iFrame = Frame;
-	it.m_iRow = (m_selection.GetFrameStart() < Frame) ? 0 : m_selection.GetRowStart();
-	CPatternIterator front {it};
-	front.m_iRow = (m_selection.GetFrameEnd() > Frame) ? pDoc->GetPatternLength(m_pUndoState->Track) : m_selection.GetRowEnd() + 1;
-
-	while (it.m_iFrame == Frame) {
-		for (int i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); ++i) {
-			it.Get(i, &Target);
-			if (front.m_iFrame == Frame)
-				front.Get(i, &Source);
-			else
-				Source = stChanNote { };
-			CopyNoteSection(&Target, &Source, PASTE_DEFAULT, (i == m_selection.GetChanStart()) ? ColStart : COLUMN_NOTE,
-				(i == m_selection.GetChanEnd()) ? ColEnd : COLUMN_EFF4);
-			it.Set(i, &Target);
-		}
-		it++;
-		front++;
-	}
 }
 
 void CPatternAction::StretchPattern(CFamiTrackerDoc *pDoc) const		// // //
@@ -669,6 +622,18 @@ CPatternIterator CPatternAction::GetEndIterator() const
 	return CPatternIterator(static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor(), m_pUndoState->Track, Pos);
 }
 
+std::pair<CPatternIterator, CPatternIterator> CPatternAction::GetIterators(const CMainFrame *pMainFrm) const
+{
+	CCursorPos c_it {m_pUndoState->Cursor}, c_end {m_pUndoState->Cursor};
+	if (m_pUndoState->IsSelecting)
+		m_pUndoState->Selection.Normalize(c_it, c_end);
+	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
+	return std::make_pair(
+		CPatternIterator {pPatternEditor, static_cast<unsigned>(m_pUndoState->Track), c_it},
+		CPatternIterator {pPatternEditor, static_cast<unsigned>(m_pUndoState->Track), c_end}
+	);
+}
+
 // Undo / Redo base methods
 
 bool CPatternAction::SaveState(const CMainFrame *pMainFrm)
@@ -693,16 +658,6 @@ bool CPatternAction::SaveState(const CMainFrame *pMainFrm)
 			if (!SetTargetSelection(pPatternEditor))		// // //
 				return false;
 			CopySelection(pPatternEditor);
-			break;
-		case ACT_EDIT_DELETE:		// // //
-			CopySelection(pPatternEditor);		// // //
-			break;
-		case ACT_EDIT_DELETE_ROWS:
-			if (!(m_selection.GetFrameStart() <= Frame && m_selection.GetFrameEnd() >= Frame))
-				return false;
-			// continue
-		case ACT_INSERT_SEL_ROWS:
-			SaveEntire(pPatternEditor);
 			break;
 		case ACT_TRANSPOSE:		// // //
 		case ACT_SCROLL_VALUES:
@@ -801,14 +756,8 @@ void CPatternAction::Undo(CMainFrame *pMainFrm) const
 		case ACT_INTERPOLATE:
 		case ACT_REVERSE:
 		case ACT_STRETCH_PATTERN:		// // //
-		case ACT_EDIT_DELETE:
 			pPatternEditor->SetSelection(m_selection);		// // //
 			PasteSelection(pPatternEditor);
-			break;
-		case ACT_INSERT_SEL_ROWS:
-		case ACT_EDIT_DELETE_ROWS:
-			RestoreSelection(pPatternEditor);
-			RestoreEntire(pPatternEditor);
 			break;
 		case ACT_DRAG_AND_DROP:
 			pPatternEditor->SetSelection(m_newSelection);
@@ -844,17 +793,6 @@ void CPatternAction::Redo(CMainFrame *pMainFrm) const
 		case ACT_EDIT_PASTE:
 			pPatternEditor->Paste(m_pClipData, m_iPasteMode, m_iPastePos);		// // //
 			break;		// // //
-		case ACT_EDIT_DELETE:
-			pPatternEditor->SetSelection(m_selection);
-			DeleteSelection(pDoc);
-			break;
-		case ACT_EDIT_DELETE_ROWS:
-			PullUpRows(pDoc);
-			pPatternEditor->CancelSelection();
-			break;
-		case ACT_INSERT_SEL_ROWS:
-			InsertRows(pDoc);
-			break;
 		case ACT_TRANSPOSE:
 			// // //
 			Transpose(pDoc);
@@ -1105,6 +1043,130 @@ void CPActionScrollField::Redo(CMainFrame *pMainFrm) const
 
 	if (bUpdate)
 		pDoc->SetNoteData(STATE_EXPAND(m_pUndoState), &Note);
+}
+
+
+
+CPActionClearSel::CPActionClearSel() :
+	CPatternAction(ACT_EDIT_DELETE)
+{
+}
+
+bool CPActionClearSel::SaveState(const CMainFrame *pMainFrm)
+{
+	const CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
+	m_pUndoClipData = pPatternEditor->CopyRaw(m_pUndoState->Selection);
+	return true;
+}
+
+void CPActionClearSel::Undo(CMainFrame *pMainFrm) const
+{
+	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
+	pPatternEditor->PasteRaw(m_pUndoClipData);
+}
+
+void CPActionClearSel::Redo(CMainFrame *pMainFrm) const
+{
+	auto it = GetIterators(pMainFrm);		// // //
+	const column_t ColStart = CPatternEditor::GetSelectColumn(it.first.m_iColumn);		// // //
+	const column_t ColEnd = CPatternEditor::GetSelectColumn(it.second.m_iColumn);
+
+	stChanNote NoteData, Blank { };		// // //
+
+	do {
+		for (int i = it.first.m_iChannel; i <= it.second.m_iChannel; ++i) {
+			it.first.Get(i, &NoteData);
+			CopyNoteSection(&NoteData, &Blank, PASTE_DEFAULT,
+							i == it.first.m_iChannel ? ColStart : COLUMN_NOTE,
+							i == it.second.m_iChannel ? ColEnd : COLUMN_EFF4);		// // //
+			it.first.Set(i, &NoteData);
+		}
+	} while (++it.first <= it.second);
+}
+
+
+
+CPActionDeleteAtSel::CPActionDeleteAtSel() :
+	CPatternAction(ACT_EDIT_DELETE_ROWS)
+{
+}
+
+bool CPActionDeleteAtSel::SaveState(const CMainFrame *pMainFrm)
+{
+	int Frame = m_pUndoState->Cursor.m_iFrame;
+	if (!(m_pUndoState->Selection.GetFrameStart() <= Frame && m_pUndoState->Selection.GetFrameEnd() >= Frame))
+		return false;
+	const CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
+	m_pUndoClipData = pPatternEditor->CopyEntire();
+	return true;
+}
+
+void CPActionDeleteAtSel::Undo(CMainFrame *pMainFrm) const
+{
+	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
+	pPatternEditor->PasteEntire(m_pUndoClipData);
+}
+
+void CPActionDeleteAtSel::Redo(CMainFrame *pMainFrm) const
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
+
+	const CSelection &Sel = m_pUndoState->Selection;
+	const int Frame = m_pUndoState->Cursor.m_iFrame;		// // //
+	const column_t ColStart = CPatternEditor::GetSelectColumn(Sel.GetColStart());		// // //
+	const column_t ColEnd = CPatternEditor::GetSelectColumn(Sel.GetColEnd());
+	stChanNote Target, Source;
+	
+	CPatternIterator it = GetStartIterator();		// // //
+	it.m_iFrame = Frame;
+	it.m_iRow = (Sel.GetFrameStart() < Frame) ? 0 : Sel.GetRowStart();
+	CPatternIterator front {it};
+	front.m_iRow = (Sel.GetFrameEnd() > Frame) ? pDoc->GetPatternLength(m_pUndoState->Track) : Sel.GetRowEnd() + 1;
+
+	while (it.m_iFrame == Frame) {
+		for (int i = Sel.GetChanStart(); i <= Sel.GetChanEnd(); ++i) {
+			it.Get(i, &Target);
+			if (front.m_iFrame == Frame)
+				front.Get(i, &Source);
+			else
+				Source = stChanNote { };
+			CopyNoteSection(&Target, &Source, PASTE_DEFAULT, (i == Sel.GetChanStart()) ? ColStart : COLUMN_NOTE,
+				(i == Sel.GetChanEnd()) ? ColEnd : COLUMN_EFF4);
+			it.Set(i, &Target);
+		}
+		++it;
+		++front;
+	}
+
+	pPatternEditor->CancelSelection();
+}
+
+
+
+CPActionInsertAtSel::CPActionInsertAtSel() :
+	CPatternAction(ACT_INSERT_SEL_ROWS)
+{
+}
+
+bool CPActionInsertAtSel::SaveState(const CMainFrame *pMainFrm)
+{
+	const CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
+	m_pUndoClipData = pPatternEditor->CopyEntire();
+	return true;
+}
+
+void CPActionInsertAtSel::Undo(CMainFrame *pMainFrm) const
+{
+	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
+	pPatternEditor->PasteEntire(m_pUndoClipData);
+}
+
+void CPActionInsertAtSel::Redo(CMainFrame *pMainFrm) const
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	for (int i = m_pUndoState->Selection.GetChanStart(); i <= m_pUndoState->Selection.GetChanEnd(); ++i)
+		pDoc->InsertRow(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, i, m_pUndoState->Selection.GetRowStart());
 }
 
 

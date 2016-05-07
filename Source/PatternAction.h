@@ -119,8 +119,6 @@ public:
 	void SetStretchMap(const std::vector<int> Map);		// // //
 
 private:
-	void SaveEntire(const CPatternEditor *pPatternEditor);
-	void RestoreEntire(CPatternEditor *pPatternEditor) const;
 	bool SetTargetSelection(CPatternEditor *pPatternEditor);		// // //
 	void CopySelection(const CPatternEditor *pPatternEditor);		// // //
 	void PasteSelection(CPatternEditor *pPatternEditor) const;		// // //
@@ -129,8 +127,6 @@ private:
 
 	void RestoreSelection(CPatternEditor *pPatternEditor) const;
 
-	void InsertRows(CFamiTrackerDoc *pDoc) const;
-	void PullUpRows(CFamiTrackerDoc *pDoc) const;
 	void StretchPattern(CFamiTrackerDoc *pDoc) const;		// // //
 	void Transpose(CFamiTrackerDoc *pDoc) const;
 	void Interpolate(CFamiTrackerDoc *pDoc) const;
@@ -138,10 +134,12 @@ private:
 	void ScrollValues(CFamiTrackerDoc *pDoc) const;
 	void DeleteSelection(CFamiTrackerDoc *pDoc) const;
 
+	virtual void UpdateView(CFamiTrackerDoc *pDoc) const;		// // //
+
 protected:
 	CPatternIterator GetStartIterator() const;		// // //
 	CPatternIterator GetEndIterator() const;
-	virtual void UpdateView(CFamiTrackerDoc *pDoc) const;		// // //
+	std::pair<CPatternIterator, CPatternIterator> GetIterators(const CMainFrame *pMainFrm) const;		// // //
 
 protected:
 	CPatternEditorState *m_pUndoState;		// // //
@@ -233,6 +231,42 @@ private:
 private:
 	stChanNote m_OldNote;
 	int m_iAmount;
+};
+
+class CPActionClearSel : public CPatternAction
+{
+public:
+	CPActionClearSel();
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+private:
+	CPatternClipData *m_pUndoClipData;
+};
+
+class CPActionDeleteAtSel : public CPatternAction
+{
+public:
+	CPActionDeleteAtSel();
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+private:
+	CPatternClipData *m_pUndoClipData;
+};
+
+class CPActionInsertAtSel : public CPatternAction
+{
+public:
+	CPActionInsertAtSel();
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+private:
+	CPatternClipData *m_pUndoClipData;
 };
 
 class CPActionReplaceInst : public CPatternAction
