@@ -9,11 +9,12 @@ Version 0.3.14.1 - Apr 9 2016
 	About
 	===
 
-0CC-FamiTracker is a modified version of FamiTracker that incorporates various
-new effects and bug fixes which work in exported NSFs as well. The name "0CC"
-comes from the author's favourite arpeggio effect. The current version includes:
+0CC-FamiTracker is a modified version of FamiTracker that incorporates numerous
+new features that work in exported NSFs and interface improvements. The name
+"0CC" comes from the author's favourite arpeggio effect command. The current
+version includes:
 
- - Complete Sunsoft 5B support
+ - Sunsoft 5B support
  - Arpeggio schemes
  - Hardware volume envelopes
  - Find / replace tab
@@ -27,21 +28,21 @@ comes from the author's favourite arpeggio effect. The current version includes:
  - N163 wave buffer access effect
  - Instrument recorder
  - Transpose dialog
- - Expansion chip selector & ad-doc multichip NSF export
+ - Ad-doc multichip NSF export
 
-See also the change log for a list of various tweaks and improvements.
+See the change log for the full list of changes made in 0CC-FamiTracker.
 
 This program and its source code are licensed under the GNU General Public
 License Version 2. Differences to the original FamiTracker source are marked
-with "// // //"; those to the ASM source with ";;; ;; ;" and "; ;; ;;;". The
-current build is based on the 0.4.6 official release of FamiTracker and an
-unknown version of the NSF driver used in that release; 0CC-FamiTracker will
-continue to use this version in future updates unless there is great need for
-update, but its behaviour may not be identical if and when any of the features
-of this mod becomes part of an official FamiTracker release.
-
-Since version 0.3.12, the source code is no longer included within the download;
+with "// // //"; those to the ASM source with ";;; ;; ;" and "; ;; ;;;". Since
+version 0.3.12, the source code is no longer included within the download;
 always consult the Github page for up-to-date source code files.
+
+The current build is based on the version 0.4.6 release of the official
+FamiTracker. 0CC-FamiTracker will be ported to newer official releases whenever
+their source code becomes available; features added in 0CC-FamiTracker may not
+have identical behaviour as respective features added to the official branch
+after the current base version.
 
 	===
 	Links
