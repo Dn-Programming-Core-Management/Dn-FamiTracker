@@ -1584,9 +1584,17 @@ void CSoundGen::LoadMachineSettings(machine_t Machine, int Rate, int NamcoChanne
 	if (Rate == 0)
 		Rate = DefaultRate;
 
-	m_csAPULock.Lock();		// // //
-	m_pAPU->ChangeMachineRate(Machine == NTSC ? MACHINE_NTSC : MACHINE_PAL, Rate);		// // //
-	m_csAPULock.Unlock();		// // //
+	{
+		CSingleLock l(&m_csAPULock);		// // //
+		if (l.Lock()) {
+			m_pAPU->ChangeMachineRate(Machine == NTSC ? MACHINE_NTSC : MACHINE_PAL, Rate);		// // //
+			l.Unlock();
+		}
+#ifdef _DEBUG
+		else
+			AfxMessageBox(_T("Unable to change machine rate"));
+#endif
+	}
 
 	// Number of cycles between each APU update
 	m_iUpdateCycles = BaseFreq / Rate;
@@ -2057,29 +2065,31 @@ void CSoundGen::UpdateAPU()
 	// Copy wave changed flag
 	m_bInternalWaveChanged = m_bWaveChanged;
 	m_bWaveChanged = false;
+	
+	{
+		CSingleLock l(&m_csAPULock);		// // //
+		if (l.Lock()) {
+			// Update APU channel registers
+			for (int i = 0; i < CHANNELS; ++i) {
+				if (m_pChannels[i] != NULL) {
+					m_pChannels[i]->RefreshChannel();
+					m_pAPU->Process();
+					// Add some delay between each channel update
+					if (m_iFrameRate == CAPU::FRAME_RATE_NTSC || m_iFrameRate == CAPU::FRAME_RATE_PAL)
+						AddCycles(CHANNEL_DELAY);
+				}
+			}
+		#ifdef WRITE_VGM		// // //
+			if (m_bPlaying)
+				m_iRegisterStream.push(0x62);		// // //
+		#endif
 
-	m_csAPULock.Lock();		// // //
-
-	// Update APU channel registers
-	for (int i = 0; i < CHANNELS; ++i) {
-		if (m_pChannels[i] != NULL) {
-			m_pChannels[i]->RefreshChannel();
+			// Finish the audio frame
+			m_pAPU->AddTime(m_iUpdateCycles - m_iConsumedCycles);
 			m_pAPU->Process();
-			// Add some delay between each channel update
-			if (m_iFrameRate == CAPU::FRAME_RATE_NTSC || m_iFrameRate == CAPU::FRAME_RATE_PAL)
-				AddCycles(CHANNEL_DELAY);
+			l.Unlock();
 		}
 	}
-#ifdef WRITE_VGM		// // //
-	if (m_bPlaying)
-		m_iRegisterStream.push(0x62);		// // //
-#endif
-
-	// Finish the audio frame
-	m_pAPU->AddTime(m_iUpdateCycles - m_iConsumedCycles);
-	m_pAPU->Process();
-
-	m_csAPULock.Unlock();		// // //
 
 #ifdef LOGGING
 	if (m_bPlaying)
