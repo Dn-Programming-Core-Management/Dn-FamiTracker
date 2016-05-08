@@ -62,6 +62,9 @@ struct CPatternEditorState		// // // TODO: might be moved to PatternEditor.h
 
 	/*!	\brief Whether a selection is active at the time of the state's creation. */
 	const bool IsSelecting;
+
+private:
+	const CSelection OriginalSelection;
 };
 
 // Pattern commands

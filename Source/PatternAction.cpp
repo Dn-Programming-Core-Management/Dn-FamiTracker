@@ -33,9 +33,9 @@
 // // // Pattern editor state class
 
 CPatternEditorState::CPatternEditorState(const CPatternEditor *pEditor, int Track) :
-	// Track {pEditor->GetTrack()},
 	Track(Track),
 	Cursor(pEditor->GetCursor()),
+	OriginalSelection(pEditor->GetSelection()),
 	Selection(pEditor->GetSelection().GetNormalized()),
 	IsSelecting(pEditor->IsSelecting())
 {
@@ -45,7 +45,7 @@ void CPatternEditorState::ApplyState(CPatternEditor *pEditor) const
 {
 	pEditor->MoveCursor(Cursor);
 	if (IsSelecting)
-		pEditor->SetSelection(Selection);
+		pEditor->SetSelection(OriginalSelection);
 	else
 		pEditor->CancelSelection();
 	pEditor->InvalidateCursor();
