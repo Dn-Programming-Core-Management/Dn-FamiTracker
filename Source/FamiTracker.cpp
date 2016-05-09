@@ -437,10 +437,6 @@ void CFamiTrackerApp::LoadLocalization()
 
 void CFamiTrackerApp::OnRecentFilesClear()		// // //
 {
-	for (int i = m_pRecentFileList->GetSize() - 1; i >= 0; --i)
-		m_pRecentFileList->Remove(i);
-	m_pRecentFileList->m_nSize = 0;
-	m_pRecentFileList->WriteList();
 	SAFE_RELEASE(m_pRecentFileList);
 }
 
