@@ -721,6 +721,7 @@
 #define ID_TRACKER_TOGGLECHIP           33184
 #define ID_TRACKER_SOLOCHIP             33185
 #define ID_MODULE_LINEARPITCH           33189
+#define ID_RECENTFILES_CLEAR            33190
 #define ID_INSTRUMENT_ADD_2A03          36864
 #define ID_INSTRUMENT_ADD_FDS           36865
 #define ID_INSTRUMENT_ADD_MMC5          36866
@@ -741,7 +742,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        341
-#define _APS_NEXT_COMMAND_VALUE         33190
+#define _APS_NEXT_COMMAND_VALUE         33191
 #define _APS_NEXT_CONTROL_VALUE         1439
 #define _APS_NEXT_SYMED_VALUE           179
 #endif

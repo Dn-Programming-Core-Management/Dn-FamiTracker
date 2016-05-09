@@ -158,6 +158,8 @@ private:
 
 	// Private variables and objects
 private:
+	static const int MAX_RECENT_FILES = 8;		// // //
+
 	// Objects
 	CMIDI			*m_pMIDI;
 	CAccelerator	*m_pAccel;					// Keyboard accelerator
@@ -193,6 +195,8 @@ public:
 	afx_msg void OnFileOpen();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnTestExport();
+	void OnRecentFilesClear();		// // //
+	void OnUpdateRecentFilesClear(CCmdUI *pCmdUI);		// // //
 };
 
 extern CFamiTrackerApp theApp;

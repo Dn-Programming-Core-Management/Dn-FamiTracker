@@ -120,7 +120,12 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Configuration...",           ID_FILE_GENERALSETTINGS
         MENUITEM SEPARATOR
-        MENUITEM "&Recent File",                ID_FILE_MRU_FILE1
+        POPUP "&Recent Files"
+        BEGIN
+            MENUITEM "&Clear",                      ID_RECENTFILES_CLEAR
+            MENUITEM SEPARATOR
+            MENUITEM "(File)",                      ID_FILE_MRU_FILE1
+        END
         MENUITEM SEPARATOR
         MENUITEM "E&xit\tAlt+F4",               ID_APP_EXIT
     END
@@ -2599,6 +2604,7 @@ BEGIN
     ID_TRACKER_TOGGLECHIP   "Mute / unmute selected sound chip\nToggle Chip"
     ID_TRACKER_SOLOCHIP     "Mute / unmute all but the selected sound chip\nSolo Chip"
     ID_MODULE_LINEARPITCH   "Enable linear pitch bends\nLinear Pitch Mode"
+    ID_RECENTFILES_CLEAR    "Clear the recent file list\nClear Recent File List"
 END
 
 #endif    // English (United States) resources

@@ -61,6 +61,8 @@ BEGIN_MESSAGE_MAP(CFamiTrackerApp, CWinApp)
 #ifdef EXPORT_TEST
 	ON_COMMAND(ID_MODULE_TEST_EXPORT, OnTestExport)
 #endif
+	ON_COMMAND(ID_RECENTFILES_CLEAR, OnRecentFilesClear)		// // //
+	ON_UPDATE_COMMAND_UI(ID_FILE_MRU_FILE1, OnUpdateRecentFilesClear)		// // //
 END_MESSAGE_MAP()
 
 // Include this for windows xp style in visual studio 2005 or later
@@ -125,7 +127,7 @@ BOOL CFamiTrackerApp::InitInstance()
 	// TODO: You should modify this string to be something appropriate
 	// such as the name of your company or organization
 	SetRegistryKey(_T(""));
-	LoadStdProfileSettings(8);  // Load standard INI file options (including MRU)
+	LoadStdProfileSettings(MAX_RECENT_FILES);  // Load standard INI file options (including MRU)
 
 	// Load program settings
 	m_pSettings = CSettings::GetObject();
@@ -432,6 +434,26 @@ void CFamiTrackerApp::LoadLocalization()
 	}
 }
 #endif
+
+void CFamiTrackerApp::OnRecentFilesClear()		// // //
+{
+	for (int i = m_pRecentFileList->GetSize() - 1; i >= 0; --i)
+		m_pRecentFileList->Remove(i);
+	m_pRecentFileList->m_nSize = 0;
+	m_pRecentFileList->WriteList();
+	SAFE_RELEASE(m_pRecentFileList);
+}
+
+void CFamiTrackerApp::OnUpdateRecentFilesClear(CCmdUI *pCmdUI)		// // //
+{
+	if (m_pRecentFileList == nullptr) {
+		m_pRecentFileList = new CRecentFileList(0, _T("Recent File List"), _T("File%d"), MAX_RECENT_FILES);
+		for (int i = 0; i < MAX_RECENT_FILES; ++i)
+			pCmdUI->m_pMenu->RemoveMenu(ID_FILE_MRU_FILE1 + i, MF_BYCOMMAND);
+		pCmdUI->m_pMenu->AppendMenu(MF_STRING, ID_FILE_MRU_FILE1, _T("(File)"));
+	}
+	m_pRecentFileList->UpdateMenu(pCmdUI);
+}
 
 void CFamiTrackerApp::ShutDownSynth()
 {
