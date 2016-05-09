@@ -184,6 +184,7 @@ public:
 
 	int GetSelectionSize() const;		// // //
 	sel_condition_t GetSelectionCondition() const;		// // //
+	sel_condition_t GetSelectionCondition(const CSelection &Sel) const;		// // //
 
 	void DragPaste(const CPatternClipData *pClipData, const CSelection *pDragTarget, bool bMix);
 

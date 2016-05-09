@@ -3592,22 +3592,28 @@ int CPatternEditor::GetSelectionSize() const		// // //
 
 sel_condition_t CPatternEditor::GetSelectionCondition() const		// // //
 {
+	if (!m_bSelecting)
+		return SEL_CLEAN;
+	return GetSelectionCondition(m_selection);
+}
+
+sel_condition_t CPatternEditor::GetSelectionCondition(const CSelection &Sel) const
+{
 	const int Track = GetSelectedTrack();
 	const int Frames = GetFrameCount();
 	unsigned char Lo[MAX_PATTERN], Hi[MAX_PATTERN];
 
 	if (!theApp.GetSettings()->General.bShowSkippedRows) {
-		CPatternIterator it = GetStartIterator();
-		const CPatternIterator End = GetEndIterator();
+		auto it = Sel.GetIterators(this, GetSelectedTrack());
 		stChanNote Note;
-		for (; it <= End; it++) {
+		for (; it.first <= it.second; ++it.first) {
 			// bool HasSkip = false;
 			for (int i = 0; i < GetChannelCount(); i++) {
-				it.Get(i, &Note);
+				it.first.Get(i, &Note);
 				for (unsigned int c = 0; c <= m_pDocument->GetEffColumns(Track, i); c++) switch (Note.EffNumber[c]) {
 				case EF_JUMP: case EF_SKIP: case EF_HALT:
-					if (m_selection.IsColumnSelected(static_cast<column_t>(COLUMN_EFF1 + c), i))
-						return (it == End) ? SEL_TERMINAL_SKIP : SEL_NONTERMINAL_SKIP;
+					if (Sel.IsColumnSelected(static_cast<column_t>(COLUMN_EFF1 + c), i))
+						return it.first == it.second ? SEL_TERMINAL_SKIP : SEL_NONTERMINAL_SKIP;
 					/*else if (it != End)
 						HasSkip = true;*/
 				}
@@ -3617,14 +3623,14 @@ sel_condition_t CPatternEditor::GetSelectionCondition() const		// // //
 		}
 	}
 
-	for (int c = m_selection.GetChanStart(); c <= m_selection.GetChanEnd(); c++) {
+	for (int c = Sel.GetChanStart(); c <= Sel.GetChanEnd(); c++) {
 		memset(Lo, 255, MAX_PATTERN);
 		memset(Hi, 0, MAX_PATTERN);
 
-		for (int i = m_selection.GetFrameStart(); i <= m_selection.GetFrameEnd(); i++) {
+		for (int i = Sel.GetFrameStart(); i <= Sel.GetFrameEnd(); i++) {
 			int Pattern = m_pDocument->GetPatternAtFrame(Track, (i + Frames) % Frames, c);
-			int RBegin = (i == m_selection.GetFrameStart()) ? m_selection.GetRowStart() : 0;
-			int REnd = (i == m_selection.GetFrameEnd()) ? m_selection.GetRowEnd() : GetCurrentPatternLength(i) - 1;
+			int RBegin = i == Sel.GetFrameStart() ? Sel.GetRowStart() : 0;
+			int REnd = i == Sel.GetFrameEnd() ? Sel.GetRowEnd() : GetCurrentPatternLength(i) - 1;
 			if (Lo[Pattern] <= Hi[Pattern] && RBegin <= Hi[Pattern] && REnd >= Lo[Pattern])
 				return SEL_REPEATED_ROW;
 			Lo[Pattern] = std::min(Lo[Pattern], static_cast<unsigned char>(RBegin));

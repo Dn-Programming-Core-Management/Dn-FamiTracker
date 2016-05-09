@@ -130,13 +130,13 @@ private:
 	void RestoreSelection(CPatternEditor *pPatternEditor) const;
 
 	void StretchPattern(CFamiTrackerDoc *pDoc) const;		// // //
-	void Interpolate(CFamiTrackerDoc *pDoc) const;
 	void Reverse(CFamiTrackerDoc *pDoc) const;
 
 	virtual void UpdateView(CFamiTrackerDoc *pDoc) const;		// // //
 
 protected:
 	void DeleteSelection(CMainFrame *pMainFrm, const CSelection &Sel) const;		// // //
+	bool ValidateSelection(const CMainFrame *pMainFrm) const;		// // //
 
 protected:
 	CPatternIterator GetStartIterator() const;		// // //
@@ -158,7 +158,6 @@ private:
 	
 	bool m_bSelecting;
 	CSelection m_selection, m_newSelection;		// // //
-	int m_iSelectionSize;		// // //
 
 	bool m_bDragDelete;
 	bool m_bDragMix;
@@ -269,19 +268,6 @@ private:
 	CPatternClipData *m_pUndoClipData;
 };
 
-class CPActionReplaceInst : public CPatternAction
-{
-public:
-	CPActionReplaceInst(unsigned Index);
-private:
-	bool SaveState(const CMainFrame *pMainFrm);
-	void Undo(CMainFrame *pMainFrm) const;
-	void Redo(CMainFrame *pMainFrm) const;
-private:
-	unsigned m_iInstrumentIndex;
-	CPatternClipData *m_pUndoClipData;
-};
-
 class CPActionTranspose : public CPatternAction
 {
 public:
@@ -305,6 +291,32 @@ private:
 	void Redo(CMainFrame *pMainFrm) const;
 private:
 	int m_iAmount;
+	CPatternClipData *m_pUndoClipData;
+};
+
+class CPActionInterpolate : public CPatternAction
+{
+public:
+	CPActionInterpolate();
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+private:
+	int m_iSelectionSize;
+	CPatternClipData *m_pUndoClipData;
+};
+
+class CPActionReplaceInst : public CPatternAction
+{
+public:
+	CPActionReplaceInst(unsigned Index);
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+private:
+	unsigned m_iInstrumentIndex;
 	CPatternClipData *m_pUndoClipData;
 };
 

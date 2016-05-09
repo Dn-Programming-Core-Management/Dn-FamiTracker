@@ -3531,7 +3531,7 @@ void CFamiTrackerView::SetStepping(int Step)
 void CFamiTrackerView::OnEditInterpolate()
 {
 	if (!m_bEditEnable) return;		// // //
-	AddAction(new CPatternAction(CPatternAction::ACT_INTERPOLATE));
+	AddAction(new CPActionInterpolate { });
 }
 
 void CFamiTrackerView::OnEditReverse()
