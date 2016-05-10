@@ -48,6 +48,7 @@ const CString CConfigGeneral::CONFIG_STR[] = {		// // //
 	_T("Show skipped rows"),
 	_T("Hexadecimal keypad"),
 	_T("Multi-frame selection"),
+	_T("Check version on startup"),
 };
 
 const CString CConfigGeneral::CONFIG_DESC[] = {		// // //
@@ -73,6 +74,7 @@ const CString CConfigGeneral::CONFIG_DESC[] = {		// // //
 	_T("Display rows that are truncated by Bxx, Cxx, or Dxx effects."),
 	_T("Use the extra keys on the keypad as hexadecimal digits in the pattern editor."),
 	_T("Allow pattern selections to span across multiple frames."),
+	_T("Check for new 0CC-FamiTracker versions released at Github on startup."),
 };
 
 // CConfigGeneral dialog
@@ -128,6 +130,9 @@ BOOL CConfigGeneral::OnApply()
 	else if (m_iPageStepSize > 256 /*MAX_PATTERN_LENGTH*/)
 		m_iPageStepSize = 256 /*MAX_PATTERN_LENGTH*/;
 
+	if (m_bCheckVersion && !theApp.GetSettings()->General.bCheckVersion)		// // //
+		theApp.CheckNewVersion(false);
+
 	theApp.GetSettings()->General.bWrapCursor		= m_bWrapCursor;
 	theApp.GetSettings()->General.bWrapFrames		= m_bWrapFrames;
 	theApp.GetSettings()->General.bFreeCursorEdit	= m_bFreeCursorEdit;
@@ -153,6 +158,7 @@ BOOL CConfigGeneral::OnApply()
 	theApp.GetSettings()->General.bShowSkippedRows	= m_bShowSkippedRows;
 	theApp.GetSettings()->General.bHexKeypad		= m_bHexKeypad;
 	theApp.GetSettings()->General.bMultiFrameSel	= m_bMultiFrameSel;
+	theApp.GetSettings()->General.bCheckVersion		= m_bCheckVersion;
 
 	theApp.GetSettings()->Keys.iKeyNoteCut			= m_iKeyNoteCut;
 	theApp.GetSettings()->Keys.iKeyNoteRelease		= m_iKeyNoteRelease;
@@ -194,6 +200,7 @@ BOOL CConfigGeneral::OnInitDialog()
 	m_bShowSkippedRows	= theApp.GetSettings()->General.bShowSkippedRows;
 	m_bHexKeypad		= theApp.GetSettings()->General.bHexKeypad;
 	m_bMultiFrameSel	= theApp.GetSettings()->General.bMultiFrameSel;
+	m_bCheckVersion		= theApp.GetSettings()->General.bCheckVersion;
 
 	m_iKeyNoteCut		= theApp.GetSettings()->Keys.iKeyNoteCut; 
 	m_iKeyNoteRelease	= theApp.GetSettings()->Keys.iKeyNoteRelease; 
@@ -251,6 +258,7 @@ BOOL CConfigGeneral::OnInitDialog()
 		m_bShowSkippedRows,
 		m_bHexKeypad,
 		m_bMultiFrameSel,
+		m_bCheckVersion,
 	};
 
 	CListCtrl *pList = static_cast<CListCtrl*>(GetDlgItem(IDC_CONFIG_LIST));
@@ -314,6 +322,7 @@ void CConfigGeneral::OnLvnItemchangedConfigList(NMHDR *pNMHDR, LRESULT *pResult)
 		&m_bShowSkippedRows,
 		&m_bHexKeypad,
 		&m_bMultiFrameSel,
+		&m_bCheckVersion,
 	};
 	
 	if (pNMLV->uChanged & LVIF_STATE) {

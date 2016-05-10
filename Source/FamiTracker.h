@@ -110,6 +110,7 @@ public:
 	// Public functions
 	//
 public:
+	void			CheckNewVersion(bool StartUp) const;		// // //
 	void			LoadSoundConfig();
 	void			UpdateMenuShortcuts();		// // //
 	void			ReloadColorScheme();
@@ -153,7 +154,6 @@ private:
 	bool CheckSingleInstance(CFTCommandLineInfo &cmdInfo);
 	void RegisterSingleInstance();
 	void UnregisterSingleInstance();
-	void CheckNewVersion();
 	void LoadLocalization();
 
 	// Private variables and objects

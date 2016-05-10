@@ -19,6 +19,7 @@
 */
 
 #include "json.hpp"		// // //
+#include <thread>		// // //
 #include "stdafx.h"
 #include "Exception.h"
 #include "FamiTracker.h"
@@ -36,11 +37,9 @@
 #include "CommandLineExport.h"
 #include "VersionHelpers.h"		// // //
 
-#define UPDATE_CHECK
-#ifdef UPDATE_CHECK
-#include "WinInet.h"
+#include "WinInet.h"		// // //
 #pragma comment(lib, "wininet.lib")
-#endif
+
 #ifdef EXPORT_TEST
 #include "ExportTest/ExportTest.h"
 #endif /* EXPORT_TEST */
@@ -61,9 +60,6 @@ BEGIN_MESSAGE_MAP(CFamiTrackerApp, CWinApp)
 	// Standard file based document commands
 	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
 	ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
-#ifdef UPDATE_CHECK
-	ON_COMMAND(ID_HELP_CHECKFORNEWVERSIONS, CheckNewVersion)
-#endif
 #ifdef EXPORT_TEST
 	ON_COMMAND(ID_MODULE_TEST_EXPORT, OnTestExport)
 #endif
@@ -290,9 +286,8 @@ BOOL CFamiTrackerApp::InitInstance()
 	m_pMainWnd->GetMenu()->GetSubMenu(4)->RemoveMenu(ID_MODULE_CHANNELS, MF_BYCOMMAND);		// // //
 #endif
 
-#ifdef UPDATE_CHECK
-	CheckNewVersion();
-#endif
+	if (m_pSettings->General.bCheckVersion)		// // //
+		CheckNewVersion(true);
 
 	// Initialization is done
 	TRACE0("App: InitInstance done\n");
@@ -548,64 +543,81 @@ void CFamiTrackerApp::UnregisterSingleInstance()
 	SAFE_RELEASE(m_pInstanceMutex);
 }
 
-#ifdef UPDATE_CHECK
-void CFamiTrackerApp::CheckNewVersion()		// // //
+void CFamiTrackerApp::CheckNewVersion(bool StartUp) const		// // //
 {
 	static PCTSTR rgpszAcceptTypes[] = {_T("application/json"), NULL};
 
-	HINTERNET hOpen, hConnect, hRequest;
-	CString jsonStr;
+	const auto CheckFunc = [&] (bool Start) {
+		HINTERNET hOpen, hConnect, hRequest;
+		CString jsonStr;
 
-	if ((hOpen = InternetOpen(_T("0CC_FamiTracker"), INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0)) &&
-		(hConnect = InternetConnect(hOpen, _T("api.github.com"),
-		INTERNET_DEFAULT_HTTPS_PORT, _T(""), _T(""), INTERNET_SERVICE_HTTP, 0, 0)) &&
-		(hRequest = HttpOpenRequest(hConnect, _T("GET"), _T("/repos/HertzDevil/0CC-FamiTracker/releases"),
-		_T("HTTP/1.0"), NULL, rgpszAcceptTypes,
-		INTERNET_FLAG_RELOAD | INTERNET_FLAG_SECURE | INTERNET_FLAG_NO_CACHE_WRITE, NULL))) try {
-		HttpAddRequestHeaders(hRequest, _T("Content-Type: application/json\r\n"), -1, HTTP_ADDREQ_FLAG_ADD);
+		if ((hOpen = InternetOpen(_T("0CC_FamiTracker"), INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0)) &&
+			(hConnect = InternetConnect(hOpen, _T("api.github.com"),
+			INTERNET_DEFAULT_HTTPS_PORT, _T(""), _T(""), INTERNET_SERVICE_HTTP, 0, 0)) &&
+			(hRequest = HttpOpenRequest(hConnect, _T("GET"), _T("/repos/HertzDevil/0CC-FamiTracker/releases"),
+			_T("HTTP/1.0"), NULL, rgpszAcceptTypes,
+			INTERNET_FLAG_RELOAD | INTERNET_FLAG_SECURE | INTERNET_FLAG_NO_CACHE_WRITE, NULL))) try {
+			HttpAddRequestHeaders(hRequest, _T("Content-Type: application/json\r\n"), -1, HTTP_ADDREQ_FLAG_ADD);
 
-		if (!HttpSendRequest(hRequest, NULL, 0, NULL, 0)) throw GetLastError();
-		while (true) {
-			DWORD Size;
-			if (!InternetQueryDataAvailable(hRequest, &Size, 0, 0)) throw GetLastError();
-			if (!Size) break;
-			char *Buf = new char[Size + 1]();
-			DWORD Received = 0;
-			for (DWORD i = 0; i < Size; i += 1024) {
-				DWORD Length = (Size - i < 1024) ? Size % 1024 : 1024;
-				if (!InternetReadFile(hRequest, Buf + i, Length, &Received))
-					throw GetLastError();
+			if (!HttpSendRequest(hRequest, NULL, 0, NULL, 0)) throw GetLastError();
+			while (true) {
+				DWORD Size;
+				if (!InternetQueryDataAvailable(hRequest, &Size, 0, 0)) throw GetLastError();
+				if (!Size) break;
+				char *Buf = new char[Size + 1]();
+				DWORD Received = 0;
+				for (DWORD i = 0; i < Size; i += 1024) {
+					DWORD Length = (Size - i < 1024) ? Size % 1024 : 1024;
+					if (!InternetReadFile(hRequest, Buf + i, Length, &Received))
+						throw GetLastError();
+				}
+				jsonStr += Buf;
+				SAFE_RELEASE_ARRAY(Buf);
 			}
-			jsonStr += Buf;
-			SAFE_RELEASE_ARRAY(Buf);
+			nlohmann::json j = nlohmann::json::parse(jsonStr.GetBuffer());
+			for (const auto &i : j) {
+				int Ver[4] = { };
+				sscanf_s(i["tag_name"].get<std::string>().c_str(),
+						 "v%u.%u.%u%*1[.r]%u", Ver, Ver + 1, Ver + 2, Ver + 3);
+				if (Ver[0] > VERSION_API || Ver[0] == VERSION_API &&
+					(Ver[1] > VERSION_MAJ || Ver[1] == VERSION_MAJ &&
+					(Ver[2] > VERSION_MIN || Ver[2] == VERSION_MIN &&
+					Ver[3] > VERSION_REV))) {
+					int Y = 1970, M = 1, D = 1;
+					sscanf_s(i["published_at"].get<std::string>().c_str(), "%d-%d-%d", &Y, &M, &D);
+					CString msg;
+					static const CString MONTHS[] = {
+						_T("Jan"), _T("Feb"), _T("Mar"), _T("Apr"), _T("May"), _T("Jun"),
+						_T("Jul"), _T("Aug"), _T("Sept"), _T("Oct"), _T("Nov"), _T("Dec"),
+					};
+					msg.Format(_T("A new version of 0CC-FamiTracker is now available:\n"
+							   "Version %d.%d.%d.%d (released %s %d, %d)\n"
+							   "Pressing \"Yes\" will launch the Github web page for this release."),
+							   Ver[0], Ver[1], Ver[2], Ver[3], MONTHS[--M], D, Y);
+					if (Start)
+						msg.Append(_T(" (Version checking on startup may be disabled in the configuration menu.)"));
+					if (AfxMessageBox(msg, MB_YESNO) == IDYES) {
+						CString url;
+						url.Format(_T("https://github.com/HertzDevil/0CC-FamiTracker/releases/tag/v%d.%d.%d.%d"),
+								   Ver[0], Ver[1], Ver[2], Ver[3]);
+						ShellExecute(NULL, _T("open"), url, NULL, NULL, SW_SHOWNORMAL);
+					}
+					break;
+				}
+			}
 		}
-		nlohmann::json j = nlohmann::json::parse(jsonStr.GetBuffer());
-		CString testOutput;
-		for (const auto &i : j) {
-			int Ver[4] = { };
-			int Y = 1970, M = 1, D = 1;
-			sscanf_s(i["tag_name"].get<std::string>().c_str(),
-					 "v%u.%u.%u%*1[.r]%u", Ver, Ver + 1, Ver + 2, Ver + 3);
-			sscanf_s(i["published_at"].get<std::string>().c_str(),
-					 "%d-%d-%d", &Y, &M, &D);
-			testOutput.AppendFormat(_T("%d %d %d %d\n"), Ver[0], Ver[1], Ver[2], Ver[3]);
+		catch (DWORD &) {
+			AfxMessageBox(_T("Unable to get version information from the source repository."));
+		}
 
-			testOutput.AppendFormat(_T("%s %s %s\n"),
-									i["tag_name"].get<std::string>().c_str(),
-									i["name"].get<std::string>().c_str(),
-									i["published_at"].get<std::string>().c_str());
-		}
-		AfxMessageBox(testOutput);
-	}
-	catch (DWORD &) {
-		AfxMessageBox(_T("Unable to get version information from the source repository."));
-	}
-	
-	if (hRequest) InternetCloseHandle(hRequest);
-	if (hConnect) InternetCloseHandle(hConnect);
-	if (hOpen) InternetCloseHandle(hOpen);
+		if (hRequest) InternetCloseHandle(hRequest);
+		if (hConnect) InternetCloseHandle(hConnect);
+		if (hOpen) InternetCloseHandle(hOpen);
+	};
+
+	std::thread t {CheckFunc, StartUp};
+	t.detach();
 }
-#endif
 
 bool CFamiTrackerApp::CheckSingleInstance(CFTCommandLineInfo &cmdInfo)
 {	

@@ -125,6 +125,7 @@ public:
 		bool	bShowSkippedRows;
 		bool	bHexKeypad;
 		bool	bMultiFrameSel;
+		bool	bCheckVersion;		// // //
 	} General;
 
 	struct {

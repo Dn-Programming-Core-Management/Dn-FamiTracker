@@ -22,7 +22,7 @@
 
 #pragma once
 
-#define SETTINGS_BOOL_COUNT 22		// // //
+#define SETTINGS_BOOL_COUNT 23		// // //
 
 // CConfigGeneral dialog
 
@@ -62,6 +62,7 @@ protected:
 	bool	m_bShowSkippedRows;
 	bool	m_bHexKeypad;
 	bool	m_bMultiFrameSel;
+	bool	m_bCheckVersion;
 
 	int		m_iEditStyle;
 	int		m_iPageStepSize;
