@@ -18,6 +18,7 @@
 ** must bear this legend.
 */
 
+#include "json.hpp"		// // //
 #include "stdafx.h"
 #include "Exception.h"
 #include "FamiTracker.h"
@@ -35,6 +36,11 @@
 #include "CommandLineExport.h"
 #include "VersionHelpers.h"		// // //
 
+#define UPDATE_CHECK
+#ifdef UPDATE_CHECK
+#include "WinInet.h"
+#pragma comment(lib, "wininet.lib")
+#endif
 #ifdef EXPORT_TEST
 #include "ExportTest/ExportTest.h"
 #endif /* EXPORT_TEST */
@@ -282,6 +288,10 @@ BOOL CFamiTrackerApp::InitInstance()
 
 #ifndef _DEBUG
 	m_pMainWnd->GetMenu()->GetSubMenu(4)->RemoveMenu(ID_MODULE_CHANNELS, MF_BYCOMMAND);		// // //
+#endif
+
+#ifdef UPDATE_CHECK
+	CheckNewVersion();
 #endif
 
 	// Initialization is done
@@ -537,6 +547,65 @@ void CFamiTrackerApp::UnregisterSingleInstance()
 
 	SAFE_RELEASE(m_pInstanceMutex);
 }
+
+#ifdef UPDATE_CHECK
+void CFamiTrackerApp::CheckNewVersion()		// // //
+{
+	static PCTSTR rgpszAcceptTypes[] = {_T("application/json"), NULL};
+
+	HINTERNET hOpen, hConnect, hRequest;
+	CString jsonStr;
+
+	if ((hOpen = InternetOpen(_T("0CC_FamiTracker"), INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0)) &&
+		(hConnect = InternetConnect(hOpen, _T("api.github.com"),
+		INTERNET_DEFAULT_HTTPS_PORT, _T(""), _T(""), INTERNET_SERVICE_HTTP, 0, 0)) &&
+		(hRequest = HttpOpenRequest(hConnect, _T("GET"), _T("/repos/HertzDevil/0CC-FamiTracker/releases"),
+		_T("HTTP/1.0"), NULL, rgpszAcceptTypes,
+		INTERNET_FLAG_RELOAD | INTERNET_FLAG_SECURE | INTERNET_FLAG_NO_CACHE_WRITE, NULL))) try {
+		HttpAddRequestHeaders(hRequest, _T("Content-Type: application/json\r\n"), -1, HTTP_ADDREQ_FLAG_ADD);
+
+		if (!HttpSendRequest(hRequest, NULL, 0, NULL, 0)) throw GetLastError();
+		while (true) {
+			DWORD Size;
+			if (!InternetQueryDataAvailable(hRequest, &Size, 0, 0)) throw GetLastError();
+			if (!Size) break;
+			char *Buf = new char[Size + 1]();
+			DWORD Received = 0;
+			for (DWORD i = 0; i < Size; i += 1024) {
+				DWORD Length = (Size - i < 1024) ? Size % 1024 : 1024;
+				if (!InternetReadFile(hRequest, Buf + i, Length, &Received))
+					throw GetLastError();
+			}
+			jsonStr += Buf;
+			SAFE_RELEASE_ARRAY(Buf);
+		}
+		nlohmann::json j = nlohmann::json::parse(jsonStr.GetBuffer());
+		CString testOutput;
+		for (const auto &i : j) {
+			int Ver[4] = { };
+			int Y = 1970, M = 1, D = 1;
+			sscanf_s(i["tag_name"].get<std::string>().c_str(),
+					 "v%u.%u.%u%*1[.r]%u", Ver, Ver + 1, Ver + 2, Ver + 3);
+			sscanf_s(i["published_at"].get<std::string>().c_str(),
+					 "%d-%d-%d", &Y, &M, &D);
+			testOutput.AppendFormat(_T("%d %d %d %d\n"), Ver[0], Ver[1], Ver[2], Ver[3]);
+
+			testOutput.AppendFormat(_T("%s %s %s\n"),
+									i["tag_name"].get<std::string>().c_str(),
+									i["name"].get<std::string>().c_str(),
+									i["published_at"].get<std::string>().c_str());
+		}
+		AfxMessageBox(testOutput);
+	}
+	catch (DWORD &) {
+		AfxMessageBox(_T("Unable to get version information from the source repository."));
+	}
+	
+	if (hRequest) InternetCloseHandle(hRequest);
+	if (hConnect) InternetCloseHandle(hConnect);
+	if (hOpen) InternetCloseHandle(hOpen);
+}
+#endif
 
 bool CFamiTrackerApp::CheckSingleInstance(CFTCommandLineInfo &cmdInfo)
 {	
