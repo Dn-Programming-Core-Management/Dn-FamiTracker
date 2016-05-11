@@ -41,6 +41,7 @@ enum ft_block_t {
 	BLK_DETUNETABLES,
 	BLK_GROOVES,
 	BLK_BOOKMARKS,
+	BLK_PARAMS_EXTRA,
 	BLK_COUNT
 };
 
@@ -70,16 +71,23 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-public:
+	void UpdateInfo();
 
 protected:
 	static const CString VERSION_TEXT[];
 	static const effect_t MAX_EFFECT_INDEX[];
 	static const stVerInfo VERSION_INFO[VERSION_INFO_COUNT];
 
+	int m_iModuleErrorLevel;
+
 	CComboBox *m_cComboVersion;
+	CSliderCtrl *m_cSliderErrorLevel;
 
 	DECLARE_MESSAGE_MAP()
 public:
 	virtual BOOL OnInitDialog();
+	virtual BOOL OnApply();
+	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnNMCustomdrawSliderVersionErrorlevel(NMHDR *pNMHDR, LRESULT *pResult);
 };

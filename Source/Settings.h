@@ -31,6 +31,13 @@ enum EDIT_STYLES {		// // // renamed
 	EDIT_STYLE_IT = 2		// IT
 };
 
+enum module_error_level_t {		// // //
+	MODULE_ERROR_NONE,		/*!< Perform no error checking at all (warning) */
+	MODULE_ERROR_RELAXED,	/*!< Skip error checking for some value ranges */
+	MODULE_ERROR_OFFICIAL,	/*!< Perform error checking according to the official build */
+	MODULE_ERROR_STRICT		/*!< Full error checking for validating modules */
+};
+
 enum WIN_STATES {
 	STATE_NORMAL,
 	STATE_MAXIMIZED
@@ -127,6 +134,10 @@ public:
 		bool	bMultiFrameSel;
 		bool	bCheckVersion;		// // //
 	} General;
+
+	struct {
+		int		iErrorLevel;
+	} Version;		// // //
 
 	struct {
 		int		iDevice;

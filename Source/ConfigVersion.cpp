@@ -24,7 +24,7 @@
 #include "FamiTracker.h"
 #include "ConfigVersion.h"
 #include "FamiTrackerTypes.h"
-
+#include "Settings.h"
 
 const CString CConfigVersion::VERSION_TEXT[] = {
 	_T("FamiTracker 0.2.2"),
@@ -52,7 +52,8 @@ const CString CConfigVersion::VERSION_TEXT[] = {
 	_T("0CC-FamiTracker 0.3.9"),
 	_T("0CC-FamiTracker 0.3.10"),
 	_T("0CC-FamiTracker 0.3.11"),				// BOOKMARKS
-	_T("Current version"),
+	_T("0CC-FamiTracker 0.3.12 - 0.3.14.0"),
+	_T("Current version"),						// PARAMS_EXTRA
 };
 
 const effect_t CConfigVersion::MAX_EFFECT_INDEX[] = {
@@ -82,6 +83,7 @@ const effect_t CConfigVersion::MAX_EFFECT_INDEX[] = {
 	EF_FDS_VOLUME,			// 0CC 0.3.10
 	EF_FDS_VOLUME,
 	EF_FDS_MOD_BIAS,		// 0CC 0.3.12
+	EF_FDS_MOD_BIAS,
 };
 
 const stVerInfo CConfigVersion::VERSION_INFO[] = {
@@ -96,6 +98,16 @@ const stVerInfo CConfigVersion::VERSION_INFO[] = {
 	{_T("FamiTracker 0.3.5"),                 EF_RETRIGGER,     0x0420, 0, {3, 1, 2, 2, 5, 3, 3, 1, 5}},
 };
 
+const CString MODULE_ERROR_DESC[] = {
+	_T("None: Perform no validation at all while loading modules. "
+	   "The tracker might crash or enter an inconsistent state."),
+	_T("Relaxed: Perform fewer bounds checking than the official build. "
+	   "The tracker might not behave properly for invalid modules."),
+	_T("Official: Perform the usual validation according to the most recent official stable build."),
+	_T("Strict: Fully validate all loaded modules. "
+	   "Invalid modules openable in the official build might be rejected."),
+};
+
 // CConfigVersion dialog
 
 IMPLEMENT_DYNAMIC(CConfigVersion, CPropertyPage)
@@ -106,6 +118,8 @@ CConfigVersion::CConfigVersion()
 
 CConfigVersion::~CConfigVersion()
 {
+	SAFE_RELEASE(m_cComboVersion);
+	SAFE_RELEASE(m_cSliderErrorLevel);
 }
 
 void CConfigVersion::DoDataExchange(CDataExchange* pDX)
@@ -113,8 +127,15 @@ void CConfigVersion::DoDataExchange(CDataExchange* pDX)
 	CPropertyPage::DoDataExchange(pDX);
 }
 
+void CConfigVersion::UpdateInfo()
+{
+	GetDlgItem(IDC_STATIC_VERSION_ERROR)->SetWindowText(MODULE_ERROR_DESC[m_iModuleErrorLevel]);
+}
 
 BEGIN_MESSAGE_MAP(CConfigVersion, CPropertyPage)
+	ON_WM_VSCROLL()
+	ON_WM_HSCROLL()
+	ON_NOTIFY(NM_CUSTOMDRAW, IDC_SLIDER_VERSION_ERRORLEVEL, OnNMCustomdrawSliderVersionErrorlevel)
 END_MESSAGE_MAP()
 
 
@@ -124,6 +145,15 @@ BOOL CConfigVersion::OnInitDialog()
 {
 	CPropertyPage::OnInitDialog();
 
+#ifndef _DEBUG
+	GetDlgItem(IDC_COMBO_VERSION_SELECT)->EnableWindow(FALSE);
+	GetDlgItem(IDC_CHECK_VERSION_LOAD)->EnableWindow(FALSE);
+	GetDlgItem(IDC_CHECK_VERSION_EDIT)->EnableWindow(FALSE);
+	GetDlgItem(IDC_CHECK_VERSION_SAVE)->EnableWindow(FALSE);
+#endif
+
+	m_iModuleErrorLevel = theApp.GetSettings()->Version.iErrorLevel;
+
 	m_cComboVersion = new CComboBox();
 	m_cComboVersion->SubclassDlgItem(IDC_COMBO_VERSION_SELECT, this);
 
@@ -131,6 +161,49 @@ BOOL CConfigVersion::OnInitDialog()
 		m_cComboVersion->AddString(VERSION_TEXT[i]);
 	m_cComboVersion->SetCurSel(m_cComboVersion->GetCount() - 1); // TODO: add to registry
 
+	m_cSliderErrorLevel = new CSliderCtrl();
+	m_cSliderErrorLevel->SubclassDlgItem(IDC_SLIDER_VERSION_ERRORLEVEL, this);
+	m_cSliderErrorLevel->SetRange(MODULE_ERROR_NONE, MODULE_ERROR_STRICT);
+	m_cSliderErrorLevel->SetPos(MODULE_ERROR_STRICT - m_iModuleErrorLevel);
+
+	UpdateInfo();
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE
+}
+
+BOOL CConfigVersion::OnApply()
+{
+#ifndef _DEBUG
+	if (m_iModuleErrorLevel == MODULE_ERROR_NONE) {
+		AfxMessageBox(IDS_MODULE_ERROR_NONE, MB_ICONERROR);
+		return false;
+	}
+#endif
+	theApp.GetSettings()->Version.iErrorLevel = m_iModuleErrorLevel;
+
+	return CPropertyPage::OnApply();
+}
+
+void CConfigVersion::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar *pScrollBar)
+{
+	UpdateInfo();
+	CPropertyPage::OnVScroll(nSBCode, nPos, pScrollBar);
+}
+
+void CConfigVersion::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar *pScrollBar)
+{
+	UpdateInfo();
+	CPropertyPage::OnHScroll(nSBCode, nPos, pScrollBar);
+}
+
+void CConfigVersion::OnNMCustomdrawSliderVersionErrorlevel(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	int NewLevel = MODULE_ERROR_STRICT - m_cSliderErrorLevel->GetPos();
+	if (m_iModuleErrorLevel != NewLevel) {
+		m_iModuleErrorLevel = NewLevel;
+		SetModified();
+	}
+	
+	*pResult = 0;
 }

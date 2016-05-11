@@ -1851,9 +1851,7 @@ void CMainFrame::OnFileGeneralsettings()
 	TabMixer.m_psp.dwFlags		&= ~PSP_HASHELP;
 	
 	ConfigWindow.AddPage(&TabGeneral);
-#ifdef _DEBUG
 	ConfigWindow.AddPage(&TabVersion);
-#endif
 	ConfigWindow.AddPage(&TabAppearance);
 	ConfigWindow.AddPage(&TabMIDI);
 	ConfigWindow.AddPage(&TabSound);

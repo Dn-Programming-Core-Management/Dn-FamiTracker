@@ -1816,17 +1816,19 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Version"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    COMBOBOX        IDC_COMBO_VERSION_SELECT,13,20,253,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "FamiTracker Version",IDC_STATIC,7,7,266,35
-    CONTROL         "Enforce FTM version compatibility while loading",IDC_CHECK_VERSION_LOAD,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,106,165,10
-    CONTROL         "Disable unsupported features while editing",IDC_CHECK_VERSION_EDIT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,128,152,10
+    COMBOBOX        IDC_COMBO_VERSION_SELECT,13,20,253,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Compatibility Settings",IDC_STATIC,7,46,148,50
+    CONTROL         "Disallow future features while loading",IDC_CHECK_VERSION_LOAD,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,58,135,10
+    CONTROL         "Disable future features in tracker",IDC_CHECK_VERSION_EDIT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,69,122,10
     CONTROL         "Save in target FTM format version",IDC_CHECK_VERSION_SAVE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,139,125,10
-    CONTROL         "Disallow unknown file blocks",IDC_CHECK_VERSION_BLOCK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,117,105,10
-    GROUPBOX        "Compatibility Settings",IDC_STATIC,7,92,266,68
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,80,125,10
+    GROUPBOX        "Module Error Level",IDC_STATIC,7,100,148,60
+    CONTROL         "",IDC_SLIDER_VERSION_ERRORLEVEL,"msctls_trackbar32",TBS_AUTOTICKS | TBS_VERT | TBS_BOTH | WS_TABSTOP,12,108,26,48
+    LTEXT           "Description",IDC_STATIC_VERSION_ERROR,45,112,98,41
+    LTEXT           "Technical information about the current version setting goes here.",IDC_STATIC,183,88,72,42
 END
 
 IDD_TRANSPOSE DIALOGEX 0, 0, 217, 226
@@ -2088,6 +2090,11 @@ BEGIN
     0
 END
 
+IDD_INSTRUMENT_VRC7 AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2298,6 +2305,7 @@ BEGIN
     IDS_TYPE_INST_NUM       "Instrument number: %1"
     IDS_INVALID_INST_NUM    "Invalid instrument number!"
     IDS_EXPORT_SAMPLES_FILE """%1"" already exists in the same directory as the music data file. Are you sure you want to overwrite it?"
+    IDS_MODULE_ERROR_NONE   "This build is not allowed to bypass validation of loaded modules."
     IDS_FILE_LOAD_ERROR     "Couldn't load file properly. Make sure you have the latest version of FamiTracker."
     IDS_CONFIG_WINDOW       "FamiTracker configuration"
 END

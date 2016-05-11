@@ -150,6 +150,7 @@
 #define IDS_INVALID_INST_NUM            193
 #define IDD_CONFIG_MIDI                 194
 #define IDS_EXPORT_SAMPLES_FILE         194
+#define IDS_MODULE_ERROR_NONE           195
 #define IDR_PATTERN_POPUP               198
 #define IDD_CONFIG_SOUND                201
 #define IDS_FILE_LOAD_ERROR             204
@@ -588,6 +589,8 @@
 #define IDC_RADIO_SEMITONE_INC          1436
 #define IDC_RADIO_SEMITONE_DEC          1437
 #define IDC_BUTTON_TRSP_CLEAR           1438
+#define IDC_SLIDER_VERSION_ERRORLEVEL   1439
+#define IDC_STATIC_VERSION_ERROR        1440
 #define ID_TRACKER_PLAY                 32771
 #define ID_TRACKER_PLAYPATTERN          32775
 #define ID_TRACKER_STOP                 32776
@@ -741,9 +744,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        341
+#define _APS_NEXT_RESOURCE_VALUE        342
 #define _APS_NEXT_COMMAND_VALUE         33191
-#define _APS_NEXT_CONTROL_VALUE         1439
+#define _APS_NEXT_CONTROL_VALUE         1441
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif
