@@ -607,7 +607,7 @@ void CFamiTrackerApp::CheckNewVersion(bool StartUp) const		// // //
 			}
 		}
 		catch (DWORD &) {
-			AfxMessageBox(_T("Unable to get version information from the source repository."));
+			AfxMessageBox(_T("Unable to get version information from the source repository."), MB_ICONERROR);
 		}
 
 		if (hRequest) InternetCloseHandle(hRequest);

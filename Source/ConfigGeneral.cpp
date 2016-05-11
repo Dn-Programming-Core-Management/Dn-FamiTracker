@@ -74,7 +74,7 @@ const CString CConfigGeneral::CONFIG_DESC[] = {		// // //
 	_T("Display rows that are truncated by Bxx, Cxx, or Dxx effects."),
 	_T("Use the extra keys on the keypad as hexadecimal digits in the pattern editor."),
 	_T("Allow pattern selections to span across multiple frames."),
-	_T("Check for new 0CC-FamiTracker versions released at Github on startup."),
+	_T("Check for new 0CC-FamiTracker versions on startup if an internet connection could be established."),
 };
 
 // CConfigGeneral dialog
