@@ -166,6 +166,21 @@ private:
 	std::vector<int> m_iStretchMap;		// // //
 };
 
+/*!
+	\brief Specialization of the pattern action class for actions operating on a selection without
+	modifying its span.
+*/
+class CPSelectionAction : public CPatternAction
+{
+protected:
+	CPSelectionAction(int iAction);
+protected:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+protected:
+	CPatternClipData *m_pUndoClipData;
+};
+
 // // // built-in pattern action subtypes
 
 class CPActionEditNote : public CPatternAction
@@ -231,16 +246,12 @@ private:
 	int m_iAmount;
 };
 
-class CPActionClearSel : public CPatternAction
+class CPActionClearSel : public CPSelectionAction
 {
 public:
 	CPActionClearSel();
 private:
-	bool SaveState(const CMainFrame *pMainFrm);
-	void Undo(CMainFrame *pMainFrm) const;
 	void Redo(CMainFrame *pMainFrm) const;
-private:
-	CPatternClipData *m_pUndoClipData;
 };
 
 class CPActionDeleteAtSel : public CPatternAction
@@ -265,59 +276,50 @@ private:
 	void Undo(CMainFrame *pMainFrm) const;
 	void Redo(CMainFrame *pMainFrm) const;
 private:
-	CPatternClipData *m_pUndoClipData;
+	CCursorPos m_cpHeadPos, m_cpTailPos;
+	CPatternClipData *m_pUndoHead, *m_pUndoTail;
 };
 
-class CPActionTranspose : public CPatternAction
+class CPActionTranspose : public CPSelectionAction
 {
 public:
 	CPActionTranspose(transpose_t Type);
 private:
-	bool SaveState(const CMainFrame *pMainFrm);
-	void Undo(CMainFrame *pMainFrm) const;
 	void Redo(CMainFrame *pMainFrm) const;
 private:
 	transpose_t m_iTransposeMode;
-	CPatternClipData *m_pUndoClipData;
 };
 
-class CPActionScrollValues : public CPatternAction
+class CPActionScrollValues : public CPSelectionAction
 {
 public:
 	CPActionScrollValues(int Amount);
 private:
-	bool SaveState(const CMainFrame *pMainFrm);
-	void Undo(CMainFrame *pMainFrm) const;
 	void Redo(CMainFrame *pMainFrm) const;
 private:
 	int m_iAmount;
-	CPatternClipData *m_pUndoClipData;
 };
 
-class CPActionInterpolate : public CPatternAction
+class CPActionInterpolate : public CPSelectionAction
 {
 public:
 	CPActionInterpolate();
 private:
 	bool SaveState(const CMainFrame *pMainFrm);
-	void Undo(CMainFrame *pMainFrm) const;
 	void Redo(CMainFrame *pMainFrm) const;
 private:
 	int m_iSelectionSize;
-	CPatternClipData *m_pUndoClipData;
 };
 
-class CPActionReplaceInst : public CPatternAction
+class CPActionReplaceInst : public CPSelectionAction
 {
 public:
 	CPActionReplaceInst(unsigned Index);
 private:
 	bool SaveState(const CMainFrame *pMainFrm);
-	void Undo(CMainFrame *pMainFrm) const;
 	void Redo(CMainFrame *pMainFrm) const;
 private:
 	unsigned m_iInstrumentIndex;
-	CPatternClipData *m_pUndoClipData;
 };
 
 class CPActionEffColumn : public CPatternAction

@@ -555,6 +555,26 @@ void CPatternAction::RestoreSelection(CPatternEditor *pPatternEditor) const
 
 
 
+CPSelectionAction::CPSelectionAction(int iAction) :
+	CPatternAction(iAction), m_pUndoClipData(nullptr)
+{
+}
+
+bool CPSelectionAction::SaveState(const CMainFrame *pMainFrm)
+{
+	const CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
+	m_pUndoClipData = pPatternEditor->CopyRaw(m_pUndoState->Selection);
+	return true;
+}
+
+void CPSelectionAction::Undo(CMainFrame *pMainFrm) const
+{
+	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
+	pPatternEditor->PasteRaw(m_pUndoClipData, m_pUndoState->Selection.m_cpStart);
+}
+
+
+
 // // // built-in pattern action subtypes
 
 
@@ -745,21 +765,8 @@ void CPActionScrollField::Redo(CMainFrame *pMainFrm) const
 
 
 CPActionClearSel::CPActionClearSel() :
-	CPatternAction(ACT_EDIT_DELETE), m_pUndoClipData(nullptr)
+	CPSelectionAction(ACT_EDIT_DELETE)
 {
-}
-
-bool CPActionClearSel::SaveState(const CMainFrame *pMainFrm)
-{
-	const CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
-	m_pUndoClipData = pPatternEditor->CopyRaw(m_pUndoState->Selection);
-	return true;
-}
-
-void CPActionClearSel::Undo(CMainFrame *pMainFrm) const
-{
-	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
-	pPatternEditor->PasteRaw(m_pUndoClipData, m_pUndoState->Selection.m_cpStart);
 }
 
 void CPActionClearSel::Redo(CMainFrame *pMainFrm) const
@@ -807,7 +814,6 @@ void CPActionDeleteAtSel::Undo(CMainFrame *pMainFrm) const
 
 void CPActionDeleteAtSel::Redo(CMainFrame *pMainFrm) const
 {
-	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
 	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
 
 	CSelection Sel(m_pUndoState->Selection);
@@ -821,48 +827,69 @@ void CPActionDeleteAtSel::Redo(CMainFrame *pMainFrm) const
 
 
 CPActionInsertAtSel::CPActionInsertAtSel() :
-	CPatternAction(ACT_INSERT_SEL_ROWS), m_pUndoClipData(nullptr)
+	CPatternAction(ACT_INSERT_SEL_ROWS), m_pUndoHead(nullptr), m_pUndoTail(nullptr)
 {
 }
 
 bool CPActionInsertAtSel::SaveState(const CMainFrame *pMainFrm)
 {
+	if (!m_pUndoState->IsSelecting) return false;
+
 	const CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
-	m_pUndoClipData = pPatternEditor->CopyEntire();
+	m_cpTailPos = CCursorPos {
+		pPatternEditor->GetCurrentPatternLength(m_pUndoState->Selection.m_cpEnd.m_iFrame) - 1,
+		m_pUndoState->Selection.m_cpStart.m_iChannel,
+		m_pUndoState->Selection.m_cpStart.m_iColumn,
+		m_pUndoState->Selection.m_cpEnd.m_iFrame
+	};
+	CCursorPos HeadEnd {
+		m_cpTailPos.m_iRow,
+		m_pUndoState->Selection.m_cpEnd.m_iChannel,
+		m_pUndoState->Selection.m_cpEnd.m_iColumn,
+		m_cpTailPos.m_iFrame
+	};
+
+	m_pUndoTail = pPatternEditor->CopyRaw(CSelection {m_cpTailPos, CCursorPos {HeadEnd}});
+	if (--HeadEnd.m_iRow < 0) {
+		--HeadEnd.m_iFrame;
+		HeadEnd.m_iRow += pPatternEditor->GetCurrentPatternLength(HeadEnd.m_iFrame);
+	}
+	if (m_pUndoState->Selection.m_cpStart <= HeadEnd) {
+		m_pUndoHead = pPatternEditor->CopyRaw(CSelection {m_pUndoState->Selection.m_cpStart, HeadEnd});
+		m_cpHeadPos = m_pUndoState->Selection.m_cpStart;
+		if (++m_cpHeadPos.m_iRow >= pPatternEditor->GetCurrentPatternLength(m_cpHeadPos.m_iFrame)) {
+			++m_cpHeadPos.m_iFrame;
+			m_cpHeadPos.m_iRow = 0;
+		}
+	}
+
 	return true;
 }
 
 void CPActionInsertAtSel::Undo(CMainFrame *pMainFrm) const
 {
 	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
-	pPatternEditor->PasteEntire(m_pUndoClipData);
+	pPatternEditor->PasteRaw(m_pUndoTail, m_cpTailPos);
+	if (m_pUndoHead)
+		pPatternEditor->PasteRaw(m_pUndoHead, m_pUndoState->Selection.m_cpStart);
 }
 
 void CPActionInsertAtSel::Redo(CMainFrame *pMainFrm) const
 {
-	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	for (int i = m_pUndoState->Selection.GetChanStart(); i <= m_pUndoState->Selection.GetChanEnd(); ++i)
-		pDoc->InsertRow(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, i, m_pUndoState->Selection.GetRowStart());
+	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
+	
+	CSelection Sel(m_pUndoState->Selection);
+	Sel.m_cpEnd.m_iRow = pPatternEditor->GetCurrentPatternLength(Sel.m_cpEnd.m_iFrame) - 1;
+	DeleteSelection(pMainFrm, Sel);
+	if (m_pUndoHead)
+		pPatternEditor->PasteRaw(m_pUndoHead, m_cpHeadPos);
 }
 
 
 
 CPActionTranspose::CPActionTranspose(transpose_t Type) :
-	CPatternAction(ACT_TRANSPOSE), m_iTransposeMode(Type)
+	CPSelectionAction(ACT_TRANSPOSE), m_iTransposeMode(Type)
 {
-}
-
-bool CPActionTranspose::SaveState(const CMainFrame *pMainFrm)
-{
-	const CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
-	m_pUndoClipData = pPatternEditor->CopyRaw(m_pUndoState->Selection);
-	return true;
-}
-
-void CPActionTranspose::Undo(CMainFrame *pMainFrm) const
-{
-	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
-	pPatternEditor->PasteRaw(m_pUndoClipData, m_pUndoState->Selection.m_cpStart);
 }
 
 void CPActionTranspose::Redo(CMainFrame *pMainFrm) const
@@ -922,21 +949,8 @@ void CPActionTranspose::Redo(CMainFrame *pMainFrm) const
 
 
 CPActionScrollValues::CPActionScrollValues(int Amount) :
-	CPatternAction(ACT_SCROLL_VALUES), m_iAmount(Amount)
+	CPSelectionAction(ACT_SCROLL_VALUES), m_iAmount(Amount)
 {
-}
-
-bool CPActionScrollValues::SaveState(const CMainFrame *pMainFrm)
-{
-	const CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
-	m_pUndoClipData = pPatternEditor->CopyRaw(m_pUndoState->Selection);
-	return true;
-}
-
-void CPActionScrollValues::Undo(CMainFrame *pMainFrm) const
-{
-	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
-	pPatternEditor->PasteRaw(m_pUndoClipData, m_pUndoState->Selection.m_cpStart);
 }
 
 void CPActionScrollValues::Redo(CMainFrame *pMainFrm) const
@@ -1015,7 +1029,7 @@ void CPActionScrollValues::Redo(CMainFrame *pMainFrm) const
 
 
 CPActionInterpolate::CPActionInterpolate() :
-	CPatternAction(ACT_INTERPOLATE)
+	CPSelectionAction(ACT_INTERPOLATE)
 {
 }
 
@@ -1024,15 +1038,8 @@ bool CPActionInterpolate::SaveState(const CMainFrame *pMainFrm)
 	if (!ValidateSelection(pMainFrm))
 		return false;
 	const CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
-	m_pUndoClipData = pPatternEditor->CopyRaw(m_pUndoState->Selection);
 	m_iSelectionSize = pPatternEditor->GetSelectionSize();
-	return true;
-}
-
-void CPActionInterpolate::Undo(CMainFrame *pMainFrm) const
-{
-	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
-	pPatternEditor->PasteRaw(m_pUndoClipData, m_pUndoState->Selection.m_cpStart);
+	return CPSelectionAction::SaveState(pMainFrm);
 }
 
 void CPActionInterpolate::Redo(CMainFrame *pMainFrm) const
@@ -1130,25 +1137,15 @@ void CPActionInterpolate::Redo(CMainFrame *pMainFrm) const
 
 
 CPActionReplaceInst::CPActionReplaceInst(unsigned Index) :
-	CPatternAction(ACT_REPLACE_INSTRUMENT), m_iInstrumentIndex(Index), m_pUndoClipData(nullptr)
+	CPSelectionAction(ACT_REPLACE_INSTRUMENT), m_iInstrumentIndex(Index)
 {
 }
 
 bool CPActionReplaceInst::SaveState(const CMainFrame *pMainFrm)
 {
-	if (m_iInstrumentIndex > static_cast<unsigned>(MAX_INSTRUMENTS))
+	if (!m_pUndoState->IsSelecting || m_iInstrumentIndex > static_cast<unsigned>(MAX_INSTRUMENTS))
 		return false;
-	const CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
-	if (!m_pUndoState->IsSelecting)
-		return false;
-	m_pUndoClipData = pPatternEditor->CopyRaw(m_pUndoState->Selection);
-	return true;
-}
-
-void CPActionReplaceInst::Undo(CMainFrame *pMainFrm) const
-{
-	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
-	pPatternEditor->PasteRaw(m_pUndoClipData);
+	return CPSelectionAction::SaveState(pMainFrm);
 }
 
 void CPActionReplaceInst::Redo(CMainFrame *pMainFrm) const
