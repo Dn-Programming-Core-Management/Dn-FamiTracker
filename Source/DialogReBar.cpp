@@ -22,6 +22,7 @@
 #include "resource.h"
 #include "FamiTracker.h"
 #include "DialogReBar.h"
+#include "CustomControls.h"		// // //
 
 // COctaveDlgBar dialog
 
@@ -70,23 +71,10 @@ HBRUSH CDialogReBar::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
 	HBRUSH hbr = CDialogBar::OnCtlColor(pDC, pWnd, nCtlColor);
 
-	if (nCtlColor == CTLCOLOR_STATIC && theApp.IsThemeActive()) {
+	if (nCtlColor == CTLCOLOR_STATIC && theApp.IsThemeActive() && !dynamic_cast<CLockedEdit*>(pWnd)) {
 		pDC->SetBkMode(TRANSPARENT);
 		return (HBRUSH)GetStockObject(NULL_BRUSH);
 	}
 
 	return hbr;
-}
-
-BOOL CDialogReBar::Create(CWnd* pParentWnd, UINT nIDTemplate, UINT nStyle, UINT nID)
-{
-	const int RANGE_MAX = 32;	// Max value of highlight
-
-	if (!CDialogBar::Create(pParentWnd, nIDTemplate, nStyle, nID))
-		return FALSE;
-
-	static_cast<CSpinButtonCtrl*>(GetDlgItem(IDC_HIGHLIGHTSPIN1))->SetRange(0, RANGE_MAX);
-	static_cast<CSpinButtonCtrl*>(GetDlgItem(IDC_HIGHLIGHTSPIN2))->SetRange(0, RANGE_MAX);
-
-	return TRUE;
 }

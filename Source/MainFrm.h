@@ -176,6 +176,8 @@ private:  // control bar embedded members
 	CLockedEdit			*m_pLockedEditLength;
 	CLockedEdit			*m_pLockedEditFrames;
 	CLockedEdit			*m_pLockedEditStep;
+	CLockedEdit			*m_pLockedEditHighlight1;		// // //
+	CLockedEdit			*m_pLockedEditHighlight2;		// // //
 	CButton				*m_pButtonGroove;		// // //
 	CButton				*m_pButtonFixTempo;		// // //
 
@@ -268,7 +270,6 @@ public:
 	afx_msg void OnUpdateNextSong(CCmdUI *pCmdUI);
 	afx_msg void OnUpdatePrevSong(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateViewControlpanel(CCmdUI *pCmdUI);
-	afx_msg void OnUpdateHighlight(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateEditCut(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateEditCopy(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateEditPaste(CCmdUI *pCmdUI);
@@ -370,6 +371,10 @@ public:
 	afx_msg void OnClickedCompact();
 	afx_msg void OnTypeInstrumentNumber();
 	afx_msg void OnToggleCompact();
+	afx_msg void OnUpdateHighlight1(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateHighlight2(CCmdUI *pCmdUI);
+	afx_msg void OnDeltaposHighlightSpin1(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnDeltaposHighlightSpin2(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnFileExportRows();
 	afx_msg void OnEditCopyAsText();
 	afx_msg void OnEditCopyAsVolumeSequence();

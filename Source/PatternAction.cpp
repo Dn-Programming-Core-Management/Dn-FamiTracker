@@ -1197,3 +1197,34 @@ void CPActionEffColumn::UpdateView(CFamiTrackerDoc *pDoc) const		// // //
 {
 	pDoc->UpdateAllViews(NULL, UPDATE_COLUMNS);
 }
+
+
+
+CPActionHighlight::CPActionHighlight(stHighlight Hl) :		// // //
+	CPatternAction(1), m_NewHighlight(Hl)
+{
+}
+
+bool CPActionHighlight::SaveState(const CMainFrame *pMainFrm)
+{
+	const CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	m_OldHighlight = pDoc->GetHighlight();
+	return memcmp(&m_NewHighlight, &m_OldHighlight, sizeof(stHighlight)) != 0;
+}
+
+void CPActionHighlight::Undo(CMainFrame *pMainFrm) const
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	pDoc->SetHighlight(m_OldHighlight);
+}
+
+void CPActionHighlight::Redo(CMainFrame *pMainFrm) const
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	pDoc->SetHighlight(m_NewHighlight);
+}
+
+void CPActionHighlight::UpdateView(CFamiTrackerDoc *pDoc) const
+{
+	pDoc->UpdateAllViews(NULL, UPDATE_HIGHLIGHT);
+}

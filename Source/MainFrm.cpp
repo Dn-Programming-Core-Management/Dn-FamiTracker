@@ -110,6 +110,8 @@ CMainFrame::CMainFrame() :
 	m_pLockedEditLength(NULL),
 	m_pLockedEditFrames(NULL),
 	m_pLockedEditStep(NULL),
+	m_pLockedEditHighlight1(NULL),		// // //
+	m_pLockedEditHighlight2(NULL),		// // //
 	m_pButtonGroove(NULL),		// // //
 	m_pButtonFixTempo(NULL),		// // //
 	m_pBannerEditName(NULL),
@@ -136,6 +138,8 @@ CMainFrame::~CMainFrame()
 	SAFE_RELEASE(m_pLockedEditLength);
 	SAFE_RELEASE(m_pLockedEditFrames);
 	SAFE_RELEASE(m_pLockedEditStep);
+	SAFE_RELEASE(m_pLockedEditHighlight1);		// // //
+	SAFE_RELEASE(m_pLockedEditHighlight2);		// // //
 	SAFE_RELEASE(m_pButtonGroove);		// // //
 	SAFE_RELEASE(m_pButtonFixTempo);		// // //
 	SAFE_RELEASE(m_pBannerEditName);
@@ -283,8 +287,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_PREV_SONG, OnUpdatePrevSong)
 	ON_UPDATE_COMMAND_UI(ID_TRACKER_SWITCHTOTRACKINSTRUMENT, OnUpdateTrackerSwitchToInstrument)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_CONTROLPANEL, OnUpdateViewControlpanel)
-	ON_UPDATE_COMMAND_UI(IDC_HIGHLIGHT1, OnUpdateHighlight)
-	ON_UPDATE_COMMAND_UI(IDC_HIGHLIGHT2, OnUpdateHighlight)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_EXPANDPATTERNS, OnUpdateSelectionEnabled)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_SHRINKPATTERNS, OnUpdateSelectionEnabled)
 	ON_UPDATE_COMMAND_UI(ID_FRAMEEDITOR_TOP, OnUpdateFrameeditorTop)
@@ -301,6 +303,10 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_BN_CLICKED(IDC_CHECK_COMPACT, OnClickedCompact)
 	ON_COMMAND(ID_CMD_INST_NUM, OnTypeInstrumentNumber)
 	ON_COMMAND(IDC_COMPACT_TOGGLE, OnToggleCompact)
+	ON_UPDATE_COMMAND_UI(IDC_HIGHLIGHT1, OnUpdateHighlight1)
+	ON_UPDATE_COMMAND_UI(IDC_HIGHLIGHT2, OnUpdateHighlight2)
+	ON_NOTIFY(UDN_DELTAPOS, IDC_HIGHLIGHTSPIN1, OnDeltaposHighlightSpin1)
+	ON_NOTIFY(UDN_DELTAPOS, IDC_HIGHLIGHTSPIN2, OnDeltaposHighlightSpin2)
 	ON_COMMAND(ID_FILE_EXPORTROWS, OnFileExportRows)
 	ON_COMMAND(ID_COPYAS_TEXT, OnEditCopyAsText)
 	ON_COMMAND(ID_COPYAS_VOLUMESEQUENCE, OnEditCopyAsVolumeSequence)
@@ -570,6 +576,8 @@ bool CMainFrame::CreateDialogPanels()
 	m_pLockedEditLength = new CLockedEdit();
 	m_pLockedEditFrames = new CLockedEdit();
 	m_pLockedEditStep	= new CLockedEdit();
+	m_pLockedEditHighlight1 = new CLockedEdit();		// // //
+	m_pLockedEditHighlight2 = new CLockedEdit();		// // //
 	m_pButtonGroove		= new CButton();		// // //
 	m_pButtonFixTempo	= new CButton();		// // //
 
@@ -578,6 +586,8 @@ bool CMainFrame::CreateDialogPanels()
 	m_pLockedEditLength->SubclassDlgItem(IDC_ROWS, &m_wndDialogBar);
 	m_pLockedEditFrames->SubclassDlgItem(IDC_FRAMES, &m_wndDialogBar);
 	m_pLockedEditStep->SubclassDlgItem(IDC_KEYSTEP, &m_wndDialogBar);
+	m_pLockedEditHighlight1->SubclassDlgItem(IDC_HIGHLIGHT1, &m_wndOctaveBar);		// // //
+	m_pLockedEditHighlight2->SubclassDlgItem(IDC_HIGHLIGHT2, &m_wndOctaveBar);		// // //
 	m_pButtonGroove->SubclassDlgItem(IDC_BUTTON_GROOVE, &m_wndDialogBar);		// // //
 	m_pButtonFixTempo->SubclassDlgItem(IDC_BUTTON_FIXTEMPO, &m_wndDialogBar);		// // //
 
@@ -1824,7 +1834,37 @@ void CMainFrame::OnUpdateFramesEdit(CCmdUI *pCmdUI)
 		else {
 			pCmdUI->SetText(MakeIntString(static_cast<CFamiTrackerDoc*>(GetActiveDocument())->GetFrameCount(m_iTrack)));
 		}
-	}	
+	}
+}
+
+void CMainFrame::OnUpdateHighlight1(CCmdUI *pCmdUI)		// // //
+{
+	if (!m_pLockedEditHighlight1->IsEditable()) {
+		CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
+		if (m_pLockedEditHighlight1->Update())
+			AddAction(new CPActionHighlight {stHighlight {
+				std::max(0, std::min(MAX_PATTERN_LENGTH, m_pLockedEditHighlight1->GetValue())),
+				pDoc->GetHighlight().Second,
+				0
+			}});
+		else
+			pCmdUI->SetText(MakeIntString(pDoc->GetHighlight().First));
+	}
+}
+
+void CMainFrame::OnUpdateHighlight2(CCmdUI *pCmdUI)		// // //
+{
+	if (!m_pLockedEditHighlight2->IsEditable()) {
+		CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
+		if (m_pLockedEditHighlight2->Update())
+			AddAction(new CPActionHighlight {stHighlight {
+				pDoc->GetHighlight().First,
+				std::max(0, std::min(MAX_PATTERN_LENGTH, m_pLockedEditHighlight2->GetValue())),
+				0
+			}});
+		else
+			pCmdUI->SetText(MakeIntString(pDoc->GetHighlight().Second));
+	}
 }
 
 void CMainFrame::OnFileGeneralsettings()
@@ -2307,21 +2347,21 @@ void CMainFrame::OnUpdateViewControlpanel(CCmdUI *pCmdUI)
 	pCmdUI->SetCheck(m_wndControlBar.IsVisible());
 }
 
-void CMainFrame::OnUpdateHighlight(CCmdUI *pCmdUI)
+void CMainFrame::OnDeltaposHighlightSpin1(NMHDR *pNMHDR, LRESULT *pResult)		// // //
 {
-	// TODO remove static variables
-	static int LastHighlight1, LastHighlight2;
-	int Highlight1, Highlight2;
-	Highlight1 = m_wndOctaveBar.GetDlgItemInt(IDC_HIGHLIGHT1);
-	Highlight2 = m_wndOctaveBar.GetDlgItemInt(IDC_HIGHLIGHT2);
-	if (Highlight1 != LastHighlight1 || Highlight2 != LastHighlight2) {
-		CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
+	if (CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument())) {
+		stHighlight Hl = pDoc->GetHighlight();
+		Hl.First = std::max(0, std::min(MAX_PATTERN_LENGTH, Hl.First - ((NMUPDOWN*)pNMHDR)->iDelta));
+		AddAction(new CPActionHighlight {Hl});
+	}
+}
 
-		pDoc->SetHighlight(stHighlight {Highlight1, Highlight2, 0});		// // //
-		pDoc->UpdateAllViews(NULL, UPDATE_HIGHLIGHT);
-
-		LastHighlight1 = Highlight1;
-		LastHighlight2 = Highlight2;
+void CMainFrame::OnDeltaposHighlightSpin2(NMHDR *pNMHDR, LRESULT *pResult)		// // //
+{
+	if (CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument())) {
+		stHighlight Hl = pDoc->GetHighlight();
+		Hl.Second = std::max(0, std::min(MAX_PATTERN_LENGTH, Hl.Second - ((NMUPDOWN*)pNMHDR)->iDelta));
+		AddAction(new CPActionHighlight {Hl});
 	}
 }
 

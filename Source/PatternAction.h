@@ -335,3 +335,16 @@ private:
 	unsigned m_iChannel;
 	unsigned m_iOldColumns, m_iNewColumns;
 };
+
+class CPActionHighlight : public CPatternAction		// // //
+{
+public:
+	CPActionHighlight(stHighlight Hl);
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+	void UpdateView(CFamiTrackerDoc *pDoc) const;
+private:
+	stHighlight m_OldHighlight, m_NewHighlight;
+};
