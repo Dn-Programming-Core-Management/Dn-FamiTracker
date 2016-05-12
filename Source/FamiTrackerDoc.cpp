@@ -59,7 +59,6 @@
 #include "ModuleException.h"		// // //
 #include "TrackerChannel.h"
 #include "DocumentFile.h"
-#include "Settings.h"
 #include "SoundGen.h"
 #include "ChannelMap.h"
 #include "SequenceCollection.h"		// // //
@@ -554,9 +553,10 @@ void CFamiTrackerDoc::ReorderSequences()
 	m_vTmpSequences.RemoveAll();
 }
 
+template <module_error_level_t l>
 void CFamiTrackerDoc::AssertFileData(bool Cond, std::string Msg) const
 {
-	if (!Cond) {
+	if (l <= theApp.GetSettings()->Version.iErrorLevel && !Cond) {
 		CModuleException *e = m_pCurrentDocument ? m_pCurrentDocument->GetException() : new CModuleException();
 		e->AppendError(Msg);
 		e->Raise();
@@ -1597,11 +1597,13 @@ void CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile, const int Ve
 	else
 		m_iExpansionChip = pDocFile->GetBlockChar();
 
-	m_iChannelsAvailable	= AssertRange(pDocFile->GetBlockInt(), 1, MAX_CHANNELS, "Channel count");		// // //
-	m_iMachine				= static_cast<machine_t>(pDocFile->GetBlockInt());
-	m_iEngineSpeed			= pDocFile->GetBlockInt();
+	m_iChannelsAvailable = AssertRange(pDocFile->GetBlockInt(), 1, MAX_CHANNELS, "Channel count");		// // //
+	AssertRange<MODULE_ERROR_OFFICIAL>(static_cast<int>(m_iChannelsAvailable), 1, MAX_CHANNELS - 1, "Channel count");
 
+	m_iMachine = static_cast<machine_t>(pDocFile->GetBlockInt());
 	AssertFileData(m_iMachine == NTSC || m_iMachine == PAL, "Unknown machine");
+
+	m_iEngineSpeed = pDocFile->GetBlockInt();
 
 	if (Version > 2)
 		m_iVibratoStyle = (vibrato_t)pDocFile->GetBlockInt();
@@ -1651,7 +1653,7 @@ void CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile, const int Ve
 		m_iSpeedSplitPoint = OLD_SPEED_SPLIT_POINT;
 	}
 
-	AssertRange(m_iExpansionChip, 0, 0x3F, "Expansion chip flag");
+	AssertRange<MODULE_ERROR_STRICT>(m_iExpansionChip, 0, 0x3F, "Expansion chip flag");
 
 	SetupChannels(m_iExpansionChip);
 }
@@ -1671,9 +1673,10 @@ void CFamiTrackerDoc::ReadBlock_Header(CDocumentFile *pDocFile, const int Versio
 		CPatternData *pTrack = GetTrack(0);
 		for (unsigned int i = 0; i < m_iChannelsAvailable; ++i) try {
 			// Channel type (unused)
-			AssertRange(pDocFile->GetBlockChar(), 0, CHANNELS - 1, "Channel type index");
+			AssertRange<MODULE_ERROR_STRICT>(pDocFile->GetBlockChar(), 0, CHANNELS - 1, "Channel type index");
 			// Effect columns
-			pTrack->SetEffectColumnCount(i, AssertRange(pDocFile->GetBlockChar(), 0, MAX_EFFECT_COLUMNS - 1, "Effect column count"));
+			pTrack->SetEffectColumnCount(i, AssertRange<MODULE_ERROR_STRICT>(
+				pDocFile->GetBlockChar(), 0, MAX_EFFECT_COLUMNS - 1, "Effect column count"));
 		}
 		catch (CModuleException *e) {
 			e->AppendError("At channel %d", i + 1);
@@ -1694,9 +1697,9 @@ void CFamiTrackerDoc::ReadBlock_Header(CDocumentFile *pDocFile, const int Versio
 				m_pTracks[i]->SetTitle(pDocFile->ReadString());		// // //
 
 		for (unsigned i = 0; i < m_iChannelsAvailable; ++i) try {
-			AssertRange(pDocFile->GetBlockChar(), 0, CHANNELS - 1, "Channel type index"); // Channel type (unused)
+			AssertRange<MODULE_ERROR_STRICT>(pDocFile->GetBlockChar(), 0, CHANNELS - 1, "Channel type index"); // Channel type (unused)
 			for (unsigned j = 0; j < m_iTrackCount; ++j) try {
-				GetTrack(j)->SetEffectColumnCount(i, AssertRange(
+				GetTrack(j)->SetEffectColumnCount(i, AssertRange<MODULE_ERROR_STRICT>(
 					pDocFile->GetBlockChar(), 0, MAX_EFFECT_COLUMNS - 1, "Effect column count"));
 			}
 			catch (CModuleException *e) {
@@ -2243,7 +2246,8 @@ void CFamiTrackerDoc::ReadBlock_DSamples(CDocumentFile *pDocFile, const int Vers
 			pDocFile->GetBlock(Name, Len);
 			Name[Len] = 0;
 			pSample->SetName(Name);
-			int Size = AssertRange(pDocFile->GetBlockInt(), 0, CDSample::MAX_SIZE, "DPCM sample size");
+			int Size = AssertRange(pDocFile->GetBlockInt(), 0, 0x7FFF, "DPCM sample size");
+			AssertFileData<MODULE_ERROR_STRICT>(Size <= 0xFF1 && Size % 0x10 == 1, "Bad DPCM sample size");
 			int TrueSize = Size + ((1 - Size) & 0x0F);		// // //
 			char *pData = new char[TrueSize];
 			pDocFile->GetBlock(pData, Size);
@@ -2339,11 +2343,13 @@ void CFamiTrackerDoc::ReadBlock_Grooves(CDocumentFile *pDocFile, const int Versi
 		}
 	}
 
-	//Count = pDocFile->GetBlockChar();
-	AssertFileData(pDocFile->GetBlockChar() == m_iTrackCount, "Use-groove flag count does not match track count");
-	for (unsigned i = 0; i < m_iTrackCount; ++i) try {
+	unsigned int Tracks = pDocFile->GetBlockChar();
+	AssertFileData<MODULE_ERROR_STRICT>(Tracks == m_iTrackCount, "Use-groove flag count does not match track count");
+	for (unsigned i = 0; i < Tracks; ++i) try {
+		int Use = pDocFile->GetBlockChar();
+		if (i >= m_iTrackCount) continue;
 		CPatternData *pTrack = GetTrack(i);
-		pTrack->SetSongGroove(pDocFile->GetBlockChar() == 1);
+		pTrack->SetSongGroove(Use == 1);
 		int Speed = pTrack->GetSongSpeed();
 		if (pTrack->GetSongGroove())
 			AssertRange(Speed, 0, MAX_GROOVE - 1, "Track default groove index");

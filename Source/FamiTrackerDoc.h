@@ -35,6 +35,7 @@
 #include "FamiTrackerTypes.h"
 // // //
 #include "FTMComponentInterface.h"
+#include "Settings.h"		// // //
 
 #define TRANSPOSE_FDS
 
@@ -410,14 +411,15 @@ private:
 		\param Cond The condition to check against.
 		\param Msg The error message.
 	*/
+	template <module_error_level_t l = MODULE_ERROR_DEFAULT>
 	void			AssertFileData(bool Cond, std::string Msg) const;		// // //
 	
-	template <typename T, typename U, typename V>
+	template <module_error_level_t l = MODULE_ERROR_DEFAULT, typename T, typename U, typename V>
 	typename std::enable_if<std::is_unsigned<T>::value, T>::type
 	AssertRange(T Value, U Min, V Max, std::string Desc) const
 	{
 		try {
-			return CModuleException::AssertRangeFmt(Value, Min, Max, Desc, "%u");
+			return CModuleException::AssertRangeFmt<l>(Value, Min, Max, Desc, "%u");
 		}
 		catch (CModuleException *e) {
 			if (m_pCurrentDocument)
@@ -425,13 +427,13 @@ private:
 			throw;
 		}
 	}
-
-	template <typename T, typename U, typename V>
+	
+	template <module_error_level_t l = MODULE_ERROR_DEFAULT, typename T, typename U, typename V>
 	typename std::enable_if<std::is_signed<T>::value, T>::type
 	AssertRange(T Value, U Min, V Max, std::string Desc) const
 	{
 		try {
-			return CModuleException::AssertRangeFmt(Value, Min, Max, Desc, "%i");
+			return CModuleException::AssertRangeFmt<l>(Value, Min, Max, Desc, "%i");
 		}
 		catch (CModuleException *e) {
 			if (m_pCurrentDocument)

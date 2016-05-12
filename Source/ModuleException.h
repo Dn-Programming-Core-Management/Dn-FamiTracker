@@ -20,13 +20,17 @@
 ** must bear this legend.
 */
 
-#pragma once
 
+#pragma once
 
 #include <string>
 #include <vector>
 #include <exception>
 #include <memory>
+
+#include "stdafx.h"
+#include "FamiTracker.h"
+#include "Settings.h"
 
 /*!
 	\brief An exception object raised while reading and writing FTM files.
@@ -64,17 +68,19 @@ public:
 	/*!	\brief Validates a numerical value so that it lies within the interval [Min, Max].
 		\details This method may throw a CModuleException object and automatically supply a suitable
 		error message based on the value description. This method handles signed and unsigned types
-		properly.
+		properly. Errors may be ignored if the current module error level is low enough.
 		\param Value The value to check against.
 		\param Min The minimum value permitted, inclusive.
 		\param Max The maximum value permitted, inclusive.
 		\param Desc A description of the checked value.
-		\param fmt Format specifier for the value type.
+		\param fmt Print format specifier for the value type.
 		\return The value argument, if the method returns.
 	*/
-	template <typename T, typename U, typename V>
+	template <module_error_level_t l = MODULE_ERROR_DEFAULT, typename T, typename U, typename V>
 	static T AssertRangeFmt(T Value, U Min, V Max, std::string Desc, const char *fmt)
 	{
+		if (l > theApp.GetSettings()->Version.iErrorLevel)
+			return Value;
 		if (!(Value >= Min && Value <= Max)) {
 			char Format[128];
 			sprintf_s(Format, sizeof(Format), "%%s out of range: expected [%s,%s], got %s", fmt, fmt, fmt);

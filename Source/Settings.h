@@ -32,10 +32,10 @@ enum EDIT_STYLES {		// // // renamed
 };
 
 enum module_error_level_t {		// // //
-	MODULE_ERROR_NONE,		/*!< Perform no error checking at all (warning) */
-	MODULE_ERROR_RELAXED,	/*!< Skip error checking for some value ranges */
-	MODULE_ERROR_OFFICIAL,	/*!< Perform error checking according to the official build */
-	MODULE_ERROR_STRICT		/*!< Full error checking for validating modules */
+	MODULE_ERROR_NONE,		/*!< No error checking at all (warning) */
+	MODULE_ERROR_DEFAULT,	/*!< Usual error checking */
+	MODULE_ERROR_STRICT,	/*!< Extra error checking for some values */
+	MODULE_ERROR_OFFICIAL	/*!< Special bounds checking according to the official build */
 };
 
 enum WIN_STATES {

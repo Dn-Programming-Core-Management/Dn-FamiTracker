@@ -95,8 +95,8 @@ bool CInstrument2A03::Load(CDocumentFile *pDocFile)
 				Index = 0;
 			SetSampleIndex(i, j, Index);
 			char Pitch = pDocFile->GetBlockChar();
-			CModuleException::AssertRangeFmt(Pitch & 0x7F, 0, 0xF, "DPCM sample pitch", "%i");
-			SetSamplePitch(i, j, Pitch);
+			CModuleException::AssertRangeFmt<MODULE_ERROR_STRICT>(Pitch & 0x7F, 0, 0xF, "DPCM sample pitch", "%i");
+			SetSamplePitch(i, j, Pitch & 0x8F);
 			if (Version > 5) {
 				char Value = pDocFile->GetBlockChar();
 				if (Value < -1) // not validated
