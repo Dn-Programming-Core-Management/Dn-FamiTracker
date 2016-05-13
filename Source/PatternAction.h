@@ -118,7 +118,6 @@ public:
 	void SetPastePos(paste_pos_t Pos);		// // //
 	void SetDragAndDrop(const CPatternClipData *pClipData, bool bDelete, bool bMix, const CSelection *pDragTarget);
 	void SetPatternLength(int Length);
-	void SetStretchMap(const std::vector<int> Map);		// // //
 
 private:
 	bool SetTargetSelection(CPatternEditor *pPatternEditor);		// // //
@@ -128,9 +127,6 @@ private:
 	void PasteAuxiliary(CPatternEditor *pPatternEditor) const;		// // //
 
 	void RestoreSelection(CPatternEditor *pPatternEditor) const;
-
-	void StretchPattern(CFamiTrackerDoc *pDoc) const;		// // //
-	void Reverse(CFamiTrackerDoc *pDoc) const;
 
 	virtual void UpdateView(CFamiTrackerDoc *pDoc) const;		// // //
 
@@ -162,8 +158,6 @@ private:
 	bool m_bDragDelete;
 	bool m_bDragMix;
 	CSelection m_dragTarget;
-
-	std::vector<int> m_iStretchMap;		// // //
 };
 
 /*!
@@ -311,6 +305,15 @@ private:
 	int m_iSelectionSize;
 };
 
+class CPActionReverse : public CPSelectionAction
+{
+public:
+	CPActionReverse();
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Redo(CMainFrame *pMainFrm) const;
+};
+
 class CPActionReplaceInst : public CPSelectionAction
 {
 public:
@@ -320,6 +323,17 @@ private:
 	void Redo(CMainFrame *pMainFrm) const;
 private:
 	unsigned m_iInstrumentIndex;
+};
+
+class CPActionStretch : public CPSelectionAction
+{
+public:
+	CPActionStretch(std::vector<int> Stretch);
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Redo(CMainFrame *pMainFrm) const;
+private:
+	std::vector<int> m_iStretchMap;
 };
 
 class CPActionEffColumn : public CPatternAction

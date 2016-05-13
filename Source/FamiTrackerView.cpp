@@ -3538,7 +3538,7 @@ void CFamiTrackerView::OnEditInterpolate()
 void CFamiTrackerView::OnEditReverse()
 {
 	if (!m_bEditEnable) return;		// // //
-	AddAction(new CPatternAction(CPatternAction::ACT_REVERSE));
+	AddAction(new CPActionReverse { });
 }
 
 void CFamiTrackerView::OnEditReplaceInstrument()
@@ -3550,19 +3550,13 @@ void CFamiTrackerView::OnEditReplaceInstrument()
 void CFamiTrackerView::OnEditExpandPatterns()		// // //
 {
 	if (!m_bEditEnable) return;
-
-	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_STRETCH_PATTERN);
-	pAction->SetStretchMap({1, 0});
-	AddAction(pAction);
+	AddAction(new CPActionStretch {std::vector<int> {1, 0}});
 }
 
 void CFamiTrackerView::OnEditShrinkPatterns()		// // //
 {
 	if (!m_bEditEnable) return;
-
-	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_STRETCH_PATTERN);
-	pAction->SetStretchMap({2});
-	AddAction(pAction);
+	AddAction(new CPActionStretch {std::vector<int> {2}});
 }
 
 void CFamiTrackerView::OnEditStretchPatterns()		// // //
@@ -3570,12 +3564,7 @@ void CFamiTrackerView::OnEditStretchPatterns()		// // //
 	if (!m_bEditEnable) return;
 
 	CStretchDlg StretchDlg;
-
-	std::vector<int> Map = StretchDlg.GetStretchMap();
-	if (Map.empty()) return;
-	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_STRETCH_PATTERN);
-	pAction->SetStretchMap(Map);
-	AddAction(pAction);
+	AddAction(new CPActionStretch {StretchDlg.GetStretchMap()});
 }
 
 void CFamiTrackerView::OnNcMouseMove(UINT nHitTest, CPoint point)

@@ -65,8 +65,7 @@ CPatternAction::CPatternAction(int iAction) :
 	m_pRedoState(nullptr),
 	m_pClipData(NULL), 
 	m_pUndoClipData(NULL),
-	m_pAuxiliaryClipData(NULL),		// // //
-	m_iStretchMap()		// // //
+	m_pAuxiliaryClipData(NULL)		// // //
 {
 }
 
@@ -107,11 +106,6 @@ void CPatternAction::SetDragAndDrop(const CPatternClipData *pClipData, bool bDel
 void CPatternAction::SetPatternLength(int Length)
 {
 	m_iNewPatternLen = Length;
-}
-
-void CPatternAction::SetStretchMap(const std::vector<int> Map)		// // //
-{
-	m_iStretchMap = Map;
 }
 
 bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // //
@@ -244,71 +238,6 @@ void CPatternAction::PasteAuxiliary(CPatternEditor *pPatternEditor) const		// //
 	pPatternEditor->PasteRaw(m_pAuxiliaryClipData);
 }
 
-void CPatternAction::StretchPattern(CFamiTrackerDoc *pDoc) const		// // //
-{
-	CPatternIterator it = GetStartIterator();		// // //
-	CPatternIterator s = GetStartIterator();		// // //
-	const CPatternIterator End = GetEndIterator();
-	const column_t ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());		// // //
-	const column_t ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
-	stChanNote Target, Source;
-	
-	int Pos = 0;
-	int Offset = 0;
-	int oldRow = -1;
-	do {
-		for (int i = 0; i <= m_selection.GetChanEnd() - m_selection.GetChanStart(); ++i) {
-			if (Offset < m_pUndoClipData->ClipInfo.Rows && m_iStretchMap[Pos] > 0)
-				Source = *(m_pUndoClipData->GetPattern(i, Offset));
-			else 
-				Source = stChanNote { };		// // //
-			it.Get(i + m_selection.GetChanStart(), &Target);
-			CopyNoteSection(&Target, &Source, PASTE_DEFAULT, i == 0 ? ColStart : COLUMN_NOTE,
-				i == m_selection.GetChanEnd() - m_selection.GetChanStart() ? ColEnd : COLUMN_EFF4);
-			it.Set(i + m_selection.GetChanStart(), &Target);
-		}
-		int dist = m_iStretchMap[Pos++];
-		for (int i = 0; i < dist; i++) {
-			Offset++;
-			oldRow = s.m_iRow;
-			s++;
-			if (s.m_iRow <= oldRow)
-				Offset += pDoc->GetPatternLength(m_pUndoState->Track) + s.m_iRow - oldRow - 1;
-		}
-		Pos %= m_iStretchMap.size();
-	} while (++it <= End);
-}
-
-void CPatternAction::Reverse(CFamiTrackerDoc *pDoc) const
-{
-	CPatternIterator itb = GetStartIterator();		// // //
-	CPatternIterator ite = GetEndIterator();
-	const column_t ColStart = CPatternEditor::GetSelectColumn(m_selection.GetColStart());
-	const column_t ColEnd = CPatternEditor::GetSelectColumn(m_selection.GetColEnd());
-	stChanNote NoteBegin, NoteEnd, Temp;
-	
-	while (itb < ite) {
-		for (int c = m_selection.GetChanStart(); c <= m_selection.GetChanEnd(); ++c) {
-			itb.Get(c, &NoteBegin);
-			ite.Get(c, &NoteEnd);
-			if (c == m_selection.GetChanStart() && ColStart > 0) {		// // //
-				Temp = NoteEnd;
-				CopyNoteSection(&NoteEnd, &NoteBegin, PASTE_DEFAULT, COLUMN_NOTE, static_cast<column_t>(ColStart - 1));
-				CopyNoteSection(&NoteBegin, &Temp, PASTE_DEFAULT, COLUMN_NOTE, static_cast<column_t>(ColStart - 1));
-			}
-			if (c == m_selection.GetChanEnd() && ColEnd < COLUMN_EFF4) {
-				Temp = NoteEnd;
-				CopyNoteSection(&NoteEnd, &NoteBegin, PASTE_DEFAULT, static_cast<column_t>(ColEnd + 1), COLUMN_EFF4);
-				CopyNoteSection(&NoteBegin, &Temp, PASTE_DEFAULT, static_cast<column_t>(ColEnd + 1), COLUMN_EFF4);
-			}
-			itb.Set(c, &NoteEnd);
-			ite.Set(c, &NoteBegin);
-		}
-		itb++;
-		ite--;
-	}
-}
-
 void CPatternAction::DeleteSelection(CMainFrame *pMainFrm, const CSelection &Sel) const		// // //
 {
 	auto it = Sel.GetIterators(
@@ -396,12 +325,6 @@ bool CPatternAction::SaveState(const CMainFrame *pMainFrm)
 				return false;
 			CopySelection(pPatternEditor);
 			break;
-		case ACT_REVERSE:
-		case ACT_STRETCH_PATTERN: {		// // //
-			if (!ValidateSelection(pMainFrm))
-				return false;
-			CopySelection(pPatternEditor);
-		}	break;
 		case ACT_PATTERN_LENGTH:
 			// Change pattern length
 			m_iOldPatternLen = pDoc->GetPatternLength(Track);
@@ -468,11 +391,6 @@ void CPatternAction::Undo(CMainFrame *pMainFrm) const
 			//pPatternEditor->SetSelection(m_newSelection);		// // //
 			PasteSelection(pPatternEditor);
 			break;
-		case ACT_REVERSE:
-		case ACT_STRETCH_PATTERN:		// // //
-			//pPatternEditor->SetSelection(m_selection);		// // //
-			PasteSelection(pPatternEditor);
-			break;
 		case ACT_DRAG_AND_DROP:
 			//pPatternEditor->SetSelection(m_newSelection);
 			PasteSelection(pPatternEditor);		// // //
@@ -507,10 +425,6 @@ void CPatternAction::Redo(CMainFrame *pMainFrm) const
 		case ACT_EDIT_PASTE:
 			pPatternEditor->Paste(m_pClipData, m_iPasteMode, m_iPastePos);		// // //
 			break;		// // //
-		case ACT_REVERSE:
-			//pPatternEditor->SetSelection(m_selection);
-			Reverse(pDoc);
-			break;
 		case ACT_DRAG_AND_DROP:
 			//RestoreSelection(pPatternEditor);
 			if (m_bDragDelete)
@@ -520,9 +434,6 @@ void CPatternAction::Redo(CMainFrame *pMainFrm) const
 		case ACT_PATTERN_LENGTH:
 			pDoc->SetPatternLength(Track, m_iNewPatternLen);
 			pMainFrm->UpdateControls();
-			break;
-		case ACT_STRETCH_PATTERN:		// // //
-			StretchPattern(pDoc);
 			break;
 #ifdef _DEBUG
 		default:
@@ -1136,6 +1047,51 @@ void CPActionInterpolate::Redo(CMainFrame *pMainFrm) const
 
 
 
+CPActionReverse::CPActionReverse() :
+	CPSelectionAction(ACT_REVERSE)
+{
+}
+
+bool CPActionReverse::SaveState(const CMainFrame *pMainFrm)
+{
+	if (!ValidateSelection(pMainFrm))
+		return false;
+	return CPSelectionAction::SaveState(pMainFrm);
+}
+
+void CPActionReverse::Redo(CMainFrame *pMainFrm) const
+{
+	auto it = GetIterators(pMainFrm);
+	const CSelection &Sel = m_pUndoState->Selection;
+
+	const column_t ColStart = CPatternEditor::GetSelectColumn(Sel.m_cpStart.m_iColumn);
+	const column_t ColEnd = CPatternEditor::GetSelectColumn(Sel.m_cpEnd.m_iColumn);
+	stChanNote NoteBegin, NoteEnd, Temp;
+
+	while (it.first < it.second) {
+		for (int c = Sel.m_cpStart.m_iChannel; c <= Sel.m_cpEnd.m_iChannel; ++c) {
+			it.first.Get(c, &NoteBegin);
+			it.second.Get(c, &NoteEnd);
+			if (c == Sel.m_cpStart.m_iChannel && ColStart > 0) {		// // //
+				Temp = NoteEnd;
+				CopyNoteSection(&NoteEnd, &NoteBegin, PASTE_DEFAULT, COLUMN_NOTE, static_cast<column_t>(ColStart - 1));
+				CopyNoteSection(&NoteBegin, &Temp, PASTE_DEFAULT, COLUMN_NOTE, static_cast<column_t>(ColStart - 1));
+			}
+			if (c == Sel.m_cpEnd.m_iChannel && ColEnd < COLUMN_EFF4) {
+				Temp = NoteEnd;
+				CopyNoteSection(&NoteEnd, &NoteBegin, PASTE_DEFAULT, static_cast<column_t>(ColEnd + 1), COLUMN_EFF4);
+				CopyNoteSection(&NoteBegin, &Temp, PASTE_DEFAULT, static_cast<column_t>(ColEnd + 1), COLUMN_EFF4);
+			}
+			it.first.Set(c, &NoteEnd);
+			it.second.Set(c, &NoteBegin);
+		}
+		++it.first;
+		--it.second;
+	}
+}
+
+
+
 CPActionReplaceInst::CPActionReplaceInst(unsigned Index) :
 	CPSelectionAction(ACT_REPLACE_INSTRUMENT), m_iInstrumentIndex(Index)
 {
@@ -1163,6 +1119,60 @@ void CPActionReplaceInst::Redo(CMainFrame *pMainFrm) const
 		if (Note.Instrument != MAX_INSTRUMENTS)
 			Note.Instrument = m_iInstrumentIndex;
 		it.first.Set(i, &Note);
+	} while (++it.first <= it.second);
+}
+
+
+
+CPActionStretch::CPActionStretch(std::vector<int> Stretch) :
+	CPSelectionAction(ACT_STRETCH_PATTERN), m_iStretchMap(Stretch)
+{
+}
+
+bool CPActionStretch::SaveState(const CMainFrame *pMainFrm)
+{
+	if (m_iStretchMap.empty())
+		return false;
+	if (!ValidateSelection(pMainFrm))
+		return false;
+	return CPSelectionAction::SaveState(pMainFrm);
+}
+
+void CPActionStretch::Redo(CMainFrame *pMainFrm) const
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	auto it = GetIterators(pMainFrm);
+	const CSelection &Sel = m_pUndoState->Selection;
+	CPatternIterator s {it.first};
+
+	const column_t ColStart = CPatternEditor::GetSelectColumn(Sel.m_cpStart.m_iColumn);
+	const column_t ColEnd = CPatternEditor::GetSelectColumn(Sel.m_cpEnd.m_iColumn);
+	stChanNote Target, Source;
+
+	int Pos = 0;
+	int Offset = 0;
+	int oldRow = -1;
+	do {
+		for (int i = Sel.m_cpStart.m_iChannel; i <= Sel.m_cpEnd.m_iChannel; ++i) {
+			if (Offset < m_pUndoClipData->ClipInfo.Rows && m_iStretchMap[Pos] > 0)
+				Source = *(m_pUndoClipData->GetPattern(i - Sel.m_cpStart.m_iChannel, Offset));
+			else 
+				Source = stChanNote { };		// // //
+			it.first.Get(i, &Target);
+			CopyNoteSection(&Target, &Source, PASTE_DEFAULT,
+							i == Sel.m_cpStart.m_iChannel ? ColStart : COLUMN_NOTE,
+							i == Sel.m_cpEnd.m_iChannel ? ColEnd : COLUMN_EFF4);
+			it.first.Set(i, &Target);
+		}
+		int dist = m_iStretchMap[Pos++];
+		for (int i = 0; i < dist; ++i) {
+			++Offset;
+			oldRow = s.m_iRow;
+			++s;
+			if (s.m_iRow <= oldRow)
+				Offset += pDoc->GetPatternLength(m_pUndoState->Track) + s.m_iRow - oldRow - 1;
+		}
+		Pos %= m_iStretchMap.size();
 	} while (++it.first <= it.second);
 }
 
