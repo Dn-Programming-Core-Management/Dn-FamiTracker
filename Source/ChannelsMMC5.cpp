@@ -132,10 +132,7 @@ void CChannelHandlerMMC5::RefreshChannel()		// // //
 
 	unsigned char HiFreq		= (Period & 0xFF);
 	unsigned char LoFreq		= (Period >> 8);
-	unsigned char LastLoFreq	= (m_iLastPeriod >> 8);
 	unsigned int  Offs			= 0x5000 + 4 * (m_iChannelID - CHANID_MMC5_SQUARE1);
-
-	m_iLastPeriod = Period;
 
 	WriteRegister(0x5015, 0x03);
 	
@@ -147,7 +144,7 @@ void CChannelHandlerMMC5::RefreshChannel()		// // //
 		return;
 	}
 	WriteRegister(Offs + 2, HiFreq);
-	if (LoFreq != LastLoFreq || m_bResetEnvelope)		// // //
+	if (LoFreq != (m_iLastPeriod >> 8) || m_bResetEnvelope)		// // //
 		WriteRegister(Offs + 3, LoFreq + (m_iLengthCounter << 3));
 
 	m_iLastPeriod = Period;		// // //
@@ -170,6 +167,7 @@ void CChannelHandlerMMC5::ClearRegisters()
 	WriteRegister(Offs, 0x30);
 	WriteRegister(Offs + 2, 0);
 	WriteRegister(Offs + 3, 0);
+	m_iLastPeriod = 0xFFFF;		// // //
 }
 
 CString CChannelHandlerMMC5::GetCustomEffectString() const		// // //
