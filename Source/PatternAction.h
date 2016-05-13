@@ -312,6 +312,23 @@ private:
 	unsigned m_iInstrumentIndex;
 };
 
+class CPActionDragDrop : public CPatternAction
+{
+public:
+	CPActionDragDrop(const CPatternClipData *pClipData, bool bDelete, bool bMix, const CSelection &pDragTarget);
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+private:
+	const CPatternClipData *m_pClipData;
+	CPatternClipData *m_pUndoClipData, *m_pAuxiliaryClipData;
+	bool m_bDragDelete;
+	bool m_bDragMix;
+	CSelection m_newSelection;
+	CSelection m_dragTarget;
+};
+
 class CPActionPatternLen : public CPatternAction
 {
 public:
