@@ -35,6 +35,8 @@ CCompoundAction::CCompoundAction() :
 
 bool CCompoundAction::SaveState(const CMainFrame *pMainFrm)
 {
+	if (m_pActionList->empty())
+		return false;
 	return (*m_pActionList->begin())->SaveState(pMainFrm);;
 }
 
@@ -63,7 +65,8 @@ void CCompoundAction::Redo(CMainFrame *pMainFrm) const
 
 void CCompoundAction::SaveUndoState(const CMainFrame *pMainFrm)		// // //
 {
-	(*m_pActionList->begin())->SaveUndoState(pMainFrm);
+	if (!m_pActionList->empty())
+		(*m_pActionList->begin())->SaveUndoState(pMainFrm);
 }
 
 void CCompoundAction::SaveRedoState(const CMainFrame *pMainFrm)		// // //

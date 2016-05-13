@@ -20,9 +20,11 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
 #include "PatternNote.h"
+#include "PatternEditorTypes.h"
 
 class CharRange
 {
@@ -57,6 +59,69 @@ struct replaceTerm
 	bool NoiseChan;
 };
 
+class CFamiTrackerDoc;
+class CFamiTrackerView;
+class CCompoundAction;
+
+/*!
+	\brief An extension of the pattern iterator that allows constraining the cursor position within
+	a given selection.
+*/
+class CFindCursor : public CPatternIterator
+{
+public:
+	/*!	\brief An enumeration representing the directions that the cursor can traverse. */
+	enum class direction_t { UP, DOWN, LEFT, RIGHT };
+
+	/*!	\brief Constructor of the find / replace cursor.
+		\param pEditor Pointer to the pattern editor.
+		\param Track The current song number.
+		\param Pos The cursor position at which searching begins.
+		\param Scope The area that the cursor operates on. */
+	CFindCursor(CPatternEditor *pEditor, int Track, const CCursorPos &Pos, const CSelection &Scope);
+
+	CFindCursor(const CFindCursor &other) = default;
+	CFindCursor &operator=(const CFindCursor &other) = default;
+
+	/*!	\brief Moves the cursor in the given direction while limiting the cursor within the scope.
+		\details If the cursor was outside its scope when this method is called, it will be moved to
+		an appropriate initial position.
+		\param Dir The direction. */
+	void Move(direction_t Dir);
+
+	/*!	\brief Checks whether the cursor reaches its starting position, as given in the
+		constructor.
+		\return True if the cursor is at the starting position. */
+	bool AtStart() const;
+
+	/*!	\brief Copies a note from the current song.
+		\details Similar to CPatternIterator::Get, but accepts no arguments.
+		\param pNote Pointer to the output note. */
+	void Get(stChanNote *pNote) const;
+
+	/*!	\brief Writes a note to the current song.
+		\details Similar to CPatternIterator::Set, but accepts no arguments.
+		\param pNote Pointer to the input note. */
+	void Set(const stChanNote *pNote);
+
+	/*!	\brief Resets the cursor to an appropriate initial position if it does not lie within its
+		scope.
+		\param Dir The movement direction.
+		\return Whether the cursor is moved. */
+	bool ResetPosition(direction_t Dir);
+
+private:
+	/*!	\brief Checks whether the cursor lies within the scope provided in the constructor.
+		\details This method is similar to CPatternEditor::IsInRange but ignores the column index
+		of the cursor.
+		\return True if the scope contains the cursor itself. */
+	bool Contains() const;
+
+private:
+	CCursorPos m_cpBeginPos;
+	const CSelection m_Scope;
+};
+
 // Exception for find dialog
 
 class CFindException : public std::runtime_error
@@ -64,10 +129,6 @@ class CFindException : public std::runtime_error
 public:
 	CFindException(const char *msg) : std::runtime_error(msg) { }
 };
-
-class CFamiTrackerDoc;
-class CFamiTrackerView;
-class CCompoundAction;
 
 // CFindDlg dialog
 
@@ -79,8 +140,6 @@ public:
 	CFindDlg(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CFindDlg();
 
-	bool Find(bool ShowEnd);
-	bool Replace(CCompoundAction *pAction = nullptr);
 	void Reset();
 
 // Dialog Data
@@ -101,6 +160,13 @@ protected:
 	void RaiseIf(bool Check, LPCTSTR Str, ...);
 
 	replaceTerm toReplace(const searchTerm *x);
+
+	bool PrepareFind();
+	bool PrepareReplace();
+	void PrepareCursor(bool ReplaceAll);
+
+	bool Find(bool ShowEnd);
+	bool Replace(CCompoundAction *pAction = nullptr);
 	
 	CFamiTrackerDoc *m_pDocument;
 	CFamiTrackerView *m_pView;
@@ -110,9 +176,13 @@ protected:
 	CEdit *m_cReplaceNoteField, *m_cReplaceInstField, *m_cReplaceVolField, *m_cReplaceEffField;
 	CComboBox *m_cSearchArea, *m_cEffectColumn;
 
-	searchTerm m_searchTerm, m_replaceTerm;
-	bool m_bFound, m_bSkipFirst, m_bVisible;
-	int m_iFrame, m_iRow, m_iChannel;
+	searchTerm m_searchTerm;
+	replaceTerm m_replaceTerm;
+	bool m_bFound, m_bSkipFirst;
+
+	CFindCursor *m_pFindCursor;
+	CFindCursor::direction_t m_iSearchDirection;
+
 	static const CString m_pNoteName[7];
 	static const CString m_pNoteSign[3];
 	static const int m_iNoteOffset[7];
@@ -123,5 +193,7 @@ public:
 	afx_msg void UpdateFields();
 	afx_msg void OnUpdateFields(UINT nID);
 	afx_msg void OnBnClickedButtonFindNext();
+	afx_msg void OnBnClickedButtonFindPrevious();
 	afx_msg void OnBnClickedButtonReplace();
+	afx_msg void OnBnClickedButtonFindReplaceall();
 };

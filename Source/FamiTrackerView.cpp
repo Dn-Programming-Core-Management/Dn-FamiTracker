@@ -184,7 +184,8 @@ BEGIN_MESSAGE_MAP(CFamiTrackerView, CView)
 	// // //
 	ON_MESSAGE(WM_USER_DUMP_INST, OnUserDumpInst)
 	ON_COMMAND(ID_MODULE_DETUNE, OnTrackerDetune)
-	ON_UPDATE_COMMAND_UI(ID_FIND_NEXT, OnUpdateFindNext)
+	ON_UPDATE_COMMAND_UI(ID_FIND_NEXT, OnUpdateFind)
+	ON_UPDATE_COMMAND_UI(ID_FIND_PREVIOUS, OnUpdateFind)
 	ON_COMMAND(ID_DECREASEVALUESCOARSE, OnCoarseDecreaseValues)
 	ON_COMMAND(ID_INCREASEVALUESCOARSE, OnCoarseIncreaseValues)
 	ON_COMMAND(ID_EDIT_PASTEOVERWRITE, OnEditPasteOverwrite)
@@ -3832,7 +3833,7 @@ void CFamiTrackerView::EditReplace(stChanNote &Note)		// // //
 	// pAction->SaveRedoState(static_cast<CMainFrame*>(GetParentFrame()));		// // //
 }
 
-void CFamiTrackerView::OnUpdateFindNext(CCmdUI *pCmdUI)		// // //
+void CFamiTrackerView::OnUpdateFind(CCmdUI *pCmdUI)		// // //
 {
 	InvalidateCursor();
 }

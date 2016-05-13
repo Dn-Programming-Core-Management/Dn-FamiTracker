@@ -168,7 +168,7 @@ private:
 public:
 	int m_iTrack;
 
-private:
+protected:
 	CFamiTrackerDoc *const m_pDocument;
 	const CPatternEditor *const m_pPatternEditor;
 };

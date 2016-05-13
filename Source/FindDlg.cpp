@@ -38,58 +38,7 @@
 #define FIND_WILD _T("*")
 #define FIND_BLANK _T("!")
 
-// CFindDlg dialog
 
-IMPLEMENT_DYNAMIC(CFindDlg, CDialog)
-
-CFindDlg::CFindDlg(CWnd* pParent /*=NULL*/) : CDialog(CFindDlg::IDD, pParent),
-	m_bFound(false),
-	m_bSkipFirst(true),
-	m_bVisible(true),
-	m_iFrame(0),
-	m_iRow(0),
-	m_iChannel(0)
-{
-	//memset(&m_searchTerm, 0, sizeof(searchTerm));
-	//memset(&m_replaceTerm, 0, sizeof(replaceTerm));
-}
-
-CFindDlg::~CFindDlg()
-{
-	SAFE_RELEASE(m_cFindNoteField);
-	SAFE_RELEASE(m_cFindNoteField2);
-	SAFE_RELEASE(m_cFindInstField);
-	SAFE_RELEASE(m_cFindInstField2);
-	SAFE_RELEASE(m_cFindVolField);
-	SAFE_RELEASE(m_cFindVolField2);
-	SAFE_RELEASE(m_cFindEffField);
-	SAFE_RELEASE(m_cReplaceNoteField);
-	SAFE_RELEASE(m_cReplaceInstField);
-	SAFE_RELEASE(m_cReplaceVolField);
-	SAFE_RELEASE(m_cReplaceEffField);
-	SAFE_RELEASE(m_cSearchArea);
-	SAFE_RELEASE(m_cEffectColumn);
-}
-
-void CFindDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-}
-
-
-BEGIN_MESSAGE_MAP(CFindDlg, CDialog)
-	ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_FIND_NOTE, IDC_CHECK_FIND_EFF, OnUpdateFields)
-	ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_REPLACE_NOTE, IDC_CHECK_REPLACE_EFF, OnUpdateFields)
-	ON_BN_CLICKED(IDC_BUTTON_FIND_NEXT, OnBnClickedButtonFindNext)
-	ON_BN_CLICKED(IDC_BUTTON_REPLACE, OnBnClickedButtonReplace)
-END_MESSAGE_MAP()
-
-
-// CFindDlg message handlers
-
-const CString CFindDlg::m_pNoteName[7] = {_T("C"), _T("D"), _T("E"), _T("F"), _T("G"), _T("A"), _T("B")};
-const CString CFindDlg::m_pNoteSign[3] = {_T("b"), _T("-"), _T("#")};
-const int CFindDlg::m_iNoteOffset[7] = {NOTE_C, NOTE_D, NOTE_E, NOTE_F, NOTE_G, NOTE_A, NOTE_B};
 
 enum {
 	WC_NOTE = 0,
@@ -99,8 +48,6 @@ enum {
 	WC_EFF,
 	WC_PARAM
 };
-
-class CPatternView;
 
 #pragma warning ( disable : 4351 ) // "new behaviour: elements of array [...] will be default initialized"
 
@@ -142,6 +89,188 @@ searchTerm& searchTerm::operator=(searchTerm &&other)
 
 	return *this;
 }
+
+
+
+CFindCursor::CFindCursor(CPatternEditor *pEditor, int Track, const CCursorPos &Pos, const CSelection &Scope) :
+	CPatternIterator(pEditor, Track, Pos),
+	m_Scope(Scope.GetNormalized()),
+	m_cpBeginPos {Pos}
+{
+}
+
+void CFindCursor::Move(direction_t Dir)
+{
+	if (ResetPosition(Dir))
+		return;
+
+	switch (Dir) {
+	case direction_t::UP: operator-=(1); break;
+	case direction_t::DOWN: operator+=(1); break;
+	case direction_t::LEFT: --m_iChannel; break;
+	case direction_t::RIGHT: ++m_iChannel; break;
+	}
+
+	if (Contains()) return;
+
+	switch (Dir) {
+	case direction_t::UP:
+		m_iFrame = m_Scope.m_cpEnd.m_iFrame;
+		m_iRow = m_Scope.m_cpEnd.m_iRow;
+		if (--m_iChannel < m_Scope.m_cpStart.m_iChannel)
+			m_iChannel = m_Scope.m_cpEnd.m_iChannel;
+		break;
+	case direction_t::DOWN:
+		m_iFrame = m_Scope.m_cpStart.m_iFrame;
+		m_iRow = m_Scope.m_cpStart.m_iRow;
+		if (++m_iChannel > m_Scope.m_cpEnd.m_iChannel)
+			m_iChannel = m_Scope.m_cpStart.m_iChannel;
+		break;
+	case direction_t::LEFT:
+		m_iChannel = m_Scope.m_cpEnd.m_iChannel;
+		if (--m_iRow < 0) {
+			--m_iFrame;
+			m_iRow = m_pPatternEditor->GetCurrentPatternLength(m_iFrame) - 1;
+		}
+		if (m_iFrame < m_Scope.m_cpStart.m_iFrame ||
+			m_iFrame == m_Scope.m_cpStart.m_iFrame && m_iRow < m_Scope.m_cpStart.m_iRow) {
+			m_iFrame = m_Scope.m_cpEnd.m_iFrame;
+			m_iRow = m_Scope.m_cpEnd.m_iRow;
+		}
+		break;
+	case direction_t::RIGHT:
+		m_iChannel = m_Scope.m_cpStart.m_iChannel;
+		if (++m_iRow >= m_pPatternEditor->GetCurrentPatternLength(m_iFrame)) {
+			++m_iFrame;
+			m_iRow = 0;
+		}
+		if (m_iFrame > m_Scope.m_cpEnd.m_iFrame ||
+			m_iFrame == m_Scope.m_cpEnd.m_iFrame && m_iRow > m_Scope.m_cpEnd.m_iRow) {
+			m_iFrame = m_Scope.m_cpStart.m_iFrame;
+			m_iRow = m_Scope.m_cpStart.m_iRow;
+		}
+		break;
+	}
+}
+
+bool CFindCursor::AtStart() const
+{
+	const int Frames = m_pDocument->GetFrameCount(m_iTrack);
+	return !((m_iFrame - m_cpBeginPos.m_iFrame) % Frames) &&
+		m_iRow == m_cpBeginPos.m_iRow && m_iChannel == m_cpBeginPos.m_iChannel;
+}
+
+void CFindCursor::Get(stChanNote *pNote) const
+{
+	CPatternIterator::Get(m_iChannel, pNote);
+}
+
+void CFindCursor::Set(const stChanNote *pNote)
+{
+	CPatternIterator::Set(m_iChannel, pNote);
+}
+
+bool CFindCursor::ResetPosition(direction_t Dir)
+{
+	if (Contains())
+		return false;
+
+	const CCursorPos *Source;
+	switch (Dir) {
+	case direction_t::DOWN: case direction_t::RIGHT:
+		m_cpBeginPos = m_Scope.m_cpEnd; Source = &m_Scope.m_cpStart; break;
+	case direction_t::UP: case direction_t::LEFT:
+		m_cpBeginPos = m_Scope.m_cpStart; Source = &m_Scope.m_cpEnd; break;
+	}
+	m_iFrame = Source->m_iFrame;
+	m_iRow = Source->m_iRow;
+	m_iChannel = Source->m_iChannel;
+	ASSERT(Contains());
+	return true;
+}
+
+bool CFindCursor::Contains() const
+{
+	if (m_iChannel < m_Scope.m_cpStart.m_iChannel || m_iChannel > m_Scope.m_cpEnd.m_iChannel)
+		return false;
+
+	const int Frames = m_pDocument->GetFrameCount(m_iTrack);
+	int Frame = m_iFrame;
+	int fStart = m_Scope.m_cpStart.m_iFrame % Frames;
+	if (fStart < 0) fStart += Frames;
+	int fEnd = m_Scope.m_cpEnd.m_iFrame % Frames;
+	if (fEnd < 0) fEnd += Frames;
+	Frame %= Frames;
+	if (Frame < 0) Frame += Frames;
+
+	bool InStart = Frame > fStart || (Frame == fStart && m_iRow >= m_Scope.m_cpStart.m_iRow);
+	bool InEnd = Frame < fEnd || (Frame == fEnd && m_iRow <= m_Scope.m_cpEnd.m_iRow);
+	if (fStart > fEnd || (fStart == fEnd && m_Scope.m_cpStart.m_iRow > m_Scope.m_cpEnd.m_iRow))
+		return InStart || InEnd;
+	else
+		return InStart && InEnd;
+}
+
+
+
+// CFindDlg dialog
+
+IMPLEMENT_DYNAMIC(CFindDlg, CDialog)
+
+CFindDlg::CFindDlg(CWnd* pParent /*=NULL*/) : CDialog(CFindDlg::IDD, pParent),
+	m_bFound(false),
+	m_bSkipFirst(true),
+	m_pFindCursor(nullptr),
+	m_iSearchDirection(CFindCursor::direction_t::RIGHT)
+{
+	//memset(&m_searchTerm, 0, sizeof(searchTerm));
+	//memset(&m_replaceTerm, 0, sizeof(replaceTerm));
+}
+
+CFindDlg::~CFindDlg()
+{
+	SAFE_RELEASE(m_cFindNoteField);
+	SAFE_RELEASE(m_cFindNoteField2);
+	SAFE_RELEASE(m_cFindInstField);
+	SAFE_RELEASE(m_cFindInstField2);
+	SAFE_RELEASE(m_cFindVolField);
+	SAFE_RELEASE(m_cFindVolField2);
+	SAFE_RELEASE(m_cFindEffField);
+	SAFE_RELEASE(m_cReplaceNoteField);
+	SAFE_RELEASE(m_cReplaceInstField);
+	SAFE_RELEASE(m_cReplaceVolField);
+	SAFE_RELEASE(m_cReplaceEffField);
+
+	SAFE_RELEASE(m_cSearchArea);
+	SAFE_RELEASE(m_cEffectColumn);
+	SAFE_RELEASE(m_pFindCursor);
+}
+
+void CFindDlg::DoDataExchange(CDataExchange* pDX)
+{
+	CDialog::DoDataExchange(pDX);
+}
+
+
+BEGIN_MESSAGE_MAP(CFindDlg, CDialog)
+	ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_FIND_NOTE, IDC_CHECK_FIND_EFF, OnUpdateFields)
+	ON_CONTROL_RANGE(BN_CLICKED, IDC_CHECK_REPLACE_NOTE, IDC_CHECK_REPLACE_EFF, OnUpdateFields)
+	ON_CONTROL_RANGE(EN_CHANGE, IDC_EDIT_FIND_NOTE, IDC_EDIT_FIND_EFF, OnUpdateFields)
+	ON_CONTROL_RANGE(EN_CHANGE, IDC_EDIT_REPLACE_NOTE, IDC_EDIT_REPLACE_EFF, OnUpdateFields)
+	ON_BN_CLICKED(IDC_BUTTON_FIND_NEXT, OnBnClickedButtonFindNext)
+	ON_BN_CLICKED(IDC_BUTTON_FIND_PREVIOUS, OnBnClickedButtonFindPrevious)
+	ON_BN_CLICKED(IDC_BUTTON_REPLACE, OnBnClickedButtonReplace)
+	ON_BN_CLICKED(IDC_BUTTON_FIND_REPLACEALL, OnBnClickedButtonFindReplaceall)
+END_MESSAGE_MAP()
+
+
+// CFindDlg message handlers
+
+const CString CFindDlg::m_pNoteName[7] = {_T("C"), _T("D"), _T("E"), _T("F"), _T("G"), _T("A"), _T("B")};
+const CString CFindDlg::m_pNoteSign[3] = {_T("b"), _T("-"), _T("#")};
+const int CFindDlg::m_iNoteOffset[7] = {NOTE_C, NOTE_D, NOTE_E, NOTE_F, NOTE_G, NOTE_A, NOTE_B};
+
+
 
 BOOL CFindDlg::OnInitDialog()
 {
@@ -206,6 +335,8 @@ void CFindDlg::UpdateFields()
 	m_cReplaceInstField->EnableWindow(IsDlgButtonChecked(IDC_CHECK_REPLACE_INST));
 	m_cReplaceVolField->EnableWindow(IsDlgButtonChecked(IDC_CHECK_REPLACE_VOL));
 	m_cReplaceEffField->EnableWindow(IsDlgButtonChecked(IDC_CHECK_REPLACE_EFF));
+
+	Reset();
 }
 
 void CFindDlg::OnUpdateFields(UINT nID)
@@ -411,6 +542,9 @@ void CFindDlg::ParseEff(searchTerm &Term, CString str, bool Half)
 
 void CFindDlg::GetFindTerm()
 {
+	RaiseIf(m_cSearchArea->GetCurSel() == 4 && !m_pView->GetPatternEditor()->IsSelecting(),
+			_T("Cannot use \"Selection\" as the search scope if there is no active pattern selection."));
+
 	CString str = _T("");
 	searchTerm newTerm;
 
@@ -495,7 +629,7 @@ void CFindDlg::GetReplaceTerm()
 				_T("the option \"Remove original data\" is enabled."));
 	}
 
-	m_replaceTerm = std::move(newTerm);
+	m_replaceTerm = toReplace(&newTerm);
 }
 
 replaceTerm CFindDlg::toReplace(const searchTerm *x)
@@ -586,135 +720,102 @@ void CFindDlg::RaiseIf(bool Check, LPCTSTR Str, ...)
 
 bool CFindDlg::Find(bool ShowEnd)
 {
-	m_pDocument = static_cast<CFamiTrackerDoc*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveDocument());
-	m_pView = static_cast<CFamiTrackerView*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveView());
+	const int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
+	const int Frames = m_pDocument->GetFrameCount(Track);
+
+	PrepareCursor(false);
 	stChanNote Target;
-	unsigned int Filter = m_cSearchArea->GetCurSel();
-	int Track = static_cast<CMainFrame*>(theApp.m_pMainWnd)->GetSelectedTrack();
+	if (m_pFindCursor->ResetPosition(m_iSearchDirection))
+		m_bSkipFirst = false;
 
-	unsigned int BeginFrame = m_bVisible ? m_pView->GetSelectedFrame() : m_iFrame,
-				 BeginRow   = m_bVisible ? m_pView->GetSelectedRow() : m_iRow,
-				 BeginChan  = m_bVisible ? m_pView->GetSelectedChannel() : m_iChannel;
-	bool bFirst = true, bSecond = false, bVertical = IsDlgButtonChecked(IDC_CHECK_VERTICAL_SEARCH) == BST_CHECKED;
-
-	const unsigned int EndFrame = FIND_SINGLE_FRAME(Filter) ? BeginFrame + 1 : m_pDocument->GetFrameCount(Track);
-	for (unsigned int i = FIND_SINGLE_FRAME(Filter) ? BeginFrame : 0; i <= EndFrame; i++) {
-		if (!bSecond && i == (FIND_SINGLE_FRAME(Filter) ? BeginFrame + 1 : m_pDocument->GetFrameCount(Track))) {
-			bSecond = true;
-			i = FIND_SINGLE_FRAME(Filter) ? BeginFrame : 0;
-		}
-		int j, k;
-		int jLimit = m_pView->GetPatternEditor()->GetCurrentPatternLength(i);
-		int kStart = FIND_SINGLE_CHANNEL(Filter) ? BeginChan : 0;
-		int kLimit = FIND_SINGLE_CHANNEL(Filter) ? BeginChan + 1 : m_pDocument->GetChannelCount();
-		for (int jk = 0; jk < jLimit * (kLimit - kStart); jk++) {
-			if (bFirst) {
-				bFirst = false;
-				i = BeginFrame; j = BeginRow; k = BeginChan;
-				jLimit = m_pView->GetPatternEditor()->GetCurrentPatternLength(i);
-				if (bVertical) jk = j + (k - kStart) * jLimit;
-				else jk = j * (kLimit - kStart) + (k - kStart);
-				if (m_bSkipFirst) continue;
-			}
-			if (bVertical) {
-				j = jk % jLimit; k = jk / jLimit + kStart;
-			}
-			else {
-				j = jk / (kLimit - kStart); k = jk % (kLimit - kStart) + kStart;
-			}
-			m_pDocument->GetNoteData(Track, i, k, j, &Target);
-
-			if (CompareFields(Target, k == CHANID_NOISE, m_pDocument->GetEffColumns(Track, k))) {
-				m_iFrame = i;
-				m_iRow = j;
-				m_iChannel = k;
-				if (m_bVisible) {
-					m_pView->SelectFrame(i);
-					m_pView->SelectRow(j);
-					m_pView->SelectChannel(k);
-				}
-				m_bSkipFirst = true; m_bFound = true; return m_bFound;
-			}
-			if (bSecond && i == BeginFrame && j == BeginRow && k == BeginChan) {
-				if (ShowEnd) AfxMessageBox(IDS_FIND_NONE, MB_OK | MB_ICONINFORMATION);
-				m_bFound = false; return m_bFound;
+	do {
+		if (m_bSkipFirst)
+			m_bSkipFirst = false;
+		else {
+			m_pFindCursor->Get(&Target);
+			if (CompareFields(Target, m_pFindCursor->m_iChannel == CHANID_NOISE,
+							  m_pDocument->GetEffColumns(Track, m_pFindCursor->m_iChannel))) {
+				// m_pFindCursor will be destroyed
+				int Frame = m_pFindCursor->m_iFrame % Frames;
+				int Row = m_pFindCursor->m_iRow;
+				int Channel = m_pFindCursor->m_iChannel;
+				m_pView->SelectFrame(Frame);
+				m_pView->SelectRow(Row);
+				m_pView->SelectChannel(Channel);
+				m_bSkipFirst = true; return m_bFound = true;
 			}
 		}
-	}
+		m_pFindCursor->Move(m_iSearchDirection);
+	} while (!m_pFindCursor->AtStart());
 
+	if (ShowEnd) AfxMessageBox(IDS_FIND_NONE, MB_ICONINFORMATION);
 	m_bSkipFirst = true;
-	m_bFound = false; return m_bFound;
+	return m_bFound = false;
 }
 
 bool CFindDlg::Replace(CCompoundAction *pAction)
 {
-	m_pDocument = static_cast<CFamiTrackerDoc*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveDocument());
-	m_pView = static_cast<CFamiTrackerView*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveView());
 	stChanNote Target;
-	int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
-
-	replaceTerm Replace = toReplace(&m_replaceTerm);
+	const int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
 
 	if (m_bFound) {
-		m_pDocument->GetNoteData(Track, m_iFrame, m_iChannel, m_iRow, &Target);
+		ASSERT(m_pFindCursor != nullptr);
+		m_pFindCursor->Get(&Target);
 		int EffColumn = m_cEffectColumn->GetCurSel();
-		if (EffColumn == MAX_EFFECT_COLUMNS && (Replace.Definite[WC_EFF] || Replace.Definite[WC_PARAM])) {
+		if (EffColumn == MAX_EFFECT_COLUMNS && (m_replaceTerm.Definite[WC_EFF] || m_replaceTerm.Definite[WC_PARAM])) {
 			for (int i = 0; i < MAX_EFFECT_COLUMNS && EffColumn != MAX_EFFECT_COLUMNS; i++)
-				if (Replace.Note.EffNumber[0] == Target.EffNumber[i] && Replace.Note.EffParam[0] == Target.EffParam[i])
+				if (m_replaceTerm.Note.EffNumber[0] == Target.EffNumber[i] && m_replaceTerm.Note.EffParam[0] == Target.EffParam[i])
 					EffColumn = i;
 		}
 
-		if (Replace.Definite[WC_NOTE])
-			Target.Note = Replace.Note.Note;
+		if (m_replaceTerm.Definite[WC_NOTE])
+			Target.Note = m_replaceTerm.Note.Note;
 		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE))
 			Target.Note = NONE;
-		if (Replace.Definite[WC_OCT])
-			Target.Octave = Replace.Note.Octave;
+		if (m_replaceTerm.Definite[WC_OCT])
+			Target.Octave = m_replaceTerm.Note.Octave;
 		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE))
 			Target.Octave = 0;
-		if (Replace.Definite[WC_INST])
-			Target.Instrument = Replace.Note.Instrument;
+		if (m_replaceTerm.Definite[WC_INST])
+			Target.Instrument = m_replaceTerm.Note.Instrument;
 		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE))
 			Target.Instrument = MAX_INSTRUMENTS;
-		if (Replace.Definite[WC_VOL])
-			Target.Vol = Replace.Note.Vol;
+		if (m_replaceTerm.Definite[WC_VOL])
+			Target.Vol = m_replaceTerm.Note.Vol;
 		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE))
 			Target.Vol = MAX_VOLUME;
 
-		if (Replace.Definite[WC_EFF]) {
+		if (m_replaceTerm.Definite[WC_EFF]) {
 			switch (m_pDocument->GetChipType(m_pView->GetSelectedChannel())) {
 			case SNDCHIP_FDS:
-				for (int i = 0; i < sizeof(FDS_EFFECTS); i++)
-					if (EFF_CHAR[Replace.Note.EffNumber[0] - 1] == EFF_CHAR[FDS_EFFECTS[i] - 1]) {
-						Replace.Note.EffNumber[0] = FDS_EFFECTS[i];
-						break;
+				for (auto e : FDS_EFFECTS)
+					if (EFF_CHAR[m_replaceTerm.Note.EffNumber[0] - 1] == EFF_CHAR[e - 1]) {
+						m_replaceTerm.Note.EffNumber[0] = e; break;
 					}
 				break;
 			case SNDCHIP_S5B:
-				for (int i = 0; i < sizeof(S5B_EFFECTS); i++)
-					if (EFF_CHAR[Replace.Note.EffNumber[0] - 1] == EFF_CHAR[S5B_EFFECTS[i] - 1]) {
-						Replace.Note.EffNumber[0] = S5B_EFFECTS[i];
-						break;
+				for (auto e : S5B_EFFECTS)
+					if (EFF_CHAR[m_replaceTerm.Note.EffNumber[0] - 1] == EFF_CHAR[e - 1]) {
+						m_replaceTerm.Note.EffNumber[0] = e; break;
 					}
 				break;
 			case SNDCHIP_N163:
-				for (int i = 0; i < sizeof(N163_EFFECTS); i++)
-					if (EFF_CHAR[Replace.Note.EffNumber[0] - 1] == EFF_CHAR[N163_EFFECTS[i] - 1]) {
-						Replace.Note.EffNumber[0] = N163_EFFECTS[i];
-						break;
+				for (auto e : N163_EFFECTS)
+					if (EFF_CHAR[m_replaceTerm.Note.EffNumber[0] - 1] == EFF_CHAR[e - 1]) {
+						m_replaceTerm.Note.EffNumber[0] = e; break;
 					}
 				break;
 			}
-			Target.EffNumber[EffColumn]	= Replace.Note.EffNumber[0];
+			Target.EffNumber[EffColumn]	= m_replaceTerm.Note.EffNumber[0];
 		}
 		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) Target.EffNumber[EffColumn] = EF_NONE;
-		if (Replace.Definite[WC_PARAM]) Target.EffParam[EffColumn] = Replace.Note.EffParam[0];
+		if (m_replaceTerm.Definite[WC_PARAM]) Target.EffParam[EffColumn] = m_replaceTerm.Note.EffParam[0];
 		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) Target.EffParam[EffColumn] = 0;
 		if (pAction)
-			pAction->JoinAction(new CPActionReplaceNote(Target, m_iFrame, m_iRow, m_iChannel));
+			pAction->JoinAction(new CPActionReplaceNote(Target,
+								m_pFindCursor->m_iFrame, m_pFindCursor->m_iRow, m_pFindCursor->m_iChannel));
 		else
 			m_pView->EditReplace(Target);
-//		m_pDocument->SetNoteData(Track, m_iFrame, m_iChannel, m_iRow, &Target);
 		m_bFound = false;
 		return true;
 	}
@@ -724,86 +825,155 @@ bool CFindDlg::Replace(CCompoundAction *pAction)
 	}
 }
 
-void CFindDlg::OnBnClickedButtonFindNext()
+bool CFindDlg::PrepareFind()
 {
+	m_pDocument = static_cast<CFamiTrackerDoc*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveDocument());
+	m_pView = static_cast<CFamiTrackerView*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveView());
+	if (!m_pDocument || !m_pView) {
+		AfxMessageBox(_T("Unknown error."), MB_ICONERROR); return false;
+	}
+	
 	try {
 		GetFindTerm();
 	}
 	catch (CFindException *e) {
 		AfxMessageBox(e->what(), MB_OK | MB_ICONSTOP);
 		delete e;
-		return;
+		return false;
 	}
 
-	m_bVisible = true;
+	return true;
+}
+
+bool CFindDlg::PrepareReplace()
+{
+	if (!PrepareFind()) return false;
+	
+	try {
+		RaiseIf(m_cEffectColumn->GetCurSel() == MAX_EFFECT_COLUMNS,
+				_T("\"Any\" cannot be used as the effect column scope for replacing."));
+		GetReplaceTerm();
+	}
+	catch (CFindException *e) {
+		AfxMessageBox(e->what(), MB_OK | MB_ICONSTOP);
+		delete e;
+		return false;
+	}
+
+	return (m_pView->GetEditMode() && !(theApp.IsPlaying() && m_pView->GetFollowMode()));
+}
+
+void CFindDlg::PrepareCursor(bool ReplaceAll)
+{
+	if (m_pFindCursor != nullptr) return;
+	
+	const int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
+	const int Frames = m_pDocument->GetFrameCount(Track);
+	const CPatternEditor *pEditor = m_pView->GetPatternEditor();
+	CCursorPos Cursor = pEditor->GetCursor();
+	CSelection Scope;
+
+	if (m_cSearchArea->GetCurSel() == 4) { // Selection
+		Scope = pEditor->GetSelection().GetNormalized();
+		if (Scope.m_cpStart.m_iFrame < 0 || Scope.m_cpEnd.m_iFrame < 0) {
+			Scope.m_cpStart.m_iFrame += Frames;
+			Scope.m_cpEnd.m_iFrame += Frames;
+		}
+	}
+	else {
+		switch (m_cSearchArea->GetCurSel()) {
+		case 0: case 1: // Track, Channel
+			Scope.m_cpStart.m_iFrame = 0;
+			Scope.m_cpEnd.m_iFrame = Frames - 1; break;
+		case 2: case 3: // Frame, Pattern
+			Scope.m_cpStart.m_iFrame = Scope.m_cpEnd.m_iFrame = Cursor.m_iFrame; break;
+		}
+
+		switch (m_cSearchArea->GetCurSel()) {
+		case 0: case 2: // Track, Frame
+			Scope.m_cpStart.m_iChannel = 0;
+			Scope.m_cpEnd.m_iChannel = m_pDocument->GetChannelCount() - 1; break;
+		case 1: case 3: // Channel, Pattern
+			Scope.m_cpStart.m_iChannel = Scope.m_cpEnd.m_iChannel = Cursor.m_iChannel; break;
+		}
+
+		Scope.m_cpStart.m_iRow = 0;
+		Scope.m_cpEnd.m_iRow = pEditor->GetCurrentPatternLength(Scope.m_cpEnd.m_iFrame) - 1;
+	}
+	m_pFindCursor = new CFindCursor {m_pView->GetPatternEditor(), Track,
+		ReplaceAll ? Scope.m_cpStart : Cursor, Scope};
+}
+
+void CFindDlg::OnBnClickedButtonFindNext()
+{
+	if (!PrepareFind()) return;
+
+	m_iSearchDirection = IsDlgButtonChecked(IDC_CHECK_VERTICAL_SEARCH) ?
+		CFindCursor::direction_t::DOWN : CFindCursor::direction_t::RIGHT;
+	Find(true);
+	m_pView->SetFocus();
+}
+
+void CFindDlg::OnBnClickedButtonFindPrevious()
+{
+	if (!PrepareFind()) return;
+
+	m_iSearchDirection = IsDlgButtonChecked(IDC_CHECK_VERTICAL_SEARCH) ?
+		CFindCursor::direction_t::UP : CFindCursor::direction_t::LEFT;
 	Find(true);
 	m_pView->SetFocus();
 }
 
 void CFindDlg::OnBnClickedButtonReplace()
 {
-	try {
-		RaiseIf(m_cEffectColumn->GetCurSel() == MAX_EFFECT_COLUMNS,
-				_T("\"Any\" cannot be used as the effect column scope for replacing."));
-		GetFindTerm();
-		GetReplaceTerm();
-	}
-	catch (CFindException *e) {
-		AfxMessageBox(e->what(), MB_OK | MB_ICONSTOP);
-		delete e;
-		return;
-	}
+	if (!PrepareReplace()) return;
 
-	m_pView = static_cast<CFamiTrackerView*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveView());
-	if (!m_pView->GetEditMode()) return;
-	if (theApp.IsPlaying() && m_pView->GetFollowMode())
-		return;
+	m_iSearchDirection = IsDlgButtonChecked(IDC_CHECK_VERTICAL_SEARCH) ?
+		CFindCursor::direction_t::DOWN : CFindCursor::direction_t::RIGHT;
+	Replace();
+	Find(false);
+	m_pView->SetFocus();
+}
 
-	if (IsDlgButtonChecked(IDC_CHECK_REPLACE_ALL)) {
-		if (AfxMessageBox(IDS_REPLACE_ALL, MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2) == IDNO)
-			return;
-		unsigned int Count = 0;
-		CString str;
+void CFindDlg::OnBnClickedButtonFindReplaceall()
+{
+	if (!PrepareReplace()) return;
+	
+	const int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
+	unsigned int Count = 0;
+	CString str;
 		
-		unsigned int Filter = m_cSearchArea->GetCurSel();
-		unsigned int ZipPos = 0, PrevPos = 0;
-		m_iFrame = FIND_SINGLE_FRAME(Filter) ? m_pView->GetSelectedFrame() : 0;
-		m_iChannel = FIND_SINGLE_CHANNEL(Filter) ? m_pView->GetSelectedChannel() : 0;
-		m_iRow = 0;
+	unsigned int Filter = m_cSearchArea->GetCurSel();
+	unsigned int ZipPos = 0, PrevPos = 0;
 
-		m_bSkipFirst = false;
-		m_bVisible = false;
+	m_iSearchDirection = IsDlgButtonChecked(IDC_CHECK_VERTICAL_SEARCH) ?
+		CFindCursor::direction_t::DOWN : CFindCursor::direction_t::RIGHT;
 
-		CCompoundAction *pAction = new CCompoundAction { };
+	CCompoundAction *pAction = new CCompoundAction { };
 
-		Find(false);
-		while (m_bFound) {
-			Replace(pAction);
-			Count++;
-			Find(false);
-			if (IsDlgButtonChecked(IDC_CHECK_VERTICAL_SEARCH))
-				ZipPos = (m_iFrame << 16) + (m_iChannel << 8) + m_iRow;
-			else
-				ZipPos = (m_iFrame << 16) + (m_iRow << 8) + m_iChannel;
-			if (ZipPos <= PrevPos) break;
-			else PrevPos = ZipPos;
-		}
-
-		static_cast<CMainFrame*>(AfxGetMainWnd())->AddAction(pAction);
-		m_pDocument->UpdateAllViews(NULL, UPDATE_PATTERN);
-//		static_cast<CMainFrame*>(AfxGetMainWnd())->ResetUndo();
-
-		str.Format(_T("%d occurrence(s) replaced."), Count);
-		AfxMessageBox(str, MB_OK | MB_ICONINFORMATION);
+	{
+		PrepareCursor(true);
+		stChanNote Target;
+		do {
+			m_pFindCursor->Get(&Target);
+			if (CompareFields(Target, m_pFindCursor->m_iChannel == CHANID_NOISE,
+								m_pDocument->GetEffColumns(Track, m_pFindCursor->m_iChannel))) {
+				m_bFound = true;
+				Replace(pAction);
+				++Count;
+			}
+			m_pFindCursor->Move(m_iSearchDirection);
+		} while (!m_pFindCursor->AtStart());
 	}
-	else {
-		m_bVisible = true;
-		Replace();
-		Find(false);
-	}
+
+	static_cast<CMainFrame*>(AfxGetMainWnd())->AddAction(pAction);
+	m_pView->SetFocus();
+	str.Format(_T("%d occurrence(s) replaced."), Count);
+	AfxMessageBox(str, MB_OK | MB_ICONINFORMATION);
 }
 
 void CFindDlg::Reset()
 {
 	m_bFound = false;
+	SAFE_RELEASE(m_pFindCursor);
 }

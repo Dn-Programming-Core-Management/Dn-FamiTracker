@@ -320,6 +320,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_SELECT_TRACK, OnEditSelecttrack)
 	ON_COMMAND(ID_EDIT_FIND_TOGGLE, OnEditFindToggle)
 	ON_COMMAND(ID_FIND_NEXT, OnFindNext)
+	ON_COMMAND(ID_FIND_PREVIOUS, OnFindPrevious)
 	ON_COMMAND(ID_EDIT_GOTO, OnEditGoto)
 	ON_COMMAND(ID_EDIT_SWAPCHANNELS, OnEditSwapChannels)
 	ON_COMMAND(ID_EDIT_STRETCHPATTERNS, OnEditStretchpatterns)
@@ -3302,6 +3303,11 @@ void CMainFrame::OnEasterEggKraid5()
 void CMainFrame::OnFindNext()
 {
 	m_pFindDlg->OnBnClickedButtonFindNext();
+}
+
+void CMainFrame::OnFindPrevious()
+{
+	m_pFindDlg->OnBnClickedButtonFindPrevious();
 }
 
 void CMainFrame::OnEditFindToggle()

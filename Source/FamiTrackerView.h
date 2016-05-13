@@ -401,7 +401,7 @@ public:
 	afx_msg LRESULT OnUserDumpInst(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnTrackerDetune();
 	afx_msg void OnTrackerGroove();
-	afx_msg void OnUpdateFindNext(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateFind(CCmdUI *pCmdUI);
 	afx_msg void OnCoarseDecreaseValues();
 	afx_msg void OnCoarseIncreaseValues();
 	afx_msg void OnEditCopyAsText();
