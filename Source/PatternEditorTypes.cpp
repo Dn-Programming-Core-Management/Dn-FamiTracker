@@ -185,12 +185,7 @@ bool CSelection::IsColumnSelected(column_t Column, int Channel) const
 void CSelection::Normalize(CCursorPos &Begin, CCursorPos &End) const		// // //
 {
 	CCursorPos Temp {GetRowStart(), GetChanStart(), GetColStart(), GetFrameStart()};
-	std::swap(End, CCursorPos {
-		m_cpStart.m_iRow + m_cpEnd.m_iRow - Temp.m_iRow,
-		m_cpStart.m_iChannel + m_cpEnd.m_iChannel - Temp.m_iChannel,
-		static_cast<cursor_column_t>(m_cpStart.m_iColumn + m_cpEnd.m_iColumn - Temp.m_iColumn),
-		m_cpStart.m_iFrame + m_cpEnd.m_iFrame - Temp.m_iFrame
-	});
+	std::swap(End, CCursorPos {GetRowEnd(), GetChanEnd(), GetColEnd(), GetFrameEnd()});
 	std::swap(Begin, Temp);
 }
 
