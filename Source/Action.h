@@ -18,8 +18,11 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
+#include <vector>
+#include <memory>
 
 // Undo / redo helper class
 
@@ -56,6 +59,9 @@ public:
 	// // // Restore the state just after the action
 	virtual void RestoreRedoState(CMainFrame *pMainFrm) const = 0;
 
+	// // // Combine current action with another one, return true if permissible
+	virtual bool Merge(const CAction *Other);
+
 	// Get the action type
 	int GetAction() const;
 
@@ -70,7 +76,6 @@ class CActionHandler
 {
 public:
 	CActionHandler();
-	~CActionHandler();
 
 	// Clear the undo list
 	void Clear();
@@ -101,12 +106,9 @@ public:
 
 public:
 	// Levels of undo in the editor. Higher value requires more memory
-	static const int MAX_LEVELS = 64;
+	static const int MAX_LEVELS;
 
 private:
-	CAction *m_pActionStack[MAX_LEVELS + 1];
-	int		m_iUndoLevel;
-	int		m_iRedoLevel;
-
+	std::vector<std::unique_ptr<CAction>> m_UndoStack, m_RedoStack;
 };
 

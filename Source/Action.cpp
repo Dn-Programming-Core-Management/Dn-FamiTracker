@@ -33,6 +33,11 @@ CAction::~CAction()
 {
 }
 
+bool CAction::Merge(const CAction *Other)		// // //
+{
+	return false;
+}
+
 int CAction::GetAction() const
 {
 	return m_iAction;
@@ -41,90 +46,72 @@ int CAction::GetAction() const
 
 // CActionHandler /////////////////////////////////////////////////////////////////
 
-CActionHandler::CActionHandler()
-{
-	m_iUndoLevel = 0;
-	m_iRedoLevel = 0;
+const int CActionHandler::MAX_LEVELS = 64;		// // //
 
-	for (int i = 0; i < MAX_LEVELS; ++i) {
-		m_pActionStack[i] = NULL;
-	}
-}
-
-CActionHandler::~CActionHandler()
+CActionHandler::CActionHandler() : m_UndoStack(), m_RedoStack()
 {
-	Clear();
 }
 
 void CActionHandler::Clear()
 {
-	m_iUndoLevel = 0;
-	m_iRedoLevel = 0;
-
-	for (int i = 0; i < MAX_LEVELS; ++i) {
-		SAFE_RELEASE(m_pActionStack[i]);
-	}
+	m_UndoStack.clear();
+	m_RedoStack.clear();
 }
 
 void CActionHandler::Push(CAction *pAction)
 {
-	if (m_iUndoLevel < MAX_LEVELS) {
-		SAFE_RELEASE(m_pActionStack[m_iUndoLevel]);
-		m_pActionStack[m_iUndoLevel++] = pAction;
+	auto ptr = std::unique_ptr<CAction>(pAction);		// // //
+	if (m_UndoStack.empty() || !(*m_UndoStack.rbegin())->Merge(pAction)) {
+		if (m_UndoStack.size() == MAX_LEVELS)
+			m_UndoStack.erase(m_UndoStack.begin(), m_UndoStack.begin() + 1);
+		m_UndoStack.push_back(std::move(ptr));
 	}
-	else {
-		SAFE_RELEASE(m_pActionStack[0]);
-		for (int i = 1; i < MAX_LEVELS; ++i)
-			m_pActionStack[i - 1] = m_pActionStack[i];
-		m_pActionStack[MAX_LEVELS - 1] = pAction;
-	}
-
-	m_iRedoLevel = 0;
+	m_RedoStack.clear();
 }
 
 CAction *CActionHandler::PopUndo()
 {
-	if (!m_iUndoLevel)
-		return NULL;
+	if (m_UndoStack.empty())
+		return nullptr;
 
-	m_iRedoLevel++;
-	m_iUndoLevel--;
-
-	return m_pActionStack[m_iUndoLevel];
+	CAction *pAction = m_UndoStack.rbegin()->release();
+	m_UndoStack.erase(m_UndoStack.end() - 1, m_UndoStack.end());
+	m_RedoStack.push_back(std::unique_ptr<CAction>(pAction));
+	return pAction;
 }
 
 CAction *CActionHandler::PopRedo()
 {
-	if (!m_iRedoLevel)
-		return NULL;
+	if (m_RedoStack.empty())
+		return nullptr;
 
-	m_iUndoLevel++;
-	m_iRedoLevel--;
-
-	return m_pActionStack[m_iUndoLevel - 1];
+	CAction *pAction = m_RedoStack.rbegin()->release();
+	m_RedoStack.erase(m_RedoStack.end() - 1, m_RedoStack.end());
+	m_UndoStack.push_back(std::unique_ptr<CAction>(pAction));
+	return pAction;
 }
 
 CAction *CActionHandler::GetLastAction() const
 {
-	return (m_iUndoLevel == 0) ? NULL : m_pActionStack[m_iUndoLevel - 1];
+	return m_UndoStack.empty() ? nullptr : m_UndoStack.rbegin()->get();
 }
 
 int CActionHandler::GetUndoLevel() const
 {
-	return m_iUndoLevel;
+	return m_UndoStack.size();
 }
 
 int CActionHandler::GetRedoLevel() const
 {
-	return m_iRedoLevel;
+	return m_RedoStack.size();
 }
 
 bool CActionHandler::CanUndo() const
 {
-	return m_iUndoLevel > 0;
+	return !m_UndoStack.empty();
 }
 
 bool CActionHandler::CanRedo() const
 {
-	return m_iRedoLevel > 0;
+	return !m_RedoStack.empty();
 }
