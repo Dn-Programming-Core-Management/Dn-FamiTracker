@@ -841,25 +841,7 @@ void CMainFrame::SetRowCount(int Count)
 	if (!pDoc->IsFileLoaded())
 		return;
 
-	Count = std::max(Count, 1);
-	Count = std::min(Count, MAX_PATTERN_LENGTH);
-
-	if (Count != pDoc->GetPatternLength(m_iTrack)) {
-
-		CPatternAction *pAction = dynamic_cast<CPatternAction*>(GetLastAction(CPatternAction::ACT_PATTERN_LENGTH));
-
-		if (pAction == NULL) {
-			// New action
-			pAction = new CPatternAction(CPatternAction::ACT_PATTERN_LENGTH);
-			pAction->SetPatternLength(Count);
-			AddAction(pAction);
-		}
-		else {
-			// Update existing action
-			pAction->SetPatternLength(Count);
-			pAction->Update(this); // TODO: extend this to all CAction objects
-		}
-	}
+	AddAction(new CPActionPatternLen {std::min(std::max(Count, 1), MAX_PATTERN_LENGTH)});		// // //
 
 	if (m_wndDialogBar.GetDlgItemInt(IDC_ROWS) != Count)
 		m_wndDialogBar.SetDlgItemInt(IDC_ROWS, Count, FALSE);
@@ -889,7 +871,7 @@ void CMainFrame::SetFrameCount(int Count)
 		else {
 			// Update existing action
 			pAction->SetFrameCount(Count);
-			pAction->Update(this);
+			pAction->Update(this); // TODO: override CAction::Merge there
 		}
 	}
 
@@ -2726,7 +2708,6 @@ bool CMainFrame::AddAction(CAction *pAction)
 	if (m_pActionHandler->GetUndoLevel() == CActionHandler::MAX_LEVELS)
 		pDoc->SetExceededFlag();
 	
-	// 0CC: merge previous action if possible
 	m_pActionHandler->Push(pAction);
 
 	return true;

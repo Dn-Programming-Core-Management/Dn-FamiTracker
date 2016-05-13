@@ -52,19 +52,19 @@ struct CPatternEditorState		// // // TODO: might be moved to PatternEditor.h
 	void ApplyState(CPatternEditor *pEditor) const;
 
 	/*!	\brief The current track number at the time of the state's creation. */
-	const int Track;
+	int Track;
 
 	/*!	\brief The current cursor position at the time of the state's creation. */
-	const CCursorPos Cursor;
+	CCursorPos Cursor;
 
 	/*!	\brief The current selection position at the time of the state's creation. */
-	const CSelection Selection;
+	CSelection Selection;
 
 	/*!	\brief Whether a selection is active at the time of the state's creation. */
-	const bool IsSelecting;
+	bool IsSelecting;
 
 private:
-	const CSelection OriginalSelection;
+	CSelection OriginalSelection;
 };
 
 // Pattern commands
@@ -111,8 +111,6 @@ public:
 	void RestoreRedoState(CMainFrame *pMainFrm) const;		// // //
 
 public:
-	void Update(CMainFrame *pMainFrm);
-
 	void SetPaste(CPatternClipData *pClipData);
 	void SetPasteMode(paste_mode_t Mode);		// // //
 	void SetPastePos(paste_pos_t Pos);		// // //
@@ -120,23 +118,12 @@ public:
 	void SetPatternLength(int Length);
 
 private:
-	bool SetTargetSelection(CPatternEditor *pPatternEditor);		// // //
-	void CopySelection(const CPatternEditor *pPatternEditor);		// // //
-	void PasteSelection(CPatternEditor *pPatternEditor) const;		// // //
-	void CopyAuxiliary(const CPatternEditor *pPatternEditor);		// // //
-	void PasteAuxiliary(CPatternEditor *pPatternEditor) const;		// // //
-
-	void RestoreSelection(CPatternEditor *pPatternEditor) const;
-
 	virtual void UpdateView(CFamiTrackerDoc *pDoc) const;		// // //
 
 protected:
+	bool SetTargetSelection(CPatternEditor *pPatternEditor, CSelection &Sel);		// // //
 	void DeleteSelection(CMainFrame *pMainFrm, const CSelection &Sel) const;		// // //
 	bool ValidateSelection(const CMainFrame *pMainFrm) const;		// // //
-
-protected:
-	CPatternIterator GetStartIterator() const;		// // //
-	CPatternIterator GetEndIterator() const;
 	std::pair<CPatternIterator, CPatternIterator> GetIterators(const CMainFrame *pMainFrm) const;		// // //
 
 protected:
@@ -323,6 +310,19 @@ private:
 	void Redo(CMainFrame *pMainFrm) const;
 private:
 	unsigned m_iInstrumentIndex;
+};
+
+class CPActionPatternLen : public CPatternAction
+{
+public:
+	CPActionPatternLen(int Length);
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+	bool Merge(const CAction *Other);		// // //
+private:
+	int m_iOldPatternLen, m_iNewPatternLen;
 };
 
 class CPActionStretch : public CPSelectionAction

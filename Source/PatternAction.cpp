@@ -108,7 +108,7 @@ void CPatternAction::SetPatternLength(int Length)
 	m_iNewPatternLen = Length;
 }
 
-bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // //
+bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor, CSelection &Sel)		// // //
 {
 	CCursorPos Start;
 
@@ -189,7 +189,7 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // /
 
 	sel_condition_t Cond = pPatternEditor->GetSelectionCondition();
 	if (Cond == SEL_CLEAN) {
-		m_newSelection = New;
+		Sel = New;
 		return true;
 	}
 	else {
@@ -206,36 +206,13 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // /
 			break;
 		}
 		if (Confirm == IDYES) {
-			pPatternEditor->SetSelection(New);
-			m_newSelection = New;
+			pPatternEditor->SetSelection(Sel = New);
 			return true;
 		}
 		else {
 			return false;
 		}
 	}
-}
-
-void CPatternAction::CopySelection(const CPatternEditor *pPatternEditor)		// // //
-{
-	SAFE_RELEASE(m_pUndoClipData);
-	m_pUndoClipData = pPatternEditor->CopyRaw();
-}
-
-void CPatternAction::PasteSelection(CPatternEditor *pPatternEditor) const		// // //
-{
-	pPatternEditor->PasteRaw(m_pUndoClipData);
-}
-
-void CPatternAction::CopyAuxiliary(const CPatternEditor *pPatternEditor)		// // //
-{
-	SAFE_RELEASE(m_pAuxiliaryClipData);
-	m_pAuxiliaryClipData = pPatternEditor->CopyRaw();
-}
-
-void CPatternAction::PasteAuxiliary(CPatternEditor *pPatternEditor) const		// // //
-{
-	pPatternEditor->PasteRaw(m_pAuxiliaryClipData);
 }
 
 void CPatternAction::DeleteSelection(CMainFrame *pMainFrm, const CSelection &Sel) const		// // //
@@ -282,16 +259,6 @@ void CPatternAction::UpdateView(CFamiTrackerDoc *pDoc) const		// // //
 	pDoc->UpdateAllViews(NULL, UPDATE_FRAME); // cursor might have moved to different channel
 }
 
-CPatternIterator CPatternAction::GetStartIterator() const		// // //
-{
-	return GetIterators(static_cast<CMainFrame*>(AfxGetMainWnd())).first;
-}
-
-CPatternIterator CPatternAction::GetEndIterator() const
-{
-	return GetIterators(static_cast<CMainFrame*>(AfxGetMainWnd())).second;
-}
-
 std::pair<CPatternIterator, CPatternIterator> CPatternAction::GetIterators(const CMainFrame *pMainFrm) const
 {
 	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
@@ -308,26 +275,19 @@ bool CPatternAction::SaveState(const CMainFrame *pMainFrm)
 	CFamiTrackerDoc *pDoc = pView->GetDocument();
 	CPatternEditor *pPatternEditor = pView->GetPatternEditor();
 
-	const int Track = m_pUndoState->Track;		// // //
-	const int Frame = m_pUndoState->Cursor.m_iFrame;
-	const int Row = m_pUndoState->Cursor.m_iRow;
-	const int Channel = m_pUndoState->Cursor.m_iChannel;
-	const cursor_column_t Column = m_pUndoState->Cursor.m_iColumn;
-
 	// Save old state
 	switch (m_iAction) {
 		case ACT_DRAG_AND_DROP:
 			if (m_bDragDelete)
-				CopyAuxiliary(pPatternEditor);
-			// continue
-		case ACT_EDIT_PASTE:
-			if (!SetTargetSelection(pPatternEditor))		// // //
+				m_pAuxiliaryClipData = pPatternEditor->CopyRaw();
+			if (!SetTargetSelection(pPatternEditor, m_newSelection))		// // //
 				return false;
-			CopySelection(pPatternEditor);
+			m_pUndoClipData = pPatternEditor->CopyRaw();
 			break;
-		case ACT_PATTERN_LENGTH:
-			// Change pattern length
-			m_iOldPatternLen = pDoc->GetPatternLength(Track);
+		case ACT_EDIT_PASTE:
+			if (!SetTargetSelection(pPatternEditor, m_newSelection))		// // //
+				return false;
+			m_pUndoClipData = pPatternEditor->CopyRaw();
 			break;
 #ifdef _DEBUG
 		default:
@@ -380,27 +340,16 @@ void CPatternAction::Undo(CMainFrame *pMainFrm) const
 	CFamiTrackerDoc *pDoc = pView->GetDocument();
 	CPatternEditor *pPatternEditor = pView->GetPatternEditor();
 
-	const int Track = m_pUndoState->Track;		// // //
-	const int Frame = m_pUndoState->Cursor.m_iFrame;
-	const int Row = m_pUndoState->Cursor.m_iRow;
-	const int Channel = m_pUndoState->Cursor.m_iChannel;
-	const cursor_column_t Column = m_pUndoState->Cursor.m_iColumn;
-
 	switch (m_iAction) {
 		case ACT_EDIT_PASTE:		// // //
-			//pPatternEditor->SetSelection(m_newSelection);		// // //
-			PasteSelection(pPatternEditor);
+			pPatternEditor->SetSelection(m_newSelection);		// // //
+			pPatternEditor->PasteRaw(m_pUndoClipData);
 			break;
 		case ACT_DRAG_AND_DROP:
-			//pPatternEditor->SetSelection(m_newSelection);
-			PasteSelection(pPatternEditor);		// // //
-			//RestoreSelection(pPatternEditor);
+			pPatternEditor->SetSelection(m_newSelection);
+			pPatternEditor->PasteRaw(m_pUndoClipData);
 			if (m_bDragDelete)
-				PasteAuxiliary(pPatternEditor);
-			break;
-		case ACT_PATTERN_LENGTH:
-			pDoc->SetPatternLength(Track, m_iOldPatternLen);
-			pMainFrm->UpdateControls();
+				pPatternEditor->PasteRaw(m_pAuxiliaryClipData, m_selection.GetNormalized().m_cpStart);
 			break;
 #ifdef _DEBUG
 		default:
@@ -415,53 +364,21 @@ void CPatternAction::Redo(CMainFrame *pMainFrm) const
 	CFamiTrackerDoc *pDoc = pView->GetDocument();
 	CPatternEditor *pPatternEditor = pView->GetPatternEditor();
 
-	const int Track = m_pUndoState->Track;		// // //
-	const int Frame = m_pUndoState->Cursor.m_iFrame;
-	const int Row = m_pUndoState->Cursor.m_iRow;
-	const int Channel = m_pUndoState->Cursor.m_iChannel;
-	const cursor_column_t Column = m_pUndoState->Cursor.m_iColumn;
-
 	switch (m_iAction) {
 		case ACT_EDIT_PASTE:
 			pPatternEditor->Paste(m_pClipData, m_iPasteMode, m_iPastePos);		// // //
 			break;		// // //
 		case ACT_DRAG_AND_DROP:
-			//RestoreSelection(pPatternEditor);
+			pPatternEditor->SetSelection(m_selection);
 			if (m_bDragDelete)
 				DeleteSelection(pMainFrm, m_selection);		// // //
 			pPatternEditor->DragPaste(m_pClipData, &m_dragTarget, m_bDragMix);
-			break;
-		case ACT_PATTERN_LENGTH:
-			pDoc->SetPatternLength(Track, m_iNewPatternLen);
-			pMainFrm->UpdateControls();
 			break;
 #ifdef _DEBUG
 		default:
 			AfxMessageBox(_T("TODO: Redo for this action is not implemented"));
 #endif
 	}
-}
-
-void CPatternAction::Update(CMainFrame *pMainFrm)
-{
-	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
-	CFamiTrackerDoc *pDoc = pView->GetDocument();
-
-	switch (m_iAction) {
-		case ACT_PATTERN_LENGTH:
-			pDoc->SetPatternLength(m_pUndoState->Track, m_iNewPatternLen);		// // //
-			pDoc->UpdateAllViews(NULL, UPDATE_PATTERN);
-			pMainFrm->UpdateControls();
-			break;
-	}
-}
-
-void CPatternAction::RestoreSelection(CPatternEditor *pPatternEditor) const
-{
-//	if (m_bSelecting)
-//		pPatternEditor->SetSelection(m_selection);
-//	else
-//		pPatternEditor->CancelSelection();
 }
 
 
@@ -1120,6 +1037,46 @@ void CPActionReplaceInst::Redo(CMainFrame *pMainFrm) const
 			Note.Instrument = m_iInstrumentIndex;
 		it.first.Set(i, &Note);
 	} while (++it.first <= it.second);
+}
+
+
+
+CPActionPatternLen::CPActionPatternLen(int Length) :
+	CPatternAction(ACT_PATTERN_LENGTH), m_iNewPatternLen(Length)
+{
+}
+
+bool CPActionPatternLen::SaveState(const CMainFrame *pMainFrm)
+{
+	const CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	m_iOldPatternLen = pDoc->GetPatternLength(m_pUndoState->Track);
+	return m_iNewPatternLen != m_iOldPatternLen;
+}
+
+void CPActionPatternLen::Undo(CMainFrame *pMainFrm) const
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	pDoc->SetPatternLength(m_pUndoState->Track, m_iOldPatternLen);
+	pMainFrm->UpdateControls();
+}
+
+void CPActionPatternLen::Redo(CMainFrame *pMainFrm) const
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	pDoc->SetPatternLength(m_pUndoState->Track, m_iNewPatternLen);
+	pMainFrm->UpdateControls();
+}
+
+bool CPActionPatternLen::Merge(const CAction *Other)
+{
+	const CPActionPatternLen *pAction = dynamic_cast<const CPActionPatternLen*>(Other);
+	if (!pAction) return false;
+	if (m_pUndoState->Track != pAction->m_pUndoState->Track)
+		return false;
+
+	*m_pRedoState = *pAction->m_pRedoState;
+	m_iNewPatternLen = pAction->m_iNewPatternLen;
+	return true;
 }
 
 

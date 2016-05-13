@@ -3081,7 +3081,6 @@ void CFamiTrackerDoc::SetPatternLength(unsigned int Track, unsigned int Length)
 	if (pTrack->GetPatternLength() != Length) {
 		pTrack->SetPatternLength(Length);
 		SetModifiedFlag();
-		SetExceededFlag();			// // //
 	}
 }
 
