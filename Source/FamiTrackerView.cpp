@@ -2918,7 +2918,7 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 				else if (m_iLastNote == NOTE_RELEASE) {
 					Note.Note = RELEASE;
 				}
-				else if (m_iLastNote > NOTE_ECHO && m_iLastNote <= NOTE_ECHO + ECHO_BUFFER_LENGTH) {		// // //
+				else if (m_iLastNote >= NOTE_ECHO && m_iLastNote <= NOTE_ECHO + ECHO_BUFFER_LENGTH) {		// // //
 					Note.Note = ECHO;
 					Note.Octave = m_iLastNote - NOTE_ECHO;
 				}
