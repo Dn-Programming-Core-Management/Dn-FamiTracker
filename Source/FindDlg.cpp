@@ -33,13 +33,6 @@
 #include "PatternAction.h"
 #include "CompoundAction.h"
 
-#define FIND_SINGLE_CHANNEL(x) ( ((x) & 0x01) == 0x01 )
-#define FIND_SINGLE_FRAME(x) ( ((x) & 0x02) == 0x02 )
-#define FIND_WILD _T("*")
-#define FIND_BLANK _T("!")
-
-
-
 enum {
 	WC_NOTE = 0,
 	WC_OCT,
@@ -612,6 +605,9 @@ void CFindDlg::GetReplaceTerm()
 		RaiseIf(i == 6, _T("Replacement query is empty."));
 		if (newTerm.Definite[i]) break;
 	}
+
+	if ((newTerm.Note->Min == HALT || newTerm.Note->Min == RELEASE) && newTerm.Note->Min == newTerm.Note->Max)
+		newTerm.Oct->Min = newTerm.Oct->Max = 0;
 
 	RaiseIf(newTerm.Definite[WC_NOTE] && !newTerm.Note->IsSingle() ||
 			newTerm.Definite[WC_OCT] && !newTerm.Oct->IsSingle() ||
