@@ -180,9 +180,9 @@ BEGIN
         MENUITEM "&Go To...",                   ID_EDIT_GOTO
         POPUP "&Bookmarks"
         BEGIN
-            MENUITEM "&Toggle",                     ID_BOOKMARKS_TOGGLE
-            MENUITEM "&Next",                       ID_BOOKMARKS_NEXT
-            MENUITEM "&Previous",                   ID_BOOKMARKS_PREVIOUS
+            MENUITEM "&Toggle Bookmark",            ID_BOOKMARKS_TOGGLE
+            MENUITEM "&Next Bookmark",              ID_BOOKMARKS_NEXT
+            MENUITEM "&Previous Bookmark",          ID_BOOKMARKS_PREVIOUS
         END
         MENUITEM SEPARATOR
         MENUITEM "&Instrument Mask",            ID_EDIT_INSTRUMENTMASK

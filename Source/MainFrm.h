@@ -401,6 +401,7 @@ public:
 	afx_msg void OnModuleEstimateSongLength();
 	afx_msg void OnToggleMultiplexer();
 	afx_msg void OnUpdateEditCopySpecial(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateSelectMultiFrame(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateToggleFollow(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateToggleCompact(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateToggleFixTempo(CCmdUI *pCmdUI);

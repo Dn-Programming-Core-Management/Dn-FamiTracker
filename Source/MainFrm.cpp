@@ -339,6 +339,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_COPYAS_TEXT, OnUpdateEditCopySpecial)
 	ON_UPDATE_COMMAND_UI(ID_COPYAS_VOLUMESEQUENCE, OnUpdateEditCopySpecial)
 	ON_UPDATE_COMMAND_UI(ID_COPYAS_PPMCK, OnUpdateEditCopySpecial)
+	ON_UPDATE_COMMAND_UI(ID_SELECT_CHANNEL, OnUpdateSelectMultiFrame)
+	ON_UPDATE_COMMAND_UI(ID_SELECT_TRACK, OnUpdateSelectMultiFrame)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_FIND_TOGGLE, OnUpdateEditFindToggle)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_INTERPOLATE, OnUpdateSelectionEnabled)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_REVERSE, OnUpdateSelectionEnabled)
@@ -2413,6 +2415,11 @@ void CMainFrame::OnUpdateEditCopySpecial(CCmdUI *pCmdUI)		// // //
 {
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(GetActiveView());
 	pCmdUI->Enable((pView->IsSelecting() && GetFocus() == GetActiveView()) ? 1 : 0);
+}
+
+void CMainFrame::OnUpdateSelectMultiFrame(CCmdUI *pCmdUI)		// // //
+{
+	pCmdUI->Enable(theApp.GetSettings()->General.bMultiFrameSel ? TRUE : FALSE);
 }
 
 void CMainFrame::OnUpdateEditPaste(CCmdUI *pCmdUI)
