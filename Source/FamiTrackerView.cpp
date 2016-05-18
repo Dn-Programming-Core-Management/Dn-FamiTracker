@@ -2863,6 +2863,8 @@ bool CFamiTrackerView::EditEffParamColumn(stChanNote &Note, int Key, int EffectI
 
 void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 {
+	if (theApp.GetAccelerator()->IsKeyUsed(nChar)) return;		// // //
+
 	CFamiTrackerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
@@ -3003,6 +3005,8 @@ bool CFamiTrackerView::DoRelease() const
 
 void CFamiTrackerView::HandleKeyboardNote(char nChar, bool Pressed) 
 {
+	if (theApp.GetAccelerator()->IsKeyUsed(nChar)) return;		// // //
+
 	// Play a note from the keyboard
 	int Note = TranslateKey(nChar);
 	int Channel = m_pPatternEditor->GetChannel();

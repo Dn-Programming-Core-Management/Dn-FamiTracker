@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 
 #include "stdafx.h"
 #include "FamiTracker.h"
-#include "accelerator.h"
+#include "Accelerator.h"
 #include "Settings.h"
 
 /*
@@ -142,7 +142,8 @@ CAccelerator::CAccelerator() :
 	m_hAccel(NULL), 
 	m_hAdditionalAccel(NULL), 
 	m_pEntriesTable(new stAccelEntry[ACCEL_COUNT]), 
-	m_pAccelTable(new ACCEL[ACCEL_COUNT])
+	m_pAccelTable(new ACCEL[ACCEL_COUNT]),
+	m_iUsedKeys()		// // //
 {
 	ATLTRACE2(atlTraceGeneral, 0, "Accelerator: Accelerator table contains %d items\n", ACCEL_COUNT);
 }
@@ -248,6 +249,11 @@ bool CAccelerator::GetShortcutString(int id, CString &str) const
 	return false;
 }
 
+bool CAccelerator::IsKeyUsed(int nChar) const		// // //
+{
+	return m_iUsedKeys.count(nChar) > 0;
+}
+
 // Registry storage/loading
 
 void CAccelerator::SaveShortcuts(CSettings *pSettings) const
@@ -263,12 +269,16 @@ void CAccelerator::LoadShortcuts(CSettings *pSettings)
 	// Set up names and default values
 	LoadDefaults();
 
+	m_iUsedKeys.clear();		// // //
+
 	// Load custom values, if exists
 	for (int i = 0; i < ACCEL_COUNT; ++i) {
 		int Default = (m_pEntriesTable[i].mod << 8) | m_pEntriesTable[i].key;
 		int Setting = pSettings->LoadSetting(SHORTCUTS_SECTION, m_pEntriesTable[i].name, Default);
 		m_pEntriesTable[i].key = Setting & 0xFF;
 		m_pEntriesTable[i].mod = Setting >> 8;
+		if (m_pEntriesTable[i].mod == MOD_NONE && m_pEntriesTable[i].key)		// // //
+			m_iUsedKeys.insert(Setting & 0xFF);
 	}
 }
 

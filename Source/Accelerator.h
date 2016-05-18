@@ -2,6 +2,8 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
+** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -22,6 +24,8 @@
 
 
 // Key accelerator class
+
+#include <unordered_set>		// // //
 
 #define MOD_NONE 0
 
@@ -58,6 +62,9 @@ public:
 
 	bool			GetShortcutString(int id, CString &str) const;
 
+	// // // check if key is used as a modifier-less shortcut
+	bool			IsKeyUsed(int nChar) const;
+
 public:
 	// Class member constants
 	static LPCTSTR			  MOD_NAMES[];							// Strings for modifiers
@@ -74,4 +81,7 @@ private:
 
 	// Accelerator table
 	ACCEL	*m_pAccelTable;
+
+	// // // Used keys
+	std::unordered_set<int> m_iUsedKeys;
 };
