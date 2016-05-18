@@ -20,7 +20,6 @@
 ** must bear this legend.
 */
 
-#include <vector>		// // //
 #include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
@@ -388,6 +387,11 @@ CPSelectionAction::CPSelectionAction(int iAction) :
 {
 }
 
+CPSelectionAction::~CPSelectionAction()
+{
+	SAFE_RELEASE(m_pUndoClipData);
+}
+
 bool CPSelectionAction::SaveState(const CMainFrame *pMainFrm)
 {
 	const CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
@@ -609,6 +613,12 @@ CPActionDeleteAtSel::CPActionDeleteAtSel() :
 {
 }
 
+CPActionDeleteAtSel::~CPActionDeleteAtSel()
+{
+	SAFE_RELEASE(m_pUndoHead);
+	SAFE_RELEASE(m_pUndoTail);
+}
+
 bool CPActionDeleteAtSel::SaveState(const CMainFrame *pMainFrm)
 {
 	if (!m_pUndoState->IsSelecting) return false;
@@ -657,6 +667,12 @@ void CPActionDeleteAtSel::Redo(CMainFrame *pMainFrm) const
 CPActionInsertAtSel::CPActionInsertAtSel() :
 	CPatternAction(ACT_INSERT_SEL_ROWS), m_pUndoHead(nullptr), m_pUndoTail(nullptr)
 {
+}
+
+CPActionInsertAtSel::~CPActionInsertAtSel()
+{
+	SAFE_RELEASE(m_pUndoHead);
+	SAFE_RELEASE(m_pUndoTail);
 }
 
 bool CPActionInsertAtSel::SaveState(const CMainFrame *pMainFrm)
@@ -1040,7 +1056,7 @@ void CPActionReplaceInst::Redo(CMainFrame *pMainFrm) const
 }
 
 
-
+/*
 // // // TODO: move stuff in CPatternAction::SetTargetSelection to the redo state
 
 CPActionDragDrop::CPActionDragDrop(const CPatternClipData *pClipData, bool bDelete, bool bMix, const CSelection &pDragTarget) :
@@ -1077,7 +1093,7 @@ void CPActionDragDrop::Redo(CMainFrame *pMainFrm) const
 		DeleteSelection(pMainFrm, m_pUndoState->Selection);		// // //
 	pPatternEditor->DragPaste(m_pClipData, &m_dragTarget, m_bDragMix);
 }
-
+*/
 
 
 CPActionPatternLen::CPActionPatternLen(int Length) :

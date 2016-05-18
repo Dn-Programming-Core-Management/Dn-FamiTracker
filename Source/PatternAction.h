@@ -155,6 +155,7 @@ class CPSelectionAction : public CPatternAction
 {
 protected:
 	CPSelectionAction(int iAction);
+	virtual ~CPSelectionAction();
 protected:
 	bool SaveState(const CMainFrame *pMainFrm);
 	void Undo(CMainFrame *pMainFrm) const;
@@ -239,6 +240,7 @@ class CPActionDeleteAtSel : public CPatternAction
 {
 public:
 	CPActionDeleteAtSel();
+	virtual ~CPActionDeleteAtSel();
 private:
 	bool SaveState(const CMainFrame *pMainFrm);
 	void Undo(CMainFrame *pMainFrm) const;
@@ -252,6 +254,7 @@ class CPActionInsertAtSel : public CPatternAction
 {
 public:
 	CPActionInsertAtSel();
+	virtual ~CPActionInsertAtSel();
 private:
 	bool SaveState(const CMainFrame *pMainFrm);
 	void Undo(CMainFrame *pMainFrm) const;
