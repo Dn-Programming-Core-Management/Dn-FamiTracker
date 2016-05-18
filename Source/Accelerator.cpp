@@ -251,7 +251,7 @@ bool CAccelerator::GetShortcutString(int id, CString &str) const
 
 bool CAccelerator::IsKeyUsed(int nChar) const		// // //
 {
-	return m_iUsedKeys.count(nChar) > 0;
+	return m_iUsedKeys.count(nChar & 0xFF) > 0;
 }
 
 // Registry storage/loading

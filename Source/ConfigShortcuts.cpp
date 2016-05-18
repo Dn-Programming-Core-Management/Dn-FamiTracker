@@ -26,6 +26,7 @@
 #include "ConfigShortcuts.h"
 #include "Accelerator.h"
 #include "Settings.h"
+#include <unordered_map>		// // //
 
 // CConfigShortcuts dialog
 
@@ -122,6 +123,25 @@ void CConfigShortcuts::OnBnClickedDefault()
 BOOL CConfigShortcuts::OnApply()
 {
 	CAccelerator *pAccel = theApp.GetAccelerator();
+	
+	std::unordered_map<int, int> m;		// // // check for conflicts
+	for (int i = 0; i < CAccelerator::ACCEL_COUNT; ++i) {
+		int KeyVal = (m_iKeys[i] & 0xFF) | (m_iMods[i] << 8);
+		if (!KeyVal) continue;
+		auto it = m.find(KeyVal);
+		if (it == m.end())
+			m[KeyVal] = i;
+		else {
+			CString msg;
+			msg.Format(_T("These two commands are assigned to the same shortcut (%s):\n- %s\n- %s"),
+					   AssembleKeyString(m_iMods[i], m_iKeys[i]),
+					   CAccelerator::DEFAULT_TABLE[it->second].name,
+					   CAccelerator::DEFAULT_TABLE[i].name);
+			
+			AfxMessageBox(msg, MB_ICONERROR);
+			return FALSE;
+		}
+	}
 
 	// Store keys
 	for (int i = 0; i < CAccelerator::ACCEL_COUNT; ++i)

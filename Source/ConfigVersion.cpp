@@ -112,7 +112,7 @@ const CString MODULE_ERROR_DESC[] = {
 
 IMPLEMENT_DYNAMIC(CConfigVersion, CPropertyPage)
 CConfigVersion::CConfigVersion()
-	: CPropertyPage(CConfigVersion::IDD)
+	: CPropertyPage(CConfigVersion::IDD), m_cComboVersion(nullptr), m_cSliderErrorLevel(nullptr)
 {
 }
 
