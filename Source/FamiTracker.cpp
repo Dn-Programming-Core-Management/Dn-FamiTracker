@@ -21,7 +21,6 @@
 */
 
 #include "json.hpp"		// // //
-#include <thread>		// // //
 #include "stdafx.h"
 #include "Exception.h"
 #include "FamiTracker.h"
@@ -346,6 +345,9 @@ int CFamiTrackerApp::ExitInstance()
 	}
 #endif
 
+	if (m_thVersionCheck.joinable())		// // //
+		m_thVersionCheck.join();
+
 	TRACE0("App: End ExitInstance\n");
 
 	return CWinApp::ExitInstance();
@@ -545,9 +547,13 @@ void CFamiTrackerApp::UnregisterSingleInstance()
 	SAFE_RELEASE(m_pInstanceMutex);
 }
 
-void CFamiTrackerApp::CheckNewVersion(bool StartUp) const		// // //
+void CFamiTrackerApp::CheckNewVersion(bool StartUp)		// // //
 {
 	static PCTSTR rgpszAcceptTypes[] = {_T("application/json"), NULL};
+
+	m_bVersionReady = false;
+	m_pVersionMessage = _T("");
+	m_iVersionStyle = 0U;
 
 	const auto CheckFunc = [&] (bool Start) {
 		HINTERNET hOpen, hConnect, hRequest;
@@ -587,29 +593,37 @@ void CFamiTrackerApp::CheckNewVersion(bool StartUp) const		// // //
 					Ver[3] > VERSION_REV))) {
 					int Y = 1970, M = 1, D = 1;
 					sscanf_s(i["published_at"].get<std::string>().c_str(), "%d-%d-%d", &Y, &M, &D);
-					CString msg;
 					static const CString MONTHS[] = {
 						_T("Jan"), _T("Feb"), _T("Mar"), _T("Apr"), _T("May"), _T("Jun"),
 						_T("Jul"), _T("Aug"), _T("Sept"), _T("Oct"), _T("Nov"), _T("Dec"),
 					};
-					msg.Format(_T("A new version of 0CC-FamiTracker is now available:\n"
-							   "Version %d.%d.%d.%d (released %s %d, %d)\n"
-							   "Pressing \"Yes\" will launch the Github web page for this release."),
-							   Ver[0], Ver[1], Ver[2], Ver[3], MONTHS[--M], D, Y);
+
+					CString desc = i["body"].get<std::string>().c_str();
+					int Index = desc.Find(_T("\r\n\r\n"));
+					if (Index >= 0)
+						desc.Delete(0, Index + 4);
+					Index = desc.Find(_T("\r\n\r\n"));
+					if (Index >= 0)
+						desc.Truncate(Index);
+
+					m_pVersionMessage.Format(_T("A new version of 0CC-FamiTracker is now available:\n\n"
+											 "Version %d.%d.%d.%d (released %s %d, %d)\n%s\n\n"
+											 "Pressing \"Yes\" will launch the Github web page for this release."),
+											 Ver[0], Ver[1], Ver[2], Ver[3], MONTHS[--M], D, Y, desc);
 					if (Start)
-						msg.Append(_T(" (Version checking on startup may be disabled in the configuration menu.)"));
-					if (AfxMessageBox(msg, MB_YESNO) == IDYES) {
-						CString url;
-						url.Format(_T("https://github.com/HertzDevil/0CC-FamiTracker/releases/tag/v%d.%d.%d.%d"),
-								   Ver[0], Ver[1], Ver[2], Ver[3]);
-						ShellExecute(NULL, _T("open"), url, NULL, NULL, SW_SHOWNORMAL);
-					}
+						m_pVersionMessage.Append(_T(" (Version checking on startup may be disabled in the configuration menu.)"));
+					m_pVersionURL.Format(_T("https://github.com/HertzDevil/0CC-FamiTracker/releases/tag/v%d.%d.%d.%d"),
+										 Ver[0], Ver[1], Ver[2], Ver[3]);
+					m_iVersionStyle = MB_YESNO | MB_ICONINFORMATION;
+					m_bVersionReady = true;
 					break;
 				}
 			}
 		}
 		catch (DWORD &) {
-			AfxMessageBox(_T("Unable to get version information from the source repository."), MB_ICONERROR);
+			m_pVersionMessage = _T("Unable to get version information from the source repository.");
+			m_iVersionStyle = MB_ICONERROR;
+			m_bVersionReady = true;
 		}
 
 		if (hRequest) InternetCloseHandle(hRequest);
@@ -617,8 +631,9 @@ void CFamiTrackerApp::CheckNewVersion(bool StartUp) const		// // //
 		if (hOpen) InternetCloseHandle(hOpen);
 	};
 
-	std::thread t {CheckFunc, StartUp};
-	t.detach();
+	if (m_thVersionCheck.joinable())
+		m_thVersionCheck.join();
+	m_thVersionCheck = std::thread {CheckFunc, StartUp};
 }
 
 bool CFamiTrackerApp::CheckSingleInstance(CFTCommandLineInfo &cmdInfo)
@@ -735,6 +750,20 @@ void CFamiTrackerApp::ReloadColorScheme()
 		pMainFrm->SetupColors();
 		pMainFrm->RedrawWindow();
 	}
+}
+
+BOOL CFamiTrackerApp::OnIdle(LONG lCount)		// // //
+{
+	if (CWinThread::OnIdle(lCount))
+		return TRUE;
+
+	if (!m_pVersionMessage.IsEmpty() && m_bVersionReady) {
+		m_bVersionReady = false;
+		if (AfxMessageBox(m_pVersionMessage, m_iVersionStyle) == IDYES)
+			ShellExecute(NULL, _T("open"), m_pVersionURL, NULL, NULL, SW_SHOWNORMAL);
+	}
+
+	return TRUE;
 }
 
 // App command to run the about dialog
