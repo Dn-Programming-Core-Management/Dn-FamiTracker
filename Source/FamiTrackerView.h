@@ -26,6 +26,8 @@
 // CFamiTrackerView, the document view class
 
 #include <afxmt.h>	// Include synchronization objects
+#include <unordered_map>		// // //
+
 #include "PatternEditorTypes.h"		// // //
 #include "FamiTrackerViewMessage.h"		// // //
 
@@ -291,6 +293,7 @@ private:
 	int					m_iLastVolume;							// Last volume added to pattern
 	effect_t			m_iLastEffect;							// Last effect number added to pattern
 	int					m_iLastEffectParam;						// Last effect parameter added to pattern
+	std::unordered_map<unsigned char, int> m_iNoteCorrection;	// // // correction from changing octaves
 
 	// MIDI
 	unsigned int		m_iLastMIDINote;

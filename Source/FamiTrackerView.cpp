@@ -277,6 +277,7 @@ CFamiTrackerView::CFamiTrackerView() :
 	m_iAutoArpPtr(0),
 	m_iLastAutoArpPtr(0),
 	m_iAutoArpKeyCount(0),
+	m_iNoteCorrection(),		// // //
 	m_iMenuChannel(-1),
 	m_iKeyboardNote(-1),
 	m_nDropEffect(DROPEFFECT_NONE),
@@ -3009,16 +3010,32 @@ void CFamiTrackerView::HandleKeyboardNote(char nChar, bool Pressed)
 	if (Pressed) {	
 		static int LastNote;
 
-		if (CheckHaltKey(nChar))
-			CutMIDINote(Channel, LastNote, true);
-		else if (CheckReleaseKey(nChar))
-			ReleaseMIDINote(Channel, LastNote, true);
+		if (CheckHaltKey(nChar)) {
+			if (m_bEditEnable)
+				CutMIDINote(Channel, Note, true);
+			else {
+				for (const auto &x : m_iNoteCorrection)		// // //
+					CutMIDINote(Channel, TranslateKey(x.first), true);
+				m_iNoteCorrection.clear();
+			}
+		}
+		else if (CheckReleaseKey(nChar)) {
+			if (m_bEditEnable)
+				ReleaseMIDINote(Channel, Note, true);
+			else {
+				for (const auto &x : m_iNoteCorrection)		// // //
+					ReleaseMIDINote(Channel, TranslateKey(x.first), true);
+				m_iNoteCorrection.clear();
+			}
+		}
 		else {
 			// Invalid key
 			if (Note == -1)
 				return;
 			TriggerMIDINote(Channel, Note, 0x7F, m_bEditEnable);
 			LastNote = Note;
+			if (!m_bEditEnable)
+				m_iNoteCorrection[nChar] = 0;		// // //
 		}
 	}
 	else {
@@ -3032,6 +3049,11 @@ void CFamiTrackerView::HandleKeyboardNote(char nChar, bool Pressed)
 				ReleaseMIDINote(Channel, Note, false);	
 			else
 				CutMIDINote(Channel, Note, false);
+			if (!m_bEditEnable) {
+				auto it = m_iNoteCorrection.find(nChar);		// // //
+				if (it != m_iNoteCorrection.end())
+					m_iNoteCorrection.erase(it);
+			}
 		}
 		else {
 			m_iActiveNotes[Channel] = 0;
@@ -3131,19 +3153,15 @@ int CFamiTrackerView::TranslateKeyModplug(unsigned char Key) const
 	stChanNote NoteData;
 	pDoc->GetNoteData(Track, m_pPatternEditor->GetFrame(), m_pPatternEditor->GetChannel(), m_pPatternEditor->GetRow(), &NoteData);
 
+	if (m_bEditEnable && Key >= '0' && Key <= '9') {		// // //
+		KeyOctave = Key - '1';
+		if (KeyOctave < 0) KeyOctave += 10;
+		if (KeyOctave >= OCTAVE_RANGE) KeyOctave = OCTAVE_RANGE - 1;
+		KeyNote = NoteData.Note;
+	}
+
 	// Convert key to a note, Modplug style
 	switch (Key) {
-		case 49:	KeyNote = NoteData.Note;	KeyOctave = 0;	break;	// 1
-		case 50:	KeyNote = NoteData.Note;	KeyOctave = 1;	break;	// 2
-		case 51:	KeyNote = NoteData.Note;	KeyOctave = 2;	break;	// 3
-		case 52:	KeyNote = NoteData.Note;	KeyOctave = 3;	break;	// 4
-		case 53:	KeyNote = NoteData.Note;	KeyOctave = 4;	break;	// 5
-		case 54:	KeyNote = NoteData.Note;	KeyOctave = 5;	break;	// 6
-		case 55:	KeyNote = NoteData.Note;	KeyOctave = 6;	break;	// 7
-		case 56:	KeyNote = NoteData.Note;	KeyOctave = 7;	break;	// 8
-		case 57:	KeyNote = NoteData.Note;	KeyOctave = 7;	break;	// 9
-		case 48:	KeyNote = NoteData.Note;	KeyOctave = 7;	break;	// 0
-
 		case 81:	KeyNote = NOTE_C;	KeyOctave = m_iOctave;	break;	// Q		// // //
 		case 87:	KeyNote = NOTE_Cs;	KeyOctave = m_iOctave;	break;	// W
 		case 69:	KeyNote = NOTE_D;	KeyOctave = m_iOctave;	break;	// E
@@ -3185,6 +3203,10 @@ int CFamiTrackerView::TranslateKeyModplug(unsigned char Key) const
 	// Invalid
 	if (KeyNote == 0)
 		return -1;
+
+	auto it = m_iNoteCorrection.find(Key);		// // //
+	if (it != m_iNoteCorrection.end())
+		KeyOctave += it->second;
 
 	// Return a MIDI note
 	return MIDI_NOTE(KeyOctave, KeyNote);
@@ -3243,6 +3265,10 @@ int CFamiTrackerView::TranslateKeyDefault(unsigned char Key) const
 	if (KeyNote == 0)
 		return -1;
 
+	auto it = m_iNoteCorrection.find(Key);		// // //
+	if (it != m_iNoteCorrection.end())
+		KeyOctave += it->second;
+
 	// Return a MIDI note
 	return MIDI_NOTE(KeyOctave, KeyNote);
 }
@@ -3291,6 +3317,8 @@ bool CFamiTrackerView::PreviewNote(unsigned char Key)
 
 	if (Note > 0) {
 		TriggerMIDINote(m_pPatternEditor->GetChannel(), Note, 0x7F, false); 
+		if (!m_bEditEnable)
+			m_iNoteCorrection[Key] = 0;		// // //
 		return true;
 	}
 
@@ -3308,6 +3336,11 @@ void CFamiTrackerView::PreviewRelease(unsigned char Key)
 			ReleaseMIDINote(m_pPatternEditor->GetChannel(), Note, false);
 		else 
 			CutMIDINote(m_pPatternEditor->GetChannel(), Note, false);
+		if (!m_bEditEnable) {
+			auto it = m_iNoteCorrection.find(Key);		// // //
+			ASSERT(it != m_iNoteCorrection.end());
+			m_iNoteCorrection.erase(it);
+		}
 	}
 }
 
@@ -3493,6 +3526,8 @@ void CFamiTrackerView::OnPreviousOctave()
 
 void CFamiTrackerView::SetOctave(unsigned int iOctave)
 {
+	for (auto &x : m_iNoteCorrection)		// // //
+		x.second -= iOctave - m_iOctave;
 	m_iOctave = iOctave;
 	static_cast<CMainFrame*>(GetParentFrame())->DisplayOctave();
 }
