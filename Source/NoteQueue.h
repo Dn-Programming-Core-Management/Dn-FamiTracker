@@ -55,16 +55,31 @@ public:
 		\param Channel The channel index.
 		\return A vector containing the physical channel indices that have a note halted. */
 	std::vector<unsigned> StopChannel(unsigned Channel);
+	
+	/*!	\brief Stops accepting notes from a given channel.
+		\param Channel The channel index. */
+	void MuteChannel(unsigned Channel);
+	/*!	\brief Resumes accepting notes from a given channel.
+		\param Channel The channel index. */
+	void UnmuteChannel(unsigned Channel);
 
 private:
 	enum class note_state_t;
+
+	const int m_iChannelCount;
+
 	std::vector<unsigned> m_iChannelMapID;
 	std::vector<unsigned> m_iCurrentNote;
+	std::vector<bool> m_bChannelMute;
+
 	std::unordered_map<int, note_state_t> m_iNoteState;
 	std::unordered_map<int, int> m_iNotePriority;
 	std::unordered_map<int, unsigned> m_iNoteChannel;
 };
 
+/*!
+	\brief The actual note queue that keeps track of multiple logical tracks.
+*/
 class CNoteQueue
 {
 public:
@@ -81,6 +96,9 @@ public:
 	unsigned Release(int Note, unsigned Channel);
 	unsigned Cut(int Note, unsigned Channel);
 	std::vector<unsigned> StopChannel(unsigned Channel);
+	
+	void MuteChannel(unsigned Channel);
+	void UnmuteChannel(unsigned Channel);
 
 private:
 	std::unordered_map<unsigned, std::shared_ptr<CNoteChannelQueue>> m_Part;

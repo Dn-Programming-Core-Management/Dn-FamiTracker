@@ -1839,7 +1839,6 @@ void CFamiTrackerView::ToggleChannel(unsigned int Channel)
 		return;
 
 	SetChannelMute(Channel, !IsChannelMuted(Channel));
-	HaltNoteSingle(Channel);
 	InvalidateHeader();
 }
 
@@ -1853,23 +1852,12 @@ void CFamiTrackerView::SoloChannel(unsigned int Channel)
 	if (Channel >= unsigned(channels))
 		return;
 
-	if (IsChannelSolo(Channel)) {
-		// Revert channels
-		for (int i = 0; i < channels; ++i) {
+	if (IsChannelSolo(Channel))
+		for (int i = 0; i < channels; ++i) // Revert channels
 			SetChannelMute(i, false);
-		}
-	}
-	else {
-		// Solo selected channel
-		for (int i = 0; i < channels; ++i) {
-			if (i == Channel)
-				SetChannelMute(i, false);
-			else {
-				SetChannelMute(i, true);
-				HaltNoteSingle(i);		// // //
-			}
-		}
-	}
+	else
+		for (int i = 0; i < channels; ++i) // Solo selected channel
+			SetChannelMute(i, i != Channel);
 
 	InvalidateHeader();
 }
@@ -1887,10 +1875,9 @@ void CFamiTrackerView::ToggleChip(unsigned int Channel)		// // //
 	int Chip = pDoc->GetChipType(Channel);
 	for (int i = 0; i < channels; ++i)
 		if (pDoc->GetChipType(i) == Chip && !IsChannelMuted(i)) {
-			for (int j = 0; j < channels; ++j) if (pDoc->GetChipType(j) == Chip) {
-				SetChannelMute(j, true);
-				HaltNoteSingle(j);
-			}
+			for (int j = 0; j < channels; ++j)
+				if (pDoc->GetChipType(j) == Chip)
+					SetChannelMute(j, true);
 			InvalidateHeader();
 			return;
 		}
@@ -1915,16 +1902,9 @@ void CFamiTrackerView::SoloChip(unsigned int Channel)		// // //
 	if (IsChipSolo(Chip))
 		for (int i = 0; i < channels; ++i)
 			SetChannelMute(i, false);
-	else {
-		for (int i = 0; i < channels; ++i) {
-			if (pDoc->GetChipType(i) == Chip)
-				SetChannelMute(i, false);
-			else {
-				SetChannelMute(i, true);
-				HaltNoteSingle(i);		// // //
-			}
-		}
-	}
+	else
+		for (int i = 0; i < channels; ++i)
+			SetChannelMute(i, pDoc->GetChipType(i) != Chip);
 
 	InvalidateHeader();
 }
@@ -1936,9 +1916,8 @@ void CFamiTrackerView::UnmuteAllChannels()
 
 	int channels = pDoc->GetAvailableChannels();
 
-	for (int i = 0; i < channels; ++i) {
+	for (int i = 0; i < channels; ++i)
 		SetChannelMute(i, false);
-	}
 
 	InvalidateHeader();
 }
@@ -1972,8 +1951,18 @@ bool CFamiTrackerView::IsChipSolo(unsigned int Chip) const		// // //
 
 void CFamiTrackerView::SetChannelMute(int Channel, bool bMute)
 {
+	CFamiTrackerDoc* pDoc = GetDocument();
+
+	if (m_bMuteChannels[Channel] != bMute) {		// // //
+		HaltNoteSingle(Channel);
+		if (bMute)
+			m_pNoteQueue->MuteChannel(pDoc->GetChannelType(Channel));
+		else
+			m_pNoteQueue->UnmuteChannel(pDoc->GetChannelType(Channel));
+	}
 	m_bMuteChannels[Channel] = bMute;
-	if (bMute && GetDocument()->GetChannelType(Channel) == theApp.GetSoundGenerator()->GetRecordChannel())
+
+	if (bMute && pDoc->GetChannelType(Channel) == theApp.GetSoundGenerator()->GetRecordChannel())
 		theApp.GetSoundGenerator()->SetRecordChannel(-1);
 }
 
@@ -2181,6 +2170,9 @@ void CFamiTrackerView::HaltNoteSingle(unsigned int Channel) const
 		if (ch != -1)
 			theApp.GetSoundGenerator()->QueueNote(ch, NoteData, NOTE_PRIO_2);
 	}
+
+	if (theApp.GetSoundGenerator()->IsPlaying())
+		theApp.GetSoundGenerator()->QueueNote(Channel, NoteData, NOTE_PRIO_2);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2342,11 +2334,12 @@ void CFamiTrackerView::UpdateNoteQueues()		// // //
 {
 	const CFamiTrackerDoc *pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
+	const int Channels = pDoc->GetChannelCount();
 
 	m_pNoteQueue->ClearMaps();
 
 	if (m_bEditEnable)
-		for (int i = 0; i < pDoc->GetChannelCount(); ++i) {
+		for (int i = 0; i < Channels; ++i) {
 			unsigned ID = pDoc->GetChannelIndex(i);
 			if (ID != -1)
 				m_pNoteQueue->AddMap({ID});
@@ -2379,6 +2372,10 @@ void CFamiTrackerView::UpdateNoteQueues()		// // //
 		if (pDoc->ExpansionEnabled(SNDCHIP_S5B))
 			m_pNoteQueue->AddMap({CHANID_S5B_CH1, CHANID_S5B_CH2, CHANID_S5B_CH3});
 	}
+
+	for (int i = 0; i < Channels; ++i)
+		if (IsChannelMuted(i))
+			m_pNoteQueue->MuteChannel(pDoc->GetChannelType(i));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
