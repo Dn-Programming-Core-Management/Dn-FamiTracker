@@ -36,6 +36,7 @@ class CFamiTrackerDoc;
 class CPatternEditor;
 class CFrameEditor;
 class CAction;
+class CNoteQueue;		// // //
 
 // TODO move general tracker state variables to the mainframe instead of the view, such as selected octave, instrument etc
 
@@ -184,7 +185,6 @@ private:
 	int		TranslateKey(unsigned char Key) const;
 	int		TranslateKeyDefault(unsigned char Key) const;
 	int		TranslateKeyModplug(unsigned char Key) const;
-	int		TranslateKeyAzerty(unsigned char Key) const;
 	
 	bool	CheckClearKey(unsigned char Key) const;
 	bool	CheckHaltKey(unsigned char Key) const;
@@ -211,12 +211,13 @@ private:
 	void	CutMIDINote(unsigned int Channel, unsigned int MidiNote, bool InsertCut);
 
 	// Note handling
-	void	PlayNote(unsigned int Channel, unsigned int Note, unsigned int Octave, unsigned int Velocity);
-	void	ReleaseNote(unsigned int Channel);
-	void	HaltNote(unsigned int Channel);
-	void	HaltNoteSingle(unsigned int Channel);
+	void	PlayNote(unsigned int Channel, unsigned int Note, unsigned int Octave, unsigned int Velocity) const;
+	void	ReleaseNote(unsigned int Channel, unsigned int Note, unsigned int Octave) const;		// // //
+	void	HaltNote(unsigned int Channel, unsigned int Note, unsigned int Octave) const;		// // //
+	void	HaltNoteSingle(unsigned int Channel) const;		// // //
 	
 	void	UpdateArpDisplay();
+	void	UpdateNoteQueues();		// // //
 	
 	// Mute methods
 	bool	IsChannelSolo(unsigned int Channel) const;
@@ -294,6 +295,7 @@ private:
 	effect_t			m_iLastEffect;							// Last effect number added to pattern
 	int					m_iLastEffectParam;						// Last effect parameter added to pattern
 	std::unordered_map<unsigned char, int> m_iNoteCorrection;	// // // correction from changing octaves
+	CNoteQueue			*m_pNoteQueue;							// // // Note queue for handling note triggers
 
 	// MIDI
 	unsigned int		m_iLastMIDINote;

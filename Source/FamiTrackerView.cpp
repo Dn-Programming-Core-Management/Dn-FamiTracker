@@ -44,6 +44,7 @@
 #include "DetuneDlg.h"
 #include "StretchDlg.h"
 #include "RecordSettingsDlg.h"
+#include "NoteQueue.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -278,6 +279,7 @@ CFamiTrackerView::CFamiTrackerView() :
 	m_iLastAutoArpPtr(0),
 	m_iAutoArpKeyCount(0),
 	m_iNoteCorrection(),		// // //
+	m_pNoteQueue(new CNoteQueue { }),		// // //
 	m_iMenuChannel(-1),
 	m_iKeyboardNote(-1),
 	m_nDropEffect(DROPEFFECT_NONE),
@@ -300,6 +302,7 @@ CFamiTrackerView::~CFamiTrackerView()
 {
 	// Release allocated objects
 	SAFE_RELEASE(m_pPatternEditor);
+	SAFE_RELEASE(m_pNoteQueue);		// // //
 }
 
 
@@ -1082,6 +1085,7 @@ void CFamiTrackerView::OnTrackerEdit()
 	m_pPatternEditor->InvalidateHeader();
 	m_pPatternEditor->InvalidateCursor();
 	RedrawPatternEditor();
+	UpdateNoteQueues();		// // //
 }
 
 LRESULT CFamiTrackerView::OnUserDumpInst(WPARAM wParam, LPARAM lParam)		// // //
@@ -1353,6 +1357,8 @@ void CFamiTrackerView::OnInitialUpdate()
 		SetChannelMute(i, false);
 	}
 
+	UpdateNoteQueues();		// // //
+
 	// Draw screen
 	m_pPatternEditor->InvalidateBackground();
 	m_pPatternEditor->InvalidatePatternData();
@@ -1422,6 +1428,7 @@ void CFamiTrackerView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* /*pHi
 		m_pPatternEditor->InvalidatePatternData();
 		m_pPatternEditor->InvalidateHeader();
 		RedrawPatternEditor();
+		UpdateNoteQueues();		// // //
 		break;
 	// Row highlight option has changed
 	case UPDATE_HIGHLIGHT:
@@ -1859,7 +1866,7 @@ void CFamiTrackerView::SoloChannel(unsigned int Channel)
 				SetChannelMute(i, false);
 			else {
 				SetChannelMute(i, true);
-				HaltNote(i);
+				HaltNoteSingle(i);		// // //
 			}
 		}
 	}
@@ -1914,7 +1921,7 @@ void CFamiTrackerView::SoloChip(unsigned int Channel)		// // //
 				SetChannelMute(i, false);
 			else {
 				SetChannelMute(i, true);
-				HaltNote(i);
+				HaltNoteSingle(i);		// // //
 			}
 		}
 	}
@@ -2073,7 +2080,7 @@ void CFamiTrackerView::InsertNote(int Note, int Octave, int Channel, int Velocit
 /// Note playing routines
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void CFamiTrackerView::PlayNote(unsigned int Channel, unsigned int Note, unsigned int Octave, unsigned int Velocity)
+void CFamiTrackerView::PlayNote(unsigned int Channel, unsigned int Note, unsigned int Octave, unsigned int Velocity) const
 {
 	// Play a note in a channel
 	stChanNote NoteData { };		// // //
@@ -2089,10 +2096,14 @@ void CFamiTrackerView::PlayNote(unsigned int Channel, unsigned int Note, unsigne
 		NoteData.Instrument	= GetInstrument();
 */
 
-	theApp.GetSoundGenerator()->QueueNote(Channel, NoteData, NOTE_PRIO_2);
+	CFamiTrackerDoc *pDoc = GetDocument();		// // //
+	int ret = pDoc->GetChannelIndex(m_pNoteQueue->Trigger(MIDI_NOTE(Octave, Note), pDoc->GetChannelType(Channel)));
+	if (ret != -1 && !m_bMuteChannels[ret]) {
+		pDoc->GetChannel(ret)->SetNote(NoteData, NOTE_PRIO_2);
+		theApp.GetSoundGenerator()->ForceReloadInstrument(ret);		// // //
+	}
 
 	if (theApp.GetSettings()->General.bPreviewFullRow) {
-		CFamiTrackerDoc *pDoc = GetDocument();
 		stChanNote ChanNote;
 		int Track = static_cast<CMainFrame*>(GetParentFrame())->GetSelectedTrack();
 		int Frame = m_pPatternEditor->GetFrame();
@@ -2107,56 +2118,69 @@ void CFamiTrackerView::PlayNote(unsigned int Channel, unsigned int Note, unsigne
 	}
 }
 
-void CFamiTrackerView::ReleaseNote(unsigned int Channel)
+void CFamiTrackerView::ReleaseNote(unsigned int Channel, unsigned int Note, unsigned int Octave) const
 {
 	// Releases a channel
 	stChanNote NoteData { };		// // //
 
 	NoteData.Note = RELEASE;
 	NoteData.Instrument = GetInstrument();
-
-	theApp.GetSoundGenerator()->QueueNote(Channel, NoteData, NOTE_PRIO_2);
+	
+	CFamiTrackerDoc *pDoc = GetDocument();		// // //
+	int ch = pDoc->GetChannelIndex(m_pNoteQueue->Release(MIDI_NOTE(Octave, Note), pDoc->GetChannelType(Channel)));
+	if (ch != -1)
+		theApp.GetSoundGenerator()->QueueNote(ch, NoteData, NOTE_PRIO_2);
 
 	if (theApp.GetSettings()->General.bPreviewFullRow) {
-		CFamiTrackerDoc *pDoc = GetDocument();
-		int Channels = pDoc->GetChannelCount();
 		NoteData.Note = HALT;
+		NoteData.Instrument = MAX_INSTRUMENTS;
+
+		int Channels = pDoc->GetChannelCount();
 		for (int i = 0; i < Channels; ++i) {
-			if (i != Channel)
+			if (i != ch)
 				theApp.GetSoundGenerator()->QueueNote(i, NoteData, NOTE_PRIO_1);
 		}
 	}
 }
 
-void CFamiTrackerView::HaltNote(unsigned int Channel)
+void CFamiTrackerView::HaltNote(unsigned int Channel, unsigned int Note, unsigned int Octave) const
 {
 	// Halts a channel
 	stChanNote NoteData { };		// // //
 
 	NoteData.Note = HALT;
 	NoteData.Instrument = GetInstrument();
-
-	theApp.GetSoundGenerator()->QueueNote(Channel, NoteData, NOTE_PRIO_2);
+	
+	CFamiTrackerDoc *pDoc = GetDocument();		// // //
+	int ch = pDoc->GetChannelIndex(m_pNoteQueue->Cut(MIDI_NOTE(Octave, Note), pDoc->GetChannelType(Channel)));
+	if (ch != -1)
+		theApp.GetSoundGenerator()->QueueNote(ch, NoteData, NOTE_PRIO_2);
 
 	if (theApp.GetSettings()->General.bPreviewFullRow) {
-		CFamiTrackerDoc *pDoc = GetDocument();
+		NoteData.Instrument = MAX_INSTRUMENTS;
+
 		int Channels = pDoc->GetChannelCount();
 		for (int i = 0; i < Channels; ++i) {
-			if (i != Channel)
+			if (i != ch)
 				theApp.GetSoundGenerator()->QueueNote(i, NoteData, NOTE_PRIO_1);
 		}
 	}
 }
 
-void CFamiTrackerView::HaltNoteSingle(unsigned int Channel)
+void CFamiTrackerView::HaltNoteSingle(unsigned int Channel) const
 {
 	// Halts one single channel only
 	stChanNote NoteData { };		// // //
 
 	NoteData.Note = HALT;
 	NoteData.Instrument = GetInstrument();
-
-	theApp.GetSoundGenerator()->QueueNote(Channel, NoteData, NOTE_PRIO_2);
+	
+	CFamiTrackerDoc *pDoc = GetDocument();		// // //
+	for (const auto &i : m_pNoteQueue->StopChannel(pDoc->GetChannelType(Channel))) {
+		int ch = pDoc->GetChannelIndex(i);
+		if (ch != -1)
+			theApp.GetSoundGenerator()->QueueNote(ch, NoteData, NOTE_PRIO_2);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2196,10 +2220,8 @@ void CFamiTrackerView::TriggerMIDINote(unsigned int Channel, unsigned int MidiNo
 		}
 	}
 	
-	if (!(theApp.IsPlaying() && m_bEditEnable && !m_bFollowMode)) {		// // //
+	if (!(theApp.IsPlaying() && m_bEditEnable && !m_bFollowMode))		// // //
 		PlayNote(Channel, Note, Octave, Velocity);
-		theApp.GetSoundGenerator()->ForceReloadInstrument(Channel);		// // //
-	}
 
 	if (Insert)
 		InsertNote(Note, Octave, Channel, Velocity + 1);
@@ -2243,15 +2265,20 @@ void CFamiTrackerView::CutMIDINote(unsigned int Channel, unsigned int MidiNote, 
 	UpdateArpDisplay();
 
 	// Cut note
-	if (!(theApp.IsPlaying() && m_bEditEnable && !m_bFollowMode) && m_iLastMIDINote == MidiNote)		// // //
-		HaltNote(Channel);
+	if (!(theApp.IsPlaying() && m_bEditEnable && !m_bFollowMode))		// // //
+		if (m_bEditEnable) {
+			if (m_iLastMIDINote == MidiNote)
+				HaltNote(Channel, Note, Octave);
+		}
+		else
+			HaltNote(Channel, Note, Octave);
 
 	if (InsertCut)
 		InsertNote(HALT, 0, Channel, 0);
 
 	// IT-mode, cut note on cuts
 	if (theApp.GetSettings()->General.iEditStyle == EDIT_STYLE_IT)
-		HaltNote(Channel);
+		HaltNote(Channel, Note, Octave);		// // //
 
 	TRACE("%i: Cut note %i on channel %i\n", GetTickCount(), MidiNote, Channel);
 }
@@ -2274,15 +2301,20 @@ void CFamiTrackerView::ReleaseMIDINote(unsigned int Channel, unsigned int MidiNo
 	UpdateArpDisplay();
 
 	// Cut note
-	if (!(theApp.IsPlaying() && m_bEditEnable && !m_bFollowMode) && m_iLastMIDINote == MidiNote)		// // //
-		ReleaseNote(Channel);
+	if (!(theApp.IsPlaying() && m_bEditEnable && !m_bFollowMode))		// // //
+		if (m_bEditEnable) {
+			if (m_iLastMIDINote == MidiNote)
+				ReleaseNote(Channel, Note, Octave);
+		}
+		else
+			ReleaseNote(Channel, Note, Octave);
 
 	if (InsertCut)
 		InsertNote(RELEASE, 0, Channel, 0);
 
 	// IT-mode, release note
 	if (theApp.GetSettings()->General.iEditStyle == EDIT_STYLE_IT)
-		ReleaseNote(Channel);
+		ReleaseNote(Channel, Note, Octave);		// // //
 
 	TRACE("%i: Release note %i on channel %i\n", GetTickCount(), MidiNote, Channel);
 }
@@ -2303,6 +2335,49 @@ void CFamiTrackerView::UpdateArpDisplay()
 
 		if (Base != -1)
 			GetParentFrame()->SetMessageText(str);
+	}
+}
+
+void CFamiTrackerView::UpdateNoteQueues()		// // //
+{
+	const CFamiTrackerDoc *pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+	m_pNoteQueue->ClearMaps();
+
+	if (m_bEditEnable)
+		for (int i = 0; i < pDoc->GetChannelCount(); ++i) {
+			unsigned ID = pDoc->GetChannelIndex(i);
+			if (ID != -1)
+				m_pNoteQueue->AddMap({ID});
+		}
+	else {
+		m_pNoteQueue->AddMap({CHANID_TRIANGLE});
+		m_pNoteQueue->AddMap({CHANID_NOISE});
+		m_pNoteQueue->AddMap({CHANID_DPCM});
+
+		if (pDoc->ExpansionEnabled(SNDCHIP_VRC6)) {
+			m_pNoteQueue->AddMap({CHANID_VRC6_PULSE1, CHANID_VRC6_PULSE2});
+			m_pNoteQueue->AddMap({CHANID_VRC6_SAWTOOTH});
+		}
+		if (pDoc->ExpansionEnabled(SNDCHIP_VRC7))
+			m_pNoteQueue->AddMap({CHANID_VRC7_CH1, CHANID_VRC7_CH2, CHANID_VRC7_CH3,
+								  CHANID_VRC7_CH4, CHANID_VRC7_CH5, CHANID_VRC7_CH6});
+		if (pDoc->ExpansionEnabled(SNDCHIP_FDS))
+			m_pNoteQueue->AddMap({CHANID_FDS});
+		if (pDoc->ExpansionEnabled(SNDCHIP_MMC5))
+			m_pNoteQueue->AddMap({CHANID_SQUARE1, CHANID_SQUARE2, CHANID_MMC5_SQUARE1, CHANID_MMC5_SQUARE2});
+		else
+			m_pNoteQueue->AddMap({CHANID_SQUARE1, CHANID_SQUARE2});
+		if (pDoc->ExpansionEnabled(SNDCHIP_N163)) {
+			std::vector<unsigned> n;
+			int Channels = pDoc->GetNamcoChannels();
+			for (int i = 0; i < Channels; ++i)
+				n.push_back(CHANID_N163_CH1 + i);
+			m_pNoteQueue->AddMap(n);
+		}
+		if (pDoc->ExpansionEnabled(SNDCHIP_S5B))
+			m_pNoteQueue->AddMap({CHANID_S5B_CH1, CHANID_S5B_CH2, CHANID_S5B_CH3});
 	}
 }
 
@@ -3016,7 +3091,7 @@ void CFamiTrackerView::HandleKeyboardNote(char nChar, bool Pressed)
 
 		if (CheckHaltKey(nChar)) {
 			if (m_bEditEnable)
-				CutMIDINote(Channel, Note, true);
+				CutMIDINote(Channel, LastNote, true);
 			else {
 				for (const auto &x : m_iNoteCorrection)		// // //
 					CutMIDINote(Channel, TranslateKey(x.first), true);
@@ -3025,7 +3100,7 @@ void CFamiTrackerView::HandleKeyboardNote(char nChar, bool Pressed)
 		}
 		else if (CheckReleaseKey(nChar)) {
 			if (m_bEditEnable)
-				ReleaseMIDINote(Channel, Note, true);
+				ReleaseMIDINote(Channel, LastNote, true);
 			else {
 				for (const auto &x : m_iNoteCorrection)		// // //
 					ReleaseMIDINote(Channel, TranslateKey(x.first), true);
@@ -3038,8 +3113,7 @@ void CFamiTrackerView::HandleKeyboardNote(char nChar, bool Pressed)
 				return;
 			TriggerMIDINote(Channel, Note, 0x7F, m_bEditEnable);
 			LastNote = Note;
-			if (!m_bEditEnable)
-				m_iNoteCorrection[nChar] = 0;		// // //
+			m_iNoteCorrection[nChar] = 0;		// // //
 		}
 	}
 	else {
@@ -3053,11 +3127,9 @@ void CFamiTrackerView::HandleKeyboardNote(char nChar, bool Pressed)
 				ReleaseMIDINote(Channel, Note, false);	
 			else
 				CutMIDINote(Channel, Note, false);
-			if (!m_bEditEnable) {
-				auto it = m_iNoteCorrection.find(nChar);		// // //
-				if (it != m_iNoteCorrection.end())
-					m_iNoteCorrection.erase(it);
-			}
+			auto it = m_iNoteCorrection.find(nChar);		// // //
+			if (it != m_iNoteCorrection.end())
+				m_iNoteCorrection.erase(it);
 		}
 		else {
 			m_iActiveNotes[Channel] = 0;
@@ -3089,60 +3161,6 @@ bool CFamiTrackerView::CheckEchoKey(unsigned char Key) const		// // //
 bool CFamiTrackerView::CheckRepeatKey(unsigned char Key) const
 {
 	return (Key == theApp.GetSettings()->Keys.iKeyRepeat);
-}
-
-int CFamiTrackerView::TranslateKeyAzerty(unsigned char Key) const
-{
-	// Azerty conversion (TODO)
-	int	KeyNote = 0, KeyOctave = 0;
-
-	// Convert key to a note
-	switch (Key) {
-		case 50:	KeyNote = NOTE_Cs;	KeyOctave = m_iOctave + 1;	break;	// 2		// // //
-		case 51:	KeyNote = NOTE_Ds;	KeyOctave = m_iOctave + 1;	break;	// 3
-		case 53:	KeyNote = NOTE_Fs;	KeyOctave = m_iOctave + 1;	break;	// 5
-		case 54:	KeyNote = NOTE_Gs;	KeyOctave = m_iOctave + 1;	break;	// 6
-		case 55:	KeyNote = NOTE_As;	KeyOctave = m_iOctave + 1;	break;	// 7
-		case 57:	KeyNote = NOTE_Cs;	KeyOctave = m_iOctave + 2;	break;	// 9
-		case 48:	KeyNote = NOTE_Ds;	KeyOctave = m_iOctave + 2;	break;	// 0
-		case 81:	KeyNote = NOTE_C;	KeyOctave = m_iOctave + 1;	break;	// Q
-		case 87:	KeyNote = NOTE_D;	KeyOctave = m_iOctave + 1;	break;	// W
-		case 69:	KeyNote = NOTE_E;	KeyOctave = m_iOctave + 1;	break;	// E
-		case 82:	KeyNote = NOTE_F;	KeyOctave = m_iOctave + 1;	break;	// R
-		case 84:	KeyNote = NOTE_G;	KeyOctave = m_iOctave + 1;	break;	// T
-		case 89:	KeyNote = NOTE_A;	KeyOctave = m_iOctave + 1;	break;	// Y
-		case 85:	KeyNote = NOTE_B;	KeyOctave = m_iOctave + 1;	break;	// U
-		case 73:	KeyNote = NOTE_C;	KeyOctave = m_iOctave + 2;	break;	// I
-		case 79:	KeyNote = NOTE_D;	KeyOctave = m_iOctave + 2;	break;	// O
-		case 80:	KeyNote = NOTE_E;	KeyOctave = m_iOctave + 2;	break;	// P
-		case 221:	KeyNote = NOTE_F;	KeyOctave = m_iOctave + 2;	break;	// Å
-		case 219:	KeyNote = NOTE_Fs;	KeyOctave = m_iOctave + 2;	break;	// ´
-		//case 186:	KeyNote = NOTE_G;	KeyOctave = m_iOctave + 2;	break;	// ¨
-		case 83:	KeyNote = NOTE_Cs;	KeyOctave = m_iOctave;		break;	// S
-		case 68:	KeyNote = NOTE_Ds;	KeyOctave = m_iOctave;		break;	// D
-		case 71:	KeyNote = NOTE_Fs;	KeyOctave = m_iOctave;		break;	// G
-		case 72:	KeyNote = NOTE_Gs;	KeyOctave = m_iOctave;		break;	// H
-		case 74:	KeyNote = NOTE_As;	KeyOctave = m_iOctave;		break;	// J
-		case 76:	KeyNote = NOTE_Cs;	KeyOctave = m_iOctave + 1;	break;	// L
-		case 192:	KeyNote = NOTE_Ds;	KeyOctave = m_iOctave + 1;	break;	// Ö
-		case 90:	KeyNote = NOTE_C;	KeyOctave = m_iOctave;		break;	// Z
-		case 88:	KeyNote = NOTE_D;	KeyOctave = m_iOctave;		break;	// X
-		case 67:	KeyNote = NOTE_E;	KeyOctave = m_iOctave;		break;	// C
-		case 86:	KeyNote = NOTE_F;	KeyOctave = m_iOctave;		break;	// V
-		case 66:	KeyNote = NOTE_G;	KeyOctave = m_iOctave;		break;	// B
-		case 78:	KeyNote = NOTE_A;	KeyOctave = m_iOctave;		break;	// N
-		case 77:	KeyNote = NOTE_B;	KeyOctave = m_iOctave;		break;	// M
-		case 188:	KeyNote = NOTE_C;	KeyOctave = m_iOctave + 1;	break;	// ,
-		case 190:	KeyNote = NOTE_D;	KeyOctave = m_iOctave + 1;	break;	// .
-		case 189:	KeyNote = NOTE_E;	KeyOctave = m_iOctave + 1;	break;	// -
-	}
-
-	// Invalid
-	if (KeyNote == 0)
-		return -1;
-
-	// Return a MIDI note
-	return MIDI_NOTE(KeyOctave, KeyNote);		
 }
 
 int CFamiTrackerView::TranslateKeyModplug(unsigned char Key) const
@@ -3321,8 +3339,6 @@ bool CFamiTrackerView::PreviewNote(unsigned char Key)
 
 	if (Note > 0) {
 		TriggerMIDINote(m_pPatternEditor->GetChannel(), Note, 0x7F, false); 
-		if (!m_bEditEnable)
-			m_iNoteCorrection[Key] = 0;		// // //
 		return true;
 	}
 
@@ -3340,11 +3356,6 @@ void CFamiTrackerView::PreviewRelease(unsigned char Key)
 			ReleaseMIDINote(m_pPatternEditor->GetChannel(), Note, false);
 		else 
 			CutMIDINote(m_pPatternEditor->GetChannel(), Note, false);
-		if (!m_bEditEnable) {
-			auto it = m_iNoteCorrection.find(Key);		// // //
-			ASSERT(it != m_iNoteCorrection.end());
-			m_iNoteCorrection.erase(it);
-		}
 	}
 }
 
