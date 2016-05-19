@@ -1955,10 +1955,10 @@ void CFamiTrackerView::SetChannelMute(int Channel, bool bMute)
 
 	if (m_bMuteChannels[Channel] != bMute) {		// // //
 		HaltNoteSingle(Channel);
-		if (bMute)
-			m_pNoteQueue->MuteChannel(pDoc->GetChannelType(Channel));
-		else
-			m_pNoteQueue->UnmuteChannel(pDoc->GetChannelType(Channel));
+//		if (bMute)
+//			m_pNoteQueue->MuteChannel(pDoc->GetChannelType(Channel));
+//		else
+//			m_pNoteQueue->UnmuteChannel(pDoc->GetChannelType(Channel));
 	}
 	m_bMuteChannels[Channel] = bMute;
 
@@ -2087,7 +2087,7 @@ void CFamiTrackerView::PlayNote(unsigned int Channel, unsigned int Note, unsigne
 
 	CFamiTrackerDoc *pDoc = GetDocument();		// // //
 	int ret = pDoc->GetChannelIndex(m_pNoteQueue->Trigger(MIDI_NOTE(Octave, Note), pDoc->GetChannelType(Channel)));
-	if (ret != -1 && !m_bMuteChannels[ret]) {
+	if (ret != -1) {
 		pDoc->GetChannel(ret)->SetNote(NoteData, NOTE_PRIO_2);
 		theApp.GetSoundGenerator()->ForceReloadInstrument(ret);		// // //
 	}
@@ -2373,9 +2373,9 @@ void CFamiTrackerView::UpdateNoteQueues()		// // //
 			m_pNoteQueue->AddMap({CHANID_S5B_CH1, CHANID_S5B_CH2, CHANID_S5B_CH3});
 	}
 
-	for (int i = 0; i < Channels; ++i)
-		if (IsChannelMuted(i))
-			m_pNoteQueue->MuteChannel(pDoc->GetChannelType(i));
+//	for (int i = 0; i < Channels; ++i)
+//		if (IsChannelMuted(i))
+//			m_pNoteQueue->MuteChannel(pDoc->GetChannelType(i));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////

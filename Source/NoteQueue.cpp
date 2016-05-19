@@ -27,7 +27,7 @@
 enum class CNoteChannelQueue::note_state_t {HOLD, RELEASE};
 
 CNoteChannelQueue::CNoteChannelQueue(std::vector<unsigned> Ch) :
-	m_iChannelMapID(Ch), m_iChannelCount(m_iChannelMapID.size())
+	m_iChannelMapID(Ch), m_iChannelCount(Ch.size())
 {
 	m_iCurrentNote.resize(m_iChannelCount);
 	m_bChannelMute.resize(m_iChannelCount);
