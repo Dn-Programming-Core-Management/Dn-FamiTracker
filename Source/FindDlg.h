@@ -130,6 +130,51 @@ public:
 	CFindException(const char *msg) : std::runtime_error(msg) { }
 };
 
+// CFindResultsBox dialog
+
+class CFindResultsBox : public CDialog
+{
+	DECLARE_DYNAMIC(CFindResultsBox)
+public:
+	CFindResultsBox(CWnd* pParent = NULL); // standard constructor
+	virtual ~CFindResultsBox();
+	
+	virtual void DoDataExchange(CDataExchange* pDX);
+
+	void AddResult(const stChanNote *pNote, const CFindCursor *pCursor, bool Noise) const;
+	void ClearResults() const;
+
+protected:
+	CListCtrl *m_cListResults;
+
+	enum result_column_t
+	{
+		ID,
+		CHANNEL, PATTERN, FRAME, ROW,
+		NOTE, INST, VOL,
+		EFFECT,
+		COUNT = EFFECT + MAX_EFFECT_COLUMNS
+	};
+
+	static result_column_t m_iLastsortColumn;
+	static bool m_bLastSortDescending;
+
+	static int CALLBACK IntCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
+	static int CALLBACK HexCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
+	static int CALLBACK StringCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
+	static int CALLBACK ChannelCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
+	static int CALLBACK NoteCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
+
+	void UpdateCount() const;
+
+protected:
+	DECLARE_MESSAGE_MAP()
+public:
+	virtual BOOL OnInitDialog();
+	afx_msg void OnNMDblclkListFindresults(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnLvnColumnClickFindResults(NMHDR *pNMHDR, LRESULT *pResult);
+};
+
 // CFindDlg dialog
 
 class CFindDlg : public CDialog
@@ -178,10 +223,12 @@ protected:
 
 	searchTerm m_searchTerm;
 	replaceTerm m_replaceTerm;
-	bool m_bFound, m_bSkipFirst;
+	bool m_bFound, m_bSkipFirst, m_bReplacing;
 
 	CFindCursor *m_pFindCursor;
 	CFindCursor::direction_t m_iSearchDirection;
+
+	CFindResultsBox *m_cResultsBox;
 
 	static const CString m_pNoteName[7];
 	static const CString m_pNoteSign[3];
@@ -194,6 +241,8 @@ public:
 	afx_msg void OnUpdateFields(UINT nID);
 	afx_msg void OnBnClickedButtonFindNext();
 	afx_msg void OnBnClickedButtonFindPrevious();
-	afx_msg void OnBnClickedButtonReplace();
-	afx_msg void OnBnClickedButtonFindReplaceall();
+	afx_msg void OnBnClickedButtonFindAll();
+	afx_msg void OnBnClickedButtonReplaceNext();
+	afx_msg void OnBnClickedButtonReplacePrevious();
+	afx_msg void OnBnClickedButtonReplaceall();
 };

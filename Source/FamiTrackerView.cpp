@@ -469,8 +469,14 @@ void CFamiTrackerView::InvalidateCursor()
 	m_pPatternEditor->InvalidateCursor();
 	RedrawPatternEditor();
 	RedrawFrameEditor();
-	CMainFrame *pMainFrame = static_cast<CMainFrame*>(GetParentFrame());
-	pMainFrame->ResetFind();		// // //
+
+	static CCursorPos LastPosition { };		// // //
+	CCursorPos p = m_pPatternEditor->GetCursor();
+	if (memcmp(&p, &LastPosition, sizeof(CCursorPos)))
+	{
+		LastPosition = p;
+		static_cast<CMainFrame*>(GetParentFrame())->ResetFind();		// // //
+	}
 }
 
 void CFamiTrackerView::InvalidateHeader()

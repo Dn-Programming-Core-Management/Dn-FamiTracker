@@ -2889,6 +2889,8 @@ void CPatternEditor::OnMouseDown(const CPoint &point)
 
 void CPatternEditor::OnMouseUp(const CPoint &point)
 {
+	GetMainFrame()->ResetFind();		// // //
+
 	// Left mouse button released
 	const int ChannelCount = GetChannelCount();
 	const int PushedChannel = m_iChannelPushed;

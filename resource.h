@@ -143,6 +143,7 @@
 #define IDS_SEQUENCE_LIMIT              186
 #define IDS_FIND_NONE                   187
 #define IDS_REPLACE_ALL                 188
+#define IDS_FINDRESULT_COUNT            188
 #define IDS_IMPORT_SEQUENCE_COUNT       189
 #define ID_FIND_NEXT                    190
 #define IDS_ABOUT_TOOLTIP_BUG           191
@@ -222,6 +223,7 @@
 #define IDD_RECORD_SETTINGS             334
 #define IDD_CONFIG_VERSION              335
 #define IDD_TRANSPOSE                   337
+#define IDD_FINDRESULTS                 343
 #define IDC_INSTRUMENTS                 1001
 #define IDC_INSTSETTINGS                1002
 #define IDC_IMPORT_DETUNE               1002
@@ -593,6 +595,10 @@
 #define IDC_STATIC_VERSION_ERROR        1440
 #define IDC_BUTTON_FIND_REPLACEALL      1441
 #define IDC_BUTTON_FIND_PREVIOUS        1442
+#define IDC_LIST_FINDRESULTS            1443
+#define IDC_STATIC_FINDRESULT_COUNT     1445
+#define IDC_BUTTON_REPLACE_PREVIOUS     1446
+#define IDC_BUTTON_FIND_ALL             1447
 #define ID_TRACKER_PLAY                 32771
 #define ID_TRACKER_PLAYPATTERN          32775
 #define ID_TRACKER_STOP                 32776
@@ -747,9 +753,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        343
+#define _APS_NEXT_RESOURCE_VALUE        345
 #define _APS_NEXT_COMMAND_VALUE         33193
-#define _APS_NEXT_CONTROL_VALUE         1443
+#define _APS_NEXT_CONTROL_VALUE         1448
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif

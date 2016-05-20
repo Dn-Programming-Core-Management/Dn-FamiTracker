@@ -38,6 +38,7 @@ public:
 	effect_t      EffNumber[MAX_EFFECT_COLUMNS] = {EF_NONE, EF_NONE, EF_NONE, EF_NONE};		// // //
 	unsigned char EffParam[MAX_EFFECT_COLUMNS] = {0U, 0U, 0U, 0U};
 
-private:
+public:
 	static const CString NOTE_NAME[NOTE_RANGE];
+	static const CString NOTE_NAME_FLAT[NOTE_RANGE];
 };
