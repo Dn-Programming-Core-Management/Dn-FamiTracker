@@ -90,10 +90,15 @@
 #define CALL_MEMBER_FN(obj, ptr) ((obj)->*(ptr))
 
 #ifdef _DEBUG
-#undef TRACE
 #define new DEBUG_NEW
 bool _trace(TCHAR *format, ...);
+#ifdef TRACE
+#undef TRACE
+#endif
 #define TRACE _trace
 #else
-#define TRACE false && _trace
+#ifdef TRACE
+#undef TRACE
+#endif
+#define TRACE __noop
 #endif
