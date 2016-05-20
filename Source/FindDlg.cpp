@@ -291,6 +291,45 @@ void CFindResultsBox::ClearResults() const
 	UpdateCount();
 }
 
+void CFindResultsBox::SelectItem(int Index) const
+{
+	const auto ToChannelIndex = [] (const CString &x) {
+		static const CString HEADER_STR[] = {
+			_T("Pulse "), _T("Triangle"), _T("Noise"), _T("DPCM"),
+			_T("VRC6 Pulse "), _T("Sawtooth"),
+			_T("MMC5 Pulse "), _T("Namco "), _T("FDS"), _T("FM Channel "), _T("5B Square ")
+		};
+		static const int HEADER_ID[] = {
+			CHANID_SQUARE1, CHANID_TRIANGLE, CHANID_NOISE, CHANID_DPCM,
+			CHANID_VRC6_PULSE1, CHANID_VRC6_SAWTOOTH,
+			CHANID_MMC5_SQUARE1, CHANID_N163_CH1, CHANID_FDS, CHANID_VRC7_CH1, CHANID_S5B_CH1,
+		};
+		for (int i = 0; i < sizeof(HEADER_ID) / sizeof(int); ++i) {
+			const auto &n = HEADER_STR[i];
+			int Size = n.GetLength();
+			if (x.Left(Size) == n) {
+				int Pos = HEADER_ID[i];
+				if (x != n) Pos += x.GetAt(x.GetLength() - 1) - '1';
+				return Pos;
+			}
+		}
+		return -1;
+	};
+	const auto Cache = [&] (const CString &x) {
+		static std::unordered_map<CString, int> m;
+		auto it = m.find(x);
+		if (it == m.end())
+			return m[x] = ToChannelIndex(x);
+		return it->second;
+	};
+
+	auto pView = static_cast<CFamiTrackerView*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveView());
+	pView->SelectChannel(Cache(m_cListResults->GetItemText(Index, CHANNEL)));
+	pView->SelectFrame(strtol(m_cListResults->GetItemText(Index, FRAME), nullptr, 16));
+	pView->SelectRow(strtol(m_cListResults->GetItemText(Index, ROW), nullptr, 16));
+	AfxGetMainWnd()->SetFocus();
+}
+
 void CFindResultsBox::UpdateCount() const
 {
 	int Count = m_cListResults->GetItemCount();
@@ -336,6 +375,45 @@ BOOL CFindResultsBox::OnInitDialog()
 	return TRUE;
 }
 
+BOOL CFindResultsBox::PreTranslateMessage(MSG *pMsg)
+{
+	if (GetFocus() == m_cListResults) {
+		if (pMsg->message == WM_KEYDOWN) {
+			switch (pMsg->wParam) {
+			case 'A':
+				if ((::GetKeyState(VK_CONTROL) & 0x80) == 0x80) {
+					m_cListResults->SetRedraw(FALSE);
+					for (int i = m_cListResults->GetItemCount() - 1; i >= 0; --i)
+						m_cListResults->SetItemState(i, LVIS_SELECTED, LVIS_SELECTED);
+					m_cListResults->SetRedraw();
+					m_cListResults->RedrawWindow();
+				}
+				break;
+			case VK_DELETE:
+				m_cListResults->SetRedraw(FALSE);
+				for (int i = m_cListResults->GetItemCount() - 1; i >= 0; --i)
+					if (m_cListResults->GetItemState(i, LVIS_SELECTED) == LVIS_SELECTED)
+						m_cListResults->DeleteItem(i);
+				m_cListResults->SetRedraw();
+				m_cListResults->RedrawWindow();
+				UpdateCount();
+				break;
+			case VK_RETURN:
+				if (m_cListResults->GetSelectedCount() == 1) {
+					POSITION p = m_cListResults->GetFirstSelectedItemPosition();
+					ASSERT(p != nullptr);
+					SelectItem(m_cListResults->GetNextSelectedItem(p));
+				}
+				return TRUE;
+			}
+		}
+	}
+
+	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_RETURN) return TRUE;
+
+	return CDialog::PreTranslateMessage(pMsg);
+}
+
 void CFindResultsBox::OnNMDblclkListFindresults(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
@@ -344,12 +422,7 @@ void CFindResultsBox::OnNMDblclkListFindresults(NMHDR *pNMHDR, LRESULT *pResult)
 	m_cListResults->SubItemHitTest(&lvhti);
 	if (lvhti.iItem == -1) return;
 	m_cListResults->SetItemState(lvhti.iItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
-
-	auto pView = static_cast<CFamiTrackerView*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveView());
-//	pView->SelectChannel(strtol(m_cListResults->GetItemText(lvhti.iItem, CHANNEL), nullptr, 16));
-	pView->SelectFrame(strtol(m_cListResults->GetItemText(lvhti.iItem, FRAME), nullptr, 16));
-	pView->SelectRow(strtol(m_cListResults->GetItemText(lvhti.iItem, ROW), nullptr, 16));
-	AfxGetMainWnd()->SetFocus();
+	SelectItem(lvhti.iItem);
 }
 
 void CFindResultsBox::OnLvnColumnClickFindResults(NMHDR *pNMHDR, LRESULT *pResult)
@@ -389,10 +462,8 @@ int CFindResultsBox::IntCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lPara
 		result = 1;
 	else if (x < y)
 		result = -1;
-	if (m_bLastSortDescending)
-		result = -result;
 
-	return result;
+	return m_bLastSortDescending ? -result : result;
 }
 
 int CFindResultsBox::HexCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)

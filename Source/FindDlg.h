@@ -165,12 +165,14 @@ protected:
 	static int CALLBACK ChannelCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
 	static int CALLBACK NoteCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
 
+	void SelectItem(int Index) const;
 	void UpdateCount() const;
 
 protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	virtual BOOL OnInitDialog();
+	virtual BOOL PreTranslateMessage(MSG *pMsg);
 	afx_msg void OnNMDblclkListFindresults(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnLvnColumnClickFindResults(NMHDR *pNMHDR, LRESULT *pResult);
 };
