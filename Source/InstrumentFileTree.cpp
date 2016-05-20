@@ -43,7 +43,7 @@ void CInstrumentFileTree::DeleteMenuObjects()
 	m_menuArray.RemoveAll();
 	m_iTotalMenusAdded = 0;
 
-	TRACE0("Cleared instrument file tree\n");
+	TRACE("Cleared instrument file tree\n");
 }
 
 CString CInstrumentFileTree::GetFile(int Index) const
@@ -70,7 +70,7 @@ bool CInstrumentFileTree::BuildMenuTree(CString instrumentPath)
 	DeleteMenuObjects();
 	m_fileList.RemoveAll();
 
-	TRACE0("Building instrument file tree...\n");
+	TRACE("Building instrument file tree...\n");
 
 	m_pRootMenu = new CMenu();
 
@@ -101,7 +101,7 @@ bool CInstrumentFileTree::BuildMenuTree(CString instrumentPath)
 		}
 	}
 
-	TRACE0("Done\n");
+	TRACE("Done\n");
 
 	return true;
 }

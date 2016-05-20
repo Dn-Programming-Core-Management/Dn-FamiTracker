@@ -167,7 +167,7 @@ UINT CVisualizerWnd::ThreadProc()
 	DWORD nThreadID = AfxGetThread()->m_nThreadID;
 	m_bThreadRunning = true;
 
-	TRACE1("Visualizer: Started thread (0x%04x)\n", nThreadID);
+	TRACE("Visualizer: Started thread (0x%04x)\n", nThreadID);
 
 	while (::WaitForSingleObject(m_hNewSamples, INFINITE) == WAIT_OBJECT_0 && m_bThreadRunning) {
 
@@ -199,7 +199,7 @@ UINT CVisualizerWnd::ThreadProc()
 		m_csBuffer.Unlock();
 	}
 
-	TRACE1("Visualizer: Closed thread (0x%04x)\n", nThreadID);
+	TRACE("Visualizer: Closed thread (0x%04x)\n", nThreadID);
 
 	return 0;
 }
@@ -310,15 +310,15 @@ void CVisualizerWnd::OnDestroy()
 		m_bThreadRunning = false;
 		::SetEvent(m_hNewSamples);
 
-		TRACE0("Visualizer: Joining thread...\n");
+		TRACE("Visualizer: Joining thread...\n");
 		if (::WaitForSingleObject(hThread, 5000) == WAIT_OBJECT_0) {
 			::CloseHandle(m_hNewSamples);
 			m_hNewSamples = NULL;
 			m_pWorkerThread = NULL;
-			TRACE0("Visualizer: Thread has finished.\n");
+			TRACE("Visualizer: Thread has finished.\n");
 		}
 		else {
-			TRACE0("Visualizer: Could not shutdown worker thread\n");
+			TRACE("Visualizer: Could not shutdown worker thread\n");
 		}
 	}
 

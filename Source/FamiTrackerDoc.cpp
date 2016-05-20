@@ -4543,7 +4543,7 @@ void CFamiTrackerDoc::RemoveUnusedSamples()		// // //
 void CFamiTrackerDoc::MergeDuplicatedPatterns(unsigned int Track)		// // //
 {
 	for (unsigned int c = 0; c < m_iChannelsAvailable; ++c) {
-		TRACE2("Trim: %d, %d\n", Track, c);
+		TRACE("Trim: %d, %d\n", Track, c);
 
 		unsigned int uiPatternUsed[MAX_PATTERN];
 
@@ -4574,7 +4574,7 @@ void CFamiTrackerDoc::MergeDuplicatedPatterns(unsigned int Track)		// // //
 				}
 				if (bSame) {
 					uiPatternUsed[ui] = uj;
-					TRACE2("Duplicate: %d = %d\n", ui, uj);
+					TRACE("Duplicate: %d = %d\n", ui, uj);
 					break;
 				}
 			}

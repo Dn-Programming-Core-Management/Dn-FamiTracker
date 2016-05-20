@@ -145,7 +145,7 @@ CAccelerator::CAccelerator() :
 	m_pAccelTable(new ACCEL[ACCEL_COUNT]),
 	m_iUsedKeys()		// // //
 {
-	ATLTRACE2(atlTraceGeneral, 0, "Accelerator: Accelerator table contains %d items\n", ACCEL_COUNT);
+	TRACE(_T("Accelerator: Accelerator table contains %d items\n"), ACCEL_COUNT);
 }
 
 CAccelerator::~CAccelerator()

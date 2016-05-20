@@ -53,7 +53,7 @@ CSettings::CSettings() : m_iAddedSettings(0)
 {
 	memset(m_pSettings, 0, sizeof(CSettingBase*) * MAX_SETTINGS);
 	SetupSettings();
-	TRACE1(_T("Settings: Added %i settings\n"), m_iAddedSettings);
+	TRACE(_T("Settings: Added %i settings\n"), m_iAddedSettings);
 }
 
 CSettings::~CSettings()

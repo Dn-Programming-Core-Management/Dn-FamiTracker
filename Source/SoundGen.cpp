@@ -143,7 +143,7 @@ CSoundGen::CSoundGen() :
 	m_iSequencePlayPos(0),
 	m_iSequenceTimeout(0)
 {
-	TRACE0("SoundGen: Object created\n");
+	TRACE("SoundGen: Object created\n");
 
 	// Create APU
 	m_pAPU = new CAPU(this);		// // //
@@ -307,7 +307,7 @@ void CSoundGen::RemoveDocument()
 
 	if (m_pDocument != NULL) {
 		// Thread stuck
-		TRACE0("SoundGen: Could not remove document pointer!\n");
+		TRACE("SoundGen: Could not remove document pointer!\n");
 	}
 }
 
@@ -355,7 +355,7 @@ void CSoundGen::SelectChip(int Chip)
 	}
 
 	if (!WaitForStop()) {
-		TRACE0("CSoundGen: Could not stop player!");
+		TRACE("CSoundGen: Could not stop player!");
 		return;
 	}
 
@@ -1867,7 +1867,7 @@ BOOL CSoundGen::InitInstance()
 	GenerateVibratoTable(VIBRATO_NEW);
 
 	if (!ResetAudioDevice()) {
-		TRACE0("SoundGen: Failed to reset audio device!\n");
+		TRACE("SoundGen: Failed to reset audio device!\n");
 		if (m_pVisualizerWnd != NULL)
 			m_pVisualizerWnd->ReportAudioProblem();
 	}
@@ -1880,7 +1880,7 @@ BOOL CSoundGen::InitInstance()
 	m_iSpeed = DEFAULT_SPEED;
 	m_iTempo = (DEFAULT_MACHINE_TYPE == NTSC) ? DEFAULT_TEMPO_NTSC : DEFAULT_TEMPO_PAL;
 
-	TRACE1("SoundGen: Created thread (0x%04x)\n", m_nThreadID);
+	TRACE("SoundGen: Created thread (0x%04x)\n", m_nThreadID);
 
 	SetThreadPriority(THREAD_PRIORITY_TIME_CRITICAL);
 
@@ -1896,7 +1896,7 @@ int CSoundGen::ExitInstance()
 {
 	// Shutdown the thread
 
-	TRACE1("SoundGen: Closing thread (0x%04x)\n", m_nThreadID);
+	TRACE("SoundGen: Closing thread (0x%04x)\n", m_nThreadID);
 
 	// Free allocated memory
 	SAFE_RELEASE_ARRAY(m_iGraphBuffer);
@@ -2114,7 +2114,7 @@ void CSoundGen::OnSilentAll(WPARAM wParam, LPARAM lParam)
 void CSoundGen::OnLoadSettings(WPARAM wParam, LPARAM lParam)
 {
 	if (!ResetAudioDevice()) {
-		TRACE0("SoundGen: Failed to reset audio device!\n");
+		TRACE("SoundGen: Failed to reset audio device!\n");
 		if (m_pVisualizerWnd != NULL)
 			m_pVisualizerWnd->ReportAudioProblem();
 	}
@@ -2205,7 +2205,7 @@ void CSoundGen::OnRemoveDocument(WPARAM wParam, LPARAM lParam)
 	//if (*m_pDumpInstrument)		// // //
 	//	(*m_pDumpInstrument)->Release();
 	m_pInstRecorder->ResetRecordCache();
-	TRACE0("SoundGen: Document removed\n");
+	TRACE("SoundGen: Document removed\n");
 }
 
 /*

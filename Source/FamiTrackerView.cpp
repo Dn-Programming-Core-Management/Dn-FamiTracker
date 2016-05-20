@@ -1323,7 +1323,7 @@ void CFamiTrackerView::OnInitialUpdate()
 
 	CFrameEditor *pFrameEditor = GetFrameEditor();
 
-	TRACE1("View: OnInitialUpdate (%s)\n", pDoc->GetTitle());
+	TRACE("View: OnInitialUpdate (%s)\n", pDoc->GetTitle());
 
 	// Setup order window
 	pFrameEditor->AssignDocument(pDoc, this);
@@ -3338,7 +3338,7 @@ bool CFamiTrackerView::PreviewNote(unsigned char Key)
 
 	int Note = TranslateKey(Key);
 
-	TRACE0("View: Note preview\n");
+	TRACE("View: Note preview\n");
 
 	if (Note > 0) {
 		TriggerMIDINote(m_pPatternEditor->GetChannel(), Note, 0x7F, false); 
@@ -3720,7 +3720,7 @@ bool CFamiTrackerView::AddAction(CAction *pAction) const
 
 DROPEFFECT CFamiTrackerView::OnDragEnter(COleDataObject* pDataObject, DWORD dwKeyState, CPoint point)
 {
-	TRACE0("OLE: OnDragEnter\n");
+	TRACE("OLE: OnDragEnter\n");
 
 	sel_condition_t Cond = m_pPatternEditor->GetSelectionCondition();
 	if (m_pPatternEditor->GetSelectionCondition() == SEL_NONTERMINAL_SKIP) {		// // //
@@ -3763,7 +3763,7 @@ DROPEFFECT CFamiTrackerView::OnDragEnter(COleDataObject* pDataObject, DWORD dwKe
 
 void CFamiTrackerView::OnDragLeave()
 {
-	TRACE0("OLE: OnDragLeave\n");
+	TRACE("OLE: OnDragLeave\n");
 
 	if (m_nDropEffect != DROPEFFECT_NONE) {
 		m_pPatternEditor->EndDrag();
@@ -3777,7 +3777,7 @@ void CFamiTrackerView::OnDragLeave()
 
 DROPEFFECT CFamiTrackerView::OnDragOver(COleDataObject* pDataObject, DWORD dwKeyState, CPoint point)
 {
-	TRACE0("OLE: OnDragOver\n");
+	TRACE("OLE: OnDragOver\n");
 
 	// Update drag'n'drop cursor
 	if (m_nDropEffect != DROPEFFECT_NONE) {
@@ -3790,7 +3790,7 @@ DROPEFFECT CFamiTrackerView::OnDragOver(COleDataObject* pDataObject, DWORD dwKey
 
 BOOL CFamiTrackerView::OnDrop(COleDataObject* pDataObject, DROPEFFECT dropEffect, CPoint point)
 {
-	TRACE0("OLE: OnDrop\n");
+	TRACE("OLE: OnDrop\n");
 
 	BOOL Result = FALSE;
 
@@ -3824,7 +3824,7 @@ BOOL CFamiTrackerView::OnDrop(COleDataObject* pDataObject, DROPEFFECT dropEffect
 
 void CFamiTrackerView::BeginDragData(int ChanOffset, int RowOffset)
 {
-	TRACE0("OLE: BeginDragData\n");
+	TRACE("OLE: BeginDragData\n");
 
 	std::shared_ptr<COleDataSource> pSrc(new COleDataSource());		// // //
 	std::shared_ptr<CPatternClipData> pClipData(m_pPatternEditor->Copy());

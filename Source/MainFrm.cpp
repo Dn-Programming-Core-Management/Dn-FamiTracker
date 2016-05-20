@@ -394,7 +394,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 
 	if (!m_wndStatusBar.Create(this) || !m_wndStatusBar.SetIndicators(indicators, sizeof(indicators) / sizeof(UINT))) {
-		TRACE0("Failed to create status bar\n");
+		TRACE("Failed to create status bar\n");
 		return -1;      // fail to create
 	}
 	m_wndStatusBar.SetPaneInfo(1, ID_INDICATOR_CHIP, SBPS_NORMAL, 250);		// // //
@@ -403,7 +403,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 
 	if (!CreateInstrumentToolbar()) {
-		TRACE0("Failed to create instrument toolbar\n");
+		TRACE("Failed to create instrument toolbar\n");
 		return -1;      // fail to create
 	}
 
@@ -415,7 +415,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	*/
 	
 	if (!CreateVisualizerWindow()) {
-		TRACE0("Failed to create sample window\n");
+		TRACE("Failed to create sample window\n");
 		return -1;      // fail to create
 	}
 
@@ -460,21 +460,21 @@ bool CMainFrame::CreateToolbars()
 	REBARBANDINFO rbi1;
 
 	if (!m_wndToolBarReBar.Create(this)) {
-		TRACE0("Failed to create rebar\n");
+		TRACE("Failed to create rebar\n");
 		return false;      // fail to create
 	}
 
 	// Add the toolbar
 	if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT | TBSTYLE_TRANSPARENT, WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC) ||
 		!m_wndToolBar.LoadToolBar(IDR_MAINFRAME))  {
-		TRACE0("Failed to create toolbar\n");
+		TRACE("Failed to create toolbar\n");
 		return false;      // fail to create
 	}
 
 	m_wndToolBar.SetBarStyle(CBRS_ALIGN_TOP | CBRS_SIZE_DYNAMIC | CBRS_TOOLTIPS | CBRS_FLYBY);
 
 	if (!m_wndOctaveBar.Create(this, (UINT)IDD_OCTAVE, CBRS_TOOLTIPS | CBRS_FLYBY, IDD_OCTAVE)) {
-		TRACE0("Failed to create octave bar\n");
+		TRACE("Failed to create octave bar\n");
 		return false;      // fail to create
 	}
 
@@ -487,7 +487,7 @@ bool CMainFrame::CreateToolbars()
 	rbi1.cx			= DPI::SX(496);
 
 	if (!m_wndToolBarReBar.GetReBarCtrl().InsertBand(-1, &rbi1)) {
-		TRACE0("Failed to create rebar\n");
+		TRACE("Failed to create rebar\n");
 		return false;      // fail to create
 	}
 
@@ -500,7 +500,7 @@ bool CMainFrame::CreateToolbars()
 	rbi1.cx			= DPI::SX(100);
 
 	if (!m_wndToolBarReBar.GetReBarCtrl().InsertBand(-1, &rbi1)) {
-		TRACE0("Failed to create rebar\n");
+		TRACE("Failed to create rebar\n");
 		return false;      // fail to create
 	}
 
@@ -522,13 +522,13 @@ bool CMainFrame::CreateDialogPanels()
 
 	// Top area
 	if (!m_wndControlBar.Create(this, IDD_MAINBAR, CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY, IDD_MAINBAR)) {
-		TRACE0("Failed to create frame main bar\n");
+		TRACE("Failed to create frame main bar\n");
 		return false;
 	}
 
 	/////////
 	if (!m_wndVerticalControlBar.Create(this, IDD_MAINBAR, CBRS_LEFT | CBRS_TOOLTIPS | CBRS_FLYBY, IDD_MAINBAR)) {
-		TRACE0("Failed to create frame main bar\n");
+		TRACE("Failed to create frame main bar\n");
 		return false;
 	}
 
@@ -547,19 +547,19 @@ bool CMainFrame::CreateDialogPanels()
 	DPI::ScaleRect(rect);		// // //
 
 	if (!m_pFrameEditor->CreateEx(WS_EX_STATICEDGE, NULL, _T(""), WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL, rect, (CWnd*)&m_wndControlBar, 0)) {
-		TRACE0("Failed to create pattern window\n");
+		TRACE("Failed to create pattern window\n");
 		return false;
 	}
 	
 	// // // Find / replace panel
 	m_pFindDlg = new CFindDlg();
 	if (!m_wndFindControlBar.Create(this, IDD_MAINBAR, CBRS_RIGHT | CBRS_TOOLTIPS | CBRS_FLYBY, IDD_MAINBAR)) {
-		TRACE0("Failed to create frame main bar\n");
+		TRACE("Failed to create frame main bar\n");
 		return false;
 	}
 	m_wndFindControlBar.ShowWindow(SW_HIDE);
 	if (!m_pFindDlg->Create(IDD_FIND, &m_wndFindControlBar)) {
-		TRACE0("Failed to create find / replace dialog\n");
+		TRACE("Failed to create find / replace dialog\n");
 		return false;
 	}
 	m_pFindDlg->ShowWindow(SW_SHOW);
@@ -567,7 +567,7 @@ bool CMainFrame::CreateDialogPanels()
 	m_wndDialogBar.SetFrameParent(this);
 
 	if (!m_wndDialogBar.Create(IDD_MAINFRAME, &m_wndControlBar)) {
-		TRACE0("Failed to create dialog bar\n");
+		TRACE("Failed to create dialog bar\n");
 		return false;
 	}
 	
@@ -636,7 +636,7 @@ bool CMainFrame::CreateDialogPanels()
 #ifdef NEW_INSTRUMENTPANEL
 /*
 	if (!m_wndInstrumentBar.Create(this, IDD_INSTRUMENTPANEL, CBRS_RIGHT | CBRS_TOOLTIPS | CBRS_FLYBY, IDD_INSTRUMENTPANEL)) {
-		TRACE0("Failed to create frame instrument bar\n");
+		TRACE("Failed to create frame instrument bar\n");
 	}
 
 	m_wndInstrumentBar.ShowWindow(SW_SHOW);
@@ -646,7 +646,7 @@ bool CMainFrame::CreateDialogPanels()
 	// Frame bar
 /*
 	if (!m_wndFrameBar.Create(this, IDD_FRAMEBAR, CBRS_LEFT | CBRS_TOOLTIPS | CBRS_FLYBY, IDD_FRAMEBAR)) {
-		TRACE0("Failed to create frame bar\n");
+		TRACE("Failed to create frame bar\n");
 	}
 	
 	m_wndFrameBar.ShowWindow(SW_SHOW);
@@ -2495,7 +2495,7 @@ void CMainFrame::OnDestroy()
 
 		if (dwResult != WAIT_OBJECT_0) {
 			// The CEvent object will leak if this happens, but the program won't crash
-			TRACE0(_T("MainFrame: Error while waiting for sound to close!\n"));
+			TRACE(_T("MainFrame: Error while waiting for sound to close!\n"));
 		}
 		else
 			delete pSoundEvent;

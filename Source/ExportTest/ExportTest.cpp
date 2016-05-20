@@ -78,7 +78,7 @@ bool CExportTest::Setup(LPCTSTR lpszFile)
 		// Get a temporary filename
 		GetTempPath(MAX_PATH, TempPath);
 		GetTempFileName(TempPath, _T("NSF-TEST"), 0, TempFile);
-		TRACE1("ExportTest: Creating file %s\n", TempFile);
+		TRACE("ExportTest: Creating file %s\n", TempFile);
 		// Export file
 		CFamiTrackerDoc *pDoc = CFamiTrackerDoc::GetDoc();
 		CCompiler Compiler(pDoc, NULL);
