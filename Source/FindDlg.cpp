@@ -96,8 +96,10 @@ CFindCursor::CFindCursor(CPatternEditor *pEditor, int Track, const CCursorPos &P
 
 void CFindCursor::Move(direction_t Dir)
 {
-	if (ResetPosition(Dir))
+	if (!Contains()) {
+		ResetPosition(Dir);
 		return;
+	}
 
 	switch (Dir) {
 	case direction_t::UP: operator-=(1); break;
@@ -165,11 +167,8 @@ void CFindCursor::Set(const stChanNote *pNote)
 	CPatternIterator::Set(m_iChannel, pNote);
 }
 
-bool CFindCursor::ResetPosition(direction_t Dir)
+void CFindCursor::ResetPosition(direction_t Dir)
 {
-	if (Contains())
-		return false;
-
 	const CCursorPos *Source;
 	switch (Dir) {
 	case direction_t::DOWN: case direction_t::RIGHT:
@@ -181,7 +180,6 @@ bool CFindCursor::ResetPosition(direction_t Dir)
 	m_iRow = Source->m_iRow;
 	m_iChannel = Source->m_iChannel;
 	ASSERT(Contains());
-	return true;
 }
 
 bool CFindCursor::Contains() const
@@ -1024,7 +1022,8 @@ bool CFindDlg::CompareFields(const stChanNote Target, bool Noise, int EffCount)
 	bool EffectMatch = false;
 
 	bool Melodic = m_searchTerm.Note->Min >= NOTE_C && m_searchTerm.Note->Min <= NOTE_B && // ||
-				   m_searchTerm.Note->Max >= NOTE_C && m_searchTerm.Note->Max <= NOTE_B;
+				   m_searchTerm.Note->Max >= NOTE_C && m_searchTerm.Note->Max <= NOTE_B &&
+				   !m_searchTerm.Definite[WC_OCT];
 
 	if (m_searchTerm.Definite[WC_NOTE]) {
 		if (m_searchTerm.NoiseChan) {
@@ -1088,10 +1087,15 @@ bool CFindDlg::Find(bool ShowEnd)
 	const int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
 	const int Frames = m_pDocument->GetFrameCount(Track);
 
+	if (ShowEnd)
+		SAFE_RELEASE(m_pFindCursor);
 	PrepareCursor(false);
 	stChanNote Target;
-	if (m_pFindCursor->ResetPosition(m_iSearchDirection))
+	if (!m_bFound) {
+		if (!m_pFindCursor->Contains())
+			m_pFindCursor->ResetPosition(m_iSearchDirection);
 		m_bSkipFirst = false;
+	}
 
 	do {
 		if (m_bSkipFirst) {

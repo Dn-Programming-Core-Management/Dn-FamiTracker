@@ -106,11 +106,9 @@ public:
 
 	/*!	\brief Resets the cursor to an appropriate initial position if it does not lie within its
 		scope.
-		\param Dir The movement direction.
-		\return Whether the cursor is moved. */
-	bool ResetPosition(direction_t Dir);
+		\param Dir The movement direction. */
+	void ResetPosition(direction_t Dir);
 
-private:
 	/*!	\brief Checks whether the cursor lies within the scope provided in the constructor.
 		\details This method is similar to CPatternEditor::IsInRange but ignores the column index
 		of the cursor.
