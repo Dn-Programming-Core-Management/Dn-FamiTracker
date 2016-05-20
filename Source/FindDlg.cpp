@@ -1126,61 +1126,64 @@ bool CFindDlg::Find(bool ShowEnd)
 bool CFindDlg::Replace(CCompoundAction *pAction)
 {
 	stChanNote Target;
-	const int Track = static_cast<CMainFrame*>(AfxGetMainWnd())->GetSelectedTrack();
 
 	if (m_bFound) {
 		ASSERT(m_pFindCursor != nullptr);
 		m_pFindCursor->Get(&Target);
-		int EffColumn = m_cEffectColumn->GetCurSel();
-		if (EffColumn == MAX_EFFECT_COLUMNS && (m_replaceTerm.Definite[WC_EFF] || m_replaceTerm.Definite[WC_PARAM])) {
-			for (int i = 0; i < MAX_EFFECT_COLUMNS && EffColumn != MAX_EFFECT_COLUMNS; i++)
-				if (m_replaceTerm.Note.EffNumber[0] == Target.EffNumber[i] && m_replaceTerm.Note.EffParam[0] == Target.EffParam[i])
-					EffColumn = i;
-		}
+
+		if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE))
+			Target = stChanNote { };
 
 		if (m_replaceTerm.Definite[WC_NOTE])
 			Target.Note = m_replaceTerm.Note.Note;
-		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE))
-			Target.Note = NONE;
+
 		if (m_replaceTerm.Definite[WC_OCT])
 			Target.Octave = m_replaceTerm.Note.Octave;
-		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE))
-			Target.Octave = 0;
+
 		if (m_replaceTerm.Definite[WC_INST])
 			Target.Instrument = m_replaceTerm.Note.Instrument;
-		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE))
-			Target.Instrument = MAX_INSTRUMENTS;
+
 		if (m_replaceTerm.Definite[WC_VOL])
 			Target.Vol = m_replaceTerm.Note.Vol;
-		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE))
-			Target.Vol = MAX_VOLUME;
 
-		if (m_replaceTerm.Definite[WC_EFF]) {
-			switch (m_pDocument->GetChipType(m_pView->GetSelectedChannel())) {
-			case SNDCHIP_FDS:
-				for (auto e : FDS_EFFECTS)
-					if (EFF_CHAR[m_replaceTerm.Note.EffNumber[0] - 1] == EFF_CHAR[e - 1]) {
-						m_replaceTerm.Note.EffNumber[0] = e; break;
-					}
-				break;
-			case SNDCHIP_S5B:
-				for (auto e : S5B_EFFECTS)
-					if (EFF_CHAR[m_replaceTerm.Note.EffNumber[0] - 1] == EFF_CHAR[e - 1]) {
-						m_replaceTerm.Note.EffNumber[0] = e; break;
-					}
-				break;
-			case SNDCHIP_N163:
-				for (auto e : N163_EFFECTS)
-					if (EFF_CHAR[m_replaceTerm.Note.EffNumber[0] - 1] == EFF_CHAR[e - 1]) {
-						m_replaceTerm.Note.EffNumber[0] = e; break;
-					}
-				break;
+		if (m_replaceTerm.Definite[WC_EFF] || m_replaceTerm.Definite[WC_PARAM]) {
+			std::vector<int> MatchedColumns;
+			if (m_cEffectColumn->GetCurSel() < MAX_EFFECT_COLUMNS)
+				MatchedColumns.push_back(m_cEffectColumn->GetCurSel());
+			else {
+				const int c = m_pDocument->GetEffColumns(m_pFindCursor->m_iTrack, m_pFindCursor->m_iChannel);
+				for (int i = 0; i <= c; ++i)
+					if ((!m_searchTerm.Definite[WC_EFF] || m_searchTerm.EffNumber[Target.EffNumber[i]]) &&
+						(!m_searchTerm.Definite[WC_PARAM] || m_searchTerm.EffParam->IsMatch(Target.EffParam[i])))
+						MatchedColumns.push_back(i);
 			}
-			Target.EffNumber[EffColumn]	= m_replaceTerm.Note.EffNumber[0];
+
+			if (m_replaceTerm.Definite[WC_EFF]) {
+				effect_t fx = m_replaceTerm.Note.EffNumber[0];
+				char c = EFF_CHAR[fx - 1];
+				switch (m_pDocument->GetChipType(m_pView->GetSelectedChannel())) {
+				case SNDCHIP_FDS:
+					for (auto e : FDS_EFFECTS) if (c == EFF_CHAR[e - 1]) {
+						fx = e; break;
+					}; break;
+				case SNDCHIP_S5B:
+					for (auto e : S5B_EFFECTS) if (c == EFF_CHAR[e - 1]) {
+						fx = e; break;
+					}; break;
+				case SNDCHIP_N163:
+					for (auto e : N163_EFFECTS) if (c == EFF_CHAR[e - 1]) {
+						fx = e; break;
+					}; break;
+				}
+				for (const int &i : MatchedColumns)
+					Target.EffNumber[i] = fx;
+			}
+
+			if (m_replaceTerm.Definite[WC_PARAM])
+				for (const int &i : MatchedColumns)
+					Target.EffParam[i] = m_replaceTerm.Note.EffParam[0];
 		}
-		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) Target.EffNumber[EffColumn] = EF_NONE;
-		if (m_replaceTerm.Definite[WC_PARAM]) Target.EffParam[EffColumn] = m_replaceTerm.Note.EffParam[0];
-		else if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE)) Target.EffParam[EffColumn] = 0;
+
 		if (pAction)
 			pAction->JoinAction(new CPActionReplaceNote(Target,
 								m_pFindCursor->m_iFrame, m_pFindCursor->m_iRow, m_pFindCursor->m_iChannel));
@@ -1220,8 +1223,6 @@ bool CFindDlg::PrepareReplace()
 	if (!PrepareFind()) return false;
 	
 	try {
-		RaiseIf(m_cEffectColumn->GetCurSel() == MAX_EFFECT_COLUMNS,
-				_T("\"Any\" cannot be used as the effect column scope for replacing."));
 		GetReplaceTerm();
 	}
 	catch (CFindException *e) {
