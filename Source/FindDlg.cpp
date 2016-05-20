@@ -751,12 +751,14 @@ void CFindDlg::ParseNote(searchTerm &Term, CString str, bool Half)
 		return;
 	}
 
-	if (str.Left(1) == _T("^")) {
+	if (str.GetAt(0) == _T('^')) {
 		RaiseIf(Half && !Term.Definite[WC_OCT], _T("Cannot use wildcards in a range search query."));
 		Term.Definite[WC_NOTE] = true;
 		Term.Definite[WC_OCT] = true;
 		Term.Note->Set(ECHO);
 		if (str.Delete(0)) {
+			if (str.GetAt(0) == _T('-'))
+				str.Delete(0);
 			RaiseIf(atoi(str) > ECHO_BUFFER_LENGTH,
 				_T("Echo buffer access \"^%s\" is out of range, maximum is %d."), str, ECHO_BUFFER_LENGTH);
 			Term.Oct->Set(atoi(str), Half);
@@ -812,7 +814,7 @@ void CFindDlg::ParseNote(searchTerm &Term, CString str, bool Half)
 
 	if (str.SpanIncluding("0123456789") == str) {
 		int NoteValue = atoi(str);
-		RaiseIf(NoteValue == 0 && str.Left(1) != _T("0"), _T("Invalid note \"%s\"."), str);
+		RaiseIf(NoteValue == 0 && str.GetAt(0) != _T('0'), _T("Invalid note \"%s\"."), str);
 		RaiseIf(NoteValue >= NOTE_COUNT || NoteValue < 0,
 			_T("Note value \"%s\" is out of range, maximum is %d."), str, NOTE_COUNT - 1);
 		Term.Definite[WC_NOTE] = true;
@@ -1023,7 +1025,7 @@ bool CFindDlg::CompareFields(const stChanNote Target, bool Noise, int EffCount)
 
 	bool Melodic = m_searchTerm.Note->Min >= NOTE_C && m_searchTerm.Note->Min <= NOTE_B && // ||
 				   m_searchTerm.Note->Max >= NOTE_C && m_searchTerm.Note->Max <= NOTE_B &&
-				   !m_searchTerm.Definite[WC_OCT];
+				   m_searchTerm.Definite[WC_OCT];
 
 	if (m_searchTerm.Definite[WC_NOTE]) {
 		if (m_searchTerm.NoiseChan) {
