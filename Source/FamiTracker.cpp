@@ -602,12 +602,12 @@ void CFamiTrackerApp::CheckNewVersion(bool StartUp)		// // //
 					int Index = desc.Find(_T("\r\n\r\n"));
 					if (Index >= 0)
 						desc.Delete(0, Index + 4);
-					Index = desc.Find(_T("\r\n\r\n"));
+					Index = desc.Find(_T("\r\n\r\n#"));
 					if (Index >= 0)
 						desc.Truncate(Index);
 
 					m_pVersionMessage.Format(_T("A new version of 0CC-FamiTracker is now available:\n\n"
-											 "Version %d.%d.%d.%d (released %s %d, %d)\n%s\n\n"
+											 "Version %d.%d.%d.%d (released %s %d, %d)\n\n%s\n\n"
 											 "Pressing \"Yes\" will launch the Github web page for this release."),
 											 Ver[0], Ver[1], Ver[2], Ver[3], MONTHS[--M], D, Y, desc);
 					if (Start)

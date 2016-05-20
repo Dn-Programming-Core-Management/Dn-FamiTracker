@@ -85,7 +85,7 @@ BOOL CModulePropertiesDlg::OnInitDialog()
 
 	CListCtrl *pSongList = static_cast<CListCtrl*>(GetDlgItem(IDC_SONGLIST));
 	pSongList->InsertColumn(0, _T("Songs"), 0, 150);
-	pSongList->SendMessage(LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT);
+	pSongList->SetExtendedStyle(LVS_EX_FULLROWSELECT);
 
 	FillSongList();
 

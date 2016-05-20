@@ -229,6 +229,8 @@ void CFrameAction::SaveRedoState(const CMainFrame *pMainFrm)		// // //
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
 	m_iRedoFramePos = pView->GetSelectedFrame();
 	m_iRedoChannelPos = pView->GetSelectedChannel();
+
+	pView->GetDocument()->UpdateAllViews(NULL, UPDATE_FRAME);
 }
 
 void CFrameAction::RestoreUndoState(CMainFrame *pMainFrm) const		// // //

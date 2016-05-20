@@ -2122,7 +2122,8 @@ void CFamiTrackerView::ReleaseNote(unsigned int Channel, unsigned int Note, unsi
 	NoteData.Instrument = GetInstrument();
 	
 	CFamiTrackerDoc *pDoc = GetDocument();		// // //
-	int ch = pDoc->GetChannelIndex(m_pNoteQueue->Release(MIDI_NOTE(Octave, Note), pDoc->GetChannelType(Channel)));
+	int ch = pDoc->GetChannelIndex(m_pNoteQueue->Cut(MIDI_NOTE(Octave, Note), pDoc->GetChannelType(Channel)));
+//	int ch = pDoc->GetChannelIndex(m_pNoteQueue->Release(MIDI_NOTE(Octave, Note), pDoc->GetChannelType(Channel)));
 	if (ch != -1)
 		theApp.GetSoundGenerator()->QueueNote(ch, NoteData, NOTE_PRIO_2);
 
