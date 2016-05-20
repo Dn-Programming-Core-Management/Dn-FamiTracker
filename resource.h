@@ -329,6 +329,7 @@
 #define IDC_SONGNAME                    1151
 #define IDC_SONG_IMPORT                 1152
 #define IDC_HIGHLIGHT1                  1153
+#define IDC_SONG_INSERT                 1153
 #define IDC_PROGRESS_BAR                1154
 #define IDC_HIGHLIGHT2                  1154
 #define IDC_TIMES                       1155

@@ -1533,12 +1533,13 @@ CAPTION "Module properties"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Song editor",IDC_STATIC,7,7,199,147
-    CONTROL         "",IDC_SONGLIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | WS_BORDER | WS_TABSTOP,14,18,120,114
-    PUSHBUTTON      "Add",IDC_SONG_ADD,138,18,60,14
-    PUSHBUTTON      "Remove",IDC_SONG_REMOVE,138,35,60,14
-    PUSHBUTTON      "Move up",IDC_SONG_UP,138,52,60,14
-    PUSHBUTTON      "Move down",IDC_SONG_DOWN,138,69,60,14
-    PUSHBUTTON      "Import file",IDC_SONG_IMPORT,138,86,60,14
+    CONTROL         "",IDC_SONGLIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | WS_BORDER | WS_TABSTOP,14,18,120,114
+    PUSHBUTTON      "Add",IDC_SONG_ADD,138,17,60,14
+    PUSHBUTTON      "Insert",IDC_SONG_INSERT,138,33,60,14
+    PUSHBUTTON      "Remove",IDC_SONG_REMOVE,138,49,60,14
+    PUSHBUTTON      "Move up",IDC_SONG_UP,138,65,60,14
+    PUSHBUTTON      "Move down",IDC_SONG_DOWN,138,81,60,14
+    PUSHBUTTON      "Import file",IDC_SONG_IMPORT,138,97,60,14
     LTEXT           " Title",IDC_STATIC,14,135,17,12,SS_CENTERIMAGE
     EDITTEXT        IDC_SONGNAME,34,135,100,12,ES_AUTOHSCROLL
     GROUPBOX        "Expansion sound",IDC_STATIC,7,156,199,43
@@ -2500,7 +2501,7 @@ STRINGTABLE
 BEGIN
     IDS_REMOVE_INSTRUMENTS  "Do you want to remove all unused instruments? There is no undo for this command."
     IDS_REMOVE_PATTERNS     "Do you want to remove all unused patterns? There is no undo for this command."
-    IDS_SONG_DELETE         "Do you want to delete this song? There is no undo for this command."
+    IDS_SONG_DELETE         "Do you want to delete the selected songs? There is no undo for this command."
     IDS_SOUND_FAIL          "It appears the current sound settings aren't working, change settings and try again."
     IDS_UNDERRUN_MESSAGE    "Warning: Audio buffer underrun, increase the audio buffer size!"
     IDS_WELCOME_VER_FORMAT  "Welcome to 0CC-FamiTracker %1, press F1 for help"

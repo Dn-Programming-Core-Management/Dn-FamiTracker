@@ -33,6 +33,7 @@ private:
 	void SelectSong(int Song);
 	void UpdateSongButtons();
 	
+	bool m_bSingleSelection;		// // //
 	unsigned int m_iSelectedSong;
 	unsigned char m_iExpansions;		// // //
 	int m_iN163Channels;
@@ -56,6 +57,7 @@ public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedSongAdd();
+	afx_msg void OnBnClickedSongInsert();		// // //
 	afx_msg void OnBnClickedSongRemove();
 	afx_msg void OnBnClickedSongUp();
 	afx_msg void OnBnClickedSongDown();
