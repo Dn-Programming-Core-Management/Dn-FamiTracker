@@ -314,6 +314,11 @@ void CTriangleChan::ResetChannel()
 	m_iLinearCounter = -1;
 }
 
+int CTriangleChan::GetChannelVolume() const
+{
+	return m_iVolume ? VOL_COLUMN_MAX : 0;
+}
+
 bool CTriangleChan::HandleEffect(effect_t EffNum, unsigned char EffParam)
 {
 	switch (EffNum) {
@@ -651,6 +656,11 @@ void CDPCMChan::RefreshChannel()
 
 		m_bTrigger = false;
 	}
+}
+
+int CDPCMChan::GetChannelVolume() const
+{
+	return VOL_COLUMN_MAX;
 }
 
 void CDPCMChan::WriteDCOffset(unsigned char Delta)		// // //

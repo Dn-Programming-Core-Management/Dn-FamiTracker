@@ -77,6 +77,7 @@ public:
 	CTriangleChan();
 	void RefreshChannel();
 	void ResetChannel();		// // //
+	int GetChannelVolume() const;		// // //
 protected:
 	bool HandleEffect(effect_t EffNum, unsigned char EffParam);		// // //
 	void ClearRegisters();
@@ -109,6 +110,7 @@ class CDPCMChan : public CChannelHandler, public CChannelHandlerInterfaceDPCM {	
 public:
 	CDPCMChan();		// // //
 	void RefreshChannel();
+	int GetChannelVolume() const;		// // //
 
 	void WriteDCOffset(unsigned char Delta);		// // //
 	void SetLoopOffset(unsigned char Loop);		// // //

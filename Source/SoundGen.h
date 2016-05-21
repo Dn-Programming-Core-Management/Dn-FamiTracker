@@ -162,7 +162,9 @@ public:
 	void		 SetJumpPattern(int Pattern);
 	void		 SetSkipRow(int Row);
 	void		 EvaluateGlobalEffects(stChanNote *NoteData, int EffColumns);
+
 	stDPCMState	 GetDPCMState() const;
+	int			 GetChannelVolume(int Channel) const;		// // //
 
 	// Rendering
 	bool		 RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEndParam, int Track);

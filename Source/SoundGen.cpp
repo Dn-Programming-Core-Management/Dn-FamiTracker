@@ -1636,6 +1636,13 @@ stDPCMState CSoundGen::GetDPCMState() const
 	return State;
 }
 
+int CSoundGen::GetChannelVolume(int Channel) const
+{
+	if (!m_pChannels[Channel])
+		return 0;
+	return m_pChannels[Channel]->GetChannelVolume();
+}
+
 void CSoundGen::PlayNote(int Channel, stChanNote *NoteData, int EffColumns)
 {	
 	if (!NoteData)

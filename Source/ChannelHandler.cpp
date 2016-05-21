@@ -987,6 +987,11 @@ int CChannelHandler::GetVolume() const
 	return m_iInstVolume;
 }
 
+int CChannelHandler::GetChannelVolume() const		// // //
+{
+	return m_iVolume;
+}
+
 void CChannelHandler::SetDutyPeriod(int Duty)
 {
 	m_iDutyPeriod = ConvertDuty(Duty);		// // //

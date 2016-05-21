@@ -42,8 +42,7 @@ class CChannelHandler : public CChannelHandlerInterface {
 protected:
 	/*!	\brief Constructor of the channel handler.
 		\param MaxPeriod The maximum pitch register value that the channel handler can attain.
-		\param MaxVolume The maximum instrument volume level that the channel handler can attain.
-	*/
+		\param MaxVolume The maximum instrument volume level that the channel handler can attain. */
 	CChannelHandler(int MaxPeriod, int MaxVolume);
 
 public:
@@ -52,35 +51,29 @@ public:
 
 	/*!	\brief Plays a note from pattern data.
 		\param NoteData A pointer to the note data.
-		\param EffColumns The number of used effect columns of the note data.
-	*/
+		\param EffColumns The number of used effect columns of the note data. */
 	void	PlayNote(stChanNote *pNoteData, int EffColumns);
 
 	// Public functions
 	/*!	\brief Initializes the channel handler and sets up member pointers.
 		\param pAPU Pointer to the sound channel object.
 		\param pVibTable Pointer to the vibrato lookup table.
-		\param pSoundGen Pointer to the sound generator object.
-	*/
+		\param pSoundGen Pointer to the sound generator object. */
 	void	InitChannel(CAPU *pAPU, int *pVibTable, CSoundGen *pSoundGen);
 	/*!	\brief Called by the MIDI auto-arpeggio function to play a given note value.
-		\param Note The note value.
-	*/
+		\param Note The note value. */
 	void	Arpeggiate(unsigned int Note);
 	/*!	\brief Forces the instrument handler to load an instrument for the next note.
 		\details This method overrides the case where the same instrument is used to play
-		successive notes.
-	*/
+		successive notes. */
 	void	ForceReloadInstrument();		// // //
 
 	/*!	\brief Updates properties of the channel handler that are obtained from the current module file. */
 	/*!	\brief Chooses between linear pitch space and the default pitch space provided by the sound chip.
-		\param bEnable Whether linear pitch space is used.
-	*/
+		\param bEnable Whether linear pitch space is used. */
 	void	SetLinearPitch(bool bEnable);		// // //
 	/*!	\brief Chooses between the new and old vibrato behaviour.
-		\param vibrato_t The vibrato style.
-	*/
+		\param vibrato_t The vibrato style. */
 	void	SetVibratoStyle(vibrato_t bEnable);		// // //
 
 	//
@@ -96,28 +89,26 @@ public:
 	/*!	\brief Retrieves the channel handler's state.
 		\warning The output of this method is neither guaranteed nor required to match that of
 		::GetStateString defined in SoundGen.cpp.
-		\return A string representing the internal state of the channel handler.
-	*/
+		\return A string representing the internal state of the channel handler. */
 	virtual CString	GetStateString();							// // //
 	/*!	\brief Applies a channel state to the channel handler.
 		\param State Pointer to a channel state object.
-		\sa CSoundGen::ApplyGlobalState
-	*/
+		\sa CSoundGen::ApplyGlobalState */
 	virtual void	ApplyChannelState(stChannelState *State);	// // //
 
 	/*!	\brief Sets the channel handler's note lookup table.
-		\param pNoteLookupTable Pointer to the note lookup table.
-	*/
+		\param pNoteLookupTable Pointer to the note lookup table. */
 	virtual void	SetNoteTable(const unsigned int *pNoteLookupTable);
 	/*!	\brief Sets the MIDI pitch wheel offset.
-		\param Pitch The new offset value.
-	*/
+		\param Pitch The new offset value. */
 	virtual void	SetPitch(int Pitch);
 
 	/*!	\brief Sets the identifier of the channel.
-		\param ID The new identifier value.
-	*/
+		\param ID The new identifier value. */
 	virtual void	SetChannelID(int ID) { m_iChannelID = ID; }
+	/*!	\brief Retrieves the identifier of the channel.
+		\return The channel's identifier value. */
+	int				GetChannelID() const { return m_iChannelID; }
 
 	// 
 	// Internal virtual functions
@@ -128,23 +119,20 @@ protected:
 	/*!	\brief Restricts the note value within the limits of the tracker, and notifies the tracker
 		view of the note.
 		\param Note Input note value.
-		\return The pitch register value of the restricted note value.
-	*/
+		\return The pitch register value of the restricted note value. */
 	virtual	int		TriggerNote(int Note);
 	
 	/*!	\brief Processes a note.
 		\details This method is called both for both notes from pattern data and the delayed note cache.
 		\param NoteData A pointer to the note data.
-		\param EffColumns The number of used effect columns of the note data.
-	*/
+		\param EffColumns The number of used effect columns of the note data. */
 	virtual void	HandleNoteData(stChanNote *pNoteData, int EffColumns);
 	/*!	\brief Processes the current instrument.
 		\details This method sets up the instrument handler, creating a new one if necessary, then
 		forwards calls to the handler if it exists.
 		\param Trigger Whether the instrument handler needs to trigger the current instrument.
 		\param NewInstrument Whether the instrument handler needs to load an instrument.
-		\return Whether the instrument with the given index is loaded to the instrument handler.
-	*/
+		\return Whether the instrument with the given index is loaded to the instrument handler. */
 	virtual bool	HandleInstrument(bool Trigger, bool NewInstrument);		// // // not pure virtual
 	/*!	\brief Processes an effect command.
 		\details Implementations of this method in subclasses should use the return value of the
@@ -152,13 +140,11 @@ protected:
 		handled by this method, but by CSoundGen::EvaluateGlobalEffects.
 		\param EffCmd The effect type to be processed.
 		\param EffParam The effect command parameter.
-		\return Whether the method has processed the effect of the given type.
-	*/
+		\return Whether the method has processed the effect of the given type. */
 	virtual bool	HandleEffect(effect_t EffNum, unsigned char EffParam);		// // // not pure virtual either
 	/*!	\brief Creates an instrument handler of an appropriate type.
 		\param Type The new instrument type.
-		\return Whether an instrument handler is created.
-	*/
+		\return Whether an instrument handler is created. */
 	virtual bool	CreateInstHandler(inst_type_t Type);		// // //
 
 	// Pure virtual functions for handling notes
@@ -171,8 +157,7 @@ protected:
 	/*!	\brief Processes a note from pattern data.
 		\details Echo buffer retrieval takes place before this method is called.
 		\param Note The note pitch.
-		\param Octave The note octave.
-	*/
+		\param Octave The note octave. */
 	virtual void	HandleNote(int Note, int Octave) = 0;
 
 	/*!	\brief Instantiates a pitch slide to a destination note. */
@@ -181,8 +166,7 @@ protected:
 	/*!	\brief Obtains the current pitch register of the sound channel.
 		\details This method chooses the appropriate signs for the sources of pitch offset in the
 		channel handler.
-		\return The current pitch register, restricted within the range of the sound channel.
-	*/
+		\return The current pitch register, restricted within the range of the sound channel. */
 	virtual int		CalculatePeriod() const;
 	/*!	\brief Obtains the current volume register of the sound channel.
 		\details This method depends on the configuration setting for optional behaviour during
@@ -190,34 +174,28 @@ protected:
 		\param Subtract Whether the channel mixes the channel and instrument volumes by subtracting
 		or multiplying register values. Subtraction is required for sound chips that produce
 		exponential volume output; multiplication applies for linear volume output.
-		\return The current volume register, restricted within the range of the sound channel.
-	*/
+		\return The current volume register, restricted within the range of the sound channel. */
 	virtual int		CalculateVolume(bool Subtract = false) const;
 	/*!	\brief Restricts the pitch value within the limits of the sound channel.
 		\details Equivalent to CChannelHandler::LimitRawPeriod if linear pitch mode is disabled.
 		\param Period Input pitch value.
-		\return The restricted pitch value.
-	*/
+		\return The restricted pitch value. */
 	virtual int		LimitPeriod(int Period) const;
 	/*!	\brief Restricts the raw pitch value within the limits of the sound channel.
 		\param Period Input period or frequency register value.
-		\return The restricted period or frequency register value.
-	*/
+		\return The restricted period or frequency register value. */
 	virtual int		LimitRawPeriod(int Period) const;
 	
 	/*!	\brief Retrieves information about common effects of the channel handler.
-		\return A string representing active effects and their parameters.
-	*/
+		\return A string representing active effects and their parameters. */
 	virtual CString	GetEffectString() const;		// // //
 	/*!	\brief Retrieves information about slide effects of the channel handler.
 		\details Depending on the internal representation of CChannelHandler::m_iPitch, this method
 		may be overridden in subclasses to return the proper effect parameters in the string.
-		\return A string representing active effects and their parameters.
-	*/
+		\return A string representing active effects and their parameters. */
 	virtual CString	GetSlideEffectString() const;		// // //
 	/*!	\brief Retrieves information about effects specific to the sound channel of the channel handler.
-		\return A string representing active effects and their parameters.
-	*/
+		\return A string representing active effects and their parameters. */
 	virtual CString	GetCustomEffectString() const;		// // //
 
 	// 
@@ -229,26 +207,22 @@ protected:
 		enabled.
 		\param Octave The note octave.
 		\param Note The note pitch.
-		\return The note value with the given pitch and octave.
-	*/
+		\return The note value with the given pitch and octave. */
 	int		RunNote(int Octave, int Note);
 	/*!	\brief Halts the current active note. */
 	void	CutNote();
 	/*!	\brief Releases the current active note.
-		\details A note can only be released once until another new note is triggered.
-	*/
+		\details A note can only be released once until another new note is triggered. */
 	void	ReleaseNote();
 
 	/*!	\brief Notifies the tracker view that the current channel handler is playing a note.
-		\param Note The note value, or -1 if no note is active.
-	*/
+		\param Note The note value, or -1 if no note is active. */
 	void	RegisterKeyState(int Note);
 	
 	/*!	\brief Returns the pitch register offset of the channel's MIDI pitch wheel value.
 		\details A positive value represents a lower pitch. The sign of the return value depends
 		on whether the sound channel uses period or frequency registers.
-		\return The pitch offset.
-	*/
+		\return The pitch offset. */
 	int		GetPitch() const;
 	
 	/*!	\brief Processes the Gxx delay effect in a given note.
@@ -256,59 +230,50 @@ protected:
 		command is found. Jump effects are processed immediately and removed from the cached data.
 		\param NoteData A pointer to the note data.
 		\param EffColumns The number of used effect columns of the note data.
-		\return Whether the note data contains a Gxx effect command.
-	*/
+		\return Whether the note data contains a Gxx effect command. */
 	bool	HandleDelay(stChanNote *NoteData, int EffColumns);
 	
 	/*!	\brief Returns the pitch register offset of the channel's 4xy vibrato effect.
 		\details A positive value represents a higher pitch. The sign of the return value depends
 		on whether the sound channel uses period or frequency registers.
-		\return The pitch offset.
-	*/
+		\return The pitch offset. */
 	int		GetVibrato() const;
 	/*!	\brief Returns the volume register offset of the channel's 7xy tremolo effect.
 		\details A positive value represents a decrease in volume.
-		\return The volume offset.
-	*/
+		\return The volume offset. */
 	int		GetTremolo() const;
 	/*!	\brief Returns the pitch register offset of the channel's Pxx fine pitch effect.
 		\details A positive value represents a lower pitch. The sign of the return value depends
 		on whether the sound channel uses period or frequency registers.
-		\return The pitch offset.
-	*/
+		\return The pitch offset. */
 	int		GetFinePitch() const;
 
 	/*!	\brief Pads CPU cycles before the next channel handler's changes to the sound registers
 		are reflected.
-		\param count The number of CPU cycles.
-	*/
+		\param count The number of CPU cycles. */
 	void	AddCycles(int count);
 
 	/*!	\brief Increments the channel handler's pitch register value.
 		\details This method directly adds \a Step to the pitch register value.
-		\param Step The number of increments.
-	*/
+		\param Step The number of increments. */
 	void	PeriodAdd(int Step);
 	/*!	\brief Decrements the channel handler's pitch register value.
 		\details This method directly subtracts \a Step from the pitch register value.
-		\param Step The number of decrements.
-	*/
+		\param Step The number of decrements. */
 	void	PeriodRemove(int Step);
 
 	/*!	\brief Pushes a note into the channel handler's echo buffer.
 		\details Transposing effects in the note data are resolved immediately.
 		\param NoteData A pointer to the note data.
 		\param Pos The index of the echo buffer at which the note will be inserted.
-		\param EffColumns The number of used effect columns of the note data.
-	*/
+		\param EffColumns The number of used effect columns of the note data. */
 	void	WriteEchoBuffer(stChanNote *NoteData, int Pos, int EffColumns);		// // //
 
 	/*!	\brief Writes to the APU memory.
 		\details This method no longer considers whether the destination sound chip is internal or
 		external, as 2A03 is handled in the same way as expansion chips in the APU class.
 		\param Reg The register port.
-		\param Value The value to be written.
-	*/
+		\param Value The value to be written. */
 	void	WriteRegister(uint16_t Reg, uint8_t Value);
 	
 	/*!	\brief Converts a duty value from the current instrument into an equivalent value for the
@@ -317,8 +282,7 @@ protected:
 		interface, and does not affect the Vxx duty cycle effect.
 		\param Duty Input duty value from the instrument.
 		\return The converted duty value, or -1 if no sensible value exists.
-		\sa CChannelHandler::SetDutyPeriod
-	*/
+		\sa CChannelHandler::SetDutyPeriod */
 	virtual int ConvertDuty(int Duty) const { return Duty; };		// // //
 
 public:		// // //
@@ -326,42 +290,37 @@ public:		// // //
 		\warning This method overrides the current pitch register value of the channel. The channel
 		handler currently has no way to allow changes due to CChannelHandler::m_iEffect and its
 		interface orthogonally.
-		\param Period The period or frequency register.
-	*/
+		\param Period The period or frequency register. */
 	void	SetPeriod(int Period);
 	/*!	\brief Obtains the current pitch register of the channel.
 		\details This includes pitch changes due to slide effects and CChannelHandler::SetNote.
-		\return The pitch register value.
-	*/
+		\return The pitch register value. */
 	int		GetPeriod() const;
 	/*!	\brief Sets the current note value of the channel.
 		\warning This method overrides the current note value of the channel, and hence effect commands
 		that depend on changing the note value.
-		\param Note The absolute note value.
-	*/
+		\param Note The absolute note value. */
 	void	SetNote(int Note);
 	/*!	\brief Obtains the current note value of the channel.
 		\details This includes pitch changes due to transposing effects and the instrument handler.
-		\return The note value.
-	*/
+		\return The note value. */
 	int		GetNote() const;
 	/*!	\brief Sets the current instrument volume of the channel.
 		\details The channel interface never controls the channel volume.
-		\param Volume The instrument volume level.
-	*/
+		\param Volume The instrument volume level. */
 	void	SetVolume(int Volume);
 	/*!	\brief Obtains the current instrument volume of the channel.
-		\return The instrument volume level.
-	*/
+		\return The instrument volume level. */
 	int		GetVolume() const;
+	/*!	\brief Obtains the current channel volume.
+		\return The channel volume level. */
+	virtual int GetChannelVolume() const;
 	/*!	\brief Sets the current duty cycle value of the channel.
 		\details The value received by the channel is converted according to the current instrument type.
-		\param Duty The duty cycle value.
-	*/
+		\param Duty The duty cycle value. */
 	void	SetDutyPeriod(int Duty);
 	/*!	\brief Obtains the current duty cycle value of the channel.
-		\return The duty cycle value.
-	*/
+		\return The duty cycle value. */
 	int		GetDutyPeriod() const;
 	unsigned char GetArpParam() const;		// // //
 	bool	IsActive() const;
