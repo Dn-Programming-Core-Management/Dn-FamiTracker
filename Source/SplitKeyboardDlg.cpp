@@ -30,6 +30,7 @@
 // CSplitKeyboardDlg dialog
 
 const CString KEEP_INST_STRING = _T("Keep");
+const int CSplitKeyboardDlg::MAX_TRANSPOSE = 24;
 
 IMPLEMENT_DYNAMIC(CSplitKeyboardDlg, CDialog)
 
@@ -97,7 +98,7 @@ BOOL CSplitKeyboardDlg::OnInitDialog()
 		pCombo->SelectString(-1, KEEP_INST_STRING);
 
 	pCombo = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_SPLIT_TRSP));
-	for (int i = 1 - OCTAVE_RANGE; i < OCTAVE_RANGE; ++i) {
+	for (int i = -MAX_TRANSPOSE; i <= MAX_TRANSPOSE; ++i) {
 		str.Format(_T("%+d"), i);
 		pCombo->AddString(str);
 	}
@@ -140,5 +141,5 @@ void CSplitKeyboardDlg::OnCbnSelchangeComboSplitInst()
 
 void CSplitKeyboardDlg::OnCbnSelchangeComboSplitTrsp()
 {
-	m_iSplitTranspose = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_SPLIT_TRSP))->GetCurSel() - OCTAVE_RANGE + 1;
+	m_iSplitTranspose = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_SPLIT_TRSP))->GetCurSel() - MAX_TRANSPOSE;
 }

@@ -38,6 +38,8 @@ public:
 	int m_iSplitInstrument;
 	int m_iSplitTranspose;
 
+	static const int MAX_TRANSPOSE;
+
 // Dialog Data
 	enum { IDD = IDD_SPLIT_KEYBOARD };
 
