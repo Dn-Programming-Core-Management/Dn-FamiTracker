@@ -2031,11 +2031,11 @@ void CFamiTrackerView::InsertNote(int Note, int Octave, int Channel, int Velocit
 		if (!m_bMaskInstrument)
 			Cell.Instrument = GetInstrument();
 
-		if (!m_bMaskVolume) 
+		if (!m_bMaskVolume) {
 			Cell.Vol = m_iLastVolume;
-
-		if (Velocity < 128)
-			Cell.Vol = (Velocity / 8);
+			if (Velocity < 128)
+				Cell.Vol = (Velocity / 8);
+		}
 	}	
 
 	// Quantization
@@ -2082,8 +2082,9 @@ void CFamiTrackerView::PlayNote(unsigned int Channel, unsigned int Note, unsigne
 
 	NoteData.Note		= Note;
 	NoteData.Octave		= Octave;
-	NoteData.Vol		= Velocity / 8;
 	NoteData.Instrument	= GetInstrument();
+	if (theApp.GetSettings()->Midi.bMidiVelocity)
+		NoteData.Vol = Velocity / 8;
 /*	
 	if (theApp.GetSettings()->General.iEditStyle == EDIT_STYLE_IT)
 		NoteData.Instrument	= m_iLastInstrument;
