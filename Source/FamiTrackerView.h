@@ -61,6 +61,7 @@ public:
 	// Instruments
 	bool		 SwitchToInstrument() const { return m_bSwitchToInstrument; };
 	void		 SwitchToInstrument(bool Switch) { m_bSwitchToInstrument = Switch; };
+	unsigned int GetSplitInstrument() const;		// // //
 
 	// Scrolling/viewing no-editing functions
 	void		 MoveCursorNextChannel();
@@ -204,6 +205,8 @@ private:
 
 	// MIDI keyboard emulation
 	void	HandleKeyboardNote(char nChar, bool Pressed);
+	bool	IsSplitEnabled(int MidiNote, int Channel) const;		// // //
+	void	SplitKeyboardAdjust(stChanNote &Note) const;		// // //
 
 	// MIDI note functions
 	void	TriggerMIDINote(unsigned int Channel, unsigned int MidiNote, unsigned int Velocity, bool Insert);
@@ -294,6 +297,11 @@ private:
 	int					m_iLastVolume;							// Last volume added to pattern
 	effect_t			m_iLastEffect;							// Last effect number added to pattern
 	int					m_iLastEffectParam;						// Last effect parameter added to pattern
+
+	int					m_iSplitNote;							// // // Split keyboard settings
+	int					m_iSplitInstrument;
+	int					m_iSplitTranspose;
+
 	std::unordered_map<unsigned char, int> m_iNoteCorrection;	// // // correction from changing octaves
 	CNoteQueue			*m_pNoteQueue;							// // // Note queue for handling note triggers
 
@@ -432,6 +440,7 @@ public:
 	afx_msg void OnBookmarksToggle();
 	afx_msg void OnBookmarksNext();
 	afx_msg void OnBookmarksPrevious();
+	afx_msg void OnEditSplitKeyboard();
 	afx_msg void OnTrackerToggleChip();
 	afx_msg void OnTrackerSoloChip();
 	afx_msg void OnTrackerRecordToInst();

@@ -398,6 +398,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;      // fail to create
 	}
 	m_wndStatusBar.SetPaneInfo(1, ID_INDICATOR_CHIP, SBPS_NORMAL, 250);		// // //
+	m_wndStatusBar.SetPaneInfo(2, ID_INDICATOR_INSTRUMENT, SBPS_NORMAL, 100);		// // //
 
 	if (!CreateDialogPanels())
 		return -1;
@@ -1551,7 +1552,11 @@ void CMainFrame::OnHelpPerformance()
 void CMainFrame::OnUpdateSBInstrument(CCmdUI *pCmdUI)
 {
 	CString String;
-	AfxFormatString1(String, ID_INDICATOR_INSTRUMENT, MakeIntString(GetSelectedInstrument(), _T("%02X")));
+	String.Format(_T("%02X"), GetSelectedInstrument());		// // //
+	unsigned int Split = static_cast<CFamiTrackerView*>(GetActiveView())->GetSplitInstrument();
+	if (Split != MAX_INSTRUMENTS)
+		String.Format(_T("%02X / %s"), Split, String);
+	AfxFormatString1(String, ID_INDICATOR_INSTRUMENT, String);
 	pCmdUI->Enable(); 
 	pCmdUI->SetText(String);
 }

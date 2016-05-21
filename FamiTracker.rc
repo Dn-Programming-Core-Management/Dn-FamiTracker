@@ -187,6 +187,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Instrument Mask",            ID_EDIT_INSTRUMENTMASK
         MENUITEM "&Volume Mask",                ID_EDIT_VOLUMEMASK, CHECKED
+        MENUITEM "Split Keyboard...",           ID_EDIT_SPLITKEYBOARD
         MENUITEM SEPARATOR
         MENUITEM "Enable &MIDI",                ID_EDIT_ENABLEMIDI
     END
@@ -979,6 +980,14 @@ BEGIN
         RIGHTMARGIN, 324
         TOPMARGIN, 7
         BOTTOMMARGIN, 185
+    END
+
+    IDD_SPLIT_KEYBOARD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 116
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 109
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1881,6 +1890,24 @@ BEGIN
     LTEXT           "0 results found.",IDC_STATIC_FINDRESULT_COUNT,7,176,78,8
 END
 
+IDD_SPLIT_KEYBOARD DIALOGEX 0, 0, 123, 116
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Split Keyboard Settings"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,7,95,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,67,95,50,14
+    LTEXT           "Split point:",IDC_STATIC,19,35,35,8
+    COMBOBOX        IDC_COMBO_SPLIT_NOTE,58,33,26,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_SPLIT_OCTAVE,90,33,20,15,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Octave:",IDC_STATIC,27,71,27,8
+    LTEXT           "Instrument:",IDC_STATIC,15,53,39,8
+    COMBOBOX        IDC_COMBO_SPLIT_INST,58,51,52,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_SPLIT_TRSP,58,69,52,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Enable split keyboard",IDC_CHECK_SPLIT_ENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,84,10
+    GROUPBOX        "Split keyboard options",IDC_STATIC,7,20,110,69
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2042,7 +2069,7 @@ BEGIN
     IDC_COMBO_EFFCOLUMN, 0x403, 4, 0
 0x7866, 0x0034, 
     IDC_COMBO_EFFCOLUMN, 0x403, 4, 0
-0x6e41, 0x0079, 
+0x6c41, 0x006c, 
     0
 END
 
@@ -2137,6 +2164,11 @@ BEGIN
     0,
     0, 0, 100, 100,
     0, 100, 0, 0
+END
+
+IDD_SPLIT_KEYBOARD AFX_DIALOG_LAYOUT
+BEGIN
+    0
 END
 
 
@@ -2657,6 +2689,7 @@ BEGIN
     ID_TRACKER_SOLOCHIP     "Mute / unmute all but the selected sound chip\nSolo Chip"
     ID_MODULE_LINEARPITCH   "Enable linear pitch bends\nLinear Pitch Mode"
     ID_RECENTFILES_CLEAR    "Clear the recent file list\nClear Recent File List"
+    ID_EDIT_SPLITKEYBOARD   "Open the split keyboard settings dialog\nSplit Keyboard"
 END
 
 #endif    // English (United States) resources
