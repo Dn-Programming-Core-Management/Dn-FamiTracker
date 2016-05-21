@@ -1585,15 +1585,14 @@ void CSoundGen::LoadMachineSettings(machine_t Machine, int Rate, int NamcoChanne
 		Rate = DefaultRate;
 
 	{
-		CSingleLock l(&m_csAPULock);		// // //
-		if (l.Lock()) {
-			m_pAPU->ChangeMachineRate(Machine == NTSC ? MACHINE_NTSC : MACHINE_PAL, Rate);		// // //
-			l.Unlock();
+		while (true) {
+			CSingleLock l(&m_csAPULock);		// // //
+			if (l.Lock(100)) {
+				m_pAPU->ChangeMachineRate(Machine == NTSC ? MACHINE_NTSC : MACHINE_PAL, Rate);		// // //
+				l.Unlock();
+				break;
+			}
 		}
-#ifdef _DEBUG
-		else
-			AfxMessageBox(_T("Unable to change machine rate"));
-#endif
 	}
 
 	// Number of cycles between each APU update
