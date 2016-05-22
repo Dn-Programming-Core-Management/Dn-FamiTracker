@@ -1573,8 +1573,6 @@ void CSoundGen::LoadMachineSettings(machine_t Machine, int Rate, int NamcoChanne
 
 	ASSERT(m_pAPU != NULL);
 
-	const double BASE_FREQ = 32.7032;
-
 	int BaseFreq	= (Machine == NTSC) ? CAPU::BASE_FREQ_NTSC  : CAPU::BASE_FREQ_PAL;
 	int DefaultRate = (Machine == NTSC) ? CAPU::FRAME_RATE_NTSC : CAPU::FRAME_RATE_PAL;
 
@@ -1584,19 +1582,13 @@ void CSoundGen::LoadMachineSettings(machine_t Machine, int Rate, int NamcoChanne
 	if (Rate == 0)
 		Rate = DefaultRate;
 
-	{
-		while (true) {
-			CSingleLock l(&m_csAPULock);		// // //
-			if (l.Lock(100)) {
-				m_pAPU->ChangeMachineRate(Machine == NTSC ? MACHINE_NTSC : MACHINE_PAL, Rate);		// // //
-				l.Unlock();
-				break;
-			}
-		}
-	}
-
 	// Number of cycles between each APU update
 	m_iUpdateCycles = BaseFreq / Rate;
+
+	{
+		CSingleLock l(&m_csAPULock, TRUE);		// // //
+		m_pAPU->ChangeMachineRate(Machine == NTSC ? MACHINE_NTSC : MACHINE_PAL, Rate);		// // //
+	}
 
 #if WRITE_VOLUME_FILE
 	CFile file("vol.txt", CFile::modeWrite | CFile::modeCreate);
