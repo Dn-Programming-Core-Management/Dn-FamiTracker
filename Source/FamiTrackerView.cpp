@@ -2072,8 +2072,16 @@ void CFamiTrackerView::InsertNote(int Note, int Octave, int Channel, int Velocit
 			if (Velocity < 128)
 				Cell.Vol = (Velocity / 8);
 		}
-		if (Note != NONE && Note != ECHO && IsSplitEnabled(MIDI_NOTE(Octave, Note), Channel))		// // //
-			SplitKeyboardAdjust(Cell);
+		if (Note != NONE && Note != ECHO) {		// // //
+			if (GetDocument()->GetChannelType(Channel) == CHANID_NOISE) {		// // //
+				unsigned int MidiNote = (MIDI_NOTE(Octave, Note) % 16) + 16;
+				Cell.Octave = Octave = GET_OCTAVE(MidiNote);
+				Cell.Note = Note = GET_NOTE(MidiNote);
+			}
+			else if (IsSplitEnabled(MIDI_NOTE(Octave, Note), Channel))
+				SplitKeyboardAdjust(Cell);
+
+		}
 	}	
 
 	// Quantization
@@ -2095,8 +2103,9 @@ void CFamiTrackerView::InsertNote(int Note, int Octave, int Channel, int Velocit
 			if (Cell.Octave < 1) Cell.Octave = 1;
 			m_iLastNote = NOTE_ECHO + Cell.Octave;
 		}
-		else
+		else {
 			m_iLastNote = (Note - 1) + Octave * 12;
+		}
 		
 		CPatternAction *pAction = new CPActionEditNote(Cell);		// // //
 		if (AddAction(pAction)) {
@@ -2232,6 +2241,7 @@ void CFamiTrackerView::HaltNoteSingle(unsigned int Channel) const
 /// MIDI note handling functions
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*
 static void FixNoise(unsigned int &MidiNote, unsigned int &Octave, unsigned int &Note)
 {
 	// NES noise channel
@@ -2239,6 +2249,7 @@ static void FixNoise(unsigned int &MidiNote, unsigned int &Octave, unsigned int 
 	Octave = GET_OCTAVE(MidiNote);
 	Note = GET_NOTE(MidiNote);
 }
+*/
 
 // Play a note
 void CFamiTrackerView::TriggerMIDINote(unsigned int Channel, unsigned int MidiNote, unsigned int Velocity, bool Insert)
@@ -2250,8 +2261,8 @@ void CFamiTrackerView::TriggerMIDINote(unsigned int Channel, unsigned int MidiNo
 	// Play a MIDI note
 	unsigned int Octave = GET_OCTAVE(MidiNote);
 	unsigned int Note = GET_NOTE(MidiNote);
-	if (pDoc->GetChannel(Channel)->GetID() == CHANID_NOISE)
-		FixNoise(MidiNote, Octave, Note);
+//	if (pDoc->GetChannel(Channel)->GetID() == CHANID_NOISE)
+//		FixNoise(MidiNote, Octave, Note);
 
 	m_iActiveNotes[Channel] = MidiNote;
 
@@ -2297,8 +2308,8 @@ void CFamiTrackerView::CutMIDINote(unsigned int Channel, unsigned int MidiNote, 
 	// Cut a MIDI note
 	unsigned int Octave = GET_OCTAVE(MidiNote);
 	unsigned int Note = GET_NOTE(MidiNote);
-	if (pDoc->GetChannel(Channel)->GetID() == CHANID_NOISE)
-		FixNoise(MidiNote, Octave, Note);
+//	if (pDoc->GetChannel(Channel)->GetID() == CHANID_NOISE)
+//		FixNoise(MidiNote, Octave, Note);
 
 	m_iActiveNotes[Channel] = 0;
 	m_iAutoArpNotes[MidiNote] = 2;
@@ -2334,8 +2345,8 @@ void CFamiTrackerView::ReleaseMIDINote(unsigned int Channel, unsigned int MidiNo
 	// Release a MIDI note
 	unsigned int Octave = GET_OCTAVE(MidiNote);
 	unsigned int Note = GET_NOTE(MidiNote);
-	if (pDoc->GetChannel(Channel)->GetID() == CHANID_NOISE)
-		FixNoise(MidiNote, Octave, Note);
+//	if (pDoc->GetChannel(Channel)->GetID() == CHANID_NOISE)
+//		FixNoise(MidiNote, Octave, Note);
 
 	m_iActiveNotes[Channel] = 0;
 	m_iAutoArpNotes[MidiNote] = 2;
@@ -3190,7 +3201,7 @@ bool CFamiTrackerView::IsSplitEnabled(int MidiNote, int Channel) const
 	if (m_iSplitNote == -1)
 		return false;
 	if (const auto Chan = GetDocument()->GetChannel(Channel)) {
-		if (Chan->GetID() == CHANID_NOISE || Chan->GetID() == CHANID_DPCM)
+		if (Chan->GetID() == CHANID_NOISE)
 			return false;
 		return MidiNote <= m_iSplitNote;
 	}
