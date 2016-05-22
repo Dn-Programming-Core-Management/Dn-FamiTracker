@@ -34,6 +34,7 @@ public:
 	virtual ~CSplitKeyboardDlg();
 
 	bool m_bSplitEnable;
+	int m_iSplitChannel;
 	int m_iSplitNote;
 	int m_iSplitInstrument;
 	int m_iSplitTranspose;
@@ -51,6 +52,7 @@ public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnBnClickedCheckSplitEnable();
 	afx_msg void OnCbnSelchangeComboSplitNote();
+	afx_msg void OnCbnSelchangeComboSplitChan();
 	afx_msg void OnCbnSelchangeComboSplitInst();
 	afx_msg void OnCbnSelchangeComboSplitTrsp();
 };

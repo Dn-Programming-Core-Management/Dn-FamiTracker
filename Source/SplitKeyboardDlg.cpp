@@ -26,6 +26,7 @@
 #include "FamiTrackerTypes.h"
 #include "PatternNote.h"
 #include "FamiTrackerDoc.h"
+#include "TrackerChannel.h"
 
 // CSplitKeyboardDlg dialog
 
@@ -37,6 +38,7 @@ IMPLEMENT_DYNAMIC(CSplitKeyboardDlg, CDialog)
 CSplitKeyboardDlg::CSplitKeyboardDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(IDD_SPLIT_KEYBOARD, pParent),
 	m_bSplitEnable(false),
+	m_iSplitChannel(-1),
 	m_iSplitNote(-1),
 	m_iSplitInstrument(MAX_INSTRUMENTS),
 	m_iSplitTranspose(0)
@@ -58,6 +60,7 @@ BEGIN_MESSAGE_MAP(CSplitKeyboardDlg, CDialog)
 	ON_BN_CLICKED(IDC_CHECK_SPLIT_ENABLE, OnBnClickedCheckSplitEnable)
 	ON_CBN_SELCHANGE(IDC_COMBO_SPLIT_NOTE, OnCbnSelchangeComboSplitNote)
 	ON_CBN_SELCHANGE(IDC_COMBO_SPLIT_OCTAVE, OnCbnSelchangeComboSplitNote)
+	ON_CBN_SELCHANGE(IDC_COMBO_SPLIT_CHAN, OnCbnSelchangeComboSplitChan)
 	ON_CBN_SELCHANGE(IDC_COMBO_SPLIT_INST, OnCbnSelchangeComboSplitInst)
 	ON_CBN_SELCHANGE(IDC_COMBO_SPLIT_TRSP, OnCbnSelchangeComboSplitTrsp)
 END_MESSAGE_MAP()
@@ -85,6 +88,16 @@ BOOL CSplitKeyboardDlg::OnInitDialog()
 		pCombo->AddString(str);
 	}
 	pCombo->SetCurSel(m_iSplitNote != -1 ? GET_OCTAVE(m_iSplitNote) : 3);
+	
+	pCombo = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_SPLIT_CHAN));
+	pCombo->AddString(KEEP_INST_STRING);
+	pCombo->SetCurSel(0);
+	for (int i = 0; i < pDoc->GetChannelCount(); ++i) {
+		auto pChan = pDoc->GetChannel(i);
+		pCombo->AddString(pChan->GetChannelName());
+		if (m_iSplitChannel == pChan->GetID())
+			pCombo->SetCurSel(i + 1);
+	}
 
 	pCombo = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_SPLIT_INST));
 	pCombo->AddString(KEEP_INST_STRING);
@@ -115,11 +128,13 @@ void CSplitKeyboardDlg::OnBnClickedCheckSplitEnable()
 {
 	if (m_bSplitEnable = (IsDlgButtonChecked(IDC_CHECK_SPLIT_ENABLE) == BST_CHECKED)) {
 		OnCbnSelchangeComboSplitNote();
+		OnCbnSelchangeComboSplitChan();
 		OnCbnSelchangeComboSplitInst();
 		OnCbnSelchangeComboSplitTrsp();
 	}
 	GetDlgItem(IDC_COMBO_SPLIT_NOTE)->EnableWindow(m_bSplitEnable);
 	GetDlgItem(IDC_COMBO_SPLIT_OCTAVE)->EnableWindow(m_bSplitEnable);
+	GetDlgItem(IDC_COMBO_SPLIT_CHAN)->EnableWindow(m_bSplitEnable);
 	GetDlgItem(IDC_COMBO_SPLIT_INST)->EnableWindow(m_bSplitEnable);
 	GetDlgItem(IDC_COMBO_SPLIT_TRSP)->EnableWindow(m_bSplitEnable);
 }
@@ -130,6 +145,14 @@ void CSplitKeyboardDlg::OnCbnSelchangeComboSplitNote()
 		static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_SPLIT_OCTAVE))->GetCurSel(),
 		static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_SPLIT_NOTE))->GetCurSel() + 1
 	);
+}
+
+void CSplitKeyboardDlg::OnCbnSelchangeComboSplitChan()
+{
+	if (int Pos = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_SPLIT_CHAN))->GetCurSel())
+		m_iSplitChannel = CFamiTrackerDoc::GetDoc()->GetChannelType(Pos - 1);
+	else
+		m_iSplitChannel = -1;
 }
 
 void CSplitKeyboardDlg::OnCbnSelchangeComboSplitInst()

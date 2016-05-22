@@ -281,6 +281,7 @@ CFamiTrackerView::CFamiTrackerView() :
 	m_iLastAutoArpPtr(0),
 	m_iAutoArpKeyCount(0),
 	m_iSplitNote(-1),		// // //
+	m_iSplitChannel(-1),		// // //
 	m_iSplitInstrument(MAX_INSTRUMENTS),		// // //
 	m_iSplitTranspose(0),		// // //
 	m_iNoteCorrection(),		// // //
@@ -1846,17 +1847,20 @@ void CFamiTrackerView::OnEditSplitKeyboard()		// // //
 	CSplitKeyboardDlg dlg;
 	dlg.m_bSplitEnable = m_iSplitNote != -1;
 	dlg.m_iSplitNote = m_iSplitNote;
+	dlg.m_iSplitChannel = m_iSplitChannel;
 	dlg.m_iSplitInstrument = m_iSplitInstrument;
 	dlg.m_iSplitTranspose = m_iSplitTranspose;
 
 	if (dlg.DoModal() == IDOK) {
 		if (dlg.m_bSplitEnable) {
 			m_iSplitNote = dlg.m_iSplitNote;
+			m_iSplitChannel = dlg.m_iSplitChannel;
 			m_iSplitInstrument = dlg.m_iSplitInstrument;
 			m_iSplitTranspose = dlg.m_iSplitTranspose;
 		}
 		else {
 			m_iSplitNote = -1;
+			m_iSplitChannel = -1;
 			m_iSplitInstrument = MAX_INSTRUMENTS;
 			m_iSplitTranspose = 0;
 		}
@@ -2125,11 +2129,13 @@ void CFamiTrackerView::PlayNote(unsigned int Channel, unsigned int Note, unsigne
 	else
 		NoteData.Instrument	= GetInstrument();
 */
+	int MidiNote = MIDI_NOTE(Octave, Note);		// // //
+	CFamiTrackerDoc *pDoc = GetDocument();
 
-	CFamiTrackerDoc *pDoc = GetDocument();		// // //
-	int ret = pDoc->GetChannelIndex(m_pNoteQueue->Trigger(MIDI_NOTE(Octave, Note), pDoc->GetChannelType(Channel)));
+	SplitAdjustChannel(Channel, NoteData);
+	int ret = pDoc->GetChannelIndex(m_pNoteQueue->Trigger(MidiNote, pDoc->GetChannelType(Channel)));
 	if (ret != -1) {
-		if (IsSplitEnabled(MIDI_NOTE(Octave, Note), ret)) 	// // //
+		if (IsSplitEnabled(MidiNote, ret)) 	// // //
 			SplitKeyboardAdjust(NoteData);
 		pDoc->GetChannel(ret)->SetNote(NoteData, NOTE_PRIO_2);
 		theApp.GetSoundGenerator()->ForceReloadInstrument(ret);		// // //
@@ -2158,6 +2164,7 @@ void CFamiTrackerView::ReleaseNote(unsigned int Channel, unsigned int Note, unsi
 	NoteData.Note = RELEASE;
 	NoteData.Instrument = GetInstrument();
 	
+	SplitAdjustChannel(Channel, NoteData);		// // //
 	CFamiTrackerDoc *pDoc = GetDocument();		// // //
 	int ch = pDoc->GetChannelIndex(m_pNoteQueue->Cut(MIDI_NOTE(Octave, Note), pDoc->GetChannelType(Channel)));
 //	int ch = pDoc->GetChannelIndex(m_pNoteQueue->Release(MIDI_NOTE(Octave, Note), pDoc->GetChannelType(Channel)));
@@ -2184,6 +2191,7 @@ void CFamiTrackerView::HaltNote(unsigned int Channel, unsigned int Note, unsigne
 	NoteData.Note = HALT;
 	NoteData.Instrument = GetInstrument();
 	
+	SplitAdjustChannel(Channel, NoteData);		// // //
 	CFamiTrackerDoc *pDoc = GetDocument();		// // //
 	int ch = pDoc->GetChannelIndex(m_pNoteQueue->Cut(MIDI_NOTE(Octave, Note), pDoc->GetChannelType(Channel)));
 	if (ch != -1)
@@ -2208,6 +2216,7 @@ void CFamiTrackerView::HaltNoteSingle(unsigned int Channel) const
 	NoteData.Note = HALT;
 	NoteData.Instrument = GetInstrument();
 	
+	SplitAdjustChannel(Channel, NoteData);		// // // ?
 	CFamiTrackerDoc *pDoc = GetDocument();		// // //
 	for (const auto &i : m_pNoteQueue->StopChannel(pDoc->GetChannelType(Channel))) {
 		int ch = pDoc->GetChannelIndex(i);
@@ -3188,7 +3197,7 @@ bool CFamiTrackerView::IsSplitEnabled(int MidiNote, int Channel) const
 	return false;
 }
 
-void CFamiTrackerView::SplitKeyboardAdjust(stChanNote &Note) const
+void CFamiTrackerView::SplitKeyboardAdjust(stChanNote &Note) const		// // //
 {
 	ASSERT(Note.Note >= NOTE_C && Note.Note <= NOTE_B);
 	int MidiNote = MIDI_NOTE(Note.Octave, Note.Note) + m_iSplitTranspose;
@@ -3199,6 +3208,15 @@ void CFamiTrackerView::SplitKeyboardAdjust(stChanNote &Note) const
 
 	if (m_iSplitInstrument != MAX_INSTRUMENTS)
 		Note.Instrument = m_iSplitInstrument;
+}
+
+void CFamiTrackerView::SplitAdjustChannel(unsigned int &Channel, const stChanNote &Note) const		// // //
+{
+	if (m_bEditEnable || m_iSplitChannel == -1) return;
+	if (m_iSplitNote != -1 && MIDI_NOTE(Note.Octave, Note.Note) <= m_iSplitNote) {
+		int Index = GetDocument()->GetChannelIndex(m_iSplitChannel);
+		if (Index != -1) Channel = Index;
+	}
 }
 
 bool CFamiTrackerView::CheckClearKey(unsigned char Key) const

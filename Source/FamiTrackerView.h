@@ -207,6 +207,7 @@ private:
 	void	HandleKeyboardNote(char nChar, bool Pressed);
 	bool	IsSplitEnabled(int MidiNote, int Channel) const;		// // //
 	void	SplitKeyboardAdjust(stChanNote &Note) const;		// // //
+	void	SplitAdjustChannel(unsigned int &Channel, const stChanNote &Note) const;		// // //
 
 	// MIDI note functions
 	void	TriggerMIDINote(unsigned int Channel, unsigned int MidiNote, unsigned int Velocity, bool Insert);
@@ -299,6 +300,7 @@ private:
 	int					m_iLastEffectParam;						// Last effect parameter added to pattern
 
 	int					m_iSplitNote;							// // // Split keyboard settings
+	int					m_iSplitChannel;
 	int					m_iSplitInstrument;
 	int					m_iSplitTranspose;
 
