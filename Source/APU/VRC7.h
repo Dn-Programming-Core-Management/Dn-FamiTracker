@@ -38,6 +38,8 @@ public:
 	uint8_t Read(uint16_t Address, bool &Mapped);
 	void EndFrame();
 	void Process(uint32_t Time);
+	
+	double GetFreq(int Channel) const;		// // //
 
 protected:
 	static const float  AMPLIFY;

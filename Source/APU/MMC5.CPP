@@ -136,6 +136,15 @@ void CMMC5::Process(uint32_t Time)
 	m_pSquare2->Process(Time);
 }
 
+double CMMC5::GetFreq(int Channel) const		// // //
+{
+	switch (Channel) {
+	case 0: return m_pSquare1->GetFrequency();
+	case 1: return m_pSquare2->GetFrequency();
+	}
+	return 0.;
+}
+
 void CMMC5::LengthCounterUpdate()
 {
 	m_pSquare1->LengthCounterUpdate();

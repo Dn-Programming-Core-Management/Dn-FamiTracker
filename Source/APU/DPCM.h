@@ -34,8 +34,10 @@ public:
 	void	Write(uint16_t Address, uint8_t Value);
 	void	WriteControl(uint8_t Value);
 	uint8_t	ReadControl() const;
-	uint8_t	DidIRQ() const;
 	void	Process(uint32_t Time);
+	double	GetFrequency() const;		// // //
+
+	uint8_t	DidIRQ() const;
 	void	Reload();
 
 	CSampleMem *GetSampleMemory() const;		// // //

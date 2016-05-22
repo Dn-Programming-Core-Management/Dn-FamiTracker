@@ -134,6 +134,18 @@ uint8_t C2A03::Read(uint16_t Address, bool &Mapped)
 	return 0U;
 }
 
+double C2A03::GetFreq(int Channel) const		// // //
+{
+	switch (Channel) {
+	case 0: return m_pSquare1->GetFrequency();
+	case 1: return m_pSquare2->GetFrequency();
+	case 2: return m_pTriangle->GetFrequency();
+	case 3: return m_pNoise->GetFrequency();
+	case 4: return m_pDPCM->GetFrequency();
+	}
+	return 0.0;
+}
+
 void C2A03::ClockSequence()
 {
 	if (m_iFrameMode == 0) {
@@ -161,11 +173,17 @@ void C2A03::ChangeMachine(int Machine)
 {
 	switch (Machine) {
 		case MACHINE_NTSC:
+			m_pSquare1->CPU_RATE = 1789773;		// // //
+			m_pSquare2->CPU_RATE = 1789773;
+			m_pTriangle->CPU_RATE = 1789773;
 			m_pNoise->PERIOD_TABLE = CNoise::NOISE_PERIODS_NTSC;
 			m_pDPCM->PERIOD_TABLE = CDPCM::DMC_PERIODS_NTSC;			
 			m_pMixer->SetClockRate(1789773);
 			break;
 		case MACHINE_PAL:
+			m_pSquare1->CPU_RATE = 1662607;		// // //
+			m_pSquare2->CPU_RATE = 1662607;
+			m_pTriangle->CPU_RATE = 1662607;
 			m_pNoise->PERIOD_TABLE = CNoise::NOISE_PERIODS_PAL;
 			m_pDPCM->PERIOD_TABLE = CDPCM::DMC_PERIODS_PAL;			
 			m_pMixer->SetClockRate(1662607);

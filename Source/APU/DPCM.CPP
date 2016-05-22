@@ -187,3 +187,11 @@ void CDPCM::Process(uint32_t Time)
 	m_iCounter -= Time;
 	m_iTime += Time;
 }
+
+double CDPCM::GetFrequency() const		// // //
+{
+	if (!m_bSampleFilled && !m_iDMA_BytesRemaining)
+		return 0.;
+	double Rate = PERIOD_TABLE == DMC_PERIODS_PAL ? CAPU::BASE_FREQ_PAL : CAPU::BASE_FREQ_NTSC;
+	return Rate / m_iPeriod;
+}

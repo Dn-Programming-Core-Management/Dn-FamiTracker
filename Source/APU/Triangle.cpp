@@ -35,6 +35,8 @@ CTriangle::CTriangle(CMixer *pMixer, int ID) : C2A03Chan(pMixer, SNDCHIP_NONE, I
 	m_iLinearLoad = 0;
 	m_iHalt = 0;
 	m_iLinearCounter = 0;
+	
+	CPU_RATE = CAPU::BASE_FREQ_NTSC;		// // //
 }
 
 CTriangle::~CTriangle()
@@ -116,6 +118,13 @@ void CTriangle::Process(uint32_t Time)
 	
 	m_iCounter -= Time;
 	m_iTime += Time;
+}
+
+double CTriangle::GetFrequency() const		// // //
+{
+	if (!m_iLinearCounter || !m_iLengthCounter || !m_iEnabled)
+		return 0.;
+	return CPU_RATE / 32. / (m_iPeriod + 1.);
 }
 
 void CTriangle::LengthCounterUpdate()

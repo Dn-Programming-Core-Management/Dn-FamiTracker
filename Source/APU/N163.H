@@ -40,6 +40,7 @@ public:
 
 	uint8_t ReadMem(uint8_t Reg);
 	void ResetCounter();
+	double GetFrequency() const;		// // //
 
 private:
 	uint32_t	m_iCounter, m_iFrequency;
@@ -61,6 +62,8 @@ public:
 	void EndFrame();
 	void Write(uint16_t Address, uint8_t Value);
 	void Log(uint16_t Address, uint8_t Value);		// // //
+	double GetFreq(int Channel) const;		// // //
+
 	uint8_t Read(uint16_t Address, bool &Mapped);
 	uint8_t ReadMem(uint8_t Reg);
 	void Mix(int32_t Value, uint32_t Time, uint8_t ChanID);

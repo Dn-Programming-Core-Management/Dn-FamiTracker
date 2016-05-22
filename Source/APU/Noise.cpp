@@ -122,6 +122,14 @@ void CNoise::Process(uint32_t Time)
 	m_iTime += Time;
 }
 
+double CNoise::GetFrequency() const		// // //
+{
+	if (!m_iEnabled || !m_iLengthCounter)
+		return 0.;
+	double Rate = PERIOD_TABLE == NOISE_PERIODS_PAL ? CAPU::BASE_FREQ_PAL : CAPU::BASE_FREQ_NTSC;
+	return Rate / m_iPeriod;
+}
+
 void CNoise::LengthCounterUpdate()
 {
 	if ((m_iLooping == 0) && (m_iLengthCounter > 0)) 

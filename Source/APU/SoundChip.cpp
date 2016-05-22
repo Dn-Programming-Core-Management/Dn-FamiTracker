@@ -36,6 +36,11 @@ CSoundChip::~CSoundChip()
 		delete m_pRegisterLogger;
 }
 
+double CSoundChip::GetFreq(int Channel) const		// // //
+{
+	return 0.0;
+}
+
 void CSoundChip::Log(uint16_t Address, uint8_t Value)		// // //
 {
 	// default logger operation

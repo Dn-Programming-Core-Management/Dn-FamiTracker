@@ -138,3 +138,13 @@ void CVRC7::Process(uint32_t Time)
 	// This cannot run in sync, fetch all samples at end of frame instead
 	m_iTime += Time;
 }
+
+double CVRC7::GetFreq(int Channel) const		// // //
+{
+	if (Channel < 0 || Channel >= 6) return 0.;
+	int Lo = m_pRegisterLogger->GetRegister(Channel | 0x10)->GetValue();
+	int Hi = m_pRegisterLogger->GetRegister(Channel | 0x20)->GetValue() & 0x0F;
+	Lo |= (Hi << 8) & 0x100;
+	Hi >>= 1;
+	return 49716. * Lo / (1 << (19 - Hi));
+}

@@ -51,6 +51,8 @@ CSquare::CSquare(CMixer *pMixer, int ID, int Chip) : C2A03Chan(pMixer, Chip, ID)
 
 	m_iFixedVolume = 0;
 	m_iEnvelopeCounter = 0;
+
+	CPU_RATE = CAPU::BASE_FREQ_NTSC;		// // //
 }
 
 CSquare::~CSquare()
@@ -145,6 +147,15 @@ void CSquare::Process(uint32_t Time)
 
 	m_iCounter -= Time;
 	m_iTime += Time;
+}
+
+double CSquare::GetFrequency() const		// // //
+{
+	bool Valid = (m_iPeriod > 7 || (m_iPeriod > 0 && m_iChip == SNDCHIP_MMC5))
+		&& m_iEnabled && m_iLengthCounter && m_iSweepResult < 0x800;
+	if (!Valid)
+		return 0.;
+	return CPU_RATE / 16. / (m_iPeriod + 1.);
 }
 
 void CSquare::LengthCounterUpdate()

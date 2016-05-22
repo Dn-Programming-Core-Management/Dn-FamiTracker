@@ -131,6 +131,33 @@ void CS5B::SetVolume(float fVol)
 {
 	m_fVolume = AMPLIFY * fVol;
 }
+
+double CS5B::GetFreq(int Channel) const		// // //
+{
+	if (Channel == 3) {
+		int Reg = m_pRegisterLogger->GetRegister(0x0B)->GetValue() | m_pRegisterLogger->GetRegister(0x0C)->GetValue() << 8;
+		if (!Reg)
+			return 0.;
+		int Shape = m_pRegisterLogger->GetRegister(0x0D)->GetValue();
+		if (!(Shape & 0x08) || (Shape & 0x01))
+			return 0.;
+		return CAPU::BASE_FREQ_NTSC / ((Shape & 0x02) ? 1024. : 512.) / Reg;
+	}
+	else if (Channel == 4) {
+		// TODO: noise refresh rate
+		return 0.;
+	}
+	else if (Channel < 0 || Channel >= 5)
+		return 0.;
+	if (m_pRegisterLogger->GetRegister(0x07)->GetValue() & (1 << Channel))
+		return 0.;
+	int Reg = m_pRegisterLogger->GetRegister(Channel * 2)->GetValue();
+	Reg |= (m_pRegisterLogger->GetRegister(Channel * 2 + 1)->GetValue() << 8) & 0xF00;
+	if (!Reg)
+		return 0.;
+	return CAPU::BASE_FREQ_NTSC / 32. / Reg;
+}
+
 /*
 void CS5B::SetChannelVolume(int Chan, int LevelL, int LevelR)
 {

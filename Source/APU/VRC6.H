@@ -30,6 +30,7 @@ public:
 	void Reset();
 	void Write(uint16_t Address, uint8_t Value);
 	void Process(int Time);
+	double GetFrequency() const;		// // //
 
 private:
 	uint8_t	m_iDutyCycle, 
@@ -49,6 +50,7 @@ public:
 	void Reset();
 	void Write(uint16_t Address, uint8_t Value);
 	void Process(int Time);
+	double GetFrequency() const;		// // //
 
 private:
 	uint8_t	m_iPhaseAccumulator, 
@@ -70,6 +72,7 @@ public:
 	uint8_t Read(uint16_t Address, bool &Mapped);
 	void EndFrame();
 	void Process(uint32_t Time);
+	double GetFreq(int Channel) const;		// // //
 
 private:
 	CVRC6_Pulse	*m_pPulse1, *m_pPulse2;

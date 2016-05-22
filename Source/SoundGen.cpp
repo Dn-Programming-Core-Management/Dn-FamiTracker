@@ -1378,6 +1378,11 @@ CRegisterState *CSoundGen::GetRegState(unsigned Chip, unsigned Reg) const		// //
 	return m_pAPU->GetRegState(Chip, Reg);
 }
 
+double CSoundGen::GetChannelFrequency(unsigned Chip, int Channel) const		// // //
+{
+	return m_pAPU->GetFreq(Chip, Channel);
+}
+
 void CSoundGen::MakeSilent()
 {
 	// Called from player thread

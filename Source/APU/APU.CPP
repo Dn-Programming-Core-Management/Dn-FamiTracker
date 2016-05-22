@@ -410,6 +410,22 @@ uint8_t CAPU::GetReg(int Chip, int Reg) const
 	return static_cast<uint8_t>(0);
 }
 
+double CAPU::GetFreq(int Chip, int Chan) const
+{
+	const CSoundChip *pChip = nullptr;
+	switch (Chip) {
+	case SNDCHIP_NONE: pChip = m_p2A03; break;
+	case SNDCHIP_VRC6: pChip = m_pVRC6; break;
+	case SNDCHIP_VRC7: pChip = m_pVRC7; break;
+	case SNDCHIP_FDS:  pChip = m_pFDS; break;
+	case SNDCHIP_MMC5: pChip = m_pMMC5; break;
+	case SNDCHIP_N163: pChip = m_pN163; break;
+	case SNDCHIP_S5B:  pChip = m_pS5B; break;
+	default: AfxDebugBreak(); return 0.;
+	}
+	return pChip->GetFreq(Chan);
+}
+
 CRegisterState *CAPU::GetRegState(int Chip, int Reg) const		// // //
 {
 	const CSoundChip *pChip = nullptr;

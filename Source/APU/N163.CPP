@@ -196,6 +196,13 @@ void CN163::Log(uint16_t Address, uint8_t Value)		// // //
 	}
 }
 
+double CN163::GetFreq(int Channel) const		// // //
+{
+	if (Channel < 0 || Channel > m_iChansInUse)
+		return 0.;
+	return m_pChannels[7 - Channel]->GetFrequency() / (m_iChansInUse + 1);
+}
+
 uint8_t CN163::Read(uint16_t Address, bool &Mapped)
 {
 	uint16_t ReadAddr;
@@ -245,7 +252,7 @@ void CN163Chan::Reset()
 {
 	m_iCounter	  = 0;
 	m_iWaveOffset = 0;
-	m_iWaveLength = 0;
+	m_iWaveLength = 0x1000000;		// // //
 	m_iVolume	  = 0;
 	m_iLastSample = 0;
 	m_iPhase	  = 0;
@@ -377,4 +384,9 @@ uint8_t CN163Chan::ReadMem(uint8_t Reg)
 void CN163Chan::ResetCounter()
 {
 	m_iCounter = 0;
+}
+
+double CN163Chan::GetFrequency() const		// // //
+{
+	return CAPU::BASE_FREQ_NTSC / 983040. * m_iFrequency / (m_iWaveLength >> 16);
 }

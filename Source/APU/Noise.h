@@ -38,6 +38,7 @@ public:
 	void	WriteControl(uint8_t Value);
 	uint8_t	ReadControl();
 	void	Process(uint32_t Time);
+	double	GetFrequency() const;		// // //
 
 	void	LengthCounterUpdate();
 	void	EnvelopeUpdate();

@@ -68,3 +68,14 @@ void CFDS::Process(uint32_t Time)
 		++m_iTime;
 	}
 }
+
+double CFDS::GetFreq(int Channel) const		// // //
+{
+	if (Channel) return 0.;
+	int Lo = m_pRegisterLogger->GetRegister(0x4082)->GetValue();
+	int Hi = m_pRegisterLogger->GetRegister(0x4083)->GetValue();
+	if (Hi & 0x80)
+		return 0.;
+	Lo |= (Hi << 8) & 0xF00;
+	return CAPU::BASE_FREQ_NTSC * (Lo / 4194304.);
+}

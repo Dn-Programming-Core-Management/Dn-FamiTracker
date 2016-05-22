@@ -36,6 +36,8 @@ public:
 
 	virtual void EndFrame() { m_iTime = 0; }
 
+	virtual double GetFrequency() const = 0;		// // //
+
 protected:
 	virtual void Mix(int32_t Value) {
 		int32_t Delta = Value - m_iLastValue;

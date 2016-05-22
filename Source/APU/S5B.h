@@ -36,6 +36,7 @@ public:
 	uint8_t 	Read(uint16_t Address, bool &Mapped);
 	void	SetSampleSpeed(uint32_t SampleRate, double ClockRate, uint32_t FrameRate);
 	void	SetVolume(float fVol);
+	double	GetFreq(int Channel) const;		// // //
 //	void	SetChannelVolume(int Chan, int LevelL, int LevelR);
 protected:
 	void	GetMixMono();

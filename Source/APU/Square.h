@@ -38,6 +38,7 @@ public:
 	void	WriteControl(uint8_t Value);
 	uint8_t	ReadControl();
 	void	Process(uint32_t Time);
+	double	GetFrequency() const;		// // //
 
 	void	LengthCounterUpdate();
 	void	SweepUpdate(int Diff);
@@ -45,6 +46,7 @@ public:
 
 public:
 	static const uint8_t DUTY_TABLE[4][16];
+	uint32_t CPU_RATE;		// // //
 
 private:
 	uint8_t	m_iDutyLength, m_iDutyCycle;

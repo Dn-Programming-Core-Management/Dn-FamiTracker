@@ -84,6 +84,13 @@ void CVRC6_Pulse::Process(int Time)
 	m_iTime += Time;
 }
 
+double CVRC6_Pulse::GetFrequency() const		// // //
+{
+	if (m_iGate || !m_iEnabled || !m_iPeriod)
+		return 0.;
+	return CAPU::BASE_FREQ_NTSC / 16. / (m_iPeriod + 1.);
+}
+
 CVRC6_Sawtooth::CVRC6_Sawtooth(CMixer *pMixer, int ID) : CChannel(pMixer, SNDCHIP_VRC6, ID) 
 {
 	Reset();
@@ -146,6 +153,13 @@ void CVRC6_Sawtooth::Process(int Time)
 
 	m_iCounter -= Time;
 	m_iTime += Time;
+}
+
+double CVRC6_Sawtooth::GetFrequency() const		// // //
+{
+	if (!m_iEnabled || !m_iPeriod)
+		return 0.;
+	return CAPU::BASE_FREQ_NTSC / 14. / (m_iPeriod + 1.);
 }
 
 CVRC6::CVRC6(CMixer *pMixer) :
@@ -217,4 +231,14 @@ void CVRC6::Process(uint32_t Time)
 	m_pPulse1->Process(Time);
 	m_pPulse2->Process(Time);
 	m_pSawtooth->Process(Time);
+}
+
+double CVRC6::GetFreq(int Channel) const		// // //
+{
+	switch (Channel) {
+	case 0: return m_pPulse1->GetFrequency();
+	case 1: return m_pPulse2->GetFrequency();
+	case 2: return m_pSawtooth->GetFrequency();
+	}
+	return 0.;
 }

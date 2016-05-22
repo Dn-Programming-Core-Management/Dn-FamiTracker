@@ -38,9 +38,13 @@ public:
 	void	WriteControl(uint8_t Value);
 	uint8_t	ReadControl();
 	void	Process(uint32_t Time);
+	double	GetFrequency() const;		// // //
 
 	void	LengthCounterUpdate();
 	void	LinearCounterUpdate();
+
+public:
+	uint32_t CPU_RATE;		// // //
 
 private:
 	static const uint8_t TRIANGLE_WAVE[];
