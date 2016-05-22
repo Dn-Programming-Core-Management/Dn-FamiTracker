@@ -1539,10 +1539,10 @@ void CMainFrame::OnPrevFrame()
 
 void CMainFrame::OnHelpPerformance()
 {
-	if (m_pPerformanceDlg == NULL) {		// // //
+	if (m_pPerformanceDlg == NULL)		// // //
 		m_pPerformanceDlg = new CPerformanceDlg();
+	if (!m_pPerformanceDlg->m_hWnd)
 		m_pPerformanceDlg->Create(IDD_PERFORMANCE, this);
-	}
 	if (!m_pPerformanceDlg->IsWindowVisible())
 		m_pPerformanceDlg->CenterWindow();
 	m_pPerformanceDlg->ShowWindow(SW_SHOW);
