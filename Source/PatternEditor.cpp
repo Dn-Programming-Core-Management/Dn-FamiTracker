@@ -1684,64 +1684,16 @@ static double NoteFromFreq(double Freq)
 	return 45.0 + 12.0 * (std::log(Freq / 440.0) / log(2.0));
 }
 
-static double FreqFromNote(double Note, double Base)
-{
-	// Return frequency for a note number
-	return Base * std::pow(2.0, Note / 12.0);
-}
-
-static double RegToFreqVRC7(int Reg, int Octave)		// // //
-{
-	return 49716.0 * Reg / (1 << (19 - Octave));
-}
-
-static double RegToFreqN163(int Reg, int Div)		// // //
-{
-	// Div = N163 channels * wave length
-	const double BASE_FREQ_NTSC = 236250000.0 / 132.0;
-	return BASE_FREQ_NTSC * Reg / 15.0 / (1 << 16) / Div;
-}
-
-static double RegToFreq(int Reg, int Chip, int Param)		// // //
-{
-	// Return NES period converted to frequency
-	const double BASE_FREQ_NTSC = 236250000.0 / 132.0;
-	const double BASE_FREQ_PAL  = 4433618.75 * 6.0 / 16.0;
-	switch (Chip) {
-	case SNDCHIP_NONE: return BASE_FREQ_NTSC / 16.0 / (Reg + 1.0); break;
-	case SNDCHIP_2A07: return BASE_FREQ_PAL  / 16.0 / (Reg + 1.0); break;
-	case SNDCHIP_VRC6: return BASE_FREQ_NTSC / 14.0 / (Reg + 1.0); break;
-	case SNDCHIP_VRC7: return RegToFreqVRC7(Reg, Param); break;
-	case SNDCHIP_FDS: return BASE_FREQ_NTSC * Reg / (1 << 20); break;
-	case SNDCHIP_N163: return RegToFreqN163(Reg, Param); break;
-	case SNDCHIP_S5B: return BASE_FREQ_NTSC / 16.0 / (Reg + 1.0); break;
-	default: return 0.0;
-	}
-}
-
-static double RegToFreq(int Reg, int Chip)		// // //
-{
-	ASSERT(Chip != SNDCHIP_VRC7 && Chip != SNDCHIP_N163);
-	return RegToFreq(Reg, Chip, 1);
-}
-
 static CString NoteToStr(int Note)
 {
-	const CString NOTES_S[] = {"C-", "C#", "D-", "D#", "E-", "F-", "F#", "G-", "G#", "A-", "A#", "B-"};		// // //
-	const CString NOTES_F[] = {"C-", "Db", "D-", "Eb", "E-", "F-", "Gb", "G-", "Ab", "A-", "Bb", "B-"};		// // //
-	
-	int Octave = Note / 12 + 1;
-	int Index = Note % 12;
-	if (Index % 12 < 0) {
-		Octave--;
-		Index += 12;
-	}
+	int Octave = GET_OCTAVE(Note) + 1;		// // //
+	int Index = GET_NOTE(Note) - 1;
 
 	CString str;
 	if (theApp.GetSettings()->Appearance.bDisplayFlats)
-		str = NOTES_F[Index];
+		str = stChanNote::NOTE_NAME_FLAT[Index];
 	else
-		str = NOTES_S[Index];
+		str = stChanNote::NOTE_NAME[Index];
 	str.AppendFormat("%i", Octave);
 	return str;
 }
