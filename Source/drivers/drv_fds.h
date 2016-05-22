@@ -477,8 +477,8 @@ const int DRIVER_RELOC_WORD_FDS[] = {
 };
 
 const int DRIVER_FREQ_TABLE_FDS[] = {
-	0x0914, 0x19CD, SNDCHIP_NONE,
-	0x091D, 0x1A8D, SNDCHIP_FDS,
+	0x0914, 0x19CD, CDetuneTable::DETUNE_NTSC,
+	0x091D, 0x1A8D, CDetuneTable::DETUNE_FDS,
 };
 
 const unsigned int VIBRATO_TABLE_LOCATION_FDS = 0x1B4D;

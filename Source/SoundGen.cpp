@@ -49,6 +49,7 @@
 #include "TrackerChannel.h"
 #include "MIDI.h"
 #include "ChannelFactory.h"		// // // test
+#include "DetuneTable.h"		// // //
 
 #ifdef EXPORT_TEST
 #include "ExportTest/ExportTest.h"
@@ -1010,17 +1011,18 @@ int CSoundGen::ReadVibratoTable(int index) const
 	return m_iVibratoTable[index];
 }
 
-int CSoundGen::ReadPeriodTable(int index, int Chip) const		// // //
+int CSoundGen::ReadPeriodTable(int Index, int Table) const		// // //
 {
-	switch (Chip) {
-	case SNDCHIP_NONE: return m_iNoteLookupTableNTSC[index]; break;
-	case SNDCHIP_VRC6: return m_iNoteLookupTableSaw[index]; break;
-	case SNDCHIP_VRC7: return m_iNoteLookupTableVRC7[index]; break;
-	case SNDCHIP_FDS:  return m_iNoteLookupTableFDS[index]; break;
-	case SNDCHIP_MMC5: return m_iNoteLookupTableNTSC[index]; break;
-	case SNDCHIP_N163: return m_iNoteLookupTableN163[index]; break;
-	case SNDCHIP_2A07: return m_iNoteLookupTablePAL[index]; break;
-	default:           return m_iNoteLookupTableNTSC[index];
+	switch (Table) {
+	case CDetuneTable::DETUNE_NTSC: return m_iNoteLookupTableNTSC[Index]; break;
+	case CDetuneTable::DETUNE_PAL:  return m_iNoteLookupTablePAL[Index]; break;
+	case CDetuneTable::DETUNE_SAW:  return m_iNoteLookupTableSaw[Index]; break;
+	case CDetuneTable::DETUNE_VRC7: return m_iNoteLookupTableVRC7[Index]; break;
+	case CDetuneTable::DETUNE_FDS:  return m_iNoteLookupTableFDS[Index]; break;
+	case CDetuneTable::DETUNE_N163: return m_iNoteLookupTableN163[Index]; break;
+	case CDetuneTable::DETUNE_S5B:  return m_iNoteLookupTableNTSC[Index] + 1; break;
+	default:
+		AfxDebugBreak(); return m_iNoteLookupTableNTSC[Index];
 	}
 }
 

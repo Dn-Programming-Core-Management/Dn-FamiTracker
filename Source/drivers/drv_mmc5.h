@@ -433,7 +433,7 @@ const int DRIVER_RELOC_WORD_MMC5[] = {
 };
 
 const int DRIVER_FREQ_TABLE_MMC5[] = {
-	0x0871, 0x17E7, SNDCHIP_NONE,
+	0x0871, 0x17E7, CDetuneTable::DETUNE_NTSC,
 };
 
 const unsigned int VIBRATO_TABLE_LOCATION_MMC5 = 0x18A7;

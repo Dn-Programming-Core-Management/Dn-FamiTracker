@@ -20,8 +20,8 @@
 ** must bear this legend.
 */
 
-#pragma once
 
+#pragma once
 
 #include <vector>
 #include <functional>

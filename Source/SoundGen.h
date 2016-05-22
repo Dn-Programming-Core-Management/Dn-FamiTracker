@@ -140,7 +140,7 @@ public:
 	void		 GenerateVibratoTable(vibrato_t Type);
 	void		 SetupVibratoTable(vibrato_t Type);
 	int			 ReadVibratoTable(int index) const;
-	int			 ReadPeriodTable(int index, int Chip) const;		// // //
+	int			 ReadPeriodTable(int Index, int Table) const;		// // //
 
 	// Player interface
 	void		 StartPlayer(play_mode_t Mode, int Track);	

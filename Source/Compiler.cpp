@@ -773,50 +773,27 @@ char* CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 			pData[pDriver->freq_table_reloc[i] + 5] = value >> 8;
 		}
 
-		int Chip = pDriver->freq_table_reloc[i + 2];
-		switch (Chip) {
-		case SNDCHIP_NONE:
+		int Table = pDriver->freq_table_reloc[i + 2];
+		switch (Table) {
+		case CDetuneTable::DETUNE_NTSC:
+		case CDetuneTable::DETUNE_PAL:
+		case CDetuneTable::DETUNE_SAW:
+		case CDetuneTable::DETUNE_FDS:
+		case CDetuneTable::DETUNE_N163:
 			for (int j = 0; j < NOTE_COUNT; j++) {
-				pData[pDriver->freq_table_reloc[i + 1] + 2 * j    ] = pSoundGen->ReadPeriodTable(j, Chip) & 0xFF;
-				pData[pDriver->freq_table_reloc[i + 1] + 2 * j + 1] = pSoundGen->ReadPeriodTable(j, Chip) >> 8;
-			} break;
-		case SNDCHIP_2A07:
-			for (int j = 0; j < NOTE_COUNT; j++) {
-				pData[pDriver->freq_table_reloc[i + 1] + 2 * j    ] = pSoundGen->ReadPeriodTable(j, Chip) & 0xFF;
-				pData[pDriver->freq_table_reloc[i + 1] + 2 * j + 1] = pSoundGen->ReadPeriodTable(j, Chip) >> 8;
-			} break;
-		case SNDCHIP_VRC6:
-			for (int j = 0; j < NOTE_COUNT; j++) {
-				pData[pDriver->freq_table_reloc[i + 1] + 2 * j    ] = pSoundGen->ReadPeriodTable(j, Chip) & 0xFF;
-				pData[pDriver->freq_table_reloc[i + 1] + 2 * j + 1] = pSoundGen->ReadPeriodTable(j, Chip) >> 8;
-			} break;
-		case SNDCHIP_VRC7:
-			for (int j = 0; j < NOTE_RANGE; j++) {
-				pData[pDriver->freq_table_reloc[i + 1] + j                 ] = pSoundGen->ReadPeriodTable(j, Chip) * 4 & 0xFF;
-				pData[pDriver->freq_table_reloc[i + 1] + j + NOTE_RANGE + 1] = pSoundGen->ReadPeriodTable(j, Chip) * 4 >> 8;
-			}
-			pData[pDriver->freq_table_reloc[i + 1] + NOTE_RANGE        ] = pSoundGen->ReadPeriodTable(0, Chip) * 8 & 0xFF;
-			pData[pDriver->freq_table_reloc[i + 1] + NOTE_RANGE * 2 + 1] = pSoundGen->ReadPeriodTable(0, Chip) * 8 >> 8;
-			break;
-		case SNDCHIP_FDS:
-			for (int j = 0; j < NOTE_COUNT; j++) {
-				pData[pDriver->freq_table_reloc[i + 1] + 2 * j    ] = pSoundGen->ReadPeriodTable(j, Chip) & 0xFF;
-				pData[pDriver->freq_table_reloc[i + 1] + 2 * j + 1] = pSoundGen->ReadPeriodTable(j, Chip) >> 8;
-			} break;
-		case SNDCHIP_N163:
-			for (int j = 0; j < NOTE_COUNT; j++) {
-				int Reg;
-				if (m_iActualChip & ~SNDCHIP_N163) {
-					if (j > 82) // avoid clipping
-						Reg = pSoundGen->ReadPeriodTable(j - 24, Chip);// *m_iActualNamcoChannels / 2;
-					else
-						Reg = pSoundGen->ReadPeriodTable(j, Chip);// *m_iActualNamcoChannels / 8;
-				}
-				else
-					Reg = pSoundGen->ReadPeriodTable(j, Chip);
+				int Reg = pSoundGen->ReadPeriodTable(j, Table);
 				pData[pDriver->freq_table_reloc[i + 1] + 2 * j    ] = Reg & 0xFF;
 				pData[pDriver->freq_table_reloc[i + 1] + 2 * j + 1] = Reg >> 8;
 			} break;
+		case CDetuneTable::DETUNE_VRC7:
+			for (int j = 0; j <= NOTE_RANGE; j++) { // one extra item
+				int Reg = pSoundGen->ReadPeriodTable(j % NOTE_RANGE, Table) * 4;
+				if (j == NOTE_RANGE) Reg <<= 1;
+				pData[pDriver->freq_table_reloc[i + 1] + j                 ] = Reg & 0xFF;
+				pData[pDriver->freq_table_reloc[i + 1] + j + NOTE_RANGE + 1] = Reg >> 8;
+			} break;
+		default:
+			AfxDebugBreak();
 		}
 	}
 

@@ -125,8 +125,8 @@ CDetuneVRC7::CDetuneVRC7() :
 	CDetuneTable(DETUNE_VRC7, 0, 0x1FF)
 {
 	SetNoteCount(12);
-	SetGenerator([] (double x) { return std::fmod(x, 12.) / 49716. * (1 << 18); });		// provisional
-	SetFrequencyFunc([] (double x) { return 49716. * std::fmod(x, 256.) / (1 << (18 - (static_cast<int>(x) >> 8))); });
+	SetGenerator([] (double x) { return x / 49716. * (1 << 18); });		// provisional
+	SetFrequencyFunc([] (double x) { return 49716. * std::fmod(x, 512.) / (1 << (18 - (static_cast<int>(x) >> 9))); });
 	Generate();
 }
 

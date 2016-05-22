@@ -481,7 +481,7 @@ const int DRIVER_RELOC_WORD_VRC7[] = {
 
 const int DRIVER_FREQ_TABLE_VRC7[] = {
 	    -1, 0x1B4F, SNDCHIP_VRC7,
-	0x08BD, 0x1A8F, SNDCHIP_NONE,
+	0x08BD, 0x1A8F, CDetuneTable::DETUNE_NTSC,
 };
 
 const unsigned int VIBRATO_TABLE_LOCATION_VRC7 = 0x1B69;

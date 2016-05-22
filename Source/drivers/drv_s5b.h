@@ -444,7 +444,7 @@ const int DRIVER_RELOC_WORD_S5B[] = {
 };
 
 const int DRIVER_FREQ_TABLE_S5B[] = {
-	0x08BC, 0x1885, SNDCHIP_NONE,
+	0x08BC, 0x1885, CDetuneTable::DETUNE_NTSC,
 };
 
 const unsigned int VIBRATO_TABLE_LOCATION_S5B = 0x1945;
