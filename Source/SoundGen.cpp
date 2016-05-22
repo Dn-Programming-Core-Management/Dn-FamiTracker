@@ -373,7 +373,7 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 	
 	SetupVibratoTable(pDocument->GetVibratoStyle());		// // //
 	
-	machine_t Machine = m_pDocument->GetMachine();
+	machine_t Machine = pDocument->GetMachine();
 	const int A440_NOTE = 45;
 	double clock_ntsc = CAPU::BASE_FREQ_NTSC / 16.0;
 	double clock_pal = CAPU::BASE_FREQ_PAL / 16.0;
@@ -385,16 +385,16 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 
 		// 2A07
 		Pitch = (clock_pal / Freq) - 0.5;
-		m_iNoteLookupTablePAL[i] = (unsigned int)(Pitch - m_pDocument->GetDetuneOffset(1, i));		// // //
+		m_iNoteLookupTablePAL[i] = (unsigned int)(Pitch - pDocument->GetDetuneOffset(1, i));		// // //
 		
 		// 2A03 / MMC5 / VRC6
 		Pitch = (clock_ntsc / Freq) - 0.5;
-		m_iNoteLookupTableNTSC[i] = (unsigned int)(Pitch - m_pDocument->GetDetuneOffset(0, i));		// // //
+		m_iNoteLookupTableNTSC[i] = (unsigned int)(Pitch - pDocument->GetDetuneOffset(0, i));		// // //
 		m_iNoteLookupTableS5B[i] = m_iNoteLookupTableNTSC[i] + 1;		// correction
 
 		// VRC6 Saw
 		Pitch = ((clock_ntsc * 16.0) / (Freq * 14.0)) - 0.5;
-		m_iNoteLookupTableSaw[i] = (unsigned int)(Pitch - m_pDocument->GetDetuneOffset(2, i));		// // //
+		m_iNoteLookupTableSaw[i] = (unsigned int)(Pitch - pDocument->GetDetuneOffset(2, i));		// // //
 
 		// FDS
 #ifdef TRANSPOSE_FDS
@@ -402,11 +402,11 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 #else
 		Pitch = (Freq * 65536.0) / (clock_ntsc / 4.0) + 0.5;
 #endif
-		m_iNoteLookupTableFDS[i] = (unsigned int)(Pitch + m_pDocument->GetDetuneOffset(4, i));		// // //
+		m_iNoteLookupTableFDS[i] = (unsigned int)(Pitch + pDocument->GetDetuneOffset(4, i));		// // //
 
 		// N163
-		Pitch = ((Freq * m_pDocument->GetNamcoChannels() * 983040.0) / clock_ntsc + 0.5) / 4;		// // //
-		m_iNoteLookupTableN163[i] = (unsigned int)(Pitch + m_pDocument->GetDetuneOffset(5, i));		// // //
+		Pitch = ((Freq * pDocument->GetNamcoChannels() * 983040.0) / clock_ntsc + 0.5) / 4;		// // //
+		m_iNoteLookupTableN163[i] = (unsigned int)(Pitch + pDocument->GetDetuneOffset(5, i));		// // //
 
 		if (m_iNoteLookupTableN163[i] > 0xFFFF)	// 0x3FFFF
 			m_iNoteLookupTableN163[i] = 0xFFFF;	// 0x3FFFF
@@ -416,7 +416,7 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 		// // // VRC7
 		if (i < NOTE_RANGE) {
 			Pitch = Freq * 262144.0 / 49716.0 + 0.5;
-			m_iNoteLookupTableVRC7[i] = (unsigned int)(Pitch + m_pDocument->GetDetuneOffset(3, i));		// // //
+			m_iNoteLookupTableVRC7[i] = (unsigned int)(Pitch + pDocument->GetDetuneOffset(3, i));		// // //
 		}
 	}
 	
