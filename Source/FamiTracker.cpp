@@ -754,16 +754,16 @@ void CFamiTrackerApp::ReloadColorScheme()
 
 BOOL CFamiTrackerApp::OnIdle(LONG lCount)		// // //
 {
-	if (CWinThread::OnIdle(lCount))
+	if (CWinApp::OnIdle(lCount))
 		return TRUE;
 
-	if (!m_pVersionMessage.IsEmpty() && m_bVersionReady) {
+	if (m_bVersionReady && !m_pVersionMessage.IsEmpty()) {
 		m_bVersionReady = false;
 		if (AfxMessageBox(m_pVersionMessage, m_iVersionStyle) == IDYES)
 			ShellExecute(NULL, _T("open"), m_pVersionURL, NULL, NULL, SW_SHOWNORMAL);
 	}
 
-	return TRUE;
+	return FALSE;
 }
 
 // App command to run the about dialog
