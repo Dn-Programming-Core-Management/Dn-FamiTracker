@@ -2,21 +2,29 @@
 
 0CC-FamiTracker is a modified version of FamiTracker that incorporates various bug fixes and new features which work in exported NSFs as well. The name "0CC" comes from the author's favourite arpeggio effect command. The current version includes:
 
- - Sunsoft 5B support
- - Arpeggio schemes
- - Hardware volume envelopes
- - Find / replace tab
- - Detune settings
- - Groove settings
- - Bookmark manager
- - Compatible sequence instruments
- - Echo buffer access
- - Delayed channel effects
- - FDS automatic FM effects
- - N163 wave buffer access effect
- - Instrument recorder
- - Transpose dialog
- - Ad-doc multichip NSF export
+- Sound engine extensions:
+   - Sunsoft 5B support (per official 0.4.2)
+   - Ad-doc multichip NSF export
+   - Echo buffer access
+   - Polyphonic note preview
+- New effects:
+   - Hardware volume envelope effects
+   - Delayed channel effects
+   - FDS automatic FM effects
+   - N163 wave buffer access effect
+- Instrument extensions:
+   - Arpeggio schemes
+   - Instrument recorder
+   - Compatible sequence instruments
+- Interface extensions:
+   - Find / replace tab
+   - Transpose dialog
+   - Split keyboard
+- Extra module contents:
+   - Detune settings
+   - Groove settings
+   - Bookmark manager
+   - Linear pitch mode
 
 See the change log for the full list of changes made in 0CC-FamiTracker.
 

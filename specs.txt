@@ -1,7 +1,7 @@
 0CC-FamiTracker Mod
 Specification
 Written by HertzDevil
-Version 0.3.14.0 - Mar 29 2016
+Version 0.3.14.2 - May 23 2016
 
 --------------------------------------------------------------------------------
 
@@ -85,6 +85,13 @@ Version 1:
   - name: str[] - bookmark name
 
 	===
+	PARAMS_EXTRA Block
+	===
+
+Version 1:
+ - linearpitch: int[0,1] - enable linear pitch mode
+
+	===
 	Text exporter syntax
 	===
 
@@ -111,7 +118,7 @@ TRACK commands:
   - track: int_list[1,64] - list of one-based indices of tracks that use a
                             default groove
 
-Bookmarks are not exported to text files.
+Bookmarks and the linear pitch setting are not exported to text files.
 
 --------------------------------------------------------------------------------
 
