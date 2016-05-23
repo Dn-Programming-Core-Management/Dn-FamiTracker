@@ -286,6 +286,8 @@ void CFindResultsBox::AddResult(const stChanNote *pNote, const CFindCursor *pCur
 void CFindResultsBox::ClearResults() const
 {
 	m_cListResults->DeleteAllItems();
+	m_iLastsortColumn = ID;
+	m_bLastSortDescending = false;
 	UpdateCount();
 }
 
