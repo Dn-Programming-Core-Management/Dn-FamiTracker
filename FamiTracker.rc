@@ -510,8 +510,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,14,1
- PRODUCTVERSION 0,3,14,1
+ FILEVERSION 0,3,14,2
+ PRODUCTVERSION 0,3,14,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -528,12 +528,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "HertzDevil"
             VALUE "FileDescription", "NES/Famicom sound tracker"
-            VALUE "FileVersion", "0.3.14.1"
+            VALUE "FileVersion", "0.3.14.2"
             VALUE "InternalName", "FamiTracker.exe"
             VALUE "LegalCopyright", " (c) jsr, HertzDevil 2005-2016 All rights reserved."
             VALUE "OriginalFilename", "FamiTracker.exe"
             VALUE "ProductName", "0CC-FamiTracker"
-            VALUE "ProductVersion", "0.3.14.1"
+            VALUE "ProductVersion", "0.3.14.2"
         END
     END
     BLOCK "VarFileInfo"

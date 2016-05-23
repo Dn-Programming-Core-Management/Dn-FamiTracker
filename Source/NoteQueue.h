@@ -55,6 +55,8 @@ public:
 		\param Channel The channel index.
 		\return A vector containing the physical channel indices that have a note halted. */
 	std::vector<unsigned> StopChannel(unsigned Channel);
+	/*!	\brief Stops all currently playing notes. */
+	void StopAll();
 	
 	/*!	\brief Stops accepting notes from a given channel.
 		\param Channel The channel index. */
@@ -96,6 +98,7 @@ public:
 	unsigned Release(int Note, unsigned Channel);
 	unsigned Cut(int Note, unsigned Channel);
 	std::vector<unsigned> StopChannel(unsigned Channel);
+	void StopAll();
 	
 	void MuteChannel(unsigned Channel);
 	void UnmuteChannel(unsigned Channel);

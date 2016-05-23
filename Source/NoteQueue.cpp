@@ -136,6 +136,13 @@ std::vector<unsigned> CNoteChannelQueue::StopChannel(unsigned Channel)
 	return v;
 }
 
+void CNoteChannelQueue::StopAll()
+{
+	std::unordered_map<int, unsigned> m {m_iNoteChannel};
+	for (const auto &x : m)
+		Cut(x.first, x.second);
+}
+
 void CNoteChannelQueue::MuteChannel(unsigned Channel)
 {
 	for (int i = 0; i < m_iChannelCount; ++i)
@@ -206,6 +213,12 @@ std::vector<unsigned> CNoteQueue::StopChannel(unsigned Channel)
 		v.insert(v.end(), ret.begin(), ret.end());
 	}
 	return v;
+}
+
+void CNoteQueue::StopAll()
+{
+	for (const auto &it : m_Part)
+		it.second->StopAll();
 }
 
 void CNoteQueue::MuteChannel(unsigned Channel)

@@ -1,9 +1,70 @@
 0CC-FamiTracker Mod
 Change Log
 Written by HertzDevil
-Version 0.3.14.1 - Apr 9 2016
+Version 0.3.14.2 - May 23 2016
 
 --------------------------------------------------------------------------------
+
+V0.3.14.2 - 05/23/16
+Additions:
+ - Added linear pitch mode (originally from official 0.4.0)
+ - Added split keyboard settings dialog
+Improvements:
+ - Keyboard input now queues notes to different channels of identical type when
+    edit mode is disabled
+ - Undoable actions now remember the selection information immediately before
+    and after performing the action
+ - Added "Find All", "Find Previous" and "Replace Previous" commands
+ - Added "Selection" as the find / replace scope
+ - Changed "Any" effect column scope to "All"
+ - "Replace All" and changes to highlight settings are now undoable
+ - Register state now uses colours for N163 waveform display
+ - Module properties dialog can now insert songs at current position or delete
+    multiple songs
+ - Added configuration settings item to check for new versions on startup
+ - [WIP] Added module error levels
+ - Shortcuts menu now checks for conflicts between shortcut commands
+ - Alert prompts for non-undoable commands now select "No" as the default
+    option
+ - Added menu command to clear the most recently used file list
+ - Added shortcut to select instrument by typing instrument number
+Bug fixes:
+ - Fixed tracker sometimes waiting indefinitely while loading a module
+ - Fixed file save dialog not displaying .ftm files when saving modified
+    untitled files while loading another document
+ - Undoable actions no longer overwrite the redo state information every time
+    they are undone
+ - Transposing and scrolling pattern values no longer create a selection under
+    the cursor
+ - Fixed Insert and Backspace keys not working properly if an active selection
+    spans across multiple frames or does not begin in the current frame
+ - Fixed tracker resetting bookmark positions after moving frame up or down
+ - Fixed repeat key inputting invalid notes after using ^0 echo buffer access
+    note
+ - Fixed find query not working if note field contains only note name
+ - Fixed replacement query not allowing note cut or note release in the note
+    field
+ - Fixed find / replace dialog replacing current note if the search query is
+    modified after the previous query matched
+ - Fixed performance dialog not displaying after opening once and then closing
+ - Fixed tracker not stopping notes from keyboard input if octave is changed
+    while depressing keyboard key
+ - Fixed 2A03 channels not using PAL period table when PAL is used
+ - Fixed DPCM channel not playing if a VRC6 or 5B instrument is loaded as the
+    current instrument
+ - Fixed MMC5 channels not playing sound when switching to another song where
+    the period high byte remains unchanged
+ - Fixed VRC6 pulse channels and 5B channels using incorrect period tables for
+    the instrument recorder
+ - DPCM data always outputs to same directory as music data instead of tracker
+    root when exporting BIN data and current module contains no DPCM samples
+ - Fixed 3xx effect commands causing pitch bends when issued no notes are being
+    played on the channel
+ - Fixed 3xx effect commands on VRC7 channels ignoring the current octave
+    register value
+ - Fixed N163 loading the waveform of the currently selected instrument if the
+    channel has not used any instrument
+ - Fixed VRC7 channels inverting the 4xy vibrato pitch offset in the tracker
 
 V0.3.14.1 - 04/09/16
 Improvements:
