@@ -667,7 +667,7 @@ const int DRIVER_FREQ_TABLE_ALL[] = {
 	0x0A2B, 0x259E, CDetuneTable::DETUNE_N163,
 	0x0A34, 0x241E, CDetuneTable::DETUNE_SAW,
 	0x0A3D, 0x24DE, CDetuneTable::DETUNE_FDS,
-	    -1, 0x265E, SNDCHIP_VRC7,
+	    -1, 0x265E, CDetuneTable::DETUNE_VRC7,
 };
 
 const unsigned int VIBRATO_TABLE_LOCATION_ALL = 0x2678;

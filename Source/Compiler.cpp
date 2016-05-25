@@ -780,13 +780,13 @@ char* CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 		case CDetuneTable::DETUNE_SAW:
 		case CDetuneTable::DETUNE_FDS:
 		case CDetuneTable::DETUNE_N163:
-			for (int j = 0; j < NOTE_COUNT; j++) {
+			for (int j = 0; j < NOTE_COUNT; ++j) {
 				int Reg = pSoundGen->ReadPeriodTable(j, Table);
 				pData[pDriver->freq_table_reloc[i + 1] + 2 * j    ] = Reg & 0xFF;
 				pData[pDriver->freq_table_reloc[i + 1] + 2 * j + 1] = Reg >> 8;
 			} break;
 		case CDetuneTable::DETUNE_VRC7:
-			for (int j = 0; j <= NOTE_RANGE; j++) { // one extra item
+			for (int j = 0; j <= NOTE_RANGE; ++j) { // one extra item
 				int Reg = pSoundGen->ReadPeriodTable(j % NOTE_RANGE, Table) * 4;
 				if (j == NOTE_RANGE) Reg <<= 1;
 				pData[pDriver->freq_table_reloc[i + 1] + j                 ] = Reg & 0xFF;
