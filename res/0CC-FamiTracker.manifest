@@ -3,10 +3,10 @@
 <assemblyIdentity 
     version="1.0.0.0" 
     processorArchitecture="X86" 
-    name="Microsoft.Windows.FamiTracker"
+    name="Microsoft.Windows.0CC-FamiTracker"
     type="win32" 
 /> 
-<description>A Famicom/NES music tracker</description> 
+<description>Extension of FamiTracker</description> 
 <dependency> 
     <dependentAssembly> 
         <assemblyIdentity 

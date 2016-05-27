@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by FamiTracker.rc
+// Used by 0CC-FamiTracker.rc
 //
 #define ID_MANIFEST                     1
 #define IDAPPLY                         3
@@ -52,6 +52,7 @@
 #define ID_CMD_NEXT_INSTRUMENT          132
 #define IDS_FILE_VALID_ERROR            133
 #define ID_CMD_PREV_INSTRUMENT          133
+#define IDS_FILE_VAID_ERROR             133
 #define IDS_FILE_VERSION_ERROR          134
 #define ID_CMD_INCREASESTEPSIZE         134
 #define IDS_INST_LIMIT                  135

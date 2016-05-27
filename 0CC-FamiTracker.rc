@@ -527,11 +527,11 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "HertzDevil"
-            VALUE "FileDescription", "NES/Famicom sound tracker"
+            VALUE "FileDescription", "Extension of FamiTracker"
             VALUE "FileVersion", "0.3.14.2"
-            VALUE "InternalName", "FamiTracker.exe"
+            VALUE "InternalName", "0CC-FamiTracker.exe"
             VALUE "LegalCopyright", " (c) jsr, HertzDevil 2005-2016 All rights reserved."
-            VALUE "OriginalFilename", "FamiTracker.exe"
+            VALUE "OriginalFilename", "0CC-FamiTracker.exe"
             VALUE "ProductName", "0CC-FamiTracker"
             VALUE "ProductVersion", "0.3.14.2"
         END
@@ -1000,14 +1000,14 @@ END
 
 IDD_ABOUTBOX DIALOGEX 0, 0, 285, 334
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "About FamiTracker"
+CAPTION "About 0CC-FamiTracker"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_HEAD,"Static",SS_OWNERDRAW,0,0,287,49
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,49,287,1
     ICON            IDR_MAINFRAME,IDC_STATIC,10,63,20,20,SS_REALSIZEIMAGE
     LTEXT           "0CC-FamiTracker",IDC_ABOUT1,54,58,219,11,SS_NOPREFIX
-    LTEXT           "A Famicom/NES music tracker",IDC_ABOUT2,54,76,167,11,SS_NOPREFIX
+    LTEXT           "Extension of FamiTracker",IDC_ABOUT2,54,76,167,11,SS_NOPREFIX
     LTEXT           "Copyright (C) 2005 - 2015 jsr, 2014 - 2016 HertzDevil",IDC_ABOUT3,54,92,215,11
     LTEXT           "E-mail:",IDC_STATIC,54,107,24,10
     LTEXT           "nicetas.c@gmail.com",IDC_MAIL,84,107,70,10,SS_NOTIFY
@@ -1946,15 +1946,7 @@ IDI_RIGHT               ICON                    "res\\RightArrow.ico"
 // RT_MANIFEST
 //
 
-ID_MANIFEST             RT_MANIFEST             "res\\FamiTracker.manifest"
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// HTML
-//
-
-IDR_EXPORT_TEST_REPORT  HTML                    "res\\export_report.htm"
+ID_MANIFEST             RT_MANIFEST             "res\\0CC-FamiTracker.manifest"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -2186,8 +2178,6 @@ BEGIN
     IDS_DPCM_IMPORT_QUALITY_FORMAT "Quality: %1"
     IDS_CLIPBOARD_ERROR     "Could not register clipboard format"
     IDS_FILE_OPEN_ERROR     "Could not open the file!"
-    IDS_FILE_VALID_ERROR    "File is not a valid FamiTracker module"
-    IDS_FILE_VERSION_ERROR  "File version is not supported"
     IDS_INST_LIMIT          "You cannot add more instruments"
     IDS_CLIPBOARD_OPEN_ERROR "Cannot open clipboard."
     IDS_CLIPBOARD_NOT_AVALIABLE "Clipboard data is not available."
@@ -2223,7 +2213,7 @@ END
 
 STRINGTABLE
 BEGIN
-    AFX_IDS_APP_TITLE       "FamiTracker"
+    AFX_IDS_APP_TITLE       "0CC-FamiTracker"
     AFX_IDS_IDLEMESSAGE     "For Help, press F1"
     AFX_IDS_HELPMODEMESSAGE "Select an object on which to get Help"
 END
@@ -2384,7 +2374,7 @@ BEGIN
     IDS_INVALID_INST_NUM    "Invalid instrument number!"
     IDS_EXPORT_SAMPLES_FILE """%1"" already exists in the same directory as the music data file. Are you sure you want to overwrite it?"
     IDS_MODULE_ERROR_NONE   "This build is not allowed to bypass validation of loaded modules."
-    IDS_FILE_LOAD_ERROR     "Couldn't load file properly. Make sure you have the latest version of FamiTracker."
+    IDS_FILE_LOAD_ERROR     "Couldn't load file properly. Make sure you have the latest version of 0CC-FamiTracker."
     IDS_CONFIG_WINDOW       "FamiTracker configuration"
 END
 
@@ -2435,8 +2425,6 @@ BEGIN
     IDS_OPEN_FILE_ERROR     "Could not open file: %1"
     IDS_INFO_COPYRIGHT      "(copyright)"
     IDS_IMPORT_FAILED       "Import module failed"
-    IDS_IMPORT_CHIP_MISMATCH 
-                            "Imported file must be of the same expansion chip type as current file."
     IDS_IMPORT_INSTRUMENT_COUNT 
                             "Could not import all instruments, out of instrument slots!"
     IDS_IMPORT_SAMPLE_SLOTS "Could not import all samples, out of sample slots!"
@@ -2521,8 +2509,6 @@ BEGIN
     IDS_CLIPBOARD_PASTE_ERROR 
                             "An error occured while trying to paste data from the clipboard."
     IDS_DPCM_SPACE_FORMAT   "Space used %1 kB, left %2 kB (%3 kB available)"
-    IDS_FILE_VERSION_TOO_NEW 
-                            "This file was created in a newer version of FamiTracker. Please download the most recent version to open this file."
     IDS_INSTRUMENT_EDITOR_TITLE "Instrument editor - %1"
     IDS_INST_VERSION_UNSUPPORTED "File version not supported!"
     IDS_FILE_SAVED          "File saved (%1 bytes)"
@@ -2541,7 +2527,7 @@ BEGIN
     IDS_WELCOME_VER_FORMAT  "Welcome to 0CC-FamiTracker %1, press F1 for help"
     IDS_DPCM_IMPORT_INVALID_WAVEFILE 
                             "Cannot load this sample, file is invalid or incompatible. (Only uncompressed PCM is supported.)"
-    IDS_INST_FILE_ERROR     "Could not load instrument file! Check that you have the most recent version of FamiTracker."
+    IDS_INST_FILE_ERROR     "Could not load instrument file! Check that you have the most recent version of 0CC-FamiTracker."
     IDS_NEW_2A03_INSTRUMENT "New 2A03 instrument"
     IDS_NEW_VRC6_INSTRUMENT "New VRC6 instrument"
     IDS_NEW_VRC7_INSTRUMENT "New VRC7 instrument"
@@ -2732,7 +2718,7 @@ BEGIN
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
     "LANGUAGE 9, 1\r\n"
     "#pragma code_page(1252)\r\n"
-    "#include ""res\\FamiTracker.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""res\\0CC-FamiTracker.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
     "#include ""afxres.rc""         // Standard components\r\n"
     "#endif\r\n"
     "\0"
@@ -2758,7 +2744,7 @@ END
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE 9, 1
 #pragma code_page(1252)
-#include "res\FamiTracker.rc2"  // non-Microsoft Visual C++ edited resources
+#include "res\0CC-FamiTracker.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"         // Standard components
 #endif
 

@@ -271,19 +271,40 @@ int CSettings::LoadSetting(CString Section, CString Name, int Default) const
 template<class T>
 void CSettingType<T>::Load()
 {
-	*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, m_tDefaultValue);
+	free((void*)theApp.m_pszProfileName);		// // //
+	theApp.m_pszProfileName = _tcsdup(_T("FamiTracker"));
+	T Default = theApp.GetProfileInt(m_pSection, m_pEntry, m_tDefaultValue);
+	free((void*)theApp.m_pszProfileName);
+	CString s;
+	s.LoadString(AFX_IDS_APP_TITLE);
+	theApp.m_pszProfileName = _tcsdup(s);
+	*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, Default);
 }
 
 template<>
 void CSettingType<bool>::Load()
 {
-	*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, m_tDefaultValue ? 1 : 0) == 1;
+	free((void*)theApp.m_pszProfileName);		// // //
+	theApp.m_pszProfileName = _tcsdup(_T("FamiTracker"));
+	bool Default = theApp.GetProfileInt(m_pSection, m_pEntry, m_tDefaultValue) ? 1 : 0;
+	free((void*)theApp.m_pszProfileName);
+	CString s;
+	s.LoadString(AFX_IDS_APP_TITLE);
+	theApp.m_pszProfileName = _tcsdup(s);
+	*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, Default) == 1;
 }
 
 template<>
 void CSettingType<CString>::Load()
 {
-	*m_pVariable = theApp.GetProfileString(m_pSection, m_pEntry, m_tDefaultValue);
+	free((void*)theApp.m_pszProfileName);		// // //
+	theApp.m_pszProfileName = _tcsdup(_T("FamiTracker"));
+	CString Default = theApp.GetProfileString(m_pSection, m_pEntry, m_tDefaultValue);
+	free((void*)theApp.m_pszProfileName);
+	CString s;
+	s.LoadString(AFX_IDS_APP_TITLE);
+	theApp.m_pszProfileName = _tcsdup(s);
+	*m_pVariable = theApp.GetProfileString(m_pSection, m_pEntry, Default);
 }
 
 template<class T>

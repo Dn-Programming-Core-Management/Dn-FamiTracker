@@ -1018,7 +1018,7 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 			FILE *f;
 			AttachConsole(ATTACH_PARENT_PROCESS);
 			errno_t err = freopen_s(&f, "CON", "w", stdout);
-			printf("FamiTracker v%i.%i.%i.%i\n", VERSION);		// // //
+			printf("0CC-FamiTracker v%i.%i.%i.%i\n", VERSION);		// // //
 			return;
 		}
 	}

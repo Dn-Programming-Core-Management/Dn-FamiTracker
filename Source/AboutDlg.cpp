@@ -151,7 +151,7 @@ BOOL CAboutDlg::OnInitDialog()
 	CString aboutString;
 
 #ifdef WIP
-	aboutString.Format(_T("FamiTracker version %i.%i.%i.%i beta"), VERSION);
+	aboutString.Format(_T("0CC-FamiTracker version %i.%i.%i.%i beta"), VERSION);
 #else
 	CString str;
 	str.Format(_T("%i.%i.%i.%i"), VERSION);
