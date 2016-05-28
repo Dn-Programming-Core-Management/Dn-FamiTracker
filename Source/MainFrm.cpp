@@ -1319,8 +1319,11 @@ void CMainFrame::OnLoadInstrument()
 		SelectInstrument(Index);		// // //
 		m_pInstrumentList->InsertInstrument(Index);
 	}
-
-	theApp.GetSettings()->SetPath(FileDialog.GetPathName(), PATH_FTI);
+	
+	if (FileDialog.GetFileName().GetLength() == 0)		// // //
+		theApp.GetSettings()->SetPath(FileDialog.GetPathName() + _T("\\"), PATH_FTI);
+	else
+		theApp.GetSettings()->SetPath(FileDialog.GetPathName(), PATH_FTI);
 }
 
 void CMainFrame::OnSaveInstrument()
@@ -1556,9 +1559,10 @@ void CMainFrame::OnUpdateSBInstrument(CCmdUI *pCmdUI)
 	unsigned int Split = static_cast<CFamiTrackerView*>(GetActiveView())->GetSplitInstrument();
 	if (Split != MAX_INSTRUMENTS)
 		String.Format(_T("%02X / %s"), Split, String);
-	AfxFormatString1(String, ID_INDICATOR_INSTRUMENT, String);
+	CString msg;
+	AfxFormatString1(msg, ID_INDICATOR_INSTRUMENT, String);
 	pCmdUI->Enable(); 
-	pCmdUI->SetText(String);
+	pCmdUI->SetText(msg);
 }
 
 void CMainFrame::OnUpdateSBOctave(CCmdUI *pCmdUI)

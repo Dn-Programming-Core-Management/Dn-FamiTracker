@@ -325,6 +325,7 @@ void CInstrumentEditorDPCM::OnBnClickedLoad()
 	theApp.GetSettings()->SetPath(OpenFileDialog.GetPathName(), PATH_DMC);
 
 	if (OpenFileDialog.GetFileName().GetLength() == 0) {
+		theApp.GetSettings()->SetPath(OpenFileDialog.GetPathName() + _T("\\"), PATH_DMC);		// // //
 		// Multiple files
 		POSITION Pos = OpenFileDialog.GetStartPosition();
 		while (Pos) {
