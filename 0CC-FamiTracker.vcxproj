@@ -902,7 +902,6 @@
     <None Include="res\key_white_unpressed.bmp" />
     <None Include="res\MainToolbar-16.bmp" />
     <None Include="res\MainToolbar-256.bmp" />
-    <None Include="res\VisualizerBg.bmp" />
     <None Include="..\nsf driver\apu.s" />
     <None Include="..\nsf driver\driver.s" />
     <None Include="..\nsf driver\effects.s" />

@@ -162,7 +162,6 @@ BOOL CAboutDlg::OnInitDialog()
 	SetDlgItemText(IDC_ABOUT_CONTRIB,
 		_T("- Original software by jsr\r\n")
 		_T("- Export plugin support by Gradualore\r\n")
-		_T("- Icon is made by Kuhneghetz\r\n")
 		_T("- Toolbar icons are made by ilkke\r\n")
 		_T("- DPCM import resampler by Jarhmander\r\n")
 		_T("- Module text import/export by rainwarrior"));		// // //

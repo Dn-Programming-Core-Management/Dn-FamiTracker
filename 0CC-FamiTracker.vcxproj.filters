@@ -1320,9 +1320,6 @@
     <None Include="res\MainToolbar-256.bmp">
       <Filter>Resource Files\Bitmaps</Filter>
     </None>
-    <None Include="res\VisualizerBg.bmp">
-      <Filter>Resource Files\Bitmaps</Filter>
-    </None>
     <None Include="..\nsf driver\apu.s">
       <Filter>NSF driver</Filter>
     </None>
