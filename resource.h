@@ -107,7 +107,6 @@
 #define IDS_WAVE_EXPORT_FINISHED        166
 #define IDS_ABOUT_TOOLTIP_MAIL          167
 #define IDS_ABOUT_TOOLTIP_WEB           168
-#define IDB_SAMPLEBG                    169
 #define IDS_ABOUT_VERSION_FORMAT        169
 #define IDB_VISUALIZER                  169
 #define IDS_PROPERTIES_CHANNELS         170

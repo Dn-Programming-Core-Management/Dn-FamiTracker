@@ -112,7 +112,7 @@ void CVisualizerSpectrum::Draw()
 	ASSERT(m_pFftObject != NULL);
 
 	static const float SCALING = 250.0f;
-	static const int OFFSET = 1;
+	static const int OFFSET = 0;
 	static const float DECAY = 3.0f;
 
 	float Step = 0.2f * (float(FFT_POINTS) / float(m_iWidth)) * m_iBarSize;		// // //

@@ -28,8 +28,6 @@ IDR_MAINFRAME           BITMAP                  "res\\MainToolbar-16.bmp"
 
 IDR_INSTRUMENT_TOOLBAR  BITMAP                  "res\\InstrumentToolbar-16.bmp"
 
-IDB_SAMPLEBG            BITMAP                  "res\\VisualizerBg.bmp"
-
 IDB_KEY_BLACK           BITMAP                  "res\\key_black_unpressed.bmp"
 
 IDB_KEY_BLACK_MARK      BITMAP                  "res\\key_black_pressed.bmp"
@@ -420,7 +418,7 @@ BEGIN
         MENUITEM "Sample scope (blur)",         ID_POPUP_SAMPLESCOPE2
         MENUITEM "Spectrum analyzer",           ID_POPUP_SPECTRUMANALYZER
         MENUITEM "Spectrum analyzer (fine)",    ID_POPUP_SPECTRUMANALYZER2
-        MENUITEM "Nothing",                     ID_POPUP_NOTHING
+        MENUITEM "Logo",                        ID_POPUP_NOTHING
     END
 END
 

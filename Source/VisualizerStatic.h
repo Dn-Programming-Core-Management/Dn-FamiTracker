@@ -32,9 +32,12 @@ public:
 	void Create(int Width, int Height);
 	void SetSampleRate(int SampleRate);
 	void Draw();
+	void DrawChar(char n, int xPos, int yPos, const COLORREF &Color);		// // //
 	void Display(CDC *pDC, bool bPaintMsg);
 
 private:
+	COLORREF *m_pBlitBuffer;		// // //
+
 	CBitmap m_bmpImage;
 	CBitmap *m_pOldBmp;
 	CDC	m_dcImage;
