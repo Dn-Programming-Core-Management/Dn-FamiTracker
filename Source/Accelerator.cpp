@@ -275,6 +275,14 @@ void CAccelerator::LoadShortcuts(CSettings *pSettings)
 	for (int i = 0; i < ACCEL_COUNT; ++i) {
 		int Default = (m_pEntriesTable[i].mod << 8) | m_pEntriesTable[i].key;
 		int Setting = pSettings->LoadSetting(SHORTCUTS_SECTION, m_pEntriesTable[i].name, Default);
+		free((void*)theApp.m_pszProfileName);		// // //
+		theApp.m_pszProfileName = _tcsdup(_T("FamiTracker"));
+		Setting = theApp.GetProfileInt(SHORTCUTS_SECTION, m_pEntriesTable[i].name, Setting);
+		free((void*)theApp.m_pszProfileName);
+		CString s;
+		s.LoadString(AFX_IDS_APP_TITLE);
+		theApp.m_pszProfileName = _tcsdup(s);
+
 		m_pEntriesTable[i].key = Setting & 0xFF;
 		m_pEntriesTable[i].mod = Setting >> 8;
 		if (m_pEntriesTable[i].mod == MOD_NONE && m_pEntriesTable[i].key)		// // //
