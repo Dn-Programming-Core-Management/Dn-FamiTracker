@@ -1604,7 +1604,19 @@ void CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile, const int Ve
 	m_iMachine = static_cast<machine_t>(pDocFile->GetBlockInt());
 	AssertFileData(m_iMachine == NTSC || m_iMachine == PAL, "Unknown machine");
 
-	m_iEngineSpeed = pDocFile->GetBlockInt();
+	if (Version >= 7) {		// // // 050B
+		switch (pDocFile->GetBlockInt()) {
+		case 1:
+			m_iEngineSpeed = static_cast<int>(1000000. / pDocFile->GetBlockInt() + .5);
+			break;
+		case 0: case 2:
+		default:
+			pDocFile->GetBlockInt();
+			m_iEngineSpeed = 0;
+		}
+	}
+	else
+		m_iEngineSpeed = pDocFile->GetBlockInt();
 
 	if (Version > 2)
 		m_iVibratoStyle = (vibrato_t)pDocFile->GetBlockInt();
@@ -1612,10 +1624,13 @@ void CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile, const int Ve
 		m_iVibratoStyle = VIBRATO_OLD;
 
 	// TODO read m_bLinearPitch
+	if (Version >= 9) {		// // // 050B
+		bool SweepReset = pDocFile->GetBlockInt() != 0;
+	}
 
 	m_vHighlight = CPatternData::DEFAULT_HIGHLIGHT;		// // //
 
-	if (Version > 3) {
+	if (Version > 3 && Version <= 6) {		// // // 050B
 		m_vHighlight.First = pDocFile->GetBlockInt();
 		m_vHighlight.Second = pDocFile->GetBlockInt();
 	}
@@ -1655,6 +1670,11 @@ void CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile, const int Ve
 	}
 
 	AssertRange<MODULE_ERROR_STRICT>(m_iExpansionChip, 0, 0x3F, "Expansion chip flag");
+
+	if (Version >= 8) {		// // // 050B
+		char Semitones = pDocFile->GetBlockChar();
+		char Cents = pDocFile->GetBlockChar();
+	}
 
 	SetupChannels(m_iExpansionChip);
 }
@@ -1713,12 +1733,17 @@ void CFamiTrackerDoc::ReadBlock_Header(CDocumentFile *pDocFile, const int Versio
 			throw;
 		}
 
-		if (Version >= 4)
-			for (unsigned int i = 0; i < m_iTrackCount; ++i) // TODO read highlight
-				GetTrack(i)->SetHighlight(m_vHighlight);		// // //
-		else
-			for (unsigned int i = 0; i < m_iTrackCount; ++i) // Use global highlight
-				GetTrack(i)->SetHighlight(m_vHighlight);		// // //
+		if (Version >= 4)		// // // 050B
+			for (unsigned int i = 0; i < m_iTrackCount; ++i) {
+				int First = static_cast<unsigned char>(pDocFile->GetBlockChar());
+				int Second = static_cast<unsigned char>(pDocFile->GetBlockChar());
+				if (!i) {
+					m_vHighlight.First = First;
+					m_vHighlight.Second = Second;
+				}
+			}
+		for (unsigned int i = 0; i < m_iTrackCount; ++i)
+			GetTrack(i)->SetHighlight(m_vHighlight);		// // //
 	}
 }
 
@@ -2115,23 +2140,27 @@ void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Vers
 				Note->Instrument = pDocFile->GetBlockChar();
 				Note->Vol = pDocFile->GetBlockChar();
 
-				for (int n = 0; n < (pTrack->GetEffectColumnCount(Channel) + 1); ++n) try {
+				int FX = m_iFileVersion == 0x200 ? 1 : Version >= 6 ? MAX_EFFECT_COLUMNS :
+						 (pTrack->GetEffectColumnCount(Channel) + 1);		// // // 050B
+				for (int n = 0; n < FX; ++n) try {
 					unsigned char EffectNumber = pDocFile->GetBlockChar();
-					unsigned char EffectParam = pDocFile->GetBlockChar();
-					if (Version < 3) {
-						if (EffectNumber == EF_PORTAOFF) {
-							EffectNumber = EF_PORTAMENTO;
-							EffectParam = 0;
+					if (Note->EffNumber[n] = static_cast<effect_t>(EffectNumber)) {
+						// AssertRange<MODULE_ERROR_STRICT>(EffectNumber, EF_NONE, EF_COUNT - 1, "Effect index");
+						unsigned char EffectParam = pDocFile->GetBlockChar();
+						if (Version < 3) {
+							if (EffectNumber == EF_PORTAOFF) {
+								EffectNumber = EF_PORTAMENTO;
+								EffectParam = 0;
+							}
+							else if (EffectNumber == EF_PORTAMENTO) {
+								if (EffectParam < 0xFF)
+									EffectParam++;
+							}
 						}
-						else if (EffectNumber == EF_PORTAMENTO) {
-							if (EffectParam < 0xFF)
-								EffectParam++;
-						}
-					}
-					if (Note->EffNumber[n] = static_cast<effect_t>(EffectNumber))
-//					if (Note->EffNumber[n] = static_cast<effect_t>(AssertRange(EffectNumber, EF_NONE, EF_COUNT - 1, "Effect index")))
 						Note->EffParam[n] = EffectParam; // skip on no effect
-					if (m_iFileVersion == 0x200) break;		// // //
+					}
+					else if (Version < 6)
+						pDocFile->GetBlockChar(); // unused blank parameter
 				}
 				catch (CModuleException *e) {
 					e->AppendError("At effect column fx%d,", n + 1);

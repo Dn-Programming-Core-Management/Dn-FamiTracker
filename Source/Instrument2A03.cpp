@@ -88,27 +88,41 @@ bool CInstrument2A03::Load(CDocumentFile *pDocFile)
 	const int Version = pDocFile->GetBlockVersion();
 	const int Octaves = (Version == 1) ? 6 : OCTAVE_RANGE;
 
-	for (int i = 0; i < Octaves; ++i) {
-		for (int j = 0; j < NOTE_RANGE; ++j) try {
+	const auto ReadAssignment = [&] (int Octave, int Note) {
+		try {
 			int Index = CModuleException::AssertRangeFmt(pDocFile->GetBlockChar(), 0, 0x7F, "DPCM sample assignment index", "%i");
 			if (Index > MAX_DSAMPLES)
 				Index = 0;
-			SetSampleIndex(i, j, Index);
+			SetSampleIndex(Octave, Note, Index);
 			char Pitch = pDocFile->GetBlockChar();
 			CModuleException::AssertRangeFmt<MODULE_ERROR_STRICT>(Pitch & 0x7F, 0, 0xF, "DPCM sample pitch", "%i");
-			SetSamplePitch(i, j, Pitch & 0x8F);
+			SetSamplePitch(Octave, Note, Pitch & 0x8F);
 			if (Version > 5) {
 				char Value = pDocFile->GetBlockChar();
 				if (Value < -1) // not validated
 					Value = -1;
-				SetSampleDeltaValue(i, j, Value);
+				SetSampleDeltaValue(Octave, Note, Value);
 			}
 		}
 		catch (CModuleException *e) {
-			e->AppendError("At note %i, octave %i,", j + 1, i);
+			e->AppendError("At note %i, octave %i,", Note + 1, Octave);
 			throw;
 		}
+	};
+
+	if (Version >= 7) {		// // // 050B
+		const int Count = CModuleException::AssertRangeFmt<MODULE_ERROR_STRICT>(
+			pDocFile->GetBlockInt(), 0, NOTE_COUNT, "DPCM sample assignment count", "%i");
+		for (int i = 0; i < Count; ++i) {
+			int Note = CModuleException::AssertRangeFmt<MODULE_ERROR_STRICT>(
+				pDocFile->GetBlockChar(), 0, NOTE_COUNT - 1, "DPCM sample assignment note index", "%i");
+			ReadAssignment(GET_OCTAVE(Note), GET_NOTE(Note) - 1);
+		}
 	}
+	else
+		for (int i = 0; i < Octaves; ++i)
+			for (int j = 0; j < NOTE_RANGE; ++j)
+				ReadAssignment(i, j);
 
 	return true;
 }

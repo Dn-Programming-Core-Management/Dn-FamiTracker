@@ -95,8 +95,9 @@ bool CInstrumentN163::Load(CDocumentFile *pDocFile)
 
 	m_iWaveSize = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), 4, MAX_WAVE_SIZE, "N163 wave size", "%i");
 	m_iWavePos = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), 0, MAX_WAVE_SIZE - 1, "N163 wave position", "%i");
-//	m_bAutoWavePos = (pDocFile->GetBlockInt() == 0) ? false : true;
-	//pDocFile->GetBlockInt();
+	if (pDocFile->GetBlockVersion() >= 8) {		// // // 050B
+		bool AutoPosition = pDocFile->GetBlockInt() != 0;
+	}
 	m_iWaveCount = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), 1, MAX_WAVE_COUNT, "N163 wave count", "%i");
 	
 	for (int i = 0; i < m_iWaveCount; ++i) {

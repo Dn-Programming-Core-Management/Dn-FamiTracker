@@ -207,7 +207,7 @@ void CDocumentFile::ValidateFile()
 		e->Raise();
 	}
 	// // // File version is too new
-	if (GetFileVersion() > FILE_VER) {
+	if (GetFileVersion() > 0x450U /*FILE_VER*/) {		// // // 050B
 		e->AppendError("FamiTracker module version too new (0x%X), expected 0x%X or below", GetFileVersion(), FILE_VER);
 		e->Raise();
 	}
