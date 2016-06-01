@@ -136,7 +136,16 @@ void CSeqInstHandler::UpdateInstrument()
 				break;
 			// Pitch
 			case SEQ_PITCH:
-				m_pInterface->SetPeriod(m_pInterface->GetPeriod() + Value);
+				switch (m_pSequence[i]->GetSetting()) {		// // //
+				case SETTING_PITCH_RELATIVE:
+					m_pInterface->SetPeriod(m_pInterface->GetPeriod() + Value);
+					break;
+				case SETTING_PITCH_ABSOLUTE:		// // // 050B
+					m_pInterface->SetPeriod(m_pInterface->TriggerNote(m_pInterface->GetNote()) + Value);
+					break;
+//				case SETTING_PITCH_SWEEP:
+//					break; // handled in subclass
+				}
 				break;
 			// Hi-pitch
 			case SEQ_HIPITCH:

@@ -26,15 +26,22 @@ class CDocumentFile;
 
 // // // Settings
 enum seq_setting_t : unsigned int {
-	SETTING_DEFAULT        = 0x0000,
-	SETTING_ARP_ABSOLUTE   = 0x0000,
-	SETTING_ARP_FIXED      = 0x0001,
-	SETTING_ARP_RELATIVE   = 0x0002,
-	SETTING_ARP_SCHEME     = 0x0003,
-	SETTING_PITCH_DEFAULT  = 0x0000,
-	SETTING_PITCH_ABSOLUTE = 0x0010,
-	SETTING_PITCH_RELATIVE = 0x0020,
+	SETTING_DEFAULT        = 0,
+
+	SETTING_VOL_16_STEPS   = 0,		// // // 050B
+	SETTING_VOL_64_STEPS   = 1,		// // // 050B
+
+	SETTING_ARP_ABSOLUTE   = 0,
+	SETTING_ARP_FIXED      = 1,
+	SETTING_ARP_RELATIVE   = 2,
+	SETTING_ARP_SCHEME     = 3,
+
+	SETTING_PITCH_RELATIVE = 0,
+	SETTING_PITCH_ABSOLUTE = 1,		// // // 050B
+	SETTING_PITCH_SWEEP    = 2,		// // // 050B
 };
+
+static const unsigned int SEQ_SETTING_COUNT[] = {2, 4, 3, 1, 1};
 
 // // // Sunsoft modes
 enum s5b_mode_t {
