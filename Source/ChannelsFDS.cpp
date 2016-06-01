@@ -131,8 +131,6 @@ void CChannelHandlerFDS::HandleNote(int Note, int Octave)
 {
 	// Trigger a new note
 	m_bResetMod = true;
-
-	m_iInstVolume = 0x1F;
 }
 
 bool CChannelHandlerFDS::CreateInstHandler(inst_type_t Type)
@@ -233,8 +231,6 @@ void CChannelHandlerFDS::ClearRegisters()
 	WriteRegister(0x4086, 0x00);		// // //
 	WriteRegister(0x4087, 0x00);
 	WriteRegister(0x4084, 0x00);		// // //
-
-	m_iInstVolume = 0x20;
 
 	m_bAutoModulation = false;		// // //
 	m_iModulationOffset = 0;		// // //

@@ -1341,11 +1341,11 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 	if (pNoteData->Note > ECHO ||		// // //
 		pNoteData->Octave > 8 ||
 		EffNumber >= EF_COUNT || 
-		pNoteData->Instrument > MAX_INSTRUMENTS) {
+		pNoteData->Instrument > MAX_INSTRUMENTS && pNoteData->Instrument != HOLD_INSTRUMENT) {		// // // 050B
 		if (Column == C_NOTE/* || Column == 4*/) {
 			CString Text;
 			Text.Format(_T("(invalid)"));
-			pDC->SetTextColor(RED(255));
+			pDC->SetTextColor(RGB(255, 0, 0));
 			pDC->TextOut(PosX, -1, Text);
 		}
 		return;
@@ -1360,12 +1360,12 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 	if (pNoteData->Instrument < MAX_INSTRUMENTS && 
 		(!m_pDocument->IsInstrumentUsed(pNoteData->Instrument) ||
 		!pTrackerChannel->IsInstrumentCompatible(pNoteData->Instrument, m_pDocument->GetInstrumentType(pNoteData->Instrument)))) { // // //
-		DimInst = InstColor = RED(255);
+		DimInst = InstColor = RGB(255, 0, 0);
 	}
 
 	// // // effects too
 	if (EffNumber != EF_NONE) if (!pTrackerChannel->IsEffectCompatible(EffNumber, EffParam))
-		DimEff = EffColor = RED(255);		// // //
+		DimEff = EffColor = RGB(255, 0, 0);		// // //
 
 	int PosY = m_iRowHeight - m_iRowHeight / 8;		// // //
 	// // // PosX -= 1;
@@ -1382,8 +1382,14 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 				case NONE:
 					if (m_bCompactMode) {		// // //
 						if (pNoteData->Instrument != MAX_INSTRUMENTS) {
-							DrawChar(pDC, PosX + m_iCharWidth * 3 / 2, PosY, HEX[pNoteData->Instrument >> 4], DimInst);
-							DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, HEX[pNoteData->Instrument & 0x0F], DimInst);
+							if (pNoteData->Instrument == HOLD_INSTRUMENT) {		// // // 050B
+								DrawChar(pDC, PosX + m_iCharWidth * 3 / 2, PosY, '&', DimInst);
+								DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, '&', DimInst);
+							}
+							else {
+								DrawChar(pDC, PosX + m_iCharWidth * 3 / 2, PosY, HEX[pNoteData->Instrument >> 4], DimInst);
+								DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, HEX[pNoteData->Instrument & 0x0F], DimInst);
+							}
 							break;
 						}
 						else if (pNoteData->Vol != MAX_VOLUME) {
@@ -1448,6 +1454,8 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 			// Instrument x0
 			if (pNoteData->Instrument == MAX_INSTRUMENTS || pNoteData->Note == HALT || pNoteData->Note == RELEASE)
 				BAR(PosX, PosY);
+			else if (pNoteData->Instrument == HOLD_INSTRUMENT)		// // // 050B
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, '&', InstColor);
 			else
 				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[pNoteData->Instrument >> 4], InstColor);		// // //
 			break;
@@ -1455,6 +1463,8 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 			// Instrument 0x
 			if (pNoteData->Instrument == MAX_INSTRUMENTS || pNoteData->Note == HALT || pNoteData->Note == RELEASE)
 				BAR(PosX, PosY);
+			else if (pNoteData->Instrument == HOLD_INSTRUMENT)		// // // 050B
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, '&', InstColor);
 			else
 				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[pNoteData->Instrument & 0x0F], InstColor);		// // //
 			break;

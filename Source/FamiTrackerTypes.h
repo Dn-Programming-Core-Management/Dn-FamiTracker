@@ -31,6 +31,10 @@
 // Maximum number of instruments to use
 const int MAX_INSTRUMENTS = 64;
 
+// Hold instrument index
+const int HOLD_INSTRUMENT = 0xFF;		// // // 050B
+// TODO: check if this conflicts with INVALID_INSTRUMENT
+
 // Maximum number of sequence lists
 const int MAX_SEQUENCES	= 128;
 

@@ -64,6 +64,14 @@ void CChannelHandlerVRC7::SetCustomReg(size_t Index, unsigned char Val)		// // /
 	m_iRegs[Index] = Val;
 }
 
+void CChannelHandlerVRC7::HandleNoteData(stChanNote *pNoteData, int EffColumns)
+{
+	CChannelHandlerInverted::HandleNoteData(pNoteData, EffColumns);		// // //
+
+	if (m_iCommand == CMD_NOTE_TRIGGER && pNoteData->Instrument == HOLD_INSTRUMENT)		// // // 050B
+		m_iCommand = CMD_NOTE_ON;
+}
+
 bool CChannelHandlerVRC7::HandleEffect(effect_t EffNum, unsigned char EffParam)
 {
 	switch (EffNum) {
@@ -146,18 +154,22 @@ void CChannelHandlerVRC7::HandleRelease()
 void CChannelHandlerVRC7::HandleNote(int Note, int Octave)
 {
 	// Portamento fix
-	if (m_iCommand == CMD_NOTE_HALT)
+	if (m_iCommand == CMD_NOTE_HALT || m_iCommand == CMD_NOTE_RELEASE)
 		m_iPeriod = 0;
 
 	// Trigger note
 	m_iNote	= RunNote(Octave, Note); // m_iPeriod altered
 	m_bHold	= true;
-
-	if ((m_iEffect != EF_PORTAMENTO || m_iPortaSpeed == 0) || m_iCommand == CMD_NOTE_HALT)
+/*
+	if ((m_iEffect != EF_PORTAMENTO || m_iPortaSpeed == 0) ||
+		m_iCommand == CMD_NOTE_HALT || m_iCommand == CMD_NOTE_RELEASE)		// // // 050B
 		m_iCommand = CMD_NOTE_TRIGGER;
-
-	if (m_iPortaSpeed > 0 && m_iEffect == EF_PORTAMENTO && m_iCommand != CMD_NOTE_HALT)
+*/
+	if (m_iPortaSpeed > 0 && m_iEffect == EF_PORTAMENTO &&
+		m_iCommand != CMD_NOTE_HALT && m_iCommand != CMD_NOTE_RELEASE)		// // // 050B
 		CorrectOctave();
+	else
+		m_iCommand = CMD_NOTE_TRIGGER;
 }
 
 bool CChannelHandlerVRC7::CreateInstHandler(inst_type_t Type)
@@ -248,15 +260,14 @@ int CChannelHandlerVRC7::CalculatePeriod() const
 
 void CVRC7Channel::RefreshChannel()
 {	
-	int Note = m_iTriggeredNote;
-	int Patch = m_iPatch;
+//	int Note = m_iTriggeredNote;
 	int Volume = CalculateVolume();
 	int Fnum = CalculatePeriod();		// // //
 	int Bnum = !m_bLinearPitch ? m_iOctave :
 		((GetPeriod() + GetVibrato() - GetFinePitch() - GetPitch()) >> LINEAR_PITCH_AMOUNT) / NOTE_RANGE;
 
 	// Write custom instrument
-	if (Patch == 0 && (m_iCommand == CMD_NOTE_TRIGGER || m_bRegsDirty)) {
+	if (m_iPatch == 0 && (m_iCommand == CMD_NOTE_TRIGGER || m_bRegsDirty)) {
 		for (int i = 0; i < 8; ++i)
 			RegWrite(i, m_iRegs[i]);
 	}
@@ -290,7 +301,7 @@ void CVRC7Channel::RefreshChannel()
 	
 	if (m_iCommand != CMD_NOTE_HALT) {
 		// Select volume & patch
-		RegWrite(0x30 + m_iChannel, (Patch << 4) | Volume);
+		RegWrite(0x30 + m_iChannel, (m_iPatch << 4) | Volume);
 	}
 
 	RegWrite(0x20 + m_iChannel, ((Fnum >> 8) & 1) | (Bnum << 1) | Cmd);

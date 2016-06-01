@@ -28,7 +28,7 @@
 
 // CTransposeDlg dialog
 
-bool CTransposeDlg::s_bDisableInst[MAX_INSTRUMENTS + 1] = {false};
+bool CTransposeDlg::s_bDisableInst[MAX_INSTRUMENTS] = {false};
 const UINT CTransposeDlg::BUTTON_ID = 0xDD00; // large enough
 
 IMPLEMENT_DYNAMIC(CTransposeDlg, CDialog)
@@ -66,6 +66,7 @@ void CTransposeDlg::Transpose(int Trsp, unsigned int Track)
 		if (Type == CHANID_NOISE || Type == CHANID_DPCM) continue;
 		for (int p = 0; p < MAX_PATTERN; ++p) for (int r = 0; r < MAX_PATTERN_LENGTH; ++r) {
 			m_pDocument->GetDataAtPattern(Track, p, c, r, &Note);
+			if (Note.Instrument == MAX_INSTRUMENTS || Note.Instrument == HOLD_INSTRUMENT) continue;
 			if (Note.Note >= NOTE_C && Note.Note <= NOTE_B && !s_bDisableInst[Note.Instrument]) {
 				int MIDI = MIDI_NOTE(Note.Octave, Note.Note) + Trsp;
 				if (MIDI < 0) MIDI = 0;
@@ -80,7 +81,7 @@ void CTransposeDlg::Transpose(int Trsp, unsigned int Track)
 
 BEGIN_MESSAGE_MAP(CTransposeDlg, CDialog)
 	ON_BN_CLICKED(IDOK, &CTransposeDlg::OnBnClickedOk)
-	ON_CONTROL_RANGE(BN_CLICKED, BUTTON_ID, BUTTON_ID + MAX_INSTRUMENTS, OnBnClickedInst)
+	ON_CONTROL_RANGE(BN_CLICKED, BUTTON_ID, BUTTON_ID + MAX_INSTRUMENTS - 1, OnBnClickedInst)
 	ON_BN_CLICKED(IDC_BUTTON_TRSP_REVERSE, &CTransposeDlg::OnBnClickedButtonTrspReverse)
 	ON_BN_CLICKED(IDC_BUTTON_TRSP_CLEAR, &CTransposeDlg::OnBnClickedButtonTrspClear)
 END_MESSAGE_MAP()

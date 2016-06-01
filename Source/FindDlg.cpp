@@ -265,7 +265,9 @@ void CFindResultsBox::AddResult(const stChanNote *pNote, const CFindCursor *pCur
 			m_cListResults->SetItemText(Pos, NOTE, pNote->ToString());
 	}
 
-	if (pNote->Instrument != MAX_INSTRUMENTS) {
+	if (pNote->Instrument == HOLD_INSTRUMENT)		// // // 050B
+		m_cListResults->SetItemText(Pos, INST, _T("&&"));
+	else if (pNote->Instrument != MAX_INSTRUMENTS) {
 		str.Format(_T("%02X"), pNote->Instrument);
 		m_cListResults->SetItemText(Pos, INST, str);
 	}
@@ -842,6 +844,10 @@ void CFindDlg::ParseInst(searchTerm &Term, CString str, bool Half)
 		RaiseIf(Half, _T("Cannot use wildcards in a range search query."));
 		Term.Inst->Min = 0;
 		Term.Inst->Max = MAX_INSTRUMENTS - 1;
+	}
+	else if (str == _T("&&")) {		// // // 050B
+		RaiseIf(Half, _T("Cannot use && in a range search query."));
+		Term.Inst->Set(HOLD_INSTRUMENT);
 	}
 	else if (!str.IsEmpty()) {
 		unsigned char Val = static_cast<unsigned char>(strtol(str, NULL, 16));

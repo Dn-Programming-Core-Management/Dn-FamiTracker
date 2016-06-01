@@ -2011,16 +2011,11 @@ bool CFamiTrackerView::IsChannelMuted(unsigned int Channel) const
 
 void CFamiTrackerView::SetInstrument(int Instrument)
 {
-	// Todo: remove this
-	CFamiTrackerDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
 	CMainFrame *pMainFrm = static_cast<CMainFrame*>(GetParentFrame());
 	ASSERT_VALID(pMainFrm);
-	ASSERT(Instrument >= 0 && Instrument < MAX_INSTRUMENTS);
 
-	if (Instrument == MAX_INSTRUMENTS)
-		return;
+	if (Instrument >= MAX_INSTRUMENTS)		// // // 050B
+		return; // may be called by emptying inst field or using &&
 
 	pMainFrm->SelectInstrument(Instrument);
 	m_iLastInstrument = GetInstrument(); // Gets actual selected instrument //  Instrument;
@@ -2734,15 +2729,19 @@ bool CFamiTrackerView::EditInstrumentColumn(stChanNote &Note, int Key, bool &Ste
 		return false;
 
 	if (CheckClearKey(Key)) {
-		Note.Instrument = MAX_INSTRUMENTS;	// Indicate no instrument selected
+		SetInstrument(Note.Instrument = MAX_INSTRUMENTS);	// Indicate no instrument selected
 		if (EditStyle != EDIT_STYLE_MPT)
 			StepDown = true;
-		m_iLastInstrument = MAX_INSTRUMENTS;
 		return true;
 	}
 	else if (CheckRepeatKey(Key)) {
-		Note.Instrument = m_iLastInstrument;
-		SetInstrument(m_iLastInstrument);
+		SetInstrument(Note.Instrument = m_iLastInstrument);
+		if (EditStyle != EDIT_STYLE_MPT)
+			StepDown = true;
+		return true;
+	}
+	else if (Key == 'H') {		// // // 050B
+		SetInstrument(Note.Instrument = HOLD_INSTRUMENT);
 		if (EditStyle != EDIT_STYLE_MPT)
 			StepDown = true;
 		return true;

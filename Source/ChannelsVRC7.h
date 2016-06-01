@@ -46,7 +46,7 @@ public:
 	void	SetCustomReg(size_t Index, unsigned char Val);		// // //
 
 protected:
-	// // //
+	virtual void HandleNoteData(stChanNote *pNoteData, int EffColumns);
 	virtual bool HandleEffect(effect_t EffNum, unsigned char EffParam);		// // //
 	virtual void HandleEmptyNote();
 	virtual void HandleCut();

@@ -51,7 +51,7 @@ private:
 	CFamiTrackerDoc *m_pDocument;
 	int m_iTrack;
 
-	static bool s_bDisableInst[MAX_INSTRUMENTS + 1];
+	static bool s_bDisableInst[MAX_INSTRUMENTS];
 	static const UINT BUTTON_ID;
 
 	CButton **m_cInstButton;

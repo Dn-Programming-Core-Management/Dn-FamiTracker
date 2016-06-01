@@ -323,7 +323,8 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 {
 	int LastInstrument = m_iInstrument;
 	int Instrument = pNoteData->Instrument;
-	bool Trigger = (pNoteData->Note != NONE) && (pNoteData->Note != HALT) && (pNoteData->Note != RELEASE);
+	bool Trigger = (pNoteData->Note != NONE) && (pNoteData->Note != HALT) && (pNoteData->Note != RELEASE) &&
+		Instrument != HOLD_INSTRUMENT;		// // // 050B
 	bool pushNone = false;
 
 	// // // Echo buffer
@@ -384,10 +385,11 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	if (pNoteData->Note == HALT || pNoteData->Note == RELEASE)		// // //
 		Instrument = MAX_INSTRUMENTS;	// Ignore instrument for release and halt commands
 
-	if (Instrument != MAX_INSTRUMENTS)
+	if (Instrument != MAX_INSTRUMENTS && Instrument != HOLD_INSTRUMENT)		// // // 050B
 		m_iInstrument = Instrument;
 
-	bool NewInstrument = (m_iInstrument != LastInstrument) || (m_iInstrument == MAX_INSTRUMENTS) || m_bForceReload;
+	bool NewInstrument = (m_iInstrument != LastInstrument && m_iInstrument != HOLD_INSTRUMENT) ||
+		(m_iInstrument == MAX_INSTRUMENTS) || m_bForceReload;		// // // 050B
 
 	if (m_iInstrument == MAX_INSTRUMENTS) {		// // // do nothing
 		// m_iInstrument = m_pSoundGen->GetDefaultInstrument();

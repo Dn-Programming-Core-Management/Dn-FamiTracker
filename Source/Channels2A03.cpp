@@ -113,8 +113,7 @@ void CChannelHandler2A03::HandleRelease()
 
 void CChannelHandler2A03::HandleNote(int Note, int Octave)
 {
-	m_iDutyPeriod	= m_iDefaultDuty;
-	m_iInstVolume	= 0x0F;		// // //
+	// // // nothing
 }
 
 bool CChannelHandler2A03::CreateInstHandler(inst_type_t Type)
@@ -387,8 +386,6 @@ void CNoiseChan::HandleNote(int Note, int Octave)
 	m_bGate = true;
 
 	m_iNote			= NewNote;
-	m_iDutyPeriod	= m_iDefaultDuty;
-	m_iInstVolume	= 0x0F;		// // //
 }
 
 void CNoiseChan::SetupSlide()		// // //

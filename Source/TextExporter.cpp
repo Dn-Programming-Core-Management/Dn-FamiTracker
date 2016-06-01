@@ -479,6 +479,7 @@ bool CTextExport::ImportCellText(		// // //
 
 	CString sInst = t.ReadToken();
 	if (sInst == _T("..")) { Cell.Instrument = MAX_INSTRUMENTS; }
+	else if (sInst == _T("&&")) { Cell.Instrument = HOLD_INSTRUMENT; }		// // // 050B
 	else
 	{
 		if (sInst.GetLength() != 2)
@@ -598,7 +599,8 @@ const CString& CTextExport::ExportCellText(const stChanNote& stCell, unsigned in
 	}
 
 	tmp.Format(_T(" %02X"), stCell.Instrument);
-	s += (stCell.Instrument == MAX_INSTRUMENTS) ? _T(" ..") : tmp;
+	s += (stCell.Instrument == MAX_INSTRUMENTS) ? _T(" ..") :
+		(stCell.Instrument == HOLD_INSTRUMENT) ? _T(" &&") : tmp;		// // // 050B
 
 	tmp.Format(_T(" %01X"), stCell.Vol);
 	s += (stCell.Vol == 0x10) ? _T(" .") : tmp;

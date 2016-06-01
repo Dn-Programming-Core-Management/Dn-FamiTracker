@@ -536,7 +536,7 @@ bool CPActionScrollField::SaveState(const CMainFrame *pMainFrm)
 	
 	switch (m_pUndoState->Cursor.m_iColumn) {
 	case C_INSTRUMENT1: case C_INSTRUMENT2:
-		return m_OldNote.Instrument < MAX_INSTRUMENTS;
+		return m_OldNote.Instrument < MAX_INSTRUMENTS && m_OldNote.Instrument != HOLD_INSTRUMENT;		// // // 050B
 	case C_VOLUME:
 		return m_OldNote.Vol < MAX_VOLUME;
 	case C_EFF1_NUM: case C_EFF1_PARAM1: case C_EFF1_PARAM2:
@@ -841,7 +841,7 @@ void CPActionScrollValues::Redo(CMainFrame *pMainFrm) const
 					continue;
 				switch (k) {
 				case COLUMN_INSTRUMENT:
-					if (Note.Instrument == MAX_INSTRUMENTS) break;
+					if (Note.Instrument == MAX_INSTRUMENTS || Note.Instrument == HOLD_INSTRUMENT) break;		// // // 050B
 					WarpFunc(Note.Instrument, MAX_INSTRUMENTS);
 					break;
 				case COLUMN_VOLUME:
@@ -915,6 +915,8 @@ void CPActionInterpolate::Redo(CMainFrame *pMainFrm) const
 				break;
 			case COLUMN_INSTRUMENT:
 				if (StartData.Instrument == MAX_INSTRUMENTS || EndData.Instrument == MAX_INSTRUMENTS)
+					continue;
+				if (StartData.Instrument == HOLD_INSTRUMENT || EndData.Instrument == HOLD_INSTRUMENT)		// // // 050B
 					continue;
 				StartValLo = (float)StartData.Instrument;
 				EndValLo = (float)EndData.Instrument;
@@ -1049,7 +1051,7 @@ void CPActionReplaceInst::Redo(CMainFrame *pMainFrm) const
 	stChanNote Note;
 	do for (int i = cBegin; i <= cEnd; ++i) {
 		it.first.Get(i, &Note);
-		if (Note.Instrument != MAX_INSTRUMENTS)
+		if (Note.Instrument != MAX_INSTRUMENTS && Note.Instrument != HOLD_INSTRUMENT)		// // // 050B
 			Note.Instrument = m_iInstrumentIndex;
 		it.first.Set(i, &Note);
 	} while (++it.first <= it.second);
