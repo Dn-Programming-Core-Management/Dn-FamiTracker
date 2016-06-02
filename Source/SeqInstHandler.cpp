@@ -30,7 +30,6 @@
 #include "SeqInstrument.h"
 #include "Sequence.h"
 #include "ChannelHandlerInterface.h"
-#include "InstHandler.h"
 #include "SeqInstHandler.h"
 
 /*
@@ -98,64 +97,7 @@ void CSeqInstHandler::UpdateInstrument()
 		int Value = m_pSequence[i]->GetItem(m_iSeqPointer[i]);
 		switch (m_iSeqState[i]) {
 		case SEQ_STATE_RUNNING:
-			switch (i) {
-			// Volume modifier
-			case SEQ_VOLUME:
-				m_pInterface->SetVolume(Value);
-				break;
-			// Arpeggiator
-			case SEQ_ARPEGGIO:
-				switch (m_pSequence[i]->GetSetting()) {
-				case SETTING_ARP_ABSOLUTE:
-					m_pInterface->SetPeriod(m_pInterface->TriggerNote(m_pInterface->GetNote() + Value));
-					break;
-				case SETTING_ARP_FIXED:
-					m_pInterface->SetPeriod(m_pInterface->TriggerNote(Value));
-					break;
-				case SETTING_ARP_RELATIVE:
-					m_pInterface->SetNote(m_pInterface->GetNote() + Value);
-					m_pInterface->SetPeriod(m_pInterface->TriggerNote(m_pInterface->GetNote()));
-					break;
-				case SETTING_ARP_SCHEME: // // //
-					if (Value < 0) Value += 256;
-					int lim = Value % 0x40, scheme = Value / 0x40;
-					if (lim > 36)
-						lim -= 64;
-					{
-						unsigned char Param = m_pInterface->GetArpParam();
-						switch (scheme) {
-						case 0: break;
-						case 1: lim += Param >> 4;   break;
-						case 2: lim += Param & 0x0F; break;
-						case 3: lim -= Param & 0x0F; break;
-						}
-					}
-					m_pInterface->SetPeriod(m_pInterface->TriggerNote(m_pInterface->GetNote() + lim));
-					break;
-				}
-				break;
-			// Pitch
-			case SEQ_PITCH:
-				switch (m_pSequence[i]->GetSetting()) {		// // //
-				case SETTING_PITCH_RELATIVE:
-					m_pInterface->SetPeriod(m_pInterface->GetPeriod() + Value);
-					break;
-				case SETTING_PITCH_ABSOLUTE:		// // // 050B
-					m_pInterface->SetPeriod(m_pInterface->TriggerNote(m_pInterface->GetNote()) + Value);
-					break;
-//				case SETTING_PITCH_SWEEP:
-//					break; // handled in subclass
-				}
-				break;
-			// Hi-pitch
-			case SEQ_HIPITCH:
-				m_pInterface->SetPeriod(m_pInterface->GetPeriod() + (Value << 4));
-				break;
-			// Duty cycling
-			case SEQ_DUTYCYCLE:
-				m_pInterface->SetDutyPeriod(Value);
-				break;
-			}
+			ProcessSequence(i, m_pSequence[i]->GetSetting(), Value);
 
 			{
 				++m_iSeqPointer[i];
@@ -199,6 +141,67 @@ void CSeqInstHandler::UpdateInstrument()
 			break;
 		}
 	}
+}
+
+bool CSeqInstHandler::ProcessSequence(int Index, unsigned Setting, int Value)
+{
+	switch (Index) {
+	// Volume modifier
+	case SEQ_VOLUME:
+		m_pInterface->SetVolume(Value);
+		return true;
+	// Arpeggiator
+	case SEQ_ARPEGGIO:
+		switch (Setting) {
+		case SETTING_ARP_ABSOLUTE:
+			m_pInterface->SetPeriod(m_pInterface->TriggerNote(m_pInterface->GetNote() + Value));
+			return true;
+		case SETTING_ARP_FIXED:
+			m_pInterface->SetPeriod(m_pInterface->TriggerNote(Value));
+			return true;
+		case SETTING_ARP_RELATIVE:
+			m_pInterface->SetNote(m_pInterface->GetNote() + Value);
+			m_pInterface->SetPeriod(m_pInterface->TriggerNote(m_pInterface->GetNote()));
+			return true;
+		case SETTING_ARP_SCHEME: // // //
+			if (Value < 0) Value += 256;
+			int lim = Value % 0x40, scheme = Value / 0x40;
+			if (lim > 36)
+				lim -= 64;
+			{
+				unsigned char Param = m_pInterface->GetArpParam();
+				switch (scheme) {
+				case 0: break;
+				case 1: lim += Param >> 4;   break;
+				case 2: lim += Param & 0x0F; break;
+				case 3: lim -= Param & 0x0F; break;
+				}
+			}
+			m_pInterface->SetPeriod(m_pInterface->TriggerNote(m_pInterface->GetNote() + lim));
+			return true;
+		}
+		return false;
+	// Pitch
+	case SEQ_PITCH:
+		switch (Setting) {		// // //
+		case SETTING_PITCH_RELATIVE:
+			m_pInterface->SetPeriod(m_pInterface->GetPeriod() + Value);
+			return true;
+		case SETTING_PITCH_ABSOLUTE:		// // // 050B
+			m_pInterface->SetPeriod(m_pInterface->TriggerNote(m_pInterface->GetNote()) + Value);
+			return true;
+		}
+		return false;
+	// Hi-pitch
+	case SEQ_HIPITCH:
+		m_pInterface->SetPeriod(m_pInterface->GetPeriod() + (Value << 4));
+		return true;
+	// Duty cycling
+	case SEQ_DUTYCYCLE:
+		m_pInterface->SetDutyPeriod(Value);
+		return true;
+	}
+	return false;
 }
 
 void CSeqInstHandler::SetupSequence(int Index, const CSequence *pSequence)

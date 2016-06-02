@@ -23,6 +23,8 @@
 
 #pragma once
 
+#include "InstHandler.h"
+
 class CChannelHandlerInterface;
 class CInstrument;
 class CSequence;
@@ -48,9 +50,9 @@ public:
 		\details A default duty value must be provided in the parameters.
 		\param pInterface Pointer to the channel interface.
 		\param Vol Default volume for instruments used by this handler.
-		\param Duty Default duty cycle for instruments used by this handler.
-	*/
+		\param Duty Default duty cycle for instruments used by this handler. */
 	CSeqInstHandler(CChannelHandlerInterface *pInterface, int Vol, int Duty);
+
 	virtual void LoadInstrument(CInstrument *pInst);
 	virtual void TriggerInstrument();
 	virtual void ReleaseInstrument();
@@ -58,15 +60,25 @@ public:
 
 	/*!	\brief Obtains the current sequence state of a given sequence type.
 		\param Index The sequence type, which should be a member of sequence_t.
-		\return The sequence state of the given sequence type.
-	*/
+		\return The sequence state of the given sequence type. */
 	seq_state_t GetSequenceState(int Index) const { return m_iSeqState[Index]; }
 
 protected:
-	/*!	\brief Prepares a sequence type for use by CSeqInstHandler::UpdateInstrument. */
-	void SetupSequence(int Index, const CSequence *pSequence);
-	/*!	\brief Clears a sequence type from use. */
-	void ClearSequence(int Index);
+	/*!	\brief Processes the value retrieved from a sequence.
+		\return True if the sequence has finished processing.
+		\param Index The sequence type.
+		\param Setting The sequence setting.
+		\param Value The sequence value to be processed. */
+	virtual bool ProcessSequence(int Index, unsigned Setting, int Value);
+
+	/*!	\brief Prepares a sequence type for use by CSeqInstHandler::UpdateInstrument.
+		\param Index The sequence type.
+		\param pSequence Pointer to the sequence. */
+	virtual void SetupSequence(int Index, const CSequence *pSequence);
+
+	/*!	\brief Clears a sequence type from use.
+		\param Index The sequence type. */
+	virtual void ClearSequence(int Index);
 
 protected:
 	/*!	\brief An array holding pointers to the sequences used by the current instrument. */

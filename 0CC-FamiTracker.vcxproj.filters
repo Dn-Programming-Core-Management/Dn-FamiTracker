@@ -702,6 +702,9 @@
     <ClCompile Include="Source\SplitKeyboardDlg.cpp">
       <Filter>Source Files\Dialog Boxes</Filter>
     </ClCompile>
+    <ClCompile Include="Source\SeqInstHandlerSawtooth.cpp">
+      <Filter>Source Files\Sound Driver\Instruments</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">
@@ -1252,6 +1255,9 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SeqInstHandlerSawtooth.h">
+      <Filter>Header Files\Sound Driver Headers\Instruments Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

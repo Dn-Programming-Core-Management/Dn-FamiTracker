@@ -25,8 +25,6 @@
 #include "SeqInstrument.h"
 #include "InstrumentN163.h"
 #include "ChannelHandlerInterface.h"
-#include "InstHandler.h"
-#include "SeqInstHandler.h"
 #include "SeqInstHandlerN163.h"
 
 /*

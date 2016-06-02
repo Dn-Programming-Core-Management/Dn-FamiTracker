@@ -30,8 +30,10 @@
 #include "ChannelsVRC6.h"
 #include "InstHandler.h"		// // //
 #include "SeqInstHandler.h"		// // //
+#include "SeqInstHandlerSawtooth.h"		// // //
 
-CChannelHandlerVRC6::CChannelHandlerVRC6() : CChannelHandler(0xFFF, 0x0F)
+CChannelHandlerVRC6::CChannelHandlerVRC6(int MaxPeriod, int MaxVolume) :		// // //
+	CChannelHandler(MaxPeriod, MaxVolume)
 {
 }
 
@@ -117,7 +119,6 @@ int CVRC6Square::ConvertDuty(int Duty) const		// // //
 {
 	switch (m_iInstTypeCurrent) {
 	case INST_2A03:	return DUTY_VRC6_FROM_2A03[Duty & 0x03];
-	case INST_N163:	return Duty;
 	case INST_S5B:	return 0x07;
 	default:		return Duty;
 	}
@@ -129,24 +130,33 @@ int CVRC6Square::ConvertDuty(int Duty) const		// // //
 
 void CVRC6Sawtooth::RefreshChannel()
 {
-	unsigned int Period = CalculatePeriod();
-
-	unsigned char HiFreq = (Period & 0xFF);
-	unsigned char LoFreq = (Period >> 8);
-
-	int Volume = (CalculateVolume() << 1) | ((m_iDutyPeriod & 1) << 5);		// // //
-
-	if (Volume < 0)
-		Volume = 0;
-	if (Volume > 63)
-		Volume = 63;
-	
 	if (!m_bGate) {		// // //
 		WriteRegister(0xB000, 0);
 		return;
 	}
 
+	unsigned int Period = CalculatePeriod();
+	unsigned int Volume = CalculateVolume();		// // //
+
+	if (auto pHandler = dynamic_cast<CSeqInstHandlerSawtooth*>(m_pInstHandler.get()))
+		if (pHandler->IsDutyIgnored())
+			Volume |= (m_iDutyPeriod) << 5;
+
 	WriteRegister(0xB000, Volume);
-	WriteRegister(0xB001, HiFreq);
-	WriteRegister(0xB002, 0x80 | LoFreq);
+	WriteRegister(0xB001, Period & 0xFF);
+	WriteRegister(0xB002, 0x80 | (Period >> 8));
+}
+
+bool CVRC6Sawtooth::CreateInstHandler(inst_type_t Type)		// // //
+{
+	switch (Type) {
+	case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B: case INST_FDS:
+		switch (m_iInstTypeCurrent) {
+		case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B: case INST_FDS: break;
+		default:
+			m_pInstHandler.reset(new CSeqInstHandlerSawtooth(this, 0x1E, Type == INST_S5B ? 0x40 : 0));
+			return true;
+		}
+	}
+	return false;
 }

@@ -22,8 +22,8 @@
 
 #pragma once
 
-class CChannelHandlerInterface;
-class CInstrument;
+#include "SeqInstHandler.h"
+
 class CInstrumentN163;
 
 /*!

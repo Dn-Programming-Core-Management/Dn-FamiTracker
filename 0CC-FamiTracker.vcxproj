@@ -489,6 +489,7 @@
     <ClCompile Include="Source\SeqInstHandler.cpp" />
     <ClCompile Include="Source\SeqInstHandlerFDS.cpp" />
     <ClCompile Include="Source\SeqInstHandlerN163.cpp" />
+    <ClCompile Include="Source\SeqInstHandlerSawtooth.cpp" />
     <ClCompile Include="Source\SeqInstrument.cpp" />
     <ClCompile Include="Source\SequenceCollection.cpp" />
     <ClCompile Include="Source\SequenceManager.cpp" />
@@ -741,6 +742,7 @@
     <ClInclude Include="Source\ModuleException.h" />
     <ClInclude Include="Source\OldSequence.h" />
     <ClInclude Include="Source\PatternNote.h" />
+    <ClInclude Include="Source\SeqInstHandlerSawtooth.h" />
     <ClInclude Include="Source\SeqInstrument.h" />
     <ClInclude Include="Source\SequenceEditorMessage.h" />
     <ClInclude Include="Source\MainFrm.h" />

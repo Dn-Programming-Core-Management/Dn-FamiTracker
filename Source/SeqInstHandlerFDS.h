@@ -23,10 +23,8 @@
 
 #pragma once
 
-class CChannelHandlerInterface;
-class CInstrument;
-class CSequence;
-class CSeqInstrument;
+#include "SeqInstHandler.h"
+
 class CInstrumentFDS;
 
 /*!
