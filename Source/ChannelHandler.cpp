@@ -142,6 +142,7 @@ void CChannelHandler::ResetChannel()
 	m_iDefaultVolume	= (VOL_COLUMN_MAX >> VOL_COLUMN_SHIFT) << VOL_COLUMN_SHIFT;		// // //
 
 	m_iDefaultDuty		= 0;
+	m_iDutyPeriod		= 0;		// // //
 	m_iInstVolume		= 0;
 
 	// Period

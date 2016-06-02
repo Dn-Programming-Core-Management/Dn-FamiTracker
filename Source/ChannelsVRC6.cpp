@@ -139,7 +139,7 @@ void CVRC6Sawtooth::RefreshChannel()
 	unsigned int Volume = CalculateVolume();		// // //
 
 	if (auto pHandler = dynamic_cast<CSeqInstHandlerSawtooth*>(m_pInstHandler.get()))
-		if (pHandler->IsDutyIgnored())
+		if (!pHandler->IsDutyIgnored())
 			Volume |= (m_iDutyPeriod) << 5;
 
 	WriteRegister(0xB000, Volume);

@@ -44,7 +44,7 @@ protected:
 
 class CVRC6Square : public CChannelHandlerVRC6 {
 public:
-	CVRC6Square() : CChannelHandlerVRC6(0xFFF, 0x0F) { m_iDefaultDuty = 0; };
+	CVRC6Square() : CChannelHandlerVRC6(0xFFF, 0x0F) { }
 	void RefreshChannel();
 protected:
 	virtual int ConvertDuty(int Duty) const;		// // //
@@ -53,7 +53,7 @@ private:
 
 class CVRC6Sawtooth : public CChannelHandlerVRC6 {
 public:
-	CVRC6Sawtooth() : CChannelHandlerVRC6(0xFFF, 0x3F) { m_iDefaultDuty = 0; };
+	CVRC6Sawtooth() : CChannelHandlerVRC6(0xFFF, 0x3F) { }
 	void RefreshChannel();
 protected:
 	bool CreateInstHandler(inst_type_t Type);		// // //

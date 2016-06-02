@@ -45,7 +45,6 @@ CChannelHandler2A03::CChannelHandler2A03() :
 	m_bResetEnvelope(false),
 	m_iLengthCounter(1)
 {
-	m_iDefaultDuty = 0;
 }
 
 void CChannelHandler2A03::HandleNoteData(stChanNote *pNoteData, int EffColumns)
@@ -203,7 +202,6 @@ int C2A03Square::ConvertDuty(int Duty) const		// // //
 {
 	switch (m_iInstTypeCurrent) {
 	case INST_VRC6:	return DUTY_2A03_FROM_VRC6[Duty & 0x07];
-	case INST_N163:	return Duty;
 	case INST_S5B:	return 0x02;
 	default:		return Duty;
 	}
