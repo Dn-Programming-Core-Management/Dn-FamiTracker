@@ -23,6 +23,9 @@
 
 #pragma once
 
+#include <string>
+#include <unordered_map>
+
 #include "PatternNote.h"
 #include "PatternEditorTypes.h"
 
@@ -140,7 +143,7 @@ public:
 	virtual void DoDataExchange(CDataExchange* pDX);
 
 	void AddResult(const stChanNote *pNote, const CFindCursor *pCursor, bool Noise) const;
-	void ClearResults() const;
+	void ClearResults();
 
 protected:
 	CListCtrl *m_cListResults;
@@ -156,6 +159,7 @@ protected:
 
 	static result_column_t m_iLastsortColumn;
 	static bool m_bLastSortDescending;
+	static std::unordered_map<std::string, int> m_iChannelPositionCache;
 
 	static int CALLBACK IntCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
 	static int CALLBACK HexCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
@@ -163,7 +167,7 @@ protected:
 	static int CALLBACK ChannelCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
 	static int CALLBACK NoteCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
 
-	void SelectItem(int Index) const;
+	void SelectItem(int Index);
 	void UpdateCount() const;
 
 protected:

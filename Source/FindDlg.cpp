@@ -23,7 +23,6 @@
 #include <memory>
 #include <cstdarg>
 #include <stdexcept>
-#include <unordered_map>
 #include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
@@ -212,11 +211,13 @@ IMPLEMENT_DYNAMIC(CFindResultsBox, CDialog)
 
 CFindResultsBox::result_column_t CFindResultsBox::m_iLastsortColumn = ID;
 bool CFindResultsBox::m_bLastSortDescending = false;
+std::unordered_map<std::string, int> CFindResultsBox::m_iChannelPositionCache = { };
 
 CFindResultsBox::CFindResultsBox(CWnd* pParent) : CDialog(IDD_FINDRESULTS, pParent)
 {
 	m_iLastsortColumn = ID;
 	m_bLastSortDescending = false;
+	m_iChannelPositionCache.clear();
 }
 
 CFindResultsBox::~CFindResultsBox()
@@ -285,17 +286,21 @@ void CFindResultsBox::AddResult(const stChanNote *pNote, const CFindCursor *pCur
 	UpdateCount();
 }
 
-void CFindResultsBox::ClearResults() const
+void CFindResultsBox::ClearResults()
 {
 	m_cListResults->DeleteAllItems();
 	m_iLastsortColumn = ID;
 	m_bLastSortDescending = false;
+	m_iChannelPositionCache.clear();
 	UpdateCount();
 }
 
-void CFindResultsBox::SelectItem(int Index) const
+void CFindResultsBox::SelectItem(int Index)
 {
-	const auto ToChannelIndex = [] (const CString &x) {
+	const auto pDoc = static_cast<CFamiTrackerDoc*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveDocument());
+
+	const auto ToChannelIndex = [] (const std::string &_x) {
+		CString x {_x.c_str()};
 		static const CString HEADER_STR[] = {
 			_T("Pulse "), _T("Triangle"), _T("Noise"), _T("DPCM"),
 			_T("VRC6 Pulse "), _T("Sawtooth"),
@@ -317,16 +322,16 @@ void CFindResultsBox::SelectItem(int Index) const
 		}
 		return -1;
 	};
-	const auto Cache = [&] (const CString &x) {
-		static std::unordered_map<CString, int> m;
-		auto it = m.find(x);
-		if (it == m.end())
-			return m[x] = ToChannelIndex(x);
+	const auto Cache = [&] (const std::string &x) {
+		auto it = m_iChannelPositionCache.find(x);
+		if (it == m_iChannelPositionCache.end())
+			return m_iChannelPositionCache[x] = pDoc->GetChannelIndex(ToChannelIndex(x));
 		return it->second;
 	};
 
 	auto pView = static_cast<CFamiTrackerView*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveView());
-	pView->SelectChannel(Cache(m_cListResults->GetItemText(Index, CHANNEL)));
+	int Channel = Cache(m_cListResults->GetItemText(Index, CHANNEL).GetString());
+	if (Channel != -1) pView->SelectChannel(Channel);
 	pView->SelectFrame(strtol(m_cListResults->GetItemText(Index, FRAME), nullptr, 16));
 	pView->SelectRow(strtol(m_cListResults->GetItemText(Index, ROW), nullptr, 16));
 	AfxGetMainWnd()->SetFocus();
