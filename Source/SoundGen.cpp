@@ -142,7 +142,8 @@ CSoundGen::CSoundGen() :
 	m_iClipCounter(0),
 	m_pSequencePlayPos(NULL),
 	m_iSequencePlayPos(0),
-	m_iSequenceTimeout(0)
+	m_iSequenceTimeout(0),
+	m_iBPMCachePosition(0)		// // //
 {
 	TRACE("SoundGen: Object created\n");
 
@@ -1082,6 +1083,16 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 	std::queue<int>().swap(m_iRegisterStream);
 #endif
 
+	{		// // // 050B
+		m_iRowTickCount = 0;
+
+		float Tempo = GetTempo();
+		for (auto &x : m_fBPMCacheValue)
+			x = Tempo;
+		for (auto &x : m_iBPMCacheTicks)
+			x = 1;
+	}
+
 	ResetTempo();
 	ResetAPU();
 
@@ -1466,6 +1477,17 @@ float CSoundGen::GetTempo() const
 	return !m_iSpeed ? 0 : float(Tempo * 6) / Speed;
 }
 
+float CSoundGen::GetAverageBPM() const
+{
+	float BPMtot = 0.f;
+	float TickTot = 0.f;
+	for (int i = 0; i < AVERAGE_BPM_SIZE; ++i)
+		BPMtot += m_fBPMCacheValue[i] * m_iBPMCacheTicks[i];
+	for (const auto &x : m_iBPMCacheTicks)
+		TickTot += x;
+	return static_cast<float>(BPMtot / TickTot);
+}
+
 void CSoundGen::RunFrame()
 {
 	// Called from player thread
@@ -1500,6 +1522,7 @@ void CSoundGen::RunFrame()
 		}
 #endif /* EXPORT_TEST */
 
+		++m_iRowTickCount;		// // // 050B
 		m_iStepRows = 0;
 
 		// Fetch next row
@@ -1517,6 +1540,12 @@ void CSoundGen::RunFrame()
 			m_bUpdateRow = true;
 			ReadPatternRow();
 			++m_iRenderRow;
+
+			// // // 050B
+			m_fBPMCacheValue[m_iBPMCachePosition] = GetTempo();		// // // 050B
+			m_iBPMCacheTicks[m_iBPMCachePosition] = m_iRowTickCount;
+			m_iRowTickCount = 0;
+			++m_iBPMCachePosition %= AVERAGE_BPM_SIZE;
 		}
 		else {
 			m_bUpdateRow = false;

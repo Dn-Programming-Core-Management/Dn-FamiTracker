@@ -152,6 +152,7 @@ public:
 	void		 ResetState();
 	void		 ResetTempo();
 	float		 GetTempo() const;
+	float		 GetAverageBPM() const;		// // //
 	bool		 IsPlaying() const { return m_bPlaying; };
 
 	// Stats
@@ -359,6 +360,7 @@ private:
 	int					m_iSkipToRow;
 	bool				m_bDoHalt;							// // // Cxx effect
 	int					m_iStepRows;						// # of rows skipped last update
+	int					m_iRowTickCount;					// // // 050B
 	play_mode_t			m_iPlayMode;
 
 	unsigned int		m_iNoteLookupTableNTSC[96];			// For 2A03
@@ -387,6 +389,11 @@ private:
 	int					m_iTempoDecrement;
 	int					m_iTempoRemainder;
 	bool				m_bUpdateRow;
+
+	static const int	AVERAGE_BPM_SIZE = 24;		// // // 050B
+	float				m_fBPMCacheValue[AVERAGE_BPM_SIZE];
+	int					m_iBPMCacheTicks[AVERAGE_BPM_SIZE];
+	int					m_iBPMCachePosition;
 
 	std::queue<int>		m_iRegisterStream;					// // // vgm export
 
