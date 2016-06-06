@@ -198,6 +198,12 @@ public:
 		int		iKeyEchoBuffer;		// // //
 	} Keys;
 
+	struct {
+		bool	bAverageBPM;
+		bool	bChannelState;
+		bool	bRegisterState;
+	} Display;		// // // 050B
+
 	// Other
 	int SampleWinState;
 	int FrameEditPos;

@@ -639,7 +639,7 @@ CRect CPatternEditor::GetInvalidatedRect() const
 {
 	if (m_bHeaderInvalidated)
 		return GetActiveRect();
-	else if (theApp.GetMainWnd()->GetMenu()->GetMenuState(ID_TRACKER_DISPLAYREGISTERSTATE, MF_BYCOMMAND) == MF_CHECKED)
+	else if (theApp.GetSettings()->Display.bRegisterState)		// // //
 		return GetActiveRect();
 
 	return GetPatternRect();
@@ -1722,7 +1722,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 	CFont *pOldFont = pDC->SelectObject(&m_fontCourierNew);
 	pDC->FillSolidRect(0, 0, m_iWinWidth, m_iWinHeight, m_colEmptyBg);		// // //
 
-	if (theApp.GetMainWnd()->GetMenu()->GetMenuState(ID_TRACKER_DISPLAYREGISTERSTATE, MF_BYCOMMAND) == MF_UNCHECKED) {
+	if (!theApp.GetSettings()->Display.bRegisterState) {		// // //
 		pDC->SelectObject(pOldFont);
 		return;
 	}

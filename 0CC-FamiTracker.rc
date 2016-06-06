@@ -296,6 +296,8 @@ BEGIN
         MENUITEM "&Follow Mode",                IDC_FOLLOW_TOGGLE, CHECKED
         MENUITEM "Co&mpact View",               IDC_COMPACT_TOGGLE
         MENUITEM SEPARATOR
+        MENUITEM "Average &BPM",                ID_VIEW_AVERAGEBPM
+        MENUITEM "C&hannel State",              ID_VIEW_CHANNELSTATE
         MENUITEM "&Register State",             ID_TRACKER_DISPLAYREGISTERSTATE
         MENUITEM SEPARATOR
         POPUP "Frame Editor &Position"
@@ -2676,6 +2678,8 @@ BEGIN
     ID_MODULE_LINEARPITCH   "Enable linear pitch bends\nLinear Pitch Mode"
     ID_RECENTFILES_CLEAR    "Clear the recent file list\nClear Recent File List"
     ID_EDIT_SPLITKEYBOARD   "Open the split keyboard settings dialog\nSplit Keyboard"
+    ID_VIEW_AVERAGEBPM      "Display average BPM value instead of instant BPM value\nDisplay Average BPM"
+    ID_VIEW_CHANNELSTATE    "Display information about active effects\nDisplay Channel State"
 END
 
 #endif    // English (United States) resources

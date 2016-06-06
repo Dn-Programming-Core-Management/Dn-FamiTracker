@@ -164,6 +164,11 @@ void CSettings::SetupSettings()
 	SETTING_INT("Window position", "Bottom", 920, &WindowPos.iBottom);
 	SETTING_INT("Window position", "State",	STATE_NORMAL, &WindowPos.iState);
 
+	// Display
+	SETTING_BOOL("Display", "Average BPM", false, &Display.bAverageBPM);		// // // 050B todo
+	SETTING_BOOL("Display", "Channel state", false, &Display.bChannelState);		// // // 050B todo
+	SETTING_BOOL("Display", "Register state", false, &Display.bRegisterState);		// // // 050B
+
 	// Other
 	SETTING_INT("Other", "Sample window state", 0, &SampleWinState);
 	SETTING_INT("Other", "Frame editor position", 0, &FrameEditPos);
