@@ -60,4 +60,5 @@ public:
 	virtual BOOL OnInitDialog();
 	virtual BOOL OnApply();
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnBnClickedButtonMixerReset();		// // // 050B
 };

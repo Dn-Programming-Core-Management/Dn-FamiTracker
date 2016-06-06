@@ -54,6 +54,7 @@ void CConfigMixer::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CConfigMixer, CPropertyPage)
 	ON_WM_VSCROLL()
+	ON_BN_CLICKED(IDC_BUTTON_MIXER_RESET, &CConfigMixer::OnBnClickedButtonMixerReset)
 END_MESSAGE_MAP()
 
 
@@ -142,4 +143,19 @@ void CConfigMixer::UpdateLevel(int nID, int Level)
 	GetDlgItemText(nID, str2);
 	if (str.Compare(str2) != 0)
 		SetDlgItemText(nID, str);
+}
+
+void CConfigMixer::OnBnClickedButtonMixerReset()		// // // 050B
+{
+	m_iLevelAPU1 = 0;
+	m_iLevelAPU2 = 0;
+	m_iLevelVRC6 = 0;
+	m_iLevelVRC7 = 0;
+	m_iLevelMMC5 = 0;
+	m_iLevelFDS = 0;
+	m_iLevelN163 = 0;
+	m_iLevelS5B = 0;
+
+	UpdateData(FALSE);
+	SetModified();
 }
