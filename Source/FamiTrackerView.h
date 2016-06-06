@@ -90,6 +90,12 @@ public:
 	unsigned int GetStepping() const { return m_iInsertKeyStepping; };
 	paste_pos_t  GetPastePos() const { return m_iPastePos; };		// // //
 
+	// // // 050B
+	int			GetMarkerFrame() const { return m_iMarkerFrame; }		// // // 050B
+	int			GetMarkerRow() const { return m_iMarkerRow; }		// // // 050B
+	void		SetMarker(int Frame, int Row);		// // // 050B
+	bool		IsMarkerValid() const;		// // //
+
 	// Player callback (TODO move to new interface)
 	void		 PlayerTick();
 	bool		 PlayerGetNote(int Track, int Frame, int Channel, int Row, stChanNote &NoteData);
@@ -278,6 +284,10 @@ private:
 	// Playing
 	bool				m_bMuteChannels[MAX_CHANNELS];			// Muted channels
 	int					m_iSwitchToInstrument;
+
+	// // // 050B
+	int					m_iMarkerFrame;
+	int					m_iMarkerRow;
 
 	// Auto arpeggio
 	char				m_iAutoArpNotes[128];

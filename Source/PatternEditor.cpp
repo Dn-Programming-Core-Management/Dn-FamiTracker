@@ -65,6 +65,10 @@ const int CPatternEditor::DEFAULT_HEADER_FONT_SIZE	= 11;
 
 void CopyNoteSection(stChanNote *Target, const stChanNote *Source, paste_mode_t Mode, column_t Begin, column_t End)		// // //
 {
+	if (Begin == COLUMN_NOTE && End == COLUMN_EFF4) {
+		*Target = *Source;
+		return;
+	}
 	static const char Offset[] = {
 		offsetof(stChanNote, Note),
 		offsetof(stChanNote, Instrument),
@@ -75,7 +79,7 @@ void CopyNoteSection(stChanNote *Target, const stChanNote *Source, paste_mode_t 
 		offsetof(stChanNote, EffNumber) + 3,
 	};
 	bool Protected[sizeof(Offset)] = {};
-	for (size_t i = 0; i < sizeof(Offset); i++) {
+	for (size_t i = 0; i < sizeof(Offset); ++i) {
 		const unsigned char TByte = *(reinterpret_cast<unsigned char*>(Target) + Offset[i]); // skip octave byte
 		const unsigned char SByte = *(reinterpret_cast<const unsigned char*>(Source) + Offset[i]);
 		switch (Mode) {
@@ -1160,6 +1164,11 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 		ColBg = DIM(ColBg, PREVIEW_SHADE_LEVEL);
 		TextColor = DIM(TextColor, 70);
 	}
+
+	// // // 050B
+	// Draw row marker
+	if (!((Frame - m_pView->GetMarkerFrame()) % GetFrameCount()) && Row == m_pView->GetMarkerRow())
+		GradientBar(pDC, 2, Line * m_iRowHeight, m_iRowColumnWidth - 5, m_iRowHeight, ColCursor, DIM(ColCursor, 30));
 
 	// Draw row number
 	pDC->SetTextAlign(TA_CENTER | TA_BASELINE);		// // //

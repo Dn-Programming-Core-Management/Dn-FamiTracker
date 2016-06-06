@@ -1062,6 +1062,12 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 			m_iPlayFrame = m_pTrackerView->GetSelectedFrame();
 			m_iPlayRow = m_pTrackerView->GetSelectedRow();
 			break;
+		// From row marker (bookmark)
+		case MODE_PLAY_MARKER:		// // // 050B
+			m_bPlayLooping = false;
+			m_iPlayFrame = m_pTrackerView->GetMarkerFrame();
+			m_iPlayRow = m_pTrackerView->GetMarkerRow();
+			break;
 	}
 
 	m_bPlaying			= true;

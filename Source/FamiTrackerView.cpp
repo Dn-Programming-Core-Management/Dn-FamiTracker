@@ -276,6 +276,8 @@ CFamiTrackerView::CFamiTrackerView() :
 	m_iSwitchToInstrument(-1),
 	m_bFollowMode(true),
 	m_bCompactMode(false),		// // //
+	m_iMarkerFrame(-1),		// // // 050B
+	m_iMarkerRow(-1),		// // // 050B
 	m_iAutoArpNotes(),		// // //
 	m_iAutoArpPtr(0),
 	m_iLastAutoArpPtr(0),
@@ -1555,6 +1557,32 @@ void CFamiTrackerView::OnUpdateDisableWhilePlaying(CCmdUI *pCmdUI)
 	pCmdUI->Enable(!theApp.IsPlaying());
 }
 
+void CFamiTrackerView::SetMarker(int Frame, int Row)		// // // 050B
+{
+	m_iMarkerFrame = Frame;
+	m_iMarkerRow = Row;
+	m_pPatternEditor->InvalidatePatternData();
+	RedrawPatternEditor();
+	GetFrameEditor()->InvalidateFrameData();
+	RedrawFrameEditor();
+}
+
+bool CFamiTrackerView::IsMarkerValid() const		// // //
+{
+	if (m_iMarkerFrame < 0 || m_iMarkerRow < 0)
+		return false;
+	
+	CFamiTrackerDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+	const int Track = static_cast<CMainFrame*>(GetParentFrame())->GetSelectedTrack();
+	if (m_iMarkerFrame >= static_cast<int>(pDoc->GetFrameCount(Track)))
+		return false;
+	if (m_iMarkerRow >= m_pPatternEditor->GetCurrentPatternLength(m_iMarkerFrame))
+		return false;
+	return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Tracker playing routines
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1780,6 +1808,9 @@ void CFamiTrackerView::OnBookmarksToggle()
 	pDoc->SetModifiedFlag();
 	pDoc->SetExceededFlag();
 	m_pPatternEditor->InvalidatePatternData();
+	RedrawPatternEditor();
+	GetFrameEditor()->InvalidateFrameData();
+	RedrawFrameEditor();
 }
 
 void CFamiTrackerView::OnBookmarksNext()

@@ -331,8 +331,10 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_MODULE_GROOVE, OnModuleGrooveSettings)
 	ON_COMMAND(ID_MODULE_BOOKMARK, OnModuleBookmarkSettings)
 	ON_COMMAND(ID_MODULE_ESTIMATESONGLENGTH, OnModuleEstimateSongLength)
-	ON_COMMAND(ID_VIEW_AVERAGEBPM, OnTrackerDisplayAverageBPM)
-	ON_COMMAND(ID_VIEW_CHANNELSTATE, OnTrackerDisplayChannelState)
+	ON_COMMAND(ID_TRACKER_PLAY_MARKER, OnTrackerPlayMarker)		// // // 050B
+	ON_COMMAND(ID_TRACKER_SET_MARKER, OnTrackerSetMarker)		// // // 050B
+	ON_COMMAND(ID_VIEW_AVERAGEBPM, OnTrackerDisplayAverageBPM)		// // // 050B
+	ON_COMMAND(ID_VIEW_CHANNELSTATE, OnTrackerDisplayChannelState)		// // // 050B
 	ON_COMMAND(ID_TOGGLE_MULTIPLEXER, OnToggleMultiplexer)
 	ON_UPDATE_COMMAND_UI(IDC_FOLLOW_TOGGLE, OnUpdateToggleFollow)
 	ON_UPDATE_COMMAND_UI(IDC_COMPACT_TOGGLE, OnUpdateToggleCompact)
@@ -348,8 +350,9 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_REVERSE, OnUpdateSelectionEnabled)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_REPLACEINSTRUMENT, OnUpdateSelectionEnabled)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_STRETCHPATTERNS, OnUpdateSelectionEnabled)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_AVERAGEBPM, OnUpdateDisplayAverageBPM)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_CHANNELSTATE, OnUpdateDisplayChannelState)
+	ON_UPDATE_COMMAND_UI(ID_TRACKER_PLAY_MARKER, OnUpdateTrackerPlayMarker)		// // // 050B
+	ON_UPDATE_COMMAND_UI(ID_VIEW_AVERAGEBPM, OnUpdateDisplayAverageBPM)		// // // 050B
+	ON_UPDATE_COMMAND_UI(ID_VIEW_CHANNELSTATE, OnUpdateDisplayChannelState)		// // // 050B
 	ON_UPDATE_COMMAND_UI(ID_TRACKER_DISPLAYREGISTERSTATE, OnUpdateDisplayRegisterState)
 	ON_COMMAND(ID_KRAID1, OnEasterEggKraid1)		// Easter Egg
 	ON_COMMAND(ID_KRAID2, OnEasterEggKraid2)
@@ -1438,6 +1441,30 @@ void CMainFrame::OnTrackerPlayCursor()
 	theApp.StartPlayer(MODE_PLAY_CURSOR);
 }
 
+void CMainFrame::OnTrackerPlayMarker()		// // // 050B
+{
+	// Play from row marker
+	if (static_cast<CFamiTrackerView*>(GetActiveView())->IsMarkerValid())
+		theApp.StartPlayer(MODE_PLAY_MARKER);
+}
+
+void CMainFrame::OnUpdateTrackerPlayMarker(CCmdUI *pCmdUI)		// // // 050B
+{
+	pCmdUI->Enable(static_cast<CFamiTrackerView*>(GetActiveView())->IsMarkerValid() ? TRUE : FALSE);
+}
+
+void CMainFrame::OnTrackerSetMarker()		// // // 050B
+{
+	auto pView = static_cast<CFamiTrackerView*>(GetActiveView());
+	int Frame = pView->GetSelectedFrame();
+	int Row = pView->GetSelectedRow();
+
+	if (Frame == pView->GetMarkerFrame() && Row == pView->GetMarkerRow())
+		pView->SetMarker(-1, -1);
+	else
+		pView->SetMarker(Frame, Row);
+}
+
 void CMainFrame::OnTrackerTogglePlay()
 {
 	// Toggle playback
@@ -1607,7 +1634,9 @@ void CMainFrame::OnUpdateSBTempo(CCmdUI *pCmdUI)
 		int EngineSpeed = pDoc->GetEngineSpeed();
 		if (EngineSpeed == 0)
 			EngineSpeed = (pDoc->GetMachine() == NTSC) ? CAPU::FRAME_RATE_NTSC : CAPU::FRAME_RATE_PAL;
-		float BPM = std::min(pSoundGen->GetTempo(), static_cast<float>(EngineSpeed * 15));
+		float BPM = std::min(pSoundGen->IsPlaying() && theApp.GetSettings()->Display.bAverageBPM ?
+								pSoundGen->GetAverageBPM() : pSoundGen->GetTempo(),
+							 static_cast<float>(EngineSpeed * 15));		// // // 050B
 		
 		CString String;
 		String.Format(_T("%.2f BPM"), BPM * 4.f / Highlight);

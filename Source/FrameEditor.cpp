@@ -306,6 +306,10 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 				GradientBar(&m_dcBack, RowRect, theApp.GetSettings()->Appearance.iColBackgroundHilite, ColBackground);
 				break;
 			}
+
+		// // // 050B row marker
+		if (Frame == pView->GetMarkerFrame())
+			GradientBar(&m_dcBack, DPI::Rect(2, i * ROW_HEIGHT + 4, ROW_COLUMN_WIDTH - 5, ROW_HEIGHT - 1), ColCursor, DIM(ColCursor, 30));
 		
 		// Play cursor
 		if (PlayFrame == Frame && !pView->GetFollowMode() && theApp.IsPlaying()) {

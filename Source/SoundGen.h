@@ -57,7 +57,8 @@ enum play_mode_t {
 	MODE_PLAY_START,		// Play from start of song
 	MODE_PLAY_REPEAT,		// Play and repeat
 	MODE_PLAY_CURSOR,		// Play from cursor
-	MODE_PLAY_FRAME			// Play frame
+	MODE_PLAY_FRAME,		// Play frame
+	MODE_PLAY_MARKER,		// // // 050B (row marker, aka "bookmark")
 };
 
 enum render_end_t { 

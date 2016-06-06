@@ -51,10 +51,12 @@ const stAccelEntry CAccelerator::DEFAULT_TABLE[] = {
 	{_T("Play"),						MOD_NONE,		0,				ID_TRACKER_PLAY},
 	{_T("Play from start"),				MOD_NONE,		VK_F5,			ID_TRACKER_PLAY_START},
 	{_T("Play from cursor"),			MOD_NONE,		VK_F7,			ID_TRACKER_PLAY_CURSOR},
+	{_T("Play from row marker"),		MOD_CONTROL,	VK_F7,			ID_TRACKER_PLAY_MARKER},			// // // 050B
 	{_T("Play and loop pattern"),		MOD_NONE,		VK_F6,			ID_TRACKER_PLAYPATTERN},
 	{_T("Play row"),					MOD_CONTROL,	VK_RETURN,		ID_TRACKER_PLAYROW},
 	{_T("Stop"),						MOD_NONE,		VK_F8,			ID_TRACKER_STOP},
 	{_T("Edit enable/disable"),			MOD_NONE,		VK_SPACE,		ID_TRACKER_EDIT},
+	{_T("Set row marker"),				MOD_CONTROL,	'B',			ID_TRACKER_SET_MARKER},				// // // 050B
 	{_T("Paste and mix"),				MOD_CONTROL,	'M',			ID_EDIT_PASTEMIX},
 	{_T("Paste and overwrite"),			MOD_NONE,		0,				ID_EDIT_PASTEOVERWRITE},			// // //
 	{_T("Paste and insert"),			MOD_NONE,		0,				ID_EDIT_PASTEINSERT},				// // //

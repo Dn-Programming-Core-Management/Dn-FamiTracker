@@ -273,16 +273,19 @@ BEGIN
         MENUITEM "Play P&attern",               ID_TRACKER_PLAYPATTERN
         MENUITEM "Play &from Start",            ID_TRACKER_PLAY_START
         MENUITEM "Play from C&ursor",           ID_TRACKER_PLAY_CURSOR
+        MENUITEM "Play from &Marker",           ID_TRACKER_PLAY_MARKER
         MENUITEM "&Stop",                       ID_TRACKER_STOP
+        MENUITEM SEPARATOR
         MENUITEM "Toggle &Edit Mode",           ID_TRACKER_EDIT
+        MENUITEM "Set Ro&w Marker",             ID_TRACKER_SET_MARKER
         MENUITEM SEPARATOR
         MENUITEM "&Toggle Channel",             ID_TRACKER_TOGGLECHANNEL
-        MENUITEM "So&lo Channel",               ID_TRACKER_SOLOCHANNEL
+        MENUITEM "S&olo Channel",               ID_TRACKER_SOLOCHANNEL
         MENUITEM "To&ggle Chip",                ID_TRACKER_TOGGLECHIP
-        MENUITEM "Solo &Chip",                  ID_TRACKER_SOLOCHIP
+        MENUITEM "So&lo Chip",                  ID_TRACKER_SOLOCHIP
         MENUITEM SEPARATOR
-        MENUITEM "Switch to Track &Instrument", ID_TRACKER_SWITCHTOTRACKINSTRUMENT
-        MENUITEM "&Record to Instrument",       ID_TRACKER_RECORDTOINST
+        MENUITEM "Switch To Track &Instrument", ID_TRACKER_SWITCHTOTRACKINSTRUMENT
+        MENUITEM "&Record To Instrument",       ID_TRACKER_RECORDTOINST
         MENUITEM "Re&corder Settings...",       ID_TRACKER_RECORDERSETTINGS
         MENUITEM SEPARATOR
         MENUITEM "&Kill Sound\tF12",            ID_TRACKER_KILLSOUND
@@ -2686,6 +2689,8 @@ BEGIN
     ID_EDIT_SPLITKEYBOARD   "Open the split keyboard settings dialog\nSplit Keyboard"
     ID_VIEW_AVERAGEBPM      "Display average BPM value instead of instant BPM value\nDisplay Average BPM"
     ID_VIEW_CHANNELSTATE    "Display information about active effects\nDisplay Channel State"
+    ID_TRACKER_PLAY_MARKER  "Play pattern from row marker\nPlay from Marker"
+    ID_TRACKER_SET_MARKER   "Set a row marker for playback\nSet Row Marker"
 END
 
 #endif    // English (United States) resources
