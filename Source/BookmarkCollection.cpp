@@ -98,8 +98,10 @@ void CBookmarkCollection::InsertFrames(unsigned Frame, unsigned Count)
 
 void CBookmarkCollection::RemoveFrames(unsigned Frame, unsigned Count)
 {
-	std::remove_if(m_pBookmark.begin(), m_pBookmark.end(),
-				  [&] (std::unique_ptr<CBookmark> &a) { return a->m_iFrame >= Frame && a->m_iFrame < Frame + Count; });
+	m_pBookmark.erase(
+		std::remove_if(m_pBookmark.begin(), m_pBookmark.end(),
+			[&] (std::unique_ptr<CBookmark> &a) { return a->m_iFrame >= Frame && a->m_iFrame < Frame + Count; }),
+		m_pBookmark.end());
 	std::for_each(m_pBookmark.begin(), m_pBookmark.end(),
 				  [&] (std::unique_ptr<CBookmark> &a) { if (a->m_iFrame >= Frame) a->m_iFrame -= Count; });
 }

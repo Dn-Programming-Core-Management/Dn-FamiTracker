@@ -2168,12 +2168,14 @@ void CFamiTrackerView::PlayNote(unsigned int Channel, unsigned int Note, unsigne
 	CFamiTrackerDoc *pDoc = GetDocument();
 
 	SplitAdjustChannel(Channel, NoteData);
-	int ret = pDoc->GetChannelIndex(m_pNoteQueue->Trigger(MidiNote, pDoc->GetChannelType(Channel)));
-	if (ret != -1) {
-		if (IsSplitEnabled(MidiNote, ret)) 	// // //
-			SplitKeyboardAdjust(NoteData);
-		pDoc->GetChannel(ret)->SetNote(NoteData, NOTE_PRIO_2);
-		theApp.GetSoundGenerator()->ForceReloadInstrument(ret);		// // //
+	if (Channel < static_cast<unsigned>(pDoc->GetChannelCount())) {
+		int ret = pDoc->GetChannelIndex(m_pNoteQueue->Trigger(MidiNote, pDoc->GetChannelType(Channel)));
+		if (ret != -1) {
+			if (IsSplitEnabled(MidiNote, ret)) 	// // //
+				SplitKeyboardAdjust(NoteData);
+			pDoc->GetChannel(ret)->SetNote(NoteData, NOTE_PRIO_2);
+			theApp.GetSoundGenerator()->ForceReloadInstrument(ret);		// // //
+		}
 	}
 
 	if (theApp.GetSettings()->General.bPreviewFullRow) {
@@ -2201,19 +2203,21 @@ void CFamiTrackerView::ReleaseNote(unsigned int Channel, unsigned int Note, unsi
 	
 	SplitAdjustChannel(Channel, NoteData);		// // //
 	CFamiTrackerDoc *pDoc = GetDocument();		// // //
-	int ch = pDoc->GetChannelIndex(m_pNoteQueue->Cut(MIDI_NOTE(Octave, Note), pDoc->GetChannelType(Channel)));
-//	int ch = pDoc->GetChannelIndex(m_pNoteQueue->Release(MIDI_NOTE(Octave, Note), pDoc->GetChannelType(Channel)));
-	if (ch != -1)
-		theApp.GetSoundGenerator()->QueueNote(ch, NoteData, NOTE_PRIO_2);
+	if (Channel < static_cast<unsigned>(pDoc->GetChannelCount())) {
+		int ch = pDoc->GetChannelIndex(m_pNoteQueue->Cut(MIDI_NOTE(Octave, Note), pDoc->GetChannelType(Channel)));
+	//	int ch = pDoc->GetChannelIndex(m_pNoteQueue->Release(MIDI_NOTE(Octave, Note), pDoc->GetChannelType(Channel)));
+		if (ch != -1)
+			theApp.GetSoundGenerator()->QueueNote(ch, NoteData, NOTE_PRIO_2);
 
-	if (theApp.GetSettings()->General.bPreviewFullRow) {
-		NoteData.Note = HALT;
-		NoteData.Instrument = MAX_INSTRUMENTS;
+		if (theApp.GetSettings()->General.bPreviewFullRow) {
+			NoteData.Note = HALT;
+			NoteData.Instrument = MAX_INSTRUMENTS;
 
-		int Channels = pDoc->GetChannelCount();
-		for (int i = 0; i < Channels; ++i) {
-			if (i != ch)
-				theApp.GetSoundGenerator()->QueueNote(i, NoteData, NOTE_PRIO_1);
+			int Channels = pDoc->GetChannelCount();
+			for (int i = 0; i < Channels; ++i) {
+				if (i != ch)
+					theApp.GetSoundGenerator()->QueueNote(i, NoteData, NOTE_PRIO_1);
+			}
 		}
 	}
 }
@@ -2228,17 +2232,19 @@ void CFamiTrackerView::HaltNote(unsigned int Channel, unsigned int Note, unsigne
 	
 	SplitAdjustChannel(Channel, NoteData);		// // //
 	CFamiTrackerDoc *pDoc = GetDocument();		// // //
-	int ch = pDoc->GetChannelIndex(m_pNoteQueue->Cut(MIDI_NOTE(Octave, Note), pDoc->GetChannelType(Channel)));
-	if (ch != -1)
-		theApp.GetSoundGenerator()->QueueNote(ch, NoteData, NOTE_PRIO_2);
+	if (Channel < static_cast<unsigned>(pDoc->GetChannelCount())) {
+		int ch = pDoc->GetChannelIndex(m_pNoteQueue->Cut(MIDI_NOTE(Octave, Note), pDoc->GetChannelType(Channel)));
+		if (ch != -1)
+			theApp.GetSoundGenerator()->QueueNote(ch, NoteData, NOTE_PRIO_2);
 
-	if (theApp.GetSettings()->General.bPreviewFullRow) {
-		NoteData.Instrument = MAX_INSTRUMENTS;
+		if (theApp.GetSettings()->General.bPreviewFullRow) {
+			NoteData.Instrument = MAX_INSTRUMENTS;
 
-		int Channels = pDoc->GetChannelCount();
-		for (int i = 0; i < Channels; ++i) {
-			if (i != ch)
-				theApp.GetSoundGenerator()->QueueNote(i, NoteData, NOTE_PRIO_1);
+			int Channels = pDoc->GetChannelCount();
+			for (int i = 0; i < Channels; ++i) {
+				if (i != ch)
+					theApp.GetSoundGenerator()->QueueNote(i, NoteData, NOTE_PRIO_1);
+			}
 		}
 	}
 }
@@ -2253,10 +2259,12 @@ void CFamiTrackerView::HaltNoteSingle(unsigned int Channel) const
 	
 	SplitAdjustChannel(Channel, NoteData);		// // // ?
 	CFamiTrackerDoc *pDoc = GetDocument();		// // //
-	for (const auto &i : m_pNoteQueue->StopChannel(pDoc->GetChannelType(Channel))) {
-		int ch = pDoc->GetChannelIndex(i);
-		if (ch != -1)
-			theApp.GetSoundGenerator()->QueueNote(ch, NoteData, NOTE_PRIO_2);
+	if (Channel < static_cast<unsigned>(pDoc->GetChannelCount())) {
+		for (const auto &i : m_pNoteQueue->StopChannel(pDoc->GetChannelType(Channel))) {
+			int ch = pDoc->GetChannelIndex(i);
+			if (ch != -1)
+				theApp.GetSoundGenerator()->QueueNote(ch, NoteData, NOTE_PRIO_2);
+		}
 	}
 
 	if (theApp.GetSoundGenerator()->IsPlaying())

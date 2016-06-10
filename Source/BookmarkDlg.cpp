@@ -125,7 +125,6 @@ void CBookmarkDlg::SelectBookmark(int Pos)
 	int n = m_cListBookmark->SetCurSel(Pos);
 	if (n == LB_ERR)
 		m_cListBookmark->SetCurSel(-1);
-	m_cListBookmark->SetFocus();
 	OnLbnSelchangeListBookmarks();
 }
 
