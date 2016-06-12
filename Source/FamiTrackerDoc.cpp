@@ -4783,7 +4783,7 @@ stFullState *CFamiTrackerDoc::RetrieveSoundState(unsigned int Track, unsigned in
 					else if (S->Tempo == -1 && xy >= GetSpeedSplitPoint()) S->Tempo = xy;
 					continue;
 				case EF_GROOVE:
-					if (S->GroovePos == -1 && xy < MAX_GROOVE) {
+					if (S->GroovePos == -1 && xy < MAX_GROOVE && m_pGrooveTable[xy] != nullptr) {
 						S->GroovePos = totalRows;
 						S->Speed = xy;
 					}
@@ -4853,8 +4853,11 @@ stFullState *CFamiTrackerDoc::RetrieveSoundState(unsigned int Track, unsigned in
 		totalRows++;
 	}
 	if (S->GroovePos == -1 && GetSongGroove(Track)) {
-		S->GroovePos = totalRows;
-		S->Speed = GetSongSpeed(Track);
+		unsigned Index = GetSongSpeed(Track);
+		if (Index < MAX_GROOVE && m_pGrooveTable[Index] != nullptr) {
+			S->GroovePos = totalRows;
+			S->Speed = Index;
+		}
 	}
 	
 	SAFE_RELEASE_ARRAY(BufferPos);
