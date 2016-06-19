@@ -90,7 +90,7 @@ private:
 	Blip_Synth<blip_good_quality, -130>		SynthMMC5;	
 	Blip_Synth<blip_good_quality, -1600>	SynthN163;
 	Blip_Synth<blip_good_quality, -3500>	SynthFDS;
-	Blip_Synth<blip_good_quality, -2000>	SynthS5B;
+	Blip_Synth<blip_good_quality, -1200>	SynthS5B;		// // // 050B
 	
 	// Blip buffer object
 	Blip_Buffer	BlipBuffer;
@@ -116,6 +116,7 @@ private:
 	float		m_fLevelMMC5;
 	float		m_fLevelFDS;
 	float		m_fLevelN163;
+	float		m_fLevelS5B;		// // // 050B
 
 	bool		m_bNamcoMixing;		// // //
 };

@@ -68,7 +68,7 @@ CAPU::CAPU(IAudioCallback *pCallback) :		// // //
 	m_pN163 = new CN163(m_pMixer);
 	m_pS5B  = new CS5B(m_pMixer);
 
-	m_fLevelVRC7 = m_fLevelS5B = 1.0f;
+	m_fLevelVRC7 = 1.0f;
 
 #ifdef LOGGING
 	m_pLog = new CFile("apu_log.txt", CFile::modeCreate | CFile::modeWrite);
@@ -186,7 +186,6 @@ void CAPU::SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume) const
 	// New settings
 	m_pMixer->UpdateSettings(LowCut, HighCut, HighDamp, float(Volume) / 100.0f);
 	m_pVRC7->SetVolume((float(Volume) / 100.0f) * m_fLevelVRC7);
-	m_pS5B->SetVolume((float(Volume) / 100.0f) * m_fLevelS5B);		// // //
 }
 
 void CAPU::SetExternalSound(uint8_t Chip)
@@ -223,7 +222,6 @@ void CAPU::ChangeMachineRate(int Machine, int Rate)		// // //
 	m_p2A03->ChangeMachine(Machine);
 
 	m_pVRC7->SetSampleSpeed(m_iSampleRate, BaseFreq, Rate);
-	m_pS5B->SetSampleSpeed(m_iSampleRate, BaseFreq, Rate);
 	m_iFrameCycleCount = BaseFreq / Rate;
 }
 
@@ -383,9 +381,7 @@ void CAPU::SetChipLevel(chip_level_t Chip, float Level)
 		case CHIP_LEVEL_VRC7:
 			m_fLevelVRC7 = fLevel;
 			break;
-		case CHIP_LEVEL_S5B:
-			m_fLevelS5B = fLevel;
-			break;
+			// // // 050B
 		default:
 			m_pMixer->SetChipLevel(Chip, fLevel);
 	}

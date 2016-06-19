@@ -465,17 +465,11 @@
     <ClCompile Include="Source\APU\N163.CPP">
       <Filter>Source Files\Sound Driver\Emulation\Sound Chips</Filter>
     </ClCompile>
-    <ClCompile Include="Source\APU\S5B.cpp">
-      <Filter>Source Files\Sound Driver\Emulation\Sound Chips</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Apu\VRC6.cpp">
       <Filter>Source Files\Sound Driver\Emulation\Sound Chips</Filter>
     </ClCompile>
     <ClCompile Include="Source\APU\VRC7.cpp">
       <Filter>Source Files\Sound Driver\Emulation\Sound Chips</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\APU\emu2149.c">
-      <Filter>Source Files\Sound Driver\Emulation\Sound Chips\External</Filter>
     </ClCompile>
     <ClCompile Include="Source\APU\emu2413.c">
       <Filter>Source Files\Sound Driver\Emulation\Sound Chips\External</Filter>
@@ -705,6 +699,9 @@
     <ClCompile Include="Source\SeqInstHandlerSawtooth.cpp">
       <Filter>Source Files\Sound Driver\Instruments</Filter>
     </ClCompile>
+    <ClCompile Include="Source\APU\S5B.cpp">
+      <Filter>Source Files\Sound Driver\Emulation\Sound Chips</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">
@@ -773,9 +770,6 @@
     <ClInclude Include="Source\APU\N163.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\APU\S5B.h">
-      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Apu\VRC6.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers</Filter>
     </ClInclude>
@@ -783,9 +777,6 @@
       <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers</Filter>
     </ClInclude>
     <ClInclude Include="Source\APU\2413tone.h">
-      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\APU\emu2149.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External</Filter>
     </ClInclude>
     <ClInclude Include="Source\APU\emu2413.h">
@@ -1258,6 +1249,9 @@
     </ClInclude>
     <ClInclude Include="Source\SeqInstHandlerSawtooth.h">
       <Filter>Header Files\Sound Driver Headers\Instruments Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\S5B.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

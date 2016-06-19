@@ -58,7 +58,6 @@
 #include "Mixer.h"
 #include "APU.h"
 #include "emu2413.h"
-#include "emu2149.h"
 
 //#define LINEAR_MIXING
 
@@ -79,6 +78,7 @@ CMixer::CMixer()
 	m_fLevelMMC5 = 1.0f;
 	m_fLevelFDS = 1.0f;
 	m_fLevelN163 = 1.0f;
+	m_fLevelS5B = 1.0f;		// // // 050B
 
 	m_iExternalChip = 0;
 	m_iSampleRate = 0;
@@ -151,6 +151,9 @@ void CMixer::SetChipLevel(chip_level_t Chip, float Level)
 		case CHIP_LEVEL_N163:
 			m_fLevelN163 = Level;
 			break;
+		case CHIP_LEVEL_S5B:		// // // 050B
+			m_fLevelS5B = Level;
+			break;
 	}
 }
 
@@ -158,28 +161,32 @@ float CMixer::GetAttenuation() const
 {
 	const float ATTENUATION_VRC6 = 0.80f;
 	const float ATTENUATION_VRC7 = 0.64f;
-	const float ATTENUATION_N163 = 0.70f;
 	const float ATTENUATION_MMC5 = 0.83f;
 	const float ATTENUATION_FDS  = 0.90f;
+	const float ATTENUATION_N163 = 0.70f;
+	const float ATTENUATION_S5B  = 0.50f;		// // // 050B
 
 	float Attenuation = 1.0f;
 
 	// Increase headroom if some expansion chips are enabled
 
-	if (m_iExternalChip & SNDCHIP_VRC7)
-		Attenuation *= ATTENUATION_VRC7;
-
-	if (m_iExternalChip & SNDCHIP_N163)
-		Attenuation *= ATTENUATION_N163;
-
 	if (m_iExternalChip & SNDCHIP_VRC6)
 		Attenuation *= ATTENUATION_VRC6;
+
+	if (m_iExternalChip & SNDCHIP_VRC7)
+		Attenuation *= ATTENUATION_VRC7;
 
 	if (m_iExternalChip & SNDCHIP_MMC5)
 		Attenuation *= ATTENUATION_MMC5;
 
 	if (m_iExternalChip & SNDCHIP_FDS)
 		Attenuation *= ATTENUATION_FDS;
+
+	if (m_iExternalChip & SNDCHIP_N163)
+		Attenuation *= ATTENUATION_N163;
+
+	if (m_iExternalChip & SNDCHIP_S5B)		// // // 050B
+		Attenuation *= ATTENUATION_S5B;
 
 	return Attenuation;
 }
@@ -225,8 +232,8 @@ void CMixer::UpdateSettings(int LowCut,	int HighCut, int HighDamp, float Overall
 	SynthMMC5.volume(Volume * 1.18421f * m_fLevelMMC5);
 	
 	// Not checked
+	SynthS5B.volume(Volume * m_fLevelS5B);		// // // 050B
 	SynthN163.volume(Volume * 1.1f * m_fLevelN163);
-	//SynthS5B.volume(Volume * 1.0f);
 
 	m_iLowCut = LowCut;
 	m_iHighCut = HighCut;
@@ -285,10 +292,6 @@ int CMixer::FinishBuffer(int t)
 	// Get channel levels for VRC7
 	for (int i = 0; i < 6; ++i)
 		StoreChannelLevel(CHANID_VRC7_CH1 + i, OPLL_getchanvol(i));
-
-	// Get channel levels for Sunsoft
-	for (int i = 0; i < 3; ++i)
-		StoreChannelLevel(CHANID_S5B_CH1 + i, PSG_getchanvol(i));
 
 	for (int i = 0; i < CHANNELS; ++i) {
 		if (m_iChanLevelFallOff[i] > 0)
@@ -397,6 +400,9 @@ void CMixer::AddValue(int ChanID, int Chip, int Value, int AbsValue, int FrameCy
 			break;
 		case SNDCHIP_VRC6:
 			MixVRC6(Value, FrameCycles);
+			break;
+		case SNDCHIP_S5B:		// // // 050B
+			MixS5B(Value, FrameCycles);
 			break;
 	}
 }

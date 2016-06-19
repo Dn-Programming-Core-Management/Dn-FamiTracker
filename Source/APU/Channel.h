@@ -50,7 +50,7 @@ protected:
 	CMixer		*m_pMixer;			// The mixer
 
 	uint32_t	m_iTime;			// Cycle counter, resets every new frame
-	int32_t		m_iLastValue;		// Last value sent to mixer
 	uint8_t		m_iChanId;			// This channels unique ID
 	uint8_t		m_iChip;			// Chip
+	int32_t		m_iLastValue;		// Last value sent to mixer
 };

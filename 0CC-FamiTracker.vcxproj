@@ -430,6 +430,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\APU\2A03.cpp" />
+    <ClCompile Include="Source\APU\S5B.cpp" />
     <ClCompile Include="Source\APU\SoundChip.cpp" />
     <ClCompile Include="Source\Bookmark.cpp" />
     <ClCompile Include="Source\BookmarkCollection.cpp" />
@@ -637,10 +638,8 @@
     <ClCompile Include="Source\APU\FDS.cpp" />
     <ClCompile Include="Source\APU\MMC5.CPP" />
     <ClCompile Include="Source\APU\N163.CPP" />
-    <ClCompile Include="Source\APU\S5B.cpp" />
     <ClCompile Include="Source\Apu\VRC6.cpp" />
     <ClCompile Include="Source\APU\VRC7.cpp" />
-    <ClCompile Include="Source\APU\emu2149.c" />
     <ClCompile Include="Source\APU\emu2413.c" />
     <ClCompile Include="Source\APU\FDSSound.cpp" />
     <ClCompile Include="Source\Blip_Buffer\Blip_Buffer.cpp" />
@@ -690,6 +689,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="Source\APU\2A03.h" />
     <ClInclude Include="Source\APU\2A03Chan.h" />
+    <ClInclude Include="Source\APU\S5B.h" />
     <ClInclude Include="Source\Bookmark.h" />
     <ClInclude Include="Source\BookmarkCollection.h" />
     <ClInclude Include="Source\BookmarkManager.h" />
@@ -777,11 +777,9 @@
     <ClInclude Include="Source\APU\FDS.h" />
     <ClInclude Include="Source\APU\MMC5.h" />
     <ClInclude Include="Source\APU\N163.h" />
-    <ClInclude Include="Source\APU\S5B.h" />
     <ClInclude Include="Source\Apu\VRC6.h" />
     <ClInclude Include="Source\APU\VRC7.h" />
     <ClInclude Include="Source\APU\2413tone.h" />
-    <ClInclude Include="Source\APU\emu2149.h" />
     <ClInclude Include="Source\APU\emu2413.h" />
     <ClInclude Include="Source\APU\FDSSound.h" />
     <ClInclude Include="Source\APU\vrc7tone.h" />

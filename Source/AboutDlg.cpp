@@ -169,7 +169,7 @@ BOOL CAboutDlg::OnInitDialog()
 		_T("- Blip_buffer 0.4.0 is Copyright (C) blargg\r\n")
 		_T("(http://www.slack.net/~ant/nes-emu/)\r\n")
 		_T("- Fast Fourier Transform code is (C) Reliable Software\r\n")
-		_T("- YM2413 && YM2149 emulators are written by Mitsutaka Okazaki\r\n")
+		_T("- YM2413 emulator is written by Mitsutaka Okazaki\r\n")
 		_T("- FDS sound emulator from nezplug (including a fix by rainwarrior)\r\n")
 		_T("- JSON for Modern C++ is Copyright (C) Niels Lohmann"));
 

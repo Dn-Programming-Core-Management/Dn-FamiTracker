@@ -129,7 +129,7 @@ private:
 	uint8_t		m_iSequencerCount;					// // // Step count for sequencer
 
 	float		m_fLevelVRC7;
-	float		m_fLevelS5B;
+	// // // 050B removed
 
 #ifdef LOGGING
 	CFile		  *m_pLog;
