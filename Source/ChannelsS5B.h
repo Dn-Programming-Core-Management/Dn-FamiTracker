@@ -50,12 +50,9 @@ protected:
 
 	// Static functions
 protected:	
-	static void SetEnvelopeHigh(int Val);
-	static void SetEnvelopeLow(int Val);
-	static void SetEnvelopeType(int Val);
 	static void SetMode(int Chan, int Square, int Noise);
-	static void SetNoiseFreq(int Freq);
-	void UpdateRegs(CAPU *pAPU);		// // //
+	void UpdateAutoEnvelope(int Period);		// // // 050B
+	void UpdateRegs();		// // //
 
 	// Static memebers
 protected:
@@ -63,23 +60,13 @@ protected:
 	static int m_iNoiseFreq;
 	static unsigned char m_iEnvFreqHi;
 	static unsigned char m_iEnvFreqLo;
+	static bool m_bEnvTrigger;		// // // 050B
 	static int m_iEnvType;
-	static bool m_bRegsDirty;
+	static int m_i5808B4;		// // // 050B, unused
 
 	// Instance members
 protected:
-	int m_iNoiseOffset;
-	bool m_bEnvEnable;		// unused
-
+	bool m_bEnvelopeEnabled;		// // // 050B
+	int m_iAutoEnvelopeShift;		// // // 050B
 	bool m_bUpdate;
-/*
-	unsigned char m_cSweep;
-	unsigned char m_cDutyCycle, m_iDefaultDuty;
-
-	int ModEnable[SEQ_COUNT];
-	int	ModIndex[SEQ_COUNT];
-	int	ModDelay[SEQ_COUNT];
-	int	ModPointer[SEQ_COUNT];
-	*/
-
 };
