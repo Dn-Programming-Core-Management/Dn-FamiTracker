@@ -438,6 +438,7 @@
     <ClCompile Include="Source\BookmarkManager.cpp" />
     <ClCompile Include="Source\ChannelFactory.cpp" />
     <ClCompile Include="Source\ChannelState.cpp" />
+    <ClCompile Include="Source\FrameEditorTypes.cpp" />
     <ClCompile Include="Source\NoteQueue.cpp" />
     <ClCompile Include="Source\RegisterState.cpp" />
     <ClCompile Include="Source\CompoundAction.cpp" />
@@ -694,6 +695,7 @@
     <ClInclude Include="Source\BookmarkCollection.h" />
     <ClInclude Include="Source\BookmarkManager.h" />
     <ClInclude Include="Source\BookmarkDlg.h" />
+    <ClInclude Include="Source\FrameEditorTypes.h" />
     <ClInclude Include="Source\NoteQueue.h" />
     <ClInclude Include="Source\RegisterState.h" />
     <ClInclude Include="Source\CompoundAction.h" />

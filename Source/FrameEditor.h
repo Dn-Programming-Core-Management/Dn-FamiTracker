@@ -22,57 +22,11 @@
 
 #pragma once
 
+#include "FrameEditorTypes.h"		// // //
+
 class CFamiTrackerDoc;
 class CFamiTrackerView;
 class CFrameEditor;
-
-struct stSelectInfo {
-	bool bSelecting;
-	int iRowStart;
-	int iRowEnd;
-};
-
-class CFrameClipData {
-public:
-	// Constructor/desctructor
-	CFrameClipData() : pFrames(NULL), iSize(0) {
-		memset(&ClipInfo, 0, sizeof(ClipInfo));
-	}
-
-	CFrameClipData(int Channels, int Frames) {
-		memset(&ClipInfo, 0, sizeof(ClipInfo));
-		Alloc(Channels * Frames);
-	}
-
-	virtual ~CFrameClipData() {
-		SAFE_RELEASE_ARRAY(pFrames);
-	}
-
-	void Alloc(int Size);
-
-	SIZE_T GetAllocSize() const;	// Get memory size in bytes
-	void ToMem(HGLOBAL hMem);		// Copy structures to memory
-	void FromMem(HGLOBAL hMem);		// Copy structures from memory
-	
-	int  GetFrame(int Frame, int Channel) const;
-	void SetFrame(int Frame, int Channel, int Pattern);
-
-public:
-	// Clip info
-	struct {
-		int Channels;
-		int Rows;
-		int FirstChannel;
-		struct {
-			int SourceRowStart;
-			int SourceRowEnd;
-		} OleInfo;
-	} ClipInfo;
-	
-	// Clip data
-	int *pFrames;
-	int iSize;
-};
 
 class CFrameEditorDropTarget : public COleDropTarget
 {

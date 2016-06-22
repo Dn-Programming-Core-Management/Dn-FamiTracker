@@ -702,6 +702,9 @@
     <ClCompile Include="Source\APU\S5B.cpp">
       <Filter>Source Files\Sound Driver\Emulation\Sound Chips</Filter>
     </ClCompile>
+    <ClCompile Include="Source\FrameEditorTypes.cpp">
+      <Filter>Source Files\Frame Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">
@@ -1252,6 +1255,9 @@
     </ClInclude>
     <ClInclude Include="Source\APU\S5B.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\FrameEditorTypes.h">
+      <Filter>Header Files\Frame Editor Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

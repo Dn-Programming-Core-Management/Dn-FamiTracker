@@ -23,7 +23,40 @@
 #pragma once
 
 #include "Action.h"
-#include "FrameEditor.h"
+#include "FrameEditorTypes.h"		// // //
+
+class CFrameEditor;		// // //
+
+/*
+	\brief A structure responsible for recording the cursor and selection state of the frame
+	editor for use by frame actions. Uses CFamiTrackerView since the frame editor class is not
+	independent.
+*/
+struct CFrameEditorState		// TODO maybe merge this with CPatternEditorState
+{
+	/*!	\brief Constructor of the frame editor state.
+		\details On construction, the object retrieves the current state of the frame editor
+		immediately. Once created, a state object remains constant and can be applied back to the
+		frame editor as many times as desired.
+		\param pView Pointer to the tracker view.
+		\param Track The track number. */
+	CFrameEditorState(const CFamiTrackerView *pEditor, int Track);
+
+	/*!	\brief Applies the state to a frame editor.
+		\param pView Pointer to the tracker view. */
+	void ApplyState(CFamiTrackerView *pView) const;
+
+	/*!	\brief The current track number at the time of the state's creation. */
+	int Track;
+
+	/*!	\brief The current frame position at the time of the state's creation. */
+	int Frame;
+
+	/*!	\brief The current channel position at the time of the state's creation. */
+	int Channel;
+
+	stSelectInfo Selection;
+};
 
 // Frame commands
 class CFrameAction : public CAction
@@ -84,6 +117,9 @@ private:
 
 	void ClearPatterns(CFamiTrackerDoc *pDoc, int Target) const;
 
+protected:
+	CFrameEditorState *m_pUndoState, *m_pRedoState;		// // //
+
 private:
 	unsigned int m_iUndoTrack;
 	unsigned int m_iUndoFramePos;
@@ -108,4 +144,16 @@ private:
 	CFrameClipData *m_pClipData;
 
 	stSelectInfo m_oSelInfo;
+};
+
+// // // built-in frame action subtypes
+
+class CFActionAddFrame : public CFrameAction
+{
+public:
+	CFActionAddFrame();
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
 };

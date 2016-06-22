@@ -2425,7 +2425,7 @@ void CMainFrame::OnSelectFrameEditor()
 
 void CMainFrame::OnModuleInsertFrame()
 {
-	AddAction(new CFrameAction(CFrameAction::ACT_ADD));
+	AddAction(new CFActionAddFrame { });		// // //
 }
 
 void CMainFrame::OnModuleRemoveFrame()
