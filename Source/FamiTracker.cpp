@@ -36,7 +36,7 @@
 #include "ChannelMap.h"
 #include "CustomExporters.h"
 #include "CommandLineExport.h"
-#include "VersionHelpers.h"		// // //
+#include <VersionHelpers.h>		// // //
 
 #include "WinInet.h"		// // //
 #pragma comment(lib, "wininet.lib")
