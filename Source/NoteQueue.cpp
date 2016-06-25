@@ -27,10 +27,9 @@
 enum class CNoteChannelQueue::note_state_t {HOLD, RELEASE};
 
 CNoteChannelQueue::CNoteChannelQueue(std::vector<unsigned> Ch) :
-	m_iChannelMapID(Ch), m_iChannelCount(Ch.size())
+	m_iChannelMapID(Ch), m_iChannelCount(Ch.size()),
+	m_iCurrentNote(Ch.size(), -1), m_bChannelMute(Ch.size())
 {
-	m_iCurrentNote.resize(m_iChannelCount);
-	m_bChannelMute.resize(m_iChannelCount);
 }
 
 unsigned CNoteChannelQueue::Trigger(int Note, unsigned Channel)
@@ -51,7 +50,7 @@ unsigned CNoteChannelQueue::Trigger(int Note, unsigned Channel)
 		for (int i = 0; i < m_iChannelCount; ++i)
 			if (m_iChannelMapID[i] == Channel) { Pos = i; break; }
 		for (int i = 0; i < m_iChannelCount; ++i) {
-			if (!m_bChannelMute[Pos] && !m_iCurrentNote[Pos])
+			if (!m_bChannelMute[Pos] && m_iCurrentNote[Pos] == -1)
 				return AddNote(Pos);
 			if (++Pos >= m_iChannelCount) Pos = 0;
 		}
@@ -117,7 +116,7 @@ unsigned CNoteChannelQueue::Cut(int Note, unsigned Channel)
 		if (pit2 != m_iNoteChannel.end()) m_iNoteChannel.erase(pit2);
 		for (int i = 0; i < m_iChannelCount; ++i)
 			if (m_iCurrentNote[i] == Note) {
-				m_iCurrentNote[i] = 0; return m_iChannelMapID[i];
+				m_iCurrentNote[i] = -1; return m_iChannelMapID[i];
 			}
 	}
 	return -1;
