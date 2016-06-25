@@ -2201,16 +2201,6 @@ CCursorPos CPatternEditor::GetCursorAtPoint(const CPoint &point) const
 	return CCursorPos(Row, GetChannelAtPoint(point.x), GetColumnAtPoint(point.x), Frame); // // //
 }
 
-CPatternIterator CPatternEditor::GetStartIterator() const		// // //
-{
-	return GetIterators().first;
-}
-
-CPatternIterator CPatternEditor::GetEndIterator() const
-{
-	return GetIterators().second;
-}
-
 std::pair<CPatternIterator, CPatternIterator> CPatternEditor::GetIterators() const
 {
 	CCursorPos c_it {m_cpCursorPos}, c_end {m_cpCursorPos};
@@ -3291,7 +3281,7 @@ CPatternClipData *CPatternEditor::CopyEntire() const
 CPatternClipData *CPatternEditor::Copy() const
 {
 	// Copy selection
-	CPatternIterator it = GetStartIterator();		// // //
+	CPatternIterator it = GetIterators().first;		// // //
 	const int Channels	= m_selection.GetChanEnd() - m_selection.GetChanStart() + 1;
 	const int Rows		= GetSelectionSize();		// // //
 	stChanNote NoteData;
@@ -3312,7 +3302,7 @@ CPatternClipData *CPatternEditor::Copy() const
 			// the clip data should store the entire field;
 			// other methods should check ClipInfo.StartColumn and ClipInfo.EndColumn before operating
 		}
-		it++;
+		++it;
 	}
 
 	return pClipData;
@@ -3912,27 +3902,26 @@ void CPatternEditor::GetVolumeColumn(CString &str) const
 
 	const int Track = GetSelectedTrack();
 	const int Channel = m_selection.GetChanStart();
-	const CPatternIterator End = GetEndIterator();
+	auto it = GetIterators();
 	stChanNote NoteData;
 
 	if (Channel < 0 || Channel >= GetChannelCount())
 		return;
 	
 	int vol = MAX_VOLUME - 1;		// // //
-	CPatternIterator it = GetStartIterator();
+	CPatternIterator s {it.first};
 	do {
-		it--;
-		if (it.m_iFrame < 0) break;
-		it.Get(Channel, &NoteData);
+		if (--s.m_iFrame < 0) break;
+		s.Get(Channel, &NoteData);
 		if (NoteData.Vol != MAX_VOLUME) {
 			vol = NoteData.Vol;
 			break;
 		}
-	} while (it.m_iFrame > 0 || it.m_iRow > 0);
+	} while (s.m_iFrame > 0 || s.m_iRow > 0);
 	
 	str.Empty();
-	for (CPatternIterator it = GetStartIterator(); it <= End; it++) {
-		it.Get(Channel, &NoteData);
+	for (; it.first <= it.second; ++it.first) {
+		it.first.Get(Channel, &NoteData);
 		if (NoteData.Vol != MAX_VOLUME)
 			vol = NoteData.Vol;
 		str.AppendFormat(_T("%i "), vol);
@@ -3950,23 +3939,22 @@ void CPatternEditor::GetSelectionAsText(CString &str) const		// // //
 	if (Channel < 0 || Channel >= GetChannelCount() || !m_bSelecting)
 		return;
 
-	CPatternIterator it = GetStartIterator();
-	CPatternIterator end = GetEndIterator();
+	auto it = GetIterators();
 	str.Empty();
 
 	int Row = 0;
-	int Size = m_bSelecting ? (GetSelectionSize() - 1) : (end.m_iRow - it.m_iRow + 1);
+	int Size = m_bSelecting ? (GetSelectionSize() - 1) : (it.second.m_iRow - it.first.m_iRow + 1);
 	int HexLength = 0;
 	do HexLength++; while (Size >>= 4);
 	if (HexLength < 2) HexLength = 2;
 
 	CString Header(_T(' '), HexLength + 3);
 	Header.Append(_T("# "));
-	for (int i = it.m_iChannel; i <= end.m_iChannel; i++) {
+	for (int i = it.first.m_iChannel; i <= it.second.m_iChannel; ++i) {
 		Header.AppendFormat(_T(": %-13s"), m_pDocument->GetChannel(i)->GetChannelName());
 		unsigned Columns = m_pDocument->GetEffColumns(Track, i);
-		if (i == end.m_iChannel)
-			Columns = std::min(Columns, static_cast<unsigned>(std::max(0, static_cast<int>(GetSelectColumn(end.m_iColumn)) - 3)));
+		if (i == it.second.m_iChannel)
+			Columns = std::min(Columns, static_cast<unsigned>(std::max(0, static_cast<int>(GetSelectColumn(it.second.m_iColumn)) - 3)));
 		for (unsigned j = 0; j < Columns; j++)
 			Header.AppendFormat(_T("fx%d "), j + 2);
 	}
@@ -3974,18 +3962,18 @@ void CPatternEditor::GetSelectionAsText(CString &str) const		// // //
 	
 	static const int COLUMN_CHAR_POS[] = {0, 4, 7, 9, 13, 17, 21};
 	static const int COLUMN_CHAR_LEN[] = {3, 2, 1, 3, 3, 3, 3};
-	const int Last = m_pDocument->GetEffColumns(Track, end.m_iChannel) + 3;
-	const unsigned BegCol = GetSelectColumn(it.m_iColumn);
-	const unsigned EndCol = GetSelectColumn(end.m_iColumn);
-	for (CPatternIterator it = GetStartIterator(); it <= end; it++) {
+	const int Last = m_pDocument->GetEffColumns(Track, it.second.m_iChannel) + 3;
+	const unsigned BegCol = GetSelectColumn(it.first.m_iColumn);
+	const unsigned EndCol = GetSelectColumn(it.second.m_iColumn);
+	for (; it.first <= it.second; ++it.first) {
 		CString line;
 		line.AppendFormat(_T("ROW %0*X"), HexLength, Row++);
-		for (int i = it.m_iChannel; i <= end.m_iChannel; i++) {
-			it.Get(i, &NoteData);
+		for (int i = it.first.m_iChannel; i <= it.second.m_iChannel; ++i) {
+			it.first.Get(i, &NoteData);
 			CString Row = CTextExport::ExportCellText(NoteData, m_pDocument->GetEffColumns(Track, i) + 1, i == CHANID_NOISE);
-			if (i == it.m_iChannel) for (unsigned c = 0; c < BegCol; c++)
-				for (int j = 0; j < COLUMN_CHAR_LEN[c]; j++) Row.SetAt(COLUMN_CHAR_POS[c] + j, ' ');
-			if (i == end.m_iChannel && EndCol < COLUMN_EFF4)
+			if (i == it.first.m_iChannel) for (unsigned c = 0; c < BegCol; ++c)
+				for (int j = 0; j < COLUMN_CHAR_LEN[c]; ++j) Row.SetAt(COLUMN_CHAR_POS[c] + j, ' ');
+			if (i == it.second.m_iChannel && EndCol < COLUMN_EFF4)
 				Row = Row.Left(COLUMN_CHAR_POS[EndCol + 1] - 1);
 			line.AppendFormat(_T(" : %s"), Row);
 		}
@@ -3998,15 +3986,12 @@ void CPatternEditor::GetSelectionAsPPMCK(CString &str) const		// // //
 {
 	// Returns a PPMCK MML translation of copied pattern
 
-	// // // int i, j;
 	stChanNote NoteData { };
 
+	auto it = GetIterators();
 	str.Empty();
 
-	// // // int Octave, Note, Duration;
-
-	const CPatternIterator End = GetEndIterator();
-	for (int c = m_selection.GetChanStart(); c <= m_selection.GetChanEnd(); c++) {
+	for (int c = it.first.m_iChannel; c <= it.second.m_iChannel; ++c) {
 		int Type = m_pDocument->GetChannelType(c);
 		switch (m_pDocument->GetChipType(c)) {
 		case SNDCHIP_NONE: Type += 'A' - CHANID_SQUARE1; break;
@@ -4026,11 +4011,11 @@ void CPatternEditor::GetSelectionAsPPMCK(CString &str) const		// // //
 		current.Note = HALT;
 		stChanNote echo[ECHO_BUFFER_LENGTH + 1] { };
 
-		for (CPatternIterator it = GetStartIterator(); it <= End; it++) {
+		for (CPatternIterator s {it.first}; s <= it.second; ++s) {
 			len++;
-			it.Get(c, &NoteData);
+			s.Get(c, &NoteData);
 			bool dump = NoteData.Note != NONE || NoteData.Vol != MAX_VOLUME;
-			bool fin = it.m_iFrame == End.m_iFrame && it.m_iRow == End.m_iRow;
+			bool fin = s.m_iFrame == it.second.m_iFrame && s.m_iRow == it.second.m_iRow;
 
 			if (dump || fin) {
 				bool push = current.Note != NONE && current.Note != RELEASE;
@@ -4101,106 +4086,6 @@ void CPatternEditor::GetSelectionAsPPMCK(CString &str) const		// // //
 		}
 		str.Append(_T("\r\n"));
 	}
-#if 0
-	str.Append(_T(";;\r\n"));
-	for (i = m_selection.GetChanStart(); i <= m_selection.GetChanEnd(); i++) {
-		if (i < 0 || i >(signed)m_pDocument->GetAvailableChannels())
-			continue;
-
-		switch (i) {
-		case 0: str.Append("A "); break;
-		case 1: str.Append("B "); break;
-		case 2: str.Append("C "); break;
-		case 3: str.Append("D "); break;
-		case 4: str.Append("E "); break;
-		}
-
-		Octave = -1;
-		Note = -1;
-
-		for (j = m_selection.GetRowStart(); j <= (m_selection.GetRowEnd() + 1); j++) {
-			if (j < 0 || j > m_iPatternLength)
-				continue;
-
-			m_pDocument->GetNoteData(GetSelectedTrack(), m_iCurrentFrame, i, j, &NoteData);
-			if (m_selection.IsColumnSelected(COLUMN_NOTE, i)) {
-				int n = NoteData.Note;
-				int o = NoteData.Octave;
-
-				bool DumpNote = false;
-
-				// First note
-				/*
-				if (Note == -1) {
-				Note = n;
-				Octave = o;
-				Duration = 0;
-				}
-				*/
-				if (j == m_selection.GetRowEnd())
-					DumpNote = true;
-
-				//if (n > 0 && n != Note) {
-				if (n > 0 || Note == -1) {
-					if (Note == -1) {
-						Note = n;
-						Octave = o;
-						Duration = 0;
-					}
-					else
-						DumpNote = true;
-				}
-				else {
-					Duration++;
-				}
-
-				if (DumpNote) {
-					/*
-					if (o != Octave && n > 0) {
-					MML.AppendFormat("o%i", Octave);
-					Octave = o;
-					}
-					*/
-					switch (Note) {
-					case 0:  str.Append("r"); break;
-					case 1:  str.Append("c"); break;
-					case 2:  str.Append("c#"); break;
-					case 3:  str.Append("d"); break;
-					case 4:  str.Append("d#"); break;
-					case 5:  str.Append("e"); break;
-					case 6:  str.Append("f"); break;
-					case 7:  str.Append("f#"); break;
-					case 8:  str.Append("g"); break;
-					case 9:  str.Append("g#"); break;
-					case 10: str.Append("a"); break;
-					case 11: str.Append("a#"); break;
-					case 12: str.Append("b"); break;
-					}
-
-					switch (Duration) {
-					case 0: str.Append("16"); break;		// 16th note
-					case 1: str.Append("8"); break;			// 8th note
-					case 2: str.Append("8."); break;		// 8th dotted
-					case 3: str.Append("4"); break;			// 4th note
-
-//					case 4: str.Append("4"); break;			// 4th note
-//					case 5: str.Append("4"); break;			// 4th note						
-//					case 6: str.Append("4"); break;			// 4th note
-
-					case 7: str.Append("2"); break;			// 2th note
-					case 15: str.Append("1"); break;		// 1th note
-
-					}
-
-					Note = n;
-					Duration = 0;
-				}
-			}
-		}
-
-		str.Append(_T("\r\n"));
-	}
-#endif
 }
 
 

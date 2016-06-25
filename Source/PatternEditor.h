@@ -266,8 +266,6 @@ private:
 	void BeginMouseSelection(const CPoint &point);
 	void ContinueMouseSelection(const CPoint &point);
 
-	CPatternIterator GetStartIterator() const;		// // //
-	CPatternIterator GetEndIterator() const;
 	std::pair<CPatternIterator, CPatternIterator> GetIterators() const;		// // //
 
 	// Editing
