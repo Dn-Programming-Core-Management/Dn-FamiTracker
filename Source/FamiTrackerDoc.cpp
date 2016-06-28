@@ -4794,15 +4794,23 @@ stFullState *CFamiTrackerDoc::RetrieveSoundState(unsigned int Track, unsigned in
 						State->Effect_LengthCounter = xy;
 					else if (State->Effect[fx] == -1 && xy <= 0x1F) {
 						State->Effect[fx] = xy;
-						if (State->Effect_LengthCounter == -1) State->Effect_LengthCounter = 0xE2;
+						if (State->Effect_LengthCounter == -1)
+							State->Effect_LengthCounter = ch->GetID() == CHANID_TRIANGLE ? 0xE1 : 0xE2;
 					}
 					continue;
 				case EF_NOTE_CUT:
 					if (!ch->IsEffectCompatible(fx, xy)) continue;
-					if (xy <= 0x7F) continue;
+					if (ch->GetID() != CHANID_TRIANGLE) continue;
 					if (State->Effect[fx] == -1) {
-						State->Effect[fx] = xy;
-						if (State->Effect_LengthCounter == -1) State->Effect_LengthCounter = 0xE2;
+						if (xy <= 0x7F) {
+							if (State->Effect_LengthCounter == -1)
+								State->Effect_LengthCounter = 0xE0;
+							continue;
+						}
+						if (State->Effect_LengthCounter != 0xE0) {
+							State->Effect[fx] = xy;
+							if (State->Effect_LengthCounter == -1) State->Effect_LengthCounter = 0xE1;
+						}
 					}
 					continue;
 				case EF_FDS_MOD_DEPTH:

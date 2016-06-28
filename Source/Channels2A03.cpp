@@ -294,7 +294,7 @@ void CTriangleChan::RefreshChannel()
 	unsigned char LoFreq = (Freq >> 8);
 	
 	if (m_iInstVolume > 0 && m_iVolume > 0 && m_bGate) {
-		WriteRegister(0x4008, (m_bEnvelopeLoop << 7) | m_iLinearCounter);		// // //
+		WriteRegister(0x4008, (m_bEnvelopeLoop << 7) | (m_iLinearCounter & 0x7F));		// // //
 		WriteRegister(0x400A, HiFreq);
 		if (m_bEnvelopeLoop || m_bResetEnvelope)		// // //
 			WriteRegister(0x400B, LoFreq + (m_iLengthCounter << 3));
@@ -320,7 +320,17 @@ bool CTriangleChan::HandleEffect(effect_t EffNum, unsigned char EffParam)
 {
 	switch (EffNum) {
 	case EF_VOLUME:
-		if (m_iLinearCounter == -1)	m_iLinearCounter = 0x7F;
+		if (EffParam < 0x20) {		// // //
+			m_iLengthCounter = EffParam;
+			m_bEnvelopeLoop = false;
+			m_bResetEnvelope = true;
+			if (m_iLinearCounter == -1)	m_iLinearCounter = 0x7F;
+		}
+		else if (EffParam >= 0xE0 && EffParam < 0xE4) {
+			if (!m_bEnvelopeLoop)
+				m_bResetEnvelope = true;
+			m_bEnvelopeLoop = ((EffParam & 0x01) != 0x01);
+		}
 		break;
 	case EF_NOTE_CUT:
 		if (EffParam >= 0x80) {
@@ -355,7 +365,7 @@ CString CTriangleChan::GetCustomEffectString() const		// // //
 	if (!m_bEnvelopeLoop)
 		str.AppendFormat(_T(" E%02X"), m_iLengthCounter);
 	if (!m_bEnvelopeLoop)
-		str.AppendFormat(_T(" EE%X"), !m_bEnvelopeLoop * 2);
+		str.AppendFormat(_T(" EE%X"), !m_bEnvelopeLoop);
 
 	return str;
 }
