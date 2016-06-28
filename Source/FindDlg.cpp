@@ -839,8 +839,9 @@ void CFindDlg::ParseNote(searchTerm &Term, CString str, bool Half)
 void CFindDlg::ParseInst(searchTerm &Term, CString str, bool Half)
 {
 	Term.Definite[WC_INST] = true;
-	if (str.IsEmpty() && !Half) {
-		Term.Inst->Set(MAX_INSTRUMENTS);
+	if (str.IsEmpty()) {
+		if (!Half)
+			Term.Inst->Set(MAX_INSTRUMENTS);
 		return;
 	}
 	RaiseIf(Half && !Term.Inst->IsSingle(), _T("Cannot use wildcards in a range search query."));
@@ -865,8 +866,9 @@ void CFindDlg::ParseInst(searchTerm &Term, CString str, bool Half)
 void CFindDlg::ParseVol(searchTerm &Term, CString str, bool Half)
 {
 	Term.Definite[WC_VOL] = true;
-	if (str.IsEmpty() && !Half) {
-		Term.Vol->Set(MAX_VOLUME);
+	if (str.IsEmpty()) {
+		if (!Half)
+			Term.Vol->Set(MAX_VOLUME);
 		return;
 	}
 	RaiseIf(Half && !Term.Vol->IsSingle(), _T("Cannot use wildcards in a range search query."));
