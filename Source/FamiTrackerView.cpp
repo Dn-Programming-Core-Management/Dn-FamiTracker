@@ -2090,7 +2090,7 @@ void CFamiTrackerView::InsertNote(int Note, int Octave, int Channel, int Velocit
 	if (Note != HALT && Note != RELEASE) {
 		Cell.Octave	= Octave;
 
-		if (!m_bMaskInstrument)
+		if (!m_bMaskInstrument && Cell.Instrument != HOLD_INSTRUMENT)		// // // 050B
 			Cell.Instrument = GetInstrument();
 
 		if (!m_bMaskVolume) {
@@ -2803,7 +2803,7 @@ bool CFamiTrackerView::EditInstrumentColumn(stChanNote &Note, int Key, bool &Ste
 		Shift = 0;
 	}
 
-	if (Note.Instrument == MAX_INSTRUMENTS)
+	if (Note.Instrument == MAX_INSTRUMENTS || Note.Instrument == HOLD_INSTRUMENT)		// // // 050B
 		Note.Instrument = 0;
 
 	switch (EditStyle) {

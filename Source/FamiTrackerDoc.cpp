@@ -4755,7 +4755,7 @@ stFullState *CFamiTrackerDoc::RetrieveSoundState(unsigned int Track, unsigned in
 				BufferPos[c] = 0;
 
 			if (State->Instrument == MAX_INSTRUMENTS)
-				if (Note.Instrument != MAX_INSTRUMENTS)
+				if (Note.Instrument != MAX_INSTRUMENTS && Note.Instrument != HOLD_INSTRUMENT)		// // // 050B
 					State->Instrument = Note.Instrument;
 
 			if (State->Volume == MAX_VOLUME)
