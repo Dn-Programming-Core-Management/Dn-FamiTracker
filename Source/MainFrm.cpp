@@ -3431,7 +3431,7 @@ void CMainFrame::OnTrackerPal()
 
 	machine_t Machine = PAL;
 	pDoc->SetMachine(Machine);
-	theApp.GetSoundGenerator()->LoadMachineSettings(Machine, pDoc->GetEngineSpeed(), pDoc->GetNamcoChannels());
+	theApp.GetSoundGenerator()->LoadMachineSettings();		// // //
 	theApp.GetSoundGenerator()->DocumentPropertiesChanged(pDoc);		// // //
 	m_wndInstEdit.SetRefreshRate(static_cast<float>(pDoc->GetFrameRate()));		// // //
 }
@@ -3443,7 +3443,7 @@ void CMainFrame::OnTrackerNtsc()
 
 	machine_t Machine = NTSC;
 	pDoc->SetMachine(Machine);
-	theApp.GetSoundGenerator()->LoadMachineSettings(Machine, pDoc->GetEngineSpeed(), pDoc->GetNamcoChannels());
+	theApp.GetSoundGenerator()->LoadMachineSettings();		// // //
 	theApp.GetSoundGenerator()->DocumentPropertiesChanged(pDoc);		// // //
 	m_wndInstEdit.SetRefreshRate(static_cast<float>(pDoc->GetFrameRate()));		// // //
 }
@@ -3455,7 +3455,7 @@ void CMainFrame::OnSpeedDefault()
 
 	int Speed = 0;
 	pDoc->SetEngineSpeed(Speed);
-	theApp.GetSoundGenerator()->LoadMachineSettings(pDoc->GetMachine(), Speed, pDoc->GetNamcoChannels());
+	theApp.GetSoundGenerator()->LoadMachineSettings();		// // //
 	m_wndInstEdit.SetRefreshRate(static_cast<float>(pDoc->GetFrameRate()));		// // //
 }
 
@@ -3476,7 +3476,7 @@ void CMainFrame::OnSpeedCustom()
 		return;
 
 	pDoc->SetEngineSpeed(Speed);
-	theApp.GetSoundGenerator()->LoadMachineSettings(Machine, Speed, pDoc->GetNamcoChannels());
+	theApp.GetSoundGenerator()->LoadMachineSettings();		// // //
 	m_wndInstEdit.SetRefreshRate(static_cast<float>(pDoc->GetFrameRate()));		// // //
 }
 

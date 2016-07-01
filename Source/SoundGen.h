@@ -117,7 +117,7 @@ public:
 	// Multiple times initialization
 	void		RegisterChannels(int Chip, CFamiTrackerDoc *pDoc);
 	void		SelectChip(int Chip);
-	void		LoadMachineSettings(machine_t Machine, int Rate, int NamcoChannels);
+	void		LoadMachineSettings();		// // // 050B
 
 	// Sound
 	bool		InitializeSound(HWND hWnd);

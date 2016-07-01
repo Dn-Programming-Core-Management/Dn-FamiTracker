@@ -2637,7 +2637,7 @@ bool CFamiTrackerDoc::ImportDetune(CFamiTrackerDoc *pImported)		// // //
 	for (int i = 0; i < 6; i++) for (int j = 0; j < NOTE_COUNT; j++)
 		m_iDetuneTable[i][j] = pImported->GetDetuneOffset(i, j);
 
-	theApp.GetSoundGenerator()->LoadMachineSettings(m_iMachine, m_iEngineSpeed, m_iNamcoChannels);
+	theApp.GetSoundGenerator()->LoadMachineSettings();		// // //
 	return true;
 }
 
@@ -3847,7 +3847,7 @@ void CFamiTrackerDoc::ApplyExpansionChip()
 	theApp.GetSoundGenerator()->SelectChip(m_iExpansionChip);
 
 	// Change period tables
-	theApp.GetSoundGenerator()->LoadMachineSettings(m_iMachine, m_iEngineSpeed, m_iNamcoChannels);
+	theApp.GetSoundGenerator()->LoadMachineSettings();		// // //
 
 	SetModifiedFlag();
 	SetExceededFlag();			// // //

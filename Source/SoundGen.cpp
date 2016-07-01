@@ -1604,7 +1604,7 @@ void CSoundGen::CheckControl()
 	}
 }
 
-void CSoundGen::LoadMachineSettings(machine_t Machine, int Rate, int NamcoChannels)
+void CSoundGen::LoadMachineSettings()		// // //
 {
 	// Setup machine-type and speed
 	//
@@ -1615,12 +1615,13 @@ void CSoundGen::LoadMachineSettings(machine_t Machine, int Rate, int NamcoChanne
 
 	ASSERT(m_pAPU != NULL);
 
-	int BaseFreq	= (Machine == NTSC) ? CAPU::BASE_FREQ_NTSC  : CAPU::BASE_FREQ_PAL;
-	int DefaultRate = (Machine == NTSC) ? CAPU::FRAME_RATE_NTSC : CAPU::FRAME_RATE_PAL;
+	m_iMachineType = m_pDocument->GetMachine();		// // // 050B
 
-	m_iMachineType = Machine;
+	int BaseFreq	= (m_iMachineType == NTSC) ? CAPU::BASE_FREQ_NTSC  : CAPU::BASE_FREQ_PAL;
+	int DefaultRate = (m_iMachineType == NTSC) ? CAPU::FRAME_RATE_NTSC : CAPU::FRAME_RATE_PAL;
 
 	// Choose a default rate if not predefined
+	int Rate = m_pDocument->GetEngineSpeed();		// // //
 	if (Rate == 0)
 		Rate = DefaultRate;
 
@@ -1629,7 +1630,7 @@ void CSoundGen::LoadMachineSettings(machine_t Machine, int Rate, int NamcoChanne
 
 	{
 		CSingleLock l(&m_csAPULock, TRUE);		// // //
-		m_pAPU->ChangeMachineRate(Machine == NTSC ? MACHINE_NTSC : MACHINE_PAL, Rate);		// // //
+		m_pAPU->ChangeMachineRate(m_iMachineType == NTSC ? MACHINE_NTSC : MACHINE_PAL, Rate);		// // //
 	}
 
 #if WRITE_VOLUME_FILE
@@ -1911,8 +1912,6 @@ BOOL CSoundGen::InitInstance()
 		if (m_pVisualizerWnd != NULL)
 			m_pVisualizerWnd->ReportAudioProblem();
 	}
-
-//	LoadMachineSettings(DEFAULT_MACHINE_TYPE, DEFAULT_MACHINE_TYPE == NTSC ? CAPU::FRAME_RATE_NTSC : CAPU::FRAME_RATE_PAL);
 
 	ResetAPU();
 
