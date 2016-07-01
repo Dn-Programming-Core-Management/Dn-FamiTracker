@@ -535,7 +535,7 @@ private:
 	stHighlight		m_vHighlight;								// // //
 
 	// Things below are for compability with older files
-	CArray<COldSequence> m_vTmpSequences;		// // //
+	std::vector<COldSequence> m_vTmpSequences;		// // //
 
 	mutable CDocumentFile *m_pCurrentDocument;		// // //
 
@@ -545,7 +545,6 @@ private:
 
 	// Thread synchronization
 private:
-	mutable CCriticalSection m_csInstrument;
 	mutable CMutex			 m_csDocumentLock;
 
 // Operations

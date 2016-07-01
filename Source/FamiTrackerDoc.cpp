@@ -372,7 +372,7 @@ void CFamiTrackerDoc::DeleteContents()
 	ResetDetuneTables();		// // //
 
 	// Used for loading older files
-	m_vTmpSequences.RemoveAll();
+	m_vTmpSequences.clear();		// // //
 
 	// Auto save
 #ifdef AUTOSAVE
@@ -532,7 +532,7 @@ void CFamiTrackerDoc::ReorderSequences()
 						pInst->SetSeqIndex(j, Indices[Index][j]);
 					}
 					else {
-						COldSequence Seq(m_vTmpSequences[Index]);		// // //
+						COldSequence &Seq = m_vTmpSequences[Index];		// // //
 						if (j == SEQ_VOLUME)
 							for (unsigned int k = 0; k < Seq.GetLength(); ++k)
 								Seq.Value[k] = std::max(std::min<int>(Seq.Value[k], 15), 0);
@@ -551,7 +551,7 @@ void CFamiTrackerDoc::ReorderSequences()
 	}
 
 	// De-allocate memory
-	m_vTmpSequences.RemoveAll();
+	m_vTmpSequences.clear();		// // //
 }
 
 template <module_error_level_t l>
@@ -1387,12 +1387,13 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 
 			case FB_SEQUENCES:
 				pOpenFile->Read(&ReadCount, sizeof(int));
-				m_vTmpSequences.SetSize(ReadCount);
 				for (i = 0; i < ReadCount; i++) {
+					COldSequence Seq;
 					pOpenFile->Read(&ImportedSequence, sizeof(ImportedSequence));
 					if (ImportedSequence.Count > 0 && ImportedSequence.Count < MAX_SEQUENCE_ITEMS)
 						for (unsigned int i = 0; i < ImportedSequence.Count; ++i)		// // //
-							m_vTmpSequences[i].AddItem(ImportedSequence.Length[i], ImportedSequence.Value[i]);
+							Seq.AddItem(ImportedSequence.Length[i], ImportedSequence.Value[i]);
+					m_vTmpSequences.push_back(Seq);		// // //
 				}
 				break;
 
@@ -1805,15 +1806,16 @@ void CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile, const int Ver
 	unsigned int Count = AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES * SEQ_COUNT, "2A03 sequence count");
 
 	if (Version == 1) {
-		m_vTmpSequences.SetSize(MAX_SEQUENCES);
 		for (unsigned int i = 0; i < Count; ++i) {
+			COldSequence Seq;
 			unsigned int Index = AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES - 1, "Sequence index");
 			unsigned int SeqCount = static_cast<unsigned char>(pDocFile->GetBlockChar());
 			AssertRange(SeqCount, 0U, static_cast<unsigned>(MAX_SEQUENCE_ITEMS - 1), "Sequence item count");
 			for (unsigned int j = 0; j < SeqCount; ++j) {
 				char Value = pDocFile->GetBlockChar();
-				m_vTmpSequences[Index].AddItem(pDocFile->GetBlockChar(), Value);
+				Seq.AddItem(pDocFile->GetBlockChar(), Value);
 			}
+			m_vTmpSequences.push_back(Seq);		// // //
 		}
 	}
 	else if (Version == 2) {
