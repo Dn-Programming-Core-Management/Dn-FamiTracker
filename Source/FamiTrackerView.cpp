@@ -1126,10 +1126,12 @@ void CFamiTrackerView::OnTrackerDetune()			// // //
 	CFamiTrackerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	CDetuneDlg DetuneDlg;
-	int *Table = DetuneDlg.GetDetuneTable();
-	if (Table == NULL) return;
+	UINT nResult = DetuneDlg.DoModal();
+	if (nResult != IDOK) return;
+	const int *Table = DetuneDlg.GetDetuneTable();
 	for (int i = 0; i < 6; i++) for (int j = 0; j < NOTE_COUNT; j++)
 		pDoc->SetDetuneOffset(i, j, *(Table + j + i * NOTE_COUNT));
+	pDoc->SetTuning(DetuneDlg.GetDetuneSemitone(), DetuneDlg.GetDetuneCent());		// // // 050B
 	theApp.GetSoundGenerator()->DocumentPropertiesChanged(pDoc);
 }
 

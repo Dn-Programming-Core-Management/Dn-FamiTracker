@@ -33,7 +33,9 @@ public:
 	CDetuneDlg(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CDetuneDlg();
 
-	int* GetDetuneTable();
+	const int *GetDetuneTable() const;
+	int GetDetuneSemitone() const;
+	int GetDetuneCent() const;
 	static const CString CHIP_STR[6];
 
 // Dialog Data
@@ -44,9 +46,8 @@ protected:
 
 	CFamiTrackerDoc* m_pDocument;
 
-	CSliderCtrl *SliderOctave, *SliderNote, *SliderOffset;
-	CSpinButtonCtrl *SpinOctave, *SpinNote, *SpinOffset;
-	CEdit *EditOctave, *EditNote, *EditOffset;
+	CSliderCtrl *m_cSliderOctave, *m_cSliderNote, *m_cSliderOffset;
+	CEdit *m_cEditOctave, *m_cEditNote, *m_cEditOffset;
 	
 	static const TCHAR *m_pNote[12];
 	static const TCHAR *m_pNoteFlat[12];
@@ -56,12 +57,12 @@ protected:
 	int    m_iOffset;
 	int    m_iCurrentChip;
 	int    m_iDetuneTable[6][96];		// NTSC PAL VRC6 VRC7 FDS N163
-	double m_iCent;
+	int    m_iGlobalSemitone, m_iGlobalCent;
 
 	// 0CC: merge with definitions from PatternEditor.cpp
 	unsigned int FreqToReg(double Freq, int Chip, int Octave);
 	double       RegToFreq(unsigned int Reg, int Chip, int Octave);
-	double       NoteToFreq(int Note);
+	double       NoteToFreq(double Note);
 
 	void UpdateOctave();
 	void UpdateNote();
@@ -85,7 +86,6 @@ public:
 	afx_msg void OnBnClickedRadioVRC7();
 	afx_msg void OnBnClickedRadioFDS();
 	afx_msg void OnBnClickedRadioN163();
-	afx_msg void OnBnClickedButtonTune();
 	afx_msg void OnBnClickedButtonReset();
 	afx_msg void OnBnClickedButtonImport();
 	afx_msg void OnBnClickedButtonExport();
