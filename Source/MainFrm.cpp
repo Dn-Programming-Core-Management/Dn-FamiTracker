@@ -489,7 +489,7 @@ bool CMainFrame::CreateToolbars()
 
 	rbi1.cbSize		= sizeof(REBARBANDINFO);
 	rbi1.fMask		= RBBIM_CHILD | RBBIM_CHILDSIZE | RBBIM_STYLE | RBBIM_SIZE;
-	rbi1.fStyle		= RBBS_NOGRIPPER;
+	rbi1.fStyle		= RBBS_GRIPPERALWAYS;		// // // 050B
 	rbi1.hwndChild	= m_wndToolBar;
 	rbi1.cxMinChild	= DPI::SX(554);
 	rbi1.cyMinChild	= DPI::SY(22);
@@ -502,9 +502,9 @@ bool CMainFrame::CreateToolbars()
 
 	rbi1.cbSize		= sizeof(REBARBANDINFO);
 	rbi1.fMask		= RBBIM_CHILD | RBBIM_CHILDSIZE | RBBIM_STYLE | RBBIM_SIZE;
-	rbi1.fStyle		= RBBS_NOGRIPPER;
+	rbi1.fStyle		= RBBS_GRIPPERALWAYS;		// // // 050B
 	rbi1.hwndChild	= m_wndOctaveBar;
-	rbi1.cxMinChild	= DPI::SX(120);
+	rbi1.cxMinChild	= DPI::SX(460);		// // //
 	rbi1.cyMinChild	= DPI::SY(22);
 	rbi1.cx			= DPI::SX(100);
 
@@ -2126,6 +2126,7 @@ BOOL CMainFrame::DestroyWindow()
 		WinRect.top = WinRect.left = 100;
 		WinRect.bottom = 920;
 		WinRect.right = 950;
+		DPI::ScaleRect(WinRect);		// // // 050B
 	}
 
 	// Save window position
