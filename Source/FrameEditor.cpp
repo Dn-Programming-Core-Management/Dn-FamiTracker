@@ -142,7 +142,9 @@ int CFrameEditor::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	m_hAccel = LoadAccelerators(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_FRAMEWND));
 
-	m_Font.CreateFont(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, DEFAULT_FONT);
+	m_Font.CreateFont(DPI::SY(14), 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
+					  OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
+					  theApp.GetSettings()->Appearance.strFrameFont);		// // // 050B
 
 	m_iClipboard = ::RegisterClipboardFormat(CLIPBOARD_ID);
 
