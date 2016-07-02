@@ -376,7 +376,7 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 	SetupVibratoTable(pDocument->GetVibratoStyle());		// // //
 	
 	machine_t Machine = pDocument->GetMachine();
-	const int A440_NOTE = 45;
+	const double A440_NOTE = 45. - pDocument->GetTuningSemitone() - pDocument->GetTuningCent() / 100.;
 	double clock_ntsc = CAPU::BASE_FREQ_NTSC / 16.0;
 	double clock_pal = CAPU::BASE_FREQ_PAL / 16.0;
 

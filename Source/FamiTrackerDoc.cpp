@@ -366,6 +366,8 @@ void CFamiTrackerDoc::DeleteContents()
 	m_bLinearPitch		 = DEFAULT_LINEAR_PITCH;
 	m_iChannelsAvailable = CHANNELS_DEFAULT;
 	m_iSpeedSplitPoint	 = DEFAULT_SPEED_SPLIT_POINT;
+	m_iDetuneSemitone	 = 0;		// // // 050B
+	m_iDetuneCent		 = 0;		// // // 050B
 
 	m_vHighlight = CPatternData::DEFAULT_HIGHLIGHT;		// // //
 
@@ -683,7 +685,7 @@ bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 		6, 1, 3, 6, 6, 3, 4, 1, 1,
 #endif
 		6, 1, 1,					// expansion
-		1, 1, 1, 1					// 0cc-ft
+		2, 1, 1, 1					// 0cc-ft
 	};
 
 	static bool (CFamiTrackerDoc::*FTM_WRITE_FUNC[])(CDocumentFile*, const int) const = {		// // //
@@ -1673,8 +1675,8 @@ void CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile, const int Ve
 	AssertRange<MODULE_ERROR_STRICT>(m_iExpansionChip, 0, 0x3F, "Expansion chip flag");
 
 	if (Version >= 8) {		// // // 050B
-		char Semitones = pDocFile->GetBlockChar();
-		char Cents = pDocFile->GetBlockChar();
+		m_iDetuneSemitone = pDocFile->GetBlockChar();
+		m_iDetuneCent = pDocFile->GetBlockChar();
 	}
 
 	SetupChannels(m_iExpansionChip);
@@ -2471,13 +2473,21 @@ bool CFamiTrackerDoc::WriteBlock_Bookmarks(CDocumentFile *pDocFile, const int Ve
 void CFamiTrackerDoc::ReadBlock_ParamsExtra(CDocumentFile *pDocFile, const int Version)
 {
 	m_bLinearPitch = pDocFile->GetBlockInt() != 0;
+	if (Version >= 2) {
+		m_iDetuneSemitone = AssertRange(pDocFile->GetBlockChar(), -12, 12, "Global semitone tuning");
+		m_iDetuneCent = AssertRange(pDocFile->GetBlockChar(), -100, 100, "Global cent tuning");
+	}
 }
 
 bool CFamiTrackerDoc::WriteBlock_ParamsExtra(CDocumentFile *pDocFile, const int Version) const
 {
-	if (!m_bLinearPitch) return true;
+	if (!m_bLinearPitch && !m_iDetuneSemitone && !m_iDetuneCent) return true;
 	pDocFile->CreateBlock(FILE_BLOCK_PARAMS_EXTRA, Version);
-	pDocFile->WriteBlockInt(true);
+	pDocFile->WriteBlockInt(m_bLinearPitch);
+	if (Version >= 2) {
+		pDocFile->WriteBlockChar(m_iDetuneSemitone);
+		pDocFile->WriteBlockChar(m_iDetuneCent);
+	}
 	return pDocFile->FlushBlock();
 }
 
@@ -4889,6 +4899,22 @@ void CFamiTrackerDoc::ResetDetuneTables()		// // //
 {
 	for (int i = 0; i < 6; i++) for (int j = 0; j < NOTE_COUNT; j++)
 		m_iDetuneTable[i][j] = 0;
+}
+
+void CFamiTrackerDoc::SetTuning(int Semitone, int Cent)		// // // 050B
+{
+	m_iDetuneSemitone = Semitone;
+	m_iDetuneCent = Cent;
+}
+
+int CFamiTrackerDoc::GetTuningSemitone() const		// // // 050B
+{
+	return m_iDetuneSemitone;
+}
+
+int CFamiTrackerDoc::GetTuningCent() const		// // // 050B
+{
+	return m_iDetuneCent;
 }
 
 CGroove* CFamiTrackerDoc::GetGroove(int Index) const		// // //

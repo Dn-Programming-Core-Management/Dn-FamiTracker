@@ -1362,6 +1362,7 @@ void CFamiTrackerView::OnInitialUpdate()
 	// Setup speed/tempo (TODO remove?)
 	theApp.GetSoundGenerator()->ResetState();
 	theApp.GetSoundGenerator()->ResetTempo();
+	theApp.GetSoundGenerator()->DocumentPropertiesChanged(pDoc);		// // //
 
 	// Default
 	SetInstrument(0);

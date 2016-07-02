@@ -769,11 +769,13 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 				CHECK(t.ReadEOL(&sResult));
 				break;
 			case CT_TUNING:		// // // 050B
+			{
 				CHECK(t.ReadInt(i,-12,12,&sResult));
-
-				CHECK(t.ReadInt(i,-100,100,&sResult));
-
+				int cent;
+				CHECK(t.ReadInt(cent,-100,100,&sResult));
+				pDoc->SetTuning(i, cent);
 				CHECK(t.ReadEOL(&sResult));
+			}
 				break;
 			case CT_N163CHANNELS:
 				CHECK(t.ReadInt(i,1,8,&sResult));
@@ -1275,17 +1277,18 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 				"%-15s %d\n"
 				"%-15s %d\n"
 //				"%-15s %d %d\n"		// // // 050B
-//				"%-15s %d %d\n"
-				"\n"),
+				),
 				CT[CT_MACHINE],   pDoc->GetMachine(),
 				CT[CT_FRAMERATE], pDoc->GetEngineSpeed(),
 				CT[CT_EXPANSION], pDoc->GetExpansionChip(),
 				CT[CT_VIBRATO],   pDoc->GetVibratoStyle(),
 				CT[CT_SPLIT],     pDoc->GetSpeedSplitPoint()
 //				,CT[CT_PLAYBACKRATE], pDoc->, pDoc->
-//				,CT[CT_TUNING], pDoc->, pDoc->
 				);
+	if (pDoc->GetTuningSemitone() || pDoc->GetTuningCent())		// // // 050B
+		s.AppendFormat(_T("%-15s %d %d\n"), CT[CT_TUNING], pDoc->GetTuningSemitone(), pDoc->GetTuningCent());
 	f.WriteString(s);
+	f.WriteString(_T("\n"));
 
 	int N163count = -1;		// // //
 	if (pDoc->ExpansionEnabled(SNDCHIP_N163))
