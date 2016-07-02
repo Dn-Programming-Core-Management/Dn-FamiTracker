@@ -65,6 +65,9 @@ public:
 	void	SetNamcoMixing(bool bLinear);		// // //
 	void	SetNamcoVolume(float fVol);
 
+	int		GetMeterDecayRate() const;		// // // 050B
+	void	SetMeterDecayRate(int Rate);		// // // 050B
+
 private:
 	inline double CalcPin1(double Val1, double Val2);
 	inline double CalcPin2(double Val1, double Val2, double Val3);
@@ -100,11 +103,12 @@ private:
 
 	int32_t		m_iChannels[CHANNELS];
 	uint8_t		m_iExternalChip;
-	uint32_t		m_iSampleRate;
+	uint32_t	m_iSampleRate;
 
 	float		m_fChannelLevels[CHANNELS];
-	uint32_t		m_iChanLevelFallOff[CHANNELS];
+	uint32_t	m_iChanLevelFallOff[CHANNELS];
 
+	int			m_iMeterDecayRate;		// // // 050B
 	int			m_iLowCut;
 	int			m_iHighCut;
 	int			m_iHighDamp;

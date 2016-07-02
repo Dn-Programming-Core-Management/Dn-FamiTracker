@@ -165,7 +165,7 @@ void CSettings::SetupSettings()
 	SETTING_INT("Window position", "State",	STATE_NORMAL, &WindowPos.iState);
 
 	// Display
-	SETTING_BOOL("Display", "Average BPM", false, &Display.bAverageBPM);		// // // 050B todo
+	SETTING_BOOL("Display", "Average BPM", false, &Display.bAverageBPM);		// // // 050B
 	SETTING_BOOL("Display", "Channel state", false, &Display.bChannelState);		// // // 050B todo
 	SETTING_BOOL("Display", "Register state", false, &Display.bRegisterState);		// // // 050B
 
@@ -173,6 +173,7 @@ void CSettings::SetupSettings()
 	SETTING_INT("Other", "Sample window state", 0, &SampleWinState);
 	SETTING_INT("Other", "Frame editor position", 0, &FrameEditPos);
 	SETTING_BOOL("Other", "Follow mode", true, &FollowMode);
+	SETTING_BOOL("Other", "Meter decay rate", false, &MeterDecayRate);		// // // 050B
 
 	// Paths
 	SETTING_STRING("Paths", "FTM path", "", &Paths[PATH_FTM]);

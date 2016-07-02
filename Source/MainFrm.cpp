@@ -354,6 +354,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_AVERAGEBPM, OnUpdateDisplayAverageBPM)		// // // 050B
 	ON_UPDATE_COMMAND_UI(ID_VIEW_CHANNELSTATE, OnUpdateDisplayChannelState)		// // // 050B
 	ON_UPDATE_COMMAND_UI(ID_TRACKER_DISPLAYREGISTERSTATE, OnUpdateDisplayRegisterState)
+	ON_UPDATE_COMMAND_UI(ID_DECAY_FAST, OnUpdateDecayFast)		// // // 050B
+	ON_UPDATE_COMMAND_UI(ID_DECAY_SLOW, OnUpdateDecaySlow)		// // // 050B
 	ON_COMMAND(ID_KRAID1, OnEasterEggKraid1)		// Easter Egg
 	ON_COMMAND(ID_KRAID2, OnEasterEggKraid2)
 	ON_COMMAND(ID_KRAID3, OnEasterEggKraid3)
@@ -2994,12 +2996,22 @@ void CMainFrame::OnEditSelecttrack()
 
 void CMainFrame::OnDecayFast()
 {
-	// TODO add this
+	theApp.GetSoundGenerator()->SetMeterDecayRate(theApp.GetSettings()->MeterDecayRate = DECAY_FAST);		// // // 050B
 }
 
 void CMainFrame::OnDecaySlow()
 {
-	// TODO add this
+	theApp.GetSoundGenerator()->SetMeterDecayRate(theApp.GetSettings()->MeterDecayRate = DECAY_SLOW);		// // // 050B
+}
+
+void CMainFrame::OnUpdateDecayFast(CCmdUI *pCmdUI)		// // // 050B
+{
+	pCmdUI->SetCheck(theApp.GetSoundGenerator()->GetMeterDecayRate() == DECAY_FAST ? MF_CHECKED : MF_UNCHECKED);
+}
+
+void CMainFrame::OnUpdateDecaySlow(CCmdUI *pCmdUI)		// // // 050B
+{
+	pCmdUI->SetCheck(theApp.GetSoundGenerator()->GetMeterDecayRate() == DECAY_SLOW ? MF_CHECKED : MF_UNCHECKED);
 }
 
 void CMainFrame::OnEditExpandpatterns()

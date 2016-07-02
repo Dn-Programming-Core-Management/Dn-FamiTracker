@@ -157,7 +157,7 @@ BEGIN
         POPUP "&Select"
         BEGIN
             MENUITEM "&All\tCtrl+A",                ID_EDIT_SELECTALL
-            MENUITEM "&None\tEsc",                  ID_SELECT_NONE
+            MENUITEM "&None",                       ID_SELECT_NONE
             MENUITEM SEPARATOR
             MENUITEM "&Row",                        ID_SELECT_ROW
             MENUITEM "&Column",                     ID_SELECT_COLUMN
@@ -298,6 +298,11 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Follow Mode",                IDC_FOLLOW_TOGGLE, CHECKED
         MENUITEM "Co&mpact View",               IDC_COMPACT_TOGGLE
+        POPUP "Meter &Decay Rate"
+        BEGIN
+            MENUITEM "&Slow",                       ID_DECAY_SLOW
+            MENUITEM "&Fast",                       ID_DECAY_FAST
+        END
         MENUITEM SEPARATOR
         MENUITEM "Average &BPM",                ID_VIEW_AVERAGEBPM
         MENUITEM "C&hannel State",              ID_VIEW_CHANNELSTATE
@@ -431,11 +436,17 @@ IDR_PATTERN_HEADER_POPUP MENU
 BEGIN
     POPUP "Popup"
     BEGIN
-        MENUITEM "&Toggle Channel\tAlt+F9",     ID_TRACKER_TOGGLECHANNEL
-        MENUITEM "&Solo Channel\tAlt+F10",      ID_TRACKER_SOLOCHANNEL
+        MENUITEM "&Toggle Channel",             ID_TRACKER_TOGGLECHANNEL
+        MENUITEM "&Solo Channel",               ID_TRACKER_SOLOCHANNEL
         MENUITEM "To&ggle Chip",                ID_TRACKER_TOGGLECHIP
         MENUITEM "So&lo Chip",                  ID_TRACKER_SOLOCHIP
         MENUITEM "&Unmute All Channels",        ID_POPUP_UNMUTEALLCHANNELS
+        MENUITEM SEPARATOR
+        POPUP "&Meter Decay Rate"
+        BEGIN
+            MENUITEM "&Slow",                       ID_DECAY_SLOW
+            MENUITEM "&Fast",                       ID_DECAY_FAST
+        END
         MENUITEM SEPARATOR
         MENUITEM "&Record to Instrument",       ID_TRACKER_RECORDTOINST
         MENUITEM "R&ecorder Settings...",       ID_TRACKER_RECORDERSETTINGS
@@ -2177,6 +2188,11 @@ BEGIN
     0
 END
 
+IDD_HEADER AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2504,6 +2520,8 @@ END
 
 STRINGTABLE
 BEGIN
+    ID_DECAY_SLOW           "Volume meters slowly decrease over time\nSlow Decay Rate"
+    ID_DECAY_FAST           "Volume meters reflect instant channel amplitude\nFast Decay Rate"
     ID_INSTRUMENT_DEEPCLONE "Create a copy of selected instrument including all sequences\nDeep Clone Instrument"
     ID_EDIT_FIND_TOGGLE     "Bring up the find / replace tab\nToggle Find / Replace Tab"
 END

@@ -2568,6 +2568,16 @@ int CSoundGen::GetSequencePlayPos(const CSequence *pSequence)
 	return Ret;
 }
 
+void CSoundGen::SetMeterDecayRate(int Type) const		// // // 050B
+{
+	m_pAPU->SetMeterDecayRate(Type);
+}
+
+int CSoundGen::GetMeterDecayRate() const
+{
+	return m_pAPU->GetMeterDecayRate();
+}
+
 int CSoundGen::GetDefaultInstrument() const
 {
 	return ((CMainFrame*)theApp.m_pMainWnd)->GetSelectedInstrument();

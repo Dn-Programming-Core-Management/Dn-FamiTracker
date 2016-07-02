@@ -90,6 +90,7 @@ CMixer::CMixer()
 	m_dSumSS = 0.0;
 	m_dSumTND = 0.0;
 
+	m_iMeterDecayRate = DECAY_SLOW;		// // // 050B
 	m_bNamcoMixing = false;		// // //
 }
 
@@ -248,6 +249,16 @@ void CMixer::SetNamcoVolume(float fVol)
 	SynthN163.volume(fVolume * 1.1f * m_fLevelN163);
 }
 
+int CMixer::GetMeterDecayRate() const		// // // 050B
+{
+	return m_iMeterDecayRate;
+}
+
+void CMixer::SetMeterDecayRate(int Rate)		// // // 050B
+{
+	m_iMeterDecayRate = Rate;
+}
+
 void CMixer::MixSamples(blip_sample_t *pBuffer, uint32_t Count)
 {
 	// For VRC7
@@ -289,21 +300,28 @@ int CMixer::FinishBuffer(int t)
 {
 	BlipBuffer.end_frame(t);
 
-	// Get channel levels for VRC7
-	for (int i = 0; i < 6; ++i)
-		StoreChannelLevel(CHANID_VRC7_CH1 + i, OPLL_getchanvol(i));
-
 	for (int i = 0; i < CHANNELS; ++i) {
-		if (m_iChanLevelFallOff[i] > 0)
-			m_iChanLevelFallOff[i]--;
-		else {
-			if (m_fChannelLevels[i] > 0) {
+		// TODO: this is more complicated than 0.5.0 beta's implementation
+		if (m_iChanLevelFallOff[i] > 0) {
+			if (m_iMeterDecayRate == DECAY_FAST)		// // // 050B
+				m_iChanLevelFallOff[i] = 0;
+			else
+				--m_iChanLevelFallOff[i];
+		}
+		else if (m_fChannelLevels[i] > 0) {
+			if (m_iMeterDecayRate == DECAY_FAST)		// // // 050B
+				m_fChannelLevels[i] = 0;
+			else {
 				m_fChannelLevels[i] -= LEVEL_FALL_OFF_RATE;
 				if (m_fChannelLevels[i] < 0)
 					m_fChannelLevels[i] = 0;
 			}
 		}
 	}
+
+	// Get channel levels for VRC7
+	for (int i = 0; i < 6; ++i)
+		StoreChannelLevel(CHANID_VRC7_CH1 + i, OPLL_getchanvol(i));
 
 	// Return number of samples available
 	return BlipBuffer.samples_avail();

@@ -393,6 +393,16 @@ void CAPU::SetNamcoMixing(bool bLinear)		// // //
 	m_pN163->SetMixingMethod(bLinear);
 }
 
+void CAPU::SetMeterDecayRate(int Type) const		// // // 050B
+{
+	m_pMixer->SetMeterDecayRate(Type);
+}
+
+int CAPU::GetMeterDecayRate() const		// // // 050B
+{
+	return m_pMixer->GetMeterDecayRate();
+}
+
 void CAPU::LogWrite(uint16_t Address, uint8_t Value)
 {
 	for (auto &r : ExChips)		// // //

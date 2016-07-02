@@ -27,6 +27,11 @@
 #define SAMPLES_IN_BYTES(x) (x << SampleSizeShift)
 
 
+enum decay_rate_t {		// // // 050B
+	DECAY_SLOW,
+	DECAY_FAST
+};
+
 // Used to get the DPCM state
 struct stDPCMState {
 	int SamplePos;

@@ -208,6 +208,7 @@ public:
 	int SampleWinState;
 	int FrameEditPos;
 	bool FollowMode;
+	bool MeterDecayRate;		// // // 050B
 	bool m_bNamcoMixing;		// // //
 
 	struct {

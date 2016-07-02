@@ -75,6 +75,8 @@ public:
 	void	SetChipLevel(chip_level_t Chip, float Level);
 
 	void	SetNamcoMixing(bool bLinear);		// // //
+	void	SetMeterDecayRate(int Type) const;		// // // 050B
+	int		GetMeterDecayRate() const;		// // // 050B
 
 #ifdef LOGGING
 	void	Log();

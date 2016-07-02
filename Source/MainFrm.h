@@ -415,6 +415,8 @@ public:
 	afx_msg void OnUpdateDisplayAverageBPM(CCmdUI *pCmdUI);		// // // 050B
 	afx_msg void OnUpdateDisplayChannelState(CCmdUI *pCmdUI);		// // // 050B
 	afx_msg void OnUpdateDisplayRegisterState(CCmdUI *pCmdUI);
+	afx_msg void OnUpdateDecayFast(CCmdUI *pCmdUI);		// // // 050B
+	afx_msg void OnUpdateDecaySlow(CCmdUI *pCmdUI);		// // // 050B
 
 	afx_msg void OnEasterEggKraid1();		// Easter Egg
 	afx_msg void OnEasterEggKraid2();
