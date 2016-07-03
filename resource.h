@@ -302,8 +302,10 @@
 #define IDC_COL_ITEM                    1100
 #define IDC_PICK_COL                    1101
 #define IDC_COL_PREVIEW                 1102
+#define IDC_BUTTON_APPEARANCE_SAVE      1103
 #define IDC_SCHEME                      1104
 #define IDC_PREVIEW                     1105
+#define IDC_BUTTON_APPEARANCE_LOAD      1106
 #define IDC_PAL                         1112
 #define IDC_LOOP                        1118
 #define IDC_OUTDEVICES                  1124

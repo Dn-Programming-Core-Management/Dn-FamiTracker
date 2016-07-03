@@ -154,6 +154,7 @@ void CSettings::SetupSettings()
 	SETTING_INT("Appearance", "Current row (playing)", DEFAULT_COLOR_SCHEME.ROW_PLAYING, &Appearance.iColCurrentRowPlaying);
 	SETTING_STRING("Appearance", "Pattern font", FONT_FACE, &Appearance.strFont);
 	SETTING_INT("Appearance", "Pattern font size", FONT_SIZE, &Appearance.iFontSize);
+	SETTING_STRING("Appearance", "Frame font", FONT_FACE, &Appearance.strFrameFont);		// // // 050B todo
 	SETTING_BOOL("General", "Pattern colors", true, &Appearance.bPatternColor);
 	SETTING_BOOL("General", "Display flats", false, &Appearance.bDisplayFlats);
 	

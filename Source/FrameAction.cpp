@@ -530,7 +530,7 @@ void CFActionChangePatternAll::Redo(CMainFrame *pMainFrm) const
 bool CFActionMoveDown::SaveState(const CMainFrame *pMainFrm)
 {
 	const CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	return m_pUndoState->Frame < pDoc->GetFrameCount(m_pUndoState->Track) - 1;
+	return m_pUndoState->Frame < static_cast<int>(pDoc->GetFrameCount(m_pUndoState->Track)) - 1;
 }
 
 void CFActionMoveDown::Undo(CMainFrame *pMainFrm) const

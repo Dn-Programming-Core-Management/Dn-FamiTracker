@@ -177,6 +177,7 @@ public:
 		int		iColCurrentRowPlaying;
 
 		CString	strFont;		// // //
+		CString	strFrameFont;		// // // 050B
 		int		iFontSize;
 		bool	bPatternColor;
 		bool	bDisplayFlats;

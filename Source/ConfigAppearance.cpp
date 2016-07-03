@@ -26,6 +26,7 @@
 #include "Settings.h"
 #include "ColorScheme.h"
 #include "Graphics.h"
+#include <fstream>
 
 const TCHAR *CConfigAppearance::COLOR_ITEMS[] = {
 	_T("Background"), 
@@ -43,6 +44,9 @@ const TCHAR *CConfigAppearance::COLOR_ITEMS[] = {
 	_T("Current row (edit mode)"),
 	_T("Current row (playing)")
 };
+
+const char *CConfigAppearance::SETTING_SEPARATOR = " : ";		// // // 050B
+const char *CConfigAppearance::HEX_PREFIX = "0x";		// // // 050B
 
 // Pre-defined color schemes
 const COLOR_SCHEME *CConfigAppearance::COLOR_SCHEMES[] = {
@@ -91,10 +95,12 @@ BEGIN_MESSAGE_MAP(CConfigAppearance, CPropertyPage)
 	ON_BN_CLICKED(IDC_PICK_COL, OnBnClickedPickCol)
 	ON_CBN_SELCHANGE(IDC_COL_ITEM, OnCbnSelchangeColItem)
 	ON_CBN_SELCHANGE(IDC_SCHEME, OnCbnSelchangeScheme)
-	ON_CBN_SELCHANGE(IDC_FONT_SIZE, &CConfigAppearance::OnCbnSelchangeFontSize)
-	ON_BN_CLICKED(IDC_PATTERNCOLORS, &CConfigAppearance::OnBnClickedPatterncolors)
-	ON_BN_CLICKED(IDC_DISPLAYFLATS, &CConfigAppearance::OnBnClickedDisplayFlats)
-	ON_CBN_EDITCHANGE(IDC_FONT_SIZE, &CConfigAppearance::OnCbnEditchangeFontSize)
+	ON_CBN_SELCHANGE(IDC_FONT_SIZE, OnCbnSelchangeFontSize)
+	ON_BN_CLICKED(IDC_PATTERNCOLORS, OnBnClickedPatterncolors)
+	ON_BN_CLICKED(IDC_DISPLAYFLATS, OnBnClickedDisplayFlats)
+	ON_CBN_EDITCHANGE(IDC_FONT_SIZE, OnCbnEditchangeFontSize)
+	ON_BN_CLICKED(IDC_BUTTON_APPEARANCE_SAVE, OnBnClickedButtonAppearanceSave)
+	ON_BN_CLICKED(IDC_BUTTON_APPEARANCE_LOAD, OnBnClickedButtonAppearanceLoad)
 END_MESSAGE_MAP()
 
 
@@ -443,4 +449,120 @@ void CConfigAppearance::OnBnClickedDisplayFlats()
 {
 	m_bDisplayFlats = IsDlgButtonChecked(IDC_DISPLAYFLATS) != 0;
 	SetModified();
+}
+
+void CConfigAppearance::OnBnClickedButtonAppearanceSave()		// // // 050B
+{
+	CString fileFilter = LoadDefaultFilter(IDS_FILTER_TXT, _T(".txt"));
+	CFileDialog fileDialog {FALSE, NULL, _T("Theme.txt"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, fileFilter};
+	if (fileDialog.DoModal() == IDOK)
+		ExportSettings(fileDialog.GetPathName().GetBuffer());
+}
+
+void CConfigAppearance::OnBnClickedButtonAppearanceLoad()		// // // 050B
+{
+	CString fileFilter = LoadDefaultFilter(IDS_FILTER_TXT, _T(".txt"));
+	CFileDialog fileDialog {TRUE, NULL, _T("Theme.txt"), OFN_HIDEREADONLY, fileFilter};
+	if (fileDialog.DoModal() == IDOK) {
+		ImportSettings(fileDialog.GetPathName().GetBuffer());
+		static_cast<CComboBox*>(GetDlgItem(IDC_FONT))->SelectString(0, m_strFont);
+		static_cast<CComboBox*>(GetDlgItem(IDC_FONT_SIZE))->SelectString(0, MakeIntString(m_iFontSize));
+		RedrawWindow();
+		SetModified();
+	}
+}
+
+void CConfigAppearance::ExportSettings(const char *Path) const		// // // 050B
+{
+	std::fstream file {Path, std::ios_base::out};
+	if (!file.good())
+		return;
+	file << "# 0CC-FamiTracker appearance" << std::endl << std::hex;
+	for (size_t i = 0; i < sizeof(m_iColors) / sizeof(*m_iColors); ++i)
+		file << COLOR_ITEMS[i] << SETTING_SEPARATOR << HEX_PREFIX << m_iColors[i] << std::endl;
+	file << std::dec;
+	file << "Pattern colors" << SETTING_SEPARATOR << m_bPatternColors << std::endl;
+	file << "Flags" << SETTING_SEPARATOR << m_bDisplayFlats << std::endl;
+	file << "Font" << SETTING_SEPARATOR << m_strFont << std::endl;
+	file << "Font size" << SETTING_SEPARATOR << m_iFontSize << std::endl;
+	file.close();
+}
+
+void CConfigAppearance::ImportSettings(const char *Path)		// // // 050B
+{
+	const size_t BUFFER_SIZE = 100;
+	std::fstream file {Path, std::ios_base::in};
+	char Line[BUFFER_SIZE + 1] = { };
+
+	while (file) {
+		file.getline(&Line[0], BUFFER_SIZE);
+		char *Begin = Line;
+		while (*Begin == ' ') ++Begin;
+		if (*Begin == '#') continue;
+
+		for (size_t i = 0; i < sizeof(m_iColors) / sizeof(*m_iColors); ++i) {
+			const auto &x = COLOR_ITEMS[i];
+			char *p = Begin;
+			if (memcmp(p, x, strlen(x)) != 0) continue;
+			p += strlen(x);
+			if (memcmp(p, SETTING_SEPARATOR, strlen(SETTING_SEPARATOR)) != 0) continue;
+			p += strlen(SETTING_SEPARATOR);
+			if (memcmp(p, HEX_PREFIX, strlen(HEX_PREFIX)) != 0) continue;
+			p += strlen(HEX_PREFIX);
+			sscanf(p, "%x", &m_iColors[i]);
+			goto outer_continue;
+		}
+
+		char *p = Begin;
+		if (!memcmp(p, "Pattern colors", strlen("Pattern colors"))) {
+			p += strlen("Pattern colors");
+			if (!memcmp(p, SETTING_SEPARATOR, strlen(SETTING_SEPARATOR))) {
+				p += strlen(SETTING_SEPARATOR);
+				if (*p == '1') {
+					m_bPatternColors = true; goto outer_continue;
+				}
+				else if (*p == '0') {
+					m_bPatternColors = false; goto outer_continue;
+				}
+			}
+		}
+
+		p = Begin;
+		if (!memcmp(p, "Flags", strlen("Flags"))) {
+			p += strlen("Flags");
+			if (!memcmp(p, SETTING_SEPARATOR, strlen(SETTING_SEPARATOR))) {
+				p += strlen(SETTING_SEPARATOR);
+				if (*p == '1') {
+					m_bPatternColors = true; goto outer_continue;
+				}
+				else if (*p == '0') {
+					m_bPatternColors = false; goto outer_continue;
+				}
+			}
+		}
+
+		p = Begin;
+		if (!memcmp(p, "Font size", strlen("Font size"))) {
+			p += strlen("Font size");
+			if (!memcmp(p, SETTING_SEPARATOR, strlen(SETTING_SEPARATOR))) {
+				p += strlen(SETTING_SEPARATOR);
+				sscanf(p, "%d", &m_iFontSize);
+				goto outer_continue;
+			}
+		}
+
+		p = Begin;
+		if (!memcmp(p, "Font", strlen("Font"))) {
+			p += strlen("Font");
+			if (!memcmp(p, SETTING_SEPARATOR, strlen(SETTING_SEPARATOR))) {
+				p += strlen(SETTING_SEPARATOR);
+				m_strFont = p; // copy assignment
+			}
+		}
+
+		TRACE(_T("Unknown appearance option: %s\n"), Line);
+	outer_continue:;
+	}
+
+	file.close();
 }
