@@ -68,6 +68,8 @@ protected:
 	static const int FONT_SIZES[];
 	static const int FONT_SIZE_COUNT;
 
+	static const char *SETTING_SEPARATOR, *HEX_PREFIX;		// // // 050B
+
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
@@ -75,6 +77,9 @@ protected:
 
 	void SetColor(int Index, int Color);
 	int GetColor(int Index) const;
+
+	void ExportSettings(const char *Path) const;		// // // 050B
+	void ImportSettings(const char *Path);		// // // 050B
 
 protected:
 	CString		m_strFont;
@@ -100,4 +105,6 @@ public:
 	afx_msg void OnBnClickedPatterncolors();
 	afx_msg void OnBnClickedDisplayFlats();
 	afx_msg void OnCbnEditchangeFontSize();
+	afx_msg void OnBnClickedButtonAppearanceSave();		// // // 050B
+	afx_msg void OnBnClickedButtonAppearanceLoad();		// // // 050B
 };
