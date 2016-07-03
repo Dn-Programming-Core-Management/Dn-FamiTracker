@@ -99,16 +99,12 @@ public:
 	void RestoreRedoState(CMainFrame *pMainFrm) const;		// // //
 
 public:
-	void SetFrameCount(unsigned int FrameCount);
-	void SetPattern(unsigned int Pattern);
-	void SetPatternDelta(int Delta);		// // //
-	void Update(CMainFrame *pMainFrm);
 	void SetPasteData(CFrameClipData *pClipData);
 	void SetDragInfo(int DragTarget, CFrameClipData *pClipData, bool Remove);
 
-private:
-	void SaveFrame(CFamiTrackerDoc *pDoc);
-	void RestoreFrame(CFamiTrackerDoc *pDoc) const;
+protected:
+	int SavePatterns(const CFamiTrackerDoc *pDoc, int *pBuf);		// // //
+	void RestorePatterns(CFamiTrackerDoc *pDoc, const int *pBuf, int Count) const;		// // //
 
 	void SaveAllFrames(CFamiTrackerDoc *pDoc);
 	void RestoreAllFrames(CFamiTrackerDoc *pDoc) const;
@@ -121,21 +117,9 @@ protected:
 	CFrameEditorState *m_pUndoState, *m_pRedoState;		// // //
 
 private:
-	unsigned int m_iUndoTrack;
-	unsigned int m_iUndoFramePos;
-	unsigned int m_iUndoChannelPos;
-	unsigned int m_iRedoFramePos;
-	unsigned int m_iRedoChannelPos;
-
-	unsigned int m_iNewFrameCount;
 	unsigned int m_iUndoFrameCount;
-	unsigned int m_iNewPattern;
 	unsigned int m_iOldPattern;
 	
-	int m_iPatternDelta;
-
-	unsigned int m_iPatterns[MAX_CHANNELS];
-
 	bool m_bDragRemove;
 	unsigned int m_iDragTarget;
 
@@ -151,7 +135,128 @@ private:
 class CFActionAddFrame : public CFrameAction
 {
 public:
-	CFActionAddFrame();
+	CFActionAddFrame() : CFrameAction(ACT_ADD) { }
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+};
+
+class CFActionRemoveFrame : public CFrameAction
+{
+public:
+	CFActionRemoveFrame() : CFrameAction(ACT_REMOVE) { }
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+private:
+	int m_iChannels;
+	int m_iPatterns[MAX_CHANNELS];
+};
+
+class CFActionDuplicateFrame : public CFrameAction
+{
+public:
+	CFActionDuplicateFrame() : CFrameAction(ACT_DUPLICATE) { }
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+};
+
+class CFActionDuplicatePatterns : public CFrameAction
+{
+public:
+	CFActionDuplicatePatterns() : CFrameAction(ACT_DUPLICATE_PATTERNS) { }
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+};
+
+class CFActionFrameCount : public CFrameAction
+{
+public:
+	CFActionFrameCount(int Count) : CFrameAction(ACT_CHANGE_COUNT), m_iNewFrameCount(Count) { }
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+	bool Merge(const CAction *Other);		// // //
+private:
+	int m_iOldFrameCount, m_iNewFrameCount;
+};
+
+class CFActionSetPattern : public CFrameAction
+{
+public:
+	CFActionSetPattern(int Pattern) : CFrameAction(ACT_SET_PATTERN), m_iNewPattern(Pattern) { }
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+	bool Merge(const CAction *Other);		// // //
+private:
+	int m_iOldPattern, m_iNewPattern;
+};
+
+class CFActionSetPatternAll : public CFrameAction
+{
+public:
+	CFActionSetPatternAll(int Pattern) : CFrameAction(ACT_SET_PATTERN_ALL), m_iNewPattern(Pattern) { }
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+private:
+	int m_iChannels;
+	int m_iPatterns[MAX_CHANNELS];
+	int m_iNewPattern;
+};
+
+class CFActionChangePattern : public CFrameAction
+{
+public:
+	CFActionChangePattern(int Offset) : CFrameAction(ACT_CHANGE_PATTERN), m_iPatternOffset(Offset) { }
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+	bool Merge(const CAction *Other);		// // //
+private:
+	int m_iOldPattern;
+	int m_iPatternOffset;
+};
+
+class CFActionChangePatternAll : public CFrameAction
+{
+public:
+	CFActionChangePatternAll(int Offset) : CFrameAction(ACT_CHANGE_PATTERN_ALL), m_iPatternOffset(Offset) { }
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+private:
+	int m_iChannels;
+	int m_iPatterns[MAX_CHANNELS];
+	int m_iPatternOffset;
+};
+
+class CFActionMoveDown : public CFrameAction
+{
+public:
+	CFActionMoveDown() : CFrameAction(ACT_MOVE_DOWN) { }
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+};
+
+class CFActionMoveUp : public CFrameAction
+{
+public:
+	CFActionMoveUp() : CFrameAction(ACT_MOVE_UP) { }
 private:
 	bool SaveState(const CMainFrame *pMainFrm);
 	void Undo(CMainFrame *pMainFrm) const;

@@ -115,7 +115,6 @@ public:
 	void SetPasteMode(paste_mode_t Mode);		// // //
 	void SetPastePos(paste_pos_t Pos);		// // //
 	void SetDragAndDrop(const CPatternClipData *pClipData, bool bDelete, bool bMix, const CSelection *pDragTarget);
-	void SetPatternLength(int Length);
 
 private:
 	virtual void UpdateView(CFamiTrackerDoc *pDoc) const;		// // //
@@ -131,9 +130,6 @@ protected:
 	CPatternEditorState *m_pRedoState;
 
 private:
-	int m_iNewPatternLen;
-	int m_iOldPatternLen;
-
 	const CPatternClipData *m_pClipData;
 	CPatternClipData *m_pUndoClipData, *m_pAuxiliaryClipData;		// // //
 	paste_mode_t m_iPasteMode;		// // //

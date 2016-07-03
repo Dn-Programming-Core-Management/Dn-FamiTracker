@@ -102,11 +102,6 @@ void CPatternAction::SetDragAndDrop(const CPatternClipData *pClipData, bool bDel
 	m_iPastePos		= PASTE_DRAG;
 }
 
-void CPatternAction::SetPatternLength(int Length)
-{
-	m_iNewPatternLen = Length;
-}
-
 bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor, CSelection &Sel)		// // //
 {
 	CCursorPos Start;
@@ -1124,7 +1119,7 @@ void CPActionPatternLen::Redo(CMainFrame *pMainFrm) const
 	pMainFrm->UpdateControls();
 }
 
-bool CPActionPatternLen::Merge(const CAction *Other)
+bool CPActionPatternLen::Merge(const CAction *Other)		// // //
 {
 	const CPActionPatternLen *pAction = dynamic_cast<const CPActionPatternLen*>(Other);
 	if (!pAction) return false;
