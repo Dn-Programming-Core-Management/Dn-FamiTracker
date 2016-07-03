@@ -668,17 +668,10 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				m_iNewPattern = (m_iNewPattern & 0xF0) | Num;
 
 			m_iNewPattern = std::min(m_iNewPattern, MAX_PATTERN - 1);
-
-			if (pMainFrame->ChangeAllPatterns()) {
-				CFrameAction *pAction = new CFrameAction(CFrameAction::ACT_SET_PATTERN_ALL);
-				pAction->SetPattern(m_iNewPattern);
-				pMainFrame->AddAction(pAction);
-			}
-			else {
-				CFrameAction *pAction = new CFrameAction(CFrameAction::ACT_SET_PATTERN);
-				pAction->SetPattern(m_iNewPattern);
-				pMainFrame->AddAction(pAction);
-			}
+			if (pMainFrame->ChangeAllPatterns())
+				pMainFrame->AddAction(new CFActionSetPatternAll {m_iNewPattern});		// // //
+			else
+				pMainFrame->AddAction(new CFActionSetPattern {m_iNewPattern});
 
 			m_pDocument->SetModifiedFlag();
 

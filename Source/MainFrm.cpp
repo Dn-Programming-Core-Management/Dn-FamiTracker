@@ -869,22 +869,7 @@ void CMainFrame::SetFrameCount(int Count)
 	Count = std::max(Count, 1);
 	Count = std::min(Count, MAX_FRAMES);
 
-	if (Count != pDoc->GetFrameCount(m_iTrack)) {
-
-		CFrameAction *pAction = static_cast<CFrameAction*>(GetLastAction(CFrameAction::ACT_CHANGE_COUNT));
-
-		if (pAction == NULL) {
-			// New action
-			pAction = new CFrameAction(CFrameAction::ACT_CHANGE_COUNT);
-			pAction->SetFrameCount(Count);
-			AddAction(pAction);
-		}
-		else {
-			// Update existing action
-			pAction->SetFrameCount(Count);
-			pAction->Update(this); // TODO: override CAction::Merge there
-		}
-	}
+	AddAction(new CFActionFrameCount {std::min(std::max(Count, 1), MAX_FRAMES)});		// // //
 
 	if (m_wndDialogBar.GetDlgItemInt(IDC_FRAMES) != Count)
 		m_wndDialogBar.SetDlgItemInt(IDC_FRAMES, Count, FALSE);
@@ -1504,19 +1489,19 @@ bool CMainFrame::CheckRepeat() const
 void CMainFrame::OnBnClickedIncFrame()
 {
 	int Add = (CheckRepeat() ? 4 : 1);
-	bool bChangeAll = ChangeAllPatterns() != 0;
-	CFrameAction *pAction = new CFrameAction(bChangeAll ? CFrameAction::ACT_CHANGE_PATTERN_ALL : CFrameAction::ACT_CHANGE_PATTERN);
-	pAction->SetPatternDelta(Add);		// // //
-	AddAction(pAction);
+	if (ChangeAllPatterns())
+		AddAction(new CFActionChangePatternAll {Add});		// // //
+	else
+		AddAction(new CFActionChangePattern {Add});
 }
 
 void CMainFrame::OnBnClickedDecFrame()
 {
 	int Remove = -(CheckRepeat() ? 4 : 1);
-	bool bChangeAll = ChangeAllPatterns() != 0;
-	CFrameAction *pAction = new CFrameAction(bChangeAll ? CFrameAction::ACT_CHANGE_PATTERN_ALL : CFrameAction::ACT_CHANGE_PATTERN);
-	pAction->SetPatternDelta(Remove);		// // //
-	AddAction(pAction);
+	if (ChangeAllPatterns())
+		AddAction(new CFActionChangePatternAll {Remove});		// // //
+	else
+		AddAction(new CFActionChangePattern {Remove});
 }
 
 bool CMainFrame::ChangeAllPatterns() const
@@ -2430,27 +2415,35 @@ void CMainFrame::OnModuleInsertFrame()
 
 void CMainFrame::OnModuleRemoveFrame()
 {
-	AddAction(new CFrameAction(CFrameAction::ACT_REMOVE));
+	AddAction(new CFActionRemoveFrame { });		// // //
 }
 
 void CMainFrame::OnModuleDuplicateFrame()
 {
-	AddAction(new CFrameAction(CFrameAction::ACT_DUPLICATE));
+	AddAction(new CFActionDuplicateFrame { });		// // //
 }
 
 void CMainFrame::OnModuleDuplicateFramePatterns()
 {
-	AddAction(new CFrameAction(CFrameAction::ACT_DUPLICATE_PATTERNS));
+	AddAction(new CFActionDuplicatePatterns { });		// // //
 }
 
 void CMainFrame::OnModuleMoveframedown()
 {
-	AddAction(new CFrameAction(CFrameAction::ACT_MOVE_DOWN));
+	CAction *pAction = new CFActionMoveDown { };		// // //
+	if (AddAction(pAction)) {
+		static_cast<CFamiTrackerView*>(GetActiveView())->SelectNextFrame();
+		pAction->SaveRedoState(this);
+	}
 }
 
 void CMainFrame::OnModuleMoveframeup()
 {
-	AddAction(new CFrameAction(CFrameAction::ACT_MOVE_UP));
+	CAction *pAction = new CFActionMoveUp { };		// // //
+	if (AddAction(pAction)) {
+		static_cast<CFamiTrackerView*>(GetActiveView())->SelectPrevFrame();
+		pAction->SaveRedoState(this);
+	}
 }
 
 void CMainFrame::OnModuleDuplicateCurrentPattern()		// // //
