@@ -34,6 +34,7 @@ struct stAccelEntry {
 	int	mod;
 	int	key;
 	int	id;
+	LPCTSTR orig_name;		// // //
 };
 
 class CAccelerator {

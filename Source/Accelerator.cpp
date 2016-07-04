@@ -51,12 +51,12 @@ const stAccelEntry CAccelerator::DEFAULT_TABLE[] = {
 	{_T("Play"),						MOD_NONE,		0,				ID_TRACKER_PLAY},
 	{_T("Play from start"),				MOD_NONE,		VK_F5,			ID_TRACKER_PLAY_START},
 	{_T("Play from cursor"),			MOD_NONE,		VK_F7,			ID_TRACKER_PLAY_CURSOR},
-	{_T("Play from row marker"),		MOD_CONTROL,	VK_F7,			ID_TRACKER_PLAY_MARKER},			// // // 050B
+	{_T("Play from row marker"),		MOD_CONTROL,	VK_F7,			ID_TRACKER_PLAY_MARKER, _T("Play from bookmark")},		// // // 050B
 	{_T("Play and loop pattern"),		MOD_NONE,		VK_F6,			ID_TRACKER_PLAYPATTERN},
 	{_T("Play row"),					MOD_CONTROL,	VK_RETURN,		ID_TRACKER_PLAYROW},
 	{_T("Stop"),						MOD_NONE,		VK_F8,			ID_TRACKER_STOP},
 	{_T("Edit enable/disable"),			MOD_NONE,		VK_SPACE,		ID_TRACKER_EDIT},
-	{_T("Set row marker"),				MOD_CONTROL,	'B',			ID_TRACKER_SET_MARKER},				// // // 050B
+	{_T("Set row marker"),				MOD_CONTROL,	'B',			ID_TRACKER_SET_MARKER, _T("Set row marker")},		// // // 050B
 	{_T("Paste and mix"),				MOD_CONTROL,	'M',			ID_EDIT_PASTEMIX},
 	{_T("Paste and overwrite"),			MOD_NONE,		0,				ID_EDIT_PASTEOVERWRITE},			// // //
 	{_T("Paste and insert"),			MOD_NONE,		0,				ID_EDIT_PASTEINSERT},				// // //
@@ -114,8 +114,8 @@ const stAccelEntry CAccelerator::DEFAULT_TABLE[] = {
 	{_T("Expand patterns"),				MOD_NONE,		0,				ID_EDIT_EXPANDPATTERNS},
 	{_T("Shrink patterns"),				MOD_NONE,		0,				ID_EDIT_SHRINKPATTERNS},
 	{_T("Stretch patterns"),			MOD_NONE,		0,				ID_EDIT_STRETCHPATTERNS},			// // //
-	{_T("Duplicate patterns"),			MOD_NONE,		0,				ID_MODULE_DUPLICATEFRAMEPATTERNS},
-	{_T("Duplicate current pattern"),	MOD_ALT,		'D',			ID_MODULE_DUPLICATECURRENTPATTERN},	// // //
+	{_T("Clone frame"),					MOD_NONE,		0,				ID_MODULE_DUPLICATEFRAMEPATTERNS, _T("Duplicate patterns")},		// // //
+	{_T("Duplicate current pattern"),	MOD_ALT,		'D',			ID_MODULE_DUPLICATECURRENTPATTERN, _T("Duplicate current pattern")},	// // //
 	{_T("Decrease pattern values"),		MOD_SHIFT,		VK_F1,			ID_DECREASEVALUES},
 	{_T("Increase pattern values"),		MOD_SHIFT,		VK_F2,			ID_INCREASEVALUES},
 	{_T("Coarse decrease values"),		MOD_SHIFT,		VK_F3,			ID_DECREASEVALUESCOARSE},			// // //
@@ -274,16 +274,22 @@ void CAccelerator::LoadShortcuts(CSettings *pSettings)
 	m_iUsedKeys.clear();		// // //
 
 	// Load custom values, if exists
+	/*
+		location priorities:
+		1. HKCU/SOFTWARE/0CC-FamiTracker
+		2. HKCU/SOFTWARE/FamiTracker
+		3. HKCU/SOFTWARE/FamiTracker, original key (using stAccelEntry::orig_name)
+		4. default value
+	*/
 	for (int i = 0; i < ACCEL_COUNT; ++i) {
-		int Default = (m_pEntriesTable[i].mod << 8) | m_pEntriesTable[i].key;
-		int Setting = pSettings->LoadSetting(SHORTCUTS_SECTION, m_pEntriesTable[i].name, Default);
-		free((void*)theApp.m_pszProfileName);		// // //
-		theApp.m_pszProfileName = _tcsdup(_T("FamiTracker"));
-		Setting = theApp.GetProfileInt(SHORTCUTS_SECTION, m_pEntriesTable[i].name, Setting);
-		free((void*)theApp.m_pszProfileName);
-		CString s;
-		s.LoadString(AFX_IDS_APP_TITLE);
-		theApp.m_pszProfileName = _tcsdup(s);
+		int Setting = (m_pEntriesTable[i].mod << 8) | m_pEntriesTable[i].key;
+		{		// // //
+			stOldSettingContext s;
+			if (m_pEntriesTable[i].orig_name != nullptr)		// // //
+				Setting = theApp.GetProfileInt(SHORTCUTS_SECTION, m_pEntriesTable[i].orig_name, Setting);
+			Setting = theApp.GetProfileInt(SHORTCUTS_SECTION, m_pEntriesTable[i].name, Setting);
+		}
+		Setting = pSettings->LoadSetting(SHORTCUTS_SECTION, m_pEntriesTable[i].name, Setting);
 
 		m_pEntriesTable[i].key = Setting & 0xFF;
 		m_pEntriesTable[i].mod = Setting >> 8;

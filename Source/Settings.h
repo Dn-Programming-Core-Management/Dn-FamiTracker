@@ -53,6 +53,13 @@ enum PATHS {
 	PATH_COUNT
 };
 
+// // // helper class for loading settings from official famitracker
+struct stOldSettingContext
+{
+	stOldSettingContext();
+	~stOldSettingContext();
+};
+
 // Base class for settings, pure virtual
 class CSettingBase {
 public:
@@ -61,6 +68,7 @@ public:
 	virtual void Load() = 0;
 	virtual void Save() = 0;
 	virtual void Default() = 0;
+	virtual void UpdateDefault(LPCTSTR pSection, LPCTSTR pEntry) = 0;		// // /
 	LPCTSTR GetSection() const { return m_pSection; };
 protected:
 	LPCTSTR m_pSection;
@@ -75,6 +83,7 @@ public:
 	virtual void Load();
 	virtual void Save();
 	virtual void Default();
+	virtual void UpdateDefault(LPCTSTR pSection, LPCTSTR pEntry);		// // //
 protected:
 	T *m_pVariable;
 	T m_tDefaultValue;
@@ -208,6 +217,7 @@ public:
 	// Other
 	int SampleWinState;
 	int FrameEditPos;
+	int ControlPanelPos;		// // // 050B
 	bool FollowMode;
 	bool MeterDecayRate;		// // // 050B
 	bool m_bNamcoMixing;		// // //
@@ -226,8 +236,8 @@ public:
 	CString InstrumentMenuPath;
 
 private:
-	template<class T> void AddSetting(LPCTSTR pSection, LPCTSTR pEntry, T tDefault, T* pVariable);
-	void AddSetting(CSettingBase *pSetting);
+	template<class T>
+	CSettingBase *AddSetting(LPCTSTR pSection, LPCTSTR pEntry, T tDefault, T *pVariable);		// // //
 	void SetupSettings();
 
 private:

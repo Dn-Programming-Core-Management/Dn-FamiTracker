@@ -32,14 +32,20 @@
 #include "Settings.h"
 #include "ColorScheme.h"
 
-#define SETTING_INT(Section, Entry, Default, Variable)	\
-	AddSetting<int>(_T(Section), _T(Entry), Default, Variable)	\
+// // // registry context
 
-#define SETTING_BOOL(Section, Entry, Default, Variable)	\
-	AddSetting<bool>(_T(Section), _T(Entry), Default, Variable)	\
+stOldSettingContext::stOldSettingContext()
+{
+	free((void*)theApp.m_pszProfileName);
+	theApp.m_pszProfileName = _T("FamiTracker");
+}
 
-#define SETTING_STRING(Section, Entry, Default, Variable)	\
-	AddSetting<CString>(_T(Section), _T(Entry), Default, Variable)	\
+stOldSettingContext::~stOldSettingContext()
+{
+	CString s;
+	s.LoadString(AFX_IDS_APP_TITLE);
+	theApp.m_pszProfileName = _tcsdup(s);
+}
 
 // CSettings
 
@@ -79,6 +85,25 @@ void CSettings::SetupSettings()
 	//  4. A variable that contains the setting, loaded on program startup and saved on shutdown
 	//
 
+	const auto SETTING_INT = [&] (LPCTSTR Section, LPCTSTR Entry, int Default, int *Variable) {		// // //
+		return AddSetting<int>(_T(Section), _T(Entry), Default, Variable);
+	};
+	const auto SETTING_BOOL = [&] (LPCTSTR Section, LPCTSTR Entry, bool Default, bool *Variable) {
+		return AddSetting<bool>(_T(Section), _T(Entry), Default, Variable);
+	};
+	const auto SETTING_STRING = [&] (LPCTSTR Section, LPCTSTR Entry, CString Default, CString *Variable) {
+		return AddSetting<CString>(_T(Section), _T(Entry), Default, Variable);
+	};
+
+	stOldSettingContext s;		// // //
+	/*
+		location priorities:
+		1. HKCU/SOFTWARE/0CC-FamiTracker
+		2. HKCU/SOFTWARE/FamiTracker
+		3. HKCU/SOFTWARE/FamiTracker, original key (using UpdateDefault)
+		4. Default value
+	*/
+
 	// General
 	SETTING_INT("General", "Edit style", EDIT_STYLE_FT2, &General.iEditStyle);
 	SETTING_INT("General", "Page step size", 4, &General.iPageStepSize);
@@ -108,7 +133,7 @@ void CSettings::SetupSettings()
 	SETTING_BOOL("General", "Check for new versions", true, &General.bCheckVersion);
 
 	// // // Version / Compatibility info
-	SETTING_INT("Version", "Module error level", MODULE_ERROR_OFFICIAL, &Version.iErrorLevel);
+	SETTING_INT("Version", "Module error level", MODULE_ERROR_DEFAULT, &Version.iErrorLevel);
 
 	// Keys
 	SETTING_INT("Keys", "Note cut",		0x31, &Keys.iKeyNoteCut);
@@ -152,11 +177,16 @@ void CSettings::SetupSettings()
 	SETTING_INT("Appearance", "Current row (normal mode)", DEFAULT_COLOR_SCHEME.ROW_NORMAL, &Appearance.iColCurrentRowNormal);
 	SETTING_INT("Appearance", "Current row (edit mode)", DEFAULT_COLOR_SCHEME.ROW_EDIT, &Appearance.iColCurrentRowEdit);
 	SETTING_INT("Appearance", "Current row (playing)", DEFAULT_COLOR_SCHEME.ROW_PLAYING, &Appearance.iColCurrentRowPlaying);
-	SETTING_STRING("Appearance", "Pattern font", FONT_FACE, &Appearance.strFont);
-	SETTING_INT("Appearance", "Pattern font size", FONT_SIZE, &Appearance.iFontSize);
-	SETTING_STRING("Appearance", "Frame font", FONT_FACE, &Appearance.strFrameFont);		// // // 050B todo
-	SETTING_BOOL("General", "Pattern colors", true, &Appearance.bPatternColor);
-	SETTING_BOOL("General", "Display flats", false, &Appearance.bDisplayFlats);
+	SETTING_STRING("Appearance", "Pattern font", FONT_FACE, &Appearance.strFont)
+		->UpdateDefault("General", "Pattern font");
+	SETTING_INT("Appearance", "Pattern font size", FONT_SIZE, &Appearance.iFontSize)
+		->UpdateDefault("General", "Pattern font size");
+	SETTING_STRING("Appearance", "Frame font", FONT_FACE, &Appearance.strFrameFont)
+		->UpdateDefault("General", "Frame font");		// // // 050B
+	SETTING_BOOL("Appearance", "Pattern colors", true, &Appearance.bPatternColor)
+		->UpdateDefault("Appearance", "Pattern colors");
+	SETTING_BOOL("Appearance", "Display flats", false, &Appearance.bDisplayFlats)
+		->UpdateDefault("Appearance", "Display flats");
 	
 	// Window position
 	SETTING_INT("Window position", "Left", 100, &WindowPos.iLeft);
@@ -173,6 +203,7 @@ void CSettings::SetupSettings()
 	// Other
 	SETTING_INT("Other", "Sample window state", 0, &SampleWinState);
 	SETTING_INT("Other", "Frame editor position", 0, &FrameEditPos);
+	SETTING_INT("Other", "Control panel position", 0, &ControlPanelPos);		// // // 050B todo
 	SETTING_BOOL("Other", "Follow mode", true, &FollowMode);
 	SETTING_BOOL("Other", "Meter decay rate", false, &MeterDecayRate);		// // // 050B
 
@@ -196,15 +227,11 @@ void CSettings::SetupSettings()
 	SETTING_INT("Mixer", "S5B", 0, &ChipLevels.iLevelS5B);
 }
 
-template<class T> void CSettings::AddSetting(LPCTSTR pSection, LPCTSTR pEntry, T tDefault, T* pVariable)
-{
-	AddSetting(new CSettingType<T>(pSection, pEntry, tDefault, pVariable));
-}
-
-void CSettings::AddSetting(CSettingBase *pSetting)
+template<class T>
+CSettingBase *CSettings::AddSetting(LPCTSTR pSection, LPCTSTR pEntry, T tDefault, T *pVariable)
 {
 	ASSERT(m_iAddedSettings < MAX_SETTINGS);
-	m_pSettings[m_iAddedSettings++] = pSetting;
+	return m_pSettings[m_iAddedSettings++] = new CSettingType<T>(pSection, pEntry, tDefault, pVariable);		// // //
 }
 
 // CSettings member functions
@@ -278,40 +305,31 @@ int CSettings::LoadSetting(CString Section, CString Name, int Default) const
 template<class T>
 void CSettingType<T>::Load()
 {
-	free((void*)theApp.m_pszProfileName);		// // //
-	theApp.m_pszProfileName = _tcsdup(_T("FamiTracker"));
-	T Default = theApp.GetProfileInt(m_pSection, m_pEntry, m_tDefaultValue);
-	free((void*)theApp.m_pszProfileName);
-	CString s;
-	s.LoadString(AFX_IDS_APP_TITLE);
-	theApp.m_pszProfileName = _tcsdup(s);
-	*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, Default);
+	{		// // //
+		stOldSettingContext s;
+		*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, m_tDefaultValue);
+	}
+	*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, *m_pVariable);
 }
 
 template<>
 void CSettingType<bool>::Load()
 {
-	free((void*)theApp.m_pszProfileName);		// // //
-	theApp.m_pszProfileName = _tcsdup(_T("FamiTracker"));
-	bool Default = theApp.GetProfileInt(m_pSection, m_pEntry, m_tDefaultValue) ? 1 : 0;
-	free((void*)theApp.m_pszProfileName);
-	CString s;
-	s.LoadString(AFX_IDS_APP_TITLE);
-	theApp.m_pszProfileName = _tcsdup(s);
-	*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, Default) == 1;
+	{		// // //
+		stOldSettingContext s;
+		*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, m_tDefaultValue) != 0;
+	}
+	*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, *m_pVariable) != 0;
 }
 
 template<>
 void CSettingType<CString>::Load()
 {
-	free((void*)theApp.m_pszProfileName);		// // //
-	theApp.m_pszProfileName = _tcsdup(_T("FamiTracker"));
-	CString Default = theApp.GetProfileString(m_pSection, m_pEntry, m_tDefaultValue);
-	free((void*)theApp.m_pszProfileName);
-	CString s;
-	s.LoadString(AFX_IDS_APP_TITLE);
-	theApp.m_pszProfileName = _tcsdup(s);
-	*m_pVariable = theApp.GetProfileString(m_pSection, m_pEntry, Default);
+	{		// // //
+		stOldSettingContext s;
+		*m_pVariable = theApp.GetProfileString(m_pSection, m_pEntry, m_tDefaultValue);
+	}
+	*m_pVariable = theApp.GetProfileString(m_pSection, m_pEntry, *m_pVariable);
 }
 
 template<class T>
@@ -330,4 +348,22 @@ template<class T>
 void CSettingType<T>::Default()
 {
 	*m_pVariable = m_tDefaultValue;
+}
+
+template<class T>
+void CSettingType<T>::UpdateDefault(LPCTSTR pSection, LPCTSTR pEntry)		// // //
+{
+	m_tDefaultValue = theApp.GetProfileInt(m_pSection, m_pEntry, m_tDefaultValue);
+}
+
+template<>
+void CSettingType<bool>::UpdateDefault(LPCTSTR pSection, LPCTSTR pEntry)		// // //
+{
+	m_tDefaultValue = theApp.GetProfileInt(m_pSection, m_pEntry, m_tDefaultValue) != 0;
+}
+
+template<>
+void CSettingType<CString>::UpdateDefault(LPCTSTR pSection, LPCTSTR pEntry)		// // //
+{
+	m_tDefaultValue = theApp.GetProfileString(m_pSection, m_pEntry, m_tDefaultValue);
 }
