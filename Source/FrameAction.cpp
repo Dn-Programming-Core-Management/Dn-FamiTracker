@@ -350,13 +350,13 @@ void CFActionDuplicateFrame::Redo(CMainFrame *pMainFrm) const
 
 
 
-bool CFActionDuplicatePatterns::SaveState(const CMainFrame *pMainFrm)
+bool CFActionCloneFrame::SaveState(const CMainFrame *pMainFrm)
 {
 	const CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
 	return pDoc->GetFrameCount(m_pUndoState->Track) < MAX_FRAMES;
 }
 
-void CFActionDuplicatePatterns::Undo(CMainFrame *pMainFrm) const
+void CFActionCloneFrame::Undo(CMainFrame *pMainFrm) const
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
 	int Count = pDoc->GetChannelCount();
@@ -365,10 +365,10 @@ void CFActionDuplicatePatterns::Undo(CMainFrame *pMainFrm) const
 	pDoc->RemoveFrame(m_pUndoState->Track, m_pUndoState->Frame + 1);
 }
 
-void CFActionDuplicatePatterns::Redo(CMainFrame *pMainFrm) const
+void CFActionCloneFrame::Redo(CMainFrame *pMainFrm) const
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	pDoc->DuplicatePatterns(m_pUndoState->Track, m_pUndoState->Frame + 1);
+	pDoc->CloneFrame(m_pUndoState->Track, m_pUndoState->Frame + 1);
 }
 
 

@@ -67,7 +67,7 @@ public:
 		ACT_ADD,
 		ACT_REMOVE,
 		ACT_DUPLICATE,
-		ACT_DUPLICATE_PATTERNS,
+		ACT_CLONE_FRAME,		// // // renamed
 		ACT_CHANGE_COUNT,
 		ACT_SET_PATTERN,
 		ACT_SET_PATTERN_ALL,
@@ -165,10 +165,10 @@ private:
 	void Redo(CMainFrame *pMainFrm) const;
 };
 
-class CFActionDuplicatePatterns : public CFrameAction
+class CFActionCloneFrame : public CFrameAction
 {
 public:
-	CFActionDuplicatePatterns() : CFrameAction(ACT_DUPLICATE_PATTERNS) { }
+	CFActionCloneFrame() : CFrameAction(ACT_CLONE_FRAME) { }
 private:
 	bool SaveState(const CMainFrame *pMainFrm);
 	void Undo(CMainFrame *pMainFrm) const;

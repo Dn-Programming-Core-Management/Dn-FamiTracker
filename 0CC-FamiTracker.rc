@@ -218,7 +218,7 @@ BEGIN
         MENUITEM "Move Frame Do&wn",            ID_MODULE_MOVEFRAMEDOWN
         MENUITEM SEPARATOR
         MENUITEM "&Clone Pattern",              ID_MODULE_DUPLICATECURRENTPATTERN
-        MENUITEM "Duplicate &Patterns",         ID_MODULE_DUPLICATEFRAMEPATTERNS
+        MENUITEM "Clone &Frame",                ID_MODULE_DUPLICATEFRAMEPATTERNS
         MENUITEM SEPARATOR
         MENUITEM "C&lear Patterns",             ID_EDIT_CLEARPATTERNS
         MENUITEM "&Merge Duplicated Patterns",  ID_CLEANUP_MERGEDUPLICATEDPATTERNS

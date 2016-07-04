@@ -3592,7 +3592,7 @@ bool CFamiTrackerDoc::DuplicateFrame(unsigned int Track, unsigned int Frame)
 	return true;
 }
 
-bool CFamiTrackerDoc::DuplicatePatterns(unsigned int Track, unsigned int Frame)
+bool CFamiTrackerDoc::CloneFrame(unsigned int Track, unsigned int Frame)		// // // renamed
 {
 	ASSERT(Track < MAX_TRACKS);
 

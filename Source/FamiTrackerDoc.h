@@ -212,7 +212,7 @@ public:
 	bool			InsertFrame(unsigned int Track, unsigned int Frame);
 	bool			RemoveFrame(unsigned int Track, unsigned int Frame);
 	bool			DuplicateFrame(unsigned int Track, unsigned int Frame);
-	bool			DuplicatePatterns(unsigned int Track, unsigned int Frame);
+	bool			CloneFrame(unsigned int Track, unsigned int Frame);		// // // renamed
 	bool			MoveFrameDown(unsigned int Track, unsigned int Frame);
 	bool			MoveFrameUp(unsigned int Track, unsigned int Frame);
 	void			DeleteFrames(unsigned int Track, unsigned int Frame, int Count);

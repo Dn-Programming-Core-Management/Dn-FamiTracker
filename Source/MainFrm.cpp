@@ -2428,7 +2428,7 @@ void CMainFrame::OnModuleDuplicateFrame()
 
 void CMainFrame::OnModuleDuplicateFramePatterns()
 {
-	AddAction(new CFActionDuplicatePatterns { });		// // //
+	AddAction(new CFActionCloneFrame { });		// // //
 }
 
 void CMainFrame::OnModuleMoveframedown()
