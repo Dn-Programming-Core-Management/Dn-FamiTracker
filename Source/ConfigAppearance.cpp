@@ -27,6 +27,8 @@
 #include "ColorScheme.h"
 #include "Graphics.h"
 #include <fstream>
+#include <string>
+#include <sstream>
 
 const TCHAR *CConfigAppearance::COLOR_ITEMS[] = {
 	_T("Background"), 
@@ -492,76 +494,40 @@ void CConfigAppearance::ImportSettings(const char *Path)		// // // 050B
 {
 	const size_t BUFFER_SIZE = 100;
 	std::fstream file {Path, std::ios_base::in};
-	char Line[BUFFER_SIZE + 1] = { };
+	std::string Line;
 
-	while (file) {
-		file.getline(&Line[0], BUFFER_SIZE);
-		char *Begin = Line;
-		while (*Begin == ' ') ++Begin;
-		if (*Begin == '#') continue;
-
+	while (true) {
+		std::getline(file, Line);
+		if (!file) break;
+		size_t Pos = Line.find(SETTING_SEPARATOR);
+		if (Pos == std::string::npos) continue;
+		
 		for (size_t i = 0; i < sizeof(m_iColors) / sizeof(*m_iColors); ++i) {
-			const auto &x = COLOR_ITEMS[i];
-			char *p = Begin;
-			if (memcmp(p, x, strlen(x)) != 0) continue;
-			p += strlen(x);
-			if (memcmp(p, SETTING_SEPARATOR, strlen(SETTING_SEPARATOR)) != 0) continue;
-			p += strlen(SETTING_SEPARATOR);
-			if (memcmp(p, HEX_PREFIX, strlen(HEX_PREFIX)) != 0) continue;
-			p += strlen(HEX_PREFIX);
-			sscanf(p, "%x", &m_iColors[i]);
-			goto outer_continue;
+			if (Line.find(COLOR_ITEMS[i]) == std::string::npos) continue;
+			size_t n = Line.find(HEX_PREFIX);
+			if (n == std::string::npos) continue;
+			std::stringstream h;
+			h << Line.substr(n);
+			h >> m_iColors[i];
 		}
 
-		char *p = Begin;
-		if (!memcmp(p, "Pattern colors", strlen("Pattern colors"))) {
-			p += strlen("Pattern colors");
-			if (!memcmp(p, SETTING_SEPARATOR, strlen(SETTING_SEPARATOR))) {
-				p += strlen(SETTING_SEPARATOR);
-				if (*p == '1') {
-					m_bPatternColors = true; goto outer_continue;
-				}
-				else if (*p == '0') {
-					m_bPatternColors = false; goto outer_continue;
-				}
-			}
+		if (Line.find("Pattern colors") != std::string::npos) {
+			std::stringstream h;
+			h << Line.substr(Pos);
+			h >> m_bPatternColors;
 		}
-
-		p = Begin;
-		if (!memcmp(p, "Flags", strlen("Flags"))) {
-			p += strlen("Flags");
-			if (!memcmp(p, SETTING_SEPARATOR, strlen(SETTING_SEPARATOR))) {
-				p += strlen(SETTING_SEPARATOR);
-				if (*p == '1') {
-					m_bPatternColors = true; goto outer_continue;
-				}
-				else if (*p == '0') {
-					m_bPatternColors = false; goto outer_continue;
-				}
-			}
+		else if (Line.find("Flags") != std::string::npos) {
+			std::stringstream h;
+			h << Line.substr(Pos);
+			h >> m_bDisplayFlats;
 		}
-
-		p = Begin;
-		if (!memcmp(p, "Font size", strlen("Font size"))) {
-			p += strlen("Font size");
-			if (!memcmp(p, SETTING_SEPARATOR, strlen(SETTING_SEPARATOR))) {
-				p += strlen(SETTING_SEPARATOR);
-				sscanf(p, "%d", &m_iFontSize);
-				goto outer_continue;
-			}
+		else if (Line.find("Font size") != std::string::npos) {
+			std::stringstream h;
+			h << Line.substr(Pos);
+			h >> m_iFontSize;
 		}
-
-		p = Begin;
-		if (!memcmp(p, "Font", strlen("Font"))) {
-			p += strlen("Font");
-			if (!memcmp(p, SETTING_SEPARATOR, strlen(SETTING_SEPARATOR))) {
-				p += strlen(SETTING_SEPARATOR);
-				m_strFont = p; // copy assignment
-			}
-		}
-
-		TRACE(_T("Unknown appearance option: %s\n"), Line);
-	outer_continue:;
+		else if (Line.find("Font") != std::string::npos)
+			m_strFont = Line.substr(Pos + strlen(SETTING_SEPARATOR)).c_str();
 	}
 
 	file.close();
