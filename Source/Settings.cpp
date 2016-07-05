@@ -99,9 +99,10 @@ void CSettings::SetupSettings()
 	/*
 		location priorities:
 		1. HKCU/SOFTWARE/0CC-FamiTracker
-		2. HKCU/SOFTWARE/FamiTracker
-		3. HKCU/SOFTWARE/FamiTracker, original key (using UpdateDefault)
-		4. Default value
+		2. HKCU/SOFTWARE/0CC-FamiTracker, original key (using UpdateDefault)
+		3. HKCU/SOFTWARE/FamiTracker
+		4. HKCU/SOFTWARE/FamiTracker, original key (using UpdateDefault)
+		5. Default value
 	*/
 
 	// General
@@ -290,16 +291,6 @@ void CSettings::SetPath(CString PathName, unsigned int PathType)
 		Paths[PathType] = PathName.Left(PathName.ReverseFind(_T('\\')));
 }
 
-void CSettings::StoreSetting(CString Section, CString Name, int Value) const
-{
-	theApp.WriteProfileInt(Section, Name, Value);
-}
-
-int CSettings::LoadSetting(CString Section, CString Name, int Default) const
-{
-	return theApp.GetProfileInt(Section, Name, Default);
-}
-
 // Settings types
 
 template<class T>
@@ -307,8 +298,12 @@ void CSettingType<T>::Load()
 {
 	{		// // //
 		stOldSettingContext s;
-		*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, m_tDefaultValue);
+		if (m_pSectionSecond)
+			*m_pVariable = theApp.GetProfileInt(m_pSectionSecond, m_pEntrySecond, m_tDefaultValue);
+		*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, *m_pVariable);
 	}
+	if (m_pSectionSecond)
+		*m_pVariable = theApp.GetProfileInt(m_pSectionSecond, m_pEntrySecond, *m_pVariable);
 	*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, *m_pVariable);
 }
 
@@ -317,8 +312,12 @@ void CSettingType<bool>::Load()
 {
 	{		// // //
 		stOldSettingContext s;
-		*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, m_tDefaultValue) != 0;
+		if (m_pSectionSecond)
+			*m_pVariable = theApp.GetProfileInt(m_pSectionSecond, m_pEntrySecond, m_tDefaultValue) != 0;
+		*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, *m_pVariable) != 0;
 	}
+	if (m_pSectionSecond)
+		*m_pVariable = theApp.GetProfileInt(m_pSectionSecond, m_pEntrySecond, *m_pVariable) != 0;
 	*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, *m_pVariable) != 0;
 }
 
@@ -327,8 +326,12 @@ void CSettingType<CString>::Load()
 {
 	{		// // //
 		stOldSettingContext s;
-		*m_pVariable = theApp.GetProfileString(m_pSection, m_pEntry, m_tDefaultValue);
+		if (m_pSectionSecond)
+			*m_pVariable = theApp.GetProfileString(m_pSectionSecond, m_pEntrySecond, m_tDefaultValue);
+		*m_pVariable = theApp.GetProfileString(m_pSection, m_pEntry, *m_pVariable);
 	}
+	if (m_pSectionSecond)
+		*m_pVariable = theApp.GetProfileString(m_pSectionSecond, m_pEntrySecond, *m_pVariable);
 	*m_pVariable = theApp.GetProfileString(m_pSection, m_pEntry, *m_pVariable);
 }
 
@@ -350,20 +353,8 @@ void CSettingType<T>::Default()
 	*m_pVariable = m_tDefaultValue;
 }
 
-template<class T>
-void CSettingType<T>::UpdateDefault(LPCTSTR pSection, LPCTSTR pEntry)		// // //
+void CSettingBase::UpdateDefault(LPCTSTR pSection, LPCTSTR pEntry)		// // //
 {
-	m_tDefaultValue = theApp.GetProfileInt(m_pSection, m_pEntry, m_tDefaultValue);
-}
-
-template<>
-void CSettingType<bool>::UpdateDefault(LPCTSTR pSection, LPCTSTR pEntry)		// // //
-{
-	m_tDefaultValue = theApp.GetProfileInt(m_pSection, m_pEntry, m_tDefaultValue) != 0;
-}
-
-template<>
-void CSettingType<CString>::UpdateDefault(LPCTSTR pSection, LPCTSTR pEntry)		// // //
-{
-	m_tDefaultValue = theApp.GetProfileString(m_pSection, m_pEntry, m_tDefaultValue);
+	m_pSectionSecond = pSection;
+	m_pEntrySecond = pEntry;
 }

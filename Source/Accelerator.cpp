@@ -262,7 +262,7 @@ void CAccelerator::SaveShortcuts(CSettings *pSettings) const
 {
 	// Save values
 	for (int i = 0; i < ACCEL_COUNT; ++i) {
-		pSettings->StoreSetting(SHORTCUTS_SECTION, m_pEntriesTable[i].name, (m_pEntriesTable[i].mod << 8) | m_pEntriesTable[i].key);
+		theApp.WriteProfileInt(SHORTCUTS_SECTION, m_pEntriesTable[i].name, (m_pEntriesTable[i].mod << 8) | m_pEntriesTable[i].key);
 	}
 }
 
@@ -289,7 +289,9 @@ void CAccelerator::LoadShortcuts(CSettings *pSettings)
 				Setting = theApp.GetProfileInt(SHORTCUTS_SECTION, m_pEntriesTable[i].orig_name, Setting);
 			Setting = theApp.GetProfileInt(SHORTCUTS_SECTION, m_pEntriesTable[i].name, Setting);
 		}
-		Setting = pSettings->LoadSetting(SHORTCUTS_SECTION, m_pEntriesTable[i].name, Setting);
+		if (m_pEntriesTable[i].orig_name != nullptr)		// // //
+			Setting = theApp.GetProfileInt(SHORTCUTS_SECTION, m_pEntriesTable[i].orig_name, Setting);
+		Setting = theApp.GetProfileInt(SHORTCUTS_SECTION, m_pEntriesTable[i].name, Setting);
 
 		m_pEntriesTable[i].key = Setting & 0xFF;
 		m_pEntriesTable[i].mod = Setting >> 8;

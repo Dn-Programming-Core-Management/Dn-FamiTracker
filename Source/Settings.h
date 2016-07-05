@@ -68,11 +68,13 @@ public:
 	virtual void Load() = 0;
 	virtual void Save() = 0;
 	virtual void Default() = 0;
-	virtual void UpdateDefault(LPCTSTR pSection, LPCTSTR pEntry) = 0;		// // /
+	virtual void UpdateDefault(LPCTSTR pSection, LPCTSTR pEntry);		// // /
 	LPCTSTR GetSection() const { return m_pSection; };
 protected:
 	LPCTSTR m_pSection;
 	LPCTSTR m_pEntry;
+	LPCTSTR m_pSectionSecond = nullptr;		// // //
+	LPCTSTR m_pEntrySecond = nullptr;		// // //
 };
 
 // Templated setting class
@@ -83,7 +85,6 @@ public:
 	virtual void Load();
 	virtual void Save();
 	virtual void Default();
-	virtual void UpdateDefault(LPCTSTR pSection, LPCTSTR pEntry);		// // //
 protected:
 	T *m_pVariable;
 	T m_tDefaultValue;
@@ -103,9 +104,6 @@ public:
 	void	DefaultSettings();
 	void	DeleteSettings();
 	void	SetWindowPos(int Left, int Top, int Right, int Bottom, int State);
-
-	void	StoreSetting(CString Section, CString Name, int Value) const;
-	int		LoadSetting(CString Section, CString Name, int Default) const;
 
 	CString GetPath(unsigned int PathType) const;
 	void	SetPath(CString PathName, unsigned int PathType);
