@@ -495,6 +495,7 @@
     <ClCompile Include="Source\SeqInstrument.cpp" />
     <ClCompile Include="Source\SequenceCollection.cpp" />
     <ClCompile Include="Source\SequenceManager.cpp" />
+    <ClCompile Include="Source\SequenceParser.cpp" />
     <ClCompile Include="Source\SimpleFile.cpp" />
     <ClCompile Include="Source\SplitKeyboardDlg.cpp" />
     <ClCompile Include="Source\stdafx.cpp">
@@ -754,6 +755,7 @@
     <ClInclude Include="Source\SeqInstHandlerN163.h" />
     <ClInclude Include="Source\SequenceCollection.h" />
     <ClInclude Include="Source\SequenceManager.h" />
+    <ClInclude Include="Source\SequenceParser.h" />
     <ClInclude Include="Source\SimpleFile.h" />
     <ClInclude Include="Source\SplitKeyboardDlg.h" />
     <ClInclude Include="Source\stdafx.h" />

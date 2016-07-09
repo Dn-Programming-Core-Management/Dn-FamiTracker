@@ -206,24 +206,7 @@ void CSequenceEditor::SetMaxValues(int MaxVol, int MaxDuty)
 
 void CSequenceEditor::SequenceChangedMessage(bool Changed)
 {
-	CString Text;
-
-	// Translate sequence to MML-like string
-	Text = "";
-
-	for (unsigned i = 0; i < m_pSequence->GetItemCount(); ++i) {
-		if (m_pSequence->GetReleasePoint() == i)		// // //
-			Text.Append(_T("/ "));
-		if (m_pSequence->GetLoopPoint() == i)
-			Text.Append(_T("| "));
-		if (m_iSelectedSetting == SEQ_ARPEGGIO && m_pSequence->GetSetting() == SETTING_ARP_SCHEME) {		// // //
-			Text.Append(CArpeggioGraphEditor::GetArpSchemeString(m_pSequence->GetItem(i)));
-			Text.Append(_T(" "));
-		}
-		else Text.AppendFormat(_T("%i "), m_pSequence->GetItem(i));
-	}
-
-	static_cast<CSequenceInstrumentEditPanel*>(m_pParent)->SetSequenceString(Text, Changed);
+	static_cast<CSequenceInstrumentEditPanel*>(m_pParent)->UpdateSequenceString(Changed);		// // //
 
 	// Set flag in document
 	if (Changed)

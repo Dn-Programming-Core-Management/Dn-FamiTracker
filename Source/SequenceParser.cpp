@@ -1,0 +1,255 @@
+/*
+** FamiTracker - NES/Famicom sound tracker
+** Copyright (C) 2005-2014  Jonathan Liss
+**
+** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
+**
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 2 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful, 
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+** Library General Public License for more details.  To obtain a 
+** copy of the GNU Library General Public License, write to the Free 
+** Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+**
+** Any permitted reproduction of these routines, in whole or in part,
+** must bear this legend.
+*/
+
+#include "stdafx.h"
+#include "SequenceParser.h"
+#include "Sequence.h"
+#include <regex>
+
+// // //
+
+std::string CSeqConversionDefault::ToString(char Value) const
+{
+	return std::to_string(Value);
+}
+
+bool CSeqConversionDefault::ToValue(const std::string &String)
+{
+	m_bReady = false;
+	if (String == "$$") {
+		m_bHex = true;
+		return true;
+	}
+	auto b = String.begin(), e = String.end();
+
+	if (!GetNextTerm(b, e, m_iCurrentValue))
+		return false;
+	m_iTargetValue = m_iCurrentValue;
+	m_iRepeat = m_iValueDiv = 1;
+	if (b != e && *b == ':') {
+		if (++b == e)
+			return false;
+		if (!GetNextInteger(b, e, m_iValueDiv))
+			return false;
+		if (b != e && *b == ':') {
+			if (++b == e)
+				return false;
+			if (!GetNextTerm(b, e, m_iTargetValue))
+				return false;
+		}
+	}
+	if (b != e && *b == '\'') {
+		if (++b == e)
+			return false;
+		if (!GetNextInteger(b, e, m_iRepeat))
+			return false;
+	}
+	if (b != e || m_iRepeat <= 0)
+		return false;
+	m_iValueInc = m_iTargetValue - m_iCurrentValue;
+	m_iRepeatCounter = m_iCounter = m_iValueMod = 0;
+	return m_bReady = true;
+}
+
+bool CSeqConversionDefault::IsReady() const
+{
+	return m_bReady;
+}
+
+char CSeqConversionDefault::GetValue()
+{
+	// do not use float division
+	int Val = m_iCurrentValue;
+	if (Val > m_iMaxValue) Val = m_iMaxValue;
+	if (Val < m_iMinValue) Val = m_iMinValue;
+	if (++m_iRepeatCounter >= m_iRepeat) {
+		m_iValueMod += m_iValueInc;
+		m_iCurrentValue += m_iValueMod / m_iValueDiv;
+		m_iValueMod %= m_iValueDiv;
+		m_iRepeatCounter = 0;
+		if (++m_iCounter >= m_iValueDiv)
+			m_bReady = false;
+	}
+	return Val;
+}
+
+void CSeqConversionDefault::OnStart()
+{
+	m_bHex = false;
+}
+
+void CSeqConversionDefault::OnFinish()
+{
+	m_bReady = false;
+}
+
+bool CSeqConversionDefault::GetNextInteger(std::string::const_iterator &b, std::string::const_iterator &e, int &Out) const
+{
+	std::smatch m;
+
+	if (m_bHex) {
+		static const std::regex HEX_RE {R"(^(-?)([0-9A-Fa-f]+))"};
+		if (!std::regex_search(b, e, m, HEX_RE))
+			return false;
+		try {
+			Out = std::stoi(m.str(2), nullptr, 16);
+		}
+		catch (std::out_of_range &) {
+			return false;
+		}
+		if (!m.str(1).empty())
+			Out = -Out;
+	}
+	else {
+		static const std::regex NUMBER_RE {R"(^-?[0-9]+)"}, HEX_PREFIX_RE {R"((-?)\$([0-9A-Fa-f]+))"};
+		if (std::regex_search(b, e, m, HEX_PREFIX_RE)) {
+			Out = std::stoi(m.str(2), nullptr, 16);
+			if (!m.str(1).empty())
+				Out = -Out;
+		}
+		else if (std::regex_search(b, e, m, NUMBER_RE))
+			try {
+				Out = std::stoi(m.str());
+			}
+			catch (std::out_of_range &) {
+				return false;
+			}
+		else
+			return false;
+	}
+
+	b = m.suffix().first;
+	return true;
+}
+
+bool CSeqConversionDefault::GetNextTerm(std::string::const_iterator &b, std::string::const_iterator &e, int &Out)
+{
+	return GetNextInteger(b, e, Out);
+}
+
+std::string CSeqConversion5B::ToString(char Value) const
+{
+	std::string Str = std::to_string(Value & 0x1F);
+	if (Value & S5B_MODE_SQUARE)
+		Str.push_back('t');
+	if (Value & S5B_MODE_NOISE)
+		Str.push_back('n');
+	if (Value & S5B_MODE_ENVELOPE)
+		Str.push_back('e');
+	return Str;
+}
+
+bool CSeqConversion5B::ToValue(const std::string &String)
+{
+	m_iEnableFlags = -1;
+	return CSeqConversionDefault::ToValue(String);
+}
+
+char CSeqConversion5B::GetValue()
+{
+	return CSeqConversionDefault::GetValue() | m_iEnableFlags;
+}
+
+bool CSeqConversion5B::GetNextTerm(std::string::const_iterator &b, std::string::const_iterator &e, int &Out)
+{
+	if (!CSeqConversionDefault::GetNextTerm(b, e, Out))
+		return false;
+
+	static const std::regex S5B_FLAGS_RE {R"(^[TtNnEe]*)"};
+	std::smatch m;
+	if (std::regex_search(b, e, m, S5B_FLAGS_RE)) {
+		if (m_iEnableFlags == -1) {
+			m_iEnableFlags = 0;
+			if (m.str().find_first_of("Tt") != std::string::npos)
+				m_iEnableFlags |= S5B_MODE_SQUARE;
+			if (m.str().find_first_of("Nn") != std::string::npos)
+				m_iEnableFlags |= S5B_MODE_NOISE;
+			if (m.str().find_first_of("Ee") != std::string::npos)
+				m_iEnableFlags |= S5B_MODE_ENVELOPE;
+		}
+		b = m.suffix().first;
+	}
+	return true;
+}
+
+void CSequenceParser::SetSequence(CSequence *pSeq)
+{
+	ASSERT(pSeq != nullptr);
+	m_pSequence = pSeq;
+}
+
+void CSequenceParser::SetConversion(CSeqConversionBase *pConv)
+{
+	ASSERT(pConv != nullptr);
+	m_pConversion.reset(pConv);
+}
+
+void CSequenceParser::ParseSequence(const std::string &String)
+{
+	m_pSequence->Clear();
+	m_iPushedCount = 0;
+	static const std::regex SPLIT_RE {R"(\S+)"};
+
+	const auto PushFunc = [&] () {
+		while (m_pConversion->IsReady()) {
+			m_pSequence->SetItem(m_iPushedCount, m_pConversion->GetValue());
+			if (++m_iPushedCount >= MAX_SEQUENCE_ITEMS)
+				break;
+		}
+	};
+
+	m_pConversion->OnStart();
+	PushFunc();
+	for (auto it = std::sregex_iterator {String.begin(), String.end(), SPLIT_RE},
+			  end = std::sregex_iterator { }; it != end; ++it) {
+		if (it->str() == "|") {
+			m_pSequence->SetLoopPoint(m_iPushedCount); continue;
+		}
+		if (it->str() == "/") {
+			m_pSequence->SetReleasePoint(m_iPushedCount); continue;
+		}
+		if (m_pConversion->ToValue(it->str()))
+			PushFunc();
+	}
+	m_pConversion->OnFinish();
+	PushFunc();
+	m_pSequence->SetItemCount(m_iPushedCount);
+}
+
+std::string CSequenceParser::PrintSequence() const
+{
+	std::string str;
+
+	const int Loop = m_pSequence->GetLoopPoint();
+	const int Release = m_pSequence->GetReleasePoint();
+
+	for (int i = 0, Count = m_pSequence->GetItemCount(); i < Count; ++i) {
+		if (i == Loop)
+			str.append("| ");
+		if (i == Release)
+			str.append("/ ");
+		str.append(m_pConversion->ToString(m_pSequence->GetItem(i)));
+		str.push_back(' ');
+	}
+
+	return str;
+}

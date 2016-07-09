@@ -31,6 +31,7 @@
 #include "InstrumentManager.h"		// // //
 #include "SequenceEditor.h"
 #include "InstrumentEditorSeq.h"
+#include "SequenceParser.h"		// // //
 
 // // // CInstrumentEditorSeq dialog
 
@@ -87,20 +88,46 @@ void CInstrumentEditorSeq::SelectSequence(int Sequence, int Type)
 	if (CListCtrl *pList = static_cast<CListCtrl*>(GetDlgItem(IDC_INSTSETTINGS)))
 		pList->SetItemState(Type, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
 	m_pSequenceEditor->SelectSequence(m_pSequence, Type, m_iInstType);
+	SetupParser();		// // //
 }
 
-void CInstrumentEditorSeq::TranslateMML(CString String, int Max, int Min)
+void CInstrumentEditorSeq::SetupParser() const		// // //
 {
-	CSequenceInstrumentEditPanel::TranslateMML(String, m_pSequence, Max, Min);
-
-	// Enable setting
-	static_cast<CListCtrl*>(GetDlgItem(IDC_INSTSETTINGS))->SetCheck(m_iSelectedSetting, 1);
+	int Max, Min;
+	CSeqConversionBase *pConv = nullptr;
+	
+	switch (m_iSelectedSetting) {
+	case SEQ_VOLUME:
+		Max = m_iMaxVolume; Min = 0; break;
+	case SEQ_ARPEGGIO:
+		switch (m_pSequence->GetSetting()) {
+		case SETTING_ARP_SCHEME:
+			// pConv = new CSeqConversionArpScheme { };
+			Max = 36; Min = -27; break;
+		case SETTING_ARP_FIXED:
+			Max = NOTE_COUNT - 1; Min = 0; break;
+		default:
+			Max = NOTE_COUNT; Min = -NOTE_COUNT; break;
+		}
+		break;
+	case SEQ_PITCH: case SEQ_HIPITCH:
+		Max = 126; Min = -127; break;
+	case SEQ_DUTYCYCLE:
+		if (m_iInstType == INST_S5B)
+			pConv = new CSeqConversion5B { };
+		Max = m_iMaxDuty; Min = 0; break;
+	}
+	if (pConv == nullptr)
+		pConv = new CSeqConversionDefault {Min, Max};
+	m_pParser->SetSequence(m_pSequence);
+	m_pParser->SetConversion(pConv);
 }
 
-void CInstrumentEditorSeq::SetSequenceString(CString Sequence, bool Changed)
+void CInstrumentEditorSeq::UpdateSequenceString(bool Changed)		// // //
 {
 	// Update sequence string
-	SetDlgItemText(IDC_SEQUENCE_STRING, Sequence);
+	SetupParser();		// // //
+	SetDlgItemText(IDC_SEQUENCE_STRING, m_pParser->PrintSequence().c_str());		// // //
 	// If the sequence was changed, assume the user wants to enable it
 	if (Changed) {
 		static_cast<CListCtrl*>(GetDlgItem(IDC_INSTSETTINGS))->SetCheck(m_iSelectedSetting, 1);
@@ -129,7 +156,10 @@ BOOL CInstrumentEditorSeq::OnInitDialog()
 
 void CInstrumentEditorSeq::OnLvnItemchangedInstsettings(NMHDR *pNMHDR, LRESULT *pResult)
 {
-	if (m_bUpdating) return;
+	if (m_bUpdating) {
+		*pResult = 0;
+		return;
+	}
 	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
 	CListCtrl *pList = static_cast<CListCtrl*>(GetDlgItem(IDC_INSTSETTINGS));
 
@@ -199,27 +229,10 @@ void CInstrumentEditorSeq::OnKeyReturn()
 	// Translate the sequence text string to a sequence
 	CString Text;
 	GetDlgItemText(IDC_SEQUENCE_STRING, Text);
+	TranslateMML(Text);		// // //
 
-	switch (m_iSelectedSetting) {
-		case SEQ_VOLUME:
-			TranslateMML(Text, m_iMaxVolume, 0);
-			break;
-		case SEQ_ARPEGGIO:
-			if (m_pSequence->GetSetting() == SETTING_ARP_SCHEME)	// // //
-				TranslateMML(Text, 36, -27);
-			else
-				TranslateMML(Text, 96, m_pSequence->GetSetting() == SETTING_ARP_FIXED ? 0 : -96);
-			break;
-		case SEQ_PITCH:
-			TranslateMML(Text, 126, -127);
-			break;
-		case SEQ_HIPITCH:
-			TranslateMML(Text, 126, -127);
-			break;
-		case SEQ_DUTYCYCLE:
-			TranslateMML(Text, m_iMaxDuty, 0);
-			break;
-	}
+	// Enable setting
+	static_cast<CListCtrl*>(GetDlgItem(IDC_INSTSETTINGS))->SetCheck(m_iSelectedSetting, 1);
 }
 
 void CInstrumentEditorSeq::OnCloneSequence()

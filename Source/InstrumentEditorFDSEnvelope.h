@@ -34,7 +34,8 @@ public:
 
 	// Public
 	virtual void SelectInstrument(std::shared_ptr<CInstrument> pInst);
-	virtual void SetSequenceString(CString Sequence, bool Changed);
+	void UpdateSequenceString(bool Changed) override;		// // //
+	void SetupParser() const override;		// // //
 
 // Dialog Data
 	enum { IDD = IDD_INSTRUMENT_FDS_ENVELOPE };
@@ -50,7 +51,6 @@ protected:
 
 protected:
 	std::shared_ptr<CInstrumentFDS> m_pInstrument;
-	int				m_iSelectedType;
 
 	DECLARE_MESSAGE_MAP()
 public:

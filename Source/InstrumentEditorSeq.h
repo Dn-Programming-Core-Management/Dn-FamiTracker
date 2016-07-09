@@ -36,7 +36,7 @@ public:
 
 	// Public
 	virtual void SelectInstrument(std::shared_ptr<CInstrument> pInst);
-	virtual void SetSequenceString(CString Sequence, bool Changed);
+	void UpdateSequenceString(bool Changed) override;		// // //
 
 // Dialog Data
 	enum { IDD = IDD_INSTRUMENT_INTERNAL };
@@ -45,7 +45,7 @@ protected:
 	virtual void OnKeyReturn();
 
 	void SelectSequence(int Sequence, int Type);
-	void TranslateMML(CString String, int Max, int Min);
+	void SetupParser() const override;		// // //
 
 protected:
 	LPCTSTR *m_pSequenceName;

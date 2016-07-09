@@ -34,6 +34,7 @@ class CSequence;
 class CSeqInstrument;
 class CFamiTrackerDoc;
 class CInstrumentManager;		// // //
+class CSequenceParser;		// // //
 
 class CInstrumentEditPanel : public CDialog
 {
@@ -79,7 +80,7 @@ public:
 	CSequenceInstrumentEditPanel(UINT nIDTemplate, CWnd* pParent);
 	virtual ~CSequenceInstrumentEditPanel();
 
-	virtual void SetSequenceString(CString Sequence, bool Changed) = 0;
+	virtual void UpdateSequenceString(bool Changed) = 0;		// // //
 
 	// Static methods
 public:
@@ -91,6 +92,7 @@ protected:
 	CSequence *m_pSequence;
 	CWnd *m_pParentWin;
 	std::shared_ptr<CSeqInstrument> m_pInstrument;		// // //
+	CSequenceParser *m_pParser;		// // //
 
 	unsigned int m_iSelectedSetting;
 
@@ -99,7 +101,8 @@ protected:
 	void SetupDialog(LPCTSTR *pListItems);
 	
 	// Virtual methods
-	virtual void TranslateMML(CString String, CSequence *pSequence, int Max, int Min) const;
+	virtual void SetupParser() const = 0;		// // //
+	virtual void TranslateMML(CString String) const;		// // //
 	virtual void PreviewNote(unsigned char Key);
 
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
