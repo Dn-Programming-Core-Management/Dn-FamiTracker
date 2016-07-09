@@ -25,6 +25,7 @@
 #include "FamiTrackerDoc.h"
 #include "Instrument.h"
 #include "TransposeDlg.h"
+#include "DPI.h"
 
 // CTransposeDlg dialog
 
@@ -97,21 +98,23 @@ BOOL CTransposeDlg::OnInitDialog()
 
 	memset(&LogFont, 0, sizeof LOGFONT);
 	_tcscpy_s(LogFont.lfFaceName, 32, SMALL_FONT_FACE);
-	LogFont.lfHeight = -10;
+	LogFont.lfHeight = -DPI::SY(10);
 	LogFont.lfPitchAndFamily = VARIABLE_PITCH | FF_SWISS;
 	m_pFont->CreateFontIndirect(&LogFont);
 
 	m_pDocument = CFamiTrackerDoc::GetDoc();
+	CRect r;
+	GetClientRect(&r);
 
 	m_cInstButton = new CButton*[MAX_INSTRUMENTS];
 	CString Name;
 	for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
 		Name.Format(_T("%02X"), i);
 		m_cInstButton[i] = new CButton();
-		int x = 22 + i % 8 * 36;
-		int y = 104 + i / 8 * 20;
+		int x = DPI::SX(20) + i % 8 * ((r.Width() - DPI::SX(30)) / 8);
+		int y = DPI::SY(104) + i / 8 * DPI::SY(20);
 		m_cInstButton[i]->Create(Name, WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX,
-								 CRect(x, y, x + 30, y + 18), this, BUTTON_ID + i);
+								 CRect(x, y, x + DPI::SX(30), y + DPI::SY(18)), this, BUTTON_ID + i);
 		m_cInstButton[i]->SetCheck(s_bDisableInst[i] ? BST_CHECKED : BST_UNCHECKED);
 		m_cInstButton[i]->SetFont(m_pFont);
 		m_cInstButton[i]->EnableWindow(m_pDocument->IsInstrumentUsed(i));

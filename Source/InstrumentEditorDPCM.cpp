@@ -138,19 +138,24 @@ BOOL CInstrumentEditorDPCM::OnInitDialog()
 
 	CComboBox *pPitch  = static_cast<CComboBox*>(GetDlgItem(IDC_PITCH));
 	CComboBox *pOctave = static_cast<CComboBox*>(GetDlgItem(IDC_OCTAVE));
+	CRect r;		// // // 050B
 
 	CListCtrl *pTableListCtrl = static_cast<CListCtrl*>(GetDlgItem(IDC_TABLE));
+	pTableListCtrl->GetClientRect(&r);
+	int Width = r.Width() - ::GetSystemMetrics(SM_CXHSCROLL);
 	pTableListCtrl->DeleteAllItems();
-	pTableListCtrl->InsertColumn(0, _T("Key"), LVCFMT_LEFT, 30);
-	pTableListCtrl->InsertColumn(1, _T("Pitch"), LVCFMT_LEFT, 35);
-	pTableListCtrl->InsertColumn(2, _T("Sample"), LVCFMT_LEFT, 90);
+	pTableListCtrl->InsertColumn(0, _T("Key"), LVCFMT_LEFT, static_cast<int>(.2 * Width));
+	pTableListCtrl->InsertColumn(1, _T("Pitch"), LVCFMT_LEFT, static_cast<int>(.23 * Width));
+	pTableListCtrl->InsertColumn(2, _T("Sample"), LVCFMT_LEFT, static_cast<int>(.57 * Width));
 	pTableListCtrl->SendMessage(LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT);
 
 	CListCtrl *pSampleListCtrl = static_cast<CListCtrl*>(GetDlgItem(IDC_SAMPLE_LIST));
+	pSampleListCtrl->GetClientRect(&r);
+	Width = r.Width();
 	pSampleListCtrl->DeleteAllItems();
-	pSampleListCtrl->InsertColumn(0, _T("#"), LVCFMT_LEFT, 22);
-	pSampleListCtrl->InsertColumn(1, _T("Name"), LVCFMT_LEFT, 88);
-	pSampleListCtrl->InsertColumn(2, _T("Size"), LVCFMT_LEFT, 39);
+	pSampleListCtrl->InsertColumn(0, _T("#"), LVCFMT_LEFT, static_cast<int>(.2 * Width));		// // //
+	pSampleListCtrl->InsertColumn(1, _T("Name"), LVCFMT_LEFT, static_cast<int>(.55 * Width));
+	pSampleListCtrl->InsertColumn(2, _T("Size"), LVCFMT_LEFT, static_cast<int>(.25 * Width));
 	pSampleListCtrl->SendMessage(LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT);
 
 	for (int i = 0; i < 16; ++i) {

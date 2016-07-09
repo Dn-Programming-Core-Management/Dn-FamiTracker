@@ -614,6 +614,8 @@
 #define IDC_BUTTON_MIXER_RESET          1454
 #define IDC_STATIC_DETUNE_CENT          1455
 #define IDC_STATIC_DETUNE_SEMITONE      1456
+#define IDC_MAINFRAME_VISUALIZER        1457
+#define IDC_INST_SEQUENCE_GRAPH         1458
 #define ID_TRACKER_PLAY                 32771
 #define ID_TRACKER_PLAYPATTERN          32775
 #define ID_TRACKER_STOP                 32776
@@ -773,9 +775,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        354
+#define _APS_NEXT_RESOURCE_VALUE        357
 #define _APS_NEXT_COMMAND_VALUE         33198
-#define _APS_NEXT_CONTROL_VALUE         1457
+#define _APS_NEXT_CONTROL_VALUE         1459
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif

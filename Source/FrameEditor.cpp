@@ -1195,13 +1195,15 @@ void CFrameEditor::OnSize(UINT nType, int cx, int cy)
 	m_iWinWidth = cx;
 	m_iWinHeight = cy;
 
+	int Offset = DPI::SY(TOP_OFFSET);		// // // 050B
+	int Height = DPI::SY(ROW_HEIGHT);		// // // 050B
+
 	// Get number of rows visible
-	int FullRowsVisible = (cy - TOP_OFFSET * 2) / ROW_HEIGHT;
-	m_iRowsVisible = (cy - TOP_OFFSET * 2 + ROW_HEIGHT - TOP_OFFSET) / ROW_HEIGHT;
+	m_iRowsVisible = (cy - Offset) / Height;		// // //
 	m_iMiddleRow = m_iRowsVisible / 2;
 
 	m_iTopScrollArea = ROW_HEIGHT;
-	m_iBottomScrollArea = cy - ROW_HEIGHT;
+	m_iBottomScrollArea = cy - ROW_HEIGHT * 2;
 
 	// Delete the back buffer
 	m_bmpBack.DeleteObject();

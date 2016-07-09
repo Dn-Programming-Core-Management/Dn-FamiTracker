@@ -706,7 +706,7 @@ CArpeggioGraphEditor::~CArpeggioGraphEditor()
 void CArpeggioGraphEditor::Initialize()
 {
 	// Setup scrollbar
-	const int SCROLLBAR_WIDTH = 18;
+	const int SCROLLBAR_WIDTH = ::GetSystemMetrics(SM_CXHSCROLL);		// // //
 	SCROLLINFO info;
 
 	m_pScrollBar = new CScrollBar();

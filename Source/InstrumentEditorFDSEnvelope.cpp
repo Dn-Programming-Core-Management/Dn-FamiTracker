@@ -30,6 +30,7 @@
 #include "SequenceEditor.h"
 #include "InstrumentEditorFDSEnvelope.h"
 #include "SequenceParser.h"		// // //
+#include "DPI.h"		// // //
 
 // CInstrumentEditorFDSEnvelope dialog
 
@@ -72,7 +73,7 @@ BOOL CInstrumentEditorFDSEnvelope::OnInitDialog()
 
 	CRect rect;
 	GetClientRect(&rect);
-	rect.DeflateRect(10, 10, 10, 45);
+	rect.DeflateRect(DPI::SX(10), DPI::SY(10), DPI::SX(10), DPI::SY(45));		// // //
 
 	m_pSequenceEditor = new CSequenceEditor();		// // //
 	m_pSequenceEditor->CreateEditor(this, rect);

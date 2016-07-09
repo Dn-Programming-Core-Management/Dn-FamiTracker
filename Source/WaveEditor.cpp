@@ -76,8 +76,6 @@ BOOL CWaveEditor::CreateEx(DWORD dwExStyle, LPCTSTR lpszClassName, LPCTSTR lpszW
 	newRect.bottom = rect.top + m_iLY * m_iSY + 4;
 	newRect.right = rect.left + m_iLX * m_iSX + 4;
 
-	DPI::ScaleRect(newRect);		// // //
-
 	if (CWnd::CreateEx(dwExStyle, lpszClassName, lpszWindowName, dwStyle, newRect, pParentWnd, 0) == -1)
 		return -1;
 

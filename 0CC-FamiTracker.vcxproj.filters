@@ -1384,6 +1384,8 @@
     <None Include="0CC-FamiTracker.reg" />
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="res\0CC-FamiTracker.manifest" />
+    <Manifest Include="res\0CC-FamiTracker.manifest">
+      <Filter>Source Files</Filter>
+    </Manifest>
   </ItemGroup>
 </Project>

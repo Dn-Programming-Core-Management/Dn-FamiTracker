@@ -32,12 +32,12 @@ int DPI::_dpiY = DPI::DEFAULT_DPI;
 
 int DPI::SX(int pt)
 {
-	return ::MulDiv(pt, 96, DPI::DEFAULT_DPI);
+	return ::MulDiv(pt, _dpiX, DPI::DEFAULT_DPI);
 }
 
 int DPI::SY(int pt)
 {
-	return ::MulDiv(pt, 96, DPI::DEFAULT_DPI);
+	return ::MulDiv(pt, _dpiY, DPI::DEFAULT_DPI);
 }
 
 void DPI::ScaleMouse(CPoint &pt)

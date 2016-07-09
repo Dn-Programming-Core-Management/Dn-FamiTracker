@@ -37,6 +37,13 @@ enum frame_edit_pos_t {
 	FRAME_EDIT_POS_LEFT
 };
 
+enum control_panel_pos_t		// // // 050B
+{
+	CONTROL_PANEL_POS_TOP,
+	CONTROL_PANEL_POS_LEFT,
+	CONTROL_PANEL_POS_RIGHT,
+};
+
 enum {
 	WM_USER_DISPLAY_MESSAGE_STRING = WM_USER,
 	WM_USER_DISPLAY_MESSAGE_ID
@@ -137,6 +144,7 @@ private:
 	void	SetInstrumentName(char *pText);
 
 	void	SetFrameEditorPosition(int Position);
+	void	SetControlPanelPosition(control_panel_pos_t Position);		// // // 050B
 	void	SelectInstrumentFolder();
 
 	bool	CheckRepeat() const;
@@ -194,6 +202,7 @@ private:  // control bar embedded members
 	CActionHandler		*m_pActionHandler;
 
 	int					m_iFrameEditorPos;
+	control_panel_pos_t	m_iControlPanelPos;		// // // 050B
 
 	CInstrumentFileTree	*m_pInstrumentFileTree;
 

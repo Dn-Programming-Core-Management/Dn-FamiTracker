@@ -71,10 +71,13 @@ BOOL CConfigShortcuts::OnInitDialog()
 	CAccelerator *pAccel = theApp.GetAccelerator();
 	CListCtrl *pListView = static_cast<CListCtrl*>(GetDlgItem(IDC_SHORTCUTS));
 
+	CRect r;		// // //
+	pListView->GetClientRect(&r);
+	int w = r.Width() - ::GetSystemMetrics(SM_CXHSCROLL);
 	pListView->DeleteAllItems();
-	pListView->InsertColumn(0, _T("Action"), LVCFMT_LEFT, 170);
-	pListView->InsertColumn(1, _T("Modifier"), LVCFMT_LEFT, 90);
-	pListView->InsertColumn(2, _T("Key"), LVCFMT_LEFT, 110);
+	pListView->InsertColumn(0, _T("Action"), LVCFMT_LEFT, static_cast<int>(.52 * w));
+	pListView->InsertColumn(1, _T("Modifier"), LVCFMT_LEFT, static_cast<int>(.23 * w));
+	pListView->InsertColumn(2, _T("Key"), LVCFMT_LEFT, static_cast<int>(.25 * w));
 
 	// Build shortcut list
 	for (int i = 0; i < CAccelerator::ACCEL_COUNT; ++i) {

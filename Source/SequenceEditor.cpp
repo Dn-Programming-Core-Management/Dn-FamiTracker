@@ -33,6 +33,7 @@
 #include "GraphEditor.h"
 #include "SequenceSetting.h"
 #include "SequenceEditorMessage.h"		// // //
+#include "DPI.h"		// // //
 
 // This file contains the sequence editor and sequence size control
 
@@ -89,10 +90,10 @@ BOOL CSequenceEditor::CreateEditor(CWnd *pParentWnd, const RECT &rect)
 
 	m_pSizeEditor = new CSizeEditor(this);
 	
-	if (m_pSizeEditor->CreateEx(NULL, NULL, _T(""), WS_CHILD | WS_VISIBLE, CRect(40, GraphRect.bottom + 5, 104, GraphRect.bottom + 22), this, 0) == -1)
+	if (m_pSizeEditor->CreateEx(NULL, NULL, _T(""), WS_CHILD | WS_VISIBLE, CRect(34, GraphRect.bottom + 5, 94, GraphRect.bottom + 22), this, 0) == -1)
 		return -1;
 
-	menuRect = CRect(GraphRect.right - 80, GraphRect.bottom + 3, GraphRect.right - 10, GraphRect.bottom + 22);
+	menuRect = CRect(GraphRect.right - 72, GraphRect.bottom + 5, GraphRect.right - 2, GraphRect.bottom + 24);
 
 	// Sequence settings editor
 	m_pSetting = new CSequenceSetting(this);
@@ -123,7 +124,7 @@ void CSequenceEditor::OnPaint()
 		m_pSizeEditor->SetValue(m_pSequence->GetItemCount());
 
 	dc.SelectObject(m_pFont);
-	dc.TextOut(10, rect.bottom - 19, _T("Size:"));
+	dc.TextOut(7, rect.bottom - 19, _T("Size:"));
 
 	CString LengthStr;
 	float Rate;		// // //

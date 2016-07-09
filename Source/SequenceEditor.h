@@ -37,9 +37,6 @@ public:
 	void SelectSequence(CSequence *pSequence, int Type, int InstrumentType);
 	void SetMaxValues(int MaxVol, int MaxDuty);
 
-public:
-	static const int SEQUENCE_EDIT_WIDTH = 540;
-	static const int SEQUENCE_EDIT_HEIGHT = 237;
 private:
 	CWnd			 *m_pParent;
 	CFont			 *m_pFont;

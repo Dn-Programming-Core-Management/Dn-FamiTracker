@@ -29,6 +29,7 @@
 #include "InstrumentEditPanel.h"
 #include "SequenceEditor.h"
 #include "SequenceParser.h"		// // //
+#include "DPI.h"		// // //
 
 // CInstrumentEditPanel dialog
 //
@@ -206,11 +207,15 @@ void CSequenceInstrumentEditPanel::SetupDialog(LPCTSTR *pListItems)
 {
 	// Instrument settings
 	CListCtrl *pList = static_cast<CListCtrl*>(GetDlgItem(IDC_INSTSETTINGS));
+
+	CRect r;		// // // 050B
+	pList->GetClientRect(&r);
+	int Width = r.Width();
 	
 	pList->DeleteAllItems();
-	pList->InsertColumn(0, _T(""), LVCFMT_LEFT, 26);
-	pList->InsertColumn(1, _T("#"), LVCFMT_LEFT, 30);
-	pList->InsertColumn(2, _T("Effect name"), LVCFMT_LEFT, 84);
+	pList->InsertColumn(0, _T(""), LVCFMT_LEFT, static_cast<int>(.18 * Width));
+	pList->InsertColumn(1, _T("#"), LVCFMT_LEFT, static_cast<int>(.22 * Width));
+	pList->InsertColumn(2, _T("Effect name"), LVCFMT_LEFT, static_cast<int>(.6 * Width));
 	pList->SendMessage(LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT | LVS_EX_CHECKBOXES);
 	
 	for (int i = SEQ_COUNT - 1; i > -1; i--) {
@@ -227,10 +232,10 @@ void CSequenceInstrumentEditPanel::SetupDialog(LPCTSTR *pListItems)
 	CSpinButtonCtrl *pSequenceSpin = static_cast<CSpinButtonCtrl*>(GetDlgItem(IDC_SEQUENCE_SPIN));
 	pSequenceSpin->SetRange(0, MAX_SEQUENCES - 1);
 
-	CRect rect(190 - 2, 30 - 2, CSequenceEditor::SEQUENCE_EDIT_WIDTH, CSequenceEditor::SEQUENCE_EDIT_HEIGHT);
-	
-	m_pSequenceEditor = new CSequenceEditor();		// // //
-	m_pSequenceEditor->CreateEditor(this, rect);
+	GetDlgItem(IDC_INST_SEQUENCE_GRAPH)->GetWindowRect(&r);		// // //
+	GetDesktopWindow()->MapWindowPoints(this, &r);
+	m_pSequenceEditor = new CSequenceEditor();
+	m_pSequenceEditor->CreateEditor(this, r);
 	m_pSequenceEditor->ShowWindow(SW_SHOW);
 }
 

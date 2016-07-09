@@ -517,10 +517,10 @@ bool CMainFrame::CreateToolbars()
 
 	m_wndToolBarReBar.GetReBarCtrl().MinimizeBand(0);
 
-	HBITMAP hbm = (HBITMAP)::LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_TOOLBAR_256), IMAGE_BITMAP, 0,0, LR_CREATEDIBSECTION);
+	HBITMAP hbm = (HBITMAP)::LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_TOOLBAR_256), IMAGE_BITMAP, DPI::SX(352), DPI::SY(16), LR_CREATEDIBSECTION);
 	m_bmToolbar.Attach(hbm); 
 	
-	m_ilToolBar.Create(16, 15, ILC_COLOR8 | ILC_MASK, 4, 4);
+	m_ilToolBar.Create(DPI::SX(16), DPI::SY(16), ILC_COLOR8 | ILC_MASK, 4, 4);
 	m_ilToolBar.Add(&m_bmToolbar, RGB(192, 192, 192));
 	m_wndToolBar.GetToolBarCtrl().SetImageList(&m_ilToolBar);
 
@@ -554,7 +554,7 @@ bool CMainFrame::CreateDialogPanels()
 	// Create frame editor
 	m_pFrameEditor = new CFrameEditor(this);
 
-	CRect rect(12, 10, 162, 173);
+	CRect rect(12, 12, m_pFrameEditor->CalcWidth(CHANNELS_DEFAULT), 162);
 	DPI::ScaleRect(rect);		// // //
 
 	if (!m_pFrameEditor->CreateEx(WS_EX_STATICEDGE, NULL, _T(""), WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL, rect, (CWnd*)&m_wndControlBar, 0)) {
@@ -668,13 +668,9 @@ bool CMainFrame::CreateDialogPanels()
 
 bool CMainFrame::CreateVisualizerWindow()
 {
-	const int POS_X = 138;
-	const int POS_Y = 113;
-	const int WIDTH = 143;
-	const int HEIGHT = 40;
-
-	CRect rect(POS_X, POS_Y, POS_X + WIDTH, POS_Y + HEIGHT);
-	DPI::ScaleRect(rect);		// // //
+	CRect rect;		// // // 050B
+	m_wndDialogBar.GetDlgItem(IDC_MAINFRAME_VISUALIZER)->GetWindowRect(&rect);
+	GetDesktopWindow()->MapWindowPoints(&m_wndDialogBar, &rect);
 
 	// Create the sample graph window
 	m_pVisualizerWnd = new CVisualizerWnd();
@@ -696,9 +692,7 @@ bool CMainFrame::CreateInstrumentToolbar()
 	// Setup the instrument toolbar
 	REBARBANDINFO rbi;
 
-	CRect r(330, 173, 514, 199);		// // //
-	DPI::ScaleRect(r);
-	if (!m_wndInstToolBarWnd.CreateEx(0, NULL, _T(""), WS_CHILD | WS_VISIBLE, r, (CWnd*)&m_wndDialogBar, 0))
+	if (!m_wndInstToolBarWnd.CreateEx(0, NULL, _T(""), WS_CHILD | WS_VISIBLE, DPI::Rect(310, 173, 184, 26), (CWnd*)&m_wndDialogBar, 0))
 		return false;
 
 	if (!m_wndInstToolReBar.Create(WS_CHILD | WS_VISIBLE, CRect(0, 0, 0, 0), &m_wndInstToolBarWnd, AFX_IDW_REBAR))
@@ -710,9 +704,9 @@ bool CMainFrame::CreateInstrumentToolbar()
 	m_wndInstToolBar.GetToolBarCtrl().SetExtendedStyle(TBSTYLE_EX_DRAWDDARROWS);
 
 	// Set 24-bit icons
-	HBITMAP hbm = (HBITMAP)::LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_TOOLBAR_INST_256), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+	HBITMAP hbm = (HBITMAP)::LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_TOOLBAR_INST_256), IMAGE_BITMAP, DPI::SX(96), DPI::SY(16), LR_CREATEDIBSECTION);
 	m_bmInstToolbar.Attach(hbm);
-	m_ilInstToolBar.Create(16, 16, ILC_COLOR24 | ILC_MASK, 4, 4);
+	m_ilInstToolBar.Create(DPI::SX(16), DPI::SY(16), ILC_COLOR24 | ILC_MASK, 4, 4);
 	m_ilInstToolBar.Add(&m_bmInstToolbar, RGB(255, 0, 255));
 	m_wndInstToolBar.GetToolBarCtrl().SetImageList(&m_ilInstToolBar);
 
@@ -749,12 +743,12 @@ void CMainFrame::ResizeFrameWindow()
 	if (pDocument != NULL) {
 
 		int Channels = pDocument->GetAvailableChannels();
-		int Height {0}, Width {0};
+		int Height = 0, Width = 0;
 
 		// Located to the right
 		if (m_iFrameEditorPos == FRAME_EDIT_POS_TOP) {
 			// Frame editor window
-			Height = CFrameEditor::DEFAULT_HEIGHT;
+			Height = CFrameEditor::DEFAULT_HEIGHT;		// // // 050B
 			Width = m_pFrameEditor->CalcWidth(Channels);
 
 			m_pFrameEditor->MoveWindow(DPI::Rect(12, 12, Width, Height));		// // //
@@ -768,17 +762,17 @@ void CMainFrame::ResizeFrameWindow()
 			CRect rect;
 			m_wndVerticalControlBar.GetClientRect(&rect);
 
-			Height = rect.Height() - CPatternEditor::HEADER_HEIGHT - 2;
+			Height = rect.Height() - DPI::SY(CPatternEditor::HEADER_HEIGHT - 2);		// // //
 			Width = m_pFrameEditor->CalcWidth(Channels);
 
-			m_pFrameEditor->MoveWindow(DPI::Rect(2, CPatternEditor::HEADER_HEIGHT + 1, Width, Height));
+			m_pFrameEditor->MoveWindow(DPI::SX(2), DPI::SY(CPatternEditor::HEADER_HEIGHT + 1), DPI::SX(Width), Height);		// // //
 
 			// Move frame controls
 			m_wndFrameControls.MoveWindow(DPI::Rect(4, 10, 150, 26));
 		}
 
 		// Vertical control bar
-		m_wndVerticalControlBar.m_sizeDefault.cx = Width + 4;
+		m_wndVerticalControlBar.m_sizeDefault.cx = DPI::SX(Width + 4);		// // // 050B
 		m_wndVerticalControlBar.CalcFixedLayout(TRUE, FALSE);
 		RecalcLayout();
 	}
@@ -791,14 +785,14 @@ void CMainFrame::ResizeFrameWindow()
 	int DialogStartPos;
 
 	if (m_iFrameEditorPos == FRAME_EDIT_POS_TOP)
-		DialogStartPos = FrameEditorRect.right + 32;
+		DialogStartPos = FrameEditorRect.right + DPI::SX(32);		// // // 050B
 	else
 		DialogStartPos = 0;
 
 	m_wndDialogBar.MoveWindow(DialogStartPos, 2, ParentRect.Width() - DialogStartPos, ParentRect.Height() - 4);
 	m_wndDialogBar.GetWindowRect(&ChildRect);
-	m_wndDialogBar.GetDlgItem(IDC_INSTRUMENTS)->MoveWindow(DPI::SX(330), DPI::SY(10), ChildRect.Width() - DPI::SX(338), DPI::SY(158));		// // //
-	m_wndDialogBar.GetDlgItem(IDC_INSTNAME)->MoveWindow(DPI::SX(520), DPI::SY(175), ChildRect.Width() - DPI::SX(528), DPI::SY(22));
+	m_wndDialogBar.GetDlgItem(IDC_INSTRUMENTS)->MoveWindow(DPI::SX(310), DPI::SY(10), ChildRect.Width() - DPI::SX(318), DPI::SY(158));		// // //
+	m_wndDialogBar.GetDlgItem(IDC_INSTNAME)->MoveWindow(DPI::SX(500), DPI::SY(175), ChildRect.Width() - DPI::SX(508), DPI::SY(22));
 
 	m_pFrameEditor->RedrawWindow();
 }
@@ -3120,6 +3114,38 @@ void CMainFrame::SetFrameEditorPosition(int Position)
 
 	// Save to settings
 	theApp.GetSettings()->FrameEditPos = Position;
+}
+
+void CMainFrame::SetControlPanelPosition(control_panel_pos_t Position)		// // // 050B
+{
+	m_iControlPanelPos = Position;
+	if (m_iControlPanelPos)
+		SetFrameEditorPosition(FRAME_EDIT_POS_LEFT);
+	
+	/*
+	CRect Rect {193, 0, 193, 126};
+	MapDialogRect(m_wndInstToolBarWnd, &Rect);
+
+	switch (m_iControlPanelPos) {
+	case CONTROL_PANEL_POS_TOP:
+		m_wndToolBar.SetBarStyle(CBRS_ALIGN_TOP | CBRS_BORDER_BOTTOM | CBRS_TOOLTIPS | CBRS_FLYBY);
+		m_wndToolBar.CalcFixedLayout(TRUE, FALSE);
+		break;
+	case CONTROL_PANEL_POS_LEFT:
+		m_wndToolBar.SetBarStyle(0x1430);
+		m_wndToolBar.CalcFixedLayout(TRUE, FALSE);
+		break;
+	case CONTROL_PANEL_POS_RIGHT:
+		m_wndToolBar.SetBarStyle(0x4130);
+		m_wndToolBar.CalcFixedLayout(TRUE, FALSE);
+		break;
+	}
+
+	// 0x462575
+	*/
+
+	ResizeFrameWindow();
+	ResizeFrameWindow();
 }
 
 void CMainFrame::OnFrameeditorTop()
