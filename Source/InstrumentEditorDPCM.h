@@ -42,13 +42,11 @@ public:
 	virtual void SelectInstrument(std::shared_ptr<CInstrument> pInst);
 
 protected:
-	static const char *KEY_NAMES[];
-
-protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 	void BuildKeyList();
 	void BuildSampleList();
+	void UpdateCurrentKey();		// // //
 	void UpdateKey(int Index);
 	bool LoadSample(const CString &FilePath, const CString &FileName);
 	bool InsertSample(CDSample *pNewSample);
@@ -70,7 +68,6 @@ public:
 	afx_msg void OnBnClickedUnload();
 	afx_msg void OnNMClickSampleList(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnBnClickedImport();
-	afx_msg void OnCbnSelchangeOctave();
 	afx_msg void OnCbnSelchangePitch();
 	afx_msg void OnLvnItemchangedTable(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnNMClickTable(NMHDR *pNMHDR, LRESULT *pResult);
