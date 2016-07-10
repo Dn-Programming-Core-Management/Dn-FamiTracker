@@ -616,6 +616,7 @@
 #define IDC_STATIC_DETUNE_SEMITONE      1456
 #define IDC_MAINFRAME_VISUALIZER        1457
 #define IDC_INST_SEQUENCE_GRAPH         1458
+#define IDC_STATIC_DPCM_ZOOM            1459
 #define ID_TRACKER_PLAY                 32771
 #define ID_TRACKER_PLAYPATTERN          32775
 #define ID_TRACKER_STOP                 32776
@@ -770,14 +771,17 @@
 #define ID_INDICATOR_TEMPO              53252
 #define ID_INDICATOR_TIME               53253
 #define ID_INDICATOR_POS                53254
+#define ID_INDICATOR_DPCM_SEGMENT       53255
+#define ID_INDICATOR_DPCM_SIZE          53256
+#define ID_INDICATOR_DPCM_ENDPOS        53257
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        357
+#define _APS_NEXT_RESOURCE_VALUE        358
 #define _APS_NEXT_COMMAND_VALUE         33198
-#define _APS_NEXT_CONTROL_VALUE         1459
+#define _APS_NEXT_CONTROL_VALUE         1460
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif

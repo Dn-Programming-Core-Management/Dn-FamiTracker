@@ -48,8 +48,6 @@
 #include "DPI.h"		// // //
 
 // Constants
-const int CInstrumentEditDlg::KEYBOARD_TOP	  = 323;
-const int CInstrumentEditDlg::KEYBOARD_LEFT	  = 12;
 const int CInstrumentEditDlg::KEYBOARD_WIDTH  = 561;
 const int CInstrumentEditDlg::KEYBOARD_HEIGHT = 58;
 
@@ -109,6 +107,19 @@ BOOL CInstrumentEditDlg::OnInitDialog()
 
 	for (int i = 0; i < PANEL_COUNT; ++i)
 		m_pPanels[i] = NULL;
+
+	CRect r;		// // //
+	GetClientRect(&r);
+	int cx = r.Width(), bot = r.bottom;
+	GetDlgItem(IDC_INST_TAB)->GetWindowRect(&r);
+	GetDesktopWindow()->MapWindowPoints(this, &r);
+	auto pKeyboard = GetDlgItem(IDC_KEYBOARD);
+	m_KeyboardRect.left   = -1 + (cx - KEYBOARD_WIDTH) / 2;
+	m_KeyboardRect.top    = -1 + r.bottom + (bot - r.bottom - KEYBOARD_HEIGHT) / 2;
+	m_KeyboardRect.right  =  1 + m_KeyboardRect.left + KEYBOARD_WIDTH;
+	m_KeyboardRect.bottom =  1 + m_KeyboardRect.top + KEYBOARD_HEIGHT;
+	pKeyboard->MoveWindow(m_KeyboardRect);
+	m_KeyboardRect.DeflateRect(1, 1, 1, 1);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE
@@ -248,6 +259,25 @@ void CInstrumentEditDlg::OnTcnSelchangeInstTab(NMHDR *pNMHDR, LRESULT *pResult)
 	*pResult = 0;
 }
 
+/*!
+	\brief Helper class to automatically select the previous drawing object when the context goes
+	out of scope.
+*/
+struct CDCObjectContext		// // // TODO: put it somewhere else, maybe Graphics.h
+{
+	CDCObjectContext(CDC &dc, CGdiObject *obj) : _dc(dc)
+	{
+		_obj = dc.SelectObject(obj);
+	}
+	~CDCObjectContext()
+	{
+		_dc.SelectObject(_obj);
+	}
+private:
+	CDC &_dc;
+	CGdiObject *_obj;
+};
+
 void CInstrumentEditDlg::OnPaint()
 {
 	CPaintDC dc(this); // device context for painting
@@ -256,73 +286,58 @@ void CInstrumentEditDlg::OnPaint()
 	const int WHITE_KEY_W	= 10;
 	const int BLACK_KEY_W	= 8;
 
-	CBitmap WhiteKeyBmp, BlackKeyBmp, *pOldWhite;
-	CBitmap WhiteKeyMarkBmp, BlackKeyMarkBmp, *pOldBlack;
-
-	CDC WhiteKey, BlackKey;
-	CDC BackDC;
-
-	CBitmap Bmp, *pOldBmp;
-
+	CBitmap Bmp, WhiteKeyBmp, BlackKeyBmp, WhiteKeyMarkBmp, BlackKeyMarkBmp;
 	Bmp.CreateCompatibleBitmap(&dc, 800, 800);
-	BackDC.CreateCompatibleDC(&dc);
-	pOldBmp = BackDC.SelectObject(&Bmp);
-
 	WhiteKeyBmp.LoadBitmap(IDB_KEY_WHITE);
 	BlackKeyBmp.LoadBitmap(IDB_KEY_BLACK);
 	WhiteKeyMarkBmp.LoadBitmap(IDB_KEY_WHITE_MARK);
 	BlackKeyMarkBmp.LoadBitmap(IDB_KEY_BLACK_MARK);
 
+	CDC BackDC;
+	BackDC.CreateCompatibleDC(&dc);
+	CDCObjectContext c {BackDC, &Bmp};		// // //
+
+	CDC WhiteKey;
 	WhiteKey.CreateCompatibleDC(&dc);
+	CDCObjectContext c2 {WhiteKey, &WhiteKeyBmp};		// // //
+
+	CDC BlackKey;
 	BlackKey.CreateCompatibleDC(&dc);
+	CDCObjectContext c3 {BlackKey, &BlackKeyBmp};		// // //
+	
+	const int WHITE[]	= {NOTE_C, NOTE_D, NOTE_E, NOTE_F, NOTE_G, NOTE_A, NOTE_B};
+	const int BLACK_1[] = {NOTE_Cs, NOTE_Ds};
+	const int BLACK_2[] = {NOTE_Fs, NOTE_Gs, NOTE_As};
 
-	pOldWhite = WhiteKey.SelectObject(&WhiteKeyBmp);
-	pOldBlack = BlackKey.SelectObject(&BlackKeyBmp);
-
-	const int WHITE[]	= {0, 2, 4, 5, 7, 9, 11};
-	const int BLACK_1[] = {1, 3};
-	const int BLACK_2[] = {6, 8, 10};
-
-	int Note	= m_iActiveKey % NOTE_RANGE;
-	int Octave	= m_iActiveKey / NOTE_RANGE;
+	int Note = GET_NOTE(m_iActiveKey);		// // //
+	int Octave = GET_OCTAVE(m_iActiveKey);
 
 	for (int j = 0; j < 8; j++) {
-		int Pos = /*KEYBOARD_LEFT +*/ ((WHITE_KEY_W * 7) * j);
+		int Pos = (WHITE_KEY_W * 7) * j;
 
 		for (int i = 0; i < 7; i++) {
-			if ((Note == WHITE[i]) && (Octave == j) && m_iActiveKey != -1)
-				WhiteKey.SelectObject(WhiteKeyMarkBmp);
-			else
-				WhiteKey.SelectObject(WhiteKeyBmp);
-
-			BackDC.BitBlt(i * WHITE_KEY_W + Pos, 0, 100, 100, &WhiteKey, 0, 0, SRCCOPY);
+			bool Selected = (Note == WHITE[i]) && (Octave == j) && m_iActiveKey != -1;
+			WhiteKey.SelectObject(Selected ? WhiteKeyMarkBmp : WhiteKeyBmp);
+			int Offset = i * WHITE_KEY_W;
+			BackDC.BitBlt(Pos + Offset, 0, 100, 100, &WhiteKey, 0, 0, SRCCOPY);
 		}
 
 		for (int i = 0; i < 2; i++) {
-			if ((Note == BLACK_1[i]) && (Octave == j) && m_iActiveKey != -1)
-				BlackKey.SelectObject(BlackKeyMarkBmp);
-			else
-				BlackKey.SelectObject(BlackKeyBmp);
-
-			BackDC.BitBlt(i * WHITE_KEY_W + WHITE_KEY_W / 2 + 1 + Pos, 0, 100, 100, &BlackKey, 0, 0, SRCCOPY);
+			bool Selected = (Note == BLACK_1[i]) && (Octave == j) && m_iActiveKey != -1;
+			BlackKey.SelectObject(Selected ? BlackKeyMarkBmp : BlackKeyBmp);
+			int Offset = i * WHITE_KEY_W + WHITE_KEY_W / 2 + 1;
+			BackDC.BitBlt(Pos + Offset, 0, 100, 100, &BlackKey, 0, 0, SRCCOPY);
 		}
 
 		for (int i = 0; i < 3; i++) {
-			if ((Note == BLACK_2[i]) && (Octave == j) && m_iActiveKey != -1)
-				BlackKey.SelectObject(BlackKeyMarkBmp);
-			else
-				BlackKey.SelectObject(BlackKeyBmp);
-
-			BackDC.BitBlt((i + 3) * WHITE_KEY_W + WHITE_KEY_W / 2 + 1 + Pos, 0, 100, 100, &BlackKey, 0, 0, SRCCOPY);
+			bool Selected = (Note == BLACK_2[i]) && (Octave == j) && m_iActiveKey != -1;
+			BlackKey.SelectObject(Selected ? BlackKeyMarkBmp : BlackKeyBmp);
+			int Offset = (i + 3) * WHITE_KEY_W + WHITE_KEY_W / 2 + 1;
+			BackDC.BitBlt(Pos + Offset, 0, 100, 100, &BlackKey, 0, 0, SRCCOPY);
 		}
 	}
 
-	WhiteKey.SelectObject(pOldWhite);
-	BlackKey.SelectObject(pOldBlack);
-
-	dc.BitBlt(DPI::SX(KEYBOARD_LEFT - 6) + 6, DPI::SY(KEYBOARD_TOP - 12) + 12, KEYBOARD_WIDTH, KEYBOARD_HEIGHT, &BackDC, 0, 0, SRCCOPY);
-
-	BackDC.SelectObject(pOldBmp);
+	dc.BitBlt(m_KeyboardRect.left, m_KeyboardRect.top, KEYBOARD_WIDTH, KEYBOARD_HEIGHT, &BackDC, 0, 0, SRCCOPY);		// // //
 }
 
 void CInstrumentEditDlg::ChangeNoteState(int Note)
@@ -332,7 +347,7 @@ void CInstrumentEditDlg::ChangeNoteState(int Note)
 	m_iActiveKey = Note;
 
 	if (m_hWnd)
-		RedrawWindow(CRect(KEYBOARD_LEFT, KEYBOARD_TOP, 580, KEYBOARD_TOP + 100), 0, RDW_INVALIDATE);
+		RedrawWindow(m_KeyboardRect, 0, RDW_INVALIDATE);		// // //
 }
 
 void CInstrumentEditDlg::SwitchOnNote(int x, int y)
@@ -345,7 +360,6 @@ void CInstrumentEditDlg::SwitchOnNote(int x, int y)
 
 	stChanNote NoteData { };
 
-	// TODO: remove hardcoded numbers
 	// // // Send to respective channels whenever cursor is outside instrument chip
 	if (m_iSelectedInstType == INST_2A03) {
 		if (m_pPanels[0]->IsWindowVisible() && Channel > CHANID_NOISE)
@@ -363,69 +377,45 @@ void CInstrumentEditDlg::SwitchOnNote(int x, int y)
 		case INST_S5B:  First = CHANID_S5B_CH1; break;
 		}
 		int Index = pDoc->GetChannelIndex(First);
-		if (Index != -1)
+		if (Index != -1 && pDoc->GetChipType(Index) != pDoc->GetChipType(Channel))
 			pView->SelectChannel(Index);
 	}
-
 	Channel = pView->GetSelectedChannel();		// // //
 
-	if (y > KEYBOARD_TOP && y < (KEYBOARD_TOP + 58) && x > KEYBOARD_LEFT && x < (KEYBOARD_LEFT + 560)) {
-		
-		int Octave = (x - KEYBOARD_LEFT) / 70;
+	if (m_KeyboardRect.PtInRect({x, y})) {
+		int KeyPos = (x - m_KeyboardRect.left) % 70;		// // //
+		int Octave = (x - m_KeyboardRect.left) / 70;
 		int Note;
 
-		if (y > KEYBOARD_TOP + 38) {
-			
+		if (y > m_KeyboardRect.top + 38) {
 			// Only white keys
-			int KeyPos = (x - KEYBOARD_LEFT) % 70;
-
-			if (KeyPos >= 0 && KeyPos < 10)				// C
-				Note = 0;
-			else if (KeyPos >= 10 && KeyPos < 20)		// D
-				Note = 2;
-			else if (KeyPos >= 20 && KeyPos < 30)		// E
-				Note = 4;
-			else if (KeyPos >= 30 && KeyPos < 40)		// F
-				Note = 5;
-			else if (KeyPos >= 40 && KeyPos < 50)		// G
-				Note = 7;
-			else if (KeyPos >= 50 && KeyPos < 60)		// A
-				Note = 9;
-			else if (KeyPos >= 60 && KeyPos < 70)		// B
-				Note = 11;
+			     if (KeyPos >= 60) Note = NOTE_B;
+			else if (KeyPos >= 50) Note = NOTE_A;
+			else if (KeyPos >= 40) Note = NOTE_G;
+			else if (KeyPos >= 30) Note = NOTE_F;
+			else if (KeyPos >= 20) Note = NOTE_E;
+			else if (KeyPos >= 10) Note = NOTE_D;
+			else if (KeyPos >=  0) Note = NOTE_C;
 		}
 		else {
 			// Black and white keys
-			int KeyPos = (x - KEYBOARD_LEFT) % 70;
-
-			if (KeyPos >= 0 && KeyPos < 7)			// C
-				Note = 0;
-			else if (KeyPos >= 7 && KeyPos < 13) 	// C#
-				Note = 1;
-			else if (KeyPos >= 13 && KeyPos < 16) 	// D
-				Note = 2;
-			else if (KeyPos >= 16 && KeyPos < 23) 	// D#
-				Note = 3;
-			else if (KeyPos >= 23 && KeyPos < 30) 	// E
-				Note = 4;
-			else if (KeyPos >= 30 && KeyPos < 37) 	// F
-				Note = 5;
-			else if (KeyPos >= 37 && KeyPos < 43) 	// F#
-				Note = 6;
-			else if (KeyPos >= 43 && KeyPos < 46) 	// G
-				Note = 7;
-			else if (KeyPos >= 46 && KeyPos < 53) 	// G#
-				Note = 8;
-			else if (KeyPos >= 53 && KeyPos < 56) 	// A
-				Note = 9;
-			else if (KeyPos >= 56 && KeyPos < 62) 	// A#
-				Note = 10;
-			else if (KeyPos >= 62 && KeyPos < 70) 	// B
-				Note = 11;
+			     if (KeyPos >= 62) Note = NOTE_B;
+			else if (KeyPos >= 56) Note = NOTE_As;
+			else if (KeyPos >= 53) Note = NOTE_A;
+			else if (KeyPos >= 46) Note = NOTE_Gs;
+			else if (KeyPos >= 43) Note = NOTE_G;
+			else if (KeyPos >= 37) Note = NOTE_Fs;
+			else if (KeyPos >= 30) Note = NOTE_F;
+			else if (KeyPos >= 23) Note = NOTE_E;
+			else if (KeyPos >= 16) Note = NOTE_Ds;
+			else if (KeyPos >= 13) Note = NOTE_D;
+			else if (KeyPos >=  7) Note = NOTE_Cs;
+			else if (KeyPos >=  0) Note = NOTE_C;
 		}
 
-		if (Note + (Octave * NOTE_RANGE) != m_iLastKey) {
-			NoteData.Note			= Note + 1;
+		int NewNote = MIDI_NOTE(Octave, Note);		// // //
+		if (NewNote != m_iLastKey) {
+			NoteData.Note			= Note;
 			NoteData.Octave			= Octave;
 			NoteData.Vol			= MAX_VOLUME - 1;
 			NoteData.Instrument		= pFrameWnd->GetSelectedInstrument();
@@ -434,9 +424,8 @@ void CInstrumentEditDlg::SwitchOnNote(int x, int y)
 
 			theApp.GetSoundGenerator()->QueueNote(Channel, NoteData, NOTE_PRIO_2);
 			theApp.GetSoundGenerator()->ForceReloadInstrument(Channel);		// // //
+			m_iLastKey = NewNote;
 		}
-
-		m_iLastKey = Note + (Octave * NOTE_RANGE);
 	}
 	else {
 		NoteData.Note			= pView->DoRelease() ? RELEASE : HALT;//HALT;
@@ -470,7 +459,6 @@ void CInstrumentEditDlg::SwitchOffNote(bool ForceHalt)
 
 void CInstrumentEditDlg::OnLButtonDown(UINT nFlags, CPoint point)
 {
-	DPI::ScaleMouse(point);
 	SwitchOnNote(point.x, point.y);
 	CDialog::OnLButtonDown(nFlags, point);
 }
@@ -483,8 +471,6 @@ void CInstrumentEditDlg::OnLButtonUp(UINT nFlags, CPoint point)
 
 void CInstrumentEditDlg::OnMouseMove(UINT nFlags, CPoint point)
 {
-	DPI::ScaleMouse(point);
-
 	if (nFlags & MK_LBUTTON)
 		SwitchOnNote(point.x, point.y);
 

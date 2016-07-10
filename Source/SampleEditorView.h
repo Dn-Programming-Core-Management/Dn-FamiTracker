@@ -48,12 +48,15 @@ public:
 	bool	HasSelection() const;
 
 	void	SetZoom(float Factor);
+	float	GetZoom() const;		// // //
 	float	GetMaxZoomFactor() const;
 
 private:
 	void	SetScroll(UINT nPos);
 
 private:
+	static const float MAX_FACTOR, MIN_FACTOR;		// // //
+
 	int *m_pSamples;
 
 	int m_iSize;

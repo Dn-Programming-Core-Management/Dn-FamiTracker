@@ -57,8 +57,6 @@ protected:
 	// Constants
 	static const int PANEL_COUNT = 2;
 
-	static const int KEYBOARD_TOP;
-	static const int KEYBOARD_LEFT;
 	static const int KEYBOARD_WIDTH;
 	static const int KEYBOARD_HEIGHT;
 
@@ -73,6 +71,7 @@ protected:
 	CInstrumentEditPanel *m_pPanels[PANEL_COUNT];
 	CInstrumentEditPanel *m_pFocusPanel;
 	CInstrumentManager *m_pInstManager;		// // //
+	CRect m_KeyboardRect;		// // //
 
 	bool m_bOpened;
 	int m_iSelectedInstType;

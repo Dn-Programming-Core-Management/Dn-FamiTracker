@@ -34,6 +34,7 @@ public:
 	CDSample *GetDSample() const;
 
 	void SelectionChanged();
+	void UpdateStatus(int Index, LPCTSTR Text);		// // //
 
 // Dialog Data
 	enum { IDD = IDD_SAMPLE_EDITOR };
@@ -41,12 +42,13 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-	void MoveControls();
 	void UpdateSampleView();
 
 	CDSample		  *m_pSample;
 	CSampleEditorView *m_pSampleEditorView;
 	CSoundGen		  *m_pSoundGen;
+
+	CStatusBar		  m_wndInfoStatusBar;		// // // 050B
 
 	DECLARE_MESSAGE_MAP()
 public:

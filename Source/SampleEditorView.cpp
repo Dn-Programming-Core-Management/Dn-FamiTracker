@@ -2,6 +2,8 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
+** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -25,6 +27,9 @@
 #include "SampleEditorDlg.h"
 
 // CSampleEditorView control
+
+const float CSampleEditorView::MAX_FACTOR = 1.0f;		// // // 1x
+const float CSampleEditorView::MIN_FACTOR = 0.01f;		// // // 100x
 
 IMPLEMENT_DYNAMIC(CSampleEditorView, CStatic)
 
@@ -197,7 +202,7 @@ void CSampleEditorView::OnMouseMove(UINT nFlags, CPoint point)
 {
 	double Sample = double(point.x) * m_dSampleStep;
 	int Offset = int(Sample / (8.0 * 64.0));
-	int Pos = int(Sample / (8.0 * 16.0));
+	int Pos = int(Sample / 8.0);		// // //
 
 	if (!m_iSize)
 		return;
@@ -213,9 +218,11 @@ void CSampleEditorView::OnMouseMove(UINT nFlags, CPoint point)
 		static_cast<CSampleEditorDlg*>(GetParent())->SelectionChanged();
 	}
 
-	CString Text;
-	Text.Format(_T(" Offset: %i, Pos: %i "), Offset, Pos);
-	GetParent()->SetDlgItemText(IDC_POS, Text);
+	CString Text, num1, num2;		// // //
+	num1.Format(_T("0x%02X"), Offset);
+	num2.Format(_T("%d"), Pos);
+	AfxFormatString2(Text, ID_INDICATOR_DPCM_SEGMENT, num1, num2);
+	static_cast<CSampleEditorDlg*>(GetParent())->UpdateStatus(0, Text);
 
 	CStatic::OnMouseMove(nFlags, point);
 }
@@ -381,11 +388,13 @@ void CSampleEditorView::UpdateInfo()
 	if (!m_iSize)
 		return;
 
-	CString Text, num1, num2;		// // //
-	num1.Format(_T("%i"), m_pSamples[m_iSize - 1]);
-	num2.Format(_T("%i"), m_iSize / 8);
-	AfxFormatString2(Text, IDS_DPCM_EDIT_INFO_FORMAT, num1, num2);
-	GetParent()->SetDlgItemText(IDC_INFO, Text);
+	CString Text, num;		// // //
+	num.Format(_T("%i"), m_iSize / 8);
+	AfxFormatString1(Text, ID_INDICATOR_DPCM_SIZE, num);
+	static_cast<CSampleEditorDlg*>(GetParent())->UpdateStatus(1, Text);
+	num.Format(_T("%i"), m_pSamples[m_iSize - 1]);
+	AfxFormatString1(Text, ID_INDICATOR_DPCM_ENDPOS, num);
+	static_cast<CSampleEditorDlg*>(GetParent())->UpdateStatus(2, Text);
 }
 
 void CSampleEditorView::OnSize(UINT nType, int cx, int cy)
@@ -472,16 +481,14 @@ void CSampleEditorView::SetZoom(float Factor)
 {
 	// Set zoom, 1.0f = no zoom, 0.0f = max zoom
 	//
-	const float MAX_FACTOR = 1.0f;		// 1x
-	const float MIN_FACTOR = 0.01f;		// 100x
 
 	int FullViewSize = m_iSize;
 	int ViewSize = m_iViewEnd - m_iViewStart;
 	int ViewMiddle = ViewSize / 2 + m_iViewStart;
 
-	float Zoom = ((MAX_FACTOR - MIN_FACTOR) * (Factor * Factor)) + MIN_FACTOR;
+	m_fZoom = ((MAX_FACTOR - MIN_FACTOR) * (Factor * Factor)) + MIN_FACTOR;		// // //
 
-	int NewViewSize = int(FullViewSize * Zoom);
+	int NewViewSize = int(FullViewSize * m_fZoom);
 
 	m_iViewStart = ViewMiddle - NewViewSize / 2;
 	m_iViewEnd = ViewMiddle + NewViewSize / 2;
@@ -497,7 +504,7 @@ void CSampleEditorView::SetZoom(float Factor)
 	}
 	else {
 		m_pScrollBar->EnableWindow(TRUE);
-		m_iScrollMax = int(1000.0f * (1.0f - Zoom));
+		m_iScrollMax = int(1000.0f * (1.0f - m_fZoom));
 		m_pScrollBar->SetScrollRange(0, m_iScrollMax);
 		m_pScrollBar->SetScrollPos((m_iViewStart * m_iScrollMax) / (m_iSize - NewViewSize));
 
@@ -510,6 +517,11 @@ void CSampleEditorView::SetZoom(float Factor)
 		ScrollInfo.nPos = (m_iViewStart * m_iScrollMax) / (m_iSize - NewViewSize);
 		m_pScrollBar->SetScrollInfo(&ScrollInfo);
 	}
+}
+
+float CSampleEditorView::GetZoom() const		// // //
+{
+	return m_fZoom;
 }
 
 float CSampleEditorView::GetMaxZoomFactor() const
