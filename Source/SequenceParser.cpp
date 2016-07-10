@@ -102,39 +102,40 @@ void CSeqConversionDefault::OnFinish()
 	m_bReady = false;
 }
 
-bool CSeqConversionDefault::GetNextInteger(std::string::const_iterator &b, std::string::const_iterator &e, int &Out) const
+bool CSeqConversionDefault::GetNextInteger(std::string::const_iterator &b, std::string::const_iterator &e, int &Out, bool Signed) const
 {
 	std::smatch m;
 
-	if (m_bHex) {
-		static const std::regex HEX_RE {R"(^(-?)([0-9A-Fa-f]+))"};
-		if (!std::regex_search(b, e, m, HEX_RE))
-			return false;
-		try {
-			Out = std::stoi(m.str(2), nullptr, 16);
+	try {
+		if (m_bHex) {
+			static const std::regex HEX_RE {R"(^([\+-]?)[0-9A-Fa-f]+)"};
+			if (!std::regex_search(b, e, m, HEX_RE))
+				return false;
+			if (Signed && !m[1].length())
+				return false;
+			Out = std::stoi(m.str(), nullptr, 16);
 		}
-		catch (std::out_of_range &) {
-			return false;
-		}
-		if (!m.str(1).empty())
-			Out = -Out;
-	}
-	else {
-		static const std::regex NUMBER_RE {R"(^-?[0-9]+)"}, HEX_PREFIX_RE {R"((-?)\$([0-9A-Fa-f]+))"};
-		if (std::regex_search(b, e, m, HEX_PREFIX_RE)) {
-			Out = std::stoi(m.str(2), nullptr, 16);
-			if (!m.str(1).empty())
-				Out = -Out;
-		}
-		else if (std::regex_search(b, e, m, NUMBER_RE))
-			try {
+		else {
+			static const std::regex NUMBER_RE {R"(^([\+-]?)[0-9]+)"};
+			static const std::regex HEX_PREFIX_RE {R"(([\+-]?)[\$x]([0-9A-Fa-f]+))"}; // do not allow 0x prefix
+			if (std::regex_search(b, e, m, HEX_PREFIX_RE)) {
+				if (Signed && !m[1].length())
+					return false;
+				Out = std::stoi(m.str(2), nullptr, 16);
+				if (m.str(1) == "-")
+					Out = -Out;
+			}
+			else if (std::regex_search(b, e, m, NUMBER_RE)) {
+				if (Signed && !m[1].length())
+					return false;
 				Out = std::stoi(m.str());
 			}
-			catch (std::out_of_range &) {
+			else
 				return false;
-			}
-		else
-			return false;
+		}
+	}
+	catch (std::out_of_range &) {
+		return false;
 	}
 
 	b = m.suffix().first;
@@ -171,7 +172,7 @@ char CSeqConversion5B::GetValue()
 
 bool CSeqConversion5B::GetNextTerm(std::string::const_iterator &b, std::string::const_iterator &e, int &Out)
 {
-	if (!CSeqConversionDefault::GetNextTerm(b, e, Out))
+	if (!GetNextInteger(b, e, Out))
 		return false;
 
 	static const std::regex S5B_FLAGS_RE {R"(^[TtNnEe]*)"};
@@ -191,6 +192,72 @@ bool CSeqConversion5B::GetNextTerm(std::string::const_iterator &b, std::string::
 	return true;
 }
 
+std::string CSeqConversionArpScheme::ToString(char Value) const		// // //
+{
+	int Offset = m_iMinValue + ((Value - m_iMinValue) & 0x3F);
+	char Scheme = Value & 0xC0;
+	if (!Offset) {
+		switch (Scheme) {
+		case ARPSCHEME_MODE_X: return "x";
+		case ARPSCHEME_MODE_Y: return "y";
+		case ARPSCHEME_MODE_NEG_Y: return "-y";
+		default: return "0";
+		}
+	}
+	std::string Str = std::to_string(Offset);
+	switch (Scheme) {
+	case ARPSCHEME_MODE_X: Str += "+x"; break;
+	case ARPSCHEME_MODE_Y: Str += "+y"; break;
+	case ARPSCHEME_MODE_NEG_Y: Str += "-y"; break;
+	}
+	return Str;
+}
+
+bool CSeqConversionArpScheme::ToValue(const std::string &String)
+{
+	m_iArpSchemeFlag = -1;
+	return CSeqConversionDefault::ToValue(String);
+}
+
+char CSeqConversionArpScheme::GetValue()
+{
+	return (CSeqConversionDefault::GetValue() & 0x3F) | m_iArpSchemeFlag;
+}
+
+bool CSeqConversionArpScheme::GetNextTerm(std::string::const_iterator &b, std::string::const_iterator &e, int &Out)
+{
+	const auto SchemeFunc = [&] (const std::string &str) {
+		if (m_iArpSchemeFlag != -1) return;
+		m_iArpSchemeFlag = 0;
+		if (str == "x" || str == "+x")
+			m_iArpSchemeFlag = static_cast<char>(ARPSCHEME_MODE_X);
+		else if (str == "y" || str == "+y")
+			m_iArpSchemeFlag = static_cast<char>(ARPSCHEME_MODE_Y);
+		else if (str == "-y")
+			m_iArpSchemeFlag = static_cast<char>(ARPSCHEME_MODE_NEG_Y);
+	};
+
+	std::smatch m;
+	static const std::regex SCHEME_HEAD_RE {R"(^(x|y|-y))"};
+	static const std::regex SCHEME_TAIL_RE {R"(^(\+x|\+y|-y)?)"};
+	
+	if (std::regex_search(b, e, m, SCHEME_HEAD_RE)) {
+		SchemeFunc(m.str());
+		b = m.suffix().first;
+		Out = 0;
+		GetNextInteger(b, e, Out, true); // optional
+	}
+	else {
+		if (!GetNextInteger(b, e, Out))
+			return false;
+		if (std::regex_search(b, e, m, SCHEME_TAIL_RE)) {
+			SchemeFunc(m.str()); // optional
+			b = m.suffix().first;
+		}
+	}
+	return true;
+}
+
 void CSequenceParser::SetSequence(CSequence *pSeq)
 {
 	ASSERT(pSeq != nullptr);
@@ -205,7 +272,9 @@ void CSequenceParser::SetConversion(CSeqConversionBase *pConv)
 
 void CSequenceParser::ParseSequence(const std::string &String)
 {
+	auto Setting = static_cast<seq_setting_t>(m_pSequence->GetSetting());
 	m_pSequence->Clear();
+	m_pSequence->SetSetting(Setting);
 	m_iPushedCount = 0;
 	static const std::regex SPLIT_RE {R"(\S+)"};
 

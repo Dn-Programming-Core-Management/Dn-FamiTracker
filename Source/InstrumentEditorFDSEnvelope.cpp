@@ -101,9 +101,8 @@ void CInstrumentEditorFDSEnvelope::SetupParser() const		// // //
 		Max = MAX_VOLUME; Min = 0; break;
 	case SEQ_ARPEGGIO:
 		switch (m_pSequence->GetSetting()) {
-		case SETTING_ARP_SCHEME:
-			// pConv = new CSeqConversionArpScheme { };
-			Max = 36; Min = -27; break;
+		case SETTING_ARP_SCHEME:		// // //
+			pConv = new CSeqConversionArpScheme {ARPSCHEME_MIN}; break;
 		case SETTING_ARP_FIXED:
 			Max = NOTE_COUNT - 1; Min = 0; break;
 		default:
@@ -117,6 +116,7 @@ void CInstrumentEditorFDSEnvelope::SetupParser() const		// // //
 		pConv = new CSeqConversionDefault {Min, Max};
 	m_pParser->SetSequence(m_pSequence);
 	m_pParser->SetConversion(pConv);
+	m_pSequenceEditor->SetConversion(pConv);		// // //
 }
 
 void CInstrumentEditorFDSEnvelope::OnCbnSelchangeType()

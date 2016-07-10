@@ -794,41 +794,6 @@ void CArpeggioGraphEditor::ChangeSetting()
 	m_pScrollBar->SetScrollInfo(&info);
 }
 
-CString CArpeggioGraphEditor::GetNoteString(int Value)
-{
-	const char NOTES_A[] = {'C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'G', 'A', 'A', 'B'};
-	const char NOTES_B[] = {'-', '#', '-', '#', '-', '-', '#', '-', '#', '-', '#', '-'};
-	const char NOTES_C[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-
-	int Octave = Value / NOTE_RANGE;
-	int Note = Value % NOTE_RANGE;
-
-	CString line;
-	line.Format(_T("%c%c%c"), NOTES_A[Note], NOTES_B[Note], NOTES_C[Octave]);
-
-	return line;
-}
-
-CString CArpeggioGraphEditor::GetArpSchemeString(int Value)
-{
-	CString line = _T("");
-	int trsp = Value & 0x3F;
-
-	if (!trsp) {
-		static const CString SINGLE[] = {_T("0"), _T("x"), _T("y"), _T("-y")};
-		return SINGLE[(Value & 0xC0) >> 6];
-	}
-
-	line.Format(_T("%i"), trsp > 0x24 ? trsp - 64 : trsp);
-	switch (Value & 0xC0) {
-	case ARPSCHEME_MODE_X: line.Append(_T("+x")); break;
-	case ARPSCHEME_MODE_Y: line.Append(_T("+y")); break;
-	case ARPSCHEME_MODE_NEG_Y: line.Append(_T("-y")); break;
-	}
-
-	return line;
-}
-
 void CArpeggioGraphEditor::DrawRange(CDC *pDC, int Max, int Min)
 {
 	const char NOTES_A[] = {'C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'G', 'A', 'A', 'B'};
@@ -849,21 +814,16 @@ void CArpeggioGraphEditor::DrawRange(CDC *pDC, int Max, int Min)
 		pDC->SetBkColor(0);
 
 		// Top
-		int NoteValue = m_iScrollOffset + 20;
-		int Octave = NoteValue / NOTE_RANGE;
-		int Note = NoteValue % NOTE_RANGE;
-
 		CString line;
-		line = GetNoteString(NoteValue);
+		int NoteValue = m_iScrollOffset + 20;
+		line.Format(_T("%s%d"), stChanNote::NOTE_NAME[GET_NOTE(NoteValue) - 1], GET_OCTAVE(NoteValue));		// // //
 		pDC->TextOut(2, m_GraphRect.top - 3, line);
 
 		// Bottom
 		NoteValue = m_iScrollOffset;
-		Octave = NoteValue / NOTE_RANGE;
-		Note = NoteValue % NOTE_RANGE;
-
-		line.Format(_T("%c%c%c"), NOTES_A[Note], NOTES_B[Note], NOTES_C[Octave]);
+		line.Format(_T("%s%d"), stChanNote::NOTE_NAME[GET_NOTE(NoteValue) - 1], GET_OCTAVE(NoteValue));		// // //
 		pDC->TextOut(2, m_GraphRect.bottom - 13, line);
+
 		pDC->SelectObject(pOldFont);
 	}
 }

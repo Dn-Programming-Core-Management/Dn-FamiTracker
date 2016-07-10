@@ -77,12 +77,14 @@ public:
 	void OnFinish() override;
 
 protected:
-	bool GetNextInteger(std::string::const_iterator &b, std::string::const_iterator &e, int &Out) const;
+	bool GetNextInteger(std::string::const_iterator &b, std::string::const_iterator &e, int &Out, bool Signed = false) const;
 	virtual bool GetNextTerm(std::string::const_iterator &b, std::string::const_iterator &e, int &Out);
 
-private:
+protected:
 	const int m_iMinValue = INT32_MIN;
 	const int m_iMaxValue = INT32_MAX;
+
+private:
 	bool m_bReady = false;
 	bool m_bHex;
 
@@ -102,6 +104,19 @@ protected:
 	bool GetNextTerm(std::string::const_iterator &b, std::string::const_iterator &e, int &Out) override;
 private:
 	char m_iEnableFlags;
+};
+
+class CSeqConversionArpScheme : public CSeqConversionDefault
+{
+public:
+	CSeqConversionArpScheme(int Min) : CSeqConversionDefault(Min, Min + 63) { }
+	std::string ToString(char Value) const override;
+	bool ToValue(const std::string &String) override;
+	char GetValue() override;
+protected:
+	bool GetNextTerm(std::string::const_iterator &b, std::string::const_iterator &e, int &Out) override;
+private:
+	char m_iArpSchemeFlag;
 };
 
 /*!

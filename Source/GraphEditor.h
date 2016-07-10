@@ -127,8 +127,6 @@ public:
 	DECLARE_DYNAMIC(CArpeggioGraphEditor)
 	CArpeggioGraphEditor(CSequence *pSequence);
 	virtual ~CArpeggioGraphEditor();
-	static CString GetNoteString(int Value);		// // //
-	static CString GetArpSchemeString(int Value);		// // //
 	void ChangeSetting();
 private:
 	int GetItemValue(int pos);

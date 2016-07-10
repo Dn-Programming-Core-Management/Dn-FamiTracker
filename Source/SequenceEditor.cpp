@@ -34,6 +34,7 @@
 #include "SequenceSetting.h"
 #include "SequenceEditorMessage.h"		// // //
 #include "DPI.h"		// // //
+#include "SequenceParser.h"		// // //
 
 // This file contains the sequence editor and sequence size control
 
@@ -155,20 +156,13 @@ LRESULT CSequenceEditor::OnCursorChange(WPARAM wParam, LPARAM lParam)
 	GetClientRect(rect);
 
 	CString Text;
-	// Arpeggio
-	if (m_iSelectedSetting == SEQ_ARPEGGIO && m_pSequence->GetSetting() == SETTING_ARP_FIXED) {
-		Text.Format(_T("{%i, %s}    "), wParam, CArpeggioGraphEditor::GetNoteString(lParam));
-	}
-	else if (m_iSelectedSetting == SEQ_ARPEGGIO && m_pSequence->GetSetting() == SETTING_ARP_SCHEME) {		// // //
-		Text.Format(_T("{%i, %s}    "), wParam, CArpeggioGraphEditor::GetArpSchemeString(lParam));
-	}
-	else {
-		Text.Format(_T("{%i, %i}    "), wParam, lParam);
-	}
-	
+	if (m_pConversion != nullptr)		// // //
+		Text.Format(_T("{%i, %s}        "), wParam, m_pConversion->ToString(static_cast<char>(lParam)).c_str());
+	else
+		Text.Format(_T("{%i, %i}        "), wParam, lParam);
 	pDC->TextOut(170, rect.bottom - 19, Text);
-	ReleaseDC(pDC);
 
+	ReleaseDC(pDC);
 	return TRUE;
 }
 
@@ -203,6 +197,11 @@ void CSequenceEditor::SetMaxValues(int MaxVol, int MaxDuty)
 {
 	m_iMaxVol = MaxVol;
 	m_iMaxDuty = MaxDuty;
+}
+
+void CSequenceEditor::SetConversion(const CSeqConversionBase *pConv)		// // //
+{
+	m_pConversion = pConv;
 }
 
 void CSequenceEditor::SequenceChangedMessage(bool Changed)

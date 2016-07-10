@@ -57,6 +57,8 @@ enum arp_scheme_mode_t {
 	ARPSCHEME_MODE_NEG_Y = 0xC0
 };
 
+const int ARPSCHEME_MIN = -27;		// // // lowest note offset for arp schemes
+
 #include "CustomExporterInterfaces.h"		// // //
 
 /*
