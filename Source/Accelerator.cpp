@@ -44,7 +44,7 @@ LPCTSTR CAccelerator::MOD_NAMES[] = {
 };
 
 // Default shortcut table
-const stAccelEntry CAccelerator::DEFAULT_TABLE[] = {
+const std::vector<stAccelEntry> CAccelerator::DEFAULT_TABLE {
 	{_T("Decrease octave"),				MOD_NONE,		VK_DIVIDE,		ID_CMD_OCTAVE_PREVIOUS},
 	{_T("Increase octave"),				MOD_NONE,		VK_MULTIPLY,	ID_CMD_OCTAVE_NEXT},
 	{_T("Play / Stop"),					MOD_NONE,		VK_RETURN,		ID_TRACKER_TOGGLE_PLAY},
@@ -127,7 +127,7 @@ const stAccelEntry CAccelerator::DEFAULT_TABLE[] = {
 	{_T("Compact View"),				MOD_NONE,		0,				IDC_COMPACT_TOGGLE},				// // //
 };
 
-const int CAccelerator::ACCEL_COUNT = sizeof(CAccelerator::DEFAULT_TABLE) / sizeof(stAccelEntry);
+const int CAccelerator::ACCEL_COUNT = DEFAULT_TABLE.size();
 
 // Registry key
 LPCTSTR CAccelerator::SHORTCUTS_SECTION = _T("Shortcuts");
@@ -141,55 +141,44 @@ static BYTE GetMod(int Mod)
 // Class instance functions
 
 CAccelerator::CAccelerator() : 
-	m_hAccel(NULL), 
-	m_hAdditionalAccel(NULL), 
-	m_pEntriesTable(new stAccelEntry[ACCEL_COUNT]), 
-	m_pAccelTable(new ACCEL[ACCEL_COUNT]),
-	m_iUsedKeys()		// // //
+	m_pEntriesTable(ACCEL_COUNT),		// // //
+	m_pAccelTable(ACCEL_COUNT)		// // //
 {
 	TRACE(_T("Accelerator: Accelerator table contains %d items\n"), ACCEL_COUNT);
 }
 
 CAccelerator::~CAccelerator()
 {
-	ASSERT(m_hAccel == NULL);
-	SAFE_RELEASE_ARRAY(m_pEntriesTable);
-	SAFE_RELEASE_ARRAY(m_pAccelTable);
+	ASSERT(m_hAccel == nullptr);
 }
 
 LPCTSTR CAccelerator::GetItemName(int Item) const
 {
-	ASSERT(Item < ACCEL_COUNT);
 	return m_pEntriesTable[Item].name;
 }
 
 int CAccelerator::GetItemKey(int Item) const
 {
-	ASSERT(Item < ACCEL_COUNT);
 	return m_pEntriesTable[Item].key;
 }
 
 int CAccelerator::GetItemMod(int Item) const
 {
-	ASSERT(Item < ACCEL_COUNT);
 	return m_pEntriesTable[Item].mod;
 }
 
 int CAccelerator::GetDefaultKey(int Item) const
 {
-	ASSERT(Item < ACCEL_COUNT);
 	return DEFAULT_TABLE[Item].key;
 }
 
 int CAccelerator::GetDefaultMod(int Item) const
 {
-	ASSERT(Item < ACCEL_COUNT);
 	return DEFAULT_TABLE[Item].mod;
 }
 
 LPCTSTR CAccelerator::GetItemModName(int Item) const
 {
-	ASSERT(Item < ACCEL_COUNT);
 	return MOD_NAMES[m_pEntriesTable[Item].mod];
 }
 
@@ -228,20 +217,19 @@ LPCTSTR CAccelerator::GetVKeyName(int virtualKey) const
 
 void CAccelerator::StoreShortcut(int Item, int Key, int Mod)
 {
-	ASSERT(Item < ACCEL_COUNT);
 	m_pEntriesTable[Item].key = Key;
 	m_pEntriesTable[Item].mod = Mod;
 }
 
 bool CAccelerator::GetShortcutString(int id, CString &str) const
 {
-	for (int i = 0; i < ACCEL_COUNT; ++i) {
-		if (m_pEntriesTable[i].id == id) {
-			CString KeyName = GetVKeyName(m_pEntriesTable[i].key);
+	for (const auto &x : m_pEntriesTable) {		// // //
+		if (x.id == id) {
+			CString KeyName = GetVKeyName(x.key);
 			if (KeyName.GetLength() > 1)
 				KeyName = KeyName.Mid(0, 1).MakeUpper() + KeyName.Mid(1, KeyName.GetLength() - 1).MakeLower();
-			if (m_pEntriesTable[i].mod > 0)
-				str.Format(_T("\t%s+%s"), MOD_NAMES[m_pEntriesTable[i].mod], KeyName);
+			if (x.mod > 0)
+				str.Format(_T("\t%s+%s"), MOD_NAMES[x.mod], KeyName);
 			else
 				str.Format(_T("\t%s"), KeyName);
 			return true;
@@ -261,8 +249,8 @@ bool CAccelerator::IsKeyUsed(int nChar) const		// // //
 void CAccelerator::SaveShortcuts(CSettings *pSettings) const
 {
 	// Save values
-	for (int i = 0; i < ACCEL_COUNT; ++i) {
-		theApp.WriteProfileInt(SHORTCUTS_SECTION, m_pEntriesTable[i].name, (m_pEntriesTable[i].mod << 8) | m_pEntriesTable[i].key);
+	for (const auto &x : m_pEntriesTable) {		// // //
+		theApp.WriteProfileInt(SHORTCUTS_SECTION, x.name, (x.mod << 8) | x.key);
 	}
 }
 
@@ -277,32 +265,33 @@ void CAccelerator::LoadShortcuts(CSettings *pSettings)
 	/*
 		location priorities:
 		1. HKCU/SOFTWARE/0CC-FamiTracker
+		1. HKCU/SOFTWARE/0CC-FamiTracker, original key
 		2. HKCU/SOFTWARE/FamiTracker
 		3. HKCU/SOFTWARE/FamiTracker, original key (using stAccelEntry::orig_name)
 		4. default value
 	*/
-	for (int i = 0; i < ACCEL_COUNT; ++i) {
-		int Setting = (m_pEntriesTable[i].mod << 8) | m_pEntriesTable[i].key;
+	for (auto &x : m_pEntriesTable) {		// // //
+		int Setting = (x.mod << 8) | x.key;
 		{		// // //
 			stOldSettingContext s;
-			if (m_pEntriesTable[i].orig_name != nullptr)		// // //
-				Setting = theApp.GetProfileInt(SHORTCUTS_SECTION, m_pEntriesTable[i].orig_name, Setting);
-			Setting = theApp.GetProfileInt(SHORTCUTS_SECTION, m_pEntriesTable[i].name, Setting);
+			if (x.orig_name != nullptr)		// // //
+				Setting = theApp.GetProfileInt(SHORTCUTS_SECTION, x.orig_name, Setting);
+			Setting = theApp.GetProfileInt(SHORTCUTS_SECTION, x.name, Setting);
 		}
-		if (m_pEntriesTable[i].orig_name != nullptr)		// // //
-			Setting = theApp.GetProfileInt(SHORTCUTS_SECTION, m_pEntriesTable[i].orig_name, Setting);
-		Setting = theApp.GetProfileInt(SHORTCUTS_SECTION, m_pEntriesTable[i].name, Setting);
+		if (x.orig_name != nullptr)		// // //
+			Setting = theApp.GetProfileInt(SHORTCUTS_SECTION, x.orig_name, Setting);
+		Setting = theApp.GetProfileInt(SHORTCUTS_SECTION, x.name, Setting);
 
-		m_pEntriesTable[i].key = Setting & 0xFF;
-		m_pEntriesTable[i].mod = Setting >> 8;
-		if (m_pEntriesTable[i].mod == MOD_NONE && m_pEntriesTable[i].key)		// // //
-			m_iUsedKeys.insert(Setting & 0xFF);
+		x.key = Setting & 0xFF;
+		x.mod = Setting >> 8;
+		if (x.mod == MOD_NONE && x.key)		// // //
+			m_iUsedKeys.insert(x.key);
 	}
 }
 
 void CAccelerator::LoadDefaults()
 {
-	memcpy(m_pEntriesTable, DEFAULT_TABLE, sizeof(stAccelEntry) * ACCEL_COUNT);
+	m_pEntriesTable = DEFAULT_TABLE;		// // //
 }
 
 void CAccelerator::Setup()
@@ -314,15 +303,15 @@ void CAccelerator::Setup()
 		m_hAccel = NULL;
 	}
 
-	memset(m_pAccelTable, 0, sizeof(ACCEL) * ACCEL_COUNT);
-
-	for (int i = 0; i < ACCEL_COUNT; ++i) {
-		m_pAccelTable[i].cmd = m_pEntriesTable[i].id;
-		m_pAccelTable[i].fVirt = FVIRTKEY | GetMod(m_pEntriesTable[i].mod);
-		m_pAccelTable[i].key = m_pEntriesTable[i].key;
+	m_pAccelTable.clear();		// // //
+	for (const auto &x : m_pEntriesTable) {
+		ACCEL a;
+		a.fVirt = FVIRTKEY | GetMod(x.mod);
+		a.key = x.key;
+		a.cmd = x.id;
+		m_pAccelTable.push_back(a);
 	}
-
-	m_hAccel = CreateAcceleratorTable(m_pAccelTable, ACCEL_COUNT);
+	m_hAccel = CreateAcceleratorTable(m_pAccelTable.data(), ACCEL_COUNT);
 }
 
 BOOL CAccelerator::Translate(HWND hWnd, MSG *pMsg)
