@@ -2,6 +2,8 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
+** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -20,6 +22,7 @@
 
 #include "stdafx.h"
 #include "CustomControls.h"
+#include "DPI.h"		// // //
 
 /*
 
@@ -75,7 +78,7 @@ void CBannerEdit::OnPaint()
 	CDC *pDC = GetDC();
 	if (pDC != NULL) {
 		CFont font;
-		font.CreateFont(12, 0, 0, 0, 0, TRUE, FALSE, FALSE, 0, 0, 0, 0, 0, BANNER_FONT);
+		font.CreateFont(DPI::SY(12), 0, 0, 0, 0, TRUE, FALSE, FALSE, 0, 0, 0, 0, 0, BANNER_FONT);
 		CFont *pOldFont = pDC->SelectObject(&font);
 
 		pDC->SetBkColor(pDC->GetPixel(4, 4));
