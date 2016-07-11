@@ -724,7 +724,7 @@ BOOL CFrameEditor::PreTranslateMessage(MSG* pMsg)
 int CFrameEditor::GetRowFromPoint(const CPoint &point, bool DropTarget) const
 {
 	// Translate a point value to a row
-	int Delta = ((point.y - TOP_OFFSET) / ROW_HEIGHT) - m_iMiddleRow;
+	int Delta = ((point.y - TOP_OFFSET) / DPI::SY(ROW_HEIGHT)) - m_iMiddleRow;		// // //
 	int NewFrame = m_pView->GetSelectedFrame() + Delta;
 	int FrameCount = m_pDocument->GetFrameCount(m_pMainFrame->GetSelectedTrack());
 	
@@ -753,8 +753,6 @@ unsigned int CFrameEditor::CalcWidth(int Channels) const
 
 void CFrameEditor::OnLButtonDown(UINT nFlags, CPoint point)
 {
-	DPI::ScaleMouse(point);
-
 	int Row = GetRowFromPoint(point, false);
 
 	m_ButtonPoint = point;
@@ -795,8 +793,6 @@ void CFrameEditor::OnLButtonDown(UINT nFlags, CPoint point)
 
 void CFrameEditor::OnLButtonUp(UINT nFlags, CPoint point)
 {
-	DPI::ScaleMouse(point);
-
 	int Channel	 = GetChannelFromPoint(point);
 	int NewFrame = GetRowFromPoint(point, false);
 
@@ -837,8 +833,6 @@ void CFrameEditor::OnLButtonUp(UINT nFlags, CPoint point)
 
 void CFrameEditor::OnMouseMove(UINT nFlags, CPoint point)
 {
-	DPI::ScaleMouse(point);
-	
 	if (nFlags & MK_LBUTTON) {
 		if (!m_bSelecting) {
 			if (abs(m_ButtonPoint.x - point.x) > m_iDragThresholdX || abs(m_ButtonPoint.y - point.y) > m_iDragThresholdY) {
@@ -885,7 +879,6 @@ void CFrameEditor::OnNcMouseMove(UINT nHitTest, CPoint point)
 void CFrameEditor::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
 	// Select channel and enable edit mode
-	DPI::ScaleMouse(point);
 
 	const int Channel  = GetChannelFromPoint(point);
 	const int NewFrame = GetRowFromPoint(point, false);
@@ -901,21 +894,6 @@ void CFrameEditor::OnLButtonDblClk(UINT nFlags, CPoint point)
 		EnableInput();
 
 	CWnd::OnLButtonDblClk(nFlags, point);
-}
-
-void CFrameEditor::OnRButtonUp(UINT nFlags, CPoint point)
-{
-	DPI::ScaleMouse(point);
-/*
-	int Channel	 = GetChannelFromPoint(point);
-	int NewFrame = GetRowFromPoint(point, false);
-
-	m_pView->SelectFrame(NewFrame);
-
-	if (Channel >= 0)
-		m_pView->SelectChannel(Channel);
-*/
-	CWnd::OnRButtonUp(nFlags, point);
 }
 
 BOOL CFrameEditor::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
