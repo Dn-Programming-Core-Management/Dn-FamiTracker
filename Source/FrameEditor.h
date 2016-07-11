@@ -97,6 +97,7 @@ private:
 	// Translation
 	int GetRowFromPoint(const CPoint &point, bool DropTarget) const;
 	int GetChannelFromPoint(const CPoint &point) const;
+	bool IsOverFrameColumn(const CPoint &point) const;		// // //
 
 	// Drag & drop
 	void InitiateDrag();
@@ -112,7 +113,6 @@ public:
 	static const int DEFAULT_HEIGHT		= 161;	// Window height at top position
 	static const int CURSOR_WIDTH		= 8;	// Cursor box width
 
-	static const TCHAR DEFAULT_FONT[];
 	static const TCHAR CLIPBOARD_ID[];
 
 private:
@@ -155,6 +155,7 @@ private:
 	bool	m_bSelecting;
 	bool	m_bStartDrag;
 	bool	m_bDeletedRows;
+	bool	m_bFullFrameSelect = false;		// // //
 	int		m_iSelStartRow;
 	int		m_iSelEndRow;
 	int		m_iSelStartChan;
