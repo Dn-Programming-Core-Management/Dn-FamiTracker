@@ -967,122 +967,75 @@ void CFamiTrackerView::OnEditPaste()
 {
 	if (!m_bEditEnable) return;		// // //
 	CClipboard Clipboard(this, m_iClipboard);
-
-	if (!Clipboard.IsOpened()) {
-		AfxMessageBox(IDS_CLIPBOARD_OPEN_ERROR);
+	HGLOBAL hMem;		// // //
+	if (!Clipboard.GetData(hMem))
 		return;
-	}
 
-	if (!Clipboard.IsDataAvailable()) {
-		AfxMessageBox(IDS_CLIPBOARD_NOT_AVALIABLE);
-		::CloseClipboard();
-		return;
-	}
-
-	HGLOBAL hMem = Clipboard.GetData();
-	if (hMem != NULL) {
-		CPatternClipData *pClipData = new CPatternClipData();
-		pClipData->FromMem(hMem);
-		// Create an undo point
-		CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EDIT_PASTE);
-		pAction->SetPaste(pClipData);
-		pAction->SetPasteMode(PASTE_DEFAULT);		// // //
-		pAction->SetPastePos(m_iPastePos);
-		AddAction(pAction);
-	}
+	CPatternClipData *pClipData = new CPatternClipData();
+	pClipData->FromMem(hMem);
+	// Create an undo point
+	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EDIT_PASTE);
+	pAction->SetPaste(pClipData);
+	pAction->SetPasteMode(PASTE_DEFAULT);		// // //
+	pAction->SetPastePos(m_iPastePos);
+	AddAction(pAction);
 }
 
 void CFamiTrackerView::OnEditPasteMix()		// // //
 {
 	if (!m_bEditEnable) return;		// // //
 	CClipboard Clipboard(this, m_iClipboard);
-
-	if (!Clipboard.IsOpened()) {
-		AfxMessageBox(IDS_CLIPBOARD_OPEN_ERROR);
+	HGLOBAL hMem;		// // //
+	if (!Clipboard.GetData(hMem))
 		return;
-	}
 
-	if (!Clipboard.IsDataAvailable()) {
-		AfxMessageBox(IDS_CLIPBOARD_NOT_AVALIABLE);
-		::CloseClipboard();
-		return;
-	}
+	CPatternClipData *pClipData = new CPatternClipData();
+	pClipData->FromMem(hMem);
 
-	HGLOBAL hMem = Clipboard.GetData();
-
-	if (hMem != NULL) {
-		CPatternClipData *pClipData = new CPatternClipData();
-		pClipData->FromMem(hMem);
-
-		// Add an undo point
-		CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EDIT_PASTE);		// // //
-		pAction->SetPaste(pClipData);
-		pAction->SetPasteMode(PASTE_MIX);		// // //
-		pAction->SetPastePos(m_iPastePos);
-		AddAction(pAction);
-	}
+	// Add an undo point
+	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EDIT_PASTE);		// // //
+	pAction->SetPaste(pClipData);
+	pAction->SetPasteMode(PASTE_MIX);		// // //
+	pAction->SetPastePos(m_iPastePos);
+	AddAction(pAction);
 }
 
 void CFamiTrackerView::OnEditPasteOverwrite()		// // //
 {
 	if (!m_bEditEnable) return;
 	CClipboard Clipboard(this, m_iClipboard);
-
-	if (!Clipboard.IsOpened()) {
-		AfxMessageBox(IDS_CLIPBOARD_OPEN_ERROR);
+	HGLOBAL hMem;		// // //
+	if (!Clipboard.GetData(hMem))
 		return;
-	}
 
-	if (!Clipboard.IsDataAvailable()) {
-		AfxMessageBox(IDS_CLIPBOARD_NOT_AVALIABLE);
-		::CloseClipboard();
-		return;
-	}
+	CPatternClipData *pClipData = new CPatternClipData();
+	pClipData->FromMem(hMem);
 
-	HGLOBAL hMem = Clipboard.GetData();
-
-	if (hMem != NULL) {
-		CPatternClipData *pClipData = new CPatternClipData();
-		pClipData->FromMem(hMem);
-
-		// Add an undo point
-		CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EDIT_PASTE);
-		pAction->SetPaste(pClipData);
-		pAction->SetPasteMode(PASTE_OVERWRITE);
-		pAction->SetPastePos(m_iPastePos);
-		AddAction(pAction);
-	}
+	// Add an undo point
+	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EDIT_PASTE);
+	pAction->SetPaste(pClipData);
+	pAction->SetPasteMode(PASTE_OVERWRITE);
+	pAction->SetPastePos(m_iPastePos);
+	AddAction(pAction);
 }
 
 void CFamiTrackerView::OnEditPasteInsert()		// // //
 {
 	if (!m_bEditEnable) return;
 	CClipboard Clipboard(this, m_iClipboard);
-
-	if (!Clipboard.IsOpened()) {
-		AfxMessageBox(IDS_CLIPBOARD_OPEN_ERROR);
+	HGLOBAL hMem;		// // //
+	if (!Clipboard.GetData(hMem))
 		return;
-	}
 
-	if (!Clipboard.IsDataAvailable()) {
-		AfxMessageBox(IDS_CLIPBOARD_NOT_AVALIABLE);
-		::CloseClipboard();
-		return;
-	}
+	CPatternClipData *pClipData = new CPatternClipData();
+	pClipData->FromMem(hMem);
 
-	HGLOBAL hMem = Clipboard.GetData();
-
-	if (hMem != NULL) {
-		CPatternClipData *pClipData = new CPatternClipData();
-		pClipData->FromMem(hMem);
-
-		// Add an undo point
-		CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EDIT_PASTE);
-		pAction->SetPaste(pClipData);
-		pAction->SetPasteMode(PASTE_INSERT);
-		pAction->SetPastePos(m_iPastePos);
-		AddAction(pAction);
-	}
+	// Add an undo point
+	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EDIT_PASTE);
+	pAction->SetPaste(pClipData);
+	pAction->SetPasteMode(PASTE_INSERT);
+	pAction->SetPastePos(m_iPastePos);
+	AddAction(pAction);
 }
 
 void CFamiTrackerView::OnEditDelete()

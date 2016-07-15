@@ -19,6 +19,7 @@
 */
 
 #include "stdafx.h"
+#include "resource.h"		// // //
 #include "Clipboard.h"
 
 // CClipboard //////////////////////////////////////////////////////////////////
@@ -74,18 +75,29 @@ bool CClipboard::SetDataPointer(LPVOID pData, UINT Size) const
 	return true;
 }
 
-HGLOBAL CClipboard::GetData() const
+bool CClipboard::GetData(HGLOBAL &hMemory) const		// // //
 {
 	ASSERT(m_bOpened);
-	return ::GetClipboardData(m_iClipboard);
+	if (!IsOpened()) {
+		AfxMessageBox(IDS_CLIPBOARD_OPEN_ERROR);
+		return false;
+	}
+	if (!IsDataAvailable()) {
+		AfxMessageBox(IDS_CLIPBOARD_NOT_AVALIABLE);
+		::CloseClipboard();
+		return false;
+	}
+	hMemory = ::GetClipboardData(m_iClipboard);
+	if (hMemory == nullptr) {
+		AfxMessageBox(IDS_CLIPBOARD_PASTE_ERROR);
+		return false;
+	}
+	return true;
 }
 
 LPVOID CClipboard::GetDataPointer()
 {
-	ASSERT(m_bOpened);
-	
-	m_hMemory = GetData();
-	if (m_hMemory == NULL)
+	if (!GetData(m_hMemory))		// // //
 		return NULL;
 
 	return ::GlobalLock(m_hMemory);

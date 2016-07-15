@@ -32,7 +32,7 @@ public:
 	HGLOBAL AllocMem(UINT Size) const;
 	void	SetData(HGLOBAL hMemory) const;
 	bool	SetDataPointer(LPVOID pData, UINT Size) const;
-	HGLOBAL GetData() const;
+	bool	GetData(HGLOBAL &hMemory) const;		// // //
 	LPVOID	GetDataPointer();
 	bool	IsDataAvailable()const;
 

@@ -1059,24 +1059,9 @@ void CFrameEditor::OnEditPaste()
 	const int Track = m_pMainFrame->GetSelectedTrack();
 
 	CClipboard Clipboard(this, m_iClipboard);
-
-	if (!Clipboard.IsOpened()) {
-		AfxMessageBox(IDS_CLIPBOARD_OPEN_ERROR);
+	HGLOBAL hMem;		// // //
+	if (!Clipboard.GetData(hMem))
 		return;
-	}
-
-	if (!Clipboard.IsDataAvailable()) {
-		AfxMessageBox(IDS_CLIPBOARD_NOT_AVALIABLE);
-		::CloseClipboard();
-		return;
-	}
-
-	HGLOBAL hMem = Clipboard.GetData();
-
-	if (hMem == NULL) {
-		AfxMessageBox(IDS_CLIPBOARD_PASTE_ERROR);
-		return;
-	}
 
 	CFrameClipData *pClipData = new CFrameClipData();
 	pClipData->FromMem(hMem);
@@ -1099,24 +1084,9 @@ void CFrameEditor::OnEditPasteNewPatterns()
 	const int Track = m_pMainFrame->GetSelectedTrack();
 
 	CClipboard Clipboard(this, m_iClipboard);
-
-	if (!Clipboard.IsOpened()) {
-		AfxMessageBox(IDS_CLIPBOARD_OPEN_ERROR);
+	HGLOBAL hMem;		// // //
+	if (!Clipboard.GetData(hMem))
 		return;
-	}
-
-	if (!Clipboard.IsDataAvailable()) {
-		AfxMessageBox(IDS_CLIPBOARD_NOT_AVALIABLE);
-		::CloseClipboard();
-		return;
-	}
-
-	HGLOBAL hMem = Clipboard.GetData();
-
-	if (hMem == NULL) {
-		AfxMessageBox(IDS_CLIPBOARD_PASTE_ERROR);
-		return;
-	}
 
 	CFrameClipData *pClipData = new CFrameClipData();
 	pClipData->FromMem(hMem);
