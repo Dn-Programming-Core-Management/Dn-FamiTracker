@@ -1063,6 +1063,8 @@ bool CFindDlg::CompareFields(const stChanNote Target, bool Noise, int EffCount)
 		else {
 			if (Noise && Melodic) return false;
 			if (Melodic) {
+				if (Target.Note < NOTE_C || Target.Note > NOTE_B)
+					return Negate;
 				int NoteValue = MIDI_NOTE(Target.Octave, Target.Note);
 				int Low = MIDI_NOTE(m_searchTerm.Oct->Min, m_searchTerm.Note->Min);
 				int High = MIDI_NOTE(m_searchTerm.Oct->Max, m_searchTerm.Note->Max);
@@ -1147,10 +1149,9 @@ bool CFindDlg::Replace(CCompoundAction *pAction)
 
 	if (m_bFound) {
 		ASSERT(m_pFindCursor != nullptr);
-		m_pFindCursor->Get(&Target);
 
-		if (IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE))
-			Target = stChanNote { };
+		if (!IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE))
+			m_pFindCursor->Get(&Target);
 
 		if (m_replaceTerm.Definite[WC_NOTE])
 			Target.Note = m_replaceTerm.Note.Note;
