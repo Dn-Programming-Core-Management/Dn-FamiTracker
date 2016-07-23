@@ -230,11 +230,11 @@ bool CSeqConversionArpScheme::GetNextTerm(std::string::const_iterator &b, std::s
 		if (m_iArpSchemeFlag != -1) return;
 		m_iArpSchemeFlag = 0;
 		if (str == "x" || str == "+x")
-			m_iArpSchemeFlag = static_cast<char>(ARPSCHEME_MODE_X);
+			m_iArpSchemeFlag = static_cast<unsigned char>(ARPSCHEME_MODE_X);
 		else if (str == "y" || str == "+y")
-			m_iArpSchemeFlag = static_cast<char>(ARPSCHEME_MODE_Y);
+			m_iArpSchemeFlag = static_cast<unsigned char>(ARPSCHEME_MODE_Y);
 		else if (str == "-y")
-			m_iArpSchemeFlag = static_cast<char>(ARPSCHEME_MODE_NEG_Y);
+			m_iArpSchemeFlag = static_cast<unsigned char>(ARPSCHEME_MODE_NEG_Y);
 	};
 
 	std::smatch m;
