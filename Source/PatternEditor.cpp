@@ -3808,24 +3808,23 @@ void CPatternEditor::OnHScroll(UINT nSBCode, UINT nPos)
 			ScrollPreviousChannel(); 
 			break;
 		case SB_RIGHT: 
-			FirstChannel(); 
+			LastChannel(); 
 			break;
 		case SB_LEFT: 
-			LastChannel(); 
+			FirstChannel(); 
 			break;
 		case SB_THUMBPOSITION:
 		case SB_THUMBTRACK:
 			for (int i = 0; i < Channels; ++i) {
-				for (unsigned j = 0; j <= GetChannelColumns(i); ++j) {
+				for (unsigned j = 0, Count = GetChannelColumns(i); j <= Count; ++j) {
 					if (count++ == nPos) {
 						MoveToChannel(i);
 						MoveToColumn(static_cast<cursor_column_t>(j));
-						if (!m_bSelecting)
-							CancelSelection();
-						return;
+						goto outer;		// // //
 					}
 				}
 			}
+		outer:;
 	}
 
 	if (!m_bSelecting)
