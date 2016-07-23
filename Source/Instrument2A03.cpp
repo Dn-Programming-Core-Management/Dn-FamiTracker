@@ -90,7 +90,8 @@ bool CInstrument2A03::Load(CDocumentFile *pDocFile)
 
 	const auto ReadAssignment = [&] (int Octave, int Note) {
 		try {
-			int Index = CModuleException::AssertRangeFmt(pDocFile->GetBlockChar(), 0, 0x7F, "DPCM sample assignment index", "%i");
+			int Index = CModuleException::AssertRangeFmt<MODULE_ERROR_STRICT>(
+				pDocFile->GetBlockChar(), 0, MAX_DSAMPLES, "DPCM sample assignment index", "%i");
 			if (Index > MAX_DSAMPLES)
 				Index = 0;
 			SetSampleIndex(Octave, Note, Index);

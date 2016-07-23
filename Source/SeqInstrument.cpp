@@ -87,10 +87,12 @@ bool CSeqInstrument::Load(CDocumentFile *pDocFile)
 	int SeqCnt = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), 0, SEQ_COUNT, "Instrument sequence count", "%i");
 	SeqCnt = SEQ_COUNT;
 
-	for (int i = 0; i < SeqCnt; i++) {
-		SetSeqEnable(i, pDocFile->GetBlockChar());
-		SetSeqIndex(i, CModuleException::AssertRangeFmt(
-			pDocFile->GetBlockChar(), 0, MAX_SEQUENCES - 1, "Instrument sequence index", "%i"));
+	for (int i = 0; i < SeqCnt; ++i) {
+		int Enable = CModuleException::AssertRangeFmt<MODULE_ERROR_STRICT>(
+			pDocFile->GetBlockChar(), 0, 1, "Instrument sequence enable flag", "%i");
+		SetSeqEnable(i, Enable != 0);
+		int Index = static_cast<unsigned char>(pDocFile->GetBlockChar());		// // //
+		SetSeqIndex(i, CModuleException::AssertRangeFmt(Index, 0, MAX_SEQUENCES - 1, "Instrument sequence index", "%i"));
 	}
 
 	return true;

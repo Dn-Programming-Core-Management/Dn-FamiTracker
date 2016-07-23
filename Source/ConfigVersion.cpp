@@ -101,11 +101,10 @@ const stVerInfo CConfigVersion::VERSION_INFO[] = {
 const CString MODULE_ERROR_DESC[] = {
 	_T("None: Perform no validation at all while loading or saving modules. "
 	   "The tracker might crash or enter an inconsistent state."),
-	_T("Default: Perform the usual validation according to the most recent official stable build."),
-	_T("Strict: Fully validate all modules. "
-	   "Invalid modules openable in the official build might be rejected."),
-	_T("Official: Perform extra bounds checking to ensure that modules are openable in the official build, "
-	   "regardless of the current version setting."),
+	_T("Default: Perform the usual error checking according to the most recent official stable build."),
+	_T("Official: Perform extra bounds checking to ensure that modules are openable in the official build."),
+	_T("Strict: Validate all modules so that they do not contain any illegal data. "
+	   "Modules openable in the official build might be rejected."),
 };
 
 // CConfigVersion dialog
@@ -163,8 +162,8 @@ BOOL CConfigVersion::OnInitDialog()
 
 	m_cSliderErrorLevel = new CSliderCtrl();
 	m_cSliderErrorLevel->SubclassDlgItem(IDC_SLIDER_VERSION_ERRORLEVEL, this);
-	m_cSliderErrorLevel->SetRange(MODULE_ERROR_NONE, MODULE_ERROR_OFFICIAL);
-	m_cSliderErrorLevel->SetPos(MODULE_ERROR_OFFICIAL - m_iModuleErrorLevel);
+	m_cSliderErrorLevel->SetRange(MODULE_ERROR_NONE, MODULE_ERROR_STRICT);
+	m_cSliderErrorLevel->SetPos(MODULE_ERROR_STRICT - m_iModuleErrorLevel);
 
 	UpdateInfo();
 
@@ -199,7 +198,7 @@ void CConfigVersion::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar *pScrollBar)
 
 void CConfigVersion::OnNMCustomdrawSliderVersionErrorlevel(NMHDR *pNMHDR, LRESULT *pResult)
 {
-	int NewLevel = MODULE_ERROR_OFFICIAL - m_cSliderErrorLevel->GetPos();
+	int NewLevel = MODULE_ERROR_STRICT - m_cSliderErrorLevel->GetPos();
 	if (m_iModuleErrorLevel != NewLevel) {
 		m_iModuleErrorLevel = NewLevel;
 		SetModified();

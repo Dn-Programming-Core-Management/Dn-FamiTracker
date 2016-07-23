@@ -1806,6 +1806,7 @@ void CFamiTrackerDoc::ReadBlock_Instruments(CDocumentFile *pDocFile, const int V
 void CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile, const int Version)
 {
 	unsigned int Count = AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES * SEQ_COUNT, "2A03 sequence count");
+	AssertRange<MODULE_ERROR_OFFICIAL>(Count, 0U, static_cast<unsigned>(MAX_SEQUENCES * SEQ_COUNT - 1), "2A03 sequence count");		// // //
 
 	if (Version == 1) {
 		for (unsigned int i = 0; i < Count; ++i) {
@@ -1848,7 +1849,8 @@ void CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile, const int Ver
 				pSeq->Clear();
 				pSeq->SetItemCount(SeqCount < MAX_SEQUENCE_ITEMS ? SeqCount : MAX_SEQUENCE_ITEMS);
 
-				unsigned int LoopPoint = AssertRange(pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount), "Sequence loop point");
+				unsigned int LoopPoint = AssertRange<MODULE_ERROR_STRICT>(
+					pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount), "Sequence loop point");
 				// Work-around for some older files
 				if (LoopPoint != SeqCount)
 					pSeq->SetLoopPoint(LoopPoint);
@@ -1856,7 +1858,8 @@ void CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile, const int Ver
 				if (Version == 4) {
 					int ReleasePoint = pDocFile->GetBlockInt();
 					int Settings = pDocFile->GetBlockInt();
-					pSeq->SetReleasePoint(AssertRange(ReleasePoint, -1, static_cast<int>(SeqCount) - 1, "Sequence release point"));
+					pSeq->SetReleasePoint(AssertRange<MODULE_ERROR_STRICT>(
+						ReleasePoint, -1, static_cast<int>(SeqCount) - 1, "Sequence release point"));
 					pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
 				}
 
@@ -1882,7 +1885,8 @@ void CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile, const int Ver
 					CSequence *pSeq = pManager->GetCollection(j)->GetSequence(i);
 					int Length = pSeq->GetItemCount();
 					if (Length > 0) {
-						pSeq->SetReleasePoint(AssertRange(ReleasePoint, -1, Length - 1, "Sequence release point"));
+						pSeq->SetReleasePoint(AssertRange<MODULE_ERROR_STRICT>(
+							ReleasePoint, -1, Length - 1, "Sequence release point"));
 						pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
 					}
 				}
@@ -1896,7 +1900,7 @@ void CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile, const int Ver
 			// Read release points correctly stored
 			for (unsigned int i = 0; i < Count; ++i) try {
 				CSequence *pSeq = pManager->GetCollection(Types[i])->GetSequence(Indices[i]);
-				pSeq->SetReleasePoint(AssertRange(
+				pSeq->SetReleasePoint(AssertRange<MODULE_ERROR_STRICT>(
 					pDocFile->GetBlockInt(), -1, static_cast<int>(pSeq->GetItemCount()) - 1, "Sequence release point"));
 				pSeq->SetSetting(static_cast<seq_setting_t>(pDocFile->GetBlockInt()));		// // //
 			}
@@ -1911,6 +1915,7 @@ void CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile, const int Ver
 void CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile, const int Version)
 {
 	unsigned int Count = AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES * SEQ_COUNT, "VRC6 sequence count");
+	AssertRange<MODULE_ERROR_OFFICIAL>(Count, 0U, MAX_SEQUENCES, "VRC6 sequence count");		// // //
 
 	CSequenceManager *pManager = GetSequenceManager(INST_VRC6);		// // //
 
@@ -1925,10 +1930,12 @@ void CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile, const int
 			pSeq->Clear();
 			pSeq->SetItemCount(SeqCount < MAX_SEQUENCE_ITEMS ? SeqCount : MAX_SEQUENCE_ITEMS);
 
-			pSeq->SetLoopPoint(AssertRange(pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence loop point"));
+			pSeq->SetLoopPoint(AssertRange<MODULE_ERROR_STRICT>(
+				pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence loop point"));
 
 			if (Version == 4) {
-				pSeq->SetReleasePoint(AssertRange(pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence release point"));
+				pSeq->SetReleasePoint(AssertRange<MODULE_ERROR_STRICT>(
+					pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence release point"));
 				pSeq->SetSetting(static_cast<seq_setting_t>(pDocFile->GetBlockInt()));		// // //
 			}
 
@@ -1954,7 +1961,8 @@ void CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile, const int
 				CSequence *pSeq = pManager->GetCollection(j)->GetSequence(i);
 				int Length = pSeq->GetItemCount();
 				if (Length > 0) {
-					pSeq->SetReleasePoint(AssertRange(ReleasePoint, -1, Length - 1, "Sequence release point"));
+					pSeq->SetReleasePoint(AssertRange<MODULE_ERROR_STRICT>(
+						ReleasePoint, -1, Length - 1, "Sequence release point"));
 					pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
 				}
 			}
@@ -1967,7 +1975,8 @@ void CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile, const int
 	else if (Version >= 6) {
 		for (unsigned int i = 0; i < Count; ++i) try {
 			CSequence *pSeq = pManager->GetCollection(Types[i])->GetSequence(Indices[i]);
-			pSeq->SetReleasePoint(AssertRange(pDocFile->GetBlockInt(), -1, static_cast<int>(pSeq->GetItemCount()) - 1, "Sequence release point"));
+			pSeq->SetReleasePoint(AssertRange<MODULE_ERROR_STRICT>(
+				pDocFile->GetBlockInt(), -1, static_cast<int>(pSeq->GetItemCount()) - 1, "Sequence release point"));
 			pSeq->SetSetting(static_cast<seq_setting_t>(pDocFile->GetBlockInt()));		// // //
 		}
 		catch (CModuleException *e) {
@@ -1980,6 +1989,7 @@ void CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile, const int
 void CFamiTrackerDoc::ReadBlock_SequencesN163(CDocumentFile *pDocFile, const int Version)
 {
 	unsigned int Count = AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES * SEQ_COUNT, "N163 sequence count");
+	AssertRange<MODULE_ERROR_OFFICIAL>(Count, 0U, static_cast<unsigned>(MAX_SEQUENCES * SEQ_COUNT - 1), "N163 sequence count");		// // //
 
 	CSequenceManager *pManager = GetSequenceManager(INST_N163);		// // //
 
@@ -1992,8 +2002,10 @@ void CFamiTrackerDoc::ReadBlock_SequencesN163(CDocumentFile *pDocFile, const int
 			pSeq->Clear();
 			pSeq->SetItemCount(SeqCount < MAX_SEQUENCE_ITEMS ? SeqCount : MAX_SEQUENCE_ITEMS);
 
-			pSeq->SetLoopPoint(AssertRange(pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence loop point"));
-			pSeq->SetReleasePoint(AssertRange(pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence release point"));
+			pSeq->SetLoopPoint(AssertRange<MODULE_ERROR_STRICT>(
+				pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence loop point"));
+			pSeq->SetReleasePoint(AssertRange<MODULE_ERROR_STRICT>(
+				pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence release point"));
 			pSeq->SetSetting(static_cast<seq_setting_t>(pDocFile->GetBlockInt()));		// // //
 
 			// AssertRange(SeqCount, 0, MAX_SEQUENCE_ITEMS, "Sequence item count");
@@ -2013,6 +2025,7 @@ void CFamiTrackerDoc::ReadBlock_SequencesN163(CDocumentFile *pDocFile, const int
 void CFamiTrackerDoc::ReadBlock_SequencesS5B(CDocumentFile *pDocFile, const int Version)
 {
 	unsigned int Count = AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES * SEQ_COUNT, "5B sequence count");
+	AssertRange<MODULE_ERROR_OFFICIAL>(Count, 0U, static_cast<unsigned>(MAX_SEQUENCES * SEQ_COUNT - 1), "N163 sequence count");		// // //
 
 	CSequenceManager *pManager = GetSequenceManager(INST_S5B);		// // //
 
@@ -2025,8 +2038,10 @@ void CFamiTrackerDoc::ReadBlock_SequencesS5B(CDocumentFile *pDocFile, const int 
 			pSeq->Clear();
 			pSeq->SetItemCount(SeqCount < MAX_SEQUENCE_ITEMS ? SeqCount : MAX_SEQUENCE_ITEMS);
 
-			pSeq->SetLoopPoint(AssertRange(pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence loop point"));
-			pSeq->SetReleasePoint(AssertRange(pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence release point"));
+			pSeq->SetLoopPoint(AssertRange<MODULE_ERROR_STRICT>(
+				pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence loop point"));
+			pSeq->SetReleasePoint(AssertRange<MODULE_ERROR_STRICT>(
+				pDocFile->GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence release point"));
 			pSeq->SetSetting(static_cast<seq_setting_t>(pDocFile->GetBlockInt()));		// // //
 
 			// AssertRange(SeqCount, 0, MAX_SEQUENCE_ITEMS, "Sequence item count");
@@ -2062,13 +2077,13 @@ void CFamiTrackerDoc::ReadBlock_Frames(CDocumentFile *pDocFile, const int Versio
 
 		for (unsigned y = 0; y < m_iTrackCount; ++y) {
 			unsigned int FrameCount = AssertRange(pDocFile->GetBlockInt(), 1, MAX_FRAMES, "Track frame count");
-			unsigned int Speed = AssertRange(pDocFile->GetBlockInt(), 0, MAX_TEMPO, "Track default speed");
+			unsigned int Speed = AssertRange<MODULE_ERROR_STRICT>(pDocFile->GetBlockInt(), 0, MAX_TEMPO, "Track default speed");
 
 			CPatternData *pTrack = GetTrack(y);
 			pTrack->SetFrameCount(FrameCount);
 
 			if (Version >= 3) {
-				unsigned int Tempo = AssertRange(pDocFile->GetBlockInt(), 0, MAX_TEMPO, "Track default tempo");
+				unsigned int Tempo = AssertRange<MODULE_ERROR_STRICT>(pDocFile->GetBlockInt(), 0, MAX_TEMPO, "Track default tempo");
 				pTrack->SetSongTempo(Tempo);
 				pTrack->SetSongSpeed(Speed);
 			}
@@ -2133,23 +2148,23 @@ void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Vers
 				stChanNote *Note = pTrack->GetPatternData(Channel, Pattern, Row);
 				*Note = stChanNote { };		// // //
 
-				/*
-				Note->Note = AssertRange(pDocFile->GetBlockChar(), NONE, ECHO, "Note value");
-				Note->Octave = AssertRange(pDocFile->GetBlockChar(), 0, OCTAVE_RANGE - 1, "Octave value");
-				Note->Instrument = AssertRange(pDocFile->GetBlockChar(), 0, m_pInstrumentManager->MAX_INSTRUMENTS, "Instrument index");
-				Note->Vol = AssertRange(pDocFile->GetBlockChar(), 0, MAX_VOLUME, "Channel volume");
-				*/
-				Note->Note = pDocFile->GetBlockChar();
-				Note->Octave = pDocFile->GetBlockChar();
-				Note->Instrument = pDocFile->GetBlockChar();
-				Note->Vol = pDocFile->GetBlockChar();
+				Note->Note = AssertRange<MODULE_ERROR_STRICT>(		// // //
+					pDocFile->GetBlockChar(), NONE, ECHO, "Note value");
+				Note->Octave = AssertRange<MODULE_ERROR_STRICT>(
+					pDocFile->GetBlockChar(), 0, OCTAVE_RANGE - 1, "Octave value");
+				int Inst = static_cast<unsigned char>(pDocFile->GetBlockChar());
+				if (Inst != HOLD_INSTRUMENT)		// // // 050B
+					AssertRange<MODULE_ERROR_STRICT>(Inst, 0, m_pInstrumentManager->MAX_INSTRUMENTS, "Instrument index");
+				Note->Instrument = Inst;
+				Note->Vol = AssertRange<MODULE_ERROR_STRICT>(
+					pDocFile->GetBlockChar(), 0, MAX_VOLUME, "Channel volume");
 
 				int FX = m_iFileVersion == 0x200 ? 1 : Version >= 6 ? MAX_EFFECT_COLUMNS :
 						 (pTrack->GetEffectColumnCount(Channel) + 1);		// // // 050B
 				for (int n = 0; n < FX; ++n) try {
 					unsigned char EffectNumber = pDocFile->GetBlockChar();
 					if (Note->EffNumber[n] = static_cast<effect_t>(EffectNumber)) {
-						// AssertRange<MODULE_ERROR_STRICT>(EffectNumber, EF_NONE, EF_COUNT - 1, "Effect index");
+						AssertRange<MODULE_ERROR_STRICT>(EffectNumber, EF_NONE, EF_COUNT - 1, "Effect index");
 						unsigned char EffectParam = pDocFile->GetBlockChar();
 						if (Version < 3) {
 							if (EffectNumber == EF_PORTAOFF) {
@@ -2278,7 +2293,6 @@ void CFamiTrackerDoc::ReadBlock_DSamples(CDocumentFile *pDocFile, const int Vers
 			unsigned int Len = AssertRange(pDocFile->GetBlockInt(), 0, CDSample::MAX_NAME_SIZE - 1, "DPCM sample name length");
 			char Name[CDSample::MAX_NAME_SIZE] = {};
 			pDocFile->GetBlock(Name, Len);
-			Name[Len] = 0;
 			pSample->SetName(Name);
 			int Size = AssertRange(pDocFile->GetBlockInt(), 0, 0x7FFF, "DPCM sample size");
 			AssertFileData<MODULE_ERROR_STRICT>(Size <= 0xFF1 && Size % 0x10 == 1, "Bad DPCM sample size");
@@ -2461,7 +2475,7 @@ bool CFamiTrackerDoc::WriteBlock_Bookmarks(CDocumentFile *pDocFile, const int Ve
 			pDocFile->WriteBlockChar(pMark->m_bPersist);
 			//pDocFile->WriteBlockInt(pMark->m_sName.size());
 			//pDocFile->WriteBlock(pMark->m_sName, (int)strlen(Name));	
-			pDocFile->WriteString(CString(pMark->m_sName.c_str()));
+			pDocFile->WriteString(pMark->m_sName.c_str());
 		}
 	}
 
