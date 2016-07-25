@@ -777,22 +777,22 @@ void CMainFrame::ResizeFrameWindow()
 		RecalcLayout();
 	}
 
-	CRect ChildRect, ParentRect, FrameEditorRect;
 
-	m_wndControlBar.GetClientRect(&ParentRect);
-	m_pFrameEditor->GetClientRect(&FrameEditorRect);
-
-	int DialogStartPos;
-
-	if (m_iFrameEditorPos == FRAME_EDIT_POS_TOP)
+	int DialogStartPos = 0;
+	if (m_iFrameEditorPos == FRAME_EDIT_POS_TOP) {
+		CRect FrameEditorRect;
+		m_pFrameEditor->GetClientRect(&FrameEditorRect);
 		DialogStartPos = FrameEditorRect.right + DPI::SX(32);		// // // 050B
-	else
-		DialogStartPos = 0;
+	}
 
-	m_wndDialogBar.MoveWindow(DialogStartPos, 2, ParentRect.Width() - DialogStartPos, ParentRect.Height() - 4);
-	m_wndDialogBar.GetWindowRect(&ChildRect);
-	m_wndDialogBar.GetDlgItem(IDC_INSTRUMENTS)->MoveWindow(DPI::SX(310), DPI::SY(10), ChildRect.Width() - DPI::SX(318), DPI::SY(158));		// // //
-	m_wndDialogBar.GetDlgItem(IDC_INSTNAME)->MoveWindow(DPI::SX(500), DPI::SY(175), ChildRect.Width() - DPI::SX(508), DPI::SY(22));
+	CRect ParentRect;
+	m_wndControlBar.GetClientRect(&ParentRect);
+	m_wndDialogBar.MoveWindow(DialogStartPos, DPI::SY(2), ParentRect.Width() - DialogStartPos, ParentRect.Height() - DPI::SY(4));		// // //
+	
+	CRect ControlRect;		// // //
+	m_wndDialogBar.GetDlgItem(IDC_MAINFRAME_INST_TOOLBAR)->GetWindowRect(&ControlRect);
+	GetDesktopWindow()->MapWindowPoints(&m_wndDialogBar, ControlRect);
+	m_wndInstToolBarWnd.MoveWindow(ControlRect);
 
 	m_pFrameEditor->RedrawWindow();
 }
