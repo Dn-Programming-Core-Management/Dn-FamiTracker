@@ -28,11 +28,12 @@
 const unsigned CDetuneTable::A440_NOTE = 45U;
 const double CDetuneTable::BASE_FREQ_NTSC = 630000000. / 352.;
 
-CDetuneTable::CDetuneTable(type_t Type, unsigned Low, unsigned High) :
+CDetuneTable::CDetuneTable(type_t Type, int Low, int High) :
 	m_iType(Type),
 	m_iRangeLow(Low),
 	m_iRangeHigh(High),
-	m_iRegisterValue(96, 0U)
+	m_iRegisterValue(96, 0U),
+	m_iOffsetValue(96, 0U)
 {
 }
 
@@ -49,17 +50,26 @@ size_t CDetuneTable::GetNoteCount() const
 void CDetuneTable::SetNoteCount(size_t Count)
 {
 	m_iRegisterValue.resize(Count);
+	m_iOffsetValue.resize(Count);
 }
 
-unsigned CDetuneTable::GetValue(unsigned Note) const
+int CDetuneTable::GetRegisterValue(unsigned Note) const
 {
-	// mainly allows both tables for one single octave and full tables
-	return m_iRegisterValue[Note % GetNoteCount()];
+	size_t Index = Note % GetNoteCount();
+	int Val = m_iRegisterValue[Index] + m_iOffsetValue[Index];
+	if (Val < m_iRangeLow) Val = m_iRangeLow;
+	if (Val > m_iRangeHigh) Val = m_iRangeHigh;
+	return Val;
 }
 
-void CDetuneTable::SetValue(unsigned Note, unsigned Value)
+int CDetuneTable::GetOffsetValue(unsigned Note) const
 {
-	m_iRegisterValue[Note] = Value;
+	return m_iOffsetValue[Note % GetNoteCount()];
+}
+
+void CDetuneTable::SetOffset(unsigned Note, int Value)
+{
+	m_iOffsetValue[Note % GetNoteCount()] = Value;
 }
 
 void CDetuneTable::SetGenerator(GenFunc f)
@@ -72,11 +82,11 @@ void CDetuneTable::SetFrequencyFunc(GenFunc f)
 	m_fInvFunction = f; // might not be needed
 }
 
-void CDetuneTable::Generate(double LowestNote)
+void CDetuneTable::GenerateRegisters(double LowestNote)
 {
 	const size_t Count = GetNoteCount();
 	for (size_t i = 0; i < Count; ++i)
-		SetValue(i, static_cast<unsigned>(GetDefaultReg(LowestNote++) + .5));
+		m_iRegisterValue[i] = static_cast<unsigned>(GetDefaultReg(LowestNote++) + .5);
 }
 
 double CDetuneTable::GetDefaultReg(double Note) const
@@ -102,7 +112,7 @@ CDetuneNTSC::CDetuneNTSC() :
 {
 	SetGenerator([] (double x) { return BASE_FREQ_NTSC / 16. / x - 1.; });
 	SetFrequencyFunc([] (double x) { return BASE_FREQ_NTSC / 16. / (x + 1.); });
-	Generate();
+	GenerateRegisters();
 }
 
 CDetunePAL::CDetunePAL() :
@@ -110,7 +120,7 @@ CDetunePAL::CDetunePAL() :
 {
 	SetGenerator([] (double x) { return 266017125. / 16. / 16. / x - 1.; });
 	SetFrequencyFunc([] (double x) { return 266017125. / 16. / 16. / (x + 1.); });
-	Generate();
+	GenerateRegisters();
 }
 
 CDetuneSaw::CDetuneSaw() :
@@ -118,7 +128,7 @@ CDetuneSaw::CDetuneSaw() :
 {
 	SetGenerator([] (double x) { return BASE_FREQ_NTSC / 14. / x - 1.; });
 	SetFrequencyFunc([] (double x) { return BASE_FREQ_NTSC / 14. / (x + 1.); });
-	Generate();
+	GenerateRegisters();
 }
 
 CDetuneVRC7::CDetuneVRC7() :
@@ -127,7 +137,7 @@ CDetuneVRC7::CDetuneVRC7() :
 	SetNoteCount(12);
 	SetGenerator([] (double x) { return x / 49716. * (1 << 18); });		// provisional
 	SetFrequencyFunc([] (double x) { return 49716. * std::fmod(x, 512.) / (1 << (18 - (static_cast<int>(x) >> 9))); });
-	Generate();
+	GenerateRegisters();
 }
 
 CDetuneFDS::CDetuneFDS() :
@@ -135,7 +145,7 @@ CDetuneFDS::CDetuneFDS() :
 {
 	SetGenerator([] (double x) { return x / BASE_FREQ_NTSC * (1 << 20); });
 	SetFrequencyFunc([] (double x) { return BASE_FREQ_NTSC * x / (1 << 20); });
-	Generate();
+	GenerateRegisters();
 }
 
 CDetuneN163::CDetuneN163() :
@@ -144,7 +154,7 @@ CDetuneN163::CDetuneN163() :
 {
 	SetGenerator([&] (double x) { return x / BASE_FREQ_NTSC * 15. * (1 << 18) * m_iChannelCount; });
 	SetFrequencyFunc([&] (double x) { return BASE_FREQ_NTSC * x / 15. / (1 << 18) / m_iChannelCount; });
-	Generate();
+	GenerateRegisters();
 }
 
 void CDetuneN163::SetChannelCount(unsigned Count) // special
@@ -157,5 +167,5 @@ CDetuneS5B::CDetuneS5B() :
 {
 	SetGenerator([] (double x) { return BASE_FREQ_NTSC / 16. / x; });
 	SetFrequencyFunc([] (double x) { return BASE_FREQ_NTSC / 16. / x; });
-	Generate();
+	GenerateRegisters();
 }

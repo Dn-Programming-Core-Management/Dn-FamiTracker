@@ -116,30 +116,26 @@ bool CWavegenParamBoolean::SetValue(const void *Val)
 const size_t CWavegenParamString::MAX_LENGTH = 1024;
 
 CWavegenParamString::CWavegenParamString(const char *Name) :
-	CWavegenParam(WGPARAM_STRING, Name),
-	m_pData(new char[MAX_LENGTH])
+	CWavegenParam(WGPARAM_STRING, Name)
 {
 }
 
-CWavegenParamString::~CWavegenParamString()
+const char *CWavegenParamString::GetValue() const
 {
-	delete[] m_pData;
-}
-
-const char* CWavegenParamString::GetValue() const
-{
-	return m_pData;
+	return m_pData.c_str();
 }
 
 bool CWavegenParamString::SetValue(const void *Val)
 {
-	char *Dest = m_pData;
+	char Dest[MAX_LENGTH] = { };
+	char *d = Dest;
 	const char *Src = reinterpret_cast<const char*>(Val);
 	size_t count = 0;
 	while (*Src) {
 		if (++count == MAX_LENGTH)
 			return false;
-		*Dest++ = *Src++;
+		*d++ = *Src++;
 	}
+	m_pData = Dest;
 	return true;
 }

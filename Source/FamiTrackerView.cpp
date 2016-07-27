@@ -921,21 +921,6 @@ void CFamiTrackerView::DrawExportTestProgress()
 
 void CFamiTrackerView::OnEditCopy()
 {
-	// // // Copy volume values
-	/* disabled, use menu command
-	if (IsShiftPressed()) {
-		OnEditCopyAsVolumeSequence();
-		return;
-	}
-	*/
-
-	CClipboard Clipboard(this, m_iClipboard);
-
-	if (!Clipboard.IsOpened()) {
-		AfxMessageBox(IDS_CLIPBOARD_OPEN_ERROR);
-		return;
-	}
-
 	if (m_pPatternEditor->GetSelectionCondition() == SEL_NONTERMINAL_SKIP) {		// // //
 		CMainFrame *pMainFrm = static_cast<CMainFrame*>(GetParentFrame());
 		ASSERT_VALID(pMainFrm);
@@ -945,6 +930,13 @@ void CFamiTrackerView::OnEditCopy()
 	}
 
 	std::shared_ptr<CPatternClipData> pClipData(m_pPatternEditor->Copy());		// // //
+
+	CClipboard Clipboard(this, m_iClipboard);
+
+	if (!Clipboard.IsOpened()) {
+		AfxMessageBox(IDS_CLIPBOARD_OPEN_ERROR);
+		return;
+	}
 
 	SIZE_T Size = pClipData->GetAllocSize();
 	HGLOBAL hMem = Clipboard.AllocMem(Size);

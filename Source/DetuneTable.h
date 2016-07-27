@@ -40,28 +40,65 @@ public:
 	};
 
 protected:
-	CDetuneTable(type_t Type, unsigned Low, unsigned High);
+	/*!	\brief Constructor of the detune table.
+		\param Type An index representing the detune table type.
+		\param Low The smallest register value this table supports. 
+		\param High The greatest register value this table supports. */
+	CDetuneTable(type_t Type, int Low, int High);
+
 	typedef std::function<double(double)> GenFunc;
 
 public:
+	/*!	\brief Gets the detune table type.
+		\return An index representing the detune table type. */
 	type_t GetType() const;
+	/*!	\brief Gets the size of the detune table.
+		\return The number of notes in the detune table. */
 	size_t GetNoteCount() const;
-	void SetNoteCount(size_t Count);
-	unsigned GetValue(unsigned Note) const;
-	void SetValue(unsigned Note, unsigned Value);
+	/*!	\brief Gets the number of used entries in the detune table.
+		\return The number of notes with a non-zero detune value in the table. */
+	size_t GetUsedCount() const;
 
-	void SetGenerator(GenFunc f);
-	void SetFrequencyFunc(GenFunc f);
-	void Generate(double LowestNote = 0.);
+	/*!	\brief Obtains the actual register value representing a given pitch.
+		\param Note The note index.
+		\return Register value. */
+	int GetRegisterValue(unsigned Note) const;
+	/*!	\brief Obtains the detune offset for a given pitch.
+		\param Note The note index.
+		\return The offset value. */
+	int GetOffsetValue(unsigned Note) const;
+	/*!	\brief Updates the detune offset for a given pitch.
+		\param Note The note index.
+		\param Offset The new offset value. */
+	void SetOffset(unsigned Note, int Offset);
+	/*!	\brief Generates the base register values of the detune table.
+		\param LowestNote The note index for the first entry of the detune table. */
+	void GenerateRegisters(double LowestNote = 0.);
 
+	/*!	\brief Converts a note index to a register value for the detune table.
+		\param Note The note index, which may be a fractional number.
+		\return Register value. */
 	double GetDefaultReg(double Note) const;
+
+	/*!	\brief Converts a note index to its frequency.
+		\param Note The note index, which may be a fractional number.
+		\return The note's frequency. */
 	static double NoteToFreq(double Note);
+	/*!	\brief Converts a frequency value to a note index.
+		\param Freq The frequency value.
+		\return The note index, which may be a fractional number. */
 	static double FreqToNote(double Freq);
 
 protected:
+	void SetNoteCount(size_t Count);
+	void SetGenerator(GenFunc f);
+	void SetFrequencyFunc(GenFunc f);
+
+protected:
 	const type_t m_iType;
-	const unsigned m_iRangeLow, m_iRangeHigh;
-	std::vector<unsigned> m_iRegisterValue;
+	const int m_iRangeLow, m_iRangeHigh;
+	std::vector<int> m_iRegisterValue;
+	std::vector<int> m_iOffsetValue;
 	GenFunc m_fFunction, m_fInvFunction;
 
 protected:

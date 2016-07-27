@@ -1012,13 +1012,6 @@ void CFrameEditor::OnEditCut()
 
 void CFrameEditor::OnEditCopy()
 {
-	CClipboard Clipboard(this, m_iClipboard);
-
-	if (!Clipboard.IsOpened()) {
-		AfxMessageBox(IDS_CLIPBOARD_OPEN_ERROR);
-		return;
-	}
-
 	if (!m_bSelecting) {
 		m_iSelStartRow = m_iSelEndRow = m_pView->GetSelectedFrame();
 		m_iSelStartChan = 0;		// // //
@@ -1041,6 +1034,13 @@ void CFrameEditor::OnEditCopy()
 		for (int j = 0; j < Channels; ++j) {
 			ClipData.SetFrame(i, j, m_pDocument->GetPatternAtFrame(m_pMainFrame->GetSelectedTrack(), i + SelectStart, j));
 		}
+	}
+
+	CClipboard Clipboard(this, m_iClipboard);
+
+	if (!Clipboard.IsOpened()) {
+		AfxMessageBox(IDS_CLIPBOARD_OPEN_ERROR);
+		return;
 	}
 
 	SIZE_T Size = ClipData.GetAllocSize();
