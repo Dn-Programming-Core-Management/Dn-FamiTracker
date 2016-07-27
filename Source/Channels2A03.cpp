@@ -689,7 +689,7 @@ void CDPCMChan::PlaySample(const CDSample *pSamp, int Pitch)		// // //
 	m_iLoopLength = SampleSize - m_iLoopOffset;
 	m_bEnabled = true;
 	m_bTrigger = true;
-	m_bGate = true;
+	//m_bGate = true;
 	m_iLoop = (Pitch & 0x80) >> 1;
 	m_iRetriggerCntr = m_iRetrigger;
 }
