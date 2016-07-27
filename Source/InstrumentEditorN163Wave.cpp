@@ -67,7 +67,7 @@ void CInstrumentEditorN163Wave::SelectInstrument(std::shared_ptr<CInstrument> pI
 	CComboBox *pSizeBox = static_cast<CComboBox*>(GetDlgItem(IDC_WAVE_SIZE));
 	CComboBox *pPosBox = static_cast<CComboBox*>(GetDlgItem(IDC_WAVE_POS));
 
-	pSizeBox->SelectString(0, MakeIntString(m_pInstrument->GetWaveSize()));
+	pSizeBox->SelectString(-1, MakeIntString(m_pInstrument->GetWaveSize()));		// // //
 	FillPosBox(m_pInstrument->GetWaveSize());
 	pPosBox->SetWindowText(MakeIntString(m_pInstrument->GetWavePos()));
 
@@ -356,28 +356,22 @@ void CInstrumentEditorN163Wave::PopulateWaveBox()		// // //
 	int Width = m_pInstrument->GetWaveSize();
 
 	CBitmap Waveforms;
-	char WaveBits[CInstrumentN163::MAX_WAVE_COUNT][CInstrumentN163::MAX_WAVE_SIZE * 2];
-	for (int i = 0; i < CInstrumentN163::MAX_WAVE_COUNT; i++)
-		CreateWaveImage(WaveBits[i], i);
 	Waveforms.CreateBitmap(Width, 16, 1, 1, NULL);
-
 	m_WaveImage.DeleteImageList();
 	m_WaveImage.Create(Width, 16, ILC_COLOR8, 0, CInstrumentN163::MAX_WAVE_COUNT);
-	if (Width & 16) Width += 16 - Width % 16; // padding
-	for (int i = 0; i < CInstrumentN163::MAX_WAVE_COUNT; i++) {
-		Waveforms.SetBitmapBits(Width * 2, WaveBits[i]);
+	for (int i = 0; i < CInstrumentN163::MAX_WAVE_COUNT; i++)
 		m_WaveImage.Add(&Waveforms, &Waveforms);
-	}
-	Waveforms.DeleteObject();
 	m_pWaveListCtrl->SetImageList(&m_WaveImage, LVSIL_SMALL);
 
 	m_pWaveListCtrl->DeleteAllItems();
-	for (int i = 0; i < m_pInstrument->GetWaveCount(); /*CInstrumentN163::MAX_WAVE_COUNT;*/ i++) {
+	for (int i = 0, Count = m_pInstrument->GetWaveCount(); i < Count; ++i) {
 		CString hex;
 		hex.Format(_T("%X"), i);
+		UpdateWaveBox(i);
 		m_pWaveListCtrl->InsertItem(i, _T(""), i);
 		m_pWaveListCtrl->SetItemText(i, 1, hex);
 	}
+	m_pWaveListCtrl->RedrawWindow();
 	SelectWave(m_iWaveIndex);
 }
 
@@ -388,7 +382,8 @@ void CInstrumentEditorN163Wave::UpdateWaveBox(int Index)		// // //
 	CreateWaveImage(WaveBits, Index);
 	Waveform.CreateBitmap(m_pInstrument->GetWaveSize(), 16, 1, 1, WaveBits);
 	m_WaveImage.Replace(Index, &Waveform, &Waveform);
-	m_pWaveListCtrl->RedrawWindow();
+	m_pWaveListCtrl->SetImageList(&m_WaveImage, LVSIL_SMALL);
+	m_pWaveListCtrl->RedrawItems(Index, Index);
 }
 
 void CInstrumentEditorN163Wave::CreateWaveImage(char *const Pos, int Index) const		// // //
@@ -398,7 +393,7 @@ void CInstrumentEditorN163Wave::CreateWaveImage(char *const Pos, int Index) cons
 	if (Width % 16) Width += 16 - Width % 16;
 	for (int j = 0; j < Width; j++) {
 		int b = Width * (15 - m_pInstrument->GetSample(Index, j)) + j;
-		Pos[b / 8] = Pos[b / 8] & ~static_cast<char>(1 << (7 - b % 8));
+		Pos[b / 8] &= ~static_cast<char>(1 << (7 - b % 8));
 	}
 }
 
