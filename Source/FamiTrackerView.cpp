@@ -767,10 +767,14 @@ BOOL CFamiTrackerView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 			m_pPatternEditor->PreviousFrame();
 		InvalidateFrameEditor();		// // //
 	}
-	if (bControlPressed)
-		pAction = new CPActionTranspose {zDelta > 0 ? TRANSPOSE_INC_NOTES : TRANSPOSE_DEC_NOTES};		// // //
-	else if (bShiftPressed)
-		pAction = new CPActionScrollValues {zDelta > 0 ? 1 : -1};		// // //
+	else if (bControlPressed) {
+		if (!(theApp.IsPlaying() && !IsSelecting()))		// // //
+			pAction = new CPActionTranspose {zDelta > 0 ? TRANSPOSE_INC_NOTES : TRANSPOSE_DEC_NOTES};		// // //
+	}
+	else if (bShiftPressed) {
+		if (!(theApp.IsPlaying() && !IsSelecting()))
+			pAction = new CPActionScrollValues {zDelta > 0 ? 1 : -1};		// // //
+	}
 	else
 		m_pPatternEditor->OnMouseScroll(zDelta);
 
