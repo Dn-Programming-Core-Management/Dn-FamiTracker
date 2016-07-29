@@ -326,7 +326,6 @@ private:
 
 	// Draw state variables
 	int		m_iCenterRow;					// The row in the middle of the editor, will always point to a valid row in current frame
-	int		m_iCurrentFrame;				// Selected frame
 	
 	int		m_iPatternLength;				// Pattern length of selected frame
 	// // // gone
