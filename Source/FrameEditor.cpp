@@ -40,6 +40,14 @@
 #include "BookmarkManager.h"		// // //
 #include "DPI.h"		// // //
 
+struct pairhash {		// // // from http://stackoverflow.com/a/20602159/5756577
+	template <typename T, typename U>
+	std::size_t operator()(const std::pair<T, U> &x) const
+	{
+		return (std::hash<T>()(x.first) * 3) ^ std::hash<U>()(x.second);
+	}
+};
+
 /*
  * CFrameEditor
  * This is the frame(order) editor to the left in the control panel
@@ -1156,13 +1164,22 @@ void CFrameEditor::PasteNew(unsigned int Track, const CFrameClipData *pClipData)
 	Sel.m_cpStart.m_iChannel = pClipData->ClipInfo.FirstChannel;		// // //
 	Sel.m_cpEnd.m_iChannel = Sel.m_cpStart.m_iChannel + Channels - 1;
 
+	std::unordered_map<std::pair<int, int>, int, pairhash> NewPatterns;
+
 	CFrameIterator it {m_pDocument, static_cast<int>(Track), Sel.m_cpStart};
 	for (int f = 0; f < Frames; ++f) {
 		m_pDocument->InsertFrame(Track, it.m_iFrame);
 		for (int c = 0; c < it.m_iChannel; ++c)
 			it.Set(c, 0);
-		for (int c = 0; c < Channels; ++c)
-			m_pDocument->CopyPattern(Track, it.Get(c + it.m_iChannel), pClipData->GetFrame(f, c), c + it.m_iChannel);
+		for (int c = 0; c < Channels; ++c) {
+			int OldPattern = pClipData->GetFrame(f, c);
+			auto Index = std::make_pair(c, OldPattern);
+			auto p = NewPatterns.find(Index);		// // // share common patterns
+			if (p == NewPatterns.end())
+				m_pDocument->CopyPattern(Track, NewPatterns[Index] = it.Get(c + it.m_iChannel), OldPattern, c + it.m_iChannel);
+			else
+				m_pDocument->SetPatternAtFrame(Track, it.m_iFrame, c + it.m_iChannel, p->second);
+		}
 		for (int c = it.m_iChannel + Channels, Count = m_pDocument->GetChannelCount(); c < Count; ++c)
 			it.Set(c, 0);
 		++it;
