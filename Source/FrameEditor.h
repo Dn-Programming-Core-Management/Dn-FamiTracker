@@ -72,9 +72,10 @@ public:
 	bool InputEnabled() const;
 
 	// Selection, copy & paste, drag & drop
+	CFrameSelection GetSelection() const;		// // //
+	bool IsSelecting() const;		// // //
+	void SetSelection(const CFrameSelection &Sel);		// // //
 	void CancelSelection();
-	void GetSelectInfo(stSelectInfo &Info) const;
-	void SetSelectInfo(const stSelectInfo &Info);		// // //
 
 	bool IsClipboardAvailable() const;
 	bool IsCopyValid(COleDataObject* pDataObject) const;
@@ -156,10 +157,7 @@ private:
 	bool	m_bStartDrag;
 	bool	m_bDeletedRows;
 	bool	m_bFullFrameSelect = false;		// // //
-	int		m_iSelStartRow;
-	int		m_iSelEndRow;
-	int		m_iSelStartChan;
-	int		m_iSelEndChan;
+	CFrameSelection m_selection;		// // //
 	int		m_iDragRow;
 
 	int		m_iTopScrollArea;

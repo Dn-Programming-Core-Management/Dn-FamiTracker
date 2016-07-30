@@ -74,7 +74,7 @@ struct stSequence {
 #include "Groove.h"		// // //
 
 #include "PatternEditorTypes.h"		// // //
-#include "FrameEditorTypes.h"		// // //
+// #include "FrameEditorTypes.h"		// // //
 
 // External classes
 class CTrackerChannel;

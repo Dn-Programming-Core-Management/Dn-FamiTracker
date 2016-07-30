@@ -27,12 +27,6 @@
 
 // // // common classes for frame editor
 
-struct stSelectInfo {
-	bool bSelecting;
-	int iRowStart;
-	int iRowEnd;
-};
-
 class CFrameClipData {
 public:
 	// Constructor/desctructor
@@ -73,4 +67,29 @@ public:
 	// Clip data
 	int *pFrames;
 	int iSize;
+};
+
+// // // Frame editor cursor
+struct CFrameCursorPos
+{
+	CFrameCursorPos() = default;
+	CFrameCursorPos(int Frame, int Channel) : m_iFrame(Frame), m_iChannel(Channel) { }
+
+	int m_iFrame = 0;
+	int m_iChannel = 0;
+};
+
+// // // Frame editor selection
+struct CFrameSelection
+{
+	inline int GetFrameStart() const;
+	inline int GetFrameEnd() const;
+	inline int GetChanStart() const;
+	inline int GetChanEnd() const;
+
+	void Normalize(CFrameCursorPos &Begin, CFrameCursorPos &End) const;		// // //
+	CFrameSelection GetNormalized() const;		// // //
+
+	CFrameCursorPos m_cpStart;
+	CFrameCursorPos m_cpEnd;
 };

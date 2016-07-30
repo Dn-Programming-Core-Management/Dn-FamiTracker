@@ -73,10 +73,6 @@ CFrameEditor::CFrameEditor(CMainFrame *pMainFrm) :
 	m_bSelecting(false),
 	m_bStartDrag(false),
 	m_bDeletedRows(false),
-	m_iSelStartRow(0),
-	m_iSelEndRow(0),
-	m_iSelStartChan(0),
-	m_iSelEndChan(0),
 	m_iDragRow(0),
 	m_iTopScrollArea(0),
 	m_iBottomScrollArea(0),
@@ -248,8 +244,10 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 	const int ChannelCount	= pDoc->GetChannelCount();
 	int ActiveFrame			= pView->GetSelectedFrame();
 	int ActiveChannel		= pView->GetSelectedChannel();
-	int SelectStart			= std::min(m_iSelStartRow, m_iSelEndRow);
-	int SelectEnd			= std::max(m_iSelStartRow, m_iSelEndRow);	
+	const int SelectStart	= m_selection.GetFrameStart();		// // //
+	const int SelectEnd		= m_selection.GetFrameEnd();
+	const int CBegin		= m_selection.GetChanStart();
+	const int CEnd			= m_selection.GetChanEnd();
 	int PatternAreaWidth	= m_iWinWidth - ROW_COLUMN_WIDTH;
 
 	if (ActiveChannel < m_iFirstChannel)
@@ -326,8 +324,6 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 
 		// Selection
 		if (bSelectedRow) {
-			int CBegin = std::min(m_iSelStartChan, m_iSelEndChan);		// // //
-			int CEnd = std::max(m_iSelStartChan, m_iSelEndChan);
 			CRect RowRect = DPI::Rect(ROW_COLUMN_WIDTH + FRAME_ITEM_WIDTH * CBegin, i * ROW_HEIGHT + 3, FRAME_ITEM_WIDTH * (CEnd - CBegin + 1), ROW_HEIGHT);		// // //
 			RowRect.OffsetRect(2, 0);
 			++RowRect.right;
@@ -560,9 +556,8 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			case VK_END:
 				if (bShift && !m_bSelecting) {
 					m_bSelecting = true;
-					m_iSelStartRow = Frame;
-					m_iSelEndRow = Frame;
-					m_iSelStartChan = m_iSelEndChan = Channel;		// // //
+					m_selection.m_cpStart.m_iFrame = m_selection.m_cpEnd.m_iFrame = Frame;		// // //
+					m_selection.m_cpStart.m_iChannel = m_selection.m_cpEnd.m_iChannel = Channel;		// // //
 				}
 				break;
 		}
@@ -655,8 +650,8 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			case VK_HOME:
 			case VK_END:
 				if (bShift) {
-					m_iSelEndRow = Frame;
-					m_iSelEndChan = Channel;		// // //
+					m_selection.m_cpEnd.m_iFrame = Frame;
+					m_selection.m_cpEnd.m_iChannel = Channel;		// // //
 					InvalidateFrameData();
 					Invalidate();
 				}
@@ -774,28 +769,25 @@ void CFrameEditor::OnLButtonDown(UINT nFlags, CPoint point)
 	m_ButtonPoint = point;
 
 	if (m_bSelecting) {
-		int SelectStart = m_iSelStartRow, SelectEnd = m_iSelEndRow;		// // //
-		if (SelectStart > SelectEnd)
-			std::swap(SelectStart, SelectEnd);
-		int ChanStart = m_iSelStartChan, ChanEnd = m_iSelEndChan;
-		if (ChanStart > ChanEnd)
-			std::swap(ChanStart, ChanEnd);
+		int SelectStart = m_selection.GetFrameStart(), SelectEnd = m_selection.GetFrameEnd();		// // //
+		int ChanStart = m_selection.GetChanStart(), ChanEnd = m_selection.GetChanEnd();		// // //
 
 		if (Row < SelectStart || Row > SelectEnd || Chan < ChanStart || Chan > ChanEnd) {		// // //
 			if (nFlags & MK_SHIFT) {
-				m_iSelEndRow = Row;
+				m_selection.m_cpEnd.m_iFrame = Row;
+				m_selection.m_cpEnd.m_iChannel = Chan;		// // //
 				InvalidateFrameData();
 				Invalidate();
 			}
 			else {
-				m_iSelEndRow = m_iSelStartRow = Row;
+				m_selection.m_cpStart.m_iFrame = m_selection.m_cpEnd.m_iFrame = Row;
 				m_bFullFrameSelect = Chan < 0;		// // //
 				if (m_bFullFrameSelect) {
-					m_iSelStartChan = 0;
-					m_iSelEndChan = m_pDocument->GetChannelCount() - 1;
+					m_selection.m_cpStart.m_iChannel = 0;
+					m_selection.m_cpEnd.m_iChannel = m_pDocument->GetChannelCount() - 1;
 				}
 				else
-					m_iSelEndChan = m_iSelStartChan = Chan;
+					m_selection.m_cpStart.m_iChannel = m_selection.m_cpEnd.m_iChannel = Chan;
 				m_bSelecting = false;
 				m_pView->SetFocus();
 			}
@@ -806,22 +798,22 @@ void CFrameEditor::OnLButtonDown(UINT nFlags, CPoint point)
 	}
 	else {
 		if (nFlags & MK_SHIFT) {
-			m_iSelStartRow = m_pView->GetSelectedFrame();
-			m_iSelEndRow = Row;
-			m_iSelStartChan = m_pView->GetSelectedChannel();		// // //
-			m_iSelEndChan = Chan;		// // //
+			m_selection.m_cpStart.m_iFrame = m_pView->GetSelectedFrame();
+			m_selection.m_cpEnd.m_iFrame = Row;
+			m_selection.m_cpStart.m_iChannel = m_pView->GetSelectedChannel();		// // //
+			m_selection.m_cpEnd.m_iChannel = Chan;		// // //
 			m_bFullFrameSelect = false;		// // //
 			m_bSelecting = true;
 		}
 		else {
-			m_iSelEndRow = m_iSelStartRow = Row;
+			m_selection.m_cpStart.m_iFrame = m_selection.m_cpEnd.m_iFrame = Row;
 			m_bFullFrameSelect = Chan < 0;		// // //
 			if (m_bFullFrameSelect) {
-				m_iSelStartChan = 0;
-				m_iSelEndChan = m_pDocument->GetChannelCount() - 1;
+				m_selection.m_cpStart.m_iChannel = 0;
+				m_selection.m_cpEnd.m_iChannel = m_pDocument->GetChannelCount() - 1;
 			}
 			else
-				m_iSelEndChan = m_iSelStartChan = Chan;
+				m_selection.m_cpStart.m_iChannel = m_selection.m_cpEnd.m_iChannel = Chan;
 		}
 	}
 	
@@ -886,14 +878,14 @@ void CFrameEditor::OnMouseMove(UINT nFlags, CPoint point)
 		}
 		else if (m_bSelecting) {
 			AutoScroll(point);
-			m_iSelEndRow = GetRowFromPoint(point, false);
+			m_selection.m_cpEnd.m_iFrame = GetRowFromPoint(point, false);
 			if (m_bFullFrameSelect) {		// // //
-				m_iSelStartChan = 0;
-				m_iSelEndChan = m_pDocument->GetChannelCount() - 1;
+				m_selection.m_cpStart.m_iChannel = 0;
+				m_selection.m_cpEnd.m_iChannel = m_pDocument->GetChannelCount() - 1;
 			}
 			else {
-				m_iSelEndChan = GetChannelFromPoint(point);
-				if (m_iSelEndChan < 0) m_iSelEndChan = 0;
+				m_selection.m_cpEnd.m_iChannel = GetChannelFromPoint(point);
+				if (m_selection.m_cpEnd.m_iChannel < 0) m_selection.m_cpEnd.m_iChannel = 0;
 			}
 			InvalidateFrameData();
 			Invalidate();
@@ -1013,13 +1005,13 @@ void CFrameEditor::OnEditCut()
 void CFrameEditor::OnEditCopy()
 {
 	if (!m_bSelecting) {
-		m_iSelStartRow = m_iSelEndRow = m_pView->GetSelectedFrame();
-		m_iSelStartChan = 0;		// // //
-		m_iSelEndChan = m_pDocument->GetChannelCount() - 1;		// // //
+		m_selection.m_cpStart.m_iFrame = m_selection.m_cpEnd.m_iFrame = m_pView->GetSelectedFrame();
+		m_selection.m_cpStart.m_iChannel = 0;		// // //
+		m_selection.m_cpEnd.m_iChannel = m_pDocument->GetChannelCount() - 1;		// // //
 	}
 
-	const int SelectStart = std::min(m_iSelStartRow, m_iSelEndRow);
-	const int SelectEnd	  = std::max(m_iSelStartRow, m_iSelEndRow);
+	const int SelectStart = m_selection.GetFrameStart();		// // //
+	const int SelectEnd	  = m_selection.GetFrameEnd();
 	const int Channels	  = m_pDocument->GetChannelCount();
 	const int Rows		  = SelectEnd - SelectStart + 1;
 
@@ -1107,9 +1099,9 @@ void CFrameEditor::OnEditPasteNewPatterns()
 void CFrameEditor::OnEditDelete()
 {
 	if (!m_bSelecting) {
-		m_iSelStartRow = m_iSelEndRow = m_pView->GetSelectedFrame();
-		m_iSelStartChan = 0;		// // //
-		m_iSelEndChan = m_pDocument->GetChannelCount() - 1;		// // //
+		m_selection.m_cpStart.m_iFrame = m_selection.m_cpEnd.m_iFrame = m_pView->GetSelectedFrame();		// // //
+		m_selection.m_cpStart.m_iChannel = 0;		// // //
+		m_selection.m_cpEnd.m_iChannel = m_pDocument->GetChannelCount() - 1;		// // //
 	}
 
 	CFrameAction *pAction = new CFrameAction(CFrameAction::ACT_DELETE_SELECTION);
@@ -1210,14 +1202,16 @@ void CFrameEditor::OnSize(UINT nType, int cx, int cy)
 
 void CFrameEditor::CancelSelection()
 {
+	if (m_bSelecting)		// // //
+		m_bInvalidated = true;
 	m_bSelecting = false;
 	m_bStartDrag = false;
 }
 
 void CFrameEditor::InitiateDrag()
 {
-	const int SelectStart = std::min(m_iSelStartRow, m_iSelEndRow);
-	const int SelectEnd	  = std::max(m_iSelStartRow, m_iSelEndRow);
+	const int SelectStart = m_selection.GetFrameStart();		// // //
+	const int SelectEnd	  = m_selection.GetFrameEnd();
 	const int Channels	  = m_pDocument->GetChannelCount();
 	const int Rows		  = SelectEnd - SelectStart + 1;
 
@@ -1386,26 +1380,29 @@ void CFrameEditor::PerformDragOperation(unsigned int Track, CFrameClipData *pCli
 			++SelectedFrame;
 	}
 
-	m_iSelStartRow = DragTarget;
-	m_iSelEndRow = DragTarget + Rows - 1;
-	m_iSelStartChan = 0;		// // //
-	m_iSelEndChan = m_pDocument->GetChannelCount() - 1;		// // //
+	m_selection.m_cpStart.m_iFrame = DragTarget;
+	m_selection.m_cpEnd.m_iFrame = DragTarget + Rows - 1;
+	m_selection.m_cpStart.m_iChannel = 0;		// // //
+	m_selection.m_cpEnd.m_iChannel = m_pDocument->GetChannelCount() - 1;		// // //
 
 	m_pView->SelectFrame(SelectedFrame);
 }
 
-void CFrameEditor::GetSelectInfo(stSelectInfo &Info) const
+CFrameSelection CFrameEditor::GetSelection() const		// // //
 {
-	Info.bSelecting = m_bSelecting;
-	Info.iRowStart = std::min(m_iSelStartRow, m_iSelEndRow);
-	Info.iRowEnd = std::max(m_iSelStartRow, m_iSelEndRow);
+	return m_selection;
 }
 
-void CFrameEditor::SetSelectInfo(const stSelectInfo &Info)		// // //
+bool CFrameEditor::IsSelecting() const		// // //
 {
-	m_bSelecting = Info.bSelecting;
-	m_iSelStartRow = Info.iRowStart;
-	m_iSelEndRow = Info.iRowEnd;
+	return m_bSelecting;
+}
+
+void CFrameEditor::SetSelection(const CFrameSelection &Sel)		// // //
+{
+	m_selection = Sel;
+	m_bSelecting = true;
+	m_bInvalidated = true;
 }
 
 bool CFrameEditor::IsClipboardAvailable() const

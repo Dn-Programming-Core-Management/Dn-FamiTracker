@@ -35,18 +35,15 @@ CPatternEditorState::CPatternEditorState(const CPatternEditor *pEditor, int Trac
 	Track(Track),
 	Cursor(pEditor->GetCursor()),
 	OriginalSelection(pEditor->GetSelection()),
-	Selection(pEditor->GetSelection().GetNormalized()),
 	IsSelecting(pEditor->IsSelecting())
 {
+	Selection = OriginalSelection.GetNormalized();
 }
 
 void CPatternEditorState::ApplyState(CPatternEditor *pEditor) const
 {
 	pEditor->MoveCursor(Cursor);
-	if (IsSelecting)
-		pEditor->SetSelection(OriginalSelection);
-	else
-		pEditor->CancelSelection();
+	IsSelecting ? pEditor->SetSelection(OriginalSelection) : pEditor->CancelSelection();
 	pEditor->InvalidateCursor();
 }
 

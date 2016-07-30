@@ -21,6 +21,7 @@
 */
 
 #include "FrameEditorTypes.h"
+#include <algorithm>
 
 // CFrameClipData //////////////////////////////////////////////////////////////
 
@@ -84,4 +85,40 @@ void CFrameClipData::SetFrame(int Frame, int Channel, int Pattern)
 	ASSERT(Channel >= 0 && Channel < ClipInfo.Channels);
 
 	*(pFrames + (Frame * ClipInfo.Channels + Channel)) = Pattern;
+}
+
+// // // CFrameSelection class
+
+inline int CFrameSelection::GetFrameStart() const
+{
+	return (m_cpEnd.m_iFrame > m_cpStart.m_iFrame) ? m_cpStart.m_iFrame : m_cpEnd.m_iFrame;
+}
+
+inline int CFrameSelection::GetFrameEnd() const
+{
+	return (m_cpEnd.m_iFrame > m_cpStart.m_iFrame) ? m_cpEnd.m_iFrame : m_cpStart.m_iFrame;
+}
+
+inline int CFrameSelection::GetChanStart() const
+{
+	return (m_cpEnd.m_iChannel > m_cpStart.m_iChannel) ? m_cpStart.m_iChannel : m_cpEnd.m_iChannel;
+}
+
+inline int CFrameSelection::GetChanEnd() const
+{
+	return (m_cpEnd.m_iChannel > m_cpStart.m_iChannel) ? m_cpEnd.m_iChannel : m_cpStart.m_iChannel;
+}
+
+void CFrameSelection::Normalize(CFrameCursorPos &Begin, CFrameCursorPos &End) const
+{
+	CFrameCursorPos Temp {GetFrameStart(), GetChanStart()};
+	std::swap(End, CFrameCursorPos {GetFrameEnd(), GetChanEnd()});
+	std::swap(Begin, Temp);
+}
+
+CFrameSelection CFrameSelection::GetNormalized() const
+{
+	CFrameSelection Sel;
+	Normalize(Sel.m_cpStart, Sel.m_cpEnd);
+	return Sel;
 }

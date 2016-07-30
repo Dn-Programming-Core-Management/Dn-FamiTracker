@@ -55,7 +55,14 @@ struct CFrameEditorState		// TODO maybe merge this with CPatternEditorState
 	/*!	\brief The current channel position at the time of the state's creation. */
 	int Channel;
 
-	stSelectInfo Selection;
+	/*!	\brief The current selection position at the time of the state's creation. */
+	CFrameSelection Selection;
+
+	/*!	\brief Whether a selection is active at the time of the state's creation. */
+	bool IsSelecting;
+
+private:
+	CFrameSelection OriginalSelection;
 };
 
 // Frame commands
@@ -126,8 +133,6 @@ private:
 	unsigned int *m_pAllPatterns;
 
 	CFrameClipData *m_pClipData;
-
-	stSelectInfo m_oSelInfo;
 };
 
 // // // built-in frame action subtypes

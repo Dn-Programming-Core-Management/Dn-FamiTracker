@@ -33,17 +33,19 @@
 CFrameEditorState::CFrameEditorState(const CFamiTrackerView *pView, int Track) :		// // //
 	Track(Track),
 	Frame(pView->GetSelectedFrame()),
-	Channel(pView->GetSelectedChannel())
+	Channel(pView->GetSelectedChannel()),
+	OriginalSelection(static_cast<CMainFrame*>(pView->GetParentFrame())->GetFrameEditor()->GetSelection()),
+	IsSelecting(static_cast<CMainFrame*>(pView->GetParentFrame())->GetFrameEditor()->IsSelecting())
 {
-	static_cast<CMainFrame*>(pView->GetParentFrame())->GetFrameEditor()->GetSelectInfo(Selection);
+	Selection = OriginalSelection.GetNormalized();
 }
 
 void CFrameEditorState::ApplyState(CFamiTrackerView *pView) const
 {
 	pView->SelectFrame(Frame);
 	pView->SelectChannel(Channel);
-	static_cast<CMainFrame*>(pView->GetParentFrame())->GetFrameEditor()->SetSelectInfo(Selection);
-
+	auto pEditor = static_cast<CMainFrame*>(pView->GetParentFrame())->GetFrameEditor();
+	IsSelecting ? pEditor->SetSelection(OriginalSelection) : pEditor->CancelSelection();
 }
 
 // CFrameAction ///////////////////////////////////////////////////////////////////
@@ -181,7 +183,6 @@ void CFrameAction::SaveUndoState(const CMainFrame *pMainFrm)		// // //
 {
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
 	m_pUndoState = new CFrameEditorState {pView, pMainFrm->GetSelectedTrack()};		// // //
-	pMainFrm->GetFrameEditor()->GetSelectInfo(m_oSelInfo);
 }
 
 void CFrameAction::SaveRedoState(const CMainFrame *pMainFrm)		// // //
@@ -227,12 +228,12 @@ void CFrameAction::Undo(CMainFrame *pMainFrm) const
 		case ACT_DRAG_AND_DROP_COPY:
 		case ACT_DELETE_SELECTION:
 			RestoreAllFrames(pDoc);
-			pView->SelectFrame(m_oSelInfo.iRowEnd);
+			pView->SelectFrame(m_pUndoState->Selection.m_cpEnd.m_iFrame);
 			pMainFrm->UpdateControls();
 			break;
 		case ACT_DRAG_AND_DROP_COPY_NEW:
 			ClearPatterns(pDoc, m_iDragTarget);
-			pView->SelectFrame(m_oSelInfo.iRowEnd);
+			pView->SelectFrame(m_pUndoState->Selection.m_cpEnd.m_iFrame);
 			pMainFrm->UpdateControls();
 			break;
 		case ACT_MERGE_DUPLICATED_PATTERNS:
@@ -273,8 +274,11 @@ void CFrameAction::Redo(CMainFrame *pMainFrm) const
 			pMainFrm->UpdateControls();
 			break;
 		case ACT_DELETE_SELECTION:
-			pDoc->DeleteFrames(m_pUndoState->Track, m_oSelInfo.iRowStart, m_oSelInfo.iRowEnd - m_oSelInfo.iRowStart + 1);
-			pView->SelectFrame(m_oSelInfo.iRowStart);
+			pDoc->DeleteFrames(
+				m_pUndoState->Track,
+				m_pUndoState->Selection.m_cpStart.m_iFrame,
+				m_pUndoState->Selection.m_cpEnd.m_iFrame - m_pUndoState->Selection.m_cpStart.m_iFrame + 1);		// // //
+			pView->SelectFrame(m_pUndoState->Selection.m_cpStart.m_iFrame);
 			pFrameEditor->CancelSelection();
 			pMainFrm->UpdateControls();
 			break;
