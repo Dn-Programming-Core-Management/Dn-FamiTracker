@@ -22,13 +22,27 @@
 
 #include "FrameEditorTypes.h"
 #include <algorithm>
+#include "FamiTrackerDoc.h"
 
 // CFrameClipData //////////////////////////////////////////////////////////////
 
-void CFrameClipData::Alloc(int Size)
+
+// Constructor/desctructor
+
+CFrameClipData::CFrameClipData()
 {
-	iSize = Size;
-	pFrames = new int[Size];
+	memset(&ClipInfo, 0, sizeof(ClipInfo));
+}
+
+CFrameClipData::CFrameClipData(int Channels, int Frames) :
+	pFrames(new int[Channels * Frames]), iSize(Channels * Frames)
+{
+	memset(&ClipInfo, 0, sizeof(ClipInfo));
+}
+
+CFrameClipData::~CFrameClipData()
+{
+	SAFE_RELEASE_ARRAY(pFrames);
 }
 
 SIZE_T CFrameClipData::GetAllocSize() const
@@ -121,4 +135,93 @@ CFrameSelection CFrameSelection::GetNormalized() const
 	CFrameSelection Sel;
 	Normalize(Sel.m_cpStart, Sel.m_cpEnd);
 	return Sel;
+}
+
+// // // CFrameIterator class
+
+CFrameIterator::CFrameIterator(const CFrameIterator &it) :
+	m_iTrack(it.m_iTrack), m_pDocument(it.m_pDocument), CFrameCursorPos(static_cast<const CFrameCursorPos &>(it))
+{
+}
+
+CFrameIterator::CFrameIterator(CFamiTrackerDoc *pDoc, int Track, const CFrameCursorPos &Pos) :
+	m_iTrack(Track), m_pDocument(pDoc), CFrameCursorPos(Pos)
+{
+	m_iFrame = NormalizeFrame(m_iFrame);
+}
+
+std::pair<CFrameIterator, CFrameIterator> CFrameIterator::FromCursor(const CFrameCursorPos &Pos, CFamiTrackerDoc *const pDoc, int Track)
+{
+	return std::make_pair(
+		CFrameIterator {pDoc, Track, Pos},
+		CFrameIterator {pDoc, Track, Pos}
+	);
+}
+
+std::pair<CFrameIterator, CFrameIterator> CFrameIterator::FromSelection(const CFrameSelection &Sel, CFamiTrackerDoc *const pDoc, int Track)
+{
+	CFrameCursorPos it, end;
+	Sel.Normalize(it, end);
+	return std::make_pair(
+		CFrameIterator {pDoc, Track, it},
+		CFrameIterator {pDoc, Track, end}
+	);
+}
+
+int CFrameIterator::Get(int Channel) const
+{
+	return m_pDocument->GetPatternAtFrame(m_iTrack, NormalizeFrame(m_iFrame), Channel);
+}
+
+void CFrameIterator::Set(int Channel, int Frame)
+{
+	m_pDocument->SetPatternAtFrame(m_iTrack, NormalizeFrame(m_iFrame), Channel, Frame);
+}
+
+CFrameIterator& CFrameIterator::operator+=(const int Frames)
+{
+	m_iFrame = NormalizeFrame(m_iFrame + Frames);
+	return *this;
+}
+
+CFrameIterator& CFrameIterator::operator-=(const int Frames)
+{
+	return operator+=(-Frames);
+}
+
+CFrameIterator& CFrameIterator::operator++()
+{
+	return operator+=(1);
+}
+
+CFrameIterator CFrameIterator::operator++(int)
+{
+	CFrameIterator tmp(*this);
+	operator+=(1);
+	return tmp;
+}
+
+CFrameIterator& CFrameIterator::operator--()
+{
+	return operator+=(-1);
+}
+
+CFrameIterator CFrameIterator::operator--(int)
+{
+	CFrameIterator tmp(*this);
+	operator+=(-1);
+	return tmp;
+}
+
+bool CFrameIterator::operator==(const CFrameIterator &other) const
+{
+	return m_iFrame == other.m_iFrame;
+}
+
+int CFrameIterator::NormalizeFrame(int Frame) const
+{
+	int Frames = m_pDocument->GetFrameCount(m_iTrack);
+	Frame %= Frames;
+	if (Frame < 0) Frame += Frames;
+	return Frame;
 }

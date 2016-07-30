@@ -49,11 +49,8 @@ struct CFrameEditorState		// TODO maybe merge this with CPatternEditorState
 	/*!	\brief The current track number at the time of the state's creation. */
 	int Track;
 
-	/*!	\brief The current frame position at the time of the state's creation. */
-	int Frame;
-
-	/*!	\brief The current channel position at the time of the state's creation. */
-	int Channel;
+	/*!	\brief The current cursor position at the time of the state's creation. */
+	CFrameCursorPos Cursor;
 
 	/*!	\brief The current selection position at the time of the state's creation. */
 	CFrameSelection Selection;
@@ -110,15 +107,12 @@ public:
 	void SetDragInfo(int DragTarget, CFrameClipData *pClipData, bool Remove);
 
 protected:
-	int SavePatterns(const CFamiTrackerDoc *pDoc, int *pBuf);		// // //
-	void RestorePatterns(CFamiTrackerDoc *pDoc, const int *pBuf, int Count) const;		// // //
-
 	void SaveAllFrames(CFamiTrackerDoc *pDoc);
 	void RestoreAllFrames(CFamiTrackerDoc *pDoc) const;
 
-	int ClipPattern(int Pattern) const;
+	static int ClipPattern(int Pattern);
 
-	void ClearPatterns(CFamiTrackerDoc *pDoc, int Target) const;
+	void ClearPatterns(CFamiTrackerDoc *pDoc, const CFrameClipData *pClipData, int Target) const;		// // //
 
 protected:
 	CFrameEditorState *m_pUndoState, *m_pRedoState;		// // //
@@ -151,13 +145,13 @@ class CFActionRemoveFrame : public CFrameAction
 {
 public:
 	CFActionRemoveFrame() : CFrameAction(ACT_REMOVE) { }
+	~CFActionRemoveFrame() { SAFE_RELEASE(m_pRowClipData); }
 private:
 	bool SaveState(const CMainFrame *pMainFrm);
 	void Undo(CMainFrame *pMainFrm) const;
 	void Redo(CMainFrame *pMainFrm) const;
 private:
-	int m_iChannels;
-	int m_iPatterns[MAX_CHANNELS];
+	CFrameClipData *m_pRowClipData = nullptr;
 };
 
 class CFActionDuplicateFrame : public CFrameAction
@@ -210,14 +204,14 @@ class CFActionSetPatternAll : public CFrameAction
 {
 public:
 	CFActionSetPatternAll(int Pattern) : CFrameAction(ACT_SET_PATTERN_ALL), m_iNewPattern(Pattern) { }
+	~CFActionSetPatternAll() { SAFE_RELEASE(m_pRowClipData); }
 private:
 	bool SaveState(const CMainFrame *pMainFrm);
 	void Undo(CMainFrame *pMainFrm) const;
 	void Redo(CMainFrame *pMainFrm) const;
 private:
-	int m_iChannels;
-	int m_iPatterns[MAX_CHANNELS];
 	int m_iNewPattern;
+	CFrameClipData *m_pRowClipData = nullptr;
 };
 
 class CFActionChangePattern : public CFrameAction
@@ -238,14 +232,14 @@ class CFActionChangePatternAll : public CFrameAction
 {
 public:
 	CFActionChangePatternAll(int Offset) : CFrameAction(ACT_CHANGE_PATTERN_ALL), m_iPatternOffset(Offset) { }
+	~CFActionChangePatternAll() { SAFE_RELEASE(m_pRowClipData); }
 private:
 	bool SaveState(const CMainFrame *pMainFrm);
 	void Undo(CMainFrame *pMainFrm) const;
 	void Redo(CMainFrame *pMainFrm) const;
 private:
-	int m_iChannels;
-	int m_iPatterns[MAX_CHANNELS];
 	int m_iPatternOffset;
+	CFrameClipData *m_pRowClipData = nullptr;
 };
 
 class CFActionMoveDown : public CFrameAction
@@ -267,3 +261,18 @@ private:
 	void Undo(CMainFrame *pMainFrm) const;
 	void Redo(CMainFrame *pMainFrm) const;
 };
+
+class CFActionPaste : public CFrameAction
+{
+public:
+	CFActionPaste(CFrameClipData *pData, bool Clone) : CFrameAction(ACT_PASTE), m_pClipData(pData), m_bClone(Clone) { }
+	~CFActionPaste() { SAFE_RELEASE(m_pClipData); }
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+private:
+	CFrameClipData *m_pClipData;
+	bool m_bClone;
+};
+

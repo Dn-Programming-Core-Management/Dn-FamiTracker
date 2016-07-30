@@ -1004,29 +1004,7 @@ void CFrameEditor::OnEditCut()
 
 void CFrameEditor::OnEditCopy()
 {
-	if (!m_bSelecting) {
-		m_selection.m_cpStart.m_iFrame = m_selection.m_cpEnd.m_iFrame = m_pView->GetSelectedFrame();
-		m_selection.m_cpStart.m_iChannel = 0;		// // //
-		m_selection.m_cpEnd.m_iChannel = m_pDocument->GetChannelCount() - 1;		// // //
-	}
-
-	const int SelectStart = m_selection.GetFrameStart();		// // //
-	const int SelectEnd	  = m_selection.GetFrameEnd();
-	const int Channels	  = m_pDocument->GetChannelCount();
-	const int Rows		  = SelectEnd - SelectStart + 1;
-
-	CFrameClipData ClipData(Channels, Rows);
-
-	ClipData.ClipInfo.Channels = Channels;
-	ClipData.ClipInfo.Rows = Rows;
-	ClipData.ClipInfo.OleInfo.SourceRowStart = SelectStart;
-	ClipData.ClipInfo.OleInfo.SourceRowEnd = SelectEnd;
-
-	for (int i = 0; i < Rows; ++i) {
-		for (int j = 0; j < Channels; ++j) {
-			ClipData.SetFrame(i, j, m_pDocument->GetPatternAtFrame(m_pMainFrame->GetSelectedTrack(), i + SelectStart, j));
-		}
-	}
+	std::unique_ptr<CFrameClipData> ClipData {Copy()};		// // //
 
 	CClipboard Clipboard(this, m_iClipboard);
 
@@ -1035,12 +1013,9 @@ void CFrameEditor::OnEditCopy()
 		return;
 	}
 
-	SIZE_T Size = ClipData.GetAllocSize();
-	HGLOBAL hMem = Clipboard.AllocMem(Size);
-
-	if (hMem != NULL) {
+	if (HGLOBAL hMem = Clipboard.AllocMem(ClipData->GetAllocSize())) {
 		// Copy to clipboard
-		ClipData.ToMem(hMem);
+		ClipData->ToMem(hMem);
 		// Set clipboard for internal data, hMem may not be used after this point
 		Clipboard.SetData(hMem);
 	}
@@ -1048,8 +1023,6 @@ void CFrameEditor::OnEditCopy()
 
 void CFrameEditor::OnEditPaste()
 {
-	const int Track = m_pMainFrame->GetSelectedTrack();
-
 	CClipboard Clipboard(this, m_iClipboard);
 	HGLOBAL hMem;		// // //
 	if (!Clipboard.GetData(hMem))
@@ -1058,23 +1031,11 @@ void CFrameEditor::OnEditPaste()
 	CFrameClipData *pClipData = new CFrameClipData();
 	pClipData->FromMem(hMem);
 
-	// Check validity
-	if (pClipData->ClipInfo.Channels != m_pDocument->GetChannelCount() ||
-		pClipData->ClipInfo.Rows + m_pDocument->GetFrameCount(Track) > MAX_FRAMES) 
-	{
-		SAFE_RELEASE(pClipData);
-		return;
-	}
-
-	CFrameAction *pAction = new CFrameAction(CFrameAction::ACT_PASTE);
-	pAction->SetPasteData(pClipData);
-	m_pMainFrame->AddAction(pAction);
+	m_pMainFrame->AddAction(new CFActionPaste {pClipData, false});		// // //
 }
 
 void CFrameEditor::OnEditPasteNewPatterns()
 {
-	const int Track = m_pMainFrame->GetSelectedTrack();
-
 	CClipboard Clipboard(this, m_iClipboard);
 	HGLOBAL hMem;		// // //
 	if (!Clipboard.GetData(hMem))
@@ -1083,17 +1044,7 @@ void CFrameEditor::OnEditPasteNewPatterns()
 	CFrameClipData *pClipData = new CFrameClipData();
 	pClipData->FromMem(hMem);
 
-	// Check validity
-	if (pClipData->ClipInfo.Channels != m_pDocument->GetChannelCount() ||
-		pClipData->ClipInfo.Rows + m_pDocument->GetFrameCount(Track) > MAX_FRAMES) 
-	{
-		SAFE_RELEASE(pClipData);
-		return;
-	}
-
-	CFrameAction *pAction = new CFrameAction(CFrameAction::ACT_PASTE_NEW);
-	pAction->SetPasteData(pClipData);
-	m_pMainFrame->AddAction(pAction);
+	m_pMainFrame->AddAction(new CFActionPaste {pClipData, true});		// // //
 }
 
 void CFrameEditor::OnEditDelete()
@@ -1108,34 +1059,116 @@ void CFrameEditor::OnEditDelete()
 	m_pMainFrame->AddAction(pAction);
 }
 
-void CFrameEditor::Paste(unsigned int Track, CFrameClipData *pClipData)
+std::pair<CFrameIterator, CFrameIterator> CFrameEditor::GetIterators() const		// // //
 {
-	const int Rows = pClipData->ClipInfo.Rows;
+	int Track = m_pMainFrame->GetSelectedTrack();
+	return m_bSelecting ?
+		CFrameIterator::FromSelection(m_selection, m_pDocument, Track) :
+		CFrameIterator::FromCursor({
+			static_cast<int>(m_pView->GetSelectedFrame()), static_cast<int>(m_pView->GetSelectedChannel())
+		}, m_pDocument, Track);
+}
+
+CFrameClipData *CFrameEditor::Copy() const		// // //
+{
+	return m_bSelecting ? Copy(m_selection) : CopyFrame(m_pView->GetSelectedFrame());
+}
+
+CFrameClipData *CFrameEditor::Copy(const CFrameSelection &Sel) const		// // //
+{
+	const int Track = m_pMainFrame->GetSelectedTrack();
+	auto it = CFrameIterator::FromSelection(Sel, m_pDocument, Track);
+	const int Frames = it.second.m_iFrame - it.first.m_iFrame + 1;
+	const int Channels = it.second.m_iChannel - it.first.m_iChannel + 1;		// // //
+	const int ChanStart = it.first.m_iChannel;
+
+	auto pData = new CFrameClipData {Channels, Frames};
+	pData->ClipInfo.Channels = Channels;
+	pData->ClipInfo.Rows = Frames;
+	pData->ClipInfo.FirstChannel = ChanStart;		// // //
+	pData->ClipInfo.OleInfo.SourceRowStart = it.first.m_iFrame;
+	pData->ClipInfo.OleInfo.SourceRowEnd = it.second.m_iFrame;
+
+	for (int f = 0; f < Frames; ++f) {
+		for (int c = 0; c < Channels; ++c)
+			pData->SetFrame(f, c, it.first.Get(c + ChanStart));
+		++it.first;
+	}
+
+	return pData;
+}
+
+CFrameClipData *CFrameEditor::CopyFrame(int Frame) const		// // //
+{
+	CFrameSelection Sel;
+	Sel.m_cpStart.m_iFrame = Sel.m_cpEnd.m_iFrame = Frame;
+	Sel.m_cpStart.m_iChannel = 0;		// // //
+	Sel.m_cpEnd.m_iChannel = m_pDocument->GetChannelCount() - 1;		// // //
+	return Copy(Sel);
+}
+
+void CFrameEditor::Paste(unsigned int Track, const CFrameClipData *pClipData)
+{
+	const int Frames = pClipData->ClipInfo.Rows;
 	const int Channels = pClipData->ClipInfo.Channels;
 	const int SelectedFrame = m_pView->GetSelectedFrame();
 
-	for (int i = 0; i < Rows; ++i) {
-		m_pDocument->InsertFrame(Track, SelectedFrame + i);
-		for (int j = 0; j < Channels; ++j) {
-			m_pDocument->SetPatternAtFrame(Track, SelectedFrame + i, j, pClipData->GetFrame(i, j));
-		}
+	CFrameSelection Sel;		// // //
+	Sel.m_cpStart.m_iFrame = SelectedFrame;
+	Sel.m_cpEnd.m_iFrame = SelectedFrame + Frames - 1;
+	Sel.m_cpStart.m_iChannel = pClipData->ClipInfo.FirstChannel;		// // //
+	Sel.m_cpEnd.m_iChannel = Sel.m_cpStart.m_iChannel + Channels - 1;
+
+	CFrameIterator it {m_pDocument, static_cast<int>(Track), Sel.m_cpStart};
+	for (int f = 0; f < Frames; ++f) {
+		m_pDocument->InsertFrame(Track, it.m_iFrame);
+		for (int c = 0; c < it.m_iChannel; ++c)
+			it.Set(c, 0);
+		for (int c = 0; c < Channels; ++c)
+			it.Set(c + it.m_iChannel, pClipData->GetFrame(f, c));
+		for (int c = it.m_iChannel + Channels, Count = m_pDocument->GetChannelCount(); c < Count; ++c)
+			it.Set(c, 0);
+		++it;
+	}
+
+	SetSelection(Sel);
+}
+
+void CFrameEditor::PasteAt(unsigned int Track, const CFrameClipData *pClipData, const CFrameCursorPos &Pos)
+{
+	CFrameIterator it {m_pDocument, static_cast<int>(Track), Pos};
+	for (int f = 0; f < pClipData->ClipInfo.Rows; ++f) {
+		for (int c = 0; c < pClipData->ClipInfo.Channels; ++c)
+			it.Set(c + /*it.m_iChannel*/ pClipData->ClipInfo.FirstChannel, pClipData->GetFrame(f, c));
+		++it;
 	}
 }
 
-void CFrameEditor::PasteNew(unsigned int Track, CFrameClipData *pClipData)
+void CFrameEditor::PasteNew(unsigned int Track, const CFrameClipData *pClipData)
 {
-	const int Rows = pClipData->ClipInfo.Rows;
+	const int Frames = pClipData->ClipInfo.Rows;
 	const int Channels = pClipData->ClipInfo.Channels;
 	const int SelectedFrame = m_pView->GetSelectedFrame();
 
-	for (int i = 0; i < Rows; ++i) {
-		m_pDocument->InsertFrame(Track, SelectedFrame + i);
-		for (int j = 0; j < Channels; ++j) {
-			int Source = pClipData->GetFrame(i, j);
-			int Target = m_pDocument->GetPatternAtFrame(Track, SelectedFrame + i, j);
-			m_pDocument->CopyPattern(Track, Target, Source, j);
-		}
+	CFrameSelection Sel;		// // //
+	Sel.m_cpStart.m_iFrame = SelectedFrame;
+	Sel.m_cpEnd.m_iFrame = SelectedFrame + Frames - 1;
+	Sel.m_cpStart.m_iChannel = pClipData->ClipInfo.FirstChannel;		// // //
+	Sel.m_cpEnd.m_iChannel = Sel.m_cpStart.m_iChannel + Channels - 1;
+
+	CFrameIterator it {m_pDocument, static_cast<int>(Track), Sel.m_cpStart};
+	for (int f = 0; f < Frames; ++f) {
+		m_pDocument->InsertFrame(Track, it.m_iFrame);
+		for (int c = 0; c < it.m_iChannel; ++c)
+			it.Set(c, 0);
+		for (int c = 0; c < Channels; ++c)
+			m_pDocument->CopyPattern(Track, it.Get(c + it.m_iChannel), pClipData->GetFrame(f, c), c + it.m_iChannel);
+		for (int c = it.m_iChannel + Channels, Count = m_pDocument->GetChannelCount(); c < Count; ++c)
+			it.Set(c, 0);
+		++it;
 	}
+
+	SetSelection(Sel);
 }
 
 bool CFrameEditor::InputEnabled() const

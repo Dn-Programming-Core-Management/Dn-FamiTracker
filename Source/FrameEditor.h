@@ -84,8 +84,12 @@ public:
 	void PerformDragOperation(unsigned int Track, CFrameClipData *pClipData, int DragTarget, bool bDelete, bool bNewPatterns);
 
 	// Commands
-	void Paste(unsigned int Track, CFrameClipData *pClipData);
-	void PasteNew(unsigned int Track, CFrameClipData *pClipData);
+	CFrameClipData *Copy() const;		// // //
+	CFrameClipData *Copy(const CFrameSelection &Sel) const;		// // //
+	CFrameClipData *CopyFrame(int Frame) const;		// // //
+	void Paste(unsigned int Track, const CFrameClipData *pClipData);
+	void PasteAt(unsigned int Track, const CFrameClipData *pClipData, const CFrameCursorPos &Pos);		// // //
+	void PasteNew(unsigned int Track, const CFrameClipData *pClipData);
 
 	// Return window width in pixels
 	unsigned int CalcWidth(int Channels) const;
@@ -102,6 +106,8 @@ private:
 
 	// Drag & drop
 	void InitiateDrag();
+
+	std::pair<CFrameIterator, CFrameIterator> GetIterators() const;		// // //
 
 	void AutoScroll(const CPoint &point);
 
