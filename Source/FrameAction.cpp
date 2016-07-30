@@ -54,12 +54,7 @@ void CFrameEditorState::ApplyState(CFamiTrackerView *pView) const
 // Undo/redo commands for frame editor
 //
 
-CFrameAction::CFrameAction(int iAction) : 
-	CAction(iAction),
-	m_pUndoState(nullptr),		// // //
-	m_pRedoState(nullptr),		// // //
-	m_pAllPatterns(NULL),
-	m_pClipData(NULL)
+CFrameAction::CFrameAction(int iAction) : CAction(iAction)
 {
 }
 
@@ -68,7 +63,6 @@ CFrameAction::~CFrameAction()
 	SAFE_RELEASE(m_pUndoState);		// // //
 	SAFE_RELEASE(m_pRedoState);		// // //
 
-	SAFE_RELEASE_ARRAY(m_pAllPatterns);
 	SAFE_RELEASE(m_pClipData);
 }
 
@@ -77,36 +71,6 @@ void CFrameAction::SetDragInfo(int DragTarget, CFrameClipData *pClipData, bool R
 	m_iDragTarget = DragTarget;
 	m_pClipData = pClipData;
 	m_bDragRemove = Remove;
-}
-
-void CFrameAction::SaveAllFrames(CFamiTrackerDoc *pDoc)
-{
-	int Frames = pDoc->GetFrameCount(m_pUndoState->Track);
-	int Channels = pDoc->GetChannelCount();
-
-	m_pAllPatterns = new unsigned int[Frames * Channels];
-
-	for (int i = 0; i < Frames; ++i) {
-		for (int j = 0; j < Channels; ++j) {
-			m_pAllPatterns[i * Channels + j] = pDoc->GetPatternAtFrame(m_pUndoState->Track, i, j);
-		}
-	}
-
-	m_iUndoFrameCount = Frames;
-}
-
-void CFrameAction::RestoreAllFrames(CFamiTrackerDoc *pDoc) const
-{
-	pDoc->SetFrameCount(m_pUndoState->Track, m_iUndoFrameCount);
-
-	int Frames = pDoc->GetFrameCount(m_pUndoState->Track);
-	int Channels = pDoc->GetChannelCount();
-	
-	for (int i = 0; i < Frames; ++i) {
-		for (int j = 0; j < Channels; ++j) {
-			pDoc->SetPatternAtFrame(m_pUndoState->Track, i, j, m_pAllPatterns[i * Channels + j]);
-		}
-	}
 }
 
 int CFrameAction::ClipPattern(int Pattern)
@@ -150,7 +114,7 @@ bool CFrameAction::SaveState(const CMainFrame *pMainFrm)
 		case ACT_DRAG_AND_DROP_COPY_NEW:
 		case ACT_DELETE_SELECTION:
 		case ACT_MERGE_DUPLICATED_PATTERNS:
-			SaveAllFrames(pDoc);
+			m_pClipData = pFrameEditor->CopyEntire(m_pUndoState->Track);		// // //
 			break;
 	}
 
@@ -194,7 +158,7 @@ void CFrameAction::Undo(CMainFrame *pMainFrm) const
 		case ACT_DRAG_AND_DROP_MOVE:
 		case ACT_DRAG_AND_DROP_COPY:
 		case ACT_DELETE_SELECTION:
-			RestoreAllFrames(pDoc);
+			pFrameEditor->PasteAt(m_pUndoState->Track, m_pClipData, {0, 0});
 			pView->SelectFrame(m_pUndoState->Selection.m_cpEnd.m_iFrame);
 			pMainFrm->UpdateControls();
 			break;
@@ -204,7 +168,7 @@ void CFrameAction::Undo(CMainFrame *pMainFrm) const
 			pMainFrm->UpdateControls();
 			break;
 		case ACT_MERGE_DUPLICATED_PATTERNS:
-			RestoreAllFrames(pDoc);
+			pFrameEditor->PasteAt(m_pUndoState->Track, m_pClipData, {0, 0});
 			break;
 	}
 }

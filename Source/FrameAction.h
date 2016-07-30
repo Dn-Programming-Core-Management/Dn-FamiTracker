@@ -103,30 +103,21 @@ public:
 	void RestoreRedoState(CMainFrame *pMainFrm) const;		// // //
 
 public:
-	void SetPasteData(CFrameClipData *pClipData);
 	void SetDragInfo(int DragTarget, CFrameClipData *pClipData, bool Remove);
 
 protected:
-	void SaveAllFrames(CFamiTrackerDoc *pDoc);
-	void RestoreAllFrames(CFamiTrackerDoc *pDoc) const;
-
 	static int ClipPattern(int Pattern);
 
 	void ClearPatterns(CFamiTrackerDoc *pDoc, const CFrameClipData *pClipData, int Target) const;		// // //
 
 protected:
-	CFrameEditorState *m_pUndoState, *m_pRedoState;		// // //
+	CFrameEditorState *m_pUndoState = nullptr, *m_pRedoState = nullptr;		// // //
 
 private:
-	unsigned int m_iUndoFrameCount;
-	unsigned int m_iOldPattern;
-	
 	bool m_bDragRemove;
 	unsigned int m_iDragTarget;
 
-	unsigned int *m_pAllPatterns;
-
-	CFrameClipData *m_pClipData;
+	CFrameClipData *m_pClipData = nullptr;
 };
 
 // // // built-in frame action subtypes

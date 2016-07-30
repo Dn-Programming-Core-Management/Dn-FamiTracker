@@ -87,6 +87,8 @@ public:
 	CFrameClipData *Copy() const;		// // //
 	CFrameClipData *Copy(const CFrameSelection &Sel) const;		// // //
 	CFrameClipData *CopyFrame(int Frame) const;		// // //
+	CFrameClipData *CopyEntire(int Track) const;		// // //
+
 	void Paste(unsigned int Track, const CFrameClipData *pClipData);
 	void PasteAt(unsigned int Track, const CFrameClipData *pClipData, const CFrameCursorPos &Pos);		// // //
 	void PasteNew(unsigned int Track, const CFrameClipData *pClipData);

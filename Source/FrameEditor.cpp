@@ -1115,6 +1115,14 @@ CFrameClipData *CFrameEditor::CopyFrame(int Frame) const		// // //
 	return Copy(Sel);
 }
 
+CFrameClipData *CFrameEditor::CopyEntire(int Track) const		// // //
+{
+	CFrameSelection Sel;
+	Sel.m_cpEnd.m_iFrame = m_pDocument->GetFrameCount(Track) - 1;
+	Sel.m_cpEnd.m_iChannel = m_pDocument->GetChannelCount() - 1;
+	return Copy(Sel);
+}
+
 void CFrameEditor::Paste(unsigned int Track, const CFrameClipData *pClipData)
 {
 	const int Frames = pClipData->ClipInfo.Rows;
