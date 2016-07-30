@@ -211,7 +211,7 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor, CSelecti
 
 void CPatternAction::DeleteSelection(CMainFrame *pMainFrm, const CSelection &Sel) const		// // //
 {
-	auto it = Sel.GetIterators(
+	auto it = CPatternIterator::FromSelection(Sel,
 		static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor(),
 		pMainFrm->GetSelectedTrack());
 	const column_t ColStart = CPatternEditor::GetSelectColumn(it.first.m_iColumn);
@@ -257,8 +257,8 @@ std::pair<CPatternIterator, CPatternIterator> CPatternAction::GetIterators(const
 {
 	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
 	return m_pUndoState->IsSelecting ?
-		m_pUndoState->Selection.GetIterators(pPatternEditor, m_pUndoState->Track) :
-		m_pUndoState->Cursor.GetIterators(pPatternEditor, m_pUndoState->Track);
+		CPatternIterator::FromSelection(m_pUndoState->Selection, pPatternEditor, m_pUndoState->Track) :
+		CPatternIterator::FromCursor(m_pUndoState->Cursor, pPatternEditor, m_pUndoState->Track);
 }
 
 // Undo / Redo base methods
@@ -296,10 +296,11 @@ void CPatternAction::SaveUndoState(const CMainFrame *pMainFrm)		// // //
 {
 	// Save undo cursor position
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
-	SAFE_RELEASE(m_pUndoState);
-	m_pUndoState = new CPatternEditorState {pView->GetPatternEditor(), pMainFrm->GetSelectedTrack()};
-	
 	const CPatternEditor *pPatternEditor = pView->GetPatternEditor(); // TODO: remove
+
+	SAFE_RELEASE(m_pUndoState);
+	m_pUndoState = new CPatternEditorState {pPatternEditor, pMainFrm->GetSelectedTrack()};
+	
 	m_bSelecting = pPatternEditor->IsSelecting();
 	m_selection = pPatternEditor->GetSelection();
 }
@@ -556,7 +557,7 @@ void CPActionScrollField::Undo(CMainFrame *pMainFrm) const
 void CPActionScrollField::Redo(CMainFrame *pMainFrm) const
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	stChanNote Note {m_OldNote};
+	stChanNote Note = m_OldNote;
 
 	const auto ScrollFunc = [&] (unsigned char &Old, int Limit) {
 		int New = static_cast<int>(Old) + m_iAmount;

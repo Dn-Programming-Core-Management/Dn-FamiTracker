@@ -2191,8 +2191,8 @@ std::pair<CPatternIterator, CPatternIterator> CPatternEditor::GetIterators() con
 {
 	CCursorPos c_it {m_cpCursorPos}, c_end {m_cpCursorPos};
 	return IsSelecting() ?
-		m_selection.GetIterators(this, GetSelectedTrack()) :
-		m_cpCursorPos.GetIterators(this, GetSelectedTrack());
+		CPatternIterator::FromSelection(m_selection, this, GetSelectedTrack()) :
+		CPatternIterator::FromCursor(m_cpCursorPos, this, GetSelectedTrack());
 }
 
 column_t CPatternEditor::GetSelectColumn(cursor_column_t Column)
@@ -3545,7 +3545,7 @@ sel_condition_t CPatternEditor::GetSelectionCondition(const CSelection &Sel) con
 	unsigned char Lo[MAX_PATTERN], Hi[MAX_PATTERN];
 
 	if (!theApp.GetSettings()->General.bShowSkippedRows) {
-		auto it = Sel.GetIterators(this, GetSelectedTrack());
+		auto it = CPatternIterator::FromSelection(Sel, this, GetSelectedTrack());
 		stChanNote Note;
 		for (; it.first <= it.second; ++it.first) {
 			// bool HasSkip = false;
