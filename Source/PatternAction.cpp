@@ -126,7 +126,7 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor, CSelecti
 		break;
 	}
 
-	CPatternIterator End(pPatternEditor, m_pUndoState->Track, Start);
+	CPatternIterator End(CFamiTrackerDoc::GetDoc(), m_pUndoState->Track, Start);
 	
 	if (m_iPasteMode == PASTE_INSERT) {
 		End.m_iFrame = Start.m_iFrame;
@@ -140,8 +140,8 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor, CSelecti
 		End.m_iFrame = m_selection.GetFrameEnd();
 		End.m_iRow = m_selection.GetRowEnd();
 		End.m_iChannel = m_selection.GetChanEnd();
-		Start.m_iColumn = CPatternEditor::GetCursorStartColumn(m_pClipData->ClipInfo.StartColumn);
-		End.m_iColumn = CPatternEditor::GetCursorEndColumn(
+		Start.m_iColumn = GetCursorStartColumn(m_pClipData->ClipInfo.StartColumn);
+		End.m_iColumn = GetCursorEndColumn(
 			!((End.m_iChannel - Start.m_iChannel + 1) % m_pClipData->ClipInfo.Channels) ?
 			m_pClipData->ClipInfo.EndColumn :
 			static_cast<column_t>(COLUMN_EFF1 + CFamiTrackerDoc::GetDoc()->GetEffColumns(m_pUndoState->Track, End.m_iChannel)));
@@ -153,8 +153,8 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor, CSelecti
 		break;
 	default:
 		End.m_iChannel += m_pClipData->ClipInfo.Channels - 1;
-		Start.m_iColumn = CPatternEditor::GetCursorStartColumn(m_pClipData->ClipInfo.StartColumn);
-		End.m_iColumn = CPatternEditor::GetCursorEndColumn(m_pClipData->ClipInfo.EndColumn);
+		Start.m_iColumn = GetCursorStartColumn(m_pClipData->ClipInfo.StartColumn);
+		End.m_iColumn = GetCursorEndColumn(m_pClipData->ClipInfo.EndColumn);
 	}
 
 	const bool bOverflow = theApp.GetSettings()->General.bOverflowPaste;
@@ -163,8 +163,8 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor, CSelecti
 		End.m_iRow = pPatternEditor->GetCurrentPatternLength(End.m_iFrame) - 1;
 	}
 
-	const unsigned EFBEGIN = CPatternEditor::GetCursorStartColumn(COLUMN_EFF1);
-	int OFFS = 3 * (CPatternEditor::GetSelectColumn(m_pUndoState->Cursor.m_iColumn) - m_pClipData->ClipInfo.StartColumn);
+	const unsigned EFBEGIN = GetCursorStartColumn(COLUMN_EFF1);
+	int OFFS = 3 * (GetSelectColumn(m_pUndoState->Cursor.m_iColumn) - m_pClipData->ClipInfo.StartColumn);
 	if (static_cast<int>(EFBEGIN - Start.m_iColumn) > OFFS)
 		OFFS = EFBEGIN - Start.m_iColumn;
 	if (Start.m_iChannel == End.m_iChannel && Start.m_iColumn >= EFBEGIN && End.m_iColumn >= EFBEGIN) {
@@ -212,10 +212,10 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor, CSelecti
 void CPatternAction::DeleteSelection(CMainFrame *pMainFrm, const CSelection &Sel) const		// // //
 {
 	auto it = CPatternIterator::FromSelection(Sel,
-		static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor(),
+		static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument(),
 		pMainFrm->GetSelectedTrack());
-	const column_t ColStart = CPatternEditor::GetSelectColumn(it.first.m_iColumn);
-	const column_t ColEnd = CPatternEditor::GetSelectColumn(it.second.m_iColumn);
+	const column_t ColStart = GetSelectColumn(it.first.m_iColumn);
+	const column_t ColEnd = GetSelectColumn(it.second.m_iColumn);
 
 	stChanNote NoteData, Blank;
 
@@ -255,10 +255,10 @@ void CPatternAction::UpdateView(CFamiTrackerDoc *pDoc) const		// // //
 
 std::pair<CPatternIterator, CPatternIterator> CPatternAction::GetIterators(const CMainFrame *pMainFrm) const
 {
-	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
+	auto pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
 	return m_pUndoState->IsSelecting ?
-		CPatternIterator::FromSelection(m_pUndoState->Selection, pPatternEditor, m_pUndoState->Track) :
-		CPatternIterator::FromCursor(m_pUndoState->Cursor, pPatternEditor, m_pUndoState->Track);
+		CPatternIterator::FromSelection(m_pUndoState->Selection, pDoc, m_pUndoState->Track) :
+		CPatternIterator::FromCursor(m_pUndoState->Cursor, pDoc, m_pUndoState->Track);
 }
 
 // Undo / Redo base methods
@@ -740,9 +740,9 @@ void CPActionTranspose::Redo(CMainFrame *pMainFrm) const
 	
 	int ChanStart     = (m_pUndoState->IsSelecting ? m_pUndoState->Selection.m_cpStart : m_pUndoState->Cursor).m_iChannel;
 	int ChanEnd       = (m_pUndoState->IsSelecting ? m_pUndoState->Selection.m_cpEnd : m_pUndoState->Cursor).m_iChannel;
-	column_t ColStart = CPatternEditor::GetSelectColumn(
+	column_t ColStart = GetSelectColumn(
 		(m_pUndoState->IsSelecting ? m_pUndoState->Selection.m_cpStart : m_pUndoState->Cursor).m_iColumn);
-	column_t ColEnd   = CPatternEditor::GetSelectColumn(
+	column_t ColEnd   = GetSelectColumn(
 		(m_pUndoState->IsSelecting ? m_pUndoState->Selection.m_cpEnd : m_pUndoState->Cursor).m_iColumn);
 	
 	const bool bSingular = it.first == it.second && !m_pUndoState->IsSelecting;
@@ -802,9 +802,9 @@ void CPActionScrollValues::Redo(CMainFrame *pMainFrm) const
 
 	int ChanStart     = (m_pUndoState->IsSelecting ? m_pUndoState->Selection.m_cpStart : m_pUndoState->Cursor).m_iChannel;
 	int ChanEnd       = (m_pUndoState->IsSelecting ? m_pUndoState->Selection.m_cpEnd : m_pUndoState->Cursor).m_iChannel;
-	column_t ColStart = CPatternEditor::GetSelectColumn(
+	column_t ColStart = GetSelectColumn(
 		(m_pUndoState->IsSelecting ? m_pUndoState->Selection.m_cpStart : m_pUndoState->Cursor).m_iColumn);
-	column_t ColEnd   = CPatternEditor::GetSelectColumn(
+	column_t ColEnd   = GetSelectColumn(
 		(m_pUndoState->IsSelecting ? m_pUndoState->Selection.m_cpEnd : m_pUndoState->Cursor).m_iColumn);
 
 	const bool bSingular = it.first == it.second && !m_pUndoState->IsSelecting;
@@ -995,8 +995,8 @@ void CPActionReverse::Redo(CMainFrame *pMainFrm) const
 	auto it = GetIterators(pMainFrm);
 	const CSelection &Sel = m_pUndoState->Selection;
 
-	const column_t ColStart = CPatternEditor::GetSelectColumn(Sel.m_cpStart.m_iColumn);
-	const column_t ColEnd = CPatternEditor::GetSelectColumn(Sel.m_cpEnd.m_iColumn);
+	const column_t ColStart = GetSelectColumn(Sel.m_cpStart.m_iColumn);
+	const column_t ColEnd = GetSelectColumn(Sel.m_cpEnd.m_iColumn);
 	stChanNote NoteBegin, NoteEnd, Temp;
 
 	while (it.first < it.second) {
@@ -1155,8 +1155,8 @@ void CPActionStretch::Redo(CMainFrame *pMainFrm) const
 	const CSelection &Sel = m_pUndoState->Selection;
 	CPatternIterator s {it.first};
 
-	const column_t ColStart = CPatternEditor::GetSelectColumn(Sel.m_cpStart.m_iColumn);
-	const column_t ColEnd = CPatternEditor::GetSelectColumn(Sel.m_cpEnd.m_iColumn);
+	const column_t ColStart = GetSelectColumn(Sel.m_cpStart.m_iColumn);
+	const column_t ColEnd = GetSelectColumn(Sel.m_cpEnd.m_iColumn);
 	stChanNote Target, Source;
 
 	int Pos = 0;

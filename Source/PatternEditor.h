@@ -198,12 +198,6 @@ public:
 	void DrawLog(CDC *pDC);
 #endif
 
-	// Public class methods
-public:
-	static column_t GetSelectColumn(cursor_column_t Column);		// // //
-	static cursor_column_t GetCursorStartColumn(column_t Column);		// // //
-	static cursor_column_t GetCursorEndColumn(column_t Column);		// // //
-
 	// Private methods
 private:
 

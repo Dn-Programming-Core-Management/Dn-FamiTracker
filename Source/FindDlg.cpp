@@ -86,8 +86,8 @@ searchTerm& searchTerm::operator=(searchTerm &&other)
 
 
 
-CFindCursor::CFindCursor(CPatternEditor *pEditor, int Track, const CCursorPos &Pos, const CSelection &Scope) :
-	CPatternIterator(pEditor, Track, Pos),
+CFindCursor::CFindCursor(CFamiTrackerDoc *pDoc, int Track, const CCursorPos &Pos, const CSelection &Scope) :
+	CPatternIterator(pDoc, Track, Pos),
 	m_Scope(Scope.GetNormalized()),
 	m_cpBeginPos {Pos}
 {
@@ -126,7 +126,7 @@ void CFindCursor::Move(direction_t Dir)
 		m_iChannel = m_Scope.m_cpEnd.m_iChannel;
 		if (--m_iRow < 0) {
 			--m_iFrame;
-			m_iRow = m_pPatternEditor->GetCurrentPatternLength(m_iFrame) - 1;
+			m_iRow = m_pDocument->GetCurrentPatternLength(m_iTrack, m_iFrame) - 1;
 		}
 		if (m_iFrame < m_Scope.m_cpStart.m_iFrame ||
 			m_iFrame == m_Scope.m_cpStart.m_iFrame && m_iRow < m_Scope.m_cpStart.m_iRow) {
@@ -136,7 +136,7 @@ void CFindCursor::Move(direction_t Dir)
 		break;
 	case direction_t::RIGHT:
 		m_iChannel = m_Scope.m_cpStart.m_iChannel;
-		if (++m_iRow >= m_pPatternEditor->GetCurrentPatternLength(m_iFrame)) {
+		if (++m_iRow >= static_cast<int>(m_pDocument->GetCurrentPatternLength(m_iTrack, m_iFrame))) {
 			++m_iFrame;
 			m_iRow = 0;
 		}
@@ -1292,8 +1292,7 @@ void CFindDlg::PrepareCursor(bool ReplaceAll)
 		Scope.m_cpStart.m_iRow = 0;
 		Scope.m_cpEnd.m_iRow = pEditor->GetCurrentPatternLength(Scope.m_cpEnd.m_iFrame) - 1;
 	}
-	m_pFindCursor = new CFindCursor {m_pView->GetPatternEditor(), Track,
-		ReplaceAll ? Scope.m_cpStart : Cursor, Scope};
+	m_pFindCursor = new CFindCursor {m_pDocument, Track, ReplaceAll ? Scope.m_cpStart : Cursor, Scope};
 }
 
 void CFindDlg::OnBnClickedButtonFindNext()

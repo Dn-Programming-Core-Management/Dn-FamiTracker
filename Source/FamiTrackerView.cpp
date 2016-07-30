@@ -3787,7 +3787,7 @@ void CFamiTrackerView::OnPickupRow()
 	default:      m_iLastNote = (Note.Note - 1) + Note.Octave * 12;
 	}
 
-	column_t Col = m_pPatternEditor->GetSelectColumn(m_pPatternEditor->GetColumn());
+	column_t Col = GetSelectColumn(m_pPatternEditor->GetColumn());		// // //
 	if (Col >= COLUMN_EFF1) {
 		m_iLastEffect = Note.EffNumber[Col - COLUMN_EFF1];
 		m_iLastEffectParam = Note.EffParam[Col - COLUMN_EFF1];

@@ -77,11 +77,11 @@ public:
 	enum class direction_t { UP, DOWN, LEFT, RIGHT };
 
 	/*!	\brief Constructor of the find / replace cursor.
-		\param pEditor Pointer to the pattern editor.
+		\param pEditor Pointer to the document.
 		\param Track The current song number.
 		\param Pos The cursor position at which searching begins.
 		\param Scope The area that the cursor operates on. */
-	CFindCursor(CPatternEditor *pEditor, int Track, const CCursorPos &Pos, const CSelection &Scope);
+	CFindCursor(CFamiTrackerDoc *pDoc, int Track, const CCursorPos &Pos, const CSelection &Scope);
 
 	CFindCursor(const CFindCursor &other) = default;
 	CFindCursor &operator=(const CFindCursor &other) = default;

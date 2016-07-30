@@ -2191,48 +2191,8 @@ std::pair<CPatternIterator, CPatternIterator> CPatternEditor::GetIterators() con
 {
 	CCursorPos c_it {m_cpCursorPos}, c_end {m_cpCursorPos};
 	return IsSelecting() ?
-		CPatternIterator::FromSelection(m_selection, this, GetSelectedTrack()) :
-		CPatternIterator::FromCursor(m_cpCursorPos, this, GetSelectedTrack());
-}
-
-column_t CPatternEditor::GetSelectColumn(cursor_column_t Column)
-{
-	// Return first column for a specific column field
-	static const column_t COLUMNS[] = {
-		COLUMN_NOTE, 
-		COLUMN_INSTRUMENT, COLUMN_INSTRUMENT,
-		COLUMN_VOLUME,
-		COLUMN_EFF1, COLUMN_EFF1, COLUMN_EFF1,
-		COLUMN_EFF2, COLUMN_EFF2, COLUMN_EFF2,
-		COLUMN_EFF3, COLUMN_EFF3, COLUMN_EFF3,
-		COLUMN_EFF4, COLUMN_EFF4, COLUMN_EFF4
-	};
-
-	ASSERT(Column >= 0 && Column < sizeof(COLUMNS));
-
-	return COLUMNS[Column];
-}
-
-cursor_column_t CPatternEditor::GetCursorStartColumn(column_t Column)
-{
-	static const cursor_column_t COL_START[] = {
-		C_NOTE, C_INSTRUMENT1, C_VOLUME, C_EFF1_NUM, C_EFF2_NUM, C_EFF3_NUM, C_EFF4_NUM
-	};
-
-	ASSERT(Column >= 0 && Column < sizeof(COL_START) / sizeof(int));		// // //
-
-	return COL_START[Column];
-}
-
-cursor_column_t CPatternEditor::GetCursorEndColumn(column_t Column)
-{
-	static const cursor_column_t COL_END[] = {
-		C_NOTE, C_INSTRUMENT2, C_VOLUME, C_EFF1_PARAM2, C_EFF2_PARAM2, C_EFF3_PARAM2, C_EFF4_PARAM2
-	};
-
-	ASSERT(Column >= 0 && Column < sizeof(COL_END) / sizeof(int));		// // //
-
-	return COL_END[Column];
+		CPatternIterator::FromSelection(m_selection, m_pDocument, GetSelectedTrack()) :
+		CPatternIterator::FromCursor(m_cpCursorPos, m_pDocument, GetSelectedTrack());
 }
 
 cursor_column_t CPatternEditor::GetChannelColumns(int Channel) const
@@ -3303,8 +3263,8 @@ CPatternClipData *CPatternEditor::CopyRaw(const CSelection &Sel) const		// // //
 	const int Track = GetSelectedTrack();
 	CCursorPos c_it, c_end;
 	Sel.Normalize(c_it, c_end);
-	CPatternIterator it {this, Track, c_it};
-	CPatternIterator end {this, Track, c_end};
+	CPatternIterator it {m_pDocument, Track, c_it};
+	CPatternIterator end {m_pDocument, Track, c_end};
 
 	const int Frames	= m_pDocument->GetFrameCount(Track);
 	const int Length	= m_pDocument->GetPatternLength(Track);
@@ -3361,14 +3321,14 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 	const unsigned int c = AtSel ? m_selection.GetChanStart() : (PastePos == PASTE_DRAG ? m_selDrag.GetChanStart() : m_cpCursorPos.m_iChannel);
 	const unsigned int CEnd = std::min(Channels + c, ChannelCount);
 
-	CPatternIterator it = CPatternIterator(this, Track, CCursorPos(r, c, GetCursorStartColumn(StartColumn), f));		// // //
+	CPatternIterator it = CPatternIterator(m_pDocument, Track, CCursorPos(r, c, GetCursorStartColumn(StartColumn), f));		// // //
 	stChanNote NoteData, Source;
 
 	const unsigned int FrameLength = m_pDocument->GetPatternLength(Track);
 
 	if (PasteMode == PASTE_INSERT) {		// // //
-		CPatternIterator front = CPatternIterator(this, Track, CCursorPos(FrameLength - 1, c, GetCursorStartColumn(StartColumn), f));
-		CPatternIterator back = CPatternIterator(this, Track, CCursorPos(FrameLength - 1 - Rows, c, GetCursorEndColumn(EndColumn), f));
+		CPatternIterator front = CPatternIterator(m_pDocument, Track, CCursorPos(FrameLength - 1, c, GetCursorStartColumn(StartColumn), f));
+		CPatternIterator back = CPatternIterator(m_pDocument, Track, CCursorPos(FrameLength - 1 - Rows, c, GetCursorEndColumn(EndColumn), f));
 		front.m_iFrame = back.m_iFrame = f; // do not warp
 		front.m_iRow = FrameLength - 1;
 		back.m_iRow = FrameLength - 1 - Rows;
@@ -3445,7 +3405,7 @@ void CPatternEditor::PasteRaw(const CPatternClipData *pClipData)		// // //
 void CPatternEditor::PasteRaw(const CPatternClipData *pClipData, const CCursorPos &Pos)		// // //
 {
 	const int Track = GetSelectedTrack();
-	CPatternIterator it {this, Track, Pos};
+	CPatternIterator it {m_pDocument, Track, Pos};
 	const int Frames = m_pDocument->GetFrameCount(Track);
 	const int Length = m_pDocument->GetPatternLength(Track);
 
@@ -3545,7 +3505,7 @@ sel_condition_t CPatternEditor::GetSelectionCondition(const CSelection &Sel) con
 	unsigned char Lo[MAX_PATTERN], Hi[MAX_PATTERN];
 
 	if (!theApp.GetSettings()->General.bShowSkippedRows) {
-		auto it = CPatternIterator::FromSelection(Sel, this, GetSelectedTrack());
+		auto it = CPatternIterator::FromSelection(Sel, m_pDocument, GetSelectedTrack());
 		stChanNote Note;
 		for (; it.first <= it.second; ++it.first) {
 			// bool HasSkip = false;
@@ -3586,17 +3546,7 @@ sel_condition_t CPatternEditor::GetSelectionCondition(const CSelection &Sel) con
 
 int CPatternEditor::GetCurrentPatternLength(int Frame) const		// // //
 {
-	const int Track = GetSelectedTrack();
-	const int Channels = GetChannelCount();
-	const int PatternLength = m_pDocument->GetPatternLength(Track);	// default length
-
-	if (theApp.GetSettings()->General.bShowSkippedRows)		// // //
-		return PatternLength;
-	else {		// // //
-		Frame %= GetFrameCount();
-		if (Frame < 0) Frame += GetFrameCount();
-		return m_pDocument->GetFrameLength(Track, Frame);		// // // moved
-	}
+	return m_pDocument->GetCurrentPatternLength(GetSelectedTrack(), Frame);
 }
 
 void CPatternEditor::SetHighlight(const stHighlight Hl)		// // //
@@ -4186,7 +4136,7 @@ void CPatternEditor::UpdateDrag(const CPoint &point)
 		ColumnEnd = static_cast<cursor_column_t>(ColumnStart + (m_iDragEndCol - m_iDragStartCol));
 	}
 
-	CPatternIterator cpBegin(this, GetSelectedTrack(), CCursorPos(PointPos.m_iRow - m_iDragOffsetRow,		// // //
+	CPatternIterator cpBegin(m_pDocument, GetSelectedTrack(), CCursorPos(PointPos.m_iRow - m_iDragOffsetRow,		// // //
 		PointPos.m_iChannel - m_iDragOffsetChannel, ColumnStart, PointPos.m_iFrame));
 	CPatternIterator cpEnd = cpBegin;
 	cpEnd += GetSelectionSize() - 1;

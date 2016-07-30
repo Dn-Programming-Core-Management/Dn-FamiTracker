@@ -21,8 +21,8 @@
 */
 
 #include "stdafx.h"
+#include "PatternEditorTypes.h"
 #include "FamiTrackerDoc.h"
-#include "PatternEditor.h"
 
 // CCursorPos /////////////////////////////////////////////////////////////////////
 
@@ -139,12 +139,12 @@ cursor_column_t CSelection::GetColEnd() const
 
 int CSelection::GetChanStart() const 
 {
-	return (m_cpEnd.m_iChannel > m_cpStart.m_iChannel) ? m_cpStart.m_iChannel : m_cpEnd.m_iChannel; 
+	return (m_cpEnd.m_iChannel > m_cpStart.m_iChannel) ? m_cpStart.m_iChannel : m_cpEnd.m_iChannel;
 }
 
 int CSelection::GetChanEnd() const 
 {
-	return (m_cpEnd.m_iChannel > m_cpStart.m_iChannel) ? m_cpEnd.m_iChannel : m_cpStart.m_iChannel; 
+	return (m_cpEnd.m_iChannel > m_cpStart.m_iChannel) ? m_cpEnd.m_iChannel : m_cpStart.m_iChannel;
 }
 
 int CSelection::GetFrameStart() const		// // //
@@ -167,8 +167,8 @@ bool CSelection::IsSameStartPoint(const CSelection &selection) const
 
 bool CSelection::IsColumnSelected(column_t Column, int Channel) const
 {
-	column_t SelStart = CPatternEditor::GetSelectColumn(GetColStart());		// // //
-	column_t SelEnd = CPatternEditor::GetSelectColumn(GetColEnd());
+	column_t SelStart = GetSelectColumn(GetColStart());		// // //
+	column_t SelEnd = GetSelectColumn(GetColEnd());
 
 	return (Channel > GetChanStart() || (Channel == GetChanStart() && Column >= SelStart))		// // //
 		&& (Channel < GetChanEnd() || (Channel == GetChanEnd() && Column <= SelEnd));
@@ -189,6 +189,22 @@ CSelection CSelection::GetNormalized() const
 }
 
 // CPatternClipData ////////////////////////////////////////////////////////////
+
+CPatternClipData::CPatternClipData()
+{
+	memset(&ClipInfo, 0, sizeof(ClipInfo));
+}
+
+CPatternClipData::CPatternClipData(int Channels, int Rows) :
+	pPattern(new stChanNote[Size]), Size(Channels * Rows)
+{
+	memset(&ClipInfo, 0, sizeof(ClipInfo));
+}
+
+CPatternClipData::~CPatternClipData()
+{
+	SAFE_RELEASE_ARRAY(pPattern);
+}
 
 SIZE_T CPatternClipData::GetAllocSize() const
 {
@@ -249,46 +265,31 @@ const stChanNote *CPatternClipData::GetPattern(int Channel, int Row) const
 // // // CPatternIterator //////////////////////////////////////////////////////
 
 CPatternIterator::CPatternIterator(const CPatternIterator &it) :
-	m_iTrack(it.m_iTrack),
-	m_pDocument(it.m_pDocument),
-	m_pPatternEditor(it.m_pPatternEditor),
-	CCursorPos(static_cast<const CCursorPos &>(it))
+	m_iTrack(it.m_iTrack), m_pDocument(it.m_pDocument), CCursorPos(static_cast<const CCursorPos &>(it))
 {
 }
 
-CPatternIterator::CPatternIterator(CPatternEditor *pEditor, int Track, const CCursorPos &Pos) :
-	m_iTrack(Track),
-	m_pDocument(CFamiTrackerDoc::GetDoc()),
-	m_pPatternEditor(pEditor),
-	CCursorPos(Pos)
+CPatternIterator::CPatternIterator(CFamiTrackerDoc *pDoc, int Track, const CCursorPos &Pos) :
+	m_iTrack(Track), m_pDocument(pDoc), CCursorPos(Pos)
 {
 	Warp();
 }
 
-CPatternIterator::CPatternIterator(const CPatternEditor *pEditor, int Track, const CCursorPos &Pos) :
-	m_iTrack(Track),
-	m_pDocument(CFamiTrackerDoc::GetDoc()),
-	m_pPatternEditor(pEditor),
-	CCursorPos(Pos)
-{
-	Warp();
-}
-
-std::pair<CPatternIterator, CPatternIterator> CPatternIterator::FromCursor(const CCursorPos &Pos, const CPatternEditor *pEditor, int Track)
+std::pair<CPatternIterator, CPatternIterator> CPatternIterator::FromCursor(const CCursorPos &Pos, CFamiTrackerDoc *const pDoc, int Track)
 {
 	return std::make_pair(
-		CPatternIterator {pEditor, Track, Pos},
-		CPatternIterator {pEditor, Track, Pos}
+		CPatternIterator {pDoc, Track, Pos},
+		CPatternIterator {pDoc, Track, Pos}
 	);
 }
 
-std::pair<CPatternIterator, CPatternIterator> CPatternIterator::FromSelection(const CSelection &Sel, const CPatternEditor *pEditor, int Track)
+std::pair<CPatternIterator, CPatternIterator> CPatternIterator::FromSelection(const CSelection &Sel, CFamiTrackerDoc *const pDoc, int Track)
 {
 	CCursorPos it, end;
 	Sel.Normalize(it, end);
 	return std::make_pair(
-		CPatternIterator {pEditor, Track, it},
-		CPatternIterator {pEditor, Track, end}
+		CPatternIterator {pDoc, Track, it},
+		CPatternIterator {pDoc, Track, end}
 	);
 }
 
@@ -380,7 +381,7 @@ bool CPatternIterator::operator==(const CPatternIterator &other) const
 void CPatternIterator::Warp()
 {
 	while (true) {
-		const int Length = m_pPatternEditor->GetCurrentPatternLength(m_iFrame);
+		const int Length = m_pDocument->GetCurrentPatternLength(m_iTrack, m_iFrame);
 		if (m_iRow >= Length) {
 			m_iRow -= Length;
 			m_iFrame++;
@@ -388,7 +389,7 @@ void CPatternIterator::Warp()
 		else break;
 	}
 	while (m_iRow < 0)
-		m_iRow += m_pPatternEditor->GetCurrentPatternLength(--m_iFrame);
+		m_iRow += m_pDocument->GetCurrentPatternLength(m_iTrack, --m_iFrame);
 	//m_iFrame %= m_pDocument->GetFrameCount(m_iTrack);
 	//if (m_iFrame < 0) m_iFrame += m_pDocument->GetFrameCount(m_iTrack);
 }

@@ -3184,6 +3184,17 @@ unsigned int CFamiTrackerDoc::GetPatternLength(unsigned int Track) const
 	return GetTrack(Track)->GetPatternLength(); 
 }
 
+unsigned int CFamiTrackerDoc::GetCurrentPatternLength(unsigned int Track, int Frame) const		// // //
+{ 
+	if (theApp.GetSettings()->General.bShowSkippedRows)		// // //
+		return GetPatternLength(Track);
+
+	int Frames = GetFrameCount(Track);
+	Frame %= Frames;
+	if (Frame < 0) Frame += Frames;
+	return GetFrameLength(Track, Frame);
+}
+
 unsigned int CFamiTrackerDoc::GetFrameCount(unsigned int Track) const 
 { 
 	ASSERT(Track < MAX_TRACKS);
