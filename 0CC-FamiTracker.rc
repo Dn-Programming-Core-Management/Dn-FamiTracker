@@ -217,7 +217,7 @@ BEGIN
         MENUITEM "Move Frame &Up",              ID_MODULE_MOVEFRAMEUP
         MENUITEM "Move Frame Do&wn",            ID_MODULE_MOVEFRAMEDOWN
         MENUITEM SEPARATOR
-        MENUITEM "&Clone Pattern",              ID_MODULE_DUPLICATECURRENTPATTERN
+        MENUITEM "&Clone Patterns",             ID_MODULE_DUPLICATECURRENTPATTERN
         MENUITEM "Clone &Frame",                ID_MODULE_DUPLICATEFRAMEPATTERNS
         MENUITEM SEPARATOR
         MENUITEM "C&lear Patterns",             ID_EDIT_CLEARPATTERNS
@@ -1077,7 +1077,7 @@ BEGIN
     EDITTEXT        IDC_INSTNAME,351,108,48,12,ES_AUTOHSCROLL
     PUSHBUTTON      "Speed",IDC_BUTTON_GROOVE,12,14,30,13
     PUSHBUTTON      "Tempo",IDC_BUTTON_FIXTEMPO,12,28,30,13
-    CONTROL         "",IDC_MAINFRAME_VISUALIZER,"Static",SS_BLACKFRAME | NOT WS_VISIBLE,91,71,124,21
+    CONTROL         "",IDC_MAINFRAME_VISUALIZER,"Static",SS_BLACKFRAME | NOT WS_VISIBLE,91,69,124,25
     CONTROL         "",IDC_MAINFRAME_INST_TOOLBAR,"Static",SS_BLACKFRAME | NOT WS_VISIBLE,221,106,124,16
 END
 
@@ -2662,7 +2662,7 @@ BEGIN
     ID_MODULE_GROOVE        "Open the groove settings dialog\nGroove Settings"
     ID_FILE_EXPORTROWS      "Dumps pattern data to comma-separated values\nExport Rows"
     ID_MODULE_DUPLICATECURRENTPATTERN 
-                            "Duplicate the current pattern to the first unused pattern\nClone Pattern"
+                            "Duplicate the current pattern or all patterns selected in the frame editor\nClone Pattern"
     ID_CLEANUP_REMOVEUNUSEDDPCMSAMPLES 
                             "Remove all unised DPCM samples\nRemove Unused DPCM Samples"
     ID_EDIT_PASTEINSERT     "Pasted notes will be inserted above the destination\nPaste Insert"

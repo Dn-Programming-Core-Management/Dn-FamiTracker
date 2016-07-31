@@ -40,14 +40,6 @@
 #include "BookmarkManager.h"		// // //
 #include "DPI.h"		// // //
 
-struct pairhash {		// // // from http://stackoverflow.com/a/20602159/5756577
-	template <typename T, typename U>
-	std::size_t operator()(const std::pair<T, U> &x) const
-	{
-		return (std::hash<T>()(x.first) * 3) ^ std::hash<U>()(x.second);
-	}
-};
-
 /*
  * CFrameEditor
  * This is the frame(order) editor to the left in the control panel
@@ -1160,38 +1152,52 @@ void CFrameEditor::PasteAt(unsigned int Track, const CFrameClipData *pClipData, 
 
 void CFrameEditor::PasteNew(unsigned int Track, int Frame, const CFrameClipData *pClipData)		// // //
 {
-	const int Frames = pClipData->ClipInfo.Frames;
-	const int Channels = pClipData->ClipInfo.Channels;
+	int Count = m_pDocument->GetChannelCount();
+	m_pDocument->AddFrames(Track, Frame, pClipData->ClipInfo.Frames);
 
-	CFrameSelection Sel;		// // //
+	CFrameSelection Sel;
 	Sel.m_cpStart.m_iFrame = Frame;
-	Sel.m_cpEnd.m_iFrame = Frame + Frames - 1;
-	Sel.m_cpStart.m_iChannel = pClipData->ClipInfo.FirstChannel;		// // //
-	Sel.m_cpEnd.m_iChannel = Sel.m_cpStart.m_iChannel + Channels - 1;
+	Sel.m_cpEnd.m_iFrame = Frame + pClipData->ClipInfo.Frames - 1;
+	Sel.m_cpStart.m_iChannel = pClipData->ClipInfo.FirstChannel;
+	Sel.m_cpEnd.m_iChannel = Sel.m_cpStart.m_iChannel + pClipData->ClipInfo.Channels - 1;
 
+	PasteAt(Track, pClipData, Sel.m_cpStart);
+	ClonePatterns(Track, Sel);
+	SetSelection(Sel);
+}
+
+void CFrameEditor::ClonePatterns(unsigned int Track, const CFrameSelection &_Sel)		// // //
+{
+	CFrameSelection Sel = _Sel.GetNormalized();
+	auto it = CFrameIterator::FromSelection(Sel, m_pDocument, Track);
 	std::unordered_map<std::pair<int, int>, int, pairhash> NewPatterns;
 
-	for (int f = 0; f < Frames; ++f)
-		m_pDocument->InsertFrame(Track, Frame);
-	CFrameIterator it {m_pDocument, static_cast<int>(Track), Sel.m_cpStart};
-	for (int f = 0; f < Frames; ++f) {
-		for (int c = 0; c < it.m_iChannel; ++c)
-			it.Set(c, 0);
-		for (int c = 0; c < Channels; ++c) {
-			int OldPattern = pClipData->GetFrame(f, c);
+	while (true) {
+		for (int c = it.first.m_iChannel; c <= it.second.m_iChannel; ++c) {
+			int OldPattern = it.first.Get(c);
 			auto Index = std::make_pair(c, OldPattern);
 			auto p = NewPatterns.find(Index);		// // // share common patterns
-			if (p == NewPatterns.end())
-				m_pDocument->CopyPattern(Track, NewPatterns[Index] = it.Get(c + it.m_iChannel), OldPattern, c + it.m_iChannel);
-			else
-				m_pDocument->SetPatternAtFrame(Track, it.m_iFrame, c + it.m_iChannel, p->second);
+			if (p == NewPatterns.end()) {
+				NewPatterns[Index] = m_pDocument->GetFirstFreePattern(Track, c);
+				m_pDocument->CopyPattern(Track, NewPatterns[Index], OldPattern, c);
+			}
+			m_pDocument->SetPatternAtFrame(Track, it.first.m_iFrame, c, NewPatterns[Index]);
 		}
-		for (int c = it.m_iChannel + Channels, Count = m_pDocument->GetChannelCount(); c < Count; ++c)
-			it.Set(c, 0);
-		++it;
+		if (it.first == it.second) break;
+		++it.first;
 	}
+}
 
-	SetSelection(Sel);
+void CFrameEditor::ClearPatterns(unsigned int Track, const CFrameSelection &Sel)		// // //
+{
+	auto it = CFrameIterator::FromSelection(Sel, m_pDocument, Track);
+	
+	while (true) {
+		for (int c = it.first.m_iChannel; c <= it.second.m_iChannel; ++c)
+			m_pDocument->ClearPattern(Track, it.first.m_iFrame, c);
+		if (it.first == it.second) break;
+		++it.first;
+	}
 }
 
 bool CFrameEditor::InputEnabled() const
@@ -1268,7 +1274,8 @@ void CFrameEditor::InitiateDrag()
 {
 	const int SelectStart = m_selection.GetFrameStart();		// // //
 	const int SelectEnd	  = m_selection.GetFrameEnd();
-	const int Channels	  = m_pDocument->GetChannelCount();
+	const int ChanStart	  = m_selection.GetChanStart();		// // //
+	const int Channels	  = m_selection.GetChanEnd() - ChanStart + 1;		// // // m_pDocument->GetChannelCount();
 	const int Rows		  = SelectEnd - SelectStart + 1;
 
 	COleDataSource *pSrc = new COleDataSource();
@@ -1277,14 +1284,14 @@ void CFrameEditor::InitiateDrag()
 
 	// Create clipboard structure
 	CFrameClipData ClipData(Channels, Rows);
+	ClipData.ClipInfo.FirstChannel = ChanStart;		// // //
 	ClipData.ClipInfo.OleInfo.SourceRowStart = SelectStart;
 	ClipData.ClipInfo.OleInfo.SourceRowEnd = SelectEnd;
 
-	for (int i = 0; i < Rows; ++i) {
-		for (int j = 0; j < Channels; ++j) {
-			ClipData.SetFrame(i, j, m_pDocument->GetPatternAtFrame(m_pMainFrame->GetSelectedTrack(), i + SelectStart, j));
-		}
-	}
+	const int Track = m_pMainFrame->GetSelectedTrack();		// // //
+	for (int i = 0; i < Rows; ++i)
+		for (int j = 0; j < Channels; ++j)
+			ClipData.SetFrame(i, j, m_pDocument->GetPatternAtFrame(Track, i + SelectStart, j + ChanStart));
 
 	SIZE_T Size = ClipData.GetAllocSize();
 	HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, Size);
@@ -1384,42 +1391,6 @@ BOOL CFrameEditor::DropData(COleDataObject* pDataObject, DROPEFFECT dropEffect)
 	Invalidate();
 
 	return TRUE;
-}
-
-void CFrameEditor::PerformDragOperation(unsigned int Track, CFrameClipData *pClipData, int DragTarget, bool bDelete, bool bNewPatterns)
-{
-	const int SelStart	= pClipData->ClipInfo.OleInfo.SourceRowStart;
-	const int SelEnd	= pClipData->ClipInfo.OleInfo.SourceRowEnd;
-	const int Rows		= pClipData->ClipInfo.Frames;
-	const int Channels	= pClipData->ClipInfo.Channels;
-	
-	int SelectedFrame = m_pView->GetSelectedFrame();
-
-	for (int i = 0; i < Rows; ++i) {
-		int Frame = DragTarget + i;
-		m_pDocument->InsertFrame(Track, Frame);
-		for (int j = 0; j < Channels; ++j) {
-			if (bNewPatterns) {
-				// Copy to new pattern numbers
-				int Source = pClipData->GetFrame(i, j);
-				int Target = m_pDocument->GetPatternAtFrame(Track, Frame, j);
-				m_pDocument->CopyPattern(Track, Target, Source, j);
-			}
-			else {
-				// Copy to existing pattern numbers
-				m_pDocument->SetPatternAtFrame(Track, Frame, j, pClipData->GetFrame(i, j));
-			}
-		}
-		if (DragTarget <= SelectedFrame)
-			++SelectedFrame;
-	}
-
-	m_selection.m_cpStart.m_iFrame = DragTarget;
-	m_selection.m_cpEnd.m_iFrame = DragTarget + Rows - 1;
-	m_selection.m_cpStart.m_iChannel = 0;		// // //
-	m_selection.m_cpEnd.m_iChannel = m_pDocument->GetChannelCount() - 1;		// // //
-
-	m_pView->SelectFrame(SelectedFrame);
 }
 
 void CFrameEditor::MoveSelection(unsigned int Track, const CFrameSelection &Sel, const CFrameCursorPos &Target)		// // //

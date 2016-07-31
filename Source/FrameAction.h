@@ -220,12 +220,14 @@ class CFActionClonePatterns : public CFrameAction		// // //
 {
 public:
 	CFActionClonePatterns() { }
+	~CFActionClonePatterns() { SAFE_RELEASE(m_pClipData); }
 private:
 	bool SaveState(const CMainFrame *pMainFrm);
 	void Undo(CMainFrame *pMainFrm) const;
 	void Redo(CMainFrame *pMainFrm) const;
 private:
 	int m_iOldPattern, m_iNewPattern;
+	CFrameClipData *m_pClipData = nullptr;
 };
 
 class CFActionPaste : public CFrameAction

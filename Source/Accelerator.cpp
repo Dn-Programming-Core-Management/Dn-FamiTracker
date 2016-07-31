@@ -115,7 +115,7 @@ const std::vector<stAccelEntry> CAccelerator::DEFAULT_TABLE {
 	{_T("Shrink patterns"),				MOD_NONE,		0,				ID_EDIT_SHRINKPATTERNS},
 	{_T("Stretch patterns"),			MOD_NONE,		0,				ID_EDIT_STRETCHPATTERNS},			// // //
 	{_T("Clone frame"),					MOD_NONE,		0,				ID_MODULE_DUPLICATEFRAMEPATTERNS, _T("Duplicate patterns")},		// // //
-	{_T("Duplicate current pattern"),	MOD_ALT,		'D',			ID_MODULE_DUPLICATECURRENTPATTERN, _T("Duplicate current pattern")},	// // //
+	{_T("Clone pattern"),				MOD_ALT,		'D',			ID_MODULE_DUPLICATECURRENTPATTERN, _T("Duplicate current pattern")},	// // //
 	{_T("Decrease pattern values"),		MOD_SHIFT,		VK_F1,			ID_DECREASEVALUES},
 	{_T("Increase pattern values"),		MOD_SHIFT,		VK_F2,			ID_INCREASEVALUES},
 	{_T("Coarse decrease values"),		MOD_SHIFT,		VK_F3,			ID_DECREASEVALUESCOARSE},			// // //

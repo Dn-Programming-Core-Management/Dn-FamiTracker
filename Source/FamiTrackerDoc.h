@@ -198,7 +198,8 @@ public:
 	bool			CloneFrame(unsigned int Track, unsigned int Frame);		// // // renamed
 	bool			MoveFrameDown(unsigned int Track, unsigned int Frame);
 	bool			MoveFrameUp(unsigned int Track, unsigned int Frame);
-	void			DeleteFrames(unsigned int Track, unsigned int Frame, int Count);
+	bool			AddFrames(unsigned int Track, unsigned int Frame, int Count);		// // //
+	bool			DeleteFrames(unsigned int Track, unsigned int Frame, int Count);		// // //
 
 	// Global (module) data
 	void			SetEngineSpeed(unsigned int Speed);

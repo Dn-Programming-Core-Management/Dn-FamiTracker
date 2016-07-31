@@ -49,6 +49,14 @@ private:
 	CFrameEditor *m_pParent;
 };
 
+struct pairhash {		// // // from http://stackoverflow.com/a/20602159/5756577
+	template <typename T, typename U>
+	std::size_t operator()(const std::pair<T, U> &x) const
+	{
+		return (std::hash<T>()(x.first) * 3) ^ std::hash<U>()(x.second);
+	}
+};
+
 // CFrameEditor
 
 class CFrameEditor : public CWnd
@@ -67,7 +75,6 @@ public:
 	void SetupColors();
 
 	// Input
-	bool Translate(HWND hWnd, MSG *pMsg) const;
 	void EnableInput();
 	bool InputEnabled() const;
 
@@ -81,7 +88,6 @@ public:
 	bool IsCopyValid(COleDataObject* pDataObject) const;
 	void UpdateDrag(const CPoint &point);
 	BOOL DropData(COleDataObject* pDataObject, DROPEFFECT dropEffect);
-	void PerformDragOperation(unsigned int Track, CFrameClipData *pClipData, int DragTarget, bool bDelete, bool bNewPatterns);
 	void MoveSelection(unsigned int Track, const CFrameSelection &Sel, const CFrameCursorPos &Target);		// // //
 
 	// Commands
@@ -93,6 +99,9 @@ public:
 	void PasteAt(unsigned int Track, const CFrameClipData *pClipData, const CFrameCursorPos &Pos);		// // //
 	void PasteInsert(unsigned int Track, int Frame, const CFrameClipData *pClipData);		// // //
 	void PasteNew(unsigned int Track, int Frame, const CFrameClipData *pClipData);		// // //
+
+	void ClonePatterns(unsigned int Track, const CFrameSelection &Sel);		// // //
+	void ClearPatterns(unsigned int Track, const CFrameSelection &Sel);		// // //
 
 	// Return window width in pixels
 	unsigned int CalcWidth(int Channels) const;
