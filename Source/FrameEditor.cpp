@@ -383,8 +383,9 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 		// Draw cursor when dragging
 		if (!m_bSelecting || (m_iDragRow <= SelectStart || m_iDragRow >= (SelectEnd + 1))) {
 			if (m_iDragRow >= FirstVisibleFrame && m_iDragRow <= FirstVisibleFrame + m_iRowsVisible) {
+				int x = ROW_COLUMN_WIDTH + CBegin * FRAME_ITEM_WIDTH + 2;		// // //
 				int y = m_iDragRow - FirstVisibleFrame;
-				m_dcBack.FillSolidRect(DPI::Rect(ROW_COLUMN_WIDTH, y * ROW_HEIGHT + 3, m_iWinWidth, 2), ColDragCursor);
+				m_dcBack.FillSolidRect(DPI::Rect(x, y * ROW_HEIGHT + 3, FRAME_ITEM_WIDTH * (CEnd - CBegin + 1) + 1, 2), ColDragCursor);
 			}
 		}
 	}
@@ -1039,7 +1040,7 @@ void CFrameEditor::OnEditPaste()
 	CFrameClipData *pClipData = new CFrameClipData();
 	pClipData->FromMem(hMem);
 
-	m_pMainFrame->AddAction(new CFActionPaste {pClipData, false});		// // //
+	m_pMainFrame->AddAction(new CFActionPaste {pClipData, static_cast<int>(m_pView->GetSelectedFrame()), false});		// // //
 }
 
 void CFrameEditor::OnEditPasteNewPatterns()
@@ -1052,7 +1053,7 @@ void CFrameEditor::OnEditPasteNewPatterns()
 	CFrameClipData *pClipData = new CFrameClipData();
 	pClipData->FromMem(hMem);
 
-	m_pMainFrame->AddAction(new CFActionPaste {pClipData, true});		// // //
+	m_pMainFrame->AddAction(new CFActionPaste {pClipData, static_cast<int>(m_pView->GetSelectedFrame()), true});		// // //
 }
 
 void CFrameEditor::OnEditDelete()
@@ -1370,13 +1371,7 @@ BOOL CFrameEditor::DropData(COleDataObject* pDataObject, DROPEFFECT dropEffect)
 			// [[fallthrough]]
 		case DROPEFFECT_COPY:
 			// Copy
-			if ((pClipData->ClipInfo.Frames + m_pDocument->GetFrameCount(Track)) <= MAX_FRAMES) {
-				int Action = m_DropTarget.CopyToNewPatterns() ? CFrameAction::ACT_DRAG_AND_DROP_COPY_NEW : CFrameAction::ACT_DRAG_AND_DROP_COPY;
-				CFrameAction *pAction = new CFrameAction(Action);
-				pAction->SetDragInfo(m_iDragRow, pClipData, false);
-				m_pMainFrame->AddAction(pAction);
-			}
-			else {
+			if (!m_pMainFrame->AddAction(new CFActionPaste {pClipData, m_iDragRow, m_DropTarget.CopyToNewPatterns()})) {		// // //
 				SAFE_RELEASE(pClipData);
 				return FALSE;
 			}
@@ -1399,18 +1394,6 @@ void CFrameEditor::PerformDragOperation(unsigned int Track, CFrameClipData *pCli
 	const int Channels	= pClipData->ClipInfo.Channels;
 	
 	int SelectedFrame = m_pView->GetSelectedFrame();
-
-	if (bDelete) {
-		// Target and source is same window
-		if (DragTarget > SelEnd)
-			DragTarget -= Rows;
-
-		for (int i = 0; i < Rows; ++i) {
-			m_pDocument->RemoveFrame(Track, SelStart);
-			if (SelStart < SelectedFrame)
-				--SelectedFrame;
-		}
-	}
 
 	for (int i = 0; i < Rows; ++i) {
 		int Frame = DragTarget + i;

@@ -2445,7 +2445,7 @@ void CMainFrame::OnModuleMoveframeup()
 
 void CMainFrame::OnModuleDuplicateCurrentPattern()		// // //
 {
-	AddAction(new CFActionDuplicatePattern { });
+	AddAction(new CFActionClonePatterns { });
 }
 
 // UI updates

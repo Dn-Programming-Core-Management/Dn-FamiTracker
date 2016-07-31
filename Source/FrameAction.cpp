@@ -54,7 +54,7 @@ void CFrameEditorState::ApplyState(CFamiTrackerView *pView) const
 // Undo/redo commands for frame editor
 //
 
-CFrameAction::CFrameAction(int iAction) : CAction(iAction)
+CFrameAction::CFrameAction() : CAction(0)		// // // dummy
 {
 }
 
@@ -62,16 +62,6 @@ CFrameAction::~CFrameAction()
 {
 	SAFE_RELEASE(m_pUndoState);		// // //
 	SAFE_RELEASE(m_pRedoState);		// // //
-
-	SAFE_RELEASE(m_pClipData);
-	SAFE_RELEASE(m_pDragData);
-}
-
-void CFrameAction::SetDragInfo(int DragTarget, CFrameClipData *pClipData, bool Remove)
-{
-	m_iDragTarget = DragTarget;
-	m_pDragData = pClipData;
-	m_bDragRemove = Remove;
 }
 
 int CFrameAction::ClipPattern(int Pattern)
@@ -82,41 +72,6 @@ int CFrameAction::ClipPattern(int Pattern)
 		Pattern = MAX_PATTERN - 1;
 
 	return Pattern;
-}
-
-void CFrameAction::ClearPatterns(CFamiTrackerDoc *pDoc, const CFrameClipData *pClipData, int Target) const		// // //
-{
-	const int Rows = pClipData->ClipInfo.Frames;
-	const int Channels = pClipData->ClipInfo.Channels;
-
-	// Clean up the copy to new patterns command
-	CFrameIterator it {pDoc, m_pUndoState->Track, {m_pUndoState->Cursor.m_iFrame, pClipData->ClipInfo.FirstChannel}};
-	for (int i = 0; i < Rows; ++i) {
-		for (int j = 0; j < Channels; ++j)
-			pDoc->ClearPattern(m_pUndoState->Track, it.m_iFrame, j + it.m_iChannel);
-		++it;
-	}
-
-	pDoc->DeleteFrames(m_pUndoState->Track, Target, Rows);
-}
-
-bool CFrameAction::SaveState(const CMainFrame *pMainFrm)
-{
-	// Save action state for undo
-
-	CFrameEditor *pFrameEditor = pMainFrm->GetFrameEditor();
-	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
-	CFamiTrackerDoc *pDoc = pView->GetDocument();
-	const int Channels = pDoc->GetAvailableChannels();
-
-	switch (m_iAction) {
-		case ACT_DRAG_AND_DROP_COPY:
-		case ACT_DRAG_AND_DROP_COPY_NEW:
-			m_pClipData = pFrameEditor->CopyEntire(m_pUndoState->Track);		// // //
-			break;
-	}
-
-	return true;
 }
 
 void CFrameAction::SaveUndoState(const CMainFrame *pMainFrm)		// // //
@@ -146,43 +101,9 @@ void CFrameAction::RestoreRedoState(CMainFrame *pMainFrm) const		// // //
 	pView->GetDocument()->UpdateAllViews(NULL, UPDATE_FRAME);
 }
 
-void CFrameAction::Undo(CMainFrame *pMainFrm) const
-{
-	CFrameEditor *pFrameEditor = pMainFrm->GetFrameEditor();
-	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
-	CFamiTrackerDoc *pDoc = pView->GetDocument();
 
-	switch (m_iAction) {
-		case ACT_DRAG_AND_DROP_COPY:
-			pFrameEditor->PasteAt(m_pUndoState->Track, m_pClipData, {0, 0});
-			pView->SelectFrame(m_pUndoState->Selection.m_cpEnd.m_iFrame);
-			pMainFrm->UpdateControls();
-			break;
-		case ACT_DRAG_AND_DROP_COPY_NEW:
-			ClearPatterns(pDoc, m_pClipData, m_iDragTarget);
-			pView->SelectFrame(m_pUndoState->Selection.m_cpEnd.m_iFrame);
-			pMainFrm->UpdateControls();
-			break;
-	}
-}
 
-void CFrameAction::Redo(CMainFrame *pMainFrm) const
-{
-	CFrameEditor *pFrameEditor = pMainFrm->GetFrameEditor();
-	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
-	CFamiTrackerDoc *pDoc = pView->GetDocument();
-	
-	switch (m_iAction) {
-		case ACT_DRAG_AND_DROP_COPY:
-			pFrameEditor->PerformDragOperation(m_pUndoState->Track, m_pDragData, m_iDragTarget, false, false);
-			pMainFrm->UpdateControls();
-			break;
-		case ACT_DRAG_AND_DROP_COPY_NEW:
-			pFrameEditor->PerformDragOperation(m_pUndoState->Track, m_pDragData, m_iDragTarget, false, true);
-			pMainFrm->UpdateControls();
-			break;
-	}
-}
+// // // built-in frame action subtypes
 
 
 
@@ -463,10 +384,22 @@ bool CFActionPaste::SaveState(const CMainFrame *pMainFrm)
 void CFActionPaste::Undo(CMainFrame *pMainFrm) const
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	if (m_bClone)
-		ClearPatterns(pDoc, m_pClipData, m_pUndoState->Cursor.m_iFrame);
+	if (m_bClone) {
+		const int Rows = m_pClipData->ClipInfo.Frames;
+		const int Channels = m_pClipData->ClipInfo.Channels;
+
+		// Clean up the copy to new patterns command
+		CFrameIterator it {pDoc, m_pUndoState->Track, {m_pUndoState->Cursor.m_iFrame, m_pClipData->ClipInfo.FirstChannel}};
+		for (int i = 0; i < Rows; ++i) {
+			for (int j = 0; j < Channels; ++j)
+				pDoc->ClearPattern(m_pUndoState->Track, it.m_iFrame, j + it.m_iChannel);
+			++it;
+		}
+
+		pDoc->DeleteFrames(m_pUndoState->Track, m_iTargetFrame, Rows);
+	}
 	else
-		pDoc->DeleteFrames(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, m_pClipData->ClipInfo.Frames);
+		pDoc->DeleteFrames(m_pUndoState->Track, m_iTargetFrame, m_pClipData->ClipInfo.Frames);
 	pMainFrm->UpdateControls();
 }
 
@@ -474,9 +407,9 @@ void CFActionPaste::Redo(CMainFrame *pMainFrm) const
 {
 	CFrameEditor *pFrameEditor = pMainFrm->GetFrameEditor();
 	if (m_bClone)
-		pFrameEditor->PasteNew(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, m_pClipData);
+		pFrameEditor->PasteNew(m_pUndoState->Track, m_iTargetFrame, m_pClipData);
 	else
-		pFrameEditor->PasteInsert(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, m_pClipData);
+		pFrameEditor->PasteInsert(m_pUndoState->Track, m_iTargetFrame, m_pClipData);
 	pMainFrm->UpdateControls();
 }
 
@@ -503,7 +436,7 @@ void CFActionDropMove::Redo(CMainFrame *pMainFrm) const
 
 
 
-bool CFActionDuplicatePattern::SaveState(const CMainFrame *pMainFrm)		// // //
+bool CFActionClonePatterns::SaveState(const CMainFrame *pMainFrm)		// // //
 {
 	const CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
 	m_iOldPattern = pDoc->GetPatternAtFrame(STATE_EXPAND(m_pUndoState));
@@ -513,14 +446,14 @@ bool CFActionDuplicatePattern::SaveState(const CMainFrame *pMainFrm)		// // //
 	return m_iNewPattern != -1;
 }
 
-void CFActionDuplicatePattern::Undo(CMainFrame *pMainFrm) const		// // //
+void CFActionClonePatterns::Undo(CMainFrame *pMainFrm) const		// // //
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
 	pDoc->ClearPattern(STATE_EXPAND(m_pUndoState));
 	pDoc->SetPatternAtFrame(STATE_EXPAND(m_pUndoState), m_iOldPattern);
 }
 
-void CFActionDuplicatePattern::Redo(CMainFrame *pMainFrm) const		// // //
+void CFActionClonePatterns::Redo(CMainFrame *pMainFrm) const		// // //
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
 	pDoc->SetPatternAtFrame(STATE_EXPAND(m_pUndoState), m_iNewPattern);
