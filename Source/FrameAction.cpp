@@ -64,12 +64,13 @@ CFrameAction::~CFrameAction()
 	SAFE_RELEASE(m_pRedoState);		// // //
 
 	SAFE_RELEASE(m_pClipData);
+	SAFE_RELEASE(m_pDragData);
 }
 
 void CFrameAction::SetDragInfo(int DragTarget, CFrameClipData *pClipData, bool Remove)
 {
 	m_iDragTarget = DragTarget;
-	m_pClipData = pClipData;
+	m_pDragData = pClipData;
 	m_bDragRemove = Remove;
 }
 
@@ -109,7 +110,6 @@ bool CFrameAction::SaveState(const CMainFrame *pMainFrm)
 	const int Channels = pDoc->GetAvailableChannels();
 
 	switch (m_iAction) {
-		case ACT_DRAG_AND_DROP_MOVE:
 		case ACT_DRAG_AND_DROP_COPY:
 		case ACT_DRAG_AND_DROP_COPY_NEW:
 			m_pClipData = pFrameEditor->CopyEntire(m_pUndoState->Track);		// // //
@@ -153,7 +153,6 @@ void CFrameAction::Undo(CMainFrame *pMainFrm) const
 	CFamiTrackerDoc *pDoc = pView->GetDocument();
 
 	switch (m_iAction) {
-		case ACT_DRAG_AND_DROP_MOVE:
 		case ACT_DRAG_AND_DROP_COPY:
 			pFrameEditor->PasteAt(m_pUndoState->Track, m_pClipData, {0, 0});
 			pView->SelectFrame(m_pUndoState->Selection.m_cpEnd.m_iFrame);
@@ -174,16 +173,12 @@ void CFrameAction::Redo(CMainFrame *pMainFrm) const
 	CFamiTrackerDoc *pDoc = pView->GetDocument();
 	
 	switch (m_iAction) {
-		case ACT_DRAG_AND_DROP_MOVE:
-			pFrameEditor->PerformDragOperation(m_pUndoState->Track, m_pClipData, m_iDragTarget, m_bDragRemove, false);
-			pMainFrm->UpdateControls();
-			break;
 		case ACT_DRAG_AND_DROP_COPY:
-			pFrameEditor->PerformDragOperation(m_pUndoState->Track, m_pClipData, m_iDragTarget, false, false);
+			pFrameEditor->PerformDragOperation(m_pUndoState->Track, m_pDragData, m_iDragTarget, false, false);
 			pMainFrm->UpdateControls();
 			break;
 		case ACT_DRAG_AND_DROP_COPY_NEW:
-			pFrameEditor->PerformDragOperation(m_pUndoState->Track, m_pClipData, m_iDragTarget, false, true);
+			pFrameEditor->PerformDragOperation(m_pUndoState->Track, m_pDragData, m_iDragTarget, false, true);
 			pMainFrm->UpdateControls();
 			break;
 	}
@@ -486,37 +481,25 @@ void CFActionPaste::Redo(CMainFrame *pMainFrm) const
 }
 
 
-/*
 
-
-
-bool CFActionAddFrame::SaveState(const CMainFrame *pMainFrm)
+bool CFActionDropMove::SaveState(const CMainFrame *pMainFrm)
 {
-	const CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-}
-
-void CFActionAddFrame::Undo(CMainFrame *pMainFrm) const
-{
-	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-}
-
-void CFActionAddFrame::Redo(CMainFrame *pMainFrm) const
-{
-	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-}
-
-bool CFActionAddFrame::Merge(const CAction *Other)		// // //
-{
-	auto pAction = dynamic_cast<const CFActionAddFrame*>(Other);
-	if (!pAction) return false;
-	if (m_pUndoState->Track != pAction->m_pUndoState->Track)
-		return false;
-
-	*m_pRedoState = *pAction->m_pRedoState;
-
 	return true;
 }
-*/
+
+void CFActionDropMove::Undo(CMainFrame *pMainFrm) const
+{
+	CFrameCursorPos Orig(m_pUndoState->Selection.m_cpStart);
+	if (m_pRedoState->Selection.m_cpStart.m_iFrame < Orig.m_iFrame)
+		Orig.m_iFrame += m_pRedoState->Selection.m_cpEnd.m_iFrame - m_pRedoState->Selection.m_cpStart.m_iFrame + 1;
+	pMainFrm->GetFrameEditor()->MoveSelection(m_pUndoState->Track, m_pRedoState->Selection, Orig);
+}
+
+void CFActionDropMove::Redo(CMainFrame *pMainFrm) const
+{
+	pMainFrm->GetFrameEditor()->MoveSelection(m_pUndoState->Track, m_pUndoState->Selection,
+											  {m_iTargetFrame, m_pUndoState->Cursor.m_iChannel});
+}
 
 
 
@@ -593,13 +576,13 @@ bool CFActionMergeDuplicated::SaveState(const CMainFrame *pMainFrm)
 	m_pClipData = new CFrameClipData {Channels, Frames};
 
 	unsigned int uiPatternUsed[MAX_PATTERN];
-	for (unsigned int c = 0; c < Channels; ++c) {
+	for (int c = 0; c < Channels; ++c) {
 		// mark all as unused
 		for (unsigned int ui = 0; ui < MAX_PATTERN; ++ui)
 			uiPatternUsed[ui] = MAX_PATTERN;
 
 		// map used patterns to themselves
-		for (unsigned int f = 0; f < Frames; ++f) {
+		for (int f = 0; f < Frames; ++f) {
 			unsigned int uiPattern = pDoc->GetPatternAtFrame(m_pUndoState->Track, f, c);
 			uiPatternUsed[uiPattern] = uiPattern;
 		}
@@ -616,7 +599,7 @@ bool CFActionMergeDuplicated::SaveState(const CMainFrame *pMainFrm)
 		}
 
 		// apply mapping
-		for (unsigned int f = 0; f < Frames; ++f)
+		for (int f = 0; f < Frames; ++f)
 			m_pClipData->SetFrame(f, c, uiPatternUsed[pDoc->GetPatternAtFrame(m_pUndoState->Track, f, c)]);
 	}
 

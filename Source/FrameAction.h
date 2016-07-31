@@ -118,6 +118,7 @@ private:
 	unsigned int m_iDragTarget;
 
 	CFrameClipData *m_pClipData = nullptr;
+	CFrameClipData *m_pDragData = nullptr;
 };
 
 // // // built-in frame action subtypes
@@ -279,6 +280,19 @@ private:
 	bool m_bClone;
 };
 
+class CFActionDropMove : public CFrameAction
+{
+public:
+	CFActionDropMove(CFrameClipData *pData, int Frame) : CFrameAction(ACT_DRAG_AND_DROP_MOVE), m_pClipData(pData), m_iTargetFrame(Frame) { }
+	~CFActionDropMove() { SAFE_RELEASE(m_pClipData); }
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+private:
+	CFrameClipData *m_pClipData = nullptr;
+	int m_iTargetFrame;
+};
 
 class CFActionDeleteSel : public CFrameAction
 {

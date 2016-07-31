@@ -2576,6 +2576,8 @@ void CMainFrame::SelectTrack(unsigned int Track)
 	pTrackBox->SetCurSel(m_iTrack);
 	//pDoc->UpdateAllViews(NULL, CHANGED_TRACK);
 	pView->TrackChanged(m_iTrack);
+	GetFrameEditor()->CancelSelection();		// // //
+	GetFrameEditor()->Invalidate();
 	OnUpdateFrameTitle(TRUE);
 
 	if (m_pBookmarkDlg != NULL)		// // //

@@ -82,6 +82,7 @@ public:
 	void UpdateDrag(const CPoint &point);
 	BOOL DropData(COleDataObject* pDataObject, DROPEFFECT dropEffect);
 	void PerformDragOperation(unsigned int Track, CFrameClipData *pClipData, int DragTarget, bool bDelete, bool bNewPatterns);
+	void MoveSelection(unsigned int Track, const CFrameSelection &Sel, const CFrameCursorPos &Target);		// // //
 
 	// Commands
 	CFrameClipData *Copy() const;		// // //

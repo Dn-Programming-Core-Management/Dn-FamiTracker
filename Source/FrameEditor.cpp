@@ -1090,8 +1090,6 @@ CFrameClipData *CFrameEditor::Copy(const CFrameSelection &Sel) const		// // //
 	const int ChanStart = it.first.m_iChannel;
 
 	auto pData = new CFrameClipData {Channels, Frames};
-	pData->ClipInfo.Channels = Channels;
-	pData->ClipInfo.Frames = Frames;
 	pData->ClipInfo.FirstChannel = ChanStart;		// // //
 	pData->ClipInfo.OleInfo.SourceRowStart = it.first.m_iFrame;
 	pData->ClipInfo.OleInfo.SourceRowEnd = it.second.m_iFrame;
@@ -1278,9 +1276,6 @@ void CFrameEditor::InitiateDrag()
 
 	// Create clipboard structure
 	CFrameClipData ClipData(Channels, Rows);
-
-	ClipData.ClipInfo.Channels = Channels;
-	ClipData.ClipInfo.Frames = Rows;
 	ClipData.ClipInfo.OleInfo.SourceRowStart = SelectStart;
 	ClipData.ClipInfo.OleInfo.SourceRowEnd = SelectEnd;
 
@@ -1300,13 +1295,12 @@ void CFrameEditor::InitiateDrag()
 
 		// Setup OLE
 		pSrc->CacheGlobalData(m_iClipboard, hMem);
-		DROPEFFECT res = pSrc->DoDragDrop(DROPEFFECT_COPY | DROPEFFECT_MOVE);
+		DROPEFFECT res = pSrc->DoDragDrop(DROPEFFECT_COPY | DROPEFFECT_MOVE); // calls DropData
 
 		if (res == DROPEFFECT_MOVE) {
 			if (!m_bDeletedRows) {
 				// Target was another window, delete rows locally
 				m_pMainFrame->AddAction(new CFActionDeleteSel { });		// // //
-				m_bSelecting = false;
 			}
 		}
 
@@ -1362,6 +1356,18 @@ BOOL CFrameEditor::DropData(COleDataObject* pDataObject, DROPEFFECT dropEffect)
 
 	// Add action
 	switch (dropEffect) {
+		case DROPEFFECT_MOVE:
+			// Move
+			if (m_bStartDrag) {		// // // same window
+				if (m_iDragRow >= SelectStart && m_iDragRow <= (SelectEnd + 1)) {		// // //
+					// Disallow dragging to the same area
+					SAFE_RELEASE(pClipData);
+					return FALSE;
+				}
+				m_pMainFrame->AddAction(new CFActionDropMove {pClipData, m_iDragRow});		// // //
+				break;
+			}
+			// [[fallthrough]]
 		case DROPEFFECT_COPY:
 			// Copy
 			if ((pClipData->ClipInfo.Frames + m_pDocument->GetFrameCount(Track)) <= MAX_FRAMES) {
@@ -1374,17 +1380,6 @@ BOOL CFrameEditor::DropData(COleDataObject* pDataObject, DROPEFFECT dropEffect)
 				SAFE_RELEASE(pClipData);
 				return FALSE;
 			}
-			break;
-		case DROPEFFECT_MOVE:
-			// Move
-			if (m_iDragRow >= SelectStart && m_iDragRow <= (SelectEnd + 1)) {
-				// Disallow dragging to the same area
-				SAFE_RELEASE(pClipData);
-				return FALSE;
-			}
-			CFrameAction *pAction = new CFrameAction(CFrameAction::ACT_DRAG_AND_DROP_MOVE);
-			pAction->SetDragInfo(m_iDragRow, pClipData, m_bStartDrag);
-			m_pMainFrame->AddAction(pAction);
 			break;
 	}
 
@@ -1442,6 +1437,37 @@ void CFrameEditor::PerformDragOperation(unsigned int Track, CFrameClipData *pCli
 	m_selection.m_cpEnd.m_iChannel = m_pDocument->GetChannelCount() - 1;		// // //
 
 	m_pView->SelectFrame(SelectedFrame);
+}
+
+void CFrameEditor::MoveSelection(unsigned int Track, const CFrameSelection &Sel, const CFrameCursorPos &Target)		// // //
+{
+	if (Target.m_iFrame == Sel.GetFrameStart()) return;
+	CFrameSelection Normal = Sel.GetNormalized();
+	auto pData = std::unique_ptr<CFrameClipData>(Copy(Normal));
+	const int Frames = Normal.m_cpEnd.m_iFrame - Normal.m_cpStart.m_iFrame + 1;
+
+	int Delta = Target.m_iFrame - Normal.m_cpStart.m_iFrame;
+	if (Delta > 0) {
+		CFrameSelection Tail(Normal);
+		Tail.m_cpStart.m_iFrame += Frames;
+		Tail.m_cpEnd.m_iFrame = Target.m_iFrame - 1;
+		auto pRest = std::unique_ptr<CFrameClipData>(Copy(Tail));
+		PasteAt(Track, pRest.get(), Normal.m_cpStart);
+		Delta -= Frames;
+		PasteAt(Track, pData.get(), {Normal.m_cpStart.m_iFrame + Delta, Normal.m_cpStart.m_iChannel});
+	}
+	else {
+		CFrameSelection Head(Normal);
+		Head.m_cpEnd.m_iFrame -= Frames;
+		Head.m_cpStart.m_iFrame = Target.m_iFrame;
+		auto pRest = std::unique_ptr<CFrameClipData>(Copy(Head));
+		PasteAt(Track, pData.get(), Head.m_cpStart);
+		Head.m_cpStart.m_iFrame += Frames;
+		PasteAt(Track, pRest.get(), Head.m_cpStart);
+	}
+	Normal.m_cpStart.m_iFrame += Delta;
+	Normal.m_cpEnd.m_iFrame += Delta;
+	SetSelection(Normal);
 }
 
 CFrameSelection CFrameEditor::GetSelection() const		// // //
