@@ -199,6 +199,8 @@ CPatternClipData::CPatternClipData(int Channels, int Rows) :
 	pPattern(new stChanNote[Channels * Rows]), Size(Channels * Rows)
 {
 	memset(&ClipInfo, 0, sizeof(ClipInfo));
+	ClipInfo.Channels = Channels;		// // //
+	ClipInfo.Rows = Rows;
 }
 
 CPatternClipData::~CPatternClipData()

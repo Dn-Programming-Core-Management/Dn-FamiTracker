@@ -38,6 +38,8 @@ CFrameClipData::CFrameClipData(int Channels, int Frames) :
 	pFrames(new int[Channels * Frames]), iSize(Channels * Frames)
 {
 	memset(&ClipInfo, 0, sizeof(ClipInfo));
+	ClipInfo.Channels = Channels;		// // //
+	ClipInfo.Frames = Frames;
 }
 
 CFrameClipData::~CFrameClipData()
