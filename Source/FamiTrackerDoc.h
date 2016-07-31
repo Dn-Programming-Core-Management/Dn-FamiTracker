@@ -166,6 +166,7 @@ public:
 	void			SetPatternAtFrame(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Pattern);
 
 	bool			IsPatternEmpty(unsigned int Track, unsigned int Channel, unsigned int Pattern) const;
+	bool			ArePatternsSame(unsigned int Track, unsigned int Channel, unsigned int Pattern1, unsigned int Pattern2) const;		// // //
 
 	void			MakeKraid();				// // // Easter Egg
 
@@ -179,8 +180,7 @@ public:
 	void			ClearPatterns(unsigned int Track);
 	void			ClearPattern(unsigned int Track, unsigned int Frame, unsigned int Channel);
 	
-	void			MergeDuplicatedPatterns(unsigned int Track);		// // //
-	void			PopulateUniquePatterns(unsigned int Track);
+	void			PopulateUniquePatterns(unsigned int Track);		// // //
 
 	bool			InsertRow(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row);
 	bool			ClearRow(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row);

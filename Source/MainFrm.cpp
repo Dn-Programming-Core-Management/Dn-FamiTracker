@@ -2445,7 +2445,7 @@ void CMainFrame::OnModuleMoveframeup()
 
 void CMainFrame::OnModuleDuplicateCurrentPattern()		// // //
 {
-	AddAction(new CFrameAction(CFrameAction::ACT_DUPLICATE_CURRENT));
+	AddAction(new CFActionDuplicatePattern { });
 }
 
 // UI updates
@@ -3075,7 +3075,7 @@ void CMainFrame::OnEditRemoveUnusedPatterns()
 
 void CMainFrame::OnEditMergeDuplicatedPatterns()
 {
-	AddAction(new CFrameAction(CFrameAction::ACT_MERGE_DUPLICATED_PATTERNS));
+	AddAction(new CFActionMergeDuplicated { });		// // //
 }
 
 void CMainFrame::OnUpdateSelectionEnabled(CCmdUI *pCmdUI)

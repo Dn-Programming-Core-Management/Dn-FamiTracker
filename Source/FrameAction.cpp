@@ -85,7 +85,7 @@ int CFrameAction::ClipPattern(int Pattern)
 
 void CFrameAction::ClearPatterns(CFamiTrackerDoc *pDoc, const CFrameClipData *pClipData, int Target) const		// // //
 {
-	const int Rows = pClipData->ClipInfo.Rows;
+	const int Rows = pClipData->ClipInfo.Frames;
 	const int Channels = pClipData->ClipInfo.Channels;
 
 	// Clean up the copy to new patterns command
@@ -112,8 +112,6 @@ bool CFrameAction::SaveState(const CMainFrame *pMainFrm)
 		case ACT_DRAG_AND_DROP_MOVE:
 		case ACT_DRAG_AND_DROP_COPY:
 		case ACT_DRAG_AND_DROP_COPY_NEW:
-		case ACT_DELETE_SELECTION:
-		case ACT_MERGE_DUPLICATED_PATTERNS:
 			m_pClipData = pFrameEditor->CopyEntire(m_pUndoState->Track);		// // //
 			break;
 	}
@@ -157,7 +155,6 @@ void CFrameAction::Undo(CMainFrame *pMainFrm) const
 	switch (m_iAction) {
 		case ACT_DRAG_AND_DROP_MOVE:
 		case ACT_DRAG_AND_DROP_COPY:
-		case ACT_DELETE_SELECTION:
 			pFrameEditor->PasteAt(m_pUndoState->Track, m_pClipData, {0, 0});
 			pView->SelectFrame(m_pUndoState->Selection.m_cpEnd.m_iFrame);
 			pMainFrm->UpdateControls();
@@ -166,9 +163,6 @@ void CFrameAction::Undo(CMainFrame *pMainFrm) const
 			ClearPatterns(pDoc, m_pClipData, m_iDragTarget);
 			pView->SelectFrame(m_pUndoState->Selection.m_cpEnd.m_iFrame);
 			pMainFrm->UpdateControls();
-			break;
-		case ACT_MERGE_DUPLICATED_PATTERNS:
-			pFrameEditor->PasteAt(m_pUndoState->Track, m_pClipData, {0, 0});
 			break;
 	}
 }
@@ -191,18 +185,6 @@ void CFrameAction::Redo(CMainFrame *pMainFrm) const
 		case ACT_DRAG_AND_DROP_COPY_NEW:
 			pFrameEditor->PerformDragOperation(m_pUndoState->Track, m_pClipData, m_iDragTarget, false, true);
 			pMainFrm->UpdateControls();
-			break;
-		case ACT_DELETE_SELECTION:
-			pDoc->DeleteFrames(
-				m_pUndoState->Track,
-				m_pUndoState->Selection.m_cpStart.m_iFrame,
-				m_pUndoState->Selection.m_cpEnd.m_iFrame - m_pUndoState->Selection.m_cpStart.m_iFrame + 1);		// // //
-			pView->SelectFrame(m_pUndoState->Selection.m_cpStart.m_iFrame);
-			pFrameEditor->CancelSelection();
-			pMainFrm->UpdateControls();
-			break;
-		case ACT_MERGE_DUPLICATED_PATTERNS:
-			pDoc->MergeDuplicatedPatterns(m_pUndoState->Track);		// // //
 			break;
 	}
 }
@@ -242,7 +224,7 @@ void CFActionRemoveFrame::Undo(CMainFrame *pMainFrm) const
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
 	pDoc->InsertFrame(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame);
-	pMainFrm->GetFrameEditor()->PasteAt(m_pUndoState->Track, m_pRowClipData, m_pUndoState->Cursor);
+	pMainFrm->GetFrameEditor()->PasteInsert(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, m_pRowClipData);
 }
 
 void CFActionRemoveFrame::Redo(CMainFrame *pMainFrm) const
@@ -453,7 +435,6 @@ void CFActionMoveDown::Redo(CMainFrame *pMainFrm) const
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
 	pDoc->MoveFrameDown(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame);
-	pMainFrm->UpdateControls();
 }
 
 
@@ -472,7 +453,6 @@ void CFActionMoveUp::Redo(CMainFrame *pMainFrm) const
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
 	pDoc->MoveFrameUp(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame);
-	pMainFrm->UpdateControls();
 }
 
 
@@ -481,7 +461,7 @@ bool CFActionPaste::SaveState(const CMainFrame *pMainFrm)
 {
 	const CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
 	return m_pClipData->ClipInfo.Channels <= pDoc->GetChannelCount() &&
-		m_pClipData->ClipInfo.Rows + pDoc->GetFrameCount(m_pUndoState->Track) <= MAX_FRAMES;
+		m_pClipData->ClipInfo.Frames + pDoc->GetFrameCount(m_pUndoState->Track) <= MAX_FRAMES;
 
 }
 
@@ -491,16 +471,18 @@ void CFActionPaste::Undo(CMainFrame *pMainFrm) const
 	if (m_bClone)
 		ClearPatterns(pDoc, m_pClipData, m_pUndoState->Cursor.m_iFrame);
 	else
-		pDoc->DeleteFrames(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, m_pClipData->ClipInfo.Rows);
+		pDoc->DeleteFrames(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, m_pClipData->ClipInfo.Frames);
+	pMainFrm->UpdateControls();
 }
 
 void CFActionPaste::Redo(CMainFrame *pMainFrm) const
 {
 	CFrameEditor *pFrameEditor = pMainFrm->GetFrameEditor();
 	if (m_bClone)
-		pFrameEditor->PasteNew(m_pUndoState->Track, m_pClipData);
+		pFrameEditor->PasteNew(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, m_pClipData);
 	else
-		pFrameEditor->Paste(m_pUndoState->Track, m_pClipData);
+		pFrameEditor->PasteInsert(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, m_pClipData);
+	pMainFrm->UpdateControls();
 }
 
 
@@ -535,3 +517,120 @@ bool CFActionAddFrame::Merge(const CAction *Other)		// // //
 	return true;
 }
 */
+
+
+
+bool CFActionDuplicatePattern::SaveState(const CMainFrame *pMainFrm)		// // //
+{
+	const CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	m_iOldPattern = pDoc->GetPatternAtFrame(STATE_EXPAND(m_pUndoState));
+	if (pDoc->IsPatternEmpty(m_pUndoState->Track, m_pUndoState->Cursor.m_iChannel, m_iOldPattern))
+		return false;
+	m_iNewPattern = pDoc->GetFirstFreePattern(m_pUndoState->Track, m_pUndoState->Cursor.m_iChannel);
+	return m_iNewPattern != -1;
+}
+
+void CFActionDuplicatePattern::Undo(CMainFrame *pMainFrm) const		// // //
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	pDoc->ClearPattern(STATE_EXPAND(m_pUndoState));
+	pDoc->SetPatternAtFrame(STATE_EXPAND(m_pUndoState), m_iOldPattern);
+}
+
+void CFActionDuplicatePattern::Redo(CMainFrame *pMainFrm) const		// // //
+{
+	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	pDoc->SetPatternAtFrame(STATE_EXPAND(m_pUndoState), m_iNewPattern);
+	pDoc->CopyPattern(m_pUndoState->Track, m_iNewPattern, m_iOldPattern, m_pUndoState->Cursor.m_iChannel);
+	// // // TODO: support frame selection
+}
+
+
+
+bool CFActionDeleteSel::SaveState(const CMainFrame *pMainFrm)
+{
+	const CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	CFrameSelection Sel(m_pUndoState->Selection);
+	Sel.m_cpStart.m_iChannel = 0;
+	Sel.m_cpEnd.m_iChannel = pDoc->GetChannelCount() - 1;
+	int Frames = Sel.m_cpEnd.m_iFrame - Sel.m_cpStart.m_iFrame + 1;
+	if (Frames == pDoc->GetFrameCount(m_pUndoState->Track))
+		if (!Sel.m_cpEnd.m_iFrame--)
+			return false;
+	m_pClipData = pMainFrm->GetFrameEditor()->Copy(Sel);
+	return true;
+}
+
+void CFActionDeleteSel::Undo(CMainFrame *pMainFrm) const
+{
+	CFrameEditor *pFrameEditor = pMainFrm->GetFrameEditor();
+	pFrameEditor->PasteInsert(m_pUndoState->Track, m_pUndoState->Selection.m_cpStart.m_iFrame, m_pClipData);
+	pMainFrm->UpdateControls();
+}
+
+void CFActionDeleteSel::Redo(CMainFrame *pMainFrm) const
+{
+	auto pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
+	pView->GetDocument()->DeleteFrames(
+		m_pUndoState->Track,
+		m_pUndoState->Selection.m_cpStart.m_iFrame,
+		m_pUndoState->Selection.m_cpEnd.m_iFrame - m_pUndoState->Selection.m_cpStart.m_iFrame + 1);		// // //
+	pView->SelectFrame(m_pUndoState->Selection.m_cpStart.m_iFrame);
+	pMainFrm->GetFrameEditor()->CancelSelection();
+	pMainFrm->UpdateControls();
+}
+
+
+
+bool CFActionMergeDuplicated::SaveState(const CMainFrame *pMainFrm)
+{
+	CFrameEditor *pFrameEditor = pMainFrm->GetFrameEditor();
+	const CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	m_pOldClipData = pFrameEditor->CopyEntire(m_pUndoState->Track);
+
+	const int Channels = pDoc->GetChannelCount();
+	const int Frames = pDoc->GetFrameCount(m_pUndoState->Track);
+	m_pClipData = new CFrameClipData {Channels, Frames};
+
+	unsigned int uiPatternUsed[MAX_PATTERN];
+	for (unsigned int c = 0; c < Channels; ++c) {
+		// mark all as unused
+		for (unsigned int ui = 0; ui < MAX_PATTERN; ++ui)
+			uiPatternUsed[ui] = MAX_PATTERN;
+
+		// map used patterns to themselves
+		for (unsigned int f = 0; f < Frames; ++f) {
+			unsigned int uiPattern = pDoc->GetPatternAtFrame(m_pUndoState->Track, f, c);
+			uiPatternUsed[uiPattern] = uiPattern;
+		}
+
+		// remap duplicates
+		for (unsigned int ui = 0; ui < MAX_PATTERN; ++ui) {
+			if (uiPatternUsed[ui] == MAX_PATTERN) continue;
+			for (unsigned int uj = 0; uj < ui; ++uj)
+				if (pDoc->ArePatternsSame(m_pUndoState->Track, c, ui, uj)) {		// // //
+					uiPatternUsed[ui] = uj;
+					TRACE("Duplicate: %d = %d\n", ui, uj);
+					break;
+				}
+		}
+
+		// apply mapping
+		for (unsigned int f = 0; f < Frames; ++f)
+			m_pClipData->SetFrame(f, c, uiPatternUsed[pDoc->GetPatternAtFrame(m_pUndoState->Track, f, c)]);
+	}
+
+	return true;
+}
+
+void CFActionMergeDuplicated::Undo(CMainFrame *pMainFrm) const
+{
+	CFrameEditor *pFrameEditor = pMainFrm->GetFrameEditor();
+	pFrameEditor->PasteAt(m_pUndoState->Track, m_pOldClipData, {0, 0});
+}
+
+void CFActionMergeDuplicated::Redo(CMainFrame *pMainFrm) const
+{
+	CFrameEditor *pFrameEditor = pMainFrm->GetFrameEditor();
+	pFrameEditor->PasteAt(m_pUndoState->Track, m_pClipData, {0, 0});
+}

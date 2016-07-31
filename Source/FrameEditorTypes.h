@@ -48,7 +48,7 @@ public:
 	// Clip info
 	struct {
 		int Channels;
-		int Rows;
+		int Frames;
 		int FirstChannel;
 		struct {
 			int SourceRowStart;

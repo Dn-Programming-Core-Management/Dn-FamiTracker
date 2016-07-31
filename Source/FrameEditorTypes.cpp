@@ -76,7 +76,7 @@ void CFrameClipData::FromMem(HGLOBAL hMem)
 	if (pByte != NULL) {
 		memcpy(&ClipInfo, pByte, sizeof(ClipInfo));
 
-		iSize = ClipInfo.Channels * ClipInfo.Rows;
+		iSize = ClipInfo.Channels * ClipInfo.Frames;
 		pFrames = new int[iSize];
 
 		memcpy(pFrames, pByte + sizeof(ClipInfo), sizeof(int) * iSize);
@@ -87,7 +87,7 @@ void CFrameClipData::FromMem(HGLOBAL hMem)
 
 int CFrameClipData::GetFrame(int Frame, int Channel) const
 {
-	ASSERT(Frame >= 0 && Frame < ClipInfo.Rows);
+	ASSERT(Frame >= 0 && Frame < ClipInfo.Frames);
 	ASSERT(Channel >= 0 && Channel < ClipInfo.Channels);
 
 	return *(pFrames + (Frame * ClipInfo.Channels + Channel));
@@ -95,7 +95,7 @@ int CFrameClipData::GetFrame(int Frame, int Channel) const
 
 void CFrameClipData::SetFrame(int Frame, int Channel, int Pattern)
 {
-	ASSERT(Frame >= 0 && Frame < ClipInfo.Rows);
+	ASSERT(Frame >= 0 && Frame < ClipInfo.Frames);
 	ASSERT(Channel >= 0 && Channel < ClipInfo.Channels);
 
 	*(pFrames + (Frame * ClipInfo.Channels + Channel)) = Pattern;

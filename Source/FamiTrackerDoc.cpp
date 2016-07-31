@@ -4606,55 +4606,14 @@ void CFamiTrackerDoc::RemoveUnusedSamples()		// // //
 	SetExceededFlag();
 }
 
-void CFamiTrackerDoc::MergeDuplicatedPatterns(unsigned int Track)		// // //
+bool CFamiTrackerDoc::ArePatternsSame(unsigned int Track, unsigned int Channel, unsigned int Pattern1, unsigned int Pattern2) const		// // //
 {
-	for (unsigned int c = 0; c < m_iChannelsAvailable; ++c) {
-		TRACE("Trim: %d, %d\n", Track, c);
-
-		unsigned int uiPatternUsed[MAX_PATTERN];
-
-		// mark all as unused
-		for (unsigned int ui = 0; ui < MAX_PATTERN; ++ui) {
-			uiPatternUsed[ui] = MAX_PATTERN;
-		}
-
-		// map used patterns to themselves
-		for (unsigned int f = 0; f < m_pTracks[Track]->GetFrameCount(); ++f) {
-			unsigned int uiPattern = m_pTracks[Track]->GetFramePattern(f, c);
-			uiPatternUsed[uiPattern] = uiPattern;
-		}
-
-		// remap duplicates
-		for (unsigned int ui = 0; ui < MAX_PATTERN; ++ui) {
-			if (uiPatternUsed[ui] == MAX_PATTERN) continue;
-			for (unsigned int uj = 0; uj < ui; ++uj) {
-				unsigned int uiLen = m_pTracks[Track]->GetPatternLength();
-				bool bSame = true;
-				for (unsigned int uk = 0; uk < uiLen; ++uk) {
-					stChanNote* a = m_pTracks[Track]->GetPatternData(c, ui, uk);
-					stChanNote* b = m_pTracks[Track]->GetPatternData(c, uj, uk);
-					if (0 != ::memcmp(a, b, sizeof(stChanNote))) {
-						bSame = false;
-						break;
-					}
-				}
-				if (bSame) {
-					uiPatternUsed[ui] = uj;
-					TRACE("Duplicate: %d = %d\n", ui, uj);
-					break;
-				}
-			}
-		}
-
-		// apply mapping
-		for (unsigned int f = 0; f < m_pTracks[Track]->GetFrameCount(); ++f) {
-			unsigned int uiPattern = m_pTracks[Track]->GetFramePattern(f, c);
-			m_pTracks[Track]->SetFramePattern(f, c, uiPatternUsed[uiPattern]);
-		}
-	}
-
-	SetModifiedFlag();		// // //
-	SetExceededFlag();
+	for (unsigned int r = 0, Count = m_pTracks[Track]->GetPatternLength(); r < Count; ++r)
+		if (::memcmp(m_pTracks[Track]->GetPatternData(Channel, Pattern1, r),
+					 m_pTracks[Track]->GetPatternData(Channel, Pattern2, r),
+					 sizeof(stChanNote)))
+			return false;
+	return true;
 }
 
 void CFamiTrackerDoc::PopulateUniquePatterns(unsigned int Track)		// // //

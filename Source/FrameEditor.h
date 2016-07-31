@@ -89,9 +89,9 @@ public:
 	CFrameClipData *CopyFrame(int Frame) const;		// // //
 	CFrameClipData *CopyEntire(int Track) const;		// // //
 
-	void Paste(unsigned int Track, const CFrameClipData *pClipData);
 	void PasteAt(unsigned int Track, const CFrameClipData *pClipData, const CFrameCursorPos &Pos);		// // //
-	void PasteNew(unsigned int Track, const CFrameClipData *pClipData);
+	void PasteInsert(unsigned int Track, int Frame, const CFrameClipData *pClipData);		// // //
+	void PasteNew(unsigned int Track, int Frame, const CFrameClipData *pClipData);		// // //
 
 	// Return window width in pixels
 	unsigned int CalcWidth(int Channels) const;

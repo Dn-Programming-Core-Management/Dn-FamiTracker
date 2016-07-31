@@ -253,6 +253,18 @@ private:
 	void Redo(CMainFrame *pMainFrm) const;
 };
 
+class CFActionDuplicatePattern : public CFrameAction		// // //
+{
+public:
+	CFActionDuplicatePattern() : CFrameAction(ACT_DUPLICATE_CURRENT) { }
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+private:
+	int m_iOldPattern, m_iNewPattern;
+};
+
 class CFActionPaste : public CFrameAction
 {
 public:
@@ -263,7 +275,33 @@ private:
 	void Undo(CMainFrame *pMainFrm) const;
 	void Redo(CMainFrame *pMainFrm) const;
 private:
-	CFrameClipData *m_pClipData;
+	CFrameClipData *m_pClipData = nullptr;
 	bool m_bClone;
 };
 
+
+class CFActionDeleteSel : public CFrameAction
+{
+public:
+	CFActionDeleteSel() : CFrameAction(ACT_DELETE_SELECTION) { }
+	~CFActionDeleteSel() { SAFE_RELEASE(m_pClipData); }
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+private:
+	CFrameClipData *m_pClipData = nullptr;
+};
+
+class CFActionMergeDuplicated : public CFrameAction
+{
+public:
+	CFActionMergeDuplicated() : CFrameAction(ACT_MERGE_DUPLICATED_PATTERNS) { }
+	~CFActionMergeDuplicated() { SAFE_RELEASE(m_pOldClipData); SAFE_RELEASE(m_pClipData); }
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+private:
+	CFrameClipData *m_pClipData = nullptr, *m_pOldClipData = nullptr;
+};
