@@ -59,7 +59,7 @@ private:
 	void			AccumulateDuration();
 	void			OptimizeString();
 	int				GetBlockSize(int Position);
-	stSpacingInfo	ScanNoteLengths(int Track, unsigned int StartRow, int Pattern, int Channel);
+	void			ScanNoteLengths(stSpacingInfo &Info, int Track, unsigned int StartRow, int Pattern, int Channel);
 
 	// Debugging
 	void			Print(LPCTSTR text) const;

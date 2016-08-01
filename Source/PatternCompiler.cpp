@@ -58,6 +58,7 @@
 // Command table
 enum command_t {
 	CMD_INSTRUMENT,
+	CMD_HOLD,		// // // 050B
 	CMD_SET_DURATION,
 	CMD_RESET_DURATION,
 	CMD_EFF_SPEED,
@@ -157,7 +158,8 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 		int ChanID = pTrackerChannel->GetID();
 		int ChipID = pTrackerChannel->GetChip();
 
-		if (ChanNote.Instrument != MAX_INSTRUMENTS && Note != HALT && Note != NONE && Note != RELEASE) {
+		if (ChanNote.Instrument != MAX_INSTRUMENTS && ChanNote.Instrument != HOLD_INSTRUMENT &&
+			Note != HALT && Note != NONE && Note != RELEASE) {		// // //
 			if (!pTrackerChannel->IsInstrumentCompatible(ChanNote.Instrument,
 				m_pDocument->GetInstrumentType(ChanNote.Instrument))) {		// // //
 				CString str;
@@ -194,7 +196,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 #ifdef OPTIMIZE_DURATIONS
 
 		// Determine length of space between notes
-		SpaceInfo = ScanNoteLengths(Track, i, Pattern, Channel);
+		ScanNoteLengths(SpaceInfo, Track, i, Pattern, Channel);		// // //
 
 		if (SpaceInfo.SpaceCount > 2) {
 			if (SpaceInfo.SpaceSize != m_iCurrentDefaultDuration && SpaceInfo.SpaceCount != 0xFF) {
@@ -225,39 +227,44 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 		}
 		else 
 */
-		if (Instrument != LastInstrument && Instrument < MAX_INSTRUMENTS && Note != HALT && Note != RELEASE) {		// // //
-
-			LastInstrument = Instrument;
-			// Write instrument change command
-			//if (Channel < InstrChannels) {
-			if (ChanID != CHANID_DPCM) {		// Skip DPCM
-				WriteDuration();
+		if (Note != HALT && Note != RELEASE) {		// // //
+			if (Instrument != LastInstrument && Instrument < MAX_INSTRUMENTS) {
+				LastInstrument = Instrument;
+				// Write instrument change command
+				//if (Channel < InstrChannels) {
+				if (ChanID != CHANID_DPCM) {		// Skip DPCM
+					WriteDuration();
 #ifdef PACKED_INST_CHANGE
-				if (Instrument < 0x10) {
-					WriteData(0xE0 | Instrument);
-				}
-				else {
+					if (Instrument < 0x10)
+						WriteData(0xE0 | Instrument);
+					else {
+						WriteData(Command(CMD_INSTRUMENT));
+						WriteData(Instrument << 1);
+					}
+#else
 					WriteData(Command(CMD_INSTRUMENT));
 					WriteData(Instrument << 1);
-				}
-#else
-				WriteData(Command(CMD_INSTRUMENT));
-				WriteData(Instrument << 1);
 #endif /* PACKED_INST_CHANGE */
-				Action = true;
+					Action = true;
+				}
+				else {
+					DPCMInst = ChanNote.Instrument;
+				}
 			}
-			else {
-				DPCMInst = ChanNote.Instrument;
-			}
-		}
-#ifdef OPTIMIZE_DURATIONS
-		else if (Instrument == LastInstrument && Instrument < MAX_INSTRUMENTS) {		// // //
-			if (ChanID != CHANID_DPCM) {
+			if (Instrument == HOLD_INSTRUMENT && ChanID != CHANID_DPCM) {		// // // 050B
 				WriteDuration();
+				WriteData(Command(CMD_HOLD));
 				Action = true;
 			}
-		}
+#ifdef OPTIMIZE_DURATIONS
+			if (Instrument == LastInstrument && Instrument < MAX_INSTRUMENTS) {		// // //
+				if (ChanID != CHANID_DPCM) {
+					WriteDuration();
+					Action = true;
+				}
+			}
 #endif /* OPTIMIZE_DURATIONS */
+		}
 
 		if (Note == 0) {
 			NESNote = 0xFF;
@@ -639,6 +646,8 @@ unsigned int CPatternCompiler::FindInstrument(int Instrument) const
 {
 	if (Instrument == MAX_INSTRUMENTS)
 		return MAX_INSTRUMENTS;
+	if (Instrument == HOLD_INSTRUMENT)		// // // 050B
+		return HOLD_INSTRUMENT;
 
 	for (int i = 0; i < MAX_INSTRUMENTS; i++) {
 		if (m_pInstrumentList[i] == Instrument)
@@ -653,11 +662,10 @@ unsigned int CPatternCompiler::FindSample(int Instrument, int Octave, int Key) c
 	return (*m_pDPCMList)[Instrument][Octave][Key - 1];
 }
 
-CPatternCompiler::stSpacingInfo CPatternCompiler::ScanNoteLengths(int Track, unsigned int StartRow, int Pattern, int Channel)
+void CPatternCompiler::ScanNoteLengths(stSpacingInfo &Info, int Track, unsigned int StartRow, int Pattern, int Channel)
 {
 	stChanNote NoteData;
 	int StartSpace = -1, Space = 0, SpaceCount = 0;
-	stSpacingInfo Info;
 
 	Info.SpaceCount = 0;
 	Info.SpaceSize = 0;
@@ -668,33 +676,30 @@ CPatternCompiler::stSpacingInfo CPatternCompiler::ScanNoteLengths(int Track, uns
 
 		if (NoteData.Note > 0)
 			NoteUsed = true;
-		if (NoteData.Instrument < MAX_INSTRUMENTS)
+		else if (NoteData.Instrument < MAX_INSTRUMENTS || NoteData.Instrument == HOLD_INSTRUMENT)		// // //
 			NoteUsed = true;
-		if (NoteData.Vol < 0x10)
+		else if (NoteData.Vol < MAX_VOLUME)
 			NoteUsed = true;
-		for (unsigned j = 0; j < (m_pDocument->GetEffColumns(Track, Channel) + 1); ++j) {
+		else for (unsigned j = 0, Count = m_pDocument->GetEffColumns(Track, Channel); j <= Count; ++j)
 			if (NoteData.EffNumber[j] != EF_NONE)
 				NoteUsed = true;
-		}
 
 		if (i == StartRow && NoteUsed == false) {
 			Info.SpaceCount = 0xFF;
 			Info.SpaceSize = StartSpace;
-			return Info;
+			return;
 		}
 
 		if (i > StartRow) {
 			if (NoteUsed) {
 				if (StartSpace == -1)
 					StartSpace = Space;
+				else if (StartSpace == Space)
+					++SpaceCount;
 				else {
-					if (StartSpace == Space)
-						SpaceCount++;
-					else {
-						Info.SpaceCount = SpaceCount;
-						Info.SpaceSize = StartSpace;
-						return Info;
-					}
+					Info.SpaceCount = SpaceCount;
+					Info.SpaceSize = StartSpace;
+					return;
 				}
 				Space = 0;
 			}
@@ -709,8 +714,6 @@ CPatternCompiler::stSpacingInfo CPatternCompiler::ScanNoteLengths(int Track, uns
 
 	Info.SpaceCount = SpaceCount;
 	Info.SpaceSize = StartSpace;
-
-	return Info;
 }
 
 void CPatternCompiler::WriteData(unsigned char Value)
