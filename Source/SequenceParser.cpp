@@ -286,15 +286,17 @@ void CSequenceParser::ParseSequence(const std::string &String)
 		}
 	};
 
+	int Loop = -1, Release = -1;
+
 	m_pConversion->OnStart();
 	PushFunc();
 	for (auto it = std::sregex_iterator {String.begin(), String.end(), SPLIT_RE},
 			  end = std::sregex_iterator { }; it != end; ++it) {
 		if (it->str() == "|") {
-			m_pSequence->SetLoopPoint(m_iPushedCount); continue;
+			Loop = m_iPushedCount; continue;
 		}
 		if (it->str() == "/") {
-			m_pSequence->SetReleasePoint(m_iPushedCount); continue;
+			Release = m_iPushedCount; continue;
 		}
 		if (m_pConversion->ToValue(it->str()))
 			PushFunc();
@@ -302,6 +304,8 @@ void CSequenceParser::ParseSequence(const std::string &String)
 	m_pConversion->OnFinish();
 	PushFunc();
 	m_pSequence->SetItemCount(m_iPushedCount);
+	m_pSequence->SetLoopPoint(Loop);
+	m_pSequence->SetReleasePoint(Release);
 }
 
 std::string CSequenceParser::PrintSequence() const
