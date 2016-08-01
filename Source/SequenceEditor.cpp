@@ -182,9 +182,17 @@ LRESULT CSequenceEditor::OnSettingChanged(WPARAM wParam, LPARAM lParam)		// // /
 	SelectSequence(m_pSequence, m_iSelectedSetting, m_iInstrumentType);
 
 	switch (m_iSelectedSetting) {
-		case SEQ_ARPEGGIO:
-			static_cast<CArpeggioGraphEditor*>(m_pGraphEditor)->ChangeSetting();
-			break;
+	case SEQ_VOLUME:		// // //
+		if (m_iInstrumentType == INST_VRC6) {
+			ASSERT(dynamic_cast<CBarGraphEditor*>(m_pGraphEditor));
+			static_cast<CBarGraphEditor*>(m_pGraphEditor)->SetMaxItems(
+				m_pSequence->GetSetting() == SETTING_VOL_64_STEPS ? 0x3F : 0x0F);
+		}
+		break;
+	case SEQ_ARPEGGIO:
+		ASSERT(dynamic_cast<CArpeggioGraphEditor*>(m_pGraphEditor));
+		static_cast<CArpeggioGraphEditor*>(m_pGraphEditor)->ChangeSetting();
+		break;
 	}
 
 	m_pSetting->RedrawWindow();
@@ -228,7 +236,10 @@ void CSequenceEditor::SelectSequence(CSequence *pSequence, int Type, int Instrum
 	// Create the graph
 	switch (Type) {
 		case SEQ_VOLUME:
-			m_pGraphEditor = new CBarGraphEditor(pSequence, m_iMaxVol);
+			if (m_iInstrumentType == INST_VRC6 && m_iSelectedSetting == SEQ_VOLUME && pSequence->GetSetting() == SETTING_VOL_64_STEPS)
+				m_pGraphEditor = new CBarGraphEditor(pSequence, 0x3F);		// // //
+			else
+				m_pGraphEditor = new CBarGraphEditor(pSequence, m_iMaxVol);
 			break;
 		case SEQ_ARPEGGIO:
 			m_pGraphEditor = new CArpeggioGraphEditor(pSequence);

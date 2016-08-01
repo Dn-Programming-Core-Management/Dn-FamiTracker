@@ -37,8 +37,10 @@ public:
 	DECLARE_DYNAMIC(CGraphEditor)
 
 protected:
-	int GetItemWidth() const;
 	virtual void Initialize();
+	int GetItemWidth() const;
+	virtual int GetItemTop() const = 0;		// // //
+	virtual int GetItemBottom() const;		// // //
 	virtual int GetItemHeight() const = 0;
 	virtual void HighlightItem(CPoint point) = 0;
 	virtual void ModifyItem(CPoint point, bool Redraw);
@@ -118,6 +120,9 @@ public:
 	void HighlightItem(CPoint point);
 	void ModifyItem(CPoint point, bool Redraw);
 	int GetItemHeight() const;
+	int GetItemTop() const override;		// // //
+
+	void SetMaxItems(int Levels);		// // //
 };
 
 // Arpeggio graph editor
@@ -143,6 +148,7 @@ protected:
 	void ModifyItem(CPoint point, bool Redraw);
 	void HighlightItem(CPoint point);
 	int GetItemHeight() const;
+	int GetItemTop() const override;		// // //
 	
 	DECLARE_MESSAGE_MAP()
 public:
@@ -160,12 +166,15 @@ public:
 	void ModifyItem(CPoint point, bool Redraw);
 	void HighlightItem(CPoint point);
 	int GetItemHeight() const;
+	int GetItemTop() const override;		// // //
 };
 
 // Sunsoft noise editor
 class CNoiseEditor : public CGraphEditor
 {
 private:
+	static const int BUTTON_HEIGHT = 9;		// // //
+	static const int BUTTON_MARGIN = 26;		// // //
 	int m_iItems;
 	int m_iLastIndex;
 protected:
@@ -176,4 +185,6 @@ public:
 	void ModifyItem(CPoint point, bool Redraw);
 	void HighlightItem(CPoint point);
 	int GetItemHeight() const;
+	int GetItemTop() const override;		// // //
+	int GetItemBottom() const override;		// // //
 };
