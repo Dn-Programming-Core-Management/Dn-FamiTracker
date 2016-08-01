@@ -38,10 +38,16 @@ enum seq_setting_t : unsigned int {
 
 	SETTING_PITCH_RELATIVE = 0,
 	SETTING_PITCH_ABSOLUTE = 1,		// // // 050B
+#ifdef _DEBUG
 	SETTING_PITCH_SWEEP    = 2,		// // // 050B
+#endif
 };
 
+#ifdef _DEBUG
 static const unsigned int SEQ_SETTING_COUNT[] = {2, 4, 3, 1, 1};
+#else
+static const unsigned int SEQ_SETTING_COUNT[] = {2, 4, 2, 1, 1};
+#endif
 
 // // // Sunsoft modes
 enum s5b_mode_t {
@@ -57,7 +63,8 @@ enum arp_scheme_mode_t {
 	ARPSCHEME_MODE_NEG_Y = 0xC0
 };
 
-const int ARPSCHEME_MIN = -27;		// // // lowest note offset for arp schemes
+const int ARPSCHEME_MAX = 36;		// // // highest note offset for arp schemes
+const int ARPSCHEME_MIN = ARPSCHEME_MAX - 0x3F;		// // //
 
 #include "CustomExporterInterfaces.h"		// // //
 

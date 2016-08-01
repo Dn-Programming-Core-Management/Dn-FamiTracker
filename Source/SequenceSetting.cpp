@@ -110,8 +110,8 @@ void CSequenceSetting::OnLButtonDown(UINT nFlags, CPoint point)
 #ifndef _DEBUG
 	if (m_iType == SEQ_VOLUME && m_iInstType != INST_VRC6)
 		m_menuPopup.EnableMenuItem(MENU_ID_BASE + SETTING_VOL_64_STEPS, MF_DISABLED);		// // // 050B
-	else if (m_iType == SEQ_PITCH && m_iInstType != INST_2A03)
-		m_menuPopup.EnableMenuItem(MENU_ID_BASE + SETTING_PITCH_SWEEP, MF_DISABLED);
+//	else if (m_iType == SEQ_PITCH && m_iInstType != INST_2A03)
+//		m_menuPopup.EnableMenuItem(MENU_ID_BASE + SETTING_PITCH_SWEEP, MF_DISABLED);
 #endif
 	m_menuPopup.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x + rect.left, point.y + rect.top, this);
 	m_menuPopup.DestroyMenu();		// // //
@@ -147,7 +147,7 @@ void CSequenceSetting::OnMenuSettingChanged(UINT ID)		// // //
 	if (m_iType == SEQ_ARPEGGIO && Setting != SETTING_ARP_SCHEME) {
 		for (unsigned int i = 0; i < m_pSequence->GetItemCount(); ++i) {
 			int Item = m_pSequence->GetItem(i) & 0x3F;
-			if (Item > 0x24) Item -= 0x40;
+			if (Item > ARPSCHEME_MAX) Item -= 0x40;
 			m_pSequence->SetItem(i, Item);
 		}
 	}

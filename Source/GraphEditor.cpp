@@ -750,8 +750,8 @@ void CArpeggioGraphEditor::Initialize()
 		info.nMax = 72;
 		info.nMin = 0;
 		info.nPage = 1;
-		info.nPos = 36;
-		m_iScrollMax = 36; break;
+		info.nPos = ARPSCHEME_MAX;
+		m_iScrollMax = ARPSCHEME_MAX; break;
 	default:
 		info.nMax = 192;
 		info.nMin = 0;
@@ -764,7 +764,7 @@ void CArpeggioGraphEditor::Initialize()
 		m_iScrollOffset = m_pSequence->GetItem(0);
 		if (m_pSequence->GetSetting() == SETTING_ARP_SCHEME){			// // //
 			m_iScrollOffset = (m_iScrollOffset + 0x80) % 0x40;
-			m_iScrollOffset -= 0x40 * (m_iScrollOffset % 0x40 > 0x24);
+			m_iScrollOffset -= 0x40 * (m_iScrollOffset % 0x40 > ARPSCHEME_MAX);
 		}
 
 		info.nPos = m_iScrollMax - m_iScrollOffset;		// // //
@@ -802,8 +802,8 @@ void CArpeggioGraphEditor::ChangeSetting()
 		info.nMax = 72;
 		info.nMin = 0;
 		info.nPage = 1;
-		info.nPos = 36;
-		m_iScrollMax = 36; break;
+		info.nPos = ARPSCHEME_MAX;
+		m_iScrollMax = ARPSCHEME_MAX; break;
 	default:
 		info.nMax = 192;
 		info.nMin = 0;
@@ -885,7 +885,7 @@ void CArpeggioGraphEditor::OnPaint()
 		int item;			// // //
 		if (m_pSequence->GetSetting() == SETTING_ARP_SCHEME) {
 			int value = (m_iHighlightedValue + 0x100) % 0x40;
-			if (value > 36) value -= 0x40;
+			if (value > ARPSCHEME_MAX) value -= 0x40;
 			item = (ITEMS / 2) - value + m_iScrollOffset;
 		}
 		else
@@ -910,7 +910,7 @@ void CArpeggioGraphEditor::OnPaint()
 		int item;			// // //
 		if (m_pSequence->GetSetting() == SETTING_ARP_SCHEME) {
 			int value = (m_pSequence->GetItem(i) + 0x100) % 0x40;
-			if (value > 36) value -= 0x40;
+			if (value > ARPSCHEME_MAX) value -= 0x40;
 			item = (ITEMS / 2) - value + m_iScrollOffset;
 		}
 		else
@@ -1012,10 +1012,10 @@ int CArpeggioGraphEditor::GetItemValue(int pos)
 		break;
 	case SETTING_ARP_SCHEME:
 		ItemValue = (ITEMS / 2) - ((pos - Top) / ItemHeight) + m_iScrollOffset;
-		if (ItemValue < -27)
-			ItemValue = -27;
-		if (ItemValue > 36)
-			ItemValue = 36;
+		if (ItemValue < ARPSCHEME_MIN)
+			ItemValue = ARPSCHEME_MIN;
+		if (ItemValue > ARPSCHEME_MAX)
+			ItemValue = ARPSCHEME_MAX;
 		break;
 	default:
 		ItemValue = (ITEMS / 2) - ((pos - Top) / ItemHeight) + m_iScrollOffset;

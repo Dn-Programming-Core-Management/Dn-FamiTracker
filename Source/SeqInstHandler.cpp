@@ -166,7 +166,7 @@ bool CSeqInstHandler::ProcessSequence(int Index, unsigned Setting, int Value)
 		case SETTING_ARP_SCHEME: // // //
 			if (Value < 0) Value += 256;
 			int lim = Value % 0x40, scheme = Value / 0x40;
-			if (lim > 36)
+			if (lim > ARPSCHEME_MAX)
 				lim -= 64;
 			{
 				unsigned char Param = m_pInterface->GetArpParam();
