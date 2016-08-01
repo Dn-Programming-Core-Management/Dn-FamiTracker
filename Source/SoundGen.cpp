@@ -2097,8 +2097,6 @@ void CSoundGen::UpdateAPU()
 {
 	// Write to APU registers
 
-	const int CHANNEL_DELAY = 250;
-
 	m_iConsumedCycles = 0;
 
 	// Copy wave changed flag
@@ -2109,13 +2107,18 @@ void CSoundGen::UpdateAPU()
 		CSingleLock l(&m_csAPULock);		// // //
 		if (l.Lock()) {
 			// Update APU channel registers
+			unsigned int LastChip = SNDCHIP_NONE;		// // // 050B
 			for (int i = 0; i < CHANNELS; ++i) {
 				if (m_pChannels[i] != NULL) {
 					m_pChannels[i]->RefreshChannel();
+					unsigned int Chip = m_pTrackerChannels[i]->GetChip();
+					if (m_pDocument->ExpansionEnabled(Chip)) {
+						int Delay = (Chip == LastChip) ? 150 : 250;
+						if (m_iConsumedCycles + Delay < m_iUpdateCycles)
+							AddCycles(Delay);
+						LastChip = Chip;
+					}
 					m_pAPU->Process();
-					// Add some delay between each channel update
-					if (m_iFrameRate == CAPU::FRAME_RATE_NTSC || m_iFrameRate == CAPU::FRAME_RATE_PAL)
-						AddCycles(CHANNEL_DELAY);
 				}
 			}
 		#ifdef WRITE_VGM		// // //
@@ -2246,13 +2249,6 @@ void CSoundGen::OnRemoveDocument(WPARAM wParam, LPARAM lParam)
 	m_pInstRecorder->ResetRecordCache();
 	TRACE("SoundGen: Document removed\n");
 }
-
-/*
-void CSoundGen::SetMeterDecayRate(int Rate)
-{
-
-}
-*/
 
 void CSoundGen::RegisterKeyState(int Channel, int Note)
 {
