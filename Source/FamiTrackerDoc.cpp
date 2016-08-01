@@ -742,6 +742,11 @@ bool CFamiTrackerDoc::WriteBlock_Parameters(CDocumentFile *pDocFile, const int V
 
 				if (Version >= 6)
 					pDocFile->WriteBlockInt(m_iSpeedSplitPoint);
+
+				if (Version >= 8) {		// // // 050B
+					pDocFile->WriteBlockChar(m_iDetuneSemitone);
+					pDocFile->WriteBlockChar(m_iDetuneCent);
+				}
 			}
 		}
 	}
@@ -1915,7 +1920,7 @@ void CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile, const int Ver
 void CFamiTrackerDoc::ReadBlock_SequencesVRC6(CDocumentFile *pDocFile, const int Version)
 {
 	unsigned int Count = AssertRange(pDocFile->GetBlockInt(), 0, MAX_SEQUENCES * SEQ_COUNT, "VRC6 sequence count");
-	AssertRange<MODULE_ERROR_OFFICIAL>(Count, 0U, MAX_SEQUENCES, "VRC6 sequence count");		// // //
+	AssertRange<MODULE_ERROR_OFFICIAL>(Count, 0U, static_cast<unsigned>(MAX_SEQUENCES), "VRC6 sequence count");		// // //
 
 	CSequenceManager *pManager = GetSequenceManager(INST_VRC6);		// // //
 
