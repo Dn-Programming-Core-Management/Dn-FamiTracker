@@ -245,6 +245,20 @@ private:
 	bool m_bClone;
 };
 
+class CFActionPasteOverwrite : public CFrameAction
+{
+public:
+	CFActionPasteOverwrite(CFrameClipData *pData) : m_pClipData(pData) { }
+	~CFActionPasteOverwrite() { SAFE_RELEASE(m_pClipData); }
+private:
+	bool SaveState(const CMainFrame *pMainFrm);
+	void Undo(CMainFrame *pMainFrm) const;
+	void Redo(CMainFrame *pMainFrm) const;
+private:
+	CFrameClipData *m_pClipData = nullptr, *m_pOldClipData = nullptr;
+	CFrameSelection m_TargetSelection;
+};
+
 class CFActionDropMove : public CFrameAction
 {
 public:

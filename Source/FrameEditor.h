@@ -225,6 +225,8 @@ public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	// // //
+	afx_msg void OnEditPasteOverwrite();
+	afx_msg void OnUpdateEditPasteOverwrite(CCmdUI *pCmdUI);
 	afx_msg void OnModuleDuplicateCurrentPattern();
 };
 

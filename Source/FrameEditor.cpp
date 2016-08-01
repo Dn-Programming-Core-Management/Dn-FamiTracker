@@ -118,6 +118,8 @@ BEGIN_MESSAGE_MAP(CFrameEditor, CWnd)
 	ON_COMMAND(ID_MODULE_MOVEFRAMEDOWN, OnModuleMoveFrameDown)
 	ON_COMMAND(ID_MODULE_MOVEFRAMEUP, OnModuleMoveFrameUp)
 	// // //
+	ON_COMMAND(ID_FRAME_PASTEOVERWRITE, OnEditPasteOverwrite)
+//	ON_UPDATE_COMMAND_UI(ID_FRAME_PASTEOVERWRITE, OnUpdateEditPasteOverwrite)
 	ON_COMMAND(ID_MODULE_DUPLICATECURRENTPATTERN, OnModuleDuplicateCurrentPattern)
 END_MESSAGE_MAP()
 
@@ -1035,6 +1037,24 @@ void CFrameEditor::OnEditPaste()
 	m_pMainFrame->AddAction(new CFActionPaste {pClipData, static_cast<int>(m_pView->GetSelectedFrame()), false});		// // //
 }
 
+void CFrameEditor::OnEditPasteOverwrite()		// // //
+{
+	CClipboard Clipboard(this, m_iClipboard);
+	HGLOBAL hMem;		// // //
+	if (!Clipboard.GetData(hMem))
+		return;
+
+	CFrameClipData *pClipData = new CFrameClipData();
+	pClipData->FromMem(hMem);
+
+	m_pMainFrame->AddAction(new CFActionPasteOverwrite {pClipData});		// // //
+}
+
+void CFrameEditor::OnUpdateEditPasteOverwrite(CCmdUI *pCmdUI)		// // //
+{
+	pCmdUI->Enable(IsClipboardAvailable() ? 1 : 0);
+}
+
 void CFrameEditor::OnEditPasteNewPatterns()
 {
 	CClipboard Clipboard(this, m_iClipboard);
@@ -1147,6 +1167,7 @@ void CFrameEditor::PasteAt(unsigned int Track, const CFrameClipData *pClipData, 
 		for (int c = 0; c < pClipData->ClipInfo.Channels; ++c)
 			it.Set(c + /*it.m_iChannel*/ pClipData->ClipInfo.FirstChannel, pClipData->GetFrame(f, c));
 		++it;
+		if (it.m_iFrame == 0) break;
 	}
 }
 

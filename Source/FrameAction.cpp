@@ -402,6 +402,30 @@ void CFActionPaste::Redo(CMainFrame *pMainFrm) const
 
 
 
+bool CFActionPasteOverwrite::SaveState(const CMainFrame *pMainFrm)		// // //
+{
+	m_TargetSelection.m_cpStart.m_iFrame = m_pUndoState->Cursor.m_iFrame;
+	m_TargetSelection.m_cpEnd.m_iFrame = m_TargetSelection.m_cpStart.m_iFrame + m_pClipData->ClipInfo.Frames - 1;
+	m_TargetSelection.m_cpStart.m_iChannel = m_pClipData->ClipInfo.FirstChannel;
+	m_TargetSelection.m_cpEnd.m_iChannel = m_TargetSelection.m_cpStart.m_iChannel + m_pClipData->ClipInfo.Channels - 1;
+	m_pOldClipData = pMainFrm->GetFrameEditor()->Copy(m_TargetSelection);
+	return true;
+}
+
+void CFActionPasteOverwrite::Undo(CMainFrame *pMainFrm) const		// // //
+{
+	pMainFrm->GetFrameEditor()->PasteAt(m_pUndoState->Track, m_pOldClipData, m_pUndoState->Cursor);
+}
+
+void CFActionPasteOverwrite::Redo(CMainFrame *pMainFrm) const		// // //
+{
+	auto pEditor = pMainFrm->GetFrameEditor();
+	pEditor->PasteAt(m_pUndoState->Track, m_pClipData, m_pUndoState->Cursor);
+	pEditor->SetSelection(m_TargetSelection);
+}
+
+
+
 bool CFActionDropMove::SaveState(const CMainFrame *pMainFrm)
 {
 	return true;
