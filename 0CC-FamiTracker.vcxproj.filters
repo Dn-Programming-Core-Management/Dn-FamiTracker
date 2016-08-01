@@ -696,6 +696,9 @@
     <ClCompile Include="Source\SplitKeyboardDlg.cpp">
       <Filter>Source Files\Dialog Boxes</Filter>
     </ClCompile>
+    <ClCompile Include="Source\SeqInstHandler2A03Pulse.cpp">
+      <Filter>Source Files\Sound Driver\Instruments</Filter>
+    </ClCompile>
     <ClCompile Include="Source\SeqInstHandlerSawtooth.cpp">
       <Filter>Source Files\Sound Driver\Instruments</Filter>
     </ClCompile>
@@ -704,6 +707,9 @@
     </ClCompile>
     <ClCompile Include="Source\FrameEditorTypes.cpp">
       <Filter>Source Files\Frame Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\PatternComponent.cpp">
+      <Filter>Source Files\Pattern Editor</Filter>
     </ClCompile>
     <ClCompile Include="Source\SequenceParser.cpp">
       <Filter>Source Files\Dialog Boxes\Instrument\Related\Sequence editor</Filter>
@@ -1253,6 +1259,9 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\SeqInstHandler2A03Pulse.h">
+      <Filter>Header Files\Sound Driver Headers\Instruments Headers</Filter>
+    </ClInclude>
     <ClInclude Include="Source\SeqInstHandlerSawtooth.h">
       <Filter>Header Files\Sound Driver Headers\Instruments Headers</Filter>
     </ClInclude>
@@ -1261,6 +1270,9 @@
     </ClInclude>
     <ClInclude Include="Source\FrameEditorTypes.h">
       <Filter>Header Files\Frame Editor Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\PatternComponent.h">
+      <Filter>Header Files\Pattern Editor Headers</Filter>
     </ClInclude>
     <ClInclude Include="Source\SequenceParser.h">
       <Filter>Header Files\Dialog Boxes Headers\Instrument Headers\Related Headers\Sequence editor Headers</Filter>

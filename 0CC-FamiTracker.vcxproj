@@ -438,6 +438,7 @@
     <ClCompile Include="Source\ChannelState.cpp" />
     <ClCompile Include="Source\FrameEditorTypes.cpp" />
     <ClCompile Include="Source\NoteQueue.cpp" />
+    <ClCompile Include="Source\PatternComponent.cpp" />
     <ClCompile Include="Source\RegisterState.cpp" />
     <ClCompile Include="Source\CompoundAction.cpp" />
     <ClCompile Include="Source\DetuneTable.cpp" />
@@ -487,6 +488,7 @@
     <ClCompile Include="Source\PatternNote.cpp" />
     <ClCompile Include="Source\RecordSettingsDlg.cpp" />
     <ClCompile Include="Source\SeqInstHandler.cpp" />
+    <ClCompile Include="Source\SeqInstHandler2A03Pulse.cpp" />
     <ClCompile Include="Source\SeqInstHandlerFDS.cpp" />
     <ClCompile Include="Source\SeqInstHandlerN163.cpp" />
     <ClCompile Include="Source\SeqInstHandlerSawtooth.cpp" />
@@ -696,6 +698,7 @@
     <ClInclude Include="Source\BookmarkDlg.h" />
     <ClInclude Include="Source\FrameEditorTypes.h" />
     <ClInclude Include="Source\NoteQueue.h" />
+    <ClInclude Include="Source\PatternComponent.h" />
     <ClInclude Include="Source\RegisterState.h" />
     <ClInclude Include="Source\CompoundAction.h" />
     <ClInclude Include="Source\DetuneTable.h" />
@@ -743,6 +746,7 @@
     <ClInclude Include="Source\ModuleException.h" />
     <ClInclude Include="Source\OldSequence.h" />
     <ClInclude Include="Source\PatternNote.h" />
+    <ClInclude Include="Source\SeqInstHandler2A03Pulse.h" />
     <ClInclude Include="Source\SeqInstHandlerSawtooth.h" />
     <ClInclude Include="Source\SeqInstrument.h" />
     <ClInclude Include="Source\SequenceEditorMessage.h" />
