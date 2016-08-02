@@ -765,15 +765,8 @@ char* CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 	
 	// // // Custom pitch tables
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
-	for (size_t i = 0; i < pDriver->freq_table_reloc_size / sizeof(int); i += 3) {
-		int value = pDriver->freq_table_reloc[i + 1];
-		if (value != -1) {
-			value += Origin;
-			pData[pDriver->freq_table_reloc[i] + 1] = value & 0xFF;
-			pData[pDriver->freq_table_reloc[i] + 5] = value >> 8;
-		}
-
-		int Table = pDriver->freq_table_reloc[i + 2];
+	for (size_t i = 0; i < pDriver->freq_table_size; i += 2) {		// // //
+		int Table = pDriver->freq_table[i + 1];
 		switch (Table) {
 		case CDetuneTable::DETUNE_NTSC:
 		case CDetuneTable::DETUNE_PAL:
@@ -782,15 +775,15 @@ char* CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 		case CDetuneTable::DETUNE_N163:
 			for (int j = 0; j < NOTE_COUNT; ++j) {
 				int Reg = pSoundGen->ReadPeriodTable(j, Table);
-				pData[pDriver->freq_table_reloc[i + 1] + 2 * j    ] = Reg & 0xFF;
-				pData[pDriver->freq_table_reloc[i + 1] + 2 * j + 1] = Reg >> 8;
+				pData[pDriver->freq_table[i] + 2 * j    ] = Reg & 0xFF;
+				pData[pDriver->freq_table[i] + 2 * j + 1] = Reg >> 8;
 			} break;
 		case CDetuneTable::DETUNE_VRC7:
 			for (int j = 0; j <= NOTE_RANGE; ++j) { // one extra item
 				int Reg = pSoundGen->ReadPeriodTable(j % NOTE_RANGE, Table) * 4;
 				if (j == NOTE_RANGE) Reg <<= 1;
-				pData[pDriver->freq_table_reloc[i + 1] + j                 ] = Reg & 0xFF;
-				pData[pDriver->freq_table_reloc[i + 1] + j + NOTE_RANGE + 1] = Reg >> 8;
+				pData[pDriver->freq_table[i] + j                 ] = Reg & 0xFF;
+				pData[pDriver->freq_table[i] + j + NOTE_RANGE + 1] = Reg >> 8;
 			} break;
 		default:
 			AfxDebugBreak();
@@ -798,18 +791,19 @@ char* CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 	}
 
 	// Relocate driver
-	for (size_t i = 0; i < (pDriver->word_reloc_size / sizeof(int)); ++i) {
+	for (size_t i = 0; i < pDriver->word_reloc_size; ++i) {
 		// Words
 		unsigned short value = pData[pDriver->word_reloc[i]] + (pData[pDriver->word_reloc[i] + 1] << 8);
-		for (size_t j = 0; j <= pDriver->freq_table_reloc_size / sizeof(int); j += 3) {		// // //
-			if (j == pDriver->freq_table_reloc_size / sizeof(int)) {
-				value += Origin;
-				pData[pDriver->word_reloc[i]] = value & 0xFF;
-				pData[pDriver->word_reloc[i] + 1] = value >> 8;
-				break;
-			}
-			if (pDriver->freq_table_reloc[j] == pDriver->word_reloc[i] - 4) break;
-		}
+		value += Origin;
+		pData[pDriver->word_reloc[i]] = value & 0xFF;
+		pData[pDriver->word_reloc[i] + 1] = value >> 8;
+	}
+
+	for (size_t i = 0; i < pDriver->adr_reloc_size; i += 2) {		// // //
+		unsigned short value = pData[pDriver->adr_reloc[i]] + (pData[pDriver->adr_reloc[i + 1]] << 8);
+		value += Origin;
+		pData[pDriver->adr_reloc[i]] = value & 0xFF;
+		pData[pDriver->adr_reloc[i + 1]] = value >> 8;
 	}
 
 	if (m_iActualChip == SNDCHIP_N163) {

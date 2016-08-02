@@ -76,79 +76,97 @@ struct driver_t {
 	const unsigned char *driver;
 	const unsigned int driver_size;
 	const int *word_reloc;
-	const int word_reloc_size;
-	const int *freq_table_reloc;		// // //
-	const int freq_table_reloc_size;	// // //
+	const size_t word_reloc_size;
+	const int *freq_table;		// // //
+	const size_t freq_table_size;	// // //
+	const int *adr_reloc;		// // //
+	const size_t adr_reloc_size;	// // //
 };
 
 const driver_t DRIVER_PACK_2A03 = { 
 	DRIVER_2A03, 
 	sizeof(DRIVER_2A03),
 	DRIVER_RELOC_WORD_2A03, 
-	sizeof(DRIVER_RELOC_WORD_2A03), 
+	sizeof(DRIVER_RELOC_WORD_2A03) / sizeof(int), 
 	DRIVER_FREQ_TABLE_2A03,				// // //
-	sizeof(DRIVER_FREQ_TABLE_2A03),
+	sizeof(DRIVER_FREQ_TABLE_2A03) / sizeof(int),
+	DRIVER_RELOC_ADR_2A03,
+	sizeof(DRIVER_RELOC_ADR_2A03) / sizeof(int),
 };
 
 const driver_t DRIVER_PACK_VRC6 = { 
 	DRIVER_VRC6, 
 	sizeof(DRIVER_VRC6),
 	DRIVER_RELOC_WORD_VRC6, 
-	sizeof(DRIVER_RELOC_WORD_VRC6), 
+	sizeof(DRIVER_RELOC_WORD_VRC6) / sizeof(int), 
 	DRIVER_FREQ_TABLE_VRC6,				// // //
-	sizeof(DRIVER_FREQ_TABLE_VRC6),
+	sizeof(DRIVER_FREQ_TABLE_VRC6) / sizeof(int),
+	DRIVER_RELOC_ADR_VRC6,
+	sizeof(DRIVER_RELOC_ADR_VRC6) / sizeof(int),
 };
 
 const driver_t DRIVER_PACK_VRC7 = { 
 	DRIVER_VRC7, 
 	sizeof(DRIVER_VRC7),
 	DRIVER_RELOC_WORD_VRC7, 
-	sizeof(DRIVER_RELOC_WORD_VRC7), 
+	sizeof(DRIVER_RELOC_WORD_VRC7) / sizeof(int), 
 	DRIVER_FREQ_TABLE_VRC7,				// // //
-	sizeof(DRIVER_FREQ_TABLE_VRC7),
+	sizeof(DRIVER_FREQ_TABLE_VRC7) / sizeof(int),
+	DRIVER_RELOC_ADR_VRC7,
+	sizeof(DRIVER_RELOC_ADR_VRC7) / sizeof(int),
 };
 
 const driver_t DRIVER_PACK_MMC5 = { 
 	DRIVER_MMC5, 
 	sizeof(DRIVER_MMC5),
 	DRIVER_RELOC_WORD_MMC5, 
-	sizeof(DRIVER_RELOC_WORD_MMC5), 
+	sizeof(DRIVER_RELOC_WORD_MMC5) / sizeof(int), 
 	DRIVER_FREQ_TABLE_MMC5,				// // //
-	sizeof(DRIVER_FREQ_TABLE_MMC5),
+	sizeof(DRIVER_FREQ_TABLE_MMC5) / sizeof(int),
+	DRIVER_RELOC_ADR_MMC5,
+	sizeof(DRIVER_RELOC_ADR_MMC5) / sizeof(int),
 };
 
 const driver_t DRIVER_PACK_FDS = { 
 	DRIVER_FDS, 
 	sizeof(DRIVER_FDS),
 	DRIVER_RELOC_WORD_FDS, 
-	sizeof(DRIVER_RELOC_WORD_FDS), 
+	sizeof(DRIVER_RELOC_WORD_FDS) / sizeof(int), 
 	DRIVER_FREQ_TABLE_FDS,				// // //
-	sizeof(DRIVER_FREQ_TABLE_FDS),
+	sizeof(DRIVER_FREQ_TABLE_FDS) / sizeof(int),
+	DRIVER_RELOC_ADR_FDS,
+	sizeof(DRIVER_RELOC_ADR_FDS) / sizeof(int),
 };
 
 const driver_t DRIVER_PACK_N163 = { 
 	DRIVER_N163, 
 	sizeof(DRIVER_N163),
 	DRIVER_RELOC_WORD_N163, 
-	sizeof(DRIVER_RELOC_WORD_N163),
+	sizeof(DRIVER_RELOC_WORD_N163) / sizeof(int),
 	DRIVER_FREQ_TABLE_N163,				// // //
-	sizeof(DRIVER_FREQ_TABLE_N163), 
+	sizeof(DRIVER_FREQ_TABLE_N163) / sizeof(int), 
+	DRIVER_RELOC_ADR_N163,
+	sizeof(DRIVER_RELOC_ADR_N163) / sizeof(int),
 };
 
 const driver_t DRIVER_PACK_S5B = {		// // //
 	DRIVER_S5B, 
 	sizeof(DRIVER_S5B),
 	DRIVER_RELOC_WORD_S5B, 
-	sizeof(DRIVER_RELOC_WORD_S5B),
+	sizeof(DRIVER_RELOC_WORD_S5B) / sizeof(int),
 	DRIVER_FREQ_TABLE_S5B,				// // //
-	sizeof(DRIVER_FREQ_TABLE_S5B), 
+	sizeof(DRIVER_FREQ_TABLE_S5B) / sizeof(int),
+	DRIVER_RELOC_ADR_S5B,
+	sizeof(DRIVER_RELOC_ADR_S5B) / sizeof(int), 
 };
 
 const driver_t DRIVER_PACK_ALL = {		// // //
 	DRIVER_ALL, 
 	sizeof(DRIVER_ALL),
 	DRIVER_RELOC_WORD_ALL, 
-	sizeof(DRIVER_RELOC_WORD_ALL), 
+	sizeof(DRIVER_RELOC_WORD_ALL) / sizeof(int), 
 	DRIVER_FREQ_TABLE_ALL,				// // //
-	sizeof(DRIVER_FREQ_TABLE_ALL),
+	sizeof(DRIVER_FREQ_TABLE_ALL) / sizeof(int),
+	DRIVER_RELOC_ADR_ALL,
+	sizeof(DRIVER_RELOC_ADR_ALL) / sizeof(int),
 };
