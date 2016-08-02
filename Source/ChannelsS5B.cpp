@@ -79,7 +79,7 @@ void CChannelHandlerS5B::UpdateRegs()		// // //
 {
 	// Done only once
 	if (m_iNoiseFreq != -1)		// // // 050B
-		WriteReg(0x06, m_iNoiseFreq);
+		WriteReg(0x06, m_iNoiseFreq ^ 0x1F);		// // // TODO: remove ^1F in next version
 	WriteReg(0x07, m_iModes);
 	WriteReg(0x0B, m_iEnvFreqLo);
 	WriteReg(0x0C, m_iEnvFreqHi);
@@ -121,7 +121,8 @@ bool CChannelHandlerS5B::HandleEffect(effect_t EffNum, unsigned char EffParam)
 		m_iAutoEnvelopeShift = EffParam >> 4;
 		break;
 	case EF_DUTY_CYCLE:
-		m_iDefaultDuty = m_iDutyPeriod = (m_iDefaultDuty & 0x1F) | (EffParam << 6);		// // // 050B
+//		m_iDefaultDuty = m_iDutyPeriod = (m_iDefaultDuty & 0x1F) | (EffParam << 6);		// // // 050B
+		m_iDefaultDuty = m_iDutyPeriod = EffParam;		// // //
 		break;
 	default: return CChannelHandler::HandleEffect(EffNum, EffParam);
 	}
@@ -178,11 +179,11 @@ void CChannelHandlerS5B::ResetChannel()
 	CChannelHandler::ResetChannel();
 
 	m_iDefaultDuty = S5B_MODE_SQUARE;
-	m_iNoiseFreq = 0;
+	m_iNoiseFreq = -1;
 	m_iEnvFreqHi = 0;
 	m_iEnvFreqLo = 0;
 	m_iEnvType = 0;
-	m_i5808B4 = 0;
+	m_i5808B4 = 0;		// // // 050B
 	m_bEnvTrigger = false;
 }
 
@@ -225,7 +226,7 @@ void CChannelHandlerS5B::RefreshChannel()
 
 	unsigned char Noise = (m_iDutyPeriod & S5B_MODE_NOISE) ? 0 : 1;
 	unsigned char Square = (m_iDutyPeriod & S5B_MODE_SQUARE) ? 0 : 1;
-	unsigned char Envelope = m_bEnvelopeEnabled ? 0x10 : 0;
+	unsigned char Envelope = (m_iDutyPeriod & S5B_MODE_ENVELOPE) ? 0x10 : 0; // m_bEnvelopeEnabled ? 0x10 : 0;
 	unsigned char NoisePeriod = m_iDutyPeriod & 0x1F;
 
 	if (!m_bGate) {

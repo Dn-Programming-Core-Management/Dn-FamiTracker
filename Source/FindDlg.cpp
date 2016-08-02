@@ -1180,7 +1180,7 @@ bool CFindDlg::Replace(CCompoundAction *pAction)
 			if (m_replaceTerm.Definite[WC_EFF]) {
 				effect_t fx = m_replaceTerm.Note.EffNumber[0];
 				char c = EFF_CHAR[fx - 1];
-				switch (m_pDocument->GetChipType(m_pView->GetSelectedChannel())) {
+				switch (m_pDocument->GetChipType(m_pFindCursor->m_iChannel)) {
 				case SNDCHIP_FDS:
 					for (auto e : FDS_EFFECTS) if (c == EFF_CHAR[e - 1]) {
 						fx = e; break;

@@ -74,10 +74,10 @@ struct CFrameCursorPos
 // // // Frame editor selection
 struct CFrameSelection
 {
-	inline int GetFrameStart() const;
-	inline int GetFrameEnd() const;
-	inline int GetChanStart() const;
-	inline int GetChanEnd() const;
+	int GetFrameStart() const;
+	int GetFrameEnd() const;
+	int GetChanStart() const;
+	int GetChanEnd() const;
 
 	void Normalize(CFrameCursorPos &Begin, CFrameCursorPos &End) const;		// // //
 	CFrameSelection GetNormalized() const;		// // //

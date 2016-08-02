@@ -876,9 +876,9 @@ void CCompiler::CreateHeader(stNSFHeader *pHeader, int MachineType) const
 	memset(pHeader->ArtistName, 0x00, 32);
 	memset(pHeader->Copyright, 0x00, 32);
 
-	strcpy_s((char*)pHeader->SongName,	 32, m_pDocument->GetSongName());
-	strcpy_s((char*)pHeader->ArtistName, 32, m_pDocument->GetSongArtist());
-	strcpy_s((char*)pHeader->Copyright,  32, m_pDocument->GetSongCopyright());
+	strncpy((char*)pHeader->SongName,   m_pDocument->GetSongName(), 32);
+	strncpy((char*)pHeader->ArtistName, m_pDocument->GetSongArtist(), 32);
+	strncpy((char*)pHeader->Copyright,  m_pDocument->GetSongCopyright(), 32);
 
 	pHeader->Speed_NTSC = SpeedNTSC; //0x411A; // default ntsc speed
 

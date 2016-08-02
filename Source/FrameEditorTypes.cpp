@@ -105,22 +105,22 @@ void CFrameClipData::SetFrame(int Frame, int Channel, int Pattern)
 
 // // // CFrameSelection class
 
-inline int CFrameSelection::GetFrameStart() const
+int CFrameSelection::GetFrameStart() const
 {
 	return (m_cpEnd.m_iFrame > m_cpStart.m_iFrame) ? m_cpStart.m_iFrame : m_cpEnd.m_iFrame;
 }
 
-inline int CFrameSelection::GetFrameEnd() const
+int CFrameSelection::GetFrameEnd() const
 {
 	return (m_cpEnd.m_iFrame > m_cpStart.m_iFrame) ? m_cpEnd.m_iFrame : m_cpStart.m_iFrame;
 }
 
-inline int CFrameSelection::GetChanStart() const
+int CFrameSelection::GetChanStart() const
 {
 	return (m_cpEnd.m_iChannel > m_cpStart.m_iChannel) ? m_cpStart.m_iChannel : m_cpEnd.m_iChannel;
 }
 
-inline int CFrameSelection::GetChanEnd() const
+int CFrameSelection::GetChanEnd() const
 {
 	return (m_cpEnd.m_iChannel > m_cpStart.m_iChannel) ? m_cpEnd.m_iChannel : m_cpStart.m_iChannel;
 }
