@@ -29,21 +29,22 @@
 class CChannelHandlerS5B : public CChannelHandler {
 public:
 	CChannelHandlerS5B();
-	virtual void ResetChannel();
-	virtual void RefreshChannel();
+	void	ResetChannel() override;
+	void	RefreshChannel() override;
 
 protected:
 	// // //
-	virtual bool HandleEffect(effect_t EffNum, unsigned char EffParam);		// // //
-	virtual void HandleEmptyNote();
-	virtual void HandleCut();
-	virtual void HandleRelease();
-	virtual void HandleNote(int Note, int Octave);
-	bool         CreateInstHandler(inst_type_t Type);		// // //
+	bool	HandleEffect(effect_t EffNum, unsigned char EffParam) override;		// // //
+	void	HandleEmptyNote() override;
+	void	HandleCut() override;
+	void	HandleRelease() override;
+	void	HandleNote(int Note, int Octave) override;
+	bool	CreateInstHandler(inst_type_t Type) override;		// // //
 	
-	virtual int ConvertDuty(int Duty) const;		// // //
-	void ClearRegisters();
-	virtual CString GetCustomEffectString() const;		// // //
+	int		CalculateVolume() const override;		// // //
+	int		ConvertDuty(int Duty) const override;		// // //
+	void	ClearRegisters() override;
+	CString	GetCustomEffectString() const override;		// // //
 
 protected:
 	void WriteReg(int Reg, int Value);

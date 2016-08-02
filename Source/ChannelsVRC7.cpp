@@ -235,7 +235,7 @@ int CChannelHandlerVRC7::CalculateVolume() const
 		Volume = 15;
 	if (Volume < 0)
 		Volume = 0;
-	return 15 - Volume;
+	return Volume;		// // //
 }
 
 int CChannelHandlerVRC7::CalculatePeriod() const
@@ -301,7 +301,7 @@ void CVRC7Channel::RefreshChannel()
 	
 	if (m_iCommand != CMD_NOTE_HALT) {
 		// Select volume & patch
-		RegWrite(0x30 + m_iChannel, (m_iPatch << 4) | Volume);
+		RegWrite(0x30 + m_iChannel, (m_iPatch << 4) | (Volume ^ 0x0F));		// // //
 	}
 
 	RegWrite(0x20 + m_iChannel, ((Fnum >> 8) & 1) | (Bnum << 1) | Cmd);

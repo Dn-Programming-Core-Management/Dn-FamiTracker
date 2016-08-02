@@ -31,6 +31,8 @@
 #include "InstHandler.h"		// // //
 #include "SeqInstHandler.h"		// // //
 #include "SeqInstHandlerFDS.h"		// // //
+#include "FamiTracker.h"		// // //
+#include "Settings.h"		// // //
 
 CChannelHandlerFDS::CChannelHandlerFDS() : 
 	CChannelHandlerInverted(0xFFF, 32)
@@ -131,6 +133,13 @@ void CChannelHandlerFDS::HandleNote(int Note, int Octave)
 {
 	// Trigger a new note
 	m_bResetMod = true;
+}
+
+int CChannelHandlerFDS::CalculateVolume() const		// // //
+{
+	if (!theApp.GetSettings()->General.bFDSOldVolume)		// // // match NSF setting
+		return LimitVolume(((m_iInstVolume + 1) * ((m_iVolume >> VOL_COLUMN_SHIFT) + 1) - 1) / 16 - GetTremolo());
+	return CChannelHandler::CalculateVolume();
 }
 
 bool CChannelHandlerFDS::CreateInstHandler(inst_type_t Type)

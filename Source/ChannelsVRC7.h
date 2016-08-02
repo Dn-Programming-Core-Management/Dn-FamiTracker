@@ -40,26 +40,25 @@ class CChannelHandlerInterfaceVRC7;
 class CChannelHandlerVRC7 : public CChannelHandlerInverted, public CChannelHandlerInterfaceVRC7 {		// // //
 public:
 	CChannelHandlerVRC7();
-	virtual void SetChannelID(int ID);
+	void	SetChannelID(int ID) override;
 
 	void	SetPatch(unsigned char Patch);		// // //
 	void	SetCustomReg(size_t Index, unsigned char Val);		// // //
 
 protected:
-	virtual void HandleNoteData(stChanNote *pNoteData, int EffColumns);
-	virtual bool HandleEffect(effect_t EffNum, unsigned char EffParam);		// // //
-	virtual void HandleEmptyNote();
-	virtual void HandleCut();
-	virtual void HandleRelease();
-	virtual void HandleNote(int Note, int Octave);
-	bool         CreateInstHandler(inst_type_t Type);		// // //
-	virtual void SetupSlide();		// // //
-	virtual int CalculateVolume() const;
-	virtual int CalculatePeriod() const;		// // //
+	void	HandleNoteData(stChanNote *pNoteData, int EffColumns) override;
+	bool	HandleEffect(effect_t EffNum, unsigned char EffParam) override;		// // //
+	void	HandleEmptyNote() override;
+	void	HandleCut() override;
+	void	HandleRelease() override;
+	void	HandleNote(int Note, int Octave) override;
+	bool	CreateInstHandler(inst_type_t Type) override;		// // //
+	void	SetupSlide() override;		// // //
+	int		CalculateVolume() const override;
+	int		CalculatePeriod() const override;		// // //
 
-	virtual void UpdateNoteRelease();		// // //
-
-	int TriggerNote(int Note);
+	void	UpdateNoteRelease() override;		// // //
+	int		TriggerNote(int Note) override;
 
 protected:
 	void CorrectOctave();		// // //

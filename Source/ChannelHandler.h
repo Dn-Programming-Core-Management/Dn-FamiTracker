@@ -169,13 +169,10 @@ protected:
 		\return The current pitch register, restricted within the range of the sound channel. */
 	virtual int		CalculatePeriod() const;
 	/*!	\brief Obtains the current volume register of the sound channel.
-		\details This method depends on the configuration setting for optional behaviour during
+		\details This method may depend on the configuration setting for optional behaviour during
 		mixing the channel volume and the instrument volume.
-		\param Subtract Whether the channel mixes the channel and instrument volumes by subtracting
-		or multiplying register values. Subtraction is required for sound chips that produce
-		exponential volume output; multiplication applies for linear volume output.
 		\return The current volume register, restricted within the range of the sound channel. */
-	virtual int		CalculateVolume(bool Subtract = false) const;
+	virtual int		CalculateVolume() const;
 	/*!	\brief Restricts the pitch value within the limits of the sound channel.
 		\details Equivalent to CChannelHandler::LimitRawPeriod if linear pitch mode is disabled.
 		\param Period Input pitch value.
@@ -185,6 +182,10 @@ protected:
 		\param Period Input period or frequency register value.
 		\return The restricted period or frequency register value. */
 	virtual int		LimitRawPeriod(int Period) const;
+	/*!	\brief Restricts a raw, mixed volume value within the limits of the sound channel.
+		\param Volume Input volume value.
+		\return The restricted volume value. */
+	virtual int		LimitVolume(int Volume) const;		// // //
 	
 	/*!	\brief Retrieves information about common effects of the channel handler.
 		\return A string representing active effects and their parameters. */
@@ -353,8 +354,7 @@ public:
 protected:
 	// Channel variables
 	/*!	\brief The channel identifier.
-		\details This value should always be a member of chan_id_t.
-	*/
+		\details This value should always be a member of chan_id_t. */
 	int				m_iChannelID;
 
 	// General
@@ -369,36 +369,30 @@ protected:
 	bool			m_bForceReload;					// // //
 
 	/*!	\brief The current note value of the channel.
-		\details Its value may be altered by transposing effects and the instrument handler.
-	*/
+		\details Its value may be altered by transposing effects and the instrument handler. */
 	int				m_iNote;
 	/*!	\brief The current pitch register value of the channel.
 		\details It may represent a period register or a frequency register, depending on the sound
 		channel used. It may also be an internal representation that does not have the same resolution
-		as the actual register of the sound channel.
-	*/
+		as the actual register of the sound channel. */
 	int				m_iPeriod;
 	/*!	\brief The current instrument volume of the channel.
-		\details The instrument volume is limited by the maximum volume level provided in the constructor.
-	*/
+		\details The instrument volume is limited by the maximum volume level provided in the constructor. */
 	int				m_iInstVolume;					// // //
 	/*!	\brief The current channel volume of the channel.
 		\details The channel volume is always limited by CChannelHandler::VOL_COLUMN_MAX rather than
-		the maximum volume level provided in the constructor.
-	*/
+		the maximum volume level provided in the constructor. */
 	int				m_iVolume;
 
 	/*!	\brief The current duty cycle value of the channel.
 		\details Its exact interpretation differs across sound chips; in particular, sound channels
 		supporting wave tables may treat this member as a table index.
 		\warning Derived classes should be expected to handle the case where this value equals -1
-		if CChannelHandler::ConvertDuty returns no sensible value for the current instrument type.
-	*/
+		if CChannelHandler::ConvertDuty returns no sensible value for the current instrument type. */
 	char			m_iDutyPeriod;
 	/*!	\brief A queue of the most recent notes triggered by the channel.
 		\details In order to represent the blank note and the note cut, the special constants
-		ECHO_BUFFER_NONE and ECHO_BUFFER_HALT are defined for use with this echo buffer.
-	*/
+		ECHO_BUFFER_NONE and ECHO_BUFFER_HALT are defined for use with this echo buffer. */
 	int				m_iEchoBuffer[ECHO_BUFFER_LENGTH + 1];		// // //
 
 	/*!	\brief A flag indicating the direction of the 4xy vibrato effect. */
@@ -418,64 +412,52 @@ protected:
 
 	// Vibrato & tremolo
 	/*!	\brief The current extent of the 4xy vibrato effect.
-		\details In accordance with the NSF driver, this member always occupies bits 4 - 7.
-	*/
+		\details In accordance with the NSF driver, this member always occupies bits 4 - 7. */
 	unsigned int	m_iVibratoDepth;
 	/*!	\brief The current rate of the 4xy vibrato effect.
-		\details The vibrato phase advances by this amount on each tick.
-	*/
+		\details The vibrato phase advances by this amount on each tick. */
 	unsigned int	m_iVibratoSpeed;
 	/*!	\brief The current phase of the 4xy vibrato effect.
-		\details One full cycle of a vibrato effect contains exactly 64 phases.
-	*/
+		\details One full cycle of a vibrato effect contains exactly 64 phases. */
 	unsigned int	m_iVibratoPhase;
 	
 	/*!	\brief The current extent of the 7xy tremolo effect.
-		\details In accordance with the NSF driver, this member always occupies bits 4 - 7.
-	*/
+		\details In accordance with the NSF driver, this member always occupies bits 4 - 7. */
 	unsigned int	m_iTremoloDepth;
 	/*!	\brief The current rate of the 7xy tremolo effect.
-		\details The tremolo phase advances by this amount on each tick.
-	*/
+		\details The tremolo phase advances by this amount on each tick. */
 	unsigned int	m_iTremoloSpeed;
 	/*!	\brief The current phase of the 7xy tremolo effect.
-		\details One full cycle of a tremolo effect contains exactly 64 phases.
-	*/
+		\details One full cycle of a tremolo effect contains exactly 64 phases. */
 	unsigned int	m_iTremoloPhase;
 
 	/*!	\brief The currently active slide effect. */
 	unsigned char	m_iEffect;
 	/*!	\brief The effect command parameter for the active slide effect.
-		\details This member is used by the instrument interface to handle arpeggio schemes.
-	*/
+		\details This member is used by the instrument interface to handle arpeggio schemes. */
 	unsigned char	m_iEffectParam;					// // //
 	/*!	\brief The current state of the 0xy arpeggio effect.
 		\details Each state corresponds to a different note offset. A 0xy arpeggio cycle may
-		contain 2 or 3 states depending on the current effect parameter.
-	*/
+		contain 2 or 3 states depending on the current effect parameter. */
 	unsigned char	m_iArpState;
 	/*!	\brief The target pitch register value if an automatic pitch slide is taking place. */
 	int				m_iPortaTo;
 	/*!	\brief The speed of the current automatic pitch slide.
 		\details The channel alters its pitch register by a value whose magnitude is no greater
-		than this member value.
-	*/
+		than this member value. */
 	int				m_iPortaSpeed;
 
 	/*!	\brief The number of ticks up to and including the tick where the Sxx delayed note cut effect
 		would occur.
-		\details Remains at 0 if no such effect is issued.
-	*/
+		\details Remains at 0 if no such effect is issued. */
 	unsigned char	m_iNoteCut;
 	/*!	\brief The number of ticks up to and including the tick where the Lxx delayed note release
 		effect would occur.
-		\details Remains at 0 if no such effect is issued.
-	*/
+		\details Remains at 0 if no such effect is issued. */
 	unsigned char	m_iNoteRelease;					// // //
 	/*!	\brief The number of ticks until the tick where the Mxy delayed channel volume effect would occur.
 		\details When its value is equal to 0, the Mxy effect would take place on the current tick.
-		Remains at -1 (255) if no such effect is issued.
-	*/
+		Remains at -1 (255) if no such effect is issued. */
 	char			m_iNoteVolume;					// // //
 	/*!	\brief A cache of the channel volume when a Mxy effect command is issued. */
 	char			m_iDefaultVolume;				// // //
@@ -483,8 +465,7 @@ protected:
 	unsigned char	m_iNewVolume;					// // //
 	/*!	\brief The number of ticks up to and including the tick where the Txy delayed note transpose
 		effect would occur.
-		\details Remains at 0 if no such effect is issued.
-	*/
+		\details Remains at 0 if no such effect is issued. */
 	unsigned char	m_iTranspose;					// // //
 	/*!	\brief A flag indicating that the last issued Txy effect command transposes downward instead
 		of upward. */
@@ -508,35 +489,31 @@ protected:
 		\details The lookup table contains either period or frequency register values according to
 		the sound channel. Except for the Konami VRC7, which only requires register values for a
 		single octave, all other lookup tables should contain at least as many entries as the number
-		of notes available in the tracker.
-	*/
+		of notes available in the tracker. */
 	const unsigned int *m_pNoteLookupTable;
 	/*!	\brief A pointer to the channel's vibrato lookup table.
 		\details A vibrato lookup table contains as many rows as the number of vibrato depths
 		available, each row containing the first quarter of the vibrato amplitude values; values for
 		other 4xy vibrato effect phases are calculated within the channel handler. The 7xy tremolo
-		effect shares the same lookup table.
-	*/
+		effect shares the same lookup table. */
 	int				*m_pVibratoTable;
 
 	/*!	\brief The MIDI pitch wheel offset of the current channel.
 		\details A positive value represents a lower pitch. The value of this member is limited
-		within [-512, 511].
-	*/
+		within [-512, 511]. */
 	int				m_iPitch;
 	
 	/*!	\brief The instrument type of the previously loaded instrument.
 		\details The channel handler uses this value to determine different actions for supporting
 		instruments not native to the current sound channel.
-		\sa CChannelHandler::ConvertDuty
-	*/
+		\sa CChannelHandler::ConvertDuty */
 	inst_type_t		m_iInstTypeCurrent;
 	/*!	\brief A pointer to the currently installed instrument handler. */
 	std::unique_ptr<CInstHandler>	m_pInstHandler;				// // //
 	
-	// Private variables
-private:
+	/*!	\brief The maximum pitch register value of the channel. */
 	int				m_iMaxPeriod;
+	/*!	\brief The maximum instrument volume of the channel. */
 	int				m_iMaxVolume;
 };
 

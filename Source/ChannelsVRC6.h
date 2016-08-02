@@ -32,30 +32,29 @@ public:
 
 protected:
 	// // //
-	virtual bool HandleEffect(effect_t EffNum, unsigned char EffParam);		// // //
-	virtual void HandleEmptyNote();
-	virtual void HandleCut();
-	virtual void HandleRelease();
-	virtual void HandleNote(int Note, int Octave);
-	virtual bool CreateInstHandler(inst_type_t Type);		// // //
+	bool	HandleEffect(effect_t EffNum, unsigned char EffParam) override;		// // //
+	void	HandleEmptyNote() override;
+	void	HandleCut() override;
+	void	HandleRelease() override;
+	void	HandleNote(int Note, int Octave) override;
+	bool	CreateInstHandler(inst_type_t Type) override;		// // //
 	// // //
-	void ClearRegisters();		// // //
+	void	ClearRegisters() override;		// // //
 };
 
 class CVRC6Square : public CChannelHandlerVRC6 {
 public:
 	CVRC6Square() : CChannelHandlerVRC6(0xFFF, 0x0F) { }
-	void RefreshChannel();
+	void	RefreshChannel() override;
 protected:
-	virtual int ConvertDuty(int Duty) const;		// // //
-private:
+	int		ConvertDuty(int Duty) const override;		// // //
 };
 
 class CVRC6Sawtooth : public CChannelHandlerVRC6 {
 public:
 	CVRC6Sawtooth() : CChannelHandlerVRC6(0xFFF, 0x3F) { }
-	void RefreshChannel();
+	void	RefreshChannel() override;
 protected:
-	bool CreateInstHandler(inst_type_t Type);		// // //
-private:
+	bool	CreateInstHandler(inst_type_t Type) override;		// // //
+	int		CalculateVolume() const override;
 };

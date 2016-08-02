@@ -187,6 +187,11 @@ void CChannelHandlerS5B::ResetChannel()
 	m_bEnvTrigger = false;
 }
 
+int CChannelHandlerS5B::CalculateVolume() const		// // //
+{
+	return LimitVolume((m_iVolume >> VOL_COLUMN_SHIFT) + m_iInstVolume - 15 - GetTremolo());
+}
+
 int CChannelHandlerS5B::ConvertDuty(int Duty) const		// // //
 {
 	switch (m_iInstTypeCurrent) {
@@ -222,7 +227,7 @@ void CChannelHandlerS5B::RefreshChannel()
 	int Period = CalculatePeriod();
 	unsigned char LoPeriod = Period & 0xFF;
 	unsigned char HiPeriod = Period >> 8;
-	int Volume = CalculateVolume(true);		// // //
+	int Volume = CalculateVolume();
 
 	unsigned char Noise = (m_iDutyPeriod & S5B_MODE_NOISE) ? 0 : 1;
 	unsigned char Square = (m_iDutyPeriod & S5B_MODE_SQUARE) ? 0 : 1;
@@ -231,7 +236,6 @@ void CChannelHandlerS5B::RefreshChannel()
 
 	if (!m_bGate) {
 		Noise = Square = Envelope = 1;
-		Volume = 0;		// // // 050B
 	}
 
 	UpdateAutoEnvelope(Period);		// // // 050B

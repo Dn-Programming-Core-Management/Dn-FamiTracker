@@ -905,32 +905,10 @@ int CChannelHandler::CalculatePeriod() const
 	return LimitRawPeriod(Period);
 }
 
-int CChannelHandler::CalculateVolume(bool Subtract) const
+int CChannelHandler::CalculateVolume() const
 {
 	// Volume calculation
-	int Volume = m_iVolume >> VOL_COLUMN_SHIFT;
-	
-	if (m_iChannelID == CHANID_FDS && !theApp.GetSettings()->General.bFDSOldVolume) {		// // // match NSF setting
-		if (!m_iInstVolume || !m_iVolume)
-			Volume = 0;
-		else
-			Volume = (m_iInstVolume * (Volume + 1)) / 16;
-	}
-	else if (Subtract)
-		Volume = Volume + m_iInstVolume - 15;
-	else
-		Volume = (m_iInstVolume * Volume) / 15;
-	Volume -= GetTremolo();
-	Volume = std::max(Volume, 0);
-	Volume = std::min(Volume, m_iMaxVolume);
-
-	if (m_iInstVolume > 0 && m_iVolume > 0 && Volume == 0 && !theApp.GetSettings()->General.bCutVolume)		// // //
-		Volume = 1;
-
-	if (!m_bGate)
-		Volume = 0;
-
-	return Volume;
+	return LimitVolume((m_iInstVolume * (m_iVolume >> VOL_COLUMN_SHIFT)) / 15 - GetTremolo());		// // //
 }
 
 int CChannelHandler::LimitPeriod(int Period) const		// // // virtual
@@ -942,6 +920,17 @@ int CChannelHandler::LimitPeriod(int Period) const		// // // virtual
 int CChannelHandler::LimitRawPeriod(int Period) const
 {
 	return std::min(std::max(Period, 0), m_iMaxPeriod);
+}
+
+int CChannelHandler::LimitVolume(int Volume) const		// // //
+{
+	if (!m_bGate)
+		return 0;
+
+	Volume = std::max(0, std::min(m_iMaxVolume, Volume));
+	if (Volume == 0 && !theApp.GetSettings()->General.bCutVolume && m_iInstVolume > 0 && m_iVolume > 0)		// // //
+		return 1;
+	return Volume;
 }
 
 void CChannelHandler::AddCycles(int count)

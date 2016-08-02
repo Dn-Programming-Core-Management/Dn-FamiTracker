@@ -31,6 +31,8 @@
 #include "InstHandler.h"		// // //
 #include "SeqInstHandler.h"		// // //
 #include "SeqInstHandlerSawtooth.h"		// // //
+#include "FamiTracker.h"		// // //
+#include "Settings.h"		// // //
 
 CChannelHandlerVRC6::CChannelHandlerVRC6(int MaxPeriod, int MaxVolume) :		// // //
 	CChannelHandler(MaxPeriod, MaxVolume)
@@ -138,10 +140,6 @@ void CVRC6Sawtooth::RefreshChannel()
 	unsigned int Period = CalculatePeriod();
 	unsigned int Volume = CalculateVolume();		// // //
 
-	if (auto pHandler = dynamic_cast<CSeqInstHandlerSawtooth*>(m_pInstHandler.get()))
-		if (!pHandler->IsDutyIgnored())
-			Volume |= (m_iDutyPeriod) << 5;
-
 	WriteRegister(0xB000, Volume);
 	WriteRegister(0xB001, Period & 0xFF);
 	WriteRegister(0xB002, 0x80 | (Period >> 8));
@@ -154,9 +152,24 @@ bool CVRC6Sawtooth::CreateInstHandler(inst_type_t Type)		// // //
 		switch (m_iInstTypeCurrent) {
 		case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B: case INST_FDS: break;
 		default:
-			m_pInstHandler.reset(new CSeqInstHandlerSawtooth(this, 0x1E, Type == INST_S5B ? 0x40 : 0));
+			m_pInstHandler.reset(new CSeqInstHandlerSawtooth(this, 0x0F, Type == INST_S5B ? 0x40 : 0));
 			return true;
 		}
 	}
 	return false;
+}
+
+int CVRC6Sawtooth::CalculateVolume() const		// // //
+{
+	bool _64_step = false;
+	if (auto pHandler = dynamic_cast<CSeqInstHandlerSawtooth*>(m_pInstHandler.get()))
+		_64_step = pHandler->IsDutyIgnored();
+
+	if (_64_step) {
+		if (!theApp.GetSettings()->General.bFDSOldVolume)		// // // match NSF setting
+			return LimitVolume(((m_iInstVolume + 1) * ((m_iVolume >> VOL_COLUMN_SHIFT) + 1) - 1) / 16 - GetTremolo());
+		return CChannelHandler::CalculateVolume();
+	}
+
+	return (CChannelHandler::CalculateVolume() << 1) | (m_iDutyPeriod << 5);
 }
