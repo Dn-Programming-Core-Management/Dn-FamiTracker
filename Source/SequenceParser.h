@@ -106,7 +106,7 @@ private:
 	char m_iEnableFlags;
 };
 
-class CSeqConversionArpScheme : public CSeqConversionDefault
+class CSeqConversionArpScheme : public CSeqConversionDefault		// // //
 {
 public:
 	CSeqConversionArpScheme(int Min) : CSeqConversionDefault(Min, Min + 63) { }
@@ -117,6 +117,15 @@ protected:
 	bool GetNextTerm(std::string::const_iterator &b, std::string::const_iterator &e, int &Out) override;
 private:
 	char m_iArpSchemeFlag;
+};
+
+class CSeqConversionArpFixed : public CSeqConversionDefault		// // //
+{
+public:
+	CSeqConversionArpFixed() : CSeqConversionDefault(0, 95) { }
+	std::string ToString(char Value) const override;
+protected:
+	bool GetNextTerm(std::string::const_iterator &b, std::string::const_iterator &e, int &Out) override;
 };
 
 /*!

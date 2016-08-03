@@ -95,16 +95,15 @@ void CInstrumentEditorSeq::SetupParser() const		// // //
 {
 	int Max, Min;
 	CSeqConversionBase *pConv = nullptr;
-	
 	switch (m_iSelectedSetting) {
 	case SEQ_VOLUME:
-		Max = m_iMaxVolume; Min = 0; break;
+		Max = m_pSequence->GetSetting() == SETTING_VOL_64_STEPS ? 0x3F : m_iMaxVolume; Min = 0; break;
 	case SEQ_ARPEGGIO:
 		switch (m_pSequence->GetSetting()) {
 		case SETTING_ARP_SCHEME:		// // //
 			pConv = new CSeqConversionArpScheme {ARPSCHEME_MIN}; break;
 		case SETTING_ARP_FIXED:
-			Max = NOTE_COUNT - 1; Min = 0; break;
+			pConv = new CSeqConversionArpFixed { }; break;		// // //
 		default:
 			Max = NOTE_COUNT; Min = -NOTE_COUNT; break;
 		}
@@ -112,8 +111,9 @@ void CInstrumentEditorSeq::SetupParser() const		// // //
 	case SEQ_PITCH: case SEQ_HIPITCH:
 		Max = 126; Min = -127; break;
 	case SEQ_DUTYCYCLE:
-		if (m_iInstType == INST_S5B)
-			pConv = new CSeqConversion5B { };
+		if (m_iInstType == INST_S5B) {
+			pConv = new CSeqConversion5B { }; break;
+		}
 		Max = m_iMaxDuty; Min = 0; break;
 	}
 	if (pConv == nullptr)

@@ -147,6 +147,8 @@ bool CSeqConversionDefault::GetNextTerm(std::string::const_iterator &b, std::str
 	return GetNextInteger(b, e, Out);
 }
 
+
+
 std::string CSeqConversion5B::ToString(char Value) const
 {
 	std::string Str = std::to_string(Value & 0x1F);
@@ -191,6 +193,8 @@ bool CSeqConversion5B::GetNextTerm(std::string::const_iterator &b, std::string::
 	}
 	return true;
 }
+
+
 
 std::string CSeqConversionArpScheme::ToString(char Value) const		// // //
 {
@@ -257,6 +261,54 @@ bool CSeqConversionArpScheme::GetNextTerm(std::string::const_iterator &b, std::s
 	}
 	return true;
 }
+
+
+
+std::string CSeqConversionArpFixed::ToString(char Value) const
+{
+	stChanNote Note;
+	Note.Note = GET_NOTE(static_cast<unsigned char>(Value));
+	Note.Octave = GET_OCTAVE(static_cast<unsigned char>(Value));
+	return std::string {Note.ToString().GetBuffer()};
+}
+
+bool CSeqConversionArpFixed::GetNextTerm(std::string::const_iterator &b, std::string::const_iterator &e, int &Out)
+{
+	auto _b(b), _e(e);
+	if (CSeqConversionDefault::GetNextTerm(_b, _e, Out)) {
+		b = _b;
+		e = _e;
+		return true;
+	}
+
+	std::smatch m;
+	static const std::regex FIXED_RE {R"(([A-Ga-g])([+\-#b]*)([0-9]+))"};
+	static const int NOTE_OFFSET[] = {9, 11, 0, 2, 4, 5, 7};
+	if (!std::regex_match(b, e, m, FIXED_RE))
+		return false;
+
+	char ch = m.str(1)[0];
+	int Note = NOTE_OFFSET[ch >= 'a' ? ch - 'a' : ch - 'A'];
+	for (const auto &acc : m.str(2)) {
+		switch (acc) {
+		case '+': case '#': ++Note; break;
+		case '-': case 'b': --Note; break;
+		}
+	}
+	
+	try {
+		Note += NOTE_RANGE * std::stoi(m.str(3));
+	}
+	catch (std::out_of_range &) {
+		return false;
+	}
+
+	Out = Note;
+	b = m.suffix().first;
+	return true;
+}
+
+
 
 void CSequenceParser::SetSequence(CSequence *pSeq)
 {

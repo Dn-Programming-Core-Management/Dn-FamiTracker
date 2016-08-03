@@ -104,7 +104,7 @@ void CInstrumentEditorFDSEnvelope::SetupParser() const		// // //
 		case SETTING_ARP_SCHEME:		// // //
 			pConv = new CSeqConversionArpScheme {ARPSCHEME_MIN}; break;
 		case SETTING_ARP_FIXED:
-			Max = NOTE_COUNT - 1; Min = 0; break;
+			pConv = new CSeqConversionArpFixed { }; break;		// // //
 		default:
 			Max = NOTE_COUNT; Min = -NOTE_COUNT; break;
 		}

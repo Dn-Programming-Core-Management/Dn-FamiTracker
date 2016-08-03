@@ -135,35 +135,36 @@ void CSequenceSetting::OnMenuSettingChanged(UINT ID)		// // //
 	unsigned New = ID - MENU_ID_BASE;
 	ASSERT(New < SEQ_SETTING_COUNT[m_iType]);
 
-	if (m_iType == SEQ_VOLUME) {		// // // 050B
-		if (Setting == SETTING_VOL_16_STEPS && New == SETTING_VOL_64_STEPS)
-			for (unsigned int i = 0; i < m_pSequence->GetItemCount(); ++i)
-				m_pSequence->SetItem(i, m_pSequence->GetItem(i) * 4);
-		else if (Setting == SETTING_VOL_64_STEPS && New == SETTING_VOL_16_STEPS)
-			for (unsigned int i = 0; i < m_pSequence->GetItemCount(); ++i)
-				m_pSequence->SetItem(i, m_pSequence->GetItem(i) / 4);
-	}
+	const auto MapFunc = [&] (signed char(*f) (signed char)) {
+		for (unsigned int i = 0, Count = m_pSequence->GetItemCount(); i < Count; ++i)
+			m_pSequence->SetItem(i, f(m_pSequence->GetItem(i)));
+	};
 
-	if (m_iType == SEQ_ARPEGGIO && Setting != SETTING_ARP_SCHEME) {
-		for (unsigned int i = 0; i < m_pSequence->GetItemCount(); ++i) {
-			int Item = m_pSequence->GetItem(i) & 0x3F;
-			if (Item > ARPSCHEME_MAX) Item -= 0x40;
-			m_pSequence->SetItem(i, Item);
+	if (New != Setting) switch (m_iType) {
+	case SEQ_VOLUME:
+		switch (New) {
+		case SETTING_VOL_16_STEPS: MapFunc([] (signed char x) -> signed char { return x / 4; }); break;
+		case SETTING_VOL_64_STEPS: MapFunc([] (signed char x) -> signed char { return x * 4; }); break;
 		}
+		break;
+	case SEQ_ARPEGGIO:
+		switch (Setting) {
+		case SETTING_ARP_SCHEME: MapFunc([] (signed char x) -> signed char {
+			signed char Item = x & 0x3F;
+			return Item > ARPSCHEME_MAX ? Item - 0x40 : Item;
+		}); break;
+		}
+		switch (New) {
+		case SETTING_ARP_SCHEME: MapFunc([] (signed char x) -> signed char {
+			return (x > ARPSCHEME_MAX ? ARPSCHEME_MAX : (x < ARPSCHEME_MIN ? ARPSCHEME_MIN : x)) & 0x3F;
+		}); break;
+		case SETTING_ARP_FIXED: MapFunc([] (signed char x) -> signed char { return x < 0 ? 0 : x; }); break;
+		}
+		break;
 	}
 	
 	m_pSequence->SetSetting(static_cast<seq_setting_t>(New));
 	m_pParent->PostMessage(WM_SETTING_CHANGED);		// // //
-
-	if (m_iType == SEQ_ARPEGGIO && Setting == SETTING_ARP_FIXED) {
-		// Prevent invalid sequence items
-		for (unsigned int i = 0; i < m_pSequence->GetItemCount(); ++i) {
-			int Item = m_pSequence->GetItem(i);
-			if (Item < 0)
-				Item = 0;
-			m_pSequence->SetItem(i, Item);
-		}
-	}
 }
 
 void CSequenceSetting::OnMouseMove(UINT nFlags, CPoint point)
