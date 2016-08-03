@@ -143,10 +143,8 @@ void CChannelHandlerS5B::HandleCut()
 
 void CChannelHandlerS5B::HandleRelease()
 {
-	if (!m_bRelease) {
-		ReleaseNote();
-		m_bUpdate = true;
-	}
+	if (!m_bRelease)
+		ReleaseNote();		// // //
 }
 
 void CChannelHandlerS5B::HandleNote(int Note, int Octave)

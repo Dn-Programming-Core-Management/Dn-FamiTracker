@@ -843,6 +843,8 @@ void CCompiler::PatchVibratoTable(char *pDriver) const
 	}
 }
 
+#pragma warning (push)
+#pragma warning (disable : 4996)
 void CCompiler::CreateHeader(stNSFHeader *pHeader, int MachineType) const
 {
 	// Fill the NSF header
@@ -928,6 +930,7 @@ void CCompiler::CreateHeader(stNSFHeader *pHeader, int MachineType) const
 	pHeader->Reserved[2] = 0x00;
 	pHeader->Reserved[3] = 0x00;
 }
+#pragma warning (pop)
 
 void CCompiler::CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType)		// // //
 {

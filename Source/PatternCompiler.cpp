@@ -580,7 +580,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 				case EF_SUNSOFT_ENV_TYPE:
 					if (ChipID == SNDCHIP_S5B) {
 						WriteData(Command(CMD_EFF_S5B_ENV_TYPE));
-						WriteData(EffParam & 0x0F);
+						WriteData(EffParam);
 					}
 					break;
 				case EF_SUNSOFT_ENV_HI:

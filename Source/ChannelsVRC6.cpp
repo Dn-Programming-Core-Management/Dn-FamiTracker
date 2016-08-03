@@ -171,5 +171,5 @@ int CVRC6Sawtooth::CalculateVolume() const		// // //
 		return CChannelHandler::CalculateVolume();
 	}
 
-	return (CChannelHandler::CalculateVolume() << 1) | (m_iDutyPeriod << 5);
+	return (CChannelHandler::CalculateVolume() << 1) | ((m_iDutyPeriod & 0x01) << 5);
 }

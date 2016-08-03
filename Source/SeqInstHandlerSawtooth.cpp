@@ -41,24 +41,3 @@ bool CSeqInstHandlerSawtooth::IsDutyIgnored() const
 {
 	return m_bIgnoreDuty;
 }
-
-bool CSeqInstHandlerSawtooth::ProcessSequence(int Index, unsigned Setting, int Value)
-{
-	switch (Index) {
-	case SEQ_VOLUME:
-		switch (Setting) {
-		case SETTING_VOL_16_STEPS:
-			m_pInterface->SetVolume(((Value & 0x0F) << 1) | ((m_pInterface->GetDutyPeriod() & 0x01) << 5));
-			return true;
-		case SETTING_VOL_64_STEPS:
-			m_pInterface->SetVolume(Value);
-			return true;
-		}
-		return false;
-	case SEQ_DUTYCYCLE:
-		if (!m_bIgnoreDuty)
-			m_pInterface->SetVolume((m_pInterface->GetVolume() & 0x1F) | ((Value & 0x01) << 5));
-		return true;
-	}
-	return CSeqInstHandler::ProcessSequence(Index, Setting, Value);
-}

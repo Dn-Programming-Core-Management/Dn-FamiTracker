@@ -49,12 +49,5 @@ public:
 	bool IsDutyIgnored() const;
 
 private:
-	/*!	\brief Processes the value retrieved from a sequence.
-		\return True if the sequence has finished processing.
-		\param Index The sequence type.
-		\param Setting The sequence setting.
-		\param Value The sequence value to be processed. */
-	bool ProcessSequence(int Index, unsigned Setting, int Value);
-
 	bool m_bIgnoreDuty;
 };
