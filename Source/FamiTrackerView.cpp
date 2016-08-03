@@ -54,7 +54,7 @@
 // Clipboard ID
 const TCHAR CFamiTrackerView::CLIPBOARD_ID[] = _T("FamiTracker Pattern");
 
-// Effect texts (TODO update this list)
+// Effect texts
 // 0CC: add verbose description as in modplug
 const CString EFFECT_TEXTS[] = {		// // //
 	_T("Fxx - Set speed to XX, cancels groove"),
@@ -94,7 +94,8 @@ const CString EFFECT_TEXTS[] = {		// // //
 	_T("W0x - DPCM pitch, F = highest"),
 	_T("Hxx - 5B envelope rate, low byte"),
 	_T("Ixx - 5B envelope rate, high byte"),
-	_T("J0x - 5B envelope shape, bit 3 = Continue, bit 2 = Attack, bit 1 = Alternate, bit 0 = Hold"),
+	_T("J0y - 5B envelope shape, bit 3 = Continue, bit 2 = Attack, bit 1 = Alternate, bit 0 = Hold"),
+	_T("Jxy - Auto 5B envelope, X - 8 = shift amount, Y = shape"),
 	_T("Lxx - Note release, XX = frames to wait"),
 	_T("Oxx - Set groove to XX"),
 	_T("Txy - Delayed transpose (upward), X = frames to wait, Y = semitone offset"),
@@ -3979,14 +3980,15 @@ CString	CFamiTrackerView::GetEffectHint(const stChanNote &Note, int Column) cons
 
 	int Channel = m_pPatternEditor->GetChannel();
 	int Chip = GetDocument()->GetChannel(Channel)->GetChip();
-	if (Index > EF_FDS_VOLUME || (Index == EF_FDS_VOLUME && Param >= 0x40)) Index++;
-	if (Index > EF_TRANSPOSE || (Index == EF_TRANSPOSE && Param >= 0x80)) Index++;
-	if (Index > EF_FDS_MOD_SPEED_HI || (Index == EF_FDS_MOD_SPEED_HI && Param >= 0x10)) Index++;
-	if (Index > EF_FDS_MOD_DEPTH || (Index == EF_FDS_MOD_DEPTH && Param >= 0x80)) Index++;
-	if (Index > EF_NOTE_CUT || (Index == EF_NOTE_CUT && Param >= 0x80 && Channel == CHANID_TRIANGLE)) Index++;
-	if (Index > EF_DUTY_CYCLE || (Index == EF_DUTY_CYCLE && Chip == SNDCHIP_N163)) Index++;
-	if (Index > EF_VOLUME || (Index == EF_VOLUME && Param >= 0xE0)) Index++;
-	if (Index > EF_SPEED || (Index == EF_SPEED && Param >= GetDocument()->GetSpeedSplitPoint())) Index++;
+	if (Index > EF_FDS_VOLUME || (Index == EF_FDS_VOLUME && Param >= 0x40)) ++Index;
+	if (Index > EF_TRANSPOSE || (Index == EF_TRANSPOSE && Param >= 0x80)) ++Index;
+	if (Index > EF_SUNSOFT_ENV_TYPE || (Index == EF_SUNSOFT_ENV_TYPE && Param >= 0x10)) ++Index;
+	if (Index > EF_FDS_MOD_SPEED_HI || (Index == EF_FDS_MOD_SPEED_HI && Param >= 0x10)) ++Index;
+	if (Index > EF_FDS_MOD_DEPTH || (Index == EF_FDS_MOD_DEPTH && Param >= 0x80)) ++Index;
+	if (Index > EF_NOTE_CUT || (Index == EF_NOTE_CUT && Param >= 0x80 && Channel == CHANID_TRIANGLE)) ++Index;
+	if (Index > EF_DUTY_CYCLE || (Index == EF_DUTY_CYCLE && Chip == SNDCHIP_N163)) ++Index;
+	if (Index > EF_VOLUME || (Index == EF_VOLUME && Param >= 0xE0)) ++Index;
+	if (Index > EF_SPEED || (Index == EF_SPEED && Param >= GetDocument()->GetSpeedSplitPoint())) ++Index;
 
 	return EFFECT_TEXTS[Index - 1];
 }
