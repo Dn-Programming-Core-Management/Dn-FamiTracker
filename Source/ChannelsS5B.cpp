@@ -227,14 +227,10 @@ void CChannelHandlerS5B::RefreshChannel()
 	unsigned char HiPeriod = Period >> 8;
 	int Volume = CalculateVolume();
 
-	unsigned char Noise = (m_iDutyPeriod & S5B_MODE_NOISE) ? 0 : 1;
-	unsigned char Square = (m_iDutyPeriod & S5B_MODE_SQUARE) ? 0 : 1;
-	unsigned char Envelope = (m_iDutyPeriod & S5B_MODE_ENVELOPE) ? 0x10 : 0; // m_bEnvelopeEnabled ? 0x10 : 0;
+	unsigned char Noise = (m_bGate && (m_iDutyPeriod & S5B_MODE_NOISE)) ? 0 : 1;
+	unsigned char Square = (m_bGate && (m_iDutyPeriod & S5B_MODE_SQUARE)) ? 0 : 1;
+	unsigned char Envelope = (m_bGate && (m_iDutyPeriod & S5B_MODE_ENVELOPE)) ? 0x10 : 0; // m_bEnvelopeEnabled ? 0x10 : 0;
 	unsigned char NoisePeriod = m_iDutyPeriod & 0x1F;
-
-	if (!m_bGate) {
-		Noise = Square = Envelope = 1;
-	}
 
 	UpdateAutoEnvelope(Period);		// // // 050B
 	SetMode(m_iChannelID, Square, Noise);
