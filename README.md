@@ -2,9 +2,9 @@
 
 0CC-FamiTracker is a modified version of FamiTracker that incorporates various bug fixes and new features which work in exported NSFs as well. The name "0CC" comes from the author's favourite arpeggio effect command. The current version includes:
 
+- Partial FamiTracker 0.5.0 beta support
 - Sound engine extensions:
-   - Sunsoft 5B support (per official 0.4.2)
-   - Ad-doc multichip NSF export
+   - Ad-hoc multichip NSF export
    - Echo buffer access
    - Polyphonic note preview
 - New effects:
@@ -30,8 +30,7 @@ See the change log for the full list of changes made in 0CC-FamiTracker.
 
 This program and its source code are licensed under the GNU General Public License Version 2. Differences to the original FamiTracker source are marked with "// // //"; those to the ASM source with ";;; ;; ;" and "; ;; ;;;".
 
-The current build is based on the version 0.4.6 release of the official FamiTracker. 0CC-FamiTracker will be ported to newer official releases whenever their source code becomes available; features added in 0CC-FamiTracker may not have identical behaviour as respective features added to the official branch after the current base version.
-
+The current build is based on the version 0.5.0 beta 5 release of the official FamiTracker. 0CC-FamiTracker will be ported to newer official releases once they become available; features added in 0CC-FamiTracker may not have identical behaviour as the corresponding features on the official branch.
 # Links
 
 - http://hertzdevil.info/programs/  
