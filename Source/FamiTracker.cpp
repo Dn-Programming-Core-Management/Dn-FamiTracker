@@ -447,16 +447,16 @@ void CFamiTrackerApp::LoadLocalization()
 void CFamiTrackerApp::OnRecentFilesClear()		// // //
 {
 	SAFE_RELEASE(m_pRecentFileList);
+	m_pRecentFileList = new CRecentFileList(0, _T("Recent File List"), _T("File%d"), MAX_RECENT_FILES);
+
+	auto pMenu = m_pMainWnd->GetMenu()->GetSubMenu(0)->GetSubMenu(14);
+	for (int i = 0; i < MAX_RECENT_FILES; ++i)
+		pMenu->RemoveMenu(ID_FILE_MRU_FILE1 + i, MF_BYCOMMAND);
+	pMenu->AppendMenu(MF_STRING, ID_FILE_MRU_FILE1, _T("(File)"));
 }
 
 void CFamiTrackerApp::OnUpdateRecentFilesClear(CCmdUI *pCmdUI)		// // //
 {
-	if (m_pRecentFileList == nullptr) {
-		m_pRecentFileList = new CRecentFileList(0, _T("Recent File List"), _T("File%d"), MAX_RECENT_FILES);
-		for (int i = 0; i < MAX_RECENT_FILES; ++i)
-			pCmdUI->m_pMenu->RemoveMenu(ID_FILE_MRU_FILE1 + i, MF_BYCOMMAND);
-		pCmdUI->m_pMenu->AppendMenu(MF_STRING, ID_FILE_MRU_FILE1, _T("(File)"));
-	}
 	m_pRecentFileList->UpdateMenu(pCmdUI);
 }
 
