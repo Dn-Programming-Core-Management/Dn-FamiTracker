@@ -3018,8 +3018,14 @@ void CMainFrame::OnEditSelectother()		// // //
 			pEditor->CancelSelection();
 
 			CFrameSelection NewSel;
+			int Frames = pDoc->GetFrameCount(m_iTrack);
 			NewSel.m_cpStart.m_iFrame = Sel.m_cpStart.m_iFrame;
-			NewSel.m_cpEnd.m_iFrame = std::min(Sel.m_cpEnd.m_iFrame, (int)pDoc->GetFrameCount(m_iTrack) - 1);
+			NewSel.m_cpEnd.m_iFrame = Sel.m_cpEnd.m_iFrame;
+			if (NewSel.m_cpStart.m_iFrame < 0) {
+				NewSel.m_cpStart.m_iFrame += Frames;
+				NewSel.m_cpEnd.m_iFrame += Frames;
+			}
+			NewSel.m_cpEnd.m_iFrame = std::min(NewSel.m_cpEnd.m_iFrame, Frames - 1);
 			NewSel.m_cpStart.m_iChannel = Sel.m_cpStart.m_iChannel;
 			NewSel.m_cpEnd.m_iChannel = Sel.m_cpEnd.m_iChannel;
 
