@@ -94,6 +94,7 @@ void CChannelHandlerMMC5::HandleRelease()
 
 void CChannelHandlerMMC5::HandleNote(int Note, int Octave)
 {
+	m_iDutyPeriod = m_iDefaultDuty;		// // //
 }
 
 bool CChannelHandlerMMC5::CreateInstHandler(inst_type_t Type)

@@ -68,6 +68,7 @@ void CChannelHandlerVRC6::HandleRelease()
 
 void CChannelHandlerVRC6::HandleNote(int Note, int Octave)
 {
+	m_iDutyPeriod = m_iDefaultDuty;		// // //
 }
 
 bool CChannelHandlerVRC6::CreateInstHandler(inst_type_t Type)

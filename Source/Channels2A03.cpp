@@ -112,7 +112,7 @@ void CChannelHandler2A03::HandleRelease()
 
 void CChannelHandler2A03::HandleNote(int Note, int Octave)
 {
-	// // // nothing
+	m_iDutyPeriod = m_iDefaultDuty;		// // //
 }
 
 bool CChannelHandler2A03::CreateInstHandler(inst_type_t Type)
