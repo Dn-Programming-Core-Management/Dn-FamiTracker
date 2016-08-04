@@ -105,7 +105,7 @@ void CInstrumentRecorder::RecordInstrument(const unsigned Tick, CView *pView)		/
 		PitchReg = REG(0x9001 + (ID << 12)) | (0x0F & REG(0x9002 | (ID << 12))) << 8; break;
 	case SNDCHIP_FDS:
 		ID -= CHANID_FDS; // ID = 0;
-		PitchReg = REG(0x4042) | (0x0F & REG(0x4043)) << 8; break;
+		PitchReg = REG(0x4082) | (0x0F & REG(0x4083)) << 8; break;
 	case SNDCHIP_MMC5:
 		ID -= CHANID_MMC5_SQUARE1;
 		PitchReg = (REG(0x5002 | (ID << 2)) | (0x07 & REG(0x5003 | (ID << 2))) << 8); break;
@@ -228,7 +228,7 @@ void CInstrumentRecorder::RecordInstrument(const unsigned Tick, CView *pView)		/
 	case INST_FDS:
 		for (int k = 0; k <= 2; k++) {
 			switch (k) {
-			case 0: Val = 0x3F & REG(0x4040); if (Val > 0x20) Val = 0x20; break;
+			case 0: Val = 0x3F & REG(0x4080); if (Val > 0x20) Val = 0x20; break;
 			case 1: Val = static_cast<char>(Note); break;
 			case 2: Val = static_cast<char>(Detune); break;
 			}
@@ -361,13 +361,15 @@ void CInstrumentRecorder::FinalizeRecordInstrument()
 	CSeqInstrument *Inst = dynamic_cast<CSeqInstrument*>(*m_pDumpInstrument);
 	CInstrumentFDS *FDSInst = dynamic_cast<CInstrumentFDS*>(*m_pDumpInstrument);
 	CInstrumentN163 *N163Inst = dynamic_cast<CInstrumentN163*>(*m_pDumpInstrument);
-	if (Inst != NULL) for (int i = 0; i < SEQ_COUNT; i++) {
-		if (Inst->GetSeqEnable(i) != 0) {
-			m_pSequenceCache[i]->SetLoopPoint(m_pSequenceCache[i]->GetItemCount() - 1);
-			(*m_pDumpInstrument)->RegisterManager(m_pDocument->GetInstrumentManager());
-			Inst->SetSequence(i, m_pSequenceCache[i]);
+	if (Inst != NULL) {
+		(*m_pDumpInstrument)->RegisterManager(m_pDocument->GetInstrumentManager());
+		for (int i = 0; i < SEQ_COUNT; i++) {
+			if (Inst->GetSeqEnable(i) != 0) {
+				m_pSequenceCache[i]->SetLoopPoint(m_pSequenceCache[i]->GetItemCount() - 1);
+				Inst->SetSequence(i, m_pSequenceCache[i]);
+			}
+			m_pSequenceCache[i] = new CSequence();
 		}
-		m_pSequenceCache[i] = new CSequence();
 	}
 	switch (InstType) {
 	case INST_FDS:

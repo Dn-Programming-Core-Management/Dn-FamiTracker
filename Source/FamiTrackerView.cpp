@@ -644,8 +644,8 @@ void CFamiTrackerView::OnRButtonUp(UINT nFlags, CPoint point)
 		PopupMenuBar.LoadMenu(IDR_PATTERN_HEADER_POPUP);
 		static_cast<CMainFrame*>(theApp.GetMainWnd())->UpdateMenu(&PopupMenuBar);
 		pPopupMenu = PopupMenuBar.GetSubMenu(0);
-		pPopupMenu->EnableMenuItem(ID_TRACKER_RECORDTOINST, theApp.IsPlaying() ? MF_ENABLED : MF_DISABLED);		// // //
-		pPopupMenu->EnableMenuItem(ID_TRACKER_RECORDERSETTINGS, theApp.IsPlaying() ? MF_ENABLED : MF_DISABLED);		// // //
+		pPopupMenu->EnableMenuItem(ID_TRACKER_RECORDTOINST, theApp.IsPlaying() ? MF_DISABLED : MF_ENABLED);		// // //
+		pPopupMenu->EnableMenuItem(ID_TRACKER_RECORDERSETTINGS, theApp.IsPlaying() ? MF_DISABLED : MF_ENABLED);		// // //
 		CMenu *pMeterMenu = pPopupMenu->GetSubMenu(6);		// // // 050B
 		int Rate = theApp.GetSoundGenerator()->GetMeterDecayRate();
 		pMeterMenu->CheckMenuItem(Rate == DECAY_FAST ? ID_DECAY_FAST : ID_DECAY_SLOW, MF_CHECKED | MF_BYCOMMAND);
