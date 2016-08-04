@@ -119,6 +119,7 @@ private:
 	// Drag & drop
 	void InitiateDrag();
 
+	CFrameCursorPos GetFrameCursor() const;		// // //
 	std::pair<CFrameIterator, CFrameIterator> GetIterators() const;		// // //
 
 	void AutoScroll(const CPoint &point);
@@ -228,6 +229,11 @@ public:
 	afx_msg void OnEditPasteOverwrite();
 	afx_msg void OnUpdateEditPasteOverwrite(CCmdUI *pCmdUI);
 	afx_msg void OnModuleDuplicateCurrentPattern();
+	
+	/*afx_msg*/ void OnEditSelectpattern();
+	/*afx_msg*/ void OnEditSelectframe();
+	/*afx_msg*/ void OnEditSelectchannel();
+	/*afx_msg*/ void OnEditSelectall();
 };
 
 

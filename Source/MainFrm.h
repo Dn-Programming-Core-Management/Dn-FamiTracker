@@ -414,6 +414,7 @@ public:
 	afx_msg void OnTrackerDisplayAverageBPM();		// // // 050B
 	afx_msg void OnTrackerDisplayChannelState();		// // // 050B
 	afx_msg void OnToggleMultiplexer();
+	afx_msg void OnUpdatePatternEditorSelected(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateEditCopySpecial(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateEditPasteOverwrite(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateSelectMultiFrame(CCmdUI *pCmdUI);
