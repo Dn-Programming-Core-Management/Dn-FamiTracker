@@ -319,6 +319,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_SELECT_FRAME, OnEditSelectframe)
 	ON_COMMAND(ID_SELECT_CHANNEL, OnEditSelectchannel)
 	ON_COMMAND(ID_SELECT_TRACK, OnEditSelecttrack)
+	ON_COMMAND(ID_SELECT_OTHER, OnEditSelectother)
 	ON_COMMAND(ID_EDIT_FIND_TOGGLE, OnEditFindToggle)
 	ON_COMMAND(ID_FIND_NEXT, OnFindNext)
 	ON_COMMAND(ID_FIND_PREVIOUS, OnFindPrevious)
@@ -349,6 +350,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_SELECT_COLUMN, OnUpdatePatternEditorSelected)
 	ON_UPDATE_COMMAND_UI(ID_SELECT_CHANNEL, OnUpdateSelectMultiFrame)
 	ON_UPDATE_COMMAND_UI(ID_SELECT_TRACK, OnUpdateSelectMultiFrame)
+//	ON_UPDATE_COMMAND_UI(ID_SELECT_OTHER, OnUpdateCurrentSelectionEnabled)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_FIND_TOGGLE, OnUpdateEditFindToggle)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_INTERPOLATE, OnUpdateSelectionEnabled)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_REVERSE, OnUpdateSelectionEnabled)
@@ -3004,6 +3006,53 @@ void CMainFrame::OnEditSelecttrack()
 		GetFrameEditor()->OnEditSelectall();
 }
 
+void CMainFrame::OnEditSelectother()		// // //
+{
+	auto pView = static_cast<CFamiTrackerView*>(GetActiveView());
+	auto pEditor = pView->GetPatternEditor();
+	auto pDoc = static_cast<const CFamiTrackerDoc*>(GetActiveDocument());
+
+	if (GetFocus() == pView) {
+		if (pEditor->IsSelecting()) {
+			const CSelection Sel = pEditor->GetSelection().GetNormalized();
+			pEditor->CancelSelection();
+
+			CFrameSelection NewSel;
+			NewSel.m_cpStart.m_iFrame = Sel.m_cpStart.m_iFrame;
+			NewSel.m_cpEnd.m_iFrame = std::min(Sel.m_cpEnd.m_iFrame, (int)pDoc->GetFrameCount(m_iTrack) - 1);
+			NewSel.m_cpStart.m_iChannel = Sel.m_cpStart.m_iChannel;
+			NewSel.m_cpEnd.m_iChannel = Sel.m_cpEnd.m_iChannel;
+
+			m_pFrameEditor->SetSelection(NewSel);
+		}
+		else
+			m_pFrameEditor->CancelSelection();
+		m_pFrameEditor->EnableInput();
+	}
+	else if (GetFocus() == m_pFrameEditor) {
+		if (m_pFrameEditor->IsSelecting()) {
+			const CFrameSelection Sel = m_pFrameEditor->GetSelection().GetNormalized();
+			m_pFrameEditor->CancelSelection();
+
+			CSelection NewSel;
+			NewSel.m_cpStart.m_iFrame = Sel.m_cpStart.m_iFrame;
+			NewSel.m_cpEnd.m_iFrame = Sel.m_cpEnd.m_iFrame;
+			NewSel.m_cpStart.m_iRow = 0;
+			NewSel.m_cpEnd.m_iRow = pDoc->GetCurrentPatternLength(m_iTrack, Sel.m_cpStart.m_iFrame) - 1;
+			NewSel.m_cpStart.m_iChannel = Sel.m_cpStart.m_iChannel;
+			NewSel.m_cpEnd.m_iChannel = Sel.m_cpEnd.m_iChannel;
+			NewSel.m_cpStart.m_iColumn = C_NOTE;
+			NewSel.m_cpEnd.m_iColumn = pEditor->GetChannelColumns(Sel.m_cpEnd.m_iChannel);
+
+			pEditor->SetSelection(NewSel);
+			pEditor->UpdateSelectionCondition();
+		}
+		else
+			pEditor->CancelSelection();
+		pView->SetFocus();
+	}
+}
+
 void CMainFrame::OnDecayFast()
 {
 	theApp.GetSoundGenerator()->SetMeterDecayRate(theApp.GetSettings()->MeterDecayRate = DECAY_FAST);		// // // 050B
@@ -3105,6 +3154,14 @@ void CMainFrame::OnUpdateSelectionEnabled(CCmdUI *pCmdUI)
 {
 	CFamiTrackerView *pView	= static_cast<CFamiTrackerView*>(GetActiveView());
 	pCmdUI->Enable(pView->IsSelecting() ? 1 : 0);
+}
+
+void CMainFrame::OnUpdateCurrentSelectionEnabled(CCmdUI *pCmdUI)		// // //
+{
+	if (GetFocus() == GetActiveView())
+		OnUpdateSelectionEnabled(pCmdUI);
+	else if (GetFocus() == GetFrameEditor())
+		pCmdUI->Enable(GetFrameEditor()->IsSelecting() ? 1 : 0);
 }
 
 void CMainFrame::SetFrameEditorPosition(int Position)

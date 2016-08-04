@@ -166,6 +166,8 @@ BEGIN
             MENUITEM "&Frame",                      ID_SELECT_FRAME
             MENUITEM "C&hannel",                    ID_SELECT_CHANNEL
             MENUITEM "&Track",                      ID_SELECT_TRACK
+            MENUITEM SEPARATOR
+            MENUITEM "In &Other Editor",            ID_SELECT_OTHER
         END
         MENUITEM SEPARATOR
         POPUP "&Find / Replace"
@@ -2790,6 +2792,7 @@ BEGIN
     ID_VIEW_CHANNELSTATE    "Display information about active effects\nDisplay Channel State"
     ID_TRACKER_PLAY_MARKER  "Play pattern from row marker\nPlay from Marker"
     ID_TRACKER_SET_MARKER   "Set a row marker for playback\nSet Row Marker"
+    ID_SELECT_OTHER         "Restore the current selection in the inactive editor window\nSelect in Other Editor"
 END
 
 #endif    // English (United States) resources

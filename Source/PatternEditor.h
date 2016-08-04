@@ -118,6 +118,8 @@ public:
 	int GetRow() const;
 	cursor_column_t GetColumn() const;
 	CCursorPos GetCursor() const;		// // //
+	
+	cursor_column_t GetChannelColumns(int Channel) const;		// // //
 
 	// Mouse
 	void OnMouseDown(const CPoint &point);
@@ -185,6 +187,7 @@ public:
 	int GetSelectionSize() const;		// // //
 	sel_condition_t GetSelectionCondition() const;		// // //
 	sel_condition_t GetSelectionCondition(const CSelection &Sel) const;		// // //
+	void UpdateSelectionCondition();		// // //
 
 	void DragPaste(const CPatternClipData *pClipData, const CSelection *pDragTarget, bool bMix);
 
@@ -236,7 +239,6 @@ private:
 
 	// Translation
 	cursor_column_t GetColumnAtPoint(int PointX) const;		// // //
-	cursor_column_t GetChannelColumns(int Channel) const;		// // //
 	int  GetSelectedTrack() const;
 	int  GetFrameCount() const;		// // //
 	int	 GetChannelCount() const;

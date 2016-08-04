@@ -666,7 +666,7 @@ bool CPatternEditor::CalculatePatternLayout()
 		if (m_bCompactMode) Width = (3 * m_iCharWidth + m_iColumnSpacing);
 		else Width = m_iCharWidth * 9 + m_iColumnSpacing * 4 + m_pDocument->GetEffColumns(Track, i) * (3 * m_iCharWidth + m_iColumnSpacing);
 		m_iChannelWidths[i] = Width + 1;
-		m_iColumns[i] = m_bCompactMode ? C_NOTE : GetChannelColumns(i);		// // //
+		m_iColumns[i] = GetChannelColumns(i);		// // //
 		m_iChannelOffsets[i] = Offset;
 		Offset += m_iChannelWidths[i];
 	}
@@ -1246,7 +1246,7 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 
 		int PosX	 = m_iColumnSpacing;
 		int SelStart = m_iColumnSpacing;
-		int Columns	 = m_bCompactMode ? C_NOTE : GetChannelColumns(i);		// // //
+		int Columns	 = GetChannelColumns(i);		// // //
 		int Width	 = m_iChannelWidths[i] - 1;		// Remove 1, spacing between channels
 
 		if (BackColor == ColBg)
@@ -2303,7 +2303,7 @@ CPatternEditor::CSelectionGuard::~CSelectionGuard()		// // //
 			}
 			m_pPatternEditor->m_bCompactMode = true;
 		}
-		m_pPatternEditor->m_iSelectionCondition = m_pPatternEditor->GetSelectionCondition();		// // //
+		m_pPatternEditor->UpdateSelectionCondition();		// // //
 	}
 	else {
 		m_pPatternEditor->m_bCurrentlySelecting = false;
@@ -2828,7 +2828,7 @@ void CPatternEditor::OnMouseUp(const CPoint &point)
 			}
 			// Row column, move to clicked row
 			if (m_bSelecting) {		// // //
-				m_iSelectionCondition = GetSelectionCondition();
+				UpdateSelectionCondition();
 				m_bSelectionInvalidated = true;
 				return;
 			}
@@ -2844,7 +2844,7 @@ void CPatternEditor::OnMouseUp(const CPoint &point)
 		}
 
 		if (m_bSelecting) {
-			m_iSelectionCondition = GetSelectionCondition();		// // //
+			UpdateSelectionCondition();		// // //
 			m_bSelectionInvalidated = true;
 			return;
 		}
@@ -3540,6 +3540,11 @@ sel_condition_t CPatternEditor::GetSelectionCondition(const CSelection &Sel) con
 	}
 
 	return SEL_CLEAN;
+}
+
+void CPatternEditor::UpdateSelectionCondition()		// // //
+{
+	m_iSelectionCondition = GetSelectionCondition();
 }
 
 // Other ////////////////////////////////////////////////////////////////////////////////////////////////////

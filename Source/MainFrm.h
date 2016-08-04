@@ -396,6 +396,7 @@ public:
 	afx_msg void OnEditSelectframe();
 	afx_msg void OnEditSelectchannel();
 	afx_msg void OnEditSelecttrack();
+	afx_msg void OnEditSelectother();
 	afx_msg void OnEditFindToggle();
 	afx_msg void OnFindNext();
 	afx_msg void OnFindPrevious();
@@ -429,6 +430,7 @@ public:
 	afx_msg void OnUpdateDisplayRegisterState(CCmdUI *pCmdUI);
 	afx_msg void OnUpdateDecayFast(CCmdUI *pCmdUI);		// // // 050B
 	afx_msg void OnUpdateDecaySlow(CCmdUI *pCmdUI);		// // // 050B
+	afx_msg void OnUpdateCurrentSelectionEnabled(CCmdUI *pCmdUI);
 
 	afx_msg void OnEasterEggKraid1();		// Easter Egg
 	afx_msg void OnEasterEggKraid2();

@@ -759,6 +759,7 @@
 #define ID_TRACKER_PLAY_MARKER          33196
 #define ID_TRACKER_SET_MARKER           33197
 #define ID_FRAME_PASTEOVERWRITE         33198
+#define ID_SELECT_OTHER                 33199
 #define ID_INSTRUMENT_ADD_2A03          36864
 #define ID_INSTRUMENT_ADD_FDS           36865
 #define ID_INSTRUMENT_ADD_MMC5          36866
@@ -782,7 +783,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        358
-#define _APS_NEXT_COMMAND_VALUE         33199
+#define _APS_NEXT_COMMAND_VALUE         33200
 #define _APS_NEXT_CONTROL_VALUE         1460
 #define _APS_NEXT_SYMED_VALUE           179
 #endif

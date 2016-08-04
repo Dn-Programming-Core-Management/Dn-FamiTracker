@@ -68,6 +68,7 @@ const std::vector<stAccelEntry> CAccelerator::DEFAULT_TABLE {
 	{_T("Select frame"),				MOD_NONE,		0,				ID_SELECT_FRAME},					// // //
 	{_T("Select channel"),				MOD_NONE,		0,				ID_SELECT_CHANNEL},					// // //
 	{_T("Select track"),				MOD_NONE,		0,				ID_SELECT_TRACK},					// // //
+	{_T("Select in other editor"),		MOD_NONE,		0,				ID_SELECT_OTHER},					// // //
 	{_T("Go to row"),					MOD_ALT,		'G',			ID_EDIT_GOTO},						// // //
 	{_T("Toggle channel"),				MOD_ALT,		VK_F9,			ID_TRACKER_TOGGLECHANNEL},
 	{_T("Solo channel"),				MOD_ALT,		VK_F10,			ID_TRACKER_SOLOCHANNEL},
