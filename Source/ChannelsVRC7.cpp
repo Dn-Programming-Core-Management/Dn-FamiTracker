@@ -153,6 +153,8 @@ void CChannelHandlerVRC7::HandleRelease()
 
 void CChannelHandlerVRC7::HandleNote(int Note, int Octave)
 {
+	CChannelHandler::HandleNote(Note, Octave);		// // //
+
 	// Portamento fix
 	if (m_iCommand == CMD_NOTE_HALT || m_iCommand == CMD_NOTE_RELEASE)
 		m_iPeriod = 0;

@@ -29,24 +29,20 @@
 class CChannelHandlerMMC5 : public CChannelHandler {
 public:
 	CChannelHandlerMMC5();
-	virtual void ResetChannel();
-	virtual void RefreshChannel();
+	void	ResetChannel() override;
+	void	RefreshChannel() override;
 
 protected:
-	virtual void HandleNoteData(stChanNote *pNoteData, int EffColumns);
-	virtual bool HandleEffect(effect_t EffNum, unsigned char EffParam);		// // //
-	virtual void HandleEmptyNote();
-	virtual void HandleCut();
-	virtual void HandleRelease();
-	virtual void HandleNote(int Note, int Octave);
-	bool         CreateInstHandler(inst_type_t Type);		// // //
-	virtual int ConvertDuty(int Duty) const;		// // //
-	virtual void ClearRegisters();
-	virtual CString GetCustomEffectString() const;		// // //
+	void	HandleNoteData(stChanNote *pNoteData, int EffColumns) override;
+	bool	HandleEffect(effect_t EffNum, unsigned char EffParam) override;		// // //
+	void	HandleEmptyNote() override;
+	void	HandleCut() override;
+	void	HandleRelease() override;
+	bool	CreateInstHandler(inst_type_t Type) override;		// // //
+	int		ConvertDuty(int Duty) const override;		// // //
+	void	ClearRegisters() override;
+	CString	GetCustomEffectString() const override;		// // //
 
-protected:
-	static const int SEQUENCES = 5;
-	static const int SEQ_TYPES[];
 protected:
 	// // //
 	bool m_bHardwareEnvelope;	// // // (constant volume flag, bit 4)

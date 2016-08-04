@@ -32,7 +32,6 @@ protected:
 	void	HandleEmptyNote() override;
 	void	HandleCut() override;
 	void	HandleRelease() override;
-	void	HandleNote(int Note, int Octave) override;
 	int		CalculateVolume() const override;		// // //
 	bool	CreateInstHandler(inst_type_t Type) override;		// // //
 	void	ClearRegisters() override;
@@ -54,8 +53,6 @@ protected:
 	// Modulation table
 	char m_iModTable[32];
 	char m_iWaveTable[64];
-	// Modulation
-	bool m_bResetMod;
 protected:
 	int m_iVolModMode;		// // // 0CC: make an enum for this
 	int m_iVolModRate;

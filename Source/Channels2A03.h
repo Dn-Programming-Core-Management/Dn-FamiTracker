@@ -32,13 +32,12 @@ public:
 	virtual void ResetChannel();
 
 protected:
-	virtual void HandleNoteData(stChanNote *pNoteData, int EffColumns);
-	virtual bool HandleEffect(effect_t EffNum, unsigned char EffParam);		// // //
-	virtual void HandleEmptyNote();
-	virtual void HandleNote(int Note, int Octave);
-	void         HandleCut();
-	void         HandleRelease();
-	bool         CreateInstHandler(inst_type_t Type);		// // //
+	void	HandleNoteData(stChanNote *pNoteData, int EffColumns) override;
+	bool	HandleEffect(effect_t EffNum, unsigned char EffParam) override;		// // //
+	void	HandleEmptyNote() override;
+	void	HandleCut() override;
+	void	HandleRelease() override;
+	bool	CreateInstHandler(inst_type_t Type) override;		// // //
 
 protected:
 	// // //
@@ -52,17 +51,17 @@ protected:
 class C2A03Square : public CChannelHandler2A03 {
 public:
 	C2A03Square();
-	void RefreshChannel();
-	void SetChannelID(int ID);		// // //
+	void	RefreshChannel() override;
+	void	SetChannelID(int ID) override;		// // //
 protected:
-	int ConvertDuty(int Duty) const;		// // //
-	void ClearRegisters();
+	int		ConvertDuty(int Duty) const override;		// // //
+	void	ClearRegisters() override;
 
-	void HandleNoteData(stChanNote *pNoteData, int EffColumns);
-	bool HandleEffect(effect_t EffNum, unsigned char EffParam);		// // //
-	void HandleEmptyNote();
-	void HandleNote(int Note, int Octave);
-	CString GetCustomEffectString() const;		// // //
+	void	HandleNoteData(stChanNote *pNoteData, int EffColumns) override;
+	bool	HandleEffect(effect_t EffNum, unsigned char EffParam) override;		// // //
+	void	HandleEmptyNote() override;
+	void	HandleNote(int Note, int Octave) override;
+	CString	GetCustomEffectString() const override;		// // //
 
 	unsigned char m_iChannel;		// // //
 	unsigned char m_cSweep;
@@ -75,13 +74,13 @@ protected:
 class CTriangleChan : public CChannelHandler2A03 {
 public:
 	CTriangleChan();
-	void RefreshChannel();
-	void ResetChannel();		// // //
-	int GetChannelVolume() const;		// // //
+	void	RefreshChannel() override;
+	void	ResetChannel() override;		// // //
+	int		GetChannelVolume() const override;		// // //
 protected:
-	bool HandleEffect(effect_t EffNum, unsigned char EffParam);		// // //
-	void ClearRegisters();
-	CString GetCustomEffectString() const;		// // //
+	bool	HandleEffect(effect_t EffNum, unsigned char EffParam) override;		// // //
+	void	ClearRegisters() override;
+	CString	GetCustomEffectString() const override;		// // //
 private:
 	int m_iLinearCounter;
 };
@@ -90,17 +89,17 @@ private:
 class CNoiseChan : public CChannelHandler2A03 {
 public:
 	CNoiseChan();
-	void RefreshChannel();
+	void	RefreshChannel();
 protected:
-	void ClearRegisters();
-	CString GetCustomEffectString() const;		// // //
-	void HandleNote(int Note, int Octave);
-	void SetupSlide();		// // //
+	void	ClearRegisters() override;
+	CString	GetCustomEffectString() const override;		// // //
+	void	HandleNote(int Note, int Octave) override;
+	void	SetupSlide() override;		// // //
 
-	int LimitPeriod(int Period) const;		// // //
-	int LimitRawPeriod(int Period) const;		// // //
+	int		LimitPeriod(int Period) const override;		// // //
+	int		LimitRawPeriod(int Period) const override;		// // //
 
-	int TriggerNote(int Note);
+	int		TriggerNote(int Note) override;
 };
 
 class CDSample;		// // //
@@ -109,23 +108,23 @@ class CDSample;		// // //
 class CDPCMChan : public CChannelHandler, public CChannelHandlerInterfaceDPCM {		// // //
 public:
 	CDPCMChan();		// // //
-	void RefreshChannel();
-	int GetChannelVolume() const;		// // //
+	void	RefreshChannel() override;
+	int		GetChannelVolume() const override;		// // //
 
 	void WriteDCOffset(unsigned char Delta);		// // //
 	void SetLoopOffset(unsigned char Loop);		// // //
 	void PlaySample(const CDSample *pSamp, int Pitch);		// // //
 protected:
-	void HandleNoteData(stChanNote *pNoteData, int EffColumns);
-	bool HandleEffect(effect_t EffNum, unsigned char EffParam);		// // //
-	void HandleEmptyNote();
-	void HandleCut();
-	void HandleRelease();
-	void HandleNote(int Note, int Octave);
-	bool CreateInstHandler(inst_type_t Type);		// // //
+	void	HandleNoteData(stChanNote *pNoteData, int EffColumns) override;
+	bool	HandleEffect(effect_t EffNum, unsigned char EffParam) override;		// // //
+	void	HandleEmptyNote() override;
+	void	HandleCut() override;
+	void	HandleRelease() override;
+	void	HandleNote(int Note, int Octave) override;
+	bool	CreateInstHandler(inst_type_t Type) override;		// // //
 
-	void ClearRegisters();
-	CString GetCustomEffectString() const;		// // //
+	void	ClearRegisters() override;
+	CString	GetCustomEffectString() const override;		// // //
 private:
 	// DPCM variables
 	unsigned char m_cDAC;
@@ -137,6 +136,6 @@ private:
 	int m_iRetrigger;
 	int m_iRetriggerCntr;
 	int m_iCustomPitch;
-	bool m_bTrigger;
+	bool m_bRetrigger;		// // //
 	bool m_bEnabled;
 };

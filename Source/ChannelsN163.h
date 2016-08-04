@@ -29,30 +29,30 @@
 class CChannelHandlerN163 : public CChannelHandlerInverted, public CChannelHandlerInterfaceN163 {
 public:
 	CChannelHandlerN163();
-	virtual void ResetChannel();
-	virtual void RefreshChannel();
+	void	RefreshChannel() override;
+	void	ResetChannel() override;
 
-	void SetWaveLength(int Length);		// // //
-	void SetWavePosition(int Pos);
-	void SetWaveCount(int Count);
-	void FillWaveRAM(const char *Buffer, int Count);
+	void	SetWaveLength(int Length);		// // //
+	void	SetWavePosition(int Pos);
+	void	SetWaveCount(int Count);
+	void	FillWaveRAM(const char *Buffer, int Count);
 
-	void SetChannelCount(int Count);		// // //
+	void	SetChannelCount(int Count);		// // //
 
 protected:
-	virtual bool HandleEffect(effect_t EffNum, unsigned char EffParam);		// // //
-	virtual bool HandleInstrument(bool Trigger, bool NewInstrument);		// // //
-	virtual void HandleEmptyNote();
-	virtual void HandleCut();
-	virtual void HandleRelease();
-	virtual void HandleNote(int Note, int Octave);
-	bool         CreateInstHandler(inst_type_t Type);		// // //
-	virtual void SetupSlide();		// // //
-	virtual int ConvertDuty(int Duty) const;		// // //
-	virtual void ClearRegisters();
-	virtual int CalculatePeriod() const;		// // //
-	virtual CString	GetSlideEffectString() const;		// // //
-	virtual CString GetCustomEffectString() const;		// // //
+	bool	HandleEffect(effect_t EffNum, unsigned char EffParam) override;		// // //
+	bool	HandleInstrument(bool Trigger, bool NewInstrument) override;		// // //
+	void	HandleEmptyNote() override;
+	void	HandleCut() override;
+	void	HandleRelease() override;
+	void	HandleNote(int Note, int Octave) override;
+	bool	CreateInstHandler(inst_type_t Type) override;		// // //
+	void	SetupSlide() override;		// // //
+	int		ConvertDuty(int Duty) const override;		// // //
+	void	ClearRegisters() override;
+	int		CalculatePeriod() const override;		// // //
+	CString	GetSlideEffectString() const override;		// // //
+	CString	GetCustomEffectString() const override;		// // //
 
 private:
 	void WriteReg(int Reg, int Value);

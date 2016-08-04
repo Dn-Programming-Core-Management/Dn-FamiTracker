@@ -2111,6 +2111,7 @@ void CSoundGen::UpdateAPU()
 			for (int i = 0; i < CHANNELS; ++i) {
 				if (m_pChannels[i] != NULL) {
 					m_pChannels[i]->RefreshChannel();
+					m_pChannels[i]->FinishTick();		// // //
 					unsigned int Chip = m_pTrackerChannels[i]->GetChip();
 					if (m_pDocument->ExpansionEnabled(Chip)) {
 						int Delay = (Chip == LastChip) ? 150 : 250;

@@ -31,8 +31,6 @@
 #include "InstHandler.h"		// // //
 #include "SeqInstHandler.h"		// // //
 
-const int CChannelHandlerMMC5::SEQ_TYPES[] = {SEQ_VOLUME, SEQ_ARPEGGIO, SEQ_PITCH, SEQ_HIPITCH, SEQ_DUTYCYCLE};
-
 CChannelHandlerMMC5::CChannelHandlerMMC5() : CChannelHandler(0x7FF, 0x0F)
 {
 	m_bHardwareEnvelope = false;		// // //
@@ -90,11 +88,6 @@ void CChannelHandlerMMC5::HandleRelease()
 {
 	if (!m_bRelease)
 		ReleaseNote();
-}
-
-void CChannelHandlerMMC5::HandleNote(int Note, int Octave)
-{
-	m_iDutyPeriod = m_iDefaultDuty;		// // //
 }
 
 bool CChannelHandlerMMC5::CreateInstHandler(inst_type_t Type)

@@ -84,6 +84,10 @@ public:
 	virtual void	ProcessChannel();							// // // no longer pure
 	/*!	\brief Updates the sound channel's registers according to the channel handler's state. */
 	virtual void	RefreshChannel() = 0;
+
+	/*!	\brief Ends the current tick. */
+	virtual void	FinishTick();		// // //
+
 	/*!	\brief Resets the channel handler's sound state to an initial state. */
 	virtual void	ResetChannel();
 	/*!	\brief Retrieves the channel handler's state.
@@ -158,7 +162,7 @@ protected:
 		\details Echo buffer retrieval takes place before this method is called.
 		\param Note The note pitch.
 		\param Octave The note octave. */
-	virtual void	HandleNote(int Note, int Octave) = 0;
+	virtual void	HandleNote(int Note, int Octave);
 
 	/*!	\brief Instantiates a pitch slide to a destination note. */
 	virtual void	SetupSlide();		// // //
@@ -358,6 +362,8 @@ protected:
 	int				m_iChannelID;
 
 	// General
+	/*!	\brief A flag indicating that a note has been triggered on the current tick. */
+	bool			m_bTrigger;
 	/*!	\brief A flag indicating that the current active note of the channel handler has been released. */
 	bool			m_bRelease;
 	/*!	\brief A flag indicating that the channel handler runs an active note. */

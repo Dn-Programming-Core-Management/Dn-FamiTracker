@@ -147,12 +147,6 @@ void CChannelHandlerS5B::HandleRelease()
 		ReleaseNote();		// // //
 }
 
-void CChannelHandlerS5B::HandleNote(int Note, int Octave)
-{
-	m_iDutyPeriod = m_iDefaultDuty;		// // //
-	m_bUpdate = true;
-}
-
 bool CChannelHandlerS5B::CreateInstHandler(inst_type_t Type)
 {
 	switch (Type) {
@@ -240,7 +234,7 @@ void CChannelHandlerS5B::RefreshChannel()
 	WriteReg((m_iChannelID - CHANID_S5B_CH1) * 2 + 1, HiPeriod);
 	WriteReg((m_iChannelID - CHANID_S5B_CH1) + 8    , Volume | Envelope);
 
-	if (Envelope && m_bUpdate)		// // // 050B
+	if (Envelope && (m_bTrigger || m_bUpdate))		// // // 050B
 		m_bEnvTrigger = true;
 	m_bUpdate = false;
 	if (!Noise && m_iNoiseFreq == -1)

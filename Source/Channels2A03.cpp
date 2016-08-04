@@ -110,11 +110,6 @@ void CChannelHandler2A03::HandleRelease()
 	*/
 }
 
-void CChannelHandler2A03::HandleNote(int Note, int Octave)
-{
-	m_iDutyPeriod = m_iDefaultDuty;		// // //
-}
-
 bool CChannelHandler2A03::CreateInstHandler(inst_type_t Type)
 {
 	switch (Type) {
@@ -376,6 +371,8 @@ CString CTriangleChan::GetCustomEffectString() const		// // //
 
 void CNoiseChan::HandleNote(int Note, int Octave)
 {
+	CChannelHandler2A03::HandleNote(Note, Octave);		// // //
+
 	int NewNote = (MIDI_NOTE(Octave, Note) & 0x0F) | 0x100;
 	int NesFreq = TriggerNote(NewNote);
 
@@ -515,7 +512,7 @@ int CNoiseChan::TriggerNote(int Note)
 CDPCMChan::CDPCMChan() :		// // //
 	CChannelHandler(0xF, 0x3F),		// // // does not use these anyway
 	m_bEnabled(false),
-	m_bTrigger(false),
+	m_bRetrigger(false),
 	m_cDAC(255),
 	m_iRetrigger(0),
 	m_iRetriggerCntr(0)
@@ -581,6 +578,7 @@ void CDPCMChan::HandleRelease()
 
 void CDPCMChan::HandleNote(int Note, int Octave)
 {
+	CChannelHandler::HandleNote(Note, Octave);		// // //
 	m_iNote = MIDI_NOTE(Octave, Note);		// // //
 	TriggerNote(m_iNote);
 	m_bGate = true;
@@ -612,7 +610,7 @@ void CDPCMChan::RefreshChannel()
 		if (m_iRetriggerCntr == 0) {
 			m_iRetriggerCntr = m_iRetrigger;
 			m_bEnabled = true;
-			m_bTrigger = true;
+			m_bRetrigger = true;
 		}
 	}
 
@@ -645,7 +643,7 @@ void CDPCMChan::RefreshChannel()
 
 		m_bEnabled = false;		// don't write to this channel anymore
 	}
-	else if (m_bTrigger) {
+	else if (m_bRetrigger) {
 		// Start playing the sample
 		WriteRegister(0x4010, (m_iPeriod & 0x0F) | m_iLoop);
 		WriteRegister(0x4012, m_iOffset);							// load address, start at $C000
@@ -659,7 +657,7 @@ void CDPCMChan::RefreshChannel()
 			WriteRegister(0x4013, m_iLoopLength);
 		}
 
-		m_bTrigger = false;
+		m_bRetrigger = false;
 	}
 }
 
@@ -688,7 +686,7 @@ void CDPCMChan::PlaySample(const CDSample *pSamp, int Pitch)		// // //
 	m_iSampleLength = (SampleSize >> 4) - (m_iOffset << 2);
 	m_iLoopLength = SampleSize - m_iLoopOffset;
 	m_bEnabled = true;
-	m_bTrigger = true;
+	m_bRetrigger = true;
 	m_iLoop = (Pitch & 0x80) >> 1;
 	m_iRetriggerCntr = m_iRetrigger;
 }

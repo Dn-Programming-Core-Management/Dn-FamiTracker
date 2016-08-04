@@ -130,9 +130,8 @@ void CChannelHandlerN163::HandleRelease()
 void CChannelHandlerN163::HandleNote(int Note, int Octave)
 {
 	// New note
+	CChannelHandler::HandleNote(Note, Octave);		// // //
 	m_bLoadWave = false;
-	m_iDutyPeriod = m_iDefaultDuty;
-	m_bRelease = false;
 //	m_bResetPhase = true;
 }
 

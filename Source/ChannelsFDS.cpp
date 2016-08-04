@@ -39,8 +39,6 @@ CChannelHandlerFDS::CChannelHandlerFDS() :
 { 
 	memset(m_iModTable, 0, 32);
 	memset(m_iWaveTable, 0, 64);
-
-	m_bResetMod = false;
 }
 
 void CChannelHandlerFDS::HandleNoteData(stChanNote *pNoteData, int EffColumns)
@@ -129,12 +127,6 @@ void CChannelHandlerFDS::HandleRelease()
 	}
 }
 
-void CChannelHandlerFDS::HandleNote(int Note, int Octave)
-{
-	// Trigger a new note
-	m_bResetMod = true;
-}
-
 int CChannelHandlerFDS::CalculateVolume() const		// // //
 {
 	if (!theApp.GetSettings()->General.bFDSOldVolume)		// // // match NSF setting
@@ -202,10 +194,8 @@ void CChannelHandlerFDS::RefreshChannel()
 	else
 		WriteRegister(0x4080, 0x80 | Volume);
 
-	if (m_bResetMod)
+	if (m_bTrigger)		// // //
 		WriteRegister(0x4085, 0);
-
-	m_bResetMod = false;
 
 	// Update modulation unit
 	if (m_iModulationDelay == 0) {
