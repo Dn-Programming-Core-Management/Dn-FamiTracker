@@ -14,7 +14,6 @@
 #define IDS_CLIPBOARD_COPY_ERROR        102
 #define IDS_CLIPBOARD_PASTE_ERROR       103
 #define IDS_DPCM_SPACE_FORMAT           104
-#define IDS_FILE_VERSION_TOO_NEW        105
 #define IDS_INSTRUMENT_EDITOR_TITLE     106
 #define IDS_INST_VERSION_UNSUPPORTED    107
 #define IDS_FILE_SAVED                  108
@@ -26,7 +25,6 @@
 #define IDS_SONG_DELETE                 114
 #define IDS_SOUND_FAIL                  115
 #define IDS_UNDERRUN_MESSAGE            116
-#define IDS_WELCOME_VER                 117
 #define IDS_WELCOME_VER_FORMAT          117
 #define IDS_DPCM_IMPORT_INVALID_WAVEFILE 118
 #define IDS_INST_FILE_ERROR             119
@@ -50,10 +48,7 @@
 #define IDS_CLIPBOARD_ERROR             131
 #define IDS_FILE_OPEN_ERROR             132
 #define ID_CMD_NEXT_INSTRUMENT          132
-#define IDS_FILE_VALID_ERROR            133
 #define ID_CMD_PREV_INSTRUMENT          133
-#define IDS_FILE_VAID_ERROR             133
-#define IDS_FILE_VERSION_ERROR          134
 #define ID_CMD_INCREASESTEPSIZE         134
 #define IDS_INST_LIMIT                  135
 #define ID_CMD_DECREASESTEPSIZE         135
@@ -65,7 +60,6 @@
 #define ID_FOCUS_FRAME_EDITOR           139
 #define ID_FOCUS_PATTERN_EDITOR         140
 #define IDS_CLIPPING_MESSAGE            140
-#define IDS_OPEN                        141
 #define ID_CMD_STEP_UP                  141
 #define IDS_FILTER_FTI                  141
 #define ID_CMD_STEP_DOWN                142
@@ -80,13 +74,11 @@
 #define IDD_SPEED                       146
 #define IDS_OUT_OF_SLOTS                146
 #define IDD_PCMIMPORT                   147
-#define IDS_OUT_OF_SAMPLEMEM            147
 #define IDS_OUT_OF_SAMPLEMEM_FORMAT     147
 #define IDS_DPCM_IMPORT_GAIN_FORMAT     148
 #define IDS_OPEN_FILE_ERROR             149
 #define IDS_INFO_COPYRIGHT              150
 #define IDS_IMPORT_FAILED               151
-#define IDS_IMPORT_CHIP_MISMATCH        152
 #define IDS_IMPORT_INSTRUMENT_COUNT     153
 #define IDS_IMPORT_SAMPLE_SLOTS         154
 #define IDS_DPCM_IMPORT_TITLE_FORMAT    155
@@ -97,7 +89,6 @@
 #define IDD_INSTRUMENT_DPCM             159
 #define IDS_PERFORMANCE_UNDERRUN_FORMAT 159
 #define IDD_INSTRUMENT                  160
-#define IDS_DPCM_IMPORT_INVALID_WAVE    160
 #define IDS_LOADING_FILE                160
 #define IDS_FILTER_DMC                  161
 #define IDS_FILTER_WAV                  162
@@ -108,7 +99,6 @@
 #define IDS_ABOUT_TOOLTIP_MAIL          167
 #define IDS_ABOUT_TOOLTIP_WEB           168
 #define IDS_ABOUT_VERSION_FORMAT        169
-#define IDB_VISUALIZER                  169
 #define IDS_PROPERTIES_CHANNELS         170
 #define IDS_LOADING_DONE                171
 #define IDB_KEY_BLACK                   172
@@ -142,7 +132,6 @@
 #define IDS_DUMP_NOT_SUPPORTED          185
 #define IDS_SEQUENCE_LIMIT              186
 #define IDS_FIND_NONE                   187
-#define IDS_REPLACE_ALL                 188
 #define IDS_FINDRESULT_COUNT            188
 #define IDS_IMPORT_SEQUENCE_COUNT       189
 #define ID_FIND_NEXT                    190
@@ -156,7 +145,6 @@
 #define IDD_CONFIG_SOUND                201
 #define IDS_FILE_LOAD_ERROR             204
 #define IDS_CONFIG_WINDOW               205
-#define IDS_WELCOME                     206
 #define IDS_SAVE_ERROR                  210
 #define IDD_CONFIG_SHORTCUTS            211
 #define IDD_OCTAVE                      212
@@ -170,7 +158,6 @@
 #define IDR_FRAME_POPUP                 240
 #define IDI_INST_N163                   245
 #define IDI_INST_FDS                    246
-#define IDI_INST_5B                     247
 #define IDI_INST_S5B                    247
 #define IDD_INSTRUMENT_FDS              248
 #define IDS_KRAID                       250
@@ -281,7 +268,6 @@
 #define IDC_SONG_COPYRIGHT              1069
 #define IDC_ARPEGGIATE                  1069
 #define IDC_FONT                        1071
-#define IDC_ABOUT                       1072
 #define IDC_PATTERNCOLORS               1072
 #define IDC_ABOUT1                      1072
 #define IDC_ABOUT2                      1073
@@ -389,12 +375,10 @@
 #define IDC_MOD_DELAY                   1195
 #define IDC_PLAY                        1195
 #define IDC_MOD_DELAY_SPIN              1196
-#define IDC_POS                         1196
 #define IDC_DELETE                      1197
 #define IDC_PRESET_PULSE_25             1197
 #define IDC_C_DM                        1197
 #define IDC_C_AR                        1198
-#define IDC_INFO                        1198
 #define IDC_C_DR                        1199
 #define IDC_C_SL                        1200
 #define IDC_TILT                        1200
@@ -500,14 +484,9 @@
 #define IDC_SLIDER_OCTAVE               1308
 #define IDC_SLIDER_DETUNE_SEMITONE      1309
 #define IDC_SLIDER_DETUNE_CENT          1310
-#define IDC_BUTTON_TUNE                 1311
 #define IDC_BUTTON_RESET                1312
 #define IDC_BUTTON_IMPORT               1313
 #define IDC_BUTTON_EXPORT               1315
-#define IDC_EDIT_CENT                   1317
-#define IDC_SPIN_CENT                   1318
-#define IDC_RADIO_CURRENT               1320
-#define IDC_RADIO_ALL                   1321
 #define IDC_EXPANSION_VRC6              1331
 #define IDC_EXPANSION_VRC7              1332
 #define IDC_EXPANSION_FDS               1333
@@ -551,7 +530,6 @@
 #define IDC_COMBO_FIND_IN               1386
 #define IDC_EDIT_FIND_VOL2              1387
 #define IDC_COMBO_EFFCOLUMN             1389
-#define IDC_CHECK_REPLACE_ALL           1390
 #define IDC_CHECK_VERTICAL_SEARCH       1392
 #define IDC_CHECK_REPLACE_NOTE          1393
 #define IDC_CHECK_REPLACE_VOL           1394
@@ -593,7 +571,6 @@
 #define IDC_SPIN_RECORDER_COUNT         1432
 #define IDC_CHECK_VERSION_EDIT          1433
 #define IDC_CHECK_VERSION_SAVE          1434
-#define IDC_CHECK_VERSION_BLOCK         1435
 #define IDC_RADIO_SEMITONE_INC          1436
 #define IDC_RADIO_SEMITONE_DEC          1437
 #define IDC_BUTTON_TRSP_CLEAR           1438
@@ -662,7 +639,6 @@
 #define ID_POPUP_TOGGLECHANNEL          32963
 #define ID_MODULE_DUPLICATEFRAME        32964
 #define ID_EDIT_REVERSE                 32984
-#define ID_INSTRUMENT_ADD               32995
 #define ID_INSTRUMENT_REMOVE            32996
 #define ID_INSTRUMENT_EDIT              32997
 #define ID_INSTRUMENT_CLONE             32998
@@ -677,11 +653,6 @@
 #define ID_POPUP_PICKUPROW              33032
 #define ID_POPUP_UNMUTEALLCHANNELS      33037
 #define ID_MODULE_CHANNELS              33038
-#define ID_INSTRUMENT_                  33039
-#define ID_HELP_CHECKFORNEWVERSIONS     33040
-#define ID_EDIT_EXPANDPATTERN           33041
-#define ID_EDIT_SHRINKPATTERN           33042
-#define ID_FILE_IMPORT                  33046
 #define ID_MODULE_REMOVEFRAME           33050
 #define ID_MODULE_COMMENTS              33051
 #define ID_MODULE_INSERTFRAME           33052

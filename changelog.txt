@@ -1,9 +1,75 @@
 0CC-FamiTracker Mod
 Change Log
 Written by HertzDevil
-Version 0.3.14.2 - May 23 2016
+Version 0.3.14.3 - Aug 3 2016
 
 --------------------------------------------------------------------------------
+
+V0.3.14.3 - 08/03/16
+Additions:
+ - Ported the following features from 0.5.0 beta:
+    - Reading 0.5.0 beta FTMs and importing 0.5.0 beta text files
+    - 5B Hxx / Ixx / Jxy pattern effects (H and J swapped according to 0CC-FT)
+    - && hold instrument command
+    - Absolute instrument pitch sequences
+    - 64-step instrument volume sequences for VRC6 sawtooth
+    - Module global tuning
+    - Player bookmark (as "row marker")
+Improvements:
+ - Ported the following changes from 0.5.0 beta:
+    - Sunsoft 5B code using Blip_Buffer
+    - MML field entry for 5B noise / mode sequences
+    - Removing octave setting in DPCM assignment editor
+    - Average BPM display
+    - [WIP] Fast volume meter decay rate
+    - Saving / loading themes
+    - Reset button in mixer configuration menu
+    - Registry entry for frame editor font
+    - Movable toolbars
+ - New tracker identity:
+    - Tracker now fully uses "0CC-FamiTracker" as application title and uses its
+       own registry key (loads default values from official FamiTracker)
+    - New application icon and document icon
+    - New visualizer display
+ - Added support for DPI scaling
+ - Selections in the frame editor now have channel scope
+ - Added a command to move the current selection to the active editor window
+ - "Paste & Duplicate" and drag & drop cloning for the frame editor now reuse
+    common pattern indices within selection
+ - Overwrite pasting and range selection commands now work in the frame editor
+ - Added a pseudo-term "$$" for MML fields which treats all subsequent terms as
+    hexadecimal even without an explicit "$" or "x" prefix
+ - Fixed arpeggio sequences may accept note names in the MML field
+ - Added buttons to toggle 5B envelope output in the graph editor for 5B noise /
+    mode sequences
+ - Redone detune dialog
+ - "Strict" is now above "Official" for module error levels
+Bug fixes:
+ - Fixed tracker crashing when retrieving the state of a non-existent groove
+ - Fixed pattern editor not allowing C-0 in polyphonic note preview
+ - Fixed pattern editor not moving to the new frame after dragging a selection
+    outside the current frame
+ - Fixed "Left Edge" and "Right Edge" on the pattern editor's horizontal scroll
+    bar
+ - Fixed tracker using parent directory as last used folder after loading
+    multiple instrument files or DPCM samples
+ - Fixed N163 instrument wave editor displaying 40 as the wave size if it used
+    a wave size of 4
+ - Fixed C-1 and C#1 on the search query's note field matching note release and
+    note cut respectively
+ - Fixed search wildcards not working for insturment and volume fields
+ - Fixed search results dialog moving the cursor to the incorrect channel for
+    expansion chips
+ - Fixed DPCM channel playing note C-0 if it contains an active note after
+    retrieving the channel state
+ - Fixed "Recall channel state" command crashing on retrieving the state of a
+    non-existent groove
+ - Fixed instrument recorder not working for the FDS channel
+ - Exx effect now works on the triangle channel
+ - Fixed VRC6 sawtooth outputting sound in exported NSFs when the instrument
+    volume is 0
+ - Fixed VRC7 using an incorrect pitch lookup table in exported NSFs
+ - Fixed VRC7 not making any sound in exported NSFs after using a note release
 
 V0.3.14.2 - 05/23/16
 Additions:

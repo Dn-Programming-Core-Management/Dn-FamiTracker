@@ -1,7 +1,7 @@
 0CC-FamiTracker Mod
 Readme / Manual
 Written by HertzDevil
-Version 0.3.14.2 - May 23 2016
+Version 0.3.14.3 - Aug 04 2016
 
 --------------------------------------------------------------------------------
 
@@ -14,9 +14,9 @@ new features that work in exported NSFs and interface improvements. The name
 "0CC" comes from the author's favourite arpeggio effect command. The current
 version includes:
 
+- Partial FamiTracker 0.5.0 beta support
 - Sound engine extensions:
-   - Sunsoft 5B support (per official 0.4.2)
-   - Ad-doc multichip NSF export
+   - Ad-hoc multichip NSF export
    - Echo buffer access
    - Polyphonic note preview
 - New effects:
@@ -46,11 +46,10 @@ with "// // //"; those to the ASM source with ";;; ;; ;" and "; ;; ;;;". Since
 version 0.3.12, the source code is no longer included within the download;
 always consult the Github page for up-to-date source code files.
 
-The current build is based on the version 0.4.6 release of the official
-FamiTracker. 0CC-FamiTracker will be ported to newer official releases whenever
-their source code becomes available; features added in 0CC-FamiTracker may not
-have identical behaviour as respective features added to the official branch
-after the current base version.
+The current build is based on the version 0.5.0 beta 5 release of the official
+FamiTracker. 0CC-FamiTracker will be ported to newer official releases once they
+become available; features added in 0CC-FamiTracker may not have identical
+behaviour as the corresponding features on the official branch.
 
 
 
@@ -72,36 +71,39 @@ after the current base version.
 
 
 
-                            +======================+
-                            |  Sunsoft 5B Support  |
-                            +======================+
+                      +==================================+
+                      |  FamiTracker 0.5.0 Beta Support  |
+                      +==================================+
 
-0CC-FamiTracker fully supports the Sunsoft 5B chip based on the implementation
-of official FamiTracker 0.4.2. The Sunsoft 5B chip is functionally identical to
-a YM2149F chip with half clock speed.
+0CC-FamiTracker 0.3.14.3 and above support the loading of modules created in any
+beta build of official FamiTracker 0.5.0. See
+https://gist.github.com/HertzDevil/c158d826a344e5ffbc0c0989e1c96a24 for the
+current status of porting 0.5.0 beta module features.
 
-The 5B noise / mode sequence, as well as the Vxx effect, takes four parameters:
+The current implementation of the Sunsoft 5B chip, which dates back from version
+0.3.0, is different from the official beta in the following ways:
 
-- Bits 0 - 4 determine the 5B noise frequency, lower values have higher pitch;
-   (Since there is only one noise output, noise period values from channels to
-   the right will override those to the left. This is not thoroughly tested.)
-- Bit 5 selects the envelope output;
-- Bit 6 selects the square wave output;
-- Bit 7 selects the noise output.
+- Hxy and Jxx are currently swapped.
+- Jx0 does not affect whether the current channel produces envelope output.
+   Only Vxx and the instrument noise / mode sequence may be used to control the
+   envelope flag.
+- The envelope generator is retriggered whenever a note triggers while envelope
+   output is enabled on the channel it belongs to, or any Jxy effect command is
+   issued.
+- Vxx reflects the raw value of the noise / mode sequence, which is combined
+   from the output flags and the noise frequency, while the beta splits this
+   into Vxx and Wxx.
+- A value of 0 in the noise / mode sequence gives the highest noise pitch
+   whereas 31 gives the lowest. This is inverted in the official beta.
 
-The 5B channels also use these chip-exclusive effects:
-
-- Hxx sets the low byte of the envelope period;
-- Ixx sets the high byte of the envelope period;
-- Jxx sets the envelope shape.
-
-See http://wiki.nesdev.com/w/index.php/Sunsoft_audio for more information.
+0CC-FamiTracker continues to save modules in the format version that is readable
+by official version 
 
 
 
-                         +===========================+
-                         |  Expansion Chip Selector  |
-                         +===========================+
+                       +===============================+
+                       |  Ad-hoc Multichip NSF Export  |
+                       +===============================+
 
 The Module Properties dialog now uses the same expansion chip selector as ipi's
 mod (http://famitracker.com/forum/posts.php?id=5235). Each expansion chip can be
@@ -184,10 +186,11 @@ chip and the MMC5 pulse channels:
    instead of the output amplitude. Smaller values give a faster decay. If the
    length counter is disabled (see below), the output amplitude warps, otherwise
    it stays at 0 after the decay finishes. On the triangle channel, this bit
-   toggles the linear counter instead.
-   Bit 1 toggles the length counter on the pulse channel or the noise channel.
-   Both this and the triangle channel's linear counter cut the channel's output
-   after a fixed number of counter clocks have elapsed, whichever comes first.
+   also toggles the linear counter since both must be active at the same time.
+   Bit 1 toggles the length counter on the pulse or noise channel. On the
+   triangle channel, both this and the linear counter may cut the channel's
+   output after a fixed number of counter clocks have elapsed, whichever comes
+   first.
 - E00 - E1F
    Sets the length counter to the value listed below, and enables the length
    counter if it was disabled. Works on the pulse, triangle, or noise channel.
@@ -854,8 +857,11 @@ combinations are the default hotkeys if provided)
    Deactivates the current selection, if any. This shortcut exists in the
    official build but is not assignable there.
 - Select row/column/pattern/frame/channel/track
-   Selects the entire area of the given scope containing the cursor. Multi-
-   frame selections must be enabled for the "Channel" and "Track" scopes.
+   Selects the entire area of the given scope containing the cursor. Multi-frame
+   selections must be enabled for the "Channel" and "Track" scopes.
+- Select in other editor
+   If the pattern editor is active, moves the current selection to the frame
+   editor, or vice versa.
 - Go to row (Alt+G)
    Brings up a dialog which allows moving the cursor to any position in the
    current song.

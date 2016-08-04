@@ -1,7 +1,7 @@
 0CC-FamiTracker Mod
 Specification
 Written by HertzDevil
-Version 0.3.14.2 - May 23 2016
+Version 0.3.14.3 - Aug 3 2016
 
 --------------------------------------------------------------------------------
 
@@ -9,7 +9,7 @@ Version 0.3.14.2 - May 23 2016
 	Newly added enumerable types
 	===
 
-The following changes to the FTM effect enumeration are made:
+The following values are added to the effect_t enumeration:
  - Mxy: 0x19: delayed channel volume
  - Lxx: 0x21: delayed note release
  - Oxx: 0x22: groove setting
@@ -17,25 +17,26 @@ The following changes to the FTM effect enumeration are made:
  - Zxx: 0x24: N163 wave buffer setting
  - Exx: 0x25: FDS hardware volume envelope
  - Zxx: 0x26: FDS auto-FM bias setting
-The values above are subject to changes once the 0.5.0 source is released.
+The values above are subject to changes once all 0.5.0 beta effects are ported.
 
 The following effect command bytes are added to the NSF export format:
- - Lxx: 0xBA: delayed note release
- - Sxx: 0xBC: linear counter
- - Oxx: 0xBE: groove setting
- - Mxy: 0xC0: delayed channel volume
- - Txy: 0xC2: delayed transpose
- - Hxx: 0xC4: FDS FM depth
- - Ixx: 0xC6: FDS FM rate, high byte
- - Jxx: 0xC8: FDS FM rate, low byte
- - Exx: 0xCA: FDS hardware volume envelope
- - Zxx: 0xCC: FDS auto-FM bias setting
- - Zxx: 0xC4: N163 wave buffer setting
- - Jxx: 0xC4: 5B envelope shape
- - Ixx: 0xC6: 5B envelope rate, high byte
- - Hxx: 0xC8: 5B envelope rate, low byte
-(+10 to N163 effect bytes in all-chip configuration)
-(+12 to 5B effect bytes in all-chip configuration)
+ - Lxx: 0xBC: delayed note release
+ - Sxx: 0xBE: linear counter
+ - Oxx: 0xC0: groove setting
+ - Mxy: 0xC2: delayed channel volume
+ - Txy: 0xC4: delayed transpose
+
+The following effect command bytes are added to the NSF export format, relative
+to the largest command value of the previous sound chip:
+ - Hxx: 0x02: FDS FM depth
+ - Ixx: 0x04: FDS FM rate, high byte
+ - Jxx: 0x06: FDS FM rate, low byte
+ - Exx: 0x08: FDS hardware volume envelope
+ - Zxx: 0x0A: FDS auto-FM bias setting
+ - Zxx: 0x02: N163 wave buffer setting
+ - Jxy: 0x02: 5B envelope shape
+ - Ixx: 0x04: 5B envelope rate, high byte
+ - Hxx: 0x06: 5B envelope rate, low byte
 
 The following note bytes are added to the FTM format:
  -  ^x: 0x0F: Echo buffer access
@@ -90,6 +91,11 @@ Version 1:
 
 Version 1:
  - linearpitch: int[0,1] - enable linear pitch mode
+
+Version 2:
+ - linearpitch: int[0,1] - enable linear pitch mode
+ - semitone: char[-12,12] - global semitone tuning
+ - cent: char[-100,100] - global cent tuning
 
 	===
 	Text exporter syntax
