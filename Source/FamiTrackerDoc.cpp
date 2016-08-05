@@ -46,6 +46,7 @@
 #include <algorithm>
 #include <vector>		// // //
 #include <string>		// // //
+#include <array>		// // //
 #include <unordered_map>		// // //
 #include "FamiTracker.h"
 #include "ChannelState.h"		// // //
@@ -138,6 +139,25 @@ enum {
 	FB_SONGARTIST,
 	FB_SONGCOPYRIGHT
 };
+
+// // // helper function for effect conversion
+typedef std::array<effect_t, EF_COUNT> EffTable;
+std::pair<EffTable, EffTable> MakeEffectConversion(std::initializer_list<std::pair<effect_t, effect_t>> List)
+{
+	EffTable forward, backward;
+	for (int i = 0; i < EF_COUNT; ++i)
+		forward[i] = backward[i] = static_cast<effect_t>(i);
+	for (const auto &p : List) {
+		forward[p.first] = p.second;
+		backward[p.second] = p.first;
+	}
+	return std::make_pair(forward, backward);
+}
+
+static const auto EFF_CONVERSION_050 = MakeEffectConversion({
+	{EF_SUNSOFT_ENV_LO, EF_SUNSOFT_ENV_TYPE},
+	{EF_SUNSOFT_ENV_TYPE, EF_SUNSOFT_ENV_LO},
+});
 
 //
 // CFamiTrackerDoc
