@@ -1,9 +1,17 @@
 0CC-FamiTracker Mod
 Change Log
 Written by HertzDevil
-Version 0.3.14.3 - Aug 3 2016
+Version 0.3.14.4 - Aug 4 2016
 
 --------------------------------------------------------------------------------
+
+V0.3.14.4 - 08/04/16
+Bug fixes:
+ - Fixed recent file list not updating the registry if cleared without being
+    viewed again at least once
+ - Fixed Vxx on blank instruments being overridden by instrument duty sequences
+ - Fixed most bugs related to portamento effects on the VRC7 channels in the
+    tracker
 
 V0.3.14.3 - 08/03/16
 Additions:

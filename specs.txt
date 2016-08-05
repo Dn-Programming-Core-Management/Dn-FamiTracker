@@ -1,7 +1,7 @@
 0CC-FamiTracker Mod
 Specification
 Written by HertzDevil
-Version 0.3.14.3 - Aug 3 2016
+Version 0.3.14.4 - Aug 4 2016
 
 --------------------------------------------------------------------------------
 
