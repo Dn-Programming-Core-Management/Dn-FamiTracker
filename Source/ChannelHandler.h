@@ -120,6 +120,13 @@ public:
 protected:
 	/*!	\brief Resets the sound channel's registers to an initial state. */
 	virtual void	ClearRegisters() = 0;
+	/*!	\brief Starts a new note.
+		\details This method initiates a new pitch slide if the 3xx automatic portamento effect is
+		enabled.
+		\param Octave The note octave.
+		\param Note The note pitch.
+		\return The note value with the given pitch and octave. */
+	virtual int		RunNote(int Octave, int Note);		// // // virtual
 	/*!	\brief Restricts the note value within the limits of the tracker, and notifies the tracker
 		view of the note.
 		\param Note Input note value.
@@ -207,13 +214,6 @@ protected:
 	// Internal non-virtual functions
 	//
 protected:
-	/*!	\brief Starts a new note.
-		\details This method initiates a new pitch slide if the 3xx automatic portamento effect is
-		enabled.
-		\param Octave The note octave.
-		\param Note The note pitch.
-		\return The note value with the given pitch and octave. */
-	int		RunNote(int Octave, int Note);
 	/*!	\brief Halts the current active note. */
 	void	CutNote();
 	/*!	\brief Releases the current active note.

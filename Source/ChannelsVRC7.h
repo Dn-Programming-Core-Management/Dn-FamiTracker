@@ -52,6 +52,7 @@ protected:
 	void	HandleCut() override;
 	void	HandleRelease() override;
 	void	HandleNote(int Note, int Octave) override;
+	int		RunNote(int Octave, int Note) override;		// // //
 	bool	CreateInstHandler(inst_type_t Type) override;		// // //
 	void	SetupSlide() override;		// // //
 	int		CalculateVolume() const override;

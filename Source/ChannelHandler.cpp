@@ -402,14 +402,6 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	default: m_iNote = RunNote(pNoteData->Octave, pNoteData->Note);
 	}
 
-	if (NewInstrument || Trigger) {
-		if (m_iInstrument != MAX_INSTRUMENTS && !HandleInstrument(Trigger, NewInstrument)) {
-			m_bForceReload = false;		// // //
-			return;
-		}
-	}
-	m_bForceReload = false;		// // //
-
 	// Note
 	switch (pNoteData->Note) {
 		case NONE:
@@ -429,6 +421,14 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 
 	if (Trigger && (m_iEffect == EF_SLIDE_DOWN || m_iEffect == EF_SLIDE_UP))		// // //
 		SetupSlide();
+
+	if ((NewInstrument || Trigger) && m_iInstrument != MAX_INSTRUMENTS) {
+		if (!HandleInstrument(Trigger, NewInstrument)) {		// // //
+			// m_bForceReload = false;		// // //
+			// return;
+		}
+	}
+	m_bForceReload = false;
 }
 
 bool CChannelHandler::HandleInstrument(bool Trigger, bool NewInstrument)		// // //
