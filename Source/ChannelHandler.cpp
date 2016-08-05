@@ -515,7 +515,7 @@ int CChannelHandler::RunNote(int Octave, int Note)
 
 	int NesFreq = TriggerNote(NewNote);
 
-	if (m_iPortaSpeed > 0 && m_iEffect == EF_PORTAMENTO) {
+	if (m_iPortaSpeed > 0 && m_iEffect == EF_PORTAMENTO && m_bGate) {		// // //
 		if (m_iPeriod == 0)
 			m_iPeriod = NesFreq;
 		m_iPortaTo = NesFreq;

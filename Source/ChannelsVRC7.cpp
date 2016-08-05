@@ -127,9 +127,12 @@ void CChannelHandlerVRC7::HandleEmptyNote()
 
 void CChannelHandlerVRC7::HandleCut()
 {
-	CutNote();		// // //
+	RegisterKeyState(-1);
+	m_bGate = false;
+//	m_iPeriod = 0;
+//	m_iPortaTo = 0;
 	m_iCommand = CMD_NOTE_HALT;
-	m_iOldOctave = -1;		// // //
+//	m_iOldOctave = -1;		// // //
 }
 
 void CChannelHandlerVRC7::UpdateNoteRelease()		// // //
@@ -176,7 +179,7 @@ int CChannelHandlerVRC7::RunNote(int Octave, int Note)		// // //
 
 	int NesFreq = TriggerNote(NewNote);
 
-	if (m_iPortaSpeed > 0 && m_iEffect == EF_PORTAMENTO) {
+	if (m_iPortaSpeed > 0 && m_iEffect == EF_PORTAMENTO && m_bGate) {		// // //
 		if (m_iPeriod == 0) {
 			m_iPeriod = NesFreq;
 			m_iOldOctave = m_iOctave = Octave;
@@ -186,6 +189,7 @@ int CChannelHandlerVRC7::RunNote(int Octave, int Note)		// // //
 	}
 	else {
 		m_iPeriod = NesFreq;
+		m_iPortaTo = 0;
 		m_iOldOctave = m_iOctave = Octave;
 	}
 
