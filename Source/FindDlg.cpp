@@ -366,18 +366,18 @@ BOOL CFindResultsBox::OnInitDialog()
 	m_cListResults->GetClientRect(&r);
 	const int w = r.Width() - ::GetSystemMetrics(SM_CXHSCROLL);
 
-	m_cListResults->InsertColumn(ID, _T("ID"), LVCFMT_LEFT, static_cast<int>(.09 * w));
+	m_cListResults->InsertColumn(ID, _T("ID"), LVCFMT_LEFT, static_cast<int>(.085 * w));
 	m_cListResults->InsertColumn(CHANNEL, _T("Channel"), LVCFMT_LEFT, static_cast<int>(.19 * w));
-	m_cListResults->InsertColumn(PATTERN, _T("Pa."), LVCFMT_LEFT, static_cast<int>(.07 * w));
-	m_cListResults->InsertColumn(FRAME, _T("Fr."), LVCFMT_LEFT, static_cast<int>(.07 * w));
-	m_cListResults->InsertColumn(ROW, _T("Ro."), LVCFMT_LEFT, static_cast<int>(.07 * w));
-	m_cListResults->InsertColumn(NOTE, _T("Note"), LVCFMT_LEFT, static_cast<int>(.09 * w));
-	m_cListResults->InsertColumn(INST, _T("In."), LVCFMT_LEFT, static_cast<int>(.07 * w));
-	m_cListResults->InsertColumn(VOL, _T("Vo."), LVCFMT_LEFT, static_cast<int>(.07 * w));
+	m_cListResults->InsertColumn(PATTERN, _T("Pa."), LVCFMT_LEFT, static_cast<int>(.065 * w));
+	m_cListResults->InsertColumn(FRAME, _T("Fr."), LVCFMT_LEFT, static_cast<int>(.065 * w));
+	m_cListResults->InsertColumn(ROW, _T("Ro."), LVCFMT_LEFT, static_cast<int>(.065 * w));
+	m_cListResults->InsertColumn(NOTE, _T("Note"), LVCFMT_LEFT, static_cast<int>(.08 * w));
+	m_cListResults->InsertColumn(INST, _T("In."), LVCFMT_LEFT, static_cast<int>(.065 * w));
+	m_cListResults->InsertColumn(VOL, _T("Vo."), LVCFMT_LEFT, static_cast<int>(.065 * w));
 	for (int i = MAX_EFFECT_COLUMNS; i > 0; --i) {
 		CString str;
 		str.Format(_T("fx%d"), i);
-		m_cListResults->InsertColumn(EFFECT, str, LVCFMT_LEFT, static_cast<int>(.07 * w));
+		m_cListResults->InsertColumn(EFFECT, str, LVCFMT_LEFT, static_cast<int>(.08 * w));
 	}
 
 	UpdateCount();
