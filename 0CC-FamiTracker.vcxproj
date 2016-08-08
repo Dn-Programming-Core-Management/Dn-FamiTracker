@@ -436,6 +436,7 @@
     <ClCompile Include="Source\BookmarkManager.cpp" />
     <ClCompile Include="Source\ChannelFactory.cpp" />
     <ClCompile Include="Source\ChannelState.cpp" />
+    <ClCompile Include="Source\FamiTrackerTypes.cpp" />
     <ClCompile Include="Source\FrameEditorTypes.cpp" />
     <ClCompile Include="Source\NoteQueue.cpp" />
     <ClCompile Include="Source\PatternComponent.cpp" />

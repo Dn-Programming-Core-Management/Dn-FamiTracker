@@ -714,6 +714,9 @@
     <ClCompile Include="Source\SequenceParser.cpp">
       <Filter>Source Files\Dialog Boxes\Instrument\Related\Sequence editor</Filter>
     </ClCompile>
+    <ClCompile Include="Source\FamiTrackerTypes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">
