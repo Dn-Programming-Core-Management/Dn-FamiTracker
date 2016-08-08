@@ -38,6 +38,10 @@ const int VRC7_PITCH_RESOLUTION = 2;		// // // extra bits for internal pitch
 
 // True if custom instrument registers needs to be updated, shared among all channels
 bool CChannelHandlerVRC7::m_bRegsDirty = false;
+// Each bit represents that the custom patch register on that index has been updated
+char CChannelHandlerVRC7::m_cPatchFlag = 0;		// // // 050B
+// Custom instrument patch
+unsigned char CChannelHandlerVRC7::m_iPatchRegs[8] = { };		// // // 050B
 
 CChannelHandlerVRC7::CChannelHandlerVRC7() : 
 	CChannelHandlerInverted((1 << (VRC7_PITCH_RESOLUTION + 9)) - 1, 15),		// // //
@@ -60,8 +64,9 @@ void CChannelHandlerVRC7::SetPatch(unsigned char Patch)		// // //
 
 void CChannelHandlerVRC7::SetCustomReg(size_t Index, unsigned char Val)		// // //
 {
-	ASSERT(Index < sizeof(m_iRegs));
-	m_iRegs[Index] = Val;
+	ASSERT(Index < sizeof(m_iPatchRegs));
+	if (!(m_cPatchFlag & (1 << Index)))		// // // 050B
+		m_iPatchRegs[Index] = Val;
 }
 
 void CChannelHandlerVRC7::HandleNoteData(stChanNote *pNoteData, int EffColumns)
@@ -78,43 +83,14 @@ bool CChannelHandlerVRC7::HandleEffect(effect_t EffNum, unsigned char EffParam)
 	case EF_DUTY_CYCLE:
 //		Patch = EffParam;		// TODO add this
 		break;
-/*
-	case EF_VRC7_MODULATOR:
-		switch (EffParam & 0xF0) {
-			case 0x00:	// Amplitude modulation on/off
-				break;
-			case 0x10:	// Vibrato on/off
-				break;
-			case 0x20:	// Sustain on/off
-				break;
-			case 0x30:	// Wave rectification on/off
-				break;
-			case 0x40:	// Key rate scaling on/off
-				break;
-			case 0x50:	// Key rate level
-				break;
-			case 0x60:	// Mult factor
-				break;
-			case 0x70:	// Attack
-				break;
-			case 0x80:	// Decay
-				break;
-			case 0x90:	// Sustain
-				break;
-			case 0xA0:	// Release
-				break;
-		}
+	case EF_VRC7_PORT:		// // // 050B
+		m_iCustomPort = EffParam & 0x07;
 		break;
-	case EF_VRC7_CARRIER:
-		break;
-	case EF_VRC7_LEVELS:
-		if (EffParam & 0x80)	// Feedback
-			m_iRegs[0x03] = (m_iRegs[0x03] & 0xF8) | (EffParam & 0x07);
-		else
-			m_iRegs[0x02] = (m_iRegs[0x02] & 0xC0) | (EffParam & 0x3F);
+	case EF_VRC7_WRITE:		// // // 050B
+		m_iPatchRegs[m_iCustomPort] = EffParam;
+		m_cPatchFlag |= 1 << m_iCustomPort;
 		m_bRegsDirty = true;
 		break;
-		*/
 	default: return CChannelHandlerInverted::HandleEffect(EffNum, EffParam);
 	}
 
@@ -298,7 +274,7 @@ void CVRC7Channel::RefreshChannel()
 	// Write custom instrument
 	if (m_iPatch == 0 && (m_iCommand == CMD_NOTE_TRIGGER || m_bRegsDirty)) {
 		for (int i = 0; i < 8; ++i)
-			RegWrite(i, m_iRegs[i]);
+			RegWrite(i, m_iPatchRegs[i]);
 	}
 
 	m_bRegsDirty = false;
@@ -334,6 +310,9 @@ void CVRC7Channel::RefreshChannel()
 	}
 
 	RegWrite(0x20 + m_iChannel, ((Fnum >> 8) & 1) | (Bnum << 1) | Cmd);
+
+	if (m_iChannelID == CHANID_VRC7_CH6)		// // // 050B
+		m_cPatchFlag = 0;
 }
 
 void CVRC7Channel::ClearRegisters()
@@ -347,6 +326,7 @@ void CVRC7Channel::ClearRegisters()
 	m_iEffect = EF_NONE;
 
 	m_iCommand = CMD_NOTE_HALT;
+	m_iCustomPort = 0;		// // // 050B
 }
 
 void CVRC7Channel::RegWrite(unsigned char Reg, unsigned char Value)

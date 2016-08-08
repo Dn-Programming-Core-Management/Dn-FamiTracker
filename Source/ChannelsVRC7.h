@@ -67,12 +67,12 @@ protected:
 
 protected:
 	static bool m_bRegsDirty;
+	static char m_cPatchFlag;		// // // 050B
+	static unsigned char m_iPatchRegs[8];		// // // 050B
 
 protected:
 	unsigned char m_iChannel;
 	unsigned char m_iPatch;
-
-	unsigned char m_iRegs[8];
 
 	bool	m_bHold;
 
@@ -81,11 +81,12 @@ protected:
 	int		m_iTriggeredNote;
 	int		m_iOctave;
 	int		m_iOldOctave;		// // //
+	int		m_iCustomPort;		// // // 050B
 };
 
 class CVRC7Channel : public CChannelHandlerVRC7 {
 public:
-	CVRC7Channel() : CChannelHandlerVRC7() {};
+	CVRC7Channel() : CChannelHandlerVRC7() { }
 	void RefreshChannel();
 protected:
 	void ClearRegisters();

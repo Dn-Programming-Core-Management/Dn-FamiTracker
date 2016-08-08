@@ -203,6 +203,8 @@ bool CTrackerChannel::IsEffectCompatible(int EffNumber, int EffParam) const		// 
 			return m_iChip == SNDCHIP_N163 && EffParam <= 0x7F;
 		case EF_FDS_VOLUME:
 			return m_iChip == SNDCHIP_FDS && (EffParam <= 0x7F || EffParam == 0xE0);
+		case EF_VRC7_PORT: case EF_VRC7_WRITE:		// // // 050B
+			return m_iChip == SNDCHIP_VRC7;
 	}
 
 	return false;

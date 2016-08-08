@@ -96,6 +96,8 @@ const CString EFFECT_TEXTS[] = {		// // //
 	_T("Ixx - 5B envelope rate, high byte"),
 	_T("J0y - 5B envelope shape, bit 3 = Continue, bit 2 = Attack, bit 1 = Alternate, bit 0 = Hold"),
 	_T("Jxy - Auto 5B envelope, X - 8 = shift amount, Y = shape"),
+	_T("Hxx - VRC7 custom patch port, XX = register address"),
+	_T("Ixx - VRC7 custom patch write, XX = register value"),
 	_T("Lxx - Note release, XX = frames to wait"),
 	_T("Oxx - Set groove to XX"),
 	_T("Txy - Delayed transpose (upward), X = frames to wait, Y = semitone offset"),

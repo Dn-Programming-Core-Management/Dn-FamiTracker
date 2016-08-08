@@ -161,6 +161,8 @@ enum effect_t : unsigned char {
 	EF_SUNSOFT_ENV_LO,
 	EF_SUNSOFT_ENV_HI,
 	EF_SUNSOFT_ENV_TYPE,
+	EF_VRC7_PORT,		// // // 050B
+	EF_VRC7_WRITE,		// // // 050B
 	EF_NOTE_RELEASE,			// // //
 	EF_GROOVE,					// // //
 	EF_TRANSPOSE,				// // //
@@ -187,7 +189,7 @@ enum effect_t : unsigned char {
 //const int EF_RETRIGGER = EF_SWEEPDOWN;
 
 // const effect_t VRC6_EFFECTS[] = {};
-// const effect_t VRC7_EFFECTS[] = {EF_VRC7_MODULATOR, EF_VRC7_CARRIER, EF_VRC7_LEVELS};
+const effect_t VRC7_EFFECTS[] = {EF_VRC7_PORT, EF_VRC7_WRITE};
 const effect_t FDS_EFFECTS[] = {EF_FDS_MOD_DEPTH, EF_FDS_MOD_SPEED_HI, EF_FDS_MOD_SPEED_LO, EF_FDS_VOLUME, EF_FDS_MOD_BIAS};
 // const effect_t MMC5_EFFECTS[] = {};
 const effect_t N163_EFFECTS[] = {EF_N163_WAVE_BUFFER};
@@ -227,6 +229,8 @@ const char EFF_CHAR[] = {
 	'H',	// Sunsoft envelope low
 	'I',	// Sunsoft envelope high
 	'J',	// Sunsoft envelope type
+	'H',	// // // 050B VRC7 custom patch port
+	'I',	// // // 050B VRC7 custom patch write
 	'L',	// // // Delayed release
 	'O',	// // // Groove
 	'T',	// // // Delayed transpose
