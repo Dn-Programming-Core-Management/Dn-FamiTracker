@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include "APU/Types.h"		// // //
+
 /*
  * Here are the constants that defines the limits in the tracker
  * change if needed (some might cause side effects)
@@ -239,6 +241,49 @@ const char EFF_CHAR[] = {
 	*/
 };
 
+effect_t GetEffectFromChar(char ch, int Chip, bool *bValid = nullptr)		// // //
+{
+	effect_t Eff = EF_NONE;
+
+	bool Found = false;
+	for (int i = EF_NONE + 1; i < EF_COUNT; ++i)
+		if (EFF_CHAR[i - 1] == ch) {
+			Eff = static_cast<effect_t>(i);
+			Found = true; break;
+		}
+	if (!Found) {
+		if (bValid != nullptr)
+			*bValid = false;
+		return Eff;
+	}
+	else if (bValid != nullptr)
+		*bValid = true;
+
+	switch (Chip) {
+	case SNDCHIP_FDS:
+		for (const auto &x : FDS_EFFECTS)
+			if (ch == EFF_CHAR[x - 1])
+				return x;
+		break;
+	case SNDCHIP_N163:
+		for (const auto &x : N163_EFFECTS)
+			if (ch == EFF_CHAR[x - 1])
+				return x;
+		break;
+	case SNDCHIP_S5B:
+		for (const auto &x : S5B_EFFECTS)
+			if (ch == EFF_CHAR[x - 1])
+				return x;
+		break;
+	case SNDCHIP_VRC7:
+		for (const auto &x : VRC7_EFFECTS)
+			if (ch == EFF_CHAR[x - 1])
+				return x;
+		break;
+	}
+
+	return Eff;
+}
 
 enum note_t : unsigned char {
 	NONE = 0,	// No note

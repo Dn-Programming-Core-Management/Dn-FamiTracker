@@ -530,41 +530,17 @@ bool CTextExport::ImportCellText(		// // //
 				return false;
 			}
 
-			int p=0;
 			TCHAR pC = sEff.GetAt(0);
 			if (pC >= TCHAR('a') && pC <= TCHAR('z')) pC += TCHAR('A') - TCHAR('a');
-			for (;p < EF_COUNT; ++p)
-				if (EFF_CHAR[p] == pC) break;
-			// // //
-			switch (pDoc->GetChipType(channel)) {
-			case SNDCHIP_FDS:
-				for (int i = 0; i < sizeof(FDS_EFFECTS); i++)
-					if (EFF_CHAR[p] == EFF_CHAR[FDS_EFFECTS[i] - 1]) {
-						p = FDS_EFFECTS[i];
-						break;
-					}
-				break;
-			case SNDCHIP_S5B:
-				for (int i = 0; i < sizeof(S5B_EFFECTS); i++)
-					if (EFF_CHAR[p] == EFF_CHAR[S5B_EFFECTS[i] - 1]) {
-						p = S5B_EFFECTS[i];
-						break;
-					}
-				break;
-			case SNDCHIP_N163:
-				for (int i = 0; i < sizeof(N163_EFFECTS); i++)
-					if (EFF_CHAR[p] == EFF_CHAR[N163_EFFECTS[i] - 1]) {
-						p = N163_EFFECTS[i];
-						break;
-					}
-				break;
-			}
-			if (p >= EF_COUNT)
+
+			bool Valid;		// // //
+			effect_t Eff = GetEffectFromChar(pC, pDoc->GetChipType(channel), &Valid);
+			if (!Valid)
 			{
 				sResult.Format(_T("Line %d column %d: unrecognized effect '%s'."), t.line, t.GetColumn(), sEff);
 				return false;
 			}
-			Cell.EffNumber[e] = static_cast<effect_t>(p+1);		// // //
+			Cell.EffNumber[e] = Eff;
 
 			int h;
 			if (!ImportHex(sEff.Right(2), h, t.line, t.GetColumn(), sResult))

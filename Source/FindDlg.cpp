@@ -1178,22 +1178,8 @@ bool CFindDlg::Replace(CCompoundAction *pAction)
 			}
 
 			if (m_replaceTerm.Definite[WC_EFF]) {
-				effect_t fx = m_replaceTerm.Note.EffNumber[0];
-				char c = EFF_CHAR[fx - 1];
-				switch (m_pDocument->GetChipType(m_pFindCursor->m_iChannel)) {
-				case SNDCHIP_FDS:
-					for (auto e : FDS_EFFECTS) if (c == EFF_CHAR[e - 1]) {
-						fx = e; break;
-					}; break;
-				case SNDCHIP_S5B:
-					for (auto e : S5B_EFFECTS) if (c == EFF_CHAR[e - 1]) {
-						fx = e; break;
-					}; break;
-				case SNDCHIP_N163:
-					for (auto e : N163_EFFECTS) if (c == EFF_CHAR[e - 1]) {
-						fx = e; break;
-					}; break;
-				}
+				effect_t fx = GetEffectFromChar(EFF_CHAR[m_replaceTerm.Note.EffNumber[0] - 1],
+												m_pDocument->GetChipType(m_pFindCursor->m_iChannel));
 				for (const int &i : MatchedColumns)
 					Target.EffNumber[i] = fx;
 			}

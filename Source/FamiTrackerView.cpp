@@ -2859,47 +2859,11 @@ bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, unsigned char nChar
 
 	int Chip = pDoc->GetChannel(m_pPatternEditor->GetChannel())->GetChip();
 
-	bool bValidEffect = false;
-	effect_t Effect;		// // //
-
 	if (nChar >= VK_NUMPAD0 && nChar <= VK_NUMPAD9)
 		nChar = '0' + nChar - VK_NUMPAD0;
 
-	switch (Chip) {
-	case SNDCHIP_FDS:
-		for (int i = 0; i < sizeof(FDS_EFFECTS) && !bValidEffect; ++i) {
-			if (nChar == EFF_CHAR[FDS_EFFECTS[i] - 1]) {
-				bValidEffect = true;
-				Effect = FDS_EFFECTS[i];
-			}
-		}
-		break;
-	case SNDCHIP_N163:
-		for (int i = 0; i < sizeof(N163_EFFECTS) && !bValidEffect; ++i) {
-			if (nChar == EFF_CHAR[N163_EFFECTS[i] - 1]) {
-				bValidEffect = true;
-				Effect = N163_EFFECTS[i];
-			}
-		}
-		break;
-	case SNDCHIP_S5B:
-		for (int i = 0; i < sizeof(S5B_EFFECTS) && !bValidEffect; ++i) {
-			if (nChar == EFF_CHAR[S5B_EFFECTS[i] - 1]) {
-				bValidEffect = true;
-				Effect = S5B_EFFECTS[i];
-			}
-		}
-		break;
-	// case SNDCHIP_VRC7:
-	}
-
-	// Common effects
-	for (int i = 0; i < EF_COUNT && !bValidEffect; ++i) {
-		if (nChar == EFF_CHAR[i]) {
-			bValidEffect = true;
-			Effect = static_cast<effect_t>(i + 1);
-		}
-	}
+	bool bValidEffect = false;
+	effect_t Effect = GetEffectFromChar(nChar, Chip, &bValidEffect);		// // //
 
 	if (bValidEffect) {
 		Note.EffNumber[EffectIndex] = Effect;
