@@ -40,12 +40,12 @@ CSeqInstHandlerN163::CSeqInstHandlerN163(CChannelHandlerInterface *pInterface, i
 {
 }
 
-void CSeqInstHandlerN163::LoadInstrument(CInstrument *pInst)		// // //
+void CSeqInstHandlerN163::LoadInstrument(std::shared_ptr<CInstrument> pInst)		// // //
 {
 	CSeqInstHandler::LoadInstrument(pInst);
 	CChannelHandlerInterfaceN163 *pInterface = dynamic_cast<CChannelHandlerInterfaceN163*>(m_pInterface);
 	if (pInterface == nullptr) return;
-	const CInstrumentN163 *pN163Inst = dynamic_cast<const CInstrumentN163*>(pInst);
+	auto pN163Inst = std::dynamic_pointer_cast<const CInstrumentN163>(m_pInstrument);
 	if (pN163Inst == nullptr) return;
 	pInterface->SetWaveLength(pN163Inst->GetWaveSize());
 	pInterface->SetWavePosition(pN163Inst->GetWavePos());
@@ -64,8 +64,8 @@ void CSeqInstHandlerN163::UpdateInstrument()
 	CSeqInstHandler::UpdateInstrument();
 	
 	if (auto pInterface = dynamic_cast<CChannelHandlerInterfaceN163*>(m_pInterface)) {
-		if (auto pN163Inst = dynamic_cast<const CInstrumentN163*>(m_pInstrument)) {
-			UpdateWave(pN163Inst);
+		if (auto pN163Inst = std::dynamic_pointer_cast<const CInstrumentN163>(m_pInstrument)) {
+			UpdateWave(pN163Inst.get());
 		}
 	}
 	m_bForceUpdate = false;

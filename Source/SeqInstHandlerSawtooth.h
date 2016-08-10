@@ -37,17 +37,18 @@ public:
 		\param pInterface Pointer to the channel interface.
 		\param Vol Default volume for instruments used by this handler.
 		\param Duty Default duty cycle for instruments used by this handler. */
-	CSeqInstHandlerSawtooth(CChannelHandlerInterface *pInterface, int Vol, int Duty);
+	CSeqInstHandlerSawtooth(CChannelHandlerInterface *pInterface, int Vol, int Duty) :
+		CSeqInstHandler(pInterface, Vol, Duty) { }
 
 	/*!	\brief Starts a new note for the instrument handler.
 		\details This reimplementation checks whether the current instrument uses a 64-step volume
 		sequence. */
-	void TriggerInstrument();
+	void TriggerInstrument() override;
 
 	/*!	\brief Queries whether the duty sequence should be ignored when calculating the volume.
 		\return Whether the current instrument uses a 64-step volume sequence. */
 	bool IsDutyIgnored() const;
 
 private:
-	bool m_bIgnoreDuty;
+	bool m_bIgnoreDuty = false;
 };

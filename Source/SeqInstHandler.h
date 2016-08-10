@@ -25,8 +25,6 @@
 
 #include "InstHandler.h"
 
-class CChannelHandlerInterface;
-class CInstrument;
 class CSequence;
 class CSeqInstrument;
 
@@ -53,10 +51,10 @@ public:
 		\param Duty Default duty cycle for instruments used by this handler. */
 	CSeqInstHandler(CChannelHandlerInterface *pInterface, int Vol, int Duty);
 
-	virtual void LoadInstrument(CInstrument *pInst);
-	virtual void TriggerInstrument();
-	virtual void ReleaseInstrument();
-	virtual void UpdateInstrument();
+	void LoadInstrument(std::shared_ptr<CInstrument> pInst) override;
+	void TriggerInstrument() override;
+	void ReleaseInstrument() override;
+	void UpdateInstrument() override;
 
 	/*!	\brief Obtains the current sequence state of a given sequence type.
 		\param Index The sequence type, which should be a member of sequence_t.

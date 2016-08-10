@@ -591,9 +591,6 @@
     <ClCompile Include="Source\SeqInstHandler.cpp">
       <Filter>Source Files\Sound Driver\Instruments</Filter>
     </ClCompile>
-    <ClCompile Include="Source\InstHandler.cpp">
-      <Filter>Source Files\Sound Driver\Instruments</Filter>
-    </ClCompile>
     <ClCompile Include="Source\InstHandlerVRC7.cpp">
       <Filter>Source Files\Sound Driver\Instruments</Filter>
     </ClCompile>

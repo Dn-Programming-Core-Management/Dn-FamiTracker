@@ -44,10 +44,10 @@ CSeqInstHandler::CSeqInstHandler(CChannelHandlerInterface *pInterface, int Vol, 
 		ClearSequence(i);
 }
 
-void CSeqInstHandler::LoadInstrument(CInstrument *pInst)
+void CSeqInstHandler::LoadInstrument(std::shared_ptr<CInstrument> pInst)
 {
 	m_pInstrument = pInst;
-	CSeqInstrument *pSeqInst = dynamic_cast<CSeqInstrument*>(pInst);
+	auto pSeqInst = std::dynamic_pointer_cast<CSeqInstrument>(pInst);
 	if (pSeqInst == nullptr) return;
 	for (size_t i = 0; i < sizeof(m_pSequence) / sizeof(CSequence*); i++) {
 		const CSequence *pSequence = pSeqInst->GetSequence(i);

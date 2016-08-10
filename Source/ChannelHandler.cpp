@@ -447,7 +447,7 @@ bool CChannelHandler::HandleInstrument(bool Trigger, bool NewInstrument)		// // 
 	if (!m_pInstHandler)
 		return false;
 	if (NewInstrument)
-		m_pInstHandler->LoadInstrument(pInstrument.get());
+		m_pInstHandler->LoadInstrument(pInstrument);
 	if (Trigger || m_bForceReload)
 		m_pInstHandler->TriggerInstrument();
 

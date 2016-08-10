@@ -25,7 +25,6 @@
 #include "SeqInstrument.h"
 #include "Instrument2A03.h"
 #include "ChannelHandlerInterface.h"
-#include "InstHandler.h"
 #include "InstHandlerDPCM.h"
 
 CInstHandlerDPCM::CInstHandlerDPCM(CChannelHandlerInterface *pInterface) :
@@ -33,16 +32,16 @@ CInstHandlerDPCM::CInstHandlerDPCM(CChannelHandlerInterface *pInterface) :
 {
 }
 
-void CInstHandlerDPCM::LoadInstrument(CInstrument *pInst)
+void CInstHandlerDPCM::LoadInstrument(std::shared_ptr<CInstrument> pInst)
 {
-	m_pInstrument = dynamic_cast<CInstrument2A03*>(pInst);
+	m_pInstrument = pInst;
 }
 
 void CInstHandlerDPCM::TriggerInstrument()
 {
 	CChannelHandlerInterfaceDPCM *pInterface = dynamic_cast<CChannelHandlerInterfaceDPCM*>(m_pInterface);
 	if (pInterface == nullptr) return;
-	if (auto pDPCMInst = dynamic_cast<const CInstrument2A03*>(m_pInstrument)) {
+	if (auto pDPCMInst = std::dynamic_pointer_cast<const CInstrument2A03>(m_pInstrument)) {
 		const int Val = m_pInterface->GetNote();
 		const int Octave = GET_OCTAVE(Val);
 		const int Note = GET_NOTE(Val) - 1;

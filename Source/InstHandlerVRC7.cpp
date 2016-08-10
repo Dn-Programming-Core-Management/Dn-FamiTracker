@@ -24,12 +24,12 @@
 #include "Instrument.h"
 #include "InstrumentVRC7.h"
 #include "ChannelHandlerInterface.h"
-#include "InstHandler.h"
 #include "InstHandlerVRC7.h"
 
-void CInstHandlerVRC7::LoadInstrument(CInstrument *pInst)
+void CInstHandlerVRC7::LoadInstrument(std::shared_ptr<CInstrument> pInst)
 {
 	m_pInstrument = pInst;
+	//m_pInstrument = std::dynamic_pointer_cast<CInstrumentVRC7>(pInst);
 	UpdateRegs();
 }
 
@@ -47,7 +47,7 @@ void CInstHandlerVRC7::UpdateInstrument()
 	if (!m_bUpdate) return;
 	CChannelHandlerInterfaceVRC7 *pInterface = dynamic_cast<CChannelHandlerInterfaceVRC7*>(m_pInterface);
 	if (pInterface == nullptr) return;
-	const CInstrumentVRC7 *pVRC7Inst = dynamic_cast<const CInstrumentVRC7*>(m_pInstrument);
+	auto pVRC7Inst = std::dynamic_pointer_cast<const CInstrumentVRC7>(m_pInstrument);
 	if (pVRC7Inst == nullptr) return;
 	pInterface->SetPatch(pVRC7Inst->GetPatch());
 	if (!pVRC7Inst->GetPatch())

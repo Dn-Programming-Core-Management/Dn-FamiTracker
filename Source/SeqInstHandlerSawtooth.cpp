@@ -25,11 +25,6 @@
 #include "ChannelHandlerInterface.h"
 #include "SeqInstHandlerSawtooth.h"
 
-CSeqInstHandlerSawtooth::CSeqInstHandlerSawtooth(CChannelHandlerInterface *pInterface, int Vol, int Duty) :
-	CSeqInstHandler(pInterface, Vol, Duty), m_bIgnoreDuty(false)
-{
-}
-
 void CSeqInstHandlerSawtooth::TriggerInstrument()
 {
 	CSeqInstHandler::TriggerInstrument();

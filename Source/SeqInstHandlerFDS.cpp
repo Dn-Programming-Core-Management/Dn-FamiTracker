@@ -32,13 +32,12 @@
  * Class CSeqInstHandlerFDS
  */
 
-void CSeqInstHandlerFDS::LoadInstrument(CInstrument *pInst)		// // //
+void CSeqInstHandlerFDS::LoadInstrument(std::shared_ptr<CInstrument> pInst)		// // //
 {
 	CSeqInstHandler::LoadInstrument(pInst);
 	
-	const CInstrumentFDS *pFDSInst = dynamic_cast<const CInstrumentFDS*>(m_pInstrument);
-	if (pFDSInst == nullptr) return;
-	UpdateTables(pFDSInst);
+	if (auto pFDSInst = std::dynamic_pointer_cast<const CInstrumentFDS>(m_pInstrument))
+		UpdateTables(pFDSInst.get());
 }
 
 void CSeqInstHandlerFDS::TriggerInstrument()
@@ -47,23 +46,21 @@ void CSeqInstHandlerFDS::TriggerInstrument()
 	
 	CChannelHandlerInterfaceFDS *pInterface = dynamic_cast<CChannelHandlerInterfaceFDS*>(m_pInterface);
 	if (pInterface == nullptr) return;
-	const CInstrumentFDS *pFDSInst = dynamic_cast<const CInstrumentFDS*>(m_pInstrument);
+	auto pFDSInst = std::dynamic_pointer_cast<const CInstrumentFDS>(m_pInstrument);
 	if (pFDSInst == nullptr) return;
 	pInterface->SetFMSpeed(pFDSInst->GetModulationSpeed());
 	pInterface->SetFMDepth(pFDSInst->GetModulationDepth());
 	pInterface->SetFMDelay(pFDSInst->GetModulationDelay());
-	UpdateTables(pFDSInst);
+	UpdateTables(pFDSInst.get());
 }
 
 void CSeqInstHandlerFDS::UpdateInstrument()
 {
 	CSeqInstHandler::UpdateInstrument();
 	
-	if (auto pInterface = dynamic_cast<CChannelHandlerInterfaceFDS*>(m_pInterface)) {
-		if (auto pFDSInst = dynamic_cast<const CInstrumentFDS*>(m_pInstrument)) {
-			UpdateTables(pFDSInst);
-		}
-	}
+	if (auto pInterface = dynamic_cast<CChannelHandlerInterfaceFDS*>(m_pInterface))
+		if (auto pFDSInst = std::dynamic_pointer_cast<const CInstrumentFDS>(m_pInstrument))
+			UpdateTables(pFDSInst.get());
 }
 
 void CSeqInstHandlerFDS::UpdateTables(const CInstrumentFDS *pInst)

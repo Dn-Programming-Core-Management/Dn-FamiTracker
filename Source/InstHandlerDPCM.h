@@ -20,19 +20,17 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
-
-class CInstHandler;
-class CChannelHandlerInterface;
-class CInstrument;
+#include "InstHandler.h"
 
 class CInstHandlerDPCM : public CInstHandler
 {
 public:
 	CInstHandlerDPCM(CChannelHandlerInterface *pInterface);
-	void LoadInstrument(CInstrument *pInst);
-	void TriggerInstrument();
-	void ReleaseInstrument();
-	void UpdateInstrument();
+	void LoadInstrument(std::shared_ptr<CInstrument> pInst) override;
+	void TriggerInstrument() override;
+	void ReleaseInstrument() override;
+	void UpdateInstrument() override;
 };

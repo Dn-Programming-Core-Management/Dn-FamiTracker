@@ -469,7 +469,6 @@
     <ClCompile Include="Source\GotoDlg.cpp" />
     <ClCompile Include="Source\Groove.cpp" />
     <ClCompile Include="Source\GrooveDlg.cpp" />
-    <ClCompile Include="Source\InstHandler.cpp" />
     <ClCompile Include="Source\InstHandlerDPCM.cpp" />
     <ClCompile Include="Source\InstHandlerVRC7.cpp" />
     <ClCompile Include="Source\InstrumentEditorSeq.cpp" />
