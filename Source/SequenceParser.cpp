@@ -292,7 +292,7 @@ bool CSeqConversionArpFixed::GetNextTerm(std::string::const_iterator &b, std::st
 	for (const auto &acc : m.str(2)) {
 		switch (acc) {
 		case '+': case '#': ++Note; break;
-		case '-': case 'b': --Note; break;
+		/*case '-':*/ case 'b': --Note; break;
 		}
 	}
 	
