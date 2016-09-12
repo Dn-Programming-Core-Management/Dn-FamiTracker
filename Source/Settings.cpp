@@ -296,43 +296,46 @@ void CSettings::SetPath(CString PathName, unsigned int PathType)
 template<class T>
 void CSettingType<T>::Load()
 {
-	{		// // //
+	T Value = m_tDefaultValue;		// // //
+	{
 		stOldSettingContext s;
 		if (m_pSectionSecond)
-			*m_pVariable = theApp.GetProfileInt(m_pSectionSecond, m_pEntrySecond, m_tDefaultValue);
-		*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, *m_pVariable);
+			Value = theApp.GetProfileInt(m_pSectionSecond, m_pEntrySecond, Value);
+		Value = theApp.GetProfileInt(m_pSection, m_pEntry, Value);
 	}
 	if (m_pSectionSecond)
-		*m_pVariable = theApp.GetProfileInt(m_pSectionSecond, m_pEntrySecond, *m_pVariable);
-	*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, *m_pVariable);
+		Value = theApp.GetProfileInt(m_pSectionSecond, m_pEntrySecond, Value);
+	*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, Value);
 }
 
 template<>
 void CSettingType<bool>::Load()
 {
-	{		// // //
+	bool Value = m_tDefaultValue;		// // //
+	{
 		stOldSettingContext s;
 		if (m_pSectionSecond)
-			*m_pVariable = theApp.GetProfileInt(m_pSectionSecond, m_pEntrySecond, m_tDefaultValue) != 0;
-		*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, *m_pVariable) != 0;
+			Value = theApp.GetProfileInt(m_pSectionSecond, m_pEntrySecond, Value) != 0;
+		Value = theApp.GetProfileInt(m_pSection, m_pEntry, Value) != 0;
 	}
 	if (m_pSectionSecond)
-		*m_pVariable = theApp.GetProfileInt(m_pSectionSecond, m_pEntrySecond, *m_pVariable) != 0;
-	*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, *m_pVariable) != 0;
+		Value = theApp.GetProfileInt(m_pSectionSecond, m_pEntrySecond, Value) != 0;
+	*m_pVariable = theApp.GetProfileInt(m_pSection, m_pEntry, Value) != 0;
 }
 
 template<>
 void CSettingType<CString>::Load()
 {
-	{		// // //
+	CString Value = m_tDefaultValue;		// // //
+	{
 		stOldSettingContext s;
 		if (m_pSectionSecond)
-			*m_pVariable = theApp.GetProfileString(m_pSectionSecond, m_pEntrySecond, m_tDefaultValue);
-		*m_pVariable = theApp.GetProfileString(m_pSection, m_pEntry, *m_pVariable);
+			Value = theApp.GetProfileString(m_pSectionSecond, m_pEntrySecond, Value);
+		Value = theApp.GetProfileString(m_pSection, m_pEntry, Value);
 	}
 	if (m_pSectionSecond)
-		*m_pVariable = theApp.GetProfileString(m_pSectionSecond, m_pEntrySecond, *m_pVariable);
-	*m_pVariable = theApp.GetProfileString(m_pSection, m_pEntry, *m_pVariable);
+		Value = theApp.GetProfileString(m_pSectionSecond, m_pEntrySecond, Value);
+	*m_pVariable = theApp.GetProfileString(m_pSection, m_pEntry, Value);
 }
 
 template<class T>
