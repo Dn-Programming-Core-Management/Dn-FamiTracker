@@ -4684,6 +4684,7 @@ void CFamiTrackerDoc::PopulateUniquePatterns(unsigned int Track)		// // //
 	pNew->SetSongTempo(GetSongTempo(Track));
 	pNew->SetFrameCount(Frames);
 	pNew->SetSongGroove(GetSongGroove(Track));
+	pNew->SetTitle(GetTrackTitle(Track));
 
 	for (int c = 0; c < GetChannelCount(); c++) {
 		pNew->SetEffectColumnCount(c, GetEffColumns(Track, c));
