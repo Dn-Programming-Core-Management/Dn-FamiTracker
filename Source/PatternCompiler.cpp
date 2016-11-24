@@ -92,20 +92,21 @@ enum command_t {
 	CMD_EFF_GROOVE,				// // //
 	CMD_EFF_DELAYED_VOLUME,		// // //
 	CMD_EFF_TRANSPOSE,			// // //
+
+	CMD_EFF_VRC7_PATCH,			// // // 050B
+
 	CMD_EFF_FDS_MOD_DEPTH,
 	CMD_EFF_FDS_MOD_RATE_HI,
 	CMD_EFF_FDS_MOD_RATE_LO,
 	CME_EFF_FDS_VOLUME,			// // //
 	CMD_EFF_FDS_MOD_BIAS,		// // //
+
 	CMD_EFF_N163_WAVE_BUFFER,	// // //
+
 	CMD_EFF_S5B_ENV_TYPE,		// // //
 	CMD_EFF_S5B_ENV_RATE_HI,	// // //
 	CMD_EFF_S5B_ENV_RATE_LO,	// // //
 };
-
-/*
-const unsigned char CMD_EFF_VRC7_PATCH = CMD_EFF_FDS_MOD_DEPTH;	// TODO: hack, fix this
-*/
 
 const unsigned char CMD_LOOP_POINT = 26;	// Currently unused
 
@@ -461,9 +462,9 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 					}
 					break;
 				case EF_DUTY_CYCLE:
-					if (ChipID == SNDCHIP_VRC7) {
-//						WriteData(CMD_EFF_VRC7_PATCH);
-//						WriteData(EffParam << 4);
+					if (ChipID == SNDCHIP_VRC7) {		// // // 050B
+						WriteData(CMD_EFF_VRC7_PATCH);
+						WriteData(EffParam << 4);
 					}
 					else if (ChanID != CHANID_TRIANGLE && ChanID != CHANID_DPCM) {	// Not triangle and dpcm
 						WriteData(Command(CMD_EFF_DUTY));
@@ -638,6 +639,7 @@ unsigned char CPatternCompiler::Command(int cmd) const
 	if (!m_pDocument->ExpansionEnabled(SNDCHIP_N163) && cmd > CMD_EFF_N163_WAVE_BUFFER) cmd -= sizeof(N163_EFFECTS);
 	// MMC5
 	if (!m_pDocument->ExpansionEnabled(SNDCHIP_FDS) && cmd > CMD_EFF_FDS_MOD_BIAS) cmd -= sizeof(FDS_EFFECTS);
+	if (!m_pDocument->ExpansionEnabled(SNDCHIP_VRC7) && cmd > CMD_EFF_VRC7_PATCH) cmd -= sizeof(VRC7_EFFECTS);
 	// VRC7, VRC6
 	return (cmd << 1) | 0x80;
 }

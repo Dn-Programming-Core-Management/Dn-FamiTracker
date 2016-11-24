@@ -81,7 +81,8 @@ bool CChannelHandlerVRC7::HandleEffect(effect_t EffNum, unsigned char EffParam)
 {
 	switch (EffNum) {
 	case EF_DUTY_CYCLE:
-//		Patch = EffParam;		// TODO add this
+		SetPatch(EffParam);		// // // 050B
+		// VRC7 Vxx is stateless!
 		break;
 	case EF_VRC7_PORT:		// // // 050B
 		m_iCustomPort = EffParam & 0x07;

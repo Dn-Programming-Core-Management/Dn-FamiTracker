@@ -78,6 +78,7 @@ const CString EFFECT_TEXTS[] = {		// // //
 	_T("2xx - Slide down, XX = speed"),
 	_T("Vxx - Set Square duty / Noise mode to XX"),
 	_T("Vxx - Set N163 wave index to XX"),
+	_T("Vxx - Set VRC7 patch index to XX"),
 	_T("Yxx - Set DPCM sample offset to XX"),
 	_T("Qxy - Portamento up, X = speed, Y = notes"),
 	_T("Rxy - Portamento down, X = speed, Y = notes"),
@@ -3953,6 +3954,7 @@ CString	CFamiTrackerView::GetEffectHint(const stChanNote &Note, int Column) cons
 	if (Index > EF_FDS_MOD_SPEED_HI || (Index == EF_FDS_MOD_SPEED_HI && Param >= 0x10)) ++Index;
 	if (Index > EF_FDS_MOD_DEPTH || (Index == EF_FDS_MOD_DEPTH && Param >= 0x80)) ++Index;
 	if (Index > EF_NOTE_CUT || (Index == EF_NOTE_CUT && Param >= 0x80 && Channel == CHANID_TRIANGLE)) ++Index;
+	if (Index > EF_DUTY_CYCLE || (Index == EF_DUTY_CYCLE && (Chip == SNDCHIP_VRC7 || Chip == SNDCHIP_N163))) ++Index;
 	if (Index > EF_DUTY_CYCLE || (Index == EF_DUTY_CYCLE && Chip == SNDCHIP_N163)) ++Index;
 	if (Index > EF_VOLUME || (Index == EF_VOLUME && Param >= 0xE0)) ++Index;
 	if (Index > EF_SPEED || (Index == EF_SPEED && Param >= GetDocument()->GetSpeedSplitPoint())) ++Index;

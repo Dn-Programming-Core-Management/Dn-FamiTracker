@@ -4891,7 +4891,9 @@ stFullState *CFamiTrackerDoc::RetrieveSoundState(unsigned int Track, unsigned in
 				case EF_N163_WAVE_BUFFER:
 				case EF_VRC7_PORT:
 					if (!ch->IsEffectCompatible(fx, xy)) continue;
-				case EF_VIBRATO: case EF_TREMOLO: case EF_PITCH: case EF_DUTY_CYCLE: case EF_VOLUME_SLIDE:
+				case EF_DUTY_CYCLE:
+					if (ch->GetChip() == SNDCHIP_VRC7) continue;		// // // 050B
+				case EF_VIBRATO: case EF_TREMOLO: case EF_PITCH: case EF_VOLUME_SLIDE:
 					if (State->Effect[fx] == -1)
 						State->Effect[fx] = xy;
 					continue;
