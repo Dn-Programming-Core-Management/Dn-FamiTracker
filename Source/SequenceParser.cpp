@@ -199,7 +199,7 @@ bool CSeqConversion5B::GetNextTerm(std::string::const_iterator &b, std::string::
 std::string CSeqConversionArpScheme::ToString(char Value) const		// // //
 {
 	int Offset = m_iMinValue + ((Value - m_iMinValue) & 0x3F);
-	char Scheme = Value & 0xC0;
+	unsigned char Scheme = Value & 0xC0;
 	if (!Offset) {
 		switch (Scheme) {
 		case ARPSCHEME_MODE_X: return "x";
