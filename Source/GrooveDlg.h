@@ -45,12 +45,13 @@ protected:
 
 	CFamiTrackerDoc *m_pDocument;
 
-	CGroove* GrooveTable[MAX_GROOVE];
+	CGroove* GrooveTable[MAX_GROOVE] = { };
 	CGroove* Groove;
 	int m_iGrooveIndex, m_iGroovePos;
 
 	CListBox *m_cGrooveTable, *m_cCurrentGroove;
 
+	void ReloadGrooves();
 	void UpdateCurrentGroove();
 	void UpdateIndicators();
 	void ParseGrooveField();
@@ -59,6 +60,7 @@ protected:
 public:
 	virtual BOOL OnInitDialog();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
 	afx_msg void OnLbnSelchangeListGrooveTable();
