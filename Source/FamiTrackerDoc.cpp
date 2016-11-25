@@ -4969,11 +4969,9 @@ CGroove* CFamiTrackerDoc::GetGroove(int Index) const		// // //
 
 void CFamiTrackerDoc::SetGroove(int Index, const CGroove* Groove)
 {
-	if (Groove == NULL) {
-		delete m_pGrooveTable[Index];
-		m_pGrooveTable[Index] = NULL;
-	}
-	else m_pGrooveTable[Index] = new CGroove(*Groove);
+	SAFE_RELEASE(m_pGrooveTable[Index]);
+	if (Groove != nullptr)
+		m_pGrooveTable[Index] = new CGroove(*Groove);
 }
 
 void CFamiTrackerDoc::SetExceededFlag(bool Exceed)

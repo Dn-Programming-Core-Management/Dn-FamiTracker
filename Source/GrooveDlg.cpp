@@ -127,8 +127,10 @@ BOOL CGrooveDlg::PreTranslateMessage(MSG* pMsg)
 void CGrooveDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 {
 	CDialog::OnShowWindow(bShow, nStatus);
-	if (bShow == TRUE)
+	if (bShow == TRUE) {
+		ReloadGrooves();
 		UpdateCurrentGroove();
+	}
 }
 
 void CGrooveDlg::SetGrooveIndex(int Index)
