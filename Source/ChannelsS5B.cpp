@@ -66,8 +66,11 @@ void CChannelHandlerS5B::SetMode(int Chan, int Square, int Noise)
 void CChannelHandlerS5B::UpdateAutoEnvelope(int Period)		// // // 050B
 {
 	if (m_bEnvelopeEnabled && m_iAutoEnvelopeShift) {
-		if (m_iAutoEnvelopeShift > 8)
-			Period >>= m_iAutoEnvelopeShift - 8;
+		if (m_iAutoEnvelopeShift > 8) {
+			Period >>= m_iAutoEnvelopeShift - 8 - 1;		// // // round off
+			if (Period & 0x01) ++Period;
+			Period >>= 1;
+		}
 		else if (m_iAutoEnvelopeShift < 8)
 			Period <<= 8 - m_iAutoEnvelopeShift;
 		m_iEnvFreqLo = Period & 0xFF;
