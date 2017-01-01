@@ -1437,11 +1437,6 @@ void CFamiTrackerView::TrackChanged(unsigned int Track)
 	CMainFrame *pMainFrm = static_cast<CMainFrame*>(GetParentFrame());
 	ASSERT_VALID(pMainFrm);
 
-	if (theApp.IsPlaying())
-		theApp.ResetPlayer();
-
-	pMainFrm->ResetUndo();
-
 	m_pPatternEditor->ResetCursor();
 	m_pPatternEditor->InvalidatePatternData();
 	m_pPatternEditor->InvalidateBackground();
@@ -1452,9 +1447,6 @@ void CFamiTrackerView::TrackChanged(unsigned int Track)
 
 	InvalidateFrameEditor();
 	RedrawFrameEditor();
-
-	// Update setting boxes
-	pMainFrm->UpdateControls();
 }
 
 // GUI elements updates

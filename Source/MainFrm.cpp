@@ -1611,22 +1611,12 @@ void CMainFrame::OnUpdateSBFrequency(CCmdUI *pCmdUI)
 
 void CMainFrame::OnUpdateSBTempo(CCmdUI *pCmdUI)
 {
+	static int Highlight = m_wndOctaveBar.GetDlgItemInt(IDC_HIGHLIGHT1);
+
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 	if (pSoundGen && !pSoundGen->IsBackgroundTask()) {
-		CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());		// // //
-		int Highlight = m_wndOctaveBar.GetDlgItemInt(IDC_HIGHLIGHT1);
-		// Highlight = pDoc->GetHighlight(m_iTrack).First;
-		if (Highlight == 0)
-			Highlight = 4;
-		int EngineSpeed = pDoc->GetEngineSpeed();
-		if (EngineSpeed == 0)
-			EngineSpeed = (pDoc->GetMachine() == NTSC) ? CAPU::FRAME_RATE_NTSC : CAPU::FRAME_RATE_PAL;
-		float BPM = std::min(pSoundGen->IsPlaying() && theApp.GetSettings()->Display.bAverageBPM ?
-								pSoundGen->GetAverageBPM() : pSoundGen->GetTempo(),
-							 static_cast<float>(EngineSpeed * 15));		// // // 050B
-		
 		CString String;
-		String.Format(_T("%.2f BPM"), BPM * 4.f / Highlight);
+		String.Format(_T("%.2f BPM"), pSoundGen->GetCurrentBPM());		// // //
 		pCmdUI->Enable();
 		pCmdUI->SetText(String);
 	}
@@ -2229,15 +2219,15 @@ void CMainFrame::OnModuleEstimateSongLength()		// // //
 	int Rate = pDoc->GetFrameRate();
 
 	CString str = _T("");
-	str.Format(_T("Estimated duration:\nIntro: %d:%02d.%02d (%d ticks)\nLoop: %d:%02d.%02d (%d ticks)\n"),
-			   static_cast<int>(Intro + .5 / 6000) / 60,
-			   static_cast<int>(Intro + .005) % 60,
-			   static_cast<int>(Intro * 100 + .5) % 100,
-			   static_cast<int>(Intro * Rate + .5),
-			   static_cast<int>(Loop + .5 / 6000) / 60,
-			   static_cast<int>(Loop + .005) % 60,
-			   static_cast<int>(Loop * 100 + .5) % 100,
-			   static_cast<int>(Loop * Rate + .5));
+	str.Format(_T("Estimated duration:\nIntro: %lld:%02lld.%02lld (%lld ticks)\nLoop: %lld:%02lld.%02lld (%lld ticks)\n"),
+			   static_cast<long long>(Intro + .5 / 6000) / 60,
+			   static_cast<long long>(Intro + .005) % 60,
+			   static_cast<long long>(Intro * 100 + .5) % 100,
+			   static_cast<long long>(Intro * Rate + .5),
+			   static_cast<long long>(Loop + .5 / 6000) / 60,
+			   static_cast<long long>(Loop + .005) % 60,
+			   static_cast<long long>(Loop * 100 + .5) % 100,
+			   static_cast<long long>(Loop * Rate + .5));
 	str.Append(_T("Tick counts are subject to rounding errors!"));
 	AfxMessageBox(str);
 }
@@ -2389,6 +2379,7 @@ void CMainFrame::OnDeltaposHighlightSpin1(NMHDR *pNMHDR, LRESULT *pResult)		// /
 		stHighlight Hl = pDoc->GetHighlight();
 		Hl.First = std::max(0, std::min(MAX_PATTERN_LENGTH, Hl.First - ((NMUPDOWN*)pNMHDR)->iDelta));
 		AddAction(new CPActionHighlight {Hl});
+		theApp.GetSoundGenerator()->SetHighlightRows(Hl.First);		// // //
 	}
 }
 
@@ -2584,8 +2575,15 @@ void CMainFrame::SelectTrack(unsigned int Track)
 	
 	m_iTrack = Track;
 
+	if (theApp.IsPlaying() && Track != theApp.GetSoundGenerator()->GetPlayerTrack())		// // // 050B
+		theApp.ResetPlayer();
+
 	pTrackBox->SetCurSel(m_iTrack);
 	//pDoc->UpdateAllViews(NULL, CHANGED_TRACK);
+
+	ResetUndo();		// // // 050B
+	UpdateControls();
+
 	pView->TrackChanged(m_iTrack);
 	GetFrameEditor()->CancelSelection();		// // //
 	GetFrameEditor()->Invalidate();

@@ -4358,42 +4358,55 @@ stHighlight CFamiTrackerDoc::GetHighlight() const		// // //
 	return m_vHighlight;
 }
 
-unsigned int CFamiTrackerDoc::GetHighlightAtRow(unsigned int Track, unsigned int Frame, unsigned int Row) const		// // //
+stHighlight CFamiTrackerDoc::GetHighlightAt(unsigned int Track, unsigned int Frame, unsigned int Row) const		// // //
 {
 	while (Frame < 0) Frame += GetFrameCount(Track);
 	Frame %= GetFrameCount(Track);
 
 	stHighlight Hl = m_vHighlight;
-	int RowOffs = 0;
-	bool Hit = false;
 	
+	const CBookmark Zero { };
 	CBookmarkCollection *pCol = m_pBookmarkManager->GetCollection(Track);
 	if (const unsigned Count = pCol->GetCount()) {
 		CBookmark tmp(Frame, Row);
-		unsigned int Min = tmp.Distance(CBookmark());
+		unsigned int Min = tmp.Distance(Zero);
 		for (unsigned i = 0; i < Count; ++i) {
 			CBookmark *pMark = pCol->GetBookmark(i);
 			unsigned Dist = tmp.Distance(*pMark);
 			if (Dist <= Min) {
 				Min = Dist;
-				RowOffs = pMark->m_iRow;
 				if (pMark->m_Highlight.First != -1 && (pMark->m_bPersist || pMark->m_iFrame == Frame))
 					Hl.First = pMark->m_Highlight.First;
 				if (pMark->m_Highlight.Second != -1 && (pMark->m_bPersist || pMark->m_iFrame == Frame))
 					Hl.Second = pMark->m_Highlight.Second;
-				Hl.Offset = pMark->m_Highlight.Offset;
-				if (!Dist)
-					Hit = true;
+				Hl.Offset = pMark->m_Highlight.Offset + pMark->m_iRow;
 			}
 		}
 	}
 
-	if (Hl.Second > 0 && !((Row - Hl.Offset - RowOffs) % Hl.Second))
-		return 2 | (Hit << 7);
-	if (Hl.First > 0 && !((Row - Hl.Offset - RowOffs) % Hl.First))
-		return 1 | (Hit << 7);
+	return Hl;
+}
 
-	return Hit << 7;
+unsigned int CFamiTrackerDoc::GetHighlightState(unsigned int Track, unsigned int Frame, unsigned int Row) const		// // //
+{
+	stHighlight Hl = GetHighlightAt(Track, Frame, Row);
+	if (Hl.Second > 0 && !((Row - Hl.Offset) % Hl.Second))
+		return 2;
+	if (Hl.First > 0 && !((Row - Hl.Offset) % Hl.First))
+		return 1;
+	return 0;
+}
+
+CBookmark *CFamiTrackerDoc::GetBookmarkAt(unsigned int Track, unsigned int Frame, unsigned int Row) const		// // //
+{
+	if (CBookmarkCollection *pCol = m_pBookmarkManager->GetCollection(Track)) {
+		for (unsigned i = 0, Count = pCol->GetCount(); i < Count; ++i) {
+			CBookmark *pMark = pCol->GetBookmark(i);
+			if (pMark->m_iFrame == Frame && pMark->m_iRow == Row)
+				return pMark;
+		}
+	}
+	return nullptr;
 }
 
 unsigned int CFamiTrackerDoc::ScanActualLength(unsigned int Track, unsigned int Count) const		// // //

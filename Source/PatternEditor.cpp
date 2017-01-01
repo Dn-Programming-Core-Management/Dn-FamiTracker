@@ -1127,13 +1127,12 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 	}
 
 	// Highlight
-	unsigned int Highlight = m_pDocument->GetHighlightAtRow(Track, Frame, Row);		// // //
+	unsigned int Highlight = m_pDocument->GetHighlightState(Track, Frame, Row);		// // //
 
 	// Clear
 	pDC->FillSolidRect(1, Line * m_iRowHeight, m_iRowColumnWidth - 2, m_iRowHeight, ColBg);
-	if (Highlight >> 7)
+	if (m_pDocument->GetBookmarkAt(Track, Frame, Row))
 		pDC->FillSolidRect(1, Line * m_iRowHeight, m_iRowColumnWidth - 2, m_iRowHeight, ColHiBg);
-	Highlight &= 0x7F;
 
 	COLORREF TextColor;
 

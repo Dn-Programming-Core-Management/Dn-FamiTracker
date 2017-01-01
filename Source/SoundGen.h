@@ -152,8 +152,10 @@ public:
 
 	void		 ResetState();
 	void		 ResetTempo();
+	void		 SetHighlightRows(int Rows);		// // //
 	float		 GetTempo() const;
 	float		 GetAverageBPM() const;		// // //
+	float		 GetCurrentBPM() const;		// // //
 	bool		 IsPlaying() const { return m_bPlaying; };
 
 	// Stats
@@ -356,6 +358,7 @@ private:
 
 	unsigned int		m_iSpeedSplitPoint;					// Speed/tempo split point fetched from the module
 	unsigned int		m_iFrameRate;						// Module frame rate
+	int					m_iLastHighlight;					// // //
 
 	bool				m_bUpdatingAPU;						// // //
 

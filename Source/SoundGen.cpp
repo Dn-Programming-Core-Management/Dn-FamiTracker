@@ -1132,6 +1132,7 @@ void CSoundGen::ApplyGlobalState()		// // //
 				m_iSpeed = State->Speed;
 			m_iGrooveIndex = -1;
 		}
+		m_iLastHighlight = m_pDocument->GetHighlightAt(GetPlayerTrack(), Frame, Row).First;
 		SetupSpeed();
 		for (int i = 0; i < m_pDocument->GetChannelCount(); i++) {
 			for (int j = 0; j < sizeof(m_pTrackerChannels) / sizeof(CTrackerChannel*); ++j)		// // // pick this out later
@@ -1437,6 +1438,7 @@ void CSoundGen::ResetTempo()
 
 	m_iSpeed = m_pDocument->GetSongSpeed(m_iPlayTrack);
 	m_iTempo = m_pDocument->GetSongTempo(m_iPlayTrack);
+	m_iLastHighlight = m_pDocument->GetHighlight().First;		// // //
 	
 	m_iTempoAccum = 0;
 	m_iTempoFrames = 0;
@@ -1455,6 +1457,11 @@ void CSoundGen::ResetTempo()
 	SetupSpeed();
 
 	m_bUpdateRow = false;
+}
+
+void CSoundGen::SetHighlightRows(int Rows)		// // //
+{
+	m_iLastHighlight = Rows;
 }
 
 void CSoundGen::SetupSpeed()
@@ -1486,7 +1493,7 @@ float CSoundGen::GetTempo() const
 	return !m_iSpeed ? 0 : float(Tempo * 6) / Speed;
 }
 
-float CSoundGen::GetAverageBPM() const
+float CSoundGen::GetAverageBPM() const		// // // 050B
 {
 	float BPMtot = 0.f;
 	float TickTot = 0.f;
@@ -1495,6 +1502,14 @@ float CSoundGen::GetAverageBPM() const
 	for (const auto &x : m_iBPMCacheTicks)
 		TickTot += x;
 	return static_cast<float>(BPMtot / TickTot);
+}
+
+float CSoundGen::GetCurrentBPM() const		// // //
+{
+	float EngineSpeed = static_cast<float>(m_pDocument->GetFrameRate());
+	float BPM = std::min(IsPlaying() && theApp.GetSettings()->Display.bAverageBPM ? GetAverageBPM() : GetTempo(),
+						 EngineSpeed * 15);		// // // 050B
+	return static_cast<float>(BPM * 4. / (m_iLastHighlight ? m_iLastHighlight : 4));
 }
 
 void CSoundGen::RunFrame()
@@ -1549,6 +1564,10 @@ void CSoundGen::RunFrame()
 			m_bUpdateRow = true;
 			ReadPatternRow();
 			++m_iRenderRow;
+
+			if (auto pMark = m_pDocument->GetBookmarkAt(m_iPlayTrack, m_iPlayFrame, m_iPlayRow))		// // //
+				if (pMark->m_Highlight.First != -1)
+					m_iLastHighlight = pMark->m_Highlight.First;
 
 			// // // 050B
 			m_fBPMCacheValue[m_iBPMCachePosition] = GetTempo();		// // // 050B
