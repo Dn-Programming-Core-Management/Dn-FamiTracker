@@ -3890,6 +3890,7 @@ void CFamiTrackerDoc::SelectExpansionChip(unsigned char Chip, bool Move)
 			pNew->SetSongSpeed(pTrack->GetSongSpeed());
 			pNew->SetSongGroove(pTrack->GetSongGroove());
 			pNew->SetFrameCount(pTrack->GetFrameCount());
+			pNew->SetTitle(pTrack->GetTitle());
 			for (int j = 0; j < CHANNELS; j++) {
 				if (oldIndex[j] != -1 && newIndex[j] != -1) {
 					pNew->SetEffectColumnCount(newIndex[j], pTrack->GetEffectColumnCount(oldIndex[j]));
@@ -4017,6 +4018,7 @@ void CFamiTrackerDoc::SetNamcoChannels(int Channels, bool Move)
 			pNew->SetSongSpeed(pTrack->GetSongSpeed());
 			pNew->SetSongGroove(pTrack->GetSongGroove());
 			pNew->SetFrameCount(pTrack->GetFrameCount());
+			pNew->SetTitle(pTrack->GetTitle());
 			for (int j = 0; j < CHANNELS; j++) {
 				if (oldIndex[j] != -1 && newIndex[j] != -1) {
 					pNew->SetEffectColumnCount(newIndex[j], pTrack->GetEffectColumnCount(oldIndex[j]));
