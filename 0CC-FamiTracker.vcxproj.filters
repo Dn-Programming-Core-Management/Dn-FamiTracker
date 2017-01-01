@@ -714,6 +714,9 @@
     <ClCompile Include="Source\FamiTrackerTypes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\SeqInstHandlerS5B.cpp">
+      <Filter>Source Files\Sound Driver\Instruments</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">
@@ -1276,6 +1279,9 @@
     </ClInclude>
     <ClInclude Include="Source\SequenceParser.h">
       <Filter>Header Files\Dialog Boxes Headers\Instrument Headers\Related Headers\Sequence editor Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SeqInstHandlerS5B.h">
+      <Filter>Header Files\Sound Driver Headers\Instruments Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

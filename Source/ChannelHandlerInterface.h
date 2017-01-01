@@ -84,3 +84,9 @@ public:
 	virtual void	SetWaveCount(int) = 0;
 	virtual void	FillWaveRAM(const char*, int) = 0;
 };
+
+class CChannelHandlerInterfaceS5B
+{
+public:
+	virtual void	SetNoiseFreq(int) = 0;
+};

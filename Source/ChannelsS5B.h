@@ -26,15 +26,18 @@
 // Derived channels, 5B
 //
 
-class CChannelHandlerS5B : public CChannelHandler {
+class CChannelHandlerS5B : public CChannelHandler, public CChannelHandlerInterfaceS5B {
 public:
 	CChannelHandlerS5B();
 	void	ResetChannel() override;
 	void	RefreshChannel() override;
 
+	void	SetNoiseFreq(int Pitch) override final;		// // //
+
 protected:
 	// // //
 	bool	HandleEffect(effect_t EffNum, unsigned char EffParam) override;		// // //
+	void	HandleNote(int Note, int Octave) override;		// // //
 	void	HandleEmptyNote() override;
 	void	HandleCut() override;
 	void	HandleRelease() override;
@@ -58,6 +61,8 @@ protected:
 protected:
 	static int m_iModes;
 	static int m_iNoiseFreq;
+	static int m_iNoisePrev;		// // //
+	static int m_iDefaultNoise;		// // //
 	static unsigned char m_iEnvFreqHi;
 	static unsigned char m_iEnvFreqLo;
 	static bool m_bEnvTrigger;		// // // 050B

@@ -121,7 +121,7 @@ void CS5B::Reset()
 {
 	m_iNoiseState = 0xFFFF;
 	m_iCounter = 0;
-	m_iNoisePeriod = 0;
+	m_iNoisePeriod = 0x1F << 5;
 	m_iNoiseClock = 0;
 	m_iEnvelopePeriod = 0;
 	m_iEnvelopeClock = 0;

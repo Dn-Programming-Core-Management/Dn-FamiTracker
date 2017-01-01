@@ -98,7 +98,7 @@ enum command_t {
 	CMD_EFF_FDS_MOD_DEPTH,
 	CMD_EFF_FDS_MOD_RATE_HI,
 	CMD_EFF_FDS_MOD_RATE_LO,
-	CME_EFF_FDS_VOLUME,			// // //
+	CMD_EFF_FDS_VOLUME,			// // //
 	CMD_EFF_FDS_MOD_BIAS,		// // //
 
 	CMD_EFF_N163_WAVE_BUFFER,	// // //
@@ -106,6 +106,7 @@ enum command_t {
 	CMD_EFF_S5B_ENV_TYPE,		// // //
 	CMD_EFF_S5B_ENV_RATE_HI,	// // //
 	CMD_EFF_S5B_ENV_RATE_LO,	// // //
+	CMD_EFF_S5B_NOISE,			// // // 050B
 };
 
 const unsigned char CMD_LOOP_POINT = 26;	// Currently unused
@@ -573,7 +574,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 					break;
 				case EF_FDS_VOLUME:		// // //
 					if (ChanID == CHANID_FDS) {
-						WriteData(Command(CME_EFF_FDS_VOLUME));
+						WriteData(Command(CMD_EFF_FDS_VOLUME));
 						WriteData(EffParam == 0xE0 ? 0x80 : (EffParam ^ 0x40));
 					}
 					break;
