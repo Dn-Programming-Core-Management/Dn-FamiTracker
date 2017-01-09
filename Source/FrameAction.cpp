@@ -255,21 +255,20 @@ bool CFActionFrameCount::Merge(const CAction *Other)		// // //
 
 bool CFActionSetPattern::SaveState(const CMainFrame *pMainFrm)
 {
-	const CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	m_iOldPattern = pDoc->GetPatternAtFrame(STATE_EXPAND(m_pUndoState));
+	m_pClipData = pMainFrm->GetFrameEditor()->Copy();
 	return true;
 }
 
 void CFActionSetPattern::Undo(CMainFrame *pMainFrm) const
 {
-	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	pDoc->SetPatternAtFrame(STATE_EXPAND(m_pUndoState), m_iOldPattern);
+	pMainFrm->GetFrameEditor()->PasteAt(m_pUndoState->Track, m_pClipData, m_pUndoState->Selection.m_cpStart);
 }
 
 void CFActionSetPattern::Redo(CMainFrame *pMainFrm) const
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	pDoc->SetPatternAtFrame(STATE_EXPAND(m_pUndoState), m_iNewPattern);
+	for (int f : m_itFrames) for (int c : m_itChannels)
+		pDoc->SetPatternAtFrame(m_pUndoState->Track, f, c, m_iNewPattern);
 }
 
 bool CFActionSetPattern::Merge(const CAction *Other)		// // //
@@ -311,7 +310,6 @@ bool CFActionChangePattern::SaveState(const CMainFrame *pMainFrm)
 {
 	if (!m_iPatternOffset)
 		return false;
-	const CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
 	m_pClipData = pMainFrm->GetFrameEditor()->Copy();
 	return true;
 }

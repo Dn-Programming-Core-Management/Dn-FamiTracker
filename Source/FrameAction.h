@@ -170,7 +170,8 @@ private:
 	void Redo(CMainFrame *pMainFrm) const override;
 	bool Merge(const CAction *Other);		// // //
 private:
-	int m_iOldPattern, m_iNewPattern;
+	int m_iNewPattern;
+	CFrameClipData *m_pClipData = nullptr;
 };
 
 class CFActionSetPatternAll : public CFrameAction

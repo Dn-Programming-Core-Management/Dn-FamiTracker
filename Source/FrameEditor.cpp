@@ -60,7 +60,6 @@ CFrameEditor::CFrameEditor(CMainFrame *pMainFrm) :
 	m_iHiglightLine(0),
 	m_iFirstChannel(0),
 	m_iCursorPos(0),
-	m_iNewPattern(0),
 	m_iRowsVisible(0),
 	m_iMiddleRow(0),
 	m_bInputEnable(false),
@@ -573,7 +572,6 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 					Channel -= 1;
 				m_pView->SelectChannel(Channel);
 				m_iCursorPos = 0;
-				m_iNewPattern = m_pDocument->GetPatternAtFrame(Track, Frame, Channel);
 				break;
 			case VK_RIGHT:
 				if (Channel == ChannelCount - 1)
@@ -582,7 +580,6 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 					Channel += 1;
 				m_pView->SelectChannel(Channel);
 				m_iCursorPos = 0;
-				m_iNewPattern = m_pDocument->GetPatternAtFrame(Track, Frame, Channel);
 				break;
 			case VK_UP:
 				if (Frame == 0)
@@ -591,7 +588,6 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 					Frame -= 1;
 				m_pView->SelectFrame(Frame);
 				m_iCursorPos = 0;
-				m_iNewPattern = m_pDocument->GetPatternAtFrame(Track, Frame, Channel);
 				break;
 			case VK_DOWN:
 				if (Frame == FrameCount - 1)
@@ -600,7 +596,6 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 					Frame += 1;
 				m_pView->SelectFrame(Frame);
 				m_iCursorPos = 0;
-				m_iNewPattern = m_pDocument->GetPatternAtFrame(Track, Frame, Channel);
 				break;
 			case VK_RETURN:
 				m_pView->SetFocus();
@@ -618,7 +613,6 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 					Frame += PAGE_SIZE;
 				m_pView->SelectFrame(Frame);
 				m_iCursorPos = 0;
-				m_iNewPattern = m_pDocument->GetPatternAtFrame(Track, Frame, Channel);
 				break;
 			case VK_PRIOR:
 				if ((signed)Frame - PAGE_SIZE < 0)
@@ -627,19 +621,16 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 					Frame -= PAGE_SIZE;
 				m_pView->SelectFrame(Frame);
 				m_iCursorPos = 0;
-				m_iNewPattern = m_pDocument->GetPatternAtFrame(Track, Frame, Channel);
 				break;
 			case VK_HOME:
 				Frame = 0;
 				m_pView->SelectFrame(Frame);
 				m_iCursorPos = 0;
-				m_iNewPattern = m_pDocument->GetPatternAtFrame(Track, Frame, Channel);
 				break;
 			case VK_END:
 				Frame = FrameCount - 1;
 				m_pView->SelectFrame(Frame);
 				m_iCursorPos = 0;
-				m_iNewPattern = m_pDocument->GetPatternAtFrame(Track, Frame, Channel);
 				break;
 		}
 
@@ -667,31 +658,45 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		}
 
 		if (Num != -1) {
-			m_iNewPattern = m_pDocument->GetPatternAtFrame(Track, Frame, Channel);		// // //
-			if (m_iCursorPos == 0)
-				m_iNewPattern = (m_iNewPattern & 0x0F) | (Num << 4);
-			else if (m_iCursorPos == 1)
-				m_iNewPattern = (m_iNewPattern & 0xF0) | Num;
-
-			m_iNewPattern = std::min(m_iNewPattern, MAX_PATTERN - 1);
-			if (pMainFrame->ChangeAllPatterns())
-				pMainFrame->AddAction(new CFActionSetPatternAll {m_iNewPattern});		// // //
-			else
-				pMainFrame->AddAction(new CFActionSetPattern {m_iNewPattern});
-
-			m_pDocument->SetModifiedFlag();
-
-			const int SelectedChannel = (m_pView->GetSelectedChannel() + 1) % m_pDocument->GetAvailableChannels();		// // //
-			const int SelectedFrame = m_pView->GetSelectedFrame();
-
-			if (m_iCursorPos == 1) {
-				m_iCursorPos = 0;
-				m_bCursor = true;
-				m_pView->SelectChannel(SelectedChannel);		// // //
-				m_iNewPattern = m_pDocument->GetPatternAtFrame(Track, SelectedFrame, SelectedChannel);
+			if (IsSelecting()) {		// // //
+				int Pattern;
+				if (m_iCursorPos == 0) {
+					Pattern = Num << 4;
+					m_iCursorPos = 1;
+				}
+				else if (m_iCursorPos == 1) {
+					Pattern = m_pDocument->GetPatternAtFrame(Track, GetSelection().GetFrameStart(), GetSelection().GetChanStart()) | Num;
+					m_iCursorPos = 0;
+				}
+				pMainFrame->AddAction(new CFActionSetPattern {Pattern});
+				m_pDocument->SetModifiedFlag();
 			}
-			else
-				m_iCursorPos = 1;
+			else {
+				int Pattern = m_pDocument->GetPatternAtFrame(Track, Frame, Channel);		// // //
+				if (m_iCursorPos == 0)
+					Pattern = (Pattern & 0x0F) | (Num << 4);
+				else if (m_iCursorPos == 1)
+					Pattern = (Pattern & 0xF0) | Num;
+				Pattern = std::min(Pattern, MAX_PATTERN - 1);
+
+				if (pMainFrame->ChangeAllPatterns())
+					pMainFrame->AddAction(new CFActionSetPatternAll {Pattern});		// // //
+				else
+					pMainFrame->AddAction(new CFActionSetPattern {Pattern});
+
+				m_pDocument->SetModifiedFlag();
+
+				const int SelectedChannel = (m_pView->GetSelectedChannel() + 1) % m_pDocument->GetAvailableChannels();		// // //
+				const int SelectedFrame = m_pView->GetSelectedFrame();
+
+				if (m_iCursorPos == 1) {
+					m_iCursorPos = 0;
+					m_bCursor = true;
+					m_pView->SelectChannel(SelectedChannel);		// // //
+				}
+				else
+					m_iCursorPos = 1;
+			}
 		}
 	}
 
@@ -792,7 +797,7 @@ void CFrameEditor::OnLButtonDown(UINT nFlags, CPoint point)
 				else
 					m_selection.m_cpStart.m_iChannel = m_selection.m_cpEnd.m_iChannel = Chan;
 				m_bSelecting = false;
-				m_pView->SetFocus();
+				// m_pView->SetFocus();
 			}
 		}
 		else {
@@ -983,14 +988,9 @@ void CFrameEditor::EnableInput()
 	// Set focus and enable input, input is disabled when focus is lost
 	SetFocus();
 
-	const int Track = m_pMainFrame->GetSelectedTrack();
-	const int Frame = m_pView->GetSelectedFrame();
-	const int Channel = m_pView->GetSelectedChannel();
-
 	m_bInputEnable = true;
 	m_bCursor = true;
 	m_iCursorPos = 0;
-	m_iNewPattern = m_pDocument->GetPatternAtFrame(Track, Frame, Channel);
 
 	SetTimer(0, 500, NULL);	// Cursor timer
 

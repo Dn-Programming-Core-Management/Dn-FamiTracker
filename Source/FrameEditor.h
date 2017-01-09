@@ -156,7 +156,6 @@ private:
 	int		m_iHiglightLine;
 	int		m_iFirstChannel;
 	int		m_iCursorPos;
-	int		m_iNewPattern;
 	int		m_iRowsVisible;
 	int		m_iMiddleRow;
 	bool	m_bInputEnable;

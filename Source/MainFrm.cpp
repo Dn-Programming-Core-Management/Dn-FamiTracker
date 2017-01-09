@@ -1508,7 +1508,7 @@ void CMainFrame::OnBnClickedDecFrame()
 
 bool CMainFrame::ChangeAllPatterns() const
 {
-	return m_wndFrameControls.IsDlgButtonChecked(IDC_CHANGE_ALL) != 0;
+	return m_wndFrameControls.IsDlgButtonChecked(IDC_CHANGE_ALL) != 0 && !GetFrameEditor()->IsSelecting();		// // //
 }
 
 void CMainFrame::OnKeyRepeat()
