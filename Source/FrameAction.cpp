@@ -47,7 +47,29 @@ void CFrameEditorState::ApplyState(CFamiTrackerView *pView) const
 	IsSelecting ? pEditor->SetSelection(OriginalSelection) : pEditor->CancelSelection();
 }
 
+int CFrameEditorState::GetFrameStart() const
+{
+	return IsSelecting ? Selection.GetFrameStart() : Cursor.m_iFrame;
+}
+
+int CFrameEditorState::GetFrameEnd() const
+{
+	return IsSelecting ? Selection.GetFrameEnd() : Cursor.m_iFrame;
+}
+
+int CFrameEditorState::GetChanStart() const
+{
+	return IsSelecting ? Selection.GetChanStart() : Cursor.m_iChannel;
+}
+
+int CFrameEditorState::GetChanEnd() const
+{
+	return IsSelecting ? Selection.GetChanEnd() : Cursor.m_iChannel;
+}
+
 #define STATE_EXPAND(st) (st)->Track, (st)->Cursor.m_iFrame, (st)->Cursor.m_iChannel
+
+
 
 // CFrameAction ///////////////////////////////////////////////////////////////////
 //
@@ -78,6 +100,8 @@ void CFrameAction::SaveUndoState(const CMainFrame *pMainFrm)		// // //
 {
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView());
 	m_pUndoState = new CFrameEditorState {pView, pMainFrm->GetSelectedTrack()};		// // //
+	m_itFrames = make_int_range(m_pUndoState->GetFrameStart(), m_pUndoState->GetFrameEnd());
+	m_itChannels = make_int_range(m_pUndoState->GetChanStart(), m_pUndoState->GetChanEnd());
 }
 
 void CFrameAction::SaveRedoState(const CMainFrame *pMainFrm)		// // //
@@ -252,7 +276,8 @@ bool CFActionSetPattern::Merge(const CAction *Other)		// // //
 {
 	auto pAction = dynamic_cast<const CFActionSetPattern*>(Other);
 	if (!pAction) return false;
-	if (m_pUndoState->Track != pAction->m_pUndoState->Track)
+	if (m_pUndoState->Track != pAction->m_pUndoState->Track ||
+		m_itFrames != pAction->m_itFrames || m_itChannels != pAction->m_itChannels)
 		return false;
 
 	*m_pRedoState = *pAction->m_pRedoState;
@@ -284,32 +309,46 @@ void CFActionSetPatternAll::Redo(CMainFrame *pMainFrm) const
 
 bool CFActionChangePattern::SaveState(const CMainFrame *pMainFrm)
 {
+	if (!m_iPatternOffset)
+		return false;
 	const CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	m_iOldPattern = pDoc->GetPatternAtFrame(STATE_EXPAND(m_pUndoState));
-	return ClipPattern(m_iOldPattern + m_iPatternOffset) != m_iOldPattern;
+	m_pClipData = pMainFrm->GetFrameEditor()->Copy();
+	return true;
 }
 
 void CFActionChangePattern::Undo(CMainFrame *pMainFrm) const
 {
-	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	pDoc->SetPatternAtFrame(STATE_EXPAND(m_pUndoState), m_iOldPattern);
+	pMainFrm->GetFrameEditor()->PasteAt(m_pUndoState->Track, m_pClipData, m_pUndoState->Selection.m_cpStart);
 }
 
 void CFActionChangePattern::Redo(CMainFrame *pMainFrm) const
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	pDoc->SetPatternAtFrame(STATE_EXPAND(m_pUndoState), ClipPattern(m_iOldPattern + m_iPatternOffset));
+	const int f0 = m_pUndoState->GetFrameStart();
+	const int c0 = m_pUndoState->IsSelecting ? m_pUndoState->GetChanStart() : 0; // copies entire row by default
+	for (int f : m_itFrames) for (int c : m_itChannels) {
+		int Frame = m_pClipData->GetFrame(f - f0, c - c0);
+		int NewFrame = ClipPattern(Frame + m_iPatternOffset);
+		if (NewFrame == Frame)
+			m_bOverflow = true;
+		pDoc->SetPatternAtFrame(m_pUndoState->Track, f, c, NewFrame);
+	}
 }
 
 bool CFActionChangePattern::Merge(const CAction *Other)		// // //
 {
 	auto pAction = dynamic_cast<const CFActionChangePattern*>(Other);
 	if (!pAction) return false;
-	if (m_pUndoState->Track != pAction->m_pUndoState->Track)
+	if (m_pUndoState->Track != pAction->m_pUndoState->Track ||
+		m_itFrames != pAction->m_itFrames || m_itChannels != pAction->m_itChannels)
+		return false;
+	if (m_bOverflow && m_iPatternOffset * pAction->m_iPatternOffset < 0) // different directions
 		return false;
 
 	*m_pRedoState = *pAction->m_pRedoState;
-	m_iPatternOffset = ClipPattern(ClipPattern(m_iOldPattern + m_iPatternOffset) + pAction->m_iPatternOffset) - m_iOldPattern;
+	m_iPatternOffset += pAction->m_iPatternOffset;
+	if (pAction->m_bOverflow)
+		m_bOverflow = true;
 	return true;
 }
 

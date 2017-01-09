@@ -592,6 +592,7 @@
     <ClInclude Include="Source\BookmarkManager.h" />
     <ClInclude Include="Source\BookmarkDlg.h" />
     <ClInclude Include="Source\FrameEditorTypes.h" />
+    <ClInclude Include="Source\IntRange.h" />
     <ClInclude Include="Source\NoteQueue.h" />
     <ClInclude Include="Source\PatternComponent.h" />
     <ClInclude Include="Source\RegisterState.h" />
