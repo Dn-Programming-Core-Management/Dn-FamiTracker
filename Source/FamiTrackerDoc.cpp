@@ -2176,7 +2176,7 @@ void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Vers
 		for (unsigned i = 0; i < Items; ++i) try {
 			unsigned Row;
 			if (m_iFileVersion == 0x0200 || Version >= 6)
-				Row = pDocFile->GetBlockChar();
+				Row = static_cast<unsigned char>(pDocFile->GetBlockChar());
 			else
 				Row = AssertRange(pDocFile->GetBlockInt(), 0, 0xFF, "Row index");		// // //
 
