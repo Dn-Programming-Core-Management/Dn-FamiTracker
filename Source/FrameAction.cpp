@@ -304,6 +304,19 @@ void CFActionSetPatternAll::Redo(CMainFrame *pMainFrm) const
 		pDoc->SetPatternAtFrame(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, i, m_iNewPattern);
 }
 
+bool CFActionSetPatternAll::Merge(const CAction *Other)		// // //
+{
+	auto pAction = dynamic_cast<const CFActionSetPatternAll*>(Other);
+	if (!pAction) return false;
+	if (m_pUndoState->Track != pAction->m_pUndoState->Track ||
+		m_pUndoState->Cursor.m_iFrame != pAction->m_pUndoState->Cursor.m_iFrame)
+		return false;
+
+	*m_pRedoState = *pAction->m_pRedoState;
+	m_iNewPattern = pAction->m_iNewPattern;
+	return true;
+}
+
 
 
 bool CFActionChangePattern::SaveState(const CMainFrame *pMainFrm)
@@ -354,6 +367,8 @@ bool CFActionChangePattern::Merge(const CAction *Other)		// // //
 
 bool CFActionChangePatternAll::SaveState(const CMainFrame *pMainFrm)
 {
+	if (!m_iPatternOffset)
+		return false;
 	m_pRowClipData = pMainFrm->GetFrameEditor()->CopyFrame(m_pUndoState->Cursor.m_iFrame);
 	return true;
 }
@@ -366,9 +381,30 @@ void CFActionChangePatternAll::Undo(CMainFrame *pMainFrm) const
 void CFActionChangePatternAll::Redo(CMainFrame *pMainFrm) const
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	for (int i = 0; i < m_pRowClipData->ClipInfo.Channels; ++i)
-		pDoc->SetPatternAtFrame(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, i,
-								ClipPattern(m_pRowClipData->GetFrame(0, i) + m_iPatternOffset));
+	for (int i = 0; i < m_pRowClipData->ClipInfo.Channels; ++i) {
+		int Frame = m_pRowClipData->GetFrame(0, i);
+		int NewFrame = ClipPattern(m_pRowClipData->GetFrame(0, i) + m_iPatternOffset);
+		if (NewFrame == Frame)
+			m_bOverflow = true;
+		pDoc->SetPatternAtFrame(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, i, NewFrame);
+	}
+}
+
+bool CFActionChangePatternAll::Merge(const CAction *Other)		// // //
+{
+	auto pAction = dynamic_cast<const CFActionChangePatternAll*>(Other);
+	if (!pAction) return false;
+	if (m_pUndoState->Track != pAction->m_pUndoState->Track ||
+		m_pUndoState->Cursor.m_iFrame != pAction->m_pUndoState->Cursor.m_iFrame)
+		return false;
+	if (m_bOverflow && m_iPatternOffset * pAction->m_iPatternOffset < 0) // different directions
+		return false;
+
+	*m_pRedoState = *pAction->m_pRedoState;
+	m_iPatternOffset += pAction->m_iPatternOffset;
+	if (pAction->m_bOverflow)
+		m_bOverflow = true;
+	return true;
 }
 
 

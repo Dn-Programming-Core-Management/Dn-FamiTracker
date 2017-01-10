@@ -516,6 +516,7 @@ void CFrameEditor::OnKillFocus(CWnd* pNewWnd)
 {
 	CWnd::OnKillFocus(pNewWnd);
 	m_bInputEnable = false;
+	CancelSelection();		// // //
 	InvalidateFrameData();
 	Invalidate();
 	theApp.GetAccelerator()->SetAccelerator(NULL);
