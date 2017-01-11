@@ -155,8 +155,8 @@ std::pair<EffTable, EffTable> MakeEffectConversion(std::initializer_list<std::pa
 }
 
 static const auto EFF_CONVERSION_050 = MakeEffectConversion({
-	{EF_SUNSOFT_ENV_LO,		EF_SUNSOFT_ENV_TYPE},
-	{EF_SUNSOFT_ENV_TYPE,	EF_SUNSOFT_ENV_LO},
+//	{EF_SUNSOFT_ENV_LO,		EF_SUNSOFT_ENV_TYPE},
+//	{EF_SUNSOFT_ENV_TYPE,	EF_SUNSOFT_ENV_LO},
 	{EF_SUNSOFT_NOISE,		EF_NOTE_RELEASE},
 	{EF_VRC7_PORT,			EF_GROOVE},
 	{EF_VRC7_WRITE,			EF_TRANSPOSE},
