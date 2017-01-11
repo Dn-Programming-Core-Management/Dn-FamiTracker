@@ -72,7 +72,7 @@ protected:
 
 protected:
 	unsigned char m_iChannel;
-	unsigned char m_iPatch;
+	char m_iPatch;
 
 	bool	m_bHold;
 

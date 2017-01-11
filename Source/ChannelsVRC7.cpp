@@ -59,7 +59,7 @@ void CChannelHandlerVRC7::SetChannelID(int ID)
 
 void CChannelHandlerVRC7::SetPatch(unsigned char Patch)		// // //
 {
-	m_iPatch = Patch;
+	m_iDutyPeriod = Patch;
 }
 
 void CChannelHandlerVRC7::SetCustomReg(size_t Index, unsigned char Val)		// // //
@@ -81,8 +81,7 @@ bool CChannelHandlerVRC7::HandleEffect(effect_t EffNum, unsigned char EffParam)
 {
 	switch (EffNum) {
 	case EF_DUTY_CYCLE:
-		SetPatch(EffParam);		// // // 050B
-		// VRC7 Vxx is stateless!
+		m_iPatch = EffParam;		// // // 050B
 		break;
 	case EF_VRC7_PORT:		// // // 050B
 		m_iCustomPort = EffParam & 0x07;
@@ -272,8 +271,13 @@ void CVRC7Channel::RefreshChannel()
 	int Bnum = !m_bLinearPitch ? m_iOctave :
 		((GetPeriod() + GetVibrato() - GetFinePitch() - GetPitch()) >> LINEAR_PITCH_AMOUNT) / NOTE_RANGE;
 
+	if (m_iPatch != -1) {		// // //
+		m_iDutyPeriod = m_iPatch;
+		m_iPatch = -1;
+	}
+
 	// Write custom instrument
-	if (m_iPatch == 0 && (m_iCommand == CMD_NOTE_TRIGGER || m_bRegsDirty)) {
+	if (m_iDutyPeriod == 0 && (m_iCommand == CMD_NOTE_TRIGGER || m_bRegsDirty)) {
 		for (int i = 0; i < 8; ++i)
 			RegWrite(i, m_iPatchRegs[i]);
 	}
@@ -307,7 +311,7 @@ void CVRC7Channel::RefreshChannel()
 	
 	if (m_iCommand != CMD_NOTE_HALT) {
 		// Select volume & patch
-		RegWrite(0x30 + m_iChannel, (m_iPatch << 4) | (Volume ^ 0x0F));		// // //
+		RegWrite(0x30 + m_iChannel, (m_iDutyPeriod << 4) | (Volume ^ 0x0F));		// // //
 	}
 
 	RegWrite(0x20 + m_iChannel, ((Fnum >> 8) & 1) | (Bnum << 1) | Cmd);
@@ -324,10 +328,10 @@ void CVRC7Channel::ClearRegisters()
 
 	m_iNote = 0;
 	m_iOctave = m_iOldOctave = -1;		// // //
+	m_iPatch = -1;
 	m_iEffect = EF_NONE;
 
 	m_iCommand = CMD_NOTE_HALT;
-	m_iPatch = 0;		// // //
 	m_iCustomPort = 0;		// // // 050B
 }
 
