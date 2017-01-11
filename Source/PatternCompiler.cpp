@@ -466,8 +466,12 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 					break;
 				case EF_DUTY_CYCLE:
 					if (ChipID == SNDCHIP_VRC7) {		// // // 050B
-						WriteData(CMD_EFF_VRC7_PATCH);
+						WriteData(Command(CMD_EFF_VRC7_PATCH));
 						WriteData(EffParam << 4);
+					}
+					else if (ChipID == SNDCHIP_S5B) {
+						WriteData(Command(CMD_EFF_DUTY));
+						WriteData(EffParam << 5);
 					}
 					else if (ChanID != CHANID_TRIANGLE && ChanID != CHANID_DPCM) {	// Not triangle and dpcm
 						WriteData(Command(CMD_EFF_DUTY));
