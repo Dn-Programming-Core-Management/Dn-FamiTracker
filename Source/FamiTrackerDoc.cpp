@@ -3088,8 +3088,8 @@ int CFamiTrackerDoc::LoadInstrument(CString FileName)
 	// Loads an instrument from file, return allocated slot or INVALID_INSTRUMENT if failed
 	//
 	int iInstMaj, iInstMin;
-	sscanf_s(INST_VERSION, "%i.%i", &iInstMaj, &iInstMin);
-	static const int I_CURRENT_VER = iInstMaj * 10 + iInstMin;
+	// // // sscanf_s(INST_VERSION, "%i.%i", &iInstMaj, &iInstMin);
+	static const int I_CURRENT_VER = 2 * 10 + 5;		// // // 050B
 	
 	int Slot = m_pInstrumentManager->GetFirstUnused();
 	try {

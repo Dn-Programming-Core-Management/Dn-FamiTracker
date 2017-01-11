@@ -42,6 +42,7 @@ CInstrumentN163::CInstrumentN163() : CSeqInstrument(INST_N163),		// // //
 	m_iSamples(),
 	m_iWaveSize(DEFAULT_WAVE_SIZE),
 	m_iWavePos(0),
+	m_bAutoWavePos(false),		// // // 050B
 	m_iWaveCount(1)
 {
 	for (int j = 0; j < DEFAULT_WAVE_SIZE; ++j)
@@ -126,6 +127,7 @@ void CInstrumentN163::SaveFile(CInstrumentFile *pFile)
 
 	pFile->WriteInt(WaveSize);
 	pFile->WriteInt(GetWavePos());
+	pFile->WriteInt(m_bAutoWavePos);		// // // 050B
 	pFile->WriteInt(WaveCount);
 
 	for (int i = 0; i < WaveCount; ++i) {
@@ -143,6 +145,9 @@ bool CInstrumentN163::LoadFile(CInstrumentFile *pFile, int iVersion)
 	// Read wave config
 	int WaveSize = CModuleException::AssertRangeFmt(static_cast<int>(pFile->ReadInt()), 4, MAX_WAVE_SIZE, "N163 wave size", "%i");
 	int WavePos = CModuleException::AssertRangeFmt(static_cast<int>(pFile->ReadInt()), 0, MAX_WAVE_SIZE - 1, "N163 wave position", "%i");
+	if (iVersion >= 0x250) {		// // // 050B
+		m_bAutoWavePos = pFile->ReadInt() != 0;
+	}
 	int WaveCount = CModuleException::AssertRangeFmt(static_cast<int>(pFile->ReadInt()), 1, MAX_WAVE_COUNT, "N163 wave count", "%i");
 	
 	SetWaveSize(WaveSize);

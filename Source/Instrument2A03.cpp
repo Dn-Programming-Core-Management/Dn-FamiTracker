@@ -136,26 +136,20 @@ void CInstrument2A03::SaveFile(CInstrumentFile *pFile)
 	// Sequences
 	CSeqInstrument::SaveFile(pFile);		// // //
 
-	unsigned int Count = 0;
-
-	// Count assigned keys
-	for (int i = 0; i < OCTAVE_RANGE; ++i) {	// octaves
-		for (int j = 0; j < NOTE_RANGE; ++j) {	// notes
-			Count += (GetSampleIndex(i, j) > 0) ? 1 : 0;
-		}
+	// DPCM
+	if (!m_pInstManager) {		// // //
+		pFile->WriteInt(0);
+		pFile->WriteInt(0);
+		return;
 	}
+
+	unsigned int Count = GetSampleCount();		// // // 050B
 	pFile->WriteInt(Count);
 
 	bool UsedSamples[MAX_DSAMPLES];
 	memset(UsedSamples, 0, sizeof(bool) * MAX_DSAMPLES);
 
-	// DPCM
-	if (!m_pInstManager) {		// // //
-		pFile->WriteInt(0);
-		return;
-	}
-
-	int SampleCount = 0;
+	int UsedCount = 0;
 	for (int i = 0; i < OCTAVE_RANGE; ++i) {	// octaves
 		for (int j = 0; j < NOTE_RANGE; ++j) {	// notes
 			if (unsigned char Sample = GetSampleIndex(i, j)) {
@@ -165,14 +159,14 @@ void CInstrument2A03::SaveFile(CInstrumentFile *pFile)
 				pFile->WriteChar(GetSamplePitch(i, j));
 				pFile->WriteChar(GetSampleDeltaValue(i, j));
 				if (!UsedSamples[Sample - 1])
-					++SampleCount;
+					++UsedCount;
 				UsedSamples[Sample - 1] = true;
 			}
 		}
 	}
 
 	// Write the number
-	pFile->WriteInt(SampleCount);
+	pFile->WriteInt(UsedCount);
 
 	// List of sample names
 	for (int i = 0; i < MAX_DSAMPLES; ++i) if (UsedSamples[i]) {
@@ -293,6 +287,17 @@ bool CInstrument2A03::LoadFile(CInstrumentFile *pFile, int iVersion)
 	}
 
 	return true;
+}
+
+int CInstrument2A03::GetSampleCount() const		// // // 050B
+{
+	int Count = 0;
+	for (int i = 0; i < OCTAVE_RANGE; ++i) {	// octaves
+		for (int j = 0; j < NOTE_RANGE; ++j) {	// notes
+			Count += (GetSampleIndex(i, j) > 0) ? 1 : 0;
+		}
+	}
+	return Count;
 }
 
 char CInstrument2A03::GetSampleIndex(int Octave, int Note) const

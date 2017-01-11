@@ -23,6 +23,8 @@
 
 #pragma once
 
+#include "FamiTrackerTypes.h"		// // //
+
 class CDSample;
 
 class CInstrument2A03 : public CSeqInstrument, public CInstrument2A03Interface {
@@ -39,6 +41,7 @@ public:
 
 private:
 	char	GetSample(int Octave, int Note) const { return GetSampleIndex(Octave, Note); };		// // //
+	int		GetSampleCount() const;		// // // 050B
 
 public:
 	// Samples
@@ -64,8 +67,8 @@ public:
 	LPCTSTR	GetSequenceName(int Index) const { return SEQUENCE_NAME[Index]; }		// // //
 
 private:
-	char	m_cSamples[OCTAVE_RANGE][12];				// Samples
-	char	m_cSamplePitch[OCTAVE_RANGE][12];			// Play pitch/loop
-	char	m_cSampleLoopOffset[OCTAVE_RANGE][12];		// Loop offset
-	char	m_cSampleDelta[OCTAVE_RANGE][12];			// Delta setting
+	char	m_cSamples[OCTAVE_RANGE][NOTE_RANGE];				// Samples
+	char	m_cSamplePitch[OCTAVE_RANGE][NOTE_RANGE];			// Play pitch/loop
+	char	m_cSampleLoopOffset[OCTAVE_RANGE][NOTE_RANGE];		// Loop offset
+	char	m_cSampleDelta[OCTAVE_RANGE][NOTE_RANGE];			// Delta setting
 };

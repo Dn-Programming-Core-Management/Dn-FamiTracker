@@ -68,6 +68,6 @@ private:
 	int		m_iSamples[MAX_WAVE_COUNT][MAX_WAVE_SIZE];
 	int		m_iWaveSize;
 	int		m_iWavePos;
-//	bool	m_bAutoWavePos;
+	bool	m_bAutoWavePos;		// // // 050B
 	int		m_iWaveCount;
 };
