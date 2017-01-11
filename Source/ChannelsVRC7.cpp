@@ -327,6 +327,7 @@ void CVRC7Channel::ClearRegisters()
 	m_iEffect = EF_NONE;
 
 	m_iCommand = CMD_NOTE_HALT;
+	m_iPatch = 0;		// // //
 	m_iCustomPort = 0;		// // // 050B
 }
 

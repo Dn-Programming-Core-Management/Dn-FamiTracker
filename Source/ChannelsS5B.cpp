@@ -114,10 +114,10 @@ bool CChannelHandlerS5B::HandleEffect(effect_t EffNum, unsigned char EffParam)
 	case EF_SUNSOFT_ENV_HI: // I
 		m_iEnvFreqHi = EffParam;
 		break;
-	case EF_SUNSOFT_ENV_LO: // H
+	case EF_SUNSOFT_ENV_LO: // J
 		m_iEnvFreqLo = EffParam;
 		break;
-	case EF_SUNSOFT_ENV_TYPE: // J
+	case EF_SUNSOFT_ENV_TYPE: // H
 		m_bEnvTrigger = true;		// // // 050B
 		m_iEnvType = EffParam & 0x0F;
 		m_bUpdate = true;
@@ -183,6 +183,8 @@ void CChannelHandlerS5B::ResetChannel()
 
 	m_iDefaultDuty = m_iDutyPeriod = S5B_MODE_SQUARE;
 	m_iDefaultNoise = m_iNoiseFreq = 0;		// // //
+	m_bEnvelopeEnabled = false;
+	m_iAutoEnvelopeShift = 0;
 	m_iEnvFreqHi = 0;
 	m_iEnvFreqLo = 0;
 	m_iEnvType = 0;

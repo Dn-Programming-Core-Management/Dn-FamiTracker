@@ -94,6 +94,8 @@ enum command_t {
 	CMD_EFF_TRANSPOSE,			// // //
 
 	CMD_EFF_VRC7_PATCH,			// // // 050B
+	CMD_EFF_VRC7_PORT,			// // // 050B
+	CMD_EFF_VRC7_WRITE,			// // // 050B
 
 	CMD_EFF_FDS_MOD_DEPTH,
 	CMD_EFF_FDS_MOD_RATE_HI,
@@ -640,8 +642,8 @@ unsigned char CPatternCompiler::Command(int cmd) const
 	if (!m_pDocument->ExpansionEnabled(SNDCHIP_N163) && cmd > CMD_EFF_N163_WAVE_BUFFER) cmd -= sizeof(N163_EFFECTS);
 	// MMC5
 	if (!m_pDocument->ExpansionEnabled(SNDCHIP_FDS) && cmd > CMD_EFF_FDS_MOD_BIAS) cmd -= sizeof(FDS_EFFECTS);
-	if (!m_pDocument->ExpansionEnabled(SNDCHIP_VRC7) && cmd > CMD_EFF_VRC7_PATCH) cmd -= sizeof(VRC7_EFFECTS);
-	// VRC7, VRC6
+	if (!m_pDocument->ExpansionEnabled(SNDCHIP_VRC7) && cmd > CMD_EFF_VRC7_WRITE) cmd -= sizeof(VRC7_EFFECTS) + 1;
+	// VRC6
 	return (cmd << 1) | 0x80;
 }
 
