@@ -164,8 +164,6 @@ BEGIN_MESSAGE_MAP(CFamiTrackerView, CView)
 	ON_COMMAND(ID_TRACKER_EDIT, OnTrackerEdit)
 	ON_COMMAND(ID_TRACKER_TOGGLECHANNEL, OnTrackerToggleChannel)
 	ON_COMMAND(ID_TRACKER_SOLOCHANNEL, OnTrackerSoloChannel)
-	ON_COMMAND(ID_CMD_OCTAVE_NEXT, OnNextOctave)
-	ON_COMMAND(ID_CMD_OCTAVE_PREVIOUS, OnPreviousOctave)
 	ON_COMMAND(ID_CMD_INCREASESTEPSIZE, OnIncreaseStepSize)
 	ON_COMMAND(ID_CMD_DECREASESTEPSIZE, OnDecreaseStepSize)
 	ON_COMMAND(ID_CMD_STEP_UP, OnOneStepUp)
@@ -274,7 +272,6 @@ CFamiTrackerView::CFamiTrackerView() :
 	m_bMaskVolume(true),
 	m_bSwitchToInstrument(false),
 	m_iPastePos(PASTE_CURSOR),		// // //
-	m_iOctave(3),
 	m_iLastNote(NONE),		// // //
 	m_iLastVolume(MAX_VOLUME),
 	m_iLastInstrument(0),
@@ -2452,9 +2449,9 @@ void CFamiTrackerView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	if (GetFocus() != this)
 		return;
 
-	if (auto pFrame = static_cast<CMainFrame*>(GetParentFrame()))		// // //
-		if (pFrame->TypeInstrumentNumber(ConvertKeyToHex(nChar)))
-			return;
+	auto pFrame = static_cast<CMainFrame*>(GetParentFrame());		// // //
+	if (pFrame && pFrame->TypeInstrumentNumber(ConvertKeyToHex(nChar)))
+		return;
 
 	if (nChar >= VK_NUMPAD0 && nChar <= VK_NUMPAD9) {
 		// Switch instrument
@@ -2512,14 +2509,14 @@ void CFamiTrackerView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		// // //
 
 		// Octaves, unless overridden
-		case VK_F2: SetOctave(0); break;
-		case VK_F3: SetOctave(1); break;
-		case VK_F4: SetOctave(2); break;
-		case VK_F5: SetOctave(3); break;
-		case VK_F6: SetOctave(4); break;
-		case VK_F7: SetOctave(5); break;
-		case VK_F8: SetOctave(6); break;
-		case VK_F9: SetOctave(7); break;
+		case VK_F2: pFrame->SelectOctave(0); break;
+		case VK_F3: pFrame->SelectOctave(1); break;
+		case VK_F4: pFrame->SelectOctave(2); break;
+		case VK_F5: pFrame->SelectOctave(3); break;
+		case VK_F6: pFrame->SelectOctave(4); break;
+		case VK_F7: pFrame->SelectOctave(5); break;
+		case VK_F8: pFrame->SelectOctave(6); break;
+		case VK_F9: pFrame->SelectOctave(7); break;
 
 		default:
 			HandleKeyboardInput(nChar);
@@ -2993,7 +2990,7 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 		case C_EFF1_PARAM2:	Column = C_EFF1_PARAM2; Index = 0; break;
 		case C_EFF2_PARAM2:	Column = C_EFF1_PARAM2; Index = 1; break;
 		case C_EFF3_PARAM2:	Column = C_EFF1_PARAM2; Index = 2; break;
-		case C_EFF4_PARAM2:	Column = C_EFF1_PARAM2; Index = 3; break;			
+		case C_EFF4_PARAM2:	Column = C_EFF1_PARAM2; Index = 3; break;
 	}
 
 	if (Column != C_NOTE && !m_bEditEnable)		// // //
@@ -3022,7 +3019,7 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 			}
 			else if (CheckEchoKey(nChar)) {		// // //
 				Note.Note = ECHO;
-				Note.Octave = m_iOctave;
+				Note.Octave = static_cast<CMainFrame*>(GetParentFrame())->GetSelectedOctave();		// // //
 				if (Note.Octave > ECHO_BUFFER_LENGTH) Note.Octave = ECHO_BUFFER_LENGTH;
 				if (!m_bMaskInstrument)
 					Note.Instrument = GetInstrument();
@@ -3220,6 +3217,7 @@ int CFamiTrackerView::TranslateKeyModplug(unsigned char Key) const
 
 	int	KeyNote = 0, KeyOctave = 0;
 	int Track = static_cast<CMainFrame*>(GetParentFrame())->GetSelectedTrack();
+	int Octave = static_cast<CMainFrame*>(GetParentFrame())->GetSelectedOctave();		// // // 050B
 
 	stChanNote NoteData;
 	pDoc->GetNoteData(Track, m_pPatternEditor->GetFrame(), m_pPatternEditor->GetChannel(), m_pPatternEditor->GetRow(), &NoteData);
@@ -3233,42 +3231,42 @@ int CFamiTrackerView::TranslateKeyModplug(unsigned char Key) const
 
 	// Convert key to a note, Modplug style
 	switch (Key) {
-		case 81:	KeyNote = NOTE_C;	KeyOctave = m_iOctave;	break;	// Q		// // //
-		case 87:	KeyNote = NOTE_Cs;	KeyOctave = m_iOctave;	break;	// W
-		case 69:	KeyNote = NOTE_D;	KeyOctave = m_iOctave;	break;	// E
-		case 82:	KeyNote = NOTE_Ds;	KeyOctave = m_iOctave;	break;	// R
-		case 84:	KeyNote = NOTE_E;	KeyOctave = m_iOctave;	break;	// T
-		case 89:	KeyNote = NOTE_F;	KeyOctave = m_iOctave;	break;	// Y
-		case 85:	KeyNote = NOTE_Fs;	KeyOctave = m_iOctave;	break;	// U
-		case 73:	KeyNote = NOTE_G;	KeyOctave = m_iOctave;	break;	// I
-		case 79:	KeyNote = NOTE_Gs;	KeyOctave = m_iOctave;	break;	// O
-		case 80:	KeyNote = NOTE_A;	KeyOctave = m_iOctave;	break;	// P
-		case 219:	KeyNote = NOTE_As;	KeyOctave = m_iOctave;	break;	// [{		// // //
-		case 221:	KeyNote = NOTE_B;	KeyOctave = m_iOctave;	break;	// ]}		// // //
+		case 81:	KeyNote = NOTE_C;	KeyOctave = Octave;	break;	// Q		// // //
+		case 87:	KeyNote = NOTE_Cs;	KeyOctave = Octave;	break;	// W
+		case 69:	KeyNote = NOTE_D;	KeyOctave = Octave;	break;	// E
+		case 82:	KeyNote = NOTE_Ds;	KeyOctave = Octave;	break;	// R
+		case 84:	KeyNote = NOTE_E;	KeyOctave = Octave;	break;	// T
+		case 89:	KeyNote = NOTE_F;	KeyOctave = Octave;	break;	// Y
+		case 85:	KeyNote = NOTE_Fs;	KeyOctave = Octave;	break;	// U
+		case 73:	KeyNote = NOTE_G;	KeyOctave = Octave;	break;	// I
+		case 79:	KeyNote = NOTE_Gs;	KeyOctave = Octave;	break;	// O
+		case 80:	KeyNote = NOTE_A;	KeyOctave = Octave;	break;	// P
+		case 219:	KeyNote = NOTE_As;	KeyOctave = Octave;	break;	// [{		// // //
+		case 221:	KeyNote = NOTE_B;	KeyOctave = Octave;	break;	// ]}		// // //
 
-		case 65:	KeyNote = NOTE_C;	KeyOctave = m_iOctave + 1;	break;	// A
-		case 83:	KeyNote = NOTE_Cs;	KeyOctave = m_iOctave + 1;	break;	// S
-		case 68:	KeyNote = NOTE_D;	KeyOctave = m_iOctave + 1;	break;	// D
-		case 70:	KeyNote = NOTE_Ds;	KeyOctave = m_iOctave + 1;	break;	// F
-		case 71:	KeyNote = NOTE_E;	KeyOctave = m_iOctave + 1;	break;	// G
-		case 72:	KeyNote = NOTE_F;	KeyOctave = m_iOctave + 1;	break;	// H
-		case 74:	KeyNote = NOTE_Fs;	KeyOctave = m_iOctave + 1;	break;	// J
-		case 75:	KeyNote = NOTE_G;	KeyOctave = m_iOctave + 1;	break;	// K
-		case 76:	KeyNote = NOTE_Gs;	KeyOctave = m_iOctave + 1;	break;	// L
-		case 186:	KeyNote = NOTE_A;	KeyOctave = m_iOctave + 1;	break;	// ;:		// // //
-		case 222:	KeyNote = NOTE_As;	KeyOctave = m_iOctave + 1;	break;	// '"
-		//case 191:	KeyNote = NOTE_B;	KeyOctave = m_iOctave + 1;	break;	// // //
+		case 65:	KeyNote = NOTE_C;	KeyOctave = Octave + 1;	break;	// A
+		case 83:	KeyNote = NOTE_Cs;	KeyOctave = Octave + 1;	break;	// S
+		case 68:	KeyNote = NOTE_D;	KeyOctave = Octave + 1;	break;	// D
+		case 70:	KeyNote = NOTE_Ds;	KeyOctave = Octave + 1;	break;	// F
+		case 71:	KeyNote = NOTE_E;	KeyOctave = Octave + 1;	break;	// G
+		case 72:	KeyNote = NOTE_F;	KeyOctave = Octave + 1;	break;	// H
+		case 74:	KeyNote = NOTE_Fs;	KeyOctave = Octave + 1;	break;	// J
+		case 75:	KeyNote = NOTE_G;	KeyOctave = Octave + 1;	break;	// K
+		case 76:	KeyNote = NOTE_Gs;	KeyOctave = Octave + 1;	break;	// L
+		case 186:	KeyNote = NOTE_A;	KeyOctave = Octave + 1;	break;	// ;:		// // //
+		case 222:	KeyNote = NOTE_As;	KeyOctave = Octave + 1;	break;	// '"
+		//case 191:	KeyNote = NOTE_B;	KeyOctave = Octave + 1;	break;	// // //
 
-		case 90:	KeyNote = NOTE_C;	KeyOctave = m_iOctave + 2;	break;	// Z
-		case 88:	KeyNote = NOTE_Cs;	KeyOctave = m_iOctave + 2;	break;	// X
-		case 67:	KeyNote = NOTE_D;	KeyOctave = m_iOctave + 2;	break;	// C
-		case 86:	KeyNote = NOTE_Ds;	KeyOctave = m_iOctave + 2;	break;	// V
-		case 66:	KeyNote = NOTE_E;	KeyOctave = m_iOctave + 2;	break;	// B
-		case 78:	KeyNote = NOTE_F;	KeyOctave = m_iOctave + 2;	break;	// N
-		case 77:	KeyNote = NOTE_Fs;	KeyOctave = m_iOctave + 2;	break;	// M
-		case 188:	KeyNote = NOTE_G;	KeyOctave = m_iOctave + 2;	break;	// ,<
-		case 190:	KeyNote = NOTE_Gs;	KeyOctave = m_iOctave + 2;	break;	// .>
-		case 191:	KeyNote = NOTE_A;	KeyOctave = m_iOctave + 2;	break;	// /?		// // //
+		case 90:	KeyNote = NOTE_C;	KeyOctave = Octave + 2;	break;	// Z
+		case 88:	KeyNote = NOTE_Cs;	KeyOctave = Octave + 2;	break;	// X
+		case 67:	KeyNote = NOTE_D;	KeyOctave = Octave + 2;	break;	// C
+		case 86:	KeyNote = NOTE_Ds;	KeyOctave = Octave + 2;	break;	// V
+		case 66:	KeyNote = NOTE_E;	KeyOctave = Octave + 2;	break;	// B
+		case 78:	KeyNote = NOTE_F;	KeyOctave = Octave + 2;	break;	// N
+		case 77:	KeyNote = NOTE_Fs;	KeyOctave = Octave + 2;	break;	// M
+		case 188:	KeyNote = NOTE_G;	KeyOctave = Octave + 2;	break;	// ,<
+		case 190:	KeyNote = NOTE_Gs;	KeyOctave = Octave + 2;	break;	// .>
+		case 191:	KeyNote = NOTE_A;	KeyOctave = Octave + 2;	break;	// /?		// // //
 	}
 
 	// Invalid
@@ -3286,50 +3284,51 @@ int CFamiTrackerView::TranslateKeyModplug(unsigned char Key) const
 int CFamiTrackerView::TranslateKeyDefault(unsigned char Key) const
 {
 	// Default conversion
-	int	KeyNote = 0, KeyOctave = 0;
+	int	KeyNote = 0;
+	int KeyOctave = static_cast<CMainFrame*>(GetParentFrame())->GetSelectedOctave();		// // // 050B
 
 	// Convert key to a note
 	switch (Key) {
-		case 50:	KeyNote = NOTE_Cs;	KeyOctave = m_iOctave + 1;	break;	// 2		// // //
-		case 51:	KeyNote = NOTE_Ds;	KeyOctave = m_iOctave + 1;	break;	// 3
-		case 53:	KeyNote = NOTE_Fs;	KeyOctave = m_iOctave + 1;	break;	// 5
-		case 54:	KeyNote = NOTE_Gs;	KeyOctave = m_iOctave + 1;	break;	// 6
-		case 55:	KeyNote = NOTE_As;	KeyOctave = m_iOctave + 1;	break;	// 7
-		case 57:	KeyNote = NOTE_Cs;	KeyOctave = m_iOctave + 2;	break;	// 9
-		case 48:	KeyNote = NOTE_Ds;	KeyOctave = m_iOctave + 2;	break;	// 0
-		case 187:	KeyNote = NOTE_Fs;	KeyOctave = m_iOctave + 2;	break;	// =+
+		case 50:	KeyNote = NOTE_Cs;	KeyOctave += 1;	break;	// 2		// // //
+		case 51:	KeyNote = NOTE_Ds;	KeyOctave += 1;	break;	// 3
+		case 53:	KeyNote = NOTE_Fs;	KeyOctave += 1;	break;	// 5
+		case 54:	KeyNote = NOTE_Gs;	KeyOctave += 1;	break;	// 6
+		case 55:	KeyNote = NOTE_As;	KeyOctave += 1;	break;	// 7
+		case 57:	KeyNote = NOTE_Cs;	KeyOctave += 2;	break;	// 9
+		case 48:	KeyNote = NOTE_Ds;	KeyOctave += 2;	break;	// 0
+		case 187:	KeyNote = NOTE_Fs;	KeyOctave += 2;	break;	// =+
 
-		case 81:	KeyNote = NOTE_C;	KeyOctave = m_iOctave + 1;	break;	// Q
-		case 87:	KeyNote = NOTE_D;	KeyOctave = m_iOctave + 1;	break;	// W
-		case 69:	KeyNote = NOTE_E;	KeyOctave = m_iOctave + 1;	break;	// E
-		case 82:	KeyNote = NOTE_F;	KeyOctave = m_iOctave + 1;	break;	// R
-		case 84:	KeyNote = NOTE_G;	KeyOctave = m_iOctave + 1;	break;	// T
-		case 89:	KeyNote = NOTE_A;	KeyOctave = m_iOctave + 1;	break;	// Y
-		case 85:	KeyNote = NOTE_B;	KeyOctave = m_iOctave + 1;	break;	// U
-		case 73:	KeyNote = NOTE_C;	KeyOctave = m_iOctave + 2;	break;	// I
-		case 79:	KeyNote = NOTE_D;	KeyOctave = m_iOctave + 2;	break;	// O
-		case 80:	KeyNote = NOTE_E;	KeyOctave = m_iOctave + 2;	break;	// P
-		case 219:	KeyNote = NOTE_F;	KeyOctave = m_iOctave + 2;	break;	// [{		// // //
-		case 221:	KeyNote = NOTE_G;	KeyOctave = m_iOctave + 2;	break;	// ]}		// // //
+		case 81:	KeyNote = NOTE_C;	KeyOctave += 1;	break;	// Q
+		case 87:	KeyNote = NOTE_D;	KeyOctave += 1;	break;	// W
+		case 69:	KeyNote = NOTE_E;	KeyOctave += 1;	break;	// E
+		case 82:	KeyNote = NOTE_F;	KeyOctave += 1;	break;	// R
+		case 84:	KeyNote = NOTE_G;	KeyOctave += 1;	break;	// T
+		case 89:	KeyNote = NOTE_A;	KeyOctave += 1;	break;	// Y
+		case 85:	KeyNote = NOTE_B;	KeyOctave += 1;	break;	// U
+		case 73:	KeyNote = NOTE_C;	KeyOctave += 2;	break;	// I
+		case 79:	KeyNote = NOTE_D;	KeyOctave += 2;	break;	// O
+		case 80:	KeyNote = NOTE_E;	KeyOctave += 2;	break;	// P
+		case 219:	KeyNote = NOTE_F;	KeyOctave += 2;	break;	// [{		// // //
+		case 221:	KeyNote = NOTE_G;	KeyOctave += 2;	break;	// ]}		// // //
 
-		case 83:	KeyNote = NOTE_Cs;	KeyOctave = m_iOctave;		break;	// S
-		case 68:	KeyNote = NOTE_Ds;	KeyOctave = m_iOctave;		break;	// D
-		case 71:	KeyNote = NOTE_Fs;	KeyOctave = m_iOctave;		break;	// G
-		case 72:	KeyNote = NOTE_Gs;	KeyOctave = m_iOctave;		break;	// H
-		case 74:	KeyNote = NOTE_As;	KeyOctave = m_iOctave;		break;	// J
-		case 76:	KeyNote = NOTE_Cs;	KeyOctave = m_iOctave + 1;	break;	// L
-		case 186:	KeyNote = NOTE_Ds;	KeyOctave = m_iOctave + 1;	break;	// ;:		// // //
+		case 83:	KeyNote = NOTE_Cs;					break;	// S
+		case 68:	KeyNote = NOTE_Ds;					break;	// D
+		case 71:	KeyNote = NOTE_Fs;					break;	// G
+		case 72:	KeyNote = NOTE_Gs;					break;	// H
+		case 74:	KeyNote = NOTE_As;					break;	// J
+		case 76:	KeyNote = NOTE_Cs;	KeyOctave += 1;	break;	// L
+		case 186:	KeyNote = NOTE_Ds;	KeyOctave += 1;	break;	// ;:		// // //
 
-		case 90:	KeyNote = NOTE_C;	KeyOctave = m_iOctave;		break;	// Z
-		case 88:	KeyNote = NOTE_D;	KeyOctave = m_iOctave;		break;	// X
-		case 67:	KeyNote = NOTE_E;	KeyOctave = m_iOctave;		break;	// C
-		case 86:	KeyNote = NOTE_F;	KeyOctave = m_iOctave;		break;	// V
-		case 66:	KeyNote = NOTE_G;	KeyOctave = m_iOctave;		break;	// B
-		case 78:	KeyNote = NOTE_A;	KeyOctave = m_iOctave;		break;	// N
-		case 77:	KeyNote = NOTE_B;	KeyOctave = m_iOctave;		break;	// M
-		case 188:	KeyNote = NOTE_C;	KeyOctave = m_iOctave + 1;	break;	// ,<
-		case 190:	KeyNote = NOTE_D;	KeyOctave = m_iOctave + 1;	break;	// .>
-		case 191:	KeyNote = NOTE_E;	KeyOctave = m_iOctave + 1;	break;	// /?		// // //
+		case 90:	KeyNote = NOTE_C;					break;	// Z
+		case 88:	KeyNote = NOTE_D;					break;	// X
+		case 67:	KeyNote = NOTE_E;					break;	// C
+		case 86:	KeyNote = NOTE_F;					break;	// V
+		case 66:	KeyNote = NOTE_G;					break;	// B
+		case 78:	KeyNote = NOTE_A;					break;	// N
+		case 77:	KeyNote = NOTE_B;					break;	// M
+		case 188:	KeyNote = NOTE_C;	KeyOctave += 1;	break;	// ,<
+		case 190:	KeyNote = NOTE_D;	KeyOctave += 1;	break;	// .>
+		case 191:	KeyNote = NOTE_E;	KeyOctave += 1;	break;	// /?		// // //
 	}
 
 	// Invalid
@@ -3576,24 +3575,10 @@ void CFamiTrackerView::OnTrackerRecorderSettings()
 		theApp.GetSoundGenerator()->SetRecordSetting(dlg.GetRecordSetting());
 }
 
-void CFamiTrackerView::OnNextOctave()
+void CFamiTrackerView::AdjustOctave(int Delta)		// // //
 {
-	if (m_iOctave < 7)
-		SetOctave(m_iOctave + 1);
-}
-
-void CFamiTrackerView::OnPreviousOctave()
-{
-	if (m_iOctave > 0)
-		SetOctave(m_iOctave - 1);
-}
-
-void CFamiTrackerView::SetOctave(unsigned int iOctave)
-{
-	for (auto &x : m_iNoteCorrection)		// // //
-		x.second -= iOctave - m_iOctave;
-	m_iOctave = iOctave;
-	static_cast<CMainFrame*>(GetParentFrame())->DisplayOctave();
+	for (auto &x : m_iNoteCorrection)
+		x.second -= Delta;
 }
 
 int CFamiTrackerView::GetSelectedChipType() const

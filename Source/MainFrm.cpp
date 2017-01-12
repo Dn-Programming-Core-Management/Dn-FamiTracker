@@ -368,6 +368,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_KRAID4, OnEasterEggKraid4)
 	ON_COMMAND(ID_KRAID5, OnEasterEggKraid5)
 	// // // From CFamiTrackerView
+	ON_COMMAND(ID_CMD_OCTAVE_NEXT, OnNextOctave)
+	ON_COMMAND(ID_CMD_OCTAVE_PREVIOUS, OnPreviousOctave)
 	ON_COMMAND(ID_TRACKER_PAL, OnTrackerPal)
 	ON_COMMAND(ID_TRACKER_NTSC, OnTrackerNtsc)
 	ON_COMMAND(ID_SPEED_DEFAULT, OnSpeedDefault)
@@ -892,7 +894,7 @@ void CMainFrame::DisplayOctave()
 {
 	CComboBox *pOctaveList = static_cast<CComboBox*>(m_wndOctaveBar.GetDlgItem(IDC_OCTAVE));
 	CFamiTrackerView *pView	= static_cast<CFamiTrackerView*>(GetActiveView());
-	pOctaveList->SetCurSel(pView->GetOctave());
+	pOctaveList->SetCurSel(GetSelectedOctave());		// // //
 }
 
 // CMainFrame diagnostics
@@ -1039,6 +1041,20 @@ void CMainFrame::OnPrevInstrument()
 {
 	// Select previous instrument in the list
 	m_pInstrumentList->SelectPreviousItem();
+}
+
+void CMainFrame::OnNextOctave()		// // //
+{
+	int Octave = GetSelectedOctave();
+	if (Octave < 7)
+		SelectOctave(Octave + 1);
+}
+
+void CMainFrame::OnPreviousOctave()		// // //
+{
+	int Octave = GetSelectedOctave();
+	if (Octave > 0)
+		SelectOctave(Octave - 1);
 }
 
 static const int INST_DIGITS = 2;		// // //
@@ -1587,8 +1603,7 @@ void CMainFrame::OnUpdateSBInstrument(CCmdUI *pCmdUI)
 void CMainFrame::OnUpdateSBOctave(CCmdUI *pCmdUI)
 {
 	CString String;
-	const int Octave = static_cast<CFamiTrackerView*>(GetActiveView())->GetOctave();
-	AfxFormatString1(String, ID_INDICATOR_OCTAVE, MakeIntString(Octave));
+	AfxFormatString1(String, ID_INDICATOR_OCTAVE, MakeIntString(GetSelectedOctave()));		// // //
 	pCmdUI->Enable(); 
 	pCmdUI->SetText(String);
 }
@@ -2271,8 +2286,8 @@ void CMainFrame::OnCbnSelchangeOctave()
 	CFamiTrackerView *pView	= static_cast<CFamiTrackerView*>(GetActiveView());
 	unsigned int Octave		= pTrackBox->GetCurSel();
 
-	if (pView->GetOctave() != Octave)
-		pView->SetOctave(Octave);
+	if (GetSelectedOctave() != Octave)		// // //
+		SelectOctave(Octave);
 }
 
 void CMainFrame::OnRemoveFocus()
@@ -2591,6 +2606,18 @@ void CMainFrame::SelectTrack(unsigned int Track)
 
 	if (m_pBookmarkDlg != NULL)		// // //
 		m_pBookmarkDlg->LoadBookmarks(m_iTrack);
+}
+
+int CMainFrame::GetSelectedOctave() const		// // // 050B
+{
+	return m_iOctave;
+}
+
+void CMainFrame::SelectOctave(int Octave)		// // // 050B
+{
+	static_cast<CFamiTrackerView*>(GetActiveView())->AdjustOctave(Octave - GetSelectedOctave());
+	m_iOctave = Octave;
+	DisplayOctave();
 }
 
 BOOL CMainFrame::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)

@@ -101,6 +101,10 @@ public:
 	int		GetSelectedTrack() const;
 	void	SelectTrack(unsigned int Track);
 
+	// Octave (moved from CFamiTrackerView)
+	int		GetSelectedOctave() const;		// // // 050B
+	void	SelectOctave(int Octave);		// // // 050B
+
 	// Undo/redo
 	bool	AddAction(CAction *pAction);
 	CAction *GetLastAction(int Filter) const;
@@ -365,6 +369,8 @@ public:
 	afx_msg LRESULT OnDisplayMessageID(WPARAM wParam, LPARAM lParam);
 
 	// // // Moved from CFamiTrackerView
+	afx_msg void OnNextOctave();
+	afx_msg void OnPreviousOctave();
 	afx_msg void OnTrackerPal();
 	afx_msg void OnTrackerNtsc();
 	afx_msg void OnSpeedDefault();

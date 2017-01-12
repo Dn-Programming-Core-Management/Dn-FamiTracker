@@ -83,12 +83,11 @@ public:
 	bool		 GetFollowMode() const;
 	void		 SetCompactMode(bool Mode);		// // //
 	int			 GetSelectedChipType() const;
-	void		 SetOctave(unsigned int iOctave);
-	unsigned int GetOctave() const { return m_iOctave; };
 	bool		 GetEditMode() const { return m_bEditEnable; };
 	void		 SetStepping(int Step);
 	unsigned int GetStepping() const { return m_iInsertKeyStepping; };
 	paste_pos_t  GetPastePos() const { return m_iPastePos; };		// // //
+	void		 AdjustOctave(int Delta);		// // //
 
 	// // // 050B
 	int			GetMarkerFrame() const { return m_iMarkerFrame; }		// // // 050B
@@ -272,7 +271,6 @@ private:
 	// Cursor & editing
 	unsigned int		m_iMoveKeyStepping;						// Number of rows to jump when moving
 	unsigned int		m_iInsertKeyStepping;					// Number of rows to move when inserting notes
-	unsigned int		m_iOctave;								// Selected octave	 (TODO move to mainframe)
 	bool				m_bEditEnable;							// Edit is enabled
 	bool				m_bSwitchToInstrument;					// Select active instrument
 	bool				m_bFollowMode;							// Follow mode, default true
@@ -401,8 +399,6 @@ public:
 	afx_msg void OnTrackerToggleChannel();
 	afx_msg void OnTrackerSoloChannel();
 	afx_msg void OnTrackerUnmuteAllChannels();
-	afx_msg void OnNextOctave();
-	afx_msg void OnPreviousOctave();
 	afx_msg void OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnEditInterpolate();
 	afx_msg void OnEditReplaceInstrument();
