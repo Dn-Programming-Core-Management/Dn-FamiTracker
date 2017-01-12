@@ -70,7 +70,6 @@ public:
 
 // Operations
 public:
-	void	SetStatusText(LPCTSTR Text,...);
 	void	ChangeNoteState(int Note);
 	
 	// Indicators & controls
@@ -132,6 +131,8 @@ public:
 #endif
 
 private:
+	template <typename... T>
+	void	SetStatusText(LPCTSTR Text, T... args);		// // //
 	bool	CreateDialogPanels();
 	bool	CreateToolbars();
 	bool	CreateInstrumentToolbar();

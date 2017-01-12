@@ -21,6 +21,7 @@
 */
 
 #include "json/json.hpp"		// // //
+#include "version.h"		// // //
 #include "stdafx.h"
 #include "Exception.h"
 #include "FamiTracker.h"

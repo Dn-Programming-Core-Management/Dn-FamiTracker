@@ -157,7 +157,8 @@ private:
 	int		CountData() const;
 
 	// Debugging
-	void	Print(LPCTSTR text, ...) const;
+	template <typename... T>
+	void	Print(LPCTSTR text, T... args) const;		// // //
 	void	ClearLog() const;
 
 public:

@@ -89,16 +89,22 @@
 // Calling member function
 #define CALL_MEMBER_FN(obj, ptr) ((obj)->*(ptr))
 
+#ifdef TRACE
+#undef TRACE
+#endif
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
-bool _trace(TCHAR *format, ...);
-#ifdef TRACE
-#undef TRACE
-#endif
+template <typename... T>
+bool _trace(TCHAR *format, T... args)
+{
+	TCHAR buffer[1000];
+	_sntprintf_s(buffer, sizeof(buffer), _TRUNCATE, format, args...);
+	OutputDebugString(buffer);
+
+	return true;
+}
 #define TRACE _trace
 #else
-#ifdef TRACE
-#undef TRACE
-#endif
 #define TRACE __noop
 #endif

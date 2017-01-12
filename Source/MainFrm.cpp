@@ -21,6 +21,7 @@
 */
 
 #include "stdafx.h"
+#include "version.h"		// // //
 #include <algorithm>
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
@@ -915,18 +916,14 @@ void CMainFrame::Dump(CDumpContext& dc) const
 
 // CMainFrame message handlers
 
-void CMainFrame::SetStatusText(LPCTSTR Text,...)
+template <typename... T>
+void CMainFrame::SetStatusText(LPCTSTR Text, T... args)		// // //
 {
-	char	Buf[512];
-	va_list argp;
-	
-	va_start(argp, Text);
-	
 	if (!Text)
 		return;
 
-	vsprintf(Buf, Text, argp);
-
+	char Buf[512] = { };
+	_sntprintf_s(Buf, sizeof(Buf), _TRUNCATE, Text, args...);
 	m_wndStatusBar.SetWindowText(Buf);
 }
 

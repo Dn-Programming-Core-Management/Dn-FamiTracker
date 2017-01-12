@@ -23,6 +23,7 @@
 #include <map>
 #include <vector>
 #include "stdafx.h"
+#include "version.h"		// // //
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "SeqInstrument.h"		// // //
@@ -159,17 +160,15 @@ CCompiler::~CCompiler()
 	SAFE_RELEASE(m_pLogger);
 }
 
-void CCompiler::Print(LPCTSTR text, ...) const
+template <typename... T>
+void CCompiler::Print(LPCTSTR text, T... args) const		// // //
 {
  	static TCHAR buf[256];
 
 	if (m_pLogger == NULL || !text)
 		return;
 
-	va_list argp;
-	va_start(argp, text);
-	_vsntprintf_s(buf, sizeof(buf), _TRUNCATE, text, argp);
-	va_end(argp);		// // //
+	_sntprintf_s(buf, sizeof(buf), _TRUNCATE, text, args...);
 
 	size_t len = _tcslen(buf);
 

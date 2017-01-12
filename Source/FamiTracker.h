@@ -25,7 +25,6 @@
 
 // FamiTracker.h : main header file for the FamiTracker application
 
-#include "version.h"
 #include <thread>		// // //
 
 // Support DLL translations

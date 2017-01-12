@@ -206,7 +206,8 @@ protected:
 
 	bool CompareFields(const stChanNote Target, bool Noise, int EffCount);
 
-	void RaiseIf(bool Check, LPCTSTR Str, ...);
+	template <typename... T>
+	void RaiseIf(bool Check, LPCTSTR Str, T... args);
 
 	replaceTerm toReplace(const searchTerm *x);
 

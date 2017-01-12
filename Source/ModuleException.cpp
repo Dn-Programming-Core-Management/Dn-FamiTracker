@@ -23,8 +23,6 @@
 #include <cstdarg>
 #include "ModuleException.h"
 
-const int CModuleException::MAX_ERROR_STRLEN = 128;
-
 CModuleException::CModuleException() :
 	std::exception(),
 	m_strError(),
@@ -46,17 +44,6 @@ const std::string CModuleException::GetErrorString() const
 		out += *m_strFooter;
 	}
 	return out;
-}
-
-void CModuleException::AppendError(std::string fmt, ...)
-{
-	va_list argp;
-	va_start(argp, fmt);
-	char *buf = new char[MAX_ERROR_STRLEN]();
-	vsprintf_s(buf, MAX_ERROR_STRLEN, fmt.c_str(), argp);
-	va_end(argp);
-	m_strError.push_back(std::unique_ptr<std::string>(new std::string(buf)));
-	delete[] buf;
 }
 
 void CModuleException::SetFooter(std::string footer)

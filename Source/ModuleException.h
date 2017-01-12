@@ -40,28 +40,32 @@ class CModuleException : std::exception
 public:
 	/*!	\brief Constructor of the exception object with an empty message. */
 	CModuleException();
+	/*! \brief Virtual destructor. */
+	virtual ~CModuleException() { }
 
 	/*!	\brief Raises the exception object.
 		\details All derived classes must override this method with the exact same function body in order
-		to throw polymorphically.
-		\warning Visual C++ 2010 does not support the `[[noreturn]]` attribute.
-	*/
-	__declspec(noreturn) virtual void Raise() { throw this; }; // microsoft
+		to throw polymorphically. */
+	[[noreturn]] virtual void Raise() { throw this; };
 
 	/*!	\brief Obtains the error description.
 		\details The description consists of zero or more lines followed by the footer specified in the
 		constructor. This exception object does not use std::exception::what.
-		\return The error string.
-	*/
+		\return The error string. */
 	const std::string GetErrorString() const;
 	/*!	\brief Appends a formatted error string to the exception.
 		\param fmt The format specifier.
-		\param ... Extra arguments for the formatted string.
-	*/
-	void AppendError(std::string fmt, ...);
+		\param ... Extra arguments for the formatted string. */
+	template <typename... T>
+	void AppendError(std::string fmt, T... args)
+	{
+		const size_t MAX_ERROR_STRLEN = 256;
+		char buf[MAX_ERROR_STRLEN] = { };
+		_sntprintf_s(buf, MAX_ERROR_STRLEN, _TRUNCATE, fmt.c_str(), args...);
+		m_strError.emplace_back(new std::string(buf));
+	}
 	/*!	\brief Sets the footer string of the error message.
-		\param footer The new footer string.
-	*/
+		\param footer The new footer string. */
 	void SetFooter(std::string footer);
 
 public:
@@ -96,5 +100,4 @@ public:
 private:
 	std::vector<std::unique_ptr<std::string>> m_strError;
 	std::unique_ptr<std::string> m_strFooter;
-	static const int MAX_ERROR_STRLEN;
 };

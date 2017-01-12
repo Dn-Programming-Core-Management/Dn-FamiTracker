@@ -1093,14 +1093,12 @@ bool CFindDlg::CompareFields(const stChanNote Target, bool Noise, int EffCount)
 	return !Negate;
 }
 
-void CFindDlg::RaiseIf(bool Check, LPCTSTR Str, ...)
+template <typename... T>
+void CFindDlg::RaiseIf(bool Check, LPCTSTR Str, T... args)
 {
 	if (!Check) return;
-	static TCHAR buf[512];
-	va_list arg;
-	va_start(arg, Str);
-	_vsntprintf_s(buf, sizeof(buf), _TRUNCATE, Str, arg);
-	va_end(arg);
+	TCHAR buf[512];
+	_sntprintf_s(buf, sizeof(buf), _TRUNCATE, Str, args...);
 	throw new CFindException(buf);
 }
 
