@@ -879,7 +879,7 @@ void CFrameEditor::OnLButtonUp(UINT nFlags, CPoint point)
 		}
 		else {
 			// Switch to frame
-			SetEditFrame(GetRowFromPoint(point, true));		// // // allow one-past-the-end
+			SetEditFrame(GetRowFromPoint(point, GetFocus() == this));		// // // allow one-past-the-end
 			if (Channel >= 0) {
 				if (Channel >= m_pDocument->GetChannelCount()) Channel = m_pDocument->GetChannelCount() - 1;
 				m_pView->SelectChannel(Channel);		// // //
@@ -896,9 +896,7 @@ void CFrameEditor::OnMouseMove(UINT nFlags, CPoint point)
 		if (!m_bSelecting) {
 			if (abs(m_ButtonPoint.x - point.x) > m_iDragThresholdX || abs(m_ButtonPoint.y - point.y) > m_iDragThresholdY) {
 				m_bSelecting = true;
-				SetFocus();
-				InvalidateFrameData();
-				Invalidate();
+				EnableInput();		// // //
 			}
 		}
 		if (m_bStartDrag) {
