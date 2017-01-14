@@ -804,6 +804,8 @@ void CFamiTrackerView::OnSetFocus(CWnd* pOldWnd)
 	CView::OnSetFocus(pOldWnd);
 	m_bHasFocus = true;
 	m_pPatternEditor->SetFocus(true);
+	CMainFrame *pMainFrm = static_cast<CMainFrame*>(GetParentFrame());		// // //
+	pMainFrm->GetFrameEditor()->CancelSelection();
 	InvalidateCursor();
 }
 
@@ -1297,6 +1299,7 @@ void CFamiTrackerView::OnInitialUpdate()
 	// Notify the pattern view about new document & view
 	m_pPatternEditor->SetDocument(pDoc, this);
 	m_pPatternEditor->ResetCursor();
+	pFrameEditor->ResetCursor();		// // //
 
 	// Always start with first track
 	pMainFrame->SelectTrack(0);
@@ -1338,7 +1341,6 @@ void CFamiTrackerView::OnInitialUpdate()
 	m_pPatternEditor->InvalidatePatternData();
 	RedrawPatternEditor();
 
-	pFrameEditor->CancelSelection();
 	pFrameEditor->InvalidateFrameData();
 	RedrawFrameEditor();
 

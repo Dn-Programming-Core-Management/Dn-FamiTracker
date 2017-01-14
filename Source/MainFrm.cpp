@@ -1503,6 +1503,8 @@ bool CMainFrame::CheckRepeat() const
 
 void CMainFrame::OnBnClickedIncFrame()
 {
+	if (static_cast<CFamiTrackerView*>(GetActiveView())->GetSelectedFrame() != GetFrameEditor()->GetEditFrame())		// // //
+		return;
 	int Add = (CheckRepeat() ? 4 : 1);
 	if (ChangeAllPatterns())
 		AddAction(new CFActionChangePatternAll {Add});		// // //
@@ -1512,6 +1514,8 @@ void CMainFrame::OnBnClickedIncFrame()
 
 void CMainFrame::OnBnClickedDecFrame()
 {
+	if (static_cast<CFamiTrackerView*>(GetActiveView())->GetSelectedFrame() != GetFrameEditor()->GetEditFrame())		// // //
+		return;
 	int Remove = -(CheckRepeat() ? 4 : 1);
 	if (ChangeAllPatterns())
 		AddAction(new CFActionChangePatternAll {Remove});		// // //

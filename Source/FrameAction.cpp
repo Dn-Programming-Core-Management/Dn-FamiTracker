@@ -32,7 +32,7 @@
 
 CFrameEditorState::CFrameEditorState(const CFamiTrackerView *pView, int Track) :		// // //
 	Track(Track),
-	Cursor {pView->GetSelectedFrame(), pView->GetSelectedChannel()},
+	Cursor {static_cast<CMainFrame*>(pView->GetParentFrame())->GetFrameEditor()->GetEditFrame(), pView->GetSelectedChannel()},
 	OriginalSelection(static_cast<CMainFrame*>(pView->GetParentFrame())->GetFrameEditor()->GetSelection()),
 	IsSelecting(static_cast<CMainFrame*>(pView->GetParentFrame())->GetFrameEditor()->IsSelecting())
 {
@@ -41,9 +41,9 @@ CFrameEditorState::CFrameEditorState(const CFamiTrackerView *pView, int Track) :
 
 void CFrameEditorState::ApplyState(CFamiTrackerView *pView) const
 {
-	pView->SelectFrame(Cursor.m_iFrame);
-	pView->SelectChannel(Cursor.m_iChannel);
 	auto pEditor = static_cast<CMainFrame*>(pView->GetParentFrame())->GetFrameEditor();
+	pEditor->SetEditFrame(Cursor.m_iFrame);
+	pView->SelectChannel(Cursor.m_iChannel);
 	IsSelecting ? pEditor->SetSelection(OriginalSelection) : pEditor->CancelSelection();
 }
 
@@ -481,6 +481,14 @@ bool CFActionPasteOverwrite::SaveState(const CMainFrame *pMainFrm)		// // //
 	m_TargetSelection.m_cpEnd.m_iFrame = m_TargetSelection.m_cpStart.m_iFrame + m_pClipData->ClipInfo.Frames - 1;
 	m_TargetSelection.m_cpStart.m_iChannel = m_pClipData->ClipInfo.FirstChannel;
 	m_TargetSelection.m_cpEnd.m_iChannel = m_TargetSelection.m_cpStart.m_iChannel + m_pClipData->ClipInfo.Channels - 1;
+
+	const CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
+	int Frames = pDoc->GetFrameCount(pMainFrm->GetSelectedTrack());
+	if (m_TargetSelection.m_cpEnd.m_iFrame >= Frames)
+		m_TargetSelection.m_cpEnd.m_iFrame = Frames - 1;
+	if (m_TargetSelection.m_cpEnd.m_iFrame < m_TargetSelection.m_cpStart.m_iFrame)
+		return false;
+
 	m_pOldClipData = pMainFrm->GetFrameEditor()->Copy(m_TargetSelection);
 	return true;
 }

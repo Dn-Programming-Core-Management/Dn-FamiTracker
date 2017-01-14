@@ -78,6 +78,10 @@ public:
 	void EnableInput();
 	bool InputEnabled() const;
 
+	int GetEditFrame() const;		// // //
+	void SetEditFrame(int Frame) const;		// // //
+	void ResetCursor();		// // //
+
 	// Selection, copy & paste, drag & drop
 	CFrameSelection GetSelection() const;		// // //
 	bool IsSelecting() const;		// // //
@@ -177,6 +181,7 @@ private:
 	bool	m_bFullFrameSelect = false;		// // //
 	CFrameSelection m_selection;		// // //
 	int		m_iDragRow;
+	mutable bool	m_bLastRow;		// // //
 
 	int		m_iTopScrollArea;
 	int		m_iBottomScrollArea;

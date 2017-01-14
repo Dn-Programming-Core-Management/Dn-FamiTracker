@@ -164,6 +164,7 @@ class CFActionSetPattern : public CFrameAction
 {
 public:
 	CFActionSetPattern(int Pattern) : m_iNewPattern(Pattern) { }
+	~CFActionSetPattern() { SAFE_RELEASE(m_pClipData); }
 private:
 	bool SaveState(const CMainFrame *pMainFrm) override;
 	void Undo(CMainFrame *pMainFrm) const override;

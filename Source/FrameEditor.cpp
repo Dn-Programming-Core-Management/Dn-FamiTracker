@@ -28,6 +28,7 @@
 #include "FamiTrackerView.h"
 #include "MainFrm.h"
 #include "FrameAction.h"
+#include "CompoundAction.h"		// // //
 #include "Accelerator.h"
 #include "PatternEditor.h"
 #include "FrameEditor.h"
@@ -73,6 +74,7 @@ CFrameEditor::CFrameEditor(CMainFrame *pMainFrm) :
 	m_bStartDrag(false),
 	m_bDeletedRows(false),
 	m_iDragRow(0),
+	m_bLastRow(false),		// // //
 	m_iTopScrollArea(0),
 	m_iBottomScrollArea(0),
 	m_DropTarget(this),
@@ -235,7 +237,7 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 
 	const bool bHexRows				= theApp.GetSettings()->General.bRowInHex;
 
-	LPCTSTR ROW_FORMAT = bHexRows ? _T("%02X") : _T("%02i");
+	LPCTSTR ROW_FORMAT = bHexRows ? _T("%02X") : _T("%03i");
 
 	const CFamiTrackerDoc *pDoc = CFamiTrackerDoc::GetDoc();
 	const CFamiTrackerView *pView = CFamiTrackerView::GetView();
@@ -243,7 +245,7 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 	const int Track			= m_pMainFrame->GetSelectedTrack();
 	const int FrameCount	= pDoc->GetFrameCount(Track);
 	const int ChannelCount	= pDoc->GetChannelCount();
-	int ActiveFrame			= pView->GetSelectedFrame();
+	int ActiveFrame			= GetEditFrame();		// // //
 	int ActiveChannel		= pView->GetSelectedChannel();
 	const int SelectStart	= m_selection.GetFrameStart();		// // //
 	const int SelectEnd		= m_selection.GetFrameEnd();
@@ -256,14 +258,17 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 	if (ActiveChannel >= (m_iFirstChannel + (ChannelCount - 1)))
 		m_iFirstChannel = ActiveChannel - (ChannelCount - 1);
 
-	if (ActiveFrame > (FrameCount - 1))
-		ActiveFrame = (FrameCount - 1);
+	if (m_bLastRow)		// // //
+		++ActiveFrame;
+	if (ActiveFrame > FrameCount)		// // //
+		ActiveFrame = FrameCount;
 	if (ActiveFrame < 0)
 		ActiveFrame = 0;
 
 	CFont *pOldFont = m_dcBack.SelectObject(&m_Font);
 
 	m_dcBack.SetBkMode(TRANSPARENT);
+	m_dcBack.SetTextAlign(TA_CENTER);		// // //
 
 	// Draw background
 	m_dcBack.FillSolidRect(0, 0, m_iWinWidth, m_iWinHeight, ColBackground);
@@ -297,7 +302,7 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 
 	// Draw rows
 	CBookmarkCollection *pCol = m_pDocument->GetBookmarkManager()->GetCollection(Track);		// // //
-	for (int i = Start; i < End; ++i) {
+	for (int i = Start; i <= End; ++i) {
 		CRect RowRect = DPI::Rect(0, i * ROW_HEIGHT + 4, m_iWinWidth, ROW_HEIGHT - 1);		// // //
 
 		// // // Highlight by bookmarks
@@ -312,14 +317,12 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 			GradientBar(&m_dcBack, DPI::Rect(2, i * ROW_HEIGHT + 4, ROW_COLUMN_WIDTH - 5, ROW_HEIGHT - 1), ColCursor, DIM(ColCursor, 30));
 		
 		// Play cursor
-		if (PlayFrame == Frame && !pView->GetFollowMode() && theApp.IsPlaying()) {
+		if (PlayFrame == Frame && !pView->GetFollowMode() && theApp.IsPlaying())
 			GradientBar(&m_dcBack, RowRect, theApp.GetSettings()->Appearance.iColCurrentRowPlaying, ColBackground);		// // //
-		}
 
 		// Queue cursor
-		if (theApp.GetSoundGenerator()->GetQueueFrame() == Frame) {
+		if (theApp.GetSoundGenerator()->GetQueueFrame() == Frame)
 			GradientBar(&m_dcBack, RowRect, QUEUE_COLOR, ColBackground);
-		}
 
 		bool bSelectedRow = m_bSelecting && (Frame >= SelectStart) && (Frame <= SelectEnd);
 
@@ -351,25 +354,44 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 			}
 		}
 
-		m_dcBack.SetTextColor(ColTextHilite);
-		m_dcBack.TextOut(DPI::SX(5), DPI::SY(i * ROW_HEIGHT + 3), MakeIntString(Frame, ROW_FORMAT));
+		if (i == End) {
+			m_dcBack.SetTextColor(ColTextHilite);
+			m_dcBack.TextOut(DPI::SX(3 + FRAME_ITEM_WIDTH / 2), DPI::SY(i * ROW_HEIGHT + 3), _T(">>"));
 
-		COLORREF CurrentColor = (i == m_iHiglightLine || m_iHiglightLine == -1) ? ColText : ColTextDimmed;
+			COLORREF CurrentColor = (i == m_iHiglightLine || m_iHiglightLine == -1) ? ColText : ColTextDimmed;
 
-		for (int j = 0; j < ChannelCount; ++j) {
-			int Chan = j + m_iFirstChannel;
+			for (int j = 0; j < ChannelCount; ++j) {
+				int Chan = j + m_iFirstChannel;
 
-			// Dim patterns that are different from current
-			if (pDoc->GetPatternAtFrame(Track, Frame, Chan) == pDoc->GetPatternAtFrame(Track, ActiveFrame, Chan) || bSelectedRow)
-				m_dcBack.SetTextColor(CurrentColor);
-			else
+				//m_dcBack.SetTextColor(CurrentColor);
 				m_dcBack.SetTextColor(DIM(CurrentColor, 70));
 
-			m_dcBack.DrawText(MakeIntString(pDoc->GetPatternAtFrame(Track, Frame, Chan), _T("%02X")),		// // //
-							  DPI::Rect(30 + j * FRAME_ITEM_WIDTH, i * ROW_HEIGHT + 3, FRAME_ITEM_WIDTH - 2, 20), DT_LEFT | DT_TOP | DT_NOCLIP);
+				m_dcBack.DrawText(_T("--"), DPI::Rect(28 + j * FRAME_ITEM_WIDTH + FRAME_ITEM_WIDTH / 2,
+													  i * ROW_HEIGHT + 3, FRAME_ITEM_WIDTH - 2, 20), DT_LEFT | DT_TOP | DT_NOCLIP);
+			}
 		}
+		else {
+			m_dcBack.SetTextColor(ColTextHilite);
+			m_dcBack.TextOut(DPI::SX(3 + FRAME_ITEM_WIDTH / 2), DPI::SY(i * ROW_HEIGHT + 3), MakeIntString(Frame, ROW_FORMAT));
 
-		Frame++;
+			COLORREF CurrentColor = (i == m_iHiglightLine || m_iHiglightLine == -1) ? ColText : ColTextDimmed;
+
+			for (int j = 0; j < ChannelCount; ++j) {
+				int Chan = j + m_iFirstChannel;
+
+				// Dim patterns that are different from current
+				if (!m_bLastRow && pDoc->GetPatternAtFrame(Track, Frame, Chan) == pDoc->GetPatternAtFrame(Track, ActiveFrame, Chan)
+								|| bSelectedRow)
+					m_dcBack.SetTextColor(CurrentColor);
+				else
+					m_dcBack.SetTextColor(DIM(CurrentColor, 70));
+
+				m_dcBack.DrawText(MakeIntString(pDoc->GetPatternAtFrame(Track, Frame, Chan), _T("%02X")),		// // //
+								  DPI::Rect(28 + j * FRAME_ITEM_WIDTH + FRAME_ITEM_WIDTH / 2,
+											i * ROW_HEIGHT + 3, FRAME_ITEM_WIDTH - 2, 20), DT_LEFT | DT_TOP | DT_NOCLIP);
+			}
+		}
+		++Frame;
 	}
 
 	if (m_DropTarget.IsDragging()) {
@@ -428,7 +450,7 @@ bool CFrameEditor::NeedUpdate() const
 	const CFamiTrackerView *pView = CFamiTrackerView::GetView();
 	const CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 
-	const int ActiveFrame	= pView->GetSelectedFrame();
+	const int ActiveFrame	= GetEditFrame();		// // //
 	const int ActiveChannel = pView->GetSelectedChannel();
 	const int PlayFrame	    = theApp.GetSoundGenerator()->GetPlayerFrame();
 
@@ -472,8 +494,8 @@ void CFrameEditor::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		case SB_THUMBPOSITION:
 		case SB_THUMBTRACK:
 			if (m_pDocument->GetFrameCount(m_pMainFrame->GetSelectedTrack()) > 1)
-				m_pView->SelectFrame(nPos);
-			break;	
+				SetEditFrame(nPos);		// // //
+			break;
 	}
 
 	CWnd::OnVScroll(nSBCode, nPos, pScrollBar);
@@ -516,7 +538,8 @@ void CFrameEditor::OnKillFocus(CWnd* pNewWnd)
 {
 	CWnd::OnKillFocus(pNewWnd);
 	m_bInputEnable = false;
-	CancelSelection();		// // //
+//	CancelSelection();		// // //
+	m_bLastRow = false;		// // //
 	InvalidateFrameData();
 	Invalidate();
 	theApp.GetAccelerator()->SetAccelerator(NULL);
@@ -526,8 +549,7 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
 	const int PAGE_SIZE = 4;
 
-	CMainFrame *pMainFrame = static_cast<CMainFrame*>(GetParentFrame());
-	int Track = pMainFrame->GetSelectedTrack();
+	int Track = m_pMainFrame->GetSelectedTrack();
 	
 	bool bShift = (::GetKeyState(VK_SHIFT) & 0x80) == 0x80;
 
@@ -546,7 +568,7 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		unsigned int ChannelCount = m_pDocument->GetChannelCount();
 		unsigned int FrameCount = m_pDocument->GetFrameCount(Track);
 		unsigned int Channel = m_pView->GetSelectedChannel();
-		unsigned int Frame = m_pView->GetSelectedFrame();
+		unsigned int Frame = GetEditFrame();		// // //
 
 		switch (nChar) {
 			case VK_UP:
@@ -557,11 +579,15 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			case VK_PRIOR:
 			case VK_HOME:
 			case VK_END:
-				if (bShift && !m_bSelecting) {
-					m_bSelecting = true;
-					m_selection.m_cpStart.m_iFrame = m_selection.m_cpEnd.m_iFrame = Frame;		// // //
-					m_selection.m_cpStart.m_iChannel = m_selection.m_cpEnd.m_iChannel = Channel;		// // //
+				if (bShift && !m_bLastRow) {		// // //
+					if (!m_bSelecting) {
+						m_bSelecting = true;
+						m_selection.m_cpStart.m_iFrame = m_selection.m_cpEnd.m_iFrame = Frame;		// // //
+						m_selection.m_cpStart.m_iChannel = m_selection.m_cpEnd.m_iChannel = Channel;		// // //
+					}
 				}
+				else
+					CancelSelection();
 				break;
 		}
 
@@ -584,18 +610,18 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				break;
 			case VK_UP:
 				if (Frame == 0)
-					Frame = FrameCount - 1;
+					Frame = FrameCount - (m_bSelecting ? 1 : 0);
 				else
 					Frame -= 1;
-				m_pView->SelectFrame(Frame);
+				SetEditFrame(Frame);		// // //
 				m_iCursorPos = 0;
 				break;
 			case VK_DOWN:
-				if (Frame == FrameCount - 1)
+				if (Frame == FrameCount - (m_bSelecting ? 1 : 0))
 					Frame = 0;
 				else 
 					Frame += 1;
-				m_pView->SelectFrame(Frame);
+				SetEditFrame(Frame);		// // //
 				m_iCursorPos = 0;
 				break;
 			case VK_RETURN:
@@ -609,10 +635,10 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				break;
 			case VK_NEXT:
 				if (Frame + PAGE_SIZE >= FrameCount)
-					Frame = FrameCount - 1;
+					Frame = FrameCount - (m_bSelecting ? 1 : 0);
 				else
 					Frame += PAGE_SIZE;
-				m_pView->SelectFrame(Frame);
+				SetEditFrame(Frame);		// // //
 				m_iCursorPos = 0;
 				break;
 			case VK_PRIOR:
@@ -620,17 +646,17 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 					Frame = 0;
 				else
 					Frame -= PAGE_SIZE;
-				m_pView->SelectFrame(Frame);
+				SetEditFrame(Frame);		// // //
 				m_iCursorPos = 0;
 				break;
 			case VK_HOME:
 				Frame = 0;
-				m_pView->SelectFrame(Frame);
+				SetEditFrame(Frame);		// // //
 				m_iCursorPos = 0;
 				break;
 			case VK_END:
-				Frame = FrameCount - 1;
-				m_pView->SelectFrame(Frame);
+				Frame = FrameCount - (m_bSelecting ? 1 : 0);
+				SetEditFrame(Frame);		// // //
 				m_iCursorPos = 0;
 				break;
 		}
@@ -647,14 +673,10 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				if (bShift) {
 					m_selection.m_cpEnd.m_iFrame = Frame;
 					m_selection.m_cpEnd.m_iChannel = Channel;		// // //
-					InvalidateFrameData();
-					Invalidate();
 				}
-				else if (m_bSelecting) {
-					m_bSelecting = false;
-					InvalidateFrameData();
-					Invalidate();
-				}
+				// // //
+				InvalidateFrameData();
+				Invalidate();
 				break;
 		}
 
@@ -669,22 +691,22 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 					Pattern = m_pDocument->GetPatternAtFrame(Track, GetSelection().GetFrameStart(), GetSelection().GetChanStart()) | Num;
 					m_iCursorPos = 0;
 				}
-				pMainFrame->AddAction(new CFActionSetPattern {Pattern});
+				m_pMainFrame->AddAction(new CFActionSetPattern {Pattern});
 				m_pDocument->SetModifiedFlag();
 			}
-			else {
-				int Pattern = m_pDocument->GetPatternAtFrame(Track, Frame, Channel);		// // //
+			else if (!m_bLastRow || FrameCount < MAX_FRAMES) {		// // //
+				int Pattern = m_bLastRow ? 0 : m_pDocument->GetPatternAtFrame(Track, Frame, Channel);		// // //
 				if (m_iCursorPos == 0)
 					Pattern = (Pattern & 0x0F) | (Num << 4);
 				else if (m_iCursorPos == 1)
 					Pattern = (Pattern & 0xF0) | Num;
 				Pattern = std::min(Pattern, MAX_PATTERN - 1);
 
-				if (pMainFrame->ChangeAllPatterns())
-					pMainFrame->AddAction(new CFActionSetPatternAll {Pattern});		// // //
-				else
-					pMainFrame->AddAction(new CFActionSetPattern {Pattern});
-
+				if (m_bLastRow)
+					m_pMainFrame->AddAction(new CFActionFrameCount {static_cast<int>(FrameCount) + 1});
+				CAction *pAction = m_pMainFrame->ChangeAllPatterns() ?
+									   (CAction*)new CFActionSetPatternAll {Pattern} : new CFActionSetPattern {Pattern};
+				m_pMainFrame->AddAction(pAction);
 				m_pDocument->SetModifiedFlag();
 
 				const int SelectedChannel = (m_pView->GetSelectedChannel() + 1) % m_pDocument->GetAvailableChannels();		// // //
@@ -735,7 +757,7 @@ int CFrameEditor::GetRowFromPoint(const CPoint &point, bool DropTarget) const
 {
 	// Translate a point value to a row
 	int Delta = ((point.y - TOP_OFFSET) / DPI::SY(ROW_HEIGHT)) - m_iMiddleRow;		// // //
-	int NewFrame = m_pView->GetSelectedFrame() + Delta;
+	int NewFrame = GetEditFrame() + Delta;
 	int FrameCount = m_pDocument->GetFrameCount(m_pMainFrame->GetSelectedTrack());
 	
 	if (NewFrame < 0)
@@ -857,7 +879,7 @@ void CFrameEditor::OnLButtonUp(UINT nFlags, CPoint point)
 		}
 		else {
 			// Switch to frame
-			m_pView->SelectFrame(NewFrame);
+			SetEditFrame(GetRowFromPoint(point, true));		// // // allow one-past-the-end
 			if (Channel >= 0) {
 				if (Channel >= m_pDocument->GetChannelCount()) Channel = m_pDocument->GetChannelCount() - 1;
 				m_pView->SelectChannel(Channel);		// // //
@@ -926,9 +948,9 @@ void CFrameEditor::OnLButtonDblClk(UINT nFlags, CPoint point)
 	// Select channel and enable edit mode
 
 	const int Channel  = GetChannelFromPoint(point);
-	const int NewFrame = GetRowFromPoint(point, false);
+	const int NewFrame = GetRowFromPoint(point, true);		// // // allow one-past-the-end
 
-	m_pView->SelectFrame(NewFrame);
+	SetEditFrame(NewFrame);		// // //
 
 	if (Channel >= 0)
 		m_pView->SelectChannel(Channel);
@@ -957,8 +979,8 @@ BOOL CFrameEditor::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 
 void CFrameEditor::AutoScroll(const CPoint &point)
 {
-	const int Row = GetRowFromPoint(point, false);
-	const int Rows = m_pDocument->GetFrameCount(m_pMainFrame->GetSelectedTrack());
+	const int Row = GetRowFromPoint(point, true);		// // //
+	const int Rows = m_pDocument->GetFrameCount(m_pMainFrame->GetSelectedTrack()) + 1;
 
 	if (point.y <= m_iTopScrollArea && Row > 0) {
 		m_pView->SelectPrevFrame();
@@ -973,7 +995,7 @@ void CFrameEditor::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 	// Popup menu
 	CMenu *pPopupMenu, PopupMenuBar;
 	PopupMenuBar.LoadMenu(IDR_FRAME_POPUP);
-	static_cast<CMainFrame*>(theApp.GetMainWnd())->UpdateMenu(&PopupMenuBar);
+	m_pMainFrame->UpdateMenu(&PopupMenuBar);
 	pPopupMenu = PopupMenuBar.GetSubMenu(0);
 
 	// Paste menu item
@@ -1034,7 +1056,7 @@ void CFrameEditor::OnEditPaste()
 	CFrameClipData *pClipData = new CFrameClipData();
 	pClipData->FromMem(hMem);
 
-	m_pMainFrame->AddAction(new CFActionPaste {pClipData, static_cast<int>(m_pView->GetSelectedFrame()), false});		// // //
+	m_pMainFrame->AddAction(new CFActionPaste {pClipData, GetEditFrame(), false});		// // //
 }
 
 void CFrameEditor::OnEditPasteOverwrite()		// // //
@@ -1065,7 +1087,7 @@ void CFrameEditor::OnEditPasteNewPatterns()
 	CFrameClipData *pClipData = new CFrameClipData();
 	pClipData->FromMem(hMem);
 
-	m_pMainFrame->AddAction(new CFActionPaste {pClipData, static_cast<int>(m_pView->GetSelectedFrame()), true});		// // //
+	m_pMainFrame->AddAction(new CFActionPaste {pClipData, GetEditFrame(), true});		// // //
 }
 
 void CFrameEditor::OnEditDelete()
@@ -1232,6 +1254,15 @@ bool CFrameEditor::InputEnabled() const
 	return m_bInputEnable;
 }
 
+void CFrameEditor::ResetCursor()		// // //
+{
+	m_pView->SelectFirstFrame();
+	m_pView->SelectChannel(0);
+	m_bLastRow = false;
+	CancelSelection();
+	InvalidateFrameData();
+}
+
 void CFrameEditor::OnModuleInsertFrame()
 {
 	m_pMainFrame->OnModuleInsertFrame();
@@ -1380,6 +1411,27 @@ void CFrameEditor::InitiateDrag()
 	m_bStartDrag = false;
 }
 
+int CFrameEditor::GetEditFrame() const		// // //
+{
+	int Frame = m_pView->GetSelectedFrame();
+	if (m_bLastRow)
+		if (Frame != m_pDocument->GetFrameCount(m_pMainFrame->GetSelectedTrack()) - 1) {
+			m_bLastRow = false;
+			SetEditFrame(++Frame);
+		}
+	return Frame + (m_bLastRow ? 1 : 0);
+}
+
+void CFrameEditor::SetEditFrame(int Frame) const		// // //
+{
+	int Frames = m_pDocument->GetFrameCount(m_pMainFrame->GetSelectedTrack());
+//	if (m_bLastRow != (Frame >= Frames))
+//		InvalidateFrameData();
+	if (m_bLastRow = (Frame >= Frames))
+		Frame = Frames - 1;
+	m_pView->SelectFrame(Frame);
+}
+
 bool CFrameEditor::IsCopyValid(COleDataObject* pDataObject) const
 {
 	// Return true if the number of pasted frames will fit
@@ -1486,6 +1538,13 @@ void CFrameEditor::MoveSelection(unsigned int Track, const CFrameSelection &Sel,
 
 CFrameSelection CFrameEditor::GetSelection() const		// // //
 {
+	if (!m_bSelecting) {
+		CFrameSelection Sel;
+		Sel.m_cpStart.m_iFrame = Sel.m_cpEnd.m_iFrame = m_pView->GetSelectedFrame();
+		Sel.m_cpStart.m_iChannel = 0;
+		Sel.m_cpEnd.m_iChannel = m_pDocument->GetChannelCount() - 1;
+		return Sel;
+	}
 	return m_selection;
 }
 

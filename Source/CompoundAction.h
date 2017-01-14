@@ -26,6 +26,7 @@
 #include "Action.h"
 #include <vector>
 #include <memory>
+#include <initializer_list>
 
 /*!
 	\brief A compound action class allowing multiple undoable actions to be chained together.
@@ -34,7 +35,8 @@
 class CCompoundAction final : public CAction
 {
 public:
-	CCompoundAction();
+	CCompoundAction() = default;
+	CCompoundAction(std::initializer_list<CAction*> list);
 
 	bool SaveState(const CMainFrame *pMainFrm);
 	void Undo(CMainFrame *pMainFrm) const;
@@ -50,6 +52,6 @@ public:
 	void JoinAction(CAction *const pAction);
 
 private:
-	std::unique_ptr<std::vector<std::unique_ptr<CAction>>> m_pActionList;
-	mutable bool m_bFirst;
+	std::vector<std::unique_ptr<CAction>> m_pActionList { };
+	mutable bool m_bFirst = true;
 };
