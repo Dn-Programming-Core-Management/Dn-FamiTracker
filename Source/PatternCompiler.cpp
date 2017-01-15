@@ -603,6 +603,12 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 						WriteData(EffParam);
 					}
 					break;
+				case EF_SUNSOFT_NOISE:		// // // 050B
+					if (ChipID == SNDCHIP_S5B) {
+						WriteData(Command(CMD_EFF_S5B_NOISE));
+						WriteData(EffParam & 0x1F);
+					}
+					break;
 				// // // N163
 				case EF_N163_WAVE_BUFFER:
 					if (ChipID == SNDCHIP_N163 && EffParam <= 0x7F) {
