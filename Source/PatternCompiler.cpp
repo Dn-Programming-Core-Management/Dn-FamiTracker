@@ -471,7 +471,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 					}
 					else if (ChipID == SNDCHIP_S5B) {
 						WriteData(Command(CMD_EFF_DUTY));
-						WriteData(EffParam << 5);
+						WriteData((EffParam << 6) | ((EffParam & 0x04) << 3));
 					}
 					else if (ChanID != CHANID_TRIANGLE && ChanID != CHANID_DPCM) {	// Not triangle and dpcm
 						WriteData(Command(CMD_EFF_DUTY));
