@@ -1018,8 +1018,7 @@ void CCompiler::UpdateSamplePointers(unsigned int Origin)
 
 	// The list is stored in the same order as the samples vector
 
-	for (std::vector<const CDSample*>::iterator it = m_vSamples.begin(); it != m_vSamples.end(); ++it) {
-		const CDSample *pDSample = *it;
+	for (auto pDSample : m_vSamples) {
 		unsigned int Size = pDSample->GetSize();
 
 		if (m_bBankSwitched) {
@@ -1054,8 +1053,7 @@ void CCompiler::UpdateFrameBanks()
 
 	int Channels = m_pDocument->GetAvailableChannels();
 
-	for (std::vector<CChunk*>::iterator it = m_vFrameChunks.begin(); it != m_vFrameChunks.end(); ++it) {
-		CChunk *pChunk = *it;
+	for (CChunk *pChunk : m_vFrameChunks) {
 		if (pChunk->GetType() == CHUNK_FRAME) {
 			// Add bank data
 			for (int j = 0; j < Channels; ++j) {
@@ -1071,8 +1069,7 @@ void CCompiler::UpdateFrameBanks()
 void CCompiler::UpdateSongBanks()
 {
 	// Write bank numbers to song lists (can only be used when bankswitching is used)
-	for (std::vector<CChunk*>::iterator it = m_vSongChunks.begin(); it != m_vSongChunks.end(); ++it) {
-		CChunk *pChunk = *it;
+	for (CChunk *pChunk : m_vSongChunks) {
 		int bank = GetObjectByRef(pChunk->GetDataRefName(0))->GetBank();
 		if (bank < PATTERN_SWITCH_BANK)
 			bank = PATTERN_SWITCH_BANK;
@@ -1083,9 +1080,8 @@ void CCompiler::UpdateSongBanks()
 void CCompiler::ClearSongBanks()
 {
 	// Clear bank data in song chunks
-	for (std::vector<CChunk*>::iterator it = m_vSongChunks.begin(); it != m_vSongChunks.end(); ++it) {
-		(*it)->SetupBankData(m_iSongBankReference, 0);
-	}
+	for (CChunk *pChunk : m_vSongChunks)
+		pChunk->SetupBankData(m_iSongBankReference, 0);
 }
 
 void CCompiler::EnableBankswitching()
@@ -1128,8 +1124,7 @@ void CCompiler::CollectLabels(CMap<CStringA, LPCSTR, int, int> &labelMap) const
 {
 	// Collect labels and assign offsets
 	int Offset = 0;
-	for (std::vector<CChunk*>::const_iterator it = m_vChunks.begin(); it != m_vChunks.end(); ++it) {
-		CChunk *pChunk = *it;
+	for (const CChunk *pChunk : m_vChunks) {
 		labelMap[pChunk->GetLabel()] = Offset;
 		Offset += pChunk->CountDataSize();
 	}
@@ -1141,8 +1136,7 @@ bool CCompiler::CollectLabelsBankswitched(CMap<CStringA, LPCSTR, int, int> &labe
 	int Bank = PATTERN_SWITCH_BANK;
 
 	// Instruments and stuff
-	for (std::vector<CChunk*>::iterator it = m_vChunks.begin(); it != m_vChunks.end(); ++it) {
-		CChunk *pChunk = *it;
+	for (const CChunk *pChunk : m_vChunks) {
 		int Size = pChunk->CountDataSize();
 
 		switch (pChunk->GetType()) {
@@ -1165,8 +1159,7 @@ bool CCompiler::CollectLabelsBankswitched(CMap<CStringA, LPCSTR, int, int> &labe
 	unsigned int Track = 0;
 
 	// The switchable area is $B000-$C000
-	for (std::vector<CChunk*>::iterator it = m_vChunks.begin(); it != m_vChunks.end(); ++it) {
-		CChunk *pChunk = *it;
+	for (CChunk *pChunk : m_vChunks) {
 		int Size = pChunk->CountDataSize();
 
 		switch (pChunk->GetType()) {
@@ -1206,9 +1199,8 @@ bool CCompiler::CollectLabelsBankswitched(CMap<CStringA, LPCSTR, int, int> &labe
 void CCompiler::AssignLabels(CMap<CStringA, LPCSTR, int, int> &labelMap)
 {
 	// Pass 2: assign addresses to labels
-	for (std::vector<CChunk*>::iterator it = m_vChunks.begin(); it != m_vChunks.end(); ++it) {
-		(*it)->AssignLabels(labelMap);
-	}
+	for (CChunk *pChunk : m_vChunks)
+		pChunk->AssignLabels(labelMap);
 }
 
 bool CCompiler::CompileData()
@@ -1359,9 +1351,8 @@ void CCompiler::Cleanup()
 {
 	// Delete objects
 
-	for (std::vector<CChunk*>::iterator it = m_vChunks.begin(); it != m_vChunks.end(); ++it) {
-		delete *it;
-	}
+	for (CChunk *pChunk : m_vChunks)
+		delete pChunk;
 
 	m_vChunks.clear();
 	m_vSequenceChunks.clear();
@@ -1387,8 +1378,7 @@ void CCompiler::AddBankswitching()
 {
 	// Add bankswitching data
 
-	for (std::vector<CChunk*>::iterator it = m_vChunks.begin(); it != m_vChunks.end(); ++it) {
-		CChunk *pChunk = *it;
+	for (CChunk *pChunk : m_vChunks) {
 		// Frame chunks
 		if (pChunk->GetType() == CHUNK_FRAME) {
 			int Length = pChunk->GetLength();
@@ -2081,12 +2071,12 @@ void CCompiler::StorePatterns(unsigned int Track)
 
 #ifdef REMOVE_DUPLICATE_PATTERNS
 	// Update references to duplicates
-	for (std::vector<CChunk*>::const_iterator it = m_vFrameChunks.begin(); it != m_vFrameChunks.end(); ++it) {
-		for (int j = 0; j < (*it)->GetLength(); ++j) {
-			CStringA str = m_DuplicateMap[(*it)->GetDataRefName(j)];
+	for (const auto pChunk : m_vFrameChunks) {
+		for (int j = 0, n = pChunk->GetLength(); j < n; ++j) {
+			CStringA str = m_DuplicateMap[pChunk->GetDataRefName(j)];
 			if (str.GetLength() != 0) {
 				// Update reference
-				(*it)->UpdateDataRefName(j, str);
+				pChunk->UpdateDataRefName(j, str);
 			}
 		}
 	}
@@ -2171,22 +2161,18 @@ int CCompiler::CountData() const
 	// Only count data
 	int Offset = 0;
 
-	for (std::vector<CChunk*>::const_iterator it = m_vChunks.begin(); it != m_vChunks.end(); ++it) {
-		Offset += (*it)->CountDataSize();
-	}
+	for (const auto pChunk : m_vChunks)
+		Offset += pChunk->CountDataSize();
 
 	return Offset;
 }
 
 CChunk *CCompiler::GetObjectByRef(CStringA label) const
 {
-	for (std::vector<CChunk*>::const_iterator it = m_vChunks.begin(); it != m_vChunks.end(); ++it) {
-		CChunk *pChunk = *it;
+	for (const auto pChunk : m_vChunks)
 		if (!label.Compare(pChunk->GetLabel()))
 			return pChunk;
-	}
-
-	return NULL;
+	return nullptr;
 }
 
 #if 0
