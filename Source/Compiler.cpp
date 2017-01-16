@@ -822,12 +822,20 @@ char* CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 				ptr += 3;
 		}
 
-		int Namco = m_pDocument->GetNamcoChannels();
+		const int CH_MAP[] = {
+			0, 1, 2, 3, 27,
+			6, 7, 8,
+			4, 5, -1,
+			9, 10, 11, 12, 13, 14, 15, 16,
+			17,
+			21, 22, 23, 24, 25, 26,
+			18, 19, 20,
+		};
+
 		for (int i = 0; i < CHANNELS; ++i)
-			if (m_pDocument->GetChannelIndex(i) == -1)
-				pData[FT_CH_ENABLE_ADR + i] = 0;
-			else if (i >= CHANID_N163_CH1 + m_iActualNamcoChannels && i <= CHANID_N163_CH8 && m_iActualNamcoChannels != Namco)
-				pData[FT_CH_ENABLE_ADR + i] = 0;
+			pData[FT_CH_ENABLE_ADR + i] = 0;
+		for (const int x : m_vChanOrder)
+			pData[FT_CH_ENABLE_ADR + CH_MAP[m_pDocument->GetChannelType(x)]] = 1;
 	}
 
 	return (char*)pData;
