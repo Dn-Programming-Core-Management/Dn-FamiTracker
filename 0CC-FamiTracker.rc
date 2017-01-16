@@ -527,8 +527,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,14,4
- PRODUCTVERSION 0,3,14,4
+ FILEVERSION 0,3,14,5
+ PRODUCTVERSION 0,3,14,5
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -545,12 +545,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "HertzDevil"
             VALUE "FileDescription", "0CC-FamiTracker, Extension of FamiTracker"
-            VALUE "FileVersion", "0.3.14.4"
+            VALUE "FileVersion", "0.3.14.5"
             VALUE "InternalName", "0CC-FamiTracker.exe"
             VALUE "LegalCopyright", " (c) jsr, HertzDevil 2005-2016 All rights reserved."
             VALUE "OriginalFilename", "0CC-FamiTracker.exe"
             VALUE "ProductName", "0CC-FamiTracker"
-            VALUE "ProductVersion", "0.3.14.4"
+            VALUE "ProductVersion", "0.3.14.5"
         END
     END
     BLOCK "VarFileInfo"

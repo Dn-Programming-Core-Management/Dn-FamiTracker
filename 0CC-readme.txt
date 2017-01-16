@@ -1,7 +1,7 @@
 0CC-FamiTracker Mod
 Readme / Manual
 Written by HertzDevil
-Version 0.3.14.4 - Aug 4 2016
+Version 0.3.14.5 - Jan 16 2017
 
 --------------------------------------------------------------------------------
 
@@ -46,10 +46,10 @@ with "// // //"; those to the ASM source with ";;; ;; ;" and "; ;; ;;;". Since
 version 0.3.12, the source code is no longer included within the download;
 always consult the Github page for up-to-date source code files.
 
-The current build is based on the version 0.5.0 beta 5 release of the official
-FamiTracker. 0CC-FamiTracker will be ported to newer official releases once they
+The current build is based on the version 0.5.0 beta 5 release of the vanilla
+FamiTracker. 0CC-FamiTracker will be ported to newer vanilla releases once they
 become available; features added in 0CC-FamiTracker may not have identical
-behaviour as the corresponding features on the official branch.
+behaviour as the corresponding features on the vanilla branch.
 
 
 
@@ -76,28 +76,23 @@ behaviour as the corresponding features on the official branch.
                       +==================================+
 
 0CC-FamiTracker 0.3.14.3 and above support the loading of modules created in any
-beta build of official FamiTracker 0.5.0. See
+beta build of vanilla FamiTracker 0.5.0. See
 https://gist.github.com/HertzDevil/c158d826a344e5ffbc0c0989e1c96a24 for the
 current status of porting 0.5.0 beta module features.
 
-The current implementation of the Sunsoft 5B chip, which dates back from version
-0.3.0, is different from the official beta in the following ways:
+The current implementation of the Sunsoft 5B chip is different from the vanilla
+beta in the following ways:
 
-- Hxy and Jxx are currently swapped.
-- Jx0 does not affect whether the current channel produces envelope output.
+- Commands V00 - V03 disable the envelope output and V04 - V07 enable it.
+- Hx0 does not affect whether the current channel produces envelope output.
    Only Vxx and the instrument noise / mode sequence may be used to control the
    envelope flag.
-- The envelope generator is retriggered whenever a note triggers while envelope
-   output is enabled on the channel it belongs to, or any Jxy effect command is
-   issued.
-- Vxx reflects the raw value of the noise / mode sequence, which is combined
-   from the output flags and the noise frequency, while the beta splits this
-   into Vxx and Wxx.
-- A value of 0 in the noise / mode sequence gives the highest noise pitch
-   whereas 31 gives the lowest. This is inverted in the official beta.
+- The envelope generator is retriggered whenever a note triggers on a channel
+   with envelope output enabled, or any Hxy effect command is issued.
 
 0CC-FamiTracker continues to save modules in the format version that is readable
-by official version 
+by vanilla version 0.4.6. There is no guarantee that any 0.5.0 beta module saved
+in the current version of 0CC-FamiTracker can be opened in the beta again.
 
 
 
@@ -252,7 +247,7 @@ actions after x or xx frames have elapsed:
    be less than 0x80.
 - Mxy
    Sets the channel volume to y. This effect has been reserved in the effects
-   enumeration since official 0.3.5. Both parameters must be nonzero for
+   enumeration since vanilla 0.3.5. Both parameters must be nonzero for
    0CC-FamiTracker to recognize this effect.
    After a delayed channel volume effect is issued, the next note will restore
    the original channel volume if the Axy volume slide effect is not active. The
@@ -387,9 +382,8 @@ settings. Inconsistent tracker settings might produce different results.
 
 The instrument recorder only allows logging output that may be represented by
 the respective instrument type of the sound chip; in particular, only sequence
-instruments are supported as of the latest official build of FamiTracker. The
-following features are recorded only once on the _final_ tick of each instrument
-upon playing:
+instruments are supported right now. The following features are recorded only
+once on the _final_ tick of each instrument upon playing:
 
 - The FDS instrument waveform;
 - The frequency modulation parameters for an FDS instrument;
@@ -681,7 +675,7 @@ from the first entry; when the Fxx effect modifies the song speed, it cancels
 the song groove at the same time.
 
 Each track can now use either a default speed or a default groove; songs using a
-default groove index of 0 cannot be opened in official releases.
+default groove index of 0 cannot be opened in vanilla builds.
 
 Each module may store up to:
 
@@ -734,7 +728,7 @@ respective menu commands are available under [Edit] -> [Bookmarks].
                             |  Linear Pitch Mode  |
                             +=====================+
 
-Official FamiTracker 0.4.0 and above contain unused code that would treat all
+Vanilla FamiTracker 0.4.0 and above contain unused code that would treat all
 pitch effects on melodic channels uniformly; as with many other sound engines,
 it achieves this by right-shifting the current pitch register in order to
 approximate a linear pitch space. The linear pitch mode in 0CC-FamiTracker
@@ -779,11 +773,11 @@ correctly tuned note above. For example, P81 is always different from P80, but
 P7F is the same as P80 for the entire octave 7 on any 2A03 channel.
 
 The pitch mode setting can be selected on the module properties dialog. As this
-mode was indeed planned in the official build, the source code contains
-commented out code that would change the format of the PARAMS data block;
-therefore, 0CC-FamiTracker saves this flag separately in a PARAMS_EXTRA data
-block whenever this mode is used, to ensure that modules using linear pitch mode
-do not become incompatible.
+mode was indeed planned in the vanilla build, the source code contains commented
+out code that would change the format of the PARAMS data block; therefore,
+0CC-FamiTracker saves this flag separately in a PARAMS_EXTRA data block whenever
+this mode is used, to ensure that modules using linear pitch mode do not become
+incompatible.
 
 
 
@@ -855,7 +849,7 @@ combinations are the default hotkeys if provided)
    data below the pasted content is pushed downwards.
 - Deselect (Esc)
    Deactivates the current selection, if any. This shortcut exists in the
-   official build but is not assignable there.
+   vanilla build but is not assignable there.
 - Select row/column/pattern/frame/channel/track
    Selects the entire area of the given scope containing the cursor. Multi-frame
    selections must be enabled for the "Channel" and "Track" scopes.
@@ -880,7 +874,7 @@ combinations are the default hotkeys if provided)
    instrument index, and the tracker selects the instrument with the given index
    if it exists.
 - Mask volume (Alt+V)
-   Toggles the volume mask setting. This shortcut exists in the official build
+   Toggles the volume mask setting. This shortcut exists in the vanilla build
    but is not assignable there.
 - Stretch patterns
    Stretches the data in the current active selection using a user-defined map.
@@ -936,6 +930,8 @@ note. This view is useful for recording videos with a lot of channels.
                                  |  Credits  |
                                  +===========+
 
+- jsr: Original developer
+- Alexander283: Original arpeggio scheme proposal
 - ImATrackMan: FDS / 5B NSF hardware recordings
 - ipi: Original implementation of the Lxx effect and expansion chip selector,
    "Usual Day" demo module

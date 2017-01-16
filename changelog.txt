@@ -1,11 +1,57 @@
 0CC-FamiTracker Mod
 Change Log
 Written by HertzDevil
-Version 0.3.14.4 - Aug 4 2016
+
+Version 0.3.14.5 - Jan 16 2017
 
 --------------------------------------------------------------------------------
 
+V0.3.14.5 - 01/16/17
+
+Important Changes:
+ - Effect indices are now remapped to match new effects in vanilla 0.5.0 beta
+ - 5B implementation is basically complete, so previous 0CC-FT 5B modules may
+    become incompatible
+
+Additions:
+ - Ported the following features from 0.5.0 beta:
+    - Reading 0.5.0 beta FTI instrument files
+    - VRC7 Hxx / Ixx / Vxx pattern effects
+    - 5B Wxx pattern effect
+ - Added one-past-the-end frame editor row
+
+Improvements:
+ - Swapped 5B Hxy / Jxx and inverted noise pitch values to match 0.5.0 beta
+ - 5B Wxx effect can be used on any 5B channel
+ - 5B automatic envelope frequency now rounds off instead of rounds down
+ - Exported multichip NSFs no longer contain data for unused sound chips
+ - Changes to pattern indices now respect active frame selections
+ - Creating a frame selection now always sets the focus to the frame editor
+ - BPM display now follows current highlight settings
+ - Groove settings dialog now shows a "*" for non-empty grooves
+
+Bug fixes:
+ - Fixed tracker failing to read registry settings if the key "FamiTracker" does
+    not exist
+ - Fixed crashes due to deleting instruments while they are being used by the
+    player
+ - Fixed tracker crashing when reading from any 0.5.0 beta module containing
+    note data on row 0x80 or below
+ - Fixed VRC7 channels not resetting the pitch after note cuts during an active
+    3xx command
+ - Fixed groove settings dialog not restoring previous values after selecting
+    "Cancel"
+ - Instrument editor now displays "-y" properly for arpeggio schemes
+ - Fixed undo operations for changing pattern indices
+ - Fixed Ctrl / Shift + Mouse Wheel not working without an active selection in
+    the pattern editor while playing with follow mode disabled
+ - Fixed "Populate Unique Patterns" command and changes to expansion chip
+    configuration erasing song names
+
+
+
 V0.3.14.4 - 08/04/16
+
 Bug fixes:
  - Fixed recent file list not updating the registry if cleared without being
     viewed again at least once
@@ -13,7 +59,10 @@ Bug fixes:
  - Fixed most bugs related to portamento effects on the VRC7 channels in the
     tracker
 
+
+
 V0.3.14.3 - 08/03/16
+
 Additions:
  - Ported the following features from 0.5.0 beta:
     - Reading 0.5.0 beta FTMs and importing 0.5.0 beta text files
@@ -23,6 +72,7 @@ Additions:
     - 64-step instrument volume sequences for VRC6 sawtooth
     - Module global tuning
     - Player bookmark (as "row marker")
+
 Improvements:
  - Ported the following changes from 0.5.0 beta:
     - Sunsoft 5B code using Blip_Buffer
@@ -52,6 +102,7 @@ Improvements:
     mode sequences
  - Redone detune dialog
  - "Strict" is now above "Official" for module error levels
+
 Bug fixes:
  - Fixed tracker crashing when retrieving the state of a non-existent groove
  - Fixed pattern editor not allowing C-0 in polyphonic note preview
@@ -79,10 +130,14 @@ Bug fixes:
  - Fixed VRC7 using an incorrect pitch lookup table in exported NSFs
  - Fixed VRC7 not making any sound in exported NSFs after using a note release
 
+
+
 V0.3.14.2 - 05/23/16
+
 Additions:
  - Added linear pitch mode (originally from official 0.4.0)
  - Added split keyboard settings dialog
+
 Improvements:
  - Keyboard input now queues notes to different channels of identical type when
     edit mode is disabled
@@ -102,8 +157,8 @@ Improvements:
     option
  - Added menu command to clear the most recently used file list
  - Added shortcut to select instrument by typing instrument number
+
 Bug fixes:
- - Fixed tracker sometimes waiting indefinitely while loading a module
  - Fixed file save dialog not displaying .ftm files when saving modified
     untitled files while loading another document
  - Undoable actions no longer overwrite the redo state information every time
@@ -140,7 +195,10 @@ Bug fixes:
     channel has not used any instrument
  - Fixed VRC7 channels inverting the 4xy vibrato pitch offset in the tracker
 
+
+
 V0.3.14.1 - 04/09/16
+
 Improvements:
  - Tracker now pads DPCM samples with invalid size on opening a module
  - Added shortcuts to toggle or solo the currently selected sound chip
@@ -150,6 +208,7 @@ Improvements:
  - Cxx effect now finishes playing the current row before halting
  - The 2A03 frame counter is now clocked at exactly 240 Hz (slightly more
     accurate than before)
+
 Bug fixes:
  - Tracker no longer validates invalid notes (according to official build)
  - Fixed frame editor not moving the cursor to the clicked channel when clicking
@@ -176,11 +235,15 @@ Bug fixes:
  - Fixed new notes on N163 channels not updating the wave buffer in exported
     NSFs if instrument does not use a wave instrument sequence
 
+
+
 V0.3.14.0 - 03/31/16
+
 Additions:
  - Added the *.0cc file extension
  - Added diagnostic information when loading invalid modules
  - Added transpose dialog
+
 Improvements:
  - 2A03 instruments now implement the instrument interface
  - FDS instruments are compatible with other channels (as untyped sequence
@@ -189,6 +252,7 @@ Improvements:
  - Implemented FDS Zxx in exported NSFs
  - Reordered main frame menu for clearer organization
  - Re-added fine spectrum visualizer
+
 Bug fixes:
  - Fixed document wrapper for custom exporters crashing when retrieving a non-
     existent instrument
@@ -212,11 +276,15 @@ Bug fixes:
  - Fixed BPM display showing values above maximum tempo at current refresh rate
  - Fixed VRC6 channels sometimes generating an extra click on starting
 
+
+
 V0.3.13 - 11/16/15
+
 Additions:
  - Added a command to create new instruments by recording the output of certain
     channels as instrument sequences
  - Instruments of all sound chips (except FDS and VRC7) are compatible
+
 Improvements:
  - "Retrieve channel state" now respects Fxx and Oxx effects, as well as current
     groove position
@@ -227,6 +295,7 @@ Improvements:
     is not on the note column when edit mode is disabled
  - Ctrl + Left/Right now shifts the phase of the current wave in the FDS / N163
     wave editor, Ctrl + Down inverts the wave
+
 Bug fixes:
  - [11/30/15 interim build] A00 command now updates the channel default volume
     for subsequent Axy and Mxy effects
@@ -257,15 +326,19 @@ Bug fixes:
  - Fixed the above bug crashing NSFs containing the FDS chip
  - Fixed 1xx, 2xx, 3xx effects becoming 1/4 as fast on N163 in exported NSFs
 
+
+
 V0.3.12 - 10/17/15
+
 Additions:
  - Added FDS automatic frequency modulation effects
  - Bookmark manager no longer crashes
  - Added a menu command to swap pattern data of two channels in the FTM
+
 Improvements:
  - Added a menu command that displays the estimated song duration
  - Pattern editor does not play notes from keyboard input while playing with
-    edit mode enabled and follow mode disabled (experimental)
+    edit mode enabled and follow mode disabled
  - Selections in compact view always include all columns in selected channels
  - Arpeggio scheme sequence editor now displays the arpeggio type of the term
     below the mouse cursor properly
@@ -277,6 +350,7 @@ Improvements:
     effect pattern data
  - Added a context menu command for the VRC7 instrument editor to copy the
     current instrument as plain text values
+
 Bug fixes:
  - Tracker no longer crashes upon loading FTMs that contain patterns with zero
     non-empty rows
@@ -303,9 +377,13 @@ Bug fixes:
  - Fixed Axy and Mxy resetting the channel volume incorrectly
  - Fixed N163 Zxx effect not setting the correct wave position in exported NSFs
 
+
+
 V0.3.11r1 - 07/12/15
+
 Improvements:
  - Added simple wildcard for search query ("." character)
+
 Bug fixes:
  - Pasting single-channel pattern data that begins from a channel volume column
     no longer moves the target selection area depending on the cursor position
@@ -319,9 +397,13 @@ Bug fixes:
  - Fixed ^0 echo buffer access retrieving incorrect notes outside 2A03 Pulse 1
     in exported NSFs
 
+
+
 V0.3.11 - 07/09/15
+
 Additions:
  - Added pattern bookmark manager and go to dialog
+
 Improvements:
  - Added a visual waveform manager for the N163 instrument editor
  - Added an option in the configuration menu to disable selections across frames
@@ -330,6 +412,7 @@ Improvements:
  - "Copy As Plain Text" now includes header row containing channel names
  - "Recall Channel State" now respects several run-time effects while playing
  - Loop points of instrument sequences can be placed after release points
+
 Bug fixes:
  - Tracker can no longer open more than one performance dialog or groove
     settings dialog
@@ -353,12 +436,16 @@ Bug fixes:
     Vxx behaviour in official builds)
  - Fixed VRC7 detune table not being exported to NSFs
 
+
+
 V0.3.10 - 06/02/15
+
 Additions:
  - Added Exx effect for the FDS channel's hardware volume envelope control
  - Added a hotkey to recall the current channel state on the status bar
  - Added fixed tempo support, which ignores tempo and directly uses the speed
     value as the number of ticks per row
+
 Improvements:
  - Increased frame limit and pattern limit to 256
  - Added menu commands to copy the current selection as volume sequence, text or
@@ -367,6 +454,7 @@ Improvements:
  - Added keyboard shortcuts and menu entries for selection in various scopes
  - Echo buffer command "^0" is now allowed
  - Moved DPCM states to "Display register state"
+
 Bug fixes:
  - Application title is finally set to "0CC-FamiTracker"
  - Fixed undo issues with paste command and drag/drop paste
@@ -413,7 +501,10 @@ Bug fixes:
  - WAV and NSFe export now handle track durations properly when disjoint parts
     of the same frame are visited twice in a loop
 
+
+
 V0.3.9 - 04/12/15
+
 Additions:
  - Selection can now span across frame boundaries
  - Added several special pasting modes
@@ -421,6 +512,7 @@ Additions:
     all channels from previous rows
  - Added a compact view mode which displays only the note fields in the pattern
     editor and hides all other columns
+
 Improvements:
  - Ported to the version of NSF driver used in official FamiTracker 0.4.6
  - The configuration menu's general tab is re-organized
@@ -456,6 +548,7 @@ Improvements:
     (like NSDL)
  - Sequence MML field now splits hexadecimal strings into signed bytes
  - The N163 wave buffer effect is renamed to Zxx
+
 Bug fixes:
  - Program now displays properly on higher DPI settings
  - Fixed the register display showing notes below octave 1 improperly
@@ -512,12 +605,16 @@ Bug fixes:
  - Fixed the tracker exporting invalid pattern data when the N163 wave buffer
     effect has an out-of-bound parameter
 
+
+
 V0.3.8 - 02/16/15
+
 Additions:
  - Added Txy delayed transpose effect
  - Added an option to export raw data of all non-empty rows as CSV
  - Effect hints now appear after updating a pattern effect command
  - Added a menu command to remove all unused DPCM samples and DPCM assignments
+
 Improvements:
  - Ported to official FamiTracker 0.4.6 and NSF driver 2.11
  - "Display register state" supports Nintendo MMC5, Konami VRC7, and Sunsoft 5B
@@ -540,6 +637,7 @@ Improvements:
  - The status bar now displays the current row and frame index in hexadecimal
     numbers when "Show row numbers in hex" is enabled
  - Qxy and Rxy now affect the first entry of the echo buffer immediately
+
 Bug fixes:
  - Sunsoft 5B channels no longer desync upon playing
  - Fixed a bug with the Lxx effect where no note release is issued if the non-
@@ -554,10 +652,14 @@ Bug fixes:
  - Fixed FTM import not accepting Sunsoft 5B instruments
  - Replacement query now handles expansion chip-specific effects correctly
 
+
+
 V0.3.7 - 01/18/15
+
 Additions:
  - Added Yxx wave buffer access for N163 channels
  - Added Find / Replace tab
+
 Improvements:
  - Added information panel for the detune settings dialog
  - Added hotkey configuration for the Volume Mask command
@@ -567,6 +669,7 @@ Improvements:
     size is zero
  - Both the effect type and parameter are remembered together when recalled
     later using the Repeat key
+
 Bug fixes:
  - Fixed a bug where the text importer could not load N163 instruments with a
     wave size of larger than 128
@@ -574,16 +677,21 @@ Bug fixes:
     not checked in the configuration menu
  - Fixed truncation error of the Tune button in the detune settings dialog
 
+
+
 V0.3.6 - 01/09/15
+
 Additions:
  - Added ad-hoc support for NSF export using multiple expansion chips
  - Added delayed channel volume effect in FamiTracker
+
 Improvements:
  - Improved Shift + Mouse Wheel behaviour
  - Shift + Mouse Wheel wraps values only when the corresponding configuration is
     checked (disabled by default)
  - Instruments reset the 0xy effect's counter when it plays an arpeggio scheme
  - "x" and "y" are case-insensitive in the arpeggio scheme MML input box
+
 Bug fixes:
  - When "Preview next/previous frame" is checked, 0CC-FamiTracker now moves to
     the previous channel properly using the up arrow key when the step size is
@@ -597,16 +705,21 @@ Bug fixes:
     created channels when both the expansion chip combination and the number of
     N163 channels have been modified
 
+
+
 V0.3.5 - 01/01/15
+
 Additions:
  - Added echo buffer
  - Added support for NSFe export
  - Added delayed channel volume effect (implemented in ASM only)
  - Added specs.txt
+
 Improvements:
  - Text importer and exporter now supports detune tables and grooves
  - Text importer now allows retry / ignore upon encountering an unknown command
  - Blank field dash and row number are properly aligned to the centre
+
 Bug fixes:
  - Fixed N163 NSF export not working
  - Text importer uses the correct form of channel-exclusive effects sharing the
@@ -617,30 +730,40 @@ Bug fixes:
  - Fixed configuration volume not affecting Sunsoft 5B channels
  - 0CC-FamiTracker can now save and load Sunsoft 5B instruments
 
+
+
 V0.3.4 - 12/28/14
+
 Additions:
  - Added groove settings
  - Added GROOVES block in FTM format
+
 Improvements:
  - Namco 163 can use unused registers for the waveform memory when there are
     fewer than 8 N163 channels (up to 240 samples if there is only one channel)
  - 0CC-FamiTracker now skips sequence, instrument and DPCM blocks upon saving if
     these blocks contain no data
+
 Bug fixes:
  - Fixed note cut not working on Sunsoft 5B channels in exported NSFs
  - Fixed Qxy and Rxy not working properly on the noise channel
 
+
+
 V0.3.3 - 12/25/14
+
 Additions:
  - Added Exx effect for hardware envelope and length counter control
  - Added Sxx effect for 2A03 triangle channel linear counter
  - Added two demo FTMs demonstrating the 2A03 hardware features
+
 Improvements:
  - 2A03 hardware sweep emulation is more accurate
  - Sunsoft 5B channels are properly tuned
  - Sunsoft 5B uses a subtractive volume table to handle its exponential volume
  - Shift + Mouse Wheel can alter individual values of two-parameter effects
  - Shift + Mouse Wheel can now wrap values upon overflowing
+
 Bug fixes:
  - Noise channel no longer halts in pitch slides and relative arpeggio sequences
     due to the channel notes' intrinsic octave and pitch
@@ -649,54 +772,75 @@ Bug fixes:
  - Fixed expansion chip selector not removing pattern data in newly created
     channels
 
+
+
 V0.3.2 - 12/20/14
+
 Additions:
  - Added DETUNETABLES block in FTM format
  - Implemented detune settings dialog
+
 Improvements:
  - Default N163 pitch table is more accurate
  - Default VRC7 pitch table is more accurate (this is already implemented in the
     official FamiTracker releases)
  - Removed detune table for Sunsoft 5B (now identical to 2A03 / NTSC)
+
 Bug Fixes:
  - Fixed a bug where the Lxx parameter in exported NSFs is 1 larger than in FTM
 
+
+
 V0.3.1 - 12/16/14
+
 Bug Fixes:
  - Fixed Vxx not working on 5B channels
  - Fixed 5B noise mode sequences not working in NSF export
 
+
+
 V0.3.0 - 12/15/14
+
 Additions:
  - Added full support for the Sunsoft 5B expansion chip
  - Added expansion chip selector from ipi's build
  - Added one demo FTM demonstrating the 0CC-FamiTracker implementation of the
     Sunsoft 5B chip
  - Added one demo FTM demonstrating the Lxx effect
+
 Improvements:
  - Frame editor returns to the first channel after modifying the pattern index
     on the last channel
  - NSFs can be exported in linear mode (they were forced in bankswitching mode
     since the first version)
 
+
+
 V0.2.4 - 12/11/14
+
 Additions:
  - Added one demo FTM demonstrating the tempo fix
  - Added detune settings (implemented in V0.3.2)
+
 Bug Fixes:
  - Fixed tempo truncation error in FamiTracker
  - Fixed Lxx not working on the DPCM channel
 
+
+
 V0.2.3 - 12/07/14
+
 Additions:
  - Sunsoft 5B envelope toggle is now incorporated into instrument duty sequences
  - Vxx for the Sunsoft 5B channels, same effect as 5B duty sequence entry
+
 Improvements:
  - Status bar now shows the combination of expansion chips in multichip FTMs
  - 0CC-FamiTracker now removes all unused sequences upon removing unused
     instruments
  - Undo reverts the "file is modified" flag if the original state of the FTM can
     be restored
+
 Bug Fixes:
  - Fixed scrolling during drag-and-drop when there are a lot of channels
  - 0CC-FamiTracker now uses the QWERTY key code constants
@@ -708,10 +852,14 @@ Bug Fixes:
  - N163 instruments no longer set the "file is modified" flag upon editing if
     there is more than one waveform
 
+
+
 V0.2.2 - 12/03/14
+
 Additions:
  - Ctrl+Shift+M now toggles Namco 163 multiplexer emulation, enabled by default
  - Namco 163 waveforms can be up to 128 samples long
+
 Improvements:
  - Multichip FTMs load properly when there are fewer than 8 N163 channels
  - Instrument editor always moves the pattern editor cursor to one of the
@@ -720,40 +868,59 @@ Improvements:
     files instead of Swedish (Sweden)
  - Better easter egg
  - N163 waves automatically prevent reading from the non-wave registers
+
 Bug Fixes:
  - Fixed NSF export bug for FDS and N163 which use invalid pitch table pointers
  - Fixed NSF export bug for VRC7 where VRC7 channels are two octaves lower
  - Lxx effect no longer affects new notes, only existing notes
 
+
+
 V0.2.1 - 11/29/14
+
 Additions:
  - Added an easter egg (included in source code since V0.3.8)
+
 Improvements:
  - Arpeggio sequence graph editor initializes at the correct vertical position
     in Scheme mode
+
 Bug Fixes:
  - Fixed a bug where arpeggio schemes cannot be input using the MML field
 
+
+
 V0.2.0 - 11/28/14
+
 Additions:
  - Added the ability to read custom pitch tables
  - Added delayed note release effect (Lxx)
+
 Bug Fixes:
  - Program now displays properly on higher DPI settings
 
+
+
 V0.1.1 - 09/14/14
+
 Improvements:
  - MML field now displays arpeggio schemes with "x" and "y" properly
  - MML field accepts "+x" and "+y" as terms
+
 Bug Fixes:
  - Arpeggio sequence graph editor will not affect "x" and "y" in sequence terms
  - Fixed a bug that treats negative numerals in front of terms incorrectly
 
+
+
 V0.1.0 - 09/12/14
+
 Additions:
  - Initial release
  - Added arpeggio schemes
  - 5 demo FTMs, one with permission from ipi
+
+
 
 --------------------------------------------------------------------------------
 

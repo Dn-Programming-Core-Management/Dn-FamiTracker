@@ -1,45 +1,9 @@
 0CC-FamiTracker Mod
 Specification
 Written by HertzDevil
-Version 0.3.14.4 - Aug 4 2016
+Version 0.3.14.5 - Jan 16 2017
 
 --------------------------------------------------------------------------------
-
-	===
-	Newly added enumerable types
-	===
-
-The following values are added to the effect_t enumeration:
- - Mxy: 0x19: delayed channel volume
- - Lxx: 0x21: delayed note release
- - Oxx: 0x22: groove setting
- - Txy: 0x23: delayed transpose
- - Zxx: 0x24: N163 wave buffer setting
- - Exx: 0x25: FDS hardware volume envelope
- - Zxx: 0x26: FDS auto-FM bias setting
-The values above are subject to changes once all 0.5.0 beta effects are ported.
-
-The following effect command bytes are added to the NSF export format:
- - Lxx: 0xBC: delayed note release
- - Sxx: 0xBE: linear counter
- - Oxx: 0xC0: groove setting
- - Mxy: 0xC2: delayed channel volume
- - Txy: 0xC4: delayed transpose
-
-The following effect command bytes are added to the NSF export format, relative
-to the largest command value of the previous sound chip:
- - Hxx: 0x02: FDS FM depth
- - Ixx: 0x04: FDS FM rate, high byte
- - Jxx: 0x06: FDS FM rate, low byte
- - Exx: 0x08: FDS hardware volume envelope
- - Zxx: 0x0A: FDS auto-FM bias setting
- - Zxx: 0x02: N163 wave buffer setting
- - Jxy: 0x02: 5B envelope shape
- - Ixx: 0x04: 5B envelope rate, high byte
- - Hxx: 0x06: 5B envelope rate, low byte
-
-The following note bytes are added to the FTM format:
- -  ^x: 0x0F: Echo buffer access
 
 	===
 	DETUNETABLES Block
