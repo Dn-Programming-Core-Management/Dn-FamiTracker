@@ -553,6 +553,19 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 						WriteData(EffParam);
 					}
 					break;
+				// // // VRC7
+				case EF_VRC7_PORT:
+					if (ChipID == SNDCHIP_VRC7) {
+						WriteData(Command(CMD_EFF_VRC7_PORT));
+						WriteData(EffParam & 0x07);
+					}
+					break;
+				case EF_VRC7_WRITE:
+					if (ChipID == SNDCHIP_VRC7) {
+						WriteData(Command(CMD_EFF_VRC7_WRITE));
+						WriteData(EffParam);
+					}
+					break;
 				// FDS
 				case EF_FDS_MOD_DEPTH:
 					if (ChanID == CHANID_FDS) {
