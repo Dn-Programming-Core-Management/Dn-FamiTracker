@@ -1295,14 +1295,14 @@ void CFamiTrackerView::OnInitialUpdate()
 
 	// Setup order window
 	pFrameEditor->AssignDocument(pDoc, this);
-
-	// Notify the pattern view about new document & view
 	m_pPatternEditor->SetDocument(pDoc, this);
-	m_pPatternEditor->ResetCursor();
-	pFrameEditor->ResetCursor();		// // //
 
 	// Always start with first track
 	pMainFrame->SelectTrack(0);
+
+	// Notify the pattern view about new document & view
+	m_pPatternEditor->ResetCursor();
+	pFrameEditor->ResetCursor();		// // //
 
 	// Update mainframe with new document settings
 	pMainFrame->UpdateInstrumentList();
