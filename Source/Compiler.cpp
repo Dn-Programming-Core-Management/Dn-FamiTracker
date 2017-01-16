@@ -1509,6 +1509,9 @@ void CCompiler::CreateMainHeader()
 	// Writes the music header
 	int TicksPerSec = m_pDocument->GetEngineSpeed();
 
+	int Chip = m_pDocument->GetExpansionChip();		// // //
+	bool bMultichip = (Chip & (Chip - 1)) != 0;
+
 	unsigned short DividerNTSC, DividerPAL;
 
 	CChunk *pChunk = CreateChunk(CHUNK_HEADER, "");
@@ -1540,14 +1543,14 @@ void CCompiler::CreateMainHeader()
 	pChunk->StoreByte(Flags);
 
 	// FDS table, only if FDS is enabled
-	if (m_pDocument->ExpansionEnabled(SNDCHIP_FDS))
+	if (m_pDocument->ExpansionEnabled(SNDCHIP_FDS) || bMultichip)
 		pChunk->StoreReference(CChunkRenderText::LABEL_WAVETABLE);
 
 	pChunk->StoreWord(DividerNTSC);
 	pChunk->StoreWord(DividerPAL);
 
 	// N163 channel count
-	if (m_pDocument->ExpansionEnabled(SNDCHIP_N163)) {
+	if (m_pDocument->ExpansionEnabled(SNDCHIP_N163) || bMultichip) {
 		/*if (m_pDocument->GetExpansionChip() != SNDCHIP_N163)		// // //
 			pChunk->StoreByte(8);
 		else*/ pChunk->StoreByte(std::max(m_iActualNamcoChannels, 1));
