@@ -685,3 +685,4 @@ const int DRIVER_RELOC_ADR_ALL[] = {
 const unsigned int VIBRATO_TABLE_LOCATION_ALL = 0x26DB;
 
 const int FT_UPDATE_EXT_ADR = 0x4DD;
+const int FT_CH_ENABLE_ADR = 0x23F6;

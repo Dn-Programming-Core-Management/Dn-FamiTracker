@@ -4032,6 +4032,8 @@ void CFamiTrackerDoc::SetNamcoChannels(int Channels, bool Move)
 			m_pTracks[i] = pNew;
 		}
 	}
+
+	SelectExpansionChip(m_iExpansionChip, false);		// // //
 }
 
 int CFamiTrackerDoc::GetNamcoChannels() const

@@ -808,7 +808,8 @@ char* CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 	if (m_iActualChip == SNDCHIP_N163) {
 		pData[m_iDriverSize - 2 - 0x100 - 0xC0 * 2 - 8 - 1 - 8 + m_iActualNamcoChannels] = 3;
 	}
-	if (m_pDocument->GetExpansionChip() == 0x3F) {		// // // // special processing
+
+	if (m_iActualChip & (m_iActualChip - 1)) {		// // // special processing for multichip
 		int ptr = FT_UPDATE_EXT_ADR;
 		for (int i = 0; i < 6; ++i) {
 			ASSERT(pData[ptr] == 0x20); // jsr
@@ -820,6 +821,13 @@ char* CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 			else
 				ptr += 3;
 		}
+
+		int Namco = m_pDocument->GetNamcoChannels();
+		for (int i = 0; i < CHANNELS; ++i)
+			if (m_pDocument->GetChannelIndex(i) == -1)
+				pData[FT_CH_ENABLE_ADR + i] = 0;
+			else if (i >= CHANID_N163_CH1 + m_iActualNamcoChannels && i <= CHANID_N163_CH8 && m_iActualNamcoChannels != Namco)
+				pData[FT_CH_ENABLE_ADR + i] = 0;
 	}
 
 	return (char*)pData;
@@ -1253,8 +1261,9 @@ bool CCompiler::CompileData()
 			m_pDriverData = &DRIVER_PACK_ALL;
 			m_iVibratoTableLocation = VIBRATO_TABLE_LOCATION_ALL;
 			Print(_T(" * Multiple expansion chips enabled\n"));
-			m_pDocument->SetNamcoChannels(8, true);
-			m_pDocument->SelectExpansionChip(0x3F, true);
+//			if (m_pDocument->ExpansionEnabled(SNDCHIP_N163))
+//				m_pDocument->SetNamcoChannels(8, true);
+//			m_pDocument->SelectExpansionChip(0x3F, true);
 			break;
 	}
 
@@ -1276,7 +1285,7 @@ bool CCompiler::CompileData()
 	}
 	if (Chip & SNDCHIP_N163) {
 		int lim = m_iActualNamcoChannels;
-		if (Chip & ~SNDCHIP_N163) lim = 8;
+//		if (Chip & ~SNDCHIP_N163) lim = 8;
 		for (int i = 0; i < lim; i++) { // 0CC: use m_iActualNamcoChannels once cc65 is embedded
 			int Channel = m_pDocument->GetChannelIndex(CHANID_N163_CH1 + i);
 			m_vChanOrder.push_back(Channel);
