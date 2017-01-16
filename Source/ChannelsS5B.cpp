@@ -36,7 +36,7 @@
 // Static member variables, for the shared stuff in 5B
 int			  CChannelHandlerS5B::m_iModes		= 0;
 int			  CChannelHandlerS5B::m_iNoiseFreq	= 0;
-int			  CChannelHandlerS5B::m_iNoisePrev	= 0;
+int			  CChannelHandlerS5B::m_iNoisePrev	= -1;
 int			  CChannelHandlerS5B::m_iDefaultNoise = 0;		// // //
 unsigned char CChannelHandlerS5B::m_iEnvFreqHi	= 0;
 unsigned char CChannelHandlerS5B::m_iEnvFreqLo	= 0;
@@ -183,6 +183,7 @@ void CChannelHandlerS5B::ResetChannel()
 
 	m_iDefaultDuty = m_iDutyPeriod = S5B_MODE_SQUARE;
 	m_iDefaultNoise = m_iNoiseFreq = 0;		// // //
+	m_iNoisePrev = -1;		// // //
 	m_bEnvelopeEnabled = false;
 	m_iAutoEnvelopeShift = 0;
 	m_iEnvFreqHi = 0;

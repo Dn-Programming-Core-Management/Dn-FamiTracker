@@ -560,64 +560,66 @@ void CFamiTrackerApp::CheckNewVersion(bool StartUp)		// // //
 		HINTERNET hOpen, hConnect, hRequest;
 		CString jsonStr;
 
-		if ((hOpen = InternetOpen(_T("0CC_FamiTracker"), INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0)) &&
-			(hConnect = InternetConnect(hOpen, _T("api.github.com"),
-			INTERNET_DEFAULT_HTTPS_PORT, _T(""), _T(""), INTERNET_SERVICE_HTTP, 0, 0)) &&
-			(hRequest = HttpOpenRequest(hConnect, _T("GET"), _T("/repos/HertzDevil/0CC-FamiTracker/releases"),
-			_T("HTTP/1.0"), NULL, rgpszAcceptTypes,
-			INTERNET_FLAG_RELOAD | INTERNET_FLAG_SECURE | INTERNET_FLAG_NO_CACHE_WRITE, NULL))) try {
-			HttpAddRequestHeaders(hRequest, _T("Content-Type: application/json\r\n"), -1, HTTP_ADDREQ_FLAG_ADD);
+		try {
+			if ((hOpen = InternetOpen(_T("0CC_FamiTracker"), INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0)) &&
+				(hConnect = InternetConnect(hOpen, _T("api.github.com"),
+				INTERNET_DEFAULT_HTTPS_PORT, _T(""), _T(""), INTERNET_SERVICE_HTTP, 0, 0)) &&
+				(hRequest = HttpOpenRequest(hConnect, _T("GET"), _T("/repos/HertzDevil/0CC-FamiTracker/releases"),
+				_T("HTTP/1.0"), NULL, rgpszAcceptTypes,
+				INTERNET_FLAG_RELOAD | INTERNET_FLAG_SECURE | INTERNET_FLAG_NO_CACHE_WRITE, NULL))) {
+				HttpAddRequestHeaders(hRequest, _T("Content-Type: application/json\r\n"), -1, HTTP_ADDREQ_FLAG_ADD);
 
-			if (!HttpSendRequest(hRequest, NULL, 0, NULL, 0)) throw GetLastError();
-			while (true) {
-				DWORD Size;
-				if (!InternetQueryDataAvailable(hRequest, &Size, 0, 0)) throw GetLastError();
-				if (!Size) break;
-				char *Buf = new char[Size + 1]();
-				DWORD Received = 0;
-				for (DWORD i = 0; i < Size; i += 1024) {
-					DWORD Length = (Size - i < 1024) ? Size % 1024 : 1024;
-					if (!InternetReadFile(hRequest, Buf + i, Length, &Received))
-						throw GetLastError();
+				if (!HttpSendRequest(hRequest, NULL, 0, NULL, 0)) throw GetLastError();
+				while (true) {
+					DWORD Size;
+					if (!InternetQueryDataAvailable(hRequest, &Size, 0, 0)) throw GetLastError();
+					if (!Size) break;
+					char *Buf = new char[Size + 1]();
+					DWORD Received = 0;
+					for (DWORD i = 0; i < Size; i += 1024) {
+						DWORD Length = (Size - i < 1024) ? Size % 1024 : 1024;
+						if (!InternetReadFile(hRequest, Buf + i, Length, &Received))
+							throw GetLastError();
+					}
+					jsonStr += Buf;
+					SAFE_RELEASE_ARRAY(Buf);
 				}
-				jsonStr += Buf;
-				SAFE_RELEASE_ARRAY(Buf);
-			}
-			nlohmann::json j = nlohmann::json::parse(jsonStr.GetBuffer());
-			for (const auto &i : j) {
-				int Ver[4] = { };
-				sscanf_s(i["tag_name"].get<std::string>().c_str(),
-						 "v%u.%u.%u%*1[.r]%u", Ver, Ver + 1, Ver + 2, Ver + 3);
-				if (Ver[0] > VERSION_API || Ver[0] == VERSION_API &&
-					(Ver[1] > VERSION_MAJ || Ver[1] == VERSION_MAJ &&
-					(Ver[2] > VERSION_MIN || Ver[2] == VERSION_MIN &&
-					Ver[3] > VERSION_REV))) {
-					int Y = 1970, M = 1, D = 1;
-					sscanf_s(i["published_at"].get<std::string>().c_str(), "%d-%d-%d", &Y, &M, &D);
-					static const CString MONTHS[] = {
-						_T("Jan"), _T("Feb"), _T("Mar"), _T("Apr"), _T("May"), _T("Jun"),
-						_T("Jul"), _T("Aug"), _T("Sept"), _T("Oct"), _T("Nov"), _T("Dec"),
-					};
+				nlohmann::json j = nlohmann::json::parse(jsonStr.GetBuffer());
+				for (const auto &i : j) {
+					int Ver[4] = { };
+					sscanf_s(i["tag_name"].get<std::string>().c_str(),
+							 "v%u.%u.%u%*1[.r]%u", Ver, Ver + 1, Ver + 2, Ver + 3);
+					if (Ver[0] > VERSION_API || Ver[0] == VERSION_API &&
+						(Ver[1] > VERSION_MAJ || Ver[1] == VERSION_MAJ &&
+						(Ver[2] > VERSION_MIN || Ver[2] == VERSION_MIN &&
+						Ver[3] > VERSION_REV))) {
+						int Y = 1970, M = 1, D = 1;
+						sscanf_s(i["published_at"].get<std::string>().c_str(), "%d-%d-%d", &Y, &M, &D);
+						static const CString MONTHS[] = {
+							_T("Jan"), _T("Feb"), _T("Mar"), _T("Apr"), _T("May"), _T("Jun"),
+							_T("Jul"), _T("Aug"), _T("Sept"), _T("Oct"), _T("Nov"), _T("Dec"),
+						};
 
-					CString desc = i["body"].get<std::string>().c_str();
-					int Index = desc.Find(_T("\r\n\r\n"));
-					if (Index >= 0)
-						desc.Delete(0, Index + 4);
-					Index = desc.Find(_T("\r\n\r\n#"));
-					if (Index >= 0)
-						desc.Truncate(Index);
+						CString desc = i["body"].get<std::string>().c_str();
+						int Index = desc.Find(_T("\r\n\r\n"));
+						if (Index >= 0)
+							desc.Delete(0, Index + 4);
+						Index = desc.Find(_T("\r\n\r\n#"));
+						if (Index >= 0)
+							desc.Truncate(Index);
 
-					m_pVersionMessage.Format(_T("A new version of 0CC-FamiTracker is now available:\n\n"
-											 "Version %d.%d.%d.%d (released %s %d, %d)\n\n%s\n\n"
-											 "Pressing \"Yes\" will launch the Github web page for this release."),
-											 Ver[0], Ver[1], Ver[2], Ver[3], MONTHS[--M], D, Y, desc);
-					if (Start)
-						m_pVersionMessage.Append(_T(" (Version checking on startup may be disabled in the configuration menu.)"));
-					m_pVersionURL.Format(_T("https://github.com/HertzDevil/0CC-FamiTracker/releases/tag/v%d.%d.%d.%d"),
-										 Ver[0], Ver[1], Ver[2], Ver[3]);
-					m_iVersionStyle = MB_YESNO | MB_ICONINFORMATION;
-					m_bVersionReady = true;
-					break;
+						m_pVersionMessage.Format(_T("A new version of 0CC-FamiTracker is now available:\n\n"
+												 "Version %d.%d.%d.%d (released %s %d, %d)\n\n%s\n\n"
+												 "Pressing \"Yes\" will launch the Github web page for this release."),
+												 Ver[0], Ver[1], Ver[2], Ver[3], MONTHS[--M], D, Y, desc);
+						if (Start)
+							m_pVersionMessage.Append(_T(" (Version checking on startup may be disabled in the configuration menu.)"));
+						m_pVersionURL.Format(_T("https://github.com/HertzDevil/0CC-FamiTracker/releases/tag/v%d.%d.%d.%d"),
+											 Ver[0], Ver[1], Ver[2], Ver[3]);
+						m_iVersionStyle = MB_YESNO | MB_ICONINFORMATION;
+						m_bVersionReady = true;
+						break;
+					}
 				}
 			}
 		}
