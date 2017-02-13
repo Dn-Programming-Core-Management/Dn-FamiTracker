@@ -127,7 +127,7 @@ void CInstrumentN163::SaveFile(CInstrumentFile *pFile)
 
 	pFile->WriteInt(WaveSize);
 	pFile->WriteInt(GetWavePos());
-	pFile->WriteInt(m_bAutoWavePos);		// // // 050B
+//	pFile->WriteInt(m_bAutoWavePos);		// // // 050B
 	pFile->WriteInt(WaveCount);
 
 	for (int i = 0; i < WaveCount; ++i) {
