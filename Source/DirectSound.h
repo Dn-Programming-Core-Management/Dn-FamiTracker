@@ -21,7 +21,6 @@
 #ifndef DSOUND_H
 #define DSOUND_H
 
-#include <windows.h>
 #include <mmsystem.h>
 #include <dsound.h>
 

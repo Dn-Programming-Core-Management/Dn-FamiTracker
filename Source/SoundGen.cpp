@@ -39,6 +39,7 @@
 #include "VisualizerWnd.h"
 #include "MainFrm.h"
 #include "DirectSound.h"
+#include "WaveFile.h"		// // //
 #include "APU/APU.h"
 #include "ChannelHandler.h"
 #include "ChannelsN163.h" // N163 channel count
@@ -169,6 +170,7 @@ CSoundGen::~CSoundGen()
 		SAFE_RELEASE(m_pTrackerChannels[i]);
 	}
 
+	SAFE_RELEASE(m_pWaveFile);		// // //
 	SAFE_RELEASE(m_pInstRecorder);		// // //
 }
 
@@ -910,7 +912,8 @@ bool CSoundGen::PlayBuffer()
 {
 	if (m_bRendering) {
 		// Output to file
-		m_wfWaveFile.WriteWave(m_pAccumBuffer, m_iBufSizeBytes);
+		ASSERT(m_pWaveFile);		// // //
+		m_pWaveFile->WriteWave(m_pAccumBuffer, m_iBufSizeBytes);
 		m_iBufferPtr = 0;
 	}
 	else {
@@ -1806,7 +1809,11 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 		m_iRenderRowCount = m_iRenderEndParam;
 	}
 
-	if (!m_wfWaveFile.OpenFile(pFile, theApp.GetSettings()->Sound.iSampleRate, theApp.GetSettings()->Sound.iSampleSize, 1)) {
+	if (m_pWaveFile)		// // //
+		delete m_pWaveFile;
+	m_pWaveFile = new CWaveFile;
+	if (!m_pWaveFile ||
+		!m_pWaveFile->OpenFile(pFile, theApp.GetSettings()->Sound.iSampleRate, theApp.GetSettings()->Sound.iSampleSize, 1)) {
 		AfxMessageBox(IDS_FILE_OPEN_ERROR);
 		return false;
 	}
@@ -1831,7 +1838,8 @@ void CSoundGen::StopRendering()
 	m_bRequestRenderStop = false;		// // //
 	m_iPlayFrame = 0;
 	m_iPlayRow = 0;
-	m_wfWaveFile.CloseFile();
+	m_pWaveFile->CloseFile();		// // //
+	delete m_pWaveFile;
 
 	ResetBuffer();
 	ResetAPU();		// // //

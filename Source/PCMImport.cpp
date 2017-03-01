@@ -26,6 +26,7 @@
 #include "PCMImport.h"
 #include "Settings.h"
 #include "SoundGen.h"
+#include "WaveFile.h"		// // //
 #include "APU/APU.h"
 #include "APU/DPCM.h"
 #include "resampler/resample.hpp"

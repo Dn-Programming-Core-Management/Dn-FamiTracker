@@ -28,7 +28,6 @@
 
 #include <afxmt.h>		// Synchronization objects
 #include <queue>		// // //
-#include "WaveFile.h"
 #include "Common.h"
 
 const int VIBRATO_LENGTH = 256;
@@ -79,6 +78,7 @@ class CSequence;		// // //
 class CAPU;
 class CDSound;
 class CDSoundChannel;
+class CWaveFile;		// // //
 class CVisualizerWnd;
 class CDSample;
 class CTrackerChannel;
@@ -404,7 +404,7 @@ private:
 
 	std::queue<int>		m_iRegisterStream;					// // // vgm export
 
-	CWaveFile			m_wfWaveFile;
+	CWaveFile			*m_pWaveFile = nullptr;		// // //
 
 	// FDS & N163 waves
 	volatile bool		m_bWaveChanged;

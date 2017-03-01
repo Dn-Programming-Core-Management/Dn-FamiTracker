@@ -21,6 +21,7 @@
 #pragma once
 
 
+#include "stdafx.h"		// // //
 #include <mmsystem.h>
 
 class CWaveFile
