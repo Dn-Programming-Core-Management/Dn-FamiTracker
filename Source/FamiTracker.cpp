@@ -42,10 +42,6 @@
 #include "WinInet.h"		// // //
 #pragma comment(lib, "wininet.lib")
 
-#ifdef EXPORT_TEST
-#include "ExportTest/ExportTest.h"
-#endif /* EXPORT_TEST */
-
 // Single instance-stuff
 const TCHAR FT_SHARED_MUTEX_NAME[]	= _T("FamiTrackerMutex");	// Name of global mutex
 const TCHAR FT_SHARED_MEM_NAME[]	= _T("FamiTrackerWnd");		// Name of global memory area
@@ -62,9 +58,6 @@ BEGIN_MESSAGE_MAP(CFamiTrackerApp, CWinApp)
 	// Standard file based document commands
 	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
 	ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
-#ifdef EXPORT_TEST
-	ON_COMMAND(ID_MODULE_TEST_EXPORT, OnTestExport)
-#endif
 	ON_COMMAND(ID_RECENTFILES_CLEAR, OnRecentFilesClear)		// // //
 	ON_UPDATE_COMMAND_UI(ID_FILE_MRU_FILE1, OnUpdateRecentFilesClear)		// // //
 END_MESSAGE_MAP()
@@ -85,9 +78,6 @@ CFamiTrackerApp::CFamiTrackerApp() :
 	m_hWndMapFile(NULL),
 #ifdef SUPPORT_TRANSLATIONS
 	m_hInstResDLL(NULL),
-#endif
-#ifdef EXPORT_TEST
-	m_bExportTesting(false),
 #endif
 	m_pInstanceMutex(NULL)
 {
@@ -268,18 +258,6 @@ BOOL CFamiTrackerApp::InitInstance()
 	
 	if (cmdInfo.m_bPlay)
 		theApp.StartPlayer(MODE_PLAY);
-
-#ifdef EXPORT_TEST
-	if (cmdInfo.m_bVerifyExport) {
-		m_bExportTesting = true;
-		VerifyExport(cmdInfo.m_strVerifyFile);
-	}
-	else {
-		// Append menu option
-		m_pMainWnd->GetMenu()->GetSubMenu(2)->AppendMenu(MF_SEPARATOR);
-		m_pMainWnd->GetMenu()->GetSubMenu(2)->AppendMenu(MF_STRING, ID_MODULE_TEST_EXPORT, _T("Test exporter"));
-	}
-#endif
 
 	// Save the main window handle
 	RegisterSingleInstance();
@@ -851,47 +829,6 @@ void CFamiTrackerApp::OnFileOpen()
 		pFrameWnd->SetMessageText(IDS_LOADING_DONE);
 }
 
-#ifdef EXPORT_TEST
-
-void CFamiTrackerApp::OnTestExport()
-{
-	VerifyExport();
-}
-
-void CFamiTrackerApp::VerifyExport() const
-{
-	CExportTest *pExportTest = new CExportTest();
-	if (pExportTest->Setup()) {
-		const CMainFrame *pMainFrame = static_cast<CMainFrame*>(m_pMainWnd);
-		pExportTest->RunInit(pMainFrame->GetSelectedTrack());
-		GetSoundGenerator()->PostThreadMessage(WM_USER_VERIFY_EXPORT, (WPARAM)pExportTest, pMainFrame->GetSelectedTrack());
-	}
-	else
-		delete pExportTest;
-}
-
-void CFamiTrackerApp::VerifyExport(LPCTSTR File) const
-{
-	CExportTest *pExportTest = new CExportTest();
-
-	printf("Verifying export for file %s\n", File);
-
-	if (pExportTest->Setup(File)) {
-		const CMainFrame *pMainFrame = static_cast<CMainFrame*>(m_pMainWnd);
-		pExportTest->RunInit(pMainFrame->GetSelectedTrack());
-		GetSoundGenerator()->PostThreadMessage(WM_USER_VERIFY_EXPORT, (WPARAM)pExportTest, pMainFrame->GetSelectedTrack());
-	}
-	else
-		delete pExportTest;
-}
-
-bool CFamiTrackerApp::IsExportTest() const
-{
-	return m_bExportTesting;
-}
-
-#endif /* EXPORT_TEST */
-
 // Used to display a messagebox on the main thread
 void CFamiTrackerApp::ThreadDisplayMessage(LPCTSTR lpszText, UINT nType, UINT nIDHelp)
 {
@@ -971,9 +908,6 @@ CFTCommandLineInfo::CFTCommandLineInfo() : CCommandLineInfo(),
 	m_bLog(false), 
 	m_bExport(false), 
 	m_bPlay(false),
-#ifdef EXPORT_TEST
-	m_bVerifyExport(false),
-#endif
 	m_strExportFile(_T("")),
 	m_strExportLogFile(_T("")),
 	m_strExportDPCMFile(_T(""))
@@ -1004,13 +938,6 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 		else if (!_tcsicmp(pszParam, _T("log"))) {
 #ifdef _DEBUG
 			m_bLog = true;
-			return;
-#endif
-		}
-		// Run export tester (/verify), optionally provide NSF file, otherwise NSF is created
-		else if (!_tcsicmp(pszParam, _T("verify"))) {
-#ifdef EXPORT_TEST
-			m_bVerifyExport = true;
 			return;
 #endif
 		}
@@ -1045,15 +972,6 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 				return;
 			}
 		}
-#ifdef EXPORT_TEST
-		else if (m_bVerifyExport) {
-			if (m_strVerifyFile.GetLength() == 0)
-			{
-				m_strVerifyFile = CString(pszParam);
-				return;
-			}
-		}
-#endif
 	}
 
 	// Call default implementation

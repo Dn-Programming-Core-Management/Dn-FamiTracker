@@ -38,9 +38,6 @@
     <Filter Include="Source Files\Exporter\Custom Exporter">
       <UniqueIdentifier>{685eb3ad-3708-429b-9b25-296fc1e358bb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Exporter\Test">
-      <UniqueIdentifier>{27b5ebd5-f247-4759-b380-e345e5151556}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Exporter\Text">
       <UniqueIdentifier>{badd21c5-24b7-4045-819b-d4b0f1b2f89e}</UniqueIdentifier>
     </Filter>
@@ -149,9 +146,6 @@
     </Filter>
     <Filter Include="Header Files\Export Headers\Text Headers">
       <UniqueIdentifier>{320c64a9-c575-4174-aa62-9d8f2fe27a51}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Export Headers\Test Headers">
-      <UniqueIdentifier>{40412bfe-0caa-4684-930d-0db690ce8a4d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Other Headers">
       <UniqueIdentifier>{84505517-f39f-413a-bcc5-5cf19175cc87}</UniqueIdentifier>
@@ -371,9 +365,6 @@
     </ClCompile>
     <ClCompile Include="Source\DocumentWrapper.cpp">
       <Filter>Source Files\Exporter\Custom Exporter</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\ExportTest\ExportTest.cpp">
-      <Filter>Source Files\Exporter\Test</Filter>
     </ClCompile>
     <ClCompile Include="Source\TextExporter.cpp">
       <Filter>Source Files\Exporter\Text</Filter>
@@ -982,9 +973,6 @@
     </ClInclude>
     <ClInclude Include="Source\TextExporter.h">
       <Filter>Header Files\Export Headers\Text Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\ExportTest\ExportTest.h">
-      <Filter>Header Files\Export Headers\Test Headers</Filter>
     </ClInclude>
     <ClInclude Include="Source\FFT\Complex.h">
       <Filter>Header Files\Other Headers</Filter>

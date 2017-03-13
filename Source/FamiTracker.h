@@ -42,8 +42,6 @@ enum {
 	IPC_LOAD_PLAY
 };
 
-// #define EXPORT_TEST
-
 // Custom command line reader
 class CFTCommandLineInfo : public CCommandLineInfo
 {
@@ -54,10 +52,6 @@ public:
 	bool m_bLog;
 	bool m_bExport;
 	bool m_bPlay;
-#ifdef EXPORT_TEST
-	bool m_bVerifyExport;
-	CString m_strVerifyFile;
-#endif
 	CString m_strExportFile;
 	CString m_strExportLogFile;
 	CString m_strExportDPCMFile;
@@ -141,12 +135,6 @@ public:
 	
 	CCustomExporters *GetCustomExporters() const;
 
-#ifdef EXPORT_TEST
-	void			VerifyExport() const;
-	void			VerifyExport(LPCTSTR File) const;
-	bool			IsExportTest() const;
-#endif /* EXPORT_TEST */
-
 	//
 	// Private functions
 	//
@@ -181,10 +169,6 @@ private:
 	CString			m_pVersionMessage, m_pVersionURL;
 	UINT			m_iVersionStyle;
 	bool			m_bVersionReady;
-
-#ifdef EXPORT_TEST
-	bool			m_bExportTesting;
-#endif
 
 #ifdef SUPPORT_TRANSLATIONS
 	HINSTANCE		m_hInstResDLL;

@@ -843,13 +843,6 @@ void CFamiTrackerView::PeriodicUpdate()
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 
 	if (pSoundGen != NULL) {
-
-#ifdef EXPORT_TEST
-		if (pSoundGen->IsTestingExport()) {
-			DrawExportTestProgress();			
-		}
-#endif /* EXPORT_TEST */
-
 		// Skip updates when doing background tasks (WAV render for example)
 		if (!pSoundGen->IsBackgroundTask()) {
 
@@ -893,35 +886,6 @@ void CFamiTrackerView::PeriodicUpdate()
 		m_iSwitchToInstrument = -1;
 	}
 }
-
-#ifdef EXPORT_TEST
-void CFamiTrackerView::DrawExportTestProgress()
-{
-	CFamiTrackerDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
-
-	m_csDrawLock.Lock();
-
-	CDC *pDC = GetDC();
-	if (pDC && pDC->m_hDC) {
-		int x = m_iWindowWidth / 2 - 100;
-		int y = m_iWindowHeight / 2 - 20;
-		int frame = pSoundGen->GetPlayerFrame();
-		int frameCount = pDoc->GetFrameCount(pSoundGen->GetPlayerTrack());
-		pDC->Rectangle(x, y, x + 200, y + 40);
-		CString str;
-		str.Format(_T("Frame %i of %i"), frame, frameCount);
-		CRect rect(x, y + 5, x + 200, y + 30);
-		pDC->DrawText(str, rect, DT_CENTER | DT_VCENTER);
-		pDC->FillSolidRect(x + 10, y + 25, ((frame * 180) / frameCount), 10, 0x00AA00);
-		ReleaseDC(pDC);
-	}
-
-	m_csDrawLock.Unlock();
-}
-#endif /* EXPORT_TEST */
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Menu commands

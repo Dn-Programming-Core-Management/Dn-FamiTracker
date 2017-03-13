@@ -52,10 +52,6 @@
 #include "ChannelFactory.h"		// // // test
 #include "DetuneTable.h"		// // //
 
-#ifdef EXPORT_TEST
-#include "ExportTest/ExportTest.h"
-#endif /* EXPORT_TEST */
-
 // 1kHz test tone
 //#define AUDIO_TEST
 
@@ -97,7 +93,6 @@ BEGIN_MESSAGE_MAP(CSoundGen, CWinThread)
 	ON_THREAD_MESSAGE(WM_USER_WRITE_APU, OnWriteAPU)
 	ON_THREAD_MESSAGE(WM_USER_CLOSE_SOUND, OnCloseSound)
 	ON_THREAD_MESSAGE(WM_USER_SET_CHIP, OnSetChip)
-	ON_THREAD_MESSAGE(WM_USER_VERIFY_EXPORT, OnVerifyExport)
 	ON_THREAD_MESSAGE(WM_USER_REMOVE_DOCUMENT, OnRemoveDocument)
 END_MESSAGE_MAP()
 
@@ -153,10 +148,6 @@ CSoundGen::CSoundGen() :
 
 	// Create all kinds of channels
 	CreateChannels();
-
-#ifdef EXPORT_TEST
-	m_bExportTesting = false;
-#endif /* EXPORT_TEST */
 }
 
 CSoundGen::~CSoundGen()
@@ -829,11 +820,6 @@ void CSoundGen::FlushBuffer(int16_t *pBuffer, uint32_t Size)
 	if (!m_pDSoundChannel)
 		return;
 
-#ifdef EXPORT_TEST
-	if (m_bExportTesting)
-		return;
-#endif /* EXPORT_TEST */
-
 	if (m_iSampleSize == 8)
 		FillBuffer<uint8_t, 8>(pBuffer, Size);
 	else
@@ -1278,10 +1264,6 @@ void CSoundGen::HaltPlayer()
 		}
 	}
 */
-#ifdef EXPORT_TEST
-	if (m_bExportTesting)
-		EndExportTest();
-#endif
 
 	// Signal that playback has stopped
 	if (m_pTrackerView != NULL) {
@@ -1444,7 +1426,6 @@ void CSoundGen::ResetTempo()
 	m_iLastHighlight = m_pDocument->GetHighlight().First;		// // //
 	
 	m_iTempoAccum = 0;
-	m_iTempoFrames = 0;
 
 	if (m_pDocument->GetSongGroove(m_iPlayTrack) && m_pDocument->GetGroove(m_iSpeed) != NULL) {		// // //
 		m_iGrooveIndex = m_iSpeed;
@@ -1541,14 +1522,6 @@ void CSoundGen::RunFrame()
 			}
 		}
 
-#ifdef EXPORT_TEST
-		if (m_bExportTesting) {
-			if (m_bFramePlayed[m_iPlayFrame] == true) {
-				EndExportTest();
-			}
-		}
-#endif /* EXPORT_TEST */
-
 		++m_iRowTickCount;		// // // 050B
 		m_iStepRows = 0;
 
@@ -1562,7 +1535,6 @@ void CSoundGen::RunFrame()
 				m_iGroovePosition++;
 			}
 				m_iStepRows++;
-				m_iTempoFrames = 0;
 //			}
 			m_bUpdateRow = true;
 			ReadPatternRow();
@@ -1616,11 +1588,6 @@ void CSoundGen::CheckControl()
 		m_iJumpToPattern = -1;
 		m_iSkipToRow = -1;
 	}
-
-#ifdef EXPORT_TEST
-	if (m_bExportTesting)
-		m_bDirty = false;
-#endif
 
 	if (m_bDirty) {
 		m_bDirty = false;
@@ -1862,10 +1829,6 @@ bool CSoundGen::IsRendering() const
 
 bool CSoundGen::IsBackgroundTask() const
 {
-#ifdef EXPORT_TEST
-	if (m_bExportTesting)
-		return true;
-#endif
 	return m_bRendering;
 }
 
@@ -2025,11 +1988,6 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 			m_pInstRecorder->RecordInstrument(m_iPlayTicks, m_pTrackerView);
 	}
 
-#ifdef EXPORT_TEST
-	if (m_bExportTesting && !m_bHaltRequest)
-		CompareRegisters();
-#endif /* EXPORT_TEST */
-
 	if (m_bHaltRequest) {
 		// Halt has been requested, abort playback here
 		HaltPlayer();
@@ -2106,7 +2064,6 @@ void CSoundGen::UpdatePlayer()
 			m_iTempoAccum += (m_iTempo ? 60 * TicksPerSec : m_iSpeed) - m_iTempoRemainder;		// // //
 		}
 		m_iTempoAccum -= m_iTempoDecrement;
-		++m_iTempoFrames;
 	}
 }
 
@@ -2256,15 +2213,6 @@ void CSoundGen::OnSetChip(WPARAM wParam, LPARAM lParam)
 	// MMC5
 	if (Chip & SNDCHIP_MMC5)
 		m_pAPU->Write(0x5015, 0x03);
-}
-
-void CSoundGen::OnVerifyExport(WPARAM wParam, LPARAM lParam)
-{
-#ifdef EXPORT_TEST
-	m_pExportTest = reinterpret_cast<CExportTest*>(wParam);
-	m_bExportTesting = true;
-	BeginPlayer(MODE_PLAY_START, lParam);
-#endif /* EXPORT_TEST */
 }
 
 void CSoundGen::OnRemoveDocument(WPARAM wParam, LPARAM lParam)
@@ -2452,25 +2400,6 @@ int CSoundGen::GetQueueFrame() const
 
 // Verification
 
-#ifdef EXPORT_TEST
-
-static stRegs InternalRegs;
-
-void CSoundGen::WriteRegister(uint16_t Reg, uint8_t Value)
-{
-	if (Reg >= 0x4000 && Reg <= 0x401F)		// // //
-		InternalRegs.R_2A03[Reg & 0x1F] = Value;
-	// VRC6
-	else if (Reg >= 0x9000 && Reg < 0x9003)
-		InternalRegs.R_VRC6[Reg & 0x03] = Value;
-	else if (Reg >= 0xA000 && Reg < 0xA003)
-		InternalRegs.R_VRC6[(Reg & 0x03) + 3] = Value;
-	else if (Reg >= 0xB000 && Reg < 0xB003)
-		InternalRegs.R_VRC6[(Reg & 0x03) + 6] = Value;
-}
-
-#else /* EXPORT_TEST */
-
 void CSoundGen::WriteRegister(uint16_t Reg, uint8_t Value)
 {
 #ifdef WRITE_VGM		// // //
@@ -2506,66 +2435,6 @@ void CSoundGen::WriteRegister(uint16_t Reg, uint8_t Value)
 	}
 #endif
 }
-
-#endif /* EXPORT_TEST */
-
-#ifdef EXPORT_TEST
-
-void CSoundGen::EndExportTest()
-{
-	m_bExportTesting = false;
-	m_bHaltRequest = true;
-
-	m_pExportTest->ReportSuccess();
-
-	SAFE_RELEASE(m_pExportTest);
-}
-
-void CSoundGen::CompareRegisters()
-{
-	bool bFailed = false;
-	stRegs ExternalRegs;
-
-	m_pExportTest->RunPlay();
-
-	// Read and compare regs
-
-	for (int i = 0; i < 0x14; ++i) {
-		ExternalRegs.R_2A03[i] = m_pExportTest->ReadReg(i, SNDCHIP_NONE);
-		if (InternalRegs.R_2A03[i] != ExternalRegs.R_2A03[i]) {
-			if (i == 0x11) {
-				if ((InternalRegs.R_2A03[i] & 0x7F) != (ExternalRegs.R_2A03[i] & 0x7F))
-					bFailed = true;
-			}
-			else if (i != 0x12)	// Ignore DPCM start address
-				bFailed = true;
-		}
-	}
-
-	if (m_pDocument->ExpansionEnabled(SNDCHIP_VRC6)) {
-		for (int i = 0; i < 9; ++i) {
-			ExternalRegs.R_VRC6[i] = m_pExportTest->ReadReg(i, SNDCHIP_VRC6);
-			if (InternalRegs.R_VRC6[i] != ExternalRegs.R_VRC6[i]) {
-				bFailed = true;
-			}
-		}
-	}
-
-	if (bFailed) {
-		// Update tracker view
-		m_pTrackerView->PostMessage(WM_USER_PLAYER);
-
-		// Display error message
-		if (m_pExportTest->ReportError(&InternalRegs, &ExternalRegs, m_iTempoFrames, m_pDocument->GetExpansionChip())) {
-			// Abort
-			m_bHaltRequest = true;
-			m_bExportTesting = false;
-			SAFE_RELEASE(m_pExportTest);
-		}
-	}
-}
-
-#endif /* EXPORT_TEST */
 
 CFTMComponentInterface *CSoundGen::GetDocumentInterface() const
 {

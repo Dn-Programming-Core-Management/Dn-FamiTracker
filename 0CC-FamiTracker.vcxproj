@@ -518,7 +518,6 @@
     <ClCompile Include="Source\CustomExporter_C_Interface.cpp" />
     <ClCompile Include="Source\CustomExporters.cpp" />
     <ClCompile Include="Source\DocumentWrapper.cpp" />
-    <ClCompile Include="Source\ExportTest\ExportTest.cpp" />
     <ClCompile Include="Source\TextExporter.cpp" />
     <ClCompile Include="Source\Chunk.cpp" />
     <ClCompile Include="Source\ChunkRenderBinary.cpp" />
@@ -748,7 +747,6 @@
     <ClInclude Include="Source\ChunkRenderBinary.h" />
     <ClInclude Include="Source\ChunkRenderText.h" />
     <ClInclude Include="Source\TextExporter.h" />
-    <ClInclude Include="Source\ExportTest\ExportTest.h" />
     <ClInclude Include="Source\FFT\Complex.h" />
     <ClInclude Include="Source\FFT\Fft.h" />
     <ClInclude Include="Source\MIDI.h" />

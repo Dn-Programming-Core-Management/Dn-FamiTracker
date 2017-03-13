@@ -187,7 +187,6 @@
 #define IDR_SAMPLE_EDITOR_POPUP         304
 #define IDD_FIND                        305
 #define IDS_WAVE_PROGRESS_FILE_FORMAT   308
-#define IDD_EXPORT_TEST                 308
 #define IDS_WAVE_PROGRESS_FRAME_FORMAT  309
 #define IDS_WAVE_PROGRESS_TIME_FORMAT   310
 #define IDS_WAVE_PROGRESS_ELAPSED_FORMAT 311
@@ -435,11 +434,9 @@
 #define IDC_SPIN_BOOKMARK_ROW           1264
 #define IDC_DELTA_COUNTER               1265
 #define IDC_SPIN_BOOKMARK_HIGH1         1265
-#define IDC_ABORT                       1266
 #define IDC_BUTTON_STRETCH_EXPAND       1266
 #define IDC_BUTTON_BOOKMARK_ADD         1266
 #define IDC_BUTTON_TRSP_REVERSE         1266
-#define IDC_CONTINUE                    1267
 #define IDC_BUTTON_BOOKMARK_REMOVE      1267
 #define IDC_SLIDER_APU1                 1268
 #define IDC_BUTTON_BOOKMARK_CLEARALL    1268

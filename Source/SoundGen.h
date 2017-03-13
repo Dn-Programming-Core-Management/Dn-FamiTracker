@@ -86,10 +86,6 @@ class CFTMComponentInterface;		// // //
 class CInstrumentRecorder;		// // //
 class CRegisterState;		// // //
 
-#ifdef EXPORT_TEST
-class CExportTest;
-#endif /* EXPORT_TEST */
-
 // CSoundGen
 
 class CSoundGen : public CWinThread, IAudioCallback
@@ -222,10 +218,6 @@ public:
 	stRecordSetting *GetRecordSetting() const;
 	void			SetRecordSetting(stRecordSetting *Setting);
 
-#ifdef EXPORT_TEST
-	bool		IsTestingExport() const { return m_bExportTesting; }
-#endif /* EXPORT_TEST */
-
 	bool HasDocument() const { return m_pDocument != NULL; };
 	CFamiTrackerDoc *GetDocument() const { return m_pDocument; };
 	CFTMComponentInterface *GetDocumentInterface() const;
@@ -285,12 +277,6 @@ private:
 	// // // Instrument recorder
 	void		ResetRecordCache();
 
-	// Verification
-#ifdef EXPORT_TEST
-	void		EndExportTest();
-	void		CompareRegisters();
-#endif /* EXPORT_TEST */
-
 public:
 	static const double NEW_VIBRATO_DEPTH[];
 	static const double OLD_VIBRATO_DEPTH[];
@@ -346,7 +332,6 @@ private:
 	int					m_iGrooveIndex;						// // // Current groove
 	unsigned int		m_iGroovePosition;					// // // Groove position
 	int					m_iTempoAccum;						// Used for speed calculation
-	int					m_iTempoFrames;						// Frames / row
 	unsigned int		m_iPlayTicks;
 	bool				m_bPlaying;							// True when tracker is playing back the module
 	bool				m_bHaltRequest;						// True when a halt is requested
@@ -425,11 +410,6 @@ private:
 	int					m_iSequencePlayPos;
 	int					m_iSequenceTimeout;
 
-#ifdef EXPORT_TEST
-	CExportTest			*m_pExportTest;
-	bool				m_bExportTesting;
-#endif /* EXPORT_TEST */
-
 	// Overloaded functions
 public:
 	virtual BOOL InitInstance();
@@ -451,6 +431,5 @@ public:
 	afx_msg void OnWriteAPU(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnCloseSound(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnSetChip(WPARAM wParam, LPARAM lParam);
-	afx_msg void OnVerifyExport(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnRemoveDocument(WPARAM wParam, LPARAM lParam);
 };

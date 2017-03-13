@@ -236,9 +236,6 @@ private:
 	bool	AddAction(CAction *pAction) const;
 	CString	GetEffectHint(const stChanNote &Note, int Column) const;		// // //
 
-#ifdef EXPORT_TEST
-	void	DrawExportTestProgress();
-#endif /* EXPORT_TEST */
 	// // //
 	// Keyboard
 	bool	IsShiftPressed() const;
