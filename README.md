@@ -31,6 +31,7 @@ See the change log for the full list of changes made in 0CC-FamiTracker.
 This program and its source code are licensed under the GNU General Public License Version 2. Differences to the original FamiTracker source are marked with "// // //"; those to the ASM source with ";;; ;; ;" and "; ;; ;;;".
 
 The current build is based on the version 0.5.0 beta 5 release of the official FamiTracker. 0CC-FamiTracker will be ported to newer official releases once they become available; features added in 0CC-FamiTracker may not have identical behaviour as the corresponding features on the official branch.
+
 # Links
 
 - http://hertzdevil.info/programs/  

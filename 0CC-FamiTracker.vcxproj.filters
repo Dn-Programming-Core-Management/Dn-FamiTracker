@@ -223,6 +223,9 @@
     <Filter Include="Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External">
       <UniqueIdentifier>{3e82601e-63d9-464e-a6d6-346452bd39b5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Windows Headers">
+      <UniqueIdentifier>{4cc7efc0-6478-4fe0-ab32-cd34c48e735a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Exception.cpp">
@@ -723,9 +726,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\MainFrm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="version.h">
@@ -1247,9 +1247,6 @@
     <ClInclude Include="Source\SplitKeyboardDlg.h">
       <Filter>Header Files\Dialog Boxes Headers</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\SeqInstHandler2A03Pulse.h">
       <Filter>Header Files\Sound Driver Headers\Instruments Headers</Filter>
     </ClInclude>
@@ -1273,6 +1270,18 @@
     </ClInclude>
     <ClInclude Include="Source\IntRange.h">
       <Filter>Header Files\Other Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\stdafx.h">
+      <Filter>Header Files\Windows Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files\Windows Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\WinSDK\VersionHelpers.h">
+      <Filter>Header Files\Windows Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\WinSDK\winapifamily.h">
+      <Filter>Header Files\Windows Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

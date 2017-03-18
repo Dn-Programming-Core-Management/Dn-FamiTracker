@@ -27,10 +27,8 @@ obj/
 [Rr]elease*/
 _ReSharper*/
 [Tt]est[Rr]esult*
+
 #0CC-FT
-ipch/**
-Texts/**
-hlp/**
 *.bin
 *.lnk
 *.tlog
@@ -41,6 +39,6 @@ hlp/**
 config.h
 apu_log.txt
 0CC-FamiTracker.vcproj
-0CC-FamiTracker.VC.opendb
-0CC-FamiTracker.VC.db
-0CC-FamiTracker.VC.VC.opendb
+*.db
+*.opendb
+.vs/*
