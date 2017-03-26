@@ -47,7 +47,8 @@ public:
 protected:
 	virtual void OnKeyReturn();
 
-	void ParseString(LPCTSTR pString);
+	void ParseManyStrings(std::string pString);
+	void ParseString(std::string pString, int waveIndex = -1);
 	void FillPosBox(int size);
 	void PopulateWaveBox();		// // //
 	void UpdateWaveBox(int Index);		// // //
