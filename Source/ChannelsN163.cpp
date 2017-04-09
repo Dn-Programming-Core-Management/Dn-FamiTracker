@@ -20,15 +20,14 @@
 ** must bear this legend.
 */
 
+#ifdef _DEBUG
 #include "stdafx.h"
-#include "FamiTracker.h"
-#include "FamiTrackerTypes.h"		// // //
+#endif
+#include "ChannelsN163.h"
+//#include "FamiTracker.h"
 #include "APU/Types.h"		// // //
-#include "Instrument.h"		// // //
 #include "SeqInstrument.h"		// // //
 #include "InstrumentN163.h"		// // // constants
-#include "ChannelHandler.h"
-#include "ChannelsN163.h"
 #include "InstHandler.h"		// // //
 #include "SeqInstHandler.h"		// // //
 #include "SeqInstHandlerN163.h"		// // //
@@ -199,19 +198,25 @@ void CChannelHandlerN163::RefreshChannel()
 
 void CChannelHandlerN163::SetWaveLength(int Length)		// // //
 {
+#ifdef _DEBUG
 	ASSERT(Length >= 4 && Length <= CInstrumentN163::MAX_WAVE_SIZE && !(Length % 4));
+#endif
 	m_iWaveLen = Length;
 }
 
 void CChannelHandlerN163::SetWavePosition(int Pos)		// // //
 {
+#ifdef _DEBUG
 	ASSERT(Pos >= 0 && Pos <= 0xFF);
+#endif
 	m_iWavePosOld = Pos;
 }
 
 void CChannelHandlerN163::SetWaveCount(int Count)		// // //
 {
+#ifdef _DEBUG
 	ASSERT(Count > 0 && Count <= CInstrumentN163::MAX_WAVE_COUNT);
+#endif
 	m_iWaveCount = Count;
 }
 
@@ -270,32 +275,24 @@ int CChannelHandlerN163::CalculatePeriod() const		// // //
 	return LimitRawPeriod(Period) << N163_PITCH_SLIDE_SHIFT;
 }
 
-CString CChannelHandlerN163::GetSlideEffectString() const		// // //
+std::string CChannelHandlerN163::GetSlideEffectString() const		// // //
 {
-	CString str = _T("");
-	
-	switch (m_iEffect) {
-	case EF_ARPEGGIO:
-		if (m_iEffectParam) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iEffectParam); break;
+	if (m_iPortaSpeed) switch (m_iEffect) {
 	case EF_PORTA_UP:
-		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_PORTA_DOWN - 1], m_iPortaSpeed >> N163_PITCH_SLIDE_SHIFT); break;
+		return MakeCommandString(EF_PORTA_DOWN, m_iPortaSpeed >> N163_PITCH_SLIDE_SHIFT);
 	case EF_PORTA_DOWN:
-		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_PORTA_UP - 1], m_iPortaSpeed >> N163_PITCH_SLIDE_SHIFT); break;
+		return MakeCommandString(EF_PORTA_UP, m_iPortaSpeed >> N163_PITCH_SLIDE_SHIFT);
 	case EF_PORTAMENTO:
-		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iPortaSpeed >> N163_PITCH_SLIDE_SHIFT); break;
+		return MakeCommandString(EF_PORTAMENTO, m_iPortaSpeed >> N163_PITCH_SLIDE_SHIFT);
 	}
-
-	return str;
+	return CChannelHandlerInverted::GetSlideEffectString();
 }
 
-CString CChannelHandlerN163::GetCustomEffectString() const		// // //
+std::string CChannelHandlerN163::GetCustomEffectString() const		// // //
 {
-	CString str = _T("");
-
 	if (m_bDisableLoad)
-		str.AppendFormat(_T(" Z%02X"), m_iWavePos >> 1);
-
-	return str;
+		return MakeCommandString(EF_N163_WAVE_BUFFER, m_iWavePos >> 1);
+	return std::string();
 }
 
 void CChannelHandlerN163::WriteReg(int Reg, int Value)

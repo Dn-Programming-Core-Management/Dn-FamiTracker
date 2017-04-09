@@ -29,10 +29,14 @@ static const int DUTY_VRC6_FROM_2A03[] = {1, 3, 7, 3};		// // //
 
 class CInstHandler;
 class stChannelState;
+class stChanNote;		// // //
 class CSoundGen;		// // //
 
 #include "ChannelHandlerInterface.h"
+#include "FamiTrackerTypes.h"		// // //
+#include "Instrument.h"		// // //
 #include <memory>		// // //
+#include <string>		// // //
 #include <cstdint>
 
 /*!
@@ -94,7 +98,7 @@ public:
 		\warning The output of this method is neither guaranteed nor required to match that of
 		::GetStateString defined in SoundGen.cpp.
 		\return A string representing the internal state of the channel handler. */
-	virtual CString	GetStateString();							// // //
+	virtual std::string	GetStateString() const;		// // //
 	/*!	\brief Applies a channel state to the channel handler.
 		\param State Pointer to a channel state object.
 		\sa CSoundGen::ApplyGlobalState */
@@ -200,15 +204,15 @@ protected:
 	
 	/*!	\brief Retrieves information about common effects of the channel handler.
 		\return A string representing active effects and their parameters. */
-	virtual CString	GetEffectString() const;		// // //
+	virtual std::string	GetEffectString() const;		// // //
 	/*!	\brief Retrieves information about slide effects of the channel handler.
 		\details Depending on the internal representation of CChannelHandler::m_iPitch, this method
 		may be overridden in subclasses to return the proper effect parameters in the string.
 		\return A string representing active effects and their parameters. */
-	virtual CString	GetSlideEffectString() const;		// // //
+	virtual std::string	GetSlideEffectString() const;		// // //
 	/*!	\brief Retrieves information about effects specific to the sound channel of the channel handler.
 		\return A string representing active effects and their parameters. */
-	virtual CString	GetCustomEffectString() const;		// // //
+	virtual std::string	GetCustomEffectString() const;		// // //
 
 	// 
 	// Internal non-virtual functions
@@ -289,6 +293,8 @@ protected:
 		\return The converted duty value, or -1 if no sensible value exists.
 		\sa CChannelHandler::SetDutyPeriod */
 	virtual int ConvertDuty(int Duty) const { return Duty; };		// // //
+
+	static std::string MakeCommandString(effect_t Effect, unsigned char Param);		// // //
 
 public:		// // //
 	/*!	\brief Sets the current pitch register of the channel.
@@ -438,7 +444,7 @@ protected:
 	unsigned int	m_iTremoloPhase;
 
 	/*!	\brief The currently active slide effect. */
-	unsigned char	m_iEffect;
+	effect_t		m_iEffect;
 	/*!	\brief The effect command parameter for the active slide effect.
 		\details This member is used by the instrument interface to handle arpeggio schemes. */
 	unsigned char	m_iEffectParam;					// // //
@@ -528,8 +534,8 @@ class CChannelHandlerInverted : public CChannelHandler {
 protected:
 	CChannelHandlerInverted(int MaxPeriod, int MaxVolume) : CChannelHandler(MaxPeriod, MaxVolume) {}
 	// // //
-	virtual bool	HandleEffect(effect_t EffNum, unsigned char EffParam);		// // //
-	virtual int		CalculatePeriod() const;
-	virtual CString	GetSlideEffectString() const;		// // //
+	bool	HandleEffect(effect_t EffNum, unsigned char EffParam) override;		// // //
+	int		CalculatePeriod() const override;
+	std::string	GetSlideEffectString() const override;		// // //
 };
 

@@ -20,7 +20,10 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include "ChannelHandler.h"
 
 class CChannelHandlerFDS : public CChannelHandlerInverted, public CChannelHandlerInterfaceFDS {
 public:
@@ -35,7 +38,7 @@ protected:
 	int		CalculateVolume() const override;		// // //
 	bool	CreateInstHandler(inst_type_t Type) override;		// // //
 	void	ClearRegisters() override;
-	CString	GetCustomEffectString() const override;		// // //
+	std::string	GetCustomEffectString() const override;		// // //
 
 public:		// // //
 	// FDS functions

@@ -22,15 +22,12 @@
 
 // Famicom disk sound
 
-#include "stdafx.h"
-#include "FamiTrackerTypes.h"		// // //
-#include "APU/Types.h"		// // //
-#include "Instrument.h"
-#include "ChannelHandler.h"
 #include "ChannelsFDS.h"
+#include "APU/Types.h"		// // //
 #include "InstHandler.h"		// // //
 #include "SeqInstHandler.h"		// // //
 #include "SeqInstHandlerFDS.h"		// // //
+#include "stdafx.h"
 #include "FamiTracker.h"		// // //
 #include "Settings.h"		// // //
 
@@ -241,26 +238,26 @@ void CChannelHandlerFDS::ClearRegisters()
 	memset(m_iWaveTable, 0, 64);
 }
 
-CString CChannelHandlerFDS::GetCustomEffectString() const		// // //
+std::string CChannelHandlerFDS::GetCustomEffectString() const		// // //
 {
-	CString str = _T("");
+	std::string str;
 
 	if (m_iVolModMode)
-		str.AppendFormat(_T(" E%02X"), ((m_iVolModMode - 1) << 6) | m_iVolModRate);
+		str += MakeCommandString(EF_FDS_VOLUME, ((m_iVolModMode - 1) << 6) | m_iVolModRate);
 	if (m_iEffModDepth != -1)
-		str.AppendFormat(_T(" H%02X"), m_iEffModDepth);
+		str += MakeCommandString(EF_FDS_MOD_DEPTH, m_iEffModDepth);
 	if (m_bAutoModulation) {
-		str.AppendFormat(_T(" I%X%X"), m_iEffModSpeedHi > 0xF ? 1 : m_iEffModSpeedHi, m_iEffModSpeedLo - 1);
+		str += MakeCommandString(EF_FDS_MOD_SPEED_HI, ((m_iEffModSpeedHi > 0xF ? 1 : m_iEffModSpeedHi) << 4) | (m_iEffModSpeedLo - 1));
 		if (m_iEffModSpeedHi > 0xF)
-			str.AppendFormat(_T(" H%02X"), 0x80 + m_iEffModSpeedHi);
+			str += MakeCommandString(EF_FDS_MOD_DEPTH, 0x80 + m_iEffModSpeedHi);
 		if (m_iModulationOffset != 0)
-			str.AppendFormat(_T(" Z%02X"), m_iModulationOffset + 0x80);
+			str += MakeCommandString(EF_FDS_MOD_BIAS, m_iModulationOffset + 0x80);
 	}
 	else {
 		if (m_iModulationSpeed >> 8)
-			str.AppendFormat(_T(" I%02X"), m_iModulationSpeed >> 8);
+			str += MakeCommandString(EF_FDS_MOD_SPEED_HI, m_iModulationSpeed >> 8);
 		if (m_iModulationSpeed & 0xFF)
-			str.AppendFormat(_T(" J%02X"), m_iModulationSpeed & 0xFF);
+			str += MakeCommandString(EF_FDS_MOD_SPEED_LO, m_iModulationSpeed & 0xFF);
 	}
 
 	return str;
@@ -268,20 +265,17 @@ CString CChannelHandlerFDS::GetCustomEffectString() const		// // //
 
 void CChannelHandlerFDS::SetFMSpeed(int Speed)		// // //
 {
-	ASSERT(Speed >= 0 && Speed <= 0xFFF);
-	m_iModulationSpeed = Speed;
+	m_iModulationSpeed = Speed & 0xFFF;
 }
 
 void CChannelHandlerFDS::SetFMDepth(int Depth)		// // //
 {
-	ASSERT(Depth >= 0 && Depth <= 0x3F);
-	m_iModulationDepth = Depth;
+	m_iModulationDepth = Depth & 0x3F;
 }
 
 void CChannelHandlerFDS::SetFMDelay(int Delay)		// // //
 {
-	ASSERT(Delay >= 0 && Delay <= 0xFF);
-	m_iModulationDelay = Delay;
+	m_iModulationDelay = Delay & 0xFF;
 }
 
 void CChannelHandlerFDS::FillWaveRAM(const char *pBuffer)		// // //

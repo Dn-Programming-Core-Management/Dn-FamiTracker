@@ -22,12 +22,8 @@
 
 // This file handles playing of VRC7 channels
 
-#include "stdafx.h"
-#include "FamiTrackerTypes.h"		// // //
-#include "APU/Types.h"		// // //
-#include "Instrument.h"		// // //
-#include "ChannelHandler.h"
 #include "ChannelsVRC7.h"
+#include "APU/Types.h"		// // //
 #include "InstHandler.h"		// // //
 #include "InstHandlerVRC7.h"		// // //
 
@@ -64,7 +60,6 @@ void CChannelHandlerVRC7::SetPatch(unsigned char Patch)		// // //
 
 void CChannelHandlerVRC7::SetCustomReg(size_t Index, unsigned char Val)		// // //
 {
-	ASSERT(Index < sizeof(m_iPatchRegs));
 	if (!(m_cPatchFlag & (1 << Index)))		// // // 050B
 		m_iPatchRegs[Index] = Val;
 }

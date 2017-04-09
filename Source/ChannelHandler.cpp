@@ -25,20 +25,30 @@
 // translating notes to channel register writes.
 //
 
-#include "stdafx.h"
-#include "FamiTracker.h"
-#include "FamiTrackerTypes.h"		// // //
+#include "ChannelHandler.h"
 #include "ChannelState.h"		// // //
 #include "FTMComponentInterface.h"
-#include "Instrument.h"
 #include "InstrumentManager.h"
 #include "TrackerChannel.h"		// // //
 #include "APU/Types.h"		// // //
+#include "stdafx.h"
 #include "SoundGen.h"
+#include "FamiTracker.h"
 #include "Settings.h"		// // //
-#include "ChannelHandler.h"
 #include "APU/APU.h"
 #include "InstHandler.h"		// // //
+
+#ifdef max
+#undef max
+#endif
+#ifdef min
+#undef min
+#endif
+
+template <typename T>
+constexpr char hex(T x) noexcept {
+	return (x & 0x0F) + ((x & 0x0F) > 0x09 ? '7' : '0');
+}
 
 /*
  * Class CChannelHandler
@@ -188,17 +198,17 @@ void CChannelHandler::ResetChannel()
 	ClearRegisters();
 }
 
-CString CChannelHandler::GetStateString()		// // //
+std::string CChannelHandler::GetStateString() const		// // //
 {
-	CString log = "";
-	log.Format(_T("Inst.: "));
+	std::string log("Inst.: ");
 	if (m_iInstrument == MAX_INSTRUMENTS) // never happens because famitracker will switch to selected inst
-		log.Append("None");
+		log += "None";
 	else
-		log.AppendFormat(_T("%02X"), m_iInstrument);
-	log.AppendFormat(_T("        Vol.: %X        Active effects:"), m_iDefaultVolume >> VOL_COLUMN_SHIFT);
-	log.Append(GetEffectString());
-	return log;
+		log += {hex(m_iInstrument >> 4), hex(m_iInstrument)};
+	log += "        Vol.: ";
+	log += hex(m_iDefaultVolume >> VOL_COLUMN_SHIFT);
+	log += "        Active effects:";
+	return log + GetEffectString();
 }
 
 void CChannelHandler::ApplyChannelState(stChannelState *State)
@@ -219,54 +229,56 @@ void CChannelHandler::ApplyChannelState(stChannelState *State)
 		HandleEffect(EF_FDS_MOD_DEPTH, State->Effect_AutoFMMult);
 }
 
-CString CChannelHandler::GetEffectString() const		// // //
+std::string CChannelHandler::GetEffectString() const		// // //
 {
-	CString str = GetSlideEffectString();
+	std::string str = GetSlideEffectString();
 	
 	if (m_iVibratoSpeed)
-		str.AppendFormat(_T(" 4%X%X"), m_iVibratoSpeed, m_iVibratoDepth >> 4);
+		str += MakeCommandString(EF_VIBRATO, m_iVibratoSpeed | (m_iVibratoDepth >> 4));
 	if (m_iTremoloSpeed)
-		str.AppendFormat(_T(" 7%X%X"), m_iTremoloSpeed, m_iTremoloDepth >> 4);
+		str += MakeCommandString(EF_TREMOLO, m_iTremoloSpeed | (m_iTremoloDepth >> 4));
 	if (m_iVolSlide)
-		str.AppendFormat(_T(" A%02X"), m_iVolSlide);
+		str += MakeCommandString(EF_VOLUME_SLIDE, m_iVolSlide);
 	if (m_iFinePitch != 0x80)
-		str.AppendFormat(_T(" P%02X"), m_iFinePitch);
+		str += MakeCommandString(EF_PITCH, m_iFinePitch);
 	if ((m_iDefaultDuty && m_iChannelID < CHANID_S5B_CH1) || (m_iDefaultDuty != 0x40 && m_iChannelID >= CHANID_S5B_CH1))
-		str.AppendFormat(_T(" V%02X"), m_iDefaultDuty);
+		str += MakeCommandString(EF_DUTY_CYCLE, m_iDefaultDuty);
 
 	// run-time effects
 	if (m_cDelayCounter >= 0 && m_bDelayEnabled)
-		str.AppendFormat(_T(" G%02X"), m_cDelayCounter + 1);
+		str += MakeCommandString(EF_DELAY, m_cDelayCounter + 1);
 	if (m_iNoteRelease)
-		str.AppendFormat(_T(" L%02X"), m_iNoteRelease);
+		str += MakeCommandString(EF_NOTE_RELEASE, m_iNoteRelease);
 	if (m_iNoteVolume > 0)
-		str.AppendFormat(_T(" M%X%X"), m_iNoteVolume, m_iNewVolume >> VOL_COLUMN_SHIFT);
+		str += MakeCommandString(EF_DELAYED_VOLUME, m_iNoteVolume | (m_iNewVolume >> VOL_COLUMN_SHIFT));
 	if (m_iNoteCut)
-		str.AppendFormat(_T(" S%02X"), m_iNoteCut);
+		str += MakeCommandString(EF_NOTE_CUT, m_iNoteCut);
 	if (m_iTranspose)
-		str.AppendFormat(_T(" T%X%X"), m_iTranspose + (m_bTransposeDown ? 8 : 0), m_iTransposeTarget);
+		str += MakeCommandString(EF_TRANSPOSE, ((m_iTranspose + (m_bTransposeDown ? 8 : 0)) << 4) | m_iTransposeTarget);
 
-	str.Append(GetCustomEffectString());
-	return str.IsEmpty() ? _T(" None") : str;
+	str += GetCustomEffectString();
+	return str.empty() ? std::string(" None") : str;
 }
 
-CString CChannelHandler::GetSlideEffectString() const		// // //
+std::string CChannelHandler::GetSlideEffectString() const		// // //
 {
-	CString str = _T("");
-	
 	switch (m_iEffect) {
 	case EF_ARPEGGIO:
-		if (m_iEffectParam) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iEffectParam); break;
+		if (m_iEffectParam)
+			return MakeCommandString(m_iEffect, m_iEffectParam);
+		break;
 	case EF_PORTA_UP: case EF_PORTA_DOWN: case EF_PORTAMENTO:
-		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iPortaSpeed); break;
+		if (m_iPortaSpeed)
+			return MakeCommandString(m_iEffect, m_iPortaSpeed);
+		break;
 	}
 
-	return str;
+	return std::string();
 }
 
-CString CChannelHandler::GetCustomEffectString() const		// // //
+std::string CChannelHandler::GetCustomEffectString() const		// // //
 {
-	return _T("");
+	return std::string();
 }
 
 // Handle common things before letting the channels play the notes
@@ -961,6 +973,11 @@ void CChannelHandler::RegisterKeyState(int Note)
 	m_pSoundGen->RegisterKeyState(m_iChannelID, Note);
 }
 
+std::string CChannelHandler::MakeCommandString(effect_t Effect, unsigned char Param)		// // //
+{
+	return {' ', EFF_CHAR[Effect - 1], hex(Param >> 4), hex(Param)};
+}
+
 void CChannelHandler::SetPeriod(int Period)
 {
 	m_iPeriod = LimitPeriod(Period);
@@ -1049,20 +1066,13 @@ int CChannelHandlerInverted::CalculatePeriod() const
 	return LimitRawPeriod(Period);
 }
 
-CString CChannelHandlerInverted::GetSlideEffectString() const		// // //
+std::string CChannelHandlerInverted::GetSlideEffectString() const		// // //
 {
-	CString str = _T("");
-	
 	switch (m_iEffect) {
-	case EF_ARPEGGIO:
-		if (m_iEffectParam) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iEffectParam); break;
 	case EF_PORTA_UP:
-		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_PORTA_DOWN - 1], m_iPortaSpeed); break;
+		return MakeCommandString(EF_PORTA_DOWN, m_iPortaSpeed);
 	case EF_PORTA_DOWN:
-		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_PORTA_UP - 1], m_iPortaSpeed); break;
-	case EF_PORTAMENTO:
-		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iPortaSpeed); break;
+		return MakeCommandString(EF_PORTA_UP, m_iPortaSpeed);
 	}
-
-	return str;
+	return CChannelHandler::GetSlideEffectString();
 }

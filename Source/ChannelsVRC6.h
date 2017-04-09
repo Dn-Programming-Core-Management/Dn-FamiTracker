@@ -20,7 +20,10 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include "ChannelHandler.h"
 
 //
 // Derived channels, VRC6

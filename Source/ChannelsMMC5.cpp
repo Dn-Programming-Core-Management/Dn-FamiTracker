@@ -22,12 +22,8 @@
 
 // MMC5 file
 
-#include "stdafx.h"
-#include "FamiTrackerTypes.h"		// // //
-#include "APU/Types.h"		// // //
-#include "Instrument.h"		// // //
-#include "ChannelHandler.h"
 #include "ChannelsMMC5.h"
+#include "APU/Types.h"		// // //
 #include "InstHandler.h"		// // //
 #include "SeqInstHandler.h"		// // //
 
@@ -161,14 +157,14 @@ void CChannelHandlerMMC5::ClearRegisters()
 	m_iLastPeriod = 0xFFFF;		// // //
 }
 
-CString CChannelHandlerMMC5::GetCustomEffectString() const		// // //
+std::string CChannelHandlerMMC5::GetCustomEffectString() const		// // //
 {
-	CString str = _T("");
+	std::string str;
 
 	if (!m_bEnvelopeLoop)
-		str.AppendFormat(_T(" E%02X"), m_iLengthCounter);
+		str += MakeCommandString(EF_VOLUME, m_iLengthCounter);
 	if (!m_bEnvelopeLoop || m_bHardwareEnvelope)
-		str.AppendFormat(_T(" EE%X"), !m_bEnvelopeLoop * 2 + m_bHardwareEnvelope);
+		str += MakeCommandString(EF_VOLUME, 0xE0 + !m_bEnvelopeLoop * 2 + m_bHardwareEnvelope);
 
 	return str;
 }

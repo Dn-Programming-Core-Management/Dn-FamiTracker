@@ -20,7 +20,10 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include "ChannelHandler.h"
 
 //
 // Derived channels, N163
@@ -51,8 +54,8 @@ protected:
 	int		ConvertDuty(int Duty) const override;		// // //
 	void	ClearRegisters() override;
 	int		CalculatePeriod() const override;		// // //
-	CString	GetSlideEffectString() const override;		// // //
-	CString	GetCustomEffectString() const override;		// // //
+	std::string	GetSlideEffectString() const override;		// // //
+	std::string	GetCustomEffectString() const override;		// // //
 
 private:
 	void WriteReg(int Reg, int Value);

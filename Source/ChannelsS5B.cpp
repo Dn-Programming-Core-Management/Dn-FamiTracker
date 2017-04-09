@@ -22,13 +22,9 @@
 
 // Sunsoft 5B (YM2149/AY-3-8910)
 
-#include "stdafx.h"
-#include "FamiTrackerTypes.h"		// // //
+#include "ChannelsS5B.h"
 #include "APU/Types.h"		// // //
 #include "Sequence.h"		// // //
-#include "Instrument.h"		// // //
-#include "ChannelHandler.h"
-#include "ChannelsS5B.h"
 #include "APU/APU.h"
 #include "InstHandler.h"		// // //
 #include "SeqInstHandlerS5B.h"		// // //
@@ -213,18 +209,18 @@ void CChannelHandlerS5B::ClearRegisters()
 	WriteReg(8 + m_iChannelID - CHANID_S5B_CH1, 0);		// Clear volume
 }
 
-CString CChannelHandlerS5B::GetCustomEffectString() const		// // //
+std::string CChannelHandlerS5B::GetCustomEffectString() const		// // //
 {
-	CString str = _T("");
+	std::string str;
 
 	if (m_iEnvFreqLo)
-		str.AppendFormat(_T(" H%02X"), m_iEnvFreqLo);
+		str += MakeCommandString(EF_SUNSOFT_ENV_LO, m_iEnvFreqLo);
 	if (m_iEnvFreqHi)
-		str.AppendFormat(_T(" I%02X"), m_iEnvFreqHi);
+		str += MakeCommandString(EF_SUNSOFT_ENV_HI, m_iEnvFreqHi);
 	if (m_iEnvType)
-		str.AppendFormat(_T(" J%02X"), m_iEnvType);
+		str += MakeCommandString(EF_SUNSOFT_ENV_TYPE, m_iEnvType);
 	if (m_iDefaultNoise)
-		str.AppendFormat(_T(" W%02X"), m_iDefaultNoise);
+		str += MakeCommandString(EF_SUNSOFT_NOISE, m_iDefaultNoise);
 
 	return str;
 }

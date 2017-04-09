@@ -22,15 +22,12 @@
 
 // This file handles playing of 2A03 channels
 
-#include "stdafx.h"
-#include "FamiTracker.h"
-#include "FamiTrackerTypes.h"		// // //
+#include "Channels2A03.h"
 #include "APU/Types.h"		// // //
 #include "APU/APU.h"		// // // for DPCM
 #include "DSample.h"		// // //
-#include "Instrument.h"
-#include "ChannelHandler.h"
-#include "Channels2A03.h"
+#include "stdafx.h"
+#include "FamiTracker.h"
 #include "Settings.h"
 #include "InstHandler.h"		// // //
 #include "SeqInstHandler.h"		// // //
@@ -259,14 +256,14 @@ void C2A03Square::HandleNote(int Note, int Octave)		// // //
 	}
 }
 
-CString C2A03Square::GetCustomEffectString() const		// // //
+std::string C2A03Square::GetCustomEffectString() const		// // //
 {
-	CString str = _T("");
-	
+	std::string str;
+
 	if (!m_bEnvelopeLoop)
-		str.AppendFormat(_T(" E%02X"), m_iLengthCounter);
+		str += MakeCommandString(EF_VOLUME, m_iLengthCounter);
 	if (!m_bEnvelopeLoop || m_bHardwareEnvelope)
-		str.AppendFormat(_T(" EE%X"), !m_bEnvelopeLoop * 2 + m_bHardwareEnvelope);
+		str += MakeCommandString(EF_VOLUME, 0xE0 + !m_bEnvelopeLoop * 2 + m_bHardwareEnvelope);
 
 	return str;
 }
@@ -351,16 +348,16 @@ void CTriangleChan::ClearRegisters()
 	WriteRegister(0x400B, 0);
 }
 
-CString CTriangleChan::GetCustomEffectString() const		// // //
+std::string CTriangleChan::GetCustomEffectString() const		// // //
 {
-	CString str = _T("");
+	std::string str;
 	
 	if (m_iLinearCounter > -1)
-		str.AppendFormat(_T(" S%02X"), m_iLinearCounter | 0x80);
+		str += MakeCommandString(EF_NOTE_CUT, m_iLinearCounter | 0x80);
 	if (!m_bEnvelopeLoop)
-		str.AppendFormat(_T(" E%02X"), m_iLengthCounter);
+		str += MakeCommandString(EF_VOLUME, m_iLengthCounter);
 	if (!m_bEnvelopeLoop)
-		str.AppendFormat(_T(" EE%X"), !m_bEnvelopeLoop);
+		str += MakeCommandString(EF_VOLUME, 0xE0 + !m_bEnvelopeLoop);
 
 	return str;
 }
@@ -472,14 +469,14 @@ void CNoiseChan::ClearRegisters()
 	WriteRegister(0x400F, 0);
 }
 
-CString CNoiseChan::GetCustomEffectString() const		// // //
+std::string CNoiseChan::GetCustomEffectString() const		// // //
 {
-	CString str = _T("");
+	std::string str;
 
 	if (!m_bEnvelopeLoop)
-		str.AppendFormat(_T(" E%02X"), m_iLengthCounter);
+		str += MakeCommandString(EF_VOLUME, m_iLengthCounter);
 	if (!m_bEnvelopeLoop || m_bHardwareEnvelope)
-		str.AppendFormat(_T(" EE%X"), !m_bEnvelopeLoop * 2 + m_bHardwareEnvelope);
+		str += MakeCommandString(EF_VOLUME, 0xE0 + !m_bEnvelopeLoop * 2 + m_bHardwareEnvelope);
 
 	return str;
 }
@@ -704,12 +701,12 @@ void CDPCMChan::ClearRegisters()
 	m_cDAC = 255;
 }
 
-CString CDPCMChan::GetCustomEffectString() const		// // //
+std::string CDPCMChan::GetCustomEffectString() const		// // //
 {
-	CString str = _T("");
+	std::string str;
 
 	if (m_iOffset)
-		str.AppendFormat(_T(" Y%02X"), m_iOffset);
+		str += MakeCommandString(EF_SAMPLE_OFFSET, m_iOffset);
 
 	return str;
 }

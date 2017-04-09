@@ -29,6 +29,7 @@
 #include <afxmt.h>		// Synchronization objects
 #include <queue>		// // //
 #include "Common.h"
+#include <string>
 
 const int VIBRATO_LENGTH = 256;
 const int TREMOLO_LENGTH = 256;
@@ -187,7 +188,7 @@ public:
 	uint8_t		GetReg(int Chip, int Reg) const;
 	CRegisterState *GetRegState(unsigned Chip, unsigned Reg) const;		// // //
 	double		GetChannelFrequency(unsigned Chip, int Channel) const;		// // //
-	CString		RecallChannelState(int Channel) const;		// // //
+	std::string	RecallChannelState(int Channel) const;		// // //
 
 	// FDS & N163 wave preview
 	void		WaveChanged();

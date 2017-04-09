@@ -20,7 +20,10 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include "ChannelHandler.h"
 
 //
 // Derived channels, 5B
@@ -46,7 +49,7 @@ protected:
 	int		CalculateVolume() const override;		// // //
 	int		ConvertDuty(int Duty) const override;		// // //
 	void	ClearRegisters() override;
-	CString	GetCustomEffectString() const override;		// // //
+	std::string	GetCustomEffectString() const override;		// // //
 
 protected:
 	void WriteReg(int Reg, int Value);

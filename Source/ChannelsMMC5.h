@@ -20,7 +20,10 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include "ChannelHandler.h"
 
 //
 // Derived channels, MMC5
@@ -41,7 +44,7 @@ protected:
 	bool	CreateInstHandler(inst_type_t Type) override;		// // //
 	int		ConvertDuty(int Duty) const override;		// // //
 	void	ClearRegisters() override;
-	CString	GetCustomEffectString() const override;		// // //
+	std::string	GetCustomEffectString() const override;		// // //
 
 protected:
 	// // //

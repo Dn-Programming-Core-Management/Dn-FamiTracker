@@ -20,7 +20,10 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include "ChannelHandler.h"
 
 //
 // Derived channels, 2A03
@@ -61,7 +64,7 @@ protected:
 	bool	HandleEffect(effect_t EffNum, unsigned char EffParam) override;		// // //
 	void	HandleEmptyNote() override;
 	void	HandleNote(int Note, int Octave) override;
-	CString	GetCustomEffectString() const override;		// // //
+	std::string	GetCustomEffectString() const override;		// // //
 
 	unsigned char m_iChannel;		// // //
 	unsigned char m_cSweep;
@@ -80,7 +83,7 @@ public:
 protected:
 	bool	HandleEffect(effect_t EffNum, unsigned char EffParam) override;		// // //
 	void	ClearRegisters() override;
-	CString	GetCustomEffectString() const override;		// // //
+	std::string	GetCustomEffectString() const override;		// // //
 private:
 	int m_iLinearCounter;
 };
@@ -92,7 +95,7 @@ public:
 	void	RefreshChannel();
 protected:
 	void	ClearRegisters() override;
-	CString	GetCustomEffectString() const override;		// // //
+	std::string	GetCustomEffectString() const override;		// // //
 	void	HandleNote(int Note, int Octave) override;
 	void	SetupSlide() override;		// // //
 
@@ -124,7 +127,7 @@ protected:
 	bool	CreateInstHandler(inst_type_t Type) override;		// // //
 
 	void	ClearRegisters() override;
-	CString	GetCustomEffectString() const override;		// // //
+	std::string	GetCustomEffectString() const override;		// // //
 private:
 	// DPCM variables
 	unsigned char m_cDAC;

@@ -20,7 +20,10 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include "ChannelHandler.h"
 
 //
 // Derived channels, VRC7
@@ -34,8 +37,6 @@ enum vrc7_command_t {
 	CMD_NOTE_HALT,
 	CMD_NOTE_RELEASE
 };
-
-class CChannelHandlerInterfaceVRC7;
 
 class CChannelHandlerVRC7 : public CChannelHandlerInverted, public CChannelHandlerInterfaceVRC7 {		// // //
 public:
