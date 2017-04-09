@@ -263,7 +263,7 @@ void CFindResultsBox::AddResult(const stChanNote *pNote, const CFindCursor *pCur
 			m_cListResults->SetItemText(Pos, NOTE, str);
 		}
 		else
-			m_cListResults->SetItemText(Pos, NOTE, pNote->ToString());
+			m_cListResults->SetItemText(Pos, NOTE, pNote->ToString().c_str());
 	}
 
 	if (pNote->Instrument == HOLD_INSTRUMENT)		// // // 050B
@@ -555,7 +555,7 @@ int CFindResultsBox::NoteCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lPar
 			return 0x100 + x.GetAt(0);
 		for (int i = 0; i < NOTE_RANGE; ++i) {
 			const auto &n = stChanNote::NOTE_NAME[i];
-			if (x.Left(n.GetLength()) == n)
+			if (!strcmp(x.Left(n.size()), n.c_str()))
 				return MIDI_NOTE(x.GetAt(x.GetLength() - 1) - '0', ++i);
 		}
 		return -1;

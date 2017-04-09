@@ -76,9 +76,9 @@ BOOL CSplitKeyboardDlg::OnInitDialog()
 
 	pCombo = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_SPLIT_NOTE));
 	for (auto n : stChanNote::NOTE_NAME) {
-		if (n.Right(1) == _T("-"))
-			n.Delete(1);
-		pCombo->AddString(n);
+		if (n.back() == '-')
+			n.pop_back();
+		pCombo->AddString(n.c_str());
 	}
 	pCombo->SetCurSel(m_iSplitNote != -1 ? (GET_NOTE(m_iSplitNote) - 1) : 0);
 	

@@ -269,7 +269,7 @@ std::string CSeqConversionArpFixed::ToString(char Value) const
 	stChanNote Note;
 	Note.Note = GET_NOTE(static_cast<unsigned char>(Value));
 	Note.Octave = GET_OCTAVE(static_cast<unsigned char>(Value));
-	return std::string {Note.ToString().GetBuffer()};
+	return Note.ToString();
 }
 
 bool CSeqConversionArpFixed::GetNextTerm(std::string::const_iterator &b, std::string::const_iterator &e, int &Out)

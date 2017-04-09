@@ -1688,17 +1688,17 @@ static double NoteFromFreq(double Freq)
 	return 45.0 + 12.0 * (std::log(Freq / 440.0) / log(2.0));
 }
 
-static CString NoteToStr(int Note)
+static std::string NoteToStr(int Note)
 {
 	int Octave = GET_OCTAVE(Note) + 1;		// // //
 	int Index = GET_NOTE(Note) - 1;
 
-	CString str;
+	std::string str;
 	if (theApp.GetSettings()->Appearance.bDisplayFlats)
 		str = stChanNote::NOTE_NAME_FLAT[Index];
 	else
 		str = stChanNote::NOTE_NAME[Index];
-	str.AppendFormat("%i", Octave);
+	str += std::to_string(Octave);
 	return str;
 }
 
@@ -1799,7 +1799,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		
 		CString str;
 		if (freq != 0.)
-			str.Format(fmt, digits, period, freq, NoteToStr(note_conv), cents);
+			str.Format(fmt, digits, period, freq, NoteToStr(note_conv).c_str(), cents);
 		else
 			str.Format(fmt, digits, period, 0., _T("---"), 0);
 		return str;

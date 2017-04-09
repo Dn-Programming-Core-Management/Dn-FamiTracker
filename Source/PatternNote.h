@@ -24,11 +24,12 @@
 #pragma once
 
 #include "FamiTrackerTypes.h"
+#include <string>
 
 // Channel note struct, holds the data for each row in patterns
 class stChanNote {
 public:
-	CString ToString() const;
+	std::string ToString() const;
 
 public:
 	unsigned char Note = NONE;
@@ -39,6 +40,6 @@ public:
 	unsigned char EffParam[MAX_EFFECT_COLUMNS] = {0U, 0U, 0U, 0U};
 
 public:
-	static const CString NOTE_NAME[NOTE_RANGE];
-	static const CString NOTE_NAME_FLAT[NOTE_RANGE];
+	static const std::string NOTE_NAME[NOTE_RANGE];
+	static const std::string NOTE_NAME_FLAT[NOTE_RANGE];
 };

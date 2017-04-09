@@ -20,38 +20,33 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include <string>
 #include "PatternNote.h"
 
-const CString stChanNote::NOTE_NAME[NOTE_RANGE] = {
-	_T("C-"), _T("C#"), _T("D-"), _T("D#"),
-	_T("E-"), _T("F-"), _T("F#"), _T("G-"),
-	_T("G#"), _T("A-"), _T("A#"), _T("B-"),
+using namespace std::string_literals;
+
+const std::string stChanNote::NOTE_NAME[NOTE_RANGE] = {
+	"C-"s, "C#"s, "D-"s, "D#"s, "E-"s, "F-"s,
+	"F#"s, "G-"s, "G#"s, "A-"s, "A#"s, "B-"s,
 };
 
-const CString stChanNote::NOTE_NAME_FLAT[NOTE_RANGE] = {
-	_T("C-"), _T("Db"), _T("D-"), _T("Eb"),
-	_T("E-"), _T("F-"), _T("Gb"), _T("G-"),
-	_T("Ab"), _T("A-"), _T("Bb"), _T("B-"),
+const std::string stChanNote::NOTE_NAME_FLAT[NOTE_RANGE] = {
+	"C-"s, "Db"s, "D-"s, "Eb"s, "E-"s, "F-"s,
+	"Gb"s, "G-"s, "Ab"s, "A-"s, "Bb"s, "B-"s,
 };
 
-CString stChanNote::ToString() const
+std::string stChanNote::ToString() const
 {
 	switch (Note) {
-	case NONE: return _T("...");
-	case HALT: return _T("---");
-	case RELEASE: return _T("===");
+	case NONE:
+		return "..."s;
+	case HALT:
+		return "---"s;
+	case RELEASE:
+		return "==="s;
 	case ECHO:
-		{
-			CString str;
-			str.Format(_T("^-%d"), Octave);
-			return str;
-		}
+		return "^-"s + std::to_string(Octave);
 	default:
-		{
-			CString str;
-			str.Format(_T("%s%d"), NOTE_NAME[Note - 1], Octave);
-			return str;
-		}
+		return NOTE_NAME[Note - 1] + std::to_string(Octave);
 	}
 }
