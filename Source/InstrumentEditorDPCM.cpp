@@ -163,7 +163,7 @@ BOOL CInstrumentEditorDPCM::OnInitDialog()
 	CString text;		// // //
 	pTableListCtrl->DeleteAllItems();
 	for (int i = 0; i < NOTE_COUNT; ++i) {
-		text.Format(_T("%s%d"), stChanNote::NOTE_NAME[GET_NOTE(i) - 1], GET_OCTAVE(i));
+		text.Format(_T("%s%d"), stChanNote::NOTE_NAME[GET_NOTE(i) - 1].c_str(), GET_OCTAVE(i));
 		pTableListCtrl->InsertItem(i, text);
 	}
 	pTableListCtrl->GetItemRect(0, &r, 2);		// // //

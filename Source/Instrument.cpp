@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2017 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -20,16 +20,17 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include "InstrumentManagerInterface.h"		// // //
 #include "Instrument.h"
+#include "InstrumentManagerInterface.h"		// // //
+#include "DocumentFile.h"
+#include "SimpleFile.h"
 
 /*
  * Class CInstrument, base class for instruments
  *
  */
 
-CInstrument::CInstrument(inst_type_t type) : m_iType(type), m_pInstManager(nullptr)		// // //
+CInstrument::CInstrument(inst_type_t type) : m_iType(type)		// // //
 {
 	memset(m_cName, 0, INST_NAME_MAX);
 }
@@ -75,30 +76,4 @@ void CInstrument::InstrumentChanged() const
 	// Set modified flag
 	if (m_pInstManager)		// // //
 		m_pInstManager->InstrumentChanged();
-}
-
-// File load / store
-
-void CInstrumentFile::WriteInt(unsigned int Value)
-{
-	Write(&Value, sizeof(int));
-}
-
-void CInstrumentFile::WriteChar(unsigned char Value)
-{
-	Write(&Value, sizeof(char));
-}
-
-unsigned int CInstrumentFile::ReadInt()
-{
-	unsigned int Value;
-	Read(&Value, sizeof(int));
-	return Value;
-}
-
-unsigned char CInstrumentFile::ReadChar()
-{
-	unsigned char Value;
-	Read(&Value, sizeof(char));
-	return Value;
 }

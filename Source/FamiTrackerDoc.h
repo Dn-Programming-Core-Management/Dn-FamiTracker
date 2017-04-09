@@ -405,11 +405,11 @@ private:
 	void			AssertFileData(bool Cond, std::string Msg) const;		// // //
 	
 	template <module_error_level_t l = MODULE_ERROR_DEFAULT, typename T, typename U, typename V>
-	typename std::enable_if<std::is_unsigned<T>::value, T>::type
+	std::enable_if_t<std::is_unsigned<T>::value, T>
 	AssertRange(T Value, U Min, V Max, std::string Desc) const
 	{
 		try {
-			return CModuleException::AssertRangeFmt<l>(Value, Min, Max, Desc, "%u");
+			return CModuleException::AssertRangeFmt<l>(Value, Min, Max, Desc);
 		}
 		catch (CModuleException *e) {
 			if (m_pCurrentDocument)
@@ -419,11 +419,11 @@ private:
 	}
 	
 	template <module_error_level_t l = MODULE_ERROR_DEFAULT, typename T, typename U, typename V>
-	typename std::enable_if<std::is_signed<T>::value, T>::type
+	std::enable_if_t<std::is_signed<T>::value, T>
 	AssertRange(T Value, U Min, V Max, std::string Desc) const
 	{
 		try {
-			return CModuleException::AssertRangeFmt<l>(Value, Min, Max, Desc, "%i");
+			return CModuleException::AssertRangeFmt<l>(Value, Min, Max, Desc);
 		}
 		catch (CModuleException *e) {
 			if (m_pCurrentDocument)

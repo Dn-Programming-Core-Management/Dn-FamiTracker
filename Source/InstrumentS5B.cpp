@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2017 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -21,9 +21,6 @@
 */
 
 // // // CInstrumentS5B is a subtype of CSeqInstrument.
-#include "stdafx.h" // CFile
-#include "Instrument.h"
-#include "SeqInstrument.h"
 #include "InstrumentS5B.h"
 
-LPCTSTR CInstrumentS5B::SEQUENCE_NAME[] = {_T("Volume"), _T("Arpeggio"), _T("Pitch"), _T("Hi-pitch"), _T("Noise / Mode")};
+const char *CInstrumentS5B::SEQUENCE_NAME[] = {"Volume", "Arpeggio", "Pitch", "Hi-pitch", "Noise / Mode"};

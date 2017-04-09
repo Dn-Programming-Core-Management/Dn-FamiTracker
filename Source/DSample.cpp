@@ -31,21 +31,17 @@
 
 CDSample::CDSample(unsigned int Size) :
 	m_iSampleSize(Size),
-	m_pSampleData(new char[Size]),
-	m_pName(new char[MAX_NAME_SIZE]())
+	m_pSampleData(new char[Size])
 {
 }
 
 CDSample::CDSample(const CDSample &sample) :		// // //
 	m_iSampleSize(sample.m_iSampleSize),
 	m_pSampleData(new char[sample.m_iSampleSize]),
-	m_pName(new char[MAX_NAME_SIZE])
+	m_sName(sample.m_sName)
 {
 	memcpy(m_pSampleData.get(), sample.m_pSampleData.get(), m_iSampleSize);
-	strncpy_s(m_pName.get(), MAX_NAME_SIZE, sample.m_pName.get(), MAX_NAME_SIZE);
 }
-
-#pragma warning ( disable : 4717 ) // "recursive on all control paths, function will cause runtime stack overflow"
 
 CDSample &CDSample::operator=(const CDSample &sample)
 {
@@ -53,10 +49,18 @@ CDSample &CDSample::operator=(const CDSample &sample)
 	m_iSampleSize = sample.m_iSampleSize;
 	m_pSampleData.reset(new char[sample.m_iSampleSize]);
 	memcpy(m_pSampleData.get(), sample.m_pSampleData.get(), m_iSampleSize);
-	strncpy(m_pName.get(), sample.m_pName.get(), MAX_NAME_SIZE);
+	strncpy(m_sName.get(), sample.m_sName.get(), MAX_NAME_SIZE);
 	*/
 	CDSample temp(sample);
 	*this = std::move(temp);
+	return *this;
+}
+
+CDSample &CDSample::operator=(CDSample &&sample)		// // //
+{
+	m_iSampleSize = sample.m_iSampleSize;
+	m_pSampleData.swap(sample.m_pSampleData);
+	m_sName.swap(sample.m_sName);
 	return *this;
 }
 
@@ -78,10 +82,12 @@ char *CDSample::GetData() const
 
 void CDSample::SetName(const char *pName)
 {
-	strncpy_s(m_pName.get(), MAX_NAME_SIZE, pName, MAX_NAME_SIZE);
+	m_sName = pName;
+	if (m_sName.size() >= MAX_NAME_SIZE)
+		m_sName.resize(MAX_NAME_SIZE - 1); // null character
 }
 
 const char *CDSample::GetName() const
 {
-	return m_pName.get();
+	return m_sName.c_str();
 }

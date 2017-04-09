@@ -18,8 +18,11 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
+#include "stdafx.h"
+#include <string>
 
 // CDocumentFile, class for reading/writing document files
 
@@ -68,7 +71,7 @@ public:
 	// // // exception
 	CModuleException *GetException() const;
 	void SetDefaultFooter(CModuleException *e) const;
-	__declspec(noreturn) void RaiseModuleException(std::string Msg) const;
+	[[noreturn]] void RaiseModuleException(std::string Msg) const;
 
 	// // // Overrides
 	virtual UINT Read(void* lpBuf, UINT nCount);

@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2017 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -20,19 +20,15 @@
 ** must bear this legend.
 */
 
-#pragma once
-
-
-#include "stdafx.h"
+#include "SeqInstrument.h"
 #include "ModuleException.h"
 #include "DocumentFile.h"
-#include "Instrument.h"
 #include "InstrumentManagerInterface.h"
 #include "Sequence.h"
 #include "OldSequence.h"		// // //
-#include "SeqInstrument.h"
 #include "Chunk.h"
 #include "ChunkRenderText.h"
+#include "SimpleFile.h"
 
 /*
  * Base class for instruments using sequences
@@ -72,7 +68,7 @@ void CSeqInstrument::Setup()
 	}
 }
 
-void CSeqInstrument::Store(CDocumentFile *pDocFile)
+void CSeqInstrument::Store(CDocumentFile *pDocFile) const
 {
 	pDocFile->WriteBlockInt(SEQ_COUNT);
 
@@ -84,21 +80,21 @@ void CSeqInstrument::Store(CDocumentFile *pDocFile)
 
 bool CSeqInstrument::Load(CDocumentFile *pDocFile)
 {
-	int SeqCnt = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), 0, SEQ_COUNT, "Instrument sequence count", "%i");
+	int SeqCnt = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), 0, SEQ_COUNT, "Instrument sequence count");
 	SeqCnt = SEQ_COUNT;
 
 	for (int i = 0; i < SeqCnt; ++i) {
 		int Enable = CModuleException::AssertRangeFmt<MODULE_ERROR_STRICT>(
-			pDocFile->GetBlockChar(), 0, 1, "Instrument sequence enable flag", "%i");
+			pDocFile->GetBlockChar(), 0, 1, "Instrument sequence enable flag");
 		SetSeqEnable(i, Enable != 0);
 		int Index = static_cast<unsigned char>(pDocFile->GetBlockChar());		// // //
-		SetSeqIndex(i, CModuleException::AssertRangeFmt(Index, 0, MAX_SEQUENCES - 1, "Instrument sequence index", "%i"));
+		SetSeqIndex(i, CModuleException::AssertRangeFmt(Index, 0, MAX_SEQUENCES - 1, "Instrument sequence index"));
 	}
 
 	return true;
 }
 
-void CSeqInstrument::SaveFile(CInstrumentFile *pFile)
+void CSeqInstrument::SaveFile(CSimpleFile *pFile) const
 {
 	pFile->WriteChar(SEQ_COUNT);
 
@@ -121,12 +117,12 @@ void CSeqInstrument::SaveFile(CInstrumentFile *pFile)
 	}
 }
 
-bool CSeqInstrument::LoadFile(CInstrumentFile *pFile, int iVersion)
+bool CSeqInstrument::LoadFile(CSimpleFile *pFile, int iVersion)
 {
 	// Sequences
 	CSequence *pSeq;
 
-	unsigned char SeqCount = CModuleException::AssertRangeFmt(pFile->ReadChar(), 0, SEQ_COUNT, "Sequence count", "%i");
+	unsigned char SeqCount = CModuleException::AssertRangeFmt(pFile->ReadChar(), 0, SEQ_COUNT, "Sequence count");
 
 	// Loop through all instrument effects
 	for (unsigned i = 0; i < SeqCount; ++i) try {
@@ -138,7 +134,7 @@ bool CSeqInstrument::LoadFile(CInstrumentFile *pFile, int iVersion)
 		SetSeqEnable(i, true);
 
 		// Read the sequence
-		int Count = CModuleException::AssertRangeFmt(pFile->ReadInt(), 0U, 0xFFU, "Sequence item count", "%i");
+		int Count = CModuleException::AssertRangeFmt(pFile->ReadInt(), 0, 0xFF, "Sequence item count");
 
 		if (iVersion < 20) {
 			COldSequence OldSeq;
@@ -153,10 +149,10 @@ bool CSeqInstrument::LoadFile(CInstrumentFile *pFile, int iVersion)
 			int Count2 = Count > MAX_SEQUENCE_ITEMS ? MAX_SEQUENCE_ITEMS : Count;
 			pSeq->SetItemCount(Count2);
 			pSeq->SetLoopPoint(CModuleException::AssertRangeFmt(
-				static_cast<int>(pFile->ReadInt()), -1, Count2 - 1, "Sequence loop point", "%i"));
+				static_cast<int>(pFile->ReadInt()), -1, Count2 - 1, "Sequence loop point"));
 			if (iVersion > 20) {
 				pSeq->SetReleasePoint(CModuleException::AssertRangeFmt(
-					static_cast<int>(pFile->ReadInt()), -1, Count2 - 1, "Sequence release point", "%i"));
+					static_cast<int>(pFile->ReadInt()), -1, Count2 - 1, "Sequence release point"));
 				if (iVersion >= 22)
 					pSeq->SetSetting(static_cast<seq_setting_t>(pFile->ReadInt()));
 			}
@@ -182,7 +178,7 @@ bool CSeqInstrument::LoadFile(CInstrumentFile *pFile, int iVersion)
 	return true;
 }
 
-int CSeqInstrument::Compile(CChunk *pChunk, int Index)
+int CSeqInstrument::Compile(CChunk *pChunk, int Index) const
 {
 	int StoredBytes = 0;
 

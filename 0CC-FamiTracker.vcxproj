@@ -172,12 +172,13 @@
       <StructMemberAlignment>Default</StructMemberAlignment>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
-      <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <MinimalRebuild>false</MinimalRebuild>
       <AdditionalIncludeDirectories>$(DXSDK_DIR)include;.\</AdditionalIncludeDirectories>
       <ObjectFileName>obj/$(IntDir)/%(RelativeDir)</ObjectFileName>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -257,6 +258,7 @@
       <DebugInformationFormat>None</DebugInformationFormat>
       <ObjectFileName>obj/$(IntDir)/%(RelativeDir)</ObjectFileName>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -268,7 +270,6 @@
       <Version>
       </Version>
       <AdditionalLibraryDirectories>C:\Program Files (x86)\Windows Kits\10\lib\10.0.10586.0\ucrt\x86;C:\Program Files (x86)\Windows Kits\10\lib\10.0.10586.0\um\x86;C:\Program Files\Windows Kits\10\lib\10.0.10240.0\ucrt\x86;C:\Program Files\Windows Kits\8.1\Lib\winv6.3\um\x86;$(DXSDK_DIR)\Lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
       <GenerateMapFile>false</GenerateMapFile>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -277,6 +278,7 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
     </Link>
     <Manifest />
   </ItemDefinitionGroup>

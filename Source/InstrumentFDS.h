@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2017 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -20,23 +20,24 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
-
+#include "SeqInstrument.h"		// // //
 #include <vector>
 #include <memory>
 
 class CInstrumentFDS : public CSeqInstrument {
 public:
 	CInstrumentFDS();
-	CInstrument* Clone() const;
-	void	Setup();
-	void	Store(CDocumentFile *pDocFile);
-	bool	Load(CDocumentFile *pDocFile);
-	void	SaveFile(CInstrumentFile *pFile);
-	bool	LoadFile(CInstrumentFile *pFile, int iVersion);
-	int		Compile(CChunk *pChunk, int Index);
-	bool	CanRelease() const;
+	CInstrument* Clone() const override;
+	void	Setup() override;
+	void	Store(CDocumentFile *pDocFile) const override;
+	bool	Load(CDocumentFile *pDocFile) override;
+	void	SaveFile(CSimpleFile *pFile) const override;
+	bool	LoadFile(CSimpleFile *pFile, int iVersion) override;
+	int		Compile(CChunk *pChunk, int Index) const override;
+	bool	CanRelease() const override;
 
 public:
 	unsigned char GetSample(int Index) const;
@@ -56,18 +57,18 @@ protected:
 	virtual void	CloneFrom(const CInstrument *pInst);		// // //
 
 private:
-	void StoreSequence(CDocumentFile *pDocFile, const CSequence *pSeq);		// // //
+	void StoreSequence(CDocumentFile *pDocFile, const CSequence *pSeq) const;		// // //
 	CSequence *LoadSequence(CDocumentFile *pDocFile) const;
-	void StoreInstSequence(CInstrumentFile *pDocFile, const CSequence *pSeq);
-	CSequence *LoadInstSequence(CInstrumentFile *pFile) const;
+	void StoreInstSequence(CSimpleFile *pDocFile, const CSequence *pSeq) const;		// // //
+	CSequence *LoadInstSequence(CSimpleFile *pFile) const;		// // //
 	void DoubleVolume() const;		// // //
 
 public:
 	static const int WAVE_SIZE = 64;
 	static const int MOD_SIZE = 32;
 	static const int SEQUENCE_COUNT = 3;		// // //
-	static LPCTSTR SEQUENCE_NAME[];
-	LPCTSTR	GetSequenceName(int Index) const { return SEQUENCE_NAME[Index]; }		// // //
+	static const char *SEQUENCE_NAME[];
+	const char *GetSequenceName(int Index) const override { return SEQUENCE_NAME[Index]; }		// // //
 
 private:
 	// Instrument data

@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2017 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@
 #include <string>
 #include <vector>
 #include <exception>
-#include <memory>
 
 #include "stdafx.h"
 #include "FamiTracker.h"
@@ -39,7 +38,7 @@ class CModuleException : std::exception
 {
 public:
 	/*!	\brief Constructor of the exception object with an empty message. */
-	CModuleException();
+	CModuleException() = default;
 	/*! \brief Virtual destructor. */
 	virtual ~CModuleException() { }
 
@@ -57,16 +56,16 @@ public:
 		\param fmt The format specifier.
 		\param ... Extra arguments for the formatted string. */
 	template <typename... T>
-	void AppendError(std::string fmt, T... args)
+	void AppendError(const std::string &fmt, T... args)
 	{
 		const size_t MAX_ERROR_STRLEN = 256;
 		char buf[MAX_ERROR_STRLEN] = { };
 		_sntprintf_s(buf, MAX_ERROR_STRLEN, _TRUNCATE, fmt.c_str(), args...);
-		m_strError.emplace_back(new std::string(buf));
+		m_strError.emplace_back(buf);
 	}
 	/*!	\brief Sets the footer string of the error message.
 		\param footer The new footer string. */
-	void SetFooter(std::string footer);
+	void SetFooter(const std::string &footer);
 
 public:
 	/*!	\brief Validates a numerical value so that it lies within the interval [Min, Max].
@@ -81,23 +80,23 @@ public:
 		\return The value argument, if the method returns.
 	*/
 	template <module_error_level_t l = MODULE_ERROR_DEFAULT, typename T, typename U, typename V>
-	static T AssertRangeFmt(T Value, U Min, V Max, std::string Desc, const char *fmt)
+	static T AssertRangeFmt(T Value, U Min, V Max, std::string Desc)
 	{
 		if (l > theApp.GetSettings()->Version.iErrorLevel)
 			return Value;
 		if (!(Value >= Min && Value <= Max)) {
-			char Format[128];
-			sprintf_s(Format, sizeof(Format), "%%s out of range: expected [%s,%s], got %s", fmt, fmt, fmt);
-			char Buffer[512];
-			sprintf_s(Buffer, sizeof(Buffer), Format, Desc.c_str(), Min, Max, Value);
+			std::string msg = Desc + " out of range: expected ["
+				+ std::to_string(Min) + ","
+				+ std::to_string(Max) + "], got "
+				+ std::to_string(Value);
 			CModuleException *e = new CModuleException();
-			e->AppendError(std::string(Buffer));
+			e->AppendError(msg);
 			e->Raise();
 		}
 		return Value;
 	}
 
 private:
-	std::vector<std::unique_ptr<std::string>> m_strError;
-	std::unique_ptr<std::string> m_strFooter;
+	std::vector<std::string> m_strError;
+	std::string m_strFooter;
 };

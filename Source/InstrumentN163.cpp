@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2017 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -20,14 +20,12 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include "InstrumentN163.h"		// // //
 #include "ModuleException.h"		// // //
 #include "DocumentFile.h"
-#include "Instrument.h"
-#include "SeqInstrument.h"		// // //
-#include "InstrumentN163.h"		// // //
 #include "Chunk.h"
 #include "ChunkRenderText.h"		// // //
+#include "SimpleFile.h"
 
 // // // Default wave
 static const char TRIANGLE_WAVE[] = {
@@ -36,7 +34,7 @@ static const char TRIANGLE_WAVE[] = {
 };
 static const int DEFAULT_WAVE_SIZE = sizeof(TRIANGLE_WAVE) / sizeof(char);
 
-LPCTSTR CInstrumentN163::SEQUENCE_NAME[] = {_T("Volume"), _T("Arpeggio"), _T("Pitch"), _T("Hi-pitch"), _T("Wave Index")};
+const char *CInstrumentN163::SEQUENCE_NAME[] = {"Volume", "Arpeggio", "Pitch", "Hi-pitch", "Wave Index"};
 
 CInstrumentN163::CInstrumentN163() : CSeqInstrument(INST_N163),		// // //
 	m_iSamples(),
@@ -72,7 +70,7 @@ void CInstrumentN163::CloneFrom(const CInstrument *pInst)
 	}
 }
 
-void CInstrumentN163::Store(CDocumentFile *pDocFile)
+void CInstrumentN163::Store(CDocumentFile *pDocFile) const
 {
 	// Store sequences
 	CSeqInstrument::Store(pDocFile);		// // //
@@ -94,18 +92,18 @@ bool CInstrumentN163::Load(CDocumentFile *pDocFile)
 {
 	if (!CSeqInstrument::Load(pDocFile)) return false;		// // //
 
-	m_iWaveSize = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), 4, MAX_WAVE_SIZE, "N163 wave size", "%i");
-	m_iWavePos = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), 0, MAX_WAVE_SIZE - 1, "N163 wave position", "%i");
-	CModuleException::AssertRangeFmt<MODULE_ERROR_OFFICIAL>(m_iWavePos, 0, 0x7F, "N163 wave position", "%i");
+	m_iWaveSize = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), 4, MAX_WAVE_SIZE, "N163 wave size");
+	m_iWavePos = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), 0, MAX_WAVE_SIZE - 1, "N163 wave position");
+	CModuleException::AssertRangeFmt<MODULE_ERROR_OFFICIAL>(m_iWavePos, 0, 0x7F, "N163 wave position");
 	if (pDocFile->GetBlockVersion() >= 8) {		// // // 050B
 		bool AutoPosition = pDocFile->GetBlockInt() != 0;
 	}
-	m_iWaveCount = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), 1, MAX_WAVE_COUNT, "N163 wave count", "%i");
-	CModuleException::AssertRangeFmt<MODULE_ERROR_OFFICIAL>(m_iWaveCount, 1, 0x10, "N163 wave count", "%i");
+	m_iWaveCount = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), 1, MAX_WAVE_COUNT, "N163 wave count");
+	CModuleException::AssertRangeFmt<MODULE_ERROR_OFFICIAL>(m_iWaveCount, 1, 0x10, "N163 wave count");
 	
 	for (int i = 0; i < m_iWaveCount; ++i) {
 		for (int j = 0; j < m_iWaveSize; ++j) try {
-			m_iSamples[i][j] = CModuleException::AssertRangeFmt(pDocFile->GetBlockChar(), 0, 15, "N163 wave sample", "%i");
+			m_iSamples[i][j] = CModuleException::AssertRangeFmt(pDocFile->GetBlockChar(), 0, 15, "N163 wave sample");
 		}
 		catch (CModuleException *e) {
 			e->AppendError("At wave %i, sample %i,", i, j);
@@ -116,7 +114,7 @@ bool CInstrumentN163::Load(CDocumentFile *pDocFile)
 	return true;
 }
 
-void CInstrumentN163::SaveFile(CInstrumentFile *pFile)
+void CInstrumentN163::SaveFile(CSimpleFile *pFile) const
 {
 	// Sequences
 	CSeqInstrument::SaveFile(pFile);		// // //
@@ -137,18 +135,18 @@ void CInstrumentN163::SaveFile(CInstrumentFile *pFile)
 	}
 }
 
-bool CInstrumentN163::LoadFile(CInstrumentFile *pFile, int iVersion)
+bool CInstrumentN163::LoadFile(CSimpleFile *pFile, int iVersion)
 {
 	// Sequences
 	CSeqInstrument::LoadFile(pFile, iVersion);		// // //
 
 	// Read wave config
-	int WaveSize = CModuleException::AssertRangeFmt(static_cast<int>(pFile->ReadInt()), 4, MAX_WAVE_SIZE, "N163 wave size", "%i");
-	int WavePos = CModuleException::AssertRangeFmt(static_cast<int>(pFile->ReadInt()), 0, MAX_WAVE_SIZE - 1, "N163 wave position", "%i");
+	int WaveSize = CModuleException::AssertRangeFmt(static_cast<int>(pFile->ReadInt()), 4, MAX_WAVE_SIZE, "N163 wave size");
+	int WavePos = CModuleException::AssertRangeFmt(static_cast<int>(pFile->ReadInt()), 0, MAX_WAVE_SIZE - 1, "N163 wave position");
 	if (iVersion >= 0x250) {		// // // 050B
 		m_bAutoWavePos = pFile->ReadInt() != 0;
 	}
-	int WaveCount = CModuleException::AssertRangeFmt(static_cast<int>(pFile->ReadInt()), 1, MAX_WAVE_COUNT, "N163 wave count", "%i");
+	int WaveCount = CModuleException::AssertRangeFmt(static_cast<int>(pFile->ReadInt()), 1, MAX_WAVE_COUNT, "N163 wave count");
 	
 	SetWaveSize(WaveSize);
 	SetWavePos(WavePos);
@@ -156,7 +154,7 @@ bool CInstrumentN163::LoadFile(CInstrumentFile *pFile, int iVersion)
 
 	for (int i = 0; i < WaveCount; ++i)
 		for (int j = 0; j < WaveSize; ++j) try {
-			SetSample(i, j, CModuleException::AssertRangeFmt(pFile->ReadChar(), 0U, 15U, "N163 wave sample", "%u"));
+			SetSample(i, j, CModuleException::AssertRangeFmt(pFile->ReadChar(), 0, 15, "N163 wave sample"));
 		}
 	catch (CModuleException *e) {
 		e->AppendError("At wave %i, sample %i,", i, j);
@@ -166,7 +164,7 @@ bool CInstrumentN163::LoadFile(CInstrumentFile *pFile, int iVersion)
 	return true;
 }
 
-int CInstrumentN163::Compile(CChunk *pChunk, int Index)
+int CInstrumentN163::Compile(CChunk *pChunk, int Index) const
 {
 	int StoredBytes = CSeqInstrument::Compile(pChunk, Index);		// // //;
 

@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2017 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -20,18 +20,20 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
+#include "SeqInstrument.h"
 
 class CInstrumentN163 : public CSeqInstrument {
 public:
 	CInstrumentN163();
-	CInstrument* Clone() const;
-	void	Store(CDocumentFile *pDocFile);
-	bool	Load(CDocumentFile *pDocFile);
-	void	SaveFile(CInstrumentFile *pFile);
-	bool	LoadFile(CInstrumentFile *pFile, int iVersion);
-	int		Compile(CChunk *pChunk, int Index);
+	CInstrument* Clone() const override;
+	void	Store(CDocumentFile *pDocFile) const override;
+	bool	Load(CDocumentFile *pDocFile) override;
+	void	SaveFile(CSimpleFile *pFile) const override;
+	bool	LoadFile(CSimpleFile *pFile, int iVersion) override;
+	int		Compile(CChunk *pChunk, int Index) const override;
 
 public:
 	int		GetWaveSize() const;
@@ -61,8 +63,8 @@ public:
 	static const int MAX_WAVE_COUNT = 64;		// Number of waves
 
 public:
-	static LPCTSTR SEQUENCE_NAME[];
-	LPCTSTR	GetSequenceName(int Index) const { return SEQUENCE_NAME[Index]; }		// // //
+	static const char *SEQUENCE_NAME[];
+	const char *GetSequenceName(int Index) const override { return SEQUENCE_NAME[Index]; }		// // //
 
 private:
 	int		m_iSamples[MAX_WAVE_COUNT][MAX_WAVE_SIZE];

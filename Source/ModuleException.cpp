@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2017 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -20,33 +20,22 @@
 ** must bear this legend.
 */
 
-#include <cstdarg>
 #include "ModuleException.h"
-
-CModuleException::CModuleException() :
-	std::exception(),
-	m_strError(),
-	m_strFooter()
-{
-}
 
 const std::string CModuleException::GetErrorString() const
 {
 	std::string out;
-	const int COUNT = m_strError.size();
-	for (int i = 0; i < COUNT; ) {
-		out += *m_strError[i];
-		if (++i == COUNT) break;
-		out += '\n';
-	}
-	if (m_strFooter) {
-		out += '\n';
-		out += *m_strFooter;
-	}
+	for (const auto &x : m_strError)
+		out += x;
+	if (m_strFooter.size())
+		out += m_strFooter;
+	else
+		out.pop_back();
+
 	return out;
 }
 
-void CModuleException::SetFooter(std::string footer)
+void CModuleException::SetFooter(const std::string &footer)
 {
-	m_strFooter.reset(new std::string(footer));
+	m_strFooter = footer;
 }

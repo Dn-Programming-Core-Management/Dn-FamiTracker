@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2017 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -20,17 +20,13 @@
 ** must bear this legend.
 */
 
-#include <vector>
-#include <memory>
-#include "stdafx.h"
-#include "Sequence.h"		// // //
-#include "ModuleException.h"		// // //
-#include "Instrument.h"
-#include "SeqInstrument.h"		// // //
 #include "InstrumentFDS.h"		// // //
+#include "Sequence.h"		// // //
 #include "Chunk.h"
 #include "ChunkRenderText.h"		// // //
 #include "DocumentFile.h"
+#include "SimpleFile.h"
+#include "ModuleException.h"		// // //
 
 const char TEST_WAVE[] = {
 	00, 01, 12, 22, 32, 36, 39, 39, 42, 47, 47, 50, 48, 51, 54, 58,
@@ -41,7 +37,7 @@ const char TEST_WAVE[] = {
 
 const int FIXED_FDS_INST_SIZE = 2 + 16 + 4 + 1;		// // //
 
-LPCTSTR CInstrumentFDS::SEQUENCE_NAME[] = {_T("Volume"), _T("Arpeggio"), _T("Pitch"), _T("Hi-pitch"), _T("(N/A)")};
+const char *CInstrumentFDS::SEQUENCE_NAME[] = {"Volume", "Arpeggio", "Pitch", "Hi-pitch", "(N/A)"};
 
 CInstrumentFDS::CInstrumentFDS() : CSeqInstrument(INST_FDS),		// // //
 	m_iModulationSpeed(0),
@@ -87,7 +83,7 @@ void CInstrumentFDS::Setup()
 {
 }
 
-void CInstrumentFDS::StoreInstSequence(CInstrumentFile *pFile, const CSequence *pSeq)
+void CInstrumentFDS::StoreInstSequence(CSimpleFile *pFile, const CSequence *pSeq) const		// // //
 {
 	// Store number of items in this sequence
 	pFile->WriteInt(pSeq->GetItemCount());
@@ -102,11 +98,11 @@ void CInstrumentFDS::StoreInstSequence(CInstrumentFile *pFile, const CSequence *
 		pFile->WriteChar(pSeq->GetItem(i));
 }
 
-CSequence *CInstrumentFDS::LoadInstSequence(CInstrumentFile *pFile) const
+CSequence *CInstrumentFDS::LoadInstSequence(CSimpleFile *pFile) const		// // //
 {
-	int SeqCount = CModuleException::AssertRangeFmt(pFile->ReadInt(), 0U, 0xFFU, "Sequence item count", "%u");
-	int Loop = CModuleException::AssertRangeFmt(static_cast<int>(pFile->ReadInt()), -1, SeqCount - 1, "Sequence loop point", "%u");
-	int Release = CModuleException::AssertRangeFmt(static_cast<int>(pFile->ReadInt()), -1, SeqCount - 1, "Sequence release point", "%u");
+	int SeqCount = CModuleException::AssertRangeFmt(pFile->ReadInt(), 0, 0xFF, "Sequence item count");
+	int Loop = CModuleException::AssertRangeFmt(static_cast<int>(pFile->ReadInt()), -1, SeqCount - 1, "Sequence loop point");
+	int Release = CModuleException::AssertRangeFmt(static_cast<int>(pFile->ReadInt()), -1, SeqCount - 1, "Sequence release point");
 
 	CSequence *pSeq = new CSequence();
 	pSeq->SetItemCount(SeqCount > MAX_SEQUENCE_ITEMS ? MAX_SEQUENCE_ITEMS : SeqCount);
@@ -120,7 +116,7 @@ CSequence *CInstrumentFDS::LoadInstSequence(CInstrumentFile *pFile) const
 	return pSeq;
 }
 
-void CInstrumentFDS::StoreSequence(CDocumentFile *pDocFile, const CSequence *pSeq)
+void CInstrumentFDS::StoreSequence(CDocumentFile *pDocFile, const CSequence *pSeq) const
 {
 	// Store number of items in this sequence
 	pDocFile->WriteBlockChar(pSeq->GetItemCount());
@@ -139,8 +135,8 @@ void CInstrumentFDS::StoreSequence(CDocumentFile *pDocFile, const CSequence *pSe
 CSequence *CInstrumentFDS::LoadSequence(CDocumentFile *pDocFile) const
 {
 	int SeqCount = static_cast<unsigned char>(pDocFile->GetBlockChar());
-	unsigned int LoopPoint = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), -1, SeqCount - 1, "Sequence loop point", "%i");;
-	unsigned int ReleasePoint = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), -1, SeqCount - 1, "Sequence release point", "%i");;
+	unsigned int LoopPoint = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), -1, SeqCount - 1, "Sequence loop point");
+	unsigned int ReleasePoint = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), -1, SeqCount - 1, "Sequence release point");
 
 	// CModuleException::AssertRangeFmt(SeqCount, 0, MAX_SEQUENCE_ITEMS, "Sequence item count", "%i");
 
@@ -165,7 +161,7 @@ void CInstrumentFDS::DoubleVolume() const
 		pVol->SetItem(i, pVol->GetItem(i) * 2);
 }
 
-void CInstrumentFDS::Store(CDocumentFile *pDocFile)
+void CInstrumentFDS::Store(CDocumentFile *pDocFile) const
 {
 	// Write wave
 	for (int i = 0; i < WAVE_SIZE; ++i) {
@@ -237,7 +233,7 @@ bool CInstrumentFDS::Load(CDocumentFile *pDocFile)
 	return true;
 }
 
-void CInstrumentFDS::SaveFile(CInstrumentFile *pFile)
+void CInstrumentFDS::SaveFile(CSimpleFile *pFile) const
 {
 	// Write wave
 	for (int i = 0; i < WAVE_SIZE; ++i) {
@@ -259,7 +255,7 @@ void CInstrumentFDS::SaveFile(CInstrumentFile *pFile)
 		StoreInstSequence(pFile, GetSequence(i));
 }
 
-bool CInstrumentFDS::LoadFile(CInstrumentFile *pFile, int iVersion)
+bool CInstrumentFDS::LoadFile(CSimpleFile *pFile, int iVersion)
 {
 	// Read wave
 	for (int i = 0; i < WAVE_SIZE; ++i) {
@@ -285,7 +281,7 @@ bool CInstrumentFDS::LoadFile(CInstrumentFile *pFile, int iVersion)
 	return true;
 }
 
-int CInstrumentFDS::Compile(CChunk *pChunk, int Index)
+int CInstrumentFDS::Compile(CChunk *pChunk, int Index) const
 {
 	CStringA str;
 

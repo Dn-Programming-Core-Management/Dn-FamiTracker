@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2017 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -38,20 +38,9 @@ enum inst_type_t {
 
 // External classes
 class CChunk;
-class CFile;
 class CDocumentFile;
+class CSimpleFile;
 class CInstrumentManagerInterface;		// // // break cyclic dependencies
-
-// Instrument file load/store
-class CInstrumentFile : public CFile
-{
-public:
-	CInstrumentFile(LPCTSTR lpszFileName, UINT nOpenFlags) : CFile(lpszFileName, nOpenFlags) {};
-	void WriteInt(unsigned int Value);
-	void WriteChar(unsigned char Value);
-	unsigned int ReadInt();
-	unsigned char ReadChar();
-};
 
 // Instrument base class
 class CInstrument {
@@ -61,16 +50,16 @@ public:
 	virtual ~CInstrument();
 	void SetName(const char *Name);
 	void GetName(char *Name) const;
-	const char* GetName() const;
+	const char *GetName() const;
 	void RegisterManager(CInstrumentManagerInterface *pManager);		// // //
 public:
 	virtual inst_type_t GetType() const;								// // // Returns instrument type
 	virtual void Setup() = 0;											// Setup some initial values
-	virtual void Store(CDocumentFile *pDocFile) = 0;					// Saves the instrument to the module
+	virtual void Store(CDocumentFile *pDocFile) const = 0;				// Saves the instrument to the module
 	virtual bool Load(CDocumentFile *pDocFile) = 0;						// Loads the instrument from a module
-	virtual void SaveFile(CInstrumentFile *pFile) = 0;					// Saves to an FTI file
-	virtual bool LoadFile(CInstrumentFile *pFile, int iVersion) = 0;	// Loads from an FTI file
-	virtual int Compile(CChunk *pChunk, int Index) = 0;					// // // Compiles the instrument for NSF generation
+	virtual void SaveFile(CSimpleFile *pFile) const = 0;				// // // Saves to an FTI file
+	virtual bool LoadFile(CSimpleFile *pFile, int iVersion) = 0;		// // // Loads from an FTI file
+	virtual int Compile(CChunk *pChunk, int Index) const = 0;			// // // Compiles the instrument for NSF generation
 	virtual bool CanRelease() const = 0;
 protected:
 	virtual void CloneFrom(const CInstrument *pInst);					// // // virtual copying
@@ -80,5 +69,5 @@ public:
 protected:
 	char m_cName[INST_NAME_MAX];
 	inst_type_t m_iType;		// // //
-	CInstrumentManagerInterface *m_pInstManager;		// // //
+	CInstrumentManagerInterface *m_pInstManager = nullptr;		// // //
 };

@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2017 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -24,72 +24,100 @@
 
 // // // File load / store
 
-CSimpleFile::CSimpleFile(LPCTSTR lpszFileName, UINT nOpenFlags) :
-	CFile(lpszFileName, nOpenFlags)
+CSimpleFile::~CSimpleFile()
 {
+	if (m_fFile.is_open())
+		m_fFile.close();
+}
+
+CSimpleFile::operator bool() const
+{
+	return m_fFile.is_open() && (bool)m_fFile;
+}
+
+void CSimpleFile::Close()
+{
+	m_fFile.close();
 }
 
 void CSimpleFile::WriteChar(char Value)
 {
-	Write(&Value, sizeof(char));
+	m_fFile.put(Value);
 }
 
 void CSimpleFile::WriteShort(short Value)
 {
-	Write(&Value, sizeof(short));
+	m_fFile.put(static_cast<char>(Value));
+	m_fFile.put(static_cast<char>(Value >> 8));
 }
 
 void CSimpleFile::WriteInt(int Value)
 {
-	Write(&Value, sizeof(int));
+	m_fFile.put(static_cast<char>(Value));
+	m_fFile.put(static_cast<char>(Value >> 8));
+	m_fFile.put(static_cast<char>(Value >> 16));
+	m_fFile.put(static_cast<char>(Value >> 24));
 }
 
-void CSimpleFile::WriteString(CString Str)
+void CSimpleFile::WriteBytes(const char *pBuf, size_t count)
 {
-	int Len = Str.GetLength();
+	m_fFile.write(pBuf, count);
+}
+
+void CSimpleFile::WriteString(std::string_view sv)
+{
+	int Len = sv.size();
 	WriteInt(Len);
-	Write(CT2CA(Str).m_psz, Len);
+	WriteBytes(sv.data(), Len);
 }
 
-void CSimpleFile::WriteStringNull(CString Str)
+void CSimpleFile::WriteStringNull(std::string_view sv)
 {
-	CT2CA s(Str);
-	Write(s, strlen(s.m_psz) + 1);
+	WriteBytes(sv.data(), sv.size());
+	m_fFile.put('\0');
 }
 
 char CSimpleFile::ReadChar()
 {
-	char Value;
-	Read(&Value, sizeof(char));
-	return Value;
+	char buf[1];
+	m_fFile.read(buf, 1);
+	return buf[0];
 }
 
 short CSimpleFile::ReadShort()
 {
-	short Value;
-	Read(&Value, sizeof(short));
-	return Value;
+	char buf[2];
+	m_fFile.read(buf, 2);
+	return buf[0] | (buf[1] << 8);
 }
 
 int CSimpleFile::ReadInt()
 {
-	int Value;
-	Read(&Value, sizeof(int));
-	return Value;
+	char buf[4];
+	m_fFile.read(buf, 4);
+	return buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24);
 }
 
-CString CSimpleFile::ReadString()
+void CSimpleFile::ReadBytes(char *pBuf, size_t count) {
+	m_fFile.read(pBuf, count);
+}
+
+std::string CSimpleFile::ReadString()
 {
 	const int Size = ReadInt();
-	LPSTR Buf = new char[Size + 1];
-	Buf[Size] = '\0';
-	return CString(CA2CT(Buf));
+	std::string str(Size, '\0');
+	m_fFile.read(&str[0], Size);
+	return str;
 }
 
-CString CSimpleFile::ReadStringNull()
+std::string CSimpleFile::ReadStringNull()
 {
-	CStringA str;
-	while (char ch = ReadChar())
+	std::string str;
+	while (true) {
+		char ch = m_fFile.get();
+		if (!ch || !m_fFile)
+			break;
 		str += ch;
-	return CString(CA2CT(str));
+	}
+	return str;
 }

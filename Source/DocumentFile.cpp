@@ -20,9 +20,8 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include "ModuleException.h"
 #include "DocumentFile.h"
+#include "ModuleException.h"
 
 //
 // This class is based on CFile and has some simple extensions to create and read FTM files

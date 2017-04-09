@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2017 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -20,30 +20,38 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
+#include <fstream>
 
-#include "stdafx.h"
-
-/*!
-	\brief An extension of the MFC file class with methods for writing and reading in different
-	data types.
-	\details This class replaces CInstrumentFile.
-*/
-class CSimpleFile : public CFile
+class CSimpleFile
 {
 public:
-	CSimpleFile(LPCTSTR lpszFileName, UINT nOpenFlags);
+	template <typename... Arg>
+	CSimpleFile(Arg... args) : m_fFile(std::forward<Arg>(args)...)
+	{
+	}
+	~CSimpleFile();
+
+	explicit operator bool() const;
+
+	void	Close();
 
 	void	WriteChar(char Value);
 	void	WriteShort(short Value);
 	void	WriteInt(int Value);
-	void	WriteString(CString Str);
-	void	WriteStringNull(CString Buf);
+	void	WriteBytes(const char *pBuf, size_t count);
+	void	WriteString(std::string_view sv);
+	void	WriteStringNull(std::string_view sv);
 
 	char	ReadChar();
 	short	ReadShort();
 	int		ReadInt();
-	CString	ReadString();
-	CString ReadStringNull();
+	void	ReadBytes(char *pBuf, size_t count);
+	std::string	ReadString();
+	std::string ReadStringNull();
+
+private:
+	std::fstream m_fFile;
 };

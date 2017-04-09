@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2017 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -20,12 +20,11 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include "Instrument.h"
 #include "InstrumentVRC7.h"		// // //
 #include "ModuleException.h"		// // //
 #include "Chunk.h"
 #include "DocumentFile.h"
+#include "SimpleFile.h"
 
 /*
  * class CInstrumentVRC7
@@ -61,7 +60,7 @@ void CInstrumentVRC7::Setup()
 {
 }
 
-void CInstrumentVRC7::Store(CDocumentFile *pDocFile)
+void CInstrumentVRC7::Store(CDocumentFile *pDocFile) const
 {
 	pDocFile->WriteBlockInt(m_iPatch);
 
@@ -71,7 +70,7 @@ void CInstrumentVRC7::Store(CDocumentFile *pDocFile)
 
 bool CInstrumentVRC7::Load(CDocumentFile *pDocFile)
 {
-	m_iPatch = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), 0, 0xF, "VRC7 patch number", "%i");
+	m_iPatch = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), 0, 0xF, "VRC7 patch number");
 
 	for (int i = 0; i < 8; ++i)
 		SetCustomReg(i, pDocFile->GetBlockChar());
@@ -79,7 +78,7 @@ bool CInstrumentVRC7::Load(CDocumentFile *pDocFile)
 	return true;
 }
 
-void CInstrumentVRC7::SaveFile(CInstrumentFile *pFile)
+void CInstrumentVRC7::SaveFile(CSimpleFile *pFile) const
 {
 	pFile->WriteInt(m_iPatch);
 
@@ -87,7 +86,7 @@ void CInstrumentVRC7::SaveFile(CInstrumentFile *pFile)
 		pFile->WriteChar(GetCustomReg(i));
 }
 
-bool CInstrumentVRC7::LoadFile(CInstrumentFile *pFile, int iVersion)
+bool CInstrumentVRC7::LoadFile(CSimpleFile *pFile, int iVersion)
 {
 	m_iPatch = pFile->ReadInt();
 
@@ -97,7 +96,7 @@ bool CInstrumentVRC7::LoadFile(CInstrumentFile *pFile, int iVersion)
 	return true;
 }
 
-int CInstrumentVRC7::Compile(CChunk *pChunk, int Index)
+int CInstrumentVRC7::Compile(CChunk *pChunk, int Index) const
 {
 	int Patch = GetPatch();
 

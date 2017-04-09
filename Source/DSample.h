@@ -2,6 +2,8 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
+** 0CC-FamiTracker is (C) 2014-2017 HertzDevil
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -18,9 +20,11 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
 #include <memory>		// // //
+#include <string>		// // //
 
 // DPCM sample class
 
@@ -31,7 +35,9 @@ public:
 
 	// Copy constructor
 	CDSample(const CDSample &sample);
+	CDSample(CDSample &&sample) = default;
 	CDSample &operator=(const CDSample &sample);
+	CDSample &operator=(CDSample &&sample);		// // //
 
 	// Set sample data and size, the object will own the memory area assigned
 	void SetData(unsigned int Size, char *pData);
@@ -58,5 +64,5 @@ private:
 	// Sample data
 	unsigned int m_iSampleSize;
 	std::unique_ptr<char[]> m_pSampleData;		// // //
-	std::unique_ptr<char[]> m_pName;		// // //
+	std::string m_sName;		// // //
 };

@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2017 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include "FamiTrackerTypes.h"		// // //
+#include "SeqInstrument.h"		// // //
 
 class CDSample;
 
@@ -31,10 +31,10 @@ class CInstrument2A03 : public CSeqInstrument, public CInstrument2A03Interface {
 public:
 	CInstrument2A03();
 	CInstrument* Clone() const;
-	void	Store(CDocumentFile *pFile);
-	bool	Load(CDocumentFile *pDocFile);
-	void	SaveFile(CInstrumentFile *pFile);
-	bool	LoadFile(CInstrumentFile *pFile, int iVersion);
+	void	Store(CDocumentFile *pFile) const override;
+	bool	Load(CDocumentFile *pDocFile) override;
+	void	SaveFile(CSimpleFile *pFile) const override;
+	bool	LoadFile(CSimpleFile *pFile, int iVersion) override;
 	// // // for the instrument interface
 	int		GetSeqEnable(int Index) const { return CSeqInstrument::GetSeqEnable(Index); }
 	int		GetSeqIndex(int Index) const { return CSeqInstrument::GetSeqIndex(Index); }
@@ -63,8 +63,8 @@ protected:
 	virtual void	CloneFrom(const CInstrument *pInst);		// // //
 
 public:
-	static LPCTSTR SEQUENCE_NAME[];
-	LPCTSTR	GetSequenceName(int Index) const { return SEQUENCE_NAME[Index]; }		// // //
+	static const char *SEQUENCE_NAME[];
+	const char *GetSequenceName(int Index) const override { return SEQUENCE_NAME[Index]; }		// // //
 
 private:
 	char	m_cSamples[OCTAVE_RANGE][NOTE_RANGE];				// Samples

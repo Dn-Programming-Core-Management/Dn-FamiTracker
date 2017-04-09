@@ -70,6 +70,7 @@
 #include "BookmarkCollection.h"		// // //
 #include "BookmarkManager.h"		// // //
 #include "APU/APU.h"
+#include "SimpleFile.h"		// // //
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -3054,18 +3055,18 @@ void CFamiTrackerDoc::SaveInstrument(unsigned int Index, CString FileName) const
 	// Saves an instrument to a file
 	//
 
-	CInstrumentFile file(FileName, CFile::modeCreate | CFile::modeWrite);
 	auto pInstrument = GetInstrument(Index);
 	ASSERT(pInstrument);
 	
-	if (file.m_hFile == CFile::hFileNull) {
+	CSimpleFile file(FileName, std::ios::out | std::ios::binary);
+	if (!file) {
 		AfxMessageBox(IDS_FILE_OPEN_ERROR, MB_ICONERROR);
 		return;
 	}
 
 	// Write header
-	file.Write(INST_HEADER, (UINT)strlen(INST_HEADER));
-	file.Write(INST_VERSION, (UINT)strlen(INST_VERSION));
+	file.WriteBytes(INST_HEADER, (UINT)strlen(INST_HEADER));
+	file.WriteBytes(INST_VERSION, (UINT)strlen(INST_VERSION));
 
 	// Write type
 	file.WriteChar(pInstrument->GetType());
@@ -3074,13 +3075,10 @@ void CFamiTrackerDoc::SaveInstrument(unsigned int Index, CString FileName) const
 	char Name[256];
 	pInstrument->GetName(Name);
 	int NameLen = (int)strlen(Name);
-	file.WriteInt(NameLen);
-	file.Write(Name, NameLen);
+	file.WriteString(std::string_view(Name, strlen(Name)));
 
 	// Write instrument data
 	pInstrument->SaveFile(&file);
-
-	file.Close();
 }
 
 int CFamiTrackerDoc::LoadInstrument(CString FileName)
@@ -3098,19 +3096,19 @@ int CFamiTrackerDoc::LoadInstrument(CString FileName)
 
 		// Open file
 		// // // CFile implements RAII
-		CInstrumentFile file(FileName, CFile::modeRead);
-		if (file.m_hFile == CFile::hFileNull)
+		CSimpleFile file(FileName, std::ios::in | std::ios::binary);
+		if (!file)
 			throw IDS_FILE_OPEN_ERROR;
 
 		// Signature
 		const UINT HEADER_LEN = strlen(INST_HEADER);
 		char Text[256] = {};
-		file.Read(Text, HEADER_LEN);
+		file.ReadBytes(Text, HEADER_LEN);
 		if (strcmp(Text, INST_HEADER) != 0)
 			throw IDS_INSTRUMENT_FILE_FAIL;
 		
 		// Version
-		file.Read(Text, static_cast<UINT>(strlen(INST_VERSION)));
+		file.ReadBytes(Text, static_cast<UINT>(strlen(INST_VERSION)));
 		sscanf_s(Text, "%i.%i", &iInstMaj, &iInstMin);		// // //
 		int iInstVer = iInstMaj * 10 + iInstMin;
 		if (iInstVer > I_CURRENT_VER)
@@ -3126,10 +3124,9 @@ int CFamiTrackerDoc::LoadInstrument(CString FileName)
 		m_pInstrumentManager->InsertInstrument(Slot, pInstrument);
 		
 		// Name
-		unsigned int NameLen = AssertRange(static_cast<int>(file.ReadInt()), 0, CInstrument::INST_NAME_MAX, "Instrument name length");
-		file.Read(Text, NameLen);
-		Text[NameLen] = 0;
-		pInstrument->SetName(Text);
+		std::string InstName = file.ReadString();
+		AssertRange(InstName.size(), 0U, static_cast<unsigned>(CInstrument::INST_NAME_MAX), "Instrument name length");
+		pInstrument->SetName(InstName.c_str());
 
 		pInstrument->LoadFile(&file, iInstVer);		// // //
 		m_csDocumentLock.Unlock();

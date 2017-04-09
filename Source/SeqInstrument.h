@@ -20,25 +20,25 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
+#include "Instrument.h"
 
 class CSequence;
-class CInstrument;
-class CSeqInstrumentInterface;
 
 class CSeqInstrument : public CInstrument, public CSeqInstrumentInterface		// // //
 {
 public:
 	CSeqInstrument(inst_type_t type);
-	virtual CInstrument* Clone() const;
-	virtual void	Setup();
-	virtual void	Store(CDocumentFile *pDocFile);
-	virtual bool	Load(CDocumentFile *pDocFile);
-	virtual void	SaveFile(CInstrumentFile *pFile);
-	virtual bool	LoadFile(CInstrumentFile *pFile, int iVersion);
-	virtual int		Compile(CChunk *pChunk, int Index);
-	virtual bool	CanRelease() const;
+	CInstrument* Clone() const override;
+	void	Setup() override;
+	void	Store(CDocumentFile *pDocFile) const override;
+	bool	Load(CDocumentFile *pDocFile) override;
+	void	SaveFile(CSimpleFile *pFile) const override;
+	bool	LoadFile(CSimpleFile *pFile, int iVersion) override;
+	int		Compile(CChunk *pChunk, int Index) const override;
+	bool	CanRelease() const override;
 
 	virtual int		GetSeqEnable(int Index) const;
 	virtual int		GetSeqIndex(int Index) const;
@@ -49,7 +49,7 @@ public:
 	virtual void	SetSequence(int SeqType, CSequence *pSeq);		// // // register sequence in document
 
 	// static const int SEQUENCE_TYPES[] = {SEQ_VOLUME, SEQ_ARPEGGIO, SEQ_PITCH, SEQ_HIPITCH, SEQ_DUTYCYCLE};
-	virtual LPCTSTR	GetSequenceName(int Index) const { return nullptr; }		// // //
+	virtual const char *GetSequenceName(int Index) const { return nullptr; }		// // //
 
 protected:
 	virtual void	CloneFrom(const CInstrument *pSeq);		// // //
