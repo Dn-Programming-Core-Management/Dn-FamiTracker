@@ -45,9 +45,9 @@
 #undef min
 #endif
 
-template <typename T>
-constexpr char hex(T x) noexcept {
-	return (x & 0x0F) + ((x & 0x0F) > 0x09 ? '7' : '0');
+std::string MakeCommandString(effect_t Effect, unsigned char Param)		// // //
+{
+	return {' ', EFF_CHAR[Effect - 1], hex(Param >> 4), hex(Param)};
 }
 
 /*
@@ -234,9 +234,9 @@ std::string CChannelHandler::GetEffectString() const		// // //
 	std::string str = GetSlideEffectString();
 	
 	if (m_iVibratoSpeed)
-		str += MakeCommandString(EF_VIBRATO, m_iVibratoSpeed | (m_iVibratoDepth >> 4));
+		str += MakeCommandString(EF_VIBRATO, (m_iVibratoSpeed << 4) | (m_iVibratoDepth >> 4));
 	if (m_iTremoloSpeed)
-		str += MakeCommandString(EF_TREMOLO, m_iTremoloSpeed | (m_iTremoloDepth >> 4));
+		str += MakeCommandString(EF_TREMOLO, (m_iTremoloSpeed << 4) | (m_iTremoloDepth >> 4));
 	if (m_iVolSlide)
 		str += MakeCommandString(EF_VOLUME_SLIDE, m_iVolSlide);
 	if (m_iFinePitch != 0x80)
@@ -250,7 +250,7 @@ std::string CChannelHandler::GetEffectString() const		// // //
 	if (m_iNoteRelease)
 		str += MakeCommandString(EF_NOTE_RELEASE, m_iNoteRelease);
 	if (m_iNoteVolume > 0)
-		str += MakeCommandString(EF_DELAYED_VOLUME, m_iNoteVolume | (m_iNewVolume >> VOL_COLUMN_SHIFT));
+		str += MakeCommandString(EF_DELAYED_VOLUME, (m_iNoteVolume << 4) | (m_iNewVolume >> VOL_COLUMN_SHIFT));
 	if (m_iNoteCut)
 		str += MakeCommandString(EF_NOTE_CUT, m_iNoteCut);
 	if (m_iTranspose)
@@ -971,11 +971,6 @@ void CChannelHandler::WriteRegister(uint16_t Reg, uint8_t Value)
 void CChannelHandler::RegisterKeyState(int Note)
 {
 	m_pSoundGen->RegisterKeyState(m_iChannelID, Note);
-}
-
-std::string CChannelHandler::MakeCommandString(effect_t Effect, unsigned char Param)		// // //
-{
-	return {' ', EFF_CHAR[Effect - 1], hex(Param >> 4), hex(Param)};
 }
 
 void CChannelHandler::SetPeriod(int Period)

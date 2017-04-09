@@ -20,7 +20,6 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
 #include "SequenceParser.h"
 #include "Sequence.h"
 #include <regex>
@@ -312,13 +311,11 @@ bool CSeqConversionArpFixed::GetNextTerm(std::string::const_iterator &b, std::st
 
 void CSequenceParser::SetSequence(CSequence *pSeq)
 {
-	ASSERT(pSeq != nullptr);
 	m_pSequence = pSeq;
 }
 
 void CSequenceParser::SetConversion(CSeqConversionBase *pConv)
 {
-	ASSERT(pConv != nullptr);
 	m_pConversion.reset(pConv);
 }
 

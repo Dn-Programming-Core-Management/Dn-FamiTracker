@@ -39,6 +39,13 @@ class CSoundGen;		// // //
 #include <string>		// // //
 #include <cstdint>
 
+template <typename T>
+constexpr char hex(T x) noexcept {
+	return (x & 0x0F) + ((x & 0x0F) > 0x09 ? '7' : '0');
+}
+
+std::string MakeCommandString(effect_t Effect, unsigned char Param);		// // //
+
 /*!
 	\brief An implementation of the channel handler.
 */
@@ -293,8 +300,6 @@ protected:
 		\return The converted duty value, or -1 if no sensible value exists.
 		\sa CChannelHandler::SetDutyPeriod */
 	virtual int ConvertDuty(int Duty) const { return Duty; };		// // //
-
-	static std::string MakeCommandString(effect_t Effect, unsigned char Param);		// // //
 
 public:		// // //
 	/*!	\brief Sets the current pitch register of the channel.

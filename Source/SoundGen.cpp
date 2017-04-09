@@ -1142,81 +1142,81 @@ void CSoundGen::ApplyGlobalState()		// // //
 */
 static std::string GetStateString(const stChannelState &State)
 {
-//	CString log = _T("");
-//	log.Format(_T("Inst.: "));
-//	if (State.Instrument == MAX_INSTRUMENTS)
-//		log.Append("None");
-//	else
-//		log.AppendFormat(_T("%02X"), State.Instrument);
-//	log.AppendFormat(_T("        Vol.: %X        Active effects:"), State.Volume >= MAX_VOLUME ? 0xF : State.Volume);
-//	
-//	CString effStr = _T("");
-//
-//	const effect_t SLIDE_EFFECT = State.Effect[EF_ARPEGGIO] >= 0 ? EF_ARPEGGIO :
-//								  State.Effect[EF_PORTA_UP] >= 0 ? EF_PORTA_UP :
-//								  State.Effect[EF_PORTA_DOWN] >= 0 ? EF_PORTA_DOWN :
-//								  EF_PORTAMENTO;
-//	for (const auto &x : {SLIDE_EFFECT, EF_VIBRATO, EF_TREMOLO, EF_VOLUME_SLIDE, EF_PITCH, EF_DUTY_CYCLE}) {
-//		int p = State.Effect[x];
-//		if (p < 0) continue;
-//		if (p == 0 && x != EF_PITCH) continue;
-//		if (p == 0x80 && x == EF_PITCH) continue;
-//		effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x - 1], p);
-//	}
-//
-//	if ((State.ChannelIndex >= CHANID_SQUARE1 && State.ChannelIndex <= CHANID_SQUARE2) ||
-//			State.ChannelIndex == CHANID_NOISE ||
-//		(State.ChannelIndex >= CHANID_MMC5_SQUARE1 && State.ChannelIndex <= CHANID_MMC5_SQUARE2))
-//		for (const auto &x : {EF_VOLUME}) {
-//			int p = State.Effect[x];
-//			if (p < 0) continue;
-//			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x - 1], p);
-//		}
-//	else if (State.ChannelIndex == CHANID_TRIANGLE)
-//		for (const auto &x : {EF_VOLUME, EF_NOTE_CUT}) {
-//			int p = State.Effect[x];
-//			if (p < 0) continue;
-//			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x - 1], p);
-//		}
-//	else if (State.ChannelIndex == CHANID_DPCM)
-//		for (const auto &x : {EF_SAMPLE_OFFSET, /*EF_DPCM_PITCH*/}) {
-//			int p = State.Effect[x];
-//			if (p <= 0) continue;
-//			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x - 1], p);
-//		}
-//	else if (State.ChannelIndex >= CHANID_VRC7_CH1 && State.ChannelIndex <= CHANID_VRC7_CH6)
-//		for (const auto &x : VRC7_EFFECTS) {
-//			int p = State.Effect[x];
-//			if (p < 0) continue;
-//			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x - 1], p);
-//		}
-//	else if (State.ChannelIndex == CHANID_FDS)
-//		for (const auto &x : FDS_EFFECTS) {
-//			int p = State.Effect[x];
-//			if (p < 0 || (x == EF_FDS_MOD_BIAS && p == 0x80)) continue;
-//			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x - 1], p);
-//		}
-//	else if (State.ChannelIndex >= CHANID_S5B_CH1 && State.ChannelIndex <= CHANID_S5B_CH3)
-//		for (const auto &x : S5B_EFFECTS) {
-//			int p = State.Effect[x];
-//			if (p < 0) continue;
-//			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x - 1], p);
-//		}
-//	else if (State.ChannelIndex >= CHANID_N163_CH1 && State.ChannelIndex <= CHANID_N163_CH8)
-//		for (const auto &x : N163_EFFECTS) {
-//			int p = State.Effect[x];
-//			if (p < 0 || (x == EF_N163_WAVE_BUFFER && p == 0x7F)) continue;
-//			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x - 1], p);
-//		}
-//	if (State.Effect_LengthCounter >= 0)
-//		effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_VOLUME - 1], State.Effect_LengthCounter);
-//	if (State.Effect_AutoFMMult >= 0)
-//		effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_FDS_MOD_DEPTH - 1], State.Effect_AutoFMMult);
-//
-//	if (effStr.IsEmpty()) effStr = _T(" None");
-//	log.Append(effStr);
-//	return log;
-	return "";
+	std::string log("Inst.: ");
+	if (State.Instrument == MAX_INSTRUMENTS)
+		log += "None";
+	else
+		log += {hex(State.Instrument >> 4), hex(State.Instrument)};
+	log += "        Vol.: ";
+	log += hex(State.Volume >= MAX_VOLUME ? 0xF : State.Volume);
+	log += "        Active effects:";
+
+	std::string effStr;
+
+	const effect_t SLIDE_EFFECT = State.Effect[EF_ARPEGGIO] >= 0 ? EF_ARPEGGIO :
+								  State.Effect[EF_PORTA_UP] >= 0 ? EF_PORTA_UP :
+								  State.Effect[EF_PORTA_DOWN] >= 0 ? EF_PORTA_DOWN :
+								  EF_PORTAMENTO;
+	for (const auto &x : {SLIDE_EFFECT, EF_VIBRATO, EF_TREMOLO, EF_VOLUME_SLIDE, EF_PITCH, EF_DUTY_CYCLE}) {
+		int p = State.Effect[x];
+		if (p < 0) continue;
+		if (p == 0 && x != EF_PITCH) continue;
+		if (p == 0x80 && x == EF_PITCH) continue;
+		effStr += MakeCommandString(x, p);
+	}
+
+	if ((State.ChannelIndex >= CHANID_SQUARE1 && State.ChannelIndex <= CHANID_SQUARE2) ||
+			State.ChannelIndex == CHANID_NOISE ||
+		(State.ChannelIndex >= CHANID_MMC5_SQUARE1 && State.ChannelIndex <= CHANID_MMC5_SQUARE2))
+		for (const auto &x : {EF_VOLUME}) {
+			int p = State.Effect[x];
+			if (p < 0) continue;
+			effStr += MakeCommandString(x, p);
+		}
+	else if (State.ChannelIndex == CHANID_TRIANGLE)
+		for (const auto &x : {EF_VOLUME, EF_NOTE_CUT}) {
+			int p = State.Effect[x];
+			if (p < 0) continue;
+			effStr += MakeCommandString(x, p);
+		}
+	else if (State.ChannelIndex == CHANID_DPCM)
+		for (const auto &x : {EF_SAMPLE_OFFSET, /*EF_DPCM_PITCH*/}) {
+			int p = State.Effect[x];
+			if (p <= 0) continue;
+			effStr += MakeCommandString(x, p);
+		}
+	else if (State.ChannelIndex >= CHANID_VRC7_CH1 && State.ChannelIndex <= CHANID_VRC7_CH6)
+		for (const auto &x : VRC7_EFFECTS) {
+			int p = State.Effect[x];
+			if (p < 0) continue;
+			effStr += MakeCommandString(x, p);
+		}
+	else if (State.ChannelIndex == CHANID_FDS)
+		for (const auto &x : FDS_EFFECTS) {
+			int p = State.Effect[x];
+			if (p < 0 || (x == EF_FDS_MOD_BIAS && p == 0x80)) continue;
+			effStr += MakeCommandString(x, p);
+		}
+	else if (State.ChannelIndex >= CHANID_S5B_CH1 && State.ChannelIndex <= CHANID_S5B_CH3)
+		for (const auto &x : S5B_EFFECTS) {
+			int p = State.Effect[x];
+			if (p < 0) continue;
+			effStr += MakeCommandString(x, p);
+		}
+	else if (State.ChannelIndex >= CHANID_N163_CH1 && State.ChannelIndex <= CHANID_N163_CH8)
+		for (const auto &x : N163_EFFECTS) {
+			int p = State.Effect[x];
+			if (p < 0 || (x == EF_N163_WAVE_BUFFER && p == 0x7F)) continue;
+			effStr += MakeCommandString(x, p);
+		}
+	if (State.Effect_LengthCounter >= 0)
+		effStr += MakeCommandString(EF_VOLUME, State.Effect_LengthCounter);
+	if (State.Effect_AutoFMMult >= 0)
+		effStr += MakeCommandString(EF_FDS_MOD_DEPTH, State.Effect_AutoFMMult);
+
+	if (!effStr.size()) effStr = " None";
+	log += effStr;
+	return log;
 }
 
 std::string CSoundGen::RecallChannelState(int Channel) const		// // //
@@ -1225,25 +1225,26 @@ std::string CSoundGen::RecallChannelState(int Channel) const		// // //
 	int Frame = m_pTrackerView->GetSelectedFrame();
 	int Row = m_pTrackerView->GetSelectedRow();
 	std::string str;
-	/*
+
 	if (stFullState *State = m_pDocument->RetrieveSoundState(GetPlayerTrack(), Frame, Row, Channel)) {
 		str = GetStateString(State->State[m_pDocument->GetChannelIndex(Channel)]);
 		if (State->Tempo >= 0)
-			str.AppendFormat(_T("        Tempo: %d"), State->Tempo);
+			str += "        Tempo: " + std::to_string(State->Tempo);
 		if (State->Speed >= 0) {
 			if (State->GroovePos >= 0) {
-				str.AppendFormat(_T("        Groove: %02X <-"), State->Speed);
+				str += "        Groove: ";
+				str += {hex(State->Speed >> 4), hex(State->Speed)};
 				CGroove *Groove = m_pDocument->GetGroove(State->Speed);
 				const unsigned char Size = Groove->GetSize();
 				for (unsigned char i = 0; i < Size; i++)
-					str.AppendFormat(_T(" %d"), Groove->GetEntry((i + State->GroovePos) % Size));
+					str += ' ' + std::to_string(Groove->GetEntry((i + State->GroovePos) % Size));
 			}
 			else
-				str.AppendFormat(_T("        Speed: %d"), State->Speed);
+				str += "        Speed: " + std::to_string(State->Speed);
 		}
 		delete State;
 	}
-	*/
+
 	return str;
 }
 

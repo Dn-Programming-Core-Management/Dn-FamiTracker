@@ -20,7 +20,6 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
 #include "CompoundAction.h"
 
 // // //
@@ -56,7 +55,7 @@ void CCompoundAction::Redo(CMainFrame *pMainFrm) const
 		if (!m_bFirst) continue;
 		(*it)->SaveUndoState(pMainFrm);
 		if (!(*it)->SaveState(pMainFrm))
-			throw new std::runtime_error(_T("Unable to create action."));
+			throw new std::runtime_error("Unable to create action.");
 	}
 	m_bFirst = false;
 }
