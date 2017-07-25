@@ -49,6 +49,8 @@ bool CSeqConversionDefault::ToValue(const std::string &String)
 			return false;
 		if (!GetNextInteger(b, e, m_iValueDiv))
 			return false;
+		if (m_iValueDiv <= 0)
+			return false;
 		if (b != e && *b == ':') {
 			if (++b == e)
 				return false;
