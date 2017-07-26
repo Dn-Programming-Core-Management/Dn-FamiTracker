@@ -75,18 +75,23 @@
 
 #include <afxole.h>        // MFC OLE support
 
-// Releasing pointers
-#define SAFE_RELEASE(p) \
-	if (p != NULL) { \
-		delete p;	\
-		p = NULL;	\
-	}	\
+// // // Releasing pointers
+// TODO: remove
+template <typename T>
+inline void SAFE_RELEASE(T *&p) {
+	if (p != nullptr) {
+		delete p;
+		p = nullptr;
+	}
+}
 
-#define SAFE_RELEASE_ARRAY(p) \
-	if (p != NULL) { \
-		delete [] p;	\
-		p = NULL;	\
-	}	\
+template <typename T>
+inline void SAFE_RELEASE_ARRAY(T *&p) {
+	if (p != nullptr) {
+		delete[] p;
+		p = nullptr;
+	}
+}
 
 // Calling member function
 #define CALL_MEMBER_FN(obj, ptr) ((obj)->*(ptr))

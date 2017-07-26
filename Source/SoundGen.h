@@ -30,6 +30,8 @@
 #include <queue>		// // //
 #include "Common.h"
 #include <string>
+#include <vector>		// // //
+#include <memory>		// // //
 
 const int VIBRATO_LENGTH = 256;
 const int TREMOLO_LENGTH = 256;
@@ -289,8 +291,8 @@ public:
 	//
 private:
 	// Objects
-	CChannelHandler		*m_pChannels[CHANNELS];
-	CTrackerChannel		*m_pTrackerChannels[CHANNELS];
+	std::vector<std::unique_ptr<CChannelHandler>> m_pChannels;		// // //
+	std::vector<std::unique_ptr<CTrackerChannel>> m_pTrackerChannels;		// // //
 	CFamiTrackerDoc		*m_pDocument;
 	CFamiTrackerView	*m_pTrackerView;
 

@@ -155,12 +155,6 @@ CSoundGen::~CSoundGen()
 	// Delete APU
 	SAFE_RELEASE(m_pAPU);
 
-	// Remove channels
-	for (int i = 0; i < CHANNELS; ++i) {
-		SAFE_RELEASE(m_pChannels[i]);
-		SAFE_RELEASE(m_pTrackerChannels[i]);
-	}
-
 	SAFE_RELEASE(m_pWaveFile);		// // //
 	SAFE_RELEASE(m_pInstRecorder);		// // //
 }
@@ -174,10 +168,8 @@ void CSoundGen::CreateChannels()
 	// Only called once!
 
 	// Clear all channels
-	for (int i = 0; i < CHANNELS; ++i) {
-		m_pChannels[i] = NULL;
-		m_pTrackerChannels[i] = NULL;
-	}
+	m_pChannels.clear();		// // //
+	m_pTrackerChannels.clear();
 
 	// 2A03/2A07
 	// // // Short header names
@@ -239,9 +231,8 @@ void CSoundGen::AssignChannel(CTrackerChannel *pTrackerChannel)		// // //
 	if (pRenderer)
 		pRenderer->SetChannelID(ID);
 
-	static size_t Pos = 0;		// // // test
-	m_pTrackerChannels[Pos] = pTrackerChannel;
-	m_pChannels[Pos++] = pRenderer;
+	m_pTrackerChannels.emplace_back(pTrackerChannel);		// // //
+	m_pChannels.emplace_back(pRenderer);
 }
 
 //
@@ -262,10 +253,9 @@ void CSoundGen::AssignDocument(CFamiTrackerDoc *pDoc)
 	m_pInstRecorder->m_pDocument = pDoc;		// // //
 
 	// Setup all channels
-	for (int i = 0; i < CHANNELS; ++i) {
-		if (m_pChannels[i])
-			m_pChannels[i]->InitChannel(m_pAPU, m_iVibratoTable, this);
-	}
+	for (auto &ptr : m_pChannels)		// // //
+		if (ptr)
+			ptr->InitChannel(m_pAPU, m_iVibratoTable, this);
 	DocumentPropertiesChanged(pDoc);		// // //
 }
 
@@ -332,12 +322,14 @@ void CSoundGen::RegisterChannels(int Chip, CFamiTrackerDoc *pDoc)
 
 	// Register the channels in the document
 	// Expansion & internal channels
-	for (int i = 0; i < sizeof(m_pTrackerChannels) / sizeof(CTrackerChannel*); ++i) {
-		int ID = m_pTrackerChannels[i]->GetID();		// // //
-		if (m_pChannels[i] && ((m_pTrackerChannels[i]->GetChip() & Chip) || (i < 5))			// // //
+	int i = 0;		// // //
+	for (auto &x : m_pTrackerChannels) {
+		int ID = x->GetID();		// // //
+		if (m_pChannels[i] && ((x->GetChip() & Chip) || (i <= CHANID_DPCM))			// // //
 						   && (i >= CHANID_FDS || i < CHANID_N163_CH1 + pDoc->GetNamcoChannels())) {
-			pDoc->RegisterChannel(m_pTrackerChannels[i], ID, m_pTrackerChannels[i]->GetChip());
+			pDoc->RegisterChannel(x.get(), ID, x->GetChip());
 		}
+		++i;
 	}
 
 	pDoc->UnlockDocument();
@@ -359,7 +351,7 @@ void CSoundGen::SelectChip(int Chip)
 
 CChannelHandler *CSoundGen::GetChannel(int Index) const
 {
-	return m_pChannels[Index];
+	return m_pChannels[Index].get();
 }
 
 void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
@@ -416,7 +408,7 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 	}
 	
 	// // // Setup note tables
-	for (int i = 0; i < CHANNELS; ++i) {
+	for (size_t i = 0; i < m_pChannels.size(); ++i) {
 		if (!m_pChannels[i]) continue;
 		const unsigned int *Table = nullptr;
 		switch (m_pTrackerChannels[i]->GetID()) {
@@ -519,12 +511,10 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 
 #endif
 
-	for (int i = 0; i < CHANNELS; ++i) {
-		if (m_pChannels[i]) {
-			m_pChannels[i]->SetVibratoStyle(pDocument->GetVibratoStyle());		// // //
-			m_pChannels[i]->SetLinearPitch(pDocument->GetLinearPitch());
-		}
-		if (auto pChan = dynamic_cast<CChannelHandlerN163*>(m_pChannels[i]))
+	for (auto &ch : m_pChannels) if (ch) {
+		ch->SetVibratoStyle(pDocument->GetVibratoStyle());		// // //
+		ch->SetLinearPitch(pDocument->GetLinearPitch());
+		if (auto pChan = dynamic_cast<CChannelHandlerN163 *>(ch.get()))
 			pChan->SetChannelCount(pDocument->GetNamcoChannels());
 	}
 	
@@ -1123,8 +1113,8 @@ void CSoundGen::ApplyGlobalState()		// // //
 		}
 		m_iLastHighlight = m_pDocument->GetHighlightAt(GetPlayerTrack(), Frame, Row).First;
 		SetupSpeed();
-		for (int i = 0; i < m_pDocument->GetChannelCount(); i++) {
-			for (int j = 0; j < sizeof(m_pTrackerChannels) / sizeof(CTrackerChannel*); ++j)		// // // pick this out later
+		for (int i = 0, n = m_pDocument->GetChannelCount(); i < n; ++i) {
+			for (size_t j = 0; j < m_pTrackerChannels.size(); ++j)		// // // pick this out later
 				if (m_pChannels[j] && m_pTrackerChannels[j]->GetID() == State->State[i].ChannelIndex) {
 					m_pChannels[j]->ApplyChannelState(&State->State[i]); break;
 				}
@@ -1221,7 +1211,8 @@ static std::string GetStateString(const stChannelState &State)
 
 std::string CSoundGen::RecallChannelState(int Channel) const		// // //
 {
-	if (IsPlaying()) return m_pChannels[Channel]->GetStateString();
+	if (IsPlaying())
+		return m_pChannels[Channel]->GetStateString();
 	int Frame = m_pTrackerView->GetSelectedFrame();
 	int Row = m_pTrackerView->GetSelectedRow();
 	std::string str;
@@ -1403,12 +1394,12 @@ void CSoundGen::MakeSilent()
 	m_pAPU->Reset();
 	m_pAPU->ClearSample();		// // //
 
-	for (int i = 0; i < CHANNELS; ++i) {
-		if (m_pChannels[i])
-			m_pChannels[i]->ResetChannel();
-		if (m_pTrackerChannels[i])
-			m_pTrackerChannels[i]->Reset();
-	}
+	for (auto &ch : m_pChannels)
+		if (ch)
+			ch->ResetChannel();
+	for (auto &ch : m_pTrackerChannels)
+		if (ch)
+			ch->Reset();
 }
 
 void CSoundGen::ResetState()
@@ -1988,7 +1979,7 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 
 	if (IsPlaying()) {		// // //
 		int Channel = m_pInstRecorder->GetRecordChannel();
-		if (Channel != -1 && m_pChannels[Channel] != nullptr)		// // //
+		if (Channel != -1 && m_pChannels[Channel])		// // //
 			m_pInstRecorder->RecordInstrument(m_iPlayTicks, m_pTrackerView);
 	}
 
@@ -2026,8 +2017,8 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 void CSoundGen::PlayChannelNotes()
 {
 	// Read notes
-	for (int i = 0; i < CHANNELS; ++i) {		// // //
-		int Index = m_pTrackerChannels[i]->GetID();
+	for (auto &x : m_pTrackerChannels) {		// // //
+		int Index = x->GetID();
 		int Channel = m_pDocument->GetChannelIndex(m_pTrackerChannels[Index]->GetID());
 		if (Channel == -1) continue;
 		
@@ -2074,14 +2065,9 @@ void CSoundGen::UpdatePlayer()
 void CSoundGen::UpdateChannels()
 {
 	// Update channels
-	for (int i = 0; i < CHANNELS; ++i) {
-		if (m_pChannels[i] != NULL) {
-			if (m_bHaltRequest)
-				m_pChannels[i]->ResetChannel();
-			else
-				m_pChannels[i]->ProcessChannel();
-		}
-	}
+	for (auto &ch : m_pChannels)		// // //
+		if (ch)
+			m_bHaltRequest ? ch->ResetChannel() : ch->ProcessChannel();
 }
 
 void CSoundGen::UpdateAPU()
@@ -2099,10 +2085,11 @@ void CSoundGen::UpdateAPU()
 		if (l.Lock()) {
 			// Update APU channel registers
 			unsigned int LastChip = SNDCHIP_NONE;		// // // 050B
-			for (int i = 0; i < CHANNELS; ++i) {
-				if (m_pChannels[i] != NULL) {
-					m_pChannels[i]->RefreshChannel();
-					m_pChannels[i]->FinishTick();		// // //
+			size_t i = 0;		// // //
+			for (auto &ch : m_pChannels) {
+				if (ch) {
+					ch->RefreshChannel();
+					ch->FinishTick();		// // //
 					unsigned int Chip = m_pTrackerChannels[i]->GetChip();
 					if (m_pDocument->ExpansionEnabled(Chip)) {
 						int Delay = (Chip == LastChip) ? 150 : 250;
@@ -2112,6 +2099,7 @@ void CSoundGen::UpdateAPU()
 					}
 					m_pAPU->Process();
 				}
+				++i;
 			}
 		#ifdef WRITE_VGM		// // //
 			if (m_bPlaying)
