@@ -630,9 +630,6 @@
     <ClCompile Include="Source\SeqInstrument.cpp">
       <Filter>Source Files\Document Data Types\Instruments</Filter>
     </ClCompile>
-    <ClCompile Include="Source\InstrumentFactory.cpp">
-      <Filter>Source Files\Document Data Types\Instruments</Filter>
-    </ClCompile>
     <ClCompile Include="Source\OldSequence.cpp">
       <Filter>Source Files\Document Data Types</Filter>
     </ClCompile>
@@ -1282,6 +1279,9 @@
     </ClInclude>
     <ClInclude Include="Source\WinSDK\winapifamily.h">
       <Filter>Header Files\Windows Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utility\Factory.h">
+      <Filter>Header Files\Components Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

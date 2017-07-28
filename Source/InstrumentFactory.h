@@ -23,21 +23,25 @@
 
 #pragma once
 
-#include "Instrument.h"
-#include "Factory.h"
+#include "Instrument2A03.h"
+#include "InstrumentVRC6.h"
+#include "InstrumentFDS.h"
+#include "InstrumentVRC7.h"
+#include "InstrumentN163.h"
+#include "InstrumentS5B.h"
 
-/*!
-	\brief The instrument factory namespace.
-	\details Including this class will automatically include all other instrument header files.
-*/
-class CInstrumentFactory : CFactory<inst_type_t, CInstrument>
-{
-private:
-	CInstrumentFactory();
-public:
-	/*!	\brief Creates a new instrument.
-		\param Type The instrument type, which should be a member of inst_type_t.
-		\return Pointer to the created instrument, or nullptr if the type is invalid.
-	*/
-	static CInstrument *CreateNew(inst_type_t Type);
-};
+#include "Utility/Factory.h"
+
+namespace FTExt {
+
+using InstrumentIndices = Utility::Indexer<
+	CInstrument2A03,
+	CInstrumentVRC6,
+	CInstrumentVRC7,
+	CInstrumentFDS,
+	CInstrumentN163,
+	CInstrumentS5B
+>;
+using InstrumentFactory = Utility::Factory<::CInstrument, InstrumentIndices>;
+
+} // namespace FTExt

@@ -449,7 +449,6 @@
     <ClCompile Include="Source\InstHandlerDPCM.cpp" />
     <ClCompile Include="Source\InstHandlerVRC7.cpp" />
     <ClCompile Include="Source\InstrumentEditorSeq.cpp" />
-    <ClCompile Include="Source\InstrumentFactory.cpp" />
     <ClCompile Include="Source\InstrumentManager.cpp" />
     <ClCompile Include="Source\InstrumentRecorder.cpp" />
     <ClCompile Include="Source\MainFrm.cpp" />
@@ -659,6 +658,7 @@
     <ClInclude Include="Source\StretchDlg.h" />
     <ClInclude Include="Source\SwapDlg.h" />
     <ClInclude Include="Source\TransposeDlg.h" />
+    <ClInclude Include="Source\Utility\Factory.h" />
     <ClInclude Include="Source\WaveformGenerator.h" />
     <ClInclude Include="Source\WavegenBuiltin.h" />
     <ClInclude Include="Source\WinSDK\VersionHelpers.h" />

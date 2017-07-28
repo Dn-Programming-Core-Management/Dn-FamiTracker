@@ -97,8 +97,7 @@ CInstrument* CChannelMap::GetChipInstrument(int Chip) const
 {
 	// Get instrument from chip ID
 	int Index = GetChipIndex(Chip);
-
-	return CInstrumentFactory::CreateNew(m_iChipInstType[Index]);		// // //
+	return FTExt::InstrumentFactory::Make(m_iChipInstType[Index]).Release();
 }
 
 // Todo move enabled module channels here

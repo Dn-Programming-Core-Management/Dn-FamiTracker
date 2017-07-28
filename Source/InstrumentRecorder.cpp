@@ -314,7 +314,7 @@ void CInstrumentRecorder::InitRecordInstrument()
 	if (m_pDocument->GetInstrumentCount() >= MAX_INSTRUMENTS) {
 		m_iDumpCount = 0; m_iRecordChannel = -1; return;
 	}
-	inst_type_t Type = INST_NONE; // optimize this
+	size_t Type = FTExt::InstrumentIndices::None;//INST_NONE; // optimize this
 	switch (pChan->GetChip()) {
 	case SNDCHIP_NONE: case SNDCHIP_MMC5: Type = INST_2A03; break;
 	case SNDCHIP_VRC6: Type = INST_VRC6; break;
@@ -323,7 +323,7 @@ void CInstrumentRecorder::InitRecordInstrument()
 	case SNDCHIP_N163: Type = INST_N163; break;
 	case SNDCHIP_S5B:  Type = INST_S5B; break;
 	}
-	*m_pDumpInstrument = CInstrumentFactory::CreateNew(Type);		// // //
+	*m_pDumpInstrument = FTExt::InstrumentFactory::Make(Type).Release();		// // //
 	if (!*m_pDumpInstrument) return;
 
 	CString str;
@@ -334,13 +334,10 @@ void CInstrumentRecorder::InitRecordInstrument()
 		m_pSequenceCache[SEQ_ARPEGGIO]->SetSetting(SETTING_ARP_FIXED);
 		return;
 	}
-	switch (Type) {
-	case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B:
-		CSeqInstrument *Inst = dynamic_cast<CSeqInstrument*>(*m_pDumpInstrument);
-		ASSERT(Inst != NULL);
+	if (auto Inst = dynamic_cast<CSeqInstrument*>(*m_pDumpInstrument)) {
 		for (int i = 0; i < SEQ_COUNT; i++) {
 			Inst->SetSeqEnable(i, 1);
-			Inst->SetSeqIndex(i, m_pDocument->GetFreeSequence(Type, i));
+			Inst->SetSeqIndex(i, m_pDocument->GetFreeSequence((inst_type_t)Type, i));
 		}
 		m_pSequenceCache[SEQ_ARPEGGIO]->SetSetting(SETTING_ARP_FIXED);
 		// m_pSequenceCache[SEQ_PITCH]->SetSetting(SETTING_PITCH_ABSOLUTE);
@@ -348,7 +345,6 @@ void CInstrumentRecorder::InitRecordInstrument()
 		// VRC6 sawtooth 64-step volume
 		if (m_iRecordChannel == CHANID_TRIANGLE)
 			Inst->SetSeqEnable(SEQ_DUTYCYCLE, 0);
-		break;
 	}
 	m_iRecordWaveSize = 32; // DEFAULT_WAVE_SIZE
 	m_iRecordWaveCount = 0;

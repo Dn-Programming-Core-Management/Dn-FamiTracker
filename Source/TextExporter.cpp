@@ -875,15 +875,17 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 			case CT_INSTN163:
 			case CT_INSTS5B:
 				{
-					inst_type_t Type = INST_NONE;
-					switch (c) {
-					case CT_INST2A03: Type = INST_2A03; break;
-					case CT_INSTVRC6: Type = INST_VRC6; break;
-					case CT_INSTN163: Type = INST_N163; break;
-					case CT_INSTS5B:  Type = INST_S5B; break;
-					}
+					size_t Type = [c] {
+						switch (c) {
+						case CT_INST2A03: return FTExt::InstrumentIndices::IndexOf<CInstrument2A03>()();		// // //
+						case CT_INSTVRC6: return FTExt::InstrumentIndices::IndexOf<CInstrumentVRC6>()();		// // //
+						case CT_INSTN163: return FTExt::InstrumentIndices::IndexOf<CInstrumentN163>()();		// // //
+						case CT_INSTS5B:  return FTExt::InstrumentIndices::IndexOf<CInstrumentS5B>()();		// // //
+						}
+						return FTExt::InstrumentIndices::None;
+					}();
 					CHECK(t.ReadInt(i,0,MAX_INSTRUMENTS-1,&sResult));
-					auto seqInst = dynamic_cast<CSeqInstrument*>(CInstrumentFactory::CreateNew(Type));		// // //
+					auto seqInst = dynamic_cast<CSeqInstrument*>(FTExt::InstrumentFactory::Make(Type).Release());		// // //
 					pDoc->AddInstrument(seqInst, i);
 					for (int s=0; s < SEQ_COUNT; ++s)
 					{
