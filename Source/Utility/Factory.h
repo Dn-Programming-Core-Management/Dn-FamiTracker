@@ -31,82 +31,91 @@ namespace FTExt::Utility {
 
 namespace details {
 
-template <std::size_t N, typename... Ts>
-struct type_at {
-};
-template <std::size_t N, typename T, typename... Ts>
-struct type_at<N, T, Ts...> {
-	using type = typename type_at<N - 1, Ts...>::type;
-};
-template <typename T, typename... Ts>
-struct type_at<1, T, Ts...> {
-	using type = T;
+template <std::size_t I, typename T>
+struct biassoc_pair { };
+
+template <std::size_t Key, typename Pair>
+struct biassoc_found_l : public std::false_type { };
+template <std::size_t Key, typename T>
+struct biassoc_found_l<Key, biassoc_pair<Key, T>> : public std::true_type {
+	using result_t = T;
 };
 
-template <std::size_t N, typename T, typename... Us>
-struct type_or {
-	using type = T;
-};
-template <std::size_t N, typename T, typename U, typename... Us>
-struct type_or<N, T, U, Us...> {
-	using type = typename type_or<N - 1, T, Us...>::type;
-};
-template <typename T, typename U, typename... Us>
-struct type_or<1, T, U, Us...> {
-	using type = U;
+template <typename Key, typename Pair>
+struct biassoc_found_r : public std::false_type { };
+template <typename Key, std::size_t I>
+struct biassoc_found_r<Key, biassoc_pair<I, Key>> : public std::true_type {
+	using result_t = std::integral_constant<std::size_t, I>;
 };
 
-template <std::size_t N, typename T, typename... Us>
-struct index_of : public std::integral_constant<std::size_t, 0> {
+template <typename...> // snifae version of std::disjunction
+struct or_t { };
+template <typename B1, typename... Bn>
+struct or_t<B1, Bn...> : public std::conditional_t<bool(B1::value), B1, or_t<Bn...>> { };
+
+template <std::size_t I, typename... Pairs>
+using biassoc_find_index = typename or_t<biassoc_found_l<I, Pairs>...>::result_t;
+template <typename T, typename... Pairs>
+using biassoc_find_type = typename or_t<biassoc_found_r<T, Pairs>...>::result_t;
+
+template <typename... Pairs>
+struct indexer_impl {
+	static constexpr std::size_t Size = sizeof...(Pairs);
+	template <std::size_t N>
+	using TypeAt = biassoc_find_index<N, Pairs...>;
+	template <std::size_t N, typename Def>
+	using TypeOr = biassoc_find_index<N, Pairs..., biassoc_pair<N, Def>>;
+	template <typename T>
+	using IndexOf = biassoc_find_type<T, Pairs...>;
+	template <typename T, std::size_t Def>
+	using IndexOr = biassoc_find_type<T, Pairs..., biassoc_pair<Def, T>>;
 };
-template <std::size_t N, typename T, typename U, typename... Us>
-struct index_of<N, T, U, Us...> : public index_of<N + 1, T, Us...> {
+
+template <>
+struct indexer_impl<> {
+	static constexpr std::size_t Size = 0;
+	template <std::size_t N, typename Def>
+	using TypeOr = Def;
+	template <typename T, std::size_t Def>
+	using IndexOr = std::integral_constant<std::size_t, Def>;
 };
-template <std::size_t N, typename T, typename... Us>
-struct index_of<N, T, T, Us...> : public std::integral_constant<std::size_t, N> {
+
+template <typename Ind, typename... Ts>
+struct make_indexer;
+template <std::size_t... Is, typename... Ts>
+struct make_indexer<std::index_sequence<Is...>, Ts...> :
+	public indexer_impl<biassoc_pair<Is + 1, Ts>...>
+{
 };
+
+template <typename Ret, typename... Args>
+std::unique_ptr<Ret> make_impl(indexer_impl<>, std::size_t id, Args&&... args) {
+	return nullptr;
+}
+template <typename Ret, typename... Args, std::size_t I, typename T, typename... Ts>
+std::unique_ptr<Ret> make_impl(indexer_impl<biassoc_pair<I, T>, Ts...>, std::size_t id, Args&&... args) {
+	return id == I ?
+		std::unique_ptr<Ret>(std::make_unique<T>(std::forward<Args>(args)...)) :
+		make_impl<Ret>(indexer_impl<Ts...> { }, id, std::forward<Args>(args)...);
+}
 
 } // namespace details
 
 template <typename... Ts>
-struct Indexer {
-	static constexpr std::size_t Size = sizeof...(Ts);
+struct Indexer : public details::make_indexer<std::index_sequence_for<Ts...>, Ts...> {
 	static constexpr std::size_t None = 0;
-	template <std::size_t N>
-	using TypeAt = typename details::type_at<N, Ts...>::type;
-	template <std::size_t N, typename Or>
-	using TypeOr = typename details::type_or<N, Or, Ts...>::type;
-	template <typename U>
-	using IndexOf = details::index_of<1, U, Ts...>;
 };
 
-namespace details {
-
-template <typename Ret, typename... Args>
-std::unique_ptr<Ret> make_impl(std::size_t id, Args&&... args) {
-	return nullptr;
-}
-template <typename Ret, typename T, typename... Ts, typename... Args>
-std::unique_ptr<Ret> make_impl(std::size_t id, Args&&... args) {
-	return id == 1 ? std::unique_ptr<Ret>(std::make_unique<T>(std::forward<Args>(args)...)) :
-		make_impl<Ret, Ts...>(id - 1, std::forward<Args>(args)...);
-}
-
-} // namespace details
-
 template <typename Ret, typename Ind>
-struct Factory;
-template <typename Ret, typename... Ts>
-struct Factory<Ret, Indexer<Ts...>> {
-//	static_assert(std::conjunction<std::is_convertible<Ts, Ret>...>::value,
-//		"Factory product types must be convertible to return type");
-	using index_t = Indexer<Ts...>;
+struct Factory {
+	using index_t = Ind;
 
 private:
 	template <typename Ptr>
 	struct HandleBase {
 		explicit operator bool() const noexcept {
 			return static_cast<bool>(data_);
+//			return static_cast<bool>(data_ && id_ != index_t::None);
 		}
 		template <typename T>
 		T *GetData() noexcept {
@@ -163,13 +172,13 @@ public:
 public:
 	template <typename... Args>
 	static Handle Make(std::size_t id, Args&&... args) {
-		return Handle {details::make_impl<Ret, Ts...>(id, std::forward<Args>(args)...),
-			id > index_t::Size ? 0 : id};
+		auto &&obj = details::make_impl<Ret>(index_t { }, id, std::forward<Args>(args)...);
+		return Handle {std::move(obj), obj ? id : index_t::None};
 	}
 	template <typename... Args>
 	static SharedHandle MakeShared(std::size_t id, Args&&... args) {
-		return SharedHandle {details::make_impl<Ret, Ts...>(id, std::forward<Args>(args)...),
-			id > index_t::Size ? 0 : id};
+		auto &&obj = details::make_impl<Ret>(index_t { }, id, std::forward<Args>(args)...);
+		return SharedHandle {std::move(obj), obj ? id : index_t::None};
 	}
 };
 

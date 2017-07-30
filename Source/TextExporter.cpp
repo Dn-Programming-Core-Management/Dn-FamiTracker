@@ -877,10 +877,10 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 				{
 					size_t Type = [c] {
 						switch (c) {
-						case CT_INST2A03: return FTExt::InstrumentIndices::IndexOf<CInstrument2A03>()();		// // //
-						case CT_INSTVRC6: return FTExt::InstrumentIndices::IndexOf<CInstrumentVRC6>()();		// // //
-						case CT_INSTN163: return FTExt::InstrumentIndices::IndexOf<CInstrumentN163>()();		// // //
-						case CT_INSTS5B:  return FTExt::InstrumentIndices::IndexOf<CInstrumentS5B>()();		// // //
+						case CT_INST2A03: return FTExt::InstrumentIndices::IndexOf<CInstrument2A03>::value;		// // //
+						case CT_INSTVRC6: return FTExt::InstrumentIndices::IndexOf<CInstrumentVRC6>::value;		// // //
+						case CT_INSTN163: return FTExt::InstrumentIndices::IndexOf<CInstrumentN163>::value;		// // //
+						case CT_INSTS5B:  return FTExt::InstrumentIndices::IndexOf<CInstrumentS5B>::value;		// // //
 						}
 						return FTExt::InstrumentIndices::None;
 					}();
