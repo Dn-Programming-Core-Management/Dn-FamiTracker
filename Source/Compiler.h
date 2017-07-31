@@ -20,7 +20,12 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include <vector>		// // //
+#include <memory>
+#include "FamiTrackerTypes.h"
 
 // NSF file header
 struct stNSFHeader {

@@ -20,9 +20,9 @@
 ** must bear this legend.
 */
 
-#include <map>
-#include <vector>
 #include "stdafx.h"
+#include "Compiler.h"
+#include <map>
 #include "version.h"		// // //
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
@@ -32,7 +32,6 @@
 #include "InstrumentN163.h"		// // //
 #include "PatternCompiler.h"
 #include "DSample.h"		// // //
-#include "Compiler.h"
 #include "Chunk.h"
 #include "ChunkRenderText.h"
 #include "ChunkRenderBinary.h"

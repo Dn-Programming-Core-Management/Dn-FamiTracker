@@ -20,9 +20,7 @@
 ** must bear this legend.
 */
 
-#include <vector>
 #include "stdafx.h"
-#include <afxmt.h>
 #include "resource.h"		// // //
 #include "Instrument.h"
 #include "SeqInstrument.h"		// // //

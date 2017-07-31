@@ -25,7 +25,7 @@
 #include "InstrumentManagerInterface.h"
 #include <vector>
 #include <memory>
-#include <afxmt.h>
+#include <mutex>
 
 class CInstrument;
 class CDSample;
@@ -44,7 +44,7 @@ class CInstrumentManager : public CInstrumentManagerInterface
 {
 public:
 	CInstrumentManager(CFTMComponentInterface *pInterface = nullptr);
-	~CInstrumentManager();
+	virtual ~CInstrumentManager();
 
 	void ClearAll();
 
@@ -67,13 +67,13 @@ public:
 	CDSampleManager *const GetDSampleManager() const;
 
 	// from interface
-	CSequence *GetSequence(int InstType, int SeqType, int Index) const; // TODO: use SetSequence and provide const getter
-	void SetSequence(int InstType, int SeqType, int Index, CSequence *pSeq);
-	int AddSequence(int InstType, int SeqType, CSequence *pSeq, CSeqInstrument *pInst = nullptr);
-	const CDSample *GetDSample(int Index) const;
-	void SetDSample(int Index, CDSample *pSamp);
-	int AddDSample(CDSample *pSamp);
-	void InstrumentChanged() const;
+	CSequence *GetSequence(int InstType, int SeqType, int Index) const override; // TODO: use SetSequence and provide const getter
+	void SetSequence(int InstType, int SeqType, int Index, CSequence *pSeq) override;
+	int AddSequence(int InstType, int SeqType, CSequence *pSeq, CSeqInstrument *pInst = nullptr) override;
+	const CDSample *GetDSample(int Index) const override;
+	void SetDSample(int Index, CDSample *pSamp) override;
+	int AddDSample(CDSample *pSamp) override;
+	void InstrumentChanged() const override;
 
 public:
 	static std::shared_ptr<CInstrument> CreateNew(inst_type_t InstType);
@@ -84,7 +84,7 @@ private:
 	std::vector<std::unique_ptr<CSequenceManager>> m_pSequenceManager;
 	std::unique_ptr<CDSampleManager> m_pDSampleManager;
 
-	mutable CCriticalSection m_InstrumentLock;
+	mutable std::mutex m_InstrumentLock;		// // //
 	CFTMComponentInterface *m_pDocInterface;
 
 private:
