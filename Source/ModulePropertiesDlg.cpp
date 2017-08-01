@@ -20,11 +20,10 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include "ModulePropertiesDlg.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "MainFrm.h"
-#include "ModulePropertiesDlg.h"
 #include "ModuleImportDlg.h"
 #include "SoundGen.h"
 

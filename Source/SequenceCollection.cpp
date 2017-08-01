@@ -20,23 +20,23 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include <vector>
-#include <memory>
-#include "Sequence.h"
 #include "SequenceCollection.h"
+#include "Sequence.h"
 
 const int CSequenceCollection::MAX_SEQUENCES = 128;
 
-CSequenceCollection::CSequenceCollection()
+CSequenceCollection::CSequenceCollection() :
+	m_pSequence(MAX_SEQUENCES)
 {
-	m_pSequence.resize(MAX_SEQUENCES);
+}
+
+CSequenceCollection::~CSequenceCollection() {
 }
 
 CSequence *CSequenceCollection::GetSequence(unsigned int Index)
 {
 	if (!m_pSequence[Index])
-		m_pSequence[Index].reset(new CSequence());
+		m_pSequence[Index] = std::make_unique<CSequence>();
 	return m_pSequence[Index].get();
 }
 
@@ -53,13 +53,13 @@ const CSequence *CSequenceCollection::GetSequence(unsigned int Index) const
 unsigned int CSequenceCollection::GetFirstFree() const
 {
 	for (int i = 0; i < MAX_SEQUENCES; i++)
-		if (m_pSequence[i] == nullptr || !m_pSequence[i]->GetItemCount())
+		if (!m_pSequence[i] || !m_pSequence[i]->GetItemCount())
 			return i;
 	return -1;
 }
 
 void CSequenceCollection::RemoveAll()
 {
-	for (auto it = m_pSequence.begin(); it < m_pSequence.end(); ++it)
-		it->reset();
+	for (auto &ptr : m_pSequence)
+		ptr.reset();
 }

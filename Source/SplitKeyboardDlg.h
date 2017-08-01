@@ -23,6 +23,9 @@
 
 #pragma once
 
+#include "stdafx.h"
+#include "resource.h"
+
 // CSplitKeyboardDlg dialog
 
 class CSplitKeyboardDlg : public CDialog

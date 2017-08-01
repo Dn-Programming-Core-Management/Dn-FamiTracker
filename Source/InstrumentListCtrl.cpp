@@ -21,10 +21,10 @@
 */
 
 #include "stdafx.h"
+#include "CustomControls.h"
 #include "resource.h"
 #include "FamiTrackerDoc.h"
 #include "MainFrm.h"
-#include "CustomControls.h"
 
 ///
 /// CInstrumentList

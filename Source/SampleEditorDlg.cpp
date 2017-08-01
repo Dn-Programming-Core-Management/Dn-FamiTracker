@@ -20,14 +20,13 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include "SampleEditorDlg.h"
 #include "FamiTracker.h"
 #include "DSample.h"
 #include "FamiTrackerTypes.h"
 #include "APU/Types.h"
 #include "SoundGen.h"
 #include "SampleEditorView.h"
-#include "SampleEditorDlg.h"
 
 //
 // The DPCM sample editor

@@ -20,18 +20,13 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include <vector>
-#include <memory>
-#include "Sequence.h"
-#include "SequenceCollection.h"
 #include "SequenceManager.h"
+#include "SequenceCollection.h"
 
 CSequenceManager::CSequenceManager(int Count)
 {
-	m_pCollection.resize(Count);
 	for (int i = 0; i < Count; ++i)
-		m_pCollection[i].reset(new CSequenceCollection());
+		m_pCollection.push_back(std::make_unique<CSequenceCollection>());
 }
 
 int CSequenceManager::GetCount() const
@@ -43,7 +38,7 @@ CSequenceCollection *CSequenceManager::GetCollection(unsigned int Index)
 {
 	if (Index >= m_pCollection.size()) return nullptr;
 	if (!m_pCollection[Index])
-		m_pCollection[Index].reset(new CSequenceCollection());
+		m_pCollection[Index] = std::make_unique<CSequenceCollection>();
 	return m_pCollection[Index].get();
 }
 

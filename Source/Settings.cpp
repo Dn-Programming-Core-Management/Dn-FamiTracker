@@ -28,8 +28,8 @@
  */
 
 #include "stdafx.h"
-#include "FamiTracker.h"
 #include "Settings.h"
+#include "FamiTracker.h"
 #include "ColorScheme.h"
 
 // // // registry context

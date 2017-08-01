@@ -20,15 +20,13 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include "GrooveDlg.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
 #include "MainFrm.h"
-#include "GrooveDlg.h"
 #include "PatternEditorTypes.h"
 #include "Clipboard.h"
-
 
 // CGrooveDlg dialog
 

@@ -20,8 +20,13 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
+#include "stdafx.h"		// // //
+#include "resource.h"		// // //
+
+enum render_end_t : int;		// // //
 
 // CWavProgressDlg dialog
 

@@ -20,9 +20,8 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include "FamiTracker.h"
 #include "ConfigGeneral.h"
+#include "FamiTracker.h"
 #include "Settings.h"
 
 const CString CConfigGeneral::CONFIG_STR[] = {		// // //

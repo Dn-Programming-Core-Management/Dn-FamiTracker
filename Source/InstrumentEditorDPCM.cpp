@@ -20,12 +20,10 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include "InstrumentEditorDPCM.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
-#include "InstrumentEditPanel.h"
-#include "InstrumentEditorDPCM.h"
 #include "SampleEditorView.h"
 #include "SampleEditorDlg.h"
 #include "SeqInstrument.h"		// // //

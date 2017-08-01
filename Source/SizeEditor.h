@@ -20,7 +20,10 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include "stdafx.h"		// // //
 
 // Size editor
 class CSizeEditor : public CWnd

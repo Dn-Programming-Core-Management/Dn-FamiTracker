@@ -20,7 +20,12 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include "InstrumentEditPanel.h"		// // //
+
+class CInstrumentVRC7;		// // //
 
 class CInstrumentEditorVRC7 : public CInstrumentEditPanel
 {

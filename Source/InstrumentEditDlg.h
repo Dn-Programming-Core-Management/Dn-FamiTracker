@@ -20,7 +20,11 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include "stdafx.h"		// // //
+#include "resource.h"		// // //
 
 class CInstrumentEditPanel;
 class CInstrumentManager;		// // //

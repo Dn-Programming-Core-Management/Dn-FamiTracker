@@ -20,16 +20,14 @@
 ** must bear this legend.
 */
 
+#include "InstrumentEditorFDS.h"
 #include <iterator> 
 #include <sstream>
-#include "stdafx.h"
 #include "FamiTracker.h"
 #include "Instrument.h"		// // //
 #include "SeqInstrument.h"		// // //
 #include "InstrumentFDS.h"		// // //
 #include "DPI.h"		// // //
-#include "InstrumentEditPanel.h"
-#include "InstrumentEditorFDS.h"
 #include "APU/Types.h"		// // //
 #include "SoundGen.h"
 #include "Clipboard.h"

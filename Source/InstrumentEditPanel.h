@@ -20,8 +20,11 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
+#include "stdafx.h"		// // //
+#include "resource.h"		// // //
 #include <string>		// // //
 #include <memory>		// // //
 
@@ -30,11 +33,9 @@
 #define LCTRL_CHECKBOX_CHECKED		0x2000
 #define LCTRL_CHECKBOX_UNCHECKED	0x1000
 
-class CSequence;
-class CSeqInstrument;
+class CInstrument;		// // //
 class CFamiTrackerDoc;
 class CInstrumentManager;		// // //
-class CSequenceParser;		// // //
 
 class CInstrumentEditPanel : public CDialog
 {
@@ -70,7 +71,10 @@ public:
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 };
 
+class CSequence;
+class CSeqInstrument;
 class CSequenceEditor;
+class CSequenceParser;		// // //
 
 // Adds some functions for sequences
 class CSequenceInstrumentEditPanel : public CInstrumentEditPanel 

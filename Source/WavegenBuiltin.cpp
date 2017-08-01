@@ -20,7 +20,6 @@
 ** must bear this legend.
 */
 
-#include "WaveformGenerator.h"
 #include "WavegenBuiltin.h"
 #include <math.h> // sine
 

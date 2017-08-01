@@ -20,7 +20,11 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include "stdafx.h"		// // //
+#include "resource.h"		// // //
 
 #define SETTINGS_BOOL_COUNT 23		// // //
 

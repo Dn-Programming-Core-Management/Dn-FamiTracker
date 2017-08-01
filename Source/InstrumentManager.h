@@ -20,6 +20,7 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
 #include "InstrumentManagerInterface.h"
@@ -33,7 +34,7 @@ class CSequenceManager;
 class CDSampleManager;
 class CFTMComponentInterface;
 
-enum inst_type_t;
+enum inst_type_t : int;
 
 /*!
 	\brief A container of FamiTracker instruments.

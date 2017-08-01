@@ -20,15 +20,14 @@
 ** must bear this legend.
 */
 
+#include "SequenceEditor.h"
 #include <memory>		// // //
 #include <string>
-#include "stdafx.h"
 #include "Instrument.h"		// // // inst_type_t
 #include "Sequence.h"
 #include "resource.h"		// // // CInstrumentEditDlg
 #include "InstrumentEditDlg.h"		// // // GetRefreshRate()
 #include "InstrumentEditPanel.h"
-#include "SequenceEditor.h"
 #include "SizeEditor.h"
 #include "GraphEditor.h"
 #include "SequenceSetting.h"

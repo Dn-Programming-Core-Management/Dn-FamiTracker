@@ -20,7 +20,7 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include "CreateWaveDlg.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
@@ -28,7 +28,6 @@
 #include "SoundGen.h"
 #include "TrackerChannel.h"
 #include "WavProgressDlg.h"
-#include "CreateWaveDlg.h"
 
 const int MAX_LOOP_TIMES = 99;
 const int MAX_PLAY_TIME	 = (99 * 60) + 0;

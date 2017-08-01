@@ -20,11 +20,9 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include "resource.h"
+#include "TransposeDlg.h"
 #include "FamiTrackerDoc.h"
 #include "Instrument.h"
-#include "TransposeDlg.h"
 #include "DPI.h"
 
 // CTransposeDlg dialog

@@ -20,8 +20,10 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
+#include "stdafx.h"
 
 // Default font
 const static TCHAR *FONT_FACE = _T("Verdana");

@@ -24,9 +24,8 @@
  * The sequence length editor
  */
 
-#include "stdafx.h"
-#include "Sequence.h"		// // // MAX_SEQUENCE_ITEMS
 #include "SizeEditor.h"
+#include "Sequence.h"		// // // MAX_SEQUENCE_ITEMS
 #include "SequenceEditorMessage.h"		// // //
 
 const int CHANGE_DELAY = 400;

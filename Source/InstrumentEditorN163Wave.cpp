@@ -20,16 +20,15 @@
 ** must bear this legend.
 */
 
+#include "InstrumentEditorN163Wave.h"
+#include "WaveEditor.h"		// // //
 #include <iterator>
 #include <sstream>
-#include "stdafx.h"
 #include "FamiTracker.h"
 #include "DPI.h"		// // //
 #include "FamiTrackerDoc.h"
 #include "SeqInstrument.h"		// // //
 #include "InstrumentN163.h"		// // //
-#include "InstrumentEditPanel.h"
-#include "InstrumentEditorN163Wave.h"
 #include "SoundGen.h"
 #include "Clipboard.h"
 #include "WavegenBuiltin.h" // test

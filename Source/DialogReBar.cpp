@@ -20,10 +20,8 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include "resource.h"
-#include "FamiTracker.h"
 #include "DialogReBar.h"
+#include "FamiTracker.h"
 #include "CustomControls.h"		// // //
 
 // COctaveDlgBar dialog

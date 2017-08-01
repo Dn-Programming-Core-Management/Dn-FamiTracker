@@ -20,7 +20,10 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include "stdafx.h"		// // //
 
 enum edit_t {
 	EDIT_NONE, 
@@ -29,6 +32,8 @@ enum edit_t {
 	EDIT_LOOP, 
 	EDIT_RELEASE
 };
+
+class CSequence;		// // //
 
 // Graph editor base class
 class CGraphEditor : public CWnd

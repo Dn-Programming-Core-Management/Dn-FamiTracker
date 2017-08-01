@@ -20,7 +20,7 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include "BookmarkDlg.h"
 #include <string>
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
@@ -29,7 +29,6 @@
 #include "Bookmark.h"
 #include "BookmarkCollection.h"
 #include "BookmarkManager.h" // TODO: night not need this
-#include "BookmarkDlg.h"
 
 // CBookmarkDlg dialog
 

@@ -20,9 +20,8 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include "FamiTracker.h"
 #include "ConfigMIDI.h"
+#include "FamiTracker.h"
 #include "MIDI.h"
 #include "Settings.h"
 

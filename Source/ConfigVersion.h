@@ -20,9 +20,12 @@
 ** must bear this legend.
 */
 
-#pragma once
-#include "FamiTrackerTypes.h"
 
+#pragma once
+
+#include "stdafx.h"		// // //
+#include "resource.h"		// // //
+#include "FamiTrackerTypes.h"
 
 // TODO: put these into FamiTrackerDoc.h maybe?
 enum ft_block_t {

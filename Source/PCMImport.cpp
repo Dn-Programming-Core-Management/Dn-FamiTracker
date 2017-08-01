@@ -20,12 +20,11 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include "PCMImport.h"
 #include "FamiTracker.h"
 #include "DSample.h"		// // //
 #include "FamiTrackerTypes.h"		// // //
 #include "APU/Types.h"		// // //
-#include "PCMImport.h"
 #include "Settings.h"
 #include "SoundGen.h"
 #include "WaveFile.h"		// // //

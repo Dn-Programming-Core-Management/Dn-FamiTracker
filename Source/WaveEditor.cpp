@@ -20,17 +20,16 @@
 ** must bear this legend.
 */
 
+#include "WaveEditor.h"
 #include <iterator> 
 #include <string>
 #include <sstream>
-#include "stdafx.h"
 #include "FamiTracker.h"
 #include "APU/Types.h"		// // //
 #include "Instrument.h"
 #include "SeqInstrument.h"
 #include "InstrumentFDS.h"		// // //
 #include "InstrumentN163.h"		// // //
-#include "WaveEditor.h"
 #include "Graphics.h"
 #include "SoundGen.h"
 #include "DPI.h"		// // //

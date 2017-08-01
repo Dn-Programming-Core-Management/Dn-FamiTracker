@@ -20,10 +20,8 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include "resource.h"
-#include "FamiTrackerDoc.h"
 #include "ModuleImportDlg.h"
+#include "FamiTrackerDoc.h"
 
 // CModuleImportDlg dialog
 

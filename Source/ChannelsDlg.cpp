@@ -20,15 +20,11 @@
 ** must bear this legend.
 */
 
-// Source\ChannelsDlg.cpp : implementation file
-//
-
-#include "stdafx.h"
+#include "ChannelsDlg.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "TrackerChannel.h"
-#include "Source\ChannelsDlg.h"
-#include "apu/apu.h"
+#include "APU/APU.h"
 
 // Used to handle channels in a future version. Not finished.
 

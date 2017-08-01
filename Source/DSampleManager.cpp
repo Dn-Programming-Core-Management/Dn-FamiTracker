@@ -20,8 +20,6 @@
 ** must bear this legend.
 */
 
-#include <vector>
-#include <memory>
 #include "DSampleManager.h"
 
 const unsigned int CDSampleManager::MAX_DSAMPLES = 64;

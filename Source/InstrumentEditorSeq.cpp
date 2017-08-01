@@ -20,15 +20,11 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include "resource.h"		// // //
-#include "Instrument.h"
+#include "InstrumentEditorSeq.h"
 #include "SeqInstrument.h"		// // //
-#include "InstrumentEditPanel.h"
 #include "Sequence.h"		// // //
 #include "InstrumentManager.h"		// // //
 #include "SequenceEditor.h"
-#include "InstrumentEditorSeq.h"
 #include "SequenceParser.h"		// // //
 
 // // // CInstrumentEditorSeq dialog

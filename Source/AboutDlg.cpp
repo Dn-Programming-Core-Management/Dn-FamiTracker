@@ -20,15 +20,13 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include "version.h"
-#include "resource.h"
 #include "AboutDlg.h"
+#include "version.h"
 
 // CAboutDlg dialog used for App About
 
 LPCTSTR LINK_WEB  = _T("http://hertzdevil.info/programs/");
-LPCTSTR LINK_BUG  = _T("http://hertzdevil.info/bug/main_page.php");		// // //
+LPCTSTR LINK_BUG  = _T("http://hertzdevil.info/forum/index.php");		// // //
 LPCTSTR LINK_MAIL = _T("mailto:nicetas.c@gmail.com");
 
 // CLinkLabel

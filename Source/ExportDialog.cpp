@@ -25,11 +25,10 @@
  *
  */
 
+#include "ExportDialog.h"
 #include <map>
 #include <vector>
-#include "stdafx.h"
 #include "FamiTracker.h"
-#include "ExportDialog.h"
 #include "FamitrackerDoc.h"
 #include "Compiler.h"
 #include "Settings.h"

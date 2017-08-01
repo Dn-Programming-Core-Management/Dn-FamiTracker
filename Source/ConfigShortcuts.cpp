@@ -20,10 +20,8 @@
 ** must bear this legend.
 */
 
-
-#include "stdafx.h"
-#include "FamiTracker.h"
 #include "ConfigShortcuts.h"
+#include "FamiTracker.h"
 #include "Accelerator.h"
 #include "Settings.h"
 #include <unordered_map>		// // //

@@ -22,6 +22,9 @@
 
 #pragma once
 
+#include "stdafx.h"		// // //
+#include <memory>		// // //
+
 enum {
 	WM_USER_WAVE_CHANGED = WM_USER
 };

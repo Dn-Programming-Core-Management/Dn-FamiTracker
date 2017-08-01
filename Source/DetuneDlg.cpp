@@ -20,14 +20,12 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include "DetuneDlg.h"
 #include <algorithm>
 #include <cmath>
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
-#include "DetuneDlg.h"
 #include "DetuneTable.h"
-
 
 // CDetuneDlg dialog
 

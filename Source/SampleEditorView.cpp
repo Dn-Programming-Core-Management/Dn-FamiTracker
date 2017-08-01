@@ -20,10 +20,8 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include "resource.h"
-#include "DSample.h"
 #include "SampleEditorView.h"
+#include "DSample.h"
 #include "SampleEditorDlg.h"
 
 // CSampleEditorView control

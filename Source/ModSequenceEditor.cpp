@@ -22,12 +22,10 @@
 
 // This is the modulation editor for FDS
 
-#include <memory>		// // //
-#include "stdafx.h"
+#include "ModSequenceEditor.h"
 #include "Instrument.h"
 #include "SeqInstrument.h"		// // //
 #include "InstrumentFDS.h"		// // //
-#include "ModSequenceEditor.h"
 #include "DPI.h"		// // //
 
 int SIZE_X = 12;

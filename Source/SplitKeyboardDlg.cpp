@@ -20,8 +20,6 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include "resource.h"
 #include "SplitKeyboardDlg.h"
 #include "FamiTrackerTypes.h"
 #include "PatternNote.h"

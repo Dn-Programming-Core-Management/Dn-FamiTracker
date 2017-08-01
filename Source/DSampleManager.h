@@ -23,6 +23,8 @@
 
 #pragma once
 
+#include <vector>
+#include <memory>
 #include "DSample.h"
 
 class CDSampleManager

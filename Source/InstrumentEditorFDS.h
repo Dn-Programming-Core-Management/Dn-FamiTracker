@@ -20,7 +20,10 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include "InstrumentEditPanel.h"		// // //
 
 class CWaveEditorFDS;
 class CModSequenceEditor;

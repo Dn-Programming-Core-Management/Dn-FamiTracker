@@ -20,9 +20,8 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include "Sequence.h"		// // //
 #include "GraphEditor.h"
+#include "Sequence.h"		// // //
 #include "Graphics.h"
 #include "FamiTracker.h"
 #include "APU/Types.h"		// // //

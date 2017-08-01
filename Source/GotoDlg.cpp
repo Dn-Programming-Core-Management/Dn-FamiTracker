@@ -20,13 +20,12 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include "GotoDlg.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
 #include "MainFrm.h"
 #include "PatternEditor.h"
-#include "GotoDlg.h"
 
 // CGotoDlg dialog
 

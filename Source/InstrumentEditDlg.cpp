@@ -20,9 +20,9 @@
 ** must bear this legend.
 */
 
+#include "InstrumentEditDlg.h"
 #include <memory>		// // //
 #include <string>
-#include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "SeqInstrument.h"		// // //
@@ -36,7 +36,6 @@
 #include "SequenceEditor.h"
 #include "InstrumentEditPanel.h"
 #include "InstrumentEditorSeq.h"		// // //
-#include "InstrumentEditDlg.h"
 #include "InstrumentEditorDPCM.h"
 #include "InstrumentEditorVRC7.h"
 #include "InstrumentEditorFDS.h"

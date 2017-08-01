@@ -20,13 +20,12 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include "RecordSettingsDlg.h"
 #include "FamiTracker.h"
 #include "FamiTrackerTypes.h"
 #include "APU/Types.h"
 #include "SoundGen.h"
 #include "InstrumentRecorder.h"
-#include "RecordSettingsDlg.h"
 
 #define MIN_INTERVAL 24
 

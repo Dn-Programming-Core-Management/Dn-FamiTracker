@@ -20,7 +20,11 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include <vector>
+#include <memory>
 
 class CSequence;
 
@@ -33,6 +37,7 @@ class CSequenceCollection
 public:
 	/*!	\brief Constructor of the sequence collection. */
 	CSequenceCollection();
+	~CSequenceCollection();
 	
 	/*!	\brief Obtains a modifiable sequence at a given index, creating the object if it
 		does not exist.

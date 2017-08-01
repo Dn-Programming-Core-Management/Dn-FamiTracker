@@ -22,6 +22,11 @@
 
 #pragma once
 
+#include "stdafx.h"		// // //
+#include "resource.h"		// // //
+
+class CDSample;		// // //
+
 namespace jarh {
 	class sinc;
 }

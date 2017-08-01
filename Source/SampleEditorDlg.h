@@ -20,11 +20,17 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include "stdafx.h"		// // //
+#include "resource.h"		// // //
 
 // CSampleEditorDlg dialog
 
+class CDSample;		// // //
 class CSoundGen;
+class CSampleEditorView;		// // //
 
 class CSampleEditorDlg : public CDialog
 {

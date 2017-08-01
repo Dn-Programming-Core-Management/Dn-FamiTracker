@@ -20,9 +20,8 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include "FamiTracker.h"
 #include "ConfigAppearance.h"
+#include "FamiTracker.h"
 #include "Settings.h"
 #include "ColorScheme.h"
 #include "Graphics.h"

@@ -20,7 +20,13 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include "InstrumentEditPanel.h"		// // //
+
+class CInstrument;		// // //
+enum inst_type_t : int;		// // //
 
 /*!
 	\brief Specialization of the instrument sequence editor panel class for CSeqInstrument.

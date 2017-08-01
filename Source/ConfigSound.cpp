@@ -20,11 +20,10 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include "ConfigSound.h"
 #include "FamiTracker.h"
 #include "FamiTrackerTypes.h"		// // //
 #include "APU/Types.h"		// // //
-#include "ConfigSound.h"
 #include "SoundGen.h"
 #include "Settings.h"
 #include "DirectSound.h"

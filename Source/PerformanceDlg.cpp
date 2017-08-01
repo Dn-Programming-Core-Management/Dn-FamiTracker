@@ -20,13 +20,11 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include "FamiTracker.h"
 #include "PerformanceDlg.h"
+#include "FamiTracker.h"
 #include "FamiTrackerTypes.h"
 #include "APU/Types.h"
 #include "SoundGen.h"
-
 
 // CPerformanceDlg dialog
 

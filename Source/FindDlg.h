@@ -23,6 +23,11 @@
 
 #pragma once
 
+#include "stdafx.h"
+#include "resource.h"
+
+#include <stdexcept>
+#include <memory>
 #include <string>
 #include <unordered_map>
 

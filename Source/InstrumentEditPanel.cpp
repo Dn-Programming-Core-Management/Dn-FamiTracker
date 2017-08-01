@@ -20,13 +20,12 @@
 ** must bear this legend.
 */
 
+#include "InstrumentEditPanel.h"
 #include <iterator> 
 #include <sstream>
-#include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
-#include "InstrumentEditPanel.h"
 #include "SequenceEditor.h"
 #include "SequenceParser.h"		// // //
 #include "DPI.h"		// // //

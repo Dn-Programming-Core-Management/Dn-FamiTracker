@@ -20,16 +20,13 @@
 ** must bear this legend.
 */
 
-#include <memory>
+#include "FindDlg.h"
 #include <cstdarg>
-#include <stdexcept>
-#include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
 #include "TrackerChannel.h"
 #include "MainFrm.h"
-#include "FindDlg.h"
 #include "PatternEditor.h"
 #include "PatternAction.h"
 #include "CompoundAction.h"

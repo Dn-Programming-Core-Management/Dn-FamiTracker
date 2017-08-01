@@ -20,14 +20,16 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
-#include "WaveEditor.h"
+#include "InstrumentEditPanel.h"		// // //
 
 // CInstrumentEditorN163Wave dialog
 
 class CWaveformGenerator;		// // //
 class CInstrumentN163;		// // //
+class CWaveEditorN163;		// // //
 
 class CInstrumentEditorN163Wave : public CInstrumentEditPanel
 {

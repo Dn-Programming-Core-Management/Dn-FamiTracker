@@ -20,12 +20,11 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include "InstrumentManager.h"
 #include "FTMComponentInterface.h"
 #include "Instrument.h"
 #include "SeqInstrument.h"
 #include "InstrumentFactory.h"
-#include "InstrumentManager.h"
 #include "Sequence.h"
 #include "SequenceCollection.h"
 #include "SequenceManager.h"

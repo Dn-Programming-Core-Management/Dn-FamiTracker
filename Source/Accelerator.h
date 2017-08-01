@@ -25,6 +25,7 @@
 
 // Key accelerator class
 
+#include "stdafx.h"		// // //
 #include <vector>		// // //
 #include <unordered_set>		// // //
 
@@ -37,6 +38,8 @@ struct stAccelEntry {
 	int	id;
 	LPCTSTR orig_name;		// // //
 };
+
+class CSettings;		// // //
 
 class CAccelerator {
 public:

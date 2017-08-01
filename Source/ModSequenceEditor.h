@@ -22,6 +22,9 @@
 
 #pragma once
 
+#include "stdafx.h"		// // //
+#include <memory>		// // //
+
 class CInstrumentFDS;		// // //
 
 class CModSequenceEditor : public CWnd

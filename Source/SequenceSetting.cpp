@@ -24,9 +24,8 @@
  * The sequence setting button. Used only by arpeggio at the moment
  */
 
-#include "stdafx.h"
-#include "Sequence.h"
 #include "SequenceSetting.h"
+#include "Sequence.h"
 #include "SequenceEditorMessage.h"		// // //
 #include "Instrument.h"		// // // inst_type_t
 

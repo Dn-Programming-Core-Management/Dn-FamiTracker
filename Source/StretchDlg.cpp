@@ -20,11 +20,10 @@
 ** must bear this legend.
 */
 
-#include <vector>
-#include "stdafx.h"
-#include "resource.h"
 #include "StretchDlg.h"
+#include <vector>
 
+const size_t STRETCH_MAP_TEST_LEN = 16;
 
 // CStretchDlg dialog
 

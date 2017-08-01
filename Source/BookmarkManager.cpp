@@ -20,12 +20,9 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include <vector>
-#include <memory>
+#include "BookmarkManager.h"
 #include "Bookmark.h"
 #include "BookmarkCollection.h"
-#include "BookmarkManager.h"
 
 CBookmarkManager::CBookmarkManager(unsigned Count) :
 	m_pCollection(Count)
@@ -35,8 +32,8 @@ CBookmarkManager::CBookmarkManager(unsigned Count) :
 
 void CBookmarkManager::ClearAll()
 {
-	for (size_t i = 0; i < m_pCollection.size(); ++i)
-		m_pCollection[i].reset(new CBookmarkCollection());
+	for (auto &ptr : m_pCollection)
+		ptr = std::make_unique<CBookmarkCollection>();
 }
 
 CBookmarkCollection *CBookmarkManager::GetCollection(unsigned Track) const
@@ -46,9 +43,10 @@ CBookmarkCollection *CBookmarkManager::GetCollection(unsigned Track) const
 
 CBookmarkCollection *CBookmarkManager::PopCollection(unsigned Track)
 {
-	if (Track >= m_pCollection.size()) return nullptr;
+	if (Track >= m_pCollection.size())
+		return nullptr;
 	CBookmarkCollection *pCol = m_pCollection[Track].release();
-	m_pCollection[Track].reset(new CBookmarkCollection());
+	m_pCollection[Track] = std::make_unique<CBookmarkCollection>();
 	return pCol;
 }
 
@@ -60,21 +58,21 @@ void CBookmarkManager::SetCollection(unsigned Track, CBookmarkCollection *const 
 unsigned int CBookmarkManager::GetBookmarkCount() const
 {
 	int Total = 0;
-	for (size_t i = 0; i < m_pCollection.size(); ++i)
-		Total += m_pCollection[i]->GetCount();
+	for (const auto &ptr : m_pCollection)
+		Total += ptr->GetCount();
 	return Total;
 }
 
 void CBookmarkManager::InsertTrack(unsigned Track)
 {
-	m_pCollection.resize(m_pCollection.size() - 1);
-	m_pCollection.insert(m_pCollection.begin() + Track, std::unique_ptr<CBookmarkCollection>(new CBookmarkCollection()));
+	m_pCollection.pop_back();
+	m_pCollection.insert(m_pCollection.begin() + Track, std::make_unique<CBookmarkCollection>());
 }
 
 void CBookmarkManager::RemoveTrack(unsigned Track)
 {
 	m_pCollection.erase(m_pCollection.begin() + Track);
-	m_pCollection.insert(m_pCollection.end(), std::unique_ptr<CBookmarkCollection>(new CBookmarkCollection()));
+	m_pCollection.insert(m_pCollection.end(), std::make_unique<CBookmarkCollection>());
 }
 
 void CBookmarkManager::SwapTracks(unsigned A, unsigned B)

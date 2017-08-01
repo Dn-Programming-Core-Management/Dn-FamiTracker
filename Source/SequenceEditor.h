@@ -20,7 +20,10 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include "stdafx.h"		// // //
 
 class CSequence;
 class CGraphEditor;
