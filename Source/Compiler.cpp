@@ -20,7 +20,6 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
 #include "Compiler.h"
 #include <map>
 #include "version.h"		// // //

@@ -20,7 +20,6 @@
 ** must bear this legend.
 */
 
-#include <string>
 #include "PatternNote.h"
 
 using namespace std::string_literals;

@@ -20,15 +20,14 @@
 ** must bear this legend.
 */
 
+#include "PatternEditor.h"
 #include <algorithm>
 #include <functional>		// // //
 #include <vector>		// // //
 #include <cmath>
-#include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
-#include "PatternEditor.h"
 #include "SoundGen.h"
 #include "TrackerChannel.h"
 #include "Settings.h"

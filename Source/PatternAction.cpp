@@ -20,6 +20,7 @@
 ** must bear this legend.
 */
 
+#include "PatternAction.h"
 #include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
@@ -27,7 +28,6 @@
 #include "Settings.h"		// // //
 #include "MainFrm.h"
 #include "PatternEditor.h"
-#include "PatternAction.h"
 
 // // // Pattern editor state class
 

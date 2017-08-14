@@ -20,8 +20,10 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
+#include "stdafx.h"		// // //
 
 // Clipboard wrapper class, using this ensures that clipboard is closed when finished
 class CClipboard

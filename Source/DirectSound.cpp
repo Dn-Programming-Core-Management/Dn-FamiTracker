@@ -24,10 +24,9 @@
 // DirectSound Interface
 //
 
-#include "stdafx.h"
+#include "DirectSound.h"
 #include <cstdio>
 #include "common.h"
-#include "DirectSound.h"
 #include "resource.h"
 
 // The single CDSound object

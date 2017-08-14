@@ -20,9 +20,7 @@
 ** must bear this legend.
 */
 
-#include <map>
-#include "stdafx.h"
-#include "chunk.h"
+#include "Chunk.h"
 
 /**
  * CChunk - Stores NSF data

@@ -20,12 +20,10 @@
 ** must bear this legend.
 */
 
-
+#include "OldSequence.h"
 #include "stdafx.h"
-#include <vector>
 // #include "ModuleException.h"
 #include "Sequence.h"
-#include "OldSequence.h"
 
 COldSequence::COldSequence() : Length(), Value() {}
 
@@ -42,7 +40,7 @@ unsigned int COldSequence::GetLength() const
 
 // // // moved from CFamiTrackerDoc::ConvertSequence
 
-CSequence *COldSequence::Convert(int Type) const
+std::unique_ptr<CSequence> COldSequence::Convert(int Type) const
 {
 	const int Count = GetLength();
 	if (Count == 0 || Count >= MAX_SEQUENCE_ITEMS)
@@ -52,7 +50,7 @@ CSequence *COldSequence::Convert(int Type) const
 	int iLength = 0;
 	int ValPtr = 0;
 
-	CSequence *pSeq = new CSequence();
+	auto pSeq = std::make_unique<CSequence>();
 
 	for (int i = 0; i < Count; ++i) {
 		if (Length[i] < 0) {

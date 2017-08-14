@@ -20,12 +20,12 @@
 ** must bear this legend.
 */
 
+#include "FrameAction.h"
 #include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
 #include "MainFrm.h"
-#include "FrameAction.h"
 #include "FrameEditor.h"
 
 // // // Frame editor state class

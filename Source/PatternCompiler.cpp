@@ -20,13 +20,11 @@
 ** must bear this legend.
 */
 
-#include <vector>
-#include "stdafx.h"
+#include "PatternCompiler.h"
 #include "FamiTrackerDoc.h"
 #include "SeqInstrument.h"		// // //
 #include "Instrument2A03.h"		// // //
 #include "InstrumentFDS.h"		// // //
-#include "PatternCompiler.h"
 #include "TrackerChannel.h"
 #include "Compiler.h"
 

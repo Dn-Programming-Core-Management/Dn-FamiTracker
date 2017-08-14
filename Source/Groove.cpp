@@ -20,8 +20,8 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
 #include "Groove.h"
+#include <cstring>
 
 CGroove::CGroove(int Speed)
 {

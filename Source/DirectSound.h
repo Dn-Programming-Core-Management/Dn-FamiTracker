@@ -20,9 +20,10 @@
 ** must bear this legend.
 */
 
-#ifndef DSOUND_H
-#define DSOUND_H
 
+#pragma once
+
+#include "stdafx.h"		// // //
 #include <mmsystem.h>
 #include <dsound.h>
 
@@ -129,5 +130,3 @@ private:
 	LPCTSTR			m_pcDevice[MAX_DEVICES];
 	GUID			*m_pGUIDs[MAX_DEVICES];
 };
-
-#endif /* DSOUND_H */

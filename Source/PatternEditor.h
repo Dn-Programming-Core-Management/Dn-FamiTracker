@@ -20,13 +20,17 @@
 ** must bear this legend.
 */
 
-#pragma once
 
+#pragma once
 
 // CPatternEditor, the pattern editor class
 
+#include "stdafx.h"		// // //
+
 #include "Common.h"
 #include "PatternEditorTypes.h"
+#include "PatternData.h"		// // //
+#include "FamiTrackerTypes.h"		// // //
 
 
 // Row color cache

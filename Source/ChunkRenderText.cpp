@@ -20,14 +20,12 @@
 ** must bear this legend.
 */
 
-#include <map>
+#include "ChunkRenderText.h"
 #include <vector>
-#include "stdafx.h"
 #include "DSample.h"		// // //
 #include "FamiTrackerDoc.h"		// // // output title
 #include "Compiler.h"
 #include "Chunk.h"
-#include "ChunkRenderText.h"
 
 // Assembly labels
 // // // moved from CCompiler

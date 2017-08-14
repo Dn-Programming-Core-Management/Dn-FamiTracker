@@ -20,20 +20,14 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include "TextExporter.h"
 #include "FamiTrackerTypes.h"		// // //
 #include "PatternData.h"		// // //
-#include "TextExporter.h"
 #include "FamiTrackerDoc.h"
 #include "../version.h"		// // //
 
 #include "DSample.h"		// // //
-#include "SeqInstrument.h"		// // //
-#include "Instrument2A03.h"
-#include "InstrumentFDS.h"
-#include "InstrumentN163.h"
-#include "InstrumentVRC7.h"
-#include "InstrumentFactory.h"
+#include "InstrumentFactory.h"		// // //
 
 #define DEBUG_OUT(...) { CString s__; s__.Format(__VA_ARGS__); OutputDebugString(s__); }
 

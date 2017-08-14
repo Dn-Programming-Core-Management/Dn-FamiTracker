@@ -20,8 +20,10 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
+#include "stdafx.h"		// // //
 #include <mmsystem.h>
 #include <afxmt.h>
 

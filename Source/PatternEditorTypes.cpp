@@ -20,7 +20,6 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
 #include "PatternEditorTypes.h"
 #include "FamiTrackerDoc.h"
 

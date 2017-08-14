@@ -20,7 +20,6 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
 #include "Sequence.h"
 
 CSequence::CSequence()
@@ -56,7 +55,10 @@ void CSequence::SetItem(int Index, signed char Value)
 
 void CSequence::SetItemCount(unsigned int Count)
 {
-	ASSERT(Count <= MAX_SEQUENCE_ITEMS);
+#ifdef _DEBUG
+	if (Count > MAX_SEQUENCE_ITEMS)		// // //
+		throw std::runtime_error {"CSequence size exceeded"};
+#endif
 	
 	m_iItemCount = Count;
 

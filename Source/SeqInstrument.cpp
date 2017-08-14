@@ -142,7 +142,7 @@ bool CSeqInstrument::LoadFile(CSimpleFile *pFile, int iVersion)
 				char Length = pFile->ReadChar();
 				OldSeq.AddItem(Length, pFile->ReadChar());
 			}
-			pSeq = OldSeq.Convert(i);
+			pSeq = OldSeq.Convert(i).release();
 		}
 		else {
 			pSeq = new CSequence();

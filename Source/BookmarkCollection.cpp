@@ -20,14 +20,11 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include "BookmarkCollection.h"
 #include <algorithm>
 #include <string>
-#include <vector>
-#include <memory>
 #include <exception>
 #include "Bookmark.h"
-#include "BookmarkCollection.h"
 #include "FamiTrackerTypes.h" // constants
 
 CBookmarkCollection::CBookmarkCollection()
@@ -47,7 +44,7 @@ CBookmark *CBookmarkCollection::GetBookmark(unsigned Index) const
 bool CBookmarkCollection::AddBookmark(CBookmark *const pMark)
 {
 	try {
-		m_pBookmark.emplace_back(std::unique_ptr<CBookmark>(pMark));
+		m_pBookmark.emplace_back(pMark);
 		return true;
 	}
 	catch (std::exception) {
@@ -65,7 +62,7 @@ bool CBookmarkCollection::SetBookmark(unsigned Index, CBookmark *const pMark)
 bool CBookmarkCollection::InsertBookmark(unsigned Index, CBookmark *const pMark)
 {
 	if (Index > m_pBookmark.size()) return false;
-	m_pBookmark.insert(m_pBookmark.begin() + Index, std::unique_ptr<CBookmark>(pMark));
+	m_pBookmark.emplace(m_pBookmark.begin() + Index, pMark);
 	return true;
 }
 

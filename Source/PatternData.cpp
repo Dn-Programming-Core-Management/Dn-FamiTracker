@@ -20,8 +20,6 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include "FamiTrackerTypes.h"		// // //
 #include "PatternData.h"
 #include <algorithm>		// // // std::swap
 

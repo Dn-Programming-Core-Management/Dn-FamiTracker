@@ -20,9 +20,9 @@
 ** must bear this legend.
 */
 
+#include "FrameEditor.h"
 #include <algorithm>
 #include <cmath>
-#include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
@@ -31,7 +31,6 @@
 #include "CompoundAction.h"		// // //
 #include "Accelerator.h"
 #include "PatternEditor.h"
-#include "FrameEditor.h"
 #include "SoundGen.h"
 #include "Settings.h"
 #include "Graphics.h"

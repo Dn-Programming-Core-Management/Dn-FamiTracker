@@ -20,12 +20,15 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
 // Document wrapper class for custom exporters
 
 #include "DSample.h"		// // //
-#include "FamiTrackerDoc.h"
+#include "CustomExporterInterfaces.h"		// // //
+
+class CFamiTrackerDoc;		// // //
 
 class CFamiTrackerDocWrapper : public CFamiTrackerDocInterface
 {

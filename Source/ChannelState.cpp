@@ -20,7 +20,6 @@
 ** must bear this legend.
 */
 
-#include <memory>
 #include "ChannelState.h"
 
 stChannelState::stChannelState() :
@@ -35,7 +34,7 @@ stChannelState::stChannelState() :
 }
 
 stFullState::stFullState(int Count) :
-	State(new stChannelState[Count]()),
+	State(std::make_unique<stChannelState[]>(Count)),
 	Tempo(-1),
 	Speed(-1),
 	GroovePos(-1)

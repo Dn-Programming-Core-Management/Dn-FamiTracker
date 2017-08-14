@@ -20,7 +20,12 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include "stdafx.h"		// // //
+#include <vector>		// // //
+#include "FamiTrackerTypes.h"		// // //
 
 class CFamiTrackerDoc;
 class CCompilerLog;

@@ -20,11 +20,13 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
 #include <vector>		// // //
 #include "Action.h"
 #include "PatternEditorTypes.h"
+#include "PatternData.h"		// // //
 
 enum transpose_t {
 	TRANSPOSE_DEC_NOTES,
@@ -32,6 +34,9 @@ enum transpose_t {
 	TRANSPOSE_DEC_OCTAVES,
 	TRANSPOSE_INC_OCTAVES
 };
+
+class CPatternEditor;		// // //
+class CMainFrame;		// // //
 
 /*
 	\brief A structure responsible for recording the cursor and selection state of the pattern

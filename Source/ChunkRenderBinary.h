@@ -20,13 +20,18 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include <vector>
 
 //
 // Binary chunk renderers
 //
 
 class CDSample;		// // //
+class CChunk;		// // //
+class CFile;		// // //
 
 // Base class
 class CBinaryFileWriter

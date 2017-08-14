@@ -20,10 +20,7 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include <string>
 #include "Bookmark.h"
-#include "FamiTrackerTypes.h"
 
 CBookmark::CBookmark(unsigned Frame, unsigned Row) :
 	m_iFrame(Frame),

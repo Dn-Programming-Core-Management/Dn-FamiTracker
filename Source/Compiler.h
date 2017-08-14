@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include "stdafx.h"		// // //
 #include <vector>		// // //
 #include <memory>
 #include "FamiTrackerTypes.h"

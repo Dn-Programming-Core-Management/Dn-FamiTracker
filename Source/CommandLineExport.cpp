@@ -20,10 +20,9 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include "CommandLineExport.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
-#include "CommandLineExport.h"
 #include "Compiler.h"
 #include "SoundGen.h"
 #include "TextExporter.h"

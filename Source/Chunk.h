@@ -20,12 +20,11 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
-// std::vector is required by this header file
 #include <vector>		// // //
 #include "stdafx.h"		// // //
-
 
 // Helper classes/objects for NSF compiling
 

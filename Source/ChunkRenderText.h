@@ -20,14 +20,20 @@
 ** must bear this legend.
 */
 
+
 #pragma once
+
+#include <vector>
+#include "stdafx.h"
 
 //
 // Text chunk renderer
 //
 
 class CChunkRenderText;
+class CChunk;		// // //
 class CDSample;		// // //
+enum chunk_type_t;		// // //
 
 typedef void (CChunkRenderText::*renderFunc_t)(CChunk *pChunk, CFile *pFile);
 

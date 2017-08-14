@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include "stdafx.h"		// // // ASSERT
 #include <utility>
 
 // Helper types for the pattern editor

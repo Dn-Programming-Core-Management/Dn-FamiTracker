@@ -20,9 +20,8 @@
 ** must bear this legend.
 */
 
-#pragma once
 
-class CDocumentFile;
+#pragma once
 
 // // // Settings
 enum seq_setting_t : unsigned int {

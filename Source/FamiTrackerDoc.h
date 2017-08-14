@@ -20,9 +20,10 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
-
+#include "stdafx.h"		// // //
 // Synchronization objects
 #include <afxmt.h>
 

@@ -20,9 +20,8 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include "resource.h"		// // //
 #include "Clipboard.h"
+#include "resource.h"		// // //
 
 // CClipboard //////////////////////////////////////////////////////////////////
 

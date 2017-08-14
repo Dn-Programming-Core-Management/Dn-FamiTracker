@@ -20,15 +20,12 @@
 ** must bear this legend.
 */
 
-#include <map>
+#include "ChunkRenderBinary.h"
 #include <vector>
-#include <functional>
-#include <algorithm>
 #include "stdafx.h"
 #include "FamiTrackerTypes.h"		// // //
 #include "Compiler.h"
 #include "Chunk.h"
-#include "ChunkRenderBinary.h"
 #include "DSample.h"		// // //
 
 /**
@@ -69,16 +66,14 @@ CChunkRenderBinary::CChunkRenderBinary(CFile *pFile) : CBinaryFileWriter(pFile),
 
 void CChunkRenderBinary::StoreChunks(const std::vector<CChunk*> &Chunks) 
 {
-	std::for_each(Chunks.begin(), Chunks.end(), [this] (CChunk *pChunk) {
-		StoreChunk(pChunk);
-	});
+	for (auto ptr : Chunks)		// // //
+		StoreChunk(ptr);
 }
 
 void CChunkRenderBinary::StoreSamples(const std::vector<const CDSample*> &Samples)
 {
-	std::for_each(Samples.begin(), Samples.end(), [this] (const CDSample *pSample) {
-		StoreSample(pSample);
-	});
+	for (auto ptr : Samples)		// // //
+		StoreSample(ptr);
 }
 
 void CChunkRenderBinary::StoreChunk(CChunk *pChunk)
@@ -133,17 +128,15 @@ void CChunkRenderNSF::StoreDriver(const char *pDriver, unsigned int Size)
 void CChunkRenderNSF::StoreChunks(const std::vector<CChunk*> &Chunks)
 {
 	// Store chunks into NSF banks
-	std::for_each(Chunks.begin(), Chunks.end(), [this] (CChunk *pChunk) {
-		StoreChunk(pChunk);
-	});
+	for (auto ptr : Chunks)		// // //
+		StoreChunk(ptr);
 }
 
 void CChunkRenderNSF::StoreChunksBankswitched(const std::vector<CChunk*> &Chunks)
 {
 	// Store chunks into NSF banks with bankswitching
-	std::for_each(Chunks.begin(), Chunks.end(), [this] (CChunk *pChunk) {
-		StoreChunkBankswitched(pChunk);
-	});
+	for (auto ptr : Chunks)		// // //
+		StoreChunkBankswitched(ptr);
 }
 
 void CChunkRenderNSF::StoreSamples(const std::vector<const CDSample*> &Samples)
@@ -154,9 +147,8 @@ void CChunkRenderNSF::StoreSamples(const std::vector<const CDSample*> &Samples)
 
 	// Align first sample to valid address
 	Fill(CCompiler::AdjustSampleAddress(GetAbsoluteAddr()));
-	std::for_each(Samples.begin(), Samples.end(), [this] (const CDSample *pSample) {
-		StoreSample(pSample);
-	});
+	for (auto ptr : Samples)		// // //
+		StoreSample(ptr);
 }
 
 void CChunkRenderNSF::StoreSamplesBankswitched(const std::vector<const CDSample*> &Samples)
@@ -166,9 +158,8 @@ void CChunkRenderNSF::StoreSamplesBankswitched(const std::vector<const CDSample*
 		AllocateNewBank();
 
 	m_iSampleAddr = CCompiler::PAGE_SAMPLES;
-	std::for_each(Samples.begin(), Samples.end(), [this] (const CDSample *pSample) {
-		StoreSampleBankswitched(pSample);
-	});
+	for (auto ptr : Samples)		// // //
+		StoreSampleBankswitched(ptr);
 }
 
 void CChunkRenderNSF::StoreSample(const CDSample *pDSample)

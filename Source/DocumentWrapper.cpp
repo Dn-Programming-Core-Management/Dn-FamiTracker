@@ -20,8 +20,8 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
 #include "DocumentWrapper.h"
+#include "FamiTrackerDoc.h"
 
 // This will implement the CFamiTrackerDocInterface for export plugins
 

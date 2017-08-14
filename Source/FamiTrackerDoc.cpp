@@ -41,8 +41,8 @@
 
 */
 
+#include "FamiTrackerDoc.h"
 #include <memory>		// // //
-#include "stdafx.h"
 #include <algorithm>
 #include <vector>		// // //
 #include <string>		// // //
@@ -56,7 +56,6 @@
 #include "InstrumentVRC6.h"		// // // for error messages only
 #include "InstrumentN163.h"		// // // for error messages only
 #include "InstrumentS5B.h"		// // // for error messages only
-#include "FamiTrackerDoc.h"
 #include "ModuleException.h"		// // //
 #include "TrackerChannel.h"
 #include "DocumentFile.h"
@@ -573,7 +572,7 @@ void CFamiTrackerDoc::ReorderSequences()
 								Seq.Value[k] = std::max(std::min<int>(Seq.Value[k], 3), 0);
 						Indices[Index][j] = Slots[j];
 						pInst->SetSeqIndex(j, Slots[j]);
-						m_pInstrumentManager->SetSequence(INST_2A03, j, Slots[j]++, Seq.Convert(j));
+						m_pInstrumentManager->SetSequence(INST_2A03, j, Slots[j]++, Seq.Convert(j).release());
 					}
 				}
 				else
@@ -1869,7 +1868,7 @@ void CFamiTrackerDoc::ReadBlock_Sequences(CDocumentFile *pDocFile, const int Ver
 				char Value = pDocFile->GetBlockChar();
 				Seq.AddItem(pDocFile->GetBlockChar(), Value);
 			}
-			m_pInstrumentManager->SetSequence(INST_2A03, Type, Index, Seq.Convert(Type));		// // //
+			m_pInstrumentManager->SetSequence(INST_2A03, Type, Index, Seq.Convert(Type).release());		// // //
 		}
 	}
 	else if (Version >= 3) {

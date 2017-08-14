@@ -20,6 +20,7 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
 #include "FrameEditorTypes.h"		// // //
@@ -27,6 +28,7 @@
 class CFamiTrackerDoc;
 class CFamiTrackerView;
 class CFrameEditor;
+class CMainFrame;		// // //
 
 class CFrameEditorDropTarget : public COleDropTarget
 {

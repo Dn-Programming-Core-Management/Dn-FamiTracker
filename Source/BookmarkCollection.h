@@ -20,8 +20,11 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
+#include <vector>
+#include <memory>
 
 class CBookmark;
 

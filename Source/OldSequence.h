@@ -23,6 +23,9 @@
 
 #pragma once
 
+#include <vector>
+#include <memory>
+
 // moved from stSequence
 
 class CSequence;
@@ -33,7 +36,7 @@ public:
 	COldSequence();
 	void AddItem(char len, char val);
 	unsigned int GetLength() const;
-	CSequence *Convert(int Type) const;
+	std::unique_ptr<CSequence> Convert(int Type) const;
 	std::vector<char> Length;
 	std::vector<char> Value;
 };
