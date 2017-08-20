@@ -1400,6 +1400,7 @@ void CFamiTrackerView::TrackChanged(unsigned int Track)
 	CMainFrame *pMainFrm = static_cast<CMainFrame*>(GetParentFrame());
 	ASSERT_VALID(pMainFrm);
 
+	SetMarker(-1, -1);		// // //
 	m_pPatternEditor->ResetCursor();
 	m_pPatternEditor->InvalidatePatternData();
 	m_pPatternEditor->InvalidateBackground();
