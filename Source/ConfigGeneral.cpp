@@ -99,9 +99,7 @@ BEGIN_MESSAGE_MAP(CConfigGeneral, CPropertyPage)
 	ON_CBN_SELENDOK(IDC_PAGELENGTH, OnCbnSelendokPagelength)
 	ON_CBN_SELCHANGE(IDC_COMBO_STYLE, OnCbnSelchangeComboStyle)
 	ON_WM_LBUTTONDOWN()
-	ON_NOTIFY(NM_CLICK, IDC_CONFIG_LIST, &CConfigGeneral::OnLvnItemchangedConfigList)
-	ON_NOTIFY(LVN_KEYDOWN, IDC_CONFIG_LIST, &CConfigGeneral::OnLvnItemchangedConfigList)
-//	ON_NOTIFY(LVN_ITEMCHANGED, IDC_CONFIG_LIST, &CConfigGeneral::OnLvnItemchangedConfigList)
+	ON_NOTIFY(LVN_ITEMCHANGED, IDC_CONFIG_LIST, OnLvnItemchangedConfigList)
 END_MESSAGE_MAP()
 
 
@@ -301,22 +299,11 @@ void CConfigGeneral::OnCbnSelchangeComboStyle()		// // //
 void CConfigGeneral::OnLvnItemchangedConfigList(NMHDR *pNMHDR, LRESULT *pResult)		// // //
 {
 	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
-	LPNMITEMACTIVATE pNMIA = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
 	CListCtrl *pList = static_cast<CListCtrl*>(GetDlgItem(IDC_CONFIG_LIST));
 
-	int sel = pList->GetSelectionMark();
-	LVHITTESTINFO info;
-	info.pt = pNMIA->ptAction;
-	pList->SubItemHitTest(&info);
-
-	if (pNMLV->uChanged & LVIF_STATE) {
-		if (pNMLV->iItem >= 0 && pNMLV->iItem < SETTINGS_BOOL_COUNT) {
-			pList->SetSelectionMark(pNMLV->iItem);
-			pList->SetItemState(pNMLV->iItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
-		}
-	}
-
-//	int sel = pList->GetSelectionMark();
+	auto mask = pNMLV->uNewState & pNMLV->uOldState;		// // // wine compatibility
+	pNMLV->uNewState &= ~mask;
+	pNMLV->uOldState &= ~mask;
 
 	using T = bool (CConfigGeneral::*);
 	static T CONFIG_BOOL[SETTINGS_BOOL_COUNT] = {		// // //
@@ -345,22 +332,22 @@ void CConfigGeneral::OnLvnItemchangedConfigList(NMHDR *pNMHDR, LRESULT *pResult)
 		&CConfigGeneral::m_bCheckVersion,
 	};
 	
-//	if (pNMLV->uChanged & LVIF_STATE) {
-//		if (pNMLV->uNewState & LVNI_SELECTED || pNMLV->uNewState & 0x3000) {
+	if (pNMLV->uChanged & LVIF_STATE) {
+		if (pNMLV->uNewState & LVNI_SELECTED || pNMLV->uNewState & 0x3000) {
 			CString str;
-			str.Format(_T("Description: %s"), CONFIG_DESC[sel]);
+			str.Format(_T("Description: %s"), CONFIG_DESC[pNMLV->iItem]);
 			SetDlgItemText(IDC_EDIT_CONFIG_DESC, str);
 			
-//			if (pNMLV->iItem >= 0 && pNMLV->iItem < SETTINGS_BOOL_COUNT)
-//				pList->SetItemState(pNMLV->iItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
-//		}
+			if (pNMLV->iItem >= 0 && pNMLV->iItem < SETTINGS_BOOL_COUNT)
+				pList->SetItemState(pNMLV->iItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+		}
 
-//		if (pNMLV->uNewState & 0x3000) {
+		if (pNMLV->uNewState & 0x3000) {
 			SetModified();
 			for (int i = 0; i < SETTINGS_BOOL_COUNT; i++)
 				this->*(CONFIG_BOOL[i]) = pList->GetCheck(i) != 0;
-//		}
-//	}
+		}
+	}
 
 	*pResult = 0;
 }
