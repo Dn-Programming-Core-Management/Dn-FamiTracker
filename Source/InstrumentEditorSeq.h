@@ -59,7 +59,6 @@ protected:
 	const int m_iMaxVolume;
 	const int m_iMaxDuty;
 	const inst_type_t m_iInstType;
-	bool m_bUpdating;
 
 protected:
 	DECLARE_MESSAGE_MAP()
@@ -68,7 +67,6 @@ public:
 	afx_msg void OnLvnItemchangedInstsettings(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnEnChangeSeqIndex();
 	afx_msg void OnBnClickedFreeSeq();
-	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	virtual BOOL DestroyWindow();
 	afx_msg void OnCloneSequence();
 };

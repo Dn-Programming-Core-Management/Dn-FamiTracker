@@ -22,6 +22,7 @@
 
 #include "FindDlg.h"
 #include <cstdarg>
+#include <map>
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
@@ -523,7 +524,7 @@ int CFindResultsBox::ChannelCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM l
 		return -1;
 	};
 	const auto Cache = [&] (const CString &x) {
-		static std::unordered_map<CString, int> m;
+		static std::map<CString, int> m;
 		auto it = m.find(x);
 		if (it == m.end())
 			return m[x] = ToIndex(x);
@@ -558,7 +559,7 @@ int CFindResultsBox::NoteCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lPar
 		return -1;
 	};
 	const auto Cache = [&] (const CString &x) {
-		static std::unordered_map<CString, int> m;
+		static std::map<CString, int> m;
 		auto it = m.find(x);
 		if (it == m.end())
 			return m[x] = ToIndex(x);
