@@ -49,8 +49,7 @@ CInstrumentEditorSeq::CInstrumentEditorSeq(CWnd* pParent, TCHAR *Title, LPCTSTR 
 	m_pSequenceName(SeqName),
 	m_iMaxVolume(Vol),
 	m_iMaxDuty(Duty),
-	m_iInstType(Type),
-	m_bUpdating(false)
+	m_iInstType(Type)
 {
 }
 
@@ -62,20 +61,21 @@ void CInstrumentEditorSeq::SelectInstrument(std::shared_ptr<CInstrument> pInst)
 	int Sel = m_iSelectedSetting;
 
 	// Update instrument setting list
-	m_bUpdating = true;
 	if (CListCtrl *pList = static_cast<CListCtrl*>(GetDlgItem(IDC_INSTSETTINGS))) {		// // //
+		pList->SetRedraw(FALSE);
 		CString str;
 		for (int i = 0; i < SEQ_COUNT; ++i) {
 			pList->SetCheck(i, m_pInstrument->GetSeqEnable(i));
 			str.Format(_T("%i"), m_pInstrument->GetSeqIndex(i));
 			pList->SetItemText(i, 1, str);
 		}
+		pList->SetRedraw();
+		pList->RedrawWindow();
 	}
 
 	// Setting text box
 	SetDlgItemInt(IDC_SEQ_INDEX, m_pInstrument->GetSeqIndex(m_iSelectedSetting = Sel));
 
-	m_bUpdating = false;
 	SelectSequence(m_pInstrument->GetSeqIndex(m_iSelectedSetting), m_iSelectedSetting);
 
 	SetFocus();
@@ -135,7 +135,7 @@ void CInstrumentEditorSeq::UpdateSequenceString(bool Changed)		// // //
 }
 
 BEGIN_MESSAGE_MAP(CInstrumentEditorSeq, CSequenceInstrumentEditPanel)
-	ON_NOTIFY(LVN_ITEMCHANGED, IDC_INSTSETTINGS, OnLvnItemchangedInstsettings)	
+	ON_NOTIFY(LVN_ITEMCHANGED, IDC_INSTSETTINGS, OnLvnItemchangedInstsettings)
 	ON_EN_CHANGE(IDC_SEQ_INDEX, OnEnChangeSeqIndex)
 	ON_BN_CLICKED(IDC_FREE_SEQ, OnBnClickedFreeSeq)
 	ON_COMMAND(ID_CLONE_SEQUENCE, OnCloneSequence)
@@ -156,13 +156,12 @@ BOOL CInstrumentEditorSeq::OnInitDialog()
 
 void CInstrumentEditorSeq::OnLvnItemchangedInstsettings(NMHDR *pNMHDR, LRESULT *pResult)
 {
-	if (m_bUpdating) {
-		*pResult = 0;
-		return;
-	}
 	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
-	CListCtrl *pList = static_cast<CListCtrl*>(GetDlgItem(IDC_INSTSETTINGS));
+	auto mask = pNMLV->uNewState & pNMLV->uOldState;		// // // wine compatibility
+	pNMLV->uNewState &= ~mask;
+	pNMLV->uOldState &= ~mask;
 
+	CListCtrl *pList = static_cast<CListCtrl*>(GetDlgItem(IDC_INSTSETTINGS));
 	if (pNMLV->uChanged & LVIF_STATE && m_pInstrument != NULL) {
 		// Selected new setting
 		if (pNMLV->uNewState & LVIS_SELECTED || pNMLV->uNewState & LCTRL_CHECKBOX_STATE) {
