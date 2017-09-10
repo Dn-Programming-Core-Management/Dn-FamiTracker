@@ -51,6 +51,7 @@
 #include "MIDI.h"
 #include "ChannelFactory.h"		// // // test
 #include "DetuneTable.h"		// // //
+#include "Arpeggiator.h"		// // //
 
 // 1kHz test tone
 //#define AUDIO_TEST
@@ -269,6 +270,7 @@ void CSoundGen::AssignView(CFamiTrackerView *pView)
 
 	// Assigns the tracker view to this object
 	m_pTrackerView = pView;
+	m_Arpeggiator = &m_pTrackerView->GetArpeggiator();		// // //
 }
 
 void CSoundGen::RemoveDocument()
@@ -2023,10 +2025,9 @@ void CSoundGen::PlayChannelNotes()
 		if (Channel == -1) continue;
 		
 		// Run auto-arpeggio, if enabled
-		int Arpeggio = m_pTrackerView->GetAutoArpeggio(Channel);
-		if (Arpeggio > 0) {
-			m_pChannels[Index]->Arpeggiate(Arpeggio);
-		}
+		if (theApp.GetSettings()->Midi.bMidiArpeggio && m_Arpeggiator)		// // //
+			if (int Arpeggio = m_Arpeggiator->GetNextNote(Channel); Arpeggio > 0)
+				m_pChannels[Index]->Arpeggiate(Arpeggio);
 
 		// Check if new note data has been queued for playing
 		if (m_pTrackerChannels[Index]->NewNoteData()) {
@@ -2261,6 +2262,7 @@ void CSoundGen::ReadPatternRow()
 
 // // //
 bool CSoundGen::PlayerGetNote(int Channel, stChanNote &NoteData) {
+	ASSERT(m_pTrackerView != NULL);
 	m_pDocument->GetNoteData(m_iPlayTrack, m_iPlayFrame, Channel, m_iPlayRow, &NoteData);
 	
 	if (!m_pTrackerView->IsChannelMuted(Channel)) {

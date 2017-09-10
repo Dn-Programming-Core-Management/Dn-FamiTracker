@@ -137,7 +137,7 @@ public:
 	void		 TrackChanged(unsigned int Track);
 
 	// Auto-arpeggio
-	int			 GetAutoArpeggio(unsigned int Channel);
+	CArpeggiator &GetArpeggiator() { return m_Arpeggiator; }		// // //
 
 //
 // Private functions

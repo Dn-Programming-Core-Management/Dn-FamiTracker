@@ -88,6 +88,7 @@ class CTrackerChannel;
 class CFTMComponentInterface;		// // //
 class CInstrumentRecorder;		// // //
 class CRegisterState;		// // //
+class CArpeggiator;		// // //
 
 // CSoundGen
 
@@ -385,6 +386,8 @@ private:
 	int					m_iTempoDecrement;
 	int					m_iTempoRemainder;
 	bool				m_bUpdateRow;
+
+	CArpeggiator		*m_Arpeggiator = nullptr;		// // //
 
 	static const int	AVERAGE_BPM_SIZE = 24;		// // // 050B
 	float				m_fBPMCacheValue[AVERAGE_BPM_SIZE];
