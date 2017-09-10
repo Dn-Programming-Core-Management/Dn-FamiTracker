@@ -708,6 +708,9 @@
     <ClCompile Include="Source\SeqInstHandlerS5B.cpp">
       <Filter>Source Files\Sound Driver\Instruments</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Arpeggiator.cpp">
+      <Filter>Source Files\Sound Driver</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">
@@ -1282,6 +1285,9 @@
     </ClInclude>
     <ClInclude Include="Source\Utility\Factory.h">
       <Filter>Header Files\Components Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Arpeggiator.h">
+      <Filter>Header Files\Sound Driver Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

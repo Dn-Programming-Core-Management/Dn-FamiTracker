@@ -30,6 +30,7 @@
 
 #include "PatternEditorTypes.h"		// // //
 #include "FamiTrackerViewMessage.h"		// // //
+#include "Arpeggiator.h"		// // //
 
 // External classes
 class CFamiTrackerDoc;
@@ -283,12 +284,7 @@ private:
 	int					m_iMarkerFrame;
 	int					m_iMarkerRow;
 
-	// Auto arpeggio
-	char				m_iAutoArpNotes[128];
-	int					m_iAutoArpPtr;
-	int					m_iLastAutoArpPtr;
-	int					m_iAutoArpKeyCount;
-	unsigned int		m_iArpeggiate[MAX_CHANNELS];
+	CArpeggiator		m_Arpeggiator;							// // // Auto arpeggio
 
 	// Window size
 	unsigned int		m_iWindowWidth;							// Width of view area

@@ -282,10 +282,7 @@ CFamiTrackerView::CFamiTrackerView() :
 	m_bCompactMode(false),		// // //
 	m_iMarkerFrame(-1),		// // // 050B
 	m_iMarkerRow(-1),		// // // 050B
-	m_iAutoArpNotes(),		// // //
-	m_iAutoArpPtr(0),
-	m_iLastAutoArpPtr(0),
-	m_iAutoArpKeyCount(0),
+	m_Arpeggiator(),		// // //
 	m_iSplitNote(-1),		// // //
 	m_iSplitChannel(-1),		// // //
 	m_iSplitInstrument(MAX_INSTRUMENTS),		// // //
@@ -301,7 +298,6 @@ CFamiTrackerView::CFamiTrackerView() :
 	memset(m_bMuteChannels, 0, sizeof(bool) * MAX_CHANNELS);
 	memset(m_iActiveNotes, 0, sizeof(int) * MAX_CHANNELS);
 	memset(m_cKeyList, 0, sizeof(char) * 256);
-	memset(m_iArpeggiate, 0, sizeof(int) * MAX_CHANNELS);
 
 	// Register this object in the sound generator
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
@@ -1509,24 +1505,8 @@ bool CFamiTrackerView::IsMarkerValid() const		// // //
 void CFamiTrackerView::PlayerTick()
 {
 	// Callback from sound thread (TODO move this to sound thread?)
-
-	if (m_iAutoArpKeyCount == 1 || !theApp.GetSettings()->Midi.bMidiArpeggio)
-		return;
-
-	// auto arpeggio
-	int OldPtr = m_iAutoArpPtr;
-	do {
-		m_iAutoArpPtr = (m_iAutoArpPtr + 1) & 127;				
-		if (m_iAutoArpNotes[m_iAutoArpPtr] == 1) {
-			m_iLastAutoArpPtr = m_iAutoArpPtr;
-			m_iArpeggiate[m_pPatternEditor->GetChannel()] = m_iAutoArpPtr;
-			break;
-		}
-		else if (m_iAutoArpNotes[m_iAutoArpPtr] == 2) {
-			m_iAutoArpNotes[m_iAutoArpPtr] = 0;
-		}
-	}
-	while (m_iAutoArpPtr != OldPtr);
+	if (theApp.GetSettings()->Midi.bMidiArpeggio)		// // //
+		m_Arpeggiator.Tick(m_pPatternEditor->GetChannel());
 }
 
 void CFamiTrackerView::PlayerPlayNote(int Channel, stChanNote *pNote)
@@ -1574,9 +1554,7 @@ void CFamiTrackerView::SetCompactMode(bool Mode)		// // //
 int	CFamiTrackerView::GetAutoArpeggio(unsigned int Channel)
 {
 	// Return and reset next arpeggio note
-	int ret = m_iArpeggiate[Channel];
-	m_iArpeggiate[Channel] = 0;
-	return ret;
+	return m_Arpeggiator.GetNextNote(Channel);		// // //
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2196,20 +2174,12 @@ void CFamiTrackerView::TriggerMIDINote(unsigned int Channel, unsigned int MidiNo
 	if (Insert)
 		InsertNote(Note, Octave, Channel, Velocity + 1);
 
-	m_iAutoArpNotes[MidiNote] = 1;
-	m_iAutoArpPtr = MidiNote;
-	m_iLastAutoArpPtr = m_iAutoArpPtr;
-
-	UpdateArpDisplay();
+	if (theApp.GetSettings()->Midi.bMidiArpeggio) {		// // //
+		m_Arpeggiator.TriggerNote(MidiNote);
+		UpdateArpDisplay();
+	}
 
 	m_iLastMIDINote = MidiNote;
-
-	m_iAutoArpKeyCount = 0;
-
-	for (int i = 0; i < 128; ++i) {
-		if (m_iAutoArpNotes[i] == 1)
-			++m_iAutoArpKeyCount;
-	}
 
 	TRACE("%i: Trigger note %i on channel %i\n", GetTickCount(), MidiNote, Channel);
 }
@@ -2228,9 +2198,11 @@ void CFamiTrackerView::CutMIDINote(unsigned int Channel, unsigned int MidiNote, 
 //		FixNoise(MidiNote, Octave, Note);
 
 	m_iActiveNotes[Channel] = 0;
-	m_iAutoArpNotes[MidiNote] = 2;
-
-	UpdateArpDisplay();
+	
+	if (theApp.GetSettings()->Midi.bMidiArpeggio) {		// // //
+		m_Arpeggiator.ReleaseNote(MidiNote);
+		UpdateArpDisplay();
+	}
 
 	// Cut note
 	if (!(theApp.IsPlaying() && m_bEditEnable && !m_bFollowMode))		// // //
@@ -2265,9 +2237,11 @@ void CFamiTrackerView::ReleaseMIDINote(unsigned int Channel, unsigned int MidiNo
 //		FixNoise(MidiNote, Octave, Note);
 
 	m_iActiveNotes[Channel] = 0;
-	m_iAutoArpNotes[MidiNote] = 2;
 
-	UpdateArpDisplay();
+	if (theApp.GetSettings()->Midi.bMidiArpeggio) {		// // //
+		m_Arpeggiator.ReleaseNote(MidiNote);
+		UpdateArpDisplay();
+	}
 
 	// Cut note
 	if (!(theApp.IsPlaying() && m_bEditEnable && !m_bFollowMode))		// // //
@@ -2290,21 +2264,8 @@ void CFamiTrackerView::ReleaseMIDINote(unsigned int Channel, unsigned int MidiNo
 
 void CFamiTrackerView::UpdateArpDisplay()
 {
-	if (theApp.GetSettings()->Midi.bMidiArpeggio == true) {
-		int Base = -1;
-		CString str = _T("Auto-arpeggio: ");
-
-		for (int i = 0; i < 128; ++i) {
-			if (m_iAutoArpNotes[i] == 1) {
-				if (Base == -1)
-					Base = i;
-				str.AppendFormat(_T("%i "), i - Base);
-			}
-		}
-
-		if (Base != -1)
-			GetParentFrame()->SetMessageText(str);
-	}
+	if (auto str = m_Arpeggiator.GetStateString(); !str.empty())		// // //
+		GetParentFrame()->SetMessageText(str.c_str());
 }
 
 void CFamiTrackerView::UpdateNoteQueues()		// // //
@@ -3075,7 +3036,7 @@ void CFamiTrackerView::HandleKeyboardNote(char nChar, bool Pressed)
 		}
 		else {
 			m_iActiveNotes[Channel] = 0;
-			m_iAutoArpNotes[Note] = 2;
+			m_Arpeggiator.ReleaseNote(Note);		// // //
 		}
 	}
 }
@@ -3603,14 +3564,10 @@ void CFamiTrackerView::OnOneStepDown()
 
 void CFamiTrackerView::MakeSilent()
 {
-	m_iAutoArpPtr		= 0; 
-	m_iLastAutoArpPtr	= 0;
-	m_iAutoArpKeyCount	= 0;
+	m_Arpeggiator = CArpeggiator { };		// // //
 
 	memset(m_iActiveNotes, 0, sizeof(int) * MAX_CHANNELS);
 	memset(m_cKeyList, 0, sizeof(char) * 256);
-	memset(m_iArpeggiate, 0, sizeof(int) * MAX_CHANNELS);
-	memset(m_iAutoArpNotes, 0, sizeof(char) * 128);
 }
 
 bool CFamiTrackerView::IsSelecting() const

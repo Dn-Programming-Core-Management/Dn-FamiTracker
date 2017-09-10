@@ -421,6 +421,7 @@
     <ClCompile Include="Source\APU\2A03.cpp" />
     <ClCompile Include="Source\APU\S5B.cpp" />
     <ClCompile Include="Source\APU\SoundChip.cpp" />
+    <ClCompile Include="Source\Arpeggiator.cpp" />
     <ClCompile Include="Source\Bookmark.cpp" />
     <ClCompile Include="Source\BookmarkCollection.cpp" />
     <ClCompile Include="Source\BookmarkDlg.cpp" />
@@ -584,6 +585,7 @@
     <ClInclude Include="Source\APU\2A03.h" />
     <ClInclude Include="Source\APU\2A03Chan.h" />
     <ClInclude Include="Source\APU\S5B.h" />
+    <ClInclude Include="Source\Arpeggiator.h" />
     <ClInclude Include="Source\Bookmark.h" />
     <ClInclude Include="Source\BookmarkCollection.h" />
     <ClInclude Include="Source\BookmarkManager.h" />
