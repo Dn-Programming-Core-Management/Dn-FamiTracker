@@ -97,7 +97,6 @@ public:
 
 	// Player callback (TODO move to new interface)
 	void		 PlayerTick();
-	bool		 PlayerGetNote(int Track, int Frame, int Channel, int Row, stChanNote &NoteData);
 	void		 PlayerPlayNote(int Channel, stChanNote *pNote);
 
 	void		 MakeSilent();

@@ -270,6 +270,7 @@ private:
 	
 	// Player
 	void		ReadPatternRow();
+	bool		PlayerGetNote(int Channel, stChanNote &NoteData);		// // //
 	void		PlayerStepRow();
 	void		PlayerStepFrame();
 	void		PlayerJumpTo(int Frame);

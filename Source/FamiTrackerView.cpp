@@ -1529,43 +1529,6 @@ void CFamiTrackerView::PlayerTick()
 	while (m_iAutoArpPtr != OldPtr);
 }
 
-bool CFamiTrackerView::PlayerGetNote(int Track, int Frame, int Channel, int Row, stChanNote &NoteData)
-{
-	CFamiTrackerDoc *pDoc = GetDocument();
-	bool ValidCommand = false;
-
-	pDoc->GetNoteData(Track, Frame, Channel, Row, &NoteData);
-	
-	if (!IsChannelMuted(Channel)) {
-		// Let view know what is about to play
-		PlayerPlayNote(Channel, &NoteData);
-		ValidCommand = true;
-	}
-	else {
-		// These effects will pass even if the channel is muted
-		const int PASS_EFFECTS[] = {EF_HALT, EF_JUMP, EF_SPEED, EF_SKIP, EF_GROOVE};		// // //
-		int Columns = pDoc->GetEffColumns(Track, Channel) + 1;
-		
-		NoteData.Note		= HALT;
-		NoteData.Octave		= 0;
-		NoteData.Instrument = 0;
-
-		for (int j = 0; j < Columns; ++j) {
-			bool Clear = true;
-			for (int k = 0; k < sizeof(PASS_EFFECTS) / sizeof(int); ++k) {		// // //
-				if (NoteData.EffNumber[j] == PASS_EFFECTS[k]) {
-					ValidCommand = true;
-					Clear = false;
-				}
-			}
-			if (Clear)
-				NoteData.EffNumber[j] = EF_NONE;
-		}
-	}
-
-	return ValidCommand;
-}
-
 void CFamiTrackerView::PlayerPlayNote(int Channel, stChanNote *pNote)
 {
 	// Callback from sound thread

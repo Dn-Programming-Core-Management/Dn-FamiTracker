@@ -2249,16 +2249,41 @@ void CSoundGen::SetNamcoMixing(bool bLinear)		// // //
 
 void CSoundGen::ReadPatternRow()
 {
-	const int Channels = m_pDocument->GetChannelCount();
 	stChanNote NoteData;
 
-	for (int i = 0; i < Channels; ++i) {
-		if (m_pTrackerView->PlayerGetNote(m_iPlayTrack, m_iPlayFrame, i, m_iPlayRow, NoteData))
+	for (int i = 0, Channels = m_pDocument->GetChannelCount(); i < Channels; ++i)
+		if (PlayerGetNote(i, NoteData))		// // //
 			QueueNote(i, NoteData, NOTE_PRIO_1);
-	}
-	if (m_bDoHalt) {		// // //
+
+	if (m_bDoHalt)		// // //
 		m_bHaltRequest = true;
+}
+
+// // //
+bool CSoundGen::PlayerGetNote(int Channel, stChanNote &NoteData) {
+	m_pDocument->GetNoteData(m_iPlayTrack, m_iPlayFrame, Channel, m_iPlayRow, &NoteData);
+	
+	if (!m_pTrackerView->IsChannelMuted(Channel)) {
+		// Let view know what is about to play
+		m_pTrackerView->PlayerPlayNote(Channel, &NoteData);
+		return true;
 	}
+
+	NoteData.Note		= HALT;
+	NoteData.Octave		= 0;
+	NoteData.Instrument = 0;
+
+	bool ValidCommand = false;
+	for (int j = 0, n = m_pDocument->GetEffColumns(m_iPlayTrack, Channel) + 1; j < n; ++j)
+		switch (NoteData.EffNumber[j]) {
+		case EF_HALT: case EF_JUMP: case EF_SPEED: case EF_SKIP: case EF_GROOVE:
+			ValidCommand = true;
+			break;
+		default:
+			NoteData.EffNumber[j] = EF_NONE;
+		}
+
+	return ValidCommand;
 }
 
 void CSoundGen::PlayerStepRow()
