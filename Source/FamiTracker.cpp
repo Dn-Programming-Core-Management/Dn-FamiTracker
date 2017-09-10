@@ -20,6 +20,8 @@
 ** must bear this legend.
 */
 
+//#define RENDER_TEST
+
 #include "json/json.hpp"		// // //
 #include "version.h"		// // //
 #include "stdafx.h"
@@ -130,6 +132,9 @@ BOOL CFamiTrackerApp::InitInstance()
 	// Parse command line for standard shell commands, DDE, file open + some custom ones
 	CFTCommandLineInfo cmdInfo;
 	ParseCommandLine(cmdInfo);
+#ifdef RENDER_TEST
+	cmdInfo.m_bRender = true;		// // // test
+#endif
 
 	if (CheckSingleInstance(cmdInfo))
 		return FALSE;
@@ -210,6 +215,32 @@ BOOL CFamiTrackerApp::InitInstance()
 	if (pDocTemplate->GetDocString(strFileTypeId, CDocTemplate::regFileTypeId) && !strFileTypeId.IsEmpty()) {
 		strTemp.Format(_T("%s\\shell\\play\\%s"), (LPCTSTR)strFileTypeId, _T("command"));
 		AfxRegSetValue(HKEY_CLASSES_ROOT, strTemp, REG_SZ, strOpenCommandLine, lstrlen(strOpenCommandLine) * sizeof(TCHAR));
+	}
+#endif
+
+#ifdef RENDER_TEST
+	// // // WAV render
+	if (cmdInfo.m_bRender) {
+		CRuntimeClass *pRuntimeClass = RUNTIME_CLASS(CFamiTrackerDoc);
+		CObject *pObject = pRuntimeClass->CreateObject();
+		if (!pObject || !pObject->IsKindOf(pRuntimeClass)) {
+			std::cerr << "Error: unable to create CFamiTrackerDoc\n";
+			return FALSE;
+		}
+		CFamiTrackerDoc *pExportDoc = static_cast<CFamiTrackerDoc *>(pObject);
+		if (!pExportDoc->OnOpenDocument(cmdInfo.m_strFileName)) {
+			std::cerr << "Error: unable to open document: " << cmdInfo.m_strFileName << '\n';
+			return FALSE;
+		}
+
+		m_pSoundGenerator->AssignDocument(pExportDoc);
+		bool res = m_pSoundGenerator->RenderToFile(cmdInfo.m_strExportFile.GetBuffer(), render_end_t::SONG_LOOP_LIMIT, 1, 0);
+		cmdInfo.m_strExportFile.ReleaseBuffer();
+		if (!res) {
+			std::cerr << "Error: unable to render WAV file: " << cmdInfo.m_strExportFile << '\n';
+			return FALSE;
+		}
+		return TRUE;
 	}
 #endif
 
@@ -624,7 +655,7 @@ bool CFamiTrackerApp::CheckSingleInstance(CFTCommandLineInfo &cmdInfo)
 	if (!GetSettings()->General.bSingleInstance)
 		return false;
 
-	if (cmdInfo.m_bExport)
+	if (cmdInfo.m_bExport || cmdInfo.m_bRender)		// // //
 		return false;
 
 	m_pInstanceMutex = new CMutex(FALSE, FT_SHARED_MUTEX_NAME);
@@ -904,16 +935,6 @@ CString MakeFloatString(float val, LPCTSTR format)
  *
  */
 
-CFTCommandLineInfo::CFTCommandLineInfo() : CCommandLineInfo(), 
-	m_bLog(false), 
-	m_bExport(false), 
-	m_bPlay(false),
-	m_strExportFile(_T("")),
-	m_strExportLogFile(_T("")),
-	m_strExportDPCMFile(_T(""))
-{
-}
-
 void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLast)
 {
 	if (bFlag) {
@@ -925,6 +946,11 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 		// Auto play (/play or /p)
 		else if (!_tcsicmp(pszParam, _T("play")) || !_tcsicmp(pszParam, _T("p"))) {
 			m_bPlay = true;
+			return;
+		}
+		// // // Render (/render or /r)
+		else if (!_tcsicmp(pszParam, _T("render")) || !_tcsicmp(pszParam, _T("r"))) {
+			m_bRender = true;
 			return;
 		}
 		// Disable crash dumps (/nodump)

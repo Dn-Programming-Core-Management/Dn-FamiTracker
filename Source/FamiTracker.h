@@ -46,12 +46,12 @@ enum {
 class CFTCommandLineInfo : public CCommandLineInfo
 {
 public:
-	CFTCommandLineInfo();
-	virtual void ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLast);
-public:
-	bool m_bLog;
-	bool m_bExport;
-	bool m_bPlay;
+	void ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLast) override;
+
+	bool m_bLog = false;
+	bool m_bExport = false;
+	bool m_bPlay = false;
+	bool m_bRender = false;		// // //
 	CString m_strExportFile;
 	CString m_strExportLogFile;
 	CString m_strExportDPCMFile;

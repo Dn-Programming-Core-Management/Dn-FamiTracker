@@ -96,8 +96,6 @@ void CCommandLineExport::CommandLineExport(const CString& fileIn, const CString&
 	}
 	CString ext = fileOut.Mid(nPos);
 
-	theApp.GetSoundGenerator()->GenerateVibratoTable(pExportDoc->GetVibratoStyle());
-
 	// export
 	if      (0 == ext.CompareNoCase(_T(".nsf")))
 	{
