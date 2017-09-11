@@ -97,8 +97,7 @@ public:
 	bool		IsMarkerValid() const;		// // //
 
 	// Player callback (TODO move to new interface)
-	void		 PlayerTick();
-	void		 PlayerPlayNote(int Channel, stChanNote *pNote);
+	void		 PlayerPlayNote(int Channel, const stChanNote &pNote);		// // //
 
 	void		 MakeSilent();
 	void		 RegisterKeyState(int Channel, int Note);
@@ -309,7 +308,6 @@ private:
 
 	// MIDI
 	unsigned int		m_iLastMIDINote;
-	unsigned int		m_iActiveNotes[MAX_CHANNELS];
 
 	// Drawing
 	CPatternEditor		*m_pPatternEditor;						// Pointer to the pattern editor object

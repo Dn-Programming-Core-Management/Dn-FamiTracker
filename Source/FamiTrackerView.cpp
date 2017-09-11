@@ -296,7 +296,6 @@ CFamiTrackerView::CFamiTrackerView() :
 	m_pPatternEditor(new CPatternEditor())
 {
 	memset(m_bMuteChannels, 0, sizeof(bool) * MAX_CHANNELS);
-	memset(m_iActiveNotes, 0, sizeof(int) * MAX_CHANNELS);
 	memset(m_cKeyList, 0, sizeof(char) * 256);
 
 	// Register this object in the sound generator
@@ -1502,20 +1501,13 @@ bool CFamiTrackerView::IsMarkerValid() const		// // //
 // Tracker playing routines
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void CFamiTrackerView::PlayerTick()
-{
-	// Callback from sound thread (TODO move this to sound thread?)
-	if (theApp.GetSettings()->Midi.bMidiArpeggio)		// // //
-		m_Arpeggiator.Tick(m_pPatternEditor->GetChannel());
-}
-
-void CFamiTrackerView::PlayerPlayNote(int Channel, stChanNote *pNote)
+// // //
+void CFamiTrackerView::PlayerPlayNote(int Channel, const stChanNote &pNote)
 {
 	// Callback from sound thread
-
-	if (pNote->Instrument < MAX_INSTRUMENTS && pNote->Note > 0 && Channel == m_pPatternEditor->GetChannel() && m_bSwitchToInstrument) {
-		m_iSwitchToInstrument = pNote->Instrument;
-	}
+	if (!IsChannelMuted(Channel) && pNote.Instrument < MAX_INSTRUMENTS && pNote.Note != NONE &&
+		Channel == GetSelectedChannel() && m_bSwitchToInstrument)
+		m_iSwitchToInstrument = pNote.Instrument;
 }
 
 unsigned int CFamiTrackerView::GetSelectedFrame() const 
@@ -2152,8 +2144,6 @@ void CFamiTrackerView::TriggerMIDINote(unsigned int Channel, unsigned int MidiNo
 //	if (pDoc->GetChannel(Channel)->GetID() == CHANID_NOISE)
 //		FixNoise(MidiNote, Octave, Note);
 
-	m_iActiveNotes[Channel] = MidiNote;
-
 	if (!theApp.GetSettings()->Midi.bMidiVelocity) {
 		if (theApp.GetSettings()->General.iEditStyle != EDIT_STYLE_IT)
 			Velocity = 127;
@@ -2191,8 +2181,6 @@ void CFamiTrackerView::CutMIDINote(unsigned int Channel, unsigned int MidiNote, 
 //	if (pDoc->GetChannel(Channel)->GetID() == CHANID_NOISE)
 //		FixNoise(MidiNote, Octave, Note);
 
-	m_iActiveNotes[Channel] = 0;
-	
 	if (theApp.GetSettings()->Midi.bMidiArpeggio) {		// // //
 		m_Arpeggiator.ReleaseNote(MidiNote);
 		UpdateArpDisplay();
@@ -2229,8 +2217,6 @@ void CFamiTrackerView::ReleaseMIDINote(unsigned int Channel, unsigned int MidiNo
 	unsigned int Note = GET_NOTE(MidiNote);
 //	if (pDoc->GetChannel(Channel)->GetID() == CHANID_NOISE)
 //		FixNoise(MidiNote, Octave, Note);
-
-	m_iActiveNotes[Channel] = 0;
 
 	if (theApp.GetSettings()->Midi.bMidiArpeggio) {		// // //
 		m_Arpeggiator.ReleaseNote(MidiNote);
@@ -3029,7 +3015,6 @@ void CFamiTrackerView::HandleKeyboardNote(char nChar, bool Pressed)
 				m_iNoteCorrection.erase(it);
 		}
 		else {
-			m_iActiveNotes[Channel] = 0;
 			m_Arpeggiator.ReleaseNote(Note);		// // //
 		}
 	}
@@ -3560,7 +3545,6 @@ void CFamiTrackerView::MakeSilent()
 {
 	m_Arpeggiator = CArpeggiator { };		// // //
 
-	memset(m_iActiveNotes, 0, sizeof(int) * MAX_CHANNELS);
 	memset(m_cKeyList, 0, sizeof(char) * 256);
 }
 

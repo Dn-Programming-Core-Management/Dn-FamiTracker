@@ -26,7 +26,7 @@
 
 enum class CNoteChannelQueue::note_state_t {HOLD, RELEASE};
 
-CNoteChannelQueue::CNoteChannelQueue(std::vector<unsigned> Ch) :
+CNoteChannelQueue::CNoteChannelQueue(const std::vector<unsigned> &Ch) :
 	m_iChannelMapID(Ch), m_iChannelCount(Ch.size()),
 	m_iCurrentNote(Ch.size(), -1), m_bChannelMute(Ch.size())
 {
@@ -160,11 +160,7 @@ void CNoteChannelQueue::UnmuteChannel(unsigned Channel)
 
 
 
-CNoteQueue::CNoteQueue() : m_Part()
-{
-}
-
-void CNoteQueue::AddMap(std::vector<unsigned> Ch)
+void CNoteQueue::AddMap(const std::vector<unsigned> &Ch)
 {
 	auto ptr = std::make_shared<CNoteChannelQueue>(Ch);
 	for (const auto &x : Ch)

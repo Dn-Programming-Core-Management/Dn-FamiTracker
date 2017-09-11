@@ -37,7 +37,7 @@ class CNoteChannelQueue
 public:
 	/*!	\brief Constructor of the note queue for a single track.
 		\param Ch List of channel indices for this queue. */
-	CNoteChannelQueue(std::vector<unsigned> Ch);
+	CNoteChannelQueue(const std::vector<unsigned> &Ch);
 	
 	/*!	\brief Triggers a note on a given channel.
 		\param Note The note number.
@@ -85,12 +85,9 @@ private:
 class CNoteQueue
 {
 public:
-	/*!	\brief Constructor of the note queue for all channels. */
-	CNoteQueue();
-
 	/*!	\brief Adds physical channels as a single logical track.
 		\param Ch List of channel indices for the queue. */
-	void AddMap(std::vector<unsigned> Ch);
+	void AddMap(const std::vector<unsigned> &Ch);
 	/*!	\brief Removes all logical tracks. */
 	void ClearMaps();
 

@@ -20,6 +20,7 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
 //
@@ -410,7 +411,6 @@ private:
 	bool				m_bDirty;						// Row/frame has changed
 	unsigned int		m_iFramesPlayed;				// Total number of frames played since start
 	unsigned int		m_iRowsPlayed;					// Total number of rows played since start
-	bool				m_bFramePlayed[MAX_FRAMES];		// true for each frame played
 
 	// Sequence play visualization
 	const CSequence		*m_pSequencePlayPos;

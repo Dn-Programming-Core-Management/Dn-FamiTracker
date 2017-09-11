@@ -1064,8 +1064,6 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 	m_bDirty			= true;
 	m_iPlayTrack		= Track;
 
-	memset(m_bFramePlayed, false, sizeof(bool) * MAX_FRAMES);
-
 #ifdef WRITE_VGM		// // //
 	std::queue<int>().swap(m_iRegisterStream);
 #endif
@@ -1263,7 +1261,7 @@ void CSoundGen::HaltPlayer()
 */
 
 	// Signal that playback has stopped
-	if (m_pTrackerView != NULL) {
+	if (m_pTrackerView) {
 		m_pTrackerView->PostMessage(WM_USER_PLAYER, m_iPlayFrame, m_iPlayRow);
 		m_pInstRecorder->StopRecording(m_pTrackerView);		// // //
 	}
@@ -1556,8 +1554,6 @@ void CSoundGen::RunFrame()
 void CSoundGen::CheckControl()
 {
 	// This function takes care of jumping and skipping
-	ASSERT(m_pTrackerView != NULL);
-
 	if (IsPlaying()) {
 		if (m_bDoHalt) {		// // //
 			++m_iRowsPlayed;
@@ -1588,7 +1584,7 @@ void CSoundGen::CheckControl()
 
 	if (m_bDirty) {
 		m_bDirty = false;
-		if (!m_bRendering)
+		if (!m_bRendering && m_pTrackerView)		// // //
 			m_pTrackerView->PostMessage(WM_USER_PLAYER, m_iPlayFrame, m_iPlayRow);
 	}
 }
@@ -2265,11 +2261,11 @@ bool CSoundGen::PlayerGetNote(int Channel, stChanNote &NoteData) {
 	ASSERT(m_pTrackerView != NULL);
 	m_pDocument->GetNoteData(m_iPlayTrack, m_iPlayFrame, Channel, m_iPlayRow, &NoteData);
 	
-	if (!m_pTrackerView->IsChannelMuted(Channel)) {
-		// Let view know what is about to play
-		m_pTrackerView->PlayerPlayNote(Channel, &NoteData);
+	// Let view know what is about to play
+	m_pTrackerView->PlayerPlayNote(Channel, NoteData);		// // //
+
+	if (!m_pTrackerView->IsChannelMuted(Channel))
 		return true;
-	}
 
 	NoteData.Note		= HALT;
 	NoteData.Octave		= 0;
@@ -2307,8 +2303,6 @@ void CSoundGen::PlayerStepFrame()
 {
 	const int Frames = m_pDocument->GetFrameCount(m_iPlayTrack);
 
-	m_bFramePlayed[m_iPlayFrame] = true;
-
 	if (m_iQueuedFrame == -1) {
 		if (++m_iPlayFrame >= Frames)
 			m_iPlayFrame = 0;
@@ -2327,8 +2321,6 @@ void CSoundGen::PlayerJumpTo(int Frame)
 {
 	const int Frames = m_pDocument->GetFrameCount(m_iPlayTrack);
 
-	m_bFramePlayed[m_iPlayFrame] = true;
-
 	m_iPlayFrame = Frame;
 
 	if (m_iPlayFrame >= Frames)
@@ -2346,8 +2338,6 @@ void CSoundGen::PlayerSkipTo(int Row)
 {
 	const int Frames = m_pDocument->GetFrameCount(m_iPlayTrack);
 	const int Rows = m_pDocument->GetPatternLength(m_iPlayTrack);
-	
-	m_bFramePlayed[m_iPlayFrame] = true;
 
 	if (++m_iPlayFrame >= Frames)
 		m_iPlayFrame = 0;
