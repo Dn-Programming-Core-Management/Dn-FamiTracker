@@ -711,6 +711,9 @@
     <ClCompile Include="Source\Arpeggiator.cpp">
       <Filter>Source Files\Sound Driver</Filter>
     </ClCompile>
+    <ClCompile Include="Source\TempoCounter.cpp">
+      <Filter>Source Files\Sound Driver</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">
@@ -1287,6 +1290,9 @@
       <Filter>Header Files\Components Headers</Filter>
     </ClInclude>
     <ClInclude Include="Source\Arpeggiator.h">
+      <Filter>Header Files\Sound Driver Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\TempoCounter.h">
       <Filter>Header Files\Sound Driver Headers</Filter>
     </ClInclude>
   </ItemGroup>

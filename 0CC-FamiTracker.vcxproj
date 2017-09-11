@@ -490,6 +490,7 @@
     <ClCompile Include="Source\PCMImport.cpp" />
     <ClCompile Include="Source\StretchDlg.cpp" />
     <ClCompile Include="Source\SwapDlg.cpp" />
+    <ClCompile Include="Source\TempoCounter.cpp" />
     <ClCompile Include="Source\TransposeDlg.cpp" />
     <ClCompile Include="Source\WaveEditor.cpp" />
     <ClCompile Include="Source\GraphEditor.cpp" />
@@ -659,6 +660,7 @@
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\StretchDlg.h" />
     <ClInclude Include="Source\SwapDlg.h" />
+    <ClInclude Include="Source\TempoCounter.h" />
     <ClInclude Include="Source\TransposeDlg.h" />
     <ClInclude Include="Source\Utility\Factory.h" />
     <ClInclude Include="Source\WaveformGenerator.h" />

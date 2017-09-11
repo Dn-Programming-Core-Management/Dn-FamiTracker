@@ -90,6 +90,7 @@ class CFTMComponentInterface;		// // //
 class CInstrumentRecorder;		// // //
 class CRegisterState;		// // //
 class CArpeggiator;		// // //
+class CTempoCounter;		// // //
 
 // CSoundGen
 
@@ -265,7 +266,6 @@ private:
 	void		BeginPlayer(play_mode_t Mode, int Track);
 	void		HaltPlayer();
 	void		MakeSilent();
-	void		SetupSpeed();
 
 	// Misc
 	void		PlaySample(const CDSample *pSample, int Offset, int Pitch);
@@ -333,11 +333,7 @@ private:
 	
 // Tracker playing variables
 private:
-	unsigned int		m_iTempo;							// Tempo and speed
-	unsigned int		m_iSpeed;							
-	int					m_iGrooveIndex;						// // // Current groove
-	unsigned int		m_iGroovePosition;					// // // Groove position
-	int					m_iTempoAccum;						// Used for speed calculation
+	std::unique_ptr<CTempoCounter> m_pTempoCounter;			// // // tempo calculation
 	unsigned int		m_iPlayTicks;
 	bool				m_bPlaying;							// True when tracker is playing back the module
 	bool				m_bHaltRequest;						// True when a halt is requested
@@ -357,7 +353,7 @@ private:
 	int					m_iJumpToPattern;
 	int					m_iSkipToRow;
 	bool				m_bDoHalt;							// // // Cxx effect
-	int					m_iStepRows;						// # of rows skipped last update
+	int					m_iRowsStepped;						// # of rows skipped last update
 	int					m_iRowTickCount;					// // // 050B
 	play_mode_t			m_iPlayMode;
 
@@ -384,8 +380,6 @@ private:
 	unsigned int		m_iRenderRowCount;
 	int					m_iRenderRow;
 
-	int					m_iTempoDecrement;
-	int					m_iTempoRemainder;
 	bool				m_bUpdateRow;
 
 	CArpeggiator		*m_Arpeggiator = nullptr;		// // //

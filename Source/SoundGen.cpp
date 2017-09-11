@@ -52,6 +52,7 @@
 #include "ChannelFactory.h"		// // // test
 #include "DetuneTable.h"		// // //
 #include "Arpeggiator.h"		// // //
+#include "TempoCounter.h"		// // //
 
 // 1kHz test tone
 //#define AUDIO_TEST
@@ -101,6 +102,8 @@ END_MESSAGE_MAP()
 int dither(long size);
 #endif
 
+
+
 // CSoundGen
 
 CSoundGen::CSoundGen() : 
@@ -117,10 +120,6 @@ CSoundGen::CSoundGen() :
 	m_bDoHalt(false),		// // //
 	m_pPreviewSample(NULL),
 	m_pVisualizerWnd(NULL),
-	m_iSpeed(0),
-	m_iTempo(0),
-	m_iGrooveIndex(-1),		// // //
-	m_iGroovePosition(0),		// // //
 	m_pInstRecorder(new CInstrumentRecorder(this)),		// // //
 	m_bWaveChanged(0),
 	m_iMachineType(NTSC),
@@ -252,6 +251,7 @@ void CSoundGen::AssignDocument(CFamiTrackerDoc *pDoc)
 	// Assigns a document to this object
 	m_pDocument = pDoc;
 	m_pInstRecorder->m_pDocument = pDoc;		// // //
+	m_pTempoCounter = std::make_unique<CTempoCounter>(*pDoc);		// // //
 
 	// Setup all channels
 	for (auto &ptr : m_pChannels)		// // //
@@ -1097,22 +1097,8 @@ void CSoundGen::ApplyGlobalState()		// // //
 	int Frame = IsPlaying() ? GetPlayerFrame() : m_pTrackerView->GetSelectedFrame();
 	int Row = IsPlaying() ? GetPlayerRow() : m_pTrackerView->GetSelectedRow();
 	if (stFullState *State = m_pDocument->RetrieveSoundState(GetPlayerTrack(), Frame, Row, -1)) {
-		if (State->Tempo != -1)
-			m_iTempo = State->Tempo;
-		if (State->GroovePos >= 0) {
-			m_iGroovePosition = State->GroovePos;
-			if (State->Speed >= 0)
-				m_iGrooveIndex = State->Speed;
-			if (m_pDocument->GetGroove(m_iGrooveIndex) != NULL)
-				m_iSpeed = m_pDocument->GetGroove(m_iGrooveIndex)->GetEntry(m_iGroovePosition);
-		}
-		else {
-			if (State->Speed >= 0)
-				m_iSpeed = State->Speed;
-			m_iGrooveIndex = -1;
-		}
+		m_pTempoCounter->LoadSoundState(*State);
 		m_iLastHighlight = m_pDocument->GetHighlightAt(GetPlayerTrack(), Frame, Row).First;
-		SetupSpeed();
 		for (int i = 0, n = m_pDocument->GetChannelCount(); i < n; ++i) {
 			for (size_t j = 0; j < m_pTrackerChannels.size(); ++j)		// // // pick this out later
 				if (m_pChannels[j] && m_pTrackerChannels[j]->GetID() == State->State[i].ChannelIndex) {
@@ -1416,25 +1402,9 @@ void CSoundGen::ResetTempo()
 	if (!m_pDocument)
 		return;
 
-	m_iSpeed = m_pDocument->GetSongSpeed(m_iPlayTrack);
-	m_iTempo = m_pDocument->GetSongTempo(m_iPlayTrack);
-	m_iLastHighlight = m_pDocument->GetHighlight().First;		// // //
+	m_pTempoCounter->LoadTempo(m_iPlayTrack);		// // //
 	
-	m_iTempoAccum = 0;
-
-	if (m_pDocument->GetSongGroove(m_iPlayTrack) && m_pDocument->GetGroove(m_iSpeed) != NULL) {		// // //
-		m_iGrooveIndex = m_iSpeed;
-		m_iGroovePosition = 0;
-		if (m_pDocument->GetGroove(m_iGrooveIndex) != NULL)
-			m_iSpeed = m_pDocument->GetGroove(m_iGrooveIndex)->GetEntry(m_iGroovePosition);
-	}
-	else {
-		m_iGrooveIndex = -1;
-		if (m_pDocument->GetSongGroove(m_iPlayTrack))
-			m_iSpeed = DEFAULT_SPEED;
-	}
-	SetupSpeed();
-
+	m_iLastHighlight = m_pDocument->GetHighlight().First;		// // //
 	m_bUpdateRow = false;
 }
 
@@ -1443,33 +1413,10 @@ void CSoundGen::SetHighlightRows(int Rows)		// // //
 	m_iLastHighlight = Rows;
 }
 
-void CSoundGen::SetupSpeed()
-{
-	if (m_iTempo) {		// // //
-		m_iTempoDecrement = (m_iTempo * 24) / m_iSpeed;
-		m_iTempoRemainder = (m_iTempo * 24) % m_iSpeed;
-	}
-	else {
-		m_iTempoDecrement = 1;
-		m_iTempoRemainder = 0;
-	}
-}
-
 // Return current tempo setting in BPM
 float CSoundGen::GetTempo() const
 {
-	float Tempo = static_cast<float>(m_iTempo);		// // //
-	if (!m_iTempo) Tempo = static_cast<float>(2.5 * m_iFrameRate);
-
-	float Speed;
-	if (m_iGrooveIndex != -1) {
-		if (m_pDocument->GetGroove(m_iGrooveIndex) == NULL)
-			Speed = DEFAULT_SPEED;
-		else Speed = m_pDocument->GetGroove(m_iGrooveIndex)->GetAverage();
-	}
-	else Speed = static_cast<float>(m_iSpeed);
-
-	return !m_iSpeed ? 0 : float(Tempo * 6) / Speed;
+	return static_cast<float>(m_pTempoCounter->GetTempo());		// // //
 }
 
 float CSoundGen::GetAverageBPM() const		// // // 050B
@@ -1499,7 +1446,8 @@ void CSoundGen::RunFrame()
 	ASSERT(m_pTrackerView != NULL);
 
 	// View callback
-	m_pTrackerView->PlayerTick();
+	if (theApp.GetSettings()->Midi.bMidiArpeggio && m_Arpeggiator)		// // //
+		m_Arpeggiator->Tick(m_pTrackerView->GetSelectedChannel());
 
 	if (IsPlaying()) {
 		
@@ -1512,24 +1460,20 @@ void CSoundGen::RunFrame()
 			}
 			else if (m_iRenderEndWhen == SONG_LOOP_LIMIT) {
 				//if (m_iFramesPlayed >= m_iRenderEndParam)
-				if (m_iRowsPlayed >= m_iRenderEndParam && m_iTempoAccum <= 0)		// // //
+				if (m_iRowsPlayed >= m_iRenderEndParam && m_pTempoCounter->CanStepRow())		// // //
 					m_bRequestRenderStop = m_bHaltRequest = true;
 			}
 		}
 
 		++m_iRowTickCount;		// // // 050B
-		m_iStepRows = 0;
+		m_iRowsStepped = 0;
 
 		// Fetch next row
-		if (m_iTempoAccum <= 0) {
+		if (m_pTempoCounter->CanStepRow()) {
 			// Enable this to skip rows on high tempos
-//			while (m_iTempoAccum <= 0)  {
-			if (m_iGrooveIndex != -1 && m_pDocument->GetGroove(m_iGrooveIndex) != NULL) {		// // //
-				m_iSpeed = m_pDocument->GetGroove(m_iGrooveIndex)->GetEntry(m_iGroovePosition);
-				SetupSpeed();
-				m_iGroovePosition++;
-			}
-				m_iStepRows++;
+//			while (m_pTempoCounter->CanStepRow())  {
+			m_pTempoCounter->StepRow();		// // //
+			++m_iRowsStepped;
 //			}
 			m_bUpdateRow = true;
 			ReadPatternRow();
@@ -1562,7 +1506,7 @@ void CSoundGen::CheckControl()
 			if (m_iJumpToPattern != -1 || m_iSkipToRow != -1)
 				m_iPlayRow = 0;
 			else
-				while (m_iStepRows--)
+				while (m_iRowsStepped--)
 					PlayerStepRow();
 		}
 		else {
@@ -1574,7 +1518,7 @@ void CSoundGen::CheckControl()
 				PlayerSkipTo(m_iSkipToRow);
 			// or just move on
 			else
-				while (m_iStepRows--)
+				while (m_iRowsStepped--)
 					PlayerStepRow();
 		}
 
@@ -1685,32 +1629,16 @@ void CSoundGen::EvaluateGlobalEffects(stChanNote *NoteData, int EffColumns)
 {
 	// Handle global effects (effects that affects all channels)
 	for (int i = 0; i < EffColumns; ++i) {
-
-		unsigned char EffNum   = NoteData->EffNumber[i];
 		unsigned char EffParam = NoteData->EffParam[i];
-
-		switch (EffNum) {
+		switch (NoteData->EffNumber[i]) {
 			// Fxx: Sets speed to xx
 			case EF_SPEED:
-				if (!EffParam)
-					++EffParam;
-				if (m_iTempo && EffParam >= m_iSpeedSplitPoint)		// // //
-					m_iTempo = EffParam;
-				else {		// // //
-					m_iSpeed = EffParam;
-					m_iGrooveIndex = -1;
-				}
-				SetupSpeed();
+				m_pTempoCounter->DoFxx(EffParam ? EffParam : 1);		// // //
 				break;
 				
 			// Oxx: Sets groove to xx
-			// currently does not support starting at arbitrary index of a groove
 			case EF_GROOVE:		// // //
-				if (m_pDocument->GetGroove(EffParam % MAX_GROOVE) == NULL) break;
-				m_iGrooveIndex = EffParam % MAX_GROOVE;
-				m_iSpeed = m_pDocument->GetGroove(m_iGrooveIndex)->GetEntry(0);
-				m_iGroovePosition = 1;
-				SetupSpeed();
+				m_pTempoCounter->DoOxx(EffParam % MAX_GROOVE);		// // //
 				break;
 
 			// Bxx: Jump to pattern xx
@@ -1902,8 +1830,7 @@ BOOL CSoundGen::InitInstance()
 	ResetAPU();
 
 	// Default tempo & speed
-	m_iSpeed = DEFAULT_SPEED;
-	m_iTempo = (DEFAULT_MACHINE_TYPE == NTSC) ? DEFAULT_TEMPO_NTSC : DEFAULT_TEMPO_PAL;
+	m_pTempoCounter = std::make_unique<CTempoCounter>(*m_pDocument);		// // //
 
 	TRACE("SoundGen: Created thread (0x%04x)\n", m_nThreadID);
 
@@ -2050,13 +1977,8 @@ void CSoundGen::UpdatePlayer()
 	if (m_bUpdateRow && !m_bHaltRequest)
 		CheckControl();
 
-	if (m_bPlaying) {
-		if (m_iTempoAccum <= 0) {
-			int TicksPerSec = m_pDocument->GetFrameRate();
-			m_iTempoAccum += (m_iTempo ? 60 * TicksPerSec : m_iSpeed) - m_iTempoRemainder;		// // //
-		}
-		m_iTempoAccum -= m_iTempoDecrement;
-	}
+	if (m_bPlaying)
+		m_pTempoCounter->Tick();		// // //
 }
 
 void CSoundGen::UpdateChannels()
