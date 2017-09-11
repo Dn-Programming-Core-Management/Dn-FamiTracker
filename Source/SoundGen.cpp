@@ -106,10 +106,8 @@ int dither(long size);
 
 // CSoundGen
 
-CSoundGen::CSoundGen() : 
-	m_pAPU(NULL),
-	m_pDSound(NULL),
-	m_pDSoundChannel(NULL),
+CSoundGen::CSoundGen() :
+	m_pAPU(std::make_unique<CAPU>((IAudioCallback *)this)),		// // //
 	m_pAccumBuffer(NULL),
 	m_iGraphBuffer(NULL),
 	m_pDocument(NULL),
@@ -118,9 +116,7 @@ CSoundGen::CSoundGen() :
 	m_bPlaying(false),
 	m_bHaltRequest(false),
 	m_bDoHalt(false),		// // //
-	m_pPreviewSample(NULL),
-	m_pVisualizerWnd(NULL),
-	m_pInstRecorder(new CInstrumentRecorder(this)),		// // //
+	m_pInstRecorder(std::make_unique<CInstrumentRecorder>(this)),		// // //
 	m_bWaveChanged(0),
 	m_iMachineType(NTSC),
 	m_bRunning(false),
@@ -143,20 +139,12 @@ CSoundGen::CSoundGen() :
 {
 	TRACE("SoundGen: Object created\n");
 
-	// Create APU
-	m_pAPU = new CAPU(this);		// // //
-
 	// Create all kinds of channels
 	CreateChannels();
 }
 
 CSoundGen::~CSoundGen()
 {
-	// Delete APU
-	SAFE_RELEASE(m_pAPU);
-
-	SAFE_RELEASE(m_pWaveFile);		// // //
-	SAFE_RELEASE(m_pInstRecorder);		// // //
 }
 
 //
@@ -173,56 +161,50 @@ void CSoundGen::CreateChannels()
 
 	// 2A03/2A07
 	// // // Short header names
-#ifdef _DUAL_CH		// // //
-	CSquare1Chan *PU1 = new C2A03Square();
-	AssignChannel(new CTrackerChannel(_T("Pulse 1"), _T("PU1"), SNDCHIP_NONE, CHANID_SQUARE1));
-	AssignChannel(new CTrackerChannel(_T("Pulse 1 SFX"), _T("PU1*"), SNDCHIP_NONE, CHANID_SQUARE1));
-#else
-	AssignChannel(new CTrackerChannel(_T("Pulse 1"), _T("PU1"), SNDCHIP_NONE, CHANID_SQUARE1));
-	AssignChannel(new CTrackerChannel(_T("Pulse 2"), _T("PU2"), SNDCHIP_NONE, CHANID_SQUARE2));
-#endif
-	AssignChannel(new CTrackerChannel(_T("Triangle"), _T("TRI"), SNDCHIP_NONE, CHANID_TRIANGLE));
-	AssignChannel(new CTrackerChannel(_T("Noise"), _T("NOI"), SNDCHIP_NONE, CHANID_NOISE));
-	AssignChannel(new CTrackerChannel(_T("DPCM"), _T("DMC"), SNDCHIP_NONE, CHANID_DPCM));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("Pulse 1"), _T("PU1"), SNDCHIP_NONE, CHANID_SQUARE1));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("Pulse 2"), _T("PU2"), SNDCHIP_NONE, CHANID_SQUARE2));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("Triangle"), _T("TRI"), SNDCHIP_NONE, CHANID_TRIANGLE));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("Noise"), _T("NOI"), SNDCHIP_NONE, CHANID_NOISE));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("DPCM"), _T("DMC"), SNDCHIP_NONE, CHANID_DPCM));
 
 	// Konami VRC6
-	AssignChannel(new CTrackerChannel(_T("VRC6 Pulse 1"), _T("V1"), SNDCHIP_VRC6, CHANID_VRC6_PULSE1));
-	AssignChannel(new CTrackerChannel(_T("VRC6 Pulse 2"), _T("V2"), SNDCHIP_VRC6, CHANID_VRC6_PULSE2));
-	AssignChannel(new CTrackerChannel(_T("Sawtooth"), _T("SAW"), SNDCHIP_VRC6, CHANID_VRC6_SAWTOOTH));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("VRC6 Pulse 1"), _T("V1"), SNDCHIP_VRC6, CHANID_VRC6_PULSE1));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("VRC6 Pulse 2"), _T("V2"), SNDCHIP_VRC6, CHANID_VRC6_PULSE2));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("Sawtooth"), _T("SAW"), SNDCHIP_VRC6, CHANID_VRC6_SAWTOOTH));
 
 	// // // Nintendo MMC5
-	AssignChannel(new CTrackerChannel(_T("MMC5 Pulse 1"), _T("PU3"), SNDCHIP_MMC5, CHANID_MMC5_SQUARE1));
-	AssignChannel(new CTrackerChannel(_T("MMC5 Pulse 2"), _T("PU4"), SNDCHIP_MMC5, CHANID_MMC5_SQUARE2));
-	AssignChannel(new CTrackerChannel(_T("MMC5 PCM"), _T("PCM"), SNDCHIP_MMC5, CHANID_MMC5_VOICE)); // null channel handler
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("MMC5 Pulse 1"), _T("PU3"), SNDCHIP_MMC5, CHANID_MMC5_SQUARE1));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("MMC5 Pulse 2"), _T("PU4"), SNDCHIP_MMC5, CHANID_MMC5_SQUARE2));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("MMC5 PCM"), _T("PCM"), SNDCHIP_MMC5, CHANID_MMC5_VOICE)); // null channel handler
 
 	// Namco N163
-	AssignChannel(new CTrackerChannel(_T("Namco 1"), _T("N1"), SNDCHIP_N163, CHANID_N163_CH1));
-	AssignChannel(new CTrackerChannel(_T("Namco 2"), _T("N2"), SNDCHIP_N163, CHANID_N163_CH2));
-	AssignChannel(new CTrackerChannel(_T("Namco 3"), _T("N3"), SNDCHIP_N163, CHANID_N163_CH3));
-	AssignChannel(new CTrackerChannel(_T("Namco 4"), _T("N4"), SNDCHIP_N163, CHANID_N163_CH4));
-	AssignChannel(new CTrackerChannel(_T("Namco 5"), _T("N5"), SNDCHIP_N163, CHANID_N163_CH5));
-	AssignChannel(new CTrackerChannel(_T("Namco 6"), _T("N6"), SNDCHIP_N163, CHANID_N163_CH6));
-	AssignChannel(new CTrackerChannel(_T("Namco 7"), _T("N7"), SNDCHIP_N163, CHANID_N163_CH7));
-	AssignChannel(new CTrackerChannel(_T("Namco 8"), _T("N8"), SNDCHIP_N163, CHANID_N163_CH8));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("Namco 1"), _T("N1"), SNDCHIP_N163, CHANID_N163_CH1));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("Namco 2"), _T("N2"), SNDCHIP_N163, CHANID_N163_CH2));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("Namco 3"), _T("N3"), SNDCHIP_N163, CHANID_N163_CH3));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("Namco 4"), _T("N4"), SNDCHIP_N163, CHANID_N163_CH4));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("Namco 5"), _T("N5"), SNDCHIP_N163, CHANID_N163_CH5));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("Namco 6"), _T("N6"), SNDCHIP_N163, CHANID_N163_CH6));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("Namco 7"), _T("N7"), SNDCHIP_N163, CHANID_N163_CH7));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("Namco 8"), _T("N8"), SNDCHIP_N163, CHANID_N163_CH8));
 
 	// Nintendo FDS
-	AssignChannel(new CTrackerChannel(_T("FDS"), _T("FDS"), SNDCHIP_FDS, CHANID_FDS));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("FDS"), _T("FDS"), SNDCHIP_FDS, CHANID_FDS));
 
 	// Konami VRC7
-	AssignChannel(new CTrackerChannel(_T("FM Channel 1"), _T("FM1"), SNDCHIP_VRC7, CHANID_VRC7_CH1));
-	AssignChannel(new CTrackerChannel(_T("FM Channel 2"), _T("FM2"), SNDCHIP_VRC7, CHANID_VRC7_CH2));
-	AssignChannel(new CTrackerChannel(_T("FM Channel 3"), _T("FM3"), SNDCHIP_VRC7, CHANID_VRC7_CH3));
-	AssignChannel(new CTrackerChannel(_T("FM Channel 4"), _T("FM4"), SNDCHIP_VRC7, CHANID_VRC7_CH4));
-	AssignChannel(new CTrackerChannel(_T("FM Channel 5"), _T("FM5"), SNDCHIP_VRC7, CHANID_VRC7_CH5));
-	AssignChannel(new CTrackerChannel(_T("FM Channel 6"), _T("FM6"), SNDCHIP_VRC7, CHANID_VRC7_CH6));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("FM Channel 1"), _T("FM1"), SNDCHIP_VRC7, CHANID_VRC7_CH1));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("FM Channel 2"), _T("FM2"), SNDCHIP_VRC7, CHANID_VRC7_CH2));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("FM Channel 3"), _T("FM3"), SNDCHIP_VRC7, CHANID_VRC7_CH3));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("FM Channel 4"), _T("FM4"), SNDCHIP_VRC7, CHANID_VRC7_CH4));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("FM Channel 5"), _T("FM5"), SNDCHIP_VRC7, CHANID_VRC7_CH5));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("FM Channel 6"), _T("FM6"), SNDCHIP_VRC7, CHANID_VRC7_CH6));
 
 	// // // Sunsoft 5B
-	AssignChannel(new CTrackerChannel(_T("5B Square 1"), _T("5B1"), SNDCHIP_S5B, CHANID_S5B_CH1));
-	AssignChannel(new CTrackerChannel(_T("5B Square 2"), _T("5B2"), SNDCHIP_S5B, CHANID_S5B_CH2));
-	AssignChannel(new CTrackerChannel(_T("5B Square 3"), _T("5B3"), SNDCHIP_S5B, CHANID_S5B_CH3));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("5B Square 1"), _T("5B1"), SNDCHIP_S5B, CHANID_S5B_CH1));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("5B Square 2"), _T("5B2"), SNDCHIP_S5B, CHANID_S5B_CH2));
+	AssignChannel(std::make_unique<CTrackerChannel>(_T("5B Square 3"), _T("5B3"), SNDCHIP_S5B, CHANID_S5B_CH3));
 }
 
-void CSoundGen::AssignChannel(CTrackerChannel *pTrackerChannel)		// // //
+void CSoundGen::AssignChannel(std::unique_ptr<CTrackerChannel> pTrackerChannel)		// // //
 {
 	static CChannelFactory F {}; // test
 	chan_id_t ID = pTrackerChannel->GetID();
@@ -231,7 +213,7 @@ void CSoundGen::AssignChannel(CTrackerChannel *pTrackerChannel)		// // //
 	if (pRenderer)
 		pRenderer->SetChannelID(ID);
 
-	m_pTrackerChannels.emplace_back(pTrackerChannel);		// // //
+	m_pTrackerChannels.push_back(std::move(pTrackerChannel));		// // //
 	m_pChannels.emplace_back(pRenderer);
 }
 
@@ -256,7 +238,7 @@ void CSoundGen::AssignDocument(CFamiTrackerDoc *pDoc)
 	// Setup all channels
 	for (auto &ptr : m_pChannels)		// // //
 		if (ptr)
-			ptr->InitChannel(m_pAPU, m_iVibratoTable, this);
+			ptr->InitChannel(m_pAPU.get(), m_iVibratoTable, this);
 	DocumentPropertiesChanged(pDoc);		// // //
 }
 
@@ -607,13 +589,13 @@ bool CSoundGen::InitializeSound(HWND hWnd)
 
 	// Called from main thread
 	ASSERT(GetCurrentThread() == theApp.m_hThread);
-	ASSERT(m_pDSound == NULL);
+	ASSERT(!m_pDSound);
 
 	// Event used to interrupt the sound buffer synchronization
 	m_hInterruptEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
 
 	// Create DirectSound object
-	m_pDSound = new CDSound(hWnd, m_hInterruptEvent);
+	m_pDSound = std::make_unique<CDSound>(hWnd, m_hInterruptEvent);		// // //
 
 	// Out of memory
 	if (!m_pDSound)
@@ -712,12 +694,10 @@ bool CSoundGen::ResetAudioDevice()
 	m_iBufSizeSamples = m_iBufSizeBytes / (SampleSize / 8);
 
 	// Temp. audio buffer
-	SAFE_RELEASE_ARRAY(m_pAccumBuffer);
-	m_pAccumBuffer = new char[m_iBufSizeBytes];
+	m_pAccumBuffer = std::make_unique<char[]>(m_iBufSizeBytes);		// // //
 
 	// Sample graph buffer
-	SAFE_RELEASE_ARRAY(m_iGraphBuffer);
-	m_iGraphBuffer = new short[m_iBufSizeSamples];
+	m_iGraphBuffer = std::make_unique<short[]>(m_iBufSizeSamples);
 
 	// Sample graph rate
 	m_csVisualizerWndLock.Lock();
@@ -765,8 +745,7 @@ void CSoundGen::CloseAudioDevice()
 	// Kill DirectSound
 	if (m_pDSoundChannel) {
 		m_pDSoundChannel->Stop();
-		m_pDSound->CloseChannel(m_pDSoundChannel);
-		m_pDSoundChannel = NULL;
+		m_pDSoundChannel.reset();		// // //
 	}
 }
 
@@ -779,8 +758,7 @@ void CSoundGen::CloseAudio()
 
 	if (m_pDSound) {
 		m_pDSound->CloseDevice();
-		delete m_pDSound;
-		m_pDSound = NULL;
+		m_pDSound.reset();		// // //
 	}
 
 	if (m_hInterruptEvent) {
@@ -834,7 +812,7 @@ void CSoundGen::FillBuffer(int16_t *pBuffer, uint32_t Size)
 
 	const int SAMPLE_MAX = 32768;
 
-	T *pConversionBuffer = (T*)m_pAccumBuffer;
+	auto pConversionBuffer = reinterpret_cast<T *>(m_pAccumBuffer.get());		// // //
 
 	for (uint32_t i = 0; i < Size; ++i) {
 		int16_t Sample = pBuffer[i];
@@ -891,7 +869,7 @@ bool CSoundGen::PlayBuffer()
 	if (m_bRendering) {
 		// Output to file
 		ASSERT(m_pWaveFile);		// // //
-		m_pWaveFile->WriteWave(m_pAccumBuffer, m_iBufSizeBytes);
+		m_pWaveFile->WriteWave(m_pAccumBuffer.get(), m_iBufSizeBytes);
 		m_iBufferPtr = 0;
 	}
 	else {
@@ -917,13 +895,13 @@ bool CSoundGen::PlayBuffer()
 		}
 
 		// Write audio to buffer
-		m_pDSoundChannel->WriteBuffer(m_pAccumBuffer, m_iBufSizeBytes);
+		m_pDSoundChannel->WriteBuffer(m_pAccumBuffer.get(), m_iBufSizeBytes);
 
 		// Draw graph
 		m_csVisualizerWndLock.Lock();
 
 		if (m_pVisualizerWnd)
-			m_pVisualizerWnd->FlushSamples(m_iGraphBuffer, m_iBufSizeSamples);
+			m_pVisualizerWnd->FlushSamples(m_iGraphBuffer.get(), m_iBufSizeSamples);
 
 		m_csVisualizerWndLock.Unlock();
 
@@ -1697,17 +1675,13 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 		m_iRenderRowCount = m_iRenderEndParam;
 	}
 
-	if (m_pWaveFile)		// // //
-		delete m_pWaveFile;
-	m_pWaveFile = new CWaveFile;
-	if (!m_pWaveFile ||
+	if (m_pWaveFile = std::make_unique<CWaveFile>(); !m_pWaveFile ||		// // //
 		!m_pWaveFile->OpenFile(pFile, theApp.GetSettings()->Sound.iSampleRate, theApp.GetSettings()->Sound.iSampleSize, 1)) {
 		AfxMessageBox(IDS_FILE_OPEN_ERROR);
 		return false;
 	}
-	else
-		PostThreadMessage(WM_USER_START_RENDER, 0, 0);
 
+	PostThreadMessage(WM_USER_START_RENDER, 0, 0);
 	return true;
 }
 
@@ -1727,7 +1701,7 @@ void CSoundGen::StopRendering()
 	m_iPlayFrame = 0;
 	m_iPlayRow = 0;
 	m_pWaveFile->CloseFile();		// // //
-	delete m_pWaveFile;
+	m_pWaveFile.reset();		// // //
 
 	ResetBuffer();
 	ResetAPU();		// // //
@@ -1757,7 +1731,7 @@ bool CSoundGen::IsBackgroundTask() const
 
 void CSoundGen::PlaySample(const CDSample *pSample, int Offset, int Pitch)
 {
-	SAFE_RELEASE(m_pPreviewSample);
+	m_pPreviewSample.reset();		// // //
 
 	// Sample may not be removed when used by the sample memory class!
 	m_pAPU->WriteSample(pSample->GetData(), pSample->GetSize());		// // //
@@ -1773,7 +1747,7 @@ void CSoundGen::PlaySample(const CDSample *pSample, int Offset, int Pitch)
 	
 	// Auto-delete samples with no name
 	if (*pSample->GetName() == 0)
-		m_pPreviewSample = pSample;
+		m_pPreviewSample.reset(pSample);		// // //
 }
 
 bool CSoundGen::PreviewDone() const
@@ -1849,10 +1823,6 @@ int CSoundGen::ExitInstance()
 	// Shutdown the thread
 
 	TRACE("SoundGen: Closing thread (0x%04x)\n", m_nThreadID);
-
-	// Free allocated memory
-	SAFE_RELEASE_ARRAY(m_iGraphBuffer);
-	SAFE_RELEASE_ARRAY(m_pAccumBuffer);
 
 	// Make sure sound interface is shut down
 	CloseAudio();
@@ -1931,10 +1901,8 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 	}
 
 	// Check if a previewed sample should be removed
-	if (m_pPreviewSample && PreviewDone()) {
-		delete m_pPreviewSample;
-		m_pPreviewSample = NULL;
-	}
+	if (m_pPreviewSample && PreviewDone())
+		m_pPreviewSample.reset();		// // //
 
 	return TRUE;
 }

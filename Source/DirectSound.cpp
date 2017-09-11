@@ -168,7 +168,8 @@ int CDSound::CalculateBufferLength(int BufferLen, int Samplerate, int Samplesize
 	return ((Samplerate * BufferLen) / 1000) * (Samplesize / 8) * Channels;
 }
 
-CDSoundChannel *CDSound::OpenChannel(int SampleRate, int SampleSize, int Channels, int BufferLength, int Blocks)
+// // //
+std::unique_ptr<CDSoundChannel> CDSound::OpenChannel(int SampleRate, int SampleSize, int Channels, int BufferLength, int Blocks)
 {
 	// Open a new secondary buffer
 	//
@@ -180,13 +181,13 @@ CDSoundChannel *CDSound::OpenChannel(int SampleRate, int SampleSize, int Channel
 	ASSERT(Blocks > 1);
 
 	if (!m_lpDirectSound)
-		return NULL;
+		return nullptr;
 
 	// Adjust buffer length in case a buffer would end up in half samples
 	while ((SampleRate * BufferLength / (Blocks * 1000) != (double)SampleRate * BufferLength / (Blocks * 1000)))
 		++BufferLength;
  
-	CDSoundChannel *pChannel = new CDSoundChannel();
+	auto pChannel = std::make_unique<CDSoundChannel>();
 
 	HANDLE hBufferEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
@@ -221,10 +222,8 @@ CDSoundChannel *CDSound::OpenChannel(int SampleRate, int SampleSize, int Channel
 	dsbd.dwFlags		= DSBCAPS_LOCSOFTWARE | DSBCAPS_GLOBALFOCUS | DSBCAPS_CTRLPOSITIONNOTIFY | DSBCAPS_GETCURRENTPOSITION2;
 	dsbd.lpwfxFormat	= &wfx;
 
-	if (FAILED(m_lpDirectSound->CreateSoundBuffer(&dsbd, &pChannel->m_lpDirectSoundBuffer, NULL))) {
-		delete pChannel;
-		return NULL;
-	}
+	if (FAILED(m_lpDirectSound->CreateSoundBuffer(&dsbd, &pChannel->m_lpDirectSoundBuffer, NULL)))
+		return nullptr;
 
 	// Setup notifications
 	for (int i = 0; i < Blocks; ++i) {
@@ -232,30 +231,15 @@ CDSoundChannel *CDSound::OpenChannel(int SampleRate, int SampleSize, int Channel
 		dspn[i].hEventNotify = hBufferEvent;
 	}
 
-	if (FAILED(pChannel->m_lpDirectSoundBuffer->QueryInterface(IID_IDirectSoundNotify, (void**)&pChannel->m_lpDirectSoundNotify))) {
-		delete pChannel;
-		return NULL;
-	}
+	if (FAILED(pChannel->m_lpDirectSoundBuffer->QueryInterface(IID_IDirectSoundNotify, (void**)&pChannel->m_lpDirectSoundNotify)))
+		return nullptr;
 
-	if (FAILED(pChannel->m_lpDirectSoundNotify->SetNotificationPositions(Blocks, dspn))) {
-		delete pChannel;
-		return NULL;
-	}
+	if (FAILED(pChannel->m_lpDirectSoundNotify->SetNotificationPositions(Blocks, dspn)))
+		return nullptr;
 
 	pChannel->ClearBuffer();
 	
 	return pChannel;
-}
-
-void CDSound::CloseChannel(CDSoundChannel *pChannel)
-{
-	if (pChannel == NULL)
-		return;
-
-	pChannel->m_lpDirectSoundBuffer->Release();
-	pChannel->m_lpDirectSoundNotify->Release();
-
-	delete pChannel;
 }
 
 // CDSoundChannel
@@ -274,6 +258,8 @@ CDSoundChannel::~CDSoundChannel()
 	// Kill buffer event
 	if (m_hEventList[1])
 		CloseHandle(m_hEventList[1]);
+	m_lpDirectSoundBuffer->Release();		// // //
+	m_lpDirectSoundNotify->Release();
 }
 
 bool CDSoundChannel::Play() const

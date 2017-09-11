@@ -26,6 +26,7 @@
 #include "stdafx.h"		// // //
 #include <mmsystem.h>
 #include <dsound.h>
+#include <memory>		// // //
 
 // Return values from WaitForDirectSoundEvent()
 enum buffer_event_t {
@@ -97,8 +98,7 @@ public:
 	bool			SetupDevice(int iDevice);
 	void			CloseDevice();
 
-	CDSoundChannel	*OpenChannel(int SampleRate, int SampleSize, int Channels, int BufferLength, int Blocks);
-	void			CloseChannel(CDSoundChannel *pChannel);
+	std::unique_ptr<CDSoundChannel> OpenChannel(int SampleRate, int SampleSize, int Channels, int BufferLength, int Blocks);		// // //
 
 	int				CalculateBufferLength(int BufferLen, int Samplerate, int Samplesize, int Channels) const;
 

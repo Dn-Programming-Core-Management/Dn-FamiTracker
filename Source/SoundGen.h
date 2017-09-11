@@ -102,9 +102,6 @@ public:
 	CSoundGen();
 	virtual ~CSoundGen();
 
-private:		// // //
-	CInstrumentRecorder *m_pInstRecorder;
-
 	//
 	// Public functions
 	//
@@ -124,7 +121,7 @@ public:
 	// Sound
 	bool		InitializeSound(HWND hWnd);
 	void		FlushBuffer(int16_t *Buffer, uint32_t Size);
-	CDSound		*GetSoundInterface() const { return m_pDSound; };
+	CDSound		*GetSoundInterface() const { return m_pDSound.get(); };		// // //
 
 	void		Interrupt() const;
 	bool		GetSoundTimeout() const;
@@ -243,7 +240,7 @@ public:
 private:
 	// Internal initialization
 	void		CreateChannels();
-	void		AssignChannel(CTrackerChannel *pTrackerChannel);		// // //
+	void		AssignChannel(std::unique_ptr<CTrackerChannel> pTrackerChannel);		// // //
 	void		ResetAPU();
 	void		GeneratePeriodTables(int BaseFreq);
 
@@ -300,12 +297,12 @@ private:
 	CFamiTrackerView	*m_pTrackerView;
 
 	// Sound
-	CDSound				*m_pDSound;
-	CDSoundChannel		*m_pDSoundChannel;
-	CVisualizerWnd		*m_pVisualizerWnd;
-	CAPU				*m_pAPU;
+	std::unique_ptr<CDSound>		m_pDSound;		// // //
+	std::unique_ptr<CDSoundChannel>	m_pDSoundChannel;
+	std::unique_ptr<CAPU>			m_pAPU;
 
-	const CDSample		*m_pPreviewSample;
+	std::unique_ptr<const CDSample> m_pPreviewSample;
+	CVisualizerWnd					*m_pVisualizerWnd;
 
 	bool				m_bRunning;
 
@@ -323,8 +320,8 @@ private:
 	unsigned int		m_iBufSizeSamples;					// Buffer size in samples
 	unsigned int		m_iBufSizeBytes;					// Buffer size in bytes
 	unsigned int		m_iBufferPtr;						// This will point in samples
-	char				*m_pAccumBuffer;
-	short				*m_iGraphBuffer;
+	std::unique_ptr<char[]> m_pAccumBuffer;					// // //
+	std::unique_ptr<short[]> m_iGraphBuffer;
 	int					m_iAudioUnderruns;					// Keep track of underruns to inform user
 	bool				m_bBufferTimeout;
 	bool				m_bBufferUnderrun;
@@ -391,7 +388,8 @@ private:
 
 	std::queue<int>		m_iRegisterStream;					// // // vgm export
 
-	CWaveFile			*m_pWaveFile = nullptr;		// // //
+	std::unique_ptr<CWaveFile> m_pWaveFile;		// // //
+	std::unique_ptr<CInstrumentRecorder> m_pInstRecorder;
 
 	// FDS & N163 waves
 	volatile bool		m_bWaveChanged;
