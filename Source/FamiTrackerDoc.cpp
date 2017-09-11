@@ -4975,12 +4975,12 @@ int CFamiTrackerDoc::GetTuningCent() const		// // // 050B
 	return m_iDetuneCent;
 }
 
-CGroove* CFamiTrackerDoc::GetGroove(int Index) const		// // //
+CGroove *CFamiTrackerDoc::GetGroove(unsigned Index) const		// // //
 {
-	return m_pGrooveTable[Index];
+	return Index < MAX_GROOVE ? m_pGrooveTable[Index] : nullptr;
 }
 
-void CFamiTrackerDoc::SetGroove(int Index, const CGroove* Groove)
+void CFamiTrackerDoc::SetGroove(unsigned Index, const CGroove* Groove)
 {
 	SAFE_RELEASE(m_pGrooveTable[Index]);
 	if (Groove != nullptr)

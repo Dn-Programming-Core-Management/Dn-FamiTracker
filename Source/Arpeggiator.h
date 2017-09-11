@@ -32,6 +32,7 @@ public:
 	void Tick(int CurrentChannel);
 	void TriggerNote(unsigned MidiNote);
 	void ReleaseNote(unsigned MidiNote);
+	void CutNote(unsigned MidiNote);
 
 	int GetNextNote(unsigned Channel);
 	std::string GetStateString() const;

@@ -47,7 +47,8 @@ public:
 
 private:
 	void SetupSpeed();
-	void SetupGroove(unsigned Index);
+	void LoadGroove(const CGroove &Groove);
+	void UpdateGrooveSpeed();
 	void StepGroove();
 
 private:

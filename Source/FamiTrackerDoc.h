@@ -256,8 +256,8 @@ public:
 	int				GetTuningSemitone() const;		// // // 050B
 	int				GetTuningCent() const;		// // // 050B
 
-	CGroove			*GetGroove(int Index) const;		// // //
-	void			SetGroove(int Index, const CGroove* Groove);
+	CGroove			*GetGroove(unsigned Index) const;		// // //
+	void			SetGroove(unsigned Index, const CGroove* Groove);
 
 	int				GetFrameLength(unsigned int Track, unsigned int Frame) const;
 

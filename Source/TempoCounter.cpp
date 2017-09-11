@@ -43,8 +43,10 @@ void CTempoCounter::LoadTempo(unsigned Track) {
 	
 	m_iTempoAccum = 0;
 
-	if (m_pDocument->GetSongGroove(Track) && m_pDocument->GetGroove(m_iSpeed))		// // //
-		SetupGroove(m_iSpeed);
+	if (auto pGroove = m_pDocument->GetGroove(m_iSpeed); m_pDocument->GetSongGroove(Track) && pGroove) {		// // //
+		LoadGroove(*pGroove);
+		UpdateGrooveSpeed();
+	}
 	else {
 		m_pCurrentGroove = nullptr;
 		if (m_pDocument->GetSongGroove(Track))
@@ -89,8 +91,8 @@ void CTempoCounter::DoFxx(uint8_t Param) {
 void CTempoCounter::DoOxx(uint8_t Param) {
 	// currently does not support starting at arbitrary index of a groove
 	if (auto pGroove = m_pDocument->GetGroove(Param)) {
-		SetupGroove(Param);
-		++m_iGroovePosition;
+		LoadGroove(*pGroove);
+		StepGroove();
 	}
 }
 
@@ -98,11 +100,11 @@ void CTempoCounter::LoadSoundState(const stFullState &state) {
 	if (state.Tempo != -1)
 		m_iTempo = state.Tempo;
 	if (state.GroovePos >= 0) {
-		m_iGroovePosition = state.GroovePos;
-		if (state.Speed >= 0)
-			m_pCurrentGroove = m_pDocument->GetGroove(state.Speed);
-		if (m_pCurrentGroove)
-			m_iSpeed = m_pCurrentGroove->GetEntry(m_iGroovePosition);
+		if (auto pGroove = m_pDocument->GetGroove(state.Speed)) {
+			LoadGroove(*pGroove);
+			m_iGroovePosition = state.GroovePos;
+			UpdateGrooveSpeed();
+		}
 	}
 	else {
 		if (state.Speed >= 0)
@@ -123,14 +125,17 @@ void CTempoCounter::SetupSpeed() {
 	}
 }
 
-void CTempoCounter::SetupGroove(unsigned Index) {
-	m_pCurrentGroove = m_pDocument->GetGroove(Index);
-	m_iSpeed = m_pCurrentGroove->GetEntry(m_iGroovePosition = 0);
+void CTempoCounter::LoadGroove(const CGroove &Groove) {
+	m_pCurrentGroove = &Groove;
+	m_iGroovePosition = 0;
+}
+
+void CTempoCounter::UpdateGrooveSpeed() {
+	m_iSpeed = m_pCurrentGroove->GetEntry(m_iGroovePosition);
 	SetupSpeed();
 }
 
 void CTempoCounter::StepGroove() {
-	m_iSpeed = m_pCurrentGroove->GetEntry(m_iGroovePosition);
-	SetupSpeed();
-	++m_iGroovePosition;
+	UpdateGrooveSpeed();
+	++m_iGroovePosition %= m_pCurrentGroove->GetSize();
 }

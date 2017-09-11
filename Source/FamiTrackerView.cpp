@@ -2182,7 +2182,7 @@ void CFamiTrackerView::CutMIDINote(unsigned int Channel, unsigned int MidiNote, 
 //		FixNoise(MidiNote, Octave, Note);
 
 	if (theApp.GetSettings()->Midi.bMidiArpeggio) {		// // //
-		m_Arpeggiator.ReleaseNote(MidiNote);
+		m_Arpeggiator.CutNote(MidiNote);
 		UpdateArpDisplay();
 	}
 

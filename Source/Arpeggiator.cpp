@@ -57,6 +57,10 @@ void CArpeggiator::ReleaseNote(unsigned MidiNote) {
 	m_iAutoArpNotes[MidiNote] = 2;
 }
 
+void CArpeggiator::CutNote(unsigned MidiNote) {
+	m_iAutoArpNotes[MidiNote] = 2;
+}
+
 int CArpeggiator::GetNextNote(unsigned Channel) {
 	return std::exchange(m_iArpeggiate[Channel], 0);
 }
