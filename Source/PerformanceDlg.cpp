@@ -25,6 +25,7 @@
 #include "FamiTrackerTypes.h"
 #include "APU/Types.h"
 #include "SoundGen.h"
+#include "AudioDriver.h"		// // //
 
 // CPerformanceDlg dialog
 
@@ -70,7 +71,7 @@ void CPerformanceDlg::OnTimer(UINT nIDEvent)
 	CProgressCtrl *pBar = static_cast<CProgressCtrl*>(GetDlgItem(IDC_CPU_BAR));
 	unsigned int Usage = theApp.GetCPUUsage();
 	unsigned int Rate = theApp.GetSoundGenerator()->GetFrameRate();
-	unsigned int Underruns = theApp.GetSoundGenerator()->GetUnderruns();
+	unsigned int Underruns = theApp.GetSoundGenerator()->GetAudioDriver()->GetUnderruns();
 	CString Text;
 
 	Text.Format(_T("%i%%"), Usage / 100);

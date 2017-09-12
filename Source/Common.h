@@ -44,6 +44,7 @@ struct stDPCMState {
 class IAudioCallback {
 public:
 	virtual void FlushBuffer(int16_t *Buffer, uint32_t Size) = 0;
+	virtual bool PlayBuffer() = 0;		// // // return true if succeeded
 };
 
 

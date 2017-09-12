@@ -91,10 +91,11 @@ class CInstrumentRecorder;		// // //
 class CRegisterState;		// // //
 class CArpeggiator;		// // //
 class CTempoCounter;		// // //
+class CAudioDriver;		// // //
 
 // CSoundGen
 
-class CSoundGen : public CWinThread, IAudioCallback
+class CSoundGen : public CWinThread, public IAudioCallback
 {
 protected:
 	DECLARE_DYNCREATE(CSoundGen)
@@ -120,13 +121,11 @@ public:
 
 	// Sound
 	bool		InitializeSound(HWND hWnd);
-	void		FlushBuffer(int16_t *Buffer, uint32_t Size);
-	CDSound		*GetSoundInterface() const { return m_pDSound.get(); };		// // //
+	void		FlushBuffer(int16_t *Buffer, uint32_t Size) override;
+	CDSound		*GetSoundInterface() const;		// // //
+	CAudioDriver *GetAudioDriver() const;		// // //
 
 	void		Interrupt() const;
-	bool		GetSoundTimeout() const;
-	bool		IsBufferUnderrun();
-	bool		IsAudioClipping();
 
 	bool		WaitForStop() const;
 	bool		IsRunning() const;
@@ -155,10 +154,9 @@ public:
 	float		 GetTempo() const;
 	float		 GetAverageBPM() const;		// // //
 	float		 GetCurrentBPM() const;		// // //
-	bool		 IsPlaying() const { return m_bPlaying; };
+	bool		 IsPlaying() const;
 
 	// Stats
-	unsigned int GetUnderruns() const;
 	unsigned int GetFrameRate();
 
 	// Tracker playing
@@ -246,10 +244,9 @@ private:
 
 	// Audio
 	bool		ResetAudioDevice();
-	void		CloseAudioDevice();
 	void		CloseAudio();
-	template<class T, int SHIFT> void FillBuffer(int16_t *pBuffer, uint32_t Size);
-	bool		PlayBuffer();
+
+	bool		PlayBuffer() override;
 
 	// Player
 	void		UpdateChannels();
@@ -284,8 +281,6 @@ public:
 	static const double NEW_VIBRATO_DEPTH[];
 	static const double OLD_VIBRATO_DEPTH[];
 
-	static const int AUDIO_TIMEOUT = 2000;		// 2s buffer timeout
-
 	//
 	// Private variables
 	//
@@ -298,7 +293,7 @@ private:
 
 	// Sound
 	std::unique_ptr<CDSound>		m_pDSound;		// // //
-	std::unique_ptr<CDSoundChannel>	m_pDSoundChannel;
+	std::unique_ptr<CAudioDriver>	m_pAudioDriver;			// // //
 	std::unique_ptr<CAPU>			m_pAPU;
 
 	std::unique_ptr<const CDSample> m_pPreviewSample;
@@ -313,20 +308,6 @@ private:
 
 	// Handles
 	HANDLE				m_hInterruptEvent;					// Used to interrupt sound buffer syncing
-
-// Sound variables (TODO: move sound to a new class?)
-private:
-	unsigned int		m_iSampleSize;						// Size of samples, in bits
-	unsigned int		m_iBufSizeSamples;					// Buffer size in samples
-	unsigned int		m_iBufSizeBytes;					// Buffer size in bytes
-	unsigned int		m_iBufferPtr;						// This will point in samples
-	std::unique_ptr<char[]> m_pAccumBuffer;					// // //
-	std::unique_ptr<short[]> m_iGraphBuffer;
-	int					m_iAudioUnderruns;					// Keep track of underruns to inform user
-	bool				m_bBufferTimeout;
-	bool				m_bBufferUnderrun;
-	bool				m_bAudioClipping;
-	int					m_iClipCounter;
 	
 // Tracker playing variables
 private:

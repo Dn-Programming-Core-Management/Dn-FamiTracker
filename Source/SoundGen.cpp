@@ -53,6 +53,7 @@
 #include "DetuneTable.h"		// // //
 #include "Arpeggiator.h"		// // //
 #include "TempoCounter.h"		// // //
+#include "AudioDriver.h"		// // //
 
 // 1kHz test tone
 //#define AUDIO_TEST
@@ -71,6 +72,8 @@
 
 // Enable audio dithering
 //#define DITHERING
+
+
 
 // The depth of each vibrato level
 const double CSoundGen::NEW_VIBRATO_DEPTH[] = {
@@ -108,8 +111,6 @@ int dither(long size);
 
 CSoundGen::CSoundGen() :
 	m_pAPU(std::make_unique<CAPU>((IAudioCallback *)this)),		// // //
-	m_pAccumBuffer(NULL),
-	m_iGraphBuffer(NULL),
 	m_pDocument(NULL),
 	m_pTrackerView(NULL),
 	m_bRendering(false),
@@ -121,7 +122,6 @@ CSoundGen::CSoundGen() :
 	m_iMachineType(NTSC),
 	m_bRunning(false),
 	m_hInterruptEvent(NULL),
-	m_bBufferTimeout(false),
 	m_bDirty(false),
 	m_iQueuedFrame(-1),
 	m_iPlayFrame(0),
@@ -129,9 +129,6 @@ CSoundGen::CSoundGen() :
 	m_iPlayTrack(0),
 	m_iPlayTicks(0),
 	m_iRegisterStream(),		// // //
-	m_bBufferUnderrun(false),
-	m_bAudioClipping(false),
-	m_iClipCounter(0),
 	m_pSequencePlayPos(NULL),
 	m_iSequencePlayPos(0),
 	m_iSequenceTimeout(0),
@@ -615,28 +612,6 @@ void CSoundGen::Interrupt() const
 		::SetEvent(m_hInterruptEvent);
 }
 
-bool CSoundGen::GetSoundTimeout() const 
-{
-	// Read without reset
-	return m_bBufferTimeout;
-}
-
-bool CSoundGen::IsBufferUnderrun()
-{
-	// Read and reset flag
-	bool ret(m_bBufferUnderrun);
-	m_bBufferUnderrun = false;
-	return ret;
-}
-
-bool CSoundGen::IsAudioClipping()
-{
-	// Read and reset flag
-	bool ret(m_bAudioClipping);
-	m_bAudioClipping = false;
-	return ret;
-}
-
 bool CSoundGen::ResetAudioDevice()
 {
 	// Setup sound, return false if failed
@@ -655,12 +630,8 @@ bool CSoundGen::ResetAudioDevice()
 	unsigned int BufferLen	= pSettings->Sound.iBufferLength;
 	unsigned int Device		= pSettings->Sound.iDevice;
 
-	m_iSampleSize = SampleSize;
-	m_iAudioUnderruns = 0;
-	m_iBufferPtr = 0;
-
-	// Close the old sound channel
-	CloseAudioDevice();
+	if (m_pAudioDriver)
+		m_pAudioDriver->CloseAudioDevice();		// // //
 
 	if (Device >= m_pDSound->GetDeviceCount()) {
 		// Invalid device detected, reset to 0
@@ -680,31 +651,19 @@ bool CSoundGen::ResetAudioDevice()
 	if (BufferLen > 100)
 		iBlocks += (BufferLen / 66);
 
-	// Create channel
-	m_pDSoundChannel = m_pDSound->OpenChannel(SampleRate, SampleSize, 1, BufferLen, iBlocks);
+	m_pAudioDriver = std::make_unique<CAudioDriver>(*this,
+		std::move(m_pDSound->OpenChannel(SampleRate, SampleSize, 1, BufferLen, iBlocks)), SampleSize);
 
 	// Channel failed
-	if (m_pDSoundChannel == NULL) {
+	if (!m_pAudioDriver || !m_pAudioDriver->IsAudioDeviceOpen()) {
 		AfxMessageBox(IDS_DSOUND_BUFFER_ERROR, MB_ICONERROR);
 		return false;
 	}
 
-	// Create a buffer
-	m_iBufSizeBytes	  = m_pDSoundChannel->GetBlockSize();
-	m_iBufSizeSamples = m_iBufSizeBytes / (SampleSize / 8);
-
-	// Temp. audio buffer
-	m_pAccumBuffer = std::make_unique<char[]>(m_iBufSizeBytes);		// // //
-
-	// Sample graph buffer
-	m_iGraphBuffer = std::make_unique<short[]>(m_iBufSizeSamples);
-
 	// Sample graph rate
 	m_csVisualizerWndLock.Lock();
-
 	if (m_pVisualizerWnd)
 		m_pVisualizerWnd->SetSampleRate(SampleRate);
-
 	m_csVisualizerWndLock.Unlock();
 
 	if (!m_pAPU->SetupSound(SampleRate, 1, (m_iMachineType == NTSC) ? MACHINE_NTSC : MACHINE_PAL))
@@ -728,25 +687,12 @@ bool CSoundGen::ResetAudioDevice()
 //	m_pAPU->SetChipLevel(SNDCHIP_S5B, pSettings->ChipLevels.iLevelS5B);
 */
 	// Update blip-buffer filtering 
-	m_pAPU->SetupMixer(pSettings->Sound.iBassFilter, pSettings->Sound.iTrebleFilter,  pSettings->Sound.iTrebleDamping, pSettings->Sound.iMixVolume);
-
-	m_bAudioClipping = false;
-	m_bBufferUnderrun = false;
-	m_bBufferTimeout = false;
-	m_iClipCounter = 0;
+	m_pAPU->SetupMixer(pSettings->Sound.iBassFilter, pSettings->Sound.iTrebleFilter,
+					   pSettings->Sound.iTrebleDamping, pSettings->Sound.iMixVolume);
 
 	TRACE("SoundGen: Created sound channel with params: %i Hz, %i bits, %i ms (%i blocks)\n", SampleRate, SampleSize, BufferLen, iBlocks);
 
 	return true;
-}
-
-void CSoundGen::CloseAudioDevice()
-{
-	// Kill DirectSound
-	if (m_pDSoundChannel) {
-		m_pDSoundChannel->Stop();
-		m_pDSoundChannel.reset();		// // //
-	}
 }
 
 void CSoundGen::CloseAudio()
@@ -754,7 +700,7 @@ void CSoundGen::CloseAudio()
 	// Called from player thread
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
 
-	CloseAudioDevice();
+	m_pAudioDriver->CloseAudioDevice();		// // //
 
 	if (m_pDSound) {
 		m_pDSound->CloseDevice();
@@ -772,11 +718,7 @@ void CSoundGen::ResetBuffer()
 	// Called from player thread
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
 
-	m_iBufferPtr = 0;
-
-	if (m_pDSoundChannel)
-		m_pDSoundChannel->ClearBuffer();
-
+	m_pAudioDriver->Reset();		// // //
 	m_pAPU->Reset();
 }
 
@@ -787,142 +729,44 @@ void CSoundGen::FlushBuffer(int16_t *pBuffer, uint32_t Size)
 	// May only be called from sound player thread
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
 
-	if (!m_pDSoundChannel)
-		return;
-
-	if (m_iSampleSize == 8)
-		FillBuffer<uint8_t, 8>(pBuffer, Size);
-	else
-		FillBuffer<int16_t, 0>(pBuffer, Size);
-
-	if (m_iClipCounter > 50) {
-		// Ignore some clipping to allow the HP-filter adjust itself
-		m_iClipCounter = 0;
-		m_bAudioClipping = true;
-	}
-	else if (m_iClipCounter > 0)
-		--m_iClipCounter;
+	m_pAudioDriver->FlushBuffer(pBuffer, Size);		// // //
 }
 
-template <class T, int SHIFT>
-void CSoundGen::FillBuffer(int16_t *pBuffer, uint32_t Size)
-{
-	// Called when the APU audio buffer is full and
-	// ready for playing
+// // //
+CDSound *CSoundGen::GetSoundInterface() const {
+	return m_pDSound.get();
+}
 
-	const int SAMPLE_MAX = 32768;
-
-	auto pConversionBuffer = reinterpret_cast<T *>(m_pAccumBuffer.get());		// // //
-
-	for (uint32_t i = 0; i < Size; ++i) {
-		int16_t Sample = pBuffer[i];
-
-		// 1000 Hz test tone
-#ifdef AUDIO_TEST
-		static double sine_phase = 0;
-		Sample = int32_t(sin(sine_phase) * 10000.0);
-
-		static double freq = 1000;
-		// Sweep
-		//freq+=0.1;
-		if (freq > 20000)
-			freq = 20;
-
-		sine_phase += freq / (double(m_pDSoundChannel->GetSampleRate()) / 6.283184);
-		if (sine_phase > 6.283184)
-			sine_phase -= 6.283184;
-#endif /* AUDIO_TEST */
-
-		// Clip detection
-		if (Sample == (SAMPLE_MAX - 1) || Sample == -SAMPLE_MAX) {
-			++m_iClipCounter;
-		}
-
-		ASSERT(m_iBufferPtr < m_iBufSizeSamples);
-
-		// Visualizer
-		m_iGraphBuffer[m_iBufferPtr] = (short)Sample;
-
-		// Convert sample and store in temp buffer
-#ifdef DITHERING
-		if (SHIFT > 0)
-			Sample = (Sample + dither(1 << SHIFT)) >> SHIFT;
-#else
-		Sample >>= SHIFT;
-#endif
-
-		if (SHIFT == 8)
-			Sample ^= 0x80;
-
-		pConversionBuffer[m_iBufferPtr++] = (T)Sample;
-
-		// If buffer is filled, throw it to direct sound
-		if (m_iBufferPtr >= m_iBufSizeSamples) {
-			if (!PlayBuffer())
-				return;
-		}
-	}
+CAudioDriver *CSoundGen::GetAudioDriver() const {
+	return m_pAudioDriver.get();
 }
 
 bool CSoundGen::PlayBuffer()
 {
+	ASSERT(GetCurrentThreadId() == m_nThreadID);
+
 	if (m_bRendering) {
-		// Output to file
-		ASSERT(m_pWaveFile);		// // //
-		m_pWaveFile->WriteWave(m_pAccumBuffer.get(), m_iBufSizeBytes);
-		m_iBufferPtr = 0;
+		auto [pBuf, size] = m_pAudioDriver->ReleaseSoundBuffer();		// // //
+		m_pWaveFile->WriteWave(pBuf, size);		// // //
+		return true;
 	}
-	else {
-		// Output to direct sound
-		DWORD dwEvent;
 
-		// Wait for a buffer event
-		while ((dwEvent = m_pDSoundChannel->WaitForSyncEvent(AUDIO_TIMEOUT)) != BUFFER_IN_SYNC) {
-			switch (dwEvent) {
-				case BUFFER_TIMEOUT:
-					// Buffer timeout
-					m_bBufferTimeout = true;
-				case BUFFER_CUSTOM_EVENT:
-					// Custom event, quit
-					m_iBufferPtr = 0;
-					return false;
-				case BUFFER_OUT_OF_SYNC:
-					// Buffer underrun detected
-					m_iAudioUnderruns++;
-					m_bBufferUnderrun = true;
-					break;
-			}
-		}
+	if (!m_pAudioDriver->DoPlayBuffer())
+		return false;
 
-		// Write audio to buffer
-		m_pDSoundChannel->WriteBuffer(m_pAccumBuffer.get(), m_iBufSizeBytes);
-
-		// Draw graph
-		m_csVisualizerWndLock.Lock();
-
-		if (m_pVisualizerWnd)
-			m_pVisualizerWnd->FlushSamples(m_iGraphBuffer.get(), m_iBufSizeSamples);
-
-		m_csVisualizerWndLock.Unlock();
-
-		// Reset buffer position
-		m_iBufferPtr = 0;
-		m_bBufferTimeout = false;
-	}
+	// // // Draw graph
+	auto [pBuf, size] = m_pAudioDriver->ReleaseGraphBuffer();
+	m_csVisualizerWndLock.Lock();
+	if (m_pVisualizerWnd)
+		m_pVisualizerWnd->FlushSamples(pBuf, size);
+	m_csVisualizerWndLock.Unlock();
 
 	return true;
 }
 
-unsigned int CSoundGen::GetUnderruns() const
-{
-	return m_iAudioUnderruns;
-}
-
 unsigned int CSoundGen::GetFrameRate()
 {
-	int FrameRate = m_iFrameCounter;
-	m_iFrameCounter = 0;
-	return FrameRate;
+	return std::exchange(m_iFrameCounter, 0);		// // //
 }
 
 //// Tracker playing routines //////////////////////////////////////////////////////////////////////////////
@@ -993,7 +837,7 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 	ASSERT(m_pDocument != NULL);
 	ASSERT(m_pTrackerView != NULL);
 
-	if (!m_pDocument || !m_pDSoundChannel || !m_pDocument->IsFileLoaded())
+	if (!m_pDocument || !m_pAudioDriver->IsAudioDeviceOpen() || !m_pDocument->IsFileLoaded())		// // //
 		return;
 
 	switch (Mode) {
@@ -1414,6 +1258,12 @@ float CSoundGen::GetCurrentBPM() const		// // //
 	float BPM = std::min(IsPlaying() && theApp.GetSettings()->Display.bAverageBPM ? GetAverageBPM() : GetTempo(),
 						 EngineSpeed * 15);		// // // 050B
 	return static_cast<float>(BPM * 4. / (m_iLastHighlight ? m_iLastHighlight : 4));
+}
+
+// // //
+
+bool CSoundGen::IsPlaying() const {
+	return m_bPlaying;
 }
 
 void CSoundGen::RunFrame()
@@ -1843,7 +1693,7 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 	if (CWinThread::OnIdle(lCount))
 		return TRUE;
 
-	if (!m_pDocument || !m_pDSoundChannel || !m_pDocument->IsFileLoaded())
+	if (!m_pDocument || !m_pAudioDriver->IsAudioDeviceOpen() || !m_pDocument->IsFileLoaded())		// // //
 		return TRUE;
 
 	++m_iFrameCounter;
@@ -1945,7 +1795,7 @@ void CSoundGen::UpdatePlayer()
 	if (m_bUpdateRow && !m_bHaltRequest)
 		CheckControl();
 
-	if (m_bPlaying)
+	if (IsPlaying())
 		m_pTempoCounter->Tick();		// // //
 }
 

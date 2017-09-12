@@ -500,7 +500,7 @@ void CFamiTrackerApp::ShutDownSynth()
 	// If thread was suspended then it will auto-terminate, because sound hasn't been initialized
 
 	// Wait for thread to exit
-	DWORD dwResult = ::WaitForSingleObject(hThread, CSoundGen::AUDIO_TIMEOUT + 1000);
+	DWORD dwResult = ::WaitForSingleObject(hThread, /*CSoundGen::AUDIO_TIMEOUT*/ 2000 + 1000);
 
 	if (dwResult != WAIT_OBJECT_0 && m_pSoundGenerator != NULL) {
 		TRACE("App: Closing the sound generator thread failed\n");

@@ -54,6 +54,7 @@
 #include "PatternEditor.h"
 #include "FrameEditor.h"
 #include "APU/APU.h"
+#include "AudioDriver.h"		// // //
 #include "GrooveDlg.h"		// // //
 #include "GotoDlg.h"		// // //
 #include "BookmarkDlg.h"	// // //
@@ -2562,7 +2563,7 @@ void CMainFrame::OnDestroy()
 		CEvent *pSoundEvent = new CEvent(FALSE, FALSE);
 		pSoundGen->PostThreadMessage(WM_USER_CLOSE_SOUND, (WPARAM)pSoundEvent, NULL);
 		// Wait for sound to close
-		DWORD dwResult = ::WaitForSingleObject(pSoundEvent->m_hObject, CSoundGen::AUDIO_TIMEOUT + 1000);
+		DWORD dwResult = ::WaitForSingleObject(pSoundEvent->m_hObject, /*CSoundGen::AUDIO_TIMEOUT*/ 2000 + 1000);		// // //
 
 		if (dwResult != WAIT_OBJECT_0) {
 			// The CEvent object will leak if this happens, but the program won't crash
@@ -3335,29 +3336,29 @@ void CMainFrame::CheckAudioStatus()
 	static BOOL DisplayedError;
 	static DWORD MessageTimeout;
 	
-	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
-
-	if (pSoundGen == NULL) {
+	if (!theApp.GetSoundGenerator()) {
 		// Should really never be displayed (only during debugging)
 		SetMessageText(_T("Audio is not working"));
 		return;
 	}
 
+	auto pDriver = theApp.GetSoundGenerator()->GetAudioDriver();		// // //
+
 	// Wait for signals from the player thread
-	if (pSoundGen->GetSoundTimeout()) {
+	if (pDriver->GetSoundTimeout()) {
 		// No events from the audio pump
 		SetMessageText(IDS_SOUND_FAIL);
 		DisplayedError = TRUE;
 		MessageTimeout = GetTickCount() + TIMEOUT;
 	}
 #ifndef _DEBUG
-	else if (pSoundGen->IsBufferUnderrun()) {
+	else if (pDriver->DidBufferUnderrun()) {		// // //
 		// Buffer underrun
 		SetMessageText(IDS_UNDERRUN_MESSAGE);
 		DisplayedError = TRUE;
 		MessageTimeout = GetTickCount() + TIMEOUT;
 	}
-	else if (pSoundGen->IsAudioClipping()) {
+	else if (pDriver->WasAudioClipping()) {		// // //
 		// Audio is clipping
 		SetMessageText(IDS_CLIPPING_MESSAGE);
 		DisplayedError = TRUE;
