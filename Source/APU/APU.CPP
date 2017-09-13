@@ -143,7 +143,8 @@ void CAPU::EndFrame()
 
 	int SamplesAvail = m_pMixer->FinishBuffer(m_iFrameCycles);
 	int ReadSamples	= m_pMixer->ReadBuffer(SamplesAvail, m_pSoundBuffer, m_bStereoEnabled);
-	m_pParent->FlushBuffer(m_pSoundBuffer, ReadSamples);
+	if (m_pParent)		// // //
+		m_pParent->FlushBuffer(m_pSoundBuffer, ReadSamples);
 	
 	m_iFrameClock /*+*/= m_iFrameCycleCount;
 	m_iFrameCycles = 0;
@@ -186,6 +187,11 @@ void CAPU::SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume) const
 	// New settings
 	m_pMixer->UpdateSettings(LowCut, HighCut, HighDamp, float(Volume) / 100.0f);
 	m_pVRC7->SetVolume((float(Volume) / 100.0f) * m_fLevelVRC7);
+}
+
+// // //
+void CAPU::SetCallback(IAudioCallback &pCallback) {
+	m_pParent = &pCallback;
 }
 
 void CAPU::SetExternalSound(uint8_t Chip)

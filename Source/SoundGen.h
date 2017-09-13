@@ -27,12 +27,14 @@
 // This thread will take care of the NES sound generation
 //
 
+#include "stdafx.h"		// // //
 #include <afxmt.h>		// Synchronization objects
 #include <queue>		// // //
 #include "Common.h"
 #include <string>
 #include <vector>		// // //
 #include <memory>		// // //
+#include "FamiTrackerTypes.h"		// // //
 
 const int VIBRATO_LENGTH = 256;
 const int TREMOLO_LENGTH = 256;

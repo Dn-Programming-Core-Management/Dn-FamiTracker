@@ -46,7 +46,7 @@ class CFile;
 
 class CAPU {
 public:
-	CAPU(IAudioCallback *pCallback);		// // //
+	explicit CAPU(IAudioCallback *pCallback = nullptr);		// // //
 	~CAPU();
 
 	void	Reset();
@@ -60,6 +60,7 @@ public:
 	void	ChangeMachineRate(int Machine, int Rate);		// // //
 	bool	SetupSound(int SampleRate, int NrChannels, int Speed);
 	void	SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume) const;
+	void	SetCallback(IAudioCallback &pCallback);		// // //
 
 	int32_t	GetVol(uint8_t Chan) const;
 	uint8_t	GetReg(int Chip, int Reg) const;

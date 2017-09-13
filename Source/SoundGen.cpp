@@ -30,7 +30,7 @@
 //  - Perhaps this should be a worker thread and not GUI thread?
 //
 
-#include "stdafx.h"
+#include "SoundGen.h"
 #include "FamiTracker.h"
 #include "FTMComponentInterface.h"		// // //
 #include "ChannelState.h"		// // //
@@ -44,7 +44,6 @@
 #include "ChannelHandler.h"
 #include "ChannelsN163.h" // N163 channel count
 #include "DSample.h"		// // //
-#include "SoundGen.h"
 #include "InstrumentRecorder.h"		// // //
 #include "Settings.h"
 #include "TrackerChannel.h"
@@ -54,9 +53,6 @@
 #include "Arpeggiator.h"		// // //
 #include "TempoCounter.h"		// // //
 #include "AudioDriver.h"		// // //
-
-// 1kHz test tone
-//#define AUDIO_TEST
 
 // Write period tables to files
 //#define WRITE_PERIOD_FILES
@@ -69,9 +65,6 @@
 
 // // // Log VGM output (experimental)
 //#define WRITE_VGM
-
-// Enable audio dithering
-//#define DITHERING
 
 
 
@@ -101,16 +94,12 @@ BEGIN_MESSAGE_MAP(CSoundGen, CWinThread)
 	ON_THREAD_MESSAGE(WM_USER_REMOVE_DOCUMENT, OnRemoveDocument)
 END_MESSAGE_MAP()
 
-#ifdef DITHERING
-int dither(long size);
-#endif
-
 
 
 // CSoundGen
 
 CSoundGen::CSoundGen() :
-	m_pAPU(std::make_unique<CAPU>((IAudioCallback *)this)),		// // //
+	m_pAPU(std::make_unique<CAPU>()),		// // //
 	m_pDocument(NULL),
 	m_pTrackerView(NULL),
 	m_bRendering(false),
@@ -666,6 +655,7 @@ bool CSoundGen::ResetAudioDevice()
 		m_pVisualizerWnd->SetSampleRate(SampleRate);
 	m_csVisualizerWndLock.Unlock();
 
+	m_pAPU->SetCallback(*m_pAudioDriver);
 	if (!m_pAPU->SetupSound(SampleRate, 1, (m_iMachineType == NTSC) ? MACHINE_NTSC : MACHINE_PAL))
 		return false;
 

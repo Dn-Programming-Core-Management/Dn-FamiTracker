@@ -23,6 +23,16 @@
 #include "AudioDriver.h"
 #include "DirectSound.h"
 
+// 1kHz test tone
+//#define AUDIO_TEST
+
+// Enable audio dithering
+//#define DITHERING
+
+#ifdef DITHERING
+int dither(long size);
+#endif
+
 CAudioDriver::CAudioDriver(IAudioCallback &Parent, std::unique_ptr<CDSoundChannel> pDevice, unsigned SampleSize) :
 	m_Parent(Parent),
 	m_pDSoundChannel(std::move(pDevice)),
