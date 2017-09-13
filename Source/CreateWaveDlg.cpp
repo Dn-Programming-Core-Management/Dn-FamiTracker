@@ -28,6 +28,7 @@
 #include "SoundGen.h"
 #include "TrackerChannel.h"
 #include "WavProgressDlg.h"
+#include "WaveRenderer.h"		// // //
 
 const int MAX_LOOP_TIMES = 99;
 const int MAX_PLAY_TIME	 = (99 * 60) + 0;
@@ -90,14 +91,10 @@ int CCreateWaveDlg::GetTimeLimit() const
 
 void CCreateWaveDlg::OnBnClickedBegin()
 {
-	render_end_t EndType = SONG_TIME_LIMIT;
-	int EndParam = 0;
-
 	CFamiTrackerDoc *pDoc = CFamiTrackerDoc::GetDoc();
 	CFamiTrackerView *pView = CFamiTrackerView::GetView();
 
 	CString FileName = pDoc->GetFileTitle();
-
 	int Track = m_ctlTracks.GetCurSel();
 
 	if (pDoc->GetTrackCount() > 1) {
@@ -115,26 +112,25 @@ void CCreateWaveDlg::OnBnClickedBegin()
 	if (SaveDialog.DoModal() == IDCANCEL)
 		return;
 	
-	// Save
-	if (IsDlgButtonChecked(IDC_RADIO_LOOP)) {
-		EndType = SONG_LOOP_LIMIT;
-		EndParam = GetFrameLoopCount();
-	}
-	else if (IsDlgButtonChecked(IDC_RADIO_TIME)) {
-		EndType = SONG_TIME_LIMIT;
-		EndParam = GetTimeLimit();
-	}
-
-	pView->UnmuteAllChannels();
+	auto pRenderer = [&] () -> std::unique_ptr<CWaveRenderer> {		// // //
+		if (IsDlgButtonChecked(IDC_RADIO_LOOP))
+			return std::make_unique<CWaveRendererRow>(pDoc->ScanActualLength(Track, GetFrameLoopCount()));		// // //
+		if (IsDlgButtonChecked(IDC_RADIO_TIME))
+			// This variable is stored in seconds, convert to frames
+			return std::make_unique<CWaveRendererTick>(GetTimeLimit() * pDoc->GetFrameRate(), pDoc->GetFrameRate());		// // //
+		return nullptr;
+	}();
+	pRenderer->SetRenderTrack(Track);
 
 	// Mute selected channels
+	pView->UnmuteAllChannels();
 	for (int i = 0; i < m_ctlChannelList.GetCount(); ++i) {
 		if (m_ctlChannelList.GetCheck(i) == 0)
 			pView->ToggleChannel(i);
 	}
 
 	// Show the render progress dialog, this will also start rendering
-	ProgressDlg.BeginRender(SaveDialog.GetPathName(), EndType, EndParam, Track);
+	ProgressDlg.BeginRender(SaveDialog.GetPathName(), std::move(pRenderer));		// // //
 
 	// Unmute all channels
 	pView->UnmuteAllChannels();

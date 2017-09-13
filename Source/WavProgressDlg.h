@@ -25,8 +25,9 @@
 
 #include "stdafx.h"		// // //
 #include "resource.h"		// // //
+#include <memory>		// // //
 
-enum render_end_t : int;		// // //
+class CWaveRenderer;		// // //
 
 // CWavProgressDlg dialog
 
@@ -38,16 +39,14 @@ public:
 	CWavProgressDlg(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CWavProgressDlg();
 
-	void BeginRender(CString &File, render_end_t LengthType, int LengthParam, int Track);
+	void BeginRender(CString &File, std::unique_ptr<CWaveRenderer> pRenderer);		// // //
 
 // Dialog Data
 	enum { IDD = IDD_WAVE_PROGRESS };
 
 protected:
 	DWORD m_dwStartTime;
-	render_end_t m_iSongEndType;
-	int m_iSongEndParam;
-	int m_iTrack;
+	std::shared_ptr<CWaveRenderer> m_pWaveRenderer;		// // //
 	
 	CString m_sFile;
 

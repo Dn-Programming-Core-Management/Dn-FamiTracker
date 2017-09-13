@@ -66,11 +66,6 @@ enum play_mode_t {
 	MODE_PLAY_MARKER,		// // // 050B (row marker, aka "bookmark")
 };
 
-enum render_end_t { 
-	SONG_TIME_LIMIT, 
-	SONG_LOOP_LIMIT 
-};
-
 class stChanNote;		// // //
 struct stRecordSetting;
 
@@ -84,7 +79,6 @@ class CSequence;		// // //
 class CAPU;
 class CDSound;
 class CDSoundChannel;
-class CWaveFile;		// // //
 class CVisualizerWnd;
 class CDSample;
 class CTrackerChannel;
@@ -94,6 +88,7 @@ class CRegisterState;		// // //
 class CArpeggiator;		// // //
 class CTempoCounter;		// // //
 class CAudioDriver;		// // //
+class CWaveRenderer;		// // //
 
 // CSoundGen
 
@@ -170,9 +165,7 @@ public:
 	int			 GetChannelVolume(int Channel) const;		// // //
 
 	// Rendering
-	bool		 RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEndParam, int Track);
-	void		 StopRendering();
-	void		 GetRenderStat(int &Frame, int &Time, bool &Done, int &FramesToRender, int &Row, int &RowCount) const;
+	bool		 RenderToFile(LPTSTR pFile, const std::shared_ptr<CWaveRenderer> &pRender);		// // //
 	bool		 IsRendering() const;	
 	bool		 IsBackgroundTask() const;
 
@@ -250,6 +243,9 @@ private:
 
 	bool		PlayBuffer() override;
 
+	void		StartRendering();		// // //
+	void		StopRendering();		// // //
+
 	// Player
 	void		UpdateChannels();
 	void		UpdateAPU();
@@ -314,7 +310,7 @@ private:
 // Tracker playing variables
 private:
 	std::unique_ptr<CTempoCounter> m_pTempoCounter;			// // // tempo calculation
-	unsigned int		m_iPlayTicks;
+	unsigned int		m_iTicksPlayed;
 	bool				m_bPlaying;							// True when tracker is playing back the module
 	bool				m_bHaltRequest;						// True when a halt is requested
 	bool				m_bPlayLooping;
@@ -348,18 +344,6 @@ private:
 
 	machine_t			m_iMachineType;						// // // NTSC/PAL
 
-	// Rendering
-	bool				m_bRendering;
-	bool				m_bRequestRenderStop;
-	bool				m_bStoppingRender;					// // //
-	render_end_t		m_iRenderEndWhen;
-	unsigned int		m_iRenderEndParam;
-	int					m_iDelayedStart;
-	int					m_iDelayedEnd;
-	int					m_iRenderTrack;
-	unsigned int		m_iRenderRowCount;
-	int					m_iRenderRow;
-
 	bool				m_bUpdateRow;
 
 	CArpeggiator		*m_Arpeggiator = nullptr;		// // //
@@ -371,7 +355,7 @@ private:
 
 	std::queue<int>		m_iRegisterStream;					// // // vgm export
 
-	std::unique_ptr<CWaveFile> m_pWaveFile;		// // //
+	std::shared_ptr<CWaveRenderer> m_pWaveRenderer;		// // //
 	std::unique_ptr<CInstrumentRecorder> m_pInstRecorder;
 
 	// FDS & N163 waves

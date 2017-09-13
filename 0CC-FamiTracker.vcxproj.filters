@@ -717,6 +717,9 @@
     <ClCompile Include="Source\AudioDriver.cpp">
       <Filter>Source Files\Sound Driver\Audio</Filter>
     </ClCompile>
+    <ClCompile Include="Source\WaveRenderer.cpp">
+      <Filter>Source Files\Sound Driver</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">
@@ -1300,6 +1303,9 @@
     </ClInclude>
     <ClInclude Include="Source\AudioDriver.h">
       <Filter>Header Files\Sound Driver Headers\Audio Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\WaveRenderer.h">
+      <Filter>Header Files\Sound Driver Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

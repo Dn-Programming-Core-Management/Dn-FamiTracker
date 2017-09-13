@@ -511,6 +511,7 @@
     <ClCompile Include="Source\CreateWaveDlg.cpp" />
     <ClCompile Include="Source\WaveformGenerator.cpp" />
     <ClCompile Include="Source\WavegenBuiltin.cpp" />
+    <ClCompile Include="Source\WaveRenderer.cpp" />
     <ClCompile Include="Source\WavProgressDlg.cpp" />
     <ClCompile Include="Source\CommandLineExport.cpp" />
     <ClCompile Include="Source\Compiler.cpp" />
@@ -667,6 +668,7 @@
     <ClInclude Include="Source\Utility\Factory.h" />
     <ClInclude Include="Source\WaveformGenerator.h" />
     <ClInclude Include="Source\WavegenBuiltin.h" />
+    <ClInclude Include="Source\WaveRenderer.h" />
     <ClInclude Include="Source\WinSDK\VersionHelpers.h" />
     <ClInclude Include="Source\WinSDK\winapifamily.h" />
     <ClInclude Include="version.h" />

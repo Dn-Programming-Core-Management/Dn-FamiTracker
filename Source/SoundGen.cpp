@@ -53,6 +53,7 @@
 #include "Arpeggiator.h"		// // //
 #include "TempoCounter.h"		// // //
 #include "AudioDriver.h"		// // //
+#include "WaveRenderer.h"		// // //
 
 // Write period tables to files
 //#define WRITE_PERIOD_FILES
@@ -102,7 +103,6 @@ CSoundGen::CSoundGen() :
 	m_pAPU(std::make_unique<CAPU>()),		// // //
 	m_pDocument(NULL),
 	m_pTrackerView(NULL),
-	m_bRendering(false),
 	m_bPlaying(false),
 	m_bHaltRequest(false),
 	m_bDoHalt(false),		// // //
@@ -116,7 +116,7 @@ CSoundGen::CSoundGen() :
 	m_iPlayFrame(0),
 	m_iPlayRow(0),
 	m_iPlayTrack(0),
-	m_iPlayTicks(0),
+	m_iTicksPlayed(0),
 	m_iRegisterStream(),		// // //
 	m_pSequencePlayPos(NULL),
 	m_iSequencePlayPos(0),
@@ -735,9 +735,9 @@ bool CSoundGen::PlayBuffer()
 {
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
 
-	if (m_bRendering) {
+	if (IsRendering()) {
 		auto [pBuf, size] = m_pAudioDriver->ReleaseSoundBuffer();		// // //
-		m_pWaveFile->WriteWave(pBuf, size);		// // //
+		m_pWaveRenderer->FlushBuffer(pBuf, size);		// // //
 		return true;
 	}
 
@@ -745,11 +745,13 @@ bool CSoundGen::PlayBuffer()
 		return false;
 
 	// // // Draw graph
-	auto [pBuf, size] = m_pAudioDriver->ReleaseGraphBuffer();
-	m_csVisualizerWndLock.Lock();
-	if (m_pVisualizerWnd)
-		m_pVisualizerWnd->FlushSamples(pBuf, size);
-	m_csVisualizerWndLock.Unlock();
+	if (!IsBackgroundTask()) {
+		auto [pBuf, size] = m_pAudioDriver->ReleaseGraphBuffer();
+		m_csVisualizerWndLock.Lock();
+		if (m_pVisualizerWnd)
+			m_pVisualizerWnd->FlushSamples(pBuf, size);
+		m_csVisualizerWndLock.Unlock();
+	}
 
 	return true;
 }
@@ -866,7 +868,7 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 	m_bPlaying			= true;
 	m_bHaltRequest      = false;
 	m_bDoHalt			= false;		// // //
-	m_iPlayTicks		= 0;
+	m_iTicksPlayed		= 0;
 	m_iFramesPlayed		= 0;
 	m_iRowsPlayed		= 0;		// // //
 	m_iJumpToPattern	= -1;
@@ -1268,21 +1270,10 @@ void CSoundGen::RunFrame()
 		m_Arpeggiator->Tick(m_pTrackerView->GetSelectedChannel());
 
 	if (IsPlaying()) {
-		
-		++m_iPlayTicks;
+		if (IsRendering())
+			m_pWaveRenderer->Tick();
 
-		if (m_bRendering) {
-			if (m_iRenderEndWhen == SONG_TIME_LIMIT) {
-				if (m_iPlayTicks > (unsigned int)m_iRenderEndParam)
-					m_bRequestRenderStop = m_bHaltRequest = true;		// // //
-			}
-			else if (m_iRenderEndWhen == SONG_LOOP_LIMIT) {
-				//if (m_iFramesPlayed >= m_iRenderEndParam)
-				if (m_iRowsPlayed >= m_iRenderEndParam && m_pTempoCounter->CanStepRow())		// // //
-					m_bRequestRenderStop = m_bHaltRequest = true;
-			}
-		}
-
+		++m_iTicksPlayed;		// // //
 		++m_iRowTickCount;		// // // 050B
 		m_iRowsStepped = 0;
 
@@ -1291,11 +1282,12 @@ void CSoundGen::RunFrame()
 			// Enable this to skip rows on high tempos
 //			while (m_pTempoCounter->CanStepRow())  {
 			m_pTempoCounter->StepRow();		// // //
+			if (IsRendering())
+				m_pWaveRenderer->StepRow();		// // //
 			++m_iRowsStepped;
 //			}
 			m_bUpdateRow = true;
 			ReadPatternRow();
-			++m_iRenderRow;
 
 			if (auto pMark = m_pDocument->GetBookmarkAt(m_iPlayTrack, m_iPlayFrame, m_iPlayRow))		// // //
 				if (pMark->m_Highlight.First != -1)
@@ -1310,6 +1302,9 @@ void CSoundGen::RunFrame()
 		else {
 			m_bUpdateRow = false;
 		}
+
+		if (IsRendering() && m_pWaveRenderer->ShouldStopPlayer())		// // //
+			m_bHaltRequest = true;
 	}
 }
 
@@ -1346,7 +1341,7 @@ void CSoundGen::CheckControl()
 
 	if (m_bDirty) {
 		m_bDirty = false;
-		if (!m_bRendering && m_pTrackerView)		// // //
+		if (!IsBackgroundTask() && m_pTrackerView)		// // //
 			m_pTrackerView->PostMessage(WM_USER_PLAYER, m_iPlayFrame, m_iPlayRow);
 	}
 }
@@ -1472,7 +1467,7 @@ void CSoundGen::EvaluateGlobalEffects(stChanNote *NoteData, int EffColumns)
 			// Cxx: Halt playback
 			case EF_HALT:
 				m_bDoHalt = true;		// // //
-				if (m_bRendering) {
+				if (IsRendering()) {
 					// Unconditional stop
 					++m_iFramesPlayed;
 				}
@@ -1488,7 +1483,7 @@ void CSoundGen::EvaluateGlobalEffects(stChanNote *NoteData, int EffColumns)
 
 // File rendering functions
 
-bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEndParam, int Track)
+bool CSoundGen::RenderToFile(LPTSTR pFile, const std::shared_ptr<CWaveRenderer> &pRender)		// // //
 {
 	// Called from main thread
 	ASSERT(GetCurrentThreadId() == theApp.m_nThreadID);
@@ -1500,71 +1495,53 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 		WaitForStop();
 	}
 
-	m_iRenderEndWhen = SongEndType;
-	m_iRenderEndParam = SongEndParam;
-	m_iRenderTrack = Track;
-	m_iRenderRowCount = 0;
-	m_iRenderRow = 0;
+	m_pWaveRenderer = pRender;		// // //
+	ASSERT(m_pWaveRenderer);
 
-	if (m_iRenderEndWhen == SONG_TIME_LIMIT) {
-		// This variable is stored in seconds, convert to frames
-		m_iRenderEndParam *= m_pDocument->GetFrameRate();
-	}
-	else if (m_iRenderEndWhen == SONG_LOOP_LIMIT) {
-		m_iRenderEndParam = m_pDocument->ScanActualLength(Track, m_iRenderEndParam);		// // //
-		m_iRenderRowCount = m_iRenderEndParam;
+	if (auto pWave = std::make_unique<CWaveFile>(); pWave &&		// // //
+		pWave->OpenFile(pFile, theApp.GetSettings()->Sound.iSampleRate, theApp.GetSettings()->Sound.iSampleSize, 1)) {
+		m_pWaveRenderer->SetOutputFile(std::move(pWave));
+		PostThreadMessage(WM_USER_START_RENDER, 0, 0);
+		return true;
 	}
 
-	if (m_pWaveFile = std::make_unique<CWaveFile>(); !m_pWaveFile ||		// // //
-		!m_pWaveFile->OpenFile(pFile, theApp.GetSettings()->Sound.iSampleRate, theApp.GetSettings()->Sound.iSampleSize, 1)) {
-		AfxMessageBox(IDS_FILE_OPEN_ERROR);
-		return false;
-	}
+	AfxMessageBox(IDS_FILE_OPEN_ERROR);
+	return false;
+}
 
-	PostThreadMessage(WM_USER_START_RENDER, 0, 0);
-	return true;
+// // //
+void CSoundGen::StartRendering() {
+	ResetBuffer();
+	m_pWaveRenderer->Start();
 }
 
 void CSoundGen::StopRendering()
 {
 	// Called from player thread
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
-	ASSERT(m_bRendering);
+	ASSERT(IsRendering());
 
 	if (!IsRendering())
 		return;
 
 	m_bPlaying = false;
-	m_bRendering = false;
-	m_bStoppingRender = false;		// // //
-	m_bRequestRenderStop = false;		// // //
+	m_pWaveRenderer.reset();		// // //
 	m_iPlayFrame = 0;
 	m_iPlayRow = 0;
-	m_pWaveFile->CloseFile();		// // //
-	m_pWaveFile.reset();		// // //
 
 	ResetBuffer();
+	HaltPlayer();		// // //
 	ResetAPU();		// // //
-}
-
-void CSoundGen::GetRenderStat(int &Frame, int &Time, bool &Done, int &FramesToRender, int &Row, int &RowCount) const
-{
-	Frame = m_iFramesPlayed;
-	Time = m_iPlayTicks / m_pDocument->GetFrameRate();
-	Done = m_bRendering;
-	FramesToRender = m_iRenderEndParam;
-	RowCount = m_iRenderRowCount;
-	Row = m_iRenderRow;
 }
 
 bool CSoundGen::IsRendering() const
 {
-	return m_bRendering;
+	return m_pWaveRenderer && m_pWaveRenderer->Started() && !m_pWaveRenderer->Finished();		// // //
 }
 
 bool CSoundGen::IsBackgroundTask() const
 {
-	return m_bRendering;
+	return IsRendering();
 }
 
 // DPCM handling
@@ -1650,7 +1627,6 @@ BOOL CSoundGen::InitInstance()
 
 	SetThreadPriority(THREAD_PRIORITY_TIME_CRITICAL);
 
-	m_iDelayedStart = 0;
 	m_iFrameCounter = 0;
 
 //	SetupChannels();
@@ -1715,7 +1691,7 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 	if (IsPlaying()) {		// // //
 		int Channel = m_pInstRecorder->GetRecordChannel();
 		if (Channel != -1 && m_pChannels[Channel])		// // //
-			m_pInstRecorder->RecordInstrument(m_iPlayTicks, m_pTrackerView);
+			m_pInstRecorder->RecordInstrument(m_iTicksPlayed, m_pTrackerView);
 	}
 
 	if (m_bHaltRequest) {
@@ -1724,21 +1700,11 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 	}
 
 	// Rendering
-	if (m_bRendering && m_bRequestRenderStop)
-		m_bStoppingRender = true;
-	if (m_bStoppingRender) {
-		if (!m_iDelayedEnd)
+	if (m_pWaveRenderer)		// // //
+		if (m_pWaveRenderer->ShouldStopRender())
 			StopRendering();
-		else
-			--m_iDelayedEnd;
-	}
-
-	if (m_iDelayedStart > 0) {
-		--m_iDelayedStart;
-		if (!m_iDelayedStart) {
-			PostThreadMessage(WM_USER_PLAY, MODE_PLAY_START, m_iRenderTrack);
-		}
-	}
+		else if (m_pWaveRenderer->ShouldStartPlayer())
+			PostThreadMessage(WM_USER_PLAY, MODE_PLAY_START, m_pWaveRenderer->GetRenderTrack());
 
 	// Check if a previewed sample should be removed
 	if (m_pPreviewSample && PreviewDone())
@@ -1886,12 +1852,7 @@ void CSoundGen::OnResetPlayer(WPARAM wParam, LPARAM lParam)
 
 void CSoundGen::OnStartRender(WPARAM wParam, LPARAM lParam)
 {
-	ResetBuffer();
-	m_bRequestRenderStop = false;
-	m_bStoppingRender = false;		// // //
-	m_bRendering = true;
-	m_iDelayedStart = 5;	// Wait 5 frames until player starts
-	m_iDelayedEnd = 5;
+	StartRendering();		// // //
 }
 
 void CSoundGen::OnStopRender(WPARAM wParam, LPARAM lParam)
@@ -2117,7 +2078,7 @@ int CSoundGen::GetPlayerTrack() const
 
 int CSoundGen::GetPlayerTicks() const
 {
-	return m_iPlayTicks;
+	return m_iTicksPlayed;
 }
 
 void CSoundGen::MoveToFrame(int Frame)
@@ -2222,7 +2183,7 @@ int CSoundGen::GetDefaultInstrument() const
 
 CInstrument* CSoundGen::GetRecordInstrument() const
 {
-	return m_pInstRecorder->GetRecordInstrument(m_iPlayTicks);
+	return m_pInstRecorder->GetRecordInstrument(m_iTicksPlayed);
 }
 
 void CSoundGen::ResetDumpInstrument()
