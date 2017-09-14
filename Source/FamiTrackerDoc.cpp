@@ -697,8 +697,7 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 	// Todo: avoid calling the main window from document class
 	if (CFrameWnd *pMainFrame = static_cast<CFrameWnd*>(AfxGetMainWnd())) {		// // //
 		CString text;
-		text.Format("%i", FileSize);
-		AfxFormatString1(text, IDS_FILE_SAVED, text);
+		AfxFormatString1(text, IDS_FILE_SAVED, std::to_string(FileSize).c_str());		// // //
 		pMainFrame->SetMessageText(text);
 	}
 

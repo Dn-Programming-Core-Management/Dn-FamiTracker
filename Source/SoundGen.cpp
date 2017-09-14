@@ -487,8 +487,6 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 		if (auto pChan = dynamic_cast<CChannelHandlerN163 *>(ch.get()))
 			pChan->SetChannelCount(pDocument->GetNamcoChannels());
 	}
-	
-	m_iSpeedSplitPoint = pDocument->GetSpeedSplitPoint();
 }
 
 //
@@ -1666,10 +1664,6 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 
 	// Access the document object, skip if access wasn't granted to avoid gaps in audio playback
 	if (m_pDocument->LockDocument(0)) {
-
-		// Read module framerate
-		m_iFrameRate = m_pDocument->GetFrameRate();
-
 		RunFrame();
 
 		// Play queued notes

@@ -3343,6 +3343,8 @@ void CMainFrame::CheckAudioStatus()
 	}
 
 	auto pDriver = theApp.GetSoundGenerator()->GetAudioDriver();		// // //
+	if (!pDriver)
+		return;
 
 	// Wait for signals from the player thread
 	if (pDriver->GetSoundTimeout()) {

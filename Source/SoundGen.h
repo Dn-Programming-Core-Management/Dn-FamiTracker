@@ -319,8 +319,6 @@ private:
 	int					m_iUpdateCycles;					// Number of cycles/APU update
 	int					m_iConsumedCycles;					// Cycles consumed by the update registers functions
 
-	unsigned int		m_iSpeedSplitPoint;					// Speed/tempo split point fetched from the module
-	unsigned int		m_iFrameRate;						// Module frame rate
 	int					m_iLastHighlight;					// // //
 
 	bool				m_bUpdatingAPU;						// // //
