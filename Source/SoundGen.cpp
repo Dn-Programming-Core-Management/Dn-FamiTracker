@@ -74,16 +74,16 @@ namespace {
 
 const std::size_t DEFAULT_AVERAGE_BPM_SIZE = 24;
 
-} // namespace
-
-// The depth of each vibrato level
-const double CSoundGen::NEW_VIBRATO_DEPTH[] = {
+// // // The depth of each vibrato level
+const double NEW_VIBRATO_DEPTH[] = {
 	1.0, 1.5, 2.5, 4.0, 5.0, 7.0, 10.0, 12.0, 14.0, 17.0, 22.0, 30.0, 44.0, 64.0, 96.0, 128.0
 };
 
-const double CSoundGen::OLD_VIBRATO_DEPTH[] = {
+const double OLD_VIBRATO_DEPTH[] = {
 	1.0, 1.0, 2.0, 3.0, 4.0, 7.0, 8.0, 15.0, 16.0, 31.0, 32.0, 63.0, 64.0, 127.0, 128.0, 255.0
 };
+
+} // namespace
 
 IMPLEMENT_DYNCREATE(CSoundGen, CWinThread)
 
@@ -883,7 +883,8 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 	std::queue<int>().swap(m_iRegisterStream);
 #endif
 
-	m_pTempoDisplay = std::make_unique<CTempoDisplay>(*m_pTempoCounter, DEFAULT_AVERAGE_BPM_SIZE);		// // // 050B
+	if (theApp.GetSettings()->Display.bAverageBPM)		// // // 050B
+		m_pTempoDisplay = std::make_unique<CTempoDisplay>(*m_pTempoCounter, DEFAULT_AVERAGE_BPM_SIZE);
 
 	ResetTempo();
 	ResetAPU();
@@ -1220,21 +1221,20 @@ void CSoundGen::SetHighlightRows(int Rows)		// // //
 }
 
 // Return current tempo setting in BPM
-float CSoundGen::GetTempo() const
+double CSoundGen::GetTempo() const
 {
-	return static_cast<float>(m_pTempoCounter->GetTempo());		// // //
+	return m_pTempoCounter->GetTempo();		// // //
 }
 
-float CSoundGen::GetAverageBPM() const		// // // 050B
+double CSoundGen::GetAverageBPM() const		// // // 050B
 {
-	return static_cast<float>(m_pTempoDisplay ? m_pTempoDisplay->GetAverageBPM() : GetTempo());
+	return m_pTempoDisplay ? m_pTempoDisplay->GetAverageBPM() : GetTempo();
 }
 
 float CSoundGen::GetCurrentBPM() const		// // //
 {
-	float EngineSpeed = static_cast<float>(m_pDocument->GetFrameRate());
-	float BPM = std::min(IsPlaying() && theApp.GetSettings()->Display.bAverageBPM ? GetAverageBPM() : GetTempo(),
-						 EngineSpeed * 15);		// // // 050B
+	double EngineSpeed = m_pDocument->GetFrameRate();
+	double BPM = std::min(GetAverageBPM(), EngineSpeed * 15);		// // // 050B
 	return static_cast<float>(BPM * 4. / (m_iLastHighlight ? m_iLastHighlight : 4));
 }
 
@@ -1296,18 +1296,7 @@ void CSoundGen::LoadMachineSettings()		// // //
 
 stDPCMState CSoundGen::GetDPCMState() const
 {
-	stDPCMState State;
-
-	if (m_pAPU == NULL) {
-		State.DeltaCntr = 0;
-		State.SamplePos = 0;
-	}
-	else {
-		State.DeltaCntr = m_pAPU->GetDeltaCounter();
-		State.SamplePos = m_pAPU->GetSamplePos();
-	}
-
-	return State;
+	return m_pAPU ? stDPCMState {m_pAPU->GetSamplePos(), m_pAPU->GetDeltaCounter()} : stDPCMState {0, 0};		// // //
 }
 
 int CSoundGen::GetChannelVolume(int Channel) const
@@ -1317,22 +1306,12 @@ int CSoundGen::GetChannelVolume(int Channel) const
 	return m_pChannels[Channel]->GetChannelVolume();
 }
 
-void CSoundGen::SetSkipRow(int Row)
-{
-	m_iSkipToRow = Row;
-}
-
-void CSoundGen::SetJumpPattern(int Pattern)
-{
-	m_iJumpToPattern = Pattern;
-}
-
-void CSoundGen::EvaluateGlobalEffects(stChanNote *NoteData, int EffColumns)
+void CSoundGen::EvaluateGlobalEffects(stChanNote &NoteData, int EffColumns)		// // //
 {
 	// Handle global effects (effects that affects all channels)
 	for (int i = 0; i < EffColumns; ++i) {
-		unsigned char EffParam = NoteData->EffParam[i];
-		switch (NoteData->EffNumber[i]) {
+		unsigned char EffParam = NoteData.EffParam[i];
+		switch (NoteData.EffNumber[i]) {
 			// Fxx: Sets speed to xx
 			case EF_SPEED:
 				m_pTempoCounter->DoFxx(EffParam ? EffParam : 1);		// // //
@@ -1345,12 +1324,12 @@ void CSoundGen::EvaluateGlobalEffects(stChanNote *NoteData, int EffColumns)
 
 			// Bxx: Jump to pattern xx
 			case EF_JUMP:
-				SetJumpPattern(EffParam);
+				m_iJumpToPattern = EffParam;
 				break;
 
 			// Dxx: Skip to next track and start at row xx
 			case EF_SKIP:
-				SetSkipRow(EffParam);
+				m_iSkipToRow = EffParam;
 				break;
 
 			// Cxx: Halt playback
@@ -1365,8 +1344,7 @@ void CSoundGen::EvaluateGlobalEffects(stChanNote *NoteData, int EffColumns)
 			default: continue;		// // //
 		}
 
-		NoteData->EffNumber[i] = EF_NONE;
-		NoteData->EffParam[i] = 0;
+		NoteData.EffNumber[i] = EF_NONE;
 	}
 }
 
@@ -1597,7 +1575,8 @@ void CSoundGen::DocumentHandleTick() {
 	if (IsPlaying()) {
 		if (IsRendering())
 			m_pWaveRenderer->Tick();
-		m_pTempoDisplay->Tick();		// // // 050B
+		if (m_pTempoDisplay)		// // // 050B
+			m_pTempoDisplay->Tick();
 		++m_iTicksPlayed;		// // //
 
 		int SteppedRows = 0;		// // //
@@ -1611,18 +1590,23 @@ void CSoundGen::DocumentHandleTick() {
 			if (IsRendering())
 				m_pWaveRenderer->StepRow();		// // //
 //			}
+			if (m_bDoHalt)
+				m_bHaltRequest = true;
 			ReadPatternRow(); // global commands should be processed here
 
 			if (auto pMark = m_pDocument->GetBookmarkAt(m_iPlayTrack, m_iPlayFrame, m_iPlayRow))		// // //
 				if (pMark->m_Highlight.First != -1)
 					m_iLastHighlight = pMark->m_Highlight.First;
 
-			m_pTempoDisplay->StepRow();		// // // 050B
+			if (m_pTempoDisplay)		// // // 050B
+				m_pTempoDisplay->StepRow();
 		}
 		m_pTempoCounter->Tick();		// // //
 
-		if (m_bDoHalt || (IsRendering() && m_pWaveRenderer->ShouldStopPlayer()))		// // //
+		if ((IsRendering() && m_pWaveRenderer->ShouldStopPlayer()))		// // //
 			m_bHaltRequest = true;
+		if (m_bDoHalt)
+			SteppedRows = 0;
 
 		// Update player
 		if (SteppedRows > 0 && !m_bHaltRequest) {
@@ -1858,23 +1842,21 @@ void CSoundGen::ReadPatternRow()
 	stChanNote NoteData;
 
 	for (int i = 0, Channels = m_pDocument->GetChannelCount(); i < Channels; ++i)
-		if (PlayerGetNote(i, NoteData))		// // //
+		if (PlayerGetNote(i, NoteData); !m_pTrackerView->IsChannelMuted(i))		// // //
 			QueueNote(i, NoteData, NOTE_PRIO_1);
 }
 
 // // //
-bool CSoundGen::PlayerGetNote(int Channel, stChanNote &NoteData) {
+void CSoundGen::PlayerGetNote(int Channel, stChanNote &NoteData) {
 	ASSERT(m_pTrackerView != NULL);
 
 	m_pDocument->GetNoteData(m_iPlayTrack, m_iPlayFrame, Channel, m_iPlayRow, &NoteData);
 
 	// // // evaluate global commands as soon as possible
-	EvaluateGlobalEffects(&NoteData, m_pDocument->GetEffColumns(m_iPlayTrack, Channel) + 1);
+	EvaluateGlobalEffects(NoteData, m_pDocument->GetEffColumns(m_iPlayTrack, Channel) + 1);
 	
 	// Let view know what is about to play
 	m_pTrackerView->PlayerPlayNote(Channel, NoteData);		// // //
-
-	return !m_pTrackerView->IsChannelMuted(Channel);		// // //
 }
 
 void CSoundGen::PlayerStepRow()

@@ -149,8 +149,6 @@ public:
 	void		 ResetState();
 	void		 ResetTempo();
 	void		 SetHighlightRows(int Rows);		// // //
-	float		 GetTempo() const;
-	float		 GetAverageBPM() const;		// // //
 	float		 GetCurrentBPM() const;		// // //
 	bool		 IsPlaying() const;
 
@@ -158,9 +156,7 @@ public:
 	unsigned int GetFrameRate();
 
 	// Tracker playing
-	void		 SetJumpPattern(int Pattern);
-	void		 SetSkipRow(int Row);
-	void		 EvaluateGlobalEffects(stChanNote *NoteData, int EffColumns);
+	void		 EvaluateGlobalEffects(stChanNote &NoteData, int EffColumns);		// // //
 
 	stDPCMState	 GetDPCMState() const;
 	int			 GetChannelVolume(int Channel) const;		// // //
@@ -260,20 +256,16 @@ private:
 	
 	// Player
 	void		ReadPatternRow();
-	bool		PlayerGetNote(int Channel, stChanNote &NoteData);		// // //
+	void		PlayerGetNote(int Channel, stChanNote &NoteData);		// // //
 	void		PlayerStepRow();
 	void		PlayerStepFrame();
 	void		PlayerJumpTo(int Frame);
 	void		PlayerSkipTo(int Row);
 
+	double		GetTempo() const;		// // //
+	double		GetAverageBPM() const;		// // //
+
 	void		ApplyGlobalState();		// // //
-
-	// // // Instrument recorder
-	void		ResetRecordCache();
-
-public:
-	static const double NEW_VIBRATO_DEPTH[];
-	static const double OLD_VIBRATO_DEPTH[];
 
 	//
 	// Private variables
