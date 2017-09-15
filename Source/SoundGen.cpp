@@ -52,6 +52,7 @@
 #include "DetuneTable.h"		// // //
 #include "Arpeggiator.h"		// // //
 #include "TempoCounter.h"		// // //
+#include "TempoDisplay.h"		// // // 050B
 #include "AudioDriver.h"		// // //
 #include "WaveRenderer.h"		// // //
 
@@ -68,6 +69,12 @@
 //#define WRITE_VGM
 
 
+
+namespace {
+
+const std::size_t DEFAULT_AVERAGE_BPM_SIZE = 24;
+
+} // namespace
 
 // The depth of each vibrato level
 const double CSoundGen::NEW_VIBRATO_DEPTH[] = {
@@ -119,8 +126,7 @@ CSoundGen::CSoundGen() :
 	m_iRegisterStream(),		// // //
 	m_pSequencePlayPos(NULL),
 	m_iSequencePlayPos(0),
-	m_iSequenceTimeout(0),
-	m_iBPMCachePosition(0)		// // //
+	m_iSequenceTimeout(0)
 {
 	TRACE("SoundGen: Object created\n");
 
@@ -877,15 +883,7 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 	std::queue<int>().swap(m_iRegisterStream);
 #endif
 
-	{		// // // 050B
-		m_iRowTickCount = 0;
-
-		float Tempo = GetTempo();
-		for (auto &x : m_fBPMCacheValue)
-			x = Tempo;
-		for (auto &x : m_iBPMCacheTicks)
-			x = 1;
-	}
+	m_pTempoDisplay = std::make_unique<CTempoDisplay>(*m_pTempoCounter, DEFAULT_AVERAGE_BPM_SIZE);		// // // 050B
 
 	ResetTempo();
 	ResetAPU();
@@ -1043,6 +1041,7 @@ void CSoundGen::HaltPlayer()
 	m_bPlaying = false;
 	m_bHaltRequest = false;
 	m_bDoHalt = false;		// // //
+	m_pTempoDisplay.reset();		// // //
 
 	MakeSilent();
 	
@@ -1228,13 +1227,7 @@ float CSoundGen::GetTempo() const
 
 float CSoundGen::GetAverageBPM() const		// // // 050B
 {
-	float BPMtot = 0.f;
-	float TickTot = 0.f;
-	for (int i = 0; i < AVERAGE_BPM_SIZE; ++i)
-		BPMtot += m_fBPMCacheValue[i] * m_iBPMCacheTicks[i];
-	for (const auto &x : m_iBPMCacheTicks)
-		TickTot += x;
-	return static_cast<float>(BPMtot / TickTot);
+	return static_cast<float>(m_pTempoDisplay ? m_pTempoDisplay->GetAverageBPM() : GetTempo());
 }
 
 float CSoundGen::GetCurrentBPM() const		// // //
@@ -1604,9 +1597,9 @@ void CSoundGen::DocumentHandleTick() {
 	if (IsPlaying()) {
 		if (IsRendering())
 			m_pWaveRenderer->Tick();
-
+		m_pTempoDisplay->Tick();		// // // 050B
 		++m_iTicksPlayed;		// // //
-		++m_iRowTickCount;		// // // 050B
+
 		int SteppedRows = 0;		// // //
 
 		// Fetch next row
@@ -1624,38 +1617,30 @@ void CSoundGen::DocumentHandleTick() {
 				if (pMark->m_Highlight.First != -1)
 					m_iLastHighlight = pMark->m_Highlight.First;
 
-			// // // 050B
-			m_fBPMCacheValue[m_iBPMCachePosition] = GetTempo();		// // // 050B
-			m_iBPMCacheTicks[m_iBPMCachePosition] = m_iRowTickCount;
-			m_iRowTickCount = 0;
-			++m_iBPMCachePosition %= AVERAGE_BPM_SIZE;
+			m_pTempoDisplay->StepRow();		// // // 050B
 		}
 		m_pTempoCounter->Tick();		// // //
 
-		if (IsRendering() && m_pWaveRenderer->ShouldStopPlayer())		// // //
+		if (m_bDoHalt || (IsRendering() && m_pWaveRenderer->ShouldStopPlayer()))		// // //
 			m_bHaltRequest = true;
 
 		// Update player
 		if (SteppedRows > 0 && !m_bHaltRequest) {
-			if (m_bDoHalt)		// // //
-				++m_iRowsPlayed;
-			else {
-				// Jump
-				if (m_iJumpToPattern != -1)
-					PlayerJumpTo(m_bPlayLooping ? m_iPlayFrame : m_iJumpToPattern);		// // //
-				// Skip
-				else if (m_iSkipToRow != -1)
-					PlayerSkipTo(m_bPlayLooping ? m_iPlayFrame : m_iSkipToRow);
-				// or just move on
-				else
-					while (SteppedRows--)
-						PlayerStepRow();
-			}
+			// Jump
+			if (m_iJumpToPattern != -1)
+				PlayerJumpTo(m_bPlayLooping ? m_iPlayFrame : m_iJumpToPattern);		// // //
+			// Skip
+			else if (m_iSkipToRow != -1)
+				PlayerSkipTo(m_bPlayLooping ? m_iPlayFrame : m_iSkipToRow);
+			// or just move on
+			else
+				while (SteppedRows--)
+					PlayerStepRow();
 
 			m_iJumpToPattern = -1;
 			m_iSkipToRow = -1;
 
-			if (!m_bDoHalt && !IsBackgroundTask() && m_pTrackerView)		// // //
+			if (!IsBackgroundTask() && m_pTrackerView)		// // //
 				m_pTrackerView->PostMessage(WM_USER_PLAYER, m_iPlayFrame, m_iPlayRow);
 		}
 	}
@@ -1875,9 +1860,6 @@ void CSoundGen::ReadPatternRow()
 	for (int i = 0, Channels = m_pDocument->GetChannelCount(); i < Channels; ++i)
 		if (PlayerGetNote(i, NoteData))		// // //
 			QueueNote(i, NoteData, NOTE_PRIO_1);
-
-	if (m_bDoHalt)		// // //
-		m_bHaltRequest = true;
 }
 
 // // //

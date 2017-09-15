@@ -89,6 +89,7 @@ class CArpeggiator;		// // //
 class CTempoCounter;		// // //
 class CAudioDriver;		// // //
 class CWaveRenderer;		// // //
+class CTempoDisplay;		// // //
 
 // CSoundGen
 
@@ -305,6 +306,7 @@ private:
 // Tracker playing variables
 private:
 	std::unique_ptr<CTempoCounter> m_pTempoCounter;			// // // tempo calculation
+	std::unique_ptr<CTempoDisplay> m_pTempoDisplay;			// // // 050B
 	unsigned int		m_iTicksPlayed;
 	bool				m_bPlaying;							// True when tracker is playing back the module
 	bool				m_bHaltRequest;						// True when a halt is requested
@@ -316,13 +318,10 @@ private:
 
 	int					m_iLastHighlight;					// // //
 
-	bool				m_bUpdatingAPU;						// // //
-
 	// Play control
 	int					m_iJumpToPattern;
 	int					m_iSkipToRow;
 	bool				m_bDoHalt;							// // // Cxx effect
-	int					m_iRowTickCount;					// // // 050B
 	play_mode_t			m_iPlayMode;
 
 	unsigned int		m_iNoteLookupTableNTSC[96];			// For 2A03
@@ -336,16 +335,11 @@ private:
 
 	machine_t			m_iMachineType;						// // // NTSC/PAL
 
-	CArpeggiator		*m_Arpeggiator = nullptr;		// // //
-
-	static const int	AVERAGE_BPM_SIZE = 24;		// // // 050B
-	float				m_fBPMCacheValue[AVERAGE_BPM_SIZE];
-	int					m_iBPMCacheTicks[AVERAGE_BPM_SIZE];
-	int					m_iBPMCachePosition;
+	CArpeggiator		*m_Arpeggiator = nullptr;			// // //
 
 	std::queue<int>		m_iRegisterStream;					// // // vgm export
 
-	std::shared_ptr<CWaveRenderer> m_pWaveRenderer;		// // //
+	std::shared_ptr<CWaveRenderer> m_pWaveRenderer;			// // //
 	std::unique_ptr<CInstrumentRecorder> m_pInstRecorder;
 
 	// FDS & N163 waves
@@ -353,12 +347,12 @@ private:
 	volatile bool		m_bInternalWaveChanged;
 
 	// Player state
-	int					m_iQueuedFrame;					// Queued frame
-	int					m_iPlayTrack;					// Current track that is playing
-	int					m_iPlayFrame;					// Current frame to play
-	int					m_iPlayRow;						// Current row to play
-	unsigned int		m_iFramesPlayed;				// Total number of frames played since start
-	unsigned int		m_iRowsPlayed;					// Total number of rows played since start
+	int					m_iQueuedFrame;						// Queued frame
+	int					m_iPlayTrack;						// Current track that is playing
+	int					m_iPlayFrame;						// Current frame to play
+	int					m_iPlayRow;							// Current row to play
+	unsigned int		m_iFramesPlayed;					// Total number of frames played since start
+	unsigned int		m_iRowsPlayed;						// Total number of rows played since start
 
 	// Sequence play visualization
 	const CSequence		*m_pSequencePlayPos;
