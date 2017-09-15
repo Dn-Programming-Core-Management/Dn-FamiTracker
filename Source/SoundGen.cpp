@@ -111,7 +111,6 @@ CSoundGen::CSoundGen() :
 	m_iMachineType(NTSC),
 	m_bRunning(false),
 	m_hInterruptEvent(NULL),
-	m_bDirty(false),
 	m_iQueuedFrame(-1),
 	m_iPlayFrame(0),
 	m_iPlayRow(0),
@@ -871,9 +870,7 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 	m_iRowsPlayed		= 0;		// // //
 	m_iJumpToPattern	= -1;
 	m_iSkipToRow		= -1;
-	m_bUpdateRow		= true;
 	m_iPlayMode			= Mode;
-	m_bDirty			= true;
 	m_iPlayTrack		= Track;
 
 #ifdef WRITE_VGM		// // //
@@ -1215,9 +1212,7 @@ void CSoundGen::ResetTempo()
 		return;
 
 	m_pTempoCounter->LoadTempo(m_iPlayTrack);		// // //
-	
 	m_iLastHighlight = m_pDocument->GetHighlight().First;		// // //
-	m_bUpdateRow = false;
 }
 
 void CSoundGen::SetHighlightRows(int Rows)		// // //
@@ -1254,94 +1249,6 @@ float CSoundGen::GetCurrentBPM() const		// // //
 
 bool CSoundGen::IsPlaying() const {
 	return m_bPlaying;
-}
-
-void CSoundGen::RunFrame()
-{
-	// Called from player thread
-	ASSERT(GetCurrentThreadId() == m_nThreadID);
-	ASSERT(m_pDocument != NULL);
-	ASSERT(m_pTrackerView != NULL);
-
-	// View callback
-	if (theApp.GetSettings()->Midi.bMidiArpeggio && m_Arpeggiator)		// // //
-		m_Arpeggiator->Tick(m_pTrackerView->GetSelectedChannel());
-
-	if (IsPlaying()) {
-		if (IsRendering())
-			m_pWaveRenderer->Tick();
-
-		++m_iTicksPlayed;		// // //
-		++m_iRowTickCount;		// // // 050B
-		m_iRowsStepped = 0;
-
-		// Fetch next row
-		if (m_pTempoCounter->CanStepRow()) {
-			// Enable this to skip rows on high tempos
-//			while (m_pTempoCounter->CanStepRow())  {
-			m_pTempoCounter->StepRow();		// // //
-			if (IsRendering())
-				m_pWaveRenderer->StepRow();		// // //
-			++m_iRowsStepped;
-//			}
-			m_bUpdateRow = true;
-			ReadPatternRow();
-
-			if (auto pMark = m_pDocument->GetBookmarkAt(m_iPlayTrack, m_iPlayFrame, m_iPlayRow))		// // //
-				if (pMark->m_Highlight.First != -1)
-					m_iLastHighlight = pMark->m_Highlight.First;
-
-			// // // 050B
-			m_fBPMCacheValue[m_iBPMCachePosition] = GetTempo();		// // // 050B
-			m_iBPMCacheTicks[m_iBPMCachePosition] = m_iRowTickCount;
-			m_iRowTickCount = 0;
-			++m_iBPMCachePosition %= AVERAGE_BPM_SIZE;
-		}
-		else {
-			m_bUpdateRow = false;
-		}
-
-		if (IsRendering() && m_pWaveRenderer->ShouldStopPlayer())		// // //
-			m_bHaltRequest = true;
-	}
-}
-
-void CSoundGen::CheckControl()
-{
-	// This function takes care of jumping and skipping
-	if (IsPlaying()) {
-		if (m_bDoHalt) {		// // //
-			++m_iRowsPlayed;
-		}
-		else if (m_bPlayLooping) {
-			if (m_iJumpToPattern != -1 || m_iSkipToRow != -1)
-				m_iPlayRow = 0;
-			else
-				while (m_iRowsStepped--)
-					PlayerStepRow();
-		}
-		else {
-			// Jump
-			if (m_iJumpToPattern != -1)
-				PlayerJumpTo(m_iJumpToPattern);
-			// Skip
-			else if (m_iSkipToRow != -1)
-				PlayerSkipTo(m_iSkipToRow);
-			// or just move on
-			else
-				while (m_iRowsStepped--)
-					PlayerStepRow();
-		}
-
-		m_iJumpToPattern = -1;
-		m_iSkipToRow = -1;
-	}
-
-	if (m_bDirty) {
-		m_bDirty = false;
-		if (!IsBackgroundTask() && m_pTrackerView)		// // //
-			m_pTrackerView->PostMessage(WM_USER_PLAYER, m_iPlayFrame, m_iPlayRow);
-	}
 }
 
 void CSoundGen::LoadMachineSettings()		// // //
@@ -1415,15 +1322,6 @@ int CSoundGen::GetChannelVolume(int Channel) const
 	if (!m_pChannels[Channel])
 		return 0;
 	return m_pChannels[Channel]->GetChannelVolume();
-}
-
-void CSoundGen::PlayNote(int Channel, stChanNote *NoteData, int EffColumns)
-{	
-	if (!NoteData)
-		return;
-
-	// Update the individual channel
-	m_pChannels[Channel]->PlayNote(NoteData, EffColumns);
 }
 
 void CSoundGen::SetSkipRow(int Row)
@@ -1664,18 +1562,7 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 
 	// Access the document object, skip if access wasn't granted to avoid gaps in audio playback
 	if (m_pDocument->LockDocument(0)) {
-		RunFrame();
-
-		// Play queued notes
-		PlayChannelNotes();
-
-		// Update player
-		UpdatePlayer();
-
-		// Channel updates (instruments, effects etc)
-		UpdateChannels();
-
-		// Unlock document
+		DocumentHandleTick();		// // //
 		m_pDocument->UnlockDocument();
 	}
 
@@ -1707,54 +1594,106 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 	return TRUE;
 }
 
-void CSoundGen::PlayChannelNotes()
-{
-	// Read notes
+// // //
+void CSoundGen::DocumentHandleTick() {
+	// Called from player thread
+	ASSERT(GetCurrentThreadId() == m_nThreadID);
+	ASSERT(m_pDocument != NULL);
+	ASSERT(m_pTrackerView != NULL);
+
+	if (IsPlaying()) {
+		if (IsRendering())
+			m_pWaveRenderer->Tick();
+
+		++m_iTicksPlayed;		// // //
+		++m_iRowTickCount;		// // // 050B
+		int SteppedRows = 0;		// // //
+
+		// Fetch next row
+		if (m_pTempoCounter->CanStepRow()) {
+			// Enable this to skip rows on high tempos
+//			while (m_pTempoCounter->CanStepRow())  {
+			++SteppedRows;
+			m_pTempoCounter->StepRow();		// // //
+			if (IsRendering())
+				m_pWaveRenderer->StepRow();		// // //
+//			}
+			ReadPatternRow(); // global commands should be processed here
+
+			if (auto pMark = m_pDocument->GetBookmarkAt(m_iPlayTrack, m_iPlayFrame, m_iPlayRow))		// // //
+				if (pMark->m_Highlight.First != -1)
+					m_iLastHighlight = pMark->m_Highlight.First;
+
+			// // // 050B
+			m_fBPMCacheValue[m_iBPMCachePosition] = GetTempo();		// // // 050B
+			m_iBPMCacheTicks[m_iBPMCachePosition] = m_iRowTickCount;
+			m_iRowTickCount = 0;
+			++m_iBPMCachePosition %= AVERAGE_BPM_SIZE;
+		}
+		m_pTempoCounter->Tick();		// // //
+
+		if (IsRendering() && m_pWaveRenderer->ShouldStopPlayer())		// // //
+			m_bHaltRequest = true;
+
+		// Update player
+		if (SteppedRows > 0 && !m_bHaltRequest) {
+			if (m_bDoHalt)		// // //
+				++m_iRowsPlayed;
+			else {
+				// Jump
+				if (m_iJumpToPattern != -1)
+					PlayerJumpTo(m_bPlayLooping ? m_iPlayFrame : m_iJumpToPattern);		// // //
+				// Skip
+				else if (m_iSkipToRow != -1)
+					PlayerSkipTo(m_bPlayLooping ? m_iPlayFrame : m_iSkipToRow);
+				// or just move on
+				else
+					while (SteppedRows--)
+						PlayerStepRow();
+			}
+
+			m_iJumpToPattern = -1;
+			m_iSkipToRow = -1;
+
+			if (!m_bDoHalt && !IsBackgroundTask() && m_pTrackerView)		// // //
+				m_pTrackerView->PostMessage(WM_USER_PLAYER, m_iPlayFrame, m_iPlayRow);
+		}
+	}
+
+	// View callback
+	if (theApp.GetSettings()->Midi.bMidiArpeggio && m_Arpeggiator)		// // //
+		m_Arpeggiator->Tick(m_pTrackerView->GetSelectedChannel());
+
+	// Play queued notes
 	for (auto &x : m_pTrackerChannels) {		// // //
+		// workaround to permutate channel indices
 		int Index = x->GetID();
 		int Channel = m_pDocument->GetChannelIndex(m_pTrackerChannels[Index]->GetID());
-		if (Channel == -1) continue;
+		if (Channel == -1)
+			continue;
+		auto &pChan = m_pChannels[Index];
+		auto &pTrackerChan = m_pTrackerChannels[Index];
 		
 		// Run auto-arpeggio, if enabled
 		if (theApp.GetSettings()->Midi.bMidiArpeggio && m_Arpeggiator)		// // //
 			if (int Arpeggio = m_Arpeggiator->GetNextNote(Channel); Arpeggio > 0)
-				m_pChannels[Index]->Arpeggiate(Arpeggio);
+				pChan->Arpeggiate(Arpeggio);
 
 		// Check if new note data has been queued for playing
-		if (m_pTrackerChannels[Index]->NewNoteData()) {
-			stChanNote Note = m_pTrackerChannels[Index]->GetNote();
-			PlayNote(Index, &Note, m_pDocument->GetEffColumns(m_iPlayTrack, Channel) + 1);
+		if (pTrackerChan->NewNoteData()) {
+			stChanNote Note = pTrackerChan->GetNote();
+			pChan->PlayNote(&Note, m_pDocument->GetEffColumns(m_iPlayTrack, Channel) + 1);
 		}
 
 		// Pitch wheel
-		int Pitch = m_pTrackerChannels[Index]->GetPitch();
-		m_pChannels[Index]->SetPitch(Pitch);
+		pChan->SetPitch(pTrackerChan->GetPitch());
 
 		// Update volume meters
-		m_pTrackerChannels[Index]->SetVolumeMeter(m_pAPU->GetVol(m_pTrackerChannels[Index]->GetID()));
+		pTrackerChan->SetVolumeMeter(m_pAPU->GetVol(pTrackerChan->GetID()));
+
+		// Channel updates (instruments, effects etc)
+		m_bHaltRequest ? pChan->ResetChannel() : pChan->ProcessChannel();
 	}
-
-	// Instrument sequence visualization
-	// // //
-}
-
-void CSoundGen::UpdatePlayer()
-{
-	// Update player state
-
-	if (m_bUpdateRow && !m_bHaltRequest)
-		CheckControl();
-
-	if (IsPlaying())
-		m_pTempoCounter->Tick();		// // //
-}
-
-void CSoundGen::UpdateChannels()
-{
-	// Update channels
-	for (auto &ch : m_pChannels)		// // //
-		if (ch)
-			m_bHaltRequest ? ch->ResetChannel() : ch->ProcessChannel();
 }
 
 void CSoundGen::UpdateAPU()
@@ -1944,29 +1883,16 @@ void CSoundGen::ReadPatternRow()
 // // //
 bool CSoundGen::PlayerGetNote(int Channel, stChanNote &NoteData) {
 	ASSERT(m_pTrackerView != NULL);
+
 	m_pDocument->GetNoteData(m_iPlayTrack, m_iPlayFrame, Channel, m_iPlayRow, &NoteData);
+
+	// // // evaluate global commands as soon as possible
+	EvaluateGlobalEffects(&NoteData, m_pDocument->GetEffColumns(m_iPlayTrack, Channel) + 1);
 	
 	// Let view know what is about to play
 	m_pTrackerView->PlayerPlayNote(Channel, NoteData);		// // //
 
-	if (!m_pTrackerView->IsChannelMuted(Channel))
-		return true;
-
-	NoteData.Note		= HALT;
-	NoteData.Octave		= 0;
-	NoteData.Instrument = 0;
-
-	bool ValidCommand = false;
-	for (int j = 0, n = m_pDocument->GetEffColumns(m_iPlayTrack, Channel) + 1; j < n; ++j)
-		switch (NoteData.EffNumber[j]) {
-		case EF_HALT: case EF_JUMP: case EF_SPEED: case EF_SKIP: case EF_GROOVE:
-			ValidCommand = true;
-			break;
-		default:
-			NoteData.EffNumber[j] = EF_NONE;
-		}
-
-	return ValidCommand;
+	return !m_pTrackerView->IsChannelMuted(Channel);		// // //
 }
 
 void CSoundGen::PlayerStepRow()
@@ -1980,8 +1906,6 @@ void CSoundGen::PlayerStepRow()
 	}
 
 	++m_iRowsPlayed;		// // //
-
-	m_bDirty = true;
 }
 
 void CSoundGen::PlayerStepFrame()
@@ -1998,8 +1922,6 @@ void CSoundGen::PlayerStepFrame()
 	}
 
 	++m_iFramesPlayed;
-
-	m_bDirty = true;
 }
 
 void CSoundGen::PlayerJumpTo(int Frame)
@@ -2015,8 +1937,6 @@ void CSoundGen::PlayerJumpTo(int Frame)
 
 	++m_iFramesPlayed;
 	++m_iRowsPlayed;		// // //
-
-	m_bDirty = true;
 }
 
 void CSoundGen::PlayerSkipTo(int Row)
@@ -2034,8 +1954,6 @@ void CSoundGen::PlayerSkipTo(int Row)
 	
 	++m_iFramesPlayed;
 	++m_iRowsPlayed;		// // //
-
-	m_bDirty = true;
 }
 
 void CSoundGen::QueueNote(int Channel, stChanNote &NoteData, note_prio_t Priority) const

@@ -247,13 +247,8 @@ private:
 	void		StopRendering();		// // //
 
 	// Player
-	void		UpdateChannels();
+	void		DocumentHandleTick();		// // //
 	void		UpdateAPU();
-	void		UpdatePlayer();
-	void		PlayChannelNotes();
-	void	 	PlayNote(int Channel, stChanNote *NoteData, int EffColumns);
-	void		RunFrame();
-	void		CheckControl();
 	void		ResetBuffer();
 	void		BeginPlayer(play_mode_t Mode, int Track);
 	void		HaltPlayer();
@@ -327,7 +322,6 @@ private:
 	int					m_iJumpToPattern;
 	int					m_iSkipToRow;
 	bool				m_bDoHalt;							// // // Cxx effect
-	int					m_iRowsStepped;						// # of rows skipped last update
 	int					m_iRowTickCount;					// // // 050B
 	play_mode_t			m_iPlayMode;
 
@@ -341,8 +335,6 @@ private:
 	int					m_iVibratoTable[VIBRATO_LENGTH];
 
 	machine_t			m_iMachineType;						// // // NTSC/PAL
-
-	bool				m_bUpdateRow;
 
 	CArpeggiator		*m_Arpeggiator = nullptr;		// // //
 
@@ -365,7 +357,6 @@ private:
 	int					m_iPlayTrack;					// Current track that is playing
 	int					m_iPlayFrame;					// Current frame to play
 	int					m_iPlayRow;						// Current row to play
-	bool				m_bDirty;						// Row/frame has changed
 	unsigned int		m_iFramesPlayed;				// Total number of frames played since start
 	unsigned int		m_iRowsPlayed;					// Total number of rows played since start
 

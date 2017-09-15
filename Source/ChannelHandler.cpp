@@ -286,11 +286,7 @@ void CChannelHandler::PlayNote(stChanNote *pNoteData, int EffColumns)
 {
 	ASSERT (pNoteData != NULL);
 
-	// Handle global effects
-	// // // global effects are removed there first
-	m_pSoundGen->EvaluateGlobalEffects(pNoteData, EffColumns);
-
-	// Handle delay commands
+	// // // Handle delay commands
 	if (HandleDelay(pNoteData, EffColumns))
 		return;
 
