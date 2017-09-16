@@ -34,6 +34,7 @@ public:
 	virtual ~CWaveRenderer();
 
 	void SetOutputFile(std::unique_ptr<CWaveFile> pWave);
+	void CloseOutputFile();
 	void FlushBuffer(char *pBuf, unsigned Size) const;
 
 	void Start();

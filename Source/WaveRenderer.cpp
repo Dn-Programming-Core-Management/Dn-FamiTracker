@@ -26,12 +26,18 @@
 #include <iomanip>
 
 CWaveRenderer::~CWaveRenderer() {
-	if (m_pWaveFile)
-		m_pWaveFile->CloseFile();
+	CloseOutputFile();
 }
 
 void CWaveRenderer::SetOutputFile(std::unique_ptr<CWaveFile> pWave) {
 	pWave.swap(m_pWaveFile);
+}
+
+void CWaveRenderer::CloseOutputFile() {
+	if (m_pWaveFile) {
+		m_pWaveFile->CloseFile();
+		m_pWaveFile.reset();
+	}
 }
 
 void CWaveRenderer::FlushBuffer(char *pBuf, unsigned Size) const {
@@ -91,8 +97,10 @@ CWaveRendererTick::CWaveRendererTick(unsigned Ticks, double Rate) :
 }
 
 void CWaveRendererTick::Tick() {
-	if (++m_iRenderTick > m_iTicksToRender)
+	if (m_iRenderTick == m_iTicksToRender)		// // //
 		FinishRender();
+	else
+		++m_iRenderTick;
 }
 
 std::string CWaveRendererTick::GetProgressString() const {
@@ -117,8 +125,10 @@ CWaveRendererRow::CWaveRendererRow(unsigned Rows) :
 }
 
 void CWaveRendererRow::StepRow() {
-	if (++m_iRenderRow >= m_iRowsToRender)		// // //
+	if (m_iRenderRow == m_iRowsToRender)		// // //
 		FinishRender();
+	else
+		++m_iRenderRow;
 }
 
 std::string CWaveRendererRow::GetProgressString() const {

@@ -1372,6 +1372,7 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, const std::shared_ptr<CWaveRenderer> 
 		return true;
 	}
 
+	StopPlayer();
 	AfxMessageBox(IDS_FILE_OPEN_ERROR);
 	return false;
 }
@@ -1537,6 +1538,13 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 		m_pDocument->UnlockDocument();
 	}
 
+	// Rendering
+	if (m_pWaveRenderer)		// // //
+		if (m_pWaveRenderer->ShouldStopRender())
+			StopRendering();
+		else if (m_pWaveRenderer->ShouldStartPlayer())
+			StartPlayer(std::make_unique<CPlayerCursor>(*m_pDocument, m_pWaveRenderer->GetRenderTrack()));
+
 	// Update APU registers
 	UpdateAPU();
 
@@ -1550,13 +1558,6 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 		// Halt has been requested, abort playback here
 		HaltPlayer();
 	}
-
-	// Rendering
-	if (m_pWaveRenderer)		// // //
-		if (m_pWaveRenderer->ShouldStopRender())
-			StopRendering();
-		else if (m_pWaveRenderer->ShouldStartPlayer())
-			PostThreadMessage(WM_USER_PLAY, MODE_PLAY_START, m_pWaveRenderer->GetRenderTrack());
 
 	// Check if a previewed sample should be removed
 	if (m_pPreviewSample && PreviewDone())

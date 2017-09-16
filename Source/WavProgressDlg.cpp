@@ -116,6 +116,7 @@ void CWavProgressDlg::OnTimer(UINT_PTR nIDEvent)
 	SetDlgItemText(IDC_TIME, Text);
 
 	if (!pSoundGen->IsRendering()) {
+		m_pWaveRenderer->CloseOutputFile();		// // //
 		SetDlgItemText(IDC_CANCEL, CString(MAKEINTRESOURCE(IDS_WAVE_EXPORT_DONE)));
 		CString title;
 		GetWindowText(title);
