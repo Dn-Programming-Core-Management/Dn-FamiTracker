@@ -44,6 +44,7 @@
 #ifdef min
 #undef min
 #endif
+#include <algorithm>		// // //
 
 std::string MakeCommandString(effect_t Effect, unsigned char Param)		// // //
 {

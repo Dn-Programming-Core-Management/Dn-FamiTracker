@@ -33,6 +33,7 @@
 #include "Graphics.h"
 #include "SoundGen.h"
 #include "DPI.h"		// // //
+#include <algorithm>		// // //
 
 /*
  * This is the wave editor for FDS and N163

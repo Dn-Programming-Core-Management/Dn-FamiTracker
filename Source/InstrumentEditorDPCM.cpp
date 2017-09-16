@@ -32,6 +32,7 @@
 #include "Settings.h"
 #include "SoundGen.h"
 #include "DSample.h"		// // //
+#include <algorithm>		// // //
 
 LPCTSTR NO_SAMPLE_STR = _T("(no sample)");
 

@@ -303,6 +303,7 @@ CFamiTrackerView::CFamiTrackerView() :
 	ASSERT_VALID(pSoundGen);
 
 	pSoundGen->AssignView(this);
+	pSoundGen->SetArpeggiator(m_Arpeggiator);		// // //
 }
 
 CFamiTrackerView::~CFamiTrackerView()

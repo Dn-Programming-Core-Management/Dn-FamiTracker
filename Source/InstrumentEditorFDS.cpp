@@ -33,6 +33,7 @@
 #include "Clipboard.h"
 #include "WaveEditor.h"		// // //
 #include "ModSequenceEditor.h"
+#include <algorithm>		// // //
 
 // CInstrumentEditorFDS dialog
 

@@ -32,7 +32,6 @@
 
 /*/ // //
 CSoundGen depends on CFamiTrackerView for:
- - GetArpeggiator
  - MakeSilent
  - GetSelectedFrame
  - GetSelectedRow
@@ -77,7 +76,7 @@ CSoundGen depends on CFamiTrackerView for:
 // Write a file with the volume table
 //#define WRITE_VOLUME_FILE
 
-// // // Log VGM output (experimental)
+// // // Log VGM output (port from sn7t when necessary)
 //#define WRITE_VGM
 
 
@@ -131,7 +130,6 @@ CSoundGen::CSoundGen() :
 	m_bRunning(false),
 	m_hInterruptEvent(NULL),
 	m_iPlayTrack(0),
-	m_iRegisterStream(),		// // //
 	m_pSequencePlayPos(NULL),
 	m_iSequencePlayPos(0),
 	m_iSequenceTimeout(0)
@@ -251,7 +249,7 @@ void CSoundGen::AssignView(CFamiTrackerView *pView)
 
 	// Assigns the tracker view to this object
 	m_pTrackerView = pView;
-	m_Arpeggiator = &m_pTrackerView->GetArpeggiator();		// // //
+	m_pArpeggiator = &m_pTrackerView->GetArpeggiator();		// // //
 }
 
 void CSoundGen::RemoveDocument()
@@ -854,7 +852,7 @@ void CSoundGen::BeginPlayer(std::unique_ptr<CPlayerCursor> Pos)		// // //
 	m_iPlayTrack		= m_pPlayerCursor->GetCurrentTrack();
 
 #ifdef WRITE_VGM		// // //
-	std::queue<int>().swap(m_iRegisterStream);
+	m_pVGMWriter = std::make_unique<CVGMWriter>();
 #endif
 
 	if (theApp.GetSettings()->Display.bAverageBPM)		// // // 050B
@@ -1008,8 +1006,7 @@ std::string CSoundGen::RecallChannelState(int Channel) const		// // //
 	return str;
 }
 
-void CSoundGen::HaltPlayer()
-{
+void CSoundGen::HaltPlayer() {
 	// Called from player thread
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
 
@@ -1032,74 +1029,10 @@ void CSoundGen::HaltPlayer()
 	m_pTempoDisplay.reset();		// // //
 
 #ifdef WRITE_VGM		// // //
-	CFile vgm("test.vgm", CFile::modeCreate | CFile::modeWrite | CFile::typeBinary);
-	int c = 0;
-	for (int i = 0; i < 0x100; ++i)
-		vgm.Write(&c, 1);
-	int Delay = 0;
-	int DelayTotal = 0;
-	const long long VGM_SAMPLE_RATE = 44100;
-
-	while (!m_iRegisterStream.empty()) { // TODO: move this to a separate thread
-		int Val = m_iRegisterStream.front();
-		m_iRegisterStream.pop();
-		if (Val == 0x62) {
-			++Delay;
-			++DelayTotal;
-		}
-		else {
-			if (Delay) {
-				int Samples = static_cast<int>(VGM_SAMPLE_RATE * Delay / m_iFrameRate);
-				while (Samples > 0xFFFF) {
-					Samples -= 0xFFFF;
-					c = 0xFFFF61;
-					vgm.Write(&c, 3);
-				}
-				if (Samples == static_cast<int>(VGM_SAMPLE_RATE / CAPU::FRAME_RATE_NTSC)) { // 735
-					c = 0x62;
-					vgm.Write(&c, 1);
-				}
-				else if (Samples == static_cast<int>(VGM_SAMPLE_RATE / CAPU::FRAME_RATE_PAL)) { // 882
-					c = 0x63;
-					vgm.Write(&c, 1);
-				}
-				else {
-					c = 0x61 | (Samples << 8);
-					vgm.Write(&c, 3);
-				}
-				Delay = 0;
-			}
-			vgm.Write(&Val, 1);
-			Val = m_iRegisterStream.front();
-			m_iRegisterStream.pop();
-			vgm.Write(&Val, 1);
-			Val = m_iRegisterStream.front();
-			m_iRegisterStream.pop();
-			vgm.Write(&Val, 1);
-		}
+	if (m_pVGMWriter) {
+		m_pVGMWriter->SaveVGMFile();
+		m_pVGMWriter.reset();
 	}
-	c = 0x66;
-	vgm.Write(&c, 1);
-
-	vgm.Seek(0, CFile::begin);
-	char Header[256] = {'V', 'g', 'm', ' '};
-	*reinterpret_cast<int*>(Header + 0x04) = static_cast<int>(vgm.GetLength()) - 4;
-	*reinterpret_cast<int*>(Header + 0x08) = 0x161;
-	*reinterpret_cast<int*>(Header + 0x18) = static_cast<int>(VGM_SAMPLE_RATE * DelayTotal / m_iFrameRate);
-	*reinterpret_cast<int*>(Header + 0x24) = m_iFrameRate;
-	*reinterpret_cast<int*>(Header + 0x34) = 0xCC;
-	*reinterpret_cast<int*>(Header + 0x84) = CAPU::BASE_FREQ_NTSC;
-	if (m_pDocument) { // TODO: do this in BeginPlayer
-		if (m_pDocument->ExpansionEnabled(SNDCHIP_FDS))
-			*reinterpret_cast<int*>(Header + 0x84) |= 0x80000000;
-		if (m_pDocument->ExpansionEnabled(SNDCHIP_S5B)) {
-			*reinterpret_cast<int*>(Header + 0x74) = CAPU::BASE_FREQ_NTSC / 2;
-			*reinterpret_cast<int*>(Header + 0x78) = 0x0110;
-		}
-	}
-	
-	vgm.Write(Header, 256);
-	vgm.Close();
 #endif
 }
 
@@ -1191,27 +1124,26 @@ void CSoundGen::SetHighlightRows(int Rows)		// // //
 }
 
 // Return current tempo setting in BPM
-double CSoundGen::GetTempo() const
-{
-	return m_pTempoCounter->GetTempo();		// // //
-}
-
 double CSoundGen::GetAverageBPM() const		// // // 050B
 {
-	return m_pTempoDisplay ? m_pTempoDisplay->GetAverageBPM() : GetTempo();
+	return m_pTempoDisplay ? m_pTempoDisplay->GetAverageBPM() : m_pTempoCounter->GetTempo();
 }
 
 float CSoundGen::GetCurrentBPM() const		// // //
 {
-	double EngineSpeed = m_pDocument->GetFrameRate();
-	double BPM = std::min(GetAverageBPM(), EngineSpeed * 15);		// // // 050B
-	return static_cast<float>(BPM * 4. / (m_iLastHighlight ? m_iLastHighlight : 4));
+	double Max = m_pDocument->GetFrameRate() * 15.;
+	double BPM = GetAverageBPM();		// // // 050B
+	return static_cast<float>((BPM > Max ? Max : BPM) * 4. / (m_iLastHighlight ? m_iLastHighlight : 4));
 }
 
 // // //
 
 bool CSoundGen::IsPlaying() const {
 	return m_bPlaying;
+}
+
+void CSoundGen::SetArpeggiator(CArpeggiator &Arp) {		// // //
+	m_pArpeggiator = &Arp;
 }
 
 void CSoundGen::LoadMachineSettings()		// // //
@@ -1556,7 +1488,16 @@ void CSoundGen::DocumentHandleTick() {
 			if (IsRendering())
 				m_pWaveRenderer->StepRow();		// // //
 
-			ReadPatternRow(); // global commands should be processed here
+			for (int i = 0, Channels = m_pDocument->GetChannelCount(); i < Channels; ++i) {		// // //
+				stChanNote NoteData;
+				m_pDocument->GetNoteData(m_iPlayTrack, m_pPlayerCursor->GetCurrentFrame(),
+										 i, m_pPlayerCursor->GetCurrentRow(), &NoteData);
+				EvaluateGlobalEffects(NoteData, m_pDocument->GetEffColumns(m_iPlayTrack, i) + 1);
+				// Let view know what is about to play
+				m_pTrackerView->PlayerPlayNote(i, NoteData);
+				if (!m_pTrackerView->IsChannelMuted(i))
+					QueueNote(i, NoteData, NOTE_PRIO_1);
+			}
 
 			if (auto pMark = m_pDocument->GetBookmarkAt(
 				m_iPlayTrack, m_pPlayerCursor->GetCurrentFrame(), m_pPlayerCursor->GetCurrentRow()))		// // //
@@ -1582,7 +1523,7 @@ void CSoundGen::DocumentHandleTick() {
 			// or just move on
 			else
 				while (SteppedRows--)
-					PlayerStepRow();
+					m_pPlayerCursor->StepRow();
 
 			m_iJumpToPattern = -1;
 			m_iSkipToRow = -1;
@@ -1593,8 +1534,8 @@ void CSoundGen::DocumentHandleTick() {
 	}
 
 	// View callback
-	if (theApp.GetSettings()->Midi.bMidiArpeggio && m_Arpeggiator)		// // //
-		m_Arpeggiator->Tick(m_pTrackerView->GetSelectedChannel());
+	if (theApp.GetSettings()->Midi.bMidiArpeggio && m_pArpeggiator)		// // //
+		m_pArpeggiator->Tick(m_pTrackerView->GetSelectedChannel());
 
 	// Play queued notes
 	for (auto &x : m_pTrackerChannels) {		// // //
@@ -1607,8 +1548,8 @@ void CSoundGen::DocumentHandleTick() {
 		auto &pTrackerChan = m_pTrackerChannels[Index];
 		
 		// Run auto-arpeggio, if enabled
-		if (theApp.GetSettings()->Midi.bMidiArpeggio && m_Arpeggiator)		// // //
-			if (int Arpeggio = m_Arpeggiator->GetNextNote(Channel); Arpeggio > 0)
+		if (theApp.GetSettings()->Midi.bMidiArpeggio && m_pArpeggiator)		// // //
+			if (int Arpeggio = m_pArpeggiator->GetNextNote(Channel); Arpeggio > 0)
 				pChan->Arpeggiate(Arpeggio);
 
 		// Check if new note data has been queued for playing
@@ -1659,10 +1600,10 @@ void CSoundGen::UpdateAPU()
 				}
 				++i;
 			}
-		#ifdef WRITE_VGM		// // //
-			if (m_bPlaying)
-				m_iRegisterStream.push(0x62);		// // //
-		#endif
+#ifdef WRITE_VGM		// // //
+			if (m_pVGMWriter)
+				m_pVGMWriter->Tick();		// // //
+#endif
 
 			// Finish the audio frame
 			m_pAPU->AddTime(m_iUpdateCycles - m_iConsumedCycles);
@@ -1800,44 +1741,6 @@ void CSoundGen::SetNamcoMixing(bool bLinear)		// // //
 
 // Player state functions
 
-void CSoundGen::ReadPatternRow()
-{
-	stChanNote NoteData;
-
-	for (int i = 0, Channels = m_pDocument->GetChannelCount(); i < Channels; ++i)
-		if (PlayerGetNote(i, NoteData); !m_pTrackerView->IsChannelMuted(i))		// // //
-			QueueNote(i, NoteData, NOTE_PRIO_1);
-}
-
-// // //
-void CSoundGen::PlayerGetNote(int Channel, stChanNote &NoteData) {
-	ASSERT(m_pTrackerView != NULL);
-
-	m_pDocument->GetNoteData(m_iPlayTrack, m_pPlayerCursor->GetCurrentFrame(),		// // //
-							 Channel, m_pPlayerCursor->GetCurrentRow(), &NoteData);
-
-	// // // evaluate global commands as soon as possible
-	EvaluateGlobalEffects(NoteData, m_pDocument->GetEffColumns(m_iPlayTrack, Channel) + 1);
-	
-	// Let view know what is about to play
-	m_pTrackerView->PlayerPlayNote(Channel, NoteData);		// // //
-}
-
-void CSoundGen::PlayerStepRow()
-{
-	m_pPlayerCursor->StepRow();		// // //
-}
-
-void CSoundGen::PlayerJumpTo(int Frame)
-{
-	m_pPlayerCursor->DoBxx(Frame);		// // //
-}
-
-void CSoundGen::PlayerSkipTo(int Row)
-{
-	m_pPlayerCursor->DoDxx(Row);		// // //
-}
-
 void CSoundGen::QueueNote(int Channel, stChanNote &NoteData, note_prio_t Priority) const
 {
 	if (m_pDocument == NULL)
@@ -1893,36 +1796,8 @@ unsigned CSoundGen::GetQueueFrame() const
 void CSoundGen::WriteRegister(uint16_t Reg, uint8_t Value)
 {
 #ifdef WRITE_VGM		// // //
-	static int S5B_Port = 0; // TODO: elevate to full object status
-	if (Reg >= 0x4000U && Reg <= 0x401FU) {
-		m_iRegisterStream.push(0xB4);
-		m_iRegisterStream.push(Reg & 0x1F);
-		m_iRegisterStream.push(Value);
-	}
-
-	else if (Reg >= 0x4040U && Reg <= 0x407FU) {
-		m_iRegisterStream.push(0xB4);
-		m_iRegisterStream.push(Reg & 0x7F);
-		m_iRegisterStream.push(Value);
-	}
-	else if (Reg >= 0x4080U && Reg <= 0x409EU) {
-		m_iRegisterStream.push(0xB4);
-		m_iRegisterStream.push((Reg & 0x1F) | 0x20);
-		m_iRegisterStream.push(Value);
-	}
-	else if (Reg == 0x4023U) {
-		m_iRegisterStream.push(0xB4);
-		m_iRegisterStream.push(0x3F);
-		m_iRegisterStream.push(Value);
-	}
-
-	else if (Reg == 0xC000)
-		S5B_Port = Value;
-	else if (Reg == 0xE000) {
-		m_iRegisterStream.push(0xA0);
-		m_iRegisterStream.push(S5B_Port);
-		m_iRegisterStream.push(Value);
-	}
+	uint8_t Port = 0;
+	m_pVGMWriter->WriteRegister(Reg, Value, Port);
 #endif
 }
 

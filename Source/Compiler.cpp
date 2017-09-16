@@ -1551,7 +1551,7 @@ void CCompiler::CreateMainHeader()
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_N163) || bMultichip) {
 		/*if (m_pDocument->GetExpansionChip() != SNDCHIP_N163)		// // //
 			pChunk->StoreByte(8);
-		else*/ pChunk->StoreByte(std::max(m_iActualNamcoChannels, 1));
+		else*/ pChunk->StoreByte(m_iActualNamcoChannels ? m_iActualNamcoChannels : 1);
 	}
 
 	m_pHeaderChunk = pChunk;

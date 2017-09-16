@@ -29,7 +29,6 @@
 
 #include "stdafx.h"		// // //
 #include <afxmt.h>		// Synchronization objects
-#include <queue>		// // //
 #include "Common.h"
 #include <string>
 #include <vector>		// // //
@@ -124,9 +123,6 @@ public:
 	void		DocumentPropertiesChanged(CFamiTrackerDoc *pDocument);
 
 public:
-	// Vibrato
-	void		 GenerateVibratoTable(vibrato_t Type);
-	void		 SetupVibratoTable(vibrato_t Type);
 	int			 ReadVibratoTable(int index) const;
 	int			 ReadPeriodTable(int Index, int Table) const;		// // //
 
@@ -142,6 +138,8 @@ public:
 	void		 SetHighlightRows(int Rows);		// // //
 	float		 GetCurrentBPM() const;		// // //
 	bool		 IsPlaying() const;
+
+	void		 SetArpeggiator(CArpeggiator &Arp);		// // //
 
 	// Stats
 	unsigned int GetFrameRate();
@@ -222,6 +220,9 @@ private:
 	void		CreateChannels();
 	void		AssignChannel(std::unique_ptr<CTrackerChannel> pTrackerChannel);		// // //
 	void		ResetAPU();
+
+	void		GenerateVibratoTable(vibrato_t Type);		// // //
+	void		SetupVibratoTable(vibrato_t Type);
 	void		GeneratePeriodTables(int BaseFreq);
 
 	// Audio
@@ -245,13 +246,6 @@ private:
 	void		PlaySample(const CDSample *pSample, int Offset, int Pitch);
 	
 	// Player
-	void		ReadPatternRow();
-	void		PlayerGetNote(int Channel, stChanNote &NoteData);		// // //
-	void		PlayerStepRow();
-	void		PlayerJumpTo(int Frame);
-	void		PlayerSkipTo(int Row);
-
-	double		GetTempo() const;		// // //
 	double		GetAverageBPM() const;		// // //
 
 	void		ApplyGlobalState();		// // //
@@ -313,9 +307,7 @@ private:
 
 	machine_t			m_iMachineType;						// // // NTSC/PAL
 
-	CArpeggiator		*m_Arpeggiator = nullptr;			// // //
-
-	std::queue<int>		m_iRegisterStream;					// // // vgm export
+	CArpeggiator		*m_pArpeggiator = nullptr;			// // //
 
 	std::shared_ptr<CWaveRenderer> m_pWaveRenderer;			// // //
 	std::unique_ptr<CInstrumentRecorder> m_pInstRecorder;
