@@ -290,7 +290,7 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 	int Start = 0;
 	int End = m_iRowsVisible;
 
-	int PlayFrame = theApp.GetSoundGenerator()->GetPlayerFrame();
+	int PlayFrame = theApp.GetSoundGenerator()->GetPlayerPos().first;		// // //
 
 	if (ActiveFrame > m_iMiddleRow)
 		Frame = ActiveFrame - m_iMiddleRow;
@@ -451,7 +451,7 @@ bool CFrameEditor::NeedUpdate() const
 
 	const int ActiveFrame	= GetEditFrame();		// // //
 	const int ActiveChannel = pView->GetSelectedChannel();
-	const int PlayFrame	    = theApp.GetSoundGenerator()->GetPlayerFrame();
+	const int PlayFrame	    = theApp.GetSoundGenerator()->GetPlayerPos().first;		// // //
 
 	if (m_iLastCursorFrame != ActiveFrame)
 		return true;

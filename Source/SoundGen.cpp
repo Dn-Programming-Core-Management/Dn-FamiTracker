@@ -30,6 +30,17 @@
 //  - Perhaps this should be a worker thread and not GUI thread?
 //
 
+/*/ // //
+CSoundGen depends on CFamiTrackerView for:
+ - GetArpeggiator
+ - MakeSilent
+ - GetSelectedFrame
+ - GetSelectedRow
+ - GetSelectedChannel
+ - IsChannelMuted
+ - PlayerPlayNote
+// // /*/
+
 #include "SoundGen.h"
 #include "FamiTracker.h"
 #include "FTMComponentInterface.h"		// // //
@@ -55,6 +66,7 @@
 #include "TempoDisplay.h"		// // // 050B
 #include "AudioDriver.h"		// // //
 #include "WaveRenderer.h"		// // //
+#include "PlayerCursor.h"		// // //
 
 // Write period tables to files
 //#define WRITE_PERIOD_FILES
@@ -118,11 +130,7 @@ CSoundGen::CSoundGen() :
 	m_iMachineType(NTSC),
 	m_bRunning(false),
 	m_hInterruptEvent(NULL),
-	m_iQueuedFrame(-1),
-	m_iPlayFrame(0),
-	m_iPlayRow(0),
 	m_iPlayTrack(0),
-	m_iTicksPlayed(0),
 	m_iRegisterStream(),		// // //
 	m_pSequencePlayPos(NULL),
 	m_iSequencePlayPos(0),
@@ -498,12 +506,12 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 // Interface functions
 //
 
-void CSoundGen::StartPlayer(play_mode_t Mode, int Track)
+void CSoundGen::StartPlayer(std::unique_ptr<CPlayerCursor> Pos)		// // //
 {
 	if (!m_hThread)
 		return;
 
-	PostThreadMessage(WM_USER_PLAY, Mode, Track);
+	PostThreadMessage(WM_USER_PLAY, reinterpret_cast<uintptr_t>(Pos.release()), 0);
 }
 
 void CSoundGen::StopPlayer()
@@ -519,7 +527,8 @@ void CSoundGen::ResetPlayer(int Track)
 	if (!m_hThread)
 		return;
 
-	PostThreadMessage(WM_USER_RESET, Track, 0);
+	auto pCur = std::make_unique<CPlayerCursor>(*m_pDocument, Track);		// // //
+	PostThreadMessage(WM_USER_RESET, reinterpret_cast<uintptr_t>(pCur.release()), 0);
 }
 
 void CSoundGen::LoadSettings()
@@ -825,7 +834,7 @@ int CSoundGen::ReadPeriodTable(int Index, int Table) const		// // //
 	}
 }
 
-void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
+void CSoundGen::BeginPlayer(std::unique_ptr<CPlayerCursor> Pos)		// // //
 {
 	// Called from player thread
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
@@ -835,49 +844,14 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 	if (!m_pDocument || !m_pAudioDriver->IsAudioDeviceOpen() || !m_pDocument->IsFileLoaded())		// // //
 		return;
 
-	switch (Mode) {
-		// Play from top of pattern
-		case MODE_PLAY:
-			m_bPlayLooping = false;
-			m_iPlayFrame = m_pTrackerView->GetSelectedFrame();
-			m_iPlayRow = 0;
-			break;
-		// Repeat pattern
-		case MODE_PLAY_REPEAT:
-			m_bPlayLooping = true;
-			m_iPlayFrame = m_pTrackerView->GetSelectedFrame();
-			m_iPlayRow = 0;
-			break;
-		// Start of song
-		case MODE_PLAY_START:
-			m_bPlayLooping = false;
-			m_iPlayFrame = 0;
-			m_iPlayRow = 0;
-			break;
-		// From cursor
-		case MODE_PLAY_CURSOR:
-			m_bPlayLooping = false;
-			m_iPlayFrame = m_pTrackerView->GetSelectedFrame();
-			m_iPlayRow = m_pTrackerView->GetSelectedRow();
-			break;
-		// From row marker (bookmark)
-		case MODE_PLAY_MARKER:		// // // 050B
-			m_bPlayLooping = false;
-			m_iPlayFrame = m_pTrackerView->GetMarkerFrame();
-			m_iPlayRow = m_pTrackerView->GetMarkerRow();
-			break;
-	}
+	m_pPlayerCursor		= std::move(Pos);		// // //
 
 	m_bPlaying			= true;
-	m_bHaltRequest      = false;
+	m_bHaltRequest		= false;
 	m_bDoHalt			= false;		// // //
-	m_iTicksPlayed		= 0;
-	m_iFramesPlayed		= 0;
-	m_iRowsPlayed		= 0;		// // //
 	m_iJumpToPattern	= -1;
 	m_iSkipToRow		= -1;
-	m_iPlayMode			= Mode;
-	m_iPlayTrack		= Track;
+	m_iPlayTrack		= m_pPlayerCursor->GetCurrentTrack();
 
 #ifdef WRITE_VGM		// // //
 	std::queue<int>().swap(m_iRegisterStream);
@@ -902,8 +876,9 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 
 void CSoundGen::ApplyGlobalState()		// // //
 {
-	int Frame = IsPlaying() ? GetPlayerFrame() : m_pTrackerView->GetSelectedFrame();
-	int Row = IsPlaying() ? GetPlayerRow() : m_pTrackerView->GetSelectedRow();
+	auto [Frame, Row] = IsPlaying() ? GetPlayerPos() :		// // //
+		std::make_pair(m_pTrackerView->GetSelectedFrame(), m_pTrackerView->GetSelectedRow());
+
 	if (stFullState *State = m_pDocument->RetrieveSoundState(GetPlayerTrack(), Frame, Row, -1)) {
 		m_pTempoCounter->LoadSoundState(*State);
 		m_iLastHighlight = m_pDocument->GetHighlightAt(GetPlayerTrack(), Frame, Row).First;
@@ -1039,27 +1014,22 @@ void CSoundGen::HaltPlayer()
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
 
 	// Move player to non-playing state
+
+	MakeSilent();
+	m_pAPU->ClearSample();		// // //
+
+	// Signal that playback has stopped
+	if (m_pTrackerView) {
+		if (m_pPlayerCursor)
+			m_pTrackerView->PostMessage(WM_USER_PLAYER,		// // //
+										m_pPlayerCursor->GetCurrentFrame(), m_pPlayerCursor->GetCurrentRow());
+		m_pInstRecorder->StopRecording(m_pTrackerView);		// // //
+	}
+
 	m_bPlaying = false;
 	m_bHaltRequest = false;
 	m_bDoHalt = false;		// // //
 	m_pTempoDisplay.reset();		// // //
-
-	MakeSilent();
-	
-	m_pAPU->ClearSample();		// // //
-/*
-	for (int i = 0; i < CHANNELS; ++i) {
-		if (m_pChannels[i] != NULL) {
-			m_pChannels[i]->ResetChannel();
-		}
-	}
-*/
-
-	// Signal that playback has stopped
-	if (m_pTrackerView) {
-		m_pTrackerView->PostMessage(WM_USER_PLAYER, m_iPlayFrame, m_iPlayRow);
-		m_pInstRecorder->StopRecording(m_pTrackerView);		// // //
-	}
 
 #ifdef WRITE_VGM		// // //
 	CFile vgm("test.vgm", CFile::modeCreate | CFile::modeWrite | CFile::typeBinary);
@@ -1335,10 +1305,7 @@ void CSoundGen::EvaluateGlobalEffects(stChanNote &NoteData, int EffColumns)		// 
 			// Cxx: Halt playback
 			case EF_HALT:
 				m_bDoHalt = true;		// // //
-				if (IsRendering()) {
-					// Unconditional stop
-					++m_iFramesPlayed;
-				}
+				m_pPlayerCursor->DoCxx();		// // //
 				break;
 
 			default: continue;		// // //
@@ -1392,11 +1359,7 @@ void CSoundGen::StopRendering()
 	if (!IsRendering())
 		return;
 
-	m_bPlaying = false;
 	m_pWaveRenderer.reset();		// // //
-	m_iPlayFrame = 0;
-	m_iPlayRow = 0;
-
 	ResetBuffer();
 	HaltPlayer();		// // //
 	ResetAPU();		// // //
@@ -1551,7 +1514,7 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 	if (IsPlaying()) {		// // //
 		int Channel = m_pInstRecorder->GetRecordChannel();
 		if (Channel != -1 && m_pChannels[Channel])		// // //
-			m_pInstRecorder->RecordInstrument(m_iTicksPlayed, m_pTrackerView);
+			m_pInstRecorder->RecordInstrument(m_pPlayerCursor->GetTotalTicks(), m_pTrackerView);
 	}
 
 	if (m_bHaltRequest) {
@@ -1578,24 +1541,25 @@ void CSoundGen::DocumentHandleTick() {
 			m_pWaveRenderer->Tick();
 		if (m_pTempoDisplay)		// // // 050B
 			m_pTempoDisplay->Tick();
-		++m_iTicksPlayed;		// // //
+		m_pPlayerCursor->Tick();
 
 		int SteppedRows = 0;		// // //
 
 		// Fetch next row
+//		while (m_pTempoCounter->CanStepRow()) {
 		if (m_pTempoCounter->CanStepRow()) {
-			// Enable this to skip rows on high tempos
-//			while (m_pTempoCounter->CanStepRow())  {
-			++SteppedRows;
+			if (m_bDoHalt)
+				m_bHaltRequest = true;
+			else
+				++SteppedRows;
 			m_pTempoCounter->StepRow();		// // //
 			if (IsRendering())
 				m_pWaveRenderer->StepRow();		// // //
-//			}
-			if (m_bDoHalt)
-				m_bHaltRequest = true;
+
 			ReadPatternRow(); // global commands should be processed here
 
-			if (auto pMark = m_pDocument->GetBookmarkAt(m_iPlayTrack, m_iPlayFrame, m_iPlayRow))		// // //
+			if (auto pMark = m_pDocument->GetBookmarkAt(
+				m_iPlayTrack, m_pPlayerCursor->GetCurrentFrame(), m_pPlayerCursor->GetCurrentRow()))		// // //
 				if (pMark->m_Highlight.First != -1)
 					m_iLastHighlight = pMark->m_Highlight.First;
 
@@ -1606,17 +1570,15 @@ void CSoundGen::DocumentHandleTick() {
 
 		if ((IsRendering() && m_pWaveRenderer->ShouldStopPlayer()))		// // //
 			m_bHaltRequest = true;
-		if (m_bDoHalt)
-			SteppedRows = 0;
 
 		// Update player
-		if (SteppedRows > 0 && !m_bHaltRequest) {
+		if (SteppedRows > 0 && !m_bDoHalt && !m_bHaltRequest) {
 			// Jump
 			if (m_iJumpToPattern != -1)
-				PlayerJumpTo(m_bPlayLooping ? m_iPlayFrame : m_iJumpToPattern);		// // //
+				m_pPlayerCursor->DoBxx(m_iJumpToPattern);
 			// Skip
 			else if (m_iSkipToRow != -1)
-				PlayerSkipTo(m_bPlayLooping ? m_iPlayFrame : m_iSkipToRow);
+				m_pPlayerCursor->DoDxx(m_iSkipToRow);
 			// or just move on
 			else
 				while (SteppedRows--)
@@ -1626,7 +1588,7 @@ void CSoundGen::DocumentHandleTick() {
 			m_iSkipToRow = -1;
 
 			if (!IsBackgroundTask() && m_pTrackerView)		// // //
-				m_pTrackerView->PostMessage(WM_USER_PLAYER, m_iPlayFrame, m_iPlayRow);
+				m_pTrackerView->PostMessage(WM_USER_PLAYER, m_pPlayerCursor->GetCurrentFrame(), m_pPlayerCursor->GetCurrentRow());
 		}
 	}
 
@@ -1721,7 +1683,7 @@ void CSoundGen::UpdateAPU()
 
 void CSoundGen::OnStartPlayer(WPARAM wParam, LPARAM lParam)
 {
-	BeginPlayer((play_mode_t)wParam, lParam);
+	BeginPlayer(std::unique_ptr<CPlayerCursor> {reinterpret_cast<CPlayerCursor *>(wParam)});
 }
 
 void CSoundGen::OnSilentAll(WPARAM wParam, LPARAM lParam)
@@ -1747,10 +1709,10 @@ void CSoundGen::OnResetPlayer(WPARAM wParam, LPARAM lParam)
 {
 	// Called when the selected song has changed
 
+	auto pCur = std::unique_ptr<CPlayerCursor> {reinterpret_cast<CPlayerCursor *>(wParam)};		// // //
+	m_iPlayTrack = pCur->GetCurrentTrack();
 	if (IsPlaying())
-		BeginPlayer(MODE_PLAY_START, wParam);		// // //
-
-	m_iPlayTrack = wParam;
+		BeginPlayer(std::move(pCur));		// // //
 }
 
 void CSoundGen::OnStartRender(WPARAM wParam, LPARAM lParam)
@@ -1851,7 +1813,8 @@ void CSoundGen::ReadPatternRow()
 void CSoundGen::PlayerGetNote(int Channel, stChanNote &NoteData) {
 	ASSERT(m_pTrackerView != NULL);
 
-	m_pDocument->GetNoteData(m_iPlayTrack, m_iPlayFrame, Channel, m_iPlayRow, &NoteData);
+	m_pDocument->GetNoteData(m_iPlayTrack, m_pPlayerCursor->GetCurrentFrame(),		// // //
+							 Channel, m_pPlayerCursor->GetCurrentRow(), &NoteData);
 
 	// // // evaluate global commands as soon as possible
 	EvaluateGlobalEffects(NoteData, m_pDocument->GetEffColumns(m_iPlayTrack, Channel) + 1);
@@ -1862,63 +1825,17 @@ void CSoundGen::PlayerGetNote(int Channel, stChanNote &NoteData) {
 
 void CSoundGen::PlayerStepRow()
 {
-	const int PatternLen = m_pDocument->GetPatternLength(m_iPlayTrack);
-
-	if (++m_iPlayRow >= PatternLen) {
-		m_iPlayRow = 0;
-		if (!m_bPlayLooping)
-			PlayerStepFrame();
-	}
-
-	++m_iRowsPlayed;		// // //
-}
-
-void CSoundGen::PlayerStepFrame()
-{
-	const int Frames = m_pDocument->GetFrameCount(m_iPlayTrack);
-
-	if (m_iQueuedFrame == -1) {
-		if (++m_iPlayFrame >= Frames)
-			m_iPlayFrame = 0;
-	}
-	else {
-		m_iPlayFrame = m_iQueuedFrame;
-		m_iQueuedFrame = -1;
-	}
-
-	++m_iFramesPlayed;
+	m_pPlayerCursor->StepRow();		// // //
 }
 
 void CSoundGen::PlayerJumpTo(int Frame)
 {
-	const int Frames = m_pDocument->GetFrameCount(m_iPlayTrack);
-
-	m_iPlayFrame = Frame;
-
-	if (m_iPlayFrame >= Frames)
-		m_iPlayFrame = Frames - 1;
-
-	m_iPlayRow = 0;
-
-	++m_iFramesPlayed;
-	++m_iRowsPlayed;		// // //
+	m_pPlayerCursor->DoBxx(Frame);		// // //
 }
 
 void CSoundGen::PlayerSkipTo(int Row)
 {
-	const int Frames = m_pDocument->GetFrameCount(m_iPlayTrack);
-	const int Rows = m_pDocument->GetPatternLength(m_iPlayTrack);
-
-	if (++m_iPlayFrame >= Frames)
-		m_iPlayFrame = 0;
-
-	m_iPlayRow = Row;
-
-	if (m_iPlayRow >= Rows)
-		m_iPlayRow = Rows - 1;
-	
-	++m_iFramesPlayed;
-	++m_iRowsPlayed;		// // //
+	m_pPlayerCursor->DoDxx(Row);		// // //
 }
 
 void CSoundGen::QueueNote(int Channel, stChanNote &NoteData, note_prio_t Priority) const
@@ -1938,14 +1855,10 @@ void CSoundGen::ForceReloadInstrument(int Channel)		// // //
 	m_pChannels[m_pDocument->GetChannel(Channel)->GetID()]->ForceReloadInstrument();
 }
 
-int	CSoundGen::GetPlayerRow() const
-{
-	return m_iPlayRow;
-}
-
-int CSoundGen::GetPlayerFrame() const
-{
-	return m_iPlayFrame;
+std::pair<unsigned, unsigned> CSoundGen::GetPlayerPos() const {		// // //
+	return std::make_pair(
+		m_pPlayerCursor ? m_pPlayerCursor->GetCurrentFrame() : 0,
+		m_pPlayerCursor ? m_pPlayerCursor->GetCurrentRow() : 0);
 }
 
 int CSoundGen::GetPlayerTrack() const
@@ -1955,24 +1868,24 @@ int CSoundGen::GetPlayerTrack() const
 
 int CSoundGen::GetPlayerTicks() const
 {
-	return m_iTicksPlayed;
+	return m_pPlayerCursor ? m_pPlayerCursor->GetTotalTicks() : 0;		// // //
 }
 
 void CSoundGen::MoveToFrame(int Frame)
 {
 	// Todo: synchronize
-	m_iPlayFrame = Frame;
-	m_iPlayRow = 0;
+	if (m_pPlayerCursor)		// // //
+		m_pPlayerCursor->SetPosition(Frame, 0);
 }
 
-void CSoundGen::SetQueueFrame(int Frame)
+void CSoundGen::SetQueueFrame(unsigned Frame)
 {
-	m_iQueuedFrame = Frame;
+	m_pPlayerCursor->QueueFrame(Frame);		// // //
 }
 
-int CSoundGen::GetQueueFrame() const
+unsigned CSoundGen::GetQueueFrame() const
 {
-	return m_iQueuedFrame;
+	return m_pPlayerCursor ? m_pPlayerCursor->GetQueuedFrame().value_or(-1) : -1;		// // //
 }
 
 // Verification
@@ -2060,7 +1973,7 @@ int CSoundGen::GetDefaultInstrument() const
 
 CInstrument* CSoundGen::GetRecordInstrument() const
 {
-	return m_pInstRecorder->GetRecordInstrument(m_iTicksPlayed);
+	return m_pInstRecorder->GetRecordInstrument(m_pPlayerCursor->GetTotalTicks());
 }
 
 void CSoundGen::ResetDumpInstrument()

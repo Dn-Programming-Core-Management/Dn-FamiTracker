@@ -56,16 +56,6 @@ enum {
 	WM_USER_REMOVE_DOCUMENT
 };
 
-// Player modes
-enum play_mode_t {
-	MODE_PLAY,				// Play from top of pattern
-	MODE_PLAY_START,		// Play from start of song
-	MODE_PLAY_REPEAT,		// Play and repeat
-	MODE_PLAY_CURSOR,		// Play from cursor
-	MODE_PLAY_FRAME,		// Play frame
-	MODE_PLAY_MARKER,		// // // 050B (row marker, aka "bookmark")
-};
-
 class stChanNote;		// // //
 struct stRecordSetting;
 
@@ -90,6 +80,7 @@ class CTempoCounter;		// // //
 class CAudioDriver;		// // //
 class CWaveRenderer;		// // //
 class CTempoDisplay;		// // //
+class CPlayerCursor;		// // //
 
 // CSoundGen
 
@@ -140,7 +131,7 @@ public:
 	int			 ReadPeriodTable(int Index, int Table) const;		// // //
 
 	// Player interface
-	void		 StartPlayer(play_mode_t Mode, int Track);	
+	void		 StartPlayer(std::unique_ptr<CPlayerCursor> Pos);		// // //
 	void		 StopPlayer();
 	void		 ResetPlayer(int Track);
 	void		 LoadSettings();
@@ -193,15 +184,14 @@ public:
 	void		SetNamcoMixing(bool bLinear);			// // //
 
 	// Player
-	int			GetPlayerRow() const;
-	int			GetPlayerFrame() const;
+	std::pair<unsigned, unsigned> GetPlayerPos() const;		// // // frame / row
 	int			GetPlayerTrack() const;
 	int			GetPlayerTicks() const;
 	void		QueueNote(int Channel, stChanNote &NoteData, note_prio_t Priority) const;
 	void		ForceReloadInstrument(int Channel);		// // //
 	void		MoveToFrame(int Frame);
-	void		SetQueueFrame(int Frame);
-	int			GetQueueFrame() const;
+	void		SetQueueFrame(unsigned Frame);		// // //
+	unsigned	GetQueueFrame() const;		// // //
 
 	// // // Instrument recorder
 	CInstrument		*GetRecordInstrument() const;
@@ -247,7 +237,7 @@ private:
 	void		DocumentHandleTick();		// // //
 	void		UpdateAPU();
 	void		ResetBuffer();
-	void		BeginPlayer(play_mode_t Mode, int Track);
+	void		BeginPlayer(std::unique_ptr<CPlayerCursor> Pos);		// // //
 	void		HaltPlayer();
 	void		MakeSilent();
 
@@ -258,7 +248,6 @@ private:
 	void		ReadPatternRow();
 	void		PlayerGetNote(int Channel, stChanNote &NoteData);		// // //
 	void		PlayerStepRow();
-	void		PlayerStepFrame();
 	void		PlayerJumpTo(int Frame);
 	void		PlayerSkipTo(int Row);
 
@@ -299,10 +288,8 @@ private:
 private:
 	std::unique_ptr<CTempoCounter> m_pTempoCounter;			// // // tempo calculation
 	std::unique_ptr<CTempoDisplay> m_pTempoDisplay;			// // // 050B
-	unsigned int		m_iTicksPlayed;
 	bool				m_bPlaying;							// True when tracker is playing back the module
 	bool				m_bHaltRequest;						// True when a halt is requested
-	bool				m_bPlayLooping;
 	int					m_iFrameCounter;
 
 	int					m_iUpdateCycles;					// Number of cycles/APU update
@@ -314,7 +301,6 @@ private:
 	int					m_iJumpToPattern;
 	int					m_iSkipToRow;
 	bool				m_bDoHalt;							// // // Cxx effect
-	play_mode_t			m_iPlayMode;
 
 	unsigned int		m_iNoteLookupTableNTSC[96];			// For 2A03
 	unsigned int		m_iNoteLookupTablePAL[96];			// For 2A07
@@ -339,12 +325,8 @@ private:
 	volatile bool		m_bInternalWaveChanged;
 
 	// Player state
-	int					m_iQueuedFrame;						// Queued frame
+	std::unique_ptr<CPlayerCursor> m_pPlayerCursor;			// // //
 	int					m_iPlayTrack;						// Current track that is playing
-	int					m_iPlayFrame;						// Current frame to play
-	int					m_iPlayRow;							// Current row to play
-	unsigned int		m_iFramesPlayed;					// Total number of frames played since start
-	unsigned int		m_iRowsPlayed;						// Total number of rows played since start
 
 	// Sequence play visualization
 	const CSequence		*m_pSequencePlayPos;

@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include "stdafx.h"
 #include "FamiTrackerTypes.h"
 
 class CSequence;
@@ -44,8 +45,8 @@ public:
 
 public:
 	void			StartRecording();
-	void			StopRecording(CView *pView);
-	void			RecordInstrument(const unsigned Tick, CView *pView);
+	void			StopRecording(CWnd *pView);
+	void			RecordInstrument(const unsigned Tick, CWnd *pView);
 
 	CInstrument		*GetRecordInstrument(unsigned Tick) const;
 	int				GetRecordChannel() const;

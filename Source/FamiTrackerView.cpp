@@ -687,7 +687,7 @@ void CFamiTrackerView::OnLButtonUp(UINT nFlags, CPoint point)
 	/*
 	if (m_bControlPressed && !m_pPatternEditor->IsSelecting()) {
 		m_pPatternEditor->JumpToRow(m_pPatternEditor->GetRow());
-		theApp.GetSoundGenerator()->StartPlayer(MODE_PLAY_CURSOR);
+		theApp.GetSoundGenerator()->StartPlayer(play_mode_t::CURSOR);
 	}
 	*/
 
@@ -851,8 +851,7 @@ void CFamiTrackerView::PeriodicUpdate()
 
 			pMainFrm->SetIndicatorTime(Min, Sec, mSec);
 
-			int Frame = pSoundGen->GetPlayerFrame();
-			int Row = pSoundGen->GetPlayerRow();
+			auto [Frame, Row] = pSoundGen->GetPlayerPos();		// // //
 
 			pMainFrm->SetIndicatorPos(Frame, Row);
 
@@ -1523,6 +1522,33 @@ unsigned int CFamiTrackerView::GetSelectedChannel() const
 unsigned int CFamiTrackerView::GetSelectedRow() const
 {
 	return m_pPatternEditor->GetRow();
+}
+
+CPlayerCursor CFamiTrackerView::GetPlayerCursor(play_mode_t Mode) const {		// // //
+	const unsigned Track = static_cast<CMainFrame*>(GetParentFrame())->GetSelectedTrack();
+
+	switch (Mode) {
+	case play_mode_t::Frame:
+		return CPlayerCursor {*GetDocument(), Track, GetSelectedFrame(), 0};
+	case play_mode_t::RepeatFrame:
+	{
+		auto cur = CPlayerCursor {*GetDocument(), Track, GetSelectedFrame(), 0};
+		cur.EnableFrameLoop();
+		return cur;
+	}
+	case play_mode_t::Cursor:
+		return CPlayerCursor {*GetDocument(), Track, GetSelectedFrame(), GetSelectedRow()};
+	case play_mode_t::Marker:		// // // 050B
+		if (GetMarkerFrame() != -1 && GetMarkerRow() != -1)
+			return CPlayerCursor {*GetDocument(), Track,
+				static_cast<unsigned>(GetMarkerFrame()), static_cast<unsigned>(GetMarkerRow())};
+		break;
+	case play_mode_t::Song:
+		return CPlayerCursor {*GetDocument(), Track};
+	}
+
+	__debugbreak();
+	return CPlayerCursor {*GetDocument(), Track};
 }
 
 void CFamiTrackerView::SetFollowMode(bool Mode)

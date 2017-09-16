@@ -67,7 +67,7 @@ class CCustomExporters;
 
 class CMutex;
 
-enum play_mode_t;	// Defined in soundgen.h
+enum class play_mode_t;		// // // Defined in PlayerCursor.h
 
 /*!
 	\brief A MFC document template supporting both .0cc and .ftm file extensions.

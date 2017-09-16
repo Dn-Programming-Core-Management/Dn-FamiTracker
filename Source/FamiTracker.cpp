@@ -288,7 +288,7 @@ BOOL CFamiTrackerApp::InitInstance()
 	m_pMIDI->Init();
 	
 	if (cmdInfo.m_bPlay)
-		theApp.StartPlayer(MODE_PLAY);
+		theApp.StartPlayer(play_mode_t::Frame);
 
 	// Save the main window handle
 	RegisterSingleInstance();
@@ -789,9 +789,10 @@ void CFamiTrackerApp::OnAppAbout()
 
 void CFamiTrackerApp::StartPlayer(play_mode_t Mode)
 {
-	int Track = static_cast<CMainFrame*>(GetMainWnd())->GetSelectedTrack();
-	if (m_pSoundGenerator)
-		m_pSoundGenerator->StartPlayer(Mode, Track);
+	if (m_pSoundGenerator) {		// // //
+		auto cur = std::make_unique<CPlayerCursor>(CFamiTrackerView::GetView()->GetPlayerCursor(Mode));
+		m_pSoundGenerator->StartPlayer(std::move(cur));
+	}
 }
 
 void CFamiTrackerApp::StopPlayer()
@@ -818,7 +819,7 @@ void CFamiTrackerApp::TogglePlayer()
 		if (m_pSoundGenerator->IsPlaying())
 			StopPlayer();
 		else
-			StartPlayer(MODE_PLAY);
+			StartPlayer(play_mode_t::Frame);
 	}
 }
 

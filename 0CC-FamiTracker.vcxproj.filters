@@ -723,6 +723,9 @@
     <ClCompile Include="Source\TempoDisplay.cpp">
       <Filter>Source Files\Sound Driver</Filter>
     </ClCompile>
+    <ClCompile Include="Source\PlayerCursor.cpp">
+      <Filter>Source Files\Sound Driver</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">
@@ -1311,6 +1314,9 @@
       <Filter>Header Files\Sound Driver Headers</Filter>
     </ClInclude>
     <ClInclude Include="Source\TempoDisplay.h">
+      <Filter>Header Files\Sound Driver Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\PlayerCursor.h">
       <Filter>Header Files\Sound Driver Headers</Filter>
     </ClInclude>
   </ItemGroup>

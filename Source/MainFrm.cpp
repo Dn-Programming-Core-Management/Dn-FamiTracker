@@ -1421,32 +1421,32 @@ void CMainFrame::OnDeltaposFrameSpin(NMHDR *pNMHDR, LRESULT *pResult)
 void CMainFrame::OnTrackerPlay()
 {
 	// Play
-	theApp.StartPlayer(MODE_PLAY);
+	theApp.StartPlayer(play_mode_t::Frame);
 }
 
 void CMainFrame::OnTrackerPlaypattern()
 {
 	// Loop pattern
-	theApp.StartPlayer(MODE_PLAY_REPEAT);
+	theApp.StartPlayer(play_mode_t::RepeatFrame);
 }
 
 void CMainFrame::OnTrackerPlayStart()
 {
 	// Play from start of song
-	theApp.StartPlayer(MODE_PLAY_START);
+	theApp.StartPlayer(play_mode_t::Song);
 }
 
 void CMainFrame::OnTrackerPlayCursor()
 {
 	// Play from cursor
-	theApp.StartPlayer(MODE_PLAY_CURSOR);
+	theApp.StartPlayer(play_mode_t::Cursor);
 }
 
 void CMainFrame::OnTrackerPlayMarker()		// // // 050B
 {
 	// Play from row marker
 	if (static_cast<CFamiTrackerView*>(GetActiveView())->IsMarkerValid())
-		theApp.StartPlayer(MODE_PLAY_MARKER);
+		theApp.StartPlayer(play_mode_t::Marker);
 }
 
 void CMainFrame::OnUpdateTrackerPlayMarker(CCmdUI *pCmdUI)		// // // 050B
@@ -2775,7 +2775,7 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 			// and play
 			if (CFamiTrackerDoc::GetDoc()->IsFileLoaded() &&
 				!CFamiTrackerDoc::GetDoc()->HasLastLoadFailed())
-				theApp.GetSoundGenerator()->StartPlayer(MODE_PLAY_START, 0);
+				theApp.StartPlayer(play_mode_t::Song);		// // //
 			return TRUE;
 	}
 

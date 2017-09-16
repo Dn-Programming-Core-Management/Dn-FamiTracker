@@ -31,6 +31,7 @@
 #include "PatternEditorTypes.h"		// // //
 #include "FamiTrackerViewMessage.h"		// // //
 #include "Arpeggiator.h"		// // //
+#include "PlayerCursor.h"		// // //
 
 // External classes
 class CFamiTrackerDoc;
@@ -38,6 +39,15 @@ class CPatternEditor;
 class CFrameEditor;
 class CAction;
 class CNoteQueue;		// // //
+
+// // // Player modes
+enum class play_mode_t {
+	Frame,			// Play from top of pattern
+	Song,			// Play from start of song
+	RepeatFrame,	// Play and repeat
+	Cursor,			// Play from cursor
+	Marker,			// // // 050B (row marker, aka "bookmark")
+};
 
 // TODO move general tracker state variables to the mainframe instead of the view, such as selected octave, instrument etc
 
@@ -78,7 +88,9 @@ public:
 	 
 	unsigned int GetSelectedFrame() const;
 	unsigned int GetSelectedChannel() const;
-	unsigned int GetSelectedRow() const; 
+	unsigned int GetSelectedRow() const;
+
+	CPlayerCursor GetPlayerCursor(play_mode_t Mode) const;		// // //
 
 	void		 SetFollowMode(bool Mode);
 	bool		 GetFollowMode() const;

@@ -433,6 +433,7 @@
     <ClCompile Include="Source\FrameEditorTypes.cpp" />
     <ClCompile Include="Source\NoteQueue.cpp" />
     <ClCompile Include="Source\PatternComponent.cpp" />
+    <ClCompile Include="Source\PlayerCursor.cpp" />
     <ClCompile Include="Source\RegisterState.cpp" />
     <ClCompile Include="Source\CompoundAction.cpp" />
     <ClCompile Include="Source\DetuneTable.cpp" />
@@ -599,6 +600,7 @@
     <ClInclude Include="Source\IntRange.h" />
     <ClInclude Include="Source\NoteQueue.h" />
     <ClInclude Include="Source\PatternComponent.h" />
+    <ClInclude Include="Source\PlayerCursor.h" />
     <ClInclude Include="Source\RegisterState.h" />
     <ClInclude Include="Source\CompoundAction.h" />
     <ClInclude Include="Source\DetuneTable.h" />

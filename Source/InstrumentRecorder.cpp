@@ -20,13 +20,12 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include "InstrumentRecorder.h"
 #include "InstrumentManager.h"
 #include "FamiTrackerDoc.h"
 #include "TrackerChannel.h"
 #include "FamiTrackerViewMessage.h"
 #include "SoundGen.h"
-#include "InstrumentRecorder.h"
 #include "SeqInstrument.h"
 #include "InstrumentFDS.h"
 #include "InstrumentN163.h"
@@ -65,14 +64,14 @@ void CInstrumentRecorder::StartRecording()
 	InitRecordInstrument();
 }
 
-void CInstrumentRecorder::StopRecording(CView *pView)
+void CInstrumentRecorder::StopRecording(CWnd *pView)
 {
 	if (*m_pDumpInstrument != nullptr && pView != nullptr)
 		pView->PostMessage(WM_USER_DUMP_INST);
 	--m_iDumpCount;
 }
 
-void CInstrumentRecorder::RecordInstrument(const unsigned Tick, CView *pView)		// // //
+void CInstrumentRecorder::RecordInstrument(const unsigned Tick, CWnd *pView)		// // //
 {
 	unsigned int Intv = static_cast<unsigned>(m_stRecordSetting.Interval);
 	if (m_iRecordChannel == -1 || Tick > Intv * m_stRecordSetting.InstCount + 1) return;

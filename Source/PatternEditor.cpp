@@ -758,8 +758,7 @@ bool CPatternEditor::CursorUpdated()
 
 		const CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 		// Store a synchronized copy of frame & row position from player
-		m_iPlayFrame = pSoundGen->GetPlayerFrame();
-		m_iPlayRow = pSoundGen->GetPlayerRow();
+		std::tie(m_iPlayFrame, m_iPlayRow) = pSoundGen->GetPlayerPos();		// // //
 		
 		if (m_bFollowMode) {
 			m_cpCursorPos.m_iRow = m_iPlayRow;
