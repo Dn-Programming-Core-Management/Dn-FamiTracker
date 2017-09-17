@@ -1021,15 +1021,15 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_HEAD,"Static",SS_OWNERDRAW,0,0,287,49
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,49,287,1
-    ICON            IDR_MAINFRAME,IDC_STATIC,12,63,21,20,SS_REALSIZEIMAGE
+    ICON            IDR_MAINFRAME,IDC_STATIC,12,63,20,20,SS_REALSIZEIMAGE
     LTEXT           "0CC-FamiTracker",IDC_ABOUT1,54,58,219,11,SS_NOPREFIX
     LTEXT           "Extension of FamiTracker",IDC_ABOUT2,54,76,167,11,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2005 - 2015 jsr, 2014 - 2016 HertzDevil",IDC_ABOUT3,54,92,215,11
+    LTEXT           "Copyright (C) 2005 - 2015 jsr, 2014 - 2017 HertzDevil",IDC_ABOUT3,54,92,215,11
     LTEXT           "E-mail:",IDC_STATIC,54,107,24,10
     LTEXT           "nicetas.c@gmail.com",IDC_MAIL,84,107,70,10,SS_NOTIFY
     LTEXT           "Web:",IDC_STATIC,54,117,24,9
     LTEXT           "http://hertzdevil.info/programs/",IDC_WEBPAGE,84,117,154,9,SS_NOTIFY
-    LTEXT           "http://hertzdevil.info/bug/main_page.php",IDC_BUG,84,127,154,9,SS_NOTIFY
+    LTEXT           "http://hertzdevil.info/forum/index.php",IDC_BUG,84,127,154,9,SS_NOTIFY
     LTEXT           "All comments and feedback are welcome\nGreets to everyone who has helped spread information about this mod or contributed with bug reports and suggestions!",IDC_STATIC,54,142,224,26
     LTEXT           "This software is licensed under the GNU General Public License.\nSource is available on Github.",IDC_STATIC,54,173,224,17
     LTEXT           "Contributions:",IDC_STATIC,54,196,224,9

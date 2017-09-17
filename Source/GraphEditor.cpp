@@ -28,6 +28,7 @@
 #include "SoundGen.h"
 #include "SequenceEditorMessage.h"		// // //
 #include "DPI.h"		// // //
+#include "PatternNote.h"		// // //
 
 // CGraphEditor
 

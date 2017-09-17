@@ -518,10 +518,6 @@
     <ClCompile Include="Source\CommandLineExport.cpp" />
     <ClCompile Include="Source\Compiler.cpp" />
     <ClCompile Include="Source\PatternCompiler.cpp" />
-    <ClCompile Include="Source\CustomExporter.cpp" />
-    <ClCompile Include="Source\CustomExporter_C_Interface.cpp" />
-    <ClCompile Include="Source\CustomExporters.cpp" />
-    <ClCompile Include="Source\DocumentWrapper.cpp" />
     <ClCompile Include="Source\TextExporter.cpp" />
     <ClCompile Include="Source\Chunk.cpp" />
     <ClCompile Include="Source\ChunkRenderBinary.cpp" />
@@ -751,11 +747,6 @@
     <ClInclude Include="Source\Compiler.h" />
     <ClInclude Include="Source\Driver.h" />
     <ClInclude Include="Source\PatternCompiler.h" />
-    <ClInclude Include="Source\CustomExporter.h" />
-    <ClInclude Include="Source\CustomExporter_C_Interface.h" />
-    <ClInclude Include="Source\CustomExporterInterfaces.h" />
-    <ClInclude Include="Source\CustomExporters.h" />
-    <ClInclude Include="Source\DocumentWrapper.h" />
     <ClInclude Include="Source\Chunk.h" />
     <ClInclude Include="Source\ChunkRenderBinary.h" />
     <ClInclude Include="Source\ChunkRenderText.h" />

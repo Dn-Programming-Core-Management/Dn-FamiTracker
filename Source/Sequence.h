@@ -23,6 +23,8 @@
 
 #pragma once
 
+#include "FamiTrackerTypes.h"		// // //
+
 // // // Settings
 enum seq_setting_t : unsigned int {
 	SETTING_DEFAULT        = 0,
@@ -65,12 +67,10 @@ enum arp_scheme_mode_t {
 const int ARPSCHEME_MAX = 36;		// // // highest note offset for arp schemes
 const int ARPSCHEME_MIN = ARPSCHEME_MAX - 0x3F;		// // //
 
-#include "CustomExporterInterfaces.h"		// // //
-
 /*
 ** This class is used to store instrument sequences
 */
-class CSequence: public CSequenceInterface {
+class CSequence {
 public:
 	CSequence();
 
@@ -81,12 +81,12 @@ public:
 	unsigned int GetItemCount() const;
 	unsigned int GetLoopPoint() const;
 	unsigned int GetReleasePoint() const;
-	unsigned int GetSetting() const; // not seq_setting_t due to CSequenceInterface
+	seq_setting_t GetSetting() const;		// // //
 	void		 SetItem(int Index, signed char Value);
 	void		 SetItemCount(unsigned int Count);
 	void		 SetLoopPoint(unsigned int Point);
 	void		 SetReleasePoint(unsigned int Point);
-	void		 SetSetting(seq_setting_t Setting);			// // //
+	void		 SetSetting(seq_setting_t Setting);		// // //
 	void		 Copy(const CSequence *pSeq);
 
 private:

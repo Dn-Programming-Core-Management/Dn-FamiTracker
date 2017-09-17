@@ -71,7 +71,6 @@ protected:
 	void CreatePRG();
 	void CreateASM();
 	void CreateNSFe();		// // //
-	void CreateCustom( CString name );
 
 	DECLARE_MESSAGE_MAP()
 public:

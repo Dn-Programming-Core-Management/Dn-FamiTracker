@@ -29,12 +29,12 @@ static const int DUTY_VRC6_FROM_2A03[] = {1, 3, 7, 3};		// // //
 
 class CInstHandler;
 class stChannelState;
-class stChanNote;		// // //
 class CSoundGen;		// // //
 
 #include "ChannelHandlerInterface.h"
 #include "FamiTrackerTypes.h"		// // //
 #include "Instrument.h"		// // //
+#include "PatternNote.h"		// // //
 #include <memory>		// // //
 #include <string>		// // //
 #include <cstdint>

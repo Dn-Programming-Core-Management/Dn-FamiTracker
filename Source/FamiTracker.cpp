@@ -37,7 +37,6 @@
 #include "Accelerator.h"
 #include "Settings.h"
 #include "ChannelMap.h"
-#include "CustomExporters.h"
 #include "CommandLineExport.h"
 #include "WinSDK/VersionHelpers.h"		// // //
 
@@ -76,7 +75,6 @@ CFamiTrackerApp::CFamiTrackerApp() :
 	m_pSettings(NULL),
 	m_pSoundGenerator(NULL),
 	m_pChannelMap(NULL),
-	m_customExporters(NULL),
 	m_hWndMapFile(NULL),
 #ifdef SUPPORT_TRANSLATIONS
 	m_hInstResDLL(NULL),
@@ -138,15 +136,6 @@ BOOL CFamiTrackerApp::InitInstance()
 
 	if (CheckSingleInstance(cmdInfo))
 		return FALSE;
-
-	//who: added by Derek Andrews <derek.george.andrews@gmail.com>
-	//why: Load all custom exporter plugins on startup.
-	
-	TCHAR pathToPlugins[MAX_PATH];
-	GetModuleFileName(NULL, pathToPlugins, MAX_PATH);
-	PathRemoveFileSpec(pathToPlugins);
-	PathAppend(pathToPlugins, _T("\\Plugins"));
-	m_customExporters = new CCustomExporters( pathToPlugins );
 
 	// Load custom accelerator
 	m_pAccel = new CAccelerator();
@@ -335,11 +324,6 @@ int CFamiTrackerApp::ExitInstance()
 		m_pSettings = NULL;
 	}
 
-	if (m_customExporters) {
-		delete m_customExporters;
-		m_customExporters = NULL;
-	}
-
 	if (m_pChannelMap) {
 		delete m_pChannelMap;
 		m_pChannelMap = NULL;
@@ -521,11 +505,6 @@ void CFamiTrackerApp::RemoveSoundGenerator()
 {
 	// Sound generator object has been deleted, remove reference
 	m_pSoundGenerator = NULL;
-}
-
-CCustomExporters* CFamiTrackerApp::GetCustomExporters(void) const
-{
-	return m_customExporters;
 }
 
 void CFamiTrackerApp::RegisterSingleInstance()

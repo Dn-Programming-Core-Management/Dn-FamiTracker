@@ -22,6 +22,7 @@
 
 #include "SequenceParser.h"
 #include "Sequence.h"
+#include "PatternNote.h"
 #include <regex>
 
 // // //

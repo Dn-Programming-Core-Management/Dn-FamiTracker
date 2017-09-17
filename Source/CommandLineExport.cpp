@@ -26,8 +26,6 @@
 #include "Compiler.h"
 #include "SoundGen.h"
 #include "TextExporter.h"
-#include "CustomExporters.h"
-#include "DocumentWrapper.h"
 
 // Command line export logger
 class CCommandLineLog : public CCompilerLog
@@ -179,32 +177,8 @@ void CCommandLineExport::CommandLineExport(const CString& fileIn, const CString&
 		}
 		return;
 	}
-	else // use first custom exporter
-	{
-		CCustomExporters* pExporters = theApp.GetCustomExporters();
-		if (pExporters)
-		{
-			CStringArray sNames;
-			pExporters->GetNames(sNames);
-			if (sNames.GetCount())
-			{
-				pExporters->SetCurrentExporter(sNames[0]);
-				CFamiTrackerDocWrapper documentWrapper(CFamiTrackerDoc::GetDoc(), 0);
-				bool bResult = (pExporters->GetCurrentExporter().Export(&documentWrapper, fileOut));
-				if (bLog)
-				{
-					fLog.WriteString(_T("Custom exporter: "));
-					fLog.WriteString(sNames[0]);
-					fLog.WriteString(_T("\n"));
-					fLog.WriteString(_T("Export "));
-					fLog.WriteString(bResult ? _T("succesful: ") : _T("failed: "));
-					fLog.WriteString(fileOut);
-					fLog.WriteString(_T("\n"));
-				}
-				return;
-			}
-		}
-	}
+
+	// // //
 
 	if (bLog)
 	{

@@ -27,7 +27,7 @@
 
 class CDSample;
 
-class CInstrument2A03 : public CSeqInstrument, public CInstrument2A03Interface {
+class CInstrument2A03 : public CSeqInstrument {
 public:
 	CInstrument2A03();
 	CInstrument* Clone() const;
@@ -35,9 +35,6 @@ public:
 	bool	Load(CDocumentFile *pDocFile) override;
 	void	SaveFile(CSimpleFile *pFile) const override;
 	bool	LoadFile(CSimpleFile *pFile, int iVersion) override;
-	// // // for the instrument interface
-	int		GetSeqEnable(int Index) const { return CSeqInstrument::GetSeqEnable(Index); }
-	int		GetSeqIndex(int Index) const { return CSeqInstrument::GetSeqIndex(Index); }
 
 private:
 	char	GetSample(int Octave, int Note) const { return GetSampleIndex(Octave, Note); };		// // //

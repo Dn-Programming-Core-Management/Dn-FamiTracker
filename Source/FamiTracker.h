@@ -63,7 +63,6 @@ class CSoundGen;
 class CSettings;
 class CAccelerator;
 class CChannelMap;
-class CCustomExporters;
 
 class CMutex;
 
@@ -132,8 +131,6 @@ public:
 	CMIDI			*GetMIDI() const			{ ASSERT(m_pMIDI); return m_pMIDI; }
 	CSettings		*GetSettings() const		{ ASSERT(m_pSettings); return m_pSettings; }
 	CChannelMap		*GetChannelMap() const		{ ASSERT(m_pChannelMap); return m_pChannelMap; }
-	
-	CCustomExporters *GetCustomExporters() const;
 
 	//
 	// Private functions
@@ -156,8 +153,6 @@ private:
 	CSoundGen		*m_pSoundGenerator;			// Sound synth & player
 	CSettings		*m_pSettings;				// Program settings
 	CChannelMap		*m_pChannelMap;
-
-	CCustomExporters *m_customExporters;
 
 	// Single instance stuff
 	CMutex			*m_pInstanceMutex;

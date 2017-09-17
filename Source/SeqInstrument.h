@@ -24,10 +24,11 @@
 #pragma once
 
 #include "Instrument.h"
+#include "FamiTrackerTypes.h"
 
 class CSequence;
 
-class CSeqInstrument : public CInstrument, public CSeqInstrumentInterface		// // //
+class CSeqInstrument : public CInstrument		// // //
 {
 public:
 	CSeqInstrument(inst_type_t type);

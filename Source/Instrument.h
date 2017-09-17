@@ -23,8 +23,6 @@
 #pragma once
 #pragma warning ( disable : 4351 )		// // // "new behaviour: elements of array [...] will be default initialized"
 
-#include "CustomExporterInterfaces.h"
-
 // Instrument types
 enum inst_type_t {
 	INST_NONE = 0,

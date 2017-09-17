@@ -32,8 +32,6 @@
 #include "FamitrackerDoc.h"
 #include "Compiler.h"
 #include "Settings.h"
-#include "CustomExporters.h"
-#include "DocumentWrapper.h"
 #include "MainFrm.h"
 
 // Define internal exporters
@@ -157,12 +155,7 @@ BOOL CExportDialog::OnInitDialog()
 	for (int i = 0; i < DEFAULT_EXPORTERS; ++i)
 		pTypeBox->AddString(DEFAULT_EXPORT_NAMES[i]);
 
-	// Add selections for each custom plugin name
-	CStringArray names;
-	theApp.GetCustomExporters()->GetNames( names );
-
-	for( int i = 0; i < names.GetCount(); ++i )
-		pTypeBox->AddString( names[ i ] );
+	// // //
 
 	// Set default selection
 	pTypeBox->SetCurSel(m_iExportOption);
@@ -190,9 +183,6 @@ void CExportDialog::OnBnClickedExport()
 			return;
 		}
 	}
-
-	//selection is the name of a custom exporter
-	CreateCustom( ItemText );
 }
 
 void CExportDialog::CreateNSF()
@@ -386,31 +376,6 @@ void CExportDialog::CreateASM()
 	Compiler.ExportASM(FileDialogMusic.GetPathName());
 
 	theApp.GetSettings()->SetPath(FileDialogMusic.GetPathName(), PATH_NSF);
-}
-
-void CExportDialog::CreateCustom( CString name )
-{
-	theApp.GetCustomExporters()->SetCurrentExporter( name );
-
-	CString custom_exporter_extension = theApp.GetCustomExporters()->GetCurrentExporter().getExt();
-	CString custom_filter_name = CString("Custom Song Data (*") + custom_exporter_extension + CString(")");
-	CString default_custom_file_name = CString("music") + custom_exporter_extension;
-
-	CString Filter = LoadDefaultFilter(custom_filter_name, custom_exporter_extension);
-	CFileDialog FileDialogCustom(FALSE, custom_exporter_extension, default_custom_file_name, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, Filter);
-
-	if(FileDialogCustom.DoModal() == IDCANCEL)
-		return;
-
-	CString fileName( FileDialogCustom.GetPathName() );	
-
-	int Track = static_cast<CMainFrame*>(theApp.m_pMainWnd)->GetSelectedTrack();
-	CFamiTrackerDocWrapper documentWrapper(CFamiTrackerDoc::GetDoc(), Track);
-
-	if(theApp.GetCustomExporters()->GetCurrentExporter().Export( &documentWrapper, CStringA(fileName) ))
-	{
-		AfxMessageBox(_T("Successfully exported!"));
-	}
 }
 
 void CExportDialog::OnBnClickedPlay()
