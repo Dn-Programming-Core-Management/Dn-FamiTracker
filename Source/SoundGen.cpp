@@ -33,8 +33,7 @@
 /*/ // //
 CSoundGen depends on CFamiTrackerView for:
  - MakeSilent
- - GetSelectedFrame
- - GetSelectedRow
+ - GetSelectedPos
  - GetSelectedChannel
  - IsChannelMuted
  - PlayerPlayNote
@@ -119,8 +118,6 @@ END_MESSAGE_MAP()
 
 CSoundGen::CSoundGen() :
 	m_pAPU(std::make_unique<CAPU>()),		// // //
-	m_pDocument(NULL),
-	m_pTrackerView(NULL),
 	m_bPlaying(false),
 	m_bHaltRequest(false),
 	m_bDoHalt(false),		// // //
@@ -130,6 +127,7 @@ CSoundGen::CSoundGen() :
 	m_bRunning(false),
 	m_hInterruptEvent(NULL),
 	m_iPlayTrack(0),
+	m_pArpeggiator(std::make_unique<CArpeggiator>()),		// // //
 	m_pSequencePlayPos(NULL),
 	m_iSequencePlayPos(0),
 	m_iSequenceTimeout(0)
@@ -249,7 +247,6 @@ void CSoundGen::AssignView(CFamiTrackerView *pView)
 
 	// Assigns the tracker view to this object
 	m_pTrackerView = pView;
-	m_pArpeggiator = &m_pTrackerView->GetArpeggiator();		// // //
 }
 
 void CSoundGen::RemoveDocument()
@@ -863,8 +860,6 @@ void CSoundGen::BeginPlayer(std::unique_ptr<CPlayerCursor> Pos)		// // //
 
 	MakeSilent();
 
-	m_pTrackerView->MakeSilent();
-
 	if (theApp.GetSettings()->General.bRetrieveChanState)		// // //
 		ApplyGlobalState();
 
@@ -874,8 +869,7 @@ void CSoundGen::BeginPlayer(std::unique_ptr<CPlayerCursor> Pos)		// // //
 
 void CSoundGen::ApplyGlobalState()		// // //
 {
-	auto [Frame, Row] = IsPlaying() ? GetPlayerPos() :		// // //
-		std::make_pair(m_pTrackerView->GetSelectedFrame(), m_pTrackerView->GetSelectedRow());
+	auto [Frame, Row] = IsPlaying() ? GetPlayerPos() : m_pTrackerView->GetSelectedPos();		// // //
 
 	CSongState state;
 	state.Retrieve(*m_pDocument, GetPlayerTrack(), Frame, Row);
@@ -980,8 +974,7 @@ std::string CSoundGen::RecallChannelState(int Channel) const		// // //
 {
 	if (IsPlaying())
 		return m_pChannels[Channel]->GetStateString();
-	int Frame = m_pTrackerView->GetSelectedFrame();
-	int Row = m_pTrackerView->GetSelectedRow();
+	auto [Frame, Row] = m_pTrackerView->GetSelectedPos();
 	std::string str;
 
 	CSongState state;
@@ -1089,6 +1082,9 @@ void CSoundGen::MakeSilent()
 	// Called from player thread
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
 
+	m_pTrackerView->MakeSilent();		// // //
+	*m_pArpeggiator = CArpeggiator { };		// // //
+
 	m_pAPU->Reset();
 	m_pAPU->ClearSample();		// // //
 
@@ -1142,8 +1138,8 @@ bool CSoundGen::IsPlaying() const {
 	return m_bPlaying;
 }
 
-void CSoundGen::SetArpeggiator(CArpeggiator &Arp) {		// // //
-	m_pArpeggiator = &Arp;
+CArpeggiator &CSoundGen::GetArpeggiator() {		// // //
+	return *m_pArpeggiator;
 }
 
 void CSoundGen::LoadMachineSettings()		// // //

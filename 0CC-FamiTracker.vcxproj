@@ -428,7 +428,7 @@
     <ClCompile Include="Source\BookmarkDlg.cpp" />
     <ClCompile Include="Source\BookmarkManager.cpp" />
     <ClCompile Include="Source\ChannelFactory.cpp" />
-    <ClCompile Include="Source\ChannelState.cpp" />
+    <ClCompile Include="Source\SongState.cpp" />
     <ClCompile Include="Source\FamiTrackerTypes.cpp" />
     <ClCompile Include="Source\FrameEditorTypes.cpp" />
     <ClCompile Include="Source\NoteQueue.cpp" />
@@ -603,7 +603,7 @@
     <ClInclude Include="Source\DPI.h" />
     <ClInclude Include="Source\Factory.h" />
     <ClInclude Include="Source\ChannelFactory.h" />
-    <ClInclude Include="Source\ChannelState.h" />
+    <ClInclude Include="Source\SongState.h" />
     <ClInclude Include="Source\drivers\drv_2a03.h" />
     <ClInclude Include="Source\drivers\drv_all.h" />
     <ClInclude Include="Source\drivers\drv_fds.h" />

@@ -139,7 +139,7 @@ public:
 	float		 GetCurrentBPM() const;		// // //
 	bool		 IsPlaying() const;
 
-	void		 SetArpeggiator(CArpeggiator &Arp);		// // //
+	CArpeggiator &GetArpeggiator();		// // //
 
 	// Stats
 	unsigned int GetFrameRate();
@@ -257,8 +257,8 @@ private:
 	// Objects
 	std::vector<std::unique_ptr<CChannelHandler>> m_pChannels;		// // //
 	std::vector<std::unique_ptr<CTrackerChannel>> m_pTrackerChannels;		// // //
-	CFamiTrackerDoc		*m_pDocument;
-	CFamiTrackerView	*m_pTrackerView;
+	CFamiTrackerDoc		*m_pDocument = nullptr;
+	CFamiTrackerView	*m_pTrackerView = nullptr;
 
 	// Sound
 	std::unique_ptr<CDSound>		m_pDSound;		// // //
@@ -307,7 +307,7 @@ private:
 
 	machine_t			m_iMachineType;						// // // NTSC/PAL
 
-	CArpeggiator		*m_pArpeggiator = nullptr;			// // //
+	std::unique_ptr<CArpeggiator> m_pArpeggiator;			// // //
 
 	std::shared_ptr<CWaveRenderer> m_pWaveRenderer;			// // //
 	std::unique_ptr<CInstrumentRecorder> m_pInstRecorder;

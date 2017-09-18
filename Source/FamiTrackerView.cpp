@@ -46,6 +46,7 @@
 #include "RecordSettingsDlg.h"
 #include "SplitKeyboardDlg.h"
 #include "NoteQueue.h"
+#include "Arpeggiator.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -282,7 +283,6 @@ CFamiTrackerView::CFamiTrackerView() :
 	m_bCompactMode(false),		// // //
 	m_iMarkerFrame(-1),		// // // 050B
 	m_iMarkerRow(-1),		// // // 050B
-	m_Arpeggiator(),		// // //
 	m_iSplitNote(-1),		// // //
 	m_iSplitChannel(-1),		// // //
 	m_iSplitInstrument(MAX_INSTRUMENTS),		// // //
@@ -303,7 +303,7 @@ CFamiTrackerView::CFamiTrackerView() :
 	ASSERT_VALID(pSoundGen);
 
 	pSoundGen->AssignView(this);
-	pSoundGen->SetArpeggiator(m_Arpeggiator);		// // //
+	m_pArpeggiator = &pSoundGen->GetArpeggiator();		// // //
 }
 
 CFamiTrackerView::~CFamiTrackerView()
@@ -1525,6 +1525,11 @@ unsigned int CFamiTrackerView::GetSelectedRow() const
 	return m_pPatternEditor->GetRow();
 }
 
+// // //
+std::pair<unsigned, unsigned> CFamiTrackerView::GetSelectedPos() const {
+	return std::make_pair(GetSelectedFrame(), GetSelectedRow());
+}
+
 CPlayerCursor CFamiTrackerView::GetPlayerCursor(play_mode_t Mode) const {		// // //
 	const unsigned Track = static_cast<CMainFrame*>(GetParentFrame())->GetSelectedTrack();
 
@@ -2186,7 +2191,7 @@ void CFamiTrackerView::TriggerMIDINote(unsigned int Channel, unsigned int MidiNo
 		InsertNote(Note, Octave, Channel, Velocity + 1);
 
 	if (theApp.GetSettings()->Midi.bMidiArpeggio) {		// // //
-		m_Arpeggiator.TriggerNote(MidiNote);
+		m_pArpeggiator->TriggerNote(MidiNote);
 		UpdateArpDisplay();
 	}
 
@@ -2209,7 +2214,7 @@ void CFamiTrackerView::CutMIDINote(unsigned int Channel, unsigned int MidiNote, 
 //		FixNoise(MidiNote, Octave, Note);
 
 	if (theApp.GetSettings()->Midi.bMidiArpeggio) {		// // //
-		m_Arpeggiator.CutNote(MidiNote);
+		m_pArpeggiator->CutNote(MidiNote);
 		UpdateArpDisplay();
 	}
 
@@ -2246,7 +2251,7 @@ void CFamiTrackerView::ReleaseMIDINote(unsigned int Channel, unsigned int MidiNo
 //		FixNoise(MidiNote, Octave, Note);
 
 	if (theApp.GetSettings()->Midi.bMidiArpeggio) {		// // //
-		m_Arpeggiator.ReleaseNote(MidiNote);
+		m_pArpeggiator->ReleaseNote(MidiNote);
 		UpdateArpDisplay();
 	}
 
@@ -2271,7 +2276,7 @@ void CFamiTrackerView::ReleaseMIDINote(unsigned int Channel, unsigned int MidiNo
 
 void CFamiTrackerView::UpdateArpDisplay()
 {
-	if (auto str = m_Arpeggiator.GetStateString(); !str.empty())		// // //
+	if (auto str = m_pArpeggiator->GetStateString(); !str.empty())		// // //
 		GetParentFrame()->SetMessageText(str.c_str());
 }
 
@@ -3042,7 +3047,7 @@ void CFamiTrackerView::HandleKeyboardNote(char nChar, bool Pressed)
 				m_iNoteCorrection.erase(it);
 		}
 		else {
-			m_Arpeggiator.ReleaseNote(Note);		// // //
+			m_pArpeggiator->ReleaseNote(Note);		// // //
 		}
 	}
 }
@@ -3570,8 +3575,6 @@ void CFamiTrackerView::OnOneStepDown()
 
 void CFamiTrackerView::MakeSilent()
 {
-	m_Arpeggiator = CArpeggiator { };		// // //
-
 	memset(m_cKeyList, 0, sizeof(char) * 256);
 }
 

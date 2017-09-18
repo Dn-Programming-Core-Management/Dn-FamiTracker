@@ -30,7 +30,6 @@
 
 #include "PatternEditorTypes.h"		// // //
 #include "FamiTrackerViewMessage.h"		// // //
-#include "Arpeggiator.h"		// // //
 #include "PlayerCursor.h"		// // //
 
 // External classes
@@ -39,6 +38,7 @@ class CPatternEditor;
 class CFrameEditor;
 class CAction;
 class CNoteQueue;		// // //
+class CArpeggiator;		// // //
 
 // // // Player modes
 enum class play_mode_t {
@@ -89,6 +89,7 @@ public:
 	unsigned int GetSelectedFrame() const;
 	unsigned int GetSelectedChannel() const;
 	unsigned int GetSelectedRow() const;
+	std::pair<unsigned, unsigned> GetSelectedPos() const;		// // //
 
 	CPlayerCursor GetPlayerCursor(play_mode_t Mode) const;		// // //
 
@@ -146,9 +147,6 @@ public:
 
 	// Update methods
 	void		 TrackChanged(unsigned int Track);
-
-	// Auto-arpeggio
-	CArpeggiator &GetArpeggiator() { return m_Arpeggiator; }		// // //
 
 //
 // Private functions
@@ -295,7 +293,7 @@ private:
 	int					m_iMarkerFrame;
 	int					m_iMarkerRow;
 
-	CArpeggiator		m_Arpeggiator;							// // // Auto arpeggio
+	CArpeggiator		*m_pArpeggiator = nullptr;				// // // Auto arpeggio
 
 	// Window size
 	unsigned int		m_iWindowWidth;							// Width of view area
