@@ -1921,6 +1921,8 @@ void CMainFrame::OnFileGeneralsettings()
 	ConfigWindow.AddPage(&TabMixer);
 
 	ConfigWindow.DoModal();
+
+	static_cast<CFamiTrackerView*>(GetActiveView())->UpdateNoteQueues();		// // // auto arp setting
 }
 
 void CMainFrame::SetSongInfo(const char *pName, const char *pArtist, const char *pCopyright)

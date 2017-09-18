@@ -2288,7 +2288,7 @@ void CFamiTrackerView::UpdateNoteQueues()		// // //
 
 	m_pNoteQueue->ClearMaps();
 
-	if (m_bEditEnable)
+	if (m_bEditEnable || theApp.GetSettings()->Midi.bMidiArpeggio)
 		for (int i = 0; i < Channels; ++i) {
 			unsigned ID = pDoc->GetChannelType(i);
 			if (ID != -1)

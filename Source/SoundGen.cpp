@@ -1082,8 +1082,9 @@ void CSoundGen::MakeSilent()
 	// Called from player thread
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
 
-	m_pTrackerView->MakeSilent();		// // //
-	*m_pArpeggiator = CArpeggiator { };		// // //
+	if (m_pTrackerView)		// // //
+		m_pTrackerView->MakeSilent();
+	*m_pArpeggiator = CArpeggiator { };
 
 	m_pAPU->Reset();
 	m_pAPU->ClearSample();		// // //

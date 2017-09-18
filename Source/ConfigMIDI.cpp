@@ -25,7 +25,6 @@
 #include "MIDI.h"
 #include "Settings.h"
 
-
 // CConfigMIDI dialog
 
 IMPLEMENT_DYNAMIC(CConfigMIDI, CPropertyPage)

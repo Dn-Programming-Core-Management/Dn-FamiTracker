@@ -119,6 +119,8 @@ public:
 	bool		 PreviewNote(unsigned char Key);
 	void		 PreviewRelease(unsigned char Key);
 
+	void	UpdateNoteQueues();		// // //
+
 	// Mute methods
 	void		 SoloChannel(unsigned int Channel);
 	void		 ToggleChannel(unsigned int Channel);
@@ -235,7 +237,6 @@ private:
 	void	HaltNoteSingle(unsigned int Channel) const;		// // //
 	
 	void	UpdateArpDisplay();
-	void	UpdateNoteQueues();		// // //
 	
 	// Mute methods
 	bool	IsChannelSolo(unsigned int Channel) const;
