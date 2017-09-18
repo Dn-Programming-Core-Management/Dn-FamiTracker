@@ -43,7 +43,7 @@ CSoundGen depends on CFamiTrackerView for:
 #include "SoundGen.h"
 #include "FamiTracker.h"
 #include "FTMComponentInterface.h"		// // //
-#include "ChannelState.h"		// // //
+#include "SongState.h"		// // //
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
 #include "VisualizerWnd.h"
@@ -877,16 +877,16 @@ void CSoundGen::ApplyGlobalState()		// // //
 	auto [Frame, Row] = IsPlaying() ? GetPlayerPos() :		// // //
 		std::make_pair(m_pTrackerView->GetSelectedFrame(), m_pTrackerView->GetSelectedRow());
 
-	if (stFullState *State = m_pDocument->RetrieveSoundState(GetPlayerTrack(), Frame, Row, -1)) {
-		m_pTempoCounter->LoadSoundState(*State);
-		m_iLastHighlight = m_pDocument->GetHighlightAt(GetPlayerTrack(), Frame, Row).First;
-		for (int i = 0, n = m_pDocument->GetChannelCount(); i < n; ++i) {
-			for (size_t j = 0; j < m_pTrackerChannels.size(); ++j)		// // // pick this out later
-				if (m_pChannels[j] && m_pTrackerChannels[j]->GetID() == State->State[i].ChannelIndex) {
-					m_pChannels[j]->ApplyChannelState(&State->State[i]); break;
-				}
-		}
-		delete State;
+	CSongState state;
+	state.Retrieve(*m_pDocument, GetPlayerTrack(), Frame, Row);
+
+	m_pTempoCounter->LoadSoundState(state);
+	m_iLastHighlight = m_pDocument->GetHighlightAt(GetPlayerTrack(), Frame, Row).First;
+	for (int i = 0, n = m_pDocument->GetChannelCount(); i < n; ++i) {
+		for (size_t j = 0; j < m_pTrackerChannels.size(); ++j)		// // // pick this out later
+			if (m_pChannels[j] && m_pTrackerChannels[j]->GetID() == state.State[i].ChannelIndex) {
+				m_pChannels[j]->ApplyChannelState(&state.State[i]); break;
+			}
 	}
 }
 
@@ -984,24 +984,24 @@ std::string CSoundGen::RecallChannelState(int Channel) const		// // //
 	int Row = m_pTrackerView->GetSelectedRow();
 	std::string str;
 
-	if (stFullState *State = m_pDocument->RetrieveSoundState(GetPlayerTrack(), Frame, Row, Channel)) {
-		str = GetStateString(State->State[m_pDocument->GetChannelIndex(Channel)]);
-		if (State->Tempo >= 0)
-			str += "        Tempo: " + std::to_string(State->Tempo);
-		if (State->Speed >= 0) {
-			if (State->GroovePos >= 0) {
+	CSongState state;
+	state.Retrieve(*m_pDocument, GetPlayerTrack(), Frame, Row);
+
+	str = GetStateString(state.State[m_pDocument->GetChannelIndex(Channel)]);
+		if (state.Tempo >= 0)
+			str += "        Tempo: " + std::to_string(state.Tempo);
+		if (state.Speed >= 0) {
+			if (state.GroovePos >= 0) {
 				str += "        Groove: ";
-				str += {hex(State->Speed >> 4), hex(State->Speed)};
-				CGroove *Groove = m_pDocument->GetGroove(State->Speed);
+				str += {hex(state.Speed >> 4), hex(state.Speed)};
+				CGroove *Groove = m_pDocument->GetGroove(state.Speed);
 				const unsigned char Size = Groove->GetSize();
 				for (unsigned char i = 0; i < Size; i++)
-					str += ' ' + std::to_string(Groove->GetEntry((i + State->GroovePos) % Size));
+					str += ' ' + std::to_string(Groove->GetEntry((i + state.GroovePos) % Size));
 			}
 			else
-				str += "        Speed: " + std::to_string(State->Speed);
+				str += "        Speed: " + std::to_string(state.Speed);
 		}
-		delete State;
-	}
 
 	return str;
 }

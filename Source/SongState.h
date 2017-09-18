@@ -26,6 +26,8 @@
 #include "FamiTrackerTypes.h" // constants
 #include <memory>
 
+class CFamiTrackerDoc;
+
 // // // Channel state information
 class stChannelState {
 public:
@@ -40,11 +42,11 @@ public:
 	int Echo[ECHO_BUFFER_LENGTH + 1];
 };
 
-class stFullState {
+class CSongState {
 public:
-	stFullState(int Count = MAX_CHANNELS);
-	stFullState(const stFullState &other) = delete;
-	stFullState& operator=(const stFullState &other) = delete;
+	CSongState(int Count = MAX_CHANNELS);
+
+	void Retrieve(const CFamiTrackerDoc &doc, unsigned Track, unsigned Frame, unsigned Row);
 
 	std::unique_ptr<stChannelState[]> State;
 	int Tempo;

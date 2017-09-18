@@ -27,7 +27,7 @@
 
 class CFamiTrackerDoc;
 class CGroove;
-class stFullState;
+class CSongState;
 
 class CTempoCounter {
 public:
@@ -43,7 +43,7 @@ public:
 
 	void DoFxx(uint8_t Param);
 	void DoOxx(uint8_t Param);
-	void LoadSoundState(const stFullState &state);
+	void LoadSoundState(const CSongState &state);
 
 private:
 	void SetupSpeed();

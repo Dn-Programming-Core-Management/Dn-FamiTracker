@@ -81,7 +81,6 @@ struct stSequence {
 // External classes
 class CTrackerChannel;
 class CDocumentFile;
-class stFullState;		// // //
 class CSeqInstrument;		// // // TODO: move to instrument manager
 class CDSample;		// // //
 
@@ -312,7 +311,6 @@ public:
 	void			RemoveUnusedSamples();		// // //
 	void			RemoveUnusedPatterns();
 	void			SwapInstruments(int First, int Second);
-	stFullState*	RetrieveSoundState(unsigned int Track, unsigned int Frame, unsigned int Row, int Channel);		// // //
 
 	// For file version compability
 	static void		ConvertSequence(stSequence *pOldSequence, CSequence *pNewSequence, int Type);

@@ -26,7 +26,7 @@
 //
 
 #include "ChannelHandler.h"
-#include "ChannelState.h"		// // //
+#include "SongState.h"		// // //
 #include "FTMComponentInterface.h"
 #include "InstrumentManager.h"
 #include "TrackerChannel.h"		// // //

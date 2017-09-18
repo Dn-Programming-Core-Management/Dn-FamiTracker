@@ -22,7 +22,7 @@
 
 #include "TempoCounter.h"
 #include "FamiTrackerDoc.h"
-#include "ChannelState.h"
+#include "SongState.h"
 
 // // // CTempoCounter
 
@@ -96,7 +96,7 @@ void CTempoCounter::DoOxx(uint8_t Param) {
 	}
 }
 
-void CTempoCounter::LoadSoundState(const stFullState &state) {
+void CTempoCounter::LoadSoundState(const CSongState &state) {
 	if (state.Tempo != -1)
 		m_iTempo = state.Tempo;
 	if (state.GroovePos >= 0) {

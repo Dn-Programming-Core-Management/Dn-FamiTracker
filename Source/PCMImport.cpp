@@ -32,6 +32,7 @@
 #include "APU/DPCM.h"
 #include "resampler/resample.hpp"
 #include "resampler/resample.inl"
+#include <algorithm>		// // //
 
 const int CPCMImport::QUALITY_RANGE = 16;
 const int CPCMImport::VOLUME_RANGE = 12;		// +/- dB
