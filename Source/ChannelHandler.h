@@ -264,11 +264,6 @@ protected:
 		\return The pitch offset. */
 	int		GetFinePitch() const;
 
-	/*!	\brief Pads CPU cycles before the next channel handler's changes to the sound registers
-		are reflected.
-		\param count The number of CPU cycles. */
-	void	AddCycles(int count);
-
 	/*!	\brief Increments the channel handler's pitch register value.
 		\details This method directly adds \a Step to the pitch register value.
 		\param Step The number of increments. */

@@ -287,9 +287,6 @@ void CChannelHandlerFDS::FillWaveRAM(const char *pBuffer)		// // //
 		// Enable write for waveform RAM
 		WriteRegister(0x4089, 0x80);
 
-		// This is the time the loop takes in NSF code
-		AddCycles(1088);
-
 		// Wave ram
 		for (int i = 0; i < 0x40; ++i)
 			WriteRegister(0x4040 + i, m_iWaveTable[i]);

@@ -34,9 +34,7 @@
 #include <vector>		// // //
 #include <memory>		// // //
 #include "FamiTrackerTypes.h"		// // //
-
-const int VIBRATO_LENGTH = 256;
-const int TREMOLO_LENGTH = 256;
+#include "SoundGenBase.h"		// // //
 
 // Custom messages
 enum { 
@@ -75,15 +73,16 @@ class CFTMComponentInterface;		// // //
 class CInstrumentRecorder;		// // //
 class CRegisterState;		// // //
 class CArpeggiator;		// // //
-class CTempoCounter;		// // //
 class CAudioDriver;		// // //
 class CWaveRenderer;		// // //
 class CTempoDisplay;		// // //
+class CTempoCounter;		// // //
 class CPlayerCursor;		// // //
+class CSoundDriver;		// // //
 
 // CSoundGen
 
-class CSoundGen : public CWinThread, public IAudioCallback
+class CSoundGen : public CWinThread, public IAudioCallback, public CSoundGenBase		// // //
 {
 protected:
 	DECLARE_DYNCREATE(CSoundGen)
@@ -145,8 +144,6 @@ public:
 	unsigned int GetFrameRate();
 
 	// Tracker playing
-	void		 EvaluateGlobalEffects(stChanNote &NoteData, int EffColumns);		// // //
-
 	stDPCMState	 GetDPCMState() const;
 	int			 GetChannelVolume(int Channel) const;		// // //
 
@@ -161,9 +158,6 @@ public:
 	bool		 PreviewDone() const;
 
 	void		 WriteAPU(int Address, char Value);
-
-	// Used by channels
-	void		AddCycles(int Count);
 
 	// Other
 	uint8_t		GetReg(int Chip, int Reg) const;
@@ -217,13 +211,7 @@ public:
 	//
 private:
 	// Internal initialization
-	void		CreateChannels();
-	void		AssignChannel(std::unique_ptr<CTrackerChannel> pTrackerChannel);		// // //
 	void		ResetAPU();
-
-	void		GenerateVibratoTable(vibrato_t Type);		// // //
-	void		SetupVibratoTable(vibrato_t Type);
-	void		GeneratePeriodTables(int BaseFreq);
 
 	// Audio
 	bool		ResetAudioDevice();
@@ -250,13 +238,20 @@ private:
 
 	void		ApplyGlobalState();		// // //
 
+	// // // CSoundGenBase impl
+	void		OnTick() override;
+	void		OnStepRow() override;
+	void		OnPlayNote(int chan, const stChanNote &note) override;
+	void		OnUpdateRow(int frame, int row) override;
+	bool		IsChannelMuted(int chan) const override; // TODO: remove
+	bool		ShouldStopPlayer() const override;
+	int			GetArpNote(int chan) const override; // TODO: remove
+
 	//
 	// Private variables
 	//
 private:
 	// Objects
-	std::vector<std::unique_ptr<CChannelHandler>> m_pChannels;		// // //
-	std::vector<std::unique_ptr<CTrackerChannel>> m_pTrackerChannels;		// // //
 	CFamiTrackerDoc		*m_pDocument = nullptr;
 	CFamiTrackerView	*m_pTrackerView = nullptr;
 
@@ -280,30 +275,18 @@ private:
 	
 // Tracker playing variables
 private:
-	std::unique_ptr<CTempoCounter> m_pTempoCounter;			// // // tempo calculation
+	std::shared_ptr<CTempoCounter> m_pTempoCounter;			// // // tempo calculation
+	std::unique_ptr<CSoundDriver> m_pSoundDriver;			// // // main sound engine
+
 	std::unique_ptr<CTempoDisplay> m_pTempoDisplay;			// // // 050B
-	bool				m_bPlaying;							// True when tracker is playing back the module
 	bool				m_bHaltRequest;						// True when a halt is requested
 	int					m_iFrameCounter;
 
 	int					m_iUpdateCycles;					// Number of cycles/APU update
 	int					m_iConsumedCycles;					// Cycles consumed by the update registers functions
 
+	int					m_iLastTrack = 0;					// // //
 	int					m_iLastHighlight;					// // //
-
-	// Play control
-	int					m_iJumpToPattern;
-	int					m_iSkipToRow;
-	bool				m_bDoHalt;							// // // Cxx effect
-
-	unsigned int		m_iNoteLookupTableNTSC[96];			// For 2A03
-	unsigned int		m_iNoteLookupTablePAL[96];			// For 2A07
-	unsigned int		m_iNoteLookupTableSaw[96];			// For VRC6 sawtooth
-	unsigned int		m_iNoteLookupTableVRC7[12];			// // // For VRC7
-	unsigned int		m_iNoteLookupTableFDS[96];			// For FDS
-	unsigned int		m_iNoteLookupTableN163[96];			// For N163
-	unsigned int		m_iNoteLookupTableS5B[96];			// // // For 5B, internal use only
-	int					m_iVibratoTable[VIBRATO_LENGTH];
 
 	machine_t			m_iMachineType;						// // // NTSC/PAL
 
@@ -315,10 +298,6 @@ private:
 	// FDS & N163 waves
 	volatile bool		m_bWaveChanged;
 	volatile bool		m_bInternalWaveChanged;
-
-	// Player state
-	std::unique_ptr<CPlayerCursor> m_pPlayerCursor;			// // //
-	int					m_iPlayTrack;						// Current track that is playing
 
 	// Sequence play visualization
 	const CSequence		*m_pSequencePlayPos;

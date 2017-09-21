@@ -92,7 +92,7 @@ void CPlayerCursor::DoDxx(unsigned row) {
 	MoveToRow(row <= Max ? row : Max);
 }
 
-unsigned CPlayerCursor::GetCurrentTrack() const noexcept {
+unsigned CPlayerCursor::GetCurrentSong() const noexcept {
 	return track_;
 }
 

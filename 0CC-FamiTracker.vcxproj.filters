@@ -708,6 +708,9 @@
     <ClCompile Include="Source\SongState.cpp">
       <Filter>Source Files\Document Data Types</Filter>
     </ClCompile>
+    <ClCompile Include="Source\SoundDriver.cpp">
+      <Filter>Source Files\Sound Driver</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">
@@ -1285,6 +1288,12 @@
     </ClInclude>
     <ClInclude Include="Source\SongState.h">
       <Filter>Header Files\Document Data Type Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SoundDriver.h">
+      <Filter>Header Files\Sound Driver Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SoundGenBase.h">
+      <Filter>Header Files\Sound Driver Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

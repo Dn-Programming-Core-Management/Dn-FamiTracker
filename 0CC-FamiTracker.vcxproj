@@ -428,6 +428,7 @@
     <ClCompile Include="Source\BookmarkDlg.cpp" />
     <ClCompile Include="Source\BookmarkManager.cpp" />
     <ClCompile Include="Source\ChannelFactory.cpp" />
+    <ClCompile Include="Source\SoundDriver.cpp" />
     <ClCompile Include="Source\SongState.cpp" />
     <ClCompile Include="Source\FamiTrackerTypes.cpp" />
     <ClCompile Include="Source\FrameEditorTypes.cpp" />
@@ -603,6 +604,7 @@
     <ClInclude Include="Source\DPI.h" />
     <ClInclude Include="Source\Factory.h" />
     <ClInclude Include="Source\ChannelFactory.h" />
+    <ClInclude Include="Source\SoundDriver.h" />
     <ClInclude Include="Source\SongState.h" />
     <ClInclude Include="Source\drivers\drv_2a03.h" />
     <ClInclude Include="Source\drivers\drv_all.h" />
@@ -658,6 +660,7 @@
     <ClInclude Include="Source\SequenceManager.h" />
     <ClInclude Include="Source\SequenceParser.h" />
     <ClInclude Include="Source\SimpleFile.h" />
+    <ClInclude Include="Source\SoundGenBase.h" />
     <ClInclude Include="Source\SplitKeyboardDlg.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\StretchDlg.h" />

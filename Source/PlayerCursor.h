@@ -44,7 +44,7 @@ public:
 	void DoCxx();
 	void DoDxx(unsigned row);
 
-	unsigned GetCurrentTrack() const noexcept;
+	unsigned GetCurrentSong() const noexcept;
 	unsigned GetCurrentFrame() const noexcept;
 	unsigned GetCurrentRow() const noexcept;
 	unsigned GetCurrentTick() const noexcept;
