@@ -93,8 +93,9 @@ private:
 	void HandleGlobalEffects(stChanNote &note, int fxCols);
 
 private:
-	std::vector<std::unique_ptr<CChannelHandler>> m_pChannels;		// // //
-	std::vector<std::unique_ptr<CTrackerChannel>> m_pTrackerChannels;		// // //
+	std::vector<std::pair<
+		std::unique_ptr<CChannelHandler>, std::unique_ptr<CTrackerChannel>
+	>> tracks_;
 	const CFamiTrackerDoc *doc_ = nullptr;		// // //
 	CAPU *apu_ = nullptr;		// // //
 	CSoundGenBase *parent_ = nullptr;		// // //

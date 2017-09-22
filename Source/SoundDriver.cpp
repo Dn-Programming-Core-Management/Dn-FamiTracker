@@ -59,8 +59,7 @@ void CSoundDriver::SetupTracks() {
 	// Only called once!
 
 	// Clear all channels
-	m_pChannels.clear();		// // //
-	m_pTrackerChannels.clear();
+	tracks_.clear();		// // /.
 
 	// 2A03/2A07
 	// // // Short header names
@@ -112,21 +111,22 @@ void CSoundDriver::LoadDocument(const CFamiTrackerDoc &doc, CAPU &apu, CSoundGen
 	apu_ = &apu;
 
 	// Setup all channels
-	for (auto &ptr : m_pChannels)		// // //
-		if (ptr)
-			ptr->InitChannel(&apu, m_iVibratoTable, /*this*/ &sound);
+	for (auto &x : tracks_)		// // //
+		if (auto &ch = x.first)
+			ch->InitChannel(&apu, m_iVibratoTable, /*this*/ &sound);
 }
 
 void CSoundDriver::ConfigureDocument() {
 	SetupVibrato();
 	SetupPeriodTables();
 
-	for (auto &ch : m_pChannels) if (ch) {
-		ch->SetVibratoStyle(doc_->GetVibratoStyle());		// // //
-		ch->SetLinearPitch(doc_->GetLinearPitch());
-		if (auto pChan = dynamic_cast<CChannelHandlerN163 *>(ch.get()))
-			pChan->SetChannelCount(doc_->GetNamcoChannels());
-	}
+	for (auto &x : tracks_)
+		if (auto &ch = x.first) {
+			ch->SetVibratoStyle(doc_->GetVibratoStyle());		// // //
+			ch->SetLinearPitch(doc_->GetLinearPitch());
+			if (auto pChan = dynamic_cast<CChannelHandlerN163 *>(ch.get()))
+				pChan->SetChannelCount(doc_->GetNamcoChannels());
+		}
 }
 
 void CSoundDriver::RegisterTracks(CFamiTrackerDoc &doc) {
@@ -142,11 +142,11 @@ void CSoundDriver::RegisterTracks(CFamiTrackerDoc &doc) {
 	// Register the channels in the document
 	// Expansion & internal channels
 	int i = 0;		// // //
-	for (auto &x : m_pTrackerChannels) {
-		int ID = x->GetID();		// // //
-		if (m_pChannels[i] && ((x->GetChip() & Chip) || (i <= CHANID_DPCM))			// // //
-						   && (i >= CHANID_FDS || i < CHANID_N163_CH1 + doc_->GetNamcoChannels())) {
-			doc.RegisterChannel(x.get(), ID, x->GetChip());
+	for (auto &x : tracks_) {
+		int ID = x.second->GetID();		// // //
+		if (x.first && ((x.second->GetChip() & Chip) || (i <= CHANID_DPCM))			// // //
+					&& (i >= CHANID_FDS || i < CHANID_N163_CH1 + doc_->GetNamcoChannels())) {
+			doc.RegisterChannel(x.second.get(), ID, x.second->GetChip());
 		}
 		++i;
 	}
@@ -171,20 +171,20 @@ void CSoundDriver::StopPlayer() {
 }
 
 void CSoundDriver::ResetTracks() {
-	for (auto &ch : m_pChannels)
-		if (ch)
+	for (auto &x : tracks_) {
+		if (auto &ch = x.first)
 			ch->ResetChannel();
-	for (auto &ch : m_pTrackerChannels)
-		if (ch)
-			ch->Reset();
+		if (auto &track = x.second)
+			track->Reset();
+	}
 }
 
 void CSoundDriver::LoadSoundState(const CSongState &state) {
 	m_pTempoCounter->LoadSoundState(state);
 	for (int i = 0, n = doc_->GetChannelCount(); i < n; ++i) {
-		for (size_t j = 0; j < m_pTrackerChannels.size(); ++j)		// // // pick this out later
-			if (m_pChannels[j] && m_pTrackerChannels[j]->GetID() == state.State[i].ChannelIndex) {
-				m_pChannels[j]->ApplyChannelState(&state.State[i]); break;
+		for (auto &x : tracks_)		// // // pick this out later
+			if (x.first && x.second->GetID() == state.State[i].ChannelIndex) {
+				x.first->ApplyChannelState(&state.State[i]); break;
 			}
 	}
 }
@@ -260,14 +260,14 @@ void CSoundDriver::StepRow() {
 }
 
 void CSoundDriver::UpdateChannels() {
-	for (auto &x : m_pTrackerChannels) {		// // //
+	for (auto &x : tracks_) {		// // //
 		// workaround to permutate channel indices
-		int Index = x->GetID();
-		int Channel = doc_->GetChannelIndex(m_pTrackerChannels[Index]->GetID());
+		int Index = x.second->GetID();
+		int Channel = doc_->GetChannelIndex(tracks_[Index].second->GetID());
 		if (Channel == -1)
 			continue;
-		auto &pChan = m_pChannels[Index];
-		auto &pTrackerChan = m_pTrackerChannels[Index];
+		auto &pChan = tracks_[Index].first;
+		auto &pTrackerChan = tracks_[Index].second;
 		
 		// Run auto-arpeggio, if enabled
 		if (int Arpeggio = parent_ ? parent_->GetArpNote(Channel) : -1; Arpeggio > 0)		// // //
@@ -294,11 +294,10 @@ void CSoundDriver::UpdateChannels() {
 
 void CSoundDriver::UpdateAPU(int cycles) {
 	unsigned int LastChip = SNDCHIP_NONE;		// // // 050B
-	size_t i = 0;		// // //
 
-	for (auto &ch : m_pChannels) {
-		if (ch) {
-			unsigned int Chip = m_pTrackerChannels[i]->GetChip();
+	for (auto &x : tracks_) {
+		if (auto &ch = x.first) {
+			unsigned int Chip = x.second->GetChip();
 			if (doc_->ExpansionEnabled(Chip)) {
 				int Delay = (Chip == LastChip) ? 150 : 250;
 				if (Delay < cycles) {
@@ -310,7 +309,6 @@ void CSoundDriver::UpdateAPU(int cycles) {
 			}
 			apu_->Process();
 		}
-		++i;
 	}
 
 	// Finish the audio frame
@@ -333,7 +331,7 @@ void CSoundDriver::EnqueueFrame(int Frame) {
 
 void CSoundDriver::ForceReloadInstrument(int chan) {
 	if (doc_)
-		m_pChannels[doc_->GetChannel(chan)->GetID()]->ForceReloadInstrument();
+		tracks_[doc_->GetChannel(chan)->GetID()].first->ForceReloadInstrument();
 }
 
 bool CSoundDriver::IsPlaying() const {
@@ -363,15 +361,17 @@ unsigned CSoundDriver::GetQueuedFrame() const {
 }
 
 CChannelHandler *CSoundDriver::GetChannelHandler(int Index) const {
-	return m_pChannels[Index].get();
+	return tracks_[Index].first.get();
 }
 
 int CSoundDriver::GetChannelVolume(int chan) const {
-	return m_pChannels[chan] ? m_pChannels[chan]->GetChannelVolume() : 0;
+	const auto &ch = GetChannelHandler(chan);
+	return ch ? ch->GetChannelVolume() : 0;
 }
 
 std::string CSoundDriver::GetChannelStateString(int chan) const {
-	return m_pChannels[chan] ? m_pChannels[chan]->GetStateString() : "";
+	const auto &ch = GetChannelHandler(chan);
+	return ch ? ch->GetStateString() : "";
 }
 
 int CSoundDriver::ReadPeriodTable(int Index, int Table) const {
@@ -396,12 +396,11 @@ void CSoundDriver::AssignTrack(std::unique_ptr<CTrackerChannel> track) {
 	static CChannelFactory F {}; // test
 	chan_id_t ID = track->GetID();
 
-	CChannelHandler *pRenderer = F.Produce(ID);
-	if (pRenderer)
-		pRenderer->SetChannelID(ID);
+	CChannelHandler *ch = F.Produce(ID);
+	if (ch)
+		ch->SetChannelID(ID);
 
-	m_pTrackerChannels.push_back(std::move(track));		// // //
-	m_pChannels.emplace_back(pRenderer);
+	tracks_.emplace_back(std::unique_ptr<CChannelHandler>(ch), std::move(track));		// // //
 }
 
 void CSoundDriver::SetupVibrato() {
@@ -473,30 +472,32 @@ void CSoundDriver::SetupPeriodTables() {
 	}
 
 	// // // Setup note tables
-	for (size_t i = 0; i < m_pChannels.size(); ++i) {
-		if (!m_pChannels[i]) continue;
-		const unsigned int *Table = nullptr;
-		switch (m_pTrackerChannels[i]->GetID()) {
-		case CHANID_SQUARE1: case CHANID_SQUARE2: case CHANID_TRIANGLE:
-			Table = Machine == PAL ? m_iNoteLookupTablePAL : m_iNoteLookupTableNTSC; break;
-		case CHANID_VRC6_PULSE1: case CHANID_VRC6_PULSE2:
-		case CHANID_MMC5_SQUARE1: case CHANID_MMC5_SQUARE2:
-			Table = m_iNoteLookupTableNTSC; break;
-		case CHANID_VRC6_SAWTOOTH:
-			Table = m_iNoteLookupTableSaw; break;
-		case CHANID_VRC7_CH1: case CHANID_VRC7_CH2: case CHANID_VRC7_CH3:
-		case CHANID_VRC7_CH4: case CHANID_VRC7_CH5: case CHANID_VRC7_CH6:
-			Table = m_iNoteLookupTableVRC7; break;
-		case CHANID_FDS:
-			Table = m_iNoteLookupTableFDS; break;
-		case CHANID_N163_CH1: case CHANID_N163_CH2: case CHANID_N163_CH3: case CHANID_N163_CH4:
-		case CHANID_N163_CH5: case CHANID_N163_CH6: case CHANID_N163_CH7: case CHANID_N163_CH8:
-			Table = m_iNoteLookupTableN163; break;
-		case CHANID_S5B_CH1: case CHANID_S5B_CH2: case CHANID_S5B_CH3:
-			Table = m_iNoteLookupTableS5B; break;
-		default: continue;
-		}
-		m_pChannels[i]->SetNoteTable(Table);
+	for (auto &x : tracks_) {
+		if (!x.first)
+			continue;
+		if (auto Table = [&] () -> const unsigned * {
+			switch (x.second->GetID()) {
+			case CHANID_SQUARE1: case CHANID_SQUARE2: case CHANID_TRIANGLE:
+				return Machine == PAL ? m_iNoteLookupTablePAL : m_iNoteLookupTableNTSC;
+			case CHANID_VRC6_PULSE1: case CHANID_VRC6_PULSE2:
+			case CHANID_MMC5_SQUARE1: case CHANID_MMC5_SQUARE2:
+				return m_iNoteLookupTableNTSC;
+			case CHANID_VRC6_SAWTOOTH:
+				return m_iNoteLookupTableSaw;
+			case CHANID_VRC7_CH1: case CHANID_VRC7_CH2: case CHANID_VRC7_CH3:
+			case CHANID_VRC7_CH4: case CHANID_VRC7_CH5: case CHANID_VRC7_CH6:
+				return m_iNoteLookupTableVRC7;
+			case CHANID_FDS:
+				return m_iNoteLookupTableFDS;
+			case CHANID_N163_CH1: case CHANID_N163_CH2: case CHANID_N163_CH3: case CHANID_N163_CH4:
+			case CHANID_N163_CH5: case CHANID_N163_CH6: case CHANID_N163_CH7: case CHANID_N163_CH8:
+				return m_iNoteLookupTableN163;
+			case CHANID_S5B_CH1: case CHANID_S5B_CH2: case CHANID_S5B_CH3:
+				return m_iNoteLookupTableS5B;
+			}
+			return nullptr;
+		}())
+			x.first->SetNoteTable(Table);
 	}
 }
 
