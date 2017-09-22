@@ -30,6 +30,7 @@
 #include "stdafx.h"
 #include "FamiTracker.h"		// // //
 #include "Settings.h"		// // //
+#include "SongState.h"		// // //
 
 CChannelHandlerFDS::CChannelHandlerFDS() : 
 	CChannelHandlerInverted(0xFFF, 32)

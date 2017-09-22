@@ -46,11 +46,6 @@
 #endif
 #include <algorithm>		// // //
 
-std::string MakeCommandString(effect_t Effect, unsigned char Param)		// // //
-{
-	return {' ', EFF_CHAR[Effect - 1], hex(Param >> 4), hex(Param)};
-}
-
 /*
  * Class CChannelHandler
  *

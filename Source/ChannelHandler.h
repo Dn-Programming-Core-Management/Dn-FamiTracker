@@ -39,13 +39,6 @@ class CSoundGen;		// // //
 #include <string>		// // //
 #include <cstdint>
 
-template <typename T>
-constexpr char hex(T x) noexcept {
-	return (x & 0x0F) + ((x & 0x0F) > 0x09 ? '7' : '0');
-}
-
-std::string MakeCommandString(effect_t Effect, unsigned char Param);		// // //
-
 /*!
 	\brief An implementation of the channel handler.
 */
@@ -103,8 +96,9 @@ public:
 	virtual void	ResetChannel();
 	/*!	\brief Retrieves the channel handler's state.
 		\warning The output of this method is neither guaranteed nor required to match that of
-		::GetStateString defined in SoundGen.cpp.
-		\return A string representing the internal state of the channel handler. */
+		stChannelState::GetStateString.
+		\return A string representing the internal state of the channel handler.
+		\relates stChannelState */
 	virtual std::string	GetStateString() const;		// // //
 	/*!	\brief Applies a channel state to the channel handler.
 		\param State Pointer to a channel state object.

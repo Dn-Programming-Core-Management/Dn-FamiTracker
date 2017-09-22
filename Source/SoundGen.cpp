@@ -24,7 +24,6 @@
 // This file takes care of the NES sound playback
 //
 // TODO: 
-//  - Break out actual player functions to a new class CPlayer
 //  - Create new interface for CFamiTrackerView with thread-safe functions
 //  - Same for CFamiTrackerDoc
 //  - Perhaps this should be a worker thread and not GUI thread?
@@ -50,30 +49,17 @@ CSoundGen depends on CFamiTrackerView for:
 #include "DirectSound.h"
 #include "WaveFile.h"		// // //
 #include "APU/APU.h"
-#include "ChannelHandler.h"
-#include "ChannelsN163.h" // N163 channel count
+#include "ChannelHandler.h" // TODO: remove (hex)
 #include "DSample.h"		// // //
 #include "InstrumentRecorder.h"		// // //
 #include "Settings.h"
-#include "TrackerChannel.h"
 #include "MIDI.h"
-#include "DetuneTable.h"		// // //
 #include "Arpeggiator.h"		// // //
 #include "TempoCounter.h"		// // //
 #include "TempoDisplay.h"		// // // 050B
 #include "AudioDriver.h"		// // //
 #include "WaveRenderer.h"		// // //
-#include "PlayerCursor.h"		// // //
 #include "SoundDriver.h"		// // //
-
-// Write period tables to files
-//#define WRITE_PERIOD_FILES
-
-// // // Write vibrato table to file
-//#define WRITE_VIBRATO_FILE
-
-// Write a file with the volume table
-//#define WRITE_VOLUME_FILE
 
 // // // Log VGM output (port from sn7t when necessary)
 //#define WRITE_VGM
@@ -225,11 +211,6 @@ void CSoundGen::SelectChip(int Chip)
 	}
 
 	PostThreadMessage(WM_USER_SET_CHIP, Chip, 0);
-}
-
-CChannelHandler *CSoundGen::GetChannel(int Index) const
-{
-	return m_pSoundDriver->GetChannelHandler(Index);
 }
 
 void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
@@ -613,92 +594,6 @@ int CSoundGen::GetArpNote(int chan) const {
 	return -1;
 }
 
-/*!	\brief Obtains a human-readable form of a channel state object.
-	\warning The output of this method is neither guaranteed nor required to match that of
-	CChannelHandler::GetStateString.
-	\param State A reference to the channel state object.
-	\return A string representing the channel's state.
-	\relates CChannelHandler
-*/
-static std::string GetStateString(const stChannelState &State)
-{
-	std::string log("Inst.: ");
-	if (State.Instrument == MAX_INSTRUMENTS)
-		log += "None";
-	else
-		log += {hex(State.Instrument >> 4), hex(State.Instrument)};
-	log += "        Vol.: ";
-	log += hex(State.Volume >= MAX_VOLUME ? 0xF : State.Volume);
-	log += "        Active effects:";
-
-	std::string effStr;
-
-	const effect_t SLIDE_EFFECT = State.Effect[EF_ARPEGGIO] >= 0 ? EF_ARPEGGIO :
-								  State.Effect[EF_PORTA_UP] >= 0 ? EF_PORTA_UP :
-								  State.Effect[EF_PORTA_DOWN] >= 0 ? EF_PORTA_DOWN :
-								  EF_PORTAMENTO;
-	for (const auto &x : {SLIDE_EFFECT, EF_VIBRATO, EF_TREMOLO, EF_VOLUME_SLIDE, EF_PITCH, EF_DUTY_CYCLE}) {
-		int p = State.Effect[x];
-		if (p < 0) continue;
-		if (p == 0 && x != EF_PITCH) continue;
-		if (p == 0x80 && x == EF_PITCH) continue;
-		effStr += MakeCommandString(x, p);
-	}
-
-	if ((State.ChannelIndex >= CHANID_SQUARE1 && State.ChannelIndex <= CHANID_SQUARE2) ||
-			State.ChannelIndex == CHANID_NOISE ||
-		(State.ChannelIndex >= CHANID_MMC5_SQUARE1 && State.ChannelIndex <= CHANID_MMC5_SQUARE2))
-		for (const auto &x : {EF_VOLUME}) {
-			int p = State.Effect[x];
-			if (p < 0) continue;
-			effStr += MakeCommandString(x, p);
-		}
-	else if (State.ChannelIndex == CHANID_TRIANGLE)
-		for (const auto &x : {EF_VOLUME, EF_NOTE_CUT}) {
-			int p = State.Effect[x];
-			if (p < 0) continue;
-			effStr += MakeCommandString(x, p);
-		}
-	else if (State.ChannelIndex == CHANID_DPCM)
-		for (const auto &x : {EF_SAMPLE_OFFSET, /*EF_DPCM_PITCH*/}) {
-			int p = State.Effect[x];
-			if (p <= 0) continue;
-			effStr += MakeCommandString(x, p);
-		}
-	else if (State.ChannelIndex >= CHANID_VRC7_CH1 && State.ChannelIndex <= CHANID_VRC7_CH6)
-		for (const auto &x : VRC7_EFFECTS) {
-			int p = State.Effect[x];
-			if (p < 0) continue;
-			effStr += MakeCommandString(x, p);
-		}
-	else if (State.ChannelIndex == CHANID_FDS)
-		for (const auto &x : FDS_EFFECTS) {
-			int p = State.Effect[x];
-			if (p < 0 || (x == EF_FDS_MOD_BIAS && p == 0x80)) continue;
-			effStr += MakeCommandString(x, p);
-		}
-	else if (State.ChannelIndex >= CHANID_S5B_CH1 && State.ChannelIndex <= CHANID_S5B_CH3)
-		for (const auto &x : S5B_EFFECTS) {
-			int p = State.Effect[x];
-			if (p < 0) continue;
-			effStr += MakeCommandString(x, p);
-		}
-	else if (State.ChannelIndex >= CHANID_N163_CH1 && State.ChannelIndex <= CHANID_N163_CH8)
-		for (const auto &x : N163_EFFECTS) {
-			int p = State.Effect[x];
-			if (p < 0 || (x == EF_N163_WAVE_BUFFER && p == 0x7F)) continue;
-			effStr += MakeCommandString(x, p);
-		}
-	if (State.Effect_LengthCounter >= 0)
-		effStr += MakeCommandString(EF_VOLUME, State.Effect_LengthCounter);
-	if (State.Effect_AutoFMMult >= 0)
-		effStr += MakeCommandString(EF_FDS_MOD_DEPTH, State.Effect_AutoFMMult);
-
-	if (!effStr.size()) effStr = " None";
-	log += effStr;
-	return log;
-}
-
 std::string CSoundGen::RecallChannelState(int Channel) const		// // //
 {
 	if (IsPlaying())
@@ -707,24 +602,7 @@ std::string CSoundGen::RecallChannelState(int Channel) const		// // //
 	auto [Frame, Row] = m_pTrackerView->GetSelectedPos();
 	CSongState state;
 	state.Retrieve(*m_pDocument, GetPlayerTrack(), Frame, Row);
-
-	std::string str = GetStateString(state.State[m_pDocument->GetChannelIndex(Channel)]);
-	if (state.Tempo >= 0)
-		str += "        Tempo: " + std::to_string(state.Tempo);
-	if (state.Speed >= 0) {
-		if (state.GroovePos >= 0) {
-			str += "        Groove: ";
-			str += {hex(state.Speed >> 4), hex(state.Speed)};
-			CGroove *Groove = m_pDocument->GetGroove(state.Speed);
-			const unsigned char Size = Groove->GetSize();
-			for (unsigned char i = 0; i < Size; i++)
-				str += ' ' + std::to_string(Groove->GetEntry((i + state.GroovePos) % Size));
-		}
-		else
-			str += "        Speed: " + std::to_string(state.Speed);
-	}
-
-	return str;
+	return state.GetChannelStateString(*m_pDocument, Channel);
 }
 
 void CSoundGen::HaltPlayer() {
@@ -878,26 +756,6 @@ void CSoundGen::LoadMachineSettings()		// // //
 		CSingleLock l(&m_csAPULock, TRUE);		// // //
 		m_pAPU->ChangeMachineRate(m_iMachineType == NTSC ? MACHINE_NTSC : MACHINE_PAL, Rate);		// // //
 	}
-
-#if WRITE_VOLUME_FILE
-	CFile file("vol.txt", CFile::modeWrite | CFile::modeCreate);
-
-	for (int i = 0; i < 16; i++) {
-		for (int j = /*(i / 2)*/0; j < 8; j++) {
-			int a = (i*(j*2)) / 15;
-			int b = (i*(j*2+1)) / 15;
-			if (i > 0 && j > 0 && a == 0) a = 1;
-			if (j > 0 && i > 0 && b == 0) b = 1;
-			unsigned char c = (a<<4) | b;
-			CString st;
-			st.Format("$%02X, ", c);
-			file.Write(st, st.GetLength());
-		}
-		file.Write("\n", 1);
-	}
-
-	file.Close();
-#endif /* WRITE_VOLUME_FILE */
 }
 
 stDPCMState CSoundGen::GetDPCMState() const

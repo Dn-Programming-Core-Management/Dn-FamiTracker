@@ -77,7 +77,6 @@ public:
 	unsigned GetPlayerTicks() const;
 	unsigned GetQueuedFrame() const;
 
-	CChannelHandler *GetChannelHandler(int Index) const;
 	int GetChannelVolume(int chan) const;
 	std::string GetChannelStateString(int chan) const;
 
@@ -86,6 +85,7 @@ public:
 
 private:
 	void AssignTrack(std::unique_ptr<CTrackerChannel> track);
+	CChannelHandler *GetChannelHandler(int Index) const;
 
 	void SetupVibrato();
 	void SetupPeriodTables();

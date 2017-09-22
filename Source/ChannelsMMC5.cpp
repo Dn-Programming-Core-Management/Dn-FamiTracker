@@ -26,6 +26,7 @@
 #include "APU/Types.h"		// // //
 #include "InstHandler.h"		// // //
 #include "SeqInstHandler.h"		// // //
+#include "SongState.h"		// // //
 
 CChannelHandlerMMC5::CChannelHandlerMMC5() : CChannelHandler(0x7FF, 0x0F)
 {

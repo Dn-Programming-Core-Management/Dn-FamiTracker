@@ -51,24 +51,100 @@ void UpdateEchoTranspose(stChanNote &Note, int &Value, unsigned int EffColumns) 
 
 
 
-stChannelState::stChannelState() :
-	ChannelIndex(-1),
-	Instrument(MAX_INSTRUMENTS),
-	Volume(MAX_VOLUME),
-	Effect_LengthCounter(-1),
-	Effect_AutoFMMult(-1)
+std::string MakeCommandString(effect_t Effect, unsigned char Param) {		// // //
+	return {' ', EFF_CHAR[Effect - 1], hex(Param >> 4), hex(Param)};
+}
+
+
+
+stChannelState::stChannelState()
 {
 	memset(Effect, -1, EF_COUNT * sizeof(int));
 	memset(Echo, -1, ECHO_BUFFER_LENGTH * sizeof(int));
 }
 
+std::string stChannelState::GetStateString() const {
+	std::string log("Inst.: ");
+	if (Instrument == MAX_INSTRUMENTS)
+		log += "None";
+	else
+		log += {hex(Instrument >> 4), hex(Instrument)};
+	log += "        Vol.: ";
+	log += hex(Volume >= MAX_VOLUME ? 0xF : Volume);
+	log += "        Active effects:";
+
+	std::string effStr;
+
+	const effect_t SLIDE_EFFECT = Effect[EF_ARPEGGIO] >= 0 ? EF_ARPEGGIO :
+		Effect[EF_PORTA_UP] >= 0 ? EF_PORTA_UP :
+		Effect[EF_PORTA_DOWN] >= 0 ? EF_PORTA_DOWN :
+		EF_PORTAMENTO;
+	for (const auto &x : {SLIDE_EFFECT, EF_VIBRATO, EF_TREMOLO, EF_VOLUME_SLIDE, EF_PITCH, EF_DUTY_CYCLE}) {
+		int p = Effect[x];
+		if (p < 0) continue;
+		if (p == 0 && x != EF_PITCH) continue;
+		if (p == 0x80 && x == EF_PITCH) continue;
+		effStr += MakeCommandString(x, p);
+	}
+
+	if ((ChannelIndex >= CHANID_SQUARE1 && ChannelIndex <= CHANID_SQUARE2) ||
+		ChannelIndex == CHANID_NOISE ||
+		(ChannelIndex >= CHANID_MMC5_SQUARE1 && ChannelIndex <= CHANID_MMC5_SQUARE2))
+		for (const auto &x : {EF_VOLUME}) {
+			int p = Effect[x];
+			if (p < 0) continue;
+			effStr += MakeCommandString(x, p);
+		}
+	else if (ChannelIndex == CHANID_TRIANGLE)
+		for (const auto &x : {EF_VOLUME, EF_NOTE_CUT}) {
+			int p = Effect[x];
+			if (p < 0) continue;
+			effStr += MakeCommandString(x, p);
+		}
+	else if (ChannelIndex == CHANID_DPCM)
+		for (const auto &x : {EF_SAMPLE_OFFSET, /*EF_DPCM_PITCH*/}) {
+			int p = Effect[x];
+			if (p <= 0) continue;
+			effStr += MakeCommandString(x, p);
+		}
+	else if (ChannelIndex >= CHANID_VRC7_CH1 && ChannelIndex <= CHANID_VRC7_CH6)
+		for (const auto &x : VRC7_EFFECTS) {
+			int p = Effect[x];
+			if (p < 0) continue;
+			effStr += MakeCommandString(x, p);
+		}
+	else if (ChannelIndex == CHANID_FDS)
+		for (const auto &x : FDS_EFFECTS) {
+			int p = Effect[x];
+			if (p < 0 || (x == EF_FDS_MOD_BIAS && p == 0x80)) continue;
+			effStr += MakeCommandString(x, p);
+		}
+	else if (ChannelIndex >= CHANID_S5B_CH1 && ChannelIndex <= CHANID_S5B_CH3)
+		for (const auto &x : S5B_EFFECTS) {
+			int p = Effect[x];
+			if (p < 0) continue;
+			effStr += MakeCommandString(x, p);
+		}
+	else if (ChannelIndex >= CHANID_N163_CH1 && ChannelIndex <= CHANID_N163_CH8)
+		for (const auto &x : N163_EFFECTS) {
+			int p = Effect[x];
+			if (p < 0 || (x == EF_N163_WAVE_BUFFER && p == 0x7F)) continue;
+			effStr += MakeCommandString(x, p);
+		}
+	if (Effect_LengthCounter >= 0)
+		effStr += MakeCommandString(EF_VOLUME, Effect_LengthCounter);
+	if (Effect_AutoFMMult >= 0)
+		effStr += MakeCommandString(EF_FDS_MOD_DEPTH, Effect_AutoFMMult);
+
+	if (!effStr.size()) effStr = " None";
+	log += effStr;
+	return log;
+}
+
 
 
 CSongState::CSongState(int Count) :
-	State(std::make_unique<stChannelState[]>(Count)),
-	Tempo(-1),
-	Speed(-1),
-	GroovePos(-1)
+	State(std::make_unique<stChannelState[]>(Count))
 {
 }
 
@@ -247,4 +323,23 @@ void CSongState::Retrieve(const CFamiTrackerDoc &doc, unsigned Track, unsigned F
 			Speed = Index;
 		}
 	}
+}
+
+std::string CSongState::GetChannelStateString(const CFamiTrackerDoc &doc, int chan) const {
+	std::string str = State[doc.GetChannelIndex(chan)].GetStateString();
+	if (Tempo >= 0)
+		str += "        Tempo: " + std::to_string(Tempo);
+	if (Speed >= 0) {
+		if (const CGroove *Groove = doc.GetGroove(Speed); Groove && GroovePos >= 0) {
+			str += "        Groove: ";
+			str += {hex(Speed >> 4), hex(Speed)};
+			const unsigned char Size = Groove->GetSize();
+			for (unsigned char i = 0; i < Size; i++)
+				str += ' ' + std::to_string(Groove->GetEntry((i + GroovePos) % Size));
+		}
+		else
+			str += "        Speed: " + std::to_string(Speed);
+	}
+
+	return str;
 }

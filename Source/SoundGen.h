@@ -58,7 +58,6 @@ struct stRecordSetting;
 
 enum note_prio_t;
 
-class CChannelHandler;
 class CFamiTrackerView;
 class CFamiTrackerDoc;
 class CInstrument;		// // //
@@ -68,7 +67,6 @@ class CDSound;
 class CDSoundChannel;
 class CVisualizerWnd;
 class CDSample;
-class CTrackerChannel;
 class CFTMComponentInterface;		// // //
 class CInstrumentRecorder;		// // //
 class CRegisterState;		// // //
@@ -116,8 +114,6 @@ public:
 
 	bool		WaitForStop() const;
 	bool		IsRunning() const;
-
-	CChannelHandler *GetChannel(int Index) const;
 
 	void		DocumentPropertiesChanged(CFamiTrackerDoc *pDocument);
 

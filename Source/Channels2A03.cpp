@@ -32,6 +32,7 @@
 #include "InstHandler.h"		// // //
 #include "SeqInstHandler.h"		// // //
 #include "InstHandlerDPCM.h"		// // //
+#include "SongState.h"		// // //
 
 //#define NOISE_PITCH_SCALE
 

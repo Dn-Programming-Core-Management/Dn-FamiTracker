@@ -25,31 +25,49 @@
 
 #include "FamiTrackerTypes.h" // constants
 #include <memory>
+#include <string>
 
 class CFamiTrackerDoc;
+
+template <typename T>
+constexpr char hex(T x) noexcept {
+	return (x & 0x0F) + ((x & 0x0F) > 0x09 ? '7' : '0');
+}
+
+std::string MakeCommandString(effect_t Effect, unsigned char Param);		// // //
 
 // // // Channel state information
 class stChannelState {
 public:
 	stChannelState();
 
-	int ChannelIndex;
-	int Instrument;
-	int Volume;
+	/*!	\brief Obtains a human-readable form of a channel state object.
+	\warning The output of this method is neither guaranteed nor required to match that of
+	CChannelHandler::GetStateString.
+	\param State A reference to the channel state object.
+	\return A string representing the channel's state.
+	\relates CChannelHandler
+	*/
+	std::string GetStateString() const;
+
+	int ChannelIndex = -1;
+	int Instrument = MAX_INSTRUMENTS;
+	int Volume = MAX_VOLUME;
 	int Effect[EF_COUNT];
-	int Effect_LengthCounter;
-	int Effect_AutoFMMult;
+	int Effect_LengthCounter = -1;
+	int Effect_AutoFMMult = -1;
 	int Echo[ECHO_BUFFER_LENGTH + 1];
 };
 
 class CSongState {
 public:
-	CSongState(int Count = MAX_CHANNELS);
+	explicit CSongState(int Count = MAX_CHANNELS);
 
 	void Retrieve(const CFamiTrackerDoc &doc, unsigned Track, unsigned Frame, unsigned Row);
+	std::string GetChannelStateString(const CFamiTrackerDoc &doc, int chan) const;
 
 	std::unique_ptr<stChannelState[]> State;
-	int Tempo;
-	int Speed;
-	int GroovePos; // -1: disable groove
+	int Tempo = -1;
+	int Speed = -1;
+	int GroovePos = -1; // -1: disable groove
 };

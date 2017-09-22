@@ -28,6 +28,7 @@
 #include "APU/APU.h"
 #include "InstHandler.h"		// // //
 #include "SeqInstHandlerS5B.h"		// // //
+#include "SongState.h"		// // //
 
 // Static member variables, for the shared stuff in 5B
 int			  CChannelHandlerS5B::m_iModes		= 0;
