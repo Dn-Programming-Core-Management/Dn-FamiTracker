@@ -61,7 +61,6 @@ public:
 
 	void Tick();
 	void StepRow();
-	void UpdateChannels();
 	void UpdateAPU(int cycles);
 
 	void QueueNote(int chan, stChanNote &note, note_prio_t priority);
@@ -90,6 +89,8 @@ private:
 	void SetupVibrato();
 	void SetupPeriodTables();
 
+	void PlayerTick();
+	void UpdateChannels();
 	void HandleGlobalEffects(stChanNote &note, int fxCols);
 
 private:

@@ -101,9 +101,9 @@ public:
 		\relates stChannelState */
 	virtual std::string	GetStateString() const;		// // //
 	/*!	\brief Applies a channel state to the channel handler.
-		\param State Pointer to a channel state object.
+		\param A channel state object.
 		\sa CSoundGen::ApplyGlobalState */
-	virtual void	ApplyChannelState(stChannelState *State);	// // //
+	virtual void	ApplyChannelState(const stChannelState &State);	// // //
 
 	/*!	\brief Sets the channel handler's note lookup table.
 		\param pNoteLookupTable Pointer to the note lookup table. */

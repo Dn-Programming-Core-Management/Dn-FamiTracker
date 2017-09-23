@@ -207,22 +207,22 @@ std::string CChannelHandler::GetStateString() const		// // //
 	return log + GetEffectString();
 }
 
-void CChannelHandler::ApplyChannelState(stChannelState *State)
+void CChannelHandler::ApplyChannelState(const stChannelState &State)
 {
-	m_iInstrument = State->Instrument;
-	m_iDefaultVolume = m_iVolume = (State->Volume == MAX_VOLUME) ? VOL_COLUMN_MAX : (State->Volume << VOL_COLUMN_SHIFT);
-	memcpy(m_iEchoBuffer, State->Echo, sizeof(int) * (ECHO_BUFFER_LENGTH + 1));
+	m_iInstrument = State.Instrument;
+	m_iDefaultVolume = m_iVolume = (State.Volume == MAX_VOLUME) ? VOL_COLUMN_MAX : (State.Volume << VOL_COLUMN_SHIFT);
+	memcpy(m_iEchoBuffer, State.Echo, sizeof(int) * (ECHO_BUFFER_LENGTH + 1));
 	if (m_iInstrument != MAX_INSTRUMENTS)
 		HandleInstrument(true, true);
-	if (State->Effect_LengthCounter >= 0)
-		HandleEffect(EF_VOLUME, State->Effect_LengthCounter);
+	if (State.Effect_LengthCounter >= 0)
+		HandleEffect(EF_VOLUME, State.Effect_LengthCounter);
 	for (unsigned int i = 0; i < EF_COUNT; i++)
-		if (State->Effect[i] >= 0)
-			HandleEffect(static_cast<effect_t>(i), State->Effect[i]);
-	if (State->Effect[EF_FDS_MOD_SPEED_HI] >= 0x10)
-		HandleEffect(EF_FDS_MOD_SPEED_HI, State->Effect[EF_FDS_MOD_SPEED_HI]);
-	if (State->Effect_AutoFMMult >= 0)
-		HandleEffect(EF_FDS_MOD_DEPTH, State->Effect_AutoFMMult);
+		if (State.Effect[i] >= 0)
+			HandleEffect(static_cast<effect_t>(i), State.Effect[i]);
+	if (State.Effect[EF_FDS_MOD_SPEED_HI] >= 0x10)
+		HandleEffect(EF_FDS_MOD_SPEED_HI, State.Effect[EF_FDS_MOD_SPEED_HI]);
+	if (State.Effect_AutoFMMult >= 0)
+		HandleEffect(EF_FDS_MOD_DEPTH, State.Effect_AutoFMMult);
 }
 
 std::string CChannelHandler::GetEffectString() const		// // //

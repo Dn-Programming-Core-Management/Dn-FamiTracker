@@ -184,7 +184,7 @@ void CSoundDriver::LoadSoundState(const CSongState &state) {
 	for (int i = 0, n = doc_->GetChannelCount(); i < n; ++i) {
 		for (auto &x : tracks_)		// // // pick this out later
 			if (x.first && x.second->GetID() == state.State[i].ChannelIndex) {
-				x.first->ApplyChannelState(&state.State[i]); break;
+				x.first->ApplyChannelState(state.State[i]); break;
 			}
 	}
 }
@@ -195,9 +195,20 @@ void CSoundDriver::SetTempoCounter(const std::shared_ptr<CTempoCounter> &tempo) 
 }
 
 void CSoundDriver::Tick() {
-	if (!IsPlaying())
-		return;
+	// Access the document object, skip if access wasn't granted to avoid gaps in audio playback
+	if (doc_ && doc_->LockDocument(0)) {
+		if (IsPlaying())
+			PlayerTick();
+		UpdateChannels();
+		doc_->UnlockDocument();
+	}
+}
 
+void CSoundDriver::StepRow() {
+	// ???
+}
+
+void CSoundDriver::PlayerTick() {
 	m_pPlayerCursor->Tick();
 	if (parent_)
 		parent_->OnTick();
@@ -253,10 +264,6 @@ void CSoundDriver::Tick() {
 		if (parent_)
 			parent_->OnUpdateRow(m_pPlayerCursor->GetCurrentFrame(), m_pPlayerCursor->GetCurrentRow());
 	}
-}
-
-void CSoundDriver::StepRow() {
-	// ???
 }
 
 void CSoundDriver::UpdateChannels() {

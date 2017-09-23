@@ -49,7 +49,6 @@ CSoundGen depends on CFamiTrackerView for:
 #include "DirectSound.h"
 #include "WaveFile.h"		// // //
 #include "APU/APU.h"
-#include "ChannelHandler.h" // TODO: remove (hex)
 #include "DSample.h"		// // //
 #include "InstrumentRecorder.h"		// // //
 #include "Settings.h"
@@ -942,11 +941,7 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 
 	++m_iFrameCounter;
 
-	// Access the document object, skip if access wasn't granted to avoid gaps in audio playback
-	if (m_pDocument->LockDocument(0)) {
-		DocumentHandleTick();		// // //
-		m_pDocument->UnlockDocument();
-	}
+	m_pSoundDriver->Tick();		// // //
 
 	// Rendering
 	if (m_pWaveRenderer)		// // //
@@ -964,7 +959,7 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 			m_pInstRecorder->RecordInstrument(GetPlayerTicks(), m_pTrackerView);
 	}
 
-	if (m_bHaltRequest) {
+	if (m_pSoundDriver->ShouldHalt() || m_bHaltRequest) {		// // //
 		// Halt has been requested, abort playback here
 		HaltPlayer();
 	}
@@ -976,26 +971,8 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 	return TRUE;
 }
 
-// // //
-void CSoundGen::DocumentHandleTick() {
-	// Called from player thread
-	ASSERT(GetCurrentThreadId() == m_nThreadID);
-	ASSERT(m_pDocument != NULL);
-	ASSERT(m_pTrackerView != NULL);
-
-	m_pSoundDriver->Tick();		// // //
-	m_pSoundDriver->UpdateChannels();		// // //
-
-	if (m_pSoundDriver->ShouldHalt())
-		m_bHaltRequest = true;
-}
-
 void CSoundGen::UpdateAPU()
 {
-	// Write to APU registers
-
-	m_iConsumedCycles = 0;
-
 	// Copy wave changed flag
 	m_bInternalWaveChanged = m_bWaveChanged;
 	m_bWaveChanged = false;

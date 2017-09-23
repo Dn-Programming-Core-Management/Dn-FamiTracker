@@ -219,7 +219,6 @@ private:
 	void		StopRendering();		// // //
 
 	// Player
-	void		DocumentHandleTick();		// // //
 	void		UpdateAPU();
 	void		ResetBuffer();
 	void		BeginPlayer(std::unique_ptr<CPlayerCursor> Pos);		// // //
@@ -279,7 +278,6 @@ private:
 	int					m_iFrameCounter;
 
 	int					m_iUpdateCycles;					// Number of cycles/APU update
-	int					m_iConsumedCycles;					// Cycles consumed by the update registers functions
 
 	int					m_iLastTrack = 0;					// // //
 	int					m_iLastHighlight;					// // //
