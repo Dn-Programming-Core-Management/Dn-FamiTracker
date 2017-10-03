@@ -24,6 +24,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>		// // //
 
 //
 // Binary chunk renderers
@@ -52,11 +53,11 @@ class CChunkRenderBinary : public CBinaryFileWriter
 {
 public:
 	CChunkRenderBinary(CFile *pFile);
-	void StoreChunks(const std::vector<CChunk*> &Chunks);
+	void StoreChunks(const std::vector<std::shared_ptr<CChunk>> &Chunks);		// // //
 	void StoreSamples(const std::vector<const CDSample*> &Samples);
 
 private:
-	void StoreChunk(CChunk *pChunk);
+	void StoreChunk(const CChunk &Chunk);		// // //
 	void StoreSample(const CDSample *pDSample);
 
 private:
@@ -70,15 +71,15 @@ public:
 	CChunkRenderNSF(CFile *pFile, unsigned int StartAddr);
 
 	void StoreDriver(const char *pDriver, unsigned int Size);
-	void StoreChunks(const std::vector<CChunk*> &Chunks);
-	void StoreChunksBankswitched(const std::vector<CChunk*> &Chunks);
+	void StoreChunks(const std::vector<std::shared_ptr<CChunk>> &Chunks);		// // //
+	void StoreChunksBankswitched(const std::vector<std::shared_ptr<CChunk>> &Chunks);		// // //
 	void StoreSamples(const std::vector<const CDSample*> &Samples);
 	void StoreSamplesBankswitched(const std::vector<const CDSample*> &Samples);
 	int  GetBankCount() const;
 
 protected:
-	void StoreChunk(const CChunk *pChunk);
-	void StoreChunkBankswitched(const CChunk *pChunk);
+	void StoreChunk(const CChunk &Chunk);		// // //
+	void StoreChunkBankswitched(const CChunk &Chunk);		// // //
 	void StoreSample(const CDSample *pDSample);
 	void StoreSampleBankswitched(const CDSample *pDSample);
 

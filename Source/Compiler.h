@@ -26,6 +26,8 @@
 #include "stdafx.h"		// // //
 #include <vector>		// // //
 #include <memory>
+#include <string>		// // //
+#include <map>		// // //
 #include "FamiTrackerTypes.h"
 
 // NSF file header
@@ -119,9 +121,9 @@ private:
 	bool	CompileData();
 	void	ResolveLabels();
 	bool	ResolveLabelsBankswitched();
-	void	CollectLabels(CMap<CStringA, LPCSTR, int, int> &labelMap) const;
-	bool	CollectLabelsBankswitched(CMap<CStringA, LPCSTR, int, int> &labelMap);
-	void	AssignLabels(CMap<CStringA, LPCSTR, int, int> &labelMap);
+	void	CollectLabels(std::map<std::string, int> &labelMap) const;		// // //
+	bool	CollectLabelsBankswitched(std::map<std::string, int> &labelMap);
+	void	AssignLabels(std::map<std::string, int> &labelMap);
 	void	AddBankswitching();
 	void	Cleanup();
 
@@ -158,8 +160,8 @@ private:
 	void	WriteSamplesBinary(CFile *pFile);
 
 	// Object list functions
-	CChunk	*CreateChunk(chunk_type_t Type, CStringA label);
-	CChunk	*GetObjectByRef(CStringA label) const;
+	CChunk	&CreateChunk(chunk_type_t Type, const std::string &label);		// // //
+	CChunk	*GetObjectByRef(const std::string &label) const;		// // //
 	int		CountData() const;
 
 	// Debugging
@@ -187,19 +189,14 @@ public:
 	static const int FLAG_VIBRATO;
 	static const int FLAG_LINEARPITCH;		// // //
 
-protected:
-	static CCompiler *pCompiler;			// Points to an active CCompiler object
-
 public:
-	static CCompiler *GetCompiler();		// Get the active CCompiler object, NULL otherwise
-
 	static unsigned int AdjustSampleAddress(unsigned int Address);
 
 private:
 	CFamiTrackerDoc *m_pDocument;
 
 	// Object lists
-	std::vector<CChunk*> m_vChunks;
+	std::vector<std::shared_ptr<CChunk>> m_vChunks;		// // //
 	std::vector<CChunk*> m_vSequenceChunks;
 	std::vector<CChunk*> m_vInstrumentChunks;
 	std::vector<CChunk*> m_vGrooveChunks;		// // //
@@ -273,7 +270,7 @@ private:
 
 	// Optimization
 	CMap<UINT, UINT, CChunk*, CChunk*> m_PatternMap;
-	CMap<CStringA, LPCSTR, CStringA, LPCSTR> m_DuplicateMap;
+	std::map<std::string, std::string> m_DuplicateMap;		// // //
 
 	// Debugging
 	CCompilerLog	*m_pLogger;

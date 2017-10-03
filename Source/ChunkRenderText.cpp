@@ -79,13 +79,13 @@ CChunkRenderText::CChunkRenderText(CFile *pFile) : m_pFile(pFile)
 {
 }
 
-void CChunkRenderText::StoreChunks(const std::vector<CChunk*> &Chunks)
+void CChunkRenderText::StoreChunks(const std::vector<std::shared_ptr<CChunk>> &Chunks)		// // //
 {
 	// Generate strings
-	for (const auto pChunk : Chunks)
+	for (auto &pChunk : Chunks)
 		for (int j = 0; j < sizeof(RENDER_FUNCTIONS) / sizeof(stChunkRenderFunc); ++j)
 			if (pChunk->GetType() == RENDER_FUNCTIONS[j].type)
-				CALL_MEMBER_FN(this, RENDER_FUNCTIONS[j].function)(pChunk, m_pFile);
+				CALL_MEMBER_FN(this, RENDER_FUNCTIONS[j].function)(pChunk.get(), m_pFile);
 
 	// Write strings to file
 	WriteFileString(CStringA("; 0CC-FamiTracker exported music data: "), m_pFile);

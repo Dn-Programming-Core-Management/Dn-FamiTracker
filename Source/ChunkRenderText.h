@@ -24,6 +24,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>		// // //
 #include "stdafx.h"
 
 //
@@ -46,7 +47,7 @@ class CChunkRenderText
 {
 public:
 	CChunkRenderText(CFile *pFile);
-	void StoreChunks(const std::vector<CChunk*> &Chunks);
+	void StoreChunks(const std::vector<std::shared_ptr<CChunk>> &Chunks);		// // //
 	void StoreSamples(const std::vector<const CDSample*> &Samples);
 
 	// Labels

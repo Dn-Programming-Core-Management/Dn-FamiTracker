@@ -305,7 +305,7 @@ int CInstrumentFDS::Compile(CChunk *pChunk, int Index) const
 	for (int i = 0; i < SEQUENCE_COUNT; ++i)
 		if (Switch & (1 << i)) {
 			str.Format(CChunkRenderText::LABEL_SEQ_FDS, Index * 5 + i);
-			pChunk->StoreReference(str);
+			pChunk->StoreReference((LPCTSTR)str);		// // //
 		}
 
 	// // // Store modulation table, two entries/byte

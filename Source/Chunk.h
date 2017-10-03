@@ -24,7 +24,9 @@
 #pragma once
 
 #include <vector>		// // //
-#include "stdafx.h"		// // //
+#include <memory>		// // //
+#include <string>		// // //
+#include <map>		// // //
 
 // Helper classes/objects for NSF compiling
 
@@ -34,9 +36,11 @@
 
 class CChunkData
 {
+protected:		// // //
+	CChunkData() = default;
+
 public:
-	CChunkData() {}
-	virtual ~CChunkData() {}
+	virtual ~CChunkData() = default;
 	virtual int GetSize() const = 0;
 	virtual unsigned short GetData() const = 0;
 };
@@ -45,8 +49,9 @@ class CChunkDataByte : public CChunkData
 {
 public:
 	CChunkDataByte(unsigned char data) : CChunkData(), m_data(data) {}
-	int GetSize() const { return 1; }
-	unsigned short GetData() const { return m_data; };
+	int GetSize() const override { return 1; }
+
+	unsigned short GetData() const override { return m_data; };
 	unsigned char m_data;
 };
 
@@ -54,28 +59,31 @@ class CChunkDataWord : public CChunkData
 {
 public:
 	CChunkDataWord(unsigned short data) : CChunkData(), m_data(data) {}
-	int GetSize() const { return 2; }
-	unsigned short GetData() const { return m_data; };
+	int GetSize() const override { return 2; }
+
+	unsigned short GetData() const override { return m_data; };
 	unsigned short m_data;
 };
 
 class CChunkDataReference : public CChunkData
 {
 public:
-	CChunkDataReference(CStringA refName) : CChunkData(), m_refName(refName), ref(-1) {}
-	int GetSize() const { return 2; }
-	unsigned short GetData() const { return ref; };
-	CStringA m_refName;
+	CChunkDataReference(const std::string &refName) : CChunkData(), m_refName(refName), ref(-1) {}
+	int GetSize() const override { return 2; }
+	unsigned short GetData() const override { return ref; };
+
+	std::string m_refName;
 	unsigned short ref;
 };
 
 class CChunkDataBank : public CChunkData
 {
 public:
-	CChunkDataBank(CStringA bankOf, int bank) : CChunkData(), m_bankOf(bankOf), m_bank(bank) {}
-	int GetSize() const { return 1; }
-	unsigned short GetData() const { return m_bank; };
-	CStringA m_bankOf;	// Reference to a label which belongs to the bank this data should point to
+	CChunkDataBank(const std::string &bankOf, int bank) : CChunkData(), m_bankOf(bankOf), m_bank(bank) {}
+	int GetSize() const override { return 1; }
+	unsigned short GetData() const override { return m_bank; };
+
+	std::string m_bankOf;	// Reference to a label which belongs to the bank this data should point to
 	unsigned int m_bank;
 };
 
@@ -83,8 +91,9 @@ class CChunkDataString : public CChunkData
 {
 public:
 	CChunkDataString(const std::vector<char> &data) : CChunkData(), m_vData(data) {}
-	int GetSize() const { return m_vData.size(); }
-	unsigned short GetData() const { return 0; };	// Invalid for this type
+	int GetSize() const override { return m_vData.size(); }
+	unsigned short GetData() const override { return 0; };	// Invalid for this type
+
 	std::vector<char> m_vData;
 };
 
@@ -116,13 +125,13 @@ enum chunk_type_t {
 class CChunk
 {
 public:
-	CChunk(chunk_type_t Type, CStringA label);
+	CChunk(chunk_type_t Type, const std::string &label);		// // //
 	~CChunk();
 
 	void			Clear();
 
 	chunk_type_t	GetType() const;
-	LPCSTR			GetLabel() const;
+	const std::string &GetLabel() const;
 	void			SetBank(unsigned char Bank);
 	unsigned char	GetBank() const;
 
@@ -132,31 +141,34 @@ public:
 
 	void			StoreByte(unsigned char data);
 	void			StoreWord(unsigned short data);
-	void			StoreReference(CStringA refName);
-	void			StoreBankReference(CStringA refName, int bank);
+	void			StoreReference(const std::string &refName);
+	void			StoreBankReference(const std::string &refName, int bank);
 	void			StoreString(const std::vector<char> &data);
 
 	void			ChangeByte(int index, unsigned char data);
 	void			SetupBankData(int index, unsigned char bank);
 
 	unsigned char	GetStringData(int index, int pos) const;
-	LPCSTR			GetDataRefName(int index) const;
+	std::string		GetDataRefName(int index) const;
 	
 	bool			IsDataReference(int index) const;
 	bool			IsDataBank(int index) const;
 
 	const std::vector<char> &GetStringData(int index) const;
 
-	void			UpdateDataRefName(int index, CStringA &name);
+	void			UpdateDataRefName(int index, const std::string &name);
 
 	unsigned int	CountDataSize() const;
 
-	void			AssignLabels(CMap<CStringA, LPCSTR, int, int> &labelMap);
+	void			AssignLabels(std::map<std::string, int> &labelMap);
 
 private:
-	std::vector<CChunkData*> m_vChunkData;	// List of data stored in this chunk
+	template <typename T>		// // //
+	T &GetChunkData(std::size_t index) const;
 
-	CStringA m_strLabel;		// Label of this chunk
+	std::vector<std::unique_ptr<CChunkData>> m_vChunkData;		// // // List of data stored in this chunk
+
+	std::string m_strLabel;		// Label of this chunk
 	unsigned char m_iBank;		// The bank this chunk will be stored in
 	chunk_type_t m_iType;		// Chunk type
 };

@@ -176,7 +176,7 @@ int CInstrumentN163::Compile(CChunk *pChunk, int Index) const
 	// Store reference to wave
 	CStringA waveLabel;
 	waveLabel.Format(CChunkRenderText::LABEL_WAVES, Index);
-	pChunk->StoreReference(waveLabel);
+	pChunk->StoreReference((LPCTSTR)waveLabel);		// // //
 	StoredBytes += 2;
 	
 	return StoredBytes;

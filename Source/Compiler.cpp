@@ -117,13 +117,6 @@ const int CCompiler::FLAG_BANKSWITCHED	= 1 << 0;
 const int CCompiler::FLAG_VIBRATO		= 1 << 1;
 const int CCompiler::FLAG_LINEARPITCH	= 1 << 2;		// // //
 
-CCompiler *CCompiler::pCompiler = NULL;
-
-CCompiler *CCompiler::GetCompiler()
-{
-	return pCompiler;
-}
-
 unsigned int CCompiler::AdjustSampleAddress(unsigned int Address)
 {
 	// Align samples to 64-byte pages
@@ -142,17 +135,12 @@ CCompiler::CCompiler(CFamiTrackerDoc *pDoc, CCompilerLog *pLogger) :
 	m_iLastBank(0),
 	m_iHashCollisions(0)
 {
-	ASSERT(CCompiler::pCompiler == NULL);
-	CCompiler::pCompiler = this;
-
 	m_iActualChip = m_pDocument->GetExpansionChip();		// // //
 	m_iActualNamcoChannels = m_pDocument->GetNamcoChannels();
 }
 
 CCompiler::~CCompiler()
 {
-	CCompiler::pCompiler = NULL;
-
 	Cleanup();
 
 	SAFE_RELEASE(m_pLogger);
@@ -1110,7 +1098,7 @@ void CCompiler::EnableBankswitching()
 void CCompiler::ResolveLabels()
 {
 	// Resolve label addresses, no banks since bankswitching is disabled
-	CMap<CStringA, LPCSTR, int, int> labelMap;
+	std::map<std::string, int> labelMap;		// // //
 
 	// Pass 1, collect labels
 	CollectLabels(labelMap);
@@ -1122,7 +1110,7 @@ void CCompiler::ResolveLabels()
 bool CCompiler::ResolveLabelsBankswitched()
 {
 	// Resolve label addresses and banks
-	CMap<CStringA, LPCSTR, int, int> labelMap;
+	std::map<std::string, int> labelMap;		// // //
 
 	// Pass 1, collect labels
 	if (!CollectLabelsBankswitched(labelMap))
@@ -1134,23 +1122,23 @@ bool CCompiler::ResolveLabelsBankswitched()
 	return true;
 }
 
-void CCompiler::CollectLabels(CMap<CStringA, LPCSTR, int, int> &labelMap) const
+void CCompiler::CollectLabels(std::map<std::string, int> &labelMap) const
 {
 	// Collect labels and assign offsets
 	int Offset = 0;
-	for (const CChunk *pChunk : m_vChunks) {
+	for (const auto &pChunk : m_vChunks) {
 		labelMap[pChunk->GetLabel()] = Offset;
 		Offset += pChunk->CountDataSize();
 	}
 }
 
-bool CCompiler::CollectLabelsBankswitched(CMap<CStringA, LPCSTR, int, int> &labelMap)
+bool CCompiler::CollectLabelsBankswitched(std::map<std::string, int> &labelMap)
 {
 	int Offset = 0;
 	int Bank = PATTERN_SWITCH_BANK;
 
 	// Instruments and stuff
-	for (const CChunk *pChunk : m_vChunks) {
+	for (const auto &pChunk : m_vChunks) {
 		int Size = pChunk->CountDataSize();
 
 		switch (pChunk->GetType()) {
@@ -1173,7 +1161,7 @@ bool CCompiler::CollectLabelsBankswitched(CMap<CStringA, LPCSTR, int, int> &labe
 	unsigned int Track = 0;
 
 	// The switchable area is $B000-$C000
-	for (CChunk *pChunk : m_vChunks) {
+	for (auto &pChunk : m_vChunks) {
 		int Size = pChunk->CountDataSize();
 
 		switch (pChunk->GetType()) {
@@ -1210,10 +1198,10 @@ bool CCompiler::CollectLabelsBankswitched(CMap<CStringA, LPCSTR, int, int> &labe
 	return true;
 }
 
-void CCompiler::AssignLabels(CMap<CStringA, LPCSTR, int, int> &labelMap)
+void CCompiler::AssignLabels(std::map<std::string, int> &labelMap)
 {
 	// Pass 2: assign addresses to labels
-	for (CChunk *pChunk : m_vChunks)
+	for (auto &pChunk : m_vChunks)
 		pChunk->AssignLabels(labelMap);
 }
 
@@ -1366,9 +1354,6 @@ void CCompiler::Cleanup()
 {
 	// Delete objects
 
-	for (CChunk *pChunk : m_vChunks)
-		delete pChunk;
-
 	m_vChunks.clear();
 	m_vSequenceChunks.clear();
 	m_vInstrumentChunks.clear();
@@ -1393,7 +1378,7 @@ void CCompiler::AddBankswitching()
 {
 	// Add bankswitching data
 
-	for (CChunk *pChunk : m_vChunks) {
+	for (auto &pChunk : m_vChunks) {
 		// Frame chunks
 		if (pChunk->GetType() == CHUNK_FRAME) {
 			int Length = pChunk->GetLength();
@@ -1512,7 +1497,7 @@ void CCompiler::CreateMainHeader()
 
 	unsigned short DividerNTSC, DividerPAL;
 
-	CChunk *pChunk = CreateChunk(CHUNK_HEADER, "");
+	CChunk &Chunk = CreateChunk(CHUNK_HEADER, "");		// // //
 
 	if (TicksPerSec == 0) {
 		// Default
@@ -1531,30 +1516,30 @@ void CCompiler::CreateMainHeader()
 
 	// Write header
 
-	pChunk->StoreReference(CChunkRenderText::LABEL_SONG_LIST);
-	pChunk->StoreReference(CChunkRenderText::LABEL_INSTRUMENT_LIST);
-	pChunk->StoreReference(CChunkRenderText::LABEL_SAMPLES_LIST);
-	pChunk->StoreReference(CChunkRenderText::LABEL_SAMPLES);
-	pChunk->StoreReference(CChunkRenderText::LABEL_GROOVE_LIST);		// // //
+	Chunk.StoreReference(CChunkRenderText::LABEL_SONG_LIST);
+	Chunk.StoreReference(CChunkRenderText::LABEL_INSTRUMENT_LIST);
+	Chunk.StoreReference(CChunkRenderText::LABEL_SAMPLES_LIST);
+	Chunk.StoreReference(CChunkRenderText::LABEL_SAMPLES);
+	Chunk.StoreReference(CChunkRenderText::LABEL_GROOVE_LIST);		// // //
 	
-	m_iHeaderFlagOffset = pChunk->GetLength();		// Save the flags offset
-	pChunk->StoreByte(Flags);
+	m_iHeaderFlagOffset = Chunk.GetLength();		// Save the flags offset
+	Chunk.StoreByte(Flags);
 
 	// FDS table, only if FDS is enabled
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_FDS) || bMultichip)
-		pChunk->StoreReference(CChunkRenderText::LABEL_WAVETABLE);
+		Chunk.StoreReference(CChunkRenderText::LABEL_WAVETABLE);
 
-	pChunk->StoreWord(DividerNTSC);
-	pChunk->StoreWord(DividerPAL);
+	Chunk.StoreWord(DividerNTSC);
+	Chunk.StoreWord(DividerPAL);
 
 	// N163 channel count
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_N163) || bMultichip) {
 		/*if (m_pDocument->GetExpansionChip() != SNDCHIP_N163)		// // //
-			pChunk->StoreByte(8);
-		else*/ pChunk->StoreByte(m_iActualNamcoChannels ? m_iActualNamcoChannels : 1);
+			Chunk.StoreByte(8);
+		else*/ Chunk.StoreByte(m_iActualNamcoChannels ? m_iActualNamcoChannels : 1);
 	}
 
-	m_pHeaderChunk = pChunk;
+	m_pHeaderChunk = &Chunk;
 }
 
 // Sequences
@@ -1607,8 +1592,8 @@ void CCompiler::CreateSequenceList()
 
 int CCompiler::StoreSequence(const CSequence *pSeq, CStringA &label)
 {
-	CChunk *pChunk = CreateChunk(CHUNK_SEQUENCE, label);
-	m_vSequenceChunks.push_back(pChunk);
+	CChunk &Chunk = CreateChunk(CHUNK_SEQUENCE, (LPCTSTR)label);		// // //
+	m_vSequenceChunks.push_back(&Chunk);
 
 	// Store the sequence
 	int iItemCount	  = pSeq->GetItemCount();
@@ -1624,13 +1609,13 @@ int CCompiler::StoreSequence(const CSequence *pSeq, CStringA &label)
 	if (iLoopPoint > iItemCount)
 		iLoopPoint = -1;
 
-	pChunk->StoreByte((unsigned char)iItemCount);
-	pChunk->StoreByte((unsigned char)iLoopPoint);
-	pChunk->StoreByte((unsigned char)iReleasePoint);
-	pChunk->StoreByte((unsigned char)iSetting);
+	Chunk.StoreByte((unsigned char)iItemCount);
+	Chunk.StoreByte((unsigned char)iLoopPoint);
+	Chunk.StoreByte((unsigned char)iReleasePoint);
+	Chunk.StoreByte((unsigned char)iSetting);
 
 	for (int i = 0; i < iItemCount; ++i) {
-		pChunk->StoreByte(pSeq->GetItem(i));
+		Chunk.StoreByte(pSeq->GetItem(i));
 	}
 
 	// Return size of this chunk
@@ -1653,11 +1638,10 @@ void CCompiler::CreateInstrumentList()
 	CChunk *pWavesChunk = NULL;		// N163
 	int iWaveSize = 0;				// N163 waves size
 
-	CChunk *pInstListChunk = CreateChunk(CHUNK_INSTRUMENT_LIST, CChunkRenderText::LABEL_INSTRUMENT_LIST);
+	CChunk &InstListChunk = CreateChunk(CHUNK_INSTRUMENT_LIST, CChunkRenderText::LABEL_INSTRUMENT_LIST);		// // //
 	
-	if (m_pDocument->ExpansionEnabled(SNDCHIP_FDS)) {
-		pWavetableChunk = CreateChunk(CHUNK_WAVETABLE, CChunkRenderText::LABEL_WAVETABLE);
-	}
+	if (m_pDocument->ExpansionEnabled(SNDCHIP_FDS))
+		pWavetableChunk = &CreateChunk(CHUNK_WAVETABLE, CChunkRenderText::LABEL_WAVETABLE);		// // //
 
 	memset(m_iWaveBanks, -1, MAX_INSTRUMENTS * sizeof(int));
 
@@ -1680,7 +1664,7 @@ void CCompiler::CreateInstrumentList()
 				// Store wave
 				CStringA label;
 				label.Format(CChunkRenderText::LABEL_WAVES, iIndex);
-				pWavesChunk = CreateChunk(CHUNK_WAVES, label);
+				pWavesChunk = &CreateChunk(CHUNK_WAVES, (LPCTSTR)label);		// // //
 				// Store waves
 				iWaveSize += pInstrument->StoreWave(pWavesChunk);
 			}
@@ -1692,12 +1676,12 @@ void CCompiler::CreateInstrumentList()
 		// Add reference to instrument list
 		CStringA label;
 		label.Format(CChunkRenderText::LABEL_INSTRUMENT, i);
-		pInstListChunk->StoreReference(label);
+		InstListChunk.StoreReference((LPCTSTR)label);
 		iTotalSize += 2;
 
 		// Actual instrument
-		CChunk *pChunk = CreateChunk(CHUNK_INSTRUMENT, label);
-		m_vInstrumentChunks.push_back(pChunk);
+		CChunk &Chunk = CreateChunk(CHUNK_INSTRUMENT, (LPCTSTR)label);		// // //
+		m_vInstrumentChunks.push_back(&Chunk);
 
 		int iIndex = m_iAssignedInstruments[i];
 		auto pInstrument = m_pDocument->GetInstrument(iIndex);
@@ -1717,13 +1701,13 @@ void CCompiler::CreateInstrumentList()
 		}
 
 		// Returns number of bytes 
-		iTotalSize += pInstrument->Compile(pChunk, iIndex);		// // //
+		iTotalSize += pInstrument->Compile(&Chunk, iIndex);		// // //
 
 		// // // Check if FDS
 		if (pInstrument->GetType() == INST_FDS && pWavetableChunk != NULL) {
 			// Store wave
 			AddWavetable(std::static_pointer_cast<CInstrumentFDS>(pInstrument).get(), pWavetableChunk);
-			pChunk->StoreByte(m_iWaveTables - 1);
+			Chunk.StoreByte(m_iWaveTables - 1);
 		}
 	}
 
@@ -1749,7 +1733,7 @@ void CCompiler::CreateSampleList()
 	// Clear the sample list
 	memset(m_iSampleBank, 0xFF, MAX_DSAMPLES);
 	
-	CChunk *pChunk = CreateChunk(CHUNK_SAMPLE_LIST, CChunkRenderText::LABEL_SAMPLES_LIST);
+	CChunk &Chunk = CreateChunk(CHUNK_SAMPLE_LIST, CChunkRenderText::LABEL_SAMPLES_LIST);		// // //
 
 	// Store sample instruments
 	unsigned int Item = 0;
@@ -1771,9 +1755,9 @@ void CCompiler::CreateSampleList()
 						// Save a reference to this item
 						m_iSamplesLookUp[i][j][k] = ++Item;
 
-						pChunk->StoreByte(SamplePitch);
-						pChunk->StoreByte(SampleDelta);
-						pChunk->StoreByte(SampleIndex * SAMPLE_ITEM_WIDTH);
+						Chunk.StoreByte(SamplePitch);
+						Chunk.StoreByte(SampleDelta);
+						Chunk.StoreByte(SampleIndex * SAMPLE_ITEM_WIDTH);
 					}
 					else
 						// No instrument here
@@ -1799,8 +1783,8 @@ void CCompiler::StoreSamples()
 	// Get sample start address
 	m_iSamplesSize = 0;
 
-	CChunk *pChunk = CreateChunk(CHUNK_SAMPLE_POINTERS, CChunkRenderText::LABEL_SAMPLES);
-	m_pSamplePointersChunk = pChunk;
+	CChunk &Chunk = CreateChunk(CHUNK_SAMPLE_POINTERS, CChunkRenderText::LABEL_SAMPLES);		// // //
+	m_pSamplePointersChunk = &Chunk;
 
 	// Store DPCM samples in a separate array
 	for (unsigned int i = 0; i < m_iSamplesUsed; ++i) {
@@ -1817,9 +1801,9 @@ void CCompiler::StoreSamples()
 			unsigned char iSampleBank = 0;
 
 			// Update SAMPLE_ITEM_WIDTH here
-			pChunk->StoreByte(iSampleAddr);
-			pChunk->StoreByte(iSampleSize);
-			pChunk->StoreByte(iSampleBank);
+			Chunk.StoreByte(iSampleAddr);
+			Chunk.StoreByte(iSampleSize);
+			Chunk.StoreByte(iSampleBank);
 
 			// Add this sample to storage
 			m_vSamples.push_back(pDSample);
@@ -1863,8 +1847,8 @@ void CCompiler::StoreGrooves()
 
 	unsigned int Size = 1, Count = 0;
 	
-	CChunk *pGrooveListChunk = CreateChunk(CHUNK_GROOVE_LIST, CChunkRenderText::LABEL_GROOVE_LIST);
-	pGrooveListChunk->StoreByte(0); // padding; possibly used to disable groove
+	CChunk &GrooveListChunk = CreateChunk(CHUNK_GROOVE_LIST, CChunkRenderText::LABEL_GROOVE_LIST);		// // //
+	GrooveListChunk.StoreByte(0); // padding; possibly used to disable groove
 
 	for (int i = 0; i < MAX_GROOVE; i++) {
 		unsigned int Pos = Size;
@@ -1875,14 +1859,14 @@ void CCompiler::StoreGrooves()
 		label.Format(CChunkRenderText::LABEL_GROOVE, i);
 		// pGrooveListChunk->StoreReference(label);
 
-		CChunk *pChunk = CreateChunk(CHUNK_GROOVE, label);
-		m_vGrooveChunks.push_back(pChunk);
+		CChunk &Chunk = CreateChunk(CHUNK_GROOVE, (LPCTSTR)label);		// // //
+		m_vGrooveChunks.push_back(&Chunk);
 		for (int j = 0; j < Groove->GetSize(); j++) {
-			pChunk->StoreByte(Groove->GetEntry(j));
+			Chunk.StoreByte(Groove->GetEntry(j));
 			Size++;
 		}
-		pChunk->StoreByte(0);
-		pChunk->StoreByte(Pos);
+		Chunk.StoreByte(0);
+		Chunk.StoreByte(Pos);
 		Size += 2;
 		Count++;
 	}
@@ -1901,7 +1885,7 @@ void CCompiler::StoreSongs()
 
 	const int TrackCount = m_pDocument->GetTrackCount();
 
-	CChunk *pSongListChunk = CreateChunk(CHUNK_SONG_LIST, CChunkRenderText::LABEL_SONG_LIST);
+	CChunk &SongListChunk = CreateChunk(CHUNK_SONG_LIST, CChunkRenderText::LABEL_SONG_LIST);		// // //
 
 	m_iDuplicatePatterns = 0;
 
@@ -1910,35 +1894,37 @@ void CCompiler::StoreSongs()
 		// Add reference to song list
 		CStringA label;
 		label.Format(CChunkRenderText::LABEL_SONG, i);
-		pSongListChunk->StoreReference(label);
+		SongListChunk.StoreReference((LPCTSTR)label);
 
 		// Create song
-		CChunk *pChunk = CreateChunk(CHUNK_SONG, label);
-		m_vSongChunks.push_back(pChunk);
+		CChunk &Chunk = CreateChunk(CHUNK_SONG, (LPCTSTR)label);		// // //
+		m_vSongChunks.push_back(&Chunk);
 
 		// Store reference to song
 		label.Format(CChunkRenderText::LABEL_SONG_FRAMES, i);
-		pChunk->StoreReference(label);
-		pChunk->StoreByte(m_pDocument->GetFrameCount(i));
-		pChunk->StoreByte(m_pDocument->GetPatternLength(i));
+		Chunk.StoreReference((LPCTSTR)label);
+		Chunk.StoreByte(m_pDocument->GetFrameCount(i));
+		Chunk.StoreByte(m_pDocument->GetPatternLength(i));
 
 		if (m_pDocument->GetSongGroove(i))		// // //
 			if (m_pDocument->GetGroove(m_pDocument->GetSongSpeed(i)) != NULL)
-				pChunk->StoreByte(0);
-			else pChunk->StoreByte(DEFAULT_SPEED);
-		else pChunk->StoreByte(m_pDocument->GetSongSpeed(i));
-
-		pChunk->StoreByte(m_pDocument->GetSongTempo(i));
+				Chunk.StoreByte(0);
+			else
+				Chunk.StoreByte(DEFAULT_SPEED);
+		else
+			Chunk.StoreByte(m_pDocument->GetSongSpeed(i));
+		Chunk.StoreByte(m_pDocument->GetSongTempo(i));
 
 		if (m_pDocument->GetSongGroove(i) && m_pDocument->GetGroove(m_pDocument->GetSongSpeed(i)) != NULL) {		// // //
 			int Pos = 1;
 			for (unsigned int j = 0; j < m_pDocument->GetSongSpeed(i); j++)
 				if (m_pDocument->GetGroove(j) != NULL) Pos += m_pDocument->GetGroove(j)->GetSize() + 2;
-			pChunk->StoreByte(Pos);
+			Chunk.StoreByte(Pos);
 		}
-		else pChunk->StoreByte(0);
+		else
+			Chunk.StoreByte(0);
 
-		pChunk->StoreBankReference(label, 0);
+		Chunk.StoreBankReference((LPCTSTR)label, 0);
 	}
 
 	m_iSongBankReference = m_vSongChunks[0]->GetLength() - 1;	// Save bank value position (all songs are equal)
@@ -1989,7 +1975,7 @@ void CCompiler::CreateFrameList(unsigned int Track)
 	// Create frame list
 	CStringA label;
 	label.Format(CChunkRenderText::LABEL_SONG_FRAMES, Track);
-	CChunk *pFrameListChunk = CreateChunk(CHUNK_FRAME_LIST, label);
+	CChunk &FrameListChunk = CreateChunk(CHUNK_FRAME_LIST, (LPCTSTR)label);		// // //
 
 	unsigned int TotalSize = 0;
 
@@ -1997,19 +1983,19 @@ void CCompiler::CreateFrameList(unsigned int Track)
 	for (int i = 0; i < FrameCount; ++i) {
 		// Add reference to frame list
 		label.Format(CChunkRenderText::LABEL_SONG_FRAME, Track, i);
-		pFrameListChunk->StoreReference(label);
+		FrameListChunk.StoreReference((LPCTSTR)label);
 		TotalSize += 2;
 
 		// Store frame item
-		CChunk *pChunk = CreateChunk(CHUNK_FRAME, label);
-		m_vFrameChunks.push_back(pChunk);
+		CChunk &Chunk = CreateChunk(CHUNK_FRAME, (LPCTSTR)label);		// // //
+		m_vFrameChunks.push_back(&Chunk);
 
 		// Pattern pointers
 		for (int j = 0; j < ChannelCount; ++j) {
 			int Chan = m_vChanOrder[j];
 			int Pattern = m_pDocument->GetPatternAtFrame(Track, i, Chan);
 			label.Format(CChunkRenderText::LABEL_PATTERN, Track, Pattern, Chan);
-			pChunk->StoreReference(label);
+			Chunk.StoreReference((LPCTSTR)label);
 			TotalSize += 2;
 		}
 	}
@@ -2059,7 +2045,7 @@ void CCompiler::StorePatterns(unsigned int Track)
 					// Hash only indicates that patterns may be equal, check exact data
 					if (PatternCompiler.CompareData(pDuplicate->GetStringData(PATTERN_CHUNK_INDEX))) {
 						// Duplicate was found, store a reference to existing pattern
-						m_DuplicateMap[label] = pDuplicate->GetLabel();
+						m_DuplicateMap.try_emplace((LPCTSTR)label, pDuplicate->GetLabel());		// // //
 						++m_iDuplicatePatterns;
 						StoreNew = false;
 					}
@@ -2068,17 +2054,17 @@ void CCompiler::StorePatterns(unsigned int Track)
 
 				if (StoreNew) {
 					// Store new pattern
-					CChunk *pChunk = CreateChunk(CHUNK_PATTERN, label);
-					m_vPatternChunks.push_back(pChunk);
+					CChunk &Chunk = CreateChunk(CHUNK_PATTERN, (LPCTSTR)label);		// // //
+					m_vPatternChunks.push_back(&Chunk);
 
 #ifdef REMOVE_DUPLICATE_PATTERNS
 					if (m_PatternMap[Hash] != NULL)
 						m_iHashCollisions++;
-					m_PatternMap[Hash] = pChunk;
+					m_PatternMap[Hash] = &Chunk;
 #endif /* REMOVE_DUPLICATE_PATTERNS */
 					
 					// Store pattern data as string
-					pChunk->StoreString(PatternCompiler.GetData());
+					Chunk.StoreString(PatternCompiler.GetData());
 
 					PatternSize += PatternCompiler.GetDataSize();
 					++PatternCount;
@@ -2089,15 +2075,10 @@ void CCompiler::StorePatterns(unsigned int Track)
 
 #ifdef REMOVE_DUPLICATE_PATTERNS
 	// Update references to duplicates
-	for (const auto pChunk : m_vFrameChunks) {
-		for (int j = 0, n = pChunk->GetLength(); j < n; ++j) {
-			CStringA str = m_DuplicateMap[pChunk->GetDataRefName(j)];
-			if (str.GetLength() != 0) {
-				// Update reference
-				pChunk->UpdateDataRefName(j, str);
-			}
-		}
-	}
+	for (const auto pChunk : m_vFrameChunks)
+		for (int j = 0, n = pChunk->GetLength(); j < n; ++j)
+			if (auto it = m_DuplicateMap.find(pChunk->GetDataRefName(j)); it != m_DuplicateMap.cend())		// // //
+				pChunk->UpdateDataRefName(j, it->second);
 #endif /* REMOVE_DUPLICATE_PATTERNS */
 
 #ifdef LOCAL_DUPLICATE_PATTERN_REMOVAL
@@ -2167,11 +2148,8 @@ void CCompiler::WriteSamplesBinary(CFile *pFile)
 
 // Object list functions
 
-CChunk *CCompiler::CreateChunk(chunk_type_t Type, CStringA label)
-{
-	CChunk *pChunk = new CChunk(Type, label);
-	m_vChunks.push_back(pChunk);
-	return pChunk;
+CChunk &CCompiler::CreateChunk(chunk_type_t Type, const std::string &label) {		// // //
+	return *m_vChunks.emplace_back(std::make_shared<CChunk>(Type, label));
 }
 
 int CCompiler::CountData() const
@@ -2179,17 +2157,17 @@ int CCompiler::CountData() const
 	// Only count data
 	int Offset = 0;
 
-	for (const auto pChunk : m_vChunks)
+	for (const auto &pChunk : m_vChunks)
 		Offset += pChunk->CountDataSize();
 
 	return Offset;
 }
 
-CChunk *CCompiler::GetObjectByRef(CStringA label) const
+CChunk *CCompiler::GetObjectByRef(const std::string &label) const
 {
-	for (const auto pChunk : m_vChunks)
-		if (!label.Compare(pChunk->GetLabel()))
-			return pChunk;
+	for (const auto &pChunk : m_vChunks)
+		if (label == pChunk->GetLabel())		// // //
+			return pChunk.get();
 	return nullptr;
 }
 
@@ -2197,7 +2175,7 @@ CChunk *CCompiler::GetObjectByRef(CStringA label) const
 
 void CCompiler::WriteChannelMap()
 {
-	CChunk *pChunk = CreateChunk(CHUNK_CHANNEL_MAP, "");
+	CChunk &Chunk = CreateChunk(CHUNK_CHANNEL_MAP, "");
 	
 	pChunk->StoreByte(CHANID_SQUARE1 + 1);
 	pChunk->StoreByte(CHANID_SQUARE2 + 1);
@@ -2247,7 +2225,7 @@ void CCompiler::WriteChannelTypes()
 	const int TYPE_N163 = 10;
 	const int TYPE_S5B	= 12;
 
-	CChunk *pChunk = CreateChunk(CHUNK_CHANNEL_TYPES, "");
+	CChunk &Chunk = CreateChunk(CHUNK_CHANNEL_TYPES, "");
 	
 	for (int i = 0; i < 4; ++i)
 		pChunk->StoreByte(TYPE_2A03);

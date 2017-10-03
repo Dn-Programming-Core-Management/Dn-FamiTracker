@@ -64,10 +64,10 @@ CChunkRenderBinary::CChunkRenderBinary(CFile *pFile) : CBinaryFileWriter(pFile),
 {
 }
 
-void CChunkRenderBinary::StoreChunks(const std::vector<CChunk*> &Chunks) 
+void CChunkRenderBinary::StoreChunks(const std::vector<std::shared_ptr<CChunk>> &Chunks) 
 {
-	for (auto ptr : Chunks)		// // //
-		StoreChunk(ptr);
+	for (auto &ptr : Chunks)		// // //
+		StoreChunk(*ptr);
 }
 
 void CChunkRenderBinary::StoreSamples(const std::vector<const CDSample*> &Samples)
@@ -76,16 +76,16 @@ void CChunkRenderBinary::StoreSamples(const std::vector<const CDSample*> &Sample
 		StoreSample(ptr);
 }
 
-void CChunkRenderBinary::StoreChunk(CChunk *pChunk)
+void CChunkRenderBinary::StoreChunk(const CChunk &Chunk)		// // //
 {
-	for (int i = 0; i < pChunk->GetLength(); ++i) {
-		if (pChunk->GetType() == CHUNK_PATTERN) {
-			const std::vector<char> &vec = pChunk->GetStringData(CCompiler::PATTERN_CHUNK_INDEX);
+	for (int i = 0, n = Chunk.GetLength(); i < n; ++i) {
+		if (Chunk.GetType() == CHUNK_PATTERN) {
+			const std::vector<char> &vec = Chunk.GetStringData(CCompiler::PATTERN_CHUNK_INDEX);
 			Store(&vec.front(), vec.size());
 		}
 		else {
-			unsigned short data = pChunk->GetData(i);
-			unsigned short size = pChunk->GetDataSize(i);
+			unsigned short data = Chunk.GetData(i);
+			unsigned short size = Chunk.GetDataSize(i);
 			Store(&data, size);
 		}
 	}
@@ -125,18 +125,18 @@ void CChunkRenderNSF::StoreDriver(const char *pDriver, unsigned int Size)
 	Store(pDriver, Size);
 }
 
-void CChunkRenderNSF::StoreChunks(const std::vector<CChunk*> &Chunks)
+void CChunkRenderNSF::StoreChunks(const std::vector<std::shared_ptr<CChunk>> &Chunks)		// // //
 {
 	// Store chunks into NSF banks
-	for (auto ptr : Chunks)		// // //
-		StoreChunk(ptr);
+	for (const auto &ptr : Chunks)		// // //
+		StoreChunk(*ptr);
 }
 
-void CChunkRenderNSF::StoreChunksBankswitched(const std::vector<CChunk*> &Chunks)
+void CChunkRenderNSF::StoreChunksBankswitched(const std::vector<std::shared_ptr<CChunk>> &Chunks)		// // //
 {
 	// Store chunks into NSF banks with bankswitching
-	for (auto ptr : Chunks)		// // //
-		StoreChunkBankswitched(ptr);
+	for (const auto &ptr : Chunks)		// // //
+		StoreChunkBankswitched(*ptr);
 }
 
 void CChunkRenderNSF::StoreSamples(const std::vector<const CDSample*> &Samples)
@@ -191,31 +191,31 @@ int CChunkRenderNSF::GetBankCount() const
 	return GetBank() + 1;
 }
 
-void CChunkRenderNSF::StoreChunkBankswitched(const CChunk *pChunk)
+void CChunkRenderNSF::StoreChunkBankswitched(const CChunk &Chunk)		// // //
 {
-	switch (pChunk->GetType()) {			
+	switch (Chunk.GetType()) {			
 		case CHUNK_FRAME_LIST:
 		case CHUNK_FRAME:
 		case CHUNK_PATTERN:
 			// Switchable data
-			while ((GetBank() + 1) <= pChunk->GetBank() && pChunk->GetBank() > CCompiler::PATTERN_SWITCH_BANK)
+			while ((GetBank() + 1) <= Chunk.GetBank() && Chunk.GetBank() > CCompiler::PATTERN_SWITCH_BANK)
 				AllocateNewBank();
 	}
 
 	// Write chunk
-	StoreChunk(pChunk);
+	StoreChunk(Chunk);
 }
 
-void CChunkRenderNSF::StoreChunk(const CChunk *pChunk)
+void CChunkRenderNSF::StoreChunk(const CChunk &Chunk)		// // //
 {
-	for (int i = 0; i < pChunk->GetLength(); ++i) {
-		if (pChunk->GetType() == CHUNK_PATTERN) {
-			const std::vector<char> &vec = pChunk->GetStringData(CCompiler::PATTERN_CHUNK_INDEX);
+	for (int i = 0, n = Chunk.GetLength(); i < n; ++i) {
+		if (Chunk.GetType() == CHUNK_PATTERN) {
+			const std::vector<char> &vec = Chunk.GetStringData(CCompiler::PATTERN_CHUNK_INDEX);
 			Store(&vec.front(), vec.size());			
 		}
 		else {
-			unsigned short data = pChunk->GetData(i);
-			unsigned short size = pChunk->GetDataSize(i);
+			unsigned short data = Chunk.GetData(i);
+			unsigned short size = Chunk.GetDataSize(i);
 			Store(&data, size);
 		}
 	}

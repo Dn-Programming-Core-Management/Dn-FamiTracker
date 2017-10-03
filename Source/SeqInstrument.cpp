@@ -204,7 +204,7 @@ int CSeqInstrument::Compile(CChunk *pChunk, int Index) const
 		if (ModSwitch & (1 << i)) {
 			CStringA str;
 			str.Format(label, GetSeqIndex(i) * SEQ_COUNT + i);
-			pChunk->StoreReference(str);
+			pChunk->StoreReference((LPCTSTR)str);		// // //
 			StoredBytes += 2;
 		}
 	}
