@@ -111,7 +111,7 @@ enum command_t {
 
 const unsigned char CMD_LOOP_POINT = 26;	// Currently unused
 
-CPatternCompiler::CPatternCompiler(CFamiTrackerDoc *pDoc, unsigned int *pInstList, DPCM_List_t *pDPCMList, CCompilerLog *pLogger) :
+CPatternCompiler::CPatternCompiler(const CFamiTrackerDoc *pDoc, unsigned int *pInstList, DPCM_List_t *pDPCMList, CCompilerLog *pLogger) :		// // //
 	m_pDocument(pDoc),
 	m_pInstrumentList(pInstList),
 	m_pDPCMList(pDPCMList),

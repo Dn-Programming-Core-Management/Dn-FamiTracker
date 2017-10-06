@@ -35,7 +35,7 @@ typedef unsigned char DPCM_List_t[MAX_INSTRUMENTS][OCTAVE_RANGE][NOTE_RANGE];
 class CPatternCompiler
 {
 public:
-	CPatternCompiler(CFamiTrackerDoc *pDoc, unsigned int *pInstList, DPCM_List_t *pDPCMList, CCompilerLog *pLogger);
+	CPatternCompiler(const CFamiTrackerDoc *pDoc, unsigned int *pInstList, DPCM_List_t *pDPCMList, CCompilerLog *pLogger);		// // //
 	~CPatternCompiler();
 
 	void			CompileData(int Track, int Pattern, int Channel);
@@ -83,6 +83,6 @@ private:
 
 	DPCM_List_t		*m_pDPCMList;
 
-	CFamiTrackerDoc *m_pDocument;
+	const CFamiTrackerDoc *m_pDocument = nullptr;		// // //
 	CCompilerLog	*m_pLogger;
 };

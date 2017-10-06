@@ -166,7 +166,7 @@ bool CInstrumentN163::LoadFile(CSimpleFile *pFile, int iVersion)
 
 int CInstrumentN163::Compile(CChunk *pChunk, int Index) const
 {
-	int StoredBytes = CSeqInstrument::Compile(pChunk, Index);		// // //;
+	int StoredBytes = CSeqInstrument::Compile(pChunk, Index);		// // //
 
 	// Store wave info
 	pChunk->StoreByte(m_iWaveSize >> 1);
@@ -174,9 +174,7 @@ int CInstrumentN163::Compile(CChunk *pChunk, int Index) const
 	StoredBytes += 2;
 
 	// Store reference to wave
-	CStringA waveLabel;
-	waveLabel.Format(CChunkRenderText::LABEL_WAVES, Index);
-	pChunk->StoreReference((LPCTSTR)waveLabel);		// // //
+	pChunk->StorePointer({CHUNK_WAVES, (unsigned)Index});		// // //
 	StoredBytes += 2;
 	
 	return StoredBytes;

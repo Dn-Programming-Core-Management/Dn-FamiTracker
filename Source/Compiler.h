@@ -70,6 +70,7 @@ struct stNSFeHeader {		// // //
 struct driver_t;
 class CChunk;
 enum chunk_type_t;
+struct stChunkLabel;		// // //
 class CDSample;		 // // //
 class CFamiTrackerDoc;		// // //
 class CSequence;		// // //
@@ -121,9 +122,9 @@ private:
 	bool	CompileData();
 	void	ResolveLabels();
 	bool	ResolveLabelsBankswitched();
-	void	CollectLabels(std::map<std::string, int> &labelMap) const;		// // //
-	bool	CollectLabelsBankswitched(std::map<std::string, int> &labelMap);
-	void	AssignLabels(std::map<std::string, int> &labelMap);
+	void	CollectLabels(std::map<stChunkLabel, int> &labelMap) const;		// // //
+	bool	CollectLabelsBankswitched(std::map<stChunkLabel, int> &labelMap);
+	void	AssignLabels(std::map<stChunkLabel, int> &labelMap);
 	void	AddBankswitching();
 	void	Cleanup();
 
@@ -138,7 +139,7 @@ private:
 	void	CreateSampleList();
 	void	CreateFrameList(unsigned int Track);
 
-	int		StoreSequence(const CSequence *pSeq, CStringA &label);
+	int		StoreSequence(const CSequence *pSeq, const stChunkLabel &label);		// // //
 	void	StoreSamples();
 	void	StoreGrooves();		// // //
 	void	StoreSongs();
@@ -160,13 +161,14 @@ private:
 	void	WriteSamplesBinary(CFile *pFile);
 
 	// Object list functions
-	CChunk	&CreateChunk(chunk_type_t Type, const std::string &label);		// // //
-	CChunk	*GetObjectByRef(const std::string &label) const;		// // //
+	CChunk	&CreateChunk(const stChunkLabel &Label);		// // //
+	CChunk	&AddChunkToList(CChunk &Chunk, const stChunkLabel &Label);		// // //
+	CChunk	*GetObjectByLabel(const stChunkLabel &Label) const;		// // //
 	int		CountData() const;
 
 	// Debugging
-	template <typename... T>
-	void	Print(LPCTSTR text, T... args) const;		// // //
+	template <typename... Args>
+	void	Print(LPCTSTR text, Args&&... args) const;		// // //
 	void	ClearLog() const;
 
 public:
@@ -197,12 +199,8 @@ private:
 
 	// Object lists
 	std::vector<std::shared_ptr<CChunk>> m_vChunks;		// // //
-	std::vector<CChunk*> m_vSequenceChunks;
-	std::vector<CChunk*> m_vInstrumentChunks;
-	std::vector<CChunk*> m_vGrooveChunks;		// // //
 	std::vector<CChunk*> m_vSongChunks;
 	std::vector<CChunk*> m_vFrameChunks;
-	std::vector<CChunk*> m_vPatternChunks;
 	//std::vector<CChunk*> m_vWaveChunks;
 
 	// Special objects
@@ -270,7 +268,7 @@ private:
 
 	// Optimization
 	CMap<UINT, UINT, CChunk*, CChunk*> m_PatternMap;
-	std::map<std::string, std::string> m_DuplicateMap;		// // //
+	std::map<stChunkLabel, stChunkLabel> m_DuplicateMap;		// // //
 
 	// Debugging
 	CCompilerLog	*m_pLogger;

@@ -283,8 +283,6 @@ bool CInstrumentFDS::LoadFile(CSimpleFile *pFile, int iVersion)
 
 int CInstrumentFDS::Compile(CChunk *pChunk, int Index) const
 {
-	CStringA str;
-
 	// Store wave
 //	int Table = pCompiler->AddWavetable(m_iSamples);
 //	int Table = 0;
@@ -302,11 +300,9 @@ int CInstrumentFDS::Compile(CChunk *pChunk, int Index) const
 		}
 	pChunk->StoreByte(Switch);
 
-	for (int i = 0; i < SEQUENCE_COUNT; ++i)
-		if (Switch & (1 << i)) {
-			str.Format(CChunkRenderText::LABEL_SEQ_FDS, Index * 5 + i);
-			pChunk->StoreReference((LPCTSTR)str);		// // //
-		}
+	for (unsigned i = 0; i < SEQUENCE_COUNT; ++i)
+		if (Switch & (1 << i))
+			pChunk->StorePointer({CHUNK_SEQUENCE, Index * 5 + i, INST_FDS});		// // //
 
 	// // // Store modulation table, two entries/byte
 	for (int i = 0; i < 16; ++i) {

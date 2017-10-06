@@ -182,14 +182,12 @@ int CSeqInstrument::Compile(CChunk *pChunk, int Index) const
 {
 	int StoredBytes = 0;
 
-	const char *label = nullptr;		// // //
-	switch (GetType()) {
-	case INST_2A03: pChunk->StoreByte(0);  label = CChunkRenderText::LABEL_SEQ_2A03; break;
-	case INST_VRC6: pChunk->StoreByte(4);  label = CChunkRenderText::LABEL_SEQ_VRC6; break;
-	case INST_N163: pChunk->StoreByte(9);  label = CChunkRenderText::LABEL_SEQ_N163; break;
-	case INST_S5B:  pChunk->StoreByte(10); label = CChunkRenderText::LABEL_SEQ_S5B;  break;
+	switch (GetType()) {		// // //
+	case INST_2A03: pChunk->StoreByte(0);  break;
+	case INST_VRC6: pChunk->StoreByte(4);  break;
+	case INST_N163: pChunk->StoreByte(9);  break;
+	case INST_S5B:  pChunk->StoreByte(10); break;
 	}
-	ASSERT(label != nullptr);
 
 	int ModSwitch = 0;
 	for (unsigned i = 0; i < SEQ_COUNT; ++i) {
@@ -202,9 +200,7 @@ int CSeqInstrument::Compile(CChunk *pChunk, int Index) const
 	
 	for (unsigned i = 0; i < SEQ_COUNT; ++i) {
 		if (ModSwitch & (1 << i)) {
-			CStringA str;
-			str.Format(label, GetSeqIndex(i) * SEQ_COUNT + i);
-			pChunk->StoreReference((LPCTSTR)str);		// // //
+			pChunk->StorePointer({CHUNK_SEQUENCE, GetSeqIndex(i) * SEQ_COUNT + i, (unsigned)GetType()});		// // //
 			StoredBytes += 2;
 		}
 	}

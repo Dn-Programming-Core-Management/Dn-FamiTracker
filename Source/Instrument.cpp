@@ -22,8 +22,7 @@
 
 #include "Instrument.h"
 #include "InstrumentManagerInterface.h"		// // //
-#include "DocumentFile.h"
-#include "SimpleFile.h"
+#include <cstring>		// // //
 
 /*
  * Class CInstrument, base class for instruments
