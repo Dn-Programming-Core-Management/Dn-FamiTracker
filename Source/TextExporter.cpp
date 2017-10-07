@@ -543,7 +543,7 @@ bool CTextExport::ImportCellText(		// // //
 		}
 	}
 
-	pDoc->SetDataAtPattern(track,pattern,channel,row,&Cell);
+	pDoc->SetDataAtPattern(track,pattern,channel,row,Cell);		// // //
 	return true;
 }
 
@@ -1166,14 +1166,13 @@ const CString& CTextExport::ExportRows(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	f.WriteString(_T("ID,TRACK,CHANNEL,PATTERN,ROW,NOTE,OCTAVE,INST,VOLUME,FX1,FX1PARAM,FX2,FX2PARAM,FX3,FX3PARAM,FX4,FX4PARAM\n"));
 
 	CString l, s = _T("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n");
-	stChanNote stCell;
 	int id = 0;
 	
 	for (unsigned int t = 0; t < pDoc->GetTrackCount(); t++)
 		for (int c = 0; c < pDoc->GetChannelCount(); c++)
 			for (int p = 0; p < MAX_PATTERN; p++)
 				for (unsigned int r = 0; r < pDoc->GetPatternLength(t); r++) {
-					pDoc->GetDataAtPattern(t,p,c,r,&stCell);
+					const auto &stCell = pDoc->GetDataAtPattern(t,p,c,r);		// // //
 					bool isEmpty = true;
 					if (stCell.Note != NONE || stCell.Instrument != MAX_INSTRUMENTS || stCell.Vol != MAX_VOLUME) isEmpty = false;
 					for (int fx = 0; fx < MAX_EFFECT_COLUMNS; fx++)
@@ -1588,9 +1587,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 				for (int c=0; c < pDoc->GetChannelCount(); ++c)
 				{
 					f.WriteString(_T(" : "));
-					stChanNote stCell;
-					pDoc->GetDataAtPattern(t,p,c,r,&stCell);
-					f.WriteString(ExportCellText(stCell, pDoc->GetEffColumns(t, c)+1, c==3));
+					f.WriteString(ExportCellText(pDoc->GetDataAtPattern(t,p,c,r), pDoc->GetEffColumns(t, c)+1, c==3));		// // //
 				}
 				f.WriteString(_T("\n"));
 			}

@@ -298,14 +298,14 @@ void CPatternIterator::Get(int Channel, stChanNote *pNote) const
 {
 	int Frame = m_iFrame % m_pDocument->GetFrameCount(m_iTrack);
 	if (Frame < 0) Frame += m_pDocument->GetFrameCount(m_iTrack);
-	m_pDocument->GetNoteData(m_iTrack, Frame, Channel, m_iRow, pNote);
+	*pNote = m_pDocument->GetNoteData(m_iTrack, Frame, Channel, m_iRow);
 }
 
 void CPatternIterator::Set(int Channel, const stChanNote *pNote)
 {
 	int Frame = m_iFrame % m_pDocument->GetFrameCount(m_iTrack);
 	if (Frame < 0) Frame += m_pDocument->GetFrameCount(m_iTrack);
-	m_pDocument->SetNoteData(m_iTrack, Frame, Channel, m_iRow, pNote);
+	m_pDocument->SetNoteData(m_iTrack, Frame, Channel, m_iRow, *pNote);
 }
 
 void CPatternIterator::Step() // resolves skip effects

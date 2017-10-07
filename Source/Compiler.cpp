@@ -1445,8 +1445,7 @@ void CCompiler::ScanSong()
 		for (int j = 0; j < frames; ++j) {
 			int p = m_pDocument->GetPatternAtFrame(i, j, DpcmChannel);
 			for (int k = 0; k < patternlen; ++k) {
-				stChanNote Note;
-				m_pDocument->GetDataAtPattern(i, p, DpcmChannel, k, &Note);
+				const auto &Note = m_pDocument->GetDataAtPattern(i, p, DpcmChannel, k);		// // //
 				if (Note.Instrument < MAX_INSTRUMENTS)
 					Instrument = Note.Instrument;
 				if (Note.Note > 0) {
@@ -1467,16 +1466,11 @@ bool CCompiler::IsInstrumentInPattern(int index) const
 	// Scan patterns in entire module
 	for (int i = 0; i < TrackCount; ++i) {
 		int PatternLength = m_pDocument->GetPatternLength(i);
-		for (int j = 0; j < Channels; ++j) {
-			for (int k = 0; k < MAX_PATTERN; ++k) {
-				for (int l = 0; l < PatternLength; ++l) {
-					stChanNote Note;
-					m_pDocument->GetDataAtPattern(i, k, j, l, &Note);
-					if (Note.Instrument == index)
+		for (int j = 0; j < Channels; ++j)
+			for (int k = 0; k < MAX_PATTERN; ++k)
+				for (int l = 0; l < PatternLength; ++l)
+					if (m_pDocument->GetDataAtPattern(i, k, j, l).Instrument == index)		// // //
 						return true;
-				}
-			}
-		}
 	}	
 
 	return false;

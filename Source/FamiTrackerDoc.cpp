@@ -69,6 +69,7 @@
 #include "BookmarkManager.h"		// // //
 #include "APU/APU.h"
 #include "SimpleFile.h"		// // //
+#include "SongView.h"		// // //
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -1596,15 +1597,14 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 	if (m_bAdjustFDSArpeggio) {
 		int Channel = GetChannelIndex(CHANID_FDS);
 		if (Channel != -1) {
-			stChanNote Note;
 			for (unsigned int t = 0; t < m_iTrackCount; ++t) for (int p = 0; p < MAX_PATTERN; ++p) for (int r = 0; r < MAX_PATTERN_LENGTH; ++r) {
-				GetDataAtPattern(t, p, Channel, r, &Note);
+				stChanNote Note = GetDataAtPattern(t, p, Channel, r);		// // //
 				if (Note.Note >= NOTE_C && Note.Note <= NOTE_B) {
 					int Trsp = MIDI_NOTE(Note.Octave, Note.Note) + NOTE_RANGE * 2;
 					Trsp = Trsp >= NOTE_COUNT ? NOTE_COUNT - 1 : Trsp;
 					Note.Note = GET_NOTE(Trsp);
 					Note.Octave = GET_OCTAVE(Trsp);
-					SetDataAtPattern(t, p, Channel, r, &Note);
+					SetDataAtPattern(t, p, Channel, r, Note);		// // //
 				}
 			}
 		}
@@ -2739,14 +2739,12 @@ bool CFamiTrackerDoc::ImportTrack(int Track, CFamiTrackerDoc *pImported, int *pI
 	// // // Copy bookmarks
 	m_pBookmarkManager->SetCollection(NewTrack, pImported->GetBookmarkManager()->PopCollection(Track));
 
-	stChanNote data;
-
 	// Copy patterns
 	for (unsigned int p = 0; p < MAX_PATTERN; ++p) {
 		for (unsigned int c = 0; c < GetAvailableChannels(); ++c) {
 			for (unsigned int r = 0; r < pImported->GetPatternLength(Track); ++r) {
 				// Get note
-				pImported->GetDataAtPattern(Track, p, c, r, &data);
+				stChanNote data = pImported->GetDataAtPattern(Track, p, c, r);		// // //
 				// Translate instrument number
 				if (data.Instrument < MAX_INSTRUMENTS)
 					data.Instrument = pInstTable[data.Instrument];
@@ -2754,7 +2752,7 @@ bool CFamiTrackerDoc::ImportTrack(int Track, CFamiTrackerDoc *pImported, int *pI
 					if (data.EffNumber[i] == EF_GROOVE && data.EffParam[i] < MAX_GROOVE)
 						data.EffParam[i] = pGrooveMap[data.EffParam[i]];
 				// Store
-				SetDataAtPattern(NewTrack, p, c, r, &data);
+				SetDataAtPattern(NewTrack, p, c, r, data);		// // //
 			}
 		}
 	}
@@ -3319,57 +3317,56 @@ unsigned int CFamiTrackerDoc::GetFrameRate() const
 
 //// Pattern functions ////////////////////////////////////////////////////////////////////////////////
 
-void CFamiTrackerDoc::SetNoteData(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row, const stChanNote *pData)
+void CFamiTrackerDoc::SetNoteData(unsigned Track, unsigned Frame, unsigned Channel, unsigned Row, const stChanNote &Data)		// // //
 {
 	ASSERT(Track < MAX_TRACKS);
 	ASSERT(Frame < MAX_FRAMES);
 	ASSERT(Channel < MAX_CHANNELS);
 	ASSERT(Row < MAX_PATTERN_LENGTH);
-	ASSERT(pData != NULL);
+
 	// Get notes from the pattern
 	CPatternData *pTrack = GetTrack(Track);
 	int Pattern = pTrack->GetFramePattern(Frame, Channel);
-	memcpy(pTrack->GetPatternData(Channel, Pattern, Row), pData, sizeof(stChanNote));
+	*pTrack->GetPatternData(Channel, Pattern, Row) = Data;		// // //
 	SetModifiedFlag();
 }
 
-void CFamiTrackerDoc::GetNoteData(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row, stChanNote *pData) const
+const stChanNote &CFamiTrackerDoc::GetNoteData(unsigned Track, unsigned Frame, unsigned Channel, unsigned Row) const
 {
 	ASSERT(Track < MAX_TRACKS);
 	ASSERT(Frame < MAX_FRAMES);
 	ASSERT(Channel < MAX_CHANNELS);
 	ASSERT(Row < MAX_PATTERN_LENGTH);
-	ASSERT(pData != NULL);
+
 	// Sets the notes of the pattern
 	CPatternData *pTrack = GetTrack(Track);
 	int Pattern = pTrack->GetFramePattern(Frame, Channel);
-	memcpy(pData, pTrack->GetPatternData(Channel, Pattern, Row), sizeof(stChanNote));
+	return *pTrack->GetPatternData(Channel, Pattern, Row);		// // //
 }
 
-void CFamiTrackerDoc::SetDataAtPattern(unsigned int Track, unsigned int Pattern, unsigned int Channel, unsigned int Row, const stChanNote *pData)
+void CFamiTrackerDoc::SetDataAtPattern(unsigned Track, unsigned Pattern, unsigned Channel, unsigned Row, const stChanNote &Data)		// // //
 {
 	ASSERT(Track < MAX_TRACKS);
 	ASSERT(Pattern < MAX_PATTERN);
 	ASSERT(Channel < MAX_CHANNELS);
 	ASSERT(Row < MAX_PATTERN_LENGTH);
-	ASSERT(pData != NULL);
+
 	// Set a note to a direct pattern
 	CPatternData *pTrack = GetTrack(Track);
-	memcpy(pTrack->GetPatternData(Channel, Pattern, Row), pData, sizeof(stChanNote));
+	*pTrack->GetPatternData(Channel, Pattern, Row) = Data;		// // //
 	SetModifiedFlag();
 }
 
-void CFamiTrackerDoc::GetDataAtPattern(unsigned int Track, unsigned int Pattern, unsigned int Channel, unsigned int Row, stChanNote *pData) const
+const stChanNote &CFamiTrackerDoc::GetDataAtPattern(unsigned Track, unsigned Pattern, unsigned Channel, unsigned Row) const		// // //
 {
 	ASSERT(Track < MAX_TRACKS);
 	ASSERT(Pattern < MAX_PATTERN);
 	ASSERT(Channel < MAX_CHANNELS);
 	ASSERT(Row < MAX_PATTERN_LENGTH);
-	ASSERT(pData != NULL);
 
 	// Get note from a direct pattern
 	CPatternData *pTrack = GetTrack(Track);
-	memcpy(pData, pTrack->GetPatternData(Channel, Pattern, Row), sizeof(stChanNote));
+	return *pTrack->GetPatternData(Channel, Pattern, Row);		// // //
 }
 
 bool CFamiTrackerDoc::InsertRow(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row)
@@ -3391,7 +3388,7 @@ bool CFamiTrackerDoc::InsertRow(unsigned int Track, unsigned int Frame, unsigned
 			sizeof(stChanNote));
 	}
 
-	*pTrack->GetPatternData(Channel, Pattern, Row) = Note;
+	SetDataAtPattern(Track, Pattern, Channel, Row, Note);		// // //
 
 	SetModifiedFlag();
 
@@ -3503,7 +3500,6 @@ bool CFamiTrackerDoc::RemoveNote(unsigned int Track, unsigned int Frame, unsigne
 
 	CPatternData *pTrack = GetTrack(Track);
 	int Pattern = pTrack->GetFramePattern(Frame, Channel);
-	stChanNote Note { };		// // //
 
 	unsigned int PatternLen = pTrack->GetPatternLength();
 
@@ -3514,7 +3510,7 @@ bool CFamiTrackerDoc::RemoveNote(unsigned int Track, unsigned int Frame, unsigne
 			sizeof(stChanNote));
 	}
 
-	*pTrack->GetPatternData(Channel, Pattern, PatternLen - 1) = Note;
+	SetDataAtPattern(Track, Pattern, Channel, PatternLen - 1, stChanNote { });		// // //
 
 	SetModifiedFlag();
 
@@ -3527,12 +3523,9 @@ bool CFamiTrackerDoc::PullUp(unsigned int Track, unsigned int Frame, unsigned in
 	ASSERT(Track < MAX_TRACKS);
 
 	int PatternLen = GetPatternLength(Track);
-	stChanNote Data;
 
-	for (int i = Row; i < PatternLen - 1; ++i) {
-		GetNoteData(Track, Frame, Channel, i + 1, &Data);
-		SetNoteData(Track, Frame, Channel, i, &Data);
-	}
+	for (int i = Row; i < PatternLen - 1; ++i)
+		SetNoteData(Track, Frame, Channel, i, GetNoteData(Track, Frame, Channel, i + 1));		// // //
 
 	// Last note on pattern
 	ClearRow(Track, Frame, Channel, PatternLen - 1);
@@ -3548,12 +3541,9 @@ void CFamiTrackerDoc::CopyPattern(unsigned int Track, int Target, int Source, in
 	ASSERT(Track < MAX_TRACKS);
 
 	int PatternLen = GetPatternLength(Track);
-	stChanNote Data;
 
-	for (int i = 0; i < PatternLen; ++i) {
-		GetDataAtPattern(Track, Source, Channel, i, &Data);
-		SetDataAtPattern(Track, Target, Channel, i, &Data);
-	}
+	for (int i = 0; i < PatternLen; ++i)
+		SetDataAtPattern(Track, Target, Channel, i, GetDataAtPattern(Track, Source, Channel, i));		// // //
 
 	SetModifiedFlag();
 }
@@ -3656,13 +3646,9 @@ bool CFamiTrackerDoc::CloneFrame(unsigned int Track, unsigned int Frame)		// // 
 		return false;
 
 	// copy old patterns into new
-	for (int i = 0; i < Channels; ++i) {
-		for(unsigned int j = 0; j < MAX_PATTERN_LENGTH; j++) {
-			stChanNote note;
-			GetNoteData(Track, Frame - 1, i, j, &note);
-			SetNoteData(Track, Frame, i, j, &note);
-		}
-	}
+	for (int i = 0; i < Channels; ++i)
+		for (unsigned int j = 0; j < MAX_PATTERN_LENGTH; j++)
+			SetNoteData(Track, Frame, i, j, GetNoteData(Track, Frame - 1, i, j));		// // //
 
 	SetModifiedFlag();
 
@@ -4428,20 +4414,18 @@ unsigned int CFamiTrackerDoc::ScanActualLength(unsigned int Track, unsigned int 
 	while (bScanning) {
 		bool hasJump = false;
 		for (int j = 0; j < GetChannelCount(); ++j) {
-			stChanNote *Note;
-			Note = m_pTracks[Track]->GetPatternData(j, m_pTracks[Track]->GetFramePattern(f, j), r);
-			GetNoteData(Track, f, j, r, Note);
+			const auto &Note = GetNoteData(Track, f, j, r);		// // //
 			for (unsigned l = 0; l < GetEffColumns(Track, j) + 1; ++l) {
-				switch (Note->EffNumber[l]) {
+				switch (Note.EffNumber[l]) {
 					case EF_JUMP:
-						JumpTo = Note->EffParam[l];
+						JumpTo = Note.EffParam[l];
 						SkipTo = 0;
 						hasJump = true;
 						break;
 					case EF_SKIP:
 						if (hasJump) break;
 						JumpTo = (f + 1) % FrameCount;
-						SkipTo = Note->EffParam[l];
+						SkipTo = Note.EffParam[l];
 						break;
 					case EF_HALT:
 						Count = 1;
@@ -4800,8 +4784,7 @@ int CFamiTrackerDoc::GetFrameLength(unsigned int Track, unsigned int Frame) cons
 	for (int j = 0; j < PatternLength; ++j) {
 		for (int i = 0; i < GetChannelCount(); ++i) {
 			int Columns = GetEffColumns(Track, i) + 1;
-			stChanNote Note;
-			GetNoteData(Track, Frame, i, j, &Note);
+			const auto &Note = GetNoteData(Track, Frame, i, j);		// // //
 			// First look for pattern data, allow this to cancel earlier pattern lengths
 			/*
 			if (Note.Note != NONE || Note.Instrument != MAX_INSTRUMENTS || Note.Vol != 0x10)
@@ -4910,64 +4893,64 @@ void CFamiTrackerDoc::MakeKraid()			// // // Easter Egg
 	kraidSeq->SetReleasePoint(-1);
 
 	// Triangle
-	stChanNote* kraidRow = new stChanNote { };
-	kraidRow->Instrument = 2;
+	stChanNote kraidRow;
+	kraidRow.Instrument = 2;
 	for (int i = 0; i < 24; i += 6) {
-		kraidRow->Note = NOTE_E; kraidRow->Octave = 2; SetDataAtPattern(0, 0, 2, i    , kraidRow);
-								 kraidRow->Octave = 3; SetDataAtPattern(0, 0, 2, i + 2, kraidRow);}
+		kraidRow.Note = NOTE_E; kraidRow.Octave = 2; SetDataAtPattern(0, 0, 2, i    , kraidRow);
+								kraidRow.Octave = 3; SetDataAtPattern(0, 0, 2, i + 2, kraidRow);}
 	for (int i = 0; i < 12; i += 6) {
-		kraidRow->Note = NOTE_C; kraidRow->Octave = 2; SetDataAtPattern(0, 1, 2, i     , kraidRow);
-								 kraidRow->Octave = 3; SetDataAtPattern(0, 1, 2, i +  2, kraidRow);
-		kraidRow->Note = NOTE_D; kraidRow->Octave = 2; SetDataAtPattern(0, 1, 2, i + 12, kraidRow);
-								 kraidRow->Octave = 3; SetDataAtPattern(0, 1, 2, i + 14, kraidRow);}
+		kraidRow.Note = NOTE_C; kraidRow.Octave = 2; SetDataAtPattern(0, 1, 2, i     , kraidRow);
+								kraidRow.Octave = 3; SetDataAtPattern(0, 1, 2, i +  2, kraidRow);
+		kraidRow.Note = NOTE_D; kraidRow.Octave = 2; SetDataAtPattern(0, 1, 2, i + 12, kraidRow);
+								kraidRow.Octave = 3; SetDataAtPattern(0, 1, 2, i + 14, kraidRow);}
 	for (int i = 0; i < 6; i += 2) {
-		kraidRow->Note = NOTE_E;  kraidRow->Octave = 2 + i / 2; SetDataAtPattern(0, 2, 2, i     , kraidRow);
-		kraidRow->Note = NOTE_Fs;                               SetDataAtPattern(0, 2, 2, i +  6, kraidRow);
-		kraidRow->Note = NOTE_F;                                SetDataAtPattern(0, 2, 2, i + 12, kraidRow);
-		kraidRow->Note = NOTE_B;  kraidRow->Octave = 1 + i / 2; SetDataAtPattern(0, 2, 2, i + 18, kraidRow);}
-	kraidRow->Note = NOTE_E; kraidRow->Octave = 1;	SetDataAtPattern(0, 4, 2,  0, kraidRow);
-	kraidRow->Note = NOTE_C; kraidRow->Octave = 2;	SetDataAtPattern(0, 3, 2, 12, kraidRow);
-	kraidRow->Note = NOTE_E;						SetDataAtPattern(0, 3, 2,  0, kraidRow);
-	kraidRow->Note = NOTE_G;						SetDataAtPattern(0, 3, 2, 16, kraidRow);
-	kraidRow->Note = NOTE_A;						SetDataAtPattern(0, 3, 2, 18, kraidRow);
-	kraidRow->Note = NOTE_B;						SetDataAtPattern(0, 3, 2,  4, kraidRow);
+		kraidRow.Note = NOTE_E;  kraidRow.Octave = 2 + i / 2; SetDataAtPattern(0, 2, 2, i     , kraidRow);
+		kraidRow.Note = NOTE_Fs;                              SetDataAtPattern(0, 2, 2, i +  6, kraidRow);
+		kraidRow.Note = NOTE_F;                               SetDataAtPattern(0, 2, 2, i + 12, kraidRow);
+		kraidRow.Note = NOTE_B;  kraidRow.Octave = 1 + i / 2; SetDataAtPattern(0, 2, 2, i + 18, kraidRow);}
+	kraidRow.Note = NOTE_E; kraidRow.Octave = 1;	SetDataAtPattern(0, 4, 2,  0, kraidRow);
+	kraidRow.Note = NOTE_C; kraidRow.Octave = 2;	SetDataAtPattern(0, 3, 2, 12, kraidRow);
+	kraidRow.Note = NOTE_E;							SetDataAtPattern(0, 3, 2,  0, kraidRow);
+	kraidRow.Note = NOTE_G;							SetDataAtPattern(0, 3, 2, 16, kraidRow);
+	kraidRow.Note = NOTE_A;							SetDataAtPattern(0, 3, 2, 18, kraidRow);
+	kraidRow.Note = NOTE_B;							SetDataAtPattern(0, 3, 2,  4, kraidRow);
 													SetDataAtPattern(0, 3, 2, 10, kraidRow);
 													SetDataAtPattern(0, 3, 2, 22, kraidRow);
-	kraidRow->Note = NOTE_C; kraidRow->Octave = 3;	SetDataAtPattern(0, 3, 2,  6, kraidRow);
+	kraidRow.Note = NOTE_C; kraidRow.Octave = 3;	SetDataAtPattern(0, 3, 2,  6, kraidRow);
 
 	// Pulse 2
-	kraidRow->Instrument = 0;
-	kraidRow->Note = NOTE_As; kraidRow->Octave = 2;	SetDataAtPattern(0, 0, 1, 22, kraidRow);
-	kraidRow->Note = NOTE_B;						SetDataAtPattern(0, 0, 1,  4, kraidRow);
+	kraidRow.Instrument = 0;
+	kraidRow.Note = NOTE_As; kraidRow.Octave = 2;	SetDataAtPattern(0, 0, 1, 22, kraidRow);
+	kraidRow.Note = NOTE_B;							SetDataAtPattern(0, 0, 1,  4, kraidRow);
 													SetDataAtPattern(0, 0, 1, 18, kraidRow);
 													SetDataAtPattern(0, 1, 1, 10, kraidRow);
 													SetDataAtPattern(0, 2, 1,  1, kraidRow);
 													SetDataAtPattern(0, 2, 1,  3, kraidRow);
 													SetDataAtPattern(0, 2, 1,  5, kraidRow);
-	kraidRow->Note = NOTE_C;  kraidRow->Octave = 3;	SetDataAtPattern(0, 0, 1, 10, kraidRow);
+	kraidRow.Note = NOTE_C;  kraidRow.Octave = 3;	SetDataAtPattern(0, 0, 1, 10, kraidRow);
 													SetDataAtPattern(0, 2, 1, 13, kraidRow);
 													SetDataAtPattern(0, 2, 1, 15, kraidRow);
 													SetDataAtPattern(0, 2, 1, 17, kraidRow);
-	kraidRow->Note = NOTE_D; 						SetDataAtPattern(0, 0, 1, 16, kraidRow);
+	kraidRow.Note = NOTE_D; 						SetDataAtPattern(0, 0, 1, 16, kraidRow);
 													SetDataAtPattern(0, 1, 1,  4, kraidRow);
 													SetDataAtPattern(0, 1, 1, 16, kraidRow);
-	kraidRow->Note = NOTE_Ds;						SetDataAtPattern(0, 2, 1, 19, kraidRow);
+	kraidRow.Note = NOTE_Ds;						SetDataAtPattern(0, 2, 1, 19, kraidRow);
 													SetDataAtPattern(0, 2, 1, 21, kraidRow);
 													SetDataAtPattern(0, 2, 1, 23, kraidRow);
-	kraidRow->Note = NOTE_E; 						SetDataAtPattern(0, 0, 1,  0, kraidRow);
+	kraidRow.Note = NOTE_E; 						SetDataAtPattern(0, 0, 1,  0, kraidRow);
 													SetDataAtPattern(0, 1, 1,  6, kraidRow);
 													SetDataAtPattern(0, 1, 1, 22, kraidRow);
 													SetDataAtPattern(0, 2, 1,  7, kraidRow);
 													SetDataAtPattern(0, 2, 1,  9, kraidRow);
 													SetDataAtPattern(0, 2, 1, 11, kraidRow);
 													SetDataAtPattern(0, 3, 1, 18, kraidRow);
-	kraidRow->Note = NOTE_Fs;						SetDataAtPattern(0, 0, 1, 12, kraidRow);
+	kraidRow.Note = NOTE_Fs;						SetDataAtPattern(0, 0, 1, 12, kraidRow);
 													SetDataAtPattern(0, 1, 1, 12, kraidRow);
 													SetDataAtPattern(0, 2, 1, 20, kraidRow);
 													SetDataAtPattern(0, 3, 1,  0, kraidRow);
 													SetDataAtPattern(0, 3, 1, 10, kraidRow);
 													SetDataAtPattern(0, 3, 1, 17, kraidRow);
-	kraidRow->Note = NOTE_G; 						SetDataAtPattern(0, 1, 1,  0, kraidRow);
+	kraidRow.Note = NOTE_G; 						SetDataAtPattern(0, 1, 1,  0, kraidRow);
 													SetDataAtPattern(0, 2, 1,  0, kraidRow);
 													SetDataAtPattern(0, 2, 1,  2, kraidRow);
 													SetDataAtPattern(0, 2, 1,  4, kraidRow);
@@ -4975,7 +4958,7 @@ void CFamiTrackerDoc::MakeKraid()			// // // Easter Egg
 													SetDataAtPattern(0, 3, 1,  9, kraidRow);
 													SetDataAtPattern(0, 3, 1, 16, kraidRow);
 													SetDataAtPattern(0, 3, 1, 19, kraidRow);
-	kraidRow->Note = NOTE_A; 						SetDataAtPattern(0, 0, 1,  6, kraidRow);
+	kraidRow.Note = NOTE_A; 						SetDataAtPattern(0, 0, 1,  6, kraidRow);
 													SetDataAtPattern(0, 1, 1, 18, kraidRow);
 													SetDataAtPattern(0, 2, 1, 12, kraidRow);
 													SetDataAtPattern(0, 2, 1, 14, kraidRow);
@@ -4985,34 +4968,34 @@ void CFamiTrackerDoc::MakeKraid()			// // // Easter Egg
 													SetDataAtPattern(0, 3, 1,  8, kraidRow);
 													SetDataAtPattern(0, 3, 1, 15, kraidRow);
 													SetDataAtPattern(0, 3, 1, 20, kraidRow);
-	kraidRow->Note = NOTE_As;						SetDataAtPattern(0, 2, 1,  6, kraidRow);
+	kraidRow.Note = NOTE_As;						SetDataAtPattern(0, 2, 1,  6, kraidRow);
 													SetDataAtPattern(0, 2, 1,  8, kraidRow);
 													SetDataAtPattern(0, 2, 1, 10, kraidRow);
-	kraidRow->Note = NOTE_B; 						SetDataAtPattern(0, 2, 1, 22, kraidRow);
+	kraidRow.Note = NOTE_B; 						SetDataAtPattern(0, 2, 1, 22, kraidRow);
 													SetDataAtPattern(0, 3, 1,  3, kraidRow);
 													SetDataAtPattern(0, 3, 1,  5, kraidRow);
 													SetDataAtPattern(0, 3, 1, 11, kraidRow);
-	kraidRow->Note = NOTE_D;  kraidRow->Octave = 4;	SetDataAtPattern(0, 3, 1,  4, kraidRow);
+	kraidRow.Note = NOTE_D;  kraidRow.Octave = 4;	SetDataAtPattern(0, 3, 1,  4, kraidRow);
 													SetDataAtPattern(0, 3, 1,  7, kraidRow);
 													SetDataAtPattern(0, 3, 1, 14, kraidRow);
 													SetDataAtPattern(0, 3, 1, 21, kraidRow);
-	kraidRow->Note = NOTE_E;						SetDataAtPattern(0, 3, 1, 22, kraidRow);
+	kraidRow.Note = NOTE_E;							SetDataAtPattern(0, 3, 1, 22, kraidRow);
 													SetDataAtPattern(0, 4, 1,  6, kraidRow);
 													SetDataAtPattern(0, 4, 1, 18, kraidRow);
-	kraidRow->Note = NOTE_Fs;						SetDataAtPattern(0, 3, 1,  6, kraidRow);
+	kraidRow.Note = NOTE_Fs;						SetDataAtPattern(0, 3, 1,  6, kraidRow);
 													SetDataAtPattern(0, 3, 1, 13, kraidRow);
 													SetDataAtPattern(0, 4, 1,  4, kraidRow);
 													SetDataAtPattern(0, 4, 1,  8, kraidRow);
 													SetDataAtPattern(0, 4, 1, 16, kraidRow);
 													SetDataAtPattern(0, 4, 1, 20, kraidRow);
-	kraidRow->Note = NOTE_G;						SetDataAtPattern(0, 4, 1,  2, kraidRow);
+	kraidRow.Note = NOTE_G;							SetDataAtPattern(0, 4, 1,  2, kraidRow);
 													SetDataAtPattern(0, 4, 1, 10, kraidRow);
 													SetDataAtPattern(0, 4, 1, 14, kraidRow);
 													SetDataAtPattern(0, 4, 1, 22, kraidRow);
-	kraidRow->Note = NOTE_A;						SetDataAtPattern(0, 3, 1, 12, kraidRow);
+	kraidRow.Note = NOTE_A;							SetDataAtPattern(0, 3, 1, 12, kraidRow);
 													SetDataAtPattern(0, 4, 1,  0, kraidRow);
 													SetDataAtPattern(0, 4, 1, 12, kraidRow);
-	kraidRow->Note = HALT; kraidRow->Octave = 0; kraidRow->Instrument = MAX_INSTRUMENTS;
+	kraidRow.Note = HALT; kraidRow.Octave = 0; kraidRow.Instrument = MAX_INSTRUMENTS;
 	SetDataAtPattern(0, 3, 1, 23, kraidRow);
 	SetDataAtPattern(0, 4, 1,  1, kraidRow);
 	SetDataAtPattern(0, 4, 1,  3, kraidRow);
@@ -5026,43 +5009,43 @@ void CFamiTrackerDoc::MakeKraid()			// // // Easter Egg
 	SetDataAtPattern(0, 4, 1, 19, kraidRow);
 	SetDataAtPattern(0, 4, 1, 21, kraidRow);
 	SetDataAtPattern(0, 4, 1, 23, kraidRow);
-	GetDataAtPattern(0, 0, 1, 0, kraidRow); kraidRow->EffNumber[0] = EF_DUTY_CYCLE; kraidRow->EffParam[0] = 2; SetDataAtPattern(0, 0, 1, 0, kraidRow);
-	GetDataAtPattern(0, 1, 1, 0, kraidRow); kraidRow->EffNumber[0] = EF_DUTY_CYCLE; kraidRow->EffParam[0] = 2; SetDataAtPattern(0, 1, 1, 0, kraidRow);
-	GetDataAtPattern(0, 2, 1, 0, kraidRow); kraidRow->EffNumber[0] = EF_DUTY_CYCLE; kraidRow->EffParam[0] = 2; SetDataAtPattern(0, 2, 1, 0, kraidRow);
+	kraidRow = GetDataAtPattern(0, 0, 1, 0); kraidRow.EffNumber[0] = EF_DUTY_CYCLE; kraidRow.EffParam[0] = 2; SetDataAtPattern(0, 0, 1, 0, kraidRow);
+	kraidRow = GetDataAtPattern(0, 1, 1, 0); kraidRow.EffNumber[0] = EF_DUTY_CYCLE; kraidRow.EffParam[0] = 2; SetDataAtPattern(0, 1, 1, 0, kraidRow);
+	kraidRow = GetDataAtPattern(0, 2, 1, 0); kraidRow.EffNumber[0] = EF_DUTY_CYCLE; kraidRow.EffParam[0] = 2; SetDataAtPattern(0, 2, 1, 0, kraidRow);
 
 	// Pulse 1
 	for (int i = 0; i < 23; i++){
-		GetDataAtPattern(0, 0, 1, i, kraidRow);
-		if (kraidRow->Note != NONE) {
-			kraidRow->Instrument = 1; kraidRow->EffNumber[1] = EF_DELAY; kraidRow->EffParam[1] = 3;
+		kraidRow = GetDataAtPattern(0, 0, 1, i);
+		if (kraidRow.Note != NONE) {
+			kraidRow.Instrument = 1; kraidRow.EffNumber[1] = EF_DELAY; kraidRow.EffParam[1] = 3;
 			SetDataAtPattern(0, 0, 0, i + 1, kraidRow);}
-		GetDataAtPattern(0, 1, 1, i, kraidRow);
-		if (kraidRow->Note != NONE) {
-			kraidRow->Instrument = 1; kraidRow->EffNumber[1] = EF_DELAY; kraidRow->EffParam[1] = 3;
+		kraidRow = GetDataAtPattern(0, 1, 1, i);
+		if (kraidRow.Note != NONE) {
+			kraidRow.Instrument = 1; kraidRow.EffNumber[1] = EF_DELAY; kraidRow.EffParam[1] = 3;
 			SetDataAtPattern(0, 1, 0, i + 1, kraidRow);}
-		GetDataAtPattern(0, 2, 1, i, kraidRow);
-		if (kraidRow->Note != NONE) {
-			kraidRow->Instrument = 1; kraidRow->EffNumber[1] = EF_DELAY; kraidRow->EffParam[1] = 3;
+		kraidRow = GetDataAtPattern(0, 2, 1, i);
+		if (kraidRow.Note != NONE) {
+			kraidRow.Instrument = 1; kraidRow.EffNumber[1] = EF_DELAY; kraidRow.EffParam[1] = 3;
 			SetDataAtPattern(0, 2, 0, i + 1, kraidRow);
 			SetDataAtPattern(0, 3, 0, i + 1, kraidRow);}
-		GetDataAtPattern(0, 3, 1, i, kraidRow);
-		if (kraidRow->Note != NONE) {
-			kraidRow->Instrument = 1; kraidRow->EffNumber[1] = EF_DELAY; kraidRow->EffParam[1] = 3;
+		kraidRow = GetDataAtPattern(0, 3, 1, i);
+		if (kraidRow.Note != NONE) {
+			kraidRow.Instrument = 1; kraidRow.EffNumber[1] = EF_DELAY; kraidRow.EffParam[1] = 3;
 			SetDataAtPattern(0, 4, 0, i + 1, kraidRow);
 			SetDataAtPattern(0, 5, 0, i + 1, kraidRow);}
-		GetDataAtPattern(0, 4, 1, i, kraidRow);
-		if (kraidRow->Note != NONE) {
-			kraidRow->Instrument = 1; kraidRow->EffNumber[1] = EF_DELAY; kraidRow->EffParam[1] = 3;
+		kraidRow = GetDataAtPattern(0, 4, 1, i);
+		if (kraidRow.Note != NONE) {
+			kraidRow.Instrument = 1; kraidRow.EffNumber[1] = EF_DELAY; kraidRow.EffParam[1] = 3;
 			SetDataAtPattern(0, 6, 0, i + 1, kraidRow);}
 	}
-	kraidRow->Note = HALT; kraidRow->Octave = 0; kraidRow->Instrument = MAX_INSTRUMENTS;
+	kraidRow.Note = HALT; kraidRow.Octave = 0; kraidRow.Instrument = MAX_INSTRUMENTS;
 	SetDataAtPattern(0, 0, 0, 0, kraidRow);
 	SetDataAtPattern(0, 5, 0, 0, kraidRow);
 	SetDataAtPattern(0, 6, 0, 0, kraidRow);
-	kraidRow->Note = NOTE_Ds; kraidRow->Octave = 3; kraidRow->Instrument = 1;
+	kraidRow.Note = NOTE_Ds; kraidRow.Octave = 3; kraidRow.Instrument = 1;
 	SetDataAtPattern(0, 3, 0, 0, kraidRow);
 	SetDataAtPattern(0, 4, 0, 0, kraidRow);
 
 	// Done
-	delete kraidRow, kraidSeq;
+	delete kraidSeq;
 }

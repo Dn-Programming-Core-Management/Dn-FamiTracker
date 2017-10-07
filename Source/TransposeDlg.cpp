@@ -59,12 +59,12 @@ void CTransposeDlg::DoDataExchange(CDataExchange* pDX)
 void CTransposeDlg::Transpose(int Trsp, unsigned int Track)
 {
 	if (!Trsp) return;
-	stChanNote Note;
+
 	for (int c = m_pDocument->GetChannelCount() - 1; c >= 0; --c) {
 		int Type = m_pDocument->GetChannelType(c);
 		if (Type == CHANID_NOISE || Type == CHANID_DPCM) continue;
 		for (int p = 0; p < MAX_PATTERN; ++p) for (int r = 0; r < MAX_PATTERN_LENGTH; ++r) {
-			m_pDocument->GetDataAtPattern(Track, p, c, r, &Note);
+			stChanNote Note = m_pDocument->GetDataAtPattern(Track, p, c, r);
 			if (Note.Instrument == MAX_INSTRUMENTS || Note.Instrument == HOLD_INSTRUMENT) continue;
 			if (Note.Note >= NOTE_C && Note.Note <= NOTE_B && !s_bDisableInst[Note.Instrument]) {
 				int MIDI = MIDI_NOTE(Note.Octave, Note.Note) + Trsp;
@@ -72,7 +72,7 @@ void CTransposeDlg::Transpose(int Trsp, unsigned int Track)
 				else if (MIDI >= NOTE_COUNT) MIDI = NOTE_COUNT - 1;
 				Note.Octave = GET_OCTAVE(MIDI);
 				Note.Note = GET_NOTE(MIDI);
-				m_pDocument->SetDataAtPattern(Track, p, c, r, &Note);
+				m_pDocument->SetDataAtPattern(Track, p, c, r, Note);		// // //
 			}
 		}
 	}

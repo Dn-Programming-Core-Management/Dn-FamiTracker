@@ -172,11 +172,11 @@ public:
 	void			MakeKraid();				// // // Easter Egg
 
 	// Pattern editing
-	void			SetNoteData(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row, const stChanNote *pData);
-	void			GetNoteData(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row, stChanNote *pData) const;
+	void			SetNoteData(unsigned Track, unsigned Frame, unsigned Channel, unsigned Row, const stChanNote &Data);		// // //
+	const stChanNote &GetNoteData(unsigned Track, unsigned Frame, unsigned Channel, unsigned Row) const;		// // //
 
-	void			SetDataAtPattern(unsigned int Track, unsigned int Pattern, unsigned int Channel, unsigned int Row, const stChanNote *pData);
-	void			GetDataAtPattern(unsigned int Track, unsigned int Pattern, unsigned int Channel, unsigned int Row, stChanNote *pData) const;
+	void			SetDataAtPattern(unsigned Track, unsigned Pattern, unsigned Channel, unsigned Row, const stChanNote &pData);		// // //
+	const stChanNote &GetDataAtPattern(unsigned Track, unsigned Pattern, unsigned Channel, unsigned Row) const;		// // //
 
 	void			ClearPatterns(unsigned int Track);
 	void			ClearPattern(unsigned int Track, unsigned int Frame, unsigned int Channel);

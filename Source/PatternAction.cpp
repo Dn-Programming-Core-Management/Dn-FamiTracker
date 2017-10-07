@@ -412,20 +412,20 @@ CPActionEditNote::CPActionEditNote(const stChanNote &Note) :
 bool CPActionEditNote::SaveState(const CMainFrame *pMainFrm)
 {
 	const CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	pDoc->GetNoteData(STATE_EXPAND(m_pUndoState), &m_OldNote);
+	m_OldNote = pDoc->GetNoteData(STATE_EXPAND(m_pUndoState));		// // //
 	return true;
 }
 
 void CPActionEditNote::Undo(CMainFrame *pMainFrm) const
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	pDoc->SetNoteData(STATE_EXPAND(m_pUndoState), &m_OldNote);
+	pDoc->SetNoteData(STATE_EXPAND(m_pUndoState), m_OldNote);
 }
 
 void CPActionEditNote::Redo(CMainFrame *pMainFrm) const
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	pDoc->SetNoteData(STATE_EXPAND(m_pUndoState), &m_NewNote);
+	pDoc->SetNoteData(STATE_EXPAND(m_pUndoState), m_NewNote);
 }
 
 
@@ -439,20 +439,20 @@ CPActionReplaceNote::CPActionReplaceNote(const stChanNote &Note, int Frame, int 
 bool CPActionReplaceNote::SaveState(const CMainFrame *pMainFrm)
 {
 	const CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	pDoc->GetNoteData(m_pUndoState->Track, m_iFrame, m_iChannel, m_iRow, &m_OldNote);
+	m_OldNote = pDoc->GetNoteData(m_pUndoState->Track, m_iFrame, m_iChannel, m_iRow);		// // //
 	return true;
 }
 
 void CPActionReplaceNote::Undo(CMainFrame *pMainFrm) const
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	pDoc->SetNoteData(m_pUndoState->Track, m_iFrame, m_iChannel, m_iRow, &m_OldNote);
+	pDoc->SetNoteData(m_pUndoState->Track, m_iFrame, m_iChannel, m_iRow, m_OldNote);
 }
 
 void CPActionReplaceNote::Redo(CMainFrame *pMainFrm) const
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	pDoc->SetNoteData(m_pUndoState->Track, m_iFrame, m_iChannel, m_iRow, &m_NewNote);
+	pDoc->SetNoteData(m_pUndoState->Track, m_iFrame, m_iChannel, m_iRow, m_NewNote);
 }
 
 
@@ -465,8 +465,8 @@ CPActionInsertRow::CPActionInsertRow() :
 bool CPActionInsertRow::SaveState(const CMainFrame *pMainFrm)
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	pDoc->GetNoteData(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, m_pUndoState->Cursor.m_iChannel,
-					  pDoc->GetPatternLength(m_pUndoState->Track) - 1, &m_OldNote);
+	m_OldNote = pDoc->GetNoteData(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, m_pUndoState->Cursor.m_iChannel,
+					  pDoc->GetPatternLength(m_pUndoState->Track) - 1);
 	return true;
 }
 
@@ -475,7 +475,7 @@ void CPActionInsertRow::Undo(CMainFrame *pMainFrm) const
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
 	pDoc->PullUp(STATE_EXPAND(m_pUndoState));
 	pDoc->SetNoteData(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, m_pUndoState->Cursor.m_iChannel,
-					  pDoc->GetPatternLength(m_pUndoState->Track) - 1, &m_OldNote);
+					  pDoc->GetPatternLength(m_pUndoState->Track) - 1, m_OldNote);
 }
 
 void CPActionInsertRow::Redo(CMainFrame *pMainFrm) const
@@ -495,7 +495,7 @@ bool CPActionDeleteRow::SaveState(const CMainFrame *pMainFrm)
 {
 	if (m_bBack && !m_pUndoState->Cursor.m_iRow) return false;
 	const CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	pDoc->GetNoteData(STATE_EXPAND(m_pUndoState) - (m_bBack ? 1 : 0), &m_OldNote); // bad
+	m_OldNote = pDoc->GetNoteData(STATE_EXPAND(m_pUndoState) - (m_bBack ? 1 : 0));		// // // // bad
 	return true;
 }
 
@@ -504,7 +504,7 @@ void CPActionDeleteRow::Undo(CMainFrame *pMainFrm) const
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
 	if (m_bPullUp)
 		pDoc->InsertRow(STATE_EXPAND(m_pUndoState) - (m_bBack ? 1 : 0));
-	pDoc->SetNoteData(STATE_EXPAND(m_pUndoState) - (m_bBack ? 1 : 0), &m_OldNote);
+	pDoc->SetNoteData(STATE_EXPAND(m_pUndoState) - (m_bBack ? 1 : 0), m_OldNote);
 }
 
 void CPActionDeleteRow::Redo(CMainFrame *pMainFrm) const
@@ -525,7 +525,7 @@ CPActionScrollField::CPActionScrollField(int Amount) :		// // //
 bool CPActionScrollField::SaveState(const CMainFrame *pMainFrm)
 {
 	const CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	pDoc->GetNoteData(STATE_EXPAND(m_pUndoState), &m_OldNote);
+	m_OldNote = pDoc->GetNoteData(STATE_EXPAND(m_pUndoState));		// // //
 	
 	switch (m_pUndoState->Cursor.m_iColumn) {
 	case C_INSTRUMENT1: case C_INSTRUMENT2:
@@ -548,7 +548,7 @@ bool CPActionScrollField::SaveState(const CMainFrame *pMainFrm)
 void CPActionScrollField::Undo(CMainFrame *pMainFrm) const
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	pDoc->SetNoteData(STATE_EXPAND(m_pUndoState), &m_OldNote);
+	pDoc->SetNoteData(STATE_EXPAND(m_pUndoState), m_OldNote);
 }
 
 void CPActionScrollField::Redo(CMainFrame *pMainFrm) const
@@ -584,7 +584,7 @@ void CPActionScrollField::Redo(CMainFrame *pMainFrm) const
 		ScrollFunc(Note.EffParam[3], 0x100); break;
 	}
 
-	pDoc->SetNoteData(STATE_EXPAND(m_pUndoState), &Note);
+	pDoc->SetNoteData(STATE_EXPAND(m_pUndoState), Note);		// // //
 }
 
 

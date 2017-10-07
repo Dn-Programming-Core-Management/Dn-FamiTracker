@@ -230,7 +230,8 @@ private:
 	void PrintRow(CDC *pDC, int Row, int Line, int Frame) const;
 	void DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPreview) const;
 	// // //
-	void DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Channel, bool bInvert, stChanNote *pNoteData, RowColorInfo_t *pColorInfo) const;
+	void DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Channel, bool bInvert,
+		const stChanNote &NoteData, const RowColorInfo_t &ColorInfo) const;		// // //
 	void DrawChar(CDC *pDC, int x, int y, TCHAR c, COLORREF Color) const;
 
 	// Other drawing

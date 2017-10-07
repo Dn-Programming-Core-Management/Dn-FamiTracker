@@ -129,7 +129,6 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 	int EffColumns = m_pDocument->GetEffColumns(Track, Channel) + 1;
 
 	stSpacingInfo SpaceInfo;
-	stChanNote ChanNote;
 
 	// Global init
 	m_iHash = 0;
@@ -146,8 +145,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 	unsigned char NESNote = 0;
 
 	for (unsigned int i = 0; i < iPatternLen; ++i) {
-
-		m_pDocument->GetDataAtPattern(Track, Pattern, Channel, i, &ChanNote);
+		stChanNote ChanNote = m_pDocument->GetDataAtPattern(Track, Pattern, Channel, i);		// // //
 
 		unsigned char Note = ChanNote.Note;
 		unsigned char Octave = ChanNote.Octave;
@@ -695,14 +693,13 @@ unsigned int CPatternCompiler::FindSample(int Instrument, int Octave, int Key) c
 
 void CPatternCompiler::ScanNoteLengths(stSpacingInfo &Info, int Track, unsigned int StartRow, int Pattern, int Channel)
 {
-	stChanNote NoteData;
 	int StartSpace = -1, Space = 0, SpaceCount = 0;
 
 	Info.SpaceCount = 0;
 	Info.SpaceSize = 0;
 
 	for (unsigned i = StartRow; i < m_pDocument->GetPatternLength(Track); ++i) {
-		m_pDocument->GetDataAtPattern(Track, Pattern, Channel, i, &NoteData);
+		const auto &NoteData = m_pDocument->GetDataAtPattern(Track, Pattern, Channel, i);		// // //
 		bool NoteUsed = false;
 
 		if (NoteData.Note > 0)

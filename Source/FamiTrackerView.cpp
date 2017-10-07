@@ -1169,8 +1169,7 @@ void CFamiTrackerView::OnTrackerPlayrow()
 	const int Channels = pDoc->GetAvailableChannels();
 
 	for (int i = 0; i < Channels; ++i) {
-		stChanNote Note;
-		pDoc->GetNoteData(Track, Frame, i, Row, &Note);
+		stChanNote Note = pDoc->GetNoteData(Track, Frame, i, Row);		// // //
 		if (!m_bMuteChannels[i])
 			theApp.GetSoundGenerator()->QueueNote(i, Note, NOTE_PRIO_1);
 	}
@@ -1960,8 +1959,7 @@ void CFamiTrackerView::InsertNote(int Note, int Octave, int Channel, int Velocit
 	const int Frame = m_pPatternEditor->GetFrame();
 	const int Row = m_pPatternEditor->GetRow();
 
-	stChanNote Cell;
-	GetDocument()->GetNoteData(Track, Frame, Channel, Row, &Cell);
+	stChanNote Cell = GetDocument()->GetNoteData(Track, Frame, Channel, Row);		// // //
 
 	Cell.Note = Note;
 
@@ -2057,14 +2055,13 @@ void CFamiTrackerView::PlayNote(unsigned int Channel, unsigned int Note, unsigne
 	}
 
 	if (theApp.GetSettings()->General.bPreviewFullRow) {
-		stChanNote ChanNote;
 		int Track = static_cast<CMainFrame*>(GetParentFrame())->GetSelectedTrack();
 		int Frame = m_pPatternEditor->GetFrame();
 		int Row = m_pPatternEditor->GetRow();
 		int Channels = pDoc->GetAvailableChannels();
 
 		for (int i = 0; i < Channels; ++i) {
-			pDoc->GetNoteData(Track, Frame, i, Row, &ChanNote);
+			stChanNote ChanNote = pDoc->GetNoteData(Track, Frame, i, Row);		// // //
 			if (!m_bMuteChannels[i] && i != Channel)
 				theApp.GetSoundGenerator()->QueueNote(i, ChanNote, (i == Channel) ? NOTE_PRIO_2 : NOTE_PRIO_1);
 		}	
@@ -2858,8 +2855,6 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 	CFamiTrackerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	stChanNote Note;
-
 	int EditStyle = theApp.GetSettings()->General.iEditStyle;
 	int Index = 0;
 
@@ -2878,7 +2873,7 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 		return;
 
 	// Get the note data
-	pDoc->GetNoteData(Track, Frame, Channel, Row, &Note);
+	stChanNote Note = pDoc->GetNoteData(Track, Frame, Channel, Row);		// // //
 
 	// Make all effect columns look the same, save an index instead
 	switch (Column) {
@@ -3121,8 +3116,7 @@ int CFamiTrackerView::TranslateKeyModplug(unsigned char Key) const
 	int Track = static_cast<CMainFrame*>(GetParentFrame())->GetSelectedTrack();
 	int Octave = static_cast<CMainFrame*>(GetParentFrame())->GetSelectedOctave();		// // // 050B
 
-	stChanNote NoteData;
-	pDoc->GetNoteData(Track, m_pPatternEditor->GetFrame(), m_pPatternEditor->GetChannel(), m_pPatternEditor->GetRow(), &NoteData);
+	const auto &NoteData = pDoc->GetNoteData(Track, m_pPatternEditor->GetFrame(), m_pPatternEditor->GetChannel(), m_pPatternEditor->GetRow());		// // //
 
 	if (m_bEditEnable && Key >= '0' && Key <= '9') {		// // //
 		KeyOctave = Key - '1';
@@ -3611,9 +3605,7 @@ void CFamiTrackerView::OnPickupRow()
 	int Row = m_pPatternEditor->GetRow();
 	int Channel = m_pPatternEditor->GetChannel();
 	
-	stChanNote Note;
-
-	pDoc->GetNoteData(Track, Frame, Channel, Row, &Note);
+	const auto &Note = pDoc->GetNoteData(Track, Frame, Channel, Row);		// // //
 
 	m_iLastVolume = Note.Vol;
 	m_iLastInstrument = Note.Instrument;		// // //

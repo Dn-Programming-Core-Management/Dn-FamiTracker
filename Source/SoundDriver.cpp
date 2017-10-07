@@ -225,9 +225,8 @@ void CSoundDriver::PlayerTick() {
 		m_pTempoCounter->StepRow();		// // //
 
 		for (int i = 0, Channels = doc_->GetChannelCount(); i < Channels; ++i) {		// // //
-			stChanNote NoteData;
-			doc_->GetNoteData(m_pPlayerCursor->GetCurrentSong(), m_pPlayerCursor->GetCurrentFrame(),
-				i, m_pPlayerCursor->GetCurrentRow(), &NoteData);
+			stChanNote NoteData = doc_->GetNoteData(m_pPlayerCursor->GetCurrentSong(),
+				m_pPlayerCursor->GetCurrentFrame(), i, m_pPlayerCursor->GetCurrentRow());
 			HandleGlobalEffects(NoteData, doc_->GetEffColumns(m_pPlayerCursor->GetCurrentSong(), i) + 1);
 			if (!parent_ || !parent_->IsChannelMuted(i))
 				QueueNote(i, NoteData, NOTE_PRIO_1);

@@ -1114,8 +1114,6 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 	const int Channels = /*m_iFirstChannel +*/ m_iChannelsVisible;
 	int OffsetX = m_iRowColumnWidth;
 
-	stChanNote NoteData;
-
 	// Start at row number column
 	pDC->SetWindowOrg(0, 0);
 
@@ -1237,8 +1235,6 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 		int f = Frame % GetFrameCount();
 		if (f < 0) f += GetFrameCount();
 
-		m_pDocument->GetNoteData(Track, f, i, Row, &NoteData);
-
 		pDC->SetWindowOrg(-OffsetX, - (signed)Line * m_iRowHeight);
 
 		int PosX	 = m_iColumnSpacing;
@@ -1296,7 +1292,7 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 				bInvert = true;
 			}
 
-			DrawCell(pDC, PosX - m_iColumnSpacing / 2, j, i, bInvert, &NoteData, &colorInfo);		// // //
+			DrawCell(pDC, PosX - m_iColumnSpacing / 2, j, i, bInvert, m_pDocument->GetNoteData(Track, f, i, Row), colorInfo);		// // //
 			PosX += GetColumnSpace(j);
 			if (!m_bCompactMode)		// // //
 				SelStart += GetSelectWidth(j);
@@ -1306,7 +1302,8 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 	}
 }
 
-void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Channel, bool bInvert, stChanNote *pNoteData, RowColorInfo_t *pColorInfo) const
+void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Channel, bool bInvert,
+	const stChanNote &NoteData, const RowColorInfo_t &ColorInfo) const		// // //
 {
 	// Sharps
 	static const char NOTES_A_SHARP[] = {'C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'G', 'A', 'A', 'B'};
@@ -1326,14 +1323,14 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 
 	const CTrackerChannel *pTrackerChannel = m_pDocument->GetChannel(Channel);
 
-	int EffNumber = Column >= 4 ? pNoteData->EffNumber[(Column - 4) / 3] : 0;		// // //
-	int EffParam  = Column >= 4 ? pNoteData->EffParam[(Column - 4) / 3] : 0;
+	int EffNumber = Column >= 4 ? NoteData.EffNumber[(Column - 4) / 3] : 0;		// // //
+	int EffParam  = Column >= 4 ? NoteData.EffParam[(Column - 4) / 3] : 0;
 
 	// Detect invalid note data
-	if (pNoteData->Note > ECHO ||		// // //
-		pNoteData->Octave > 8 ||
+	if (NoteData.Note > ECHO ||		// // //
+		NoteData.Octave > 8 ||
 		EffNumber >= EF_COUNT || 
-		pNoteData->Instrument > MAX_INSTRUMENTS && pNoteData->Instrument != HOLD_INSTRUMENT) {		// // // 050B
+		NoteData.Instrument > MAX_INSTRUMENTS && NoteData.Instrument != HOLD_INSTRUMENT) {		// // // 050B
 		if (Column == C_NOTE/* || Column == 4*/) {
 			CString Text;
 			Text.Format(_T("(invalid)"));
@@ -1343,15 +1340,15 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 		return;
 	}
 
-	COLORREF InstColor = pColorInfo->Instrument;
-	COLORREF EffColor = pColorInfo->Effect;
-	COLORREF DimInst = pColorInfo->Compact;		// // //
-	COLORREF DimEff = pColorInfo->Compact;		// // //
+	COLORREF InstColor = ColorInfo.Instrument;
+	COLORREF EffColor = ColorInfo.Effect;
+	COLORREF DimInst = ColorInfo.Compact;		// // //
+	COLORREF DimEff = ColorInfo.Compact;		// // //
 
 	// Make non-available instruments red in the pattern editor
-	if (pNoteData->Instrument < MAX_INSTRUMENTS && 
-		(!m_pDocument->IsInstrumentUsed(pNoteData->Instrument) ||
-		!pTrackerChannel->IsInstrumentCompatible(pNoteData->Instrument, m_pDocument->GetInstrumentType(pNoteData->Instrument)))) { // // //
+	if (NoteData.Instrument < MAX_INSTRUMENTS && 
+		(!m_pDocument->IsInstrumentUsed(NoteData.Instrument) ||
+		!pTrackerChannel->IsInstrumentCompatible(NoteData.Instrument, m_pDocument->GetInstrumentType(NoteData.Instrument)))) { // // //
 		DimInst = InstColor = RGB(255, 0, 0);
 	}
 
@@ -1363,38 +1360,38 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 	// // // PosX -= 1;
 
 #define BARLENGTH (m_iRowHeight > 6 ? 4 : 2)		// // //
-#define BAR(x, y) pDC->FillSolidRect((x) + m_iCharWidth / 2 - BARLENGTH / 2, (y) - m_iRowHeight / 2 + m_iRowHeight / 8, BARLENGTH, 1, pColorInfo->Shaded)
+#define BAR(x, y) pDC->FillSolidRect((x) + m_iCharWidth / 2 - BARLENGTH / 2, (y) - m_iRowHeight / 2 + m_iRowHeight / 8, BARLENGTH, 1, ColorInfo.Shaded)
 
 	pDC->SetTextAlign(TA_CENTER | TA_BASELINE);		// // //
 
 	switch (Column) {
 		case C_NOTE:
 			// Note and octave
-			switch (pNoteData->Note) {
+			switch (NoteData.Note) {
 				case NONE:
 					if (m_bCompactMode) {		// // //
-						if (pNoteData->Instrument != MAX_INSTRUMENTS) {
-							if (pNoteData->Instrument == HOLD_INSTRUMENT) {		// // // 050B
+						if (NoteData.Instrument != MAX_INSTRUMENTS) {
+							if (NoteData.Instrument == HOLD_INSTRUMENT) {		// // // 050B
 								DrawChar(pDC, PosX + m_iCharWidth * 3 / 2, PosY, '&', DimInst);
 								DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, '&', DimInst);
 							}
 							else {
-								DrawChar(pDC, PosX + m_iCharWidth * 3 / 2, PosY, HEX[pNoteData->Instrument >> 4], DimInst);
-								DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, HEX[pNoteData->Instrument & 0x0F], DimInst);
+								DrawChar(pDC, PosX + m_iCharWidth * 3 / 2, PosY, HEX[NoteData.Instrument >> 4], DimInst);
+								DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, HEX[NoteData.Instrument & 0x0F], DimInst);
 							}
 							break;
 						}
-						else if (pNoteData->Vol != MAX_VOLUME) {
-							DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, HEX[pNoteData->Vol], pColorInfo->Compact);
+						else if (NoteData.Vol != MAX_VOLUME) {
+							DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, HEX[NoteData.Vol], ColorInfo.Compact);
 							break;
 						}
 						else {
 							bool Found = false;
 							for (unsigned int i = 0; i <= m_pDocument->GetEffColumns(GetSelectedTrack(), Channel); i++) {
-								if (pNoteData->EffNumber[i] != EF_NONE) {
-									DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, EFF_CHAR[pNoteData->EffNumber[i] - 1], DimEff);
-									DrawChar(pDC, PosX + m_iCharWidth * 3 / 2, PosY, HEX[pNoteData->EffParam[i] >> 4], DimEff);
-									DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, HEX[pNoteData->EffParam[i] & 0x0F], DimEff);
+								if (NoteData.EffNumber[i] != EF_NONE) {
+									DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, EFF_CHAR[NoteData.EffNumber[i] - 1], DimEff);
+									DrawChar(pDC, PosX + m_iCharWidth * 3 / 2, PosY, HEX[NoteData.EffParam[i] >> 4], DimEff);
+									DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, HEX[NoteData.EffParam[i] & 0x0F], DimEff);
 									Found = true;
 									break;
 								}
@@ -1413,59 +1410,59 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 					break;		// // // same below
 				case HALT:
 					// Note stop
-					GradientBar(pDC, PosX + 5, (m_iRowHeight / 2) - 2, m_iCharWidth * 3 - 11, m_iRowHeight / 4, pColorInfo->Note, pColorInfo->Back);
+					GradientBar(pDC, PosX + 5, (m_iRowHeight / 2) - 2, m_iCharWidth * 3 - 11, m_iRowHeight / 4, ColorInfo.Note, ColorInfo.Back);
 					break;
 				case RELEASE:
 					// Note release
-					pDC->FillSolidRect(PosX + 5, m_iRowHeight / 2 - 3, m_iCharWidth * 3 - 11, 2, pColorInfo->Note);		// // //
-					pDC->FillSolidRect(PosX + 5, m_iRowHeight / 2 + 1, m_iCharWidth * 3 - 11, 2, pColorInfo->Note);
+					pDC->FillSolidRect(PosX + 5, m_iRowHeight / 2 - 3, m_iCharWidth * 3 - 11, 2, ColorInfo.Note);		// // //
+					pDC->FillSolidRect(PosX + 5, m_iRowHeight / 2 + 1, m_iCharWidth * 3 - 11, 2, ColorInfo.Note);
 					break;
 				case ECHO:
 					// // // Echo buffer access
-					DrawChar(pDC, PosX + m_iCharWidth, PosY, _T('^'), pColorInfo->Note);
-					DrawChar(pDC, PosX + m_iCharWidth * 2, PosY, NOTES_C[pNoteData->Octave], pColorInfo->Note);
+					DrawChar(pDC, PosX + m_iCharWidth, PosY, _T('^'), ColorInfo.Note);
+					DrawChar(pDC, PosX + m_iCharWidth * 2, PosY, NOTES_C[NoteData.Octave], ColorInfo.Note);
 					break;
 				default:
 					if (pTrackerChannel->GetID() == CHANID_NOISE) {
 						// Noise
-						char NoiseFreq = (pNoteData->Note - 1 + pNoteData->Octave * 12) & 0x0F;
-						DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[NoiseFreq], pColorInfo->Note);		// // //
-						DrawChar(pDC, PosX + m_iCharWidth * 3 / 2, PosY, '-', pColorInfo->Note);
-						DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, '#', pColorInfo->Note);
+						char NoiseFreq = (NoteData.Note - 1 + NoteData.Octave * 12) & 0x0F;
+						DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[NoiseFreq], ColorInfo.Note);		// // //
+						DrawChar(pDC, PosX + m_iCharWidth * 3 / 2, PosY, '-', ColorInfo.Note);
+						DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, '#', ColorInfo.Note);
 					}
 					else {
 						// The rest
-						DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, NOTES_A[pNoteData->Note - 1], pColorInfo->Note);		// // //
-						DrawChar(pDC, PosX + m_iCharWidth * 3 / 2, PosY, NOTES_B[pNoteData->Note - 1], pColorInfo->Note);
-						DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, NOTES_C[pNoteData->Octave], pColorInfo->Note);
+						DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, NOTES_A[NoteData.Note - 1], ColorInfo.Note);		// // //
+						DrawChar(pDC, PosX + m_iCharWidth * 3 / 2, PosY, NOTES_B[NoteData.Note - 1], ColorInfo.Note);
+						DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, NOTES_C[NoteData.Octave], ColorInfo.Note);
 					}
 					break;
 			}
 			break;
 		case C_INSTRUMENT1:
 			// Instrument x0
-			if (pNoteData->Instrument == MAX_INSTRUMENTS || pNoteData->Note == HALT || pNoteData->Note == RELEASE)
+			if (NoteData.Instrument == MAX_INSTRUMENTS || NoteData.Note == HALT || NoteData.Note == RELEASE)
 				BAR(PosX, PosY);
-			else if (pNoteData->Instrument == HOLD_INSTRUMENT)		// // // 050B
+			else if (NoteData.Instrument == HOLD_INSTRUMENT)		// // // 050B
 				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, '&', InstColor);
 			else
-				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[pNoteData->Instrument >> 4], InstColor);		// // //
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[NoteData.Instrument >> 4], InstColor);		// // //
 			break;
 		case C_INSTRUMENT2:
 			// Instrument 0x
-			if (pNoteData->Instrument == MAX_INSTRUMENTS || pNoteData->Note == HALT || pNoteData->Note == RELEASE)
+			if (NoteData.Instrument == MAX_INSTRUMENTS || NoteData.Note == HALT || NoteData.Note == RELEASE)
 				BAR(PosX, PosY);
-			else if (pNoteData->Instrument == HOLD_INSTRUMENT)		// // // 050B
+			else if (NoteData.Instrument == HOLD_INSTRUMENT)		// // // 050B
 				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, '&', InstColor);
 			else
-				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[pNoteData->Instrument & 0x0F], InstColor);		// // //
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[NoteData.Instrument & 0x0F], InstColor);		// // //
 			break;
 		case C_VOLUME: 
 			// Volume
-			if (pNoteData->Vol == MAX_VOLUME || pTrackerChannel->GetID() == CHANID_DPCM)
+			if (NoteData.Vol == MAX_VOLUME || pTrackerChannel->GetID() == CHANID_DPCM)
 				BAR(PosX, PosY);
 			else 
-				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[pNoteData->Vol & 0x0F], pColorInfo->Volume);		// // //
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[NoteData.Vol & 0x0F], ColorInfo.Volume);		// // //
 			break;
 		case C_EFF1_NUM: case C_EFF2_NUM: case C_EFF3_NUM: case C_EFF4_NUM:
 			// Effect type
@@ -1479,14 +1476,14 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 			if (EffNumber == 0)
 				BAR(PosX, PosY);
 			else
-				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[(EffParam >> 4) & 0x0F], pColorInfo->Note);		// // //
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[(EffParam >> 4) & 0x0F], ColorInfo.Note);		// // //
 			break;
 		case C_EFF1_PARAM2: case C_EFF2_PARAM2: case C_EFF3_PARAM2: case C_EFF4_PARAM2:
 			// Effect param y
 			if (EffNumber == 0)
 				BAR(PosX, PosY);
 			else
-				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[EffParam & 0x0F], pColorInfo->Note);		// // //
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[EffParam & 0x0F], ColorInfo.Note);		// // //
 			break;
 	}
 
@@ -3211,11 +3208,9 @@ CPatternClipData *CPatternEditor::CopyEntire() const
 	pClipData->ClipInfo.Channels = ChannelCount;
 	pClipData->ClipInfo.Rows = Rows;
 
-	for (int i = 0; i < ChannelCount; ++i) {
-		for (int j = 0; j < Rows; ++j) {
-			m_pDocument->GetNoteData(Track, Frame, i, j, pClipData->GetPattern(i, j));
-		}
-	}
+	for (int i = 0; i < ChannelCount; ++i)
+		for (int j = 0; j < Rows; ++j)
+			*pClipData->GetPattern(i, j) = m_pDocument->GetNoteData(Track, Frame, i, j);		// // //
 	
 	return pClipData;
 }
@@ -3278,7 +3273,7 @@ CPatternClipData *CPatternEditor::CopyRaw(const CSelection &Sel) const		// // //
 	
 	const int PackedPos = (it.m_iFrame + Frames) * Length + it.m_iRow;
 	for (int r = 0; r < Rows; r++) for (int i = 0; i < Channels; ++i)
-		m_pDocument->GetNoteData(Track, (PackedPos + r) / Length % Frames, i + cBegin, (PackedPos + r) % Length, pClipData->GetPattern(i, r));
+		*pClipData->GetPattern(i, r) = m_pDocument->GetNoteData(Track, (PackedPos + r) / Length % Frames, i + cBegin, (PackedPos + r) % Length);
 
 	return pClipData;
 }
@@ -3293,11 +3288,9 @@ void CPatternEditor::PasteEntire(const CPatternClipData *pClipData)
 	// Paste entire
 	const int Track = GetSelectedTrack();
 	const int Frame = m_cpCursorPos.m_iFrame;		// // //
-	for (int i = 0; i < pClipData->ClipInfo.Channels; ++i) {
-		for (int j = 0; j < pClipData->ClipInfo.Rows; ++j) {
-			m_pDocument->SetNoteData(Track, Frame, i, j, pClipData->GetPattern(i, j));
-		}
-	}
+	for (int i = 0; i < pClipData->ClipInfo.Channels; ++i)
+		for (int j = 0; j < pClipData->ClipInfo.Rows; ++j)
+			m_pDocument->SetNoteData(Track, Frame, i, j, *pClipData->GetPattern(i, j));		// // //
 }
 
 void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t PasteMode, const paste_pos_t PastePos)		// // //
@@ -3411,17 +3404,16 @@ void CPatternEditor::PasteRaw(const CPatternClipData *pClipData, const CCursorPo
 	const column_t StartColumn = pClipData->ClipInfo.StartColumn;
 	const column_t EndColumn = pClipData->ClipInfo.EndColumn;
 
-	stChanNote Target { }, Source { };
 	const int PackedPos = (Pos.m_iFrame + GetFrameCount()) * Length + Pos.m_iRow;
 	for (int i = 0; i < Channels; ++i) for (int r = 0; r < Rows; r++) {
 		int c = i + Pos.m_iChannel;
 		if (c == GetChannelCount()) return;
-		m_pDocument->GetNoteData(Track, (PackedPos + r) / Length % Frames, c, (PackedPos + r) % Length, &Target);
-		Source = *(pClipData->GetPattern(i, r));
+		stChanNote Target = m_pDocument->GetNoteData(Track, (PackedPos + r) / Length % Frames, c, (PackedPos + r) % Length);
+		const auto &Source = *(pClipData->GetPattern(i, r));
 		CopyNoteSection(&Target, &Source, PASTE_DEFAULT, (i == 0) ? StartColumn : COLUMN_NOTE,
 			std::min((i == Channels + Pos.m_iChannel - 1) ? EndColumn : COLUMN_EFF4,
 						static_cast<column_t>(COLUMN_EFF1 + m_pDocument->GetEffColumns(Track, c))));
-		m_pDocument->SetNoteData(Track, (PackedPos + r) / Length % Frames, c, (PackedPos + r) % Length, &Target);
+		m_pDocument->SetNoteData(Track, (PackedPos + r) / Length % Frames, c, (PackedPos + r) % Length, Target);
 	}
 }
 

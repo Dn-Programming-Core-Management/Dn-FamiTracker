@@ -29,7 +29,7 @@
 
 namespace {
 
-void UpdateEchoTranspose(stChanNote &Note, int &Value, unsigned int EffColumns) {
+void UpdateEchoTranspose(const stChanNote &Note, int &Value, unsigned int EffColumns) {
 	for (int j = EffColumns; j >= 0; --j) {
 		const int Param = Note.EffParam[j] & 0x0F;
 		switch (Note.EffNumber[j]) {
@@ -151,7 +151,6 @@ CSongState::CSongState(int Count) :
 void CSongState::Retrieve(const CFamiTrackerDoc &doc, unsigned Track, unsigned Frame, unsigned Row) {
 	const int Chans = doc.GetChannelCount();
 	
-	stChanNote Note;
 	int totalRows = 0;
 	auto BufferPos = std::make_unique<int[]>(Chans);
 	auto Transpose = std::make_unique<int[][ECHO_BUFFER_LENGTH + 1]>(Chans);
@@ -171,7 +170,7 @@ void CSongState::Retrieve(const CFamiTrackerDoc &doc, unsigned Track, unsigned F
 			// if (Channel != -1) c = GetChannelIndex(Channel);
 			stChannelState &chState = State[c];
 			int EffColumns = doc.GetEffColumns(Track, c);
-			doc.GetNoteData(Track, Frame, c, Row, &Note);
+			const auto &Note = doc.GetNoteData(Track, Frame, c, Row);		// // //
 		
 			if (Note.Note != NONE && Note.Note != RELEASE) {
 				for (int i = 0; i < std::min(BufferPos[c], ECHO_BUFFER_LENGTH + 1); i++) {
