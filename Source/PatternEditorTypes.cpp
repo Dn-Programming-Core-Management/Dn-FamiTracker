@@ -22,6 +22,7 @@
 
 #include "PatternEditorTypes.h"
 #include "FamiTrackerDoc.h"
+#include "PatternNote.h"		// // //
 
 // CCursorPos /////////////////////////////////////////////////////////////////////
 

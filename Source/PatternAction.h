@@ -27,6 +27,7 @@
 #include "Action.h"
 #include "PatternEditorTypes.h"
 #include "PatternData.h"		// // //
+#include "PatternNote.h"		// // //
 
 enum transpose_t {
 	TRANSPOSE_DEC_NOTES,

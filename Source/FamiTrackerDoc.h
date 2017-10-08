@@ -264,8 +264,8 @@ public:
 	int				AddTrack();
 	void			RemoveTrack(unsigned int Track);
 	unsigned int	GetTrackCount() const;
-	CString			GetTrackTitle(unsigned int Track) const;
-	void			SetTrackTitle(unsigned int Track, const CString &title);
+	const std::string &GetTrackTitle(unsigned int Track) const;		// // //
+	void			SetTrackTitle(unsigned int Track, const std::string &title);		// // //
 	void			MoveTrackUp(unsigned int Track);
 	void			MoveTrackDown(unsigned int Track);
 

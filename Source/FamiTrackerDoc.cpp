@@ -816,7 +816,7 @@ bool CFamiTrackerDoc::WriteBlock_Header(CDocumentFile *pDocFile, const int Versi
 	// Ver 3, store track names
 	if (Version >= 3)
 		for (unsigned int i = 0; i < m_iTrackCount; ++i)
-			pDocFile->WriteString(m_pTracks[i]->GetTitle());		// // //
+			pDocFile->WriteString(m_pTracks[i]->GetTitle().c_str());		// // //
 
 	for (unsigned int i = 0; i < m_iChannelsAvailable; ++i) {
 		// Channel type
@@ -1149,8 +1149,6 @@ bool CFamiTrackerDoc::WriteBlock_Patterns(CDocumentFile *pDocFile, const int Ver
 
 	pDocFile->CreateBlock(FILE_BLOCK_PATTERNS, Version);
 
-	stChanNote *Note;		// // //
-
 	for (unsigned t = 0; t < m_iTrackCount; ++t) {
 		for (unsigned i = 0; i < m_iChannelsAvailable; ++i) {
 			for (unsigned x = 0; x < MAX_PATTERN; ++x) {
@@ -1161,10 +1159,10 @@ bool CFamiTrackerDoc::WriteBlock_Patterns(CDocumentFile *pDocFile, const int Ver
 				//unsigned int PatternLen = m_pTracks[t]->GetPatternLength();
 				
 				// Get the number of items in this pattern
-				for (unsigned y = 0; y < PatternLen; ++y) {
-					if (!m_pTracks[t]->IsCellFree(i, x, y))
-						Items++;
-				}
+				const auto &Song = *m_pTracks[t];		// // //
+				for (unsigned y = 0; y < PatternLen; ++y)
+					if (!Song.IsCellFree(i, x, y))
+						++Items;
 
 				if (Items > 0) {
 					pDocFile->WriteBlockInt(t);		// Write track
@@ -1173,21 +1171,21 @@ bool CFamiTrackerDoc::WriteBlock_Patterns(CDocumentFile *pDocFile, const int Ver
 					pDocFile->WriteBlockInt(Items);	// Number of items
 
 					for (unsigned y = 0; y < PatternLen; y++) {
-						if (!m_pTracks[t]->IsCellFree(i, x, y)) {
-							Note = m_pTracks[t]->GetPatternData(i, x, y);		// // //
+						if (!Song.IsCellFree(i, x, y)) {
+							const auto &Note = Song.GetPatternData(i, x, y);		// // //
 							// AssertFileData(Note, "Cannot create note");
 							pDocFile->WriteBlockInt(y);
 
-							pDocFile->WriteBlockChar(Note->Note);
-							pDocFile->WriteBlockChar(Note->Octave);
-							pDocFile->WriteBlockChar(Note->Instrument);
-							pDocFile->WriteBlockChar(Note->Vol);
+							pDocFile->WriteBlockChar(Note.Note);
+							pDocFile->WriteBlockChar(Note.Octave);
+							pDocFile->WriteBlockChar(Note.Instrument);
+							pDocFile->WriteBlockChar(Note.Vol);
 
-							int EffColumns = (m_pTracks[t]->GetEffectColumnCount(i) + 1);
+							int EffColumns = Song.GetEffectColumnCount(i) + 1;
 
 							for (int n = 0; n < EffColumns; n++) {
-								pDocFile->WriteBlockChar(EFF_CONVERSION_050.second[Note->EffNumber[n]]);		// // // 050B
-								pDocFile->WriteBlockChar(Note->EffParam[n]);
+								pDocFile->WriteBlockChar(EFF_CONVERSION_050.second[Note.EffNumber[n]]);		// // // 050B
+								pDocFile->WriteBlockChar(Note.EffParam[n]);
 							}
 						}
 					}
@@ -1459,20 +1457,19 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 								if (ImportedNote.ExtraStuff2 < 0xFF)
 									ImportedNote.ExtraStuff2++;
 							}
-							stChanNote *Note;
-							Note = pTrack->GetPatternData(x, c, i);
-							Note->EffNumber[0]	= static_cast<effect_t>(ImportedNote.ExtraStuff1);
-							Note->EffParam[0]	= ImportedNote.ExtraStuff2;
-							Note->Instrument	= ImportedNote.Instrument;
-							Note->Note			= ImportedNote.Note;
-							Note->Octave		= ImportedNote.Octave;
-							Note->Vol			= 0;
-							if (Note->Note == 0)
-								Note->Instrument = MAX_INSTRUMENTS;
-							if (Note->Vol == 0)
-								Note->Vol = MAX_VOLUME;
-							if (Note->EffNumber[0] < EF_COUNT)		// // //
-								Note->EffNumber[0] = EFF_CONVERSION_050.first[Note->EffNumber[0]];
+							auto &Note = pTrack->GetPatternData(x, c, i);		// // //
+							Note.EffNumber[0]	= static_cast<effect_t>(ImportedNote.ExtraStuff1);
+							Note.EffParam[0]	= ImportedNote.ExtraStuff2;
+							Note.Instrument	= ImportedNote.Instrument;
+							Note.Note			= ImportedNote.Note;
+							Note.Octave		= ImportedNote.Octave;
+							Note.Vol			= 0;
+							if (Note.Note == 0)
+								Note.Instrument = MAX_INSTRUMENTS;
+							if (Note.Vol == 0)
+								Note.Vol = MAX_VOLUME;
+							if (Note.EffNumber[0] < EF_COUNT)		// // //
+								Note.EffNumber[0] = EFF_CONVERSION_050.first[Note.EffNumber[0]];
 						}
 					}
 				}
@@ -1752,7 +1749,7 @@ void CFamiTrackerDoc::ReadBlock_Header(CDocumentFile *pDocFile, const int Versio
 		// Track names
 		if (Version >= 3)
 			for (unsigned i = 0; i < m_iTrackCount; ++i)
-				m_pTracks[i]->SetTitle(pDocFile->ReadString());		// // //
+				m_pTracks[i]->SetTitle((LPCTSTR)pDocFile->ReadString());		// // //
 
 		for (unsigned i = 0; i < m_iChannelsAvailable; ++i) try {
 			AssertRange<MODULE_ERROR_STRICT>(pDocFile->GetBlockChar(), 0, CHANNELS - 1, "Channel type index"); // Channel type (unused)
@@ -2179,25 +2176,24 @@ void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Vers
 				Row = AssertRange(pDocFile->GetBlockInt(), 0, 0xFF, "Row index");		// // //
 
 			try {
-				stChanNote *Note = pTrack->GetPatternData(Channel, Pattern, Row);
-				*Note = stChanNote { };		// // //
+				stChanNote Note;		// // //
 
-				Note->Note = AssertRange<MODULE_ERROR_STRICT>(		// // //
+				Note.Note = AssertRange<MODULE_ERROR_STRICT>(		// // //
 					pDocFile->GetBlockChar(), NONE, ECHO, "Note value");
-				Note->Octave = AssertRange<MODULE_ERROR_STRICT>(
+				Note.Octave = AssertRange<MODULE_ERROR_STRICT>(
 					pDocFile->GetBlockChar(), 0, OCTAVE_RANGE - 1, "Octave value");
 				int Inst = static_cast<unsigned char>(pDocFile->GetBlockChar());
 				if (Inst != HOLD_INSTRUMENT)		// // // 050B
 					AssertRange<MODULE_ERROR_STRICT>(Inst, 0, m_pInstrumentManager->MAX_INSTRUMENTS, "Instrument index");
-				Note->Instrument = Inst;
-				Note->Vol = AssertRange<MODULE_ERROR_STRICT>(
+				Note.Instrument = Inst;
+				Note.Vol = AssertRange<MODULE_ERROR_STRICT>(
 					pDocFile->GetBlockChar(), 0, MAX_VOLUME, "Channel volume");
 
 				int FX = m_iFileVersion == 0x200 ? 1 : Version >= 6 ? MAX_EFFECT_COLUMNS :
 						 (pTrack->GetEffectColumnCount(Channel) + 1);		// // // 050B
 				for (int n = 0; n < FX; ++n) try {
 					unsigned char EffectNumber = pDocFile->GetBlockChar();
-					if (Note->EffNumber[n] = static_cast<effect_t>(EffectNumber)) {
+					if (Note.EffNumber[n] = static_cast<effect_t>(EffectNumber)) {
 						AssertRange<MODULE_ERROR_STRICT>(EffectNumber, EF_NONE, EF_COUNT - 1, "Effect index");
 						unsigned char EffectParam = pDocFile->GetBlockChar();
 						if (Version < 3) {
@@ -2210,7 +2206,7 @@ void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Vers
 									EffectParam++;
 							}
 						}
-						Note->EffParam[n] = EffectParam; // skip on no effect
+						Note.EffParam[n] = EffectParam; // skip on no effect
 					}
 					else if (Version < 6)
 						pDocFile->GetBlockChar(); // unused blank parameter
@@ -2220,42 +2216,42 @@ void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Vers
 					throw;
 				}
 
-	//			if (Note->Vol > MAX_VOLUME)
-	//				Note->Vol &= 0x0F;
+	//			if (Note.Vol > MAX_VOLUME)
+	//				Note.Vol &= 0x0F;
 
 				// Specific for version 2.0
 				if (m_iFileVersion == 0x0200) {
 
-					if (Note->EffNumber[0] == EF_SPEED && Note->EffParam[0] < 20)
-						Note->EffParam[0]++;
+					if (Note.EffNumber[0] == EF_SPEED && Note.EffParam[0] < 20)
+						Note.EffParam[0]++;
 
-					if (Note->Vol == 0)
-						Note->Vol = MAX_VOLUME;
+					if (Note.Vol == 0)
+						Note.Vol = MAX_VOLUME;
 					else {
-						Note->Vol--;
-						Note->Vol &= 0x0F;
+						Note.Vol--;
+						Note.Vol &= 0x0F;
 					}
 
-					if (Note->Note == 0)
-						Note->Instrument = MAX_INSTRUMENTS;
+					if (Note.Note == 0)
+						Note.Instrument = MAX_INSTRUMENTS;
 				}
 
 				if (ExpansionEnabled(SNDCHIP_N163) && GetChipType(Channel) == SNDCHIP_N163) {		// // //
 					for (int n = 0; n < MAX_EFFECT_COLUMNS; ++n)
-						if (Note->EffNumber[n] == EF_SAMPLE_OFFSET)
-							Note->EffNumber[n] = EF_N163_WAVE_BUFFER;
+						if (Note.EffNumber[n] == EF_SAMPLE_OFFSET)
+							Note.EffNumber[n] = EF_N163_WAVE_BUFFER;
 				}
 
 				if (Version == 3) {
 					// Fix for VRC7 portamento
 					if (ExpansionEnabled(SNDCHIP_VRC7) && Channel > 4) {
 						for (int n = 0; n < MAX_EFFECT_COLUMNS; ++n) {
-							switch (Note->EffNumber[n]) {
+							switch (Note.EffNumber[n]) {
 							case EF_PORTA_DOWN:
-								Note->EffNumber[n] = EF_PORTA_UP;
+								Note.EffNumber[n] = EF_PORTA_UP;
 								break;
 							case EF_PORTA_UP:
-								Note->EffNumber[n] = EF_PORTA_DOWN;
+								Note.EffNumber[n] = EF_PORTA_DOWN;
 								break;
 							}
 						}
@@ -2263,10 +2259,10 @@ void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Vers
 					// FDS pitch effect fix
 					else if (ExpansionEnabled(SNDCHIP_FDS) && GetChannelType(Channel) == CHANID_FDS) {
 						for (int n = 0; n < MAX_EFFECT_COLUMNS; ++n) {
-							switch (Note->EffNumber[n]) {
+							switch (Note.EffNumber[n]) {
 							case EF_PITCH:
-								if (Note->EffParam[n] != 0x80)
-									Note->EffParam[n] = (0x100 - Note->EffParam[n]) & 0xFF;
+								if (Note.EffParam[n] != 0x80)
+									Note.EffParam[n] = (0x100 - Note.EffParam[n]) & 0xFF;
 								break;
 							}
 						}
@@ -2274,7 +2270,7 @@ void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Vers
 				}
 
 				if (m_iFileVersion < 0x450) {		// // // 050B
-					for (auto &x : Note->EffNumber)
+					for (auto &x : Note.EffNumber)
 						if (x < EF_COUNT)
 							x = EFF_CONVERSION_050.first[x];
 				}
@@ -2283,29 +2279,31 @@ void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Vers
 					// Noise pitch slide fix
 					if (GetChannelType(Channel) == CHANID_NOISE) {
 						for (int n = 0; n < MAX_EFFECT_COLUMNS; ++n) {
-							switch (Note->EffNumber[n]) {
+							switch (Note.EffNumber[n]) {
 								case EF_PORTA_DOWN:
-									Note->EffNumber[n] = EF_PORTA_UP;
-									Note->EffParam[n] = Note->EffParam[n] << 4;
+									Note.EffNumber[n] = EF_PORTA_UP;
+									Note.EffParam[n] = Note.EffParam[n] << 4;
 									break;
 								case EF_PORTA_UP:
-									Note->EffNumber[n] = EF_PORTA_DOWN;
-									Note->EffParam[n] = Note->EffParam[n] << 4;
+									Note.EffNumber[n] = EF_PORTA_DOWN;
+									Note.EffParam[n] = Note.EffParam[n] << 4;
 									break;
 								case EF_PORTAMENTO:
-									Note->EffParam[n] = Note->EffParam[n] << 4;
+									Note.EffParam[n] = Note.EffParam[n] << 4;
 									break;
 								case EF_SLIDE_UP:
-									Note->EffParam[n] = Note->EffParam[n] + 0x70;
+									Note.EffParam[n] = Note.EffParam[n] + 0x70;
 									break;
 								case EF_SLIDE_DOWN:
-									Note->EffParam[n] = Note->EffParam[n] + 0x70;
+									Note.EffParam[n] = Note.EffParam[n] + 0x70;
 									break;
 							}
 						}
 					}
 				}
 				*/
+
+				pTrack->SetPatternData(Channel, Pattern, Row, Note);		// // //
 			}
 			catch (CModuleException *e) {
 				e->AppendError("At row %02X,", Row);
@@ -3327,7 +3325,7 @@ void CFamiTrackerDoc::SetNoteData(unsigned Track, unsigned Frame, unsigned Chann
 	// Get notes from the pattern
 	CPatternData *pTrack = GetTrack(Track);
 	int Pattern = pTrack->GetFramePattern(Frame, Channel);
-	*pTrack->GetPatternData(Channel, Pattern, Row) = Data;		// // //
+	pTrack->SetPatternData(Channel, Pattern, Row, Data);		// // //
 	SetModifiedFlag();
 }
 
@@ -3339,9 +3337,9 @@ const stChanNote &CFamiTrackerDoc::GetNoteData(unsigned Track, unsigned Frame, u
 	ASSERT(Row < MAX_PATTERN_LENGTH);
 
 	// Sets the notes of the pattern
-	CPatternData *pTrack = GetTrack(Track);
+	const CPatternData *pTrack = GetTrack(Track);		// // //
 	int Pattern = pTrack->GetFramePattern(Frame, Channel);
-	return *pTrack->GetPatternData(Channel, Pattern, Row);		// // //
+	return pTrack->GetPatternData(Channel, Pattern, Row);		// // //
 }
 
 void CFamiTrackerDoc::SetDataAtPattern(unsigned Track, unsigned Pattern, unsigned Channel, unsigned Row, const stChanNote &Data)		// // //
@@ -3353,7 +3351,7 @@ void CFamiTrackerDoc::SetDataAtPattern(unsigned Track, unsigned Pattern, unsigne
 
 	// Set a note to a direct pattern
 	CPatternData *pTrack = GetTrack(Track);
-	*pTrack->GetPatternData(Channel, Pattern, Row) = Data;		// // //
+	pTrack->SetPatternData(Channel, Pattern, Row, Data);		// // //
 	SetModifiedFlag();
 }
 
@@ -3365,8 +3363,8 @@ const stChanNote &CFamiTrackerDoc::GetDataAtPattern(unsigned Track, unsigned Pat
 	ASSERT(Row < MAX_PATTERN_LENGTH);
 
 	// Get note from a direct pattern
-	CPatternData *pTrack = GetTrack(Track);
-	return *pTrack->GetPatternData(Channel, Pattern, Row);		// // //
+	const CPatternData *pTrack = GetTrack(Track);		// // //
+	return pTrack->GetPatternData(Channel, Pattern, Row);		// // //
 }
 
 bool CFamiTrackerDoc::InsertRow(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row)
@@ -3379,16 +3377,11 @@ bool CFamiTrackerDoc::InsertRow(unsigned int Track, unsigned int Frame, unsigned
 	CPatternData *pTrack = GetTrack(Track);
 	int Pattern = pTrack->GetFramePattern(Frame, Channel);
 	int PatternLen = pTrack->GetPatternLength();
-	stChanNote Note { };		// // //
 
-	for (unsigned int i = PatternLen - 1; i > Row; i--) {
-		memcpy(
-			pTrack->GetPatternData(Channel, Pattern, i), 
-			pTrack->GetPatternData(Channel, Pattern, i - 1), 
-			sizeof(stChanNote));
-	}
-
-	SetDataAtPattern(Track, Pattern, Channel, Row, Note);		// // //
+	for (unsigned int i = PatternLen - 1; i > Row; i--)
+		SetDataAtPattern(Track, Pattern, Channel, i,
+			GetDataAtPattern(Track, Pattern, Channel, i - 1));		// // //
+	SetDataAtPattern(Track, Pattern, Channel, Row, { });		// // //
 
 	SetModifiedFlag();
 
@@ -3428,7 +3421,7 @@ bool CFamiTrackerDoc::ClearRow(unsigned int Track, unsigned int Frame, unsigned 
 
 	CPatternData *pTrack = GetTrack(Track);
 	int Pattern = pTrack->GetFramePattern(Frame, Channel);
-	*pTrack->GetPatternData(Channel, Pattern, Row) = stChanNote { };		// // //
+	pTrack->SetPatternData(Channel, Pattern, Row, { });		// // //
 	
 	SetModifiedFlag();
 
@@ -3444,45 +3437,45 @@ bool CFamiTrackerDoc::ClearRowField(unsigned int Track, unsigned int Frame, unsi
 
 	CPatternData *pTrack = GetTrack(Track);
 	int Pattern = pTrack->GetFramePattern(Frame, Channel);
-	stChanNote *pNote = pTrack->GetPatternData(Channel, Pattern, Row);
+	stChanNote &Note = pTrack->GetPatternData(Channel, Pattern, Row);		// // //
 
 	switch (Column) {
 		case C_NOTE:			// Note
-			pNote->Note = 0;
-			pNote->Octave = 0;
-			pNote->Instrument = MAX_INSTRUMENTS;	// Fix the old behaviour
-			pNote->Vol = MAX_VOLUME;
+			Note.Note = 0;
+			Note.Octave = 0;
+			Note.Instrument = MAX_INSTRUMENTS;	// Fix the old behaviour
+			Note.Vol = MAX_VOLUME;
 			break;
 		case C_INSTRUMENT1:		// Instrument
 		case C_INSTRUMENT2:
-			pNote->Instrument = MAX_INSTRUMENTS;
+			Note.Instrument = MAX_INSTRUMENTS;
 			break;
 		case C_VOLUME:			// Volume
-			pNote->Vol = MAX_VOLUME;
+			Note.Vol = MAX_VOLUME;
 			break;
 		case C_EFF1_NUM:			// Effect 1
 		case C_EFF1_PARAM1:
 		case C_EFF1_PARAM2:
-			pNote->EffNumber[0] = EF_NONE;
-			pNote->EffParam[0] = 0;
+			Note.EffNumber[0] = EF_NONE;
+			Note.EffParam[0] = 0;
 			break;
 		case C_EFF2_NUM:		// Effect 2
 		case C_EFF2_PARAM1:
 		case C_EFF2_PARAM2:
-			pNote->EffNumber[1] = EF_NONE;
-			pNote->EffParam[1] = 0;
+			Note.EffNumber[1] = EF_NONE;
+			Note.EffParam[1] = 0;
 			break;
 		case C_EFF3_NUM:		// Effect 3
 		case C_EFF3_PARAM1:
 		case C_EFF3_PARAM2:
-			pNote->EffNumber[2] = EF_NONE;
-			pNote->EffParam[2] = 0;
+			Note.EffNumber[2] = EF_NONE;
+			Note.EffParam[2] = 0;
 			break;
 		case C_EFF4_NUM:		// Effect 4
 		case C_EFF4_PARAM1:
 		case C_EFF4_PARAM2:
-			pNote->EffNumber[3] = EF_NONE;
-			pNote->EffParam[3] = 0;
+			Note.EffNumber[3] = EF_NONE;
+			Note.EffParam[3] = 0;
 			break;
 	}
 	
@@ -3503,14 +3496,10 @@ bool CFamiTrackerDoc::RemoveNote(unsigned int Track, unsigned int Frame, unsigne
 
 	unsigned int PatternLen = pTrack->GetPatternLength();
 
-	for (unsigned int i = Row - 1; i < (PatternLen - 1); i++) {
-		memcpy(
-			pTrack->GetPatternData(Channel, Pattern, i), 
-			pTrack->GetPatternData(Channel, Pattern, i + 1),
-			sizeof(stChanNote));
-	}
-
-	SetDataAtPattern(Track, Pattern, Channel, PatternLen - 1, stChanNote { });		// // //
+	for (unsigned int i = Row - 1; i < (PatternLen - 1); ++i)
+		SetDataAtPattern(Track, Pattern, Channel, i,
+			GetDataAtPattern(Track, Pattern, Channel, i + 1));		// // //
+	SetDataAtPattern(Track, Pattern, Channel, PatternLen - 1, { });		// // //
 
 	SetModifiedFlag();
 
@@ -3734,7 +3723,7 @@ bool CFamiTrackerDoc::DeleteFrames(unsigned int Track, unsigned int Frame, int C
 
 //// Track functions //////////////////////////////////////////////////////////////////////////////////
 
-CString CFamiTrackerDoc::GetTrackTitle(unsigned int Track) const
+const std::string &CFamiTrackerDoc::GetTrackTitle(unsigned int Track) const		// // //
 {
 	if (!m_pTracks[Track])		// // //
 		return CPatternData::DEFAULT_TITLE;
@@ -3787,7 +3776,7 @@ void CFamiTrackerDoc::RemoveTrack(unsigned int Track)
 	SetExceededFlag();		// // //
 }
 
-void CFamiTrackerDoc::SetTrackTitle(unsigned int Track, const CString &title)
+void CFamiTrackerDoc::SetTrackTitle(unsigned int Track, const std::string &title)		// // //
 {
 	if (m_pTracks[Track]->GetTitle() != title) {		// // //
 		m_pTracks[Track]->SetTitle(title);
@@ -3877,7 +3866,7 @@ void CFamiTrackerDoc::SelectExpansionChip(unsigned char Chip, bool Move)
 					for (int f = 0; f < MAX_FRAMES; f++)
 						pNew->SetFramePattern(f, newIndex[j], pTrack->GetFramePattern(f, oldIndex[j]));
 					for (int p = 0; p < MAX_PATTERN; p++)
-						memcpy(pNew->GetPatternData(newIndex[j], p, 0), pTrack->GetPatternData(oldIndex[j], p, 0), MAX_PATTERN_LENGTH * sizeof(stChanNote));
+						pNew->CopyPattern(newIndex[j], p, *pTrack, oldIndex[j], p);
 				}
 			}
 			SAFE_RELEASE(pTrack);
@@ -4005,7 +3994,7 @@ void CFamiTrackerDoc::SetNamcoChannels(int Channels, bool Move)
 					for (int f = 0; f < MAX_FRAMES; f++)
 						pNew->SetFramePattern(f, newIndex[j], pTrack->GetFramePattern(f, oldIndex[j]));
 					for (int p = 0; p < MAX_PATTERN; p++)
-						memcpy(pNew->GetPatternData(newIndex[j], p, 0), pTrack->GetPatternData(oldIndex[j], p, 0), MAX_PATTERN_LENGTH * sizeof(stChanNote));
+						pNew->CopyPattern(newIndex[j], p, *pTrack, oldIndex[j], p);
 				}
 			}
 			SAFE_RELEASE(pTrack);
@@ -4490,36 +4479,35 @@ double CFamiTrackerDoc::GetStandardLength(int Track, unsigned int ExtraLoops) co
 	while (bScanning) {
 		bool hasJump = false;
 		for (int j = 0; j < GetChannelCount(); ++j) {
-			stChanNote* Note;
-			Note = m_pTracks[Track]->GetPatternData(j, m_pTracks[Track]->GetFramePattern(f, j), r);
+			const auto &Note = std::as_const(m_pTracks[Track])->GetPatternData(j, m_pTracks[Track]->GetFramePattern(f, j), r);
 			for (unsigned l = 0; l < GetEffColumns(Track, j) + 1; ++l) {
-				switch (Note->EffNumber[l]) {
+				switch (Note.EffNumber[l]) {
 				case EF_JUMP:
-					JumpTo = Note->EffParam[l];
+					JumpTo = Note.EffParam[l];
 					SkipTo = 0;
 					hasJump = true;
 					break;
 				case EF_SKIP:
 					if (hasJump) break;
 					JumpTo = (f + 1) % FrameCount;
-					SkipTo = Note->EffParam[l];
+					SkipTo = Note.EffParam[l];
 					break;
 				case EF_HALT:
 					ExtraLoops = 0;
 					bScanning = false;
 					break;
 				case EF_SPEED:
-					if (GetSongTempo(Track) && Note->EffParam[l] >= m_iSpeedSplitPoint)
-						Tempo = Note->EffParam[l];
+					if (GetSongTempo(Track) && Note.EffParam[l] >= m_iSpeedSplitPoint)
+						Tempo = Note.EffParam[l];
 					else {
 						IsGroove = false;
-						Speed = Note->EffParam[l];
+						Speed = Note.EffParam[l];
 					}
 					break;
 				case EF_GROOVE:
-					if (m_pGrooveTable[Note->EffParam[l]] == NULL) break;
+					if (m_pGrooveTable[Note.EffParam[l]] == NULL) break;
 					IsGroove = true;
-					GrooveIndex = Note->EffParam[l];
+					GrooveIndex = Note.EffParam[l];
 					GroovePointer = 0;
 					break;
 				}
@@ -4567,8 +4555,7 @@ void CFamiTrackerDoc::RemoveUnusedInstruments()
 					for (unsigned int Frame = 0; Frame < m_pTracks[j]->GetFrameCount(); ++Frame) {
 						unsigned int Pattern = m_pTracks[j]->GetFramePattern(Frame, Channel);
 						for (unsigned int Row = 0; Row < m_pTracks[j]->GetPatternLength(); ++Row) {
-							stChanNote *pNote = m_pTracks[j]->GetPatternData(Channel, Pattern, Row);
-							if (pNote->Instrument == i)
+							if (std::as_const(m_pTracks[j])->GetPatternData(Channel, Pattern, Row).Instrument == i)		// // //
 								Used = true;
 						}
 					}
@@ -4632,13 +4619,13 @@ void CFamiTrackerDoc::RemoveUnusedSamples()		// // //
 				for (unsigned int Frame = 0; Frame < m_pTracks[j]->GetFrameCount(); ++Frame) {
 					unsigned int Pattern = m_pTracks[j]->GetFramePattern(Frame, CHANID_DPCM);
 					for (unsigned int Row = 0; Row < m_pTracks[j]->GetPatternLength(); ++Row) {
-						stChanNote *pNote = m_pTracks[j]->GetPatternData(CHANID_DPCM, Pattern, Row);
-						int Index = pNote->Instrument;
-						if (pNote->Note < NOTE_C || pNote->Note > NOTE_B || Index == MAX_INSTRUMENTS) continue;		// // //
+						const auto &Note = std::as_const(m_pTracks[j])->GetPatternData(CHANID_DPCM, Pattern, Row);		// // //
+						int Index = Note.Instrument;
+						if (Note.Note < NOTE_C || Note.Note > NOTE_B || Index == MAX_INSTRUMENTS) continue;		// // //
 						if (GetInstrumentType(Index) != INST_2A03) continue;
-						AssignUsed[Index][pNote->Octave][pNote->Note - 1] = true;
+						AssignUsed[Index][Note.Octave][Note.Note - 1] = true;
 						auto pInst = std::static_pointer_cast<CInstrument2A03>(GetInstrument(Index));
-						if (pInst->GetSampleIndex(pNote->Octave, pNote->Note - 1) == i + 1)
+						if (pInst->GetSampleIndex(Note.Octave, Note.Note - 1) == i + 1)
 							Used = true;
 					}
 				}
@@ -4660,12 +4647,7 @@ void CFamiTrackerDoc::RemoveUnusedSamples()		// // //
 
 bool CFamiTrackerDoc::ArePatternsSame(unsigned int Track, unsigned int Channel, unsigned int Pattern1, unsigned int Pattern2) const		// // //
 {
-	for (unsigned int r = 0, Count = m_pTracks[Track]->GetPatternLength(); r < Count; ++r)
-		if (::memcmp(m_pTracks[Track]->GetPatternData(Channel, Pattern1, r),
-					 m_pTracks[Track]->GetPatternData(Channel, Pattern2, r),
-					 sizeof(stChanNote)))
-			return false;
-	return true;
+	return m_pTracks[Track]->ArePatternsSame(Channel, Pattern1, Channel, Pattern2);		// // //
 }
 
 void CFamiTrackerDoc::PopulateUniquePatterns(unsigned int Track)		// // //
@@ -4686,8 +4668,8 @@ void CFamiTrackerDoc::PopulateUniquePatterns(unsigned int Track)		// // //
 		for (int f = 0; f < Frames; f++) {
 			pNew->SetFramePattern(f, c, f);
 			for (int r = 0; r < Rows; r++)
-				memcpy(pNew->GetPatternData(c, f, r),
-				pTrack->GetPatternData(c, pTrack->GetFramePattern(f, c), r), sizeof(stChanNote));
+				pNew->SetPatternData(c, f, r,
+					pTrack->GetPatternData(c, pTrack->GetFramePattern(f, c), r));
 		}
 	}
 
@@ -4701,7 +4683,7 @@ void CFamiTrackerDoc::PopulateUniquePatterns(unsigned int Track)		// // //
 void CFamiTrackerDoc::SwapInstruments(int First, int Second)
 {
 	// Swap instruments
-	auto pFirst = m_pInstrumentManager->GetInstrument(First);
+	auto pFirst = m_pInstrumentManager->GetInstrument(First);		// // //
 	auto pSecond = m_pInstrumentManager->GetInstrument(Second);
 	m_pInstrumentManager->InsertInstrument(Second, pFirst);
 	m_pInstrumentManager->InsertInstrument(First, pSecond);
@@ -4714,11 +4696,11 @@ void CFamiTrackerDoc::SwapInstruments(int First, int Second)
 		for (int j = 0; j < MAX_PATTERN; ++j) {
 			for (unsigned int k = 0; k < Count; ++k) {
 				for (int l = 0; l < MAX_PATTERN_LENGTH; ++l) {
-					stChanNote *pData = pTrack->GetPatternData(k, j, l);
-					if (pData->Instrument == First)
-						pData->Instrument = Second;
-					else if (pData->Instrument == Second)
-						pData->Instrument = First;
+					auto &Data = pTrack->GetPatternData(k, j, l);
+					if (Data.Instrument == First)
+						Data.Instrument = Second;
+					else if (Data.Instrument == Second)
+						Data.Instrument = First;
 				}
 			}
 		}

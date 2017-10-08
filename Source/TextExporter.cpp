@@ -1072,7 +1072,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					pDoc->SetSongSpeed(track, i);
 					CHECK(t.ReadInt(i,0,MAX_TEMPO,&sResult));
 					pDoc->SetSongTempo(track, i);
-					pDoc->SetTrackTitle(track, t.ReadToken());
+					pDoc->SetTrackTitle(track, (LPCTSTR)t.ReadToken());		// // //
 
 					CHECK(t.ReadEOL(&sResult));
 					++track;
@@ -1530,7 +1530,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 
 	for (unsigned int t=0; t < pDoc->GetTrackCount(); ++t)
 	{
-		const char* zpTitle = pDoc->GetTrackTitle(t).GetString();
+		const char* zpTitle = pDoc->GetTrackTitle(t).c_str();		// // //
 		if (zpTitle == NULL) zpTitle = "";
 
 		s.Format(_T("%s %3d %3d %3d %s\n"),

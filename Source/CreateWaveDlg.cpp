@@ -98,7 +98,7 @@ void CCreateWaveDlg::OnBnClickedBegin()
 	int Track = m_ctlTracks.GetCurSel();
 
 	if (pDoc->GetTrackCount() > 1) {
-		FileName.AppendFormat(_T(" - Track %02i (%s)"), Track + 1, pDoc->GetTrackTitle(Track).GetBuffer());
+		FileName.AppendFormat(_T(" - Track %02i (%s)"), Track + 1, pDoc->GetTrackTitle(Track).c_str());		// // //
 	}
 
 	CWavProgressDlg ProgressDlg;
@@ -162,7 +162,7 @@ BOOL CCreateWaveDlg::OnInitDialog()
 	for (unsigned int i = 0; i < pDoc->GetTrackCount(); ++i) {
 		CString text;
 		text.Format(_T("#%02i - "), i + 1);
-		text.Append(pDoc->GetTrackTitle(i));
+		text.Append(pDoc->GetTrackTitle(i).c_str());		// // //
 		m_ctlTracks.AddString(text);
 	}
 

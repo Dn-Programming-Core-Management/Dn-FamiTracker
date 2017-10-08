@@ -21,11 +21,11 @@
 */
 
 #include "PatternData.h"
-#include <algorithm>		// // // std::swap
+#include "PatternNote.h"		// // //
 
 // Defaults when creating new modules
 const unsigned CPatternData::DEFAULT_ROW_COUNT	= 64;
-const CString CPatternData::DEFAULT_TITLE = _T("New song");		// // //
+const std::string CPatternData::DEFAULT_TITLE = "New song";		// // //
 const stHighlight CPatternData::DEFAULT_HIGHLIGHT = {4, 16, 0};		// // //
 
 // This class contains pattern data
@@ -38,10 +38,7 @@ CPatternData::CPatternData(unsigned int PatternLength) :		// // //
 	m_iSongSpeed(DEFAULT_SPEED),
 	m_iSongTempo(DEFAULT_TEMPO_NTSC),
 	m_bUseGroove(false),		// // //
-	m_vRowHighlight(DEFAULT_HIGHLIGHT),		// // //
-	m_iFrameList(),		// // //
-	m_pPatternData(),
-	m_iEffectColumns()
+	m_vRowHighlight(DEFAULT_HIGHLIGHT)		// // //
 {
 	// // // Pre-allocate pattern 0 for all channels
 	for (int i = 0; i < MAX_CHANNELS; ++i)
@@ -50,22 +47,17 @@ CPatternData::CPatternData(unsigned int PatternLength) :		// // //
 
 CPatternData::~CPatternData()
 {
-	// Deallocate memory
-	for (int i = 0; i < MAX_CHANNELS; ++i) {
-		for (int j = 0; j < MAX_PATTERN; ++j) {
-			SAFE_RELEASE_ARRAY(m_pPatternData[i][j]);
-		}
-	}
+	// // //
 }
 
 bool CPatternData::IsCellFree(unsigned int Channel, unsigned int Pattern, unsigned int Row) const
 {
-	const stChanNote *pNote = GetPatternData(Channel, Pattern, Row);
+	const auto &Note = GetPatternData(Channel, Pattern, Row);		// // //
 
-	return !pNote || pNote->Note == NONE &&		// // //
-		pNote->EffNumber[0] == EF_NONE && pNote->EffNumber[1] == EF_NONE &&
-		pNote->EffNumber[2] == EF_NONE && pNote->EffNumber[3] == EF_NONE &&
-		pNote->Vol == MAX_VOLUME && pNote->Instrument == MAX_INSTRUMENTS;
+	return Note.Note == NONE &&
+		Note.EffNumber[0] == EF_NONE && Note.EffNumber[1] == EF_NONE &&
+		Note.EffNumber[2] == EF_NONE && Note.EffNumber[3] == EF_NONE &&
+		Note.Vol == MAX_VOLUME && Note.Instrument == MAX_INSTRUMENTS;
 }
 
 bool CPatternData::IsPatternEmpty(unsigned int Channel, unsigned int Pattern) const
@@ -94,32 +86,37 @@ bool CPatternData::IsPatternInUse(unsigned int Channel, unsigned int Pattern) co
 	return false;
 }
 
-stChanNote *CPatternData::GetPatternData(unsigned int Channel, unsigned int Pattern, unsigned int Row) const
-{
-	// Private method, may return NULL
-	if (!m_pPatternData[Channel][Pattern])
-		return nullptr;
-
-	return m_pPatternData[Channel][Pattern] + Row;
+bool CPatternData::ArePatternsSame(unsigned ch1, unsigned pat1, unsigned ch2, unsigned pat2) const {		// // //
+	const auto &p1 = m_pPatternData[ch1][pat1];
+	const auto &p2 = m_pPatternData[ch2][pat2];
+	return (!p1 && !p2) || (p1 && p2 && *p1 == *p2);
 }
 
-stChanNote *CPatternData::GetPatternData(unsigned int Channel, unsigned int Pattern, unsigned int Row)
+stChanNote &CPatternData::GetPatternData(unsigned Channel, unsigned Pattern, unsigned Row)		// // //
+{
+	if (!m_pPatternData[Channel][Pattern])
+		AllocatePattern(Channel, Pattern);
+	return (*m_pPatternData[Channel][Pattern])[Row];
+}
+
+const stChanNote &CPatternData::GetPatternData(unsigned Channel, unsigned Pattern, unsigned Row) const		// // //
+{
+	static const auto BLANK = stChanNote { };		// // //
+	if (!m_pPatternData[Channel][Pattern])
+		return BLANK;
+	return (*m_pPatternData[Channel][Pattern])[Row];
+}
+
+void CPatternData::SetPatternData(unsigned Channel, unsigned Pattern, unsigned Row, const stChanNote &Note)		// // //
 {
 	if (!m_pPatternData[Channel][Pattern])		// Allocate pattern if accessed for the first time
 		AllocatePattern(Channel, Pattern);
-
-	return m_pPatternData[Channel][Pattern] + Row;
+	(*m_pPatternData[Channel][Pattern])[Row] = Note;
 }
 
 void CPatternData::AllocatePattern(unsigned int Channel, unsigned int Pattern)
 {
-	// Allocate memory
-	m_pPatternData[Channel][Pattern] = new stChanNote[MAX_PATTERN_LENGTH];
-
-	// Clear memory
-	stChanNote Blank { };		// // //
-	for (int i = 0; i < MAX_PATTERN_LENGTH; ++i)
-		memcpy(m_pPatternData[Channel][Pattern] + i, &Blank, sizeof(stChanNote));
+	m_pPatternData[Channel][Pattern] = std::make_unique<pattern_t>();
 }
 
 void CPatternData::ClearEverything()
@@ -127,24 +124,22 @@ void CPatternData::ClearEverything()
 	// Release all patterns and clear frame list
 
 	// Frame list
-	memset(m_iFrameList, 0, sizeof(char) * MAX_FRAMES * MAX_CHANNELS);
+	m_iFrameList.fill({ });		// // //
 	m_iFrameCount = 1;
 	
 	// Patterns, deallocate everything
-	for (int i = 0; i < MAX_CHANNELS; ++i) {
-		for (int j = 0; j < MAX_PATTERN; ++j) {
-			ClearPattern(i, j);
-		}
-	}
+	for (auto &x : m_pPatternData)		// // //
+		for (auto &p : x)
+			p.reset();
 }
 
 void CPatternData::ClearPattern(unsigned int Channel, unsigned int Pattern)
 {
 	// Deletes a specified pattern in a channel
-	SAFE_RELEASE_ARRAY(m_pPatternData[Channel][Pattern]);
+	m_pPatternData[Channel][Pattern].reset();		// // //
 }
 
-CString CPatternData::GetTitle() const
+const std::string &CPatternData::GetTitle() const		// // //
 {
 	return m_sTrackName;
 }
@@ -179,7 +174,7 @@ bool CPatternData::GetSongGroove() const		// // //
 	return m_bUseGroove;
 }
 
-void CPatternData::SetTitle(CString str)
+void CPatternData::SetTitle(const std::string &str)		// // //
 {
 	m_sTrackName = str;
 }
@@ -222,9 +217,11 @@ unsigned int CPatternData::GetFramePattern(unsigned int Frame, unsigned int Chan
 void CPatternData::SetFramePattern(unsigned int Frame, unsigned int Channel, unsigned int Pattern)
 {
 	m_iFrameList[Frame][Channel] = Pattern;
+	if (!m_pPatternData[Channel][Pattern])		// // // Allocate pattern if accessed for the first time
+		AllocatePattern(Channel, Pattern);
 }
 
-void CPatternData::SetHighlight(const stHighlight Hl)		// // //
+void CPatternData::SetHighlight(const stHighlight &Hl)		// // //
 {
 	m_vRowHighlight = Hl;
 }
@@ -234,12 +231,17 @@ stHighlight CPatternData::GetRowHighlight() const
 	return m_vRowHighlight;
 }
 
+void CPatternData::CopyPattern(unsigned Chan, unsigned Pat, const CPatternData &From, unsigned ChanFrom, unsigned PatFrom) {		// // //
+	const auto &p1 = From.m_pPatternData[ChanFrom][PatFrom];
+	if (auto &p2 = m_pPatternData[Chan][Pat])
+		*p2 = *p1;
+	else
+		p2 = std::make_unique<pattern_t>(*p1);
+}
+
 void CPatternData::SwapChannels(unsigned int First, unsigned int Second)		// // //
 {
-	for (int i = 0; i < MAX_FRAMES; i++) {
+	for (int i = 0; i < MAX_FRAMES; i++)
 		std::swap(m_iFrameList[i][First], m_iFrameList[i][Second]);
-	}
-	for (int i = 0; i < MAX_PATTERN; i++) {
-		std::swap(m_pPatternData[First][i], m_pPatternData[Second][i]);
-	}
+	std::swap(m_pPatternData[First], m_pPatternData[Second]);
 }

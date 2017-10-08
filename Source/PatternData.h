@@ -23,8 +23,12 @@
 
 #pragma once
 
-#include "stdafx.h"		// // //
-#include "PatternNote.h"		// // //
+#include <array>		// // //
+#include <memory>		// // //
+#include <string>		// // //
+#include "FamiTrackerTypes.h"		// // //
+
+class stChanNote;		// // //
 
 // // // Highlight settings
 struct stHighlight {
@@ -50,13 +54,16 @@ public:
 	bool IsCellFree(unsigned int Channel, unsigned int Pattern, unsigned int Row) const;
 	bool IsPatternEmpty(unsigned int Channel, unsigned int Pattern) const;
 	bool IsPatternInUse(unsigned int Channel, unsigned int Pattern) const;
+	bool ArePatternsSame(unsigned ch1, unsigned pat1, unsigned ch2, unsigned pat2) const;		// // //
 
 	void ClearEverything();
 	void ClearPattern(unsigned int Channel, unsigned int Pattern);
 
-	stChanNote *GetPatternData(unsigned int Channel, unsigned int Pattern, unsigned int Row);
+	stChanNote &GetPatternData(unsigned Channel, unsigned Pattern, unsigned Row);		// // //
+	const stChanNote &GetPatternData(unsigned Channel, unsigned Pattern, unsigned Row) const;		// // //
+	void SetPatternData(unsigned Channel, unsigned Pattern, unsigned Row, const stChanNote &Note);		// // //
 
-	CString GetTitle() const;
+	const std::string &GetTitle() const;		// // //
 	unsigned int GetPatternLength() const;
 	unsigned int GetFrameCount() const;
 	unsigned int GetSongSpeed() const;
@@ -64,7 +71,7 @@ public:
 	int GetEffectColumnCount(int Channel) const;;
 	bool GetSongGroove() const;		// // //
 
-	void SetTitle(CString str);
+	void SetTitle(const std::string &str);		// // //
 	void SetPatternLength(unsigned int Length);
 	void SetFrameCount(unsigned int Count);
 	void SetSongSpeed(unsigned int Speed);
@@ -75,25 +82,25 @@ public:
 	unsigned int GetFramePattern(unsigned int Frame, unsigned int Channel) const;
 	void SetFramePattern(unsigned int Frame, unsigned int Channel, unsigned int Pattern);
 
-	void SetHighlight(const stHighlight Hl);		// // //
+	void SetHighlight(const stHighlight &Hl);		// // //
 	stHighlight GetRowHighlight() const;
 
+	void CopyPattern(unsigned Chan, unsigned Pat, const CPatternData &From, unsigned ChanFrom, unsigned PatFrom);		// // //
 	void SwapChannels(unsigned int First, unsigned int Second);		// // //
 
 private:
-	stChanNote *GetPatternData(unsigned int Channel, unsigned int Pattern, unsigned int Row) const;
 	void AllocatePattern(unsigned int Channel, unsigned int Patterns);
 
 public:
 	// // // moved from CFamiTrackerDoc
-	static const CString DEFAULT_TITLE;
+	static const std::string DEFAULT_TITLE;
 	static const stHighlight DEFAULT_HIGHLIGHT;
 
 private:
 	static const unsigned DEFAULT_ROW_COUNT;
 
 	// Track parameters
-	CString      m_sTrackName;				// // // moved
+	std::string	 m_sTrackName;				// // // moved
 	unsigned int m_iPatternLength;			// Amount of rows in one pattern
 	unsigned int m_iFrameCount;				// Number of frames
 	unsigned int m_iSongSpeed;				// Song speed
@@ -104,11 +111,12 @@ private:
 	stHighlight  m_vRowHighlight;			// // //
 
 	// Number of visible effect columns for each channel
-	unsigned char m_iEffectColumns[MAX_CHANNELS];
+	std::array<unsigned char, MAX_CHANNELS> m_iEffectColumns = { };		// // //
 
 	// List of the patterns assigned to frames
-	unsigned char m_iFrameList[MAX_FRAMES][MAX_CHANNELS];		
+	std::array<std::array<unsigned char, MAX_CHANNELS>, MAX_FRAMES> m_iFrameList = { };		// // //
 
 	// All accesses to m_pPatternData must go through GetPatternData()
-	stChanNote *m_pPatternData[MAX_CHANNELS][MAX_PATTERN];
+	using pattern_t = std::array<stChanNote, MAX_PATTERN_LENGTH>;		// // //
+	std::array<std::array<std::unique_ptr<pattern_t>, MAX_PATTERN>, MAX_CHANNELS> m_pPatternData;
 };

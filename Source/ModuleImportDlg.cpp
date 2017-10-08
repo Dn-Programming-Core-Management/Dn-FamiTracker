@@ -61,7 +61,7 @@ BOOL CModuleImportDlg::OnInitDialog()
 	
 	for (int i = 0; i < TrackCount; ++i) {
 		CString str;
-		str.Format(_T("#%02i %s"), i + 1, m_pImportedDoc->GetTrackTitle(i).GetString());
+		str.Format(_T("#%02i %s"), i + 1, m_pImportedDoc->GetTrackTitle(i).c_str());		// // //
 		m_ctlTrackList.AddString(str);
 		m_ctlTrackList.SetCheck(i, 1);
 	}

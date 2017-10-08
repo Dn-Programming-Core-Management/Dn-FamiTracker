@@ -31,6 +31,14 @@ class stChanNote {
 public:
 	std::string ToString() const;
 
+	constexpr bool operator==(const stChanNote &other) const noexcept {
+		for (int i = 0; i < MAX_EFFECT_COLUMNS; ++i)
+			if (EffNumber[i] != other.EffNumber[i] || EffNumber[i] != EF_NONE && EffParam[i] != other.EffParam[i])
+				return false;
+		return Note == other.Note && Vol == other.Vol && Instrument == other.Instrument &&
+			(Note == NONE || Octave == other.Octave || Note == HALT || Note == RELEASE);
+	}
+
 public:
 	unsigned char Note = NONE;
 	unsigned char Octave = 0U;

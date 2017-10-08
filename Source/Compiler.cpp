@@ -25,6 +25,7 @@
 #include "version.h"		// // //
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
+#include "PatternNote.h"		// // //
 #include "SeqInstrument.h"		// // //
 #include "Instrument2A03.h"		// // //
 #include "InstrumentFDS.h"		// // //
@@ -423,7 +424,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 
 	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
 		iTimeSize += 4;
-		iTlblSize += strlen(m_pDocument->GetTrackTitle(i)) + 1;
+		iTlblSize += m_pDocument->GetTrackTitle(i).size() + 1;
 	}
 
 	const unsigned char TimeIdent[] = {'t', 'i', 'm', 'e'};
@@ -438,7 +439,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	OutputFile.Write(reinterpret_cast<char*>(&iTlblSize), sizeof(int));
 	OutputFile.Write(&TlblIdent, sizeof(TlblIdent));
 	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
-		OutputFile.Write(m_pDocument->GetTrackTitle(i), strlen(m_pDocument->GetTrackTitle(i)) + 1);
+		OutputFile.Write(m_pDocument->GetTrackTitle(i).c_str(), m_pDocument->GetTrackTitle(i).size() + 1);
 	}
 
 	// Write NSF data
