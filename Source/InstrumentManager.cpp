@@ -72,7 +72,7 @@ std::shared_ptr<CInstrument> CInstrumentManager::GetInstrument(unsigned int Inde
 
 std::shared_ptr<CInstrument> CInstrumentManager::CreateNew(inst_type_t InstType)
 {
-	return std::shared_ptr<CInstrument>(FTExt::InstrumentFactory::Make(InstType).Release(), inst_deleter);
+	return std::shared_ptr<CInstrument>(FTExt::InstrumentFactory::Make(InstType).release(), inst_deleter);
 }
 
 bool CInstrumentManager::InsertInstrument(unsigned int Index, CInstrument *pInst)

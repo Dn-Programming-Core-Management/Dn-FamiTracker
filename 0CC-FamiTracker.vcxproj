@@ -428,6 +428,7 @@
     <ClCompile Include="Source\BookmarkDlg.cpp" />
     <ClCompile Include="Source\BookmarkManager.cpp" />
     <ClCompile Include="Source\ChannelFactory.cpp" />
+    <ClCompile Include="Source\InstrumentFactory.cpp" />
     <ClCompile Include="Source\SoundDriver.cpp" />
     <ClCompile Include="Source\SongState.cpp" />
     <ClCompile Include="Source\FamiTrackerTypes.cpp" />
@@ -668,7 +669,6 @@
     <ClInclude Include="Source\TempoCounter.h" />
     <ClInclude Include="Source\TempoDisplay.h" />
     <ClInclude Include="Source\TransposeDlg.h" />
-    <ClInclude Include="Source\Utility\Factory.h" />
     <ClInclude Include="Source\WaveformGenerator.h" />
     <ClInclude Include="Source\WavegenBuiltin.h" />
     <ClInclude Include="Source\WaveRenderer.h" />

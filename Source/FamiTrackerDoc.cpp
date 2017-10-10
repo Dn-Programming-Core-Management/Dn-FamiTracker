@@ -2952,11 +2952,12 @@ void CFamiTrackerDoc::AddInstrument(CInstrument *pInstrument, unsigned int Slot)
 		SetModifiedFlag();
 		SetExceededFlag();		// // //
 	}
+	// TODO: CInstrumentMana
 }
 
 int CFamiTrackerDoc::AddInstrument(const char *pName, int ChipType)
 {
-	CInstrument *pInst = theApp.GetChannelMap()->GetChipInstrument(ChipType);
+	auto pInst = theApp.GetChannelMap()->GetChipInstrument(ChipType);		// // //
 	if (!pInst) {
 #ifdef _DEBUG
 		MessageBox(NULL, _T("(TODO) add instrument definitions for this chip"), _T("Stop"), MB_OK);
@@ -2967,7 +2968,7 @@ int CFamiTrackerDoc::AddInstrument(const char *pName, int ChipType)
 	pInst->Setup();
 	pInst->SetName(pName);
 
-	return AddInstrument(pInst);
+	return AddInstrument(pInst.release());		// // //
 }
 
 void CFamiTrackerDoc::RemoveInstrument(unsigned int Index)

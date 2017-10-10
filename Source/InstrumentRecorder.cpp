@@ -313,16 +313,18 @@ void CInstrumentRecorder::InitRecordInstrument()
 	if (m_pDocument->GetInstrumentCount() >= MAX_INSTRUMENTS) {
 		m_iDumpCount = 0; m_iRecordChannel = -1; return;
 	}
-	size_t Type = FTExt::InstrumentIndices::None;//INST_NONE; // optimize this
-	switch (pChan->GetChip()) {
-	case SNDCHIP_NONE: case SNDCHIP_MMC5: Type = INST_2A03; break;
-	case SNDCHIP_VRC6: Type = INST_VRC6; break;
-	// case SNDCHIP_VRC7: Type = INST_VRC7; break;
-	case SNDCHIP_FDS:  Type = INST_FDS; break;
-	case SNDCHIP_N163: Type = INST_N163; break;
-	case SNDCHIP_S5B:  Type = INST_S5B; break;
-	}
-	*m_pDumpInstrument = FTExt::InstrumentFactory::Make(Type).Release();		// // //
+	size_t Type = [&] { // optimize this
+		switch (pChan->GetChip()) {
+		case SNDCHIP_NONE: case SNDCHIP_MMC5: return INST_2A03;
+		case SNDCHIP_VRC6: return INST_VRC6;
+		// case SNDCHIP_VRC7: return INST_VRC7;
+		case SNDCHIP_FDS:  return INST_FDS;
+		case SNDCHIP_N163: return INST_N163;
+		case SNDCHIP_S5B:  return INST_S5B;
+		}
+		return INST_NONE;
+	}();
+	*m_pDumpInstrument = FTExt::InstrumentFactory::Make(Type).release();		// // //
 	if (!*m_pDumpInstrument) return;
 
 	CString str;

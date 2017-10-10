@@ -20,17 +20,22 @@
 ** must bear this legend.
 */
 
+#include "InstrumentFactory.h"
+#include "Instrument2A03.h"
+#include "InstrumentVRC6.h"
+#include "InstrumentFDS.h"
+#include "InstrumentVRC7.h"
+#include "InstrumentN163.h"
+#include "InstrumentS5B.h"
 
-#pragma once
-
-#include <memory>
-
-class CInstrument;
-
-namespace FTExt {
-
-struct InstrumentFactory {
-	static std::unique_ptr<CInstrument> Make(std::size_t index);
-};
-
-} // namespace FTExt
+std::unique_ptr<CInstrument> FTExt::InstrumentFactory::Make(std::size_t index) {
+	switch (index) {
+	case INST_2A03: return std::make_unique<CInstrument2A03>();
+	case INST_VRC6: return std::make_unique<CInstrumentVRC6>();
+	case INST_VRC7: return std::make_unique<CInstrumentVRC7>();
+	case INST_FDS:  return std::make_unique<CInstrumentFDS>();
+	case INST_N163: return std::make_unique<CInstrumentN163>();
+	case INST_S5B: return std::make_unique<CInstrumentS5B>();
+	}
+	return nullptr;
+}

@@ -711,6 +711,9 @@
     <ClCompile Include="Source\SoundDriver.cpp">
       <Filter>Source Files\Sound Driver</Filter>
     </ClCompile>
+    <ClCompile Include="Source\InstrumentFactory.cpp">
+      <Filter>Source Files\Document Data Types\Instruments</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">
@@ -1264,9 +1267,6 @@
     </ClInclude>
     <ClInclude Include="Source\WinSDK\winapifamily.h">
       <Filter>Header Files\Windows Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Utility\Factory.h">
-      <Filter>Header Files\Components Headers</Filter>
     </ClInclude>
     <ClInclude Include="Source\Arpeggiator.h">
       <Filter>Header Files\Sound Driver Headers</Filter>

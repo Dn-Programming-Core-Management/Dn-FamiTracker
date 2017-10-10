@@ -20,8 +20,14 @@
 ** must bear this legend.
 */
 
+
 #pragma once
 
+#include "Instrument.h"		// // //
+#include "FamiTrackerTypes.h"		// // //
+#include <memory>		// // //
+
+class CTrackerChannel;		// // //
 
 // CChannelMap
 
@@ -36,7 +42,7 @@ public:
 	LPCTSTR		GetChipName(int Index) const;
 	int			GetChipIdent(int Index) const;
 	int			GetChipIndex(int Ident) const;
-	CInstrument	*GetChipInstrument(int Chip) const;
+	std::unique_ptr<CInstrument> GetChipInstrument(int Chip) const;		// // //
 
 	// Active channel map
 	void			ResetChannels();

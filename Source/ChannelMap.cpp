@@ -93,11 +93,11 @@ int	CChannelMap::GetChipIndex(int Ident) const
 	return 0;
 }
 
-CInstrument* CChannelMap::GetChipInstrument(int Chip) const
+std::unique_ptr<CInstrument> CChannelMap::GetChipInstrument(int Chip) const		// // //
 {
 	// Get instrument from chip ID
 	int Index = GetChipIndex(Chip);
-	return FTExt::InstrumentFactory::Make(m_iChipInstType[Index]).Release();
+	return FTExt::InstrumentFactory::Make(m_iChipInstType[Index]);
 }
 
 // Todo move enabled module channels here

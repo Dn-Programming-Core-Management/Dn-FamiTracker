@@ -28,6 +28,10 @@
 
 #include "DSample.h"		// // //
 #include "InstrumentFactory.h"		// // //
+#include "Instrument2A03.h"		// // //
+#include "InstrumentVRC7.h"		// // //
+#include "InstrumentFDS.h"		// // //
+#include "InstrumentN163.h"		// // //
 
 #define DEBUG_OUT(...) { CString s__; s__.Format(__VA_ARGS__); OutputDebugString(s__); }
 
@@ -871,15 +875,15 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 				{
 					size_t Type = [c] {
 						switch (c) {
-						case CT_INST2A03: return FTExt::InstrumentIndices::IndexOf<CInstrument2A03>::value;		// // //
-						case CT_INSTVRC6: return FTExt::InstrumentIndices::IndexOf<CInstrumentVRC6>::value;		// // //
-						case CT_INSTN163: return FTExt::InstrumentIndices::IndexOf<CInstrumentN163>::value;		// // //
-						case CT_INSTS5B:  return FTExt::InstrumentIndices::IndexOf<CInstrumentS5B>::value;		// // //
+						case CT_INST2A03: return INST_2A03;
+						case CT_INSTVRC6: return INST_VRC6;
+						case CT_INSTN163: return INST_N163;
+						case CT_INSTS5B:  return INST_S5B;
 						}
-						return FTExt::InstrumentIndices::None;
+						return INST_NONE;
 					}();
 					CHECK(t.ReadInt(i,0,MAX_INSTRUMENTS-1,&sResult));
-					auto seqInst = dynamic_cast<CSeqInstrument*>(FTExt::InstrumentFactory::Make(Type).Release());		// // //
+					auto seqInst = dynamic_cast<CSeqInstrument*>(FTExt::InstrumentFactory::Make(Type).release());		// // //
 					pDoc->AddInstrument(seqInst, i);
 					for (int s=0; s < SEQ_COUNT; ++s)
 					{
