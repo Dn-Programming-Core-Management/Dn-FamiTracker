@@ -128,8 +128,6 @@ BOOL CChannelsDlg::OnInitDialog()
 		m_pAvailableTree->SortChildren(hItem);
 	}
 
-	CChannelMap *map = theApp.GetChannelMap();
-
 	CFamiTrackerDoc *pDoc = CFamiTrackerDoc::GetDoc();
 
 	for (unsigned i = 0; i < pDoc->GetAvailableChannels(); ++i) {

@@ -70,22 +70,18 @@ std::shared_ptr<CInstrument> CInstrumentManager::GetInstrument(unsigned int Inde
 	return m_pInstruments[Index];
 }
 
-std::shared_ptr<CInstrument> CInstrumentManager::CreateNew(inst_type_t InstType)
+std::unique_ptr<CInstrument> CInstrumentManager::CreateNew(inst_type_t InstType)
 {
-	return std::shared_ptr<CInstrument>(FTExt::InstrumentFactory::Make(InstType).release(), inst_deleter);
+	return FTExt::InstrumentFactory::Make(InstType);
 }
 
-bool CInstrumentManager::InsertInstrument(unsigned int Index, CInstrument *pInst)
-{
-	return InsertInstrument(Index, std::shared_ptr<CInstrument>(pInst, inst_deleter));
-}
-
-bool CInstrumentManager::InsertInstrument(unsigned int Index, std::shared_ptr<CInstrument> pInst)
+bool CInstrumentManager::InsertInstrument(unsigned int Index, std::unique_ptr<CInstrument> pInst)
 {
 	std::lock_guard<std::mutex> lock(m_InstrumentLock);
-	if (m_pInstruments[Index] != pInst) {
-		m_pInstruments[Index] = pInst;
-		pInst->RegisterManager(this);
+	auto pShared = std::shared_ptr<CInstrument>(pInst.release(), inst_deleter);
+	if (m_pInstruments[Index] != pShared) {
+		m_pInstruments[Index] = pShared;
+		pShared->RegisterManager(this);
 		return true;
 	}
 	return false;
@@ -99,6 +95,10 @@ bool CInstrumentManager::RemoveInstrument(unsigned int Index)
 		return true;
 	}
 	return false;
+}
+
+void CInstrumentManager::SwapInstruments(unsigned int IndexA, unsigned int IndexB) {
+	m_pInstruments[IndexA].swap(m_pInstruments[IndexB]);
 }
 
 void CInstrumentManager::ClearAll()

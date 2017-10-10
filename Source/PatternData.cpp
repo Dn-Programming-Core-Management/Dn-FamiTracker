@@ -232,11 +232,13 @@ stHighlight CPatternData::GetRowHighlight() const
 }
 
 void CPatternData::CopyPattern(unsigned Chan, unsigned Pat, const CPatternData &From, unsigned ChanFrom, unsigned PatFrom) {		// // //
-	const auto &p1 = From.m_pPatternData[ChanFrom][PatFrom];
-	if (auto &p2 = m_pPatternData[Chan][Pat])
-		*p2 = *p1;
+	if (const auto &p1 = From.m_pPatternData[ChanFrom][PatFrom])
+		if (auto &p2 = m_pPatternData[Chan][Pat])
+			*p2 = *p1;
+		else
+			p2 = std::make_unique<pattern_t>(*p1);
 	else
-		p2 = std::make_unique<pattern_t>(*p1);
+		m_pPatternData[Chan][Pat].reset();
 }
 
 void CPatternData::SwapChannels(unsigned int First, unsigned int Second)		// // //

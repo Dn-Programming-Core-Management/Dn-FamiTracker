@@ -36,7 +36,6 @@
 #include "SoundGen.h"
 #include "Accelerator.h"
 #include "Settings.h"
-#include "ChannelMap.h"
 #include "CommandLineExport.h"
 #include "WinSDK/VersionHelpers.h"		// // //
 
@@ -74,7 +73,6 @@ CFamiTrackerApp::CFamiTrackerApp() :
 	m_pAccel(NULL),
 	m_pSettings(NULL),
 	m_pSoundGenerator(NULL),
-	m_pChannelMap(NULL),
 	m_hWndMapFile(NULL),
 #ifdef SUPPORT_TRANSLATIONS
 	m_hInstResDLL(NULL),
@@ -147,9 +145,6 @@ BOOL CFamiTrackerApp::InitInstance()
 
 	// Create sound generator
 	m_pSoundGenerator = new CSoundGen();
-
-	// Create channel map
-	m_pChannelMap = new CChannelMap();
 
 	// Start sound generator thread, initially suspended
 	if (!m_pSoundGenerator->CreateThread(CREATE_SUSPENDED)) {
@@ -322,11 +317,6 @@ int CFamiTrackerApp::ExitInstance()
 	if (m_pSettings) {
 		m_pSettings->SaveSettings();
 		m_pSettings = NULL;
-	}
-
-	if (m_pChannelMap) {
-		delete m_pChannelMap;
-		m_pChannelMap = NULL;
 	}
 
 #ifdef SUPPORT_TRANSLATIONS

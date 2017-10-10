@@ -273,9 +273,8 @@ public:
 	std::shared_ptr<CInstrument>	GetInstrument(unsigned int Index) const;
 	unsigned int	GetInstrumentCount() const;
 	bool			IsInstrumentUsed(unsigned int Index) const;
-	int				AddInstrument(const char *pName, int ChipType);					// Add a new instrument
-	int				AddInstrument(CInstrument *pInstrument);
-	void			AddInstrument(CInstrument *pInstrument, unsigned int Slot);
+	int				AddInstrument(std::unique_ptr<CInstrument> pInstrument);		// // //
+	void			AddInstrument(std::unique_ptr<CInstrument> pInstrument, unsigned int Slot);		// // //
 	void			RemoveInstrument(unsigned int Index);							// Remove an instrument
 	void			SetInstrumentName(unsigned int Index, const char *pName);		// Set the name of an instrument
 	void			GetInstrumentName(unsigned int Index, char *pName) const;		// Get the name of an instrument

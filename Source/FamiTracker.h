@@ -62,7 +62,6 @@ class CMIDI;
 class CSoundGen;
 class CSettings;
 class CAccelerator;
-class CChannelMap;
 
 class CMutex;
 
@@ -130,7 +129,6 @@ public:
 	CSoundGen		*GetSoundGenerator() const	{ ASSERT(m_pSoundGenerator); return m_pSoundGenerator; }
 	CMIDI			*GetMIDI() const			{ ASSERT(m_pMIDI); return m_pMIDI; }
 	CSettings		*GetSettings() const		{ ASSERT(m_pSettings); return m_pSettings; }
-	CChannelMap		*GetChannelMap() const		{ ASSERT(m_pChannelMap); return m_pChannelMap; }
 
 	//
 	// Private functions
@@ -152,7 +150,6 @@ private:
 	CAccelerator	*m_pAccel;					// Keyboard accelerator
 	CSoundGen		*m_pSoundGenerator;			// Sound synth & player
 	CSettings		*m_pSettings;				// Program settings
-	CChannelMap		*m_pChannelMap;
 
 	// Single instance stuff
 	CMutex			*m_pInstanceMutex;

@@ -883,8 +883,8 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 						return INST_NONE;
 					}();
 					CHECK(t.ReadInt(i,0,MAX_INSTRUMENTS-1,&sResult));
-					auto seqInst = dynamic_cast<CSeqInstrument*>(FTExt::InstrumentFactory::Make(Type).release());		// // //
-					pDoc->AddInstrument(seqInst, i);
+					auto pInst = FTExt::InstrumentFactory::Make(Type);		// // //
+					auto seqInst = static_cast<CSeqInstrument *>(pInst.get());		// // //
 					for (int s=0; s < SEQ_COUNT; ++s)
 					{
 						CHECK(t.ReadInt(i,-1,MAX_SEQUENCES-1,&sResult));
@@ -901,14 +901,14 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 						pInst->SetWaveCount(i);
 					}
 					seqInst->SetName(Charify(t.ReadToken()));
+					pDoc->AddInstrument(std::move(pInst), i);
 					CHECK(t.ReadEOL(&sResult));
 				}
 				break;
 			case CT_INSTVRC7:
 				{
 					CHECK(t.ReadInt(i,0,MAX_INSTRUMENTS-1,&sResult));
-					CInstrumentVRC7 *pInst = new CInstrumentVRC7();
-					pDoc->AddInstrument(pInst, i);
+					auto pInst = std::make_unique<CInstrumentVRC7>();		// // //
 					CHECK(t.ReadInt(i,0,15,&sResult));
 					pInst->SetPatch(i);
 					for (int r=0; r < 8; ++r)
@@ -917,14 +917,14 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 						pInst->SetCustomReg(r, i);
 					}
 					pInst->SetName(Charify(t.ReadToken()));
+					pDoc->AddInstrument(std::move(pInst), i);		// // //
 					CHECK(t.ReadEOL(&sResult));
 				}
 				break;
 			case CT_INSTFDS:
 				{
 					CHECK(t.ReadInt(i,0,MAX_INSTRUMENTS-1,&sResult));
-					CInstrumentFDS *pInst = new CInstrumentFDS();
-					pDoc->AddInstrument(pInst, i);
+					auto pInst = std::make_unique<CInstrumentFDS>();		// // //
 					CHECK(t.ReadInt(i,0,1,&sResult));
 					pInst->SetModulationEnable(i==1);
 					CHECK(t.ReadInt(i,0,4095,&sResult));
@@ -934,6 +934,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					CHECK(t.ReadInt(i,0,255,&sResult));
 					pInst->SetModulationDelay(i);
 					pInst->SetName(Charify(t.ReadToken()));
+					pDoc->AddInstrument(std::move(pInst), i);		// // //
 					CHECK(t.ReadEOL(&sResult));
 				}
 				break;

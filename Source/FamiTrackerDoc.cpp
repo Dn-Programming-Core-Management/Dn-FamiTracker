@@ -59,7 +59,6 @@
 #include "TrackerChannel.h"
 #include "DocumentFile.h"
 #include "SoundGen.h"
-#include "ChannelMap.h"
 #include "SequenceCollection.h"		// // //
 #include "SequenceManager.h"		// // //
 #include "DSampleManager.h"			// // //
@@ -1395,7 +1394,7 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 				for (i = 0; i < ReadCount; i++) {
 					pOpenFile->Read(&ImportedInstruments, sizeof(ImportedInstruments));
 					if (ImportedInstruments.Free == false) {
-						CInstrument2A03 *pInst = new CInstrument2A03();
+						auto pInst = std::make_unique<CInstrument2A03>();
 						for (int j = 0; j < SEQ_COUNT; j++) {
 							pInst->SetSeqEnable(j, ImportedInstruments.ModEnable[j]);
 							pInst->SetSeqIndex(j, ImportedInstruments.ModIndex[j]);
@@ -1413,7 +1412,7 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 							}
 						}
 
-						m_pInstrumentManager->InsertInstrument(i, pInst);		// // //
+						m_pInstrumentManager->InsertInstrument(i, std::move(pInst));		// // //
 					}
 				}
 				break;
@@ -1811,8 +1810,7 @@ void CFamiTrackerDoc::ReadBlock_Instruments(CDocumentFile *pDocFile, const int V
 
 		// Read instrument type and create an instrument
 		inst_type_t Type = (inst_type_t)pDocFile->GetBlockChar();
-		auto pInstrument = CInstrumentManager::CreateNew(Type);
-		m_pInstrumentManager->InsertInstrument(index, pInstrument); // this registers the instrument content provider
+		auto pInstrument = CInstrumentManager::CreateNew(Type);		// // //
 
 		try {
 			// Load the instrument
@@ -1824,6 +1822,7 @@ void CFamiTrackerDoc::ReadBlock_Instruments(CDocumentFile *pDocFile, const int V
 			pDocFile->GetBlock(Name, size);
 			Name[size] = 0;
 			pInstrument->SetName(Name);
+			m_pInstrumentManager->InsertInstrument(index, std::move(pInstrument));		// // // this registers the instrument content provider
 		}
 		catch (CModuleException *e) {
 			pDocFile->SetDefaultFooter(e);
@@ -2636,39 +2635,28 @@ bool CFamiTrackerDoc::ImportInstruments(CFamiTrackerDoc *pImported, int *pInstTa
 	// Copy instruments
 	for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
 		if (pImported->IsInstrumentUsed(i)) {
-			CInstrument *pInst = pImported->GetInstrument(i)->Clone();
-			inst_type_t Type = pInst->GetType();
+			auto pInst = std::unique_ptr<CInstrument>(pImported->GetInstrument(i)->Clone());		// // //
+
 			// Update references
-			switch (Type) {
-			case INST_2A03: case INST_VRC6: case INST_N163: case INST_S5B:		// // //
-				{
-					// Update sequence references
-					CSeqInstrument *pInstrument = static_cast<CSeqInstrument*>(pInst);
-					for (int t = 0; t < SEQ_COUNT; ++t) if (pInstrument->GetSeqEnable(t)) {
-						for (size_t j = 0; j < sizeof(chip); j++) if (inst[j] == Type) {
-							pInstrument->SetSeqIndex(t, seqTable[j][pInstrument->GetSeqIndex(t)][t]);
-							break;
-						}
+			if (auto pSeq = dynamic_cast<CSeqInstrument *>(pInst.get())) {
+				for (int t = 0; t < SEQ_COUNT; ++t)
+					if (pSeq->GetSeqEnable(t)) {
+						for (size_t j = 0; j < sizeof(chip); j++)
+							if (inst[j] == pInst->GetType()) {
+								pSeq->SetSeqIndex(t, seqTable[j][pSeq->GetSeqIndex(t)][t]);
+								break;
+							}
 					}
-				}
-				break;
-			case INST_FDS: case INST_VRC7:		// // //
-				// no operations
-				break;
-			default:
-				AfxDebugBreak();	// Add code for this instrument
-			}
-			if (Type == INST_2A03) {
-				CInstrument2A03 *pInstrument = static_cast<CInstrument2A03*>(pInst);
 				// Update DPCM samples
-				for (int o = 0; o < OCTAVE_RANGE; ++o) for (int n = 0; n < NOTE_RANGE; ++n) {
-					int Sample = pInstrument->GetSampleIndex(o, n);
-					if (Sample != 0)
-						pInstrument->SetSampleIndex(o, n, SamplesTable[Sample - 1] + 1);
-				}
+				if (auto p2A03 = dynamic_cast<CInstrument2A03 *>(pSeq))
+					for (int o = 0; o < OCTAVE_RANGE; ++o) for (int n = 0; n < NOTE_RANGE; ++n) {
+						int Sample = p2A03->GetSampleIndex(o, n);
+						if (Sample != 0)
+							p2A03->SetSampleIndex(o, n, SamplesTable[Sample - 1] + 1);
+					}
 			}
-			// Update samples
-			int Index = AddInstrument(pInst);
+
+			int Index = AddInstrument(std::move(pInst));		// // //
 			// Save a reference to this instrument
 			pInstTable[i] = Index;
 		}
@@ -2937,38 +2925,21 @@ bool CFamiTrackerDoc::IsInstrumentUsed(unsigned int Index) const
 	return m_pInstrumentManager->IsInstrumentUsed(Index);
 }
 
-int CFamiTrackerDoc::AddInstrument(CInstrument *pInstrument)
+int CFamiTrackerDoc::AddInstrument(std::unique_ptr<CInstrument> pInstrument)		// // //
 {
 	const int Slot = m_pInstrumentManager->GetFirstUnused();
 	if (Slot == INVALID_INSTRUMENT)
 		return INVALID_INSTRUMENT;
-	AddInstrument(pInstrument, Slot);		// // //
+	AddInstrument(std::move(pInstrument), Slot);		// // //
 	return Slot;
 }
 
-void CFamiTrackerDoc::AddInstrument(CInstrument *pInstrument, unsigned int Slot)
+void CFamiTrackerDoc::AddInstrument(std::unique_ptr<CInstrument> pInstrument, unsigned int Slot)		// // //
 {
-	if (m_pInstrumentManager->InsertInstrument(Slot, pInstrument)) {
+	if (m_pInstrumentManager->InsertInstrument(Slot, std::move(pInstrument))) {
 		SetModifiedFlag();
 		SetExceededFlag();		// // //
 	}
-	// TODO: CInstrumentMana
-}
-
-int CFamiTrackerDoc::AddInstrument(const char *pName, int ChipType)
-{
-	auto pInst = theApp.GetChannelMap()->GetChipInstrument(ChipType);		// // //
-	if (!pInst) {
-#ifdef _DEBUG
-		MessageBox(NULL, _T("(TODO) add instrument definitions for this chip"), _T("Stop"), MB_OK);
-#endif
-		return INVALID_INSTRUMENT;
-	}
-	pInst->RegisterManager(m_pInstrumentManager);
-	pInst->Setup();
-	pInst->SetName(pName);
-
-	return AddInstrument(pInst.release());		// // //
 }
 
 void CFamiTrackerDoc::RemoveInstrument(unsigned int Index)
@@ -2989,7 +2960,8 @@ int CFamiTrackerDoc::CloneInstrument(unsigned int Index)
 	const int Slot = m_pInstrumentManager->GetFirstUnused();
 
 	if (Slot != INVALID_INSTRUMENT) {
-		m_pInstrumentManager->InsertInstrument(Slot, m_pInstrumentManager->GetInstrument(Index)->Clone());
+		m_pInstrumentManager->InsertInstrument(Slot,
+			std::unique_ptr<CInstrument>(m_pInstrumentManager->GetInstrument(Index)->Clone()));		// // //
 		SetModifiedFlag();
 		SetExceededFlag();		// // //
 	}
@@ -3115,7 +3087,6 @@ int CFamiTrackerDoc::LoadInstrument(CString FileName)
 			InstType = INST_2A03;
 		auto pInstrument = CInstrumentManager::CreateNew(InstType);
 		AssertFileData(pInstrument.get() != nullptr, "Failed to create instrument");
-		m_pInstrumentManager->InsertInstrument(Slot, pInstrument);
 		
 		// Name
 		std::string InstName = file.ReadString();
@@ -3123,6 +3094,7 @@ int CFamiTrackerDoc::LoadInstrument(CString FileName)
 		pInstrument->SetName(InstName.c_str());
 
 		pInstrument->LoadFile(&file, iInstVer);		// // //
+		m_pInstrumentManager->InsertInstrument(Slot, std::move(pInstrument));
 		m_csDocumentLock.Unlock();
 		return Slot;
 	}
@@ -4684,11 +4656,7 @@ void CFamiTrackerDoc::PopulateUniquePatterns(unsigned int Track)		// // //
 void CFamiTrackerDoc::SwapInstruments(int First, int Second)
 {
 	// Swap instruments
-	auto pFirst = m_pInstrumentManager->GetInstrument(First);		// // //
-	auto pSecond = m_pInstrumentManager->GetInstrument(Second);
-	m_pInstrumentManager->InsertInstrument(Second, pFirst);
-	m_pInstrumentManager->InsertInstrument(First, pSecond);
-	// m_pInstrumentManager->Swap(First, Second);
+	m_pInstrumentManager->SwapInstruments(First, Second);		// // //
 	
 	// Scan patterns
 	const unsigned int Count = m_iRegisteredChannels;
@@ -4841,21 +4809,24 @@ void CFamiTrackerDoc::MakeKraid()			// // // Easter Egg
 
 	// Instruments
 	for (int i = 0; i < MAX_INSTRUMENTS; i++) RemoveInstrument(i);
-	auto kraidInst = std::static_pointer_cast<CInstrument2A03>(CInstrumentManager::CreateNew(INST_2A03));
+	auto kraidInst = std::unique_ptr<CInstrument2A03>(static_cast<CInstrument2A03 *>(
+		CInstrumentManager::CreateNew(INST_2A03).release()));
 	kraidInst->SetSeqEnable(SEQ_VOLUME, 1);
 	kraidInst->SetSeqIndex(SEQ_VOLUME, 0);
 	kraidInst->SetName("Lead ");
-	m_pInstrumentManager->InsertInstrument(0, kraidInst);
-	kraidInst = std::static_pointer_cast<CInstrument2A03>(CInstrumentManager::CreateNew(INST_2A03));
+	m_pInstrumentManager->InsertInstrument(0, std::move(kraidInst));
+	kraidInst = std::unique_ptr<CInstrument2A03>(static_cast<CInstrument2A03 *>(
+		CInstrumentManager::CreateNew(INST_2A03).release()));
 	kraidInst->SetSeqEnable(SEQ_VOLUME, 1);
 	kraidInst->SetSeqIndex(SEQ_VOLUME, 1);
 	kraidInst->SetName("Echo");
-	m_pInstrumentManager->InsertInstrument(1, kraidInst);
-	kraidInst = std::static_pointer_cast<CInstrument2A03>(CInstrumentManager::CreateNew(INST_2A03));
+	m_pInstrumentManager->InsertInstrument(1, std::move(kraidInst));
+	kraidInst = std::unique_ptr<CInstrument2A03>(static_cast<CInstrument2A03 *>(
+		CInstrumentManager::CreateNew(INST_2A03).release()));
 	kraidInst->SetSeqEnable(SEQ_VOLUME, 1);
 	kraidInst->SetSeqIndex(SEQ_VOLUME, 2);
 	kraidInst->SetName("Triangle");
-	m_pInstrumentManager->InsertInstrument(2, kraidInst);
+	m_pInstrumentManager->InsertInstrument(2, std::move(kraidInst));
 
 	// Sequences
 	CSequence *kraidSeq;

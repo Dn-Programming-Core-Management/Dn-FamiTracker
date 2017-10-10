@@ -130,7 +130,7 @@ void CSoundDriver::ConfigureDocument() {
 }
 
 void CSoundDriver::RegisterTracks(CFamiTrackerDoc &doc) {
-	ASSERT(&doc == doc_); // TODO: use std::unique_ptr<CChannelMap>
+	ASSERT(&doc == doc_); // TODO: use doc_'s track map object
 
 	// This affects the sound channel interface so it must be synchronized
 	doc.LockDocument();

@@ -50,9 +50,9 @@ public:
 	void ClearAll();
 
 	std::shared_ptr<CInstrument> GetInstrument(unsigned int Index) const;
-	bool InsertInstrument(unsigned int Index, CInstrument *pInst);
-	bool InsertInstrument(unsigned int Index, std::shared_ptr<CInstrument> pInst);
+	bool InsertInstrument(unsigned int Index, std::unique_ptr<CInstrument> pInst);
 	bool RemoveInstrument(unsigned int Index);
+	void SwapInstruments(unsigned int IndexA, unsigned int IndexB);
 	
 	bool IsInstrumentUsed(unsigned int Index) const;
 	unsigned int GetInstrumentCount() const;
@@ -77,7 +77,7 @@ public:
 	void InstrumentChanged() const override;
 
 public:
-	static std::shared_ptr<CInstrument> CreateNew(inst_type_t InstType);
+	static std::unique_ptr<CInstrument> CreateNew(inst_type_t InstType);
 	static const int MAX_INSTRUMENTS;
 
 private:

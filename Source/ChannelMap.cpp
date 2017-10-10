@@ -20,85 +20,14 @@
 ** must bear this legend.
 */
 
-#include <vector>		// // //
-#include <memory>		// // //
-#include "stdafx.h"
-#include "APU/Types.h"
-#include "InstrumentFactory.h"		// // //
-#include "TrackerChannel.h"
 #include "ChannelMap.h"
+#include "APU/Types.h"
+#include "TrackerChannel.h"
 
 /*
  *  This class contains the expansion chip definitions & instruments.
  *
  */
-
-CChannelMap::CChannelMap() :
-	m_iAddedChips(0)
-{
-	SetupSoundChips();
-}
-
-CChannelMap::~CChannelMap()
-{
-}
-
-void CChannelMap::SetupSoundChips()
-{
-	// Add available chips
-	AddChip(SNDCHIP_NONE, INST_2A03, _T("NES channels only"));
-	AddChip(SNDCHIP_VRC6, INST_VRC6, _T("Konami VRC6"));
-	AddChip(SNDCHIP_VRC7, INST_VRC7, _T("Konami VRC7"));
-	AddChip(SNDCHIP_FDS,  INST_FDS,  _T("Nintendo FDS sound"));
-	AddChip(SNDCHIP_MMC5, INST_2A03, _T("Nintendo MMC5"));
-	AddChip(SNDCHIP_N163, INST_N163, _T("Namco 163"));
-	AddChip(SNDCHIP_S5B,  INST_S5B,  _T("Sunsoft 5B"));
-}
-
-void CChannelMap::AddChip(int Ident, inst_type_t Inst, LPCTSTR pName)
-{
-	ASSERT(m_iAddedChips < CHIP_COUNT);
-
-	m_pChipNames[m_iAddedChips] = pName;
-	m_iChipIdents[m_iAddedChips] = Ident;
-	m_iChipInstType[m_iAddedChips] = Inst;
-	++m_iAddedChips;
-}
-
-int CChannelMap::GetChipCount() const
-{
-	// Return number of available chips
-	return m_iAddedChips;
-}
-
-LPCTSTR CChannelMap::GetChipName(int Index) const
-{
-	// Get chip name from index
-	return m_pChipNames[Index];
-}
-
-int CChannelMap::GetChipIdent(int Index) const
-{
-	// Get chip ID from index
-	return m_iChipIdents[Index];
-}
-
-int	CChannelMap::GetChipIndex(int Ident) const
-{
-	// Get index from chip ID
-	for (int i = 0; i < m_iAddedChips; ++i) {
-		if (Ident == m_iChipIdents[i])
-			return i;
-	}
-	return 0;
-}
-
-std::unique_ptr<CInstrument> CChannelMap::GetChipInstrument(int Chip) const		// // //
-{
-	// Get instrument from chip ID
-	int Index = GetChipIndex(Chip);
-	return FTExt::InstrumentFactory::Make(m_iChipInstType[Index]);
-}
 
 // Todo move enabled module channels here
 

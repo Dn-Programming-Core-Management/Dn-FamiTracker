@@ -25,6 +25,7 @@
 
 #include "Instrument.h"		// // //
 #include "FamiTrackerTypes.h"		// // //
+#include <vector>		// // //
 #include <memory>		// // //
 
 class CTrackerChannel;		// // //
@@ -34,39 +35,15 @@ class CTrackerChannel;		// // //
 class CChannelMap
 {
 public:
-	CChannelMap();
-	~CChannelMap();
-	void SetupSoundChips();
-
-	int			GetChipCount() const;
-	LPCTSTR		GetChipName(int Index) const;
-	int			GetChipIdent(int Index) const;
-	int			GetChipIndex(int Ident) const;
-	std::unique_ptr<CInstrument> GetChipInstrument(int Chip) const;		// // //
-
-	// Active channel map
 	void			ResetChannels();
 	void			RegisterChannel(CTrackerChannel *pChannel, int ChannelType, int ChipType);
 	CTrackerChannel	*GetChannel(int Index) const;
 	int				GetChannelType(int Channel) const;
 	int				GetChipType(int Channel) const;
 
-public:
-	static const int CHIP_COUNT = 8;	// Number of allowed expansion chips
-
-protected:
-	void AddChip(int Ident, inst_type_t Inst, LPCTSTR pName);
-
-protected:
-	// Chips
-	int				m_iAddedChips;
-	int				m_iChipIdents[CHIP_COUNT];
-	LPCTSTR			m_pChipNames[CHIP_COUNT];
-	inst_type_t		m_iChipInstType[CHIP_COUNT];		// // //
-
-	// Current set
+private:		// // //
 	CTrackerChannel	*m_pChannels[CHANNELS];
-	int				m_iRegisteredChannels;
+	int				m_iRegisteredChannels = 0;
 	int				m_iChannelTypes[CHANNELS];
 	int				m_iChannelChip[CHANNELS];
 

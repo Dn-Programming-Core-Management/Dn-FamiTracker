@@ -62,6 +62,7 @@
 #include "SpeedDlg.h"		// // //
 #include "TransposeDlg.h"	// // //
 #include "DPI.h"		// // //
+#include "InstrumentFactory.h"		// // //
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -940,7 +941,33 @@ void CMainFrame::NewInstrument(int ChipType)
 	// Add new instrument to module
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
 
-	int Index = pDoc->AddInstrument(CFamiTrackerDoc::NEW_INST_NAME, ChipType);
+	// // // Get instrument from chip ID
+	auto pInst = [&] () -> std::unique_ptr<CInstrument> {
+		const auto INST_MAP = {		// // //
+			std::make_pair(SNDCHIP_NONE, INST_2A03),
+			std::make_pair(SNDCHIP_VRC6, INST_VRC6),
+			std::make_pair(SNDCHIP_VRC7, INST_VRC7),
+			std::make_pair(SNDCHIP_FDS,  INST_FDS),
+			std::make_pair(SNDCHIP_MMC5, INST_2A03),
+			std::make_pair(SNDCHIP_N163, INST_N163),
+			std::make_pair(SNDCHIP_S5B,  INST_S5B),
+		};
+		for (const auto &x : INST_MAP)		// // //
+			if (x.first == ChipType)
+				return FTExt::InstrumentFactory::Make(x.second);
+		return nullptr;
+	}();
+
+	if (!pInst) {		// // //
+#ifdef _DEBUG
+		MessageBox(_T("(TODO) add instrument definitions for this chip"), _T("Stop"), MB_OK);
+#endif
+		return;
+	}
+
+	pInst->Setup();
+	pInst->SetName(CFamiTrackerDoc::NEW_INST_NAME);
+	int Index = pDoc->AddInstrument(std::move(pInst));		// // //
 
 	if (Index == -1) {
 		// Out of slots
