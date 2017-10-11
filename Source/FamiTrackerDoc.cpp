@@ -69,6 +69,7 @@
 #include "APU/APU.h"
 #include "SimpleFile.h"		// // //
 #include "SongView.h"		// // //
+#include "ChannelMap.h"		// // //
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -183,9 +184,9 @@ END_MESSAGE_MAP()
 CFamiTrackerDoc::CFamiTrackerDoc() : 
 	m_bFileLoaded(false), 
 	m_bFileLoadFailed(false), 
-	m_iRegisteredChannels(0), 
 	m_iNamcoChannels(0),		// // //
 	m_bDisplayComment(false),
+	m_pChannelMap(std::make_unique<CChannelMap>()),		// // //
 	m_pInstrumentManager(new CInstrumentManager(this)),
 	m_pBookmarkManager(new CBookmarkManager(MAX_TRACKS))
 {
@@ -819,7 +820,7 @@ bool CFamiTrackerDoc::WriteBlock_Header(CDocumentFile *pDocFile, const int Versi
 
 	for (unsigned int i = 0; i < m_iChannelsAvailable; ++i) {
 		// Channel type
-		pDocFile->WriteBlockChar(m_iChannelTypes[i]);
+		pDocFile->WriteBlockChar(GetChannelType(i));		// // //
 		for (unsigned int j = 0; j < m_iTrackCount; ++j) {
 			ASSERT(m_pTracks[j] != NULL);
 			// Effect columns
@@ -4051,21 +4052,17 @@ bool CFamiTrackerDoc::IsPatternEmpty(unsigned int Track, unsigned int Channel, u
 
 int CFamiTrackerDoc::GetChannelType(int Channel) const
 {
-	ASSERT(m_iRegisteredChannels != 0);
-	ASSERT(Channel < m_iRegisteredChannels);
-	return m_iChannelTypes[Channel];
+	return m_pChannelMap->GetChannelType(Channel);		// // //
 }
 
 int CFamiTrackerDoc::GetChipType(int Channel) const
 {
-	ASSERT(m_iRegisteredChannels != 0);
-	ASSERT(Channel < m_iRegisteredChannels);
-	return m_pChannels[Channel]->GetChip();
+	return m_pChannelMap->GetChipType(Channel);		// // //
 }
 
 int CFamiTrackerDoc::GetChannelCount() const
 {
-	return m_iRegisteredChannels;
+	return m_pChannelMap->GetChannelCount();		// // //
 }
 
 int CFamiTrackerDoc::GetChannelPosition(int Channel, unsigned char Chip)		// // //
@@ -4104,31 +4101,23 @@ int CFamiTrackerDoc::GetChannelPosition(int Channel, unsigned char Chip)		// // 
 void CFamiTrackerDoc::ResetChannels()
 {
 	// Clears all channels from the document
-	m_iRegisteredChannels = 0;
+	m_pChannelMap->ResetChannels();		// // //
 }
 
 void CFamiTrackerDoc::RegisterChannel(CTrackerChannel *pChannel, int ChannelType, int ChipType)
 {
 	// Adds a channel to the document
-	m_pChannels[m_iRegisteredChannels] = pChannel;
-	m_iChannelTypes[m_iRegisteredChannels] = ChannelType;
-	m_iChannelChip[m_iRegisteredChannels] = ChipType;
-	m_iRegisteredChannels++;
+	m_pChannelMap->RegisterChannel(pChannel, ChannelType, ChipType);		// // //
 }
 
 CTrackerChannel *CFamiTrackerDoc::GetChannel(int Index) const
 {
-	return m_pChannels[Index];
+	return m_pChannelMap->GetChannel(Index);		// // //
 }
 
 int CFamiTrackerDoc::GetChannelIndex(int Channel) const
 {
-	// Translate channel ID to index, returns -1 if not found
-	for (int i = 0; i < m_iRegisteredChannels; ++i) {
-		if (m_pChannels[i]->GetID() == Channel)
-			return i;
-	}
-	return -1;
+	return m_pChannelMap->GetChannelType(Channel);		// // //
 }
 
 // Vibrato functions
@@ -4659,7 +4648,7 @@ void CFamiTrackerDoc::SwapInstruments(int First, int Second)
 	m_pInstrumentManager->SwapInstruments(First, Second);		// // //
 	
 	// Scan patterns
-	const unsigned int Count = m_iRegisteredChannels;
+	const unsigned int Count = GetChannelCount();
 	for (unsigned int i = 0; i < m_iTrackCount; ++i) {
 		CPatternData *pTrack = m_pTracks[i];
 		for (int j = 0; j < MAX_PATTERN; ++j) {

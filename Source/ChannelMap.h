@@ -38,6 +38,8 @@ public:
 	void			ResetChannels();
 	void			RegisterChannel(CTrackerChannel *pChannel, int ChannelType, int ChipType);
 	CTrackerChannel	*GetChannel(int Index) const;
+	int				GetChannelIndex(int Channel) const;
+	int				GetChannelCount() const;		// // //
 	int				GetChannelType(int Channel) const;
 	int				GetChipType(int Channel) const;
 

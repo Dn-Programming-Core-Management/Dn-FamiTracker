@@ -79,6 +79,7 @@ struct stSequence {
 // #include "FrameEditorTypes.h"		// // //
 
 // External classes
+class CChannelMap;		// // //
 class CTrackerChannel;
 class CDocumentFile;
 class CSeqInstrument;		// // // TODO: move to instrument manager
@@ -458,10 +459,7 @@ private:
 	//
 
 	// Channels (TODO: run-time state, remove or move these?)
-	CTrackerChannel	*m_pChannels[CHANNELS];
-	int				m_iRegisteredChannels;
-	int				m_iChannelTypes[CHANNELS];
-	int				m_iChannelChip[CHANNELS];
+	std::unique_ptr<CChannelMap> m_pChannelMap;		// // //
 
 
 	//

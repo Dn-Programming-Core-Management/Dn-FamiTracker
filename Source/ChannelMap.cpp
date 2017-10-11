@@ -29,12 +29,15 @@
  *
  */
 
-// Todo move enabled module channels here
+int CChannelMap::GetChannelCount() const {		// // //
+	return m_iRegisteredChannels;
+}
 
 int CChannelMap::GetChannelType(int Channel) const
 {
 	// Return channel type form channel index
 	ASSERT(m_iRegisteredChannels != 0);
+	ASSERT(Channel < m_iRegisteredChannels);		// // //
 	return m_iChannelTypes[Channel];
 }
 
@@ -67,4 +70,13 @@ CTrackerChannel *CChannelMap::GetChannel(int Index) const
 	ASSERT(m_iRegisteredChannels != 0);
 	ASSERT(m_pChannels[Index] != NULL);
 	return m_pChannels[Index];
+}
+
+int CChannelMap::GetChannelIndex(int Channel) const {		// // //
+	// Translate channel ID to index, returns -1 if not found
+	for (int i = 0; i < m_iRegisteredChannels; ++i) {
+		if (m_pChannels[i]->GetID() == Channel)
+			return i;
+	}
+	return -1;
 }
