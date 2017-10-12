@@ -186,7 +186,7 @@ void CSoundGen::SetVisualizerWindow(CVisualizerWnd *pWnd)
 	m_csVisualizerWndLock.Unlock();
 }
 
-void CSoundGen::RegisterChannels(int Chip, CFamiTrackerDoc *pDoc)
+void CSoundGen::RegisterChannels()
 {
 	// This method will add channels to the document object, depending on the expansion chip used.
 	// Called from the document object (from the main thread)
@@ -194,8 +194,7 @@ void CSoundGen::RegisterChannels(int Chip, CFamiTrackerDoc *pDoc)
 	// Called from main thread
 	ASSERT(GetCurrentThreadId() == theApp.m_nThreadID);
 
-	ASSERT(pDoc == m_pDocument);
-	m_pSoundDriver->RegisterTracks(*pDoc);		// // //
+	m_pSoundDriver->RegisterTracks();		// // //
 }
 
 void CSoundGen::SelectChip(int Chip)

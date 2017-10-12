@@ -128,9 +128,7 @@ public:
 	//
 	// Interface functions (not related to document data) TODO move this?
 	//
-	void			ResetChannels();
-	void			RegisterChannel(CTrackerChannel *pChannel, int ChannelType, int ChipType);
-	CTrackerChannel* GetChannel(int Index) const;
+	CTrackerChannel	&GetChannel(int Index) const;		// // //
 	int				GetChannelIndex(int Channel) const;
 
 	int				GetChannelType(int Channel) const;
@@ -319,10 +317,11 @@ public:
 	void			SetExceededFlag(bool Exceed = 1);		// // //
 
 	// // // from the component interface
-	CSequenceManager *const GetSequenceManager(int InstType) const;
-	CInstrumentManager *const GetInstrumentManager() const;
-	CDSampleManager *const GetDSampleManager() const;
-	CBookmarkManager *const GetBookmarkManager() const;
+	CChannelMap *const GetChannelMap() const override;
+	CSequenceManager *const GetSequenceManager(int InstType) const override;
+	CInstrumentManager *const GetInstrumentManager() const override;
+	CDSampleManager *const GetDSampleManager() const override;
+	CBookmarkManager *const GetBookmarkManager() const override;
 	void			Modify(bool Change);
 	void			ModifyIrreversible();
 

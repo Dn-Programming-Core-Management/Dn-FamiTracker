@@ -215,7 +215,7 @@ void CSongState::Retrieve(const CFamiTrackerDoc &doc, unsigned Track, unsigned F
 				if (Note.Vol != MAX_VOLUME)
 					chState.Volume = Note.Vol;
 		
-			CTrackerChannel *ch = doc.GetChannel(c);
+			CTrackerChannel &ch = doc.GetChannel(c);
 			for (int k = EffColumns; k >= 0; k--) {
 				unsigned char fx = Note.EffNumber[k], xy = Note.EffParam[k];
 				switch (fx) {
@@ -241,18 +241,18 @@ void CSongState::Retrieve(const CFamiTrackerDoc &doc, unsigned Track, unsigned F
 					}
 					continue;
 				case EF_VOLUME:
-					if (!ch->IsEffectCompatible(fx, xy)) continue;
+					if (!ch.IsEffectCompatible(fx, xy)) continue;
 					if (chState.Effect_LengthCounter == -1 && xy >= 0xE0 && xy <= 0xE3)
 						chState.Effect_LengthCounter = xy;
 					else if (chState.Effect[fx] == -1 && xy <= 0x1F) {
 						chState.Effect[fx] = xy;
 						if (chState.Effect_LengthCounter == -1)
-							chState.Effect_LengthCounter = ch->GetID() == CHANID_TRIANGLE ? 0xE1 : 0xE2;
+							chState.Effect_LengthCounter = ch.GetID() == CHANID_TRIANGLE ? 0xE1 : 0xE2;
 					}
 					continue;
 				case EF_NOTE_CUT:
-					if (!ch->IsEffectCompatible(fx, xy)) continue;
-					if (ch->GetID() != CHANID_TRIANGLE) continue;
+					if (!ch.IsEffectCompatible(fx, xy)) continue;
+					if (ch.GetID() != CHANID_TRIANGLE) continue;
 					if (chState.Effect[fx] == -1) {
 						if (xy <= 0x7F) {
 							if (chState.Effect_LengthCounter == -1)
@@ -266,12 +266,12 @@ void CSongState::Retrieve(const CFamiTrackerDoc &doc, unsigned Track, unsigned F
 					}
 					continue;
 				case EF_FDS_MOD_DEPTH:
-					if (!ch->IsEffectCompatible(fx, xy)) continue;
+					if (!ch.IsEffectCompatible(fx, xy)) continue;
 					if (chState.Effect_AutoFMMult == -1 && xy >= 0x80)
 						chState.Effect_AutoFMMult = xy;
 					continue;
 				case EF_FDS_MOD_SPEED_HI:
-					if (!ch->IsEffectCompatible(fx, xy)) continue;
+					if (!ch.IsEffectCompatible(fx, xy)) continue;
 					if (xy <= 0x0F)
 						maskFDS = true;
 					else if (!maskFDS && chState.Effect[fx] == -1) {
@@ -280,7 +280,7 @@ void CSongState::Retrieve(const CFamiTrackerDoc &doc, unsigned Track, unsigned F
 					}
 					continue;
 				case EF_FDS_MOD_SPEED_LO:
-					if (!ch->IsEffectCompatible(fx, xy)) continue;
+					if (!ch.IsEffectCompatible(fx, xy)) continue;
 					maskFDS = true;
 					continue;
 				case EF_SAMPLE_OFFSET:
@@ -288,9 +288,9 @@ void CSongState::Retrieve(const CFamiTrackerDoc &doc, unsigned Track, unsigned F
 				case EF_SUNSOFT_ENV_LO: case EF_SUNSOFT_ENV_HI: case EF_SUNSOFT_ENV_TYPE:
 				case EF_N163_WAVE_BUFFER:
 				case EF_VRC7_PORT:
-					if (!ch->IsEffectCompatible(fx, xy)) continue;
+					if (!ch.IsEffectCompatible(fx, xy)) continue;
 				case EF_DUTY_CYCLE:
-					if (ch->GetChip() == SNDCHIP_VRC7) continue;		// // // 050B
+					if (ch.GetChip() == SNDCHIP_VRC7) continue;		// // // 050B
 				case EF_VIBRATO: case EF_TREMOLO: case EF_PITCH: case EF_VOLUME_SLIDE:
 					if (chState.Effect[fx] == -1)
 						chState.Effect[fx] = xy;

@@ -50,7 +50,7 @@ public:
 	void SetupTracks();
 	void LoadDocument(const CFamiTrackerDoc &doc, CAPU &apu, CSoundGen &sound);
 	void ConfigureDocument();
-	void RegisterTracks(CFamiTrackerDoc &doc);
+	void RegisterTracks();
 
 	void StartPlayer(std::unique_ptr<CPlayerCursor> cur);
 	void StopPlayer();

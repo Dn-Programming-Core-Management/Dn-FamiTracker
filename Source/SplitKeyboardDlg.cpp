@@ -91,9 +91,9 @@ BOOL CSplitKeyboardDlg::OnInitDialog()
 	pCombo->AddString(KEEP_INST_STRING);
 	pCombo->SetCurSel(0);
 	for (int i = 0; i < pDoc->GetChannelCount(); ++i) {
-		auto pChan = pDoc->GetChannel(i);
-		pCombo->AddString(pChan->GetChannelName());
-		if (m_iSplitChannel == pChan->GetID())
+		const auto &Chan = pDoc->GetChannel(i);
+		pCombo->AddString(Chan.GetChannelName());
+		if (m_iSplitChannel == Chan.GetID())
 			pCombo->SetCurSel(i + 1);
 	}
 

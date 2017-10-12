@@ -32,6 +32,7 @@
 #include "SongState.h"
 #include "APU/APU.h"
 #include "ChannelsN163.h"
+#include "ChannelMap.h"
 
 
 
@@ -59,7 +60,7 @@ void CSoundDriver::SetupTracks() {
 	// Only called once!
 
 	// Clear all channels
-	tracks_.clear();		// // /.
+	tracks_.clear();		// // //
 
 	// 2A03/2A07
 	// // // Short header names
@@ -129,29 +130,27 @@ void CSoundDriver::ConfigureDocument() {
 		}
 }
 
-void CSoundDriver::RegisterTracks(CFamiTrackerDoc &doc) {
-	ASSERT(&doc == doc_); // TODO: use doc_'s track map object
-
+void CSoundDriver::RegisterTracks() {
 	// This affects the sound channel interface so it must be synchronized
-	doc.LockDocument();
+	doc_->LockDocument();
 
-	// Clear all registered channels
-	doc.ResetChannels();
-	const auto Chip = doc.GetExpansionChip();
+	auto &Map = *doc_->GetChannelMap();		// // //
+	Map.ResetChannels();
 
 	// Register the channels in the document
 	// Expansion & internal channels
+	const auto Chip = doc_->GetExpansionChip();
 	int i = 0;		// // //
 	for (auto &x : tracks_) {
 		int ID = x.second->GetID();		// // //
 		if (x.first && ((x.second->GetChip() & Chip) || (i <= CHANID_DPCM))			// // //
 					&& (i >= CHANID_FDS || i < CHANID_N163_CH1 + doc_->GetNamcoChannels())) {
-			doc.RegisterChannel(x.second.get(), ID, x.second->GetChip());
+			Map.RegisterChannel(*x.second);
 		}
 		++i;
 	}
 
-	doc.UnlockDocument();
+	doc_->UnlockDocument();
 }
 
 void CSoundDriver::StartPlayer(std::unique_ptr<CPlayerCursor> cur) {
@@ -323,7 +322,7 @@ void CSoundDriver::UpdateAPU(int cycles) {
 }
 
 void CSoundDriver::QueueNote(int chan, stChanNote &note, note_prio_t priority) {
-	doc_->GetChannel(chan)->SetNote(note, NOTE_PRIO_1);
+	doc_->GetChannel(chan).SetNote(note, NOTE_PRIO_1);
 }
 
 void CSoundDriver::SetPlayerPos(int Frame, int Row) {
@@ -337,7 +336,7 @@ void CSoundDriver::EnqueueFrame(int Frame) {
 
 void CSoundDriver::ForceReloadInstrument(int chan) {
 	if (doc_)
-		tracks_[doc_->GetChannel(chan)->GetID()].first->ForceReloadInstrument();
+		tracks_[doc_->GetChannel(chan).GetID()].first->ForceReloadInstrument();
 }
 
 bool CSoundDriver::IsPlaying() const {

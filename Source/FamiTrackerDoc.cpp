@@ -3238,7 +3238,7 @@ void CFamiTrackerDoc::SetEffColumns(unsigned int Track, unsigned int Channel, un
 	ASSERT(Channel < MAX_CHANNELS);
 	ASSERT(Columns < MAX_EFFECT_COLUMNS);
 
-	GetChannel(Channel)->SetColumnCount(Columns);
+	GetChannel(Channel).SetColumnCount(Columns);		// // //
 	GetTrack(Track)->SetEffectColumnCount(Channel, Columns);
 
 	SetModifiedFlag();
@@ -3868,7 +3868,7 @@ void CFamiTrackerDoc::SetupChannels(unsigned char Chip)
 	m_iExpansionChip = Chip;
 
 	// Register the channels
-	theApp.GetSoundGenerator()->RegisterChannels(Chip, this); 
+	theApp.GetSoundGenerator()->RegisterChannels();		// // //
 
 	m_iChannelsAvailable = GetChannelCount();
 
@@ -3894,6 +3894,10 @@ void CFamiTrackerDoc::ApplyExpansionChip()
 //
 // from the compoment interface
 //
+
+CChannelMap *const CFamiTrackerDoc::GetChannelMap() const {
+	return m_pChannelMap.get();
+}
 
 CSequenceManager *const CFamiTrackerDoc::GetSequenceManager(int InstType) const
 {
@@ -4098,26 +4102,14 @@ int CFamiTrackerDoc::GetChannelPosition(int Channel, unsigned char Chip)		// // 
 	return pos;
 }
 
-void CFamiTrackerDoc::ResetChannels()
-{
-	// Clears all channels from the document
-	m_pChannelMap->ResetChannels();		// // //
-}
-
-void CFamiTrackerDoc::RegisterChannel(CTrackerChannel *pChannel, int ChannelType, int ChipType)
-{
-	// Adds a channel to the document
-	m_pChannelMap->RegisterChannel(pChannel, ChannelType, ChipType);		// // //
-}
-
-CTrackerChannel *CFamiTrackerDoc::GetChannel(int Index) const
+CTrackerChannel &CFamiTrackerDoc::GetChannel(int Index) const		// // //
 {
 	return m_pChannelMap->GetChannel(Index);		// // //
 }
 
 int CFamiTrackerDoc::GetChannelIndex(int Channel) const
 {
-	return m_pChannelMap->GetChannelType(Channel);		// // //
+	return m_pChannelMap->GetChannelIndex(Channel);		// // //
 }
 
 // Vibrato functions

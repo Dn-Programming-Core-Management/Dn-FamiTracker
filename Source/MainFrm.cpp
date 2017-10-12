@@ -2683,7 +2683,7 @@ void CMainFrame::OnNewInstrumentMenu(NMHDR* pNotifyStruct, LRESULT* result)
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(GetActiveView());
 	
 	int Chip = pDoc->GetExpansionChip();
-	int SelectedChip = pDoc->GetChannel(pView->GetSelectedChannel())->GetChip();	// where the cursor is located
+	int SelectedChip = pDoc->GetChipType(pView->GetSelectedChannel());		// // // where the cursor is located
 
 	menu.AppendMenu(MF_STRING, ID_INSTRUMENT_ADD_2A03, _T("New 2A03 instrument"));
 

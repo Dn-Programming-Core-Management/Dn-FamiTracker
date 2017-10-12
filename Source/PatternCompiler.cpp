@@ -154,13 +154,13 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 		
 		bool Action = false;
 
-		CTrackerChannel *pTrackerChannel = m_pDocument->GetChannel(Channel);
-		int ChanID = pTrackerChannel->GetID();
-		int ChipID = pTrackerChannel->GetChip();
+		const auto &TrackerChannel = m_pDocument->GetChannel(Channel);		// // //
+		int ChanID = TrackerChannel.GetID();
+		int ChipID = TrackerChannel.GetChip();
 
 		if (ChanNote.Instrument != MAX_INSTRUMENTS && ChanNote.Instrument != HOLD_INSTRUMENT &&
 			Note != HALT && Note != NONE && Note != RELEASE) {		// // //
-			if (!pTrackerChannel->IsInstrumentCompatible(ChanNote.Instrument,
+			if (!TrackerChannel.IsInstrumentCompatible(ChanNote.Instrument,
 				m_pDocument->GetInstrumentType(ChanNote.Instrument))) {		// // //
 				CString str;
 				str.Format(_T("Error: Missing or incompatible instrument (on row %i, channel %i, pattern %i)\n"), i, Channel, Pattern);

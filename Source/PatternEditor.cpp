@@ -1321,8 +1321,6 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 	const char *NOTES_A = m_bDisplayFlat ? NOTES_A_FLAT : NOTES_A_SHARP;
 	const char *NOTES_B = m_bDisplayFlat ? NOTES_B_FLAT : NOTES_B_SHARP;
 
-	const CTrackerChannel *pTrackerChannel = m_pDocument->GetChannel(Channel);
-
 	int EffNumber = Column >= 4 ? NoteData.EffNumber[(Column - 4) / 3] : 0;		// // //
 	int EffParam  = Column >= 4 ? NoteData.EffParam[(Column - 4) / 3] : 0;
 
@@ -1345,15 +1343,17 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 	COLORREF DimInst = ColorInfo.Compact;		// // //
 	COLORREF DimEff = ColorInfo.Compact;		// // //
 
+	const auto &TrackerChannel = m_pDocument->GetChannel(Channel);		// // //
+
 	// Make non-available instruments red in the pattern editor
 	if (NoteData.Instrument < MAX_INSTRUMENTS && 
 		(!m_pDocument->IsInstrumentUsed(NoteData.Instrument) ||
-		!pTrackerChannel->IsInstrumentCompatible(NoteData.Instrument, m_pDocument->GetInstrumentType(NoteData.Instrument)))) { // // //
+		!TrackerChannel.IsInstrumentCompatible(NoteData.Instrument, m_pDocument->GetInstrumentType(NoteData.Instrument)))) { // // //
 		DimInst = InstColor = RGB(255, 0, 0);
 	}
 
 	// // // effects too
-	if (EffNumber != EF_NONE) if (!pTrackerChannel->IsEffectCompatible(EffNumber, EffParam))
+	if (EffNumber != EF_NONE) if (!TrackerChannel.IsEffectCompatible(EffNumber, EffParam))
 		DimEff = EffColor = RGB(255, 0, 0);		// // //
 
 	int PosY = m_iRowHeight - m_iRowHeight / 8;		// // //
@@ -1423,7 +1423,7 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 					DrawChar(pDC, PosX + m_iCharWidth * 2, PosY, NOTES_C[NoteData.Octave], ColorInfo.Note);
 					break;
 				default:
-					if (pTrackerChannel->GetID() == CHANID_NOISE) {
+					if (TrackerChannel.GetID() == CHANID_NOISE) {
 						// Noise
 						char NoiseFreq = (NoteData.Note - 1 + NoteData.Octave * 12) & 0x0F;
 						DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[NoiseFreq], ColorInfo.Note);		// // //
@@ -1459,7 +1459,7 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 			break;
 		case C_VOLUME: 
 			// Volume
-			if (NoteData.Vol == MAX_VOLUME || pTrackerChannel->GetID() == CHANID_DPCM)
+			if (NoteData.Vol == MAX_VOLUME || TrackerChannel.GetID() == CHANID_DPCM)
 				BAR(PosX, PosY);
 			else 
 				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[NoteData.Vol & 0x0F], ColorInfo.Volume);		// // //
@@ -1538,9 +1538,9 @@ void CPatternEditor::DrawHeader(CDC *pDC)
 		}
 
 		// Text
-		CTrackerChannel *pChannel = m_pDocument->GetChannel(Channel);
+		const auto &TrackerChannel = m_pDocument->GetChannel(Channel);		// // //
 		CString pChanName = (m_bCompactMode && m_iCharWidth < 6) ? _T("") :
-			(m_bCompactMode || m_iCharWidth < 9) ? pChannel->GetShortName() : pChannel->GetChannelName();		// // //
+			(m_bCompactMode || m_iCharWidth < 9) ? TrackerChannel.GetShortName() : TrackerChannel.GetChannelName();		// // //
 
 		COLORREF HeadTextCol = bMuted ? STATIC_COLOR_SCHEME.CHANNEL_MUTED : STATIC_COLOR_SCHEME.CHANNEL_NORMAL;
 
@@ -1641,8 +1641,7 @@ void CPatternEditor::DrawMeters(CDC *pDC)
 
 	for (int i = 0; i < m_iChannelsVisible; ++i) {
 		int Channel = i + m_iFirstChannel;
-		CTrackerChannel *pChannel = m_pDocument->GetChannel(Channel);
-		int level = pChannel->GetVolumeMeter();
+		int level = m_pDocument->GetChannel(Channel).GetVolumeMeter();		// // //
 
 		for (int j = 0; j < 15; ++j) {
 			int x = Offset + (j * BAR_SIZE);
@@ -3879,7 +3878,7 @@ void CPatternEditor::GetSelectionAsText(CString &str) const		// // //
 	CString Header(_T(' '), HexLength + 3);
 	Header.Append(_T("# "));
 	for (int i = it.first.m_iChannel; i <= it.second.m_iChannel; ++i) {
-		Header.AppendFormat(_T(": %-13s"), m_pDocument->GetChannel(i)->GetChannelName());
+		Header.AppendFormat(_T(": %-13s"), m_pDocument->GetChannel(i).GetChannelName());
 		unsigned Columns = m_pDocument->GetEffColumns(Track, i);
 		if (i == it.second.m_iChannel)
 			Columns = std::min(Columns, static_cast<unsigned>(std::max(0, static_cast<int>(GetSelectColumn(it.second.m_iColumn)) - 3)));

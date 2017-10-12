@@ -22,6 +22,7 @@
 
 #pragma once
 
+class CChannelMap;
 class CSequenceManager;
 class CInstrumentManager;
 class CDSampleManager;
@@ -30,6 +31,7 @@ class CBookmarkManager;
 class CFTMComponentInterface
 {
 public:
+	virtual CChannelMap *const GetChannelMap() const = 0;
 	virtual CSequenceManager *const GetSequenceManager(int InstType) const = 0;
 	virtual CInstrumentManager *const GetInstrumentManager() const = 0;
 	virtual CDSampleManager *const GetDSampleManager() const = 0;

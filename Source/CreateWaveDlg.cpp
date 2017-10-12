@@ -155,7 +155,7 @@ BOOL CCreateWaveDlg::OnInitDialog()
 
 	int ChannelCount = pDoc->GetAvailableChannels();
 	for (int i = 0; i < ChannelCount; ++i) {
-		m_ctlChannelList.AddString(pDoc->GetChannel(i)->GetChannelName());
+		m_ctlChannelList.AddString(pDoc->GetChannel(i).GetChannelName());		// // //
 		m_ctlChannelList.SetCheck(i, 1);
 	}
 

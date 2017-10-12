@@ -21,7 +21,6 @@
 */
 
 #include "ChannelMap.h"
-#include "APU/Types.h"
 #include "TrackerChannel.h"
 
 /*
@@ -29,54 +28,41 @@
  *
  */
 
-int CChannelMap::GetChannelCount() const {		// // //
-	return m_iRegisteredChannels;
-}
-
-int CChannelMap::GetChannelType(int Channel) const
-{
-	// Return channel type form channel index
-	ASSERT(m_iRegisteredChannels != 0);
-	ASSERT(Channel < m_iRegisteredChannels);		// // //
-	return m_iChannelTypes[Channel];
-}
-
-int CChannelMap::GetChipType(int Channel) const
-{
-	// Return chip type from channel index
-	ASSERT(m_iRegisteredChannels != 0);
-	ASSERT(Channel < m_iRegisteredChannels);
-	return m_pChannels[Channel]->GetChip();
-}
-
 void CChannelMap::ResetChannels()
 {
-	// Clears all channels from the channel map
-	m_iRegisteredChannels = 0;
+	m_pChannels.clear();		// // //
+	m_iChannelIndices.clear();
 }
 
-void CChannelMap::RegisterChannel(CTrackerChannel *pChannel, int ChannelType, int ChipType)
+void CChannelMap::RegisterChannel(CTrackerChannel &Channel)		// // //
 {
 	// Adds a channel to the channel map
-	m_pChannels[m_iRegisteredChannels] = pChannel;
-	m_iChannelTypes[m_iRegisteredChannels] = ChannelType;
-	m_iChannelChip[m_iRegisteredChannels] = ChipType;
-	++m_iRegisteredChannels;
+	m_iChannelIndices.try_emplace(Channel.GetID(), m_pChannels.size());		// // //
+	m_pChannels.push_back(&Channel);
 }
 
-CTrackerChannel *CChannelMap::GetChannel(int Index) const
+CTrackerChannel &CChannelMap::GetChannel(int Index) const		// // //
 {
-	// Return channel from index
-	ASSERT(m_iRegisteredChannels != 0);
-	ASSERT(m_pChannels[Index] != NULL);
-	return m_pChannels[Index];
+	return *m_pChannels[Index];
 }
 
 int CChannelMap::GetChannelIndex(int Channel) const {		// // //
 	// Translate channel ID to index, returns -1 if not found
-	for (int i = 0; i < m_iRegisteredChannels; ++i) {
-		if (m_pChannels[i]->GetID() == Channel)
-			return i;
-	}
+	if (auto it = m_iChannelIndices.find(Channel); it != m_iChannelIndices.cend())
+		return it->second;
 	return -1;
+}
+
+int CChannelMap::GetChannelCount() const {		// // //
+	return m_pChannels.size();
+}
+
+int CChannelMap::GetChannelType(int Channel) const
+{
+	return m_pChannels[Channel]->GetID();
+}
+
+int CChannelMap::GetChipType(int Channel) const
+{
+	return m_pChannels[Channel]->GetChip();
 }

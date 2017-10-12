@@ -1579,13 +1579,13 @@ void CFamiTrackerView::SetCompactMode(bool Mode)		// // //
 void CFamiTrackerView::RegisterKeyState(int Channel, int Note)
 {
 	CFamiTrackerDoc *pDoc = GetDocument();
-	CTrackerChannel *pChannel = pDoc->GetChannel(m_pPatternEditor->GetChannel());
+	const auto &Chan = pDoc->GetChannel(m_pPatternEditor->GetChannel());		// // //
 
-	if (pChannel->GetID() == Channel)
+	if (Chan.GetID() == Channel)
 		m_iKeyboardNote = Note;
 
 	/*
-	if (Channel == m_pPatternEditor->GetChannel())
+	if (Chan == m_pPatternEditor->GetChannel())
 		m_iKeyboardNote = Note;
 		*/
 }
@@ -2047,7 +2047,7 @@ void CFamiTrackerView::PlayNote(unsigned int Channel, unsigned int Note, unsigne
 		if (ret != -1) {
 			if (IsSplitEnabled(MidiNote, ret)) 	// // //
 				SplitKeyboardAdjust(NoteData);
-			pDoc->GetChannel(ret)->SetNote(NoteData, NOTE_PRIO_2);
+			pDoc->GetChannel(ret).SetNote(NoteData, NOTE_PRIO_2);
 			theApp.GetSoundGenerator()->ForceReloadInstrument(ret);		// // //
 		}
 	}
@@ -2748,7 +2748,7 @@ bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, unsigned char nChar
 	CFamiTrackerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	int Chip = pDoc->GetChannel(m_pPatternEditor->GetChannel())->GetChip();
+	int Chip = pDoc->GetChannel(m_pPatternEditor->GetChannel()).GetChip();		// // //
 
 	if (nChar >= VK_NUMPAD0 && nChar <= VK_NUMPAD9)
 		nChar = '0' + nChar - VK_NUMPAD0;
@@ -3045,16 +3045,13 @@ void CFamiTrackerView::HandleKeyboardNote(char nChar, bool Pressed)
 	}
 }
 
-bool CFamiTrackerView::IsSplitEnabled(int MidiNote, int Channel) const
+bool CFamiTrackerView::IsSplitEnabled(int MidiNote, int Channel) const		// // //
 {
 	if (m_iSplitNote == -1)
 		return false;
-	if (const auto Chan = GetDocument()->GetChannel(Channel)) {
-		if (Chan->GetID() == CHANID_NOISE)
-			return false;
-		return MidiNote <= m_iSplitNote;
-	}
-	return false;
+	if (GetDocument()->GetChannel(Channel).GetID() == CHANID_NOISE)
+		return false;
+	return MidiNote <= m_iSplitNote;
 }
 
 void CFamiTrackerView::SplitKeyboardAdjust(stChanNote &Note) const		// // //
@@ -3358,9 +3355,8 @@ void CFamiTrackerView::TranslateMidiMessage()
 			
 			case MIDI_MSG_PITCH_WHEEL: 
 				{
-					CTrackerChannel *pChannel = pDoc->GetChannel(Channel);
 					int PitchValue = 0x2000 - ((Data1 & 0x7F) | ((Data2 & 0x7F) << 7));
-					pChannel->SetPitch(-PitchValue / 0x10);
+					pDoc->GetChannel(Channel).SetPitch(-PitchValue / 0x10);		// // //
 				}
 				break;
 
@@ -3809,7 +3805,7 @@ CString	CFamiTrackerView::GetEffectHint(const stChanNote &Note, int Column) cons
 	if (Index >= EF_COUNT) return _T("Undefined effect");
 
 	int Channel = m_pPatternEditor->GetChannel();
-	int Chip = GetDocument()->GetChannel(Channel)->GetChip();
+	int Chip = GetDocument()->GetChipType(Channel);
 	if (Index > EF_FDS_VOLUME || (Index == EF_FDS_VOLUME && Param >= 0x40)) ++Index;
 	if (Index > EF_TRANSPOSE || (Index == EF_TRANSPOSE && Param >= 0x80)) ++Index;
 	if (Index > EF_SUNSOFT_ENV_TYPE || (Index == EF_SUNSOFT_ENV_TYPE && Param >= 0x10)) ++Index;

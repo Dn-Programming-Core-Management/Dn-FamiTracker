@@ -130,10 +130,8 @@ BOOL CChannelsDlg::OnInitDialog()
 
 	CFamiTrackerDoc *pDoc = CFamiTrackerDoc::GetDoc();
 
-	for (unsigned i = 0; i < pDoc->GetAvailableChannels(); ++i) {
-		CTrackerChannel *pChannel = pDoc->GetChannel(i);
-		AddChannel(pChannel->GetID());
-	}
+	for (unsigned i = 0; i < pDoc->GetAvailableChannels(); ++i)
+		AddChannel(pDoc->GetChannel(i).GetID());		// // //
 /*
 	AddChannel(CHANID_SQUARE1);
 	AddChannel(CHANID_SQUARE2);

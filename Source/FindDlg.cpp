@@ -236,7 +236,7 @@ void CFindResultsBox::AddResult(const stChanNote *pNote, const CFindCursor *pCur
 	m_cListResults->InsertItem(Pos, str);
 
 	const auto pDoc = static_cast<CFamiTrackerDoc*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveDocument());
-	m_cListResults->SetItemText(Pos, CHANNEL, pDoc->GetChannel(pCursor->m_iChannel)->GetChannelName());
+	m_cListResults->SetItemText(Pos, CHANNEL, pDoc->GetChannel(pCursor->m_iChannel).GetChannelName());
 	str.Format(_T("%02X"), pDoc->GetPatternAtFrame(pCursor->m_iTrack, pCursor->m_iFrame, pCursor->m_iChannel));
 	m_cListResults->SetItemText(Pos, PATTERN, str);
 

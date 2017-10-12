@@ -91,7 +91,7 @@ void CInstrumentRecorder::RecordInstrument(const unsigned Tick, CWnd *pView)		//
 	int Detune = 0x7FFFFFFF;
 	int ID = m_iRecordChannel;
 	
-	char Chip = m_pDocument->GetChannel(m_pDocument->GetChannelIndex(m_iRecordChannel))->GetChip();
+	char Chip = m_pDocument->GetChipType(m_pDocument->GetChannelIndex(m_iRecordChannel));
 	const auto REG = [&] (int x) { return m_pSoundGen->GetReg(Chip, x); };
 
 	switch (Chip) {
@@ -309,12 +309,12 @@ void CInstrumentRecorder::ReleaseCurrent()
 
 void CInstrumentRecorder::InitRecordInstrument()
 {
-	CTrackerChannel *pChan = m_pDocument->GetChannel(m_pDocument->GetChannelIndex(m_iRecordChannel));
+	const auto &Chan = m_pDocument->GetChannel(m_pDocument->GetChannelIndex(m_iRecordChannel));
 	if (m_pDocument->GetInstrumentCount() >= MAX_INSTRUMENTS) {
 		m_iDumpCount = 0; m_iRecordChannel = -1; return;
 	}
 	size_t Type = [&] { // optimize this
-		switch (pChan->GetChip()) {
+		switch (Chan.GetChip()) {
 		case SNDCHIP_NONE: case SNDCHIP_MMC5: return INST_2A03;
 		case SNDCHIP_VRC6: return INST_VRC6;
 		// case SNDCHIP_VRC7: return INST_VRC7;
@@ -328,7 +328,7 @@ void CInstrumentRecorder::InitRecordInstrument()
 	if (!*m_pDumpInstrument) return;
 
 	CString str;
-	str.Format(_T("from %s"), pChan->GetChannelName());
+	str.Format(_T("from %s"), Chan.GetChannelName());
 	(*m_pDumpInstrument)->SetName(str);
 	
 	if (Type == INST_FDS) {

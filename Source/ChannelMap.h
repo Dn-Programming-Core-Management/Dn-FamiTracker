@@ -23,10 +23,8 @@
 
 #pragma once
 
-#include "Instrument.h"		// // //
-#include "FamiTrackerTypes.h"		// // //
 #include <vector>		// // //
-#include <memory>		// // //
+#include <unordered_map>		// // //
 
 class CTrackerChannel;		// // //
 
@@ -36,17 +34,15 @@ class CChannelMap
 {
 public:
 	void			ResetChannels();
-	void			RegisterChannel(CTrackerChannel *pChannel, int ChannelType, int ChipType);
-	CTrackerChannel	*GetChannel(int Index) const;
+	void			RegisterChannel(CTrackerChannel &Channel);		// // //
+
+	CTrackerChannel	&GetChannel(int Index) const;		// // //
 	int				GetChannelIndex(int Channel) const;
 	int				GetChannelCount() const;		// // //
 	int				GetChannelType(int Channel) const;
 	int				GetChipType(int Channel) const;
 
 private:		// // //
-	CTrackerChannel	*m_pChannels[CHANNELS];
-	int				m_iRegisteredChannels = 0;
-	int				m_iChannelTypes[CHANNELS];
-	int				m_iChannelChip[CHANNELS];
-
+	std::vector<CTrackerChannel *> m_pChannels;		// // //
+	std::unordered_map<int, int> m_iChannelIndices;		// // //
 };

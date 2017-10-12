@@ -100,7 +100,7 @@ public:
 	void		SetVisualizerWindow(CVisualizerWnd *pWnd);
 
 	// Multiple times initialization
-	void		RegisterChannels(int Chip, CFamiTrackerDoc *pDoc);
+	void		RegisterChannels();		// // //
 	void		SelectChip(int Chip);
 	void		LoadMachineSettings();		// // // 050B
 
