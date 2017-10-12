@@ -28,43 +28,44 @@
 #include <memory>
 #include <string>		// // //
 #include <map>		// // //
+#include <cstdint>		// // //
 #include "FamiTrackerTypes.h"
 
 // NSF file header
 struct stNSFHeader {
-	unsigned char	Ident[5];
-	unsigned char	Version;
-	unsigned char	TotalSongs;
-	unsigned char	StartSong;
-	unsigned short	LoadAddr;
-	unsigned short	InitAddr;
-	unsigned short	PlayAddr;
-	unsigned char	SongName[32];
-	unsigned char	ArtistName[32];
-	unsigned char	Copyright[32];
-	unsigned short	Speed_NTSC;
-	unsigned char	BankValues[8];
-	unsigned short	Speed_PAL;
-	unsigned char	Flags;
-	unsigned char	SoundChip;
-	unsigned char	Reserved[4];
+	uint8_t		Ident[5] = {'N', 'E', 'S', 'N', '\x1A'};		// // //
+	uint8_t		Version = 1;
+	uint8_t		TotalSongs;
+	uint8_t		StartSong = 1;
+	uint16_t	LoadAddr;
+	uint16_t	InitAddr;
+	uint16_t	PlayAddr;
+	uint8_t		SongName[32] = { };
+	uint8_t		ArtistName[32] = { };
+	uint8_t		Copyright[32] = { };
+	uint8_t		Speed_NTSC;
+	uint16_t	BankValues[8] = { };
+	uint16_t	Speed_PAL;
+	uint8_t		Flags = 0; // NTSC
+	uint8_t		SoundChip;
+	uint8_t		Reserved[4] = { };
 };
 
 struct stNSFeHeader {		// // //
-	unsigned char	NSFeIdent[4];
-	unsigned int	InfoSize;
-	unsigned char	InfoIdent[4];
-	unsigned short	LoadAddr;
-	unsigned short	InitAddr;
-	unsigned short	PlayAddr;
-	unsigned char	Flags;
-	unsigned char	SoundChip;
-	unsigned char	TotalSongs;
-	unsigned char	StartSong;
-	unsigned short	Speed_NTSC;
-	unsigned int	BankSize;
-	unsigned char	BankIdent[4];
-	unsigned char	BankValues[8];
+	uint8_t		NSFeIdent[4] = {'N', 'S', 'F', 'E'};
+	uint32_t	InfoSize = 12;
+	uint8_t		InfoIdent[4] = {'I', 'N', 'F', 'O'};
+	uint16_t	LoadAddr;
+	uint16_t	InitAddr;
+	uint16_t	PlayAddr;
+	uint8_t		Flags = 0; // NTSC
+	uint8_t		SoundChip;
+	uint8_t		TotalSongs;
+	uint8_t		StartSong = 0;
+	uint16_t	Speed_NTSC;
+	uint32_t	BankSize = 8;
+	uint8_t		BankIdent[4] = {'B', 'A', 'N', 'K'};
+	uint8_t		BankValues[8] = { };
 };
 
 struct driver_t;
@@ -106,8 +107,8 @@ public:
 private:
 	bool	OpenFile(LPCTSTR lpszFileName, CFile &file) const;
 
-	void	CreateHeader(stNSFHeader *pHeader, int MachineType) const;
-	void	CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType);		// // //
+	stNSFHeader CreateHeader(int MachineType) const;		// // //
+	stNSFeHeader CreateNSFeHeader(int MachineType);		// // //
 	void	SetDriverSongAddress(char *pDriver, unsigned short Address) const;
 #if 0
 	void	WriteChannelMap();

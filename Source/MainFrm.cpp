@@ -965,7 +965,7 @@ void CMainFrame::NewInstrument(int ChipType)
 		return;
 	}
 
-	pInst->Setup();
+	auto &Inst = *pInst;
 	pInst->SetName(CFamiTrackerDoc::NEW_INST_NAME);
 	int Index = pDoc->AddInstrument(std::move(pInst));		// // //
 
@@ -974,6 +974,8 @@ void CMainFrame::NewInstrument(int ChipType)
 		AfxMessageBox(IDS_INST_LIMIT, MB_ICONERROR);
 		return;
 	}
+
+	Inst.OnRegisterManager();		// // // TODO: uniform setup sequence
 
 	// Add to list and select
 	pDoc->UpdateAllViews(NULL, UPDATE_INSTRUMENT);

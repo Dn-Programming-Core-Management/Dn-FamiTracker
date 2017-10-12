@@ -31,7 +31,6 @@ class CInstrumentFDS : public CSeqInstrument {
 public:
 	CInstrumentFDS();
 	CInstrument* Clone() const override;
-	void	Setup() override;
 	void	Store(CDocumentFile *pDocFile) const override;
 	bool	Load(CDocumentFile *pDocFile) override;
 	void	SaveFile(CSimpleFile *pFile) const override;
@@ -54,7 +53,7 @@ public:
 	void	SetModulationEnable(bool Enable);
 
 protected:
-	virtual void	CloneFrom(const CInstrument *pInst);		// // //
+	void	CloneFrom(const CInstrument *pInst) override;		// // //
 
 private:
 	void StoreSequence(CDocumentFile *pDocFile, const CSequence *pSeq) const;		// // //

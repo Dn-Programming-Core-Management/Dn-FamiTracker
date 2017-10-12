@@ -29,7 +29,6 @@ class CInstrumentVRC7 : public CInstrument {
 public:
 	CInstrumentVRC7();
 	CInstrument* Clone() const override;
-	void	Setup() override;
 	void	Store(CDocumentFile *pDocFile) const override;
 	bool	Load(CDocumentFile *pDocFile) override;
 	void	SaveFile(CSimpleFile *pFile) const override;
@@ -44,7 +43,7 @@ public:
 	unsigned char GetCustomReg(int Reg) const;		// // //
 
 protected:
-	virtual void	CloneFrom(const CInstrument *pInst);		// // //
+	void	CloneFrom(const CInstrument *pInst) override;		// // //
 
 private:
 	unsigned int m_iPatch;

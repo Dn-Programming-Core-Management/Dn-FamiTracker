@@ -38,6 +38,9 @@ CInstrument::~CInstrument()
 {
 }
 
+void CInstrument::OnRegisterManager() {		// // //
+}
+
 void CInstrument::CloneFrom(const CInstrument *pSeq)
 {
 	SetName(pSeq->GetName());

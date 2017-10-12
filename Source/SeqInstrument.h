@@ -33,7 +33,6 @@ class CSeqInstrument : public CInstrument		// // //
 public:
 	CSeqInstrument(inst_type_t type);
 	CInstrument* Clone() const override;
-	void	Setup() override;
 	void	Store(CDocumentFile *pDocFile) const override;
 	bool	Load(CDocumentFile *pDocFile) override;
 	void	SaveFile(CSimpleFile *pFile) const override;
@@ -53,7 +52,8 @@ public:
 	virtual const char *GetSequenceName(int Index) const { return nullptr; }		// // //
 
 protected:
-	virtual void	CloneFrom(const CInstrument *pSeq);		// // //
+	void	OnRegisterManager() override;		// // //
+	void	CloneFrom(const CInstrument *pSeq) override;		// // //
 	CSeqInstrument *CopySequences(const CSeqInstrument *const src);		// // //
 	int		m_iSeqEnable[SEQ_COUNT];
 	int		m_iSeqIndex[SEQ_COUNT];

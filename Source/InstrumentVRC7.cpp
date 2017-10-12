@@ -56,10 +56,6 @@ void CInstrumentVRC7::CloneFrom(const CInstrument *pInst)
 	}
 }
 
-void CInstrumentVRC7::Setup()
-{
-}
-
 void CInstrumentVRC7::Store(CDocumentFile *pDocFile) const
 {
 	pDocFile->WriteBlockInt(m_iPatch);

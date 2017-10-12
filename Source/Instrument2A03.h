@@ -57,7 +57,7 @@ public:
 	const CDSample *GetDSample(int Octave, int Note) const;		// // //
 
 protected:
-	virtual void	CloneFrom(const CInstrument *pInst);		// // //
+	void	CloneFrom(const CInstrument *pInst) override;		// // //
 
 public:
 	static const char *SEQUENCE_NAME[];

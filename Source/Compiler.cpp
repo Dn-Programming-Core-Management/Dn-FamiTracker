@@ -271,11 +271,8 @@ void CCompiler::ExportNSF(LPCTSTR lpszFileName, int MachineType)
 	}
 
 	// Create NSF header
-	stNSFHeader Header;
-	CreateHeader(&Header, MachineType);
-
-	// Write header
-	OutputFile.Write(&Header, sizeof(stNSFHeader));
+	auto Header = CreateHeader(MachineType);		// // //
+	OutputFile.Write(&Header, sizeof(Header));
 
 	// Write NSF data
 	CChunkRenderNSF Render(&OutputFile, m_iLoadAddress);
@@ -404,13 +401,12 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 
 	// // // Create NSFe header
 	int iAuthSize = 0, iTimeSize = 0, iTlblSize = 0, iDataSize = 0;
-	CString str;
-	str.Format(_T("0CC-FamiTracker %i.%i.%i.%i"), VERSION);		// // //
+	CStringA str;
+	str.Format("0CC-FamiTracker %i.%i.%i.%i", VERSION);		// // //
 	iAuthSize = strlen(m_pDocument->GetSongName()) + strlen(m_pDocument->GetSongArtist())
 		+ strlen(m_pDocument->GetSongCopyright()) + str.GetLength() + 4;
 
-	stNSFeHeader Header;
-	CreateNSFeHeader(&Header, MachineType);
+	auto Header = CreateNSFeHeader(MachineType);		// // //
 	OutputFile.Write(&Header, sizeof(Header));
 
 	const unsigned char AuthIdent[] = {'a', 'u', 't', 'h'};
@@ -419,8 +415,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	OutputFile.Write(m_pDocument->GetSongName(), strlen(m_pDocument->GetSongName()) + 1);
 	OutputFile.Write(m_pDocument->GetSongArtist(), strlen(m_pDocument->GetSongArtist()) + 1);
 	OutputFile.Write(m_pDocument->GetSongCopyright(), strlen(m_pDocument->GetSongCopyright()) + 1);
-	OutputFile.Write((char*)((PCSTR)str), str.GetLength() + 1);
-	str.ReleaseBuffer();
+	OutputFile.Write((char*)((LPCSTR)str), str.GetLength() + 1);
 
 	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
 		iTimeSize += 4;
@@ -845,160 +840,76 @@ void CCompiler::PatchVibratoTable(char *pDriver) const
 	}
 }
 
-#pragma warning (push)
-#pragma warning (disable : 4996)
-void CCompiler::CreateHeader(stNSFHeader *pHeader, int MachineType) const
+stNSFHeader CCompiler::CreateHeader(int MachineType) const		// // //
 {
 	// Fill the NSF header
 	//
 	// Speed will be the same for NTSC/PAL
 	//
 
-	int Speed = m_pDocument->GetEngineSpeed();
+	stNSFHeader Header;		// // //
+	Header.TotalSongs = m_pDocument->GetTrackCount();
+	Header.LoadAddr = m_iLoadAddress;
+	Header.InitAddr = m_iInitAddress;
+	Header.PlayAddr = m_iInitAddress + 3;
+	strncpy((char *)Header.SongName,   m_pDocument->GetSongName(), std::extent_v<decltype(Header.SongName)>);
+	strncpy((char *)Header.ArtistName, m_pDocument->GetSongArtist(), std::extent_v<decltype(Header.ArtistName)>);
+	strncpy((char *)Header.Copyright,  m_pDocument->GetSongCopyright(), std::extent_v<decltype(Header.Copyright)>);
+	Header.SoundChip = m_iActualChip;		// // //
 
 	// If speed is default, write correct NTSC/PAL speed periods
 	// else, set the same custom speed for both
-	int SpeedNTSC = (Speed == 0) ? 1000000 / 60 : 1000000 / Speed;
-	int SpeedPAL = (Speed == 0) ? 1000000 / 50 : 1000000 / Speed; 
-
-	memset(pHeader, 0, 0x80);
-
-	pHeader->Ident[0]	= 0x4E;
-	pHeader->Ident[1]	= 0x45;
-	pHeader->Ident[2]	= 0x53;
-	pHeader->Ident[3]	= 0x4D;
-	pHeader->Ident[4]	= 0x1A;
-
-	pHeader->Version	= 0x01;
-	pHeader->TotalSongs	= m_pDocument->GetTrackCount();
-	pHeader->StartSong	= 1;
-	pHeader->LoadAddr	= m_iLoadAddress;
-	pHeader->InitAddr	= m_iInitAddress;
-	pHeader->PlayAddr	= m_iInitAddress + 3;
-
-	memset(pHeader->SongName, 0x00, 32);
-	memset(pHeader->ArtistName, 0x00, 32);
-	memset(pHeader->Copyright, 0x00, 32);
-
-	strncpy((char*)pHeader->SongName,   m_pDocument->GetSongName(), 32);
-	strncpy((char*)pHeader->ArtistName, m_pDocument->GetSongArtist(), 32);
-	strncpy((char*)pHeader->Copyright,  m_pDocument->GetSongCopyright(), 32);
-
-	pHeader->Speed_NTSC = SpeedNTSC; //0x411A; // default ntsc speed
+	int Speed = m_pDocument->GetEngineSpeed();
+	Header.Speed_NTSC = Speed ? 1000000 / Speed : 1000000 / 60; //0x411A; // default ntsc speed
+	Header.Speed_PAL = Speed ? 1000000 / Speed : 1000000 / 50; //0x4E20; // default pal speed
 
 	if (m_bBankSwitched) {
 		for (int i = 0; i < 4; ++i) {
 			unsigned int SampleBank = m_iFirstSampleBank + i;
-			pHeader->BankValues[i] = i;
-			pHeader->BankValues[i + 4] = (SampleBank < m_iLastBank) ? SampleBank : m_iLastBank;
+			Header.BankValues[i] = i;
+			Header.BankValues[i + 4] = (SampleBank < m_iLastBank) ? SampleBank : m_iLastBank;
 		}
-		if (LAST_BANK_FIXED) {
-			// Bind last page to last bank
-			pHeader->BankValues[7] = m_iLastBank;
-		}
+		// Bind last page to last bank
+		if constexpr (LAST_BANK_FIXED)
+			Header.BankValues[7] = m_iLastBank;
 	}
-	else {
-		for (int i = 0; i < 8; ++i) {
-			pHeader->BankValues[i] = 0;
-		}
-	}
-
-	pHeader->Speed_PAL = SpeedPAL; //0x4E20; // default pal speed
 
 	// Allow PAL or dual tunes only if no expansion chip is selected
 	// Expansion chips weren't available in PAL areas
-	if (m_pDocument->GetExpansionChip() == SNDCHIP_NONE) {
-		switch (MachineType) {
-			case 0:	// NTSC
-				pHeader->Flags = 0x00;
-				break;
-			case 1:	// PAL
-				pHeader->Flags = 0x01;
-				break;
-			case 2:	// Dual
-				pHeader->Flags = 0x02;
-				break;
-		}
-	}
-	else {
-		pHeader->Flags = 0x00;
-	}
+	if (m_pDocument->GetExpansionChip() == SNDCHIP_NONE)
+		Header.Flags = MachineType;
 
-	// Expansion chip
-	pHeader->SoundChip = m_iActualChip;		// // //
-
-	pHeader->Reserved[0] = 0x00;
-	pHeader->Reserved[1] = 0x00;
-	pHeader->Reserved[2] = 0x00;
-	pHeader->Reserved[3] = 0x00;
+	return Header;
 }
-#pragma warning (pop)
 
-void CCompiler::CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType)		// // //
+stNSFeHeader CCompiler::CreateNSFeHeader(int MachineType)		// // //
 {
-	memset(pHeader, 0, 40);
+	stNSFeHeader Header;
 
-	int SpeedPAL, SpeedNTSC, Speed;
-	Speed = m_pDocument->GetEngineSpeed();
-	if (Speed == 0) {
-		SpeedNTSC = 1000000 / 60;
-		SpeedPAL = 1000000 / 50;
-	}
-	else SpeedNTSC = SpeedPAL = 1000000 / Speed;
+	Header.TotalSongs = m_pDocument->GetTrackCount();
+	Header.LoadAddr = m_iLoadAddress;
+	Header.InitAddr = m_iInitAddress;
+	Header.PlayAddr = m_iInitAddress + 3;
+	Header.SoundChip = m_iActualChip;		// // //
 
-	pHeader->InfoSize = 12;
-	pHeader->BankSize = 8;
-
-	pHeader->NSFeIdent[0] = 'N';
-	pHeader->NSFeIdent[1] = 'S';
-	pHeader->NSFeIdent[2] = 'F';
-	pHeader->NSFeIdent[3] = 'E';
-	pHeader->InfoIdent[0] = 'I';
-	pHeader->InfoIdent[1] = 'N';
-	pHeader->InfoIdent[2] = 'F';
-	pHeader->InfoIdent[3] = 'O';
-	pHeader->BankIdent[0] = 'B';
-	pHeader->BankIdent[1] = 'A';
-	pHeader->BankIdent[2] = 'N';
-	pHeader->BankIdent[3] = 'K';
-
-	pHeader->TotalSongs	= m_pDocument->GetTrackCount();
-	pHeader->StartSong	= 0;
-	pHeader->LoadAddr	= m_iLoadAddress;
-	pHeader->InitAddr	= m_iInitAddress;
-	pHeader->PlayAddr	= m_iInitAddress + 3;
+	int Speed = m_pDocument->GetEngineSpeed();
+	Header.Speed_NTSC = Speed ? 1000000 / Speed : 1000000 / 60; //0x411A; // default ntsc speed
 
 	if (m_bBankSwitched) {
 		for (int i = 0; i < 4; ++i) {
-			pHeader->BankValues[i] = i;
-			pHeader->BankValues[i + 4] = m_iFirstSampleBank + i;
+			unsigned int SampleBank = m_iFirstSampleBank + i;
+			Header.BankValues[i] = i;
+			Header.BankValues[i + 4] = (SampleBank < m_iLastBank) ? SampleBank : m_iLastBank;
 		}
-	}
-	else {
-		for (int i = 0; i < 8; ++i) {
-			pHeader->BankValues[i] = 0;
-		}
+		// Bind last page to last bank
+		if constexpr (LAST_BANK_FIXED)
+			Header.BankValues[7] = m_iLastBank;
 	}
 
-	if (m_pDocument->GetExpansionChip() == SNDCHIP_NONE) {
-		switch (MachineType) {
-			case 0:	// NTSC
-				pHeader->Flags = 0x00;
-				break;
-			case 1:	// PAL
-				pHeader->Flags = 0x01;
-				break;
-			case 2:	// Dual
-				pHeader->Flags = 0x02;
-				break;
-		}
-	}
-	else {
-		pHeader->Flags = 0x00;
-	}
+	if (m_pDocument->GetExpansionChip() == SNDCHIP_NONE)
+		Header.Flags = MachineType;
 
-	pHeader->Speed_NTSC = SpeedNTSC;
-	pHeader->SoundChip = m_iActualChip;		// // //
+	return Header;
 }
 
 

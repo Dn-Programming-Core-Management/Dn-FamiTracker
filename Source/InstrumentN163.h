@@ -56,7 +56,7 @@ public:
 	bool	RemoveWave(int Index);		// // //
 
 protected:
-	virtual void	CloneFrom(const CInstrument *pInst);		// // //
+	void	CloneFrom(const CInstrument *pInst) override;		// // //
 
 public:
 	static const int MAX_WAVE_SIZE = 240;		// Wave size (240 samples)		// // //

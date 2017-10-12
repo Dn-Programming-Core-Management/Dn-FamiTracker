@@ -51,8 +51,8 @@ public:
 	const char *GetName() const;
 	void RegisterManager(CInstrumentManagerInterface *pManager);		// // //
 public:
+	virtual void OnRegisterManager();									// // // Setup some initial values
 	virtual inst_type_t GetType() const;								// // // Returns instrument type
-	virtual void Setup() = 0;											// Setup some initial values
 	virtual void Store(CDocumentFile *pDocFile) const = 0;				// Saves the instrument to the module
 	virtual bool Load(CDocumentFile *pDocFile) = 0;						// Loads the instrument from a module
 	virtual void SaveFile(CSimpleFile *pFile) const = 0;				// // // Saves to an FTI file

@@ -79,10 +79,6 @@ void CInstrumentFDS::CloneFrom(const CInstrument *pInst)
 	}
 }
 
-void CInstrumentFDS::Setup()
-{
-}
-
 void CInstrumentFDS::StoreInstSequence(CSimpleFile *pFile, const CSequence *pSeq) const		// // //
 {
 	// Store number of items in this sequence

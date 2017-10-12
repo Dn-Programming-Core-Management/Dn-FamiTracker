@@ -33,6 +33,9 @@
  */
 
 CVisualizerScope::CVisualizerScope(bool bBlur) :
+#ifdef _DEBUG		// // //
+	m_iPeak(0),
+#endif
 	m_pBlitBuffer(NULL),
 	m_pWindowBuf(NULL),
 	m_bBlur(bBlur),
@@ -122,9 +125,8 @@ void CVisualizerScope::RenderBuffer()
 void CVisualizerScope::Draw()
 {
 #ifdef _DEBUG
-	static int _peak = 0;
-	static int _min = 0;
-	static int _max = 0;
+	int _min = 0;		// // //
+	int _max = 0;
 #endif
 
 	const int TIME_SCALING = 7;
@@ -133,14 +135,11 @@ void CVisualizerScope::Draw()
 	static int Accum = 0;
 
 	for (unsigned int i = 0; i < m_iSampleCount; ++i) {
-		
 #ifdef _DEBUG
 		if (_min > m_pSamples[i])
 			_min = m_pSamples[i];
 		if (_max < m_pSamples[i])
 			_max = m_pSamples[i];
-		if (abs(m_pSamples[i]) > _peak)
-			_peak = abs(m_pSamples[i]);
 #endif
 
 		int Pos = m_iWindowBufPtr++ / TIME_SCALING;
@@ -162,11 +161,7 @@ void CVisualizerScope::Draw()
 	}
 
 #ifdef _DEBUG
-	_peak = _max - _min;
-	m_iPeak = _peak;
-	_peak = 0;
-	_min = 0;
-	_max = 0;
+	m_iPeak = _max - _min;		// // //
 #endif
 }
 
@@ -178,7 +173,7 @@ void CVisualizerScope::Display(CDC *pDC, bool bPaintMsg)
 	CString PeakText;
 	PeakText.Format(_T("%i"), m_iPeak);
 	pDC->TextOut(0, 0, PeakText);
-	PeakText.Format(_T("-%gdB"), 20.0 * log(double(m_iPeak) / 65535.0));
+	PeakText.Format(_T("%gdB"), 20.0 * log(double(m_iPeak) / 65535.0));		// // //
 	pDC->TextOut(0, 16, PeakText);
 #endif
 }
