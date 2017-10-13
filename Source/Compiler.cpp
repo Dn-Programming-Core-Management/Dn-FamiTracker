@@ -1273,12 +1273,12 @@ void CCompiler::Cleanup()
 	m_pHeaderChunk = NULL;
 
 	// // // Full chip export
-	if (m_pDocument->GetNamcoChannels() != m_iActualNamcoChannels ||
-		m_pDocument->GetExpansionChip() != m_iActualChip)
-	{
-		m_pDocument->SetNamcoChannels(m_iActualNamcoChannels, true);
-		m_pDocument->SelectExpansionChip(m_iActualChip, true);
-	}
+//	if (m_pDocument->GetNamcoChannels() != m_iActualNamcoChannels ||
+//		m_pDocument->GetExpansionChip() != m_iActualChip)
+//	{
+//		m_pDocument->SetNamcoChannels(m_iActualNamcoChannels, true);
+//		m_pDocument->SelectExpansionChip(m_iActualChip, true);
+//	}
 }
 
 void CCompiler::AddBankswitching()

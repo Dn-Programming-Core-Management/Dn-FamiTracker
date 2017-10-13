@@ -33,7 +33,7 @@
 
 // NSF file header
 struct stNSFHeader {
-	uint8_t		Ident[5] = {'N', 'E', 'S', 'N', '\x1A'};		// // //
+	uint8_t		Ident[5] = {'N', 'E', 'S', 'M', '\x1A'};		// // //
 	uint8_t		Version = 1;
 	uint8_t		TotalSongs;
 	uint8_t		StartSong = 1;
@@ -43,8 +43,8 @@ struct stNSFHeader {
 	uint8_t		SongName[32] = { };
 	uint8_t		ArtistName[32] = { };
 	uint8_t		Copyright[32] = { };
-	uint8_t		Speed_NTSC;
-	uint16_t	BankValues[8] = { };
+	uint16_t	Speed_NTSC;
+	uint8_t		BankValues[8] = { };
 	uint16_t	Speed_PAL;
 	uint8_t		Flags = 0; // NTSC
 	uint8_t		SoundChip;
@@ -196,7 +196,7 @@ public:
 	static unsigned int AdjustSampleAddress(unsigned int Address);
 
 private:
-	CFamiTrackerDoc *m_pDocument;
+	const CFamiTrackerDoc *m_pDocument;
 
 	// Object lists
 	std::vector<std::shared_ptr<CChunk>> m_vChunks;		// // //
