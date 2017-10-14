@@ -70,6 +70,7 @@
 #include "SimpleFile.h"		// // //
 #include "SongView.h"		// // //
 #include "ChannelMap.h"		// // //
+#include "FamiTrackerDocIO.h"		// // // TODO: remove
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -1199,37 +1200,15 @@ bool CFamiTrackerDoc::WriteBlock_Patterns(CDocumentFile *pDocFile, const int Ver
 
 bool CFamiTrackerDoc::WriteBlock_DSamples(CDocumentFile *pDocFile, const int Version) const
 {
-	int Count = GetSampleCount();		// // //
-	if (!Count) return true;
-
 	pDocFile->CreateBlock(FILE_BLOCK_DSAMPLES, Version);
-
-	// Write sample count
-	pDocFile->WriteBlockChar(Count);
-
-	for (unsigned int i = 0; i < CDSampleManager::MAX_DSAMPLES; ++i) {
-		if (const CDSample *pSamp = GetSample(i)) {
-			// Write sample
-			pDocFile->WriteBlockChar(i);
-			int Length = strlen(pSamp->GetName());
-			pDocFile->WriteBlockInt(Length);
-			pDocFile->WriteBlock(pSamp->GetName(), Length);
-			pDocFile->WriteBlockInt(pSamp->GetSize());
-			pDocFile->WriteBlock(pSamp->GetData(), pSamp->GetSize());
-		}
-	}
-
+	CFamiTrackerDocIO(*pDocFile).SaveSamples(*this);		// // //
 	return pDocFile->FlushBlock();
 }
 
 bool CFamiTrackerDoc::WriteBlock_Comments(CDocumentFile *pDocFile, const int Version) const
 {
-	if (m_strComment.IsEmpty())
-		return true;
-
 	pDocFile->CreateBlock(FILE_BLOCK_COMMENTS, Version);
-	pDocFile->WriteBlockInt(m_bDisplayComment ? 1 : 0);
-	pDocFile->WriteString(m_strComment);
+	CFamiTrackerDocIO(*pDocFile).SaveComments(*this);		// // //
 	return pDocFile->FlushBlock();
 }
 
@@ -1524,27 +1503,26 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
  */
 BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 {
-	static std::unordered_map<std::string, void (CFamiTrackerDoc::*)(CDocumentFile*, const int)> FTM_READ_FUNC;
-	FTM_READ_FUNC[FILE_BLOCK_PARAMS]			= &CFamiTrackerDoc::ReadBlock_Parameters;
-	FTM_READ_FUNC[FILE_BLOCK_INFO]				= &CFamiTrackerDoc::ReadBlock_SongInfo;
-	FTM_READ_FUNC[FILE_BLOCK_INSTRUMENTS]		= &CFamiTrackerDoc::ReadBlock_Instruments;
-	FTM_READ_FUNC[FILE_BLOCK_SEQUENCES]			= &CFamiTrackerDoc::ReadBlock_Sequences;
-	FTM_READ_FUNC[FILE_BLOCK_FRAMES]			= &CFamiTrackerDoc::ReadBlock_Frames;
-	FTM_READ_FUNC[FILE_BLOCK_PATTERNS]			= &CFamiTrackerDoc::ReadBlock_Patterns;
-	FTM_READ_FUNC[FILE_BLOCK_DSAMPLES]			= &CFamiTrackerDoc::ReadBlock_DSamples;
-	FTM_READ_FUNC[FILE_BLOCK_HEADER]			= &CFamiTrackerDoc::ReadBlock_Header;
-	FTM_READ_FUNC[FILE_BLOCK_COMMENTS]			= &CFamiTrackerDoc::ReadBlock_Comments;
-	FTM_READ_FUNC[FILE_BLOCK_SEQUENCES_VRC6]	= &CFamiTrackerDoc::ReadBlock_SequencesVRC6;
-	FTM_READ_FUNC[FILE_BLOCK_SEQUENCES_N163]	= &CFamiTrackerDoc::ReadBlock_SequencesN163;
-	FTM_READ_FUNC[FILE_BLOCK_SEQUENCES_N106]	= &CFamiTrackerDoc::ReadBlock_SequencesN163;	// Backward compatibility
-	FTM_READ_FUNC[FILE_BLOCK_SEQUENCES_S5B]		= &CFamiTrackerDoc::ReadBlock_SequencesS5B;		// // //
-	FTM_READ_FUNC[FILE_BLOCK_DETUNETABLES]		= &CFamiTrackerDoc::ReadBlock_DetuneTables;		// // //
-	FTM_READ_FUNC[FILE_BLOCK_GROOVES]			= &CFamiTrackerDoc::ReadBlock_Grooves;			// // //
-	FTM_READ_FUNC[FILE_BLOCK_BOOKMARKS]			= &CFamiTrackerDoc::ReadBlock_Bookmarks;		// // //
-	FTM_READ_FUNC[FILE_BLOCK_PARAMS_EXTRA]		= &CFamiTrackerDoc::ReadBlock_ParamsExtra;		// // //
-	
-	const char *BlockID;
-	bool ErrorFlag = false;
+	using map_t = std::unordered_map<std::string, void (CFamiTrackerDoc::*)(CDocumentFile*, const int)>;
+	static const auto FTM_READ_FUNC = map_t {
+		{FILE_BLOCK_PARAMS,			&CFamiTrackerDoc::ReadBlock_Parameters},
+		{FILE_BLOCK_INFO,			&CFamiTrackerDoc::ReadBlock_SongInfo},
+		{FILE_BLOCK_INSTRUMENTS,	&CFamiTrackerDoc::ReadBlock_Instruments},
+		{FILE_BLOCK_SEQUENCES,		&CFamiTrackerDoc::ReadBlock_Sequences},
+		{FILE_BLOCK_FRAMES,			&CFamiTrackerDoc::ReadBlock_Frames},
+		{FILE_BLOCK_PATTERNS,		&CFamiTrackerDoc::ReadBlock_Patterns},
+		{FILE_BLOCK_DSAMPLES,		&CFamiTrackerDoc::ReadBlock_DSamples},
+		{FILE_BLOCK_HEADER,			&CFamiTrackerDoc::ReadBlock_Header},
+		{FILE_BLOCK_COMMENTS,		&CFamiTrackerDoc::ReadBlock_Comments},
+		{FILE_BLOCK_SEQUENCES_VRC6,	&CFamiTrackerDoc::ReadBlock_SequencesVRC6},
+		{FILE_BLOCK_SEQUENCES_N163,	&CFamiTrackerDoc::ReadBlock_SequencesN163},
+		{FILE_BLOCK_SEQUENCES_N106,	&CFamiTrackerDoc::ReadBlock_SequencesN163},	// Backward compatibility
+		{FILE_BLOCK_SEQUENCES_S5B,	&CFamiTrackerDoc::ReadBlock_SequencesS5B},	// // //
+		{FILE_BLOCK_DETUNETABLES,	&CFamiTrackerDoc::ReadBlock_DetuneTables},	// // //
+		{FILE_BLOCK_GROOVES,		&CFamiTrackerDoc::ReadBlock_Grooves},		// // //
+		{FILE_BLOCK_BOOKMARKS,		&CFamiTrackerDoc::ReadBlock_Bookmarks},		// // //
+		{FILE_BLOCK_PARAMS_EXTRA,	&CFamiTrackerDoc::ReadBlock_ParamsExtra},	// // //
+	};
 
 #ifdef _DEBUG
 	int _msgs_ = 0;
@@ -1560,9 +1538,10 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 	}
 
 	// Read all blocks
+	bool ErrorFlag = false;
 	while (!DocumentFile.Finished() && !ErrorFlag) {
 		ErrorFlag = DocumentFile.ReadBlock();
-		BlockID = DocumentFile.GetBlockHeaderID();
+		const char *BlockID = DocumentFile.GetBlockHeaderID();
 		if (!strcmp(BlockID, "END")) break;
 
 		try {
@@ -1783,8 +1762,7 @@ void CFamiTrackerDoc::ReadBlock_Header(CDocumentFile *pDocFile, const int Versio
 
 void CFamiTrackerDoc::ReadBlock_Comments(CDocumentFile *pDocFile, const int Version)
 {
-	m_bDisplayComment = (pDocFile->GetBlockInt() == 1) ? true : false;
-	m_strComment = pDocFile->ReadString();
+	CFamiTrackerDocIO(*pDocFile).LoadComments(*this, Version);		// // //
 }
 
 void CFamiTrackerDoc::ReadBlock_ChannelLayout(CDocumentFile *pDocFile, const int Version)
@@ -2319,33 +2297,7 @@ void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Vers
 
 void CFamiTrackerDoc::ReadBlock_DSamples(CDocumentFile *pDocFile, const int Version)
 {
-	unsigned int Count = AssertRange(
-		static_cast<unsigned char>(pDocFile->GetBlockChar()), 0U, CDSampleManager::MAX_DSAMPLES, "DPCM sample count");
-
-	for (unsigned int i = 0; i < Count; ++i) {
-		unsigned int Index = AssertRange(
-			static_cast<unsigned char>(pDocFile->GetBlockChar()), 0U, CDSampleManager::MAX_DSAMPLES - 1, "DPCM sample index");
-		CDSample *pSample = nullptr;
-		try {
-			pSample = new CDSample();		// // //
-			unsigned int Len = AssertRange(pDocFile->GetBlockInt(), 0, CDSample::MAX_NAME_SIZE - 1, "DPCM sample name length");
-			char Name[CDSample::MAX_NAME_SIZE] = {};
-			pDocFile->GetBlock(Name, Len);
-			pSample->SetName(Name);
-			int Size = AssertRange(pDocFile->GetBlockInt(), 0, 0x7FFF, "DPCM sample size");
-			AssertFileData<MODULE_ERROR_STRICT>(Size <= 0xFF1 && Size % 0x10 == 1, "Bad DPCM sample size");
-			int TrueSize = Size + ((1 - Size) & 0x0F);		// // //
-			char *pData = new char[TrueSize];
-			pDocFile->GetBlock(pData, Size);
-			memset(pData + Size, 0xAA, TrueSize - Size);
-			pSample->SetData(TrueSize, pData);
-		}
-		catch (CModuleException *e) {
-			e->AppendError("At DPCM sample %d,", Index);
-			throw;
-		}
-		SetSample(Index, pSample);
-	}
+	CFamiTrackerDocIO(*pDocFile).LoadSamples(*this, Version);		// // //
 }
 
 // // // Detune tables
@@ -4233,15 +4185,13 @@ void CFamiTrackerDoc::AutoSave()
 // Comment functions
 //
 
-void CFamiTrackerDoc::SetComment(CString &comment, bool bShowOnLoad)
+void CFamiTrackerDoc::SetComment(const CString &comment, bool bShowOnLoad)		// // //
 {
 	m_strComment = comment;
 	m_bDisplayComment = bShowOnLoad;
-	SetModifiedFlag();
-	SetExceededFlag();		// // //
 }
 
-CString CFamiTrackerDoc::GetComment() const
+const CString &CFamiTrackerDoc::GetComment() const		// // //
 {
 	return m_strComment;
 }

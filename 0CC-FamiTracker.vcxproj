@@ -428,6 +428,7 @@
     <ClCompile Include="Source\BookmarkDlg.cpp" />
     <ClCompile Include="Source\BookmarkManager.cpp" />
     <ClCompile Include="Source\ChannelFactory.cpp" />
+    <ClCompile Include="Source\FamiTrackerDocIO.cpp" />
     <ClCompile Include="Source\InstrumentFactory.cpp" />
     <ClCompile Include="Source\SoundDriver.cpp" />
     <ClCompile Include="Source\SongState.cpp" />
@@ -594,6 +595,7 @@
     <ClInclude Include="Source\BookmarkCollection.h" />
     <ClInclude Include="Source\BookmarkManager.h" />
     <ClInclude Include="Source\BookmarkDlg.h" />
+    <ClInclude Include="Source\FamiTrackerDocIO.h" />
     <ClInclude Include="Source\FrameEditorTypes.h" />
     <ClInclude Include="Source\IntRange.h" />
     <ClInclude Include="Source\NoteQueue.h" />

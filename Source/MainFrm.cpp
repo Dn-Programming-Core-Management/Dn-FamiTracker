@@ -2228,8 +2228,11 @@ void CMainFrame::OnModuleComments()
 	CFamiTrackerDoc	*pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());		// // //
 	commentsDlg.SetComment(pDoc->GetComment());
 	commentsDlg.SetShowOnLoad(pDoc->ShowCommentOnOpen());
-	if (commentsDlg.DoModal() == IDOK && commentsDlg.IsChanged())
+	if (commentsDlg.DoModal() == IDOK && commentsDlg.IsChanged()) {
 		pDoc->SetComment(commentsDlg.GetComment(), commentsDlg.GetShowOnLoad());
+		pDoc->SetModifiedFlag();		// // //
+		pDoc->SetExceededFlag();
+	}
 }
 
 void CMainFrame::OnModuleGrooveSettings()		// // //

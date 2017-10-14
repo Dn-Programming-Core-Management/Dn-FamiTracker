@@ -166,16 +166,17 @@ bool CDocumentFile::FlushBlock()
 	if (!m_pBlockData)
 		return false;
 
-	try {
-		Write(m_cBlockID, 16);
-		Write(&m_iBlockVersion, sizeof(m_iBlockVersion));
-		Write(&m_iBlockPointer, sizeof(m_iBlockPointer));
-		Write(m_pBlockData, m_iBlockPointer);
-	}
-	catch (CFileException *e) {
-		e->Delete();
-		return false;
-	}
+	if (m_iBlockPointer)		// // //
+		try {
+			Write(m_cBlockID, 16);
+			Write(&m_iBlockVersion, sizeof(m_iBlockVersion));
+			Write(&m_iBlockPointer, sizeof(m_iBlockPointer));
+			Write(m_pBlockData, m_iBlockPointer);
+		}
+		catch (CFileException *e) {
+			e->Delete();
+			return false;
+		}
 
 	SAFE_RELEASE_ARRAY(m_pBlockData);
 
@@ -191,8 +192,6 @@ void CDocumentFile::ValidateFile()
 	// Check ident string
 	Read(Buffer, int(strlen(FILE_HEADER_ID)));
 
-	CModuleException *e = new CModuleException();		// // // blank
-
 	if (memcmp(Buffer, FILE_HEADER_ID, strlen(FILE_HEADER_ID)) != 0)
 		RaiseModuleException("File is not a FamiTracker module");
 
@@ -200,6 +199,8 @@ void CDocumentFile::ValidateFile()
 	Read(Buffer, 4);
 	m_iFileVersion = (Buffer[3] << 24) | (Buffer[2] << 16) | (Buffer[1] << 8) | Buffer[0];
 	
+	CModuleException *e = new CModuleException();		// // // blank
+
 	// // // Older file version
 	if (GetFileVersion() < COMPATIBLE_VER) {
 		e->AppendError("FamiTracker module version too old (0x%X), expected 0x%X or above", GetFileVersion(), COMPATIBLE_VER);

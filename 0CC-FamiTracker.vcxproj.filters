@@ -220,6 +220,12 @@
     <Filter Include="Header Files\Windows Headers">
       <UniqueIdentifier>{4cc7efc0-6478-4fe0-ab32-cd34c48e735a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Document Utilities Headers">
+      <UniqueIdentifier>{e55a3bbf-e408-4d7a-b727-a449bb5a7a4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Document Utilities">
+      <UniqueIdentifier>{af9b230a-5b56-49e5-a408-836b2bcc9ca1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Exception.cpp">
@@ -713,6 +719,9 @@
     </ClCompile>
     <ClCompile Include="Source\InstrumentFactory.cpp">
       <Filter>Source Files\Document Data Types\Instruments</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\FamiTrackerDocIO.cpp">
+      <Filter>Source Files\Document Utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1294,6 +1303,9 @@
     </ClInclude>
     <ClInclude Include="Source\SoundGenBase.h">
       <Filter>Header Files\Sound Driver Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\FamiTrackerDocIO.h">
+      <Filter>Header Files\Document Utilities Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

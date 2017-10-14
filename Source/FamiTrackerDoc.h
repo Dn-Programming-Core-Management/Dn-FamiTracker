@@ -231,8 +231,8 @@ public:
 	bool			GetLinearPitch() const;
 	void			SetLinearPitch(bool Enable);
 
-	void			SetComment(CString &comment, bool bShowOnLoad);
-	CString			GetComment() const;
+	void			SetComment(const CString &comment, bool bShowOnLoad);		// // //
+	const CString	&GetComment() const;		// // //
 	bool			ShowCommentOnOpen() const;
 
 	void			SetSpeedSplitPoint(int SplitPoint);
