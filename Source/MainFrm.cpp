@@ -135,7 +135,6 @@ CMainFrame::CMainFrame() :
 
 CMainFrame::~CMainFrame()
 {
-	SAFE_RELEASE(m_pImageList);
 	SAFE_RELEASE(m_pLockedEditSpeed);
 	SAFE_RELEASE(m_pLockedEditTempo);
 	SAFE_RELEASE(m_pLockedEditLength);
@@ -157,6 +156,7 @@ CMainFrame::~CMainFrame()
 	SAFE_RELEASE(m_pVisualizerWnd);
 	SAFE_RELEASE(m_pActionHandler);
 	SAFE_RELEASE(m_pInstrumentFileTree);
+	SAFE_RELEASE(m_pImageList);
 }
 
 BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)

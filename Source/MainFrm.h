@@ -159,9 +159,12 @@ private:
 	void	ShowInstrumentNumberText();		// // //
 
 private:  // control bar embedded members
-	CStatusBar			m_wndStatusBar;
+	CBitmap				m_bmToolbar;			// main toolbar
+	CImageList			m_ilToolBar;
 	CToolBar			m_wndToolBar;
 	CReBar				m_wndToolBarReBar;
+
+	CStatusBar			m_wndStatusBar;
 	CDialogReBar		m_wndOctaveBar;
 	CDialogBar			m_wndControlBar;	// Parent to frame editor and settings/instrument editor
 	CDialogBar			m_wndVerticalControlBar;	// Parent to large frame editor
@@ -171,6 +174,8 @@ private:  // control bar embedded members
 	CControlPanelDlg	m_wndFrameControls;		// Contains +, - and change all
 
 	CWnd				m_wndInstToolBarWnd;
+	CBitmap				m_bmInstToolbar;		// instrument toolbar
+	CImageList			m_ilInstToolBar;
 	CToolBar			m_wndInstToolBar;
 	CReBarCtrl			m_wndInstToolReBar;
 	CInstrumentEditDlg	m_wndInstEdit;
@@ -197,12 +202,6 @@ private:  // control bar embedded members
 	CBannerEdit			*m_pBannerEditName;
 	CBannerEdit			*m_pBannerEditArtist;
 	CBannerEdit			*m_pBannerEditCopyright;
-
-	CBitmap				m_bmToolbar;			// main toolbar
-	CImageList			m_ilToolBar;
-
-	CBitmap				m_bmInstToolbar;		// instrument toolbar
-	CImageList			m_ilInstToolBar;
 
 	CActionHandler		*m_pActionHandler;
 
