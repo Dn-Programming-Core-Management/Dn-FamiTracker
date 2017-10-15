@@ -693,39 +693,33 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 
 bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 {
-	static const int DEFAULT_BLOCK_VERSION[] = {		// // // TODO: use version info
+	using pair_t = std::pair<bool (CFamiTrackerDoc::*)(CDocumentFile *, const int) const, int>;
+	static pair_t FTM_WRITE_FUNC[] = {		// // //
+		{&CFamiTrackerDoc::WriteBlock_Parameters,	 6},
+		{&CFamiTrackerDoc::WriteBlock_SongInfo,		 1},
+		{&CFamiTrackerDoc::WriteBlock_Header,		 3},
+		{&CFamiTrackerDoc::WriteBlock_Instruments,	 6},
+		{&CFamiTrackerDoc::WriteBlock_Sequences,	 6},
+		{&CFamiTrackerDoc::WriteBlock_Frames,		 3},
 #ifdef TRANSPOSE_FDS
-		6, 1, 3, 6, 6, 3, 5, 1, 1,	// internal
+		{&CFamiTrackerDoc::WriteBlock_Patterns,		 5},
 #else
-		6, 1, 3, 6, 6, 3, 4, 1, 1,
+		{&CFamiTrackerDoc::WriteBlock_Patterns,		 4},
 #endif
-		6, 1, 1,					// expansion
-		2, 1, 1, 1					// 0cc-ft
+		{&CFamiTrackerDoc::WriteBlock_DSamples,		 1},
+		{&CFamiTrackerDoc::WriteBlock_Comments,		 1},
+		{&CFamiTrackerDoc::WriteBlock_SequencesVRC6, 6},		// // //
+		{&CFamiTrackerDoc::WriteBlock_SequencesN163, 1},
+		{&CFamiTrackerDoc::WriteBlock_SequencesS5B,	 1},
+		{&CFamiTrackerDoc::WriteBlock_ParamsExtra,	 2},		// // //
+		{&CFamiTrackerDoc::WriteBlock_DetuneTables,	 1},		// // //
+		{&CFamiTrackerDoc::WriteBlock_Grooves,		 1},			// // //
+		{&CFamiTrackerDoc::WriteBlock_Bookmarks,	 1},			// // //
 	};
 
-	static bool (CFamiTrackerDoc::*FTM_WRITE_FUNC[])(CDocumentFile*, const int) const = {		// // //
-		&CFamiTrackerDoc::WriteBlock_Parameters,
-		&CFamiTrackerDoc::WriteBlock_SongInfo,
-		&CFamiTrackerDoc::WriteBlock_Header,
-		&CFamiTrackerDoc::WriteBlock_Instruments,
-		&CFamiTrackerDoc::WriteBlock_Sequences,
-		&CFamiTrackerDoc::WriteBlock_Frames,
-		&CFamiTrackerDoc::WriteBlock_Patterns,
-		&CFamiTrackerDoc::WriteBlock_DSamples,
-		&CFamiTrackerDoc::WriteBlock_Comments,
-		&CFamiTrackerDoc::WriteBlock_SequencesVRC6,		// // //
-		&CFamiTrackerDoc::WriteBlock_SequencesN163,
-		&CFamiTrackerDoc::WriteBlock_SequencesS5B,
-		&CFamiTrackerDoc::WriteBlock_ParamsExtra,		// // //
-		&CFamiTrackerDoc::WriteBlock_DetuneTables,		// // //
-		&CFamiTrackerDoc::WriteBlock_Grooves,			// // //
-		&CFamiTrackerDoc::WriteBlock_Bookmarks,			// // //
-	};
-
-	for (size_t i = 0; i < sizeof(FTM_WRITE_FUNC) / sizeof(*FTM_WRITE_FUNC); ++i) {
-		if (!CALL_MEMBER_FN(this, FTM_WRITE_FUNC[i])(pDocFile, DEFAULT_BLOCK_VERSION[i]))
+	for (const auto &x : FTM_WRITE_FUNC)
+		if (!(this->*x.first)(pDocFile, x.second))
 			return false;
-	}
 	return true;
 }
 
@@ -806,15 +800,14 @@ bool CFamiTrackerDoc::WriteBlock_Header(CDocumentFile *pDocFile, const int Versi
 	// Ver 3, store track names
 	if (Version >= 3)
 		for (unsigned int i = 0; i < m_iTrackCount; ++i)
-			pDocFile->WriteString(m_pTracks[i]->GetTitle().c_str());		// // //
+			pDocFile->WriteString(GetTrack(i).GetTitle().c_str());		// // //
 
 	for (unsigned int i = 0; i < m_iChannelsAvailable; ++i) {
 		// Channel type
 		pDocFile->WriteBlockChar(GetChannelType(i));		// // //
 		for (unsigned int j = 0; j < m_iTrackCount; ++j) {
-			ASSERT(m_pTracks[j] != NULL);
 			// Effect columns
-			pDocFile->WriteBlockChar(m_pTracks[j]->GetEffectColumnCount(i));
+			pDocFile->WriteBlockChar(GetTrack(j).GetEffectColumnCount(i));
 			if (Version <= 1) break;
 		}
 	}
@@ -1107,16 +1100,16 @@ bool CFamiTrackerDoc::WriteBlock_Frames(CDocumentFile *pDocFile, const int Versi
 	pDocFile->CreateBlock(FILE_BLOCK_FRAMES, Version);
 
 	for (unsigned i = 0; i < m_iTrackCount; ++i) {
-		const auto &pTune = m_pTracks[i];
+		const auto &Song = GetTrack(i);
 
-		pDocFile->WriteBlockInt(pTune->GetFrameCount());
-		pDocFile->WriteBlockInt(pTune->GetSongSpeed());
-		pDocFile->WriteBlockInt(pTune->GetSongTempo());
-		pDocFile->WriteBlockInt(pTune->GetPatternLength());
+		pDocFile->WriteBlockInt(Song.GetFrameCount());
+		pDocFile->WriteBlockInt(Song.GetSongSpeed());
+		pDocFile->WriteBlockInt(Song.GetSongTempo());
+		pDocFile->WriteBlockInt(Song.GetPatternLength());
 
-		for (unsigned int j = 0; j < pTune->GetFrameCount(); ++j) {
+		for (unsigned int j = 0; j < Song.GetFrameCount(); ++j) {
 			for (unsigned k = 0; k < m_iChannelsAvailable; ++k) {
-				pDocFile->WriteBlockChar((unsigned char)pTune->GetFramePattern(j, k));
+				pDocFile->WriteBlockChar((unsigned char)Song.GetFramePattern(j, k));
 			}
 		}
 	}
@@ -1149,7 +1142,7 @@ bool CFamiTrackerDoc::WriteBlock_Patterns(CDocumentFile *pDocFile, const int Ver
 				//unsigned int PatternLen = m_pTracks[t]->GetPatternLength();
 				
 				// Get the number of items in this pattern
-				const auto &Song = *m_pTracks[t];		// // //
+				const auto &Song = GetTrack(t);		// // //
 				for (unsigned y = 0; y < PatternLen; ++y)
 					if (!Song.IsCellFree(i, x, y))
 						++Items;
@@ -1478,7 +1471,7 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
  */
 BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 {
-	using map_t = std::unordered_map<std::string, void (CFamiTrackerDoc::*)(CDocumentFile*, const int)>;
+	using map_t = std::unordered_map<std::string, void (CFamiTrackerDoc::*)(CDocumentFile *, const int)>;
 	static const auto FTM_READ_FUNC = map_t {
 		{FILE_BLOCK_PARAMS,			&CFamiTrackerDoc::ReadBlock_Parameters},
 		{FILE_BLOCK_INFO,			&CFamiTrackerDoc::ReadBlock_SongInfo},
@@ -1709,7 +1702,7 @@ void CFamiTrackerDoc::ReadBlock_Header(CDocumentFile *pDocFile, const int Versio
 		// Track names
 		if (Version >= 3)
 			for (unsigned i = 0; i < m_iTrackCount; ++i)
-				m_pTracks[i]->SetTitle((LPCTSTR)pDocFile->ReadString());		// // //
+				GetTrack(i).SetTitle((LPCTSTR)pDocFile->ReadString());		// // //
 
 		for (unsigned i = 0; i < m_iChannelsAvailable; ++i) try {
 			AssertRange<MODULE_ERROR_STRICT>(pDocFile->GetBlockChar(), 0, CHANNELS - 1, "Channel type index"); // Channel type (unused)
@@ -3420,9 +3413,9 @@ bool CFamiTrackerDoc::DeleteFrames(unsigned int Track, unsigned int Frame, int C
 
 const std::string &CFamiTrackerDoc::GetTrackTitle(unsigned int Track) const		// // //
 {
-	if (!m_pTracks[Track])		// // //
-		return CPatternData::DEFAULT_TITLE;
-	return m_pTracks[Track]->GetTitle();
+	if (Track < GetTrackCount())
+		return GetTrack(Track).GetTitle();
+	return CPatternData::DEFAULT_TITLE;
 }
 
 int CFamiTrackerDoc::AddTrack()
@@ -3473,8 +3466,8 @@ void CFamiTrackerDoc::RemoveTrack(unsigned int Track)
 
 void CFamiTrackerDoc::SetTrackTitle(unsigned int Track, const std::string &title)		// // //
 {
-	if (m_pTracks[Track]->GetTitle() != title) {		// // //
-		m_pTracks[Track]->SetTitle(title);
+	if (auto &Song = GetTrack(Track); Song.GetTitle() != title) {		// // //
+		Song.SetTitle(title);
 		ModifyIrreversible();
 	}
 }
@@ -3499,18 +3492,18 @@ void CFamiTrackerDoc::MoveTrackDown(unsigned int Track)
 
 void CFamiTrackerDoc::SwapTracks(unsigned int Track1, unsigned int Track2)
 {
-	std::swap(m_pTracks[Track1], m_pTracks[Track2]);
+	m_pTracks[Track1].swap(m_pTracks[Track2]);		// // //
 	m_pBookmarkManager->SwapTracks(Track1, Track2);		// // //
 }
 
 void CFamiTrackerDoc::AllocateTrack(unsigned int Track)
 {
 	// Allocate a new song if not already done
-	if (m_pTracks[Track] == NULL) {
-		int Tempo = (m_iMachine == NTSC) ? DEFAULT_TEMPO_NTSC : DEFAULT_TEMPO_PAL;
-		m_pTracks[Track] = std::make_unique<CPatternData>();		// // //
-		m_pTracks[Track]->SetSongTempo(Tempo);
+	if (!m_pTracks[Track]) {
+		auto pSong = std::make_unique<CPatternData>();		// // //
+		pSong->SetSongTempo(m_iMachine == NTSC ? DEFAULT_TEMPO_NTSC : DEFAULT_TEMPO_PAL);
 		m_pBookmarkManager->GetCollection(Track)->ClearBookmarks();
+		m_pTracks[Track] = std::move(pSong);
 	}
 }
 
@@ -4150,7 +4143,7 @@ double CFamiTrackerDoc::GetStandardLength(int Track, unsigned int ExtraLoops) co
 	while (bScanning) {
 		bool hasJump = false;
 		for (int j = 0; j < GetChannelCount(); ++j) {
-			const auto &Note = std::as_const(m_pTracks[Track])->GetPatternData(j, m_pTracks[Track]->GetFramePattern(f, j), r);
+			const auto &Note = GetNoteData(Track, f, j, r);
 			for (unsigned l = 0; l < GetEffColumns(Track, j) + 1; ++l) {
 				switch (Note.EffNumber[l]) {
 				case EF_JUMP:
@@ -4222,11 +4215,12 @@ void CFamiTrackerDoc::RemoveUnusedInstruments()
 		if (IsInstrumentUsed(i)) {
 			bool Used = false;
 			for (unsigned int j = 0; j < m_iTrackCount; ++j) {
+				const auto &Song = GetTrack(j);		// // //
 				for (unsigned int Channel = 0; Channel < m_iChannelsAvailable; ++Channel) {
-					for (unsigned int Frame = 0; Frame < m_pTracks[j]->GetFrameCount(); ++Frame) {
-						unsigned int Pattern = m_pTracks[j]->GetFramePattern(Frame, Channel);
-						for (unsigned int Row = 0; Row < m_pTracks[j]->GetPatternLength(); ++Row) {
-							if (std::as_const(m_pTracks[j])->GetPatternData(Channel, Pattern, Row).Instrument == i)		// // //
+					for (unsigned int Frame = 0; Frame < Song.GetFrameCount(); ++Frame) {
+						unsigned int Pattern = Song.GetFramePattern(Frame, Channel);
+						for (unsigned int Row = 0; Row < Song.GetPatternLength(); ++Row) {
+							if (Song.GetPatternData(Channel, Pattern, Row).Instrument == i)		// // //
 								Used = true;
 						}
 					}
@@ -4261,16 +4255,17 @@ void CFamiTrackerDoc::RemoveUnusedInstruments()
 void CFamiTrackerDoc::RemoveUnusedPatterns()
 {
 	for (unsigned int i = 0; i < m_iTrackCount; ++i) {
+		auto &Song = GetTrack(i);
 		for (unsigned int c = 0; c < m_iChannelsAvailable; ++c) {
 			for (unsigned int p = 0; p < MAX_PATTERN; ++p) {
 				bool bRemove(true);
 				// Check if pattern is used in frame list
-				unsigned int FrameCount = m_pTracks[i]->GetFrameCount();
+				unsigned int FrameCount = Song.GetFrameCount();
 				for (unsigned int f = 0; f < FrameCount; ++f) {
-					bRemove = (m_pTracks[i]->GetFramePattern(f, c) == p) ? false : bRemove;
+					bRemove = (Song.GetFramePattern(f, c) == p) ? false : bRemove;
 				}
 				if (bRemove)
-					m_pTracks[i]->ClearPattern(c, p);
+					Song.ClearPattern(c, p);
 			}
 		}
 	}
@@ -4287,10 +4282,11 @@ void CFamiTrackerDoc::RemoveUnusedSamples()		// // //
 		if (IsSampleUsed(i)) {
 			bool Used = false;
 			for (unsigned int j = 0; j < m_iTrackCount; ++j) {
-				for (unsigned int Frame = 0; Frame < m_pTracks[j]->GetFrameCount(); ++Frame) {
-					unsigned int Pattern = m_pTracks[j]->GetFramePattern(Frame, CHANID_DPCM);
-					for (unsigned int Row = 0; Row < m_pTracks[j]->GetPatternLength(); ++Row) {
-						const auto &Note = std::as_const(m_pTracks[j])->GetPatternData(CHANID_DPCM, Pattern, Row);		// // //
+				auto &Song = GetTrack(j);
+				for (unsigned int Frame = 0; Frame < Song.GetFrameCount(); ++Frame) {
+					unsigned int Pattern = Song.GetFramePattern(Frame, CHANID_DPCM);
+					for (unsigned int Row = 0; Row < Song.GetPatternLength(); ++Row) {
+						const auto &Note = std::as_const(Song).GetPatternData(CHANID_DPCM, Pattern, Row);		// // //
 						int Index = Note.Instrument;
 						if (Note.Note < NOTE_C || Note.Note > NOTE_B || Index == MAX_INSTRUMENTS) continue;		// // //
 						if (GetInstrumentType(Index) != INST_2A03) continue;
@@ -4461,7 +4457,7 @@ void CFamiTrackerDoc::MakeKraid()			// // // Easter Egg
 	// Basic info
 	for (int i = GetTrackCount() - 1; i > 0; i--) RemoveTrack(i);
 	SetTrackTitle(0, CPatternData::DEFAULT_TITLE);
-	m_pTracks[0]->ClearEverything();
+	GetTrack(0).ClearEverything();
 	SetEngineSpeed(0);
 	SetMachine(NTSC);
 	SetFrameCount(0, 14);
