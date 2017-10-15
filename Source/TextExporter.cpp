@@ -27,6 +27,7 @@
 #include "../version.h"		// // //
 
 #include "DSample.h"		// // //
+#include "Groove.h"		// // //
 #include "InstrumentFactory.h"		// // //
 #include "Instrument2A03.h"		// // //
 #include "InstrumentVRC7.h"		// // //
@@ -843,15 +844,14 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					int size, entry;
 					CHECK(t.ReadInt(i,0,MAX_GROOVE-1,&sResult));
 					CHECK(t.ReadInt(size,1,MAX_GROOVE_SIZE,&sResult));
-					CGroove *Groove = new CGroove();
+					auto Groove = std::make_unique<CGroove>();
 					Groove->SetSize(size);
 					CHECK_COLON();
 					for (int j = 0; j < size; j++) {
 						CHECK(t.ReadInt(entry,1,255,&sResult));
 						Groove->SetEntry(j, entry);
 					}
-					pDoc->SetGroove(i, Groove);
-					SAFE_RELEASE(Groove);
+					pDoc->SetGroove(i, std::move(Groove));
 					CHECK(t.ReadEOL(&sResult));
 				}
 				break;

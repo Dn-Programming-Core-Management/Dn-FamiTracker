@@ -68,22 +68,22 @@ struct stSequence {
 };
 
 // Access data types used by the document class
-#include "PatternData.h"
 #include "Instrument.h"
 #include "Sequence.h"
 #include "OldSequence.h"		// // //
-#include "Groove.h"		// // //
 #include "Bookmark.h"		// // //
 
 #include "PatternEditorTypes.h"		// // //
 // #include "FrameEditorTypes.h"		// // //
 
 // External classes
+class CPatternData;		// // //
 class CChannelMap;		// // //
 class CTrackerChannel;
 class CDocumentFile;
 class CSeqInstrument;		// // // TODO: move to instrument manager
 class CDSample;		// // //
+class CGroove;		// // //
 
 //
 // I'll try to organize this class, things are quite messy right now!
@@ -255,7 +255,7 @@ public:
 	int				GetTuningCent() const;		// // // 050B
 
 	CGroove			*GetGroove(unsigned Index) const;		// // //
-	void			SetGroove(unsigned Index, const CGroove* Groove);
+	void			SetGroove(unsigned Index, std::unique_ptr<CGroove> Groove);
 
 	int				GetFrameLength(unsigned int Track, unsigned int Frame) const;
 
@@ -440,8 +440,8 @@ private:
 	//
 
 	void			AllocateTrack(unsigned int Song);
-	CPatternData*	GetTrack(unsigned int Track);
-	CPatternData*	GetTrack(unsigned int Track) const;
+	CPatternData	&GetTrack(unsigned int Track);		// // //
+	const CPatternData &GetTrack(unsigned int Track) const;		// // //
 	void			SwapTracks(unsigned int Track1, unsigned int Track2);
 
 	void			SetupChannels(unsigned char Chip);
@@ -487,15 +487,15 @@ private:
 	//
 
 	// Patterns and song data
-	CPatternData	*m_pTracks[MAX_TRACKS];						// List of all tracks
+	std::vector<std::unique_ptr<CPatternData>> m_pTracks;		// // // List of all tracks
 
 	unsigned int	m_iTrackCount;								// Number of tracks added
 	unsigned int	m_iChannelsAvailable;						// Number of channels added
 
 	// Instruments, samples and sequences
-	CInstrumentManager *m_pInstrumentManager;					// // //
-	CBookmarkManager *m_pBookmarkManager;						// // //
-	CGroove			*m_pGrooveTable[MAX_GROOVE];				// // // Grooves
+	std::unique_ptr<CInstrumentManager> m_pInstrumentManager;	// // //
+	std::unique_ptr<CBookmarkManager> m_pBookmarkManager;		// // //
+	std::array<std::unique_ptr<CGroove>, MAX_GROOVE> m_pGrooveTable;		// // // Grooves
 
 	// Module properties
 	unsigned char	m_iExpansionChip;							// Expansion chip

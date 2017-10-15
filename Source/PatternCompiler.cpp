@@ -27,6 +27,7 @@
 #include "InstrumentFDS.h"		// // //
 #include "TrackerChannel.h"
 #include "Compiler.h"
+#include "Groove.h"		// // //
 
 /**
  * CPatternCompiler - Compress patterns to strings for the NSF code

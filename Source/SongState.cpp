@@ -23,6 +23,7 @@
 #include "SongState.h"
 #include "FamiTrackerDoc.h"
 #include "TrackerChannel.h"
+#include "Groove.h"
 #include <algorithm>
 
 

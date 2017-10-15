@@ -32,6 +32,7 @@
 #include "InstrumentN163.h"		// // //
 #include "PatternCompiler.h"
 #include "DSample.h"		// // //
+#include "Groove.h"		// // //
 #include "Chunk.h"
 #include "ChunkRenderText.h"
 #include "ChunkRenderBinary.h"

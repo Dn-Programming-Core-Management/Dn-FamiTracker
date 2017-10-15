@@ -29,6 +29,8 @@
 #include "DSampleManager.h"
 #include "DSample.h"
 
+#include "Groove.h"
+
 #include "BookmarkManager.h"
 #include "BookmarkCollection.h"
 
@@ -168,7 +170,7 @@ void CFamiTrackerDocIO::LoadDetuneTables(CFamiTrackerDoc &doc, int ver) {
 void CFamiTrackerDocIO::SaveDetuneTables(const CFamiTrackerDoc &doc, int ver) {
 	int NoteUsed[6] = { };
 	int ChipCount = 0;
-	for (int i = 0; i < std::size(NoteUsed); ++i) {
+	for (size_t i = 0; i < std::size(NoteUsed); ++i) {
 		for (int j = 0; j < NOTE_COUNT; j++)
 			if (doc.GetDetuneOffset(i, j) != 0)
 				++NoteUsed[i];
@@ -209,7 +211,7 @@ void CFamiTrackerDocIO::LoadGrooves(CFamiTrackerDoc &doc, int ver) {
 				e->AppendError("At position %i,", j);
 				throw;
 			}
-			doc.SetGroove(Index, pGroove.get()); // TODO: fix
+			doc.SetGroove(Index, std::move(pGroove));
 		}
 		catch (CModuleException *e) {
 			e->AppendError("At groove %i,", Index);

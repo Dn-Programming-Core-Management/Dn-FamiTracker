@@ -27,6 +27,7 @@
 #include "MainFrm.h"
 #include "PatternEditorTypes.h"
 #include "Clipboard.h"
+#include "Groove.h"
 
 // CGrooveDlg dialog
 
@@ -42,8 +43,6 @@ CGrooveDlg::~CGrooveDlg()
 {
 	SAFE_RELEASE(m_cGrooveTable);
 	SAFE_RELEASE(m_cCurrentGroove);
-	for (int i = 0; i < MAX_GROOVE; i++)
-		SAFE_RELEASE(GrooveTable[i]);
 }
 
 void CGrooveDlg::DoDataExchange(CDataExchange* pDX)
@@ -135,7 +134,7 @@ void CGrooveDlg::SetGrooveIndex(int Index)
 {
 	m_iGrooveIndex = Index;
 	m_iGroovePos = 0;
-	Groove = GrooveTable[m_iGrooveIndex];
+	Groove = GrooveTable[m_iGrooveIndex].get();
 	m_cGrooveTable->SetCurSel(Index);
 	m_cCurrentGroove->SetCurSel(0);
 	UpdateCurrentGroove();
@@ -162,9 +161,9 @@ void CGrooveDlg::OnBnClickedApply()
 
 	for (int i = 0; i < MAX_GROOVE; i++)
 		if (GrooveTable[i]->GetSize())
-			m_pDocument->SetGroove(i, GrooveTable[i]);
+			m_pDocument->SetGroove(i, std::make_unique<CGroove>(*GrooveTable[i]));
 		else {
-			m_pDocument->SetGroove(i, NULL);
+			m_pDocument->SetGroove(i, nullptr);
 			const unsigned Tracks = m_pDocument->GetTrackCount();
 			for (unsigned j = 0; j < Tracks; j++)
 			if (m_pDocument->GetSongSpeed(j) == i && m_pDocument->GetSongGroove(j)) {
@@ -193,13 +192,12 @@ void CGrooveDlg::ReloadGrooves()
 	m_cCurrentGroove->ResetContent();
 	for (int i = 0; i < MAX_GROOVE; i++) {
 		bool Used = false;
-		SAFE_RELEASE(GrooveTable[i]);
 		if (CGroove *orig = m_pDocument->GetGroove(i)) {
-			GrooveTable[i] = new CGroove {*orig};
+			GrooveTable[i] = std::make_unique<CGroove>(*orig);
 			Used = true;
 		}
 		else
-			GrooveTable[i] = new CGroove { };
+			GrooveTable[i] = std::make_unique<CGroove>();
 
 		CString String;
 		String.Format(_T("%02X%s"), i, Used ? _T(" *") : _T(""));
@@ -212,7 +210,7 @@ void CGrooveDlg::UpdateCurrentGroove()
 	CString String;
 	CString disp = "";
 	
-	Groove = GrooveTable[m_iGrooveIndex];
+	Groove = GrooveTable[m_iGrooveIndex].get();
 	m_cCurrentGroove->ResetContent();
 	for (int i = 0, n = Groove->GetSize(); i < n; ++i) {
 		String.Format(_T("%02X: %d"), i, Groove->GetEntry(i));
@@ -263,9 +261,7 @@ void CGrooveDlg::UpdateIndicators()
 void CGrooveDlg::OnBnClickedButtonGroovelUp()
 {
 	if (m_iGrooveIndex == 0) return;
-	CGroove *Temp = Groove;
-	GrooveTable[m_iGrooveIndex] = GrooveTable[m_iGrooveIndex - 1];
-	GrooveTable[m_iGrooveIndex - 1] = Temp;
+	GrooveTable[m_iGrooveIndex].swap(GrooveTable[m_iGrooveIndex - 1]);
 	SetGrooveIndex(m_iGrooveIndex - 1);
 	UpdateCurrentGroove();
 }
@@ -273,9 +269,7 @@ void CGrooveDlg::OnBnClickedButtonGroovelUp()
 void CGrooveDlg::OnBnClickedButtonGroovelDown()
 {
 	if (m_iGrooveIndex == MAX_GROOVE - 1) return;
-	CGroove *Temp = Groove;
-	GrooveTable[m_iGrooveIndex] = GrooveTable[m_iGrooveIndex + 1];
-	GrooveTable[m_iGrooveIndex + 1] = Temp;
+	GrooveTable[m_iGrooveIndex].swap(GrooveTable[m_iGrooveIndex + 1]);
 	SetGrooveIndex(m_iGrooveIndex + 1);
 	UpdateCurrentGroove();
 }

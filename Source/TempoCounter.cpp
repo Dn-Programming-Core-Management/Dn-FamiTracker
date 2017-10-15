@@ -23,6 +23,7 @@
 #include "TempoCounter.h"
 #include "FamiTrackerDoc.h"
 #include "SongState.h"
+#include "Groove.h"
 
 // // // CTempoCounter
 

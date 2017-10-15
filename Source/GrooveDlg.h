@@ -26,6 +26,8 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "FamiTrackerTypes.h"
+#include <memory>
+#include <array>
 
 class CFamiTrackerDoc;
 
@@ -51,8 +53,8 @@ protected:
 
 	CFamiTrackerDoc *m_pDocument;
 
-	CGroove* GrooveTable[MAX_GROOVE] = { };
-	CGroove* Groove;
+	std::array<std::unique_ptr<CGroove>, MAX_GROOVE> GrooveTable;
+	CGroove *Groove = nullptr;
 	int m_iGrooveIndex, m_iGroovePos;
 
 	CListBox *m_cGrooveTable, *m_cCurrentGroove;
