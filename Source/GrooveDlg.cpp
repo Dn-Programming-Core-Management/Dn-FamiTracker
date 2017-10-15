@@ -28,6 +28,7 @@
 #include "PatternEditorTypes.h"
 #include "Clipboard.h"
 #include "Groove.h"
+#include "PatternNote.h"
 
 // CGrooveDlg dialog
 

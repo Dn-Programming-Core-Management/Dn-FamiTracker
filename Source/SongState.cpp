@@ -332,7 +332,7 @@ std::string CSongState::GetChannelStateString(const CFamiTrackerDoc &doc, int ch
 	if (Speed >= 0) {
 		if (const CGroove *Groove = doc.GetGroove(Speed); Groove && GroovePos >= 0) {
 			str += "        Groove: ";
-			str += {hex(Speed >> 4), hex(Speed)};
+			str += {hex(Speed >> 4), hex(Speed), ' ', '<', '-'};
 			const unsigned char Size = Groove->GetSize();
 			for (unsigned char i = 0; i < Size; i++)
 				str += ' ' + std::to_string(Groove->GetEntry((i + GroovePos) % Size));

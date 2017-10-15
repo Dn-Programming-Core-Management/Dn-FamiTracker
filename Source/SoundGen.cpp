@@ -59,6 +59,7 @@ CSoundGen depends on CFamiTrackerView for:
 #include "AudioDriver.h"		// // //
 #include "WaveRenderer.h"		// // //
 #include "SoundDriver.h"		// // //
+#include "PatternNote.h"		// // //
 
 // // // Log VGM output (port from sn7t when necessary)
 //#define WRITE_VGM

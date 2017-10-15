@@ -50,14 +50,12 @@ class searchTerm
 {
 public:
 	searchTerm();
-	searchTerm(searchTerm &&other);
-	searchTerm& operator=(searchTerm &&other);
 
 	std::unique_ptr<CharRange> Note, Oct, Inst, Vol;
-	bool EffNumber[EF_COUNT];
+	bool EffNumber[EF_COUNT] = { };
 	std::unique_ptr<CharRange> EffParam;
-	bool Definite[6];
-	bool NoiseChan;
+	bool Definite[6] = { };
+	bool NoiseChan = false;
 };
 
 struct replaceTerm
@@ -209,12 +207,13 @@ protected:
 	void GetFindTerm();
 	void GetReplaceTerm();
 
-	bool CompareFields(const stChanNote Target, bool Noise, int EffCount);
+	bool CompareFields(const stChanNote &Target, bool Noise, int EffCount);
 
 	template <typename... T>
 	void RaiseIf(bool Check, LPCTSTR Str, T... args);
+	unsigned GetHex(const CString &str);
 
-	replaceTerm toReplace(const searchTerm *x);
+	replaceTerm toReplace(const searchTerm &x) const;
 
 	bool PrepareFind();
 	bool PrepareReplace();

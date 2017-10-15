@@ -32,6 +32,8 @@
 #include "PatternAction.h"
 #include "CompoundAction.h"
 
+namespace {
+
 enum {
 	WC_NOTE = 0,
 	WC_OCT,
@@ -41,45 +43,17 @@ enum {
 	WC_PARAM
 };
 
-#pragma warning ( disable : 4351 ) // "new behaviour: elements of array [...] will be default initialized"
+} // namespace
 
 searchTerm::searchTerm() :
-	NoiseChan(false),
-	Note(new CharRange()),
-	Oct(new CharRange()),
-	Inst(new CharRange(0, MAX_INSTRUMENTS)),
-	Vol(new CharRange(0, MAX_VOLUME)),
-	EffParam(new CharRange()),
+	Note(std::make_unique<CharRange>()),
+	Oct(std::make_unique<CharRange>()),
+	Inst(std::make_unique<CharRange>(0, MAX_INSTRUMENTS)),
+	Vol(std::make_unique<CharRange>(0, MAX_VOLUME)),
+	EffParam(std::make_unique<CharRange>()),
 	Definite(),
 	EffNumber()
 {
-}
-
-searchTerm::searchTerm(searchTerm &&other) :
-	NoiseChan(other.NoiseChan),
-	Note(std::move(other.Note)),
-	Oct(std::move(other.Oct)),
-	Inst(std::move(other.Inst)),
-	Vol(std::move(other.Vol)),
-	EffParam(std::move(other.EffParam))
-{
-	memcpy(Definite, other.Definite, sizeof(Definite));
-	memcpy(EffNumber, other.EffNumber, sizeof(EffNumber));
-}
-
-searchTerm& searchTerm::operator=(searchTerm &&other)
-{
-	NoiseChan = other.NoiseChan;
-	Note.swap(other.Note);
-	Oct.swap(other.Oct);
-	Inst.swap(other.Inst);
-	Vol.swap(other.Vol);
-	EffParam.swap(other.EffParam);
-
-	memcpy(Definite, other.Definite, sizeof(Definite));
-	memcpy(EffNumber, other.EffNumber, sizeof(EffNumber));
-
-	return *this;
 }
 
 
@@ -807,7 +781,7 @@ void CFindDlg::ParseNote(searchTerm &Term, CString str, bool Half)
 	}
 
 	if (str.Right(2) == _T("-#") && str.GetLength() == 3) {
-		int NoteValue = static_cast<unsigned char>(strtol(str.Left(1), NULL, 16));
+		int NoteValue = GetHex(str.Left(1));
 		Term.Definite[WC_NOTE] = true;
 		Term.Definite[WC_OCT] = true;
 		if (str.Left(1) == _T(".")) {
@@ -857,7 +831,7 @@ void CFindDlg::ParseInst(searchTerm &Term, CString str, bool Half)
 		Term.Inst->Set(HOLD_INSTRUMENT);
 	}
 	else if (!str.IsEmpty()) {
-		unsigned char Val = static_cast<unsigned char>(strtol(str, NULL, 16));
+		unsigned char Val = GetHex(str);
 		RaiseIf(Val >= MAX_INSTRUMENTS,
 			_T("Instrument \"%s\" is out of range, maximum is %X."), str, MAX_INSTRUMENTS - 1);
 		Term.Inst->Set(Val, Half);
@@ -880,7 +854,7 @@ void CFindDlg::ParseVol(searchTerm &Term, CString str, bool Half)
 		Term.Vol->Max = MAX_VOLUME - 1;
 	}
 	else if (!str.IsEmpty()) {
-		unsigned char Val = static_cast<unsigned char>(strtol(str, NULL, 16));
+		unsigned char Val = GetHex(str);
 		RaiseIf(Val >= MAX_VOLUME,
 			_T("Channel volume \"%s\" is out of range, maximum is %X."), str, MAX_VOLUME - 1);
 		Term.Vol->Set(Val, Half);
@@ -904,17 +878,19 @@ void CFindDlg::ParseEff(searchTerm &Term, CString str, bool Half)
 	}
 	else {
 		char Name = str[0];
+		bool found = false;
 		for (size_t i = 1; i < EF_COUNT; i++) {
 			if (Name == EFF_CHAR[i - 1]) {
 				Term.Definite[WC_EFF] = true;
 				Term.EffNumber[i] = true;
+				found = true;
 			}
 		}
-		RaiseIf(Term.EffNumber[EF_NONE], _T("Unknown effect \"%s\" found in search query."), str.Left(1));
+		RaiseIf(!found, _T("Unknown effect \"%s\" found in search query."), str.Left(1));
 	}
 	if (str.GetLength() > 1) {
 		Term.Definite[WC_PARAM] = true;
-		Term.EffParam->Set(static_cast<unsigned char>(strtol(str.Right(2), NULL, 16)));
+		Term.EffParam->Set(GetHex(str.Right(2)));
 	}
 }
 
@@ -1010,29 +986,37 @@ void CFindDlg::GetReplaceTerm()
 				_T("the option \"Remove original data\" is enabled."));
 	}
 
-	m_replaceTerm = toReplace(&newTerm);
+	m_replaceTerm = toReplace(newTerm);
 }
 
-replaceTerm CFindDlg::toReplace(const searchTerm *x)
+unsigned CFindDlg::GetHex(const CString &str) {
+	TCHAR *e = nullptr;
+	unsigned val = _tcstoul((LPCTSTR)str, &e, 16);
+	RaiseIf(errno == ERANGE || e != (LPCTSTR)str + str.GetLength(),
+		_T("Invalid hexadecimal \"%s\"."), str);
+	return val;
+}
+
+replaceTerm CFindDlg::toReplace(const searchTerm &x) const
 {
 	replaceTerm Term;
-	Term.Note.Note = x->Note->Min;
-	Term.Note.Octave = x->Oct->Min;
-	Term.Note.Instrument = x->Inst->Min;
-	Term.Note.Vol = x->Vol->Min;
-	Term.NoiseChan = x->NoiseChan;
+	Term.Note.Note = x.Note->Min;
+	Term.Note.Octave = x.Oct->Min;
+	Term.Note.Instrument = x.Inst->Min;
+	Term.Note.Vol = x.Vol->Min;
+	Term.NoiseChan = x.NoiseChan;
 	for (size_t i = 0; i < EF_COUNT; i++)
-		if (x->EffNumber[i]) {
+		if (x.EffNumber[i]) {
 			Term.Note.EffNumber[0] = static_cast<effect_t>(i);
 			break;
 		}
-	Term.Note.EffParam[0] = x->EffParam->Min;
-	memcpy(Term.Definite, x->Definite, sizeof(bool) * 6);
+	Term.Note.EffParam[0] = x.EffParam->Min;
+	memcpy(Term.Definite, x.Definite, sizeof(bool) * 6);
 
 	return Term;
 }
 
-bool CFindDlg::CompareFields(const stChanNote Target, bool Noise, int EffCount)
+bool CFindDlg::CompareFields(const stChanNote &Target, bool Noise, int EffCount)
 {
 	int EffColumn = m_cEffectColumn->GetCurSel();
 	if (EffColumn > EffCount && EffColumn != 4) EffColumn = EffCount;

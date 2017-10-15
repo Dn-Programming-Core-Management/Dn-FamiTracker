@@ -30,7 +30,6 @@
 #include "DialogReBar.h"
 #include "ControlPanelDlg.h"
 #include "CustomControls.h"
-#include "FindDlg.h"		// // //
 
 enum frame_edit_pos_t { 
 	FRAME_EDIT_POS_TOP, 
@@ -57,6 +56,7 @@ class CFrameEditor;
 class CGrooveDlg;		// // //
 class CBookmarkDlg;
 class CSwapDlg;
+class CFindDlg;		// // //
 
 class CMainFrame : public CFrameWnd
 {

@@ -60,6 +60,7 @@
 #include "BookmarkDlg.h"	// // //
 #include "SwapDlg.h"		// // //
 #include "SpeedDlg.h"		// // //
+#include "FindDlg.h"		// // //
 #include "TransposeDlg.h"	// // //
 #include "DPI.h"		// // //
 #include "InstrumentFactory.h"		// // //
