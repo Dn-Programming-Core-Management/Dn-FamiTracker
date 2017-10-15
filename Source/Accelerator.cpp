@@ -304,13 +304,14 @@ void CAccelerator::Setup()
 	}
 
 	m_pAccelTable.clear();		// // //
-	for (const auto &x : m_pEntriesTable) {
-		ACCEL a;
-		a.fVirt = FVIRTKEY | GetMod(x.mod);
-		a.key = x.key;
-		a.cmd = x.id;
-		m_pAccelTable.push_back(a);
-	}
+	for (const auto &x : m_pEntriesTable)
+		if (x.key) {
+			ACCEL a;
+			a.fVirt = FVIRTKEY | GetMod(x.mod);
+			a.key = x.key;
+			a.cmd = x.id;
+			m_pAccelTable.push_back(a);
+		}
 	m_hAccel = CreateAcceleratorTable(m_pAccelTable.data(), ACCEL_COUNT);
 }
 
