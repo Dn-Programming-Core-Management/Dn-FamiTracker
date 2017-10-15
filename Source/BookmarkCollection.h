@@ -153,6 +153,13 @@ public:
 	*/
 	bool SortByPosition(bool Desc);
 
+	auto begin() const {
+		return m_pBookmark.cbegin();
+	}
+	auto end() const {
+		return m_pBookmark.cend();
+	}
+
 private:
 	std::vector<std::unique_ptr<CBookmark>> m_pBookmark;
 };

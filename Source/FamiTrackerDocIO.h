@@ -38,11 +38,26 @@ public:
 	void Save(const CFamiTrackerDoc &doc);
 
 //private:
-	void LoadSamples(CFamiTrackerDoc &doc, int ver);
-	void SaveSamples(const CFamiTrackerDoc &doc);
+	void LoadSongInfo(CFamiTrackerDoc &doc, int ver);
+	void SaveSongInfo(const CFamiTrackerDoc &doc, int ver);
+
+	void LoadDSamples(CFamiTrackerDoc &doc, int ver);
+	void SaveDSamples(const CFamiTrackerDoc &doc, int ver);
 
 	void LoadComments(CFamiTrackerDoc &doc, int ver);
-	void SaveComments(const CFamiTrackerDoc &doc);
+	void SaveComments(const CFamiTrackerDoc &doc, int ver);
+
+	void LoadParamsExtra(CFamiTrackerDoc &doc, int ver);
+	void SaveParamsExtra(const CFamiTrackerDoc &doc, int ver);
+
+	void LoadDetuneTables(CFamiTrackerDoc &doc, int ver);
+	void SaveDetuneTables(const CFamiTrackerDoc &doc, int ver);
+
+	void LoadGrooves(CFamiTrackerDoc &doc, int ver);
+	void SaveGrooves(const CFamiTrackerDoc &doc, int ver);
+
+	void LoadBookmarks(CFamiTrackerDoc &doc, int ver);
+	void SaveBookmarks(const CFamiTrackerDoc &doc, int ver);
 
 private:
 	template <module_error_level_t l = MODULE_ERROR_DEFAULT>

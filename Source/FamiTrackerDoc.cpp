@@ -743,6 +743,21 @@ bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 	return true;
 }
 
+#define DEFAULT_WRITE(NAME, BLOCKNAME) \
+	bool CFamiTrackerDoc::WriteBlock_ ## NAME(CDocumentFile *pDocFile, const int Version) const { \
+		pDocFile->CreateBlock(FILE_BLOCK_ ## BLOCKNAME, Version); \
+		CFamiTrackerDocIO {*pDocFile}.Save ## NAME(*this, Version); \
+		return pDocFile->FlushBlock(); \
+	}
+
+DEFAULT_WRITE(SongInfo, INFO)
+DEFAULT_WRITE(DSamples, DSAMPLES)
+DEFAULT_WRITE(Comments, COMMENTS)
+DEFAULT_WRITE(ParamsExtra, PARAMS_EXTRA)
+DEFAULT_WRITE(DetuneTables, DETUNETABLES)
+DEFAULT_WRITE(Grooves, GROOVES)
+DEFAULT_WRITE(Bookmarks, BOOKMARKS)
+
 bool CFamiTrackerDoc::WriteBlock_Parameters(CDocumentFile *pDocFile, const int Version) const
 {
 	// Module parameters
@@ -779,18 +794,6 @@ bool CFamiTrackerDoc::WriteBlock_Parameters(CDocumentFile *pDocFile, const int V
 			}
 		}
 	}
-
-	return pDocFile->FlushBlock();
-}
-
-bool CFamiTrackerDoc::WriteBlock_SongInfo(CDocumentFile *pDocFile, const int Version) const
-{
-	// Song info
-	pDocFile->CreateBlock(FILE_BLOCK_INFO, Version);
-	
-	pDocFile->WriteBlock(m_strName, 32);
-	pDocFile->WriteBlock(m_strArtist, 32);
-	pDocFile->WriteBlock(m_strCopyright, 32);
 
 	return pDocFile->FlushBlock();
 }
@@ -1198,20 +1201,6 @@ bool CFamiTrackerDoc::WriteBlock_Patterns(CDocumentFile *pDocFile, const int Ver
 	return pDocFile->FlushBlock();
 }
 
-bool CFamiTrackerDoc::WriteBlock_DSamples(CDocumentFile *pDocFile, const int Version) const
-{
-	pDocFile->CreateBlock(FILE_BLOCK_DSAMPLES, Version);
-	CFamiTrackerDocIO(*pDocFile).SaveSamples(*this);		// // //
-	return pDocFile->FlushBlock();
-}
-
-bool CFamiTrackerDoc::WriteBlock_Comments(CDocumentFile *pDocFile, const int Version) const
-{
-	pDocFile->CreateBlock(FILE_BLOCK_COMMENTS, Version);
-	CFamiTrackerDocIO(*pDocFile).SaveComments(*this);		// // //
-	return pDocFile->FlushBlock();
-}
-
 bool CFamiTrackerDoc::WriteBlock_ChannelLayout(CDocumentFile *pDocFile, const int Version) const
 {
 //	pDocFile->CreateBlock(FILE_CHANNEL_LAYOUT, Version);
@@ -1600,6 +1589,19 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 	return TRUE;
 }
 
+#define DEFAULT_READ(NAME) \
+	void CFamiTrackerDoc::ReadBlock_ ## NAME(CDocumentFile *pDocFile, const int Version) { \
+		CFamiTrackerDocIO {*pDocFile}.Load ## NAME(*this, Version); \
+	}
+
+DEFAULT_READ(SongInfo)
+DEFAULT_READ(DSamples)
+DEFAULT_READ(Comments)
+DEFAULT_READ(ParamsExtra)
+DEFAULT_READ(DetuneTables)
+DEFAULT_READ(Grooves)
+DEFAULT_READ(Bookmarks)
+
 void CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile, const int Version)
 {
 	// Get first track for module versions that require that
@@ -1692,13 +1694,6 @@ void CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile, const int Ve
 	SetupChannels(m_iExpansionChip);
 }
 
-void CFamiTrackerDoc::ReadBlock_SongInfo(CDocumentFile *pDocFile, const int Version)		// // //
-{
-	pDocFile->GetBlock(m_strName, 32);
-	pDocFile->GetBlock(m_strArtist, 32);
-	pDocFile->GetBlock(m_strCopyright, 32);
-}
-
 void CFamiTrackerDoc::ReadBlock_Header(CDocumentFile *pDocFile, const int Version)
 {
 	if (Version == 1) {
@@ -1758,11 +1753,6 @@ void CFamiTrackerDoc::ReadBlock_Header(CDocumentFile *pDocFile, const int Versio
 		for (unsigned int i = 0; i < m_iTrackCount; ++i)
 			GetTrack(i)->SetHighlight(m_vHighlight);		// // //
 	}
-}
-
-void CFamiTrackerDoc::ReadBlock_Comments(CDocumentFile *pDocFile, const int Version)
-{
-	CFamiTrackerDocIO(*pDocFile).LoadComments(*this, Version);		// // //
 }
 
 void CFamiTrackerDoc::ReadBlock_ChannelLayout(CDocumentFile *pDocFile, const int Version)
@@ -2293,206 +2283,6 @@ void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Vers
 			throw;
 		}
 	}
-}
-
-void CFamiTrackerDoc::ReadBlock_DSamples(CDocumentFile *pDocFile, const int Version)
-{
-	CFamiTrackerDocIO(*pDocFile).LoadSamples(*this, Version);		// // //
-}
-
-// // // Detune tables
-
-#include "DetuneDlg.h" // TODO: bad, encapsulate detune tables
-
-void CFamiTrackerDoc::ReadBlock_DetuneTables(CDocumentFile *pDocFile, const int Version)
-{
-	int Count = AssertRange(pDocFile->GetBlockChar(), 0, 6, "Detune table count");
-	for (int i = 0; i < Count; i++) {
-		int Chip = AssertRange(pDocFile->GetBlockChar(), 0, 5, "Detune table index");
-		try {
-			int Item = AssertRange(pDocFile->GetBlockChar(), 0, NOTE_COUNT, "Detune table note count");
-			for (int j = 0; j < Item; j++) {
-				int Note = AssertRange(pDocFile->GetBlockChar(), 0, NOTE_COUNT - 1, "Detune table note index");
-				int Offset = pDocFile->GetBlockInt();
-				m_iDetuneTable[Chip][Note] = Offset;
-			}
-		}
-		catch (CModuleException *e) {
-			e->AppendError("At %s detune table,", CDetuneDlg::CHIP_STR[Chip]);
-			throw;
-		}
-	}
-}
-
-bool CFamiTrackerDoc::WriteBlock_DetuneTables(CDocumentFile *pDocFile, const int Version) const
-{
-	int NoteUsed[6], ChipCount = 0;
-	for (int i = 0; i < 6; i++) {
-		NoteUsed[i] = 0;
-		for (int j = 0; j < NOTE_COUNT; j++)
-			if (m_iDetuneTable[i][j] != 0)
-				NoteUsed[i]++;
-		if (NoteUsed[i]) ChipCount++;
-	}
-	if (!ChipCount) return true;
-
-	pDocFile->CreateBlock(FILE_BLOCK_DETUNETABLES, Version);
-	pDocFile->WriteBlockChar(ChipCount);
-	
-	for (int i = 0; i < 6; i++) {
-		if (!NoteUsed[i]) continue;
-		pDocFile->WriteBlockChar(i);
-		pDocFile->WriteBlockChar(NoteUsed[i]);
-		for (int j = 0; j < NOTE_COUNT; j++) {
-			if (m_iDetuneTable[i][j] == 0) continue;
-			pDocFile->WriteBlockChar(j);
-			pDocFile->WriteBlockInt(m_iDetuneTable[i][j]);
-		}
-	}
-
-	return pDocFile->FlushBlock();
-}
-
-// // // Groove table
-
-void CFamiTrackerDoc::ReadBlock_Grooves(CDocumentFile *pDocFile, const int Version)
-{
-	const int Count = AssertRange(pDocFile->GetBlockChar(), 0, MAX_GROOVE, "Groove count");
-
-	for (int i = 0; i < Count; i++) {
-		int Index = AssertRange(pDocFile->GetBlockChar(), 0, MAX_GROOVE - 1, "Groove index");
-		try {
-			int Size = AssertRange(pDocFile->GetBlockChar(), 1, MAX_GROOVE_SIZE, "Groove size");
-			if (m_pGrooveTable[Index] == NULL)
-				m_pGrooveTable[Index] = new CGroove();
-			m_pGrooveTable[Index]->SetSize(Size);
-			for (int j = 0; j < Size; j++) try {
-				m_pGrooveTable[Index]->SetEntry(j, AssertRange(
-					static_cast<unsigned char>(pDocFile->GetBlockChar()), 1U, 0xFFU, "Groove item"));
-			}
-			catch (CModuleException *e) {
-				e->AppendError("At position %i,", j);
-				throw;
-			}
-		}
-		catch (CModuleException *e) {
-			e->AppendError("At groove %i,", Index);
-			throw;
-		}
-	}
-
-	unsigned int Tracks = pDocFile->GetBlockChar();
-	AssertFileData<MODULE_ERROR_STRICT>(Tracks == m_iTrackCount, "Use-groove flag count does not match track count");
-	for (unsigned i = 0; i < Tracks; ++i) try {
-		int Use = pDocFile->GetBlockChar();
-		if (i >= m_iTrackCount) continue;
-		CPatternData *pTrack = GetTrack(i);
-		pTrack->SetSongGroove(Use == 1);
-		int Speed = pTrack->GetSongSpeed();
-		if (pTrack->GetSongGroove())
-			AssertRange(Speed, 0, MAX_GROOVE - 1, "Track default groove index");
-		else
-			AssertRange(Speed, 1, MAX_TEMPO, "Track default speed");
-	}
-	catch (CModuleException *e) {
-		e->AppendError("At track %d,", i + 1);
-		throw;
-	}
-}
-
-bool CFamiTrackerDoc::WriteBlock_Grooves(CDocumentFile *pDocFile, const int Version) const
-{
-	int Count = 0;
-	for (int i = 0; i < MAX_GROOVE; i++)
-		if (m_pGrooveTable[i] != NULL) Count++;
-	if (!Count) return true;
-	pDocFile->CreateBlock(FILE_BLOCK_GROOVES, Version);
-	pDocFile->WriteBlockChar(Count);
-	
-	for (int i = 0; i < MAX_GROOVE; i++) if (m_pGrooveTable[i] != NULL) {
-		int Size = m_pGrooveTable[i]->GetSize();
-		pDocFile->WriteBlockChar(i);
-		pDocFile->WriteBlockChar(Size);
-		for (int j = 0; j < Size; j++)
-			pDocFile->WriteBlockChar(m_pGrooveTable[i]->GetEntry(j));
-	}
-	
-	pDocFile->WriteBlockChar(m_iTrackCount);
-	for (unsigned i = 0; i < m_iTrackCount; ++i)
-		pDocFile->WriteBlockChar(GetTrack(i)->GetSongGroove());
-
-	return pDocFile->FlushBlock();
-}
-
-// // // Bookmarks
-
-void CFamiTrackerDoc::ReadBlock_Bookmarks(CDocumentFile *pDocFile, const int Version)
-{
-	int Count = pDocFile->GetBlockInt();
-
-	for (int i = 0; i < Count; i++) {
-		CBookmark *pMark = new CBookmark();
-		unsigned int Track = AssertRange(static_cast<unsigned char>(pDocFile->GetBlockChar()), 0, m_iTrackCount - 1, "Bookmark track index");
-		int Frame = static_cast<unsigned char>(pDocFile->GetBlockChar());
-		int Row = static_cast<unsigned char>(pDocFile->GetBlockChar());
-		pMark->m_iFrame = AssertRange(Frame, 0, static_cast<int>(m_pTracks[Track]->GetFrameCount()) - 1, "Bookmark frame index");
-		pMark->m_iRow = AssertRange(Row, 0, static_cast<int>(m_pTracks[Track]->GetPatternLength()) - 1, "Bookmark row index");
-		pMark->m_Highlight.First = pDocFile->GetBlockInt();
-		pMark->m_Highlight.Second = pDocFile->GetBlockInt();
-		pMark->m_bPersist = pDocFile->GetBlockChar() != 0;
-		pMark->m_sName = std::string(pDocFile->ReadString());
-		m_pBookmarkManager->GetCollection(Track)->AddBookmark(pMark);
-	}
-}
-
-bool CFamiTrackerDoc::WriteBlock_Bookmarks(CDocumentFile *pDocFile, const int Version) const
-{
-	int Count = m_pBookmarkManager->GetBookmarkCount();
-	if (!Count) return true;
-	pDocFile->CreateBlock(FILE_BLOCK_BOOKMARKS, Version);
-	pDocFile->WriteBlockInt(Count);
-	
-	for (unsigned int i = 0; i < m_iTrackCount; i++) {
-		CBookmarkCollection *pCol = m_pBookmarkManager->GetCollection(i);
-		unsigned int Count = pCol->GetCount();
-		if (Count) for (unsigned int j = 0; j < Count; ++j) {
-			CBookmark *pMark = pCol->GetBookmark(j);
-			pDocFile->WriteBlockChar(i);
-			pDocFile->WriteBlockChar(pMark->m_iFrame);
-			pDocFile->WriteBlockChar(pMark->m_iRow);
-			pDocFile->WriteBlockInt(pMark->m_Highlight.First);
-			pDocFile->WriteBlockInt(pMark->m_Highlight.Second);
-			pDocFile->WriteBlockChar(pMark->m_bPersist);
-			//pDocFile->WriteBlockInt(pMark->m_sName.size());
-			//pDocFile->WriteBlock(pMark->m_sName, (int)strlen(Name));	
-			pDocFile->WriteString(pMark->m_sName.c_str());
-		}
-	}
-
-	return pDocFile->FlushBlock();
-}
-
-// // // Extra parameters
-
-void CFamiTrackerDoc::ReadBlock_ParamsExtra(CDocumentFile *pDocFile, const int Version)
-{
-	m_bLinearPitch = pDocFile->GetBlockInt() != 0;
-	if (Version >= 2) {
-		m_iDetuneSemitone = AssertRange(pDocFile->GetBlockChar(), -12, 12, "Global semitone tuning");
-		m_iDetuneCent = AssertRange(pDocFile->GetBlockChar(), -100, 100, "Global cent tuning");
-	}
-}
-
-bool CFamiTrackerDoc::WriteBlock_ParamsExtra(CDocumentFile *pDocFile, const int Version) const
-{
-	if (!m_bLinearPitch && !m_iDetuneSemitone && !m_iDetuneCent) return true;
-	pDocFile->CreateBlock(FILE_BLOCK_PARAMS_EXTRA, Version);
-	pDocFile->WriteBlockInt(m_bLinearPitch);
-	if (Version >= 2) {
-		pDocFile->WriteBlockChar(m_iDetuneSemitone);
-		pDocFile->WriteBlockChar(m_iDetuneCent);
-	}
-	return pDocFile->FlushBlock();
 }
 
 // FTM import ////
