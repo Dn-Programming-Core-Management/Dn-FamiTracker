@@ -45,12 +45,12 @@ CChannelHandler2A03::CChannelHandler2A03() :
 {
 }
 
-void CChannelHandler2A03::HandleNoteData(stChanNote *pNoteData, int EffColumns)
+void CChannelHandler2A03::HandleNoteData(stChanNote &NoteData)		// // //
 {
 	// // //
-	CChannelHandler::HandleNoteData(pNoteData, EffColumns);
+	CChannelHandler::HandleNoteData(NoteData);
 
-	if (pNoteData->Note != NONE && pNoteData->Note != HALT && pNoteData->Note != RELEASE) {
+	if (NoteData.Note != NONE && NoteData.Note != HALT && NoteData.Note != RELEASE) {
 		if (!m_bEnvelopeLoop || m_bHardwareEnvelope)		// // //
 			m_bResetEnvelope = true;
 	}
@@ -210,11 +210,11 @@ void C2A03Square::ClearRegisters()
 	m_iLastPeriod = 0xFFFF;
 }
 
-void C2A03Square::HandleNoteData(stChanNote *pNoteData, int EffColumns)
+void C2A03Square::HandleNoteData(stChanNote &NoteData)		// // //
 {
 	m_iSweep = 0;
 	m_bSweeping = false;
-	CChannelHandler2A03::HandleNoteData(pNoteData, EffColumns);
+	CChannelHandler2A03::HandleNoteData(NoteData);
 }
 
 bool C2A03Square::HandleEffect(effect_t EffNum, unsigned char EffParam)
@@ -517,17 +517,17 @@ CDPCMChan::CDPCMChan() :		// // //
 { 
 }
 
-void CDPCMChan::HandleNoteData(stChanNote *pNoteData, int EffColumns)
+void CDPCMChan::HandleNoteData(stChanNote &NoteData)		// // //
 {
 	m_iCustomPitch = -1;
 	m_iRetrigger = 0;
 
-	if (pNoteData->Note != NONE) {
+	if (NoteData.Note != NONE) {
 		m_iNoteCut = 0;
 		m_iNoteRelease = 0;			// // //
 	}
 
-	CChannelHandler::HandleNoteData(pNoteData, EffColumns);
+	CChannelHandler::HandleNoteData(NoteData);
 }
 
 bool CDPCMChan::HandleEffect(effect_t EffNum, unsigned char EffParam)

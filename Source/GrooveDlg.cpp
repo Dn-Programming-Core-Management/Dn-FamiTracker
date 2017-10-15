@@ -338,7 +338,7 @@ void CGrooveDlg::OnBnClickedButtonGrooveCopyFxx()
 	
 	unsigned char prev = 0;
 	for (unsigned char i = 0; i < Groove->GetSize(); i++) {
-		stChanNote row { };
+		stChanNote row;
 		unsigned char x = Groove->GetEntry(i);
 		if (x != prev || !i) {
 			row.EffNumber[0] = EF_SPEED;

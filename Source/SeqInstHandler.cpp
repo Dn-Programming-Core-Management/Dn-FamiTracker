@@ -69,7 +69,7 @@ void CSeqInstHandler::TriggerInstrument()
 	m_iNoteOffset = 0;
 	m_iPitchOffset = 0;
 	m_iDutyParam = m_iDefaultDuty;
-	
+
 	if (m_pInterface->IsActive()) {
 		m_pInterface->SetVolume(m_iDefaultVolume);
 //		m_pInterface->SetDutyPeriod(m_iDefaultDuty); // not same

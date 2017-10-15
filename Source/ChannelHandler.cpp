@@ -278,41 +278,39 @@ std::string CChannelHandler::GetCustomEffectString() const		// // //
 }
 
 // Handle common things before letting the channels play the notes
-void CChannelHandler::PlayNote(stChanNote *pNoteData, int EffColumns)
+void CChannelHandler::PlayNote(stChanNote NoteData)		// // //
 {
-	ASSERT (pNoteData != NULL);
-
 	// // // Handle delay commands
-	if (HandleDelay(pNoteData, EffColumns))
+	if (HandleDelay(NoteData))
 		return;
 
 	// Let the channel play
-	HandleNoteData(pNoteData, EffColumns);
+	HandleNoteData(NoteData);
 }
 
-void CChannelHandler::WriteEchoBuffer(stChanNote *NoteData, int Pos, int EffColumns)
+void CChannelHandler::WriteEchoBuffer(const stChanNote &NoteData, int Pos)
 {
 	if (Pos < 0 || Pos > ECHO_BUFFER_LENGTH) return;
 	int Value;
-	switch (NoteData->Note) {
+	switch (NoteData.Note) {
 	case NONE: Value = ECHO_BUFFER_NONE; break;
 	case HALT: Value = ECHO_BUFFER_HALT; break;
-	case ECHO: Value = ECHO_BUFFER_ECHO + NoteData->Octave; break;
+	case ECHO: Value = ECHO_BUFFER_ECHO + NoteData.Octave; break;
 	default:
-		Value = MIDI_NOTE(NoteData->Octave, NoteData->Note);
-		for (int i = EffColumns; i >= 0; i--) {
-			const int Param = NoteData->EffParam[i] & 0x0F;
-			if (NoteData->EffNumber[i] == EF_SLIDE_UP) {
+		Value = MIDI_NOTE(NoteData.Octave, NoteData.Note);
+		for (int i = MAX_EFFECT_COLUMNS - 1; i >= 0; --i) {
+			const int Param = NoteData.EffParam[i] & 0x0F;
+			if (NoteData.EffNumber[i] == EF_SLIDE_UP) {
 				Value += Param;
 				break;
 			}
-			else if (NoteData->EffNumber[i] == EF_SLIDE_DOWN) {
+			else if (NoteData.EffNumber[i] == EF_SLIDE_DOWN) {
 				Value -= Param;
 				break;
 			}
-			else if (NoteData->EffNumber[i] == EF_TRANSPOSE) {
+			else if (NoteData.EffNumber[i] == EF_TRANSPOSE) {
 				// Sometimes there are not enough ticks for the transpose to take place
-				if (NoteData->EffParam[i] & 0x80)
+				if (NoteData.EffParam[i] & 0x80)
 					Value -= Param;
 				else
 					Value += Param;
@@ -325,37 +323,37 @@ void CChannelHandler::WriteEchoBuffer(stChanNote *NoteData, int Pos, int EffColu
 	m_iEchoBuffer[Pos] = Value;
 }
 
-void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
+void CChannelHandler::HandleNoteData(stChanNote &NoteData)
 {
 	int LastInstrument = m_iInstrument;
-	int Instrument = pNoteData->Instrument;
-	bool Trigger = (pNoteData->Note != NONE) && (pNoteData->Note != HALT) && (pNoteData->Note != RELEASE) &&
+	int Instrument = NoteData.Instrument;
+	bool Trigger = (NoteData.Note != NONE) && (NoteData.Note != HALT) && (NoteData.Note != RELEASE) &&
 		Instrument != HOLD_INSTRUMENT;		// // // 050B
 	bool pushNone = false;
 
 	// // // Echo buffer
-	if (pNoteData->Note == ECHO && pNoteData->Octave <= ECHO_BUFFER_LENGTH)
+	if (NoteData.Note == ECHO && NoteData.Octave <= ECHO_BUFFER_LENGTH)
 	{ // retrieve buffer
-		int NewNote = m_iEchoBuffer[pNoteData->Octave];
+		int NewNote = m_iEchoBuffer[NoteData.Octave];
 		if (NewNote == ECHO_BUFFER_NONE) {
-			pNoteData->Note = NONE;
+			NoteData.Note = NONE;
 			pushNone = true;
 		}
-		else if (NewNote == ECHO_BUFFER_HALT) pNoteData->Note = HALT;
+		else if (NewNote == ECHO_BUFFER_HALT) NoteData.Note = HALT;
 		else {
-			pNoteData->Note = GET_NOTE(NewNote);
-			pNoteData->Octave = GET_OCTAVE(NewNote);
+			NoteData.Note = GET_NOTE(NewNote);
+			NoteData.Octave = GET_OCTAVE(NewNote);
 		}
 	}
-	if (pNoteData->Note != RELEASE && (pNoteData->Note != NONE) || pushNone)
+	if (NoteData.Note != RELEASE && (NoteData.Note != NONE) || pushNone)
 	{ // push buffer
 		for (int i = ECHO_BUFFER_LENGTH; i > 0; i--)
 			m_iEchoBuffer[i] = m_iEchoBuffer[i - 1];
-		WriteEchoBuffer(pNoteData, 0, EffColumns);
+		WriteEchoBuffer(NoteData, 0);
 	}
 	
 	// Clear the note cut effect
-	if (pNoteData->Note != NONE) {
+	if (NoteData.Note != NONE) {
 		m_iNoteCut = 0;
 		m_iNoteRelease = 0;		// // //
 		if (Trigger && m_iNoteVolume == 0 && !m_iVolSlide) {		// // //
@@ -369,9 +367,9 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 		m_iEffect = EF_NONE;
 
 	// Effects
-	for (int n = 0; n < EffColumns; n++) {
-		effect_t      EffNum   = pNoteData->EffNumber[n];
-		unsigned char EffParam = pNoteData->EffParam[n];
+	for (int n = 0; n < MAX_EFFECT_COLUMNS; n++) {
+		effect_t      EffNum   = NoteData.EffNumber[n];
+		unsigned char EffParam = NoteData.EffParam[n];
 		HandleEffect(EffNum, EffParam);		// // // single method
 		
 		// 0CC: remove this eventually like how the asm handles it
@@ -382,13 +380,13 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	}
 
 	// Volume
-	if (pNoteData->Vol < MAX_VOLUME) {
-		m_iVolume = pNoteData->Vol << VOL_COLUMN_SHIFT;
+	if (NoteData.Vol < MAX_VOLUME) {
+		m_iVolume = NoteData.Vol << VOL_COLUMN_SHIFT;
 		m_iDefaultVolume = m_iVolume;		// // //
 	}
 
 	// Instrument
-	if (pNoteData->Note == HALT || pNoteData->Note == RELEASE)		// // //
+	if (NoteData.Note == HALT || NoteData.Note == RELEASE)		// // //
 		Instrument = MAX_INSTRUMENTS;	// Ignore instrument for release and halt commands
 
 	if (Instrument != MAX_INSTRUMENTS && Instrument != HOLD_INSTRUMENT)		// // // 050B
@@ -401,13 +399,13 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 		// m_iInstrument = m_pSoundGen->GetDefaultInstrument();
 	}
 	
-	switch (pNoteData->Note) {		// // // set note value before loading instrument
+	switch (NoteData.Note) {		// // // set note value before loading instrument
 	case NONE: case HALT: case RELEASE: break;
-	default: m_iNote = RunNote(pNoteData->Octave, pNoteData->Note);
+	default: m_iNote = RunNote(NoteData.Octave, NoteData.Note);
 	}
 
 	// Note
-	switch (pNoteData->Note) {
+	switch (NoteData.Note) {
 		case NONE:
 			HandleEmptyNote();
 			break;
@@ -419,7 +417,7 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 			HandleRelease();
 			break;
 		default:
-			HandleNote(pNoteData->Note, pNoteData->Octave);
+			HandleNote(NoteData.Note, NoteData.Octave);
 			break;
 	}
 
@@ -441,7 +439,7 @@ bool CChannelHandler::HandleInstrument(bool Trigger, bool NewInstrument)		// // 
 	if (!pDoc) return false;
 	std::shared_ptr<CInstrument> pInstrument = pDoc->GetInstrumentManager()->GetInstrument(m_iInstrument);
 	if (!pInstrument) return false;
-	
+
 	// load instrument here
 	inst_type_t instType = pInstrument->GetType();
 	if (NewInstrument)
@@ -646,31 +644,30 @@ bool CChannelHandler::HandleEffect(effect_t EffCmd, unsigned char EffParam)
 	return true;
 }
 
-bool CChannelHandler::HandleDelay(stChanNote *pNoteData, int EffColumns)
+bool CChannelHandler::HandleDelay(stChanNote &NoteData)
 {
 	// Handle note delay, Gxx
 
 	if (m_bDelayEnabled) {
 		m_bDelayEnabled = false;
-		HandleNoteData(&m_cnDelayed, m_iDelayEffColumns);
+		HandleNoteData(m_cnDelayed);		// // //
 	}
 	
 	// Check delay
-	for (int i = 0; i < EffColumns; ++i) {
-		if (pNoteData->EffNumber[i] == EF_DELAY && pNoteData->EffParam[i] > 0) {
+	for (int i = 0; i < MAX_EFFECT_COLUMNS; ++i) {
+		if (NoteData.EffNumber[i] == EF_DELAY && NoteData.EffParam[i] > 0) {
 			m_bDelayEnabled = true;
-			m_cDelayCounter = pNoteData->EffParam[i];
-			m_iDelayEffColumns = EffColumns;
+			m_cDelayCounter = NoteData.EffParam[i];
 
 			// Only one delay/row is allowed
-			for (int j = 0; j < EffColumns; ++j) {
-				if (pNoteData->EffNumber[j] == EF_DELAY) {		// // //
-					pNoteData->EffNumber[j] = EF_NONE;
-					pNoteData->EffParam[j] = 0;
+			for (int j = 0; j < MAX_EFFECT_COLUMNS; ++j) {
+				if (NoteData.EffNumber[j] == EF_DELAY) {		// // //
+					NoteData.EffNumber[j] = EF_NONE;
+					NoteData.EffParam[j] = 0;
 				}
 			}
 			
-			memcpy(&m_cnDelayed, pNoteData, sizeof(stChanNote));
+			m_cnDelayed = NoteData;		// // //
 			return true;
 		}
 	}
@@ -717,7 +714,7 @@ void CChannelHandler::UpdateDelay()
 	if (m_bDelayEnabled) {
 		if (!m_cDelayCounter) {
 			m_bDelayEnabled = false;
-			PlayNote(&m_cnDelayed, m_iDelayEffColumns);
+			PlayNote(m_cnDelayed);		// // //
 		}
 		else
 			m_cDelayCounter--;

@@ -36,12 +36,12 @@ CChannelHandlerMMC5::CChannelHandlerMMC5() : CChannelHandler(0x7FF, 0x0F)
 	m_iLengthCounter = 1;
 }
 
-void CChannelHandlerMMC5::HandleNoteData(stChanNote *pNoteData, int EffColumns)
+void CChannelHandlerMMC5::HandleNoteData(stChanNote &NoteData)		// // //
 {
 	// // //
-	CChannelHandler::HandleNoteData(pNoteData, EffColumns);
+	CChannelHandler::HandleNoteData(NoteData);
 
-	if (pNoteData->Note != NONE && pNoteData->Note != HALT && pNoteData->Note != RELEASE) {
+	if (NoteData.Note != NONE && NoteData.Note != HALT && NoteData.Note != RELEASE) {
 		if (!m_bEnvelopeLoop || m_bHardwareEnvelope)		// // //
 			m_bResetEnvelope = true;
 	}

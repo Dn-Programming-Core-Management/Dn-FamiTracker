@@ -49,7 +49,7 @@ public:
 	void SetColumnCount(int Count);
 
 	stChanNote GetNote();
-	void SetNote(stChanNote &Note, note_prio_t Priority);
+	void SetNote(const stChanNote &Note, note_prio_t Priority);		// // //
 	bool NewNoteData() const;
 	void Reset();
 

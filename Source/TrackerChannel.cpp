@@ -78,7 +78,7 @@ void CTrackerChannel::SetColumnCount(int Count)
 	m_iColumnCount = Count;
 }
 
-void CTrackerChannel::SetNote(stChanNote &Note, note_prio_t Priority)
+void CTrackerChannel::SetNote(const stChanNote &Note, note_prio_t Priority)		// // //
 {
 	m_csNoteLock.Lock();
 
@@ -93,11 +93,10 @@ void CTrackerChannel::SetNote(stChanNote &Note, note_prio_t Priority)
 
 stChanNote CTrackerChannel::GetNote()
 {
-	stChanNote Note;
-	
 	m_csNoteLock.Lock();
 
-	Note = m_Note;
+	stChanNote Note = m_Note;		// // //
+	m_Note = stChanNote { };
 	m_bNewNote = false;
 	m_iNotePriority = NOTE_PRIO_0;
 
@@ -115,6 +114,7 @@ void CTrackerChannel::Reset()
 {
 	m_csNoteLock.Lock();
 
+	m_Note = stChanNote { };		// // //
 	m_bNewNote = false;
 	m_iVolumeMeter = 0;
 	m_iNotePriority = NOTE_PRIO_0;

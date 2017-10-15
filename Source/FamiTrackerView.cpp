@@ -1167,7 +1167,7 @@ void CFamiTrackerView::OnTrackerPlayrow()
 	const int Channels = pDoc->GetAvailableChannels();
 
 	for (int i = 0; i < Channels; ++i) {
-		stChanNote Note = pDoc->GetNoteData(Track, Frame, i, Row);		// // //
+		stChanNote Note = pDoc->GetActiveNote(Track, Frame, i, Row);		// // //
 		if (!m_bMuteChannels[i])
 			theApp.GetSoundGenerator()->QueueNote(i, Note, NOTE_PRIO_1);
 	}
@@ -2025,7 +2025,7 @@ void CFamiTrackerView::InsertNote(int Note, int Octave, int Channel, int Velocit
 void CFamiTrackerView::PlayNote(unsigned int Channel, unsigned int Note, unsigned int Octave, unsigned int Velocity) const
 {
 	// Play a note in a channel
-	stChanNote NoteData { };		// // //
+	stChanNote NoteData;		// // //
 
 	NoteData.Note		= Note;
 	NoteData.Octave		= Octave;
@@ -2059,7 +2059,7 @@ void CFamiTrackerView::PlayNote(unsigned int Channel, unsigned int Note, unsigne
 		int Channels = pDoc->GetAvailableChannels();
 
 		for (int i = 0; i < Channels; ++i) {
-			stChanNote ChanNote = pDoc->GetNoteData(Track, Frame, i, Row);		// // //
+			stChanNote ChanNote = pDoc->GetActiveNote(Track, Frame, i, Row);		// // //
 			if (!m_bMuteChannels[i] && i != Channel)
 				theApp.GetSoundGenerator()->QueueNote(i, ChanNote, (i == Channel) ? NOTE_PRIO_2 : NOTE_PRIO_1);
 		}	
@@ -2069,7 +2069,7 @@ void CFamiTrackerView::PlayNote(unsigned int Channel, unsigned int Note, unsigne
 void CFamiTrackerView::ReleaseNote(unsigned int Channel, unsigned int Note, unsigned int Octave) const
 {
 	// Releases a channel
-	stChanNote NoteData { };		// // //
+	stChanNote NoteData;		// // //
 
 	NoteData.Note = RELEASE;
 	NoteData.Instrument = GetInstrument();
@@ -2098,7 +2098,7 @@ void CFamiTrackerView::ReleaseNote(unsigned int Channel, unsigned int Note, unsi
 void CFamiTrackerView::HaltNote(unsigned int Channel, unsigned int Note, unsigned int Octave) const
 {
 	// Halts a channel
-	stChanNote NoteData { };		// // //
+	stChanNote NoteData;		// // //
 
 	NoteData.Note = HALT;
 	NoteData.Instrument = GetInstrument();
@@ -2125,7 +2125,7 @@ void CFamiTrackerView::HaltNote(unsigned int Channel, unsigned int Note, unsigne
 void CFamiTrackerView::HaltNoteSingle(unsigned int Channel) const
 {
 	// Halts one single channel only
-	stChanNote NoteData { };		// // //
+	stChanNote NoteData;		// // //
 
 	NoteData.Note = HALT;
 	NoteData.Instrument = GetInstrument();

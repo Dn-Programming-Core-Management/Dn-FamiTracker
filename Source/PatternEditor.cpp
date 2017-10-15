@@ -3913,7 +3913,7 @@ void CPatternEditor::GetSelectionAsPPMCK(CString &str) const		// // //
 {
 	// Returns a PPMCK MML translation of copied pattern
 
-	stChanNote NoteData { };
+	stChanNote NoteData;
 
 	auto it = GetIterators();
 	str.Empty();
@@ -3934,9 +3934,9 @@ void CPatternEditor::GetSelectionAsPPMCK(CString &str) const		// // //
 		int o = -1;
 		int len = -1;
 		bool first = true;
-		stChanNote current { };
+		stChanNote current;
 		current.Note = HALT;
-		stChanNote echo[ECHO_BUFFER_LENGTH + 1] { };
+		stChanNote echo[ECHO_BUFFER_LENGTH + 1] = { };
 
 		for (CPatternIterator s {it.first}; s <= it.second; ++s) {
 			len++;

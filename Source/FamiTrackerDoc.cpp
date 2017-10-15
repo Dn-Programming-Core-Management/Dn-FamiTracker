@@ -2962,8 +2962,7 @@ void CFamiTrackerDoc::SetEffColumns(unsigned int Track, unsigned int Channel, un
 
 void CFamiTrackerDoc::SetEngineSpeed(unsigned int Speed)
 {
-	ASSERT(Speed <= 800); // hardcoded at the moment, TODO: fix this
-	ASSERT(Speed >= 10 || Speed == 0);
+	ASSERT(Speed >= 16 || Speed == 0);		// // //
 
 	m_iEngineSpeed = Speed;
 	SetModifiedFlag();
@@ -3028,6 +3027,13 @@ const stChanNote &CFamiTrackerDoc::GetNoteData(unsigned Track, unsigned Frame, u
 	const auto &Song = GetTrack(Track);		// // //
 	int Pattern = Song.GetFramePattern(Frame, Channel);
 	return Song.GetPatternData(Channel, Pattern, Row);		// // //
+}
+
+stChanNote CFamiTrackerDoc::GetActiveNote(unsigned Track, unsigned Frame, unsigned Channel, unsigned Row) const {		// // //
+	auto Note = GetNoteData(Track, Frame, Channel, Row);
+	for (int i = GetEffColumns(Track, Channel) + 1; i < MAX_EFFECT_COLUMNS; ++i)
+		Note.EffNumber[i] = EF_NONE;
+	return Note;
 }
 
 void CFamiTrackerDoc::SetDataAtPattern(unsigned Track, unsigned Pattern, unsigned Channel, unsigned Row, const stChanNote &Data)		// // //

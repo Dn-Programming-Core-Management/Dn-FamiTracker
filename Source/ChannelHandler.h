@@ -54,9 +54,8 @@ public:
 	virtual ~CChannelHandler();
 
 	/*!	\brief Plays a note from pattern data.
-		\param NoteData A pointer to the note data.
-		\param EffColumns The number of used effect columns of the note data. */
-	void	PlayNote(stChanNote *pNoteData, int EffColumns);
+		\param NoteData The note data. */
+	void	PlayNote(stChanNote NoteData);		// // //
 
 	// Public functions
 	/*!	\brief Initializes the channel handler and sets up member pointers.
@@ -140,9 +139,8 @@ protected:
 	
 	/*!	\brief Processes a note.
 		\details This method is called both for both notes from pattern data and the delayed note cache.
-		\param NoteData A pointer to the note data.
-		\param EffColumns The number of used effect columns of the note data. */
-	virtual void	HandleNoteData(stChanNote *pNoteData, int EffColumns);
+		\param NoteData The note data. */
+	virtual void	HandleNoteData(stChanNote &NoteData);
 	/*!	\brief Processes the current instrument.
 		\details This method sets up the instrument handler, creating a new one if necessary, then
 		forwards calls to the handler if it exists.
@@ -238,10 +236,9 @@ protected:
 	/*!	\brief Processes the Gxx delay effect in a given note.
 		\details The method caches the note data at CChannelHandler::m_cnDelayed if a Gxx effect
 		command is found. Jump effects are processed immediately and removed from the cached data.
-		\param NoteData A pointer to the note data.
-		\param EffColumns The number of used effect columns of the note data.
+		\param NoteData The note data.
 		\return Whether the note data contains a Gxx effect command. */
-	bool	HandleDelay(stChanNote *NoteData, int EffColumns);
+	bool	HandleDelay(stChanNote &NoteData);
 	
 	/*!	\brief Returns the pitch register offset of the channel's 4xy vibrato effect.
 		\details A positive value represents a higher pitch. The sign of the return value depends
@@ -269,10 +266,9 @@ protected:
 
 	/*!	\brief Pushes a note into the channel handler's echo buffer.
 		\details Transposing effects in the note data are resolved immediately.
-		\param NoteData A pointer to the note data.
-		\param Pos The index of the echo buffer at which the note will be inserted.
-		\param EffColumns The number of used effect columns of the note data. */
-	void	WriteEchoBuffer(stChanNote *NoteData, int Pos, int EffColumns);		// // //
+		\param NoteData The note data.
+		\param Pos The index of the echo buffer at which the note will be inserted. */
+	void	WriteEchoBuffer(const stChanNote &NoteData, int Pos);		// // //
 
 	/*!	\brief Writes to the APU memory.
 		\details This method no longer considers whether the destination sound chip is internal or
@@ -411,8 +407,6 @@ protected:
 	bool			m_bDelayEnabled;
 	/*!	\brief The number of ticks until the tick where the note delayed by a Gxx effect command will be played. */
 	unsigned char	m_cDelayCounter;
-	/*!	\brief The number of used effect columns of the delayed note cache. */
-	unsigned int	m_iDelayEffColumns;		
 	/*!	\brief A note structure holding a temporary cache of the note data delayed by a Gxx effect command. */
 	stChanNote		m_cnDelayed;
 

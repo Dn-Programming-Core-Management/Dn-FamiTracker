@@ -63,7 +63,7 @@ public:
 	void StepRow();
 	void UpdateAPU(int cycles);
 
-	void QueueNote(int chan, stChanNote &note, note_prio_t priority);
+	void QueueNote(int chan, const stChanNote &note, note_prio_t priority);
 	void SetPlayerPos(int Frame, int Row);
 	void EnqueueFrame(int Frame);
 	void ForceReloadInstrument(int chan);
@@ -91,7 +91,7 @@ private:
 
 	void PlayerTick();
 	void UpdateChannels();
-	void HandleGlobalEffects(stChanNote &note, int fxCols);
+	void HandleGlobalEffects(stChanNote &note);
 
 private:
 	std::vector<std::pair<

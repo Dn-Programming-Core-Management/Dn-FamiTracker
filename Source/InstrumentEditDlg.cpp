@@ -357,7 +357,7 @@ void CInstrumentEditDlg::SwitchOnNote(int x, int y)
 	int Channel = pView->GetSelectedChannel();		// // //
 	int Chip = pDoc->GetExpansionChip();
 
-	stChanNote NoteData { };
+	stChanNote NoteData;
 
 	// // // Send to respective channels whenever cursor is outside instrument chip
 	if (m_iSelectedInstType == INST_2A03) {
@@ -441,13 +441,12 @@ void CInstrumentEditDlg::SwitchOnNote(int x, int y)
 
 void CInstrumentEditDlg::SwitchOffNote(bool ForceHalt)
 {
-	stChanNote NoteData { };		// // //
-
 	CFamiTrackerView *pView = CFamiTrackerView::GetView();
 	CMainFrame *pFrameWnd = static_cast<CMainFrame*>(GetParent());
 
 	int Channel = pView->GetSelectedChannel();
 
+	stChanNote NoteData;		// // //
 	NoteData.Note			= (pView->DoRelease() && !ForceHalt) ? RELEASE : HALT;
 	NoteData.Instrument		= pFrameWnd->GetSelectedInstrument();
 

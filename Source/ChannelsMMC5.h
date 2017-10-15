@@ -36,7 +36,7 @@ public:
 	void	RefreshChannel() override;
 
 protected:
-	void	HandleNoteData(stChanNote *pNoteData, int EffColumns) override;
+	void	HandleNoteData(stChanNote &pNoteData) override;		// // //
 	bool	HandleEffect(effect_t EffNum, unsigned char EffParam) override;		// // //
 	void	HandleEmptyNote() override;
 	void	HandleCut() override;

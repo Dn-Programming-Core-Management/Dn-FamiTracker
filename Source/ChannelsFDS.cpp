@@ -39,7 +39,7 @@ CChannelHandlerFDS::CChannelHandlerFDS() :
 	memset(m_iWaveTable, 0, 64);
 }
 
-void CChannelHandlerFDS::HandleNoteData(stChanNote *pNoteData, int EffColumns)
+void CChannelHandlerFDS::HandleNoteData(stChanNote &NoteData)		// // //
 {
 	m_iEffModDepth = -1;
 	if (!m_bAutoModulation) {		// // //
@@ -48,9 +48,9 @@ void CChannelHandlerFDS::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	}
 	m_bVolModTrigger = false;		// // //
 
-	CChannelHandler::HandleNoteData(pNoteData, EffColumns);
+	CChannelHandler::HandleNoteData(NoteData);
 	// // //
-	if (pNoteData->Note != NONE && pNoteData->Note != HALT && pNoteData->Note != RELEASE)
+	if (NoteData.Note != NONE && NoteData.Note != HALT && NoteData.Note != RELEASE)
 		m_bVolModTrigger = true;
 
 	if (m_iEffModDepth != -1)

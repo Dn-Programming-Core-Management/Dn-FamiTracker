@@ -175,7 +175,7 @@ public:
 	std::pair<unsigned, unsigned> GetPlayerPos() const;		// // // frame / row
 	int			GetPlayerTrack() const;
 	int			GetPlayerTicks() const;
-	void		QueueNote(int Channel, stChanNote &NoteData, note_prio_t Priority) const;
+	void		QueueNote(int Channel, const stChanNote &NoteData, note_prio_t Priority) const;		// // //
 	void		ForceReloadInstrument(int Channel);		// // //
 	void		MoveToFrame(int Frame);
 	void		SetQueueFrame(unsigned Frame);		// // //

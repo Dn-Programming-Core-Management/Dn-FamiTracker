@@ -224,9 +224,9 @@ void CSoundDriver::PlayerTick() {
 		m_pTempoCounter->StepRow();		// // //
 
 		for (int i = 0, Channels = doc_->GetChannelCount(); i < Channels; ++i) {		// // //
-			stChanNote NoteData = doc_->GetNoteData(m_pPlayerCursor->GetCurrentSong(),
-				m_pPlayerCursor->GetCurrentFrame(), i, m_pPlayerCursor->GetCurrentRow());
-			HandleGlobalEffects(NoteData, doc_->GetEffColumns(m_pPlayerCursor->GetCurrentSong(), i) + 1);
+			stChanNote NoteData = doc_->GetActiveNote(m_pPlayerCursor->GetCurrentSong(),
+				m_pPlayerCursor->GetCurrentFrame(), i, m_pPlayerCursor->GetCurrentRow());		// // //
+			HandleGlobalEffects(NoteData);
 			if (!parent_ || !parent_->IsChannelMuted(i))
 				QueueNote(i, NoteData, NOTE_PRIO_1);
 			// Let view know what is about to play
@@ -279,10 +279,8 @@ void CSoundDriver::UpdateChannels() {
 			pChan->Arpeggiate(Arpeggio);
 
 		// Check if new note data has been queued for playing
-		if (pTrackerChan->NewNoteData()) {
-			stChanNote Note = pTrackerChan->GetNote();
-			pChan->PlayNote(&Note, doc_->GetEffColumns(m_pPlayerCursor->GetCurrentSong(), Channel) + 1);
-		}
+		if (pTrackerChan->NewNoteData())
+			pChan->PlayNote(pTrackerChan->GetNote());		// // //
 
 		// Pitch wheel
 		pChan->SetPitch(pTrackerChan->GetPitch());
@@ -321,8 +319,8 @@ void CSoundDriver::UpdateAPU(int cycles) {
 	apu_->Process();
 }
 
-void CSoundDriver::QueueNote(int chan, stChanNote &note, note_prio_t priority) {
-	doc_->GetChannel(chan).SetNote(note, NOTE_PRIO_1);
+void CSoundDriver::QueueNote(int chan, const stChanNote &note, note_prio_t priority) {
+	doc_->GetChannel(chan).SetNote(note, priority);
 }
 
 void CSoundDriver::SetPlayerPos(int Frame, int Row) {
@@ -506,8 +504,8 @@ void CSoundDriver::SetupPeriodTables() {
 	}
 }
 
-void CSoundDriver::HandleGlobalEffects(stChanNote &note, int fxCols) {
-	for (int i = 0; i < fxCols; ++i) {
+void CSoundDriver::HandleGlobalEffects(stChanNote &note) {
+	for (int i = 0; i < MAX_EFFECT_COLUMNS; ++i) {
 		unsigned char EffParam = note.EffParam[i];
 		switch (note.EffNumber[i]) {
 			// Fxx: Sets speed to xx

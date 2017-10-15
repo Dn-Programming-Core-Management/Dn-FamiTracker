@@ -1115,7 +1115,7 @@ void CSoundGen::SetNamcoMixing(bool bLinear)		// // //
 
 // Player state functions
 
-void CSoundGen::QueueNote(int Channel, stChanNote &NoteData, note_prio_t Priority) const
+void CSoundGen::QueueNote(int Channel, const stChanNote &NoteData, note_prio_t Priority) const		// // //
 {
 	// Queue a note for play
 	m_pSoundDriver->QueueNote(Channel, NoteData, Priority);

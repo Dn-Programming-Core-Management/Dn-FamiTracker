@@ -64,11 +64,11 @@ void CChannelHandlerVRC7::SetCustomReg(size_t Index, unsigned char Val)		// // /
 		m_iPatchRegs[Index] = Val;
 }
 
-void CChannelHandlerVRC7::HandleNoteData(stChanNote *pNoteData, int EffColumns)
+void CChannelHandlerVRC7::HandleNoteData(stChanNote &NoteData)		// // //
 {
-	CChannelHandlerInverted::HandleNoteData(pNoteData, EffColumns);		// // //
+	CChannelHandlerInverted::HandleNoteData(NoteData);		// // //
 
-	if (m_iCommand == CMD_NOTE_TRIGGER && pNoteData->Instrument == HOLD_INSTRUMENT)		// // // 050B
+	if (m_iCommand == CMD_NOTE_TRIGGER && NoteData.Instrument == HOLD_INSTRUMENT)		// // // 050B
 		m_iCommand = CMD_NOTE_ON;
 }
 

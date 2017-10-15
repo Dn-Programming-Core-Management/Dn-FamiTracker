@@ -47,7 +47,7 @@ public:
 	void	SetCustomReg(size_t Index, unsigned char Val);		// // //
 
 protected:
-	void	HandleNoteData(stChanNote *pNoteData, int EffColumns) override;
+	void	HandleNoteData(stChanNote &pNoteData) override;		// // //
 	bool	HandleEffect(effect_t EffNum, unsigned char EffParam) override;		// // //
 	void	HandleEmptyNote() override;
 	void	HandleCut() override;

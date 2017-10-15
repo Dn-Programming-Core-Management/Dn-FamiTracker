@@ -410,7 +410,7 @@ bool CTextExport::ImportCellText(		// // //
 	unsigned int row,
 	CString& sResult)
 {
-	stChanNote Cell { };		// // //
+	stChanNote Cell;		// // //
 
 	CString sNote = t.ReadToken();
 	if      (sNote == _T("...")) { Cell.Note = NONE; }
