@@ -84,6 +84,7 @@ public:
 	stHighlight GetRowHighlight() const;
 
 	void CopyPattern(unsigned Chan, unsigned Pat, const CSongData &From, unsigned ChanFrom, unsigned PatFrom);		// // //
+	void CopyTrack(unsigned Chan, const CSongData &From, unsigned ChanFrom);		// // //
 	void SwapChannels(unsigned int First, unsigned int Second);		// // //
 
 private:

@@ -241,6 +241,14 @@ void CSongData::CopyPattern(unsigned Chan, unsigned Pat, const CSongData &From, 
 		m_pPatternData[Chan][Pat].reset();
 }
 
+void CSongData::CopyTrack(unsigned Chan, const CSongData &From, unsigned ChanFrom) {
+	SetEffectColumnCount(Chan, From.GetEffectColumnCount(ChanFrom));
+	for (int f = 0; f < MAX_FRAMES; f++)
+		SetFramePattern(f, Chan, From.GetFramePattern(f, ChanFrom));
+	for (int p = 0; p < MAX_PATTERN; p++)
+		CopyPattern(Chan, p, From, ChanFrom, p);
+}
+
 void CSongData::SwapChannels(unsigned int First, unsigned int Second)		// // //
 {
 	for (int i = 0; i < MAX_FRAMES; i++)

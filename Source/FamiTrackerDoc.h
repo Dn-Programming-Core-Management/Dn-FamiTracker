@@ -443,8 +443,8 @@ private:
 	// Internal module operations
 	//
 
-	void			AllocateTrack(unsigned int Song);
-	void			SwapTracks(unsigned int Track1, unsigned int Track2);
+	void			AllocateSong(unsigned int Index);		// // //
+	void			SwapSongs(unsigned int First, unsigned int Second);		// // //
 
 	void			SetupChannels(unsigned char Chip);
 	void			ApplyExpansionChip();
@@ -491,7 +491,6 @@ private:
 	// Patterns and song data
 	std::vector<std::unique_ptr<CSongData>> m_pTracks;		// // // List of all tracks
 
-	unsigned int	m_iTrackCount;								// Number of tracks added
 	unsigned int	m_iChannelsAvailable;						// Number of channels added
 
 	// Instruments, samples and sequences
