@@ -45,8 +45,6 @@ public:
 	LPCTSTR GetShortName() const;		// // //
 	const char GetChip() const;
 	chan_id_t GetID() const;		// // //
-	const int GetColumnCount() const;
-	void SetColumnCount(int Count);
 
 	stChanNote GetNote();
 	void SetNote(const stChanNote &Note, note_prio_t Priority);		// // //
@@ -68,7 +66,6 @@ private:
 private:
 	int m_iChip;
 	chan_id_t m_iChannelID;		// // //
-	int m_iColumnCount;
 
 	stChanNote m_Note;
 	bool m_bNewNote;

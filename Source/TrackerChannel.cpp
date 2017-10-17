@@ -36,7 +36,6 @@ CTrackerChannel::CTrackerChannel(LPCTSTR pName, LPCTSTR pShort, const int iChip,
 	m_pChannelName(pName),
 	m_iChip(iChip),
 	m_iChannelID(iID),
-	m_iColumnCount(0),
 	m_bNewNote(false),
 	m_iPitch(0),
 	m_iNotePriority(NOTE_PRIO_0),
@@ -66,16 +65,6 @@ const char CTrackerChannel::GetChip() const
 chan_id_t CTrackerChannel::GetID() const		// // //
 {
 	return m_iChannelID;
-}
-
-const int CTrackerChannel::GetColumnCount() const
-{
-	return m_iColumnCount;
-}
-
-void CTrackerChannel::SetColumnCount(int Count)
-{
-	m_iColumnCount = Count;
 }
 
 void CTrackerChannel::SetNote(const stChanNote &Note, note_prio_t Priority)		// // //

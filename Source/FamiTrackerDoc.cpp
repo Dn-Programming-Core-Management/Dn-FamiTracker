@@ -2949,7 +2949,6 @@ void CFamiTrackerDoc::SetEffColumns(unsigned int Track, unsigned int Channel, un
 	ASSERT(Channel < MAX_CHANNELS);
 	ASSERT(Columns < MAX_EFFECT_COLUMNS);
 
-	GetChannel(Channel).SetColumnCount(Columns);		// // //
 	GetSongData(Track).SetEffectColumnCount(Channel, Columns);
 
 	SetModifiedFlag();
@@ -3228,12 +3227,7 @@ void CFamiTrackerDoc::SwapChannels(unsigned int Track, unsigned int First, unsig
 	ASSERT(First < MAX_CHANNELS);
 	ASSERT(Second < MAX_CHANNELS);
 
-	auto &Song = GetSongData(Track);
-	Song.SwapChannels(First, Second);
-
-	unsigned int Temp = Song.GetEffectColumnCount(First);
-	SetEffColumns(Track, First, Song.GetEffectColumnCount(Second));
-	SetEffColumns(Track, Second, Temp);
+	GetSongData(Track).SwapChannels(First, Second);
 
 	SetModifiedFlag();
 }

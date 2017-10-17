@@ -251,6 +251,7 @@ void CSongData::CopyTrack(unsigned Chan, const CSongData &From, unsigned ChanFro
 
 void CSongData::SwapChannels(unsigned int First, unsigned int Second)		// // //
 {
+	std::swap(m_iEffectColumns[First], m_iEffectColumns[Second]);
 	for (int i = 0; i < MAX_FRAMES; i++)
 		std::swap(m_iFrameList[i][First], m_iFrameList[i][Second]);
 	std::swap(m_pPatternData[First], m_pPatternData[Second]);
