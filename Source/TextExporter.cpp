@@ -22,7 +22,7 @@
 
 #include "TextExporter.h"
 #include "FamiTrackerTypes.h"		// // //
-#include "PatternData.h"		// // //
+#include "SongData.h"		// // //
 #include "FamiTrackerDoc.h"
 #include "../version.h"		// // //
 

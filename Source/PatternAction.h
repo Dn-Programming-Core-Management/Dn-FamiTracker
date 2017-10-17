@@ -26,7 +26,7 @@
 #include <vector>		// // //
 #include "Action.h"
 #include "PatternEditorTypes.h"
-#include "PatternData.h"		// // //
+#include "SongData.h"		// // //
 #include "PatternNote.h"		// // //
 
 enum transpose_t {

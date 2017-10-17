@@ -42,6 +42,12 @@ CFamiTrackerDocIO::CFamiTrackerDocIO(CDocumentFile &file) :
 }
 
 void CFamiTrackerDocIO::Load(CFamiTrackerDoc &doc) {
+}
+
+void CFamiTrackerDocIO::Save(const CFamiTrackerDoc &doc) {
+}
+
+void CFamiTrackerDocIO::LoadSongInfo(CFamiTrackerDoc &doc, int ver) {
 	char buf[32];
 	file_.GetBlock(buf, std::size(buf));
 	doc.SetSongName(buf);
@@ -51,16 +57,10 @@ void CFamiTrackerDocIO::Load(CFamiTrackerDoc &doc) {
 	doc.SetSongCopyright(buf);
 }
 
-void CFamiTrackerDocIO::Save(const CFamiTrackerDoc &doc) {
+void CFamiTrackerDocIO::SaveSongInfo(const CFamiTrackerDoc &doc, int ver) {
 	file_.WriteBlock(doc.GetSongName(), 32);
 	file_.WriteBlock(doc.GetSongArtist(), 32);
 	file_.WriteBlock(doc.GetSongCopyright(), 32);
-}
-
-void CFamiTrackerDocIO::LoadSongInfo(CFamiTrackerDoc &doc, int ver) {
-}
-
-void CFamiTrackerDocIO::SaveSongInfo(const CFamiTrackerDoc &doc, int ver) {
 }
 
 void CFamiTrackerDocIO::LoadDSamples(CFamiTrackerDoc &doc, int ver) {

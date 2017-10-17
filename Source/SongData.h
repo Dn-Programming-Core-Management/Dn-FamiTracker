@@ -42,14 +42,12 @@ const unsigned int DEFAULT_TEMPO_NTSC = 150;
 const unsigned int DEFAULT_TEMPO_PAL  = 125;
 const unsigned int DEFAULT_SPEED      = 6;
 
-// TODO rename to CTrack perhaps?
-
-// CPatternData holds all notes in the patterns
-class CPatternData
+// CSongData holds all notes in the patterns
+class CSongData
 {
 public:
-	CPatternData(unsigned int PatternLength = DEFAULT_ROW_COUNT);		// // //
-	~CPatternData();
+	CSongData(unsigned int PatternLength = DEFAULT_ROW_COUNT);		// // //
+	~CSongData();
 
 	bool IsCellFree(unsigned int Channel, unsigned int Pattern, unsigned int Row) const;
 	bool IsPatternEmpty(unsigned int Channel, unsigned int Pattern) const;
@@ -85,7 +83,7 @@ public:
 	void SetHighlight(const stHighlight &Hl);		// // //
 	stHighlight GetRowHighlight() const;
 
-	void CopyPattern(unsigned Chan, unsigned Pat, const CPatternData &From, unsigned ChanFrom, unsigned PatFrom);		// // //
+	void CopyPattern(unsigned Chan, unsigned Pat, const CSongData &From, unsigned ChanFrom, unsigned PatFrom);		// // //
 	void SwapChannels(unsigned int First, unsigned int Second);		// // //
 
 private:

@@ -29,7 +29,7 @@
 
 #include "Common.h"
 #include "PatternEditorTypes.h"
-#include "PatternData.h"		// // //
+#include "SongData.h"		// // //
 #include "FamiTrackerTypes.h"		// // //
 
 

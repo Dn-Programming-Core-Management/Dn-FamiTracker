@@ -77,7 +77,7 @@ struct stSequence {
 // #include "FrameEditorTypes.h"		// // //
 
 // External classes
-class CPatternData;		// // //
+class CSongData;		// // //
 class CChannelMap;		// // //
 class CTrackerChannel;
 class CDocumentFile;
@@ -145,6 +145,9 @@ public:
 	//
 
 	// Local (song) data
+	CSongData		&GetSongData(unsigned int Index);		// // //
+	const CSongData	&GetSongData(unsigned int Index) const;		// // //
+
 	void			SetPatternLength(unsigned int Track, unsigned int Length);
 	void			SetFrameCount(unsigned int Track, unsigned int Count);
 	void			SetSongSpeed(unsigned int Track, unsigned int Speed);
@@ -441,8 +444,6 @@ private:
 	//
 
 	void			AllocateTrack(unsigned int Song);
-	CPatternData	&GetTrack(unsigned int Track);		// // //
-	const CPatternData &GetTrack(unsigned int Track) const;		// // //
 	void			SwapTracks(unsigned int Track1, unsigned int Track2);
 
 	void			SetupChannels(unsigned char Chip);
@@ -488,7 +489,7 @@ private:
 	//
 
 	// Patterns and song data
-	std::vector<std::unique_ptr<CPatternData>> m_pTracks;		// // // List of all tracks
+	std::vector<std::unique_ptr<CSongData>> m_pTracks;		// // // List of all tracks
 
 	unsigned int	m_iTrackCount;								// Number of tracks added
 	unsigned int	m_iChannelsAvailable;						// Number of channels added

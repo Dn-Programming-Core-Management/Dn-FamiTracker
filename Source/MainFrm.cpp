@@ -455,8 +455,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	m_wndOctaveBar.CheckDlgButton(IDC_FOLLOW, theApp.GetSettings()->FollowMode);
 	m_wndOctaveBar.CheckDlgButton(IDC_CHECK_COMPACT, false);		// // //
-	m_wndOctaveBar.SetDlgItemInt(IDC_HIGHLIGHT1, CPatternData::DEFAULT_HIGHLIGHT.First, 0);		// // //
-	m_wndOctaveBar.SetDlgItemInt(IDC_HIGHLIGHT2, CPatternData::DEFAULT_HIGHLIGHT.Second, 0);
+	m_wndOctaveBar.SetDlgItemInt(IDC_HIGHLIGHT1, CSongData::DEFAULT_HIGHLIGHT.First, 0);		// // //
+	m_wndOctaveBar.SetDlgItemInt(IDC_HIGHLIGHT2, CSongData::DEFAULT_HIGHLIGHT.Second, 0);
 
 	UpdateMenus();
 
