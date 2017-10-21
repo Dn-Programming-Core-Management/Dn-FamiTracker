@@ -23,10 +23,10 @@
 
 #pragma once
 
+#include <string>
+
 class CFamiTrackerDoc;
 class CDocumentFile;
-
-#include <string>
 
 enum module_error_level_t; // Settings.h
 

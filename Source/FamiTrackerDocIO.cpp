@@ -28,6 +28,9 @@
 
 #include "InstrumentManager.h"
 
+#include "SequenceManager.h"
+#include "SequenceCollection.h"
+
 #include "SongData.h"
 #include "PatternNote.h"
 
@@ -94,6 +97,34 @@ static const auto EFF_CONVERSION_050 = MakeEffectConversion({
 	{EF_FDS_VOLUME,			EF_VRC7_PORT},
 	{EF_FDS_MOD_BIAS,		EF_VRC7_WRITE},
 });
+
+template <typename F> // (const CSequence &seq, int index, int seqType)
+void VisitSequences(const CSequenceManager *manager, F&& f) {
+	if (!manager)
+		return;
+	for (int j = 0, n = manager->GetCount(); j < n; ++j) {
+		const auto &col = *manager->GetCollection(j);
+		for (int i = 0; i < MAX_SEQUENCES; ++i) {
+			if (const CSequence *pSeq = col.GetSequence(i); pSeq && pSeq->GetItemCount())
+				f(*pSeq, i, j);
+		}
+	}
+}
+
+template <typename F> // (const CSongData &song, int index)
+void VisitSongs(const CFamiTrackerDoc &doc, F&& f) {
+	for (int j = 0, n = doc.GetTrackCount(); j < n; ++j)
+		f(doc.GetSongData(j), j);
+}
+
+template <typename F> // (const CSongData &song, int song, int channel, int pattern)
+void VisitPatterns(const CFamiTrackerDoc &doc, F&& f) {
+	VisitSongs(doc, [&] (const CSongData &song, int index) {
+		for (int ch = 0, n = doc.GetChannelCount(); ch < n; ++ch)
+			for (int p = 0; p < MAX_PATTERN; ++p)
+				f(song, index, ch, p);
+	});
+}
 
 } // namespace
 
@@ -267,32 +298,24 @@ void CFamiTrackerDocIO::SaveSequences(const CFamiTrackerDoc &doc, int ver) {
 		return;		// // //
 	file_.WriteBlockInt(Count);
 
-	for (int i = 0; i < MAX_SEQUENCES; ++i) {
-		for (int j = 0; j < SEQ_COUNT; ++j) {
-			if (const CSequence *pSeq = doc.GetSequence(INST_2A03, i, j); pSeq && pSeq->GetItemCount()) {
-				file_.WriteBlockInt(i); // index
-				file_.WriteBlockInt(j); // type
-				file_.WriteBlockChar(pSeq->GetItemCount());
-				file_.WriteBlockInt(pSeq->GetLoopPoint());
-				for (int k = 0, Count = pSeq->GetItemCount(); k < Count; ++k)
-					file_.WriteBlockChar(pSeq->GetItem(k));
-			}
-		}
-	}
+	VisitSequences(doc.GetSequenceManager(INST_2A03), [&] (const CSequence &seq, int index, int seqType) {
+		file_.WriteBlockInt(index);
+		file_.WriteBlockInt(seqType);
+		file_.WriteBlockChar(seq.GetItemCount());
+		file_.WriteBlockInt(seq.GetLoopPoint());
+		for (int k = 0, Count = seq.GetItemCount(); k < Count; ++k)
+			file_.WriteBlockChar(seq.GetItem(k));
+	});
 
 	// v6
-	for (int i = 0; i < MAX_SEQUENCES; ++i) {
-		for (int j = 0; j < SEQ_COUNT; ++j) {
-			if (const CSequence *pSeq = doc.GetSequence(INST_2A03, i, j); pSeq && pSeq->GetItemCount()) {
-				file_.WriteBlockInt(pSeq->GetReleasePoint());
-				file_.WriteBlockInt(pSeq->GetSetting());
-			}
-		}
-	}
+	VisitSequences(doc.GetSequenceManager(INST_2A03), [&] (const CSequence &seq, int index, int seqType) {
+		file_.WriteBlockInt(seq.GetReleasePoint());
+		file_.WriteBlockInt(seq.GetSetting());
+	});
 }
 
 void CFamiTrackerDocIO::SaveFrames(const CFamiTrackerDoc &doc, int ver) {
-	for (const auto &Song : doc.AllSongs()) {
+	VisitSongs(doc, [&] (const CSongData &Song, int index) {
 		file_.WriteBlockInt(Song.GetFrameCount());
 		file_.WriteBlockInt(Song.GetSongSpeed());
 		file_.WriteBlockInt(Song.GetSongTempo());
@@ -301,7 +324,7 @@ void CFamiTrackerDocIO::SaveFrames(const CFamiTrackerDoc &doc, int ver) {
 		for (unsigned int j = 0; j < Song.GetFrameCount(); ++j)
 			for (int k = 0; k < doc.GetChannelCount(); ++k)
 				file_.WriteBlockChar((unsigned char)Song.GetFramePattern(j, k));
-	}
+	});
 }
 
 void CFamiTrackerDocIO::SavePatterns(const CFamiTrackerDoc &doc, int ver) {
@@ -316,50 +339,44 @@ void CFamiTrackerDocIO::SavePatterns(const CFamiTrackerDoc &doc, int ver) {
 	 *
 	 */ 
 
-//	int t = 0;
-	for (const auto &[Song, t] : doc.AllSongsWithIndices()) {
-		for (int i = 0; i < doc.GetChannelCount(); ++i) {
-			for (unsigned x = 0; x < MAX_PATTERN; ++x) {
-				unsigned Items = 0;
+	VisitPatterns(doc, [&] (const CSongData &Song, int song, int ch, int pat) {
+		unsigned Items = 0;
 
-				// Save all rows
-				unsigned int PatternLen = MAX_PATTERN_LENGTH;
-				//unsigned int PatternLen = m_pTracks[t]->GetPatternLength();
+		// Save all rows
+		unsigned int PatternLen = MAX_PATTERN_LENGTH;
+		//unsigned int PatternLen = Song.GetPatternLength();
 				
-				// Get the number of items in this pattern
-				for (unsigned y = 0; y < PatternLen; ++y)
-					if (!Song.IsCellFree(i, x, y))
-						++Items;
-				if (!Items)
-					continue;
+		// Get the number of items in this pattern
+		for (unsigned y = 0; y < PatternLen; ++y)
+			if (!Song.IsCellFree(ch, pat, y))
+				++Items;
+		if (!Items)
+			return;
 
-				file_.WriteBlockInt(t);		// Write track
-				file_.WriteBlockInt(i);		// Write channel
-				file_.WriteBlockInt(x);		// Write pattern
-				file_.WriteBlockInt(Items);	// Number of items
+		file_.WriteBlockInt(song);		// Write track
+		file_.WriteBlockInt(ch);		// Write channel
+		file_.WriteBlockInt(pat);		// Write pattern
+		file_.WriteBlockInt(Items);	// Number of items
 
-				for (unsigned y = 0; y < PatternLen; y++) {
-					if (!Song.IsCellFree(i, x, y)) {
-						const auto &Note = Song.GetPatternData(i, x, y);		// // //
-						file_.WriteBlockInt(y);
+		for (unsigned y = 0; y < PatternLen; y++) {
+			if (!Song.IsCellFree(ch, pat, y)) {
+				const auto &Note = Song.GetPatternData(ch, pat, y);		// // //
+				file_.WriteBlockInt(y);
 
-						file_.WriteBlockChar(Note.Note);
-						file_.WriteBlockChar(Note.Octave);
-						file_.WriteBlockChar(Note.Instrument);
-						file_.WriteBlockChar(Note.Vol);
+				file_.WriteBlockChar(Note.Note);
+				file_.WriteBlockChar(Note.Octave);
+				file_.WriteBlockChar(Note.Instrument);
+				file_.WriteBlockChar(Note.Vol);
 
-						int EffColumns = Song.GetEffectColumnCount(i) + 1;
+				int EffColumns = Song.GetEffectColumnCount(ch) + 1;
 
-						for (int n = 0; n < EffColumns; n++) {
-							file_.WriteBlockChar(EFF_CONVERSION_050.second[Note.EffNumber[n]]);		// // // 050B
-							file_.WriteBlockChar(Note.EffParam[n]);
-						}
-					}
+				for (int n = 0; n < EffColumns; n++) {
+					file_.WriteBlockChar(EFF_CONVERSION_050.second[Note.EffNumber[n]]);		// // // 050B
+					file_.WriteBlockChar(Note.EffParam[n]);
 				}
 			}
 		}
-//		++t;
-	}
+	});
 }
 
 void CFamiTrackerDocIO::LoadDSamples(CFamiTrackerDoc &doc, int ver) {
@@ -429,28 +446,20 @@ void CFamiTrackerDocIO::SaveSequencesVRC6(const CFamiTrackerDoc &doc, int ver) {
 		return;		// // //
 	file_.WriteBlockInt(Count);
 
-	for (int i = 0; i < MAX_SEQUENCES; ++i) {
-		for (int j = 0; j < SEQ_COUNT; ++j) {
-			if (const CSequence *pSeq = doc.GetSequence(INST_VRC6, i, j); pSeq && pSeq->GetItemCount()) {
-				file_.WriteBlockInt(i); // index
-				file_.WriteBlockInt(j); // type
-				file_.WriteBlockChar(pSeq->GetItemCount());
-				file_.WriteBlockInt(pSeq->GetLoopPoint());
-				for (int k = 0, Count = pSeq->GetItemCount(); k < Count; ++k)
-					file_.WriteBlockChar(pSeq->GetItem(k));
-			}
-		}
-	}
+	VisitSequences(doc.GetSequenceManager(INST_VRC6), [&] (const CSequence &seq, int index, int seqType) {
+		file_.WriteBlockInt(index);
+		file_.WriteBlockInt(seqType);
+		file_.WriteBlockChar(seq.GetItemCount());
+		file_.WriteBlockInt(seq.GetLoopPoint());
+		for (int k = 0, Count = seq.GetItemCount(); k < Count; ++k)
+			file_.WriteBlockChar(seq.GetItem(k));
+	});
 
 	// v6
-	for (int i = 0; i < MAX_SEQUENCES; ++i) {
-		for (int j = 0; j < SEQ_COUNT; ++j) {
-			if (const CSequence *pSeq = doc.GetSequence(INST_VRC6, i, j); pSeq && pSeq->GetItemCount()) {
-				file_.WriteBlockInt(pSeq->GetReleasePoint());
-				file_.WriteBlockInt(pSeq->GetSetting());
-			}
-		}
-	}
+	VisitSequences(doc.GetSequenceManager(INST_VRC6), [&] (const CSequence &seq, int index, int seqType) {
+		file_.WriteBlockInt(seq.GetReleasePoint());
+		file_.WriteBlockInt(seq.GetSetting());
+	});
 }
 
 void CFamiTrackerDocIO::SaveSequencesN163(const CFamiTrackerDoc &doc, int ver) {
@@ -463,20 +472,16 @@ void CFamiTrackerDocIO::SaveSequencesN163(const CFamiTrackerDoc &doc, int ver) {
 		return;		// // //
 	file_.WriteBlockInt(Count);
 
-	for (int i = 0; i < MAX_SEQUENCES; ++i) {
-		for (int j = 0; j < SEQ_COUNT; ++j) {
-			if (const CSequence *pSeq = doc.GetSequence(INST_N163, i, j); pSeq && pSeq->GetItemCount()) {
-				file_.WriteBlockInt(i); // index
-				file_.WriteBlockInt(j); // type
-				file_.WriteBlockChar(pSeq->GetItemCount());
-				file_.WriteBlockInt(pSeq->GetLoopPoint());
-				file_.WriteBlockInt(pSeq->GetReleasePoint());
-				file_.WriteBlockInt(pSeq->GetSetting());
-				for (int k = 0, Count = pSeq->GetItemCount(); k < Count; ++k)
-					file_.WriteBlockChar(pSeq->GetItem(k));
-			}
-		}
-	}
+	VisitSequences(doc.GetSequenceManager(INST_N163), [&] (const CSequence &seq, int index, int seqType) {
+		file_.WriteBlockInt(index);
+		file_.WriteBlockInt(seqType);
+		file_.WriteBlockChar(seq.GetItemCount());
+		file_.WriteBlockInt(seq.GetLoopPoint());
+		file_.WriteBlockInt(seq.GetReleasePoint());
+		file_.WriteBlockInt(seq.GetSetting());
+		for (int k = 0, Count = seq.GetItemCount(); k < Count; ++k)
+			file_.WriteBlockChar(seq.GetItem(k));
+	});
 }
 
 void CFamiTrackerDocIO::SaveSequencesS5B(const CFamiTrackerDoc &doc, int ver) {
@@ -485,20 +490,16 @@ void CFamiTrackerDocIO::SaveSequencesS5B(const CFamiTrackerDoc &doc, int ver) {
 		return;		// // //
 	file_.WriteBlockInt(Count);
 
-	for (int i = 0; i < MAX_SEQUENCES; ++i) {
-		for (int j = 0; j < SEQ_COUNT; ++j) {
-			if (const CSequence *pSeq = doc.GetSequence(INST_S5B, i, j); pSeq && pSeq->GetItemCount()) {
-				file_.WriteBlockInt(i); // index
-				file_.WriteBlockInt(j); // type
-				file_.WriteBlockChar(pSeq->GetItemCount());
-				file_.WriteBlockInt(pSeq->GetLoopPoint());
-				file_.WriteBlockInt(pSeq->GetReleasePoint());
-				file_.WriteBlockInt(pSeq->GetSetting());
-				for (int k = 0, Count = pSeq->GetItemCount(); k < Count; ++k)
-					file_.WriteBlockChar(pSeq->GetItem(k));
-			}
-		}
-	}
+	VisitSequences(doc.GetSequenceManager(INST_S5B), [&] (const CSequence &seq, int index, int seqType) {
+		file_.WriteBlockInt(index);
+		file_.WriteBlockInt(seqType);
+		file_.WriteBlockChar(seq.GetItemCount());
+		file_.WriteBlockInt(seq.GetLoopPoint());
+		file_.WriteBlockInt(seq.GetReleasePoint());
+		file_.WriteBlockInt(seq.GetSetting());
+		for (int k = 0, Count = seq.GetItemCount(); k < Count; ++k)
+			file_.WriteBlockChar(seq.GetItem(k));
+	});
 }
 
 void CFamiTrackerDocIO::LoadParamsExtra(CFamiTrackerDoc &doc, int ver) {

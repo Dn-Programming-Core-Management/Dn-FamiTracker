@@ -1307,9 +1307,6 @@
     <ClInclude Include="Source\SongData.h">
       <Filter>Header Files\Document Data Type Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\for_map.h">
-      <Filter>Header Files\Other Headers</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="0CC-FamiTracker.rc">
