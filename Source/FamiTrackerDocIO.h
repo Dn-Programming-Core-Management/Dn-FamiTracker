@@ -38,14 +38,32 @@ public:
 	void Save(const CFamiTrackerDoc &doc);
 
 //private:
+	void SaveParams(const CFamiTrackerDoc &doc, int ver);
+
 	void LoadSongInfo(CFamiTrackerDoc &doc, int ver);
 	void SaveSongInfo(const CFamiTrackerDoc &doc, int ver);
+
+	void SaveHeader(const CFamiTrackerDoc &doc, int ver);
+
+	void SaveInstruments(const CFamiTrackerDoc &doc, int ver);
+
+	void SaveSequences(const CFamiTrackerDoc &doc, int ver);
+
+	void SaveFrames(const CFamiTrackerDoc &doc, int ver);
+
+	void SavePatterns(const CFamiTrackerDoc &doc, int ver);
 
 	void LoadDSamples(CFamiTrackerDoc &doc, int ver);
 	void SaveDSamples(const CFamiTrackerDoc &doc, int ver);
 
 	void LoadComments(CFamiTrackerDoc &doc, int ver);
 	void SaveComments(const CFamiTrackerDoc &doc, int ver);
+
+	void SaveSequencesVRC6(const CFamiTrackerDoc &doc, int ver);
+
+	void SaveSequencesN163(const CFamiTrackerDoc &doc, int ver);
+
+	void SaveSequencesS5B(const CFamiTrackerDoc &doc, int ver);
 
 	void LoadParamsExtra(CFamiTrackerDoc &doc, int ver);
 	void SaveParamsExtra(const CFamiTrackerDoc &doc, int ver);

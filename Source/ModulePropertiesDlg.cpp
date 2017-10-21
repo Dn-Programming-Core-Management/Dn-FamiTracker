@@ -195,7 +195,7 @@ void CModulePropertiesDlg::OnBnClickedSongAdd()
 	
 	m_pDocument->UpdateAllViews(NULL, UPDATE_TRACK);
 
-	TrackTitle.Format(TRACK_FORMAT, NewTrack + 1, m_pDocument->GetTrackTitle(NewTrack));
+	TrackTitle.Format(TRACK_FORMAT, NewTrack + 1, m_pDocument->GetTrackTitle(NewTrack).c_str());
 	static_cast<CListCtrl*>(GetDlgItem(IDC_SONGLIST))->InsertItem(NewTrack, TrackTitle);
 
 	SelectSong(NewTrack);

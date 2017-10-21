@@ -729,6 +729,8 @@ bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 	}
 
 DEFAULT_WRITE(SongInfo, INFO)
+DEFAULT_WRITE(Frames, FRAMES)
+DEFAULT_WRITE(Patterns, PATTERNS)
 DEFAULT_WRITE(DSamples, DSAMPLES)
 DEFAULT_WRITE(Comments, COMMENTS)
 DEFAULT_WRITE(ParamsExtra, PARAMS_EXTRA)
@@ -1078,98 +1080,6 @@ bool CFamiTrackerDoc::WriteBlock_SequencesS5B(CDocumentFile *pDocFile, const int
 				// Store items
 				for (int k = 0; k < Count; ++k) {
 					pDocFile->WriteBlockChar(pSeq->GetItem(k));
-				}
-			}
-		}
-	}
-
-	return pDocFile->FlushBlock();
-}
-
-bool CFamiTrackerDoc::WriteBlock_Frames(CDocumentFile *pDocFile, const int Version) const
-{
-	/* Store frame count
-	 *
-	 * 1. Number of channels (5 for 2A03 only)
-	 * 2. 
-	 * 
-	 */ 
-
-	pDocFile->CreateBlock(FILE_BLOCK_FRAMES, Version);
-
-	for (unsigned i = 0; i < GetTrackCount(); ++i) {
-		const auto &Song = GetSongData(i);
-
-		pDocFile->WriteBlockInt(Song.GetFrameCount());
-		pDocFile->WriteBlockInt(Song.GetSongSpeed());
-		pDocFile->WriteBlockInt(Song.GetSongTempo());
-		pDocFile->WriteBlockInt(Song.GetPatternLength());
-
-		for (unsigned int j = 0; j < Song.GetFrameCount(); ++j) {
-			for (unsigned k = 0; k < m_iChannelsAvailable; ++k) {
-				pDocFile->WriteBlockChar((unsigned char)Song.GetFramePattern(j, k));
-			}
-		}
-	}
-
-	return pDocFile->FlushBlock();
-}
-
-bool CFamiTrackerDoc::WriteBlock_Patterns(CDocumentFile *pDocFile, const int Version) const
-{
-	/*
-	 * Version changes: 
-	 *
-	 *  2: Support multiple tracks
-	 *  3: Changed portamento effect
-	 *  4: Switched portamento effects for VRC7 (1xx & 2xx), adjusted Pxx for FDS
-	 *  5: Adjusted FDS octave
-	 *  (6: Noise pitch slide effects fix)
-	 *
-	 */ 
-
-	pDocFile->CreateBlock(FILE_BLOCK_PATTERNS, Version);
-
-	for (unsigned t = 0; t < GetTrackCount(); ++t) {
-		for (unsigned i = 0; i < m_iChannelsAvailable; ++i) {
-			for (unsigned x = 0; x < MAX_PATTERN; ++x) {
-				unsigned Items = 0;
-
-				// Save all rows
-				unsigned int PatternLen = MAX_PATTERN_LENGTH;
-				//unsigned int PatternLen = m_pTracks[t]->GetPatternLength();
-				
-				// Get the number of items in this pattern
-				const auto &Song = GetSongData(t);		// // //
-				for (unsigned y = 0; y < PatternLen; ++y)
-					if (!Song.IsCellFree(i, x, y))
-						++Items;
-
-				if (Items > 0) {
-					pDocFile->WriteBlockInt(t);		// Write track
-					pDocFile->WriteBlockInt(i);		// Write channel
-					pDocFile->WriteBlockInt(x);		// Write pattern
-					pDocFile->WriteBlockInt(Items);	// Number of items
-
-					for (unsigned y = 0; y < PatternLen; y++) {
-						if (!Song.IsCellFree(i, x, y)) {
-							const auto &Note = Song.GetPatternData(i, x, y);		// // //
-							// AssertFileData(Note, "Cannot create note");
-							pDocFile->WriteBlockInt(y);
-
-							pDocFile->WriteBlockChar(Note.Note);
-							pDocFile->WriteBlockChar(Note.Octave);
-							pDocFile->WriteBlockChar(Note.Instrument);
-							pDocFile->WriteBlockChar(Note.Vol);
-
-							int EffColumns = Song.GetEffectColumnCount(i) + 1;
-
-							for (int n = 0; n < EffColumns; n++) {
-								pDocFile->WriteBlockChar(EFF_CONVERSION_050.second[Note.EffNumber[n]]);		// // // 050B
-								pDocFile->WriteBlockChar(Note.EffParam[n]);
-							}
-						}
-					}
 				}
 			}
 		}
@@ -3663,52 +3573,6 @@ int CFamiTrackerDoc::GetNamcoChannels() const
 	return m_iNamcoChannels;
 }
 
-void CFamiTrackerDoc::ConvertSequence(stSequence *pOldSequence, CSequence *pNewSequence, int Type)
-{
-	// This function is used to convert old version sequences (used by older file versions)
-	// to the current version
-
-	if (pOldSequence->Count == 0 || pOldSequence->Count >= MAX_SEQUENCE_ITEMS)
-		return;	// Invalid sequence
-
-	// Save a pointer to this
-	int iLoopPoint = -1;
-	int iLength = 0;
-	int ValPtr = 0;
-
-	// Store the sequence
-	int Count = pOldSequence->Count;
-
-	for (int i = 0; i < Count; ++i) {
-		int Value  = pOldSequence->Value[i];
-		int Length = pOldSequence->Length[i];
-
-		if (Length < 0) {
-			iLoopPoint = 0;
-			for (int l = signed(pOldSequence->Count) + Length - 1; l < signed(pOldSequence->Count) - 1; l++)
-				iLoopPoint += (pOldSequence->Length[l] + 1);
-		}
-		else {
-			for (int l = 0; l < Length + 1; l++) {
-				if ((Type == SEQ_PITCH || Type == SEQ_HIPITCH) && l > 0)
-					pNewSequence->SetItem(ValPtr++, 0);
-				else
-					pNewSequence->SetItem(ValPtr++, (unsigned char)Value);
-				iLength++;
-			}
-		}
-	}
-
-	if (iLoopPoint != -1) {
-		if (iLoopPoint > iLength)
-			iLoopPoint = iLength;
-		iLoopPoint = iLength - iLoopPoint;
-	}
-
-	pNewSequence->SetItemCount(ValPtr);
-	pNewSequence->SetLoopPoint(iLoopPoint);
-}
-
 unsigned int CFamiTrackerDoc::GetFirstFreePattern(unsigned int Track, unsigned int Channel) const
 {
 	auto &Song = GetSongData(Track);
@@ -4413,7 +4277,7 @@ int CFamiTrackerDoc::GetFrameLength(unsigned int Track, unsigned int Frame) cons
 void CFamiTrackerDoc::MakeKraid()			// // // Easter Egg
 {
 	// Basic info
-	DeleteContents();
+	CreateEmpty();
 	SetFrameCount(0, 14);
 	SetPatternLength(0, 24);
 	SetSongSpeed(0, 8);
@@ -4633,5 +4497,5 @@ void CFamiTrackerDoc::MakeKraid()			// // // Easter Egg
 	SetDataAtPattern(0, 4, 0, 0, kraidRow);
 
 	// Done
-	delete kraidSeq;
+//	delete kraidSeq;
 }

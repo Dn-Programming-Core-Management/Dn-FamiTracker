@@ -26,6 +26,9 @@
 #include "FamiTrackerDoc.h"
 #include "Settings.h"
 
+#include "SongData.h"
+#include "PatternNote.h"
+
 #include "DSampleManager.h"
 #include "DSample.h"
 
@@ -33,6 +36,38 @@
 
 #include "BookmarkManager.h"
 #include "BookmarkCollection.h"
+
+namespace {
+
+// // // helper function for effect conversion
+typedef std::array<effect_t, EF_COUNT> EffTable;
+std::pair<EffTable, EffTable> MakeEffectConversion(std::initializer_list<std::pair<effect_t, effect_t>> List)
+{
+	EffTable forward, backward;
+	for (int i = 0; i < EF_COUNT; ++i)
+		forward[i] = backward[i] = static_cast<effect_t>(i);
+	for (const auto &p : List) {
+		forward[p.first] = p.second;
+		backward[p.second] = p.first;
+	}
+	return std::make_pair(forward, backward);
+}
+
+static const auto EFF_CONVERSION_050 = MakeEffectConversion({
+//	{EF_SUNSOFT_ENV_LO,		EF_SUNSOFT_ENV_TYPE},
+//	{EF_SUNSOFT_ENV_TYPE,	EF_SUNSOFT_ENV_LO},
+	{EF_SUNSOFT_NOISE,		EF_NOTE_RELEASE},
+	{EF_VRC7_PORT,			EF_GROOVE},
+	{EF_VRC7_WRITE,			EF_TRANSPOSE},
+	{EF_NOTE_RELEASE,		EF_N163_WAVE_BUFFER},
+	{EF_GROOVE,				EF_FDS_VOLUME},
+	{EF_TRANSPOSE,			EF_FDS_MOD_BIAS},
+	{EF_N163_WAVE_BUFFER,	EF_SUNSOFT_NOISE},
+	{EF_FDS_VOLUME,			EF_VRC7_PORT},
+	{EF_FDS_MOD_BIAS,		EF_VRC7_WRITE},
+});
+
+} // namespace
 
 // // // save/load functionality
 
@@ -45,6 +80,9 @@ void CFamiTrackerDocIO::Load(CFamiTrackerDoc &doc) {
 }
 
 void CFamiTrackerDocIO::Save(const CFamiTrackerDoc &doc) {
+}
+
+void CFamiTrackerDocIO::SaveParams(const CFamiTrackerDoc &doc, int ver) {
 }
 
 void CFamiTrackerDocIO::LoadSongInfo(CFamiTrackerDoc &doc, int ver) {
@@ -61,6 +99,86 @@ void CFamiTrackerDocIO::SaveSongInfo(const CFamiTrackerDoc &doc, int ver) {
 	file_.WriteBlock(doc.GetSongName(), 32);
 	file_.WriteBlock(doc.GetSongArtist(), 32);
 	file_.WriteBlock(doc.GetSongCopyright(), 32);
+}
+
+void CFamiTrackerDocIO::SaveHeader(const CFamiTrackerDoc &doc, int ver) {
+}
+
+void CFamiTrackerDocIO::SaveInstruments(const CFamiTrackerDoc &doc, int ver) {
+}
+
+void CFamiTrackerDocIO::SaveSequences(const CFamiTrackerDoc &doc, int ver) {
+}
+
+void CFamiTrackerDocIO::SaveFrames(const CFamiTrackerDoc &doc, int ver) {
+	for (const auto &Song : doc.AllSongs()) {
+		file_.WriteBlockInt(Song.GetFrameCount());
+		file_.WriteBlockInt(Song.GetSongSpeed());
+		file_.WriteBlockInt(Song.GetSongTempo());
+		file_.WriteBlockInt(Song.GetPatternLength());
+
+		for (unsigned int j = 0; j < Song.GetFrameCount(); ++j)
+			for (int k = 0; k < doc.GetChannelCount(); ++k)
+				file_.WriteBlockChar((unsigned char)Song.GetFramePattern(j, k));
+	}
+}
+
+void CFamiTrackerDocIO::SavePatterns(const CFamiTrackerDoc &doc, int ver) {
+	/*
+	 * Version changes: 
+	 *
+	 *  2: Support multiple tracks
+	 *  3: Changed portamento effect
+	 *  4: Switched portamento effects for VRC7 (1xx & 2xx), adjusted Pxx for FDS
+	 *  5: Adjusted FDS octave
+	 *  (6: Noise pitch slide effects fix)
+	 *
+	 */ 
+
+//	int t = 0;
+	for (const auto &[Song, t] : doc.AllSongsWithIndices()) {
+		for (int i = 0; i < doc.GetChannelCount(); ++i) {
+			for (unsigned x = 0; x < MAX_PATTERN; ++x) {
+				unsigned Items = 0;
+
+				// Save all rows
+				unsigned int PatternLen = MAX_PATTERN_LENGTH;
+				//unsigned int PatternLen = m_pTracks[t]->GetPatternLength();
+				
+				// Get the number of items in this pattern
+				for (unsigned y = 0; y < PatternLen; ++y)
+					if (!Song.IsCellFree(i, x, y))
+						++Items;
+				if (!Items)
+					continue;
+
+				file_.WriteBlockInt(t);		// Write track
+				file_.WriteBlockInt(i);		// Write channel
+				file_.WriteBlockInt(x);		// Write pattern
+				file_.WriteBlockInt(Items);	// Number of items
+
+				for (unsigned y = 0; y < PatternLen; y++) {
+					if (!Song.IsCellFree(i, x, y)) {
+						const auto &Note = Song.GetPatternData(i, x, y);		// // //
+						file_.WriteBlockInt(y);
+
+						file_.WriteBlockChar(Note.Note);
+						file_.WriteBlockChar(Note.Octave);
+						file_.WriteBlockChar(Note.Instrument);
+						file_.WriteBlockChar(Note.Vol);
+
+						int EffColumns = Song.GetEffectColumnCount(i) + 1;
+
+						for (int n = 0; n < EffColumns; n++) {
+							file_.WriteBlockChar(EFF_CONVERSION_050.second[Note.EffNumber[n]]);		// // // 050B
+							file_.WriteBlockChar(Note.EffParam[n]);
+						}
+					}
+				}
+			}
+		}
+//		++t;
+	}
 }
 
 void CFamiTrackerDocIO::LoadDSamples(CFamiTrackerDoc &doc, int ver) {
@@ -122,6 +240,15 @@ void CFamiTrackerDocIO::SaveComments(const CFamiTrackerDoc &doc, int ver) {
 		file_.WriteBlockInt(doc.ShowCommentOnOpen() ? 1 : 0);
 		file_.WriteString(str);
 	}
+}
+
+void CFamiTrackerDocIO::SaveSequencesVRC6(const CFamiTrackerDoc &doc, int ver) {
+}
+
+void CFamiTrackerDocIO::SaveSequencesN163(const CFamiTrackerDoc &doc, int ver) {
+}
+
+void CFamiTrackerDocIO::SaveSequencesS5B(const CFamiTrackerDoc &doc, int ver) {
 }
 
 void CFamiTrackerDocIO::LoadParamsExtra(CFamiTrackerDoc &doc, int ver) {

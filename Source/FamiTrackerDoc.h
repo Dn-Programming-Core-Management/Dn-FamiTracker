@@ -38,6 +38,8 @@
 #include "FTMComponentInterface.h"
 #include "Settings.h"		// // //
 
+#include "for_map.h"		// // //
+
 #define TRANSPOSE_FDS
 
 // #define DISABLE_SAVE		// // //
@@ -314,9 +316,6 @@ public:
 	void			RemoveUnusedPatterns();
 	void			SwapInstruments(int First, int Second);
 
-	// For file version compability
-	static void		ConvertSequence(stSequence *pOldSequence, CSequence *pNewSequence, int Type);
-
 	bool			GetExceededFlag() { return m_bExceeded; };
 	void			SetExceededFlag(bool Exceed = 1);		// // //
 
@@ -328,6 +327,15 @@ public:
 	CBookmarkManager *const GetBookmarkManager() const override;
 	void			Modify(bool Change);
 	void			ModifyIrreversible();
+
+	auto AllSongs() const {		// // //
+		return proj_deref(m_pTracks);
+	}
+	auto AllSongsWithIndices() const {
+		return proj(m_pTracks, [i = 0] (const auto &x) mutable {
+			return std::pair<CSongData &, int>(*x, i++);
+		});
+	}
 
 	// Constants
 public:

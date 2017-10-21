@@ -526,7 +526,7 @@
     <ClCompile Include="Source\ChunkRenderBinary.cpp" />
     <ClCompile Include="Source\ChunkRenderText.cpp" />
     <ClCompile Include="Source\DSample.cpp" />
-    <ClCompile Include="Source\PatternData.cpp" />
+    <ClCompile Include="Source\SongData.cpp" />
     <ClCompile Include="Source\Sequence.cpp" />
     <ClCompile Include="Source\Instrument.cpp" />
     <ClCompile Include="Source\Instrument2A03.cpp" />
@@ -596,6 +596,7 @@
     <ClInclude Include="Source\BookmarkManager.h" />
     <ClInclude Include="Source\BookmarkDlg.h" />
     <ClInclude Include="Source\FamiTrackerDocIO.h" />
+    <ClInclude Include="Source\for_map.h" />
     <ClInclude Include="Source\FrameEditorTypes.h" />
     <ClInclude Include="Source\IntRange.h" />
     <ClInclude Include="Source\NoteQueue.h" />
@@ -760,7 +761,7 @@
     <ClInclude Include="Source\FFT\Fft.h" />
     <ClInclude Include="Source\MIDI.h" />
     <ClInclude Include="Source\DSample.h" />
-    <ClInclude Include="Source\PatternData.h" />
+    <ClInclude Include="Source\SongData.h" />
     <ClInclude Include="Source\Sequence.h" />
     <ClInclude Include="Source\Instrument.h" />
     <ClInclude Include="Source\Clipboard.h" />
