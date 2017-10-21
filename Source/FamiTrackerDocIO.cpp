@@ -26,6 +26,8 @@
 #include "FamiTrackerDoc.h"
 #include "Settings.h"
 
+#include "InstrumentManager.h"
+
 #include "SongData.h"
 #include "PatternNote.h"
 
@@ -38,6 +40,32 @@
 #include "BookmarkCollection.h"
 
 namespace {
+
+const char *FILE_BLOCK_PARAMS			= "PARAMS";
+const char *FILE_BLOCK_INFO				= "INFO";
+const char *FILE_BLOCK_INSTRUMENTS		= "INSTRUMENTS";
+const char *FILE_BLOCK_SEQUENCES		= "SEQUENCES";
+const char *FILE_BLOCK_FRAMES			= "FRAMES";
+const char *FILE_BLOCK_PATTERNS			= "PATTERNS";
+const char *FILE_BLOCK_DSAMPLES			= "DPCM SAMPLES";
+const char *FILE_BLOCK_HEADER			= "HEADER";
+const char *FILE_BLOCK_COMMENTS			= "COMMENTS";
+
+// VRC6
+const char *FILE_BLOCK_SEQUENCES_VRC6	= "SEQUENCES_VRC6";
+
+// N163
+const char *FILE_BLOCK_SEQUENCES_N163	= "SEQUENCES_N163";
+const char *FILE_BLOCK_SEQUENCES_N106	= "SEQUENCES_N106";
+
+// Sunsoft
+const char *FILE_BLOCK_SEQUENCES_S5B	= "SEQUENCES_S5B";
+
+// // // 0CC-FamiTracker specific
+const char *FILE_BLOCK_DETUNETABLES		= "DETUNETABLES";
+const char *FILE_BLOCK_GROOVES			= "GROOVES";
+const char *FILE_BLOCK_BOOKMARKS		= "BOOKMARKS";
+const char *FILE_BLOCK_PARAMS_EXTRA		= "PARAMS_EXTRA";
 
 // // // helper function for effect conversion
 typedef std::array<effect_t, EF_COUNT> EffTable;
@@ -79,10 +107,74 @@ CFamiTrackerDocIO::CFamiTrackerDocIO(CDocumentFile &file) :
 void CFamiTrackerDocIO::Load(CFamiTrackerDoc &doc) {
 }
 
-void CFamiTrackerDocIO::Save(const CFamiTrackerDoc &doc) {
+bool CFamiTrackerDocIO::Save(const CFamiTrackerDoc &doc) {
+	using block_info_t = std::tuple<void (CFamiTrackerDocIO::*)(const CFamiTrackerDoc &, int), int, const char *>;
+	static const block_info_t MODULE_WRITE_FUNC[] = {		// // //
+		{&CFamiTrackerDocIO::SaveParams,		6, FILE_BLOCK_PARAMS},
+		{&CFamiTrackerDocIO::SaveSongInfo,		1, FILE_BLOCK_INFO},
+		{&CFamiTrackerDocIO::SaveHeader,		3, FILE_BLOCK_HEADER},
+		{&CFamiTrackerDocIO::SaveInstruments,	6, FILE_BLOCK_INSTRUMENTS},
+		{&CFamiTrackerDocIO::SaveSequences,		6, FILE_BLOCK_SEQUENCES},
+		{&CFamiTrackerDocIO::SaveFrames,		3, FILE_BLOCK_FRAMES},
+#ifdef TRANSPOSE_FDS
+		{&CFamiTrackerDocIO::SavePatterns,		5, FILE_BLOCK_PATTERNS},
+#else
+		{&CFamiTrackerDocIO::SavePatterns,		4, FILE_BLOCK_PATTERNS},
+#endif
+		{&CFamiTrackerDocIO::SaveDSamples,		1, FILE_BLOCK_DSAMPLES},
+		{&CFamiTrackerDocIO::SaveComments,		1, FILE_BLOCK_COMMENTS},
+		{&CFamiTrackerDocIO::SaveSequencesVRC6,	6, FILE_BLOCK_SEQUENCES_VRC6},		// // //
+		{&CFamiTrackerDocIO::SaveSequencesN163,	1, FILE_BLOCK_SEQUENCES_N163},
+		{&CFamiTrackerDocIO::SaveSequencesS5B,	1, FILE_BLOCK_SEQUENCES_S5B},
+		{&CFamiTrackerDocIO::SaveParamsExtra,	2, FILE_BLOCK_PARAMS_EXTRA},		// // //
+		{&CFamiTrackerDocIO::SaveDetuneTables,	1, FILE_BLOCK_DETUNETABLES},		// // //
+		{&CFamiTrackerDocIO::SaveGrooves,		1, FILE_BLOCK_GROOVES},				// // //
+		{&CFamiTrackerDocIO::SaveBookmarks,		1, FILE_BLOCK_BOOKMARKS},			// // //
+	};
+
+	file_.BeginDocument();
+	for (auto &&[fn, ver, name] : MODULE_WRITE_FUNC) {
+		file_.CreateBlock(name, ver);
+		(this->*fn)(doc, ver);
+		if (!file_.FlushBlock())
+			return false;
+	}
+	file_.EndDocument();
+	return true;
 }
 
 void CFamiTrackerDocIO::SaveParams(const CFamiTrackerDoc &doc, int ver) {
+	if (ver >= 2)
+		file_.WriteBlockChar(doc.GetExpansionChip());		// ver 2 change
+	else
+		file_.WriteBlockInt(doc.GetSongData(0).GetSongSpeed());
+
+	file_.WriteBlockInt(doc.GetChannelCount());
+	file_.WriteBlockInt(doc.GetMachine());
+	file_.WriteBlockInt(doc.GetEngineSpeed());
+	
+	if (ver >= 3) {
+		file_.WriteBlockInt(doc.GetVibratoStyle());
+
+		if (ver >= 4) {
+			auto hl = doc.GetHighlight();
+			file_.WriteBlockInt(hl.First);
+			file_.WriteBlockInt(hl.Second);
+
+			if (ver >= 5) {
+				if (doc.ExpansionEnabled(SNDCHIP_N163))
+					file_.WriteBlockInt(doc.GetNamcoChannels());
+
+				if (ver >= 6)
+					file_.WriteBlockInt(doc.GetSpeedSplitPoint());
+
+				if (ver >= 8) {		// // // 050B
+					file_.WriteBlockChar(doc.GetTuningSemitone());
+					file_.WriteBlockChar(doc.GetTuningCent());
+				}
+			}
+		}
+	}
 }
 
 void CFamiTrackerDocIO::LoadSongInfo(CFamiTrackerDoc &doc, int ver) {
@@ -102,12 +194,101 @@ void CFamiTrackerDocIO::SaveSongInfo(const CFamiTrackerDoc &doc, int ver) {
 }
 
 void CFamiTrackerDocIO::SaveHeader(const CFamiTrackerDoc &doc, int ver) {
+	// Write number of tracks
+	if (ver >= 2)
+		file_.WriteBlockChar(doc.GetTrackCount() - 1);
+
+	// Ver 3, store track names
+	if (ver >= 3)
+		for (unsigned int i = 0; i < doc.GetTrackCount(); ++i)
+			file_.WriteString(doc.GetSongData(i).GetTitle().c_str());		// // //
+
+	for (int i = 0; i < doc.GetChannelCount(); ++i) {
+		// Channel type
+		file_.WriteBlockChar(doc.GetChannelType(i));		// // //
+		for (unsigned int j = 0; j < doc.GetTrackCount(); ++j) {
+			// Effect columns
+			file_.WriteBlockChar(doc.GetSongData(j).GetEffectColumnCount(i));
+			if (ver <= 1)
+				break;
+		}
+	}
 }
 
 void CFamiTrackerDocIO::SaveInstruments(const CFamiTrackerDoc &doc, int ver) {
+	// A bug in v0.3.0 causes a crash if this is not 2, so change only when that ver is obsolete!
+	//
+	// Log:
+	// - v6: adds DPCM delta settings
+	//
+
+	// If FDS is used then version must be at least 4 or recent files won't load
+
+	// Fix for FDS instruments
+/*	if (m_iExpansionChip & SNDCHIP_FDS)
+		ver = 4;
+
+	for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
+		if (m_pInstrumentManager->GetInstrument(i)->GetType() == INST_FDS)
+			ver = 4;
+	}
+*/
+	char Name[CInstrument::INST_NAME_MAX];
+
+	const auto &Manager = *doc.GetInstrumentManager();
+
+	// Instruments block
+	const int Count = Manager.GetInstrumentCount();
+	if (!Count)
+		return;		// // //
+	file_.WriteBlockInt(Count);
+
+	for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
+		// Only write instrument if it's used
+		if (auto pInst = Manager.GetInstrument(i)) {
+			// Write index and type
+			file_.WriteBlockInt(i);
+			file_.WriteBlockChar(static_cast<char>(pInst->GetType()));
+
+			// Store the instrument
+			pInst->Store(&file_);
+
+			// Store the name
+			pInst->GetName(Name);
+			file_.WriteBlockInt((int)strlen(Name));
+			file_.WriteBlock(Name, (int)strlen(Name));
+		}
+	}
 }
 
 void CFamiTrackerDocIO::SaveSequences(const CFamiTrackerDoc &doc, int ver) {
+	int Count = doc.GetTotalSequenceCount(INST_2A03);
+	if (!Count)
+		return;		// // //
+	file_.WriteBlockInt(Count);
+
+	for (int i = 0; i < MAX_SEQUENCES; ++i) {
+		for (int j = 0; j < SEQ_COUNT; ++j) {
+			if (const CSequence *pSeq = doc.GetSequence(INST_2A03, i, j); pSeq && pSeq->GetItemCount()) {
+				file_.WriteBlockInt(i); // index
+				file_.WriteBlockInt(j); // type
+				file_.WriteBlockChar(pSeq->GetItemCount());
+				file_.WriteBlockInt(pSeq->GetLoopPoint());
+				for (int k = 0, Count = pSeq->GetItemCount(); k < Count; ++k)
+					file_.WriteBlockChar(pSeq->GetItem(k));
+			}
+		}
+	}
+
+	// v6
+	for (int i = 0; i < MAX_SEQUENCES; ++i) {
+		for (int j = 0; j < SEQ_COUNT; ++j) {
+			if (const CSequence *pSeq = doc.GetSequence(INST_2A03, i, j); pSeq && pSeq->GetItemCount()) {
+				file_.WriteBlockInt(pSeq->GetReleasePoint());
+				file_.WriteBlockInt(pSeq->GetSetting());
+			}
+		}
+	}
 }
 
 void CFamiTrackerDocIO::SaveFrames(const CFamiTrackerDoc &doc, int ver) {
@@ -243,12 +424,81 @@ void CFamiTrackerDocIO::SaveComments(const CFamiTrackerDoc &doc, int ver) {
 }
 
 void CFamiTrackerDocIO::SaveSequencesVRC6(const CFamiTrackerDoc &doc, int ver) {
+	int Count = doc.GetTotalSequenceCount(INST_VRC6);
+	if (!Count)
+		return;		// // //
+	file_.WriteBlockInt(Count);
+
+	for (int i = 0; i < MAX_SEQUENCES; ++i) {
+		for (int j = 0; j < SEQ_COUNT; ++j) {
+			if (const CSequence *pSeq = doc.GetSequence(INST_VRC6, i, j); pSeq && pSeq->GetItemCount()) {
+				file_.WriteBlockInt(i); // index
+				file_.WriteBlockInt(j); // type
+				file_.WriteBlockChar(pSeq->GetItemCount());
+				file_.WriteBlockInt(pSeq->GetLoopPoint());
+				for (int k = 0, Count = pSeq->GetItemCount(); k < Count; ++k)
+					file_.WriteBlockChar(pSeq->GetItem(k));
+			}
+		}
+	}
+
+	// v6
+	for (int i = 0; i < MAX_SEQUENCES; ++i) {
+		for (int j = 0; j < SEQ_COUNT; ++j) {
+			if (const CSequence *pSeq = doc.GetSequence(INST_VRC6, i, j); pSeq && pSeq->GetItemCount()) {
+				file_.WriteBlockInt(pSeq->GetReleasePoint());
+				file_.WriteBlockInt(pSeq->GetSetting());
+			}
+		}
+	}
 }
 
 void CFamiTrackerDocIO::SaveSequencesN163(const CFamiTrackerDoc &doc, int ver) {
+	/* 
+	 * Store N163 sequences
+	 */ 
+
+	int Count = doc.GetTotalSequenceCount(INST_N163);
+	if (!Count)
+		return;		// // //
+	file_.WriteBlockInt(Count);
+
+	for (int i = 0; i < MAX_SEQUENCES; ++i) {
+		for (int j = 0; j < SEQ_COUNT; ++j) {
+			if (const CSequence *pSeq = doc.GetSequence(INST_N163, i, j); pSeq && pSeq->GetItemCount()) {
+				file_.WriteBlockInt(i); // index
+				file_.WriteBlockInt(j); // type
+				file_.WriteBlockChar(pSeq->GetItemCount());
+				file_.WriteBlockInt(pSeq->GetLoopPoint());
+				file_.WriteBlockInt(pSeq->GetReleasePoint());
+				file_.WriteBlockInt(pSeq->GetSetting());
+				for (int k = 0, Count = pSeq->GetItemCount(); k < Count; ++k)
+					file_.WriteBlockChar(pSeq->GetItem(k));
+			}
+		}
+	}
 }
 
 void CFamiTrackerDocIO::SaveSequencesS5B(const CFamiTrackerDoc &doc, int ver) {
+	int Count = doc.GetTotalSequenceCount(INST_S5B);
+	if (!Count)
+		return;		// // //
+	file_.WriteBlockInt(Count);
+
+	for (int i = 0; i < MAX_SEQUENCES; ++i) {
+		for (int j = 0; j < SEQ_COUNT; ++j) {
+			if (const CSequence *pSeq = doc.GetSequence(INST_S5B, i, j); pSeq && pSeq->GetItemCount()) {
+				file_.WriteBlockInt(i); // index
+				file_.WriteBlockInt(j); // type
+				file_.WriteBlockChar(pSeq->GetItemCount());
+				file_.WriteBlockInt(pSeq->GetLoopPoint());
+				file_.WriteBlockInt(pSeq->GetReleasePoint());
+				file_.WriteBlockInt(pSeq->GetSetting());
+				for (int k = 0, Count = pSeq->GetItemCount(); k < Count; ++k)
+					file_.WriteBlockChar(pSeq->GetItem(k));
+			}
+		}
+	}
 }
 
 void CFamiTrackerDocIO::LoadParamsExtra(CFamiTrackerDoc &doc, int ver) {

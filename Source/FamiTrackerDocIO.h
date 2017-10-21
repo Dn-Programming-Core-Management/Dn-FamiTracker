@@ -35,7 +35,7 @@ public:
 	explicit CFamiTrackerDocIO(CDocumentFile &file);
 
 	void Load(CFamiTrackerDoc &doc);
-	void Save(const CFamiTrackerDoc &doc);
+	bool Save(const CFamiTrackerDoc &doc);
 
 //private:
 	void SaveParams(const CFamiTrackerDoc &doc, int ver);

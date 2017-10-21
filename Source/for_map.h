@@ -103,12 +103,12 @@ auto proj(T&& x) {
 
 template <typename T>
 auto proj_deref(T&& x) {
-	return proj(std::forward<T>(x), [] (const auto &x) -> decltype(auto) { return *x; });
+	return proj(std::forward<T>(x), [] (const auto &x) -> decltype(*x) { return *x; });
 }
 
 template <typename T>
 auto proj_with_index(T&& x) {
-	return proj(std::forward<T>(x), [i = 0] (const auto &x) mutable {
-		return std::pair<decltype((x)), int>(x, i++);
+	return proj(std::forward<T>(x), [i = 0] (const auto &x) mutable -> std::pair<decltype(x), int> {
+		return {x, i++};
 	});
 }
