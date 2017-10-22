@@ -114,17 +114,19 @@ void VisitSequences(const CSequenceManager *manager, F&& f) {
 	}
 }
 
-// void (*F)(const CSongData &song, unsigned index)
+// void (*F)(CPatternData &pattern, unsigned song, unsigned channel, unsigned index)
 template <typename F>
-void VisitSongs(const CFamiTrackerDoc &doc, F f) {
-	for (unsigned j = 0, n = doc.GetTrackCount(); j < n; ++j)
-		f(doc.GetSongData(j), j);
+void VisitPatterns(CFamiTrackerDoc &doc, F f) {
+	doc.VisitSongs([&] (CSongData &song, unsigned index) {
+		for (unsigned ch = 0, n = doc.GetChannelCount(); ch < n; ++ch)
+			for (unsigned p = 0; p < MAX_PATTERN; ++p)
+				f(song.GetPattern(ch, p), index, ch, p);
+	});
 }
-
 // void (*F)(const CPatternData &pattern, unsigned song, unsigned channel, unsigned index)
 template <typename F>
 void VisitPatterns(const CFamiTrackerDoc &doc, F f) {
-	VisitSongs(doc, [&] (const CSongData &song, unsigned index) {
+	doc.VisitSongs([&] (const CSongData &song, unsigned index) {
 		for (unsigned ch = 0, n = doc.GetChannelCount(); ch < n; ++ch)
 			for (unsigned p = 0; p < MAX_PATTERN; ++p)
 				f(song.GetPattern(ch, p), index, ch, p);
@@ -169,7 +171,7 @@ bool CFamiTrackerDocIO::Save(const CFamiTrackerDoc &doc) {
 	};
 
 	file_.BeginDocument();
-	for (auto &&[fn, ver, name] : MODULE_WRITE_FUNC) {
+	for (auto [fn, ver, name] : MODULE_WRITE_FUNC) {
 		file_.CreateBlock(name, ver);
 		(this->*fn)(doc, ver);
 		if (!file_.FlushBlock())
@@ -248,22 +250,24 @@ void CFamiTrackerDocIO::LoadHeader(CFamiTrackerDoc &doc, int ver) {
 	else if (ver >= 2) {
 		// Multiple tracks
 		unsigned Tracks = AssertRange(file_.GetBlockChar() + 1, 1, static_cast<int>(MAX_TRACKS), "Track count");	// 0 means one track
+		doc.GetSongData(Tracks - 1); // allocate
 
 		// Track names
 		if (ver >= 3)
-			for (unsigned i = 0; i < Tracks; ++i)
-				doc.GetSongData(i).SetTitle((LPCTSTR)file_.ReadString());		// // //
+			doc.VisitSongs([&] (CSongData &song) { song.SetTitle((LPCTSTR)file_.ReadString()); });
 
 		for (int i = 0; i < doc.GetChannelCount(); ++i) try {
 			AssertRange<MODULE_ERROR_STRICT>(file_.GetBlockChar(), 0, CHANNELS - 1, "Channel type index"); // Channel type (unused)
-			for (unsigned j = 0; j < Tracks; ++j) try {
-				doc.GetSongData(j).SetEffectColumnCount(i, AssertRange<MODULE_ERROR_STRICT>(
-					file_.GetBlockChar(), 0, MAX_EFFECT_COLUMNS - 1, "Effect column count"));
-			}
-			catch (CModuleException *e) {
-				e->AppendError("At effect column fx%d,", j + 1);
-				throw;
-			}
+			doc.VisitSongs([&] (CSongData &song, unsigned index) {
+				try {
+					song.SetEffectColumnCount(i, AssertRange<MODULE_ERROR_STRICT>(
+						file_.GetBlockChar(), 0, MAX_EFFECT_COLUMNS - 1, "Effect column count"));
+				}
+				catch (CModuleException *e) {
+					e->AppendError("At song %d,", index + 1);
+					throw;
+				}
+			});
 		}
 		catch (CModuleException *e) {
 			e->AppendError("At channel %d,", i + 1);
@@ -277,9 +281,9 @@ void CFamiTrackerDocIO::LoadHeader(CFamiTrackerDoc &doc, int ver) {
 				if (!i)
 					doc.SetHighlight({First, Second});
 			}
-		for (unsigned int i = 0; i < Tracks; ++i)
-			doc.GetSongData(i).SetHighlight(doc.GetHighlight());		// // //
-	}}
+		doc.VisitSongs([&] (CSongData &song) { song.SetHighlight(doc.GetHighlight()); });		// // //
+	}
+}
 
 void CFamiTrackerDocIO::SaveHeader(const CFamiTrackerDoc &doc, int ver) {
 	// Write number of tracks
@@ -288,8 +292,7 @@ void CFamiTrackerDocIO::SaveHeader(const CFamiTrackerDoc &doc, int ver) {
 
 	// Ver 3, store track names
 	if (ver >= 3)
-		for (unsigned int i = 0; i < doc.GetTrackCount(); ++i)
-			file_.WriteString(doc.GetSongData(i).GetTitle().c_str());		// // //
+		doc.VisitSongs([&] (const CSongData &song) { file_.WriteString(song.GetTitle().c_str()); });
 
 	for (int i = 0; i < doc.GetChannelCount(); ++i) {
 		// Channel type
@@ -428,45 +431,43 @@ void CFamiTrackerDocIO::LoadFrames(CFamiTrackerDoc &doc, int ver) {
 		}
 	}
 	else if (ver > 1) {
-		for (unsigned y = 0, n = doc.GetTrackCount(); y < n; ++y) {
+		doc.VisitSongs([&] (CSongData &song) {
 			unsigned int FrameCount = AssertRange(file_.GetBlockInt(), 1, MAX_FRAMES, "Track frame count");
 			unsigned int Speed = AssertRange<MODULE_ERROR_STRICT>(file_.GetBlockInt(), 0, MAX_TEMPO, "Track default speed");
-
-			auto &Song = doc.GetSongData(y);
-			Song.SetFrameCount(FrameCount);
+			song.SetFrameCount(FrameCount);
 
 			if (ver >= 3) {
 				unsigned int Tempo = AssertRange<MODULE_ERROR_STRICT>(file_.GetBlockInt(), 0, MAX_TEMPO, "Track default tempo");
-				Song.SetSongTempo(Tempo);
-				Song.SetSongSpeed(Speed);
+				song.SetSongTempo(Tempo);
+				song.SetSongSpeed(Speed);
 			}
 			else {
 				if (Speed < 20) {
-					Song.SetSongTempo(doc.GetMachine() == NTSC ? DEFAULT_TEMPO_NTSC : DEFAULT_TEMPO_PAL);
-					Song.SetSongSpeed(Speed);
+					song.SetSongTempo(doc.GetMachine() == NTSC ? DEFAULT_TEMPO_NTSC : DEFAULT_TEMPO_PAL);
+					song.SetSongSpeed(Speed);
 				}
 				else {
-					Song.SetSongTempo(Speed);
-					Song.SetSongSpeed(DEFAULT_SPEED);
+					song.SetSongTempo(Speed);
+					song.SetSongSpeed(DEFAULT_SPEED);
 				}
 			}
 
 			unsigned PatternLength = AssertRange(file_.GetBlockInt(), 1, MAX_PATTERN_LENGTH, "Track default row count");
-			Song.SetPatternLength(PatternLength);
+			song.SetPatternLength(PatternLength);
 			
 			for (unsigned i = 0; i < FrameCount; ++i) {
 				for (int j = 0; j < doc.GetChannelCount(); ++j) {
 					// Read pattern index
 					int Pattern = static_cast<unsigned char>(file_.GetBlockChar());
-					Song.SetFramePattern(i, j, AssertRange(Pattern, 0, MAX_PATTERN - 1, "Pattern index"));
+					song.SetFramePattern(i, j, AssertRange(Pattern, 0, MAX_PATTERN - 1, "Pattern index"));
 				}
 			}
-		}
+		});
 	}
 }
 
 void CFamiTrackerDocIO::SaveFrames(const CFamiTrackerDoc &doc, int ver) {
-	VisitSongs(doc, [&] (const CSongData &Song, int index) {
+	doc.VisitSongs([&] (const CSongData &Song) {
 		file_.WriteBlockInt(Song.GetFrameCount());
 		file_.WriteBlockInt(Song.GetSongSpeed());
 		file_.WriteBlockInt(Song.GetSongTempo());
@@ -918,8 +919,7 @@ void CFamiTrackerDocIO::SaveGrooves(const CFamiTrackerDoc &doc, int ver) {
 		}
 
 	file_.WriteBlockChar(doc.GetTrackCount());
-	for (unsigned i = 0; i < doc.GetTrackCount(); ++i)
-		file_.WriteBlockChar(doc.GetSongGroove(i));
+	doc.VisitSongs([&] (const CSongData &song) { file_.WriteBlockChar(song.GetSongGroove()); });
 }
 
 void CFamiTrackerDocIO::LoadBookmarks(CFamiTrackerDoc &doc, int ver) {

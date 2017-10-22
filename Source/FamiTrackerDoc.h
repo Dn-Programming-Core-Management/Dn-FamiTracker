@@ -327,6 +327,47 @@ public:
 	void			Modify(bool Change);
 	void			ModifyIrreversible();
 
+	// void (*F)(CSongData &song [, unsigned index])
+	template <typename F>
+	void VisitSongs(F f) {
+		if constexpr (std::is_invocable_v<F, CSongData &>)
+			visit_songs_impl(f);
+		else
+			visit_songs_impl2(f);
+	}
+	// void (*F)(const CSongData &song [, unsigned index])
+	template <typename F>
+	void VisitSongs(F f) const {
+		if constexpr (std::is_invocable_v<F, const CSongData &>)
+			visit_songs_impl(f);
+		else
+			visit_songs_impl2(f);
+	}
+
+private:
+	template <typename F>
+	void visit_songs_impl(F f) {
+		for (auto &song : m_pTracks)
+			f(*song);
+	}
+	template <typename F>
+	void visit_songs_impl(F f) const {
+		for (const auto &song : m_pTracks)
+			f(*song);
+	}
+	template <typename F>
+	void visit_songs_impl2(F f) {
+		unsigned index = 0;
+		for (auto &song : m_pTracks)
+			f(*song, index++);
+	}
+	template <typename F>
+	void visit_songs_impl2(F f) const {
+		unsigned index = 0;
+		for (const auto &song : m_pTracks)
+			f(*song, index++);
+	}
+
 	// Constants
 public:
 	static const char*	NEW_INST_NAME;
