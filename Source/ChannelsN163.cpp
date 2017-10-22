@@ -101,7 +101,7 @@ bool CChannelHandlerN163::HandleInstrument(bool Trigger, bool NewInstrument)
 		return false;
 
 	if (!m_bLoadWave && NewInstrument)
-		m_iDefaultDuty = 0;
+		m_iDefaultDuty = m_iDutyPeriod = 0;
 
 	if (!m_bDisableLoad) {
 		m_iWavePos = /*pInstrument->GetAutoWavePos() ? GetIndex() * 16 :*/ m_iWavePosOld;
@@ -131,7 +131,7 @@ void CChannelHandlerN163::HandleNote(int Note, int Octave)
 {
 	// New note
 	CChannelHandler::HandleNote(Note, Octave);		// // //
-	m_bLoadWave = false;
+//	m_bLoadWave = false;
 //	m_bResetPhase = true;
 }
 
