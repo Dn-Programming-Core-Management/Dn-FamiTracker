@@ -30,17 +30,6 @@
 #include "SequenceManager.h"
 #include "DSampleManager.h"
 
-namespace {
-
-void inst_deleter(CInstrument *ptr) {
-	if (ptr) {
-		ptr->RegisterManager(nullptr);
-		delete ptr;
-	}
-}
-
-} // namespace
-
 const int CInstrumentManager::MAX_INSTRUMENTS = 64;
 const int CInstrumentManager::SEQ_MANAGER_COUNT = 5;
 
@@ -78,10 +67,25 @@ std::unique_ptr<CInstrument> CInstrumentManager::CreateNew(inst_type_t InstType)
 bool CInstrumentManager::InsertInstrument(unsigned int Index, std::unique_ptr<CInstrument> pInst)
 {
 	std::lock_guard<std::mutex> lock(m_InstrumentLock);
-	auto pShared = std::shared_ptr<CInstrument>(pInst.release(), inst_deleter);
+	auto pShared = std::shared_ptr<CInstrument>(std::move(pInst));
 	if (m_pInstruments[Index] != pShared) {
+		if (m_pInstruments[Index])
+			m_pInstruments[Index]->RegisterManager(nullptr);
 		m_pInstruments[Index] = pShared;
 		pShared->RegisterManager(this);
+		return true;
+	}
+	return false;
+}
+
+bool CInstrumentManager::InsertInstrument(unsigned int Index, std::shared_ptr<CInstrument> pInst)
+{
+	std::lock_guard<std::mutex> lock(m_InstrumentLock);
+	if (m_pInstruments[Index] != pInst) {
+		if (m_pInstruments[Index])
+			m_pInstruments[Index]->RegisterManager(nullptr);
+		m_pInstruments[Index] = pInst;
+		pInst->RegisterManager(this);
 		return true;
 	}
 	return false;
@@ -91,6 +95,7 @@ bool CInstrumentManager::RemoveInstrument(unsigned int Index)
 {
 	std::lock_guard<std::mutex> lock(m_InstrumentLock);
 	if (m_pInstruments[Index]) {
+		m_pInstruments[Index]->RegisterManager(nullptr);
 		m_pInstruments[Index].reset();
 		return true;
 	}
@@ -104,8 +109,11 @@ void CInstrumentManager::SwapInstruments(unsigned int IndexA, unsigned int Index
 void CInstrumentManager::ClearAll()
 {
 	std::lock_guard<std::mutex> lock(m_InstrumentLock);
-	for (auto &ptr : m_pInstruments)
+	for (auto &ptr : m_pInstruments) {
+		if (ptr)
+			ptr->RegisterManager(nullptr);
 		ptr.reset();
+	}
 	for (int i = 0; i < SEQ_MANAGER_COUNT; i++)
 		m_pSequenceManager[i].swap(std::make_unique<CSequenceManager>(i == 2 ? 3 : SEQ_COUNT));
 	m_pDSampleManager.swap(std::make_unique<CDSampleManager>());
