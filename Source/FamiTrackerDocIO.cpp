@@ -27,6 +27,9 @@
 #include "Settings.h"
 
 #include "InstrumentManager.h"
+#include "InstrumentVRC6.h" // error message
+#include "InstrumentN163.h" // error message
+#include "InstrumentS5B.h" // error message
 
 #include "SequenceManager.h"
 #include "SequenceCollection.h"
@@ -226,6 +229,58 @@ void CFamiTrackerDocIO::SaveSongInfo(const CFamiTrackerDoc &doc, int ver) {
 	file_.WriteBlock(doc.GetSongCopyright(), 32);
 }
 
+void CFamiTrackerDocIO::LoadHeader(CFamiTrackerDoc &doc, int ver) {
+	if (ver == 1) {
+		// Single track
+		auto &Song = doc.GetSongData(0);
+		for (int i = 0; i < doc.GetChannelCount(); ++i) try {
+			// Channel type (unused)
+			AssertRange<MODULE_ERROR_STRICT>(file_.GetBlockChar(), 0, CHANNELS - 1, "Channel type index");
+			// Effect columns
+			Song.SetEffectColumnCount(i, AssertRange<MODULE_ERROR_STRICT>(
+				file_.GetBlockChar(), 0, MAX_EFFECT_COLUMNS - 1, "Effect column count"));
+		}
+		catch (CModuleException *e) {
+			e->AppendError("At channel %d", i + 1);
+			throw;
+		}
+	}
+	else if (ver >= 2) {
+		// Multiple tracks
+		unsigned Tracks = AssertRange(file_.GetBlockChar() + 1, 1, static_cast<int>(MAX_TRACKS), "Track count");	// 0 means one track
+
+		// Track names
+		if (ver >= 3)
+			for (unsigned i = 0; i < Tracks; ++i)
+				doc.GetSongData(i).SetTitle((LPCTSTR)file_.ReadString());		// // //
+
+		for (int i = 0; i < doc.GetChannelCount(); ++i) try {
+			AssertRange<MODULE_ERROR_STRICT>(file_.GetBlockChar(), 0, CHANNELS - 1, "Channel type index"); // Channel type (unused)
+			for (unsigned j = 0; j < Tracks; ++j) try {
+				doc.GetSongData(j).SetEffectColumnCount(i, AssertRange<MODULE_ERROR_STRICT>(
+					file_.GetBlockChar(), 0, MAX_EFFECT_COLUMNS - 1, "Effect column count"));
+			}
+			catch (CModuleException *e) {
+				e->AppendError("At effect column fx%d,", j + 1);
+				throw;
+			}
+		}
+		catch (CModuleException *e) {
+			e->AppendError("At channel %d,", i + 1);
+			throw;
+		}
+
+		if (ver >= 4)		// // // 050B
+			for (unsigned int i = 0; i < Tracks; ++i) {
+				int First = static_cast<unsigned char>(file_.GetBlockChar());
+				int Second = static_cast<unsigned char>(file_.GetBlockChar());
+				if (!i)
+					doc.SetHighlight({First, Second});
+			}
+		for (unsigned int i = 0; i < Tracks; ++i)
+			doc.GetSongData(i).SetHighlight(doc.GetHighlight());		// // //
+	}}
+
 void CFamiTrackerDocIO::SaveHeader(const CFamiTrackerDoc &doc, int ver) {
 	// Write number of tracks
 	if (ver >= 2)
@@ -244,6 +299,48 @@ void CFamiTrackerDocIO::SaveHeader(const CFamiTrackerDoc &doc, int ver) {
 			file_.WriteBlockChar(doc.GetSongData(j).GetEffectColumnCount(i));
 			if (ver <= 1)
 				break;
+		}
+	}
+}
+
+void CFamiTrackerDocIO::LoadInstruments(CFamiTrackerDoc &doc, int ver) {
+	/*
+	 * Version changes
+	 *
+	 *  2 - Extended DPCM octave range
+	 *  3 - Added settings to the arpeggio sequence
+	 *
+	 */
+
+	// Number of instruments
+	const int Count = AssertRange(file_.GetBlockInt(), 0, CInstrumentManager::MAX_INSTRUMENTS, "Instrument count");
+	auto &Manager = *doc.GetInstrumentManager();
+
+	for (int i = 0; i < Count; ++i) {
+		// Instrument index
+		int index = AssertRange(file_.GetBlockInt(), 0, CInstrumentManager::MAX_INSTRUMENTS - 1, "Instrument index");
+
+		// Read instrument type and create an instrument
+		inst_type_t Type = (inst_type_t)file_.GetBlockChar();
+		auto pInstrument = CInstrumentManager::CreateNew(Type);		// // //
+
+		try {
+			// Load the instrument
+			AssertFileData(pInstrument.get() != nullptr, "Failed to create instrument");
+			pInstrument->Load(&file_);
+			// Read name
+			int size = AssertRange(file_.GetBlockInt(), 0, CInstrument::INST_NAME_MAX, "Instrument name length");
+			char Name[CInstrument::INST_NAME_MAX + 1];
+			file_.GetBlock(Name, size);
+			Name[size] = 0;
+			pInstrument->SetName(Name);
+			Manager.InsertInstrument(index, std::move(pInstrument));		// // // this registers the instrument content provider
+		}
+		catch (CModuleException *e) {
+			file_.SetDefaultFooter(e);
+			e->AppendError("At instrument %02X,", index);
+			Manager.RemoveInstrument(index);
+			throw;
 		}
 	}
 }
@@ -314,6 +411,58 @@ void CFamiTrackerDocIO::SaveSequences(const CFamiTrackerDoc &doc, int ver) {
 		file_.WriteBlockInt(seq.GetReleasePoint());
 		file_.WriteBlockInt(seq.GetSetting());
 	});
+}
+
+void CFamiTrackerDocIO::LoadFrames(CFamiTrackerDoc &doc, int ver) {
+	if (ver == 1) {
+		unsigned int FrameCount = AssertRange(file_.GetBlockInt(), 1, MAX_FRAMES, "Track frame count");
+		/*m_iChannelsAvailable =*/ AssertRange(file_.GetBlockInt(), 0, MAX_CHANNELS, "Channel count");
+		auto &Song = doc.GetSongData(0);
+		Song.SetFrameCount(FrameCount);
+		for (unsigned i = 0; i < FrameCount; ++i) {
+			for (int j = 0; j < doc.GetChannelCount(); ++j) {
+				unsigned Pattern = static_cast<unsigned char>(file_.GetBlockChar());
+				AssertRange(Pattern, 0U, static_cast<unsigned>(MAX_PATTERN - 1), "Pattern index");
+				Song.SetFramePattern(i, j, Pattern);
+			}
+		}
+	}
+	else if (ver > 1) {
+		for (unsigned y = 0, n = doc.GetTrackCount(); y < n; ++y) {
+			unsigned int FrameCount = AssertRange(file_.GetBlockInt(), 1, MAX_FRAMES, "Track frame count");
+			unsigned int Speed = AssertRange<MODULE_ERROR_STRICT>(file_.GetBlockInt(), 0, MAX_TEMPO, "Track default speed");
+
+			auto &Song = doc.GetSongData(y);
+			Song.SetFrameCount(FrameCount);
+
+			if (ver >= 3) {
+				unsigned int Tempo = AssertRange<MODULE_ERROR_STRICT>(file_.GetBlockInt(), 0, MAX_TEMPO, "Track default tempo");
+				Song.SetSongTempo(Tempo);
+				Song.SetSongSpeed(Speed);
+			}
+			else {
+				if (Speed < 20) {
+					Song.SetSongTempo(doc.GetMachine() == NTSC ? DEFAULT_TEMPO_NTSC : DEFAULT_TEMPO_PAL);
+					Song.SetSongSpeed(Speed);
+				}
+				else {
+					Song.SetSongTempo(Speed);
+					Song.SetSongSpeed(DEFAULT_SPEED);
+				}
+			}
+
+			unsigned PatternLength = AssertRange(file_.GetBlockInt(), 1, MAX_PATTERN_LENGTH, "Track default row count");
+			Song.SetPatternLength(PatternLength);
+			
+			for (unsigned i = 0; i < FrameCount; ++i) {
+				for (int j = 0; j < doc.GetChannelCount(); ++j) {
+					// Read pattern index
+					int Pattern = static_cast<unsigned char>(file_.GetBlockChar());
+					Song.SetFramePattern(i, j, AssertRange(Pattern, 0, MAX_PATTERN - 1, "Pattern index"));
+				}
+			}
+		}
+	}
 }
 
 void CFamiTrackerDocIO::SaveFrames(const CFamiTrackerDoc &doc, int ver) {
@@ -431,6 +580,79 @@ void CFamiTrackerDocIO::SaveComments(const CFamiTrackerDoc &doc, int ver) {
 	}
 }
 
+void CFamiTrackerDocIO::LoadSequencesVRC6(CFamiTrackerDoc &doc, int ver) {
+	unsigned int Count = AssertRange(file_.GetBlockInt(), 0, MAX_SEQUENCES * SEQ_COUNT, "VRC6 sequence count");
+	AssertRange<MODULE_ERROR_OFFICIAL>(Count, 0U, static_cast<unsigned>(MAX_SEQUENCES), "VRC6 sequence count");		// // //
+
+	CSequenceManager *pManager = doc.GetSequenceManager(INST_VRC6);		// // //
+
+	int Indices[MAX_SEQUENCES * SEQ_COUNT];
+	int Types[MAX_SEQUENCES * SEQ_COUNT];
+	for (unsigned int i = 0; i < Count; ++i) {
+		unsigned int Index = Indices[i] = AssertRange(file_.GetBlockInt(), 0, MAX_SEQUENCES - 1, "Sequence index");
+		unsigned int Type = Types[i] = AssertRange(file_.GetBlockInt(), 0, SEQ_COUNT - 1, "Sequence type");
+		try {
+			unsigned char SeqCount = file_.GetBlockChar();
+			CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);
+			pSeq->Clear();
+			pSeq->SetItemCount(SeqCount < MAX_SEQUENCE_ITEMS ? SeqCount : MAX_SEQUENCE_ITEMS);
+
+			pSeq->SetLoopPoint(AssertRange<MODULE_ERROR_STRICT>(
+				file_.GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence loop point"));
+
+			if (ver == 4) {
+				pSeq->SetReleasePoint(AssertRange<MODULE_ERROR_STRICT>(
+					file_.GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence release point"));
+				pSeq->SetSetting(static_cast<seq_setting_t>(file_.GetBlockInt()));		// // //
+			}
+
+			// AssertRange(SeqCount, 0, MAX_SEQUENCE_ITEMS, "Sequence item count");
+			for (unsigned int j = 0; j < SeqCount; ++j) {
+				char Value = file_.GetBlockChar();
+				if (j < MAX_SEQUENCE_ITEMS)		// // //
+					pSeq->SetItem(j, Value);
+			}
+		}
+		catch (CModuleException *e) {
+			e->AppendError("At VRC6 %s sequence %d,", CInstrumentVRC6::SEQUENCE_NAME[Type], Index);
+			throw;
+		}
+	}
+
+	if (ver == 5) {
+		// Version 5 saved the release points incorrectly, this is fixed in ver 6
+		for (int i = 0; i < MAX_SEQUENCES; ++i) {
+			for (int j = 0; j < SEQ_COUNT; ++j) try {
+				int ReleasePoint = file_.GetBlockInt();
+				int Settings = file_.GetBlockInt();
+				CSequence *pSeq = pManager->GetCollection(j)->GetSequence(i);
+				int Length = pSeq->GetItemCount();
+				if (Length > 0) {
+					pSeq->SetReleasePoint(AssertRange<MODULE_ERROR_STRICT>(
+						ReleasePoint, -1, Length - 1, "Sequence release point"));
+					pSeq->SetSetting(static_cast<seq_setting_t>(Settings));		// // //
+				}
+			}
+			catch (CModuleException *e) {
+				e->AppendError("At VRC6 %s sequence %d,", CInstrumentVRC6::SEQUENCE_NAME[j], i);
+				throw;
+			}
+		}
+	}
+	else if (ver >= 6) {
+		for (unsigned int i = 0; i < Count; ++i) try {
+			CSequence *pSeq = pManager->GetCollection(Types[i])->GetSequence(Indices[i]);
+			pSeq->SetReleasePoint(AssertRange<MODULE_ERROR_STRICT>(
+				file_.GetBlockInt(), -1, static_cast<int>(pSeq->GetItemCount()) - 1, "Sequence release point"));
+			pSeq->SetSetting(static_cast<seq_setting_t>(file_.GetBlockInt()));		// // //
+		}
+		catch (CModuleException *e) {
+			e->AppendError("At VRC6 %s sequence %d,", CInstrumentVRC6::SEQUENCE_NAME[Types[i]], Indices[i]);
+			throw;
+		}
+	}
+}
+
 void CFamiTrackerDocIO::SaveSequencesVRC6(const CFamiTrackerDoc &doc, int ver) {
 	int Count = doc.GetTotalSequenceCount(INST_VRC6);
 	if (!Count)
@@ -453,6 +675,41 @@ void CFamiTrackerDocIO::SaveSequencesVRC6(const CFamiTrackerDoc &doc, int ver) {
 	});
 }
 
+void CFamiTrackerDocIO::LoadSequencesN163(CFamiTrackerDoc &doc, int ver) {
+	unsigned int Count = AssertRange(file_.GetBlockInt(), 0, MAX_SEQUENCES * SEQ_COUNT, "N163 sequence count");
+	AssertRange<MODULE_ERROR_OFFICIAL>(Count, 0U, static_cast<unsigned>(MAX_SEQUENCES * SEQ_COUNT - 1), "N163 sequence count");		// // //
+
+	CSequenceManager *pManager = doc.GetSequenceManager(INST_N163);		// // //
+
+	for (unsigned int i = 0; i < Count; i++) {
+		unsigned int  Index		   = AssertRange(file_.GetBlockInt(), 0, MAX_SEQUENCES - 1, "Sequence index");
+		unsigned int  Type		   = AssertRange(file_.GetBlockInt(), 0, SEQ_COUNT - 1, "Sequence type");
+		try {
+			unsigned char SeqCount = file_.GetBlockChar();
+			CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);
+			pSeq->Clear();
+			pSeq->SetItemCount(SeqCount < MAX_SEQUENCE_ITEMS ? SeqCount : MAX_SEQUENCE_ITEMS);
+
+			pSeq->SetLoopPoint(AssertRange<MODULE_ERROR_STRICT>(
+				file_.GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence loop point"));
+			pSeq->SetReleasePoint(AssertRange<MODULE_ERROR_STRICT>(
+				file_.GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence release point"));
+			pSeq->SetSetting(static_cast<seq_setting_t>(file_.GetBlockInt()));		// // //
+
+			// AssertRange(SeqCount, 0, MAX_SEQUENCE_ITEMS, "Sequence item count");
+			for (int j = 0; j < SeqCount; ++j) {
+				char Value = file_.GetBlockChar();
+				if (j < MAX_SEQUENCE_ITEMS)		// // //
+					pSeq->SetItem(j, Value);
+			}
+		}
+		catch (CModuleException *e) {
+			e->AppendError("At N163 %s sequence %d,", CInstrumentN163::SEQUENCE_NAME[Type], Index);
+			throw;
+		}
+	}
+}
+
 void CFamiTrackerDocIO::SaveSequencesN163(const CFamiTrackerDoc &doc, int ver) {
 	/* 
 	 * Store N163 sequences
@@ -473,6 +730,41 @@ void CFamiTrackerDocIO::SaveSequencesN163(const CFamiTrackerDoc &doc, int ver) {
 		for (int k = 0, Count = seq.GetItemCount(); k < Count; ++k)
 			file_.WriteBlockChar(seq.GetItem(k));
 	});
+}
+
+void CFamiTrackerDocIO::LoadSequencesS5B(CFamiTrackerDoc &doc, int ver) {
+	unsigned int Count = AssertRange(file_.GetBlockInt(), 0, MAX_SEQUENCES * SEQ_COUNT, "5B sequence count");
+	AssertRange<MODULE_ERROR_OFFICIAL>(Count, 0U, static_cast<unsigned>(MAX_SEQUENCES * SEQ_COUNT - 1), "5B sequence count");		// // //
+
+	CSequenceManager *pManager = doc.GetSequenceManager(INST_S5B);		// // //
+
+	for (unsigned int i = 0; i < Count; i++) {
+		unsigned int  Index		   = AssertRange(file_.GetBlockInt(), 0, MAX_SEQUENCES - 1, "Sequence index");
+		unsigned int  Type		   = AssertRange(file_.GetBlockInt(), 0, SEQ_COUNT - 1, "Sequence type");
+		try {
+			unsigned char SeqCount = file_.GetBlockChar();
+			CSequence *pSeq = pManager->GetCollection(Type)->GetSequence(Index);
+			pSeq->Clear();
+			pSeq->SetItemCount(SeqCount < MAX_SEQUENCE_ITEMS ? SeqCount : MAX_SEQUENCE_ITEMS);
+
+			pSeq->SetLoopPoint(AssertRange<MODULE_ERROR_STRICT>(
+				file_.GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence loop point"));
+			pSeq->SetReleasePoint(AssertRange<MODULE_ERROR_STRICT>(
+				file_.GetBlockInt(), -1, static_cast<int>(SeqCount) - 1, "Sequence release point"));
+			pSeq->SetSetting(static_cast<seq_setting_t>(file_.GetBlockInt()));		// // //
+
+			// AssertRange(SeqCount, 0, MAX_SEQUENCE_ITEMS, "Sequence item count");
+			for (int j = 0; j < SeqCount; ++j) {
+				char Value = file_.GetBlockChar();
+				if (j < MAX_SEQUENCE_ITEMS)		// // //
+					pSeq->SetItem(j, Value);
+			}
+		}
+		catch (CModuleException *e) {
+			e->AppendError("At 5B %s sequence %d,", CInstrumentS5B::SEQUENCE_NAME[Type], Index);
+			throw;
+		}
+	}
 }
 
 void CFamiTrackerDocIO::SaveSequencesS5B(const CFamiTrackerDoc &doc, int ver) {
