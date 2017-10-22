@@ -64,20 +64,6 @@ std::unique_ptr<CInstrument> CInstrumentManager::CreateNew(inst_type_t InstType)
 	return FTExt::InstrumentFactory::Make(InstType);
 }
 
-bool CInstrumentManager::InsertInstrument(unsigned int Index, std::unique_ptr<CInstrument> pInst)
-{
-	std::lock_guard<std::mutex> lock(m_InstrumentLock);
-	auto pShared = std::shared_ptr<CInstrument>(std::move(pInst));
-	if (m_pInstruments[Index] != pShared) {
-		if (m_pInstruments[Index])
-			m_pInstruments[Index]->RegisterManager(nullptr);
-		m_pInstruments[Index] = pShared;
-		pShared->RegisterManager(this);
-		return true;
-	}
-	return false;
-}
-
 bool CInstrumentManager::InsertInstrument(unsigned int Index, std::shared_ptr<CInstrument> pInst)
 {
 	std::lock_guard<std::mutex> lock(m_InstrumentLock);
