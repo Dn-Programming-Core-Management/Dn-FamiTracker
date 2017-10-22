@@ -29,6 +29,8 @@
 // Channel note struct, holds the data for each row in patterns
 class stChanNote {
 public:
+	constexpr stChanNote() noexcept = default;
+
 	std::string ToString() const;
 
 	constexpr bool operator==(const stChanNote &other) const noexcept {
@@ -37,6 +39,9 @@ public:
 				return false;
 		return Note == other.Note && Vol == other.Vol && Instrument == other.Instrument &&
 			(Note == NONE || Octave == other.Octave || Note == HALT || Note == RELEASE);
+	}
+	constexpr bool operator!=(const stChanNote &other) const noexcept {
+		return !operator==(other);
 	}
 
 public:

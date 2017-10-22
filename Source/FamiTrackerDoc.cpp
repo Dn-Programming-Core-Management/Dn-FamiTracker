@@ -68,7 +68,7 @@
 #include "BookmarkManager.h"		// // //
 #include "APU/APU.h"
 #include "SimpleFile.h"		// // //
-#include "SongView.h"		// // //
+//#include "SongView.h"		// // //
 #include "ChannelMap.h"		// // //
 #include "FamiTrackerDocIO.h"		// // // TODO: remove
 #include "Groove.h"		// // //
@@ -3833,37 +3833,7 @@ void CFamiTrackerDoc::SetExceededFlag(bool Exceed)
 int CFamiTrackerDoc::GetFrameLength(unsigned int Track, unsigned int Frame) const
 {
 	// // // moved from PatternEditor.cpp
-	const int PatternLength = GetPatternLength(Track);	// default length
-	
-	int HaltPoint = PatternLength;
-
-	for (int j = 0; j < PatternLength; ++j) {
-		for (int i = 0; i < GetChannelCount(); ++i) {
-			int Columns = GetEffColumns(Track, i) + 1;
-			const auto &Note = GetNoteData(Track, Frame, i, j);		// // //
-			// First look for pattern data, allow this to cancel earlier pattern lengths
-			/*
-			if (Note.Note != NONE || Note.Instrument != MAX_INSTRUMENTS || Note.Vol != 0x10)
-				HaltPoint = PatternLength;
-			for (int k = 0; k < Columns; ++k) {
-				if (Note.EffNumber[k] != EF_NONE)
-					HaltPoint = PatternLength;
-			}
-			*/
-			// Then look for pattern break commands
-			for (int k = 0; k < Columns; ++k) {
-				switch (Note.EffNumber[k]) {
-					case EF_SKIP:
-					case EF_JUMP:
-					case EF_HALT:
-						HaltPoint = j + 1;
-						return HaltPoint;
-				}
-			}
-		}
-	}
-
-	return HaltPoint;
+	return GetSongData(Track).GetFrameSize(Frame, GetChannelCount());		// // //
 }
 
 void CFamiTrackerDoc::MakeKraid()			// // // Easter Egg

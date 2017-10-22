@@ -111,18 +111,20 @@ void VisitSequences(const CSequenceManager *manager, F&& f) {
 	}
 }
 
-template <typename F> // (const CSongData &song, int index)
-void VisitSongs(const CFamiTrackerDoc &doc, F&& f) {
-	for (int j = 0, n = doc.GetTrackCount(); j < n; ++j)
+// void (*F)(const CSongData &song, unsigned index)
+template <typename F>
+void VisitSongs(const CFamiTrackerDoc &doc, F f) {
+	for (unsigned j = 0, n = doc.GetTrackCount(); j < n; ++j)
 		f(doc.GetSongData(j), j);
 }
 
-template <typename F> // (const CSongData &song, int song, int channel, int pattern)
-void VisitPatterns(const CFamiTrackerDoc &doc, F&& f) {
-	VisitSongs(doc, [&] (const CSongData &song, int index) {
-		for (int ch = 0, n = doc.GetChannelCount(); ch < n; ++ch)
-			for (int p = 0; p < MAX_PATTERN; ++p)
-				f(song, index, ch, p);
+// void (*F)(const CPatternData &pattern, unsigned song, unsigned channel, unsigned index)
+template <typename F>
+void VisitPatterns(const CFamiTrackerDoc &doc, F f) {
+	VisitSongs(doc, [&] (const CSongData &song, unsigned index) {
+		for (unsigned ch = 0, n = doc.GetChannelCount(); ch < n; ++ch)
+			for (unsigned p = 0; p < MAX_PATTERN; ++p)
+				f(song.GetPattern(ch, p), index, ch, p);
 	});
 }
 
@@ -339,43 +341,32 @@ void CFamiTrackerDocIO::SavePatterns(const CFamiTrackerDoc &doc, int ver) {
 	 *
 	 */ 
 
-	VisitPatterns(doc, [&] (const CSongData &Song, int song, int ch, int pat) {
-		unsigned Items = 0;
-
+	VisitPatterns(doc, [&] (const CPatternData &pattern, int song, int ch, int index) {
 		// Save all rows
 		unsigned int PatternLen = MAX_PATTERN_LENGTH;
 		//unsigned int PatternLen = Song.GetPatternLength();
-				
-		// Get the number of items in this pattern
-		for (unsigned y = 0; y < PatternLen; ++y)
-			if (!Song.IsCellFree(ch, pat, y))
-				++Items;
+
+		unsigned Items = pattern.GetNoteCount(PatternLen);
 		if (!Items)
 			return;
-
 		file_.WriteBlockInt(song);		// Write track
 		file_.WriteBlockInt(ch);		// Write channel
-		file_.WriteBlockInt(pat);		// Write pattern
-		file_.WriteBlockInt(Items);	// Number of items
+		file_.WriteBlockInt(index);		// Write pattern
+		file_.WriteBlockInt(Items);		// Number of items
 
-		for (unsigned y = 0; y < PatternLen; y++) {
-			if (!Song.IsCellFree(ch, pat, y)) {
-				const auto &Note = Song.GetPatternData(ch, pat, y);		// // //
-				file_.WriteBlockInt(y);
-
-				file_.WriteBlockChar(Note.Note);
-				file_.WriteBlockChar(Note.Octave);
-				file_.WriteBlockChar(Note.Instrument);
-				file_.WriteBlockChar(Note.Vol);
-
-				int EffColumns = Song.GetEffectColumnCount(ch) + 1;
-
-				for (int n = 0; n < EffColumns; n++) {
-					file_.WriteBlockChar(EFF_CONVERSION_050.second[Note.EffNumber[n]]);		// // // 050B
-					file_.WriteBlockChar(Note.EffParam[n]);
-				}
+		pattern.VisitRows(PatternLen, [&] (const stChanNote &note, unsigned row) {
+			if (note == stChanNote { })
+				return;
+			file_.WriteBlockInt(row);
+			file_.WriteBlockChar(note.Note);
+			file_.WriteBlockChar(note.Octave);
+			file_.WriteBlockChar(note.Instrument);
+			file_.WriteBlockChar(note.Vol);
+			for (int n = 0, EffColumns = doc.GetEffColumns(song, ch) + 1; n < EffColumns; ++n) {
+				file_.WriteBlockChar(EFF_CONVERSION_050.second[note.EffNumber[n]]);		// // // 050B
+				file_.WriteBlockChar(note.EffParam[n]);
 			}
-		}
+		});
 	});
 }
 

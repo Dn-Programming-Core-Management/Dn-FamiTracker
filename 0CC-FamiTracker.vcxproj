@@ -430,6 +430,7 @@
     <ClCompile Include="Source\ChannelFactory.cpp" />
     <ClCompile Include="Source\FamiTrackerDocIO.cpp" />
     <ClCompile Include="Source\InstrumentFactory.cpp" />
+    <ClCompile Include="Source\PatternData.cpp" />
     <ClCompile Include="Source\SoundDriver.cpp" />
     <ClCompile Include="Source\SongState.cpp" />
     <ClCompile Include="Source\FamiTrackerTypes.cpp" />
@@ -600,6 +601,7 @@
     <ClInclude Include="Source\IntRange.h" />
     <ClInclude Include="Source\NoteQueue.h" />
     <ClInclude Include="Source\PatternComponent.h" />
+    <ClInclude Include="Source\PatternData.h" />
     <ClInclude Include="Source\PlayerCursor.h" />
     <ClInclude Include="Source\RegisterState.h" />
     <ClInclude Include="Source\CompoundAction.h" />

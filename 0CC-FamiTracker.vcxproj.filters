@@ -723,6 +723,9 @@
     <ClCompile Include="Source\SongData.cpp">
       <Filter>Source Files\Document Data Types</Filter>
     </ClCompile>
+    <ClCompile Include="Source\PatternData.cpp">
+      <Filter>Source Files\Document Data Types</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">
@@ -1305,6 +1308,9 @@
       <Filter>Header Files\Document Utilities Headers</Filter>
     </ClInclude>
     <ClInclude Include="Source\SongData.h">
+      <Filter>Header Files\Document Data Type Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\PatternData.h">
       <Filter>Header Files\Document Data Type Headers</Filter>
     </ClInclude>
   </ItemGroup>

@@ -27,6 +27,7 @@
 #include <memory>		// // //
 #include <string>		// // //
 #include "FamiTrackerTypes.h"		// // //
+#include "PatternData.h"		// // //
 
 class stChanNote;		// // //
 
@@ -47,7 +48,6 @@ class CSongData
 {
 public:
 	CSongData(unsigned int PatternLength = DEFAULT_ROW_COUNT);		// // //
-	~CSongData();
 
 	bool IsCellFree(unsigned int Channel, unsigned int Pattern, unsigned int Row) const;
 	bool IsPatternEmpty(unsigned int Channel, unsigned int Pattern) const;
@@ -60,6 +60,11 @@ public:
 	stChanNote &GetPatternData(unsigned Channel, unsigned Pattern, unsigned Row);		// // //
 	const stChanNote &GetPatternData(unsigned Channel, unsigned Pattern, unsigned Row) const;		// // //
 	void SetPatternData(unsigned Channel, unsigned Pattern, unsigned Row, const stChanNote &Note);		// // //
+
+	CPatternData &GetPattern(unsigned Channel, unsigned Pattern);		// // //
+	const CPatternData &GetPattern(unsigned Channel, unsigned Pattern) const;		// // //
+	CPatternData &GetPatternOnFrame(unsigned Channel, unsigned Frame);		// // //
+	const CPatternData &GetPatternOnFrame(unsigned Channel, unsigned Frame) const;		// // //
 
 	const std::string &GetTitle() const;		// // //
 	unsigned int GetPatternLength() const;
@@ -80,15 +85,14 @@ public:
 	unsigned int GetFramePattern(unsigned int Frame, unsigned int Channel) const;
 	void SetFramePattern(unsigned int Frame, unsigned int Channel, unsigned int Pattern);
 
+	unsigned GetFrameSize(unsigned Frame, unsigned MaxChans) const;		// // //
+
 	void SetHighlight(const stHighlight &Hl);		// // //
 	stHighlight GetRowHighlight() const;
 
 	void CopyPattern(unsigned Chan, unsigned Pat, const CSongData &From, unsigned ChanFrom, unsigned PatFrom);		// // //
 	void CopyTrack(unsigned Chan, const CSongData &From, unsigned ChanFrom);		// // //
 	void SwapChannels(unsigned int First, unsigned int Second);		// // //
-
-private:
-	void AllocatePattern(unsigned int Channel, unsigned int Patterns);
 
 public:
 	// // // moved from CFamiTrackerDoc
@@ -116,6 +120,5 @@ private:
 	std::array<std::array<unsigned char, MAX_CHANNELS>, MAX_FRAMES> m_iFrameList = { };		// // //
 
 	// All accesses to m_pPatternData must go through GetPatternData()
-	using pattern_t = std::array<stChanNote, MAX_PATTERN_LENGTH>;		// // //
-	std::array<std::array<std::unique_ptr<pattern_t>, MAX_PATTERN>, MAX_CHANNELS> m_pPatternData;
+	std::array<std::array<CPatternData, MAX_PATTERN>, MAX_CHANNELS> m_pPatternData;		// // //
 };
