@@ -193,6 +193,7 @@ void CModulePropertiesDlg::OnBnClickedSongAdd()
 	if (NewTrack == -1)
 		return;
 	
+	m_pDocument->ModifyIrreversible();		// // //
 	m_pDocument->UpdateAllViews(NULL, UPDATE_TRACK);
 
 	TrackTitle.Format(TRACK_FORMAT, NewTrack + 1, m_pDocument->GetTrackTitle(NewTrack).c_str());
@@ -213,6 +214,7 @@ void CModulePropertiesDlg::OnBnClickedSongInsert()		// // //
 	
 	while (NewTrack > m_iSelectedSong + 1)
 		m_pDocument->MoveTrackUp(NewTrack--);
+	m_pDocument->ModifyIrreversible();		// // //
 	m_pDocument->UpdateAllViews(NULL, UPDATE_TRACK);
 
 	TrackTitle.Format(TRACK_FORMAT, NewTrack, m_pDocument->GetTrackTitle(NewTrack));
@@ -251,6 +253,7 @@ void CModulePropertiesDlg::OnBnClickedSongRemove()
 			pSongList->DeleteItem(i);
 			m_pDocument->RemoveTrack(i);
 		}
+	m_pDocument->ModifyIrreversible();		// // //
 	m_pDocument->UpdateAllViews(NULL, UPDATE_TRACK);
 
 	Count = m_pDocument->GetTrackCount();	// Get new track count
@@ -276,6 +279,7 @@ void CModulePropertiesDlg::OnBnClickedSongUp()
 		return;
 
 	m_pDocument->MoveTrackUp(Song);
+	m_pDocument->ModifyIrreversible();		// // //
 	m_pDocument->UpdateAllViews(NULL, UPDATE_TRACK);
 
 	Text.Format(TRACK_FORMAT, Song + 1, m_pDocument->GetTrackTitle(Song));
@@ -296,6 +300,7 @@ void CModulePropertiesDlg::OnBnClickedSongDown()
 		return;
 
 	m_pDocument->MoveTrackDown(Song);
+	m_pDocument->ModifyIrreversible();		// // //
 	m_pDocument->UpdateAllViews(NULL, UPDATE_TRACK);
 
 	Text.Format(TRACK_FORMAT, Song + 1, m_pDocument->GetTrackTitle(Song));

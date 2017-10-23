@@ -1025,6 +1025,8 @@ LRESULT CFamiTrackerView::OnUserDumpInst(WPARAM wParam, LPARAM lParam)		// // //
 	ASSERT_VALID(pDoc);
 	CInstrument *Inst = theApp.GetSoundGenerator()->GetRecordInstrument();
 	int Slot = pDoc->AddInstrument(std::unique_ptr<CInstrument>(Inst));
+	if (Slot != INVALID_INSTRUMENT)
+		pDoc->ModifyIrreversible();
 	CMainFrame *pMainFrm = static_cast<CMainFrame*>(GetParentFrame());
 	ASSERT_VALID(pMainFrm);
 	pMainFrm->UpdateInstrumentList();

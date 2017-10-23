@@ -230,13 +230,9 @@ void CSongData::SetHighlight(const stHighlight &Hl)		// // //
 	m_vRowHighlight = Hl;
 }
 
-stHighlight CSongData::GetRowHighlight() const
+const stHighlight &CSongData::GetRowHighlight() const
 {
 	return m_vRowHighlight;
-}
-
-void CSongData::CopyPattern(unsigned Chan, unsigned Pat, const CSongData &From, unsigned ChanFrom, unsigned PatFrom) {		// // //
-	m_pPatternData[Chan][Pat] = From.m_pPatternData[ChanFrom][PatFrom];
 }
 
 void CSongData::CopyTrack(unsigned Chan, const CSongData &From, unsigned ChanFrom) {
@@ -244,7 +240,7 @@ void CSongData::CopyTrack(unsigned Chan, const CSongData &From, unsigned ChanFro
 	for (int f = 0; f < MAX_FRAMES; f++)
 		SetFramePattern(f, Chan, From.GetFramePattern(f, ChanFrom));
 	for (int p = 0; p < MAX_PATTERN; p++)
-		CopyPattern(Chan, p, From, ChanFrom, p);
+		GetPattern(Chan, p) = From.GetPattern(ChanFrom, p);
 }
 
 void CSongData::SwapChannels(unsigned int First, unsigned int Second)		// // //

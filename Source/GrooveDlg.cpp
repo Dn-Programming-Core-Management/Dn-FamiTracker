@@ -157,8 +157,7 @@ void CGrooveDlg::OnBnClickedCancel()
 
 void CGrooveDlg::OnBnClickedApply()
 {
-	m_pDocument->SetModifiedFlag();
-	m_pDocument->SetExceededFlag();
+	m_pDocument->ModifyIrreversible();
 
 	for (int i = 0; i < MAX_GROOVE; i++)
 		if (GrooveTable[i]->GetSize())

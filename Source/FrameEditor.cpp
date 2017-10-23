@@ -1226,6 +1226,7 @@ void CFrameEditor::ClonePatterns(unsigned int Track, const CFrameSelection &_Sel
 			if (p == NewPatterns.end()) {
 				NewPatterns[Index] = m_pDocument->GetFirstFreePattern(Track, c);
 				m_pDocument->CopyPattern(Track, NewPatterns[Index], OldPattern, c);
+				m_pDocument->SetModifiedFlag();
 			}
 			m_pDocument->SetPatternAtFrame(Track, it.first.m_iFrame, c, NewPatterns[Index]);
 		}
@@ -1239,8 +1240,10 @@ void CFrameEditor::ClearPatterns(unsigned int Track, const CFrameSelection &Sel)
 	auto it = CFrameIterator::FromSelection(Sel, m_pDocument, Track);
 	
 	while (true) {
-		for (int c = it.first.m_iChannel; c <= it.second.m_iChannel; ++c)
+		for (int c = it.first.m_iChannel; c <= it.second.m_iChannel; ++c) {
 			m_pDocument->ClearPattern(Track, it.first.m_iFrame, c);
+			m_pDocument->SetModifiedFlag();
+		}
 		if (it.first == it.second) break;
 		++it.first;
 	}

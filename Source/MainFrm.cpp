@@ -826,6 +826,8 @@ void CMainFrame::SetTempo(int Tempo)
 	int MinTempo = pDoc->GetSpeedSplitPoint();
 	Tempo = std::max(Tempo, MinTempo);
 	Tempo = std::min(Tempo, MAX_TEMPO);
+	if (Tempo != pDoc->GetSongTempo(m_iTrack))		// // //
+		pDoc->ModifyIrreversible();
 	pDoc->SetSongTempo(m_iTrack, Tempo);
 	theApp.GetSoundGenerator()->ResetTempo();
 
@@ -845,6 +847,8 @@ void CMainFrame::SetSpeed(int Speed)
 		Speed = std::max(Speed, MIN_SPEED);
 		Speed = std::min(Speed, MaxSpeed);		// // //
 	}
+	if (Speed != pDoc->GetSongSpeed(m_iTrack))		// // //
+		pDoc->ModifyIrreversible();
 	pDoc->SetSongSpeed(m_iTrack, Speed);
 	theApp.GetSoundGenerator()->ResetTempo();
 
@@ -979,6 +983,7 @@ void CMainFrame::NewInstrument(int ChipType)
 	Inst.OnRegisterManager();		// // // TODO: uniform setup sequence
 
 	// Add to list and select
+	pDoc->ModifyIrreversible();
 	pDoc->UpdateAllViews(NULL, UPDATE_INSTRUMENT);
 	SelectInstrument(Index);
 }
@@ -1262,7 +1267,8 @@ void CMainFrame::OnRemoveInstrument()
 	CloseInstrumentEditor();
 
 	// Remove from document
-	pDoc->RemoveInstrument(Instrument);
+	if (pDoc->RemoveInstrument(Instrument))		// // //
+		pDoc->ModifyIrreversible();
 	pDoc->UpdateAllViews(NULL, UPDATE_INSTRUMENT);
 
 	// Remove from list
@@ -1301,6 +1307,7 @@ void CMainFrame::OnCloneInstrument()
 		return;
 	}
 
+	pDoc->ModifyIrreversible();		// // //
 	pDoc->UpdateAllViews(NULL, UPDATE_INSTRUMENT);
 	SelectInstrument(Slot);
 }
@@ -1315,11 +1322,12 @@ void CMainFrame::OnDeepCloneInstrument()
 
 	int Slot = pDoc->DeepCloneInstrument(m_iInstrument);
 
-	if (Slot == -1) {
+	if (Slot == INVALID_INSTRUMENT) {
 		AfxMessageBox(IDS_INST_LIMIT, MB_ICONERROR);
 		return;
 	}
 
+	pDoc->ModifyIrreversible();		// // //
 	m_pInstrumentList->InsertInstrument(Slot);
 	SelectInstrument(Slot);
 }
@@ -3176,6 +3184,7 @@ void CMainFrame::OnEditClearPatterns()
 		return;
 
 	pDoc->ClearPatterns(Track);
+	pDoc->SetModifiedFlag();
 	pDoc->UpdateAllViews(NULL, UPDATE_PATTERN);
 
 	ResetUndo();
@@ -3209,7 +3218,9 @@ void CMainFrame::OnEditRemoveUnusedPatterns()
 		return;
 
 	pDoc->RemoveUnusedPatterns();
-	ResetUndo();		// // //
+	pDoc->SetModifiedFlag();		// // //
+	pDoc->SetExceededFlag();
+	ResetUndo();
 	pDoc->UpdateAllViews(NULL, UPDATE_PATTERN);
 }
 
@@ -3441,6 +3452,7 @@ void CMainFrame::OnToggleGroove()
 {
 	CFamiTrackerDoc *pDoc = (CFamiTrackerDoc*)GetActiveDocument();
 	pDoc->SetSongGroove(m_iTrack, !pDoc->GetSongGroove(m_iTrack));
+	pDoc->ModifyIrreversible();
 	GetActiveView()->SetFocus();
 }
 
@@ -3461,12 +3473,14 @@ void CMainFrame::OnUpdateGrooveEdit(CCmdUI *pCmdUI)
 		if (Speed < MIN_SPEED) Speed = MIN_SPEED;
 		pDoc->SetSongSpeed(m_iTrack, Speed);
 	}
+	pDoc->ModifyIrreversible();
 }
 
 void CMainFrame::OnToggleFixTempo()
 {
 	CFamiTrackerDoc *pDoc = (CFamiTrackerDoc*)GetActiveDocument();
 	pDoc->SetSongTempo(m_iTrack, pDoc->GetSongTempo(m_iTrack) ? 0 : 150);
+	pDoc->ModifyIrreversible();
 	GetActiveView()->SetFocus();
 }
 
@@ -3574,7 +3588,9 @@ void CMainFrame::OnEditRemoveUnusedSamples()
 	
 	CloseInstrumentEditor();
 	pDoc->RemoveUnusedSamples();
-	ResetUndo();		// // //
+	pDoc->SetModifiedFlag();		// // //
+	pDoc->SetExceededFlag();
+	ResetUndo();
 	pDoc->UpdateAllViews(NULL, UPDATE_PATTERN);
 }
 
@@ -3586,6 +3602,8 @@ void CMainFrame::OnEditPopulateUniquePatterns()		// // //
 		return;
 	
 	pDoc->PopulateUniquePatterns(m_iTrack);
+	pDoc->SetModifiedFlag();
+	pDoc->SetExceededFlag();
 	ResetUndo();
 	pDoc->UpdateAllViews(NULL, UPDATE_FRAME);
 }
@@ -3611,8 +3629,8 @@ void CMainFrame::OnTrackerPal()
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
 	ASSERT_VALID(pDoc);
 
-	machine_t Machine = PAL;
-	pDoc->SetMachine(Machine);
+	pDoc->SetMachine(PAL);
+	pDoc->ModifyIrreversible();
 	theApp.GetSoundGenerator()->LoadMachineSettings();		// // //
 	theApp.GetSoundGenerator()->DocumentPropertiesChanged(pDoc);		// // //
 	m_wndInstEdit.SetRefreshRate(static_cast<float>(pDoc->GetFrameRate()));		// // //
@@ -3623,8 +3641,8 @@ void CMainFrame::OnTrackerNtsc()
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
 	ASSERT_VALID(pDoc);
 
-	machine_t Machine = NTSC;
-	pDoc->SetMachine(Machine);
+	pDoc->SetMachine(NTSC);
+	pDoc->ModifyIrreversible();
 	theApp.GetSoundGenerator()->LoadMachineSettings();		// // //
 	theApp.GetSoundGenerator()->DocumentPropertiesChanged(pDoc);		// // //
 	m_wndInstEdit.SetRefreshRate(static_cast<float>(pDoc->GetFrameRate()));		// // //
@@ -3637,6 +3655,7 @@ void CMainFrame::OnSpeedDefault()
 
 	int Speed = 0;
 	pDoc->SetEngineSpeed(Speed);
+	pDoc->ModifyIrreversible();
 	theApp.GetSoundGenerator()->LoadMachineSettings();		// // //
 	m_wndInstEdit.SetRefreshRate(static_cast<float>(pDoc->GetFrameRate()));		// // //
 }
@@ -3658,6 +3677,7 @@ void CMainFrame::OnSpeedCustom()
 		return;
 
 	pDoc->SetEngineSpeed(Speed);
+	pDoc->ModifyIrreversible();
 	theApp.GetSoundGenerator()->LoadMachineSettings();		// // //
 	m_wndInstEdit.SetRefreshRate(static_cast<float>(pDoc->GetFrameRate()));		// // //
 }

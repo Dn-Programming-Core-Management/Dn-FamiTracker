@@ -192,6 +192,8 @@ void CSwapDlg::OnBnClickedOk()
 		pDoc->SwapChannels(m_iTrack,
 						   GetFinalChannel(m_iDestChannel1, m_iDestChip1),
 						   GetFinalChannel(m_iDestChannel2, m_iDestChip2));
+	pDoc->SetModifiedFlag();
+	pDoc->SetExceededFlag();
 	pDoc->UpdateAllViews(NULL, UPDATE_PATTERN);
 	pDoc->UpdateAllViews(NULL, UPDATE_FRAME);
 	pDoc->UpdateAllViews(NULL, UPDATE_COLUMNS);

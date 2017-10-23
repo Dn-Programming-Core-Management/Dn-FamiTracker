@@ -187,7 +187,6 @@ public:
 	void			PopulateUniquePatterns(unsigned int Track);		// // //
 
 	bool			InsertRow(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row);
-	bool			ClearRow(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row);
 	bool			ClearRowField(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row, cursor_column_t Column);
 	bool			RemoveNote(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row);
 	bool			PullUp(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row);
@@ -242,11 +241,11 @@ public:
 	void			SetSpeedSplitPoint(int SplitPoint);
 	int				GetSpeedSplitPoint() const;
 
-	void			SetHighlight(unsigned int Track, const stHighlight Hl);		// // //
-	stHighlight		GetHighlight(unsigned int Track) const;
+	void			SetHighlight(unsigned int Track, const stHighlight &Hl);		// // //
+	const stHighlight &GetHighlight(unsigned int Track) const;
 
-	void			SetHighlight(const stHighlight Hl);		// // //
-	stHighlight		GetHighlight() const;
+	void			SetHighlight(const stHighlight &Hl);		// // //
+	const stHighlight &GetHighlight() const;
 	stHighlight		GetHighlightAt(unsigned int Track, unsigned int Frame, unsigned int Row) const;		// // //
 	unsigned int	GetHighlightState(unsigned int Track, unsigned int Frame, unsigned int Row) const;		// // //
 	CBookmark*		GetBookmarkAt(unsigned int Track, unsigned int Frame, unsigned int Row) const;		// // //
@@ -277,8 +276,8 @@ public:
 	unsigned int	GetInstrumentCount() const;
 	bool			IsInstrumentUsed(unsigned int Index) const;
 	int				AddInstrument(std::unique_ptr<CInstrument> pInstrument);		// // //
-	void			AddInstrument(std::unique_ptr<CInstrument> pInstrument, unsigned int Slot);		// // //
-	void			RemoveInstrument(unsigned int Index);							// Remove an instrument
+	bool			AddInstrument(std::unique_ptr<CInstrument> pInstrument, unsigned int Slot);		// // //
+	bool			RemoveInstrument(unsigned int Index);							// // // Remove an instrument
 	void			SetInstrumentName(unsigned int Index, const char *pName);		// Set the name of an instrument
 	void			GetInstrumentName(unsigned int Index, char *pName) const;		// Get the name of an instrument
 	int				CloneInstrument(unsigned int Index);							// Create a copy of an instrument
