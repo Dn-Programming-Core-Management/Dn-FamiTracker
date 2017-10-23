@@ -168,10 +168,12 @@ void CModulePropertiesDlg::OnBnClickedOk()
 	}
 
 	// Vibrato 
-	CComboBox *pVibratoBox = static_cast<CComboBox*>(GetDlgItem(IDC_VIBRATO));
-	m_pDocument->SetVibratoStyle((pVibratoBox->GetCurSel() == 0) ? VIBRATO_NEW : VIBRATO_OLD);
-	CComboBox *pPitchBox = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_LINEARPITCH));		// // //
-	m_pDocument->SetLinearPitch(pPitchBox->GetCurSel() == 1);
+	vibrato_t newVib = static_cast<CComboBox*>(GetDlgItem(IDC_VIBRATO))->GetCurSel() == 0 ? VIBRATO_NEW : VIBRATO_OLD;		// // //
+	bool newLinear = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_LINEARPITCH))->GetCurSel() == 1;
+	if (newVib != m_pDocument->GetVibratoStyle() || newLinear != m_pDocument->GetLinearPitch())
+		m_pDocument->ModifyIrreversible();
+	m_pDocument->SetVibratoStyle(newVib);
+	m_pDocument->SetLinearPitch(newLinear);
 
 	if (pMainFrame->GetSelectedTrack() != m_iSelectedSong)
 		pMainFrame->SelectTrack(m_iSelectedSong);
@@ -325,7 +327,9 @@ void CModulePropertiesDlg::OnEnChangeSongname()
 	Title.Format(TRACK_FORMAT, m_iSelectedSong + 1, Text);
 
 	pSongList->SetItemText(m_iSelectedSong, 0, Title);
-	m_pDocument->SetTrackTitle(m_iSelectedSong, (LPCTSTR)Text);		// // //
+	if (m_pDocument->GetTrackTitle(m_iSelectedSong) != Text.GetString())		// // //
+		m_pDocument->ModifyIrreversible();
+	m_pDocument->SetTrackTitle(m_iSelectedSong, (LPCTSTR)Text);
 	m_pDocument->UpdateAllViews(NULL, UPDATE_TRACK);
 }
 

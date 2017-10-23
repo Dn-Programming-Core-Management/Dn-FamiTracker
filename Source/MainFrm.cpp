@@ -3464,16 +3464,16 @@ void CMainFrame::OnUpdateGrooveEdit(CCmdUI *pCmdUI)
 		m_pButtonGroove->SetWindowText(_T("Groove"));
 		if (Speed > MAX_GROOVE - 1) Speed = MAX_GROOVE - 1;
 		if (Speed < 0) Speed = 0;
-		pDoc->SetSongSpeed(m_iTrack, Speed);
 	}
 	else {
 		m_pButtonGroove->SetWindowText(_T("Speed"));
 		int MaxSpeed = pDoc->GetSongTempo(m_iTrack) ? pDoc->GetSpeedSplitPoint() - 1 : 0xFF;
 		if (Speed > MaxSpeed) Speed = MaxSpeed;
 		if (Speed < MIN_SPEED) Speed = MIN_SPEED;
-		pDoc->SetSongSpeed(m_iTrack, Speed);
 	}
-	pDoc->ModifyIrreversible();
+	if (Speed != pDoc->GetSongSpeed(m_iTrack))
+		pDoc->ModifyIrreversible();
+	pDoc->SetSongSpeed(m_iTrack, Speed);
 }
 
 void CMainFrame::OnToggleFixTempo()

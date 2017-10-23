@@ -205,7 +205,7 @@ unsigned CSongData::GetFrameSize(unsigned Frame, unsigned MaxChans) const {		// 
 	const unsigned PatternLength = GetPatternLength();	// default length
 	unsigned HaltPoint = PatternLength;
 
-	for (int i = 0; i < MaxChans; ++i) {
+	for (unsigned i = 0; i < MaxChans; ++i) {
 		unsigned halt = [&] {
 			const int Columns = GetEffectColumnCount(i) + 1;
 			const auto &pat = GetPatternOnFrame(i, Frame);

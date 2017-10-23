@@ -2526,10 +2526,7 @@ void CFamiTrackerDoc::RemoveTrack(unsigned int Track)
 
 void CFamiTrackerDoc::SetTrackTitle(unsigned int Track, const std::string &title)		// // //
 {
-	if (auto &Song = GetSongData(Track); Song.GetTitle() != title) {		// // //
-		Song.SetTitle(title);
-		ModifyIrreversible();
-	}
+	GetSongData(Track).SetTitle(title);
 }
 
 void CFamiTrackerDoc::MoveTrackUp(unsigned int Track)
@@ -2824,8 +2821,6 @@ vibrato_t CFamiTrackerDoc::GetVibratoStyle() const
 
 void CFamiTrackerDoc::SetVibratoStyle(vibrato_t Style)
 {
-	if (m_iVibratoStyle != Style)		// // //
-		ModifyIrreversible();
 	m_iVibratoStyle = Style;
 }
 
@@ -2838,8 +2833,6 @@ bool CFamiTrackerDoc::GetLinearPitch() const
 
 void CFamiTrackerDoc::SetLinearPitch(bool Enable)
 {
-	if (m_bLinearPitch != Enable)		// // //
-		ModifyIrreversible();
 	m_bLinearPitch = Enable;
 }
 
