@@ -3377,228 +3377,117 @@ int CFamiTrackerDoc::GetFrameLength(unsigned int Track, unsigned int Frame) cons
 	return GetSongData(Track).GetFrameSize(Frame, GetChannelCount());		// // //
 }
 
+struct Kraid {		// // // Easter egg
+	void buildDoc(CFamiTrackerDoc &doc) {
+		// Instruments and sequences
+		makeInst(doc, 0, 6, "Lead ");
+		makeInst(doc, 1, 2, "Echo");
+		makeInst(doc, 2, 15, "Triangle");
+	}
+
+	void buildSong(CSongData &song) {
+		const unsigned FRAMES = 14;
+		const unsigned ROWS = 24;
+		const unsigned PATTERNS[][FRAMES] = {
+			{0, 0, 0, 0, 1, 1, 2, 3, 3, 3, 4, 5, 6, 6},
+			{0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 4, 4},
+			{0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 4, 4},
+			{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+			{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		};
+
+		song.SetFrameCount(FRAMES);
+		song.SetPatternLength(ROWS);
+		song.SetSongSpeed(8);
+		song.SetEffectColumnCount(0, 1);
+
+		for (int ch = 0; ch < FRAMES; ++ch)
+			for (int f = 0; f < ROWS; ++f)
+				song.SetFramePattern(f, ch, PATTERNS[ch][f]);
+		
+		makePattern(song, 2, 0, "<e.>e...<e.>e...<e.>e...<e.>e...");
+		makePattern(song, 2, 1, "<c.>c...<c.>c...<d.>d...<d.>d...");
+		makePattern(song, 2, 2, "<e.>e.>e.<<F.>F.>F.<<f.>f.>f.<<<b.>b.>b.");
+		makePattern(song, 2, 3, "<e...b.>c...<b.c...g.a...b.");
+		makePattern(song, 2, 4, "<<e");
+
+		makePattern(song, 1, 0, "@e...<b.>a... c. F...d.<b...A.");
+		makePattern(song, 1, 1, "@g... d. e...<b.>F...d. a...e.");
+		makePattern(song, 1, 2, "@g<b>g<b>g<b>AeAeAeacacacaDFDbD");
+		makePattern(song, 1, 3, "Fgab>d<b>Fd<agFb>aFd<agFega>de-");
+		makePattern(song, 1, 4, ">a-g-F-e-F-g-a-g-F-e-F-g-");
+
+		int f = 0;
+		int r = 0;
+		do { // TODO: use CSongIterator
+			auto note = song.GetPatternOnFrame(1, f).GetNoteOn(r);
+			if (++r >= ROWS) {
+				r = 0;
+				if (++f >= FRAMES)
+					f = 0;
+			}
+			if (note != stChanNote { }) {
+				note.Instrument = 1;
+				note.EffNumber[1] = EF_DELAY;
+				note.EffParam[1] = 3;
+				song.GetPatternOnFrame(0, f).SetNoteOn(r, note);
+			}
+		} while (f || r);
+	}
+
+private:
+	void makeInst(CFamiTrackerDoc &doc, unsigned index, char vol, const char *name) {
+		doc.AddInstrument(CInstrumentManager::CreateNew(INST_2A03), index);
+		auto leadInst = std::dynamic_pointer_cast<CInstrument2A03>(doc.GetInstrument(index));
+		leadInst->SetSeqEnable(SEQ_VOLUME, true);
+		leadInst->SetSeqIndex(SEQ_VOLUME, index);
+		leadInst->SetName(name);
+
+		CSequence &leadEnv = *leadInst->GetSequence(SEQ_VOLUME);
+		leadEnv.SetItemCount(1);
+		leadEnv.SetItem(0, vol);
+		leadEnv.SetLoopPoint(-1);
+		leadEnv.SetReleasePoint(-1);
+	}
+
+	void makePattern(CSongData &song, unsigned ch, unsigned pat, std::string_view mml) {
+		const uint8_t INST = ch == 1 ? 0 : 2;
+		uint8_t octave = 3;
+		int row = 0;
+		auto &pattern = song.GetPattern(ch, pat);
+
+		for (auto c : mml) {
+			auto &note = pattern.GetNoteOn(row);
+			switch (c) {
+			case '<': --octave; break;
+			case '>': ++octave; break;
+			case '.': ++row; break;
+			case '-': ++row; note.Note = HALT   ; break;
+			case '=': ++row; note.Note = RELEASE; break;
+			case 'c': ++row; note.Note = NOTE_C ; note.Octave = octave, note.Instrument = INST; break;
+			case 'C': ++row; note.Note = NOTE_Cs; note.Octave = octave, note.Instrument = INST; break;
+			case 'd': ++row; note.Note = NOTE_D ; note.Octave = octave, note.Instrument = INST; break;
+			case 'D': ++row; note.Note = NOTE_Ds; note.Octave = octave, note.Instrument = INST; break;
+			case 'e': ++row; note.Note = NOTE_E ; note.Octave = octave, note.Instrument = INST; break;
+			case 'f': ++row; note.Note = NOTE_F ; note.Octave = octave, note.Instrument = INST; break;
+			case 'F': ++row; note.Note = NOTE_Fs; note.Octave = octave, note.Instrument = INST; break;
+			case 'g': ++row; note.Note = NOTE_G ; note.Octave = octave, note.Instrument = INST; break;
+			case 'G': ++row; note.Note = NOTE_Gs; note.Octave = octave, note.Instrument = INST; break;
+			case 'a': ++row; note.Note = NOTE_A ; note.Octave = octave, note.Instrument = INST; break;
+			case 'A': ++row; note.Note = NOTE_As; note.Octave = octave, note.Instrument = INST; break;
+			case 'b': ++row; note.Note = NOTE_B ; note.Octave = octave, note.Instrument = INST; break;
+			case '@': note.EffNumber[0] = EF_DUTY_CYCLE; note.EffParam[0] = 2; break;
+			}
+		}
+	}
+};
+
 void CFamiTrackerDoc::MakeKraid()			// // // Easter Egg
 {
 	// Basic info
 	CreateEmpty();
-	SetFrameCount(0, 14);
-	SetPatternLength(0, 24);
-	SetSongSpeed(0, 8);
-	SetEffColumns(0, 0, 1);
 
-	// Patterns
-	SetPatternAtFrame(0,  0, 0, 0); SetPatternAtFrame(0,  0, 1, 0); SetPatternAtFrame(0,  0, 2, 0);
-	SetPatternAtFrame(0,  1, 0, 0); SetPatternAtFrame(0,  1, 1, 0); SetPatternAtFrame(0,  1, 2, 0);
-	SetPatternAtFrame(0,  2, 0, 0); SetPatternAtFrame(0,  2, 1, 0); SetPatternAtFrame(0,  2, 2, 0);
-	SetPatternAtFrame(0,  3, 0, 0); SetPatternAtFrame(0,  3, 1, 0); SetPatternAtFrame(0,  3, 2, 0);
-	SetPatternAtFrame(0,  4, 0, 1); SetPatternAtFrame(0,  4, 1, 1); SetPatternAtFrame(0,  4, 2, 1);
-	SetPatternAtFrame(0,  5, 0, 1); SetPatternAtFrame(0,  5, 1, 1); SetPatternAtFrame(0,  5, 2, 1);
-	SetPatternAtFrame(0,  6, 0, 2); SetPatternAtFrame(0,  6, 1, 2); SetPatternAtFrame(0,  6, 2, 2);
-	SetPatternAtFrame(0,  7, 0, 3); SetPatternAtFrame(0,  7, 1, 2); SetPatternAtFrame(0,  7, 2, 2);
-	SetPatternAtFrame(0,  8, 0, 3); SetPatternAtFrame(0,  8, 1, 2); SetPatternAtFrame(0,  8, 2, 2);
-	SetPatternAtFrame(0,  9, 0, 3); SetPatternAtFrame(0,  9, 1, 2); SetPatternAtFrame(0,  9, 2, 2);
-	SetPatternAtFrame(0, 10, 0, 4); SetPatternAtFrame(0, 10, 1, 3); SetPatternAtFrame(0, 10, 2, 3);
-	SetPatternAtFrame(0, 11, 0, 5); SetPatternAtFrame(0, 11, 1, 3); SetPatternAtFrame(0, 11, 2, 3);
-	SetPatternAtFrame(0, 12, 0, 6); SetPatternAtFrame(0, 12, 1, 4); SetPatternAtFrame(0, 12, 2, 4);
-	SetPatternAtFrame(0, 13, 0, 6); SetPatternAtFrame(0, 13, 1, 4); SetPatternAtFrame(0, 13, 2, 4);
-	for (int i = 0; i < 14; i++){
-		SetPatternAtFrame(0, i, 3, 0);
-		SetPatternAtFrame(0, i, 4, 0);
-	}
-
-	// Instruments
-	for (int i = 0; i < MAX_INSTRUMENTS; i++) RemoveInstrument(i);
-	auto kraidInst = std::unique_ptr<CInstrument2A03>(static_cast<CInstrument2A03 *>(
-		CInstrumentManager::CreateNew(INST_2A03).release()));
-	kraidInst->SetSeqEnable(SEQ_VOLUME, 1);
-	kraidInst->SetSeqIndex(SEQ_VOLUME, 0);
-	kraidInst->SetName("Lead ");
-	m_pInstrumentManager->InsertInstrument(0, std::move(kraidInst));
-	kraidInst = std::unique_ptr<CInstrument2A03>(static_cast<CInstrument2A03 *>(
-		CInstrumentManager::CreateNew(INST_2A03).release()));
-	kraidInst->SetSeqEnable(SEQ_VOLUME, 1);
-	kraidInst->SetSeqIndex(SEQ_VOLUME, 1);
-	kraidInst->SetName("Echo");
-	m_pInstrumentManager->InsertInstrument(1, std::move(kraidInst));
-	kraidInst = std::unique_ptr<CInstrument2A03>(static_cast<CInstrument2A03 *>(
-		CInstrumentManager::CreateNew(INST_2A03).release()));
-	kraidInst->SetSeqEnable(SEQ_VOLUME, 1);
-	kraidInst->SetSeqIndex(SEQ_VOLUME, 2);
-	kraidInst->SetName("Triangle");
-	m_pInstrumentManager->InsertInstrument(2, std::move(kraidInst));
-
-	// Sequences
-	CSequence *kraidSeq;
-	kraidSeq = GetSequence(INST_2A03, 0, SEQ_VOLUME);
-	kraidSeq->SetItemCount(1);
-	kraidSeq->SetItem(0, 6);
-	kraidSeq->SetLoopPoint(-1);
-	kraidSeq->SetReleasePoint(-1);
-	kraidSeq = GetSequence(INST_2A03, 1, SEQ_VOLUME);
-	kraidSeq->SetItemCount(1);
-	kraidSeq->SetItem(0, 2);
-	kraidSeq->SetLoopPoint(-1);
-	kraidSeq->SetReleasePoint(-1);
-	kraidSeq = GetSequence(INST_2A03, 2, SEQ_VOLUME);
-	kraidSeq->SetItemCount(1);
-	kraidSeq->SetItem(0, 15);
-	kraidSeq->SetLoopPoint(-1);
-	kraidSeq->SetReleasePoint(-1);
-
-	// Triangle
-	stChanNote kraidRow;
-	kraidRow.Instrument = 2;
-	for (int i = 0; i < 24; i += 6) {
-		kraidRow.Note = NOTE_E; kraidRow.Octave = 2; SetDataAtPattern(0, 0, 2, i    , kraidRow);
-								kraidRow.Octave = 3; SetDataAtPattern(0, 0, 2, i + 2, kraidRow);}
-	for (int i = 0; i < 12; i += 6) {
-		kraidRow.Note = NOTE_C; kraidRow.Octave = 2; SetDataAtPattern(0, 1, 2, i     , kraidRow);
-								kraidRow.Octave = 3; SetDataAtPattern(0, 1, 2, i +  2, kraidRow);
-		kraidRow.Note = NOTE_D; kraidRow.Octave = 2; SetDataAtPattern(0, 1, 2, i + 12, kraidRow);
-								kraidRow.Octave = 3; SetDataAtPattern(0, 1, 2, i + 14, kraidRow);}
-	for (int i = 0; i < 6; i += 2) {
-		kraidRow.Note = NOTE_E;  kraidRow.Octave = 2 + i / 2; SetDataAtPattern(0, 2, 2, i     , kraidRow);
-		kraidRow.Note = NOTE_Fs;                              SetDataAtPattern(0, 2, 2, i +  6, kraidRow);
-		kraidRow.Note = NOTE_F;                               SetDataAtPattern(0, 2, 2, i + 12, kraidRow);
-		kraidRow.Note = NOTE_B;  kraidRow.Octave = 1 + i / 2; SetDataAtPattern(0, 2, 2, i + 18, kraidRow);}
-	kraidRow.Note = NOTE_E; kraidRow.Octave = 1;	SetDataAtPattern(0, 4, 2,  0, kraidRow);
-	kraidRow.Note = NOTE_C; kraidRow.Octave = 2;	SetDataAtPattern(0, 3, 2, 12, kraidRow);
-	kraidRow.Note = NOTE_E;							SetDataAtPattern(0, 3, 2,  0, kraidRow);
-	kraidRow.Note = NOTE_G;							SetDataAtPattern(0, 3, 2, 16, kraidRow);
-	kraidRow.Note = NOTE_A;							SetDataAtPattern(0, 3, 2, 18, kraidRow);
-	kraidRow.Note = NOTE_B;							SetDataAtPattern(0, 3, 2,  4, kraidRow);
-													SetDataAtPattern(0, 3, 2, 10, kraidRow);
-													SetDataAtPattern(0, 3, 2, 22, kraidRow);
-	kraidRow.Note = NOTE_C; kraidRow.Octave = 3;	SetDataAtPattern(0, 3, 2,  6, kraidRow);
-
-	// Pulse 2
-	kraidRow.Instrument = 0;
-	kraidRow.Note = NOTE_As; kraidRow.Octave = 2;	SetDataAtPattern(0, 0, 1, 22, kraidRow);
-	kraidRow.Note = NOTE_B;							SetDataAtPattern(0, 0, 1,  4, kraidRow);
-													SetDataAtPattern(0, 0, 1, 18, kraidRow);
-													SetDataAtPattern(0, 1, 1, 10, kraidRow);
-													SetDataAtPattern(0, 2, 1,  1, kraidRow);
-													SetDataAtPattern(0, 2, 1,  3, kraidRow);
-													SetDataAtPattern(0, 2, 1,  5, kraidRow);
-	kraidRow.Note = NOTE_C;  kraidRow.Octave = 3;	SetDataAtPattern(0, 0, 1, 10, kraidRow);
-													SetDataAtPattern(0, 2, 1, 13, kraidRow);
-													SetDataAtPattern(0, 2, 1, 15, kraidRow);
-													SetDataAtPattern(0, 2, 1, 17, kraidRow);
-	kraidRow.Note = NOTE_D; 						SetDataAtPattern(0, 0, 1, 16, kraidRow);
-													SetDataAtPattern(0, 1, 1,  4, kraidRow);
-													SetDataAtPattern(0, 1, 1, 16, kraidRow);
-	kraidRow.Note = NOTE_Ds;						SetDataAtPattern(0, 2, 1, 19, kraidRow);
-													SetDataAtPattern(0, 2, 1, 21, kraidRow);
-													SetDataAtPattern(0, 2, 1, 23, kraidRow);
-	kraidRow.Note = NOTE_E; 						SetDataAtPattern(0, 0, 1,  0, kraidRow);
-													SetDataAtPattern(0, 1, 1,  6, kraidRow);
-													SetDataAtPattern(0, 1, 1, 22, kraidRow);
-													SetDataAtPattern(0, 2, 1,  7, kraidRow);
-													SetDataAtPattern(0, 2, 1,  9, kraidRow);
-													SetDataAtPattern(0, 2, 1, 11, kraidRow);
-													SetDataAtPattern(0, 3, 1, 18, kraidRow);
-	kraidRow.Note = NOTE_Fs;						SetDataAtPattern(0, 0, 1, 12, kraidRow);
-													SetDataAtPattern(0, 1, 1, 12, kraidRow);
-													SetDataAtPattern(0, 2, 1, 20, kraidRow);
-													SetDataAtPattern(0, 3, 1,  0, kraidRow);
-													SetDataAtPattern(0, 3, 1, 10, kraidRow);
-													SetDataAtPattern(0, 3, 1, 17, kraidRow);
-	kraidRow.Note = NOTE_G; 						SetDataAtPattern(0, 1, 1,  0, kraidRow);
-													SetDataAtPattern(0, 2, 1,  0, kraidRow);
-													SetDataAtPattern(0, 2, 1,  2, kraidRow);
-													SetDataAtPattern(0, 2, 1,  4, kraidRow);
-													SetDataAtPattern(0, 3, 1,  1, kraidRow);
-													SetDataAtPattern(0, 3, 1,  9, kraidRow);
-													SetDataAtPattern(0, 3, 1, 16, kraidRow);
-													SetDataAtPattern(0, 3, 1, 19, kraidRow);
-	kraidRow.Note = NOTE_A; 						SetDataAtPattern(0, 0, 1,  6, kraidRow);
-													SetDataAtPattern(0, 1, 1, 18, kraidRow);
-													SetDataAtPattern(0, 2, 1, 12, kraidRow);
-													SetDataAtPattern(0, 2, 1, 14, kraidRow);
-													SetDataAtPattern(0, 2, 1, 16, kraidRow);
-													SetDataAtPattern(0, 2, 1, 18, kraidRow);
-													SetDataAtPattern(0, 3, 1,  2, kraidRow);
-													SetDataAtPattern(0, 3, 1,  8, kraidRow);
-													SetDataAtPattern(0, 3, 1, 15, kraidRow);
-													SetDataAtPattern(0, 3, 1, 20, kraidRow);
-	kraidRow.Note = NOTE_As;						SetDataAtPattern(0, 2, 1,  6, kraidRow);
-													SetDataAtPattern(0, 2, 1,  8, kraidRow);
-													SetDataAtPattern(0, 2, 1, 10, kraidRow);
-	kraidRow.Note = NOTE_B; 						SetDataAtPattern(0, 2, 1, 22, kraidRow);
-													SetDataAtPattern(0, 3, 1,  3, kraidRow);
-													SetDataAtPattern(0, 3, 1,  5, kraidRow);
-													SetDataAtPattern(0, 3, 1, 11, kraidRow);
-	kraidRow.Note = NOTE_D;  kraidRow.Octave = 4;	SetDataAtPattern(0, 3, 1,  4, kraidRow);
-													SetDataAtPattern(0, 3, 1,  7, kraidRow);
-													SetDataAtPattern(0, 3, 1, 14, kraidRow);
-													SetDataAtPattern(0, 3, 1, 21, kraidRow);
-	kraidRow.Note = NOTE_E;							SetDataAtPattern(0, 3, 1, 22, kraidRow);
-													SetDataAtPattern(0, 4, 1,  6, kraidRow);
-													SetDataAtPattern(0, 4, 1, 18, kraidRow);
-	kraidRow.Note = NOTE_Fs;						SetDataAtPattern(0, 3, 1,  6, kraidRow);
-													SetDataAtPattern(0, 3, 1, 13, kraidRow);
-													SetDataAtPattern(0, 4, 1,  4, kraidRow);
-													SetDataAtPattern(0, 4, 1,  8, kraidRow);
-													SetDataAtPattern(0, 4, 1, 16, kraidRow);
-													SetDataAtPattern(0, 4, 1, 20, kraidRow);
-	kraidRow.Note = NOTE_G;							SetDataAtPattern(0, 4, 1,  2, kraidRow);
-													SetDataAtPattern(0, 4, 1, 10, kraidRow);
-													SetDataAtPattern(0, 4, 1, 14, kraidRow);
-													SetDataAtPattern(0, 4, 1, 22, kraidRow);
-	kraidRow.Note = NOTE_A;							SetDataAtPattern(0, 3, 1, 12, kraidRow);
-													SetDataAtPattern(0, 4, 1,  0, kraidRow);
-													SetDataAtPattern(0, 4, 1, 12, kraidRow);
-	kraidRow.Note = HALT; kraidRow.Octave = 0; kraidRow.Instrument = MAX_INSTRUMENTS;
-	SetDataAtPattern(0, 3, 1, 23, kraidRow);
-	SetDataAtPattern(0, 4, 1,  1, kraidRow);
-	SetDataAtPattern(0, 4, 1,  3, kraidRow);
-	SetDataAtPattern(0, 4, 1,  5, kraidRow);
-	SetDataAtPattern(0, 4, 1,  7, kraidRow);
-	SetDataAtPattern(0, 4, 1,  9, kraidRow);
-	SetDataAtPattern(0, 4, 1, 11, kraidRow);
-	SetDataAtPattern(0, 4, 1, 13, kraidRow);
-	SetDataAtPattern(0, 4, 1, 15, kraidRow);
-	SetDataAtPattern(0, 4, 1, 17, kraidRow);
-	SetDataAtPattern(0, 4, 1, 19, kraidRow);
-	SetDataAtPattern(0, 4, 1, 21, kraidRow);
-	SetDataAtPattern(0, 4, 1, 23, kraidRow);
-	kraidRow = GetDataAtPattern(0, 0, 1, 0); kraidRow.EffNumber[0] = EF_DUTY_CYCLE; kraidRow.EffParam[0] = 2; SetDataAtPattern(0, 0, 1, 0, kraidRow);
-	kraidRow = GetDataAtPattern(0, 1, 1, 0); kraidRow.EffNumber[0] = EF_DUTY_CYCLE; kraidRow.EffParam[0] = 2; SetDataAtPattern(0, 1, 1, 0, kraidRow);
-	kraidRow = GetDataAtPattern(0, 2, 1, 0); kraidRow.EffNumber[0] = EF_DUTY_CYCLE; kraidRow.EffParam[0] = 2; SetDataAtPattern(0, 2, 1, 0, kraidRow);
-
-	// Pulse 1
-	for (int i = 0; i < 23; i++){
-		kraidRow = GetDataAtPattern(0, 0, 1, i);
-		if (kraidRow.Note != NONE) {
-			kraidRow.Instrument = 1; kraidRow.EffNumber[1] = EF_DELAY; kraidRow.EffParam[1] = 3;
-			SetDataAtPattern(0, 0, 0, i + 1, kraidRow);}
-		kraidRow = GetDataAtPattern(0, 1, 1, i);
-		if (kraidRow.Note != NONE) {
-			kraidRow.Instrument = 1; kraidRow.EffNumber[1] = EF_DELAY; kraidRow.EffParam[1] = 3;
-			SetDataAtPattern(0, 1, 0, i + 1, kraidRow);}
-		kraidRow = GetDataAtPattern(0, 2, 1, i);
-		if (kraidRow.Note != NONE) {
-			kraidRow.Instrument = 1; kraidRow.EffNumber[1] = EF_DELAY; kraidRow.EffParam[1] = 3;
-			SetDataAtPattern(0, 2, 0, i + 1, kraidRow);
-			SetDataAtPattern(0, 3, 0, i + 1, kraidRow);}
-		kraidRow = GetDataAtPattern(0, 3, 1, i);
-		if (kraidRow.Note != NONE) {
-			kraidRow.Instrument = 1; kraidRow.EffNumber[1] = EF_DELAY; kraidRow.EffParam[1] = 3;
-			SetDataAtPattern(0, 4, 0, i + 1, kraidRow);
-			SetDataAtPattern(0, 5, 0, i + 1, kraidRow);}
-		kraidRow = GetDataAtPattern(0, 4, 1, i);
-		if (kraidRow.Note != NONE) {
-			kraidRow.Instrument = 1; kraidRow.EffNumber[1] = EF_DELAY; kraidRow.EffParam[1] = 3;
-			SetDataAtPattern(0, 6, 0, i + 1, kraidRow);}
-	}
-	kraidRow.Note = HALT; kraidRow.Octave = 0; kraidRow.Instrument = MAX_INSTRUMENTS;
-	SetDataAtPattern(0, 0, 0, 0, kraidRow);
-	SetDataAtPattern(0, 5, 0, 0, kraidRow);
-	SetDataAtPattern(0, 6, 0, 0, kraidRow);
-	kraidRow.Note = NOTE_Ds; kraidRow.Octave = 3; kraidRow.Instrument = 1;
-	SetDataAtPattern(0, 3, 0, 0, kraidRow);
-	SetDataAtPattern(0, 4, 0, 0, kraidRow);
-
-	// Done
-//	delete kraidSeq;
+	Kraid builder;
+	builder.buildDoc(*this);
+	builder.buildSong(GetSongData(0));
 }
