@@ -2845,22 +2845,14 @@ bool CMainFrame::AddAction(CAction *pAction)
 		SAFE_RELEASE(e);
 		return false;
 	}
-	pAction->SaveRedoState(this);
 
 	CFamiTrackerDoc	*pDoc = (CFamiTrackerDoc*)GetActiveDocument();			// // //
 	if (m_pActionHandler->GetUndoLevel() == CActionHandler::MAX_LEVELS)
-		pDoc->SetExceededFlag();
-	
+		pDoc->ModifyIrreversible();
+	pAction->SaveRedoState(this);
 	m_pActionHandler->Push(pAction);
 
 	return true;
-}
-
-CAction *CMainFrame::GetLastAction(int Filter) const
-{
-	ASSERT(m_pActionHandler != NULL);
-	CAction *pAction = m_pActionHandler->GetLastAction();
-	return (pAction == NULL || pAction->GetAction() != Filter) ? NULL : pAction;
 }
 
 void CMainFrame::ResetUndo()

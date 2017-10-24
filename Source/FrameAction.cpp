@@ -76,10 +76,6 @@ int CFrameEditorState::GetChanEnd() const
 // Undo/redo commands for frame editor
 //
 
-CFrameAction::CFrameAction() : CAction(0)		// // // dummy
-{
-}
-
 CFrameAction::~CFrameAction()
 {
 	SAFE_RELEASE(m_pUndoState);		// // //

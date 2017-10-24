@@ -26,32 +26,15 @@
 
 // CAction ////////////////////////////////////////////////////////////////////////
 
-CAction::CAction(int iAction) : m_iAction(iAction)
-{
-}
-
-CAction::~CAction()
-{
-}
-
 bool CAction::Merge(const CAction *Other)		// // //
 {
 	return false;
-}
-
-int CAction::GetAction() const
-{
-	return m_iAction;
 }
 
 
 // CActionHandler /////////////////////////////////////////////////////////////////
 
 const int CActionHandler::MAX_LEVELS = 64;		// // //
-
-CActionHandler::CActionHandler() : m_UndoStack(), m_RedoStack()
-{
-}
 
 void CActionHandler::Clear()
 {
@@ -62,9 +45,9 @@ void CActionHandler::Clear()
 void CActionHandler::Push(CAction *pAction)
 {
 	auto ptr = std::unique_ptr<CAction>(pAction);		// // //
-	if (m_UndoStack.empty() || !(*m_UndoStack.rbegin())->Merge(pAction)) {
+	if (m_UndoStack.empty() || !m_UndoStack.back()->Merge(pAction)) {
 		if (m_UndoStack.size() == MAX_LEVELS)
-			m_UndoStack.erase(m_UndoStack.begin(), m_UndoStack.begin() + 1);
+			m_UndoStack.erase(m_UndoStack.begin());
 		m_UndoStack.push_back(std::move(ptr));
 	}
 	m_RedoStack.clear();
@@ -75,10 +58,9 @@ CAction *CActionHandler::PopUndo()
 	if (m_UndoStack.empty())
 		return nullptr;
 
-	CAction *pAction = m_UndoStack.rbegin()->release();
-	m_UndoStack.erase(m_UndoStack.end() - 1, m_UndoStack.end());
-	m_RedoStack.push_back(std::unique_ptr<CAction>(pAction));
-	return pAction;
+	auto &pAction = m_RedoStack.emplace_back(std::move(m_UndoStack.back()));
+	m_UndoStack.pop_back();
+	return pAction.get();
 }
 
 CAction *CActionHandler::PopRedo()
@@ -86,15 +68,14 @@ CAction *CActionHandler::PopRedo()
 	if (m_RedoStack.empty())
 		return nullptr;
 
-	CAction *pAction = m_RedoStack.rbegin()->release();
-	m_RedoStack.erase(m_RedoStack.end() - 1, m_RedoStack.end());
-	m_UndoStack.push_back(std::unique_ptr<CAction>(pAction));
-	return pAction;
+	auto &pAction = m_UndoStack.emplace_back(std::move(m_RedoStack.back()));
+	m_RedoStack.pop_back();
+	return pAction.get();
 }
 
 CAction *CActionHandler::GetLastAction() const
 {
-	return m_UndoStack.empty() ? nullptr : m_UndoStack.rbegin()->get();
+	return m_UndoStack.empty() ? nullptr : m_UndoStack.back().get();
 }
 
 int CActionHandler::GetUndoLevel() const

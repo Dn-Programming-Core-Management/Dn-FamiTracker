@@ -106,7 +106,6 @@ public:
 
 	// Undo/redo
 	bool	AddAction(CAction *pAction);
-	CAction *GetLastAction(int Filter) const;
 	void	ResetUndo();
 
 	bool	ChangeAllPatterns() const;

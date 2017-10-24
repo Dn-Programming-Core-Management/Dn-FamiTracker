@@ -56,7 +56,7 @@ void CPatternEditorState::ApplyState(CPatternEditor *pEditor) const
 #define STATE_EXPAND(st) (st)->Track, (st)->Cursor.m_iFrame, (st)->Cursor.m_iChannel, (st)->Cursor.m_iRow
 
 CPatternAction::CPatternAction(int iAction) : 
-	CAction(iAction),
+	m_iAction(iAction),		// // //
 	m_pUndoState(nullptr),
 	m_pRedoState(nullptr),
 	m_pClipData(NULL), 
@@ -592,6 +592,22 @@ void CPActionScrollField::Redo(CMainFrame *pMainFrm) const
 	pDoc->SetModifiedFlag();
 }
 
+
+
+CPActionPaste::CPActionPaste() :
+	CPatternAction(ACT_EDIT_PASTE)
+{
+}
+
+bool CPActionPaste::SaveState(const CMainFrame *pMainFrm) {
+	return false;
+}
+
+void CPActionPaste::Undo(CMainFrame *pMainFrm) const {
+}
+
+void CPActionPaste::Redo(CMainFrame *pMainFrm) const {
+}
 
 
 CPActionClearSel::CPActionClearSel() :

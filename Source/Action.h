@@ -38,7 +38,7 @@ class CMainFrame;		// // //
 class CAction
 {
 public:
-	virtual ~CAction();
+	virtual ~CAction() = default;
 
 	// // // Save the action-specific state information. This method may reject the action by returning false
 	virtual bool SaveState(const CMainFrame *pMainFrm) = 0;
@@ -63,21 +63,13 @@ public:
 
 	// // // Combine current action with another one, return true if permissible
 	virtual bool Merge(const CAction *Other);
-
-	// Get the action type
-	int GetAction() const;
-
-protected:
-	CAction(int iAction = -1);		// // //
-
-	int m_iAction;
 };
 
 // Stores action objects (a dual-stack, kind of)
 class CActionHandler
 {
 public:
-	CActionHandler();
+	CActionHandler() = default;
 
 	// Clear the undo list
 	void Clear();

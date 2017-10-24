@@ -38,16 +38,16 @@ public:
 	CCompoundAction() = default;
 	CCompoundAction(std::initializer_list<CAction*> list);
 
-	bool SaveState(const CMainFrame *pMainFrm);
-	void Undo(CMainFrame *pMainFrm) const;
-	void Redo(CMainFrame *pMainFrm) const;
+	bool SaveState(const CMainFrame *pMainFrm) override;
+	void Undo(CMainFrame *pMainFrm) const override;
+	void Redo(CMainFrame *pMainFrm) const override;
 
-	void SaveUndoState(const CMainFrame *pMainFrm);		// // //
-	void SaveRedoState(const CMainFrame *pMainFrm);		// // //
-	void RestoreUndoState(CMainFrame *pMainFrm) const;		// // //
-	void RestoreRedoState(CMainFrame *pMainFrm) const;		// // //
+	void SaveUndoState(const CMainFrame *pMainFrm) override;		// // //
+	void SaveRedoState(const CMainFrame *pMainFrm) override;		// // //
+	void RestoreUndoState(CMainFrame *pMainFrm) const override;		// // //
+	void RestoreRedoState(CMainFrame *pMainFrm) const override;		// // //
 
-	/*!	\brief Adds an action to the compound to be performed last (and undoed first).
+	/*!	\brief Adds an action to the compound to be performed last (and undone first).
 		\param pAction Pointer to the action object. */
 	void JoinAction(CAction *const pAction);
 
