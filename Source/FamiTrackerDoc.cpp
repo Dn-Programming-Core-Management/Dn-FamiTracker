@@ -2571,6 +2571,11 @@ const CSongData &CFamiTrackerDoc::GetSongData(unsigned int Index) const		// // /
 	return *m_pTracks[Index];
 }
 
+std::unique_ptr<CSongData> CFamiTrackerDoc::ReplaceSong(unsigned Index, std::unique_ptr<CSongData> pSong) {		// // //
+	m_pTracks[Index].swap(pSong);
+	return std::move(pSong);
+}
+
 unsigned int CFamiTrackerDoc::GetTrackCount() const
 {
 	return m_pTracks.size();
@@ -3275,30 +3280,6 @@ bool CFamiTrackerDoc::ArePatternsSame(unsigned int Track, unsigned int Channel, 
 {
 	const auto &song = GetSongData(Track);
 	return song.GetPattern(Channel, Pattern1) == song.GetPattern(Channel, Pattern2);
-}
-
-void CFamiTrackerDoc::PopulateUniquePatterns(unsigned int Track)		// // //
-{
-	const int Rows = GetPatternLength(Track);
-	const int Frames = GetFrameCount(Track);
-	const auto &Song = GetSongData(Track);
-	auto pNew = std::make_unique<CSongData>(Rows);
-
-	pNew->SetSongSpeed(GetSongSpeed(Track));
-	pNew->SetSongTempo(GetSongTempo(Track));
-	pNew->SetFrameCount(Frames);
-	pNew->SetSongGroove(GetSongGroove(Track));
-	pNew->SetTitle(GetTrackTitle(Track));
-
-	for (int c = 0; c < GetChannelCount(); c++) {
-		pNew->SetEffectColumnCount(c, GetEffColumns(Track, c));
-		for (int f = 0; f < Frames; f++) {
-			pNew->SetFramePattern(f, c, f);
-			pNew->GetPattern(c, f) = Song.GetPattern(c, Song.GetFramePattern(f, c));
-		}
-	}
-
-	m_pTracks[Track] = std::move(pNew);
 }
 
 void CFamiTrackerDoc::SwapInstruments(int First, int Second)

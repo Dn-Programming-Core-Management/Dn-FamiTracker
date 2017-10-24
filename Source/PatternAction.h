@@ -24,6 +24,7 @@
 #pragma once
 
 #include <vector>		// // //
+#include <memory>		// // //
 #include "Action.h"
 #include "PatternEditorTypes.h"
 #include "SongData.h"		// // //
@@ -79,7 +80,7 @@ class CPatternAction : public CAction
 public:
 	enum ACTIONS
 	{
-		ACT_EDIT_NOTE,
+		ACT_EDIT_NOTE = 1,
 		ACT_REPLACE_NOTE,		// // //
 		ACT_INSERT_ROW,
 		ACT_DELETE_ROW,
@@ -394,4 +395,18 @@ private:
 	void UpdateView(CFamiTrackerDoc *pDoc) const;
 private:
 	stHighlight m_OldHighlight, m_NewHighlight;
+};
+
+class CPActionUniquePatterns : public CPatternAction {
+public:
+	CPActionUniquePatterns(unsigned index) : CPatternAction(0), index_(index) { }
+private:
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) const override;
+	void UpdateView(CFamiTrackerDoc *pDoc) const;
+
+	mutable std::unique_ptr<CSongData> song_; // ???
+	mutable std::unique_ptr<CSongData> songNew_;
+	unsigned index_ = 0;
 };

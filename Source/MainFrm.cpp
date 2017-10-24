@@ -3571,16 +3571,7 @@ void CMainFrame::OnEditRemoveUnusedSamples()
 
 void CMainFrame::OnEditPopulateUniquePatterns()		// // //
 {
-	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
-
-	if (AfxMessageBox(IDS_POPULATE_PATTERNS, MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2) == IDNO)
-		return;
-	
-	pDoc->PopulateUniquePatterns(m_iTrack);
-	pDoc->SetModifiedFlag();
-	pDoc->SetExceededFlag();
-	ResetUndo();
-	pDoc->UpdateAllViews(NULL, UPDATE_FRAME);
+	AddAction(std::make_unique<CPActionUniquePatterns>(m_iTrack));
 }
 
 void CMainFrame::OnEditGoto()

@@ -147,6 +147,7 @@ public:
 	// Local (song) data
 	CSongData		&GetSongData(unsigned int Index);		// // //
 	const CSongData	&GetSongData(unsigned int Index) const;		// // //
+	std::unique_ptr<CSongData> ReplaceSong(unsigned Index, std::unique_ptr<CSongData> pSong);		// // // returns old song
 
 	void			SetPatternLength(unsigned int Track, unsigned int Length);
 	void			SetFrameCount(unsigned int Track, unsigned int Count);
@@ -184,8 +185,6 @@ public:
 	void			ClearPatterns(unsigned int Track);
 	void			ClearPattern(unsigned int Track, unsigned int Frame, unsigned int Channel);
 	
-	void			PopulateUniquePatterns(unsigned int Track);		// // //
-
 	bool			InsertRow(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row);
 	bool			ClearRowField(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row, cursor_column_t Column);
 	bool			RemoveNote(unsigned int Track, unsigned int Frame, unsigned int Channel, unsigned int Row);

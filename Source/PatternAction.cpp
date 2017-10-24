@@ -1273,3 +1273,47 @@ void CPActionHighlight::UpdateView(CFamiTrackerDoc *pDoc) const
 {
 	pDoc->UpdateAllViews(NULL, UPDATE_HIGHLIGHT);
 }
+
+
+
+bool CPActionUniquePatterns::SaveState(const CMainFrame &MainFrm) {
+	const auto *pDoc = static_cast<CFamiTrackerView*>(MainFrm.GetActiveView())->GetDocument();
+	if (index_ >= pDoc->GetTrackCount())
+		return false;
+	const auto &Song = pDoc->GetSongData(index_);
+	const int Rows = Song.GetPatternLength();
+	const int Frames = Song.GetFrameCount();
+
+	songNew_ = std::make_unique<CSongData>(Rows);
+	songNew_->SetSongSpeed(Song.GetSongSpeed());
+	songNew_->SetSongTempo(Song.GetSongTempo());
+	songNew_->SetFrameCount(Frames);
+	songNew_->SetSongGroove(Song.GetSongGroove());
+	songNew_->SetTitle(Song.GetTitle());
+
+	for (int c = 0; c < pDoc->GetChannelCount(); c++) {
+		songNew_->SetEffectColumnCount(c, Song.GetEffectColumnCount(c));
+		for (int f = 0; f < Frames; f++) {
+			songNew_->SetFramePattern(f, c, f);
+			songNew_->GetPattern(c, f) = Song.GetPattern(c, Song.GetFramePattern(f, c));
+		}
+	}
+
+	return true;
+}
+
+void CPActionUniquePatterns::Undo(CMainFrame &MainFrm) const {
+	ASSERT(song_);
+	auto pDoc = static_cast<CFamiTrackerView*>(MainFrm.GetActiveView())->GetDocument();
+	songNew_ = pDoc->ReplaceSong(index_, std::move(song_));
+}
+
+void CPActionUniquePatterns::Redo(CMainFrame &MainFrm) const {
+	ASSERT(songNew_);
+	auto pDoc = static_cast<CFamiTrackerView*>(MainFrm.GetActiveView())->GetDocument();
+	song_ = pDoc->ReplaceSong(index_, std::move(songNew_));
+}
+
+void CPActionUniquePatterns::UpdateView(CFamiTrackerDoc *pDoc) const {
+	pDoc->UpdateAllViews(NULL, UPDATE_FRAME);
+}
