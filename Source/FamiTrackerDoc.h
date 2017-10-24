@@ -234,8 +234,8 @@ public:
 	bool			GetLinearPitch() const;
 	void			SetLinearPitch(bool Enable);
 
-	void			SetComment(const CString &comment, bool bShowOnLoad);		// // //
-	const CString	&GetComment() const;		// // //
+	void			SetComment(const std::string &comment, bool bShowOnLoad);		// // //
+	const std::string &GetComment() const;		// // //
 	bool			ShowCommentOnOpen() const;
 
 	void			SetSpeedSplitPoint(int SplitPoint);
@@ -531,7 +531,7 @@ private:
 	char			m_strCopyright[32];							// Song copyright
 
 	// Comments
-	CString			m_strComment;
+	std::string		m_strComment;								// // //
 	bool			m_bDisplayComment;
 
 	// Row highlight (TODO remove)

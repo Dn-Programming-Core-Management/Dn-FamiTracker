@@ -20,16 +20,18 @@
 ** must bear this legend.
 */
 
-#pragma once
 
+#pragma once
 
 // CMainFrame, the main window class
 
+#include "stdafx.h"		// // //
 #include "InstrumentEditDlg.h"
 #include "PerformanceDlg.h"
 #include "DialogReBar.h"
 #include "ControlPanelDlg.h"
 #include "CustomControls.h"
+#include <memory>		// // //
 
 enum frame_edit_pos_t { 
 	FRAME_EDIT_POS_TOP, 
@@ -57,6 +59,7 @@ class CGrooveDlg;		// // //
 class CBookmarkDlg;
 class CSwapDlg;
 class CFindDlg;		// // //
+struct stHighlight;		// // //
 
 class CMainFrame : public CFrameWnd
 {
@@ -83,7 +86,7 @@ public:
 	void	UpdateControls();
 	void	ResizeFrameWindow();
 
-	void	SetHighlightRows(stHighlight Hl);		// // //
+	void	SetHighlightRows(const stHighlight &Hl);		// // //
 
 	void	UpdateMenus();
 	void	UpdateMenu(CMenu *pMenu);		// // //

@@ -20,11 +20,10 @@
 ** must bear this legend.
 */
 
+#include "FamiTrackerView.h"
 #include <cmath>
-#include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
-#include "FamiTrackerView.h"
 #include "MainFrm.h"
 #include "MIDI.h"
 #include "InstrumentEditDlg.h"

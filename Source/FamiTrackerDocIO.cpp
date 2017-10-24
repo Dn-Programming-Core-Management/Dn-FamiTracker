@@ -571,13 +571,13 @@ void CFamiTrackerDocIO::SaveDSamples(const CFamiTrackerDoc &doc, int ver) {
 
 void CFamiTrackerDocIO::LoadComments(CFamiTrackerDoc &doc, int ver) {
 	bool disp = file_.GetBlockInt() == 1;
-	doc.SetComment(file_.ReadString(), disp);
+	doc.SetComment(file_.ReadString().GetString(), disp);
 }
 
 void CFamiTrackerDocIO::SaveComments(const CFamiTrackerDoc &doc, int ver) {
-	if (const auto &str = doc.GetComment(); !str.IsEmpty()) {
+	if (const auto &str = doc.GetComment(); !str.empty()) {
 		file_.WriteBlockInt(doc.ShowCommentOnOpen() ? 1 : 0);
-		file_.WriteString(str);
+		file_.WriteString(str.c_str());
 	}
 }
 

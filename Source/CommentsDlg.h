@@ -25,6 +25,7 @@
 
 #include "stdafx.h"		// // //
 #include "resource.h"		// // //
+#include <string>		// // //
 
 // CCommentsDlg dialog
 
@@ -36,8 +37,8 @@ public:
 	CCommentsDlg(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CCommentsDlg();
 	// // //
-	CString GetComment() const;
-	void SetComment(CString Str);
+	const std::string &GetComment() const;		// // //
+	void SetComment(const std::string &Str);		// // //
 	bool GetShowOnLoad() const;
 	void SetShowOnLoad(bool Enable);
 	bool IsChanged() const;
@@ -59,8 +60,8 @@ protected:
 protected:
 	bool m_bChanged;
 	CFont *m_pFont;
-	// // //
-	CString m_sComment;
+
+	std::string m_sComment;		// // //
 	bool m_bShowOnLoad;
 
 	DECLARE_MESSAGE_MAP()

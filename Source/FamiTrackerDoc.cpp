@@ -394,8 +394,7 @@ void CFamiTrackerDoc::DeleteContents()
 	ClearAutoSave();
 #endif
 
-	m_strComment.Empty();
-	m_bDisplayComment = false;
+	SetComment("", false);		// // //
 
 	// // // Allocate first song
 	AllocateSong(0);
@@ -2929,13 +2928,13 @@ void CFamiTrackerDoc::AutoSave()
 // Comment functions
 //
 
-void CFamiTrackerDoc::SetComment(const CString &comment, bool bShowOnLoad)		// // //
+void CFamiTrackerDoc::SetComment(const std::string &comment, bool bShowOnLoad)		// // //
 {
 	m_strComment = comment;
 	m_bDisplayComment = bShowOnLoad;
 }
 
-const CString &CFamiTrackerDoc::GetComment() const		// // //
+const std::string &CFamiTrackerDoc::GetComment() const		// // //
 {
 	return m_strComment;
 }

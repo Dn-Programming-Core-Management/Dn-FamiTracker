@@ -20,13 +20,12 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include "MainFrm.h"
 #include "version.h"		// // //
 #include <algorithm>
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
-#include "MainFrm.h"
 #include "ExportDialog.h"
 #include "CreateWaveDlg.h"
 #include "InstrumentEditDlg.h"
@@ -65,6 +64,7 @@
 #include "DPI.h"		// // //
 #include "InstrumentFactory.h"		// // //
 #include "ActionHandler.h"		// // //
+#include "ModuleAction.h"		// // //
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -891,7 +891,7 @@ void CMainFrame::UpdateControls()
 	m_wndDialogBar.UpdateDialogControls(&m_wndDialogBar, TRUE);
 }
 
-void CMainFrame::SetHighlightRows(stHighlight Hl)
+void CMainFrame::SetHighlightRows(const stHighlight &Hl)		// // //
 {
 	m_wndOctaveBar.SetDlgItemInt(IDC_HIGHLIGHT1, Hl.First);
 	m_wndOctaveBar.SetDlgItemInt(IDC_HIGHLIGHT2, Hl.Second);
@@ -2236,11 +2236,8 @@ void CMainFrame::OnModuleComments()
 	CFamiTrackerDoc	*pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());		// // //
 	commentsDlg.SetComment(pDoc->GetComment());
 	commentsDlg.SetShowOnLoad(pDoc->ShowCommentOnOpen());
-	if (commentsDlg.DoModal() == IDOK && commentsDlg.IsChanged()) {
-		pDoc->SetComment(commentsDlg.GetComment(), commentsDlg.GetShowOnLoad());
-		pDoc->SetModifiedFlag();		// // //
-		pDoc->SetExceededFlag();
-	}
+	if (commentsDlg.DoModal() == IDOK && commentsDlg.IsChanged())
+		AddAction(std::make_unique<ModuleAction::CComment>(commentsDlg.GetComment(), commentsDlg.GetShowOnLoad()));		// // //
 }
 
 void CMainFrame::OnModuleGrooveSettings()		// // //

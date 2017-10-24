@@ -43,12 +43,12 @@ CCommentsDlg::~CCommentsDlg()
 	SAFE_RELEASE(m_pFont);
 }
 
-CString CCommentsDlg::GetComment() const		// // //
+const std::string &CCommentsDlg::GetComment() const		// // //
 {
 	return m_sComment;
 }
 
-void CCommentsDlg::SetComment(CString Str)
+void CCommentsDlg::SetComment(const std::string &Str)		// // //
 {
 	m_sComment = Str;
 }
@@ -87,7 +87,9 @@ END_MESSAGE_MAP()
 
 void CCommentsDlg::SaveComment()
 {
-	GetDlgItemText(IDC_COMMENTS, m_sComment);		// // //
+	CString str;		// // //
+	GetDlgItemText(IDC_COMMENTS, str);		// // //
+	m_sComment = CT2CA(str.GetString());
 	m_bShowOnLoad = IsDlgButtonChecked(IDC_SHOWONOPEN) == BST_CHECKED;
 }
 
@@ -132,7 +134,7 @@ BOOL CCommentsDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	SetDlgItemText(IDC_COMMENTS, m_sComment);		// // //
+	SetDlgItemText(IDC_COMMENTS, CA2CT(m_sComment.c_str()));		// // //
 	CheckDlgButton(IDC_SHOWONOPEN, m_bShowOnLoad ? BST_CHECKED : BST_UNCHECKED);
 	m_bChanged = false;
 

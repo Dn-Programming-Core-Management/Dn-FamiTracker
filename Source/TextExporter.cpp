@@ -703,9 +703,9 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 				break;
 			case CT_COMMENT:
 				{
-					CString sComment = pDoc->GetComment();
-					if (sComment.GetLength() > 0)
-						sComment = sComment + _T("\r\n");
+					std::string sComment = pDoc->GetComment();		// // //
+					if (!sComment.empty())
+						sComment += "\r\n";
 					sComment += t.ReadToken();
 					pDoc->SetComment(sComment, pDoc->ShowCommentOnOpen());
 					CHECK(t.ReadEOL(&sResult));
@@ -1225,7 +1225,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	f.WriteString(s);
 
 	f.WriteString(_T("# Song comment\n"));
-	CString sComment = pDoc->GetComment();
+	CString sComment = pDoc->GetComment().c_str();		// // //
 	bool bCommentLines = false;
 	do
 	{
