@@ -105,7 +105,7 @@ public:
 	void	SelectOctave(int Octave);		// // // 050B
 
 	// Undo/redo
-	bool	AddAction(CAction *pAction);
+	bool	AddAction(std::unique_ptr<CAction> pAction);		// // //
 	void	ResetUndo();
 
 	bool	ChangeAllPatterns() const;
@@ -202,7 +202,7 @@ private:  // control bar embedded members
 	CBannerEdit			*m_pBannerEditArtist;
 	CBannerEdit			*m_pBannerEditCopyright;
 
-	CActionHandler		*m_pActionHandler;
+	std::unique_ptr<CActionHandler> m_pActionHandler;		// // //
 
 	int					m_iFrameEditorPos;
 	control_panel_pos_t	m_iControlPanelPos;		// // // 050B

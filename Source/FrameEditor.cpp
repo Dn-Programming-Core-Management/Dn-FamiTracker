@@ -690,7 +690,7 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 					Pattern = m_pDocument->GetPatternAtFrame(Track, GetSelection().GetFrameStart(), GetSelection().GetChanStart()) | Num;
 					m_iCursorPos = 0;
 				}
-				m_pMainFrame->AddAction(new CFActionSetPattern {Pattern});
+				m_pMainFrame->AddAction(std::make_unique<CFActionSetPattern>(Pattern));
 				m_pDocument->SetModifiedFlag();
 			}
 			else if (!m_bLastRow || FrameCount < MAX_FRAMES) {		// // //
@@ -701,11 +701,12 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 					Pattern = (Pattern & 0xF0) | Num;
 				Pattern = std::min(Pattern, MAX_PATTERN - 1);
 
-				if (m_bLastRow)
-					m_pMainFrame->AddAction(new CFActionFrameCount {static_cast<int>(FrameCount) + 1});
-				CAction *pAction = m_pMainFrame->ChangeAllPatterns() ?
-									   (CAction*)new CFActionSetPatternAll {Pattern} : new CFActionSetPattern {Pattern};
-				m_pMainFrame->AddAction(pAction);
+				if (m_bLastRow) // TODO: use CCompoundAction
+					m_pMainFrame->AddAction(std::make_unique<CFActionFrameCount>(static_cast<int>(FrameCount) + 1));
+				if (m_pMainFrame->ChangeAllPatterns())
+					m_pMainFrame->AddAction(std::make_unique<CFActionSetPatternAll>(Pattern));
+				else
+					m_pMainFrame->AddAction(std::make_unique<CFActionSetPattern>(Pattern));
 				m_pDocument->SetModifiedFlag();
 
 				const int SelectedChannel = (m_pView->GetSelectedChannel() + 1) % m_pDocument->GetAvailableChannels();		// // //
@@ -1053,7 +1054,7 @@ void CFrameEditor::OnEditPaste()
 	CFrameClipData *pClipData = new CFrameClipData();
 	pClipData->FromMem(hMem);
 
-	m_pMainFrame->AddAction(new CFActionPaste {pClipData, GetEditFrame(), false});		// // //
+	m_pMainFrame->AddAction(std::make_unique<CFActionPaste>(pClipData, GetEditFrame(), false));		// // //
 }
 
 void CFrameEditor::OnEditPasteOverwrite()		// // //
@@ -1066,7 +1067,7 @@ void CFrameEditor::OnEditPasteOverwrite()		// // //
 	CFrameClipData *pClipData = new CFrameClipData();
 	pClipData->FromMem(hMem);
 
-	m_pMainFrame->AddAction(new CFActionPasteOverwrite {pClipData});		// // //
+	m_pMainFrame->AddAction(std::make_unique<CFActionPasteOverwrite>(pClipData));		// // //
 }
 
 void CFrameEditor::OnUpdateEditPasteOverwrite(CCmdUI *pCmdUI)		// // //
@@ -1084,7 +1085,7 @@ void CFrameEditor::OnEditPasteNewPatterns()
 	CFrameClipData *pClipData = new CFrameClipData();
 	pClipData->FromMem(hMem);
 
-	m_pMainFrame->AddAction(new CFActionPaste {pClipData, GetEditFrame(), true});		// // //
+	m_pMainFrame->AddAction(std::make_unique<CFActionPaste>(pClipData, GetEditFrame(), true));		// // //
 }
 
 void CFrameEditor::OnEditDelete()
@@ -1095,7 +1096,7 @@ void CFrameEditor::OnEditDelete()
 		m_selection.m_cpEnd.m_iChannel = m_pDocument->GetChannelCount() - 1;		// // //
 	}
 
-	m_pMainFrame->AddAction(new CFActionDeleteSel { });		// // //
+	m_pMainFrame->AddAction(std::make_unique<CFActionDeleteSel>( ));		// // //
 }
 
 CFrameCursorPos CFrameEditor::GetFrameCursor() const		// // //
@@ -1399,7 +1400,7 @@ void CFrameEditor::InitiateDrag()
 		if (res == DROPEFFECT_MOVE) {
 			if (!m_bDeletedRows) {
 				// Target was another window, delete rows locally
-				m_pMainFrame->AddAction(new CFActionDeleteSel { });		// // //
+				m_pMainFrame->AddAction(std::make_unique<CFActionDeleteSel>( ));		// // //
 			}
 		}
 
@@ -1484,13 +1485,13 @@ BOOL CFrameEditor::DropData(COleDataObject* pDataObject, DROPEFFECT dropEffect)
 					SAFE_RELEASE(pClipData);
 					return FALSE;
 				}
-				m_pMainFrame->AddAction(new CFActionDropMove {pClipData, m_iDragRow});		// // //
+				m_pMainFrame->AddAction(std::make_unique<CFActionDropMove>(pClipData, m_iDragRow));		// // //
 				break;
 			}
-			// [[fallthrough]]
+			[[fallthrough]];
 		case DROPEFFECT_COPY:
 			// Copy
-			if (!m_pMainFrame->AddAction(new CFActionPaste {pClipData, m_iDragRow, m_DropTarget.CopyToNewPatterns()})) {		// // //
+			if (!m_pMainFrame->AddAction(std::make_unique<CFActionPaste>(pClipData, m_iDragRow, m_DropTarget.CopyToNewPatterns()))) {		// // //
 				SAFE_RELEASE(pClipData);
 				return FALSE;
 			}

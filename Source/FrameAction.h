@@ -89,10 +89,10 @@ protected:
 public:
 	virtual ~CFrameAction();
 
-	void SaveUndoState(const CMainFrame *pMainFrm) override;		// // //
-	void SaveRedoState(const CMainFrame *pMainFrm) override;		// // //
-	void RestoreUndoState(CMainFrame *pMainFrm) const override;		// // //
-	void RestoreRedoState(CMainFrame *pMainFrm) const override;		// // //
+	void SaveUndoState(const CMainFrame &MainFrm) override;		// // //
+	void SaveRedoState(const CMainFrame &MainFrm) override;		// // //
+	void RestoreUndoState(CMainFrame &MainFrm) const override;		// // //
+	void RestoreRedoState(CMainFrame &MainFrm) const override;		// // //
 
 protected:
 	static int ClipPattern(int Pattern);
@@ -110,9 +110,9 @@ class CFActionAddFrame : public CFrameAction
 public:
 	CFActionAddFrame() = default;
 private:
-	bool SaveState(const CMainFrame *pMainFrm) override;
-	void Undo(CMainFrame *pMainFrm) const override;
-	void Redo(CMainFrame *pMainFrm) const override;
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) const override;
 };
 
 class CFActionRemoveFrame : public CFrameAction
@@ -121,9 +121,9 @@ public:
 	CFActionRemoveFrame() = default;
 	~CFActionRemoveFrame() { SAFE_RELEASE(m_pRowClipData); }
 private:
-	bool SaveState(const CMainFrame *pMainFrm) override;
-	void Undo(CMainFrame *pMainFrm) const override;
-	void Redo(CMainFrame *pMainFrm) const override;
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) const override;
 private:
 	CFrameClipData *m_pRowClipData = nullptr;
 };
@@ -133,9 +133,9 @@ class CFActionDuplicateFrame : public CFrameAction
 public:
 	CFActionDuplicateFrame() = default;
 private:
-	bool SaveState(const CMainFrame *pMainFrm) override;
-	void Undo(CMainFrame *pMainFrm) const override;
-	void Redo(CMainFrame *pMainFrm) const override;
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) const override;
 };
 
 class CFActionCloneFrame : public CFrameAction
@@ -143,9 +143,9 @@ class CFActionCloneFrame : public CFrameAction
 public:
 	CFActionCloneFrame() = default;
 private:
-	bool SaveState(const CMainFrame *pMainFrm) override;
-	void Undo(CMainFrame *pMainFrm) const override;
-	void Redo(CMainFrame *pMainFrm) const override;
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) const override;
 };
 
 class CFActionFrameCount : public CFrameAction
@@ -153,10 +153,10 @@ class CFActionFrameCount : public CFrameAction
 public:
 	CFActionFrameCount(int Count) : m_iNewFrameCount(Count) { }
 private:
-	bool SaveState(const CMainFrame *pMainFrm) override;
-	void Undo(CMainFrame *pMainFrm) const override;
-	void Redo(CMainFrame *pMainFrm) const override;
-	bool Merge(const CAction *Other) override;		// // //
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) const override;
+	bool Merge(const CAction &Other) override;		// // //
 private:
 	int m_iOldFrameCount, m_iNewFrameCount;
 };
@@ -167,10 +167,10 @@ public:
 	CFActionSetPattern(int Pattern) : m_iNewPattern(Pattern) { }
 	~CFActionSetPattern() { SAFE_RELEASE(m_pClipData); }
 private:
-	bool SaveState(const CMainFrame *pMainFrm) override;
-	void Undo(CMainFrame *pMainFrm) const override;
-	void Redo(CMainFrame *pMainFrm) const override;
-	bool Merge(const CAction *Other) override;		// // //
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) const override;
+	bool Merge(const CAction &Other) override;		// // //
 private:
 	int m_iNewPattern;
 	CFrameClipData *m_pClipData = nullptr;
@@ -182,10 +182,10 @@ public:
 	CFActionSetPatternAll(int Pattern) : m_iNewPattern(Pattern) { }
 	~CFActionSetPatternAll() { SAFE_RELEASE(m_pRowClipData); }
 private:
-	bool SaveState(const CMainFrame *pMainFrm) override;
-	void Undo(CMainFrame *pMainFrm) const override;
-	void Redo(CMainFrame *pMainFrm) const override;
-	bool Merge(const CAction *Other) override;		// // //
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) const override;
+	bool Merge(const CAction &Other) override;		// // //
 private:
 	int m_iNewPattern;
 	CFrameClipData *m_pRowClipData = nullptr;
@@ -197,10 +197,10 @@ public:
 	CFActionChangePattern(int Offset) : m_iPatternOffset(Offset) { }
 	~CFActionChangePattern() { SAFE_RELEASE(m_pClipData); }
 private:
-	bool SaveState(const CMainFrame *pMainFrm) override;
-	void Undo(CMainFrame *pMainFrm) const override;
-	void Redo(CMainFrame *pMainFrm) const override;
-	bool Merge(const CAction *Other) override;		// // //
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) const override;
+	bool Merge(const CAction &Other) override;		// // //
 private:
 	int m_iPatternOffset;
 	CFrameClipData *m_pClipData = nullptr;
@@ -213,10 +213,10 @@ public:
 	CFActionChangePatternAll(int Offset) : m_iPatternOffset(Offset) { }
 	~CFActionChangePatternAll() { SAFE_RELEASE(m_pRowClipData); }
 private:
-	bool SaveState(const CMainFrame *pMainFrm) override;
-	void Undo(CMainFrame *pMainFrm) const override;
-	void Redo(CMainFrame *pMainFrm) const override;
-	bool Merge(const CAction *Other) override;		// // //
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) const override;
+	bool Merge(const CAction &Other) override;		// // //
 private:
 	int m_iPatternOffset;
 	CFrameClipData *m_pRowClipData = nullptr;
@@ -228,9 +228,9 @@ class CFActionMoveDown : public CFrameAction
 public:
 	CFActionMoveDown() = default;
 private:
-	bool SaveState(const CMainFrame *pMainFrm) override;
-	void Undo(CMainFrame *pMainFrm) const override;
-	void Redo(CMainFrame *pMainFrm) const override;
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) const override;
 };
 
 class CFActionMoveUp : public CFrameAction
@@ -238,9 +238,9 @@ class CFActionMoveUp : public CFrameAction
 public:
 	CFActionMoveUp() = default;
 private:
-	bool SaveState(const CMainFrame *pMainFrm) override;
-	void Undo(CMainFrame *pMainFrm) const override;
-	void Redo(CMainFrame *pMainFrm) const override;
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) const override;
 };
 
 class CFActionClonePatterns : public CFrameAction		// // //
@@ -249,9 +249,9 @@ public:
 	CFActionClonePatterns() = default;
 	~CFActionClonePatterns() { SAFE_RELEASE(m_pClipData); }
 private:
-	bool SaveState(const CMainFrame *pMainFrm) override;
-	void Undo(CMainFrame *pMainFrm) const override;
-	void Redo(CMainFrame *pMainFrm) const override;
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) const override;
 private:
 	int m_iOldPattern, m_iNewPattern;
 	CFrameClipData *m_pClipData = nullptr;
@@ -263,9 +263,9 @@ public:
 	CFActionPaste(CFrameClipData *pData, int Frame, bool Clone) : m_pClipData(pData), m_iTargetFrame(Frame), m_bClone(Clone) { }
 	~CFActionPaste() { SAFE_RELEASE(m_pClipData); }
 private:
-	bool SaveState(const CMainFrame *pMainFrm) override;
-	void Undo(CMainFrame *pMainFrm) const override;
-	void Redo(CMainFrame *pMainFrm) const override;
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) const override;
 private:
 	CFrameClipData *m_pClipData = nullptr;
 	int m_iTargetFrame;
@@ -278,9 +278,9 @@ public:
 	CFActionPasteOverwrite(CFrameClipData *pData) : m_pClipData(pData) { }
 	~CFActionPasteOverwrite() { SAFE_RELEASE(m_pClipData); }
 private:
-	bool SaveState(const CMainFrame *pMainFrm) override;
-	void Undo(CMainFrame *pMainFrm) const override;
-	void Redo(CMainFrame *pMainFrm) const override;
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) const override;
 private:
 	CFrameClipData *m_pClipData = nullptr, *m_pOldClipData = nullptr;
 	CFrameSelection m_TargetSelection;
@@ -292,9 +292,9 @@ public:
 	CFActionDropMove(CFrameClipData *pData, int Frame) : m_pClipData(pData), m_iTargetFrame(Frame) { }
 	~CFActionDropMove() { SAFE_RELEASE(m_pClipData); }
 private:
-	bool SaveState(const CMainFrame *pMainFrm) override;
-	void Undo(CMainFrame *pMainFrm) const override;
-	void Redo(CMainFrame *pMainFrm) const override;
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) const override;
 private:
 	CFrameClipData *m_pClipData = nullptr;
 	int m_iTargetFrame;
@@ -306,9 +306,9 @@ public:
 	CFActionDeleteSel() = default;
 	~CFActionDeleteSel() { SAFE_RELEASE(m_pClipData); }
 private:
-	bool SaveState(const CMainFrame *pMainFrm) override;
-	void Undo(CMainFrame *pMainFrm) const override;
-	void Redo(CMainFrame *pMainFrm) const override;
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) const override;
 private:
 	CFrameClipData *m_pClipData = nullptr;
 };
@@ -319,9 +319,9 @@ public:
 	CFActionMergeDuplicated() = default;
 	~CFActionMergeDuplicated() { SAFE_RELEASE(m_pOldClipData); SAFE_RELEASE(m_pClipData); }
 private:
-	bool SaveState(const CMainFrame *pMainFrm) override;
-	void Undo(CMainFrame *pMainFrm) const override;
-	void Redo(CMainFrame *pMainFrm) const override;
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) const override;
 private:
 	CFrameClipData *m_pClipData = nullptr, *m_pOldClipData = nullptr;
 };

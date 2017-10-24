@@ -64,6 +64,7 @@
 #include "TransposeDlg.h"	// // //
 #include "DPI.h"		// // //
 #include "InstrumentFactory.h"		// // //
+#include "ActionHandler.h"		// // //
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -122,7 +123,6 @@ CMainFrame::CMainFrame() :
 	m_pBannerEditArtist(NULL),
 	m_pBannerEditCopyright(NULL),
 	m_pInstrumentList(NULL),
-	m_pActionHandler(NULL),
 	m_iFrameEditorPos(FRAME_EDIT_POS_TOP),
 	m_pInstrumentFileTree(NULL),
 	m_iInstrument(0),
@@ -155,7 +155,6 @@ CMainFrame::~CMainFrame()
 	SAFE_RELEASE(m_pPerformanceDlg);		// // //
 	SAFE_RELEASE(m_pInstrumentList);
 	SAFE_RELEASE(m_pVisualizerWnd);
-	SAFE_RELEASE(m_pActionHandler);
 	SAFE_RELEASE(m_pInstrumentFileTree);
 	SAFE_RELEASE(m_pImageList);
 }
@@ -407,7 +406,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		ReleaseDC(pDC);
 	}
 
-	m_pActionHandler = new CActionHandler();
+	ResetUndo();		// // //
 
 	if (CFrameWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
@@ -864,7 +863,7 @@ void CMainFrame::SetRowCount(int Count)
 	if (!pDoc->IsFileLoaded())
 		return;
 
-	AddAction(new CPActionPatternLen {std::min(std::max(Count, 1), MAX_PATTERN_LENGTH)});		// // //
+	AddAction(std::make_unique<CPActionPatternLen>(std::min(std::max(Count, 1), MAX_PATTERN_LENGTH)));		// // //
 
 	if (m_wndDialogBar.GetDlgItemInt(IDC_ROWS) != Count)
 		m_wndDialogBar.SetDlgItemInt(IDC_ROWS, Count, FALSE);
@@ -881,7 +880,7 @@ void CMainFrame::SetFrameCount(int Count)
 	Count = std::max(Count, 1);
 	Count = std::min(Count, MAX_FRAMES);
 
-	AddAction(new CFActionFrameCount {std::min(std::max(Count, 1), MAX_FRAMES)});		// // //
+	AddAction(std::make_unique<CFActionFrameCount>(std::min(std::max(Count, 1), MAX_FRAMES)));		// // //
 
 	if (m_wndDialogBar.GetDlgItemInt(IDC_FRAMES) != Count)
 		m_wndDialogBar.SetDlgItemInt(IDC_FRAMES, Count, FALSE);
@@ -1546,9 +1545,9 @@ void CMainFrame::OnBnClickedIncFrame()
 		return;
 	int Add = (CheckRepeat() ? 4 : 1);
 	if (ChangeAllPatterns())
-		AddAction(new CFActionChangePatternAll {Add});		// // //
+		AddAction(std::make_unique<CFActionChangePatternAll>(Add));		// // //
 	else
-		AddAction(new CFActionChangePattern {Add});
+		AddAction(std::make_unique<CFActionChangePattern>(Add));
 }
 
 void CMainFrame::OnBnClickedDecFrame()
@@ -1557,9 +1556,9 @@ void CMainFrame::OnBnClickedDecFrame()
 		return;
 	int Remove = -(CheckRepeat() ? 4 : 1);
 	if (ChangeAllPatterns())
-		AddAction(new CFActionChangePatternAll {Remove});		// // //
+		AddAction(std::make_unique<CFActionChangePatternAll>(Remove));		// // //
 	else
-		AddAction(new CFActionChangePattern {Remove});
+		AddAction(std::make_unique<CFActionChangePattern>(Remove));
 }
 
 bool CMainFrame::ChangeAllPatterns() const
@@ -1902,11 +1901,11 @@ void CMainFrame::OnUpdateHighlight1(CCmdUI *pCmdUI)		// // //
 	if (!m_pLockedEditHighlight1->IsEditable()) {
 		CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
 		if (m_pLockedEditHighlight1->Update())
-			AddAction(new CPActionHighlight {stHighlight {
+			AddAction(std::make_unique<CPActionHighlight>(stHighlight {
 				std::max(0, std::min(MAX_PATTERN_LENGTH, m_pLockedEditHighlight1->GetValue())),
 				pDoc->GetHighlight().Second,
 				0
-			}});
+			}));
 		else
 			pCmdUI->SetText(MakeIntString(pDoc->GetHighlight().First));
 	}
@@ -1917,11 +1916,11 @@ void CMainFrame::OnUpdateHighlight2(CCmdUI *pCmdUI)		// // //
 	if (!m_pLockedEditHighlight2->IsEditable()) {
 		CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
 		if (m_pLockedEditHighlight2->Update())
-			AddAction(new CPActionHighlight {stHighlight {
+			AddAction(std::make_unique<CPActionHighlight>(stHighlight {
 				pDoc->GetHighlight().First,
 				std::max(0, std::min(MAX_PATTERN_LENGTH, m_pLockedEditHighlight2->GetValue())),
 				0
-			}});
+			}));
 		else
 			pCmdUI->SetText(MakeIntString(pDoc->GetHighlight().Second));
 	}
@@ -2438,7 +2437,7 @@ void CMainFrame::OnDeltaposHighlightSpin1(NMHDR *pNMHDR, LRESULT *pResult)		// /
 	if (CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument())) {
 		stHighlight Hl = pDoc->GetHighlight();
 		Hl.First = std::max(0, std::min(MAX_PATTERN_LENGTH, Hl.First - ((NMUPDOWN*)pNMHDR)->iDelta));
-		AddAction(new CPActionHighlight {Hl});
+		AddAction(std::make_unique<CPActionHighlight>(Hl));
 		theApp.GetSoundGenerator()->SetHighlightRows(Hl.First);		// // //
 	}
 }
@@ -2448,7 +2447,7 @@ void CMainFrame::OnDeltaposHighlightSpin2(NMHDR *pNMHDR, LRESULT *pResult)		// /
 	if (CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument())) {
 		stHighlight Hl = pDoc->GetHighlight();
 		Hl.Second = std::max(0, std::min(MAX_PATTERN_LENGTH, Hl.Second - ((NMUPDOWN*)pNMHDR)->iDelta));
-		AddAction(new CPActionHighlight {Hl});
+		AddAction(std::make_unique<CPActionHighlight>(Hl));
 	}
 }
 
@@ -2464,45 +2463,47 @@ void CMainFrame::OnSelectFrameEditor()
 
 void CMainFrame::OnModuleInsertFrame()
 {
-	AddAction(new CFActionAddFrame { });		// // //
+	AddAction(std::make_unique<CFActionAddFrame>());		// // //
 }
 
 void CMainFrame::OnModuleRemoveFrame()
 {
-	AddAction(new CFActionRemoveFrame { });		// // //
+	AddAction(std::make_unique<CFActionRemoveFrame>());		// // //
 }
 
 void CMainFrame::OnModuleDuplicateFrame()
 {
-	AddAction(new CFActionDuplicateFrame { });		// // //
+	AddAction(std::make_unique<CFActionDuplicateFrame>());		// // //
 }
 
 void CMainFrame::OnModuleDuplicateFramePatterns()
 {
-	AddAction(new CFActionCloneFrame { });		// // //
+	AddAction(std::make_unique<CFActionCloneFrame>());		// // //
 }
 
 void CMainFrame::OnModuleMoveframedown()
 {
-	CAction *pAction = new CFActionMoveDown { };		// // //
-	if (AddAction(pAction)) {
+	auto pAction = std::make_unique<CFActionMoveDown>();		// // //
+	auto &Action = *pAction; // TODO: remove
+	if (AddAction(std::move(pAction))) {
 		static_cast<CFamiTrackerView*>(GetActiveView())->SelectNextFrame();
-		pAction->SaveRedoState(this);
+		Action.SaveRedoState(*this);
 	}
 }
 
 void CMainFrame::OnModuleMoveframeup()
 {
-	CAction *pAction = new CFActionMoveUp { };		// // //
-	if (AddAction(pAction)) {
+	auto pAction = std::make_unique<CFActionMoveUp>();		// // //
+	auto &Action = *pAction; // TODO: remove
+	if (AddAction(std::move(pAction))) {
 		static_cast<CFamiTrackerView*>(GetActiveView())->SelectPrevFrame();
-		pAction->SaveRedoState(this);
+		Action.SaveRedoState(*this);
 	}
 }
 
 void CMainFrame::OnModuleDuplicateCurrentPattern()		// // //
 {
-	AddAction(new CFActionClonePatterns { });
+	AddAction(std::make_unique<CFActionClonePatterns>());
 }
 
 // UI updates
@@ -2825,81 +2826,66 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 	return CFrameWnd::OnCopyData(pWnd, pCopyDataStruct);
 }
 
-bool CMainFrame::AddAction(CAction *pAction)
+bool CMainFrame::AddAction(std::unique_ptr<CAction> pAction)		// // //
 {
-	ASSERT(m_pActionHandler != NULL);
-	
-	pAction->SaveUndoState(this);		// // //
-	if (!pAction->SaveState(this)) {
-		// Operation cancelled
-		SAFE_RELEASE(pAction);
-		return false;
-	}
+	ASSERT(m_pActionHandler);
+
 	try {		// // //
-		pAction->Redo(this);
+		pAction->SaveUndoState(*this);		// // //
+		if (!pAction->SaveState(*this))
+			return false; // Operation cancelled
+		pAction->Redo(*this);
+		pAction->SaveRedoState(*this);
+		m_pActionHandler->Push(std::move(pAction));
 	}
 	catch (std::runtime_error *e) {
+		pAction->Undo(*this);
 		AfxMessageBox(e->what());
-		pAction->Undo(this);
-		SAFE_RELEASE(pAction);
 		SAFE_RELEASE(e);
 		return false;
 	}
 
-	CFamiTrackerDoc	*pDoc = (CFamiTrackerDoc*)GetActiveDocument();			// // //
-	if (m_pActionHandler->GetUndoLevel() == CActionHandler::MAX_LEVELS)
+	auto pDoc = dynamic_cast<CFTMComponentInterface *>(GetActiveDocument());		// // //
+	if (m_pActionHandler->ActionsLost())		// // //
 		pDoc->ModifyIrreversible();
-	pAction->SaveRedoState(this);
-	m_pActionHandler->Push(pAction);
 
 	return true;
 }
 
 void CMainFrame::ResetUndo()
 {
-	ASSERT(m_pActionHandler != NULL);
-
-	m_pActionHandler->Clear();
+	m_pActionHandler = std::make_unique<CActionHandler>();		// // //
 }
 
 void CMainFrame::OnEditUndo()
 {
 	ASSERT(m_pActionHandler != NULL);
 
-	if (CAction *pAction = m_pActionHandler->PopUndo()) {
-		pAction->RestoreRedoState(this);		// // //
-		pAction->Undo(this);
-		pAction->RestoreUndoState(this);		// // //
-	}
-
-	CFamiTrackerDoc	*pDoc = (CFamiTrackerDoc*)GetActiveDocument();			// // //
-	if (!m_pActionHandler->CanUndo() && !pDoc->GetExceededFlag())
-		pDoc->SetModifiedFlag(false);
+	auto &doc = static_cast<CFamiTrackerDoc &>(*GetActiveDocument());
+	m_pActionHandler->UndoLastAction(*this);		// // //
+	if (!m_pActionHandler->CanUndo() && !doc.GetExceededFlag())
+		doc.SetModifiedFlag(false);
 }
 
 void CMainFrame::OnEditRedo()
 {
-	ASSERT(m_pActionHandler != NULL);
+	ASSERT(m_pActionHandler);
 
-	if (CAction *pAction = m_pActionHandler->PopRedo()) {
-		pAction->RestoreUndoState(this);		// // //
-		pAction->Redo(this);
-		pAction->RestoreRedoState(this);		// // //
-	}
+	m_pActionHandler->RedoLastAction(*this);		// // //
 }
 
 void CMainFrame::OnUpdateEditUndo(CCmdUI *pCmdUI)
 {
-	ASSERT(m_pActionHandler != NULL);
+	ASSERT(m_pActionHandler);
 
-	pCmdUI->Enable(m_pActionHandler->CanUndo() ? 1 : 0);
+	pCmdUI->Enable(m_pActionHandler->CanUndo());
 }
 
 void CMainFrame::OnUpdateEditRedo(CCmdUI *pCmdUI)
 {
-	ASSERT(m_pActionHandler != NULL);
+	ASSERT(m_pActionHandler);
 
-	pCmdUI->Enable(m_pActionHandler->CanRedo() ? 1 : 0);
+	pCmdUI->Enable(m_pActionHandler->CanRedo());
 }
 
 void CMainFrame::UpdateMenus()
@@ -3218,7 +3204,7 @@ void CMainFrame::OnEditRemoveUnusedPatterns()
 
 void CMainFrame::OnEditMergeDuplicatedPatterns()
 {
-	AddAction(new CFActionMergeDuplicated { });		// // //
+	AddAction(std::make_unique<CFActionMergeDuplicated>());		// // //
 }
 
 void CMainFrame::OnUpdateSelectionEnabled(CCmdUI *pCmdUI)

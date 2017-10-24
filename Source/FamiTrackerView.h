@@ -243,7 +243,7 @@ private:
 	bool	IsChipSolo(unsigned int Chip) const;		// // //
 
 	// Other
-	bool	AddAction(CAction *pAction) const;
+	bool	AddAction(std::unique_ptr<CAction> pAction) const;		// // //
 	CString	GetEffectHint(const stChanNote &Note, int Column) const;		// // //
 
 	// // //

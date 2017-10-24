@@ -726,6 +726,9 @@
     <ClCompile Include="Source\PatternData.cpp">
       <Filter>Source Files\Document Data Types</Filter>
     </ClCompile>
+    <ClCompile Include="Source\ActionHandler.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">
@@ -1312,6 +1315,9 @@
     </ClInclude>
     <ClInclude Include="Source\PatternData.h">
       <Filter>Header Files\Document Data Type Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ActionHandler.h">
+      <Filter>Header Files\Components Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

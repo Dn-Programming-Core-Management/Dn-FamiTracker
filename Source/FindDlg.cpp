@@ -1170,7 +1170,7 @@ bool CFindDlg::Replace(CCompoundAction *pAction)
 		}
 
 		if (pAction)
-			pAction->JoinAction(new CPActionReplaceNote(Target,
+			pAction->JoinAction(std::make_unique<CPActionReplaceNote>(Target,
 								m_pFindCursor->m_iFrame, m_pFindCursor->m_iRow, m_pFindCursor->m_iChannel));
 		else
 			m_pView->EditReplace(Target);
@@ -1355,7 +1355,7 @@ void CFindDlg::OnBnClickedButtonReplaceall()
 	m_iSearchDirection = IsDlgButtonChecked(IDC_CHECK_VERTICAL_SEARCH) ?
 		CFindCursor::direction_t::DOWN : CFindCursor::direction_t::RIGHT;
 
-	CCompoundAction *pAction = new CCompoundAction { };
+	auto pAction = std::make_unique<CCompoundAction>();
 	PrepareCursor(true);
 	stChanNote Target;
 	do {
@@ -1363,13 +1363,13 @@ void CFindDlg::OnBnClickedButtonReplaceall()
 		if (CompareFields(Target, m_pFindCursor->m_iChannel == CHANID_NOISE,
 							m_pDocument->GetEffColumns(Track, m_pFindCursor->m_iChannel))) {
 			m_bFound = true;
-			Replace(pAction);
+			Replace(static_cast<CCompoundAction *>(pAction.get()));
 			++Count;
 		}
 		m_pFindCursor->Move(m_iSearchDirection);
 	} while (!m_pFindCursor->AtStart());
 
-	static_cast<CMainFrame*>(AfxGetMainWnd())->AddAction(pAction);
+	static_cast<CMainFrame*>(AfxGetMainWnd())->AddAction(std::move(pAction));
 	m_pView->SetFocus();
 	CString str;
 	str.Format(_T("%d occurrence(s) replaced."), Count);

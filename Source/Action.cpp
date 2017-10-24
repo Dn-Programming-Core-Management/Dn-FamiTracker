@@ -24,76 +24,7 @@
 
 #include "Action.h"
 
-// CAction ////////////////////////////////////////////////////////////////////////
-
-bool CAction::Merge(const CAction *Other)		// // //
+bool CAction::Merge(const CAction &Other)		// // //
 {
 	return false;
-}
-
-
-// CActionHandler /////////////////////////////////////////////////////////////////
-
-const int CActionHandler::MAX_LEVELS = 64;		// // //
-
-void CActionHandler::Clear()
-{
-	m_UndoStack.clear();
-	m_RedoStack.clear();
-}
-
-void CActionHandler::Push(CAction *pAction)
-{
-	auto ptr = std::unique_ptr<CAction>(pAction);		// // //
-	if (m_UndoStack.empty() || !m_UndoStack.back()->Merge(pAction)) {
-		if (m_UndoStack.size() == MAX_LEVELS)
-			m_UndoStack.erase(m_UndoStack.begin());
-		m_UndoStack.push_back(std::move(ptr));
-	}
-	m_RedoStack.clear();
-}
-
-CAction *CActionHandler::PopUndo()
-{
-	if (m_UndoStack.empty())
-		return nullptr;
-
-	auto &pAction = m_RedoStack.emplace_back(std::move(m_UndoStack.back()));
-	m_UndoStack.pop_back();
-	return pAction.get();
-}
-
-CAction *CActionHandler::PopRedo()
-{
-	if (m_RedoStack.empty())
-		return nullptr;
-
-	auto &pAction = m_UndoStack.emplace_back(std::move(m_RedoStack.back()));
-	m_RedoStack.pop_back();
-	return pAction.get();
-}
-
-CAction *CActionHandler::GetLastAction() const
-{
-	return m_UndoStack.empty() ? nullptr : m_UndoStack.back().get();
-}
-
-int CActionHandler::GetUndoLevel() const
-{
-	return m_UndoStack.size();
-}
-
-int CActionHandler::GetRedoLevel() const
-{
-	return m_RedoStack.size();
-}
-
-bool CActionHandler::CanUndo() const
-{
-	return !m_UndoStack.empty();
-}
-
-bool CActionHandler::CanRedo() const
-{
-	return !m_RedoStack.empty();
 }

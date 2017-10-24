@@ -753,7 +753,7 @@ void CFamiTrackerView::OnMouseMove(UINT nFlags, CPoint point)
 
 BOOL CFamiTrackerView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 {
-	CPatternAction *pAction = NULL;
+	std::unique_ptr<CAction> pAction;		// // //
 
 	bool bShiftPressed = IsShiftPressed();
 	bool bControlPressed = IsControlPressed();
@@ -767,20 +767,16 @@ BOOL CFamiTrackerView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 	}
 	else if (bControlPressed) {
 		if (!(theApp.IsPlaying() && !IsSelecting() && m_bFollowMode))		// // //
-			pAction = new CPActionTranspose {zDelta > 0 ? TRANSPOSE_INC_NOTES : TRANSPOSE_DEC_NOTES};		// // //
+			pAction = std::make_unique<CPActionTranspose>(zDelta > 0 ? TRANSPOSE_INC_NOTES : TRANSPOSE_DEC_NOTES);		// // //
 	}
 	else if (bShiftPressed) {
 		if (!(theApp.IsPlaying() && !IsSelecting() && m_bFollowMode))
-			pAction = new CPActionScrollValues {zDelta > 0 ? 1 : -1};		// // //
+			pAction = std::make_unique<CPActionScrollValues>(zDelta > 0 ? 1 : -1);		// // //
 	}
 	else
 		m_pPatternEditor->OnMouseScroll(zDelta);
 
-	if (pAction != NULL) {
-		AddAction(pAction);
-	}
-	else
-		InvalidateCursor();
+	pAction ? AddAction(std::move(pAction)) : InvalidateCursor();
 	
 	return CView::OnMouseWheel(nFlags, zDelta, pt);
 }
@@ -933,11 +929,11 @@ void CFamiTrackerView::OnEditPaste()
 	CPatternClipData *pClipData = new CPatternClipData();
 	pClipData->FromMem(hMem);
 	// Create an undo point
-	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EDIT_PASTE);
+	auto pAction = std::make_unique<CPatternAction>(CPatternAction::ACT_EDIT_PASTE);
 	pAction->SetPaste(pClipData);
 	pAction->SetPasteMode(PASTE_DEFAULT);		// // //
 	pAction->SetPastePos(m_iPastePos);
-	AddAction(pAction);
+	AddAction(std::move(pAction));
 }
 
 void CFamiTrackerView::OnEditPasteMix()		// // //
@@ -952,11 +948,11 @@ void CFamiTrackerView::OnEditPasteMix()		// // //
 	pClipData->FromMem(hMem);
 
 	// Add an undo point
-	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EDIT_PASTE);		// // //
+	auto pAction = std::make_unique<CPatternAction>(CPatternAction::ACT_EDIT_PASTE);		// // //
 	pAction->SetPaste(pClipData);
 	pAction->SetPasteMode(PASTE_MIX);		// // //
 	pAction->SetPastePos(m_iPastePos);
-	AddAction(pAction);
+	AddAction(std::move(pAction));
 }
 
 void CFamiTrackerView::OnEditPasteOverwrite()		// // //
@@ -971,11 +967,11 @@ void CFamiTrackerView::OnEditPasteOverwrite()		// // //
 	pClipData->FromMem(hMem);
 
 	// Add an undo point
-	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EDIT_PASTE);
+	auto pAction = std::make_unique<CPatternAction>(CPatternAction::ACT_EDIT_PASTE);
 	pAction->SetPaste(pClipData);
 	pAction->SetPasteMode(PASTE_OVERWRITE);
 	pAction->SetPastePos(m_iPastePos);
-	AddAction(pAction);
+	AddAction(std::move(pAction));
 }
 
 void CFamiTrackerView::OnEditPasteInsert()		// // //
@@ -990,17 +986,17 @@ void CFamiTrackerView::OnEditPasteInsert()		// // //
 	pClipData->FromMem(hMem);
 
 	// Add an undo point
-	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_EDIT_PASTE);
+	auto pAction = std::make_unique<CPatternAction>(CPatternAction::ACT_EDIT_PASTE);
 	pAction->SetPaste(pClipData);
 	pAction->SetPasteMode(PASTE_INSERT);
 	pAction->SetPastePos(m_iPastePos);
-	AddAction(pAction);
+	AddAction(std::move(pAction));
 }
 
 void CFamiTrackerView::OnEditDelete()
 {
 	if (!m_bEditEnable) return;		// // //
-	AddAction(new CPActionClearSel { });		// // //
+	AddAction(std::make_unique<CPActionClearSel>());		// // //
 }
 
 void CFamiTrackerView::OnTrackerEdit()
@@ -1055,49 +1051,49 @@ void CFamiTrackerView::OnTrackerDetune()			// // //
 void CFamiTrackerView::OnTransposeDecreasenote()
 {
 	if (!m_bEditEnable) return;		// // //
-	AddAction(new CPActionTranspose {TRANSPOSE_DEC_NOTES});
+	AddAction(std::make_unique<CPActionTranspose>(TRANSPOSE_DEC_NOTES));
 }
 
 void CFamiTrackerView::OnTransposeDecreaseoctave()
 {
 	if (!m_bEditEnable) return;		// // //
-	AddAction(new CPActionTranspose {TRANSPOSE_DEC_OCTAVES});
+	AddAction(std::make_unique<CPActionTranspose>(TRANSPOSE_DEC_OCTAVES));
 }
 
 void CFamiTrackerView::OnTransposeIncreasenote()
 {
 	if (!m_bEditEnable) return;		// // //
-	AddAction(new CPActionTranspose {TRANSPOSE_INC_NOTES});
+	AddAction(std::make_unique<CPActionTranspose>(TRANSPOSE_INC_NOTES));
 }
 
 void CFamiTrackerView::OnTransposeIncreaseoctave()
 {
 	if (!m_bEditEnable) return;		// // //
-	AddAction(new CPActionTranspose {TRANSPOSE_INC_OCTAVES});
+	AddAction(std::make_unique<CPActionTranspose>(TRANSPOSE_INC_OCTAVES));
 }
 
 void CFamiTrackerView::OnDecreaseValues()
 {
 	if (!m_bEditEnable) return;		// // //
-	AddAction(new CPActionScrollValues {-1});
+	AddAction(std::make_unique<CPActionScrollValues>(-1));
 }
 
 void CFamiTrackerView::OnIncreaseValues()
 {
 	if (!m_bEditEnable) return;		// // //
-	AddAction(new CPActionScrollValues {1});
+	AddAction(std::make_unique<CPActionScrollValues>(1));
 }
 
 void CFamiTrackerView::OnCoarseDecreaseValues()		// // //
 {
 	if (!m_bEditEnable) return;
-	AddAction(new CPActionScrollValues {-16});
+	AddAction(std::make_unique<CPActionScrollValues>(-16));
 }
 
 void CFamiTrackerView::OnCoarseIncreaseValues()		// // //
 {
 	if (!m_bEditEnable) return;
-	AddAction(new CPActionScrollValues {16});
+	AddAction(std::make_unique<CPActionScrollValues>(16));
 }
 
 void CFamiTrackerView::OnEditInstrumentMask()
@@ -2009,12 +2005,13 @@ void CFamiTrackerView::InsertNote(int Note, int Octave, int Channel, int Velocit
 			m_iLastNote = (Note - 1) + Octave * 12;
 		}
 		
-		CPatternAction *pAction = new CPActionEditNote(Cell);		// // //
-		if (AddAction(pAction)) {
+		auto pAction = std::make_unique<CPActionEditNote>(Cell);		// // //
+		auto &Action = *pAction; // TODO: remove
+		if (AddAction(std::move(pAction))) {
 			const CSettings *pSettings = theApp.GetSettings();
 			if (m_pPatternEditor->GetColumn() == C_NOTE && !theApp.IsPlaying() && m_iInsertKeyStepping > 0 && !pSettings->Midi.bMidiMasterSync) {
 				StepDown();
-				pAction->SaveRedoState(static_cast<CMainFrame*>(GetParentFrame()));		// // //
+				Action.SaveRedoState(static_cast<CMainFrame &>(*GetParentFrame()));		// // //
 			}
 		}
 	}
@@ -2541,9 +2538,9 @@ void CFamiTrackerView::OnKeyInsert()
 		return;
 
 	if (m_pPatternEditor->IsSelecting())
-		AddAction(new CPActionInsertAtSel { });		// // //
+		AddAction(std::make_unique<CPActionInsertAtSel>());		// // //
 	else
-		AddAction(new CPActionInsertRow { });
+		AddAction(std::make_unique<CPActionInsertRow>());
 }
 
 void CFamiTrackerView::OnKeyBackspace()
@@ -2556,16 +2553,17 @@ void CFamiTrackerView::OnKeyBackspace()
 		return;
 
 	if (m_pPatternEditor->IsSelecting()) {
-		AddAction(new CPActionDeleteAtSel { });
+		AddAction(std::make_unique<CPActionDeleteAtSel>());
 	}
 	else {
 		if (PreventRepeat(VK_BACK, true))
 			return;
-		CPatternAction *pAction = new CPActionDeleteRow(true, true);		// // //
-		if (AddAction(pAction)) {
+		auto pAction = std::make_unique<CPActionDeleteRow>(true, true);		// // //
+		auto &Action = *pAction; // TODO: remove
+		if (AddAction(std::move(pAction))) {
 			m_pPatternEditor->MoveUp(1);
 			InvalidateCursor();
-			pAction->SaveRedoState(static_cast<CMainFrame*>(GetParentFrame()));		// // //
+			Action.SaveRedoState(static_cast<CMainFrame &>(*GetParentFrame()));		// // //
 		}
 	}
 }
@@ -2586,12 +2584,13 @@ void CFamiTrackerView::OnKeyDelete()
 	}
 	else {
 		bool bPullUp = theApp.GetSettings()->General.bPullUpDelete || bShiftPressed;
-		CPatternAction *pAction = new CPActionDeleteRow(bPullUp, false);		// // //
-		AddAction(pAction);
-		if (!bPullUp) {
-			StepDown();
-			pAction->SaveRedoState(static_cast<CMainFrame*>(GetParentFrame()));		// // //
-		}
+		auto pAction = std::make_unique<CPActionDeleteRow>(bPullUp, false);		// // //
+		auto &Action = *pAction; // TODO: remove
+		if (AddAction(std::move(pAction)))
+			if (!bPullUp) {
+				StepDown();
+				Action.SaveRedoState(static_cast<CMainFrame &>(*GetParentFrame()));		// // //
+			}
 	}
 }
 
@@ -2600,7 +2599,7 @@ void CFamiTrackerView::KeyIncreaseAction()
 	if (!m_bEditEnable)		// // //
 		return;
 
-	AddAction(new CPActionScrollField {1});		// // //
+	AddAction(std::make_unique<CPActionScrollField>(1));		// // //
 }
 
 void CFamiTrackerView::KeyDecreaseAction()
@@ -2608,7 +2607,7 @@ void CFamiTrackerView::KeyDecreaseAction()
 	if (!m_bEditEnable)		// // //
 		return;
 	
-	AddAction(new CPActionScrollField {-1});		// // //
+	AddAction(std::make_unique<CPActionScrollField>(-1));		// // //
 }
 
 bool CFamiTrackerView::EditInstrumentColumn(stChanNote &Note, int Key, bool &StepDown, bool &MoveRight, bool &MoveLeft)
@@ -2966,8 +2965,9 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 
 	// Something changed, store pattern data in document and update screen
 	if (m_bEditEnable) {
-		CPatternAction *pAction = new CPActionEditNote(Note);		// // //
-		if (AddAction(pAction)) {
+		auto pAction = std::make_unique<CPActionEditNote>(Note);		// // //
+		auto &Action = *pAction; // TODO: remove
+		if (AddAction(std::move(pAction))) {
 			if (bMoveLeft)
 				m_pPatternEditor->MoveLeft();
 			if (bMoveRight)
@@ -2975,7 +2975,7 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 			if (bStepDown)
 				StepDown();
 			InvalidateCursor();
-			pAction->SaveRedoState(static_cast<CMainFrame*>(GetParentFrame()));		// // //
+			Action.SaveRedoState(static_cast<CMainFrame &>(*GetParentFrame()));		// // //
 		}
 	}
 }
@@ -3508,31 +3508,31 @@ void CFamiTrackerView::SetStepping(int Step)
 void CFamiTrackerView::OnEditInterpolate()
 {
 	if (!m_bEditEnable) return;		// // //
-	AddAction(new CPActionInterpolate { });
+	AddAction(std::make_unique<CPActionInterpolate>());
 }
 
 void CFamiTrackerView::OnEditReverse()
 {
 	if (!m_bEditEnable) return;		// // //
-	AddAction(new CPActionReverse { });
+	AddAction(std::make_unique<CPActionReverse>());
 }
 
 void CFamiTrackerView::OnEditReplaceInstrument()
 {
 	if (!m_bEditEnable) return;		// // //
-	AddAction(new CPActionReplaceInst {GetInstrument()});
+	AddAction(std::make_unique<CPActionReplaceInst>(GetInstrument()));
 }
 
 void CFamiTrackerView::OnEditExpandPatterns()		// // //
 {
 	if (!m_bEditEnable) return;
-	AddAction(new CPActionStretch {std::vector<int> {1, 0}});
+	AddAction(std::make_unique<CPActionStretch>(std::vector<int> {1, 0}));
 }
 
 void CFamiTrackerView::OnEditShrinkPatterns()		// // //
 {
 	if (!m_bEditEnable) return;
-	AddAction(new CPActionStretch {std::vector<int> {2}});
+	AddAction(std::make_unique<CPActionStretch>(std::vector<int> {2}));
 }
 
 void CFamiTrackerView::OnEditStretchPatterns()		// // //
@@ -3540,7 +3540,7 @@ void CFamiTrackerView::OnEditStretchPatterns()		// // //
 	if (!m_bEditEnable) return;
 
 	CStretchDlg StretchDlg;
-	AddAction(new CPActionStretch {StretchDlg.GetStretchMap()});
+	AddAction(std::make_unique<CPActionStretch>(StretchDlg.GetStretchMap()));
 }
 
 void CFamiTrackerView::OnNcMouseMove(UINT nHitTest, CPoint point)
@@ -3623,11 +3623,11 @@ void CFamiTrackerView::OnPickupRow()
 	}
 }
 
-bool CFamiTrackerView::AddAction(CAction *pAction) const
+bool CFamiTrackerView::AddAction(std::unique_ptr<CAction> pAction) const		// // //
 {
 	// Performs an action and adds it to the undo queue
 	CMainFrame *pMainFrm = static_cast<CMainFrame*>(GetParentFrame());
-	return (pMainFrm != NULL) ? pMainFrm->AddAction(pAction) : false;
+	return pMainFrm ? pMainFrm->AddAction(std::move(pAction)) : false;
 }
 
 // OLE support
@@ -3764,7 +3764,7 @@ void CFamiTrackerView::BeginDragData(int ChanOffset, int RowOffset)
 			switch (res) {
 				case DROPEFFECT_MOVE:
 					// Delete data
-					AddAction(new CPActionClearSel { });		// // //
+					AddAction(std::make_unique<CPActionClearSel>());		// // //
 					break;
 			}
 
@@ -3784,7 +3784,7 @@ bool CFamiTrackerView::IsDragging() const
 
 void CFamiTrackerView::EditReplace(stChanNote &Note)		// // //
 {
-	AddAction(new CPActionEditNote(Note));
+	AddAction(std::make_unique<CPActionEditNote>(Note));
 	InvalidateCursor();
 	// pAction->SaveRedoState(static_cast<CMainFrame*>(GetParentFrame()));		// // //
 }

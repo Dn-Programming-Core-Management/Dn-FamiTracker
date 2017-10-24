@@ -3570,13 +3570,13 @@ void CPatternEditor::SetFocus(bool bFocus)
 void CPatternEditor::IncreaseEffectColumn(int Channel)
 {
 	const int Columns = m_pDocument->GetEffColumns(GetSelectedTrack(), Channel) + 1;
-	GetMainFrame()->AddAction(new CPActionEffColumn {Channel, Columns});		// // //
+	GetMainFrame()->AddAction(std::make_unique<CPActionEffColumn>(Channel, Columns));		// // //
 }
 
 void CPatternEditor::DecreaseEffectColumn(int Channel)
 {
 	const int Columns = m_pDocument->GetEffColumns(GetSelectedTrack(), Channel) - 1;
-	if (GetMainFrame()->AddAction(new CPActionEffColumn {Channel, Columns}))		// // //
+	if (GetMainFrame()->AddAction(std::make_unique<CPActionEffColumn>(Channel, Columns)))		// // //
 		if (static_cast<int>(m_cpCursorPos.m_iColumn) > Columns * 3 + 6)		// // //
 			m_cpCursorPos.m_iColumn = static_cast<cursor_column_t>(m_cpCursorPos.m_iColumn - 3);
 }
@@ -4104,9 +4104,9 @@ bool CPatternEditor::PerformDrop(const CPatternClipData *pClipData, bool bCopy, 
 
 	m_bSelecting = true;
 
-	CPatternAction *pAction = new CPatternAction(CPatternAction::ACT_DRAG_AND_DROP);
+	auto pAction = std::make_unique<CPatternAction>(CPatternAction::ACT_DRAG_AND_DROP);		// // //
 	pAction->SetDragAndDrop(pClipData, bDelete, bMix, &m_selDrag);
-	GetMainFrame()->AddAction(pAction);
+	GetMainFrame()->AddAction(std::move(pAction));
 
 	return true;
 }
