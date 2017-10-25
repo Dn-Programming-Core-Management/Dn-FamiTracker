@@ -22,49 +22,37 @@
 
 #include "ActionHandler.h"
 #include "Action.h"
-#include "FamiTrackerDoc.h"
+#include "stdafx.h" // ???
 
-const int CActionHandler::MAX_LEVELS = 64;		// // //
-
-void CActionHandler::Clear()
+CActionHandler::CActionHandler(unsigned capacity) :
+	redoPtr_(undoList_.cbegin()), capacity_(capacity)
 {
-	m_UndoStack.clear();
-	m_RedoStack.clear();
-	lost_ = false;
 }
 
-void CActionHandler::Push(std::unique_ptr<CAction> pAction)		// // //
-{
-	if (!pAction)
-		return;
-	if (m_UndoStack.empty() || !m_UndoStack.back()->Merge(*pAction)) {
-		if (m_UndoStack.size() == MAX_LEVELS) {
-			m_UndoStack.erase(m_UndoStack.begin());
+bool CActionHandler::AddAction(CMainFrame &cxt, std::unique_ptr<CAction> pAction) {		// // //
+	if (!pAction || !pAction->Commit(cxt))
+		return false;
+
+	redoPtr_ = undoList_.erase(redoPtr_, undoList_.cend());
+	if (!(CanUndo() && (*std::prev(redoPtr_))->Merge(*pAction))) {
+		undoList_.push_back(std::move(pAction));
+		if (undoList_.size() > capacity_) {
+			undoList_.pop_front();
 			lost_ = true;
 		}
-		m_UndoStack.push_back(std::move(pAction));
 	}
-	m_RedoStack.clear();
+
+	return true;
 }
 
 void CActionHandler::UndoLastAction(CMainFrame &cxt) {		// // //
-	if (CanUndo()) {
-		auto &pAction = m_RedoStack.emplace_back(std::move(m_UndoStack.back()));
-		pAction->RestoreRedoState(cxt);
-		pAction->Undo(cxt);
-		pAction->RestoreUndoState(cxt);
-		m_UndoStack.pop_back();
-	}
+	if (CanUndo())
+		(*--redoPtr_)->PerformUndo(cxt);
 }
 
 void CActionHandler::RedoLastAction(CMainFrame &cxt) {		// // //
-	if (CanRedo()) {
-		auto &pAction = m_UndoStack.emplace_back(std::move(m_RedoStack.back()));
-		pAction->RestoreUndoState(cxt);		// // //
-		pAction->Redo(cxt);
-		pAction->RestoreRedoState(cxt);		// // //
-		m_RedoStack.pop_back();
-	}
+	if (CanRedo())
+		(*redoPtr_++)->PerformRedo(cxt);
 }
 
 bool CActionHandler::ActionsLost() const {		// // //
@@ -73,10 +61,10 @@ bool CActionHandler::ActionsLost() const {		// // //
 
 bool CActionHandler::CanUndo() const
 {
-	return !m_UndoStack.empty();
+	return redoPtr_ != undoList_.cbegin();
 }
 
 bool CActionHandler::CanRedo() const
 {
-	return !m_RedoStack.empty();
+	return redoPtr_ != undoList_.cend();
 }

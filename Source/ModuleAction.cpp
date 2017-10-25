@@ -46,13 +46,13 @@ bool ModuleAction::CComment::SaveState(const CMainFrame &MainFrm) {
 	return true; // no merge because the comment dialog is modal
 }
 
-void ModuleAction::CComment::Undo(CMainFrame &MainFrm) const {
+void ModuleAction::CComment::Undo(CMainFrame &MainFrm) {
 	auto pDoc = static_cast<CFamiTrackerView*>(MainFrm.GetActiveView())->GetDocument();
 	pDoc->SetComment(oldComment_, oldShow_);
 	MainFrm.SetMessageText(_T("Comment settings changed"));
 }
 
-void ModuleAction::CComment::Redo(CMainFrame &MainFrm) const {
+void ModuleAction::CComment::Redo(CMainFrame &MainFrm) {
 	auto pDoc = static_cast<CFamiTrackerView*>(MainFrm.GetActiveView())->GetDocument();
 	pDoc->SetComment(newComment_, newShow_);
 	MainFrm.SetMessageText(_T("Comment settings changed"));

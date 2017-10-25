@@ -44,8 +44,8 @@ public:
 	}
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Undo(CMainFrame &MainFrm) const override;
-	void Redo(CMainFrame &MainFrm) const override;
+	void Undo(CMainFrame &MainFrm) override;
+	void Redo(CMainFrame &MainFrm) override;
 
 	std::string oldComment_;
 	std::string newComment_;

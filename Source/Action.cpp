@@ -23,8 +23,35 @@
 // These classes implements a new more flexible undo system
 
 #include "Action.h"
+#include <utility> // std::exchange
 
-bool CAction::Merge(const CAction &Other)		// // //
-{
+bool CAction::Merge(const CAction &Other) {		// // //
 	return false;
+}
+
+bool CAction::Commit(CMainFrame &cxt) {
+	if (done_)
+		return false;
+	SaveUndoState(cxt);
+	if (!SaveState(cxt)) // TODO: remove
+		return false; // Operation cancelled
+	Redo(cxt);
+	SaveRedoState(cxt);
+	return done_ = true;
+}
+
+
+void CAction::PerformUndo(CMainFrame &cxt) {
+	if (std::exchange(done_, false)) {
+		RestoreRedoState(cxt);
+		Undo(cxt);
+		RestoreUndoState(cxt);
+	}
+}
+void CAction::PerformRedo(CMainFrame &cxt) {
+	if (!std::exchange(done_, true)) {
+		RestoreUndoState(cxt);
+		Redo(cxt);
+		RestoreRedoState(cxt);
+	}
 }

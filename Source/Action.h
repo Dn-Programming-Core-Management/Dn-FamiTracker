@@ -29,29 +29,40 @@ class CMainFrame;		// // //
 class CAction
 {
 public:
-	virtual ~CAction() = default;
+	virtual ~CAction() noexcept = default;
 
-	// // // Save the action-specific state information. This method may reject the action by returning false
-	virtual bool SaveState(const CMainFrame &MainFrm) = 0;
+	// perform the action for the first time, return success or failure
+	virtual bool Commit(CMainFrame &cxt);		// // //
+	// perform the inverse action
+	void PerformUndo(CMainFrame &cxt);		// // //
+	// perform the action again
+	void PerformRedo(CMainFrame &cxt);		// // //
+	// combine current action with another one, return true if permissible
+	virtual bool Merge(const CAction &Other);		// // //
+
+protected:
+	friend class CCompoundAction;		// // //
+
+	// Save the action-specific state information. This method may reject the action by returning false
+	virtual bool SaveState(const CMainFrame &cxt) = 0;
 
 	// Undo the operation
-	virtual void Undo(CMainFrame &MainFrm) const = 0;
+	virtual void Undo(CMainFrame &cxt) = 0;
 
 	// Redo the operation
-	virtual void Redo(CMainFrame &MainFrm) const = 0;
+	virtual void Redo(CMainFrame &cxt) = 0;
 
-	// // // Save the undo state before performing the action
-	virtual void SaveUndoState(const CMainFrame &MainFrm) = 0;
+	// Save the undo state before performing the action
+	virtual void SaveUndoState(const CMainFrame &cxt) = 0;
 
-	// // // Save the redo state after performing the action
-	virtual void SaveRedoState(const CMainFrame &MainFrm) = 0;
+	// Save the redo state after performing the action
+	virtual void SaveRedoState(const CMainFrame &cxt) = 0;
 
-	// // // Restore the state just before the action
-	virtual void RestoreUndoState(CMainFrame &MainFrm) const = 0;
+	// Restore the state just before the action
+	virtual void RestoreUndoState(CMainFrame &cxt) const = 0;
 
-	// // // Restore the state just after the action
-	virtual void RestoreRedoState(CMainFrame &MainFrm) const = 0;
+	// Restore the state just after the action
+	virtual void RestoreRedoState(CMainFrame &cxt) const = 0;
 
-	// // // Combine current action with another one, return true if permissible
-	virtual bool Merge(const CAction &Other);
+	bool done_ = false;
 };

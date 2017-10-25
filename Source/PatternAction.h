@@ -23,12 +23,12 @@
 
 #pragma once
 
-#include <vector>		// // //
-#include <memory>		// // //
 #include "Action.h"
 #include "PatternEditorTypes.h"
 #include "SongData.h"		// // //
 #include "PatternNote.h"		// // //
+#include <vector>		// // //
+#include <memory>		// // //
 
 enum transpose_t {
 	TRANSPOSE_DEC_NOTES,
@@ -109,8 +109,8 @@ public:
 	virtual ~CPatternAction();
 
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Undo(CMainFrame &MainFrm) const override;
-	void Redo(CMainFrame &MainFrm) const override;
+	void Undo(CMainFrame &MainFrm) override;
+	void Redo(CMainFrame &MainFrm) override;
 
 	void SaveUndoState(const CMainFrame &MainFrm) override;		// // //
 	void SaveRedoState(const CMainFrame &MainFrm) override;		// // //
@@ -163,7 +163,7 @@ protected:
 	virtual ~CPSelectionAction();
 protected:
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Undo(CMainFrame &MainFrm) const override;
+	void Undo(CMainFrame &MainFrm) override;
 protected:
 	CPatternClipData *m_pUndoClipData;
 };
@@ -176,8 +176,8 @@ public:
 	CPActionEditNote(const stChanNote &Note);
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Undo(CMainFrame &MainFrm) const override;
-	void Redo(CMainFrame &MainFrm) const override;
+	void Undo(CMainFrame &MainFrm) override;
+	void Redo(CMainFrame &MainFrm) override;
 private:
 	stChanNote m_NewNote, m_OldNote;
 };
@@ -188,8 +188,8 @@ public:
 	CPActionReplaceNote(const stChanNote &Note, int Frame, int Row, int Channel);
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Undo(CMainFrame &MainFrm) const override;
-	void Redo(CMainFrame &MainFrm) const override;
+	void Undo(CMainFrame &MainFrm) override;
+	void Redo(CMainFrame &MainFrm) override;
 private:
 	stChanNote m_NewNote, m_OldNote;
 	int m_iFrame, m_iRow, m_iChannel;
@@ -201,8 +201,8 @@ public:
 	CPActionInsertRow();
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Undo(CMainFrame &MainFrm) const override;
-	void Redo(CMainFrame &MainFrm) const override;
+	void Undo(CMainFrame &MainFrm) override;
+	void Redo(CMainFrame &MainFrm) override;
 private:
 	stChanNote m_OldNote;
 };
@@ -213,8 +213,8 @@ public:
 	CPActionDeleteRow(bool PullUp, bool Backspace);
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Undo(CMainFrame &MainFrm) const override;
-	void Redo(CMainFrame &MainFrm) const override;
+	void Undo(CMainFrame &MainFrm) override;
+	void Redo(CMainFrame &MainFrm) override;
 private:
 	stChanNote m_OldNote;
 	bool m_bPullUp, m_bBack;
@@ -226,8 +226,8 @@ public:
 	CPActionScrollField(int Amount);
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Undo(CMainFrame &MainFrm) const override;
-	void Redo(CMainFrame &MainFrm) const override;
+	void Undo(CMainFrame &MainFrm) override;
+	void Redo(CMainFrame &MainFrm) override;
 private:
 	stChanNote m_OldNote;
 	int m_iAmount;
@@ -238,8 +238,8 @@ public:
 	CPActionPaste();
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Undo(CMainFrame &MainFrm) const override;
-	void Redo(CMainFrame &MainFrm) const override;
+	void Undo(CMainFrame &MainFrm) override;
+	void Redo(CMainFrame &MainFrm) override;
 };
 
 class CPActionClearSel : public CPSelectionAction
@@ -247,7 +247,7 @@ class CPActionClearSel : public CPSelectionAction
 public:
 	CPActionClearSel();
 private:
-	void Redo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) override;
 };
 
 class CPActionDeleteAtSel : public CPatternAction
@@ -257,8 +257,8 @@ public:
 	virtual ~CPActionDeleteAtSel();
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Undo(CMainFrame &MainFrm) const override;
-	void Redo(CMainFrame &MainFrm) const override;
+	void Undo(CMainFrame &MainFrm) override;
+	void Redo(CMainFrame &MainFrm) override;
 private:
 	CCursorPos m_cpTailPos;
 	CPatternClipData *m_pUndoHead, *m_pUndoTail;
@@ -271,8 +271,8 @@ public:
 	virtual ~CPActionInsertAtSel();
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Undo(CMainFrame &MainFrm) const override;
-	void Redo(CMainFrame &MainFrm) const override;
+	void Undo(CMainFrame &MainFrm) override;
+	void Redo(CMainFrame &MainFrm) override;
 private:
 	CCursorPos m_cpHeadPos, m_cpTailPos;
 	CPatternClipData *m_pUndoHead, *m_pUndoTail;
@@ -283,7 +283,7 @@ class CPActionTranspose : public CPSelectionAction
 public:
 	CPActionTranspose(transpose_t Type);
 private:
-	void Redo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) override;
 private:
 	transpose_t m_iTransposeMode;
 };
@@ -293,7 +293,7 @@ class CPActionScrollValues : public CPSelectionAction
 public:
 	CPActionScrollValues(int Amount);
 private:
-	void Redo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) override;
 private:
 	int m_iAmount;
 };
@@ -304,7 +304,7 @@ public:
 	CPActionInterpolate();
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Redo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) override;
 private:
 	int m_iSelectionSize;
 };
@@ -315,7 +315,7 @@ public:
 	CPActionReverse();
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Redo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) override;
 };
 
 class CPActionReplaceInst : public CPSelectionAction
@@ -324,7 +324,7 @@ public:
 	CPActionReplaceInst(unsigned Index);
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Redo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) override;
 private:
 	unsigned m_iInstrumentIndex;
 };
@@ -335,8 +335,8 @@ public:
 	CPActionDragDrop(const CPatternClipData *pClipData, bool bDelete, bool bMix, const CSelection &pDragTarget);
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Undo(CMainFrame &MainFrm) const override;
-	void Redo(CMainFrame &MainFrm) const override;
+	void Undo(CMainFrame &MainFrm) override;
+	void Redo(CMainFrame &MainFrm) override;
 private:
 	const CPatternClipData *m_pClipData;
 	CPatternClipData *m_pUndoClipData, *m_pAuxiliaryClipData;
@@ -352,8 +352,8 @@ public:
 	CPActionPatternLen(int Length);
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Undo(CMainFrame &MainFrm) const override;
-	void Redo(CMainFrame &MainFrm) const override;
+	void Undo(CMainFrame &MainFrm) override;
+	void Redo(CMainFrame &MainFrm) override;
 	bool Merge(const CAction &Other) override;		// // //
 private:
 	int m_iOldPatternLen, m_iNewPatternLen;
@@ -365,7 +365,7 @@ public:
 	CPActionStretch(std::vector<int> Stretch);
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Redo(CMainFrame &MainFrm) const override;
+	void Redo(CMainFrame &MainFrm) override;
 private:
 	std::vector<int> m_iStretchMap;
 };
@@ -376,8 +376,8 @@ public:
 	CPActionEffColumn(int Channel, int Count);
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Undo(CMainFrame &MainFrm) const override;
-	void Redo(CMainFrame &MainFrm) const override;
+	void Undo(CMainFrame &MainFrm) override;
+	void Redo(CMainFrame &MainFrm) override;
 	void UpdateView(CFamiTrackerDoc *pDoc) const;
 private:
 	unsigned m_iChannel;
@@ -390,8 +390,8 @@ public:
 	CPActionHighlight(stHighlight Hl);
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Undo(CMainFrame &MainFrm) const override;
-	void Redo(CMainFrame &MainFrm) const override;
+	void Undo(CMainFrame &MainFrm) override;
+	void Redo(CMainFrame &MainFrm) override;
 	void UpdateView(CFamiTrackerDoc *pDoc) const;
 private:
 	stHighlight m_OldHighlight, m_NewHighlight;
@@ -402,11 +402,11 @@ public:
 	CPActionUniquePatterns(unsigned index) : CPatternAction(0), index_(index) { }
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Undo(CMainFrame &MainFrm) const override;
-	void Redo(CMainFrame &MainFrm) const override;
+	void Undo(CMainFrame &MainFrm) override;
+	void Redo(CMainFrame &MainFrm) override;
 	void UpdateView(CFamiTrackerDoc *pDoc) const;
 
-	mutable std::unique_ptr<CSongData> song_; // ???
-	mutable std::unique_ptr<CSongData> songNew_;
+	std::unique_ptr<CSongData> song_;
+	std::unique_ptr<CSongData> songNew_;
 	unsigned index_ = 0;
 };

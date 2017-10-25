@@ -23,24 +23,20 @@
 
 #pragma once
 
-#include <vector>
+#include <list>
 #include <memory>
 
 class CAction;
 class CMainFrame;
-class CFamiTrackerDoc;
 
-// // // Stores action objects (a dual-stack, kind of)
+// // // Stores action objects
 class CActionHandler
 {
 public:
-	CActionHandler() = default;
+	explicit CActionHandler(unsigned capacity);
 
-	// Clear the undo list
-	void Clear();
-
-	// Add new action to undo list
-	void Push(std::unique_ptr<CAction> pAction);		// // //
+	// Add new action to undo list, return true if action is performed
+	bool AddAction(CMainFrame &cxt, std::unique_ptr<CAction> pAction);		// // //
 	
 	void UndoLastAction(CMainFrame &cxt);		// // //
 	void RedoLastAction(CMainFrame &cxt);		// // //
@@ -54,12 +50,9 @@ public:
 	// Returns true if there are redo objects available
 	bool CanRedo() const;
 
-public:
-	// Levels of undo in the editor. Higher value requires more memory
-	static const int MAX_LEVELS;
-
 private:
-	std::vector<std::unique_ptr<CAction>> m_UndoStack;
-	std::vector<std::unique_ptr<CAction>> m_RedoStack;
+	std::list<std::unique_ptr<CAction>> undoList_;
+	std::list<std::unique_ptr<CAction>>::const_iterator redoPtr_;
+	unsigned capacity_;
 	bool lost_ = false;
 };

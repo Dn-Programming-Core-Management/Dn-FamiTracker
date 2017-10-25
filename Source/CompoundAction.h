@@ -26,7 +26,6 @@
 #include "Action.h"
 #include <vector>
 #include <memory>
-#include <initializer_list>
 
 /*!
 	\brief A compound action class allowing multiple undoable actions to be chained together.
@@ -35,23 +34,21 @@
 class CCompoundAction final : public CAction		// // //
 {
 public:
-	CCompoundAction() = default;
-	CCompoundAction(std::initializer_list<CAction*> list);
+	/*!	\brief Adds an action to the compound to be performed last (and undone first).
+		\param pAction Pointer to the action object. */
+	void JoinAction(std::unique_ptr<CAction> pAction);
+
+private:
+	bool Commit(CMainFrame &MainFrm) override;
 
 	bool SaveState(const CMainFrame &MainFrm) override;
-	void Undo(CMainFrame &MainFrm) const override;
-	void Redo(CMainFrame &MainFrm) const override;
+	void Undo(CMainFrame &MainFrm) override;
+	void Redo(CMainFrame &MainFrm) override;
 
 	void SaveUndoState(const CMainFrame &MainFrm) override;
 	void SaveRedoState(const CMainFrame &MainFrm) override;
 	void RestoreUndoState(CMainFrame &MainFrm) const override;
 	void RestoreRedoState(CMainFrame &MainFrm) const override;
 
-	/*!	\brief Adds an action to the compound to be performed last (and undone first).
-		\param pAction Pointer to the action object. */
-	void JoinAction(std::unique_ptr<CAction> pAction);
-
-private:
 	std::vector<std::unique_ptr<CAction>> m_pActionList;
-	mutable bool m_bFirst = true;
 };

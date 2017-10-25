@@ -26,64 +26,61 @@
 // Compound action class
 // // //
 
-CCompoundAction::CCompoundAction(std::initializer_list<CAction *> list)
-{
-	for (auto x : list)
-		m_pActionList.emplace_back(x);
+bool CCompoundAction::Commit(CMainFrame &MainFrm) {
+	if (done_ || m_pActionList.empty())
+		return false;
+
+	auto it = m_pActionList.begin();
+	const auto end = m_pActionList.end();
+	while (it != end) {
+		(*it)->SaveUndoState(MainFrm);
+		if (!(*it)->SaveState(MainFrm)) { // TODO: remove
+			while (it != m_pActionList.begin())
+				(*--it)->Undo(MainFrm);
+			return false; // Operation cancelled
+		}
+		(*it++)->Redo(MainFrm);
+	}
+
+	SaveRedoState(MainFrm);
+	return done_ = true;
 }
 
 bool CCompoundAction::SaveState(const CMainFrame &MainFrm)
 {
-	if (m_pActionList.empty())
-		return false;
-	return (*m_pActionList.begin())->SaveState(MainFrm);
+	return !m_pActionList.empty() && m_pActionList.front()->SaveState(MainFrm);
 }
 
-void CCompoundAction::Undo(CMainFrame &MainFrm) const
+void CCompoundAction::Undo(CMainFrame &MainFrm)
 {
 	for (auto it = m_pActionList.rbegin(); it != m_pActionList.rend(); ++it)
 		(*it)->Undo(MainFrm);
 }
 
-void CCompoundAction::Redo(CMainFrame &MainFrm) const
+void CCompoundAction::Redo(CMainFrame &MainFrm)
 {
-	auto it = m_pActionList.begin();
-	const auto end = m_pActionList.end();
-	while (true) {
-		(*it)->Redo(MainFrm);
-		if (++it == end)
-			break;
-		if (!m_bFirst)
-			continue;
-		(*it)->SaveUndoState(MainFrm);
-		if (!(*it)->SaveState(MainFrm))
-			throw new std::runtime_error("Unable to create action.");
-	}
-	m_bFirst = false;
+	for (auto &x : m_pActionList)
+		x->Redo(MainFrm);
 }
 
 void CCompoundAction::SaveUndoState(const CMainFrame &MainFrm)
 {
-	if (!m_pActionList.empty())
-		m_pActionList.front()->SaveUndoState(MainFrm);
+	m_pActionList.front()->SaveUndoState(MainFrm);
 }
 
 void CCompoundAction::SaveRedoState(const CMainFrame &MainFrm)
 {
-	if (!m_pActionList.empty())
-		m_pActionList.back()->SaveRedoState(MainFrm);
+	m_pActionList.back()->SaveRedoState(MainFrm);
 }
 
 void CCompoundAction::RestoreUndoState(CMainFrame &MainFrm) const
 {
-	if (!m_pActionList.empty())
-		m_pActionList.front()->RestoreUndoState(MainFrm);
+	m_pActionList.front()->RestoreUndoState(MainFrm);
 }
 
 void CCompoundAction::RestoreRedoState(CMainFrame &pMainFrm) const
 {
-	if (!m_pActionList.empty())
-		m_pActionList.back()->RestoreRedoState(pMainFrm);
+	m_pActionList.back()->RestoreRedoState(pMainFrm);
 }
 
 void CCompoundAction::JoinAction(std::unique_ptr<CAction> pAction)

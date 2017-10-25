@@ -70,11 +70,15 @@
 #define new DEBUG_NEW
 #endif
 
-static UINT indicators[] =
+namespace {
+
+const unsigned MAX_UNDO_LEVELS = 64;		// // // moved
+
+const UINT indicators[] =
 {
 	ID_SEPARATOR,           // status line indicator
 	ID_INDICATOR_CHIP,
-	ID_INDICATOR_INSTRUMENT, 
+	ID_INDICATOR_INSTRUMENT,
 	ID_INDICATOR_OCTAVE,
 	ID_INDICATOR_RATE,
 	ID_INDICATOR_TEMPO,
@@ -87,14 +91,16 @@ static UINT indicators[] =
 
 // Timers
 enum {
-	TMR_WELCOME, 
-	TMR_AUDIO_CHECK, 
+	TMR_WELCOME,
+	TMR_AUDIO_CHECK,
 	TMR_AUTOSAVE
 };
 
 // Repeat config
 const int REPEAT_DELAY = 20;
 const int REPEAT_TIME = 200;
+
+} // namespace
 
 // CMainFrame
 
@@ -2827,16 +2833,11 @@ bool CMainFrame::AddAction(std::unique_ptr<CAction> pAction)		// // //
 {
 	ASSERT(m_pActionHandler);
 
-	try {		// // //
-		pAction->SaveUndoState(*this);		// // //
-		if (!pAction->SaveState(*this))
-			return false; // Operation cancelled
-		pAction->Redo(*this);
-		pAction->SaveRedoState(*this);
-		m_pActionHandler->Push(std::move(pAction));
+	try {
+		if (!m_pActionHandler->AddAction(*this, std::move(pAction)))
+			return false;		// // //
 	}
 	catch (std::runtime_error *e) {
-		pAction->Undo(*this);
 		AfxMessageBox(e->what());
 		SAFE_RELEASE(e);
 		return false;
@@ -2845,19 +2846,16 @@ bool CMainFrame::AddAction(std::unique_ptr<CAction> pAction)		// // //
 	auto pDoc = dynamic_cast<CFTMComponentInterface *>(GetActiveDocument());		// // //
 	if (m_pActionHandler->ActionsLost())		// // //
 		pDoc->ModifyIrreversible();
-
 	return true;
 }
 
 void CMainFrame::ResetUndo()
 {
-	m_pActionHandler = std::make_unique<CActionHandler>();		// // //
+	m_pActionHandler = std::make_unique<CActionHandler>(MAX_UNDO_LEVELS);		// // //
 }
 
 void CMainFrame::OnEditUndo()
 {
-	ASSERT(m_pActionHandler != NULL);
-
 	auto &doc = static_cast<CFamiTrackerDoc &>(*GetActiveDocument());
 	m_pActionHandler->UndoLastAction(*this);		// // //
 	if (!m_pActionHandler->CanUndo() && !doc.GetExceededFlag())
@@ -2866,23 +2864,17 @@ void CMainFrame::OnEditUndo()
 
 void CMainFrame::OnEditRedo()
 {
-	ASSERT(m_pActionHandler);
-
 	m_pActionHandler->RedoLastAction(*this);		// // //
 }
 
 void CMainFrame::OnUpdateEditUndo(CCmdUI *pCmdUI)
 {
-	ASSERT(m_pActionHandler);
-
-	pCmdUI->Enable(m_pActionHandler->CanUndo());
+	pCmdUI->Enable(m_pActionHandler && m_pActionHandler->CanUndo());		// // //
 }
 
 void CMainFrame::OnUpdateEditRedo(CCmdUI *pCmdUI)
 {
-	ASSERT(m_pActionHandler);
-
-	pCmdUI->Enable(m_pActionHandler->CanRedo());
+	pCmdUI->Enable(m_pActionHandler && m_pActionHandler->CanRedo());		// // //
 }
 
 void CMainFrame::UpdateMenus()
