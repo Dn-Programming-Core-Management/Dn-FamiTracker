@@ -3288,20 +3288,16 @@ void CFamiTrackerDoc::SwapInstruments(int First, int Second)
 	m_pInstrumentManager->SwapInstruments(First, Second);		// // //
 	
 	// Scan patterns
-	const unsigned int Count = GetChannelCount();
-	for (auto &pSong : m_pTracks) {
-		for (int j = 0; j < MAX_PATTERN; ++j) {
-			for (unsigned int k = 0; k < Count; ++k) {
-				for (int l = 0; l < MAX_PATTERN_LENGTH; ++l) {
-					auto &Data = pSong->GetPatternData(k, j, l);
-					if (Data.Instrument == First)
-						Data.Instrument = Second;
-					else if (Data.Instrument == Second)
-						Data.Instrument = First;
-				}
-			}
-		}
-	}
+	VisitSongs([&] (CSongData &song) {
+		song.VisitPatterns([&] (CPatternData &pat) {
+			pat.VisitRows([&] (stChanNote &note, unsigned row) {
+				if (note.Instrument == First)
+					note.Instrument = Second;
+				else if (note.Instrument == Second)
+					note.Instrument = First;
+			});
+		});
+	});
 }
 
 void CFamiTrackerDoc::SetDetuneOffset(int Chip, int Note, int Detune)		// // //

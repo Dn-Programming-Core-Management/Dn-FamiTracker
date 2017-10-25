@@ -93,6 +93,58 @@ public:
 	void CopyTrack(unsigned Chan, const CSongData &From, unsigned ChanFrom);		// // //
 	void SwapChannels(unsigned int First, unsigned int Second);		// // //
 
+	// void (*F)(CPatternData &pat [, unsigned ch, unsigned pat_index])
+	template <typename F>
+	void VisitPatterns(F f) {		// // //
+		if constexpr (std::is_invocable_v<F, CPatternData &>)
+			visit_patterns_impl(f);
+		else
+			visit_patterns_impl2(f);
+	}
+
+	// void (*F)(const CPatternData &pat [, unsigned ch, unsigned pat_index])
+	template <typename F>
+	void VisitPatterns(F f) const {
+		if constexpr (std::is_invocable_v<F, const CPatternData &>)
+			visit_patterns_impl(f);
+		else
+			visit_patterns_impl2(f);
+	}
+
+private:
+	template <typename F>
+	void visit_patterns_impl(F f) {
+		for (auto &ch : m_pPatternData)
+			for (auto &p : ch)
+				f(p);
+	}
+	template <typename F>
+	void visit_patterns_impl(F f) const {
+		for (auto &ch : m_pPatternData)
+			for (auto &p : ch)
+				f(p);
+	}
+	template <typename F>
+	void visit_patterns_impl2(F f) {
+		unsigned ch_index = 0;
+		unsigned p_index = 0;
+		for (auto &ch : m_pPatternData) {
+			for (auto &p : ch)
+				f(p, ch_index, p_index++);
+			++ch_index;
+		}
+	}
+	template <typename F>
+	void visit_patterns_impl2(F f) const {
+		unsigned ch_index = 0;
+		unsigned p_index = 0;
+		for (auto &ch : m_pPatternData) {
+			for (auto &p : ch)
+				f(p, ch_index, p_index++);
+			++ch_index;
+		}
+	}
+
 public:
 	// // // moved from CFamiTrackerDoc
 	static const std::string DEFAULT_TITLE;
