@@ -20,18 +20,60 @@
 ** must bear this legend.
 */
 
-#pragma once
 
+#pragma once
 
 // Application version information
 
 // Define this for beta builds
-//#define WIP
+#define WIP
 
 // Version info
 #define VERSION_API  0
 #define VERSION_MAJ  3
 #define VERSION_MIN  14
-#define VERSION_REV  5
+#define VERSION_REV  6
 
-#define VERSION VERSION_API,VERSION_MAJ,VERSION_MIN,VERSION_REV
+#define STRINGIFY_IMPL(x) #x
+#define STRINGIFY(x) STRINGIFY_IMPL(x)
+#define VERSION_STR(SEP) STRINGIFY(VERSION_API) SEP STRINGIFY(VERSION_MAJ) SEP \
+	STRINGIFY(VERSION_MIN) SEP STRINGIFY(VERSION_REV)
+
+constexpr int Compare0CCFTVersion(int api, int maj, int min, int rev) noexcept {
+	if (api > VERSION_API)
+		return 1;
+	if (api < VERSION_API)
+		return -1;
+	if (maj > VERSION_MAJ)
+		return 1;
+	if (maj < VERSION_MAJ)
+		return -1;
+	if (min > VERSION_MIN)
+		return 1;
+	if (min < VERSION_MIN)
+		return -1;
+	if (rev > VERSION_REV)
+		return 1;
+	if (rev < VERSION_REV)
+		return -1;
+	return 0;
+}
+
+#if defined(WIP) && __has_include("commit_hash.h")
+#include "commit_hash.h"
+constexpr const char *Get0CCFTVersionString() noexcept {
+	return VERSION_STR(".") " [" COMMIT_HASH "]";
+}
+
+constexpr const char *GetDumpVersionString() noexcept {
+	return VERSION_STR("_") "_" COMMIT_HASH;
+}
+#else
+constexpr const char *Get0CCFTVersionString() noexcept {
+	return VERSION_STR(".");
+}
+
+constexpr const char *GetDumpVersionString() noexcept {
+	return VERSION_STR("_");
+}
+#endif

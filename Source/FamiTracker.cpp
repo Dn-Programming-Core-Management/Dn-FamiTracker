@@ -415,7 +415,7 @@ void CFamiTrackerApp::LoadLocalization()
 	WORD Major, Minor, Build, Revision;
 
 	if (GetFileVersion(DLL_NAME, Major, Minor, Revision, Build)) {
-		if (Major != VERSION_API || Minor != VERSION_MAJ || Revision != VERSION_MIN || Build != VERSION_REV)		// // //
+		if (0 != Compare0CCFTVersion(Major, Minor, Revision, Build))		// // //
 			return;
 
 		m_hInstResDLL = ::LoadLibrary(DLL_NAME);
@@ -567,10 +567,7 @@ void CFamiTrackerApp::CheckNewVersion(bool StartUp)		// // //
 					int Ver[4] = { };
 					sscanf_s(i["tag_name"].get<std::string>().c_str(),
 							 "v%u.%u.%u%*1[.r]%u", Ver, Ver + 1, Ver + 2, Ver + 3);
-					if (Ver[0] > VERSION_API || Ver[0] == VERSION_API &&
-						(Ver[1] > VERSION_MAJ || Ver[1] == VERSION_MAJ &&
-						(Ver[2] > VERSION_MIN || Ver[2] == VERSION_MIN &&
-						Ver[3] > VERSION_REV))) {
+					if (Compare0CCFTVersion(Ver[0], Ver[1], Ver[2], Ver[3]) > 0) {
 						int Y = 1970, M = 1, D = 1;
 						sscanf_s(i["published_at"].get<std::string>().c_str(), "%d-%d-%d", &Y, &M, &D);
 						static const CString MONTHS[] = {
@@ -944,7 +941,7 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 			FILE *f;
 			AttachConsole(ATTACH_PARENT_PROCESS);
 			errno_t err = freopen_s(&f, "CON", "w", stdout);
-			printf("0CC-FamiTracker v%i.%i.%i.%i\n", VERSION);		// // //
+			printf("0CC-FamiTracker v%s\n", Get0CCFTVersionString());		// // //
 			return;
 		}
 	}

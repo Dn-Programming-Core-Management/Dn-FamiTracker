@@ -42,3 +42,4 @@ apu_log.txt
 *.db
 *.opendb
 .vs/*
+commit_hash.h

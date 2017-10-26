@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# put this into .git/hooks
+echo \#define COMMIT_HASH \"`git log -n1 --oneline | head -c7`\" > commit_hash.h

@@ -54,7 +54,7 @@ static CString GetDumpFilename(int counter)
 	filename.AppendFormat(_T("_%02i%02i%02i-%02i%02i"), t.GetYear(), t.GetMonth(), t.GetDay(), t.GetHour(), t.GetMinute());
 
 	// App version
-	filename.AppendFormat(_T("-v%i_%i_%i_%i"), VERSION);		// // //
+	filename.AppendFormat(_T("-v%s"), GetDumpVersionString());		// // //
 #ifdef WIP
 	filename.Append(_T("_beta"));
 #endif

@@ -149,11 +149,9 @@ BOOL CAboutDlg::OnInitDialog()
 	CString aboutString;
 
 #ifdef WIP
-	aboutString.Format(_T("0CC-FamiTracker version %i.%i.%i.%i beta"), VERSION);
+	aboutString.Format(_T("0CC-FamiTracker %s"), Get0CCFTVersionString());
 #else
-	CString str;
-	str.Format(_T("%i.%i.%i.%i"), VERSION);
-	AfxFormatString1(aboutString, IDS_ABOUT_VERSION_FORMAT, str);
+	AfxFormatString1(aboutString, IDS_ABOUT_VERSION_FORMAT, Get0CCFTVersionString());
 #endif
 
 	SetDlgItemText(IDC_ABOUT1, aboutString);
