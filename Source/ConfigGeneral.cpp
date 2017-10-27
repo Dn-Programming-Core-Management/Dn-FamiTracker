@@ -51,7 +51,7 @@ const CString CConfigGeneral::CONFIG_STR[] = {		// // //
 };
 
 const CString CConfigGeneral::CONFIG_DESC[] = {		// // //
-	_T("Wrap around the cursor when reaching top or bottom in the pattern editor."),
+	_T("Wrap the cursor around the edges of the pattern editor."),
 	_T("Move to next or previous frame when reaching top or bottom in the pattern editor."),
 	_T("Unlock the cursor from the center of the pattern editor."),
 	_T("Preview wave and DPCM files in the open file dialog when loading samples to the module."),
