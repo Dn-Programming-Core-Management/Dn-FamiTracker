@@ -23,7 +23,8 @@
 
 #pragma once
 
-#include "stdafx.h"		// // // ASSERT
+#include "stdafx.h" // clip data
+#include <memory>
 #include <utility>
 
 // Helper types for the pattern editor
@@ -91,7 +92,6 @@ inline column_t GetSelectColumn(cursor_column_t Column)
 		COLUMN_EFF4, COLUMN_EFF4, COLUMN_EFF4
 	};
 
-	ASSERT(Column >= 0 && Column < sizeof(COLUMNS));
 	return COLUMNS[Column];
 }
 
@@ -101,7 +101,6 @@ inline cursor_column_t GetCursorStartColumn(column_t Column)
 		C_NOTE, C_INSTRUMENT1, C_VOLUME, C_EFF1_NUM, C_EFF2_NUM, C_EFF3_NUM, C_EFF4_NUM
 	};
 
-	ASSERT(Column >= 0 && Column < COLUMNS);		// // //
 	return COL_START[Column];
 }
 
@@ -111,7 +110,6 @@ inline cursor_column_t GetCursorEndColumn(column_t Column)
 		C_NOTE, C_INSTRUMENT2, C_VOLUME, C_EFF1_PARAM2, C_EFF2_PARAM2, C_EFF3_PARAM2, C_EFF4_PARAM2
 	};
 
-	ASSERT(Column >= 0 && Column < COLUMNS);		// // //
 	return COL_END[Column];
 }
 
@@ -140,16 +138,15 @@ enum sel_condition_t {
 	SEL_TERMINAL_SKIP		// skip effect on last row
 };
 
-class CFamiTrackerDoc;		// // //
+class CSongData;		// // //
 class stChanNote;
 
 // Class used by clipboard
 class CPatternClipData
 {
 public:
-	CPatternClipData();
+	CPatternClipData() = default;
 	CPatternClipData(int Channels, int Rows);
-	~CPatternClipData();
 
 	SIZE_T GetAllocSize() const;	// Get clip data size in bytes
 	void ToMem(HGLOBAL hMem);		// Copy structures to memory
@@ -158,26 +155,23 @@ public:
 	stChanNote *GetPattern(int Channel, int Row);
 	const stChanNote *GetPattern(int Channel, int Row) const;
 
-private:
-	// Do not make copies
-	CPatternClipData(const CPatternClipData &obj) {};
-
 public:
 	struct {
-		int Channels;			// Number of channels
-		int Rows;				// Number of rows
-		column_t StartColumn;	// // // Start column in first channel
-		column_t EndColumn;		// // // End column in last channel
+		int Channels = 0;			// Number of channels
+		int Rows = 0;				// Number of rows
+		column_t StartColumn = COLUMN_NOTE;		// // // Start column in first channel
+		column_t EndColumn = COLUMN_NOTE;		// // // End column in last channel
 		struct {				// OLE drag and drop info
-			int ChanOffset;
-			int RowOffset;
+			int ChanOffset = 0;
+			int RowOffset = 0;
 		} OleInfo;
 	} ClipInfo;
 
-	stChanNote *pPattern = nullptr;	// Pattern data
+	std::unique_ptr<stChanNote[]> pPattern;		// // // Pattern data
 	int Size = 0;					// Pattern data size, in rows * columns
 };
 
+class CFamiTrackerDoc;
 
 // Cursor position
 class CCursorPos {

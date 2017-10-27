@@ -330,11 +330,9 @@ void CGrooveDlg::OnBnClickedButtonGrooveCopyFxx()
 		return;
 	}
 	
-	CPatternClipData *Fxx = new CPatternClipData(1, size);
-	Fxx->ClipInfo.Channels    = 1;
-	Fxx->ClipInfo.Rows        = size;
-	Fxx->ClipInfo.StartColumn = COLUMN_EFF1;
-	Fxx->ClipInfo.EndColumn   = COLUMN_EFF1;
+	CPatternClipData Fxx(1, size);
+	Fxx.ClipInfo.StartColumn = COLUMN_EFF1;
+	Fxx.ClipInfo.EndColumn   = COLUMN_EFF1;
 	
 	unsigned char prev = 0;
 	for (unsigned char i = 0; i < Groove->GetSize(); i++) {
@@ -344,15 +342,12 @@ void CGrooveDlg::OnBnClickedButtonGrooveCopyFxx()
 			row.EffNumber[0] = EF_SPEED;
 			row.EffParam[0] = x;
 		}
-		memcpy(Fxx->GetPattern(0, i), &row, sizeof(stChanNote));
+		memcpy(Fxx.GetPattern(0, i), &row, sizeof(stChanNote));
 		prev = x;
 	}
 	
-	std::shared_ptr<CPatternClipData> pClipData(Fxx);
-	SIZE_T Size = pClipData->GetAllocSize();
-	HGLOBAL hMem = Clipboard.AllocMem(Size);
-	if (hMem != NULL) {
-		pClipData->ToMem(hMem);
+	if (auto hMem = Clipboard.AllocMem(Fxx.GetAllocSize())) {
+		Fxx.ToMem(hMem);
 		// Set clipboard for internal data, hMem may not be used after this point
 		Clipboard.SetData(hMem);
 	}

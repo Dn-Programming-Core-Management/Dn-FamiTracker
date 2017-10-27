@@ -891,7 +891,7 @@ void CFamiTrackerView::OnEditCopy()
 		return;
 	}
 
-	std::shared_ptr<CPatternClipData> pClipData(m_pPatternEditor->Copy());		// // //
+	std::unique_ptr<CPatternClipData> pClipData(m_pPatternEditor->Copy());		// // //
 
 	CClipboard Clipboard(this, m_iClipboard);
 
@@ -900,10 +900,7 @@ void CFamiTrackerView::OnEditCopy()
 		return;
 	}
 
-	SIZE_T Size = pClipData->GetAllocSize();
-	HGLOBAL hMem = Clipboard.AllocMem(Size);
-
-	if (hMem != NULL) {
+	if (auto hMem = Clipboard.AllocMem(pClipData->GetAllocSize())) {
 		pClipData->ToMem(hMem);
 		// Set clipboard for internal data, hMem may not be used after this point
 		Clipboard.SetData(hMem);

@@ -190,22 +190,10 @@ CSelection CSelection::GetNormalized() const
 
 // CPatternClipData ////////////////////////////////////////////////////////////
 
-CPatternClipData::CPatternClipData()
-{
-	memset(&ClipInfo, 0, sizeof(ClipInfo));
-}
-
 CPatternClipData::CPatternClipData(int Channels, int Rows) :
-	pPattern(new stChanNote[Channels * Rows]), Size(Channels * Rows)
+	pPattern(std::make_unique<stChanNote[]>(Channels * Rows)), Size(Channels * Rows),		// // //
+	ClipInfo({Channels, Rows})
 {
-	memset(&ClipInfo, 0, sizeof(ClipInfo));
-	ClipInfo.Channels = Channels;		// // //
-	ClipInfo.Rows = Rows;
-}
-
-CPatternClipData::~CPatternClipData()
-{
-	SAFE_RELEASE_ARRAY(pPattern);
 }
 
 SIZE_T CPatternClipData::GetAllocSize() const
@@ -216,15 +204,12 @@ SIZE_T CPatternClipData::GetAllocSize() const
 void CPatternClipData::ToMem(HGLOBAL hMem) 
 {
 	// From CPatternClipData to memory
-	ASSERT(hMem != NULL);
-	ASSERT(pPattern != NULL);
+	ASSERT(hMem);
+	ASSERT(pPattern);
 
-	BYTE *pByte = (BYTE*)::GlobalLock(hMem);
-
-	if (pByte != NULL) {
+	if (auto pByte = (BYTE *)::GlobalLock(hMem)) {
 		memcpy(pByte, &ClipInfo, sizeof(ClipInfo));
-		memcpy(pByte + sizeof(ClipInfo), pPattern, Size * sizeof(stChanNote));
-
+		memcpy(pByte + sizeof(ClipInfo), pPattern.get(), Size * sizeof(stChanNote));		// // //
 		::GlobalUnlock(hMem);
 	}
 }
@@ -232,18 +217,14 @@ void CPatternClipData::ToMem(HGLOBAL hMem)
 void CPatternClipData::FromMem(HGLOBAL hMem)
 {
 	// From memory to CPatternClipData
-	ASSERT(hMem != NULL);
-	ASSERT(pPattern == NULL);
+	ASSERT(hMem);
+	ASSERT(!pPattern);
 
-	BYTE *pByte = (BYTE*)::GlobalLock(hMem);
-
-	if (pByte != NULL) {
+	if (auto pByte = (BYTE *)::GlobalLock(hMem)) {
 		memcpy(&ClipInfo, pByte, sizeof(ClipInfo));
-	
 		Size = ClipInfo.Channels * ClipInfo.Rows;
-		pPattern = new stChanNote[Size];
-		memcpy(pPattern, pByte + sizeof(ClipInfo), Size * sizeof(stChanNote));
-
+		pPattern = std::make_unique<stChanNote[]>(Size);		// // //
+		memcpy(pPattern.get(), pByte + sizeof(ClipInfo), Size * sizeof(stChanNote));
 		::GlobalUnlock(hMem);
 	}
 }
@@ -253,7 +234,7 @@ stChanNote *CPatternClipData::GetPattern(int Channel, int Row)
 	ASSERT(Channel < ClipInfo.Channels);
 	ASSERT(Row < ClipInfo.Rows);
 
-	return pPattern + (Channel * ClipInfo.Rows + Row);
+	return &pPattern[Channel * ClipInfo.Rows + Row];
 }
 
 const stChanNote *CPatternClipData::GetPattern(int Channel, int Row) const
@@ -261,7 +242,7 @@ const stChanNote *CPatternClipData::GetPattern(int Channel, int Row) const
 	ASSERT(Channel < ClipInfo.Channels);
 	ASSERT(Row < ClipInfo.Rows);
 
-	return pPattern + (Channel * ClipInfo.Rows + Row);
+	return &pPattern[Channel * ClipInfo.Rows + Row];
 }
 
 // // // CPatternIterator //////////////////////////////////////////////////////
