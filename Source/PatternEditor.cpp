@@ -580,21 +580,7 @@ void CPatternEditor::DrawScreen(CDC *pDC, CFamiTrackerView *pView)
 	Text.Format(_T("Play: %i - %i"), m_iPlayFrame, m_iPlayRow); PUT_TEXT(220);
 	Text.Format(_T("Middle row: %i"), m_iCenterRow); PUT_TEXT(220);
 
-#else
-
-#ifdef WIP
-	// Display the BETA text
-	CString Text;
-	int line = 0;
-	int offset = m_iWinWidth - 200;		// // //
-	Text.Format(_T("Revision %i beta (%s)"), VERSION_REV, __DATE__);
-	pDC->SetTextColor(0x00FFFF);
-	pDC->SetBkMode(TRANSPARENT);
-	pDC->TextOut(offset, m_iWinHeight - 24 - 18 * line++, Text);
-
-#endif
-
-#endif
+#endif		// // //
 
 	// Update scrollbars
 	UpdateVerticalScroll();
@@ -4104,9 +4090,7 @@ bool CPatternEditor::PerformDrop(const CPatternClipData *pClipData, bool bCopy, 
 
 	m_bSelecting = true;
 
-	auto pAction = std::make_unique<CPatternAction>(CPatternAction::ACT_DRAG_AND_DROP);		// // //
-	pAction->SetDragAndDrop(pClipData, bDelete, bMix, &m_selDrag);
-	GetMainFrame()->AddAction(std::move(pAction));
+	GetMainFrame()->AddAction(std::make_unique<CPActionDragDrop>(pClipData, bDelete, bMix, m_selDrag));		// // //
 
 	return true;
 }

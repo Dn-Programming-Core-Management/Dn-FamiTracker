@@ -108,45 +108,33 @@ public:
 public:
 	virtual ~CPatternAction();
 
-	bool SaveState(const CMainFrame &MainFrm) override;
-	void Undo(CMainFrame &MainFrm) override;
-	void Redo(CMainFrame &MainFrm) override;
-
 	void SaveUndoState(const CMainFrame &MainFrm) override;		// // //
 	void SaveRedoState(const CMainFrame &MainFrm) override;		// // //
 	void RestoreUndoState(CMainFrame &MainFrm) const override;		// // //
 	void RestoreRedoState(CMainFrame &MainFrm) const override;		// // //
-
-public:
-	void SetPaste(CPatternClipData *pClipData);
-	void SetPasteMode(paste_mode_t Mode);		// // //
-	void SetPastePos(paste_pos_t Pos);		// // //
-	void SetDragAndDrop(const CPatternClipData *pClipData, bool bDelete, bool bMix, const CSelection *pDragTarget);
 
 private:
 	virtual void UpdateView(CFamiTrackerDoc *pDoc) const;		// // //
 
 protected:
 	bool SetTargetSelection(CPatternEditor *pPatternEditor, CSelection &Sel);		// // //
-	void DeleteSelection(CMainFrame &MainFrm, const CSelection &Sel) const;		// // //
-	bool ValidateSelection(const CMainFrame &MainFrm) const;		// // //
-	std::pair<CPatternIterator, CPatternIterator> GetIterators(const CMainFrame &MainFrm) const;		// // //
+	void DeleteSelection(CFamiTrackerDoc &Doc, unsigned Track, const CSelection &Sel) const;		// // //
+	bool ValidateSelection(const CPatternEditor &Editor) const;		// // //
+	std::pair<CPatternIterator, CPatternIterator> GetIterators(CFamiTrackerDoc &doc) const;		// // //
 
 protected:
-	CPatternEditorState *m_pUndoState;		// // //
-	CPatternEditorState *m_pRedoState;
+	std::unique_ptr<CPatternEditorState> m_pUndoState;		// // //
+	std::unique_ptr<CPatternEditorState> m_pRedoState;
 
-private:
+protected:
 	const CPatternClipData *m_pClipData;
-	CPatternClipData *m_pUndoClipData, *m_pAuxiliaryClipData;		// // //
+	CPatternClipData *m_pUndoClipData;		// // //
 	paste_mode_t m_iPasteMode;		// // //
 	paste_pos_t m_iPastePos;		// // //
 	
 	bool m_bSelecting;
 	CSelection m_selection, m_newSelection;		// // //
 
-	bool m_bDragDelete;
-	bool m_bDragMix;
 	CSelection m_dragTarget;
 
 	int m_iAction;		// // // TODO: remove
@@ -235,7 +223,7 @@ private:
 
 class CPActionPaste : public CPatternAction {
 public:
-	CPActionPaste();
+	CPActionPaste(CPatternClipData *pClipData, paste_mode_t Mode, paste_pos_t Pos);
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
 	void Undo(CMainFrame &MainFrm) override;
@@ -338,12 +326,12 @@ private:
 	void Undo(CMainFrame &MainFrm) override;
 	void Redo(CMainFrame &MainFrm) override;
 private:
-	const CPatternClipData *m_pClipData;
-	CPatternClipData *m_pUndoClipData, *m_pAuxiliaryClipData;
+//	const CPatternClipData *m_pClipData;
+	std::unique_ptr<CPatternClipData> m_pAuxiliaryClipData; // TODO: remove
 	bool m_bDragDelete;
 	bool m_bDragMix;
-	CSelection m_newSelection;
-	CSelection m_dragTarget;
+//	CSelection m_newSelection;
+//	CSelection m_dragTarget;
 };
 
 class CPActionPatternLen : public CPatternAction

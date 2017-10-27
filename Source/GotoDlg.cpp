@@ -63,9 +63,8 @@ BOOL CGotoDlg::OnInitDialog()
 	m_cChipEdit = new CComboBox();
 	m_cChipEdit->SubclassDlgItem(IDC_COMBO_GOTO_CHIP, this);
 
-	CFamiTrackerDoc *pDoc = CFamiTrackerDoc::GetDoc();
 	CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(((CFrameWnd*)AfxGetMainWnd())->GetActiveView());
-	CPatternEditor *pEditor = pView->GetPatternEditor();
+	CFamiTrackerDoc *pDoc = pView->GetDocument();
 
 	m_cChipEdit->AddString(_T("2A03"));
 	if (pDoc->ExpansionEnabled(SNDCHIP_VRC6))
@@ -81,7 +80,7 @@ BOOL CGotoDlg::OnInitDialog()
 	if (pDoc->ExpansionEnabled(SNDCHIP_S5B))
 		m_cChipEdit->AddString(_T("5B"));
 		
-	int Channel = pDoc->GetChannelType(pEditor->GetChannel());
+	int Channel = pDoc->GetChannelType(pView->GetSelectedChannel());
 	if (Channel >= CHANID_S5B_CH1) {
 		Channel -= CHANID_S5B_CH1;
 		m_cChipEdit->SelectString(-1, _T("5B"));
@@ -109,8 +108,8 @@ BOOL CGotoDlg::OnInitDialog()
 	else
 		m_cChipEdit->SelectString(-1, _T("2A03"));
 
-	SetDlgItemInt(IDC_EDIT_GOTO_FRAME, pEditor->GetFrame());
-	SetDlgItemInt(IDC_EDIT_GOTO_ROW, pEditor->GetRow());
+	SetDlgItemInt(IDC_EDIT_GOTO_FRAME, pView->GetSelectedFrame());
+	SetDlgItemInt(IDC_EDIT_GOTO_ROW, pView->GetSelectedRow());
 	SetDlgItemInt(IDC_EDIT_GOTO_CHANNEL, Channel + 1);
 
 	CEdit *pEdit = static_cast<CEdit*>(GetDlgItem(IDC_EDIT_GOTO_CHANNEL));

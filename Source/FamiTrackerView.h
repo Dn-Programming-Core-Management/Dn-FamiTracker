@@ -222,6 +222,8 @@ private:
 
 	void	InsertNote(int Note, int Octave, int Channel, int Velocity);
 
+	void	DoPaste(paste_mode_t Mode);		// // //
+
 	// MIDI keyboard emulation
 	void	HandleKeyboardNote(char nChar, bool Pressed);
 	bool	IsSplitEnabled(int MidiNote, int Channel) const;		// // //

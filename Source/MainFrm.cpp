@@ -1824,12 +1824,11 @@ void CMainFrame::OnUpdateInstrumentEdit(CCmdUI *pCmdUI)
 
 void CMainFrame::OnTimer(UINT nIDEvent)
 {
-	CString text, str;
+	CString text;
 	switch (nIDEvent) {
 		// Welcome message
 		case TMR_WELCOME:
-			str.Format(_T("%i.%i.%i.%i"), VERSION);		// // //
-			AfxFormatString1(text, IDS_WELCOME_VER_FORMAT, str);
+			AfxFormatString1(text, IDS_WELCOME_VER_FORMAT, Get0CCFTVersionString());
 			SetMessageText(text);
 			KillTimer(TMR_WELCOME);
 			break;
@@ -3323,7 +3322,8 @@ void CMainFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 	// Add name of subtune
 	title.AppendFormat(_T(" [#%i %s]"), m_iTrack + 1, pDoc->GetTrackTitle(GetSelectedTrack()).c_str());		// // //
 
-	title.AppendFormat(_T(" - 0CC-FamiTracker %i.%i.%i.%i"), VERSION);		// // //
+	title.Append(_T(" - 0CC-FamiTracker "));		// // //
+	title.Append(Get0CCFTVersionString());		// // //
 	SetWindowText(title);
 	// UpdateFrameTitleForDocument(title);
 }

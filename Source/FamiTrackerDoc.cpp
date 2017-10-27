@@ -748,11 +748,6 @@ BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 
 	m_pCurrentDocument = nullptr;		// // //
 
-#ifdef WIP
-	// Force backups if compiled as beta
-//	m_bForceBackup = true;
-#endif
-
 	// File is loaded
 	m_bFileLoaded = true;
 	m_bFileLoadFailed = false;
