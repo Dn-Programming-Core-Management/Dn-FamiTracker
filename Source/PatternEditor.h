@@ -50,6 +50,7 @@ extern void CopyNoteSection(stChanNote *Target, const stChanNote *Source, paste_
 class CFamiTrackerDoc;
 class CFamiTrackerView;
 class CMainFrame;
+class CPatternClipData;		// // //
 
 // CPatternEditor
 class CPatternEditor {

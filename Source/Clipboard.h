@@ -25,6 +25,8 @@
 
 #include "stdafx.h"		// // //
 
+class CClipboardResource;		// // //
+
 // Clipboard wrapper class, using this ensures that clipboard is closed when finished
 class CClipboard
 {
@@ -39,6 +41,8 @@ public:
 	bool	GetData(HGLOBAL &hMemory) const;		// // //
 	LPVOID	GetDataPointer();
 	bool	IsDataAvailable()const;
+
+	bool	TryCopy(const CClipboardResource &res);		// // //
 
 private:
 	bool m_bOpened;

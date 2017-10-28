@@ -22,6 +22,7 @@
 
 #include "Clipboard.h"
 #include "resource.h"		// // //
+#include "ClipboardResource.h"		// // //
 
 // CClipboard //////////////////////////////////////////////////////////////////
 
@@ -107,4 +108,13 @@ LPVOID CClipboard::GetDataPointer()
 bool CClipboard::IsDataAvailable() const
 {
 	return ::IsClipboardFormatAvailable(m_iClipboard) == TRUE;
+}
+
+bool CClipboard::TryCopy(const CClipboardResource &res) {		// // //
+	if (auto hMem = AllocMem(res.GetAllocSize())) {
+		res.WriteGlobalMemory(hMem);
+		SetData(hMem);
+		return true;
+	}
+	return false;
 }

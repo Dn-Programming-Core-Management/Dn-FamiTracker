@@ -25,7 +25,7 @@
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
 #include "MainFrm.h"
-#include "PatternEditorTypes.h"
+#include "PatternClipData.h"
 #include "Clipboard.h"
 #include "Groove.h"
 #include "PatternNote.h"
@@ -345,12 +345,8 @@ void CGrooveDlg::OnBnClickedButtonGrooveCopyFxx()
 		memcpy(Fxx.GetPattern(0, i), &row, sizeof(stChanNote));
 		prev = x;
 	}
-	
-	if (auto hMem = Clipboard.AllocMem(Fxx.GetAllocSize())) {
-		Fxx.ToMem(hMem);
-		// Set clipboard for internal data, hMem may not be used after this point
-		Clipboard.SetData(hMem);
-	}
+
+	Clipboard.TryCopy(Fxx);		// // //
 }
 
 void CGrooveDlg::ParseGrooveField()

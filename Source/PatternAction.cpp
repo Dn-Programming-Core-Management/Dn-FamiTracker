@@ -28,6 +28,7 @@
 #include "Settings.h"		// // //
 #include "MainFrm.h"
 #include "PatternEditor.h"
+#include "PatternClipData.h"		// // //
 
 // // // all dependencies on CMainFrame
 #define GET_VIEW() static_cast<CFamiTrackerView *>(MainFrm.GetActiveView())

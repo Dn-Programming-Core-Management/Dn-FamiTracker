@@ -23,7 +23,6 @@
 
 #pragma once
 
-#include "stdafx.h" // clip data
 #include <memory>
 #include <utility>
 
@@ -140,36 +139,6 @@ enum sel_condition_t {
 
 class CSongData;		// // //
 class stChanNote;
-
-// Class used by clipboard
-class CPatternClipData
-{
-public:
-	CPatternClipData() = default;
-	CPatternClipData(int Channels, int Rows);
-
-	SIZE_T GetAllocSize() const;	// Get clip data size in bytes
-	void ToMem(HGLOBAL hMem);		// Copy structures to memory
-	void FromMem(HGLOBAL hMem);		// Copy structures from memory
-	
-	stChanNote *GetPattern(int Channel, int Row);
-	const stChanNote *GetPattern(int Channel, int Row) const;
-
-public:
-	struct {
-		int Channels = 0;			// Number of channels
-		int Rows = 0;				// Number of rows
-		column_t StartColumn = COLUMN_NOTE;		// // // Start column in first channel
-		column_t EndColumn = COLUMN_NOTE;		// // // End column in last channel
-		struct {				// OLE drag and drop info
-			int ChanOffset = 0;
-			int RowOffset = 0;
-		} OleInfo;
-	} ClipInfo;
-
-	std::unique_ptr<stChanNote[]> pPattern;		// // // Pattern data
-	int Size = 0;					// Pattern data size, in rows * columns
-};
 
 class CFamiTrackerDoc;
 

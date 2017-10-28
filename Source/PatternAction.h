@@ -39,6 +39,7 @@ enum transpose_t {
 
 class CPatternEditor;		// // //
 class CMainFrame;		// // //
+class CPatternClipData;		// // //
 
 /*
 	\brief A structure responsible for recording the cursor and selection state of the pattern

@@ -27,6 +27,7 @@
 #include "FamiTrackerView.h"
 #include "MainFrm.h"
 #include "FrameEditor.h"
+#include "FrameClipData.h"		// // //
 
 // // // all dependencies on CMainFrame
 #define GET_VIEW() static_cast<CFamiTrackerView *>(MainFrm.GetActiveView())
@@ -154,6 +155,10 @@ void CFActionAddFrame::Redo(CMainFrame &MainFrm)
 
 
 
+CFActionRemoveFrame::~CFActionRemoveFrame() {
+	SAFE_RELEASE(m_pRowClipData);
+}
+
 bool CFActionRemoveFrame::SaveState(const CMainFrame &MainFrm)
 {
 	const CFamiTrackerDoc *pDoc = GET_DOCUMENT();
@@ -259,6 +264,10 @@ bool CFActionFrameCount::Merge(const CAction &Other)		// // //
 
 
 
+CFActionSetPattern::~CFActionSetPattern() {
+	SAFE_RELEASE(m_pClipData);
+}
+
 bool CFActionSetPattern::SaveState(const CMainFrame &MainFrm)
 {
 	m_pClipData = GET_FRAME_EDITOR()->Copy();
@@ -293,6 +302,10 @@ bool CFActionSetPattern::Merge(const CAction &Other)		// // //
 
 
 
+CFActionSetPatternAll::~CFActionSetPatternAll() {
+	SAFE_RELEASE(m_pRowClipData);
+}
+
 bool CFActionSetPatternAll::SaveState(const CMainFrame &MainFrm)
 {
 	m_pRowClipData = GET_FRAME_EDITOR()->CopyFrame(m_pUndoState->Cursor.m_iFrame);
@@ -326,6 +339,10 @@ bool CFActionSetPatternAll::Merge(const CAction &Other)		// // //
 }
 
 
+
+CFActionChangePattern::~CFActionChangePattern() {
+	SAFE_RELEASE(m_pClipData);
+}
 
 bool CFActionChangePattern::SaveState(const CMainFrame &MainFrm)
 {
@@ -373,6 +390,10 @@ bool CFActionChangePattern::Merge(const CAction &Other)		// // //
 }
 
 
+
+CFActionChangePatternAll::~CFActionChangePatternAll() {
+	SAFE_RELEASE(m_pRowClipData);
+}
 
 bool CFActionChangePatternAll::SaveState(const CMainFrame &MainFrm)
 {
@@ -462,6 +483,10 @@ void CFActionMoveUp::Redo(CMainFrame &MainFrm)
 
 
 
+CFActionPaste::~CFActionPaste() {
+	SAFE_RELEASE(m_pClipData);
+}
+
 bool CFActionPaste::SaveState(const CMainFrame &MainFrm)
 {
 	const CFamiTrackerDoc *pDoc = GET_DOCUMENT();
@@ -490,6 +515,10 @@ void CFActionPaste::Redo(CMainFrame &MainFrm)
 }
 
 
+
+CFActionPasteOverwrite::~CFActionPasteOverwrite() {
+	SAFE_RELEASE(m_pClipData);
+}
 
 bool CFActionPasteOverwrite::SaveState(const CMainFrame &MainFrm)		// // //
 {
@@ -523,6 +552,10 @@ void CFActionPasteOverwrite::Redo(CMainFrame &MainFrm)		// // //
 
 
 
+CFActionDropMove::~CFActionDropMove() {
+	SAFE_RELEASE(m_pClipData);
+}
+
 bool CFActionDropMove::SaveState(const CMainFrame &MainFrm)
 {
 	return true;
@@ -543,6 +576,10 @@ void CFActionDropMove::Redo(CMainFrame &MainFrm)
 }
 
 
+
+CFActionClonePatterns::~CFActionClonePatterns() {
+	SAFE_RELEASE(m_pClipData);
+}
 
 bool CFActionClonePatterns::SaveState(const CMainFrame &MainFrm)		// // //
 {
@@ -588,6 +625,10 @@ void CFActionClonePatterns::Redo(CMainFrame &MainFrm)		// // //
 
 
 
+CFActionDeleteSel::~CFActionDeleteSel() {
+	SAFE_RELEASE(m_pClipData);
+}
+
 bool CFActionDeleteSel::SaveState(const CMainFrame &MainFrm)
 {
 	const CFamiTrackerDoc *pDoc = GET_DOCUMENT();
@@ -622,6 +663,11 @@ void CFActionDeleteSel::Redo(CMainFrame &MainFrm)
 }
 
 
+
+CFActionMergeDuplicated::~CFActionMergeDuplicated() {
+	SAFE_RELEASE(m_pOldClipData);
+	SAFE_RELEASE(m_pClipData);
+}
 
 bool CFActionMergeDuplicated::SaveState(const CMainFrame &MainFrm)
 {

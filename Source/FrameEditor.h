@@ -29,6 +29,7 @@ class CFamiTrackerDoc;
 class CFamiTrackerView;
 class CFrameEditor;
 class CMainFrame;		// // //
+class CFrameClipData;		// // //
 
 class CFrameEditorDropTarget : public COleDropTarget
 {
@@ -179,7 +180,7 @@ private:
 	// Select/drag
 	bool	m_bSelecting;
 	bool	m_bStartDrag;
-	bool	m_bDeletedRows;
+	bool	m_bDropped;
 	bool	m_bFullFrameSelect = false;		// // //
 	CFrameSelection m_selection;		// // //
 	int		m_iDragRow;

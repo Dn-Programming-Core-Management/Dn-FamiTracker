@@ -30,37 +30,6 @@
 
 class CFamiTrackerDoc;		// // //
 
-class CFrameClipData {
-public:
-	// Constructor/desctructor
-	CFrameClipData();
-	CFrameClipData(int Channels, int Frames);
-	virtual ~CFrameClipData();
-
-	SIZE_T GetAllocSize() const;	// Get memory size in bytes
-	void ToMem(HGLOBAL hMem);		// Copy structures to memory
-	void FromMem(HGLOBAL hMem);		// Copy structures from memory
-	
-	int  GetFrame(int Frame, int Channel) const;
-	void SetFrame(int Frame, int Channel, int Pattern);
-
-public:
-	// Clip info
-	struct {
-		int Channels;
-		int Frames;
-		int FirstChannel;
-		struct {
-			int SourceRowStart;
-			int SourceRowEnd;
-		} OleInfo;
-	} ClipInfo;
-	
-	// Clip data
-	int *pFrames = nullptr;
-	int iSize = 0;
-};
-
 // // // Frame editor cursor
 struct CFrameCursorPos
 {

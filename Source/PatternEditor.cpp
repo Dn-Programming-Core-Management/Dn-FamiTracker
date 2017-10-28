@@ -40,6 +40,7 @@
 #include "APU/Noise.h"		// // //
 #include "APU/DPCM.h"		// // //
 #include "RegisterState.h"		// // //
+#include "PatternClipData.h"		// // //
 
 /*
  * CPatternEditor

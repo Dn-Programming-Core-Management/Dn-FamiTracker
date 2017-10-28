@@ -39,6 +39,7 @@
 #include "BookmarkCollection.h"		// // //
 #include "BookmarkManager.h"		// // //
 #include "DPI.h"		// // //
+#include "FrameClipData.h"		// // //
 
 /*
  * CFrameEditor
@@ -71,7 +72,7 @@ CFrameEditor::CFrameEditor(CMainFrame *pMainFrm) :
 	m_hAccel(0),
 	m_bSelecting(false),
 	m_bStartDrag(false),
-	m_bDeletedRows(false),
+	m_bDropped(false),
 	m_iDragRow(0),
 	m_bLastRow(false),		// // //
 	m_iTopScrollArea(0),
@@ -1036,12 +1037,7 @@ void CFrameEditor::OnEditCopy()
 		return;
 	}
 
-	if (HGLOBAL hMem = Clipboard.AllocMem(ClipData->GetAllocSize())) {
-		// Copy to clipboard
-		ClipData->ToMem(hMem);
-		// Set clipboard for internal data, hMem may not be used after this point
-		Clipboard.SetData(hMem);
-	}
+	Clipboard.TryCopy(*ClipData);		// // //
 }
 
 void CFrameEditor::OnEditPaste()
@@ -1052,9 +1048,8 @@ void CFrameEditor::OnEditPaste()
 		return;
 
 	CFrameClipData *pClipData = new CFrameClipData();
-	pClipData->FromMem(hMem);
-
-	m_pMainFrame->AddAction(std::make_unique<CFActionPaste>(pClipData, GetEditFrame(), false));		// // //
+	if (pClipData->ReadGlobalMemory(hMem))
+		m_pMainFrame->AddAction(std::make_unique<CFActionPaste>(pClipData, GetEditFrame(), false));		// // //
 }
 
 void CFrameEditor::OnEditPasteOverwrite()		// // //
@@ -1065,9 +1060,8 @@ void CFrameEditor::OnEditPasteOverwrite()		// // //
 		return;
 
 	CFrameClipData *pClipData = new CFrameClipData();
-	pClipData->FromMem(hMem);
-
-	m_pMainFrame->AddAction(std::make_unique<CFActionPasteOverwrite>(pClipData));		// // //
+	if (pClipData->ReadGlobalMemory(hMem))
+		m_pMainFrame->AddAction(std::make_unique<CFActionPasteOverwrite>(pClipData));		// // //
 }
 
 void CFrameEditor::OnUpdateEditPasteOverwrite(CCmdUI *pCmdUI)		// // //
@@ -1083,9 +1077,8 @@ void CFrameEditor::OnEditPasteNewPatterns()
 		return;
 
 	CFrameClipData *pClipData = new CFrameClipData();
-	pClipData->FromMem(hMem);
-
-	m_pMainFrame->AddAction(std::make_unique<CFActionPaste>(pClipData, GetEditFrame(), true));		// // //
+	if (pClipData->ReadGlobalMemory(hMem))
+		m_pMainFrame->AddAction(std::make_unique<CFActionPaste>(pClipData, GetEditFrame(), true));		// // //
 }
 
 void CFrameEditor::OnEditDelete()
@@ -1370,10 +1363,6 @@ void CFrameEditor::InitiateDrag()
 	const int Channels	  = m_selection.GetChanEnd() - ChanStart + 1;		// // // m_pDocument->GetChannelCount();
 	const int Rows		  = SelectEnd - SelectStart + 1;
 
-	COleDataSource *pSrc = new COleDataSource();
-
-	m_bDeletedRows = false;
-
 	// Create clipboard structure
 	CFrameClipData ClipData(Channels, Rows);
 	ClipData.ClipInfo.FirstChannel = ChanStart;		// // //
@@ -1385,29 +1374,15 @@ void CFrameEditor::InitiateDrag()
 		for (int j = 0; j < Channels; ++j)
 			ClipData.SetFrame(i, j, m_pDocument->GetPatternAtFrame(Track, i + SelectStart, j + ChanStart));
 
-	SIZE_T Size = ClipData.GetAllocSize();
-	HGLOBAL hMem = ::GlobalAlloc(GMEM_MOVEABLE, Size);
+	m_bDropped = false;
 
-	if (hMem != NULL) {
-		// Copy to clipboard
+	DROPEFFECT res = ClipData.DragDropTransfer(m_iClipboard, DROPEFFECT_COPY | DROPEFFECT_MOVE);		// // // calls DropData
 
-		ClipData.ToMem(hMem);
-
-		// Setup OLE
-		pSrc->CacheGlobalData(m_iClipboard, hMem);
-		DROPEFFECT res = pSrc->DoDragDrop(DROPEFFECT_COPY | DROPEFFECT_MOVE); // calls DropData
-
-		if (res == DROPEFFECT_MOVE) {
-			if (!m_bDeletedRows) {
-				// Target was another window, delete rows locally
-				m_pMainFrame->AddAction(std::make_unique<CFActionDeleteSel>( ));		// // //
-			}
-		}
-
-		::GlobalFree(hMem);
+	if (!m_bDropped) { // Target was another window
+		if (res & DROPEFFECT_MOVE)
+			m_pMainFrame->AddAction(std::make_unique<CFActionDeleteSel>());		// // // Delete data
+		CancelSelection();
 	}
-	
-	SAFE_RELEASE(pSrc);
 
 	m_bStartDrag = false;
 }
@@ -1436,12 +1411,13 @@ void CFrameEditor::SetEditFrame(int Frame) const		// // //
 bool CFrameEditor::IsCopyValid(COleDataObject* pDataObject) const
 {
 	// Return true if the number of pasted frames will fit
-	CFrameClipData *pClipData = new CFrameClipData();
+	CFrameClipData ClipData;		// // //
 	HGLOBAL hMem = pDataObject->GetGlobalData(m_iClipboard);
-	pClipData->FromMem(hMem);
-	int Frames = pClipData->ClipInfo.Frames;
-	SAFE_RELEASE(pClipData);
-	return (m_pDocument->GetFrameCount(m_pMainFrame->GetSelectedTrack()) + Frames) <= MAX_FRAMES;
+	if (ClipData.ReadGlobalMemory(hMem)) {		// // //
+		int Frames = ClipData.ClipInfo.Frames;
+		return (m_pDocument->GetFrameCount(m_pMainFrame->GetSelectedTrack()) + Frames) <= MAX_FRAMES;
+	}
+	return false;
 }
 
 void CFrameEditor::UpdateDrag(const CPoint &point)
@@ -1464,8 +1440,10 @@ BOOL CFrameEditor::DropData(COleDataObject* pDataObject, DROPEFFECT dropEffect)
 
 	// Get frame data
 	CFrameClipData *pClipData = new CFrameClipData();
-	HGLOBAL hMem = pDataObject->GetGlobalData(m_iClipboard);
-	pClipData->FromMem(hMem);
+	if (!pClipData->ReadGlobalMemory(pDataObject->GetGlobalData(m_iClipboard))) {		// // //
+		SAFE_RELEASE(pClipData);
+		return FALSE;
+	}
 
 	const int SelectStart = pClipData->ClipInfo.OleInfo.SourceRowStart;
 	const int SelectEnd	  = pClipData->ClipInfo.OleInfo.SourceRowEnd;
@@ -1498,7 +1476,7 @@ BOOL CFrameEditor::DropData(COleDataObject* pDataObject, DROPEFFECT dropEffect)
 			break;
 	}
 
-	m_bDeletedRows = true;
+	m_bDropped = true;
 
 	InvalidateFrameData();
 	Invalidate();

@@ -429,9 +429,12 @@
     <ClCompile Include="Source\BookmarkDlg.cpp" />
     <ClCompile Include="Source\BookmarkManager.cpp" />
     <ClCompile Include="Source\ChannelFactory.cpp" />
+    <ClCompile Include="Source\ClipboardResource.cpp" />
     <ClCompile Include="Source\FamiTrackerDocIO.cpp" />
+    <ClCompile Include="Source\FrameClipData.cpp" />
     <ClCompile Include="Source\InstrumentFactory.cpp" />
     <ClCompile Include="Source\ModuleAction.cpp" />
+    <ClCompile Include="Source\PatternClipData.cpp" />
     <ClCompile Include="Source\PatternData.cpp" />
     <ClCompile Include="Source\SoundDriver.cpp" />
     <ClCompile Include="Source\SongState.cpp" />
@@ -599,11 +602,14 @@
     <ClInclude Include="Source\BookmarkCollection.h" />
     <ClInclude Include="Source\BookmarkManager.h" />
     <ClInclude Include="Source\BookmarkDlg.h" />
+    <ClInclude Include="Source\ClipboardResource.h" />
     <ClInclude Include="Source\FamiTrackerDocIO.h" />
+    <ClInclude Include="Source\FrameClipData.h" />
     <ClInclude Include="Source\FrameEditorTypes.h" />
     <ClInclude Include="Source\IntRange.h" />
     <ClInclude Include="Source\ModuleAction.h" />
     <ClInclude Include="Source\NoteQueue.h" />
+    <ClInclude Include="Source\PatternClipData.h" />
     <ClInclude Include="Source\PatternComponent.h" />
     <ClInclude Include="Source\PatternData.h" />
     <ClInclude Include="Source\PlayerCursor.h" />

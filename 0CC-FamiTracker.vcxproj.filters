@@ -492,9 +492,6 @@
     <ClCompile Include="Source\MIDI.cpp">
       <Filter>Source Files\MIDI</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Clipboard.cpp">
-      <Filter>Source Files\Pattern Editor</Filter>
-    </ClCompile>
     <ClCompile Include="Source\PatternAction.cpp">
       <Filter>Source Files\Pattern Editor</Filter>
     </ClCompile>
@@ -730,6 +727,18 @@
       <Filter>Source Files\Document Utilities</Filter>
     </ClCompile>
     <ClCompile Include="Source\ActionHandler.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\PatternClipData.cpp">
+      <Filter>Source Files\Pattern Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\FrameClipData.cpp">
+      <Filter>Source Files\Frame Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Clipboard.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ClipboardResource.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
   </ItemGroup>
@@ -997,9 +1006,6 @@
     </ClInclude>
     <ClInclude Include="Source\Instrument.h">
       <Filter>Header Files\Document Data Type Headers\Instrument Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Clipboard.h">
-      <Filter>Header Files\Pattern Editor Headers</Filter>
     </ClInclude>
     <ClInclude Include="Source\ColorScheme.h">
       <Filter>Header Files\Pattern Editor Headers</Filter>
@@ -1323,6 +1329,18 @@
       <Filter>Header Files\Document Utilities Headers</Filter>
     </ClInclude>
     <ClInclude Include="Source\ActionHandler.h">
+      <Filter>Header Files\Components Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\PatternClipData.h">
+      <Filter>Header Files\Pattern Editor Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\FrameClipData.h">
+      <Filter>Header Files\Frame Editor Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Clipboard.h">
+      <Filter>Header Files\Components Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ClipboardResource.h">
       <Filter>Header Files\Components Headers</Filter>
     </ClInclude>
   </ItemGroup>
