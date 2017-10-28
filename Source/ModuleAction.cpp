@@ -25,6 +25,9 @@
 #include "FamiTrackerView.h"
 #include "FamiTrackerDoc.h"
 
+#define GET_VIEW() static_cast<CFamiTrackerView *>(MainFrm.GetActiveView())
+#define GET_DOCUMENT() *GET_VIEW()->GetDocument()
+
 void CModuleAction::SaveUndoState(const CMainFrame &MainFrm) {
 }
 
@@ -40,20 +43,20 @@ void CModuleAction::RestoreRedoState(CMainFrame &MainFrm) const {
 
 
 bool ModuleAction::CComment::SaveState(const CMainFrame &MainFrm) {
-	auto pDoc = static_cast<CFamiTrackerView*>(MainFrm.GetActiveView())->GetDocument();
-	oldComment_ = pDoc->GetComment();
-	oldShow_ = pDoc->ShowCommentOnOpen();
+	auto &doc = GET_DOCUMENT();
+	oldComment_ = doc.GetComment();
+	oldShow_ = doc.ShowCommentOnOpen();
 	return true; // no merge because the comment dialog is modal
 }
 
 void ModuleAction::CComment::Undo(CMainFrame &MainFrm) {
-	auto pDoc = static_cast<CFamiTrackerView*>(MainFrm.GetActiveView())->GetDocument();
-	pDoc->SetComment(oldComment_, oldShow_);
+	auto &doc = GET_DOCUMENT();
+	doc.SetComment(oldComment_, oldShow_);
 	MainFrm.SetMessageText(_T("Comment settings changed"));
 }
 
 void ModuleAction::CComment::Redo(CMainFrame &MainFrm) {
-	auto pDoc = static_cast<CFamiTrackerView*>(MainFrm.GetActiveView())->GetDocument();
-	pDoc->SetComment(newComment_, newShow_);
+	auto &doc = GET_DOCUMENT();
+	doc.SetComment(newComment_, newShow_);
 	MainFrm.SetMessageText(_T("Comment settings changed"));
 }

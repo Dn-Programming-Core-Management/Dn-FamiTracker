@@ -62,13 +62,6 @@ void CPatternEditorState::ApplyState(CPatternEditor *pEditor) const
 // // // for note writes
 #define STATE_EXPAND(st) (st)->Track, (st)->Cursor.m_iFrame, (st)->Cursor.m_iChannel, (st)->Cursor.m_iRow
 
-CPatternAction::CPatternAction(int iAction) : 
-	m_iAction(iAction),		// // //
-	m_pClipData(NULL), 
-	m_pUndoClipData(NULL)
-{
-}
-
 CPatternAction::~CPatternAction()
 {
 	SAFE_RELEASE(m_pClipData);
@@ -268,11 +261,6 @@ void CPatternAction::RestoreRedoState(CMainFrame &MainFrm) const		// // //
 
 
 
-CPSelectionAction::CPSelectionAction(int iAction) :
-	CPatternAction(iAction), m_pUndoClipData(nullptr)
-{
-}
-
 CPSelectionAction::~CPSelectionAction()
 {
 	SAFE_RELEASE(m_pUndoClipData);
@@ -298,7 +286,7 @@ void CPSelectionAction::Undo(CMainFrame &MainFrm)
 
 
 CPActionEditNote::CPActionEditNote(const stChanNote &Note) :
-	CPatternAction(ACT_EDIT_NOTE), m_NewNote(Note)
+	m_NewNote(Note)
 {
 }
 
@@ -324,8 +312,7 @@ void CPActionEditNote::Redo(CMainFrame &MainFrm)
 
 
 CPActionReplaceNote::CPActionReplaceNote(const stChanNote &Note, int Frame, int Row, int Channel) :
-	CPatternAction(ACT_REPLACE_NOTE), m_NewNote(Note),
-	m_iFrame(Frame), m_iRow(Row), m_iChannel(Channel)
+	m_NewNote(Note), m_iFrame(Frame), m_iRow(Row), m_iChannel(Channel)
 {
 }
 
@@ -349,11 +336,6 @@ void CPActionReplaceNote::Redo(CMainFrame &MainFrm)
 }
 
 
-
-CPActionInsertRow::CPActionInsertRow() :
-	CPatternAction(ACT_INSERT_ROW)
-{
-}
 
 bool CPActionInsertRow::SaveState(const CMainFrame &MainFrm)
 {
@@ -382,7 +364,7 @@ void CPActionInsertRow::Redo(CMainFrame &MainFrm)
 
 
 CPActionDeleteRow::CPActionDeleteRow(bool PullUp, bool Backspace) :
-	CPatternAction(ACT_DELETE_ROW), m_bPullUp(PullUp), m_bBack(Backspace)
+	m_bPullUp(PullUp), m_bBack(Backspace)
 {
 }
 
@@ -415,7 +397,7 @@ void CPActionDeleteRow::Redo(CMainFrame &MainFrm)
 
 
 CPActionScrollField::CPActionScrollField(int Amount) :		// // //
-	CPatternAction(ACT_INCREASE), m_iAmount(Amount)
+	m_iAmount(Amount)
 {
 }
 
@@ -487,8 +469,28 @@ void CPActionScrollField::Redo(CMainFrame &MainFrm)
 
 
 
-CPActionPaste::CPActionPaste(CPatternClipData *pClipData, paste_mode_t Mode, paste_pos_t Pos) :
-	CPatternAction(ACT_EDIT_PASTE)
+// // // TODO: move stuff in CPatternAction::SetTargetSelection to the redo state
+/*
+CPSelectionAction::~CPSelectionAction()
+{
+	SAFE_RELEASE(m_pUndoClipData);
+}
+
+bool CPSelectionAction::SaveState(const CMainFrame &MainFrm)
+{
+	const CPatternEditor *pPatternEditor = GET_PATTERN_EDITOR();
+	m_pUndoClipData = pPatternEditor->CopyRaw(m_pUndoState->Selection);
+	return true;
+}
+
+void CPSelectionAction::Undo(CMainFrame &MainFrm)
+{
+	CPatternEditor *pPatternEditor = GET_PATTERN_EDITOR();
+	pPatternEditor->PasteRaw(m_pUndoClipData, m_pUndoState->Selection.m_cpStart);
+}
+*/
+
+CPActionPaste::CPActionPaste(CPatternClipData *pClipData, paste_mode_t Mode, paste_pos_t Pos)
 {
 	m_pClipData = pClipData;
 	m_iPasteMode = Mode;
@@ -516,22 +518,12 @@ void CPActionPaste::Redo(CMainFrame &MainFrm) {
 
 
 
-CPActionClearSel::CPActionClearSel() :
-	CPSelectionAction(ACT_EDIT_DELETE)
-{
-}
-
 void CPActionClearSel::Redo(CMainFrame &MainFrm)
 {
 	DeleteSelection(*GET_DOCUMENT(), GET_SELECTED_TRACK(), m_pUndoState->Selection);
 }
 
 
-
-CPActionDeleteAtSel::CPActionDeleteAtSel() :
-	CPatternAction(ACT_EDIT_DELETE_ROWS), m_pUndoHead(nullptr), m_pUndoTail(nullptr)
-{
-}
 
 CPActionDeleteAtSel::~CPActionDeleteAtSel()
 {
@@ -583,11 +575,6 @@ void CPActionDeleteAtSel::Redo(CMainFrame &MainFrm)
 }
 
 
-
-CPActionInsertAtSel::CPActionInsertAtSel() :
-	CPatternAction(ACT_INSERT_SEL_ROWS), m_pUndoHead(nullptr), m_pUndoTail(nullptr)
-{
-}
 
 CPActionInsertAtSel::~CPActionInsertAtSel()
 {
@@ -651,8 +638,7 @@ void CPActionInsertAtSel::Redo(CMainFrame &MainFrm)
 
 
 
-CPActionTranspose::CPActionTranspose(transpose_t Type) :
-	CPSelectionAction(ACT_TRANSPOSE), m_iTransposeMode(Type)
+CPActionTranspose::CPActionTranspose(transpose_t Type) : m_iTransposeMode(Type)
 {
 }
 
@@ -712,8 +698,7 @@ void CPActionTranspose::Redo(CMainFrame &MainFrm)
 
 
 
-CPActionScrollValues::CPActionScrollValues(int Amount) :
-	CPSelectionAction(ACT_SCROLL_VALUES), m_iAmount(Amount)
+CPActionScrollValues::CPActionScrollValues(int Amount) : m_iAmount(Amount)
 {
 }
 
@@ -791,11 +776,6 @@ void CPActionScrollValues::Redo(CMainFrame &MainFrm)
 }
 
 
-
-CPActionInterpolate::CPActionInterpolate() :
-	CPSelectionAction(ACT_INTERPOLATE)
-{
-}
 
 bool CPActionInterpolate::SaveState(const CMainFrame &MainFrm)
 {
@@ -902,11 +882,6 @@ void CPActionInterpolate::Redo(CMainFrame &MainFrm)
 
 
 
-CPActionReverse::CPActionReverse() :
-	CPSelectionAction(ACT_REVERSE)
-{
-}
-
 bool CPActionReverse::SaveState(const CMainFrame &MainFrm)
 {
 	if (!ValidateSelection(*GET_PATTERN_EDITOR()))
@@ -948,7 +923,7 @@ void CPActionReverse::Redo(CMainFrame &MainFrm)
 
 
 CPActionReplaceInst::CPActionReplaceInst(unsigned Index) :
-	CPSelectionAction(ACT_REPLACE_INSTRUMENT), m_iInstrumentIndex(Index)
+	m_iInstrumentIndex(Index)
 {
 }
 
@@ -978,10 +953,9 @@ void CPActionReplaceInst::Redo(CMainFrame &MainFrm)
 }
 
 
-// // // TODO: move stuff in CPatternAction::SetTargetSelection to the redo state
 
 CPActionDragDrop::CPActionDragDrop(const CPatternClipData *pClipData, bool bDelete, bool bMix, const CSelection &pDragTarget) :
-	CPatternAction(ACT_DRAG_AND_DROP), m_bDragDelete(bDelete), m_bDragMix(bMix)
+	m_bDragDelete(bDelete), m_bDragMix(bMix)
 //	m_pClipData(pClipData), m_dragTarget(pDragTarget)
 {
 	m_pClipData		= pClipData;
@@ -991,9 +965,9 @@ CPActionDragDrop::CPActionDragDrop(const CPatternClipData *pClipData, bool bDele
 
 bool CPActionDragDrop::SaveState(const CMainFrame &MainFrm)
 {
-	CPatternEditor *pPatternEditor = GET_PATTERN_EDITOR();
 	if (m_bDragDelete)
-		m_pAuxiliaryClipData.reset(pPatternEditor->CopyRaw());
+		m_pAuxiliaryClipData.reset(GET_PATTERN_EDITOR()->CopyRaw());
+	CPatternEditor *pPatternEditor = GET_PATTERN_EDITOR();
 	if (!SetTargetSelection(pPatternEditor, m_newSelection))		// // //
 		return false;
 	m_pUndoClipData = pPatternEditor->CopyRaw();
@@ -1013,15 +987,11 @@ void CPActionDragDrop::Redo(CMainFrame &MainFrm)
 {
 	if (m_bDragDelete)
 		DeleteSelection(*GET_DOCUMENT(), GET_SELECTED_TRACK(), m_pUndoState->Selection);		// // //
+//	GET_PATTERN_EDITOR()->Paste(m_pClipData, m_iPasteMode, m_iPastePos);		// // //
 	GET_PATTERN_EDITOR()->DragPaste(m_pClipData, &m_dragTarget, m_bDragMix);
 }
 
 
-
-CPActionPatternLen::CPActionPatternLen(int Length) :
-	CPatternAction(ACT_PATTERN_LENGTH), m_iNewPatternLen(Length)
-{
-}
 
 bool CPActionPatternLen::SaveState(const CMainFrame &MainFrm)
 {
@@ -1061,8 +1031,8 @@ bool CPActionPatternLen::Merge(const CAction &Other)		// // //
 
 
 
-CPActionStretch::CPActionStretch(std::vector<int> Stretch) :
-	CPSelectionAction(ACT_STRETCH_PATTERN), m_iStretchMap(Stretch)
+CPActionStretch::CPActionStretch(const std::vector<int> &Stretch) :
+	m_iStretchMap(Stretch)
 {
 }
 
@@ -1116,7 +1086,7 @@ void CPActionStretch::Redo(CMainFrame &MainFrm)
 
 
 CPActionEffColumn::CPActionEffColumn(int Channel, int Count) :		// // //
-	CPatternAction(ACT_EFFECT_COLUMNS), m_iChannel(Channel), m_iNewColumns(Count)
+	m_iChannel(Channel), m_iNewColumns(Count)
 {
 }
 
@@ -1149,8 +1119,8 @@ void CPActionEffColumn::UpdateView(CFamiTrackerDoc *pDoc) const		// // //
 
 
 
-CPActionHighlight::CPActionHighlight(stHighlight Hl) :		// // //
-	CPatternAction(1), m_NewHighlight(Hl)
+CPActionHighlight::CPActionHighlight(const stHighlight &Hl) :		// // //
+	m_NewHighlight(Hl)
 {
 }
 

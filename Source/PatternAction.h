@@ -78,34 +78,6 @@ private:
 class CPatternAction : public CAction
 {
 public:
-	enum ACTIONS
-	{
-		ACT_EDIT_NOTE = 1,
-		ACT_REPLACE_NOTE,		// // //
-		ACT_INSERT_ROW,
-		ACT_DELETE_ROW,
-		ACT_INCREASE,
-		ACT_DECREASE,
-		ACT_EDIT_PASTE,		// // //
-		ACT_EDIT_DELETE,
-		ACT_EDIT_DELETE_ROWS,
-		ACT_INSERT_SEL_ROWS,
-		ACT_TRANSPOSE,
-		ACT_SCROLL_VALUES,
-		ACT_INTERPOLATE,
-		ACT_REVERSE,
-		ACT_REPLACE_INSTRUMENT,
-		ACT_DRAG_AND_DROP,
-		ACT_PATTERN_LENGTH,
-		ACT_STRETCH_PATTERN,		// // //
-		ACT_EFFECT_COLUMNS,		// // //
-	};
-
-// protected:
-public:
-	CPatternAction(int iAction);
-
-public:
 	virtual ~CPatternAction();
 
 	void SaveUndoState(const CMainFrame &MainFrm) override;		// // //
@@ -127,8 +99,8 @@ protected:
 	std::unique_ptr<CPatternEditorState> m_pRedoState;
 
 protected:
-	const CPatternClipData *m_pClipData;
-	CPatternClipData *m_pUndoClipData;		// // //
+	const CPatternClipData *m_pClipData = nullptr;
+	CPatternClipData *m_pUndoClipData = nullptr;		// // //
 	paste_mode_t m_iPasteMode;		// // //
 	paste_pos_t m_iPastePos;		// // //
 	
@@ -136,8 +108,6 @@ protected:
 	CSelection m_selection, m_newSelection;		// // //
 
 	CSelection m_dragTarget;
-
-	int m_iAction;		// // // TODO: remove
 };
 
 /*!
@@ -147,13 +117,12 @@ protected:
 class CPSelectionAction : public CPatternAction
 {
 protected:
-	CPSelectionAction(int iAction);
 	virtual ~CPSelectionAction();
 protected:
 	bool SaveState(const CMainFrame &MainFrm) override;
 	void Undo(CMainFrame &MainFrm) override;
 protected:
-	CPatternClipData *m_pUndoClipData;
+	CPatternClipData *m_pUndoClipData = nullptr;
 };
 
 // // // built-in pattern action subtypes
@@ -166,7 +135,7 @@ private:
 	bool SaveState(const CMainFrame &MainFrm) override;
 	void Undo(CMainFrame &MainFrm) override;
 	void Redo(CMainFrame &MainFrm) override;
-private:
+
 	stChanNote m_NewNote, m_OldNote;
 };
 
@@ -178,20 +147,17 @@ private:
 	bool SaveState(const CMainFrame &MainFrm) override;
 	void Undo(CMainFrame &MainFrm) override;
 	void Redo(CMainFrame &MainFrm) override;
-private:
+
 	stChanNote m_NewNote, m_OldNote;
 	int m_iFrame, m_iRow, m_iChannel;
 };
 
 class CPActionInsertRow : public CPatternAction
 {
-public:
-	CPActionInsertRow();
-private:
 	bool SaveState(const CMainFrame &MainFrm) override;
 	void Undo(CMainFrame &MainFrm) override;
 	void Redo(CMainFrame &MainFrm) override;
-private:
+
 	stChanNote m_OldNote;
 };
 
@@ -203,7 +169,7 @@ private:
 	bool SaveState(const CMainFrame &MainFrm) override;
 	void Undo(CMainFrame &MainFrm) override;
 	void Redo(CMainFrame &MainFrm) override;
-private:
+
 	stChanNote m_OldNote;
 	bool m_bPullUp, m_bBack;
 };
@@ -216,7 +182,7 @@ private:
 	bool SaveState(const CMainFrame &MainFrm) override;
 	void Undo(CMainFrame &MainFrm) override;
 	void Redo(CMainFrame &MainFrm) override;
-private:
+
 	stChanNote m_OldNote;
 	int m_iAmount;
 };
@@ -232,38 +198,35 @@ private:
 
 class CPActionClearSel : public CPSelectionAction
 {
-public:
-	CPActionClearSel();
-private:
 	void Redo(CMainFrame &MainFrm) override;
 };
 
 class CPActionDeleteAtSel : public CPatternAction
 {
 public:
-	CPActionDeleteAtSel();
 	virtual ~CPActionDeleteAtSel();
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
 	void Undo(CMainFrame &MainFrm) override;
 	void Redo(CMainFrame &MainFrm) override;
-private:
+
 	CCursorPos m_cpTailPos;
-	CPatternClipData *m_pUndoHead, *m_pUndoTail;
+	CPatternClipData *m_pUndoHead = nullptr;
+	CPatternClipData *m_pUndoTail = nullptr;
 };
 
 class CPActionInsertAtSel : public CPatternAction
 {
 public:
-	CPActionInsertAtSel();
 	virtual ~CPActionInsertAtSel();
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
 	void Undo(CMainFrame &MainFrm) override;
 	void Redo(CMainFrame &MainFrm) override;
-private:
+
 	CCursorPos m_cpHeadPos, m_cpTailPos;
-	CPatternClipData *m_pUndoHead, *m_pUndoTail;
+	CPatternClipData *m_pUndoHead = nullptr;
+	CPatternClipData *m_pUndoTail = nullptr;
 };
 
 class CPActionTranspose : public CPSelectionAction
@@ -272,7 +235,7 @@ public:
 	CPActionTranspose(transpose_t Type);
 private:
 	void Redo(CMainFrame &MainFrm) override;
-private:
+
 	transpose_t m_iTransposeMode;
 };
 
@@ -282,26 +245,20 @@ public:
 	CPActionScrollValues(int Amount);
 private:
 	void Redo(CMainFrame &MainFrm) override;
-private:
+
 	int m_iAmount;
 };
 
 class CPActionInterpolate : public CPSelectionAction
 {
-public:
-	CPActionInterpolate();
-private:
 	bool SaveState(const CMainFrame &MainFrm) override;
 	void Redo(CMainFrame &MainFrm) override;
-private:
+
 	int m_iSelectionSize;
 };
 
 class CPActionReverse : public CPSelectionAction
 {
-public:
-	CPActionReverse();
-private:
 	bool SaveState(const CMainFrame &MainFrm) override;
 	void Redo(CMainFrame &MainFrm) override;
 };
@@ -337,7 +294,7 @@ private:
 class CPActionPatternLen : public CPatternAction
 {
 public:
-	CPActionPatternLen(int Length);
+	CPActionPatternLen(int Length) : m_iNewPatternLen(Length) { }
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
 	void Undo(CMainFrame &MainFrm) override;
@@ -350,11 +307,11 @@ private:
 class CPActionStretch : public CPSelectionAction
 {
 public:
-	CPActionStretch(std::vector<int> Stretch);
+	CPActionStretch(const std::vector<int> &Stretch);
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
 	void Redo(CMainFrame &MainFrm) override;
-private:
+
 	std::vector<int> m_iStretchMap;
 };
 
@@ -367,7 +324,7 @@ private:
 	void Undo(CMainFrame &MainFrm) override;
 	void Redo(CMainFrame &MainFrm) override;
 	void UpdateView(CFamiTrackerDoc *pDoc) const;
-private:
+
 	unsigned m_iChannel;
 	unsigned m_iOldColumns, m_iNewColumns;
 };
@@ -375,19 +332,19 @@ private:
 class CPActionHighlight : public CPatternAction		// // //
 {
 public:
-	CPActionHighlight(stHighlight Hl);
+	CPActionHighlight(const stHighlight &Hl);
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
 	void Undo(CMainFrame &MainFrm) override;
 	void Redo(CMainFrame &MainFrm) override;
 	void UpdateView(CFamiTrackerDoc *pDoc) const;
-private:
+
 	stHighlight m_OldHighlight, m_NewHighlight;
 };
 
 class CPActionUniquePatterns : public CPatternAction {
 public:
-	CPActionUniquePatterns(unsigned index) : CPatternAction(0), index_(index) { }
+	CPActionUniquePatterns(unsigned index) : index_(index) { }
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
 	void Undo(CMainFrame &MainFrm) override;
