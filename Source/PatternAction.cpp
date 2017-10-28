@@ -65,8 +65,6 @@ void CPatternEditorState::ApplyState(CPatternEditor *pEditor) const
 
 CPatternAction::~CPatternAction()
 {
-	SAFE_RELEASE(m_pClipData);
-	SAFE_RELEASE(m_pUndoClipData);
 }
 
 bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor, CSelection &Sel)		// // //
@@ -262,9 +260,7 @@ void CPatternAction::RestoreRedoState(CMainFrame &MainFrm) const		// // //
 
 
 
-CPSelectionAction::~CPSelectionAction()
-{
-	SAFE_RELEASE(m_pUndoClipData);
+CPSelectionAction::~CPSelectionAction() {
 }
 
 bool CPSelectionAction::SaveState(const CMainFrame &MainFrm)
@@ -277,7 +273,7 @@ bool CPSelectionAction::SaveState(const CMainFrame &MainFrm)
 void CPSelectionAction::Undo(CMainFrame &MainFrm)
 {
 	CPatternEditor *pPatternEditor = GET_PATTERN_EDITOR();
-	pPatternEditor->PasteRaw(m_pUndoClipData, m_pUndoState->Selection.m_cpStart);
+	pPatternEditor->PasteRaw(*m_pUndoClipData, m_pUndoState->Selection.m_cpStart);
 }
 
 
@@ -491,9 +487,9 @@ void CPSelectionAction::Undo(CMainFrame &MainFrm)
 }
 */
 
-CPActionPaste::CPActionPaste(CPatternClipData *pClipData, paste_mode_t Mode, paste_pos_t Pos)
+CPActionPaste::CPActionPaste(std::unique_ptr<CPatternClipData> pClipData, paste_mode_t Mode, paste_pos_t Pos)
 {
-	m_pClipData = pClipData;
+	m_pClipData = std::move(pClipData);
 	m_iPasteMode = Mode;
 	m_iPastePos = Pos;
 }
@@ -509,12 +505,12 @@ bool CPActionPaste::SaveState(const CMainFrame &MainFrm) {
 void CPActionPaste::Undo(CMainFrame &MainFrm) {
 	CPatternEditor *pPatternEditor = GET_PATTERN_EDITOR();
 	pPatternEditor->SetSelection(m_newSelection);		// // //
-	pPatternEditor->PasteRaw(m_pUndoClipData);
+	pPatternEditor->PasteRaw(*m_pUndoClipData);
 }
 
 void CPActionPaste::Redo(CMainFrame &MainFrm) {
 	CPatternEditor *pPatternEditor = GET_PATTERN_EDITOR();
-	pPatternEditor->Paste(m_pClipData, m_iPasteMode, m_iPastePos);		// // //
+	pPatternEditor->Paste(*m_pClipData, m_iPasteMode, m_iPastePos);		// // //
 }
 
 
@@ -528,8 +524,6 @@ void CPActionClearSel::Redo(CMainFrame &MainFrm)
 
 CPActionDeleteAtSel::~CPActionDeleteAtSel()
 {
-	SAFE_RELEASE(m_pUndoHead);
-	SAFE_RELEASE(m_pUndoTail);
 }
 
 bool CPActionDeleteAtSel::SaveState(const CMainFrame &MainFrm)
@@ -558,9 +552,9 @@ bool CPActionDeleteAtSel::SaveState(const CMainFrame &MainFrm)
 void CPActionDeleteAtSel::Undo(CMainFrame &MainFrm)
 {
 	CPatternEditor *pPatternEditor = GET_PATTERN_EDITOR();
-	pPatternEditor->PasteRaw(m_pUndoHead, m_pUndoState->Selection.m_cpStart);
+	pPatternEditor->PasteRaw(*m_pUndoHead, m_pUndoState->Selection.m_cpStart);
 	if (m_pUndoTail)
-		pPatternEditor->PasteRaw(m_pUndoTail, m_cpTailPos);
+		pPatternEditor->PasteRaw(*m_pUndoTail, m_cpTailPos);
 }
 
 void CPActionDeleteAtSel::Redo(CMainFrame &MainFrm)
@@ -571,7 +565,7 @@ void CPActionDeleteAtSel::Redo(CMainFrame &MainFrm)
 	Sel.m_cpEnd.m_iRow = pPatternEditor->GetCurrentPatternLength(Sel.m_cpEnd.m_iFrame) - 1;
 	DeleteSelection(*GET_DOCUMENT(), GET_SELECTED_TRACK(), Sel);
 	if (m_pUndoTail)
-		pPatternEditor->PasteRaw(m_pUndoTail, m_pUndoState->Selection.m_cpStart);
+		pPatternEditor->PasteRaw(*m_pUndoTail, m_pUndoState->Selection.m_cpStart);
 	pPatternEditor->CancelSelection();
 }
 
@@ -579,8 +573,6 @@ void CPActionDeleteAtSel::Redo(CMainFrame &MainFrm)
 
 CPActionInsertAtSel::~CPActionInsertAtSel()
 {
-	SAFE_RELEASE(m_pUndoHead);
-	SAFE_RELEASE(m_pUndoTail);
 }
 
 bool CPActionInsertAtSel::SaveState(const CMainFrame &MainFrm)
@@ -621,9 +613,9 @@ bool CPActionInsertAtSel::SaveState(const CMainFrame &MainFrm)
 void CPActionInsertAtSel::Undo(CMainFrame &MainFrm)
 {
 	CPatternEditor *pPatternEditor = GET_PATTERN_EDITOR();
-	pPatternEditor->PasteRaw(m_pUndoTail, m_cpTailPos);
+	pPatternEditor->PasteRaw(*m_pUndoTail, m_cpTailPos);
 	if (m_pUndoHead)
-		pPatternEditor->PasteRaw(m_pUndoHead, m_pUndoState->Selection.m_cpStart);
+		pPatternEditor->PasteRaw(*m_pUndoHead, m_pUndoState->Selection.m_cpStart);
 }
 
 void CPActionInsertAtSel::Redo(CMainFrame &MainFrm)
@@ -634,7 +626,7 @@ void CPActionInsertAtSel::Redo(CMainFrame &MainFrm)
 	Sel.m_cpEnd.m_iRow = pPatternEditor->GetCurrentPatternLength(Sel.m_cpEnd.m_iFrame) - 1;
 	DeleteSelection(*GET_DOCUMENT(), GET_SELECTED_TRACK(), Sel);
 	if (m_pUndoHead)
-		pPatternEditor->PasteRaw(m_pUndoHead, m_cpHeadPos);
+		pPatternEditor->PasteRaw(*m_pUndoHead, m_cpHeadPos);
 }
 
 
@@ -955,11 +947,11 @@ void CPActionReplaceInst::Redo(CMainFrame &MainFrm)
 
 
 
-CPActionDragDrop::CPActionDragDrop(const CPatternClipData *pClipData, bool bDelete, bool bMix, const CSelection &pDragTarget) :
+CPActionDragDrop::CPActionDragDrop(std::unique_ptr<CPatternClipData> pClipData, bool bDelete, bool bMix, const CSelection &pDragTarget) :
 	m_bDragDelete(bDelete), m_bDragMix(bMix)
 //	m_pClipData(pClipData), m_dragTarget(pDragTarget)
 {
-	m_pClipData		= pClipData;
+	m_pClipData		= std::move(pClipData);
 	m_dragTarget	= pDragTarget;
 	m_iPastePos		= PASTE_DRAG;
 }
@@ -967,7 +959,7 @@ CPActionDragDrop::CPActionDragDrop(const CPatternClipData *pClipData, bool bDele
 bool CPActionDragDrop::SaveState(const CMainFrame &MainFrm)
 {
 	if (m_bDragDelete)
-		m_pAuxiliaryClipData.reset(GET_PATTERN_EDITOR()->CopyRaw());
+		m_pAuxiliaryClipData = GET_PATTERN_EDITOR()->CopyRaw();
 	CPatternEditor *pPatternEditor = GET_PATTERN_EDITOR();
 	if (!SetTargetSelection(pPatternEditor, m_newSelection))		// // //
 		return false;
@@ -979,17 +971,17 @@ void CPActionDragDrop::Undo(CMainFrame &MainFrm)
 {
 	CPatternEditor *pPatternEditor = GET_PATTERN_EDITOR();
 	pPatternEditor->SetSelection(m_newSelection);
-	pPatternEditor->PasteRaw(m_pUndoClipData);
+	pPatternEditor->PasteRaw(*m_pUndoClipData);
 	if (m_bDragDelete)
-		pPatternEditor->PasteRaw(m_pAuxiliaryClipData.get(), m_pUndoState->Selection.m_cpStart);
+		pPatternEditor->PasteRaw(*m_pAuxiliaryClipData.get(), m_pUndoState->Selection.m_cpStart);
 }
 
 void CPActionDragDrop::Redo(CMainFrame &MainFrm)
 {
 	if (m_bDragDelete)
 		DeleteSelection(*GET_DOCUMENT(), GET_SELECTED_TRACK(), m_pUndoState->Selection);		// // //
-//	GET_PATTERN_EDITOR()->Paste(m_pClipData, m_iPasteMode, m_iPastePos);		// // //
-	GET_PATTERN_EDITOR()->DragPaste(m_pClipData, &m_dragTarget, m_bDragMix);
+//	GET_PATTERN_EDITOR()->Paste(*m_pClipData, m_iPasteMode, m_iPastePos);		// // //
+	GET_PATTERN_EDITOR()->DragPaste(*m_pClipData, m_dragTarget, m_bDragMix);
 }
 
 

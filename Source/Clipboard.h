@@ -35,16 +35,17 @@ public:
 	~CClipboard();
 
 	bool	IsOpened() const;
-	HGLOBAL AllocMem(UINT Size) const;
-	void	SetData(HGLOBAL hMemory) const;
 	bool	SetDataPointer(LPVOID pData, UINT Size) const;
 	bool	GetData(HGLOBAL &hMemory) const;		// // //
 	LPVOID	GetDataPointer();
 	bool	IsDataAvailable()const;
 
 	bool	TryCopy(const CClipboardResource &res);		// // //
+	bool	TryRestore(CClipboardResource &res) const;		// // //
 
 private:
+	void	SetData(HGLOBAL hMemory) const;
+
 	bool m_bOpened;
 	UINT m_iClipboard;
 	HGLOBAL m_hMemory;

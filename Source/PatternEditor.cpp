@@ -3070,19 +3070,19 @@ void CPatternEditor::OnMouseRDown(const CPoint &point)
 	}
 }
 
-void CPatternEditor::DragPaste(const CPatternClipData *pClipData, const CSelection *pDragTarget, bool bMix)
+void CPatternEditor::DragPaste(const CPatternClipData &ClipData, const CSelection &DragTarget, bool bMix)
 {
 	// Paste drag'n'drop selections
 
 	// Set cursor location
-	m_cpCursorPos = pDragTarget->m_cpStart;
+	m_cpCursorPos = DragTarget.m_cpStart;
 
-	Paste(pClipData, bMix ? PASTE_MIX : PASTE_DEFAULT, PASTE_DRAG);		// // //
+	Paste(ClipData, bMix ? PASTE_MIX : PASTE_DEFAULT, PASTE_DRAG);		// // //
 
 	// // // Update selection
-	m_selection.m_cpStart = pDragTarget->m_cpStart;
-	m_selection.m_cpEnd = pDragTarget->m_cpEnd;
-	if (pDragTarget->m_cpStart.m_iFrame < 0) {
+	m_selection.m_cpStart = DragTarget.m_cpStart;
+	m_selection.m_cpEnd = DragTarget.m_cpEnd;
+	if (DragTarget.m_cpStart.m_iFrame < 0) {
 		const int Frames = GetFrameCount();
 		m_cpCursorPos.m_iFrame += Frames;
 		m_selection.m_cpStart.m_iFrame += Frames;
@@ -3182,14 +3182,14 @@ CCursorPos CPatternEditor::GetCursor() const		// // //
 
 // Copy and paste ///////////////////////////////////////////////////////////////////////////////////////////
 
-CPatternClipData *CPatternEditor::CopyEntire() const
+std::unique_ptr<CPatternClipData> CPatternEditor::CopyEntire() const
 {
 	const int Track = GetSelectedTrack();
 	const int ChannelCount = GetChannelCount();
 	const int Rows = m_pDocument->GetPatternLength(Track);
 	const int Frame = m_cpCursorPos.m_iFrame;		// // //
 	
-	CPatternClipData *pClipData = new CPatternClipData(ChannelCount, Rows);
+	auto pClipData = std::make_unique<CPatternClipData>(ChannelCount, Rows);
 
 	pClipData->ClipInfo.Channels = ChannelCount;
 	pClipData->ClipInfo.Rows = Rows;
@@ -3201,7 +3201,7 @@ CPatternClipData *CPatternEditor::CopyEntire() const
 	return pClipData;
 }
 
-CPatternClipData *CPatternEditor::Copy() const
+std::unique_ptr<CPatternClipData> CPatternEditor::Copy() const
 {
 	// Copy selection
 	CPatternIterator it = GetIterators().first;		// // //
@@ -3209,7 +3209,7 @@ CPatternClipData *CPatternEditor::Copy() const
 	const int Rows		= GetSelectionSize();		// // //
 	stChanNote NoteData;
 
-	CPatternClipData *pClipData = new CPatternClipData(Channels, Rows);
+	auto pClipData = std::make_unique<CPatternClipData>(Channels, Rows);
 	pClipData->ClipInfo.Channels	= Channels;		// // //
 	pClipData->ClipInfo.Rows		= Rows;
 	pClipData->ClipInfo.StartColumn	= GetSelectColumn(m_selection.GetColStart());		// // //
@@ -3231,12 +3231,12 @@ CPatternClipData *CPatternEditor::Copy() const
 	return pClipData;
 }
 
-CPatternClipData *CPatternEditor::CopyRaw() const		// // //
+std::unique_ptr<CPatternClipData> CPatternEditor::CopyRaw() const		// // //
 {
 	return CopyRaw(m_selection);
 }
 
-CPatternClipData *CPatternEditor::CopyRaw(const CSelection &Sel) const		// // //
+std::unique_ptr<CPatternClipData> CPatternEditor::CopyRaw(const CSelection &Sel) const		// // //
 {
 	const int Track = GetSelectedTrack();
 	CCursorPos c_it, c_end;
@@ -3251,7 +3251,7 @@ CPatternClipData *CPatternEditor::CopyRaw(const CSelection &Sel) const		// // //
 	const int cBegin	= it.m_iChannel;
 	const int Channels	= end.m_iChannel - cBegin + 1;
 
-	CPatternClipData *pClipData = new CPatternClipData(Channels, Rows);
+	auto pClipData = std::make_unique<CPatternClipData>(Channels, Rows);
 	pClipData->ClipInfo.Channels	= Channels;
 	pClipData->ClipInfo.Rows		= Rows;
 	pClipData->ClipInfo.StartColumn	= GetSelectColumn(it.m_iColumn);
@@ -3264,32 +3264,27 @@ CPatternClipData *CPatternEditor::CopyRaw(const CSelection &Sel) const		// // //
 	return pClipData;
 }
 
-void CPatternEditor::Cut()
-{
-	// Cut selection
-}
-
-void CPatternEditor::PasteEntire(const CPatternClipData *pClipData)
+void CPatternEditor::PasteEntire(const CPatternClipData &ClipData)
 {
 	// Paste entire
 	const int Track = GetSelectedTrack();
 	const int Frame = m_cpCursorPos.m_iFrame;		// // //
-	for (int i = 0; i < pClipData->ClipInfo.Channels; ++i)
-		for (int j = 0; j < pClipData->ClipInfo.Rows; ++j)
-			m_pDocument->SetNoteData(Track, Frame, i, j, *pClipData->GetPattern(i, j));		// // //
+	for (int i = 0; i < ClipData.ClipInfo.Channels; ++i)
+		for (int j = 0; j < ClipData.ClipInfo.Rows; ++j)
+			m_pDocument->SetNoteData(Track, Frame, i, j, *ClipData.GetPattern(i, j));		// // //
 }
 
-void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t PasteMode, const paste_pos_t PastePos)		// // //
+void CPatternEditor::Paste(const CPatternClipData &ClipData, const paste_mode_t PasteMode, const paste_pos_t PastePos)		// // //
 {
 	// // // Paste
 	const unsigned int Track		= GetSelectedTrack();
 	const unsigned int ChannelCount = GetChannelCount();
 
 	const unsigned int Channels	   = (PastePos == PASTE_FILL) ?
-		m_selection.GetChanEnd() - m_selection.GetChanStart() + 1 : pClipData->ClipInfo.Channels;
-	const unsigned int Rows		   = (PastePos == PASTE_FILL) ? GetSelectionSize() : pClipData->ClipInfo.Rows;
-	const column_t StartColumn = pClipData->ClipInfo.StartColumn;
-	const column_t EndColumn   = pClipData->ClipInfo.EndColumn;
+		m_selection.GetChanEnd() - m_selection.GetChanStart() + 1 : ClipData.ClipInfo.Channels;
+	const unsigned int Rows		   = (PastePos == PASTE_FILL) ? GetSelectionSize() : ClipData.ClipInfo.Rows;
+	const column_t StartColumn = ClipData.ClipInfo.StartColumn;
+	const column_t EndColumn   = ClipData.ClipInfo.EndColumn;
 	
 	bool AtSel = (PastePos == PASTE_SELECTION || PastePos == PASTE_FILL);
 	const int f = AtSel ? m_selection.GetFrameStart() : (PastePos == PASTE_DRAG ? m_selDrag.GetFrameStart() : m_cpCursorPos.m_iFrame);
@@ -3328,7 +3323,7 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 		const unsigned int ColStart = std::max(GetSelectColumn(AtSel ? m_selection.GetColStart() : m_cpCursorPos.m_iColumn), COLUMN_EFF1);
 		for (unsigned int j = 0; j < Rows; ++j) {
 			it.Get(c, &NoteData);
-			Source = *(pClipData->GetPattern(0, j % pClipData->ClipInfo.Rows));
+			Source = *(ClipData.GetPattern(0, j % ClipData.ClipInfo.Rows));
 			for (unsigned int i = StartColumn - COLUMN_EFF1; i <= EndColumn - COLUMN_EFF1; ++i) {		// // //
 				const unsigned int Offset = i - StartColumn + ColStart;
 				if (Offset > m_pDocument->GetEffColumns(Track, c)) break;
@@ -3357,11 +3352,11 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 
 	for (unsigned int j = 0; j < Rows; ++j) {
 		for (unsigned int i = c; i < CEnd; ++i) {
-			int cGet = (i - c) % pClipData->ClipInfo.Channels;
+			int cGet = (i - c) % ClipData.ClipInfo.Channels;
 			const column_t ColEnd = std::min((i == Channels + c - 1) ? EndColumn : COLUMN_EFF4,
 				static_cast<column_t>(COLUMN_EFF1 + m_pDocument->GetEffColumns(Track, i)));
 			it.Get(i, &NoteData);
-			Source = *(pClipData->GetPattern(cGet, j % pClipData->ClipInfo.Rows));
+			Source = *(ClipData.GetPattern(cGet, j % ClipData.ClipInfo.Rows));
 			CopyNoteSection(&NoteData, &Source, PasteMode, (!cGet) ? StartColumn : COLUMN_NOTE, ColEnd);
 			it.Set(i, &NoteData);
 		}
@@ -3373,29 +3368,29 @@ void CPatternEditor::Paste(const CPatternClipData *pClipData, const paste_mode_t
 	}
 }
 
-void CPatternEditor::PasteRaw(const CPatternClipData *pClipData)		// // //
+void CPatternEditor::PasteRaw(const CPatternClipData &ClipData)		// // //
 {
-	PasteRaw(pClipData, GetIterators().first);
+	PasteRaw(ClipData, GetIterators().first);
 }
 
-void CPatternEditor::PasteRaw(const CPatternClipData *pClipData, const CCursorPos &Pos)		// // //
+void CPatternEditor::PasteRaw(const CPatternClipData &ClipData, const CCursorPos &Pos)		// // //
 {
 	const int Track = GetSelectedTrack();
 	CPatternIterator it {m_pDocument, Track, Pos};
 	const int Frames = m_pDocument->GetFrameCount(Track);
 	const int Length = m_pDocument->GetPatternLength(Track);
 
-	const int Rows = pClipData->ClipInfo.Rows;
-	const int Channels = pClipData->ClipInfo.Channels;
-	const column_t StartColumn = pClipData->ClipInfo.StartColumn;
-	const column_t EndColumn = pClipData->ClipInfo.EndColumn;
+	const int Rows = ClipData.ClipInfo.Rows;
+	const int Channels = ClipData.ClipInfo.Channels;
+	const column_t StartColumn = ClipData.ClipInfo.StartColumn;
+	const column_t EndColumn = ClipData.ClipInfo.EndColumn;
 
 	const int PackedPos = (Pos.m_iFrame + GetFrameCount()) * Length + Pos.m_iRow;
 	for (int i = 0; i < Channels; ++i) for (int r = 0; r < Rows; r++) {
 		int c = i + Pos.m_iChannel;
 		if (c == GetChannelCount()) return;
 		stChanNote Target = m_pDocument->GetNoteData(Track, (PackedPos + r) / Length % Frames, c, (PackedPos + r) % Length);
-		const auto &Source = *(pClipData->GetPattern(i, r));
+		const auto &Source = *(ClipData.GetPattern(i, r));
 		CopyNoteSection(&Target, &Source, PASTE_DEFAULT, (i == 0) ? StartColumn : COLUMN_NOTE,
 			std::min((i == Channels + Pos.m_iChannel - 1) ? EndColumn : COLUMN_EFF4,
 						static_cast<column_t>(COLUMN_EFF1 + m_pDocument->GetEffColumns(Track, c))));
@@ -4005,15 +4000,15 @@ void CPatternEditor::GetSelectionAsPPMCK(CString &str) const		// // //
 
 // OLE support
 
-void CPatternEditor::BeginDrag(const CPatternClipData *pClipData)
+void CPatternEditor::BeginDrag(const CPatternClipData &ClipData)
 {
-	m_iDragChannels = pClipData->ClipInfo.Channels - 1;
-	m_iDragRows = pClipData->ClipInfo.Rows - 1;
-	m_iDragStartCol = GetCursorStartColumn(pClipData->ClipInfo.StartColumn);
-	m_iDragEndCol = GetCursorEndColumn(pClipData->ClipInfo.EndColumn);
+	m_iDragChannels = ClipData.ClipInfo.Channels - 1;
+	m_iDragRows = ClipData.ClipInfo.Rows - 1;
+	m_iDragStartCol = GetCursorStartColumn(ClipData.ClipInfo.StartColumn);
+	m_iDragEndCol = GetCursorEndColumn(ClipData.ClipInfo.EndColumn);
 
-	m_iDragOffsetChannel = pClipData->ClipInfo.OleInfo.ChanOffset;
-	m_iDragOffsetRow = pClipData->ClipInfo.OleInfo.RowOffset;
+	m_iDragOffsetChannel = ClipData.ClipInfo.OleInfo.ChanOffset;
+	m_iDragOffsetRow = ClipData.ClipInfo.OleInfo.RowOffset;
 
 	m_bDragging = true;
 }
@@ -4023,7 +4018,7 @@ void CPatternEditor::EndDrag()
 	m_bDragging = false;
 }
 
-bool CPatternEditor::PerformDrop(const CPatternClipData *pClipData, bool bCopy, bool bCopyMix)
+bool CPatternEditor::PerformDrop(std::unique_ptr<CPatternClipData> pClipData, bool bCopy, bool bCopyMix)		// // //
 {
 	// Drop selection onto pattern, returns true if drop was successful
 
@@ -4045,7 +4040,6 @@ bool CPatternEditor::PerformDrop(const CPatternClipData *pClipData, bool bCopy, 
 	}
 
 	if (m_selDrag.m_cpStart.m_iChannel < 0/* || m_selDrag.m_cpStart.m_iRow < 0*/) {
-
 		// Clip if selection is less than zero as this is not handled by the paste routine
 		int ChannelOffset = (m_selDrag.m_cpStart.m_iChannel < 0) ? -m_selDrag.m_cpStart.m_iChannel : 0;
 		int RowOffset = (m_selDrag.m_cpStart.m_iRow < 0) ? -m_selDrag.m_cpStart.m_iRow : 0;
@@ -4053,17 +4047,15 @@ bool CPatternEditor::PerformDrop(const CPatternClipData *pClipData, bool bCopy, 
 		int NewChannels = pClipData->ClipInfo.Channels - ChannelOffset;
 		int NewRows = pClipData->ClipInfo.Rows - RowOffset;
 
-		CPatternClipData *pClipped = new CPatternClipData(NewChannels, NewRows);
+		auto pClipped = std::make_unique<CPatternClipData>(NewChannels, NewRows);		// // //
 
 		pClipped->ClipInfo = pClipData->ClipInfo;
 		pClipped->ClipInfo.Channels = NewChannels;
 		pClipped->ClipInfo.Rows = NewRows;
 
-		for (int c = 0; c < NewChannels; ++c) {
-			for (int r = 0; r < NewRows; ++r) {
+		for (int c = 0; c < NewChannels; ++c)
+			for (int r = 0; r < NewRows; ++r)
 				*pClipped->GetPattern(c, r) = *pClipData->GetPattern(c + ChannelOffset, r + RowOffset);
-			}
-		}
 
 		if (m_selDrag.m_cpStart.m_iChannel < 0) {
 			m_selDrag.m_cpStart.m_iChannel = 0;
@@ -4072,8 +4064,7 @@ bool CPatternEditor::PerformDrop(const CPatternClipData *pClipData, bool bCopy, 
 
 		m_selDrag.m_cpStart.m_iRow = std::max(m_selDrag.m_cpStart.m_iRow, 0);
 
-		SAFE_RELEASE(pClipData);
-		pClipData = pClipped;
+		pClipData = std::move(pClipped);		// // //
 	}
 
 	if (m_selDrag.m_cpEnd.m_iChannel > Channels - 1) {
@@ -4091,7 +4082,7 @@ bool CPatternEditor::PerformDrop(const CPatternClipData *pClipData, bool bCopy, 
 
 	m_bSelecting = true;
 
-	GetMainFrame()->AddAction(std::make_unique<CPActionDragDrop>(pClipData, bDelete, bMix, m_selDrag));		// // //
+	GetMainFrame()->AddAction(std::make_unique<CPActionDragDrop>(std::move(pClipData), bDelete, bMix, m_selDrag));		// // //
 
 	return true;
 }

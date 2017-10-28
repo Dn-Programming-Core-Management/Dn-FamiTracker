@@ -44,11 +44,6 @@ bool CClipboard::IsOpened() const
 	return m_bOpened;
 }
 
-HGLOBAL CClipboard::AllocMem(UINT Size) const
-{
-	return ::GlobalAlloc(GMEM_MOVEABLE, Size);
-}
-
 void CClipboard::SetData(HGLOBAL hMemory) const
 {
 	ASSERT(m_bOpened);
@@ -61,20 +56,15 @@ bool CClipboard::SetDataPointer(LPVOID pData, UINT Size) const
 {
 	ASSERT(m_bOpened);
 
-	HGLOBAL hMemory = AllocMem(Size);
-	if (hMemory == NULL)
-		return false;
-
-	LPVOID pClipData = ::GlobalLock(hMemory);
-	if (pClipData == NULL)
-		return false;
-
-	memcpy(pClipData, pData, Size);
-
-	::GlobalUnlock(hMemory);
-	SetData(hMemory);
-
-	return true;
+	if (HGLOBAL hMemory = ::GlobalAlloc(GMEM_MOVEABLE, Size)) {
+		if (LPVOID pClipData = ::GlobalLock(hMemory)) {
+			memcpy(pClipData, pData, Size);
+			SetData(hMemory);
+			::GlobalUnlock(hMemory);
+			return true;
+		}
+	}
+	return false;
 }
 
 bool CClipboard::GetData(HGLOBAL &hMemory) const		// // //
@@ -111,10 +101,18 @@ bool CClipboard::IsDataAvailable() const
 }
 
 bool CClipboard::TryCopy(const CClipboardResource &res) {		// // //
-	if (auto hMem = AllocMem(res.GetAllocSize())) {
-		res.WriteGlobalMemory(hMem);
-		SetData(hMem);
-		return true;
+	if (auto hMem = res.AllocateGlobalMemory()) {
+		if (res.WriteGlobalMemory(hMem)) {
+			SetData(hMem);
+			return true;
+		}
 	}
 	return false;
+}
+
+bool CClipboard::TryRestore(CClipboardResource &res) const {		// // //
+	HGLOBAL hMem;		// // //
+	if (!GetData(hMem))
+		return false;
+	return res.ReadGlobalMemory(hMem);
 }

@@ -61,19 +61,19 @@ constexpr int Compare0CCFTVersion(int api, int maj, int min, int rev) noexcept {
 
 #if defined(WIP) && __has_include("commit_hash.h")
 #include "commit_hash.h"
-constexpr const char *Get0CCFTVersionString() noexcept {
+inline const char *Get0CCFTVersionString() noexcept {
 	return VERSION_STR(".") " [" COMMIT_HASH "]";
 }
 
-constexpr const char *GetDumpVersionString() noexcept {
+inline const char *GetDumpVersionString() noexcept {
 	return VERSION_STR("_") "_" COMMIT_HASH;
 }
 #else
-constexpr const char *Get0CCFTVersionString() noexcept {
+inline const char *Get0CCFTVersionString() noexcept {
 	return VERSION_STR(".");
 }
 
-constexpr const char *GetDumpVersionString() noexcept {
+inline const char *GetDumpVersionString() noexcept {
 	return VERSION_STR("_");
 }
 #endif

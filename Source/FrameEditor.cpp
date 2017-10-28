@@ -1042,26 +1042,16 @@ void CFrameEditor::OnEditCopy()
 
 void CFrameEditor::OnEditPaste()
 {
-	CClipboard Clipboard(this, m_iClipboard);
-	HGLOBAL hMem;		// // //
-	if (!Clipboard.GetData(hMem))
-		return;
-
-	CFrameClipData *pClipData = new CFrameClipData();
-	if (pClipData->ReadGlobalMemory(hMem))
-		m_pMainFrame->AddAction(std::make_unique<CFActionPaste>(pClipData, GetEditFrame(), false));		// // //
+	auto pClipData = std::make_unique<CFrameClipData>();
+	if (CClipboard {this, m_iClipboard}.TryRestore(*pClipData))		// // //
+		m_pMainFrame->AddAction(std::make_unique<CFActionPaste>(pClipData.release(), GetEditFrame(), false));		// // //
 }
 
 void CFrameEditor::OnEditPasteOverwrite()		// // //
 {
-	CClipboard Clipboard(this, m_iClipboard);
-	HGLOBAL hMem;		// // //
-	if (!Clipboard.GetData(hMem))
-		return;
-
-	CFrameClipData *pClipData = new CFrameClipData();
-	if (pClipData->ReadGlobalMemory(hMem))
-		m_pMainFrame->AddAction(std::make_unique<CFActionPasteOverwrite>(pClipData));		// // //
+	auto pClipData = std::make_unique<CFrameClipData>();
+	if (CClipboard {this, m_iClipboard}.TryRestore(*pClipData))		// // //
+		m_pMainFrame->AddAction(std::make_unique<CFActionPasteOverwrite>(pClipData.release()));		// // //
 }
 
 void CFrameEditor::OnUpdateEditPasteOverwrite(CCmdUI *pCmdUI)		// // //
@@ -1071,14 +1061,9 @@ void CFrameEditor::OnUpdateEditPasteOverwrite(CCmdUI *pCmdUI)		// // //
 
 void CFrameEditor::OnEditPasteNewPatterns()
 {
-	CClipboard Clipboard(this, m_iClipboard);
-	HGLOBAL hMem;		// // //
-	if (!Clipboard.GetData(hMem))
-		return;
-
-	CFrameClipData *pClipData = new CFrameClipData();
-	if (pClipData->ReadGlobalMemory(hMem))
-		m_pMainFrame->AddAction(std::make_unique<CFActionPaste>(pClipData, GetEditFrame(), true));		// // //
+	auto pClipData = std::make_unique<CFrameClipData>();
+	if (CClipboard {this, m_iClipboard}.TryRestore(*pClipData))		// // //
+		m_pMainFrame->AddAction(std::make_unique<CFActionPaste>(pClipData.release(), GetEditFrame(), true));		// // //
 }
 
 void CFrameEditor::OnEditDelete()

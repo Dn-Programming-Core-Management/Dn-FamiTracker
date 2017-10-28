@@ -146,15 +146,14 @@ public:
 	int GetChannelAtPoint(int PointX) const;
 
 	// Edit: Copy & paste, selection
-	CPatternClipData *CopyEntire() const;
-	CPatternClipData *Copy() const;
-	CPatternClipData *CopyRaw() const;		// // //
-	CPatternClipData *CopyRaw(const CSelection &Sel) const;		// // //
-	void Cut();
-	void PasteEntire(const CPatternClipData *pClipData);
-	void Paste(const CPatternClipData *pClipData, const paste_mode_t PasteMode, const paste_pos_t PastePos);		// // //
-	void PasteRaw(const CPatternClipData *pClipData);		// // //
-	void PasteRaw(const CPatternClipData *pClipData, const CCursorPos &Pos);		// // //
+	std::unique_ptr<CPatternClipData> CopyEntire() const;
+	std::unique_ptr<CPatternClipData> Copy() const;
+	std::unique_ptr<CPatternClipData> CopyRaw() const;		// // //
+	std::unique_ptr<CPatternClipData> CopyRaw(const CSelection &Sel) const;		// // //
+	void PasteEntire(const CPatternClipData &ClipData);
+	void Paste(const CPatternClipData &ClipData, const paste_mode_t PasteMode, const paste_pos_t PastePos);		// // //
+	void PasteRaw(const CPatternClipData &ClipData);		// // //
+	void PasteRaw(const CPatternClipData &ClipData, const CCursorPos &Pos);		// // //
 
 	bool IsSelecting() const;
 	void SelectChannel();
@@ -194,12 +193,12 @@ public:
 	sel_condition_t GetSelectionCondition(const CSelection &Sel) const;		// // //
 	void UpdateSelectionCondition();		// // //
 
-	void DragPaste(const CPatternClipData *pClipData, const CSelection *pDragTarget, bool bMix);
+	void DragPaste(const CPatternClipData &ClipData, const CSelection &DragTarget, bool bMix);
 
 	// OLE support
-	void BeginDrag(const CPatternClipData *pClipData);
+	void BeginDrag(const CPatternClipData &ClipData);
 	void EndDrag();
-	bool PerformDrop(const CPatternClipData *pClipData, bool bCopy, bool bCopyMix);
+	bool PerformDrop(std::unique_ptr<CPatternClipData> pClipData, bool bCopy, bool bCopyMix);		// // //
 	void UpdateDrag(const CPoint &point);
 
 #ifdef _DEBUG

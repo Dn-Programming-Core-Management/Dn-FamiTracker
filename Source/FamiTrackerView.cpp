@@ -936,14 +936,9 @@ void CFamiTrackerView::OnEditPasteInsert()		// // //
 }
 
 void CFamiTrackerView::DoPaste(paste_mode_t Mode) {		// // //
-	CClipboard Clipboard(this, m_iClipboard);
-	HGLOBAL hMem;		// // //
-	if (!Clipboard.GetData(hMem))
-		return;
-
-	CPatternClipData *pClipData = new CPatternClipData();
-	if (pClipData->ReadGlobalMemory(hMem))
-		AddAction(std::make_unique<CPActionPaste>(pClipData, Mode, m_iPastePos));		// // //
+	auto pClipData = std::make_unique<CPatternClipData>();
+	if (CClipboard {this, m_iClipboard}.TryRestore(*pClipData))		// // //
+		AddAction(std::make_unique<CPActionPaste>(std::move(pClipData), Mode, m_iPastePos));		// // //
 }
 
 void CFamiTrackerView::OnEditDelete()
@@ -3617,7 +3612,7 @@ DROPEFFECT CFamiTrackerView::OnDragEnter(COleDataObject* pDataObject, DWORD dwKe
 		DragData.ReadGlobalMemory(pDataObject->GetGlobalData(m_iClipboard));
 
 		// Begin drag operation
-		m_pPatternEditor->BeginDrag(&DragData);
+		m_pPatternEditor->BeginDrag(DragData);
 		m_pPatternEditor->UpdateDrag(point);
 
 		InvalidateCursor();
@@ -3667,17 +3662,13 @@ BOOL CFamiTrackerView::OnDrop(COleDataObject* pDataObject, DROPEFFECT dropEffect
 		m_pPatternEditor->UpdateDrag(point);
 
 		// Get clipboard data
-		CPatternClipData *pClipData = new CPatternClipData();
+		auto pClipData = std::make_unique<CPatternClipData>();		// // //
 		HGLOBAL hMem = pDataObject->GetGlobalData(m_iClipboard);
-		if (!pClipData->ReadGlobalMemory(pDataObject->GetGlobalData(m_iClipboard)))
-			SAFE_RELEASE(pClipData);
-
-		// Paste into pattern
-		else if (!m_pPatternEditor->PerformDrop(pClipData, bCopy, m_bDropMix))
-			SAFE_RELEASE(pClipData);
+		if (pClipData->ReadGlobalMemory(pDataObject->GetGlobalData(m_iClipboard)))
+			if (m_pPatternEditor->PerformDrop(std::move(pClipData), bCopy, m_bDropMix))
+				m_bDropped = true;
 
 		InvalidateCursor();
-		m_bDropped = true;
 
 		Result = TRUE;
 	}

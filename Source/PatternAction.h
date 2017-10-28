@@ -29,6 +29,7 @@
 #include "PatternNote.h"		// // //
 #include <vector>		// // //
 #include <memory>		// // //
+#include "PatternClipData.h"		// // // TODO: remove
 
 enum transpose_t {
 	TRANSPOSE_DEC_NOTES,
@@ -100,8 +101,8 @@ protected:
 	std::unique_ptr<CPatternEditorState> m_pRedoState;
 
 protected:
-	const CPatternClipData *m_pClipData = nullptr;
-	CPatternClipData *m_pUndoClipData = nullptr;		// // //
+	std::unique_ptr<const CPatternClipData> m_pClipData;
+	std::unique_ptr<const CPatternClipData> m_pUndoClipData;		// // //
 	paste_mode_t m_iPasteMode;		// // //
 	paste_pos_t m_iPastePos;		// // //
 	
@@ -123,7 +124,7 @@ protected:
 	bool SaveState(const CMainFrame &MainFrm) override;
 	void Undo(CMainFrame &MainFrm) override;
 protected:
-	CPatternClipData *m_pUndoClipData = nullptr;
+	std::unique_ptr<CPatternClipData> m_pUndoClipData;
 };
 
 // // // built-in pattern action subtypes
@@ -190,7 +191,7 @@ private:
 
 class CPActionPaste : public CPatternAction {
 public:
-	CPActionPaste(CPatternClipData *pClipData, paste_mode_t Mode, paste_pos_t Pos);
+	CPActionPaste(std::unique_ptr<CPatternClipData> pClipData, paste_mode_t Mode, paste_pos_t Pos);
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
 	void Undo(CMainFrame &MainFrm) override;
@@ -212,8 +213,8 @@ private:
 	void Redo(CMainFrame &MainFrm) override;
 
 	CCursorPos m_cpTailPos;
-	CPatternClipData *m_pUndoHead = nullptr;
-	CPatternClipData *m_pUndoTail = nullptr;
+	std::unique_ptr<const CPatternClipData> m_pUndoHead;
+	std::unique_ptr<const CPatternClipData> m_pUndoTail;
 };
 
 class CPActionInsertAtSel : public CPatternAction
@@ -226,8 +227,8 @@ private:
 	void Redo(CMainFrame &MainFrm) override;
 
 	CCursorPos m_cpHeadPos, m_cpTailPos;
-	CPatternClipData *m_pUndoHead = nullptr;
-	CPatternClipData *m_pUndoTail = nullptr;
+	std::unique_ptr<const CPatternClipData> m_pUndoHead;
+	std::unique_ptr<const CPatternClipData> m_pUndoTail;
 };
 
 class CPActionTranspose : public CPSelectionAction
@@ -278,14 +279,14 @@ private:
 class CPActionDragDrop : public CPatternAction
 {
 public:
-	CPActionDragDrop(const CPatternClipData *pClipData, bool bDelete, bool bMix, const CSelection &pDragTarget);
+	CPActionDragDrop(std::unique_ptr<CPatternClipData> pClipData, bool bDelete, bool bMix, const CSelection &pDragTarget);
 private:
 	bool SaveState(const CMainFrame &MainFrm) override;
 	void Undo(CMainFrame &MainFrm) override;
 	void Redo(CMainFrame &MainFrm) override;
 private:
 //	const CPatternClipData *m_pClipData;
-	std::unique_ptr<CPatternClipData> m_pAuxiliaryClipData; // TODO: remove
+	std::unique_ptr<const CPatternClipData> m_pAuxiliaryClipData; // TODO: remove
 	bool m_bDragDelete;
 	bool m_bDragMix;
 //	CSelection m_newSelection;
