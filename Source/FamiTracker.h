@@ -20,12 +20,13 @@
 ** must bear this legend.
 */
 
-#pragma once
 
+#pragma once
 
 // FamiTracker.h : main header file for the FamiTracker application
 
 #include <thread>		// // //
+#include "FamiTrackerTypes.h"		// // //
 
 // Support DLL translations
 #define SUPPORT_TRANSLATIONS
@@ -42,6 +43,11 @@ enum {
 	IPC_LOAD_PLAY
 };
 
+enum class render_type_t {
+	Loops,
+	Seconds,
+};
+
 // Custom command line reader
 class CFTCommandLineInfo : public CCommandLineInfo
 {
@@ -55,6 +61,9 @@ public:
 	CString m_strExportFile;
 	CString m_strExportLogFile;
 	CString m_strExportDPCMFile;
+	render_type_t render_type_ = render_type_t::Loops;		// // //
+	unsigned track_ = MAX_TRACKS;
+	unsigned render_param_ = 0;		// // //
 };
 
 

@@ -20,8 +20,6 @@
 ** must bear this legend.
 */
 
-//#define RENDER_TEST
-
 #include "json/json.hpp"		// // //
 #include "version.h"		// // //
 #include "stdafx.h"
@@ -38,6 +36,7 @@
 #include "Settings.h"
 #include "CommandLineExport.h"
 #include "WinSDK/VersionHelpers.h"		// // //
+#include "WaveRenderer.h"		// // //
 
 #include "WinInet.h"		// // //
 #pragma comment(lib, "wininet.lib")
@@ -128,9 +127,6 @@ BOOL CFamiTrackerApp::InitInstance()
 	// Parse command line for standard shell commands, DDE, file open + some custom ones
 	CFTCommandLineInfo cmdInfo;
 	ParseCommandLine(cmdInfo);
-#ifdef RENDER_TEST
-	cmdInfo.m_bRender = true;		// // // test
-#endif
 
 	if (CheckSingleInstance(cmdInfo))
 		return FALSE;
@@ -202,31 +198,43 @@ BOOL CFamiTrackerApp::InitInstance()
 	}
 #endif
 
-#ifdef RENDER_TEST
 	// // // WAV render
 	if (cmdInfo.m_bRender) {
 		CRuntimeClass *pRuntimeClass = RUNTIME_CLASS(CFamiTrackerDoc);
-		CObject *pObject = pRuntimeClass->CreateObject();
+		std::unique_ptr<CObject> pObject {pRuntimeClass->CreateObject()};
 		if (!pObject || !pObject->IsKindOf(pRuntimeClass)) {
 			std::cerr << "Error: unable to create CFamiTrackerDoc\n";
 			return FALSE;
 		}
-		CFamiTrackerDoc *pExportDoc = static_cast<CFamiTrackerDoc *>(pObject);
-		if (!pExportDoc->OnOpenDocument(cmdInfo.m_strFileName)) {
+		auto &doc = static_cast<CFamiTrackerDoc &>(*pObject);
+		m_pSoundGenerator->AssignDocument(&doc);
+		m_pSoundGenerator->InitializeSound(NULL);
+
+		if (!doc.OnOpenDocument(cmdInfo.m_strFileName)) {
 			std::cerr << "Error: unable to open document: " << cmdInfo.m_strFileName << '\n';
 			return FALSE;
 		}
+		if ((unsigned)cmdInfo.track_ >= doc.GetTrackCount())
+			cmdInfo.track_ = 0;
 
-		m_pSoundGenerator->AssignDocument(pExportDoc);
-		bool res = m_pSoundGenerator->RenderToFile(cmdInfo.m_strExportFile.GetBuffer(), render_end_t::SONG_LOOP_LIMIT, 1, 0);
-		cmdInfo.m_strExportFile.ReleaseBuffer();
+		std::unique_ptr<CWaveRenderer> render;
+		switch (cmdInfo.render_type_) {
+		case render_type_t::Loops:
+			render = std::make_unique<CWaveRendererRow>(doc.ScanActualLength(cmdInfo.track_, cmdInfo.render_param_)); break;
+		case render_type_t::Seconds:
+			render = std::make_unique<CWaveRendererTick>(cmdInfo.render_param_, doc.GetFrameRate()); break;
+		}
+		bool res = m_pSoundGenerator->RenderToFile(cmdInfo.m_strExportFile.GetString(), std::move(render));
 		if (!res) {
 			std::cerr << "Error: unable to render WAV file: " << cmdInfo.m_strExportFile << '\n';
 			return FALSE;
 		}
+		Sleep(100);
+		while (m_pSoundGenerator->IsRendering())
+			m_pSoundGenerator->OnIdle(0);
+		std::cout << "Done." << std::endl;
 		return TRUE;
 	}
-#endif
 
 	// Handle command line export
 	if (cmdInfo.m_bExport) {
@@ -947,21 +955,50 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 	}
 	else {
 		// Store NSF name, then log filename
-		if (m_bExport == true) {
-			if (m_strExportFile.GetLength() == 0)
-			{
+		if (m_bExport) {
+			if (m_strExportFile.IsEmpty()) {
 				m_strExportFile = CString(pszParam);
 				return;
 			}
-			else if(m_strExportLogFile.GetLength() == 0)
-			{
+			else if (m_strExportLogFile.IsEmpty()) {
 				m_strExportLogFile = CString(pszParam);
 				return;
 			}
-			else if(m_strExportDPCMFile.GetLength() == 0)
-			{
+			else if (m_strExportDPCMFile.IsEmpty()) {
 				// BIN export takes another file paramter for DPCM
 				m_strExportDPCMFile = CString(pszParam);
+				return;
+			}
+		}
+		else if (m_bRender) {		// // //
+			if (m_strExportFile.IsEmpty()) {
+				m_strExportFile = CString(pszParam);
+				return;
+			}
+			else if (track_ == (unsigned)-1) {
+				CString param = pszParam;
+				TCHAR *str_end = param.GetBuffer() + param.GetLength();
+				TCHAR *str_end2;
+				track_ = _tcstoul(pszParam, &str_end2, 10);
+				param.ReleaseBuffer();
+				if (errno || str_end2 != str_end)
+					m_bRender = false;
+				return;
+			}
+			else {
+				CString param = pszParam;
+				if (param.Right(1) == _T("s")) {
+					param.Delete(param.GetLength() - 1);
+					render_type_ = render_type_t::Seconds;
+				}
+				else
+					render_type_ = render_type_t::Loops;
+				TCHAR *str_end = param.GetBuffer() + param.GetLength();
+				TCHAR *str_end2;
+				render_param_ = _tcstoul(pszParam, &str_end2, 10);
+				param.ReleaseBuffer();
+				if (errno || str_end2 != str_end)
+					m_bRender = false;
 				return;
 			}
 		}

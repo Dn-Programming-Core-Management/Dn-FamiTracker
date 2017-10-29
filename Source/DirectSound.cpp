@@ -74,7 +74,7 @@ bool CDSound::SetupDevice(int iDevice)
 		return false;
 	}
 
-	if (FAILED(m_lpDirectSound->SetCooperativeLevel(m_hWndTarget, DSSCL_PRIORITY))) {
+	if (m_hWndTarget != NULL && FAILED(m_lpDirectSound->SetCooperativeLevel(m_hWndTarget, DSSCL_PRIORITY))) {		// // //
 		m_lpDirectSound = NULL;
 		return false;
 	}

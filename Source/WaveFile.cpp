@@ -22,7 +22,7 @@
 
 #include "WaveFile.h"
 
-bool CWaveFile::OpenFile(LPTSTR Filename, int SampleRate, int SampleSize, int Channels)
+bool CWaveFile::OpenFile(LPCTSTR Filename, int SampleRate, int SampleSize, int Channels)
 {
 	// Open a wave file for streaming
 	//
@@ -36,7 +36,9 @@ bool CWaveFile::OpenFile(LPTSTR Filename, int SampleRate, int SampleSize, int Ch
 	WaveFormat.wf.nAvgBytesPerSec = SampleRate * (SampleSize / 8) * Channels;
 	WaveFormat.wBitsPerSample	  = SampleSize;
 
-	hmmioOut = mmioOpen(Filename, NULL, MMIO_ALLOCBUF | MMIO_READWRITE | MMIO_CREATE);
+	TCHAR pBuf[128] = { };		// // //
+	_tcscpy_s(pBuf, Filename);
+	hmmioOut = mmioOpen(pBuf, NULL, MMIO_ALLOCBUF | MMIO_READWRITE | MMIO_CREATE);
 
 	ckOutRIFF.fccType = mmioFOURCC('W', 'A', 'V', 'E');
 	ckOutRIFF.cksize  = 0;

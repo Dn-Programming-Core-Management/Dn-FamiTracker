@@ -33,6 +33,7 @@
 #include <string>
 #include <vector>		// // //
 #include <memory>		// // //
+#include <mutex>		// // //
 #include "FamiTrackerTypes.h"		// // //
 #include "SoundGenBase.h"		// // //
 
@@ -144,7 +145,7 @@ public:
 	int			 GetChannelVolume(int Channel) const;		// // //
 
 	// Rendering
-	bool		 RenderToFile(LPTSTR pFile, const std::shared_ptr<CWaveRenderer> &pRender);		// // //
+	bool		 RenderToFile(LPCTSTR pFile, const std::shared_ptr<CWaveRenderer> &pRender);		// // //
 	bool		 IsRendering() const;	
 	bool		 IsBackgroundTask() const;
 
@@ -225,6 +226,8 @@ private:
 	void		HaltPlayer();
 	void		MakeSilent();
 
+	bool		is_rendering_impl() const;		// // //
+
 	// Misc
 	void		PlaySample(const CDSample *pSample, int Offset, int Pitch);
 	
@@ -256,7 +259,7 @@ private:
 	std::unique_ptr<CAPU>			m_pAPU;
 
 	std::unique_ptr<const CDSample> m_pPreviewSample;
-	CVisualizerWnd					*m_pVisualizerWnd;
+	CVisualizerWnd					*m_pVisualizerWnd = nullptr;
 
 	bool				m_bRunning;
 
@@ -287,6 +290,7 @@ private:
 	std::unique_ptr<CArpeggiator> m_pArpeggiator;			// // //
 
 	std::shared_ptr<CWaveRenderer> m_pWaveRenderer;			// // //
+	mutable std::mutex renderer_mtx_;		// // //
 	std::unique_ptr<CInstrumentRecorder> m_pInstRecorder;
 
 	// FDS & N163 waves

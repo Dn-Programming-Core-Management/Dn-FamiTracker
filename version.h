@@ -31,8 +31,8 @@
 // Version info
 #define VERSION_API  0
 #define VERSION_MAJ  3
-#define VERSION_MIN  14
-#define VERSION_REV  6
+#define VERSION_MIN  15
+#define VERSION_REV  0
 
 #define STRINGIFY_IMPL(x) #x
 #define STRINGIFY(x) STRINGIFY_IMPL(x)
