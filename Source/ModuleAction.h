@@ -53,4 +53,43 @@ private:
 	bool newShow_ = false;
 };
 
+class CTitle : public ::CModuleAction {
+public:
+	CTitle(std::string_view str);
+private:
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) override;
+	void Redo(CMainFrame &MainFrm) override;
+	bool Merge(const CAction &other) override;
+
+	std::string oldStr_;
+	std::string newStr_;
+};
+
+class CArtist : public ::CModuleAction {
+public:
+	CArtist(std::string_view str);
+private:
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) override;
+	void Redo(CMainFrame &MainFrm) override;
+	bool Merge(const CAction &other) override;
+
+	std::string oldStr_;
+	std::string newStr_;
+};
+
+class CCopyright : public ::CModuleAction {
+public:
+	CCopyright(std::string_view str);
+private:
+	bool SaveState(const CMainFrame &MainFrm) override;
+	void Undo(CMainFrame &MainFrm) override;
+	void Redo(CMainFrame &MainFrm) override;
+	bool Merge(const CAction &other) override;
+
+	std::string oldStr_;
+	std::string newStr_;
+};
+
 } // namespace ModuleAction

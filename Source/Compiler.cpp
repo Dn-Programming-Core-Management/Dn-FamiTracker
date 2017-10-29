@@ -404,18 +404,22 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	int iAuthSize = 0, iTimeSize = 0, iTlblSize = 0, iDataSize = 0;
 	CStringA str = "0CC-FamiTracker ";
 	str.Append(Get0CCFTVersionString());		// // //
-	iAuthSize = strlen(m_pDocument->GetSongName()) + strlen(m_pDocument->GetSongArtist())
-		+ strlen(m_pDocument->GetSongCopyright()) + str.GetLength() + 4;
+	iAuthSize = m_pDocument->GetModuleName().size() + m_pDocument->GetModuleArtist().size() +
+		m_pDocument->GetModuleCopyright().size() + str.GetLength() + 4;
 
 	auto Header = CreateNSFeHeader(MachineType);		// // //
 	OutputFile.Write(&Header, sizeof(Header));
 
 	const unsigned char AuthIdent[] = {'a', 'u', 't', 'h'};
+	const unsigned char nullch = 0;
 	OutputFile.Write(reinterpret_cast<char*>(&iAuthSize), sizeof(int));
 	OutputFile.Write(&AuthIdent, sizeof(AuthIdent));
-	OutputFile.Write(m_pDocument->GetSongName(), strlen(m_pDocument->GetSongName()) + 1);
-	OutputFile.Write(m_pDocument->GetSongArtist(), strlen(m_pDocument->GetSongArtist()) + 1);
-	OutputFile.Write(m_pDocument->GetSongCopyright(), strlen(m_pDocument->GetSongCopyright()) + 1);
+	OutputFile.Write(m_pDocument->GetModuleName().data(), m_pDocument->GetModuleName().size());
+	OutputFile.Write(&nullch, 1);
+	OutputFile.Write(m_pDocument->GetModuleArtist().data(), m_pDocument->GetModuleArtist().size());
+	OutputFile.Write(&nullch, 1);
+	OutputFile.Write(m_pDocument->GetModuleCopyright().data(), m_pDocument->GetModuleCopyright().size());
+	OutputFile.Write(&nullch, 1);
 	OutputFile.Write((char*)((LPCSTR)str), str.GetLength() + 1);
 
 	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
@@ -853,9 +857,9 @@ stNSFHeader CCompiler::CreateHeader(int MachineType) const		// // //
 	Header.LoadAddr = m_iLoadAddress;
 	Header.InitAddr = m_iInitAddress;
 	Header.PlayAddr = m_iInitAddress + 3;
-	strncpy((char *)Header.SongName,   m_pDocument->GetSongName(), std::extent_v<decltype(Header.SongName)>);
-	strncpy((char *)Header.ArtistName, m_pDocument->GetSongArtist(), std::extent_v<decltype(Header.ArtistName)>);
-	strncpy((char *)Header.Copyright,  m_pDocument->GetSongCopyright(), std::extent_v<decltype(Header.Copyright)>);
+	strncpy((char *)Header.SongName,   m_pDocument->GetModuleName().data(), std::size(Header.SongName));
+	strncpy((char *)Header.ArtistName, m_pDocument->GetModuleArtist().data(), std::size(Header.ArtistName));
+	strncpy((char *)Header.Copyright,  m_pDocument->GetModuleCopyright().data(), std::size(Header.Copyright));
 	Header.SoundChip = m_iActualChip;		// // //
 
 	// If speed is default, write correct NTSC/PAL speed periods

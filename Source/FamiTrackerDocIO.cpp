@@ -197,19 +197,25 @@ void CFamiTrackerDocIO::SaveParams(const CFamiTrackerDoc &doc, int ver) {
 }
 
 void CFamiTrackerDocIO::LoadSongInfo(CFamiTrackerDoc &doc, int ver) {
-	char buf[32];
+	char buf[METADATA_FIELD_LENGTH];
 	file_.GetBlock(buf, std::size(buf));
-	doc.SetSongName(buf);
+	doc.SetModuleName(buf);
 	file_.GetBlock(buf, std::size(buf));
-	doc.SetSongArtist(buf);
+	doc.SetModuleArtist(buf);
 	file_.GetBlock(buf, std::size(buf));
-	doc.SetSongCopyright(buf);
+	doc.SetModuleCopyright(buf);
 }
 
 void CFamiTrackerDocIO::SaveSongInfo(const CFamiTrackerDoc &doc, int ver) {
-	file_.WriteBlock(doc.GetSongName(), 32);
-	file_.WriteBlock(doc.GetSongArtist(), 32);
-	file_.WriteBlock(doc.GetSongCopyright(), 32);
+	const auto write_sv = [&] (std::string_view sv, size_t len) {
+		sv = sv.substr(0, METADATA_FIELD_LENGTH - 1);
+		file_.WriteBlock(sv.data(), sv.size());
+		for (size_t i = sv.size(); i < len; ++i)
+			file_.WriteBlockChar(0);
+	};
+	write_sv(doc.GetModuleName(), METADATA_FIELD_LENGTH);
+	write_sv(doc.GetModuleArtist(), METADATA_FIELD_LENGTH);
+	write_sv(doc.GetModuleCopyright(), METADATA_FIELD_LENGTH);
 }
 
 void CFamiTrackerDocIO::LoadHeader(CFamiTrackerDoc &doc, int ver) {

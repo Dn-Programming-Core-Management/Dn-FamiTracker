@@ -367,9 +367,9 @@ void CFamiTrackerDoc::DeleteContents()
 	m_pBookmarkManager->ClearAll();		// // //
 
 	// Clear song info
-	memset(m_strName, 0, 32);
-	memset(m_strArtist, 0, 32);
-	memset(m_strCopyright, 0, 32);
+	SetModuleName("");		// // //
+	SetModuleArtist("");
+	SetModuleCopyright("");
 
 	// Reset variables to default
 	m_iMachine			 = DEFAULT_MACHINE_TYPE;
@@ -805,6 +805,7 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 			FileBlock = FB_EOF;
 
 		unsigned int Speed, FrameCount, Pattern, PatternLength;
+		char pBuf[METADATA_FIELD_LENGTH] = { };		// // //
 
 		switch (FileBlock) {
 			case FB_CHANNELS:
@@ -929,15 +930,18 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 				break;
 
 			case FB_SONGNAME:
-				pOpenFile->Read(m_strName, sizeof(char) * 32);
+				pOpenFile->Read(pBuf, METADATA_FIELD_LENGTH);		// // //
+				SetModuleName(pBuf);
 				break;
 
 			case FB_SONGARTIST:
-				pOpenFile->Read(m_strArtist, sizeof(char) * 32);
+				pOpenFile->Read(pBuf, METADATA_FIELD_LENGTH);
+				SetModuleArtist(pBuf);
 				break;
 		
 			case FB_SONGCOPYRIGHT:
-				pOpenFile->Read(m_strCopyright, sizeof(char) * 32);
+				pOpenFile->Read(pBuf, METADATA_FIELD_LENGTH);
+				SetModuleCopyright(pBuf);
 				break;
 			
 			default:
@@ -1763,66 +1767,45 @@ int CFamiTrackerDoc::GetTotalSequenceCount(inst_type_t InstType) const {		// // 
 // Song info
 //
 
-const char* CFamiTrackerDoc::GetSongName() const
-{ 
+std::string_view CFamiTrackerDoc::GetModuleName() const		// // //
+{
 	return m_strName; 
 }
 
-const char* CFamiTrackerDoc::GetSongArtist() const
+std::string_view CFamiTrackerDoc::GetModuleArtist() const
 { 
 	return m_strArtist; 
 }
 
-const char* CFamiTrackerDoc::GetSongCopyright() const
+std::string_view CFamiTrackerDoc::GetModuleCopyright() const
 { 
 	return m_strCopyright; 
 }
 
-void CFamiTrackerDoc::SetSongName(const char *pName)
+void CFamiTrackerDoc::SetModuleName(std::string_view pName)
 {
-	ASSERT(pName != NULL);
-	if (strcmp(m_strName, pName) != 0) {
-		bool nul = false;		// // //
-		char str[32];
-		for (int i = 0; i < 32; i++) {
-			str[i] = nul ? 0 : pName[i];
-			if (!str[i]) nul = true;
-		}
-		memcpy_s(m_strName, 32, str, 32);
-		SetModifiedFlag();
-		SetExceededFlag();		// // //
+	pName = pName.substr(0, METADATA_FIELD_LENGTH - 1);		// // //
+	if (m_strName != pName) {
+		m_strName = pName;
+//		ModifyIrreversible();
 	}
 }
 
-void CFamiTrackerDoc::SetSongArtist(const char *pArtist)
+void CFamiTrackerDoc::SetModuleArtist(std::string_view pArtist)
 {
-	ASSERT(pArtist != NULL);
-	if (strcmp(m_strArtist, pArtist) != 0) {
-		bool nul = false;		// // //
-		char str[32];
-		for (int i = 0; i < 32; i++) {
-			str[i] = nul ? 0 : pArtist[i];
-			if (!str[i]) nul = true;
-		}
-		memcpy_s(m_strArtist, 32, str, 32);
-		SetModifiedFlag();
-		SetExceededFlag();		// // //
+	pArtist = pArtist.substr(0, METADATA_FIELD_LENGTH - 1);		// // //
+	if (m_strArtist != pArtist) {
+		m_strArtist = pArtist;
+//		ModifyIrreversible();
 	}
 }
 
-void CFamiTrackerDoc::SetSongCopyright(const char *pCopyright)
+void CFamiTrackerDoc::SetModuleCopyright(std::string_view pCopyright)
 {
-	ASSERT(pCopyright != NULL);
-	if (strcmp(m_strCopyright, pCopyright) != 0) {
-		bool nul = false;		// // //
-		char str[32];
-		for (int i = 0; i < 32; i++) {
-			str[i] = nul ? 0 : pCopyright[i];
-			if (!str[i]) nul = true;
-		}
-		memcpy_s(m_strCopyright, 32, str, 32);
-		SetModifiedFlag();
-		SetExceededFlag();		// // //
+	pCopyright = pCopyright.substr(0, METADATA_FIELD_LENGTH - 1);		// // //
+	if (m_strCopyright != pCopyright) {
+		m_strCopyright = pCopyright;
+//		ModifyIrreversible();
 	}
 }
 

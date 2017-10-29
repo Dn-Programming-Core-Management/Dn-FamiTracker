@@ -47,6 +47,8 @@ const machine_t    DEFAULT_MACHINE_TYPE		 = NTSC;
 const unsigned int DEFAULT_SPEED_SPLIT_POINT = 32;
 const unsigned int OLD_SPEED_SPLIT_POINT	 = 21;
 
+const std::size_t METADATA_FIELD_LENGTH = 32;		// // //
+
 // View update modes (TODO check these and remove inappropriate flags)
 enum {
 	UPDATE_NONE = 0,		// No update
@@ -58,13 +60,6 @@ enum {
 	UPDATE_HIGHLIGHT,		// Row highlight option has changed
 	UPDATE_COLUMNS,			// Effect columns has changed
 	UPDATE_CLOSE			// Document is closing (TODO remove)
-};
-
-// Old sequence list, kept for compability
-struct stSequence {
-	unsigned int Count;
-	signed char Length[MAX_SEQUENCE_ITEMS];
-	signed char Value[MAX_SEQUENCE_ITEMS];
 };
 
 // Access data types used by the document class
@@ -219,13 +214,12 @@ public:
 	// Todo: remove this, use getchannelcount instead
 	unsigned int	GetAvailableChannels()	const { return m_iChannelsAvailable; };
 
-	// Todo: Replace with CString
-	const char*		GetSongName() const;
-	const char*		GetSongArtist() const;
-	const char*		GetSongCopyright() const;
-	void			SetSongName(const char *pName);
-	void			SetSongArtist(const char *pArtist);
-	void			SetSongCopyright(const char *pCopyright);
+	std::string_view GetModuleName() const;		// // //
+	std::string_view GetModuleArtist() const;
+	std::string_view GetModuleCopyright() const;
+	void			SetModuleName(std::string_view pName);
+	void			SetModuleArtist(std::string_view pArtist);
+	void			SetModuleCopyright(std::string_view pCopyright);
 
 	vibrato_t		GetVibratoStyle() const;
 	void			SetVibratoStyle(vibrato_t Style);
@@ -525,9 +519,9 @@ private:
 	int				m_iDetuneSemitone, m_iDetuneCent;			// // // 050B tuning
 
 	// NSF info
-	char			m_strName[32];								// Song name
-	char			m_strArtist[32];							// Song artist
-	char			m_strCopyright[32];							// Song copyright
+	std::string		m_strName;									// Song name
+	std::string		m_strArtist;								// Song artist
+	std::string		m_strCopyright;								// Song copyright
 
 	// Comments
 	std::string		m_strComment;								// // //

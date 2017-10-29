@@ -1967,32 +1967,41 @@ void CMainFrame::OnFileGeneralsettings()
 	static_cast<CFamiTrackerView*>(GetActiveView())->UpdateNoteQueues();		// // // auto arp setting
 }
 
-void CMainFrame::SetSongInfo(const char *pName, const char *pArtist, const char *pCopyright)
+void CMainFrame::SetSongInfo(const CFamiTrackerDoc &doc)		// // //
 {
-	m_wndDialogBar.SetDlgItemText(IDC_SONG_NAME, pName);
-	m_wndDialogBar.SetDlgItemText(IDC_SONG_ARTIST, pArtist);
-	m_wndDialogBar.SetDlgItemText(IDC_SONG_COPYRIGHT, pCopyright);
+	m_wndDialogBar.SetDlgItemText(IDC_SONG_NAME, doc.GetModuleName().data());
+	m_wndDialogBar.SetDlgItemText(IDC_SONG_ARTIST, doc.GetModuleArtist().data());
+	m_wndDialogBar.SetDlgItemText(IDC_SONG_COPYRIGHT, doc.GetModuleCopyright().data());
 }
 
 void CMainFrame::OnEnSongNameChange()
 {
-	char Text[32];
-	m_wndDialogBar.GetDlgItemText(IDC_SONG_NAME, Text, 32);
-	static_cast<CFamiTrackerDoc*>(GetActiveDocument())->SetSongName(Text);
+	CString str;
+	auto pEdit = (CEdit *)m_wndDialogBar.GetDlgItem(IDC_SONG_NAME);
+	pEdit->GetWindowText(str);
+	auto sel = pEdit->GetSel();
+	if (AddAction(std::make_unique<ModuleAction::CTitle>(str.GetString())))
+		pEdit->SetSel(sel);
 }
 
 void CMainFrame::OnEnSongArtistChange()
 {
-	char Text[32];
-	m_wndDialogBar.GetDlgItemText(IDC_SONG_ARTIST, Text, 32);
-	static_cast<CFamiTrackerDoc*>(GetActiveDocument())->SetSongArtist(Text);
+	CString str;
+	auto pEdit = (CEdit *)m_wndDialogBar.GetDlgItem(IDC_SONG_ARTIST);
+	pEdit->GetWindowText(str);
+	auto sel = pEdit->GetSel();
+	if (AddAction(std::make_unique<ModuleAction::CArtist>(str.GetString())))
+		pEdit->SetSel(sel);
 }
 
 void CMainFrame::OnEnSongCopyrightChange()
 {
-	char Text[32];
-	m_wndDialogBar.GetDlgItemText(IDC_SONG_COPYRIGHT, Text, 32);
-	static_cast<CFamiTrackerDoc*>(GetActiveDocument())->SetSongCopyright(Text);
+	CString str;
+	auto pEdit = (CEdit *)m_wndDialogBar.GetDlgItem(IDC_SONG_COPYRIGHT);
+	pEdit->GetWindowText(str);
+	auto sel = pEdit->GetSel();
+	if (AddAction(std::make_unique<ModuleAction::CCopyright>(str.GetString())))
+		pEdit->SetSel(sel);
 }
 
 void CMainFrame::ChangeNoteState(int Note)
@@ -2083,7 +2092,7 @@ void CMainFrame::OnFileImportText()
 		AfxMessageBox(sResult, MB_OK | MB_ICONEXCLAMATION);
 	}
 
-	SetSongInfo(pDoc->GetSongName(), pDoc->GetSongArtist(), pDoc->GetSongCopyright());
+	SetSongInfo(*pDoc);		// // //
 	pDoc->SetModifiedFlag(FALSE);
 	// TODO figure out how to handle this case, call OnInitialUpdate??
 	//pDoc->UpdateAllViews(NULL, CHANGED_ERASE);		// Remove
@@ -3503,7 +3512,7 @@ void CMainFrame::OnEasterEggKraid5()
 		CFamiTrackerDoc *pDoc = (CFamiTrackerDoc*)GetActiveDocument();
 		pDoc->MakeKraid();
 		SelectTrack(0);
-		SetSongInfo(_T(""), _T(""), _T(""));
+		SetSongInfo(*pDoc);
 		UpdateControls();
 		UpdateInstrumentList();
 		UpdateTrackBox();

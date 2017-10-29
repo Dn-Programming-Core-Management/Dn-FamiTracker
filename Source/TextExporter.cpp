@@ -690,15 +690,15 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 				t.FinishLine();
 				break;
 			case CT_TITLE:
-				pDoc->SetSongName(Charify(t.ReadToken()));
+				pDoc->SetModuleName(Charify(t.ReadToken()));
 				CHECK(t.ReadEOL(&sResult));
 				break;
 			case CT_AUTHOR:
-				pDoc->SetSongArtist(Charify(t.ReadToken()));
+				pDoc->SetModuleArtist(Charify(t.ReadToken()));
 				CHECK(t.ReadEOL(&sResult));
 				break;
 			case CT_COPYRIGHT:
-				pDoc->SetSongCopyright(Charify(t.ReadToken()));
+				pDoc->SetModuleCopyright(Charify(t.ReadToken()));
 				CHECK(t.ReadEOL(&sResult));
 				break;
 			case CT_COMMENT:
@@ -1214,17 +1214,17 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	s.Format(_T("# 0CC-FamiTracker text export %s\n\n"), Get0CCFTVersionString());		// // //
 	f.WriteString(s);
 
-	s.Format(_T("# Song information\n"
+	s.Format(_T("# Module information\n"
 	            "%-15s %s\n"
 	            "%-15s %s\n"
 	            "%-15s %s\n"
 	            "\n"),
-	            CT[CT_TITLE],     ExportString(pDoc->GetSongName()),
-	            CT[CT_AUTHOR],    ExportString(pDoc->GetSongArtist()),
-	            CT[CT_COPYRIGHT], ExportString(pDoc->GetSongCopyright()));
+	            CT[CT_TITLE],     ExportString(pDoc->GetModuleName().data()),
+	            CT[CT_AUTHOR],    ExportString(pDoc->GetModuleArtist().data()),
+	            CT[CT_COPYRIGHT], ExportString(pDoc->GetModuleCopyright().data()));
 	f.WriteString(s);
 
-	f.WriteString(_T("# Song comment\n"));
+	f.WriteString(_T("# Module comment\n"));
 	CString sComment = pDoc->GetComment().c_str();		// // //
 	bool bCommentLines = false;
 	do

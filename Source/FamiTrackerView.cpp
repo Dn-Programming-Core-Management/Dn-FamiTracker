@@ -1208,7 +1208,7 @@ void CFamiTrackerView::OnInitialUpdate()
 
 	// Update mainframe with new document settings
 	pMainFrame->UpdateInstrumentList();
-	pMainFrame->SetSongInfo(pDoc->GetSongName(), pDoc->GetSongArtist(), pDoc->GetSongCopyright());
+	pMainFrame->SetSongInfo(*pDoc);		// // //
 	pMainFrame->UpdateTrackBox();
 	pMainFrame->DisplayOctave();
 	pMainFrame->UpdateControls();

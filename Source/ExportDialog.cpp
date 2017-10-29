@@ -144,9 +144,9 @@ BOOL CExportDialog::OnInitDialog()
 		CheckDlgButton(IDC_DUAL, 0);
 	}
 
-	SetDlgItemText(IDC_NAME, CString(pDoc->GetSongName()));
-	SetDlgItemText(IDC_ARTIST, CString(pDoc->GetSongArtist()));
-	SetDlgItemText(IDC_COPYRIGHT, CString(pDoc->GetSongCopyright()));
+	SetDlgItemText(IDC_NAME, pDoc->GetModuleName().data());		// // //
+	SetDlgItemText(IDC_ARTIST, pDoc->GetModuleArtist().data());
+	SetDlgItemText(IDC_COPYRIGHT, pDoc->GetModuleCopyright().data());
 
 	// Fill the export box
 	CComboBox *pTypeBox = static_cast<CComboBox*>(GetDlgItem(IDC_TYPE));
@@ -208,9 +208,9 @@ void CExportDialog::CreateNSF()
 
 	USES_CONVERSION;
 
-	pDoc->SetSongName(T2A(Name.GetBuffer()));
-	pDoc->SetSongArtist(T2A(Artist.GetBuffer()));
-	pDoc->SetSongCopyright(T2A(Copyright.GetBuffer()));
+	pDoc->SetModuleName(T2A(Name.GetBuffer()));
+	pDoc->SetModuleArtist(T2A(Artist.GetBuffer()));
+	pDoc->SetModuleCopyright(T2A(Copyright.GetBuffer()));
 
 	CFileDialog FileDialog(FALSE, NSF_FILTER[1], DefFileName, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, filter);
 
@@ -250,9 +250,9 @@ void CExportDialog::CreateNSFe()		// // //
 
 	USES_CONVERSION;
 
-	pDoc->SetSongName(T2A(Name.GetBuffer()));
-	pDoc->SetSongArtist(T2A(Artist.GetBuffer()));
-	pDoc->SetSongCopyright(T2A(Copyright.GetBuffer()));
+	pDoc->SetModuleName(T2A(Name.GetBuffer()));
+	pDoc->SetModuleArtist(T2A(Artist.GetBuffer()));
+	pDoc->SetModuleCopyright(T2A(Copyright.GetBuffer()));
 
 	CFileDialog FileDialog(FALSE, NSF_FILTER[1], DefFileName, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, filter);
 
