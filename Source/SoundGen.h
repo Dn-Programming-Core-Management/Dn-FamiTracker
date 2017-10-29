@@ -307,6 +307,7 @@ public:
 	virtual BOOL InitInstance();
 	virtual int	 ExitInstance();
 	virtual BOOL OnIdle(LONG lCount);
+	BOOL IdleLoop();		// // //
 
 	// Implementation
 public:

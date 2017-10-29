@@ -204,18 +204,19 @@ BOOL CFamiTrackerApp::InitInstance()
 		std::unique_ptr<CObject> pObject {pRuntimeClass->CreateObject()};
 		if (!pObject || !pObject->IsKindOf(pRuntimeClass)) {
 			std::cerr << "Error: unable to create CFamiTrackerDoc\n";
+			ExitProcess(1);
 			return FALSE;
 		}
 		auto &doc = static_cast<CFamiTrackerDoc &>(*pObject);
-		m_pSoundGenerator->AssignDocument(&doc);
-		m_pSoundGenerator->InitializeSound(NULL);
-
 		if (!doc.OnOpenDocument(cmdInfo.m_strFileName)) {
 			std::cerr << "Error: unable to open document: " << cmdInfo.m_strFileName << '\n';
+			ExitProcess(1);
 			return FALSE;
 		}
 		if ((unsigned)cmdInfo.track_ >= doc.GetTrackCount())
 			cmdInfo.track_ = 0;
+		m_pSoundGenerator->AssignDocument(&doc);
+		m_pSoundGenerator->InitializeSound(NULL);
 
 		std::unique_ptr<CWaveRenderer> render;
 		switch (cmdInfo.render_type_) {
@@ -224,15 +225,21 @@ BOOL CFamiTrackerApp::InitInstance()
 		case render_type_t::Seconds:
 			render = std::make_unique<CWaveRendererTick>(cmdInfo.render_param_, doc.GetFrameRate()); break;
 		}
-		bool res = m_pSoundGenerator->RenderToFile(cmdInfo.m_strExportFile.GetString(), std::move(render));
-		if (!res) {
+		render->SetRenderTrack(cmdInfo.track_);
+		if (!m_pSoundGenerator->RenderToFile(cmdInfo.m_strExportFile.GetString(), std::move(render))) {
 			std::cerr << "Error: unable to render WAV file: " << cmdInfo.m_strExportFile << '\n';
 			return FALSE;
 		}
-		Sleep(100);
+		while (!m_pSoundGenerator->IsRendering())
+			;
+		std::cout << "Rendering started... ";
 		while (m_pSoundGenerator->IsRendering())
-			m_pSoundGenerator->OnIdle(0);
+			;//			m_pSoundGenerator->IdleLoop();
+		m_pSoundGenerator->StopPlayer();
+		m_pSoundGenerator->RemoveDocument();
+		ShutDownSynth();
 		std::cout << "Done." << std::endl;
+		ExitProcess(0);
 		return TRUE;
 	}
 
@@ -975,14 +982,15 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 				m_strExportFile = CString(pszParam);
 				return;
 			}
-			else if (track_ == (unsigned)-1) {
+			else if (track_ == MAX_TRACKS) {
 				CString param = pszParam;
-				TCHAR *str_end = param.GetBuffer() + param.GetLength();
+				TCHAR *str_end = const_cast<LPTSTR>(pszParam) + param.GetLength();
 				TCHAR *str_end2;
 				track_ = _tcstoul(pszParam, &str_end2, 10);
-				param.ReleaseBuffer();
 				if (errno || str_end2 != str_end)
 					m_bRender = false;
+				if (track_ >= MAX_TRACKS)
+					track_ = 0;
 				return;
 			}
 			else {
@@ -993,10 +1001,9 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 				}
 				else
 					render_type_ = render_type_t::Loops;
-				TCHAR *str_end = param.GetBuffer() + param.GetLength();
+				TCHAR *str_end = const_cast<LPTSTR>(pszParam) + param.GetLength();
 				TCHAR *str_end2;
 				render_param_ = _tcstoul(pszParam, &str_end2, 10);
-				param.ReleaseBuffer();
 				if (errno || str_end2 != str_end)
 					m_bRender = false;
 				return;

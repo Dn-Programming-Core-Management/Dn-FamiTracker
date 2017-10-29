@@ -63,7 +63,7 @@ public:
 	CString m_strExportDPCMFile;
 	render_type_t render_type_ = render_type_t::Loops;		// // //
 	unsigned track_ = MAX_TRACKS;
-	unsigned render_param_ = 0;		// // //
+	unsigned render_param_ = 1;		// // //
 };
 
 

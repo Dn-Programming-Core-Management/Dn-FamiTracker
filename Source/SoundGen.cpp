@@ -418,7 +418,10 @@ void CSoundGen::CloseAudio()
 	// Called from player thread
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
 
-	m_pAudioDriver->CloseAudioDevice();		// // //
+	if (m_pAudioDriver) {		// // //
+		m_pAudioDriver->CloseAudioDevice();
+		m_pAudioDriver.reset();
+	}
 
 	if (m_pDSound) {
 		m_pDSound->CloseDevice();
@@ -469,8 +472,7 @@ bool CSoundGen::PlayBuffer()
 		m_pWaveRenderer->FlushBuffer(pBuf, size);		// // //
 		return true;
 	}
-
-	if (!m_pAudioDriver->DoPlayBuffer())
+	else if (!m_pAudioDriver->DoPlayBuffer())
 		return false;
 
 	// // // Draw graph
@@ -952,6 +954,10 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 	if (CWinThread::OnIdle(lCount))
 		return TRUE;
 
+	return IdleLoop();		// // //
+}
+
+BOOL CSoundGen::IdleLoop() {
 	if (!m_pDocument || !m_pAudioDriver->IsAudioDeviceOpen() || !m_pDocument->IsFileLoaded())		// // //
 		return TRUE;
 
