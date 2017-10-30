@@ -38,8 +38,12 @@
 #include "WinSDK/VersionHelpers.h"		// // //
 #include "WaveRenderer.h"		// // //
 
+#include <afxadv.h>		// // // CRecentFileList
 #include "WinInet.h"		// // //
 #pragma comment(lib, "wininet.lib")
+#if !defined(WIP) && !defined(_DEBUG)		// // //
+#include <afxpriv.h>
+#endif
 
 // Single instance-stuff
 const TCHAR FT_SHARED_MUTEX_NAME[]	= _T("FamiTrackerMutex");	// Name of global mutex

@@ -1,7 +1,7 @@
 0CC-FamiTracker Mod
 Readme / Manual
 Written by HertzDevil
-Version 0.3.14.5 - Jan 16 2017
+Version 0.3.15.0 - Oct 30 2017
 
 --------------------------------------------------------------------------------
 
@@ -68,6 +68,29 @@ behaviour as the corresponding features on the vanilla branch.
    The Git source repository for the tracker.
 - http://github.com/HertzDevil/0CC-FT-NSF-Driver
    The Git source repository for the NSF driver.
+
+
+
+                          +=========================+
+                          |  Command Line Commands  |
+                          +=========================+
+
+The following extra commands are available:
+
+  >0CC-FamiTracker.exe <filename> /render <outname> [<track> [<count>]]
+
+Renders a given song to a WAV file, using existing configuration settings. Added
+in version 0.3.15.0.
+
+- <filename>
+   Module filename, including the file extension.
+- <outname>
+   Output filename.
+- <track>
+   Zero-based song index. Uses 0 (the first song) by default.
+- <count>
+   The number of loops to render (default 1). If this number ends with "s",
+   renders for the given number of seconds instead.
 
 
 

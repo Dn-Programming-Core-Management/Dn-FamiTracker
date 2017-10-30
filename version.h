@@ -26,7 +26,7 @@
 // Application version information
 
 // Define this for beta builds
-#define WIP
+//#define WIP
 
 // Version info
 #define VERSION_API  0

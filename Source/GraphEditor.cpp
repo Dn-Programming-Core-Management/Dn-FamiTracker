@@ -838,12 +838,12 @@ void CArpeggioGraphEditor::DrawRange(CDC *pDC, int Max, int Min)
 		// Top
 		CString line;
 		int NoteValue = m_iScrollOffset + 20;
-		line.Format(_T("%s%d"), stChanNote::NOTE_NAME[GET_NOTE(NoteValue) - 1], GET_OCTAVE(NoteValue));		// // //
+		line.Format(_T("%s%d"), stChanNote::NOTE_NAME[GET_NOTE(NoteValue) - 1].c_str(), GET_OCTAVE(NoteValue));		// // //
 		pDC->TextOut(2, m_GraphRect.top - 3, line);
 
 		// Bottom
 		NoteValue = m_iScrollOffset;
-		line.Format(_T("%s%d"), stChanNote::NOTE_NAME[GET_NOTE(NoteValue) - 1], GET_OCTAVE(NoteValue));		// // //
+		line.Format(_T("%s%d"), stChanNote::NOTE_NAME[GET_NOTE(NoteValue) - 1].c_str(), GET_OCTAVE(NoteValue));		// // //
 		pDC->TextOut(2, m_GraphRect.bottom - 13, line);
 
 		pDC->SelectObject(pOldFont);

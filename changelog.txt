@@ -2,9 +2,37 @@
 Change Log
 Written by HertzDevil
 
-Version 0.3.14.5 - Jan 16 2017
+Version 0.3.15.0 - Oct 30 2017
 
 --------------------------------------------------------------------------------
+
+V0.3.15.0 - 10/30/17
+
+Important Changes:
+ - Custom exporter support has been dropped because of lack of use
+
+Additions:
+ - Added the ability to render WAV files from the command line
+
+Improvements:
+ - The following actions are now undoable:
+    - Changing title / artist / copyright fields
+    - Changing comment settings
+    - "Populate Unique Patterns"
+ - Player now moves to the queued frame if it loops the current pattern
+ - Saved modules will now completely skip empty data blocks
+
+Bug fixes:
+ - Added workaround for Wine in the instrument editor and the configuration menu
+ - Fixed crash from using "x:0" or "x:0:z" entries in sequence editor MML fields
+ - Changing to a new song now resets the row marker
+ - Tracker no longer queues notes to other channels if auto-arpeggio is enabled
+ - Fixed forum link display on the About dialog
+ - Reverted a change that caused new notes on N163 channels to sometimes not
+    reload the wave with the correct indices
+ - Exporting multi-chip NSFs no longer modifies the current module
+
+
 
 V0.3.14.5 - 01/16/17
 

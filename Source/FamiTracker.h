@@ -71,6 +71,7 @@ class CMIDI;
 class CSoundGen;
 class CSettings;
 class CAccelerator;
+class CRecentFileList;		// // //
 
 class CMutex;
 
