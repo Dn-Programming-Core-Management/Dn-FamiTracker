@@ -348,14 +348,12 @@ void CPActionInsertRow::Undo(CMainFrame &MainFrm)
 	pDoc->PullUp(STATE_EXPAND(m_pUndoState));
 	pDoc->SetNoteData(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, m_pUndoState->Cursor.m_iChannel,
 					  pDoc->GetPatternLength(m_pUndoState->Track) - 1, m_OldNote);
-	pDoc->SetModifiedFlag();
 }
 
 void CPActionInsertRow::Redo(CMainFrame &MainFrm)
 {
 	CFamiTrackerDoc *pDoc = GET_DOCUMENT();
 	pDoc->InsertRow(STATE_EXPAND(m_pUndoState));
-	pDoc->SetModifiedFlag();
 }
 
 
@@ -379,7 +377,6 @@ void CPActionDeleteRow::Undo(CMainFrame &MainFrm)
 	if (m_bPullUp)
 		pDoc->InsertRow(STATE_EXPAND(m_pUndoState) - (m_bBack ? 1 : 0));
 	pDoc->SetNoteData(STATE_EXPAND(m_pUndoState) - (m_bBack ? 1 : 0), m_OldNote);
-	pDoc->SetModifiedFlag();
 }
 
 void CPActionDeleteRow::Redo(CMainFrame &MainFrm)
@@ -388,7 +385,6 @@ void CPActionDeleteRow::Redo(CMainFrame &MainFrm)
 	pDoc->ClearRowField(STATE_EXPAND(m_pUndoState) - (m_bBack ? 1 : 0), m_pUndoState->Cursor.m_iColumn);
 	if (m_bPullUp)
 		pDoc->PullUp(STATE_EXPAND(m_pUndoState) - (m_bBack ? 1 : 0));
-	pDoc->SetModifiedFlag();
 }
 
 
@@ -461,7 +457,6 @@ void CPActionScrollField::Redo(CMainFrame &MainFrm)
 	}
 
 	pDoc->SetNoteData(STATE_EXPAND(m_pUndoState), Note);		// // //
-	pDoc->SetModifiedFlag();
 }
 
 
@@ -997,7 +992,6 @@ void CPActionPatternLen::Undo(CMainFrame &MainFrm)
 {
 	CFamiTrackerDoc *pDoc = GET_DOCUMENT();
 	pDoc->SetPatternLength(m_pUndoState->Track, m_iOldPatternLen);
-	pDoc->SetModifiedFlag();
 	UPDATE_CONTROLS();
 }
 
@@ -1005,7 +999,6 @@ void CPActionPatternLen::Redo(CMainFrame &MainFrm)
 {
 	CFamiTrackerDoc *pDoc = GET_DOCUMENT();
 	pDoc->SetPatternLength(m_pUndoState->Track, m_iNewPatternLen);
-	pDoc->SetModifiedFlag();
 	UPDATE_CONTROLS();
 }
 
@@ -1095,14 +1088,12 @@ void CPActionEffColumn::Undo(CMainFrame &MainFrm)
 {
 	CFamiTrackerDoc *pDoc = GET_DOCUMENT();
 	pDoc->SetEffColumns(m_pUndoState->Track, m_iChannel, m_iOldColumns);
-	pDoc->SetModifiedFlag();
 }
 
 void CPActionEffColumn::Redo(CMainFrame &MainFrm)
 {
 	CFamiTrackerDoc *pDoc = GET_DOCUMENT();
 	pDoc->SetEffColumns(m_pUndoState->Track, m_iChannel, m_iNewColumns);
-	pDoc->SetModifiedFlag();
 }
 
 void CPActionEffColumn::UpdateView(CFamiTrackerDoc *pDoc) const		// // //
@@ -1128,14 +1119,12 @@ void CPActionHighlight::Undo(CMainFrame &MainFrm)
 {
 	CFamiTrackerDoc *pDoc = GET_DOCUMENT();
 	pDoc->SetHighlight(m_OldHighlight);
-	pDoc->SetModifiedFlag();
 }
 
 void CPActionHighlight::Redo(CMainFrame &MainFrm)
 {
 	CFamiTrackerDoc *pDoc = GET_DOCUMENT();
 	pDoc->SetHighlight(m_NewHighlight);
-	pDoc->SetModifiedFlag();
 }
 
 void CPActionHighlight::UpdateView(CFamiTrackerDoc *pDoc) const

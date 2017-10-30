@@ -82,7 +82,6 @@ void ModuleAction::CTitle::Undo(CMainFrame &MainFrm) {
 void ModuleAction::CTitle::Redo(CMainFrame &MainFrm) {
 	auto &doc = GET_DOCUMENT();
 	doc.SetModuleName(newStr_);
-	doc.SetModifiedFlag();
 	MainFrm.SetSongInfo(doc);
 }
 
@@ -115,7 +114,6 @@ void ModuleAction::CArtist::Undo(CMainFrame &MainFrm) {
 void ModuleAction::CArtist::Redo(CMainFrame &MainFrm) {
 	auto &doc = GET_DOCUMENT();
 	doc.SetModuleArtist(newStr_);
-	doc.SetModifiedFlag();
 	MainFrm.SetSongInfo(doc);
 }
 
@@ -148,7 +146,6 @@ void ModuleAction::CCopyright::Undo(CMainFrame &MainFrm) {
 void ModuleAction::CCopyright::Redo(CMainFrame &MainFrm) {
 	auto &doc = GET_DOCUMENT();
 	doc.SetModuleCopyright(newStr_);
-	doc.SetModifiedFlag();
 	MainFrm.SetSongInfo(doc);
 }
 

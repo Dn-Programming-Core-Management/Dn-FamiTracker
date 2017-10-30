@@ -279,8 +279,7 @@ void CSequenceInstrumentEditPanel::TranslateMML(CString String) const
 		m_pSequenceEditor->RedrawWindow();
 
 	// Register a document change
-	GetDocument()->SetModifiedFlag();
-	GetDocument()->SetExceededFlag();		// // //
+	GetDocument()->ModifyIrreversible();		// // //
 }
 
 void CSequenceInstrumentEditPanel::OnRClickInstSettings(NMHDR* pNMHDR, LRESULT* pResult)

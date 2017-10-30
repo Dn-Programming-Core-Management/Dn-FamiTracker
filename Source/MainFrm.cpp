@@ -1062,7 +1062,7 @@ void CMainFrame::SwapInstruments(int First, int Second)
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
 
 	pDoc->SwapInstruments(First, Second);
-	pDoc->SetModifiedFlag();
+	pDoc->ModifyIrreversible();		// // // make this a module action
 	UpdateInstrumentList();
 	pDoc->UpdateAllViews(NULL, UPDATE_PATTERN);
 
@@ -2094,12 +2094,12 @@ void CMainFrame::OnFileImportText()
 
 	SetSongInfo(*pDoc);		// // //
 	pDoc->SetModifiedFlag(FALSE);
+	pDoc->SetExceededFlag(false);		// // //
 	// TODO figure out how to handle this case, call OnInitialUpdate??
 	//pDoc->UpdateAllViews(NULL, CHANGED_ERASE);		// Remove
 	pDoc->UpdateAllViews(NULL, UPDATE_INSTRUMENT);
 	//pDoc->UpdateAllViews(NULL, UPDATE_ENTIRE);		// TODO Remove
 	theApp.GetSoundGenerator()->DocumentPropertiesChanged(pDoc);
-	pDoc->SetExceededFlag(false);			// // //
 }
 
 void CMainFrame::OnFileExportText()
@@ -2852,6 +2852,7 @@ bool CMainFrame::AddAction(std::unique_ptr<CAction> pAction)		// // //
 	}
 
 	auto pDoc = dynamic_cast<CFTMComponentInterface *>(GetActiveDocument());		// // //
+	pDoc->Modify(true);
 	if (m_pActionHandler->ActionsLost())		// // //
 		pDoc->ModifyIrreversible();
 	return true;
@@ -2866,6 +2867,7 @@ void CMainFrame::OnEditUndo()
 {
 	auto &doc = static_cast<CFamiTrackerDoc &>(*GetActiveDocument());
 	m_pActionHandler->UndoLastAction(*this);		// // //
+	doc.SetModifiedFlag(true);
 	if (!m_pActionHandler->CanUndo() && !doc.GetExceededFlag())
 		doc.SetModifiedFlag(false);
 }
@@ -2873,6 +2875,8 @@ void CMainFrame::OnEditUndo()
 void CMainFrame::OnEditRedo()
 {
 	m_pActionHandler->RedoLastAction(*this);		// // //
+	auto &doc = static_cast<CFamiTrackerDoc &>(*GetActiveDocument());
+	doc.SetModifiedFlag(true); // TODO: not always
 }
 
 void CMainFrame::OnUpdateEditUndo(CCmdUI *pCmdUI)
@@ -3159,7 +3163,8 @@ void CMainFrame::OnEditClearPatterns()
 		return;
 
 	pDoc->ClearPatterns(Track);
-	pDoc->SetModifiedFlag();
+	pDoc->ModifyIrreversible();		// // //
+	ResetUndo();
 	pDoc->UpdateAllViews(NULL, UPDATE_PATTERN);
 
 	ResetUndo();
@@ -3193,8 +3198,7 @@ void CMainFrame::OnEditRemoveUnusedPatterns()
 		return;
 
 	pDoc->RemoveUnusedPatterns();
-	pDoc->SetModifiedFlag();		// // //
-	pDoc->SetExceededFlag();
+	pDoc->ModifyIrreversible();		// // //
 	ResetUndo();
 	pDoc->UpdateAllViews(NULL, UPDATE_PATTERN);
 }
@@ -3564,8 +3568,7 @@ void CMainFrame::OnEditRemoveUnusedSamples()
 	
 	CloseInstrumentEditor();
 	pDoc->RemoveUnusedSamples();
-	pDoc->SetModifiedFlag();		// // //
-	pDoc->SetExceededFlag();
+	pDoc->ModifyIrreversible();		// // //
 	ResetUndo();
 	pDoc->UpdateAllViews(NULL, UPDATE_PATTERN);
 }

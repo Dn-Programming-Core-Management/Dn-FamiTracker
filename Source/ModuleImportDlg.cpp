@@ -176,8 +176,7 @@ bool CModuleImportDlg::ImportTracks()
 	}
 
 	// Rebuild instrument list
-	m_pDocument->SetModifiedFlag();
-	m_pDocument->SetExceededFlag();		// // //
+	m_pDocument->ModifyIrreversible();		// // //
 	m_pDocument->UpdateAllViews(NULL, UPDATE_INSTRUMENT);
 	m_pDocument->UpdateAllViews(NULL, UPDATE_PATTERN);
 

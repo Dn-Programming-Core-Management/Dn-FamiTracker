@@ -266,8 +266,7 @@ void CDetuneDlg::UpdateOffset()
 
 void CDetuneDlg::OnBnClickedOk()
 {
-	m_pDocument->SetModifiedFlag();
-	m_pDocument->SetExceededFlag();
+	m_pDocument->ModifyIrreversible();
 	CDialog::OnOK();
 }
 

@@ -683,8 +683,7 @@ void CInstrumentEditorDPCM::OnBnClickedEdit()
 	if (nRes == IDOK) {
 		// Save edited sample
 		SetSelectedSample(new CDSample(*Editor.GetDSample()));		// // //
-		GetDocument()->SetModifiedFlag();
-		GetDocument()->SetExceededFlag();		// // //
+		GetDocument()->ModifyIrreversible();		// // //
 	}
 
 	// Update sample list

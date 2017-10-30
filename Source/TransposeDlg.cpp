@@ -24,6 +24,7 @@
 #include "FamiTrackerDoc.h"
 #include "PatternNote.h"
 #include "Instrument.h"
+#include "MainFrm.h"
 #include "DPI.h"
 
 // CTransposeDlg dialog
@@ -149,6 +150,8 @@ void CTransposeDlg::OnBnClickedOk()
 		Transpose(Trsp, m_iTrack);
 
 	m_pDocument->UpdateAllViews(NULL, UPDATE_PATTERN);
+	m_pDocument->ModifyIrreversible();
+	((CMainFrame *)AfxGetMainWnd())->ResetUndo();
 	CDialog::OnOK();
 }
 

@@ -1626,8 +1626,7 @@ void CFamiTrackerView::OnBookmarksToggle()
 
 	static_cast<CMainFrame*>(GetParentFrame())->UpdateBookmarkList();
 	SetFocus();
-	pDoc->SetModifiedFlag();
-	pDoc->SetExceededFlag();
+	pDoc->ModifyIrreversible();
 	m_pPatternEditor->InvalidatePatternData();
 	RedrawPatternEditor();
 	GetFrameEditor()->InvalidateFrameData();

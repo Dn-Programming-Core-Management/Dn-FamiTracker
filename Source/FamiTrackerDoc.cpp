@@ -304,7 +304,7 @@ BOOL CFamiTrackerDoc::OnSaveDocument(LPCTSTR lpszPathName)
 
 	// This function is called by the GUI to save the file
 
-	if (!m_bFileLoaded)
+	if (!IsFileLoaded())
 		return FALSE;
 
 	// File backup, now performed on save instead of open
@@ -726,10 +726,6 @@ BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 			// Create a backup of this file, since it's an old version 
 			// and something might go wrong when converting
 			m_bForceBackup = true;
-
-			// Auto-select old style vibrato for old files
-			m_iVibratoStyle = VIBRATO_OLD;
-			m_bLinearPitch = false;
 		}
 		else {
 			if (!OpenDocumentNew(OpenFile))
@@ -1682,8 +1678,7 @@ void CFamiTrackerDoc::SetSample(unsigned int Index, CDSample *pSamp)		// // //
 {
 	ASSERT(Index < MAX_DSAMPLES);
 	if (m_pInstrumentManager->GetDSampleManager()->SetDSample(Index, pSamp)) {
-		SetModifiedFlag();
-		SetExceededFlag();		// // //
+		ModifyIrreversible();		// // //
 	}
 }
 
@@ -1877,8 +1872,7 @@ void CFamiTrackerDoc::SetInstrumentName(unsigned int Index, const char *pName)
 
 	if (strcmp(pInst->GetName(), pName) != 0) {
 		pInst->SetName(pName);
-		SetModifiedFlag();
-		SetExceededFlag();		// // //
+		ModifyIrreversible();		// // //
 	}
 }
 
@@ -2020,7 +2014,6 @@ void CFamiTrackerDoc::SetFrameCount(unsigned int Track, unsigned int Count)
 		Song.SetFrameCount(Count);
 		if (Count < Old)
 			m_pBookmarkManager->GetCollection(Track)->RemoveFrames(Count, Old - Count); // TODO: don't
-		SetModifiedFlag();
 		SetExceededFlag();			// // // TODO: is this needed?
 	}
 }
@@ -2150,7 +2143,6 @@ unsigned int CFamiTrackerDoc::GetFrameRate() const
 void CFamiTrackerDoc::SetNoteData(unsigned Track, unsigned Frame, unsigned Channel, unsigned Row, const stChanNote &Data)		// // //
 {
 	GetSongData(Track).GetPatternOnFrame(Channel, Frame).SetNoteOn(Row, Data);		// // //
-	SetModifiedFlag();
 }
 
 const stChanNote &CFamiTrackerDoc::GetNoteData(unsigned Track, unsigned Frame, unsigned Channel, unsigned Row) const
@@ -2169,7 +2161,6 @@ void CFamiTrackerDoc::SetDataAtPattern(unsigned Track, unsigned Pattern, unsigne
 {
 	// Set a note to a direct pattern
 	GetSongData(Track).SetPatternData(Channel, Pattern, Row, Data);		// // //
-	SetModifiedFlag();
 }
 
 const stChanNote &CFamiTrackerDoc::GetDataAtPattern(unsigned Track, unsigned Pattern, unsigned Channel, unsigned Row) const		// // //
@@ -2587,8 +2578,7 @@ void CFamiTrackerDoc::SelectExpansionChip(unsigned char Chip, bool Move)
 	// Complete sound chip setup
 	SetupChannels(Chip);
 	ApplyExpansionChip();
-	SetModifiedFlag();
-	SetExceededFlag();
+	ModifyIrreversible();
 
 	if (!(Chip & SNDCHIP_N163))		// // //
 		m_iNamcoChannels = 0;
@@ -2662,8 +2652,8 @@ void CFamiTrackerDoc::Modify(bool Change)
 
 void CFamiTrackerDoc::ModifyIrreversible()
 {
-	SetModifiedFlag();
-	SetExceededFlag();
+	SetModifiedFlag(TRUE);
+	SetExceededFlag(TRUE);
 }
 
 bool CFamiTrackerDoc::ExpansionEnabled(int Chip) const
