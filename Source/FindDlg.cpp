@@ -128,14 +128,14 @@ bool CFindCursor::AtStart() const
 		m_iRow == m_cpBeginPos.m_iRow && m_iChannel == m_cpBeginPos.m_iChannel;
 }
 
-void CFindCursor::Get(stChanNote *pNote) const
+const stChanNote &CFindCursor::Get() const
 {
-	CPatternIterator::Get(m_iChannel, pNote);
+	return CPatternIterator::Get(m_iChannel);
 }
 
-void CFindCursor::Set(const stChanNote *pNote)
+void CFindCursor::Set(const stChanNote &Note)
 {
-	CPatternIterator::Set(m_iChannel, pNote);
+	CPatternIterator::Set(m_iChannel, Note);
 }
 
 void CFindCursor::ResetPosition(direction_t Dir)
@@ -1092,7 +1092,6 @@ bool CFindDlg::Find(bool ShowEnd)
 	if (ShowEnd)
 		SAFE_RELEASE(m_pFindCursor);
 	PrepareCursor(false);
-	stChanNote Target;
 	if (!m_bFound) {
 		if (!m_pFindCursor->Contains())
 			m_pFindCursor->ResetPosition(m_iSearchDirection);
@@ -1104,7 +1103,7 @@ bool CFindDlg::Find(bool ShowEnd)
 			m_bSkipFirst = false;
 			m_pFindCursor->Move(m_iSearchDirection);
 		}
-		m_pFindCursor->Get(&Target);
+		const auto &Target = m_pFindCursor->Get();
 		if (CompareFields(Target, m_pFindCursor->m_iChannel == CHANID_NOISE,
 							m_pDocument->GetEffColumns(Track, m_pFindCursor->m_iChannel))) {
 			CFindCursor *pCursor = nullptr;
@@ -1113,25 +1112,26 @@ bool CFindDlg::Find(bool ShowEnd)
 			m_pView->SelectRow(pCursor->m_iRow);
 			m_pView->SelectChannel(pCursor->m_iChannel);
 			std::swap(pCursor, m_pFindCursor);
-			m_bSkipFirst = true; return m_bFound = true;
+			m_bSkipFirst = true;
+			return m_bFound = true;
 		}
 		m_pFindCursor->Move(m_iSearchDirection);
 	} while (!m_pFindCursor->AtStart());
 
-	if (ShowEnd) AfxMessageBox(IDS_FIND_NONE, MB_ICONINFORMATION);
+	if (ShowEnd)
+		AfxMessageBox(IDS_FIND_NONE, MB_ICONINFORMATION);
 	m_bSkipFirst = true;
 	return m_bFound = false;
 }
 
 bool CFindDlg::Replace(CCompoundAction *pAction)
 {
-	stChanNote Target;
-
 	if (m_bFound) {
 		ASSERT(m_pFindCursor != nullptr);
 
+		stChanNote Target;
 		if (!IsDlgButtonChecked(IDC_CHECK_FIND_REMOVE))
-			m_pFindCursor->Get(&Target);
+			Target = m_pFindCursor->Get();
 
 		if (m_replaceTerm.Definite[WC_NOTE])
 			Target.Note = m_replaceTerm.Note.Note;
@@ -1328,11 +1328,10 @@ void CFindDlg::OnBnClickedButtonFindAll()
 		CFindCursor::direction_t::DOWN : CFindCursor::direction_t::RIGHT;
 
 	PrepareCursor(true);
-	stChanNote Target;
 	m_cResultsBox->SetRedraw(FALSE);
 	m_cResultsBox->ClearResults();
 	do {
-		m_pFindCursor->Get(&Target);
+		const auto &Target = m_pFindCursor->Get();
 		if (CompareFields(Target, m_pFindCursor->m_iChannel == CHANID_NOISE,
 							m_pDocument->GetEffColumns(Track, m_pFindCursor->m_iChannel)))
 			m_cResultsBox->AddResult(&Target, m_pFindCursor, m_pFindCursor->m_iChannel == CHANID_NOISE);
@@ -1357,9 +1356,8 @@ void CFindDlg::OnBnClickedButtonReplaceall()
 
 	auto pAction = std::make_unique<CCompoundAction>();
 	PrepareCursor(true);
-	stChanNote Target;
 	do {
-		m_pFindCursor->Get(&Target);
+		const auto &Target = m_pFindCursor->Get();
 		if (CompareFields(Target, m_pFindCursor->m_iChannel == CHANID_NOISE,
 							m_pDocument->GetEffColumns(Track, m_pFindCursor->m_iChannel))) {
 			m_bFound = true;

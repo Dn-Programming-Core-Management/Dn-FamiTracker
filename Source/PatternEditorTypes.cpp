@@ -219,26 +219,24 @@ std::pair<CPatternIterator, CPatternIterator> CPatternIterator::FromSelection(co
 	);
 }
 
-void CPatternIterator::Get(int Channel, stChanNote *pNote) const
+const stChanNote &CPatternIterator::Get(int Channel) const
 {
 	int Frame = m_iFrame % m_pDocument->GetFrameCount(m_iTrack);
 	if (Frame < 0) Frame += m_pDocument->GetFrameCount(m_iTrack);
-	*pNote = m_pDocument->GetNoteData(m_iTrack, Frame, Channel, m_iRow);
+	return m_pDocument->GetNoteData(m_iTrack, Frame, Channel, m_iRow);
 }
 
-void CPatternIterator::Set(int Channel, const stChanNote *pNote)
+void CPatternIterator::Set(int Channel, const stChanNote &Note)
 {
 	int Frame = m_iFrame % m_pDocument->GetFrameCount(m_iTrack);
 	if (Frame < 0) Frame += m_pDocument->GetFrameCount(m_iTrack);
-	m_pDocument->SetNoteData(m_iTrack, Frame, Channel, m_iRow, *pNote);
+	m_pDocument->SetNoteData(m_iTrack, Frame, Channel, m_iRow, Note);
 }
 
 void CPatternIterator::Step() // resolves skip effects
 {
-	stChanNote Note;
-
 	for (int i = m_pDocument->GetChannelCount() - 1; i >= 0; --i) {
-		Get(i, &Note);
+		const auto &Note = Get(i);
 		for (int c = m_pDocument->GetEffColumns(m_iTrack, i); c >= 0; --c) {
 			if (Note.EffNumber[c] == EF_JUMP) {
 				m_iFrame = Note.EffParam[c];
@@ -250,7 +248,7 @@ void CPatternIterator::Step() // resolves skip effects
 		}
 	}
 	for (int i = m_pDocument->GetChannelCount() - 1; i >= 0; i--) {
-		Get(i, &Note);
+		const auto &Note = Get(i);
 		for (int c = m_pDocument->GetEffColumns(m_iTrack, i); c >= 0; --c) {
 			if (Note.EffNumber[c] == EF_SKIP) {
 				++m_iFrame;

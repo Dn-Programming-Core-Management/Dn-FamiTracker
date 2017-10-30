@@ -180,14 +180,14 @@ void CPatternAction::DeleteSelection(CFamiTrackerDoc &Doc, unsigned Track, const
 	const column_t ColStart = GetSelectColumn(it.first.m_iColumn);
 	const column_t ColEnd = GetSelectColumn(it.second.m_iColumn);
 
-	stChanNote NoteData, Blank;
+	stChanNote BLANK;
 
 	do for (int i = it.first.m_iChannel; i <= it.second.m_iChannel; ++i) {
-		it.first.Get(i, &NoteData);
-		CopyNoteSection(&NoteData, &Blank, PASTE_DEFAULT,
+		auto NoteData = it.first.Get(i);
+		CopyNoteSection(&NoteData, &BLANK, PASTE_DEFAULT,
 						i == it.first.m_iChannel ? ColStart : COLUMN_NOTE,
 						i == it.second.m_iChannel ? ColEnd : COLUMN_EFF4);
-		it.first.Set(i, &NoteData);
+		it.first.Set(i, NoteData);
 	} while (++it.first <= it.second);
 }
 
@@ -634,8 +634,7 @@ void CPActionTranspose::Redo(CMainFrame &MainFrm)
 {
 	CFamiTrackerDoc *pDoc = GET_DOCUMENT();
 	auto it = GetIterators(*pDoc);
-	stChanNote Note;
-	
+
 	int ChanStart     = (m_pUndoState->IsSelecting ? m_pUndoState->Selection.m_cpStart : m_pUndoState->Cursor).m_iChannel;
 	int ChanEnd       = (m_pUndoState->IsSelecting ? m_pUndoState->Selection.m_cpEnd : m_pUndoState->Cursor).m_iChannel;
 	column_t ColStart = GetSelectColumn(
@@ -654,7 +653,7 @@ void CPActionTranspose::Redo(CMainFrame &MainFrm)
 		for (int i = ChanStart; i <= ChanEnd; ++i) {
 			if (!m_pUndoState->Selection.IsColumnSelected(COLUMN_NOTE, i))
 				continue;
-			Note = *(m_pUndoClipData->GetPattern(i - ChanStart, Row));		// // //
+			auto Note = *(m_pUndoClipData->GetPattern(i - ChanStart, Row));		// // //
 			if (Note.Note == NONE || Note.Note == HALT || Note.Note == RELEASE)
 				continue;
 			if (Note.Note == ECHO) {
@@ -677,7 +676,7 @@ void CPActionTranspose::Redo(CMainFrame &MainFrm)
 				Note.Note = GET_NOTE(NewNote);
 				Note.Octave = GET_OCTAVE(NewNote);
 			}
-			it.first.Set(i, &Note);
+			it.first.Set(i, Note);
 		}
 		++Row;
 		oldRow = it.first.m_iRow;
@@ -695,8 +694,6 @@ void CPActionScrollValues::Redo(CMainFrame &MainFrm)
 	CFamiTrackerDoc *pDoc = GET_DOCUMENT();
 	CPatternEditor *pPatternEditor = GET_PATTERN_EDITOR();
 	auto it = GetIterators(*pDoc);
-	stChanNote Note;
-
 	int ChanStart     = (m_pUndoState->IsSelecting ? m_pUndoState->Selection.m_cpStart : m_pUndoState->Cursor).m_iChannel;
 	int ChanEnd       = (m_pUndoState->IsSelecting ? m_pUndoState->Selection.m_cpEnd : m_pUndoState->Cursor).m_iChannel;
 	column_t ColStart = GetSelectColumn(
@@ -726,7 +723,7 @@ void CPActionScrollValues::Redo(CMainFrame &MainFrm)
 		if (it.first.m_iRow <= oldRow)
 			Row += Length + it.first.m_iRow - oldRow - 1;
 		for (int i = ChanStart; i <= ChanEnd; ++i) {
-			Note = *(m_pUndoClipData->GetPattern(i - ChanStart, Row));		// // //
+			auto Note = *(m_pUndoClipData->GetPattern(i - ChanStart, Row));		// // //
 			for (unsigned k = COLUMN_INSTRUMENT; k < COLUMNS; ++k) {
 				if (i == ChanStart && k < ColStart)
 					continue;
@@ -756,7 +753,7 @@ void CPActionScrollValues::Redo(CMainFrame &MainFrm)
 					break;
 				}
 			}
-			it.first.Set(i, &Note);
+			it.first.Set(i, Note);
 		}
 		++Row;
 		oldRow = it.first.m_iRow;
@@ -778,7 +775,6 @@ void CPActionInterpolate::Redo(CMainFrame &MainFrm)
 {
 	CFamiTrackerDoc *pDoc = GET_DOCUMENT();
 	auto it = GetIterators(*pDoc);
-	stChanNote StartData, EndData;
 	const CSelection &Sel = m_pUndoState->Selection;
 
 	for (int i = Sel.m_cpStart.m_iChannel; i <= Sel.m_cpEnd.m_iChannel; ++i) {
@@ -786,8 +782,8 @@ void CPActionInterpolate::Redo(CMainFrame &MainFrm)
 		for (int j = 0; j < Columns; ++j) {
 			if (!Sel.IsColumnSelected(static_cast<column_t>(j), i)) continue;
 			CPatternIterator r {it.first};		// // //
-			r.Get(i, &StartData);
-			it.second.Get(i, &EndData);
+			const auto &StartData = r.Get(i);
+			const auto &EndData = it.second.Get(i);
 			double StartValHi, StartValLo;		// // //
 			double EndValHi, EndValLo;
 			double DeltaHi, DeltaLo;
@@ -845,24 +841,24 @@ void CPActionInterpolate::Redo(CMainFrame &MainFrm)
 			while (++r < it.second) {
 				StartValLo += DeltaLo;
 				StartValHi += DeltaHi;
-				r.Get(i, &EndData);
+				auto Note = r.Get(i);
 				switch (j) {
 				case COLUMN_NOTE:
-					EndData.Note = GET_NOTE((int)StartValLo); 
-					EndData.Octave = GET_OCTAVE((int)StartValLo); 
+					Note.Note = GET_NOTE((int)StartValLo); 
+					Note.Octave = GET_OCTAVE((int)StartValLo); 
 					break;
 				case COLUMN_INSTRUMENT:
-					EndData.Instrument = (int)StartValLo; 
+					Note.Instrument = (int)StartValLo; 
 					break;
 				case COLUMN_VOLUME:
-					EndData.Vol = (int)StartValLo; 
+					Note.Vol = (int)StartValLo; 
 					break;
 				case COLUMN_EFF1: case COLUMN_EFF2: case COLUMN_EFF3: case COLUMN_EFF4:
-					EndData.EffNumber[j - 3] = Effect;
-					EndData.EffParam[j - 3] = (int)StartValLo + ((int)StartValHi << 4); 
+					Note.EffNumber[j - 3] = Effect;
+					Note.EffParam[j - 3] = (int)StartValLo + ((int)StartValHi << 4); 
 					break;
 				}
-				r.Set(i, &EndData);
+				r.Set(i, Note);
 			}
 		}
 	}
@@ -884,24 +880,23 @@ void CPActionReverse::Redo(CMainFrame &MainFrm)
 
 	const column_t ColStart = GetSelectColumn(Sel.m_cpStart.m_iColumn);
 	const column_t ColEnd = GetSelectColumn(Sel.m_cpEnd.m_iColumn);
-	stChanNote NoteBegin, NoteEnd, Temp;
 
 	while (it.first < it.second) {
 		for (int c = Sel.m_cpStart.m_iChannel; c <= Sel.m_cpEnd.m_iChannel; ++c) {
-			it.first.Get(c, &NoteBegin);
-			it.second.Get(c, &NoteEnd);
+			auto NoteBegin = it.first.Get(c);
+			auto NoteEnd = it.second.Get(c);
 			if (c == Sel.m_cpStart.m_iChannel && ColStart > 0) {		// // //
-				Temp = NoteEnd;
+				auto Temp = NoteEnd;
 				CopyNoteSection(&NoteEnd, &NoteBegin, PASTE_DEFAULT, COLUMN_NOTE, static_cast<column_t>(ColStart - 1));
 				CopyNoteSection(&NoteBegin, &Temp, PASTE_DEFAULT, COLUMN_NOTE, static_cast<column_t>(ColStart - 1));
 			}
 			if (c == Sel.m_cpEnd.m_iChannel && ColEnd < COLUMN_EFF4) {
-				Temp = NoteEnd;
+				auto Temp = NoteEnd;
 				CopyNoteSection(&NoteEnd, &NoteBegin, PASTE_DEFAULT, static_cast<column_t>(ColEnd + 1), COLUMN_EFF4);
 				CopyNoteSection(&NoteBegin, &Temp, PASTE_DEFAULT, static_cast<column_t>(ColEnd + 1), COLUMN_EFF4);
 			}
-			it.first.Set(c, &NoteEnd);
-			it.second.Set(c, &NoteBegin);
+			it.first.Set(c, NoteEnd);
+			it.second.Set(c, NoteBegin);
 		}
 		++it.first;
 		--it.second;
@@ -931,12 +926,10 @@ void CPActionReplaceInst::Redo(CMainFrame &MainFrm)
 	const int cBegin = Sel.GetChanStart() + (Sel.IsColumnSelected(COLUMN_INSTRUMENT, Sel.GetChanStart()) ? 0 : 1);
 	const int cEnd = Sel.GetChanEnd() - (Sel.IsColumnSelected(COLUMN_INSTRUMENT, Sel.GetChanEnd()) ? 0 : 1);
 
-	stChanNote Note;
 	do for (int i = cBegin; i <= cEnd; ++i) {
-		it.first.Get(i, &Note);
+		const auto &Note = it.first.Get(i);
 		if (Note.Instrument != MAX_INSTRUMENTS && Note.Instrument != HOLD_INSTRUMENT)		// // // 050B
-			Note.Instrument = m_iInstrumentIndex;
-		it.first.Set(i, &Note);
+			const_cast<stChanNote &>(Note).Instrument = m_iInstrumentIndex; // TODO: non-const CPatternIterator
 	} while (++it.first <= it.second);
 }
 
@@ -1040,22 +1033,20 @@ void CPActionStretch::Redo(CMainFrame &MainFrm)
 
 	const column_t ColStart = GetSelectColumn(Sel.m_cpStart.m_iColumn);
 	const column_t ColEnd = GetSelectColumn(Sel.m_cpEnd.m_iColumn);
-	stChanNote Target, Source;
 
 	int Pos = 0;
 	int Offset = 0;
 	int oldRow = -1;
 	do {
+		stChanNote BLANK;
 		for (int i = Sel.m_cpStart.m_iChannel; i <= Sel.m_cpEnd.m_iChannel; ++i) {
-			if (Offset < m_pUndoClipData->ClipInfo.Rows && m_iStretchMap[Pos] > 0)
-				Source = *(m_pUndoClipData->GetPattern(i - Sel.m_cpStart.m_iChannel, Offset));
-			else 
-				Source = stChanNote { };		// // //
-			it.first.Get(i, &Target);
+			const auto &Source = (Offset < m_pUndoClipData->ClipInfo.Rows && m_iStretchMap[Pos] > 0) ?
+				*(m_pUndoClipData->GetPattern(i - Sel.m_cpStart.m_iChannel, Offset)) : BLANK;		// // //
+			auto Target = it.first.Get(i);
 			CopyNoteSection(&Target, &Source, PASTE_DEFAULT,
 							i == Sel.m_cpStart.m_iChannel ? ColStart : COLUMN_NOTE,
 							i == Sel.m_cpEnd.m_iChannel ? ColEnd : COLUMN_EFF4);
-			it.first.Set(i, &Target);
+			it.first.Set(i, Target);
 		}
 		int dist = m_iStretchMap[Pos++];
 		for (int i = 0; i < dist; ++i) {

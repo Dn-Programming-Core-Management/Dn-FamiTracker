@@ -102,13 +102,13 @@ public:
 
 	/*!	\brief Copies a note from the current song.
 		\details Similar to CPatternIterator::Get, but accepts no arguments.
-		\param pNote Pointer to the output note. */
-	void Get(stChanNote *pNote) const;
+		\return Note on the current track. */
+	const stChanNote &Get() const;
 
 	/*!	\brief Writes a note to the current song.
 		\details Similar to CPatternIterator::Set, but accepts no arguments.
-		\param pNote Pointer to the input note. */
-	void Set(const stChanNote *pNote);
+		\param Note Note to write. */
+	void Set(const stChanNote &Note);
 
 	/*!	\brief Resets the cursor to an appropriate initial position if it does not lie within its
 		scope.

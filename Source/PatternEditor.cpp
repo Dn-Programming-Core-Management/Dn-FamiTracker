@@ -3207,7 +3207,6 @@ std::unique_ptr<CPatternClipData> CPatternEditor::Copy() const
 	CPatternIterator it = GetIterators().first;		// // //
 	const int Channels	= m_selection.GetChanEnd() - m_selection.GetChanStart() + 1;
 	const int Rows		= GetSelectionSize();		// // //
-	stChanNote NoteData;
 
 	auto pClipData = std::make_unique<CPatternClipData>(Channels, Rows);
 	pClipData->ClipInfo.Channels	= Channels;		// // //
@@ -3218,10 +3217,9 @@ std::unique_ptr<CPatternClipData> CPatternEditor::Copy() const
 	for (int r = 0; r < Rows; r++) {		// // //
 		for (int i = 0; i < Channels; ++i) {
 			stChanNote *Target = pClipData->GetPattern(i, r);
-			it.Get(i + m_selection.GetChanStart(), &NoteData);
 			/*CopyNoteSection(Target, &NoteData, PASTE_DEFAULT,
 				i == 0 ? ColStart : COLUMN_NOTE, i == Channels - 1 ? ColEnd : COLUMN_EFF4);*/
-			memcpy(Target, &NoteData, sizeof(stChanNote));
+			*Target = it.Get(i + m_selection.GetChanStart());
 			// the clip data should store the entire field;
 			// other methods should check ClipInfo.StartColumn and ClipInfo.EndColumn before operating
 		}
@@ -3293,7 +3291,6 @@ void CPatternEditor::Paste(const CPatternClipData &ClipData, const paste_mode_t 
 	const unsigned int CEnd = std::min(Channels + c, ChannelCount);
 
 	CPatternIterator it = CPatternIterator(m_pDocument, Track, CCursorPos(r, c, GetCursorStartColumn(StartColumn), f));		// // //
-	stChanNote NoteData, Source;
 
 	const unsigned int FrameLength = m_pDocument->GetPatternLength(Track);
 
@@ -3305,12 +3302,12 @@ void CPatternEditor::Paste(const CPatternClipData &ClipData, const paste_mode_t 
 		back.m_iRow = FrameLength - 1 - Rows;
 		while (back.m_iRow >= static_cast<int>(r)) {
 			for (unsigned int i = c; i < CEnd; i++) {
-				back.Get(i, &Source);
-				front.Get(i, &NoteData);
+				const auto &Source = back.Get(i);
+				auto NoteData = front.Get(i);
 				CopyNoteSection(&NoteData, &Source, PasteMode, (i == c) ? StartColumn : COLUMN_NOTE,
 					std::min((i == Channels + c - 1) ? EndColumn : COLUMN_EFF4,
 								static_cast<column_t>(COLUMN_EFF1 + m_pDocument->GetEffColumns(Track, i))));
-				front.Set(i, &NoteData);
+				front.Set(i, NoteData);
 			}
 			front.m_iRow--;
 			back.m_iRow--;
@@ -3322,8 +3319,8 @@ void CPatternEditor::Paste(const CPatternClipData &ClipData, const paste_mode_t 
 	if (Channels == 1 && StartColumn >= COLUMN_EFF1) {
 		const unsigned int ColStart = std::max(GetSelectColumn(AtSel ? m_selection.GetColStart() : m_cpCursorPos.m_iColumn), COLUMN_EFF1);
 		for (unsigned int j = 0; j < Rows; ++j) {
-			it.Get(c, &NoteData);
-			Source = *(ClipData.GetPattern(0, j % ClipData.ClipInfo.Rows));
+			auto NoteData = it.Get(c);
+			const auto &Source = *(ClipData.GetPattern(0, j % ClipData.ClipInfo.Rows));
 			for (unsigned int i = StartColumn - COLUMN_EFF1; i <= EndColumn - COLUMN_EFF1; ++i) {		// // //
 				const unsigned int Offset = i - StartColumn + ColStart;
 				if (Offset > m_pDocument->GetEffColumns(Track, c)) break;
@@ -3340,7 +3337,7 @@ void CPatternEditor::Paste(const CPatternClipData &ClipData, const paste_mode_t 
 					NoteData.EffParam[Offset] = Source.EffParam[i];
 				}
 			}
-			it.Set(c, &NoteData);
+			it.Set(c, NoteData);
 			if ((++it).m_iRow == 0) { // end of frame reached
 				if ((!theApp.GetSettings()->General.bOverflowPaste && PasteMode != PASTE_OVERFLOW) ||
 					PasteMode == PASTE_INSERT) break;
@@ -3355,10 +3352,10 @@ void CPatternEditor::Paste(const CPatternClipData &ClipData, const paste_mode_t 
 			int cGet = (i - c) % ClipData.ClipInfo.Channels;
 			const column_t ColEnd = std::min((i == Channels + c - 1) ? EndColumn : COLUMN_EFF4,
 				static_cast<column_t>(COLUMN_EFF1 + m_pDocument->GetEffColumns(Track, i)));
-			it.Get(i, &NoteData);
-			Source = *(ClipData.GetPattern(cGet, j % ClipData.ClipInfo.Rows));
+			auto NoteData = it.Get(i);
+			const auto &Source = *(ClipData.GetPattern(cGet, j % ClipData.ClipInfo.Rows));
 			CopyNoteSection(&NoteData, &Source, PasteMode, (!cGet) ? StartColumn : COLUMN_NOTE, ColEnd);
-			it.Set(i, &NoteData);
+			it.Set(i, NoteData);
 		}
 		if ((++it).m_iRow == 0) { // end of frame reached
 			if ((!theApp.GetSettings()->General.bOverflowPaste && PasteMode != PASTE_OVERFLOW) ||
@@ -3476,11 +3473,10 @@ sel_condition_t CPatternEditor::GetSelectionCondition(const CSelection &Sel) con
 
 	if (!theApp.GetSettings()->General.bShowSkippedRows) {
 		auto it = CPatternIterator::FromSelection(Sel, m_pDocument, GetSelectedTrack());
-		stChanNote Note;
 		for (; it.first <= it.second; ++it.first) {
 			// bool HasSkip = false;
 			for (int i = 0; i < GetChannelCount(); i++) {
-				it.first.Get(i, &Note);
+				const auto &Note = it.first.Get(i);
 				for (unsigned int c = 0; c <= m_pDocument->GetEffColumns(Track, i); c++) switch (Note.EffNumber[c]) {
 				case EF_JUMP: case EF_SKIP: case EF_HALT:
 					if (Sel.IsColumnSelected(static_cast<column_t>(COLUMN_EFF1 + c), i))
@@ -3812,8 +3808,6 @@ void CPatternEditor::GetVolumeColumn(CString &str) const
 	const int Track = GetSelectedTrack();
 	const int Channel = m_selection.GetChanStart();
 	auto it = GetIterators();
-	stChanNote NoteData;
-
 	if (Channel < 0 || Channel >= GetChannelCount())
 		return;
 	
@@ -3821,7 +3815,7 @@ void CPatternEditor::GetVolumeColumn(CString &str) const
 	CPatternIterator s {it.first};
 	do {
 		if (--s.m_iFrame < 0) break;
-		s.Get(Channel, &NoteData);
+		const auto &NoteData = s.Get(Channel);
 		if (NoteData.Vol != MAX_VOLUME) {
 			vol = NoteData.Vol;
 			break;
@@ -3830,7 +3824,7 @@ void CPatternEditor::GetVolumeColumn(CString &str) const
 	
 	str.Empty();
 	for (; it.first <= it.second; ++it.first) {
-		it.first.Get(Channel, &NoteData);
+		const auto &NoteData = it.first.Get(Channel);
 		if (NoteData.Vol != MAX_VOLUME)
 			vol = NoteData.Vol;
 		str.AppendFormat(_T("%i "), vol);
@@ -3843,7 +3837,6 @@ void CPatternEditor::GetSelectionAsText(CString &str) const		// // //
 
 	const int Track = GetSelectedTrack();
 	const int Channel = m_selection.GetChanStart() + !m_selection.IsColumnSelected(COLUMN_VOLUME, m_selection.GetChanStart()); // // //
-	stChanNote NoteData;
 
 	if (Channel < 0 || Channel >= GetChannelCount() || !m_bSelecting)
 		return;
@@ -3878,7 +3871,7 @@ void CPatternEditor::GetSelectionAsText(CString &str) const		// // //
 		CString line;
 		line.AppendFormat(_T("ROW %0*X"), HexLength, Row++);
 		for (int i = it.first.m_iChannel; i <= it.second.m_iChannel; ++i) {
-			it.first.Get(i, &NoteData);
+			const auto &NoteData = it.first.Get(i);
 			CString Row = CTextExport::ExportCellText(NoteData, m_pDocument->GetEffColumns(Track, i) + 1, i == CHANID_NOISE);
 			if (i == it.first.m_iChannel) for (unsigned c = 0; c < BegCol; ++c)
 				for (int j = 0; j < COLUMN_CHAR_LEN[c]; ++j) Row.SetAt(COLUMN_CHAR_POS[c] + j, ' ');
@@ -3894,8 +3887,6 @@ void CPatternEditor::GetSelectionAsText(CString &str) const		// // //
 void CPatternEditor::GetSelectionAsPPMCK(CString &str) const		// // //
 {
 	// Returns a PPMCK MML translation of copied pattern
-
-	stChanNote NoteData;
 
 	auto it = GetIterators();
 	str.Empty();
@@ -3922,7 +3913,7 @@ void CPatternEditor::GetSelectionAsPPMCK(CString &str) const		// // //
 
 		for (CPatternIterator s {it.first}; s <= it.second; ++s) {
 			len++;
-			s.Get(c, &NoteData);
+			const auto &NoteData = s.Get(c);
 			bool dump = NoteData.Note != NONE || NoteData.Vol != MAX_VOLUME;
 			bool fin = s.m_iFrame == it.second.m_iFrame && s.m_iRow == it.second.m_iRow;
 

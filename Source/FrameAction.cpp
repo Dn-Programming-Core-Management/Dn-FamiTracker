@@ -216,14 +216,12 @@ void CFActionCloneFrame::Undo(CMainFrame &MainFrm)
 	for (int i = 0; i < Count; ++i)
 		pDoc->ClearPattern(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame + 1, i);
 	pDoc->RemoveFrame(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame + 1);
-	pDoc->SetModifiedFlag();
 }
 
 void CFActionCloneFrame::Redo(CMainFrame &MainFrm)
 {
 	CFamiTrackerDoc *pDoc = GET_DOCUMENT();
 	pDoc->CloneFrame(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame + 1);
-	pDoc->SetModifiedFlag();
 }
 
 
@@ -450,14 +448,12 @@ void CFActionMoveDown::Undo(CMainFrame &MainFrm)
 {
 	CFamiTrackerDoc *pDoc = GET_DOCUMENT();
 	pDoc->MoveFrameUp(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame + 1);
-	pDoc->SetModifiedFlag();
 }
 
 void CFActionMoveDown::Redo(CMainFrame &MainFrm)
 {
 	CFamiTrackerDoc *pDoc = GET_DOCUMENT();
 	pDoc->MoveFrameDown(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame);
-	pDoc->SetModifiedFlag();
 }
 
 
@@ -471,14 +467,12 @@ void CFActionMoveUp::Undo(CMainFrame &MainFrm)
 {
 	CFamiTrackerDoc *pDoc = GET_DOCUMENT();
 	pDoc->MoveFrameDown(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame - 1);
-	pDoc->SetModifiedFlag();
 }
 
 void CFActionMoveUp::Redo(CMainFrame &MainFrm)
 {
 	CFamiTrackerDoc *pDoc = GET_DOCUMENT();
 	pDoc->MoveFrameUp(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame);
-	pDoc->SetModifiedFlag();
 }
 
 
@@ -607,7 +601,6 @@ void CFActionClonePatterns::Undo(CMainFrame &MainFrm)		// // //
 		CFamiTrackerDoc *pDoc = GET_DOCUMENT();
 		pDoc->ClearPattern(STATE_EXPAND(m_pUndoState));
 		pDoc->SetPatternAtFrame(STATE_EXPAND(m_pUndoState), m_iOldPattern);
-		pDoc->SetModifiedFlag();
 	}
 }
 
@@ -619,7 +612,6 @@ void CFActionClonePatterns::Redo(CMainFrame &MainFrm)		// // //
 		CFamiTrackerDoc *pDoc = GET_DOCUMENT();
 		pDoc->SetPatternAtFrame(STATE_EXPAND(m_pUndoState), m_iNewPattern);
 		pDoc->CopyPattern(m_pUndoState->Track, m_iNewPattern, m_iOldPattern, m_pUndoState->Cursor.m_iChannel);
-		pDoc->SetModifiedFlag();
 	}
 }
 

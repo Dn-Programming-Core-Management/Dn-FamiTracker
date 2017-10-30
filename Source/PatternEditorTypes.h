@@ -191,8 +191,8 @@ public:
 	static std::pair<CPatternIterator, CPatternIterator> FromCursor(const CCursorPos &Pos, CFamiTrackerDoc *const pDoc, int Track);
 	static std::pair<CPatternIterator, CPatternIterator> FromSelection(const CSelection &Sel, CFamiTrackerDoc *const pDoc, int Track);
 	
-	void Get(int Channel, stChanNote *pNote) const;
-	void Set(int Channel, const stChanNote *pNote);
+	const stChanNote &Get(int Channel) const;
+	void Set(int Channel, const stChanNote &Note);
 	void Step();
 
 	CPatternIterator &operator+=(const int Rows);
