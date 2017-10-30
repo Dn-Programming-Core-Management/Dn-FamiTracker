@@ -2,9 +2,16 @@
 Change Log
 Written by HertzDevil
 
-Version 0.3.15.0 - Oct 30 2017
+Version 0.3.15.1 - Oct 30 2017
 
 --------------------------------------------------------------------------------
+
+V0.3.15.1 - 10/30/17
+
+Bug fixes:
+ - Fixed pattern block corruption for songs containing more than 256 rows
+
+
 
 V0.3.15.0 - 10/30/17
 
