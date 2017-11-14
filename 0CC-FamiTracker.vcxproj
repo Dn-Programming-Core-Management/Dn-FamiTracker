@@ -559,7 +559,6 @@
     <ClCompile Include="Source\ChannelsVRC6.cpp" />
     <ClCompile Include="Source\ChannelsVRC7.cpp" />
     <ClCompile Include="Source\DirectSound.cpp" />
-    <ClCompile Include="Source\FFT\Fft.cpp" />
     <ClCompile Include="Source\MIDI.cpp" />
     <ClCompile Include="Source\Clipboard.cpp" />
     <ClCompile Include="Source\PatternAction.cpp" />
@@ -587,6 +586,10 @@
     <ClInclude Include="Source\BookmarkCollection.h" />
     <ClInclude Include="Source\BookmarkManager.h" />
     <ClInclude Include="Source\BookmarkDlg.h" />
+    <ClInclude Include="Source\ClipboardResource.h" />
+    <ClInclude Include="Source\FamiTrackerDocIO.h" />
+    <ClInclude Include="Source\FFT\FftComplex.hpp" />
+    <ClInclude Include="Source\FrameClipData.h" />
     <ClInclude Include="Source\FrameEditorTypes.h" />
     <ClInclude Include="Source\IntRange.h" />
     <ClInclude Include="Source\NoteQueue.h" />
@@ -747,7 +750,7 @@
     <ClInclude Include="Source\ChunkRenderText.h" />
     <ClInclude Include="Source\TextExporter.h" />
     <ClInclude Include="Source\FFT\Complex.h" />
-    <ClInclude Include="Source\FFT\Fft.h" />
+    <ClInclude Include="Source\FFT\FftBuffer.h" />
     <ClInclude Include="Source\MIDI.h" />
     <ClInclude Include="Source\DSample.h" />
     <ClInclude Include="Source\PatternData.h" />

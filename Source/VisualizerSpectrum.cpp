@@ -18,12 +18,10 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include "VisualizerSpectrum.h"
 #include "FamiTracker.h"
 #include "VisualizerWnd.h"
-#include "VisualizerSpectrum.h"
 #include "Graphics.h"
-#include "fft\fft.h"
 
 /*
  * Displays a spectrum analyzer
@@ -32,15 +30,13 @@
 
 CVisualizerSpectrum::CVisualizerSpectrum(int Size) :		// // //
 	m_iBarSize(Size),
-	m_pBlitBuffer(NULL),
-	m_pFftObject(NULL)
+	m_pBlitBuffer(NULL)
 {
 }
 
 CVisualizerSpectrum::~CVisualizerSpectrum()
 {
 	SAFE_RELEASE_ARRAY(m_pBlitBuffer);
-	SAFE_RELEASE(m_pFftObject);
 }
 
 void CVisualizerSpectrum::Create(int Width, int Height)
@@ -51,20 +47,13 @@ void CVisualizerSpectrum::Create(int Width, int Height)
 
 	m_pBlitBuffer = new COLORREF[Width * Height];
 	memset(m_pBlitBuffer, BG_COLOR, Width * Height * sizeof(COLORREF));
-
-	// Calculate window function (Hann)
-	float fraction = 6.283185f / (FFT_POINTS - 1);
-	for (int i = FFT_POINTS; i--;)
-		m_fWindow[i] = 0.5f * (1.0f - cosf(float(i * fraction)));
 }
 
 void CVisualizerSpectrum::SetSampleRate(int SampleRate)
 {
-	SAFE_RELEASE(m_pFftObject);
+	fft_buffer_ = FftBuffer<FFT_POINTS> { };		// // //
 
-	m_pFftObject = new Fft(FFT_POINTS, SampleRate);
-
-	memset(m_fFftPoint, 0, sizeof(float) * FFT_POINTS);
+	m_fFftPoint.fill(0.f);		// // //
 
 	m_iSampleCount = 0;
 	m_iFillPos = 0;
@@ -72,25 +61,20 @@ void CVisualizerSpectrum::SetSampleRate(int SampleRate)
 
 void CVisualizerSpectrum::Transform(short *pSamples, unsigned int Count)
 {
-	ASSERT(m_pFftObject != NULL);
-
-	for (int i = Count; i--;)
-		pSamples[i] = short(pSamples[i] * m_fWindow[i]);
-	
-	m_pFftObject->CopyIn(FFT_POINTS, pSamples);
-	m_pFftObject->Transform();
+	fft_buffer_.CopyIn(pSamples, FFT_POINTS);
+	fft_buffer_.Transform();
 }
 
 void CVisualizerSpectrum::SetSampleData(short *pSamples, unsigned int iCount)
 {
 	CVisualizerBase::SetSampleData(pSamples, iCount);
 
-	int size, offset = 0;
+	int offset = 0;
 
 	if (m_iFillPos > 0) {
-		size = FFT_POINTS - m_iFillPos;
-		memcpy(m_pSampleBuffer + m_iFillPos, pSamples, size * sizeof(short));
-		Transform(m_pSampleBuffer, FFT_POINTS);
+		const int size = FFT_POINTS - m_iFillPos;
+		std::copy_n(pSamples, size, m_pSampleBuffer.begin() + m_iFillPos);
+		Transform(m_pSampleBuffer.data(), FFT_POINTS);
 		offset += size;
 		iCount -= size;
 	}
@@ -102,15 +86,12 @@ void CVisualizerSpectrum::SetSampleData(short *pSamples, unsigned int iCount)
 	}
 
 	// Copy rest
-	size = iCount;
-	memcpy(m_pSampleBuffer, pSamples + offset, size * sizeof(short));
-	m_iFillPos = size;
+	std::copy_n(pSamples + offset, iCount, m_pSampleBuffer.begin());
+	m_iFillPos = iCount;
 }
 
 void CVisualizerSpectrum::Draw()
 {
-	ASSERT(m_pFftObject != NULL);
-
 	static const float SCALING = 250.0f;
 	static const int OFFSET = 0;
 	static const float DECAY = 3.0f;
@@ -126,7 +107,7 @@ void CVisualizerSpectrum::Draw()
 		float level = 0;
 		int steps = (iStep - LastStep) + 1;
 		for (int j = 0; j < steps; ++j)
-			level += float(m_pFftObject->GetIntensity(LastStep + j)) / SCALING;
+			level += float(fft_buffer_.GetIntensity(LastStep + j)) / SCALING;
 		level /= steps;
 		
 		// linear -> db
