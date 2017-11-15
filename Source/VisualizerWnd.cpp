@@ -18,43 +18,12 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include "FamiTracker.h"
 #include "VisualizerWnd.h"
+#include "FamiTracker.h"
 #include "Settings.h"
 #include "VisualizerScope.h"
 #include "VisualizerSpectrum.h"
 #include "VisualizerStatic.h"
-#include "resource.h"
-
-/*
- * Class CVisualizerBase
- *
- */
-
-void CVisualizerBase::Create(int Width, int Height)
-{
-	memset(&m_bmi, 0, sizeof(BITMAPINFO));
-	m_bmi.bmiHeader.biSize	   = sizeof(BITMAPINFOHEADER);
-	m_bmi.bmiHeader.biBitCount = 32;
-	m_bmi.bmiHeader.biHeight   = -Height;
-	m_bmi.bmiHeader.biWidth	   = Width;
-	m_bmi.bmiHeader.biPlanes   = 1;
-
-	m_iWidth = Width;
-	m_iHeight = Height;
-}
-
-void CVisualizerBase::SetSampleData(short *pSamples, unsigned int iCount)
-{
-	m_pSamples = pSamples;
-	m_iSampleCount = iCount;
-}
-
-/*
- * Class CVisualizerWnd
- *
- */
 
 // Thread entry helper
 
@@ -126,11 +95,9 @@ void CVisualizerWnd::NextState()
 
 void CVisualizerWnd::SetSampleRate(int SampleRate)
 {
-	for (int i = 0; i < STATE_COUNT; ++i) {		// // //
-		if (m_pStates[i] != NULL) {
-			m_pStates[i]->SetSampleRate(SampleRate);
-		}
-	}
+	for (auto &state : m_pStates)		// // //
+		if (state)
+			state->SetSampleRate(SampleRate);
 }
 
 void CVisualizerWnd::FlushSamples(short *pSamples, int Count)

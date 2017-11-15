@@ -18,38 +18,15 @@
 ** must bear this legend.
 */
 
-#pragma once
 
+#pragma once
 
 // Visualizer classes
 
+#include "stdafx.h"		// // //
 #include <afxmt.h>		// Synchronization objects
 
-class CVisualizerBase
-{
-public:
-	CVisualizerBase() : m_iWidth(0), m_iHeight(0), m_iSampleCount(0), m_pSamples(NULL) {}
-	virtual ~CVisualizerBase() {}
-
-	// Create the visualizer
-	virtual void Create(int Width, int Height);
-	// Set rate of samples
-	virtual void SetSampleRate(int SampleRate) = 0;
-	// Set new sample data
-	virtual void SetSampleData(short *iSamples, unsigned int iCount);
-	// Render an image from the sample data
-	virtual void Draw() = 0;
-	// Display the image
-	virtual void Display(CDC *pDC, bool bPaintMsg) = 0;
-
-protected:
-	BITMAPINFO m_bmi;
-	int m_iWidth;
-	int m_iHeight;
-
-	unsigned int m_iSampleCount;
-	short *m_pSamples;
-};
+class CVisualizerBase;		// // //
 
 // CVisualizerWnd
 
