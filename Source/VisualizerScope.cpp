@@ -18,11 +18,9 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
+#include "VisualizerScope.h"
 #include <cmath>
 #include "FamiTracker.h"
-#include "VisualizerWnd.h"
-#include "VisualizerScope.h"
 #include "Graphics.h"
 
 /*
@@ -31,7 +29,6 @@
  */
 
 CVisualizerScope::CVisualizerScope(bool bBlur) :
-	m_pBlitBuffer(NULL),
 	m_pWindowBuf(NULL),
 	m_bBlur(bBlur),
 	m_iWindowBufPtr(0)
@@ -40,7 +37,6 @@ CVisualizerScope::CVisualizerScope(bool bBlur) :
 
 CVisualizerScope::~CVisualizerScope()
 {
-	SAFE_RELEASE_ARRAY(m_pBlitBuffer);
 	SAFE_RELEASE_ARRAY(m_pWindowBuf);
 }
 
@@ -48,12 +44,7 @@ void CVisualizerScope::Create(int Width, int Height)
 {
 	CVisualizerBase::Create(Width, Height);
 
-	SAFE_RELEASE_ARRAY(m_pBlitBuffer);
 	SAFE_RELEASE_ARRAY(m_pWindowBuf);
-
-	m_pBlitBuffer = new COLORREF[Width * (Height + 1)];
-	memset(m_pBlitBuffer, 0, Width * Height * sizeof(COLORREF));
-
 	m_pWindowBuf = new short[Width];
 	m_iWindowBufPtr = 0;
 }
@@ -65,7 +56,8 @@ void CVisualizerScope::SetSampleRate(int SampleRate)
 void CVisualizerScope::ClearBackground()
 {
 	for (int y = 0; y < m_iHeight; ++y) {
-		memset(m_pBlitBuffer + y * m_iWidth, int(sinf((float(y) * 3.14f) / float(m_iHeight)) * 40.0f), sizeof(COLORREF) * m_iWidth);
+		int intensity = sinf((float(y) * 3.14f) / float(m_iHeight)) * 40.0f;		// // //
+		memset(&m_pBlitBuffer[y * m_iWidth], intensity, sizeof(COLORREF) * m_iWidth);
 	}
 }
 
@@ -81,7 +73,7 @@ void CVisualizerScope::RenderBuffer()
 	const float HALF_HEIGHT = float(m_iHeight) / 2.0f;
 
 	if (m_bBlur)
-		BlurBuffer(m_pBlitBuffer, m_iWidth, m_iHeight, BLUR_COLORS);
+		BlurBuffer(m_pBlitBuffer.get(), m_iWidth, m_iHeight, BLUR_COLORS);
 	else
 		ClearBackground();
 
@@ -96,22 +88,22 @@ void CVisualizerScope::RenderBuffer()
 		if (Sample > HALF_HEIGHT - 1)
 			Sample = HALF_HEIGHT - 1;
 
-		PutPixel(m_pBlitBuffer, m_iWidth, m_iHeight, x, Sample + HALF_HEIGHT - 0.5f, LINE_COL2);
-		PutPixel(m_pBlitBuffer, m_iWidth, m_iHeight, x, Sample + HALF_HEIGHT + 0.5f, LINE_COL2);
-		PutPixel(m_pBlitBuffer, m_iWidth, m_iHeight, x, Sample + HALF_HEIGHT + 0.0f, LINE_COL1);
+		PutPixel(m_pBlitBuffer.get(), m_iWidth, m_iHeight, x, Sample + HALF_HEIGHT - 0.5f, LINE_COL2);
+		PutPixel(m_pBlitBuffer.get(), m_iWidth, m_iHeight, x, Sample + HALF_HEIGHT + 0.5f, LINE_COL2);
+		PutPixel(m_pBlitBuffer.get(), m_iWidth, m_iHeight, x, Sample + HALF_HEIGHT + 0.0f, LINE_COL1);
 
 		if ((Sample - LastSample) > 1.0f) {
 			float frac = LastSample - floor(LastSample);
 			for (float y = LastSample; y < Sample; ++y) {
 				float Offset = (y - LastSample) / (Sample - LastSample);
-				PutPixel(m_pBlitBuffer, m_iWidth, m_iHeight, x + Offset - 1.0f, y + HALF_HEIGHT + frac, LINE_COL1);
+				PutPixel(m_pBlitBuffer.get(), m_iWidth, m_iHeight, x + Offset - 1.0f, y + HALF_HEIGHT + frac, LINE_COL1);
 			}
 		}
 		else if ((LastSample - Sample) > 1.0f) {
 			float frac = Sample - floor(Sample);
 			for (float y = Sample; y < LastSample; ++y) {
 				float Offset = (y - Sample) / (LastSample - Sample);
-				PutPixel(m_pBlitBuffer, m_iWidth, m_iHeight, x - Offset, y + HALF_HEIGHT + frac, LINE_COL1);
+				PutPixel(m_pBlitBuffer.get(), m_iWidth, m_iHeight, x - Offset, y + HALF_HEIGHT + frac, LINE_COL1);
 			}
 		}
 	}
@@ -170,7 +162,7 @@ void CVisualizerScope::Draw()
 
 void CVisualizerScope::Display(CDC *pDC, bool bPaintMsg)
 {
-	StretchDIBits(pDC->m_hDC, 0, 0, m_iWidth, m_iHeight, 0, 0, m_iWidth, m_iHeight, m_pBlitBuffer, &m_bmi, DIB_RGB_COLORS, SRCCOPY);
+	CVisualizerBase::Display(pDC, bPaintMsg);		// // //
 
 #ifdef _DEBUG
 	CString PeakText;

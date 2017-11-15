@@ -42,6 +42,10 @@ constexpr std::array<T, N> make_hann_window() {
 template <std::size_t N>
 class FftBuffer {
 public:
+	static constexpr std::size_t GetPoints() noexcept {
+		return N;
+	}
+
 	void Reset() {
 		samples_.fill({ });
 		buffer_.fill({ });
@@ -53,8 +57,10 @@ public:
 
 	template <typename InputIt>
 	void CopyIn(InputIt Samples, std::size_t SampleCount) {
-		if (SampleCount > std::size(samples_))
-			return;
+		if (SampleCount > GetPoints()) {
+			SampleCount = GetPoints();
+			std::advance(Samples, SampleCount - GetPoints());
+		}
 		std::copy(samples_.cbegin() + SampleCount, samples_.cend(), samples_.begin());
 		std::transform(Samples, Samples + SampleCount, samples_.begin(), [] (auto x) {
 			return std::complex<double>(x, 0);
@@ -62,7 +68,7 @@ public:
 	}
 
 	double GetIntensity(int i) const {
-		const double sqrtpoints = 1 << (FFT::details::floor_log2(N) / 2);
+		const double sqrtpoints = 1 << (FFT::details::floor_log2(GetPoints()) / 2);
 		return std::abs(buffer_[i]) / sqrtpoints;
 	}
 

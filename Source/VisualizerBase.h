@@ -2,6 +2,8 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
+** 0CC-FamiTracker is (C) 2014-2017 HertzDevil
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -21,23 +23,31 @@
 
 #pragma once
 
-#include "VisualizerBase.h"		// // //
+#include "stdafx.h"
+#include <memory>		// // //
 
-// CVisualizerStatic, static picture visualizer
-
-class CVisualizerStatic : public CVisualizerBase
-{
+class CVisualizerBase {		// // //
 public:
-	CVisualizerStatic() = default;
-	~CVisualizerStatic();
+	virtual ~CVisualizerBase() = default;
 
-	void SetSampleRate(int SampleRate) override;
-	void Draw() override;
+	// Create the visualizer
+	virtual void Create(int Width, int Height);
+	// Set rate of samples
+	virtual void SetSampleRate(int SampleRate) = 0;
+	// Set new sample data
+	virtual void SetSampleData(short *iSamples, unsigned int iCount);
+	// Render an image from the sample data
+	virtual void Draw() = 0;
+	// Display the image
+	virtual void Display(CDC *pDC, bool bPaintMsg);		// // //
 
-private:
-	void DrawChar(char n, int xPos, int yPos, const COLORREF &Color);		// // //
+protected:
+	BITMAPINFO m_bmi;
+	std::unique_ptr<COLORREF[]> m_pBlitBuffer;		// // //
 
-	CBitmap m_bmpImage;
-	CBitmap *m_pOldBmp = nullptr;
-	CDC	m_dcImage;
+	int m_iWidth = 0;
+	int m_iHeight = 0;
+
+	unsigned int m_iSampleCount = 0;
+	short *m_pSamples = nullptr;
 };

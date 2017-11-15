@@ -333,6 +333,7 @@
     <ClCompile Include="Source\StretchDlg.cpp" />
     <ClCompile Include="Source\SwapDlg.cpp" />
     <ClCompile Include="Source\TransposeDlg.cpp" />
+    <ClCompile Include="Source\VisualizerBase.cpp" />
     <ClCompile Include="Source\WaveEditor.cpp" />
     <ClCompile Include="Source\GraphEditor.cpp" />
     <ClCompile Include="Source\SequenceEditor.cpp" />
@@ -504,6 +505,7 @@
     <ClInclude Include="Source\StretchDlg.h" />
     <ClInclude Include="Source\SwapDlg.h" />
     <ClInclude Include="Source\TransposeDlg.h" />
+    <ClInclude Include="Source\VisualizerBase.h" />
     <ClInclude Include="Source\WaveformGenerator.h" />
     <ClInclude Include="Source\WavegenBuiltin.h" />
     <ClInclude Include="Source\WinSDK\VersionHelpers.h" />
@@ -593,7 +595,6 @@
     <ClInclude Include="Source\ChunkRenderBinary.h" />
     <ClInclude Include="Source\ChunkRenderText.h" />
     <ClInclude Include="Source\TextExporter.h" />
-    <ClInclude Include="Source\FFT\Complex.h" />
     <ClInclude Include="Source\FFT\FftBuffer.h" />
     <ClInclude Include="Source\MIDI.h" />
     <ClInclude Include="Source\DSample.h" />
