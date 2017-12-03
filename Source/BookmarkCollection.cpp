@@ -41,7 +41,7 @@ unsigned CBookmarkCollection::GetCount() const
 
 CBookmark *CBookmarkCollection::GetBookmark(unsigned Index) const
 {
-	return m_pBookmark[Index].get();
+	return Index < m_pBookmark.size() ? m_pBookmark[Index].get() : nullptr;
 }
 
 bool CBookmarkCollection::AddBookmark(CBookmark *const pMark)
@@ -165,7 +165,7 @@ bool CBookmarkCollection::SortByName(bool Desc)
 {
 	static auto sortFunc = [] (const std::unique_ptr<CBookmark> &a, const std::unique_ptr<CBookmark> &b)
 		{ return a->m_sName < b->m_sName; };
-	
+
 	if (Desc) std::reverse(m_pBookmark.begin(), m_pBookmark.end());
 	bool Change = !std::is_sorted(m_pBookmark.begin(), m_pBookmark.end(), sortFunc);
 	if (Desc) std::reverse(m_pBookmark.begin(), m_pBookmark.end());
@@ -177,11 +177,14 @@ bool CBookmarkCollection::SortByName(bool Desc)
 
 bool CBookmarkCollection::SortByPosition(bool Desc)
 {
+	static auto sortFunc = [] (const std::unique_ptr<CBookmark> &a, const std::unique_ptr<CBookmark> &b)
+		{ return *a < *b; };
+
 	if (Desc) std::reverse(m_pBookmark.begin(), m_pBookmark.end());
-	bool Change = !std::is_sorted(m_pBookmark.begin(), m_pBookmark.end());
+	bool Change = !std::is_sorted(m_pBookmark.begin(), m_pBookmark.end(), sortFunc);
 	if (Desc) std::reverse(m_pBookmark.begin(), m_pBookmark.end());
 	if (!Change) return false;
-	std::stable_sort(m_pBookmark.begin(), m_pBookmark.end());
+	std::stable_sort(m_pBookmark.begin(), m_pBookmark.end(), sortFunc);
 	if (Desc) std::reverse(m_pBookmark.begin(), m_pBookmark.end());
 	return true;
 }
