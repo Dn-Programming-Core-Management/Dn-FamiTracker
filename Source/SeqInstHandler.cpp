@@ -94,13 +94,14 @@ void CSeqInstHandler::UpdateInstrument()
 	if (!m_pInterface->IsActive()) return;
 	for (size_t i = 0; i < sizeof(m_pSequence) / sizeof(CSequence*); i++) {
 		if (m_pSequence[i] == nullptr || m_pSequence[i]->GetItemCount() == 0) continue;
-		int Value = m_pSequence[i]->GetItem(m_iSeqPointer[i]);
+		int Value;
 		switch (m_iSeqState[i]) {
 		case SEQ_STATE_RUNNING:
+			Value = m_pSequence[i]->GetItem(m_iSeqPointer[i]);
 			ProcessSequence(i, m_pSequence[i]->GetSetting(), Value);
+			++m_iSeqPointer[i];
 
-			{
-				++m_iSeqPointer[i];
+			{	
 				int Release = m_pSequence[i]->GetReleasePoint();
 				int Items = m_pSequence[i]->GetItemCount();
 				int Loop = m_pSequence[i]->GetLoopPoint();
