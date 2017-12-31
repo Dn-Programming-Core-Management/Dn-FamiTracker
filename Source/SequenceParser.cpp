@@ -331,10 +331,8 @@ void CSequenceParser::ParseSequence(const std::string &String)
 	static const std::regex SPLIT_RE {R"(\S+)"};
 
 	const auto PushFunc = [&] () {
-		while (m_pConversion->IsReady()) {
+		for (; m_pConversion->IsReady() && m_iPushedCount < MAX_SEQUENCE_ITEMS; ++m_iPushedCount) {
 			m_pSequence->SetItem(m_iPushedCount, m_pConversion->GetValue());
-			if (++m_iPushedCount >= MAX_SEQUENCE_ITEMS)
-				break;
 		}
 	};
 
