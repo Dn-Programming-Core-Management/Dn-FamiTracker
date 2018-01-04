@@ -68,7 +68,8 @@ protected:
 	static const int FONT_SIZES[];
 	static const int FONT_SIZE_COUNT;
 
-	static const char *SETTING_SEPARATOR, *HEX_PREFIX;		// // // 050B
+	static const char SETTING_SEPARATOR[];		// // // 050B
+	static const char HEX_PREFIX[];		// // // 050B
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

@@ -28,7 +28,7 @@
 #include "Graphics.h"
 #include <fstream>
 #include <string>
-#include <sstream>
+#include "NumConv.h"		// // //
 
 const TCHAR *CConfigAppearance::COLOR_ITEMS[] = {
 	_T("Background"), 
@@ -47,8 +47,8 @@ const TCHAR *CConfigAppearance::COLOR_ITEMS[] = {
 	_T("Current row (playing)")
 };
 
-const char *CConfigAppearance::SETTING_SEPARATOR = " : ";		// // // 050B
-const char *CConfigAppearance::HEX_PREFIX = "0x";		// // // 050B
+const char CConfigAppearance::SETTING_SEPARATOR[] = " : ";		// // // 050B
+const char CConfigAppearance::HEX_PREFIX[] = "0x";		// // // 050B
 
 // Pre-defined color schemes
 const COLOR_SCHEME *CConfigAppearance::COLOR_SCHEMES[] = {
@@ -476,23 +476,19 @@ void CConfigAppearance::OnBnClickedButtonAppearanceLoad()		// // // 050B
 
 void CConfigAppearance::ExportSettings(const char *Path) const		// // // 050B
 {
-	std::fstream file {Path, std::ios_base::out};
-	if (!file.good())
-		return;
-	file << "# 0CC-FamiTracker appearance" << std::endl << std::hex;
-	for (size_t i = 0; i < sizeof(m_iColors) / sizeof(*m_iColors); ++i)
-		file << COLOR_ITEMS[i] << SETTING_SEPARATOR << HEX_PREFIX << m_iColors[i] << std::endl;
-	file << std::dec;
-	file << "Pattern colors" << SETTING_SEPARATOR << m_bPatternColors << std::endl;
-	file << "Flags" << SETTING_SEPARATOR << m_bDisplayFlats << std::endl;
-	file << "Font" << SETTING_SEPARATOR << m_strFont << std::endl;
-	file << "Font size" << SETTING_SEPARATOR << m_iFontSize << std::endl;
-	file.close();
+	if (auto file = std::fstream {Path, std::ios_base::out}) {
+		file << "# 0CC-FamiTracker appearance" << std::endl;
+		for (size_t i = 0; i < std::size(m_iColors); ++i)
+			file << COLOR_ITEMS[i] << SETTING_SEPARATOR << HEX_PREFIX << conv::from_uint_hex(m_iColors[i], 6) << std::endl;
+		file << "Pattern colors" << SETTING_SEPARATOR << m_bPatternColors << std::endl;
+		file << "Flags" << SETTING_SEPARATOR << m_bDisplayFlats << std::endl;
+		file << "Font" << SETTING_SEPARATOR << m_strFont << std::endl;
+		file << "Font size" << SETTING_SEPARATOR << m_iFontSize << std::endl;
+	}
 }
 
 void CConfigAppearance::ImportSettings(const char *Path)		// // // 050B
 {
-	const size_t BUFFER_SIZE = 100;
 	std::fstream file {Path, std::ios_base::in};
 	std::string Line;
 
@@ -500,34 +496,34 @@ void CConfigAppearance::ImportSettings(const char *Path)		// // // 050B
 		std::getline(file, Line);
 		if (!file) break;
 		size_t Pos = Line.find(SETTING_SEPARATOR);
-		if (Pos == std::string::npos) continue;
+		if (Pos == std::string::npos)
+			continue;
+		auto sv = std::string_view(Line).substr(Pos + std::size(SETTING_SEPARATOR) - 1);		// // //
 		
 		for (size_t i = 0; i < sizeof(m_iColors) / sizeof(*m_iColors); ++i) {
-			if (Line.find(COLOR_ITEMS[i]) == std::string::npos) continue;
-			size_t n = Line.find(HEX_PREFIX);
-			if (n == std::string::npos) continue;
-			std::stringstream h;
-			h << Line.substr(n);
-			h >> m_iColors[i];
+			if (Line.find(COLOR_ITEMS[i]) == std::string::npos)
+				continue;
+			size_t n = sv.find(HEX_PREFIX);
+			if (n == std::string_view::npos)
+				continue;
+			if (auto c = conv::to_uint32(sv.substr(n + std::size(HEX_PREFIX) - 1), 16))
+				m_iColors[i] = *c;
 		}
 
 		if (Line.find("Pattern colors") != std::string::npos) {
-			std::stringstream h;
-			h << Line.substr(Pos);
-			h >> m_bPatternColors;
+			if (auto x = conv::to_uint(sv))
+				m_bPatternColors = (bool)*x;
 		}
 		else if (Line.find("Flags") != std::string::npos) {
-			std::stringstream h;
-			h << Line.substr(Pos);
-			h >> m_bDisplayFlats;
+			if (auto x = conv::to_uint(sv))
+				m_bDisplayFlats = (bool)*x;
 		}
 		else if (Line.find("Font size") != std::string::npos) {
-			std::stringstream h;
-			h << Line.substr(Pos);
-			h >> m_iFontSize;
+			if (auto x = conv::to_uint(sv))
+				m_iFontSize = *x;
 		}
 		else if (Line.find("Font") != std::string::npos)
-			m_strFont = Line.substr(Pos + strlen(SETTING_SEPARATOR)).c_str();
+			m_strFont = sv.data();
 	}
 
 	file.close();
