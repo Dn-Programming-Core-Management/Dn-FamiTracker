@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2017 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -768,15 +768,13 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					static const inst_type_t CHIP_MACRO[4] = { INST_2A03, INST_VRC6, INST_N163, INST_S5B };		// // //
 					int chip = c - CT_MACRO;
 
-					int mt;
+					int mt, loop, release;
 					CHECK(t.ReadInt(mt,0,SEQ_COUNT-1,&sResult));
 					CHECK(t.ReadInt(i,0,MAX_SEQUENCES-1,&sResult));
 					CSequence* pSeq = pDoc->GetSequence(CHIP_MACRO[chip], i, mt);
 
-					CHECK(t.ReadInt(i,-1,MAX_SEQUENCE_ITEMS,&sResult));
-					pSeq->SetLoopPoint(i);
-					CHECK(t.ReadInt(i,-1,MAX_SEQUENCE_ITEMS,&sResult));
-					pSeq->SetReleasePoint(i);
+					CHECK(t.ReadInt(loop,-1,MAX_SEQUENCE_ITEMS,&sResult));
+					CHECK(t.ReadInt(release,-1,MAX_SEQUENCE_ITEMS,&sResult));
 					CHECK(t.ReadInt(i,0,255,&sResult));
 					pSeq->SetSetting(static_cast<seq_setting_t>(i));		// // //
 
@@ -795,6 +793,8 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 						++count;
 					}
 					pSeq->SetItemCount(count);
+					pSeq->SetLoopPoint(loop);
+					pSeq->SetReleasePoint(release);
 				}
 				break;
 			case CT_DPCMDEF:
@@ -1009,14 +1009,12 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 						return sResult;
 					}
 					auto pInst = std::static_pointer_cast<CInstrumentFDS>(pDoc->GetInstrument(i));
-
+					int loop, release;
 					CHECK(t.ReadInt(i,0,CInstrumentFDS::SEQUENCE_COUNT-1,&sResult));
 					CSequence *pSeq = new CSequence();		// // //
 					pInst->SetSequence(i, pSeq);
-					CHECK(t.ReadInt(i,-1,MAX_SEQUENCE_ITEMS,&sResult));
-					pSeq->SetLoopPoint(i);
-					CHECK(t.ReadInt(i,-1,MAX_SEQUENCE_ITEMS,&sResult));
-					pSeq->SetReleasePoint(i);
+					CHECK(t.ReadInt(loop,-1,MAX_SEQUENCE_ITEMS,&sResult));
+					CHECK(t.ReadInt(release,-1,MAX_SEQUENCE_ITEMS,&sResult));
 					CHECK(t.ReadInt(i,0,255,&sResult));
 					pSeq->SetSetting(static_cast<seq_setting_t>(i));		// // //
 
@@ -1035,6 +1033,8 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 						++count;
 					}
 					pSeq->SetItemCount(count);
+					pSeq->SetLoopPoint(loop);
+					pSeq->SetReleasePoint(release);
 				}
 				break;
 			case CT_N163WAVE:
@@ -1396,7 +1396,8 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 		s.Format(_T("%-8s %3d   "), CTstr, i);
 		f.WriteString(s);
 
-		if (auto seqInst = std::dynamic_pointer_cast<CSeqInstrument>(pInst)) {
+		auto seqInst = std::dynamic_pointer_cast<CSeqInstrument>(pInst);
+		if (seqInst && pInst->GetType() != INST_FDS) {
 			s.Empty();
 			for (int j = 0; j < SEQ_COUNT; j++)
 				s.AppendFormat(_T("%3d "), seqInst->GetSeqEnable(j) ? seqInst->GetSeqIndex(j) : -1);
