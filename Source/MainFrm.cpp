@@ -2039,9 +2039,10 @@ void CMainFrame::OnFileImportText()
 	}
 
 	SetSongInfo(pDoc->GetSongName(), pDoc->GetSongArtist(), pDoc->GetSongCopyright());
-	pDoc->SetModifiedFlag(FALSE);
+	pDoc->SetModifiedFlag(TRUE);
 	// TODO figure out how to handle this case, call OnInitialUpdate??
 	//pDoc->UpdateAllViews(NULL, CHANGED_ERASE);		// Remove
+	pDoc->UpdateAllViews(NULL, UPDATE_PROPERTIES);
 	pDoc->UpdateAllViews(NULL, UPDATE_INSTRUMENT);
 	//pDoc->UpdateAllViews(NULL, UPDATE_ENTIRE);		// TODO Remove
 	theApp.GetSoundGenerator()->DocumentPropertiesChanged(pDoc);
