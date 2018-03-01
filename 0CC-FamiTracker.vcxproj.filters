@@ -1277,50 +1277,8 @@
     <ClInclude Include="Source\WinSDK\winapifamily.h">
       <Filter>Header Files\Windows Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Arpeggiator.h">
-      <Filter>Header Files\Sound Driver Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\TempoCounter.h">
-      <Filter>Header Files\Sound Driver Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\AudioDriver.h">
-      <Filter>Header Files\Sound Driver Headers\Audio Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\WaveRenderer.h">
-      <Filter>Header Files\Sound Driver Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\TempoDisplay.h">
-      <Filter>Header Files\Sound Driver Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\PlayerCursor.h">
-      <Filter>Header Files\Sound Driver Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\SongState.h">
-      <Filter>Header Files\Document Data Type Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\SoundDriver.h">
-      <Filter>Header Files\Sound Driver Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\SoundGenBase.h">
-      <Filter>Header Files\Sound Driver Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\FamiTrackerDocIO.h">
-      <Filter>Header Files\Document Utilities Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\SongData.h">
-      <Filter>Header Files\Document Data Type Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Source\PatternData.h">
       <Filter>Header Files\Document Data Type Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\ModuleAction.h">
-      <Filter>Header Files\Document Utilities Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\ActionHandler.h">
-      <Filter>Header Files\Components Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\PatternClipData.h">
-      <Filter>Header Files\Pattern Editor Headers</Filter>
     </ClInclude>
     <ClInclude Include="Source\FrameClipData.h">
       <Filter>Header Files\Frame Editor Headers</Filter>
@@ -1336,6 +1294,9 @@
     </ClInclude>
     <ClInclude Include="Source\FFT\FftBuffer.h">
       <Filter>Header Files\Other Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\FamiTrackerDocIO.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
