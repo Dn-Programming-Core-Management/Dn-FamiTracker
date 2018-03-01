@@ -27,6 +27,7 @@ obj/
 [Rr]elease*/
 _ReSharper*/
 [Tt]est[Rr]esult*
+*.vspx
 
 #0CC-FT
 *.bin
@@ -41,4 +42,13 @@ apu_log.txt
 0CC-FamiTracker.vcproj
 *.db
 *.opendb
+
 .vs/*
+.vscode/*
+.leu
+.editorconfig
+commit_hash.h
+
+libft0cc/build
+libft0cc/build_ms
+Testing/Temporary
