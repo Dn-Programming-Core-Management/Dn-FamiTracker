@@ -17,6 +17,7 @@ Future changes:
 
 - Exponential instrument volume decay or release (like ADSR), and possibly an effect.
 - Warn when editing instrument sequences reused in many instruments, or patterns appearing in many frames.
+- https://github.com/jimbo1qaz/0CC-FamiTracker/issues
 
 # 0CC-FamiTracker
 
