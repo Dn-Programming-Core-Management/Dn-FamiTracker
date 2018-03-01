@@ -1,3 +1,23 @@
+# nyanpasu64 0CC-Famitracker
+
+This is a fork of HertzDevil's 0CC-Famitracker 0.3.14.5 (since 0.3.15.1 and master are quite buggy and changing rapidly). It contains bugfixes which HertzDevil has not merged yet (some for months, some fixed independently in 0.3.15.1 or master), as well as N163 multi-wave copy-paste support.
+
+Bugfixes:
+
+- Don't corrupt memory when entering MML volume sequences over 252 items long (instead truncate).
+- Fix bug where find-replacing anything with an empty effect creates " 00" effect.
+- Fix text import instrument loop/release (@owomomo, fixed in 0.3.15.1).
+- Update channel count after importing text (like master). Mark file as modified.
+
+Enhancements:
+- N163 wave editor's copy/paste buttons copy all waves at once, separated/terminated with semicolons. This allows for highly efficient Audacity-N163 import workflows (see https://gist.github.com/nyanpasu64/424110eab84dad50cf1a6646a72b2627).
+- Hi-res FFT spectrogram (like master).
+
+Future changes:
+
+- Exponential instrument volume decay or release (like ADSR), and possibly an effect.
+- Warn when editing instrument sequences reused in many instruments, or patterns appearing in many frames.
+
 # 0CC-FamiTracker
 
 0CC-FamiTracker is a modified version of FamiTracker that incorporates various bug fixes and new features which work in exported NSFs as well. The name "0CC" comes from the author's favourite arpeggio effect command. The current version includes:
