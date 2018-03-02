@@ -28,7 +28,7 @@
 
 // CVisualizerSpectrum, spectrum style visualizer
 
-const int FFT_POINTS = 1024;
+const int FFT_POINTS = 256;
 
 class CVisualizerSpectrum : public CVisualizerBase
 {
