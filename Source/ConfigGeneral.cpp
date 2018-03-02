@@ -2,7 +2,7 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
-** 0CC-FamiTracker is (C) 2014-2015 HertzDevil
+** 0CC-FamiTracker is (C) 2014-2017 HertzDevil
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -20,9 +20,8 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include "FamiTracker.h"
 #include "ConfigGeneral.h"
+#include "FamiTracker.h"
 #include "Settings.h"
 
 const CString CConfigGeneral::CONFIG_STR[] = {		// // //
@@ -99,7 +98,10 @@ BEGIN_MESSAGE_MAP(CConfigGeneral, CPropertyPage)
 	ON_CBN_EDITUPDATE(IDC_PAGELENGTH, OnCbnEditupdatePagelength)
 	ON_CBN_SELENDOK(IDC_PAGELENGTH, OnCbnSelendokPagelength)
 	ON_CBN_SELCHANGE(IDC_COMBO_STYLE, OnCbnSelchangeComboStyle)
-	ON_NOTIFY(LVN_ITEMCHANGED, IDC_CONFIG_LIST, &CConfigGeneral::OnLvnItemchangedConfigList)
+	ON_WM_LBUTTONDOWN()
+	ON_NOTIFY(NM_CLICK, IDC_CONFIG_LIST, &CConfigGeneral::OnLvnItemchangedConfigList)
+	ON_NOTIFY(LVN_KEYDOWN, IDC_CONFIG_LIST, &CConfigGeneral::OnLvnItemchangedConfigList)
+//	ON_NOTIFY(LVN_ITEMCHANGED, IDC_CONFIG_LIST, &CConfigGeneral::OnLvnItemchangedConfigList)
 END_MESSAGE_MAP()
 
 
@@ -299,52 +301,66 @@ void CConfigGeneral::OnCbnSelchangeComboStyle()		// // //
 void CConfigGeneral::OnLvnItemchangedConfigList(NMHDR *pNMHDR, LRESULT *pResult)		// // //
 {
 	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
+	LPNMITEMACTIVATE pNMIA = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
 	CListCtrl *pList = static_cast<CListCtrl*>(GetDlgItem(IDC_CONFIG_LIST));
 
-	bool *const CONFIG_BOOL[SETTINGS_BOOL_COUNT] = {		// // //
-		&m_bWrapCursor,
-		&m_bWrapFrames,
-		&m_bFreeCursorEdit,
-		&m_bPreviewWAV,
-		&m_bKeyRepeat,
-		&m_bRowInHex,
-		&m_bFramePreview,
-		&m_bNoDPCMReset,
-		&m_bNoStepMove,
-		&m_bPullUpDelete,
-		&m_bBackups,
-		&m_bSingleInstance,
-		&m_bPreviewFullRow,
-		&m_bDisableDblClick,
-		&m_bWrapPatternValue,
-		&m_bCutVolume,
-		&m_bFDSOldVolume,
-		&m_bRetrieveChanState,
-		&m_bOverflowPaste,
-		&m_bShowSkippedRows,
-		&m_bHexKeypad,
-		&m_bMultiFrameSel,
-		&m_bCheckVersion,
-	};
-	
-	if (pNMLV->uChanged & LVIF_STATE) {
-		if (pNMLV->uNewState & LVNI_SELECTED || pNMLV->uNewState & 0x3000) {
-			CString str;
-			CListCtrl *pList = static_cast<CListCtrl*>(GetDlgItem(IDC_CONFIG_LIST));
-			str.Format(_T("Description: %s"), CONFIG_DESC[pNMLV->iItem]);
-			SetDlgItemText(IDC_EDIT_CONFIG_DESC, str);
-			
-			pList->SetSelectionMark(pNMLV->iItem);
-			if (pNMLV->iItem >= 0 && pNMLV->iItem < SETTINGS_BOOL_COUNT)
-				pList->SetItemState(pNMLV->iItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
-		}
+	int sel = pList->GetSelectionMark();
+	LVHITTESTINFO info;
+	info.pt = pNMIA->ptAction;
+	pList->SubItemHitTest(&info);
 
-		if (pNMLV->uNewState & 0x3000) {
-			SetModified();
-			for (int i = 0; i < SETTINGS_BOOL_COUNT; i++)
-				*CONFIG_BOOL[i] = pList->GetCheck(i) != 0;
+	if (pNMLV->uChanged & LVIF_STATE) {
+		if (pNMLV->iItem >= 0 && pNMLV->iItem < SETTINGS_BOOL_COUNT) {
+			pList->SetSelectionMark(pNMLV->iItem);
+			pList->SetItemState(pNMLV->iItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
 		}
 	}
+
+//	int sel = pList->GetSelectionMark();
+
+	using T = bool (CConfigGeneral::*);
+	static T CONFIG_BOOL[SETTINGS_BOOL_COUNT] = {		// // //
+		&CConfigGeneral::m_bWrapCursor,
+		&CConfigGeneral::m_bWrapFrames,
+		&CConfigGeneral::m_bFreeCursorEdit,
+		&CConfigGeneral::m_bPreviewWAV,
+		&CConfigGeneral::m_bKeyRepeat,
+		&CConfigGeneral::m_bRowInHex,
+		&CConfigGeneral::m_bFramePreview,
+		&CConfigGeneral::m_bNoDPCMReset,
+		&CConfigGeneral::m_bNoStepMove,
+		&CConfigGeneral::m_bPullUpDelete,
+		&CConfigGeneral::m_bBackups,
+		&CConfigGeneral::m_bSingleInstance,
+		&CConfigGeneral::m_bPreviewFullRow,
+		&CConfigGeneral::m_bDisableDblClick,
+		&CConfigGeneral::m_bWrapPatternValue,
+		&CConfigGeneral::m_bCutVolume,
+		&CConfigGeneral::m_bFDSOldVolume,
+		&CConfigGeneral::m_bRetrieveChanState,
+		&CConfigGeneral::m_bOverflowPaste,
+		&CConfigGeneral::m_bShowSkippedRows,
+		&CConfigGeneral::m_bHexKeypad,
+		&CConfigGeneral::m_bMultiFrameSel,
+		&CConfigGeneral::m_bCheckVersion,
+	};
+	
+//	if (pNMLV->uChanged & LVIF_STATE) {
+//		if (pNMLV->uNewState & LVNI_SELECTED || pNMLV->uNewState & 0x3000) {
+			CString str;
+			str.Format(_T("Description: %s"), CONFIG_DESC[sel]);
+			SetDlgItemText(IDC_EDIT_CONFIG_DESC, str);
+			
+//			if (pNMLV->iItem >= 0 && pNMLV->iItem < SETTINGS_BOOL_COUNT)
+//				pList->SetItemState(pNMLV->iItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+//		}
+
+//		if (pNMLV->uNewState & 0x3000) {
+			SetModified();
+			for (int i = 0; i < SETTINGS_BOOL_COUNT; i++)
+				this->*(CONFIG_BOOL[i]) = pList->GetCheck(i) != 0;
+//		}
+//	}
 
 	*pResult = 0;
 }
