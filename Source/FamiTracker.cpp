@@ -528,6 +528,8 @@ void CFamiTrackerApp::UnregisterSingleInstance()
 
 void CFamiTrackerApp::CheckNewVersion(bool StartUp)		// // //
 {
+	return;
+
 	static PCTSTR rgpszAcceptTypes[] = {_T("application/json"), NULL};
 
 	m_bVersionReady = false;
@@ -542,7 +544,7 @@ void CFamiTrackerApp::CheckNewVersion(bool StartUp)		// // //
 			if ((hOpen = InternetOpen(_T("0CC_FamiTracker"), INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0)) &&
 				(hConnect = InternetConnect(hOpen, _T("api.github.com"),
 				INTERNET_DEFAULT_HTTPS_PORT, _T(""), _T(""), INTERNET_SERVICE_HTTP, 0, 0)) &&
-				(hRequest = HttpOpenRequest(hConnect, _T("GET"), _T("/repos/HertzDevil/0CC-FamiTracker/releases"),
+				(hRequest = HttpOpenRequest(hConnect, _T("GET"), _T("/repos/jimbo1qaz/0CC-FamiTracker/releases"),
 				_T("HTTP/1.0"), NULL, rgpszAcceptTypes,
 				INTERNET_FLAG_RELOAD | INTERNET_FLAG_SECURE | INTERNET_FLAG_NO_CACHE_WRITE, NULL))) {
 				HttpAddRequestHeaders(hRequest, _T("Content-Type: application/json\r\n"), -1, HTTP_ADDREQ_FLAG_ADD);
