@@ -2535,7 +2535,7 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_INSTRUMENT_REMOVE    "Remove instrument from module\nRemove Iinstrument"
+    ID_INSTRUMENT_REMOVE    "Remove instrument from module\nRemove Instrument"
     ID_INSTRUMENT_EDIT      "Open instrument edtor\nEdit Instrument"
     ID_INSTRUMENT_CLONE     "Create a copy of selected instrument\nClone Instrument"
     ID_FRAME_COPY           "Copy the selection and put it on the Clipboard\nCopy"
