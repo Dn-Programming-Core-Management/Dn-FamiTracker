@@ -51,7 +51,6 @@ private:
 
 public:
 	afx_msg void OnContextMenu(CWnd*, CPoint);
-	afx_msg void OnAddInstrument();
 	afx_msg void OnLvnBeginlabeledit(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnNMClick(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnLvnKeydown(NMHDR *pNMHDR, LRESULT *pResult);
@@ -83,7 +82,6 @@ private:
 	int m_iValue;
 public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
-	afx_msg void OnFileAddsong();
 };
 
 
