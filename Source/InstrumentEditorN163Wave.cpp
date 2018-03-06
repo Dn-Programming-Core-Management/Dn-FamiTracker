@@ -289,6 +289,10 @@ void CInstrumentEditorN163Wave::ParseManyStrings(string pStrings)
 
 void CInstrumentEditorN163Wave::ParseString(string pString, int waveIndex)
 {
+	// The second parameter waveIndex is optional, and defaults to -1 in the header file.
+	// The GUI MML setter calls without a wave index, and writes to the wave selected in the GUI.
+	// The clipboard-paste code calls with a wave index >= 0, and writes to each wave #N.
+
 	if (waveIndex == -1) {
 		waveIndex = m_iWaveIndex;
 	}
