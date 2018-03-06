@@ -647,12 +647,12 @@ BOOL CFindDlg::OnInitDialog()
 	m_cResultsBox = new CFindResultsBox(this);
 	m_cResultsBox->Create(IDD_FINDRESULTS, this);
 
-	m_cFindNoteField     = new CEdit();
-	m_cFindNoteField2    = new CEdit();
-	m_cFindInstField     = new CEdit();
-	m_cFindInstField2    = new CEdit();
-	m_cFindVolField      = new CEdit();
-	m_cFindVolField2     = new CEdit();
+	m_cFindNoteField     = new CBannerEdit(IDS_FIND_BEGIN);
+	m_cFindNoteField2    = new CBannerEdit(IDS_FIND_END);
+	m_cFindInstField     = new CBannerEdit(IDS_FIND_BEGIN);
+	m_cFindInstField2    = new CBannerEdit(IDS_FIND_END);
+	m_cFindVolField      = new CBannerEdit(IDS_FIND_BEGIN);
+	m_cFindVolField2     = new CBannerEdit(IDS_FIND_END);
 	m_cFindEffField      = new CEdit();
 	m_cReplaceNoteField  = new CEdit();
 	m_cReplaceInstField  = new CEdit();
@@ -670,6 +670,13 @@ BOOL CFindDlg::OnInitDialog()
 	m_cReplaceInstField ->SubclassDlgItem(IDC_EDIT_REPLACE_INST, this);
 	m_cReplaceVolField  ->SubclassDlgItem(IDC_EDIT_REPLACE_VOL, this);
 	m_cReplaceEffField  ->SubclassDlgItem(IDC_EDIT_REPLACE_EFF, this);
+
+	//m_cFindNoteField->SetCueBanner(L"from");
+	//m_cFindNoteField2->SetCueBanner(L"(to)");
+	//m_cFindInstField->SetCueBanner(L"from");
+	//m_cFindInstField2->SetCueBanner(L"(to)");
+	//m_cFindVolField->SetCueBanner(L"from");
+	//m_cFindVolField2->SetCueBanner(L"(to)");
 
 	m_cSearchArea = new CComboBox();
 	m_cEffectColumn = new CComboBox();

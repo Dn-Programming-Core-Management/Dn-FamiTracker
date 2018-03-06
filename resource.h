@@ -147,7 +147,10 @@
 #define IDS_CONFIG_WINDOW               205
 #define IDS_SAVE_ERROR                  210
 #define IDD_CONFIG_SHORTCUTS            211
+#define IDS_FIND_BEGIN                  211
 #define IDD_OCTAVE                      212
+#define IDS_STRING212                   212
+#define IDS_FIND_END                    212
 #define IDI_INST_VRC6                   217
 #define IDD_EXPORT                      218
 #define IDI_INST_VRC7                   225
