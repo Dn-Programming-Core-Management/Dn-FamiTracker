@@ -2566,6 +2566,8 @@ END
 STRINGTABLE
 BEGIN
     IDS_SAVE_ERROR          "Couldn't save file, check that it isn't write protected or shared with other applications and enough disk space is available."
+    IDS_FIND_BEGIN          "Begin"
+    IDS_FIND_END            "(End)"
 END
 
 STRINGTABLE
