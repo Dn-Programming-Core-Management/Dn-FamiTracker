@@ -78,7 +78,7 @@ void CBannerEdit::OnPaint()
 	CDC *pDC = GetDC();
 	if (pDC != NULL) {
 		CFont font;
-		font.CreateFont(DPI::SY(12), 0, 0, 0, 0, TRUE, FALSE, FALSE, 0, 0, 0, 0, 0, BANNER_FONT);
+		font.CreateFont(DPI::SY(13), 0, 0, 0, 0, FALSE, FALSE, FALSE, 0, 0, 0, 0, 0, BANNER_FONT);
 		CFont *pOldFont = pDC->SelectObject(&font);
 
 		pDC->SetBkColor(pDC->GetPixel(4, 4));
