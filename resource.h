@@ -141,6 +141,7 @@
 #define IDD_CONFIG_MIDI                 194
 #define IDS_EXPORT_SAMPLES_FILE         194
 #define IDS_MODULE_ERROR_NONE           195
+#define IDS_FIND_EDIT_DISABLED          196
 #define IDR_PATTERN_POPUP               198
 #define IDD_CONFIG_SOUND                201
 #define IDS_FILE_LOAD_ERROR             204

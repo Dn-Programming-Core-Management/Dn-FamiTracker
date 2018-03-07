@@ -34,6 +34,7 @@
 #include "PatternEditor.h"
 #include "PatternAction.h"
 #include "CompoundAction.h"
+#include "resource.h"
 
 enum {
 	WC_NOTE = 0,
@@ -1242,7 +1243,12 @@ bool CFindDlg::PrepareReplace()
 		return false;
 	}
 
-	return (m_pView->GetEditMode() && !(theApp.IsPlaying() && m_pView->GetFollowMode()));
+	if (!m_pView->GetEditMode()) {
+		AfxMessageBox(IDS_FIND_EDIT_DISABLED, MB_OK);
+		return false;
+	}
+
+	return (!(theApp.IsPlaying() && m_pView->GetFollowMode()));
 }
 
 void CFindDlg::PrepareCursor(bool ReplaceAll)
