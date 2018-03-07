@@ -71,8 +71,8 @@ void CBannerEdit::OnPaint()
 	CString str;
 	GetWindowText(str);
 
-	// only if empty and not in focus
-	if (str.GetLength() > 0 || GetFocus() == this)
+	// only if empty, enabled, and not in focus
+	if (str.GetLength() > 0 || GetFocus() == this || !IsWindowEnabled())
 		return;
 
 	CDC *pDC = GetDC();
@@ -81,9 +81,7 @@ void CBannerEdit::OnPaint()
 		font.CreateFont(DPI::SY(13), 0, 0, 0, 0, FALSE, FALSE, FALSE, 0, 0, 0, 0, 0, BANNER_FONT);
 		CFont *pOldFont = pDC->SelectObject(&font);
 
-		int bgIndex = IsWindowEnabled() ? COLOR_WINDOW : COLOR_3DFACE;
-
-		pDC->SetBkColor(GetSysColor(bgIndex));
+		pDC->SetBkColor(GetSysColor(COLOR_WINDOW));
 		pDC->SetTextColor(BANNER_COLOR);
 		pDC->TextOut(2, 1, m_strText);
 		pDC->SelectObject(pOldFont);
