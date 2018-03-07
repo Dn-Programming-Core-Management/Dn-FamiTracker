@@ -2462,6 +2462,7 @@ BEGIN
     IDS_INVALID_INST_NUM    "Invalid instrument number!"
     IDS_EXPORT_SAMPLES_FILE """%1"" already exists in the same directory as the music data file. Are you sure you want to overwrite it?"
     IDS_MODULE_ERROR_NONE   "This build is not allowed to bypass validation of loaded modules."
+    IDS_FIND_EDIT_DISABLED  "Replace will not work unless Edit Mode is enabled."
     IDS_FILE_LOAD_ERROR     "Couldn't load file properly. Make sure you have the latest version of 0CC-FamiTracker."
     IDS_CONFIG_WINDOW       "FamiTracker configuration"
 END
