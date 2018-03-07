@@ -147,10 +147,7 @@
 #define IDS_CONFIG_WINDOW               205
 #define IDS_SAVE_ERROR                  210
 #define IDD_CONFIG_SHORTCUTS            211
-#define IDS_FIND_BEGIN                  211
 #define IDD_OCTAVE                      212
-#define IDS_STRING212                   212
-#define IDS_FIND_END                    212
 #define IDI_INST_VRC6                   217
 #define IDD_EXPORT                      218
 #define IDI_INST_VRC7                   225
@@ -595,6 +592,8 @@
 #define IDC_INST_SEQUENCE_GRAPH         1458
 #define IDC_MAINFRAME_INST_TOOLBAR      1458
 #define IDC_STATIC_DPCM_ZOOM            1459
+#define IDS_FIND_BEGIN                  9001
+#define IDS_FIND_END                    9002
 #define ID_TRACKER_PLAY                 32771
 #define ID_TRACKER_PLAYPATTERN          32775
 #define ID_TRACKER_STOP                 32776

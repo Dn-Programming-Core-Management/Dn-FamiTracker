@@ -2566,8 +2566,6 @@ END
 STRINGTABLE
 BEGIN
     IDS_SAVE_ERROR          "Couldn't save file, check that it isn't write protected or shared with other applications and enough disk space is available."
-    IDS_FIND_BEGIN          "Begin"
-    IDS_FIND_END            "(End)"
 END
 
 STRINGTABLE
@@ -2778,6 +2776,12 @@ BEGIN
     ID_TRACKER_PLAY_MARKER  "Play pattern from row marker\nPlay from Marker"
     ID_TRACKER_SET_MARKER   "Set a row marker for playback\nSet Row Marker"
     ID_SELECT_OTHER         "Restore the current selection in the inactive editor window\nSelect in Other Editor"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_FIND_BEGIN          "Begin"
+    IDS_FIND_END            "(End)"
 END
 
 #endif    // English (United States) resources
