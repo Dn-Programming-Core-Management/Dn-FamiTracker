@@ -35,6 +35,7 @@
 #include "VRC7.h"
 #include "S5B.h"
 #include "../RegisterState.h"		// // //
+#include "../SpeedDlg.h"
 
 const int		CAPU::SEQUENCER_FREQUENCY	= 240;		// // //
 const uint32_t	CAPU::BASE_FREQ_NTSC		= 1789773;		// 72.667
@@ -236,7 +237,7 @@ bool CAPU::SetupSound(int SampleRate, int NrChannels, int Machine)		// // //
 	uint8_t FrameRate = (Machine == MACHINE_NTSC) ? FRAME_RATE_NTSC : FRAME_RATE_PAL;
 	m_iSampleRate = SampleRate;		// // //
 
-	m_iSoundBufferSamples = uint32_t(m_iSampleRate / FRAME_RATE_PAL);	// Samples / frame. Allocate for PAL, since it's more
+	m_iSoundBufferSamples = uint32_t(m_iSampleRate / RATE_MIN);	// Samples / frame. Playing at FPS < 0.5*RATE_MIN will overflow blip_buffer.
 	m_bStereoEnabled	  = (NrChannels == 2);	
 	m_iSoundBufferSize	  = m_iSoundBufferSamples * NrChannels;		// Total amount of samples to allocate
 	m_iSampleSizeShift	  = (NrChannels == 2) ? 1 : 0;
