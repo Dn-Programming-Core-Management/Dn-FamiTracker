@@ -21,7 +21,9 @@
 */
 
 #pragma once
+#include "resource.h"
 
+extern const int RATE_MIN;
 
 // CSpeedDlg dialog
 
