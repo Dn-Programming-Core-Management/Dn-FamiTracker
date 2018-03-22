@@ -24,23 +24,21 @@
 #include "stdafx.h"
 #include "FFT/FftBuffer.h"		// // //
 #include <memory>
-#include "VisualizerWnd.h"		// // //
+#include "VisualizerBase.h"		// // //
 
 // CVisualizerSpectrum, spectrum style visualizer
 
-const int FFT_POINTS = 256;
+const int FFT_POINTS = 1024;
 
 class CVisualizerSpectrum : public CVisualizerBase
 {
 public:
 	CVisualizerSpectrum(int Size);		// // //
-	virtual ~CVisualizerSpectrum();
 
-	void Create(int Width, int Height);
-	void SetSampleRate(int SampleRate);
-	void SetSampleData(short *iSamples, unsigned int iCount);
-	void Draw();
-	void Display(CDC *pDC, bool bPaintMsg);
+	void Create(int Width, int Height) override;
+	void SetSampleRate(int SampleRate) override;
+	void SetSampleData(short *iSamples, unsigned int iCount) override;
+	void Draw() override;
 
 protected:
 	void Transform(short *pSamples, unsigned int Count);
@@ -49,7 +47,6 @@ private:
 	static const COLORREF BG_COLOR = 0;
 	const int m_iBarSize;
 
-	COLORREF *m_pBlitBuffer;
 	FftBuffer<FFT_POINTS> fft_buffer_;		// // //
 
 	int m_iFillPos;

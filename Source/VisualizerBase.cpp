@@ -2,6 +2,8 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
+** 0CC-FamiTracker is (C) 2014-2017 HertzDevil
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -18,26 +20,31 @@
 ** must bear this legend.
 */
 
+#include "VisualizerBase.h"
 
-#pragma once
-
-#include "VisualizerBase.h"		// // //
-
-// CVisualizerStatic, static picture visualizer
-
-class CVisualizerStatic : public CVisualizerBase
+void CVisualizerBase::Create(int Width, int Height)
 {
-public:
-	CVisualizerStatic() = default;
-	~CVisualizerStatic();
+	memset(&m_bmi, 0, sizeof(BITMAPINFO));
+	m_bmi.bmiHeader.biSize	   = sizeof(BITMAPINFOHEADER);
+	m_bmi.bmiHeader.biBitCount = 32;
+	m_bmi.bmiHeader.biHeight   = -Height;
+	m_bmi.bmiHeader.biWidth	   = Width;
+	m_bmi.bmiHeader.biPlanes   = 1;
 
-	void SetSampleRate(int SampleRate) override;
-	void Draw() override;
+	m_iWidth = Width;
+	m_iHeight = Height;
+	m_pBlitBuffer = std::make_unique<COLORREF[]>(Width * Height);		// // //
+}
 
-private:
-	void DrawChar(char n, int xPos, int yPos, const COLORREF &Color);		// // //
+void CVisualizerBase::SetSampleData(short *pSamples, unsigned int iCount)
+{
+	m_pSamples = pSamples;
+	m_iSampleCount = iCount;
+}
 
-	CBitmap m_bmpImage;
-	CBitmap *m_pOldBmp = nullptr;
-	CDC	m_dcImage;
-};
+void CVisualizerBase::Display(CDC *pDC, bool bPaintMsg) {		// // //
+	StretchDIBits(pDC->m_hDC,
+		0, 0, m_iWidth, m_iHeight,
+		0, 0, m_iWidth, m_iHeight,
+		m_pBlitBuffer.get(), &m_bmi, DIB_RGB_COLORS, SRCCOPY);
+}
