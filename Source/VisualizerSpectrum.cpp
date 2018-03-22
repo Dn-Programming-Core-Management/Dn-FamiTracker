@@ -72,7 +72,7 @@ void CVisualizerSpectrum::SetSampleData(short *pSamples, unsigned int iCount)
 	int offset = 0;
 
 	if (m_iFillPos > 0) {
-		const int size = FFT_POINTS - m_iFillPos;
+		const int size = std::min((int)iCount, FFT_POINTS - m_iFillPos);
 		std::copy_n(pSamples, size, m_pSampleBuffer.begin() + m_iFillPos);
 		Transform(m_pSampleBuffer.data(), FFT_POINTS);
 		offset += size;
