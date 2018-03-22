@@ -18,13 +18,10 @@
 ** must bear this legend.
 */
 
-#include "stdafx.h"
-#include <cmath>		// // //
-#include "VisualizerWnd.h"
 #include "VisualizerStatic.h"
+#include <cmath>		// // //
 #include "FamiTracker.h"		// // //
 #include "Settings.h"		// // //
-#include "resource.h"
 
 static const char LOGO_FONT[][7] = {		// // //
 	{0x3C, 0x66, 0x66, 0x66, 0x66, 0x66, 0x3C}, // 0
@@ -40,24 +37,10 @@ static const char LOGO_FONT[][7] = {		// // //
 	{0x7E, 0x60, 0x60, 0x78, 0x60, 0x60, 0x7E}, // E
 };
 
-CVisualizerStatic::CVisualizerStatic() :
-	m_pBlitBuffer(nullptr)
-{
-}
-
 CVisualizerStatic::~CVisualizerStatic()
 {
-	SAFE_RELEASE_ARRAY(m_pBlitBuffer);		// // //
-	if (m_dcImage.m_hDC != NULL) {
+	if (m_dcImage.m_hDC)
 		m_dcImage.SelectObject(m_pOldBmp);
-	}
-}
-
-void CVisualizerStatic::Create(int Width, int Height)
-{
-	CVisualizerBase::Create(Width, Height);
-
-	m_pBlitBuffer = new COLORREF[Width * (Height + 1)]();		// // //
 }
 
 void CVisualizerStatic::SetSampleRate(int SampleRate)
@@ -66,8 +49,8 @@ void CVisualizerStatic::SetSampleRate(int SampleRate)
 
 void CVisualizerStatic::Draw()
 {
-	static const char *STR = "0CC-FamiTracker";		// // //
-	static const size_t COUNT = strlen(STR);
+	static const char STR[] = "0CC-FamiTracker";		// // //
+	static const size_t COUNT = std::size(STR);
 	static long long t = 0;
 
 	const auto FixRGB = [] (int x) { return RGB(GetBValue(x), GetGValue(x), GetRValue(x)); };
@@ -107,37 +90,33 @@ void CVisualizerStatic::Draw()
 
 void CVisualizerStatic::DrawChar(char n, int xPos, int yPos, const COLORREF &Color)		// // //
 {
-	int Index = 0;
-	switch (n) {
-	case '0': break;
-	case 'C': case 'c': Index = 1; break;
-	case '-': Index = 2; break;
-	case 'F': case 'f': Index = 3; break;
-	case 'A': case 'a': Index = 4; break;
-	case 'M': case 'm': Index = 5; break;
-	case 'I': case 'i': Index = 6; break;
-	case 'T': case 't': Index = 7; break;
-	case 'R': case 'r': Index = 8; break;
-	case 'K': case 'k': Index = 9; break;
-	case 'E': case 'e': Index = 10; break;
-	default: return;
-	}
-	for (int i = 0; i < 7; ++i) {
-		if (yPos >= 0 && yPos < m_iHeight) {
-			int x = xPos;
-			char Row = LOGO_FONT[Index][i];
-			for (int j = 0; j < 8; ++j) {
-				if (x >= 0 && x < m_iWidth && Row < 0)
-					m_pBlitBuffer[yPos * m_iWidth + x] = Color;
-				Row <<= 1;
-				++x;
+	const auto drawFunc = [&] (const char (&glyph)[7]) {
+		for (int i = 0; i < 7; ++i) {
+			if (yPos >= 0 && yPos < m_iHeight) {
+				int x = xPos;
+				char Row = glyph[i];
+				for (int j = 0; j < 8; ++j) {
+					if (x >= 0 && x < m_iWidth && Row < 0)
+						m_pBlitBuffer[yPos * m_iWidth + x] = Color;
+					Row <<= 1;
+					++x;
+				}
 			}
+			++yPos;
 		}
-		++yPos;
-	}
-}
+	};
 
-void CVisualizerStatic::Display(CDC *pDC, bool bPaintMsg)
-{
-	StretchDIBits(pDC->m_hDC, 0, 0, m_iWidth, m_iHeight, 0, 0, m_iWidth, m_iHeight, m_pBlitBuffer, &m_bmi, DIB_RGB_COLORS, SRCCOPY);
+	switch (n) {
+	case '0':           return drawFunc(LOGO_FONT[0]);
+	case 'C': case 'c': return drawFunc(LOGO_FONT[1]);
+	case '-':           return drawFunc(LOGO_FONT[2]);
+	case 'F': case 'f': return drawFunc(LOGO_FONT[3]);
+	case 'A': case 'a': return drawFunc(LOGO_FONT[4]);
+	case 'M': case 'm': return drawFunc(LOGO_FONT[5]);
+	case 'I': case 'i': return drawFunc(LOGO_FONT[6]);
+	case 'T': case 't': return drawFunc(LOGO_FONT[7]);
+	case 'R': case 'r': return drawFunc(LOGO_FONT[8]);
+	case 'K': case 'k': return drawFunc(LOGO_FONT[9]);
+	case 'E': case 'e': return drawFunc(LOGO_FONT[10]);
+	}
 }

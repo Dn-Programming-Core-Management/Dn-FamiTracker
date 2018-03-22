@@ -20,7 +20,6 @@
 
 #include "VisualizerSpectrum.h"
 #include "FamiTracker.h"
-#include "VisualizerWnd.h"
 #include "Graphics.h"
 
 /*
@@ -29,24 +28,15 @@
  */
 
 CVisualizerSpectrum::CVisualizerSpectrum(int Size) :		// // //
-	m_iBarSize(Size),
-	m_pBlitBuffer(NULL)
+	m_iBarSize(Size)
 {
-}
-
-CVisualizerSpectrum::~CVisualizerSpectrum()
-{
-	SAFE_RELEASE_ARRAY(m_pBlitBuffer);
 }
 
 void CVisualizerSpectrum::Create(int Width, int Height)
 {
 	CVisualizerBase::Create(Width, Height);
 
-	SAFE_RELEASE_ARRAY(m_pBlitBuffer);
-
-	m_pBlitBuffer = new COLORREF[Width * Height];
-	memset(m_pBlitBuffer, BG_COLOR, Width * Height * sizeof(COLORREF));
+	std::fill(m_pBlitBuffer.get(), m_pBlitBuffer.get() + Width * Height, BG_COLOR);		// // //
 }
 
 void CVisualizerSpectrum::SetSampleRate(int SampleRate)
@@ -61,7 +51,7 @@ void CVisualizerSpectrum::SetSampleRate(int SampleRate)
 
 void CVisualizerSpectrum::Transform(short *pSamples, unsigned int Count)
 {
-	fft_buffer_.CopyIn(pSamples, FFT_POINTS);
+	fft_buffer_.CopyIn(pSamples, Count);
 	fft_buffer_.Transform();
 }
 
@@ -69,10 +59,12 @@ void CVisualizerSpectrum::SetSampleData(short *pSamples, unsigned int iCount)
 {
 	CVisualizerBase::SetSampleData(pSamples, iCount);
 
+	Transform(pSamples, iCount);
+	/*
 	int offset = 0;
 
 	if (m_iFillPos > 0) {
-		const int size = FFT_POINTS - m_iFillPos;
+		const int size = std::min((int)iCount, FFT_POINTS - m_iFillPos);
 		std::copy_n(pSamples, size, m_pSampleBuffer.begin() + m_iFillPos);
 		Transform(m_pSampleBuffer.data(), FFT_POINTS);
 		offset += size;
@@ -88,6 +80,7 @@ void CVisualizerSpectrum::SetSampleData(short *pSamples, unsigned int iCount)
 	// Copy rest
 	std::copy_n(pSamples + offset, iCount, m_pSampleBuffer.begin());
 	m_iFillPos = iCount;
+	*/
 }
 
 void CVisualizerSpectrum::Draw()
@@ -111,7 +104,7 @@ void CVisualizerSpectrum::Draw()
 		level /= steps;
 		
 		// linear -> db
-		level = (20 * logf(level / 4.0f)) * 0.8f;
+		level = (20 * std::log10(level));// *0.8f;
 
 		if (level < 0.0f)
 			level = 0.0f;
@@ -139,7 +132,7 @@ void CVisualizerSpectrum::Draw()
 			for (int x = 0; x < m_iBarSize; ++x) {		// // //
 				if (m_iBarSize > 1 && x == m_iBarSize - 1)
 					Color = DIM(Color, 50);
-				m_pBlitBuffer[(m_iHeight - y - 1) * m_iWidth + i * m_iBarSize + x + OFFSET] = y < level ? Color : BG_COLOR;
+				m_pBlitBuffer[(m_iHeight - 1 - y) * m_iWidth + i * m_iBarSize + x + OFFSET] = y < level ? Color : BG_COLOR;
 			}
 		}	
 		
@@ -147,9 +140,3 @@ void CVisualizerSpectrum::Draw()
 		Pos += Step;
 	}
 }
-
-void CVisualizerSpectrum::Display(CDC *pDC, bool bPaintMsg)
-{
-	StretchDIBits(pDC->m_hDC, 0, 0, m_iWidth, m_iHeight, 0, 0, m_iWidth, m_iHeight, m_pBlitBuffer, &m_bmi, DIB_RGB_COLORS, SRCCOPY);
-}
-
