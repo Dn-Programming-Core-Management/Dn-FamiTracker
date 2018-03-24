@@ -320,7 +320,7 @@ BOOL CFamiTrackerDoc::OnSaveDocument(LPCTSTR lpszPathName)
 		return FALSE;
 
 	// File backup, now performed on save instead of open
-	if ((m_bForceBackup || theApp.GetSettings()->General.bBackups) && !m_bBackupDone) {
+	if ((m_bForceBackup || theApp.GetSettings()->General.bBackups) && (!m_bBackupDone || true)) {
 		CString BakName;
 		BakName.Format(_T("%s.bak"), lpszPathName);
 		CopyFile(lpszPathName, BakName.GetBuffer(), FALSE);
@@ -631,7 +631,7 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 
 	// First write to a temp file (if saving fails, the original is not destroyed)
 	GetTempPath(MAX_PATH, TempPath);
-	GetTempFileName(TempPath, _T("FTM"), 0, TempFile);
+	GetTempFileName(_T("."), _T("0CC"), 0, TempFile);
 
 	if (!DocumentFile.Open(TempFile, CFile::modeWrite | CFile::modeCreate, &ex)) {
 		// Could not open file
@@ -665,33 +665,38 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 	DocumentFile.Close();
 	m_pCurrentDocument = nullptr;		// // //
 
-	// Save old creation date
-	HANDLE hOldFile;
-	FILETIME creationTime;
-
-	hOldFile = CreateFile(lpszPathName, FILE_READ_ATTRIBUTES, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-	GetFileTime(hOldFile, &creationTime, NULL, NULL);
-	CloseHandle(hOldFile);
-
 	// Everything is done and the program cannot crash at this point
 	// Replace the original
-	if (!MoveFileEx(TempFile, lpszPathName, MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED)) {
+	DWORD err = 0;
+	if (!ReplaceFile(lpszPathName, TempFile, NULL, REPLACEFILE_IGNORE_MERGE_ERRORS, NULL, NULL)) {
+		err = GetLastError();
+		if (err == ERROR_FILE_NOT_FOUND) {
+			err = 0;
+			if (!MoveFileEx(TempFile, lpszPathName, MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED)) {
+				err = GetLastError();
+			}
+		}
+	}
+	if (err != 0) {
 		// Display message if saving failed
-		TCHAR *lpMsgBuf;
-		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
+		TCHAR *lpMsgBuf = _T("Error, failed to print error.");
+		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
+			err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
+
 		CString	strFormatted;
 		AfxFormatString1(strFormatted, IDS_SAVE_FILE_ERROR, lpMsgBuf);
+
+		CString str;
+		str.Format("%d", err);
+		strFormatted += str;
+
 		AfxMessageBox(strFormatted, MB_OK | MB_ICONERROR);
 		LocalFree(lpMsgBuf);
-		// Remove temp file
+
+		// FIXME: Remove temp file. May or may not be what you want.
 		DeleteFile(TempFile);
 		return FALSE;
 	}
-
-	// Restore creation date
-	hOldFile = CreateFile(lpszPathName, FILE_WRITE_ATTRIBUTES, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-	SetFileTime(hOldFile, &creationTime, NULL, NULL);
-	CloseHandle(hOldFile);
 
 	// Todo: avoid calling the main window from document class
 	if (CFrameWnd *pMainFrame = static_cast<CFrameWnd*>(AfxGetMainWnd())) {		// // //
