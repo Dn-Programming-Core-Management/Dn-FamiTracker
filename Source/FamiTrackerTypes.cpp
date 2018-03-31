@@ -22,6 +22,25 @@
 
 #include "FamiTrackerTypes.h"
 #include "APU/Types.h"
+#include <array>
+
+constexpr auto Effects(){
+	std::array<Effect, EF_COUNT> effects;
+	for (size_t i = 0; i < EF_COUNT; i++) {
+		int default = 0;
+		int uiDefault = 0;
+
+		if (i == EF_PITCH || i == EF_FDS_MOD_BIAS) {
+			default = uiDefault = 0x80;
+		}
+		else if (i == EF_N163_WAVE_BUFFER) {
+			default = 0x7F;
+		}
+		effects[i] = { EFF_CHAR[i], default, uiDefault };
+	}
+	return effects;
+}
+const std::array<Effect, EF_COUNT> effects = Effects();
 
 effect_t GetEffectFromChar(char ch, int Chip, bool *bValid)		// // //
 {
