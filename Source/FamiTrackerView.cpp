@@ -2823,11 +2823,17 @@ bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, unsigned char nChar
 
 	bool bValidEffect = false;
 	effect_t Effect = GetEffectFromChar(nChar, Chip, &bValidEffect);		// // //
+	effect_t prev = Note.EffNumber[EffectIndex];
 
 	if (bValidEffect) {
 		Note.EffNumber[EffectIndex] = Effect;
 		if (m_bEditEnable && Note.EffNumber[EffectIndex] != EF_NONE)		// // //
 			GetParentFrame()->SetMessageText(GetEffectHint(Note, EffectIndex));
+		
+		if (prev == EF_NONE || effects[Effect].uiDefault != 0) {
+			Note.EffParam[EffectIndex] = effects[Effect].uiDefault;
+		}
+		
 		switch (EditStyle) {
 			case EDIT_STYLE_MPT:	// Modplug
 				if (Effect == m_iLastEffect)
