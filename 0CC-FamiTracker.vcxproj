@@ -260,6 +260,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\HistoryFileDlg.cpp" />
     <ClCompile Include="Source\APU\2A03.cpp" />
     <ClCompile Include="Source\APU\S5B.cpp" />
     <ClCompile Include="Source\APU\SoundChip.cpp" />
@@ -423,6 +424,7 @@
     <ClCompile Include="Source\WaveFile.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\HistoryFileDlg.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Source\APU\2A03.h" />
     <ClInclude Include="Source\APU\2A03Chan.h" />

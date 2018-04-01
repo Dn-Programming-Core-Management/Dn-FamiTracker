@@ -711,6 +711,9 @@
     <ClCompile Include="Source\VisualizerBase.cpp">
       <Filter>Source Files\Visualizer\Visualizers</Filter>
     </ClCompile>
+    <ClCompile Include="Source\HistoryFileDlg.cpp">
+      <Filter>Source Files\Dialog Boxes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">
@@ -1297,6 +1300,9 @@
     </ClInclude>
     <ClInclude Include="Source\VisualizerBase.h">
       <Filter>Header Files\Visualizer Headers\Visualizers Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\HistoryFileDlg.h">
+      <Filter>Header Files\Dialog Boxes Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
