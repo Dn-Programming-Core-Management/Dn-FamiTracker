@@ -1,8 +1,0 @@
-version: 1.0.{build}
-image: Visual Studio 2017
-build:
-  project: 0CC-FamiTracker.vcxproj
-  verbosity: minimal
-
-after_build:
-  - ps: Get-ChildItem .\*.exe | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
