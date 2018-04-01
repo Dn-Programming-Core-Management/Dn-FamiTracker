@@ -61,6 +61,7 @@
 #include "SpeedDlg.h"		// // //
 #include "TransposeDlg.h"	// // //
 #include "DPI.h"		// // //
+#include "HistoryFileDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -2060,8 +2061,8 @@ void CMainFrame::OnFileExportText()
 	CString	DefFileName = pDoc->GetFileTitle();
 
 	CString fileFilter = LoadDefaultFilter(IDS_FILTER_TXT, _T(".txt"));
-	CFileDialog FileDialog(FALSE, _T(".txt"), DefFileName, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, fileFilter);
-	FileDialog.m_pOFN->lpstrInitialDir = theApp.GetSettings()->GetPath(PATH_NSF);
+	HistoryFileDlg FileDialog(PATH_EXPORT, FALSE, _T(".txt"), DefFileName, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, fileFilter);
+	// FileDialog.m_pOFN->lpstrInitialDir = theApp.GetSettings()->GetPath(PATH_NSF);
 
 	if (FileDialog.DoModal() == IDCANCEL)
 		return;
@@ -2084,8 +2085,8 @@ void CMainFrame::OnFileExportRows()		// // //
 	CFamiTrackerDoc	*pDoc = (CFamiTrackerDoc*)GetActiveDocument();
 	CString	DefFileName = pDoc->GetFileTitle();
 
-	CFileDialog FileDialog(FALSE, _T(".csv"), DefFileName, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Comma-separated values (*.csv)|*.csv|All files|*.*||"));
-	FileDialog.m_pOFN->lpstrInitialDir = theApp.GetSettings()->GetPath(PATH_NSF);
+	HistoryFileDlg FileDialog(PATH_EXPORT, FALSE, _T(".csv"), DefFileName, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Comma-separated values (*.csv)|*.csv|All files|*.*||"));
+	// FileDialog.m_pOFN->lpstrInitialDir = theApp.GetSettings()->GetPath(PATH_NSF);
 
 	if (FileDialog.DoModal() == IDCANCEL)
 		return;
