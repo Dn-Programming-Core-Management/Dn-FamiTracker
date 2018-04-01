@@ -23,6 +23,7 @@
 #pragma once
 
 #include "APU/Types.h"		// // //
+#include <array>
 
 /*
  * Here are the constants that defines the limits in the tracker
@@ -246,6 +247,14 @@ const char EFF_CHAR[] = {
 	'J',	// VRC7 modulator/feedback level
 	*/
 };
+
+struct Effect {
+	char eff_char;
+	int default = 0x00;
+	int uiDefault = 0x00;
+};
+
+const extern std::array<Effect, EF_COUNT> effects;
 
 effect_t GetEffectFromChar(char ch, int Chip, bool *bValid = nullptr);		// // //
 
