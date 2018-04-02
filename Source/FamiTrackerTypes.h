@@ -205,7 +205,7 @@ const char EFF_CHAR[] = {
 	'C',	// Halt
 	'E',	// Volume
 	'3',	// Porta on
-	 255,		// Porta off		// unused
+	'\xff',	// Porta off		// unused
 	'H',	// Sweep up
 	'I',	// Sweep down
 	'0',	// Arpeggio
