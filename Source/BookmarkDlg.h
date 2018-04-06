@@ -70,6 +70,7 @@ protected:
 public:
 	virtual BOOL OnInitDialog();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	virtual void OnOK();
 	afx_msg void OnBnClickedButtonBookmarkAdd();
 	afx_msg void OnBnClickedButtonBookmarkUpdate();
 	afx_msg void OnBnClickedButtonBookmarkRemove();
