@@ -202,6 +202,11 @@ BOOL CBookmarkDlg::PreTranslateMessage(MSG* pMsg)
 	return CDialog::PreTranslateMessage(pMsg);
 }
 
+void CBookmarkDlg::OnOK()
+{
+	OnBnClickedButtonBookmarkUpdate();
+}
+
 void CBookmarkDlg::OnBnClickedButtonBookmarkAdd()
 {
 	CBookmark *pMark = MakeBookmark();
