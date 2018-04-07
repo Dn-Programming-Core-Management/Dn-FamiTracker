@@ -434,7 +434,6 @@
     <ClInclude Include="Source\BookmarkManager.h" />
     <ClInclude Include="Source\BookmarkDlg.h" />
     <ClInclude Include="Source\ClipboardResource.h" />
-    <ClInclude Include="Source\FamiTrackerDocIO.h" />
     <ClInclude Include="Source\FFT\FftComplex.hpp" />
     <ClInclude Include="Source\FrameClipData.h" />
     <ClInclude Include="Source\FrameEditorTypes.h" />
