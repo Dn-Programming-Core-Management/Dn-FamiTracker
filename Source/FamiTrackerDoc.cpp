@@ -316,8 +316,10 @@ BOOL CFamiTrackerDoc::OnSaveDocument(LPCTSTR lpszPathName)
 
 	// This function is called by the GUI to save the file
 
-	if (!m_bFileLoaded)
+	if (!m_bFileLoaded) {
+		AfxMessageBox(_T("Attempted to save an unloaded document, this should never happen."), MB_OK | MB_ICONERROR);
 		return FALSE;
+	}
 
 	// File backup, now performed on save instead of open
 	if ((m_bForceBackup || theApp.GetSettings()->General.bBackups) && !m_bBackupDone) {
@@ -388,11 +390,13 @@ void CFamiTrackerDoc::DeleteContents()
 	memset(m_strCopyright, 0, 32);
 
 	// Reset variables to default
-	m_iMachine			 = DEFAULT_MACHINE_TYPE;
-	m_iEngineSpeed		 = 0;
-	m_iExpansionChip	 = SNDCHIP_NONE;
-	m_iVibratoStyle		 = VIBRATO_OLD;
-	m_bLinearPitch		 = DEFAULT_LINEAR_PITCH;
+	m_iMachine = DEFAULT_MACHINE_TYPE;
+	m_iEngineSpeed = 0;
+	m_iExpansionChip = SNDCHIP_NONE;
+	m_iVibratoStyle = VIBRATO_OLD;
+	m_bLinearPitch = DEFAULT_LINEAR_PITCH;
+	N163LevelOffset = 0;
+
 	m_iChannelsAvailable = CHANNELS_DEFAULT;
 	m_iSpeedSplitPoint	 = DEFAULT_SPEED_SPLIT_POINT;
 	m_iDetuneSemitone	 = 0;		// // // 050B
@@ -4214,6 +4218,19 @@ void CFamiTrackerDoc::SetLinearPitch(bool Enable)
 	if (m_bLinearPitch != Enable)		// // //
 		ModifyIrreversible();
 	m_bLinearPitch = Enable;
+}
+
+// N163 Volume Offset
+int CFamiTrackerDoc::GetN163LevelOffset() const {
+	return N163LevelOffset;
+}
+
+void CFamiTrackerDoc::SetN163LevelOffset(int offset) {
+	if (N163LevelOffset != offset) {
+		ModifyIrreversible();
+		N163LevelOffset = offset;
+		theApp.LoadSoundConfig();
+	}
 }
 
 // Attributes
