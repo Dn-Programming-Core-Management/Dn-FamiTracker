@@ -232,6 +232,9 @@ public:
 	bool			GetLinearPitch() const;
 	void			SetLinearPitch(bool Enable);
 
+	int GetN163LevelOffset() const;
+	void SetN163LevelOffset(int offset);
+
 	void			SetComment(CString &comment, bool bShowOnLoad);
 	CString			GetComment() const;
 	bool			ShowCommentOnOpen() const;
@@ -507,6 +510,8 @@ private:
 	unsigned int	m_iNamcoChannels;
 	vibrato_t		m_iVibratoStyle;							// 0 = old style, 1 = new style
 	bool			m_bLinearPitch;
+	int				N163LevelOffset;
+	
 	machine_t		m_iMachine;									// // // NTSC / PAL
 	unsigned int	m_iEngineSpeed;								// Refresh rate
 	unsigned int	m_iSpeedSplitPoint;							// Speed/tempo split-point
