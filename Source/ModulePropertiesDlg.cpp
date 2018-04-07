@@ -21,6 +21,10 @@
 */
 
 #include "stdafx.h"
+#include <cstdlib>
+#include <cmath>
+
+#include "NoNotifyEdit.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "MainFrm.h"
@@ -46,10 +50,13 @@ CModulePropertiesDlg::~CModulePropertiesDlg()
 {
 }
 
-void CModulePropertiesDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-}
+//void CModulePropertiesDlg::DoDataExchange(CDataExchange* pDX)
+//{
+//	CDialog::DoDataExchange(pDX);
+//}
+
+// cargo cult much?
+
 
 
 BEGIN_MESSAGE_MAP(CModulePropertiesDlg, CDialog)
@@ -60,8 +67,9 @@ BEGIN_MESSAGE_MAP(CModulePropertiesDlg, CDialog)
 	ON_BN_CLICKED(IDC_SONG_UP, OnBnClickedSongUp)
 	ON_BN_CLICKED(IDC_SONG_DOWN, OnBnClickedSongDown)
 	ON_EN_CHANGE(IDC_SONGNAME, OnEnChangeSongname)
+	//ON_EN_CHANGE(IDC_EDIT_N163_OFFSET, N163OffsetEdit)
 	ON_BN_CLICKED(IDC_SONG_IMPORT, OnBnClickedSongImport)
-	// ON_CBN_SELCHANGE(IDC_EXPANSION, OnCbnSelchangeExpansion)
+
 	ON_WM_HSCROLL()
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_SONGLIST, OnLvnItemchangedSonglist)
 	ON_BN_CLICKED(IDC_EXPANSION_VRC6, OnBnClickedExpansionVRC6)
@@ -71,11 +79,20 @@ BEGIN_MESSAGE_MAP(CModulePropertiesDlg, CDialog)
 	ON_BN_CLICKED(IDC_EXPANSION_S5B, OnBnClickedExpansionS5B)
 	ON_BN_CLICKED(IDC_EXPANSION_N163, OnBnClickedExpansionN163)
 	ON_CBN_SELCHANGE(IDC_COMBO_LINEARPITCH, OnCbnSelchangeComboLinearpitch)
+	ON_EN_CHANGE(IDC_EDIT_N163_OFFSET, &CModulePropertiesDlg::OnEnChangeEditN163Offset)
 END_MESSAGE_MAP()
 
 
-// CModulePropertiesDlg message handlers
+const int LEVEL_RANGE = 12;		// +/- 12 dB range
 
+const int FINE_DELTA = 10;		// you better hope this matches CConfigMixer::LEVEL_SCALE and SoundGen.cpp.
+const int COARSE_DELTA = 1;		// slider notches per dB.
+const int PAGEUP = COARSE_DELTA * 2;	// 2 dB per pageup.
+
+const int MAX_FINE = LEVEL_RANGE * FINE_DELTA;
+	// user input is clamped to +-MAX_FINE.
+
+// CModulePropertiesDlg message handlers
 BOOL CModulePropertiesDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
@@ -100,38 +117,32 @@ BOOL CModulePropertiesDlg::OnInitDialog()
 	((CButton*)GetDlgItem(IDC_EXPANSION_N163))->SetCheck((m_iExpansions & SNDCHIP_N163) != 0);
 	((CButton*)GetDlgItem(IDC_EXPANSION_S5B))->SetCheck((m_iExpansions & SNDCHIP_S5B) != 0);
 
+	// Namco channel count
+	CSliderCtrl *pChanSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_CHANNELS));
+	pChanSlider->SetRange(1, 8);
+
+	m_iN163Channels = m_pDocument->GetNamcoChannels();
+
+
 	// Vibrato 
 	CComboBox *pVibratoBox = static_cast<CComboBox*>(GetDlgItem(IDC_VIBRATO));
 	pVibratoBox->SetCurSel((m_pDocument->GetVibratoStyle() == VIBRATO_NEW) ? 0 : 1);
+	
+	// Pitch
 	CComboBox *pPitchBox = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_LINEARPITCH));		// // //
 	pPitchBox->SetCurSel(m_pDocument->GetLinearPitch() ? 1 : 0);
+	
+	// N163 Level Offset
+	N163LevelOffset = m_pDocument->GetN163LevelOffset();
+	// (Slider)
+	CSliderCtrl *pSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_SLIDER_N163_OFFSET));
+	pSlider->SetRange(-LEVEL_RANGE * COARSE_DELTA, LEVEL_RANGE * COARSE_DELTA);
+	pSlider->SetTicFreq(COARSE_DELTA * 2);
+	pSlider->SetPageSize(PAGEUP);
 
-	// Namco channel count
-	CSliderCtrl *pChanSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_CHANNELS));
-	CStatic *pChannelsLabel = (CStatic*)GetDlgItem(IDC_CHANNELS_NR);
-	pChanSlider->SetRange(1, 8);
-
-	CString channelsStr;
-	channelsStr.LoadString(IDS_PROPERTIES_CHANNELS);
-	if (m_iExpansions & SNDCHIP_N163) {
-		m_iN163Channels = m_pDocument->GetNamcoChannels();
-
-		pChanSlider->SetPos(m_iN163Channels);
-		pChanSlider->EnableWindow(TRUE);
-		pChannelsLabel->EnableWindow(TRUE);
-		channelsStr.AppendFormat(_T(" %i"), m_iN163Channels);
-	}
-	else {
-		m_iN163Channels = 1;
-
-		pChanSlider->SetPos(0);
-		pChanSlider->EnableWindow(FALSE);
-		channelsStr.Append(_T(" N/A"));
-	}
-	SetDlgItemText(IDC_CHANNELS_NR, channelsStr);
-
+	updateN163GUI();
 	return TRUE;  // return TRUE unless you set the focus to a control
-	// EXCEPTION: OCX Property Pages should return FALSE
+				  // EXCEPTION: OCX Property Pages should return FALSE
 }
 
 void CModulePropertiesDlg::OnBnClickedOk()
@@ -171,8 +182,16 @@ void CModulePropertiesDlg::OnBnClickedOk()
 	// Vibrato 
 	CComboBox *pVibratoBox = static_cast<CComboBox*>(GetDlgItem(IDC_VIBRATO));
 	m_pDocument->SetVibratoStyle((pVibratoBox->GetCurSel() == 0) ? VIBRATO_NEW : VIBRATO_OLD);
+
+	// Linear pitch
 	CComboBox *pPitchBox = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_LINEARPITCH));		// // //
 	m_pDocument->SetLinearPitch(pPitchBox->GetCurSel() == 1);
+
+	// N163 Volume 
+	if (m_pDocument->GetN163LevelOffset() != N163LevelOffset) {
+		m_pDocument->SetN163LevelOffset(N163LevelOffset);
+	}
+
 
 	if (pMainFrame->GetSelectedTrack() != m_iSelectedSong)
 		pMainFrame->SelectTrack(m_iSelectedSong);
@@ -183,6 +202,25 @@ void CModulePropertiesDlg::OnBnClickedOk()
 
 	OnOK();
 }
+
+
+// **** events ****
+void CModulePropertiesDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+{
+	CSliderCtrl *pSlider = reinterpret_cast<CSliderCtrl*>(pScrollBar);
+	int pos = pSlider->GetPos();
+	if (pSlider->GetDlgCtrlID() == IDC_CHANNELS) {
+		setN163NChannels(pos);
+	}
+	else if (pSlider->GetDlgCtrlID() == IDC_SLIDER_N163_OFFSET) {
+		N163OffsetSlider(pos);
+	}
+
+	CDialog::OnHScroll(nSBCode, nPos, pScrollBar);
+}
+
+
+// **** song selection ****
 
 void CModulePropertiesDlg::OnBnClickedSongAdd()
 {
@@ -382,43 +420,6 @@ void CModulePropertiesDlg::OnBnClickedSongImport()
 	((CButton*)GetDlgItem(IDC_EXPANSION_S5B))->SetCheck((m_iExpansions & SNDCHIP_S5B) != 0);
 	m_pDocument->UpdateAllViews(NULL, UPDATE_PROPERTIES);
 }
-/*
-void CModulePropertiesDlg::OnCbnSelchangeExpansion()
-{
-	CComboBox *pExpansionChipBox = static_cast<CComboBox*>(GetDlgItem(IDC_EXPANSION));
-	CSliderCtrl *pSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_CHANNELS));
-
-	// Expansion chip
-	unsigned int iExpansionChip = theApp.GetChannelMap()->GetChipIdent(pExpansionChipBox->GetCurSel());
-
-	CString channelsStr;
-	channelsStr.LoadString(IDS_PROPERTIES_CHANNELS);
-	if (iExpansionChip == SNDCHIP_N163) {
-		pSlider->EnableWindow(TRUE);
-		int Channels = m_pDocument->GetNamcoChannels();
-		pSlider->SetPos(Channels);
-		channelsStr.AppendFormat(_T(" %i"), Channels);
-	}
-	else {
-		pSlider->EnableWindow(FALSE);
-		channelsStr.Append(_T(" N/A"));
-	}
-	SetDlgItemText(IDC_CHANNELS_NR, channelsStr);
-}
-*/
-void CModulePropertiesDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
-{
-	CSliderCtrl *pSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_CHANNELS));
-
-	m_iN163Channels = pSlider->GetPos();
-
-	CString text;
-	text.LoadString(IDS_PROPERTIES_CHANNELS);
-	text.AppendFormat(_T(" %i"),  pSlider->GetPos());
-	SetDlgItemText(IDC_CHANNELS_NR, text);
-
-	CDialog::OnHScroll(nSBCode, nPos, pScrollBar);
-}
 
 void CModulePropertiesDlg::OnLvnItemchangedSonglist(NMHDR *pNMHDR, LRESULT *pResult)
 {
@@ -452,6 +453,9 @@ void CModulePropertiesDlg::FillSongList()
 		pSongList->InsertItem(i, Text);
 	}
 }
+
+
+// **** Expansion selection ****
 
 BOOL CModulePropertiesDlg::PreTranslateMessage(MSG* pMsg)
 {
@@ -529,33 +533,14 @@ void CModulePropertiesDlg::OnBnClickedExpansionS5B()
 void CModulePropertiesDlg::OnBnClickedExpansionN163()
 {
 	CButton *pCheckBox = (CButton*)GetDlgItem(IDC_EXPANSION_N163);
-
-	CSliderCtrl *pChanSlider = (CSliderCtrl*)GetDlgItem(IDC_CHANNELS);
-	CStatic *pChannelsLabel = (CStatic*)GetDlgItem(IDC_CHANNELS_NR);
-	CString channelsStr;
-	channelsStr.LoadString(IDS_PROPERTIES_CHANNELS);
-
-	// Expansion chip
-	if (pCheckBox->GetCheck() == BST_CHECKED)
-	{
+	
+	if (pCheckBox->GetCheck() == BST_CHECKED) {
 		m_iExpansions |= SNDCHIP_N163;
-		
-		if (!m_iN163Channels) m_iN163Channels = 1;		// // //
-		pChanSlider->SetPos(m_iN163Channels);
-		pChanSlider->EnableWindow(TRUE);
-		pChannelsLabel->EnableWindow(TRUE);
-		channelsStr.AppendFormat(_T(" %i"), m_iN163Channels);
-	}
-	else
-	{
+	} else {
 		m_iExpansions &= ~SNDCHIP_N163;
-		
-		pChanSlider->SetPos(m_iN163Channels = 0);
-		pChanSlider->EnableWindow(FALSE);
-		pChannelsLabel->EnableWindow(FALSE);
-		channelsStr.Append(_T(" N/A"));
 	}
-	SetDlgItemText(IDC_CHANNELS_NR, channelsStr);
+	
+	updateN163GUI();
 }
 
 void CModulePropertiesDlg::OnCbnSelchangeComboLinearpitch()
@@ -568,5 +553,93 @@ void CModulePropertiesDlg::OnCbnSelchangeComboLinearpitch()
 			"changes to this setting might not be reflected when the current module is loaded from "
 			"a future official release that implements this feature."
 		), MB_OK | MB_ICONINFORMATION);
+	}
+}
+
+
+// N163 Channel Count
+void CModulePropertiesDlg::setN163NChannels(int nchan) {
+	m_iN163Channels = nchan;
+
+	CString text;
+	text.LoadString(IDS_PROPERTIES_CHANNELS);
+	text.AppendFormat(_T(" %i"), nchan);
+	SetDlgItemText(IDC_CHANNELS_NR, text);
+}
+
+
+// N163 GUI
+void CModulePropertiesDlg::strFromLevel(CString &target, int Level)
+{
+	target.Format(_T("%+.1f"), float(Level) / float(FINE_DELTA));
+}
+
+void CModulePropertiesDlg::updateN163GUI(bool renderText) {
+
+	CStatic *pChannelsLabel = (CStatic*)GetDlgItem(IDC_CHANNELS_NR);
+	CString channelsStr;
+	channelsStr.LoadString(IDS_PROPERTIES_CHANNELS);
+
+	CSliderCtrl *pChanSlider = (CSliderCtrl*)GetDlgItem(IDC_CHANNELS);
+	auto levelSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_SLIDER_N163_OFFSET));
+	auto levelEdit = static_cast<NoNotifyEdit*>(GetDlgItem(IDC_EDIT_N163_OFFSET));
+	auto levelText = GetDlgItem(IDC_STATIC_N163_OFFSET_DB);
+
+	CWnd *N163Enable[]{pChanSlider, pChannelsLabel, levelSlider, levelEdit, levelText};
+
+	// Is N163 enabled?
+	bool n163Enabled = m_iExpansions & SNDCHIP_N163;
+	if (n163Enabled) {
+		if (!m_iN163Channels) m_iN163Channels = 1;		// // //
+		channelsStr.AppendFormat(_T(" %i"), m_iN163Channels);
+	}
+	else {
+		m_iN163Channels = 0;
+		N163LevelOffset = 0;
+		channelsStr.Append(_T(" N/A"));
+	}
+	
+	// Enable/disable UI.
+	for (CWnd *widget : N163Enable) widget->EnableWindow(n163Enabled);
+	
+	// Redraw UI.
+	pChanSlider->SetPos(m_iN163Channels);
+	levelSlider->SetPos((int)std::round(1.0 * N163LevelOffset * COARSE_DELTA / FINE_DELTA));
+	if (renderText) {
+		CString n163LevelStr;
+		strFromLevel(n163LevelStr, N163LevelOffset);
+		levelEdit->SetWindowTextNoNotify(n163LevelStr);
+	}
+
+	SetDlgItemText(IDC_CHANNELS_NR, channelsStr);
+}
+
+
+// N163 Level Offset callbacks
+void CModulePropertiesDlg::N163OffsetSlider(int pos) {
+	N163LevelOffset = (int)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
+	updateN163GUI();
+}
+
+
+bool CModulePropertiesDlg::levelFromStr(int &target, CString dBstr) {
+	CT2A dBchar(dBstr);
+	char *endptr;
+	double dBval = strtod(dBstr, &endptr);
+	if (*endptr == '\0') {									// if no error
+		target = static_cast<int>(std::round(dBval * 10));
+		target = std::clamp(target, -MAX_FINE, MAX_FINE);
+		return true;
+	}
+	return false;
+}
+
+void CModulePropertiesDlg::OnEnChangeEditN163Offset()
+{
+	auto levelEdit = static_cast<CEdit*>(GetDlgItem(IDC_EDIT_N163_OFFSET));
+	CString str;
+	levelEdit->GetWindowText(str);
+	if (levelFromStr(N163LevelOffset, str)) {
+		updateN163GUI(false);
 	}
 }
