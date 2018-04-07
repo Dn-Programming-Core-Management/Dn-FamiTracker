@@ -714,6 +714,9 @@
     <ClCompile Include="Source\HistoryFileDlg.cpp">
       <Filter>Source Files\Dialog Boxes</Filter>
     </ClCompile>
+    <ClCompile Include="Source\NoNotifyEdit.cpp">
+      <Filter>Source Files\Custom Controls</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">
@@ -1303,6 +1306,9 @@
     </ClInclude>
     <ClInclude Include="Source\HistoryFileDlg.h">
       <Filter>Header Files\Dialog Boxes Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\NoNotifyEdit.h">
+      <Filter>Header Files\Custom Control Headers</Filter>
     </ClInclude>
     <ClInclude Include="Source\str_conv\str_conv.hpp">
       <Filter>Header Files</Filter>

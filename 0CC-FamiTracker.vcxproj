@@ -260,6 +260,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\NoNotifyEdit.cpp" />
     <ClCompile Include="Source\HistoryFileDlg.cpp" />
     <ClCompile Include="Source\APU\2A03.cpp" />
     <ClCompile Include="Source\APU\S5B.cpp" />
@@ -425,6 +426,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\array_view.h" />
+    <ClInclude Include="Source\NoNotifyEdit.h" />
     <ClInclude Include="Source\HistoryFileDlg.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Source\APU\2A03.h" />
