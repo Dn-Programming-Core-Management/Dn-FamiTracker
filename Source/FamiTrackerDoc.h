@@ -376,6 +376,7 @@ private:
 	bool			WriteBlock_DetuneTables(CDocumentFile *pDocFile, const int Version) const;
 	bool			WriteBlock_Grooves(CDocumentFile *pDocFile, const int Version) const;
 	bool			WriteBlock_Bookmarks(CDocumentFile *pDocFile, const int Version) const;
+	bool			WriteBlock_JSON(CDocumentFile * pDocFile, const int Version) const;
 
 	void			ReadBlock_Parameters(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_SongInfo(CDocumentFile *pDocFile, const int Version);		// // //
@@ -395,6 +396,7 @@ private:
 	void			ReadBlock_DetuneTables(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_Grooves(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_Bookmarks(CDocumentFile *pDocFile, const int Version);
+	void			ReadBlock_JSON(CDocumentFile * pDocFile, const int Version);
 
 	// For file version compability
 	void			ReorderSequences();
