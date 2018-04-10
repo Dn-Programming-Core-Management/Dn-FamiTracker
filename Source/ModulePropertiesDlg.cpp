@@ -24,7 +24,6 @@
 #include <cstdlib>
 #include <cmath>
 
-#include "NoNotifyEdit.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "MainFrm.h"
@@ -67,7 +66,6 @@ BEGIN_MESSAGE_MAP(CModulePropertiesDlg, CDialog)
 	ON_BN_CLICKED(IDC_SONG_UP, OnBnClickedSongUp)
 	ON_BN_CLICKED(IDC_SONG_DOWN, OnBnClickedSongDown)
 	ON_EN_CHANGE(IDC_SONGNAME, OnEnChangeSongname)
-	//ON_EN_CHANGE(IDC_EDIT_N163_OFFSET, N163OffsetEdit)
 	ON_BN_CLICKED(IDC_SONG_IMPORT, OnBnClickedSongImport)
 
 	ON_WM_HSCROLL()
@@ -79,7 +77,7 @@ BEGIN_MESSAGE_MAP(CModulePropertiesDlg, CDialog)
 	ON_BN_CLICKED(IDC_EXPANSION_S5B, OnBnClickedExpansionS5B)
 	ON_BN_CLICKED(IDC_EXPANSION_N163, OnBnClickedExpansionN163)
 	ON_CBN_SELCHANGE(IDC_COMBO_LINEARPITCH, OnCbnSelchangeComboLinearpitch)
-	ON_EN_CHANGE(IDC_EDIT_N163_OFFSET, &CModulePropertiesDlg::OnEnChangeEditN163Offset)
+	ON_EN_CHANGE(IDC_N163_OFFSET_EDIT, &CModulePropertiesDlg::OnEnChangeEditN163Offset)
 END_MESSAGE_MAP()
 
 
@@ -96,6 +94,8 @@ const int MAX_FINE = LEVEL_RANGE * FINE_DELTA;
 BOOL CModulePropertiesDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
+
+	N163LevelEdit.SubclassDlgItem(IDC_N163_OFFSET_EDIT, this);
 
 	// Get active document
 	CFrameWnd *pFrameWnd = static_cast<CFrameWnd*>(GetParent());
@@ -135,7 +135,7 @@ BOOL CModulePropertiesDlg::OnInitDialog()
 	// N163 Level Offset
 	N163LevelOffset = m_pDocument->GetN163LevelOffset();
 	// (Slider)
-	CSliderCtrl *pSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_SLIDER_N163_OFFSET));
+	CSliderCtrl *pSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_N163_OFFSET_SLIDER));
 	pSlider->SetRange(-LEVEL_RANGE * COARSE_DELTA, LEVEL_RANGE * COARSE_DELTA);
 	pSlider->SetTicFreq(COARSE_DELTA * 2);
 	pSlider->SetPageSize(PAGEUP);
@@ -212,7 +212,7 @@ void CModulePropertiesDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrol
 	if (pSlider->GetDlgCtrlID() == IDC_CHANNELS) {
 		setN163NChannels(pos);
 	}
-	else if (pSlider->GetDlgCtrlID() == IDC_SLIDER_N163_OFFSET) {
+	else if (pSlider->GetDlgCtrlID() == IDC_N163_OFFSET_SLIDER) {
 		N163OffsetSlider(pos);
 	}
 
@@ -581,9 +581,14 @@ void CModulePropertiesDlg::updateN163GUI(bool renderText) {
 	channelsStr.LoadString(IDS_PROPERTIES_CHANNELS);
 
 	CSliderCtrl *pChanSlider = (CSliderCtrl*)GetDlgItem(IDC_CHANNELS);
-	auto levelSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_SLIDER_N163_OFFSET));
-	auto levelEdit = static_cast<NoNotifyEdit*>(GetDlgItem(IDC_EDIT_N163_OFFSET));
-	auto levelText = GetDlgItem(IDC_STATIC_N163_OFFSET_DB);
+	auto levelSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_N163_OFFSET_SLIDER));
+	
+	// FIXME https://web.archive.org/web/20080218162024/https://www.microsoft.com/msj/1297/c1297.aspx
+	// look up, look down, everything is wrong, this file must be burnt to the ground
+	// https://github.com/HertzDevil/0CC-FamiTracker/commit/3400bbb24974ee10ab8ba7afcfa1a3e96f96e7f9#diff-413168e8ded8a41a4d8f9a8b18a34628
+	
+	auto levelEdit = GetDlgItem(IDC_N163_OFFSET_EDIT);
+	auto levelText = GetDlgItem(IDC_N163_OFFSET_DB);
 
 	CWnd *N163Enable[]{pChanSlider, pChannelsLabel, levelSlider, levelEdit, levelText};
 
@@ -608,7 +613,7 @@ void CModulePropertiesDlg::updateN163GUI(bool renderText) {
 	if (renderText) {
 		CString n163LevelStr;
 		strFromLevel(n163LevelStr, N163LevelOffset);
-		levelEdit->SetWindowTextNoNotify(n163LevelStr);
+		N163LevelEdit.SetWindowTextNoNotify(n163LevelStr);
 	}
 
 	SetDlgItemText(IDC_CHANNELS_NR, channelsStr);
@@ -636,9 +641,9 @@ bool CModulePropertiesDlg::levelFromStr(int &target, CString dBstr) {
 
 void CModulePropertiesDlg::OnEnChangeEditN163Offset()
 {
-	auto levelEdit = static_cast<CEdit*>(GetDlgItem(IDC_EDIT_N163_OFFSET));
+	//auto levelEdit = static_cast<CEdit*>(GetDlgItem(IDC_N163_OFFSET_EDIT));
 	CString str;
-	levelEdit->GetWindowText(str);
+	N163LevelEdit.GetWindowText(str);
 	if (levelFromStr(N163LevelOffset, str)) {
 		updateN163GUI(false);
 	}
