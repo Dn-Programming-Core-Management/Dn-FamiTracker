@@ -593,9 +593,9 @@
 #define IDC_INST_SEQUENCE_GRAPH         1458
 #define IDC_MAINFRAME_INST_TOOLBAR      1458
 #define IDC_STATIC_DPCM_ZOOM            1459
-#define IDC_SLIDER_N163_OFFSET          1461
-#define IDC_EDIT_N163_OFFSET            1463
-#define IDC_STATIC_N163_OFFSET_DB       1464
+#define IDC_N163_OFFSET_SLIDER          1461
+#define IDC_N163_OFFSET_EDIT            1463
+#define IDC_N163_OFFSET_DB              1464
 #define IDS_FIND_BEGIN                  9001
 #define IDS_FIND_END                    9002
 #define ID_TRACKER_PLAY                 32771

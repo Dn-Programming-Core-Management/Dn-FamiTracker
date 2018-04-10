@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include "NoNotifyEdit.h"
+
 
 // CModulePropertiesDlg dialog
 
@@ -55,6 +57,8 @@ protected:
 	bool levelFromStr(int & target, CString dBstr);
 	
 	void FillSongList();
+
+	NoNotifyEdit N163LevelEdit;
 
 	DECLARE_MESSAGE_MAP()
 public:
