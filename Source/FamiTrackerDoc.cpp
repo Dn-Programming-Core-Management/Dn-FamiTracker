@@ -630,8 +630,8 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 	TCHAR TempPath[MAX_PATH], TempFile[MAX_PATH];
 
 	// First write to a temp file (if saving fails, the original is not destroyed)
-	GetTempPath(MAX_PATH, TempPath);
-	GetTempFileName(_T("."), _T("0CC"), 0, TempFile);
+	CString updir = "/..";
+	GetTempFileName(lpszPathName + updir, _T("0CC"), 0, TempFile);
 
 	if (!DocumentFile.Open(TempFile, CFile::modeWrite | CFile::modeCreate, &ex)) {
 		// Could not open file
