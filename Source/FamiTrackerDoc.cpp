@@ -461,6 +461,7 @@ void CFamiTrackerDoc::CreateEmpty()
 	// Auto-select new style vibrato for new modules
 	m_iVibratoStyle = VIBRATO_NEW;
 	m_bLinearPitch = DEFAULT_LINEAR_PITCH;
+	N163LevelOffset = 0;
 
 	m_iNamcoChannels = 0;		// // //
 
@@ -1302,6 +1303,7 @@ BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 			// Auto-select old style vibrato for old files
 			m_iVibratoStyle = VIBRATO_OLD;
 			m_bLinearPitch = false;
+			N163LevelOffset = 0;
 		}
 		else {
 			if (!OpenDocumentNew(OpenFile))
@@ -1349,6 +1351,7 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 
 	m_iVibratoStyle = VIBRATO_OLD;
 	m_bLinearPitch = false;
+	N163LevelOffset = 0;
 
 	// // // local structs
 	struct {
