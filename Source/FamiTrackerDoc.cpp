@@ -320,7 +320,7 @@ BOOL CFamiTrackerDoc::OnSaveDocument(LPCTSTR lpszPathName)
 		return FALSE;
 
 	// File backup, now performed on save instead of open
-	if ((m_bForceBackup || theApp.GetSettings()->General.bBackups) && (!m_bBackupDone || true)) {
+	if ((m_bForceBackup || theApp.GetSettings()->General.bBackups) && !m_bBackupDone) {
 		CString BakName;
 		BakName.Format(_T("%s.bak"), lpszPathName);
 		CopyFile(lpszPathName, BakName.GetBuffer(), FALSE);
