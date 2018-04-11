@@ -31,7 +31,7 @@
 // Version info
 #define VERSION_API  0
 #define VERSION_MAJ  0
-#define VERSION_MIN  3
-#define VERSION_REV  1337
+#define VERSION_MIN  5
+#define VERSION_REV  0
 
 #define VERSION VERSION_API,VERSION_MAJ,VERSION_MIN,VERSION_REV
