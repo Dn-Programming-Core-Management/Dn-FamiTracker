@@ -593,8 +593,8 @@ void CModulePropertiesDlg::updateN163GUI(bool renderText) {
 	CWnd *N163Enable[]{pChanSlider, pChannelsLabel, levelSlider, levelEdit, levelText};
 
 	// Is N163 enabled?
-	bool n163Enabled = m_iExpansions & SNDCHIP_N163;
-	if (n163Enabled) {
+	bool N163Enabled = m_iExpansions & SNDCHIP_N163;
+	if (N163Enabled) {
 		if (!m_iN163Channels) m_iN163Channels = 1;		// // //
 		channelsStr.AppendFormat(_T(" %i"), m_iN163Channels);
 	}
@@ -605,7 +605,7 @@ void CModulePropertiesDlg::updateN163GUI(bool renderText) {
 	}
 	
 	// Enable/disable UI.
-	for (CWnd *widget : N163Enable) widget->EnableWindow(n163Enabled);
+	for (CWnd *widget : N163Enable) widget->EnableWindow(N163Enabled);
 	
 	// Redraw UI.
 	pChanSlider->SetPos(m_iN163Channels);
