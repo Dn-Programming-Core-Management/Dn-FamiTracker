@@ -48,6 +48,9 @@
 #include <string>		// // //
 #include <array>		// // //
 #include <unordered_map>		// // //
+
+#include "json/json.hpp"
+
 #include "FamiTracker.h"
 #include "ChannelState.h"		// // //
 #include "Instrument.h"		// // //
@@ -70,6 +73,9 @@
 #include "BookmarkCollection.h"		// // //
 #include "BookmarkManager.h"		// // //
 #include "APU/APU.h"
+#include "str_conv/str_conv.hpp"
+
+using json = nlohmann::json;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -109,6 +115,7 @@ const char *FILE_BLOCK_DETUNETABLES			= "DETUNETABLES";
 const char *FILE_BLOCK_GROOVES				= "GROOVES";
 const char *FILE_BLOCK_BOOKMARKS			= "BOOKMARKS";
 const char *FILE_BLOCK_PARAMS_EXTRA			= "PARAMS_EXTRA";
+const char *FILE_BLOCK_JSON = "JSON";
 
 // FTI instruments files
 static const char INST_HEADER[] = "FTI";
@@ -388,11 +395,13 @@ void CFamiTrackerDoc::DeleteContents()
 	memset(m_strCopyright, 0, 32);
 
 	// Reset variables to default
-	m_iMachine			 = DEFAULT_MACHINE_TYPE;
-	m_iEngineSpeed		 = 0;
-	m_iExpansionChip	 = SNDCHIP_NONE;
-	m_iVibratoStyle		 = VIBRATO_OLD;
-	m_bLinearPitch		 = DEFAULT_LINEAR_PITCH;
+	m_iMachine = DEFAULT_MACHINE_TYPE;
+	m_iEngineSpeed = 0;
+	m_iExpansionChip = SNDCHIP_NONE;
+	m_iVibratoStyle = VIBRATO_OLD;
+	m_bLinearPitch = DEFAULT_LINEAR_PITCH;
+	N163LevelOffset = 0;
+
 	m_iChannelsAvailable = CHANNELS_DEFAULT;
 	m_iSpeedSplitPoint	 = DEFAULT_SPEED_SPLIT_POINT;
 	m_iDetuneSemitone	 = 0;		// // // 050B
@@ -452,6 +461,7 @@ void CFamiTrackerDoc::CreateEmpty()
 	// Auto-select new style vibrato for new modules
 	m_iVibratoStyle = VIBRATO_NEW;
 	m_bLinearPitch = DEFAULT_LINEAR_PITCH;
+	N163LevelOffset = 0;
 
 	m_iNamcoChannels = 0;		// // //
 
@@ -718,7 +728,8 @@ bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 		6, 1, 3, 6, 6, 3, 4, 1, 1,
 #endif
 		6, 1, 1,					// expansion
-		2, 1, 1, 1					// 0cc-ft
+		2, 1, 1, 1,					// 0cc-ft
+		1							// json
 	};
 
 	static bool (CFamiTrackerDoc::*FTM_WRITE_FUNC[])(CDocumentFile*, const int) const = {		// // //
@@ -738,6 +749,7 @@ bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 		&CFamiTrackerDoc::WriteBlock_DetuneTables,		// // //
 		&CFamiTrackerDoc::WriteBlock_Grooves,			// // //
 		&CFamiTrackerDoc::WriteBlock_Bookmarks,			// // //
+		&CFamiTrackerDoc::WriteBlock_JSON
 	};
 
 	for (size_t i = 0; i < sizeof(FTM_WRITE_FUNC) / sizeof(*FTM_WRITE_FUNC); ++i) {
@@ -1296,6 +1308,7 @@ BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 			// Auto-select old style vibrato for old files
 			m_iVibratoStyle = VIBRATO_OLD;
 			m_bLinearPitch = false;
+			N163LevelOffset = 0;
 		}
 		else {
 			if (!OpenDocumentNew(OpenFile))
@@ -1343,6 +1356,7 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 
 	m_iVibratoStyle = VIBRATO_OLD;
 	m_bLinearPitch = false;
+	N163LevelOffset = 0;
 
 	// // // local structs
 	struct {
@@ -1550,6 +1564,7 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 	FTM_READ_FUNC[FILE_BLOCK_GROOVES]			= &CFamiTrackerDoc::ReadBlock_Grooves;			// // //
 	FTM_READ_FUNC[FILE_BLOCK_BOOKMARKS]			= &CFamiTrackerDoc::ReadBlock_Bookmarks;		// // //
 	FTM_READ_FUNC[FILE_BLOCK_PARAMS_EXTRA]		= &CFamiTrackerDoc::ReadBlock_ParamsExtra;		// // //
+	FTM_READ_FUNC[FILE_BLOCK_JSON]				= &CFamiTrackerDoc::ReadBlock_JSON;		// // //
 	
 	const char *BlockID;
 	bool ErrorFlag = false;
@@ -2521,12 +2536,57 @@ bool CFamiTrackerDoc::WriteBlock_Bookmarks(CDocumentFile *pDocFile, const int Ve
 			pDocFile->WriteBlockChar(pMark->m_bPersist);
 			//pDocFile->WriteBlockInt(pMark->m_sName.size());
 			//pDocFile->WriteBlock(pMark->m_sName, (int)strlen(Name));	
-			pDocFile->WriteString(pMark->m_sName.c_str());
+			pDocFile->WriteString(pMark->m_sName);
 		}
 	}
 
 	return pDocFile->FlushBlock();
 }
+
+
+const char *N163_OFFSET = "n163-offset";
+
+// http://jsonapi.org/format/ except {data:{ is unnecessary.
+const json DEFAULT = {
+	{ N163_OFFSET, 0 }
+};
+
+void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile *pDocFile, const int Version) {
+	json out(DEFAULT);
+
+	CT2A fileData(pDocFile->ReadString());
+	json in = json::parse(static_cast<char*>(fileData));
+
+	json unknowns;
+	for (auto it : json::iterator_wrapper(in)) {
+		auto key = it.key();					// std::string is bad? If exists non-string, we can't handle it. So pass verbatim into unknowns.
+		if (DEFAULT.find(key) == DEFAULT.end()) {
+			unknowns[key] = it.value();
+		}
+		out[key] = it.value();
+	}
+
+	if (!unknowns.empty()) {
+		auto err = "Warning: unknown JSON data (will be discarded):\n" + unknowns.dump();
+		AfxMessageBox(conv::to_t(std::move(err)).c_str(), MB_ICONWARNING);
+	}
+
+	SetN163LevelOffset(out[N163_OFFSET]);
+}
+
+bool CFamiTrackerDoc::WriteBlock_JSON(CDocumentFile *pDocFile, const int Version) const {
+	const json j = {
+		{ N163_OFFSET, GetN163LevelOffset() }
+	};
+	if (j == DEFAULT) {
+		return true;
+	}
+
+	pDocFile->CreateBlock(FILE_BLOCK_JSON, Version);
+	pDocFile->WriteString(j.dump());
+	return pDocFile->FlushBlock();
+}
+
 
 // // // Extra parameters
 
@@ -4219,6 +4279,19 @@ void CFamiTrackerDoc::SetLinearPitch(bool Enable)
 	if (m_bLinearPitch != Enable)		// // //
 		ModifyIrreversible();
 	m_bLinearPitch = Enable;
+}
+
+// N163 Volume Offset
+int CFamiTrackerDoc::GetN163LevelOffset() const {
+	return N163LevelOffset;
+}
+
+void CFamiTrackerDoc::SetN163LevelOffset(int offset) {
+	if (N163LevelOffset != offset) {
+		ModifyIrreversible();
+		N163LevelOffset = offset;
+		theApp.LoadSoundConfig();
+	}
 }
 
 // Attributes

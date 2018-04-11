@@ -162,6 +162,14 @@ void CDocumentFile::WriteString(CString String)
 	WriteBlockChar(0);
 }
 
+
+// adapted from hertzdevil/25d77a
+void CDocumentFile::WriteString(std::string_view sv) {
+	WriteBlock((const char *)sv.data(), sv.size());
+	WriteBlockChar(0);
+}
+
+
 bool CDocumentFile::FlushBlock()
 {
 	if (!m_pBlockData)
