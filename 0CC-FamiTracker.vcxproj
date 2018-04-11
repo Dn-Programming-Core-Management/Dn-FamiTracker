@@ -424,6 +424,7 @@
     <ClCompile Include="Source\WaveFile.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\array_view.h" />
     <ClInclude Include="Source\HistoryFileDlg.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Source\APU\2A03.h" />
@@ -504,7 +505,10 @@
     <ClInclude Include="Source\SplitKeyboardDlg.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\StretchDlg.h" />
+    <ClInclude Include="Source\str_conv\str_conv.hpp" />
+    <ClInclude Include="Source\str_conv\utf8_conv.hpp" />
     <ClInclude Include="Source\SwapDlg.h" />
+    <ClInclude Include="Source\to_sv.h" />
     <ClInclude Include="Source\TransposeDlg.h" />
     <ClInclude Include="Source\VisualizerBase.h" />
     <ClInclude Include="Source\WaveformGenerator.h" />

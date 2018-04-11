@@ -1304,6 +1304,18 @@
     <ClInclude Include="Source\HistoryFileDlg.h">
       <Filter>Header Files\Dialog Boxes Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Source\str_conv\str_conv.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\str_conv\utf8_conv.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\to_sv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\array_view.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="0CC-FamiTracker.rc">
