@@ -323,10 +323,8 @@ BOOL CFamiTrackerDoc::OnSaveDocument(LPCTSTR lpszPathName)
 
 	// This function is called by the GUI to save the file
 
-	if (!m_bFileLoaded) {
-		AfxMessageBox(_T("Attempted to save an unloaded document, this should never happen."), MB_OK | MB_ICONERROR);
+	if (!m_bFileLoaded)
 		return FALSE;
-	}
 
 	// File backup, now performed on save instead of open
 	if ((m_bForceBackup || theApp.GetSettings()->General.bBackups) && !m_bBackupDone) {
