@@ -232,6 +232,9 @@ public:
 	bool			GetLinearPitch() const;
 	void			SetLinearPitch(bool Enable);
 
+	int GetN163LevelOffset() const;
+	void SetN163LevelOffset(int offset);
+
 	void			SetComment(CString &comment, bool bShowOnLoad);
 	CString			GetComment() const;
 	bool			ShowCommentOnOpen() const;
@@ -373,6 +376,7 @@ private:
 	bool			WriteBlock_DetuneTables(CDocumentFile *pDocFile, const int Version) const;
 	bool			WriteBlock_Grooves(CDocumentFile *pDocFile, const int Version) const;
 	bool			WriteBlock_Bookmarks(CDocumentFile *pDocFile, const int Version) const;
+	bool			WriteBlock_JSON(CDocumentFile * pDocFile, const int Version) const;
 
 	void			ReadBlock_Parameters(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_SongInfo(CDocumentFile *pDocFile, const int Version);		// // //
@@ -392,6 +396,7 @@ private:
 	void			ReadBlock_DetuneTables(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_Grooves(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_Bookmarks(CDocumentFile *pDocFile, const int Version);
+	void			ReadBlock_JSON(CDocumentFile * pDocFile, const int Version);
 
 	// For file version compability
 	void			ReorderSequences();
@@ -507,6 +512,8 @@ private:
 	unsigned int	m_iNamcoChannels;
 	vibrato_t		m_iVibratoStyle;							// 0 = old style, 1 = new style
 	bool			m_bLinearPitch;
+	int				N163LevelOffset;
+	
 	machine_t		m_iMachine;									// // // NTSC / PAL
 	unsigned int	m_iEngineSpeed;								// Refresh rate
 	unsigned int	m_iSpeedSplitPoint;							// Speed/tempo split-point

@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include "NoNotifyEdit.h"
+
 
 // CModulePropertiesDlg dialog
 
@@ -37,6 +39,7 @@ private:
 	unsigned int m_iSelectedSong;
 	unsigned char m_iExpansions;		// // //
 	int m_iN163Channels;
+	int N163LevelOffset;
 
 	CFamiTrackerDoc *m_pDocument;
 
@@ -48,9 +51,14 @@ public:
 	enum { IDD = IDD_PROPERTIES };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	// virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
+	void strFromLevel(CString & target, int Level);
+	bool levelFromStr(int & target, CString dBstr);
+	
 	void FillSongList();
+
+	NoNotifyEdit N163LevelEdit;
 
 	DECLARE_MESSAGE_MAP()
 public:
@@ -62,9 +70,8 @@ public:
 	afx_msg void OnBnClickedSongUp();
 	afx_msg void OnBnClickedSongDown();
 	afx_msg void OnEnChangeSongname();
-	afx_msg void OnClickSongList(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnBnClickedSongImport();
-	// afx_msg void OnCbnSelchangeExpansion();
+	
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnLvnItemchangedSonglist(NMHDR *pNMHDR, LRESULT *pResult);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
@@ -74,5 +81,10 @@ public:
 	afx_msg void OnBnClickedExpansionMMC5();
 	afx_msg void OnBnClickedExpansionS5B();
 	afx_msg void OnBnClickedExpansionN163();
+	void setN163NChannels(int nchan);
+	void updateN163GUI(bool renderText=true);
+	void N163OffsetSlider(int pos);
+	afx_msg void OnEnChangeEditN163Offset();
+
 	afx_msg void OnCbnSelchangeComboLinearpitch();
 };
