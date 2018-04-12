@@ -21,6 +21,7 @@
 */
 
 #pragma once
+#include "CustomControls.h"
 
 /*!
 	\brief Specialization of the instrument sequence editor panel class for CSeqInstrument.
