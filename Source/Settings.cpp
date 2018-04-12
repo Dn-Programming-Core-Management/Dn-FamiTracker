@@ -211,10 +211,11 @@ void CSettings::SetupSettings()
 	// Paths
 	SETTING_STRING("Paths", "FTM path", "", &Paths[PATH_FTM]);
 	SETTING_STRING("Paths", "FTI path", "", &Paths[PATH_FTI]);
-	SETTING_STRING("Paths", "NSF path", "", &Paths[PATH_NSF]);
 	SETTING_STRING("Paths", "DMC path", "", &Paths[PATH_DMC]);
 	SETTING_STRING("Paths", "WAV path", "", &Paths[PATH_WAV]);
-	SETTING_STRING("Paths", "TXT Export path", "", &Paths[PATH_EXPORT]);
+	
+	//SETTING_STRING("Paths", "NSF path", "", &Paths[PATH_NSF]);
+	//SETTING_STRING("Paths", "TXT Export path", "", &Paths[PATH_EXPORT]);
 
 	SETTING_STRING("Paths", "Instrument menu", "", &InstrumentMenuPath);
 
