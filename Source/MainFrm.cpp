@@ -1779,7 +1779,7 @@ void CMainFrame::OnUpdateInstrumentEdit(CCmdUI *pCmdUI)
 	pCmdUI->Enable(m_pInstrumentList->GetItemCount() > 0);
 }
 
-void CMainFrame::OnTimer(UINT nIDEvent)
+void CMainFrame::OnTimer(UINT_PTR nIDEvent)
 {
 	CString text, str;
 	switch (nIDEvent) {
