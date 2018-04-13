@@ -19,7 +19,10 @@
 */
 
 #include "stdafx.h"
+#pragma warning (push)
+#pragma warning (disable:4091) // a microsoft header has warnings. Very nice.
 #include <Dbghelp.h>
+#pragma warning (pop)
 #include "Exception.h"
 #include "../version.h"
 
