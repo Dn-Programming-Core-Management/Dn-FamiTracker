@@ -647,7 +647,7 @@ bool CFamiTrackerApp::CheckSingleInstance(CFTCommandLineInfo &cmdInfo)
 					data.dwData = cmdInfo.m_bPlay ? IPC_LOAD_PLAY : IPC_LOAD;
 					data.cbData = (DWORD)((_tcslen(pFilePath) + 1) * sizeof(TCHAR));
 					data.lpData = pFilePath;
-					DWORD result;
+					ULONG_PTR result;
 					SendMessageTimeout(hWnd, WM_COPYDATA, NULL, (LPARAM)&data, SMTO_NORMAL, 100, &result);
 					UnmapViewOfFile(pBuf);
 					CloseHandle(hMapFile);
