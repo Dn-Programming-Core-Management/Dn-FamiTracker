@@ -56,7 +56,7 @@ void CVisualizerScope::SetSampleRate(int SampleRate)
 void CVisualizerScope::ClearBackground()
 {
 	for (int y = 0; y < m_iHeight; ++y) {
-		int intensity = sinf((float(y) * 3.14f) / float(m_iHeight)) * 40.0f;		// // //
+		int intensity = static_cast<int>(sinf((float(y) * 3.14f) / float(m_iHeight)) * 40.0f);		// // //
 		memset(&m_pBlitBuffer[y * m_iWidth], intensity, sizeof(COLORREF) * m_iWidth);
 	}
 }
