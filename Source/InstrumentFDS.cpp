@@ -32,6 +32,12 @@
 #include "ChunkRenderText.h"		// // //
 #include "DocumentFile.h"
 
+// https://stackoverflow.com/a/14997413/2683842
+inline int modulo(int i, int n) {
+	return (i % n + n) % n;
+}
+
+
 const char TEST_WAVE[] = {
 	00, 01, 12, 22, 32, 36, 39, 39, 42, 47, 47, 50, 48, 51, 54, 58,
 	54, 55, 49, 50, 52, 61, 63, 63, 59, 56, 53, 51, 48, 47, 41, 35,
@@ -352,6 +358,8 @@ int CInstrumentFDS::GetModulation(int Index) const
 
 void CInstrumentFDS::SetModulation(int Index, int Value)
 {
+	//Index = modulo(Index, MOD_SIZE);
+	Value = modulo(Value, MOD_Y);
 	if (m_iModulation[Index] != Value)		// // //
 		InstrumentChanged();
 	m_iModulation[Index] = Value;
