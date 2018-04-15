@@ -205,7 +205,7 @@ void CInstrumentEditorFDS::OnPresetSawtooth()
 
 void CInstrumentEditorFDS::OnModPresetFlat()
 {
-	for (int i = 0; i < 32; ++i) {
+	for (int i = 0; i < CInstrumentFDS::MOD_SIZE; ++i) {
 		m_pInstrument->SetModulation(i, 0);
 	}
 
@@ -215,20 +215,22 @@ void CInstrumentEditorFDS::OnModPresetFlat()
 
 void CInstrumentEditorFDS::OnModPresetSine()
 {
-	for (int i = 0; i < 8; ++i) {
-		m_pInstrument->SetModulation(i, 7);
-		m_pInstrument->SetModulation(i + 8, 1);
-		m_pInstrument->SetModulation(i + 16, 1);
-		m_pInstrument->SetModulation(i + 24, 7);
+	const int BEGIN = 0;
+	const int CENTER = CInstrumentFDS::MOD_SIZE / 2;
+	const int END = CInstrumentFDS::MOD_SIZE;
+	const int DELTA = 6;
+
+	for (int i = 0; i < END; i++) m_pInstrument->SetModulation(i, 0);
+
+	m_pInstrument->SetModulation(BEGIN, 4);
+	m_pInstrument->SetModulation(CENTER, 4);
+
+	for (int i = 1; i <= DELTA; ++i) {
+		m_pInstrument->SetModulation(BEGIN + i, -1);
+		m_pInstrument->SetModulation(CENTER - i, 1);
+		m_pInstrument->SetModulation(CENTER + i, 1);
+		m_pInstrument->SetModulation(END - i, -1);
 	}
-
-	m_pInstrument->SetModulation(7, 0);
-	m_pInstrument->SetModulation(8, 0);
-	m_pInstrument->SetModulation(9, 0);
-
-	m_pInstrument->SetModulation(23, 0);
-	m_pInstrument->SetModulation(24, 0);
-	m_pInstrument->SetModulation(25, 0);
 
 	m_pModSequenceEditor->RedrawWindow();
 	theApp.GetSoundGenerator()->WaveChanged();
