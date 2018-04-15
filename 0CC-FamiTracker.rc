@@ -380,14 +380,14 @@ BEGIN
         MENUITEM "D&uplicate Patterns",         ID_MODULE_DUPLICATEFRAMEPATTERNS
         MENUITEM SEPARATOR
         MENUITEM "Move &Up",                    ID_MODULE_MOVEFRAMEUP
-        MENUITEM "Move D&own",                  ID_MODULE_MOVEFRAMEDOWN
+        MENUITEM "Move &Down",                  ID_MODULE_MOVEFRAMEDOWN
         MENUITEM SEPARATOR
         MENUITEM "Cu&t\tCtrl+X",                ID_FRAME_CUT
         MENUITEM "&Copy\tCtrl+C",               ID_FRAME_COPY
         MENUITEM "&Paste\tCtrl+V",              ID_FRAME_PASTE
         MENUITEM "Paste && &Overwrite",         ID_FRAME_PASTEOVERWRITE
         MENUITEM "Paste && Duplicate",          ID_FRAME_PASTENEWPATTERNS
-        MENUITEM "&Delete\tDel",                ID_FRAME_DELETE
+        MENUITEM "Delete\tDel",                 ID_FRAME_DELETE
     END
 END
 
