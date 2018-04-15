@@ -65,6 +65,7 @@ private:
 public:
 	static const int WAVE_SIZE = 64;
 	static const int MOD_SIZE = 32;
+	static const int MOD_Y = 8;
 	static const int SEQUENCE_COUNT = 3;		// // //
 	static LPCTSTR SEQUENCE_NAME[];
 	LPCTSTR	GetSequenceName(int Index) const { return SEQUENCE_NAME[Index]; }		// // //
@@ -72,8 +73,8 @@ public:
 private:
 	// Instrument data
 	std::vector<std::unique_ptr<CSequence>> m_pSequence;
-	unsigned char m_iSamples[64];
-	unsigned char m_iModulation[32];
+	unsigned char m_iSamples[WAVE_SIZE];
+	unsigned char m_iModulation[MOD_SIZE];
 	int			  m_iModulationSpeed;
 	int			  m_iModulationDepth;
 	int			  m_iModulationDelay;
