@@ -637,7 +637,7 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 	CDocumentFile DocumentFile;
 	m_pCurrentDocument = &DocumentFile;		// // //
 	CFileException ex;
-	TCHAR TempPath[MAX_PATH], TempFile[MAX_PATH];
+	TCHAR TempFile[MAX_PATH];
 
 	// First write to a temp file (if saving fails, the original is not destroyed)
 	CString updir = "/..";
@@ -2558,7 +2558,7 @@ void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile *pDocFile, const int Version)
 	json in = json::parse(static_cast<char*>(fileData));
 
 	json unknowns;
-	for (auto it : json::iterator_wrapper(in)) {
+	for (auto it : in.items()) {
 		auto key = it.key();					// std::string is bad? If exists non-string, we can't handle it. So pass verbatim into unknowns.
 		if (DEFAULT.find(key) == DEFAULT.end()) {
 			unknowns[key] = it.value();
