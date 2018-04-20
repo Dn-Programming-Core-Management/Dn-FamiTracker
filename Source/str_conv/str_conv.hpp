@@ -103,9 +103,14 @@ auto to_wide(T&& str) {
 // defined by nyanpasu64:
 
 #ifdef UNICODE
-const auto& to_t = to_wide<std::string>;
+typedef std::wstring _tstring;
 #else
-const auto& to_t = to_utf8<std::string>;
+typedef std::string _tstring;
 #endif
+
+template <typename T>
+auto to_t(T&& str) {
+	return details::to_utf_string<_tstring>(std::forward<T>(str));
+}
 
 } // namespace conv
