@@ -33,6 +33,7 @@
 #include "SoundGen.h"
 #include "Clipboard.h"
 #include "WavegenBuiltin.h" // test
+#include "str_conv/str_conv.hpp"
 
 using namespace std;
 
@@ -133,8 +134,8 @@ BOOL CInstrumentEditorN163Wave::OnInitDialog()
 	m_pWaveListCtrl = new CListCtrl();
 	m_pWaveListCtrl->SubclassDlgItem(IDC_N163_WAVES, this);
 	m_pWaveListCtrl->GetClientRect(&r);		// // // 050B
-	m_pWaveListCtrl->InsertColumn(0, _T("Wave"), LVCFMT_LEFT, static_cast<int>(.85 * r.Width()));
-	m_pWaveListCtrl->InsertColumn(1, _T("#"), LVCFMT_LEFT, static_cast<int>(.15 * r.Width()));
+	m_pWaveListCtrl->InsertColumn(0, _T("Wave"), LVCFMT_LEFT, static_cast<int>(.83 * r.Width()));
+	m_pWaveListCtrl->InsertColumn(1, _T("#"), LVCFMT_LEFT, static_cast<int>(.17 * r.Width()));
 	m_pWaveListCtrl->SetColumnOrderArray(2, order);
 
 	m_WaveImage.Create(CInstrumentN163::MAX_WAVE_SIZE, 16, ILC_COLOR8, 0, CInstrumentN163::MAX_WAVE_COUNT);
@@ -251,14 +252,15 @@ void CInstrumentEditorN163Wave::OnBnClickedPaste()
 	if (Clipboard.IsDataAvailable()) {
 		LPTSTR text = (LPTSTR)Clipboard.GetDataPointer();
 		if (text != NULL)
-			ParseManyStrings(string(text));
+			ParseManyStrings(conv::to_utf8(text));
 	}
 }
 
 void CInstrumentEditorN163Wave::ParseManyStrings(string pStrings)
 {
-	while (m_pInstrument->GetWaveCount() > 1) {
-		OnBnClickedN163Delete();
+	auto nwave = [this]() { return m_pInstrument->GetWaveCount(); };
+	while (nwave() > 1) {
+		m_pInstrument->RemoveWave(nwave() - 1);
 	}
 
 	stringstream test(pStrings);
@@ -269,22 +271,19 @@ void CInstrumentEditorN163Wave::ParseManyStrings(string pStrings)
 		seglist.push_back(segment);
 	}
 
+	int curr = 0;
+	for (string& str : seglist) {
+		if (std::all_of(str.begin(), str.end(), isspace)) continue;
 
-	bool first = true;
-	for (int i=0; i < (int)seglist.size(); i++) {
-		string str = seglist[i];
-		for (int j=0; j<(int)str.size(); j++) {
-			if (!isspace(str[j])) {
-				if (first) {
-					first = false;
-				} else {
-					OnBnClickedN163Add();
-				}
-				ParseString(str, i);
-				break;
-			}
+		if (curr >= nwave()) {
+			// 64-wave limit to N163 instruments.
+			if (!m_pInstrument->InsertNewWave(curr)) break;
 		}
+		ParseString(str, curr);
+		curr++;
 	}
+
+	PopulateWaveBox();
 }
 
 void CInstrumentEditorN163Wave::ParseString(string pString, int waveIndex)
@@ -441,26 +440,12 @@ void CInstrumentEditorN163Wave::CreateWaveImage(char *const Pos, int Index) cons
 	}
 }
 
-/*
-void CInstrumentEditorN163Wave::OnPositionClicked()
-{
-	if (IsDlgButtonChecked(IDC_POSITION)) {
-		GetDlgItem(IDC_WAVE_POS)->EnableWindow(FALSE);
-		m_pInstrument->SetAutoWavePos(true);
-	}
-	else {
-		GetDlgItem(IDC_WAVE_POS)->EnableWindow(TRUE);
-		m_pInstrument->SetAutoWavePos(false);
-	}
-}
-*/
-
 void CInstrumentEditorN163Wave::OnKeyReturn()
 {
 	// Parse MML string
 	CString text;
 	GetDlgItemText(IDC_MML, text);
-	ParseString(string(text));
+	ParseString(conv::to_utf8(text), m_iWaveIndex);
 }
 
 void CInstrumentEditorN163Wave::OnLvnItemchangedN163Waves(NMHDR *pNMHDR, LRESULT *pResult)		// // //
