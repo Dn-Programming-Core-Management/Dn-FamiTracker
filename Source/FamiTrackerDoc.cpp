@@ -400,7 +400,7 @@ void CFamiTrackerDoc::DeleteContents()
 	m_iExpansionChip = SNDCHIP_NONE;
 	m_iVibratoStyle = VIBRATO_OLD;
 	m_bLinearPitch = DEFAULT_LINEAR_PITCH;
-	N163LevelOffset = 0;
+	SetN163LevelOffset(0);
 
 	m_iChannelsAvailable = CHANNELS_DEFAULT;
 	m_iSpeedSplitPoint	 = DEFAULT_SPEED_SPLIT_POINT;
@@ -461,7 +461,7 @@ void CFamiTrackerDoc::CreateEmpty()
 	// Auto-select new style vibrato for new modules
 	m_iVibratoStyle = VIBRATO_NEW;
 	m_bLinearPitch = DEFAULT_LINEAR_PITCH;
-	N163LevelOffset = 0;
+	SetN163LevelOffset(0);
 
 	m_iNamcoChannels = 0;		// // //
 
@@ -1308,7 +1308,7 @@ BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 			// Auto-select old style vibrato for old files
 			m_iVibratoStyle = VIBRATO_OLD;
 			m_bLinearPitch = false;
-			N163LevelOffset = 0;
+			SetN163LevelOffset(0);
 		}
 		else {
 			if (!OpenDocumentNew(OpenFile))
@@ -1356,7 +1356,7 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 
 	m_iVibratoStyle = VIBRATO_OLD;
 	m_bLinearPitch = false;
-	N163LevelOffset = 0;
+	SetN163LevelOffset(0);
 
 	// // // local structs
 	struct {
@@ -4283,13 +4283,13 @@ void CFamiTrackerDoc::SetLinearPitch(bool Enable)
 
 // N163 Volume Offset
 int CFamiTrackerDoc::GetN163LevelOffset() const {
-	return N163LevelOffset;
+	return _N163LevelOffset;
 }
 
 void CFamiTrackerDoc::SetN163LevelOffset(int offset) {
-	if (N163LevelOffset != offset) {
+	if (_N163LevelOffset != offset) {
 		ModifyIrreversible();
-		N163LevelOffset = offset;
+		_N163LevelOffset = offset;
 		theApp.LoadSoundConfig();
 	}
 }
