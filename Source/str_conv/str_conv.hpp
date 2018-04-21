@@ -102,11 +102,12 @@ auto to_wide(T&& str) {
 
 // defined by nyanpasu64:
 
-#ifdef UNICODE
-typedef std::wstring _tstring;
-#else
-typedef std::string _tstring;
-#endif
+//#ifdef UNICODE
+//typedef std::wstring _tstring;
+//#else
+//typedef std::string _tstring;
+//#endif
+typedef std::basic_string<TCHAR> _tstring;
 
 template <typename T>
 auto to_t(T&& str) {
