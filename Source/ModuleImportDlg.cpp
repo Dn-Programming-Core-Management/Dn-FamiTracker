@@ -96,7 +96,7 @@ void CModuleImportDlg::OnBnClickedCancel()
 
 bool CModuleImportDlg::LoadFile(CString Path, CFamiTrackerDoc *pDoc)
 {	
-	m_pImportedDoc = pDoc->LoadImportFile(Path);
+	m_pImportedDoc = CFamiTrackerDoc::LoadImportFile(Path);
 
 	// Check if load failed
 	if (m_pImportedDoc == NULL)
