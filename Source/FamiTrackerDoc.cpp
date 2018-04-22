@@ -268,6 +268,8 @@ BOOL CFamiTrackerDoc::OnNewDocument()
 	if (!CDocument::OnNewDocument())
 		return FALSE;
 
+	// CFamiTrackerDoc::OnNewDocument calls CDocument::OnNewDocument() and CreateEmpty(). Both call DeleteContents.
+	// Opening files doesn't call CDocument::OnNewDocument() but calls CreateEmpty(). Only the latter calls DeleteContents.
 	CreateEmpty();
 
 	return TRUE;
@@ -452,6 +454,9 @@ void CFamiTrackerDoc::SetModifiedFlag(BOOL bModified)
 
 void CFamiTrackerDoc::CreateEmpty()
 {
+	// CFamiTrackerDoc::OnNewDocument calls CDocument::OnNewDocument() and CreateEmpty(). Both call DeleteContents.
+	// OpenDocument() doesn't call CDocument::OnNewDocument() but calls CreateEmpty(). Only the latter calls DeleteContents.
+
 	m_csDocumentLock.Lock();
 
 	// Allocate first song
