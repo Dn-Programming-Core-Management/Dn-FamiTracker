@@ -402,15 +402,7 @@ void CFamiTrackerDoc::DeleteContents()
 	m_iExpansionChip = SNDCHIP_NONE;
 	m_iVibratoStyle = VIBRATO_OLD;
 	m_bLinearPitch = DEFAULT_LINEAR_PITCH;
-
-	// SetN163LevelOffset()
-		// If we're closing the program, tries to initialize a dead sound engine.
-		// If we're creating file, this gets called twice.
 	SetN163LevelOffset(0);
-		// If we're switching files, setting to 0 will fail to reinitialize the sound engine.
-	// If we set to INT_MIN, opening a file will reinitialize the sound engine unnecessarily.
-		// Honestly it doesn't matter.
-	// So leave it stale.
 
 	m_iChannelsAvailable = CHANNELS_DEFAULT;
 	m_iSpeedSplitPoint	 = DEFAULT_SPEED_SPLIT_POINT;
