@@ -139,7 +139,8 @@ CSoundGen::CSoundGen() :
 	m_pSequencePlayPos(NULL),
 	m_iSequencePlayPos(0),
 	m_iSequenceTimeout(0),
-	m_iBPMCachePosition(0)		// // //
+	m_iBPMCachePosition(0),		// // //
+	currN163LevelOffset(0)
 {
 	TRACE("SoundGen: Object created\n");
 
@@ -362,8 +363,20 @@ CChannelHandler *CSoundGen::GetChannel(int Index) const
 	return m_pChannels[Index];
 }
 
+/*
+INVARIANT: called whenever any document is created or changes.
+	CREATION:
+	CreateEmpty() calls DocumentPropertiesChanged.
+	OpenDocument() calls DocumentPropertiesChanged.
+
+PRECONDITION: pDocument is not null.
+PROPERTY: if pDocument is main document, linear pitch is synced.
+RESULT: linear pitch is correct.
+*/
 void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 {
+	if (pDocument != m_pDocument)
+		return;
 	ASSERT(pDocument != NULL);
 	
 	SetupVibratoTable(pDocument->GetVibratoStyle());		// // //
@@ -529,6 +542,12 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 	}
 	
 	m_iSpeedSplitPoint = pDocument->GetSpeedSplitPoint();
+
+	if (currN163LevelOffset != pDocument->GetN163LevelOffset()) {
+		// Player thread calls OnLoadSettings() which calls ResetAudioDevice()
+		// Why are GetCurrentThreadId and GetCurrentThread used interchangably?
+		LoadSettings();
+	}
 }
 
 //
@@ -738,6 +757,8 @@ bool CSoundGen::ResetAudioDevice()
 	if (!m_pAPU->SetupSound(SampleRate, 1, (m_iMachineType == NTSC) ? MACHINE_NTSC : MACHINE_PAL))
 		return false;
 
+	currN163LevelOffset = m_pDocument->GetN163LevelOffset();
+
 	m_pAPU->SetChipLevel(CHIP_LEVEL_APU1, float(pSettings->ChipLevels.iLevelAPU1 / 10.0f));
 	m_pAPU->SetChipLevel(CHIP_LEVEL_APU2, float(pSettings->ChipLevels.iLevelAPU2 / 10.0f));
 	m_pAPU->SetChipLevel(CHIP_LEVEL_VRC6, float(pSettings->ChipLevels.iLevelVRC6 / 10.0f));
@@ -745,7 +766,7 @@ bool CSoundGen::ResetAudioDevice()
 	m_pAPU->SetChipLevel(CHIP_LEVEL_MMC5, float(pSettings->ChipLevels.iLevelMMC5 / 10.0f));
 	m_pAPU->SetChipLevel(CHIP_LEVEL_FDS, float(pSettings->ChipLevels.iLevelFDS / 10.0f));
 	m_pAPU->SetChipLevel(CHIP_LEVEL_N163, float(
-		(pSettings->ChipLevels.iLevelN163 + m_pDocument->GetN163LevelOffset())/ 10.0f));
+		(pSettings->ChipLevels.iLevelN163 + currN163LevelOffset) / 10.0f));
 	m_pAPU->SetChipLevel(CHIP_LEVEL_S5B, float(pSettings->ChipLevels.iLevelS5B / 10.0f));
 /*
 	m_pAPU->SetChipLevel(SNDCHIP_NONE, 0);//pSettings->ChipLevels.iLevel2A03);
