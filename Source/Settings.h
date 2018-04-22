@@ -46,12 +46,12 @@ enum WIN_STATES {
 enum PATHS {
 	PATH_FTM,
 	PATH_FTI,
-	PATH_NSF,
 	PATH_DMC,
 	PATH_WAV,
-	PATH_EXPORT,
+	PATH_COUNT,
 
-	PATH_COUNT
+	PATH_NSF = PATH_FTM,
+	PATH_EXPORT = PATH_FTM
 };
 
 // // // helper class for loading settings from official famitracker
