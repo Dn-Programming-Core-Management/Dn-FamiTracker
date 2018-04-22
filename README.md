@@ -7,6 +7,7 @@ This is a fork of HertzDevil's 0CC-Famitracker 0.3.14.5 (since 0.3.15.1 and mast
 
 Bugfixes:
 
+- Export N163 FTI instruments properly.
 - Don't corrupt memory when entering MML volume sequences over 252 items long (instead truncate).
 - Fix bug where find-replacing anything with an empty effect creates " 00" effect.
 - Fix text import instrument loop/release (@owomomo, fixed in 0.3.15.1).
