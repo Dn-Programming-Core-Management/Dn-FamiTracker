@@ -118,7 +118,7 @@ public:
 	bool HasLastLoadFailed() const;
 
 	// Import
-	CFamiTrackerDoc* LoadImportFile(LPCTSTR lpszPathName) const;
+	static CFamiTrackerDoc* LoadImportFile(LPCTSTR lpszPathName);
 	bool ImportInstruments(CFamiTrackerDoc *pImported, int *pInstTable);
 	bool ImportGrooves(CFamiTrackerDoc *pImported, int *pGrooveMap);		// // //
 	bool ImportDetune(CFamiTrackerDoc *pImported);			// // //
