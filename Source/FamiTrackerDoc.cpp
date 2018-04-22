@@ -402,7 +402,15 @@ void CFamiTrackerDoc::DeleteContents()
 	m_iExpansionChip = SNDCHIP_NONE;
 	m_iVibratoStyle = VIBRATO_OLD;
 	m_bLinearPitch = DEFAULT_LINEAR_PITCH;
-	SetN163LevelOffset(0);
+
+	// SetN163LevelOffset()
+		// If we're closing the program, tries to initialize a dead sound engine.
+		// If we're creating file, this gets called twice.
+	_N163LevelOffset = INT_MIN;
+		// If we're switching files, setting to 0 will fail to reinitialize the sound engine.
+	// If we set to INT_MIN, opening a file will reinitialize the sound engine unnecessarily.
+		// Honestly it doesn't matter.
+	// So leave it stale.
 
 	m_iChannelsAvailable = CHANNELS_DEFAULT;
 	m_iSpeedSplitPoint	 = DEFAULT_SPEED_SPLIT_POINT;
@@ -521,6 +529,11 @@ void CFamiTrackerDoc::OnFileSaveAs()
 	theApp.GetSettings()->SetPath(newName, PATH_FTM);
 	
 	DoSave(newName);
+}
+
+bool CFamiTrackerDoc::isMainDocument() {
+	CFrameWnd *pFrameWnd = dynamic_cast<CFrameWnd*>(theApp.m_pMainWnd);
+	return pFrameWnd && pFrameWnd->GetActiveDocument() == this;
 }
 
 // CFamiTrackerDoc serialization (never used)
@@ -1342,7 +1355,9 @@ BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 	m_bFileLoadFailed = false;
 	m_bBackupDone = false;		// // //
 
-	theApp.GetSoundGenerator()->DocumentPropertiesChanged(this);
+	if (isMainDocument()) {
+		theApp.GetSoundGenerator()->DocumentPropertiesChanged(this);
+	}
 
 	return TRUE;
 }
@@ -4295,7 +4310,13 @@ void CFamiTrackerDoc::SetN163LevelOffset(int offset) {
 	if (_N163LevelOffset != offset) {
 		ModifyIrreversible();
 		_N163LevelOffset = offset;
-		theApp.LoadSoundConfig();
+		
+		if (isMainDocument()) {
+			theApp.LoadSoundConfig();	// CSoundGen::ResetAudioDevice looks at GetN163LevelOffset()
+			// TODO I should move N163 volume loading logic to DocumentPropertiesChanged? I'm not sure.
+			// TODO: theApp.GetSoundGenerator()->SetN163LevelOffset(offset)?
+			// Maybe I should pull out "primary FT doc connected to synth" and "imported FT doc" into separate classes.
+		}
 	}
 }
 
