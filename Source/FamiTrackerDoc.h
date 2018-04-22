@@ -571,6 +571,5 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnFileSaveAs();
-	bool isMainDocument();
 	afx_msg void OnFileSave();
 };

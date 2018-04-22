@@ -298,6 +298,7 @@ private:
 	CDSoundChannel		*m_pDSoundChannel;
 	CVisualizerWnd		*m_pVisualizerWnd;
 	CAPU				*m_pAPU;
+	int currN163LevelOffset;
 
 	const CDSample		*m_pPreviewSample;
 
