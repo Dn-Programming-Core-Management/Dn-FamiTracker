@@ -118,7 +118,7 @@ public:
 	bool HasLastLoadFailed() const;
 
 	// Import
-	CFamiTrackerDoc* LoadImportFile(LPCTSTR lpszPathName) const;
+	static CFamiTrackerDoc* LoadImportFile(LPCTSTR lpszPathName);
 	bool ImportInstruments(CFamiTrackerDoc *pImported, int *pInstTable);
 	bool ImportGrooves(CFamiTrackerDoc *pImported, int *pGrooveMap);		// // //
 	bool ImportDetune(CFamiTrackerDoc *pImported);			// // //
@@ -512,7 +512,7 @@ private:
 	unsigned int	m_iNamcoChannels;
 	vibrato_t		m_iVibratoStyle;							// 0 = old style, 1 = new style
 	bool			m_bLinearPitch;
-	int				N163LevelOffset;
+	int				_N163LevelOffset;
 	
 	machine_t		m_iMachine;									// // // NTSC / PAL
 	unsigned int	m_iEngineSpeed;								// Refresh rate
