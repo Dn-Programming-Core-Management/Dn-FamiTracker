@@ -123,6 +123,8 @@ protected:
 	void	HandleNote(int Note, int Octave) override;
 	bool	CreateInstHandler(inst_type_t Type) override;		// // //
 
+	void triggerSample();
+
 	void	ClearRegisters() override;
 	CString	GetCustomEffectString() const override;		// // //
 private:
@@ -133,9 +135,9 @@ private:
 	unsigned char m_iSampleLength;
 	unsigned char m_iLoopOffset;
 	unsigned char m_iLoopLength;
-	int m_iRetrigger;
-	int m_iRetriggerCntr;
+	int mRetriggerPeriod;
+	int mRetriggerCtr;
 	int m_iCustomPitch;
-	bool m_bRetrigger;		// // //
-	bool m_bEnabled;
+	bool mTriggerSample;		// // //
+	bool mEnabled;
 };
