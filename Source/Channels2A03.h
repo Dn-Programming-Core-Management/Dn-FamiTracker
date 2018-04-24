@@ -124,6 +124,7 @@ protected:
 	bool	CreateInstHandler(inst_type_t Type) override;		// // //
 
 	void triggerSample();
+	void queueSample();
 
 	void	ClearRegisters() override;
 	CString	GetCustomEffectString() const override;		// // //
