@@ -511,18 +511,19 @@ int CNoiseChan::TriggerNote(int Note)
 
 CDPCMChan::CDPCMChan() :		// // //
 	CChannelHandler(0xF, 0x3F),		// // // does not use these anyway
-	m_bEnabled(false),
-	m_bRetrigger(false),
+	mEnabled(false),
+	mTriggerSample(false),
 	m_cDAC(255),
-	m_iRetrigger(0),
-	m_iRetriggerCntr(0)
+	mRetriggerPeriod(0),
+	mRetriggerCtr(0)
 { 
 }
+
 
 void CDPCMChan::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 {
 	m_iCustomPitch = -1;
-	m_iRetrigger = 0;
+	mRetriggerPeriod = 0;
 
 	if (pNoteData->Note != NONE) {
 		m_iNoteCut = 0;
@@ -532,6 +533,9 @@ void CDPCMChan::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	CChannelHandler::HandleNoteData(pNoteData, EffColumns);
 }
 
+
+
+// Called once per row.
 bool CDPCMChan::HandleEffect(effect_t EffNum, unsigned char EffParam)
 {
 	switch (EffNum) {
@@ -545,12 +549,54 @@ bool CDPCMChan::HandleEffect(effect_t EffNum, unsigned char EffParam)
 		m_iCustomPitch = EffParam & 0x0F;		// // //
 		break;
 	case EF_RETRIGGER:
-//		if (NoteData->EffParam[i] > 0) {
-			m_iRetrigger = EffParam + 1;
-			if (m_iRetriggerCntr == 0)
-				m_iRetriggerCntr = m_iRetrigger;
-//		}
-//		m_iEnableRetrigger = 1;
+		/*
+		triggerSample() {
+			Sets mTriggerSample.
+			Sets mRetriggerCtr = 1.
+		}
+
+		If new row:
+			mRetriggerPeriod = 0.
+			
+			If Xxx: HandleEffect.EF_RETRIGGER:
+				mRetriggerPeriod = xx
+				if mRetriggerCtr == 0:		// Happens once, ever (due to triggerSample() rewrite)
+					triggerSample()
+			
+			if note: PlaySample():
+				triggerSample()
+
+		Each frame: RefreshChannel():	// renders channel (pushes registers to 2a03)
+			If mRetriggerPeriod:
+				mRetriggerCtr--
+				If zero:
+					mRetriggerCtr = mRetriggerPeriod.
+					mEnabled = true
+					mTriggerSample = true
+			
+			if mTriggerSample:
+				play DPCM.
+			
+		
+		In the absence of triggerSample(), mRetriggerCtr is cycled within [1..mRetriggerPeriod] by RefreshChannel().
+		If a sample plays on any? non-Xxx row, mRetriggerCtr is reset to 0.
+		*/
+
+
+		// mRetriggerCtr is decremented during Xxx rows, and paused during non-Xxx rows.
+		// mRetriggerCtr remains within [1..mRetriggerPeriod]. If it's decremented to 0, mRetriggerPeriod is added immediately.
+		
+		// Each row sets mRetriggerPeriod to 0, unless Xxx.
+		// Then Xxx takes effect.
+		// Explicit notes (PlaySample()) hard-syncs mRetriggerCtr to mRetriggerPeriod+1, then queues sample for RefreshChannel().
+			// <s>If explicit note without Xxx on that row, both become 0.
+		// RefreshChannel() when retriggering, sets mRetriggerCtr to mRetriggerPeriod.
+			// Pushes changes to NES.
+		
+		mRetriggerPeriod = std::max((int)EffParam, 1);
+		if (mRetriggerCtr == 0) {
+			triggerSample();
+		}
 		break;
 	case EF_NOTE_CUT:
 	case EF_NOTE_RELEASE:
@@ -598,6 +644,30 @@ bool CDPCMChan::CreateInstHandler(inst_type_t Type)
 	return false;
 }
 
+
+// Called once per row.
+void CDPCMChan::PlaySample(const CDSample *pSamp, int Pitch)		// // //
+{
+	int SampleSize = pSamp->GetSize();
+	m_pAPU->WriteSample(pSamp->GetData(), SampleSize);		// // //
+	m_iPeriod = m_iCustomPitch != -1 ? m_iCustomPitch : Pitch;
+	m_iSampleLength = (SampleSize >> 4) - (m_iOffset << 2);
+	m_iLoopLength = SampleSize - m_iLoopOffset;
+	m_iLoop = (Pitch & 0x80) >> 1;
+	triggerSample();
+}
+
+
+void CDPCMChan::triggerSample() {
+	// Trigger sample.
+	mEnabled = true;
+	mTriggerSample = true;
+
+	// If mRetriggerPeriod is nonzero, this initializes retriggering.
+	mRetriggerCtr = 1;
+}
+
+// Called once per frame. Renders note to registers. Initializes playback.
 void CDPCMChan::RefreshChannel()
 {
 	if (m_cDAC != 255) {
@@ -605,19 +675,20 @@ void CDPCMChan::RefreshChannel()
 		m_cDAC = 255;
 	}
 
-	if (m_iRetrigger != 0) {
-		m_iRetriggerCntr--;
-		if (m_iRetriggerCntr == 0) {
-			m_iRetriggerCntr = m_iRetrigger;
-			m_bEnabled = true;
-			m_bRetrigger = true;
+	if (mRetriggerPeriod != 0) {
+		mRetriggerCtr--;
+		if (mRetriggerCtr == 0) {
+			mRetriggerCtr = mRetriggerPeriod;
+			mEnabled = true;
+			mTriggerSample = true;
 		}
 	}
+
 
 	if (m_bRelease) {
 		// Release command
 		WriteRegister(0x4015, 0x0F);
-		m_bEnabled = false;
+		mEnabled = false;
 		m_bRelease = false;
 	}
 
@@ -630,7 +701,7 @@ void CDPCMChan::RefreshChannel()
 	}
 */	
 
-	if (!m_bEnabled)
+	if (!mEnabled)
 		return;
 
 	if (!m_bGate) {
@@ -641,9 +712,9 @@ void CDPCMChan::RefreshChannel()
 			WriteRegister(0x4011, 0);	// regain full volume for TN
 		}
 
-		m_bEnabled = false;		// don't write to this channel anymore
+		mEnabled = false;		// don't write to this channel anymore
 	}
-	else if (m_bRetrigger) {
+	else if (mTriggerSample) {
 		// Start playing the sample
 		WriteRegister(0x4010, (m_iPeriod & 0x0F) | m_iLoop);
 		WriteRegister(0x4012, m_iOffset);							// load address, start at $C000
@@ -657,9 +728,10 @@ void CDPCMChan::RefreshChannel()
 			WriteRegister(0x4013, m_iLoopLength);
 		}
 
-		m_bRetrigger = false;
+		mTriggerSample = false;
 	}
 }
+
 
 int CDPCMChan::GetChannelVolume() const
 {
@@ -676,19 +748,6 @@ void CDPCMChan::WriteDCOffset(unsigned char Delta)		// // //
 void CDPCMChan::SetLoopOffset(unsigned char Loop)		// // //
 {
 	m_iLoopOffset = Loop;
-}
-
-void CDPCMChan::PlaySample(const CDSample *pSamp, int Pitch)		// // //
-{
-	int SampleSize = pSamp->GetSize();
-	m_pAPU->WriteSample(pSamp->GetData(), SampleSize);		// // //
-	m_iPeriod = m_iCustomPitch != -1 ? m_iCustomPitch : Pitch;
-	m_iSampleLength = (SampleSize >> 4) - (m_iOffset << 2);
-	m_iLoopLength = SampleSize - m_iLoopOffset;
-	m_bEnabled = true;
-	m_bRetrigger = true;
-	m_iLoop = (Pitch & 0x80) >> 1;
-	m_iRetriggerCntr = m_iRetrigger;
 }
 
 void CDPCMChan::ClearRegisters()
