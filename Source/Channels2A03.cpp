@@ -551,8 +551,13 @@ bool CDPCMChan::HandleEffect(effect_t EffNum, unsigned char EffParam)
 	case EF_RETRIGGER:
 		/*
 		triggerSample() {
-			Sets mTriggerSample.
-			Sets mRetriggerCtr = 1.
+			mTriggerSample = true	// play sample this frame.
+			queueSample()			// If mRetriggerPeriod != 0, this initializes retriggering.
+									// Otherwise reset mRetriggerCtr.
+		}
+		queueSample() {
+			if (mRetriggerPeriod == 0)	mRetriggerCtr = 0;
+			else						mRetriggerCtr = mRetriggerPeriod + 1;
 		}
 
 		If new row:
@@ -560,8 +565,8 @@ bool CDPCMChan::HandleEffect(effect_t EffNum, unsigned char EffParam)
 			
 			If Xxx: HandleEffect.EF_RETRIGGER:
 				mRetriggerPeriod = xx
-				if mRetriggerCtr == 0:		// Happens once, ever (due to triggerSample() rewrite)
-					triggerSample()
+				if mRetriggerCtr == 0:	// Most recent row contains note without Xxx
+					queueSample()
 			
 			if note: PlaySample():
 				triggerSample()
@@ -578,24 +583,13 @@ bool CDPCMChan::HandleEffect(effect_t EffNum, unsigned char EffParam)
 				play DPCM.
 			
 		
-		In the absence of triggerSample(), mRetriggerCtr is cycled within [1..mRetriggerPeriod] by RefreshChannel().
-		If a sample plays on any? non-Xxx row, mRetriggerCtr is reset to 0.
+		In the absence of queueSample(), mRetriggerCtr is cycled within [1..mRetriggerPeriod] by RefreshChannel().
+		If a row-note plays on any non-Xxx row, mRetriggerCtr is reset to mRetriggerPeriod=0.
 		*/
-
-
-		// mRetriggerCtr is decremented during Xxx rows, and paused during non-Xxx rows.
-		// mRetriggerCtr remains within [1..mRetriggerPeriod]. If it's decremented to 0, mRetriggerPeriod is added immediately.
-		
-		// Each row sets mRetriggerPeriod to 0, unless Xxx.
-		// Then Xxx takes effect.
-		// Explicit notes (PlaySample()) hard-syncs mRetriggerCtr to mRetriggerPeriod+1, then queues sample for RefreshChannel().
-			// <s>If explicit note without Xxx on that row, both become 0.
-		// RefreshChannel() when retriggering, sets mRetriggerCtr to mRetriggerPeriod.
-			// Pushes changes to NES.
 		
 		mRetriggerPeriod = std::max((int)EffParam, 1);
-		if (mRetriggerCtr == 0) {
-			triggerSample();
+		if (mRetriggerCtr == 0) {	// Most recent row contains note without Xxx
+			queueSample();
 		}
 		break;
 	case EF_NOTE_CUT:
@@ -663,9 +657,20 @@ void CDPCMChan::triggerSample() {
 	mEnabled = true;
 	mTriggerSample = true;
 
-	// If mRetriggerPeriod is nonzero, this initializes retriggering.
-	mRetriggerCtr = 1;
+	// If mRetriggerPeriod != 0, this initializes retriggering. Otherwise reset mRetriggerCtr.
+	queueSample();
 }
+
+void CDPCMChan::queueSample() {
+	if (mRetriggerPeriod == 0) {
+		// Not retriggering, reset mRetriggerCtr.
+		mRetriggerCtr = 0;
+	} else {
+		// mRetriggerCtr gets decremented this frame, and reaches 0 in mRetriggerPeriod frames.
+		mRetriggerCtr = mRetriggerPeriod + 1;
+	}
+}
+
 
 // Called once per frame. Renders note to registers. Initializes playback.
 void CDPCMChan::RefreshChannel()
