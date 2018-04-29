@@ -50,7 +50,7 @@ private:
 	uint8_t	m_iWaveOffset;
 	uint8_t	*m_pWaveData;
 
-	uint8_t m_iLastSample;
+	int m_iLastSample;
 };
 
 class CN163 : public CSoundChip {
