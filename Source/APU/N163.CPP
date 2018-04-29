@@ -292,6 +292,16 @@ void CN163Chan::Write(uint16_t Address, uint8_t Value)
 	}
 }
 
+const int N163_CENTER = 8;
+//const int VOLUME_LIMIT = 16;
+int mixN163Volume(uint8_t sample, uint8_t volume) {
+	sample &= 0xF;
+
+	// note: N163 output is centred at 8, and inverted w.r.t 2A03
+	int amp = (N163_CENTER - sample) * volume;
+	return amp;
+}
+
 void CN163Chan::Process(uint32_t Time, uint8_t ChannelsActive, CN163 *pParent)
 {
 	uint32_t TimeStamp = 0;
@@ -319,7 +329,7 @@ void CN163Chan::Process(uint32_t Time, uint8_t ChannelsActive, CN163 *pParent)
 		if (WavePtr & 1)
 			Sample >>= 4;
 
-		m_iLastSample = (Sample & 0x0F) * m_iVolume;
+		m_iLastSample = mixN163Volume(Sample, m_iVolume);
 		pParent->Mix(m_iLastSample, TimeStamp, m_iChanId);
 	}
 
@@ -350,7 +360,7 @@ void CN163Chan::ProcessClean(uint32_t Time, uint8_t ChannelsActive)
 		if (WavePtr & 1)
 			Sample >>= 4;
 
-		Mix((Sample & 0x0F) * m_iVolume);
+		Mix(mixN163Volume(Sample, m_iVolume));
 	}
 	
 	m_iCounter -= Time;
