@@ -277,7 +277,7 @@ void CVRC7Channel::RefreshChannel()
 	}
 
 	// Write custom instrument
-	if (m_iDutyPeriod == 0 && (m_iCommand == CMD_NOTE_TRIGGER || m_bRegsDirty)) {
+	if ((m_iDutyPeriod == 0 && m_iCommand == CMD_NOTE_TRIGGER) || m_bRegsDirty) {
 		for (int i = 0; i < 8; ++i)
 			RegWrite(i, m_iPatchRegs[i]);
 	}
