@@ -24,7 +24,7 @@
 
 // CClipboard //////////////////////////////////////////////////////////////////
 
-CClipboard::CClipboard(CWnd *pWnd, UINT Clipboard) : m_bOpened(pWnd->OpenClipboard() == TRUE), m_iClipboard(Clipboard), m_hMemory(NULL)
+CClipboard::CClipboard(CWnd *pWnd, UINT clipboardFormat) : m_bOpened(pWnd->OpenClipboard() == TRUE), mClipboardFormat(clipboardFormat), m_hMemory(NULL)
 {
 }
 
@@ -52,7 +52,7 @@ void CClipboard::SetData(HGLOBAL hMemory) const
 	ASSERT(m_bOpened);
 
 	::EmptyClipboard();
-	::SetClipboardData(m_iClipboard, hMemory);
+	::SetClipboardData(mClipboardFormat, hMemory);
 }
 
 bool CClipboard::SetDataPointer(LPVOID pData, UINT Size) const
@@ -87,7 +87,7 @@ bool CClipboard::GetData(HGLOBAL &hMemory) const		// // //
 		::CloseClipboard();
 		return false;
 	}
-	hMemory = ::GetClipboardData(m_iClipboard);
+	hMemory = ::GetClipboardData(mClipboardFormat);
 	if (hMemory == nullptr) {
 		AfxMessageBox(IDS_CLIPBOARD_PASTE_ERROR);
 		return false;
@@ -105,5 +105,5 @@ LPVOID CClipboard::GetDataPointer()
 
 bool CClipboard::IsDataAvailable() const
 {
-	return ::IsClipboardFormatAvailable(m_iClipboard) == TRUE;
+	return ::IsClipboardFormatAvailable(mClipboardFormat) == TRUE;
 }

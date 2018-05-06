@@ -264,7 +264,7 @@ static int ConvertKeyExtra(int Key)		// // //
 // CFamiTrackerView construction/destruction
 
 CFamiTrackerView::CFamiTrackerView() : 
-	m_iClipboard(0),
+	mClipboardFormat(0),
 	m_iInsertKeyStepping(1),
 	m_bEditEnable(false),
 	m_bMaskInstrument(false),
@@ -378,9 +378,9 @@ int CFamiTrackerView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_pPatternEditor->ApplyColorScheme();
 
 	// Create clipboard format
-	m_iClipboard = ::RegisterClipboardFormat(CLIPBOARD_ID);
+	mClipboardFormat = ::RegisterClipboardFormat(CLIPBOARD_ID);
 
-	if (m_iClipboard == 0)
+	if (mClipboardFormat == 0)
 		AfxMessageBox(IDS_CLIPBOARD_ERROR, MB_ICONERROR);
 
 	return 0;
@@ -902,7 +902,7 @@ void CFamiTrackerView::OnEditCopy()
 
 	std::shared_ptr<CPatternClipData> pClipData(m_pPatternEditor->Copy());		// // //
 
-	CClipboard Clipboard(this, m_iClipboard);
+	CClipboard Clipboard(this, mClipboardFormat);
 
 	if (!Clipboard.IsOpened()) {
 		AfxMessageBox(IDS_CLIPBOARD_OPEN_ERROR);
@@ -929,7 +929,7 @@ void CFamiTrackerView::OnEditCut()
 void CFamiTrackerView::OnEditPaste()
 {
 	if (!m_bEditEnable) return;		// // //
-	CClipboard Clipboard(this, m_iClipboard);
+	CClipboard Clipboard(this, mClipboardFormat);
 	HGLOBAL hMem;		// // //
 	if (!Clipboard.GetData(hMem))
 		return;
@@ -947,7 +947,7 @@ void CFamiTrackerView::OnEditPaste()
 void CFamiTrackerView::OnEditPasteMix()		// // //
 {
 	if (!m_bEditEnable) return;		// // //
-	CClipboard Clipboard(this, m_iClipboard);
+	CClipboard Clipboard(this, mClipboardFormat);
 	HGLOBAL hMem;		// // //
 	if (!Clipboard.GetData(hMem))
 		return;
@@ -966,7 +966,7 @@ void CFamiTrackerView::OnEditPasteMix()		// // //
 void CFamiTrackerView::OnEditPasteOverwrite()		// // //
 {
 	if (!m_bEditEnable) return;
-	CClipboard Clipboard(this, m_iClipboard);
+	CClipboard Clipboard(this, mClipboardFormat);
 	HGLOBAL hMem;		// // //
 	if (!Clipboard.GetData(hMem))
 		return;
@@ -985,7 +985,7 @@ void CFamiTrackerView::OnEditPasteOverwrite()		// // //
 void CFamiTrackerView::OnEditPasteInsert()		// // //
 {
 	if (!m_bEditEnable) return;
-	CClipboard Clipboard(this, m_iClipboard);
+	CClipboard Clipboard(this, mClipboardFormat);
 	HGLOBAL hMem;		// // //
 	if (!Clipboard.GetData(hMem))
 		return;
@@ -3664,7 +3664,7 @@ bool CFamiTrackerView::IsSelecting() const
 
 bool CFamiTrackerView::IsClipboardAvailable() const
 {
-	return ::IsClipboardFormatAvailable(m_iClipboard) == TRUE;
+	return ::IsClipboardFormatAvailable(mClipboardFormat) == TRUE;
 }
 
 void CFamiTrackerView::OnBlockStart()
@@ -3738,7 +3738,7 @@ DROPEFFECT CFamiTrackerView::OnDragEnter(COleDataObject* pDataObject, DWORD dwKe
 		static_cast<CMainFrame*>(GetParentFrame())->SetMessageText(IDS_SEL_REPEATED_ROW);
 		m_nDropEffect = DROPEFFECT_NONE;
 	}
-	else if (pDataObject->IsDataAvailable(m_iClipboard)) {
+	else if (pDataObject->IsDataAvailable(mClipboardFormat)) {
 		if (dwKeyState & (MK_CONTROL | MK_SHIFT)) {
 			m_nDropEffect = DROPEFFECT_COPY;
 			if (dwKeyState & MK_SHIFT)
@@ -3753,7 +3753,7 @@ DROPEFFECT CFamiTrackerView::OnDragEnter(COleDataObject* pDataObject, DWORD dwKe
 		// Get drag rectangle
 		std::shared_ptr<CPatternClipData> pDragData(new CPatternClipData());		// // //
 
-		HGLOBAL hMem = pDataObject->GetGlobalData(m_iClipboard);
+		HGLOBAL hMem = pDataObject->GetGlobalData(mClipboardFormat);
 		pDragData->FromMem(hMem);
 
 		// Begin drag operation
@@ -3808,7 +3808,7 @@ BOOL CFamiTrackerView::OnDrop(COleDataObject* pDataObject, DROPEFFECT dropEffect
 
 		// Get clipboard data
 		CPatternClipData *pClipData = new CPatternClipData();
-		HGLOBAL hMem = pDataObject->GetGlobalData(m_iClipboard);
+		HGLOBAL hMem = pDataObject->GetGlobalData(mClipboardFormat);
 		pClipData->FromMem(hMem);
 				
 		// Paste into pattern
@@ -3847,7 +3847,7 @@ void CFamiTrackerView::BeginDragData(int ChanOffset, int RowOffset)
 		m_bDragSource = true;
 		m_bDropped = false;
 
-		pSrc->CacheGlobalData(m_iClipboard, hMem);
+		pSrc->CacheGlobalData(mClipboardFormat, hMem);
 		DROPEFFECT res = pSrc->DoDragDrop(DROPEFFECT_COPY | DROPEFFECT_MOVE);
 
 		if (m_bDropped == false) {

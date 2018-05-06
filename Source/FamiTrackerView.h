@@ -262,7 +262,7 @@ public:
 private:
 	// General
 	bool				m_bHasFocus;
-	UINT				m_iClipboard;
+	UINT				mClipboardFormat;
 	int					m_iMenuChannel;							// Which channel a popup-menu belongs to
 
 	// Cursor & editing
