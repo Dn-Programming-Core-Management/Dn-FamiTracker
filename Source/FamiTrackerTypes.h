@@ -85,7 +85,7 @@ const int ECHO_BUFFER_LENGTH = 3;
 
 // Number of available channels (max) TODO: should not be used anymore!
 // instead, check the channelsavailable variable and allocate dynamically
-const int MAX_CHANNELS	 = 5 + 3 + 2 + 6 + 1 + 8 + 3;		
+const int MAX_CHANNELS	 = 5 + 3 + 2 + 6 + 1 + 8 + 3;
 
 const int CHANNELS_DEFAULT = 5;
 const int CHANNELS_VRC6	   = 3;
@@ -130,48 +130,48 @@ enum {
 // Channel effects
 enum effect_t : unsigned char {
 	EF_NONE = 0,
-	EF_SPEED,
-	EF_JUMP,
-	EF_SKIP,
-	EF_HALT,
-	EF_VOLUME,
-	EF_PORTAMENTO,
-	EF_PORTAOFF,				// unused!!
-	EF_SWEEPUP,
-	EF_SWEEPDOWN,
-	EF_ARPEGGIO,
-	EF_VIBRATO,
-	EF_TREMOLO,
-	EF_PITCH,
-	EF_DELAY,
-	EF_DAC,
-	EF_PORTA_UP,
-	EF_PORTA_DOWN,
-	EF_DUTY_CYCLE,
-	EF_SAMPLE_OFFSET,
-	EF_SLIDE_UP,
-	EF_SLIDE_DOWN,
-	EF_VOLUME_SLIDE,
-	EF_NOTE_CUT,
-	EF_RETRIGGER,
-	EF_DELAYED_VOLUME,			// // //
-	EF_FDS_MOD_DEPTH,
-	EF_FDS_MOD_SPEED_HI,
-	EF_FDS_MOD_SPEED_LO,
-	EF_DPCM_PITCH,
-	EF_SUNSOFT_ENV_TYPE,
-	EF_SUNSOFT_ENV_HI,
-	EF_SUNSOFT_ENV_LO,
-	EF_SUNSOFT_NOISE,		// // // 050B
-	EF_VRC7_PORT,		// // // 050B
-	EF_VRC7_WRITE,		// // // 050B
-	EF_NOTE_RELEASE,			// // //
-	EF_GROOVE,					// // //
-	EF_TRANSPOSE,				// // //
-	EF_N163_WAVE_BUFFER,		// // //
-	EF_FDS_VOLUME,				// // //
-	EF_FDS_MOD_BIAS,				// // //
-//	EF_TARGET_VOLUME_SLIDE, 
+	EF_SPEED,           	// Speed
+	EF_JUMP,            	// Jump
+	EF_SKIP,            	// Skip
+	EF_HALT,            	// Halt
+	EF_VOLUME,          	// Volume
+	EF_PORTAMENTO,      	// Porta on
+	EF_PORTAOFF,        	// Porta off		// unused
+	EF_SWEEPUP,         	// Sweep up
+	EF_SWEEPDOWN,       	// Sweep down
+	EF_ARPEGGIO,        	// Arpeggio
+	EF_VIBRATO,         	// Vibrato
+	EF_TREMOLO,         	// Tremolo
+	EF_PITCH,           	// Pitch
+	EF_DELAY,           	// Note delay
+	EF_DAC,             	// DAC setting
+	EF_PORTA_UP,        	// Portamento up
+	EF_PORTA_DOWN,      	// Portamento down
+	EF_DUTY_CYCLE,      	// Duty cycle
+	EF_SAMPLE_OFFSET,   	// Sample offset
+	EF_SLIDE_UP,        	// Slide up
+	EF_SLIDE_DOWN,      	// Slide down
+	EF_VOLUME_SLIDE,    	// Volume slide
+	EF_NOTE_CUT,        	// Note cut
+	EF_RETRIGGER,       	// DPCM retrigger
+	EF_DELAYED_VOLUME,  	// // // Delayed channel volume
+	EF_FDS_MOD_DEPTH,   	// FDS modulation depth
+	EF_FDS_MOD_SPEED_HI,	// FDS modulation speed hi
+	EF_FDS_MOD_SPEED_LO,	// FDS modulation speed lo
+	EF_DPCM_PITCH,      	// DPCM Pitch
+	EF_SUNSOFT_ENV_TYPE,	// Sunsoft envelope type
+	EF_SUNSOFT_ENV_HI,  	// Sunsoft envelope high
+	EF_SUNSOFT_ENV_LO,  	// Sunsoft envelope low
+	EF_SUNSOFT_NOISE,   	// // // 050B Sunsoft noise period
+	EF_VRC7_PORT,       	// // // 050B VRC7 custom patch port
+	EF_VRC7_WRITE,      	// // // 050B VRC7 custom patch write
+	EF_NOTE_RELEASE,    	// // // Delayed release
+	EF_GROOVE,          	// // // Groove
+	EF_TRANSPOSE,       	// // // Delayed transpose
+	EF_N163_WAVE_BUFFER,	// // // N163 wave buffer
+	EF_FDS_VOLUME,      	// // // FDS volume envelope
+	EF_FDS_MOD_BIAS,    	// // // FDS auto-FM bias
+	// EF_TARGET_VOLUME_SLIDE,
 /*
 	EF_VRC7_MODULATOR,
 	EF_VRC7_CARRIER,
@@ -199,52 +199,53 @@ const effect_t S5B_EFFECTS[] = {EF_SUNSOFT_ENV_TYPE, EF_SUNSOFT_ENV_HI, EF_SUNSO
 
 // Channel effect letters
 const char EFF_CHAR[] = {
-	'F',	// Speed
-	'B',	// Jump 
-	'D',	// Skip 
-	'C',	// Halt
-	'E',	// Volume
-	'3',	// Porta on
-	'\xff',	// Porta off		// unused
-	'H',	// Sweep up
-	'I',	// Sweep down
-	'0',	// Arpeggio
-	'4',	// Vibrato
-	'7',	// Tremolo
-	'P',	// Pitch
-	'G',	// Note delay
-	'Z',	// DAC setting
-	'1',	// Portamento up
-	'2',	// Portamento down
-	'V',	// Duty cycle
-	'Y',	// Sample offset
-	'Q',	// Slide up
-	'R',	// Slide down
-	'A',	// Volume slide
-	'S',	// Note cut
-	'X',	// DPCM retrigger						 
-	'M',	// // // Delayed channel volume
-	'H',	// FDS modulation depth
-	'I',	// FDS modulation speed hi
-	'J',	// FDS modulation speed lo
-	'W',	// DPCM Pitch
-	'H',	// Sunsoft envelope type
-	'I',	// Sunsoft envelope high
-	'J',	// Sunsoft envelope low
-	'W',	// // // 050B Sunsoft noise period
-	'H',	// // // 050B VRC7 custom patch port
-	'I',	// // // 050B VRC7 custom patch write
-	'L',	// // // Delayed release
-	'O',	// // // Groove
-	'T',	// // // Delayed transpose
-	'Z',	// // // N163 wave buffer
-	'E',	// // // FDS volume envelope
-	'Z',	// // // FDS auto-FM bias
-	//'9'	// Targeted volume slide
+	       	// EF_NONE,
+	'F',   	// EF_SPEED,
+	'B',   	// EF_JUMP,
+	'D',   	// EF_SKIP,
+	'C',   	// EF_HALT,
+	'E',   	// EF_VOLUME,
+	'3',   	// EF_PORTAMENTO,
+	'\xff',	// EF_PORTAOFF,
+	'H',   	// EF_SWEEPUP,
+	'I',   	// EF_SWEEPDOWN,
+	'0',   	// EF_ARPEGGIO,
+	'4',   	// EF_VIBRATO,
+	'7',   	// EF_TREMOLO,
+	'P',   	// EF_PITCH,
+	'G',   	// EF_DELAY,
+	'Z',   	// EF_DAC,
+	'1',   	// EF_PORTA_UP,
+	'2',   	// EF_PORTA_DOWN,
+	'V',   	// EF_DUTY_CYCLE,
+	'Y',   	// EF_SAMPLE_OFFSET,
+	'Q',   	// EF_SLIDE_UP,
+	'R',   	// EF_SLIDE_DOWN,
+	'A',   	// EF_VOLUME_SLIDE,
+	'S',   	// EF_NOTE_CUT,
+	'X',   	// EF_RETRIGGER,
+	'M',   	// EF_DELAYED_VOLUME,
+	'H',   	// EF_FDS_MOD_DEPTH,
+	'I',   	// EF_FDS_MOD_SPEED_HI,
+	'J',   	// EF_FDS_MOD_SPEED_LO,
+	'W',   	// EF_DPCM_PITCH,
+	'H',   	// EF_SUNSOFT_ENV_TYPE,
+	'I',   	// EF_SUNSOFT_ENV_HI,
+	'J',   	// EF_SUNSOFT_ENV_LO,
+	'W',   	// EF_SUNSOFT_NOISE,
+	'H',   	// EF_VRC7_PORT,
+	'I',   	// EF_VRC7_WRITE,
+	'L',   	// EF_NOTE_RELEASE,
+	'O',   	// EF_GROOVE,
+	'T',   	// EF_TRANSPOSE,
+	'Z',   	// EF_N163_WAVE_BUFFER,
+	'E',   	// EF_FDS_VOLUME,
+	'Z',   	// EF_FDS_MOD_BIAS,
+	//'9'  	// EF_TARGET_VOLUME_SLIDE,
 	/*
-	'H',	// VRC7 modulator
-	'I',	// VRC7 carrier
-	'J',	// VRC7 modulator/feedback level
+	'H',	// EF_VRC7_MODULATOR,
+	'I',	// EF_VRC7_CARRIER,
+	'J',	// EF_VRC7_LEVELS,
 	*/
 };
 
