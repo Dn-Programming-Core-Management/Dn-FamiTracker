@@ -52,3 +52,6 @@ commit_hash.h
 libft0cc/build
 libft0cc/build_ms
 Testing/Temporary
+
+# https://marketplace.visualstudio.com/items?itemName=YaobinOuyang.CodeAtlas
+CodeGraphData
