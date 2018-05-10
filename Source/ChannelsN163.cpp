@@ -82,7 +82,6 @@ bool CChannelHandlerN163::HandleEffect(effect_t EffNum, unsigned char EffParam)
 			m_bDisableLoad = false;
 		}
 		else {
-			if (EffParam + (m_iWaveLen >> 1) > 0x80 - 8 * m_iChannels) break;
 			m_iWavePos = EffParam << 1;
 			m_bDisableLoad = true;
 		}
