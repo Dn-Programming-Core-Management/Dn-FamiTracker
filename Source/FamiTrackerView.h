@@ -266,7 +266,7 @@ private:
 	int					m_iMenuChannel;							// Which channel a popup-menu belongs to
 
 	// Cursor & editing
-	unsigned int		m_iMoveKeyStepping;						// Number of rows to jump when moving
+	unsigned int MoveKeyStepping() const;
 	unsigned int		m_iInsertKeyStepping;					// Number of rows to move when inserting notes
 	bool				m_bEditEnable;							// Edit is enabled
 	bool				m_bSwitchToInstrument;					// Select active instrument
