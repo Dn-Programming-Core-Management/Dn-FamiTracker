@@ -265,7 +265,6 @@ static int ConvertKeyExtra(int Key)		// // //
 
 CFamiTrackerView::CFamiTrackerView() : 
 	m_iClipboard(0),
-	m_iMoveKeyStepping(1),
 	m_iInsertKeyStepping(1),
 	m_bEditEnable(false),
 	m_bMaskInstrument(false),
@@ -2529,14 +2528,14 @@ void CFamiTrackerView::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 void CFamiTrackerView::OnKeyDirUp()
 {
 	// Move up
-	m_pPatternEditor->MoveUp(m_iMoveKeyStepping);
+	m_pPatternEditor->MoveUp(MoveKeyStepping());
 	InvalidateCursor();
 }
 
 void CFamiTrackerView::OnKeyDirDown()
 {
 	// Move down
-	m_pPatternEditor->MoveDown(m_iMoveKeyStepping);
+	m_pPatternEditor->MoveDown(MoveKeyStepping());
 	InvalidateCursor();
 }
 
@@ -3576,13 +3575,16 @@ void CFamiTrackerView::OnDecreaseStepSize()
 void CFamiTrackerView::SetStepping(int Step) 
 { 
 	m_iInsertKeyStepping = Step;
-
-	if (Step > 0 && !theApp.GetSettings()->General.bNoStepMove)
-		m_iMoveKeyStepping = Step;
-	else 
-		m_iMoveKeyStepping = 1;
-
 	static_cast<CMainFrame*>(GetParentFrame())->UpdateControls();
+}
+
+unsigned CFamiTrackerView::MoveKeyStepping() const {
+	auto step = m_iInsertKeyStepping;
+	if (step > 0 && !theApp.GetSettings()->General.bNoStepMove) {
+		return step;
+	} else {
+		return 1;
+	}
 }
 
 void CFamiTrackerView::OnEditInterpolate()
