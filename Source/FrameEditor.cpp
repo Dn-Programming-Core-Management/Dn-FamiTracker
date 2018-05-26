@@ -55,7 +55,7 @@ CFrameEditor::CFrameEditor(CMainFrame *pMainFrm) :
 	m_pMainFrame(pMainFrm),
 	m_pDocument(NULL),
 	m_pView(NULL),
-	m_iClipboard(0),
+	mClipboardFormat(0),
 	m_iWinWidth(0),
 	m_iWinHeight(0),
 	m_iHiglightLine(0),
@@ -144,10 +144,10 @@ int CFrameEditor::OnCreate(LPCREATESTRUCT lpCreateStruct)
 					  OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
 					  theApp.GetSettings()->Appearance.strFrameFont);		// // // 050B
 
-	m_iClipboard = ::RegisterClipboardFormat(CLIPBOARD_ID);
+	mClipboardFormat = ::RegisterClipboardFormat(CLIPBOARD_ID);
 
 	m_DropTarget.Register(this);
-	m_DropTarget.SetClipBoardFormat(m_iClipboard);
+	m_DropTarget.SetClipBoardFormat(mClipboardFormat);
 
 	m_iDragThresholdX = ::GetSystemMetrics(SM_CXDRAG);
 	m_iDragThresholdY = ::GetSystemMetrics(SM_CYDRAG);
@@ -1029,7 +1029,7 @@ void CFrameEditor::OnEditCopy()
 {
 	std::unique_ptr<CFrameClipData> ClipData {Copy()};		// // //
 
-	CClipboard Clipboard(this, m_iClipboard);
+	CClipboard Clipboard(this, mClipboardFormat);
 
 	if (!Clipboard.IsOpened()) {
 		AfxMessageBox(IDS_CLIPBOARD_OPEN_ERROR);
@@ -1046,7 +1046,7 @@ void CFrameEditor::OnEditCopy()
 
 void CFrameEditor::OnEditPaste()
 {
-	CClipboard Clipboard(this, m_iClipboard);
+	CClipboard Clipboard(this, mClipboardFormat);
 	HGLOBAL hMem;		// // //
 	if (!Clipboard.GetData(hMem))
 		return;
@@ -1059,7 +1059,7 @@ void CFrameEditor::OnEditPaste()
 
 void CFrameEditor::OnEditPasteOverwrite()		// // //
 {
-	CClipboard Clipboard(this, m_iClipboard);
+	CClipboard Clipboard(this, mClipboardFormat);
 	HGLOBAL hMem;		// // //
 	if (!Clipboard.GetData(hMem))
 		return;
@@ -1077,7 +1077,7 @@ void CFrameEditor::OnUpdateEditPasteOverwrite(CCmdUI *pCmdUI)		// // //
 
 void CFrameEditor::OnEditPasteNewPatterns()
 {
-	CClipboard Clipboard(this, m_iClipboard);
+	CClipboard Clipboard(this, mClipboardFormat);
 	HGLOBAL hMem;		// // //
 	if (!Clipboard.GetData(hMem))
 		return;
@@ -1391,7 +1391,7 @@ void CFrameEditor::InitiateDrag()
 		ClipData.ToMem(hMem);
 
 		// Setup OLE
-		pSrc->CacheGlobalData(m_iClipboard, hMem);
+		pSrc->CacheGlobalData(mClipboardFormat, hMem);
 		DROPEFFECT res = pSrc->DoDragDrop(DROPEFFECT_COPY | DROPEFFECT_MOVE); // calls DropData
 
 		if (res == DROPEFFECT_MOVE) {
@@ -1434,7 +1434,7 @@ bool CFrameEditor::IsCopyValid(COleDataObject* pDataObject) const
 {
 	// Return true if the number of pasted frames will fit
 	CFrameClipData *pClipData = new CFrameClipData();
-	HGLOBAL hMem = pDataObject->GetGlobalData(m_iClipboard);
+	HGLOBAL hMem = pDataObject->GetGlobalData(mClipboardFormat);
 	pClipData->FromMem(hMem);
 	int Frames = pClipData->ClipInfo.Frames;
 	SAFE_RELEASE(pClipData);
@@ -1461,7 +1461,7 @@ BOOL CFrameEditor::DropData(COleDataObject* pDataObject, DROPEFFECT dropEffect)
 
 	// Get frame data
 	CFrameClipData *pClipData = new CFrameClipData();
-	HGLOBAL hMem = pDataObject->GetGlobalData(m_iClipboard);
+	HGLOBAL hMem = pDataObject->GetGlobalData(mClipboardFormat);
 	pClipData->FromMem(hMem);
 
 	const int SelectStart = pClipData->ClipInfo.OleInfo.SourceRowStart;
@@ -1561,21 +1561,21 @@ void CFrameEditor::SetSelection(const CFrameSelection &Sel)		// // //
 
 bool CFrameEditor::IsClipboardAvailable() const
 {
-	return ::IsClipboardFormatAvailable(m_iClipboard) == TRUE;
+	return ::IsClipboardFormatAvailable(mClipboardFormat) == TRUE;
 }
 
 // CFrameEditorDropTarget ////////////
 
 void CFrameEditorDropTarget::SetClipBoardFormat(UINT iClipboard)
 {
-	m_iClipboard = iClipboard;
+	mClipboardFormat = iClipboard;
 }
 
 DROPEFFECT CFrameEditorDropTarget::OnDragEnter(CWnd* pWnd, COleDataObject* pDataObject, DWORD dwKeyState, CPoint point)
 {
 	CFrameWnd *pMainFrame = dynamic_cast<CFrameWnd*>(theApp.m_pMainWnd);
 
-	if (pDataObject->IsDataAvailable(m_iClipboard)) {
+	if (pDataObject->IsDataAvailable(mClipboardFormat)) {
 		if (dwKeyState & MK_CONTROL) {
 			if (m_pParent->IsCopyValid(pDataObject)) {
 				m_nDropEffect = DROPEFFECT_COPY;
