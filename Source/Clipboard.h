@@ -25,7 +25,7 @@
 class CClipboard
 {
 public:
-	CClipboard(CWnd *pWnd, UINT Clipboard);
+	CClipboard(CWnd *pWnd, UINT clipboardFormat);
 	~CClipboard();
 
 	bool	IsOpened() const;
@@ -38,6 +38,6 @@ public:
 
 private:
 	bool m_bOpened;
-	UINT m_iClipboard;
+	UINT mClipboardFormat;
 	HGLOBAL m_hMemory;
 };
