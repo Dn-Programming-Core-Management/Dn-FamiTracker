@@ -23,6 +23,7 @@
 #pragma once
 
 #include <vector>		// // //
+#include <optional>
 #include "Action.h"
 #include "PatternEditorTypes.h"
 
@@ -120,7 +121,7 @@ private:
 	virtual void UpdateView(CFamiTrackerDoc *pDoc) const;		// // //
 
 protected:
-	bool SetTargetSelection(CPatternEditor *pPatternEditor, CSelection &Sel);		// // //
+	std::optional<CSelection> SetTargetSelection(CPatternEditor * pPatternEditor);
 	void DeleteSelection(CMainFrame *pMainFrm, const CSelection &Sel) const;		// // //
 	bool ValidateSelection(const CMainFrame *pMainFrm) const;		// // //
 	std::pair<CPatternIterator, CPatternIterator> GetIterators(const CMainFrame *pMainFrm) const;		// // //

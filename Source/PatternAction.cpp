@@ -99,7 +99,7 @@ void CPatternAction::SetDragAndDrop(const CPatternClipData *pClipData, bool bDel
 	m_iPastePos		= PASTE_DRAG;
 }
 
-bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor, CSelection &Sel)		// // //
+std::optional<CSelection> CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // //
 {
 	CCursorPos Start;
 
@@ -173,15 +173,14 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor, CSelecti
 		}
 	}
 	
-	CSelection New;
-	New.m_cpStart = Start;
-	New.m_cpEnd = End;
-	pPatternEditor->SetSelection(New);
+	CSelection newSelection;
+	newSelection.m_cpStart = Start;
+	newSelection.m_cpEnd = End;
+	pPatternEditor->SetSelection(newSelection);
 
 	sel_condition_t Cond = pPatternEditor->GetSelectionCondition();
 	if (Cond == SEL_CLEAN) {
-		Sel = New;
-		return true;
+		return newSelection;
 	}
 	else {
 		pPatternEditor->SetSelection(m_selection);
@@ -197,11 +196,11 @@ bool CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor, CSelecti
 			break;
 		}
 		if (Confirm == IDYES) {
-			pPatternEditor->SetSelection(Sel = New);
-			return true;
+			pPatternEditor->SetSelection(newSelection);
+			return newSelection;
 		}
 		else {
-			return false;
+			return {};
 		}
 	}
 }
@@ -271,15 +270,15 @@ bool CPatternAction::SaveState(const CMainFrame *pMainFrm)
 		case ACT_DRAG_AND_DROP:
 			if (m_bDragDelete)
 				m_pAuxiliaryClipData = pPatternEditor->CopyRaw();
-			if (!SetTargetSelection(pPatternEditor, m_newSelection))		// // //
-				return false;
+		// fallthrough
+		case ACT_EDIT_PASTE: {
+			auto selMaybe = SetTargetSelection(pPatternEditor);
+			if (!selMaybe) return false;
+
+			m_newSelection = *selMaybe;
 			m_pUndoClipData = pPatternEditor->CopyRaw();
 			break;
-		case ACT_EDIT_PASTE:
-			if (!SetTargetSelection(pPatternEditor, m_newSelection))		// // //
-				return false;
-			m_pUndoClipData = pPatternEditor->CopyRaw();
-			break;
+		}
 #ifdef _DEBUG
 		default:
 			AfxMessageBox(_T("TODO Implement action for this command"));
