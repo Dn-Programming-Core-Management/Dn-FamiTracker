@@ -120,7 +120,7 @@ CMainFrame::CMainFrame() :
 	m_pBannerEditArtist(NULL),
 	m_pBannerEditCopyright(NULL),
 	m_pInstrumentList(NULL),
-	m_pActionHandler(NULL),
+	m_history(NULL),
 	m_iFrameEditorPos(FRAME_EDIT_POS_TOP),
 	m_pInstrumentFileTree(NULL),
 	m_iInstrument(0),
@@ -154,7 +154,7 @@ CMainFrame::~CMainFrame()
 	SAFE_RELEASE(m_pPerformanceDlg);		// // //
 	SAFE_RELEASE(m_pInstrumentList);
 	SAFE_RELEASE(m_pVisualizerWnd);
-	SAFE_RELEASE(m_pActionHandler);
+	SAFE_RELEASE(m_history);
 	SAFE_RELEASE(m_pInstrumentFileTree);
 }
 
@@ -405,7 +405,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		ReleaseDC(pDC);
 	}
 
-	m_pActionHandler = new CActionHandler();
+	m_history = new History();
 
 	if (CFrameWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
@@ -2442,7 +2442,7 @@ void CMainFrame::OnModuleDuplicateFramePatterns()
 
 void CMainFrame::OnModuleMoveframedown()
 {
-	CAction *pAction = new CFActionMoveDown { };		// // //
+	Action *pAction = new CFActionMoveDown { };		// // //
 	if (AddAction(pAction)) {
 		static_cast<CFamiTrackerView*>(GetActiveView())->SelectNextFrame();
 		pAction->SaveRedoState(this);
@@ -2451,7 +2451,7 @@ void CMainFrame::OnModuleMoveframedown()
 
 void CMainFrame::OnModuleMoveframeup()
 {
-	CAction *pAction = new CFActionMoveUp { };		// // //
+	Action *pAction = new CFActionMoveUp { };		// // //
 	if (AddAction(pAction)) {
 		static_cast<CFamiTrackerView*>(GetActiveView())->SelectPrevFrame();
 		pAction->SaveRedoState(this);
@@ -2783,9 +2783,9 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 	return CFrameWnd::OnCopyData(pWnd, pCopyDataStruct);
 }
 
-bool CMainFrame::AddAction(CAction *pAction)
+bool CMainFrame::AddAction(Action *pAction)
 {
-	ASSERT(m_pActionHandler != NULL);
+	ASSERT(m_history != NULL);
 	
 	pAction->SaveUndoState(this);		// // //
 	if (!pAction->SaveState(this)) {
@@ -2806,48 +2806,48 @@ bool CMainFrame::AddAction(CAction *pAction)
 	pAction->SaveRedoState(this);
 
 	CFamiTrackerDoc	*pDoc = (CFamiTrackerDoc*)GetActiveDocument();			// // //
-	if (m_pActionHandler->GetUndoLevel() == CActionHandler::MAX_LEVELS)
+	if (m_history->GetUndoLevel() == History::MAX_LEVELS)
 		pDoc->SetExceededFlag();
 	
-	m_pActionHandler->Push(pAction);
+	m_history->Push(pAction);
 
 	return true;
 }
 
-CAction *CMainFrame::GetLastAction(int Filter) const
+Action *CMainFrame::GetLastAction(int Filter) const
 {
-	ASSERT(m_pActionHandler != NULL);
-	CAction *pAction = m_pActionHandler->GetLastAction();
+	ASSERT(m_history != NULL);
+	Action *pAction = m_history->GetLastAction();
 	return (pAction == NULL || pAction->GetAction() != Filter) ? NULL : pAction;
 }
 
 void CMainFrame::ResetUndo()
 {
-	ASSERT(m_pActionHandler != NULL);
+	ASSERT(m_history != NULL);
 
-	m_pActionHandler->Clear();
+	m_history->Clear();
 }
 
 void CMainFrame::OnEditUndo()
 {
-	ASSERT(m_pActionHandler != NULL);
+	ASSERT(m_history != NULL);
 
-	if (CAction *pAction = m_pActionHandler->PopUndo()) {
+	if (Action *pAction = m_history->PopUndo()) {
 		pAction->RestoreRedoState(this);		// // //
 		pAction->Undo(this);
 		pAction->RestoreUndoState(this);		// // //
 	}
 
 	CFamiTrackerDoc	*pDoc = (CFamiTrackerDoc*)GetActiveDocument();			// // //
-	if (!m_pActionHandler->CanUndo() && !pDoc->GetExceededFlag())
+	if (!m_history->CanUndo() && !pDoc->GetExceededFlag())
 		pDoc->SetModifiedFlag(false);
 }
 
 void CMainFrame::OnEditRedo()
 {
-	ASSERT(m_pActionHandler != NULL);
+	ASSERT(m_history != NULL);
 
-	if (CAction *pAction = m_pActionHandler->PopRedo()) {
+	if (Action *pAction = m_history->PopRedo()) {
 		pAction->RestoreUndoState(this);		// // //
 		pAction->Redo(this);
 		pAction->RestoreRedoState(this);		// // //
@@ -2856,16 +2856,16 @@ void CMainFrame::OnEditRedo()
 
 void CMainFrame::OnUpdateEditUndo(CCmdUI *pCmdUI)
 {
-	ASSERT(m_pActionHandler != NULL);
+	ASSERT(m_history != NULL);
 
-	pCmdUI->Enable(m_pActionHandler->CanUndo() ? 1 : 0);
+	pCmdUI->Enable(m_history->CanUndo() ? 1 : 0);
 }
 
 void CMainFrame::OnUpdateEditRedo(CCmdUI *pCmdUI)
 {
-	ASSERT(m_pActionHandler != NULL);
+	ASSERT(m_history != NULL);
 
-	pCmdUI->Enable(m_pActionHandler->CanRedo() ? 1 : 0);
+	pCmdUI->Enable(m_history->CanRedo() ? 1 : 0);
 }
 
 void CMainFrame::UpdateMenus()

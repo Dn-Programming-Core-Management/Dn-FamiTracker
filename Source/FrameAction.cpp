@@ -76,7 +76,7 @@ int CFrameEditorState::GetChanEnd() const
 // Undo/redo commands for frame editor
 //
 
-CFrameAction::CFrameAction() : CAction(0)		// // // dummy
+CFrameAction::CFrameAction() : Action(0)		// // // dummy
 {
 }
 
@@ -239,7 +239,7 @@ void CFActionFrameCount::Redo(CMainFrame *pMainFrm) const
 	pMainFrm->UpdateControls();
 }
 
-bool CFActionFrameCount::Merge(const CAction *Other)		// // //
+bool CFActionFrameCount::Merge(const Action *Other)		// // //
 {
 	auto pAction = dynamic_cast<const CFActionFrameCount*>(Other);
 	if (!pAction) return false;
@@ -271,7 +271,7 @@ void CFActionSetPattern::Redo(CMainFrame *pMainFrm) const
 		pDoc->SetPatternAtFrame(m_pUndoState->Track, f, c, m_iNewPattern);
 }
 
-bool CFActionSetPattern::Merge(const CAction *Other)		// // //
+bool CFActionSetPattern::Merge(const Action *Other)		// // //
 {
 	auto pAction = dynamic_cast<const CFActionSetPattern*>(Other);
 	if (!pAction) return false;
@@ -304,7 +304,7 @@ void CFActionSetPatternAll::Redo(CMainFrame *pMainFrm) const
 		pDoc->SetPatternAtFrame(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, i, m_iNewPattern);
 }
 
-bool CFActionSetPatternAll::Merge(const CAction *Other)		// // //
+bool CFActionSetPatternAll::Merge(const Action *Other)		// // //
 {
 	auto pAction = dynamic_cast<const CFActionSetPatternAll*>(Other);
 	if (!pAction) return false;
@@ -346,7 +346,7 @@ void CFActionChangePattern::Redo(CMainFrame *pMainFrm) const
 	}
 }
 
-bool CFActionChangePattern::Merge(const CAction *Other)		// // //
+bool CFActionChangePattern::Merge(const Action *Other)		// // //
 {
 	auto pAction = dynamic_cast<const CFActionChangePattern*>(Other);
 	if (!pAction) return false;
@@ -390,7 +390,7 @@ void CFActionChangePatternAll::Redo(CMainFrame *pMainFrm) const
 	}
 }
 
-bool CFActionChangePatternAll::Merge(const CAction *Other)		// // //
+bool CFActionChangePatternAll::Merge(const Action *Other)		// // //
 {
 	auto pAction = dynamic_cast<const CFActionChangePatternAll*>(Other);
 	if (!pAction) return false;

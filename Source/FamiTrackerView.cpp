@@ -3714,7 +3714,7 @@ void CFamiTrackerView::OnPickupRow()
 	}
 }
 
-bool CFamiTrackerView::AddAction(CAction *pAction) const
+bool CFamiTrackerView::AddAction(Action *pAction) const
 {
 	// Performs an action and adds it to the undo queue
 	CMainFrame *pMainFrm = static_cast<CMainFrame*>(GetParentFrame());
