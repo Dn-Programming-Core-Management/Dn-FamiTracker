@@ -27,7 +27,7 @@
 // Compound action class
 // // //
 
-CCompoundAction::CCompoundAction(std::initializer_list<CAction*> list)
+CCompoundAction::CCompoundAction(std::initializer_list<Action*> list)
 {
 	for (auto x : list)
 		m_pActionList.emplace_back(x);
@@ -82,7 +82,7 @@ void CCompoundAction::RestoreRedoState(CMainFrame *pMainFrm) const		// // //
 	(*m_pActionList.rbegin())->RestoreRedoState(pMainFrm);
 }
 
-void CCompoundAction::JoinAction(CAction *const pAction)
+void CCompoundAction::JoinAction(Action *const pAction)
 {
 	m_pActionList.emplace_back(pAction);
 }

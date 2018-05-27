@@ -52,8 +52,8 @@ enum {
 
 class CVisualizerWnd;
 class CInstrumentFileTree;
-class CAction;
-class CActionHandler;
+class Action;
+class History;
 class CFrameEditor;
 class CGrooveDlg;		// // //
 class CBookmarkDlg;
@@ -106,8 +106,8 @@ public:
 	void	SelectOctave(int Octave);		// // // 050B
 
 	// Undo/redo
-	bool	AddAction(CAction *pAction);
-	CAction *GetLastAction(int Filter) const;
+	bool	AddAction(Action *pAction);
+	Action *GetLastAction(int Filter) const;
 	void	ResetUndo();
 
 	bool	ChangeAllPatterns() const;
@@ -205,7 +205,7 @@ private:  // control bar embedded members
 	CBitmap				m_bmInstToolbar;		// instrument toolbar
 	CImageList			m_ilInstToolBar;
 
-	CActionHandler		*m_pActionHandler;
+	History		*m_history;
 
 	int					m_iFrameEditorPos;
 	control_panel_pos_t	m_iControlPanelPos;		// // // 050B

@@ -56,7 +56,7 @@ void CPatternEditorState::ApplyState(CPatternEditor *pEditor) const
 #define STATE_EXPAND(st) (st)->Track, (st)->Cursor.m_iFrame, (st)->Cursor.m_iChannel, (st)->Cursor.m_iRow
 
 CPatternAction::CPatternAction(int iAction) : 
-	CAction(iAction),
+	Action(iAction),
 	m_pUndoState(nullptr),
 	m_pRedoState(nullptr),
 	m_pClipData(NULL), 
@@ -1117,7 +1117,7 @@ void CPActionPatternLen::Redo(CMainFrame *pMainFrm) const
 	pMainFrm->UpdateControls();
 }
 
-bool CPActionPatternLen::Merge(const CAction *Other)		// // //
+bool CPActionPatternLen::Merge(const Action *Other)		// // //
 {
 	const CPActionPatternLen *pAction = dynamic_cast<const CPActionPatternLen*>(Other);
 	if (!pAction) return false;

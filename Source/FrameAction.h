@@ -80,7 +80,7 @@ private:
 };
 
 // Frame commands
-class CFrameAction : public CAction
+class CFrameAction : public Action
 {
 protected:
 	CFrameAction();		// // //
@@ -155,7 +155,7 @@ private:
 	bool SaveState(const CMainFrame *pMainFrm) override;
 	void Undo(CMainFrame *pMainFrm) const override;
 	void Redo(CMainFrame *pMainFrm) const override;
-	bool Merge(const CAction *Other) override;		// // //
+	bool Merge(const Action *Other) override;		// // //
 private:
 	int m_iOldFrameCount, m_iNewFrameCount;
 };
@@ -169,7 +169,7 @@ private:
 	bool SaveState(const CMainFrame *pMainFrm) override;
 	void Undo(CMainFrame *pMainFrm) const override;
 	void Redo(CMainFrame *pMainFrm) const override;
-	bool Merge(const CAction *Other) override;		// // //
+	bool Merge(const Action *Other) override;		// // //
 private:
 	int m_iNewPattern;
 	CFrameClipData *m_pClipData = nullptr;
@@ -184,7 +184,7 @@ private:
 	bool SaveState(const CMainFrame *pMainFrm) override;
 	void Undo(CMainFrame *pMainFrm) const override;
 	void Redo(CMainFrame *pMainFrm) const override;
-	bool Merge(const CAction *Other) override;		// // //
+	bool Merge(const Action *Other) override;		// // //
 private:
 	int m_iNewPattern;
 	CFrameClipData *m_pRowClipData = nullptr;
@@ -199,7 +199,7 @@ private:
 	bool SaveState(const CMainFrame *pMainFrm) override;
 	void Undo(CMainFrame *pMainFrm) const override;
 	void Redo(CMainFrame *pMainFrm) const override;
-	bool Merge(const CAction *Other) override;		// // //
+	bool Merge(const Action *Other) override;		// // //
 private:
 	int m_iPatternOffset;
 	CFrameClipData *m_pClipData = nullptr;
@@ -215,7 +215,7 @@ private:
 	bool SaveState(const CMainFrame *pMainFrm) override;
 	void Undo(CMainFrame *pMainFrm) const override;
 	void Redo(CMainFrame *pMainFrm) const override;
-	bool Merge(const CAction *Other) override;		// // //
+	bool Merge(const Action *Other) override;		// // //
 private:
 	int m_iPatternOffset;
 	CFrameClipData *m_pRowClipData = nullptr;

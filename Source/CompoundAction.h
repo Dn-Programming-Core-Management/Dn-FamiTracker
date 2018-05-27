@@ -32,11 +32,11 @@
 	\brief A compound action class allowing multiple undoable actions to be chained together.
 	\details The compound uniquely manages the action objects it contains.
 */
-class CCompoundAction final : public CAction
+class CCompoundAction final : public Action
 {
 public:
 	CCompoundAction() = default;
-	CCompoundAction(std::initializer_list<CAction*> list);
+	CCompoundAction(std::initializer_list<Action*> list);
 
 	bool SaveState(const CMainFrame *pMainFrm);
 	void Undo(CMainFrame *pMainFrm) const;
@@ -49,9 +49,9 @@ public:
 
 	/*!	\brief Adds an action to the compound to be performed last (and undoed first).
 		\param pAction Pointer to the action object. */
-	void JoinAction(CAction *const pAction);
+	void JoinAction(Action *const pAction);
 
 private:
-	std::vector<std::unique_ptr<CAction>> m_pActionList { };
+	std::vector<std::unique_ptr<Action>> m_pActionList { };
 	mutable bool m_bFirst = true;
 };
