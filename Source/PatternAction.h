@@ -68,7 +68,7 @@ private:
 };
 
 // Pattern commands
-class CPatternAction : public CAction
+class CPatternAction : public Action
 {
 public:
 	enum ACTIONS
@@ -336,7 +336,7 @@ private:
 	bool SaveState(const CMainFrame *pMainFrm);
 	void Undo(CMainFrame *pMainFrm) const;
 	void Redo(CMainFrame *pMainFrm) const;
-	bool Merge(const CAction *Other);		// // //
+	bool Merge(const Action *Other);		// // //
 private:
 	int m_iOldPatternLen, m_iNewPatternLen;
 };

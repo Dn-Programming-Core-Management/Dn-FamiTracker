@@ -35,7 +35,7 @@
 class CFamiTrackerDoc;
 class CPatternEditor;
 class CFrameEditor;
-class CAction;
+class Action;
 class CNoteQueue;		// // //
 
 // TODO move general tracker state variables to the mainframe instead of the view, such as selected octave, instrument etc
@@ -233,7 +233,7 @@ private:
 	bool	IsChipSolo(unsigned int Chip) const;		// // //
 
 	// Other
-	bool	AddAction(CAction *pAction) const;
+	bool	AddAction(Action *pAction) const;
 	CString	GetEffectHint(const stChanNote &Note, int Column) const;		// // //
 
 	// // //
