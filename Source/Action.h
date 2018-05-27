@@ -27,16 +27,16 @@
 // Undo / redo helper class
 
 //
-// Change MAX_LEVELS in the class CActionHandler if you want more undo levels
+// Change MAX_LEVELS in the class History if you want more undo levels
 //
 
 class CMainFrame;		// // //
 
 // Base class for action commands
-class CAction
+class Action
 {
 public:
-	virtual ~CAction();
+	virtual ~Action();
 
 	// // // Save the action-specific state information. This method may reject the action by returning false
 	virtual bool SaveState(const CMainFrame *pMainFrm) = 0;
@@ -60,37 +60,37 @@ public:
 	virtual void RestoreRedoState(CMainFrame *pMainFrm) const = 0;
 
 	// // // Combine current action with another one, return true if permissible
-	virtual bool Merge(const CAction *Other);
+	virtual bool Merge(const Action *Other);
 
 	// Get the action type
 	int GetAction() const;
 
 protected:
-	CAction(int iAction = -1);		// // //
+	Action(int iAction = -1);		// // //
 
 	int m_iAction;
 };
 
 // Stores action objects (a dual-stack, kind of)
-class CActionHandler
+class History
 {
 public:
-	CActionHandler();
+	History();
 
 	// Clear the undo list
 	void Clear();
 
 	// Add new action to undo list
-	void Push(CAction *pAction);
+	void Push(Action *pAction);
 
 	// Get first undo action object in queue
-	CAction *PopUndo();
+	Action *PopUndo();
 
 	// Get first redo action object in queue
-	CAction *PopRedo();
+	Action *PopRedo();
 
 	// Return last action in queue without changing the queue
-	CAction *GetLastAction() const;
+	Action *GetLastAction() const;
 
 	// Get number of undo levels available
 	int GetUndoLevel() const;
@@ -109,6 +109,6 @@ public:
 	static const int MAX_LEVELS;
 
 private:
-	std::vector<std::unique_ptr<CAction>> m_UndoStack, m_RedoStack;
+	std::vector<std::unique_ptr<Action>> m_UndoStack, m_RedoStack;
 };
 

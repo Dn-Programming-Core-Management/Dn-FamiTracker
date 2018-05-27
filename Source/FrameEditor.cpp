@@ -704,8 +704,8 @@ void CFrameEditor::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 				if (m_bLastRow)
 					m_pMainFrame->AddAction(new CFActionFrameCount {static_cast<int>(FrameCount) + 1});
-				CAction *pAction = m_pMainFrame->ChangeAllPatterns() ?
-									   (CAction*)new CFActionSetPatternAll {Pattern} : new CFActionSetPattern {Pattern};
+				Action *pAction = m_pMainFrame->ChangeAllPatterns() ?
+									   (Action*)new CFActionSetPatternAll {Pattern} : new CFActionSetPattern {Pattern};
 				m_pMainFrame->AddAction(pAction);
 				m_pDocument->SetModifiedFlag();
 
