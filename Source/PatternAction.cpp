@@ -99,8 +99,22 @@ void CPatternAction::SetDragAndDrop(const CPatternClipData *pClipData, bool bDel
 	m_iPastePos		= PASTE_DRAG;
 }
 
+/**
+ * Constructs a *pasting* target selection, based on m_iPastePos.
+ * Then assigns selection to GUI (pPatternEditor), and returns selection.
+ *
+ * If "bad" paste is rejected by user: doesn't modify GUI selection, and returns {}.
+*/
 std::optional<CSelection> CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // //
 {
+	// TODO: Move to PasteAction class.
+	
+	// TODO: Factor out getTargetSelection and setSelectionMaybe methods.
+	/* (I'd factor out "start position calculation" into method calls beforehand,
+	 * not a switch statement depending *heavily* on this->state.)
+	 */
+	
+	 // setSelectionMaybe warns on "bad" pastes. Redo doesn't. Why?
 	CCursorPos Start;
 
 	if ((m_iPastePos == PASTE_SELECTION || m_iPastePos == PASTE_FILL) && !m_bSelecting)
@@ -173,12 +187,15 @@ std::optional<CSelection> CPatternAction::SetTargetSelection(CPatternEditor *pPa
 		}
 	}
 	
+	// Construct selection.
 	CSelection newSelection;
 	newSelection.m_cpStart = Start;
 	newSelection.m_cpEnd = End;
-	pPatternEditor->SetSelection(newSelection);
 
+	// Assign selection to GUI.
+	pPatternEditor->SetSelection(newSelection);	
 	sel_condition_t Cond = pPatternEditor->GetSelectionCondition();
+
 	if (Cond == SEL_CLEAN) {
 		return newSelection;
 	}
@@ -272,6 +289,9 @@ bool CPatternAction::SaveState(const CMainFrame *pMainFrm)
 				m_pAuxiliaryClipData = pPatternEditor->CopyRaw();
 		// fallthrough
 		case ACT_EDIT_PASTE: {
+			// Assigns selection region to pPatternEditor.
+				// (What does it have to do with SaveState? Nothing.)
+			// Also returns selection region, for undo purposes.
 			auto selMaybe = SetTargetSelection(pPatternEditor);
 			if (!selMaybe) return false;
 
