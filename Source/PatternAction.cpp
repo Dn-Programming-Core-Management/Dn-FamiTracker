@@ -108,13 +108,9 @@ void CPatternAction::SetDragAndDrop(const CPatternClipData *pClipData, bool bDel
 std::optional<CSelection> CPatternAction::SetTargetSelection(CPatternEditor *pPatternEditor)		// // //
 {
 	// TODO: Move to PasteAction class.
-	
-	// TODO: Factor out getTargetSelection and setSelectionMaybe methods.
-	/* (I'd factor out "start position calculation" into method calls beforehand,
-	 * not a switch statement depending *heavily* on this->state.)
-	 */
-	
-	 // setSelectionMaybe warns on "bad" pastes. Redo doesn't. Why?
+	// SaveState calls SetTargetSelection and warns on "bad" pastes.
+	// Redo reuses the return value and doesn't warn.
+
 	CCursorPos Start;
 
 	if ((m_iPastePos == PASTE_SELECTION || m_iPastePos == PASTE_FILL) && !m_bSelecting)
