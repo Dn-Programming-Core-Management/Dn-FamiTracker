@@ -1070,46 +1070,6 @@ void CPActionReplaceInst::Redo(CMainFrame *pMainFrm) const
 }
 
 
-/*
-// // // TODO: move stuff in CPatternAction::SetTargetSelection to the redo state
-
-CPActionDragDrop::CPActionDragDrop(const CPatternClipData *pClipData, bool bDelete, bool bMix, const CSelection &pDragTarget) :
-	CPatternAction(ACT_DRAG_AND_DROP),
-	m_pClipData(pClipData), m_bDragDelete(bDelete), m_bDragMix(bMix), m_dragTarget(pDragTarget)
-{
-}
-
-bool CPActionDragDrop::SaveState(const CMainFrame *pMainFrm)
-{
-	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
-	if (m_bDragDelete)
-		m_pAuxiliaryClipData = pPatternEditor->CopyRaw();
-	if (!SetTargetSelection(pPatternEditor, m_newSelection))		// // //
-		return false;
-	m_pUndoClipData = pPatternEditor->CopyRaw();
-	return true;
-}
-
-void CPActionDragDrop::Undo(CMainFrame *pMainFrm) const
-{
-	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
-	pPatternEditor->SetSelection(m_newSelection);
-	pPatternEditor->PasteRaw(m_pUndoClipData);
-	if (m_bDragDelete)
-		pPatternEditor->PasteRaw(m_pAuxiliaryClipData, m_pUndoState->Selection.m_cpStart);
-}
-
-void CPActionDragDrop::Redo(CMainFrame *pMainFrm) const
-{
-	CPatternEditor *pPatternEditor = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetPatternEditor();
-	if (m_bDragDelete)
-		DeleteSelection(pMainFrm, m_pUndoState->Selection);		// // //
-	pPatternEditor->DragPaste(m_pClipData, &m_dragTarget, m_bDragMix);
-}
-*/
-
-
 CPActionPatternLen::CPActionPatternLen(int Length) :
 	CPatternAction(ACT_PATTERN_LENGTH), m_iNewPatternLen(Length)
 {
