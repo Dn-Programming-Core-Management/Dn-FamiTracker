@@ -2783,32 +2783,40 @@ BOOL CMainFrame::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 	return CFrameWnd::OnCopyData(pWnd, pCopyDataStruct);
 }
 
+/** \brief Performs pAction, saves "before" and "after" into pAction, and adds to history.
+*/
 bool CMainFrame::AddAction(Action *pAction)
 {
 	ASSERT(m_history != NULL);
 	
-	pAction->SaveUndoState(this);		// // //
-	if (!pAction->SaveState(this)) {
+	pAction->SaveUndoState(this);
+
+	// Save state before operation. (Pasting also moves selection :( )
+	bool saveSuccess = pAction->SaveState(this);
+	if (!saveSuccess) {
 		// Operation cancelled
 		SAFE_RELEASE(pAction);
 		return false;
 	}
-	try {		// // //
+
+	// Perform action.
+	try {
 		pAction->Redo(this);
-	}
-	catch (std::runtime_error *e) {
+	} catch (std::runtime_error *e) {
 		AfxMessageBox(e->what());
 		pAction->Undo(this);
 		SAFE_RELEASE(pAction);
 		SAFE_RELEASE(e);
 		return false;
 	}
+
+	// Save state after action.
 	pAction->SaveRedoState(this);
 
+	// Add action to history.
 	CFamiTrackerDoc	*pDoc = (CFamiTrackerDoc*)GetActiveDocument();			// // //
 	if (m_history->GetUndoLevel() == History::MAX_LEVELS)
 		pDoc->SetExceededFlag();
-	
 	m_history->Push(pAction);
 
 	return true;
