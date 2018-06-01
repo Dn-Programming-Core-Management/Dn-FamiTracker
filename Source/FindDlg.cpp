@@ -281,7 +281,7 @@ void CFindResultsBox::AddResult(const stChanNote *pNote, const CFindCursor *pCur
 
 	for (int i = 0; i < MAX_EFFECT_COLUMNS; ++i)
 		if (pNote->EffNumber[i] != EF_NONE) {
-			str.Format(_T("%c%02X"), EFF_CHAR[pNote->EffNumber[i] - 1], pNote->EffParam[i]);
+			str.Format(_T("%c%02X"), EFF_CHAR[pNote->EffNumber[i]], pNote->EffParam[i]);
 			m_cListResults->SetItemText(Pos, EFFECT + i, str);
 		}
 
@@ -916,7 +916,7 @@ void CFindDlg::ParseEff(searchTerm &Term, CString str, bool Half)
 	else {
 		char Name = str[0];
 		for (size_t i = 1; i < EF_COUNT; i++) {
-			if (Name == EFF_CHAR[i - 1]) {
+			if (Name == EFF_CHAR[i]) {
 				Term.Definite[WC_EFF] = true;
 				Term.EffNumber[i] = true;
 			}
@@ -1185,7 +1185,7 @@ bool CFindDlg::Replace(CCompoundAction *pAction)
 			}
 
 			if (m_replaceTerm.Definite[WC_EFF]) {
-				effect_t fx = GetEffectFromChar(EFF_CHAR[m_replaceTerm.Note.EffNumber[0] - 1],
+				effect_t fx = GetEffectFromChar(EFF_CHAR[m_replaceTerm.Note.EffNumber[0]],
 												m_pDocument->GetChipType(m_pFindCursor->m_iChannel));
 				for (const int &i : MatchedColumns)
 					Target.EffNumber[i] = fx;
