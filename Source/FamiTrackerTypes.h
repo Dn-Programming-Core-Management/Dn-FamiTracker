@@ -189,6 +189,9 @@ enum effect_t : unsigned char {
 //const int EF_FDS_MOD_DEPTH = EF_SWEEPUP;	// FDS modulation depth, 'H'
 
 //const int EF_RETRIGGER = EF_SWEEPDOWN;
+// Note: Order must be preserved.
+// Global/2A03 effects should be listed before expansion-specific effects
+// sharing the same character.
 
 // const effect_t VRC6_EFFECTS[] = {};
 const effect_t VRC7_EFFECTS[] = {EF_VRC7_PORT, EF_VRC7_WRITE};
