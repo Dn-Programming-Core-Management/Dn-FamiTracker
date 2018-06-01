@@ -1183,7 +1183,7 @@ static CString GetStateString(const stChannelState &State)
 		if (p < 0) continue;
 		if (p == 0 && x != EF_PITCH) continue;
 		if (p == 0x80 && x == EF_PITCH) continue;
-		effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x - 1], p);
+		effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x], p);
 	}
 
 	if ((State.ChannelIndex >= CHANID_SQUARE1 && State.ChannelIndex <= CHANID_SQUARE2) ||
@@ -1192,48 +1192,48 @@ static CString GetStateString(const stChannelState &State)
 		for (const auto &x : {EF_VOLUME}) {
 			int p = State.Effect[x];
 			if (p < 0) continue;
-			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x - 1], p);
+			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x], p);
 		}
 	else if (State.ChannelIndex == CHANID_TRIANGLE)
 		for (const auto &x : {EF_VOLUME, EF_NOTE_CUT}) {
 			int p = State.Effect[x];
 			if (p < 0) continue;
-			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x - 1], p);
+			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x], p);
 		}
 	else if (State.ChannelIndex == CHANID_DPCM)
 		for (const auto &x : {EF_SAMPLE_OFFSET, /*EF_DPCM_PITCH*/}) {
 			int p = State.Effect[x];
 			if (p <= 0) continue;
-			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x - 1], p);
+			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x], p);
 		}
 	else if (State.ChannelIndex >= CHANID_VRC7_CH1 && State.ChannelIndex <= CHANID_VRC7_CH6)
 		for (const auto &x : VRC7_EFFECTS) {
 			int p = State.Effect[x];
 			if (p < 0) continue;
-			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x - 1], p);
+			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x], p);
 		}
 	else if (State.ChannelIndex == CHANID_FDS)
 		for (const auto &x : FDS_EFFECTS) {
 			int p = State.Effect[x];
 			if (p < 0 || (x == EF_FDS_MOD_BIAS && p == 0x80)) continue;
-			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x - 1], p);
+			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x], p);
 		}
 	else if (State.ChannelIndex >= CHANID_S5B_CH1 && State.ChannelIndex <= CHANID_S5B_CH3)
 		for (const auto &x : S5B_EFFECTS) {
 			int p = State.Effect[x];
 			if (p < 0) continue;
-			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x - 1], p);
+			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x], p);
 		}
 	else if (State.ChannelIndex >= CHANID_N163_CH1 && State.ChannelIndex <= CHANID_N163_CH8)
 		for (const auto &x : N163_EFFECTS) {
 			int p = State.Effect[x];
 			if (p < 0 || (x == EF_N163_WAVE_BUFFER && p == 0x7F)) continue;
-			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x - 1], p);
+			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x], p);
 		}
 	if (State.Effect_LengthCounter >= 0)
-		effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_VOLUME - 1], State.Effect_LengthCounter);
+		effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_VOLUME], State.Effect_LengthCounter);
 	if (State.Effect_AutoFMMult >= 0)
-		effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_FDS_MOD_DEPTH - 1], State.Effect_AutoFMMult);
+		effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_FDS_MOD_DEPTH], State.Effect_AutoFMMult);
 
 	if (effStr.IsEmpty()) effStr = _T(" None");
 	log.Append(effStr);

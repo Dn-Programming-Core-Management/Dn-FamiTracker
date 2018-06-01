@@ -199,7 +199,7 @@ const effect_t S5B_EFFECTS[] = {EF_SUNSOFT_ENV_TYPE, EF_SUNSOFT_ENV_HI, EF_SUNSO
 
 // Channel effect letters
 const char EFF_CHAR[] = {
-	       	// EF_NONE,
+	'\xff',	// EF_NONE,
 	'F',   	// EF_SPEED,
 	'B',   	// EF_JUMP,
 	'D',   	// EF_SKIP,

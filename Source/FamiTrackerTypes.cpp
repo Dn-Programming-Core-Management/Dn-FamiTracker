@@ -48,7 +48,7 @@ effect_t GetEffectFromChar(char ch, int Chip, bool *bValid)		// // //
 
 	bool Found = false;
 	for (int i = EF_NONE + 1; i < EF_COUNT; ++i)
-		if (EFF_CHAR[i - 1] == ch) {
+		if (EFF_CHAR[i] == ch) {
 			Eff = static_cast<effect_t>(i);
 			Found = true; break;
 		}
@@ -63,22 +63,22 @@ effect_t GetEffectFromChar(char ch, int Chip, bool *bValid)		// // //
 	switch (Chip) {
 	case SNDCHIP_FDS:
 		for (const auto &x : FDS_EFFECTS)
-			if (ch == EFF_CHAR[x - 1])
+			if (ch == EFF_CHAR[x])
 				return x;
 		break;
 	case SNDCHIP_N163:
 		for (const auto &x : N163_EFFECTS)
-			if (ch == EFF_CHAR[x - 1])
+			if (ch == EFF_CHAR[x])
 				return x;
 		break;
 	case SNDCHIP_S5B:
 		for (const auto &x : S5B_EFFECTS)
-			if (ch == EFF_CHAR[x - 1])
+			if (ch == EFF_CHAR[x])
 				return x;
 		break;
 	case SNDCHIP_VRC7:
 		for (const auto &x : VRC7_EFFECTS)
-			if (ch == EFF_CHAR[x - 1])
+			if (ch == EFF_CHAR[x])
 				return x;
 		break;
 	}
