@@ -39,7 +39,15 @@ class CFrameEditor;
 class Action;
 class CNoteQueue;		// // //
 
+// Keycode vs character
+
 using Keycode = int64_t;// int
+using Character = uint64_t;
+
+enum class KeyType {
+	KEYCODE,
+	CHARACTER
+};
 
 // TODO move general tracker state variables to the mainframe instead of the view, such as selected octave, instrument etc
 
@@ -170,7 +178,7 @@ private:
 	void	StepDown();
 
 	// Input key handling
-	void	HandleKeyboardInput(Keycode Key);		// // //
+	void HandleKeyboardInput(Keycode Key, KeyType type);		// // //
 	void	TranslateMidiMessage();
 
 	void	OnKeyDirUp();
@@ -206,7 +214,7 @@ private:
 
 	bool	EditInstrumentColumn(stChanNote &Note, Keycode key, bool &StepDown, bool &MoveRight, bool &MoveLeft);
 	bool	EditVolumeColumn(stChanNote &Note, Keycode key, bool &bStepDown);
-	bool	EditEffNumberColumn(stChanNote &Note, Keycode key, int EffectIndex, bool &bStepDown);
+	bool EditEffNumberColumn(stChanNote &Note, Keycode key, KeyType type, int EffectIndex, bool &bStepDown);
 	bool	EditEffParamColumn(stChanNote &Note, Keycode key, int EffectIndex, bool &bStepDown, bool &bMoveRight, bool &bMoveLeft);
 
 	void	InsertNote(int Note, int Octave, int Channel, int Velocity);
@@ -290,7 +298,7 @@ private:
 	unsigned int		m_iWindowHeight;						// Height of view area
 
 	// Input
-	char				m_cKeyList[256];
+	char				m_cKeyList[256];	// TODO unordered_set<Keycode> keysHeldDown;
 	unsigned int		m_iKeyboardNote;
 	int					m_iLastNote;							// Last note added to pattern
 	int					m_iLastInstrument;						// Last instrument added to pattern
@@ -348,6 +356,7 @@ public:
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnKeyDown(UINT key, UINT nRepCnt, UINT nFlags);
+	afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnKeyUp(UINT key, UINT nRepCnt, UINT nFlags);
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
