@@ -241,15 +241,6 @@ private:
 	bool	IsShiftPressed() const;
 	bool	IsControlPressed() const;
 
-	// Update timer
-#if 0
-	static UINT ThreadProcFunc(LPVOID pParam);
-
-	bool	StartTimerThread();
-	void	EndTimerThread();
-	UINT	ThreadProc();
-#endif
-
 //
 // Constants
 //
