@@ -220,7 +220,7 @@ BEGIN_MESSAGE_MAP(CFamiTrackerView, CView)
 END_MESSAGE_MAP()
 
 // Convert keys 0-F to numbers, -1 = invalid key
-static int ConvertKeyToHex(int Key)
+static int ConvertKeyToHex(Keycode Key)
 {
 	switch (Key) {
 	case '0': case VK_NUMPAD0: return 0x00;
@@ -248,7 +248,7 @@ static int ConvertKeyToHex(int Key)
 	return -1;
 }
 
-static int ConvertKeyExtra(int Key)		// // //
+static int ConvertKeyExtra(Keycode Key)		// // //
 {
 	switch (Key) {
 		case VK_DIVIDE:   return 0x0A;
@@ -2409,27 +2409,27 @@ bool CFamiTrackerView::IsControlPressed() const
 	return (::GetKeyState(VK_CONTROL) & 0x80) == 0x80;
 }
 
-void CFamiTrackerView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+void CFamiTrackerView::OnKeyDown(UINT key, UINT nRepCnt, UINT nFlags)
 {	
 	// Called when a key is pressed
 	if (GetFocus() != this)
 		return;
 
 	auto pFrame = static_cast<CMainFrame*>(GetParentFrame());		// // //
-	if (pFrame && pFrame->TypeInstrumentNumber(ConvertKeyToHex(nChar)))
+	if (pFrame && pFrame->TypeInstrumentNumber(ConvertKeyToHex(key)))
 		return;
 
-	if (nChar >= VK_NUMPAD0 && nChar <= VK_NUMPAD9) {
+	if (key >= VK_NUMPAD0 && key <= VK_NUMPAD9) {
 		// Switch instrument
 		if (m_pPatternEditor->GetColumn() == C_NOTE) {
-			SetInstrument(nChar - VK_NUMPAD0);
+			SetInstrument(key - VK_NUMPAD0);
 			return;
 		}
 	}
 
-	if ((nChar == VK_ADD || nChar == VK_SUBTRACT) && theApp.GetSettings()->General.bHexKeypad)		// // //
-		HandleKeyboardInput(nChar);
-	else if (!theApp.GetSettings()->General.bHexKeypad || !(nChar == VK_RETURN && !(nFlags & KF_EXTENDED))) switch (nChar) {
+	if ((key == VK_ADD || key == VK_SUBTRACT) && theApp.GetSettings()->General.bHexKeypad)		// // //
+		HandleKeyboardInput(key);
+	else if (!theApp.GetSettings()->General.bHexKeypad || !(key == VK_RETURN && !(nFlags & KF_EXTENDED))) switch (key) {
 		case VK_UP:
 			OnKeyDirUp();
 			break;
@@ -2485,21 +2485,21 @@ void CFamiTrackerView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		case VK_F9: pFrame->SelectOctave(7); break;
 
 		default:
-			HandleKeyboardInput(nChar);
+			HandleKeyboardInput(key);
 	}
 
-	CView::OnKeyDown(nChar, nRepCnt, nFlags);
+	CView::OnKeyDown(key, nRepCnt, nFlags);
 }
 
-void CFamiTrackerView::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+void CFamiTrackerView::OnSysKeyDown(UINT key, UINT nRepCnt, UINT nFlags)
 {
 	// This is called when a key + ALT is pressed
-	if (nChar >= VK_NUMPAD0 && nChar <= VK_NUMPAD9) {
-		SetStepping(nChar - VK_NUMPAD0);
+	if (key >= VK_NUMPAD0 && key <= VK_NUMPAD9) {
+		SetStepping(key - VK_NUMPAD0);
 		return;
 	}
 
-	switch (nChar) {
+	switch (key) {
 		case VK_LEFT:
 			m_pPatternEditor->MoveChannelLeft();
 			InvalidateCursor();
@@ -2510,16 +2510,16 @@ void CFamiTrackerView::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			break;
 	}
 
-	CView::OnSysKeyDown(nChar, nRepCnt, nFlags);
+	CView::OnSysKeyDown(key, nRepCnt, nFlags);
 }
 
-void CFamiTrackerView::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
+void CFamiTrackerView::OnKeyUp(UINT key, UINT nRepCnt, UINT nFlags)
 {
 	// Called when a key is released
-	HandleKeyboardNote(nChar, false);
-	m_cKeyList[nChar] = 0;
+	HandleKeyboardNote(key, false);
+	m_cKeyList[key] = 0;
 
-	CView::OnKeyUp(nChar, nRepCnt, nFlags);
+	CView::OnKeyUp(key, nRepCnt, nFlags);
 }
 
 //
@@ -2677,7 +2677,7 @@ void CFamiTrackerView::KeyDecreaseAction()
 	AddAction(new CPActionScrollField {-1});		// // //
 }
 
-bool CFamiTrackerView::EditInstrumentColumn(stChanNote &Note, int Key, bool &StepDown, bool &MoveRight, bool &MoveLeft)
+bool CFamiTrackerView::EditInstrumentColumn(stChanNote &Note, Keycode Key, bool &StepDown, bool &MoveRight, bool &MoveLeft)
 {
 	int EditStyle = theApp.GetSettings()->General.iEditStyle;
 	const cursor_column_t Column = m_pPatternEditor->GetColumn();		// // //
@@ -2753,7 +2753,7 @@ bool CFamiTrackerView::EditInstrumentColumn(stChanNote &Note, int Key, bool &Ste
 	return true;
 }
 
-bool CFamiTrackerView::EditVolumeColumn(stChanNote &Note, int Key, bool &bStepDown)
+bool CFamiTrackerView::EditVolumeColumn(stChanNote &Note, Keycode Key, bool &bStepDown)
 {
 	int EditStyle = theApp.GetSettings()->General.iEditStyle;
 
@@ -2789,14 +2789,14 @@ bool CFamiTrackerView::EditVolumeColumn(stChanNote &Note, int Key, bool &bStepDo
 	return true;
 }
 
-bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, unsigned char nChar, int EffectIndex, bool &bStepDown)
+bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, Keycode key, int EffectIndex, bool &bStepDown)
 {
 	int EditStyle = theApp.GetSettings()->General.iEditStyle;
 
 	if (!m_bEditEnable)
 		return false;
 
-	if (CheckRepeatKey(nChar)) {
+	if (CheckRepeatKey(key)) {
 		Note.EffNumber[EffectIndex] = m_iLastEffect;
 		Note.EffParam[EffectIndex] = m_iLastEffectParam;
 		if (EditStyle != EDIT_STYLE_MPT)		// // //
@@ -2806,7 +2806,7 @@ bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, unsigned char nChar
 		return true;
 	}
 
-	if (CheckClearKey(nChar)) {
+	if (CheckClearKey(key)) {
 		Note.EffNumber[EffectIndex] = EF_NONE;
 		if (EditStyle != EDIT_STYLE_MPT)
 			bStepDown = true;
@@ -2818,11 +2818,11 @@ bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, unsigned char nChar
 
 	int Chip = pDoc->GetChannel(m_pPatternEditor->GetChannel())->GetChip();
 
-	if (nChar >= VK_NUMPAD0 && nChar <= VK_NUMPAD9)
-		nChar = '0' + nChar - VK_NUMPAD0;
+	if (key >= VK_NUMPAD0 && key <= VK_NUMPAD9)
+		key = '0' + key - VK_NUMPAD0;
 
 	bool bValidEffect = false;
-	effect_t Effect = GetEffectFromChar(nChar, Chip, &bValidEffect);		// // //
+	effect_t Effect = GetEffectFromChar(static_cast<char>(key), Chip, &bValidEffect);		// // //
 	effect_t prev = Note.EffNumber[EffectIndex];
 
 	if (bValidEffect) {
@@ -2850,7 +2850,7 @@ bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, unsigned char nChar
 	return false;
 }
 
-bool CFamiTrackerView::EditEffParamColumn(stChanNote &Note, int Key, int EffectIndex, bool &bStepDown, bool &bMoveRight, bool &bMoveLeft)
+bool CFamiTrackerView::EditEffParamColumn(stChanNote &Note, Keycode Key, int EffectIndex, bool &bStepDown, bool &bMoveRight, bool &bMoveLeft)
 {
 
 	int EditStyle = theApp.GetSettings()->General.iEditStyle;
@@ -2920,9 +2920,9 @@ bool CFamiTrackerView::EditEffParamColumn(stChanNote &Note, int Key, int EffectI
 	return true;
 }
 
-void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
+void CFamiTrackerView::HandleKeyboardInput(Keycode Key)
 {
-	if (theApp.GetAccelerator()->IsKeyUsed(nChar)) return;		// // //
+	if (theApp.GetAccelerator()->IsKeyUsed(static_cast<int>(Key))) return;		// // //
 
 	CFamiTrackerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
@@ -2943,7 +2943,7 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 	bool bMoveLeft = false;
 
 	// Watch for repeating keys
-	if (PreventRepeat(nChar, m_bEditEnable))
+	if (PreventRepeat(Key, m_bEditEnable))
 		return;
 
 	// Get the note data
@@ -2966,11 +2966,11 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 	}
 
 	if (Column != C_NOTE && !m_bEditEnable)		// // //
-		HandleKeyboardNote(nChar, true);
+		HandleKeyboardNote(Key, true);
 	switch (Column) {
 		// Note & octave column
 		case C_NOTE:
-			if (CheckRepeatKey(nChar)) {
+			if (CheckRepeatKey(Key)) {
 				if (m_iLastNote == 0) {
 					Note.Note = 0;
 				}
@@ -2989,7 +2989,7 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 					Note.Octave = GET_OCTAVE(m_iLastNote);
 				}
 			}
-			else if (CheckEchoKey(nChar)) {		// // //
+			else if (CheckEchoKey(Key)) {		// // //
 				Note.Note = ECHO;
 				Note.Octave = static_cast<CMainFrame*>(GetParentFrame())->GetSelectedOctave();		// // //
 				if (Note.Octave > ECHO_BUFFER_LENGTH) Note.Octave = ECHO_BUFFER_LENGTH;
@@ -2997,7 +2997,7 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 					Note.Instrument = GetInstrument();
 				m_iLastNote = NOTE_ECHO + Note.Octave;
 			}
-			else if (CheckClearKey(nChar)) {
+			else if (CheckClearKey(Key)) {
 				// Remove note
 				Note.Note = 0;
 				Note.Octave = 0;
@@ -3005,7 +3005,7 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 			}
 			else {
 				// This is special
-				HandleKeyboardNote(nChar, true);
+				HandleKeyboardNote(Key, true);
 				return;
 			}
 			if (EditStyle != EDIT_STYLE_MPT)		// // //
@@ -3014,28 +3014,28 @@ void CFamiTrackerView::HandleKeyboardInput(unsigned char nChar)		// // //
 		// Instrument column
 		case C_INSTRUMENT1:
 		case C_INSTRUMENT2:
-			if (!EditInstrumentColumn(Note, nChar, bStepDown, bMoveRight, bMoveLeft))
+			if (!EditInstrumentColumn(Note, Key, bStepDown, bMoveRight, bMoveLeft))
 				return;
 			break;
 		// Volume column
 		case C_VOLUME:
-			if (!EditVolumeColumn(Note, nChar, bStepDown))
+			if (!EditVolumeColumn(Note, Key, bStepDown))
 				return;
 			break;
-		// Effect number
+		// Effect type (character)
 		case C_EFF1_NUM:
-			if (!EditEffNumberColumn(Note, nChar, Index, bStepDown))
+			if (!EditEffNumberColumn(Note, Key, Index, bStepDown))
 				return;
 			break;
 		// Effect parameter
 		case C_EFF1_PARAM1:
 		case C_EFF1_PARAM2:
-			if (!EditEffParamColumn(Note, nChar, Index, bStepDown, bMoveRight, bMoveLeft))
+			if (!EditEffParamColumn(Note, Key, Index, bStepDown, bMoveRight, bMoveLeft))
 				return;
 			break;
 	}
 
-	if (CheckClearKey(nChar) && IsControlPressed())		// // //
+	if (CheckClearKey(Key) && IsControlPressed())		// // //
 		Note = stChanNote { };
 
 	// Something changed, store pattern data in document and update screen
@@ -3062,18 +3062,18 @@ bool CFamiTrackerView::DoRelease() const
 	return pInstrument->CanRelease();
 }
 
-void CFamiTrackerView::HandleKeyboardNote(char nChar, bool Pressed) 
+void CFamiTrackerView::HandleKeyboardNote(Keycode key, bool Pressed) 
 {
-	if (theApp.GetAccelerator()->IsKeyUsed(nChar)) return;		// // //
+	if (theApp.GetAccelerator()->IsKeyUsed(static_cast<int>(key))) return;		// // //
 
 	// Play a note from the keyboard
-	int Note = TranslateKey(nChar);
+	int Note = TranslateKey(key);
 	int Channel = m_pPatternEditor->GetChannel();
 	
 	if (Pressed) {	
 		static int LastNote;
 
-		if (CheckHaltKey(nChar)) {
+		if (CheckHaltKey(key)) {
 			if (m_bEditEnable)
 				CutMIDINote(Channel, LastNote, true);
 			else {
@@ -3082,7 +3082,7 @@ void CFamiTrackerView::HandleKeyboardNote(char nChar, bool Pressed)
 				m_iNoteCorrection.clear();
 			}
 		}
-		else if (CheckReleaseKey(nChar)) {
+		else if (CheckReleaseKey(key)) {
 			if (m_bEditEnable)
 				ReleaseMIDINote(Channel, LastNote, true);
 			else {
@@ -3097,7 +3097,7 @@ void CFamiTrackerView::HandleKeyboardNote(char nChar, bool Pressed)
 				return;
 			TriggerMIDINote(Channel, Note, 0x7F, m_bEditEnable);
 			LastNote = Note;
-			m_iNoteCorrection[nChar] = 0;		// // //
+			m_iNoteCorrection[key] = 0;		// // //
 		}
 	}
 	else {
@@ -3111,7 +3111,7 @@ void CFamiTrackerView::HandleKeyboardNote(char nChar, bool Pressed)
 				ReleaseMIDINote(Channel, Note, false);	
 			else
 				CutMIDINote(Channel, Note, false);
-			auto it = m_iNoteCorrection.find(nChar);		// // //
+			auto it = m_iNoteCorrection.find(key);		// // //
 			if (it != m_iNoteCorrection.end())
 				m_iNoteCorrection.erase(it);
 		}
@@ -3156,32 +3156,32 @@ void CFamiTrackerView::SplitAdjustChannel(unsigned int &Channel, const stChanNot
 	}
 }
 
-bool CFamiTrackerView::CheckClearKey(unsigned char Key) const
+bool CFamiTrackerView::CheckClearKey(Keycode Key) const
 {
 	return (Key == theApp.GetSettings()->Keys.iKeyClear);
 }
 
-bool CFamiTrackerView::CheckReleaseKey(unsigned char Key) const
+bool CFamiTrackerView::CheckReleaseKey(Keycode Key) const
 {
 	return (Key == theApp.GetSettings()->Keys.iKeyNoteRelease);
 }
 
-bool CFamiTrackerView::CheckHaltKey(unsigned char Key) const
+bool CFamiTrackerView::CheckHaltKey(Keycode Key) const
 {
 	return (Key == theApp.GetSettings()->Keys.iKeyNoteCut);
 }
 
-bool CFamiTrackerView::CheckEchoKey(unsigned char Key) const		// // //
+bool CFamiTrackerView::CheckEchoKey(Keycode Key) const		// // //
 {
 	return (Key == theApp.GetSettings()->Keys.iKeyEchoBuffer);
 }
 
-bool CFamiTrackerView::CheckRepeatKey(unsigned char Key) const
+bool CFamiTrackerView::CheckRepeatKey(Keycode Key) const
 {
 	return (Key == theApp.GetSettings()->Keys.iKeyRepeat);
 }
 
-int CFamiTrackerView::TranslateKeyModplug(unsigned char Key) const
+int CFamiTrackerView::TranslateKeyModplug(Keycode Key) const
 {
 	// Modplug conversion
 	CFamiTrackerDoc* pDoc = GetDocument();
@@ -3195,7 +3195,7 @@ int CFamiTrackerView::TranslateKeyModplug(unsigned char Key) const
 	pDoc->GetNoteData(Track, m_pPatternEditor->GetFrame(), m_pPatternEditor->GetChannel(), m_pPatternEditor->GetRow(), &NoteData);
 
 	if (m_bEditEnable && Key >= '0' && Key <= '9') {		// // //
-		KeyOctave = Key - '1';
+		KeyOctave = static_cast<int>(Key - '1');
 		if (KeyOctave < 0) KeyOctave += 10;
 		if (KeyOctave >= OCTAVE_RANGE) KeyOctave = OCTAVE_RANGE - 1;
 		KeyNote = NoteData.Note;
@@ -3253,7 +3253,7 @@ int CFamiTrackerView::TranslateKeyModplug(unsigned char Key) const
 	return MIDI_NOTE(KeyOctave, KeyNote);
 }
 
-int CFamiTrackerView::TranslateKeyDefault(unsigned char Key) const
+int CFamiTrackerView::TranslateKeyDefault(Keycode Key) const
 {
 	// Default conversion
 	int	KeyNote = 0;
@@ -3315,7 +3315,7 @@ int CFamiTrackerView::TranslateKeyDefault(unsigned char Key) const
 	return MIDI_NOTE(KeyOctave, KeyNote);
 }
 
-int CFamiTrackerView::TranslateKey(unsigned char Key) const
+int CFamiTrackerView::TranslateKey(Keycode Key) const
 {
 	// Translates a keyboard character into a MIDI note
 
@@ -3327,7 +3327,7 @@ int CFamiTrackerView::TranslateKey(unsigned char Key) const
 	return TranslateKeyDefault(Key);
 }
 
-bool CFamiTrackerView::PreventRepeat(unsigned char Key, bool Insert)
+bool CFamiTrackerView::PreventRepeat(Keycode Key, bool Insert)
 {
 	if (m_cKeyList[Key] == 0)
 		m_cKeyList[Key] = 1;
@@ -3339,7 +3339,7 @@ bool CFamiTrackerView::PreventRepeat(unsigned char Key, bool Insert)
 	return false;
 }
 
-void CFamiTrackerView::RepeatRelease(unsigned char Key)
+void CFamiTrackerView::RepeatRelease(Keycode Key)
 {
 	memset(m_cKeyList, 0, 256);
 }
@@ -3348,7 +3348,7 @@ void CFamiTrackerView::RepeatRelease(unsigned char Key)
 // Note preview
 //
 
-bool CFamiTrackerView::PreviewNote(unsigned char Key)
+bool CFamiTrackerView::PreviewNote(Keycode Key)
 {
 	if (PreventRepeat(Key, false))
 		return false;
@@ -3365,7 +3365,7 @@ bool CFamiTrackerView::PreviewNote(unsigned char Key)
 	return false;
 }
 
-void CFamiTrackerView::PreviewRelease(unsigned char Key)
+void CFamiTrackerView::PreviewRelease(Keycode Key)
 {
 	memset(m_cKeyList, 0, 256);
 
