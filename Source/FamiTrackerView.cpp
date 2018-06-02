@@ -115,6 +115,7 @@ const CString EFFECT_TEXTS[] = {		// // //
 	_T("Exx - FDS volume envelope (attack), XX = rate"),
 	_T("Exx - FDS volume envelope (decay), XX - 40 = rate"),
 	_T("Zxx - Auto FDS modulation rate bias, XX - 80 = offset"),
+	_T("=00 - Reset channel phase"),
 };
 
 // OLE copy and mix

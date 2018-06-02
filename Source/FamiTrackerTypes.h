@@ -171,24 +171,13 @@ enum effect_t : unsigned char {
 	EF_N163_WAVE_BUFFER,	// // // N163 wave buffer
 	EF_FDS_VOLUME,      	// // // FDS volume envelope
 	EF_FDS_MOD_BIAS,    	// // // FDS auto-FM bias
-	// EF_TARGET_VOLUME_SLIDE,
-/*
-	EF_VRC7_MODULATOR,
-	EF_VRC7_CARRIER,
-	EF_VRC7_LEVELS,
-*/
+
+	// jimbo1qaz
+	EF_PHASE_RESET,			// 
+
 	EF_COUNT
 };
 
-// DPCM  effects
-//const int EF_DPCM_PITCH = EF_SWEEPUP;		// DPCM pitch, 'H'
-
-//const int EF_VRC7_PATCH = EF_DUTY_CYCLE;	// VRC7 patch setting, 'V'
-
-// FDS effects
-//const int EF_FDS_MOD_DEPTH = EF_SWEEPUP;	// FDS modulation depth, 'H'
-
-//const int EF_RETRIGGER = EF_SWEEPDOWN;
 // Note: Order must be preserved.
 // Global/2A03 effects should be listed before expansion-specific effects
 // sharing the same character.
@@ -244,12 +233,9 @@ const char EFF_CHAR[] = {
 	'Z',   	// EF_N163_WAVE_BUFFER,
 	'E',   	// EF_FDS_VOLUME,
 	'Z',   	// EF_FDS_MOD_BIAS,
-	//'9'  	// EF_TARGET_VOLUME_SLIDE,
-	/*
-	'H',	// EF_VRC7_MODULATOR,
-	'I',	// EF_VRC7_CARRIER,
-	'J',	// EF_VRC7_LEVELS,
-	*/
+
+	// jimbo1qaz
+	'=',	// EF_PHASE_RESET
 };
 
 struct Effect {
