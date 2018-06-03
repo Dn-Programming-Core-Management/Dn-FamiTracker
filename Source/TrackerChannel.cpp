@@ -207,6 +207,11 @@ bool CTrackerChannel::IsEffectCompatible(effect_t EffNumber, int EffParam) const
 			return m_iChip == SNDCHIP_FDS && (EffParam <= 0x7F || EffParam == 0xE0);
 		case EF_VRC7_PORT: case EF_VRC7_WRITE:		// // // 050B
 			return m_iChip == SNDCHIP_VRC7;
+		case EF_PHASE_RESET:
+			return this->m_iChip == SNDCHIP_VRC6 && EffParam == 0x00;
+		case EF_COUNT:
+		default:
+			throw std::runtime_error("Missing case in CTrackerChannel::IsEffectCompatible");
 	}
 
 	return false;
