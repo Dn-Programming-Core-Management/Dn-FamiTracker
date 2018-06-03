@@ -45,6 +45,10 @@ bool CChannelHandlerVRC6::HandleEffect(effect_t EffNum, unsigned char EffParam)
 	case EF_DUTY_CYCLE:
 		m_iDefaultDuty = m_iDutyPeriod = EffParam;
 		break;
+
+	case EF_PHASE_RESET:
+		this->ClearRegisters();		// TODO ensure this doesn't interrupt for 1 frame.
+		break;
 	default: return CChannelHandler::HandleEffect(EffNum, EffParam);
 	}
 

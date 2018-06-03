@@ -953,7 +953,7 @@ void CChannelHandler::AddCycles(int count)
 void CChannelHandler::WriteRegister(uint16_t Reg, uint8_t Value)
 {
 	m_pAPU->Write(Reg, Value);
-	m_pSoundGen->WriteRegister(Reg, Value);
+	m_pSoundGen->WriteRegister(Reg, Value);		// This method is dead. Blame #ifdef WRITE_VGM.
 }
 
 void CChannelHandler::RegisterKeyState(int Note)
