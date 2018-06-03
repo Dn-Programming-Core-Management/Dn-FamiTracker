@@ -1328,7 +1328,7 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 
 	const CTrackerChannel *pTrackerChannel = m_pDocument->GetChannel(Channel);
 
-	int EffNumber = Column >= 4 ? pNoteData->EffNumber[(Column - 4) / 3] : 0;		// // //
+	effect_t EffNumber = Column >= 4 ? pNoteData->EffNumber[(Column - 4) / 3] : EF_NONE;		// // //
 	int EffParam  = Column >= 4 ? pNoteData->EffParam[(Column - 4) / 3] : 0;
 
 	// Detect invalid note data

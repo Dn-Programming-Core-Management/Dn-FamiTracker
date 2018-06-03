@@ -27,6 +27,7 @@
 
 #include <afxmt.h>	// For CMutex
 #include "APU/Types.h"		// // //
+#include "FamiTrackerTypes.h"
 
 enum note_prio_t {
 	NOTE_PRIO_0, 
@@ -58,7 +59,7 @@ public:
 	int GetPitch() const;
 
 	bool IsInstrumentCompatible(int Instrument, inst_type_t Type) const;		// // //
-	bool IsEffectCompatible(int EffNumber, int EffParam) const;		// // //
+	bool IsEffectCompatible(effect_t EffNumber, int EffParam) const;		// // //
 
 private:
 	LPCTSTR m_pChannelName, m_pShortName;		// // //

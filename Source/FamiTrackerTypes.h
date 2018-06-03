@@ -112,20 +112,6 @@ enum sequence_t {
 	SEQ_COUNT
 };
 
-// New sequence types
-/*
-enum {
-	SEQ_VOLUME,
-	SEQ_ARPEGGIO,
-	SEQ_PITCH,
-	SEQ_HIPITCH,		// TODO: remove this eventually
-	SEQ_DUTYCYCLE,
-	SEQ_SUNSOFT_NOISE,
-
-	SEQ_COUNT
-};
-*/
-//const int SEQ_SUNSOFT_NOISE = SEQ_DUTYCYCLE + 1;
 
 // Channel effects
 enum effect_t : unsigned char {
@@ -188,6 +174,8 @@ const effect_t FDS_EFFECTS[] = {EF_FDS_MOD_DEPTH, EF_FDS_MOD_SPEED_HI, EF_FDS_MO
 // const effect_t MMC5_EFFECTS[] = {};
 const effect_t N163_EFFECTS[] = {EF_N163_WAVE_BUFFER};
 const effect_t S5B_EFFECTS[] = {EF_SUNSOFT_ENV_TYPE, EF_SUNSOFT_ENV_HI, EF_SUNSOFT_ENV_LO, EF_SUNSOFT_NOISE};
+
+// Effect checking = bool CTrackerChannel::IsEffectCompatible
 
 // Channel effect letters
 const char EFF_CHAR[] = {
