@@ -24,6 +24,7 @@
 #include "PatternNote.h"		// // //
 #include "Instrument.h"		// // //
 #include "TrackerChannel.h"
+#include <stdexcept>
 
 /*
  * This class serves as the interface between the UI and the sound player for each channel
@@ -167,7 +168,7 @@ bool CTrackerChannel::IsInstrumentCompatible(int Instrument, inst_type_t Type) c
 	return false;
 }
 
-bool CTrackerChannel::IsEffectCompatible(int EffNumber, int EffParam) const		// // //
+bool CTrackerChannel::IsEffectCompatible(effect_t EffNumber, int EffParam) const
 {
 	switch (EffNumber) {
 		case EF_NONE:

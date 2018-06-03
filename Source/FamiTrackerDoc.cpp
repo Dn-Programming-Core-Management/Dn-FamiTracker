@@ -4918,7 +4918,8 @@ stFullState *CFamiTrackerDoc::RetrieveSoundState(unsigned int Track, unsigned in
 			CTrackerChannel *ch = GetChannel(c);
 			ASSERT(ch != NULL);
 			for (int k = EffColumns; k >= 0; k--) {
-				unsigned char fx = Note.EffNumber[k], xy = Note.EffParam[k];
+				effect_t fx = Note.EffNumber[k];
+				unsigned char xy = Note.EffParam[k];
 				switch (fx) {
 				// ignore effects that cannot have memory
 				case EF_NONE: case EF_PORTAOFF:
