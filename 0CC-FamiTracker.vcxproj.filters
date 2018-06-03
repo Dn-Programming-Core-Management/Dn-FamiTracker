@@ -226,6 +226,12 @@
     <Filter Include="Header Files\Windows Headers">
       <UniqueIdentifier>{4cc7efc0-6478-4fe0-ab32-cd34c48e735a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\utils">
+      <UniqueIdentifier>{d048192f-ce5d-455d-84ee-c9609fffd270}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\utils">
+      <UniqueIdentifier>{5b5628bb-0b1c-41b9-919d-73689e71d621}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Exception.cpp">
@@ -716,6 +722,9 @@
     </ClCompile>
     <ClCompile Include="Source\NoNotifyEdit.cpp">
       <Filter>Source Files\Custom Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\utils\input.cpp">
+      <Filter>Source Files\utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1321,6 +1330,9 @@
     </ClInclude>
     <ClInclude Include="Source\array_view.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\utils\input.h">
+      <Filter>Header Files\utils</Filter>
     </ClInclude>
     <ClInclude Include="Source\type_safe\detail\aligned_union.hpp">
       <Filter>Header Files</Filter>

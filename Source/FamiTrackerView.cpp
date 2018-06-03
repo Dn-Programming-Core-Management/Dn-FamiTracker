@@ -20,8 +20,8 @@
 ** must bear this legend.
 */
 
-#include <cmath>
 #include "stdafx.h"
+
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
@@ -46,7 +46,12 @@
 #include "RecordSettingsDlg.h"
 #include "SplitKeyboardDlg.h"
 #include "NoteQueue.h"
+
+#include <cmath>
 #include <assert.h>
+
+using std::get;
+using std::get_if;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -2433,7 +2438,7 @@ void CFamiTrackerView::OnKeyDown(UINT key, UINT nRepCnt, UINT nFlags)
 	}
 
 	if ((key == VK_ADD || key == VK_SUBTRACT) && theApp.GetSettings()->General.bHexKeypad)		// // //
-		HandleKeyboardInput(key, KeyType::KEYCODE);
+		HandleKeyboardInput(Keycode(key));
 	else if (!theApp.GetSettings()->General.bHexKeypad || !(key == VK_RETURN && !(nFlags & KF_EXTENDED))) switch (key) {
 		case VK_UP:
 			OnKeyDirUp();
@@ -2490,14 +2495,14 @@ void CFamiTrackerView::OnKeyDown(UINT key, UINT nRepCnt, UINT nFlags)
 		case VK_F9: pFrame->SelectOctave(7); break;
 
 		default:
-			HandleKeyboardInput(key, KeyType::KEYCODE);
+			HandleKeyboardInput(Keycode(key));
 	}
 
 	CView::OnKeyDown(key, nRepCnt, nFlags);
 }
 
 
-bool withinInclusive(int x, int first, int last) {
+inline bool withinInclusive(int x, int first, int last) {
 	return first <= x && x <= last;
 }
 
@@ -2510,7 +2515,7 @@ bool isAlphanumeric(T x) {
 }
 
 // OnChar operates on translated characters, and inserts non-alphanumeric effects.
-void CFamiTrackerView::OnChar(UINT chr, UINT nrepeat, UINT flags) {
+void CFamiTrackerView::OnChar(UINT chr, UINT _nEvents, UINT flags) {
 	if (GetFocus() != this)
 		return;
 
@@ -2519,33 +2524,13 @@ void CFamiTrackerView::OnChar(UINT chr, UINT nrepeat, UINT flags) {
 		return;
 	}
 
-	// Don't repeat effect, if key repeat disabled
-	if (nrepeat && !(theApp.GetSettings()->General.bKeyRepeat)) {
+	// Don't repeat effect, if key repeat disabled.
+	bool isRepeat = flags & 0x00004000;	// I have no clue why this works.
+	if (isRepeat && !(theApp.GetSettings()->General.bKeyRepeat)) {
 		return;
 	}
 
-	//int track = static_cast<CMainFrame*>(GetParentFrame())->GetSelectedTrack();
-	//int frame = m_pPatternEditor->GetFrame();
-	//int row = m_pPatternEditor->GetRow();
-	//int channel = m_pPatternEditor->GetChannel();
-	//
-	//cursor_column_t column = m_pPatternEditor->GetColumn();
-
-	//// Only handle effect columns.
-	//const int DELTA = C_EFF2_NUM - C_EFF1_NUM;
-	//if (column >= C_EFF1_NUM) {
-	//	int offset = column - C_EFF1_NUM;
-	//	int index = column / DELTA;
-	//	offset %= DELTA;
-
-	//	// Only handle effect name column.
-	//	if (offset == 0) {
-	//		this->EditEffNumberColumn();
-	//	}
-	//}
-	//return;
-
-	HandleKeyboardInput(chr, KeyType::CHARACTER);
+	HandleKeyboardInput(Character(chr));
 }
 
 void CFamiTrackerView::OnSysKeyDown(UINT key, UINT nRepCnt, UINT nFlags)
@@ -2846,14 +2831,15 @@ bool CFamiTrackerView::EditVolumeColumn(stChanNote &Note, Keycode Key, bool &bSt
 	return true;
 }
 
-bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, Keycode key, KeyType type, int EffectIndex, bool &bStepDown)
+bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, Input input, int EffectIndex, bool &bStepDown)
 {
 	int EditStyle = theApp.GetSettings()->General.iEditStyle;
 
 	if (!m_bEditEnable)
 		return false;
 
-	if (type == KeyType::KEYCODE) {
+	if (auto p = get_if<Keycode>(&input)) {
+		auto key = *p;
 		// class InputKey -> isKey, isChar
 		// if input.isKey():
 		// KeyType key = input.getKey();
@@ -2890,15 +2876,29 @@ bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, Keycode key, KeyTyp
 
 	// **** Handle effect names. ****
 
-	if (type == KeyType::KEYCODE && !isAlphanumeric(key)) {
-		return false;
-	}
-	if (type == KeyType::CHARACTER) {
-		assert(!isAlphanumeric(key));
+	char effect;	// TODO promote to int. So Unicode codepoints won't clash with ASCII effects.
+
+	if (auto p = get_if<Keycode>(&input)) {
+		auto key = *p;
+		if (!isAlphanumeric(key)) {
+			return false;
+		}
+		effect = (char)key;
+
+	} else if (auto p = get_if<Character>(&input)) {
+		int chr = (int)*p;
+		assert(!isAlphanumeric(chr));
+		if ((unsigned)chr >= 0x100) {
+			throw std::runtime_error("non-8bit character or something");
+		}
+		effect = (char)chr;
+
+	} else {
+		throw std::runtime_error("EditEffNumberColumn called with invalid Input (neither Keycode nor Character)");
 	}
 
 	bool bValidEffect = false;
-	effect_t Effect = GetEffectFromChar(static_cast<char>(key), Chip, &bValidEffect);		// // //
+	effect_t Effect = GetEffectFromChar(effect, Chip, &bValidEffect);		// // //
 	effect_t prev = Note.EffNumber[EffectIndex];
 
 	if (bValidEffect) {
@@ -2996,15 +2996,19 @@ bool CFamiTrackerView::EditEffParamColumn(stChanNote &Note, Keycode Key, int Eff
 	return true;
 }
 
-void CFamiTrackerView::HandleKeyboardInput(Keycode Key, KeyType type)
+/*
+https://github.com/jimbo1qaz/0CC-FamiTracker/wiki/Keyboard-Input-Handling:-Row-Editor-(FamiTrackerView.cpp)
+*/
+void CFamiTrackerView::HandleKeyboardInput(Input input)
 {
 	// https://github.com/solodon4/Mach7 ???
-	if (type == KeyType::KEYCODE) {
-		if (theApp.GetAccelerator()->IsKeyUsed(static_cast<int>(Key)))
+	if (auto p = get_if<Keycode>(&input)) {
+		auto key = *p;
+		if (theApp.GetAccelerator()->IsKeyUsed(static_cast<int>(key)))
 			return;
 
 		// Watch for repeating keys
-		if (PreventRepeat(Key, m_bEditEnable))
+		if (PreventRepeat(key, m_bEditEnable))
 			return;
 	}
 
@@ -3046,15 +3050,16 @@ void CFamiTrackerView::HandleKeyboardInput(Keycode Key, KeyType type)
 		case C_EFF4_PARAM2:	Column = C_EFF1_PARAM2; Index = 3; break;
 	}
 
-	if (type == KeyType::KEYCODE) {
+	if (auto p = get_if<Keycode>(&input)) {
+		auto key = *p;
 
 		if (Column != C_NOTE && !m_bEditEnable)		// // //
-			HandleKeyboardNote(Key, true);
+			HandleKeyboardNote(key, true);
 
 		switch (Column) {
 		// Note & octave column
 		case C_NOTE:
-			if (CheckRepeatKey(Key)) {
+			if (CheckRepeatKey(key)) {
 				if (m_iLastNote == 0) {
 					Note.Note = 0;
 				} else if (m_iLastNote == NOTE_HALT) {
@@ -3068,21 +3073,21 @@ void CFamiTrackerView::HandleKeyboardInput(Keycode Key, KeyType type)
 					Note.Note = GET_NOTE(m_iLastNote);
 					Note.Octave = GET_OCTAVE(m_iLastNote);
 				}
-			} else if (CheckEchoKey(Key)) {		// // //
+			} else if (CheckEchoKey(key)) {		// // //
 				Note.Note = ECHO;
 				Note.Octave = static_cast<CMainFrame*>(GetParentFrame())->GetSelectedOctave();		// // //
 				if (Note.Octave > ECHO_BUFFER_LENGTH) Note.Octave = ECHO_BUFFER_LENGTH;
 				if (!m_bMaskInstrument)
 					Note.Instrument = GetInstrument();
 				m_iLastNote = NOTE_ECHO + Note.Octave;
-			} else if (CheckClearKey(Key)) {
+			} else if (CheckClearKey(key)) {
 				// Remove note
 				Note.Note = 0;
 				Note.Octave = 0;
 				m_iLastNote = 0;
 			} else {
 				// This is special
-				HandleKeyboardNote(Key, true);
+				HandleKeyboardNote(key, true);
 				return;
 			}
 			if (EditStyle != EDIT_STYLE_MPT)		// // //
@@ -3094,39 +3099,40 @@ void CFamiTrackerView::HandleKeyboardInput(Keycode Key, KeyType type)
 		// Instrument column
 		case C_INSTRUMENT1:
 		case C_INSTRUMENT2:
-			if (!EditInstrumentColumn(Note, Key, bStepDown, bMoveRight, bMoveLeft))		// invert test?
+			if (!EditInstrumentColumn(Note, key, bStepDown, bMoveRight, bMoveLeft))		// invert test?
 				return;
 			break;
 		// Volume column
 		case C_VOLUME:
-			if (!EditVolumeColumn(Note, Key, bStepDown))
+			if (!EditVolumeColumn(Note, key, bStepDown))
 				return;
 			break;
 		// Effect type (character)
 		case C_EFF1_NUM:
-			if (!EditEffNumberColumn(Note, Key, type, Index, bStepDown))
+			if (!EditEffNumberColumn(Note, input, Index, bStepDown))
 				return;
 			break;
 		// Effect parameter
 		case C_EFF1_PARAM1:
 		case C_EFF1_PARAM2:
-			if (!EditEffParamColumn(Note, Key, Index, bStepDown, bMoveRight, bMoveLeft))
+			if (!EditEffParamColumn(Note, key, Index, bStepDown, bMoveRight, bMoveLeft))
 				return;
 			break;
 		}
 
-		if (CheckClearKey(Key) && IsControlPressed())		// // //
+		if (CheckClearKey(key) && IsControlPressed())		// // //
 			Note = stChanNote{};
 	}
-	else if (type == KeyType::CHARACTER) {
+	else if (auto p = get_if<Character>(&input)) {
 		if (Column == C_EFF1_NUM) {
-			if (EditEffNumberColumn(Note, Key, type, Index, bStepDown)) {
+			if (EditEffNumberColumn(Note, input, Index, bStepDown)) {
 				goto altered_char;
 			}
 		}
 		return;
 
-		altered_char:
+	altered_char:
+		;
 	}
 
 	// Something changed, store pattern data in document and update screen

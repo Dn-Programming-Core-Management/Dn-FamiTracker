@@ -30,7 +30,7 @@
 
 #include "PatternEditorTypes.h"		// // //
 #include "FamiTrackerViewMessage.h"		// // //
-#include <stdint.h>
+#include "utils/input.h"
 
 // External classes
 class CFamiTrackerDoc;
@@ -38,16 +38,6 @@ class CPatternEditor;
 class CFrameEditor;
 class Action;
 class CNoteQueue;		// // //
-
-// Keycode vs character
-
-using Keycode = int64_t;// int
-using Character = uint64_t;
-
-enum class KeyType {
-	KEYCODE,
-	CHARACTER
-};
 
 // TODO move general tracker state variables to the mainframe instead of the view, such as selected octave, instrument etc
 
@@ -178,7 +168,7 @@ private:
 	void	StepDown();
 
 	// Input key handling
-	void HandleKeyboardInput(Keycode Key, KeyType type);		// // //
+	void HandleKeyboardInput(Input input);
 	void	TranslateMidiMessage();
 
 	void	OnKeyDirUp();
@@ -214,7 +204,7 @@ private:
 
 	bool	EditInstrumentColumn(stChanNote &Note, Keycode key, bool &StepDown, bool &MoveRight, bool &MoveLeft);
 	bool	EditVolumeColumn(stChanNote &Note, Keycode key, bool &bStepDown);
-	bool EditEffNumberColumn(stChanNote &Note, Keycode key, KeyType type, int EffectIndex, bool &bStepDown);
+	bool	EditEffNumberColumn(stChanNote &Note, Input input, int EffectIndex, bool &bStepDown);
 	bool	EditEffParamColumn(stChanNote &Note, Keycode key, int EffectIndex, bool &bStepDown, bool &bMoveRight, bool &bMoveLeft);
 
 	void	InsertNote(int Note, int Octave, int Channel, int Velocity);
