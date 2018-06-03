@@ -57,6 +57,10 @@ void CVRC6_Pulse::Write(uint16_t Address, uint8_t Value)
 			m_iPeriod = m_iPeriodLow + (m_iPeriodHigh << 8);
 			break;
 		case 0x02:
+			// Continuously reset phase when disabled.
+			if (!this->m_iEnabled) {
+				m_iDutyCycleCounter = 0;	// Coarse counter, period=32
+			}
 			m_iEnabled = (Value & 0x80);
 			m_iPeriodHigh = (Value & 0x0F);
 			m_iPeriod = m_iPeriodLow + (m_iPeriodHigh << 8);
@@ -118,6 +122,15 @@ void CVRC6_Sawtooth::Write(uint16_t Address, uint8_t Value)
 			m_iPeriod = m_iPeriodLow + (m_iPeriodHigh << 8);
 			break;
 		case 0x02:
+			// Continuously reset phase when disabled.
+			if (!this->m_iEnabled) {
+				// m_iCounter = 0;	// Fine counter. "Clearing E does not reset the frequency divider, however"
+					// Also, assigning to 0 would be wrong since it counts *down*, so 0 triggers an immediate step.
+				// Not resetting fine-phase (m_iCounter) creates deliberate jitter of up to 1/7 cycle.
+				
+				m_iResetReg = 0;			// Coarse counter, period=14. `count14 = 0`
+				m_iPhaseAccumulator = 0;	// sawtooth numeric output.
+			}
 			m_iEnabled = (Value & 0x80);
 			m_iPeriodHigh = (Value & 0x0F);
 			m_iPeriod = m_iPeriodLow + (m_iPeriodHigh << 8);
