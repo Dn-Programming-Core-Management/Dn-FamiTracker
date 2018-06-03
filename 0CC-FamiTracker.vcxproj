@@ -73,7 +73,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <MinimalRebuild>false</MinimalRebuild>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)include;.\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)include;./;Source/</AdditionalIncludeDirectories>
       <ObjectFileName>obj/$(IntDir)/%(RelativeDir)</ObjectFileName>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -104,7 +104,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)include;.\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)include;./;Source/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -393,6 +393,39 @@
     <ClInclude Include="Source\SwapDlg.h" />
     <ClInclude Include="Source\to_sv.h" />
     <ClInclude Include="Source\TransposeDlg.h" />
+    <ClInclude Include="Source\type_safe\arithmetic_policy.hpp" />
+    <ClInclude Include="Source\type_safe\boolean.hpp" />
+    <ClInclude Include="Source\type_safe\bounded_type.hpp" />
+    <ClInclude Include="Source\type_safe\compact_optional.hpp" />
+    <ClInclude Include="Source\type_safe\config.hpp" />
+    <ClInclude Include="Source\type_safe\constrained_type.hpp" />
+    <ClInclude Include="Source\type_safe\deferred_construction.hpp" />
+    <ClInclude Include="Source\type_safe\detail\aligned_union.hpp" />
+    <ClInclude Include="Source\type_safe\detail\all_of.hpp" />
+    <ClInclude Include="Source\type_safe\detail\assert.hpp" />
+    <ClInclude Include="Source\type_safe\detail\assign_or_construct.hpp" />
+    <ClInclude Include="Source\type_safe\detail\constant_parser.hpp" />
+    <ClInclude Include="Source\type_safe\detail\copy_move_control.hpp" />
+    <ClInclude Include="Source\type_safe\detail\force_inline.hpp" />
+    <ClInclude Include="Source\type_safe\detail\is_nothrow_swappable.hpp" />
+    <ClInclude Include="Source\type_safe\detail\map_invoke.hpp" />
+    <ClInclude Include="Source\type_safe\detail\variant_impl.hpp" />
+    <ClInclude Include="Source\type_safe\downcast.hpp" />
+    <ClInclude Include="Source\type_safe\flag.hpp" />
+    <ClInclude Include="Source\type_safe\flag_set.hpp" />
+    <ClInclude Include="Source\type_safe\floating_point.hpp" />
+    <ClInclude Include="Source\type_safe\index.hpp" />
+    <ClInclude Include="Source\type_safe\integer.hpp" />
+    <ClInclude Include="Source\type_safe\narrow_cast.hpp" />
+    <ClInclude Include="Source\type_safe\optional.hpp" />
+    <ClInclude Include="Source\type_safe\optional_ref.hpp" />
+    <ClInclude Include="Source\type_safe\output_parameter.hpp" />
+    <ClInclude Include="Source\type_safe\reference.hpp" />
+    <ClInclude Include="Source\type_safe\strong_typedef.hpp" />
+    <ClInclude Include="Source\type_safe\tagged_union.hpp" />
+    <ClInclude Include="Source\type_safe\types.hpp" />
+    <ClInclude Include="Source\type_safe\variant.hpp" />
+    <ClInclude Include="Source\type_safe\visitor.hpp" />
     <ClInclude Include="Source\VisualizerBase.h" />
     <ClInclude Include="Source\WaveformGenerator.h" />
     <ClInclude Include="Source\WavegenBuiltin.h" />
