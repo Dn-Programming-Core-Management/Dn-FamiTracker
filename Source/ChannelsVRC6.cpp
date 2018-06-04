@@ -47,9 +47,11 @@ bool CChannelHandlerVRC6::HandleEffect(effect_t EffNum, unsigned char EffParam)
 		break;
 
 	case EF_PHASE_RESET:
-		this->resetPhase();
-		// RefreshChannel gets called afterwards, on the same frame.
-		// So there is no 1-frame silent gap (verified while running at 16hz).
+		if (EffParam == 0) {
+			this->resetPhase();
+			// RefreshChannel gets called afterwards, on the same frame.
+			// So there is no 1-frame silent gap (verified while running at 16hz).
+		}
 		break;
 	default: return CChannelHandler::HandleEffect(EffNum, EffParam);
 	}
