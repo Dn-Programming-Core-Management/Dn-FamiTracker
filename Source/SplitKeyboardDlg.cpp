@@ -21,7 +21,7 @@
 */
 
 #include "stdafx.h"
-#include "resource.h"
+#include "res/resource.h"
 #include "SplitKeyboardDlg.h"
 #include "FamiTrackerTypes.h"
 #include "PatternNote.h"
