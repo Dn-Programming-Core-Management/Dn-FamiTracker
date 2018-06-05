@@ -256,9 +256,9 @@ CString CChannelHandler::GetSlideEffectString() const		// // //
 	
 	switch (m_iEffect) {
 	case EF_ARPEGGIO:
-		if (m_iEffectParam) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iEffectParam); break;
+		if (m_iEffectParam) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect], m_iEffectParam); break;
 	case EF_PORTA_UP: case EF_PORTA_DOWN: case EF_PORTAMENTO:
-		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iPortaSpeed); break;
+		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect], m_iPortaSpeed); break;
 	}
 
 	return str;
@@ -1055,13 +1055,13 @@ CString CChannelHandlerInverted::GetSlideEffectString() const		// // //
 	
 	switch (m_iEffect) {
 	case EF_ARPEGGIO:
-		if (m_iEffectParam) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iEffectParam); break;
+		if (m_iEffectParam) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect], m_iEffectParam); break;
 	case EF_PORTA_UP:
-		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_PORTA_DOWN - 1], m_iPortaSpeed); break;
+		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_PORTA_DOWN], m_iPortaSpeed); break;
 	case EF_PORTA_DOWN:
-		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_PORTA_UP - 1], m_iPortaSpeed); break;
+		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[EF_PORTA_UP], m_iPortaSpeed); break;
 	case EF_PORTAMENTO:
-		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect - 1], m_iPortaSpeed); break;
+		if (m_iPortaSpeed) str.AppendFormat(_T(" %c%02X"), EFF_CHAR[m_iEffect], m_iPortaSpeed); break;
 	}
 
 	return str;

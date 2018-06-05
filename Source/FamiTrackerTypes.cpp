@@ -42,46 +42,44 @@ constexpr auto Effects(){
 }
 const std::array<Effect, EF_COUNT> effects = Effects();
 
+// TODO: Define std::unordered_map<char, effect_t> for all effects, plus each expansion.
+// Faster, but produces duplicate global consts.
 effect_t GetEffectFromChar(char ch, int Chip, bool *bValid)		// // //
 {
-	effect_t Eff = EF_NONE;
+	bool dummy;
+	if (bValid == nullptr) bValid = &dummy;
 
-	bool Found = false;
-	for (int i = EF_NONE + 1; i < EF_COUNT; ++i)
-		if (EFF_CHAR[i - 1] == ch) {
-			Eff = static_cast<effect_t>(i);
-			Found = true; break;
-		}
-	if (!Found) {
-		if (bValid != nullptr)
-			*bValid = false;
-		return Eff;
-	}
-	else if (bValid != nullptr)
-		*bValid = true;
+	*bValid = true;
 
 	switch (Chip) {
 	case SNDCHIP_FDS:
 		for (const auto &x : FDS_EFFECTS)
-			if (ch == EFF_CHAR[x - 1])
+			if (ch == EFF_CHAR[x])
 				return x;
 		break;
 	case SNDCHIP_N163:
 		for (const auto &x : N163_EFFECTS)
-			if (ch == EFF_CHAR[x - 1])
+			if (ch == EFF_CHAR[x])
 				return x;
 		break;
 	case SNDCHIP_S5B:
 		for (const auto &x : S5B_EFFECTS)
-			if (ch == EFF_CHAR[x - 1])
+			if (ch == EFF_CHAR[x])
 				return x;
 		break;
 	case SNDCHIP_VRC7:
 		for (const auto &x : VRC7_EFFECTS)
-			if (ch == EFF_CHAR[x - 1])
+			if (ch == EFF_CHAR[x])
 				return x;
 		break;
 	}
 
-	return Eff;
+	for (effect_t eff = EF_NONE; eff != EF_COUNT; eff = static_cast<effect_t>(eff + 1)) {
+		if (EFF_CHAR[eff] == ch) {
+			return eff;
+		}
+	}
+
+	*bValid = false;
+	return EF_NONE;
 }
