@@ -723,9 +723,6 @@
     <ClCompile Include="Source\NoNotifyEdit.cpp">
       <Filter>Source Files\Custom Controls</Filter>
     </ClCompile>
-    <ClCompile Include="Source\utils\input.cpp">
-      <Filter>Source Files\utils</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">

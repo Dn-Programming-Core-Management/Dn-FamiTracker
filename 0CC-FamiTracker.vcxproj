@@ -216,7 +216,6 @@
     <ClCompile Include="Source\StretchDlg.cpp" />
     <ClCompile Include="Source\SwapDlg.cpp" />
     <ClCompile Include="Source\TransposeDlg.cpp" />
-    <ClCompile Include="Source\utils\input.cpp" />
     <ClCompile Include="Source\VisualizerBase.cpp" />
     <ClCompile Include="Source\WaveEditor.cpp" />
     <ClCompile Include="Source\GraphEditor.cpp" />
