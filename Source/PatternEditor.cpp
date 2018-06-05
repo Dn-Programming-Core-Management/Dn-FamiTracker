@@ -1394,7 +1394,7 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 							bool Found = false;
 							for (unsigned int i = 0; i <= m_pDocument->GetEffColumns(GetSelectedTrack(), Channel); i++) {
 								if (pNoteData->EffNumber[i] != EF_NONE) {
-									DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, EFF_CHAR[pNoteData->EffNumber[i] - 1], DimEff);
+									DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, EFF_CHAR[pNoteData->EffNumber[i]], DimEff);
 									DrawChar(pDC, PosX + m_iCharWidth * 3 / 2, PosY, HEX[pNoteData->EffParam[i] >> 4], DimEff);
 									DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, HEX[pNoteData->EffParam[i] & 0x0F], DimEff);
 									Found = true;
@@ -1474,7 +1474,7 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 			if (EffNumber == 0)
 				BAR(PosX, PosY);
 			else
-				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, EFF_CHAR[EffNumber - 1], EffColor);		// // //
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, EFF_CHAR[EffNumber], EffColor);		// // //
 			break;
 		case C_EFF1_PARAM1: case C_EFF2_PARAM1: case C_EFF3_PARAM1: case C_EFF4_PARAM1:
 			// Effect param x

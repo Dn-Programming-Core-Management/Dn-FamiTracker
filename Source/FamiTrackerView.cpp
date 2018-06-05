@@ -57,6 +57,7 @@ const TCHAR CFamiTrackerView::CLIPBOARD_ID[] = _T("FamiTracker Pattern");
 // Effect texts
 // 0CC: add verbose description as in modplug
 const CString EFFECT_TEXTS[] = {		// // //
+	_T(""),
 	_T("Fxx - Set speed to XX, cancels groove"),
 	_T("Fxx - Set tempo to XX"),
 	_T("Bxx - Jump to beginning of frame XX"),
@@ -3910,5 +3911,5 @@ CString	CFamiTrackerView::GetEffectHint(const stChanNote &Note, int Column) cons
 	if (Index > EF_VOLUME || (Index == EF_VOLUME && Param >= 0xE0)) ++Index;
 	if (Index > EF_SPEED || (Index == EF_SPEED && Param >= GetDocument()->GetSpeedSplitPoint())) ++Index;
 
-	return EFFECT_TEXTS[Index - 1];
+	return EFFECT_TEXTS[Index];
 }

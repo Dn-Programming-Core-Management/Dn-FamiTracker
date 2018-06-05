@@ -595,7 +595,7 @@ const CString& CTextExport::ExportCellText(const stChanNote& stCell, unsigned in
 		}
 		else
 		{
-			tmp.Format(_T(" %c%02X"), EFF_CHAR[stCell.EffNumber[e]-1], stCell.EffParam[e]);
+			tmp.Format(_T(" %c%02X"), EFF_CHAR[stCell.EffNumber[e]], stCell.EffParam[e]);
 			s += tmp;
 		}
 	}
