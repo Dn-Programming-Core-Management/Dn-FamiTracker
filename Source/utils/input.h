@@ -9,7 +9,7 @@
 
 namespace ts = type_safe;
 
-using Keycode = int64_t;// int
+using Keycode = int;
 
 struct Character : ts::strong_typedef<Character, int>,
 	ts::strong_typedef_op::equality_comparison<Character>,
