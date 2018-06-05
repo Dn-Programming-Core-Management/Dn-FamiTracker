@@ -21,7 +21,7 @@
 */
 
 #include "stdafx.h"
-#include "resource.h"		// // //
+#include "res/resource.h"        // // //
 #include "Instrument.h"
 #include "SeqInstrument.h"		// // //
 #include "InstrumentFDS.h"		// // //

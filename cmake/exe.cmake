@@ -388,6 +388,8 @@ add_executable(${PROJECT_NAME}
         Source/WavegenBuiltin.h
         Source/WavProgressDlg.cpp
         Source/WavProgressDlg.h
-        0CC-FamiTracker.rc
-        resource.h
+
+        res/0CC-FamiTracker.rc
+        res/resource.h
+
         version.h)
