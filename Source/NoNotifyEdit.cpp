@@ -14,9 +14,6 @@ NoNotifyEdit::NoNotifyEdit() {
 	notify = true;
 }
 
-NoNotifyEdit::~NoNotifyEdit() {
-}
-
 BEGIN_MESSAGE_MAP(NoNotifyEdit, CEdit)
 	ON_CONTROL_REFLECT_EX(EN_CHANGE, OnEnChange)
 END_MESSAGE_MAP()
