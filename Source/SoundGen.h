@@ -241,7 +241,6 @@ private:
 	void		CreateChannels();
 	void		AssignChannel(CTrackerChannel *pTrackerChannel);		// // //
 	void		ResetAPU();
-	void		GeneratePeriodTables(int BaseFreq);
 
 	// Audio
 	bool		ResetAudioDevice();
@@ -275,9 +274,6 @@ private:
 	void		PlayerSkipTo(int Row);
 
 	void		ApplyGlobalState();		// // //
-
-	// // // Instrument recorder
-	void		ResetRecordCache();
 
 public:
 	static const double NEW_VIBRATO_DEPTH[];
@@ -430,7 +426,6 @@ public:
 	afx_msg void OnStartRender(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnStopRender(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnPreviewSample(WPARAM wParam, LPARAM lParam);
-	afx_msg void OnHaltPreview(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnWriteAPU(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnCloseSound(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnSetChip(WPARAM wParam, LPARAM lParam);
