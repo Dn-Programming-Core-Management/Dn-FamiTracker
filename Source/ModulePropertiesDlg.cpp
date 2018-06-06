@@ -628,7 +628,6 @@ void CModulePropertiesDlg::N163OffsetSlider(int pos) {
 
 
 bool CModulePropertiesDlg::levelFromStr(int &target, CString dBstr) {
-	CT2A dBchar(dBstr);
 	char *endptr;
 	double dBval = strtod(dBstr, &endptr);
 	if (*endptr == '\0') {									// if no error
@@ -641,7 +640,6 @@ bool CModulePropertiesDlg::levelFromStr(int &target, CString dBstr) {
 
 void CModulePropertiesDlg::OnEnChangeEditN163Offset()
 {
-	//auto levelEdit = static_cast<CEdit*>(GetDlgItem(IDC_N163_OFFSET_EDIT));
 	CString str;
 	N163LevelEdit.GetWindowText(str);
 	if (levelFromStr(N163LevelOffset, str)) {
