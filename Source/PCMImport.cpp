@@ -205,7 +205,7 @@ CDSample *CPCMImport::ShowDialog()
 	CString fileFilter = LoadDefaultFilter(IDS_FILTER_WAV, _T(".wav"));	
 	CFileSoundDialog OpenFileDialog(TRUE, 0, 0, OFN_HIDEREADONLY, fileFilter);
 
-	OpenFileDialog.m_pOFN->lpstrInitialDir = theApp.GetSettings()->GetPath(PATH_WAV);
+	OpenFileDialog.m_pOFN->lpstrInitialDir = theApp.GetSettings()->GetPath(PATH_WAV_IMPORT);
 
 	if (OpenFileDialog.DoModal() == IDCANCEL)
 		return NULL;
@@ -213,7 +213,7 @@ CDSample *CPCMImport::ShowDialog()
 	// Stop any preview
 	PlaySound(NULL, NULL, SND_NODEFAULT | SND_SYNC);
 
-	theApp.GetSettings()->SetPath(OpenFileDialog.GetPathName(), PATH_WAV);
+	theApp.GetSettings()->SetPath(OpenFileDialog.GetPathName(), PATH_WAV_IMPORT);
 
 	m_strPath	  = OpenFileDialog.GetPathName();
 	m_strFileName = OpenFileDialog.GetFileName();
