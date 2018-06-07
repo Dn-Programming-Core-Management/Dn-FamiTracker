@@ -2,7 +2,6 @@
 
 cmake_minimum_required(VERSION 3.10)
 project(j0CC_FamiTracker)
-set(CMAKE_CXX_STANDARD 17)
 
 
 # MFC debug/release
@@ -23,6 +22,7 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}
 # - res/0CC-FamiTracker.manifest MUST not be in add_executable().
 # - /MANIFEST:NO must be passed into the linker.
 
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 set_target_properties(${PROJECT_NAME} PROPERTIES
         LINK_FLAGS
             /MANIFEST:NO)
