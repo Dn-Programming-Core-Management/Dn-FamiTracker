@@ -162,7 +162,6 @@ CSoundGen::~CSoundGen()
 		SAFE_RELEASE(m_pTrackerChannels[i]);
 	}
 
-	SAFE_RELEASE(m_pWaveFile);		// // //
 	SAFE_RELEASE(m_pInstRecorder);		// // //
 }
 
@@ -1798,9 +1797,8 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 		m_iRenderRowCount = m_iRenderEndParam;
 	}
 
-	if (m_pWaveFile)		// // //
-		delete m_pWaveFile;
-	m_pWaveFile = new CWaveFile;
+	m_pWaveFile = std::make_unique<CWaveFile>();
+	// Unfortunately, destructor doesn't cleanup object. Only CloseFile() does.
 	if (!m_pWaveFile ||
 		!m_pWaveFile->OpenFile(pFile, theApp.GetSettings()->Sound.iSampleRate, theApp.GetSettings()->Sound.iSampleSize, 1)) {
 		AfxMessageBox(IDS_FILE_OPEN_ERROR);
@@ -1828,7 +1826,7 @@ void CSoundGen::StopRendering()
 	m_iPlayFrame = 0;
 	m_iPlayRow = 0;
 	m_pWaveFile->CloseFile();		// // //
-	delete m_pWaveFile;
+	m_pWaveFile.reset();
 
 	ResetBuffer();
 	ResetAPU();		// // //
