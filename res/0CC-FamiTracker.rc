@@ -24,23 +24,23 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Bitmap
 //
 
-IDR_MAINFRAME           BITMAP                  "res\\MainToolbar-16.bmp"
+IDR_MAINFRAME           BITMAP                  "MainToolbar-16.bmp"
 
-IDR_INSTRUMENT_TOOLBAR  BITMAP                  "res\\InstrumentToolbar-16.bmp"
+IDR_INSTRUMENT_TOOLBAR  BITMAP                  "InstrumentToolbar-16.bmp"
 
-IDB_KEY_BLACK           BITMAP                  "res\\key_black_unpressed.bmp"
+IDB_KEY_BLACK           BITMAP                  "key_black_unpressed.bmp"
 
-IDB_KEY_BLACK_MARK      BITMAP                  "res\\key_black_pressed.bmp"
+IDB_KEY_BLACK_MARK      BITMAP                  "key_black_pressed.bmp"
 
-IDB_KEY_WHITE           BITMAP                  "res\\key_white_unpressed.bmp"
+IDB_KEY_WHITE           BITMAP                  "key_white_unpressed.bmp"
 
-IDB_KEY_WHITE_MARK      BITMAP                  "res\\key_white_pressed.bmp"
+IDB_KEY_WHITE_MARK      BITMAP                  "key_white_pressed.bmp"
 
-IDB_TOOLBAR_256         BITMAP                  "res\\MainToolbar-256.bmp"
+IDB_TOOLBAR_256         BITMAP                  "MainToolbar-256.bmp"
 
-IDB_TOOLBAR_INST_256    BITMAP                  "res\\InstrumentToolbar-256.bmp"
+IDB_TOOLBAR_INST_256    BITMAP                  "InstrumentToolbar-256.bmp"
 
-IDB_ABOUT               BITMAP                  "res\\About.bmp"
+IDB_ABOUT               BITMAP                  "About.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1941,27 +1941,27 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON                    "res\\Application.ico"
+IDR_MAINFRAME           ICON                    "Application.ico"
 
-IDI_INST_2A03           ICON                    "res\\Inst_2A03.ico"
+IDI_INST_2A03           ICON                    "Inst_2A03.ico"
 
-IDI_INST_VRC6           ICON                    "res\\Inst_VRC6.ico"
+IDI_INST_VRC6           ICON                    "Inst_VRC6.ico"
 
-IDI_INST_VRC7           ICON                    "res\\Inst_VRC7.ico"
+IDI_INST_VRC7           ICON                    "Inst_VRC7.ico"
 
-IDR_FamiTrackerTYPE     ICON                    "res\\Document.ico"
+IDR_FamiTrackerTYPE     ICON                    "Document.ico"
 
-IDI_INST_N163           ICON                    "res\\Inst_N163.ico"
+IDI_INST_N163           ICON                    "Inst_N163.ico"
 
-IDI_INST_FDS            ICON                    "res\\Inst_FDS.ico"
+IDI_INST_FDS            ICON                    "Inst_FDS.ico"
 
-IDI_INST_S5B            ICON                    "res\\Inst_S5B.ico"
+IDI_INST_S5B            ICON                    "Inst_S5B.ico"
 
-IDI_INST_2A07           ICON                    "res\\Inst_2A07.ico"
+IDI_INST_2A07           ICON                    "Inst_2A07.ico"
 
-IDI_LEFT                ICON                    "res\\LeftArrow.ico"
+IDI_LEFT                ICON                    "LeftArrow.ico"
 
-IDI_RIGHT               ICON                    "res\\RightArrow.ico"
+IDI_RIGHT               ICON                    "RightArrow.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1969,7 +1969,7 @@ IDI_RIGHT               ICON                    "res\\RightArrow.ico"
 // RT_MANIFEST
 //
 
-ID_MANIFEST             RT_MANIFEST             "res\\0CC-FamiTracker.manifest"
+ID_MANIFEST             RT_MANIFEST             "0CC-FamiTracker.manifest"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -2837,7 +2837,7 @@ BEGIN
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
     "LANGUAGE 9, 1\r\n"
     "#pragma code_page(1252)\r\n"
-    "#include ""res\\0CC-FamiTracker.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""0CC-FamiTracker.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
     "#include ""afxres.rc""         // Standard components\r\n"
     "#endif\r\n"
     "\0"
@@ -2863,7 +2863,7 @@ END
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE 9, 1
 #pragma code_page(1252)
-#include "res\0CC-FamiTracker.rc2"  // non-Microsoft Visual C++ edited resources
+#include "0CC-FamiTracker.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"         // Standard components
 #endif
 
