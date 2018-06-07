@@ -30,6 +30,8 @@
 #include <queue>		// // //
 #include "Common.h"
 
+#include <memory>
+
 const int VIBRATO_LENGTH = 256;
 const int TREMOLO_LENGTH = 256;
 
@@ -390,7 +392,7 @@ private:
 
 	std::queue<int>		m_iRegisterStream;					// // // vgm export
 
-	CWaveFile			*m_pWaveFile = nullptr;		// // //
+	std::unique_ptr<CWaveFile> m_pWaveFile;
 
 	// FDS & N163 waves
 	volatile bool		m_bWaveChanged;
