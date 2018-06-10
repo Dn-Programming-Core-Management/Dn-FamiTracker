@@ -45,6 +45,14 @@ bool CChannelHandlerVRC6::HandleEffect(effect_t EffNum, unsigned char EffParam)
 	case EF_DUTY_CYCLE:
 		m_iDefaultDuty = m_iDutyPeriod = EffParam;
 		break;
+
+	case EF_PHASE_RESET:
+		if (EffParam == 0) {
+			this->resetPhase();
+			// RefreshChannel gets called afterwards, on the same frame.
+			// So there is no 1-frame silent gap (verified while running at 16hz).
+		}
+		break;
 	default: return CChannelHandler::HandleEffect(EffNum, EffParam);
 	}
 
@@ -80,11 +88,22 @@ bool CChannelHandlerVRC6::CreateInstHandler(inst_type_t Type)
 	return false;
 }
 
+
+uint16_t CChannelHandlerVRC6::getAddress() {
+	return ((m_iChannelID - CHANID_VRC6_PULSE1) << 12) + 0x9000;
+}
+
 void CChannelHandlerVRC6::ClearRegisters()		// // //
 {
-	uint16_t Address = ((m_iChannelID - CHANID_VRC6_PULSE1) << 12) + 0x9000;
+	uint16_t Address = this->getAddress();
 	WriteRegister(Address, 0);
 	WriteRegister(Address + 1, 0);
+	WriteRegister(Address + 2, 0);
+}
+
+void CChannelHandlerVRC6::resetPhase()		// // //
+{
+	uint16_t Address = this->getAddress();
 	WriteRegister(Address + 2, 0);
 }
 
@@ -94,7 +113,7 @@ void CChannelHandlerVRC6::ClearRegisters()		// // //
 
 void CVRC6Square::RefreshChannel()
 {
-	uint16_t Address = ((m_iChannelID - CHANID_VRC6_PULSE1) << 12) + 0x9000;
+	uint16_t Address = this->getAddress();
 
 	unsigned int Period = CalculatePeriod();
 	unsigned int Volume = CalculateVolume();

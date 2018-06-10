@@ -57,6 +57,11 @@ void CVRC6_Pulse::Write(uint16_t Address, uint8_t Value)
 			m_iPeriod = m_iPeriodLow + (m_iPeriodHigh << 8);
 			break;
 		case 0x02:
+			// Continuously reset phase when disabled.
+			if (!this->m_iEnabled) {
+				m_iDutyCycleCounter = 0;	// Coarse counter, period=32
+				// For hardware-accuracy, do not reset fine counter `m_iCounter = 0`.
+			}
 			m_iEnabled = (Value & 0x80);
 			m_iPeriodHigh = (Value & 0x0F);
 			m_iPeriod = m_iPeriodLow + (m_iPeriodHigh << 8);
@@ -118,6 +123,16 @@ void CVRC6_Sawtooth::Write(uint16_t Address, uint8_t Value)
 			m_iPeriod = m_iPeriodLow + (m_iPeriodHigh << 8);
 			break;
 		case 0x02:
+			// Continuously reset phase when disabled.
+			if (!this->m_iEnabled) {
+				m_iResetReg = 0;			// Coarse counter, period=14. (NSFPlay: `count14 = 0`)
+				m_iPhaseAccumulator = 0;	// sawtooth numeric output.
+
+				// For hardware-accuracy, do not reset fine counter `m_iCounter = 0`.
+				// Also, assigning to 0 would be wrong since it counts *down*, so 0 triggers an immediate step.
+
+				// Not resetting m_iCounter creates deliberate jitter of up to 1/7 cycle.
+			}
 			m_iEnabled = (Value & 0x80);
 			m_iPeriodHigh = (Value & 0x0F);
 			m_iPeriod = m_iPeriodLow + (m_iPeriodHigh << 8);

@@ -30,6 +30,7 @@
 
 #include "PatternEditorTypes.h"		// // //
 #include "FamiTrackerViewMessage.h"		// // //
+#include "utils/input.h"
 
 // External classes
 class CFamiTrackerDoc;
@@ -104,8 +105,8 @@ public:
 	void		 RegisterKeyState(int Channel, int Note);
 
 	// Note preview
-	bool		 PreviewNote(unsigned char Key);
-	void		 PreviewRelease(unsigned char Key);
+	bool		 PreviewNote(Keycode Key);
+	void		 PreviewRelease(Keycode Key);
 
 	// Mute methods
 	void		 SoloChannel(unsigned int Channel);
@@ -167,7 +168,7 @@ private:
 	void	StepDown();
 
 	// Input key handling
-	void	HandleKeyboardInput(unsigned char Key);		// // //
+	void HandleKeyboardInput(Input input);
 	void	TranslateMidiMessage();
 
 	void	OnKeyDirUp();
@@ -188,28 +189,28 @@ private:
 	void	KeyIncreaseAction();
 	void	KeyDecreaseAction();
 	
-	int		TranslateKey(unsigned char Key) const;
-	int		TranslateKeyDefault(unsigned char Key) const;
-	int		TranslateKeyModplug(unsigned char Key) const;
+	int		TranslateKey(Keycode Key) const;
+	int		TranslateKeyDefault(Keycode Key) const;
+	int		TranslateKeyModplug(Keycode Key) const;
 	
-	bool	CheckClearKey(unsigned char Key) const;
-	bool	CheckHaltKey(unsigned char Key) const;
-	bool	CheckReleaseKey(unsigned char Key) const;
-	bool	CheckRepeatKey(unsigned char Key) const;
-	bool	CheckEchoKey(unsigned char Key) const;		// // //
+	bool	CheckClearKey(Keycode Key) const;
+	bool	CheckHaltKey(Keycode Key) const;
+	bool	CheckReleaseKey(Keycode Key) const;
+	bool	CheckRepeatKey(Keycode Key) const;
+	bool	CheckEchoKey(Keycode Key) const;		// // //
 
-	bool	PreventRepeat(unsigned char Key, bool Insert);
-	void	RepeatRelease(unsigned char Key);
+	bool	PreventRepeat(Keycode Key, bool Insert);
+	void	RepeatRelease(Keycode Key);
 
-	bool	EditInstrumentColumn(stChanNote &Note, int Value, bool &StepDown, bool &MoveRight, bool &MoveLeft);
-	bool	EditVolumeColumn(stChanNote &Note, int Value, bool &bStepDown);
-	bool	EditEffNumberColumn(stChanNote &Note, unsigned char nChar, int EffectIndex, bool &bStepDown);
-	bool	EditEffParamColumn(stChanNote &Note, int Value, int EffectIndex, bool &bStepDown, bool &bMoveRight, bool &bMoveLeft);
+	bool	EditInstrumentColumn(stChanNote &Note, Keycode key, bool &StepDown, bool &MoveRight, bool &MoveLeft);
+	bool	EditVolumeColumn(stChanNote &Note, Keycode key, bool &bStepDown);
+	bool	EditEffNumberColumn(stChanNote &Note, Input input, int EffectIndex, bool &bStepDown);
+	bool	EditEffParamColumn(stChanNote &Note, Keycode key, int EffectIndex, bool &bStepDown, bool &bMoveRight, bool &bMoveLeft);
 
 	void	InsertNote(int Note, int Octave, int Channel, int Velocity);
 
 	// MIDI keyboard emulation
-	void	HandleKeyboardNote(char nChar, bool Pressed);
+	void	HandleKeyboardNote(Keycode key, bool Pressed);
 	bool	IsSplitEnabled(int MidiNote, int Channel) const;		// // //
 	void	SplitKeyboardAdjust(stChanNote &Note) const;		// // //
 	void	SplitAdjustChannel(unsigned int &Channel, const stChanNote &Note) const;		// // //
@@ -240,15 +241,6 @@ private:
 	// Keyboard
 	bool	IsShiftPressed() const;
 	bool	IsControlPressed() const;
-
-	// Update timer
-#if 0
-	static UINT ThreadProcFunc(LPVOID pParam);
-
-	bool	StartTimerThread();
-	void	EndTimerThread();
-	UINT	ThreadProc();
-#endif
 
 //
 // Constants
@@ -296,7 +288,7 @@ private:
 	unsigned int		m_iWindowHeight;						// Height of view area
 
 	// Input
-	char				m_cKeyList[256];
+	char				m_cKeyList[256];	// TODO unordered_set<Keycode> keysHeldDown;
 	unsigned int		m_iKeyboardNote;
 	int					m_iLastNote;							// Last note added to pattern
 	int					m_iLastInstrument;						// Last instrument added to pattern
@@ -309,7 +301,7 @@ private:
 	int					m_iSplitInstrument;
 	int					m_iSplitTranspose;
 
-	std::unordered_map<unsigned char, int> m_iNoteCorrection;	// // // correction from changing octaves
+	std::unordered_map<Keycode, int> m_iNoteCorrection;			// // // correction from changing octaves
 	CNoteQueue			*m_pNoteQueue;							// // // Note queue for handling note triggers
 
 	// MIDI
@@ -353,8 +345,9 @@ public:
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
-	afx_msg void OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg void OnKeyDown(UINT key, UINT nRepCnt, UINT nFlags);
+	afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg void OnKeyUp(UINT key, UINT nRepCnt, UINT nFlags);
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnXButtonDown(UINT nFlags, UINT nButton, CPoint point);		// // //
@@ -396,7 +389,7 @@ public:
 	afx_msg void OnTrackerToggleChannel();
 	afx_msg void OnTrackerSoloChannel();
 	afx_msg void OnTrackerUnmuteAllChannels();
-	afx_msg void OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg void OnSysKeyDown(UINT key, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnEditInterpolate();
 	afx_msg void OnEditReplaceInstrument();
 	afx_msg void OnEditReverse();
