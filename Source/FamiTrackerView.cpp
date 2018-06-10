@@ -50,7 +50,6 @@
 #include <cmath>
 #include <assert.h>
 
-using std::get;
 using std::get_if;
 
 #ifdef _DEBUG
