@@ -37,8 +37,13 @@ ft_update_s5b:
 	ldx #$00
 	stx var_Pul_Noi
 @UpdateNoise:
-	lda var_ch_Trigger + S5B_OFFSET, x
+	; a = var_ch_SequencePtr5[S5B_OFFSET + x]
+	; if a == #$FF goto :+
+
+	lda var_ch_SequencePtr5 + S5B_OFFSET, x
+	cmp #$FF
 	beq :+
+
 	lda var_ch_DutyCurrent + S5B_OFFSET, x
 	bpl :+									; no noise
 	and #$1F
