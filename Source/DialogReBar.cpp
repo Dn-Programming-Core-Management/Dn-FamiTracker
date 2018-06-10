@@ -19,7 +19,7 @@
 */
 
 #include "stdafx.h"
-#include "resource.h"
+#include "res/resource.h"
 #include "FamiTracker.h"
 #include "DialogReBar.h"
 #include "CustomControls.h"		// // //

@@ -34,7 +34,7 @@
 #include "PatternEditor.h"
 #include "PatternAction.h"
 #include "CompoundAction.h"
-#include "resource.h"
+#include "res/resource.h"
 
 enum {
 	WC_NOTE = 0,
