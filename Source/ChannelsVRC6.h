@@ -38,7 +38,9 @@ protected:
 	void	HandleRelease() override;
 	bool	CreateInstHandler(inst_type_t Type) override;		// // //
 	// // //
+	uint16_t getAddress();
 	void	ClearRegisters() override;		// // //
+	void	resetPhase();
 };
 
 class CVRC6Square : public CChannelHandlerVRC6 {
