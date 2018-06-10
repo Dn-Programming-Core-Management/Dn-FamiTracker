@@ -22,7 +22,7 @@
 
 #include "stdafx.h"
 #include "version.h"
-#include "resource.h"
+#include "res/resource.h"
 #include "AboutDlg.h"
 
 // CAboutDlg dialog used for App About

@@ -25,7 +25,7 @@
 #include "stdafx.h"
 #include "Instrument.h"		// // // inst_type_t
 #include "Sequence.h"
-#include "resource.h"		// // // CInstrumentEditDlg
+#include "res/resource.h"        // // // CInstrumentEditDlg
 #include "InstrumentEditDlg.h"		// // // GetRefreshRate()
 #include "InstrumentEditPanel.h"
 #include "SequenceEditor.h"

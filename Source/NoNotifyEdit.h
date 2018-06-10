@@ -5,7 +5,7 @@ class NoNotifyEdit : public CEdit {
 
 public:
 	NoNotifyEdit();
-	virtual ~NoNotifyEdit();
+	virtual ~NoNotifyEdit() = default;
 
 protected:
 	DECLARE_MESSAGE_MAP()
