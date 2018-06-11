@@ -24,6 +24,7 @@ add_executable(${PROJECT_NAME}
         res/MainToolbar-16.bmp
         res/MainToolbar-256.bmp
         res/RightArrow.ico
+
         Source/APU/2413tone.h
         Source/APU/2A03.cpp
         Source/APU/2A03.h
@@ -387,6 +388,8 @@ add_executable(${PROJECT_NAME}
         Source/WavegenBuiltin.h
         Source/WavProgressDlg.cpp
         Source/WavProgressDlg.h
+
+        Source/utils/input.h
 
         res/0CC-FamiTracker.rc
         res/resource.h
