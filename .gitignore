@@ -120,3 +120,4 @@ fabric.properties
 
 Doxyfile
 doxygen/
+/Source/drivers/asm/build/log.txt
