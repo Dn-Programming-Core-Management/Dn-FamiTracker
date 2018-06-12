@@ -74,7 +74,7 @@ const CString EFFECT_TEXTS[] = {		// // //
 	_T("(not used)"),
 	_T("Hxy - Hardware sweep up, X = speed, Y = shift"),
 	_T("Ixy - Hardware sweep down, X = speed, Y = shift"),
-	_T("0xy - Arpeggio, X = second note, Y = third note"),
+	_T("0xy - Arpeggio, X = second note, Y = third note (if zero, produces 2-frame period)"),
 	_T("4xy - Vibrato, X = speed, Y = depth"),
 	_T("7xy - Tremolo, X = speed, Y = depth"),
 	_T("Pxx - Fine pitch, XX - 80 = offset"),
