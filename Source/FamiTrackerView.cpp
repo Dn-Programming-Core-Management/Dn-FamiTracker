@@ -103,7 +103,7 @@ const CString EFFECT_TEXTS[] = {		// // //
 	_T("Hxy - Auto 5B envelope, X - 8 = shift amount, Y = shape"),
 	_T("Ixx - 5B envelope rate, high byte"),
 	_T("Jxx - 5B envelope rate, low byte"),
-	_T("Wxx - 5B noise pitch, 1F = lowest"),
+	_T("Wxx - 5B noise pitch, 1F = highest"),
 	_T("Hxx - VRC7 custom patch port, XX = register address"),
 	_T("Ixx - VRC7 custom patch write, XX = register value"),
 	_T("Lxx - Note release, XX = frames to wait"),
