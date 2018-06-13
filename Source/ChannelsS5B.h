@@ -59,15 +59,15 @@ protected:
 
 	// Static memebers
 protected:
-	static int s_iModes;
-	static int s_iNoiseFreq;
-	static int s_iNoisePrev;		// // //
-	static int s_iDefaultNoise;		// // //
-	static unsigned char s_iEnvFreqHi;
-	static unsigned char s_iEnvFreqLo;
-	static bool s_bEnvTrigger;		// // // 050B
-	static int s_iEnvType;
-	static int s_unused;		// // // 050B, unused
+	static int m_iModes;
+	static int m_iNoiseFreq;
+	static int m_iNoisePrev;		// // //
+	static int m_iDefaultNoise;		// // //
+	static unsigned char m_iEnvFreqHi;
+	static unsigned char m_iEnvFreqLo;
+	static bool m_bEnvTrigger;		// // // 050B
+	static int m_iEnvType;
+	static int m_i5808B4;		// // // 050B, unused
 
 	// Instance members
 protected:
