@@ -134,8 +134,14 @@ bool CChannelHandlerS5B::HandleEffect(effect_t EffNum, EffParamT EffParam)
 		m_iAutoEnvelopeShift = EffParam >> 4;
 		break;
 	case EF_DUTY_CYCLE: {
-		// Translate Vxx bitmask to `enum DutyType` bitmask,
-		// using VXX_TO_DUTY as a conversion table.
+		/*
+		Translate Vxx bitmask to `enum DutyType` bitmask, using VXX_TO_DUTY
+		as a conversion table.
+
+		CSeqInstHandlerS5B::ProcessSequence loads m_iDutyPeriod from the top
+		3 bits of an instrument's duty sequence. (The bottom 5 go to m_iNoiseFreq.)
+		This function moves Vxx to the top 3 bits of m_iDutyPeriod.
+		*/
 
 		unsigned char duty = 0;
 		for (auto const&[VXX, DUTY] : VXX_TO_DUTY) {
