@@ -35,15 +35,15 @@
 #include <map>
 
 // Static member variables, for the shared stuff in 5B
-int			  CChannelHandlerS5B::m_iModes		= 0;
-int			  CChannelHandlerS5B::m_iNoiseFreq	= 0;
-int			  CChannelHandlerS5B::m_iNoisePrev	= -1;
-int			  CChannelHandlerS5B::m_iDefaultNoise = 0;		// // //
-unsigned char CChannelHandlerS5B::m_iEnvFreqHi	= 0;
-unsigned char CChannelHandlerS5B::m_iEnvFreqLo	= 0;
-bool		  CChannelHandlerS5B::m_bEnvTrigger	= false;		// // // 050B
-int			  CChannelHandlerS5B::m_iEnvType	= 0;
-int			  CChannelHandlerS5B::m_i5808B4		= 0;		// // // 050B
+int			  CChannelHandlerS5B::s_iModes		= 0;
+int			  CChannelHandlerS5B::s_iNoiseFreq	= 0;
+int			  CChannelHandlerS5B::s_iNoisePrev	= -1;
+int			  CChannelHandlerS5B::s_iDefaultNoise = 0;		// // //
+unsigned char CChannelHandlerS5B::s_iEnvFreqHi	= 0;
+unsigned char CChannelHandlerS5B::s_iEnvFreqLo	= 0;
+bool		  CChannelHandlerS5B::s_bEnvTrigger	= false;		// // // 050B
+int			  CChannelHandlerS5B::s_iEnvType	= 0;
+int			  CChannelHandlerS5B::s_unused		= 0;		// // // 050B
 
 // Class functions
 
@@ -53,17 +53,17 @@ void CChannelHandlerS5B::SetMode(int Chan, int Square, int Noise)
 
 	switch (Chan) {
 		case 0:
-			m_iModes &= 0x36;
+			s_iModes &= 0x36;
 			break;
 		case 1:
-			m_iModes &= 0x2D;
+			s_iModes &= 0x2D;
 			break;
 		case 2:
-			m_iModes &= 0x1B;
+			s_iModes &= 0x1B;
 			break;
 	}
 
-	m_iModes |= (Noise << (3 + Chan)) | (Square << Chan);
+	s_iModes |= (Noise << (3 + Chan)) | (Square << Chan);
 }
 
 void CChannelHandlerS5B::UpdateAutoEnvelope(int Period)		// // // 050B
@@ -76,22 +76,22 @@ void CChannelHandlerS5B::UpdateAutoEnvelope(int Period)		// // // 050B
 		}
 		else if (m_iAutoEnvelopeShift < 8)
 			Period <<= 8 - m_iAutoEnvelopeShift;
-		m_iEnvFreqLo = Period & 0xFF;
-		m_iEnvFreqHi = Period >> 8;
+		s_iEnvFreqLo = Period & 0xFF;
+		s_iEnvFreqHi = Period >> 8;
 	}
 }
 
 void CChannelHandlerS5B::UpdateRegs()		// // //
 {
 	// Done only once
-	if (m_iNoiseFreq != m_iNoisePrev)		// // //
-		WriteReg(0x06, (m_iNoisePrev = m_iNoiseFreq) ^ 0x1F);
-	WriteReg(0x07, m_iModes);
-	WriteReg(0x0B, m_iEnvFreqLo);
-	WriteReg(0x0C, m_iEnvFreqHi);
-	if (m_bEnvTrigger)		// // // 050B
-		WriteReg(0x0D, m_iEnvType);
-	m_bEnvTrigger = false;
+	if (s_iNoiseFreq != s_iNoisePrev)		// // //
+		WriteReg(0x06, (s_iNoisePrev = s_iNoiseFreq) ^ 0x1F);
+	WriteReg(0x07, s_iModes);
+	WriteReg(0x0B, s_iEnvFreqLo);
+	WriteReg(0x0C, s_iEnvFreqHi);
+	if (s_bEnvTrigger)		// // // 050B
+		WriteReg(0x0D, s_iEnvType);
+	s_bEnvTrigger = false;
 }
 
 // Instance functions
@@ -103,7 +103,7 @@ CChannelHandlerS5B::CChannelHandlerS5B() :
 	m_bUpdate(false)
 {
 	m_iDefaultDuty = S5B_MODE_SQUARE;		// // //
-	m_iDefaultNoise = 0;		// // //
+	s_iDefaultNoise = 0;		// // //
 }
 
 
@@ -126,17 +126,17 @@ bool CChannelHandlerS5B::HandleEffect(effect_t EffNum, EffParamT EffParam)
 {
 	switch (EffNum) {
 	case EF_SUNSOFT_NOISE: // W
-		m_iDefaultNoise = m_iNoiseFreq = EffParam & 0x1F;		// // // 050B
+		s_iDefaultNoise = s_iNoiseFreq = EffParam & 0x1F;		// // // 050B
 		break;
 	case EF_SUNSOFT_ENV_HI: // I
-		m_iEnvFreqHi = EffParam;
+		s_iEnvFreqHi = EffParam;
 		break;
 	case EF_SUNSOFT_ENV_LO: // J
-		m_iEnvFreqLo = EffParam;
+		s_iEnvFreqLo = EffParam;
 		break;
 	case EF_SUNSOFT_ENV_TYPE: // H
-		m_bEnvTrigger = true;		// // // 050B
-		m_iEnvType = EffParam & 0x0F;
+		s_bEnvTrigger = true;		// // // 050B
+		s_iEnvType = EffParam & 0x0F;
 		m_bUpdate = true;
 		m_bEnvelopeEnabled = EffParam != 0;
 		m_iAutoEnvelopeShift = EffParam >> 4;
@@ -174,7 +174,7 @@ void CChannelHandlerS5B::HandleNote(int Note, int Octave)		// // //
 	*/
 
 	if (this->m_iDefaultDuty & DutyType::NOISE) {
-		m_iNoiseFreq = m_iDefaultNoise;
+		s_iNoiseFreq = s_iDefaultNoise;
 	}
 }
 
@@ -220,15 +220,15 @@ void CChannelHandlerS5B::ResetChannel()
 	CChannelHandler::ResetChannel();
 
 	m_iDefaultDuty = m_iDutyPeriod = S5B_MODE_SQUARE;
-	m_iDefaultNoise = m_iNoiseFreq = 0;		// // //
-	m_iNoisePrev = -1;		// // //
+	s_iDefaultNoise = s_iNoiseFreq = 0;		// // //
+	s_iNoisePrev = -1;		// // //
 	m_bEnvelopeEnabled = false;
 	m_iAutoEnvelopeShift = 0;
-	m_iEnvFreqHi = 0;
-	m_iEnvFreqLo = 0;
-	m_iEnvType = 0;
-	m_i5808B4 = 0;		// // // 050B
-	m_bEnvTrigger = false;
+	s_iEnvFreqHi = 0;
+	s_iEnvFreqLo = 0;
+	s_iEnvType = 0;
+	s_unused = 0;		// // // 050B
+	s_bEnvTrigger = false;
 }
 
 int CChannelHandlerS5B::CalculateVolume() const		// // //
@@ -255,14 +255,14 @@ CString CChannelHandlerS5B::GetCustomEffectString() const		// // //
 {
 	CString str = _T("");
 
-	if (m_iEnvFreqLo)
-		str.AppendFormat(_T(" H%02X"), m_iEnvFreqLo);
-	if (m_iEnvFreqHi)
-		str.AppendFormat(_T(" I%02X"), m_iEnvFreqHi);
-	if (m_iEnvType)
-		str.AppendFormat(_T(" J%02X"), m_iEnvType);
-	if (m_iDefaultNoise)
-		str.AppendFormat(_T(" W%02X"), m_iDefaultNoise);
+	if (s_iEnvFreqLo)
+		str.AppendFormat(_T(" H%02X"), s_iEnvFreqLo);
+	if (s_iEnvFreqHi)
+		str.AppendFormat(_T(" I%02X"), s_iEnvFreqHi);
+	if (s_iEnvType)
+		str.AppendFormat(_T(" J%02X"), s_iEnvType);
+	if (s_iDefaultNoise)
+		str.AppendFormat(_T(" W%02X"), s_iDefaultNoise);
 
 	return str;
 }
@@ -286,7 +286,7 @@ void CChannelHandlerS5B::RefreshChannel()
 	WriteReg((m_iChannelID - CHANID_S5B_CH1) + 8    , Volume | Envelope);
 
 	if (Envelope && (m_bTrigger || m_bUpdate))		// // // 050B
-		m_bEnvTrigger = true;
+		s_bEnvTrigger = true;
 	m_bUpdate = false;
 
 	if (m_iChannelID == CHANID_S5B_CH3)
@@ -295,5 +295,5 @@ void CChannelHandlerS5B::RefreshChannel()
 
 void CChannelHandlerS5B::SetNoiseFreq(int Pitch)		// // //
 {
-	m_iNoiseFreq = Pitch;
+	s_iNoiseFreq = Pitch;
 }
