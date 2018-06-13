@@ -32,6 +32,7 @@
 #include "APU/APU.h"
 #include "InstHandler.h"		// // //
 #include "SeqInstHandlerS5B.h"		// // //
+#include <map>
 
 // Static member variables, for the shared stuff in 5B
 int			  CChannelHandlerS5B::m_iModes		= 0;
@@ -105,7 +106,15 @@ CChannelHandlerS5B::CChannelHandlerS5B() :
 	m_iDefaultNoise = 0;		// // //
 }
 
-bool CChannelHandlerS5B::HandleEffect(effect_t EffNum, unsigned char EffParam)
+
+using EffParamT = unsigned char;
+static const std::map<EffParamT, s5b_mode_t> VXX_TO_DUTY = {
+	{1<<0, S5B_MODE_SQUARE},
+	{1<<1, S5B_MODE_NOISE},
+	{1<<2, S5B_MODE_ENVELOPE},
+};
+
+bool CChannelHandlerS5B::HandleEffect(effect_t EffNum, EffParamT EffParam)
 {
 	switch (EffNum) {
 	case EF_SUNSOFT_NOISE: // W
@@ -124,10 +133,26 @@ bool CChannelHandlerS5B::HandleEffect(effect_t EffNum, unsigned char EffParam)
 		m_bEnvelopeEnabled = EffParam != 0;
 		m_iAutoEnvelopeShift = EffParam >> 4;
 		break;
-	case EF_DUTY_CYCLE:
-		m_iDefaultDuty = m_iDutyPeriod = (EffParam << 6) | ((EffParam & 0x04) << 3);		// // // 050B
-//		m_iDefaultDuty = m_iDutyPeriod = EffParam;		// // //
+	case EF_DUTY_CYCLE: {
+		/*
+		Translate Vxx bitmask to `enum DutyType` bitmask, using VXX_TO_DUTY
+		as a conversion table.
+
+		CSeqInstHandlerS5B::ProcessSequence loads m_iDutyPeriod from the top
+		3 bits of an instrument's duty sequence. (The bottom 5 go to m_iNoiseFreq.)
+		This function moves Vxx to the top 3 bits of m_iDutyPeriod.
+		*/
+
+		unsigned char duty = 0;
+		for (auto const&[VXX, DUTY] : VXX_TO_DUTY) {
+			if (EffParam & VXX) {
+				duty |= DUTY;
+			}
+		}
+
+		m_iDefaultDuty = m_iDutyPeriod = duty;
 		break;
+	}
 	default: return CChannelHandler::HandleEffect(EffNum, EffParam);
 	}
 
@@ -137,7 +162,18 @@ bool CChannelHandlerS5B::HandleEffect(effect_t EffNum, unsigned char EffParam)
 void CChannelHandlerS5B::HandleNote(int Note, int Octave)		// // //
 {
 	CChannelHandler::HandleNote(Note, Octave);
-	m_iNoiseFreq = m_iDefaultNoise;
+
+	/*
+	Vxx is handled above: CChannelHandlerS5B::HandleEffect, case EF_DUTY_CYCLE
+	m_iDefaultDuty is Vxx.
+	m_iDutyPeriod is Vxx plus instrument bit-flags. But it's not fully
+		initialized yet (instruments are handled after notes) which is bad.
+	https://docs.google.com/document/d/e/2PACX-1vQ8osh6mm4c4Ay_gVMIJCH8eRB5gBE180Xyeda1T5U6owG7BbKM-yNKVB8azg27HUD9QZ9Vf88crplE/pub
+	*/
+
+	if (this->m_iDefaultDuty & S5B_MODE_NOISE) {
+		m_iNoiseFreq = m_iDefaultNoise;
+	}
 }
 
 void CChannelHandlerS5B::HandleEmptyNote()
