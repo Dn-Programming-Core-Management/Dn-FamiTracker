@@ -108,18 +108,10 @@ CChannelHandlerS5B::CChannelHandlerS5B() :
 
 
 using EffParamT = unsigned char;
-enum DutyType {
-	TONE		= 1<<6,
-	NOISE		= 1<<7,
-	ENVELOPE	= 1<<5,
-};
-
-
-
-static const std::map<EffParamT, DutyType> VXX_TO_DUTY = {
-	{1<<0, DutyType::TONE},
-	{1<<1, DutyType::NOISE},
-	{1<<2, DutyType::ENVELOPE},
+static const std::map<EffParamT, s5b_mode_t> VXX_TO_DUTY = {
+	{1<<0, S5B_MODE_SQUARE},
+	{1<<1, S5B_MODE_NOISE},
+	{1<<2, S5B_MODE_ENVELOPE},
 };
 
 bool CChannelHandlerS5B::HandleEffect(effect_t EffNum, EffParamT EffParam)
@@ -173,7 +165,7 @@ void CChannelHandlerS5B::HandleNote(int Note, int Octave)		// // //
 	https://docs.google.com/document/d/e/2PACX-1vQ8osh6mm4c4Ay_gVMIJCH8eRB5gBE180Xyeda1T5U6owG7BbKM-yNKVB8azg27HUD9QZ9Vf88crplE/pub
 	*/
 
-	if (this->m_iDefaultDuty & DutyType::NOISE) {
+	if (this->m_iDefaultDuty & S5B_MODE_NOISE) {
 		s_iNoiseFreq = s_iDefaultNoise;
 	}
 }
