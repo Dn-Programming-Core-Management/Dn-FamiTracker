@@ -164,7 +164,18 @@ bool CChannelHandlerS5B::HandleEffect(effect_t EffNum, EffParamT EffParam)
 void CChannelHandlerS5B::HandleNote(int Note, int Octave)		// // //
 {
 	CChannelHandler::HandleNote(Note, Octave);
-	m_iNoiseFreq = m_iDefaultNoise;
+
+	/*
+	Vxx is handled above: CChannelHandlerS5B::HandleEffect, case EF_DUTY_CYCLE
+	m_iDefaultDuty is Vxx.
+	m_iDutyPeriod is Vxx plus instrument bit-flags. But it's not fully
+		initialized yet (instruments are handled after notes) which is bad.
+	https://docs.google.com/document/d/e/2PACX-1vQ8osh6mm4c4Ay_gVMIJCH8eRB5gBE180Xyeda1T5U6owG7BbKM-yNKVB8azg27HUD9QZ9Vf88crplE/pub
+	*/
+
+	if (this->m_iDefaultDuty & DutyType::NOISE) {
+		m_iNoiseFreq = m_iDefaultNoise;
+	}
 }
 
 void CChannelHandlerS5B::HandleEmptyNote()
