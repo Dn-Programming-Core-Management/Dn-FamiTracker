@@ -32,6 +32,7 @@
 #include "APU/APU.h"
 #include "InstHandler.h"		// // //
 #include "SeqInstHandlerS5B.h"		// // //
+#include <map>
 
 // Static member variables, for the shared stuff in 5B
 int			  CChannelHandlerS5B::m_iModes		= 0;
@@ -105,7 +106,23 @@ CChannelHandlerS5B::CChannelHandlerS5B() :
 	m_iDefaultNoise = 0;		// // //
 }
 
-bool CChannelHandlerS5B::HandleEffect(effect_t EffNum, unsigned char EffParam)
+
+using EffParamT = unsigned char;
+enum DutyType {
+	TONE		= 1<<6,
+	NOISE		= 1<<7,
+	ENVELOPE	= 1<<5,
+};
+
+
+
+static const std::map<EffParamT, DutyType> VXX_TO_DUTY = {
+	{1<<0, DutyType::TONE},
+	{1<<1, DutyType::NOISE},
+	{1<<2, DutyType::ENVELOPE},
+};
+
+bool CChannelHandlerS5B::HandleEffect(effect_t EffNum, EffParamT EffParam)
 {
 	switch (EffNum) {
 	case EF_SUNSOFT_NOISE: // W
@@ -124,10 +141,20 @@ bool CChannelHandlerS5B::HandleEffect(effect_t EffNum, unsigned char EffParam)
 		m_bEnvelopeEnabled = EffParam != 0;
 		m_iAutoEnvelopeShift = EffParam >> 4;
 		break;
-	case EF_DUTY_CYCLE:
-		m_iDefaultDuty = m_iDutyPeriod = (EffParam << 6) | ((EffParam & 0x04) << 3);		// // // 050B
-//		m_iDefaultDuty = m_iDutyPeriod = EffParam;		// // //
+	case EF_DUTY_CYCLE: {
+		// Translate Vxx bitmask to `enum DutyType` bitmask,
+		// using VXX_TO_DUTY as a conversion table.
+
+		unsigned char duty = 0;
+		for (auto const&[VXX, DUTY] : VXX_TO_DUTY) {
+			if (EffParam & VXX) {
+				duty |= DUTY;
+			}
+		}
+
+		m_iDefaultDuty = m_iDutyPeriod = duty;
 		break;
+	}
 	default: return CChannelHandler::HandleEffect(EffNum, EffParam);
 	}
 
