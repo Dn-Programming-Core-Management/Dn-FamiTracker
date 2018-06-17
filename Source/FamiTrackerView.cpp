@@ -63,8 +63,8 @@ const TCHAR CFamiTrackerView::CLIPBOARD_ID[] = _T("FamiTracker Pattern");
 // 0CC: add verbose description as in modplug
 const CString EFFECT_TEXTS[] = {		// // //
 	_T(""),
-	_T("Fxx - Set speed to XX, cancels groove"),
-	_T("Fxx - Set tempo to XX"),
+	_T("Fxx - Set speed to XX, cancels groove. If xx>=10, tempo must be fixed."),
+	_T("Fxx - Set tempo to XX (if tempo not fixed)"),
 	_T("Bxx - Jump to beginning of frame XX"),
 	_T("Dxx - Skip to row XX of next frame"),
 	_T("Cxx - Halt song"),
