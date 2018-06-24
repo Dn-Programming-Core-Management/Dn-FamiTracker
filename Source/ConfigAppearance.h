@@ -72,8 +72,6 @@ protected:
 	static const char HEX_PREFIX[];		// // // 050B
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
 	void SelectColorScheme(const COLOR_SCHEME *pColorScheme);
 
 	void SetColor(int Index, int Color);
@@ -85,7 +83,10 @@ protected:
 protected:
 	CString		m_strFont;
 	
-	int			m_iFontSize;
+	int			m_rowHeight;
+	int			fontPercent;
+	CComboBox	fontPercentList;
+	
 	int			m_iSelectedItem;
 	bool		m_bPatternColors;
 	bool		m_bDisplayFlats;
@@ -106,6 +107,11 @@ public:
 	afx_msg void OnBnClickedPatterncolors();
 	afx_msg void OnBnClickedDisplayFlats();
 	afx_msg void OnCbnEditchangeFontSize();
+
 	afx_msg void OnBnClickedButtonAppearanceSave();		// // // 050B
 	afx_msg void OnBnClickedButtonAppearanceLoad();		// // // 050B
+	
+	afx_msg void OnCbnSelchangeFontPercent();
+	afx_msg void OnCbnEditchangeFontPercent();
+	void onChangeFontPercent(CString text);
 };

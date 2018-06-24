@@ -250,21 +250,26 @@ void CPatternEditor::ApplyColorScheme()
 {
 	// The color scheme has changed
 	//
-
-	const CSettings *pSettings = theApp.GetSettings();
+	const CSettings *settings = theApp.GetSettings();
 
 	LOGFONT LogFont;
-	LPCTSTR	FontName = pSettings->Appearance.strFont;		// // //
-	LPCTSTR	HeaderFace = DEFAULT_HEADER_FONT;
+	LPCTSTR FontName = settings->Appearance.strFont;		// // //
+	LPCTSTR HeaderFace = DEFAULT_HEADER_FONT;
 
-	COLORREF ColBackground = pSettings->Appearance.iColBackground;
+	COLORREF ColBackground = settings->Appearance.iColBackground;
 
-	// Fetch font size
-	m_iPatternFontSize = pSettings->Appearance.iFontSize;		// // //
-	m_iCharWidth = m_iPatternFontSize - 1;
-	m_iColumnSpacing = (m_iPatternFontSize + 1) / 3;
+	// Grid size
+	// FIXME
+	const int rowHeight = settings->Appearance.rowHeight;
+	m_iRowHeight = rowHeight;
+	m_iCharWidth = rowHeight - 1;
+	m_iColumnSpacing = (rowHeight + 1) / 3;
 	m_iRowColumnWidth = m_iCharWidth * 3 + 2;
-	m_iRowHeight = m_iPatternFontSize;
+
+	// Font size (rounded to nearest pixel)
+	const int fontSize = calculateFontSize(rowHeight, settings->Appearance.fontPercent);
+
+	m_iPatternFontSize = fontSize;
 
 	CalcLayout();
 
@@ -273,7 +278,6 @@ void CPatternEditor::ApplyColorScheme()
 	memcpy(LogFont.lfFaceName, FontName, _tcslen(FontName));
 
 	LogFont.lfHeight = -m_iPatternFontSize;
-//	LogFont.lfHeight = -DPI::SY(12);		// // //
 	LogFont.lfQuality = DRAFT_QUALITY;
 	LogFont.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
 
@@ -1102,6 +1106,9 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 
 	const unsigned int PREVIEW_SHADE_LEVEL = 70;
 
+	// TODO use dependency injection on pSettings, so we can use a 
+	// CPatternEditor object to preview our color picker.
+
 	const CSettings *pSettings = theApp.GetSettings();		// // //
 
 	COLORREF ColCursor	= pSettings->Appearance.iColCursor;
@@ -1308,6 +1315,8 @@ void CPatternEditor::DrawRow(CDC *pDC, int Row, int Line, int Frame, bool bPrevi
 	}
 }
 
+static const int HEIGHT_OFFSET = 6;
+
 void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Channel, bool bInvert, stChanNote *pNoteData, RowColorInfo_t *pColorInfo) const
 {
 	// Sharps
@@ -1361,11 +1370,26 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 	if (EffNumber != EF_NONE) if (!pTrackerChannel->IsEffectCompatible(EffNumber, EffParam))
 		DimEff = EffColor = RGB(255, 0, 0);		// // //
 
-	int PosY = m_iRowHeight - m_iRowHeight / 8;		// // //
-	// // // PosX -= 1;
+	// Compute font vertical position
+	// TODO resize font about center = avg(cap, base + descender/2)?
 
-#define BARLENGTH (m_iRowHeight > 6 ? 4 : 2)		// // //
-#define BAR(x, y) pDC->FillSolidRect((x) + m_iCharWidth / 2 - BARLENGTH / 2, (y) - m_iRowHeight / 2 + m_iRowHeight / 8, BARLENGTH, 1, pColorInfo->Shaded)
+	int PosY = m_iRowHeight;
+	PosY -= PosY / HEIGHT_OFFSET;
+
+	// Compute vertical position for empty bars
+	const int halfX = m_iCharWidth / 2;
+	const int halfY = m_iRowHeight - m_iRowHeight / 2;
+
+	const int BAR_WIDTH = m_iRowHeight * 1 / 3;
+	const int BAR_HEIGHT = std::max(m_iRowHeight / 12, 1);
+	auto BAR = [&](int x) {
+		pDC->FillSolidRect(
+				x + halfX - BAR_WIDTH / 2,
+				halfY - BAR_HEIGHT / 2,
+				BAR_WIDTH,
+				BAR_HEIGHT,
+				pColorInfo->Shaded);
+	};
 
 	pDC->SetTextAlign(TA_CENTER | TA_BASELINE);		// // //
 
@@ -1403,14 +1427,14 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 							}
 							if (Found) break;
 						}
-						BAR(PosX, PosY);
-						BAR(PosX + m_iCharWidth, PosY);
-						BAR(PosX + m_iCharWidth * 2, PosY);
+						BAR(PosX);
+						BAR(PosX + m_iCharWidth);
+						BAR(PosX + m_iCharWidth * 2);
 					}
 					else {
-						BAR(PosX, PosY);
-						BAR(PosX + m_iCharWidth, PosY);
-						BAR(PosX + m_iCharWidth * 2, PosY);
+						BAR(PosX);
+						BAR(PosX + m_iCharWidth);
+						BAR(PosX + m_iCharWidth * 2);
 					}
 					break;		// // // same below
 				case HALT:
@@ -1447,7 +1471,7 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 		case C_INSTRUMENT1:
 			// Instrument x0
 			if (pNoteData->Instrument == MAX_INSTRUMENTS || pNoteData->Note == HALT || pNoteData->Note == RELEASE)
-				BAR(PosX, PosY);
+				BAR(PosX);
 			else if (pNoteData->Instrument == HOLD_INSTRUMENT)		// // // 050B
 				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, '&', InstColor);
 			else
@@ -1456,7 +1480,7 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 		case C_INSTRUMENT2:
 			// Instrument 0x
 			if (pNoteData->Instrument == MAX_INSTRUMENTS || pNoteData->Note == HALT || pNoteData->Note == RELEASE)
-				BAR(PosX, PosY);
+				BAR(PosX);
 			else if (pNoteData->Instrument == HOLD_INSTRUMENT)		// // // 050B
 				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, '&', InstColor);
 			else
@@ -1465,28 +1489,28 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 		case C_VOLUME: 
 			// Volume
 			if (pNoteData->Vol == MAX_VOLUME || pTrackerChannel->GetID() == CHANID_DPCM)
-				BAR(PosX, PosY);
+				BAR(PosX);
 			else 
 				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[pNoteData->Vol & 0x0F], pColorInfo->Volume);		// // //
 			break;
 		case C_EFF1_NUM: case C_EFF2_NUM: case C_EFF3_NUM: case C_EFF4_NUM:
 			// Effect type
 			if (EffNumber == 0)
-				BAR(PosX, PosY);
+				BAR(PosX);
 			else
 				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, EFF_CHAR[EffNumber], EffColor);		// // //
 			break;
 		case C_EFF1_PARAM1: case C_EFF2_PARAM1: case C_EFF3_PARAM1: case C_EFF4_PARAM1:
 			// Effect param x
 			if (EffNumber == 0)
-				BAR(PosX, PosY);
+				BAR(PosX);
 			else
 				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[(EffParam >> 4) & 0x0F], pColorInfo->Note);		// // //
 			break;
 		case C_EFF1_PARAM2: case C_EFF2_PARAM2: case C_EFF3_PARAM2: case C_EFF4_PARAM2:
 			// Effect param y
 			if (EffNumber == 0)
-				BAR(PosX, PosY);
+				BAR(PosX);
 			else
 				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[EffParam & 0x0F], pColorInfo->Note);		// // //
 			break;

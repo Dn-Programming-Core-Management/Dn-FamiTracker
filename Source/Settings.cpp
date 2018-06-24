@@ -174,14 +174,17 @@ void CSettings::SetupSettings()
 	SETTING_INT("Appearance", "Pattern effect", DEFAULT_COLOR_SCHEME.TEXT_EFFECT, &Appearance.iColPatternEffect);
 	SETTING_INT("Appearance", "Selection", DEFAULT_COLOR_SCHEME.SELECTION, &Appearance.iColSelection);
 	SETTING_INT("Appearance", "Cursor", DEFAULT_COLOR_SCHEME.CURSOR, &Appearance.iColCursor);
-	// // //
+
 	SETTING_INT("Appearance", "Current row (normal mode)", DEFAULT_COLOR_SCHEME.ROW_NORMAL, &Appearance.iColCurrentRowNormal);
 	SETTING_INT("Appearance", "Current row (edit mode)", DEFAULT_COLOR_SCHEME.ROW_EDIT, &Appearance.iColCurrentRowEdit);
 	SETTING_INT("Appearance", "Current row (playing)", DEFAULT_COLOR_SCHEME.ROW_PLAYING, &Appearance.iColCurrentRowPlaying);
+
 	SETTING_STRING("Appearance", "Pattern font", FONT_FACE, &Appearance.strFont)
 		->UpdateDefault("General", "Pattern font");
-	SETTING_INT("Appearance", "Pattern font size", FONT_SIZE, &Appearance.iFontSize)
+	SETTING_INT("Appearance", "Pattern font size", FONT_SIZE, &Appearance.rowHeight)
 		->UpdateDefault("General", "Pattern font size");
+	SETTING_INT("Appearance", "Pattern font size percentage", FONT_RATIO, &Appearance.fontPercent);
+
 	SETTING_STRING("Appearance", "Frame font", FONT_FACE, &Appearance.strFrameFont)
 		->UpdateDefault("General", "Frame font");		// // // 050B
 	SETTING_BOOL("Appearance", "Pattern colors", true, &Appearance.bPatternColor)
