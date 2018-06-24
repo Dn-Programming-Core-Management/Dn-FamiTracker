@@ -26,6 +26,7 @@
 // Default font
 const static TCHAR *FONT_FACE = _T("Verdana");
 const static int FONT_SIZE	  = 12;
+const static int FONT_RATIO = 100;
 
 // Static colors
 const struct {
@@ -69,6 +70,7 @@ struct COLOR_SCHEME {
 	const COLORREF	ROW_PLAYING;		// // //
 	const TCHAR		*FONT_FACE;
 	const int		FONT_SIZE;
+	const int FONT_PERCENT = 100;
 };
 
 // Default
@@ -175,3 +177,15 @@ const COLOR_SCHEME SATURDAY_COLOR_SCHEME = {
 	_T("Courier"),		// Font
 	11					// Font size
 };
+
+
+// honestly belongs in CPatternEditor. ConfigAppearance should use
+// CPatternEditor to draw the preview.
+// Maybe CPatternEditor and CFrameEditor should use/mixin a Grid class.
+
+const int _PERCENT = 100;
+
+inline int calculateFontSize(const int rowHeight, const int fontPercent) {
+	return (rowHeight * fontPercent + _PERCENT / 2) / _PERCENT;
+}
+

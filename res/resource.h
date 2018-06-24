@@ -596,6 +596,7 @@
 #define IDC_N163_OFFSET_SLIDER          1461
 #define IDC_N163_OFFSET_EDIT            1463
 #define IDC_N163_OFFSET_DB              1464
+#define IDC_FONT_PERCENT                1465
 #define IDS_FIND_BEGIN                  9001
 #define IDS_FIND_END                    9002
 #define ID_TRACKER_PLAY                 32771
@@ -758,7 +759,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        358
 #define _APS_NEXT_COMMAND_VALUE         33200
-#define _APS_NEXT_CONTROL_VALUE         1465
+#define _APS_NEXT_CONTROL_VALUE         1466
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif

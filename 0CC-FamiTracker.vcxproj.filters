@@ -723,6 +723,9 @@
     <ClCompile Include="Source\NoNotifyEdit.cpp">
       <Filter>Source Files\Custom Controls</Filter>
     </ClCompile>
+    <ClCompile Include="Source\utils\ftmath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">
@@ -1280,9 +1283,6 @@
     <ClInclude Include="Source\stdafx.h">
       <Filter>Header Files\Windows Headers</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files\Windows Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Source\WinSDK\VersionHelpers.h">
       <Filter>Header Files\Windows Headers</Filter>
     </ClInclude>
@@ -1430,9 +1430,15 @@
     <ClInclude Include="Source\type_safe\visitor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="res\resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\utils\ftmath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="0CC-FamiTracker.rc">
+    <ResourceCompile Include="res\0CC-FamiTracker.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
