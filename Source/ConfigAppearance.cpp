@@ -25,10 +25,12 @@
 #include "ConfigAppearance.h"
 #include "Settings.h"
 #include "Graphics.h"
-#include <fstream>
-#include <string>
+
 #include "NumConv.h"		// // //
 #include "utils/ftmath.h"
+
+#include <fstream>
+#include <string>
 #include <algorithm>
 #include <array>
 
