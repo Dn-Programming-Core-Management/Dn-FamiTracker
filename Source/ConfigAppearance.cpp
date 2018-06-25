@@ -555,10 +555,11 @@ void CConfigAppearance::OnBnClickedDisplayFlats()
 	SetModified();
 }
 
+const auto TXT = _T(".txt");
 void CConfigAppearance::OnBnClickedButtonAppearanceSave()		// // // 050B
 {
-	CString fileFilter = LoadDefaultFilter(IDS_FILTER_TXT, _T(".txt"));
-	CFileDialog fileDialog {FALSE, NULL, _T("Theme.txt"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, fileFilter};
+	CString fileFilter = LoadDefaultFilter(IDS_FILTER_TXT, TXT);
+	CFileDialog fileDialog {FALSE, TXT, _T("Theme.txt"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, fileFilter};
 	if (fileDialog.DoModal() == IDOK)
 		ExportSettings(fileDialog.GetPathName().GetBuffer());
 }
