@@ -25,12 +25,20 @@
 #include "ConfigAppearance.h"
 #include "Settings.h"
 #include "Graphics.h"
-#include <fstream>
-#include <string>
+
 #include "NumConv.h"		// // //
 #include "utils/ftmath.h"
+#include "str_conv/str_conv.hpp"
+
+#include <fstream>
+#include <string>
 #include <algorithm>
 #include <array>
+#include <regex>
+
+
+
+using namespace std::string_literals;
 
 const TCHAR *CConfigAppearance::COLOR_ITEMS[] = {
 	_T("Background"), 
@@ -51,6 +59,7 @@ const TCHAR *CConfigAppearance::COLOR_ITEMS[] = {
 
 const char CConfigAppearance::SETTING_SEPARATOR[] = " : ";		// // // 050B
 const char CConfigAppearance::HEX_PREFIX[] = "0x";		// // // 050B
+// TODO replace above with std::string, and don't subtract std::size()-null terminator
 
 // Pre-defined color schemes
 const COLOR_SCHEME *CConfigAppearance::COLOR_SCHEMES[] = {
@@ -546,10 +555,11 @@ void CConfigAppearance::OnBnClickedDisplayFlats()
 	SetModified();
 }
 
+const auto TXT = _T(".txt");
 void CConfigAppearance::OnBnClickedButtonAppearanceSave()		// // // 050B
 {
-	CString fileFilter = LoadDefaultFilter(IDS_FILTER_TXT, _T(".txt"));
-	CFileDialog fileDialog {FALSE, NULL, _T("Theme.txt"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, fileFilter};
+	CString fileFilter = LoadDefaultFilter(IDS_FILTER_TXT, TXT);
+	CFileDialog fileDialog {FALSE, TXT, _T("Theme.txt"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, fileFilter};
 	if (fileDialog.DoModal() == IDOK)
 		ExportSettings(fileDialog.GetPathName().GetBuffer());
 }
@@ -582,6 +592,37 @@ void CConfigAppearance::ExportSettings(const char *Path) const		// // // 050B
 	}
 }
 
+const std::regex SETTING_REGEX("([^:]+)"s + CConfigAppearance::SETTING_SEPARATOR + "(.*)");
+	// [0, 1, 2]
+
+std::string_view ltrim(std::string_view & str) {
+	// Find index of first non-whitespace
+	auto left = std::find_if(str.begin(), str.end(), [](char ch) { return !std::isspace<char>(ch, std::locale::classic()); })
+		- str.begin();
+	
+	return str.substr(left);
+}
+
+std::string_view rtrim(std::string_view & str) {
+	// Find iterator of last non-whitespace
+	// note: subtracting 1 from rightIt causes it to point out of bounds.
+	// See https://stackoverflow.com/q/16609041
+	auto rightIt = std::find_if(str.rbegin(), str.rend(), [](char ch) { return !std::isspace<char>(ch, std::locale::classic()); });
+	
+	// Find index of first whitespace (= last char + 1) (= rightIt.base())
+	auto right = str.length() - (rightIt - str.rbegin());
+	
+	return str.substr(0, right);
+}
+
+std::string_view trim(std::string_view & str) {
+	return ltrim(rtrim(str));
+}
+
+bool is_match(std::string_view str, std::string match) {
+	return trim(str) == match;
+}
+
 void CConfigAppearance::ImportSettings(const char *Path)		// // // 050B
 {
 	std::fstream file {Path, std::ios_base::in};
@@ -593,39 +634,43 @@ void CConfigAppearance::ImportSettings(const char *Path)		// // // 050B
 	while (true) {
 		std::getline(file, Line);
 		if (!file) break;
-		size_t Pos = Line.find(SETTING_SEPARATOR);
-		if (Pos == std::string::npos)
-			continue;
-		auto sv = std::string_view(Line).substr(Pos + std::size(SETTING_SEPARATOR) - 1);		// // //
+
+		// Extract key and value, using regex SETTING_REGEX.
+
+		std::smatch matches;
+		std::regex_match(Line, matches, SETTING_REGEX);
+		if (matches.empty()) continue;
+
+		ASSERT(matches.size() == 3);	// [0, 1, 2]
+		
+		std::string key = matches[1].str();
+		std::string value = matches[2].str();
 
 		for (size_t i = 0; i < sizeof(m_iColors) / sizeof(*m_iColors); ++i) {
-			if (Line.find(COLOR_ITEMS[i]) == std::string::npos)
+			if (!is_match(key, conv::to_utf8(COLOR_ITEMS[i])))
 				continue;
-			size_t n = sv.find(HEX_PREFIX);
+			size_t n = value.find(HEX_PREFIX);
 			if (n == std::string_view::npos)
 				continue;
-			if (auto c = conv::to_uint32(sv.substr(n + std::size(HEX_PREFIX) - 1), 16))
+			if (auto c = conv::to_uint32(value.substr(n + std::size(HEX_PREFIX) - 1), 16))
 				m_iColors[i] = *c;
 		}
 
-		if (Line.find("Pattern colors") != std::string::npos) {
-			if (auto x = conv::to_uint(sv))
+		if (is_match(key, "Pattern colors")) {
+			if (auto x = conv::to_uint(value))
 				m_bPatternColors = (bool)*x;
-		}
-		else if (Line.find("Flags") != std::string::npos) {
-			if (auto x = conv::to_uint(sv))
+		} else if (is_match(key, "Flags")) {
+			if (auto x = conv::to_uint(value))
 				m_bDisplayFlats = (bool)*x;
-		}
-		else if (Line.find("Font size") != std::string::npos) {
-			if (auto x = conv::to_uint(sv))
+		} else if (is_match(key, "Font size")) {
+			if (auto x = conv::to_uint(value))
 				m_rowHeight = *x;
-		}
-		else if (Line.find("Font percent")  != std::string::npos) {
-			if (auto x = conv::to_uint(sv))
+		} else if (is_match(key, "Font percent")) {
+			if (auto x = conv::to_uint(value))
 				this->fontPercent = *x;
-		}
-		else if (Line.find("Font") != std::string::npos)
-			m_strFont = sv.data();
+		} else if (is_match(key, "Font"))
+			m_strFont = value.data();
+
 	}
 
 	file.close();
