@@ -37,12 +37,15 @@ ft_update_s5b:
 	ldx #$00
 	stx var_Pul_Noi
 @UpdateNoise:
-	; a = var_ch_SequencePtr5[S5B_OFFSET + x]
-	; if a == #$FF goto :+
+	; ; a = var_ch_SequencePtr5[S5B_OFFSET + x]
+	; ; if a == #$FF goto :+
 
-	lda var_ch_SequencePtr5 + S5B_OFFSET, x
-	cmp #$FF
-	beq :+
+	; lda var_ch_SequencePtr5 + S5B_OFFSET, x
+	; cmp #$FF
+	; beq :+
+
+	; FIXME the above code skips the last entry in noise sequence.
+	; Unconditionally applying noise sequence breaks Wxx but nobody uses it anyway.
 
 	lda var_ch_DutyCurrent + S5B_OFFSET, x
 	bpl :+									; no noise
