@@ -63,8 +63,8 @@ const TCHAR CFamiTrackerView::CLIPBOARD_ID[] = _T("FamiTracker Pattern");
 // 0CC: add verbose description as in modplug
 const CString EFFECT_TEXTS[] = {		// // //
 	_T(""),
-	_T("Fxx - Set speed to XX, cancels groove"),
-	_T("Fxx - Set tempo to XX"),
+	_T("Fxx - Set speed to XX, cancels groove. If xx>=10, tempo must be fixed."),
+	_T("Fxx - Set tempo to XX (if tempo not fixed)"),
 	_T("Bxx - Jump to beginning of frame XX"),
 	_T("Dxx - Skip to row XX of next frame"),
 	_T("Cxx - Halt song"),
@@ -74,7 +74,7 @@ const CString EFFECT_TEXTS[] = {		// // //
 	_T("(not used)"),
 	_T("Hxy - Hardware sweep up, X = speed, Y = shift"),
 	_T("Ixy - Hardware sweep down, X = speed, Y = shift"),
-	_T("0xy - Arpeggio, X = second note, Y = third note"),
+	_T("0xy - Arpeggio, X = second note, Y = third note (if zero, produces 2-frame period)"),
 	_T("4xy - Vibrato, X = speed, Y = depth"),
 	_T("7xy - Tremolo, X = speed, Y = depth"),
 	_T("Pxx - Fine pitch, XX - 80 = offset"),
@@ -103,7 +103,7 @@ const CString EFFECT_TEXTS[] = {		// // //
 	_T("Hxy - Auto 5B envelope, X - 8 = shift amount, Y = shape"),
 	_T("Ixx - 5B envelope rate, high byte"),
 	_T("Jxx - 5B envelope rate, low byte"),
-	_T("Wxx - 5B noise pitch, 1F = lowest"),
+	_T("Wxx - 5B noise pitch, 1F = highest"),
 	_T("Hxx - VRC7 custom patch port, XX = register address"),
 	_T("Ixx - VRC7 custom patch write, XX = register value"),
 	_T("Lxx - Note release, XX = frames to wait"),

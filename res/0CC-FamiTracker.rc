@@ -1193,7 +1193,7 @@ BEGIN
     GROUPBOX        "General settings",IDC_STATIC,7,7,163,153
     CONTROL         "",IDC_CONFIG_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,15,19,147,109,WS_EX_TRANSPARENT
     GROUPBOX        "Edit settings",IDC_STATIC,177,7,96,61
-    LTEXT           "Page jump length:",IDC_STATIC,184,20,58,9
+    LTEXT           "Page Down jump:",IDC_STATIC,184,20,58,9
     COMBOBOX        IDC_PAGELENGTH,240,19,27,12,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Pattern edit style:",IDC_STATIC,184,35,59,8
     COMBOBOX        IDC_COMBO_STYLE,184,48,83,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -2598,8 +2598,8 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_DECAY_SLOW           "Volume meters slowly decrease over time\nSlow Decay Rate"
-    ID_DECAY_FAST           "Volume meters reflect instant channel amplitude\nFast Decay Rate"
+    ID_DECAY_SLOW           "[Channel Headers] Volume meters slowly decrease over time\nSlow Decay Rate"
+    ID_DECAY_FAST           "[Channel Headers] Volume meters reflect instant channel amplitude\nFast Decay Rate"
     ID_INSTRUMENT_DEEPCLONE "Create a copy of selected instrument including all sequences\nDeep Clone Instrument"
     ID_EDIT_FIND_TOGGLE     "Bring up the find / replace tab\nToggle Find / Replace Tab"
 END
@@ -2789,8 +2789,8 @@ BEGIN
     ID_MODULE_LINEARPITCH   "Enable linear pitch bends\nLinear Pitch Mode"
     ID_RECENTFILES_CLEAR    "Clear the recent file list\nClear Recent File List"
     ID_EDIT_SPLITKEYBOARD   "Open the split keyboard settings dialog\nSplit Keyboard"
-    ID_VIEW_AVERAGEBPM      "Display average BPM value instead of instant BPM value\nDisplay Average BPM"
-    ID_VIEW_CHANNELSTATE    "Display information about active effects\nDisplay Channel State"
+    ID_VIEW_AVERAGEBPM      "[Status Bar] Display average BPM value instead of instant BPM value\nDisplay Average BPM"
+    ID_VIEW_CHANNELSTATE    "[Not Implemented] Display information about active effects\nDisplay Channel State"
     ID_TRACKER_PLAY_MARKER  "Play pattern from row marker\nPlay from Marker"
     ID_TRACKER_SET_MARKER   "Set a row marker for playback\nSet Row Marker"
     ID_SELECT_OTHER         "Restore the current selection in the inactive editor window\nSelect in Other Editor"
