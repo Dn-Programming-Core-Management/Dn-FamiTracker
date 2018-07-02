@@ -1,4 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
+  <component name="CidrRootsConfiguration">
+    <libraryRoots>
+      <file path="$PROJECT_DIR$/Source/json" />
+      <file path="$PROJECT_DIR$/Source/type_safe" />
+    </libraryRoots>
+    <excludeRoots>
+      <file path="$PROJECT_DIR$/.vs" />
+      <file path="$PROJECT_DIR$/Debug" />
+      <file path="$PROJECT_DIR$/Release" />
+      <file path="$PROJECT_DIR$/Source/drivers/asm" />
+      <file path="$PROJECT_DIR$/cmake-clang" />
+      <file path="$PROJECT_DIR$/doxygen" />
+      <file path="$PROJECT_DIR$/obj" />
+    </excludeRoots>
+  </component>
 </project>
