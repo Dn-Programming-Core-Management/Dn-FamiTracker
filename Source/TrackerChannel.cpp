@@ -190,8 +190,29 @@ bool CTrackerChannel::IsEffectCompatible(effect_t EffNumber, int EffParam) const
 			return false;
 		case EF_SWEEPUP: case EF_SWEEPDOWN:
 			return m_iChannelID == CHANID_SQUARE1 || m_iChannelID == CHANID_SQUARE2;
-		case EF_DAC: case EF_SAMPLE_OFFSET: case EF_RETRIGGER: case EF_DPCM_PITCH:
-			return m_iChannelID == CHANID_DPCM;
+		case EF_DAC: case EF_SAMPLE_OFFSET: case EF_RETRIGGER: case EF_DPCM_PITCH: {
+			// TODO move to virtual method of Effect subclasses.
+			if (m_iChannelID != CHANID_DPCM) return false;
+
+			int limit;
+			switch (EffNumber) {
+				case EF_DAC:
+					limit = 0x7f; break;
+				case EF_SAMPLE_OFFSET:
+					limit = 0x3f; break;
+				case EF_DPCM_PITCH:
+					limit = 0x0f; break;
+				case EF_RETRIGGER:
+					limit = 0xff; break;
+					/* 0xff on the same row as a note causes mRetriggerCtr = 0x100.
+					 * mRetriggerCtr is an int and does not overflow.
+					 * Had mRetriggerCtr been an u8, XFF would assign mRetriggerCtr=0 and trigger DPCM.
+					 * But the note triggers DPCM too, so the double-trigger is harmless. */
+				default:
+					throw std::runtime_error("Error: DPCM effect without limit defined");
+			}
+			return EffParam <= limit;
+		}
 		case EF_DUTY_CYCLE:
 			return m_iChannelID != CHANID_DPCM;		// // // 050B
 		case EF_FDS_MOD_DEPTH:
