@@ -390,6 +390,9 @@ add_executable(${PROJECT_NAME}
         Source/WavProgressDlg.h
 
         Source/utils/input.h
+        Source/utils/ftmath.h
+        Source/utils/ftmath.cpp
+
 
         res/0CC-FamiTracker.rc
         res/resource.h
