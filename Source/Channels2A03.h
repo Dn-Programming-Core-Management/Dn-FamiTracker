@@ -136,8 +136,8 @@ private:
 	unsigned char m_iSampleLength;
 	unsigned char m_iLoopOffset;
 	unsigned char m_iLoopLength;
-	int mRetriggerPeriod;
-	int mRetriggerCtr;
+	int mRetriggerPeriod;	// If zero, DPCM will not retrigger.
+	int mRetriggerCtr;		// Time until next DPCM retrigger (frames)
 	int m_iCustomPitch;
 	bool mTriggerSample;		// // //
 	bool mEnabled;
