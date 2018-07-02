@@ -27,16 +27,16 @@
 constexpr auto Effects(){
 	std::array<Effect, EF_COUNT> effects;
 	for (size_t i = 0; i < EF_COUNT; i++) {
-		int default = 0;
+		int initial = 0;
 		int uiDefault = 0;
 
 		if (i == EF_PITCH || i == EF_FDS_MOD_BIAS) {
-			default = uiDefault = 0x80;
+			initial = uiDefault = 0x80;
 		}
 		else if (i == EF_N163_WAVE_BUFFER) {
-			default = 0x7F;
+			initial = 0x7F;
 		}
-		effects[i] = { EFF_CHAR[i], default, uiDefault };
+		effects[i] = { EFF_CHAR[i], initial, uiDefault };
 	}
 	return effects;
 }
