@@ -53,7 +53,10 @@ public:
 	C2A03Square();
 	void	RefreshChannel() override;
 	void	SetChannelID(int ID) override;		// // //
+	int getDutyMax() const override;
 protected:
+	static const char MAX_DUTY;
+
 	int		ConvertDuty(int Duty) const override;		// // //
 	void	ClearRegisters() override;
 
