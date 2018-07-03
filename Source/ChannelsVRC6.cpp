@@ -151,6 +151,12 @@ int CVRC6Square::ConvertDuty(int Duty) const		// // //
 // VRC6 Sawtooth
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+const char CVRC6Sawtooth::MAX_DUTY = 0x01;
+
+int CVRC6Sawtooth::getDutyMax() const {
+	return MAX_DUTY;
+}
+
 void CVRC6Sawtooth::RefreshChannel()
 {
 	if (!m_bGate) {		// // //
