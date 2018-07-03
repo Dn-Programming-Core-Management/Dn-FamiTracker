@@ -91,7 +91,7 @@ public:
 
 	int getDutyMax() const override;
 protected:
-	static const char MAX_DUTY;
+	static const char MAX_DUTY;		// TODO remove class constant, move to .cpp file
 
 	void ClearRegisters();
 private:

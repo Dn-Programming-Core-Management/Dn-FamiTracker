@@ -49,7 +49,7 @@ public:
 	void	RefreshChannel() override;
 	int getDutyMax() const override;
 protected:
-	static const char MAX_DUTY;
+	static const char MAX_DUTY;		// TODO remove class constant, move to .cpp file
 
 	int		ConvertDuty(int Duty) const override;		// // //
 };
@@ -60,7 +60,7 @@ public:
 	void	RefreshChannel() override;
 	int getDutyMax() const override;
 protected:
-	static const char MAX_DUTY;
+	static const char MAX_DUTY;		// TODO remove class constant, move to .cpp file
 
 	bool	CreateInstHandler(inst_type_t Type) override;		// // //
 	int		CalculateVolume() const override;

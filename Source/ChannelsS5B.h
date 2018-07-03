@@ -36,7 +36,7 @@ public:
 
 	int getDutyMax() const override;
 protected:
-	static const char MAX_DUTY;
+	static const char MAX_DUTY;		// TODO remove class constant, move to .cpp file
 
 	bool	HandleEffect(effect_t EffNum, unsigned char EffParam) override;		// // //
 	void	HandleNote(int Note, int Octave) override;		// // //
