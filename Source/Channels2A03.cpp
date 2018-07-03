@@ -36,8 +36,6 @@
 #include "SeqInstHandler.h"		// // //
 #include "InstHandlerDPCM.h"		// // //
 
-//#define NOISE_PITCH_SCALE
-
 CChannelHandler2A03::CChannelHandler2A03() :
 	CChannelHandler(0x7FF, 0x0F),
 	m_bHardwareEnvelope(false),
@@ -433,29 +431,13 @@ int CNoiseChan::LimitRawPeriod(int Period) const		// // //
 	return Period; // no limit
 }
 
-/*
-int CNoiseChan::CalculatePeriod() const
-{
-	return LimitPeriod(m_iPeriod - GetVibrato() + GetFinePitch() + GetPitch());
-}
-*/
-
-CNoiseChan::CNoiseChan() : CChannelHandler2A03()		// // //
-{
-}
-
 void CNoiseChan::RefreshChannel()
 {
 	int Period = CalculatePeriod();
 	int Volume = CalculateVolume();
 	char NoiseMode = (m_iDutyPeriod & 0x01) << 7;
 
-#ifdef NOISE_PITCH_SCALE
-	Period = (Period >> 4) & 0x0F;
-#else
 	Period = Period & 0x0F;
-#endif
-
 	Period ^= 0x0F;
 	
 	if (m_bGate)		// // //
@@ -492,23 +474,8 @@ CString CNoiseChan::GetCustomEffectString() const		// // //
 
 int CNoiseChan::TriggerNote(int Note)
 {
-	// Clip range to 0-15
-	/*
-	if (Note > 0x0F)
-		Note = 0x0F;
-	if (Note < 0)
-		Note = 0;
-		*/
-
 	RegisterKeyState(Note);
-
-//	Note &= 0x0F;
-
-#ifdef NOISE_PITCH_SCALE
-	return (Note ^ 0x0F) << 4;
-#else
 	return Note | 0x100;		// // //
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
