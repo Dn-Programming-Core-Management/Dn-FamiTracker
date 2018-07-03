@@ -111,6 +111,12 @@ void CChannelHandlerVRC6::resetPhase()		// // //
 // // // VRC6 Squares
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+const char CVRC6Square::MAX_DUTY = 0x07;
+
+int CVRC6Square::getDutyMax() const {
+	return MAX_DUTY;
+}
+
 void CVRC6Square::RefreshChannel()
 {
 	uint16_t Address = this->getAddress();
