@@ -431,11 +431,17 @@ int CNoiseChan::LimitRawPeriod(int Period) const		// // //
 	return Period; // no limit
 }
 
+const char CNoiseChan::MAX_DUTY = 0x01;
+
+int CNoiseChan::getDutyMax() const {
+	return MAX_DUTY;
+}
+
 void CNoiseChan::RefreshChannel()
 {
 	int Period = CalculatePeriod();
 	int Volume = CalculateVolume();
-	char NoiseMode = (m_iDutyPeriod & 0x01) << 7;
+	char NoiseMode = (m_iDutyPeriod & MAX_DUTY) << 7;
 
 	Period = Period & 0x0F;
 	Period ^= 0x0F;

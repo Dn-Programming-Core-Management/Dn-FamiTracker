@@ -92,7 +92,10 @@ private:
 class CNoiseChan : public CChannelHandler2A03 {
 public:
 	void	RefreshChannel();
+	int getDutyMax() const override;
 protected:
+	static const char MAX_DUTY;
+
 	void	ClearRegisters() override;
 	CString	GetCustomEffectString() const override;		// // //
 	void	HandleNote(int Note, int Octave) override;
