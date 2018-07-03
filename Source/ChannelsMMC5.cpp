@@ -116,11 +116,17 @@ void CChannelHandlerMMC5::ResetChannel()
 // // // MMC5 Channels
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+const char CChannelHandlerMMC5::MAX_DUTY = 0x03;
+
+int CChannelHandlerMMC5::getDutyMax() const {
+	return MAX_DUTY;
+}
+
 void CChannelHandlerMMC5::RefreshChannel()		// // //
 {
 	int Period = CalculatePeriod();
 	int Volume = CalculateVolume();
-	char DutyCycle = (m_iDutyPeriod & 0x03);
+	char DutyCycle = (m_iDutyPeriod & MAX_DUTY);
 
 	unsigned char HiFreq		= (Period & 0xFF);
 	unsigned char LoFreq		= (Period >> 8);
