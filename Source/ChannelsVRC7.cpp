@@ -263,6 +263,12 @@ int CChannelHandlerVRC7::CalculatePeriod() const
 // VRC7 Channels
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+const char CVRC7Channel::MAX_DUTY = 0x0F;
+
+int CVRC7Channel::getDutyMax() const {
+	return MAX_DUTY;
+}
+
 void CVRC7Channel::RefreshChannel()
 {	
 //	int Note = m_iTriggeredNote;
