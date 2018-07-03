@@ -91,7 +91,6 @@ private:
 // Noise
 class CNoiseChan : public CChannelHandler2A03 {
 public:
-	CNoiseChan();
 	void	RefreshChannel();
 protected:
 	void	ClearRegisters() override;
