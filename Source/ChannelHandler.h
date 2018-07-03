@@ -320,6 +320,7 @@ public:		// // //
 	/*!	\brief Obtains the current channel volume.
 		\return The channel volume level. */
 	virtual int GetChannelVolume() const;
+
 	/*!	\brief Sets the current duty cycle value of the channel.
 		\details The value received by the channel is converted according to the current instrument type.
 		\param Duty The duty cycle value. */
@@ -327,6 +328,13 @@ public:		// // //
 	/*!	\brief Obtains the current duty cycle value of the channel.
 		\return The duty cycle value. */
 	int		GetDutyPeriod() const;
+	/*!
+	 * Returns maximum valid duty cycle, inclusive (-1 if none are valid).
+	 * Used to mark invalid Vxx red in the GUI.
+	 * @return Valid duty cycles are 0 <= duty <= getDutyMax().
+	 */
+	virtual int getDutyMax() const;
+
 	unsigned char GetArpParam() const;		// // //
 	bool	IsActive() const;
 	bool	IsReleasing() const;

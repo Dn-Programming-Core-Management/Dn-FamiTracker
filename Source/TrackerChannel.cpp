@@ -24,6 +24,9 @@
 #include "PatternNote.h"		// // //
 #include "Instrument.h"		// // //
 #include "TrackerChannel.h"
+
+#include "ChannelFactory.h"
+#include "ChannelHandler.h"
 #include <stdexcept>
 
 /*
@@ -213,8 +216,14 @@ bool CTrackerChannel::IsEffectCompatible(effect_t EffNumber, int EffParam) const
 			}
 			return EffParam <= limit;
 		}
-		case EF_DUTY_CYCLE:
-			return m_iChannelID != CHANID_DPCM;		// // // 050B
+		case EF_DUTY_CYCLE: {
+			static CChannelFactory F;
+			// Don't use make_unique if you need a custom deleter or are adopting a raw pointer from elsewhere.
+
+			auto channelHandler = std::unique_ptr<CChannelHandler>(F.Produce(this->m_iChannelID));
+			int limit = channelHandler->getDutyMax();
+			return EffParam <= limit;
+		}
 		case EF_FDS_MOD_DEPTH:
 			return m_iChip == SNDCHIP_FDS && (EffParam <= 0x3F || EffParam >= 0x80);
 		case EF_FDS_MOD_SPEED_HI: case EF_FDS_MOD_SPEED_LO: case EF_FDS_MOD_BIAS:
@@ -237,13 +246,3 @@ bool CTrackerChannel::IsEffectCompatible(effect_t EffNumber, int EffParam) const
 
 	return false;
 }
-
-/*
-int CTrackerChannel::GetEffect(int Letter) const
-{
-	if (m_iChip == SNDCHIP_FDS) {
-	}
-
-	return 
-}
-*/
