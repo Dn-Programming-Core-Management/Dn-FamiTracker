@@ -226,6 +226,10 @@ void CChannelHandlerN163::SetChannelCount(int Count)		// // //
 	m_iChannels = Count;
 }
 
+int CChannelHandlerN163::getDutyMax() const {
+	return CInstrumentN163::MAX_WAVE_COUNT - 1;
+}
+
 int CChannelHandlerN163::ConvertDuty(int Duty) const		// // //
 {
 	switch (m_iInstTypeCurrent) {

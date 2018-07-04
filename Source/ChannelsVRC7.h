@@ -88,7 +88,11 @@ class CVRC7Channel : public CChannelHandlerVRC7 {
 public:
 	CVRC7Channel() : CChannelHandlerVRC7() { }
 	void RefreshChannel();
+
+	int getDutyMax() const override;
 protected:
+	static const char MAX_DUTY;		// TODO remove class constant, move to .cpp file
+
 	void ClearRegisters();
 private:
 	void RegWrite(unsigned char Reg, unsigned char Value);

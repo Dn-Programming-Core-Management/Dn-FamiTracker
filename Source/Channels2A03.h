@@ -53,7 +53,10 @@ public:
 	C2A03Square();
 	void	RefreshChannel() override;
 	void	SetChannelID(int ID) override;		// // //
+	int getDutyMax() const override;
 protected:
+	static const char MAX_DUTY;
+
 	int		ConvertDuty(int Duty) const override;		// // //
 	void	ClearRegisters() override;
 
@@ -88,9 +91,11 @@ private:
 // Noise
 class CNoiseChan : public CChannelHandler2A03 {
 public:
-	CNoiseChan();
 	void	RefreshChannel();
+	int getDutyMax() const override;
 protected:
+	static const char MAX_DUTY;
+
 	void	ClearRegisters() override;
 	CString	GetCustomEffectString() const override;		// // //
 	void	HandleNote(int Note, int Octave) override;

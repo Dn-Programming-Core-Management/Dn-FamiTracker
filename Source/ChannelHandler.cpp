@@ -1006,6 +1006,11 @@ int CChannelHandler::GetDutyPeriod() const
 	return m_iDutyPeriod;
 }
 
+int CChannelHandler::getDutyMax() const {
+	return -1;
+}
+
+
 unsigned char CChannelHandler::GetArpParam() const
 {
 	return m_iEffect == EF_ARPEGGIO ? m_iEffectParam : 0U;
