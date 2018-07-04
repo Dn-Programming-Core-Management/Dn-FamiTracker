@@ -36,9 +36,7 @@
 #include "SeqInstHandler.h"		// // //
 #include "InstHandlerDPCM.h"		// // //
 
-//#define NOISE_PITCH_SCALE
-
-CChannelHandler2A03::CChannelHandler2A03() : 
+CChannelHandler2A03::CChannelHandler2A03() :
 	CChannelHandler(0x7FF, 0x0F),
 	m_bHardwareEnvelope(false),
 	m_bEnvelopeLoop(true),
@@ -144,11 +142,17 @@ C2A03Square::C2A03Square() :
 {
 }
 
+const char C2A03Square::MAX_DUTY = 0x03;
+
+int C2A03Square::getDutyMax() const {
+	return static_cast<int>(MAX_DUTY);
+}
+
 void C2A03Square::RefreshChannel()
 {
 	int Period = CalculatePeriod();
 	int Volume = CalculateVolume();
-	char DutyCycle = (m_iDutyPeriod & 0x03);
+	char DutyCycle = (m_iDutyPeriod & MAX_DUTY);
 
 	unsigned char HiFreq = (Period & 0xFF);
 	unsigned char LoFreq = (Period >> 8);
@@ -427,29 +431,19 @@ int CNoiseChan::LimitRawPeriod(int Period) const		// // //
 	return Period; // no limit
 }
 
-/*
-int CNoiseChan::CalculatePeriod() const
-{
-	return LimitPeriod(m_iPeriod - GetVibrato() + GetFinePitch() + GetPitch());
-}
-*/
+const char CNoiseChan::MAX_DUTY = 0x01;
 
-CNoiseChan::CNoiseChan() : CChannelHandler2A03()		// // //
-{
+int CNoiseChan::getDutyMax() const {
+	return MAX_DUTY;
 }
 
 void CNoiseChan::RefreshChannel()
 {
 	int Period = CalculatePeriod();
 	int Volume = CalculateVolume();
-	char NoiseMode = (m_iDutyPeriod & 0x01) << 7;
+	char NoiseMode = (m_iDutyPeriod & MAX_DUTY) << 7;
 
-#ifdef NOISE_PITCH_SCALE
-	Period = (Period >> 4) & 0x0F;
-#else
 	Period = Period & 0x0F;
-#endif
-
 	Period ^= 0x0F;
 	
 	if (m_bGate)		// // //
@@ -486,23 +480,8 @@ CString CNoiseChan::GetCustomEffectString() const		// // //
 
 int CNoiseChan::TriggerNote(int Note)
 {
-	// Clip range to 0-15
-	/*
-	if (Note > 0x0F)
-		Note = 0x0F;
-	if (Note < 0)
-		Note = 0;
-		*/
-
 	RegisterKeyState(Note);
-
-//	Note &= 0x0F;
-
-#ifdef NOISE_PITCH_SCALE
-	return (Note ^ 0x0F) << 4;
-#else
 	return Note | 0x100;		// // //
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////

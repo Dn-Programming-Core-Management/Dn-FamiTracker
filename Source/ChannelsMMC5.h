@@ -31,8 +31,10 @@ public:
 	CChannelHandlerMMC5();
 	void	ResetChannel() override;
 	void	RefreshChannel() override;
-
+	int getDutyMax() const override;
 protected:
+	static const char MAX_DUTY;
+
 	void	HandleNoteData(stChanNote *pNoteData, int EffColumns) override;
 	bool	HandleEffect(effect_t EffNum, unsigned char EffParam) override;		// // //
 	void	HandleEmptyNote() override;

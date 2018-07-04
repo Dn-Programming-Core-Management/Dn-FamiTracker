@@ -114,6 +114,13 @@ static const std::map<EffParamT, s5b_mode_t> VXX_TO_DUTY = {
 	{1<<2, S5B_MODE_ENVELOPE},
 };
 
+const char CChannelHandlerS5B::MAX_DUTY = 0x07;		// = 1|2|4
+
+int CChannelHandlerS5B::getDutyMax() const {
+	return MAX_DUTY;
+}
+
+
 bool CChannelHandlerS5B::HandleEffect(effect_t EffNum, EffParamT EffParam)
 {
 	switch (EffNum) {

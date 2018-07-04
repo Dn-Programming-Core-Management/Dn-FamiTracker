@@ -111,6 +111,12 @@ void CChannelHandlerVRC6::resetPhase()		// // //
 // // // VRC6 Squares
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+const char CVRC6Square::MAX_DUTY = 0x07;
+
+int CVRC6Square::getDutyMax() const {
+	return MAX_DUTY;
+}
+
 void CVRC6Square::RefreshChannel()
 {
 	uint16_t Address = this->getAddress();
@@ -144,6 +150,12 @@ int CVRC6Square::ConvertDuty(int Duty) const		// // //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // VRC6 Sawtooth
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+const char CVRC6Sawtooth::MAX_DUTY = 0x01;
+
+int CVRC6Sawtooth::getDutyMax() const {
+	return MAX_DUTY;
+}
 
 void CVRC6Sawtooth::RefreshChannel()
 {
