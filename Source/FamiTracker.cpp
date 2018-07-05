@@ -59,7 +59,7 @@ BEGIN_MESSAGE_MAP(CFamiTrackerApp, CWinApp)
 	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
 	ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
 	ON_COMMAND(ID_RECENTFILES_CLEAR, OnRecentFilesClear)		// // //
-	ON_UPDATE_COMMAND_UI(ID_FILE_MRU_FILE1, OnUpdateRecentFilesClear)		// // //
+	ON_UPDATE_COMMAND_UI(ID_FILE_MRU_FILE1, OnUpdateRecentFiles)		// // //
 END_MESSAGE_MAP()
 
 // Include this for windows xp style in visual studio 2005 or later
@@ -434,8 +434,12 @@ void CFamiTrackerApp::OnRecentFilesClear()		// // //
 	pMenu->AppendMenu(MF_STRING, ID_FILE_MRU_FILE1, _T("(File)"));
 }
 
-void CFamiTrackerApp::OnUpdateRecentFilesClear(CCmdUI *pCmdUI)		// // //
+void CFamiTrackerApp::OnUpdateRecentFiles(CCmdUI *pCmdUI)		// // //
 {
+	// https://www.codeguru.com/cpp/controls/menu/miscellaneous/article.php/c167
+	// updating a submenu?
+	if (pCmdUI->m_pSubMenu != NULL) return;
+
 	m_pRecentFileList->UpdateMenu(pCmdUI);
 }
 
