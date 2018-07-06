@@ -425,6 +425,13 @@ void CFamiTrackerApp::LoadLocalization()
 
 void CFamiTrackerApp::OnRecentFilesClear()		// // //
 {
+	int confirm = AfxMessageBox(IDS_CLEAR_RECENTS, MB_YESNO | MB_ICONEXCLAMATION | MB_DEFBUTTON2);
+	if (confirm == IDNO) {
+		return;
+	} else if (confirm != IDYES) {
+		throw std::runtime_error("Recent Files Clear message box returned invalid value");
+	}
+
 	SAFE_RELEASE(m_pRecentFileList);
 	m_pRecentFileList = new CRecentFileList(0, _T("Recent File List"), _T("File%d"), MAX_RECENT_FILES);
 

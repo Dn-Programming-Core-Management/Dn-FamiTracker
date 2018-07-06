@@ -2283,6 +2283,7 @@ BEGIN
     IDS_DPCM_IMPORT_QUALITY_FORMAT "Quality: %1"
     IDS_CLIPBOARD_ERROR     "Could not register clipboard format"
     IDS_FILE_OPEN_ERROR     "Could not open the file!"
+    IDS_CLEAR_RECENTS       "Do you want to clear all recent files?"
     IDS_INST_LIMIT          "You cannot add more instruments"
     IDS_CLIPBOARD_OPEN_ERROR "Cannot open clipboard."
     IDS_CLIPBOARD_NOT_AVALIABLE "Clipboard data is not available."
