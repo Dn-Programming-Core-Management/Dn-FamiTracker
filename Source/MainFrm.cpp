@@ -338,7 +338,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_TRACKER_PLAY_MARKER, OnTrackerPlayMarker)		// // // 050B
 	ON_COMMAND(ID_TRACKER_SET_MARKER, OnTrackerSetMarker)		// // // 050B
 	ON_COMMAND(ID_VIEW_AVERAGEBPM, OnTrackerDisplayAverageBPM)		// // // 050B
-	ON_COMMAND(ID_VIEW_CHANNELSTATE, OnTrackerDisplayChannelState)		// // // 050B
 	ON_COMMAND(ID_TOGGLE_MULTIPLEXER, OnToggleMultiplexer)
 	ON_UPDATE_COMMAND_UI(IDC_FOLLOW_TOGGLE, OnUpdateToggleFollow)
 	ON_UPDATE_COMMAND_UI(IDC_COMPACT_TOGGLE, OnUpdateToggleCompact)
@@ -360,7 +359,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_STRETCHPATTERNS, OnUpdateSelectionEnabled)
 	ON_UPDATE_COMMAND_UI(ID_TRACKER_PLAY_MARKER, OnUpdateTrackerPlayMarker)		// // // 050B
 	ON_UPDATE_COMMAND_UI(ID_VIEW_AVERAGEBPM, OnUpdateDisplayAverageBPM)		// // // 050B
-	ON_UPDATE_COMMAND_UI(ID_VIEW_CHANNELSTATE, OnUpdateDisplayChannelState)		// // // 050B
 	ON_UPDATE_COMMAND_UI(ID_TRACKER_DISPLAYREGISTERSTATE, OnUpdateDisplayRegisterState)
 	ON_UPDATE_COMMAND_UI(ID_DECAY_FAST, OnUpdateDecayFast)		// // // 050B
 	ON_UPDATE_COMMAND_UI(ID_DECAY_SLOW, OnUpdateDecaySlow)		// // // 050B
@@ -2148,11 +2146,6 @@ void CMainFrame::OnTrackerDisplayAverageBPM()		// // // 050B
 	theApp.GetSettings()->Display.bAverageBPM = !theApp.GetSettings()->Display.bAverageBPM;
 }
 
-void CMainFrame::OnTrackerDisplayChannelState()		// // // 050B
-{
-	theApp.GetSettings()->Display.bChannelState = !theApp.GetSettings()->Display.bChannelState;
-}
-
 void CMainFrame::OnTrackerDisplayRegisterState()
 {
 	theApp.GetSettings()->Display.bRegisterState = !theApp.GetSettings()->Display.bRegisterState;		// // //
@@ -2161,11 +2154,6 @@ void CMainFrame::OnTrackerDisplayRegisterState()
 void CMainFrame::OnUpdateDisplayAverageBPM(CCmdUI *pCmdUI)		// // // 050B
 {
 	pCmdUI->SetCheck(theApp.GetSettings()->Display.bAverageBPM ? MF_CHECKED : MF_UNCHECKED);
-}
-
-void CMainFrame::OnUpdateDisplayChannelState(CCmdUI *pCmdUI)		// // // 050B
-{
-	pCmdUI->SetCheck(theApp.GetSettings()->Display.bChannelState ? MF_CHECKED : MF_UNCHECKED);
 }
 
 void CMainFrame::OnUpdateDisplayRegisterState(CCmdUI *pCmdUI)		// // //

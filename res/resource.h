@@ -731,7 +731,6 @@
 #define ID_FIND_PREVIOUS                33192
 #define ID_EDIT_SPLITKEYBOARD           33193
 #define ID_VIEW_AVERAGEBPM              33194
-#define ID_VIEW_CHANNELSTATE            33195
 #define ID_TRACKER_PLAY_MARKER          33196
 #define ID_TRACKER_SET_MARKER           33197
 #define ID_FRAME_PASTEOVERWRITE         33198

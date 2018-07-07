@@ -201,7 +201,6 @@ void CSettings::SetupSettings()
 
 	// Display
 	SETTING_BOOL("Display", "Average BPM", false, &Display.bAverageBPM);		// // // 050B
-	SETTING_BOOL("Display", "Channel state", false, &Display.bChannelState);		// // // 050B todo
 	SETTING_BOOL("Display", "Register state", false, &Display.bRegisterState);		// // // 050B
 
 	// Other
