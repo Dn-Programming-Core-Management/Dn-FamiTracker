@@ -135,7 +135,6 @@ public:
 		bool	bWrapPatternValue;		// // //
 		bool	bCutVolume;
 		bool	bFDSOldVolume;
-		bool	bRetrieveChanState;
 		bool	bOverflowPaste;
 		bool	bShowSkippedRows;
 		bool	bHexKeypad;

@@ -126,7 +126,6 @@ void CSettings::SetupSettings()
 	SETTING_BOOL("General", "Wrap pattern values", false, &General.bWrapPatternValue);
 	SETTING_BOOL("General", "Cut sub-volume", false, &General.bCutVolume);
 	SETTING_BOOL("General", "Use old FDS volume table", false, &General.bFDSOldVolume);
-	SETTING_BOOL("General", "Retrieve channel state", true, &General.bRetrieveChanState);
 	SETTING_BOOL("General", "Overflow paste mode", false, &General.bOverflowPaste);
 	SETTING_BOOL("General", "Show skipped rows", false, &General.bShowSkippedRows);
 	SETTING_BOOL("General", "Hexadecimal keypad", false, &General.bHexKeypad);
