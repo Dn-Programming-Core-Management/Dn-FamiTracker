@@ -49,6 +49,7 @@
 #define IDS_FILE_OPEN_ERROR             132
 #define ID_CMD_NEXT_INSTRUMENT          132
 #define ID_CMD_PREV_INSTRUMENT          133
+#define IDS_CLEAR_RECENTS               133
 #define ID_CMD_INCREASESTEPSIZE         134
 #define IDS_INST_LIMIT                  135
 #define ID_CMD_DECREASESTEPSIZE         135
