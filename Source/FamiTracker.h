@@ -188,7 +188,7 @@ public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnTestExport();
 	void OnRecentFilesClear();		// // //
-	void OnUpdateRecentFilesClear(CCmdUI *pCmdUI);		// // //
+	void OnUpdateRecentFiles(CCmdUI *pCmdUI);		// // //
 };
 
 extern CFamiTrackerApp theApp;
