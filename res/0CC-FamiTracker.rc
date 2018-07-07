@@ -307,7 +307,6 @@ BEGIN
         END
         MENUITEM SEPARATOR
         MENUITEM "Average &BPM",                ID_VIEW_AVERAGEBPM
-        MENUITEM "C&hannel State",              ID_VIEW_CHANNELSTATE
         MENUITEM "&Register State",             ID_TRACKER_DISPLAYREGISTERSTATE
         MENUITEM SEPARATOR
         POPUP "Frame Editor &Position"
@@ -2791,7 +2790,6 @@ BEGIN
     ID_RECENTFILES_CLEAR    "Clear the recent file list\nClear Recent File List"
     ID_EDIT_SPLITKEYBOARD   "Open the split keyboard settings dialog\nSplit Keyboard"
     ID_VIEW_AVERAGEBPM      "[Status Bar] Display average BPM value instead of instant BPM value\nDisplay Average BPM"
-    ID_VIEW_CHANNELSTATE    "[Not Implemented] Display information about active effects\nDisplay Channel State"
     ID_TRACKER_PLAY_MARKER  "Play pattern from row marker\nPlay from Marker"
     ID_TRACKER_SET_MARKER   "Set a row marker for playback\nSet Row Marker"
     ID_SELECT_OTHER         "Restore the current selection in the inactive editor window\nSelect in Other Editor"
