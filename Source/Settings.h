@@ -211,7 +211,6 @@ public:
 
 	struct {
 		bool	bAverageBPM;
-		bool	bChannelState;
 		bool	bRegisterState;
 	} Display;		// // // 050B
 
