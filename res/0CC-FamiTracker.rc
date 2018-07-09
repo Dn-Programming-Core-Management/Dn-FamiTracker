@@ -2318,7 +2318,7 @@ END
 
 STRINGTABLE
 BEGIN
-    AFX_IDS_APP_TITLE       "j0CC-FamiTracker"
+    AFX_IDS_APP_TITLE       "0CC-FamiTracker"
     AFX_IDS_IDLEMESSAGE     "For Help, press F1"
     AFX_IDS_HELPMODEMESSAGE "Select an object on which to get Help"
 END
