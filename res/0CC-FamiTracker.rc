@@ -323,7 +323,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Performance",                ID_HELP_PERFORMANCE
         MENUITEM SEPARATOR
-        MENUITEM "&About 0CC-FamiTracker...",   ID_APP_ABOUT
+        MENUITEM "&About j0CC-FamiTracker...",  ID_APP_ABOUT
     END
 END
 
@@ -543,12 +543,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "HertzDevil"
-            VALUE "FileDescription", "0CC-FamiTracker, Extension of FamiTracker"
+            VALUE "FileDescription", "j0CC-FamiTracker, Extension of FamiTracker"
             VALUE "FileVersion", "0.3.14.5"
-            VALUE "InternalName", "0CC-FamiTracker.exe"
+            VALUE "InternalName", "j0CC-FamiTracker.exe"
             VALUE "LegalCopyright", " (c) jsr, HertzDevil 2005-2016 All rights reserved."
-            VALUE "OriginalFilename", "0CC-FamiTracker.exe"
-            VALUE "ProductName", "0CC-FamiTracker"
+            VALUE "OriginalFilename", "j0CC-FamiTracker.exe"
+            VALUE "ProductName", "j0CC-FamiTracker"
             VALUE "ProductVersion", "0.3.14.5"
         END
     END
@@ -1027,13 +1027,13 @@ END
 
 IDD_ABOUTBOX DIALOGEX 0, 0, 285, 334
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "About 0CC-FamiTracker"
+CAPTION "About j0CC-FamiTracker"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_HEAD,"Static",SS_OWNERDRAW,0,0,287,49
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,49,287,1
     ICON            IDR_MAINFRAME,IDC_STATIC,12,63,21,20,SS_REALSIZEIMAGE
-    LTEXT           "0CC-FamiTracker",IDC_ABOUT1,54,58,219,11,SS_NOPREFIX
+    LTEXT           "j0CC-FamiTracker",IDC_ABOUT1,54,58,219,11,SS_NOPREFIX
     LTEXT           "jimbo1qaz's Mod of 0CC-FamiTracker",IDC_ABOUT2,54,76,167,11,SS_NOPREFIX
     LTEXT           "Copyright (C) 2005 - 2015 jsr, 2014 - 2016 HertzDevil",IDC_ABOUT3,54,92,215,11
     LTEXT           "E-mail:",IDC_STATIC,54,107,24,10
@@ -1668,7 +1668,7 @@ BEGIN
     CONTROL         "",IDC_SLIDER_DETUNE_SEMITONE,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,72,126,150,15
     LTEXT           "Cent: +0",IDC_STATIC_DETUNE_CENT,15,147,52,8
     CONTROL         "",IDC_SLIDER_DETUNE_CENT,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,72,144,150,15
-    LTEXT           "Modules saved in this build of 0CC-FamiTracker will erase the tuning information for official 0.5.0 beta.",IDC_STATIC,15,163,201,18
+    LTEXT           "Modules saved in this build of j0CC-FamiTracker will erase the tuning information for official 0.5.0 beta.",IDC_STATIC,15,163,201,18
     PUSHBUTTON      "Reset",IDC_BUTTON_RESET,236,10,50,14
     PUSHBUTTON      "Import",IDC_BUTTON_IMPORT,236,27,50,14
     PUSHBUTTON      "Export",IDC_BUTTON_EXPORT,236,44,50,14
@@ -2277,7 +2277,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "0CC-FamiTracker\n\n0CC-FamiTracker\n0CC-FamiTracker modules (*.0cc;*.ftm)\n.0cc\n0CCFamiTracker.Document\n0CCFamiTracker.Document"
+    IDR_MAINFRAME           "j0CC-FamiTracker\n\nj0CC-FamiTracker\nj0CC-FamiTracker modules (*.0cc;*.ftm)\n.0cc\n0CCFamiTracker.Document\n0CCFamiTracker.Document"
     IDS_FRAME_DROP_MOVE     "Drop selection to move frames"
     IDS_DPCM_IMPORT_QUALITY_FORMAT "Quality: %1"
     IDS_CLIPBOARD_ERROR     "Could not register clipboard format"
@@ -2302,7 +2302,7 @@ BEGIN
     IDS_SEL_TERMINAL_SKIP   "Error: Current selection may truncate other rows, consider enabling ""Show skipped rows""."
     IDS_PASTE_REPEATED_ROW  "Warning: Clip data may overwrite itself during pasting. Do you want to apply the paste operation?"
     IDS_PASTE_NONTERMINAL   "Warning: Clip data may alter frame lengths during pasting. Do you want to apply the paste operation?"
-    IDS_DISABLE_SAVE        "Saving to external files is disabled in this build of 0CC-FamiTracker."
+    IDS_DISABLE_SAVE        "Saving to external files is disabled in this build of j0CC-FamiTracker."
     IDS_BOOKMARK_EMPTY      "The current track does not contain any bookmarks."
     IDS_POPULATE_PATTERNS   "Do you want to copy a unique pattern for all frames? There is no undo for this command."
     IDS_BOOKMARK_FORMAT     "Moved to bookmark %1. (Highlight: %2, %3)"
@@ -2318,7 +2318,7 @@ END
 
 STRINGTABLE
 BEGIN
-    AFX_IDS_APP_TITLE       "0CC-FamiTracker"
+    AFX_IDS_APP_TITLE       "j0CC-FamiTracker"
     AFX_IDS_IDLEMESSAGE     "For Help, press F1"
     AFX_IDS_HELPMODEMESSAGE "Select an object on which to get Help"
 END
@@ -2461,7 +2461,7 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_FILE_GENERALSETTINGS "Open 0CC-FamiTracker settings\nConfiguration"
+    ID_FILE_GENERALSETTINGS "Open j0CC-FamiTracker settings\nConfiguration"
     ID_EDIT_ENABLEMIDI      "Temporarly enable / disable commands from the MIDI device\nEnable MIDI"
     ID_TRACKER_PLAYROW      "Play a single row\nPlay Current Row"
 END
@@ -2480,7 +2480,7 @@ BEGIN
     IDS_EXPORT_SAMPLES_FILE """%1"" already exists in the same directory as the music data file. Are you sure you want to overwrite it?"
     IDS_MODULE_ERROR_NONE   "This build is not allowed to bypass validation of loaded modules."
     IDS_FIND_EDIT_DISABLED  "Replace will not work unless Edit Mode is enabled."
-    IDS_FILE_LOAD_ERROR     "Couldn't load file properly. Make sure you have the latest version of 0CC-FamiTracker."
+    IDS_FILE_LOAD_ERROR     "Couldn't load file properly. Make sure you have the latest version of j0CC-FamiTracker."
     IDS_CONFIG_WINDOW       "FamiTracker configuration"
 END
 
@@ -2632,10 +2632,10 @@ BEGIN
     IDS_SONG_DELETE         "Do you want to delete the selected songs? There is no undo for this command."
     IDS_SOUND_FAIL          "It appears the current sound settings aren't working, change settings and try again."
     IDS_UNDERRUN_MESSAGE    "Warning: Audio buffer underrun, increase the audio buffer size!"
-    IDS_WELCOME_VER_FORMAT  "Welcome to 0CC-FamiTracker %1, press F1 for help"
+    IDS_WELCOME_VER_FORMAT  "Welcome to j0CC-FamiTracker %1, press F1 for help"
     IDS_DPCM_IMPORT_INVALID_WAVEFILE 
                             "Cannot load this sample, file is invalid or incompatible. (Only uncompressed PCM is supported.)"
-    IDS_INST_FILE_ERROR     "Could not load instrument file! Check that you have the most recent version of 0CC-FamiTracker."
+    IDS_INST_FILE_ERROR     "Could not load instrument file! Check that you have the most recent version of j0CC-FamiTracker."
     IDS_NEW_2A03_INSTRUMENT "New 2A03 instrument"
     IDS_NEW_VRC6_INSTRUMENT "New VRC6 instrument"
     IDS_NEW_VRC7_INSTRUMENT "New VRC7 instrument"
@@ -2712,7 +2712,7 @@ BEGIN
     IDS_WAVE_EXPORT_FINISHED "finished"
     IDS_ABOUT_TOOLTIP_MAIL  "Send mail to nicetas.c@gmail.com"
     IDS_ABOUT_TOOLTIP_WEB   "Go to http://hertzdevil.info/programs/"
-    IDS_ABOUT_VERSION_FORMAT "0CC-FamiTracker version %1"
+    IDS_ABOUT_VERSION_FORMAT "j0CC-FamiTracker version %1"
     IDS_PROPERTIES_CHANNELS "Channels:"
     IDS_LOADING_DONE        "File loaded"
     IDS_DPCM_IMPORT_SIZE_FORMAT "Converted size: %1 bytes"
