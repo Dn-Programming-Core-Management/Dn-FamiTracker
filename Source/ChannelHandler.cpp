@@ -49,9 +49,9 @@ CChannelHandler::CChannelHandler(int MaxPeriod, int MaxVolume) :
 	m_iChannelID(0), 
 	m_iInstTypeCurrent(INST_NONE),		// // //
 	m_iInstrument(0),
-	m_pNoteLookupTable(NULL),
-	m_pVibratoTable(NULL),
-	m_pAPU(NULL),
+	m_pNoteLookupTable(nullptr),
+	m_pVibratoTable(nullptr),
+	m_pAPU(nullptr),
 	m_pInstHandler(),		// // //
 	m_iPitch(0),
 	m_iNote(0),
@@ -101,7 +101,7 @@ void CChannelHandler::SetPitch(int Pitch)
 
 int CChannelHandler::GetPitch() const 
 { 
-	if (m_iPitch != 0 && m_iNote != 0 && m_pNoteLookupTable != NULL) {
+	if (m_iPitch != 0 && m_iNote != 0 && m_pNoteLookupTable != nullptr) {
 		// Interpolate pitch
 		int LowNote  = std::max(m_iNote - PITCH_WHEEL_RANGE, 0);
 		int HighNote = std::min(m_iNote + PITCH_WHEEL_RANGE, 95);
@@ -270,7 +270,7 @@ CString CChannelHandler::GetCustomEffectString() const		// // //
 // Handle common things before letting the channels play the notes
 void CChannelHandler::PlayNote(stChanNote *pNoteData, int EffColumns)
 {
-	ASSERT (pNoteData != NULL);
+	ASSERT (pNoteData != nullptr);
 
 	// Handle global effects
 	// // // global effects are removed there first
