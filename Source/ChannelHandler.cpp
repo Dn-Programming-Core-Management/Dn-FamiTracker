@@ -1025,11 +1025,11 @@ bool CChannelHandler::IsReleasing() const
 }
 
 /*
- * Class CChannelHandlerInverted
+ * Class FrequencyChannelHandler
  *
  */
 
-bool CChannelHandlerInverted::HandleEffect(effect_t EffNum, unsigned char EffParam)
+bool FrequencyChannelHandler::HandleEffect(effect_t EffNum, unsigned char EffParam)
 {
 	if (!m_bLinearPitch) switch (EffNum) {		// // //
 	case EF_PORTA_UP: EffNum = EF_PORTA_DOWN; break;
@@ -1038,7 +1038,7 @@ bool CChannelHandlerInverted::HandleEffect(effect_t EffNum, unsigned char EffPar
 	return CChannelHandler::HandleEffect(EffNum, EffParam);
 }
 
-int CChannelHandlerInverted::CalculatePeriod() const
+int FrequencyChannelHandler::CalculatePeriod() const
 {
 	int Period = LimitPeriod(GetPeriod() + GetVibrato() - GetFinePitch() - GetPitch());		// // //
 	if (m_bLinearPitch && m_pNoteLookupTable != nullptr) {
@@ -1052,7 +1052,7 @@ int CChannelHandlerInverted::CalculatePeriod() const
 	return LimitRawPeriod(Period);
 }
 
-CString CChannelHandlerInverted::GetSlideEffectString() const		// // //
+CString FrequencyChannelHandler::GetSlideEffectString() const		// // //
 {
 	CString str = _T("");
 	
