@@ -1211,7 +1211,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 
 	CString s;
 
-	s.Format(_T("# 0CC-FamiTracker text export %i.%i.%i.%i\n\n"), VERSION);		// // //
+	s.Format(_T("# " APP_NAME " text export %i.%i.%i.%i\n\n"), VERSION);		// // //
 	f.WriteString(s);
 
 	s.Format(_T("# Song information\n"

@@ -3307,7 +3307,7 @@ void CMainFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 	// Add name of subtune
 	title.AppendFormat(_T(" [#%i %s]"), m_iTrack + 1, pDoc->GetTrackTitle(GetSelectedTrack()).GetString());
 
-	title.AppendFormat(_T(" - j0CC-FamiTracker %i.%i.%i.%i"), VERSION);		// // //
+	title.AppendFormat(_T(" - %s"), _T(APP_NAME_VERSION));		// // //
 	SetWindowText(title);
 	// UpdateFrameTitleForDocument(title);
 }

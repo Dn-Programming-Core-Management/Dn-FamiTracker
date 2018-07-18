@@ -49,7 +49,7 @@ void CVisualizerStatic::SetSampleRate(int SampleRate)
 
 void CVisualizerStatic::Draw()
 {
-	static const char STR[] = "0CC-FamiTracker";		// // //
+	static const char STR[] = APP_NAME;		// // //
 	static const size_t COUNT = std::size(STR);
 	static long long t = 0;
 

@@ -90,7 +90,7 @@ void CChunkRenderText::StoreChunks(const std::vector<CChunk*> &Chunks)
 				CALL_MEMBER_FN(this, RENDER_FUNCTIONS[j].function)(pChunk, m_pFile);
 
 	// Write strings to file
-	WriteFileString(CStringA("; 0CC-FamiTracker exported music data: "), m_pFile);
+	WriteFileString(CStringA("; " APP_NAME " exported music data: "), m_pFile);
 	WriteFileString(CFamiTrackerDoc::GetDoc()->GetTitle(), m_pFile);
 	WriteFileString(CStringA("\n;\n\n"), m_pFile);
 
