@@ -68,9 +68,7 @@ CChannelHandler::CChannelHandler(int MaxPeriod, int MaxVolume) :
 {
 }
 
-CChannelHandler::~CChannelHandler()
-{
-}
+CChannelHandler::~CChannelHandler() = default;
 
 void CChannelHandler::InitChannel(CAPU *pAPU, int *pVibTable, CSoundGen *pSoundGen)
 {
