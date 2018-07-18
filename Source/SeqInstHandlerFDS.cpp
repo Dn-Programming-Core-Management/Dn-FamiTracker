@@ -35,7 +35,7 @@
 void CSeqInstHandlerFDS::LoadInstrument(std::shared_ptr<CInstrument> pInst)		// // //
 {
 	CSeqInstHandler::LoadInstrument(pInst);
-	
+
 	if (auto pFDSInst = std::dynamic_pointer_cast<const CInstrumentFDS>(m_pInstrument))
 		UpdateTables(pFDSInst.get());
 }
@@ -43,7 +43,7 @@ void CSeqInstHandlerFDS::LoadInstrument(std::shared_ptr<CInstrument> pInst)		// 
 void CSeqInstHandlerFDS::TriggerInstrument()
 {
 	CSeqInstHandler::TriggerInstrument();
-	
+
 	CChannelHandlerInterfaceFDS *pInterface = dynamic_cast<CChannelHandlerInterfaceFDS*>(m_pInterface);
 	if (pInterface == nullptr) return;
 	auto pFDSInst = std::dynamic_pointer_cast<const CInstrumentFDS>(m_pInstrument);
