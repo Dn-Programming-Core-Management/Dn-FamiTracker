@@ -417,8 +417,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 
 	// // // Create NSFe header
 	int iAuthSize = 0, iTimeSize = 0, iTlblSize = 0, iDataSize = 0;
-	CString str;
-	str.Format(_T("0CC-FamiTracker %i.%i.%i.%i"), VERSION);		// // //
+	CString str = _T(APP_NAME_VERSION);
 	iAuthSize = strlen(m_pDocument->GetSongName()) + strlen(m_pDocument->GetSongArtist())
 		+ strlen(m_pDocument->GetSongCopyright()) + str.GetLength() + 4;
 

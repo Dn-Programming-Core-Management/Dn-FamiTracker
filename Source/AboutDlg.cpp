@@ -148,19 +148,16 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 
 BOOL CAboutDlg::OnInitDialog()
 {
-	CString aboutString;
+	CString aboutString = _T(APP_NAME " version " VERSION_STR);
 
 #ifdef WIP
-	aboutString.Format(_T("0CC-FamiTracker version %i.%i.%i.%i beta"), VERSION);
-#else
-	CString str;
-	str.Format(_T("%i.%i.%i.%i"), VERSION);
-	AfxFormatString1(aboutString, IDS_ABOUT_VERSION_FORMAT, str);
+	aboutString += " beta";
 #endif
 
 	SetDlgItemText(IDC_ABOUT1, aboutString);
 	SetDlgItemText(IDC_ABOUT_CONTRIB,
 		_T("- Original software by jsr\r\n")
+		_T("- 0CC-FamiTracker by HertzDevil\r\n")
 		_T("- Export plugin support by Gradualore\r\n")
 		_T("- Toolbar icons are made by ilkke\r\n")
 		_T("- DPCM import resampler by Jarhmander\r\n")
@@ -168,7 +165,7 @@ BOOL CAboutDlg::OnInitDialog()
 	SetDlgItemText(IDC_ABOUT_LIB,
 		_T("- Blip_buffer 0.4.0 is Copyright (C) blargg\r\n")
 		_T("(http://www.slack.net/~ant/nes-emu/)\r\n")
-		_T("- Fast Fourier Transform code is (C) 2017 Project Nayuki (MIT License)\r\n")
+		_T("- FFT code is (C) 2017 Project Nayuki (MIT License)\r\n")
 		_T("- YM2413 emulator is written by Mitsutaka Okazaki\r\n")
 		_T("- FDS sound emulator from nezplug (including a fix by rainwarrior)\r\n")
 		_T("- JSON for Modern C++ is Copyright (C) Niels Lohmann"));

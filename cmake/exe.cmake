@@ -397,4 +397,6 @@ add_executable(${PROJECT_NAME}
         res/0CC-FamiTracker.rc
         res/resource.h
 
-        version.h)
+        version.h
+        name.h
+        )

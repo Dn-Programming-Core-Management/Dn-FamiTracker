@@ -581,7 +581,7 @@ void CConfigAppearance::OnBnClickedButtonAppearanceLoad()		// // // 050B
 void CConfigAppearance::ExportSettings(const char *Path) const		// // // 050B
 {
 	if (auto file = std::fstream {Path, std::ios_base::out}) {
-		file << "# 0CC-FamiTracker appearance" << std::endl;
+		file << "# " APP_NAME " appearance" << std::endl;
 		for (size_t i = 0; i < std::size(m_iColors); ++i)
 			file << COLOR_ITEMS[i] << SETTING_SEPARATOR << HEX_PREFIX << conv::from_uint_hex(m_iColors[i], 6) << std::endl;
 		file << "Pattern colors" << SETTING_SEPARATOR << m_bPatternColors << std::endl;

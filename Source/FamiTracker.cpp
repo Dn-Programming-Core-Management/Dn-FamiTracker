@@ -200,7 +200,7 @@ BOOL CFamiTrackerApp::InitInstance()
 #if !defined(WIP) && !defined(_DEBUG)
 	// Add shell options
 	RegisterShellFileTypes();		// // //
-	static const LPCTSTR FILE_ASSOC_NAME = _T("0CC-FamiTracker Module");
+	static const LPCTSTR FILE_ASSOC_NAME = _T(APP_NAME " Module");
 	AfxRegSetValue(HKEY_CLASSES_ROOT, "0CCFamiTracker.Document", REG_SZ, FILE_ASSOC_NAME, lstrlen(FILE_ASSOC_NAME) * sizeof(TCHAR));
 	// Add an option to play files
 	CString strPathName, strTemp, strFileTypeId;
@@ -551,6 +551,9 @@ void CFamiTrackerApp::CheckNewVersion(bool StartUp)		// // //
 		HINTERNET hOpen, hConnect, hRequest;
 		CString jsonStr;
 
+		// FIXME FIXME github repo differs from APP_NAME
+		// also burn this code with fire
+
 		try {
 			if ((hOpen = InternetOpen(_T("0CC_FamiTracker"), INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0)) &&
 				(hConnect = InternetConnect(hOpen, _T("api.github.com"),
@@ -580,6 +583,9 @@ void CFamiTrackerApp::CheckNewVersion(bool StartUp)		// // //
 					int Ver[4] = { };
 					sscanf_s(i["tag_name"].get<std::string>().c_str(),
 							 "v%u.%u.%u%*1[.r]%u", Ver, Ver + 1, Ver + 2, Ver + 3);
+
+					// TODO std::vector comparison
+
 					if (Ver[0] > VERSION_API || Ver[0] == VERSION_API &&
 						(Ver[1] > VERSION_MAJ || Ver[1] == VERSION_MAJ &&
 						(Ver[2] > VERSION_MIN || Ver[2] == VERSION_MIN &&
@@ -599,13 +605,13 @@ void CFamiTrackerApp::CheckNewVersion(bool StartUp)		// // //
 						if (Index >= 0)
 							desc.Truncate(Index);
 
-						m_pVersionMessage.Format(_T("A new version of 0CC-FamiTracker is now available:\n\n"
+						m_pVersionMessage.Format(_T("A new version of " APP_NAME " is now available:\n\n"
 												 "Version %d.%d.%d.%d (released %s %d, %d)\n\n%s\n\n"
 												 "Pressing \"Yes\" will launch the Github web page for this release."),
 												 Ver[0], Ver[1], Ver[2], Ver[3], MONTHS[--M], D, Y, desc);
 						if (Start)
 							m_pVersionMessage.Append(_T(" (Version checking on startup may be disabled in the configuration menu.)"));
-						m_pVersionURL.Format(_T("https://github.com/HertzDevil/0CC-FamiTracker/releases/tag/v%d.%d.%d.%d"),
+						m_pVersionURL.Format(_T("https://github.com/nyanpasu64/0CC-FamiTracker/releases/tag/v%d.%d.%d.%d"),
 											 Ver[0], Ver[1], Ver[2], Ver[3]);
 						m_iVersionStyle = MB_YESNO | MB_ICONINFORMATION;
 						m_bVersionReady = true;
@@ -961,7 +967,7 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 			FILE *f;
 			AttachConsole(ATTACH_PARENT_PROCESS);
 			errno_t err = freopen_s(&f, "CON", "w", stdout);
-			printf("0CC-FamiTracker v%i.%i.%i.%i\n", VERSION);		// // //
+			printf("%s", APP_NAME_VERSION);		// // //
 			return;
 		}
 	}
@@ -1064,7 +1070,7 @@ BOOL CDocManager0CC::DoPromptFileName(CString &fileName, UINT nIDSTitle, DWORD l
 	CString path = theApp.GetSettings()->GetPath(PATH_FTM) + _T("\\");
 
 	CFileDialog OpenFileDlg(bOpenFileDialog, _T("0cc"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-							_T("0CC-FamiTracker modules (*.0cc;*.ftm)|*.0cc; *.ftm|All files (*.*)|*.*||"),		// // //
+							_T(APP_NAME " modules (*.0cc;*.ftm)|*.0cc; *.ftm|All files (*.*)|*.*||"),		// // //
 							AfxGetMainWnd(), 0);
 	OpenFileDlg.m_ofn.Flags |= lFlags;
 	OpenFileDlg.m_ofn.lpstrFile = fileName.GetBuffer(_MAX_PATH);
