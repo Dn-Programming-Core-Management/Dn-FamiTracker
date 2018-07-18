@@ -9,11 +9,11 @@
 ** the Free Software Foundation; either version 2 of the License, or
 ** (at your option) any later version.
 **
-** This program is distributed in the hope that it will be useful, 
+** This program is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
-** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-** Library General Public License for more details.  To obtain a 
-** copy of the GNU Library General Public License, write to the Free 
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+** Library General Public License for more details.  To obtain a
+** copy of the GNU Library General Public License, write to the Free
 ** Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ** Any permitted reproduction of these routines, in whole or in part,
@@ -114,7 +114,7 @@ public:
 		\return The channel's identifier value. */
 	int				GetChannelID() const { return m_iChannelID; }
 
-	// 
+	//
 	// Internal virtual functions
 	//
 protected:
@@ -197,7 +197,7 @@ protected:
 		\param Volume Input volume value.
 		\return The restricted volume value. */
 	virtual int		LimitVolume(int Volume) const;		// // //
-	
+
 	/*!	\brief Retrieves information about common effects of the channel handler.
 		\return A string representing active effects and their parameters. */
 	virtual CString	GetEffectString() const;		// // //
@@ -210,7 +210,7 @@ protected:
 		\return A string representing active effects and their parameters. */
 	virtual CString	GetCustomEffectString() const;		// // //
 
-	// 
+	//
 	// Internal non-virtual functions
 	//
 protected:
@@ -223,13 +223,13 @@ protected:
 	/*!	\brief Notifies the tracker view that the current channel handler is playing a note.
 		\param Note The note value, or -1 if no note is active. */
 	void	RegisterKeyState(int Note);
-	
+
 	/*!	\brief Returns the pitch register offset of the channel's MIDI pitch wheel value.
 		\details A positive value represents a lower pitch. The sign of the return value depends
 		on whether the sound channel uses period or frequency registers.
 		\return The pitch offset. */
 	int		GetPitch() const;
-	
+
 	/*!	\brief Processes the Gxx delay effect in a given note.
 		\details The method caches the note data at CChannelHandler::m_cnDelayed if a Gxx effect
 		command is found. Jump effects are processed immediately and removed from the cached data.
@@ -237,7 +237,7 @@ protected:
 		\param EffColumns The number of used effect columns of the note data.
 		\return Whether the note data contains a Gxx effect command. */
 	bool	HandleDelay(stChanNote *NoteData, int EffColumns);
-	
+
 	/*!	\brief Returns the pitch register offset of the channel's 4xy vibrato effect.
 		\details A positive value represents a higher pitch. The sign of the return value depends
 		on whether the sound channel uses period or frequency registers.
@@ -280,7 +280,7 @@ protected:
 		\param Reg The register port.
 		\param Value The value to be written. */
 	void	WriteRegister(uint16_t Reg, uint8_t Value);
-	
+
 	/*!	\brief Converts a duty value from the current instrument into an equivalent value for the
 		current sound channel.
 		\details This method is only called from an instrument through the channel handler's
@@ -420,7 +420,7 @@ protected:
 	/*!	\brief The number of ticks until the tick where the note delayed by a Gxx effect command will be played. */
 	unsigned char	m_cDelayCounter;
 	/*!	\brief The number of used effect columns of the delayed note cache. */
-	unsigned int	m_iDelayEffColumns;		
+	unsigned int	m_iDelayEffColumns;
 	/*!	\brief A note structure holding a temporary cache of the note data delayed by a Gxx effect command. */
 	stChanNote		m_cnDelayed;
 
@@ -434,7 +434,7 @@ protected:
 	/*!	\brief The current phase of the 4xy vibrato effect.
 		\details One full cycle of a vibrato effect contains exactly 64 phases. */
 	unsigned int	m_iVibratoPhase;
-	
+
 	/*!	\brief The current extent of the 7xy tremolo effect.
 		\details In accordance with the NSF driver, this member always occupies bits 4 - 7. */
 	unsigned int	m_iTremoloDepth;
@@ -516,7 +516,7 @@ protected:
 		\details A positive value represents a lower pitch. The value of this member is limited
 		within [-512, 511]. */
 	int				m_iPitch;
-	
+
 	/*!	\brief The instrument type of the previously loaded instrument.
 		\details The channel handler uses this value to determine different actions for supporting
 		instruments not native to the current sound channel.
@@ -524,7 +524,7 @@ protected:
 	inst_type_t		m_iInstTypeCurrent;
 	/*!	\brief A pointer to the currently installed instrument handler. */
 	std::unique_ptr<CInstHandler>	m_pInstHandler;				// // //
-	
+
 	/*!	\brief The maximum pitch register value of the channel. */
 	int				m_iMaxPeriod;
 	/*!	\brief The maximum instrument volume of the channel. */
