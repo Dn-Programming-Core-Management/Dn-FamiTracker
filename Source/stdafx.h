@@ -108,3 +108,6 @@ bool _trace(TCHAR *format, T... args)
 #else
 #define TRACE __noop
 #endif
+
+
+#include "name.h"

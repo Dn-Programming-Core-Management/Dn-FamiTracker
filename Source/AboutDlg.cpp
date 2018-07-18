@@ -148,14 +148,10 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 
 BOOL CAboutDlg::OnInitDialog()
 {
-	CString aboutString;
+	CString aboutString = _T(APP_NAME " version " VERSION_STR);
 
 #ifdef WIP
-	aboutString.Format(_T("0CC-FamiTracker version %i.%i.%i.%i beta"), VERSION);
-#else
-	CString str;
-	str.Format(_T("%i.%i.%i.%i"), VERSION);
-	AfxFormatString1(aboutString, IDS_ABOUT_VERSION_FORMAT, str);
+	aboutString += " beta";
 #endif
 
 	SetDlgItemText(IDC_ABOUT1, aboutString);

@@ -74,7 +74,7 @@ const CString CConfigGeneral::CONFIG_DESC[] = {		// // //
 	_T("Ignore the pattern step setting when moving the cursor, only use it when inserting notes."),
 	_T("Make delete key pull up rows rather than only deleting the value, as if by Shift+Delete."),
 	_T("Create backup copy of unmodified file, when you open and save a module."),
-	_T("Only allow one single instance of the 0CC-FamiTracker application."),
+	_T("Only allow one single instance of the " APP_NAME " application."),
 	_T("Preview all channels when inserting notes in the pattern editor."),
 	_T("Do not select the whole channel when double-clicking in the pattern editor."),
 	_T("When using Shift + Mouse Wheel to modify a pattern value, allow the parameter to wrap around its limit values."),
@@ -84,7 +84,7 @@ const CString CConfigGeneral::CONFIG_DESC[] = {		// // //
 	_T("Display rows that are truncated by Bxx, Cxx, or Dxx effects."),
 	_T("Use the extra keys on the keypad as hexadecimal digits in the pattern editor."),
 	_T("Allow pattern selections to span across multiple frames."),
-	_T("Check for new 0CC-FamiTracker versions on startup if an internet connection could be established."),
+	_T("Check for new " APP_NAME " versions on startup if an internet connection could be established."),
 };
 
 // CConfigGeneral dialog
