@@ -131,7 +131,7 @@ protected:
 		view of the note.
 		\param Note Input note value.
 		\return The pitch register value of the restricted note value. */
-	virtual	int		TriggerNote(int Note);
+	int		TriggerNote(int Note) override;
 	
 	/*!	\brief Processes a note.
 		\details This method is called both for both notes from pattern data and the delayed note cache.
@@ -296,38 +296,38 @@ public:		// // //
 		handler currently has no way to allow changes due to CChannelHandler::m_iEffect and its
 		interface orthogonally.
 		\param Period The period or frequency register. */
-	void	SetPeriod(int Period);
+	void	SetPeriod(int Period) override;
 	/*!	\brief Obtains the current pitch register of the channel.
 		\details This includes pitch changes due to slide effects and CChannelHandler::SetNote.
 		\return The pitch register value. */
-	int		GetPeriod() const;
+	int		GetPeriod() const override;
 	/*!	\brief Sets the current note value of the channel.
 		\warning This method overrides the current note value of the channel, and hence effect commands
 		that depend on changing the note value.
 		\param Note The absolute note value. */
-	void	SetNote(int Note);
+	void	SetNote(int Note) override;
 	/*!	\brief Obtains the current note value of the channel.
 		\details This includes pitch changes due to transposing effects and the instrument handler.
 		\return The note value. */
-	int		GetNote() const;
+	int		GetNote() const override;
 	/*!	\brief Sets the current instrument volume of the channel.
 		\details The channel interface never controls the channel volume.
 		\param Volume The instrument volume level. */
-	void	SetVolume(int Volume);
+	void	SetVolume(int Volume) override;
 	/*!	\brief Obtains the current instrument volume of the channel.
 		\return The instrument volume level. */
-	int		GetVolume() const;
+	int		GetVolume() const override;
 	/*!	\brief Obtains the current channel volume.
 		\return The channel volume level. */
-	virtual int GetChannelVolume() const;
+	int GetChannelVolume() const override;
 
 	/*!	\brief Sets the current duty cycle value of the channel.
 		\details The value received by the channel is converted according to the current instrument type.
 		\param Duty The duty cycle value. */
-	void	SetDutyPeriod(int Duty);
+	void	SetDutyPeriod(int Duty) override;
 	/*!	\brief Obtains the current duty cycle value of the channel.
 		\return The duty cycle value. */
-	int		GetDutyPeriod() const;
+	int		GetDutyPeriod() const override;
 	/*!
 	 * Returns maximum valid duty cycle, inclusive (-1 if none are valid).
 	 * Used to mark invalid Vxx red in the GUI.
@@ -335,9 +335,9 @@ public:		// // //
 	 */
 	virtual int getDutyMax() const;
 
-	unsigned char GetArpParam() const;		// // //
-	bool	IsActive() const;
-	bool	IsReleasing() const;
+	unsigned char GetArpParam() const override;		// // //
+	bool	IsActive() const override;
+	bool	IsReleasing() const override;
 
 private:
 	void	UpdateNoteCut();
@@ -537,7 +537,7 @@ protected:
 	CChannelHandlerInverted(int MaxPeriod, int MaxVolume) : CChannelHandler(MaxPeriod, MaxVolume) {}
 	// // //
 	virtual bool	HandleEffect(effect_t EffNum, unsigned char EffParam);		// // //
-	virtual int		CalculatePeriod() const;
+	int		CalculatePeriod() const override;
 	virtual CString	GetSlideEffectString() const;		// // //
 };
 
