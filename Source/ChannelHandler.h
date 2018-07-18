@@ -532,9 +532,9 @@ protected:
 };
 
 // Channel handler for channels with frequency registers
-class CChannelHandlerInverted : public CChannelHandler {
+class FrequencyChannelHandler : public CChannelHandler {
 protected:
-	CChannelHandlerInverted(int MaxPeriod, int MaxVolume) : CChannelHandler(MaxPeriod, MaxVolume) {}
+	FrequencyChannelHandler(int MaxPeriod, int MaxVolume) : CChannelHandler(MaxPeriod, MaxVolume) {}
 	// // //
 	virtual bool	HandleEffect(effect_t EffNum, unsigned char EffParam);		// // //
 	int		CalculatePeriod() const override;

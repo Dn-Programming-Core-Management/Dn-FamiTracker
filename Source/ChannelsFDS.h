@@ -22,7 +22,7 @@
 
 #pragma once
 
-class CChannelHandlerFDS : public CChannelHandlerInverted, public CChannelHandlerInterfaceFDS {
+class CChannelHandlerFDS : public FrequencyChannelHandler, public CChannelHandlerInterfaceFDS {
 public:
 	CChannelHandlerFDS();
 	virtual void RefreshChannel();
