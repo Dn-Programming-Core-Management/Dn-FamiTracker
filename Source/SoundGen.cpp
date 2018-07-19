@@ -132,6 +132,7 @@ CSoundGen::CSoundGen() :
 	m_iPlayRow(0),
 	m_iPlayTrack(0),
 	m_iPlayTicks(0),
+	m_iConsumedCycles(0),
 	m_iRegisterStream(),		// // //
 	m_bBufferUnderrun(false),
 	m_bAudioClipping(false),
@@ -1392,6 +1393,7 @@ void CSoundGen::AddCycles(int Count)
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
 
 	// Add APU cycles
+	Count = std::min(Count, m_iUpdateCycles - m_iConsumedCycles);
 	m_iConsumedCycles += Count;
 	m_pAPU->AddTime(Count);
 }
@@ -2102,9 +2104,6 @@ void CSoundGen::UpdateChannels()
 void CSoundGen::UpdateAPU()
 {
 	// Write to APU registers
-
-	m_iConsumedCycles = 0;
-
 	// Copy wave changed flag
 	m_bInternalWaveChanged = m_bWaveChanged;
 	m_bWaveChanged = false;
@@ -2121,8 +2120,7 @@ void CSoundGen::UpdateAPU()
 					unsigned int Chip = m_pTrackerChannels[i]->GetChip();
 					if (m_pDocument->ExpansionEnabled(Chip)) {
 						int Delay = (Chip == LastChip) ? 150 : 250;
-						if (m_iConsumedCycles + Delay < m_iUpdateCycles)
-							AddCycles(Delay);
+						AddCycles(Delay);
 						LastChip = Chip;
 					}
 					m_pAPU->Process();
@@ -2134,11 +2132,16 @@ void CSoundGen::UpdateAPU()
 		#endif
 
 			// Finish the audio frame
+			if (m_iConsumedCycles > m_iUpdateCycles) {
+				throw std::runtime_error("overflowed vblank!");
+			}
 			m_pAPU->AddTime(m_iUpdateCycles - m_iConsumedCycles);
 			m_pAPU->Process();
 			l.Unlock();
 		}
 	}
+
+	m_iConsumedCycles = 0;
 
 #ifdef LOGGING
 	if (m_bPlaying)
