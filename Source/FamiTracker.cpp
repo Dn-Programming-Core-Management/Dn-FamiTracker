@@ -967,7 +967,8 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 			FILE *f;
 			AttachConsole(ATTACH_PARENT_PROCESS);
 			errno_t err = freopen_s(&f, "CON", "w", stdout);
-			printf("%s", APP_NAME_VERSION);		// // //
+			errno_t err2 = freopen_s(&f, "CON", "w", stderr);
+			fprintf(stderr, "%s\n", APP_NAME_VERSION);		// // //
 			return;
 		}
 	}
