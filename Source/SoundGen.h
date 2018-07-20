@@ -183,6 +183,8 @@ public:
 	void		 WriteAPU(int Address, char Value);
 
 	// Used by channels
+
+	/** Add cycles to model execution time (capped at vblank). */
 	void		AddCycles(int Count);
 
 	// Other
