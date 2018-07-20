@@ -35,7 +35,7 @@
 #include "Settings.h"		// // //
 
 CChannelHandlerFDS::CChannelHandlerFDS() : 
-	CChannelHandlerInverted(0xFFF, 32)
+	FrequencyChannelHandler(0xFFF, 32)
 { 
 	memset(m_iModTable, 0, 32);
 	memset(m_iWaveTable, 0, 64);
@@ -105,7 +105,7 @@ bool CChannelHandlerFDS::HandleEffect(effect_t EffNum, unsigned char EffParam)
 	case EF_FDS_MOD_BIAS:		// // //
 		m_iModulationOffset = EffParam - 0x80;
 		break;
-	default: return CChannelHandlerInverted::HandleEffect(EffNum, EffParam);
+	default: return FrequencyChannelHandler::HandleEffect(EffNum, EffParam);
 	}
 
 	return true;

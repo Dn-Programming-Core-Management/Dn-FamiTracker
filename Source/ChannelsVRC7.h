@@ -37,7 +37,7 @@ enum vrc7_command_t {
 
 class CChannelHandlerInterfaceVRC7;
 
-class CChannelHandlerVRC7 : public CChannelHandlerInverted, public CChannelHandlerInterfaceVRC7 {		// // //
+class CChannelHandlerVRC7 : public FrequencyChannelHandler, public CChannelHandlerInterfaceVRC7 {		// // //
 public:
 	CChannelHandlerVRC7();
 	void	SetChannelID(int ID) override;

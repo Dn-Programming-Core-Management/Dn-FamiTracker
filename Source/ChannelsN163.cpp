@@ -36,7 +36,7 @@
 const int N163_PITCH_SLIDE_SHIFT = 2;	// Increase amplitude of pitch slides
 
 CChannelHandlerN163::CChannelHandlerN163() : 
-	CChannelHandlerInverted(0xFFFF, 0x0F), 
+	FrequencyChannelHandler(0xFFFF, 0x0F),
 	m_bDisableLoad(false),		// // //
 	m_bResetPhase(false),
 	m_iWaveLen(4),		// // //
@@ -88,7 +88,7 @@ bool CChannelHandlerN163::HandleEffect(effect_t EffNum, unsigned char EffParam)
 		if (auto pHandler = dynamic_cast<CSeqInstHandlerN163*>(m_pInstHandler.get()))
 			pHandler->RequestWaveUpdate();
 		break;
-	default: return CChannelHandlerInverted::HandleEffect(EffNum, EffParam);
+	default: return FrequencyChannelHandler::HandleEffect(EffNum, EffParam);
 	}
 
 	return true;

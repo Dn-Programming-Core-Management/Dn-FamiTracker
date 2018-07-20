@@ -44,7 +44,7 @@ char CChannelHandlerVRC7::m_cPatchFlag = 0;		// // // 050B
 unsigned char CChannelHandlerVRC7::m_iPatchRegs[8] = { };		// // // 050B
 
 CChannelHandlerVRC7::CChannelHandlerVRC7() : 
-	CChannelHandlerInverted((1 << (VRC7_PITCH_RESOLUTION + 9)) - 1, 15),		// // //
+	FrequencyChannelHandler((1 << (VRC7_PITCH_RESOLUTION + 9)) - 1, 15),		// // //
 	m_iCommand(CMD_NONE),
 	m_iTriggeredNote(0)
 {
@@ -71,7 +71,7 @@ void CChannelHandlerVRC7::SetCustomReg(size_t Index, unsigned char Val)		// // /
 
 void CChannelHandlerVRC7::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 {
-	CChannelHandlerInverted::HandleNoteData(pNoteData, EffColumns);		// // //
+	FrequencyChannelHandler::HandleNoteData(pNoteData, EffColumns);		// // //
 
 	if (m_iCommand == CMD_NOTE_TRIGGER && pNoteData->Instrument == HOLD_INSTRUMENT)		// // // 050B
 		m_iCommand = CMD_NOTE_ON;
@@ -91,7 +91,7 @@ bool CChannelHandlerVRC7::HandleEffect(effect_t EffNum, unsigned char EffParam)
 		m_cPatchFlag |= 1 << m_iCustomPort;
 		m_bRegsDirty = true;
 		break;
-	default: return CChannelHandlerInverted::HandleEffect(EffNum, EffParam);
+	default: return FrequencyChannelHandler::HandleEffect(EffNum, EffParam);
 	}
 
 	return true;
