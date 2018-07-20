@@ -35,7 +35,7 @@
 void CSeqInstHandlerFDS::LoadInstrument(std::shared_ptr<CInstrument> pInst)		// // //
 {
 	CSeqInstHandler::LoadInstrument(pInst);
-	
+
 	if (auto pFDSInst = std::dynamic_pointer_cast<const CInstrumentFDS>(m_pInstrument))
 		UpdateTables(pFDSInst.get());
 }
@@ -43,8 +43,8 @@ void CSeqInstHandlerFDS::LoadInstrument(std::shared_ptr<CInstrument> pInst)		// 
 void CSeqInstHandlerFDS::TriggerInstrument()
 {
 	CSeqInstHandler::TriggerInstrument();
-	
-	CChannelHandlerInterfaceFDS *pInterface = dynamic_cast<CChannelHandlerInterfaceFDS*>(m_pInterface);
+
+	auto *pInterface = dynamic_cast<CChannelHandlerInterfaceFDS*>(m_pInterface);
 	if (pInterface == nullptr) return;
 	auto pFDSInst = std::dynamic_pointer_cast<const CInstrumentFDS>(m_pInstrument);
 	if (pFDSInst == nullptr) return;
@@ -58,14 +58,13 @@ void CSeqInstHandlerFDS::UpdateInstrument()
 {
 	CSeqInstHandler::UpdateInstrument();
 	
-	if (auto pInterface = dynamic_cast<CChannelHandlerInterfaceFDS*>(m_pInterface))
-		if (auto pFDSInst = std::dynamic_pointer_cast<const CInstrumentFDS>(m_pInstrument))
-			UpdateTables(pFDSInst.get());
+	if (auto pFDSInst = std::dynamic_pointer_cast<const CInstrumentFDS>(m_pInstrument))
+		UpdateTables(pFDSInst.get());
 }
 
 void CSeqInstHandlerFDS::UpdateTables(const CInstrumentFDS *pInst)
 {
-	CChannelHandlerInterfaceFDS *pInterface = dynamic_cast<CChannelHandlerInterfaceFDS*>(m_pInterface);
+	auto *pInterface = dynamic_cast<CChannelHandlerInterfaceFDS*>(m_pInterface);
 	if (pInterface == nullptr) return;
 	char Buffer[0x40];		// // //
 	for (int i = 0; i < 0x40; i++)
