@@ -26,7 +26,7 @@
 // Derived channels, N163
 //
 
-class CChannelHandlerN163 : public CChannelHandlerInverted, public CChannelHandlerInterfaceN163 {
+class CChannelHandlerN163 : public FrequencyChannelHandler, public CChannelHandlerInterfaceN163 {
 public:
 	CChannelHandlerN163();
 	void	RefreshChannel() override;

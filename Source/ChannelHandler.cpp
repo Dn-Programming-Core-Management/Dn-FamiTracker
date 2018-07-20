@@ -49,9 +49,9 @@ CChannelHandler::CChannelHandler(int MaxPeriod, int MaxVolume) :
 	m_iChannelID(0), 
 	m_iInstTypeCurrent(INST_NONE),		// // //
 	m_iInstrument(0),
-	m_pNoteLookupTable(NULL),
-	m_pVibratoTable(NULL),
-	m_pAPU(NULL),
+	m_pNoteLookupTable(nullptr),
+	m_pVibratoTable(nullptr),
+	m_pAPU(nullptr),
 	m_pInstHandler(),		// // //
 	m_iPitch(0),
 	m_iNote(0),
@@ -68,9 +68,7 @@ CChannelHandler::CChannelHandler(int MaxPeriod, int MaxVolume) :
 {
 }
 
-CChannelHandler::~CChannelHandler()
-{
-}
+CChannelHandler::~CChannelHandler() = default;
 
 void CChannelHandler::InitChannel(CAPU *pAPU, int *pVibTable, CSoundGen *pSoundGen)
 {
@@ -103,7 +101,7 @@ void CChannelHandler::SetPitch(int Pitch)
 
 int CChannelHandler::GetPitch() const 
 { 
-	if (m_iPitch != 0 && m_iNote != 0 && m_pNoteLookupTable != NULL) {
+	if (m_iPitch != 0 && m_iNote != 0 && m_pNoteLookupTable != nullptr) {
 		// Interpolate pitch
 		int LowNote  = std::max(m_iNote - PITCH_WHEEL_RANGE, 0);
 		int HighNote = std::min(m_iNote + PITCH_WHEEL_RANGE, 95);
@@ -272,7 +270,7 @@ CString CChannelHandler::GetCustomEffectString() const		// // //
 // Handle common things before letting the channels play the notes
 void CChannelHandler::PlayNote(stChanNote *pNoteData, int EffColumns)
 {
-	ASSERT (pNoteData != NULL);
+	ASSERT (pNoteData != nullptr);
 
 	// Handle global effects
 	// // // global effects are removed there first
@@ -1027,11 +1025,11 @@ bool CChannelHandler::IsReleasing() const
 }
 
 /*
- * Class CChannelHandlerInverted
+ * Class FrequencyChannelHandler
  *
  */
 
-bool CChannelHandlerInverted::HandleEffect(effect_t EffNum, unsigned char EffParam)
+bool FrequencyChannelHandler::HandleEffect(effect_t EffNum, unsigned char EffParam)
 {
 	if (!m_bLinearPitch) switch (EffNum) {		// // //
 	case EF_PORTA_UP: EffNum = EF_PORTA_DOWN; break;
@@ -1040,7 +1038,7 @@ bool CChannelHandlerInverted::HandleEffect(effect_t EffNum, unsigned char EffPar
 	return CChannelHandler::HandleEffect(EffNum, EffParam);
 }
 
-int CChannelHandlerInverted::CalculatePeriod() const
+int FrequencyChannelHandler::CalculatePeriod() const
 {
 	int Period = LimitPeriod(GetPeriod() + GetVibrato() - GetFinePitch() - GetPitch());		// // //
 	if (m_bLinearPitch && m_pNoteLookupTable != nullptr) {
@@ -1054,7 +1052,7 @@ int CChannelHandlerInverted::CalculatePeriod() const
 	return LimitRawPeriod(Period);
 }
 
-CString CChannelHandlerInverted::GetSlideEffectString() const		// // //
+CString FrequencyChannelHandler::GetSlideEffectString() const		// // //
 {
 	CString str = _T("");
 	
