@@ -717,8 +717,9 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 	if (CFrameWnd *pMainFrame = static_cast<CFrameWnd*>(AfxGetMainWnd())) {		// // //
 		CString text;
 		text.Format("%i", FileSize);
-		AfxFormatString1(text, IDS_FILE_SAVED, text);
-		pMainFrame->SetMessageText(text);
+		CString out;
+		AfxFormatString1(out, IDS_FILE_SAVED, text);
+		pMainFrame->SetMessageText(out);
 	}
 
 	return TRUE;
