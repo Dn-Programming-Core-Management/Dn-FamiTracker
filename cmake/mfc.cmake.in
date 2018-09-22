@@ -29,6 +29,9 @@ endmacro()
 
 
 set(CMAKE_MFC_FLAG "@CMAKE_MFC_FLAG_VALUE@")
+if ("${CMAKE_MFC_FLAG}" STREQUAL "")
+    message(FATAL_ERROR "Did not set CMAKE_MFC_FLAG_VALUE when including MFC CMake")
+endif()
 
 FIND_PACKAGE(MFC)
 IF (NOT MFC_FOUND)
