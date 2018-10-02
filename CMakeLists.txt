@@ -4,8 +4,25 @@ cmake_minimum_required(VERSION 3.10)
 project(j0CC_FamiTracker)
 
 
-# MFC debug/release
-include(cmake/mfc.cmake)
+# MFC based off https://github.com/Kitware/CMake/blob/master/Tests/MFC/CMakeLists.txt
+    # also sets https://stackoverflow.com/questions/14172856/cmake-mt-md
+# Simpler approach (unimplemented): https://stackoverflow.com/questions/11580748/cmake-mfc
+    # does not set mt vs md
+
+if (CMAKE_BUILD_TYPE MATCHES DEBUG)
+    # Debug build requires dynamic MFC.
+    set(CMAKE_MFC_FLAG_VALUE 0)
+else ()
+    # Otherwise link MFC statically.
+    set(CMAKE_MFC_FLAG_VALUE 1)
+endif ()
+
+set(mfcin cmake/mfc.cmake.in)
+set(mfc ${CMAKE_CURRENT_BINARY_DIR}/mfc.cmake)
+
+# Configure MFC
+configure_file(${mfcin} ${mfc} @ONLY)
+include(${mfc})
 
 
 # compiling
@@ -25,5 +42,5 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 set_target_properties(${PROJECT_NAME} PROPERTIES
         LINK_FLAGS
-            /MANIFEST:NO)
+        /MANIFEST:NO)
 #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /MANIFEST:NO")
