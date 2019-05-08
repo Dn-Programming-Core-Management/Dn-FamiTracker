@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "PatternEditorTypes.h"
 #include "FamiTrackerDoc.h"
+#include <utility>
 
 // CCursorPos /////////////////////////////////////////////////////////////////////
 
@@ -75,6 +76,14 @@ bool CCursorPos::IsValid(int RowCount, int ChannelCount) const		// // //
 		return false;
 
 	return true;
+}
+
+void CCursorPos::fixInvalid(CFamiTrackerDoc const & document) {
+	auto channel_count = document.GetChannelCount();
+	if (this->m_iChannel >= channel_count) {
+		this->m_iChannel = channel_count;
+		this->m_iColumn = C_EFF4_PARAM2;
+	}
 }
 
 // CSelection /////////////////////////////////////////////////////////////////////
@@ -392,25 +401,4 @@ void CPatternIterator::Warp()
 	}
 	while (m_iRow < 0)
 		m_iRow += m_pDocument->GetCurrentPatternLength(m_iTrack, --m_iFrame);
-	//m_iFrame %= m_pDocument->GetFrameCount(m_iTrack);
-	//if (m_iFrame < 0) m_iFrame += m_pDocument->GetFrameCount(m_iTrack);
 }
-
-// CPatternEditorLayout ////////////////////////////////////////////////////////
-/*
-CPatternEditorLayout::CPatternEditorLayout()
-{
-}
-
-void CPatternEditorLayout::SetSize(int Width, int Height)
-{
-//	m_iWinWidth = width;
-//	m_iWinHeight = height - ::GetSystemMetrics(SM_CYHSCROLL);
-}
-
-void CPatternEditorLayout::CalculateLayout()
-{
-	// Calculate pattern layout. Must be called when layout or window size has changed
-
-}
-*/

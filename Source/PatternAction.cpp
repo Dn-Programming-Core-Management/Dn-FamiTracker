@@ -182,7 +182,10 @@ std::optional<CSelection> CPatternAction::SetTargetSelection(CPatternEditor *pPa
 				End.m_iColumn = C_EFF4_PARAM2;
 		}
 	}
-	
+
+	Start.fixInvalid(*pPatternEditor->m_pDocument);
+	End.fixInvalid(*pPatternEditor->m_pDocument);
+
 	// Construct selection.
 	CSelection newSelection;
 	newSelection.m_cpStart = Start;

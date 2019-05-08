@@ -294,8 +294,9 @@ private:
 	static const int ROW_HEIGHT;
 
 	// Variables
-private:
+public:
 	CFamiTrackerDoc	 *m_pDocument;
+private:
 	CFamiTrackerView *m_pView;
 
 	// GDI objects
