@@ -188,6 +188,7 @@ public:
 	bool operator <(const CCursorPos &other) const;
 	bool operator <=(const CCursorPos &other) const;
 	bool IsValid(int RowCount, int ChannelCount) const;		// // //
+	void fixInvalid(CFamiTrackerDoc const & document);
 
 public:
 	int m_iFrame;		// // //
