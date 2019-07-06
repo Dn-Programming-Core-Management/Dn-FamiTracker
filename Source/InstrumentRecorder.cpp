@@ -216,7 +216,8 @@ void CInstrumentRecorder::RecordInstrument(const unsigned Tick, CView *pView)		/
 					}
 					break;
 				case SNDCHIP_S5B:
-					Val = 0x1F & REG(0x06) | (0x10 & REG(0x08 + ID)) << 1
+					//0x1F accounts for inverted noise period value
+					Val = 0x1F - (0x1F & REG(0x06)) | (0x10 & REG(0x08 + ID)) << 1
 						| (0x01 << ID & ~REG(0x07)) << (6 - ID) | (0x08 << ID & ~REG(0x07)) << (4 - ID); break;
 				}
 				break;
