@@ -22,6 +22,7 @@
 
 #include "stdafx.h"
 #include "CompoundAction.h"
+#include <stdexcept>
 
 // // //
 // Compound action class
