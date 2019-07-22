@@ -326,7 +326,7 @@ bool CDSoundChannel::ClearBuffer()
 	return true;
 }
 
-bool CDSoundChannel::WriteBuffer(char *pBuffer, unsigned int Samples)
+bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
 {
 	// Fill sound buffer
 	//
