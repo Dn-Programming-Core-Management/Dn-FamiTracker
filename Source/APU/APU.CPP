@@ -142,8 +142,8 @@ void CAPU::EndFrame()
 	for (auto Chip : ExChips)		// // //
 		Chip->EndFrame();
 
-	int SamplesAvail = m_pMixer->FinishBuffer(m_iFrameCycles);
-	int ReadSamples	= m_pMixer->ReadBuffer(SamplesAvail, m_pSoundBuffer, m_bStereoEnabled);
+	m_pMixer->FinishBuffer(m_iFrameCycles);
+	int ReadSamples	= m_pMixer->ReadBuffer(m_pSoundBuffer);
 	m_pParent->FlushBuffer(m_pSoundBuffer, ReadSamples);
 	
 	m_iFrameClock /*+*/= m_iFrameCycleCount;
