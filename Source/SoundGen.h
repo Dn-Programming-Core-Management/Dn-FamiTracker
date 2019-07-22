@@ -119,7 +119,7 @@ public:
 
 	// Sound
 	bool		InitializeSound(HWND hWnd);
-	void		FlushBuffer(int16_t *Buffer, uint32_t Size);
+	void		FlushBuffer(int16_t const * pBuffer, uint32_t Size);
 	CDSound		*GetSoundInterface() const { return m_pDSound; };
 
 	void		Interrupt() const;
@@ -248,7 +248,7 @@ private:
 	bool		ResetAudioDevice();
 	void		CloseAudioDevice();
 	void		CloseAudio();
-	template<class T, int SHIFT> void FillBuffer(int16_t *pBuffer, uint32_t Size);
+	template<class T, int SHIFT> void FillBuffer(int16_t const * pBuffer, uint32_t Size);
 	bool		PlayBuffer();
 
 	// Player

@@ -41,7 +41,7 @@ struct stDPCMState {
 // Used to play the audio when the buffer is full
 class IAudioCallback {
 public:
-	virtual void FlushBuffer(int16_t *Buffer, uint32_t Size) = 0;
+	virtual void FlushBuffer(int16_t const * Buffer, uint32_t Size) = 0;
 };
 
 

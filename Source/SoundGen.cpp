@@ -832,7 +832,7 @@ void CSoundGen::ResetBuffer()
 	m_pAPU->Reset();
 }
 
-void CSoundGen::FlushBuffer(int16_t *pBuffer, uint32_t Size)
+void CSoundGen::FlushBuffer(int16_t const * pBuffer, uint32_t Size)
 {
 	// Callback method from emulation
 
@@ -857,7 +857,7 @@ void CSoundGen::FlushBuffer(int16_t *pBuffer, uint32_t Size)
 }
 
 template <class T, int SHIFT>
-void CSoundGen::FillBuffer(int16_t *pBuffer, uint32_t Size)
+void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 {
 	// Called when the APU audio buffer is full and
 	// ready for playing
