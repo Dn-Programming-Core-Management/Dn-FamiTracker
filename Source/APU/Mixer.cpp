@@ -296,7 +296,7 @@ int CMixer::SamplesAvail() const
 	return (int)BlipBuffer.samples_avail();
 }
 
-int CMixer::FinishBuffer(int t)
+void CMixer::FinishBuffer(int t)
 {
 	BlipBuffer.end_frame(t);
 
@@ -322,9 +322,6 @@ int CMixer::FinishBuffer(int t)
 	// Get channel levels for VRC7
 	for (int i = 0; i < 6; ++i)
 		StoreChannelLevel(CHANID_VRC7_CH1 + i, OPLL_getchanvol(i));
-
-	// Return number of samples available
-	return BlipBuffer.samples_avail();
 }
 
 //
@@ -425,9 +422,9 @@ void CMixer::AddValue(int ChanID, int Chip, int Value, int AbsValue, int FrameCy
 	}
 }
 
-int CMixer::ReadBuffer(int Size, void *Buffer, bool Stereo)
+int CMixer::ReadBuffer(void *Buffer)
 {
-	return BlipBuffer.read_samples((blip_sample_t*)Buffer, Size);
+	return BlipBuffer.read_samples((blip_sample_t*)Buffer, BlipBuffer.samples_avail());
 }
 
 int32_t CMixer::GetChanOutput(uint8_t Chan) const
