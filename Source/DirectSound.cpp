@@ -343,8 +343,10 @@ bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
 	if (FAILED(m_lpDirectSoundBuffer->Lock(Block * m_iBlockSize, m_iBlockSize, (void**)&pAudioPtr1, &AudioBytes1, (void**)&pAudioPtr2, &AudioBytes2, 0)))
 		return false;
 
+	// Copy "pBuffer head" to "pAudioPtr1 circular buffer".
 	memcpy(pAudioPtr1, pBuffer, AudioBytes1);
 
+	// Copy "pBuffer tail" to "pAudioPtr2 circular buffer head".
 	if (pAudioPtr2)
 		memcpy(pAudioPtr2, pBuffer + AudioBytes1, AudioBytes2);
 
