@@ -55,6 +55,7 @@ const CString CConfigGeneral::CONFIG_STR[] = {		// // //
 	_T("Warp pattern values"),
 	_T("Cut sub-volume"),
 	_T("Use old FDS volume table"),
+	_T("Retrieve channel state"),
 	_T("Overflow paste mode"),
 	_T("Show skipped rows"),
 	_T("Hexadecimal keypad"),
@@ -80,6 +81,7 @@ const CString CConfigGeneral::CONFIG_DESC[] = {		// // //
 	_T("When using Shift + Mouse Wheel to modify a pattern value, allow the parameter to wrap around its limit values."),
 	_T("Always silent volume values below 1 due to Axy or 7xy effects."),
 	_T("Use the existing volume table for the FDS channel which has higher precision than in exported NSFs."),
+	_T("Reconstruct the current channel's state from previous frames upon playing (except when playing one row)."),
 	_T("Move pasted pattern data outside the rows of the current frame to subsequent frames."),
 	_T("Display rows that are truncated by Bxx, Cxx, or Dxx effects."),
 	_T("Use the extra keys on the keypad as hexadecimal digits in the pattern editor."),
@@ -164,6 +166,7 @@ BOOL CConfigGeneral::OnApply()
 	theApp.GetSettings()->General.bWrapPatternValue	= m_bWrapPatternValue;
 	theApp.GetSettings()->General.bCutVolume		= m_bCutVolume;
 	theApp.GetSettings()->General.bFDSOldVolume		= m_bFDSOldVolume;
+	theApp.GetSettings()->General.bRetrieveChanState = m_bRetrieveChanState;
 	theApp.GetSettings()->General.bOverflowPaste	= m_bOverflowPaste;
 	theApp.GetSettings()->General.bShowSkippedRows	= m_bShowSkippedRows;
 	theApp.GetSettings()->General.bHexKeypad		= m_bHexKeypad;
@@ -205,6 +208,7 @@ BOOL CConfigGeneral::OnInitDialog()
 	m_bWrapPatternValue = theApp.GetSettings()->General.bWrapPatternValue;
 	m_bCutVolume		= theApp.GetSettings()->General.bCutVolume;
 	m_bFDSOldVolume		= theApp.GetSettings()->General.bFDSOldVolume;
+	m_bRetrieveChanState = theApp.GetSettings()->General.bRetrieveChanState;
 	m_bOverflowPaste	= theApp.GetSettings()->General.bOverflowPaste;
 	m_bShowSkippedRows	= theApp.GetSettings()->General.bShowSkippedRows;
 	m_bHexKeypad		= theApp.GetSettings()->General.bHexKeypad;
@@ -262,6 +266,7 @@ BOOL CConfigGeneral::OnInitDialog()
 		m_bWrapPatternValue,
 		m_bCutVolume,
 		m_bFDSOldVolume,
+		m_bRetrieveChanState,
 		m_bOverflowPaste,
 		m_bShowSkippedRows,
 		m_bHexKeypad,
@@ -332,6 +337,7 @@ void CConfigGeneral::OnLvnItemchangedConfigList(NMHDR *pNMHDR, LRESULT *pResult)
 		&CConfigGeneral::m_bWrapPatternValue,
 		&CConfigGeneral::m_bCutVolume,
 		&CConfigGeneral::m_bFDSOldVolume,
+		&CConfigGeneral::m_bRetrieveChanState,
 		&CConfigGeneral::m_bOverflowPaste,
 		&CConfigGeneral::m_bShowSkippedRows,
 		&CConfigGeneral::m_bHexKeypad,

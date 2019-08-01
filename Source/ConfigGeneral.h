@@ -26,7 +26,7 @@
 #include "stdafx.h"		// // //
 #include "res/resource.h"        // // //
 
-#define SETTINGS_BOOL_COUNT 22		// // //
+#define SETTINGS_BOOL_COUNT 23		// // //
 
 // CConfigGeneral dialog
 
@@ -61,6 +61,7 @@ protected:
 	bool	m_bWrapPatternValue;		// // //
 	bool	m_bCutVolume;
 	bool	m_bFDSOldVolume;
+	bool	m_bRetrieveChanState;
 	bool	m_bOverflowPaste;
 	bool	m_bShowSkippedRows;
 	bool	m_bHexKeypad;
