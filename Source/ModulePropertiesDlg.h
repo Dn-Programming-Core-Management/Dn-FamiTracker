@@ -85,6 +85,4 @@ public:
 	void updateN163GUI(bool renderText=true);
 	void N163OffsetSlider(int pos);
 	afx_msg void OnEnChangeEditN163Offset();
-
-	afx_msg void OnCbnSelchangeComboLinearpitch();
 };

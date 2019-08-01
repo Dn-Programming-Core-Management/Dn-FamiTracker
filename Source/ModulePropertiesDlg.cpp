@@ -76,7 +76,6 @@ BEGIN_MESSAGE_MAP(CModulePropertiesDlg, CDialog)
 	ON_BN_CLICKED(IDC_EXPANSION_MMC5, OnBnClickedExpansionMMC5)
 	ON_BN_CLICKED(IDC_EXPANSION_S5B, OnBnClickedExpansionS5B)
 	ON_BN_CLICKED(IDC_EXPANSION_N163, OnBnClickedExpansionN163)
-	ON_CBN_SELCHANGE(IDC_COMBO_LINEARPITCH, OnCbnSelchangeComboLinearpitch)
 	ON_EN_CHANGE(IDC_N163_OFFSET_EDIT, &CModulePropertiesDlg::OnEnChangeEditN163Offset)
 END_MESSAGE_MAP()
 
@@ -541,19 +540,6 @@ void CModulePropertiesDlg::OnBnClickedExpansionN163()
 	}
 	
 	updateN163GUI();
-}
-
-void CModulePropertiesDlg::OnCbnSelchangeComboLinearpitch()
-{
-	static bool First = true;
-	if (First) {
-		First = false;
-		AfxMessageBox(_T(
-			"Because linear pitch mode is a planned feature in the official build, "
-			"changes to this setting might not be reflected when the current module is loaded from "
-			"a future official release that implements this feature."
-		), MB_OK | MB_ICONINFORMATION);
-	}
 }
 
 
