@@ -1117,7 +1117,8 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 
 	m_pTrackerView->MakeSilent();
 
-	ApplyGlobalState();
+	if (theApp.GetSettings()->General.bRetrieveChanState)		// // //
+		ApplyGlobalState();
 
 	if (m_pInstRecorder->GetRecordChannel() != -1)		// // //
 		m_pInstRecorder->StartRecording();
