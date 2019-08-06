@@ -67,7 +67,6 @@ void CTransposeDlg::Transpose(int Trsp, unsigned int Track)
 		if (Type == CHANID_NOISE || Type == CHANID_DPCM) continue;
 		for (int p = 0; p < MAX_PATTERN; ++p) for (int r = 0; r < MAX_PATTERN_LENGTH; ++r) {
 			m_pDocument->GetDataAtPattern(Track, p, c, r, &Note);
-			if (Note.Instrument == MAX_INSTRUMENTS || Note.Instrument == HOLD_INSTRUMENT) continue;
 			if (Note.Note >= NOTE_C && Note.Note <= NOTE_B && !s_bDisableInst[Note.Instrument]) {
 				int MIDI = MIDI_NOTE(Note.Octave, Note.Note) + Trsp;
 				if (MIDI < 0) MIDI = 0;
