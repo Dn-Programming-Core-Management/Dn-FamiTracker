@@ -51,13 +51,13 @@ public:
 	bool	AllocateBuffer(unsigned int Size, uint32_t SampleRate, uint8_t NrChannels);
 	void	SetClockRate(uint32_t Rate);
 	void	ClearBuffer();
-	int		FinishBuffer(int t);
+	void FinishBuffer(int t);
 	int		SamplesAvail() const;
 	void	MixSamples(blip_sample_t *pBuffer, uint32_t Count);
 	uint32_t	GetMixSampleCount(int t) const;
 
 	void	AddSample(int ChanID, int Value);
-	int		ReadBuffer(int Size, void *Buffer, bool Stereo);
+	int		ReadBuffer(void *Buffer);
 
 	int32_t	GetChanOutput(uint8_t Chan) const;
 	void	SetChipLevel(chip_level_t Chip, float Level);

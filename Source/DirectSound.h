@@ -46,7 +46,7 @@ public:
 	bool Stop() const;
 	bool IsPlaying() const;
 	bool ClearBuffer();
-	bool WriteBuffer(char *pBuffer, unsigned int Samples);
+	bool WriteBuffer(char const * pBuffer, unsigned int Samples);
 
 	buffer_event_t WaitForSyncEvent(DWORD dwTimeout) const;
 
