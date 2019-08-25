@@ -945,7 +945,7 @@ int CChannelHandler::LimitVolume(int Volume) const		// // //
 
 void CChannelHandler::AddCycles(int count)
 {
-	m_pSoundGen->AddCycles(count);
+	m_pSoundGen->AddCyclesUnlessEndOfFrame(count);
 }
 
 void CChannelHandler::WriteRegister(uint16_t Reg, uint8_t Value)

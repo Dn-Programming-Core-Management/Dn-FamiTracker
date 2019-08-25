@@ -185,7 +185,7 @@ public:
 	// Used by channels
 
 	/** Add cycles to model execution time (capped at vblank). */
-	void		AddCycles(int Count);
+	void		AddCyclesUnlessEndOfFrame(int Count);
 
 	// Other
 	uint8_t		GetReg(int Chip, int Reg) const;

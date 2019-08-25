@@ -51,7 +51,7 @@ public:
 
 	void	Reset();
 	void	Process();
-	void	AddTime(int32_t Cycles);
+	void	AddCycles(int32_t Cycles);
 
 	void	SetExternalSound(uint8_t Chip);
 	void	Write(uint16_t Address, uint8_t Value);		// // //
