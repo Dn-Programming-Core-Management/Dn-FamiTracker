@@ -2119,16 +2119,17 @@ void CSoundGen::UpdateAPU()
 		CSingleLock l(&m_csAPULock);		// // //
 		if (l.Lock()) {
 			// Update APU channel registers
-			unsigned int LastChip = SNDCHIP_NONE;		// // // 050B
+			unsigned int PrevChip = SNDCHIP_NONE;		// // // 050B
 			for (int i = 0; i < CHANNELS; ++i) {
 				if (m_pChannels[i] != NULL) {
 					m_pChannels[i]->RefreshChannel();
 					m_pChannels[i]->FinishTick();		// // //
 					unsigned int Chip = m_pTrackerChannels[i]->GetChip();
 					if (m_pDocument->ExpansionEnabled(Chip)) {
-						int Delay = (Chip == LastChip) ? 150 : 250;
+						int Delay = (Chip == PrevChip) ? 150 : 250;
+
 						AddCycles(Delay);
-						LastChip = Chip;
+						PrevChip = Chip;
 					}
 					m_pAPU->Process();
 				}
