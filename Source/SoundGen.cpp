@@ -51,6 +51,7 @@
 #include "MIDI.h"
 #include "ChannelFactory.h"		// // // test
 #include "DetuneTable.h"		// // //
+#include <iostream>
 
 // 1kHz test tone
 //#define AUDIO_TEST
@@ -1394,7 +1395,7 @@ void CSoundGen::ResetAPU()
 	m_pAPU->ClearSample();		// // //
 }
 
-void CSoundGen::AddCycles(int Count)
+void CSoundGen::AddCyclesUnlessEndOfFrame(int Count)
 {
 	// Called from player thread
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
@@ -1402,7 +1403,7 @@ void CSoundGen::AddCycles(int Count)
 	// Add APU cycles
 	Count = std::min(Count, m_iUpdateCycles - m_iConsumedCycles);
 	m_iConsumedCycles += Count;
-	m_pAPU->AddTime(Count);
+	m_pAPU->AddCycles(Count);
 }
 
 uint8_t CSoundGen::GetReg(int Chip, int Reg) const
@@ -2128,7 +2129,7 @@ void CSoundGen::UpdateAPU()
 					if (m_pDocument->ExpansionEnabled(Chip)) {
 						int Delay = (Chip == PrevChip) ? 150 : 250;
 
-						AddCycles(Delay);
+						AddCyclesUnlessEndOfFrame(Delay);
 						m_pAPU->Process();
 
 						PrevChip = Chip;
@@ -2145,7 +2146,7 @@ void CSoundGen::UpdateAPU()
 				throw std::runtime_error("overflowed vblank!");
 			}
 
-			m_pAPU->AddTime(m_iUpdateCycles - m_iConsumedCycles);
+			m_pAPU->AddCycles(m_iUpdateCycles - m_iConsumedCycles);
 			m_pAPU->Process();
 
 			l.Unlock();
