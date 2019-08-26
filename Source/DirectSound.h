@@ -60,7 +60,16 @@ public:
 
 private:
 	int GetPlayBlock() const;
-	int GetWriteBlock() const;
+	
+	/*!
+	https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee418062(v%3Dvs.85)
+	The write cursor is the point in the buffer ahead of which it is safe to write data to the buffer.
+	Data should not be written to the part of the buffer after the play cursor and before the write cursor.
+
+	Data should not be written to the blocks in (?, write cursor's block].
+	Otherwise, you risk writing before the write cursor, which will not be played back properly.
+	*/
+	int GetWritableBlock() const;
 
 	void AdvanceWritePointer();
 
