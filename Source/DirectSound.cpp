@@ -371,7 +371,7 @@ buffer_event_t CDSoundChannel::WaitForSyncEvent(DWORD dwTimeout) const
 		case WAIT_OBJECT_0:			// External event
 			return BUFFER_CUSTOM_EVENT;
 		case WAIT_OBJECT_0 + 1:		// DirectSound buffer
-			return (GetWriteBlock() == m_iCurrentWriteBlock) ? BUFFER_OUT_OF_SYNC : BUFFER_IN_SYNC;
+			return (GetWritableBlock() == m_iCurrentWriteBlock) ? BUFFER_OUT_OF_SYNC : BUFFER_IN_SYNC;
 		case WAIT_TIMEOUT:			// Timeout
 			return BUFFER_TIMEOUT;
 	}
@@ -388,7 +388,7 @@ int CDSoundChannel::GetPlayBlock() const
 	return (PlayPos / m_iBlockSize);
 }
 
-int CDSoundChannel::GetWriteBlock() const
+int CDSoundChannel::GetWritableBlock() const
 {
 	// Return the block where the write pos is
 	DWORD PlayPos, WritePos;
