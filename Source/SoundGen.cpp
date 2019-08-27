@@ -2129,9 +2129,10 @@ void CSoundGen::UpdateAPU()
 						int Delay = (Chip == PrevChip) ? 150 : 250;
 
 						AddCycles(Delay);
+						m_pAPU->Process();
+
 						PrevChip = Chip;
 					}
-					m_pAPU->Process();
 				}
 			}
 		#ifdef WRITE_VGM		// // //
@@ -2143,8 +2144,10 @@ void CSoundGen::UpdateAPU()
 			if (m_iConsumedCycles > m_iUpdateCycles) {
 				throw std::runtime_error("overflowed vblank!");
 			}
+
 			m_pAPU->AddTime(m_iUpdateCycles - m_iConsumedCycles);
 			m_pAPU->Process();
+
 			l.Unlock();
 		}
 	}
