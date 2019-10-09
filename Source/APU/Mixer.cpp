@@ -390,8 +390,10 @@ void CMixer::AddValue(int ChanID, int Chip, int Value, int AbsValue, int FrameCy
 	StoreChannelLevel(ChanID, AbsValue);
 	m_iChannels[ChanID] = Value;
 
+	// Unless otherwise notes, Value is already a delta.
 	switch (Chip) {
 		case SNDCHIP_NONE:
+			// Value == AbsValue.
 			switch (ChanID) {
 				case CHANID_SQUARE1:
 				case CHANID_SQUARE2:
@@ -411,6 +413,7 @@ void CMixer::AddValue(int ChanID, int Chip, int Value, int AbsValue, int FrameCy
 			MixFDS(Value, FrameCycles);
 			break;
 		case SNDCHIP_MMC5:
+			// Value == AbsValue.
 			MixMMC5(Delta, FrameCycles);
 			break;
 		case SNDCHIP_VRC6:
