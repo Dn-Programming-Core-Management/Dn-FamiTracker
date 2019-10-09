@@ -260,7 +260,7 @@ bool CAPU::SetupSound(int SampleRate, int NrChannels, int Machine)		// // //
 	return true;
 }
 
-void CAPU::AddTime(int32_t Cycles)
+void CAPU::AddCycles(int32_t Cycles)
 {
 	if (Cycles < 0)
 		return;
