@@ -22,6 +22,7 @@
 #define DSOUND_H
 
 #include <mmsystem.h>
+#include <InitGuid.h>
 #include <dsound.h>
 
 // Return values from WaitForDirectSoundEvent()
