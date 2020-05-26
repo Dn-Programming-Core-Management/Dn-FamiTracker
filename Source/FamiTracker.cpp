@@ -62,9 +62,6 @@ BEGIN_MESSAGE_MAP(CFamiTrackerApp, CWinApp)
 	ON_UPDATE_COMMAND_UI(ID_FILE_MRU_FILE1, OnUpdateRecentFiles)		// // //
 END_MESSAGE_MAP()
 
-// Include this for windows xp style in visual studio 2005 or later
-#pragma comment(linker, "\"/manifestdependency:type='Win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='X86' publicKeyToken='6595b64144ccf1df' language='*'\"")
-
 // CFamiTrackerApp construction
 
 CFamiTrackerApp::CFamiTrackerApp() :
