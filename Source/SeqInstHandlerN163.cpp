@@ -85,7 +85,7 @@ void CSeqInstHandlerN163::UpdateWave(const CInstrumentN163 *pInst)
 	// raw position and count
 	// int Duty = m_pInterface->GetDutyPeriod();
 	// if (Duty < 0) return;
-	int Index = m_pInterface->GetDutyPeriod();
+	int Index = m_pInterface->GetDutyPeriod() & 0xFF;
 	if (Index >= pInst->GetWaveCount())
 		Index = pInst->GetWaveCount() - 1;
 	const int Count = pInst->GetWaveSize() >> 1;
