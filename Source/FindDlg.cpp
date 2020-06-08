@@ -342,10 +342,10 @@ void CFindResultsBox::SelectItem(int Index)
 void CFindResultsBox::UpdateCount() const
 {
 	int Count = m_cListResults->GetItemCount();
-	CString str;
+	CString str, out;
 	str.Format(_T("%d"), Count);
-	AfxFormatString2(str, IDS_FINDRESULT_COUNT, str, Count == 1 ? _T("result") : _T("results"));
-	GetDlgItem(IDC_STATIC_FINDRESULT_COUNT)->SetWindowText(str);
+	AfxFormatString2(out, IDS_FINDRESULT_COUNT, str, Count == 1 ? _T("result") : _T("results"));
+	GetDlgItem(IDC_STATIC_FINDRESULT_COUNT)->SetWindowText(out);
 }
 
 
