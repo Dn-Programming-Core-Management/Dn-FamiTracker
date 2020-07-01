@@ -555,7 +555,7 @@ void CFamiTrackerApp::CheckNewVersion(bool StartUp)		// // //
 			if ((hOpen = InternetOpen(_T("0CC_FamiTracker"), INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0)) &&
 				(hConnect = InternetConnect(hOpen, _T("api.github.com"),
 				INTERNET_DEFAULT_HTTPS_PORT, _T(""), _T(""), INTERNET_SERVICE_HTTP, 0, 0)) &&
-				(hRequest = HttpOpenRequest(hConnect, _T("GET"), _T("/repos/jimbo1qaz/0CC-FamiTracker/releases"),
+				(hRequest = HttpOpenRequest(hConnect, _T("GET"), _T("/repos/nyanpasu64/0CC-FamiTracker/releases"),
 				_T("HTTP/1.0"), NULL, rgpszAcceptTypes,
 				INTERNET_FLAG_RELOAD | INTERNET_FLAG_SECURE | INTERNET_FLAG_NO_CACHE_WRITE, NULL))) {
 				HttpAddRequestHeaders(hRequest, _T("Content-Type: application/json\r\n"), -1, HTTP_ADDREQ_FLAG_ADD);
@@ -608,7 +608,7 @@ void CFamiTrackerApp::CheckNewVersion(bool StartUp)		// // //
 												 Ver[0], Ver[1], Ver[2], Ver[3], MONTHS[--M], D, Y, desc);
 						if (Start)
 							m_pVersionMessage.Append(_T(" (Version checking on startup may be disabled in the configuration menu.)"));
-						m_pVersionURL.Format(_T("https://github.com/jimbo1qaz/0CC-FamiTracker/releases/tag/v%d.%d.%d.%d"),
+						m_pVersionURL.Format(_T("https://github.com/nyanpasu64/0CC-FamiTracker/releases/tag/v%d.%d.%d.%d"),
 											 Ver[0], Ver[1], Ver[2], Ver[3]);
 						m_iVersionStyle = MB_YESNO | MB_ICONINFORMATION;
 						m_bVersionReady = true;

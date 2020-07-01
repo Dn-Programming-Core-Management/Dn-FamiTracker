@@ -1,7 +1,7 @@
-# jimbo1qaz 0CC-Famitracker
+# nyanpasu64 0CC-Famitracker
 
-- Download at https://github.com/jimbo1qaz/0CC-FamiTracker/releases
-- Dev builds at https://ci.appveyor.com/project/jimbo1qaz/0cc-famitracker/history
+- Download at https://github.com/nyanpasu64/0CC-FamiTracker/releases
+- Dev builds at https://ci.appveyor.com/project/nyanpasu64/0cc-famitracker/history
 
 This is a fork of HertzDevil's 0CC-Famitracker 0.3.14.5 (since 0.3.15.1 and master are quite buggy and changing rapidly). It contains bugfixes which HertzDevil has not merged yet (some for months, some fixed independently in 0.3.15.1 or master), as well as N163 multi-wave copy-paste support.
 
@@ -16,7 +16,7 @@ Bugfixes:
 Enhancements:
 - N163 file-specific mixing level offset.
 - Typing Pxx (or FDS Zxx) defaults to P80.
-- N163 wave editor's copy/paste buttons copy all waves at once, separated/terminated with semicolons. This allows for highly efficient Audacity-N163 import workflows (see https://gist.github.com/jimbo1qaz/424110eab84dad50cf1a6646a72b2627).
+- N163 wave editor's copy/paste buttons copy all waves at once, separated/terminated with semicolons. This allows for highly efficient Audacity-N163 import workflows (see https://gist.github.com/nyanpasu64/424110eab84dad50cf1a6646a72b2627).
 - Save TXT export path properly.
 - Hi-res FFT spectrogram (like master).
 
@@ -24,7 +24,7 @@ Future changes:
 
 - Exponential instrument volume decay or release (like ADSR), and possibly an effect.
 - Warn when editing instrument sequences reused in many instruments, or patterns appearing in many frames.
-- https://github.com/jimbo1qaz/0CC-FamiTracker/issues
+- https://github.com/nyanpasu64/0CC-FamiTracker/issues
 
 # 0CC-FamiTracker
 

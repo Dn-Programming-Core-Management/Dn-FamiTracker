@@ -158,7 +158,7 @@ enum effect_t : unsigned char {
 	EF_FDS_VOLUME,      	// // // FDS volume envelope
 	EF_FDS_MOD_BIAS,    	// // // FDS auto-FM bias
 
-	// jimbo1qaz
+	// nyanpasu64
 	EF_PHASE_RESET,			// 
 
 	EF_COUNT
@@ -222,7 +222,7 @@ const char EFF_CHAR[] = {
 	'E',   	// EF_FDS_VOLUME,
 	'Z',   	// EF_FDS_MOD_BIAS,
 
-	// jimbo1qaz
+	// nyanpasu64
 	'=',	// EF_PHASE_RESET
 };
 

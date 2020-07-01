@@ -2997,7 +2997,7 @@ bool CFamiTrackerView::EditEffParamColumn(stChanNote &Note, Keycode Key, int Eff
 }
 
 /*
-https://github.com/jimbo1qaz/0CC-FamiTracker/wiki/Keyboard-Input-Handling:-Row-Editor-(FamiTrackerView.cpp)
+https://github.com/nyanpasu64/0CC-FamiTracker/wiki/Keyboard-Input-Handling:-Row-Editor-(FamiTrackerView.cpp)
 */
 void CFamiTrackerView::HandleKeyboardInput(Input input)
 {

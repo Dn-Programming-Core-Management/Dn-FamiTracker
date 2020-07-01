@@ -100,7 +100,7 @@ auto to_wide(T&& str) {
 	return details::to_utf_string<std::wstring>(std::forward<T>(str));
 }
 
-// defined by jimbo1qaz:
+// defined by nyanpasu64:
 
 typedef std::basic_string<TCHAR> _tstring;
 
