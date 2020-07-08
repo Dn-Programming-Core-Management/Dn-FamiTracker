@@ -12,14 +12,8 @@
 
 #ifndef RESAMPLE_INL
 #define RESAMPLE_INL
-//------------------------------------------------------------------------
-/*
-#include <numeric>
-#include <algorithm>
-#include <cmath>
-*/
-//------------------------------------------------------------------------
 
+#include <cmath>  // std::floor
 
 
 namespace jarh

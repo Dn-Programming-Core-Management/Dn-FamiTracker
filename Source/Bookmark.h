@@ -26,6 +26,8 @@
 #include "FamiTrackerTypes.h" // PatternData
 #include "PatternData.h" // stHighlight
 
+#include <string>
+
 class CBookmark
 {
 public:

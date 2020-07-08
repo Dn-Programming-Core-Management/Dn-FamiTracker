@@ -29,6 +29,8 @@
 #include "PatternNote.h"
 #include "PatternEditorTypes.h"
 
+#include <stdexcept>
+
 class CharRange
 {
 public:
