@@ -1,5 +1,15 @@
 # nyanpasu64 0CC-Famitracker
 
+## Shutting down
+
+0.6.3 is the final release. This program has been effectively dead for months to years, as my priorities have moved elsewhere, to building a new tracker from scratch, freed from MFC and being chained to Win32, freed from DirectSound and 40-70 ms of audio latency, freed from a fixed row grid that falls apart as soon as you try to use triplets...
+
+Additionally I can't let this program continue under its current name. I can't have people talking to me about the program under its current name. I should've renamed the program earlier, but never picked one.
+
+I invite the community to fork the program, possibly under a name like FamiTracker-Next. I may participate if I regain interest.
+
+## Readme
+
 - Download at https://github.com/nyanpasu64/0CC-FamiTracker/releases
 - Dev builds at https://ci.appveyor.com/project/nyanpasu64/0cc-famitracker/history
 
