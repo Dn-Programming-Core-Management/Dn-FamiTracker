@@ -67,4 +67,5 @@ public:
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
+	afx_msg void OnBnClickedBitReverse();
 };
