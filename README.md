@@ -1,3 +1,17 @@
+# (haven't decided what to name this fork yet)
+I'm starting to do stuff with this source code now that j0CC-Famitracker has effectively died.  
+Don't expect a lot here, just tiny improvements that personally help my workflow for creating modules.
+
+## Additions (so far)
+* DPCM sample bit order reversal
+## Plans
+* Multitrack export (either seperate or one multichannel wav file)
+* Adjustable refresh rate
+* Muting a channel won't disable its sound output (and so have nonlinear mixing which can be linearly mixed)
+* Panning? (when the above item is fulfilled, it will pave the way for proper panning)
+
+releases at https://github.com/Gumball2415/j0CC-FamiTracker/releases
+
 # nyanpasu64 0CC-Famitracker
 
 ## Shutting down
