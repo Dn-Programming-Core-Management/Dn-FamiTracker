@@ -267,11 +267,7 @@ void CSampleEditorDlg::OnBnClickedBitReverse()
 	for (int i=1; i != m_pSample->GetSize(); i++) {
 		char InputByte = InputData[i];
 		char ByteCache = InputByte & 1;
-		ByteCache = (BitTable[InputByte & 0xff]);// |
-			//(BitTable[(InputByte >> 8) & 0xff] << 16) |
-			//(BitTable[(InputByte >> 16) & 0xff] << 8) |
-			//(BitTable[(InputByte >> 24) & 0xff]);
-
+		ByteCache = (BitTable[InputByte & 0xff]);
 		DataCache[i] = ByteCache;
 	}
 	m_pSample->SetData(m_pSample->GetSize(), DataCache);
