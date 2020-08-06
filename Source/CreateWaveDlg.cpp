@@ -27,6 +27,10 @@
 #include "TrackerChannel.h"
 #include "WavProgressDlg.h"
 #include "CreateWaveDlg.h"
+#include "str_conv/str_conv.hpp"
+
+//#include <string>
+#include <filesystem>
 
 const int MAX_LOOP_TIMES = 99;
 const int MAX_PLAY_TIME	 = (99 * 60) + 0;
@@ -89,6 +93,9 @@ int CCreateWaveDlg::GetTimeLimit() const
 
 void CCreateWaveDlg::OnBnClickedBegin()
 {
+	namespace fs = std::filesystem;
+	using namespace std::string_literals;
+
 	render_end_t EndType = SONG_TIME_LIMIT;
 	int EndParam = 0;
 
@@ -103,7 +110,6 @@ void CCreateWaveDlg::OnBnClickedBegin()
 		FileName.AppendFormat(_T(" - Track %02i (%s)"), Track + 1, pDoc->GetTrackTitle(Track).GetBuffer());
 	}
 
-	CWavProgressDlg ProgressDlg;
 	CString fileFilter = LoadDefaultFilter(IDS_FILTER_WAV, _T(".wav"));	
 	CFileDialog SaveDialog(FALSE, _T("wav"), FileName, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, fileFilter);
 
@@ -127,13 +133,60 @@ void CCreateWaveDlg::OnBnClickedBegin()
 	pView->UnmuteAllChannels();
 
 	// Mute selected channels
-	for (int i = 0; i < m_ctlChannelList.GetCount(); ++i) {
-		if (m_ctlChannelList.GetCheck(i) == 0)
-			pView->ToggleChannel(i);
+
+	CString outPathC = SaveDialog.GetPathName();
+	fs::path outPath = conv::to_utf8(outPathC);
+
+
+	auto nchan = m_ctlChannelList.GetCount();
+	{
+		// Mute selected channels
+		pView->UnmuteAllChannels();
+		for (int i = 0; i < nchan; ++i) {
+			if (m_ctlChannelList.GetCheck(i) == BST_UNCHECKED)
+				pView->ToggleChannel(i);
+		}
+
+		CWavProgressDlg ProgressDlg;
+		// Show the render progress dialog, this will also start rendering
+		ProgressDlg.BeginRender(outPathC, EndType, EndParam, Track);
+		if (ProgressDlg.CancelRender)
+			goto end;
 	}
 
-	// Show the render progress dialog, this will also start rendering
-	ProgressDlg.BeginRender(SaveDialog.GetPathName(), EndType, EndParam, Track);
+	if (IsDlgButtonChecked(IDC_SEPERATE_CHANNEL_EXPORT)) {
+		for (int i = 0; i < nchan; ++i) {
+			if (m_ctlChannelList.GetCheck(i) == BST_CHECKED) {
+				pView->MuteAllChannels();
+				pView->ToggleChannel(i);
+
+				// Write wav file to same name as above, but with a suffix before the extension.
+				CString chanNameC; m_ctlChannelList.GetText(i, chanNameC);
+
+				CString textC;
+				textC.Format(_T("%02i - "), i + 1);
+				textC.Append(chanNameC);
+
+				std::string text = conv::to_utf8(textC);
+
+				fs::path chanOutPath = outPath;
+				chanOutPath.replace_filename("");
+				chanOutPath += text + ".wav"s;
+
+				CString chanOutPathC = conv::to_t(chanOutPath.string()).c_str();
+
+				CWavProgressDlg ProgressDlg;
+				// Show the render progress dialog, this will also start rendering
+				ProgressDlg.BeginRender(chanOutPathC, EndType, EndParam, Track);
+
+				// if cancelled early, abort further rendering.
+				if (ProgressDlg.CancelRender)
+					break;
+			}
+		}
+	}
+
+	end:
 
 	// Unmute all channels
 	pView->UnmuteAllChannels();

@@ -1917,6 +1917,18 @@ void CFamiTrackerView::UnmuteAllChannels()
 	InvalidateHeader();
 }
 
+void CFamiTrackerView::MuteAllChannels() {
+	CFamiTrackerDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+	int channels = pDoc->GetAvailableChannels();
+
+	for (int i = 0; i < channels; ++i)
+		SetChannelMute(i, true);
+
+	InvalidateHeader();
+}
+
 bool CFamiTrackerView::IsChannelSolo(unsigned int Channel) const
 {
 	// Returns true if Channel is the only active channel 
