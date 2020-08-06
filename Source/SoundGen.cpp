@@ -1839,6 +1839,7 @@ void CSoundGen::StopRendering()
 
 	ResetBuffer();
 	ResetAPU();		// // //
+	HaltPlayer();
 }
 
 void CSoundGen::GetRenderStat(int &Frame, int &Time, bool &Done, int &FramesToRender, int &Row, int &RowCount) const
