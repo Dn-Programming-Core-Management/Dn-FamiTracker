@@ -114,6 +114,7 @@ public:
 	void		 SoloChip(unsigned int Channel);		// // //
 	void		 ToggleChip(unsigned int Channel);		// // //
 	void		 UnmuteAllChannels();
+	void         MuteAllChannels();
 	bool		 IsChannelMuted(unsigned int Channel) const;
 	void		 SetChannelMute(int Channel, bool bMute);
 
