@@ -27,6 +27,11 @@ include(${mfc})
 
 # compiling
 include(cmake/exe.cmake)
+if(COMMAND target_precompile_headers)
+    target_precompile_headers(${PROJECT_NAME} PRIVATE
+        "$<$<COMPILE_LANGUAGE:CXX>:Source/stdafx.cpp>"
+    )
+endif()
 
 
 # linking
