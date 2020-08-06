@@ -18,6 +18,7 @@
 ** must bear this legend.
 */
 
+#include <Source\CreateWaveDlg.h>
 #pragma once
 
 
@@ -44,12 +45,15 @@ protected:
 	
 	CString m_sFile;
 
+public:
+	bool CancelRender = false;
+
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
 public:
-	afx_msg void OnBnClickedCancel();
 	virtual BOOL OnInitDialog();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	void OnCancel() override;
 };

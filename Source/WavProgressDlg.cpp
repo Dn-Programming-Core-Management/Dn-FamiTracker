@@ -48,23 +48,11 @@ void CWavProgressDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CWavProgressDlg, CDialog)
-	ON_BN_CLICKED(IDC_CANCEL, &CWavProgressDlg::OnBnClickedCancel)
+	ON_BN_CLICKED(IDC_CANCEL, &CWavProgressDlg::OnCancel)
 	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 // CWavProgressDlg message handlers
-
-void CWavProgressDlg::OnBnClickedCancel()
-{
-	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
-
-	if (pSoundGen->IsRendering()) {
-		//pSoundGen->StopRendering();
-		pSoundGen->PostThreadMessage(WM_USER_STOP_RENDER, 0, 0);
-	}
-
-	EndDialog(0);
-}
 
 void CWavProgressDlg::BeginRender(CString &File, render_end_t LengthType, int LengthParam, int Track)
 {
@@ -154,6 +142,9 @@ void CWavProgressDlg::OnTimer(UINT_PTR nIDEvent)
 	pProgressBar->SetPos(PercentDone);
 
 	if (!Rendering) {
+		// TODO don't close single-wav export dialog or last dialog in multi-wav export
+		EndDialog(0);
+
 		SetDlgItemText(IDC_CANCEL, CString(MAKEINTRESOURCE(IDS_WAVE_EXPORT_DONE)));
 		CString title;
 		GetWindowText(title);
@@ -165,4 +156,18 @@ void CWavProgressDlg::OnTimer(UINT_PTR nIDEvent)
 	}
 
 	CDialog::OnTimer(nIDEvent);
+}
+
+
+void CWavProgressDlg::OnCancel()
+{
+	CSoundGen* pSoundGen = theApp.GetSoundGenerator();
+
+	if (pSoundGen->IsRendering()) {
+		//pSoundGen->StopRendering();
+		pSoundGen->PostThreadMessage(WM_USER_STOP_RENDER, 0, 0);
+	}
+	CancelRender = true;
+
+	CDialog::OnCancel();
 }
