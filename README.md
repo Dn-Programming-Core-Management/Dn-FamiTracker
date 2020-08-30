@@ -13,6 +13,7 @@ Plans
 * Panning? (when the above item is fulfilled, it will pave the way for proper panning)
 
 Download at: https://github.com/Gumball2415/j0CC-FamiTracker/releases
+
 Dev builds at: https://ci.appveyor.com/project/Gumball2415/dn-famitracker/history
 
 # nyanpasu64 0CC-Famitracker
