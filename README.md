@@ -9,10 +9,10 @@ Additions (so far)
 Plans
 * Multitrack export (either seperate or one multichannel wav file)
 * Adjustable refresh rate
-* Muting a channel won't disable its sound output (and so have nonlinear mixing which can be linearly mixed)
+* Muting a channel won't disable its sound output (and so have nonlinear mixing which is separated linearly)
 * Panning? (when the above item is fulfilled, it will pave the way for proper panning)
 
-releases at https://github.com/Gumball2415/j0CC-FamiTracker/releases
+Download at: https://github.com/Gumball2415/j0CC-FamiTracker/releases
 
 # nyanpasu64 0CC-Famitracker
 
