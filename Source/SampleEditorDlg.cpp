@@ -264,7 +264,7 @@ void CSampleEditorDlg::OnBnClickedBitReverse()
 	memcpy(InputData, m_pSample->GetData(), m_pSample->GetSize());
 	char* DataCache = new char[m_pSample->GetSize()];
 	// bit reverse each byte of InputData and save it to DataCache
-	for (int i=1; i != m_pSample->GetSize(); i++) {
+	for (int i=0; i != m_pSample->GetSize(); i++) {
 		char InputByte = InputData[i];
 		char ByteCache = InputByte & 1;
 		ByteCache = (BitTable[InputByte & 0xff]);
