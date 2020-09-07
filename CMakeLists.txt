@@ -1,7 +1,7 @@
 # TODO: https://pabloariasal.github.io/2018/02/19/its-time-to-do-cmake-right/
 
 cmake_minimum_required(VERSION 3.10)
-project(j0CC_FamiTracker)
+project(Dn_FamiTracker)
 
 
 # MFC based off https://github.com/Kitware/CMake/blob/master/Tests/MFC/CMakeLists.txt
