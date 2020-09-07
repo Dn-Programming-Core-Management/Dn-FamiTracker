@@ -161,7 +161,7 @@ private:
 
 	void	PeriodicUpdate();
 	
-	int		TimerDelayer = 100; // Refresh rate depending on playback
+	int		TimerDelayer; // Refresh rate depending on playback
 
 	// Instruments
 	void		 SetInstrument(int Instrument);

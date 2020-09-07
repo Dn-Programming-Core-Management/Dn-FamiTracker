@@ -379,6 +379,7 @@ int CFamiTrackerView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CView::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
+	TimerDelayer = 100;
 	// Install a timer for screen updates, 20ms
 	SetTimer(TMR_UPDATE, TimerDelayer, NULL);
 
@@ -676,7 +677,7 @@ void CFamiTrackerView::OnRButtonUp(UINT nFlags, CPoint point)
 
 void CFamiTrackerView::OnLButtonDown(UINT nFlags, CPoint point)
 {
-	SetTimer(TMR_SCROLL, TimerDelayer, NULL);
+	SetTimer(TMR_SCROLL, 10, NULL);
 
 	m_pPatternEditor->OnMouseDown(point);
 	SetCapture();	// Capture mouse 
@@ -823,17 +824,13 @@ void CFamiTrackerView::OnTimer(UINT_PTR nIDEvent)
 	// Timer callback function
 
 	if (theApp.IsPlaying()) {
-		KillTimer(TMR_SCROLL);
 		KillTimer(TMR_UPDATE);
 		TimerDelayer = 16;
-		SetTimer(TMR_SCROLL, TimerDelayer, NULL);
 		SetTimer(TMR_UPDATE, TimerDelayer, NULL);
 	}
 	else {
-		KillTimer(TMR_SCROLL);
 		KillTimer(TMR_UPDATE);
 		TimerDelayer = 100;
-		SetTimer(TMR_SCROLL, TimerDelayer, NULL);
 		SetTimer(TMR_UPDATE, TimerDelayer, NULL);
 	}
 	switch (nIDEvent) {
