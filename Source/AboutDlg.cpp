@@ -227,9 +227,3 @@ BOOL CAboutDlg::PreTranslateMessage(MSG* pMsg)
 	m_wndToolTip.RelayEvent(pMsg);
 	return CDialog::PreTranslateMessage(pMsg);
 }
-
-
-void CAboutDlg::OnStnClickedAbout2()
-{
-	// TODO: Add your control notification handler code here
-}

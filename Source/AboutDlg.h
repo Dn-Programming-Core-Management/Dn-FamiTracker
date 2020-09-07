@@ -77,5 +77,4 @@ public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnBnClickedOk();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
-	afx_msg void OnStnClickedAbout2();
 };
