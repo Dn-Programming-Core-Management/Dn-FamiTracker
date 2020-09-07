@@ -1,0 +1,30 @@
+version: dev.{build}
+pull_requests:
+  do_not_increment_build_number: true
+branches:
+  only:
+  - master
+skip_tags: true
+skip_branch_with_pr: true
+image: Visual Studio 2019
+configuration:
+- Release
+- Debug
+shallow_clone: true
+clone_depth: 5
+cache: c:\tools\vcpkg\installed\
+build:
+  project: 0CC-FamiTracker.vcxproj
+  parallel: true
+  verbosity: minimal
+after_build:
+- cmd: >-
+    cd %configuration%
+
+    if %configuration%==Release ( move *.exe j0CC-%APPVEYOR_BUILD_VERSION%.exe ) else ( move *.exe j0CC-%APPVEYOR_BUILD_VERSION%-%configuration%.exe )
+artifacts:
+- path: $(configuration)\*.exe
+  name: exe
+- path: $(configuration)\*.pdb
+  name: pdb
+deploy: off
