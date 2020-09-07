@@ -6,12 +6,12 @@ Don't expect a lot here, just tiny improvements that personally help my workflow
 Additions (so far)
 * DPCM sample bit order reversal
 * Adaptable refresh rate depending on playback (≈60fps on playback, otherwise 10fps)
-* Multitrack export
+* Multitrack per-channel export
 
 Plans
 * Adjustable maximum refresh rate
 * Muting a channel won't disable its sound output (and so have nonlinear mixing which is separated linearly)
-* Panning? (when the above item is fulfilled, it will pave the way for proper panning)
+* Panning? (when the above item is fulfilled, it will pave the way for panning similar to NSFPlay)
 
 Download at: https://github.com/Gumball2415/j0CC-FamiTracker/releases
 
