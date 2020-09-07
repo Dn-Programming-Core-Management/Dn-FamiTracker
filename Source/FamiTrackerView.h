@@ -160,6 +160,8 @@ private:
 	void	RedrawFrameEditor();
 
 	void	PeriodicUpdate();
+	
+	int		TimerDelayer = 100; // Refresh rate depending on playback
 
 	// Instruments
 	void		 SetInstrument(int Instrument);

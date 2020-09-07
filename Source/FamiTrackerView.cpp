@@ -380,7 +380,7 @@ int CFamiTrackerView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 
 	// Install a timer for screen updates, 20ms
-	SetTimer(TMR_UPDATE, 20, NULL);
+	SetTimer(TMR_UPDATE, TimerDelayer, NULL);
 
 	m_DropTarget.Register(this);
 
@@ -676,7 +676,7 @@ void CFamiTrackerView::OnRButtonUp(UINT nFlags, CPoint point)
 
 void CFamiTrackerView::OnLButtonDown(UINT nFlags, CPoint point)
 {
-	SetTimer(TMR_SCROLL, 10, NULL);
+	SetTimer(TMR_SCROLL, TimerDelayer, NULL);
 
 	m_pPatternEditor->OnMouseDown(point);
 	SetCapture();	// Capture mouse 
@@ -821,6 +821,21 @@ void CFamiTrackerView::OnSetFocus(CWnd* pOldWnd)
 void CFamiTrackerView::OnTimer(UINT_PTR nIDEvent)
 {
 	// Timer callback function
+
+	if (theApp.IsPlaying()) {
+		KillTimer(TMR_SCROLL);
+		KillTimer(TMR_UPDATE);
+		TimerDelayer = 16;
+		SetTimer(TMR_SCROLL, TimerDelayer, NULL);
+		SetTimer(TMR_UPDATE, TimerDelayer, NULL);
+	}
+	else {
+		KillTimer(TMR_SCROLL);
+		KillTimer(TMR_UPDATE);
+		TimerDelayer = 100;
+		SetTimer(TMR_SCROLL, TimerDelayer, NULL);
+		SetTimer(TMR_UPDATE, TimerDelayer, NULL);
+	}
 	switch (nIDEvent) {
 		// Drawing updates when playing
 		case TMR_UPDATE: 
