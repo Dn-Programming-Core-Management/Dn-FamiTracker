@@ -116,6 +116,7 @@ void CHead::DrawItem(LPDRAWITEMSTRUCT lpDraw)
 // CAboutDlg
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
+	ON_STN_CLICKED(IDC_ABOUT2, &CAboutDlg::OnStnClickedAbout2)
 END_MESSAGE_MAP()
 
 CAboutDlg::CAboutDlg() : 
@@ -161,6 +162,7 @@ BOOL CAboutDlg::OnInitDialog()
 		_T("- Export plugin support by Gradualore\r\n")
 		_T("- Toolbar icons are made by ilkke\r\n")
 		_T("- DPCM import resampler by Jarhmander\r\n")
+		_T("- DPCM sample bit order reverser by Persune\r\n")
 		_T("- Module text import/export by rainwarrior"));		// // //
 	SetDlgItemText(IDC_ABOUT_LIB,
 		_T("- Blip_buffer 0.4.0 is Copyright (C) blargg\r\n")
@@ -224,4 +226,10 @@ BOOL CAboutDlg::PreTranslateMessage(MSG* pMsg)
 {
 	m_wndToolTip.RelayEvent(pMsg);
 	return CDialog::PreTranslateMessage(pMsg);
+}
+
+
+void CAboutDlg::OnStnClickedAbout2()
+{
+	// TODO: Add your control notification handler code here
 }

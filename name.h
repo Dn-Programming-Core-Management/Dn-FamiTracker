@@ -1,2 +1,2 @@
 #pragma once
-#define APP_NAME	"j0CC-FamiTracker"
+#define APP_NAME	"Dn-FamiTracker"
