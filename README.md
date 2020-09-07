@@ -6,7 +6,7 @@ Don't expect a lot here, just tiny improvements that personally help my workflow
 Additions (so far)
 * DPCM sample bit order reversal
 * Adaptable refresh rate depending on playback (≈60fps on playback, otherwise 10fps)
-* Multitrack export (either seperate or one multichannel wav file)
+* Multitrack export
 
 Plans
 * Adjustable maximum refresh rate
