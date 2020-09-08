@@ -21,7 +21,7 @@ after_build:
 - cmd: >-
     cd %configuration%
 
-    if %configuration%==Release ( move *.exe j0CC-%APPVEYOR_BUILD_VERSION%.exe ) else ( move *.exe j0CC-%APPVEYOR_BUILD_VERSION%-%configuration%.exe )
+    if %configuration%==Release ( move *.exe Dn-%APPVEYOR_BUILD_VERSION%.exe ) else ( move *.exe Dn-%APPVEYOR_BUILD_VERSION%-%configuration%.exe )
 artifacts:
 - path: $(configuration)\*.exe
   name: exe

@@ -116,7 +116,6 @@ void CHead::DrawItem(LPDRAWITEMSTRUCT lpDraw)
 // CAboutDlg
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
-	ON_STN_CLICKED(IDC_ABOUT2, &CAboutDlg::OnStnClickedAbout2)
 END_MESSAGE_MAP()
 
 CAboutDlg::CAboutDlg() : 
