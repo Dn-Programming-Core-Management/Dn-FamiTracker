@@ -1,15 +1,16 @@
 # Dn-FamiTracker
-Somewhat personal modifications for j0CC-FamiTracker 0.6.3
+Modifications for j0CC-FamiTracker 0.6.3
 
 Don't expect a lot here, just tiny improvements that personally help my workflow for creating modules.
 
 Additions (so far)
 * DPCM sample bit order reversal
-* Adaptable refresh rate depending on playback (≈60fps on playback, otherwise 10fps)
+* Adaptable register state refresh rate depending on playback (≈60fps on playback, otherwise 10fps)
 * Multitrack per-channel export
 
 Plans
-* Adjustable maximum refresh rate
+* Adjustable maximum register state refresh rate
+* Multichannel wav export (multiple channels inside one .wav file)
 * Muting a channel won't disable its sound output (and so have nonlinear mixing which is separated linearly)
 * Panning? (when the above item is fulfilled, it will pave the way for panning similar to NSFPlay)
 
