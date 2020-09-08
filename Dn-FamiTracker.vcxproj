@@ -12,10 +12,10 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{92FE0690-CE4F-4CCF-A52C-23265AE7429F}</ProjectGuid>
-    <RootNamespace>0CC-FamiTracker</RootNamespace>
+    <RootNamespace>Dn-FamiTracker</RootNamespace>
     <Keyword>MFCProj</Keyword>
     <TargetPlatformVersion>8.1</TargetPlatformVersion>
-    <ProjectName>0CC-FamiTracker</ProjectName>
+    <ProjectName>Dn-FamiTracker</ProjectName>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -552,7 +552,7 @@
     <None Include="..\nsf driver\nsf_wrap.s" />
     <None Include="..\nsf driver\periods.s" />
     <None Include="..\nsf driver\s5b.s" />
-    <None Include="0CC-FamiTracker.reg" />
+    <None Include="Dn-FamiTracker.reg" />
     <None Include="0CC-readme.txt" />
     <None Include="res\Application.ico" />
     <None Include="res\Document.ico" />

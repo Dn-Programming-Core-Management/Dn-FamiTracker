@@ -14,7 +14,7 @@ shallow_clone: true
 clone_depth: 5
 cache: c:\tools\vcpkg\installed\
 build:
-  project: 0CC-FamiTracker.vcxproj
+  project: Dn-FamiTracker.vcxproj
   parallel: true
   verbosity: minimal
 after_build:
