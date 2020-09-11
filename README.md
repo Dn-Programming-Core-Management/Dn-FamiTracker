@@ -14,7 +14,7 @@ Plans
 * Muting a channel won't disable its sound output (and so have nonlinear mixing which is separated linearly)
 * Panning? (when the above item is fulfilled, it will pave the way for panning similar to NSFPlay)
 
-Download at: https://github.com/Gumball2415/j0CC-FamiTracker/releases
+Download at: https://github.com/Gumball2415/Dn-FamiTracker/releases
 
 Dev builds at: https://ci.appveyor.com/project/Gumball2415/dn-famitracker/history
 
