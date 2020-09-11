@@ -274,7 +274,7 @@ void CPatternEditor::ApplyColorScheme()
 	CalcLayout();
 
 	// Create pattern font
-	memset(&LogFont, 0, sizeof LOGFONT);
+	memset(&LogFont, 0, sizeof(LOGFONT));
 	memcpy(LogFont.lfFaceName, FontName, _tcslen(FontName));
 
 	LogFont.lfHeight = -m_iPatternFontSize;
@@ -288,7 +288,7 @@ void CPatternEditor::ApplyColorScheme()
 	m_fontPattern.CreateFontIndirect(&LogFont);
 
 	// Create header font
-	memset(&LogFont, 0, sizeof LOGFONT);
+	memset(&LogFont, 0, sizeof(LOGFONT));
 	memcpy(LogFont.lfFaceName, HeaderFace, _tcslen(HeaderFace));
 
 	LogFont.lfHeight = -DEFAULT_HEADER_FONT_SIZE;
