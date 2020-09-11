@@ -20,11 +20,13 @@
 ** must bear this legend.
 */
 
+#include "stdafx.h"
+#include "DPI.h"
+
 #include <algorithm>
 #include <functional>		// // //
 #include <vector>		// // //
 #include <cmath>
-#include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
@@ -50,16 +52,15 @@
 
 // Define pattern layout here
 
-const int CPatternEditor::HEADER_HEIGHT		 = 36;
-const int CPatternEditor::HEADER_CHAN_START	 = 0;
-const int CPatternEditor::HEADER_CHAN_HEIGHT = 36;
-const int CPatternEditor::ROW_HEIGHT		 = 12;
+const int CPatternEditor::HEADER_HEIGHT_NODPI = 36;
+static constexpr int HEADER_CHAN_START = 0;
+#define HEADER_CHAN_HEIGHT  HEADER_HEIGHT
+static constexpr int ROW_HEIGHT = 12;
 
 // Pattern header font
-LPCTSTR CPatternEditor::DEFAULT_HEADER_FONT = _T("Tahoma");
+static constexpr LPCTSTR DEFAULT_HEADER_FONT = _T("Tahoma");
 
-const int CPatternEditor::DEFAULT_FONT_SIZE			= 12;
-const int CPatternEditor::DEFAULT_HEADER_FONT_SIZE	= 11;
+static constexpr int DEFAULT_HEADER_FONT_SIZE = 11;
 
 // // //
 
@@ -151,6 +152,7 @@ void CopyNoteSection(stChanNote *Target, const stChanNote *Source, paste_mode_t 
 // CPatternEditor
 
 CPatternEditor::CPatternEditor() :
+	HEADER_HEIGHT(DPI::SY(HEADER_HEIGHT_NODPI)),
 	// Pointers
 	m_pDocument(NULL),
 	m_pView(NULL),
@@ -260,7 +262,7 @@ void CPatternEditor::ApplyColorScheme()
 
 	// Grid size
 	// FIXME
-	const int rowHeight = settings->Appearance.rowHeight;
+	const int rowHeight = DPI::SY(settings->Appearance.rowHeight);
 	m_iRowHeight = rowHeight;
 	m_iCharWidth = rowHeight - 1;
 	m_iColumnSpacing = (rowHeight + 1) / 3;
@@ -291,7 +293,7 @@ void CPatternEditor::ApplyColorScheme()
 	memset(&LogFont, 0, sizeof(LOGFONT));
 	memcpy(LogFont.lfFaceName, HeaderFace, _tcslen(HeaderFace));
 
-	LogFont.lfHeight = -DEFAULT_HEADER_FONT_SIZE;
+	LogFont.lfHeight = -DPI::SY(DEFAULT_HEADER_FONT_SIZE);
 	//LogFont.lfWeight = 550;
 	LogFont.lfPitchAndFamily = VARIABLE_PITCH | FF_SWISS;
 
@@ -302,7 +304,8 @@ void CPatternEditor::ApplyColorScheme()
 	m_fontHeader.CreateFontIndirect(&LogFont);
 
 	if (m_fontCourierNew.m_hObject == NULL)		// // // smaller
-		m_fontCourierNew.CreateFont(14, 0, 0, 0, 0, FALSE, FALSE, FALSE, 0, 0, 0, DRAFT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, _T("Courier New"));
+		m_fontCourierNew.CreateFont(
+			DPI::SY(14), 0, 0, 0, 0, FALSE, FALSE, FALSE, 0, 0, 0, DRAFT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, _T("Courier New"));
 
 	// Cache some colors
 	m_colSeparator	= BLEND(ColBackground, (ColBackground ^ 0xFFFFFF), SHADE_LEVEL.SEPARATOR);
@@ -1640,11 +1643,11 @@ void CPatternEditor::DrawMeters(CDC *pDC)
 	const COLORREF COL_DARK_SHADOW  = DIM(COL_DARK, 80);
 	const COLORREF DPCM_STATE_COLOR = 0x00404040;
 
-	const int BAR_TOP	 = 5 + 18 + HEADER_CHAN_START;
+	const int BAR_TOP	 = DPI::SY(5 + 18 + HEADER_CHAN_START);
 	const int BAR_SIZE	 = m_bCompactMode ? (GetColumnSpace(C_NOTE) - 2) / 16 : (GetChannelWidth(0) - 6) / 16;		// // //
 	const int BAR_LEFT	 = m_bCompactMode ? m_iRowColumnWidth + (GetColumnSpace(C_NOTE) - 16 * BAR_SIZE + 3) / 2 : m_iRowColumnWidth + 7;
 	const int BAR_SPACE	 = 1;
-	const int BAR_HEIGHT = 5;
+	const int BAR_HEIGHT = DPI::SY(5);
 
 	static COLORREF colors[15];
 	static COLORREF colors_dim[15];
@@ -1749,9 +1752,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 
 	const CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 
-	const int LINE_HEIGHT = 13;
-	int x = 30;		// // //
-	int y = 30 - LINE_HEIGHT * 2;
+	const int LINE_HEIGHT = DPI::SY(13);
+	int x = DPI::SX(30);		// // //
+	int y = DPI::SY(30) - LINE_HEIGHT * 2;
 	int line = -1;		// // //
 	CString text;
 
@@ -1801,10 +1804,10 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		++vis_line;
 	};
 
-	const auto DrawTextFunc = [&] (int xOffs, CString text) {
+	const auto DrawTextFunc = [&] (int xOffsNoDPI, CString text) {
 		pDC->SetTextColor(0x808080);
 		pDC->SetTextAlign(TA_NOUPDATECP);
-		pDC->TextOut(x + xOffs, y, text);
+		pDC->TextOut(x + DPI::SX(xOffsNoDPI), y, text);
 	};
 
 	const auto GetRegsFunc = [&] (unsigned Chip, std::function<int(int)> F, int Count) {
@@ -1918,13 +1921,15 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_N163)) {
 		DrawHeaderFunc(_T("N163"));		// // //
 
+		const int wave_x = x + DPI::SX(300);
+
 		// // // N163 wave
 		const int N163_CHANS = m_pDocument->GetNamcoChannels();
 		const int Length = 0x80 - 8 * N163_CHANS;
 
 		y += 18;
-		pDC->FillSolidRect(x + 300 - 1, y - 1, 2 * Length + 2, 17, 0x808080);
-		pDC->FillSolidRect(x + 300, y, 2 * Length, 15, 0);
+		pDC->FillSolidRect(wave_x - 1, y - 1, 2 * Length + 2, 17, 0x808080);
+		pDC->FillSolidRect(wave_x, y, 2 * Length, 15, 0);
 		for (int i = 0; i < Length; i++) {
 			auto pState = pSoundGen->GetRegState(SNDCHIP_N163, i);
 			const int Hi = (pState->GetValue() >> 4) & 0x0F;
@@ -1932,8 +1937,8 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			COLORREF Col = BLEND(
 				0xC0C0C0, DECAY_COLOR[pState->GetNewValueTime()], 100 * pState->GetLastUpdatedTime() / CRegisterState::DECAY_RATE
 			);
-			pDC->FillSolidRect(x + 300 + i * 2    , y + 15 - Lo, 1, Lo, Col);
-			pDC->FillSolidRect(x + 300 + i * 2 + 1, y + 15 - Hi, 1, Hi, Col);
+			pDC->FillSolidRect(wave_x + i * 2    , y + 15 - Lo, 1, Lo, Col);
+			pDC->FillSolidRect(wave_x + i * 2 + 1, y + 15 - Hi, 1, Hi, Col);
 		}
 		for (int i = 0; i < N163_CHANS; ++i) {
 			auto pPosState = pSoundGen->GetRegState(SNDCHIP_N163, 0x78 - i * 8 + 6);
@@ -1942,8 +1947,8 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			const int WaveLen = 0x100 - (pLenState->GetValue() & 0xFC);
 			const int NewTime = std::min(pPosState->GetNewValueTime(), pLenState->GetNewValueTime());
 			const int UpdateTime = std::min(pPosState->GetLastUpdatedTime(), pLenState->GetLastUpdatedTime());
-			pDC->FillSolidRect(x + 300, y + 20 + i * 5, Length * 2, 3, 0);
-			pDC->FillSolidRect(x + 300 + WavePos, y + 20 + i * 5, WaveLen, 3,
+			pDC->FillSolidRect(wave_x, y + 20 + i * 5, Length * 2, 3, 0);
+			pDC->FillSolidRect(wave_x + WavePos, y + 20 + i * 5, WaveLen, 3,
 							   BLEND(0xC0C0C0, DECAY_COLOR[NewTime], 100 * UpdateTime / CRegisterState::DECAY_RATE));
 		}
 		y -= 18;

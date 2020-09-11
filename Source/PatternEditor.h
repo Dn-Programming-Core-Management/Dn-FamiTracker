@@ -281,17 +281,8 @@ private:
 
 public:
 	// Public consts
-	static const int HEADER_HEIGHT;
-	// // //
-private:
-	// Private consts
-	static LPCTSTR DEFAULT_HEADER_FONT;
-	static const int DEFAULT_FONT_SIZE;
-	static const int DEFAULT_HEADER_FONT_SIZE;
-
-	static const int HEADER_CHAN_START;
-	static const int HEADER_CHAN_HEIGHT;
-	static const int ROW_HEIGHT;
+	static const int HEADER_HEIGHT_NODPI;
+	const int HEADER_HEIGHT;
 
 	// Variables
 public:
