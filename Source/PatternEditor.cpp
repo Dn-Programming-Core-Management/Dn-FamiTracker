@@ -305,7 +305,7 @@ void CPatternEditor::ApplyColorScheme()
 
 	if (m_fontCourierNew.m_hObject == NULL)		// // // smaller
 		m_fontCourierNew.CreateFont(
-			DPI::SY(14), 0, 0, 0, 0, FALSE, FALSE, FALSE, 0, 0, 0, DRAFT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, _T("Courier New"));
+			DPI::SY(14), 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, 0, 0, 0, DRAFT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, _T("Courier New"));
 
 	// Cache some colors
 	m_colSeparator	= BLEND(ColBackground, (ColBackground ^ 0xFFFFFF), SHADE_LEVEL.SEPARATOR);
