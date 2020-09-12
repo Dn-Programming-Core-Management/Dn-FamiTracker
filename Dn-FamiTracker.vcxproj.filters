@@ -1552,7 +1552,7 @@
     <None Include="Source\resampler\resample.inl">
       <Filter>Header Files\Dialog Boxes Headers\Instrument Headers\Related Headers\Resampler Headers</Filter>
     </None>
-    <None Include="0CC-FamiTracker.reg" />
+    <None Include="Dn-FamiTracker.reg" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="res\0CC-FamiTracker.manifest">
