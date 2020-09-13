@@ -15,10 +15,10 @@ project(${project})
 
 if (CMAKE_BUILD_TYPE MATCHES DEBUG)
     # Debug build requires dynamic MFC.
-    set(CMAKE_MFC_FLAG_VALUE 0)
+    set(STATIC_MSVCRT 0)
 else ()
     # Otherwise link MFC statically.
-    set(CMAKE_MFC_FLAG_VALUE 1)
+    set(STATIC_MSVCRT 1)
 endif ()
 
 set(mfcin cmake/mfc.cmake.in)

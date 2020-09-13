@@ -28,9 +28,9 @@ macro(msvc_link_to_static_crt)
 endmacro()
 
 
-set(CMAKE_MFC_FLAG "@CMAKE_MFC_FLAG_VALUE@")
+set(CMAKE_MFC_FLAG "@STATIC_MSVCRT@")
 if ("${CMAKE_MFC_FLAG}" STREQUAL "")
-    message(FATAL_ERROR "Did not set CMAKE_MFC_FLAG_VALUE when including MFC CMake")
+    message(FATAL_ERROR "Did not set STATIC_MSVCRT when including MFC CMake")
 endif()
 
 # First set static/dynamic MSVCRT...
