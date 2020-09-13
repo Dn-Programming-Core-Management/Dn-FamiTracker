@@ -13,6 +13,7 @@ project(${project})
 # Simpler approach (unimplemented): https://stackoverflow.com/questions/11580748/cmake-mfc
     # does not set mt vs md
 
+# Configure MFC
 if (CMAKE_BUILD_TYPE MATCHES DEBUG)
     # Debug build requires dynamic MFC.
     set(STATIC_MSVCRT 0)
@@ -20,13 +21,7 @@ else ()
     # Otherwise link MFC statically.
     set(STATIC_MSVCRT 1)
 endif ()
-
-set(mfcin cmake/mfc.cmake.in)
-set(mfc ${CMAKE_CURRENT_BINARY_DIR}/mfc.cmake)
-
-# Configure MFC
-configure_file(${mfcin} ${mfc} @ONLY)
-include(${mfc})
+include(cmake/mfc.cmake)
 
 
 # compiling
