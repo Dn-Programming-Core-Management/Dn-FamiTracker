@@ -158,6 +158,11 @@ BOOL CInstrumentEditorDPCM::OnInitDialog()
 		pPitch->AddString(std::to_string(i).c_str());
 	pPitch->SetCurSel(15);
 
+	CComboBox* pPreviewPitch = static_cast<CComboBox*>(GetDlgItem(IDC_PREVIEW_PITCH));
+	for (int i = 0; i < 16; ++i)
+		pPreviewPitch->AddString(std::to_string(i).c_str());
+	pPreviewPitch->SetCurSel(15);
+
 	CheckDlgButton(IDC_LOOP, 0);
 	
 	CString text;		// // //
@@ -700,9 +705,10 @@ void CInstrumentEditorDPCM::OnNMDblclkSampleList(NMHDR *pNMHDR, LRESULT *pResult
 
 void CInstrumentEditorDPCM::OnBnClickedPreview()
 {
+	int PreviewPitch = static_cast<CComboBox*>(GetDlgItem(IDC_PREVIEW_PITCH))->GetCurSel();
 	const CDSample *pSample = GetSelectedSample();
 	if (pSample != NULL)
-		theApp.GetSoundGenerator()->PreviewSample(pSample, 0, 15);
+		theApp.GetSoundGenerator()->PreviewSample(pSample, 0, PreviewPitch);
 }
 
 void CInstrumentEditorDPCM::OnNMRClickSampleList(NMHDR *pNMHDR, LRESULT *pResult)
