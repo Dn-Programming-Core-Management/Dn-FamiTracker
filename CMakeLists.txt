@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.10)
 
 set(project "Dn_FamiTracker")
 set(exe "Dn_FamiTracker")
+include(cmake_user_begin.cmake OPTIONAL)
 
 project(${project})
 
@@ -66,3 +67,5 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC" AND CMAKE_BUILD_TYPE MATCHES "Release")
         COMPILE_PDB_OUTPUT_DIR ${CMAKE_BINARY_DIR}
     )
 endif()
+
+include(cmake_user_end.cmake OPTIONAL)
