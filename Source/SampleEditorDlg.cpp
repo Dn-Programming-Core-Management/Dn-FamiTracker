@@ -365,7 +365,7 @@ void CSampleEditorDlg::UpdateStatus(int Index, LPCTSTR Text)		// // //
 
 void CSampleEditorDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 {
-	lpMMI->ptMinTrackSize.x = 630;
-	lpMMI->ptMinTrackSize.y = 400;
+	lpMMI->ptMinTrackSize.x = 738;
+	lpMMI->ptMinTrackSize.y = 456;
 	CDialog::OnGetMinMaxInfo(lpMMI);
 }
