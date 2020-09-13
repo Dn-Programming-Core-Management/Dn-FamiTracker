@@ -33,11 +33,7 @@ if ("${CMAKE_MFC_FLAG}" STREQUAL "")
     message(FATAL_ERROR "Did not set CMAKE_MFC_FLAG_VALUE when including MFC CMake")
 endif()
 
-FIND_PACKAGE(MFC)
-IF (NOT MFC_FOUND)
-    MESSAGE(FATAL_ERROR "MFC Could not be found during the MFC test")
-ENDIF()
-
+# First set static/dynamic MSVCRT...
 if("${CMAKE_MFC_FLAG}" STREQUAL "1")
     msvc_link_to_static_crt()
 else()
@@ -45,6 +41,12 @@ else()
     # but generators matching "Make" require:
     add_definitions(-D_AFXDLL)
 endif()
+
+# Then call FindMFC.cmake (behavior depends on static/dynamic CRT).
+FIND_PACKAGE(MFC)
+IF (NOT MFC_FOUND)
+    MESSAGE(FATAL_ERROR "MFC Could not be found during the MFC test")
+ENDIF()
 
 if("${CMAKE_MFC_FLAG}" STREQUAL "2")
     set(CMAKE_INSTALL_MFC_LIBRARIES ON)
