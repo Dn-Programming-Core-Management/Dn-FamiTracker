@@ -60,6 +60,8 @@ public:
 	virtual void OnStart() { }
 	/*!	\brief Called after converting an MML string. */
 	virtual void OnFinish() { }
+
+    virtual ~CSeqConversionBase() = default;
 };
 
 class CSeqConversionDefault : public CSeqConversionBase
