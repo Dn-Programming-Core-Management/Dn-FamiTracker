@@ -770,10 +770,10 @@ void CMainFrame::ResizeFrameWindow()
 			CRect rect;
 			m_wndVerticalControlBar.GetClientRect(&rect);
 
-			Height = rect.Height() - DPI::SY(CPatternEditor::HEADER_HEIGHT - 2);		// // //
+			Height = rect.Height() - DPI::SY(CPatternEditor::HEADER_HEIGHT_NODPI - 2);		// // //
 			Width = m_pFrameEditor->CalcWidth(Channels);
 
-			m_pFrameEditor->MoveWindow(DPI::SX(2), DPI::SY(CPatternEditor::HEADER_HEIGHT + 1), DPI::SX(Width), Height);		// // //
+			m_pFrameEditor->MoveWindow(DPI::SX(2), DPI::SY(CPatternEditor::HEADER_HEIGHT_NODPI + 1), DPI::SX(Width), Height);		// // //
 
 			// Move frame controls
 			m_wndFrameControls.MoveWindow(DPI::Rect(4, 10, 150, 26));

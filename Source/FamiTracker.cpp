@@ -42,6 +42,11 @@
 #include "WinInet.h"		// // //
 #pragma comment(lib, "wininet.lib")
 
+// 0CC uses AfxRegSetValue() and AfxGetModuleShortFileName(),
+// found in the undocumented header afxpriv.h.
+// These functions shouldn't have been used... but here we are.
+#include <afxpriv.h>
+
 // Single instance-stuff
 const TCHAR FT_SHARED_MUTEX_NAME[]	= _T("FamiTrackerMutex");	// Name of global mutex
 const TCHAR FT_SHARED_MEM_NAME[]	= _T("FamiTrackerWnd");		// Name of global memory area

@@ -68,7 +68,7 @@
 #ifndef _AFX_NO_AFXCMN_SUPPORT
 #include <afxcmn.h>			// MFC support for Windows Common Controls
 #endif // _AFX_NO_AFXCMN_SUPPORT
-#include <afxdhtml.h>
+#include <afxadv.h>
 #include <afxdlgs.h>
 
 #include <afxole.h>        // MFC OLE support
