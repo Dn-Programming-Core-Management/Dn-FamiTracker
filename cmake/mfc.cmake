@@ -28,25 +28,26 @@ macro(msvc_link_to_static_crt)
 endmacro()
 
 
-set(CMAKE_MFC_FLAG "@CMAKE_MFC_FLAG_VALUE@")
-if ("${CMAKE_MFC_FLAG}" STREQUAL "")
-    message(FATAL_ERROR "Did not set CMAKE_MFC_FLAG_VALUE when including MFC CMake")
+if ("${STATIC_MSVCRT}" STREQUAL "")
+    message(FATAL_ERROR "Did not set STATIC_MSVCRT when including MFC CMake")
 endif()
 
+# First set static/dynamic MSVCRT...
+if(STATIC_MSVCRT)
+    msvc_link_to_static_crt()
+else()
+    # VS generators add this automatically based on the STATIC_MSVCRT value,
+    # but generators matching "Make" require:
+    add_definitions(-D_AFXDLL)
+endif()
+
+# Then call FindMFC.cmake (behavior depends on static/dynamic CRT).
 FIND_PACKAGE(MFC)
 IF (NOT MFC_FOUND)
     MESSAGE(FATAL_ERROR "MFC Could not be found during the MFC test")
 ENDIF()
 
-if("${CMAKE_MFC_FLAG}" STREQUAL "1")
-    msvc_link_to_static_crt()
-else()
-    # VS generators add this automatically based on the CMAKE_MFC_FLAG value,
-    # but generators matching "Make" require:
-    add_definitions(-D_AFXDLL)
-endif()
-
-if("${CMAKE_MFC_FLAG}" STREQUAL "2")
+if("${STATIC_MSVCRT}" STREQUAL "2")
     set(CMAKE_INSTALL_MFC_LIBRARIES ON)
     include(InstallRequiredSystemLibraries)
 endif()

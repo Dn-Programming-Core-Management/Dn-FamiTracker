@@ -1,0 +1,1 @@
+# cmake_user_begin is called before project(). You can set global options.

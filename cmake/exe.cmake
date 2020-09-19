@@ -1,7 +1,7 @@
 include_directories(.)
 include_directories(Source)
 
-add_executable(${PROJECT_NAME}
+add_executable(${exe}
         WIN32
 
         res/About.bmp
