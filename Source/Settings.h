@@ -29,6 +29,7 @@ enum EDIT_STYLES {		// // // renamed
 	EDIT_STYLE_FT2 = 0,		// FT2
 	EDIT_STYLE_MPT = 1,		// ModPlug
 	EDIT_STYLE_IT = 2,		// IT
+	EDIT_STYLE_FT2_JP = 3,	// FT2-JP106
 };
 
 enum module_error_level_t {		// // //

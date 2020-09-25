@@ -2809,6 +2809,10 @@ bool CFamiTrackerView::EditInstrumentColumn(stChanNote &Note, Keycode Key, bool 
 				StepDown = true;
 			}
 			break;
+		case EDIT_STYLE_FT2_JP: // FT2-JP106
+			Note.Instrument = (Note.Instrument & Mask) | (Value << Shift);
+			StepDown = true;
+			break;
 	}
 
 	if (Note.Instrument > (MAX_INSTRUMENTS - 1))
@@ -3008,6 +3012,10 @@ bool CFamiTrackerView::EditEffParamColumn(stChanNote &Note, Keycode Key, int Eff
 				bMoveLeft = true;
 				bStepDown = true;
 			}
+			break;
+        case EDIT_STYLE_FT2_JP:	// FT2-JP106
+			Note.EffParam[EffectIndex] = (Note.EffParam[EffectIndex] & Mask) | Value << Shift;
+			bStepDown = true;
 			break;
 	}
 	
@@ -3436,6 +3444,72 @@ int CFamiTrackerView::TranslateKeyDefault(Keycode Key) const
 	return MIDI_NOTE(KeyOctave, KeyNote);
 }
 
+int CFamiTrackerView::TranslateKeyFT2JP(Keycode Key) const
+{
+	// Default conversion
+	int	KeyNote = 0;
+	int KeyOctave = static_cast<CMainFrame*>(GetParentFrame())->GetSelectedOctave();		// // // 050B
+
+	// Convert key to a note
+	switch (Key) {
+		case 50:	KeyNote = NOTE_Cs;	KeyOctave += 1;	break;	// 2		// // //
+		case 51:	KeyNote = NOTE_Ds;	KeyOctave += 1;	break;	// 3
+		case 53:	KeyNote = NOTE_Fs;	KeyOctave += 1;	break;	// 5
+		case 54:	KeyNote = NOTE_Gs;	KeyOctave += 1;	break;	// 6
+		case 55:	KeyNote = NOTE_As;	KeyOctave += 1;	break;	// 7
+		case 57:	KeyNote = NOTE_Cs;	KeyOctave += 2;	break;	// 9
+		case 48:	KeyNote = NOTE_Ds;	KeyOctave += 2;	break;	// 0
+		case 222:	KeyNote = NOTE_Fs;	KeyOctave += 2;	break;	// Modded - Japanese ^~
+		//case 187:	KeyNote = NOTE_Fs;	KeyOctave += 2;	break;	// =+
+
+		case 81:	KeyNote = NOTE_C;	KeyOctave += 1;	break;	// Q
+		case 87:	KeyNote = NOTE_D;	KeyOctave += 1;	break;	// W
+		case 69:	KeyNote = NOTE_E;	KeyOctave += 1;	break;	// E
+		case 82:	KeyNote = NOTE_F;	KeyOctave += 1;	break;	// R
+		case 84:	KeyNote = NOTE_G;	KeyOctave += 1;	break;	// T
+		case 89:	KeyNote = NOTE_A;	KeyOctave += 1;	break;	// Y
+		case 85:	KeyNote = NOTE_B;	KeyOctave += 1;	break;	// U
+		case 73:	KeyNote = NOTE_C;	KeyOctave += 2;	break;	// I
+		case 79:	KeyNote = NOTE_D;	KeyOctave += 2;	break;	// O
+		case 80:	KeyNote = NOTE_E;	KeyOctave += 2;	break;	// P
+		case 192:	KeyNote = NOTE_F;	KeyOctave += 2;	break;	// Fixed - Japanese @`
+		//case 219:	KeyNote = NOTE_F;	KeyOctave += 2;	break;	// [{		// // //
+		case 219:	KeyNote = NOTE_G;	KeyOctave += 2;	break;	// Fixed - Japanese [{		// // //
+		//case 221:	KeyNote = NOTE_G;	KeyOctave += 2;	break;	// ]}		// // //
+
+		case 83:	KeyNote = NOTE_Cs;					break;	// S
+		case 68:	KeyNote = NOTE_Ds;					break;	// D
+		case 71:	KeyNote = NOTE_Fs;					break;	// G
+		case 72:	KeyNote = NOTE_Gs;					break;	// H
+		case 74:	KeyNote = NOTE_As;					break;	// J
+		case 76:	KeyNote = NOTE_Cs;	KeyOctave += 1;	break;	// L
+		case 187:	KeyNote = NOTE_Ds;	KeyOctave += 1;	break;	// Fixed - Japanese :*		// // //
+		//case 186:	KeyNote = NOTE_Ds;	KeyOctave += 1;	break;	// ;:		// // //
+
+		case 90:	KeyNote = NOTE_C;					break;	// Z
+		case 88:	KeyNote = NOTE_D;					break;	// X
+		case 67:	KeyNote = NOTE_E;					break;	// C
+		case 86:	KeyNote = NOTE_F;					break;	// V
+		case 66:	KeyNote = NOTE_G;					break;	// B
+		case 78:	KeyNote = NOTE_A;					break;	// N
+		case 77:	KeyNote = NOTE_B;					break;	// M
+		case 188:	KeyNote = NOTE_C;	KeyOctave += 1;	break;	// ,<
+		case 190:	KeyNote = NOTE_D;	KeyOctave += 1;	break;	// .>
+		case 191:	KeyNote = NOTE_E;	KeyOctave += 1;	break;	// /?		// // //
+	}
+
+	// Invalid
+	if (KeyNote == 0)
+		return -1;
+
+	auto it = m_iNoteCorrection.find(Key);		// // //
+	if (it != m_iNoteCorrection.end())
+		KeyOctave += it->second;
+
+	// Return a MIDI note
+	return MIDI_NOTE(KeyOctave, KeyNote);
+}
+
 int CFamiTrackerView::TranslateKey(Keycode Key) const
 {
 	// Translates a keyboard character into a MIDI note
@@ -3443,6 +3517,10 @@ int CFamiTrackerView::TranslateKey(Keycode Key) const
 	// For modplug users
 	if (theApp.GetSettings()->General.iEditStyle == EDIT_STYLE_MPT)
 		return TranslateKeyModplug(Key);
+	
+	// For FastTracker 2 JP106 users
+	if (theApp.GetSettings()->General.iEditStyle == EDIT_STYLE_FT2_JP)
+		return TranslateKeyFT2JP(Key);
 
 	// Default
 	return TranslateKeyDefault(Key);
