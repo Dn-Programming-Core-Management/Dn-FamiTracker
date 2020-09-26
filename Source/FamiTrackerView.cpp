@@ -3446,11 +3446,11 @@ int CFamiTrackerView::TranslateKeyDefault(Keycode Key) const
 
 int CFamiTrackerView::TranslateKeyFT2JP(Keycode Key) const
 {
-	// Default conversion
+	// FastTracker 2 style with JP106 keyboard conversion
 	int	KeyNote = 0;
 	int KeyOctave = static_cast<CMainFrame*>(GetParentFrame())->GetSelectedOctave();		// // // 050B
 
-	// Convert key to a note
+	// Convert key to a note for FastTracker 2 style with JP106 keyboard
 	switch (Key) {
 		case 50:	KeyNote = NOTE_Cs;	KeyOctave += 1;	break;	// 2		// // //
 		case 51:	KeyNote = NOTE_Ds;	KeyOctave += 1;	break;	// 3
@@ -3459,8 +3459,7 @@ int CFamiTrackerView::TranslateKeyFT2JP(Keycode Key) const
 		case 55:	KeyNote = NOTE_As;	KeyOctave += 1;	break;	// 7
 		case 57:	KeyNote = NOTE_Cs;	KeyOctave += 2;	break;	// 9
 		case 48:	KeyNote = NOTE_Ds;	KeyOctave += 2;	break;	// 0
-		case 222:	KeyNote = NOTE_Fs;	KeyOctave += 2;	break;	// Modded - Japanese ^~
-		//case 187:	KeyNote = NOTE_Fs;	KeyOctave += 2;	break;	// =+
+		case 222:	KeyNote = NOTE_Fs;	KeyOctave += 2;	break;	// Japanese ^~
 
 		case 81:	KeyNote = NOTE_C;	KeyOctave += 1;	break;	// Q
 		case 87:	KeyNote = NOTE_D;	KeyOctave += 1;	break;	// W
@@ -3472,10 +3471,8 @@ int CFamiTrackerView::TranslateKeyFT2JP(Keycode Key) const
 		case 73:	KeyNote = NOTE_C;	KeyOctave += 2;	break;	// I
 		case 79:	KeyNote = NOTE_D;	KeyOctave += 2;	break;	// O
 		case 80:	KeyNote = NOTE_E;	KeyOctave += 2;	break;	// P
-		case 192:	KeyNote = NOTE_F;	KeyOctave += 2;	break;	// Fixed - Japanese @`
-		//case 219:	KeyNote = NOTE_F;	KeyOctave += 2;	break;	// [{		// // //
-		case 219:	KeyNote = NOTE_G;	KeyOctave += 2;	break;	// Fixed - Japanese [{		// // //
-		//case 221:	KeyNote = NOTE_G;	KeyOctave += 2;	break;	// ]}		// // //
+		case 192:	KeyNote = NOTE_F;	KeyOctave += 2;	break;	// Japanese @`
+		case 219:	KeyNote = NOTE_G;	KeyOctave += 2;	break;	// Japanese [{		// // //
 
 		case 83:	KeyNote = NOTE_Cs;					break;	// S
 		case 68:	KeyNote = NOTE_Ds;					break;	// D
@@ -3483,8 +3480,7 @@ int CFamiTrackerView::TranslateKeyFT2JP(Keycode Key) const
 		case 72:	KeyNote = NOTE_Gs;					break;	// H
 		case 74:	KeyNote = NOTE_As;					break;	// J
 		case 76:	KeyNote = NOTE_Cs;	KeyOctave += 1;	break;	// L
-		case 187:	KeyNote = NOTE_Ds;	KeyOctave += 1;	break;	// Fixed - Japanese :*		// // //
-		//case 186:	KeyNote = NOTE_Ds;	KeyOctave += 1;	break;	// ;:		// // //
+		case 187:	KeyNote = NOTE_Ds;	KeyOctave += 1;	break;	// Japanese :*		// // //
 
 		case 90:	KeyNote = NOTE_C;					break;	// Z
 		case 88:	KeyNote = NOTE_D;					break;	// X
