@@ -2469,7 +2469,7 @@ void CPatternEditor::OnHomeKey()
 
 	const bool bControl = IsControlPressed();
 
-	if (bControl || theApp.GetSettings()->General.iEditStyle == EDIT_STYLE_FT2) {
+	if (bControl || theApp.GetSettings()->General.iEditStyle == EDIT_STYLE_FT2 || theApp.GetSettings()->General.iEditStyle == EDIT_STYLE_FT2_JP) {
 		// Control or FT2 edit style
 		MoveToTop();
 	}
@@ -2491,7 +2491,7 @@ void CPatternEditor::OnEndKey()
 	const int Channels = GetChannelCount();
 	const cursor_column_t Columns = GetChannelColumns(GetChannel());
 
-	if (bControl || theApp.GetSettings()->General.iEditStyle == EDIT_STYLE_FT2) {
+	if (bControl || theApp.GetSettings()->General.iEditStyle == EDIT_STYLE_FT2 || theApp.GetSettings()->General.iEditStyle == EDIT_STYLE_FT2_JP) {
 		// Control or FT2 edit style
 		MoveToBottom();
 	}

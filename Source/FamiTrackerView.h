@@ -195,6 +195,7 @@ private:
 	int		TranslateKey(Keycode Key) const;
 	int		TranslateKeyDefault(Keycode Key) const;
 	int		TranslateKeyModplug(Keycode Key) const;
+	int		TranslateKeyFT2JP(Keycode Key) const;
 	
 	bool	CheckClearKey(Keycode Key) const;
 	bool	CheckHaltKey(Keycode Key) const;
