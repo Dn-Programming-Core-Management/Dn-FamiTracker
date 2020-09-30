@@ -825,7 +825,7 @@ void CFamiTrackerView::OnTimer(UINT_PTR nIDEvent)
 
 	if (theApp.IsPlaying()) {
 		KillTimer(TMR_UPDATE);
-		TimerDelayer = 16;
+		TimerDelayer = 1;
 		SetTimer(TMR_UPDATE, TimerDelayer, NULL);
 	}
 	else {
