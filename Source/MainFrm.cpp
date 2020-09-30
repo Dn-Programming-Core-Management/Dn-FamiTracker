@@ -42,6 +42,7 @@
 #include "ConfigShortcuts.h"
 #include "ConfigWindow.h"
 #include "ConfigMixer.h"
+#include "ConfigEmulation.h"	// // !!
 #include "Settings.h"
 #include "Accelerator.h"
 #include "SoundGen.h"
@@ -1900,6 +1901,7 @@ void CMainFrame::OnFileGeneralsettings()
 	CConfigSound		TabSound;
 	CConfigShortcuts	TabShortcuts;
 	CConfigMixer		TabMixer;
+	CConfigEmulation	TabEmulation;	// // !!
 
 	ConfigWindow.m_psh.dwFlags	&= ~PSH_HASHELP;
 	TabGeneral.m_psp.dwFlags	&= ~PSP_HASHELP;
@@ -1909,6 +1911,7 @@ void CMainFrame::OnFileGeneralsettings()
 	TabSound.m_psp.dwFlags		&= ~PSP_HASHELP;
 	TabShortcuts.m_psp.dwFlags	&= ~PSP_HASHELP;
 	TabMixer.m_psp.dwFlags		&= ~PSP_HASHELP;
+	TabEmulation.m_psp.dwFlags	&= ~PSP_HASHELP;
 	
 	ConfigWindow.AddPage(&TabGeneral);
 	ConfigWindow.AddPage(&TabVersion);
@@ -1917,6 +1920,7 @@ void CMainFrame::OnFileGeneralsettings()
 	ConfigWindow.AddPage(&TabSound);
 	ConfigWindow.AddPage(&TabShortcuts);
 	ConfigWindow.AddPage(&TabMixer);
+	ConfigWindow.AddPage(&TabEmulation);
 
 	ConfigWindow.DoModal();
 }

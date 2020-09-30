@@ -12,6 +12,8 @@
 #define IDD_ABOUTBOX                    100
 #define IDS_CLEARPATTERN                101
 #define IDS_CLIPBOARD_COPY_ERROR        102
+#define IDD_PROPPAGE_SMALL              102
+#define IDD_CONFIG_EMULATION            102
 #define IDS_CLIPBOARD_PASTE_ERROR       103
 #define IDS_DPCM_SPACE_FORMAT           104
 #define IDS_INSTRUMENT_EDITOR_TITLE     106
@@ -760,7 +762,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        358
+#define _APS_NEXT_RESOURCE_VALUE        359
 #define _APS_NEXT_COMMAND_VALUE         33200
 #define _APS_NEXT_CONTROL_VALUE         1472
 #define _APS_NEXT_SYMED_VALUE           179
