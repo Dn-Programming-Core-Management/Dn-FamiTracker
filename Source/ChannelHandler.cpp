@@ -294,7 +294,7 @@ void CChannelHandler::WriteEchoBuffer(stChanNote *NoteData, int Pos, int EffColu
 	case ECHO: Value = ECHO_BUFFER_ECHO + NoteData->Octave; break;
 	default:
 		Value = MIDI_NOTE(NoteData->Octave, NoteData->Note);
-		for (int i = EffColumns; i >= 0; i--) {
+		for (int i = EffColumns - 1; i >= 0; i--) {
 			const int Param = NoteData->EffParam[i] & 0x0F;
 			if (NoteData->EffNumber[i] == EF_SLIDE_UP) {
 				Value += Param;
