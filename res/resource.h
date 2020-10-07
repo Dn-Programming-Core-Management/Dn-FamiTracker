@@ -12,7 +12,6 @@
 #define IDD_ABOUTBOX                    100
 #define IDS_CLEARPATTERN                101
 #define IDS_CLIPBOARD_COPY_ERROR        102
-#define IDD_PROPPAGE_SMALL              102
 #define IDD_CONFIG_EMULATION            102
 #define IDS_CLIPBOARD_PASTE_ERROR       103
 #define IDS_DPCM_SPACE_FORMAT           104
