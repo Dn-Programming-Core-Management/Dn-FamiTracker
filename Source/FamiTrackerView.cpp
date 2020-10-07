@@ -822,7 +822,6 @@ void CFamiTrackerView::OnSetFocus(CWnd* pOldWnd)
 void CFamiTrackerView::OnTimer(UINT_PTR nIDEvent)
 {
 	// Timer callback function
-
 	if (theApp.IsPlaying()) {
 		KillTimer(TMR_UPDATE);
 		TimerDelayer = 16;
@@ -830,7 +829,7 @@ void CFamiTrackerView::OnTimer(UINT_PTR nIDEvent)
 	}
 	else {
 		KillTimer(TMR_UPDATE);
-		TimerDelayer = 100;
+		TimerDelayer = theApp.GetSettings()->General.iLowRefreshRate;
 		SetTimer(TMR_UPDATE, TimerDelayer, NULL);
 	}
 	switch (nIDEvent) {

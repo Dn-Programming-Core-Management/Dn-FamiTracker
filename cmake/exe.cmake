@@ -144,6 +144,8 @@ add_executable(${exe}
         Source/CompoundAction.h
         Source/ConfigAppearance.cpp
         Source/ConfigAppearance.h
+		Source/ConfigEmulation.cpp
+		Source/ConfigEmulation.h
         Source/ConfigGeneral.cpp
         Source/ConfigGeneral.h
         Source/ConfigMIDI.cpp
@@ -394,7 +396,7 @@ add_executable(${exe}
         Source/utils/ftmath.cpp
 
 
-        res/0CC-FamiTracker.rc
+        res/Dn-FamiTracker.rc
         res/resource.h
 
         version.h

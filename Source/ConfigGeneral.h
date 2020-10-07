@@ -70,6 +70,7 @@ protected:
 
 	int		m_iEditStyle;
 	int		m_iPageStepSize;
+	int		m_iLowRefreshRate;		// // !!
 
 	int		m_iKeyNoteCut;
 	int		m_iKeyNoteRelease;
@@ -82,6 +83,8 @@ protected:
 
 	CToolTipCtrl m_wndToolTip;
 
+	void UpdateTexts();
+
 	DECLARE_MESSAGE_MAP()
 public:
 	virtual BOOL OnSetActive();
@@ -90,6 +93,7 @@ public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnCbnEditupdatePagelength();
 	afx_msg void OnCbnSelendokPagelength();
+	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 	afx_msg void OnCbnSelchangeComboStyle();		// // //

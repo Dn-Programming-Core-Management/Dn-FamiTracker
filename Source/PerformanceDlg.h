@@ -34,8 +34,13 @@ public:
 // Dialog Data
 	enum { IDD = IDD_PERFORMANCE };
 
+private:
+	void UpdateBar();
+	void UpdateInfo();
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+
+	unsigned int PerRefreshRate;		// Refresh rate for performance meter updates
 
 	DECLARE_MESSAGE_MAP()
 public:
@@ -43,4 +48,5 @@ public:
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnBnClickedOk();
 	virtual BOOL DestroyWindow();
+	afx_msg void OnClose();
 };

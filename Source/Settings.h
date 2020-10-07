@@ -142,6 +142,7 @@ public:
 		bool	bHexKeypad;
 		bool	bMultiFrameSel;
 		bool	bCheckVersion;		// // //
+		int		iLowRefreshRate;	// // !!		The lower refresh rate, when theApp is not playing. Also used by the Performance dialog
 	} General;
 
 	struct {
@@ -233,6 +234,8 @@ public:
 		int		iLevelN163;
 		int		iLevelS5B;
 	} ChipLevels;
+
+	struct {} Emulation; // TODO: add emulation options
 
 	CString InstrumentMenuPath;
 

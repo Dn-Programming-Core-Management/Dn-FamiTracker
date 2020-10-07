@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by 0CC-FamiTracker.rc
+// Used by Dn-FamiTracker.rc
 //
 #define ID_MANIFEST                     1
 #define IDAPPLY                         3
@@ -608,6 +608,8 @@
 #define IDC_BIT_REVERSE                 1467
 #define IDC_SEPERATE_CHANNEL_EXPORT     1469
 #define IDC_PREVIEW_PITCH               1471
+#define IDC_IDLE_REFRESH                1475
+#define IDC_IDLE_REFRESH_T              1476
 #define IDS_FIND_BEGIN                  9001
 #define IDS_FIND_END                    9002
 #define ID_TRACKER_PLAY                 32771
@@ -767,9 +769,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        360
+#define _APS_NEXT_RESOURCE_VALUE        361
 #define _APS_NEXT_COMMAND_VALUE         33200
-#define _APS_NEXT_CONTROL_VALUE         1473
+#define _APS_NEXT_CONTROL_VALUE         1477
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif

@@ -132,6 +132,8 @@ void CSettings::SetupSettings()
 	SETTING_BOOL("General", "Hexadecimal keypad", false, &General.bHexKeypad);
 	SETTING_BOOL("General", "Multi-frame selection", false, &General.bMultiFrameSel);
 	SETTING_BOOL("General", "Check for new versions", true, &General.bCheckVersion);
+	// // !!
+	SETTING_INT("Appearance", "Idle refresh rate", 100, &General.iLowRefreshRate);
 
 	// // // Version / Compatibility info
 	SETTING_INT("Version", "Module error level", MODULE_ERROR_DEFAULT, &Version.iErrorLevel);
