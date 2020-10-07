@@ -162,7 +162,7 @@ BOOL CAboutDlg::OnInitDialog()
 		_T("- Export plugin support by Gradualore\r\n")
 		_T("- Toolbar icons are made by ilkke\r\n")
 		_T("- DPCM import resampler by Jarhmander\r\n")
-		_T("- DPCM sample bit order reverser by Persune\r\n")	// // !!
+		_T("- DPCM sample bit order reverser mod by Persune\r\n")	// // !!
 		_T("- Module text import/export by rainwarrior"));		// // //
 	SetDlgItemText(IDC_ABOUT_LIB, // // !!							 <- line break here
 		_T("- Blip_buffer 0.4.0 is Copyright (C) blargg (LGPL v2.1)\r\n")

@@ -1444,7 +1444,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="res\0CC-FamiTracker.rc">
+    <ResourceCompile Include="res\Dn-FamiTracker.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
@@ -1561,7 +1561,7 @@
     <None Include="Dn-FamiTracker.reg" />
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="res\0CC-FamiTracker.manifest">
+    <Manifest Include="res\Dn-FamiTracker.manifest">
       <Filter>Source Files</Filter>
     </Manifest>
   </ItemGroup>
