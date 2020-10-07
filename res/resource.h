@@ -16,6 +16,7 @@
 #define IDD_CONFIG_EMULATION            102
 #define IDS_CLIPBOARD_PASTE_ERROR       103
 #define IDS_DPCM_SPACE_FORMAT           104
+#define IDS_ABOUT_TOOLTIP_WEB2          105
 #define IDS_INSTRUMENT_EDITOR_TITLE     106
 #define IDS_INST_VERSION_UNSUPPORTED    107
 #define IDS_FILE_SAVED                  108
@@ -145,7 +146,9 @@
 #define IDS_EXPORT_SAMPLES_FILE         194
 #define IDS_MODULE_ERROR_NONE           195
 #define IDS_FIND_EDIT_DISABLED          196
+#define IDS_ABOUT_TOOLTIP_WEB3          197
 #define IDR_PATTERN_POPUP               198
+#define IDS_ABOUT_TOOLTIP_WEB4          198
 #define IDD_CONFIG_SOUND                201
 #define IDS_FILE_LOAD_ERROR             204
 #define IDS_CONFIG_WINDOW               205
@@ -392,6 +395,9 @@
 #define IDC_MAIL                        1208
 #define IDC_WEBPAGE                     1209
 #define IDC_BUG                         1210
+#define IDC_WEBPAGE2                    1211
+#define IDC_WEBPAGE3                    1213
+#define IDC_WEBPAGE4                    1214
 #define IDC_ADDED_LIST                  1217
 #define IDC_FONT_SIZE                   1219
 #define IDC_COPY_WAVE                   1220
@@ -764,7 +770,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        359
 #define _APS_NEXT_COMMAND_VALUE         33200
-#define _APS_NEXT_CONTROL_VALUE         1472
+#define _APS_NEXT_CONTROL_VALUE         1473
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif

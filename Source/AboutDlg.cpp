@@ -27,9 +27,11 @@
 
 // CAboutDlg dialog used for App About
 
-LPCTSTR LINK_WEB  = _T("http://hertzdevil.info/programs/");
-LPCTSTR LINK_BUG  = _T("http://hertzdevil.info/bug/main_page.php");		// // //
-LPCTSTR LINK_MAIL = _T("mailto:nicetas.c@gmail.com");
+LPCTSTR LINK_WEB2 = _T("http://hertzdevil.info/programs/");
+LPCTSTR LINK_WEB = _T("http://famitracker.com");						// // !!
+LPCTSTR LINK_WEB3 = _T("https://github.com/nyanpasu64/j0CC-FamiTracker");						// // !!
+LPCTSTR LINK_WEB4 = _T("https://github.com/Gumball2415/Dn-FamiTracker");						// // !!
+LPCTSTR LINK_BUG  = _T("https://github.com/Gumball2415/Dn-FamiTracker/issues");		// // !!
 
 // CLinkLabel
 
@@ -120,7 +122,6 @@ END_MESSAGE_MAP()
 
 CAboutDlg::CAboutDlg() : 
 	CDialog(CAboutDlg::IDD), 
-	m_pMail(nullptr), 
 	m_pWeb(nullptr), 
 	m_pBug(nullptr),
 	m_pLinkFont(nullptr), 
@@ -132,7 +133,6 @@ CAboutDlg::CAboutDlg() :
 
 CAboutDlg::~CAboutDlg()
 {
-	SAFE_RELEASE(m_pMail);
 	SAFE_RELEASE(m_pWeb);
 	SAFE_RELEASE(m_pHead);
 	SAFE_RELEASE(m_pBug);
@@ -158,18 +158,19 @@ BOOL CAboutDlg::OnInitDialog()
 	SetDlgItemText(IDC_ABOUT_CONTRIB,
 		_T("- Original software by jsr\r\n")
 		_T("- 0CC-FamiTracker by HertzDevil\r\n")
+		_T("- j0CC-FamiTracker by nyanpasu64\r\n")
 		_T("- Export plugin support by Gradualore\r\n")
 		_T("- Toolbar icons are made by ilkke\r\n")
 		_T("- DPCM import resampler by Jarhmander\r\n")
-		_T("- DPCM sample bit order reverser by Persune\r\n")
+		_T("- DPCM sample bit order reverser by Persune\r\n")	// // !!
 		_T("- Module text import/export by rainwarrior"));		// // //
-	SetDlgItemText(IDC_ABOUT_LIB,
-		_T("- Blip_buffer 0.4.0 is Copyright (C) blargg\r\n")
-		_T("(http://www.slack.net/~ant/nes-emu/)\r\n")
-		_T("- FFT code is (C) 2017 Project Nayuki (MIT License)\r\n")
-		_T("- YM2413 emulator is written by Mitsutaka Okazaki\r\n")
-		_T("- FDS sound emulator from nezplug (including a fix by rainwarrior)\r\n")
-		_T("- JSON for Modern C++ is Copyright (C) Niels Lohmann"));
+	SetDlgItemText(IDC_ABOUT_LIB, // // !!							 <- line break here
+		_T("- Blip_buffer 0.4.0 is Copyright (C) blargg (LGPL v2.1)\r\n")
+		_T("- FFT code is (C) 2017 Project Nayuki (MIT)\r\n")
+		_T("- YM2413 emulator is (C) Mitsutaka Okazaki (MIT)\r\n")
+		_T("- Old FDS sound emulator from nezplug (including a fix by\r\n   rainwarrior)\r\n")
+		_T("- New FDS sound emulator from rainwarrior's NSFPlay\r\n")
+		_T("- JSON for Modern C++ is Copyright (C) Niels Lohmann (MIT)"));
 
 	m_pHead = new CHead();
 	m_pHead->SubclassDlgItem(IDC_HEAD, this);
@@ -179,24 +180,34 @@ BOOL CAboutDlg::OnInitDialog()
 	m_wndToolTip.Create(this, TTS_ALWAYSTIP);
 	m_wndToolTip.Activate(TRUE);
 
-	m_pMail = new CLinkLabel(LINK_MAIL);
-	m_pMail->SubclassDlgItem(IDC_MAIL, this);
+	m_pWeb = new CLinkLabel(LINK_WEB2);
+	m_pWeb->SubclassDlgItem(IDC_WEBPAGE, this);
 
-	LOGFONT LogFont;
-	CFont *pFont;
-	pFont = m_pMail->GetFont();
+	LOGFONT LogFont;						// // !!
+	CFont* pFont;
+	pFont = m_pWeb->GetFont();
 	pFont->GetLogFont(&LogFont);
 	LogFont.lfUnderline = 1;
 	m_pLinkFont = new CFont();
 	m_pLinkFont->CreateFontIndirect(&LogFont);
 
-	m_pMail->SetFont(m_pLinkFont);
-	m_wndToolTip.AddTool(m_pMail, IDS_ABOUT_TOOLTIP_MAIL);
-	
-	m_pWeb = new CLinkLabel(LINK_WEB);
-	m_pWeb->SubclassDlgItem(IDC_WEBPAGE, this);
 	m_pWeb->SetFont(m_pLinkFont);
 	m_wndToolTip.AddTool(m_pWeb, IDS_ABOUT_TOOLTIP_WEB);
+
+	m_pWeb = new CLinkLabel(LINK_WEB);		// // !!
+	m_pWeb->SubclassDlgItem(IDC_WEBPAGE2, this);
+	m_pWeb->SetFont(m_pLinkFont);
+	m_wndToolTip.AddTool(m_pWeb, IDS_ABOUT_TOOLTIP_WEB2);
+
+	m_pWeb = new CLinkLabel(LINK_WEB3);		// // !!
+	m_pWeb->SubclassDlgItem(IDC_WEBPAGE3, this);
+	m_pWeb->SetFont(m_pLinkFont);
+	m_wndToolTip.AddTool(m_pWeb, IDS_ABOUT_TOOLTIP_WEB3);
+
+	m_pWeb = new CLinkLabel(LINK_WEB4);		// // !!
+	m_pWeb->SubclassDlgItem(IDC_WEBPAGE4, this);
+	m_pWeb->SetFont(m_pLinkFont);
+	m_wndToolTip.AddTool(m_pWeb, IDS_ABOUT_TOOLTIP_WEB4);
 
 	m_pBug = new CLinkLabel(LINK_BUG);		// // //
 	m_pBug->SubclassDlgItem(IDC_BUG, this);
