@@ -24,6 +24,7 @@ else ()
 endif ()
 include(cmake/mfc.cmake)
 
+#HTMLHelper stuff here
 
 # compiling
 include(cmake/exe.cmake)
@@ -40,9 +41,9 @@ endif()
 TARGET_LINK_LIBRARIES(${exe}
         Dbghelp winmm comctl32 dsound dxguid Version)
 
-# 0CC-FamiTracker.rc includes res/0CC-FamiTracker.manifest.
+# Dn-FamiTracker.rc includes res/Dn-FamiTracker.manifest.
 # To prevent manifest linking errors:
-# - res/0CC-FamiTracker.manifest MUST not be in add_executable().
+# - res/Dn-FamiTracker.manifest MUST not be in add_executable().
 # - /MANIFEST:NO must be passed into the linker.
 set_property(
     TARGET ${exe}
