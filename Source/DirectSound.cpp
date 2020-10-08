@@ -26,7 +26,7 @@
 #include <cstdio>
 #include "common.h"
 #include "DirectSound.h"
-#include "res/resource.h"
+#include "../resource.h"
 
 // The single CDSound object
 CDSound *CDSound::pThisObject = NULL;

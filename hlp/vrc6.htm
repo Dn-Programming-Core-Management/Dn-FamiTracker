@@ -1,0 +1,50 @@
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" Content="Microsoft Visual Studio 8.0">
+<TITLE></TITLE>
+<link href="style.css" rel="stylesheet" type="text/css" />
+</HEAD>
+<BODY>
+
+    <span class="topic">Konami VRC6</span><hr />
+    
+    <p class="heading">About</p>
+
+    <p class="text">
+        The VRC6 chip has two square wave channels and one sawtooth wave 
+        channel. This chip was used in games as Akumajou Densetsu and Madara by 
+        Konami.</p>
+    
+    <p class="text"><b>Pulse 1 and 2</b></p>
+    
+    <p class="text">
+        Produces pulse waves like the internal channels, but have eight different duty 
+        settings and lacks hardware sweep. They can also go deeper in frequency.</p>
+    
+    <p class="text"><b>Sawtooth</b></p>
+    
+    <p class="text">
+        Generates a sawtooth wave. This channel has no duty functionalty but 
+        still uses that instrument setting to calculate the volume since the volume 
+        register is larger than 4 bits (0 - 15), one bit from the duty 
+        setting is used to form a 5-bit volume value. A volume level too high causes the wave to wrap around and 
+        will sound distorted (happens when duty = 1 and volume &gt; 5), so the useful volume range is usually 0 - 15 
+        anyway.</p>
+    
+    <hr />
+    
+    <p class="heading">Instruments</p>
+
+    <p class="text">
+        Instruments are specific for VRC6 but behaves much like those for 2A03, except 
+        that 8 duty levels are available and 
+        has no DPCM tab.</p>
+        
+    <p class="text">
+        See <a href="2a03.htm#Instruments">2A03 instruments</a> for more information.</p>
+
+    <hr />
+    <span class="footer">Back to <a href="sound_overview.htm">sound hardware</a> &middot; <a href="main_index.htm">main index</a></span>
+
+</BODY>
+</HTML>

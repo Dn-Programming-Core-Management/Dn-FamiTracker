@@ -21,7 +21,7 @@
 */
 
 #include "stdafx.h"
-#include "res/resource.h"
+#include "../resource.h"
 #include "DSample.h"
 #include "SampleEditorView.h"
 #include "SampleEditorDlg.h"

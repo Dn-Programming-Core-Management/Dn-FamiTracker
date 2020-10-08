@@ -217,6 +217,7 @@
 #define IDD_TRANSPOSE                   337
 #define IDD_FINDRESULTS                 343
 #define IDD_SPLIT_KEYBOARD              345
+#define IDR_HTML1                       361
 #define IDC_INSTRUMENTS                 1001
 #define IDC_INSTSETTINGS                1002
 #define IDC_IMPORT_DETUNE               1002
@@ -769,7 +770,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        361
+#define _APS_NEXT_RESOURCE_VALUE        362
 #define _APS_NEXT_COMMAND_VALUE         33200
 #define _APS_NEXT_CONTROL_VALUE         1477
 #define _APS_NEXT_SYMED_VALUE           179

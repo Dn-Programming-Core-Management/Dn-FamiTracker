@@ -1,0 +1,164 @@
+<HTML>
+	<HEAD>
+		<TITLE></TITLE>
+		<META content="Microsoft Visual Studio 8.0" name="GENERATOR">
+	    <style type="text/css">
+            .style2
+            {
+                width: 100%;
+            }
+            .style5
+            {
+                width: 150px;
+                font-size: 9pt;
+                font-weight: bold;
+            }
+            .style1
+            {
+                font-size: 11pt;
+            }
+            .style6
+            {
+                font-weight: normal;
+            }
+            .style7
+            {
+                font-size: 11pt;
+                font-weight: bold;
+            }
+        </style>
+	</HEAD>
+	<BODY style="FONT-WEIGHT: normal; FONT-SIZE: 9pt; FONT-FAMILY: Arial;">
+            &nbsp;<span style="color: gray"><span style="FONT-SIZE: 16pt; font-family: Verdana;"><strong>Instruments</strong></span></span>
+			<hr>
+            <span style="font-size: 9pt">
+                <br />
+                As no samples are stored in instruments (except for the DPCM channel), a 
+			set of settings are available to customize the sound. These settings are 
+			defined through sequence-graphs.
+			A sequence is a list of values that are applied to the channel at the same rate 
+			as the frame rate, shown in the main window. Default for NTSC is 60 FPS and PAL 
+            is 50 FPS.<br>
+			<br>
+            </span>
+			<a name="settings"></a><strong>
+				<span style="FONT-SIZE: 11pt">The instrument editor -&nbsp;2A03<br />
+            <br />
+            <span style="font-size: 9pt">
+				<IMG id="IMG1" style="FONT-SIZE: 10pt" src="img/inst_edit_1.png" alt=""></span></span><br>
+				<br />
+			</strong><span style="font-size: 9pt">
+			Select a sequence in the Instrument settings list and use the Select next empty 
+			slot to get a free sequence slot.&nbsp;Check the&nbsp;checkbox to enable the 
+			sequence.<br />
+            <br />
+            These effects are available<STRONG>&nbsp;
+            </STRONG>(none of these apply to the DPCM 
+			channel)<br />
+            
+            <br />
+            <table class="style2">
+                <tr>
+                    <td class="style5" valign="top">
+                        Volume</td>
+                    <td>
+                        <span style="font-size: 9pt">
+			Channel amplitude.
+			is not possible to change triangle volume, but a zero will disable the 
+			channel and non-zero will enable it.
+			<br>
+			Range: <b>0</b> to <b>15</b>.<br />
+                        </span></td>
+                </tr>
+                <tr>
+                    <td class="style5" valign="top">
+                        Arpeggio</td>
+                    <td>
+                        <span style="font-size: 9pt">Produces fast note-shifting, commonly used to simulate chords.
+			<br>
+			Range: <b>-79</b> to <b>+79 </b>
+  +79 </b>
+                        <br />
+            </span>
+		            </td>
+                </tr>
+                <tr>
+                    <td class="style5" valign="top">
+                        Pitch bend &amp; High-speed pitch bend<br />
+                    </td>
+                    <td valign="top">
+                        <span style="font-size: 9pt">Alters the pitch, Hi-pitch multiplies the value by 
+                        16.<br />
+                        Range: <b>-127</b> to <b>126<br />
+                        </b>
+            </span>
+		            </td>
+                </tr>
+                <tr>
+                    <td class="style5" valign="top">
+                        Duty cycle / noise mode</td>
+                    <td>
+            <span style="font-size: 9pt">Sets the duty cycle and noise mode.
+			<br>
+			Square: <b>0 = 12.5%</b>, <b>1 = 25%</b>,<b> 2 = 50%</b>, <b>3 = 75% </b>
+			<br>
+			Noise: <b>0 = 32k-bit mode</b>, <b>1 = 93-bit mode</b> </span>
+		            </td>
+                </tr>
+            </table>
+            <STRONG style="font-weight: 700"><span class="style6">
+            <br />
+            The sequence can be drawn in the sequence editor, left mouse button then changes single items and right button draws lines. You 
+			can set a loop point by clicking the Length-field. 			<br>
+			<bMML-like strings can be used in the MML text field. (Some of these effects will 
+			differ from real MML though) </span> </STRONG>
+            <STRONG style="font-weight: 700"><span class="style6">
+            <br />
+            <a name="dpcm"></a> </span> </STRONG>
+            <br />
+            <span style="font-weight: 700"><STRONG>
+            <SPAN class="style1">The instrument editor - DPCM 
+samples<br />
+            </SPAN> </STRONG> </span><STRONG style="font-weight: 700"><span class="style6"><br>
+			<IMG id="IMG2" style="FONT-SIZE: 10pt" src="img/inst_edit_2.png" alt=""><br>
+            <br />
+			The DPCM channel behaves different from the others in the way that samples are 
+			used, this tab is used to assign DPCM samples to instruments.<br />
+			First load the samples, either directly from &quot;Load sample&quot; where the 
+			format must be 1-bit delta PCM, or &quot;Import sample&quot; to import wave-files. (The quality of wave files will decrease significantly 
+			when converted to DPCM.)
+            The NES can handle a total of 16 kB DPCM samples.<br>
+			<br />
+			Then select a key in &quot;Assigned samples&quot;-box and select the sample from the 
+            drop-down box below. The pitch box&nbsp;sets the&nbsp;pitch for the sample.
+            <br />
+            The &quot;&lt;-&quot; can also be used to assign samples, and &quot;-&gt;&quot; to remove assigned 
+            samples.<br>
+			<br>
+			More about <a href="./import_dpcm.htm"><span style="font-size: 9pt">importing DPCM samples.</span></a><br>
+            </span><STRONG><span style="font-weight: 700">
+            <br />
+            </span> </STRONG><span style="font-weight: 700"><STRONG>Note:             </STRONG> </span>
+            </STRONG>Playing a DPCM sample may decrease the volume level of triangle and 
+            noise. If full volume isn&#39;t regained after a sample is finished, use a note stop 
+            or the Z-effect in the DPCM channel to restore it.
+			<br>
+            </span>
+            <span style="font-weight: 700"> </span>
+			<hr>
+	        </span>
+            <p class="style7">
+                VRC6 instruments</p>
+            <p>
+                VRC6 are not compatible with 2A03 instruments. To create a VRC6 instrument, 
+                place cursor in a VRC6 channel and create a new instrument. The differences are 
+                no DPCM-support and 8 levels of the duty pulse setting.<br />
+            </p>
+            <p class="style7">
+                MMC5 instruments</p>
+            <p>
+                MMC5 is compatible with 2A03 instruments. The two square channels in MMC5 are 
+                identical to the 2A03 square channels, except for no hardware sweep function.<br />
+            </p>
+	</BODY>
+</HTML>

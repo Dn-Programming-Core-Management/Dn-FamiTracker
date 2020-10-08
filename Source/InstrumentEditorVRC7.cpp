@@ -23,7 +23,7 @@
 #include <iterator>
 #include <sstream>
 #include "stdafx.h"
-#include "res/resource.h"        // // //
+#include "../resource.h"        // // //
 #include "Instrument.h"
 #include "InstrumentVRC7.h"		// // //
 #include "InstrumentEditPanel.h"

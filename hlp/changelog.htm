@@ -1,0 +1,361 @@
+<HTML>
+	<HEAD>
+		<TITLE></TITLE>
+		<META NAME="GENERATOR" Content="Microsoft Visual Studio .NET 7.1">
+        <link href="style.css" rel="stylesheet" type="text/css" />
+	    <style type="text/css">
+            .changelog
+            {
+	            font-family: verdana;
+	            font-size: 9pt;
+	            line-height: 150%;
+            }
+        </style>        
+	</HEAD>
+	<BODY>
+		<span class="topic">Change log</span><HR />
+        <br />
+
+        <span class="heading">Version 0.4.6</span>
+        <ul class="changelog">
+          <li>&nbsp;Pattern rows with unspecified instruments will use the selected instrument</li>
+          <li>&nbsp;Fixed some rendering bugs</li>
+          <li>&nbsp;Fixed instrument clone command bug</li>
+        </ul>
+
+        <span class="heading">Version 0.4.5</span>
+        <ul class="changelog">
+          <li>&nbsp;Improved VRC7 emulation, clipping will occur when audio is too loud</li>
+          <li>&nbsp;Improved accuracy of tempo calculation</li>
+          <li>&nbsp;Added multi-channel support to the insert command</li>
+          <li>&nbsp;Added song selector to the wave export dialog</li>
+          <li>&nbsp;Added drag and drop support to instrument list for instrument reordering</li>
+          <li>&nbsp;Added hex support to macro sequence strings and waves (x00 and $00)</li>
+          <li>&nbsp;Added option to display channel register values</li>
+          <li>&nbsp;Fixed a bug with the transpose command when used without an active selection</li>
+          <li>&nbsp;Fixed a portamento up/down effect bug when used on a silent channel</li>
+          <li>&nbsp;Fixed a bug with Sxx effect on DPCM affecting the pulse 1 channel when exported to NSF</li>
+          <li>&nbsp;Fixed a bug when using delayed notes on the last row of a pattern</li>
+          <li>&nbsp;Fixed a few pattern editor render bugs</li>
+          <li>&nbsp;Fixed MIDI note on/off priority problem</li>
+        </ul>
+
+        <span class="heading">Version 0.4.4</span>
+        <ul class="changelog">
+          <li>&nbsp;Fixed a problem with fixed arpeggio not playing the final note</li>
+          <li>&nbsp;Fixed muting / unmuting channels affecting all channels when preview full row was enabled</li>
+          <li>&nbsp;Fixed toolbar icons not being visible in Windows XP</li>
+          <li>&nbsp;Fixed a problem that caused the 64th sample not staying assigned when file is loaded</li>
+          <li>&nbsp;Fixed note slides clearing the slide effect after reaching target note</li>
+          <li>&nbsp;Fixed the Select All (Ctrl+A) command behaviour to be more similar to IT</li>
+          <li>&nbsp;Fixed skip command (Dxx) in NSF code when skipping to any other row than 0</li>
+          <li>&nbsp;Fixed NES export</li>
+          <li>&nbsp;Updated PAL DPCM period table</li>
+        </ul>       
+        
+        <span class="heading">Version 0.4.3</span>
+        <ul class="changelog">
+          <li>&nbsp;Added names to the built in VRC7 patches</li>
+          <li>&nbsp;Added option to preview full row when editing notes</li>
+          <li>&nbsp;Added option to display flat notes instead of sharps</li>
+          <li>&nbsp;Added a fix for TNS-HFC carts when DPCM bankswitching is used</li>
+          <li>&nbsp;Added an audio level mixer</li>
+          <li>&nbsp;Removed MIDI import</li>
+          <li>&nbsp;Corrected VRC7 tuning table</li>
+          <li>&nbsp;Fixed DPCM instrument editor keyboard bug</li>
+          <li>&nbsp;Fixed NSF export when using sequences with hidden loop points</li>
+          <li>&nbsp;Fixed NSF code crash when using too many assigned DPCM samples</li>
+          <li>&nbsp;Fixed crash on startup when NSFplay is located in the same folder</li>
+          <li>&nbsp;Fixed a problem with N163 and FDS waves that appeared when playing a module</li>
+          <li>&nbsp;Fixed some DPCM sample editor bugs</li>
+          <li>&nbsp;Fixed duplicated paste bug in the frame editor</li>
+          <li>&nbsp;Fixed some noise pitch slide effect bugs</li>
+          <li>&nbsp;Fixed the tremolo effect command (7xx) on VRC7 channels</li>
+          <li>&nbsp;Fixed note slide effects on VRC7</li>
+        </ul>
+        
+        <span class="heading">Version 0.4.2</span>
+        <ul class="changelog">
+            <li>&nbsp;Added selection + drag & drop capability to the frame editor</li>
+            <li>&nbsp;NSF exporter will optimize N163 waves</li>
+            <li>&nbsp;Added initial delta counter setting to the DPCM instrument editor</li>
+            <li>&nbsp;Added a text exporter / importer (by rainwarrior)</li>
+            <li>&nbsp;Added a shortcut item for the duplicate patterns command</li>
+            <li>&nbsp;Added a volume mask option to pattern editor (edit menu)</li>
+            <li>&nbsp;Added module comments dialog</li>
+            <li>&nbsp;Adjusted filtering of FDS audio emulation</li>
+            <li>&nbsp;Fixed extra effect columns not being copied on shift+drag</li>
+            <li>&nbsp;Fixed a problem with shift+mouse wheel</li>
+            <li>&nbsp;Fixed a few other FTM file import problems</li>
+            <li>&nbsp;Fixed a problem with FDS wave previewing</li>
+            <li>&nbsp;Fixed a bankswitching bug when exporting multisong NSFs</li>
+            <li>&nbsp;Fixed VRC6 and MMC5 not being silenced by the Cxx command</li>
+            <li>&nbsp;Fixed some problems with the Dxx command</li>          
+        </ul>
+                  
+        <span class="heading">Version 0.4.1</span>
+        <ul class="changelog">        
+            <li>&nbsp;Added an instrument files menu</li>
+            <li>&nbsp;Added an option to copy volume column to text (Shift+copy)</li>
+            <li>&nbsp;Changed default key for note cut to '1'</li>
+            <li>&nbsp;Fixed some problems with the FTM import feature</li>
+            <li>&nbsp;Fixed vibrato (4xx) export bug</li>
+            <li>&nbsp;Fixed volume slide (Axx) export bug</li>
+            <li>&nbsp;Fixed an undo bug after pasting from clipboard</li>
+            <li>&nbsp;Fixed problem when loading instrument files that contains sequences of max size</li>
+            <li>&nbsp;Fixed some wave file export bugs</li>
+        </ul>
+                
+        <span class="heading">Version 0.4.0</span>
+        <ul class="changelog">
+            <li>&nbsp;Added fixed and relative arpeggio modes</li>
+            <li>&nbsp;Added DPCM bank switching</li>
+            <li>&nbsp;Added Namco expansion sound</li>
+            <li>&nbsp;Added pattern expand/shrink options</li>
+            <li>&nbsp;Added pattern & instrument deep clone commands (by coda)</li>
+            <li>&nbsp;Added assembly source export option</li>
+            <li>&nbsp;Added some NSF export optimizations</li>
+            <li>&nbsp;Added indication of unsaved files</li>
+            <li>&nbsp;Added support for 24bit and 32bit samples to the DPCM importer</li>
+            <li>&nbsp;Added better DPCM import resampler (by Jarhmander)</li>
+            <li>&nbsp;Added an option to toggle between old & new speed/tempo split-point</li>
+            <li>&nbsp;Moved the home/end key behaviour to the impulse tracker mode</li>
+            <li>&nbsp;Removed PAL option when using expansion chips</li>
+            <li>&nbsp;Increased auto-scroll speed</li>
+            <li>&nbsp;BPM calculation depends on the row highlight settings</li>
+			<li>&nbsp;Added rainwarrior's new VRC7 patches</li>
+            <li>&nbsp;Fixed the file creation date being overwritten when saving files</li>
+            <li>&nbsp;Fixed VRC6 sawtooth pitch bug</li>
+            <li>&nbsp;Fixed VRC6 instrument switch bug</li>
+            <li>&nbsp;Fixed FDS modulation bug (by rainwarrior)</li>
+            <li>&nbsp;Fixed FDS fine pitch setting in the tracker</li>
+            <li>&nbsp;Fixed FDS instrument release behaviour</li>
+            <li>&nbsp;Fixed export problem that occured when trying to play unassigned samples</li>
+            <li>&nbsp;Fixed VRC7 custom instrument bug in exported NSFs</li>
+        </ul>
+            
+        <span class="heading">Version 0.3.7</span>
+        <ul class="changelog">
+             <li>&nbsp;Added MML string copy/paste to VRC7 instrument editor </li>
+             <li>&nbsp;Added VRC7 built-in patch display </li>
+             <li>&nbsp;Added MML string copy/paste to FDS waveform editor </li>
+             <li>&nbsp;Added pattern font size selector </li>
+             <li>&nbsp;Added single instance option </li>
+             <li>&nbsp;Added play option to FTM file type in file explorer </li>
+             <li>&nbsp;Added context sensitive help (F1)</li>
+             <li>&nbsp;Ctrl+select to do whole channel selections</li>
+             <li>&nbsp;New effects:
+                 <ul class="text">
+                     <li>&nbsp;H = FDS modulation depth </li>
+                     <li>&nbsp;I = FDS modulation speed, high part </li>
+                     <li>&nbsp;J = FDS modulation speed, low part </li>
+                 </ul>
+             </li>
+             <li>Shortcuts with removed keys are saved </li>
+             <li>&nbsp;Fixed a crash bug when frame preview is disabled </li>
+             <li>&nbsp;Fixed a sequence editor crash bug </li>
+             <li>&nbsp;Fixed another VRC6 release sequence bug </li>
+             <li>&nbsp;Fixed the PAL flag bug when loading PAL FTMs </li>
+             <li>&nbsp;Fixed a pitch effect (Pxx) bug in exported NSFs </li>
+             <li>&nbsp;Fixed a portamento effect (3xx) bug on noise channel in exported NSFs
+             </li>
+             <li>&nbsp;Fixed MIDI sync clock receiver </li>
+             <li>&nbsp;Fixed a square channels emulation bug </li>
+             <li>&nbsp;Fixed a song editor bug </li>
+             <li>&nbsp;Fixed a problem when saving VRC6 instrument files </li>
+             <li>&nbsp;Fixed a small vibrato export bug</li>                
+        </ul>
+        
+        <span class="heading">Version 0.3.6</span>
+        <ul class="changelog">
+            <li>Added support for module importing</li>
+            <li>Added a shortcut option to show/hide control panel (in settings/shortcuts)</li>
+            <li>Added alt+left/right to move to left/right channel</li>
+            <li>Added block begin/end commands (Alt+B/E, available in IT-mode)</li>
+            <li>Exporter plugin code updated</li>
+            <li>Fixed a problem when loading multiple FTI files with DPCM samples</li>
+            <li>Fixed a problem that occured when using undo on patterns with Dxx/Bxx effects</li>
+            <li>Fixed VRC7 sweeps, auto portamento &amp; fine pitch setting</li>
+            <li>Adjusted VRC7 mixing volume after hardware measurements</li>
+            <li>Changed the VRC7 built-in patch settings to a more accurate set</li>
+            <li>Fixed auto-arpeggio issue in the tracker</li>
+            <li>Fixed the problem that caused release points to sometimes disappear in 
+                saved files</li>
+            <li>Fixed some synchronization issues that could cause a crash when switching 
+                expansion chip sound</li>
+            <li>Fixed some DPCM editor crash bugs</li>
+            <li>Fixed a bug that crashed the program when loading files with FDS 
+                instruments and FDS expansion disabled</li>
+            <li>Fixed a bug that crashed the program when repeatedly pressing F12</li>
+            <li>Fixed Sxx effect in exported files</li>
+            <li>Fixed Rxx effect issue on exported files</li>
+            <li>Fixed Vxx effect inconsistency when exporting NSFs</li>
+            <li>Fixed Qxx/Rxx effect behvaiour on FDS in tracker</li>
+            <li>Fixed Rxx/Qxx effect when triggering a new note before the slide is done 
+                in exported files</li>
+            <li>Fixed a bug in the Yxx-effect when exporting to NSF</li>
+            <li>Corrected the tremolo effect on FDS</li>
+            <li>Inverted the Pxx command in the FDS channel</li>
+            <li>Fixed FDS pitch clipping in exported files</li>
+            <li>Disabled FDS hardware envelope trigger for note 
+                offs when exporting to NSF</li>
+            <li>Fixed a crash bug when inserting/removing frames when max count is used</li>
+            <li>Fixed a crash bug that occurred sometimes when using select-all in a 
+                channel with all effect columns enabled</li>
+            <li>Mixed paste does not overwrite non-empty rows anymore</li>
+            <li>Note cut/release works on IT-mode when previewing notes</li>
+            <li>Fixed a crash bug when inputting MIDI data on an invalid channel</li>
+            <li>Fixed VRC6 sequence bug when triggering the release part</li>
+            <li>Fixed a bug where DPCM would fail in exported NSFs after 
+                removing instruments</li>
+            <li>Fixed a crash bug when using a custom refresh rate with expansion chips</li>
+        </ul>
+        
+        <span class="heading">Version 0.3.5</span>
+        <ul class="changelog">
+            <li>Delete key deleted two rows on the bottom row, fixed</li>
+            <li>Entering an instrument column number moves to that instrument</li>
+            <li>Fixed a bug that caused files with 64 instruments to not load</li>
+            <li>Fixed export bug where instruments with empty sequences caused the 
+                file to not work </li>
+            <li>New effect Sxx, cut note after xx frames </li>
+            <li>New effect Xxx, DPCM retrigger, xx = delay in frames </li>
+            <li>Added a feature to remove unused instruments &amp; 
+                patterns</li>
+            <li>Load/save instrument &amp; DPCM paths bug on Windows Vista &amp; 7 fixed </li>
+            <li>Beeps on Alt+[key] removed </li>
+            <li>Redraws screen on row highlight change </li>
+            <li>Fixed pattern display when frame preview is disabled </li>
+            <li>Fixed the tracker/nsf inconcistency when note delay and speed 
+                change was used on the same row </li>
+            <li>DPCM file preview added </li>
+            <li>CTRL+click in frame editor to queue next 
+                frame when playing </li>
+            <li>Added VRC7 &amp; FDS expansion chips</li>
+            <li>Copy &amp; paste in frame editor. Ctrl+C to copy a row and Ctrl+V to 
+                paste </li>
+            <li>Added note release command. Release-part of sequences are defined 
+                by a &#39;/&#39; in the sequence string. </li>
+            <li>Shortcut editor supports combinations of ctrl+alt+shift </li>
+            <li>Added a new vibrato mode that bends both up and 
+                down, old mode is still available as an option</li>
+            <li>Fixed a bug that caused corruption when using undo after pattern 
+                size change</li>
+            <li>Export plugin support is added</li>
+            <li>New commands in the shortcut editor:
+                <ul class="changelog">
+                    <li>Play song from start (F5)</li>
+                    <li>Play and repeat pattern (F6)</li>
+                    <li>Play from cursor (F7)</li>
+                    <li>Stop (F8)</li>
+                    <li>Move to pattern (F2) / frame editor (F3)</li>
+                    <li>Replace instrument (Alt+S)</li>
+                </ul>
+            </li>
+            <li>Frame (order) window now has an edit mode, double click to activate it. Keys:
+                <ul class="changelog">
+                    <li>0-F: selects a pattern</li>
+                    <li>Ctrl+Up/Down: moves selected frame up/down</li>
+                    <li>Insert/Delete: inserts and deletes frames</li>
+                    <li>Ctrl+C: copy current frame, Ctrl+V: paste frame into selected frame</li>
+                </ul>
+            </li>
+        </ul>
+        
+        <span class="heading">Version 0.3.0</span>
+        <ul class="changelog">
+            <li>MMC5 expansion sound support</li>
+            <li>Improved pattern editor (possible to select multiple channels, drag&#39;n&#39;drop, 
+                control+drag = copy, shift+drag = mix) </li>
+            <li>Ctrl+wheel = Transpose selected notes </li>
+            <li>Shift+wheel = Increase/decrease instrument, volume and effect 
+                values </li>
+            <li>Scroll lock = Toggle follow mode </li>
+            <li>Control+D = Duplicate frame </li>
+            <li>It&#39;s possible to edit directly in the frame editor by double 
+                clicking </li>
+            <li>Customizable keys for note cut, repeat and clear field </li>
+            <li>Added second highlight </li>
+            <li>Added a repeat action key </li>
+            <li>Added a second highlight option </li>
+            <li>Fixed a bug with the tremolo effect</li>
+        </ul>
+        
+        <span class="heading">Version 0.2.9</span>
+        <ul class="changelog">
+            <li>New effects Q, R (pitch slide),
+                A (volume slide)  A (volume slide)</li>
+            <li>Fixed a tempo bug in the tracker</li>
+            <li>VRC6 support added</li>
+            <li>Improved the song editor</li>
+            <li>Added options to disable follow mode
+                when playing and customizable row highlighting</li>
+            <li>Added clear patterns command</li>
+            <li>Wave file 
+                export</li>
+            <li>Added .NES file exporting</li>
+            <li>Improved hardware sweep commands
+                in the tracker again (accurate NSF player is needed to get those right)</li>
+            <li>Fixed a bug where NSFs would
+                fail if there was deleted instruments in the file</li>
+            <li>Fixed a 
+                problem with NSF bankswitching</li>
+            <li>Fixed some problems with note
+                delay command in tracker and NSF</li>
+        </ul>
+        
+        <span class="heading">Version 0.2.7</span>
+		<UL class="changelog">
+			<LI>New NSF code,&nbsp;creates&nbsp;smaller NSF files&nbsp;(and use less 6502&nbsp;CPU).
+			<LI>NSF bank switching is used automatically when needed.
+			<LI>New pattern effects: V, square duty setting/noise mode; Y, DPCM sample offset
+			<LI>Settings edit boxes are locked from editing, double click to unlock.
+			<LI>Fixed some bugs in the instrument editor to avoid crashes.
+			<LI>Added modplug keyboard style when the modplug setting is enabled.
+			<LI>Optimized screen updates,&nbsp;the tracker should use less CPU.
+			<LI>Currently selected instrument&nbsp;is highlighted in the&nbsp;list box.
+			<LI>Added an option to mask the instrument when inserting new&nbsp;notes.
+			<LI>Added a tempo box to the song settings.
+			<LI>Added multiple-tap-of-home-key functionality.
+			<LI>Added an option to&nbsp;select the instrument currently being played by the selected channel.
+			<LI>Fixed mixed pasting, instruments is now also pasted.
+			<LI>Fixed the&nbsp;instrument sequence too long crash bug.
+			<LI>Added buttons for next/prev song in the toolbar.
+			<LI>Auto-arpeggio works for PC keyboard input.
+			<LI>The commands speed, jump, skip and halt are now&nbsp;handled from muted channels.
+			<LI>Notes won't be retriggered&nbsp;when pushing two buttons at the same time and then releasing one.
+			<LI>Added a shortcut editor to the option dialog, note that the default shortcuts will still be shown in menus.
+			<LI>Page up/down jump lenght is customizable from configuration.
+			<LI>Impulse tracker edit option added.
+			<LI>The cursor will move with the same length as step length when moving it.
+			<LI>Fixed a bug that occured when moving the cursor when multiple effect tracks are visible.
+			<LI>Changed the pith sequence interpreter.
+			<LI>Volume of channels will be rounded of to 1 instead of 0.
+			<LI>DPCM delay works in the tracker. </FONT>
+            <li>Fixed a problem that caused 8-bit wave files to fail when imported to DPCM. </font></li>
+            <li>Fixed the crash problem when using samples too long.&nbsp;
+            <li>Added a value gradients option for the volume column.
+            <li>Paste works&nbsp;when edit mode&nbsp;is off.
+			<LI>Changed the noise channel to display frequencies instead of useless notes.
+			<LI>Square hardware sweep is adjusted.
+			<LI>Scrolling with the mouse wheel in free cursor mode will scroll the view and not cursor 
+			<LI>New keys
+		        <UL class="changelog">
+				    <LI>Numpad 0 - 9 = Select instrument 0 - 9</LI>
+					<LI>Ctrl + Numpad = Set step size</LI>
+                    <LI>Alt + F9 = Mute channel</LI>
+                    <LI>Alt + F10 = Solo channel</LI>
+					<LI>Numpad / = Decrease octave</LI>
+					<LI>Numpad * = Increase octave</LI>
+                    <LI>Ctrl + up = Next instrument</LI>
+                    <LI>Ctrl + Down = Previous instrument</LI>
+                    <LI>Alt + T = Mask instrument column</LI>
+                </UL>
+            </LI>
+		</UL>
+		
+		<hr />
+        <span class="footer"><i>Back to <a href="main_index.htm">main index</a></i></span>
+		
+	</BODY>
+</HTML>

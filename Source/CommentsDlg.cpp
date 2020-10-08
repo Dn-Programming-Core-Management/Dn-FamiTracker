@@ -19,7 +19,7 @@
 */
 
 #include "stdafx.h"
-#include "res/resource.h"
+#include "../resource.h"
 #include "CommentsDlg.h"
 
 // CCommentsDlg dialog

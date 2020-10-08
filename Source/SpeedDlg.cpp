@@ -21,7 +21,7 @@
 */
 
 #include "stdafx.h"
-#include "res/resource.h"
+#include "../resource.h"
 #include "SpeedDlg.h"
 
 const int RATE_MIN = 16;		// // //

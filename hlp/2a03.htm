@@ -1,0 +1,312 @@
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" Content="Microsoft Visual Studio 8.0">
+<TITLE></TITLE>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+        td.key
+        {
+            width: 35px;
+            text-align: center;
+            border: solid 1px #808080;
+        }
+        td.freq
+        {
+            width: 100px;
+            text-align: center;
+            border: solid 1px #808080;
+        }        
+    </style>
+</HEAD>
+<BODY>
+
+    <span class="topic">2A03/2A07 internal channels</span><hr />
+    
+    <p class="heading">About</p>
+    
+    <p class="text">
+        This is the sound generator found inside the NES CPU. The NTSC version 
+        (america/japan) is named 2A03 and the PAL version (europe) is named 2A07. The 
+        difference between the chips is that NTSC version runs at 1.79 MHz and 60 FPS 
+        while PAL runs at 1.66 MHz and 50 FPS.</p>
+    <p class="text">
+        The audio refresh rate is normally tied to the video refresh rate, where each 
+        video frame corresponds to one audio tick, but the NSF format allows any refresh 
+        rate and is customizable from the 
+        <a href="menu_tracker.htm">Tracker menu</a></p>
+    <p class="text">
+        There is five sound channels available:</p>
+    
+    <ul class="text">
+        <li><b>Pulse 1 and 2</b><br />
+            Produces pulse waves with four duty lengths (12.5%, 25%, 50% and 25% inverted). 
+            These channels have a hardware sweep unit that can be accessed by
+            <a href="effect_list.htm">H and I effects</a>.<br /><br />
+            <i>Note:</i> There is a bug that resets the duty phase when switching between 
+            certain frequencies, this can be heard as a pop and might be noticable when 
+            using vibrato or pitch slides across those frequencies.<br /><br />
+        </li>
+        
+        <li><b>Triangle</b><br />
+            Triangle shaped waveform. There is no volume control for this channel, 
+            so it will always be either on or off. The triangle cycle period is 
+            twice as long as for square channels so triangle notes will be one octave lower than 
+            square notes.<br /><br />
+        </li>
+        
+        <li><b>Noise</b><br />
+            White noise generator.<br />
+                        Can produce 32k-bit and 93-bit sequences, selectable
+            from the instruments duty/noise setting. There are only 16 different 
+            pitches available, so a pitch value instead of notes &amp; octaves is displayed.<br /><br />
+        </li>
+
+        <li><b>DPCM (Delta PCM)</b><br />
+            Also known as DMC.<br />
+            Used to play delta modulated samples. 
+            Channel effects (volume, arpeggio &amp; pitch slides) does not work on this channel. 
+            The volume column has no effect on this channel.
+        </li>
+    </ul>
+    
+    <table class="noteFrame" cellpadding="5px">
+        <tr>
+            <td>
+                <p class="text">
+                    <b>Note:</b> 
+                    The volume level 
+                    of triangle and noise channels will be affected by the DPCM channel, 
+                    due to the way the sound is mixed in the hardware. 
+                    More info is available on the bottom of this page.
+                </p>
+            </td>
+        </tr>
+    </table>
+    
+    <hr />
+    <p class="heading"><a name="Instruments">Instruments</a></p>
+    
+    <p class="text">
+        The 2A03 instruments contains a combination of parameters for the 
+        waveform channels and a set of samples for the DPCM channel.</p>
+        
+    <p class="text"><b>2A03 settings</b></p>
+    
+    <p class="text">
+        <img id="IMG1" style="FONT-SIZE: 10pt" src="img/inst_2a03.png" alt=""></p>
+    
+    <p class="text">
+        This part of the instrument is only used by the wave channels of 2A03 (pulse, triangle and noise). 
+        The idea is based on the MML style, where a set of sequences are used to program the channels. 
+        A sequence is a list of values that are applied to the channel at the same rate as the NSF refresh rate, shown in the main window.
+        As shown in the example above, 30 steps take 500 ms to run when using the default rate of 60 FPS.</p>
+    
+    <p class="text">
+        These effects are available</p>
+    
+    <ul class="text">
+        <li>
+            <b>Volume</b><br />
+            Controls channel amplitude. The triangle channel has no volume control, but a volume of zero will make it silent.<br />
+            Range: <b>0</b> to <b>15</b>.<br />
+            <br />
+        </li>
+        <li>
+            <b>Arpeggio</b><br />
+            Used for rapid note shifting, commonly used to simulate chords. This sequence has three separate modes: absolute, relative and fixed.<br />
+            <ul>
+            <li><i>Absolute:</i></li> adds to the base note (default).<br />
+            <li><i>Relative:</i></li> adds to the base note and saves the result as new base note.<br />
+            <li><i>Fixed:</i></li> does not add to the base note, instead it's used after the sequence 
+            is done. Adding a loop prevents the base note from being used at all.<br />
+            </ul>
+            <br />
+        </li>
+        <li>
+            <b>Pitch bend / high-speed pitch bend</b><br />
+            Affects the pitch, Hi-pitch multiplies the value by 16.<br />
+            Range: <b>-127</b> to <b>126</b> (pitch units)<br />
+            <br />
+        </li>
+        <li>
+            <b>Duty cycle / noise mode</b><br />
+            Sets the duty cycle period and noise mode, the triangle channel is unaffected.<br />
+            <ul>
+            <li><i>Pulse:</i></li> <b>0</b> = 12.5%, <b>1</b> = 25%, <b>2</b> = 50%, <b>3</b> = 75% (pulse width)<br />
+            <li><i>Noise:</i></li> <b>0</b> = 32k-bit mode, <b>1</b> = 93-bit mode</ul>
+        </li>
+    </ul>
+    
+    <p class="text">
+        Sequences are defined in the graphical sequence editor, where you can draw with 
+        the mouse (right-click to draw lines) or directly edit the values in the text box. 
+        Left click the bottom part to set a loop point and right click to set a release point. 
+        The text box accepts &#39;$&#39; and &#39;x&#39; for hexadecimal notation.</p>
+        
+    <p class="text">
+        A loop point causes the sequence to loop and a release points will hold the 
+        sequence until a release command. The loop point is defined as a &#39;|&#39; and release point as &#39;/&#39; in the text 
+        string.</p>
+        
+    <p class="text">
+        Any key can be pressed inside the instrument editor to preview the instrument. 
+        Press ESC to close the instrument editor.</p>
+    
+    <hr />
+    <p class="text"><b>DPCM samples</b></p>
+    
+    <p class="text">
+		<IMG id="IMG2" style="FONT-SIZE: 10pt" src="img/inst_dpcm.png" alt=""></p>
+
+    <p class="text">
+        This tab is used to assign samples for the DPCM channel, it 
+        does not affect any other channel. Assigned samples are samples assigned in 
+        the selected instrument while loaded samples are global for all instruments.</p>
+    
+    <ul class="text">
+        <li>
+            <b>Load</b><br />
+            Load samples from files, the default file extension for DPCM files is &#39;.dmc&#39;. The format must be 1-bit delta PCM and max size is 4081 
+            bytes. The size should be a multiple of 16 + 1 bytes, otherwise the sample will be padded.<br /><br />
+        </li>
+        <li>
+            <b>Unload</b><br />
+            Remove selected sample.<br /><br />
+        </li>
+        <li>
+            <b>Save</b><br />
+            Saves selected sample to a file.<br /><br />
+        </li>
+        <li>
+            <b>Import</b><br />
+            Load and convert PCM&nbsp; files to delta PCM.
+            <a href="dpcm_import.htm">See more info about importing PCM.</a><br /><br />
+        </li>
+        <li>
+            <b>Edit</b><br />
+            Open the <a href="dpcm_editor.htm">DPCM editor</a>.<br /><br />
+        </li>
+        <li>
+            <b>Preview</b><br />
+            Plays the sample (at pitch 15).<br />
+        </li>
+        
+    </ul>
+    
+    <p class="text">
+        The available space for DPCM samples is 256 kB with bankswitching (16 kB without bankswitching). 
+		Select a key in &quot;Assigned samples&quot;-box and select the sample from the 
+        drop-down box below (or right click in the list). The pitch box&nbsp;sets the&nbsp;pitch for the sample (15 - 0).
+        The &quot;<b>&lt;-</b>&quot;-button can also be used to assign samples, and &quot;<b>-&gt;</b>&quot;-button to remove assigned 
+        samples.</p>
+    
+    <p class="text">
+        The loop setting will enable the DPCM loop mode, where the entire sample is 
+        looped from start to end.</p>
+    <p class="text">
+        The D-counter (delta counter) setting is used to force the delta counter to an initial value before the 
+        sample is played (equivalent to a Zxx-command in the pattern). Set it to Off to start playing the sample without resetting 
+        the delta counter.</p>
+    <p class="text">
+        The pitch setting translates to a frequency according to the 
+        following table:</p>
+        
+    <table class="default" border="1" cellpadding="3px" style="width: 130px">
+        <tr>
+            <td class="key highlight"><b>Key</b></td>
+            <td class="freq highlight"><b>Frequency</b></td>
+        </tr>
+        <tr>
+            <td class="key">0</td>
+            <td class="freq">4181.71 Hz</td>
+        </tr>
+        <tr>
+            <td class="key">1</td>
+            <td class="freq">4709.93 Hz</td>
+        </tr>
+        <tr>
+            <td class="key">2</td>
+            <td class="freq">5264.04 Hz</td>
+        </tr>
+        <tr>
+            <td class="key">3</td>
+            <td class="freq">5593.04 Hz</td>
+        </tr>
+        <tr>
+            <td class="key">4</td>
+            <td class="freq">6257.95 Hz</td>
+        </tr>
+        <tr>
+            <td class="key">5</td>
+            <td class="freq">7046.35 Hz</td>
+        </tr>
+        <tr>
+            <td class="key">6</td>
+            <td class="freq">7919.35 Hz</td>
+        </tr>
+        <tr>
+            <td class="key">7</td>
+            <td class="freq">8363.42 Hz</td>
+        </tr>
+        <tr>
+            <td class="key">8</td>
+            <td class="freq">9419.86 Hz</td>
+        </tr>
+        <tr>
+            <td class="key">9</td>
+            <td class="freq">11,186.08 Hz</td>
+        </tr>
+        <tr>
+            <td class="key">10</td>
+            <td class="freq">12,604.03 Hz</td>
+        </tr>
+        <tr>
+            <td class="key">11</td>
+            <td class="freq">13,982.60 Hz</td>
+        </tr>
+        <tr>
+            <td class="key">12</td>
+            <td class="freq">16,884.65 Hz</td>
+        </tr>
+        <tr>
+            <td class="key">13</td>
+            <td class="freq">21,306.82 Hz</td>
+        </tr>
+        <tr>
+            <td class="key">14</td>
+            <td class="freq">24,857.95 Hz</td>
+        </tr>
+        <tr>
+            <td class="key">15</td>
+            <td class="freq">33,143.94 Hz</td>
+        </tr>
+    </table>
+    
+    <p class="text">
+        This is equivalent to the quality setting when converting WAV files to DPCM 
+        samples.</p>
+        
+    <table class="noteFrame" cellpadding="5px">
+        <tr>
+            <td>
+                <p class="text">
+                    <b>Note:</b>
+                    Playing a DPCM sample may decrease the volume level of triangle and noise. 
+                    If full volume isn&#39;t restored after the sample is finished, 
+                    use a note stop or a Z00-effect in the DPCM channel to restore it. 
+                    You can use the 
+                    <a href="menus.htm#Tracker">Tracker/Display DPCM</a> 
+                    option to display the current value of the DPCM delta counter, 
+                    a higher value results in lower volume output. Likewise, you can use the Zxx 
+                    effect to get some additional control of volume on the triangle and noise 
+                    channels.
+                </p>
+            </td>
+        </tr>
+    </table>
+
+    <hr />
+    <span class="footer">Back to <a href="sound_overview.htm">sound hardware</a> &middot; <a href="main_index.htm">main index</a></span>
+
+</BODY>
+</HTML>

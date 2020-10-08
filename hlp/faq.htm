@@ -1,0 +1,150 @@
+<HTML>
+<HEAD>
+    <META NAME="GENERATOR" Content="Microsoft Visual Studio 8.0">
+    <TITLE></TITLE>
+    <link href="style.css" rel="stylesheet" type="text/css" />	
+</HEAD>
+<BODY class="text">
+
+    <span class="topic">Frequently Asked Questions</span><hr />
+
+    <div style="line-height: 150%">
+
+    <p>
+        This is a copy of the FAQ on the wiki. The <a href="http://famitracker.com/wiki/index.php?title=Frequently_Asked_Questions" target="new">online version</a> might be more 
+        up to date.</p>
+        
+    <h3>
+        <span class="mw-headline">Module</span></h3>
+    <p>
+        <b>Q:</b> <i>So... How do I get started?</i><br />
+        <b>A:</b> The first thing to do would be to create an instrument. On the 
+        top-right corner of the screen you will see a large empty black box. Click the 
+        &quot;New Instrument&quot; button below that. Now double-click your new instrument, and 
+        start playing around with it (starting with volume obviously) until you get a 
+        sound that you&#39;re satisfied with. Then you can start laying down some notes, and 
+        away you go!
+    </p>
+    <p>
+        <b>Q:</b> <i>How do I add a sound chip like MMC5 or VRC6 to my module?</i><br />
+        <b>A:</b> Simply open Module&gt;Module Properties. There you will find an Expansion 
+        Chip menu where you can choose from one of the
+        <a href="http://famitracker.com/wiki/index.php?title=Sound_hardware#Expansion_sound" 
+            title="Sound hardware">available sound chips</a>.
+    </p>
+    <p>
+        <b>Q:</b> <i>How do I create instruments for them? I can&#39;t find the option to 
+        create a <a class="mw-redirect" 
+            href="http://famitracker.com/wiki/index.php?title=VRC6" title="VRC6">VRC6</a> 
+        instrument!</i>
+        <br />
+        <b>A:</b> To create an instrument for a specific chip, the cursor should be 
+        focused on one of channels of the chip in question, because every chip has its 
+        own type of instrument and you cannot, for instance, use a 2A03 instrument on a 
+        VRC6 square channel.
+        <br />
+    </p>
+    <h3>
+        <span class="mw-headline">Editing</span></h3>
+    <p>
+        <b>Q:</b> <i>I can&#39;t find key for stopping note (dash symbol in the pattern). 
+        I&#39;ve checked &#39;Shortcuts&#39; in &#39;Configuration&#39;, and haven&#39;t found anything similar.</i><br />
+        <b>A:</b> The key is definable, it is in &#39;Configuration&#39;, &#39;General&#39;, 
+        bottom-right corner (frame titled &#39;Keys&#39;). If you have problems with redefining 
+        the key, you may need to add the Standard English keyboard layout using your 
+        operating system&#39;s regional and language options.
+    </p>
+    <p>
+        <b>Q:</b> <i>How do I write triplets?</i>
+        <br />
+        <b>A:</b> There are several valid ways to insert triplets in your module, but 
+        one of the most common ones is to use the <b><a class="mw-redirect" 
+            href="http://famitracker.com/wiki/index.php?title=Gxx" title="Gxx">Gxx</a></b> 
+        command. If your module&#39;s tempo and speed are set to 150 and 6, respectively, 
+        then you can use <b>G02</b> and <b>G04</b> on your triplet&#39;s second and third 
+        notes, and you will get perfect triplets. Bear in mind that if you are using a 
+        different tempo, different values will be required, so mess around with that 
+        until you get the sound you like.
+    </p>
+    <p>
+        <b>Q:</b> <i>How to make patterns with different length?</i>
+        <br />
+        <b>A:</b> All the patterns have the same length (defined by the &quot;Rows&quot; field), 
+        however you can make one pattern shorter using effect <b><a class="mw-redirect" 
+            href="http://famitracker.com/wiki/index.php?title=Dxx" title="Dxx">Dxx</a></b>.
+    </p>
+    <p>
+        <b>Q:</b> <i>How do I stop my song, as opposed to letting it loop all the time?</i><br />
+        <b>A:</b> Use the <b><a class="mw-redirect" 
+            href="http://famitracker.com/wiki/index.php?title=Cxx" title="Cxx">Cxx</a></b> 
+        command at the very end of your module to stop it dead. <b>xx</b> does nothing; 
+        use zeros.
+    </p>
+    <a id="Instruments" name="Instruments"></a>
+    <h3>
+        <span class="mw-headline">Instruments</span></h3>
+    <p>
+        <b>Q:</b> <i>How to load instrument file (*.fti)?</i>
+        <br />
+        <b>A:</b> There are five buttons under the instruments list - New, Delete, Open, 
+        Save, Editor. Version 0.3.0 has some problems with instruments loading under 
+        Windows 7, they could not be saved or loaded from arbitrary folder.
+    </p>
+    <p>
+        <b>Q:</b> <i>I&#39;ve made one instrument, and when I&#39;m trying to make another, 
+        first one changes as well.</i>
+        <br />
+        <b>A:</b> You should select new &#39;Sequence&#39; for new instrument. It could be done 
+        by clicking &#39;Select next empty slot&#39; button.
+    </p>
+    <p>
+        <b>Q:</b> <i>I&#39;m having difficulty getting any sound out of my custom VRC7 
+        instruments. Help!</i>
+        <br />
+        <b>A:</b> The first thing to do if you want sound is to increase the attack on 
+        the carrier. Then you can mess around with the settings until you get something 
+        that you are pleased with.
+    </p>
+    <p>
+        <b>Q:</b> <i>My VRC6 sawtooth wave sounds all wrong! What did I do?!</i>
+        <br />
+        <b>A:</b> Make sure you didn&#39;t accidentally set the duty cycle to 1 in the 
+        instrument settings or effect column. This is an intentional feature to distort 
+        the sawtooth wave.
+    </p>
+    <a id="Troubleshooting" name="Troubleshooting"></a>
+    <h3>
+        <span class="mw-headline">Troubleshooting</span></h3>
+    <p>
+        <b>Q:</b> <i>I have problem with FamiTracker under Windows Vista x64 or Windows 
+        7, the sound is stuttering.</i>
+        <br />
+        <b>A:</b> Try to update sound card drivers.
+    </p>
+    <p>
+        <b>Q:</b> <i>I get sound alright, but it&#39;s constantly clicking.</i>
+        <br />
+        <b>A:</b> The buffer length is too short. Try adjusting it in the &quot;Sound&quot; tab in 
+        File&gt;Configuration.
+    </p>
+    <p>
+        <b>Q:</b> <i>I tried opening a module in FamiTracker, but it gives me an error 
+        message!</i>
+        <br />
+        <b>A:</b> Most likely you are attempting to open a module from a newer version 
+        into an old version of FamiTracker (occasionally the error happens the other way 
+        around: trying to open an older file in a new version). Download the latest 
+        stable release (or, if you already have that, the newest beta), and try opening 
+        the file in it. If the problem persists, report your problem on the
+        <a class="external text" href="http://famitracker.com/forum/threads.php?id=2" 
+            rel="nofollow" title="http://famitracker.com/forum/threads.php?id=2">
+        Famitracker forums</a>.
+    </p>
+
+    </div>
+
+    <hr />
+    <span class="footer"><i>Back to <a href="main_index.htm">main index</a></i></span>
+
+</BODY>
+</HTML>

@@ -21,7 +21,7 @@
 */
 
 #pragma once
-#include "res/resource.h"
+#include "../resource.h"
 
 extern const int RATE_MIN;
 

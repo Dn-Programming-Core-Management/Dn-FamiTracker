@@ -1,0 +1,92 @@
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" Content="Microsoft Visual Studio 8.0">
+<TITLE></TITLE>
+<link href="style.css" rel="stylesheet" type="text/css" />
+</HEAD>
+<BODY>
+
+    <span class="topic">Namco 163</span>
+    <hr />
+    
+    <p class="heading">About</p>
+    
+    <p class="text">
+        This chip was created by Namco and contains up to eight wave channels, this chip 
+        was earlier erroneously known as Namco 106 (which is the same chip but without 
+        the audio capabilities). It was used in multiple Namco games, such as 
+        Final Lap, King of Kings and Rolling Thunder.</p>
+    
+    <p class="text">
+        The chip has 128 bytes of RAM for wave storage, but the last 64 bytes is shared 
+        with the audio registers so the wave area is practically limited to 64 bytes (or 
+        128 wave steps). Each channel can use a wave size from 4 to 256 steps, but most 
+        NSF players supports only 32 steps as the largest size. This is also the limitation 
+        in the tracker at the moment.</p>
+        
+    <table class="noteFrame" cellpadding="5px"><tr><td>
+        <p class="text">
+            <b>Note:</b> This chip has 8 channels in total, but the actual number of channels to use 
+            is configurable (from the module properties dialog). This is of importance 
+            because all channels are clocked sequentally by the chip, so the pitch range 
+            will depend on the channel count: a lower number of channels allows an extended 
+            top pitch range. More channels will also increase the effects of aliasing (since 
+            this chip uses phase accumulation for tone generation).</p>
+            
+        <p class="text">
+            What is even more important is that the DAC is also shared by 
+            all channels in the same sequential manner. The rate for this channel switching 
+            is 120 kHz, which means that <b>when all 8 channels are enabled, there will be 
+            audible channel switching noise at 15 kHz</b> (or 17 kHz when 7 channels are 
+            enabled). The Namco cart did not have a LP filter to deal with this, so it 
+            is very audible. To avoid this, do not use 8 (or 7) channels. Most games used 
+            only four channels. This behaviour is not commonly emulated by NSF players 
+            (at the moment), with the exception of NEZplug++.</p>
+    </td></tr></table>
+    
+    <hr />
+    <p class="heading">Instruments</p>
+    
+    <p>
+        <IMG id="IMG1" style="FONT-SIZE: 10pt" src="img/inst_n163.PNG" alt="Namco instrument editor"></p>
+    
+    <p class="text"><b>Envelopes</b></p>
+    
+    <p class="text">
+        Namco instruments has an envelope editor that behaves like 2A03, with the 
+        exception for an extra wave setting.</p>
+        
+    <p class="text">
+        See <a href="2a03.htm#Instruments">2A03 instruments</a> for more information.</p>
+
+    <p class="text"><b>Wave</b></p>
+    
+    <p class="text">
+        This tab is used to define waves for the instrument, the wave editor is the same 
+        as used for FDS except that only 16 levels are available and the wave size is 
+        customizable. Like for FDS, a few presets are available.</p>
+    
+    <p class="text">
+        Up to 16 different waves can be stored in the same instrument, and the wave to 
+        actually use is controlled by the wave envelope setting or the V pattern effect. 
+        Only one wave is uploaded the the wave memory at the time.</p>
+    
+    <p class="text">
+        The location in the wave memory is customizable, and the user is responsible for 
+        being sure that no instruments tries to use the same memory position 
+        simultaneously! For example, two instruments that uses wave position 0 cannot be 
+        used at the same time, but can be used at different times. Two instruments that 
+        uses wave position 0 and 32 can be used simultaneously.</p>
+    
+    <p class="text">
+        The instrument editor will suggest wave positions depending on the wave size.</p>
+    
+    <p class="text">
+        Also be aware that the pitch table is calculated with 32 steps waves in mind, so 
+        waves that are not a power of two in size will be out of tune.</p>
+
+    <hr />
+    <span class="footer">Back to <a href="sound_overview.htm">sound hardware</a> &middot; <a href="main_index.htm">main index</a></span>
+
+</BODY>
+</HTML>

@@ -20,7 +20,7 @@
 
 
 #include "stdafx.h"
-#include "res/resource.h"
+#include "../resource.h"
 #include "ControlPanelDlg.h"
 
 // This class is mainly used to forward messages to the parent window

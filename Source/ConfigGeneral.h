@@ -24,7 +24,7 @@
 #pragma once
 
 #include "stdafx.h"		// // //
-#include "res/resource.h"        // // //
+#include "../resource.h"        // // //
 
 #define SETTINGS_BOOL_COUNT 23		// // //
 

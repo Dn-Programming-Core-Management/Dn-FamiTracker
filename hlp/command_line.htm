@@ -1,0 +1,57 @@
+<HTML>
+    <HEAD>
+        <TITLE></TITLE>
+        <META NAME="GENERATOR" Content="Microsoft Visual Studio .NET 7.1">
+        <link href="style.css" rel="stylesheet" type="text/css" />
+    </HEAD>
+    <BODY>
+
+<span class="topic">Command line</span><hr>
+
+<p class="text">
+    Famitracker may be invoked from the command line
+    to open a file, or to export an FTM to another file type.
+</p>
+
+<p class="heading">Open</p>
+
+<p><tt>FamiTracker [FTM filename]</tt></p>
+
+<p class="text">This command line will start FamiTracker and open the
+   specified FTM document.</p>
+
+<p class="heading">Export</p>
+
+<p><tt>FamiTracker [FTM filename] -export [export file] [log file] [DPCM file]</tt></p>
+
+<p class="text">This command line will export the specified FTM file to the specified
+   export file. Any messages created by the export process will
+   be sent to the specified log file. After exporting, FamiTracker
+   will close without opening its main window. This is intended
+   for automated processing of FTM files.</p>
+   
+<p class="text">The type of export is determined by the file extension used.
+   Known export file extensions:
+     <b>NSF</b>,
+     <b>NES</b>,
+     <b>BIN</b>,
+     <b>PRG</b>,
+     <b>ASM</b>,
+     <b>TXT</b>.
+   If the export file extension is not known, the first
+   custom export plugin will be tried instead, if available.
+   The DPCM file is only required for <b>BIN</b> export;
+   it is ignored in other cases.</p>
+
+<p class="heading">Disable crash dumps</p>
+
+<p><tt>FamiTracker [FTM filename] -nodump</tt></p>
+
+<p class="text">
+    This command will disable the crash dump generation, for cases where these are undesirable.</p>
+
+<hr />
+<span class="footer">Back to <a href="interface.htm">interface</a> &middot; <a href="main_index.htm">main index</a></span>
+
+    </BODY>
+</HTML>

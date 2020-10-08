@@ -1,0 +1,317 @@
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" Content="Microsoft Visual Studio 8.0">
+<TITLE></TITLE>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+        .tableDescription
+        {
+            font-size: 9pt;
+            font-family: Arial;
+        }
+    </style>
+</HEAD>
+<BODY>
+
+    <span class="topic">Konami VRC7</span><hr />
+    
+    <p class="heading">About</p>
+    
+    <p class="text">
+        The VRC7 chip contains a customized OPLL unit (YM2413) that has 6 channels for 
+        frequency modulation synthesis. This chip was only used in the game Lagrange Point 
+        by Konami.</p>
+        
+    <p class="text">
+        This chip has 15 predefined patches and can hold one user defined patch,
+        the predefined patches are 
+        customized for VRC7 and are not the default ones for
+        YM2413. </p>
+    
+    <p class="text">
+        Note cut command will clear the key on flag, note release command will clear the 
+        key on flag but keep the sustained flag.</p>
+    
+    <table class="noteFrame" cellpadding="5px"><tr><td>
+        <p class="text">
+            <b>Note:</b> 
+            The chip is limited to only <b>one</b> user 
+            defined patch, so it&#39;s not possible to simultaneously use different user defined 
+            patches in different channels!
+            See documents about YM2413 if you need more information.<br /><br />
+            
+            The available headroom range is limited by this chip and clipping will occur when the total level is too loud,
+            this occurs already when two channels are running at maximum volume, so keep the volume levels down.
+        </p>
+    </td></tr></table>
+            
+    <hr />
+    <p class="heading">Instruments</p>
+    
+    <IMG id="IMG1" src="img/inst_vrc7.png" alt="">
+
+    <p class="text">
+        Instruments contains a patch setting and the parameters for the 
+        custom patch (patch #0). The predefined patches (patch #1 
+        - #15) are defined in 
+        hardware and cannot be changed.</p>
+        
+    <p class="text">
+        Use copy/paste to create and read MML strings from the clipboard of the  
+        patch settings.</p>
+    
+    <p class="text">
+        The custom patch settings are enabled when patch 0 is selected
+        and are used to customize the modulator and carrier oscillator, 
+        but it will also display the settings for the internal patches.</p>
+    <p class="text">
+        <b>Note:</b> when using sustained patches, use the <b>note cut</b> command to move on 
+        to the release phase. The note release command will also release the note, but 
+        does so at a fixed rate.</p>
+        
+    <table border="1" cellpadding="3px" cellspacing="0" class="default" style="width: 12%">
+        <tr>
+            <td class="highlight" style="width: 200px">
+                <b>Parameter</b></td>
+            <td class="highlight" style="width: 320px">
+                <b>Description</b></td>
+            <td class="highlight" style="width: 80px">
+                <b>Range</b></td>
+        </tr>
+        <tr>
+            <td>
+                Attack, Decay, Sustain, Release</td>
+            <td>
+                ADSR envelope for the volume level.</td>
+            <td>
+                0 - 15</td>
+        </tr>
+        <tr>
+            <td>
+                Amplitude modulation</td>
+            <td>
+                Applies a fixed tremolo effect at 3.7 Hz</td>
+            <td>
+                on / off</td>
+        </tr>
+        <tr>
+            <td>
+                Vibrato</td>
+            <td>
+                Applies a fixed vibrato effect at 6.4 Hz</td>
+            <td>
+                on / off</td>
+        </tr>
+        <tr>
+            <td>
+                Sustained</td>
+            <td>
+                Switch between sustained and percussive tone</td>
+            <td>
+                on / off</td>
+        </tr>
+        <tr>
+            <td>
+                Key scaling</td>
+            <td>
+                Increases the ADSR rate for higher pitches</td>
+            <td>
+                on / off</td>
+        </tr>
+        <tr>
+            <td>
+                Key scaling level</td>
+            <td>
+                The attenuation level for key scaling, according to table 2</td>
+            <td>
+                0 - 3</td>
+        </tr>
+        <tr>
+            <td>
+                Wave rectification</td>
+            <td>
+                Half-wave rectification of the sine wave</td>
+            <td>
+                on / off</td>
+        </tr>
+        <tr>
+            <td>
+                Multiplication factor</td>
+            <td>
+                Multiplies the pitch by a factor, according to table 3</td>
+            <td>
+                0 - 15</td>
+        </tr>
+        <tr>
+            <td>
+                Feedback</td>
+            <td>
+                Modulator feedback level</td>
+            <td>
+                0 - 7</td>
+        </tr>
+        <tr>
+            <td>
+                Modulator Level</td>
+            <td>
+                Modulator mixing level</td>
+            <td>
+                0 - 31</td>
+        </tr>
+    </table>
+    
+    <span class="tableDescription">Table 1, Instrument parameters</span>
+    <br />
+    <br />
+    
+    <table class="default" border="1" cellpadding="3px" cellspacing="0" style="width: 110px">
+        <tr>
+            <td class="highlight" style="width: 40px">
+                <b>Value</b></td>
+            <td clasS="highlight" align="center">
+                <b>Rate</b></td>
+        </tr>    
+        <tr>
+            <td>
+                0</td>
+            <td align="center">
+                0 dB/oct</td>
+        </tr>
+        <tr>
+            <td>
+                1</td>
+            <td align="center">
+                1.5 dB/oct</td>
+        </tr>
+        <tr>
+            <td>
+                2</td>
+            <td align="center">
+                3 dB/oct</td>
+        </tr>
+        <tr>
+            <td>
+                3</td>
+            <td align="center">
+                6 dB/oct</td>
+        </tr>
+    </table>
+    
+    <span class="tableDescription">Table 2, Key Scale Level Table</span>
+    <br />
+    <br />
+    
+    <table class="default" border="1" cellpadding="3px" cellspacing="0" style="width: 110px">
+        <tr>
+            <td class="highlight" style="width: 40px">
+                <b>Value</b></td>
+            <td class="highlight" align="center">
+                <b>Factor</b></td>
+        </tr>    
+        <tr>
+            <td>
+                0</td>
+            <td align="center">
+                ½</td>
+        </tr>
+        <tr>
+            <td>
+                1</td>
+            <td align="center">
+                1</td>
+        </tr>
+        <tr>
+            <td>
+                2</td>
+            <td align="center">
+                2</td>
+        </tr>
+        <tr>
+            <td>
+                3</td>
+            <td align="center">
+                3</td>
+        </tr>
+        <tr>
+            <td>
+                4</td>
+            <td align="center">
+                4</td>
+        </tr>
+        <tr>
+            <td>
+                5</td>
+            <td align="center">
+                5</td>
+        </tr>
+        <tr>
+            <td>
+                6</td>
+            <td align="center">
+                6</td>
+        </tr>
+        <tr>
+            <td>
+                7</td>
+            <td align="center">
+                7</td>
+        </tr>
+        <tr>
+            <td>
+                8</td>
+            <td align="center">
+                8</td>
+        </tr>
+        <tr>
+            <td>
+                9</td>
+            <td align="center">
+                9</td>
+        </tr>
+        <tr>
+            <td>
+                10</td>
+            <td align="center">
+                10</td>
+        </tr>
+        <tr>
+            <td>
+                11</td>
+            <td align="center">
+                10</td>
+        </tr>
+        <tr>
+            <td>
+                12</td>
+            <td align="center">
+                12</td>
+        </tr>
+        <tr>
+            <td>
+                13</td>
+            <td align="center">
+                12</td>
+        </tr>
+        <tr>
+            <td>
+                14</td>
+            <td align="center">
+                15</td>
+        </tr>
+        <tr>
+            <td>
+                15</td>
+            <td align="center">
+                15</td>
+        </tr>
+    </table>
+
+    <span class="tableDescription">Table 3, Multiplication factor table</span>
+
+    <br />
+    <br />
+    <hr />
+    <span class="footer">Back to <a href="sound_overview.htm">sound hardware</a> &middot; <a href="main_index.htm">main index</a></span>
+
+</BODY>
+</HTML>

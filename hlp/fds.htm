@@ -1,0 +1,70 @@
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" Content="Microsoft Visual Studio 8.0">
+<TITLE></TITLE>
+<link href="style.css" rel="stylesheet" type="text/css" />
+</HEAD>
+<BODY>
+
+    <span class="topic">Nintendo FDS</span>
+    <hr />
+    
+    <p class="heading">About</p>
+    
+    <p class="text">
+        This is a single channel chip used in the Famicom Disk System hardware by 
+        Nintendo. It was an external disk drive unit available for 
+        Famicom, games was distributed on disks instead of carts.</p>
+        
+    <p class="text">
+        The channel uses a 64-step customizable waveform and has a simple frequency 
+        modulator.</p>
+    
+    <hr />
+    <p class="heading">Instruments</p>
+    
+    <p>
+        <IMG id="IMG1" style="FONT-SIZE: 10pt" src="img/inst_fds.PNG" alt=""></p>
+
+    <p class="text"><b>Wave editor</b></p>
+    
+    <p class="text">
+        The instrument editor contains a wave editor, the wave is 64 
+        steps long and the amplitude is 64 steps.</p>
+        
+    <p class="text">
+        Usage: Left-click to change each sample, middle-click to draw a 
+        line and right-click to switch between line/dot mode. A few presets are also 
+        available.</p>
+        
+    <p class="text">
+        Use copy/paste wave to copy a MML-string of the wave to/from the 
+        clipboard.</p>
+        
+    <p class="text"><b>Modulator editor</b></p>
+    
+    <p class="text">
+        The rest of the controls belongs to the frequency modulator: 
+        rate (0 - 4095), depth (0 - 63) and delay (0 - 255) 
+        after a note is triggered can be set. 
+        (This has been copied straight from MCK).</p>
+    
+    <p class="text">
+        The big box is the modulation table, where each box tells how much to add or 
+        subtract from the frequency. Each value is  
+        used twice by the modulator unit, and the frequency is automatically reset each time end 
+        is reached. Yellow = 0, green above = +1, +2, +4, green below = -1, -2, -4 and blue 
+        is reset to initial frequency. Use copy/paste table to copy and 
+        MML-string of the table to/from the clipboard.</p>
+        
+    <p>
+        <IMG id="IMG2" style="FONT-SIZE: 10pt" src="img/fds_fm_table.PNG" alt=""></p>
+    
+    <p class="text">
+        There is also a tab with envelopes for volume, arpeggio &amp; pitch.</p>
+
+    <hr />
+    <span class="footer">Back to <a href="sound_overview.htm">sound hardware</a> &middot; <a href="main_index.htm">main index</a></span>
+
+</BODY>
+</HTML>

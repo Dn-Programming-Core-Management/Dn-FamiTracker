@@ -397,7 +397,7 @@ add_executable(${exe}
 
 
         res/Dn-FamiTracker.rc
-        res/resource.h
+        resource.h
 
         version.h
         name.h

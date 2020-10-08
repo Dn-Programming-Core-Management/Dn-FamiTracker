@@ -1,0 +1,369 @@
+<HTML>
+    <HEAD>
+        <TITLE></TITLE>
+        <META NAME="GENERATOR" Content="Microsoft Visual Studio .NET 7.1">
+        <link href="style.css" rel="stylesheet" type="text/css" />
+    </HEAD>
+    <BODY>
+
+<span class="topic">Text import and export</span><hr>
+
+<p class="text">
+    This feature creates a text equivalent of an FTM file.
+    It is intended to facilitate the creation of automated tools for
+    reading or creating Famitracker data.
+</p>
+
+<p class="text">
+    The syntax consists of a list of commands. One command begins
+    each line, followed by a series of whitespace-separated tokens
+    to be consumed by that command. Blank lines are skipped.
+    The import begins with a new empty document, and each command
+    makes a change to the document.
+</p>
+
+<p class="text">
+    The format is not case-sensitive.
+    Future versions may not be backwards compatible;
+    save as FTM instead if this is needed.
+</p>
+
+<p class="heading">Commands</p>
+
+<p><ul>
+    <li><b>#</b> ...
+        <ul>
+            A line beginning with a # command is ignored by the importer, treated as a comment.
+            # must be followed by at least one whitespace character before any comments appear.
+        </ul>
+    </li>
+    <li><b>TITLE</b> [title]
+        <ul>
+            <li><i>title</i>: string - the document's title</li>
+        </ul>
+    </li>
+    <li><b>AUTHOR</b> [author]
+        <ul>
+            <li><i>title</i>: string - the document's author</li>
+        </ul>
+    </li>
+    <li><b>COPYRIGHT</b> [copyright]
+        <ul>
+            <li><i>title</i>: string - the document's copyright information</li>
+        </ul>
+    </li>
+    <li><b>COMMENT</b> [comment]
+        <ul>
+            This adds a line to the document comment.
+            Multiple <i>COMMENT</i> commands will each add a new line to the comment.
+            <li><i>comment</i> string - line of text to add</li>
+        </ul>
+    </li>
+    <li><b>MACHINE</b> [machine]
+        <ul>
+            <li><i>machine</i>: int[0,1] - 0 for NTSC, 1 for PAL</li>
+        </ul>
+    </li>
+    <li><b>FRAMERATE</b> [fps]
+        <ul>
+            <li><i>fps</i>: int[0,800] - music framerate, 0 for machine default</li>
+        </ul>
+    </li>
+    <li><b>EXPANSION</b> [chips]
+        <ul>
+            <li><i>chips</i>: int[0,255] - bitfield representing expansion chips used: 1=VRC6, 2=VRC7, 4=FDS, 8=MMC5, 16=N163, 32=S5B</li>
+        </ul>
+    </li>
+    <li><b>VIBRATO</b> [mode]
+        <ul>
+            <li><i>mode</i>: int[0,1] - 0 for old style vibrato, 1 for new style</li>
+        </ul>
+    </li>
+    <li><b>SPLIT</b> [split]
+        <ul>
+            <li><i>split</i>: int[0,255] - split point where Fxx effect sets tempo instead of speed</li>
+        </ul>
+    </li>
+    <li><b>N163CHANNELS</b> [channels]
+        <ul>
+            <li><i>channels</i>: int[1,8] - channels used by N163 expansion</li>
+        </ul>
+    </li>
+    <li><b>MACRO</b> [type] [index] [loop] [release] [setting] : [macro]
+        <ul>
+            Defines a macro sequence for a 2A03 instrument.
+            <li><i>type</i>: int[0,4] - 0=volume, 1=arpeggio, 2=pitch, 3=hi-pitch, 4=duty</li>
+            <li><i>index</i>: int[0,127] - index of the macro</li>
+            <li><i>loop</i>: int[-1,253] - loop point, -1 for no loop</li>
+            <li><i>release</i>: int[-1,253] - release point, -1 for no release</li>
+            <li><i>setting</i>: int[0,255] - macro setting (for arpeggio: 0=absolute, 1=fixed, 2=relative)</li>
+            <li><i>macro</i>: int_list[-128,127] - macro sequence</li>
+        </ul>
+    </li>
+    <li><b>MACROVRC6</b> [type] [index] [loop] [release] [setting] : [macro]
+        <ul>
+            Defines a macro sequence for a VRC6 instrument.
+            <li><i>type</i>: int[0,4] - 0=volume, 1=arpeggio, 2=pitch, 3=hi-pitch, 4=pulse-width</li>
+            <li><i>index</i>: int[0,127] - index of the macro</li>
+            <li><i>loop</i>: int[-1,253] - loop point, -1 for no loop</li>
+            <li><i>release</i>: int[-1,253] - release point, -1 for no release</li>
+            <li><i>setting</i>: int[0,255] - macro setting (for arpeggio: 0=absolute, 1=fixed, 2=relative)</li>
+            <li><i>macro</i>: int_list[-128,127] - macro sequence</li>
+        </ul>
+    </li>
+    <li><b>MACRON163</b> [type] [index] [loop] [release] [setting] : [macro]
+        <ul>
+            Defines a macro sequence for a Namco 163 instrument.
+            <li><i>type</i>: int[0,4] - 0=volume, 1=arpeggio, 2=pitch, 3=hi-pitch, 4=wave</li>
+            <li><i>index</i>: int[0,127] - index of the macro</li>
+            <li><i>loop</i>: int[-1,253] - loop point, -1 for no loop</li>
+            <li><i>release</i>: int[-1,253] - release point, -1 for no release</li>
+            <li><i>setting</i>: int[0,255] - macro setting (for arpeggio: 0=absolute, 1=fixed, 2=relative)</li>
+            <li><i>macro</i>: int_list[-128,127] - macro sequence</li>
+        </ul>
+    </li>
+    <li><b>MACROS5B</b> [type] [index] [loop] [release] [setting] : [macro]
+        <ul>
+            Defines a macro sequence for a Sunsoft 5B instrument.
+            <li><i>type</i>: int[0,4] - 0=volume, 1=arpeggio, 2=pitch, 3=hi-pitch, 4=tone</li>
+            <li><i>index</i>: int[0,127] - index of the macro</li>
+            <li><i>loop</i>: int[-1,253] - loop point, -1 for no loop</li>
+            <li><i>release</i>: int[-1,253] - release point, -1 for no release</li>
+            <li><i>setting</i>: int[0,255] - macro setting (for arpeggio: 0=absolute, 1=fixed, 2=relative)</li>
+            <li><i>macro</i>: int_list[-128,127] - macro sequence</li>
+        </ul>
+    </li>
+    <li><b>DPCMDEF</b> [index] [size] [name]
+        <ul>
+            Creates a DPCM sample of the specified size in bytes.
+            Use the <i>DPCM</i> command to fill in the sample data.
+            <li><i>index</i>: int[0,63] - index of the sample</li>
+            <li><i>size</i>: int[0,4081] - size in bytes to allocate for the sample</li>
+            <li><i>name</i>: string - original filename of sample</li>
+        </ul>
+    </li>
+    <li><b>DPCM</b> : [data]
+        <ul>
+            Fills in sample data for the sample defined by the last <i>DPCMDEF</i> command.
+            The data list may be of any length as long as it does not exceed the allocated
+            sample length. Multiple <i>DPCM</i> commands will resume filling the sample
+            where the previous one left off.
+            <li><i>data</i>: hex_list[00,FF] - contents of the sample</li>
+        </ul>
+    </li>
+    <li><b>INST2A03</b> [index] [seq_vol] [seq_arp] [seq_pit] [seq_hpi] [seq_dut] [name]
+        <ul>
+            Defines a 2A03 instrument. To add DPCM sample key mappings, use the <i>KEYDPCM</i> command.
+            Use the <i>MACRO</i> command to define sequences for use with 2A03 instruments.
+            <li><i>index</i>: int[0,63] - index of the instrument</li>
+            <li><i>seq_vol</i>: int[-1,127] - volume macro sequence, -1 for none</li>
+            <li><i>seq_arp</i>: int[-1,127] - arpeggio macro sequence, -1 for none</li>
+            <li><i>seq_pit</i>: int[-1,127] - pitch macro sequence, -1 for none</li>
+            <li><i>seq_hpi</i>: int[-1,127] - hi-pitch macro sequence, -1 for none</li>
+            <li><i>seq_dut</i>: int[-1,127] - duty macro sequence, -1 for none</li>
+            <li><i>name</i>: string - name of the instrument</li>
+        </ul>
+    </li>
+    <li><b>INSTVRC6</b> [index] [seq_vol] [seq_arp] [seq_pit] [seq_hpi] [seq_wid] [name]
+        <ul>
+            Defines a VRC6 instrument.
+            Use the <i>MACROVRC6</i> command to define sequences for use with VRC6 instruments.
+            <li><i>index</i>: int[0,63] - index of the instrument</li>
+            <li><i>seq_vol</i>: int[-1,127] - volume macro sequence, -1 for none</li>
+            <li><i>seq_arp</i>: int[-1,127] - arpeggio macro sequence, -1 for none</li>
+            <li><i>seq_pit</i>: int[-1,127] - pitch macro sequence, -1 for none</li>
+            <li><i>seq_hpi</i>: int[-1,127] - hi-pitch macro sequence, -1 for none</li>
+            <li><i>seq_wid</i>: int[-1,127] - pulse width macro sequence, -1 for none</li>
+            <li><i>name</i>: string - name of the instrument</li>
+        </ul>
+    </li>
+    <li><b>INSTVRC7</b> [index] [patch] [r0] [r1] [r2] [r3] [r4] [r5] [r6] [r7] [name]
+        <ul>
+            Defines a VRC7 instrument.
+            <li><i>index</i>: int[0,63] - index of the instrument</li>
+            <li><i>patch</i>: int[0,15] - VRC7 patch used by the instrument</li>
+            <li><i>r0-7</i>: hex[00,FF] - custom patch register data</li>
+            <li><i>name</i>: string - name of the instrument</li>
+        </ul>
+    </li>
+    <li><b>INSTFDS</b> [index] [mod_enable] [mod_speed] [mod_depth] [mod_delay] [name]
+        <ul>
+            Defines an FDS instrument.
+            Use the commands <i>FDSWAVE</i>, <i>FDSMOD</i>, and <i>FDSMACRO</i> to fill in the
+                waveform, modulation table, and macro data for the FDS instrument.
+            <li><i>index</i>: int[0,63] - index of the instrument</li>
+            <li><i>mod_enable</i>: int[0,1] - 0 for modulator disabled, 1 for enabled</li>
+            <li><i>mod_speed</i>: int[0,4905] - modulator speed</li>
+            <li><i>mod_depth</i>: int[0,63] - modulator depth</li>
+            <li><i>mod_delay</i>: int[0,255] - modulator delay</li>
+            <li><i>name</i>: string - name of the instrument</li>
+        </ul>
+    </li>
+    <li><b>INSTN163</b> [index] [seq_vol] [seq_arp] [seq_pit] [seq_hpi] [seq_wav] [w_size] [w_pos] [w_count] [name]
+        <ul>
+            Defines a Namco 163 instrument.
+            Use the <i>MACRON163</i> command to define sequences for use with N163 instruments.
+            <li><i>index</i>: int[0,63] - index of the instrument</li>
+            <li><i>seq_vol</i>: int[-1,127] - volume macro sequence, -1 for none</li>
+            <li><i>seq_arp</i>: int[-1,127] - arpeggio macro sequence, -1 for none</li>
+            <li><i>seq_pit</i>: int[-1,127] - pitch macro sequence, -1 for none</li>
+            <li><i>seq_hpi</i>: int[-1,127] - hi-pitch macro sequence, -1 for none</li>
+            <li><i>seq_wav</i>: int[-1,127] - wave macro sequence, -1 for none</li>
+            <li><i>w_size</i>: int[0,32] - wave length</li>
+            <li><i>w_pos</i>: int[0,127] - wave memory position</li>
+            <li><i>w_count</i>: int[0,16] - number of waves</li>
+            <li><i>name</i>: string - name of the instrument</li>
+        </ul>
+    </li>
+    <li><b>INSTS5B</b> [index] [seq_vol] [seq_arp] [seq_pit] [seq_hpi] [seq_ton] [name]
+        <ul>
+            Defines a Sunsoft 5B instrument.
+            Use the <i>MACROS5B</i> command to define sequences for use with S5B instruments.
+            <li><i>index</i>: int[0,63] - index of the instrument</li>
+            <li><i>seq_vol</i>: int[-1,127] - volume macro sequence, -1 for none</li>
+            <li><i>seq_arp</i>: int[-1,127] - arpeggio macro sequence, -1 for none</li>
+            <li><i>seq_pit</i>: int[-1,127] - pitch macro sequence, -1 for none</li>
+            <li><i>seq_hpi</i>: int[-1,127] - hi-pitch macro sequence, -1 for none</li>
+            <li><i>seq_ton</i>: int[-1,127] - tone macro sequence, -1 for none</li>
+            <li><i>name</i>: string - name of the instrument</li>
+        </ul>
+    </li>
+    <li><b>KEYDPCM</b> [inst] [octave] [note] [sample] [pitch] [loop] [loop_point] [delta]
+        <ul>
+            Adds a DPCM sample mapping to a key in a 2A03 instrument.
+            Use the <i>INST2A03</i> command to define the instrument before attempting to add a key mapping.
+            <li><i>inst</i>: int[0,63] - index of the instrument</li>
+            <li><i>octave</i>: int[0,7] - octave of key</li>
+            <li><i>note</i>: int[0,11] - scale note of key</li>
+            <li><i>sample</i>: int[0,63] - index of the sample to play</li>
+            <li><i>pitch</i>: int[0,15] - pitch of the sample</li>
+            <li><i>loop</i>: int[0,1] - 0 for no loop, 1 for loop</li>
+            <li><i>loop_point</i>: int[0,255] - loop point of the sample (32 byte increments)</li>
+            <li><i>delta</i>: int[-1,127] - delta counter value, -1 for off</i></li>
+        </ul>
+    </li>
+    <li><b>FDSWAVE</b> [inst] : [data]
+        <ul>
+            Defines a waveform for an FDS instrument.
+            Use the <i>INSTFDS</i> command to define the instrument before attempting to define its waveform.
+            <li><i>inst</i>: int[0,63] - index of the instrument</li>
+            <li><i>data</i>: int_list[0,63] - contents of the waveform, must be 64 elements long</li>
+        </ul>
+    </li>
+    <li><b>FDSMOD</b> [inst] : [data]
+        <ul>
+            Defines a modulator table for an FDS instrument.
+            Use the <i>INSTFDS</i> command to define the instrument before attempting to define its mod table.
+            <li><i>inst</i>: int[0,63] - index of the instrument</li>
+            <li><i>data</i>: int_list[0,7] - contents of the table, must be 32 elements long</li>
+        </ul>
+    </li>
+    <li><b>FDSMACRO</b> [inst] [type] [loop] [release] [setting] : [macro]
+        <ul>
+            Defines a macro sequence for an FDS instrument.
+            Use the <i>INSTFDS</i> command to define the instrument before attempting to define its macros.
+            <li><i>inst</i>: int[0,63] - index of the instrument</li>
+            <li><i>type</i>: int[0,2] - 0=volume, 1=arpeggio, 2=pitch</li>
+            <li><i>loop</i>: int[-1,253] - loop point, -1 for no loop</li>
+            <li><i>release</i>: int[-1,253] - release point, -1 for no release</li>
+            <li><i>setting</i>: int[0,255] - macro setting (for arpeggio: 0=absolute, 1=fixed, 2=relative)</li>
+            <li><i>macro</i>: int_list[-128,127] - macro sequence</li>
+        </ul>
+    </li>
+    <li><b>N163WAVE</b> [inst] [wave] : [data]
+        <ul>
+            Defines a waveform for a Namco 163 instrument.
+            Use the <i>INSTN163</i> command to define the instrument before attempting to define its waveforms.
+            <li><i>inst</i>: int[0,63] - index of the instrument</li>
+            <li><i>wave</i>: int[0,15] - index of the wave</li>
+            <li><i>data</i>: int_list[0,15] - contents of the waveform, must be the same length as defined by the INSTN163 instrument</li>
+        </ul>
+    </li>
+    <li><b>TRACK</b> [pattern] [speed] [tempo] [name]
+        <ul>
+            Begins a new track.
+            <li><i>pattern</i>: int[0,256] - length of patterns</li>
+            <li><i>speed</i>: int[0,255] - track speed</li>
+            <li><i>tempo</i>: int[0,255] - track tempo</li>
+            <li><i>name</i>: string - name of the track</li>
+        </ul>
+    </li>
+    <li><b>COLUMNS</b> : [columns]
+        <ul>
+            Sets the number of effect columns in each channel. This should be specified after a <i>TRACK</i> command, and
+            before using <i>ROW</i> commands to fill in pattern data. If not specified, each channel will have the default
+            number of effect columns (1).
+            <li><i>columns</i>: int_list[1,4] - number of effect columns for each channel,
+                must be the same length as needed for the expansion chip set specified by <i>EXPANSION</i></li>
+        </ul>
+    </li>
+    <li><b>ORDER</b> [frame] : [list]
+        <ul>
+            Sets the patterns to be played in each frame. Applies to current track.
+            <li><i>frame</i>: hex[00,7F] - index of frame</li>
+            <li><i>list</i>: hex_list[00,7F] - pattern to use for each channel,
+                must be the same length as needed for the expansion chip set specified by <i>EXPANSION</i></li>
+        </ul>
+    </li>
+    <li><b>PATTERN</b> [pattern]
+        <ul>
+            Sets the current pattern to be filled by subsequent <i>ROW</i> commands.
+            <li><i>pattern</i>: hex[00,7F] - index of pattern</li>
+        </ul>
+    </li>
+    <li><b>ROW</b> [row] : [c0] : [c1] : [c2] ...
+        <ul>
+            Writes data to one row of the current pattern in the current track.
+            After the row is specified, there is a colon character (:) before
+            the row data for each channel in turn.
+            Visually this should look similar the pattern editor, as if you
+            were editing a frame where all pattern indices are the same
+            (e.g. ORDER 00 : 00 00 00 00 00).<br />
+            The first field represents the note, the first character a letter (C,D,E,F,G,A,B)
+            then 
+            <li><i>row</i>: hex[00,7F] - index of pattern</li>
+            <li><i>c0...</i>: channel data for each channel.
+                The channel data looks like: <tt>nnn ii v eee</tt>
+                <ul>
+                    <li><i>nnn</i>: note, begins with a letter (C,D,E,F,G,A,B), then
+                                  a sharp (#,+) natural (-,.) or flat (b,f) character,
+                                  then an octave (0,1,2,3,4,5,6,7); an empty note
+                                  is ..., a halt is ---, a release is ===;
+                                  the notes for the noise channel <i>c3</i> are special:
+                                  they begin with a hex[0,F] to specify noise pitch,
+                                  followed by two characters "-#"
+                                  </li>
+                    <li><i>ii</i>: hex[00,3F] - instrument index, .. for none.</li>
+                    <li><i>v</i>: hex[0,F] - volume, .. for none.</li>
+                    <li><i>eee</i>: effect, begins with a letter or number specifying the effect type,
+                                    then the last two characters are hex[00,FF] specifying the parameter value.
+                                    There must be as many <i>eee</i> fields as specified by the <i>COLUMNS</i> command.
+                                    </li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+
+</ul></p>
+
+<p class="heading">Data Types</p>
+
+<p class="text">
+    The following data types are used in the format:
+</p>
+
+<p><ul>
+    <li><b>int</b> - decimal integer</li>
+    <li><b>hex</b> - unsigned hexadecimal number</li>
+    <li><b>string</b> - string of characters, if whitespace is required the string may be enclosed in quotes ("");
+                        if a quote (") is required, use a double quote ("") instead;
+                        a string may not contain a newline</li>
+    <li><b>int_list</b> - list of whitespace-separated integers following a colon character, continues to end of line</li>
+    <li><b>hex_list</b> - list of whitespace-separated hexadecimal numbers following a colon character, continues to end of line</li>
+</ul></p>
+
+<hr />
+<span class="footer">Back to <a href="interface.htm">interface</a> &middot; <a href="main_index.htm">main index</a></span>
+
+    </BODY>
+</HTML>

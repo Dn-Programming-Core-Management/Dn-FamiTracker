@@ -34,7 +34,7 @@
 	#error include 'stdafx.h' before including this file for PCH
 #endif
 
-#include "res/resource.h"       // main symbols
+#include "../resource.h"       // main symbols
 
 // Inter-process commands
 enum {

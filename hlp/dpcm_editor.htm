@@ -1,0 +1,64 @@
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" Content="Microsoft Visual Studio 8.0">
+<TITLE></TITLE>
+<link href="style.css" rel="stylesheet" type="text/css" />
+    </HEAD>
+<BODY>
+    <span class="topic">DPCM sample editor</span>
+    <hr />
+    
+    <p class="text">There is a simple DPCM sample editor available from 
+        the <a href="2a03.htm#Instruments">DPCM instrument editor</a>, 
+        it&#39;s intended mainly for trimming silent parts from the beginning and end of samples.
+        Other types of edits should be done preferably before the sample is 
+        converted to DPCM.</p>
+    
+    <p>
+        <IMG id="IMG2" style="FONT-SIZE: 10pt" src="img/dpcm_editor.png" 
+            alt="Screenshot of the DPCM sample editor"></p>
+    
+    <p class="text">Use the sample area to select a part of the sample and to set the 
+        start position (for preview).</p>
+    
+    <ul class="text">
+        <li><b>Delete</b><br />
+            Removes a part of the sample, select the part you wish to remove and press delete. This works best on the 
+            beginning and end of a sample; if you need to remove something in the middle 
+            then it&#39;s usually better to do this on the sample before you convert it to DPCM.
+            <br />
+            <br />
+        </li>
+        <li><b>Tilt</b><br />
+            Inserts zero-value samples 
+            inside a selected area, causing the sample to tilt toward zero. The idea is to 
+            restore the delta counter back to zero when the sample 
+            has finished, in order to restore volume for the triangle and noise channels.        
+            <br />
+            <br />
+        </li>
+        <li><b>Center wave</b><br />
+            Draws the sample with an initial delta counter value of 64 in order to center the start of the wave. 
+            This is another method to keep the triangle and noise volume consistent, make 
+            sure all samples starts and ends at 64.
+            The sample itself is not affected by this option, the equal operation in the 
+            tracker is to use the effect <a href="effect_list.htm">Z40</a> when playing the sample.
+            <br />
+            <br />
+        </li>
+        <li><b>Play</b><br />
+            Previews the sample at the selected pitch.<br />
+        </li>
+    </ul>
+    
+    <p class="text">
+        The offset value tells the start position (as used internally by 
+        the DPCM channel), this value can be used with the
+        <a href="effect_list.htm">Yxx command</a>. 
+        The pos value is the position in size units as used by the DPCM channel.</p>
+
+    <hr />
+    <span class="footer">Back to <a href="interface.htm">interface</a> &middot; <a href="main_index.htm">main index</a></span>
+
+</BODY>
+</HTML>
