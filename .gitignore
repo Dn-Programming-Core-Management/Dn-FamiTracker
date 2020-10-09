@@ -64,6 +64,8 @@ Testing/Temporary
 *.userosscache
 *.sln.docstates
 
+CMakeSettings.json
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
