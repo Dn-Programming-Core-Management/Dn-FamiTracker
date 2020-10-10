@@ -1471,9 +1471,6 @@
     <ClInclude Include="Source\ConfigEmulation.h">
       <Filter>Header Files\Dialog Boxes Headers\Config Headers</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="res\Dn-FamiTracker.rc">
@@ -1788,6 +1785,9 @@
   <ItemGroup>
     <CustomBuild Include="hlp\Dn-FamiTracker.hhp">
       <Filter>HTML Help Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="resource.h">
+      <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
 </Project>
