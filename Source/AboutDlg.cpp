@@ -29,8 +29,7 @@
 
 LPCTSTR LINK_WEB2 = _T("http://hertzdevil.info/programs/");
 LPCTSTR LINK_WEB = _T("http://famitracker.com");						// // !!
-LPCTSTR LINK_WEB3 = _T("https://github.com/nyanpasu64/j0CC-FamiTracker");						// // !!
-LPCTSTR LINK_WEB4 = _T("https://github.com/Gumball2415/Dn-FamiTracker");						// // !!
+LPCTSTR LINK_WEB3 = _T("https://github.com/Gumball2415/Dn-FamiTracker");						// // !!
 LPCTSTR LINK_BUG  = _T("https://github.com/Gumball2415/Dn-FamiTracker/issues");		// // !!
 
 // CLinkLabel
@@ -158,7 +157,7 @@ BOOL CAboutDlg::OnInitDialog()
 	SetDlgItemText(IDC_ABOUT_CONTRIB,
 		_T("- Original software by jsr\r\n")
 		_T("- 0CC-FamiTracker by HertzDevil\r\n")
-		_T("- j0CC-FamiTracker by nyanpasu64\r\n")
+		_T("- Additional improvements by nyanpasu64\r\n")
 		_T("- Export plugin support by Gradualore\r\n")
 		_T("- Toolbar icons are made by ilkke\r\n")
 		_T("- DPCM import resampler by Jarhmander\r\n")
@@ -203,11 +202,6 @@ BOOL CAboutDlg::OnInitDialog()
 	m_pWeb->SubclassDlgItem(IDC_WEBPAGE3, this);
 	m_pWeb->SetFont(m_pLinkFont);
 	m_wndToolTip.AddTool(m_pWeb, IDS_ABOUT_TOOLTIP_WEB3);
-
-	m_pWeb = new CLinkLabel(LINK_WEB4);		// // !!
-	m_pWeb->SubclassDlgItem(IDC_WEBPAGE4, this);
-	m_pWeb->SetFont(m_pLinkFont);
-	m_wndToolTip.AddTool(m_pWeb, IDS_ABOUT_TOOLTIP_WEB4);
 
 	m_pBug = new CLinkLabel(LINK_BUG);		// // //
 	m_pBug->SubclassDlgItem(IDC_BUG, this);

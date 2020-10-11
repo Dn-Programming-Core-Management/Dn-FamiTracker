@@ -1473,7 +1473,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="res\Dn-FamiTracker.rc">
+    <ResourceCompile Include="Dn-FamiTracker.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

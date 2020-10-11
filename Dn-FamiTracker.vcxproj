@@ -740,7 +740,7 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
     <ClInclude Include="Source\WaveFile.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="res\Dn-FamiTracker.rc">
+    <ResourceCompile Include="Dn-FamiTracker.rc">
       <DeploymentContent>true</DeploymentContent>
     </ResourceCompile>
   </ItemGroup>
@@ -1000,7 +1000,7 @@ echo.</Command>
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties RESOURCE_FILE="res\Dn-FamiTracker.rc" />
+      <UserProperties RESOURCE_FILE="Dn-FamiTracker.rc" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
