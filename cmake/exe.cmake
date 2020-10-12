@@ -396,7 +396,7 @@ add_executable(${exe}
         Source/utils/ftmath.cpp
 
 
-        res/Dn-FamiTracker.rc
+        Dn-FamiTracker.rc
         resource.h
 
         version.h
