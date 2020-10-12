@@ -2504,13 +2504,13 @@ void CMainFrame::OnUpdateEditDelete(CCmdUI *pCmdUI)
 void CMainFrame::OnHelpEffecttable()
 {
 	// Display effect table in help
-	HtmlHelp((DWORD)_T("effect_list.htm"), HH_DISPLAY_TOPIC);
+	HtmlHelp((DWORD_PTR)_T("effect_list.htm"), HH_DISPLAY_TOPIC);
 }
 
 void CMainFrame::OnHelpFAQ()
 {
 	// Display FAQ in help
-	HtmlHelp((DWORD)_T("faq.htm"), HH_DISPLAY_TOPIC);
+	HtmlHelp((DWORD_PTR)_T("faq.htm"), HH_DISPLAY_TOPIC);
 }
 
 CFrameEditor *CMainFrame::GetFrameEditor() const
