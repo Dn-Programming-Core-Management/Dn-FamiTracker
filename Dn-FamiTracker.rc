@@ -110,7 +110,7 @@ BEGIN
         MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
         MENUITEM SEPARATOR
         MENUITEM "Create NS&F...\tCtrl+E",      ID_FILE_CREATE_NSF
-        MENUITEM "Create WA&V...",              ID_FILE_CREATEWAV
+        MENUITEM "Create WA&V...\tCtrl+Shift+E", ID_FILE_CREATEWAV
         MENUITEM SEPARATOR
         MENUITEM "&Import Text...",             ID_FILE_IMPORTTEXT
         MENUITEM "&Export Text...",             ID_FILE_EXPORTTEXT
@@ -505,6 +505,7 @@ BEGIN
     "M",            ID_TOGGLE_MULTIPLEXER,  VIRTKEY, SHIFT, CONTROL, NOINVERT
     "S",            ID_TOGGLE_SPEED,        VIRTKEY, SHIFT, CONTROL, NOINVERT
     VK_F12,         ID_TRACKER_KILLSOUND,   VIRTKEY, NOINVERT
+    "E",            ID_FILE_CREATEWAV,      VIRTKEY, SHIFT, CONTROL, NOINVERT
 END
 
 IDR_FRAMEWND ACCELERATORS
