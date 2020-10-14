@@ -60,7 +60,7 @@ static unsigned char default_inst[OPLL_TONE_NUM][(16 + 3) * 8] = {
   },
 };
 // Added by jsr
-int32_t opll_volumes[10];
+int16_t opll_volumes[10];
 
 /* phase increment counter */
 #define DP_BITS 19
@@ -946,7 +946,6 @@ static INLINE int16_t calc_slot_hat(OPLL *opll) {
 static void update_output(OPLL *opll) {
   int16_t *out;
   int i;
-  int32_t inst = 0;
   update_ampm(opll);
   update_short_noise(opll);
   update_slots(opll);
@@ -956,13 +955,12 @@ static void update_output(OPLL *opll) {
   /* CH1-6 */
   for (i = 0; i < 6; i++) {
     if (!(opll->mask & OPLL_MASK_CH(i))) {
-      out[i] = _MO(calc_slot_car(opll, i, calc_slot_mod(opll, i)));
+      out[i] = _MO(calc_slot_car(opll, i, calc_slot_mod(opll, i))); 
 
-      int32_t absval;
-      inst += out[i];
+      int16_t absval;
       absval = abs(out[i]);
       if (absval > opll_volumes[i])
-          opll_volumes[i] = out[i];
+          opll_volumes[i] = out[i] / 32; // volume is blown out for some reason
     }
   }
 

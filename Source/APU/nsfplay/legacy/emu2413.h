@@ -58,7 +58,6 @@ typedef struct __OPLL_SLOT {
   uint8_t sus_flag;  /* key-sus option 1:on 0:off */
   uint16_t tll;      /* total level + key scale level*/
   uint8_t rks;       /* key scale offset (rks) for eg speed */
-  int32_t eg_mode;       /* Current state */
   uint8_t eg_rate_h; /* eg speed rate high 4bits */
   uint8_t eg_rate_l; /* eg speed rate low 2bits */
   uint32_t eg_shift; /* shift for eg global counter, controls envelope speed */
