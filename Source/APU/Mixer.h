@@ -53,7 +53,7 @@ public:
 	void	ClearBuffer();
 	void FinishBuffer(int t);
 	int		SamplesAvail() const;
-	void	MixSamples(blip_sample_t *pBuffer, uint32_t Count);
+	void	MixSamples(blip_amplitude_t *pBuffer, uint32_t Count);
 	uint32_t	GetMixSampleCount(int t) const;
 
 	void	AddSample(int ChanID, int Value);
@@ -87,19 +87,25 @@ private:
 
 private:
 	// Blip buffer synths
-	Blip_Synth<blip_good_quality, -500>		Synth2A03SS;
-	Blip_Synth<blip_good_quality, -500>		Synth2A03TND;
-	Blip_Synth<blip_good_quality, -500>		SynthVRC6;
-	Blip_Synth<blip_good_quality, -130>		SynthMMC5;	
-	Blip_Synth<blip_good_quality, -1600>	SynthN163;
-	Blip_Synth<blip_good_quality, -3500>	SynthFDS;
-	Blip_Synth<blip_good_quality, -1200>	SynthS5B;		// // // 050B
-	
+	Blip_Synth<blip_good_quality> Synth2A03SS;
+	Blip_Synth<blip_good_quality> Synth2A03TND;
+	Blip_Synth<blip_good_quality> SynthVRC6;
+	Blip_Synth<blip_good_quality> SynthMMC5;
+	Blip_Synth<blip_good_quality> SynthN163;
+	Blip_Synth<blip_good_quality> SynthFDS;
+	Blip_Synth<blip_good_quality> SynthS5B;		// // // 050B
+
+	#define FOREACH_SYNTH(X, SEP) \
+		X(Synth2A03SS) SEP \
+		X(Synth2A03TND) SEP \
+		X(SynthVRC6) SEP \
+		X(SynthMMC5) SEP \
+		X(SynthN163) SEP \
+		X(SynthFDS) SEP \
+		X(SynthS5B)
+
 	// Blip buffer object
 	Blip_Buffer	BlipBuffer;
-
-	double		m_dSumSS;
-	double		m_dSumTND;
 
 	int32_t		m_iChannels[CHANNELS];
 	uint8_t		m_iExternalChip;
