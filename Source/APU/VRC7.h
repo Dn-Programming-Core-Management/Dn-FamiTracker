@@ -22,7 +22,7 @@
 #pragma once
 
 #include "SoundChip.h"
-#include "emu2413.h"
+#include "nsfplay/legacy/emu2413.h"
 
 class CVRC7 : public CSoundChip {
 public:

@@ -1,7 +1,7 @@
 #include <cmath>
 #include <memory>
 #include <cstdint>		// // //
-#include "apu.h"
+#include "../APU.h"
 
 // Code is from nezplug via nintendulator
 
