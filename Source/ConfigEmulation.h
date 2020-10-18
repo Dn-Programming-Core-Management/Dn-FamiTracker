@@ -41,14 +41,8 @@ private:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-	// FDS
-	int		m_iFDSEmulator;
 	// N163
 	bool	m_bDisableNamcoMultiplex;
-	//S5B
-	int		m_iS5BEmulator;
-	// VRC7
-	int		m_iVRC7Patch;
 
 	void UpdateSliderTexts();
 

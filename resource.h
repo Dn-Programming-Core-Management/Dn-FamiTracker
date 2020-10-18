@@ -611,6 +611,14 @@
 #define IDC_PREVIEW_PITCH               1471
 #define IDC_IDLE_REFRESH                1475
 #define IDC_IDLE_REFRESH_T              1476
+#define IDC_COMBO1                      1478
+#define IDC_COMBO_FDS_EMULATOR          1478
+#define IDC_CHECK1                      1482
+#define IDC_N163_MULTIPLEXER            1482
+#define IDC_SLIDER_FDS_LOWPASS          1484
+#define IDC_COMBO_S5B_EMULATOR          1485
+#define IDC_COMBO_VRC7_PATCH            1486
+#define IDC_FDS_LOWPASS_FREQ            1488
 #define IDS_FIND_BEGIN                  9001
 #define IDS_FIND_END                    9002
 #define ID_TRACKER_PLAY                 32771
@@ -770,9 +778,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        362
+#define _APS_NEXT_RESOURCE_VALUE        364
 #define _APS_NEXT_COMMAND_VALUE         33202
-#define _APS_NEXT_CONTROL_VALUE         1477
+#define _APS_NEXT_CONTROL_VALUE         1489
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif

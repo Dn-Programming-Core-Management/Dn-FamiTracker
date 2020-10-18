@@ -68,7 +68,6 @@ BOOL CConfigEmulation::OnInitDialog()
 	CSliderCtrl* pFDSLowpass = static_cast<CSliderCtrl*>(GetDlgItem(IDC_SLIDER_FDS_LOWPASS));
 	pFDSLowpass->SetRange(0, 20000);
 	pFDSLowpass->SetPos(pSettings->Emulation.iFDSLowpass);
-	m_iFDSEmulator = pSettings->Emulation.iFDSEmulator;
 
 	// N163
 	m_bDisableNamcoMultiplex = pSettings->Emulation.bNamcoMixing;
@@ -84,7 +83,7 @@ BOOL CConfigEmulation::OnInitDialog()
 	pVRC7Patch->AddString("FT 0.3.5 by Mitsutaka Okazaki (6/24/2001)");
 	pVRC7Patch->AddString("FT 0.3.6 by quietust(1/18/2004)");
 	pVRC7Patch->AddString("VRC7 TONES by okazaki@angel.ne.jp (4/10/2004)");
-	pVRC7Patch->AddString("FamiTracker 0.4.0 by rainwarrior (8/01/2012)");
+	pVRC7Patch->AddString("FT 0.4.0 by rainwarrior (8/01/2012)");
 	pVRC7Patch->AddString("j0CC-FT 0.6.2 by Nuke.YTK (3/20/2019)");
 	pVRC7Patch->SetCurSel(pSettings->Emulation.iVRC7Patch);
 
@@ -101,6 +100,8 @@ BOOL CConfigEmulation::OnApply()
 	
 	// FDS
 	SetEmulators(IDC_COMBO_FDS_EMULATOR);
+	CSliderCtrl* pFDSLowpass = static_cast<CSliderCtrl*>(GetDlgItem(IDC_SLIDER_FDS_LOWPASS));
+	pSettings->Emulation.iFDSLowpass = pFDSLowpass->GetPos();
 
 	// N163
 	pSettings->Emulation.bNamcoMixing = m_bDisableNamcoMultiplex;
