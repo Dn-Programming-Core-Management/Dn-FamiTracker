@@ -55,6 +55,23 @@ enum PATHS {
 	PATH_EXPORT = PATH_FTM
 };
 
+// // !! emulators from different sources
+enum EMULATORS {
+	EMU_INTERNAL = 0,		// internal emulators
+	EMU_NSFPLAY = 1			// nsfplay emulator
+};
+
+// // !! VRC7 hardware patches (not sure if i should add)
+enum VRC7_PATCH {
+	PATCH_KT1 = 0,
+	PATCH_KT2 = 1,
+	PATCH_FT35 = 2,
+	PATCH_FT36 = 3,
+	PATCH_MO = 4,
+	PATCH_RW = 5,
+	PATCH_NUKE = 6
+};
+
 // // // helper class for loading settings from official famitracker
 struct stOldSettingContext
 {
@@ -142,7 +159,7 @@ public:
 		bool	bHexKeypad;
 		bool	bMultiFrameSel;
 		bool	bCheckVersion;		// // //
-		int		iLowRefreshRate;	// // !!		The lower refresh rate, when theApp is not playing. Also used by the Performance dialog
+		int		iLowRefreshRate;	// // !!
 	} General;
 
 	struct {
@@ -222,7 +239,6 @@ public:
 	int ControlPanelPos;		// // // 050B
 	bool FollowMode;
 	bool MeterDecayRate;		// // // 050B
-	bool m_bNamcoMixing;		// // //
 
 	struct {
 		int		iLevelAPU1;
@@ -235,7 +251,17 @@ public:
 		int		iLevelS5B;
 	} ChipLevels;
 
-	struct {} Emulation; // TODO: add emulation options
+	struct {
+		// FDS
+		int		iFDSLowpass;
+		int		iFDSEmulator;
+		// N163
+		bool	bNamcoMixing;		// // //
+		// S5B
+		int		iS5BEmulator;
+		// VRC7
+		int		iVRC7Patch;
+	} Emulation;
 
 	CString InstrumentMenuPath;
 

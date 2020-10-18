@@ -174,7 +174,7 @@ BOOL CConfigGeneral::OnApply()
 	theApp.GetSettings()->General.bMultiFrameSel	= m_bMultiFrameSel;
 	theApp.GetSettings()->General.bCheckVersion		= m_bCheckVersion;
 	// // !!
-	theApp.GetSettings()->General.iLowRefreshRate = m_iLowRefreshRate = static_cast<CSliderCtrl*>(GetDlgItem(IDC_IDLE_REFRESH))->GetPos();;
+	theApp.GetSettings()->General.iLowRefreshRate = m_iLowRefreshRate = static_cast<CSliderCtrl*>(GetDlgItem(IDC_IDLE_REFRESH))->GetPos();
 
 	theApp.GetSettings()->Keys.iKeyNoteCut			= m_iKeyNoteCut;
 	theApp.GetSettings()->Keys.iKeyNoteRelease		= m_iKeyNoteRelease;

@@ -232,6 +232,17 @@ void CSettings::SetupSettings()
 	SETTING_INT("Mixer", "FDS", 0, &ChipLevels.iLevelFDS);
 	SETTING_INT("Mixer", "N163", 0, &ChipLevels.iLevelN163);
 	SETTING_INT("Mixer", "S5B", 0, &ChipLevels.iLevelS5B);
+
+	// Emulation
+		// FDS
+	SETTING_INT("Emulation", "FDS emulator", EMU_INTERNAL, &Emulation.iFDSEmulator);
+	SETTING_INT("Emulation", "FDS lowpass filter cutoff", 2000, &Emulation.iFDSLowpass);
+		// N163
+	SETTING_BOOL("Emulation", "N163 multiplexing", true, &Emulation.bNamcoMixing);
+		// S5B
+	SETTING_INT("Emulation", "S5B emulator", EMU_INTERNAL, &Emulation.iFDSEmulator);
+		// VRC7
+	SETTING_INT("Emulation", "VRC7 hardware patch", PATCH_NUKE, &Emulation.iVRC7Patch);
 }
 
 template<class T>

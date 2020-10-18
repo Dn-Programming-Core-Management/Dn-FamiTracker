@@ -23,7 +23,6 @@
 
 #pragma once
 
-
 // CConfigEmulation dialog
 
 class CConfigEmulation : public CPropertyPage
@@ -42,5 +41,28 @@ private:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
+	// FDS
+	int		m_iFDSEmulator;
+	// N163
+	bool	m_bDisableNamcoMultiplex;
+	//S5B
+	int		m_iS5BEmulator;
+	// VRC7
+	int		m_iVRC7Patch;
+
+	void UpdateSliderTexts();
+
 	DECLARE_MESSAGE_MAP()
+public:
+	virtual BOOL OnInitDialog();
+	virtual BOOL OnApply();
+	void GetEmulators(int nID);
+	void SetEmulators(int nID);
+	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	//afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	//afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
+	afx_msg void OnBnClickedN163Multiplexer();
+	afx_msg void OnCbnSelchangeComboFdsEmulator();
+	afx_msg void OnCbnSelchangeComboS5bEmulator();
+	afx_msg void OnCbnSelchangeComboVrc7Patch();
 };

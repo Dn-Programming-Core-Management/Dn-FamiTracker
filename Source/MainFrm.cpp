@@ -3389,14 +3389,14 @@ void CMainFrame::OnToggleMultiplexer()
 {
 	CSettings *pSettings = theApp.GetSettings();
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
-	if (!pSettings->m_bNamcoMixing){
-		pSettings->m_bNamcoMixing = true;
-		pSoundGen->SetNamcoMixing(theApp.GetSettings()->m_bNamcoMixing);
+	if (!pSettings->Emulation.bNamcoMixing){
+		pSettings->Emulation.bNamcoMixing = true;
+		pSoundGen->SetNamcoMixing(theApp.GetSettings()->Emulation.bNamcoMixing);
 		SetStatusText(_T("Namco 163 multiplexer emulation disabled"));
 	}
 	else{
-		pSettings->m_bNamcoMixing = false;
-		pSoundGen->SetNamcoMixing(theApp.GetSettings()->m_bNamcoMixing);
+		pSettings->Emulation.bNamcoMixing = false;
+		pSoundGen->SetNamcoMixing(theApp.GetSettings()->Emulation.bNamcoMixing);
 		SetStatusText(_T("Namco 163 multiplexer emulation enabled"));
 	}
 }

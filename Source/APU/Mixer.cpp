@@ -91,7 +91,6 @@ CMixer::CMixer()
 	m_dSumTND = 0.0;
 
 	m_iMeterDecayRate = DECAY_SLOW;		// // // 050B
-	m_bNamcoMixing = false;		// // //
 }
 
 CMixer::~CMixer()

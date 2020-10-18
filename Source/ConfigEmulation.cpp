@@ -23,8 +23,12 @@
 
 #include "stdafx.h"
 #include "FamiTracker.h"
+#include "FamiTrackerTypes.h"
+#include "SoundGen.h"
 #include "ConfigEmulation.h"
 #include "Settings.h"
+#include "MainFrm.h"
+
 
 
 // CConfigEmulation dialog
@@ -44,9 +48,136 @@ void CConfigEmulation::DoDataExchange(CDataExchange* pDX)
 	CPropertyPage::DoDataExchange(pDX);
 }
 
-
 BEGIN_MESSAGE_MAP(CConfigEmulation, CPropertyPage)
+	ON_WM_HSCROLL()
+	ON_BN_CLICKED(IDC_N163_MULTIPLEXER, &CConfigEmulation::OnBnClickedN163Multiplexer)
+	ON_CBN_SELCHANGE(IDC_COMBO_FDS_EMULATOR, &CConfigEmulation::OnCbnSelchangeComboFdsEmulator)
+	ON_CBN_SELCHANGE(IDC_COMBO_S5B_EMULATOR, &CConfigEmulation::OnCbnSelchangeComboS5bEmulator)
+	ON_CBN_SELCHANGE(IDC_COMBO_VRC7_PATCH, &CConfigEmulation::OnCbnSelchangeComboVrc7Patch)
 END_MESSAGE_MAP()
 
 
 // CConfigEmulation message handlers
+
+BOOL CConfigEmulation::OnInitDialog()
+{
+	CSettings* pSettings = theApp.GetSettings();
+
+	// FDS
+	GetEmulators(IDC_COMBO_FDS_EMULATOR);
+	CSliderCtrl* pFDSLowpass = static_cast<CSliderCtrl*>(GetDlgItem(IDC_SLIDER_FDS_LOWPASS));
+	pFDSLowpass->SetRange(0, 20000);
+	pFDSLowpass->SetPos(pSettings->Emulation.iFDSLowpass);
+	m_iFDSEmulator = pSettings->Emulation.iFDSEmulator;
+
+	// N163
+	m_bDisableNamcoMultiplex = pSettings->Emulation.bNamcoMixing;
+	CheckDlgButton(IDC_N163_MULTIPLEXER, pSettings->Emulation.bNamcoMixing);
+
+	// S5B
+	GetEmulators(IDC_COMBO_S5B_EMULATOR);
+
+	// VRC7
+	CComboBox* pVRC7Patch = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_VRC7_PATCH));
+	pVRC7Patch->AddString("Patch set 1 by kevtris (11/14/1999)");
+	pVRC7Patch->AddString("Patch set 2 by kevtris (11/15/1999)");
+	pVRC7Patch->AddString("FT 0.3.5 by Mitsutaka Okazaki (6/24/2001)");
+	pVRC7Patch->AddString("FT 0.3.6 by quietust(1/18/2004)");
+	pVRC7Patch->AddString("VRC7 TONES by okazaki@angel.ne.jp (4/10/2004)");
+	pVRC7Patch->AddString("FamiTracker 0.4.0 by rainwarrior (8/01/2012)");
+	pVRC7Patch->AddString("j0CC-FT 0.6.2 by Nuke.YTK (3/20/2019)");
+	pVRC7Patch->SetCurSel(pSettings->Emulation.iVRC7Patch);
+
+	UpdateSliderTexts();
+	CPropertyPage::OnInitDialog();
+	return TRUE;  // return TRUE unless you set the focus to a control
+	// EXCEPTION: OCX Property Pages should return FALSE
+}
+
+BOOL CConfigEmulation::OnApply()
+{
+	CSettings* pSettings = theApp.GetSettings();
+	CSoundGen* pSoundGen = theApp.GetSoundGenerator();
+	
+	// FDS
+	SetEmulators(IDC_COMBO_FDS_EMULATOR);
+
+	// N163
+	pSettings->Emulation.bNamcoMixing = m_bDisableNamcoMultiplex;
+	pSoundGen->SetNamcoMixing(theApp.GetSettings()->Emulation.bNamcoMixing);
+
+	// S5B
+	SetEmulators(IDC_COMBO_S5B_EMULATOR);
+
+	// VRC7
+	CComboBox* pVRC7Patch = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_VRC7_PATCH));
+	pSettings->Emulation.iVRC7Patch = pVRC7Patch->GetCurSel();
+
+	theApp.LoadSoundConfig();
+	return CPropertyPage::OnApply();
+}
+
+void CConfigEmulation::GetEmulators(int nID)
+{
+	CSettings* pSettings = theApp.GetSettings();
+	CComboBox* pComboBox = static_cast<CComboBox*>(GetDlgItem(nID));
+	pComboBox->AddString("(default)");
+	pComboBox->AddString("nsfplay");
+
+	switch (nID) {
+	case IDC_COMBO_FDS_EMULATOR:
+		pComboBox->SetCurSel(pSettings->Emulation.iFDSEmulator); break;
+	case IDC_COMBO_S5B_EMULATOR:
+		pComboBox->SetCurSel(pSettings->Emulation.iS5BEmulator); break;
+	}
+}
+
+void CConfigEmulation::SetEmulators(int nID)
+{
+	CSettings* pSettings = theApp.GetSettings();
+	CComboBox* pComboBox = static_cast<CComboBox*>(GetDlgItem(nID));
+	switch (nID) {
+	case IDC_COMBO_FDS_EMULATOR:
+		pSettings->Emulation.iFDSEmulator = pComboBox->GetCurSel(); break;
+	case IDC_COMBO_S5B_EMULATOR:
+		pSettings->Emulation.iS5BEmulator = pComboBox->GetCurSel(); break;
+	}
+}
+
+void CConfigEmulation::OnBnClickedN163Multiplexer()
+{
+	m_bDisableNamcoMultiplex = IsDlgButtonChecked(IDC_N163_MULTIPLEXER) != 0;
+	SetModified();
+}
+
+void CConfigEmulation::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+{
+	UpdateSliderTexts();
+	SetModified();
+	CPropertyPage::OnHScroll(nSBCode, nPos, pScrollBar);
+}
+
+void CConfigEmulation::UpdateSliderTexts()
+{
+	CString str;
+	str.Format(_T("%i Hz"), static_cast<CSliderCtrl*>(GetDlgItem(IDC_SLIDER_FDS_LOWPASS))->GetPos());
+	SetDlgItemText(IDC_FDS_LOWPASS_FREQ, str);
+}
+
+
+void CConfigEmulation::OnCbnSelchangeComboFdsEmulator()
+{
+	SetModified();
+}
+
+
+void CConfigEmulation::OnCbnSelchangeComboS5bEmulator()
+{
+	SetModified();
+}
+
+
+void CConfigEmulation::OnCbnSelchangeComboVrc7Patch()
+{
+	SetModified();
+}
