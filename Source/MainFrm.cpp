@@ -2518,6 +2518,10 @@ CFrameEditor *CMainFrame::GetFrameEditor() const
 	return m_pFrameEditor;
 }
 
+CVisualizerWnd *CMainFrame::GetVisualizerWnd() const {		// // //
+	return m_pVisualizerWnd;
+}
+
 void CMainFrame::OnEditEnableMIDI()
 {
 	theApp.GetMIDI()->ToggleInput();

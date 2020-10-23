@@ -68,6 +68,7 @@ protected: // create from serialization only
 // Attributes
 public:
 	CFrameEditor *GetFrameEditor() const;
+	CVisualizerWnd *GetVisualizerWnd() const;		// // //
 
 // Operations
 public:

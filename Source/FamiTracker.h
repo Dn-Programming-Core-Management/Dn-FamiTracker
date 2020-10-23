@@ -57,13 +57,14 @@ public:
 	CString m_strExportDPCMFile;
 };
 
-
+class CMainFrame;		// // //
 class CMIDI;
 class CSoundGen;
 class CSettings;
 class CAccelerator;
 class CChannelMap;
 class CCustomExporters;
+class CVersionChecker;		// // //
 
 class CMutex;
 
@@ -127,6 +128,7 @@ public:
 	void			WaitUntilStopped() const;
 
 	// Get-functions
+	CMainFrame		*GetMainFrame() const;		// // //
 	CAccelerator	*GetAccelerator() const		{ ASSERT(m_pAccel); return m_pAccel; }
 	CSoundGen		*GetSoundGenerator() const	{ ASSERT(m_pSoundGenerator); return m_pSoundGenerator; }
 	CMIDI			*GetMIDI() const			{ ASSERT(m_pMIDI); return m_pMIDI; }
@@ -163,6 +165,7 @@ private:
 	CMutex			*m_pInstanceMutex;
 	HANDLE			m_hWndMapFile;
 
+	bool			m_bRunning = false;		// // //
 	bool			m_bThemeActive;
 
 	std::thread		m_thVersionCheck;			// // //
