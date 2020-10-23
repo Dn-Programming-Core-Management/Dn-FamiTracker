@@ -1,17 +1,13 @@
 # Dn-FamiTracker
-Modifications based on j0CC-FamiTracker 0.6.3
-
 Dn-Famitracker is a fork of 0CC-FamiTracker that incorporates numerous fixes and features. It is originally intended to be a personal mod filled with quality-of-life features to suit the author's needs, but is now intending to move past this original purpose. The meaning of the name "Dn" is whatever you wish it to be.
+- Downloads/full changelog at: https://github.com/Gumball2415/Dn-FamiTracker/releases
+- Dev builds at: https://ci.appveyor.com/project/Gumball2415/dn-famitracker/history
 
-Notable additions
-* DPCM sample bit order reversal
-* Adaptable register state refresh rate depending on playback (≈60fps on playback, otherwise 10fps)
-* Multitrack per-channel export
-* More accessible DPCM preview pitch in the instrument editor dialog
-
-Download/full changelog at: https://github.com/Gumball2415/Dn-FamiTracker/releases
-
-Dev builds at: https://ci.appveyor.com/project/Gumball2415/dn-famitracker/history
+- Notable additions
+   - DPCM sample bit order reversal
+   - Adaptable register state refresh rate depending on playback (≈60fps on playback, otherwise 10fps)
+   - Multitrack per-channel export
+   - More accessible DPCM preview pitch in the instrument editor dialog
 
 The application and the source code are distributed under the GNU GPL 2 license. Dn modifications and additions in the source code and ASM code are marked with "// // !!" and ";; ;; !!", respectively.
 
