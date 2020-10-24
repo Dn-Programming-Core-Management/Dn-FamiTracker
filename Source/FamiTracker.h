@@ -172,6 +172,7 @@ private:
 	CString			m_pVersionMessage, m_pVersionURL;
 	UINT			m_iVersionStyle;
 	bool			m_bVersionReady;
+	std::unique_ptr<CVersionChecker> m_pVersionChecker;		// // //
 
 #ifdef SUPPORT_TRANSLATIONS
 	HINSTANCE		m_hInstResDLL;

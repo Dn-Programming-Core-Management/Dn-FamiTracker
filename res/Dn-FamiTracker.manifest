@@ -2,7 +2,7 @@
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" >
 <assemblyIdentity
     version="1.0.0.0"
-    name="Microsoft.Windows.0CC-FamiTracker"
+    name="Microsoft.Windows.Dn-FamiTracker"
     type="win32"
 />
 <description>Extension of FamiTracker</description>
