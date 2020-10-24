@@ -97,7 +97,7 @@ namespace {
 			ft_version_t ver = { };
 			auto& [api, maj, min, rev] = ver;
 			const std::string& tag = i["tag_name"];
-			::sscanf_s(tag.data(), "v%u.%u.%u%*1[.r]%u", &api, &maj, &min, &rev);
+			::sscanf_s(tag.data(), "Dn%u.%u.%u%*1[.r]%u", &api, &maj, &min, &rev);
 			if (ver > current) {
 				current = ver;
 				jPtr = &i;
@@ -141,11 +141,11 @@ void CVersionChecker::ThreadFn(bool startup, std::promise<std::optional<stVersio
 			desc = desc.substr(0, pos);
 
 		std::string msg = "A new version of Dn-FamiTracker is now available:\n\n";
-		msg += "Version " + verStr + " (released on " + timeStr + " %s)\n\n";
+		msg += "Version " + verStr + " (released on " + timeStr + ")\n\n";
 		msg += "Pressing \"Yes\" will launch the Github web page for this release.";
 		if (startup)
 			msg += " (Version checking on startup may be disabled in the configuration menu.)";
-		std::string url = "https://github.com/Gumball2415/Dn-FamiTracker/releases/tag/Dn%s" + verStr;
+		std::string url = "https://github.com/Gumball2415/Dn-FamiTracker/releases/tag/Dn" + verStr;
 
 		p.set_value(stVersionCheckResult{ std::move(msg), std::move(url), MB_YESNO | MB_ICONINFORMATION });
 	}
