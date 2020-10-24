@@ -135,25 +135,23 @@ void CVersionChecker::ThreadFn(bool startup, std::promise<std::optional<stVersio
 		std::string timeStr = json["published_at"];
 
 		std::string desc = json["body"];
-		if (auto pos = desc.find("\r\n\r\n"); pos != std::string::npos)
-			desc = desc.substr(pos + 4);
-		if (auto pos = desc.find("\r\n\r\n#"); pos != std::string::npos)
-			desc = desc.substr(0, pos);
 
 		std::string msg = "A new version of Dn-FamiTracker is now available:\n\n";
 		msg += "Version " + verStr + " (released on " + timeStr + ")\n\n";
-		msg += "Pressing \"Yes\" will launch the Github web page for this release.";
+		msg += desc + "\n\n";
+		msg += "Pressing \"Yes\" will launch the Github web page for this release.\n\n";
+		msg += "Pressing \"No\" will disable version checking in the future.\n\n";
 		if (startup)
-			msg += " (Version checking on startup may be disabled in the configuration menu.)";
+			msg += "(Version checking on startup may be re-enabled in the configuration menu.)";
 		std::string url = "https://github.com/Gumball2415/Dn-FamiTracker/releases/tag/Dn" + verStr;
 
-		p.set_value(stVersionCheckResult{ std::move(msg), std::move(url), MB_YESNO | MB_ICONINFORMATION });
+		p.set_value(stVersionCheckResult{ std::move(msg), std::move(url), MB_YESNOCANCEL | MB_ICONINFORMATION });
 	}
 	else
 		p.set_value(std::nullopt);
 }
 catch (...) {
 	p.set_value(std::nullopt);
-	//	p.set_value(stVersionCheckResult {
-	//		"Unable to get version information from the source repository.", "", MB_ICONERROR});
+	p.set_value(stVersionCheckResult {
+			"Unable to get version information from the source repository.", "", MB_ICONERROR});
 }
