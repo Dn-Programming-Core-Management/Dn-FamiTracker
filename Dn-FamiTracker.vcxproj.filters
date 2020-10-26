@@ -782,6 +782,9 @@
     <ClCompile Include="Source\VersionChecker.cpp">
       <Filter>Source Files\Other</Filter>
     </ClCompile>
+    <ClCompile Include="Source\VersionCheckerDlg.cpp">
+      <Filter>Source Files\Dialog Boxes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">
@@ -1497,6 +1500,9 @@
     </ClInclude>
     <ClInclude Include="Source\VersionChecker.h">
       <Filter>Header Files\Other Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\VersionCheckerDlg.h">
+      <Filter>Header Files\Dialog Boxes Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

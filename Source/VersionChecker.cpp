@@ -26,9 +26,11 @@
 #include "json/json.hpp"
 #pragma warning (pop)
 #include <vector>
+#include <ctime>
 #include "stdafx.h"
 #include "version.h"
 #include "WinInet.h"
+#include <CommCtrl.h>
 #pragma comment(lib, "wininet.lib")
 
 namespace {
@@ -134,24 +136,48 @@ void CVersionChecker::ThreadFn(bool startup, std::promise<std::optional<stVersio
 
 		std::string timeStr = json["published_at"];
 
+		// convert UniversalSortableDateFormat to tm
+		struct tm pubTime;
+		pubTime.tm_year		= std::stoi(timeStr.substr(0, 4), nullptr, 10) - 1900;
+		pubTime.tm_mon		= std::stoi(timeStr.substr(5, 2), nullptr, 10) - 1;
+		pubTime.tm_mday		= std::stoi(timeStr.substr(8, 2), nullptr, 10);
+
+		// TODO: add time since update has been released (i.e., 2 hours ago, etc.)
+		//pubTime.tm_hour		= std::stoi(timeStr.substr(11, 2), nullptr, 10);
+		//pubTime.tm_min		= std::stoi(timeStr.substr(14, 2), nullptr, 10);
+		//pubTime.tm_sec		= std::stoi(timeStr.substr(17, 2), nullptr, 10);
+
+		char chDate[14];
+		strftime(chDate, 14, "%b %d, %Y", &pubTime);
+		std::string s(chDate);
+
 		std::string desc = json["body"];
 
-		std::string msg = "A new version of Dn-FamiTracker is now available:\n\n";
-		msg += "Version " + verStr + " (released on " + timeStr + ")\n\n";
-		msg += desc + "\n\n";
-		msg += "Pressing \"Yes\" will launch the Github web page for this release.\n\n";
-		msg += "Pressing \"No\" will disable version checking in the future.\n\n";
-		if (startup)
-			msg += "(Version checking on startup may be re-enabled in the configuration menu.)";
-		std::string url = "https://github.com/Gumball2415/Dn-FamiTracker/releases/tag/Dn" + verStr;
+		// replace all "* " with " - " for dialog formatting
+		const std::string t("\r\n* ");
+		std::string::size_type pos = 0;
+		size_t count = 0;
 
-		p.set_value(stVersionCheckResult{ std::move(msg), std::move(url), MB_YESNOCANCEL | MB_ICONINFORMATION });
+		while ((pos = desc.find(t, pos)) != std::string::npos)
+		{
+			count++;
+			desc.erase(pos + 1, 2);
+			desc.insert(pos + 1, "\r\n  - ");
+			pos += t.size();
+		}
+		int StartUp = 0;
+		std::string VerInfo = "Version " + verStr + " (released on " + s + ")\n\n";
+		if (startup)
+			StartUp = 1;
+		std::string url = json["html_url"];
+
+		p.set_value(stVersionCheckResult{ std::move(StartUp), std::move(VerInfo), std::move(desc), std::move(url) });
 	}
 	else
 		p.set_value(std::nullopt);
 }
 catch (...) {
 	p.set_value(std::nullopt);
-	p.set_value(stVersionCheckResult {
-			"Unable to get version information from the source repository.", "", MB_ICONERROR});
+//	p.set_value(stVersionCheckResult {
+//			"Unable to get version information from the source repository.", "", "", "", MB_ICONERROR});
 }

@@ -43,6 +43,7 @@
 #include "VisualizerWnd.h"		// // //
 #include "htmlhelp.h"		// // !!
 #include "VersionChecker.h"		// // //
+#include "VersionCheckerDlg.h"		// // !!
 #include <iostream>		// // //
 #include "str_conv/str_conv.hpp"		// // //
 
@@ -69,6 +70,7 @@ BEGIN_MESSAGE_MAP(CFamiTrackerApp, CWinApp)
 	ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
 	ON_COMMAND(ID_RECENTFILES_CLEAR, OnRecentFilesClear)		// // //
 	ON_UPDATE_COMMAND_UI(ID_FILE_MRU_FILE1, OnUpdateRecentFiles)		// // //
+	ON_COMMAND(ID_HELP_VERSION_CHECK, OnHelpVersionCheck)		// // !!
 END_MESSAGE_MAP()
 
 // CFamiTrackerApp construction
@@ -684,12 +686,25 @@ BOOL CFamiTrackerApp::OnIdle(LONG lCount)		// // //
 
 	if (m_pVersionChecker && m_pVersionChecker->IsReady())
 		if (auto pChecker = std::move(m_pVersionChecker); auto result = pChecker->GetVersionCheckResult())
-			if (int Msgresult = AfxMessageBox(conv::to_t(result->Message).data(), result->MessageBoxStyle); Msgresult == IDYES)
-				ShellExecuteW(NULL, L"open", conv::to_wide(result->URL).data(), NULL, NULL, SW_SHOWNORMAL);
-			else if (Msgresult == IDNO)
-				GetSettings()->General.bCheckVersion = false;
-
+		{
+			m_pVersionURL = result->URL;
+			m_pVerInfo = result->VerInfo;
+			m_pVerDesc = result->VerDesc;
+			m_bStartUp = result->StartUp;
+			OnVersionCheck();
+		}
 	return FALSE;
+}
+
+void CFamiTrackerApp::OnVersionCheck()
+{	
+	CVersionCheckerDlg VCDlg;
+	VCDlg.DoModal();
+}
+
+void CFamiTrackerApp::OnHelpVersionCheck() {
+	m_bStartUp = 0;
+	OnVersionCheck();
 }
 
 // App command to run the about dialog

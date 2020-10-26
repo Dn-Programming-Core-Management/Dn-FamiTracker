@@ -324,6 +324,7 @@ BEGIN
         MENUITEM "&Performance",                ID_HELP_PERFORMANCE
         MENUITEM SEPARATOR
         MENUITEM "&About Dn-FamiTracker...",    ID_APP_ABOUT
+        MENUITEM "Check for updates...",        ID_HELP_VERSION_CHECK
     END
 END
 
@@ -1041,6 +1042,14 @@ BEGIN
         HORZGUIDE, 73
         HORZGUIDE, 109
         HORZGUIDE, 143
+    END
+
+    IDD_VERSION_CHECKER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 220
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 189
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1991,6 +2000,21 @@ BEGIN
     LTEXT           "Hardware patch version",IDC_STATIC,14,139,78,8
 END
 
+IDD_VERSION_CHECKER DIALOGEX 0, 0, 227, 196
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dn-FamiTracker Update"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Update",IDOK,115,175,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,170,175,50,14
+    LTEXT           "A new version of Dn-FamiTracker is now available.",IDC_STATIC,7,7,162,8
+    LTEXT           "Version  (released on  )",IDC_VERSIONDATE_MSG,7,21,213,8
+    LTEXT           "Release notes:",IDC_STATIC,7,36,49,8
+    EDITTEXT        IDC_RELEASE_MSG,7,52,213,80,ES_MULTILINE | ES_READONLY | WS_VSCROLL | NOT WS_TABSTOP,WS_EX_TRANSPARENT
+    LTEXT           "Pressing ""Update"" will launch the Github web page for this release.",IDC_STATIC,7,140,213,8
+    CONTROL         "Do not remind me again.",IDC_UPDATE_REMIND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,156,213,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2347,6 +2371,19 @@ END
 IDD_CONFIG_MIDI AFX_DIALOG_LAYOUT
 BEGIN
     0
+END
+
+IDD_VERSION_CHECKER AFX_DIALOG_LAYOUT
+BEGIN
+    0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 100, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0
 END
 
 

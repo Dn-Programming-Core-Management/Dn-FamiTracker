@@ -20,34 +20,29 @@
 ** must bear this legend.
 */
 
-
 #pragma once
 
-#include <string>
-#include <thread>
-#include <future>
-#include <optional>
+// CVersionCheckerDlg dialog
 
-struct stVersionCheckResult {
-	int StartUp;
-	std::string VerInfo;
-	std::string VerDesc;
-	std::string URL;
-};
+class CVersionCheckerDlg : public CDialog
+{
+	DECLARE_DYNAMIC(CVersionCheckerDlg)
 
-class CVersionChecker {
 public:
-	explicit CVersionChecker(bool StartUp);
-	~CVersionChecker() noexcept;
+	CVersionCheckerDlg(CWnd* pParent = NULL);   // standard constructor
+	virtual ~CVersionCheckerDlg();
 
-	bool IsReady() const;
-	std::optional<stVersionCheckResult> GetVersionCheckResult();
 
-private:
-	static void ThreadFn(bool startup, std::promise<std::optional<stVersionCheckResult>> p) noexcept;
+	enum { IDD = IDD_VERSION_CHECKER };
 
-private:
-	std::promise<std::optional<stVersionCheckResult>> promise_;
-	std::future<std::optional<stVersionCheckResult>> future_ = promise_.get_future();
-	std::thread th_;
+protected:
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+
+	CString UpdateURL;
+
+	DECLARE_MESSAGE_MAP()
+public:
+	virtual BOOL OnInitDialog();
+	afx_msg void OnBnClickedOk();
+	afx_msg void OnBnClickedCancel();
 };

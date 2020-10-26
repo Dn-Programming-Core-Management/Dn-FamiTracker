@@ -26,6 +26,7 @@
 // FamiTracker.h : main header file for the FamiTracker application
 
 #include <thread>		// // //
+#include <string>
 
 // Support DLL translations
 #define SUPPORT_TRANSLATIONS
@@ -168,11 +169,11 @@ private:
 	bool			m_bRunning = false;		// // //
 	bool			m_bThemeActive;
 
-	std::thread		m_thVersionCheck;			// // //
-	CString			m_pVersionMessage, m_pVersionURL;
-	UINT			m_iVersionStyle;
 	bool			m_bVersionReady;
+public:
 	std::unique_ptr<CVersionChecker> m_pVersionChecker;		// // //
+	std::string		m_pVersionURL, m_pVerInfo, m_pVerDesc;
+	bool m_bStartUp;
 
 #ifdef SUPPORT_TRANSLATIONS
 	HINSTANCE		m_hInstResDLL;
@@ -189,6 +190,8 @@ public:
 	afx_msg BOOL OnIdle(LONG lCount);		// // //
 	afx_msg void OnAppAbout();
 	afx_msg void OnFileOpen();
+	afx_msg void OnVersionCheck();			// // !!
+	afx_msg void OnHelpVersionCheck();		// // !!
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnTestExport();
 	void OnRecentFilesClear();		// // //

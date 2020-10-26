@@ -46,7 +46,8 @@ libft0cc/build
 libft0cc/build_ms
 Testing/Temporary
 
-
+# this should be automatically generated at build
+hlp/HTMLDefines.h
 
 
 
