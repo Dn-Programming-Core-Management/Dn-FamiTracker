@@ -25,7 +25,14 @@ add_executable(${exe}
         res/MainToolbar-256.bmp
         res/RightArrow.ico
 
-        Source/APU/2413tone.h
+        Source/APU/nezplug/FDS.CPP
+        Source/APU/nezplug/FDS.H
+        Source/APU/nezplug/FDSSound.cpp
+        Source/APU/nezplug/FDSSound.h
+        Source/APU/nsfplay/legacy/2413tone.h
+        Source/APU/nsfplay/legacy/emu2413.c
+        Source/APU/nsfplay/legacy/emu2413.h
+        Source/APU/nsfplay/legacy/vrc7tone_nuke.h
         Source/APU/2A03.cpp
         Source/APU/2A03.h
         Source/APU/2A03Chan.h
@@ -34,12 +41,6 @@ add_executable(${exe}
         Source/APU/Channel.h
         Source/APU/DPCM.CPP
         Source/APU/DPCM.h
-        Source/APU/emu2413.c
-        Source/APU/emu2413.h
-        Source/APU/FDS.CPP
-        Source/APU/FDS.H
-        Source/APU/FDSSound.cpp
-        Source/APU/FDSSound.h
         Source/APU/Mixer.cpp
         Source/APU/Mixer.h
         Source/APU/MMC5.CPP
@@ -61,7 +62,6 @@ add_executable(${exe}
         Source/APU/VRC6.H
         Source/APU/VRC7.cpp
         Source/APU/VRC7.h
-        Source/APU/vrc7tone.h
         Source/Blip_Buffer/Blip_Buffer.cpp
         Source/Blip_Buffer/Blip_Buffer.h
         Source/drivers/drv_2a03.h
@@ -144,8 +144,8 @@ add_executable(${exe}
         Source/CompoundAction.h
         Source/ConfigAppearance.cpp
         Source/ConfigAppearance.h
-		Source/ConfigEmulation.cpp
-		Source/ConfigEmulation.h
+        Source/ConfigEmulation.cpp
+        Source/ConfigEmulation.h
         Source/ConfigGeneral.cpp
         Source/ConfigGeneral.h
         Source/ConfigMIDI.cpp
@@ -370,6 +370,10 @@ add_executable(${exe}
         Source/TrackerChannel.h
         Source/TransposeDlg.cpp
         Source/TransposeDlg.h
+        Source/VersionChecker.cpp
+        Source/VersionChecker.h
+        Source/VersionCheckerDlg.cpp
+        Source/VersionCheckerDlg.h
         Source/VisualizerBase.cpp
         Source/VisualizerBase.h
         Source/VisualizerScope.cpp

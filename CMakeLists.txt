@@ -1,9 +1,9 @@
 # TODO: https://pabloariasal.github.io/2018/02/19/its-time-to-do-cmake-right/
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.11)
 
-set(project "Dn_FamiTracker")
-set(exe "Dn_FamiTracker")
+set(project "Dn-FamiTracker")
+set(exe "Dn-FamiTracker")
 include(cmake_user_begin.cmake OPTIONAL)
 
 project(${project})
@@ -24,10 +24,18 @@ else ()
 endif ()
 include(cmake/mfc.cmake)
 
-#HTMLHelper stuff here
-
 # compiling
 include(cmake/exe.cmake)
+
+#builds the .chm file
+if(WIN32)
+	add_custom_command(TARGET ${exe}
+		COMMAND cmd /c ${CMAKE_CURRENT_SOURCE_DIR}/cmake/compile-chm.bat
+		COMMAND move Dn-Famitracker.chm ${CMAKE_CURRENT_BINARY_DIR}
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		COMMENT "Generating help file...")
+endif()
+
 target_compile_features(${exe} PRIVATE cxx_std_17)
 
 if(COMMAND target_precompile_headers)
