@@ -8,7 +8,6 @@ include(cmake_user_begin.cmake OPTIONAL)
 
 project(${project})
 
-
 # MFC based off https://github.com/Kitware/CMake/blob/master/Tests/MFC/CMakeLists.txt
     # also sets https://stackoverflow.com/questions/14172856/cmake-mt-md
 # Simpler approach (unimplemented): https://stackoverflow.com/questions/11580748/cmake-mfc
@@ -31,7 +30,7 @@ include(cmake/exe.cmake)
 if(WIN32)
 	add_custom_command(TARGET ${exe}
 		COMMAND cmd /c ${CMAKE_CURRENT_SOURCE_DIR}/cmake/compile-chm.bat
-		COMMAND move Dn-Famitracker.chm ${CMAKE_CURRENT_BINARY_DIR}
+		COMMAND move Dn-Famitracker.chm ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		COMMENT "Generating help file...")
 endif()
