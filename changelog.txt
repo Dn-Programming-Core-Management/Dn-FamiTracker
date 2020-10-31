@@ -60,7 +60,7 @@ Dn0.1.0.0 - 08/05/20
 
 Additions:
 
- - DPCM sample bit order reversal (located in the DPCM sample editor)ker
+ - DPCM sample bit order reversal (located in the DPCM sample editor)
 
 --------------------------------------------------------------------------------
 
