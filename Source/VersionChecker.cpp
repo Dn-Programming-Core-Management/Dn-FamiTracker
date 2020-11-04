@@ -37,7 +37,6 @@ namespace {
 
 	LPCWSTR rgpszAcceptTypes[] = { L"application/json", NULL };
 
-	// // // TODO: cpr maybe
 	struct CHttpStringReader {
 		CHttpStringReader() {
 			hOpen = InternetOpenW(L"Dn_FamiTracker", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
@@ -162,7 +161,7 @@ void CVersionChecker::ThreadFn(bool startup, std::promise<std::optional<stVersio
 		{
 			count++;
 			desc.erase(pos + 1, 2);
-			desc.insert(pos + 1, "\r\n  - ");
+			desc.insert(pos + 1, "\r\n - ");
 			pos += t.size();
 		}
 		int StartUp = 0;

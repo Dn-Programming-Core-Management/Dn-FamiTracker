@@ -703,8 +703,7 @@ void CFamiTrackerApp::OnVersionCheck()
 }
 
 void CFamiTrackerApp::OnHelpVersionCheck() {
-	m_bStartUp = 0;
-	OnVersionCheck();
+	CheckNewVersion(false);
 }
 
 // App command to run the about dialog
