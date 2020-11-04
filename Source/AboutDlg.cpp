@@ -112,6 +112,7 @@ void CHead::DrawItem(LPDRAWITEMSTRUCT lpDraw)
 	dcImage.SelectObject(bmp);
 
 	pDC->BitBlt(0, 0, 434, 80, &dcImage, 0, 0, SRCCOPY);
+
 }
 
 // CAboutDlg
@@ -147,6 +148,10 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 
 BOOL CAboutDlg::OnInitDialog()
 {
+	// draw the icon manually due to scaling issues
+	HICON hIco = (HICON)LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME), IMAGE_ICON, 48, 48, LR_DEFAULTCOLOR);
+	static_cast<CStatic*>(GetDlgItem(IDC_ICON_STATIC))->SetIcon(hIco);
+
 	CString aboutString = _T(APP_NAME " version " VERSION_STR);
 
 #ifdef WIP
