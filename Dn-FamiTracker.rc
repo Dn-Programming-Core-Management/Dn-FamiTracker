@@ -573,6 +573,7 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 278
+        VERTGUIDE, 26
         VERTGUIDE, 48
         VERTGUIDE, 54
         VERTGUIDE, 78
@@ -1067,7 +1068,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_HEAD,"Static",SS_OWNERDRAW,0,0,287,49
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,49,287,1
-    ICON            IDR_MAINFRAME,IDC_STATIC,12,63,20,20,SS_REALSIZEIMAGE
+    ICON            IDR_MAINFRAME,IDC_STATIC,16,60,21,20,SS_CENTERIMAGE
     LTEXT           "Dn-FamiTracker",IDC_ABOUT1,54,58,219,11,SS_NOPREFIX
     LTEXT           "Persune's mod of 0CC-FamiTracker",IDC_ABOUT2,54,76,167,11,SS_NOPREFIX
     LTEXT           "Copyright (C) 2005 - 2015 jsr, 2014 - 2016 HertzDevil",IDC_ABOUT3,54,92,215,11
@@ -2025,13 +2026,13 @@ END
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res/Application.ico"
 
+IDR_FamiTrackerTYPE     ICON                    "res/Document.ico"
+
 IDI_INST_2A03           ICON                    "res/Inst_2A03.ico"
 
 IDI_INST_VRC6           ICON                    "res/Inst_VRC6.ico"
 
 IDI_INST_VRC7           ICON                    "res/Inst_VRC7.ico"
-
-IDR_FamiTrackerTYPE     ICON                    "res/Document.ico"
 
 IDI_INST_N163           ICON                    "res/Inst_N163.ico"
 

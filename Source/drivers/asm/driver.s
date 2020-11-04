@@ -467,7 +467,7 @@ last_bss_var:			.res 1						; Not used
 ; NSF entry addresses
 
 .if .defined(PACKAGE)
-	.byte "0CCFT ", $02, $0C
+	.byte "DN-FT ", $02, $0C		 ;; ;; !!
 .endif
 
 LOAD:

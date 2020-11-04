@@ -941,7 +941,6 @@ echo.</Command>
     <None Include="hlp\vrc7.htm">
       <DeploymentContent>true</DeploymentContent>
     </None>
-    <None Include="res\Application.ico" />
     <None Include="res\Document.ico" />
     <None Include="res\export_report.htm">
       <DeploymentContent>true</DeploymentContent>
@@ -1002,6 +1001,7 @@ echo.</Command>
     <Image Include="hlp\img\properties.PNG" />
     <Image Include="hlp\img\toolbar1.png" />
     <Image Include="hlp\img\toolbar2.png" />
+    <Image Include="res\Application.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

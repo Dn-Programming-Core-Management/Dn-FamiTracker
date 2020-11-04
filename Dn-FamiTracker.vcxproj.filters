@@ -1511,9 +1511,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\Application.ico">
-      <Filter>Resource Files\Icons</Filter>
-    </None>
     <None Include="res\Document.ico">
       <Filter>Resource Files\Icons</Filter>
     </None>
@@ -1813,6 +1810,9 @@
     </Image>
     <Image Include="hlp\img\toolbar2.png">
       <Filter>HTML Help Topics\Images</Filter>
+    </Image>
+    <Image Include="res\Application.ico">
+      <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

@@ -2,26 +2,36 @@ Dn-FamiTracker Mod
 Change Log
 Written by Persune
 
-Version 0.2.2 - October 31 2020 (tentative)
+Version 0.2.2 - November 1 2020 (tentative)
 
 --------------------------------------------------------------------------------
 
-Dn0.2.2.0 - 10/31/2020
+Dn0.2.2.0 - 11/01/2020
 
 Additions:
 
  - added FastTracker 2 (JP106) keymap
- - Enable DPI scaling for pattern editor
  - Adjustable idle refresh rate in configuration
- - Updated the VRC7 emulation core
+ - Added back the help manual
  - Emulation tab in Configuration, which includes:
    - Swappable emulation cores for FDS and Sunsoft 5B
    - Switchable VRC7 hardware patches for older module compatibility
    - Toggleable N163 multiplexing
+ - Include changelogs of vanilla, j0CC, and Dn
+
+Improvements:
+
+ - Enable DPI scaling for pattern editor
+ - Updated the VRC7 emulation core
+ - Updated the About dialog
+ - Enabled x64 builds in the project files
+ - Export wave shortcut (Ctrl + Shift + E)
+ - Reenabled version checking, which can also be accesed in the Help popup
+ - replaced the application icon (design by Compass Man)
 
 Fixes:
 
- - Removed more occurences of old program name
+ - Removed more occurences of old program name and renamed more files to Dn
 
 
 
