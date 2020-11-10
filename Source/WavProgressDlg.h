@@ -18,7 +18,6 @@
 ** must bear this legend.
 */
 
-#include <Source\CreateWaveDlg.h>
 #pragma once
 
 

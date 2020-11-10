@@ -227,6 +227,9 @@ BOOL CFamiTrackerApp::InitInstance()
 		exporter.CommandLineExport(cmdInfo.m_strFileName, cmdInfo.m_strExportFile, cmdInfo.m_strExportLogFile, cmdInfo.m_strExportDPCMFile);
 		ExitProcess(0);
 	}
+	if (cmdInfo.m_bHelp) {		// // !!
+		ExitProcess(0);
+	}
 
 	// Dispatch commands specified on the command line.  Will return FALSE if
 	// app was launched with /RegServer, /Register, /Unregserver or /Unregister.
@@ -867,6 +870,7 @@ CFTCommandLineInfo::CFTCommandLineInfo() : CCommandLineInfo(),
 	m_bLog(false), 
 	m_bExport(false), 
 	m_bPlay(false),
+	m_bHelp(false),		// // !!
 	m_strExportFile(_T("")),
 	m_strExportLogFile(_T("")),
 	m_strExportDPCMFile(_T(""))
@@ -909,6 +913,28 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 			errno_t err = freopen_s(&f, "CON", "w", stdout);
 			errno_t err2 = freopen_s(&f, "CON", "w", stderr);
 			fprintf(stderr, "%s\n", APP_NAME_VERSION);		// // //
+			return;
+		}
+		// // !! help (/help)
+		else if (!_tcsicmp(pszParam, _T("help")) || !_tcsicmp(pszParam, _T("h"))) {
+			m_bHelp = true;
+			FILE* cout;
+			AttachConsole(ATTACH_PARENT_PROCESS);
+			errno_t err = freopen_s(&cout, "CON", "w", stdout);
+			// TODO: format this better
+			std::string helpmessage = "Dn-FamiTracker commandline help";
+;			helpmessage += "\nusage: Dn-FamiTracker [module file] [-play | -export | -nodump | -log]\n";
+			helpmessage += "options:\n";
+			helpmessage += "play\t: automatically plays when the program starts\n";
+			helpmessage += "export\t: exports the module to a specified format. the format is determined by the filetype of the output.\n";
+			helpmessage += "\t-export [output file] [optional log file] [DPCM file for BIN export]\n";
+			helpmessage += "\tthe following formats are available:\n";
+			helpmessage += "\t\t.nsf\n\t\t.nes\n\t\t.bin\n\t\t.prg\n\t\t.asm\n\t\t.nsfe\n\t\t.txt\n";
+			helpmessage += "nodump\t: disables the crash dump generation, for cases where these are undesirable\n";
+			helpmessage += "log\t: enables the register logger, available in debug builds only\n";
+			helpmessage += "Press enter to continue . . .";
+			fprintf(stdout, "%s\n", helpmessage.c_str());
+			fclose(cout);
 			return;
 		}
 	}
