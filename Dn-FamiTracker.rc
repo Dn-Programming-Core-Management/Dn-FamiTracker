@@ -313,6 +313,12 @@ BEGIN
         BEGIN
             MENUITEM "&Top",                        ID_FRAMEEDITOR_TOP, CHECKED
             MENUITEM "&Left",                       ID_FRAMEEDITOR_LEFT
+            MENUITEM "&Popup",                      ID_FRAMEEDITORPOSITION_POPUP, INACTIVE
+        END
+        POPUP "C&ontrol Panel Position"
+        BEGIN
+            MENUITEM "&Top",                        ID_CONTROLPANEL_TOP
+            MENUITEM "&Popup",                      ID_CONTROLPANEL_POPUP, INACTIVE
         END
     END
     POPUP "&Help"
@@ -804,7 +810,7 @@ BEGIN
     IDD_MAINBAR, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 136
+        RIGHTMARGIN, 138
         TOPMARGIN, 5
         BOTTOMMARGIN, 123
     END
@@ -1426,7 +1432,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,185,95,10
 END
 
-IDD_MAINBAR DIALOGEX 0, 0, 143, 128
+IDD_MAINBAR DIALOGEX 0, 0, 145, 128
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 EXSTYLE WS_EX_TRANSPARENT | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -2385,6 +2391,11 @@ BEGIN
     0, 0, 100, 0,
     0, 0, 0, 0,
     0, 0, 0, 0
+END
+
+IDD_MAINBAR AFX_DIALOG_LAYOUT
+BEGIN
+    0
 END
 
 

@@ -3012,7 +3012,7 @@ bool CFamiTrackerView::EditEffParamColumn(stChanNote &Note, Keycode Key, int Eff
 				bStepDown = true;
 			}
 			break;
-        case EDIT_STYLE_FT2_JP:	// FT2-JP106
+		case EDIT_STYLE_FT2_JP:	// FT2-JP106
 			Note.EffParam[EffectIndex] = (Note.EffParam[EffectIndex] & Mask) | Value << Shift;
 			bStepDown = true;
 			break;

@@ -116,6 +116,8 @@ private:
 	bool NeedUpdate() const;
 
 	// Translation
+	int GetChannelOffset() const;		// // !!
+	int GetArrowFromPoint(const CPoint &point) const;
 	int GetRowFromPoint(const CPoint &point, bool DropTarget) const;
 	int GetChannelFromPoint(const CPoint &point) const;
 	bool IsOverFrameColumn(const CPoint &point) const;		// // //
@@ -131,7 +133,7 @@ private:
 public:
 	// Window layout
 	static const int ROW_COLUMN_WIDTH	= 26;	// The left-most column width
-	static const int FRAME_ITEM_WIDTH	= 20;	// Pattern item width 
+	static const int FRAME_ITEM_WIDTH	= 20;	// Pattern item width
 	static const int ROW_HEIGHT			= 15;	// Height of rows
 	static const int TOP_OFFSET			= 3;	// Top offset
 	static const int DEFAULT_HEIGHT		= 161;	// Window height at top position
@@ -147,10 +149,14 @@ private:
 
 	// GDI objects
 	CFont	m_Font;
+	CFont	m_ChanFont;		// // !!
 	CBitmap m_bmpBack;
 	CDC		m_dcBack;
 
 	UINT	mClipboardFormat;
+
+	// Channel view limit
+	int		m_iChannelView;
 
 	// Window size
 	int		m_iWinWidth;
@@ -185,6 +191,9 @@ private:
 
 	int		m_iTopScrollArea;
 	int		m_iBottomScrollArea;
+
+	bool	m_bChannelViewArrow1;
+	bool	m_bChannelViewArrow2;
 
 	CPoint	m_ButtonPoint;
 

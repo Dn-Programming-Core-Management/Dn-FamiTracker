@@ -35,7 +35,8 @@
 
 enum frame_edit_pos_t { 
 	FRAME_EDIT_POS_TOP, 
-	FRAME_EDIT_POS_LEFT
+	FRAME_EDIT_POS_LEFT,
+	FRAME_EDIT_POS_DIALOG	// // !!
 };
 
 enum control_panel_pos_t		// // // 050B
