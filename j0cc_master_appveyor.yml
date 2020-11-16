@@ -7,6 +7,9 @@ branches:
 skip_tags: true
 skip_branch_with_pr: true
 image: Visual Studio 2019
+platform:
+- x64
+- Win32
 configuration:
 - Release
 - Debug
@@ -19,12 +22,12 @@ build:
   verbosity: minimal
 after_build:
 - cmd: >-
-    cd %configuration%
+    cd %platform%\%configuration%
 
-    if %configuration%==Release ( move *.exe Dn-%APPVEYOR_BUILD_VERSION%.exe ) else ( move *.exe Dn-%APPVEYOR_BUILD_VERSION%-%configuration%.exe )
+    move *.exe Dn-%APPVEYOR_BUILD_VERSION%-%platform%-%configuration%.exe
 artifacts:
-- path: $(configuration)\*.exe
+- path: $(platform)\$(configuration)\*.exe
   name: exe
-- path: $(configuration)\*.pdb
+- path: $(platform)\$(configuration)\*.pdb
   name: pdb
 deploy: off
