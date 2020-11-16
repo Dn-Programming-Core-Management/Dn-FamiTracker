@@ -243,9 +243,9 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 	const COLORREF ColTextDimmed	= DIM(theApp.GetSettings()->Appearance.iColPatternText, 90);
 
 	CPoint ArrowPoints[3];
-	CBrush HoverBrush(ColTextHilite);
+	CBrush HoverBrush(ColText);
 	CBrush BlackBrush(ColBackground);
-	CPen HoverPen(PS_SOLID, 1, ColTextHilite);
+	CPen HoverPen(PS_SOLID, 1, ColText);
 	CPen BlackPen(PS_SOLID, 1, ColTextDimmed);
 
 	const bool bHexRows				= theApp.GetSettings()->General.bRowInHex;
@@ -439,7 +439,7 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 				// Channel names
 				m_dcBack.SelectObject(m_ChanFont);
 				CTrackerChannel* pChannel = m_pDocument->GetChannel(Chan);
-				m_dcBack.DrawTextA(pChannel->GetShortName(),			// // !!
+				m_dcBack.DrawText(pChannel->GetShortName(),			// // !!
 					DPI::Rect(28 + (j * FRAME_ITEM_WIDTH + FRAME_ITEM_WIDTH / 2) - ChannelOffset * FRAME_ITEM_WIDTH,
 					DPI::SY(TOP_OFFSET), FRAME_ITEM_WIDTH - 2, 20), DT_LEFT | DT_TOP | DT_NOCLIP);
 				m_dcBack.SelectObject(m_Font);
@@ -918,19 +918,45 @@ void CFrameEditor::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	int Row = GetRowFromPoint(point, false);
 	int Chan = GetChannelFromPoint(point);		// // //
+	int Arrow = GetArrowFromPoint(point);		// // !!
 
 	m_ButtonPoint = point;
+	if (Arrow == 0) {
+		if (m_bSelecting) {
+			int SelectStart = m_selection.GetFrameStart(), SelectEnd = m_selection.GetFrameEnd();		// // //
+			int ChanStart = m_selection.GetChanStart(), ChanEnd = m_selection.GetChanEnd();		// // //
 
-	if (m_bSelecting) {
-		int SelectStart = m_selection.GetFrameStart(), SelectEnd = m_selection.GetFrameEnd();		// // //
-		int ChanStart = m_selection.GetChanStart(), ChanEnd = m_selection.GetChanEnd();		// // //
-
-		if (Row < SelectStart || Row > SelectEnd || Chan < ChanStart || Chan > ChanEnd) {		// // //
+			if (Row < SelectStart || Row > SelectEnd || Chan < ChanStart || Chan > ChanEnd) {		// // //
+				if (nFlags & MK_SHIFT) {
+					m_selection.m_cpEnd.m_iFrame = Row;
+					m_selection.m_cpEnd.m_iChannel = Chan;		// // //
+					InvalidateFrameData();
+					Invalidate();
+				}
+				else {
+					m_selection.m_cpStart.m_iFrame = m_selection.m_cpEnd.m_iFrame = Row;
+					m_bFullFrameSelect = Chan < 0;		// // //
+					if (m_bFullFrameSelect) {
+						m_selection.m_cpStart.m_iChannel = 0;
+						m_selection.m_cpEnd.m_iChannel = m_pDocument->GetChannelCount() - 1;
+					}
+					else
+						m_selection.m_cpStart.m_iChannel = m_selection.m_cpEnd.m_iChannel = Chan;
+					m_bSelecting = false;
+					// m_pView->SetFocus();
+				}
+			}
+			else {
+				m_bStartDrag = true;
+			}
+		}
+		else {
 			if (nFlags & MK_SHIFT) {
+				m_selection.m_cpStart = GetFrameCursor();		// // //
 				m_selection.m_cpEnd.m_iFrame = Row;
 				m_selection.m_cpEnd.m_iChannel = Chan;		// // //
-				InvalidateFrameData();
-				Invalidate();
+				m_bFullFrameSelect = false;		// // //
+				m_bSelecting = true;
 			}
 			else {
 				m_selection.m_cpStart.m_iFrame = m_selection.m_cpEnd.m_iFrame = Row;
@@ -941,34 +967,9 @@ void CFrameEditor::OnLButtonDown(UINT nFlags, CPoint point)
 				}
 				else
 					m_selection.m_cpStart.m_iChannel = m_selection.m_cpEnd.m_iChannel = Chan;
-				m_bSelecting = false;
-				// m_pView->SetFocus();
 			}
 		}
-		else {
-			m_bStartDrag = true;
-		}
 	}
-	else {
-		if (nFlags & MK_SHIFT) {
-			m_selection.m_cpStart = GetFrameCursor();		// // //
-			m_selection.m_cpEnd.m_iFrame = Row;
-			m_selection.m_cpEnd.m_iChannel = Chan;		// // //
-			m_bFullFrameSelect = false;		// // //
-			m_bSelecting = true;
-		}
-		else {
-			m_selection.m_cpStart.m_iFrame = m_selection.m_cpEnd.m_iFrame = Row;
-			m_bFullFrameSelect = Chan < 0;		// // //
-			if (m_bFullFrameSelect) {
-				m_selection.m_cpStart.m_iChannel = 0;
-				m_selection.m_cpEnd.m_iChannel = m_pDocument->GetChannelCount() - 1;
-			}
-			else
-				m_selection.m_cpStart.m_iChannel = m_selection.m_cpEnd.m_iChannel = Chan;
-		}
-	}
-	
 	CWnd::OnLButtonDown(nFlags, point);
 }
 
@@ -979,33 +980,39 @@ void CFrameEditor::OnLButtonUp(UINT nFlags, CPoint point)
 	int Arrow = GetArrowFromPoint(point);		// // !!
 
 	if (m_bSelecting) {
-		if (m_bStartDrag) {
-			m_bSelecting = false;
-			m_bStartDrag = false;
-			m_pView->SetFocus();
-		}
-		InvalidateFrameData();
-		Invalidate();
-	}
-	else {
-		if ((nFlags & MK_CONTROL) && theApp.IsPlaying()) {
-			// Queue this frame
-			if (NewFrame == theApp.GetSoundGenerator()->GetQueueFrame())
-				// Remove
-				theApp.GetSoundGenerator()->SetQueueFrame(-1);
-			else
-				// Set new
-				theApp.GetSoundGenerator()->SetQueueFrame(NewFrame);
-
+		if (Arrow == 0) {
+			if (m_bStartDrag) {
+				m_bSelecting = false;
+				m_bStartDrag = false;
+				m_pView->SetFocus();
+			}
 			InvalidateFrameData();
 			Invalidate();
 		}
+	}
+	else {
+		if (Arrow == 0) {
+			if ((nFlags & MK_CONTROL) && theApp.IsPlaying()) {
+				// Queue this frame
+				if (NewFrame == theApp.GetSoundGenerator()->GetQueueFrame())
+					// Remove
+					theApp.GetSoundGenerator()->SetQueueFrame(-1);
+				else
+					// Set new
+					theApp.GetSoundGenerator()->SetQueueFrame(NewFrame);
+
+				InvalidateFrameData();
+				Invalidate();
+			}
+		}
 		else {
 			// Switch to frame
-			SetEditFrame(GetRowFromPoint(point, GetFocus() == this));		// // // allow one-past-the-end
-			if (Channel >= 0) {
-				if (Channel >= m_pDocument->GetChannelCount()) Channel = m_pDocument->GetChannelCount() - 1;
-				m_pView->SelectChannel(Channel);		// // //
+			if (Arrow == 0) {
+				SetEditFrame(GetRowFromPoint(point, GetFocus() == this));		// // // allow one-past-the-end
+				if (Channel >= 0) {
+					if (Channel >= m_pDocument->GetChannelCount()) Channel = m_pDocument->GetChannelCount() - 1;
+					m_pView->SelectChannel(Channel);		// // //
+				}
 			}
 			else if (Arrow == 1) {
 				if (m_iChannelView > 5) {
@@ -1032,49 +1039,49 @@ void CFrameEditor::OnMouseMove(UINT nFlags, CPoint point)
 	int Arrow = GetArrowFromPoint(point);		// // !!
 	if (Arrow == 1) {
 		if (m_iChannelView > 5) {
-			m_bChannelViewArrow2 = true;
-			m_bChannelViewArrow1 = false;
+			//m_bChannelViewArrow2 = true;
+			//m_bChannelViewArrow1 = false;
 			RedrawFrameEditor();
 		}
 	}
 	else if (Arrow == 2) {
 		if (m_iChannelView < m_pDocument->GetChannelCount()) {
-			m_bChannelViewArrow2 = false;
-			m_bChannelViewArrow1 = true;
+			//m_bChannelViewArrow2 = false;
+			//m_bChannelViewArrow1 = true;
 			RedrawFrameEditor();
 		}
 	}
-	else {
-		m_bChannelViewArrow1 = false;
-		m_bChannelViewArrow2 = false;
+	else if (Arrow == 0) {
+		//m_bChannelViewArrow1 = false;
+		//m_bChannelViewArrow2 = false;
 		RedrawFrameEditor();
-	}
 
-	if (nFlags & MK_LBUTTON) {
-		if (!m_bSelecting) {
-			if (abs(m_ButtonPoint.x - point.x) > m_iDragThresholdX || abs(m_ButtonPoint.y - point.y) > m_iDragThresholdY) {
-				m_bSelecting = true;
-				EnableInput();		// // //
+		if (nFlags & MK_LBUTTON) {
+			if (!m_bSelecting) {
+				if (abs(m_ButtonPoint.x - point.x) > m_iDragThresholdX || abs(m_ButtonPoint.y - point.y) > m_iDragThresholdY) {
+					m_bSelecting = true;
+					EnableInput();		// // //
+				}
 			}
-		}
-		if (m_bStartDrag) {
-			if (abs(m_ButtonPoint.x - point.x) > m_iDragThresholdX || abs(m_ButtonPoint.y - point.y) > m_iDragThresholdY) {
-				InitiateDrag();
+			if (m_bStartDrag) {
+				if (abs(m_ButtonPoint.x - point.x) > m_iDragThresholdX || abs(m_ButtonPoint.y - point.y) > m_iDragThresholdY) {
+					InitiateDrag();
+				}
 			}
-		}
-		else if (m_bSelecting) {
-			AutoScroll(point);
-			m_selection.m_cpEnd.m_iFrame = GetRowFromPoint(point, false);
-			if (m_bFullFrameSelect) {		// // //
-				m_selection.m_cpStart.m_iChannel = 0;
-				m_selection.m_cpEnd.m_iChannel = m_pDocument->GetChannelCount() - 1;
+			else if (m_bSelecting) {
+				AutoScroll(point);
+				m_selection.m_cpEnd.m_iFrame = GetRowFromPoint(point, false);
+				if (m_bFullFrameSelect) {		// // //
+					m_selection.m_cpStart.m_iChannel = 0;
+					m_selection.m_cpEnd.m_iChannel = m_pDocument->GetChannelCount() - 1;
+				}
+				else {
+					m_selection.m_cpEnd.m_iChannel = GetChannelFromPoint(point);
+					if (m_selection.m_cpEnd.m_iChannel < 0) m_selection.m_cpEnd.m_iChannel = 0;
+				}
+				InvalidateFrameData();
+				Invalidate();
 			}
-			else {
-				m_selection.m_cpEnd.m_iChannel = GetChannelFromPoint(point);
-				if (m_selection.m_cpEnd.m_iChannel < 0) m_selection.m_cpEnd.m_iChannel = 0;
-			}
-			InvalidateFrameData();
-			Invalidate();
 		}
 	}
 
@@ -1105,16 +1112,20 @@ void CFrameEditor::OnLButtonDblClk(UINT nFlags, CPoint point)
 
 	const int Channel  = GetChannelFromPoint(point);
 	const int NewFrame = GetRowFromPoint(point, true);		// // // allow one-past-the-end
+	int Arrow = GetArrowFromPoint(point);		// // !!
 
-	SetEditFrame(NewFrame);		// // //
 
-	if (Channel >= 0)
-		m_pView->SelectChannel(Channel);
+	if (Arrow == 0) {
+		SetEditFrame(NewFrame);		// // //
 
-	if (m_bInputEnable)
-		m_pView->SetFocus();
-	else
-		EnableInput();
+		if (Channel >= 0)
+			m_pView->SelectChannel(Channel);
+
+		if (m_bInputEnable)
+			m_pView->SetFocus();
+		else
+			EnableInput();
+	}
 
 	CWnd::OnLButtonDblClk(nFlags, point);
 }

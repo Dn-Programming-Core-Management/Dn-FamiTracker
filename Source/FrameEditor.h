@@ -192,8 +192,8 @@ private:
 	int		m_iTopScrollArea;
 	int		m_iBottomScrollArea;
 
-	bool	m_bChannelViewArrow1;
-	bool	m_bChannelViewArrow2;
+	bool	m_bChannelViewArrow1 = true;		// // !!
+	bool	m_bChannelViewArrow2 = true;		// // !!
 
 	CPoint	m_ButtonPoint;
 
