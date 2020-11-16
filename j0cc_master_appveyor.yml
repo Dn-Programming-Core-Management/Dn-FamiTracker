@@ -15,7 +15,6 @@ configuration:
 - Debug
 shallow_clone: true
 clone_depth: 5
-cache: c:\tools\vcpkg\installed\
 build:
   project: Dn-FamiTracker.vcxproj
   parallel: true
