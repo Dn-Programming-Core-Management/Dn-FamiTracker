@@ -33,8 +33,8 @@ CModuleException::CModuleException() :
 const std::string CModuleException::GetErrorString() const
 {
 	std::string out;
-	const int COUNT = m_strError.size();
-	for (int i = 0; i < COUNT; ) {
+	const std::size_t COUNT = m_strError.size();
+	for (std::size_t i = 0; i < COUNT; ) {
 		out += *m_strError[i];
 		if (++i == COUNT) break;
 		out += '\n';

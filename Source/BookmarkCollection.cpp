@@ -117,7 +117,7 @@ void CBookmarkCollection::SwapFrames(unsigned A, unsigned B)
 int CBookmarkCollection::GetBookmarkIndex(const CBookmark *const pMark) const
 {
 	if (unsigned Count = GetCount())
-		for (size_t i = 0; i < Count; ++i)
+		for (std::size_t i = 0; i < Count; ++i)
 			if (m_pBookmark[i].get() == pMark)
 				return i;
 	return -1;

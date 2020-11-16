@@ -390,7 +390,7 @@ void CChunkRenderText::StoreFrameChunk(CChunk *pChunk, CFile *pFile)
 void CChunkRenderText::StorePatternChunk(CChunk *pChunk, CFile *pFile)
 {
 	CStringA str;
-	int len = pChunk->GetLength();
+	std::size_t len = pChunk->GetLength();
 
 	// Patterns
 	str.Format("; Bank %i\n", pChunk->GetBank());

@@ -56,7 +56,7 @@ private:
 
 private:
 	CVisualizerBase *m_pStates[STATE_COUNT];
-	unsigned int m_iCurrentState;
+	std::size_t m_iCurrentState;
 
 	int	m_iBufferSize;
 	short *m_pBuffer1;

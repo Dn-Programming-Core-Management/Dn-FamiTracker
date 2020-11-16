@@ -40,7 +40,7 @@ CSeqInstHandler::CSeqInstHandler(CChannelHandlerInterface *pInterface, int Vol, 
 	CInstHandler(pInterface, Vol),
 	m_iDefaultDuty(Duty)
 {
-	for (size_t i = 0; i < sizeof(m_pSequence) / sizeof(CSequence*); i++)
+	for (std::size_t i = 0; i < sizeof(m_pSequence) / sizeof(CSequence*); i++)
 		ClearSequence(i);
 }
 
@@ -49,7 +49,7 @@ void CSeqInstHandler::LoadInstrument(std::shared_ptr<CInstrument> pInst)
 	m_pInstrument = pInst;
 	auto pSeqInst = std::dynamic_pointer_cast<CSeqInstrument>(pInst);
 	if (pSeqInst == nullptr) return;
-	for (size_t i = 0; i < sizeof(m_pSequence) / sizeof(CSequence*); i++) {
+	for (std::size_t i = 0; i < sizeof(m_pSequence) / sizeof(CSequence*); i++) {
 		const CSequence *pSequence = pSeqInst->GetSequence(i);
 		bool Enable = pSeqInst->GetSeqEnable(i) == SEQ_STATE_RUNNING;
 		if (!Enable)
@@ -61,7 +61,7 @@ void CSeqInstHandler::LoadInstrument(std::shared_ptr<CInstrument> pInst)
 
 void CSeqInstHandler::TriggerInstrument()
 {
-	for (size_t i = 0; i < sizeof(m_pSequence) / sizeof(CInstrument*); i++) if (m_pSequence[i] != nullptr) {
+	for (std::size_t i = 0; i < sizeof(m_pSequence) / sizeof(CInstrument*); i++) if (m_pSequence[i] != nullptr) {
 		m_iSeqState[i] = SEQ_STATE_RUNNING;
 		m_iSeqPointer[i] = 0;
 	}
@@ -92,7 +92,7 @@ void CSeqInstHandler::ReleaseInstrument()
 void CSeqInstHandler::UpdateInstrument()
 {
 	if (!m_pInterface->IsActive()) return;
-	for (size_t i = 0; i < sizeof(m_pSequence) / sizeof(CSequence*); i++) {
+	for (std::size_t i = 0; i < sizeof(m_pSequence) / sizeof(CSequence*); i++) {
 		if (m_pSequence[i] == nullptr || m_pSequence[i]->GetItemCount() == 0) continue;
 		int Value;
 		switch (m_iSeqState[i]) {

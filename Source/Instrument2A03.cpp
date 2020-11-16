@@ -180,7 +180,7 @@ void CInstrument2A03::SaveFile(CInstrumentFile *pFile)
 		if (const CDSample *pSample = m_pInstManager->GetDSample(i)) {
 			pFile->WriteInt(i);
 			const char *pName = pSample->GetName();
-			int NameLen = strlen(pName);
+			std::size_t NameLen = strlen(pName);
 			pFile->WriteInt(NameLen);
 			pFile->Write(pName, NameLen);
 			pFile->WriteInt(pSample->GetSize());

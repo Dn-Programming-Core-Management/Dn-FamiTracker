@@ -1236,7 +1236,7 @@ bool CFamiTrackerDoc::WriteBlock_DSamples(CDocumentFile *pDocFile, const int Ver
 		if (const CDSample *pSamp = GetSample(i)) {
 			// Write sample
 			pDocFile->WriteBlockChar(i);
-			int Length = strlen(pSamp->GetName());
+			std::size_t Length = strlen(pSamp->GetName());
 			pDocFile->WriteBlockInt(Length);
 			pDocFile->WriteBlock(pSamp->GetName(), Length);
 			pDocFile->WriteBlockInt(pSamp->GetSize());
@@ -3173,7 +3173,7 @@ int CFamiTrackerDoc::LoadInstrument(CString FileName)
 			throw IDS_FILE_OPEN_ERROR;
 
 		// Signature
-		const UINT HEADER_LEN = strlen(INST_HEADER);
+		const std::size_t HEADER_LEN = strlen(INST_HEADER);
 		char Text[256] = {};
 		file.Read(Text, HEADER_LEN);
 		if (strcmp(Text, INST_HEADER) != 0)

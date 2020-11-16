@@ -416,7 +416,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	}
 
 	// // // Create NSFe header
-	int iAuthSize = 0, iTimeSize = 0, iTlblSize = 0, iDataSize = 0;
+	std::size_t iAuthSize = 0, iTimeSize = 0, iTlblSize = 0, iDataSize = 0;
 	CString str = _T(APP_NAME_VERSION);
 	iAuthSize = strlen(m_pDocument->GetSongName()) + strlen(m_pDocument->GetSongArtist())
 		+ strlen(m_pDocument->GetSongCopyright()) + str.GetLength() + 4;
