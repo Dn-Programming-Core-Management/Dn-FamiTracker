@@ -13,8 +13,11 @@
     
     <p class="text">
         The MMC5 contains two pulse wave channels that are identical to the 
-        internal pulse channels, except that the two hardware sweep units are missing. It 
-        was used in the game Just Breed by Enix.</p>
+        internal pulse channels, except that the two hardware sweep units are missing. It also has an 8-bit DAC, for PCM playback, which is not supported in Famitracker. Playing samples through the MMC5 DAC or the 7-bit mode of the DPCM DAC requires constant attention from the emulated CPU core. This isn't practical with the FamiTracker driver or most drivers used in games.
+ </p>
+<br/>
+
+<p class="text"> A notable game using the MMC5 is Shin 4 -Jin Uchi Mahjong, which also utilized the PCM channel.</p>
         
     <p class="text">
         <a href="2a03.htm">Check 2A03 for more details about the square channels.</a></p>
@@ -23,7 +26,7 @@
     <p class="heading">Instruments</p>
     
     <p class="text">
-        The instruments used by MMC5 are shared with 2A03.
+        Due to the MMC5's sound being a clone of the 2A03 pulses, the instruments used by MMC5 are shared with 2A03.
         <a href="2a03.htm#Instruments">See 2A03 instruments.</a></p>
     
     <hr />

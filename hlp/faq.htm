@@ -8,12 +8,7 @@
 
     <span class="topic">Frequently Asked Questions</span><hr />
 
-    <div style="line-height: 150%">
-
-    <p>
-        This is a copy of the FAQ on the wiki. The <a href="http://famitracker.com/wiki/index.php?title=Frequently_Asked_Questions" target="new">online version</a> might be more 
-        up to date.</p>
-        
+    <div style="line-height: 150%">        
     <h3>
         <span class="mw-headline">Module</span></h3>
     <p>
@@ -30,7 +25,8 @@
         <b>A:</b> Simply open Module&gt;Module Properties. There you will find an Expansion 
         Chip menu where you can choose from one of the
         <a href="http://famitracker.com/wiki/index.php?title=Sound_hardware#Expansion_sound" 
-            title="Sound hardware">available sound chips</a>.
+            title="Sound hardware">available sound chips</a>. Unlike previous versions, you can now
+	select multiple chips to add to your module.
     </p>
     <p>
         <b>Q:</b> <i>How do I create instruments for them? I can&#39;t find the option to 
@@ -81,8 +77,7 @@
         use zeros.
     </p>
     <a id="Instruments" name="Instruments"></a>
-    <h3>
-        <span class="mw-headline">Instruments</span></h3>
+    <h3><span class="mw-headline">Instruments</span></h3>
     <p>
         <b>Q:</b> <i>How to load instrument file (*.fti)?</i>
         <br />
@@ -112,6 +107,86 @@
         instrument settings or effect column. This is an intentional feature to distort 
         the sawtooth wave.
     </p>
+    <p>
+        <b>Q:</b> <i>How do I get Sunsoft 5B envelopes to work?</i>
+        <br />
+        <b>A:</b> You first need to either set the chip to use Envelope in the Noise/Mode macro 
+	(the yellow bar) or put the Vxx command V04 into the effects column. Now place 
+	the Hxy command into the effects column (or another effect column if using Vxx). From 
+	here, there are two options: You can either control the envelope manually (using extra effects)
+	or placing a note in any of the channels (using the autoenvelope feature). If you want to control 
+	the envelope manually, do H0y (replace "y" with desired envelope shape) and then use Ixx/Jxx
+	effects to control the pitch. If you want to use the autoenvelope feature, use Hxy, (replacing "x" with
+	the desired octave) and place a note with the envelope enabled.
+    </p>
+    <p>
+        <b>Q:</b> <i>Is there a table that shows all the available envelope shapes?</i>
+        <br />
+        <b>A:</b> Yes! It can be seen here:
+    </p><br>
+<table border="1" size=50%>
+<thead>
+  <tr>
+    <th>H0y Hex Command</th>
+    <th>Envelope Shape</th>
+    <th>Envelope Description</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>$0 to $3</td>
+    <td>|\________</td>
+    <td>A one-shot decay envelope. Usually used at extremely low frequencies mixed with tone to produce a hardware decay envelope.</td>
+  </tr>
+  <tr>
+    <td>$4 to $7</td>
+    <td>/|________</td>
+    <td>A one-shot attack envelope. </td>
+  </tr>
+  <tr>
+    <td>$8</td>
+    <td>|\_|\_|\_|\_</td>
+    <td>Looped decay envelope. Functionally identical to a sawtooth wave at audible frequencies.</td>
+  </tr>
+  <tr>
+    <td>$9</td>
+    <td>|\________</td>
+    <td>Identical to $0.</td>
+  </tr>
+  <tr>
+    <td>$A</td>
+    <td>\/\/\/\/\/\/\/</td>
+    <td>Looped Decay and Attack envelope. Identical to a symmetrical sawtooth wave, referred to as a "triangle" wave.</td>
+  </tr>
+  <tr>
+    <td>$B</td>
+    <td>\|¯¯¯¯¯¯¯¯</td>
+    <td>One-shot decay envelope. Holds the output at maximum volume when finished.</td>
+  </tr>
+  <tr>
+    <td>$C</td>
+    <td>_/|_/|_/|_/|</td>
+    <td>Looped attack envelope. Functionally identical to envelope $8 at audible frequencies.</td>
+  </tr>
+  <tr>
+    <td>$D</td>
+    <td>|/¯¯¯¯¯¯¯¯</td>
+    <td>One-shot attack envelope. Holds the output at maximum volume when finished.</td>
+  </tr>
+  <tr>
+    <td>$E</td>
+    <td>/\/\/\/\/\/\/\</td>
+    <td>Looped Attack and Decay envelope. Virtually identical to $A.</td>
+  </tr>
+  <tr>
+    <td>$F</td>
+    <td>/|________</td>
+    <td>Identical to $4.</td>
+  </tr>
+</tbody>
+</table>
+<span class="footer">Note: The 5B is capable of mixing this with Tone, and/or Noise.</p>
+
     <a id="Troubleshooting" name="Troubleshooting"></a>
     <h3>
         <span class="mw-headline">Troubleshooting</span></h3>
@@ -140,7 +215,6 @@
             rel="nofollow" title="http://famitracker.com/forum/threads.php?id=2">
         Famitracker forums</a>.
     </p>
-
     </div>
 
     <hr />

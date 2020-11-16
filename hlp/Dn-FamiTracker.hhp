@@ -64,6 +64,7 @@ img\properties.png
 img\Icon.png
 style.css
 gpl.txt
+sunsoft.htm
 
 [ALIAS]
 CHANGE_LOG						= changelog.htm
@@ -85,6 +86,7 @@ HIDD_INSTRUMENT_FDS				= fds.htm
 HIDD_INSTRUMENT_FDS_ENVELOPE	= fds.htm
 HIDD_INSTRUMENT_INTERNAL		= 2a03.htm
 HIDD_INSTRUMENT_N163			= n163.htm
+HIDD_INSTRUMENT_SUN5=sunsoft.htm
 HIDD_INSTRUMENT_VRC6			= vrc6.htm
 HIDD_INSTRUMENT_VRC7			= vrc7.htm
 HIDD_PCMIMPORT					= dpcm_import.htm
