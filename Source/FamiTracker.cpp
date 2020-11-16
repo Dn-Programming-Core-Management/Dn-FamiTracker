@@ -1037,7 +1037,7 @@ BOOL CDocManager0CC::DoPromptFileName(CString &fileName, UINT nIDSTitle, DWORD l
 	CString path = theApp.GetSettings()->GetPath(PATH_FTM) + _T("\\");
 
 	CFileDialog OpenFileDlg(bOpenFileDialog, _T("0cc"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-							_T("0CC-FamiTracker modules (*.0cc)|*.0cc|FamiTracker modules (*.ftm)|*.ftm|All files (*.*)|*.*||"),		// // !!
+							_T(APP_NAME " modules (*.0cc;*.ftm)|*.0cc; *.ftm|All files (*.*)|*.*||"),
 							AfxGetMainWnd(), 0);
 	OpenFileDlg.m_ofn.Flags |= lFlags;
 	OpenFileDlg.m_ofn.lpstrFile = fileName.GetBuffer(_MAX_PATH);
