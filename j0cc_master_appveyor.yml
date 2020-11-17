@@ -29,4 +29,6 @@ artifacts:
   name: exe
 - path: $(platform)\$(configuration)\*.pdb
   name: pdb
+- path: $(platform)\$(configuration)\*.chm
+  name: chm
 deploy: off
