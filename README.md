@@ -25,7 +25,7 @@ I invite the community to fork the program, possibly under a name like FamiTrack
 
 ## Readme
 
-- Download at https://github.com/nyanpasu64/0CC-FamiTracker/releases
+- Download at https://github.com/nyanpasu64/j0CC-FamiTracker/releases
 - Dev builds at https://ci.appveyor.com/project/nyanpasu64/0cc-famitracker/history
 
 This is a fork of HertzDevil's 0CC-Famitracker 0.3.14.5 (since 0.3.15.1 and master are quite buggy and changing rapidly). It contains bugfixes which HertzDevil has not merged yet (some for months, some fixed independently in 0.3.15.1 or master), as well as N163 multi-wave copy-paste support.
@@ -49,7 +49,7 @@ Future changes:
 
 - Exponential instrument volume decay or release (like ADSR), and possibly an effect.
 - Warn when editing instrument sequences reused in many instruments, or patterns appearing in many frames.
-- https://github.com/nyanpasu64/0CC-FamiTracker/issues
+- https://github.com/nyanpasu64/j0CC-FamiTracker/issues
 
 # 0CC-FamiTracker
 
