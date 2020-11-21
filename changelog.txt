@@ -2,36 +2,43 @@ Dn-FamiTracker Mod
 Change Log
 Written by Persune
 
-Version 0.2.2 - November 1 2020 (tentative)
+Version 0.2.2 - November 21 2020 (tentative)
 
 --------------------------------------------------------------------------------
 
-Dn0.2.2.0 - 11/01/2020
+Dn0.2.2.0 - 11/21/2020 *
 
+* = not yet properly implemented.
 Additions:
 
- - added FastTracker 2 (JP106) keymap
+ - Added FastTracker 2 (JP106) keymap
  - Adjustable idle refresh rate in configuration
- - Added back the help manual
+ - Added back the help manual, with additional updated info contributed by:
+   - Blue Mario for Sunsoft 5B information
  - Emulation tab in Configuration, which includes:
-   - Swappable emulation cores for FDS and Sunsoft 5B
-   - Switchable VRC7 hardware patches for older module compatibility
+   - Swappable emulation cores for FDS and Sunsoft 5B*
+   - Switchable VRC7 hardware patches for older module compatibility*
    - Toggleable N163 multiplexing
- - Include changelogs of vanilla, j0CC, and Dn
 
 Improvements:
 
  - Enable DPI scaling for pattern editor
- - Updated the VRC7 emulation core
- - Updated the About dialog
- - Enabled x64 builds in the project files
+ - Adjustable channel view in frame editor
+ - Updated the About information
  - Export wave shortcut (Ctrl + Shift + E)
  - Reenabled version checking, which can also be accesed in the Help popup
- - replaced the application icon (design by Compass Man)
 
-Fixes:
+Internal:
 
+ - Fix CMake MFC detection and link flag conflicts (@nyanpasu64 #6)
  - Removed more occurences of old program name and renamed more files to Dn
+    (@nyanpasu64 #7)
+ - Replaced the application icon (design by Compass Man)
+ - Enabled x64 build compiling in the Visual Studio files
+ - Updated the VRC7 emulation core
+ - Include changelogs of vanilla, j0CC, and Dn in changelog.txt
+ - Moved resource.h and Dn-FamiTracker.rc back to root folder due to HTMLHelp
+    compilation
 
 
 
@@ -41,12 +48,19 @@ Additions:
 
  - Adjustable preview pitch.
 
-Fixes:
+Improvements:
+
+ - Readjusted the DPCM sample editor dialog size limit.
+
+Bug fixes:
+
+ - Fixed drag-scrolling not working.
+ - Readjusted the DPCM sample editor dialog size limit.
+
+Internal:
 
  - Changed the project and corresponding project file names accordingly to
     Dn-FamiTracker.
- - Fixed drag-scrolling not working.
- - Readjusted the DPCM sample editor dialog size limit.
 
 
 
@@ -54,14 +68,18 @@ Dn0.2.0.0 - 09/07/20
 
 Additions:
 
- - Multiple .wav per-channel export
+ - Multiple .wav per-channel export (#2)
  - Adaptive register state refresh rate(≈60fps during playback, otherwise 10fps)
 
-Fixes:
+Bug fixes:
 
  - DPCM sample bit reversal now includes the first bit of the sample
  - Fixed the version numbering
+
+Internal:
+
  - Changed most of the internal names from j0CC-FamiTracker to Dn-FamiTracker
+ - Use precompiled headers in CMake builds (@nyanpasu64 #3)
 
 
 
@@ -70,7 +88,7 @@ Dn0.1.0.0 - 08/05/20
 
 Additions:
 
- - DPCM sample bit order reversal (located in the DPCM sample editor)
+ - DPCM sample bit order reversal (located in the DPCM sample editor) (#1)
 
 --------------------------------------------------------------------------------
 
