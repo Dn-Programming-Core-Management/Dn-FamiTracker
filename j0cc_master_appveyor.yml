@@ -16,8 +16,7 @@ configuration:
 shallow_clone: true
 clone_depth: 5
 build:
-  project: Dn-FamiTracker.vcxproj
-  project: hlp\hlp.vcxproj
+  project: Dn-FamiTracker.sln
   parallel: true
   verbosity: minimal
 after_build:
