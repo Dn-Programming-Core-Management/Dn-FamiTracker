@@ -4,6 +4,11 @@ VisualStudioVersion = 16.0.30523.141
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Dn-FamiTracker", "Dn-FamiTracker.vcxproj", "{92FE0690-CE4F-4CCF-A52C-23265AE7429F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hlp", "hlp\hlp.vcxproj", "{AFD2F6E3-E658-4A1B-A691-8F10A858321B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{92FE0690-CE4F-4CCF-A52C-23265AE7429F} = {92FE0690-CE4F-4CCF-A52C-23265AE7429F}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -20,6 +25,14 @@ Global
 		{92FE0690-CE4F-4CCF-A52C-23265AE7429F}.Release|Win32.Build.0 = Release|Win32
 		{92FE0690-CE4F-4CCF-A52C-23265AE7429F}.Release|x64.ActiveCfg = Release|x64
 		{92FE0690-CE4F-4CCF-A52C-23265AE7429F}.Release|x64.Build.0 = Release|x64
+		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.Debug|Win32.Build.0 = Debug|Win32
+		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.Debug|x64.ActiveCfg = Debug|x64
+		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.Debug|x64.Build.0 = Debug|x64
+		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.Release|Win32.ActiveCfg = Release|Win32
+		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.Release|Win32.Build.0 = Release|Win32
+		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.Release|x64.ActiveCfg = Release|x64
+		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

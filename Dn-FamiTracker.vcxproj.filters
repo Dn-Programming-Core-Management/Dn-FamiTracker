@@ -181,40 +181,8 @@
     <Filter Include="Resource Files\Bitmaps">
       <UniqueIdentifier>{3c0eb6e1-cb4f-4199-9306-8e30e8f4bcb9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="HTML Help Files">
-      <UniqueIdentifier>{329515b6-eb2c-486d-8c1e-3b4233a56464}</UniqueIdentifier>
-      <Extensions>hhp;hhc;hhk;gif;jpg</Extensions>
-    </Filter>
-    <Filter Include="HTML Help Topics">
-      <UniqueIdentifier>{62768ca9-3235-4fa7-a1a9-fde2f1968831}</UniqueIdentifier>
-      <Extensions>htm;html</Extensions>
-    </Filter>
-    <Filter Include="HTML Help Topics\Images">
-      <UniqueIdentifier>{4d347caa-1e4f-4789-954f-4f6488796171}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="HTML Help Topics\Chips">
-      <UniqueIdentifier>{906a93a8-ef21-40f8-ad9f-1ed1905f6168}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="HTML Help Topics\CSS">
-      <UniqueIdentifier>{52c23c6c-b9cd-4e41-8cd8-1dcf6c260c48}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="HTML Help Topics\Interface">
-      <UniqueIdentifier>{8e230067-7555-4516-8e5d-c9ac97be9837}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="HTML Help Topics\Interface\Configuration">
-      <UniqueIdentifier>{d79afa5b-a335-48fc-bce1-3514d34c5169}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="HTML Help Topics\Interface\Menus">
-      <UniqueIdentifier>{9e75fac8-7983-47cc-a99d-e2dc39a16ddf}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="HTML Help Topics\Interface\Dialogs">
-      <UniqueIdentifier>{c159a6e7-b8c1-4204-ac13-2f62d2bac969}</UniqueIdentifier>
-    </Filter>
     <Filter Include="NSF driver">
       <UniqueIdentifier>{902336ea-2d2b-45f8-a76f-2be92c15f953}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="HTML">
-      <UniqueIdentifier>{1e31c849-45ba-408b-a865-3143de81d231}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Dialog Boxes Headers\Config Headers">
       <UniqueIdentifier>{f6fc5dfb-3ada-41b9-95ff-2eacdf50def7}</UniqueIdentifier>
@@ -1618,144 +1586,6 @@
       <Filter>Header Files\Dialog Boxes Headers\Instrument Headers\Related Headers\Resampler Headers</Filter>
     </None>
     <None Include="Dn-FamiTracker.reg" />
-    <None Include="hlp\changelog.htm">
-      <Filter>HTML Help Topics</Filter>
-    </None>
-    <None Include="hlp\faq.htm">
-      <Filter>HTML Help Topics</Filter>
-    </None>
-    <None Include="hlp\main_index.htm">
-      <Filter>HTML Help Topics</Filter>
-    </None>
-    <None Include="hlp\2a03.htm">
-      <Filter>HTML Help Topics\Chips</Filter>
-    </None>
-    <None Include="hlp\fds.htm">
-      <Filter>HTML Help Topics\Chips</Filter>
-    </None>
-    <None Include="hlp\mmc5.htm">
-      <Filter>HTML Help Topics\Chips</Filter>
-    </None>
-    <None Include="hlp\n163.htm">
-      <Filter>HTML Help Topics\Chips</Filter>
-    </None>
-    <None Include="hlp\sound_overview.htm">
-      <Filter>HTML Help Topics\Chips</Filter>
-    </None>
-    <None Include="hlp\sunsoft.htm">
-      <Filter>HTML Help Topics\Chips</Filter>
-    </None>
-    <None Include="hlp\vrc6.htm">
-      <Filter>HTML Help Topics\Chips</Filter>
-    </None>
-    <None Include="hlp\vrc7.htm">
-      <Filter>HTML Help Topics\Chips</Filter>
-    </None>
-    <None Include="hlp\style.css">
-      <Filter>HTML Help Topics\CSS</Filter>
-    </None>
-    <None Include="hlp\command_line.htm">
-      <Filter>HTML Help Topics\Interface</Filter>
-    </None>
-    <None Include="hlp\control_panel.htm">
-      <Filter>HTML Help Topics\Interface</Filter>
-    </None>
-    <None Include="hlp\effect_list.htm">
-      <Filter>HTML Help Topics\Interface</Filter>
-    </None>
-    <None Include="hlp\interface.htm">
-      <Filter>HTML Help Topics\Interface</Filter>
-    </None>
-    <None Include="hlp\menus.htm">
-      <Filter>HTML Help Topics\Interface</Filter>
-    </None>
-    <None Include="hlp\pattern_editor.htm">
-      <Filter>HTML Help Topics\Interface</Filter>
-    </None>
-    <None Include="hlp\shortcuts.htm">
-      <Filter>HTML Help Topics\Interface</Filter>
-    </None>
-    <None Include="hlp\text_export.htm">
-      <Filter>HTML Help Topics\Interface</Filter>
-    </None>
-    <None Include="hlp\toolbar.htm">
-      <Filter>HTML Help Topics\Interface</Filter>
-    </None>
-    <None Include="hlp\config_appearance.htm">
-      <Filter>HTML Help Topics\Interface\Configuration</Filter>
-    </None>
-    <None Include="hlp\config_general.htm">
-      <Filter>HTML Help Topics\Interface\Configuration</Filter>
-    </None>
-    <None Include="hlp\config_midi.htm">
-      <Filter>HTML Help Topics\Interface\Configuration</Filter>
-    </None>
-    <None Include="hlp\config_mixer.htm">
-      <Filter>HTML Help Topics\Interface\Configuration</Filter>
-    </None>
-    <None Include="hlp\config_shortcuts.htm">
-      <Filter>HTML Help Topics\Interface\Configuration</Filter>
-    </None>
-    <None Include="hlp\config_sound.htm">
-      <Filter>HTML Help Topics\Interface\Configuration</Filter>
-    </None>
-    <None Include="hlp\configuration.htm">
-      <Filter>HTML Help Topics\Interface\Configuration</Filter>
-    </None>
-    <None Include="hlp\menu_edit.htm">
-      <Filter>HTML Help Topics\Interface\Menus</Filter>
-    </None>
-    <None Include="hlp\menu_file.htm">
-      <Filter>HTML Help Topics\Interface\Menus</Filter>
-    </None>
-    <None Include="hlp\menu_help.htm">
-      <Filter>HTML Help Topics\Interface\Menus</Filter>
-    </None>
-    <None Include="hlp\menu_instrument.htm">
-      <Filter>HTML Help Topics\Interface\Menus</Filter>
-    </None>
-    <None Include="hlp\menu_module.htm">
-      <Filter>HTML Help Topics\Interface\Menus</Filter>
-    </None>
-    <None Include="hlp\menu_tracker.htm">
-      <Filter>HTML Help Topics\Interface\Menus</Filter>
-    </None>
-    <None Include="hlp\menu_view.htm">
-      <Filter>HTML Help Topics\Interface\Menus</Filter>
-    </None>
-    <None Include="hlp\comments.htm">
-      <Filter>HTML Help Topics\Interface\Dialogs</Filter>
-    </None>
-    <None Include="hlp\dpcm_editor.htm">
-      <Filter>HTML Help Topics\Interface\Dialogs</Filter>
-    </None>
-    <None Include="hlp\dpcm_import.htm">
-      <Filter>HTML Help Topics\Interface\Dialogs</Filter>
-    </None>
-    <None Include="hlp\export_wave.htm">
-      <Filter>HTML Help Topics\Interface\Dialogs</Filter>
-    </None>
-    <None Include="hlp\nsf_export.htm">
-      <Filter>HTML Help Topics\Interface\Dialogs</Filter>
-    </None>
-    <None Include="hlp\performance.htm">
-      <Filter>HTML Help Topics\Interface\Dialogs</Filter>
-    </None>
-    <None Include="hlp\properties.htm">
-      <Filter>HTML Help Topics\Interface\Dialogs</Filter>
-    </None>
-    <None Include="hlp\speed.htm">
-      <Filter>HTML Help Topics\Interface\Dialogs</Filter>
-    </None>
-    <None Include="res\export_report.htm">
-      <Filter>HTML</Filter>
-    </None>
-    <None Include="hlp\Dn-FamiTracker.hhc">
-      <Filter>HTML Help Files</Filter>
-    </None>
-    <None Include="hlp\Dn-FamiTracker.hhk">
-      <Filter>HTML Help Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="res\Dn-FamiTracker.manifest">
@@ -1763,62 +1593,11 @@
     </Manifest>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="hlp\img\comments.png">
-      <Filter>HTML Help Topics\Images</Filter>
-    </Image>
-    <Image Include="hlp\img\dpcm_editor.PNG">
-      <Filter>HTML Help Topics\Images</Filter>
-    </Image>
-    <Image Include="hlp\img\dpcm_import.png">
-      <Filter>HTML Help Topics\Images</Filter>
-    </Image>
-    <Image Include="hlp\img\export_wav.png">
-      <Filter>HTML Help Topics\Images</Filter>
-    </Image>
-    <Image Include="hlp\img\fds_fm_table.PNG">
-      <Filter>HTML Help Topics\Images</Filter>
-    </Image>
-    <Image Include="hlp\img\frame_editor.png">
-      <Filter>HTML Help Topics\Images</Filter>
-    </Image>
-    <Image Include="hlp\img\Icon.png">
-      <Filter>HTML Help Topics\Images</Filter>
-    </Image>
-    <Image Include="hlp\img\inst_2a03.png">
-      <Filter>HTML Help Topics\Images</Filter>
-    </Image>
-    <Image Include="hlp\img\inst_dpcm.PNG">
-      <Filter>HTML Help Topics\Images</Filter>
-    </Image>
-    <Image Include="hlp\img\inst_fds.PNG">
-      <Filter>HTML Help Topics\Images</Filter>
-    </Image>
-    <Image Include="hlp\img\inst_n163.png">
-      <Filter>HTML Help Topics\Images</Filter>
-    </Image>
-    <Image Include="hlp\img\inst_vrc7.PNG">
-      <Filter>HTML Help Topics\Images</Filter>
-    </Image>
-    <Image Include="hlp\img\pattern.png">
-      <Filter>HTML Help Topics\Images</Filter>
-    </Image>
-    <Image Include="hlp\img\properties.PNG">
-      <Filter>HTML Help Topics\Images</Filter>
-    </Image>
-    <Image Include="hlp\img\toolbar1.png">
-      <Filter>HTML Help Topics\Images</Filter>
-    </Image>
-    <Image Include="hlp\img\toolbar2.png">
-      <Filter>HTML Help Topics\Images</Filter>
-    </Image>
     <Image Include="res\Application.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="hlp\Dn-FamiTracker.hhp">
-      <Filter>HTML Help Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="resource.h">
       <Filter>Header Files</Filter>
     </CustomBuild>

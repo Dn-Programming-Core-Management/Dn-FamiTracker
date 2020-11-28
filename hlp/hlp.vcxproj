@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{afd2f6e3-e658-4a1b-a691-8f10a858321b}</ProjectGuid>
+    <RootNamespace>hlp</RootNamespace>
+    <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141_xp</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141_xp</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <TargetName>$(SolutionName)</TargetName>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <TargetExt>.chm</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <TargetName>$(SolutionName)</TargetName>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <TargetExt>.chm</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>$(SolutionName)</TargetName>
+    <TargetExt>.chm</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>$(SolutionName)</TargetName>
+    <TargetExt>.chm</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="..\res\export_report.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <CustomBuild Include="Dn-FamiTracker.hhp">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">start /wait hhc "Dn-FamiTracker.hhp"
+if not exist "Dn-FamiTracker.chm" goto :HelpError
+copy "Dn-FamiTracker.chm" "$(OutDir)Dn-FamiTracker.chm"
+goto :HelpDone
+:HelpError
+echo hlp\Dn-FamiTracker.hhp(1) : error:Problem encountered creating help file
+echo.
+:HelpDone
+echo.</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">start /wait hhc "Dn-FamiTracker.hhp"
+if not exist "Dn-FamiTracker.chm" goto :HelpError
+copy "Dn-FamiTracker.chm" "$(OutDir)Dn-FamiTracker.chm"
+goto :HelpDone
+:HelpError
+echo hlp\Dn-FamiTracker.hhp(1) : error:Problem encountered creating help file
+echo.
+:HelpDone
+echo.</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">start /wait hhc "Dn-FamiTracker.hhp"
+if not exist "Dn-FamiTracker.chm" goto :HelpError
+copy "Dn-FamiTracker.chm" "$(OutDir)Dn-FamiTracker.chm"
+goto :HelpDone
+:HelpError
+echo hlp\Dn-FamiTracker.hhp(1) : error:Problem encountered creating help file
+echo.
+:HelpDone
+echo.</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">start /wait hhc "Dn-FamiTracker.hhp"
+if not exist "Dn-FamiTracker.chm" goto :HelpError
+copy "Dn-FamiTracker.chm" "$(OutDir)Dn-FamiTracker.chm"
+goto :HelpDone
+:HelpError
+echo hlp\Dn-FamiTracker.hhp(1) : error:Problem encountered creating help file
+echo.
+:HelpDone
+echo.</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Making help file...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Making help file...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Making help file...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Making help file...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)$(ProjectName).chm</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)$(ProjectName).chm</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)$(ProjectName).chm</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)$(ProjectName).chm</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
+    </CustomBuild>
+    <None Include="2a03.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="changelog.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="command_line.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="comments.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="configuration.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="config_appearance.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="config_general.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="config_midi.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="config_mixer.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="config_shortcuts.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="config_sound.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="control_panel.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Dn-FamiTracker.hhc" />
+    <None Include="Dn-FamiTracker.hhk" />
+    <None Include="dpcm_editor.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="dpcm_import.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="effect_list.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="export_wave.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="faq.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="fds.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="interface.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="main_index.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="menus.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="menu_edit.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="menu_file.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="menu_help.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="menu_instrument.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="menu_module.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="menu_tracker.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="menu_view.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="mmc5.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="n163.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="nsf_export.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="pattern_editor.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="performance.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="properties.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="shortcuts.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="sound_overview.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="speed.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="style.css" />
+    <None Include="sunsoft.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="text_export.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="toolbar.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="vrc6.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="vrc7.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="img\comments.png" />
+    <Image Include="img\dpcm_editor.PNG" />
+    <Image Include="img\dpcm_import.png" />
+    <Image Include="img\export_wav.png" />
+    <Image Include="img\fds_fm_table.PNG" />
+    <Image Include="img\frame_editor.png" />
+    <Image Include="img\Icon.png" />
+    <Image Include="img\inst_2a03.png" />
+    <Image Include="img\inst_dpcm.PNG" />
+    <Image Include="img\inst_fds.PNG" />
+    <Image Include="img\inst_n163.png" />
+    <Image Include="img\inst_vrc7.PNG" />
+    <Image Include="img\pattern.png" />
+    <Image Include="img\properties.PNG" />
+    <Image Include="img\toolbar1.png" />
+    <Image Include="img\toolbar2.png" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
