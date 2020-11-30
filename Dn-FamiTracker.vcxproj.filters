@@ -773,7 +773,7 @@
     <ClCompile Include="Source\APU\nezplug\FDS.CPP">
       <Filter>Source Files\Sound Driver\Emulation\Sound Chips</Filter>
     </ClCompile>
-    <ClCompile Include="Source\APU\nsfplay\legacy\emu2413.c">
+    <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\emu2413.c">
       <Filter>Source Files\Sound Driver\Emulation\Sound Chips\External\nsfplay</Filter>
     </ClCompile>
     <ClCompile Include="Source\APU\nezplug\FDSSound.cpp">
@@ -784,6 +784,9 @@
     </ClCompile>
     <ClCompile Include="Source\VersionCheckerDlg.cpp">
       <Filter>Source Files\Dialog Boxes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\nes_fds.cpp">
+      <Filter>Source Files\Sound Driver\Emulation\Sound Chips\External\nsfplay</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1483,10 +1486,10 @@
     <ClInclude Include="Source\APU\nezplug\FDS.H">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\APU\nsfplay\legacy\2413tone.h">
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\2413tone.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\nsfplay</Filter>
     </ClInclude>
-    <ClInclude Include="Source\APU\nsfplay\legacy\emu2413.h">
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\emu2413.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\nsfplay</Filter>
     </ClInclude>
     <ClInclude Include="Source\APU\nezplug\FDSSound.h">
@@ -1495,7 +1498,7 @@
     <ClInclude Include="Source\APU\old\vrc7tone.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\old</Filter>
     </ClInclude>
-    <ClInclude Include="Source\APU\nsfplay\legacy\vrc7tone_nuke.h">
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\vrc7tone_nuke.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\nsfplay</Filter>
     </ClInclude>
     <ClInclude Include="Source\VersionChecker.h">
@@ -1503,6 +1506,9 @@
     </ClInclude>
     <ClInclude Include="Source\VersionCheckerDlg.h">
       <Filter>Header Files\Dialog Boxes Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\nes_fds.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\nsfplay</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
