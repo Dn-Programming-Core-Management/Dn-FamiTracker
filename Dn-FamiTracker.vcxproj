@@ -263,7 +263,7 @@
     <Manifest />
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source\APU\nezplug\FDS.CPP" />
+    <ClCompile Include="Source\APU\nezplug\FDS.cpp" />
     <ClCompile Include="Source\APU\nezplug\FDSSound.cpp" />
     <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\emu2413.c" />
     <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\nes_fds.cpp" />
@@ -394,15 +394,15 @@
     <ClCompile Include="Source\ChannelMap.cpp" />
     <ClCompile Include="Source\SoundGen.cpp" />
     <ClCompile Include="Source\TrackerChannel.cpp" />
-    <ClCompile Include="Source\Apu\APU.cpp" />
-    <ClCompile Include="Source\Apu\Mixer.cpp" />
-    <ClCompile Include="Source\Apu\DPCM.cpp" />
-    <ClCompile Include="Source\Apu\Noise.cpp" />
-    <ClCompile Include="Source\Apu\Square.cpp" />
-    <ClCompile Include="Source\Apu\Triangle.cpp" />
-    <ClCompile Include="Source\APU\MMC5.CPP" />
-    <ClCompile Include="Source\APU\N163.CPP" />
-    <ClCompile Include="Source\Apu\VRC6.cpp" />
+    <ClCompile Include="Source\APU\APU.cpp" />
+    <ClCompile Include="Source\APU\Mixer.cpp" />
+    <ClCompile Include="Source\APU\DPCM.cpp" />
+    <ClCompile Include="Source\APU\Noise.cpp" />
+    <ClCompile Include="Source\APU\Square.cpp" />
+    <ClCompile Include="Source\APU\Triangle.cpp" />
+    <ClCompile Include="Source\APU\MMC5.cpp" />
+    <ClCompile Include="Source\APU\N163.cpp" />
+    <ClCompile Include="Source\APU\VRC6.cpp" />
     <ClCompile Include="Source\APU\VRC7.cpp" />
     <ClCompile Include="Source\Blip_Buffer\Blip_Buffer.cpp" />
     <ClCompile Include="Source\ChannelHandler.cpp" />
@@ -651,19 +651,18 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
     <ClInclude Include="Source\Common.h" />
     <ClInclude Include="Source\SoundGen.h" />
     <ClInclude Include="Source\TrackerChannel.h" />
-    <ClInclude Include="Source\Apu\APU.h" />
-    <ClInclude Include="Source\Apu\Channel.h" />
-    <ClInclude Include="Source\Apu\Mixer.h" />
+    <ClInclude Include="Source\APU\APU.h" />
+    <ClInclude Include="Source\APU\Channel.h" />
     <ClInclude Include="Source\APU\Mixer.h" />
     <ClInclude Include="Source\APU\Types.h" />
-    <ClInclude Include="Source\Apu\DPCM.h" />
-    <ClInclude Include="Source\Apu\Noise.h" />
-    <ClInclude Include="Source\Apu\Square.h" />
-    <ClInclude Include="Source\Apu\Triangle.h" />
-    <ClInclude Include="Source\Apu\SoundChip.h" />
+    <ClInclude Include="Source\APU\DPCM.h" />
+    <ClInclude Include="Source\APU\Noise.h" />
+    <ClInclude Include="Source\APU\Square.h" />
+    <ClInclude Include="Source\APU\Triangle.h" />
+    <ClInclude Include="Source\APU\SoundChip.h" />
     <ClInclude Include="Source\APU\MMC5.h" />
     <ClInclude Include="Source\APU\N163.h" />
-    <ClInclude Include="Source\Apu\VRC6.h" />
+    <ClInclude Include="Source\APU\VRC6.h" />
     <ClInclude Include="Source\APU\VRC7.h" />
     <ClInclude Include="Source\Blip_Buffer\Blip_Buffer.h" />
     <ClInclude Include="Source\ChannelHandler.h" />

@@ -21,7 +21,7 @@
 */
 
 #include "../stdafx.h"
-#include "../common.h"
+#include "../Common.h"
 #include <algorithm>
 #include "Mixer.h"
 #include "Square.h"
