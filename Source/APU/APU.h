@@ -112,7 +112,10 @@ private:
 	CVRC7		*m_pVRC7;
 	CS5B		*m_pS5B;
 
-	uint8_t		m_iExternalSoundChip;				// External sound chip, if used
+	/// Bitfield of external sound chips enabled.
+	/// Never read, except for code hidden behind #ifdef LOGGING.
+	uint8_t		m_iExternalSoundChips;
+
 	std::vector<CSoundChip*> m_SoundChips;
 
 	uint32_t	m_iSampleRate;						// // //
