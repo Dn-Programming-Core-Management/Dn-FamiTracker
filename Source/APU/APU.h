@@ -29,6 +29,7 @@
 #include "Mixer.h"
 
 #include <vector>
+#include <memory>
 
 // External classes
 class C2A03;		// // //
@@ -40,6 +41,7 @@ class CN163;
 class CS5B;
 
 class CSoundChip;		// // //
+class CSoundChip2;
 class CRegisterState;		// // //
 
 #ifdef LOGGING
@@ -104,7 +106,7 @@ private:
 	IAudioCallback *m_pParent;
 
 	// Expansion chips
-	C2A03		*m_p2A03;		// // //
+	std::unique_ptr<C2A03> m_p2A03;
 	CVRC6		*m_pVRC6;
 	CMMC5		*m_pMMC5;
 	CFDS		*m_pFDS;
@@ -114,6 +116,7 @@ private:
 
 	uint8_t		m_iExternalSoundChips;				// Bitfield of external sound chips enabled
 	std::vector<CSoundChip*> m_SoundChips;
+	std::vector<CSoundChip2*> m_SoundChips2;
 
 	uint32_t	m_iSampleRate;						// // //
 	uint32_t	m_iFrameCycleCount;

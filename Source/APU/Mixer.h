@@ -38,6 +38,8 @@ enum chip_level_t {
 	CHIP_LEVEL_S5B
 };
 
+class C2A03;
+
 class CMixer
 {
 public:
@@ -45,10 +47,29 @@ public:
 	~CMixer();
 
 	void	ExternalSound(int Chip);
+
+	/// Registers a C2A03's Blip_Synths for volume balancing adjustments.
+	/// This interface assumes there is only 1 of each chip, which is suboptimal but whatever.
+	///
+	/// Should never be null. CAPU creates all expansion chips,
+	/// even if chips are not active in current module.
+	///
+	/// Right now, CMixer handles Blip_Synth treble/volume configuration
+	/// (bass is handled when reading from Blip_Buffer).
+	/// Eventually CMixer should either be integrated into CAPU
+	/// or UpdateSettings() should accept a CAPU*,
+	/// so it can peek at the Blip_Synth(s) owned by each CSoundChip2 subclass.
+	/// Because C2A03 has two Blip_Synth and the rest have one (VRC7 might have zero, IDK),
+	/// "get blip synth" should not be a method in CSoundChip2.
+	void SetC2A03(C2A03* chip);
+
 	void	AddValue(int ChanID, int Chip, int Value, int AbsValue, int FrameCycles);
 	void	UpdateSettings(int LowCut,	int HighCut, int HighDamp, float OverallVol);
 
 	bool	AllocateBuffer(unsigned int Size, uint32_t SampleRate, uint8_t NrChannels);
+	Blip_Buffer& GetBuffer() {
+		return BlipBuffer;
+	}
 	void	SetClockRate(uint32_t Rate);
 	void	ClearBuffer();
 	void FinishBuffer(int t);
@@ -69,11 +90,6 @@ public:
 	void	SetMeterDecayRate(int Rate);		// // // 050B
 
 private:
-	inline double CalcPin1(double Val1, double Val2);
-	inline double CalcPin2(double Val1, double Val2, double Val3);
-
-	void MixInternal1(int Time);
-	void MixInternal2(int Time);
 	void MixN163(int Value, int Time);
 	void MixFDS(int Value, int Time);
 	void MixVRC6(int Value, int Time);
@@ -87,8 +103,11 @@ private:
 
 private:
 	// Blip buffer synths
-	Blip_Synth<blip_good_quality> Synth2A03SS;
-	Blip_Synth<blip_good_quality> Synth2A03TND;
+
+	// Should never be null during playback. CAPU creates all expansion chips,
+	// even if chips are not active in current module.
+	Blip_Synth<blip_good_quality> *Synth2A03SS = nullptr;
+	Blip_Synth<blip_good_quality> *Synth2A03TND = nullptr;
 	Blip_Synth<blip_good_quality> SynthVRC6;
 	Blip_Synth<blip_good_quality> SynthMMC5;
 	Blip_Synth<blip_good_quality> SynthN163;
@@ -96,8 +115,8 @@ private:
 	Blip_Synth<blip_good_quality> SynthS5B;		// // // 050B
 
 	#define FOREACH_SYNTH(X, SEP) \
-		X(Synth2A03SS) SEP \
-		X(Synth2A03TND) SEP \
+		X((*Synth2A03SS)) SEP \
+		X((*Synth2A03TND)) SEP \
 		X(SynthVRC6) SEP \
 		X(SynthMMC5) SEP \
 		X(SynthN163) SEP \

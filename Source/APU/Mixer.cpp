@@ -57,6 +57,7 @@
 #include <cmath>
 #include "Mixer.h"
 #include "APU.h"
+#include "2A03.h"
 #include "nsfplay/xgm/devices/Sound/legacy/emu2413.h"
 
 //#define LINEAR_MIXING
@@ -94,32 +95,17 @@ CMixer::~CMixer()
 {
 }
 
-inline double CMixer::CalcPin1(double Val1, double Val2)
-{
-	// Mix the output of APU audio pin 1: square
-	//
-
-	if ((Val1 + Val2) > 0)
-		return 95.88 / ((8128.0 / (Val1 + Val2)) + 100.0);
-
-	return 0;
-}
-
-inline double CMixer::CalcPin2(double Val1, double Val2, double Val3)
-{
-	// Mix the output of APU audio pin 2: triangle, noise and DPCM
-	//
-
-	if ((Val1 + Val2 + Val3) > 0)
-		return 159.79 / ((1.0 / ((Val1 / 8227.0) + (Val2 / 12241.0) + (Val3 / 22638.0))) + 100.0);
-
-	return 0;
-}
-
 void CMixer::ExternalSound(int Chip)
 {
 	m_iExternalChip = Chip;
 	UpdateSettings(m_iLowCut, m_iHighCut, m_iHighDamp, m_fOverallVol);
+}
+
+void CMixer::SetC2A03(C2A03* chip)
+{
+	VERIFY(chip);
+	Synth2A03SS = &chip->GetApu1BlipSynth();
+	Synth2A03TND = &chip->GetApu2BlipSynth();
 }
 
 void CMixer::SetNamcoMixing(bool bLinear)		// // //
@@ -199,8 +185,11 @@ void CMixer::UpdateSettings(int LowCut,	int HighCut, int HighDamp, float Overall
 
 	blip_eq_t eq(-HighDamp, HighCut, m_iSampleRate);
 
-	Synth2A03SS.treble_eq(eq);
-	Synth2A03TND.treble_eq(eq);
+	VERIFY(Synth2A03SS);
+	VERIFY(Synth2A03TND);
+
+	Synth2A03SS->treble_eq(eq);
+	Synth2A03TND->treble_eq(eq);
 	SynthVRC6.treble_eq(eq);
 	SynthMMC5.treble_eq(eq);
 	SynthS5B.treble_eq(eq);
@@ -224,8 +213,8 @@ void CMixer::UpdateSettings(int LowCut,	int HighCut, int HighDamp, float Overall
 	SynthFDS.treble_eq(fds_eq);
 
 	// Volume levels
-	Synth2A03SS.volume(Volume * m_fLevelAPU1, 500);
-	Synth2A03TND.volume(Volume * m_fLevelAPU2, 500);
+	Synth2A03SS->volume(Volume * m_fLevelAPU1, 10000);
+	Synth2A03TND->volume(Volume * m_fLevelAPU2, 10000);
 	SynthVRC6.volume(Volume * 3.98333f * m_fLevelVRC6, 500);
 	SynthMMC5.volume(Volume * 1.18421f * m_fLevelMMC5, 130);
 	SynthS5B.volume(Volume * m_fLevelS5B, 1600);  // Not checked
@@ -325,32 +314,6 @@ void CMixer::FinishBuffer(int t)
 // Mixing
 //
 
-void CMixer::MixInternal1(int Time)
-{
-#ifdef LINEAR_MIXING
-	SumL = ((m_iChannels[CHANID_SQUARE1].Left + m_iChannels[CHANID_SQUARE2].Left) * 0.00752) * InternalVol;
-	SumR = ((m_iChannels[CHANID_SQUARE1].Right + m_iChannels[CHANID_SQUARE2].Right) *  0.00752) * InternalVol;
-#else
-	double Sum = CalcPin1(m_iChannels[CHANID_SQUARE1], m_iChannels[CHANID_SQUARE2]);
-#endif
-
-	double Delta = Sum * AMP_2A03;
-	Synth2A03SS.update(Time, (int)Delta, &BlipBuffer);
-}
-
-void CMixer::MixInternal2(int Time)
-{
-#ifdef LINEAR_MIXING
-	SumL = ((0.00851 * m_iChannels[CHANID_TRIANGLE].Left + 0.00494 * m_iChannels[CHANID_NOISE].Left + 0.00335 * m_iChannels[CHANID_DPCM].Left)) * InternalVol;
-	SumR = ((0.00851 * m_iChannels[CHANID_TRIANGLE].Right + 0.00494 * m_iChannels[CHANID_NOISE].Right + 0.00335 * m_iChannels[CHANID_DPCM].Right)) * InternalVol;
-#else
-	double Sum = CalcPin2(m_iChannels[CHANID_TRIANGLE], m_iChannels[CHANID_NOISE], m_iChannels[CHANID_DPCM]);
-#endif
-
-	double Delta = Sum * AMP_2A03;
-	Synth2A03TND.update(Time, (int)Delta, &BlipBuffer);
-}
-
 void CMixer::MixN163(int Value, int Time)
 {
 	SynthN163.offset(Time, Value, &BlipBuffer);
@@ -388,18 +351,8 @@ void CMixer::AddValue(int ChanID, int Chip, int Value, int AbsValue, int FrameCy
 	// Unless otherwise notes, Value is already a delta.
 	switch (Chip) {
 		case SNDCHIP_NONE:
-			// Value == AbsValue.
-			switch (ChanID) {
-				case CHANID_SQUARE1:
-				case CHANID_SQUARE2:
-					MixInternal1(FrameCycles);
-					break;
-				case CHANID_TRIANGLE:
-				case CHANID_NOISE:
-				case CHANID_DPCM:
-					MixInternal2(FrameCycles);
-					break;
-			}
+			// 2A03 nonlinear mixing bypasses CMixer now, and talks directly to BlipBuffer
+			// (obtained by CMixerLegacy::GetBuffer()).
 			break;
 		case SNDCHIP_N163:
 			MixN163(Value, FrameCycles);

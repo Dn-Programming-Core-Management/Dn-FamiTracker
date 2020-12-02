@@ -28,12 +28,14 @@
 #include "SoundGen.h"
 #include "WaveFile.h"		// // //
 #include "APU/APU.h"
-#include "APU/DPCM.h"
+#include "APU/nsfplay/xgm/devices/Sound/nes_dmc.h"
 #include "resampler/resample.hpp"
 #include "resampler/resample.inl"
 
 const int CPCMImport::QUALITY_RANGE = 16;
 const int CPCMImport::VOLUME_RANGE = 12;		// +/- dB
+
+const uint32_t* DMC_PERIODS_NTSC = xgm::NES_DMC::freq_table[0];
 
 // Implement a resampler using CRTP idiom
 class resampler : public jarh::resample<resampler>
@@ -346,7 +348,7 @@ void CPCMImport::UpdateFileInfo()
 
 	SetDlgItemText(IDC_SAMPLE_RATE, SampleRate);
 
-	float base_freq = (float)CAPU::BASE_FREQ_NTSC / (float)CDPCM::DMC_PERIODS_NTSC[m_iQuality];
+	float base_freq = (float)CAPU::BASE_FREQ_NTSC / (float)DMC_PERIODS_NTSC[m_iQuality];
 
 	CString Resampling;
 	AfxFormatString1(Resampling, IDS_DPCM_IMPORT_TARGET_FORMAT, MakeFloatString(base_freq));
@@ -390,7 +392,7 @@ CDSample *CPCMImport::ConvertFile()
 	int iSamples = 0;
 
 	// Determine resampling factor
-	float base_freq = (float)CAPU::BASE_FREQ_NTSC / (float)CDPCM::DMC_PERIODS_NTSC[m_iQuality];
+	float base_freq = (float)CAPU::BASE_FREQ_NTSC / (float)DMC_PERIODS_NTSC[m_iQuality];
 	float resample_factor = base_freq / (float)m_iSamplesPerSec;
 
 	resampler resmpler(*m_psinc, resample_factor, m_iChannels, m_iSampleSize, m_iWaveSize, m_fSampleFile);
