@@ -55,7 +55,7 @@ CAPU::CAPU(IAudioCallback *pCallback) :		// // //
 	m_iFrameCycles(0),
 	m_pSoundBuffer(NULL),
 	m_pMixer(new CMixer()),
-	m_iExternalSoundChip(0),
+	m_iExternalSoundChips(0),
 	m_iCyclesToRun(0),
 	m_iSampleRate(44100)		// // //
 {
@@ -190,7 +190,7 @@ void CAPU::SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume) const
 void CAPU::SetExternalSound(uint8_t Chip)
 {
 	// Set expansion chip
-	m_iExternalSoundChip = Chip;
+	m_iExternalSoundChips = Chip;
 	m_pMixer->ExternalSound(Chip);
 
 	m_SoundChips.clear();
@@ -337,32 +337,32 @@ void CAPU::Log()
 	str.Append("2A03 ");
 	for (int i = 0; i < 0x14; ++i)
 		str.AppendFormat("%02X ", GetReg(SNDCHIP_NONE, i));
-	if (m_iExternalSoundChip & SNDCHIP_VRC6) {		// // //
+	if (m_iExternalSoundChips & SNDCHIP_VRC6) {		// // //
 		str.Append("VRC6 ");
 		for (int i = 0; i < 0x03; ++i) for (int j = 0; j < 0x03; ++j)
 			str.AppendFormat("%02X ", GetReg(SNDCHIP_VRC6, 0x9000 + i * 0x1000 + j));
 	}
-	if (m_iExternalSoundChip & SNDCHIP_MMC5) {
+	if (m_iExternalSoundChips & SNDCHIP_MMC5) {
 		str.Append("MMC5 ");
 		for (int i = 0; i < 0x08; ++i)
 			str.AppendFormat("%02X ", GetReg(SNDCHIP_MMC5, 0x5000 + i));
 	}
-	if (m_iExternalSoundChip & SNDCHIP_N163) {
+	if (m_iExternalSoundChips & SNDCHIP_N163) {
 		str.Append("N163 ");
 		for (int i = 0; i < 0x80; ++i)
 			str.AppendFormat("%02X ", GetReg(SNDCHIP_N163, i));
 	}
-	if (m_iExternalSoundChip & SNDCHIP_FDS) {
+	if (m_iExternalSoundChips & SNDCHIP_FDS) {
 		str.Append("FDS ");
 		for (int i = 0; i < 0x0B; ++i)
 			str.AppendFormat("%02X ", GetReg(SNDCHIP_FDS, 0x4080 + i));
 	}
-	if (m_iExternalSoundChip & SNDCHIP_VRC7) {
+	if (m_iExternalSoundChips & SNDCHIP_VRC7) {
 		str.Append("VRC7 ");
 		for (int i = 0; i < 0x40; ++i)
 			str.AppendFormat("%02X ", GetReg(SNDCHIP_VRC7, i));
 	}
-	if (m_iExternalSoundChip & SNDCHIP_S5B) {
+	if (m_iExternalSoundChips & SNDCHIP_S5B) {
 		str.Append("S5B ");
 		for (int i = 0; i < 0x10; ++i)
 			str.AppendFormat("%02X ", GetReg(SNDCHIP_S5B, i));
