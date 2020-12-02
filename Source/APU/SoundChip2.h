@@ -27,6 +27,9 @@
 #include <memory>
 
 class CRegisterLogger;		// // //
+class Blip_Buffer;
+
+constexpr inline int NSFPLAY_RENDER_STEP = 4;
 
 class CSoundChip2 {
 public:
@@ -34,7 +37,7 @@ public:
 	virtual ~CSoundChip2() = default;
 
 	virtual void	Reset() = 0;
-	virtual void	Process(uint32_t Time) = 0;
+	virtual void	Process(uint32_t Time, Blip_Buffer& Output) = 0;
 	virtual void	EndFrame() = 0;
 
 	virtual void	Write(uint16_t Address, uint8_t Value) = 0;

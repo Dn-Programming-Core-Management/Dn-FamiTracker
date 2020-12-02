@@ -27,8 +27,15 @@ namespace xgm
     };
   protected:
     const int GETA_BITS;
+
+  public:
+    // DPCM.
     static const UINT32 freq_table[2][16];
+
+  protected:
+    // Noise.
     static const UINT32 wavlen_table[2][16];
+
     UINT32 tnd_table[2][16][16][128];
 
     int option[OPT_END];
