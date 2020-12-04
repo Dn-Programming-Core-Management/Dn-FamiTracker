@@ -29,8 +29,6 @@
 class CRegisterLogger;		// // //
 class Blip_Buffer;
 
-constexpr inline int NSFPLAY_RENDER_STEP = 4;
-
 class CSoundChip2 {
 public:
 	CSoundChip2();		// // //

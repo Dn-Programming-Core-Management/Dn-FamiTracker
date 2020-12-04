@@ -72,6 +72,7 @@ namespace xgm
 
     virtual void Reset ();
     virtual void Tick (UINT32 clocks);
+    UINT32 ClocksUntilLevelChange() override;
     virtual UINT32 Render (INT32 b[2]);
     virtual bool Read (UINT32 adr, UINT32 & val, UINT32 id=0);
     virtual bool Write (UINT32 adr, UINT32 val, UINT32 id=0);

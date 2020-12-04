@@ -26,6 +26,7 @@
 #include "APU.h"
 #include "2A03.h"
 #include "../RegisterState.h"		// // //
+#include "utils/variadic_minmax.h"
 
 // // // 2A03 sound chip class
 
@@ -57,7 +58,6 @@ void C2A03::Reset()
 void C2A03::Process(uint32_t Time, Blip_Buffer& Output)
 {
 	uint32_t now = 0;
-	uint32_t prev_now = now;
 
 	auto get_output = [this](uint32_t dclocks, uint32_t now, Blip_Buffer& blip_buf) {
 		m_Apu2.TickFrameSequence(dclocks);
@@ -72,15 +72,17 @@ void C2A03::Process(uint32_t Time, Blip_Buffer& Output)
 		Synth2A03TND.update(m_iTime + now, out[0], &blip_buf);
 	};
 
-	// Not quite deterministic, because we don't accumulate delays across Process() calls.
-	// The non-determinism will be worse once Process() is interrupted by audio callback boundaries,
-	// rather than merely frame sequencer and frame boundaries.
-	// But to be pedantic (which may/not be needed for deterministic WAV export),
-	// this should eventually be fixed.
 	while (now < Time) {
-		now = std::min(now + NSFPLAY_RENDER_STEP, Time);
-		get_output(now - prev_now, now, Output);
-		prev_now = now;
+		// Due to how nsfplay is implemented, when ClocksUntilLevelChange() is used,
+		// the result of `Tick(clocks); Render()` should be sent to Blip_Synth
+		// at the instant in time *before* Tick() is called.
+		// See https://docs.google.com/document/d/1BnXwR3Avol7S5YNa3d4duGdbI6GNMwuYWLHuYiMZh5Y/edit#heading=h.lnh9d8j1x3uc
+		auto dclocks = vmin(
+			m_Apu1.ClocksUntilLevelChange(),
+			m_Apu2.ClocksUntilLevelChange(),
+			Time - now);
+		get_output(dclocks, now, Output);
+		now += dclocks;
 	}
 
 	m_iTime += Time;
