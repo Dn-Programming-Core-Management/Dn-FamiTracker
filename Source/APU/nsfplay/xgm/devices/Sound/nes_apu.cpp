@@ -3,6 +3,7 @@
 //
 #include <assert.h>
 #include "nes_apu.h"
+#include "nsfplay_math.h"
 
 namespace xgm
 {
@@ -135,6 +136,49 @@ namespace xgm
   {
     out[0] = calc_sqr(0, clocks);
     out[1] = calc_sqr(1, clocks);
+  }
+
+  std::optional<UINT32> NES_APU::ClocksUntilLevelChange()
+  {
+      // We don't know how long until the frame sequencer kicks in.
+      // But it doesn't matter, NES_DMC::ClocksUntilLevelChange() takes that into account,
+      // and we run both NES_APU and NES_DMC in lockstep.
+
+      // a near-infinite number of cycles (longer than 1 second).
+      UINT32 out = 1 << 24;
+
+      // See calc_sqr().
+      auto check_level_change = [this](size_t sqr, auto& out) {
+          // Only constrain "clocks until level change" if the channel is not muted by hardware,
+          // and has a nonzero volume.
+          if (length_counter[sqr] > 0 &&
+              freq[sqr] >= 8 &&
+              sfreq[sqr] < 0x800)
+          {
+              // I was worried that ClocksUntilLevelChange() could output a large number,
+              // but a frequency sweep would occur and cause the output to change before anticipated.
+              // This is not a concern, since freq only updates when registers are written,
+              // and sfreq only updates when the APU audio counter (120Hz) ticks.
+              // And neither can occur within the next Tick(clocks) where
+              // clocks = min(NES_APU::ClocksUntilLevelChange(), NES_DMC::ClocksUntilLevelChange(), CAPU::Process(Time)).
+
+              auto vol = envelope_disable[sqr] ? volume[sqr] : envelope_counter[sqr];
+              if (vol > 0) {
+                  // The aim of ClocksUntilLevelChange() is to not update the output level every cycle,
+                  // but only when the output level actually changes.
+                  //
+                  // `scounter` is the number of clocks before the next entry in the square wavetable.
+                  // However, all but 2 entries have the same output level as before,
+                  // so this will run Render() more often than needed.
+                  // (But this is no more often than FamiTracker's original emulation at Square.cpp.)
+                  out = std::min(out, value_or(scounter[sqr], freq[sqr] + 1));
+              }
+          }
+      };
+
+      check_level_change(0, out);
+      check_level_change(1, out);
+      return out;
   }
 
   // 生成される波形の振幅は0-8191

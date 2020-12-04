@@ -741,16 +741,16 @@
     <ClCompile Include="Source\VersionCheckerDlg.cpp">
       <Filter>Source Files\Dialog Boxes</Filter>
     </ClCompile>
-    <ClCompile Include="Source\APU\nsfplay\legacy\emu2413.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\APU\SoundChip2.cpp">
       <Filter>Source Files\Sound Driver\Emulation</Filter>
     </ClCompile>
     <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\nes_apu.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Sound Driver\Emulation\Sound Chips\External\nsfplay</Filter>
     </ClCompile>
     <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\nes_dmc.cpp">
+      <Filter>Source Files\Sound Driver\Emulation\Sound Chips\External\nsfplay</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\emu2413.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1454,21 +1454,6 @@
     <ClInclude Include="Source\VersionCheckerDlg.h">
       <Filter>Header Files\Dialog Boxes Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\APU\nsfplay\legacy\2413tone.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\APU\nsfplay\legacy\emu2413.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\APU\nsfplay\legacy\vrc7tone_nuke.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\nes_apu.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\nes_dmc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\APU\nsfplay\xgm\devices\device.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1483,6 +1468,30 @@
     </ClInclude>
     <ClInclude Include="Source\APU\SoundChip2.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\utils\vminmax.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\SoundChip2.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\nes_apu.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\nsfplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\nes_dmc.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\nsfplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\nsfplay_math.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\nsfplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\2413tone.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\emu2413.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\vrc7tone_nuke.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\nsfplay</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,7 @@
 #include "nes_dmc.h"
 #include "nes_apu.h"
+#include "utils/variadic_minmax.h"
+#include "nsfplay_math.h"
 #include <cstdlib>
 
 namespace xgm
@@ -352,6 +354,56 @@ namespace xgm
     out[0] = calc_tri(clocks);
     out[1] = calc_noise(clocks);
     out[2] = calc_dmc(clocks);
+  }
+
+  std::optional<UINT32> NES_DMC::ClocksUntilLevelChange()
+  {
+      // See TickFrameSequence().
+      // nsfplay is written strangely.
+      // When a countdown is 0, it means the event will occur
+      // on the next nonzero call to TickFrameSequence() or Tick().
+      // See https://docs.google.com/document/d/1BnXwR3Avol7S5YNa3d4duGdbI6GNMwuYWLHuYiMZh5Y/edit#heading=h.lnh9d8j1x3uc
+      // for discussion on how to handle 0.
+      UINT32 out =
+          (UINT32)value_or(frame_sequence_length - frame_sequence_count, frame_sequence_length);
+
+      // See calc_tri().
+      if (linear_counter > 0 && length_counter[0] > 0
+          && (!option[OPT_TRI_MUTE] || tri_freq > 0)) {
+        out = std::min(out, value_or(counter[0], tri_freq + 1));
+      }
+
+      // See calc_noise().
+      // Unfortunately, at noise pitch $F, this updates every 4 clocks,
+      // which drains CPU especially in debug builds.
+      //
+      // One solution is to only update noise intermittently,
+      // However it's tricky to get right, and may require editing calc_noise().
+      //
+      // For now, just accept the increased CPU usage as a tradeoff.
+      {
+          UINT32 env = envelope_disable ? noise_volume : envelope_counter;
+          if (length_counter[1] < 1) env = 0;
+          if (env > 0) {
+              out = std::min(out, [&] {
+                  if (counter[1] < 0) {
+                      // "only happens on startup when using the randomize noise option", idk what to return
+                      return (UINT32)1;
+                  }
+                  return value_or(counter[1], nfreq);
+              }());
+          }
+      }
+
+      // See calc_dmc().
+      // It's quite tricky to predict if the DMC is playing a sample or not,
+      // so always assume it's playing.
+      // But the amount of CPU overhead is minimal, because the DMC frequency never exceeds 33 kHz,
+      // equivalent to a clock-skip of 54 (on NTSC, see `NES_DMC::freq_table`).
+      auto clocks_until_dmc = value_or(counter[2], dfreq);
+      out = std::min(out, clocks_until_dmc);
+
+      return out;
   }
 
   UINT32 NES_DMC::Render (INT32 b[2])

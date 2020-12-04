@@ -2,6 +2,7 @@
 #define _DEVICE_H_
 #include <stdio.h>
 #include <vector>
+#include <optional>
 #include <assert.h>
 #include "../xtypes.h"
 #include "devinfo.h"
@@ -91,6 +92,20 @@ namespace xgm
      * Soundchip clocked by M2 (NTSC = ~1.789MHz)
      */
     virtual void Tick (UINT32 clocks) = 0;
+
+    /**
+     * This interface only allows you to advance time (Tick)
+     * and poll for the latest amplitude (Render).
+     * If you call Tick() with an argument greater than 1, you lose precision,
+     * and with a small argument, you burn more CPU time.
+     *
+     * As an optimization,
+     * this function returns the number of clocks before the next level change.
+     * If the chip does not know how to compute it, it returns nullopt.
+     */
+    virtual std::optional<UINT32> ClocksUntilLevelChange () {
+        return {};
+    }
 
     /**
      * チップの動作クロックを設定
