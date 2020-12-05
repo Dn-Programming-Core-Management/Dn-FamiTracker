@@ -17,7 +17,7 @@ FamiTracker (and most of its forks) is an MFC application with project files mad
 ## Dependencies and Building
 To edit and/or build the source, you may use Visual Studio 2019, or alternatively, any IDE that supports CMake. You will need the following dependencies:
 
-- HTMLHelp to build the manual (install from here: https://docs.microsoft.com/en-us/previous-versions/windows/desktop/htmlhelp/microsoft-html-help-downloads)
+- [HTMLHelp](https://docs.microsoft.com/en-us/previous-versions/windows/desktop/htmlhelp/microsoft-html-help-downloads) to build the manual
 - For any IDE that supports building via CMake:
   - CMake
   - The latest MSVC build tools (may be from VS Installer or from other sources)
@@ -34,7 +34,7 @@ To edit and/or build the source, you may use Visual Studio 2019, or alternativel
       - MSVC v142 - VS 2019 C++ x64/x86 build tools (latest version)
       - C++ CMake tools for Windows
 
-  - Alternatively, you can install the components mentioned via the provided .vsconfig file.
+  - Alternatively, you can install the components mentioned via the [provided .vsconfig file](../Dn-FT_VS_Dependencies.vsconfig).
 
 
 
