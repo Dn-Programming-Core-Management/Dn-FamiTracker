@@ -34,7 +34,7 @@ To edit and/or build the source, you may use Visual Studio 2019, or alternativel
       - MSVC v142 - VS 2019 C++ x64/x86 build tools (latest version)
       - C++ CMake tools for Windows
 
-  - Alternatively, you can install the components mentioned via the [provided .vsconfig file](../Dn-FT_VS_Dependencies.vsconfig).
+  - Alternatively, you can install the components mentioned via the [provided .vsconfig file](Dn-FT_VS_Dependencies.vsconfig).
 
 
 
