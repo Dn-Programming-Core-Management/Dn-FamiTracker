@@ -902,7 +902,19 @@ int CChannelHandler::GetFinePitch() const
 int CChannelHandler::CalculatePeriod() const 
 {
 	int Detune = GetVibrato() - GetFinePitch() - GetPitch();
-	int Period = LimitPeriod(GetPeriod() - Detune);		// // //
+
+	// This was not thought through properly.
+	// - if !m_bLinearPitch, this calls LimitRawPeriod(LimitRawPeriod(...)), which is likely useless.
+	// - if m_bLinearPitch && m_pNoteLookupTable != nullptr, then we call LimitPeriod() twice and discard the first call.
+	// - if m_bLinearPitch but m_pNoteLookupTable == nullptr, this is probably a bugged/invalid state and should not happen.
+	// IDK how subclasses will customize these two methods...
+	// TBH inheritance and overriding makes it hard to reason about the possible behaviors without reading every subclass.
+	// So I'm scared to change this code.
+	// So far, the only override is by CNoiseChan (which makes both methods identity functions).
+	// So refactoring will be safe so far.
+
+	int Period;
+
 	if (m_bLinearPitch && m_pNoteLookupTable != nullptr) {
 		Period = LimitPeriod(GetPeriod() + Detune);
 		int Note = Period >> LINEAR_PITCH_AMOUNT;
@@ -911,6 +923,9 @@ int CChannelHandler::CalculatePeriod() const
 		Offset = Offset * Sub >> LINEAR_PITCH_AMOUNT;
 		if (Sub && !Offset) Offset = 1;
 		Period = m_pNoteLookupTable[Note] - Offset;
+	}
+	else {
+		Period = GetPeriod() - Detune;
 	}
 	return LimitRawPeriod(Period);
 }
