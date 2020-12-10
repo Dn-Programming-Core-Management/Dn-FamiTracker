@@ -15,6 +15,7 @@ Additions:
  - Adjustable idle refresh rate in configuration
  - Added back the help manual, with additional updated info contributed by:
    - Blue Mario for Sunsoft 5B information
+   - Compass Man for providing updated screenshots
  - Emulation tab in Configuration, which includes:
    - Swappable emulation cores for FDS and Sunsoft 5B*
    - Switchable VRC7 hardware patches for older module compatibility*
