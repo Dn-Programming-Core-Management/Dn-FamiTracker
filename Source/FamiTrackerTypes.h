@@ -157,9 +157,8 @@ enum effect_t : unsigned char {
 	EF_N163_WAVE_BUFFER,	// // // N163 wave buffer
 	EF_FDS_VOLUME,      	// // // FDS volume envelope
 	EF_FDS_MOD_BIAS,    	// // // FDS auto-FM bias
-
-	// nyanpasu64
-	EF_PHASE_RESET,			// 
+	EF_PHASE_RESET,  // Reset waveform phase without retriggering note (VRC6-only so far)
+	EF_HARMONIC,  // Multiply the note pitch by an integer
 
 	EF_COUNT
 };
@@ -221,14 +220,16 @@ const char EFF_CHAR[] = {
 	'Z',   	// EF_N163_WAVE_BUFFER,
 	'E',   	// EF_FDS_VOLUME,
 	'Z',   	// EF_FDS_MOD_BIAS,
-
-	// nyanpasu64
 	'=',	// EF_PHASE_RESET
+	'K',	// EF_HARMONIC
 };
 
 struct Effect {
 	char eff_char;
+
+	/// Unused.
 	int initial = 0x00;
+
 	int uiDefault = 0x00;
 };
 

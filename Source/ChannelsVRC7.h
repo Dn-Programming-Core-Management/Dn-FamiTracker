@@ -56,7 +56,7 @@ protected:
 	bool	CreateInstHandler(inst_type_t Type) override;		// // //
 	void	SetupSlide() override;		// // //
 	int		CalculateVolume() const override;
-	int		CalculatePeriod() const override;		// // //
+	int		CalculatePeriod(bool MultiplyByHarmonic = true) const override;		// // //
 
 	void	UpdateNoteRelease() override;		// // //
 	int		TriggerNote(int Note) override;
