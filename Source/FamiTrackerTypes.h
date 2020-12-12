@@ -226,10 +226,7 @@ const char EFF_CHAR[] = {
 
 struct Effect {
 	char eff_char;
-
-	/// Unused.
 	int initial = 0x00;
-
 	int uiDefault = 0x00;
 };
 
