@@ -139,13 +139,17 @@ public:
 	static const int DEFAULT_HEIGHT		= 161;	// Window height at top position
 	static const int CURSOR_WIDTH		= 8;	// Cursor box width
 
+	// Channel view limit
+	int		m_iChannelView;
+
 	static const TCHAR CLIPBOARD_ID[];
 
 private:
 	// Object pointers
 	CMainFrame		 *m_pMainFrame;
-	CFamiTrackerDoc  *m_pDocument;
+	CFamiTrackerDoc	 *m_pDocument;
 	CFamiTrackerView *m_pView;
+	CSettings		 *m_pSettings;		// // !!
 
 	// GDI objects
 	CFont	m_Font;
@@ -154,9 +158,6 @@ private:
 	CDC		m_dcBack;
 
 	UINT	mClipboardFormat;
-
-	// Channel view limit
-	int		m_iChannelView;
 
 	// Window size
 	int		m_iWinWidth;

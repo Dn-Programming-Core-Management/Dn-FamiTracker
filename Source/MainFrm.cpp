@@ -754,6 +754,11 @@ void CMainFrame::ResizeFrameWindow()
 		int Channels = pDocument->GetAvailableChannels();
 		int Height = 0, Width = 0;
 
+		// // !! truncate channel view count when loading a new module with less channels than current
+		if (m_pFrameEditor->m_iChannelView > Channels) {
+			m_pFrameEditor->m_iChannelView = Channels;
+		}
+
 		// Located to the right
 		if (m_iFrameEditorPos == FRAME_EDIT_POS_TOP) {
 			// Frame editor window

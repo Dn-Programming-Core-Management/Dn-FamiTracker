@@ -57,7 +57,7 @@ CFrameEditor::CFrameEditor(CMainFrame *pMainFrm) :
 	m_pDocument(NULL),
 	m_pView(NULL),
 	mClipboardFormat(0),
-	m_iChannelView(5),
+	m_iChannelView(theApp.GetSettings()->ChannelViewCount),		// // !!
 	m_iWinWidth(0),
 	m_iWinHeight(0),
 	m_iHiglightLine(0),
@@ -142,12 +142,12 @@ int CFrameEditor::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	m_hAccel = LoadAccelerators(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_FRAMEWND));
 
-	m_Font.CreateFontA(DPI::SY(14), 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
+	m_Font.CreateFont(DPI::SY(14), 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
 		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
 		theApp.GetSettings()->Appearance.strFrameFont);		// // // 050B
 
-	m_ChanFont.CreateFontA(DPI::SY(14 - 14 / 4), 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
-		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
+	m_ChanFont.CreateFont((DPI::SY(14) - DPI::SY(14 / 4)), 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
+		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,	
 		theApp.GetSettings()->Appearance.strFrameFont);		// // !!
 
 
@@ -317,7 +317,14 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 	
 	for (int i = Start; i <= End; ++i) {
 		CRect RowRect = DPI::Rect(0, i * ROW_HEIGHT + 4, m_iWinWidth, ROW_HEIGHT - 1);		// // //
-		
+
+		// // // Highlight by bookmarks
+		if (i != m_iMiddleRow) if (const unsigned Count = pCol->GetCount()) for (unsigned j = 0; j < Count; ++j)
+			if (pCol->GetBookmark(j)->m_iFrame == Frame) {
+				GradientBar(&m_dcBack, RowRect, theApp.GetSettings()->Appearance.iColBackgroundHilite, ColBackground);
+				break;
+			}
+
 		// Play cursor
 		if (PlayFrame == Frame && !m_pView->GetFollowMode() && theApp.IsPlaying())
 			GradientBar(&m_dcBack, RowRect, theApp.GetSettings()->Appearance.iColCurrentRowPlaying, ColBackground);		// // //
@@ -414,18 +421,18 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 	// Row numbers and Channel names
 	for (int i = Start; i <= End; ++i) {
 		m_dcBack.SelectObject(m_Font);
-		CRect RowRect = DPI::Rect(0, i * ROW_HEIGHT + 4, m_iWinWidth, ROW_HEIGHT - 1);		// // //
+
+		// // !! Row highlight by bookmarks
+		if (const unsigned Count = pCol->GetCount()) for (unsigned j = 0; j < Count; ++j)
+			if (pCol->GetBookmark(j)->m_iFrame == Frame) {
+				GradientBar(&m_dcBack, DPI::Rect(0, i* ROW_HEIGHT + 4, ROW_COLUMN_WIDTH - 1, ROW_HEIGHT - 1), theApp.GetSettings()->Appearance.iColBackgroundHilite, ColBackground);
+				break;
+			}
 
 		// // // 050B row marker
 		if (Frame == m_pView->GetMarkerFrame())
 			GradientBar(&m_dcBack, DPI::Rect(2, i * ROW_HEIGHT + 4, ROW_COLUMN_WIDTH - 5, ROW_HEIGHT - 1), ColCursor, DIM(ColCursor, 30));
 
-		// // // Highlight by bookmarks
-		if (i != m_iMiddleRow) if (const unsigned Count = pCol->GetCount()) for (unsigned j = 0; j < Count; ++j)
-			if (pCol->GetBookmark(j)->m_iFrame == Frame) {
-				GradientBar(&m_dcBack, RowRect, theApp.GetSettings()->Appearance.iColBackgroundHilite, ColBackground);
-				break;
-			}
 		if (i == End) {
 			m_dcBack.SetTextColor(ColTextHilite);
 			m_dcBack.TextOut(DPI::SX(3 + FRAME_ITEM_WIDTH / 2), DPI::SY(i* ROW_HEIGHT + 3), _T(">>"));
@@ -441,7 +448,10 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 				CTrackerChannel* pChannel = m_pDocument->GetChannel(Chan);
 				m_dcBack.DrawText(pChannel->GetShortName(),			// // !!
 					DPI::Rect(28 + (j * FRAME_ITEM_WIDTH + FRAME_ITEM_WIDTH / 2) - ChannelOffset * FRAME_ITEM_WIDTH,
-					DPI::SY(TOP_OFFSET), FRAME_ITEM_WIDTH - 2, 20), DT_LEFT | DT_TOP | DT_NOCLIP);
+						TOP_OFFSET,
+						FRAME_ITEM_WIDTH - 2,
+						20),
+					DT_LEFT | DT_TOP | DT_NOCLIP);
 				m_dcBack.SelectObject(m_Font);
 			}
 		}
@@ -452,15 +462,14 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 		}
 		++Frame;
 	}
-	CRect Corner = DPI::Rect(0, 0, DPI::SX(ROW_COLUMN_WIDTH - 1), DPI::SY(TOP_OFFSET * 2 + (14 - 14 / 4)));
 	// corner square
-	m_dcBack.FillSolidRect(0, 0, Corner.Width(), Corner.Height(), ColBackground);
+	m_dcBack.FillSolidRect(0, 0, DPI::SX(ROW_COLUMN_WIDTH - 1), DPI::SY(TOP_OFFSET * 2 + (14 - 14 / 4)), ColBackground);
 
 	// arrows to adjust visible channels
 	if (m_iChannelView < ChannelCount) {
-		ArrowPoints[0].SetPoint((Corner.Width() / 2) + 4 - 2, TOP_OFFSET);
-		ArrowPoints[1].SetPoint((Corner.Width() / 2) + 4 - 2, TOP_OFFSET + 10);
-		ArrowPoints[2].SetPoint((Corner.Width() / 2) + 4 + 3, TOP_OFFSET + 5);
+		ArrowPoints[0].SetPoint(DPI::SX(((ROW_COLUMN_WIDTH - 1) / 2) + 4 - 2), DPI::SY(TOP_OFFSET));
+		ArrowPoints[1].SetPoint(DPI::SX(((ROW_COLUMN_WIDTH - 1) / 2) + 4 - 2), DPI::SY(TOP_OFFSET + 10));
+		ArrowPoints[2].SetPoint(DPI::SX(((ROW_COLUMN_WIDTH - 1) / 2) + 4 + 3), DPI::SY(TOP_OFFSET + 5));
 
 		CObject *pOldBrush = m_dcBack.SelectObject(m_bChannelViewArrow1 ? &HoverBrush : &BlackBrush);
 		CObject *pOldPen = m_dcBack.SelectObject(m_bChannelViewArrow1 ? &HoverPen : &BlackPen);
@@ -470,9 +479,9 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 		m_dcBack.SelectObject(pOldPen);
 	}
 	if (m_iChannelView > 5) {
-		ArrowPoints[0].SetPoint((Corner.Width() / 2) - 4 + 2, TOP_OFFSET);
-		ArrowPoints[1].SetPoint((Corner.Width() / 2) - 4 + 2, TOP_OFFSET + 10);
-		ArrowPoints[2].SetPoint((Corner.Width() / 2) - 4 - 3, TOP_OFFSET + 5);
+		ArrowPoints[0].SetPoint(DPI::SX(((ROW_COLUMN_WIDTH - 1) / 2) - 4 + 2), DPI::SY(TOP_OFFSET));
+		ArrowPoints[1].SetPoint(DPI::SX(((ROW_COLUMN_WIDTH - 1) / 2) - 4 + 2), DPI::SY(TOP_OFFSET + 10));
+		ArrowPoints[2].SetPoint(DPI::SX(((ROW_COLUMN_WIDTH - 1) / 2) - 4 - 3), DPI::SY(TOP_OFFSET + 5));
 
 		CObject* pOldBrush = m_dcBack.SelectObject(m_bChannelViewArrow2 ? &HoverBrush : &BlackBrush);
 		CObject* pOldPen = m_dcBack.SelectObject(m_bChannelViewArrow2 ? &HoverPen : &BlackPen);
@@ -1004,29 +1013,27 @@ void CFrameEditor::OnLButtonUp(UINT nFlags, CPoint point)
 				InvalidateFrameData();
 				Invalidate();
 			}
-		}
-		else {
-			// Switch to frame
-			if (Arrow == 0) {
-				SetEditFrame(GetRowFromPoint(point, GetFocus() == this));		// // // allow one-past-the-end
-				if (Channel >= 0) {
-					if (Channel >= m_pDocument->GetChannelCount()) Channel = m_pDocument->GetChannelCount() - 1;
+			else {
+				// Switch to frame
+				m_pView->SelectFrame(NewFrame);
+				if (Channel >= m_pDocument->GetChannelCount()) Channel = m_pDocument->GetChannelCount() - 1;
 					m_pView->SelectChannel(Channel);		// // //
-				}
 			}
-			else if (Arrow == 1) {
-				if (m_iChannelView > 5) {
-					m_iChannelView -= 1;
-					// refresh the window
-					m_pMainFrame->ResizeFrameWindow();
-				}
+		}
+		else if (Arrow == 1) {
+			if (m_iChannelView > 5) {
+				m_iChannelView -= 1;
+				theApp.GetSettings()->ChannelViewCount = m_iChannelView;
+				// refresh the window
+				m_pMainFrame->ResizeFrameWindow();
 			}
-			else if (Arrow == 2) {
-				if (m_iChannelView < m_pDocument->GetChannelCount()) {
-					m_iChannelView += 1;
-					// refresh the window
-					m_pMainFrame->ResizeFrameWindow();
-				}
+		}
+		else if (Arrow == 2) {
+			if (m_iChannelView < m_pDocument->GetChannelCount()) {
+				m_iChannelView += 1;
+				theApp.GetSettings()->ChannelViewCount = m_iChannelView;
+				// refresh the window
+				m_pMainFrame->ResizeFrameWindow();
 			}
 		}
 	}
@@ -1510,7 +1517,7 @@ void CFrameEditor::OnSize(UINT nType, int cx, int cy)
 	m_iRowsVisible = (cy - Offset) / Height;		// // //
 	m_iMiddleRow = m_iRowsVisible / 2;
 
-	m_iTopScrollArea = ROW_HEIGHT;
+	m_iTopScrollArea = ROW_HEIGHT * 2;	// offset by channel header
 	m_iBottomScrollArea = cy - ROW_HEIGHT * 2;
 
 	// Delete the back buffer

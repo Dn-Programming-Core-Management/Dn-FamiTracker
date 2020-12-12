@@ -237,6 +237,7 @@ public:
 	int SampleWinState;
 	int FrameEditPos;
 	int ControlPanelPos;		// // // 050B
+	int ChannelViewCount;		// // !!
 	bool FollowMode;
 	bool MeterDecayRate;		// // // 050B
 

@@ -209,6 +209,7 @@ void CSettings::SetupSettings()
 	SETTING_INT("Other", "Sample window state", 0, &SampleWinState);
 	SETTING_INT("Other", "Frame editor position", 0, &FrameEditPos);
 	SETTING_INT("Other", "Control panel position", 0, &ControlPanelPos);		// // // 050B todo
+	SETTING_INT("Other", "Frame editor channel count", 5, &ChannelViewCount);		// // !!
 	SETTING_BOOL("Other", "Follow mode", true, &FollowMode);
 	SETTING_BOOL("Other", "Meter decay rate", false, &MeterDecayRate);		// // // 050B
 
