@@ -32,6 +32,7 @@
 
 #include "stdafx.h"
 #include "FamiTracker.h"
+#include "FamiTrackerTypes.h"
 #include "FTMComponentInterface.h"		// // //
 #include "ChannelState.h"		// // //
 #include "FamiTrackerDoc.h"
@@ -1185,11 +1186,10 @@ static CString GetStateString(const stChannelState &State)
 								  State.Effect[EF_PORTA_UP] >= 0 ? EF_PORTA_UP :
 								  State.Effect[EF_PORTA_DOWN] >= 0 ? EF_PORTA_DOWN :
 								  EF_PORTAMENTO;
-	for (const auto &x : {SLIDE_EFFECT, EF_VIBRATO, EF_TREMOLO, EF_VOLUME_SLIDE, EF_PITCH, EF_DUTY_CYCLE}) {
+	for (const auto &x : {SLIDE_EFFECT, EF_VIBRATO, EF_TREMOLO, EF_VOLUME_SLIDE, EF_PITCH, EF_DUTY_CYCLE, EF_HARMONIC}) {
 		int p = State.Effect[x];
 		if (p < 0) continue;
-		if (p == 0 && x != EF_PITCH) continue;
-		if (p == 0x80 && x == EF_PITCH) continue;
+		if (p == effects[x].initial) continue;
 		effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x], p);
 	}
 
@@ -1221,8 +1221,11 @@ static CString GetStateString(const stChannelState &State)
 		}
 	else if (State.ChannelIndex == CHANID_FDS)
 		for (const auto &x : FDS_EFFECTS) {
+			// CFamiTrackerDoc::RetrieveSoundState() does not retrieve I0x and Jxx effects (only Ixy),
+			// so those will never be displayed.
 			int p = State.Effect[x];
-			if (p < 0 || (x == EF_FDS_MOD_BIAS && p == 0x80)) continue;
+			if (p < 0) continue;
+			if (p == effects[x].initial) continue;
 			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x], p);
 		}
 	else if (State.ChannelIndex >= CHANID_S5B_CH1 && State.ChannelIndex <= CHANID_S5B_CH3)
@@ -1234,7 +1237,8 @@ static CString GetStateString(const stChannelState &State)
 	else if (State.ChannelIndex >= CHANID_N163_CH1 && State.ChannelIndex <= CHANID_N163_CH8)
 		for (const auto &x : N163_EFFECTS) {
 			int p = State.Effect[x];
-			if (p < 0 || (x == EF_N163_WAVE_BUFFER && p == 0x7F)) continue;
+			if (p < 0) continue;
+			if (p == effects[x].initial) continue;
 			effStr.AppendFormat(_T(" %c%02X"), EFF_CHAR[x], p);
 		}
 	if (State.Effect_LengthCounter >= 0)

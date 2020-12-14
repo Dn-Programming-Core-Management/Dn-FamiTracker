@@ -52,7 +52,7 @@ protected:
 	void	SetupSlide() override;		// // //
 	int		ConvertDuty(int Duty) const override;		// // //
 	void	ClearRegisters() override;
-	int		CalculatePeriod() const override;		// // //
+	int		CalculatePeriod(bool MultiplyByHarmonic = true) const override;		// // //
 	CString	GetSlideEffectString() const override;		// // //
 	CString	GetCustomEffectString() const override;		// // //
 

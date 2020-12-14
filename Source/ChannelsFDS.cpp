@@ -158,18 +158,19 @@ bool CChannelHandlerFDS::CreateInstHandler(inst_type_t Type)
 
 void CChannelHandlerFDS::RefreshChannel()
 {
-	int Frequency = CalculatePeriod();
-	unsigned char LoFreq = Frequency & 0xFF;
-	unsigned char HiFreq = (Frequency >> 8) & 0x0F;
+	int CarrierFrequency = CalculatePeriod();
+	unsigned char LoFreq = CarrierFrequency & 0xFF;
+	unsigned char HiFreq = (CarrierFrequency >> 8) & 0x0F;
 
 	unsigned char ModFreqLo = m_iModulationSpeed & 0xFF;
 	unsigned char ModFreqHi = (m_iModulationSpeed >> 8) & 0x0F;
 	if (m_bAutoModulation) {		// // //
-		int newFreq = Frequency * m_iEffModSpeedHi / m_iEffModSpeedLo + m_iModulationOffset;
-		if (newFreq < 0) newFreq = 0;
-		if (newFreq > 0xFFF) newFreq = 0xFFF;
-		ModFreqLo = newFreq & 0xFF;
-		ModFreqHi = (newFreq >> 8) & 0x0F;
+		int FundFrequency = CalculatePeriod(false);
+		int ModFrequency = FundFrequency * m_iEffModSpeedHi / m_iEffModSpeedLo + m_iModulationOffset;
+		if (ModFrequency < 0) ModFrequency = 0;
+		if (ModFrequency > 0xFFF) ModFrequency = 0xFFF;
+		ModFreqLo = ModFrequency & 0xFF;
+		ModFreqHi = (ModFrequency >> 8) & 0x0F;
 	}
 
 	unsigned char Volume = CalculateVolume();

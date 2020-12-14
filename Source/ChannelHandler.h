@@ -178,7 +178,7 @@ protected:
 		\details This method chooses the appropriate signs for the sources of pitch offset in the
 		channel handler.
 		\return The current pitch register, restricted within the range of the sound channel. */
-	virtual int		CalculatePeriod() const;
+	virtual int		CalculatePeriod(bool MultiplyByHarmonic = true) const;
 	/*!	\brief Obtains the current volume register of the sound channel.
 		\details This method may depend on the configuration setting for optional behaviour during
 		mixing the channel volume and the instrument volume.
@@ -486,6 +486,8 @@ protected:
 	bool			m_bTransposeDown;				// // //
 	/*!	\brief The number of notes to transpose in a Txy delayed note transpose effect. */
 	char			m_iTransposeTarget;				// // //
+	/*!	\brief Multiply the frequency of all output notes by this value. May be zero. */
+	unsigned int m_iHarmonic;
 	/*!	\brief The effect command parameter of the Pxx fine pitch effect. */
 	unsigned int	m_iFinePitch;
 	/*!	\brief The effect command parameter of the Vxx duty cycle effect. */
@@ -537,7 +539,7 @@ protected:
 	FrequencyChannelHandler(int MaxPeriod, int MaxVolume) : CChannelHandler(MaxPeriod, MaxVolume) {}
 	// // //
 	virtual bool	HandleEffect(effect_t EffNum, unsigned char EffParam);		// // //
-	int		CalculatePeriod() const override;
+	int		CalculatePeriod(bool MultiplyByHarmonic = true) const override;
 	virtual CString	GetSlideEffectString() const;		// // //
 };
 

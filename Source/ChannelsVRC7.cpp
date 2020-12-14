@@ -243,7 +243,7 @@ int CChannelHandlerVRC7::CalculateVolume() const
 	return Volume;		// // //
 }
 
-int CChannelHandlerVRC7::CalculatePeriod() const
+int CChannelHandlerVRC7::CalculatePeriod(bool MultiplyByHarmonic) const
 {
 	int Detune = GetVibrato() - GetFinePitch() - GetPitch();
 	int Period = LimitPeriod(GetPeriod() + (Detune << VRC7_PITCH_RESOLUTION));		// // //
@@ -256,6 +256,9 @@ int CChannelHandlerVRC7::CalculatePeriod() const
 		if (Sub && Offset < (1 << VRC7_PITCH_RESOLUTION)) Offset = 1 << VRC7_PITCH_RESOLUTION;
 		Period = GetFnum(Note) + Offset;
 	}
+	// TODO multiply pitch by harmonic if requested.
+	// This may not be implemented, since VRC7's pitch system makes multiplication hard,
+	// and it already has carrier/modulator sliders, making this less useful.
 	return LimitRawPeriod(Period) >> VRC7_PITCH_RESOLUTION;
 }
 

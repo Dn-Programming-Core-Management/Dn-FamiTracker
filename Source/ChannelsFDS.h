@@ -58,6 +58,10 @@ protected:
 	int m_iVolModRate;
 	bool m_bVolModTrigger;
 
+	/// this code needs Rust enums.
+	/// If m_bAutoModulation is true, then m_iEffModSpeedHi / (m_iEffModSpeedLo+1)
+	/// act as a numerator/denominator.
+	/// Otherwise, they act as high/low bytes.
 	bool m_bAutoModulation;		// // //
 	int m_iModulationOffset;
 

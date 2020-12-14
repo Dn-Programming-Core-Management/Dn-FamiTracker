@@ -169,6 +169,7 @@ void CChannelHandler::ResetChannel()
 	m_iTranspose		= 0;
 	m_bTransposeDown	= false;
 	m_iTransposeTarget	= 0;
+	m_iHarmonic = 1;
 	m_iVibratoDepth		= 0;
 	m_iTremoloDepth		= 0;
 
@@ -243,6 +244,8 @@ CString CChannelHandler::GetEffectString() const		// // //
 		str.AppendFormat(_T(" S%02X"), m_iNoteCut);
 	if (m_iTranspose)
 		str.AppendFormat(_T(" T%X%X"), m_iTranspose + (m_bTransposeDown ? 8 : 0), m_iTransposeTarget);
+	if (m_iHarmonic != 1)
+		str.AppendFormat(_T(" K%02X"), m_iHarmonic);
 
 	str.Append(GetCustomEffectString());
 	return str.IsEmpty() ? _T(" None") : str;
@@ -630,6 +633,9 @@ bool CChannelHandler::HandleEffect(effect_t EffCmd, unsigned char EffParam)
 		m_iTransposeTarget = EffParam & 0x0F;
 		m_bTransposeDown = (EffParam & 0x80) != 0;
 		break;
+	case EF_HARMONIC:
+		m_iHarmonic = EffParam;
+		break;
 //	case EF_TARGET_VOLUME_SLIDE:
 		// TODO implement
 //		break;
@@ -899,10 +905,22 @@ int CChannelHandler::GetFinePitch() const
 	return (0x80 - m_iFinePitch);
 }
 
-int CChannelHandler::CalculatePeriod() const 
+int CChannelHandler::CalculatePeriod(bool MultiplyByHarmonic) const
 {
 	int Detune = GetVibrato() - GetFinePitch() - GetPitch();
-	int Period = LimitPeriod(GetPeriod() - Detune);		// // //
+
+	// This was not thought through properly.
+	// - if !m_bLinearPitch, this calls LimitRawPeriod(LimitRawPeriod(...)), which is likely useless.
+	// - if m_bLinearPitch && m_pNoteLookupTable != nullptr, then we call LimitPeriod() twice and discard the first call.
+	// - if m_bLinearPitch but m_pNoteLookupTable == nullptr, this is probably a bugged/invalid state and should not happen.
+	// IDK how subclasses will customize these two methods...
+	// TBH inheritance and overriding makes it hard to reason about the possible behaviors without reading every subclass.
+	// So I'm scared to change this code.
+	// So far, the only override is by CNoiseChan (which makes both methods identity functions).
+	// So refactoring will be safe so far.
+
+	int Period;
+
 	if (m_bLinearPitch && m_pNoteLookupTable != nullptr) {
 		Period = LimitPeriod(GetPeriod() + Detune);
 		int Note = Period >> LINEAR_PITCH_AMOUNT;
@@ -911,6 +929,21 @@ int CChannelHandler::CalculatePeriod() const
 		Offset = Offset * Sub >> LINEAR_PITCH_AMOUNT;
 		if (Sub && !Offset) Offset = 1;
 		Period = m_pNoteLookupTable[Note] - Offset;
+	}
+	else {
+		Period = GetPeriod() - Detune;
+	}
+
+	// Some but not all period-based chips add 1 to the period you specify.
+	// So division is actually inconsistent on those chips, but it's not a big deal,
+	// since it's equivalent to rounding period up instead of down.
+	if (MultiplyByHarmonic) {
+		if (m_iHarmonic > 0) {
+			Period /= m_iHarmonic;
+		}
+		else {
+			Period = m_iMaxPeriod;
+		}
 	}
 	return LimitRawPeriod(Period);
 }
@@ -1038,18 +1071,22 @@ bool FrequencyChannelHandler::HandleEffect(effect_t EffNum, unsigned char EffPar
 	return CChannelHandler::HandleEffect(EffNum, EffParam);
 }
 
-int FrequencyChannelHandler::CalculatePeriod() const
+int FrequencyChannelHandler::CalculatePeriod(bool MultiplyByHarmonic) const
 {
-	int Period = LimitPeriod(GetPeriod() + GetVibrato() - GetFinePitch() - GetPitch());		// // //
+	int Frequency = GetPeriod() + GetVibrato() - GetFinePitch() - GetPitch();		// // //
 	if (m_bLinearPitch && m_pNoteLookupTable != nullptr) {
-		int Note = Period >> LINEAR_PITCH_AMOUNT;
-		int Sub = Period % (1 << LINEAR_PITCH_AMOUNT);
+		Frequency = LimitPeriod(Frequency);
+		int Note = Frequency >> LINEAR_PITCH_AMOUNT;
+		int Sub = Frequency % (1 << LINEAR_PITCH_AMOUNT);
 		int Offset = Note < NOTE_COUNT - 1 ? m_pNoteLookupTable[Note + 1] - m_pNoteLookupTable[Note] : 0;
 		Offset = Offset * Sub >> LINEAR_PITCH_AMOUNT;
 		if (Sub && !Offset) Offset = 1;
-		Period = m_pNoteLookupTable[Note] + Offset;
+		Frequency = m_pNoteLookupTable[Note] + Offset;
 	}
-	return LimitRawPeriod(Period);
+	if (MultiplyByHarmonic) {
+		Frequency *= m_iHarmonic;
+	}
+	return LimitRawPeriod(Frequency);
 }
 
 CString FrequencyChannelHandler::GetSlideEffectString() const		// // //

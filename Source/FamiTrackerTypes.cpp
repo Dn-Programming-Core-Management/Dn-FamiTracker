@@ -32,9 +32,10 @@ constexpr auto Effects(){
 
 		if (i == EF_PITCH || i == EF_FDS_MOD_BIAS) {
 			initial = uiDefault = 0x80;
-		}
-		else if (i == EF_N163_WAVE_BUFFER) {
+		} else if (i == EF_N163_WAVE_BUFFER) {
 			initial = 0x7F;
+		} else if (i == EF_HARMONIC) {
+			initial = uiDefault = 1;
 		}
 		effects[i] = { EFF_CHAR[i], initial, uiDefault };
 	}

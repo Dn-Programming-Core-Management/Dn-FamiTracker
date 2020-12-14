@@ -4918,6 +4918,8 @@ stFullState *CFamiTrackerDoc::RetrieveSoundState(unsigned int Track, unsigned in
 		
 			CTrackerChannel *ch = GetChannel(c);
 			ASSERT(ch != NULL);
+
+			// Why are effect columns processed from right to left?
 			for (int k = EffColumns; k >= 0; k--) {
 				effect_t fx = Note.EffNumber[k];
 				unsigned char xy = Note.EffParam[k];
@@ -5008,6 +5010,9 @@ stFullState *CFamiTrackerDoc::RetrieveSoundState(unsigned int Track, unsigned in
 						State->Effect[EF_PORTA_DOWN] = fx == EF_PORTA_DOWN ? xy : -2;
 					}
 					continue;
+				case EF_HARMONIC:
+					if (State->Effect[fx] == -1)
+						State->Effect[fx] = xy;
 				}
 			}
 			// if (Channel != -1) break;
