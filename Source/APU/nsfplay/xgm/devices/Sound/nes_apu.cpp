@@ -137,7 +137,7 @@ namespace xgm
     out[1] = calc_sqr(1, clocks);
   }
 
-  // ¶¬‚³‚ê‚é”gŒ`‚ÌU•‚Í0-8191
+  // ç”Ÿæˆã•ã‚Œã‚‹æ³¢å½¢ã®æŒ¯å¹…ã¯0-8191
   UINT32 NES_APU::Render (INT32 b[2])
   {
     out[0] = (mask & 1) ? 0 : out[0];

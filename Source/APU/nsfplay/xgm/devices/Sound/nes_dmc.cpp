@@ -193,7 +193,7 @@ namespace xgm
 
   }
 
-  // ŽOŠp”gƒ`ƒƒƒ“ƒlƒ‹‚ÌŒvŽZ –ß‚è’l‚Í0-15
+  // ä¸‰è§’æ³¢ãƒãƒ£ãƒ³ãƒãƒ«ã®è¨ˆç®— æˆ»ã‚Šå€¤ã¯0-15
   UINT32 NES_DMC::calc_tri (UINT32 clocks)
   {
     static UINT32 tritbl[32] = 
@@ -219,10 +219,10 @@ namespace xgm
     return ret;
   }
 
-  // ƒmƒCƒYƒ`ƒƒƒ“ƒlƒ‹‚ÌŒvŽZ –ß‚è’l‚Í0-127
-  // ’áƒTƒ“ƒvƒŠƒ“ƒOƒŒ[ƒg‚Å‡¬‚·‚é‚ÆƒGƒCƒŠƒAƒXƒmƒCƒY‚ªŒƒ‚µ‚¢‚Ì‚Å
-  // ƒmƒCƒY‚¾‚¯‚Í‚±‚ÌŠÖ”“à‚Å‚ƒNƒƒbƒN‡¬‚µAŠÈˆÕ‚ÈƒTƒ“ƒvƒŠƒ“ƒOƒŒ[ƒg
-  // •ÏŠ·‚ðs‚Á‚Ä‚¢‚éB
+  // ãƒŽã‚¤ã‚ºãƒãƒ£ãƒ³ãƒãƒ«ã®è¨ˆç®— æˆ»ã‚Šå€¤ã¯0-127
+  // ä½Žã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ãƒ¬ãƒ¼ãƒˆã§åˆæˆã™ã‚‹ã¨ã‚¨ã‚¤ãƒªã‚¢ã‚¹ãƒŽã‚¤ã‚ºãŒæ¿€ã—ã„ã®ã§
+  // ãƒŽã‚¤ã‚ºã ã‘ã¯ã“ã®é–¢æ•°å†…ã§é«˜ã‚¯ãƒ­ãƒƒã‚¯åˆæˆã—ã€ç°¡æ˜“ãªã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ãƒ¬ãƒ¼ãƒˆ
+  // å¤‰æ›ã‚’è¡Œã£ã¦ã„ã‚‹ã€‚
   UINT32 NES_DMC::calc_noise(UINT32 clocks)
   {
     UINT32 env = envelope_disable ? noise_volume : envelope_counter;
@@ -724,12 +724,12 @@ namespace xgm
 
     case 0x4012:
       adr_reg = val&0xff;
-      // ‚±‚±‚Ådaddress‚ÍXV‚³‚ê‚È‚¢
+      // ã“ã“ã§daddressã¯æ›´æ–°ã•ã‚Œãªã„
       break;
 
     case 0x4013:
       len_reg = val&0xff;
-      // ‚±‚±‚Ålength‚ÍXV‚³‚ê‚È‚¢
+      // ã“ã“ã§lengthã¯æ›´æ–°ã•ã‚Œãªã„
       break;
 
     default:
