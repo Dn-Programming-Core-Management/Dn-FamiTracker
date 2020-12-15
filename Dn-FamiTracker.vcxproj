@@ -265,7 +265,7 @@
   <ItemGroup>
     <ClCompile Include="Source\APU\nezplug\FDS.cpp" />
     <ClCompile Include="Source\APU\nezplug\FDSSound.cpp" />
-    <ClCompile Include="Source\APU\nsfplay\legacy\emu2413.c" />
+    <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\emu2413.c" />
     <ClCompile Include="Source\APU\SoundChip2.cpp" />
     <ClCompile Include="Source\ConfigEmulation.cpp" />
     <ClCompile Include="Source\NoNotifyEdit.cpp" />
@@ -509,9 +509,9 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
     </CustomBuild>
     <ClInclude Include="Source\APU\nezplug\FDS.H" />
     <ClInclude Include="Source\APU\nezplug\FDSSound.h" />
-    <ClInclude Include="Source\APU\nsfplay\legacy\2413tone.h" />
-    <ClInclude Include="Source\APU\nsfplay\legacy\emu2413.h" />
-    <ClInclude Include="Source\APU\nsfplay\legacy\vrc7tone_nuke.h" />
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\2413tone.h" />
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\emu2413.h" />
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\vrc7tone_nuke.h" />
     <ClInclude Include="Source\APU\old\vrc7tone.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>

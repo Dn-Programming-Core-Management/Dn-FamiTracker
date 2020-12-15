@@ -27,7 +27,7 @@ add_executable(${exe}
 
         Source/APU/nezplug/FDS.cpp
         Source/APU/nezplug/FDSSound.cpp
-        Source/APU/nsfplay/legacy/emu2413.c
+        Source/APU/nsfplay/xgm/devices/Sound/legacy/emu2413.c
         Source/APU/SoundChip2.cpp
         Source/APU/2A03.cpp
         Source/APU/APU.cpp
