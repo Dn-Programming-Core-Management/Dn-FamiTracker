@@ -32,7 +32,7 @@
 
 static unsigned char default_inst[(16+3)*16] = 
 {
-#include "APU/nsfplay/legacy/vrc7tone_nuke.h" 
+#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_nuke.h" 
 };
 
 // CInstrumentSettingsVRC7 dialog
