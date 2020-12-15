@@ -24,7 +24,7 @@
 
 #include "stdafx.h"
 #include <cstdio>
-#include "common.h"
+#include "Common.h"
 #include "DirectSound.h"
 #include "../resource.h"
 
