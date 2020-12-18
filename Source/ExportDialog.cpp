@@ -30,7 +30,7 @@
 #include "stdafx.h"
 #include "FamiTracker.h"
 #include "ExportDialog.h"
-#include "FamitrackerDoc.h"
+#include "FamiTrackerDoc.h"
 #include "Compiler.h"
 #include "Settings.h"
 #include "CustomExporters.h"

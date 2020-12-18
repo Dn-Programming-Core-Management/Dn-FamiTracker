@@ -25,8 +25,8 @@ add_executable(${exe}
         res/MainToolbar-256.bmp
         res/RightArrow.ico
 
-        Source/APU/nezplug/FDS.CPP
-        Source/APU/nezplug/FDS.H
+        Source/APU/nezplug/FDS.cpp
+        Source/APU/nezplug/FDS.h
         Source/APU/nezplug/FDSSound.cpp
         Source/APU/nezplug/FDSSound.h
         Source/APU/nsfplay/legacy/2413tone.h
@@ -36,17 +36,17 @@ add_executable(${exe}
         Source/APU/2A03.cpp
         Source/APU/2A03.h
         Source/APU/2A03Chan.h
-        Source/APU/APU.CPP
+        Source/APU/APU.cpp
         Source/APU/APU.h
         Source/APU/Channel.h
-        Source/APU/DPCM.CPP
+        Source/APU/DPCM.cpp
         Source/APU/DPCM.h
         Source/APU/Mixer.cpp
         Source/APU/Mixer.h
-        Source/APU/MMC5.CPP
-        Source/APU/MMC5.H
-        Source/APU/N163.CPP
-        Source/APU/N163.H
+        Source/APU/MMC5.cpp
+        Source/APU/MMC5.h
+        Source/APU/N163.cpp
+        Source/APU/N163.h
         Source/APU/Noise.cpp
         Source/APU/Noise.h
         Source/APU/S5B.cpp
@@ -58,8 +58,8 @@ add_executable(${exe}
         Source/APU/Triangle.cpp
         Source/APU/Triangle.h
         Source/APU/Types.h
-        Source/APU/VRC6.CPP
-        Source/APU/VRC6.H
+        Source/APU/VRC6.cpp
+        Source/APU/VRC6.h
         Source/APU/VRC7.cpp
         Source/APU/VRC7.h
         Source/Blip_Buffer/Blip_Buffer.cpp
