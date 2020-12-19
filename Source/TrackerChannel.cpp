@@ -241,8 +241,12 @@ bool CTrackerChannel::IsEffectCompatible(effect_t EffNumber, int EffParam) const
 			return m_iChip == SNDCHIP_VRC6 && EffParam == 0x00;
 		case EF_HARMONIC:
 			// VRC7 is not supported yet.
-			if (m_iChip == SNDCHIP_VRC7)
-				return false;
+			if (m_iChip == SNDCHIP_VRC7) return false;
+			// 2A03 noise behaves strangely with Kxx.
+			if (m_iChannelID == CHANID_NOISE) return false;
+			// K00 (frequency *= 0) is invalid/undefined behavior,
+			// and not guaranteed to behave properly/consistently in the tracker or NSF.
+			if (EffParam <= 0) return false;
 			return true;
 		case EF_COUNT:
 		default:
