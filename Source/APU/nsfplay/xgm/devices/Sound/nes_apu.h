@@ -68,6 +68,10 @@ namespace xgm
       NES_APU ();
      ~NES_APU ();
 
+    // // !! fetch frequency directly instead of through GetTrackInfo()
+    double GetFrequencyPulse1() const;
+    double GetFrequencyPulse2() const;
+
     void FrameSequence(int s);
 
     virtual void Reset ();

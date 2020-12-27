@@ -122,6 +122,42 @@ namespace xgm
     return &trkinfo[trk];
   }
 
+  double NES_DMC::GetFrequencyTriangle() const  // // !!
+  {
+      if (!(linear_counter > 0 && length_counter[0] > 0
+          && (!option[OPT_TRI_MUTE] || tri_freq > 0)))
+        return 0.0;
+      return clock / 32 / (tri_freq + 1);
+  }
+
+  double NES_DMC::GetFrequencyNoise() const     // // !!
+  {
+      return clock / double(wavlen_table[pal][reg[0x400e - 0x4008] & 0xF] * ((noise_tap & (1 << 6)) ? 93 : 1));
+  }
+
+  double NES_DMC::GetFrequencyDPCM() const      // // !!
+  {
+      if ((data > 0x100) && !dlength)
+        return 0.0;
+      return clock / double(freq_table[pal][reg[0x4010 - 0x4008] & 0xF]);
+  }
+
+
+  UINT8 NES_DMC::GetSamplePos() const
+  {
+      return (daddress - ((adr_reg<<6)|0xC000)) >> 6;
+  }
+
+  UINT8 NES_DMC::GetDeltaCounter() const
+  {
+      return (damp << 1) | dac_lsb;
+  }
+
+  bool NES_DMC::IsPlaying() const
+  {
+      return (dlength > 0);
+  }
+
   void NES_DMC::FrameSequence(int s)
   {
     //DEBUG_OUT("FrameSequence: %d\n",s);

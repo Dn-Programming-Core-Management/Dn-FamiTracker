@@ -340,6 +340,24 @@ namespace xgm
     return &trkinfo[trk];
   }
 
+  double NES_APU::GetFrequencyPulse1() const    // // !!
+  {
+      if (!(length_counter[0] > 0 &&
+          freq[0] >= 8 &&
+          sfreq[0] < 0x800))
+      return 0.0;
+    return clock / 16 / (freq[0] + 1);
+  }
+
+  double NES_APU::GetFrequencyPulse2() const    // // !!
+  {
+    if (!(length_counter[1] > 0 &&
+        freq[1] >= 8 &&
+        sfreq[1] < 0x800))
+      return 0.0;
+    return clock / 16 / (freq[1] + 1);
+  }
+
   bool NES_APU::Write (UINT32 adr, UINT32 val, UINT32 id)
   {
     int ch;

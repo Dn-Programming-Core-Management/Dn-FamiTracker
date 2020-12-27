@@ -107,6 +107,13 @@ namespace xgm
       NES_DMC ();
      ~NES_DMC ();
 
+
+    double GetFrequencyTriangle() const;
+    double GetFrequencyNoise() const;
+    double GetFrequencyDPCM() const;
+    UINT8 GetSamplePos() const;
+    UINT8 GetDeltaCounter() const;
+    bool IsPlaying() const;
     void InitializeTNDTable(double wt, double wn, double wd);
     void SetPal (bool is_pal);
     void SetAPU (NES_APU* apu_);

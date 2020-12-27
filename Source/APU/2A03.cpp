@@ -27,6 +27,7 @@
 #include "2A03.h"
 #include "../RegisterState.h"		// // //
 #include "utils/variadic_minmax.h"
+#include "nsfplay/xgm/devices/devinfo.h"		// // !!
 
 // // // 2A03 sound chip class
 
@@ -116,16 +117,20 @@ uint8_t C2A03::Read(uint16_t Address, bool &Mapped)
 	return 0U;
 }
 
-double C2A03::GetFreq(int Channel) const		// // //
+double C2A03::GetFreq(int Channel) const		// // !!
 {
-	// TODO FIXME use m_Apu1/2.GetTrackInfo() and parse the result.
-	//switch (Channel) {
-	//case 0: return m_pSquare1->GetFrequency();
-	//case 1: return m_pSquare2->GetFrequency();
-	//case 2: return m_pTriangle->GetFrequency();
-	//case 3: return m_pNoise->GetFrequency();
-	//case 4: return m_pDPCM->GetFrequency();
-	//}
+	switch (Channel) {
+	case 0:
+		return m_Apu1.GetFrequencyPulse1();
+	case 1:
+		return m_Apu1.GetFrequencyPulse2();
+	case 2:
+		return m_Apu2.GetFrequencyTriangle();
+	case 3:
+		return m_Apu2.GetFrequencyNoise();
+	case 4:
+		return m_Apu2.GetFrequencyDPCM();
+	}
 	return 0.0;
 }
 
@@ -161,18 +166,15 @@ CSampleMem *C2A03::GetSampleMemory()		// // //
 
 uint8_t C2A03::GetSamplePos() const
 {
-	return 0;
-	// TODO return m_pDPCM->GetSamplePos();
+	return m_Apu2.GetSamplePos();
 }
 
 uint8_t C2A03::GetDeltaCounter() const
 {
-	return 0;
-	// TODO return m_pDPCM->GetDeltaCounter();
+	return m_Apu2.GetDeltaCounter();
 }
 
 bool C2A03::DPCMPlaying() const
 {
-	return false;
-	// TODO return m_pDPCM->IsPlaying();
+	return m_Apu2.IsPlaying();
 }
