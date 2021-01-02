@@ -1,13 +1,28 @@
-# Dn-FamiTracker
-Dn-Famitracker is a fork of 0CC-FamiTracker that incorporates numerous fixes and features. It is originally intended to be a personal mod filled with quality-of-life features to suit the author's needs, but is now intending to move past this original purpose. The meaning of the name "Dn" is whatever you wish it to be.
-- Downloads/full changelog at: https://github.com/Gumball2415/Dn-FamiTracker/releases
-- Dev builds at: https://ci.appveyor.com/project/Gumball2415/dn-famitracker/history
+<img src="docs/dn logo.svg">
 
-- Notable additions
-   - DPCM sample bit order reversal
-   - Adaptable register state refresh rate depending on playback (≈60fps on playback, otherwise 10fps)
-   - Multitrack per-channel export
-   - More accessible DPCM preview pitch in the instrument editor dialog
+Dn-Famitracker is a fork of 0CC-FamiTracker that incorporates numerous fixes and features. The meaning of the name "Dn" is whatever you wish it to be.
+
+## Notable additions
+
+- DPCM sample bit order reversal
+
+- Adaptable register state refresh rate depending on playback (≈60fps on playback, otherwise 10fps)
+
+- Multitrack per-channel export
+
+- More accessible DPCM preview pitch in the instrument editor dialog
+
+## Contributing
+
+[Contributing and compiling](CONTRIBUTING.md)
+
+## Downloads
+
+Download releases: [![GitHub all releases](https://img.shields.io/github/downloads/Gumball2415/Dn-FamiTracker/total?logo=github&style=flat-square)](https://github.com/Gumball2415/Dn-FamiTracker/releases)
+
+Development builds: [![AppVeyor](https://img.shields.io/appveyor/build/Gumball2415/dn-famitracker?logo=appveyor&style=flat-square)](https://ci.appveyor.com/project/Gumball2415/dn-famitracker/history)
+
+
 
 The application and the source code are distributed under the GNU GPL 2 license. Dn modifications and additions in the source code and ASM code are marked with "// // !!" and ";; ;; !!", respectively.
 
