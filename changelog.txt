@@ -2,28 +2,27 @@ Dn-FamiTracker Mod
 Change Log
 Written by Persune
 
-Version 0.2.2 - November 21 2020 (tentative)
+Version 0.2.2 - January 5 2021 (tentative)
 
 --------------------------------------------------------------------------------
 
-Dn0.2.2.0 - 11/21/2020 *
+Dn0.2.2.0 - 01/05/2021
 
-* = not yet properly implemented.
 Additions:
 
- - Added FastTracker 2 (JP106) keymap
+ - Added FastTracker 2 (JP106) keymap (@sdhizumi #8)
  - Adjustable idle refresh rate in configuration
  - Added back the help manual, with additional updated info contributed by:
-   - Blue Mario for Sunsoft 5B information
-   - Compass Man for providing updated screenshots
- - Emulation tab in Configuration, which includes:
-   - Swappable emulation cores for FDS and Sunsoft 5B*
-   - Switchable VRC7 hardware patches for older module compatibility*
+   - Blue Mario for Sunsoft 5B information (@N-SPC700 #12)
+   - Compass Man for providing updated screenshots (#12)
+ - Emulation tab in Configuration, which currently includes:
    - Toggleable N163 multiplexing
+ - Added the Kxx multiply frequency effect, not currently supported in NSF
+    export (@nyanpasu64 #16)
 
 Improvements:
 
- - Enable DPI scaling for pattern editor
+ - Enable DPI scaling for pattern editor (@nyanpasu64 #5)
  - Adjustable channel view in frame editor
  - Updated the About information
  - Export wave shortcut (Ctrl + Shift + E)
@@ -40,6 +39,7 @@ Internal:
  - Include changelogs of vanilla, j0CC, and Dn in changelog.txt
  - Moved resource.h and Dn-FamiTracker.rc back to root folder due to HTMLHelp
     compilation
+ - Corrected paths on case-sensitive filesystems (@nyanpasu64 #18)
 
 
 
