@@ -55,5 +55,7 @@ private:
 
 	uint8_t	m_iSoundReg;
 
+	int	m_iPatchTone;
+
 	float	m_fVolume;
 };

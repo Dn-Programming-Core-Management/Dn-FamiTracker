@@ -760,6 +760,9 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
     <None Include="Dn-FamiTracker.reg" />
     <None Include="0CC-readme.txt" />
     <None Include="res\Document.ico" />
+    <None Include="res\export_report.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
     <None Include="res\Inst_2A03.ico" />
     <None Include="res\Inst_2A07.ico" />
     <None Include="res\Inst_FDS.ico" />

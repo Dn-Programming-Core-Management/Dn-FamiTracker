@@ -78,13 +78,15 @@ BOOL CConfigEmulation::OnInitDialog()
 
 	// VRC7
 	CComboBox* pVRC7Patch = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_VRC7_PATCH));
-	pVRC7Patch->AddString("Patch set 1 by kevtris (11/14/1999)");
-	pVRC7Patch->AddString("Patch set 2 by kevtris (11/15/1999)");
-	pVRC7Patch->AddString("FT 0.3.5 by Mitsutaka Okazaki (6/24/2001)");
-	pVRC7Patch->AddString("FT 0.3.6 by quietust(1/18/2004)");
-	pVRC7Patch->AddString("VRC7 TONES by okazaki@angel.ne.jp (4/10/2004)");
-	pVRC7Patch->AddString("FT 0.4.0 by rainwarrior (8/01/2012)");
 	pVRC7Patch->AddString("j0CC-FT 0.6.2 by Nuke.YTK (3/20/2019)");
+	pVRC7Patch->AddString("FT 0.4.0 by rainwarrior (8/01/2012)");
+	pVRC7Patch->AddString("FT 0.3.6 by quietust(1/18/2004)");
+	pVRC7Patch->AddString("FT 0.3.5 by Mitsutaka Okazaki (6/24/2001)");
+	pVRC7Patch->AddString("VRC7 TONES by okazaki@angel.ne.jp (4/10/2004)");
+	pVRC7Patch->AddString("Patch set 2 by kevtris (11/15/1999)");
+	pVRC7Patch->AddString("Patch set 1 by kevtris (11/14/1999)");
+	pVRC7Patch->AddString("2413 Tone");
+	pVRC7Patch->AddString("281B Tone");
 	pVRC7Patch->SetCurSel(pSettings->Emulation.iVRC7Patch);
 
 	UpdateSliderTexts();
@@ -113,8 +115,9 @@ BOOL CConfigEmulation::OnApply()
 	// VRC7
 	CComboBox* pVRC7Patch = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_VRC7_PATCH));
 	pSettings->Emulation.iVRC7Patch = pVRC7Patch->GetCurSel();
-
+	
 	theApp.LoadSoundConfig();
+
 	return CPropertyPage::OnApply();
 }
 

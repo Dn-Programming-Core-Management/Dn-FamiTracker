@@ -19,6 +19,8 @@
 */
 
 #include "../stdafx.h"
+#include "../FamiTracker.h"
+#include "../Settings.h"
 #include "APU.h"
 #include "VRC7.h"
 #include "../RegisterState.h"		// // //
@@ -26,8 +28,16 @@
 const float  CVRC7::AMPLIFY	  = 4.6f;		// Mixing amplification, VRC7 patch 14 is 4,88 times stronger than a 50% square @ v=15
 const uint32_t CVRC7::OPL_CLOCK = 3579545;	// Clock frequency
 
-CVRC7::CVRC7(CMixer *pMixer) : CSoundChip(pMixer), m_pBuffer(NULL), m_pOPLLInt(NULL), m_fVolume(1.0f), m_iMaxSamples(0), m_iSoundReg(0)
+CVRC7::CVRC7(CMixer* pMixer) :
+	CSoundChip(pMixer),
+	m_pBuffer(NULL),
+	m_pOPLLInt(NULL),
+	m_fVolume(1.0f),
+	m_iMaxSamples(0),
+	m_iSoundReg(0),
+	m_iPatchTone(theApp.GetSettings()->Emulation.iVRC7Patch)
 {
+
 	m_pRegisterLogger->AddRegisterRange(0x00, 0x07);		// // //
 	m_pRegisterLogger->AddRegisterRange(0x10, 0x15);
 	m_pRegisterLogger->AddRegisterRange(0x20, 0x25);
@@ -60,7 +70,7 @@ void CVRC7::SetSampleSpeed(uint32_t SampleRate, double ClockRate, uint32_t Frame
 	m_pOPLLInt = OPLL_new(OPL_CLOCK, SampleRate);
 
 	OPLL_reset(m_pOPLLInt);
-	OPLL_reset_patch(m_pOPLLInt, 1);
+	OPLL_reset_patch(m_pOPLLInt, theApp.GetSettings()->Emulation.iVRC7Patch);
 
 	m_iMaxSamples = (SampleRate / FrameRate) * 2;	// Allow some overflow
 

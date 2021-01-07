@@ -63,13 +63,15 @@ enum EMULATORS {
 
 // // !! VRC7 hardware patches (not sure if i should add)
 enum VRC7_PATCH {
-	PATCH_KT1 = 0,
-	PATCH_KT2 = 1,
-	PATCH_FT35 = 2,
-	PATCH_FT36 = 3,
-	PATCH_MO = 4,
-	PATCH_RW = 5,
-	PATCH_NUKE = 6
+	PATCH_NUKE = 0,		// OPLL_VRC7_TONE
+	PATCH_RW = 1,		// OPLL_VRC7_RW_TONE
+	PATCH_FT36 = 2,		// OPLL_VRC7_FT36_TONE
+	PATCH_FT35 = 3,		// OPLL_VRC7_FT35_TONE
+	PATCH_MO = 4,		// OPLL_VRC7_MO_TONE
+	PATCH_KT2 = 5,		// OPLL_VRC7_KT2_TONE
+	PATCH_KT1 = 6,		// OPLL_VRC7_KT1_TONE
+	PATCH_2413 = 7,		// OPLL_2413_TONE
+	PATCH_281B = 8		// OPLL_281B_TONE
 };
 
 // // // helper class for loading settings from official famitracker
