@@ -20,6 +20,9 @@
 ** must bear this legend.
 */
 
+#include "../stdafx.h"
+#include "../FamiTracker.h"
+#include "../Settings.h"
 #include "../Common.h"
 #include "APU.h"
 #include "N163.h"
@@ -49,7 +52,7 @@ CN163::CN163(CMixer *pMixer) :
 	m_iActiveChan(0),
 	m_iCycle(0),
 	m_pWaveData(new uint8_t[0x80]()),		// // //
-	m_bOldMixing(0)		// // //
+	m_bOldMixing(theApp.GetSettings()->Emulation.bNamcoMixing)		// // //
 {
 	m_pRegisterLogger->AddRegisterRange(0x00, 0x7F);		// // //
 	for (int i = 0; i < 8; ++i)
