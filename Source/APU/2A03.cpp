@@ -89,7 +89,7 @@ void C2A03::Process(uint32_t Time, Blip_Buffer& Output)
 	m_iTime += Time;
 }
 
-void C2A03::EndFrame()
+void C2A03::EndFrame(Blip_Buffer&, gsl::span<int16_t>)
 {
 	m_iTime = 0;
 }
