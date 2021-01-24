@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include "gsl/span"
 #include <cstdint>		// // //
 #include <memory>
 
@@ -35,8 +36,21 @@ public:
 	virtual ~CSoundChip2() = default;
 
 	virtual void	Reset() = 0;
+
+	/// Advance the sound chip emulator.
+	///
+	/// - Time is the number of clock cycles to advance.
+	/// - Output is where audio will be written to.
 	virtual void	Process(uint32_t Time, Blip_Buffer& Output) = 0;
-	virtual void	EndFrame() = 0;
+
+	/// End an audio frame/tick.
+	/// Each subclass of CSoundChip2 can choose to write audio to Output
+	/// on every call to Process(), or on the final call to EndFrame().
+	///
+	/// - Output is where audio will be written to.
+	/// - TempBuffer can be overwritten freely, and the contents will be discarded
+	///   after the function returns.
+	virtual void	EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer) = 0;
 
 	virtual void	Write(uint16_t Address, uint8_t Value) = 0;
 	virtual uint8_t	Read(uint16_t Address, bool &Mapped) = 0;

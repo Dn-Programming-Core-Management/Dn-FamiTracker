@@ -145,7 +145,7 @@ void CAPU::EndFrame()
 	for (auto Chip : m_SoundChips)		// // //
 		Chip->EndFrame();
 	for (auto Chip : m_SoundChips2)
-		Chip->EndFrame();
+		Chip->EndFrame(m_pMixer->GetBuffer(), gsl::span(m_pSoundBuffer, m_iSoundBufferSize << 1));
 
 	m_pMixer->FinishBuffer(m_iFrameCycles);
 	int ReadSamples	= m_pMixer->ReadBuffer(m_pSoundBuffer);
