@@ -47,7 +47,7 @@ endif()
 
 # linking
 TARGET_LINK_LIBRARIES(${exe}
-        Dbghelp winmm comctl32 dsound dxguid Version)
+        Dbghelp winmm comctl32 dsound Version htmlhelp)
 
 # Dn-FamiTracker.rc includes res/Dn-FamiTracker.manifest.
 # To prevent manifest linking errors:
