@@ -101,10 +101,11 @@ namespace xgm
      *
      * As an optimization,
      * this function returns the number of clocks before the next level change.
-     * If the chip does not know how to compute it, it returns nullopt.
+     * If the chip does not know how to compute it, it returns a placeholder value.
      */
-    virtual std::optional<UINT32> ClocksUntilLevelChange () {
-        return {};
+    virtual UINT32 ClocksUntilLevelChange () {
+        constexpr int NSFPLAY_RENDER_STEP = 4;
+        return NSFPLAY_RENDER_STEP;
     }
 
     /**

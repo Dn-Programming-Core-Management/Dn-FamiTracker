@@ -356,7 +356,7 @@ namespace xgm
     out[2] = calc_dmc(clocks);
   }
 
-  std::optional<UINT32> NES_DMC::ClocksUntilLevelChange()
+  UINT32 NES_DMC::ClocksUntilLevelChange()
   {
       // See TickFrameSequence().
       // nsfplay is written strangely.

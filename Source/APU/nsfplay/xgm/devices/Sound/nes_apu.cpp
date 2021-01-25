@@ -138,7 +138,7 @@ namespace xgm
     out[1] = calc_sqr(1, clocks);
   }
 
-  std::optional<UINT32> NES_APU::ClocksUntilLevelChange()
+  UINT32 NES_APU::ClocksUntilLevelChange()
   {
       // We don't know how long until the frame sequencer kicks in.
       // But it doesn't matter, NES_DMC::ClocksUntilLevelChange() takes that into account,

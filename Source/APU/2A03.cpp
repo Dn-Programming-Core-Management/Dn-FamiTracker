@@ -78,8 +78,8 @@ void C2A03::Process(uint32_t Time, Blip_Buffer& Output)
 		// at the instant in time *before* Tick() is called.
 		// See https://docs.google.com/document/d/1BnXwR3Avol7S5YNa3d4duGdbI6GNMwuYWLHuYiMZh5Y/edit#heading=h.lnh9d8j1x3uc
 		auto dclocks = vmin(
-			m_Apu1.ClocksUntilLevelChange().value_or(NSFPLAY_RENDER_STEP),
-			m_Apu2.ClocksUntilLevelChange().value_or(NSFPLAY_RENDER_STEP),
+			m_Apu1.ClocksUntilLevelChange(),
+			m_Apu2.ClocksUntilLevelChange(),
 			Time - now);
 		get_output(dclocks, now, Output);
 		now += dclocks;
