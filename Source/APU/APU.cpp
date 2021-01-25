@@ -274,14 +274,13 @@ bool CAPU::SetupSound(int SampleRate, int NrChannels, int Machine)		// // //
 	if (!m_pMixer->AllocateBuffer(m_iSoundBufferSamples, m_iSampleRate, NrChannels))		// // //
 		return false;
 
-	m_pMixer->SetClockRate(BaseFreq);
+	// m_pMixer->SetClockRate() is unnecessary, because ChangeMachineRate() assigns it anyway.
 
 	SAFE_RELEASE_ARRAY(m_pSoundBuffer);
 
 	m_pSoundBuffer = new int16_t[m_iSoundBufferSize << 1];
-
-	if (m_pSoundBuffer == NULL)
-		return false;
+	// `m_pSoundBuffer == NULL` can never happen.
+	// `new` throws std::bad_alloc on failure, and never returns null.
 
 	ChangeMachineRate(Machine, FrameRate);		// // //
 
