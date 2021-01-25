@@ -39,32 +39,18 @@ enum chip_level_t {
 };
 
 class C2A03;
+class CAPU;
 
 class CMixer
 {
 public:
-	CMixer();
+	CMixer(CAPU * Parent);
 	~CMixer();
 
 	void	ExternalSound(int Chip);
 
-	/// Registers a C2A03's Blip_Synths for volume balancing adjustments.
-	/// This interface assumes there is only 1 of each chip, which is suboptimal but whatever.
-	///
-	/// Should never be null. CAPU creates all expansion chips,
-	/// even if chips are not active in current module.
-	///
-	/// Right now, CMixer handles Blip_Synth treble/volume configuration
-	/// (bass is handled when reading from Blip_Buffer).
-	/// Eventually CMixer should either be integrated into CAPU
-	/// or UpdateSettings() should accept a CAPU*,
-	/// so it can peek at the Blip_Synth(s) owned by each CSoundChip2 subclass.
-	/// Because C2A03 has two Blip_Synth and the rest have one (VRC7 might have zero, IDK),
-	/// "get blip synth" should not be a method in CSoundChip2.
-	void SetC2A03(C2A03* chip);
-
 	void	AddValue(int ChanID, int Chip, int Value, int AbsValue, int FrameCycles);
-	void	UpdateSettings(int LowCut,	int HighCut, int HighDamp, float OverallVol);
+	void	UpdateMixing(int LowCut, int HighCut, int HighDamp, float OverallVol);
 
 	bool	AllocateBuffer(unsigned int Size, uint32_t SampleRate, uint8_t NrChannels);
 	Blip_Buffer& GetBuffer() {
@@ -102,21 +88,27 @@ private:
 	float GetAttenuation() const;
 
 private:
-	// Blip buffer synths
+	// Pointer to parent/owning CAPU object.
+	CAPU * m_APU;
 
 	// Should never be null during playback. CAPU creates all expansion chips,
 	// even if chips are not active in current module.
-	Blip_Synth<blip_good_quality> *Synth2A03SS = nullptr;
-	Blip_Synth<blip_good_quality> *Synth2A03TND = nullptr;
 	Blip_Synth<blip_good_quality> SynthVRC6;
 	Blip_Synth<blip_good_quality> SynthMMC5;
 	Blip_Synth<blip_good_quality> SynthN163;
 	Blip_Synth<blip_good_quality> SynthFDS;
 	Blip_Synth<blip_good_quality> SynthS5B;		// // // 050B
 
+	/// Only used by CMixer::ClearBuffer(), which clears the global Blip_Buffer
+	/// and all Blip_Synth owned by CMixer.
+	///
+	/// What about CSoundChip2 which owns its own Blip_Synth?
+	/// I've decided that CMixer should not be responsible for clearing those Blip_Synth,
+	/// but rather CSoundChip2::Reset() should do so.
+	///
+	/// This works because CMixer::ClearBuffer() is only called by CAPU::Reset(),
+	/// which also calls CSoundChip2::Reset() on each sound chip.
 	#define FOREACH_SYNTH(X, SEP) \
-		X((*Synth2A03SS)) SEP \
-		X((*Synth2A03TND)) SEP \
 		X(SynthVRC6) SEP \
 		X(SynthMMC5) SEP \
 		X(SynthN163) SEP \
@@ -148,4 +140,6 @@ private:
 	float		m_fLevelS5B;		// // // 050B
 
 	bool		m_bNamcoMixing;		// // //
+
+	friend class CAPU;
 };

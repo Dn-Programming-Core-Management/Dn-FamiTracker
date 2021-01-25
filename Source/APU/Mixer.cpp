@@ -67,7 +67,8 @@ static const double AMP_2A03 = 400.0;
 static const float LEVEL_FALL_OFF_RATE	= 0.6f;
 static const int   LEVEL_FALL_OFF_DELAY = 3;
 
-CMixer::CMixer()
+CMixer::CMixer(CAPU * Parent)
+	: m_APU(Parent)
 {
 	memset(m_iChannels, 0, sizeof(int32_t) * CHANNELS);
 	memset(m_fChannelLevels, 0, sizeof(float) * CHANNELS);
@@ -98,14 +99,7 @@ CMixer::~CMixer()
 void CMixer::ExternalSound(int Chip)
 {
 	m_iExternalChip = Chip;
-	UpdateSettings(m_iLowCut, m_iHighCut, m_iHighDamp, m_fOverallVol);
-}
-
-void CMixer::SetC2A03(C2A03* chip)
-{
-	VERIFY(chip);
-	Synth2A03SS = &chip->GetApu1BlipSynth();
-	Synth2A03TND = &chip->GetApu2BlipSynth();
+	UpdateMixing(m_iLowCut, m_iHighCut, m_iHighDamp, m_fOverallVol);
 }
 
 void CMixer::SetNamcoMixing(bool bLinear)		// // //
@@ -176,7 +170,7 @@ float CMixer::GetAttenuation() const
 
 constexpr int N163_RANGE = 1200;
 
-void CMixer::UpdateSettings(int LowCut,	int HighCut, int HighDamp, float OverallVol)
+void CMixer::UpdateMixing(int LowCut, int HighCut, int HighDamp, float OverallVol)
 {
 	float Volume = OverallVol * GetAttenuation();
 
@@ -185,14 +179,15 @@ void CMixer::UpdateSettings(int LowCut,	int HighCut, int HighDamp, float Overall
 
 	blip_eq_t eq(-HighDamp, HighCut, m_iSampleRate);
 
-	VERIFY(Synth2A03SS);
-	VERIFY(Synth2A03TND);
-
-	Synth2A03SS->treble_eq(eq);
-	Synth2A03TND->treble_eq(eq);
 	SynthVRC6.treble_eq(eq);
 	SynthMMC5.treble_eq(eq);
 	SynthS5B.treble_eq(eq);
+
+	// See https://docs.google.com/document/d/19vtipTYI-vqL3-BPrE9HPjHmPpkFuIZKvWfevP3Oo_A/edit#heading=h.h70ipevgjbn7
+	// for an exploration of how I came to this design.
+	for (auto * chip : m_APU->m_SoundChips2) {
+		chip->UpdateFilter(eq);
+	}
 
 	// N163 special filtering
 	double n163_treble = 24;
@@ -213,8 +208,11 @@ void CMixer::UpdateSettings(int LowCut,	int HighCut, int HighDamp, float Overall
 	SynthFDS.treble_eq(fds_eq);
 
 	// Volume levels
-	Synth2A03SS->volume(Volume * m_fLevelAPU1, 10000);
-	Synth2A03TND->volume(Volume * m_fLevelAPU2, 10000);
+	auto& chip2A03 = *m_APU->m_p2A03;
+
+	chip2A03.UpdateVolumeAPU1(Volume * m_fLevelAPU1, 10000);
+	chip2A03.UpdateVolumeAPU2(Volume * m_fLevelAPU2, 10000);
+
 	SynthVRC6.volume(Volume * 3.98333f * m_fLevelVRC6, 500);
 	SynthMMC5.volume(Volume * 1.18421f * m_fLevelMMC5, 130);
 	SynthS5B.volume(Volume * m_fLevelS5B, 1600);  // Not checked
@@ -271,6 +269,13 @@ void CMixer::SetClockRate(uint32_t Rate)
 void CMixer::ClearBuffer()
 {
 	BlipBuffer.clear();
+
+	// What about CSoundChip2 which owns its own Blip_Synth?
+	// I've decided that CMixer should not be responsible for clearing those Blip_Synth,
+	// but rather CSoundChip2::Reset() should do so.
+	//
+	// This works because CMixer::ClearBuffer() is only called by CAPU::Reset(),
+	// which also calls CSoundChip2::Reset() on each sound chip.
 
 	#define X(SYNTH)  SYNTH.clear();
 	FOREACH_SYNTH(X, );

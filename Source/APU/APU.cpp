@@ -56,7 +56,7 @@ CAPU::CAPU(IAudioCallback *pCallback) :		// // //
 	m_pParent(pCallback),
 	m_iFrameCycles(0),
 	m_pSoundBuffer(NULL),
-	m_pMixer(new CMixer()),
+	m_pMixer(new CMixer(this)),
 	m_p2A03(std::make_unique<C2A03>()),
 	m_iExternalSoundChips(0),
 	m_iCyclesToRun(0),
@@ -68,8 +68,6 @@ CAPU::CAPU(IAudioCallback *pCallback) :		// // //
 	m_pFDS  = new CFDS(m_pMixer);
 	m_pN163 = new CN163(m_pMixer);
 	m_pS5B  = new CS5B(m_pMixer);
-
-	m_pMixer->SetC2A03(m_p2A03.get());
 
 	m_fLevelVRC7 = 1.0f;
 
@@ -196,16 +194,14 @@ void CAPU::Reset()
 void CAPU::SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume) const
 {
 	// New settings
-	m_pMixer->UpdateSettings(LowCut, HighCut, HighDamp, float(Volume) / 100.0f);
+	m_pMixer->UpdateMixing(LowCut, HighCut, HighDamp, float(Volume) / 100.0f);
 	m_pVRC7->SetVolume((float(Volume) / 100.0f) * m_fLevelVRC7);
 }
 
 void CAPU::SetExternalSound(uint8_t Chip)
 {
-	// Set expansion chip
-	m_iExternalSoundChips = Chip;
-	m_pMixer->ExternalSound(Chip);
-
+	// Initialize list of active sound chips.
+	// Do this first because m_SoundChips2 is used by CMixer::ExternalSound() -> CMixer::UpdateMixing().
 	m_SoundChips.clear();
 	m_SoundChips2.clear();
 
@@ -222,6 +218,25 @@ void CAPU::SetExternalSound(uint8_t Chip)
 		m_SoundChips.push_back(m_pN163);
 	if (Chip & SNDCHIP_S5B)
 		m_SoundChips.push_back(m_pS5B);
+
+	// Set (unused) bitfield of external sound chips enabled.
+	m_iExternalSoundChips = Chip;
+
+	// Reinitialize mixer with list of external sound chips (as well as m_SoundChips2).
+	m_pMixer->ExternalSound(Chip);
+
+	// CAPU::ChangeMachineRate -> CMixer::SetClockRate is called before CAPU::SetExternalSound,
+	// so it is unable to set the clock rate for expansion chips.
+	// (For details, see https://docs.google.com/document/d/15j5uyfIH5t6j3NrhJSDfylctmWX7DUJFc3zhRt3elC8/edit#heading=h.2lsbu1jxs230.)
+	// So set the clock rate for all expansion chips here as well.
+	//
+	// Note that when changing clock rate, CMixer::SetClockRate() is called but not CAPU::SetExternalSound(),
+	// so both functions need to do the same thing.
+	//
+	// Note that I've marked both CMixer and CAPU as friends of each other,
+	// since I feel they really should be the same class.
+	// Feel free to complain.
+	m_pMixer->SetClockRate(m_pMixer->BlipBuffer.clock_rate());
 
 	Reset();
 }

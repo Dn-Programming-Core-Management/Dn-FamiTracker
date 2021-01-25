@@ -53,6 +53,9 @@ public:
 	CAPU(IAudioCallback *pCallback);		// // //
 	~CAPU();
 
+	/// Enforce a fixed address, so CMixer can hold a parent pointer to CAPU.
+	BLIP_DISABLE_COPY_MOVE(CAPU)
+
 	void	Reset();
 	void	Process();
 	void	AddCycles(int32_t Cycles);
@@ -114,7 +117,10 @@ private:
 	CVRC7		*m_pVRC7;
 	CS5B		*m_pS5B;
 
-	uint8_t		m_iExternalSoundChips;				// Bitfield of external sound chips enabled
+	/// Bitfield of external sound chips enabled.
+	/// Never read, except for code hidden behind #ifdef LOGGING.
+	uint8_t		m_iExternalSoundChips;
+
 	std::vector<CSoundChip*> m_SoundChips;
 	std::vector<CSoundChip2*> m_SoundChips2;
 
@@ -145,4 +151,5 @@ private:
 //	unsigned char m_iRegs[32];
 #endif
 
+	friend class CMixer;
 };

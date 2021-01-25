@@ -23,6 +23,8 @@
 
 #pragma once
 
+#include "Blip_Buffer/Blip_Buffer.h"
+
 #include "gsl/span"
 #include <cstdint>		// // //
 #include <memory>
@@ -36,6 +38,15 @@ public:
 	virtual ~CSoundChip2() = default;
 
 	virtual void	Reset() = 0;
+	virtual void UpdateFilter(blip_eq_t eq) = 0;
+
+	/// The empty default implementation is sufficient
+	/// unless your CSoundChip2 subclass owns its own Blip_Buffer (not just Blip_Synth).
+	///
+	/// tbh the proliferation of mutable state with setters is evil,
+	/// I'd much rather set clock rate as a constructor parameter
+	/// and tear down all sound chips when it changes.
+	virtual void SetClockRate(uint32_t Rate) {}
 
 	/// Advance the sound chip emulator.
 	///
