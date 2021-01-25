@@ -84,6 +84,7 @@ public:
 	C2A03();
 
 	void Reset() override;
+	void UpdateFilter(blip_eq_t eq) override;
 	void Process(uint32_t Time, Blip_Buffer& Output) override;
 	void EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer) override;
 
@@ -93,6 +94,9 @@ public:
 	double GetFreq(int Channel) const override;		// // //
 
 public:
+	void UpdateMixingAPU1(double v, unsigned int range);
+	void UpdateMixingAPU2(double v, unsigned int range);
+
 	void	ClockSequence();		// // //
 	
 	void	ChangeMachine(int Machine);
@@ -101,14 +105,6 @@ public:
 	uint8_t	GetSamplePos() const;
 	uint8_t	GetDeltaCounter() const;
 	bool	DPCMPlaying() const;
-
-	Blip_Synth<blip_good_quality>& GetApu1BlipSynth() {
-		return Synth2A03SS;
-	}
-
-	Blip_Synth<blip_good_quality>& GetApu2BlipSynth() {
-		return Synth2A03TND;
-	}
 
 private:
 	/// Referenced by m_Apu2.

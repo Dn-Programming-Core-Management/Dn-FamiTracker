@@ -54,6 +54,15 @@ void C2A03::Reset()
 
 	m_Apu1.Reset();
 	m_Apu2.Reset();
+
+	Synth2A03SS.clear();
+	Synth2A03TND.clear();
+}
+
+void C2A03::UpdateFilter(blip_eq_t eq)
+{
+	Synth2A03SS.treble_eq(eq);
+	Synth2A03TND.treble_eq(eq);
 }
 
 void C2A03::Process(uint32_t Time, Blip_Buffer& Output)
@@ -132,6 +141,14 @@ double C2A03::GetFreq(int Channel) const		// // !!
 		return m_Apu2.GetFrequencyDPCM();
 	}
 	return 0.0;
+}
+
+void C2A03::UpdateMixingAPU1(double v, unsigned int range) {
+	Synth2A03SS.volume(v, range);
+}
+
+void C2A03::UpdateMixingAPU2(double v, unsigned int range) {
+	Synth2A03TND.volume(v, range);
 }
 
 void C2A03::ClockSequence()

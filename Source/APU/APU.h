@@ -53,6 +53,9 @@ public:
 	CAPU(IAudioCallback *pCallback);		// // //
 	~CAPU();
 
+	/// Enforce a fixed address, so CMixer can hold a parent pointer to CAPU.
+	BLIP_DISABLE_COPY_MOVE(CAPU)
+
 	void	Reset();
 	void	Process();
 	void	AddCycles(int32_t Cycles);
@@ -148,4 +151,5 @@ private:
 //	unsigned char m_iRegs[32];
 #endif
 
+	friend class CMixer;
 };
