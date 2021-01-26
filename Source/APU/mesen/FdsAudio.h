@@ -30,7 +30,8 @@ private:
 public:
 	uint8_t ClockAudio()
 	{
-		int frequency = _volume.GetFrequency();
+		// Unsigned 12 bits, bounded by [0..0xfff).
+		int32_t frequency = _volume.GetFrequency();
 		if(!_haltWaveform && !_disableEnvelopes) {
 			_volume.TickEnvelope();
 			if(_mod.TickEnvelope()) {
@@ -49,9 +50,15 @@ public:
 		} else {
 			auto out = UpdateOutput();
 
-			if(frequency + _mod.GetOutput() > 0 && !_waveWriteEnabled) {
-				_waveOverflowCounter += frequency + _mod.GetOutput();
-				if(_waveOverflowCounter < frequency + _mod.GetOutput()) {
+			// Unsure how many bits. Hopefully it's 16 bits or less.
+			int32_t modFrequency = frequency + _mod.GetOutput();
+
+			if(modFrequency > 0 && !_waveWriteEnabled) {
+				// u16 wrapping addition.
+				_waveOverflowCounter += modFrequency;
+
+				// If output is less than both inputs, then addition overflowed.
+				if(_waveOverflowCounter < modFrequency) {
 					_wavePosition = (_wavePosition + 1) & 0x3F;
 				}
 			}
