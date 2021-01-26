@@ -14,7 +14,7 @@ private:
 	uint8_t _waveTable[64] = { 0 };
 	bool _waveWriteEnabled = false;
 
-	BaseFdsChannel _volume;
+	BaseFdsChannel _carrier;
 	ModChannel _mod;
 
 	bool _disableEnvelopes = false;
@@ -31,9 +31,9 @@ public:
 	uint8_t ClockAudio()
 	{
 		// Unsigned 12 bits, bounded by [0..0xfff).
-		int32_t frequency = _volume.GetFrequency();
+		int32_t frequency = _carrier.GetFrequency();
 		if(!_haltWaveform && !_disableEnvelopes) {
-			_volume.TickEnvelope();
+			_carrier.TickEnvelope();
 			if(_mod.TickEnvelope()) {
 				_mod.UpdateOutput(frequency);
 			}
@@ -70,7 +70,7 @@ public:
 private:
 	uint8_t UpdateOutput()
 	{
-		uint32_t level = std::min((int)_volume.GetGain(), 32) * WaveVolumeTable[_masterVolume];
+		uint32_t level = std::min((int)_carrier.GetGain(), 32) * WaveVolumeTable[_masterVolume];
 
 		// `_waveTable[_wavePosition]` is bounded within [0..63].
 		// `level` is bounded within [0..1152] because `_carrier.GetGain()` is clamped to ≤32
@@ -93,7 +93,7 @@ public:
 			value |= _waveTable[addr & 0x3F];
 		} else if(addr == 0x4090) {
 			value &= 0xC0;
-			value |= _volume.GetGain();
+			value |= _carrier.GetGain();
 		} else if(addr == 0x4092) {
 			value &= 0xC0;
 			value |= _mod.GetGain();
@@ -112,17 +112,17 @@ public:
 			switch(addr) {
 				case 0x4080:
 				case 0x4082:
-					_volume.WriteReg(addr, value);
+					_carrier.WriteReg(addr, value);
 					break;
 
 				case 0x4083:
 					_disableEnvelopes = (value & 0x40) == 0x40;
 					_haltWaveform = (value & 0x80) == 0x80;
 					if(_disableEnvelopes) {
-						_volume.ResetTimer();
+						_carrier.ResetTimer();
 						_mod.ResetTimer();
 					}
-					_volume.WriteReg(addr, value);
+					_carrier.WriteReg(addr, value);
 					break;
 
 				case 0x4084:
@@ -142,7 +142,7 @@ public:
 					break;
 
 				case 0x408A:
-					_volume.SetMasterEnvelopeSpeed(value);
+					_carrier.SetMasterEnvelopeSpeed(value);
 					_mod.SetMasterEnvelopeSpeed(value);
 					break;
 			}
