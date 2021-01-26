@@ -67,6 +67,73 @@ public:
 		}
 	}
 
+	/// Compute how many clock cycles FdsAudio can skip ahead in time
+	/// without changing internal modulator state or output.
+	///
+	/// You can safely call SkipClockAudio(ClockAudioMaxSkip()) without the output changing.
+	/// Afterwards you must call ClockAudio() once, before calling SkipClockAudio() more.
+	///
+	/// The return value may be zero, at which point SkipClockAudio(0) will do nothing
+	/// and it's faster to not call it.
+	uint32_t ClockAudioMaxSkip() const
+	{
+		uint32_t clocks = 1 << 24;
+
+		// Copied from ClockAudio().
+		// Unsigned 12 bits, bounded by [0..0xfff).
+		int32_t frequency = _carrier.GetFrequency();
+		if(!_haltWaveform && !_disableEnvelopes) {
+			clocks = std::min(clocks, _carrier.TickEnvelopeMaxSkip());
+			clocks = std::min(clocks, _mod.TickEnvelopeMaxSkip());
+		}
+
+		clocks = std::min(clocks, _mod.TickModulatorMaxSkip());
+
+		if(_haltWaveform) {
+		} else {
+			// Unsure how many bits. Hopefully it's 16 bits or less.
+			int32_t modFrequency = frequency + _mod.GetOutput();
+
+			if(modFrequency > 0 && !_waveWriteEnabled) {
+				uint32_t phaseWithoutOverflow = UINT16_MAX - _waveOverflowCounter;
+				uint32_t clocksWithoutOverflow = phaseWithoutOverflow / modFrequency;
+				clocks = std::min(clocks, clocksWithoutOverflow);
+			}
+		}
+
+		return clocks;
+	}
+
+	void SkipClockAudio(uint32_t clocks)
+	{
+		// Unsigned 12 bits, bounded by [0..0xfff).
+		int32_t frequency = _carrier.GetFrequency();
+		if (!_haltWaveform && !_disableEnvelopes) {
+			_carrier.SkipTickEnvelope(clocks);
+			_mod.SkipTickEnvelope(clocks);
+		}
+
+		_mod.SkipTickModulator(clocks);
+
+		if (_haltWaveform) {
+			_wavePosition = 0;
+			return;
+		}
+		else {
+			// Unsure how many bits. Hopefully it's 16 bits or less.
+			int32_t modFrequency = frequency + _mod.GetOutput();
+
+			if (modFrequency > 0 && !_waveWriteEnabled) {
+				uint32_t newWaveOverflowCounter = _waveOverflowCounter + modFrequency * clocks;
+				_waveOverflowCounter = newWaveOverflowCounter;
+
+				// Ensure that cycle-skipping does not overflow the counter and trigger a step.
+				assert(_waveOverflowCounter == newWaveOverflowCounter);
+			}
+			return;
+		}
+	}
+
 private:
 	uint8_t UpdateOutput()
 	{

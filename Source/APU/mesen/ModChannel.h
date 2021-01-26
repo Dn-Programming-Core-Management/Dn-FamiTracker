@@ -1,6 +1,8 @@
 #pragma once
 #include "stdafx.h"
 #include "BaseFdsChannel.h"
+#include <assert.h>
+#include <algorithm>  // std::min
 
 class ModChannel : public BaseFdsChannel
 {
@@ -57,7 +59,7 @@ public:
 		}
 	}
 
-	bool IsEnabled()
+	bool IsEnabled() const
 	{
 		return !_modulationDisabled && _frequency > 0;
 	}
@@ -78,6 +80,33 @@ public:
 			}
 		}
 		return false;
+	}
+
+	/// Compute how many calls to TickModulator() can be skipped without changing output.
+	uint32_t TickModulatorMaxSkip() const
+	{
+		// Copied from TickModulator().
+		if(IsEnabled()) {  // if true, then _frequency > 0.
+			uint32_t phaseWithoutOverflow = UINT16_MAX - _overflowCounter;
+			uint32_t clocksWithoutOverflow = phaseWithoutOverflow / _frequency;
+			return clocksWithoutOverflow;
+		}
+
+		// If chip is in an idle state, return a very large number as a placeholder.
+		return 1 << 24;
+	}
+
+	/// Simulates the effects of multiple calls to TickModulator().
+	/// The modulator level must not change in the process.
+	void SkipTickModulator(uint32_t clocks)
+	{
+		if(IsEnabled()) {
+			uint32_t newOverflowCounter = _overflowCounter + _frequency * clocks;
+			_overflowCounter = newOverflowCounter;
+
+			// Ensure that cycle-skipping does not overflow the counter and trigger a step.
+			assert(_overflowCounter == newOverflowCounter);
+		}
 	}
 
 	void UpdateOutput(uint16_t volumePitch)
@@ -115,7 +144,7 @@ public:
 		_output = temp;
 	}
 
-	int32_t GetOutput()
+	int32_t GetOutput() const
 	{
 		return IsEnabled() ? _output : 0;
 	}

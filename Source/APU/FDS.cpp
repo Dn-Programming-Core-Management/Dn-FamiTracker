@@ -107,13 +107,26 @@ void CFDS::Process(uint32_t Time, Blip_Buffer& Output)
 {
 	uint32_t now = 0;
 
-	auto get_output = [this](uint32_t now, Blip_Buffer& blip_buf) {
-		uint8_t out = m_FDS.ClockAudio();
-		m_SynthFDS.update(m_iTime + now, out, &blip_buf);
-	};
+	while (true) {
+		assert(now <= Time);
+		if (now >= Time)
+			break;
 
-	while (now < Time) {
-		get_output(now, m_BlipFDS);
+		auto tmp = m_FDS.ClockAudioMaxSkip();
+		auto clock_skip = std::min(tmp, Time - now);
+		if (clock_skip > 0) {
+			m_FDS.SkipClockAudio(clock_skip);
+			now += clock_skip;
+		}
+
+		if (tmp < (1 << 24))
+			assert(tmp - m_FDS.ClockAudioMaxSkip() == clock_skip);
+		assert(now <= Time);
+		if (now >= Time)
+			break;
+
+		uint8_t out = m_FDS.ClockAudio();
+		m_SynthFDS.update(m_iTime + now, out, &m_BlipFDS);
 		now++;
 	}
 
