@@ -137,7 +137,7 @@ void CVRC7::EndFrame()
 		LastSample = Sample;
 	}
 
-	m_pMixer->MixSamples((blip_sample_t*)m_pBuffer, WantSamples);
+	m_pMixer->MixSamples((blip_amplitude_t*)m_pBuffer, WantSamples);
 
 	m_iBufferPtr -= WantSamples;
 	m_iTime = 0;

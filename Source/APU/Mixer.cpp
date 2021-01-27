@@ -87,9 +87,6 @@ CMixer::CMixer()
 	m_iHighDamp = 0;
 	m_fOverallVol = 1.0f;
 
-	m_dSumSS = 0.0;
-	m_dSumTND = 0.0;
-
 	m_iMeterDecayRate = DECAY_SLOW;		// // // 050B
 }
 
@@ -191,6 +188,8 @@ float CMixer::GetAttenuation() const
 	return Attenuation;
 }
 
+constexpr int N163_RANGE = 1200;
+
 void CMixer::UpdateSettings(int LowCut,	int HighCut, int HighDamp, float OverallVol)
 {
 	float Volume = OverallVol * GetAttenuation();
@@ -225,15 +224,13 @@ void CMixer::UpdateSettings(int LowCut,	int HighCut, int HighDamp, float Overall
 	SynthFDS.treble_eq(fds_eq);
 
 	// Volume levels
-	Synth2A03SS.volume(Volume * m_fLevelAPU1);
-	Synth2A03TND.volume(Volume * m_fLevelAPU2);
-	SynthVRC6.volume(Volume * 3.98333f * m_fLevelVRC6);
-	SynthFDS.volume(Volume * 1.00f * m_fLevelFDS);
-	SynthMMC5.volume(Volume * 1.18421f * m_fLevelMMC5);
-	
-	// Not checked
-	SynthS5B.volume(Volume * m_fLevelS5B);		// // // 050B
-	SynthN163.volume(Volume * 1.1f * m_fLevelN163);
+	Synth2A03SS.volume(Volume * m_fLevelAPU1, 500);
+	Synth2A03TND.volume(Volume * m_fLevelAPU2, 500);
+	SynthVRC6.volume(Volume * 3.98333f * m_fLevelVRC6, 500);
+	SynthMMC5.volume(Volume * 1.18421f * m_fLevelMMC5, 130);
+	SynthS5B.volume(Volume * m_fLevelS5B, 1600);  // Not checked
+	SynthFDS.volume(Volume * 1.00f * m_fLevelFDS, 3500);
+	SynthN163.volume(Volume * 1.1f * m_fLevelN163, N163_RANGE);  // Not checked
 
 	m_iLowCut = LowCut;
 	m_iHighCut = HighCut;
@@ -245,7 +242,7 @@ void CMixer::SetNamcoVolume(float fVol)
 {
 	float fVolume = fVol * m_fOverallVol * GetAttenuation();
 
-	SynthN163.volume(fVolume * 1.1f * m_fLevelN163);
+	SynthN163.volume(fVolume * 1.1f * m_fLevelN163, N163_RANGE);
 }
 
 int CMixer::GetMeterDecayRate() const		// // // 050B
@@ -258,7 +255,7 @@ void CMixer::SetMeterDecayRate(int Rate)		// // // 050B
 	m_iMeterDecayRate = Rate;
 }
 
-void CMixer::MixSamples(blip_sample_t *pBuffer, uint32_t Count)
+void CMixer::MixSamples(blip_amplitude_t *pBuffer, uint32_t Count)
 {
 	// For VRC7
 	BlipBuffer.mix_samples(pBuffer, Count);
@@ -286,8 +283,9 @@ void CMixer::ClearBuffer()
 {
 	BlipBuffer.clear();
 
-	m_dSumSS = 0;
-	m_dSumTND = 0;
+	#define X(SYNTH)  SYNTH.clear();
+	FOREACH_SYNTH(X, );
+	#undef X
 }
 
 int CMixer::SamplesAvail() const
@@ -336,9 +334,8 @@ void CMixer::MixInternal1(int Time)
 	double Sum = CalcPin1(m_iChannels[CHANID_SQUARE1], m_iChannels[CHANID_SQUARE2]);
 #endif
 
-	double Delta = (Sum - m_dSumSS) * AMP_2A03;
-	Synth2A03SS.offset(Time, (int)Delta, &BlipBuffer);
-	m_dSumSS = Sum;
+	double Delta = Sum * AMP_2A03;
+	Synth2A03SS.update(Time, (int)Delta, &BlipBuffer);
 }
 
 void CMixer::MixInternal2(int Time)
@@ -350,9 +347,8 @@ void CMixer::MixInternal2(int Time)
 	double Sum = CalcPin2(m_iChannels[CHANID_TRIANGLE], m_iChannels[CHANID_NOISE], m_iChannels[CHANID_DPCM]);
 #endif
 
-	double Delta = (Sum - m_dSumTND) * AMP_2A03;
-	Synth2A03TND.offset(Time, (int)Delta, &BlipBuffer);
-	m_dSumTND = Sum;
+	double Delta = Sum * AMP_2A03;
+	Synth2A03TND.update(Time, (int)Delta, &BlipBuffer);
 }
 
 void CMixer::MixN163(int Value, int Time)
@@ -426,7 +422,7 @@ void CMixer::AddValue(int ChanID, int Chip, int Value, int AbsValue, int FrameCy
 
 int CMixer::ReadBuffer(void *Buffer)
 {
-	return BlipBuffer.read_samples((blip_sample_t*)Buffer, BlipBuffer.samples_avail());
+	return BlipBuffer.read_samples((blip_amplitude_t*)Buffer, BlipBuffer.samples_avail());
 }
 
 int32_t CMixer::GetChanOutput(uint8_t Chan) const
@@ -475,5 +471,5 @@ void CMixer::ClearChannelLevels()
 
 uint32_t CMixer::ResampleDuration(uint32_t Time) const
 {
-	return (uint32_t)BlipBuffer.resampled_duration((blip_time_t)Time);
+	return (uint32_t)BlipBuffer.resampled_duration((blip_nsamp_t)Time);
 }
