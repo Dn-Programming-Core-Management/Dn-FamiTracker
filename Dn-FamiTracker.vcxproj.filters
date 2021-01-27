@@ -753,6 +753,9 @@
     <ClCompile Include="Source\APU\nsfplay\legacy\emu2413.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\APU\SoundChip2.cpp">
+      <Filter>Source Files\Sound Driver\Emulation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">
@@ -1471,6 +1474,9 @@
     </ClInclude>
     <ClInclude Include="Source\APU\nsfplay\legacy\vrc7tone_nuke.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\SoundChip2.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

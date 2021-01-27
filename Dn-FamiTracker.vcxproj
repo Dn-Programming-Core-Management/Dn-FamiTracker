@@ -266,6 +266,7 @@
     <ClCompile Include="Source\APU\nezplug\FDS.cpp" />
     <ClCompile Include="Source\APU\nezplug\FDSSound.cpp" />
     <ClCompile Include="Source\APU\nsfplay\legacy\emu2413.c" />
+    <ClCompile Include="Source\APU\SoundChip2.cpp" />
     <ClCompile Include="Source\ConfigEmulation.cpp" />
     <ClCompile Include="Source\NoNotifyEdit.cpp" />
     <ClCompile Include="Source\HistoryFileDlg.cpp" />
@@ -515,6 +516,7 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="Source\APU\SoundChip2.h" />
     <ClInclude Include="Source\array_view.h" />
     <ClInclude Include="Source\ConfigEmulation.h" />
     <ClInclude Include="Source\NoNotifyEdit.h" />
