@@ -9,11 +9,11 @@
 ** the Free Software Foundation; either version 2 of the License, or
 ** (at your option) any later version.
 **
-** This program is distributed in the hope that it will be useful, 
+** This program is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
-** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-** Library General Public License for more details.  To obtain a 
-** copy of the GNU Library General Public License, write to the Free 
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+** Library General Public License for more details.  To obtain a
+** copy of the GNU Library General Public License, write to the Free
 ** Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ** Any permitted reproduction of these routines, in whole or in part,
@@ -39,6 +39,7 @@ enum chip_level_t {
 };
 
 class C2A03;
+class CFDS;
 class CAPU;
 
 class CMixer
@@ -77,7 +78,6 @@ public:
 
 private:
 	void MixN163(int Value, int Time);
-	void MixFDS(int Value, int Time);
 	void MixVRC6(int Value, int Time);
 	void MixMMC5(int Value, int Time);
 	void MixS5B(int Value, int Time);
@@ -91,12 +91,13 @@ private:
 	// Pointer to parent/owning CAPU object.
 	CAPU * m_APU;
 
+	// Blip buffer synths
+
 	// Should never be null during playback. CAPU creates all expansion chips,
 	// even if chips are not active in current module.
 	Blip_Synth<blip_good_quality> SynthVRC6;
 	Blip_Synth<blip_good_quality> SynthMMC5;
 	Blip_Synth<blip_good_quality> SynthN163;
-	Blip_Synth<blip_good_quality> SynthFDS;
 	Blip_Synth<blip_good_quality> SynthS5B;		// // // 050B
 
 	/// Only used by CMixer::ClearBuffer(), which clears the global Blip_Buffer
@@ -112,7 +113,6 @@ private:
 		X(SynthVRC6) SEP \
 		X(SynthMMC5) SEP \
 		X(SynthN163) SEP \
-		X(SynthFDS) SEP \
 		X(SynthS5B)
 
 	// Blip buffer object

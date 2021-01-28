@@ -1,8 +1,8 @@
 #pragma once
 #include "stdafx.h"
-#include "Snapshotable.h"
+#include <cstdint>
 
-class BaseFdsChannel : public Snapshotable
+class BaseFdsChannel
 {
 protected:
 	uint8_t _speed = 0;
@@ -15,11 +15,6 @@ protected:
 
 	//"Few FDS NSFs write to this register. The BIOS initializes this to $FF."
 	uint8_t _masterSpeed = 0xFF;
-
-	void StreamState(bool saving) override
-	{
-		Stream(_speed, _gain, _envelopeOff, _volumeIncrease, _frequency, _timer, _masterSpeed);
-	}
 
 public:
 	void SetMasterEnvelopeSpeed(uint8_t masterSpeed)

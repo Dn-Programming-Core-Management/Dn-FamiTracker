@@ -58,6 +58,7 @@ CAPU::CAPU(IAudioCallback *pCallback) :		// // //
 	m_pSoundBuffer(NULL),
 	m_pMixer(new CMixer(this)),
 	m_p2A03(std::make_unique<C2A03>()),
+	m_pFDS(std::make_unique<CFDS>()),
 	m_iExternalSoundChips(0),
 	m_iCyclesToRun(0),
 	m_iSampleRate(44100)		// // //
@@ -65,7 +66,6 @@ CAPU::CAPU(IAudioCallback *pCallback) :		// // //
 	m_pMMC5 = new CMMC5(m_pMixer);
 	m_pVRC6 = new CVRC6(m_pMixer);
 	m_pVRC7 = new CVRC7(m_pMixer);
-	m_pFDS  = new CFDS(m_pMixer);
 	m_pN163 = new CN163(m_pMixer);
 	m_pS5B  = new CS5B(m_pMixer);
 
@@ -82,7 +82,6 @@ CAPU::~CAPU()
 	SAFE_RELEASE(m_pMMC5);
 	SAFE_RELEASE(m_pVRC6);
 	SAFE_RELEASE(m_pVRC7);
-	SAFE_RELEASE(m_pFDS);
 	SAFE_RELEASE(m_pN163);
 	SAFE_RELEASE(m_pS5B);
 
@@ -211,7 +210,7 @@ void CAPU::SetExternalSound(uint8_t Chip)
 	if (Chip & SNDCHIP_VRC7)
 		m_SoundChips.push_back(m_pVRC7);
 	if (Chip & SNDCHIP_FDS)
-		m_SoundChips.push_back(m_pFDS);
+		m_SoundChips2.push_back(m_pFDS.get());
 	if (Chip & SNDCHIP_MMC5)
 		m_SoundChips.push_back(m_pMMC5);
 	if (Chip & SNDCHIP_N163)

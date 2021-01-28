@@ -9,11 +9,11 @@
 ** the Free Software Foundation; either version 2 of the License, or
 ** (at your option) any later version.
 **
-** This program is distributed in the hope that it will be useful, 
+** This program is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
-** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-** Library General Public License for more details.  To obtain a 
-** copy of the GNU Library General Public License, write to the Free 
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+** Library General Public License for more details.  To obtain a
+** copy of the GNU Library General Public License, write to the Free
 ** Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ** Any permitted reproduction of these routines, in whole or in part,
@@ -28,16 +28,16 @@
 
  Mixing of external channles are based on my own research:
 
- VRC6 (Madara): 
+ VRC6 (Madara):
 	Pulse channels has the same amplitude as internal-
 	pulse channels on equal volume levels.
 
- FDS: 
+ FDS:
 	Square wave @ v = $1F: 2.4V
 	  			  v = $0F: 1.25V
 	(internal square wave: 1.0V)
 
- MMC5 (just breed): 
+ MMC5 (just breed):
 	2A03 square @ v = $0F: 760mV (the cart attenuates internal channels a little)
 	MMC5 square @ v = $0F: 900mV
 
@@ -58,6 +58,7 @@
 #include "Mixer.h"
 #include "APU.h"
 #include "2A03.h"
+#include "FDS.h"
 #include "nsfplay/xgm/devices/Sound/legacy/emu2413.h"
 
 //#define LINEAR_MIXING
@@ -200,21 +201,19 @@ void CMixer::UpdateMixing(int LowCut, int HighCut, int HighDamp, float OverallVo
 	blip_eq_t eq_n163(-n163_treble, n163_rolloff, m_iSampleRate);
 	SynthN163.treble_eq(eq_n163);
 
-	// FDS special filtering (TODO fix this for high sample rates)
-	blip_eq_t fds_eq(-48, 1000, m_iSampleRate);
-
-	SynthFDS.treble_eq(fds_eq);
-
 	// Volume levels
-	auto& chip2A03 = *m_APU->m_p2A03;
+	auto & chip2A03 = *m_APU->m_p2A03;
+	auto & chipFDS = *m_APU->m_pFDS;
 
+	// Maybe the range argument, as well as the constant factor in the volume,
+	// should be supplied by the CSoundChip2 subclass rather than CMixer.
 	chip2A03.UpdateMixingAPU1(Volume * m_fLevelAPU1, 10000);
 	chip2A03.UpdateMixingAPU2(Volume * m_fLevelAPU2, 10000);
+	chipFDS.UpdateMixLevel(Volume * 1.122f * m_fLevelFDS, 256);
 
 	SynthVRC6.volume(Volume * 3.98333f * m_fLevelVRC6, 500);
 	SynthMMC5.volume(Volume * 1.18421f * m_fLevelMMC5, 130);
 	SynthS5B.volume(Volume * m_fLevelS5B, 1600);  // Not checked
-	SynthFDS.volume(Volume * 1.00f * m_fLevelFDS, 3500);
 	SynthN163.volume(Volume * 1.1f * m_fLevelN163, N163_RANGE);  // Not checked
 
 	m_iLowCut = LowCut;
@@ -255,6 +254,9 @@ bool CMixer::AllocateBuffer(unsigned int BufferLength, uint32_t SampleRate, uint
 {
 	m_iSampleRate = SampleRate;
 	BlipBuffer.set_sample_rate(SampleRate, (BufferLength * 1000 * 2) / SampleRate);
+
+	// I don't know if BlipFDS is initialized or not.
+	// So I copied the above call to CMixer::UpdateSettings().
 	return true;
 }
 
@@ -262,6 +264,13 @@ void CMixer::SetClockRate(uint32_t Rate)
 {
 	// Change the clockrate
 	BlipBuffer.clock_rate(Rate);
+
+	// Propagate the change to any sound chips with their own Blip_Buffer.
+	// Note that m_APU->m_SoundChips2 may not have been initialized yet,
+	// so CAPU::SetExternalSound() does the same thing.
+	for (auto * chip : m_APU->m_SoundChips2) {
+		chip->SetClockRate(Rate);
+	}
 }
 
 void CMixer::ClearBuffer()
@@ -281,7 +290,7 @@ void CMixer::ClearBuffer()
 }
 
 int CMixer::SamplesAvail() const
-{	
+{
 	return (int)BlipBuffer.samples_avail();
 }
 
@@ -322,11 +331,6 @@ void CMixer::MixN163(int Value, int Time)
 	SynthN163.offset(Time, Value, &BlipBuffer);
 }
 
-void CMixer::MixFDS(int Value, int Time)
-{
-	SynthFDS.offset(Time, Value, &BlipBuffer);
-}
-
 void CMixer::MixVRC6(int Value, int Time)
 {
 	SynthVRC6.offset(Time, Value, &BlipBuffer);
@@ -346,7 +350,7 @@ void CMixer::AddValue(int ChanID, int Chip, int Value, int AbsValue, int FrameCy
 {
 	// Add sound to mixer
 	//
-	
+
 	int Delta = Value - m_iChannels[ChanID];
 	StoreChannelLevel(ChanID, AbsValue);
 	m_iChannels[ChanID] = Value;
@@ -359,9 +363,6 @@ void CMixer::AddValue(int ChanID, int Chip, int Value, int AbsValue, int FrameCy
 			break;
 		case SNDCHIP_N163:
 			MixN163(Value, FrameCycles);
-			break;
-		case SNDCHIP_FDS:
-			MixFDS(Value, FrameCycles);
 			break;
 		case SNDCHIP_MMC5:
 			// Value == AbsValue.

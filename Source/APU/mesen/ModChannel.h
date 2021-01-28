@@ -5,25 +5,16 @@
 class ModChannel : public BaseFdsChannel
 {
 private:
-	const int32_t ModReset = 0xFF;
-	const int32_t _modLut[8] = { 0,1,2,4,ModReset,-4,-2,-1 };
+	static constexpr int32_t ModReset = 0xFF;
+	static constexpr int32_t _modLut[8] = { 0,1,2,4,ModReset,-4,-2,-1 };
 
 	int8_t _counter = 0;
 	bool _modulationDisabled = false;
 
-	uint8_t _modTable[64];
+	uint8_t _modTable[64] = { 0 };
 	uint8_t _modTablePosition = 0;
 	uint16_t _overflowCounter = 0;
 	int32_t _output = 0;
-
-protected:
-	void StreamState(bool saving) override
-	{
-		BaseFdsChannel::StreamState(saving);
-		
-		ArrayInfo<uint8_t> modTable = { _modTable, 64 };
-		Stream(_counter, _modulationDisabled, _modTablePosition, _overflowCounter, modTable, _output);
-	}
 
 public:
 	virtual void WriteReg(uint16_t addr, uint8_t value) override

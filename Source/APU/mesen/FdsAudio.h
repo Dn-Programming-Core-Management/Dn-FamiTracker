@@ -1,22 +1,17 @@
 #pragma once
 #include "stdafx.h"
 #include <algorithm>
-#include "Snapshotable.h"
-#include "EmulationSettings.h"
 #include "APU.h"
 #include "BaseFdsChannel.h"
 #include "ModChannel.h"
-#include "BaseExpansionAudio.h"
-#include "MemoryManager.h"
-#include "Console.h"
 
-class FdsAudio : public BaseExpansionAudio
+class FdsAudio
 {
 private:
-	const uint32_t WaveVolumeTable[4] = { 36, 24, 17, 14 };
+	static constexpr uint32_t WaveVolumeTable[4] = { 36, 24, 17, 14 };
 
 	//Register values
-	uint8_t _waveTable[64];
+	uint8_t _waveTable[64] = { 0 };
 	bool _waveWriteEnabled = false;
 
 	BaseFdsChannel _volume;
@@ -31,22 +26,9 @@ private:
 	uint16_t _waveOverflowCounter = 0;
 	int32_t _wavePitch = 0;
 	uint8_t _wavePosition = 0;
-	
-	uint8_t _lastOutput = 0;
 
-protected:
-	void StreamState(bool saving) override
-	{
-		BaseExpansionAudio::StreamState(saving);
-
-		ArrayInfo<uint8_t> waveTable = { _waveTable, 64 };
-		SnapshotInfo volume{ &_volume };
-		SnapshotInfo mod{ &_mod };
-
-		Stream(volume, mod, _waveWriteEnabled, _disableEnvelopes, _haltWaveform, _masterVolume, _waveOverflowCounter, _wavePitch, _wavePosition, _lastOutput, waveTable);
-	}
-
-	void ClockAudio() override
+public:
+	uint8_t ClockAudio()
 	{
 		int frequency = _volume.GetFrequency();
 		if(!_haltWaveform && !_disableEnvelopes) {
@@ -63,9 +45,9 @@ protected:
 	
 		if(_haltWaveform) {
 			_wavePosition = 0;
-			UpdateOutput();
+			return UpdateOutput();
 		} else {
-			UpdateOutput();
+			auto out = UpdateOutput();
 
 			if(frequency + _mod.GetOutput() > 0 && !_waveWriteEnabled) {
 				_waveOverflowCounter += frequency + _mod.GetOutput();
@@ -73,29 +55,32 @@ protected:
 					_wavePosition = (_wavePosition + 1) & 0x3F;
 				}
 			}
+
+			return out;
 		}
 	}
 
-	void UpdateOutput()
+private:
+	uint8_t UpdateOutput()
 	{
 		uint32_t level = std::min((int)_volume.GetGain(), 32) * WaveVolumeTable[_masterVolume];
+
+		// `_waveTable[_wavePosition]` is bounded within [0..63].
+		// `level` is bounded within [0..1152] because `_carrier.GetGain()` is clamped to ≤32
+		// and `WaveVolumeTable[_masterVolume]` ≤ 36.
+		// As a result, `(_waveTable[_wavePosition] * level) / 1152` is bounded within [0..63].
 		uint8_t outputLevel = (_waveTable[_wavePosition] * level) / 1152;
-
-
-		if(_lastOutput != outputLevel) {
-			_console->GetApu()->AddExpansionAudioDelta(AudioChannel::FDS, outputLevel - _lastOutput);
-			_lastOutput = outputLevel;
-		}
+		return outputLevel;
 	}
 
 public:
-	FdsAudio(shared_ptr<Console> console) : BaseExpansionAudio(console)
-	{
+	void Reset() {
+		*this = {};
 	}
 
 	uint8_t ReadRegister(uint16_t addr)
 	{
-		uint8_t value = _console->GetMemoryManager()->GetOpenBus();
+		uint8_t value = 0;
 		if(addr <= 0x407F) {
 			value &= 0xC0;
 			value |= _waveTable[addr & 0x3F];

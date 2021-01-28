@@ -112,7 +112,7 @@ private:
 	std::unique_ptr<C2A03> m_p2A03;
 	CVRC6		*m_pVRC6;
 	CMMC5		*m_pMMC5;
-	CFDS		*m_pFDS;
+	std::unique_ptr<CFDS> m_pFDS;
 	CN163		*m_pN163;
 	CVRC7		*m_pVRC7;
 	CS5B		*m_pS5B;

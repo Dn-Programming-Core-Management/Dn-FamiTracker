@@ -26,7 +26,6 @@ add_executable(${exe}
         res/RightArrow.ico
 
         Source/APU/FDS.cpp
-        Source/APU/nezplug/FDSSound.cpp
         Source/APU/nsfplay/xgm/devices/Sound/legacy/emu2413.c
         Source/APU/nsfplay/xgm/devices/Sound/nes_apu.cpp
         Source/APU/nsfplay/xgm/devices/Sound/nes_dmc.cpp

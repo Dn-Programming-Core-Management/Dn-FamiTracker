@@ -7,11 +7,11 @@
 ** the Free Software Foundation; either version 2 of the License, or
 ** (at your option) any later version.
 **
-** This program is distributed in the hope that it will be useful, 
+** This program is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
-** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-** Library General Public License for more details.  To obtain a 
-** copy of the GNU Library General Public License, write to the Free 
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+** Library General Public License for more details.  To obtain a
+** copy of the GNU Library General Public License, write to the Free
 ** Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ** Any permitted reproduction of these routines, in whole or in part,
@@ -21,18 +21,36 @@
 
 #pragma once
 
-#include "SoundChip.h"
-#include "Channel.h"
+#include "SoundChip2.h"
+#include "Blip_Buffer/Blip_Buffer.h"
+#include "APU/mesen/FdsAudio.h"
 
-class CFDS : public CSoundChip, public CChannel {
+class CMixer;
+
+class CFDS : public CSoundChip2 {
 public:
-	CFDS(CMixer *pMixer);
+	CFDS();
 	virtual ~CFDS();
-	void	Reset();
-	void	Write(uint16_t Address, uint8_t Value);
-	uint8_t	Read(uint16_t Address, bool &Mapped);
-	void	EndFrame();
-	void	Process(uint32_t Time);
-	double	GetFreq(int Channel) const;		// // //
-	double	GetFrequency() const { return GetFreq(0); }		// // //
+	void	Reset() override;
+	void UpdateFilter(blip_eq_t eq) override;
+	void SetClockRate(uint32_t Rate) override;
+	void	Write(uint16_t Address, uint8_t Value) override;
+	uint8_t	Read(uint16_t Address, bool &Mapped) override;
+	void	Process(uint32_t Time, Blip_Buffer& Output) override;
+	void	EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer) override;
+	double	GetFreq(int Channel) const override;		// // //
+
+	void UpdateMixLevel(double v, unsigned int range);
+
+private:
+	FdsAudio m_FDS;
+
+	Blip_Buffer m_BlipFDS;
+	Blip_Synth<blip_good_quality> m_SynthFDS;
+
+	// The lower this value is, the stronger the lowpass filter is.
+	float m_alpha = 0;
+	float m_lowPassState = 0.f;
+
+	uint32_t	m_iTime = 0;  // Clock counter, used as a timestamp for Blip_Buffer, resets every new frame
 };
