@@ -98,6 +98,11 @@ public:
     // Mix 'count' samples from 'buf' into buffer.
     void mix_samples( blip_amplitude_t const* buf, blip_nsamp_t count );
 
+    /// Mix 'count' samples from 'buf' into buffer.
+    /// The input is assumed to originate from another Blip_Buffer,
+    /// and is not delayed by the impulse width.
+    void mix_samples_raw(blip_amplitude_t const* buf, blip_nsamp_t count);
+
     // not documented yet
     void set_modified() { modified_ = 1; }
     int clear_modified() { int b = modified_; modified_ = 0; return b; }
