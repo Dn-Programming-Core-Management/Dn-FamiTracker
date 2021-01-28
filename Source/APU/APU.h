@@ -28,6 +28,8 @@
 #include "../Common.h"
 #include "Mixer.h"
 
+#include <vector>
+
 // External classes
 class C2A03;		// // //
 class CVRC6;
@@ -111,6 +113,7 @@ private:
 	CS5B		*m_pS5B;
 
 	uint8_t		m_iExternalSoundChip;				// External sound chip, if used
+	std::vector<CSoundChip*> m_SoundChips;
 
 	uint32_t	m_iSampleRate;						// // //
 	uint32_t	m_iFrameCycleCount;
