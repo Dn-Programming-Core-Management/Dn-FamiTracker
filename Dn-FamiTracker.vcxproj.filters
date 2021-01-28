@@ -729,9 +729,6 @@
     <ClCompile Include="Source\ConfigEmulation.cpp">
       <Filter>Source Files\Dialog Boxes\Config</Filter>
     </ClCompile>
-    <ClCompile Include="Source\APU\nezplug\FDS.cpp">
-      <Filter>Source Files\Sound Driver\Emulation\Sound Chips</Filter>
-    </ClCompile>
     <ClCompile Include="Source\APU\nezplug\FDSSound.cpp">
       <Filter>Source Files\Sound Driver\Emulation\Sound Chips\External\nezplug</Filter>
     </ClCompile>
@@ -752,6 +749,9 @@
     </ClCompile>
     <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\emu2413.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\APU\FDS.cpp">
+      <Filter>Source Files\Sound Driver\Emulation\Sound Chips</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1439,9 +1439,6 @@
     <ClInclude Include="Source\ConfigEmulation.h">
       <Filter>Header Files\Dialog Boxes Headers\Config Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\APU\nezplug\FDS.H">
-      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Source\APU\nezplug\FDSSound.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\nezplug</Filter>
     </ClInclude>
@@ -1492,6 +1489,9 @@
     </ClInclude>
     <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\vrc7tone_nuke.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\nsfplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\FDS.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

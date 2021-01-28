@@ -18,11 +18,11 @@
 ** must bear this legend.
 */
 
-#include "../../stdafx.h"
-#include "../APU.h"
+#include "../stdafx.h"
+#include "APU.h"
 #include "FDS.h"
-#include "FDSSound.h"
-#include "../../RegisterState.h"		// // //
+#include "nezplug/FDSSound.h"
+#include "../RegisterState.h"		// // //
 
 // FDS interface, actual FDS emulation is in FDSSound.cpp
 

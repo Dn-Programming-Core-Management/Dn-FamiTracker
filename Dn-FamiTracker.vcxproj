@@ -263,7 +263,7 @@
     <Manifest />
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source\APU\nezplug\FDS.cpp" />
+    <ClCompile Include="Source\APU\FDS.cpp" />
     <ClCompile Include="Source\APU\nezplug\FDSSound.cpp" />
     <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\emu2413.c" />
     <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\nes_apu.cpp" />
@@ -506,7 +506,7 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hlp\HTMLDefines.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">hlp\HTMLDefines.h;%(Outputs)</Outputs>
     </CustomBuild>
-    <ClInclude Include="Source\APU\nezplug\FDS.H" />
+    <ClInclude Include="Source\APU\FDS.h" />
     <ClInclude Include="Source\APU\nezplug\FDSSound.h" />
     <ClInclude Include="Source\APU\nsfplay\xgm\debugout.h" />
     <ClInclude Include="Source\APU\nsfplay\xgm\devices\device.h" />

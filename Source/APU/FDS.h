@@ -21,8 +21,8 @@
 
 #pragma once
 
-#include "../SoundChip.h"
-#include "../Channel.h"
+#include "SoundChip.h"
+#include "Channel.h"
 
 class CFDS : public CSoundChip, public CChannel {
 public:

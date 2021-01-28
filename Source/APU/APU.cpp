@@ -30,7 +30,7 @@
 #include "2A03.h"		// // //
 #include "VRC6.h"
 #include "MMC5.h"
-#include "nezplug/FDS.h"
+#include "FDS.h"
 #include "N163.h"
 #include "VRC7.h"
 #include "S5B.h"
