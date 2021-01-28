@@ -422,23 +422,23 @@ blip_nsamp_t Blip_Buffer::read_samples( blip_amplitude_t* BLIP_RESTRICT out, bli
         {
             for ( blip_nsamp_t n = count; n; --n )
             {
+                BLIP_READER_NEXT( reader, bass );
                 blip_long s = BLIP_READER_READ( reader );
                 if ( (blip_amplitude_t) s != s )
                     s = 0x7FFF - (s >> 24);
                 *out++ = (blip_amplitude_t) s;
-                BLIP_READER_NEXT( reader, bass );
             }
         }
         else
         {
             for ( blip_nsamp_t n = count; n; --n )
             {
+                BLIP_READER_NEXT( reader, bass );
                 blip_long s = BLIP_READER_READ( reader );
                 if ( (blip_amplitude_t) s != s )
                     s = 0x7FFF - (s >> 24);
                 *out = (blip_amplitude_t) s;
                 out += 2;
-                BLIP_READER_NEXT( reader, bass );
             }
         }
         BLIP_READER_END( reader, *this );
