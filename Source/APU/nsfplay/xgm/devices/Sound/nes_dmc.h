@@ -111,6 +111,10 @@ namespace xgm
     double GetFrequencyTriangle() const;
     double GetFrequencyNoise() const;
     double GetFrequencyDPCM() const;
+    double GetVolumeTriangle() const;
+    double GetVolumeNoise() const;
+    double GetVolumeDPCM() const;
+
     UINT8 GetSamplePos() const;
     UINT8 GetDeltaCounter() const;
     bool IsPlaying() const;

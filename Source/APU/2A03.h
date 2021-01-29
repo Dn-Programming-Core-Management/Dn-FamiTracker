@@ -92,6 +92,7 @@ public:
 	uint8_t Read(uint16_t Address, bool &Mapped) override;
 
 	double GetFreq(int Channel) const override;		// // //
+	double GetVol(int Channel) const;
 
 public:
 	void UpdateVolumeAPU1(double v, unsigned int range);

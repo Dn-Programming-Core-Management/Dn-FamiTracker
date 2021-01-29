@@ -310,6 +310,11 @@ void CMixer::FinishBuffer(int t)
 		}
 	}
 
+	// Get levels for chips detached from CChannel
+	auto& chip2A03 = *m_APU->m_p2A03;
+	for (int i = 0; i < 5; ++i)
+		StoreChannelLevel(CHANID_SQUARE1 + i, chip2A03.GetVol(i));
+
 	// Get channel levels for VRC7
 	for (int i = 0; i < 6; ++i)
 		StoreChannelLevel(CHANID_VRC7_CH1 + i, OPLL_getchanvol(i));

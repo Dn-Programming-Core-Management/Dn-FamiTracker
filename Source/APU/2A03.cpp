@@ -151,6 +151,23 @@ void C2A03::UpdateVolumeAPU2(double v, unsigned int range) {
 	Synth2A03TND.volume(v, range);
 }
 
+double C2A03::GetVol(int Channel) const
+{
+	switch (Channel) {
+	case 0:
+		return m_Apu1.GetVolumePulse1();
+	case 1:
+		return m_Apu1.GetVolumePulse2();
+	case 2:
+		return m_Apu2.GetVolumeTriangle();
+	case 3:
+		return m_Apu2.GetVolumeNoise();
+	case 4:
+		return m_Apu2.GetVolumeDPCM();
+	}
+	return 0.0;
+}
+
 void C2A03::ClockSequence()
 {
 	// Do nothing. It's handled by nsfplay xgm.

@@ -53,7 +53,7 @@ namespace xgm
     option[OPT_NONLINEAR_MIXER] = 1;
     option[OPT_RANDOMIZE_NOISE] = 1;
 	option[OPT_RANDOMIZE_TRI] = 1;
-    option[OPT_TRI_MUTE] = 1;
+    option[OPT_TRI_MUTE] = 0;
     option[OPT_DPCM_REVERSE] = 0;
     tnd_table[0][0][0][0] = 0;
     tnd_table[1][0][0][0] = 0;
@@ -124,8 +124,7 @@ namespace xgm
 
   double NES_DMC::GetFrequencyTriangle() const  // // !!
   {
-      if (!(linear_counter > 0 && length_counter[0] > 0
-          && (!option[OPT_TRI_MUTE] || tri_freq > 0)))
+      if (!(linear_counter > 0 && length_counter[0] > 0))
         return 0.0;
       return clock / 32 / (tri_freq + 1);
   }
@@ -140,6 +139,23 @@ namespace xgm
       if ((data > 0x100) && !dlength)
         return 0.0;
       return clock / double(freq_table[pal][reg[0x4010 - 0x4008] & 0xF]);
+  }
+
+  double NES_DMC::GetVolumeTriangle() const
+  {
+      if (!(linear_counter > 0 && length_counter[0] > 0))
+          return 0.0;
+      return 15;
+  }
+
+  double NES_DMC::GetVolumeNoise() const
+  {
+      return noise_volume;
+  }
+
+  double NES_DMC::GetVolumeDPCM() const
+  {
+      return GetDeltaCounter();
   }
 
 
