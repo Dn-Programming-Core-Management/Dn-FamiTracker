@@ -60,6 +60,7 @@
 #include "2A03.h"
 #include "FDS.h"
 #include "nsfplay/xgm/devices/Sound/legacy/emu2413.h"
+#include "utils/variadic_minmax.h"
 
 //#define LINEAR_MIXING
 
@@ -294,6 +295,23 @@ int CMixer::SamplesAvail() const
 	return (int)BlipBuffer.samples_avail();
 }
 
+static int get_channel_level(CSoundChip2& chip, int channel) {
+	int max = chip.GetChannelLevelRange(channel);
+	int level = chip.GetChannelLevel(channel);
+
+	// Clip out-of-bounds levels to the maximum allowed on the meter.
+	level = min(level, max);
+
+	int out = level * 16 / (max + 1);
+	ASSERT(0 <= out && out <= 15);
+
+	// Ensure that the division process never clips small levels to 0.
+	if (level > 0 && out <= 0) {
+		out = 1;
+	}
+	return out;
+}
+
 void CMixer::FinishBuffer(int t)
 {
 	BlipBuffer.end_frame(t);
@@ -316,6 +334,14 @@ void CMixer::FinishBuffer(int t)
 			}
 		}
 	}
+
+	auto& chip2A03 = *m_APU->m_p2A03;
+	for (int i = 0; i < 5; i++) {
+		StoreChannelLevel(CHANID_SQUARE1 + i, get_channel_level(chip2A03, i));
+	}
+
+	auto& chipFDS = *m_APU->m_pFDS;
+	StoreChannelLevel(CHANID_FDS, get_channel_level(chipFDS, 0));
 
 	// Get channel levels for VRC7
 	for (int i = 0; i < 6; ++i)
@@ -394,12 +420,6 @@ void CMixer::StoreChannelLevel(int Channel, int Value)
 	// Adjust channel levels for some channels
 	if (Channel == CHANID_VRC6_SAWTOOTH)
 		AbsVol = (AbsVol * 3) / 4;
-
-	if (Channel == CHANID_DPCM)
-		AbsVol /= 8;
-
-	if (Channel == CHANID_FDS)
-		AbsVol = AbsVol / 38;
 
 	if (Channel >= CHANID_N163_CH1 && Channel <= CHANID_N163_CH8) {
 		AbsVol /= 15;

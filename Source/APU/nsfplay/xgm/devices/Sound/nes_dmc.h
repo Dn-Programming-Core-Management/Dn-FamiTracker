@@ -32,7 +32,7 @@ namespace xgm
     // DPCM.
     static const UINT32 freq_table[2][16];
 
-  protected:
+  public:
     // Noise.
     static const UINT32 wavlen_table[2][16];
 

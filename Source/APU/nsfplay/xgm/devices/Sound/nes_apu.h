@@ -21,7 +21,7 @@ namespace xgm
     enum
     { SQR0_MASK = 1, SQR1_MASK = 2, };
 
-  protected:
+  public:
     int option[OPT_END];        // 各種オプション
     int mask;
     INT32 sm[2][2];

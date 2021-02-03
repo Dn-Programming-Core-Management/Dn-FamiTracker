@@ -80,6 +80,15 @@ void C2A03::Process(uint32_t Time, Blip_Buffer& Output)
 
 		m_Apu2.Render(out);
 		Synth2A03TND.update(m_iTime + now, out[0], &blip_buf);
+
+		// pulse 1/2
+		m_ChannelLevels[0].update(m_Apu1.out[0]);
+		m_ChannelLevels[1].update(m_Apu1.out[1]);
+
+		// tri/noise/dpcm
+		m_ChannelLevels[2].update(m_Apu2.out[0]);
+		m_ChannelLevels[3].update(m_Apu2.out[1]);
+		m_ChannelLevels[4].update(m_Apu2.out[2]);
 	};
 
 	while (now < Time) {
@@ -142,6 +151,34 @@ double C2A03::GetFreq(int Channel) const		// // !!
 	}
 	return 0.0;
 }
+
+int C2A03::GetChannelLevel(int Channel)
+{
+	ASSERT(0 <= Channel && Channel < 5);
+	if (0 <= Channel && Channel < 5) {
+		return m_ChannelLevels[Channel].getLevel();
+	}
+	return 0;
+}
+
+int C2A03::GetChannelLevelRange(int Channel) const
+{
+	ASSERT(0 <= Channel && Channel < 5);
+	switch (Channel) {
+	case 0: case 1: case 2: case 3:
+		// pulse/tri/noise
+		return 15;
+
+	case 4:
+		// dpcm
+		return 127;
+
+	default:
+		// unknown channel, return 1 to avoid division by 0
+		return 1;
+	}
+}
+
 
 void C2A03::UpdateMixingAPU1(double v, unsigned int range) {
 	Synth2A03SS.volume(v, range);

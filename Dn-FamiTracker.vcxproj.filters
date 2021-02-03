@@ -1496,6 +1496,9 @@
     <ClInclude Include="Source\APU\mesen\ModChannel.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\mesen</Filter>
     </ClInclude>
+    <ClInclude Include="Source\APU\ChannelLevelState.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Dn-FamiTracker.rc">

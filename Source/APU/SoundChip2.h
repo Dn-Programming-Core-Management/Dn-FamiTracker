@@ -68,6 +68,26 @@ public:
 
 	virtual double	GetFreq(int Channel) const;		// // //
 
+	/// Obtain the amplitude range seen by the specified channel
+	/// since the previous call to GetChannelLevel() with the same channel.
+	/// If the channel has not encountered any deltas since then, returns 0.
+	///
+	/// This method is called by CMixer.
+	/// The return values will near-instantly drop to 0 when a note ends.
+	/// CMixer may run a peak follower on the return values
+	/// to make the volume meters decay gradually.
+	virtual int GetChannelLevel(int Channel)
+	{
+		return 0;
+	}
+
+	/// The largest possible value returned by GetChannelLevel(Channel).
+	/// Return 1 instead of 0 for invalid channels, to avoid division-by-0 crashes.
+	virtual int GetChannelLevelRange(int Channel) const
+	{
+		return 1;
+	}
+
 	virtual void	Log(uint16_t Address, uint8_t Value);		// // //
 	CRegisterLogger *GetRegisterLogger() const;		// // //
 

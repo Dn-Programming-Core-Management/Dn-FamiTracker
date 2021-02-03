@@ -22,6 +22,7 @@
 #pragma once
 
 #include "SoundChip2.h"
+#include "ChannelLevelState.h"
 #include "Blip_Buffer/Blip_Buffer.h"
 #include "APU/mesen/FdsAudio.h"
 
@@ -39,6 +40,8 @@ public:
 	void	Process(uint32_t Time, Blip_Buffer& Output) override;
 	void	EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer) override;
 	double	GetFreq(int Channel) const override;		// // //
+	int GetChannelLevel(int Channel) override;
+	int GetChannelLevelRange(int Channel) const override;
 
 	void UpdateMixLevel(double v, unsigned int range);
 
@@ -47,6 +50,9 @@ private:
 
 	Blip_Buffer m_BlipFDS;
 	Blip_Synth<blip_good_quality> m_SynthFDS;
+
+	/// Used for GetChannelLevel().
+	ChannelLevelState<uint8_t> m_ChannelLevel;
 
 	// The lower this value is, the stronger the lowpass filter is.
 	float m_alpha = 0;

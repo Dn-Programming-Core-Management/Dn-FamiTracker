@@ -126,6 +126,7 @@ void CFDS::Process(uint32_t Time, Blip_Buffer& Output)
 			break;
 
 		uint8_t out = m_FDS.ClockAudio();
+		m_ChannelLevel.update(out);
 		m_SynthFDS.update(m_iTime + now, out, &m_BlipFDS);
 		now++;
 	}
@@ -169,6 +170,28 @@ double CFDS::GetFreq(int Channel) const		// // //
 		return 0.;
 	Lo |= (Hi << 8) & 0xF00;
 	return CAPU::BASE_FREQ_NTSC * (Lo / 4194304.);
+}
+
+int CFDS::GetChannelLevel(int Channel)
+{
+	ASSERT(Channel == 0);
+	if (Channel == 0) {
+		return m_ChannelLevel.getLevel();
+	}
+	return 0;
+}
+
+int CFDS::GetChannelLevelRange(int Channel) const
+{
+	ASSERT(Channel == 0);
+	if (Channel == 0) {
+		// The largest value I've seen coming out of Mesen's FDS emulator is 63.
+		// This only occurs if the channel volume is set to 32
+		// (by placing 32 in the instrument and F in the pattern).
+		// Additionally, the master volume is 32 by default (the default value).
+		return 63;
+	}
+	return 0;
 }
 
 void CFDS::UpdateMixLevel(double v, unsigned int range)

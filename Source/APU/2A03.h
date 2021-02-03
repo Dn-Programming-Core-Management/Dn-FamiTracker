@@ -24,6 +24,7 @@
 #pragma once
 
 #include "SoundChip2.h"
+#include "ChannelLevelState.h"
 
 #include "APU/nsfplay/xgm/devices/Sound/nes_apu.h"
 #include "APU/nsfplay/xgm/devices/Sound/nes_dmc.h"
@@ -92,6 +93,8 @@ public:
 	uint8_t Read(uint16_t Address, bool &Mapped) override;
 
 	double GetFreq(int Channel) const override;		// // //
+	int GetChannelLevel(int Channel) override;
+	int GetChannelLevelRange(int Channel) const override;
 
 public:
 	void UpdateMixingAPU1(double v, unsigned int range);
@@ -112,6 +115,9 @@ private:
 
 	xgm::NES_APU m_Apu1;
 	xgm::NES_DMC m_Apu2;
+
+	// [0..4] correspond to Pulse 1, Pulse 2, Triangle, Noise, and DPCM.
+	ChannelLevelState<uint8_t> m_ChannelLevels[5];
 
 	Blip_Synth<blip_good_quality> Synth2A03SS;
 	Blip_Synth<blip_good_quality> Synth2A03TND;
