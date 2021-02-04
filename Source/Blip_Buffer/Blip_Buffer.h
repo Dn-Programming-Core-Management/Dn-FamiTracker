@@ -215,6 +215,12 @@ public:
     void treble_eq( blip_eq_t const& eq )       { impl.treble_eq( eq ); }
 
     void clear() { impl.last_amp = 0; }
+
+    /// Set the last-seen amplitude to `dc_amp` without outputting a step.
+    /// If Blip_Buffer currently has output level 0,
+    /// this acts like subtracting `dc_amp` from all future calls to update().
+    void center_dc(int dc_amp) { impl.last_amp = dc_amp; }
+
     // Update amplitude of waveform at given time. Using this requires a separate
     // Blip_Synth for each waveform.
     // The actual output value (assuming no DC removal) is around

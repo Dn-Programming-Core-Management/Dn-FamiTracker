@@ -57,6 +57,22 @@ void C2A03::Reset()
 
 	Synth2A03SS.clear();
 	Synth2A03TND.clear();
+
+	// nsfplay's triangle output is nonzero after being reset. Cancel it out.
+	{
+		// Tick(0) is valid. https://github.com/bbbradsmith/nsfplay/commit/14cb23159584427053a6e5456bb1f9ce8d0918d5
+		m_Apu2.Tick(0);
+
+		int32_t out[2];
+		m_Apu2.Render(&out[0]);
+
+		// Eliminate pop in speakers.
+		Synth2A03TND.center_dc(out[0]);
+
+		// Eliminate pop in volume meters.
+		m_ChannelLevels[2].update(m_Apu2.out[0]);
+		m_ChannelLevels[2].getLevel();
+	}
 }
 
 void C2A03::UpdateFilter(blip_eq_t eq)
