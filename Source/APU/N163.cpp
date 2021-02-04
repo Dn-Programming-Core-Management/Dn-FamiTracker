@@ -153,7 +153,21 @@ void CN163::EndFrame()
 			m_pRegisterLogger->SetPort(Address);
 			m_pRegisterLogger->Write(ReadMem(Address));
 		}
-		if (i != m_iActiveChan)		// // //
+
+		// If multiplexer is turned on (new mixing), reset the clock counter for inactive channels.
+		//
+		// How would an inactive channel end on a non-(0 or 15) clock counter in the first place?
+		// HertzDevil's commit message leaves a clue: "attempt to fix n163 multiplexer state on halting".
+		//
+		// Maybe if CN163 didn't split its synthesis logic into 8 independent CChannel subclasses,
+		// that would prevent state desynchronization in the first place... maybe...
+		//
+		// Another reason is that code that can switch between multiplexing and mixing channels at runtime
+		// is harder to reason about. A comprehensive test suite and/or informal/formal proofs
+		// would help catch bugs in this area. Incrementally tacking onto an existing misguided architecture
+		// without a complete understanding does the opposite. Frankly I'm impressed that FamiTracker
+		// has so few bugs considering how disorganized the architecture and development process has been.
+		if (!m_bOldMixing && i != m_iActiveChan)
 			m_pChannels[i]->ResetCounter();
 	}
 
