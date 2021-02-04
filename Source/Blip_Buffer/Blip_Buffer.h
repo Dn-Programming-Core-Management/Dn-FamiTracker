@@ -249,7 +249,7 @@ public:
     // When update(...Amplitude) is called,
     // the actual output value (assuming no DC removal) is around
     // (Amplitude / range) * volume * 65536.
-    Blip_Synth(unsigned int range, double volume) : impl( impulses, quality ) {
+    Blip_Synth(double volume, unsigned int range) : impl( impulses, quality ) {
         this->volume(volume, range);
     }
     // Cannot be moved or copied because this struct is self-referencing:
