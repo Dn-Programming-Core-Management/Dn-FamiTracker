@@ -210,7 +210,7 @@ void CMixer::UpdateMixing(int LowCut, int HighCut, int HighDamp, float OverallVo
 	// should be supplied by the CSoundChip2 subclass rather than CMixer.
 	chip2A03.UpdateMixingAPU1(Volume * m_fLevelAPU1, 10000);
 	chip2A03.UpdateMixingAPU2(Volume * m_fLevelAPU2, 10000);
-	chipFDS.UpdateMixLevel(Volume * 1.122f * m_fLevelFDS, 256);
+	chipFDS.UpdateMixLevel(Volume * m_fLevelFDS);
 
 	SynthVRC6.volume(Volume * 3.98333f * m_fLevelVRC6, 500);
 	SynthMMC5.volume(Volume * 1.18421f * m_fLevelMMC5, 130);

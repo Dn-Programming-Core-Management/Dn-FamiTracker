@@ -28,7 +28,7 @@ private:
 	uint8_t _wavePosition = 0;
 
 public:
-	uint8_t ClockAudio()
+	uint32_t ClockAudio()
 	{
 		// Unsigned 12 bits, bounded by [0..0xfff).
 		int32_t frequency = _carrier.GetFrequency();
@@ -135,15 +135,15 @@ public:
 	}
 
 private:
-	uint8_t UpdateOutput()
+	uint32_t UpdateOutput()
 	{
 		uint32_t level = std::min((int)_carrier.GetGain(), 32) * WaveVolumeTable[_masterVolume];
 
 		// `_waveTable[_wavePosition]` is bounded within [0..63].
 		// `level` is bounded within [0..1152] because `_carrier.GetGain()` is clamped to ≤32
 		// and `WaveVolumeTable[_masterVolume]` ≤ 36.
-		// As a result, `(_waveTable[_wavePosition] * level) / 1152` is bounded within [0..63].
-		uint8_t outputLevel = (_waveTable[_wavePosition] * level) / 1152;
+		// As a result, `_waveTable[_wavePosition] * level` is bounded within [0 .. 63 * 1152].
+		auto outputLevel = _waveTable[_wavePosition] * level;
 		return outputLevel;
 	}
 

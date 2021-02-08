@@ -125,9 +125,9 @@ void CFDS::Process(uint32_t Time, Blip_Buffer& Output)
 		if (now >= Time)
 			break;
 
-		uint8_t out = m_FDS.ClockAudio();
+		auto out = m_FDS.ClockAudio();
 		m_ChannelLevel.update(out);
-		m_SynthFDS.update(m_iTime + now, out, &m_BlipFDS);
+		m_SynthFDS.update(m_iTime + now, (int) out, &m_BlipFDS);
 		now++;
 	}
 
@@ -194,7 +194,11 @@ int CFDS::GetChannelLevelRange(int Channel) const
 	return 0;
 }
 
-void CFDS::UpdateMixLevel(double v, unsigned int range)
+void CFDS::UpdateMixLevel(double v)
 {
-	m_SynthFDS.volume(v, range);
+	// (m_SynthFDS: FdsAudio) used to generate output samples between [0..63] inclusive,
+	// but was changed to  [0 .. 63*1152] inclusive to prevent quantization at low volumes.
+	// The following mixing levels match nsfplay's FDS output,
+	// using 2A03 Pulse as a baseline.
+	m_SynthFDS.volume(v * 1.122f, 256 * 1152);
 }
