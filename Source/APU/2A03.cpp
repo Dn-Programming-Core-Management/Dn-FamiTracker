@@ -196,12 +196,12 @@ int C2A03::GetChannelLevelRange(int Channel) const
 }
 
 
-void C2A03::UpdateMixingAPU1(double v, unsigned int range) {
-	Synth2A03SS.volume(v, range);
+void C2A03::UpdateMixingAPU1(double v) {
+	Synth2A03SS.volume(v, 10000);
 }
 
-void C2A03::UpdateMixingAPU2(double v, unsigned int range) {
-	Synth2A03TND.volume(v, range);
+void C2A03::UpdateMixingAPU2(double v) {
+	Synth2A03TND.volume(v, 10000);
 }
 
 void C2A03::ClockSequence()
