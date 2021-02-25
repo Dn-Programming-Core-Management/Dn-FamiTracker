@@ -444,3 +444,9 @@ fabric.properties
 
 # Editor-based Rest Client
 .idea/httpRequests
+
+# VSCode CMake
+/build/*
+
+# VSCode clangd
+/.cache/*
