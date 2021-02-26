@@ -30,10 +30,12 @@
 #include "2A03.h"		// // //
 #include "VRC6.h"
 #include "MMC5.h"
-#include "nezplug/FDS.h"
+#include "FDS.h"
 #include "N163.h"
 #include "VRC7.h"
 #include "S5B.h"
+#include "SoundChip.h"
+#include "SoundChip2.h"
 #include "../RegisterState.h"		// // //
 #include "../SpeedDlg.h"
 
@@ -54,16 +56,16 @@ CAPU::CAPU(IAudioCallback *pCallback) :		// // //
 	m_pParent(pCallback),
 	m_iFrameCycles(0),
 	m_pSoundBuffer(NULL),
-	m_pMixer(new CMixer()),
-	m_iExternalSoundChip(0),
+	m_pMixer(new CMixer(this)),
+	m_p2A03(std::make_unique<C2A03>()),
+	m_pFDS(std::make_unique<CFDS>()),
+	m_iExternalSoundChips(0),
 	m_iCyclesToRun(0),
 	m_iSampleRate(44100)		// // //
 {
-	m_p2A03 = new C2A03(m_pMixer);		// // //
 	m_pMMC5 = new CMMC5(m_pMixer);
 	m_pVRC6 = new CVRC6(m_pMixer);
 	m_pVRC7 = new CVRC7(m_pMixer);
-	m_pFDS  = new CFDS(m_pMixer);
 	m_pN163 = new CN163(m_pMixer);
 	m_pS5B  = new CS5B(m_pMixer);
 
@@ -77,11 +79,9 @@ CAPU::CAPU(IAudioCallback *pCallback) :		// // //
 
 CAPU::~CAPU()
 {
-	SAFE_RELEASE(m_p2A03);		// // //
 	SAFE_RELEASE(m_pMMC5);
 	SAFE_RELEASE(m_pVRC6);
 	SAFE_RELEASE(m_pVRC7);
-	SAFE_RELEASE(m_pFDS);
 	SAFE_RELEASE(m_pN163);
 	SAFE_RELEASE(m_pS5B);
 
@@ -109,6 +109,8 @@ void CAPU::Process()
 
 		for (auto Chip : m_SoundChips)		// // //
 			Chip->Process(Time);
+		for (auto Chip : m_SoundChips2)
+			Chip->Process(Time, m_pMixer->GetBuffer());
 
 		m_iFrameCycles	  += Time;
 		m_iSequencerClock += Time;
@@ -139,6 +141,8 @@ void CAPU::EndFrame()
 	
 	for (auto Chip : m_SoundChips)		// // //
 		Chip->EndFrame();
+	for (auto Chip : m_SoundChips2)
+		Chip->EndFrame(m_pMixer->GetBuffer(), gsl::span(m_pSoundBuffer, m_iSoundBufferSize << 1));
 
 	m_pMixer->FinishBuffer(m_iFrameCycles);
 	int ReadSamples	= m_pMixer->ReadBuffer(m_pSoundBuffer);
@@ -147,9 +151,11 @@ void CAPU::EndFrame()
 	m_iFrameClock /*+*/= m_iFrameCycleCount;
 	m_iFrameCycles = 0;
 
-	for (auto &r : m_SoundChips)		// // //
+	for (auto& r : m_SoundChips)		// // //
 		r->GetRegisterLogger()->Step();
-		
+	for (auto& r : m_SoundChips2)
+		r->GetRegisterLogger()->Step();
+
 #ifdef LOGGING
 	++m_iFrame;
 #endif
@@ -174,6 +180,10 @@ void CAPU::Reset()
 		Chip->GetRegisterLogger()->Reset();
 		Chip->Reset();
 	}
+	for (auto Chip : m_SoundChips2) {
+		Chip->GetRegisterLogger()->Reset();
+		Chip->Reset();
+	}
 
 #ifdef LOGGING
 	m_iFrame = 0;
@@ -183,25 +193,24 @@ void CAPU::Reset()
 void CAPU::SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume) const
 {
 	// New settings
-	m_pMixer->UpdateSettings(LowCut, HighCut, HighDamp, float(Volume) / 100.0f);
+	m_pMixer->UpdateMixing(LowCut, HighCut, HighDamp, float(Volume) / 100.0f);
 	m_pVRC7->SetVolume((float(Volume) / 100.0f) * m_fLevelVRC7);
 }
 
 void CAPU::SetExternalSound(uint8_t Chip)
 {
-	// Set expansion chip
-	m_iExternalSoundChip = Chip;
-	m_pMixer->ExternalSound(Chip);
-
+	// Initialize list of active sound chips.
+	// Do this first because m_SoundChips2 is used by CMixer::ExternalSound() -> CMixer::UpdateMixing().
 	m_SoundChips.clear();
+	m_SoundChips2.clear();
 
-	m_SoundChips.push_back(m_p2A03);		// // //
+	m_SoundChips2.push_back(m_p2A03.get());		// // //
 	if (Chip & SNDCHIP_VRC6)
 		m_SoundChips.push_back(m_pVRC6);
 	if (Chip & SNDCHIP_VRC7)
 		m_SoundChips.push_back(m_pVRC7);
 	if (Chip & SNDCHIP_FDS)
-		m_SoundChips.push_back(m_pFDS);
+		m_SoundChips2.push_back(m_pFDS.get());
 	if (Chip & SNDCHIP_MMC5)
 		m_SoundChips.push_back(m_pMMC5);
 	if (Chip & SNDCHIP_N163)
@@ -209,19 +218,39 @@ void CAPU::SetExternalSound(uint8_t Chip)
 	if (Chip & SNDCHIP_S5B)
 		m_SoundChips.push_back(m_pS5B);
 
+	// Set (unused) bitfield of external sound chips enabled.
+	m_iExternalSoundChips = Chip;
+
+	// Reinitialize mixer with list of external sound chips (as well as m_SoundChips2).
+	m_pMixer->ExternalSound(Chip);
+
+	// CAPU::ChangeMachineRate -> CMixer::SetClockRate is called before CAPU::SetExternalSound,
+	// so it is unable to set the clock rate for expansion chips.
+	// (For details, see https://docs.google.com/document/d/15j5uyfIH5t6j3NrhJSDfylctmWX7DUJFc3zhRt3elC8/edit#heading=h.2lsbu1jxs230.)
+	// So set the clock rate for all expansion chips here as well.
+	//
+	// Note that when changing clock rate, CMixer::SetClockRate() is called but not CAPU::SetExternalSound(),
+	// so both functions need to do the same thing.
+	//
+	// Note that I've marked both CMixer and CAPU as friends of each other,
+	// since I feel they really should be the same class.
+	// Feel free to complain.
+	m_pMixer->SetClockRate(m_pMixer->BlipBuffer.clock_rate());
+
 	Reset();
 }
 
-void CAPU::ChangeMachineRate(int Machine, int Rate)		// // //
+void CAPU::ChangeMachineRate(int Machine, int FrameRate)		// // //
 {
 	// Allow to change speed on the fly
 	//
 	
 	uint32_t BaseFreq = (Machine == MACHINE_NTSC) ? BASE_FREQ_NTSC : BASE_FREQ_PAL;
 	m_p2A03->ChangeMachine(Machine);
+	m_pMixer->SetClockRate(BaseFreq);
 
-	m_pVRC7->SetSampleSpeed(m_iSampleRate, BaseFreq, Rate);
-	m_iFrameCycleCount = BaseFreq / Rate;
+	m_pVRC7->SetSampleSpeed(m_iSampleRate, BaseFreq, FrameRate);
+	m_iFrameCycleCount = BaseFreq / FrameRate;
 }
 
 bool CAPU::SetupSound(int SampleRate, int NrChannels, int Machine)		// // //
@@ -244,14 +273,13 @@ bool CAPU::SetupSound(int SampleRate, int NrChannels, int Machine)		// // //
 	if (!m_pMixer->AllocateBuffer(m_iSoundBufferSamples, m_iSampleRate, NrChannels))		// // //
 		return false;
 
-	m_pMixer->SetClockRate(BaseFreq);
+	// m_pMixer->SetClockRate() is unnecessary, because ChangeMachineRate() assigns it anyway.
 
 	SAFE_RELEASE_ARRAY(m_pSoundBuffer);
 
 	m_pSoundBuffer = new int16_t[m_iSoundBufferSize << 1];
-
-	if (m_pSoundBuffer == NULL)
-		return false;
+	// `m_pSoundBuffer == NULL` can never happen.
+	// `new` throws std::bad_alloc on failure, and never returns null.
 
 	ChangeMachineRate(Machine, FrameRate);		// // //
 
@@ -273,6 +301,8 @@ void CAPU::Write(uint16_t Address, uint8_t Value)
 	
 	for (auto Chip : m_SoundChips)		// // //
 		Chip->Write(Address, Value);
+	for (auto Chip : m_SoundChips2)
+		Chip->Write(Address, Value);
 
 	LogWrite(Address, Value);
 }
@@ -288,6 +318,9 @@ uint8_t CAPU::Read(uint16_t Address)
 	Process();
 	
 	for (auto Chip : m_SoundChips)		// // //
+		if (!Mapped)
+			Value = Chip->Read(Address, Mapped);
+	for (auto Chip : m_SoundChips2)
 		if (!Mapped)
 			Value = Chip->Read(Address, Mapped);
 
@@ -337,32 +370,32 @@ void CAPU::Log()
 	str.Append("2A03 ");
 	for (int i = 0; i < 0x14; ++i)
 		str.AppendFormat("%02X ", GetReg(SNDCHIP_NONE, i));
-	if (m_iExternalSoundChip & SNDCHIP_VRC6) {		// // //
+	if (m_iExternalSoundChips & SNDCHIP_VRC6) {		// // //
 		str.Append("VRC6 ");
 		for (int i = 0; i < 0x03; ++i) for (int j = 0; j < 0x03; ++j)
 			str.AppendFormat("%02X ", GetReg(SNDCHIP_VRC6, 0x9000 + i * 0x1000 + j));
 	}
-	if (m_iExternalSoundChip & SNDCHIP_MMC5) {
+	if (m_iExternalSoundChips & SNDCHIP_MMC5) {
 		str.Append("MMC5 ");
 		for (int i = 0; i < 0x08; ++i)
 			str.AppendFormat("%02X ", GetReg(SNDCHIP_MMC5, 0x5000 + i));
 	}
-	if (m_iExternalSoundChip & SNDCHIP_N163) {
+	if (m_iExternalSoundChips & SNDCHIP_N163) {
 		str.Append("N163 ");
 		for (int i = 0; i < 0x80; ++i)
 			str.AppendFormat("%02X ", GetReg(SNDCHIP_N163, i));
 	}
-	if (m_iExternalSoundChip & SNDCHIP_FDS) {
+	if (m_iExternalSoundChips & SNDCHIP_FDS) {
 		str.Append("FDS ");
 		for (int i = 0; i < 0x0B; ++i)
 			str.AppendFormat("%02X ", GetReg(SNDCHIP_FDS, 0x4080 + i));
 	}
-	if (m_iExternalSoundChip & SNDCHIP_VRC7) {
+	if (m_iExternalSoundChips & SNDCHIP_VRC7) {
 		str.Append("VRC7 ");
 		for (int i = 0; i < 0x40; ++i)
 			str.AppendFormat("%02X ", GetReg(SNDCHIP_VRC7, i));
 	}
-	if (m_iExternalSoundChip & SNDCHIP_S5B) {
+	if (m_iExternalSoundChips & SNDCHIP_S5B) {
 		str.Append("S5B ");
 		for (int i = 0; i < 0x10; ++i)
 			str.AppendFormat("%02X ", GetReg(SNDCHIP_S5B, i));
@@ -406,6 +439,8 @@ void CAPU::LogWrite(uint16_t Address, uint8_t Value)
 {
 	for (auto &r : m_SoundChips)		// // //
 		r->Log(Address, Value);
+	for (auto& r : m_SoundChips2)
+		r->Log(Address, Value);
 }
 
 uint8_t CAPU::GetReg(int Chip, int Reg) const
@@ -417,33 +452,36 @@ uint8_t CAPU::GetReg(int Chip, int Reg) const
 
 double CAPU::GetFreq(int Chip, int Chan) const
 {
-	const CSoundChip *pChip = nullptr;
+	auto PtrGetFreq = [&] (auto const & pChip) {
+		return pChip.GetFreq(Chan);
+	};
+
 	switch (Chip) {
-	case SNDCHIP_NONE: pChip = m_p2A03; break;
-	case SNDCHIP_VRC6: pChip = m_pVRC6; break;
-	case SNDCHIP_VRC7: pChip = m_pVRC7; break;
-	case SNDCHIP_FDS:  pChip = m_pFDS; break;
-	case SNDCHIP_MMC5: pChip = m_pMMC5; break;
-	case SNDCHIP_N163: pChip = m_pN163; break;
-	case SNDCHIP_S5B:  pChip = m_pS5B; break;
+	case SNDCHIP_NONE: return PtrGetFreq(*m_p2A03);
+	case SNDCHIP_VRC6: return PtrGetFreq(*m_pVRC6);
+	case SNDCHIP_VRC7: return PtrGetFreq(*m_pVRC7);
+	case SNDCHIP_FDS:  return PtrGetFreq(*m_pFDS);
+	case SNDCHIP_MMC5: return PtrGetFreq(*m_pMMC5);
+	case SNDCHIP_N163: return PtrGetFreq(*m_pN163);
+	case SNDCHIP_S5B:  return PtrGetFreq(*m_pS5B);
 	default: AfxDebugBreak(); return 0.;
 	}
-	return pChip->GetFreq(Chan);
 }
 
 CRegisterState *CAPU::GetRegState(int Chip, int Reg) const		// // //
 {
-	const CSoundChip *pChip = nullptr;
-	switch (Chip) {
-	case SNDCHIP_NONE: pChip = m_p2A03; break;
-	case SNDCHIP_VRC6: pChip = m_pVRC6; break;
-	case SNDCHIP_VRC7: pChip = m_pVRC7; break;
-	case SNDCHIP_FDS:  pChip = m_pFDS; break;
-	case SNDCHIP_MMC5: pChip = m_pMMC5; break;
-	case SNDCHIP_N163: pChip = m_pN163; break;
-	case SNDCHIP_S5B:  pChip = m_pS5B; break;
-	default: AfxDebugBreak();
-	}
+	auto PtrGetRegState = [&](auto const& pChip) {
+		return pChip.GetRegisterLogger()->GetRegister(Reg);
+	};
 
-	return pChip->GetRegisterLogger()->GetRegister(Reg);
+	switch (Chip) {
+	case SNDCHIP_NONE: return PtrGetRegState(*m_p2A03);
+	case SNDCHIP_VRC6: return PtrGetRegState(*m_pVRC6);
+	case SNDCHIP_VRC7: return PtrGetRegState(*m_pVRC7);
+	case SNDCHIP_FDS:  return PtrGetRegState(*m_pFDS);
+	case SNDCHIP_MMC5: return PtrGetRegState(*m_pMMC5);
+	case SNDCHIP_N163: return PtrGetRegState(*m_pN163);
+	case SNDCHIP_S5B:  return PtrGetRegState(*m_pS5B);
+	default: AfxDebugBreak(); return nullptr;
+	}
 }

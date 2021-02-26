@@ -43,35 +43,3 @@ class IAudioCallback {
 public:
 	virtual void FlushBuffer(int16_t const * Buffer, uint32_t Size) = 0;
 };
-
-
-// class for simulating CPU memory, used by the DPCM channel
-class CSampleMem 
-{
-public:
-	CSampleMem() : m_pMemory(0), m_iMemSize(0) {
-	};
-
-	uint8_t Read(uint16_t Address) const {
-		if (!m_pMemory)
-			return 0;
-		uint16_t Addr = (Address - 0xC000);// % m_iMemSize;
-		if (Addr >= m_iMemSize)
-			return 0;
-		return m_pMemory[Addr];
-	};
-
-	void SetMem(const char *pPtr, int Size) {
-		m_pMemory = (uint8_t*)pPtr;
-		m_iMemSize = Size;
-	};
-
-	void Clear() {
-		m_pMemory = 0;
-		m_iMemSize = 0;
-	}
-
-private:
-	const uint8_t *m_pMemory;
-	uint16_t m_iMemSize;
-};

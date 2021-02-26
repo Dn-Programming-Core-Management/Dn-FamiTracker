@@ -422,23 +422,23 @@ blip_nsamp_t Blip_Buffer::read_samples( blip_amplitude_t* BLIP_RESTRICT out, bli
         {
             for ( blip_nsamp_t n = count; n; --n )
             {
+                BLIP_READER_NEXT( reader, bass );
                 blip_long s = BLIP_READER_READ( reader );
                 if ( (blip_amplitude_t) s != s )
                     s = 0x7FFF - (s >> 24);
                 *out++ = (blip_amplitude_t) s;
-                BLIP_READER_NEXT( reader, bass );
             }
         }
         else
         {
             for ( blip_nsamp_t n = count; n; --n )
             {
+                BLIP_READER_NEXT( reader, bass );
                 blip_long s = BLIP_READER_READ( reader );
                 if ( (blip_amplitude_t) s != s )
                     s = 0x7FFF - (s >> 24);
                 *out = (blip_amplitude_t) s;
                 out += 2;
-                BLIP_READER_NEXT( reader, bass );
             }
         }
         BLIP_READER_END( reader, *this );
@@ -470,3 +470,24 @@ void Blip_Buffer::mix_samples( blip_amplitude_t const* in, blip_nsamp_t count )
     *out -= prev;
 }
 
+void Blip_Buffer::mix_samples_raw(blip_amplitude_t const* in, blip_nsamp_t count)
+{
+    if (buffer_size_ == silent_buf_size)
+    {
+        assert(0);
+        return;
+    }
+
+    buf_t_* out = buffer_ + (offset_ >> BLIP_BUFFER_ACCURACY);
+
+    int const sample_shift = blip_sample_bits - 16;
+    int prev = 0;
+    while (count--)
+    {
+        blip_long s = (blip_long)*in++ << sample_shift;
+        *out += s - prev;
+        prev = s;
+        ++out;
+    }
+    *out -= prev;
+}

@@ -29,6 +29,7 @@
 #include "Mixer.h"
 
 #include <vector>
+#include <memory>
 
 // External classes
 class C2A03;		// // //
@@ -40,6 +41,7 @@ class CN163;
 class CS5B;
 
 class CSoundChip;		// // //
+class CSoundChip2;
 class CRegisterState;		// // //
 
 #ifdef LOGGING
@@ -50,6 +52,9 @@ class CAPU {
 public:
 	CAPU(IAudioCallback *pCallback);		// // //
 	~CAPU();
+
+	/// Enforce a fixed address, so CMixer can hold a parent pointer to CAPU.
+	BLIP_DISABLE_COPY_MOVE(CAPU)
 
 	void	Reset();
 	void	Process();
@@ -104,16 +109,20 @@ private:
 	IAudioCallback *m_pParent;
 
 	// Expansion chips
-	C2A03		*m_p2A03;		// // //
+	std::unique_ptr<C2A03> m_p2A03;
 	CVRC6		*m_pVRC6;
 	CMMC5		*m_pMMC5;
-	CFDS		*m_pFDS;
+	std::unique_ptr<CFDS> m_pFDS;
 	CN163		*m_pN163;
 	CVRC7		*m_pVRC7;
 	CS5B		*m_pS5B;
 
-	uint8_t		m_iExternalSoundChip;				// External sound chip, if used
+	/// Bitfield of external sound chips enabled.
+	/// Never read, except for code hidden behind #ifdef LOGGING.
+	uint8_t		m_iExternalSoundChips;
+
 	std::vector<CSoundChip*> m_SoundChips;
+	std::vector<CSoundChip2*> m_SoundChips2;
 
 	uint32_t	m_iSampleRate;						// // //
 	uint32_t	m_iFrameCycleCount;
@@ -142,4 +151,5 @@ private:
 //	unsigned char m_iRegs[32];
 #endif
 
+	friend class CMixer;
 };

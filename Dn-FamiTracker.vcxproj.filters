@@ -235,9 +235,6 @@
     <Filter Include="Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\old">
       <UniqueIdentifier>{beb189dc-9d30-47cd-983b-cb0020af33af}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\nezplug">
-      <UniqueIdentifier>{27c435d9-0a50-47ba-84d8-1f0c67a71efc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Sound Driver\Emulation\Sound Chips\External\old">
       <UniqueIdentifier>{758675ec-da50-40ab-b4a3-0d47e196eb29}</UniqueIdentifier>
     </Filter>
@@ -249,6 +246,9 @@
     </Filter>
     <Filter Include="Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\nsfplay">
       <UniqueIdentifier>{6f783435-0a2a-4e85-beec-901287b2713f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\mesen">
+      <UniqueIdentifier>{f2739585-ae45-42fa-bcd6-0366cbc323c7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -462,16 +462,7 @@
     <ClCompile Include="Source\APU\Mixer.cpp">
       <Filter>Source Files\Sound Driver\Emulation</Filter>
     </ClCompile>
-    <ClCompile Include="Source\APU\DPCM.cpp">
-      <Filter>Source Files\Sound Driver\Emulation\Internal Channels</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\APU\Noise.cpp">
-      <Filter>Source Files\Sound Driver\Emulation\Internal Channels</Filter>
-    </ClCompile>
     <ClCompile Include="Source\APU\Square.cpp">
-      <Filter>Source Files\Sound Driver\Emulation\Internal Channels</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\APU\Triangle.cpp">
       <Filter>Source Files\Sound Driver\Emulation\Internal Channels</Filter>
     </ClCompile>
     <ClCompile Include="Source\APU\MMC5.cpp">
@@ -738,20 +729,26 @@
     <ClCompile Include="Source\ConfigEmulation.cpp">
       <Filter>Source Files\Dialog Boxes\Config</Filter>
     </ClCompile>
-    <ClCompile Include="Source\APU\nezplug\FDS.cpp">
-      <Filter>Source Files\Sound Driver\Emulation\Sound Chips</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\APU\nezplug\FDSSound.cpp">
-      <Filter>Source Files\Sound Driver\Emulation\Sound Chips\External\nezplug</Filter>
-    </ClCompile>
     <ClCompile Include="Source\VersionChecker.cpp">
       <Filter>Source Files\Other</Filter>
     </ClCompile>
     <ClCompile Include="Source\VersionCheckerDlg.cpp">
       <Filter>Source Files\Dialog Boxes</Filter>
     </ClCompile>
-    <ClCompile Include="Source\APU\nsfplay\legacy\emu2413.c">
+    <ClCompile Include="Source\APU\SoundChip2.cpp">
+      <Filter>Source Files\Sound Driver\Emulation</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\nes_apu.cpp">
+      <Filter>Source Files\Sound Driver\Emulation\Sound Chips\External\nsfplay</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\nes_dmc.cpp">
+      <Filter>Source Files\Sound Driver\Emulation\Sound Chips\External\nsfplay</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\emu2413.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\APU\FDS.cpp">
+      <Filter>Source Files\Sound Driver\Emulation\Sound Chips</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -797,16 +794,7 @@
     <ClInclude Include="Source\APU\Types.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\APU\DPCM.h">
-      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Internal Channels Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\APU\Noise.h">
-      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Internal Channels Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Source\APU\Square.h">
-      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Internal Channels Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\APU\Triangle.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers\Internal Channels Headers</Filter>
     </ClInclude>
     <ClInclude Include="Source\APU\MMC5.h">
@@ -1448,12 +1436,6 @@
     <ClInclude Include="Source\ConfigEmulation.h">
       <Filter>Header Files\Dialog Boxes Headers\Config Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\APU\nezplug\FDS.H">
-      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\APU\nezplug\FDSSound.h">
-      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\nezplug</Filter>
-    </ClInclude>
     <ClInclude Include="Source\APU\old\vrc7tone.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\old</Filter>
     </ClInclude>
@@ -1463,14 +1445,59 @@
     <ClInclude Include="Source\VersionCheckerDlg.h">
       <Filter>Header Files\Dialog Boxes Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\APU\nsfplay\legacy\2413tone.h">
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\device.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\APU\nsfplay\legacy\emu2413.h">
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\devinfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\APU\nsfplay\legacy\vrc7tone_nuke.h">
+    <ClInclude Include="Source\APU\nsfplay\xgm\debugout.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\nsfplay\xgm\xtypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\SoundChip2.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\utils\variadic_minmax.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\SoundChip2.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\nes_apu.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\nsfplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\nes_dmc.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\nsfplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\nsfplay_math.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\nsfplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\2413tone.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\emu2413.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\vrc7tone_nuke.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\nsfplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\FDS.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\mesen\BaseFdsChannel.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\mesen</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\mesen\FdsAudio.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\mesen</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\mesen\ModChannel.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\mesen</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\ChannelLevelState.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

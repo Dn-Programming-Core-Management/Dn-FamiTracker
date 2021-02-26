@@ -263,9 +263,11 @@
     <Manifest />
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source\APU\nezplug\FDS.cpp" />
-    <ClCompile Include="Source\APU\nezplug\FDSSound.cpp" />
-    <ClCompile Include="Source\APU\nsfplay\legacy\emu2413.c" />
+    <ClCompile Include="Source\APU\FDS.cpp" />
+    <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\emu2413.c" />
+    <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\nes_apu.cpp" />
+    <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\nes_dmc.cpp" />
+    <ClCompile Include="Source\APU\SoundChip2.cpp" />
     <ClCompile Include="Source\ConfigEmulation.cpp" />
     <ClCompile Include="Source\NoNotifyEdit.cpp" />
     <ClCompile Include="Source\HistoryFileDlg.cpp" />
@@ -395,10 +397,7 @@
     <ClCompile Include="Source\TrackerChannel.cpp" />
     <ClCompile Include="Source\APU\APU.cpp" />
     <ClCompile Include="Source\APU\Mixer.cpp" />
-    <ClCompile Include="Source\APU\DPCM.cpp" />
-    <ClCompile Include="Source\APU\Noise.cpp" />
     <ClCompile Include="Source\APU\Square.cpp" />
-    <ClCompile Include="Source\APU\Triangle.cpp" />
     <ClCompile Include="Source\APU\MMC5.cpp" />
     <ClCompile Include="Source\APU\N163.cpp" />
     <ClCompile Include="Source\APU\VRC6.cpp" />
@@ -506,15 +505,26 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hlp\HTMLDefines.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">hlp\HTMLDefines.h;%(Outputs)</Outputs>
     </CustomBuild>
-    <ClInclude Include="Source\APU\nezplug\FDS.H" />
-    <ClInclude Include="Source\APU\nezplug\FDSSound.h" />
-    <ClInclude Include="Source\APU\nsfplay\legacy\2413tone.h" />
-    <ClInclude Include="Source\APU\nsfplay\legacy\emu2413.h" />
-    <ClInclude Include="Source\APU\nsfplay\legacy\vrc7tone_nuke.h" />
+    <ClInclude Include="Source\APU\ChannelLevelState.h" />
+    <ClInclude Include="Source\APU\FDS.h" />
+    <ClInclude Include="Source\APU\mesen\BaseFdsChannel.h" />
+    <ClInclude Include="Source\APU\mesen\FdsAudio.h" />
+    <ClInclude Include="Source\APU\mesen\ModChannel.h" />
+    <ClInclude Include="Source\APU\nsfplay\xgm\debugout.h" />
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\device.h" />
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\devinfo.h" />
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\2413tone.h" />
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\emu2413.h" />
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\vrc7tone_nuke.h" />
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\nes_apu.h" />
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\nes_dmc.h" />
+    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\nsfplay_math.h" />
+    <ClInclude Include="Source\APU\nsfplay\xgm\xtypes.h" />
     <ClInclude Include="Source\APU\old\vrc7tone.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="Source\APU\SoundChip2.h" />
     <ClInclude Include="Source\array_view.h" />
     <ClInclude Include="Source\ConfigEmulation.h" />
     <ClInclude Include="Source\NoNotifyEdit.h" />
@@ -635,6 +645,7 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
     <ClInclude Include="Source\type_safe\types.hpp" />
     <ClInclude Include="Source\type_safe\variant.hpp" />
     <ClInclude Include="Source\type_safe\visitor.hpp" />
+    <ClInclude Include="Source\utils\variadic_minmax.h" />
     <ClInclude Include="Source\utils\ftmath.h" />
     <ClInclude Include="Source\utils\input.h" />
     <ClInclude Include="Source\VersionChecker.h" />
@@ -653,10 +664,7 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
     <ClInclude Include="Source\APU\Channel.h" />
     <ClInclude Include="Source\APU\Mixer.h" />
     <ClInclude Include="Source\APU\Types.h" />
-    <ClInclude Include="Source\APU\DPCM.h" />
-    <ClInclude Include="Source\APU\Noise.h" />
     <ClInclude Include="Source\APU\Square.h" />
-    <ClInclude Include="Source\APU\Triangle.h" />
     <ClInclude Include="Source\APU\SoundChip.h" />
     <ClInclude Include="Source\APU\MMC5.h" />
     <ClInclude Include="Source\APU\N163.h" />

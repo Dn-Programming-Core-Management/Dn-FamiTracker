@@ -98,6 +98,11 @@ public:
     // Mix 'count' samples from 'buf' into buffer.
     void mix_samples( blip_amplitude_t const* buf, blip_nsamp_t count );
 
+    /// Mix 'count' samples from 'buf' into buffer.
+    /// The input is assumed to originate from another Blip_Buffer,
+    /// and is not delayed by the impulse width.
+    void mix_samples_raw(blip_amplitude_t const* buf, blip_nsamp_t count);
+
     // not documented yet
     void set_modified() { modified_ = 1; }
     int clear_modified() { int b = modified_; modified_ = 0; return b; }
@@ -210,6 +215,12 @@ public:
     void treble_eq( blip_eq_t const& eq )       { impl.treble_eq( eq ); }
 
     void clear() { impl.last_amp = 0; }
+
+    /// Set the last-seen amplitude to `dc_amp` without outputting a step.
+    /// If Blip_Buffer currently has output level 0,
+    /// this acts like subtracting `dc_amp` from all future calls to update().
+    void center_dc(int dc_amp) { impl.last_amp = dc_amp; }
+
     // Update amplitude of waveform at given time. Using this requires a separate
     // Blip_Synth for each waveform.
     // The actual output value (assuming no DC removal) is around
@@ -244,7 +255,7 @@ public:
     // When update(...Amplitude) is called,
     // the actual output value (assuming no DC removal) is around
     // (Amplitude / range) * volume * 65536.
-    Blip_Synth(unsigned int range, double volume) : impl( impulses, quality ) {
+    Blip_Synth(double volume, unsigned int range) : impl( impulses, quality ) {
         this->volume(volume, range);
     }
     // Cannot be moved or copied because this struct is self-referencing:
@@ -263,11 +274,13 @@ public:
     // See blip_buffer.txt
     blip_eq_t( double treble, blip_long rolloff_freq, blip_long sample_rate, blip_long cutoff_freq = 0 );
 
-private:
+public:
     double treble;
     blip_long rolloff_freq;
     blip_long sample_rate;
     blip_long cutoff_freq;
+
+private:
     void generate( float* out, int count ) const;
     friend class Blip_Synth_;
 };

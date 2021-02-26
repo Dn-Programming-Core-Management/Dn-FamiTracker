@@ -2,6 +2,8 @@
 ** FamiTracker - NES/Famicom sound tracker
 ** Copyright (C) 2005-2014  Jonathan Liss
 **
+** 0CC-FamiTracker is (C) 2014-2016 HertzDevil
+**
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 2 of the License, or
@@ -18,39 +20,28 @@
 ** must bear this legend.
 */
 
-/*
- * Triangle wave generation
- *
- */
+#include "../stdafx.h"
+#include "SoundChip2.h"
+#include "../RegisterState.h"
 
+CSoundChip2::CSoundChip2() :
+	m_pRegisterLogger(std::make_unique<CRegisterLogger>())
+{
+}
 
-#pragma once
+double CSoundChip2::GetFreq(int Channel) const		// // //
+{
+	return 0.0;
+}
 
-#include "2A03Chan.h"		// // //
+void CSoundChip2::Log(uint16_t Address, uint8_t Value)		// // //
+{
+	// default logger operation
+	if (m_pRegisterLogger->SetPort(Address))
+		m_pRegisterLogger->Write(Value);
+}
 
-class CTriangle : public C2A03Chan {
-public:
-	CTriangle(CMixer *pMixer, int ID);
-	~CTriangle();
-
-	void	Reset();
-	void	Write(uint16_t Address, uint8_t Value);
-	void	WriteControl(uint8_t Value);
-	uint8_t	ReadControl();
-	void	Process(uint32_t Time);
-	double	GetFrequency() const;		// // //
-
-	void	LengthCounterUpdate();
-	void	LinearCounterUpdate();
-
-public:
-	uint32_t CPU_RATE;		// // //
-
-private:
-	static const uint8_t TRIANGLE_WAVE[];
-
-private:
-	uint8_t	m_iLoop, m_iLinearLoad, m_iHalt;
-	uint16_t	m_iLinearCounter;
-	int8_t	m_iStepGen;
-};
+CRegisterLogger* CSoundChip2::GetRegisterLogger() const		// // //
+{
+	return m_pRegisterLogger.get();
+}

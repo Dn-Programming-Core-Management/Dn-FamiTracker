@@ -25,20 +25,19 @@ add_executable(${exe}
         res/MainToolbar-256.bmp
         res/RightArrow.ico
 
-        Source/APU/nezplug/FDS.cpp
-        Source/APU/nezplug/FDSSound.cpp
-        Source/APU/nsfplay/legacy/emu2413.c
+        Source/APU/FDS.cpp
+        Source/APU/nsfplay/xgm/devices/Sound/legacy/emu2413.c
+        Source/APU/nsfplay/xgm/devices/Sound/nes_apu.cpp
+        Source/APU/nsfplay/xgm/devices/Sound/nes_dmc.cpp
+        Source/APU/SoundChip2.cpp
         Source/APU/2A03.cpp
         Source/APU/APU.cpp
-        Source/APU/DPCM.cpp
         Source/APU/Mixer.cpp
         Source/APU/MMC5.cpp
         Source/APU/N163.cpp
-        Source/APU/Noise.cpp
         Source/APU/S5B.cpp
         Source/APU/SoundChip.cpp
         Source/APU/Square.cpp
-        Source/APU/Triangle.cpp
         Source/APU/VRC6.cpp
         Source/APU/VRC7.cpp
         Source/Blip_Buffer/Blip_Buffer.cpp

@@ -23,56 +23,104 @@
 
 #pragma once
 
-class CMixer;
+#include "SoundChip2.h"
+#include "ChannelLevelState.h"
 
-#include "SoundChip.h"
-#include "Channel.h"
+#include "APU/nsfplay/xgm/devices/Sound/nes_apu.h"
+#include "APU/nsfplay/xgm/devices/Sound/nes_dmc.h"
+#include "APU/nsfplay/xgm/devices/device.h"
 
-class CSquare;
-class CTriangle;
-class CNoise;
-class CDPCM;
-
-class C2A03 : public CSoundChip
+// class for simulating CPU memory, used by the DPCM channel
+class CSampleMem : public xgm::IDevice
 {
 public:
-	C2A03(CMixer *pMixer);
-	virtual ~C2A03();
+	CSampleMem() : m_pMemory(0), m_iMemSize(0) {
+	};
 
-	void Reset();
-	void Process(uint32_t Time);
-	void EndFrame();
+	uint8_t Read(uint16_t Address) const {
+		if (!m_pMemory)
+			return 0;
+		uint16_t Addr = (Address - 0xC000);// % m_iMemSize;
+		if (Addr >= m_iMemSize)
+			return 0;
+		return m_pMemory[Addr];
+	};
 
-	void Write(uint16_t Address, uint8_t Value);
-	uint8_t Read(uint16_t Address, bool &Mapped);
+	void SetMem(const char* pPtr, int Size) {
+		m_pMemory = (uint8_t*)pPtr;
+		m_iMemSize = Size;
+	};
 
-	double GetFreq(int Channel) const;		// // //
+	void Clear() {
+		m_pMemory = 0;
+		m_iMemSize = 0;
+	}
+
+// impl xgm::IDevice
+
+	// CSampleMem as IDevice is only used by NES_DMC.
+	// It only calls Read(adr, val, id=0) and ignores the return value.
+
+	// not called, don't care
+	void Reset() override {}
+
+	// not called, don't care
+	bool Write(UINT32 adr, UINT32 val, UINT32 id) override {
+		return false;
+	}
+
+	bool Read(UINT32 adr, UINT32& val, UINT32 id) override {
+		val = Read((uint16_t)adr);
+		return true;
+	}
+
+private:
+	const uint8_t* m_pMemory;
+	uint16_t m_iMemSize;
+};
+
+class C2A03 : public CSoundChip2
+{
+public:
+	C2A03();
+
+	void Reset() override;
+	void UpdateFilter(blip_eq_t eq) override;
+	void Process(uint32_t Time, Blip_Buffer& Output) override;
+	void EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer) override;
+
+	void Write(uint16_t Address, uint8_t Value) override;
+	uint8_t Read(uint16_t Address, bool &Mapped) override;
+
+	double GetFreq(int Channel) const override;		// // //
+	int GetChannelLevel(int Channel) override;
+	int GetChannelLevelRange(int Channel) const override;
 
 public:
+	void UpdateMixingAPU1(double v);
+	void UpdateMixingAPU2(double v);
+
 	void	ClockSequence();		// // //
 	
 	void	ChangeMachine(int Machine);
 	
-	CSampleMem *GetSampleMemory() const;		// // //
+	CSampleMem *GetSampleMemory();		// // //
 	uint8_t	GetSamplePos() const;
 	uint8_t	GetDeltaCounter() const;
 	bool	DPCMPlaying() const;
 
 private:
-	inline void Clock_240Hz() const;		// // //
-	inline void Clock_120Hz() const;		// // //
-	inline void Clock_60Hz() const;		// // //
+	/// Referenced by m_Apu2.
+	CSampleMem m_SampleMem;
 
-	inline void RunAPU1(uint32_t Time);
-	inline void RunAPU2(uint32_t Time);
+	xgm::NES_APU m_Apu1;
+	xgm::NES_DMC m_Apu2;
 
-private:
-	CSquare		*m_pSquare1;
-	CSquare		*m_pSquare2;
-	CTriangle	*m_pTriangle;
-	CNoise		*m_pNoise;
-	CDPCM		*m_pDPCM;
-	
-	uint8_t		m_iFrameSequence;					// Frame sequence
-	uint8_t		m_iFrameMode;						// 4 or 5-steps frame sequence
+	// [0..4] correspond to Pulse 1, Pulse 2, Triangle, Noise, and DPCM.
+	ChannelLevelState<uint8_t> m_ChannelLevels[5];
+
+	Blip_Synth<blip_good_quality> Synth2A03SS;
+	Blip_Synth<blip_good_quality> Synth2A03TND;
+
+	uint32_t	m_iTime = 0;  // Clock counter, used as a timestamp for Blip_Buffer, resets every new frame
 };

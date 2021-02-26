@@ -24,7 +24,7 @@ Development builds: [![AppVeyor](https://img.shields.io/appveyor/build/Gumball24
 
 
 
-The application and the source code are distributed under the GNU GPL 2 license. Dn modifications and additions in the source code and ASM code are marked with "// // !!" and ";; ;; !!", respectively.
+The application and the source code are distributed under the GNU GPL 2 license or any later version, but depends on FDS sound emulation only under the GPL v3. Dn modifications and additions in the source code and ASM code are marked with "// // !!" and ";; ;; !!", respectively.
 
 The two readmes below are for archival purposes only.
 

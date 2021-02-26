@@ -9,11 +9,11 @@
 ** the Free Software Foundation; either version 2 of the License, or
 ** (at your option) any later version.
 **
-** This program is distributed in the hope that it will be useful, 
+** This program is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
-** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-** Library General Public License for more details.  To obtain a 
-** copy of the GNU Library General Public License, write to the Free 
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+** Library General Public License for more details.  To obtain a
+** copy of the GNU Library General Public License, write to the Free
 ** Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ** Any permitted reproduction of these routines, in whole or in part,
@@ -38,17 +38,25 @@ enum chip_level_t {
 	CHIP_LEVEL_S5B
 };
 
+class C2A03;
+class CFDS;
+class CAPU;
+
 class CMixer
 {
 public:
-	CMixer();
+	CMixer(CAPU * Parent);
 	~CMixer();
 
 	void	ExternalSound(int Chip);
+
 	void	AddValue(int ChanID, int Chip, int Value, int AbsValue, int FrameCycles);
-	void	UpdateSettings(int LowCut,	int HighCut, int HighDamp, float OverallVol);
+	void	UpdateMixing(int LowCut, int HighCut, int HighDamp, float OverallVol);
 
 	bool	AllocateBuffer(unsigned int Size, uint32_t SampleRate, uint8_t NrChannels);
+	Blip_Buffer& GetBuffer() {
+		return BlipBuffer;
+	}
 	void	SetClockRate(uint32_t Rate);
 	void	ClearBuffer();
 	void FinishBuffer(int t);
@@ -69,13 +77,7 @@ public:
 	void	SetMeterDecayRate(int Rate);		// // // 050B
 
 private:
-	inline double CalcPin1(double Val1, double Val2);
-	inline double CalcPin2(double Val1, double Val2, double Val3);
-
-	void MixInternal1(int Time);
-	void MixInternal2(int Time);
 	void MixN163(int Value, int Time);
-	void MixFDS(int Value, int Time);
 	void MixVRC6(int Value, int Time);
 	void MixMMC5(int Value, int Time);
 	void MixS5B(int Value, int Time);
@@ -86,22 +88,31 @@ private:
 	float GetAttenuation() const;
 
 private:
+	// Pointer to parent/owning CAPU object.
+	CAPU * m_APU;
+
 	// Blip buffer synths
-	Blip_Synth<blip_good_quality> Synth2A03SS;
-	Blip_Synth<blip_good_quality> Synth2A03TND;
+
+	// Should never be null during playback. CAPU creates all expansion chips,
+	// even if chips are not active in current module.
 	Blip_Synth<blip_good_quality> SynthVRC6;
 	Blip_Synth<blip_good_quality> SynthMMC5;
 	Blip_Synth<blip_good_quality> SynthN163;
-	Blip_Synth<blip_good_quality> SynthFDS;
 	Blip_Synth<blip_good_quality> SynthS5B;		// // // 050B
 
+	/// Only used by CMixer::ClearBuffer(), which clears the global Blip_Buffer
+	/// and all Blip_Synth owned by CMixer.
+	///
+	/// What about CSoundChip2 which owns its own Blip_Synth?
+	/// I've decided that CMixer should not be responsible for clearing those Blip_Synth,
+	/// but rather CSoundChip2::Reset() should do so.
+	///
+	/// This works because CMixer::ClearBuffer() is only called by CAPU::Reset(),
+	/// which also calls CSoundChip2::Reset() on each sound chip.
 	#define FOREACH_SYNTH(X, SEP) \
-		X(Synth2A03SS) SEP \
-		X(Synth2A03TND) SEP \
 		X(SynthVRC6) SEP \
 		X(SynthMMC5) SEP \
 		X(SynthN163) SEP \
-		X(SynthFDS) SEP \
 		X(SynthS5B)
 
 	// Blip buffer object
@@ -129,4 +140,6 @@ private:
 	float		m_fLevelS5B;		// // // 050B
 
 	bool		m_bNamcoMixing;		// // //
+
+	friend class CAPU;
 };

@@ -40,8 +40,6 @@
 #include "Graphics.h"
 #include "TextExporter.h"		// // //
 #include "APU/APU.h"
-#include "APU/Noise.h"		// // //
-#include "APU/DPCM.h"		// // //
 #include "RegisterState.h"		// // //
 
 /*
