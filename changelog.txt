@@ -2,21 +2,28 @@ Dn-FamiTracker Mod
 Change Log
 Written by Persune
 
-Version 0.2.2 - January 5 2021 (tentative)
+Version 0.2.2 ce67065 - February 27, 2021 (tentative)
 
 --------------------------------------------------------------------------------
 
-Dn0.2.2.0 - 01/05/2021
+Dn0.2.2.0 ce67065 - 02/27/2021
+
+Important changes:
+
+ - Reenabled version checking, which can also be accesed in the Help popup
+ - Replaced FDS emulation core with Mesen's version
+ - Replaced 2A03 emulation core with NSFPlay's version
+ - Added back the help manual, with additional updated info contributed by:
+   - Blue Mario for Sunsoft 5B information (@N-SPC700 #12)
+   - Compass Man for providing updated screenshots (#12)
 
 Additions:
 
  - Added FastTracker 2 (JP106) keymap (@sdhizumi #8)
  - Adjustable idle refresh rate in configuration
- - Added back the help manual, with additional updated info contributed by:
-   - Blue Mario for Sunsoft 5B information (@N-SPC700 #12)
-   - Compass Man for providing updated screenshots (#12)
  - Emulation tab in Configuration, which currently includes:
    - Toggleable N163 multiplexing
+   - Swappable VRC7 hardware patches
  - Added the Kxx multiply frequency effect, not currently supported in NSF
     export (@nyanpasu64 #16)
 
@@ -24,13 +31,19 @@ Improvements:
 
  - Enable DPI scaling for pattern editor (@nyanpasu64 #5)
  - Adjustable channel view in frame editor
- - Updated the About information
+ - Updated About information
  - Export wave shortcut (Ctrl + Shift + E)
- - Reenabled version checking, which can also be accesed in the Help popup
+
+Bug fixes:
+
+ - Fixed N163 detuning when multiplexing is turned off (@nyanpasu64)
+ - Fixed DC drifting (when no highpass is applied) due to rounding errors in
+    Blip_Buffer calculation
 
 Internal:
 
  - Fix CMake MFC detection and link flag conflicts (@nyanpasu64 #6)
+ - Removed header files from CMake (@nyanpasu64 #26)
  - Removed more occurences of old program name and renamed more files to Dn
     (@nyanpasu64 #7)
  - Replaced the application icon (design by Compass Man)
@@ -40,6 +53,9 @@ Internal:
  - Moved resource.h and Dn-FamiTracker.rc back to root folder due to HTMLHelp
     compilation
  - Corrected paths on case-sensitive filesystems (@nyanpasu64 #18)
+ - Replaced Blip_Buffer with an improved fork (@nyanpasu64 #27)
+ - Added emulation clock-skipping until next level change to save CPU,
+    currently implemented in 2A03 and FDS emulator cores
 
 
 
