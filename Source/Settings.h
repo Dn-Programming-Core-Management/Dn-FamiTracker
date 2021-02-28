@@ -55,13 +55,7 @@ enum PATHS {
 	PATH_EXPORT = PATH_FTM
 };
 
-// // !! emulators from different sources
-enum EMULATORS {
-	EMU_INTERNAL = 0,		// internal emulators
-	EMU_NSFPLAY = 1			// nsfplay emulator
-};
-
-// // !! VRC7 hardware patches (not sure if i should add)
+// // !! VRC7 hardware patches
 enum VRC7_PATCH {
 	PATCH_NUKE = 0,		// OPLL_VRC7_TONE
 	PATCH_RW = 1,		// OPLL_VRC7_RW_TONE

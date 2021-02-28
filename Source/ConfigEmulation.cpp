@@ -64,7 +64,6 @@ BOOL CConfigEmulation::OnInitDialog()
 	CSettings* pSettings = theApp.GetSettings();
 
 	// FDS
-	GetEmulators(IDC_COMBO_FDS_EMULATOR);
 	CSliderCtrl* pFDSLowpass = static_cast<CSliderCtrl*>(GetDlgItem(IDC_SLIDER_FDS_LOWPASS));
 	pFDSLowpass->SetRange(0, 20000);
 	pFDSLowpass->SetPos(pSettings->Emulation.iFDSLowpass);
@@ -72,9 +71,6 @@ BOOL CConfigEmulation::OnInitDialog()
 	// N163
 	m_bDisableNamcoMultiplex = pSettings->Emulation.bNamcoMixing;
 	CheckDlgButton(IDC_N163_MULTIPLEXER, pSettings->Emulation.bNamcoMixing);
-
-	// S5B
-	GetEmulators(IDC_COMBO_S5B_EMULATOR);
 
 	// VRC7
 	CComboBox* pVRC7Patch = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_VRC7_PATCH));
@@ -99,18 +95,10 @@ BOOL CConfigEmulation::OnApply()
 {
 	CSettings* pSettings = theApp.GetSettings();
 	CSoundGen* pSoundGen = theApp.GetSoundGenerator();
-	
-	// FDS
-	SetEmulators(IDC_COMBO_FDS_EMULATOR);
-	CSliderCtrl* pFDSLowpass = static_cast<CSliderCtrl*>(GetDlgItem(IDC_SLIDER_FDS_LOWPASS));
-	pSettings->Emulation.iFDSLowpass = pFDSLowpass->GetPos();
 
 	// N163
 	pSettings->Emulation.bNamcoMixing = m_bDisableNamcoMultiplex;
 	pSoundGen->SetNamcoMixing(theApp.GetSettings()->Emulation.bNamcoMixing);
-
-	// S5B
-	SetEmulators(IDC_COMBO_S5B_EMULATOR);
 
 	// VRC7
 	CComboBox* pVRC7Patch = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_VRC7_PATCH));
@@ -119,33 +107,6 @@ BOOL CConfigEmulation::OnApply()
 	theApp.LoadSoundConfig();
 
 	return CPropertyPage::OnApply();
-}
-
-void CConfigEmulation::GetEmulators(int nID)
-{
-	CSettings* pSettings = theApp.GetSettings();
-	CComboBox* pComboBox = static_cast<CComboBox*>(GetDlgItem(nID));
-	pComboBox->AddString("(default)");
-	pComboBox->AddString("nsfplay");
-
-	switch (nID) {
-	case IDC_COMBO_FDS_EMULATOR:
-		pComboBox->SetCurSel(pSettings->Emulation.iFDSEmulator); break;
-	case IDC_COMBO_S5B_EMULATOR:
-		pComboBox->SetCurSel(pSettings->Emulation.iS5BEmulator); break;
-	}
-}
-
-void CConfigEmulation::SetEmulators(int nID)
-{
-	CSettings* pSettings = theApp.GetSettings();
-	CComboBox* pComboBox = static_cast<CComboBox*>(GetDlgItem(nID));
-	switch (nID) {
-	case IDC_COMBO_FDS_EMULATOR:
-		pSettings->Emulation.iFDSEmulator = pComboBox->GetCurSel(); break;
-	case IDC_COMBO_S5B_EMULATOR:
-		pSettings->Emulation.iS5BEmulator = pComboBox->GetCurSel(); break;
-	}
 }
 
 void CConfigEmulation::OnBnClickedN163Multiplexer()

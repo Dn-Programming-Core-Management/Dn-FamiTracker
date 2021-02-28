@@ -50,8 +50,6 @@ protected:
 public:
 	virtual BOOL OnInitDialog();
 	virtual BOOL OnApply();
-	void GetEmulators(int nID);
-	void SetEmulators(int nID);
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	//afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	//afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
