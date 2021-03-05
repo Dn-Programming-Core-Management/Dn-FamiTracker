@@ -84,10 +84,6 @@ CMixer::CMixer(CAPU * Parent)
 
 	m_iExternalChip = 0;
 	m_iSampleRate = 0;
-	m_iLowCut = 0;
-	m_iHighCut = 0;
-	m_iHighDamp = 0;
-	m_fOverallVol = 1.0f;
 
 	m_iMeterDecayRate = DECAY_SLOW;		// // // 050B
 }
@@ -99,7 +95,6 @@ CMixer::~CMixer()
 void CMixer::ExternalSound(int Chip)
 {
 	m_iExternalChip = Chip;
-	UpdateMixing(m_iLowCut, m_iHighCut, m_iHighDamp, m_fOverallVol);
 }
 
 void CMixer::SetChipLevel(chip_level_t Chip, float Level)
@@ -125,6 +120,8 @@ void CMixer::SetChipLevel(chip_level_t Chip, float Level)
 			break;
 		case CHIP_LEVEL_S5B:		// // // 050B
 			m_fLevelS5B = Level;
+			break;
+		case CHIP_LEVEL_VRC7: case CHIP_LEVEL_COUNT:
 			break;
 	}
 }
@@ -165,9 +162,13 @@ float CMixer::GetAttenuation() const
 
 constexpr int N163_RANGE = 1200;
 
-void CMixer::UpdateMixing(int LowCut, int HighCut, int HighDamp, float OverallVol)
+void CMixer::RecomputeMixing()
 {
-	float Volume = OverallVol * GetAttenuation();
+	auto LowCut = m_MixerConfig.LowCut;
+	auto HighCut = m_MixerConfig.HighCut;
+	auto HighDamp = m_MixerConfig.HighDamp;
+
+	float Volume = m_MixerConfig.OverallVol * GetAttenuation();
 
 	// Blip-buffer filtering
 	BlipBuffer.bass_freq(LowCut);
@@ -211,16 +212,15 @@ void CMixer::UpdateMixing(int LowCut, int HighCut, int HighDamp, float OverallVo
 	SynthMMC5.volume(Volume * 1.18421f * m_fLevelMMC5, 130);
 	SynthS5B.volume(Volume * m_fLevelS5B, 1600);  // Not checked
 	SynthN163.volume(Volume * 1.1f * m_fLevelN163, N163_RANGE);  // Not checked
-
-	m_iLowCut = LowCut;
-	m_iHighCut = HighCut;
-	m_iHighDamp = HighDamp;
-	m_fOverallVol = OverallVol;
 }
 
+/// CN163::Process() calls CMixer::SetNamcoVolume().
+/// This overrides the N163 volume (which is supposed to be set by
+/// CMixer::RecomputeMixing()) on every single emulation call.
+/// This is gross, but works and doesn't have any dependency ordering problems.
 void CMixer::SetNamcoVolume(float fVol)
 {
-	float fVolume = fVol * m_fOverallVol * GetAttenuation();
+	float fVolume = fVol * m_MixerConfig.OverallVol * GetAttenuation();
 
 	SynthN163.volume(fVolume * 1.1f * m_fLevelN163, N163_RANGE);
 }

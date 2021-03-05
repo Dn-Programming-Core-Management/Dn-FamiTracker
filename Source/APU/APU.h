@@ -30,6 +30,10 @@
 
 #include <vector>
 #include <memory>
+#include <optional>
+// move to .cpp
+#include <exception>
+#include "VRC7.h"
 
 // External classes
 class C2A03;		// // //
@@ -60,14 +64,9 @@ public:
 	void	Process();
 	void	AddCycles(int32_t Cycles);
 
-	void	SetExternalSound(uint8_t Chip);
 	void	Write(uint16_t Address, uint8_t Value);		// // //
 	uint8_t	Read(uint16_t Address);
 	
-	void	ChangeMachineRate(int Machine, int Rate);		// // //
-	bool	SetupSound(int SampleRate, int NrChannels, int Speed);
-	void	SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume) const;
-
 	int32_t	GetVol(uint8_t Chan) const;
 	uint8_t	GetReg(int Chip, int Reg) const;
 	double	GetFreq(int Chip, int Chan) const;		// // //
@@ -79,9 +78,21 @@ public:
 	void	WriteSample(const char *pBuf, int Size);		// // //
 	void	ClearSample();		// // //
 
-	void	SetChipLevel(chip_level_t Chip, float Level);
+	// Configuration methods:
+	/// it's a config method which should be dependency-tracked by CAPUConfig,
+	/// but it acts kinda like a constructor... so i'll let it slide. public it is.
+	bool	SetupSound(int SampleRate, int NrChannels, int Speed);
+	/// Mostly orthogonal.
+	void	ChangeMachineRate(int Machine, int Rate);		// // //
 
+	/// Mostly orthogonal.
 	void	SetNamcoMixing(bool bLinear);		// // //
+
+private:
+	void	SetExternalSound(uint8_t Chip);
+	// End configuration methods.
+
+public:
 	void	SetMeterDecayRate(int Type) const;		// // // 050B
 	int		GetMeterDecayRate() const;		// // // 050B
 
@@ -152,4 +163,44 @@ private:
 #endif
 
 	friend class CMixer;
+	friend class CAPUConfig;
+};
+
+/// Used to reconfigure CAPU and ensure all modified properties are recomputed properly.
+/// All modified properties are recomputed once, when CAPUConfig is destroyed.
+/// TODO port to an apply() API?
+class CAPUConfig {
+public:
+	CAPUConfig(CAPU * APU)
+		: m_APU(APU)
+		, m_Mixer(APU->m_pMixer)
+		, m_UncaughtExceptions(std::uncaught_exceptions())
+	{}
+
+	// Mutator methods
+	void SetExternalSound(uint8_t Chip) {
+		m_ExternalSound = Chip;
+	}
+
+	void SetChipLevel(chip_level_t Chip, float LeveldB);
+	void SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume);
+
+	/// Commit changes if no exception is active.
+	///
+	/// I prefer placing all mutations in a single flat method,
+	/// where all dependencies are made explicit,
+	/// over depending on the ordering of methods.
+	~CAPUConfig() noexcept(false);
+
+// fields
+private:
+	CAPU * m_APU;
+	CMixer * m_Mixer;
+
+	int m_UncaughtExceptions;
+
+	// Mutations.
+	std::optional<uint8_t> m_ExternalSound;
+	std::optional<float> m_ChipLevels[CHIP_LEVEL_COUNT];
+	std::optional<MixerConfig> m_MixerConfig;
 };

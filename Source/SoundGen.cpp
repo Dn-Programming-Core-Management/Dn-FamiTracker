@@ -761,26 +761,22 @@ bool CSoundGen::ResetAudioDevice()
 
 	currN163LevelOffset = m_pDocument->GetN163LevelOffset();
 
-	m_pAPU->SetChipLevel(CHIP_LEVEL_APU1, float(pSettings->ChipLevels.iLevelAPU1 / 10.0f));
-	m_pAPU->SetChipLevel(CHIP_LEVEL_APU2, float(pSettings->ChipLevels.iLevelAPU2 / 10.0f));
-	m_pAPU->SetChipLevel(CHIP_LEVEL_VRC6, float(pSettings->ChipLevels.iLevelVRC6 / 10.0f));
-	m_pAPU->SetChipLevel(CHIP_LEVEL_VRC7, float(pSettings->ChipLevels.iLevelVRC7 / 10.0f));
-	m_pAPU->SetChipLevel(CHIP_LEVEL_MMC5, float(pSettings->ChipLevels.iLevelMMC5 / 10.0f));
-	m_pAPU->SetChipLevel(CHIP_LEVEL_FDS, float(pSettings->ChipLevels.iLevelFDS / 10.0f));
-	m_pAPU->SetChipLevel(CHIP_LEVEL_N163, float(
-		(pSettings->ChipLevels.iLevelN163 + currN163LevelOffset) / 10.0f));
-	m_pAPU->SetChipLevel(CHIP_LEVEL_S5B, float(pSettings->ChipLevels.iLevelS5B / 10.0f));
-/*
-	m_pAPU->SetChipLevel(SNDCHIP_NONE, 0);//pSettings->ChipLevels.iLevel2A03);
-	m_pAPU->SetChipLevel(SNDCHIP_VRC6, 0);//pSettings->ChipLevels.iLevelVRC6);
-	m_pAPU->SetChipLevel(SNDCHIP_VRC7, 0);//pSettings->ChipLevels.iLevelVRC7);
-	m_pAPU->SetChipLevel(SNDCHIP_MMC5, 0);//pSettings->ChipLevels.iLevelMMC5);
-	m_pAPU->SetChipLevel(SNDCHIP_FDS, 0);//pSettings->ChipLevels.iLevelFDS);
-//	m_pAPU->SetChipLevel(SNDCHIP_N163, pSettings->ChipLevels.iLevelN163);
-//	m_pAPU->SetChipLevel(SNDCHIP_S5B, pSettings->ChipLevels.iLevelS5B);
-*/
-	// Update blip-buffer filtering 
-	m_pAPU->SetupMixer(pSettings->Sound.iBassFilter, pSettings->Sound.iTrebleFilter,  pSettings->Sound.iTrebleDamping, pSettings->Sound.iMixVolume);
+	{
+		auto config = CAPUConfig(m_pAPU);
+
+		config.SetChipLevel(CHIP_LEVEL_APU1, float(pSettings->ChipLevels.iLevelAPU1 / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_APU2, float(pSettings->ChipLevels.iLevelAPU2 / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_VRC6, float(pSettings->ChipLevels.iLevelVRC6 / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_VRC7, float(pSettings->ChipLevels.iLevelVRC7 / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_MMC5, float(pSettings->ChipLevels.iLevelMMC5 / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_FDS, float(pSettings->ChipLevels.iLevelFDS / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_N163, float(
+			(pSettings->ChipLevels.iLevelN163 + currN163LevelOffset) / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_S5B, float(pSettings->ChipLevels.iLevelS5B / 10.0f));
+
+		// Update blip-buffer filtering
+		config.SetupMixer(pSettings->Sound.iBassFilter, pSettings->Sound.iTrebleFilter, pSettings->Sound.iTrebleDamping, pSettings->Sound.iMixVolume);
+	}
 
 	m_bAudioClipping = false;
 	m_bBufferUnderrun = false;
@@ -2243,7 +2239,10 @@ void CSoundGen::OnSetChip(WPARAM wParam, LPARAM lParam)
 {
 	int Chip = wParam;
 
-	m_pAPU->SetExternalSound(Chip);
+	{
+		auto config = CAPUConfig(m_pAPU);
+		config.SetExternalSound(Chip);
+	}
 
 	// Enable internal channels after reset
 	m_pAPU->Write(0x4015, 0x0F);
