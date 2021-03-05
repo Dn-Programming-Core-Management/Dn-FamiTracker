@@ -208,6 +208,8 @@ void CMixer::RecomputeMixing()
 	chip2A03.UpdateMixingAPU2(Volume * m_fLevelAPU2);
 	chipFDS.UpdateMixLevel(Volume * m_fLevelFDS);
 
+	chipFDS.UpdateFdsFilter(m_MixerConfig.FDSLowpass);
+
 	SynthVRC6.volume(Volume * 3.98333f * m_fLevelVRC6, 500);
 	SynthMMC5.volume(Volume * 1.18421f * m_fLevelMMC5, 130);
 	SynthS5B.volume(Volume * m_fLevelS5B, 1600);  // Not checked

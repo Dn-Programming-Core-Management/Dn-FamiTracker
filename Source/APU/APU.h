@@ -26,6 +26,7 @@
 //#define LOGGING
 
 #include "../Common.h"
+// TODO switch to MixerCommon.h, with forward-declaration of CMixer, plus MixerConfig
 #include "Mixer.h"
 
 #include <vector>
@@ -183,7 +184,7 @@ public:
 	}
 
 	void SetChipLevel(chip_level_t Chip, float LeveldB);
-	void SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume);
+	void SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume, int FDSLowpass);
 
 	/// Commit changes if no exception is active.
 	///

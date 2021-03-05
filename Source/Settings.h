@@ -251,11 +251,8 @@ public:
 	struct {
 		// FDS
 		int		iFDSLowpass;
-		int		iFDSEmulator;
 		// N163
 		bool	bNamcoMixing;		// // //
-		// S5B
-		int		iS5BEmulator;
 		// VRC7
 		int		iVRC7Patch;
 	} Emulation;

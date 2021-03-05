@@ -775,7 +775,12 @@ bool CSoundGen::ResetAudioDevice()
 		config.SetChipLevel(CHIP_LEVEL_S5B, float(pSettings->ChipLevels.iLevelS5B / 10.0f));
 
 		// Update blip-buffer filtering
-		config.SetupMixer(pSettings->Sound.iBassFilter, pSettings->Sound.iTrebleFilter, pSettings->Sound.iTrebleDamping, pSettings->Sound.iMixVolume);
+		config.SetupMixer(
+			pSettings->Sound.iBassFilter,
+			pSettings->Sound.iTrebleFilter,
+			pSettings->Sound.iTrebleDamping,
+			pSettings->Sound.iMixVolume,
+			pSettings->Emulation.iFDSLowpass);
 	}
 
 	m_bAudioClipping = false;

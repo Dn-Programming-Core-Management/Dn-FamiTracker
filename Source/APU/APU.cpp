@@ -465,9 +465,9 @@ CRegisterState *CAPU::GetRegState(int Chip, int Reg) const		// // //
 }
 
 
-void CAPUConfig::SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume)
+void CAPUConfig::SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume, int FDSLowpass)
 {
-	m_MixerConfig = MixerConfig{ LowCut, HighCut, HighDamp, float(Volume) / 100.0f };
+	m_MixerConfig = MixerConfig{ LowCut, HighCut, HighDamp, float(Volume) / 100.0f, FDSLowpass };
 }
 
 void CAPUConfig::SetChipLevel(chip_level_t Chip, float LeveldB)

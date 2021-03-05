@@ -48,6 +48,7 @@ struct MixerConfig {
 	int HighCut = 0;
 	int HighDamp = 0;
 	float OverallVol = 0;
+	int FDSLowpass = 2000;
 };
 
 class CMixer

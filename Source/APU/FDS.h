@@ -25,6 +25,8 @@
 #include "ChannelLevelState.h"
 #include "Blip_Buffer/Blip_Buffer.h"
 #include "APU/mesen/FdsAudio.h"
+#include "FamiTracker.h"
+#include "Settings.h"
 
 class CMixer;
 
@@ -43,9 +45,15 @@ public:
 	int GetChannelLevel(int Channel) override;
 	int GetChannelLevelRange(int Channel) const override;
 
+	void UpdateFdsFilter(int CutoffHz);
 	void UpdateMixLevel(double v);
 
 private:
+	void RecomputeFdsFilter();
+
+private:
+	int m_CutoffHz;
+
 	FdsAudio m_FDS;
 
 	Blip_Buffer m_BlipFDS;

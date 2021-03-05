@@ -75,16 +75,9 @@ void CFDS::UpdateFilter(blip_eq_t eq)
 	// So BlipFDS should skip bass removal.
 	m_BlipFDS.bass_freq(0);
 
-	// Compute first-order lowpass coefficient from FDS cutoff frequency and sampling rate.
-	auto sampleRate_hz = float(eq.sample_rate);
-	auto cutoff_hz = 2000.f; // TODO configurable cutoff frequency
-	auto cutoff_rad = TWOPI * cutoff_hz / sampleRate_hz;
-
-	// This formula is approximate, but good enough because the FDS cutoff frequency is small
-	// compared to the audio sampling rate.
-	// Despite the exponential, this formula will never blow up
-	// because -cutoff_rad is negative, so e^(-cutoff_rad) lies between 0 and 1.
-	m_alpha = 1 - std::exp(-cutoff_rad);
+	// Default cutoff frequency, will be overriden when UpdateFdsFilter() is called.
+	m_CutoffHz = 2000;
+	RecomputeFdsFilter();
 }
 
 void CFDS::SetClockRate(uint32_t Rate)
@@ -194,6 +187,12 @@ int CFDS::GetChannelLevelRange(int Channel) const
 	return 0;
 }
 
+void CFDS::UpdateFdsFilter(int CutoffHz)
+{
+	m_CutoffHz = CutoffHz;
+	RecomputeFdsFilter();
+}
+
 void CFDS::UpdateMixLevel(double v)
 {
 	// (m_SynthFDS: FdsAudio) used to generate output samples between [0..63] inclusive,
@@ -201,4 +200,23 @@ void CFDS::UpdateMixLevel(double v)
 	// The following mixing levels match nsfplay's FDS output,
 	// using 2A03 Pulse as a baseline.
 	m_SynthFDS.volume(v * 1.122f, 256 * 1152);
+}
+
+/// Input:
+/// - m_CutoffHz
+/// - m_BlipFDS.sample_rate()
+/// 
+/// Output:
+/// - m_alpha
+void CFDS::RecomputeFdsFilter()
+{
+	// Compute first-order lowpass coefficient from FDS cutoff frequency and sampling rate.
+	auto sampleRate_hz = float(m_BlipFDS.sample_rate());
+	auto cutoff_rad = TWOPI * (float)m_CutoffHz / sampleRate_hz;
+
+	// This formula is approximate, but good enough because the FDS cutoff frequency is small
+	// compared to the audio sampling rate.
+	// Despite the exponential, this formula will never blow up
+	// because -cutoff_rad is negative, so e^(-cutoff_rad) lies between 0 and 1.
+	m_alpha = 1 - std::exp(-cutoff_rad);
 }
