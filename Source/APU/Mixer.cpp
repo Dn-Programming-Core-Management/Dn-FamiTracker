@@ -102,11 +102,6 @@ void CMixer::ExternalSound(int Chip)
 	UpdateMixing(m_iLowCut, m_iHighCut, m_iHighDamp, m_fOverallVol);
 }
 
-void CMixer::SetNamcoMixing(bool bLinear)		// // //
-{
-	m_bNamcoMixing = bLinear;
-}
-
 void CMixer::SetChipLevel(chip_level_t Chip, float Level)
 {
 	switch (Chip) {

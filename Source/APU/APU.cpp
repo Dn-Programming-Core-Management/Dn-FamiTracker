@@ -421,7 +421,6 @@ void CAPU::SetChipLevel(chip_level_t Chip, float Level)
 
 void CAPU::SetNamcoMixing(bool bLinear)		// // //
 {
-	m_pMixer->SetNamcoMixing(bLinear);
 	m_pN163->SetMixingMethod(bLinear);
 }
 

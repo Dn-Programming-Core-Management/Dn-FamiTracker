@@ -70,7 +70,6 @@ public:
 	int32_t	GetChanOutput(uint8_t Chan) const;
 	void	SetChipLevel(chip_level_t Chip, float Level);
 	uint32_t	ResampleDuration(uint32_t Time) const;
-	void	SetNamcoMixing(bool bLinear);		// // //
 	void	SetNamcoVolume(float fVol);
 
 	int		GetMeterDecayRate() const;		// // // 050B
@@ -138,8 +137,6 @@ private:
 	float		m_fLevelFDS;
 	float		m_fLevelN163;
 	float		m_fLevelS5B;		// // // 050B
-
-	bool		m_bNamcoMixing;		// // //
 
 	friend class CAPU;
 };
