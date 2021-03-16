@@ -163,7 +163,6 @@ bool CFActionRemoveFrame::SaveState(const CMainFrame *pMainFrm)
 void CFActionRemoveFrame::Undo(CMainFrame *pMainFrm) const
 {
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerView*>(pMainFrm->GetActiveView())->GetDocument();
-	pDoc->InsertFrame(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame);
 	pMainFrm->GetFrameEditor()->PasteInsert(m_pUndoState->Track, m_pUndoState->Cursor.m_iFrame, m_pRowClipData);
 }
 
