@@ -65,7 +65,7 @@ BOOL CConfigEmulation::OnInitDialog()
 
 	// FDS
 	CSliderCtrl* pFDSLowpass = static_cast<CSliderCtrl*>(GetDlgItem(IDC_SLIDER_FDS_LOWPASS));
-	pFDSLowpass->SetRange(0, 20000);
+	pFDSLowpass->SetRange(0, 8000);
 	pFDSLowpass->SetPos(pSettings->Emulation.iFDSLowpass);
 
 	// N163
@@ -95,6 +95,10 @@ BOOL CConfigEmulation::OnApply()
 {
 	CSettings* pSettings = theApp.GetSettings();
 	CSoundGen* pSoundGen = theApp.GetSoundGenerator();
+
+	// FDS
+	CSliderCtrl* pFDSLowpass = static_cast<CSliderCtrl*>(GetDlgItem(IDC_SLIDER_FDS_LOWPASS));
+	pSettings->Emulation.iFDSLowpass = pFDSLowpass->GetPos();
 
 	// N163
 	pSettings->Emulation.bNamcoMixing = m_bDisableNamcoMultiplex;

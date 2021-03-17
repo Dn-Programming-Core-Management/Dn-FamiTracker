@@ -190,13 +190,6 @@ void CAPU::Reset()
 #endif
 }
 
-void CAPU::SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume) const
-{
-	// New settings
-	m_pMixer->UpdateMixing(LowCut, HighCut, HighDamp, float(Volume) / 100.0f);
-	m_pVRC7->SetVolume((float(Volume) / 100.0f) * m_fLevelVRC7);
-}
-
 void CAPU::SetExternalSound(uint8_t Chip)
 {
 	// Initialize list of active sound chips.
@@ -405,23 +398,8 @@ void CAPU::Log()
 }
 #endif
 
-void CAPU::SetChipLevel(chip_level_t Chip, float Level)
-{
-	float fLevel = powf(10, Level / 20.0f);		// Convert dB to linear
-
-	switch (Chip) {
-		case CHIP_LEVEL_VRC7:
-			m_fLevelVRC7 = fLevel;
-			break;
-			// // // 050B
-		default:
-			m_pMixer->SetChipLevel(Chip, fLevel);
-	}
-}
-
 void CAPU::SetNamcoMixing(bool bLinear)		// // //
 {
-	m_pMixer->SetNamcoMixing(bLinear);
 	m_pN163->SetMixingMethod(bLinear);
 }
 
@@ -483,5 +461,77 @@ CRegisterState *CAPU::GetRegState(int Chip, int Reg) const		// // //
 	case SNDCHIP_N163: return PtrGetRegState(*m_pN163);
 	case SNDCHIP_S5B:  return PtrGetRegState(*m_pS5B);
 	default: AfxDebugBreak(); return nullptr;
+	}
+}
+
+
+void CAPUConfig::SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume, int FDSLowpass)
+{
+	m_MixerConfig = MixerConfig{ LowCut, HighCut, HighDamp, float(Volume) / 100.0f, FDSLowpass };
+}
+
+void CAPUConfig::SetChipLevel(chip_level_t Chip, float LeveldB)
+{
+	float LevelLinear = powf(10, LeveldB / 20.0f);		// Convert dB to linear
+	m_ChipLevels[Chip] = LevelLinear;
+}
+
+CAPUConfig::~CAPUConfig() noexcept(false) {
+	// if unwinding, skip reconfiguring CAPU.
+	// it would be a *lot* easier to simply not call ~CAPUConfig in the unwind table...
+	// but C++ makes many simple things complicated and slow.
+	if (std::uncaught_exceptions() != m_UncaughtExceptions) {
+		return;
+	}
+
+	bool mixingDirty = false;
+
+	// Writes to CMixer::m_iExternalChip.
+	// This is read by CMixer::GetAttenuation(), which is called by CMixer::RecomputeMixing().
+	if (m_ExternalSound) {
+		// This eagerly calls m_pMixer->SetClockRate(m_pMixer->BlipBuffer.clock_rate())
+		// (reinitializing the clock rate to the same value, but to a different set of expansion chips).
+		// We don't know if BlipBuffer.clock_rate() is initialized yet or not,
+		// but if clock rate initialization happens later,
+		// CAPU::ChangeMachineRate() will call CMixer::SetClockRate() a second time.
+		// Ugly, but it works.
+		m_APU->SetExternalSound(*m_ExternalSound);
+		mixingDirty = true;
+	}
+
+	// Writes to CAPU::m_fLevelVRC7 and CMixer::m_fLevel[...].
+	// This is read by CMixer::RecomputeMixing().
+	for (int chip = 0; chip < CHIP_LEVEL_COUNT; chip++) {
+		if (m_ChipLevels[chip]) {
+			auto level = *m_ChipLevels[chip];
+			switch (chip) {
+			case CHIP_LEVEL_VRC7:
+				m_APU->m_fLevelVRC7 = level;
+				break;
+			default:
+				m_Mixer->SetChipLevel((chip_level_t)chip, level);
+				mixingDirty = true;
+				break;
+			}
+		}
+	}
+
+	// Writes to CMixer::m_MixerConfig.
+	// This is read by CMixer::RecomputeMixing().
+	if (m_MixerConfig) {
+		auto& cfg = *m_MixerConfig;
+		// Volume does not decrease as you enable expansion chips.
+		// This is probably a bug, but it's too late to change it now
+		// (it would break old modules).
+		m_APU->m_pVRC7->SetVolume(cfg.OverallVol * m_APU->m_fLevelVRC7);
+
+		m_Mixer->SetMixing(cfg);
+		mixingDirty = true;
+	}
+
+	if (mixingDirty) {
+		// Volume decreases exponentially as you enable expansion chips linearly.
+		// This is probably a bug, but it might be too late to change it now.
+		m_Mixer->RecomputeMixing();
 	}
 }

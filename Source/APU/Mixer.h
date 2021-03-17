@@ -35,12 +35,21 @@ enum chip_level_t {
 	CHIP_LEVEL_MMC5,
 	CHIP_LEVEL_FDS,
 	CHIP_LEVEL_N163,
-	CHIP_LEVEL_S5B
+	CHIP_LEVEL_S5B,
+	CHIP_LEVEL_COUNT
 };
 
 class C2A03;
 class CFDS;
 class CAPU;
+
+struct MixerConfig {
+	int LowCut = 0;
+	int HighCut = 0;
+	int HighDamp = 0;
+	float OverallVol = 0;
+	int FDSLowpass = 2000;
+};
 
 class CMixer
 {
@@ -51,7 +60,10 @@ public:
 	void	ExternalSound(int Chip);
 
 	void	AddValue(int ChanID, int Chip, int Value, int AbsValue, int FrameCycles);
-	void	UpdateMixing(int LowCut, int HighCut, int HighDamp, float OverallVol);
+	void	SetMixing(MixerConfig cfg) {
+		m_MixerConfig = cfg;
+	}
+	void	RecomputeMixing();
 
 	bool	AllocateBuffer(unsigned int Size, uint32_t SampleRate, uint8_t NrChannels);
 	Blip_Buffer& GetBuffer() {
@@ -70,7 +82,6 @@ public:
 	int32_t	GetChanOutput(uint8_t Chan) const;
 	void	SetChipLevel(chip_level_t Chip, float Level);
 	uint32_t	ResampleDuration(uint32_t Time) const;
-	void	SetNamcoMixing(bool bLinear);		// // //
 	void	SetNamcoVolume(float fVol);
 
 	int		GetMeterDecayRate() const;		// // // 050B
@@ -126,10 +137,7 @@ private:
 	uint32_t	m_iChanLevelFallOff[CHANNELS];
 
 	int			m_iMeterDecayRate;		// // // 050B
-	int			m_iLowCut;
-	int			m_iHighCut;
-	int			m_iHighDamp;
-	float		m_fOverallVol;
+	MixerConfig m_MixerConfig;
 
 	float		m_fLevelAPU1;
 	float		m_fLevelAPU2;
@@ -138,8 +146,6 @@ private:
 	float		m_fLevelFDS;
 	float		m_fLevelN163;
 	float		m_fLevelS5B;		// // // 050B
-
-	bool		m_bNamcoMixing;		// // //
 
 	friend class CAPU;
 };
