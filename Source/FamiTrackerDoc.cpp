@@ -313,6 +313,9 @@ BOOL CFamiTrackerDoc::OnOpenDocument(LPCTSTR lpszPathName)
 
 	SetExceededFlag(FALSE);		// // //
 
+	// // !! prevent volume meter decay speed from being coupled to the current engine speed
+	theApp.GetSoundGenerator()->LoadSettings();
+
 	return TRUE;
 }
 
@@ -486,6 +489,9 @@ void CFamiTrackerDoc::CreateEmpty()
 	m_csDocumentLock.Unlock();
 
 	theApp.GetSoundGenerator()->DocumentPropertiesChanged(this);
+
+	// // !! prevent volume meter decay speed from being coupled to the current engine speed
+	theApp.GetSoundGenerator()->LoadSettings();
 }
 
 //
@@ -821,7 +827,7 @@ bool CFamiTrackerDoc::WriteBlock_Header(CDocumentFile *pDocFile, const int Versi
 {
 	/* 
 	 *  Header data
- 	 *
+	 *
 	 *  Store song count and then for each channel: 
 	 *  channel type and number of effect columns
 	 *
