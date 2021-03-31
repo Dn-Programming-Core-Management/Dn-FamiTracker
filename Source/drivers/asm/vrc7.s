@@ -158,6 +158,7 @@ ft_update_vrc7:
 @UpdateChannel:
 	; Load and cache period if there is an active note
 	lda var_ch_Note + VRC7_OFFSET, x
+	beq @SkipPeriod
 	lda var_ch_PeriodCalcLo + VRC7_OFFSET, x
 	sta var_ch_vrc7_FnumLo, x
 	lda var_ch_PeriodCalcHi + VRC7_OFFSET, x
