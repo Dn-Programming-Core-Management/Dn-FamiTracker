@@ -62,13 +62,15 @@
 
 <!-- all data below is Dn-FT changes-->
 <br>
-	<span class="heading">Dn-FamiTracker Version 0.2.2.0 (tentative)</span>
+	<span class="heading">Dn-FamiTracker Version 0.3.0.0</span>
 		<ul class="changelog">
 			<li>Important Changes:</li>
 			<ul class="changelog">
 				<li>Reenabled version checking, which can also be accesed in the Help popup</li>
-				<li>Replaced FDS emulation core with Mesen's version</li>
-				<li>Replaced 2A03 emulation core with NSFPlay's version</li>
+				<li>Replaced FDS emulation core with Mesen's version (@nyanpasu64
+					<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/32" target="new">#32</a>)</li>
+				<li>Replaced 2A03 emulation core with NSFPlay's version (@nyanpasu64
+					<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/32" target="new">#32</a>)</li>
 				<li>Added back the help manual, with additional updated info contributed by:</li>
 				<ul class="changelog">
 					<li>Blue Mario for Sunsoft 5B information (@N-SPC700
@@ -86,29 +88,33 @@
 				<ul class="changelog">
 					<li>Toggleable N163 multiplexing</li>
 					<li>Swappable VRC7 hardware patches</li>
+					<li>Adjustable FDS cutoff filter (@nyanpasu64
+					<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/42" target="new">#42</a>)</li>
 				</ul>
 				<li>Added the Kxx multiply frequency effect, not currently supported in NSF export (@nyanpasu64
 				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/16" target="new">#16</a>)</li>
+				<li>Adjustable channel view in frame editor</li>
 			</ul>
 			<li>Improvements:</li>
 			<ul class="changelog">
 				<li>Enable DPI scaling for pattern editor (@nyanpasu
 				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/5" target="new">#5</a>)</li>
-				<li>Adjustable channel view in frame editor</li>
 				<li>Updated About information</li>
 				<li>Export wave shortcut (Ctrl + Shift + E)</li>
 			</ul>
 			<li>Bug fixes:</li>
 			<ul class="changelog">
-				<li>Fixed N163 detuning when multiplexing is turned off (@nyanpasu64
+				<li>Fixed DC drifting (when no highpass is applied) due to rounding errors in Blip_Buffer calculation (@nyanpasu64
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/27" target="new">#27</a>)</li>
+				<li>Fixed N163 detuning when multiplexing is disabled (@nyanpasu64
 				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/31" target="new">#31</a>)</li>
-				<li>Fixed DC drifting (when no highpass is applied) due to rounding errors in Blip_Buffer calculation</li>
+				<li>Fixed undoing "delete frame" adding a new frame (<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/43" target="new">#43</a>)</li>
+				<li>Fixed VRC7 note cuts being inconsistent with in-tracker note cuts (@Kouzeru 
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/47" target="new">#47</a>)</li>
 			</ul>
 			<li>Internal:</li>
 			<ul class="changelog">
 				<li>Fix CMake MFC detection and link flag conflicts (@nyanpasu
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/6" target="new">#6</a>)</li>
-				<li>Removed header files from CMake (@nyanpasu
 				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/6" target="new">#6</a>)</li>
 				<li>Removed more occurences of old program name and renamed more files to Dn (@nyanpasu
 				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/7" target="new">#7</a>)</li>
@@ -119,10 +125,15 @@
 				<li>Moved resource.h and Dn-FamiTracker.rc back to root folder due to HTMLHelp compilation</li>
 				<li>Corrected paths on case-sensitive filesystems (@nyanpasu64
 				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/18" target="new">#18</a>)</li>
+				<li>Removed header files from CMake (@nyanpasu
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/26" target="new">#26</a>)</li>
 				<li>Replaced Blip_Buffer with an improved fork (@nyanpasu64
 				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/27" target="new">#27</a>)</li>
 				<li>Added emulation clock-skipping until next level change to save CPU, currently implemented
-				in 2A03 and FDS emulator cores</li>
+				in 2A03 and FDS emulator cores (@nyanpasu64
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/32" target="new">#32</a>)</li>
+				<li>Fixed file extension association in Dn-FamiTracker.reg (@Raphaelo24
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/36" target="new">#36</a>)</li>
 			</ul>
 		</ul>
 <br>
