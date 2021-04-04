@@ -199,7 +199,6 @@
 #define IDR_EXPORT_TEST_REPORT          311
 #define IDS_DSOUND_ERROR                312
 #define IDS_DSOUND_BUFFER_ERROR         313
-#define IDB_ABOUT                       313
 #define IDS_EDIT_MODE                   314
 #define IDI_LEFT                        314
 #define IDS_NORMAL_MODE                 315
@@ -219,6 +218,7 @@
 #define IDD_SPLIT_KEYBOARD              345
 #define IDR_HTML1                       361
 #define IDD_VERSION_CHECKER             369
+#define IDB_ABOUT                       376
 #define IDC_INSTRUMENTS                 1001
 #define IDC_INSTSETTINGS                1002
 #define IDC_IMPORT_DETUNE               1002
@@ -794,9 +794,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        374
+#define _APS_NEXT_RESOURCE_VALUE        377
 #define _APS_NEXT_COMMAND_VALUE         33215
-#define _APS_NEXT_CONTROL_VALUE         1494
+#define _APS_NEXT_CONTROL_VALUE         1495
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif
