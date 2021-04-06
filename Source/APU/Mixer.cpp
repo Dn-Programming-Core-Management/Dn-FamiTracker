@@ -201,14 +201,17 @@ void CMixer::RecomputeMixing()
 	// Volume levels
 	auto & chip2A03 = *m_APU->m_p2A03;
 	auto & chipFDS = *m_APU->m_pFDS;
+	auto & chipVRC7 = *m_APU->m_pVRC7;
 
 	// Maybe the range argument, as well as the constant factor in the volume,
 	// should be supplied by the CSoundChip2 subclass rather than CMixer.
 	chip2A03.UpdateMixingAPU1(Volume * m_fLevelAPU1);
 	chip2A03.UpdateMixingAPU2(Volume * m_fLevelAPU2);
 	chipFDS.UpdateMixLevel(Volume * m_fLevelFDS);
+	chipVRC7.UpdateMixLevel(Volume * m_fLevelFDS);
 
 	chipFDS.UpdateFdsFilter(m_MixerConfig.FDSLowpass);
+	//chipVRC7.UpdatePatchSet(Volume * m_fLevelFDS);
 
 	SynthVRC6.volume(Volume * 3.98333f * m_fLevelVRC6, 500);
 	SynthMMC5.volume(Volume * 1.18421f * m_fLevelMMC5, 130);
@@ -235,17 +238,6 @@ int CMixer::GetMeterDecayRate() const		// // // 050B
 void CMixer::SetMeterDecayRate(int Rate)		// // // 050B
 {
 	m_iMeterDecayRate = Rate;
-}
-
-void CMixer::MixSamples(blip_amplitude_t *pBuffer, uint32_t Count)
-{
-	// For VRC7
-	BlipBuffer.mix_samples(pBuffer, Count);
-}
-
-uint32_t CMixer::GetMixSampleCount(int t) const
-{
-	return BlipBuffer.count_samples(t);
 }
 
 bool CMixer::AllocateBuffer(unsigned int BufferLength, uint32_t SampleRate, uint8_t NrChannels)
@@ -333,16 +325,15 @@ void CMixer::FinishBuffer(int t)
 	}
 
 	auto& chip2A03 = *m_APU->m_p2A03;
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < 5; i++)
 		StoreChannelLevel(CHANID_SQUARE1 + i, get_channel_level(chip2A03, i));
-	}
 
 	auto& chipFDS = *m_APU->m_pFDS;
 	StoreChannelLevel(CHANID_FDS, get_channel_level(chipFDS, 0));
 
-	// Get channel levels for VRC7
+	auto& chipVRC7 = *m_APU->m_pVRC7;
 	for (int i = 0; i < 6; ++i)
-		StoreChannelLevel(CHANID_VRC7_CH1 + i, OPLL_getchanvol(i));
+		StoreChannelLevel(CHANID_VRC7_CH1 + i, get_channel_level(chipVRC7, i));
 }
 
 //

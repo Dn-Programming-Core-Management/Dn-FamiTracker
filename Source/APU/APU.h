@@ -126,7 +126,7 @@ private:
 	CMMC5		*m_pMMC5;
 	std::unique_ptr<CFDS> m_pFDS;
 	CN163		*m_pN163;
-	CVRC7		*m_pVRC7;
+	std::unique_ptr<CVRC7> m_pVRC7;
 	CS5B		*m_pS5B;
 
 	/// Bitfield of external sound chips enabled.

@@ -960,7 +960,7 @@ static void update_output(OPLL *opll) {
       int16_t absval;
       absval = abs(out[i]);
       if (absval > opll_volumes[i])
-          opll_volumes[i] = out[i] / 32; // volume is blown out for some reason
+          opll_volumes[i] = out[i];
     }
   }
 
