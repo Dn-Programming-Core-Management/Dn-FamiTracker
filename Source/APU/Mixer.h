@@ -49,6 +49,7 @@ struct MixerConfig {
 	int HighDamp = 0;
 	float OverallVol = 0;
 	int FDSLowpass = 2000;
+	int VRC7Patchset = 0;
 };
 
 class CMixer

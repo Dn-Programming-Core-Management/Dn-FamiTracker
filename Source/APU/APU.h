@@ -184,7 +184,7 @@ public:
 	}
 
 	void SetChipLevel(chip_level_t Chip, float LeveldB);
-	void SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume, int FDSLowpass);
+	void SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume, int FDSLowpass, int VRC7Patchset);
 
 	/// Commit changes if no exception is active.
 	///

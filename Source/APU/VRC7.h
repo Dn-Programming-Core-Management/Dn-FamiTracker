@@ -50,6 +50,7 @@ public:
 
 	void UpdateMixLevel(double v);
 
+	void UpdatePatchSet(int Patchset);
 
 protected:
 	static const float  AMPLIFY;

@@ -189,4 +189,9 @@ void CVRC7::UpdateMixLevel(double v)
 	// the range of the emulator seems to be 65536
 	m_SynthVRC7.volume(v * AMPLIFY, 10000);
 }
+
+void CVRC7::UpdatePatchSet(int Patchset)
+{
+	m_iPatchTone = Patchset;
+	OPLL_resetPatch(m_pOPLLInt, m_iPatchTone);
 }

@@ -211,7 +211,7 @@ void CMixer::RecomputeMixing()
 	chipVRC7.UpdateMixLevel(Volume * m_fLevelFDS);
 
 	chipFDS.UpdateFdsFilter(m_MixerConfig.FDSLowpass);
-	//chipVRC7.UpdatePatchSet(Volume * m_fLevelFDS);
+	chipVRC7.UpdatePatchSet(m_MixerConfig.VRC7Patchset);
 
 	SynthVRC6.volume(Volume * 3.98333f * m_fLevelVRC6, 500);
 	SynthMMC5.volume(Volume * 1.18421f * m_fLevelMMC5, 130);
