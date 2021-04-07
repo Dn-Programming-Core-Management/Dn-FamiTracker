@@ -1,5 +1,5 @@
 /**
- * emu2413 v1.5.2
+ * emu2413 v1.5.6
  * https://github.com/digital-sound-antiques/emu2413
  * Copyright (C) 2020 Mitsutaka Okazaki
  *
@@ -30,7 +30,8 @@
 #define _PI_ 3.14159265358979323846264338327950288
 
 #define OPLL_TONE_NUM 9
-static unsigned char default_inst[OPLL_TONE_NUM][(16 + 3) * 8] = {
+/* clang-format off */
+static uint8_t default_inst[OPLL_TONE_NUM][(16 + 3) * 8] = {
   {
 #include "vrc7tone_nuke.h"
   },
@@ -59,8 +60,11 @@ static unsigned char default_inst[OPLL_TONE_NUM][(16 + 3) * 8] = {
 #include "281btone.h"
   },
 };
+
 // Added by jsr
 int16_t opll_volumes[10];
+
+/* clang-format on */
 
 /* phase increment counter */
 #define DP_BITS 19
@@ -859,7 +863,7 @@ static void update_slots(OPLL *opll) {
 
 /* output: -4095...4095 */
 static INLINE int16_t lookup_exp_table(uint16_t i) {
-  /* from andete's expressoin */
+  /* from andete's expression */
   int16_t t = (exp_table[(i & 0xff) ^ 0xff] + 1024);
   int16_t res = t >> ((i & 0x7f00) >> 8);
   return ((i & 0x8000) ? ~res : res) << 1;
@@ -946,6 +950,7 @@ static INLINE int16_t calc_slot_hat(OPLL *opll) {
 static void update_output(OPLL *opll) {
   int16_t *out;
   int i;
+
   update_ampm(opll);
   update_short_noise(opll);
   update_slots(opll);
@@ -954,13 +959,14 @@ static void update_output(OPLL *opll) {
 
   /* CH1-6 */
   for (i = 0; i < 6; i++) {
-    if (!(opll->mask & OPLL_MASK_CH(i))) {
+    if (!(opll->mask & OPLL_MASK_CH(i))) { 
       out[i] = _MO(calc_slot_car(opll, i, calc_slot_mod(opll, i))); 
 
       int16_t absval;
       absval = abs(out[i]);
       if (absval > opll_volumes[i])
           opll_volumes[i] = out[i];
+      out[i] = _MO(calc_slot_car(opll, i, calc_slot_mod(opll, i)));
     }
   }
 
@@ -1080,11 +1086,11 @@ void OPLL_delete(OPLL *opll) {
 
 static void reset_rate_conversion_params(OPLL *opll) {
   const double f_out = opll->rate;
-  const double f_inp = opll->clk / 72;
+  const double f_inp = opll->clk / 72.0;
 
   opll->out_time = 0;
-  opll->out_step = ((uint32_t)f_inp) << 8;
-  opll->inp_step = ((uint32_t)f_out) << 8;
+  opll->out_step = f_inp;
+  opll->inp_step = f_out;
 
   if (opll->conv) {
     OPLL_RateConv_delete(opll->conv);
@@ -1382,14 +1388,14 @@ void OPLL_dumpToPatch(const uint8_t *dump, OPLL_PATCH *patch) {
 }
 
 void OPLL_getDefaultPatch(int32_t type, int32_t num, OPLL_PATCH *patch) {
-  OPLL_dump2patch(default_inst[type] + num * 8, patch);
+  OPLL_dumpToPatch(default_inst[type] + num * 8, patch);
 }
 
 void OPLL_setPatch(OPLL *opll, const uint8_t *dump) {
   OPLL_PATCH patch[2];
   int i;
   for (i = 0; i < 19; i++) {
-    OPLL_dump2patch(dump + i * 8, patch);
+    OPLL_dumpToPatch(dump + i * 8, patch);
     memcpy(&opll->patch[i * 2 + 0], &patch[0], sizeof(OPLL_PATCH));
     memcpy(&opll->patch[i * 2 + 1], &patch[1], sizeof(OPLL_PATCH));
   }
