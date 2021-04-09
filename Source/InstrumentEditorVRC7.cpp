@@ -30,7 +30,7 @@
 #include "InstrumentEditorVRC7.h"
 #include "Clipboard.h"
 
-static unsigned char default_inst[(16+3)*16] = 
+static unsigned char default_inst[(8+3)*16] = 
 {
 #include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_nuke.h" 
 };
@@ -186,7 +186,7 @@ void CInstrumentEditorVRC7::SelectInstrument(std::shared_ptr<CInstrument> pInst)
 		LoadCustomPatch();
 	else
 		LoadInternalPatch(Patch);
-	
+
 	EnableControls(Patch == 0);
 }
 
@@ -225,7 +225,7 @@ void CInstrumentEditorVRC7::LoadInternalPatch(int Num)
 	GetDlgItem(IDC_PASTE)->EnableWindow(FALSE);
 
 	// Register 0
-	Reg = default_inst[(Num * 16) + 0];
+	Reg = default_inst[(Num * 8) + 0];
 	CheckDlgButton(IDC_M_AM, Reg & 0x80 ? 1 : 0);
 	CheckDlgButton(IDC_M_VIB, Reg & 0x40 ? 1 : 0);
 	CheckDlgButton(IDC_M_EG, Reg & 0x20 ? 1 : 0);
@@ -233,7 +233,7 @@ void CInstrumentEditorVRC7::LoadInternalPatch(int Num)
 	SetSliderVal(IDC_M_MUL, Reg & 0x0F);
 
 	// Register 1
-	Reg = default_inst[(Num * 16) + 1];
+	Reg = default_inst[(Num * 8) + 1];
 	CheckDlgButton(IDC_C_AM, Reg & 0x80 ? 1 : 0);
 	CheckDlgButton(IDC_C_VIB, Reg & 0x40 ? 1 : 0);
 	CheckDlgButton(IDC_C_EG, Reg & 0x20 ? 1 : 0);
@@ -241,34 +241,34 @@ void CInstrumentEditorVRC7::LoadInternalPatch(int Num)
 	SetSliderVal(IDC_C_MUL, Reg & 0x0F);
 
 	// Register 2
-	Reg = default_inst[(Num * 16) + 2];
+	Reg = default_inst[(Num * 8) + 2];
 	SetSliderVal(IDC_M_KSL, Reg >> 6);
 	SetSliderVal(IDC_TL, Reg & 0x3F);
 
 	// Register 3
-	Reg = default_inst[(Num * 16) + 3];
+	Reg = default_inst[(Num * 8) + 3];
 	SetSliderVal(IDC_C_KSL, Reg >> 6);
 	SetSliderVal(IDC_FB, 7 - (Reg & 7));
 	CheckDlgButton(IDC_C_DM, Reg & 0x10 ? 1 : 0);
 	CheckDlgButton(IDC_M_DM, Reg & 0x08 ? 1 : 0);
 
 	// Register 4
-	Reg = default_inst[(Num * 16) + 4];
+	Reg = default_inst[(Num * 8) + 4];
 	SetSliderVal(IDC_M_AR, Reg >> 4);
 	SetSliderVal(IDC_M_DR, Reg & 0x0F);
 
 	// Register 5
-	Reg = default_inst[(Num * 16) + 5];
+	Reg = default_inst[(Num * 8) + 5];
 	SetSliderVal(IDC_C_AR, Reg >> 4);
 	SetSliderVal(IDC_C_DR, Reg & 0x0F);
 
 	// Register 6
-	Reg = default_inst[(Num * 16) + 6];
+	Reg = default_inst[(Num * 8) + 6];
 	SetSliderVal(IDC_M_SL, Reg >> 4);
 	SetSliderVal(IDC_M_RR, Reg & 0x0F);
 
 	// Register 7
-	Reg = default_inst[(Num * 16) + 7];
+	Reg = default_inst[(Num * 8) + 7];
 	SetSliderVal(IDC_C_SL, Reg >> 4);
 	SetSliderVal(IDC_C_RR, Reg & 0x0F);
 
@@ -382,7 +382,6 @@ void CInstrumentEditorVRC7::SaveCustomPatch()
 	// Register 7
 	Reg = GetSliderVal(IDC_C_SL) << 4;
 	Reg |= GetSliderVal(IDC_C_RR);
-	m_pInstrument->SetCustomReg(7, Reg);	
 	m_pInstrument->SetCustomReg(7, Reg);
 
 	WritePatchText(0);
@@ -448,7 +447,7 @@ void CInstrumentEditorVRC7::OnCopy()
 	int patch = m_pInstrument->GetPatch();
 	// Assemble a MML string
 	for (int i = 0; i < 8; ++i)
-		MML.AppendFormat(_T("$%02X "), (patch == 0) ? (unsigned char)(m_pInstrument->GetCustomReg(i)) : default_inst[patch * 16 + i]);
+		MML.AppendFormat(_T("$%02X "), (patch == 0) ? (unsigned char)(m_pInstrument->GetCustomReg(i)) : default_inst[patch * 8 + i]);
 	
 	CClipboard Clipboard(this, CF_TEXT);
 
@@ -465,7 +464,7 @@ void CInstrumentEditorVRC7::CopyAsPlainText()		// // //
 	int patch = m_pInstrument->GetPatch();
 	unsigned char reg[8] = {};
 	for (int i = 0; i < 8; ++i)
-		reg[i] = patch == 0 ? m_pInstrument->GetCustomReg(i) : default_inst[patch * 16 + i];
+		reg[i] = patch == 0 ? m_pInstrument->GetCustomReg(i) : default_inst[patch * 8 + i];
 	
 	CString MML;
 	GetDlgItemTextA(IDC_PATCH, MML);
