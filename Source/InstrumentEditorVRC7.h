@@ -41,6 +41,7 @@ protected:
 	void LoadCustomPatch();
 	void SaveCustomPatch();
 	void LoadInternalPatch(int Num);
+	void WritePatchText(int Patch);
 
 	void SetupSlider(int Slider, int Max);
 	int GetSliderVal(int Slider);

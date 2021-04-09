@@ -271,6 +271,8 @@ void CInstrumentEditorVRC7::LoadInternalPatch(int Num)
 	Reg = default_inst[(Num * 16) + 7];
 	SetSliderVal(IDC_C_SL, Reg >> 4);
 	SetSliderVal(IDC_C_RR, Reg & 0x0F);
+
+	WritePatchText(Num);
 }
 
 void CInstrumentEditorVRC7::LoadCustomPatch()
@@ -326,6 +328,8 @@ void CInstrumentEditorVRC7::LoadCustomPatch()
 	Reg = m_pInstrument->GetCustomReg(7);
 	SetSliderVal(IDC_C_SL, Reg >> 4);
 	SetSliderVal(IDC_C_RR, Reg & 0x0F);
+
+	WritePatchText(0);
 }
 
 void CInstrumentEditorVRC7::SaveCustomPatch()
@@ -379,6 +383,20 @@ void CInstrumentEditorVRC7::SaveCustomPatch()
 	Reg = GetSliderVal(IDC_C_SL) << 4;
 	Reg |= GetSliderVal(IDC_C_RR);
 	m_pInstrument->SetCustomReg(7, Reg);	
+	m_pInstrument->SetCustomReg(7, Reg);
+
+	WritePatchText(0);
+}
+
+void CInstrumentEditorVRC7::WritePatchText(int Patch)
+{
+	CString patchtxt;
+
+	for (int i = 0; i < 8; ++i)
+		patchtxt.AppendFormat(_T("$%02X "), (Patch == 0) ? (unsigned char)(m_pInstrument->GetCustomReg(i)) : default_inst[Patch * 8 + i]);
+
+	CWnd* pPatchText = GetDlgItem(IDC_PATCH_TEXT);
+	pPatchText->SetWindowText(patchtxt);
 }
 
 void CInstrumentEditorVRC7::OnBnClickedCheckbox()
