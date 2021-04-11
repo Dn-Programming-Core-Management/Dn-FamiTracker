@@ -525,13 +525,29 @@ void CInstrumentEditorVRC7::PasteSettings(LPCTSTR pString)
 
 BOOL CInstrumentEditorVRC7::PreTranslateMessage(MSG* pMsg)
 {
-	if (pMsg->message == WM_KEYDOWN && m_pInstrument != NULL && GetFocus() != GetDlgItem(IDC_PATCH)) {
-		int Patch = m_pInstrument->GetPatch();
-		switch (pMsg->wParam) {
+	int Patch = m_pInstrument->GetPatch();
+
+	if (pMsg->message == WM_KEYDOWN && m_pInstrument != NULL) {
+		if (GetFocus() == GetDlgItem(IDC_PATCH_TEXT)) {
+			if (pMsg->wParam == VK_RETURN) {
+				CString patchtxt;
+				CWnd* pPatchText = GetDlgItem(IDC_PATCH_TEXT);
+				pPatchText->GetWindowText(patchtxt);
+				if (Patch != 0) {
+					SelectPatch(0);
+					static_cast<CComboBox*>(GetDlgItem(IDC_PATCH))->SetCurSel(0);
+					PasteSettings(patchtxt);
+				}
+				else
+					PasteSettings(patchtxt);
+			}
+		}
+		else if (GetFocus() != GetDlgItem(IDC_PATCH)) {
+			switch (pMsg->wParam) {
 			case VK_DOWN:
 				if (Patch < 15) {
 					SelectPatch(Patch + 1);
-					static_cast<CComboBox*>(GetDlgItem(IDC_PATCH))->SetCurSel(Patch + 1);
+						static_cast<CComboBox*>(GetDlgItem(IDC_PATCH))->SetCurSel(Patch + 1);
 				}
 				break;
 			case VK_UP:
@@ -540,6 +556,7 @@ BOOL CInstrumentEditorVRC7::PreTranslateMessage(MSG* pMsg)
 					static_cast<CComboBox*>(GetDlgItem(IDC_PATCH))->SetCurSel(Patch - 1);
 				}
 				break;
+			}
 		}
 	}
 
