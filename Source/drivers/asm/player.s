@@ -558,7 +558,7 @@ ft_read_note:
 	bcs @VolumeCommand
 	cmp #$E0							; See if a quick instrument command
 	bcs @InstCommand
-	and #$7F							; Look up the command address
+	asl a								; Look up the command address
 	sty var_Temp						; from the command table
 	tay
 	lda ft_command_table, y
@@ -653,61 +653,61 @@ ft_get_hold_clear:
 ft_command_table:
 	.word ft_cmd_instrument			; 80
 ;	.word ft_cmd_hold
-	.word ft_set_hold				; 82
-	.word ft_cmd_duration			; 84
-	.word ft_cmd_noduration			; 86
-	.word ft_cmd_speed				; 88
-	.word ft_cmd_tempo				; 8A
-	.word ft_cmd_jump				; 8C
-	.word ft_cmd_skip				; 8E
-	.word ft_cmd_halt				; 90
-	.word ft_cmd_effvolume			; 92
-	.word ft_cmd_clear				; 94
-	.word ft_cmd_porta_up			; 96
-	.word ft_cmd_porta_down			; 98
-	.word ft_cmd_portamento			; 9A
-	.word ft_cmd_arpeggio			; 9C
-	.word ft_cmd_vibrato			; 9E
-	.word ft_cmd_tremolo			; A0
-	.word ft_cmd_pitch				; A2
-	.word ft_cmd_reset_pitch		; A4
-	.word ft_cmd_duty				; A6
-	.word ft_cmd_delay				; A8
-	.word ft_cmd_sweep				; AA
-	.word ft_cmd_dac				; AC
-	.word ft_cmd_sample_offset		; AE
-	.word ft_cmd_slide_up			; B0
-	.word ft_cmd_slide_down			; B2
-	.word ft_cmd_vol_slide			; B4
-	.word ft_cmd_note_cut			; B6
-	.word ft_cmd_retrigger			; B8
-	.word ft_cmd_dpcm_pitch			; BA
+	.word ft_set_hold				; 81
+	.word ft_cmd_duration			; 82
+	.word ft_cmd_noduration			; 83
+	.word ft_cmd_speed				; 84
+	.word ft_cmd_tempo				; 85
+	.word ft_cmd_jump				; 86
+	.word ft_cmd_skip				; 87
+	.word ft_cmd_halt				; 88
+	.word ft_cmd_effvolume			; 89
+	.word ft_cmd_clear				; 8A
+	.word ft_cmd_porta_up			; 8B
+	.word ft_cmd_porta_down			; 8C
+	.word ft_cmd_portamento			; 8D
+	.word ft_cmd_arpeggio			; 8E
+	.word ft_cmd_vibrato			; 8F
+	.word ft_cmd_tremolo			; 90
+	.word ft_cmd_pitch				; 91
+	.word ft_cmd_reset_pitch		; 92
+	.word ft_cmd_duty				; 93
+	.word ft_cmd_delay				; 94
+	.word ft_cmd_sweep				; 95
+	.word ft_cmd_dac				; 96
+	.word ft_cmd_sample_offset		; 97
+	.word ft_cmd_slide_up			; 98
+	.word ft_cmd_slide_down			; 99
+	.word ft_cmd_vol_slide			; 9A
+	.word ft_cmd_note_cut			; 9B
+	.word ft_cmd_retrigger			; 9C
+	.word ft_cmd_dpcm_pitch			; 9D
 	;;; ;; ;
-	.word ft_cmd_note_release		; BC
-	.word ft_cmd_linear_counter		; BE
-	.word ft_cmd_groove				; C0
-	.word ft_cmd_delayed_volume		; C2
-	.word ft_cmd_transpose			; C4
+	.word ft_cmd_note_release		; 9E
+	.word ft_cmd_linear_counter		; 9F
+	.word ft_cmd_groove				; A0
+	.word ft_cmd_delayed_volume		; A1
+	.word ft_cmd_transpose			; A2
 .if .defined(USE_VRC7)
-	.word ft_cmd_vrc7_patch_change
-	.word ft_cmd_vrc7_port
-	.word ft_cmd_vrc7_write
+	.word ft_cmd_vrc7_patch_change	; A3
+	.word ft_cmd_vrc7_port			; A4
+	.word ft_cmd_vrc7_write			; A5
 .endif
 .if .defined(USE_FDS)
-	.word ft_cmd_fds_mod_depth
-	.word ft_cmd_fds_mod_rate_hi
-	.word ft_cmd_fds_mod_rate_lo
-	.word ft_cmd_fds_volume
-	.word ft_cmd_fds_mod_bias
+	.word ft_cmd_fds_mod_depth		; A6
+	.word ft_cmd_fds_mod_rate_hi	; A7
+	.word ft_cmd_fds_mod_rate_lo	; A8
+	.word ft_cmd_fds_volume			; A9
+	.word ft_cmd_fds_mod_bias		; AA
 .endif
 .if .defined(USE_N163)
-	.word ft_cmd_n163_wave_buffer
+	.word ft_cmd_n163_wave_buffer	; AB
 .endif
 .if .defined(USE_S5B)		;;; ;; ;
-	.word ft_cmd_s5b_env_type
-	.word ft_cmd_s5b_env_rate_hi
-	.word ft_cmd_s5b_env_rate_lo
-	.word ft_cmd_s5b_noise
+	.word ft_cmd_s5b_env_type		; AC
+	.word ft_cmd_s5b_env_rate_hi	; AD
+	.word ft_cmd_s5b_env_rate_lo	; AE
+	.word ft_cmd_s5b_noise			; AF
 .endif				; ;; ;;;
 ;	.word ft_cmd_expand
 

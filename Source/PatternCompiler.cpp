@@ -672,7 +672,7 @@ unsigned char CPatternCompiler::Command(int cmd) const
 		// VRC6
 	}
 
-	return (cmd << 1) | 0x80;
+	return cmd | 0x80;
 }
 
 unsigned int CPatternCompiler::FindInstrument(int Instrument) const
