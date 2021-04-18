@@ -1658,6 +1658,7 @@ void CSoundGen::LoadMachineSettings()		// // //
 	{
 		CSingleLock l(&m_csAPULock, TRUE);		// // //
 		m_pAPU->ChangeMachineRate(m_iMachineType == NTSC ? MACHINE_NTSC : MACHINE_PAL, Rate);		// // //
+		m_pAPU->Reset();
 	}
 
 #if WRITE_VOLUME_FILE
