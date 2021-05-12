@@ -160,7 +160,7 @@ float CMixer::GetAttenuation() const
 	return Attenuation;
 }
 
-constexpr int N163_RANGE = 1200;
+constexpr int N163_RANGE = 1600;
 
 void CMixer::RecomputeMixing()
 {
@@ -212,8 +212,8 @@ void CMixer::RecomputeMixing()
 
 	SynthVRC6.volume(Volume * 3.98333f * m_fLevelVRC6, 500);
 	SynthMMC5.volume(Volume * 1.18421f * m_fLevelMMC5, 130);
-	SynthS5B.volume(Volume * m_fLevelS5B, 1600);  // Not checked
 	SynthN163.volume(Volume * 1.1f * m_fLevelN163, N163_RANGE);  // Not checked
+	SynthS5B.volume(Volume * m_fLevelS5B, 1200);  // Not checked
 }
 
 /// CN163::Process() calls CMixer::SetNamcoVolume().
