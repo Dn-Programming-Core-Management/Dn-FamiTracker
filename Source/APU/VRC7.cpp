@@ -7,11 +7,11 @@
 ** the Free Software Foundation; either version 2 of the License, or
 ** (at your option) any later version.
 **
-** This program is distributed in the hope that it will be useful, 
+** This program is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
-** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-** Library General Public License for more details.  To obtain a 
-** copy of the GNU Library General Public License, write to the Free 
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+** Library General Public License for more details.  To obtain a
+** copy of the GNU Library General Public License, write to the Free
 ** Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 **
 ** Any permitted reproduction of these routines, in whole or in part,
@@ -25,17 +25,10 @@
 #include "VRC7.h"
 #include "../RegisterState.h"		// // //
 
-const float  CVRC7::AMPLIFY	  = 4.6f;		// Mixing amplification, VRC7 patch 14 is 4,88 times stronger than a 50% square @ v=15
+const float  CVRC7::AMPLIFY = 4.6f;		// Mixing amplification, VRC7 patch 14 is 4, 88 times stronger than a 50 % square @ v = 15
 const uint32_t CVRC7::OPL_CLOCK = 3579545;	// Clock frequency
 
-CVRC7::CVRC7(CMixer* pMixer) :
-	CSoundChip(pMixer),
-	m_pBuffer(NULL),
-	m_pOPLLInt(NULL),
-	m_fVolume(1.0f),
-	m_iMaxSamples(0),
-	m_iSoundReg(0),
-	m_iPatchTone(theApp.GetSettings()->Emulation.iVRC7Patch)
+CVRC7::CVRC7()
 {
 
 	m_pRegisterLogger->AddRegisterRange(0x00, 0x07);		// // //
@@ -59,6 +52,19 @@ void CVRC7::Reset()
 {
 	m_iBufferPtr = 0;
 	m_iTime = 0;
+	m_BlipVRC7.clear();
+}
+
+void CVRC7::UpdateFilter(blip_eq_t eq)
+{
+	m_SynthVRC7.treble_eq(eq);
+	m_BlipVRC7.set_sample_rate(eq.sample_rate);
+	m_BlipVRC7.bass_freq(0);
+}
+
+void CVRC7::SetClockRate(uint32_t Rate)
+{
+	m_BlipVRC7.clock_rate(Rate);
 }
 
 void CVRC7::SetSampleSpeed(uint32_t SampleRate, double ClockRate, uint32_t FrameRate)
@@ -70,7 +76,7 @@ void CVRC7::SetSampleSpeed(uint32_t SampleRate, double ClockRate, uint32_t Frame
 	m_pOPLLInt = OPLL_new(OPL_CLOCK, SampleRate);
 
 	OPLL_reset(m_pOPLLInt);
-	OPLL_reset_patch(m_pOPLLInt, theApp.GetSettings()->Emulation.iVRC7Patch);
+	OPLL_resetPatch(m_pOPLLInt, m_iPatchTone);
 
 	m_iMaxSamples = (SampleRate / FrameRate) * 2;	// Allow some overflow
 
@@ -109,16 +115,25 @@ uint8_t CVRC7::Read(uint16_t Address, bool &Mapped)
 	return 0;
 }
 
-void CVRC7::EndFrame()
+void CVRC7::Process(uint32_t Time, Blip_Buffer& Output)
 {
-	uint32_t WantSamples = m_pMixer->GetMixSampleCount(m_iTime);
+	// This cannot run in sync, fetch all samples at end of frame instead
+	for (int i = 0; i < 6; i++)
+		m_ChannelLevels[i].update(OPLL_getchanvol(i));
+
+	m_iTime += Time;
+}
+
+void CVRC7::EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer)
+{
+	uint32_t WantSamples = Output.count_samples(m_iTime);
 
 	static int32_t LastSample = 0;
 
 	// Generate VRC7 samples
 	while (m_iBufferPtr < WantSamples) {
 		int32_t RawSample = OPLL_calc(m_pOPLLInt);
-		
+
 		// Clipping is slightly asymmetric
 		if (RawSample > 3600)
 			RawSample = 3600;
@@ -137,16 +152,11 @@ void CVRC7::EndFrame()
 		LastSample = Sample;
 	}
 
-	m_pMixer->MixSamples((blip_amplitude_t*)m_pBuffer, WantSamples);
+	Output.mix_samples((blip_amplitude_t*)m_pBuffer, WantSamples);
 
 	m_iBufferPtr -= WantSamples;
-	m_iTime = 0;
-}
 
-void CVRC7::Process(uint32_t Time)
-{
-	// This cannot run in sync, fetch all samples at end of frame instead
-	m_iTime += Time;
+	m_iTime = 0;
 }
 
 double CVRC7::GetFreq(int Channel) const		// // //
@@ -157,4 +167,31 @@ double CVRC7::GetFreq(int Channel) const		// // //
 	Lo |= (Hi << 8) & 0x100;
 	Hi >>= 1;
 	return 49716. * Lo / (1 << (19 - Hi));
+}
+
+int CVRC7::GetChannelLevel(int Channel)
+{
+	ASSERT(0 <= Channel && Channel < 9);
+	if (0 <= Channel && Channel < 6) {
+		return m_ChannelLevels[Channel].getLevel();
+	}
+	return 0;
+}
+
+int CVRC7::GetChannelLevelRange(int Channel) const
+{
+	// unknown for now
+	return 15;
+}
+
+void CVRC7::UpdateMixLevel(double v)
+{
+	// the range of the emulator seems to be 65536
+	m_SynthVRC7.volume(v * AMPLIFY, 10000);
+}
+
+void CVRC7::UpdatePatchSet(int Patchset)
+{
+	m_iPatchTone = Patchset;
+	OPLL_resetPatch(m_pOPLLInt, m_iPatchTone);
 }
