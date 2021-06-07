@@ -532,7 +532,9 @@ namespace xgm
   void NES_DMC::InitializeTNDTable(double wt, double wn, double wd) {
 
     // volume adjusted by 0.95 based on empirical measurements
-    const double MASTER = 8192.0 * 0.95;
+    // MDFourier tests show that this seems to further deviate from hardware
+	// see https://docs.google.com/document/d/1LIiskXiEBOyMX3j9SEjCB5hhUVRQFvG4eWz7dZC2cI8
+      const double MASTER = 8192.0;// * 0.95;
     // truthfully, the nonlinear curve does not appear to match well
     // with my tests. Do more testing of the APU/DMC DAC later.
     // this value keeps the triangle consistent with measured levels,
