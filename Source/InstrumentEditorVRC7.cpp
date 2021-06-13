@@ -30,9 +30,52 @@
 #include "InstrumentEditorVRC7.h"
 #include "Clipboard.h"
 
-static unsigned char default_inst[(8+3)*16] = 
+#include "FamiTracker.h"
+#include "Settings.h"
+
+// based off NSFPlay emu2413's hardware patch scheme
+#define OPLL_TONE_NUM 9
+static unsigned char default_inst[OPLL_TONE_NUM][(16 + 3) * 8] =
 {
-#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_nuke.h" 
+	{
+#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_nuke.h"
+	},
+	{
+#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_rw.h"
+	},
+	{
+#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_ft36.h"
+	},
+	{
+#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_ft35.h"
+	},
+	{
+#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_mo.h"
+	},
+	{
+#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_kt2.h"
+	},
+	{
+#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_kt1.h"
+	},
+	{
+#include "APU/nsfplay/xgm/devices/Sound/legacy/2413tone.h"
+	},
+	{
+#include "APU/nsfplay/xgm/devices/Sound/legacy/281btone.h"
+	},
+};
+
+enum PatchTone {
+	VRC7_NUKE = 0,
+	VRC7_RW = 1,
+	VRC7_FT36 = 2,
+	VRC7_FT35 = 3,
+	VRC7_MO = 4,
+	VRC7_KT2 = 5,
+	VRC7_KT1 = 6,
+	TONE_2413 = 7,
+	TONE_281B = 8,
 };
 
 // CInstrumentSettingsVRC7 dialog
@@ -80,10 +123,12 @@ BOOL CInstrumentEditorVRC7::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
+	// is this acceptable to do
+	m_iPatchTone = theApp.GetSettings()->Emulation.iVRC7Patch;
+
 	CComboBox *pPatchBox = static_cast<CComboBox*>(GetDlgItem(IDC_PATCH));
 	CString Text;
-
-	const _TCHAR* const PATCH_NAME[16] = {
+	const _TCHAR* const VRC7_PATCH_NAME[16] = {
 		_T("(custom patch)"),
 		_T("Bell"),
 		_T("Guitar"),
@@ -101,10 +146,71 @@ BOOL CInstrumentEditorVRC7::OnInitDialog()
 		_T("Synthesizer"),
 		_T("Chorus")
 	};
+	const _TCHAR* const YM2413_PATCH_NAME[16] = {
+		_T("(custom patch)"),
+		_T("Violin"),
+		_T("Guitar"),
+		_T("Piano"),
+		_T("Flute"),
+		_T("Clarinet"),
+		_T("Oboe"),
+		_T("Trumpet"),
+		_T("Organ"),
+		_T("Horn"),
+		_T("Synthesizer"),
+		_T("Harpsichord"),
+		_T("Vibraphone"),
+		_T("Synthsizer Bass"),
+		_T("Acoustic Bass"),
+		_T("Electric Guitar")
+	};
+	const _TCHAR* const YMF281B_PATCH_NAME[16] = {
+		_T("(custom patch)"),
+		_T("Electric Strings"),
+		_T("Bow Wow"),
+		_T("Electric Guitar"),
+		_T("Organ"),
+		_T("Clarinet"),
+		_T("Saxophone"),
+		_T("Trumpet"),
+		_T("Street Organ"),
+		_T("Synth Brass"),
+		_T("Electric Piano"),
+		_T("Bass"),
+		_T("Vibraphone"),
+		_T("Chimes"),
+		_T("Tom Tom II"),
+		_T("Noise")
+	};
 
-	for (int i = 0; i < 16; ++i) {
-		Text.Format(_T("Patch #%i - %s"), i, PATCH_NAME[i]);
-		pPatchBox->AddString(Text);
+	switch (m_iPatchTone) {
+	// various VRC7 patch versions
+	case VRC7_NUKE:
+	case VRC7_RW:
+	case VRC7_FT36:
+	case VRC7_FT35:
+	case VRC7_MO:
+	case VRC7_KT2:
+	case VRC7_KT1:
+		for (int i = 0; i < 16; ++i) {
+			Text.Format(_T("Patch #%i - %s"), i, VRC7_PATCH_NAME[i]);
+			pPatchBox->AddString(Text);
+		}
+		break;
+	// YM2413 tone by Mitsutaka Okazaki, 2020
+	case TONE_2413:
+		for (int i = 0; i < 16; ++i) {
+			Text.Format(_T("Patch #%i - %s"), i, YM2413_PATCH_NAME[i]);
+			pPatchBox->AddString(Text);
+		}
+		break;
+	// YMF281B tone by Chabin (4/10/2004) with fixes from plgDavid
+	case TONE_281B:
+		for (int i = 0; i < 16; ++i) {
+			Text.Format(_T("Patch #%i - %s"), i, YMF281B_PATCH_NAME[i]);
+			pPatchBox->AddString(Text);
+		}
+		break;
 	}
 
 	pPatchBox->SetCurSel(0);
@@ -225,7 +331,7 @@ void CInstrumentEditorVRC7::LoadInternalPatch(int Num)
 	GetDlgItem(IDC_PASTE)->EnableWindow(FALSE);
 
 	// Register 0
-	Reg = default_inst[(Num * 8) + 0];
+	Reg = default_inst[m_iPatchTone][(Num * 8) + 0];
 	CheckDlgButton(IDC_M_AM, Reg & 0x80 ? 1 : 0);
 	CheckDlgButton(IDC_M_VIB, Reg & 0x40 ? 1 : 0);
 	CheckDlgButton(IDC_M_EG, Reg & 0x20 ? 1 : 0);
@@ -233,7 +339,7 @@ void CInstrumentEditorVRC7::LoadInternalPatch(int Num)
 	SetSliderVal(IDC_M_MUL, Reg & 0x0F);
 
 	// Register 1
-	Reg = default_inst[(Num * 8) + 1];
+	Reg = default_inst[m_iPatchTone][(Num * 8) + 1];
 	CheckDlgButton(IDC_C_AM, Reg & 0x80 ? 1 : 0);
 	CheckDlgButton(IDC_C_VIB, Reg & 0x40 ? 1 : 0);
 	CheckDlgButton(IDC_C_EG, Reg & 0x20 ? 1 : 0);
@@ -241,34 +347,34 @@ void CInstrumentEditorVRC7::LoadInternalPatch(int Num)
 	SetSliderVal(IDC_C_MUL, Reg & 0x0F);
 
 	// Register 2
-	Reg = default_inst[(Num * 8) + 2];
+	Reg = default_inst[m_iPatchTone][(Num * 8) + 2];
 	SetSliderVal(IDC_M_KSL, Reg >> 6);
 	SetSliderVal(IDC_TL, Reg & 0x3F);
 
 	// Register 3
-	Reg = default_inst[(Num * 8) + 3];
+	Reg = default_inst[m_iPatchTone][(Num * 8) + 3];
 	SetSliderVal(IDC_C_KSL, Reg >> 6);
 	SetSliderVal(IDC_FB, 7 - (Reg & 7));
 	CheckDlgButton(IDC_C_DM, Reg & 0x10 ? 1 : 0);
 	CheckDlgButton(IDC_M_DM, Reg & 0x08 ? 1 : 0);
 
 	// Register 4
-	Reg = default_inst[(Num * 8) + 4];
+	Reg = default_inst[m_iPatchTone][(Num * 8) + 4];
 	SetSliderVal(IDC_M_AR, Reg >> 4);
 	SetSliderVal(IDC_M_DR, Reg & 0x0F);
 
 	// Register 5
-	Reg = default_inst[(Num * 8) + 5];
+	Reg = default_inst[m_iPatchTone][(Num * 8) + 5];
 	SetSliderVal(IDC_C_AR, Reg >> 4);
 	SetSliderVal(IDC_C_DR, Reg & 0x0F);
 
 	// Register 6
-	Reg = default_inst[(Num * 8) + 6];
+	Reg = default_inst[m_iPatchTone][(Num * 8) + 6];
 	SetSliderVal(IDC_M_SL, Reg >> 4);
 	SetSliderVal(IDC_M_RR, Reg & 0x0F);
 
 	// Register 7
-	Reg = default_inst[(Num * 8) + 7];
+	Reg = default_inst[m_iPatchTone][(Num * 8) + 7];
 	SetSliderVal(IDC_C_SL, Reg >> 4);
 	SetSliderVal(IDC_C_RR, Reg & 0x0F);
 
@@ -392,7 +498,7 @@ void CInstrumentEditorVRC7::WritePatchText(int Patch)
 	CString patchtxt;
 
 	for (int i = 0; i < 8; ++i)
-		patchtxt.AppendFormat(_T("$%02X "), (Patch == 0) ? (unsigned char)(m_pInstrument->GetCustomReg(i)) : default_inst[Patch * 8 + i]);
+		patchtxt.AppendFormat(_T("$%02X "), (Patch == 0) ? (unsigned char)(m_pInstrument->GetCustomReg(i)) : default_inst[m_iPatchTone][Patch * 8 + i]);
 
 	CWnd* pPatchText = GetDlgItem(IDC_PATCH_TEXT);
 	pPatchText->SetWindowText(patchtxt);
@@ -447,7 +553,7 @@ void CInstrumentEditorVRC7::OnCopy()
 	int patch = m_pInstrument->GetPatch();
 	// Assemble a MML string
 	for (int i = 0; i < 8; ++i)
-		MML.AppendFormat(_T("$%02X "), (patch == 0) ? (unsigned char)(m_pInstrument->GetCustomReg(i)) : default_inst[patch * 8 + i]);
+		MML.AppendFormat(_T("$%02X "), (patch == 0) ? (unsigned char)(m_pInstrument->GetCustomReg(i)) : default_inst[m_iPatchTone][patch * 8 + i]);
 	
 	CClipboard Clipboard(this, CF_TEXT);
 
@@ -464,7 +570,7 @@ void CInstrumentEditorVRC7::CopyAsPlainText()		// // //
 	int patch = m_pInstrument->GetPatch();
 	unsigned char reg[8] = {};
 	for (int i = 0; i < 8; ++i)
-		reg[i] = patch == 0 ? m_pInstrument->GetCustomReg(i) : default_inst[patch * 8 + i];
+		reg[i] = patch == 0 ? m_pInstrument->GetCustomReg(i) : default_inst[m_iPatchTone][patch * 8 + i];
 	
 	CString MML;
 	GetDlgItemTextA(IDC_PATCH, MML);

@@ -51,6 +51,9 @@ protected:
 	void PasteSettings(LPCTSTR pString);
 	void CopyAsPlainText();		// // //
 
+private:
+	int m_iPatchTone;
+
 protected:
 	std::shared_ptr<CInstrumentVRC7> m_pInstrument;
 
