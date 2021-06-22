@@ -550,7 +550,14 @@ void CInstrumentEditorVRC7::PasteSettings(LPCTSTR pString)
 		m_pInstrument->SetCustomReg(i, value);
 	}
 
-	LoadCustomPatch();
+	int Patch = m_pInstrument->GetPatch();
+	if (Patch != CUSTOM_PATCH) {
+		SelectPatch(CUSTOM_PATCH);
+		static_cast<CComboBox*>(GetDlgItem(IDC_PATCH))->SetCurSel(0);
+		LoadPatch(CUSTOM_PATCH);
+	}
+	else
+		LoadPatch(CUSTOM_PATCH);
 }
 
 BOOL CInstrumentEditorVRC7::PreTranslateMessage(MSG* pMsg)
