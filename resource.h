@@ -624,6 +624,7 @@
 #define IDC_VERSIONDATE_MSG             1489
 #define IDC_RELEASE_MSG                 1492
 #define IDC_ICON_STATIC                 1493
+#define IDC_PATCH_TEXT                  1495
 #define IDS_FIND_BEGIN                  9001
 #define IDS_FIND_END                    9002
 #define ID_TRACKER_PLAY                 32771
@@ -796,7 +797,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        377
 #define _APS_NEXT_COMMAND_VALUE         33215
-#define _APS_NEXT_CONTROL_VALUE         1495
+#define _APS_NEXT_CONTROL_VALUE         1496
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif

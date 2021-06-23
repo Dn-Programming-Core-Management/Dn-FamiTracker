@@ -30,9 +30,43 @@
 #include "InstrumentEditorVRC7.h"
 #include "Clipboard.h"
 
-static unsigned char default_inst[(16+3)*16] = 
+#include "FamiTracker.h"
+#include "Settings.h"
+
+static constexpr size_t REGS_PER_INSTR = 8;
+static constexpr int CUSTOM_PATCH = 0;
+
+// based off NSFPlay emu2413's hardware patch scheme
+static constexpr int OPLL_TONE_NUM = 9;
+static constexpr uint8_t DEFAULT_PATCHES[OPLL_TONE_NUM][(16 + 3) * REGS_PER_INSTR] =
 {
-#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_nuke.h" 
+	{
+#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_nuke.h"
+	},
+	{
+#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_rw.h"
+	},
+	{
+#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_ft36.h"
+	},
+	{
+#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_ft35.h"
+	},
+	{
+#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_mo.h"
+	},
+	{
+#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_kt2.h"
+	},
+	{
+#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_kt1.h"
+	},
+	{
+#include "APU/nsfplay/xgm/devices/Sound/legacy/2413tone.h"
+	},
+	{
+#include "APU/nsfplay/xgm/devices/Sound/legacy/281btone.h"
+	},
 };
 
 // CInstrumentSettingsVRC7 dialog
@@ -80,10 +114,12 @@ BOOL CInstrumentEditorVRC7::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	CComboBox *pPatchBox = static_cast<CComboBox*>(GetDlgItem(IDC_PATCH));
-	CString Text;
+	PatchBank = (PatchTone)theApp.GetSettings()->Emulation.iVRC7Patch;
 
-	const _TCHAR* const PATCH_NAME[16] = {
+	CComboBox* pPatchBox = static_cast<CComboBox*>(GetDlgItem(IDC_PATCH));
+	CString Text;
+	const _TCHAR* VRC7_patchnames[16] = {
+		// various VRC7 patch versions
 		_T("(custom patch)"),
 		_T("Bell"),
 		_T("Guitar"),
@@ -101,9 +137,67 @@ BOOL CInstrumentEditorVRC7::OnInitDialog()
 		_T("Synthesizer"),
 		_T("Chorus")
 	};
+	const _TCHAR* YM2413_patchnames[16] = {
+		// YM2413 tone by Mitsutaka Okazaki, 2020
+		_T("(custom patch)"),
+		_T("Violin"),
+		_T("Guitar"),
+		_T("Piano"),
+		_T("Flute"),
+		_T("Clarinet"),
+		_T("Oboe"),
+		_T("Trumpet"),
+		_T("Organ"),
+		_T("Horn"),
+		_T("Synthesizer"),
+		_T("Harpsichord"),
+		_T("Vibraphone"),
+		_T("Synthsizer Bass"),
+		_T("Acoustic Bass"),
+		_T("Electric Guitar")
+	};
+	const _TCHAR* YMF281B_patchnames[16] = {
+		// YMF281B tone by Chabin (4/10/2004) with fixes from plgDavid
+		_T("(custom patch)"),
+		_T("Electric Strings"),
+		_T("Bow Wow"),
+		_T("Electric Guitar"),
+		_T("Organ"),
+		_T("Clarinet"),
+		_T("Saxophone"),
+		_T("Trumpet"),
+		_T("Street Organ"),
+		_T("Synth Brass"),
+		_T("Electric Piano"),
+		_T("Bass"),
+		_T("Vibraphone"),
+		_T("Chimes"),
+		_T("Tom Tom II"),
+		_T("Noise")
+	};
+
+	_TCHAR const* const* patch_names;
+
+	switch (PatchBank) {
+	case VRC7_NUKE:
+	case VRC7_RW:
+	case VRC7_FT36:
+	case VRC7_FT35:
+	case VRC7_MO:
+	case VRC7_KT2:
+	case VRC7_KT1:
+		patch_names = VRC7_patchnames;
+		break;
+	case TONE_2413:
+		patch_names = YM2413_patchnames;
+		break;
+	case TONE_281B:
+		patch_names = YMF281B_patchnames;
+		break;
+	}
 
 	for (int i = 0; i < 16; ++i) {
-		Text.Format(_T("Patch #%i - %s"), i, PATCH_NAME[i]);
+		Text.Format(_T("Patch #%i - %s"), i, patch_names[i]);
 		pPatchBox->AddString(Text);
 	}
 
@@ -139,12 +233,8 @@ void CInstrumentEditorVRC7::OnCbnSelchangePatch()
 void CInstrumentEditorVRC7::SelectPatch(int Patch)
 {
 	m_pInstrument->SetPatch(Patch);
-	EnableControls(Patch == 0);
-
-	if (Patch == 0)
-		LoadCustomPatch();
-	else
-		LoadInternalPatch(Patch);
+	EnableControls(Patch == CUSTOM_PATCH);
+	LoadPatch(Patch);
 }
 
 void CInstrumentEditorVRC7::EnableControls(bool bEnable)
@@ -182,12 +272,9 @@ void CInstrumentEditorVRC7::SelectInstrument(std::shared_ptr<CInstrument> pInst)
 
 	pPatchBox->SetCurSel(Patch);
 	
-	if (Patch == 0)
-		LoadCustomPatch();
-	else
-		LoadInternalPatch(Patch);
-	
-	EnableControls(Patch == 0);
+	LoadPatch(Patch);
+
+	EnableControls(Patch == CUSTOM_PATCH);
 }
 
 BOOL CInstrumentEditorVRC7::OnEraseBkgnd(CDC* pDC)
@@ -218,114 +305,53 @@ void CInstrumentEditorVRC7::SetSliderVal(int Slider, int Value)
 	pSlider->SetPos(Value);
 }
 
-void CInstrumentEditorVRC7::LoadInternalPatch(int Num)
+void CInstrumentEditorVRC7::LoadPatch(int Num)
 {
-	unsigned int Reg;
-
-	GetDlgItem(IDC_PASTE)->EnableWindow(FALSE);
+	uint8_t inst_params[8];
+	for (int i = 0; i < 8; ++i)
+		inst_params[i] = FetchPatchByte(PatchBank, Num, i);
 
 	// Register 0
-	Reg = default_inst[(Num * 16) + 0];
-	CheckDlgButton(IDC_M_AM, Reg & 0x80 ? 1 : 0);
-	CheckDlgButton(IDC_M_VIB, Reg & 0x40 ? 1 : 0);
-	CheckDlgButton(IDC_M_EG, Reg & 0x20 ? 1 : 0);
-	CheckDlgButton(IDC_M_KSR2, Reg & 0x10 ? 1 : 0);
-	SetSliderVal(IDC_M_MUL, Reg & 0x0F);
+	CheckDlgButton(IDC_M_AM, inst_params[0] & 0x80 ? 1 : 0);
+	CheckDlgButton(IDC_M_VIB, inst_params[0] & 0x40 ? 1 : 0);
+	CheckDlgButton(IDC_M_EG, inst_params[0] & 0x20 ? 1 : 0);
+	CheckDlgButton(IDC_M_KSR2, inst_params[0] & 0x10 ? 1 : 0);
+	SetSliderVal(IDC_M_MUL, inst_params[0] & 0x0F);
 
 	// Register 1
-	Reg = default_inst[(Num * 16) + 1];
-	CheckDlgButton(IDC_C_AM, Reg & 0x80 ? 1 : 0);
-	CheckDlgButton(IDC_C_VIB, Reg & 0x40 ? 1 : 0);
-	CheckDlgButton(IDC_C_EG, Reg & 0x20 ? 1 : 0);
-	CheckDlgButton(IDC_C_KSR, Reg & 0x10 ? 1 : 0);
-	SetSliderVal(IDC_C_MUL, Reg & 0x0F);
+	CheckDlgButton(IDC_C_AM, inst_params[1] & 0x80 ? 1 : 0);
+	CheckDlgButton(IDC_C_VIB, inst_params[1] & 0x40 ? 1 : 0);
+	CheckDlgButton(IDC_C_EG, inst_params[1] & 0x20 ? 1 : 0);
+	CheckDlgButton(IDC_C_KSR, inst_params[1] & 0x10 ? 1 : 0);
+	SetSliderVal(IDC_C_MUL, inst_params[1] & 0x0F);
 
 	// Register 2
-	Reg = default_inst[(Num * 16) + 2];
-	SetSliderVal(IDC_M_KSL, Reg >> 6);
-	SetSliderVal(IDC_TL, Reg & 0x3F);
+	SetSliderVal(IDC_M_KSL, inst_params[2] >> 6);
+	SetSliderVal(IDC_TL, inst_params[2] & 0x3F);
 
 	// Register 3
-	Reg = default_inst[(Num * 16) + 3];
-	SetSliderVal(IDC_C_KSL, Reg >> 6);
-	SetSliderVal(IDC_FB, 7 - (Reg & 7));
-	CheckDlgButton(IDC_C_DM, Reg & 0x10 ? 1 : 0);
-	CheckDlgButton(IDC_M_DM, Reg & 0x08 ? 1 : 0);
+	SetSliderVal(IDC_C_KSL, inst_params[3] >> 6);
+	SetSliderVal(IDC_FB, 7 - (inst_params[3] & 7));
+	CheckDlgButton(IDC_C_DM, inst_params[3] & 0x10 ? 1 : 0);
+	CheckDlgButton(IDC_M_DM, inst_params[3] & 0x08 ? 1 : 0);
 
 	// Register 4
-	Reg = default_inst[(Num * 16) + 4];
-	SetSliderVal(IDC_M_AR, Reg >> 4);
-	SetSliderVal(IDC_M_DR, Reg & 0x0F);
+	SetSliderVal(IDC_M_AR, inst_params[4] >> 4);
+	SetSliderVal(IDC_M_DR, inst_params[4] & 0x0F);
 
 	// Register 5
-	Reg = default_inst[(Num * 16) + 5];
-	SetSliderVal(IDC_C_AR, Reg >> 4);
-	SetSliderVal(IDC_C_DR, Reg & 0x0F);
+	SetSliderVal(IDC_C_AR, inst_params[5] >> 4);
+	SetSliderVal(IDC_C_DR, inst_params[5] & 0x0F);
 
 	// Register 6
-	Reg = default_inst[(Num * 16) + 6];
-	SetSliderVal(IDC_M_SL, Reg >> 4);
-	SetSliderVal(IDC_M_RR, Reg & 0x0F);
+	SetSliderVal(IDC_M_SL, inst_params[6] >> 4);
+	SetSliderVal(IDC_M_RR, inst_params[6] & 0x0F);
 
 	// Register 7
-	Reg = default_inst[(Num * 16) + 7];
-	SetSliderVal(IDC_C_SL, Reg >> 4);
-	SetSliderVal(IDC_C_RR, Reg & 0x0F);
-}
+	SetSliderVal(IDC_C_SL, inst_params[7] >> 4);
+	SetSliderVal(IDC_C_RR, inst_params[7] & 0x0F);
 
-void CInstrumentEditorVRC7::LoadCustomPatch()
-{
-	unsigned char Reg;
-
-	GetDlgItem(IDC_PASTE)->EnableWindow(TRUE);
-
-	// Register 0
-	Reg = m_pInstrument->GetCustomReg(0);
-	CheckDlgButton(IDC_M_AM, Reg & 0x80 ? 1 : 0);
-	CheckDlgButton(IDC_M_VIB, Reg & 0x40 ? 1 : 0);
-	CheckDlgButton(IDC_M_EG, Reg & 0x20 ? 1 : 0);
-	CheckDlgButton(IDC_M_KSR2, Reg & 0x10 ? 1 : 0);
-	SetSliderVal(IDC_M_MUL, Reg & 0x0F);
-
-	// Register 1
-	Reg = m_pInstrument->GetCustomReg(1);
-	CheckDlgButton(IDC_C_AM, Reg & 0x80 ? 1 : 0);
-	CheckDlgButton(IDC_C_VIB, Reg & 0x40 ? 1 : 0);
-	CheckDlgButton(IDC_C_EG, Reg & 0x20 ? 1 : 0);
-	CheckDlgButton(IDC_C_KSR, Reg & 0x10 ? 1 : 0);
-	SetSliderVal(IDC_C_MUL, Reg & 0x0F);
-
-	// Register 2
-	Reg = m_pInstrument->GetCustomReg(2);
-	SetSliderVal(IDC_M_KSL, Reg >> 6);
-	SetSliderVal(IDC_TL, Reg & 0x3F);
-
-	// Register 3
-	Reg = m_pInstrument->GetCustomReg(3);
-	SetSliderVal(IDC_C_KSL, Reg >> 6);
-	SetSliderVal(IDC_FB, 7 - (Reg & 7));
-	CheckDlgButton(IDC_C_DM, Reg & 0x10 ? 1 : 0);
-	CheckDlgButton(IDC_M_DM, Reg & 0x08 ? 1 : 0);
-
-	// Register 4
-	Reg = m_pInstrument->GetCustomReg(4);
-	SetSliderVal(IDC_M_AR, Reg >> 4);
-	SetSliderVal(IDC_M_DR, Reg & 0x0F);
-
-	// Register 5
-	Reg = m_pInstrument->GetCustomReg(5);
-	SetSliderVal(IDC_C_AR, Reg >> 4);
-	SetSliderVal(IDC_C_DR, Reg & 0x0F);
-
-	// Register 6
-	Reg = m_pInstrument->GetCustomReg(6);
-	SetSliderVal(IDC_M_SL, Reg >> 4);
-	SetSliderVal(IDC_M_RR, Reg & 0x0F);
-
-	// Register 7
-	Reg = m_pInstrument->GetCustomReg(7);
-	SetSliderVal(IDC_C_SL, Reg >> 4);
-	SetSliderVal(IDC_C_RR, Reg & 0x0F);
+	WritePatchText(Num);
 }
 
 void CInstrumentEditorVRC7::SaveCustomPatch()
@@ -378,7 +404,20 @@ void CInstrumentEditorVRC7::SaveCustomPatch()
 	// Register 7
 	Reg = GetSliderVal(IDC_C_SL) << 4;
 	Reg |= GetSliderVal(IDC_C_RR);
-	m_pInstrument->SetCustomReg(7, Reg);	
+	m_pInstrument->SetCustomReg(7, Reg);
+
+	WritePatchText(CUSTOM_PATCH);
+}
+
+void CInstrumentEditorVRC7::WritePatchText(int Patch)
+{
+	CString patchtxt;
+
+	for (int i = 0; i < 8; ++i)
+		patchtxt.AppendFormat(_T("$%02X "), FetchPatchByte(PatchBank, Patch, i));
+
+	CWnd* pPatchText = GetDlgItem(IDC_PATCH_TEXT);
+	pPatchText->SetWindowText(patchtxt);
 }
 
 void CInstrumentEditorVRC7::OnBnClickedCheckbox()
@@ -430,7 +469,7 @@ void CInstrumentEditorVRC7::OnCopy()
 	int patch = m_pInstrument->GetPatch();
 	// Assemble a MML string
 	for (int i = 0; i < 8; ++i)
-		MML.AppendFormat(_T("$%02X "), (patch == 0) ? (unsigned char)(m_pInstrument->GetCustomReg(i)) : default_inst[patch * 16 + i]);
+		MML.AppendFormat(_T("$%02X "), FetchPatchByte(PatchBank, patch, i));
 	
 	CClipboard Clipboard(this, CF_TEXT);
 
@@ -447,7 +486,7 @@ void CInstrumentEditorVRC7::CopyAsPlainText()		// // //
 	int patch = m_pInstrument->GetPatch();
 	unsigned char reg[8] = {};
 	for (int i = 0; i < 8; ++i)
-		reg[i] = patch == 0 ? m_pInstrument->GetCustomReg(i) : default_inst[patch * 16 + i];
+		reg[i] = FetchPatchByte(PatchBank, patch, i);//patch == 0 ? m_pInstrument->GetCustomReg(i) : DEFAULT_PATCHES[PatchBank][patch * 8 + i];
 	
 	CString MML;
 	GetDlgItemTextA(IDC_PATCH, MML);
@@ -468,6 +507,14 @@ void CInstrumentEditorVRC7::CopyAsPlainText()		// // //
 	}
 
 	Clipboard.SetDataPointer(MML.GetBuffer(), MML.GetLength() + 1);
+}
+
+uint8_t CInstrumentEditorVRC7::FetchPatchByte(PatchTone patch_bank_id, int patch, unsigned char patch_byte)
+{
+	if (patch > CUSTOM_PATCH)
+		return DEFAULT_PATCHES[patch_bank_id][patch * REGS_PER_INSTR + patch_byte];
+	else
+		return m_pInstrument->GetCustomReg(patch_byte);
 }
 
 void CInstrumentEditorVRC7::OnPaste()
@@ -503,14 +550,37 @@ void CInstrumentEditorVRC7::PasteSettings(LPCTSTR pString)
 		m_pInstrument->SetCustomReg(i, value);
 	}
 
-	LoadCustomPatch();
+	int Patch = m_pInstrument->GetPatch();
+	if (Patch != CUSTOM_PATCH) {
+		SelectPatch(CUSTOM_PATCH);
+		static_cast<CComboBox*>(GetDlgItem(IDC_PATCH))->SetCurSel(0);
+		LoadPatch(CUSTOM_PATCH);
+	}
+	else
+		LoadPatch(CUSTOM_PATCH);
 }
 
 BOOL CInstrumentEditorVRC7::PreTranslateMessage(MSG* pMsg)
 {
-	if (pMsg->message == WM_KEYDOWN && m_pInstrument != NULL && GetFocus() != GetDlgItem(IDC_PATCH)) {
-		int Patch = m_pInstrument->GetPatch();
-		switch (pMsg->wParam) {
+	int Patch = m_pInstrument->GetPatch();
+
+	if (pMsg->message == WM_KEYDOWN && m_pInstrument != NULL) {
+		if (GetFocus() == GetDlgItem(IDC_PATCH_TEXT)) {
+			if (pMsg->wParam == VK_RETURN) {
+				CString patchtxt;
+				CWnd* pPatchText = GetDlgItem(IDC_PATCH_TEXT);
+				pPatchText->GetWindowText(patchtxt);
+				if (Patch != CUSTOM_PATCH) {
+					SelectPatch(CUSTOM_PATCH);
+					static_cast<CComboBox*>(GetDlgItem(IDC_PATCH))->SetCurSel(0);
+					PasteSettings(patchtxt);
+				}
+				else
+					PasteSettings(patchtxt);
+			}
+		}
+		else if (GetFocus() != GetDlgItem(IDC_PATCH)) {
+			switch (pMsg->wParam) {
 			case VK_DOWN:
 				if (Patch < 15) {
 					SelectPatch(Patch + 1);
@@ -518,11 +588,12 @@ BOOL CInstrumentEditorVRC7::PreTranslateMessage(MSG* pMsg)
 				}
 				break;
 			case VK_UP:
-				if (Patch > 0) {
+				if (Patch > CUSTOM_PATCH) {
 					SelectPatch(Patch - 1);
 					static_cast<CComboBox*>(GetDlgItem(IDC_PATCH))->SetCurSel(Patch - 1);
 				}
 				break;
+			}
 		}
 	}
 

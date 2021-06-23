@@ -22,6 +22,19 @@
 
 class CInstrumentEditorVRC7 : public CInstrumentEditPanel
 {
+
+	enum PatchTone {
+		VRC7_NUKE = 0,
+		VRC7_RW = 1,
+		VRC7_FT36 = 2,
+		VRC7_FT35 = 3,
+		VRC7_MO = 4,
+		VRC7_KT2 = 5,
+		VRC7_KT1 = 6,
+		TONE_2413 = 7,
+		TONE_281B = 8,
+	};
+
 	DECLARE_DYNAMIC(CInstrumentEditorVRC7)
 
 public:
@@ -38,9 +51,11 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
+	void LoadPatch(int Num);
 	void LoadCustomPatch();
 	void SaveCustomPatch();
 	void LoadInternalPatch(int Num);
+	void WritePatchText(int Patch);
 
 	void SetupSlider(int Slider, int Max);
 	int GetSliderVal(int Slider);
@@ -49,6 +64,10 @@ protected:
 	void SelectPatch(int Patch);
 	void PasteSettings(LPCTSTR pString);
 	void CopyAsPlainText();		// // //
+	uint8_t FetchPatchByte(PatchTone patch_bank_id, int patch, unsigned char patch_byte);
+
+private:
+	PatchTone PatchBank;
 
 protected:
 	std::shared_ptr<CInstrumentVRC7> m_pInstrument;
