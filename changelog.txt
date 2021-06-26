@@ -2,9 +2,38 @@ Dn-FamiTracker Mod
 Change Log
 Written by Persune
 
-Version 0.3.0.0 - April 3, 2021 (tentative)
+Version 0.3.1.0 40e3a0e - June 24, 2021
 
 --------------------------------------------------------------------------------
+
+Dn0.3.1.0 40e3a0e - 06/24/2021
+
+Important changes:
+
+ - N163 and 5B expansion audio mixing has been restored to 0.2.1 levels (@nyanpasu64 #66)
+ - Adjusted APU 2 levels to match blargg's original formula (@Gumball2415 #69)
+
+Additions:
+
+ - Added a textbox for patch editing within the VRC7 instrument editor (@Gumball2415 #60)
+
+Improvements:
+
+ - Edit NSF export format to allow adding more effects (@Gumball2415, @nyanpasu64 #46)
+
+Bug fixes:
+
+ - Fix hardware patch bank presets not reading properly (@Gumball2415 #60)
+ - Fix crash when increasing engine speed with VRC7 enabled (@nyanpasu64 #62)
+ - Fix N163 and 5B mixing levels which were swapped in 0.3.0 (causing N163 to be louder and 5B to be quieter) (@nyanpasu64 #66)
+
+Internal:
+
+ - Update VRC7 emulator core emu2413 to v1.5.6 (@Gumball2415 #59)
+ - Port CVRC7 to CSoundChip2 (@Gumball2415 #59)
+ - Refactor VRC7 hardware patch bank swapping (@Gumball2415 #59)
+
+
 
 Dn0.3.0.0 - 04/03/2021
 
