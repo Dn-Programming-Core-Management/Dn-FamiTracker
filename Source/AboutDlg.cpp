@@ -171,7 +171,7 @@ BOOL CAboutDlg::OnInitDialog()
 		_T("- DPCM sample bit order reverser mod by Persune\r\n")		// // !!
 		_T("- Module text import/export by rainwarrior"));		// // //
 	SetDlgItemText(IDC_ABOUT_LIB, // // !!
-		_T("- Blip_buffer 0.4.1 is Copyright (C) blargg (LGPL v2.1)\r\n   (modified by nyanpasu64)")
+		_T("- Blip_buffer 0.4.1 is Copyright (C) blargg (LGPL v2.1)\r\n   (modified by nyanpasu64)\r\n")
 		_T("- FFT code is (C) 2017 Project Nayuki (MIT)\r\n")
 		_T("- emu2413 v1.5.2 (C) Mitsutaka Okazaki (MIT)\r\n")
 		_T("- 2A03 sound emulator from NSFPlay\r\n")
