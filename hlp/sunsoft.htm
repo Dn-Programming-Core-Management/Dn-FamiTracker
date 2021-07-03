@@ -1,32 +1,165 @@
-<HTML>
-<HEAD>
-<META NAME="GENERATOR" Content="Microsoft Visual Studio 8.0">
-<TITLE></TITLE>
-<link href="style.css" rel="stylesheet" type="text/css" /> 
-</HEAD>
-<BODY>
-
-    <span class="topic">Sunsoft 5B</span>
-    <hr />
-    
-    <p class="heading">About</p>
-    
-    <p class="text">
-        This chip was used by Sunsoft, in any FME-7 game, often interchanged with both the Sunsoft FME-7, and 5A. The only time it's audio was used was in Gimmick!. It is actually a YM2149F, a clone of the <a href="https://en.wikipedia.org/wiki/General_Instrument_AY-3-8910" target="new">AY-3-8910</a>. This family of chips are capable of generating noise, envelopes, and tone (square waves), and can even mix these two waves together. However, Gimmick! exclusively used the Tone part of the 5B, rendering the rest of the chip's functions unused. As a result, most emulators don't support the extra modes.</p>
-<br>
-<p class="text">This chip, along with the <a href="vrc7.htm">Konami VRC7</a>, was produced by Yamaha, under the product code <b>YM6630</b>.</p>
-<hr />
-	<p class="heading">Instruments</p>
-	<p class="text">The biggest difference from the usual macros in Famitracker are the Noise/Mode macros. These macros are very powerful, allowing one to tweak the settings of how each channel works on a per-channel basis, at whatever time they want. This includes but is not limited to:</p>
-	<ul class="text">
-		<li>Per-tick mixing control between Envelope, Noise, and Tone</li>
-		<li>Macros to define the Noise pitch</li>
-		<li>Ability to mix all three modes into one channel (e.g. Noise+Tone, Tone+Envelope, etc.)</li>
-	</ul>
-<hr>
-	<p class="heading">
-<hr />
-    <span class="footer">Back to <a href="sound_overview.htm">sound hardware</a> &middot; <a href="main_index.htm">main index</a></span>    
-
-</BODY>
-</HTML>
+<!--TODO: add some more content about instruments, and clarify effects more-->
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<link href="style.css" rel="stylesheet" type="text/css">
+	</head>
+	<body>
+		<span class="topic">Sunsoft 5B</span>
+		<hr>
+		<!--5B image goes here lol-->
+		<p class="heading">About</p>
+		<p class="text">
+			The Sunsoft 5B is a chip manufactured by Yamaha, for Sunsoft. While used 
+			interchangeably with the Sunsoft FME-7, and the Sunsoft 5A, the only game
+			to utilize the audio was in the Famicom game Gimmick!. Due to Yamaha's 
+			manufacturing, it is a clone of their own chip, the YM2149F, itself a 
+			clone of the AY-3-8910. The chip has 3 channels of audio, capable of 
+			Tone (square waves), 32 pitches of Noise, and a user configurable Envelope 
+			generator. However, despite these features, Gimmick! only used the Tone 
+			capabilities of the chip.
+		</p>
+		<p class="heading">Instruments</p>
+		<!--add 5b instrument image here too-->
+		<p class="text">
+			Instruments on the Sunsoft 5B are fairly close to the 2A03. However the 
+			biggest difference lies in the Noise/Mode macro, which replaces the Duty
+			macro present on the 2A03. This macro allows one to toggle noise, tone, 
+			and envelope on the channel, also allowing one to freely mix between the 
+			three.
+			<br>
+			Another major change from the 2A03's instruments lies in the volume. 
+			While the 2A03's design gives it linear volume, the Sunsoft 5B has 
+			what is "exponential volume", which behaves differently than the 2A03's 
+			linear volume.
+			<!--Explain exponential volume better in the future, maybe?-->
+		</p>
+		<p class="heading">Noise/Mode Macro</p>
+		<!--Add the 5B instrument editor with the noise/mode macro editor open-->
+		<p class="text">
+			The Noise/Mode macro present in Dn-FT is relatively simple. There are three 
+			bars, one for each "mode", which can be freely toggled. Above is a slider 
+			allowing for the user to define what specific pitch they want, of the 32 
+			available pitches.
+		</p>
+		<p class="heading">5B Envelopes</p>
+		<p class="text">The Sunsoft 5B has a configurable envelope generator, able to 
+			play back 16 preset envelope sets. The table below shows each envelope and 
+			its functions.
+		</p>
+		<p class="footer"><i>Note: These are intended to be used with the Hxy command.</i></p>
+		<table border="1" size=50% class="text">
+			<thead>
+			  <tr>
+				<th>H0y Hex Command</th>
+				<th>Envelope Shape</th>
+				<th>Envelope Description</th>
+			  </tr>
+			</thead>
+			<tbody>
+			  <tr>
+				<td>$0 to $3</td>
+				<td><img src="img/s5b_env_0-3,_9.png" alt="|\________"></td>
+				<td>A one-shot decay envelope. Usually used at extremely low frequencies mixed with tone to produce a hardware decay envelope.</td>
+			  </tr>
+			  <tr>
+				<td>$4 to $7</td>
+				<td><img src="img/s5b_env_4-7,_f.png" alt="/|________"></td>
+				<td>A one-shot attack envelope. </td>
+			  </tr>
+			  <tr>
+				<td>$8</td>
+				<td><img src="img/s5b_env_8.png" alt="|\_|\_|\_|\_"></td>
+				<td>Looped decay envelope. Functionally identical to a sawtooth wave at audible frequencies.</td>
+			  </tr>
+			  <tr>
+				<td>$9</td>
+				<td><img src="img/s5b_env_0-3,_9.png" alt="|\________"></td>
+				<td>Identical to $0.</td>
+			  </tr>
+			  <tr>
+				<td>$A</td>
+				<td><img src="img/s5b_env_a.png" alt="\/\/\/\/\/\/\/"></td>
+				<td>Looped Decay and Attack envelope. Identical to a symmetrical sawtooth wave, referred to as a "triangle" wave.</td>
+			  </tr>
+			  <tr>
+				<td>$B</td>
+				<td><img src="img/s5b_env_b.png" alt="\|&#8254&#8254&#8254&#8254&#8254&#8254&#8254&#8254"></td>
+				<td>One-shot decay envelope. Holds the output at maximum volume when finished.</td>
+			  </tr>
+			  <tr>
+				<td>$C</td>
+				<td><img src="img/s5b_env_c.png" alt="_/|_/|_/|_/|"></td>
+				<td>Looped attack envelope. Functionally identical to envelope $8 at audible frequencies.</td>
+			  </tr>
+			  <tr>
+				<td>$D</td>
+				<td><img src="img/s5b_env_d.png" alt="|/&#8254&#8254&#8254&#8254&#8254&#8254&#8254&#8254"></td>
+				<td>One-shot attack envelope. Holds the output at maximum volume when finished.</td>
+			  </tr>
+			  <tr>
+				<td>$E</td>
+				<td><img src="img/s5b_env_e.png" alt="/\/\/\/\/\/\/\"></td>
+				<td>Looped Attack and Decay envelope. Virtually identical to $A.</td>
+			  </tr>
+			  <tr>
+				<td>$F</td>
+				<td><img src="img/s5b_env_4-7,_f.png" alt="/|________"></td>
+				<td>Identical to $4.</td>
+			  </tr>
+			</tbody>
+		</table>
+		<p class="heading">Effects</p>
+		<p class="text">
+			The Sunsoft 5B comes with it's own unique set of effects for the features 
+			it has. The table describes all the effects and their syntax, as well as 
+			what they do.
+		</p>
+		<table border="1" style="undefined;table-layout: fixed; width: 448px" class="text">
+			<colgroup>
+			<col style="width: 101px">
+			<col style="width: 171px">
+			<col style="width: 176px">
+			</colgroup>
+			<thead>
+			  <tr>
+				<th>Effect Name</th>
+				<th>Effect Syntax</th>
+				<th>Effect Description</th>
+			  </tr>
+			</thead>
+			<tbody>
+			  <tr>
+				<td>Envelope</td>
+				<td>H0y<br><br>Y = Envelope Shape</td>
+				<td>Defines an envelope type to use. Set pitch with Ixx and Jxx.</td>
+			  </tr>
+			  <tr>
+				<td>Auto Envelope</td>
+				<td>Hxy<br>X = Pitch Shift<br>Y = Envelope Shape</td>
+				<td>Define an envelope type to use, and tie it to the note placed down in the pattern.</td>
+			  </tr>
+			  <tr>
+				<td>Envelope Pitch</td>
+				<td>Ixx, Jxx</td>
+				<td>These two effects control the 5B's pitch and </td>
+			  </tr>
+			  <tr>
+				<td>Noise Pitch</td>
+				<td>Wxx</td>
+				<td>Manually control the pitch at which the 5B's Noise Generator is playing.</td>
+			  </tr>
+			  <tr>
+				<td>Noise/Mode Toggle</td>
+				<td>Vxx</td>
+				<td>Manually Toggle Tone/Noise/Envelope, <br>overriding the instrument's macro if it has ended.</td>
+			  </tr>
+			</tbody>
+		</table>
+		<hr>
+        <span class="footer">
+			Back to <a href="sound_overview.htm">sound hardware</a> &middot; 
+			<a href="main_index.htm">main index</a>
+		</span>
+	</body>
+</html>
