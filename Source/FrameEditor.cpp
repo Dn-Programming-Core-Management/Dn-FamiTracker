@@ -467,7 +467,7 @@ void CFrameEditor::DrawFrameEditor(CDC *pDC)
 	m_dcBack.FillSolidRect(0, 0, DPI::SX(ROW_COLUMN_WIDTH - 1), DPI::SY(TOP_OFFSET * 2 + (14 - 14 / 4)), ColBackground);
 
 	// arrows to adjust visible channels
-	if (m_iChannelView < ChannelCount) {
+	if (m_iChannelView < ChannelCount && m_iChannelView < m_iMaxChannelView) {
 		ArrowPoints[0].SetPoint(DPI::SX(((ROW_COLUMN_WIDTH - 1) / 2) + 4 - 2), DPI::SY(TOP_OFFSET));
 		ArrowPoints[1].SetPoint(DPI::SX(((ROW_COLUMN_WIDTH - 1) / 2) + 4 - 2), DPI::SY(TOP_OFFSET + 10));
 		ArrowPoints[2].SetPoint(DPI::SX(((ROW_COLUMN_WIDTH - 1) / 2) + 4 + 3), DPI::SY(TOP_OFFSET + 5));
@@ -916,6 +916,7 @@ bool CFrameEditor::IsOverFrameColumn(const CPoint &point) const		// // //
 
 unsigned int CFrameEditor::CalcWidth(int Channels) const
 {
+	// return the smallest width between input and current channel view count
 	if (Channels < m_iChannelView)
 		return ROW_COLUMN_WIDTH + FRAME_ITEM_WIDTH * Channels + 25;
 	else
@@ -1030,7 +1031,7 @@ void CFrameEditor::OnLButtonUp(UINT nFlags, CPoint point)
 			}
 		}
 		else if (Arrow == 2) {
-			if (m_iChannelView < m_pDocument->GetChannelCount()) {
+			if (m_iChannelView < m_pDocument->GetChannelCount() && m_iChannelView < m_iMaxChannelView) {
 				m_iChannelView += 1;
 				theApp.GetSettings()->ChannelViewCount = m_iChannelView;
 				// refresh the window
@@ -1045,25 +1046,7 @@ void CFrameEditor::OnLButtonUp(UINT nFlags, CPoint point)
 void CFrameEditor::OnMouseMove(UINT nFlags, CPoint point)
 {
 	int Arrow = GetArrowFromPoint(point);		// // !!
-	if (Arrow == 1) {
-		if (m_iChannelView > 5) {
-			//m_bChannelViewArrow2 = true;
-			//m_bChannelViewArrow1 = false;
-			RedrawFrameEditor();
-		}
-	}
-	else if (Arrow == 2) {
-		if (m_iChannelView < m_pDocument->GetChannelCount()) {
-			//m_bChannelViewArrow2 = false;
-			//m_bChannelViewArrow1 = true;
-			RedrawFrameEditor();
-		}
-	}
-	else if (Arrow == 0) {
-		//m_bChannelViewArrow1 = false;
-		//m_bChannelViewArrow2 = false;
-		RedrawFrameEditor();
-
+	if (Arrow == 0) {
 		if (nFlags & MK_LBUTTON) {
 			if (!m_bSelecting) {
 				if (abs(m_ButtonPoint.x - point.x) > m_iDragThresholdX || abs(m_ButtonPoint.y - point.y) > m_iDragThresholdY) {

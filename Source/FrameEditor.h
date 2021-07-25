@@ -139,7 +139,7 @@ public:
 	static const int DEFAULT_HEIGHT		= 161;	// Window height at top position
 	static const int CURSOR_WIDTH		= 8;	// Cursor box width
 
-	// Channel view limit
+	// Channel view count
 	int		m_iChannelView;
 	// Maximum channel view
 	int		m_iMaxChannelView;
