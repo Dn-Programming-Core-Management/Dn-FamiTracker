@@ -141,6 +141,8 @@ public:
 
 	// Channel view limit
 	int		m_iChannelView;
+	// Maximum channel view
+	int		m_iMaxChannelView;
 
 	static const TCHAR CLIPBOARD_ID[];
 

@@ -156,6 +156,7 @@ public:
 		bool	bMultiFrameSel;
 		bool	bCheckVersion;		// // //
 		int		iLowRefreshRate;	// // !!
+		int		iMaxChannelView;	// // !!
 	} General;
 
 	struct {
