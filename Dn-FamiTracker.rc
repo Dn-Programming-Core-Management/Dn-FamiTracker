@@ -554,7 +554,7 @@ BEGIN
             VALUE "FileDescription", "Dn-FamiTracker, Extension of FamiTracker"
             VALUE "FileVersion", "0.3.1.0"
             VALUE "InternalName", "Dn-FamiTracker.exe"
-            VALUE "LegalCopyright", "(c) jsr, HertzDevil 2005-2016, Dn Programming Core Management 2017-2021. All rights reserved."
+            VALUE "LegalCopyright", "(c) jsr 2005-2015, HertzDevil 2014-2018, Dn Programming Core Management 2017-2021. All rights reserved."
             VALUE "OriginalFilename", "Dn-FamiTracker.exe"
             VALUE "ProductName", "Dn-FamiTracker"
             VALUE "ProductVersion", "0.3.1.0"
@@ -1074,10 +1074,10 @@ BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,49,287,1
     ICON            IDR_MAINFRAME,IDC_ICON_STATIC,11,58,20,20,SS_REALSIZEIMAGE
     LTEXT           "Dn-FamiTracker",IDC_ABOUT1,54,58,219,11,SS_NOPREFIX
-    LTEXT           "Mod of 0CC-FamiTracker",IDC_ABOUT2,54,72,167,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2005 - 2015 jsr, 2014 - 2018 HertzDevil,\nDn Programming Core Management 2017-2021.",IDC_ABOUT3,54,84,215,16
+    LTEXT           "Extension of 0CC-FamiTracker",IDC_ABOUT2,54,72,167,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2005 - 2015 jsr, 2014 - 2018 HertzDevil,\n2017 - 2021 Dn Programming Core Management.",IDC_ABOUT3,54,84,215,16
     LTEXT           "Web:",IDC_STATIC,54,107,24,9
-    LTEXT           "https://github.com/Gumball2415/Dn-FamiTracker/issues",IDC_BUG,84,134,194,9,SS_NOTIFY
+    LTEXT           "Dn-FamiTracker issue tracker",IDC_BUG,84,134,194,9,SS_NOTIFY
     LTEXT           "All comments and feedback are welcome\nGreets to everyone who has helped spread information about this mod or contributed with bug reports and suggestions!",IDC_STATIC,54,150,224,26
     LTEXT           "This software is licensed under the GNU General Public License.\n0CC / Dn sources are available on Github.\nVanilla source is available on the webpage.",IDC_STATIC,54,181,224,24
     LTEXT           "Contributions:",IDC_STATIC,54,210,224,9
@@ -1087,7 +1087,7 @@ BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,54,294,215,1
     LTEXT           "http://hertzdevil.info/programs/",IDC_WEBPAGE,84,116,137,9,SS_NOTIFY
     LTEXT           "http://famitracker.com",IDC_WEBPAGE2,84,107,137,9,SS_NOTIFY
-    LTEXT           "https://github.com/Gumball2415/Dn-FamiTracker",IDC_WEBPAGE3,84,125,194,9,SS_NOTIFY
+    LTEXT           "Dn-FamiTracker source code repository",IDC_WEBPAGE3,84,125,194,9,SS_NOTIFY
     EDITTEXT        IDC_ABOUT_CONTRIB,54,223,224,57,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER | WS_VSCROLL
     EDITTEXT        IDC_ABOUT_LIB,54,296,224,57,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER | WS_VSCROLL
 END
@@ -2444,12 +2444,12 @@ BEGIN
     IDS_IMPORT_SEQUENCE_COUNT 
                             "Could not import all sequences, out of sequence slots!"
     ID_FIND_NEXT            "Find the next result of the search query\nFind Next"
-    IDS_ABOUT_TOOLTIP_BUG   "Report bugs at https://github.com/Gumball2415/Dn-FamiTracker/issues"
+    IDS_ABOUT_TOOLTIP_BUG   "Report bugs at https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/issues"
 END
 
 STRINGTABLE
 BEGIN
-    AFX_IDS_APP_TITLE       "0CC-FamiTracker"
+    AFX_IDS_APP_TITLE       "Dn-FamiTracker"
     AFX_IDS_IDLEMESSAGE     "For Help, press F1"
     AFX_IDS_HELPMODEMESSAGE "Select an object on which to get Help"
 END
@@ -2611,7 +2611,7 @@ BEGIN
     IDS_EXPORT_SAMPLES_FILE """%1"" already exists in the same directory as the music data file. Are you sure you want to overwrite it?"
     IDS_MODULE_ERROR_NONE   "This build is not allowed to bypass validation of loaded modules."
     IDS_FIND_EDIT_DISABLED  "Replace will not work unless Edit Mode is enabled."
-    IDS_ABOUT_TOOLTIP_WEB3  "Go to https://github.com/Gumball2415/Dn-FamiTracker"
+    IDS_ABOUT_TOOLTIP_WEB3  "Go to https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker"
     IDS_FILE_LOAD_ERROR     "Couldn't load file properly. Make sure you have the latest version of Dn-FamiTracker."
     IDS_CONFIG_WINDOW       "Dn-FamiTracker configuration"
 END

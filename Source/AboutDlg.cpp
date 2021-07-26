@@ -29,8 +29,8 @@
 
 LPCTSTR LINK_WEB2 = _T("http://hertzdevil.info/programs/");
 LPCTSTR LINK_WEB = _T("http://famitracker.com");						// // !!
-LPCTSTR LINK_WEB3 = _T("https://github.com/Gumball2415/Dn-FamiTracker");						// // !!
-LPCTSTR LINK_BUG  = _T("https://github.com/Gumball2415/Dn-FamiTracker/issues");		// // !!
+LPCTSTR LINK_WEB3 = _T("https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker");						// // !!
+LPCTSTR LINK_BUG  = _T("https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/issues");		// // !!
 
 // CLinkLabel
 
