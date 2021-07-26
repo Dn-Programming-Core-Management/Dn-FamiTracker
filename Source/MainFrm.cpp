@@ -754,6 +754,8 @@ void CMainFrame::ResizeFrameWindow()
 		int Channels = pDocument->GetAvailableChannels();
 		int Height = 0, Width = 0;
 
+		// make sure m_iMaxChannelView is updated
+		m_pFrameEditor->m_iMaxChannelView = theApp.GetSettings()->General.iMaxChannelView;
 
 		// Located to the right
 		if (m_iFrameEditorPos == FRAME_EDIT_POS_TOP) {

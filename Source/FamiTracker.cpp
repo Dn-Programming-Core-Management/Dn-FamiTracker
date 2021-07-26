@@ -682,6 +682,13 @@ void CFamiTrackerApp::ReloadColorScheme()
 	}
 }
 
+void CFamiTrackerApp::RefreshFrameEditor()
+{
+	// refresh the frame editor to reflect new changes in the configuration settings
+	GetMainFrame()->ResizeFrameWindow();
+	CFamiTrackerView::GetView()->OnInitialUpdate();
+}
+
 BOOL CFamiTrackerApp::OnIdle(LONG lCount)		// // //
 {
 	if (CWinApp::OnIdle(lCount))
