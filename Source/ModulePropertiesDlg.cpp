@@ -199,6 +199,8 @@ void CModulePropertiesDlg::OnBnClickedOk()
 
 	theApp.GetSoundGenerator()->DocumentPropertiesChanged(m_pDocument);
 
+	theApp.RefreshFrameEditor();
+
 	OnOK();
 }
 

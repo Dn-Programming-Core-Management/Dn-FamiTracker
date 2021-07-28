@@ -1289,6 +1289,12 @@ void CFamiTrackerView::OnInitialUpdate()
 	m_pPatternEditor->ResetCursor();
 	pFrameEditor->ResetCursor();		// // //
 
+	// // !! limit channel view count to the max allowed
+	if (pFrameEditor->m_iMaxChannelView < pDoc->GetAvailableChannels())
+		pFrameEditor->m_iChannelView = pFrameEditor->m_iMaxChannelView;
+	else
+		pFrameEditor->m_iChannelView = pDoc->GetAvailableChannels();
+
 	// Update mainframe with new document settings
 	pMainFrame->UpdateInstrumentList();
 	pMainFrame->SetSongInfo(pDoc->GetSongName(), pDoc->GetSongArtist(), pDoc->GetSongCopyright());

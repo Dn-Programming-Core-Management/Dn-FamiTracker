@@ -71,6 +71,7 @@ protected:
 	int		m_iEditStyle;
 	int		m_iPageStepSize;
 	int		m_iLowRefreshRate;		// // !!
+	int		m_iMaxChannelView;
 
 	int		m_iKeyNoteCut;
 	int		m_iKeyNoteRelease;

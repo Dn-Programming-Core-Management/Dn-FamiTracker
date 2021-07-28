@@ -134,6 +134,7 @@ void CSettings::SetupSettings()
 	SETTING_BOOL("General", "Check for new versions", true, &General.bCheckVersion);
 	// // !!
 	SETTING_INT("Appearance", "Idle refresh rate", 100, &General.iLowRefreshRate);
+	SETTING_INT("Appearance", "Maximum frame editor channel view", 8, &General.iMaxChannelView);		// // !!
 
 	// // // Version / Compatibility info
 	SETTING_INT("Version", "Module error level", MODULE_ERROR_DEFAULT, &Version.iErrorLevel);
