@@ -81,7 +81,7 @@ using json = nlohmann::json;
 #define new DEBUG_NEW
 #endif
 
-const char* CFamiTrackerDoc::NEW_INST_NAME = "New instrument";
+const char* CFamiTrackerDoc::NEW_INST_NAME = "";
 
 // Make 1 channel default since 8 sounds bad
 const int	CFamiTrackerDoc::DEFAULT_NAMCO_CHANS = 1;
