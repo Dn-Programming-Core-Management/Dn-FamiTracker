@@ -193,13 +193,8 @@ BOOL CFamiTrackerApp::InitInstance()
 		m_pDocManager = new CDocManager0CC { };
 	m_pDocManager->AddDocTemplate(pDocTemplate);
 
-	// Work-around to enable file type registration in windows vista/7
-	if (IsWindowsVistaOrGreater()) {		// // //
-		HKEY HKCU;
-		long res_reg = ::RegOpenKey(HKEY_CURRENT_USER, _T("Software\\Classes"), &HKCU);
-		if(res_reg == ERROR_SUCCESS)
-			RegOverridePredefKey(HKEY_CLASSES_ROOT, HKCU);
-	}
+	// Enable file type registration in Windows Vista and up
+	AfxSetPerUserRegistration(TRUE);
 
 	// Enable DDE Execute open
 	EnableShellOpen();
@@ -220,6 +215,8 @@ BOOL CFamiTrackerApp::InitInstance()
 		AfxRegSetValue(HKEY_CLASSES_ROOT, strTemp, REG_SZ, strOpenCommandLine, lstrlen(strOpenCommandLine) * sizeof(TCHAR));
 	}
 #endif
+
+	AfxSetPerUserRegistration(FALSE);
 
 	// Handle command line export
 	if (cmdInfo.m_bExport) {
