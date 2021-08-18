@@ -274,6 +274,11 @@ ft_calc_period:
 	lda var_ch_PeriodCalcHi, x
 	sbc #$00
 	sta var_ch_PeriodCalcHi, x
+	cmp #$ff
+	bne @Skip						; prevent overflow
+	lda #$00
+	sta var_ch_PeriodCalcHi, x
+	sta var_ch_PeriodCalcLo, x
 @Skip:
 
 	jsr ft_vibrato
