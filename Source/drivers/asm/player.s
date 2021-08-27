@@ -19,6 +19,11 @@ ft_music_play:
 	ldx #$00
 @ChanLoop:
 	CH_LOOP_START @ChanLoopEpilog
+	jsr ft_fetch_speed
+	cmp	var_ch_Delay, x
+	bcs :+
+	sta var_ch_Delay, x
+:
 	lda var_ch_Delay, x
 	beq @SkipDelay
 	sec
