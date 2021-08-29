@@ -32,6 +32,8 @@ const uint8_t SNDCHIP_MMC5 = 8;			// Nintendo MMC5
 const uint8_t SNDCHIP_N163 = 16;		// Namco N-106
 const uint8_t SNDCHIP_S5B  = 32;		// Sunsoft 5B
 
+const uint8_t SNDCHIP_EPSM = 128;		// Expansion Port Sound Module
+
 enum chan_id_t {
 	CHANID_SQUARE1,
 	CHANID_SQUARE2,
@@ -68,6 +70,24 @@ enum chan_id_t {
 	CHANID_S5B_CH1,
 	CHANID_S5B_CH2,
 	CHANID_S5B_CH3,
+
+	CHANID_EPSM_FM1,
+	CHANID_EPSM_FM2,
+	CHANID_EPSM_FM3,
+	CHANID_EPSM_FM4,
+	CHANID_EPSM_FM5,
+	CHANID_EPSM_FM6,
+
+	CHANID_EPSM_SSG1,
+	CHANID_EPSM_SSG2,
+	CHANID_EPSM_SSG3,
+
+	CHANID_EPSM_BD,
+	CHANID_EPSM_SD,
+	CHANID_EPSM_TOP,
+	CHANID_EPSM_HH,
+	CHANID_EPSM_TOM,
+	CHANID_EPSM_RIM,
 
 	CHANNELS		/* Total number of channels */
 };

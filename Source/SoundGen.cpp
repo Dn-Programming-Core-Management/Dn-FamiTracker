@@ -231,6 +231,25 @@ void CSoundGen::CreateChannels()
 	AssignChannel(new CTrackerChannel(_T("5B Square 1"), _T("5B1"), SNDCHIP_S5B, CHANID_S5B_CH1));
 	AssignChannel(new CTrackerChannel(_T("5B Square 2"), _T("5B2"), SNDCHIP_S5B, CHANID_S5B_CH2));
 	AssignChannel(new CTrackerChannel(_T("5B Square 3"), _T("5B3"), SNDCHIP_S5B, CHANID_S5B_CH3));
+
+	// // !! Expansion Port Sound Module
+	AssignChannel(new CTrackerChannel(_T("EPSM FM 1"), _T("FM1"), SNDCHIP_EPSM, CHANID_EPSM_FM1));
+	AssignChannel(new CTrackerChannel(_T("EPSM FM 2"), _T("FM2"), SNDCHIP_EPSM, CHANID_EPSM_FM2));
+	AssignChannel(new CTrackerChannel(_T("EPSM FM 3"), _T("FM3"), SNDCHIP_EPSM, CHANID_EPSM_FM3));
+	AssignChannel(new CTrackerChannel(_T("EPSM FM 4"), _T("FM4"), SNDCHIP_EPSM, CHANID_EPSM_FM4));
+	AssignChannel(new CTrackerChannel(_T("EPSM FM 5"), _T("FM5"), SNDCHIP_EPSM, CHANID_EPSM_FM5));
+	AssignChannel(new CTrackerChannel(_T("EPSM FM 6"), _T("FM6"), SNDCHIP_EPSM, CHANID_EPSM_FM6));
+
+	AssignChannel(new CTrackerChannel(_T("EPSM SSG 1"), _T("SG1"), SNDCHIP_EPSM, CHANID_EPSM_SSG1));
+	AssignChannel(new CTrackerChannel(_T("EPSM SSG 1"), _T("SG2"), SNDCHIP_EPSM, CHANID_EPSM_SSG2));
+	AssignChannel(new CTrackerChannel(_T("EPSM SSG 1"), _T("SG3"), SNDCHIP_EPSM, CHANID_EPSM_SSG3));
+
+	AssignChannel(new CTrackerChannel(_T("EPSM Rhythm 1"), _T("BD"), SNDCHIP_EPSM, CHANID_EPSM_BD));
+	AssignChannel(new CTrackerChannel(_T("EPSM Rhythm 2"), _T("SD"), SNDCHIP_EPSM, CHANID_EPSM_SD));
+	AssignChannel(new CTrackerChannel(_T("EPSM Rhythm 3"), _T("TOP"), SNDCHIP_EPSM, CHANID_EPSM_TOP));
+	AssignChannel(new CTrackerChannel(_T("EPSM Rhythm 4"), _T("HH"), SNDCHIP_EPSM, CHANID_EPSM_HH));
+	AssignChannel(new CTrackerChannel(_T("EPSM Rhythm 5"), _T("TOM"), SNDCHIP_EPSM, CHANID_EPSM_TOM));
+	AssignChannel(new CTrackerChannel(_T("EPSM Rhythm 6"), _T("RIM"), SNDCHIP_EPSM, CHANID_EPSM_RIM));
 }
 
 void CSoundGen::AssignChannel(CTrackerChannel *pTrackerChannel)		// // //
