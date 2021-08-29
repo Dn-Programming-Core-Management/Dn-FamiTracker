@@ -1290,7 +1290,7 @@ void CFamiTrackerView::OnInitialUpdate()
 	pFrameEditor->ResetCursor();		// // //
 
 	// // !! limit channel view count to the max allowed
-	if (pFrameEditor->m_iMaxChannelView < pDoc->GetAvailableChannels())
+	if (static_cast<unsigned int>(pFrameEditor->m_iMaxChannelView) < pDoc->GetAvailableChannels())
 		pFrameEditor->m_iChannelView = pFrameEditor->m_iMaxChannelView;
 	else
 		pFrameEditor->m_iChannelView = pDoc->GetAvailableChannels();
