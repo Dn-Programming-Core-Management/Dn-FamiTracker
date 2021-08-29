@@ -92,7 +92,7 @@ public:
 	void	ExportNES(LPCTSTR lpszFileName, bool EnablePAL);
 	void	ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File);
 	void	ExportPRG(LPCTSTR lpszFileName, bool EnablePAL);
-	void	ExportASM(LPCTSTR lpszFileName);
+	void	ExportASM(LPCTSTR lpszFileName, LPCTSTR lpszDPCMFile);
 
 private:
 	bool	OpenFile(LPCTSTR lpszFileName, CFile &file) const;
@@ -148,6 +148,7 @@ private:
 
 	// File writing
 	void	WriteAssembly(CFile *pFile);
+	void	WriteSamplesAssembly(CFile *pFile);
 	void	WriteBinary(CFile *pFile);
 	void	WriteSamplesBinary(CFile *pFile);
 

@@ -53,6 +53,7 @@ protected:
 	static LPCTSTR DPCMS_FILTER[2];
 	static LPCTSTR PRG_FILTER[2];
 	static LPCTSTR ASM_FILTER[2];
+	static LPCTSTR DPCMASM_FILTER[2];
 	static LPCTSTR NSFE_FILTER[2];		// // //
 
 #ifdef _DEBUG

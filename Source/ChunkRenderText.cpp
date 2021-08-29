@@ -135,13 +135,8 @@ void CChunkRenderText::StoreSamples(const std::vector<const CDSample*> &Samples)
 {
 	// Store DPCM samples in file, assembly format
 	CStringA str;
-	str.Format("\n; DPCM samples (located at DPCM segment)\n");
+	str.Format("; DPCM samples (located at DPCM segment)\n\n");
 	WriteFileString(str, m_pFile);
-
-	if (Samples.size() > 0) {
-		str.Format("\n\t.segment \"DPCM\"\n");
-		WriteFileString(str, m_pFile);
-	}
 
 	unsigned int Address = CCompiler::PAGE_SAMPLES;
 	for (size_t i = 0; i < Samples.size(); ++i) if (const CDSample *pDSample = Samples[i]) {		// // //

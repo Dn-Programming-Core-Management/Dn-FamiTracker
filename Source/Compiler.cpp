@@ -714,7 +714,7 @@ void CCompiler::ExportPRG(LPCTSTR lpszFileName, bool EnablePAL)
 	Cleanup();
 }
 
-void CCompiler::ExportASM(LPCTSTR lpszFileName)
+void CCompiler::ExportASM(LPCTSTR lpszFileName, LPCTSTR lpszDPCMFile)
 {
 	ClearLog();
 
@@ -744,8 +744,19 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName)
 		return;
 	}
 
+	CFile OutputFileDPCM;
+	if (_tcslen(lpszDPCMFile) != 0) {
+		if (!OpenFile(lpszDPCMFile, OutputFileDPCM)) {
+			OutputFile.Close();
+			return;
+		}
+	}
+
 	// Write output file
 	WriteAssembly(&OutputFile);
+
+	if (_tcslen(lpszDPCMFile) != 0)
+		WriteSamplesAssembly(&OutputFileDPCM);
 
 	// Done
 	OutputFile.Close();
@@ -2142,10 +2153,16 @@ void CCompiler::AddWavetable(CInstrumentFDS *pInstrument, CChunk *pChunk)
 
 void CCompiler::WriteAssembly(CFile *pFile)
 {
-	// Dump all chunks and samples as assembly text
+	// Dump all chunks as assembly text
 	CChunkRenderText Render(pFile);
 	Render.StoreChunks(m_vChunks);
 	Print(_T(" * Music data size: %i bytes\n"), m_iMusicDataSize);
+}
+
+void CCompiler::WriteSamplesAssembly(CFile* pFile)
+{
+	// Dump all samples as assembly text
+	CChunkRenderText Render(pFile);
 	Render.StoreSamples(m_vSamples);
 	Print(_T(" * DPCM samples size: %i bytes\n"), m_iSamplesSize);
 }

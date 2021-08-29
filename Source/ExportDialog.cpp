@@ -68,6 +68,7 @@ LPCTSTR CExportDialog::RAW_FILTER[]   = { _T("Raw song data (*.bin)"), _T(".bin"
 LPCTSTR CExportDialog::DPCMS_FILTER[] = { _T("DPCM sample bank (*.bin)"), _T(".bin") };
 LPCTSTR CExportDialog::PRG_FILTER[]   = { _T("NES program bank (*.prg)"), _T(".prg") };
 LPCTSTR CExportDialog::ASM_FILTER[]	  = { _T("Assembly text (*.asm)"), _T(".asm") };
+LPCTSTR CExportDialog::DPCMASM_FILTER[] = { _T("DPCM sample bank (*.asm)"), _T(".asm") };
 LPCTSTR CExportDialog::NSFE_FILTER[]  = { _T("NSFe file (*.nsfe)"), _T(".nsfe") };		// // //
 
 // Compiler logger
@@ -373,18 +374,42 @@ void CExportDialog::CreateASM()
 	CFamiTrackerDoc *pDoc = CFamiTrackerDoc::GetDoc();
 	CCompiler Compiler(pDoc, new CEditLog(GetDlgItem(IDC_OUTPUT)));
 
-	CString Filter = LoadDefaultFilter(ASM_FILTER[0], ASM_FILTER[1]);
-	CFileDialog FileDialogMusic(FALSE, ASM_FILTER[1], _T("music.asm"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, Filter);
+	const CString DEFAULT_MUSIC_NAME = _T("music.asm");		// // //
+	const CString DEFAULT_SAMPLE_NAME = _T("samples.asm");
+
+	CString MusicFilter = LoadDefaultFilter(ASM_FILTER[0], ASM_FILTER[1]);
+	CString DPCMFilter = LoadDefaultFilter(DPCMASM_FILTER[0], DPCMASM_FILTER[1]);
+
+	CFileDialog FileDialogMusic(FALSE, ASM_FILTER[1], DEFAULT_MUSIC_NAME, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, MusicFilter);
+	CFileDialog FileDialogSamples(FALSE, DPCMASM_FILTER[1], DEFAULT_SAMPLE_NAME, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, DPCMFilter);
 
 	FileDialogMusic.m_pOFN->lpstrInitialDir = theApp.GetSettings()->GetPath(PATH_NSF);
 
 	if (FileDialogMusic.DoModal() == IDCANCEL)
 		return;
 
+	CString SampleDir = FileDialogMusic.GetPathName();		// // //
+	if (pDoc->GetSampleCount() > 0) {
+		if (FileDialogSamples.DoModal() == IDCANCEL)
+			return;
+		SampleDir = FileDialogSamples.GetPathName();
+	}
+	else {
+		int Pos = SampleDir.ReverseFind(_T('\\'));
+		ASSERT(Pos != -1);
+		SampleDir = SampleDir.Left(Pos + 1) + DEFAULT_SAMPLE_NAME;
+		if (PathFileExists(SampleDir)) {
+			CString msg;
+			AfxFormatString1(msg, IDS_EXPORT_SAMPLES_FILE, DEFAULT_SAMPLE_NAME);
+			if (AfxMessageBox(msg, MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2) == IDNO)
+				return;
+		}
+	}
+
 	// Display wait cursor
 	CWaitCursor wait;
 
-	Compiler.ExportASM(FileDialogMusic.GetPathName());
+	Compiler.ExportASM(FileDialogMusic.GetPathName(), SampleDir);
 
 	theApp.GetSettings()->SetPath(FileDialogMusic.GetPathName(), PATH_NSF);
 }

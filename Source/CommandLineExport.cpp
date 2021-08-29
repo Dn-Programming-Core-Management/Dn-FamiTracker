@@ -153,7 +153,7 @@ void CCommandLineExport::CommandLineExport(const CString& fileIn, const CString&
 	else if (0 == ext.CompareNoCase(_T(".asm")))
 	{
 		CCompiler compiler(pExportDoc, bLog ? new CCommandLineLog(&tLog) : NULL);
-		compiler.ExportASM(fileOut);
+		compiler.ExportASM(fileOut, fileDPCM);
 		if (bLog)
 		{
 			tLog += _T("\nASM export complete.\n");
