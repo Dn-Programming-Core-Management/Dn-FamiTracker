@@ -53,6 +53,8 @@ void CVRC7::Reset()
 	m_iBufferPtr = 0;
 	m_iTime = 0;
 	m_BlipVRC7.clear();
+	if (m_pOPLLInt != NULL)
+		OPLL_reset(m_pOPLLInt);
 }
 
 void CVRC7::UpdateFilter(blip_eq_t eq)
