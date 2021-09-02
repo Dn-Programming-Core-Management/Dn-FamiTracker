@@ -485,6 +485,9 @@ void CFamiTrackerDoc::CreateEmpty()
 
 	m_csDocumentLock.Unlock();
 
+	// Add new instrument on new module
+	AddInstrument(NEW_INST_NAME, SNDCHIP_NONE);
+
 	theApp.GetSoundGenerator()->DocumentPropertiesChanged(this);
 }
 
