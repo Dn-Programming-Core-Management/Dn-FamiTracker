@@ -883,6 +883,9 @@ CFTCommandLineInfo::CFTCommandLineInfo() : CCommandLineInfo(),
 
 void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLast)
 {
+	// Call default implementation
+	CCommandLineInfo::ParseParam(pszParam, bFlag, bLast);
+
 	if (bFlag) {
 		// Export file (/export or /e)
 		if (!_tcsicmp(pszParam, _T("export")) || !_tcsicmp(pszParam, _T("e"))) {
@@ -963,9 +966,6 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 			}
 		}
 	}
-
-	// Call default implementation
-	CCommandLineInfo::ParseParam(pszParam, bFlag, bLast);
 }
 
 //
