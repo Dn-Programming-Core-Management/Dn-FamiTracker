@@ -680,6 +680,28 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 
 	ULONGLONG FileSize = DocumentFile.GetLength();
 
+	// Flush file buffers before deleting
+	if (!FlushFileBuffers(DocumentFile)) {
+		// Flush failed
+		DocumentFile.Close();
+		DeleteFile(TempFile);
+
+		// Display error
+		TCHAR* lpMsgBuf = _T("Error, failed flushing file to disk.");
+		CString	ErrorMsg;
+		CString	strFormatted;
+
+		DWORD err = GetLastError();
+		ErrorMsg.Format("%d", err);
+		strFormatted += ErrorMsg;
+		
+		AfxFormatString1(strFormatted, IDS_SAVE_FILE_ERROR, lpMsgBuf);
+		AfxMessageBox(strFormatted, MB_OK | MB_ICONERROR);
+		
+		m_pCurrentDocument = nullptr;
+		return FALSE;
+	}
+
 	DocumentFile.Close();
 	m_pCurrentDocument = nullptr;		// // //
 
@@ -824,7 +846,7 @@ bool CFamiTrackerDoc::WriteBlock_Header(CDocumentFile *pDocFile, const int Versi
 {
 	/* 
 	 *  Header data
- 	 *
+	 *
 	 *  Store song count and then for each channel: 
 	 *  channel type and number of effect columns
 	 *
