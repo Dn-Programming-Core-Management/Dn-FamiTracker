@@ -477,6 +477,9 @@ void CFamiTrackerDoc::CreateEmpty()
 	SetupAutoSave();
 #endif
 
+	// Add new instrument on new module
+	AddInstrument(NEW_INST_NAME, SNDCHIP_NONE);
+
 	SetModifiedFlag(FALSE);
 	SetExceededFlag(FALSE);		// // //
 
@@ -484,9 +487,6 @@ void CFamiTrackerDoc::CreateEmpty()
 	m_bFileLoaded = true;
 
 	m_csDocumentLock.Unlock();
-
-	// Add new instrument on new module
-	AddInstrument(NEW_INST_NAME, SNDCHIP_NONE);
 
 	theApp.GetSoundGenerator()->DocumentPropertiesChanged(this);
 }
