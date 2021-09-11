@@ -39,7 +39,10 @@ CBookmark::CBookmark(unsigned Frame, unsigned Row) :
 unsigned CBookmark::Distance(const CBookmark &other) const
 {
 	const int ALL_ROWS = MAX_PATTERN * MAX_PATTERN_LENGTH;
-	int Dist = ((m_iFrame - other.m_iFrame) * MAX_PATTERN_LENGTH + m_iRow - other.m_iRow) % ALL_ROWS;
+	int Dist =
+		(((int)m_iFrame - (int)other.m_iFrame) * MAX_PATTERN_LENGTH
+			+ (int)m_iRow - (int)other.m_iRow)
+		% ALL_ROWS;
 	if (Dist < 0) Dist += ALL_ROWS;
 	return static_cast<unsigned>(Dist);
 }

@@ -234,7 +234,7 @@ namespace xgm
   // 三角波チャンネルの計算 戻り値は0-15
   UINT32 NES_DMC::calc_tri (UINT32 clocks)
   {
-    static UINT32 tritbl[32] = 
+    static UINT32 tritbl[32] =
     {
      15,14,13,12,11,10, 9, 8,
       7, 6, 5, 4, 3, 2, 1, 0,
@@ -426,7 +426,7 @@ namespace xgm
                       // "only happens on startup when using the randomize noise option", idk what to return
                       return (UINT32)1;
                   }
-                  return value_or(counter[1], nfreq);
+                  return value_or((UINT32) counter[1], nfreq);
               }());
           }
       }
