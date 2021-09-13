@@ -12,7 +12,7 @@ Important changes:
 
  - New file extension format for modules: *.dnm (@Gumball2415 #71)
  - New file extension format for instruments: *.dni (@Gumball2415 #71)
- - Support for Windows XP has been deprecated (@Gumball2415, @nyanpasu64,
+ - Support for Windows XP has been dropped (@Gumball2415, @nyanpasu64,
     @N-SPC700 #82, #84)
 
 Additions:
