@@ -2,21 +2,25 @@ Dn-FamiTracker Mod
 Change Log
 Written by Persune
 
-Version 0.3.2.0 a927e00 - August 27, 2021 (tentative)
+Version 0.4.0.0 - September 13, 2021 (tentative)
 
 --------------------------------------------------------------------------------
 
-Dn0.3.2.0 a927e00 - 08/27/2021 (tentative)
+Dn0.4.0.0 - 09/13/2021
 
 Important changes:
 
  - New file extension format for modules: *.dnm (@Gumball2415 #71)
  - New file extension format for instruments: *.dni (@Gumball2415 #71)
+ - Support for Windows XP has been deprecated (@Gumball2415, @nyanpasu64,
+    @N-SPC700 #82, #84)
 
 Additions:
 
  - Add new D.P.C.M. organization info, links and metadata (@Gumball2415 #71)
- - New instrument names are blank on creation
+ - New instrument names are blank on creation (@Gumball2415)
+ - Add empty instrument in newly created modules (@Gumball2415, @nyanpasu64,
+    @N-SPC700 #77)
 
 Improvements:
 
@@ -25,13 +29,22 @@ Improvements:
 
 Bug fixes:
 
- - Fix Gxx delay command overflow in NSF driver (@Gumball2415 #80)
- - Fix FDS automatic modulation overflow in NSF driver (@Gumball2415 #65, #80)
- - Fix period calculation overflow in NSF driver
+ - Fix Gxx delay command overflow in NSF driver (@Gumball2415, @smbhacks #80)
+ - Fix FDS automatic modulation overflow in NSF driver (@Gumball2415, @galap-1 #65, #80)
+ - Fix period calculation overflow in NSF driver (@Gumball2415, @smbhacks #80)
+ - Reset VRC7 emulator core on channel handler reset (@Gumball2415, @TakuikaNinja #79)
+ - Flush file to disk before renaming to prevent module corruption
+    (@Gumball2415, @nyanpasu64 #81)
+ - Fix commandline parameter processing when flags are used (@Gumball2415)
 
 Internal:
 
- - Fix broken Open dialog after launching Dn by opening a file (@nyanpasu64 #76)
+ - Fix CString::Format() memory corruption bug on Wine (@nyanpasu64 #56)
+ - Fix uninitialized echo buffer values (@nyanpasu64 #56)
+ - Clarify nsfplay value_or() (@nyanpasu64 #56)
+ - Clarify integer widths in CBookmark::Distance() (@nyanpasu64 #56)
+ - Fix broken Open dialog after launching Dn by opening a file (@nyanpasu64 #74, #76)
+ - Fix out-of-bounds read in oscilloscope (@nyanpasu64 #85)
 
 
 
