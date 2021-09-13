@@ -612,6 +612,7 @@
 #define IDC_PREVIEW_PITCH               1471
 #define IDC_IDLE_REFRESH                1475
 #define IDC_IDLE_REFRESH_T              1476
+#define IDC_MAXCHANVIEW_T               1477
 #define IDC_COMBO1                      1478
 #define IDC_COMBO_FDS_EMULATOR          1478
 #define IDC_CHECK1                      1482
@@ -625,6 +626,7 @@
 #define IDC_RELEASE_MSG                 1492
 #define IDC_ICON_STATIC                 1493
 #define IDC_PATCH_TEXT                  1495
+#define IDC_MAXCHANVIEW                 1496
 #define IDS_FIND_BEGIN                  9001
 #define IDS_FIND_END                    9002
 #define ID_TRACKER_PLAY                 32771
@@ -797,7 +799,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        377
 #define _APS_NEXT_COMMAND_VALUE         33215
-#define _APS_NEXT_CONTROL_VALUE         1496
+#define _APS_NEXT_CONTROL_VALUE         1500
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif

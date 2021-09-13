@@ -754,10 +754,8 @@ void CMainFrame::ResizeFrameWindow()
 		int Channels = pDocument->GetAvailableChannels();
 		int Height = 0, Width = 0;
 
-		// // !! truncate channel view count when loading a new module with less channels than current
-		if (m_pFrameEditor->m_iChannelView > Channels) {
-			m_pFrameEditor->m_iChannelView = Channels;
-		}
+		// make sure m_iMaxChannelView is updated
+		m_pFrameEditor->m_iMaxChannelView = theApp.GetSettings()->General.iMaxChannelView;
 
 		// Located to the right
 		if (m_iFrameEditorPos == FRAME_EDIT_POS_TOP) {
@@ -1598,8 +1596,10 @@ void CMainFrame::OnUpdateSBInstrument(CCmdUI *pCmdUI)
 	CString String;
 	String.Format(_T("%02X"), GetSelectedInstrument());		// // //
 	unsigned int Split = static_cast<CFamiTrackerView*>(GetActiveView())->GetSplitInstrument();
-	if (Split != MAX_INSTRUMENTS)
-		String.Format(_T("%02X / %s"), Split, String);
+	if (Split != MAX_INSTRUMENTS) {
+		CString Orig = String;
+		String.Format(_T("%02X / %s"), Split, Orig);
+	}
 	CString msg;
 	AfxFormatString1(msg, ID_INDICATOR_INSTRUMENT, String);
 	pCmdUI->Enable(); 

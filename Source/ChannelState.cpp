@@ -31,7 +31,7 @@ stChannelState::stChannelState() :
 	Effect_AutoFMMult(-1)
 {
 	memset(Effect, -1, EF_COUNT * sizeof(int));
-	memset(Echo, -1, ECHO_BUFFER_LENGTH * sizeof(int));
+	std::fill(std::begin(Echo), std::end(Echo), -1);
 }
 
 stFullState::stFullState(int Count) :

@@ -193,13 +193,8 @@ BOOL CFamiTrackerApp::InitInstance()
 		m_pDocManager = new CDocManager0CC { };
 	m_pDocManager->AddDocTemplate(pDocTemplate);
 
-	// Work-around to enable file type registration in windows vista/7
-	if (IsWindowsVistaOrGreater()) {		// // //
-		HKEY HKCU;
-		long res_reg = ::RegOpenKey(HKEY_CURRENT_USER, _T("Software\\Classes"), &HKCU);
-		if(res_reg == ERROR_SUCCESS)
-			RegOverridePredefKey(HKEY_CLASSES_ROOT, HKCU);
-	}
+	// Enable file type registration in Windows Vista and up
+	AfxSetPerUserRegistration(TRUE);
 
 	// Enable DDE Execute open
 	EnableShellOpen();
@@ -220,6 +215,8 @@ BOOL CFamiTrackerApp::InitInstance()
 		AfxRegSetValue(HKEY_CLASSES_ROOT, strTemp, REG_SZ, strOpenCommandLine, lstrlen(strOpenCommandLine) * sizeof(TCHAR));
 	}
 #endif
+
+	AfxSetPerUserRegistration(FALSE);
 
 	// Handle command line export
 	if (cmdInfo.m_bExport) {
@@ -682,6 +679,13 @@ void CFamiTrackerApp::ReloadColorScheme()
 	}
 }
 
+void CFamiTrackerApp::RefreshFrameEditor()
+{
+	// refresh the frame editor to reflect new changes in the configuration settings
+	GetMainFrame()->ResizeFrameWindow();
+	CFamiTrackerView::GetView()->OnInitialUpdate();
+}
+
 BOOL CFamiTrackerApp::OnIdle(LONG lCount)		// // //
 {
 	if (CWinApp::OnIdle(lCount))
@@ -879,6 +883,9 @@ CFTCommandLineInfo::CFTCommandLineInfo() : CCommandLineInfo(),
 
 void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLast)
 {
+	// Call default implementation
+	CCommandLineInfo::ParseParam(pszParam, bFlag, bLast);
+
 	if (bFlag) {
 		// Export file (/export or /e)
 		if (!_tcsicmp(pszParam, _T("export")) || !_tcsicmp(pszParam, _T("e"))) {
@@ -959,9 +966,6 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 			}
 		}
 	}
-
-	// Call default implementation
-	CCommandLineInfo::ParseParam(pszParam, bFlag, bLast);
 }
 
 //
@@ -1037,7 +1041,7 @@ BOOL CDocManager0CC::DoPromptFileName(CString &fileName, UINT nIDSTitle, DWORD l
 	CString path = theApp.GetSettings()->GetPath(PATH_FTM) + _T("\\");
 
 	CFileDialog OpenFileDlg(bOpenFileDialog, _T("0cc"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-							_T(APP_NAME " modules (*.0cc;*.ftm)|*.0cc; *.ftm|All files (*.*)|*.*||"),
+							_T(APP_NAME " modules (*.dnm;*.0cc;*.ftm)|*.dnm; *.0cc; *.ftm|All files (*.*)|*.*||"),
 							AfxGetMainWnd(), 0);
 	OpenFileDlg.m_ofn.Flags |= lFlags;
 	OpenFileDlg.m_ofn.lpstrFile = fileName.GetBuffer(_MAX_PATH);

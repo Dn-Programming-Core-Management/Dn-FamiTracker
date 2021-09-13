@@ -216,16 +216,20 @@ void PutPixel(COLORREF *pBuffer, int Width, int Height, float x, float y, COLORR
 	float w_y1 = y - y0;
 	float w_y0 = 1 - w_y1;
 
-	COLORREF c1 = BLEND(col, pBuffer[y0 * Width + x0], int((w_x0 * w_y0) * 100.0f));
-	COLORREF c2 = BLEND(col, pBuffer[y0 * Width + x1], int((w_x1 * w_y0) * 100.0f));
-	COLORREF c3 = BLEND(col, pBuffer[y1 * Width + x0], int((w_x0 * w_y1) * 100.0f));
-	COLORREF c4 = BLEND(col, pBuffer[y1 * Width + x1], int((w_x1 * w_y1) * 100.0f));
-
-	pBuffer[y0 * Width + x0] = c1;
-	if (x1 < Width)
+	if (true) {
+		COLORREF c1 = BLEND(col, pBuffer[y0 * Width + x0], int((w_x0 * w_y0) * 100.0f));
+		pBuffer[y0 * Width + x0] = c1;
+	}
+	if (x1 < Width) {
+		COLORREF c2 = BLEND(col, pBuffer[y0 * Width + x1], int((w_x1 * w_y0) * 100.0f));
 		pBuffer[y0 * Width + x1] = c2;
-	if (y1 < Height)
+	}
+	if (y1 < Height) {
+		COLORREF c3 = BLEND(col, pBuffer[y1 * Width + x0], int((w_x0 * w_y1) * 100.0f));
 		pBuffer[y1 * Width + x0] = c3;
-	if (x1 < Width && y1 < Height)
+	}
+	if (x1 < Width && y1 < Height) {
+		COLORREF c4 = BLEND(col, pBuffer[y1 * Width + x1], int((w_x1 * w_y1) * 100.0f));
 		pBuffer[y1 * Width + x1] = c4;
+	}
 }

@@ -2,30 +2,63 @@ Dn-FamiTracker Mod
 Change Log
 Written by Persune
 
-Version 0.3.1.0 - June 30, 2021
+Version 0.3.2.0 a927e00 - August 27, 2021 (tentative)
 
 --------------------------------------------------------------------------------
+
+Dn0.3.2.0 a927e00 - 08/27/2021 (tentative)
+
+Important changes:
+
+ - New file extension format for modules: *.dnm (@Gumball2415 #71)
+ - New file extension format for instruments: *.dni (@Gumball2415 #71)
+
+Additions:
+
+ - Add new D.P.C.M. organization info, links and metadata (@Gumball2415 #71)
+ - New instrument names are blank on creation
+
+Improvements:
+
+ - Adjustable frame editor channel view limit (@Gumball2415 #72)
+ - Fix frame editor channel view truncation (@Gumball2415 #72)
+
+Bug fixes:
+
+ - Fix Gxx delay command overflow in NSF driver (@Gumball2415 #80)
+ - Fix FDS automatic modulation overflow in NSF driver (@Gumball2415 #65, #80)
+ - Fix period calculation overflow in NSF driver
+
+Internal:
+
+ - Fix broken Open dialog after launching Dn by opening a file (@nyanpasu64 #76)
+
+
 
 Dn0.3.1.0 - 06/30/2021
 
 Important changes:
 
- - N163 and 5B expansion audio mixing has been restored to 0.2.1 levels (@nyanpasu64 #66)
+ - N163 and 5B expansion audio mixing has been restored to 0.2.1 levels
+    (@nyanpasu64 #66)
  - Adjusted APU 2 levels to match blargg's original formula (@Gumball2415 #69)
 
 Additions:
 
- - Added a textbox for patch editing within the VRC7 instrument editor (@Gumball2415 #60)
+ - Added a textbox for patch editing within the VRC7 instrument editor
+    (@Gumball2415 #60)
 
 Improvements:
 
- - Edit NSF export format to allow adding more effects (@Gumball2415, @nyanpasu64 #46)
+ - Edit NSF export format to allow adding more effects (@Gumball2415,
+    @nyanpasu64 #46)
 
 Bug fixes:
 
  - Fix VRC7 hardware patch bank presets not reading properly (@Gumball2415 #60)
  - Fix crash when increasing engine speed with VRC7 enabled (@nyanpasu64 #62)
- - Fix N163 and 5B mixing levels which were swapped in 0.3.0 (causing N163 to be louder and 5B to be quieter) (@nyanpasu64 #66)
+ - Fix N163 and 5B mixing levels which were swapped in 0.3.0 (causing N163 to be
+    louder and 5B to be quieter) (@nyanpasu64 #66)
 
 Internal:
 
@@ -155,11 +188,11 @@ Version 0.6.3 - August 1 2020
 
 0.6.3 - 08/01/20
 
-This will be the final release. This program has been effectively dead for months
-to years, as my priorities have moved elsewhere, to building a new tracker from
-scratch, freed from MFC and being chained to Win32, freed from DirectSound and
-40-70 ms of audio latency, freed from a fixed row grid that falls apart as soon
-as you try to use triplets...
+This will be the final release. This program has been effectively dead for
+months to years, as my priorities have moved elsewhere, to building a new
+tracker from scratch, freed from MFC and being chained to Win32, freed from
+DirectSound and 40-70 ms of audio latency, freed from a fixed row grid that
+falls apart as soon as you try to use triplets...
 
 Additionally I can't let this program continue under its current name. I can't
 have people talking to me about the program under its current name. I should've
@@ -181,7 +214,8 @@ FamiTracker-Next. I may participate if I regain interest.
  - Remove build dependency on DXSDK and dxguid.lib (#160)
  - Enable 64-bit builds (#154)
  - Fix memory corruption on Wine during find-and-replace (#164)
- - Fix out-of-bounds read (garbage data or crashes) with N163 Vxx effects over 0x80 (#165)
+ - Fix out-of-bounds read (garbage data or crashes) with N163 Vxx effects over
+    0x80 (#165)
 
 
 
@@ -263,7 +297,8 @@ Bugfixes:
     1 contains default instruments.
  - Not broken in NSF export
  - Fixed bug where N163 Zxx (wave position) effects would fail when switching
-    instruments. (Removed Zxx error checking, since it checked the old wave size)
+    instruments. (Removed Zxx error checking, since it checked the old wave
+	size)
  - Fixed bug where "Ignore Step when moving" wouldn't take effect until changing
     step size.
 
