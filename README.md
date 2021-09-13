@@ -22,6 +22,8 @@ Download releases: [![GitHub all releases](https://img.shields.io/github/downloa
 
 Development builds: [![AppVeyor](https://img.shields.io/appveyor/build/Gumball2415/dn-famitracker?logo=appveyor&style=flat-square)](https://ci.appveyor.com/project/Gumball2415/dn-famitracker/history)
 
+Legacy Dev Builds: [![AppVeyor](https://img.shields.io/appveyor/build/Gumball2415/dn-famitracker-legacy?logo=appveyor&style=flat-square)](https://ci.appveyor.com/project/Gumball2415/dn-famitracker-legacy/history)
+
 
 
 The application and the source code are distributed under the GNU GPL 2 license or any later version, but depends on FDS sound emulation only under the GPL v3. Dn modifications and additions in the source code and ASM code are marked with "// // !!" and ";; ;; !!", respectively.
