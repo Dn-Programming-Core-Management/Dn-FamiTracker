@@ -21,8 +21,8 @@
 				<p class="text">
 					<b>Note:</b>
 					This change log is updated manually. To ensure the latest updates, visit
-					<a href="https://github.com/Gumball2415/Dn-FamiTracker/releases" target="new">
-					https://github.com/Gumball2415/Dn-FamiTracker/releases</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/releases" target="new">
+					https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/releases</a>
 				</p>
 			</td>
 		</tr>
@@ -62,7 +62,65 @@
 
 <!-- all data below is Dn-FT changes-->
 <br>
-	<span class="heading">Dn Version 0.3.1.0</span>
+	<span class="heading">Dn-FamiTracker Version 0.4.0.0</span>
+		<ul class="changelog">
+			<li>Important Changes:</li>
+			<ul class="changelog">
+				<li>New file extension format for modules: *.dnm (@Gumball2415
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/71" target="new">#71</a>)</li>
+				<li>New file extension format for instruments: *.dni (@Gumball2415
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/71" target="new">#71</a>)</li>
+				<li>Support for Windows XP has been deprecated (@Gumball2415, @nyanpasu64, @N-SPC700
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/issues/82" target="new">#82</a>,
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/84" target="new">#84</a>)</li>
+			</ul>
+			<li>Additions:</li>
+			<ul class="changelog">
+				<li>Add new D.P.C.M. organization info, links and metadata (@Gumball2415
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/71" target="new">#71</a>)</li>
+				<li>New instrument names are blank on creation (@Gumball2415)</li>
+				<li>Add empty instrument in newly created modules (@Gumball2415, @nyanpasu64, @N-SPC700 
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/issues/77" target="new">#77</a>)</li>
+			</ul>
+			<li>Improvements:</li>
+			<ul class="changelog">
+				<li>Adjustable frame editor channel view limit (@Gumball2415
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/72" target="new">#72</a>)</li>
+				<li>Fix frame editor channel view truncation (@Gumball2415
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/72" target="new">#72</a>)</li>
+			</ul>
+			<li>Bug fixes:</li>
+			<ul class="changelog">
+				<li>Fix Gxx delay command overflow in NSF driver (@Gumball2415, @smbhacks
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/80" target="new">#80</a>)</li>
+				<li>Fix FDS automatic modulation overflow in NSF driver (@Gumball2415, @galap-1 
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/issues/65" target="new">#65</a>,
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/80" target="new">#80</a>)</li>
+				<li>Fix period calculation overflow in NSF driver (@Gumball2415, @smbhacks #80)</li>
+				<li>Reset VRC7 emulator core on channel handler reset (@Gumball2415, @TakuikaNinja
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/issues/79" target="new">#79</a>)</li>
+				<li>Flush file to disk before renaming to prevent module corruption (@Gumball2415, @nyanpasu64
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/issues/81" target="new">#81</a>)</li>
+				<li>Fix commandline parameter processing when flags are used (@Gumball2415)</li>
+			</ul>
+			<li>Internal:</li>
+			<ul class="changelog">
+				<li>Fix CString::Format() memory corruption bug on Wine (@nyanpasu64
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/56" target="new">#56</a>)</li>
+				<li>Fix uninitialized echo buffer values (@nyanpasu64
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/56" target="new">#56</a>)</li>
+				<li>Clarify nsfplay value_or() (@nyanpasu64 #56)</li>
+				<li>Clarify integer widths in CBookmark::Distance() (@nyanpasu64
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/56" target="new">#56</a>)</li>
+				<li>Fix broken Open dialog after launching Dn by opening a file (@nyanpasu64
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/issues/74" target="new">#74</a>,
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/76" target="new">#76</a>)</li>
+				<li>Fix out-of-bounds read in oscilloscope (@nyanpasu64
+				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/85" target="new">#85</a>)</li>
+			</ul>
+		</ul>
+<br>
+	<span class="heading">Dn-FamiTracker Version 0.3.1.0</span>
 		<ul class="changelog">
 			<li>Important Changes:</li>
 			<ul class="changelog">
