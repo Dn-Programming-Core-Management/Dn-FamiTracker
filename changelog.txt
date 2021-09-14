@@ -2,9 +2,17 @@ Dn-FamiTracker Mod
 Change Log
 Written by Persune
 
-Version 0.4.0.0 - September 13, 2021 (tentative)
+Version 0.4.0.1 - September 14, 2021
 
 --------------------------------------------------------------------------------
+
+Dn0.4.0.1 - 09/14/2021
+
+Patch fixes:
+
+ - Fix internal version numbering (@Gumball2415)
+
+
 
 Dn0.4.0.0 - 09/13/2021
 
