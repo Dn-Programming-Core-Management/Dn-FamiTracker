@@ -1,33 +1,31 @@
+rem usage: release.bat configuration platform [commithash]
 mkdir distribute
-mkdir distribute\x64\Release
-mkdir distribute\x64\Debug
-mkdir distribute\x86\Release
-mkdir distribute\x86\Debug
 
-copy x64\Release\Dn-FamiTracker.exe	distribute\x64\Release\Dn-FamiTracker.exe
-copy x64\Release\Dn-FamiTracker.chm	distribute\x64\Release\Dn-FamiTracker.chm
-copy x64\Release\Dn-FamiTracker.pdb	distribute\x64\Release\Dn-FamiTracker.pdb
-copy x64\Release\vc142.pdb 			distribute\x64\Release\vc142.pdb
+if "%2"=="Win32" (
+	set conf_name=x86
+	goto continue
+)
+if "%2"=="x64" (
+	set conf_name=x64
+	goto continue
+)
+goto endfile
 
-copy x64\Debug\Dn-FamiTracker.exe	distribute\x64\Debug\Dn-FamiTracker.exe
-copy x64\Debug\Dn-FamiTracker.chm	distribute\x64\Debug\Dn-FamiTracker.chm
-copy x64\Debug\Dn-FamiTracker.pdb	distribute\x64\Debug\Dn-FamiTracker.pdb
-copy x64\Debug\vc142.pdb			distribute\x64\Debug\vc142.pdb
-copy changelog.txt					distribute\x64\changelog.txt
+:continue
+if "%~3"=="" goto compileversion
 
-copy Win32\Release\Dn-FamiTracker.exe	distribute\x86\Release\Dn-FamiTracker.exe
-copy Win32\Release\Dn-FamiTracker.chm	distribute\x86\Release\Dn-FamiTracker.chm
-copy Win32\Release\Dn-FamiTracker.pdb	distribute\x86\Release\Dn-FamiTracker.pdb
-copy Win32\Release\vc142.pdb			distribute\x86\Release\vc142.pdb
+cd  %2/%1/
+call 7z a -t7z -mx=9 -mmt=3 -m0=LZMA2:d=26:fb=128 -ms=on ..\..\distribute\Dn-FamiTracker_"%~3"_%conf_name%_"%~1".7z Dn-FamiTracker.exe Dn-FamiTracker.chm Dn-FamiTracker.pdb vc142.pdb ..\..\changelog.txt
+cd ..\..
+goto endfile
 
-copy Win32\Debug\Dn-FamiTracker.exe		distribute\x86\Debug\Dn-FamiTracker.exe
-copy Win32\Debug\Dn-FamiTracker.chm		distribute\x86\Debug\Dn-FamiTracker.chm
-copy Win32\Debug\Dn-FamiTracker.pdb		distribute\x86\Debug\Dn-FamiTracker.pdb
-copy Win32\Debug\vc142.pdb				distribute\x86\Debug\vc142.pdb
-copy changelog.txt						distribute\x86\changelog.txt
-
-
-@echo.
-@echo distribute folder updated.
-@echo.
-@pause
+:compileversion
+for /F "tokens=1,2,3,4,5 delims=, " %%A in (Dn-FamiTracker.rc) do (
+	if "%%~A" == "FILEVERSION" (
+		set version=v%%B%%C%%D%%E
+	)
+)
+cd  %2/%1/
+call 7z a -t7z -mx=9 -mmt=3 -m0=LZMA2:d=26:fb=128 -ms=on ..\..\distribute\Dn-FamiTracker_%version%_%conf_name%_"%~1".7z Dn-FamiTracker.exe Dn-FamiTracker.chm Dn-FamiTracker.pdb vc142.pdb ..\..\changelog.txt
+cd ..\..
+:endfile
