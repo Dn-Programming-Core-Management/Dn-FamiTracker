@@ -21,14 +21,8 @@ build:
   verbosity: minimal
 after_build:
 - cmd: >-
-    cd %platform%\%configuration%
-
-    move *.exe Dn-%APPVEYOR_BUILD_VERSION%-%platform%-%configuration%.exe
+    call release.bat %configuration% %platform% %APPVEYOR_BUILD_VERSION%
 artifacts:
-- path: $(platform)\$(configuration)\*.exe
-  name: exe
-- path: $(platform)\$(configuration)\*.pdb
-  name: pdb
-- path: $(platform)\$(configuration)\*.chm
-  name: chm
+- path: distribute\*.7z
+  name: 7z
 deploy: off
