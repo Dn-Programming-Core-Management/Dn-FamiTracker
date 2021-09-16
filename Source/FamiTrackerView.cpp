@@ -781,11 +781,11 @@ BOOL CFamiTrackerView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 		InvalidateFrameEditor();		// // //
 	}
 	else if (bControlPressed) {
-		if (!(theApp.IsPlaying() && !IsSelecting() && m_bFollowMode))		// // //
+		if (m_bEditEnable && !(theApp.IsPlaying() && !IsSelecting() && m_bFollowMode))		// // //
 			pAction = new CPActionTranspose {zDelta > 0 ? TRANSPOSE_INC_NOTES : TRANSPOSE_DEC_NOTES};		// // //
 	}
 	else if (bShiftPressed) {
-		if (!(theApp.IsPlaying() && !IsSelecting() && m_bFollowMode))
+		if (m_bEditEnable && !(theApp.IsPlaying() && !IsSelecting() && m_bFollowMode))
 			pAction = new CPActionScrollValues {zDelta > 0 ? 1 : -1};		// // //
 	}
 	else
