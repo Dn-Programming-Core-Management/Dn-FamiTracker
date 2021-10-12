@@ -368,6 +368,7 @@ private:
 	machine_t			m_iMachineType;						// // // NTSC/PAL
 
 	// Rendering
+	bool				m_bRequestRenderStart;
 	bool				m_bRendering;
 	bool				m_bRequestRenderStop;
 	bool				m_bStoppingRender;					// // //
