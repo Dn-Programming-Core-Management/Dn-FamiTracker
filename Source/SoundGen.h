@@ -432,4 +432,11 @@ public:
 	afx_msg void OnCloseSound(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnSetChip(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnRemoveDocument(WPARAM wParam, LPARAM lParam);
+
+public:
+	CSingleLock Lock() {
+		auto out = CSingleLock(&m_csAPULock, TRUE);
+		ASSERT(out.IsLocked());
+		return out;
+	}
 };

@@ -1798,6 +1798,8 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 		WaitForStop();
 	}
 
+	CSingleLock l = Lock();
+
 	m_iRenderEndWhen = SongEndType;
 	m_iRenderEndParam = SongEndParam;
 	m_iRenderTrack = Track;
@@ -1831,6 +1833,8 @@ void CSoundGen::StopRendering()
 	// Called from player thread
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
 	ASSERT(m_bRendering);
+
+	CSingleLock l = Lock();
 
 	if (!IsRendering())
 		return;
@@ -2209,6 +2213,7 @@ void CSoundGen::OnResetPlayer(WPARAM wParam, LPARAM lParam)
 
 void CSoundGen::OnStartRender(WPARAM wParam, LPARAM lParam)
 {
+	CSingleLock l = Lock();
 	ResetBuffer();
 	m_bRequestRenderStop = false;
 	m_bStoppingRender = false;		// // //
