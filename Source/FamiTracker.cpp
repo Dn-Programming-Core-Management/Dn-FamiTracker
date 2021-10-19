@@ -679,11 +679,14 @@ void CFamiTrackerApp::ReloadColorScheme()
 	}
 }
 
+// refresh the frame editor to reflect new changes from the configuration settings
 void CFamiTrackerApp::RefreshFrameEditor()
 {
-	// refresh the frame editor to reflect new changes in the configuration settings
+	// The frame editor UI will update late without this
+	// function call in this particular spot
 	GetMainFrame()->ResizeFrameWindow();
-	CFamiTrackerView::GetView()->OnInitialUpdate();
+
+	CFamiTrackerView::GetView()->RefreshFrameEditor();
 }
 
 BOOL CFamiTrackerApp::OnIdle(LONG lCount)		// // //
