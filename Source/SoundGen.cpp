@@ -112,6 +112,7 @@ CSoundGen::CSoundGen() :
 	m_iGraphBuffer(NULL),
 	m_pDocument(NULL),
 	m_pTrackerView(NULL),
+	m_bRequestRenderStart(false),
 	m_bRendering(false),
 	m_bPlaying(false),
 	m_bHaltRequest(false),
@@ -1798,6 +1799,8 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 		WaitForStop();
 	}
 
+	CSingleLock l = Lock();
+
 	m_iRenderEndWhen = SongEndType;
 	m_iRenderEndParam = SongEndParam;
 	m_iRenderTrack = Track;
@@ -1813,6 +1816,8 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 		m_iRenderRowCount = m_iRenderEndParam;
 	}
 
+	ASSERT(!m_bRendering);
+	ASSERT(m_pWaveFile == nullptr);
 	m_pWaveFile = std::make_unique<CWaveFile>();
 	// Unfortunately, destructor doesn't cleanup object. Only CloseFile() does.
 	if (!m_pWaveFile ||
@@ -1820,8 +1825,10 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 		AfxMessageBox(IDS_FILE_OPEN_ERROR);
 		return false;
 	}
-	else
+	else {
+		m_bRequestRenderStart = true;
 		PostThreadMessage(WM_USER_START_RENDER, 0, 0);
+	}
 
 	return true;
 }
@@ -1831,6 +1838,8 @@ void CSoundGen::StopRendering()
 	// Called from player thread
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
 	ASSERT(m_bRendering);
+
+	CSingleLock l = Lock();
 
 	if (!IsRendering())
 		return;
@@ -1861,7 +1870,7 @@ void CSoundGen::GetRenderStat(int &Frame, int &Time, bool &Done, int &FramesToRe
 
 bool CSoundGen::IsRendering() const
 {
-	return m_bRendering;
+	return m_bRequestRenderStart || m_bRendering;
 }
 
 bool CSoundGen::IsBackgroundTask() const
@@ -2209,7 +2218,9 @@ void CSoundGen::OnResetPlayer(WPARAM wParam, LPARAM lParam)
 
 void CSoundGen::OnStartRender(WPARAM wParam, LPARAM lParam)
 {
+	CSingleLock l = Lock();
 	ResetBuffer();
+	m_bRequestRenderStart = false;
 	m_bRequestRenderStop = false;
 	m_bStoppingRender = false;		// // //
 	m_bRendering = true;
