@@ -1346,6 +1346,31 @@ void CFamiTrackerView::OnInitialUpdate()
 	//CView::OnInitialUpdate();	
 }
 
+void CFamiTrackerView::RefreshFrameEditor()
+{
+	// Updates the state of the frame editor max channel count,
+	// refreshes and redraws the frame editor
+
+	CFamiTrackerDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+	CMainFrame* pMainFrame = static_cast<CMainFrame*>(GetParentFrame());
+	ASSERT_VALID(pMainFrame);
+
+	CFrameEditor* pFrameEditor = GetFrameEditor();
+	pFrameEditor->AssignDocument(pDoc, this);
+
+	if (static_cast<unsigned int>(pFrameEditor->m_iMaxChannelView) < pDoc->GetAvailableChannels())
+		pFrameEditor->m_iChannelView = pFrameEditor->m_iMaxChannelView;
+	else
+		pFrameEditor->m_iChannelView = pDoc->GetAvailableChannels();
+
+	pMainFrame->ResizeFrameWindow();
+
+	pFrameEditor->InvalidateFrameData();
+	RedrawFrameEditor();
+}
+
 void CFamiTrackerView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* /*pHint*/)
 {
 	// Called when the document has changed

@@ -121,6 +121,7 @@ public:
 	// For UI updates
 	bool		 IsSelecting() const;
 	bool		 IsClipboardAvailable() const;
+	void		 RefreshFrameEditor();
 
 	// General
 	void		 SetupColors();
