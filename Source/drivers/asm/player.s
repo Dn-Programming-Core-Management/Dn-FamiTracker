@@ -442,8 +442,10 @@ ft_read_note:
 :
 .endif									; ;; ;;;
 .endif
+  
 	jsr ft_reset_instrument
 	jsr ft_set_trigger		;;; ;; ;
+
 .if .defined(USE_FDS)		;;; ;; ; removed var_VolTemp
 	lda ft_channel_type, x
 	cmp #CHAN_FDS
@@ -635,8 +637,7 @@ ft_set_trigger:
 	and #($FF - STATE_RELEASE)
 	sta var_ch_State, x
 	rts
-
-;;; ;; ; 050B
+	;;; ;; ; 050B
 ft_set_hold:
 	lda var_ch_State, x
 	ora #STATE_HOLD
@@ -657,62 +658,60 @@ ft_get_hold_clear:
 ;
 ft_command_table:
 	.word ft_cmd_instrument			; 80
-;	.word ft_cmd_hold
-	.word ft_set_hold				; 81
-	.word ft_cmd_duration			; 82
-	.word ft_cmd_noduration			; 83
-	.word ft_cmd_speed				; 84
-	.word ft_cmd_tempo				; 85
-	.word ft_cmd_jump				; 86
-	.word ft_cmd_skip				; 87
-	.word ft_cmd_halt				; 88
-	.word ft_cmd_effvolume			; 89
-	.word ft_cmd_clear				; 8A
-	.word ft_cmd_porta_up			; 8B
-	.word ft_cmd_porta_down			; 8C
-	.word ft_cmd_portamento			; 8D
-	.word ft_cmd_arpeggio			; 8E
-	.word ft_cmd_vibrato			; 8F
-	.word ft_cmd_tremolo			; 90
-	.word ft_cmd_pitch				; 91
-	.word ft_cmd_reset_pitch		; 92
-	.word ft_cmd_duty				; 93
-	.word ft_cmd_delay				; 94
-	.word ft_cmd_sweep				; 95
-	.word ft_cmd_dac				; 96
-	.word ft_cmd_sample_offset		; 97
-	.word ft_cmd_slide_up			; 98
-	.word ft_cmd_slide_down			; 99
-	.word ft_cmd_vol_slide			; 9A
-	.word ft_cmd_note_cut			; 9B
-	.word ft_cmd_retrigger			; 9C
-	.word ft_cmd_dpcm_pitch			; 9D
+	.word ft_cmd_duration			; 81
+	.word ft_cmd_noduration			; 82
+	.word ft_cmd_speed				; 83
+	.word ft_cmd_tempo				; 84
+	.word ft_cmd_jump				; 85
+	.word ft_cmd_skip				; 86
+	.word ft_cmd_halt				; 87
+	.word ft_cmd_effvolume			; 88
+	.word ft_cmd_clear				; 89
+	.word ft_cmd_porta_up			; 8A
+	.word ft_cmd_porta_down			; 8B
+	.word ft_cmd_portamento			; 8C
+	.word ft_cmd_arpeggio			; 8D
+	.word ft_cmd_vibrato			; 8E
+	.word ft_cmd_tremolo			; 8F
+	.word ft_cmd_pitch				; 90
+	.word ft_cmd_reset_pitch		; 91
+	.word ft_cmd_duty				; 92
+	.word ft_cmd_delay				; 93
+	.word ft_cmd_sweep				; 94
+	.word ft_cmd_dac				; 95
+	.word ft_cmd_sample_offset		; 96
+	.word ft_cmd_slide_up			; 97
+	.word ft_cmd_slide_down			; 98
+	.word ft_cmd_vol_slide			; 99
+	.word ft_cmd_note_cut			; 9A
+	.word ft_cmd_retrigger			; 9B
+	.word ft_cmd_dpcm_pitch			; 9C
 	;;; ;; ;
-	.word ft_cmd_note_release		; 9E
-	.word ft_cmd_linear_counter		; 9F
-	.word ft_cmd_groove				; A0
-	.word ft_cmd_delayed_volume		; A1
-	.word ft_cmd_transpose			; A2
+	.word ft_cmd_note_release		; 9D
+	.word ft_cmd_linear_counter		; 9E
+	.word ft_cmd_groove				; 9F
+	.word ft_cmd_delayed_volume		; A0
+	.word ft_cmd_transpose			; A1
 .if .defined(USE_VRC7)
-	.word ft_cmd_vrc7_patch_change	; A3
-	.word ft_cmd_vrc7_port			; A4
-	.word ft_cmd_vrc7_write			; A5
+	.word ft_cmd_vrc7_patch_change	; A2
+	.word ft_cmd_vrc7_port			; A3
+	.word ft_cmd_vrc7_write			; A4
 .endif
 .if .defined(USE_FDS)
-	.word ft_cmd_fds_mod_depth		; A6
-	.word ft_cmd_fds_mod_rate_hi	; A7
-	.word ft_cmd_fds_mod_rate_lo	; A8
-	.word ft_cmd_fds_volume			; A9
-	.word ft_cmd_fds_mod_bias		; AA
+	.word ft_cmd_fds_mod_depth		; A5
+	.word ft_cmd_fds_mod_rate_hi	; A6
+	.word ft_cmd_fds_mod_rate_lo	; A7
+	.word ft_cmd_fds_volume			; A8
+	.word ft_cmd_fds_mod_bias		; A9
 .endif
 .if .defined(USE_N163)
-	.word ft_cmd_n163_wave_buffer	; AB
+	.word ft_cmd_n163_wave_buffer	; AA
 .endif
 .if .defined(USE_S5B)		;;; ;; ;
-	.word ft_cmd_s5b_env_type		; AC
-	.word ft_cmd_s5b_env_rate_hi	; AD
-	.word ft_cmd_s5b_env_rate_lo	; AE
-	.word ft_cmd_s5b_noise			; AF
+	.word ft_cmd_s5b_env_type		; AB
+	.word ft_cmd_s5b_env_rate_hi	; AC
+	.word ft_cmd_s5b_env_rate_lo	; AD
+	.word ft_cmd_s5b_noise			; AE
 .endif				; ;; ;;;
 ;	.word ft_cmd_expand
 

@@ -142,6 +142,11 @@ CHANNELS	= DPCM_OFFSET + .defined(USE_DPCM)
 	FLAG_USEPAL      = %10000000
 .endenum
 
+
+.enum
+  INST_HOLD = $FF
+.endenum
+
 .segment "ZEROPAGE"
 
 ;

@@ -496,7 +496,15 @@ ft_load_instrument:
 
 	; Instrument_pointer_list + a => instrument_address
 	; instrument_address + ft_music_addr => instrument_data
-
+	
+	; Skip load if hold instrument
+	cmp #INST_HOLD
+	bne @NoHold
+	jsr ft_set_hold
+	rts
+@NoHold:
+	
+	
 	sta var_Temp2	;;; ;; ; used by N163
 
 	; Get the instrument data pointer

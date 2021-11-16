@@ -58,7 +58,7 @@
 // Command table
 enum command_t {
 	CMD_INSTRUMENT,
-	CMD_HOLD,		// // // 050B
+	//CMD_HOLD,		// // // 050B
 	CMD_SET_DURATION,
 	CMD_RESET_DURATION,
 	CMD_EFF_SPEED,
@@ -232,7 +232,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 		else 
 */
 		if (Note != HALT && Note != RELEASE) {		// // //
-			if (Instrument != LastInstrument && Instrument < MAX_INSTRUMENTS) {
+			if ((Instrument != LastInstrument && Instrument < MAX_INSTRUMENTS) || Instrument == HOLD_INSTRUMENT) {
 				LastInstrument = Instrument;
 				// Write instrument change command
 				//if (Channel < InstrChannels) {
@@ -243,7 +243,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 						WriteData(0xE0 | Instrument);
 					else {
 						WriteData(Command(CMD_INSTRUMENT));
-						WriteData(Instrument << 1);
+						WriteData(Instrument);
 					}
 #else
 					WriteData(Command(CMD_INSTRUMENT));
@@ -254,11 +254,6 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 				else {
 					DPCMInst = ChanNote.Instrument;
 				}
-			}
-			if (Instrument == HOLD_INSTRUMENT && ChanID != CHANID_DPCM) {		// // // 050B
-				WriteDuration();
-				WriteData(Command(CMD_HOLD));
-				Action = true;
 			}
 #ifdef OPTIMIZE_DURATIONS
 			if (Instrument == LastInstrument && Instrument < MAX_INSTRUMENTS) {		// // //
