@@ -241,9 +241,13 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 #ifdef PACKED_INST_CHANGE
 					if (Instrument < 0x10)
 						WriteData(0xE0 | Instrument);
+					else if (Instrument == HOLD_INSTRUMENT) {
+						WriteData(Command(CMD_INSTRUMENT));
+						WriteData(HOLD_INSTRUMENT);
+					}
 					else {
 						WriteData(Command(CMD_INSTRUMENT));
-						WriteData(Instrument);
+						WriteData(Instrument << 1);
 					}
 #else
 					WriteData(Command(CMD_INSTRUMENT));
