@@ -410,7 +410,7 @@ void CMixer::StoreChannelLevel(int Channel, int Value)
 		AbsVol = (AbsVol * 3) / 4;
 
 	if (Channel >= CHANID_N163_CH1 && Channel <= CHANID_N163_CH8) {
-		AbsVol /= 15;
+		AbsVol = (AbsVol * 2) / 15;
 		Channel = (7 - (Channel - CHANID_N163_CH1)) + CHANID_N163_CH1;
 	}
 
