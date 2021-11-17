@@ -54,8 +54,6 @@ void CSeqInstHandlerVRC7::ReleaseInstrument()
 
 void CSeqInstHandlerVRC7::UpdateInstrument()
 {
-	CSeqInstHandler::UpdateInstrument();
-
 	if (!m_bUpdate) return;
 	CChannelHandlerInterfaceVRC7* pInterface = dynamic_cast<CChannelHandlerInterfaceVRC7*>(m_pInterface);
 	if (pInterface == nullptr) return;
@@ -66,6 +64,8 @@ void CSeqInstHandlerVRC7::UpdateInstrument()
 		for (std::size_t i = 0; i < 8; i++)
 			pInterface->SetCustomReg(i, pVRC7Inst->GetCustomReg(i));
 	m_bUpdate = false;
+
+	CSeqInstHandler::UpdateInstrument();
 }
 
 void CSeqInstHandlerVRC7::UpdateRegs()
