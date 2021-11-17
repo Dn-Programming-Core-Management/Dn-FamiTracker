@@ -45,8 +45,8 @@ LPCTSTR CInstrumentVRC7::SEQUENCE_NAME[] = { _T("Volume"), _T("Arpeggio"), _T("P
 CInstrumentVRC7::CInstrumentVRC7() : CSeqInstrument(INST_VRC7), m_iPatch(0)		// // //
 {
 	memcpy(m_iRegs, VRC7_SINE_PATCH, sizeof(VRC7_SINE_PATCH));
-	m_pSequence.resize(SEQ_COUNT);
-	for (int i = 0; i < SEQ_COUNT; ++i)
+	m_pSequence.resize(SEQ_COUNT);		// // //
+	for (int i = 0; i < SEQ_COUNT; ++i)		// // //
 		m_pSequence[i].reset(new CSequence());
 }
 
@@ -75,7 +75,7 @@ void CInstrumentVRC7::Setup()
 }
 
 
-void CInstrumentVRC7::StoreInstSequence(CInstrumentFile* pFile, const CSequence* pSeq)
+void CInstrumentVRC7::StoreInstSequence(CInstrumentFile* pFile, const CSequence* pSeq)		// // //
 {
 	// Store number of items in this sequence
 	pFile->WriteInt(pSeq->GetItemCount());
@@ -90,7 +90,7 @@ void CInstrumentVRC7::StoreInstSequence(CInstrumentFile* pFile, const CSequence*
 		pFile->WriteChar(pSeq->GetItem(i));
 }
 
-CSequence* CInstrumentVRC7::LoadInstSequence(CInstrumentFile* pFile) const
+CSequence* CInstrumentVRC7::LoadInstSequence(CInstrumentFile* pFile) const		// // //
 {
 	int SeqCount = CModuleException::AssertRangeFmt(pFile->ReadInt(), 0U, 0xFFU, "Sequence item count", "%u");
 	int Loop = CModuleException::AssertRangeFmt(static_cast<int>(pFile->ReadInt()), -1, SeqCount - 1, "Sequence loop point", "%u");
@@ -100,7 +100,7 @@ CSequence* CInstrumentVRC7::LoadInstSequence(CInstrumentFile* pFile) const
 	pSeq->SetItemCount(SeqCount > MAX_SEQUENCE_ITEMS ? MAX_SEQUENCE_ITEMS : SeqCount);
 	pSeq->SetLoopPoint(Loop);
 	pSeq->SetReleasePoint(Release);
-	pSeq->SetSetting(static_cast<seq_setting_t>(pFile->ReadInt()));		// // //
+	pSeq->SetSetting(static_cast<seq_setting_t>(pFile->ReadInt()));
 
 	for (int i = 0; i < SeqCount; ++i)
 		pSeq->SetItem(i, pFile->ReadChar());
@@ -108,7 +108,7 @@ CSequence* CInstrumentVRC7::LoadInstSequence(CInstrumentFile* pFile) const
 	return pSeq;
 }
 
-void CInstrumentVRC7::StoreSequence(CDocumentFile* pDocFile, const CSequence* pSeq)
+void CInstrumentVRC7::StoreSequence(CDocumentFile* pDocFile, const CSequence* pSeq)		// // //
 {
 	// Store number of items in this sequence
 	pDocFile->WriteBlockChar(pSeq->GetItemCount());
@@ -124,7 +124,7 @@ void CInstrumentVRC7::StoreSequence(CDocumentFile* pDocFile, const CSequence* pS
 	}
 }
 
-CSequence* CInstrumentVRC7::LoadSequence(CDocumentFile* pDocFile) const
+CSequence* CInstrumentVRC7::LoadSequence(CDocumentFile* pDocFile) const		// // //
 {
 	int SeqCount = static_cast<unsigned char>(pDocFile->GetBlockChar());
 	unsigned int LoopPoint = CModuleException::AssertRangeFmt(pDocFile->GetBlockInt(), -1, SeqCount - 1, "Sequence loop point", "%i");;
@@ -136,7 +136,7 @@ CSequence* CInstrumentVRC7::LoadSequence(CDocumentFile* pDocFile) const
 	pSeq->SetItemCount(SeqCount > MAX_SEQUENCE_ITEMS ? MAX_SEQUENCE_ITEMS : SeqCount);
 	pSeq->SetLoopPoint(LoopPoint);
 	pSeq->SetReleasePoint(ReleasePoint);
-	pSeq->SetSetting(static_cast<seq_setting_t>(pDocFile->GetBlockInt()));		// // //
+	pSeq->SetSetting(static_cast<seq_setting_t>(pDocFile->GetBlockInt()));
 
 	for (int x = 0; x < SeqCount; ++x) {
 		char Value = pDocFile->GetBlockChar();
@@ -165,7 +165,7 @@ bool CInstrumentVRC7::Load(CDocumentFile *pDocFile)
 		SetCustomReg(i, pDocFile->GetBlockChar());
 
 
-	if (pDocFile->GetBlockVersion() >= 7) {
+	if (pDocFile->GetBlockVersion() >= 7) {		// // //
 		SetSequence(SEQ_VOLUME, LoadSequence(pDocFile));
 		SetSequence(SEQ_ARPEGGIO, LoadSequence(pDocFile));
 		SetSequence(SEQ_PITCH, LoadSequence(pDocFile));
@@ -206,7 +206,6 @@ bool CInstrumentVRC7::LoadFile(CInstrumentFile *pFile, int iVersion)
 int CInstrumentVRC7::Compile(CChunk *pChunk, int Index)
 {
 	int Patch = GetPatch();
-
 	pChunk->StoreByte(6);		// // // CHAN_VRC7
 	pChunk->StoreByte(Patch << 4);	// Shift up by 4 to make room for volume
 
@@ -248,18 +247,18 @@ unsigned char CInstrumentVRC7::GetCustomReg(int Reg) const		// // //
 }
 
 
-int	CInstrumentVRC7::GetSeqEnable(int Index) const
+int	CInstrumentVRC7::GetSeqEnable(int Index) const		// // //
 {
 	return Index < SEQUENCE_COUNT;
 }
 
-int	CInstrumentVRC7::GetSeqIndex(int Index) const
+int	CInstrumentVRC7::GetSeqIndex(int Index) const		// // //
 {
 	ASSERT(false);
 	return 0;
 }
 
-void CInstrumentVRC7::SetSeqIndex(int Index, int Value)
+void CInstrumentVRC7::SetSeqIndex(int Index, int Value)		// // //
 {
 	ASSERT(false);
 }
@@ -269,7 +268,7 @@ CSequence* CInstrumentVRC7::GetSequence(int SeqType) const		// // //
 	return m_pSequence[SeqType].get();
 }
 
-void CInstrumentVRC7::SetSequence(int SeqType, CSequence* pSeq)
+void CInstrumentVRC7::SetSequence(int SeqType, CSequence* pSeq)		// // //
 {
 	m_pSequence[SeqType].reset(pSeq);
 }
