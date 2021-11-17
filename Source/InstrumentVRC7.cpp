@@ -22,8 +22,8 @@
 ** must bear this legend.
 */
 
-#include <vector>
-#include <memory>
+#include <vector>		// // //
+#include <memory>		// // //
 #include "stdafx.h"
 #include "Sequence.h"		// // //
 #include "ModuleException.h"		// // //
@@ -40,7 +40,7 @@
  */
 
 static const unsigned char VRC7_SINE_PATCH[] = {0x01, 0x21, 0x00, 0x00, 0x00, 0xF0, 0x00, 0x0F};		// // //
-LPCTSTR CInstrumentVRC7::SEQUENCE_NAME[] = { _T("Volume"), _T("Arpeggio"), _T("Pitch"), _T("Hi-pitch"), _T("Patch") };
+LPCTSTR CInstrumentVRC7::SEQUENCE_NAME[] = { _T("Volume"), _T("Arpeggio"), _T("Pitch"), _T("Hi-pitch"), _T("Patch") };		// // //
 
 CInstrumentVRC7::CInstrumentVRC7() : CSeqInstrument(INST_VRC7), m_iPatch(0)		// // //
 {

@@ -183,7 +183,7 @@ bool CChannelHandlerVRC7::CreateInstHandler(inst_type_t Type)
 	switch (Type) {
 	case INST_VRC7:
 		if (m_iInstTypeCurrent != INST_VRC7)
-			m_pInstHandler.reset(new CSeqInstHandlerVRC7(this, 0x0F, 0x0F));
+			m_pInstHandler.reset(new CSeqInstHandlerVRC7(this, 0x0F, 0x0F));		// // //
 		return true;
 	}
 	return false;
@@ -237,7 +237,7 @@ unsigned int CChannelHandlerVRC7::GetFnum(int Note) const
 
 int CChannelHandlerVRC7::CalculateVolume() const
 {
-	int Volume = (m_iInstVolume * (m_iVolume >> VOL_COLUMN_SHIFT)) / 15 - GetTremolo();
+	int Volume = (m_iInstVolume * (m_iVolume >> VOL_COLUMN_SHIFT)) / 15 - GetTremolo();		// // //
 	if (Volume > 15)
 		Volume = 15;
 	if (Volume < 0)
@@ -268,8 +268,6 @@ int CChannelHandlerVRC7::CalculatePeriod(bool MultiplyByHarmonic) const
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // VRC7 Channels
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-const char CVRC7Channel::MAX_DUTY = 0x0F;
 
 int CVRC7Channel::getDutyMax() const {
 	return MAX_DUTY;

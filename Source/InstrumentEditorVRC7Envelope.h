@@ -34,10 +34,10 @@ public:
 
 	// Public
 	virtual void SelectInstrument(std::shared_ptr<CInstrument> pInst);
-	void UpdateSequenceString(bool Changed) override;		// // //
-	void SetupParser() const override;		// // //
+	void UpdateSequenceString(bool Changed) override;
+	void SetupParser() const override;
 
-// Dialog Data
+	// Dialog Data
 	enum { IDD = IDD_INSTRUMENT_VRC7_ENVELOPE };
 
 protected:

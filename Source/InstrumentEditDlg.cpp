@@ -203,7 +203,7 @@ void CInstrumentEditDlg::SetCurrentInstrument(int Index)
 				break;
 			case INST_VRC7:
 				InsertPane(new CInstrumentEditorVRC7(), true);
-				InsertPane(new CInstrumentEditorVRC7Envelope(), false);
+				InsertPane(new CInstrumentEditorVRC7Envelope(), false);		// // //
 				break;
 			case INST_FDS:
 				InsertPane(new CInstrumentEditorFDS(), true);
