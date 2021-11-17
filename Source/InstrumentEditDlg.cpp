@@ -44,6 +44,7 @@
 #include "InstrumentEditorFDS.h"
 #include "InstrumentEditorFDSEnvelope.h"
 #include "InstrumentEditorN163Wave.h"
+#include "InstrumentEditorVRC7Envelope.h"
 #include "MainFrm.h"
 #include "SoundGen.h"
 #include "TrackerChannel.h"
@@ -202,6 +203,7 @@ void CInstrumentEditDlg::SetCurrentInstrument(int Index)
 				break;
 			case INST_VRC7:
 				InsertPane(new CInstrumentEditorVRC7(), true);
+				InsertPane(new CInstrumentEditorVRC7Envelope(), false);
 				break;
 			case INST_FDS:
 				InsertPane(new CInstrumentEditorFDS(), true);

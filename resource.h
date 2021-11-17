@@ -218,6 +218,8 @@
 #define IDD_SPLIT_KEYBOARD              345
 #define IDR_HTML1                       361
 #define IDD_VERSION_CHECKER             369
+#define IDD_INSTRUMENT_FDS_ENVELOPE1    370
+#define IDD_INSTRUMENT_VRC7_ENVELOPE    370
 #define IDB_ABOUT                       376
 #define IDD_CONFIG_GUI                  377
 #define IDC_INSTRUMENTS                 1001

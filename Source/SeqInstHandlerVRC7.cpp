@@ -23,31 +23,41 @@
 */
 
 #include "stdafx.h"
+#include "Sequence.h"
 #include "Instrument.h"
+#include "SeqInstrument.h"
 #include "InstrumentVRC7.h"
 #include "ChannelHandlerInterface.h"
-#include "InstHandlerVRC7.h"
+#include "SeqInstHandlerVRC7.h"
 
-void CInstHandlerVRC7::LoadInstrument(std::shared_ptr<CInstrument> pInst)
+/*
+ * Class CSeqInstHandlerVRC7
+ */
+
+void CSeqInstHandlerVRC7::LoadInstrument(std::shared_ptr<CInstrument> pInst)		// // //
 {
+	CSeqInstHandler::LoadInstrument(pInst);
 	m_pInstrument = pInst;
-	//m_pInstrument = std::dynamic_pointer_cast<CInstrumentVRC7>(pInst);
 	UpdateRegs();
 }
 
-void CInstHandlerVRC7::TriggerInstrument()
+void CSeqInstHandlerVRC7::TriggerInstrument()
 {
+	CSeqInstHandler::TriggerInstrument();
 	UpdateRegs();
 }
 
-void CInstHandlerVRC7::ReleaseInstrument()
+void CSeqInstHandlerVRC7::ReleaseInstrument()
 {
+	CSeqInstHandler::ReleaseInstrument();
 }
 
-void CInstHandlerVRC7::UpdateInstrument()
+void CSeqInstHandlerVRC7::UpdateInstrument()
 {
+	CSeqInstHandler::UpdateInstrument();
+
 	if (!m_bUpdate) return;
-	CChannelHandlerInterfaceVRC7 *pInterface = dynamic_cast<CChannelHandlerInterfaceVRC7*>(m_pInterface);
+	CChannelHandlerInterfaceVRC7* pInterface = dynamic_cast<CChannelHandlerInterfaceVRC7*>(m_pInterface);
 	if (pInterface == nullptr) return;
 	auto pVRC7Inst = std::dynamic_pointer_cast<const CInstrumentVRC7>(m_pInstrument);
 	if (pVRC7Inst == nullptr) return;
@@ -58,7 +68,7 @@ void CInstHandlerVRC7::UpdateInstrument()
 	m_bUpdate = false;
 }
 
-void CInstHandlerVRC7::UpdateRegs()
+void CSeqInstHandlerVRC7::UpdateRegs()
 {
 	m_bUpdate = true;
 }

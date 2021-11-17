@@ -25,13 +25,15 @@
 
 #pragma once
 
-#include "InstHandler.h"
+#include "SeqInstHandler.h"
 
-class CInstHandlerVRC7 : public CInstHandler
+class CInstrumentVRC7;
+
+class CSeqInstHandlerVRC7 : public CSeqInstHandler
 {
 public:
-	CInstHandlerVRC7(CChannelHandlerInterface *pInterface, int Vol) :
-		CInstHandler(pInterface, Vol) { }
+	CSeqInstHandlerVRC7(CChannelHandlerInterface *pInterface, int Vol, int Duty) :
+		CSeqInstHandler(pInterface, Vol, Duty) { }
 	void LoadInstrument(std::shared_ptr<CInstrument> pInst) override;
 	void TriggerInstrument() override;
 	void ReleaseInstrument() override;

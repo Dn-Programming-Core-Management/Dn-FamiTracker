@@ -25,7 +25,13 @@
 #pragma once
 
 
-class CInstrumentVRC7 : public CInstrument {
+#include <vector>
+#include <memory>
+
+#include "Sequence.h"
+#include "SeqInstrument.h"
+
+class CInstrumentVRC7 : public CSeqInstrument {
 public:
 	CInstrumentVRC7();
 	CInstrument* Clone() const;
@@ -43,10 +49,30 @@ public:
 	void		 SetCustomReg(int Reg, unsigned char Value);		// // //
 	unsigned char GetCustomReg(int Reg) const;		// // //
 
+private:
+	void StoreSequence(CDocumentFile *pDocFile, const CSequence *pSeq);		// // //
+	CSequence *LoadSequence(CDocumentFile *pDocFile) const;
+	void StoreInstSequence(CInstrumentFile *pDocFile, const CSequence *pSeq);
+	CSequence *LoadInstSequence(CInstrumentFile *pFile) const;
+
 protected:
 	virtual void	CloneFrom(const CInstrument *pInst);		// // //
 
+public:
+	static const int SEQUENCE_COUNT = 5;		// // //
+	static LPCTSTR SEQUENCE_NAME[];
+	LPCTSTR	GetSequenceName(int Index) const { return SEQUENCE_NAME[Index]; }		// // //
+
 private:
+	// Instrument data
+	std::vector<std::unique_ptr<CSequence>> m_pSequence;
 	unsigned int m_iPatch;
 	unsigned char m_iRegs[8];		// // // Custom patch settings
+
+public: // // // porting CSeqInstrument
+	virtual int		GetSeqEnable(int Index) const;
+	virtual int		GetSeqIndex(int Index) const;
+	virtual void	SetSeqIndex(int Index, int Value);
+	CSequence* GetSequence(int SeqType) const;		// // //
+	virtual void	SetSequence(int SeqType, CSequence* pSeq);		// // //
 };

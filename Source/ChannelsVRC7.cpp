@@ -30,8 +30,8 @@
 #include "Instrument.h"		// // //
 #include "ChannelHandler.h"
 #include "ChannelsVRC7.h"
-#include "InstHandler.h"		// // //
-#include "InstHandlerVRC7.h"		// // //
+#include "SeqInstHandler.h"		// // //
+#include "SeqInstHandlerVRC7.h"		// // //
 
 #define OPL_NOTE_ON 0x10
 #define OPL_SUSTAIN_ON 0x20
@@ -183,7 +183,7 @@ bool CChannelHandlerVRC7::CreateInstHandler(inst_type_t Type)
 	switch (Type) {
 	case INST_VRC7:
 		if (m_iInstTypeCurrent != INST_VRC7)
-			m_pInstHandler.reset(new CInstHandlerVRC7(this, 0x0F));
+			m_pInstHandler.reset(new CSeqInstHandlerVRC7(this, 0x0F, 0x0F));
 		return true;
 	}
 	return false;
@@ -237,13 +237,14 @@ unsigned int CChannelHandlerVRC7::GetFnum(int Note) const
 
 int CChannelHandlerVRC7::CalculateVolume() const
 {
-	int Volume = (m_iVolume >> VOL_COLUMN_SHIFT) - GetTremolo();
+	int Volume = (m_iInstVolume * (m_iVolume >> VOL_COLUMN_SHIFT)) / 15 - GetTremolo();
 	if (Volume > 15)
 		Volume = 15;
 	if (Volume < 0)
 		Volume = 0;
 	return Volume;		// // //
 }
+
 
 int CChannelHandlerVRC7::CalculatePeriod(bool MultiplyByHarmonic) const
 {

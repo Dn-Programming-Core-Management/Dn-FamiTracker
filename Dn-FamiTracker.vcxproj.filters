@@ -743,9 +743,11 @@
     </ClCompile>
     <ClCompile Include="Source\ConfigGUI.cpp">
       <Filter>Source Files</Filter>
+    <ClCompile Include="Source\SeqInstHandlerVRC7.cpp">
+      <Filter>Source Files\Sound Driver\Instruments</Filter>
     </ClCompile>
-    <ClCompile Include="Source\ConfigEmulation.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Source\InstrumentEditorVRC7Envelope.cpp">
+      <Filter>Source Files\Dialog Boxes\Instrument\Instrument panels</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1089,9 +1091,6 @@
       <Filter>Header Files\Sound Driver Headers\Instruments Headers</Filter>
     </ClInclude>
     <ClInclude Include="Source\SeqInstHandlerN163.h">
-      <Filter>Header Files\Sound Driver Headers\Instruments Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\InstHandlerVRC7.h">
       <Filter>Header Files\Sound Driver Headers\Instruments Headers</Filter>
     </ClInclude>
     <ClInclude Include="Source\ChannelHandlerInterface.h">
@@ -1498,6 +1497,12 @@
     </ClInclude>
     <ClInclude Include="Source\rigtorp\SPSCQueue.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SeqInstHandlerVRC7.h"><ClInclude Include="Source\SeqInstHandlerVRC7.h">
+      <Filter>Header Files\Sound Driver Headers\Instruments Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\InstrumentEditorVRC7Envelope.h">
+      <Filter>Header Files\Dialog Boxes Headers\Instrument Headers\Instrument dialog</Filter>
     </ClInclude>
     <ClInclude Include="Source\APU\mesen\Namco163Audio.h">
       <Filter>Header Files</Filter>

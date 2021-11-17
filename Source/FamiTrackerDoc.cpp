@@ -117,7 +117,7 @@ const char *FILE_BLOCK_JSON = "JSON";
 
 // FTI instruments files
 static const char INST_HEADER[] = "FTI";
-static const char INST_VERSION[] = "2.4";
+static const char INST_VERSION[] = "2.5";
 
 /* 
 	Instrument version history
@@ -125,6 +125,7 @@ static const char INST_VERSION[] = "2.4";
 	 * 2.2 - FDS volume sequences goes from 0-31 instead of 0-15
 	 * 2.3 - Support for release points & extra setting in sequences, 2A03 & VRC6
 	 * 2.4 - DPCM delta counter setting
+	 * 2.5 - VRC7 sequences
 */
 
 // File blocks
@@ -752,7 +753,7 @@ bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 {
 	static const int DEFAULT_BLOCK_VERSION[] = {		// // // TODO: use version info
 #ifdef TRANSPOSE_FDS
-		6, 1, 3, 6, 6, 3, 5, 1, 1,	// internal
+		6, 1, 3, 7, 6, 3, 5, 1, 1,	// internal
 #else
 		6, 1, 3, 6, 6, 3, 4, 1, 1,
 #endif
@@ -3177,7 +3178,7 @@ int CFamiTrackerDoc::LoadInstrument(CString FileName)
 	//
 	int iInstMaj, iInstMin;
 	// // // sscanf_s(INST_VERSION, "%i.%i", &iInstMaj, &iInstMin);
-	static const int I_CURRENT_VER = 2 * 10 + 5;		// // // 050B
+	static const int I_CURRENT_VER = 2 * 10 + 6;		// // // 050B
 	
 	int Slot = m_pInstrumentManager->GetFirstUnused();
 	try {
