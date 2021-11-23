@@ -30,7 +30,9 @@
 #include <queue>		// // //
 #include "Common.h"
 
+#include <atomic>
 #include <memory>
+#include <mutex>
 
 const int VIBRATO_LENGTH = 256;
 const int TREMOLO_LENGTH = 256;
@@ -306,7 +308,7 @@ private:
 
 	// Thread synchronization
 private:
-	mutable CCriticalSection m_csAPULock;		// // //
+	mutable std::mutex m_csAPULock;		// // //
 	mutable CCriticalSection m_csVisualizerWndLock;
 
 	// Handles
@@ -335,7 +337,7 @@ private:
 	int					m_iTempoAccum;						// Used for speed calculation
 	unsigned int		m_iPlayTicks;
 	bool				m_bPlaying;							// True when tracker is playing back the module
-	bool				m_bHaltRequest;						// True when a halt is requested
+	std::atomic<bool>	m_bHaltRequest;						// True when a halt is requested
 	bool				m_bPlayLooping;
 	int					m_iFrameCounter;
 
@@ -435,9 +437,11 @@ public:
 	afx_msg void OnRemoveDocument(WPARAM wParam, LPARAM lParam);
 
 public:
-	CSingleLock Lock() {
-		auto out = CSingleLock(&m_csAPULock, TRUE);
-		ASSERT(out.IsLocked());
-		return out;
+	std::unique_lock<std::mutex> Lock() {
+		return std::unique_lock<std::mutex>(m_csAPULock);
+	}
+
+	std::unique_lock<std::mutex> DeferLock() {
+		return std::unique_lock<std::mutex>(m_csAPULock, std::defer_lock);
 	}
 };

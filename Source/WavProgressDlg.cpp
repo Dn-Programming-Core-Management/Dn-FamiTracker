@@ -100,13 +100,13 @@ void CWavProgressDlg::OnTimer(UINT_PTR nIDEvent)
 	CProgressCtrl *pProgressBar = static_cast<CProgressCtrl*>(GetDlgItem(IDC_PROGRESS_BAR));
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 
-	CSingleLock l = pSoundGen->Lock();
+	auto l = pSoundGen->Lock();
 	bool Rendering = pSoundGen->IsRendering();
 
 	int Frame, RenderedTime, FramesToRender, RowCount, Row;
 	bool Done;
 	pSoundGen->GetRenderStat(Frame, RenderedTime, Done, FramesToRender, Row, RowCount);
-	l.Unlock();
+	l.unlock();
 
 	if (!Rendering)
 		Row = RowCount;	// Force 100%
