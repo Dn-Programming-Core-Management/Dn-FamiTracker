@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "FamiTracker.h"
 #include "FamiTrackerTypes.h"
+#include "Settings.h"
 #include "APU\Types.h"
 #include "SoundGen.h"
 #include "WavProgressDlg.h"
@@ -73,6 +74,8 @@ BOOL CWavProgressDlg::OnInitDialog()
 	CView *pView = static_cast<CFrameWnd*>(AfxGetMainWnd())->GetActiveView();		// // //
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 
+	m_iTimerPeriod = theApp.GetSettings()->General.iLowRefreshRate;
+	
 	pView->Invalidate();
 	pView->RedrawWindow();
 
@@ -85,7 +88,7 @@ BOOL CWavProgressDlg::OnInitDialog()
 		EndDialog(0);
 
 	m_dwStartTime = GetTickCount();
-	SetTimer(0, 200, NULL);
+	SetTimer(0, m_iTimerPeriod, NULL);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE
