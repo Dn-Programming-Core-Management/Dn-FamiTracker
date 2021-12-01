@@ -64,7 +64,8 @@ CChannelHandler::CChannelHandler(int MaxPeriod, int MaxVolume) :
 	m_bNewVibratoMode(false),
 	m_bLinearPitch(false),
 	m_bForceReload(false),		// // //
-	m_iEffectParam(0)		// // //
+	m_iEffectParam(0),		// // //
+	m_iVolSlideTarget(-1)		// // !!
 {
 }
 
@@ -161,6 +162,7 @@ void CChannelHandler::ResetChannel()
 	m_iFinePitch		= 0x80;
 	m_iPeriod			= 0;
 	m_iVolSlide			= 0;
+	m_iVolSlideTarget	= -1;		// // !!
 	m_bDelayEnabled		= false;
 	m_iNoteCut			= 0;
 	m_iNoteRelease		= 0;		// // //
@@ -612,6 +614,7 @@ bool CChannelHandler::HandleEffect(effect_t EffCmd, unsigned char EffParam)
 		break;
 	case EF_VOLUME_SLIDE:
 		m_iVolSlide = EffParam;
+		m_iVolSlideTarget = -1;
 		if (!EffParam)		// // //
 			m_iDefaultVolume = m_iVolume;
 		break;
@@ -636,9 +639,17 @@ bool CChannelHandler::HandleEffect(effect_t EffCmd, unsigned char EffParam)
 	case EF_HARMONIC:
 		m_iHarmonic = EffParam;
 		break;
-//	case EF_TARGET_VOLUME_SLIDE:
-		// TODO implement
-//		break;
+	case EF_TARGET_VOLUME_SLIDE:
+		if (EffParam) {		// // !!
+			m_iVolSlide = (EffParam & 0xF0) >> 4;
+			m_iVolSlideTarget = (EffParam & 0x0F) << VOL_COLUMN_SHIFT;
+		}
+		else {
+			m_iVolSlide = 0x00;
+			m_iVolSlideTarget = -1;
+			m_iDefaultVolume = m_iVolume;
+		}
+		break;
 	default:
 		return false;
 	}
@@ -738,7 +749,24 @@ void CChannelHandler::UpdateVolumeSlide()
 
 void CChannelHandler::UpdateTargetVolumeSlide()
 {
-	// TODO implement
+	// Target volume slide (Nxy)				// // !!
+	if (m_iVolume > m_iVolSlideTarget) {
+		m_iVolume -= (m_iVolSlide & 0x0F);
+		if (m_iVolume <= m_iVolSlideTarget) {
+			m_iVolume = m_iVolSlideTarget;
+			m_iVolSlide = 0x00;
+			m_iVolSlideTarget = -1;
+		}
+	}
+	else
+	{
+		m_iVolume += (m_iVolSlide & 0x0F);
+		if (m_iVolume >= m_iVolSlideTarget) {
+			m_iVolume = m_iVolSlideTarget;
+			m_iVolSlide = 0x00;
+			m_iVolSlideTarget = -1;
+		}
+	}
 }
 
 void CChannelHandler::UpdateVibratoTremolo()
@@ -853,7 +881,10 @@ void CChannelHandler::ProcessChannel()
 	UpdateNoteRelease();		// // //
 	UpdateNoteVolume();			// // //
 	UpdateTranspose();			// // //
-	UpdateVolumeSlide();
+	if (m_iVolSlideTarget < 0)	// // !!
+		UpdateVolumeSlide();
+	else
+		UpdateTargetVolumeSlide();
 	UpdateVibratoTremolo();
 	UpdateEffects();
 	if (m_pInstHandler) m_pInstHandler->UpdateInstrument();		// // //

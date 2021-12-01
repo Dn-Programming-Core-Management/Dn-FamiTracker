@@ -6,6 +6,34 @@ ft_run_effects:
 	; Volume slide
 	lda var_ch_VolSlide, x
 	beq @NoVolSlide
+	lda var_ch_VolSlideTarget, x	;; ;; !! begin target volume slide
+	bmi @VolSlide
+	cmp var_ch_VolColumn, x
+	bcs :+
+	sec								; slide up to target
+	lda var_ch_VolColumn, x
+	sbc var_ch_VolSlide, x
+	cmp var_ch_VolSlideTarget, x
+	bcc @ReachedVolSlideTarget
+	sta var_ch_VolColumn, x
+	bcs @NoVolSlide
+:	clc								; slide down to target
+	lda var_ch_VolColumn, x
+	adc var_ch_VolSlide, x
+	cmp var_ch_VolSlideTarget, x
+	bcs @ReachedVolSlideTarget
+	sta var_ch_VolColumn, x
+	bcc @NoVolSlide
+@ReachedVolSlideTarget:
+	lda var_ch_VolSlideTarget, x
+	sta var_ch_VolColumn, x
+	lda #$00
+	sta var_ch_VolSlide, x
+	lda #$80
+	sta var_ch_VolSlideTarget, x
+	jmp @NoVolSlide					;; ;; !! end target volume slide
+
+@VolSlide:
 	; First calculate volume decrease
 	lda var_ch_VolSlide, x
 	and #$0F

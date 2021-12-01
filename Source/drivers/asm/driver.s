@@ -336,6 +336,7 @@ var_ch_PeriodCalcLo:	.res EFF_CHANS 				; Frequency after fine pitch and vibrato
 var_ch_PeriodCalcHi:	.res EFF_CHANS
 ;var_ch_OutVolume:		.res EFF_CHANS				; Volume for the APU
 var_ch_VolSlide:		.res EFF_CHANS				;;; ;; ; Volume slide
+var_ch_VolSlideTarget:	.res EFF_CHANS				;; ;; !! Volume slide target
 var_ch_DutyDefault:		.res EFF_CHANS				;;; ;; ; Duty cycle / Noise mode
 var_ch_DutyCurrent:		.res EFF_CHANS				; ;; ;;; do not rely on bitwise operations
 

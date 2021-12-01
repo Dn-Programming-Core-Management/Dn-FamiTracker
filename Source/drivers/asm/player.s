@@ -693,26 +693,27 @@ ft_command_table:
 	.word ft_cmd_groove				; A0
 	.word ft_cmd_delayed_volume		; A1
 	.word ft_cmd_transpose			; A2
+	.word ft_cmd_target_vol_slide	; A3	;; ;; !!
 .if .defined(USE_VRC7)
-	.word ft_cmd_vrc7_patch_change	; A3
-	.word ft_cmd_vrc7_port			; A4
-	.word ft_cmd_vrc7_write			; A5
+	.word ft_cmd_vrc7_patch_change	; A4
+	.word ft_cmd_vrc7_port			; A5
+	.word ft_cmd_vrc7_write			; A6
 .endif
 .if .defined(USE_FDS)
-	.word ft_cmd_fds_mod_depth		; A6
-	.word ft_cmd_fds_mod_rate_hi	; A7
-	.word ft_cmd_fds_mod_rate_lo	; A8
-	.word ft_cmd_fds_volume			; A9
-	.word ft_cmd_fds_mod_bias		; AA
+	.word ft_cmd_fds_mod_depth		; A7
+	.word ft_cmd_fds_mod_rate_hi	; A8
+	.word ft_cmd_fds_mod_rate_lo	; A9
+	.word ft_cmd_fds_volume			; AA
+	.word ft_cmd_fds_mod_bias		; AB
 .endif
 .if .defined(USE_N163)
-	.word ft_cmd_n163_wave_buffer	; AB
+	.word ft_cmd_n163_wave_buffer	; AC
 .endif
 .if .defined(USE_S5B)		;;; ;; ;
-	.word ft_cmd_s5b_env_type		; AC
-	.word ft_cmd_s5b_env_rate_hi	; AD
-	.word ft_cmd_s5b_env_rate_lo	; AE
-	.word ft_cmd_s5b_noise			; AF
+	.word ft_cmd_s5b_env_type		; AD
+	.word ft_cmd_s5b_env_rate_hi	; AE
+	.word ft_cmd_s5b_env_rate_lo	; AF
+	.word ft_cmd_s5b_noise			; B0
 .endif				; ;; ;;;
 ;	.word ft_cmd_expand
 
@@ -983,7 +984,9 @@ ft_cmd_vol_slide:
 	bne :+							;;; ;; ;
 	lda var_ch_VolColumn, x
 	sta var_ch_VolDefault, x		; ;; ;;;
-:	rts
+:	lda #$80						;; ;; !!
+	sta var_ch_VolSlideTarget, x
+	rts
 ; Effect: Note cut (Sxx)
 ft_cmd_note_cut:
 	jsr ft_get_pattern_byte
@@ -1021,6 +1024,29 @@ ft_cmd_delayed_volume:
 ft_cmd_transpose:
 	jsr ft_get_pattern_byte
 	sta var_ch_Transpose, x
+	rts
+;; ;; !! Effect: Target note slide (Nxy)
+ft_cmd_target_vol_slide:
+	jsr ft_get_pattern_byte			; Fetch speed / volume
+	beq :+
+	pha
+	and #$F0
+	lsr a
+	lsr a
+	lsr a
+	lsr a
+	sta var_ch_VolSlide, x
+	pla
+	and #$0F
+	asl a
+	asl a
+	asl a
+	sta var_ch_VolSlideTarget, x
+	rts
+:	sta var_ch_VolSlide, x
+	sta var_ch_VolDefault, x;
+	lda #$80
+	sta var_ch_VolSlideTarget, x
 	rts
 ; Effect: Retrigger
 ft_cmd_retrigger:
