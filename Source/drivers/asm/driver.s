@@ -290,6 +290,7 @@ var_Tempo_Count:		.res 2						;  (if tempo support is not needed then this can b
 var_Tempo_Dec:			.res 2
 var_Tempo_Modulus:		.res 2						;;; ;; ; from 0.4.6
 var_Sweep:				.res 1						; This has to be saved
+var_VolumeSlideStarted:	.res 1						;; ;; !! Flag to allow simultaneous volume + slide 
 
 .if .defined(USE_BANKSWITCH)
 ;var_Bank:				.res 1

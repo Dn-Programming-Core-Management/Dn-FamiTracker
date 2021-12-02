@@ -279,6 +279,12 @@ ft_loop_channels:
 	sta var_ch_VolColumn, x
 	lda #$00
 	sta var_ch_VolDelay, x
+	lda var_ch_VolSlideTarget, x		;; ;; !! kill volume slide upon new volume
+	bmi :+
+	lda #$80
+	sta var_ch_VolSlideTarget, x
+	lda #$00
+	sta var_ch_VolSlide, x
 :
 	lda var_ch_VolDelay, x
 	cmp #$10
@@ -325,6 +331,7 @@ ft_read_pattern:
 	sta var_ch_NoteDelay, x
 	rts									; And skip
 :	sty var_Sweep						; Y = 0
+	sty var_VolumeSlideStarted			;; ;; !!
 .if .defined(USE_BANKSWITCH)
 	;;; ;; ; First setup the bank
 	lda var_InitialBank
@@ -550,7 +557,15 @@ ft_read_note:
 	and #$78
 	sta var_ch_VolColumn, x
 	sta var_ch_VolDefault, x			;;; ;; ;
-	iny
+	lda	var_VolumeSlideStarted			;; ;; !! kill volume slide upon new volume
+	bne :+
+	lda var_ch_VolSlideTarget, x
+	bmi :+
+	lda	#$00
+	sta var_ch_VolSlide, x
+	lda	#$80
+	sta var_ch_VolSlideTarget, x
+:	iny
 	jmp ft_read_note
 @InstCommand:							; Instrument change
 	and #$0F
@@ -1029,6 +1044,7 @@ ft_cmd_transpose:
 ft_cmd_target_vol_slide:
 	jsr ft_get_pattern_byte			; Fetch speed / volume
 	beq :+
+	sta var_VolumeSlideStarted		; Flag just needs to be non-zero
 	pha
 	and #$F0
 	lsr a

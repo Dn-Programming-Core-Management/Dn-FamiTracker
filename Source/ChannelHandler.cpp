@@ -331,6 +331,7 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	bool Trigger = (pNoteData->Note != NONE) && (pNoteData->Note != HALT) && (pNoteData->Note != RELEASE) &&
 		Instrument != HOLD_INSTRUMENT;		// // // 050B
 	bool pushNone = false;
+	bool handledTargetVolumeSlide = false;	// // !!
 
 	// // // Echo buffer
 	if (pNoteData->Note == ECHO && pNoteData->Octave <= ECHO_BUFFER_LENGTH)
@@ -378,12 +379,20 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 			m_iVolume = m_iDefaultVolume;
 			m_iNoteVolume = -1;
 		}
+		else if (EffNum == EF_TARGET_VOLUME_SLIDE) {	// // !!
+			handledTargetVolumeSlide = true;
+		}
 	}
 
 	// Volume
 	if (pNoteData->Vol < MAX_VOLUME) {
 		m_iVolume = pNoteData->Vol << VOL_COLUMN_SHIFT;
 		m_iDefaultVolume = m_iVolume;		// // //
+
+		if (!handledTargetVolumeSlide && m_iVolSlideTarget >= 0) {	// // !!
+			m_iVolSlide = 0x00;		// Cancel slide upon new volume command similar to Q/Rxx
+			m_iVolSlideTarget = -1;
+		}
 	}
 
 	// Instrument
@@ -708,8 +717,13 @@ void CChannelHandler::UpdateNoteRelease()		// // //
 void CChannelHandler::UpdateNoteVolume()		// // //
 {
 	// Delayed channel volume (Mxy)
-	if (m_iNoteVolume > 0) if (!--m_iNoteVolume)
+	if (m_iNoteVolume > 0) if (!--m_iNoteVolume) {
 		m_iVolume = m_iNewVolume;
+		if (m_iVolSlideTarget >= 0) {			// // !!
+			m_iVolSlideTarget = -1;
+			m_iVolSlide = 0x00;
+		}
+	}
 }
 
 void CChannelHandler::UpdateTranspose()		// // //
