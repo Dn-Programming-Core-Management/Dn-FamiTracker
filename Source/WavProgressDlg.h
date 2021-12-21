@@ -41,6 +41,8 @@ protected:
 	render_end_t m_iSongEndType;
 	int m_iSongEndParam;
 	int m_iTrack;
+
+	int		m_iTimerPeriod; // Refresh rate depending on playback
 	
 	CString m_sFile;
 
