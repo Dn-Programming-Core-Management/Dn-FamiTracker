@@ -126,6 +126,7 @@ void CChannelHandlerVRC7::UpdateNoteRelease()		// // //
 
 void CChannelHandlerVRC7::HandleRelease()
 {
+	ReleaseNote();
 	if (!m_bRelease) {
 		m_iCommand = CMD_NOTE_RELEASE;
 		RegisterKeyState(-1);
@@ -237,7 +238,7 @@ unsigned int CChannelHandlerVRC7::GetFnum(int Note) const
 
 int CChannelHandlerVRC7::CalculateVolume() const
 {
-	int Volume = (m_iInstVolume * (m_iVolume >> VOL_COLUMN_SHIFT)) / 15 - GetTremolo();		// // //
+	int Volume = ((m_iVolume >> VOL_COLUMN_SHIFT) + m_iInstVolume - 15 - GetTremolo());
 	if (Volume > 15)
 		Volume = 15;
 	if (Volume < 0)

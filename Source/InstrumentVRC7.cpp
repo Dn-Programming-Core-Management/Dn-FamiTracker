@@ -165,7 +165,7 @@ bool CInstrumentVRC7::Load(CDocumentFile *pDocFile)
 		SetCustomReg(i, pDocFile->GetBlockChar());
 
 
-	if (pDocFile->GetBlockVersion() >= 7) {		// // //
+	if (pDocFile->GetFileVersion() >= pDocFile->FILE_VER) {		// // //
 		SetSequence(SEQ_VOLUME, LoadSequence(pDocFile));
 		SetSequence(SEQ_ARPEGGIO, LoadSequence(pDocFile));
 		SetSequence(SEQ_PITCH, LoadSequence(pDocFile));

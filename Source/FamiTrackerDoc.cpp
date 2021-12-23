@@ -753,7 +753,7 @@ bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 {
 	static const int DEFAULT_BLOCK_VERSION[] = {		// // // TODO: use version info
 #ifdef TRANSPOSE_FDS
-		6, 1, 3, 7, 6, 3, 5, 1, 1,	// internal
+		6, 1, 3, 6, 6, 3, 5, 1, 1,	// internal
 #else
 		6, 1, 3, 6, 6, 3, 4, 1, 1,
 #endif

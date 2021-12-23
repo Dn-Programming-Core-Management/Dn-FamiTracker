@@ -33,7 +33,7 @@
 // No unicode allowed here
 
 // Class constants
-const unsigned int CDocumentFile::FILE_VER		 = 0x0440;			// Current file version (4.40)
+const unsigned int CDocumentFile::FILE_VER		 = 0x0451;			// Current file version (4.51)
 const unsigned int CDocumentFile::COMPATIBLE_VER = 0x0100;			// Compatible file version (1.0)
 
 const char *CDocumentFile::FILE_HEADER_ID = "FamiTracker Module";
@@ -217,7 +217,7 @@ void CDocumentFile::ValidateFile()
 		e->Raise();
 	}
 	// // // File version is too new
-	if (GetFileVersion() > 0x450U /*FILE_VER*/) {		// // // 050B
+	if (GetFileVersion() > FILE_VER) {		// // // 050B
 		e->AppendError("FamiTracker module version too new (0x%X), expected 0x%X or below", GetFileVersion(), FILE_VER);
 		e->Raise();
 	}
