@@ -1471,7 +1471,7 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 						// // // Check valid note
 						const int N163limits[] = { 95, 95, 95, 94, 90, 87, 84, 82 };
 						COLORREF noteCol = pColorInfo->Note;
-						if (((pTrackerChannel->GetID() <= CHANID_TRIANGLE || pTrackerChannel->GetChip() == SNDCHIP_MMC5) && (pNoteData->Note-1+pNoteData->Octave*12 < 9)) ||
+						if (((pTrackerChannel->GetID() <= CHANID_TRIANGLE || pTrackerChannel->GetChip() == SNDCHIP_MMC5) && (pNoteData->Note-1+pNoteData->Octave*12 < 9-m_pDocument->GetMachine())) ||
 							(pTrackerChannel->GetChip() == SNDCHIP_FDS && pNoteData->Note-1+pNoteData->Octave*12 > 92) ||
 							(pTrackerChannel->GetChip() == SNDCHIP_N163 && pNoteData->Note-1+pNoteData->Octave*12 > N163limits[m_pDocument->GetNamcoChannels()-1]))
 							noteCol = RGB(255, 0, 0);
