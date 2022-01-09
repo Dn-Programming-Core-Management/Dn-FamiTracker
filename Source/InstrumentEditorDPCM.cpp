@@ -221,6 +221,7 @@ void CInstrumentEditorDPCM::UpdateKey(int Index)
 
 	pTableListCtrl->SetItemText(Index, 1, PitchStr);
 	pTableListCtrl->SetItemText(Index, 2, NameStr);
+	GetDocument()->UpdateAllViews(NULL, UPDATE_PATTERN);	// // //
 }
 
 void CInstrumentEditorDPCM::BuildSampleList()
@@ -256,6 +257,7 @@ void CInstrumentEditorDPCM::BuildSampleList()
 		MakeIntString(MAX_SAMPLE_SPACE / 0x400));
 	
 	SetDlgItemText(IDC_SPACE, Text);
+	GetDocument()->UpdateAllViews(NULL, UPDATE_PATTERN);	// // //
 }
 
 // When saved in NSF, the samples has to be aligned at even 6-bits addresses

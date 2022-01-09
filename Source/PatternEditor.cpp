@@ -43,6 +43,9 @@
 #include "TextExporter.h"		// // //
 #include "APU/APU.h"
 #include "RegisterState.h"		// // //
+#include "DSample.h"	// // //
+#include "SeqInstrument.h"	// // //
+#include "Instrument2A03.h"	// // //
 
 /*
  * CPatternEditor
@@ -1464,9 +1467,28 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 					}
 					else {
 						// The rest
-						DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, NOTES_A[pNoteData->Note - 1], pColorInfo->Note);		// // //
-						DrawChar(pDC, PosX + m_iCharWidth * 3 / 2, PosY, NOTES_B[pNoteData->Note - 1], pColorInfo->Note);
-						DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, NOTES_C[pNoteData->Octave], pColorInfo->Note);
+
+						// // // Check valid note
+						const int N163limits[] = { 95, 95, 95, 94, 90, 87, 84, 82 };
+						COLORREF noteCol = pColorInfo->Note;
+						if (((pTrackerChannel->GetID() <= CHANID_TRIANGLE || pTrackerChannel->GetChip() == SNDCHIP_MMC5) && (pNoteData->Note-1+pNoteData->Octave*12 < 9)) ||
+							(pTrackerChannel->GetChip() == SNDCHIP_FDS && pNoteData->Note-1+pNoteData->Octave*12 > 92) ||
+							(pTrackerChannel->GetChip() == SNDCHIP_N163 && pNoteData->Note-1+pNoteData->Octave*12 > N163limits[m_pDocument->GetNamcoChannels()-1]))
+							noteCol = RGB(255, 0, 0);
+						if (pNoteData->Instrument != MAX_INSTRUMENTS && pNoteData->Instrument != HOLD_INSTRUMENT && pTrackerChannel->GetID() == CHANID_DPCM) {
+							if (auto pDPCMInst = std::dynamic_pointer_cast<const CInstrument2A03>(m_pDocument->GetInstrument(pNoteData->Instrument))) {
+								if (pDPCMInst->GetDSample(pNoteData->Octave, pNoteData->Note - 1) == nullptr)
+									noteCol = RGB(255, 0, 0);
+							}
+							else if (m_pDocument->GetInstrument(pNoteData->Instrument) == nullptr || m_pDocument->GetInstrument(pNoteData->Instrument)->GetType() != INST_2A03)
+								noteCol = RGB(255, 0, 0);
+						} else if (pNoteData->Instrument == HOLD_INSTRUMENT && pTrackerChannel->GetID() == CHANID_DPCM)
+							noteCol = RGB(255, 0, 0);
+					
+						
+						DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, NOTES_A[pNoteData->Note - 1], noteCol);		// // //
+						DrawChar(pDC, PosX + m_iCharWidth * 3 / 2, PosY, NOTES_B[pNoteData->Note - 1], noteCol);
+						DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, NOTES_C[pNoteData->Octave], noteCol);
 					}
 					break;
 			}
