@@ -73,6 +73,7 @@ public:
 	int32_t	GetVol(uint8_t Chan) const;
 	uint8_t	GetReg(int Chip, int Reg) const;
 	double	GetFreq(int Chip, int Chan) const;		// // //
+	double	GetFDSModFreq() const; // Fetch FDS modulation frequency
 	CRegisterState *GetRegState(int Chip, int Reg) const;		// // //
 	
 	uint8_t	GetSamplePos() const;

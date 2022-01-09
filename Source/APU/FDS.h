@@ -49,6 +49,8 @@ public:
 	int GetChannelLevel(int Channel) override;
 	int GetChannelLevelRange(int Channel) const override;
 
+	double	GetModFreq() const;
+
 	void UpdateFdsFilter(int CutoffHz);
 	void UpdateMixLevel(double v);
 

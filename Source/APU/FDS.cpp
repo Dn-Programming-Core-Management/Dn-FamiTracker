@@ -169,6 +169,16 @@ double CFDS::GetFreq(int Channel) const		// // //
 	return CAPU::BASE_FREQ_NTSC * (Lo / 4194304.);
 }
 
+double CFDS::GetModFreq() const		// // //
+{
+	int Lo = m_pRegisterLogger->GetRegister(0x4086)->GetValue();
+	int Hi = m_pRegisterLogger->GetRegister(0x4087)->GetValue();
+	if (Hi & 0x80)
+		return 0.;
+	Lo |= (Hi << 8) & 0xF00;
+	return CAPU::BASE_FREQ_NTSC * (Lo / 4194304.);
+}
+
 int CFDS::GetChannelLevel(int Channel)
 {
 	ASSERT(Channel == 0);

@@ -1432,6 +1432,11 @@ double CSoundGen::GetChannelFrequency(unsigned Chip, int Channel) const		// // /
 	return m_pAPU->GetFreq(Chip, Channel);
 }
 
+double CSoundGen::GetFDSModFrequency() const
+{
+	return m_pAPU->GetFDSModFreq();
+}
+
 void CSoundGen::MakeSilent()
 {
 	// Called from player thread
