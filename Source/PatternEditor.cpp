@@ -2002,7 +2002,24 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_FDS)) {
 		DrawHeaderFunc(_T("FDS"));		// // //
-		
+
+		// // // FDS wave
+		const int wave_x = x + DPI::SX(180);
+		const double xScale = 1, yScale = 0.5;
+
+		y += 36;
+		pDC->FillSolidRect(wave_x - 1, y - 1, (int)(64*xScale) + 2, (int)(64*yScale)+2, 0x808080); // draw box
+		pDC->FillSolidRect(wave_x, y, (int)(64*xScale), (int)(64*yScale)-1, 0);                    // fill box
+		for (double i = 0; i < 64; i+=(1/xScale)) {
+			auto pState = pSoundGen->GetRegState(SNDCHIP_FDS, 0x4040 + ((int)(i) & 0x3F));
+			int state = pState->GetValue();
+			COLORREF Col = BLEND(0xC0C0C0, DECAY_COLOR[pState->GetNewValueTime()], 100 * pState->GetLastUpdatedTime() / CRegisterState::DECAY_RATE);
+			pDC->FillSolidRect(wave_x + (int)(i * xScale), y + (int)((0x3F - state) * yScale), 1, (int)(state* yScale) + 1, Col);
+			pDC->FillSolidRect(wave_x + (int)(i*xScale), y + (int)((0x3F-state)*yScale), 1, 1, DIM(Col,(int)(100*(state*yScale-(int)(state*yScale))))); // antialiasing
+		}
+		y -= 36;
+
+		// other
 		int period = (pSoundGen->GetReg(SNDCHIP_FDS, 0x4082) & 0xFF) | ((pSoundGen->GetReg(SNDCHIP_FDS, 0x4083) & 0x0F) << 8);
 		int vol = (pSoundGen->GetReg(SNDCHIP_FDS, 0x4080) & 0x3F);
 		double freq = theApp.GetSoundGenerator()->GetChannelFrequency(SNDCHIP_FDS, 0);		// // //
