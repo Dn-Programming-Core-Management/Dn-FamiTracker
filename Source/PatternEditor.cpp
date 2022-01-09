@@ -1985,7 +1985,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		const int wave_x = x + DPI::SX(180);
 		const double xScale = 1, yScale = 0.5;
 
-		y += 36;
+		y += 18 + LINE_HEIGHT * 2;
 		pDC->FillSolidRect(wave_x - 1, y - 1, (int)(64*xScale) + 2, (int)(64*yScale)+2, 0x808080); // draw box
 		pDC->FillSolidRect(wave_x, y, (int)(64*xScale), (int)(64*yScale)-1, 0);                    // fill box
 		for (double i = 0; i < 64; i+=(1/xScale)) {
@@ -1993,26 +1993,37 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			int state = pState->GetValue();
 			COLORREF Col = BLEND(0xC0C0C0, DECAY_COLOR[pState->GetNewValueTime()], 100 * pState->GetLastUpdatedTime() / CRegisterState::DECAY_RATE);
 			pDC->FillSolidRect(wave_x + (int)(i * xScale), y + (int)((0x3F - state) * yScale), 1, (int)(state* yScale) + 1, Col);
-			pDC->FillSolidRect(wave_x + (int)(i*xScale), y + (int)((0x3F-state)*yScale), 1, 1, DIM(Col,(int)(100*(state*yScale-(int)(state*yScale))))); // antialiasing
+			pDC->FillSolidRect(wave_x + (int)(i * xScale), y + (int)((0x3F-state)*yScale), 1, 1, DIM(Col,(int)(100*(state*yScale-(int)(state*yScale))))); // antialiasing
 		}
-		y -= 36;
+		y -= 18 + LINE_HEIGHT * 2;
 
 		// other
 		int period = (pSoundGen->GetReg(SNDCHIP_FDS, 0x4082) & 0xFF) | ((pSoundGen->GetReg(SNDCHIP_FDS, 0x4083) & 0x0F) << 8);
 		int vol = (pSoundGen->GetReg(SNDCHIP_FDS, 0x4080) & 0x3F);
 		double freq = theApp.GetSoundGenerator()->GetChannelFrequency(SNDCHIP_FDS, 0);		// // //
 
-		CString FDStext;
-		FDStext.Format(_T("%s, vol = %02i"), GetPitchTextFunc(3, period, freq), vol);
+		int modperiod = (pSoundGen->GetReg(SNDCHIP_FDS, 0x4086) & 0xFF) | ((pSoundGen->GetReg(SNDCHIP_FDS, 0x4087) & 0x0F) << 8);
+		int moddepth = (pSoundGen->GetReg(SNDCHIP_FDS, 0x4084) & 0x3F);
+		double modfreq = theApp.GetSoundGenerator()->GetFDSModFrequency();
 
-		for (int i = 0; i < 11; ++i) {
-			GetRegsFunc(SNDCHIP_FDS, [&] (int) { return 0x4080 + i; }, 1);
-			text.Format(_T("$%04X:"), 0x4080 + i);
-			DrawRegFunc(text, 1);
-			if (!i) DrawTextFunc(180, FDStext);
+		CString FDStext;
+		CString Modtext;
+
+		FDStext.Format(_T("%s, vol = %02i"), GetPitchTextFunc(3, period, freq), vol);
+		Modtext.Format(_T("modulation %s, depth = %02i"), GetPitchTextFunc(3, modperiod, modfreq), moddepth);
+
+		for (int i = 0; i < 3; ++i) {
+			GetRegsFunc(SNDCHIP_FDS, [&](int x) { return 0x4080 + i * 4 + x; }, 4);
+			text.Format(_T("$%04X:"), 0x4080 + i * 4);
+			DrawRegFunc(text, 4);
+			switch (i) {
+			case 0: DrawTextFunc(180, FDStext); break;
+			case 1: DrawTextFunc(180, Modtext); break;
+			}
 		}
 		
 		DrawVolFunc(freq, vol << 3);
+		line += 2; y += LINE_HEIGHT * 2;
 	}
 
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_VRC7)) {		// // //

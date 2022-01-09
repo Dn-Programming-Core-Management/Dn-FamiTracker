@@ -195,6 +195,7 @@ public:
 	uint8_t		GetReg(int Chip, int Reg) const;
 	CRegisterState *GetRegState(unsigned Chip, unsigned Reg) const;		// // //
 	double		GetChannelFrequency(unsigned Chip, int Channel) const;		// // //
+	double		GetFDSModFrequency() const;		// // //
 	CString		RecallChannelState(int Channel) const;		// // //
 
 	// FDS & N163 wave preview
