@@ -1832,6 +1832,22 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		return str;
 	};
 
+	// For noise and DPCM.
+	const auto GetPitchTextFuncLong = [](int digits, int period, double freq, bool rate) {
+		const CString fmt = _T("%s = $%0*X (%9.2fHz %-4s %+03i)");
+		const double note = NoteFromFreq(freq);
+		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
+		const int cents = int((note - double(note_conv)) * 100.0);
+
+		CString str;
+		CString ratepitch = rate ? _T("rate ") : _T("pitch");
+		if (freq != 0.)
+			str.Format(fmt, ratepitch, digits, period, freq, NoteToStr(note_conv), cents);
+		else
+			str.Format(fmt, ratepitch, digits, period, 0., _T("---"), 0);
+		return str;
+	};
+
 	// 2A03
 	DrawHeaderFunc(_T("2A03"));		// // //
 
@@ -1856,13 +1872,14 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		case 3:
 			period = reg[2] & 0x0F;
 			vol = reg[0] & 0x0F;
-			text.Format(_T("pitch = $%01X, vol = %02i, mode = %i"), period, vol, reg[2] >> 7);
+			text.Format(_T("%s, vol = %02i, mode = %i"), GetPitchTextFuncLong(1, period, freq, !(reg[2] >> 7)), vol, reg[2] >> 7);
 			period = (period << 4) | ((reg[2] & 0x80) >> 4);
 			freq /= 16; break; // for display
+
 		case 4:
 			period = reg[0] & 0x0F;
 			vol = 15 * !pSoundGen->PreviewDone();
-			text.Format(_T("%s, %s, size = %i byte%c"), GetPitchTextFunc(1, period & 0x0F, freq),
+			text.Format(_T("%s, %s, size = %i byte%c"), GetPitchTextFuncLong(1, (period & 0x0F), freq, 1),
 				(reg[0] & 0x40) ? _T("looped") : _T("once"), (reg[3] << 4) | 1, reg[3] ? 's' : ' ');
 			freq /= 16; break; // for display
 		}
