@@ -60,7 +60,7 @@ CFrameEditor::CFrameEditor(CMainFrame *pMainFrm) :
 	m_pView(NULL),
 	mClipboardFormat(0),
 	m_iChannelView(theApp.GetSettings()->ChannelViewCount),		// // !!
-	m_iMaxChannelView(theApp.GetSettings()->General.iMaxChannelView),		// // !!
+	m_iMaxChannelView(theApp.GetSettings()->GUI.iMaxChannelView),		// // !!
 	m_iWinWidth(0),
 	m_iWinHeight(0),
 	m_iHiglightLine(0),

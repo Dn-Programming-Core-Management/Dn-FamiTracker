@@ -53,8 +53,6 @@ void CConfigEmulation::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CConfigEmulation, CPropertyPage)
 	ON_WM_HSCROLL()
 	ON_BN_CLICKED(IDC_N163_MULTIPLEXER, &CConfigEmulation::OnBnClickedN163Multiplexer)
-	ON_CBN_SELCHANGE(IDC_COMBO_FDS_EMULATOR, &CConfigEmulation::OnCbnSelchangeComboFdsEmulator)
-	ON_CBN_SELCHANGE(IDC_COMBO_S5B_EMULATOR, &CConfigEmulation::OnCbnSelchangeComboS5bEmulator)
 	ON_CBN_SELCHANGE(IDC_COMBO_VRC7_PATCH, &CConfigEmulation::OnCbnSelchangeComboVrc7Patch)
 END_MESSAGE_MAP()
 
@@ -133,18 +131,6 @@ void CConfigEmulation::UpdateSliderTexts()
 	CString str;
 	str.Format(_T("%i Hz"), static_cast<CSliderCtrl*>(GetDlgItem(IDC_SLIDER_FDS_LOWPASS))->GetPos());
 	SetDlgItemText(IDC_FDS_LOWPASS_FREQ, str);
-}
-
-
-void CConfigEmulation::OnCbnSelchangeComboFdsEmulator()
-{
-	SetModified();
-}
-
-
-void CConfigEmulation::OnCbnSelchangeComboS5bEmulator()
-{
-	SetModified();
 }
 
 

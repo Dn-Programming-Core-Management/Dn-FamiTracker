@@ -70,7 +70,7 @@ BOOL CPerformanceDlg::OnInitDialog()
 	theApp.GetCPUUsage();
 	theApp.GetSoundGenerator()->GetFrameRate();
 
-	PerRefreshRate = theApp.GetSettings()->General.iLowRefreshRate;
+	PerRefreshRate = theApp.GetSettings()->GUI.iLowRefreshRate;
 	SetTimer(TMR_BAR, PerRefreshRate, NULL);
 	SetTimer(TMR_INFO, 1000, NULL);
 

@@ -832,7 +832,7 @@ void CFamiTrackerView::OnTimer(UINT_PTR nIDEvent)
 	}
 	else {
 		KillTimer(TMR_UPDATE);
-		TimerDelayer = theApp.GetSettings()->General.iLowRefreshRate;
+		TimerDelayer = theApp.GetSettings()->GUI.iLowRefreshRate;
 		SetTimer(TMR_UPDATE, TimerDelayer, NULL);
 	}
 	switch (nIDEvent) {
