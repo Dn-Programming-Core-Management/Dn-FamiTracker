@@ -159,6 +159,7 @@ public:
 		bool	bCheckVersion;		// // //
 		int		iLowRefreshRate;	// // !!
 		int		iMaxChannelView;	// // !!
+		bool	bSmoothRegFreq;
 	} General;
 
 	struct {

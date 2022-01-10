@@ -137,6 +137,7 @@ void CSettings::SetupSettings()
 	// // !!
 	SETTING_INT("Appearance", "Idle refresh rate", 100, &General.iLowRefreshRate);
 	SETTING_INT("Appearance", "Maximum frame editor channel view", 8, &General.iMaxChannelView);		// // !!
+	SETTING_BOOL("Appearance", "Smooth register frequency view", true, &General.bSmoothRegFreq);
 
 	// // // Version / Compatibility info
 	SETTING_INT("Version", "Module error level", MODULE_ERROR_DEFAULT, &Version.iErrorLevel);
