@@ -1878,9 +1878,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 
 		case 4:
 			period = reg[0] & 0x0F;
-			vol = 15 * !pSoundGen->PreviewDone();
-			text.Format(_T("%s, %s, size = %i byte%c"), GetPitchTextFuncLong(1, (period & 0x0F), freq, 1),
-				(reg[0] & 0x40) ? _T("looped") : _T("once"), (reg[3] << 4) | 1, reg[3] ? 's' : ' ');
+			vol = 15 *!pSoundGen->PreviewDone();
+			text.Format(_T("%s, %-5s size = %-4i byte%c"), GetPitchTextFuncLong(1, (period & 0x0F), freq, 1),
+				(reg[0] & 0x40) ? _T("loop,") : _T("once,"), (reg[3] << 4) | 1, reg[3] ? 's' : ' ');
 			freq /= 16; break; // for display
 		}
 /*
