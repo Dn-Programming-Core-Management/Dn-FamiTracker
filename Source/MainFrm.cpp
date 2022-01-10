@@ -45,6 +45,7 @@
 #include "ConfigWindow.h"
 #include "ConfigMixer.h"
 #include "ConfigEmulation.h"	// // !!
+#include "ConfigGUI.h"
 #include "Settings.h"
 #include "Accelerator.h"
 #include "SoundGen.h"
@@ -757,7 +758,7 @@ void CMainFrame::ResizeFrameWindow()
 		int Height = 0, Width = 0;
 
 		// make sure m_iMaxChannelView is updated
-		m_pFrameEditor->m_iMaxChannelView = theApp.GetSettings()->General.iMaxChannelView;
+		m_pFrameEditor->m_iMaxChannelView = theApp.GetSettings()->GUI.iMaxChannelView;
 
 		// Located to the right
 		if (m_iFrameEditorPos == FRAME_EDIT_POS_TOP) {
@@ -1909,6 +1910,7 @@ void CMainFrame::OnFileGeneralsettings()
 	CConfigShortcuts	TabShortcuts;
 	CConfigMixer		TabMixer;
 	CConfigEmulation	TabEmulation;	// // !!
+	CConfigGUI			TabGUI;
 
 	ConfigWindow.m_psh.dwFlags	&= ~PSH_HASHELP;
 	TabGeneral.m_psp.dwFlags	&= ~PSP_HASHELP;
@@ -1919,6 +1921,7 @@ void CMainFrame::OnFileGeneralsettings()
 	TabShortcuts.m_psp.dwFlags	&= ~PSP_HASHELP;
 	TabMixer.m_psp.dwFlags		&= ~PSP_HASHELP;
 	TabEmulation.m_psp.dwFlags	&= ~PSP_HASHELP;
+	TabGUI.m_psp.dwFlags		&= ~PSP_HASHELP;
 	
 	ConfigWindow.AddPage(&TabGeneral);
 	ConfigWindow.AddPage(&TabVersion);
@@ -1928,6 +1931,7 @@ void CMainFrame::OnFileGeneralsettings()
 	ConfigWindow.AddPage(&TabShortcuts);
 	ConfigWindow.AddPage(&TabMixer);
 	ConfigWindow.AddPage(&TabEmulation);
+	ConfigWindow.AddPage(&TabGUI);
 
 	ConfigWindow.DoModal();
 }

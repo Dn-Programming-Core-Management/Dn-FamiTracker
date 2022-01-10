@@ -263,12 +263,13 @@
     <Manifest />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\ConfigEmulation.cpp" />
+    <ClCompile Include="Source\ConfigGUI.cpp" />
     <ClCompile Include="Source\APU\FDS.cpp" />
     <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\emu2413.c" />
     <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\nes_apu.cpp" />
     <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\nes_dmc.cpp" />
     <ClCompile Include="Source\APU\SoundChip2.cpp" />
-    <ClCompile Include="Source\ConfigEmulation.cpp" />
     <ClCompile Include="Source\NoNotifyEdit.cpp" />
     <ClCompile Include="Source\HistoryFileDlg.cpp" />
     <ClCompile Include="Source\APU\2A03.cpp" />
@@ -505,6 +506,8 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hlp\HTMLDefines.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">hlp\HTMLDefines.h;%(Outputs)</Outputs>
     </CustomBuild>
+    <ClInclude Include="Source\ConfigEmulation.h" />
+    <ClInclude Include="Source\ConfigGUI.h" />
     <ClInclude Include="Source\APU\ChannelLevelState.h" />
     <ClInclude Include="Source\APU\FDS.h" />
     <ClInclude Include="Source\APU\mesen\BaseFdsChannel.h" />
@@ -526,7 +529,6 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
     </ClInclude>
     <ClInclude Include="Source\APU\SoundChip2.h" />
     <ClInclude Include="Source\array_view.h" />
-    <ClInclude Include="Source\ConfigEmulation.h" />
     <ClInclude Include="Source\NoNotifyEdit.h" />
     <ClInclude Include="Source\HistoryFileDlg.h" />
     <ClInclude Include="Source\APU\2A03.h" />

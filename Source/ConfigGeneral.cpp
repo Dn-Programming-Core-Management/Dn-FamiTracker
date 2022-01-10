@@ -177,18 +177,12 @@ BOOL CConfigGeneral::OnApply()
 	theApp.GetSettings()->General.bHexKeypad		= m_bHexKeypad;
 	theApp.GetSettings()->General.bMultiFrameSel	= m_bMultiFrameSel;
 	theApp.GetSettings()->General.bCheckVersion		= m_bCheckVersion;
-	// // !!
-	theApp.GetSettings()->General.iLowRefreshRate	= m_iLowRefreshRate = static_cast<CSliderCtrl*>(GetDlgItem(IDC_IDLE_REFRESH))->GetPos();
-	theApp.GetSettings()->General.iMaxChannelView	= m_iMaxChannelView = static_cast<CSliderCtrl*>(GetDlgItem(IDC_MAXCHANVIEW))->GetPos();;
 	
 	theApp.GetSettings()->Keys.iKeyNoteCut			= m_iKeyNoteCut;
 	theApp.GetSettings()->Keys.iKeyNoteRelease		= m_iKeyNoteRelease;
 	theApp.GetSettings()->Keys.iKeyClear			= m_iKeyClear;
 	theApp.GetSettings()->Keys.iKeyRepeat			= m_iKeyRepeat;
 	theApp.GetSettings()->Keys.iKeyEchoBuffer		= m_iKeyEchoBuffer;		// // //
-
-	// trigger CMainFrame::ResizeFrameWindow()
-	theApp.RefreshFrameEditor();
 
 	return CPropertyPage::OnApply();
 }
@@ -225,9 +219,6 @@ BOOL CConfigGeneral::OnInitDialog()
 	m_bHexKeypad		= theApp.GetSettings()->General.bHexKeypad;
 	m_bMultiFrameSel	= theApp.GetSettings()->General.bMultiFrameSel;
 	m_bCheckVersion		= theApp.GetSettings()->General.bCheckVersion;
-	// // !!
-	m_iLowRefreshRate	= theApp.GetSettings()->General.iLowRefreshRate;
-	m_iMaxChannelView	= theApp.GetSettings()->General.iMaxChannelView;
 
 	m_iKeyNoteCut		= theApp.GetSettings()->Keys.iKeyNoteCut; 
 	m_iKeyNoteRelease	= theApp.GetSettings()->Keys.iKeyNoteRelease; 
@@ -303,25 +294,12 @@ BOOL CConfigGeneral::OnInitDialog()
 		pList->SetItemText(0, 1, CONFIG_STR[i]);
 	}
 
-	// // !!
-	CSettings* pSettings = theApp.GetSettings();
-
-	CSliderCtrl* pIdleRefSlider= static_cast<CSliderCtrl*>(GetDlgItem(IDC_IDLE_REFRESH));
-	pIdleRefSlider->SetRange(16, 1000);
-	pIdleRefSlider->SetPos(pSettings->General.iLowRefreshRate);
-
-	CSliderCtrl* pMaxChanSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_MAXCHANVIEW));
-	pMaxChanSlider->SetRange(5, 28);
-	pMaxChanSlider->SetPos(pSettings->General.iMaxChannelView);
-	UpdateTexts();
-
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE
 }
 
 void CConfigGeneral::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
-	UpdateTexts();
 	SetModified();
 	CPropertyPage::OnHScroll(nSBCode, nPos, pScrollBar);
 }
@@ -441,13 +419,3 @@ BOOL CConfigGeneral::PreTranslateMessage(MSG* pMsg)
 	return CPropertyPage::PreTranslateMessage(pMsg);
 }
 
-void CConfigGeneral::UpdateTexts()
-{
-	CString Text;
-
-	Text.Format(_T("%i ms"), static_cast<CSliderCtrl*>(GetDlgItem(IDC_IDLE_REFRESH))->GetPos());
-	SetDlgItemText(IDC_IDLE_REFRESH_T, Text);
-
-	Text.Format(_T("%i chans"), static_cast<CSliderCtrl*>(GetDlgItem(IDC_MAXCHANVIEW))->GetPos());
-	SetDlgItemText(IDC_MAXCHANVIEW_T, Text);
-}	

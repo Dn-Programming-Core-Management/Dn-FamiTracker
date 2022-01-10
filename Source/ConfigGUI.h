@@ -25,26 +25,27 @@
 
 #pragma once
 
-// CConfigEmulation dialog
+// CConfigGUI dialog
 
-class CConfigEmulation : public CPropertyPage
+class CConfigGUI : public CPropertyPage
 {
-	DECLARE_DYNAMIC(CConfigEmulation)
+	DECLARE_DYNAMIC(CConfigGUI)
 
 public:
-	CConfigEmulation();   // standard constructor
-	virtual ~CConfigEmulation();
+	CConfigGUI();   // standard constructor
+	virtual ~CConfigGUI();
 
-// Dialog Data
-	enum { IDD = IDD_CONFIG_EMULATION };
+	// Dialog Data
+	enum { IDD = IDD_CONFIG_GUI };
 
 private:
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-	// N163
-	bool	m_bDisableNamcoMultiplex;
+	int		m_iLowRefreshRate;
+	int		m_iMaxChannelView;
+	bool	m_bSmoothRegFreq;
 
 	void UpdateSliderTexts();
 
@@ -53,8 +54,9 @@ public:
 	virtual BOOL OnInitDialog();
 	virtual BOOL OnApply();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-	//afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-	//afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
-	afx_msg void OnBnClickedN163Multiplexer();
-	afx_msg void OnCbnSelchangeComboVrc7Patch();
+	afx_msg void OnBnClickedSmoothregfreqCheck();
+	afx_msg void OnEnKillfocusMaxchanviewEdit();
+	afx_msg void OnEnKillfocusIdleRefreshEdit();
+	afx_msg void OnEnChangeMaxchanviewEdit();
+	afx_msg void OnEnChangeIdleRefreshEdit();
 };

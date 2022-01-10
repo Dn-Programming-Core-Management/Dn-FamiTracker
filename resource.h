@@ -219,6 +219,7 @@
 #define IDR_HTML1                       361
 #define IDD_VERSION_CHECKER             369
 #define IDB_ABOUT                       376
+#define IDD_CONFIG_GUI                  377
 #define IDC_INSTRUMENTS                 1001
 #define IDC_INSTSETTINGS                1002
 #define IDC_IMPORT_DETUNE               1002
@@ -618,6 +619,7 @@
 #define IDC_CHECK1                      1482
 #define IDC_N163_MULTIPLEXER            1482
 #define IDC_UPDATE_REMIND               1482
+#define IDC_SMOOTHREGFREQ_CHECK         1482
 #define IDC_SLIDER_FDS_LOWPASS          1484
 #define IDC_COMBO_S5B_EMULATOR          1485
 #define IDC_COMBO_VRC7_PATCH            1486
@@ -627,6 +629,10 @@
 #define IDC_ICON_STATIC                 1493
 #define IDC_PATCH_TEXT                  1495
 #define IDC_MAXCHANVIEW                 1496
+#define IDC_MAXCHANVIEW_SLIDER          1496
+#define IDC_IDLE_REFRESH_SLIDER         1505
+#define IDC_MAXCHANVIEW_EDIT            1508
+#define IDC_IDLE_REFRESH_EDIT           1512
 #define IDS_FIND_BEGIN                  9001
 #define IDS_FIND_END                    9002
 #define ID_TRACKER_PLAY                 32771
@@ -797,9 +803,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        377
+#define _APS_NEXT_RESOURCE_VALUE        379
 #define _APS_NEXT_COMMAND_VALUE         33215
-#define _APS_NEXT_CONTROL_VALUE         1500
+#define _APS_NEXT_CONTROL_VALUE         1514
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif
