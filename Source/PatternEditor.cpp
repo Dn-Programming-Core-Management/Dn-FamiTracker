@@ -1762,7 +1762,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		m_pDocument->ExpansionEnabled(SNDCHIP_VRC6) * 5 +
 		m_pDocument->ExpansionEnabled(SNDCHIP_MMC5) * 4 +
 		m_pDocument->ExpansionEnabled(SNDCHIP_N163) * 18 +
-		m_pDocument->ExpansionEnabled(SNDCHIP_FDS) * 13 +
+		m_pDocument->ExpansionEnabled(SNDCHIP_FDS) * 7 +
 		m_pDocument->ExpansionEnabled(SNDCHIP_VRC7) * 9 +
 		m_pDocument->ExpansionEnabled(SNDCHIP_S5B) * 8);		// // //
 	int vis_line = 0;
@@ -2005,17 +2005,24 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		// // // FDS wave
 		const int wave_x = x + DPI::SX(180);
 		const double xScale = 1, yScale = 0.5;
+		const int wave_width = (int)(64 * xScale);
+		const int wave_height = (int)(64 * yScale);
 
 		y += 18 + LINE_HEIGHT * 2;
-		pDC->FillSolidRect(wave_x - 1, y - 1, (int)(64*xScale) + 2, (int)(64*yScale)+2, 0x808080); // draw box
-		pDC->FillSolidRect(wave_x, y, (int)(64*xScale), (int)(64*yScale)-1, 0);                    // fill box
-		for (double i = 0; i < 64; i+=(1/xScale)) {
-			auto pState = pSoundGen->GetRegState(SNDCHIP_FDS, 0x4040 + ((int)(i) & 0x3F));
+
+		pDC->FillSolidRect(wave_x-1, y-1, wave_width+2, wave_height+2, 0x808080);	// draw box
+		pDC->FillSolidRect(wave_x, y, wave_width, wave_height-1, 0);              // fill box
+		for (int i = 0; i < wave_width; i++) {
+			// get register state
+			auto pState = pSoundGen->GetRegState(SNDCHIP_FDS, 0x4040 + ((int)(i/xScale) & 0x3F));
 			int state = pState->GetValue();
+			// calculate color
 			COLORREF Col = BLEND(0xC0C0C0, DECAY_COLOR[pState->GetNewValueTime()], 100 * pState->GetLastUpdatedTime() / CRegisterState::DECAY_RATE);
-			pDC->FillSolidRect(wave_x + (int)(i * xScale), y + (int)((0x3F - state) * yScale), 1, (int)(state* yScale) + 1, Col);
-			pDC->FillSolidRect(wave_x + (int)(i * xScale), y + (int)((0x3F-state)*yScale), 1, 1, DIM(Col,(int)(100*(state*yScale-(int)(state*yScale))))); // antialiasing
+			// draw wave
+			pDC->FillSolidRect(wave_x + i, y + (int)((0x3F-state)*yScale), 1, (int)(state*yScale)+1, Col);
+			pDC->FillSolidRect(wave_x + i, y + (int)((0x3F-state)*yScale), 1, 1, DIM(Col,(int)(100*(state*yScale-(int)(state*yScale))))); // antialiasing
 		}
+
 		y -= 18 + LINE_HEIGHT * 2;
 
 		// other
