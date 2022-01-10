@@ -1819,7 +1819,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 	};
 
 	const auto GetPitchTextFunc = [] (int digits, int period, double freq) {
-		const CString fmt = _T("pitch = $%0*X (%7.2fHz %s %+03i)");
+		const CString fmt = _T("pitch = $%0*X (%7.2fHz %-4s %+03i)");
 		const double note = NoteFromFreq(freq);
 		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
 		const int cents = int((note - double(note_conv)) * 100.0);
