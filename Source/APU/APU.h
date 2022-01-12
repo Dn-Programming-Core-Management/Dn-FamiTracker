@@ -133,7 +133,7 @@ private:
 	CVRC6		*m_pVRC6;
 	CMMC5		*m_pMMC5;
 	std::unique_ptr<CFDS> m_pFDS;
-	CN163		*m_pN163;
+	std::unique_ptr<CN163> m_pN163;
 	std::unique_ptr<CVRC7> m_pVRC7;
 	CS5B		*m_pS5B;
 
