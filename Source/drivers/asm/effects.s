@@ -27,6 +27,7 @@ ft_run_effects:
 @ReachedVolSlideTarget:
 	lda var_ch_VolSlideTarget, x
 	sta var_ch_VolColumn, x
+	sta var_ch_VolDefault, x
 	lda #$00
 	sta var_ch_VolSlide, x
 	lda #$80
