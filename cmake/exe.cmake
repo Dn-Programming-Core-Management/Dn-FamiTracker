@@ -80,6 +80,7 @@ add_executable(${exe}
         Source/ConfigAppearance.cpp
         Source/ConfigEmulation.cpp
         Source/ConfigGeneral.cpp
+        Source/ConfigGUI.cpp
         Source/ConfigMIDI.cpp
         Source/ConfigMixer.cpp
         Source/ConfigShortcuts.cpp
