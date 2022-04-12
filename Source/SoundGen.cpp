@@ -41,7 +41,7 @@
 #include "FamiTrackerView.h"
 #include "VisualizerWnd.h"
 #include "MainFrm.h"
-#include "DirectSound.h"
+#include "SoundInterface.h"
 #include "WaveFile.h"		// // //
 #include "APU/APU.h"
 #include "ChannelHandler.h"
@@ -108,8 +108,8 @@ int dither(long size);
 
 CSoundGen::CSoundGen() : 
 	m_pAPU(NULL),
-	m_pDSound(NULL),
-	m_pDSoundChannel(NULL),
+	m_pSoundInterface(NULL),
+	m_pSoundStream(NULL),
 	m_pAccumBuffer(NULL),
 	m_iGraphBuffer(NULL),
 	m_pDocument(NULL),
@@ -639,19 +639,19 @@ bool CSoundGen::InitializeSound(HWND hWnd)
 
 	// Called from main thread
 	ASSERT(GetCurrentThread() == theApp.m_hThread);
-	ASSERT(m_pDSound == NULL);
+	ASSERT(m_pSoundInterface == NULL);
 
 	// Event used to interrupt the sound buffer synchronization
 	m_hInterruptEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
 
 	// Create DirectSound object
-	m_pDSound = new CDSound(hWnd, m_hInterruptEvent);
+	m_pSoundInterface = new CSoundInterface(hWnd, m_hInterruptEvent);
 
 	// Out of memory
-	if (!m_pDSound)
+	if (!m_pSoundInterface)
 		return false;
 
-	m_pDSound->EnumerateDevices();
+	m_pSoundInterface->EnumerateDevices();
 
 	// Start thread when audio is done
 	ResumeThread();
@@ -696,7 +696,7 @@ bool CSoundGen::ResetAudioDevice()
 
 	// Called from player thread
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
-	ASSERT(m_pDSound != NULL);
+	ASSERT(m_pSoundInterface != NULL);
 
 	CSettings *pSettings = theApp.GetSettings();
 
@@ -714,14 +714,14 @@ bool CSoundGen::ResetAudioDevice()
 	// Close the old sound channel
 	CloseAudioDevice();
 
-	if (Device >= m_pDSound->GetDeviceCount()) {
+	if (Device >= m_pSoundInterface->GetDeviceCount()) {
 		// Invalid device detected, reset to 0
 		Device = 0;
 		pSettings->Sound.iDevice = 0;
 	}
 
 	// Reinitialize direct sound
-	if (!m_pDSound->SetupDevice(Device)) {
+	if (!m_pSoundInterface->SetupDevice(Device)) {
 		AfxMessageBox(IDS_DSOUND_ERROR, MB_ICONERROR);
 		return false;
 	}
@@ -733,16 +733,16 @@ bool CSoundGen::ResetAudioDevice()
 		iBlocks += (BufferLen / 66);
 
 	// Create channel
-	m_pDSoundChannel = m_pDSound->OpenChannel(SampleRate, SampleSize, 1, BufferLen, iBlocks);
+	m_pSoundStream = m_pSoundInterface->OpenChannel(SampleRate, SampleSize, 1, BufferLen, iBlocks);
 
 	// Channel failed
-	if (m_pDSoundChannel == NULL) {
+	if (m_pSoundStream == NULL) {
 		AfxMessageBox(IDS_DSOUND_BUFFER_ERROR, MB_ICONERROR);
 		return false;
 	}
 
 	// Create a buffer
-	m_iBufSizeBytes	  = m_pDSoundChannel->GetBlockSize();
+	m_iBufSizeBytes	  = m_pSoundStream->GetBlockSize();
 	m_iBufSizeSamples = m_iBufSizeBytes / (SampleSize / 8);
 
 	// Temp. audio buffer
@@ -802,10 +802,10 @@ bool CSoundGen::ResetAudioDevice()
 void CSoundGen::CloseAudioDevice()
 {
 	// Kill DirectSound
-	if (m_pDSoundChannel) {
-		m_pDSoundChannel->Stop();
-		m_pDSound->CloseChannel(m_pDSoundChannel);
-		m_pDSoundChannel = NULL;
+	if (m_pSoundStream) {
+		m_pSoundStream->Stop();
+		m_pSoundInterface->CloseChannel(m_pSoundStream);
+		m_pSoundStream = NULL;
 	}
 }
 
@@ -816,10 +816,10 @@ void CSoundGen::CloseAudio()
 
 	CloseAudioDevice();
 
-	if (m_pDSound) {
-		m_pDSound->CloseDevice();
-		delete m_pDSound;
-		m_pDSound = NULL;
+	if (m_pSoundInterface) {
+		m_pSoundInterface->CloseDevice();
+		delete m_pSoundInterface;
+		m_pSoundInterface = NULL;
 	}
 
 	if (m_hInterruptEvent) {
@@ -835,8 +835,8 @@ void CSoundGen::ResetBuffer()
 
 	m_iBufferPtr = 0;
 
-	if (m_pDSoundChannel)
-		m_pDSoundChannel->ClearBuffer();
+	if (m_pSoundStream)
+		m_pSoundStream->ClearBuffer();
 
 	m_pAPU->Reset();
 }
@@ -848,7 +848,7 @@ void CSoundGen::FlushBuffer(int16_t const * pBuffer, uint32_t Size)
 	// May only be called from sound player thread
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
 
-	if (!m_pDSoundChannel)
+	if (!m_pSoundStream)
 		return;
 
 	if (m_iSampleSize == 8)
@@ -889,7 +889,7 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 		if (freq > 20000)
 			freq = 20;
 
-		sine_phase += freq / (double(m_pDSoundChannel->GetSampleRate()) / 6.283184);
+		sine_phase += freq / (double(m_pSoundStream->GetSampleRate()) / 6.283184);
 		if (sine_phase > 6.283184)
 			sine_phase -= 6.283184;
 #endif /* AUDIO_TEST */
@@ -937,7 +937,7 @@ bool CSoundGen::PlayBuffer()
 		// Output to direct sound
 		// Wait for a buffer event
 		while (true) {
-			DWORD dwEvent = m_pDSoundChannel->WaitForSyncEvent(AUDIO_TIMEOUT);
+			DWORD dwEvent = m_pSoundStream->WaitForSyncEvent(AUDIO_TIMEOUT);
 			switch (dwEvent) {
 				case BUFFER_IN_SYNC:
 					goto done;
@@ -962,7 +962,7 @@ bool CSoundGen::PlayBuffer()
 		done:
 
 		// Write audio to buffer
-		m_pDSoundChannel->WriteBuffer(m_pAccumBuffer, m_iBufSizeBytes);
+		m_pSoundStream->WriteBuffer(m_pAccumBuffer, m_iBufSizeBytes);
 
 		// Draw graph
 		m_csVisualizerWndLock.Lock();
@@ -1060,7 +1060,7 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 	ASSERT(m_pDocument != NULL);
 	ASSERT(m_pTrackerView != NULL);
 
-	if (!m_pDocument || !m_pDSoundChannel || !m_pDocument->IsFileLoaded())
+	if (!m_pDocument || !m_pSoundStream || !m_pDocument->IsFileLoaded())
 		return;
 
 	switch (Mode) {
@@ -1946,7 +1946,7 @@ BOOL CSoundGen::InitInstance()
 	// First check if thread creation should be cancelled
 	// This will occur when no sound object is available
 	
-	if (m_pDSound == NULL)
+	if (m_pSoundInterface == NULL)
 		return FALSE;
 
 	// Set running flag
@@ -2008,7 +2008,7 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 	if (CWinThread::OnIdle(lCount))
 		return TRUE;
 
-	if (!m_pDocument || !m_pDSoundChannel || !m_pDocument->IsFileLoaded())
+	if (!m_pDocument || !m_pSoundStream || !m_pDocument->IsFileLoaded())
 		return TRUE;
 
 	++m_iFrameCounter;

@@ -29,7 +29,7 @@
 #include "ConfigSound.h"
 #include "SoundGen.h"
 #include "Settings.h"
-#include "DirectSound.h"
+#include "SoundInterface.h"
 
 // CConfigSound dialog
 
@@ -105,11 +105,11 @@ BOOL CConfigSound::OnInitDialog()
 
 	UpdateTexts();
 
-	CDSound *pDSound = theApp.GetSoundGenerator()->GetSoundInterface();
-	const int iCount = pDSound->GetDeviceCount();
+	CSoundInterface *pSoundInterface = theApp.GetSoundGenerator()->GetSoundInterface();
+	const int iCount = pSoundInterface->GetDeviceCount();
 
 	for (int i = 0; i < iCount; ++i)
-		pDevices->AddString(pDSound->GetDeviceName(i));
+		pDevices->AddString(pSoundInterface->GetDeviceName(i));
 
 	pDevices->SetCurSel(pSettings->Sound.iDevice);
 

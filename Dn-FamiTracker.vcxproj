@@ -412,7 +412,7 @@
     <ClCompile Include="Source\ChannelsS5B.cpp" />
     <ClCompile Include="Source\ChannelsVRC6.cpp" />
     <ClCompile Include="Source\ChannelsVRC7.cpp" />
-    <ClCompile Include="Source\DirectSound.cpp" />
+    <ClCompile Include="Source\SoundInterface.cpp" />
     <ClCompile Include="Source\MIDI.cpp" />
     <ClCompile Include="Source\Clipboard.cpp" />
     <ClCompile Include="Source\PatternAction.cpp" />
@@ -681,7 +681,7 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
     <ClInclude Include="Source\ChannelsS5B.h" />
     <ClInclude Include="Source\ChannelsVRC6.h" />
     <ClInclude Include="Source\ChannelsVRC7.h" />
-    <ClInclude Include="Source\DirectSound.h" />
+    <ClInclude Include="Source\SoundInterface.h" />
     <ClInclude Include="Source\AboutDlg.h" />
     <ClInclude Include="Source\ChannelsDlg.h" />
     <ClInclude Include="Source\CommentsDlg.h" />

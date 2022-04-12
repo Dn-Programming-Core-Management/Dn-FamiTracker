@@ -82,8 +82,8 @@ class CFamiTrackerDoc;
 class CInstrument;		// // //
 class CSequence;		// // //
 class CAPU;
-class CDSound;
-class CDSoundChannel;
+class CSoundInterface;
+class CSoundStream;
 class CWaveFile;		// // //
 class CVisualizerWnd;
 class CDSample;
@@ -124,7 +124,7 @@ public:
 	// Sound
 	bool		InitializeSound(HWND hWnd);
 	void		FlushBuffer(int16_t const * pBuffer, uint32_t Size);
-	CDSound		*GetSoundInterface() const { return m_pDSound; };
+	CSoundInterface		*GetSoundInterface() const { return m_pSoundInterface; };
 
 	void		Interrupt() const;
 	bool		GetSoundTimeout() const;
@@ -299,8 +299,8 @@ private:
 	CFamiTrackerView	*m_pTrackerView;
 
 	// Sound
-	CDSound				*m_pDSound;
-	CDSoundChannel		*m_pDSoundChannel;
+	CSoundInterface				*m_pSoundInterface;
+	CSoundStream		*m_pSoundStream;
 	CVisualizerWnd		*m_pVisualizerWnd;
 	CAPU				*m_pAPU;
 	int currN163LevelOffset;

@@ -96,7 +96,7 @@ add_executable(${exe}
         Source/DetuneDlg.cpp
         Source/DetuneTable.cpp
         Source/DialogReBar.cpp
-        Source/DirectSound.cpp
+        Source/SoundInterface.cpp
         Source/DocumentFile.cpp
         Source/DocumentWrapper.cpp
         Source/DPI.cpp

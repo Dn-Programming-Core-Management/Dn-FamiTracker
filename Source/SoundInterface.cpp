@@ -29,22 +29,22 @@
 #include "stdafx.h"
 #include <cstdio>
 #include "Common.h"
-#include "DirectSound.h"
+#include "SoundInterface.h"
 #include "../resource.h"
 
-// The single CDSound object
-CDSound *CDSound::pThisObject = NULL;
+// The single CSoundInterface object
+CSoundInterface *CSoundInterface::pThisObject = NULL;
 
 // Class members
 
-BOOL CALLBACK CDSound::DSEnumCallback(LPGUID lpGuid, LPCTSTR lpcstrDescription, LPCTSTR lpcstrModule, LPVOID lpContext)
+BOOL CALLBACK CSoundInterface::DSEnumCallback(LPGUID lpGuid, LPCTSTR lpcstrDescription, LPCTSTR lpcstrModule, LPVOID lpContext)
 {
 	return pThisObject->EnumerateCallback(lpGuid, lpcstrDescription, lpcstrModule, lpContext);
 }
 
 // Instance members
 
-CDSound::CDSound(HWND hWnd, HANDLE hNotification) :
+CSoundInterface::CSoundInterface(HWND hWnd, HANDLE hNotification) :
 	m_iDevices(0),
 	m_lpDirectSound(NULL),
 	m_hWndTarget(hWnd),
@@ -54,7 +54,7 @@ CDSound::CDSound(HWND hWnd, HANDLE hNotification) :
 	pThisObject = this;
 }
 
-CDSound::~CDSound()
+CSoundInterface::~CSoundInterface()
 {
 	for (int i = 0; i < (int)m_iDevices; ++i) {
 		delete [] m_pcDevice[i];
@@ -62,7 +62,7 @@ CDSound::~CDSound()
 	}
 }
 
-bool CDSound::SetupDevice(int iDevice)
+bool CSoundInterface::SetupDevice(int iDevice)
 {	
 	if (iDevice > (int)m_iDevices)
 		iDevice = 0;
@@ -85,7 +85,7 @@ bool CDSound::SetupDevice(int iDevice)
 	return true;
 }
 
-void CDSound::CloseDevice()
+void CSoundInterface::CloseDevice()
 {
 	if (!m_lpDirectSound)
 		return;
@@ -97,7 +97,7 @@ void CDSound::CloseDevice()
 		ClearEnumeration();
 }
 
-void CDSound::ClearEnumeration()
+void CSoundInterface::ClearEnumeration()
 {
 	for (unsigned i = 0; i < m_iDevices; ++i) {
 		delete [] m_pcDevice[i];
@@ -108,7 +108,7 @@ void CDSound::ClearEnumeration()
 	m_iDevices = 0;
 }
 
-BOOL CDSound::EnumerateCallback(LPGUID lpGuid, LPCTSTR lpcstrDescription, LPCTSTR lpcstrModule, LPVOID lpContext)
+BOOL CSoundInterface::EnumerateCallback(LPGUID lpGuid, LPCTSTR lpcstrDescription, LPCTSTR lpcstrModule, LPVOID lpContext)
 {
 	m_pcDevice[m_iDevices] = new TCHAR[_tcslen(lpcstrDescription) + 1];
 	_tcscpy((TCHAR*)m_pcDevice[m_iDevices], lpcstrDescription);
@@ -125,7 +125,7 @@ BOOL CDSound::EnumerateCallback(LPGUID lpGuid, LPCTSTR lpcstrDescription, LPCTST
 	return TRUE;
 }
 
-void CDSound::EnumerateDevices()
+void CSoundInterface::EnumerateDevices()
 {
 	if (m_iDevices != 0)
 		ClearEnumeration();
@@ -144,18 +144,18 @@ void CDSound::EnumerateDevices()
 #endif
 }
 
-unsigned int CDSound::GetDeviceCount() const
+unsigned int CSoundInterface::GetDeviceCount() const
 {
 	return m_iDevices;
 }
 
-LPCTSTR CDSound::GetDeviceName(unsigned int iDevice) const
+LPCTSTR CSoundInterface::GetDeviceName(unsigned int iDevice) const
 {
 	ASSERT(iDevice < m_iDevices);
 	return m_pcDevice[iDevice];
 }
 
-int CDSound::MatchDeviceID(LPCTSTR Name) const
+int CSoundInterface::MatchDeviceID(LPCTSTR Name) const
 {
 	for (unsigned int i = 0; i < m_iDevices; ++i) {
 		if (!_tcscmp(Name, m_pcDevice[i]))
@@ -165,13 +165,13 @@ int CDSound::MatchDeviceID(LPCTSTR Name) const
 	return 0;
 }
 
-int CDSound::CalculateBufferLength(int BufferLen, int Samplerate, int Samplesize, int Channels) const
+int CSoundInterface::CalculateBufferLength(int BufferLen, int Samplerate, int Samplesize, int Channels) const
 {
 	// Calculate size of the buffer, in bytes
 	return ((Samplerate * BufferLen) / 1000) * (Samplesize / 8) * Channels;
 }
 
-CDSoundChannel *CDSound::OpenChannel(int SampleRate, int SampleSize, int Channels, int BufferLength, int Blocks)
+CSoundStream *CSoundInterface::OpenChannel(int SampleRate, int SampleSize, int Channels, int BufferLength, int Blocks)
 {
 	// Open a new secondary buffer
 	//
@@ -189,7 +189,7 @@ CDSoundChannel *CDSound::OpenChannel(int SampleRate, int SampleSize, int Channel
 	while ((SampleRate * BufferLength / (Blocks * 1000) != (double)SampleRate * BufferLength / (Blocks * 1000)))
 		++BufferLength;
  
-	CDSoundChannel *pChannel = new CDSoundChannel();
+	CSoundStream *pChannel = new CSoundStream();
 
 	HANDLE hBufferEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
@@ -250,7 +250,7 @@ CDSoundChannel *CDSound::OpenChannel(int SampleRate, int SampleSize, int Channel
 	return pChannel;
 }
 
-void CDSound::CloseChannel(CDSoundChannel *pChannel)
+void CSoundInterface::CloseChannel(CSoundStream *pChannel)
 {
 	if (pChannel == NULL)
 		return;
@@ -261,9 +261,9 @@ void CDSound::CloseChannel(CDSoundChannel *pChannel)
 	delete pChannel;
 }
 
-// CDSoundChannel
+// CSoundStream
 
-CDSoundChannel::CDSoundChannel()
+CSoundStream::CSoundStream()
 {
 	m_iCurrentWriteBlock = 0;
 
@@ -272,33 +272,33 @@ CDSoundChannel::CDSoundChannel()
 	m_hWndTarget = NULL;
 }
 
-CDSoundChannel::~CDSoundChannel()
+CSoundStream::~CSoundStream()
 {
 	// Kill buffer event
 	if (m_hEventList[1])
 		CloseHandle(m_hEventList[1]);
 }
 
-bool CDSoundChannel::Play() const
+bool CSoundStream::Play() const
 {
 	// Begin playback of buffer
 	return FAILED(m_lpDirectSoundBuffer->Play(NULL, NULL, DSBPLAY_LOOPING)) ? false : true;
 }
 
-bool CDSoundChannel::Stop() const
+bool CSoundStream::Stop() const
 {
 	// Stop playback
 	return FAILED(m_lpDirectSoundBuffer->Stop()) ? false : true;
 }
 
-bool CDSoundChannel::IsPlaying() const
+bool CSoundStream::IsPlaying() const
 {
 	DWORD Status;
 	m_lpDirectSoundBuffer->GetStatus(&Status);
 	return ((Status & DSBSTATUS_PLAYING) == DSBSTATUS_PLAYING);
 }
 
-bool CDSoundChannel::ClearBuffer()
+bool CSoundStream::ClearBuffer()
 {
 	LPVOID pAudioPtr1, pAudioPtr2;
 	DWORD AudioBytes1, AudioBytes2;
@@ -330,7 +330,7 @@ bool CDSoundChannel::ClearBuffer()
 	return true;
 }
 
-bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
+bool CSoundStream::WriteBuffer(char const * pBuffer, unsigned int Samples)
 {
 	// Fill sound buffer
 	//
@@ -362,7 +362,7 @@ bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
 	return true;
 }
 
-buffer_event_t CDSoundChannel::WaitForSyncEvent(DWORD dwTimeout) const
+buffer_event_t CSoundStream::WaitForSyncEvent(DWORD dwTimeout) const
 {
 	// Wait for a DirectSound event
 	if (!IsPlaying()) {
@@ -384,7 +384,7 @@ buffer_event_t CDSoundChannel::WaitForSyncEvent(DWORD dwTimeout) const
 	return BUFFER_NONE;
 }
 
-int CDSoundChannel::GetPlayBlock() const
+int CSoundStream::GetPlayBlock() const
 {
 	// Return the block where the play pos is
 	DWORD PlayPos, WritePos;
@@ -392,7 +392,7 @@ int CDSoundChannel::GetPlayBlock() const
 	return (PlayPos / m_iBlockSize);
 }
 
-int CDSoundChannel::GetWritableBlock() const
+int CSoundStream::GetWritableBlock() const
 {
 	// Return the block where the write pos is
 	DWORD PlayPos, WritePos;
@@ -400,7 +400,7 @@ int CDSoundChannel::GetWritableBlock() const
 	return (WritePos / m_iBlockSize);
 }
 
-void CDSoundChannel::AdvanceWritePointer()
+void CSoundStream::AdvanceWritePointer()
 {
 	m_iCurrentWriteBlock = (m_iCurrentWriteBlock + 1) % m_iBlocks;
 }
