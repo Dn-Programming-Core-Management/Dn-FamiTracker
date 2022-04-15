@@ -40,7 +40,7 @@ const int VIBRATO_LENGTH = 256;
 const int TREMOLO_LENGTH = 256;
 
 // Custom messages
-enum { 
+enum {
 	WM_USER_SILENT_ALL = WM_USER + 1,
 	WM_USER_LOAD_SETTINGS,
 	WM_USER_PLAY,
@@ -66,9 +66,9 @@ enum play_mode_t {
 	MODE_PLAY_MARKER,		// // // 050B (row marker, aka "bookmark")
 };
 
-enum render_end_t { 
-	SONG_TIME_LIMIT, 
-	SONG_LOOP_LIMIT 
+enum render_end_t {
+	SONG_TIME_LIMIT,
+	SONG_LOOP_LIMIT
 };
 
 class stChanNote;		// // //
@@ -110,7 +110,7 @@ private:		// // //
 	//
 public:
 
-	// One time initialization 
+	// One time initialization
 	void		AssignDocument(CFamiTrackerDoc *pDoc);
 	void		AssignView(CFamiTrackerView *pView);
 	void		RemoveDocument();
@@ -146,7 +146,7 @@ public:
 	int			 ReadPeriodTable(int Index, int Table) const;		// // //
 
 	// Player interface
-	void		 StartPlayer(play_mode_t Mode, int Track);	
+	void		 StartPlayer(play_mode_t Mode, int Track);
 	void		 StopPlayer();
 	void		 ResetPlayer(int Track);
 	void		 LoadSettings();
@@ -176,7 +176,7 @@ public:
 	bool		 RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEndParam, int Track);
 	void		 StopRendering();
 	void		 GetRenderStat(int &Frame, int &Time, bool &Done, int &FramesToRender, int &Row, int &RowCount) const;
-	bool		 IsRendering() const;	
+	bool		 IsRendering() const;
 	bool		 IsBackgroundTask() const;
 
 	// Sample previewing
@@ -240,7 +240,7 @@ public:
 
 	int GetDefaultInstrument() const;
 
-	// 
+	//
 	// Private functions
 	//
 private:
@@ -272,7 +272,7 @@ private:
 
 	// Misc
 	void		PlaySample(const CDSample *pSample, int Offset, int Pitch);
-	
+
 	// Player
 	void		ReadPatternRow();
 	void		PlayerStepRow();
@@ -330,11 +330,11 @@ private:
 	bool				m_bBufferUnderrun;
 	bool				m_bAudioClipping;
 	int					m_iClipCounter;
-	
+
 // Tracker playing variables
 private:
 	unsigned int		m_iTempo;							// Tempo and speed
-	unsigned int		m_iSpeed;							
+	unsigned int		m_iSpeed;
 	int					m_iGrooveIndex;						// // // Current groove
 	unsigned int		m_iGroovePosition;					// // // Groove position
 	int					m_iTempoAccum;						// Used for speed calculation

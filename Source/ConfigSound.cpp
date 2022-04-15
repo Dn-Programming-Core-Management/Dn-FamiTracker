@@ -67,7 +67,7 @@ BOOL CConfigSound::OnInitDialog()
 	CComboBox *pSampleRate	= static_cast<CComboBox*>(GetDlgItem(IDC_SAMPLE_RATE));
 	CComboBox *pSampleSize	= static_cast<CComboBox*>(GetDlgItem(IDC_SAMPLE_SIZE));
 	CComboBox *pDevices		= static_cast<CComboBox*>(GetDlgItem(IDC_DEVICES));
-	
+
 	CSliderCtrl *pBufSlider			  = static_cast<CSliderCtrl*>(GetDlgItem(IDC_BUF_LENGTH));
 	CSliderCtrl *pBassSlider		  = static_cast<CSliderCtrl*>(GetDlgItem(IDC_BASS_FREQ));
 	CSliderCtrl *pTrebleSliderFreq	  = static_cast<CSliderCtrl*>(GetDlgItem(IDC_TREBLE_FREQ));
