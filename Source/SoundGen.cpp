@@ -2030,6 +2030,22 @@ BOOL CSoundGen::InitInstance()
 
 //	SetupChannels();
 
+	// We need to initialize state before playback begins.
+	//
+	// Normally, CSoundStream comes up and the GUI sends a WM_USER_STOP message,
+	// calling CSoundGen::OnStopPlayer() -> CSoundGen::HaltPlayer() which initializes
+	// state.
+	//
+	// However, if CSoundStream fails to initialize (for example due to WASAPI
+	// sampling rate not matching system rate), WM_USER_STOP never arrives
+	// and CSoundGen::HaltPlayer() is never called to initialize state.
+	// Once you fix the sampling rate and properly initialize CSoundStream,
+	// FT crashes in CChannelHandler::GetVibrato() because
+	// CChannelHandler::m_iVibratoDepth is uninitialized.
+	//
+	// To avoid the crash, we need to initialize state on startup.
+	HaltPlayer();
+
 	return TRUE;
 }
 
