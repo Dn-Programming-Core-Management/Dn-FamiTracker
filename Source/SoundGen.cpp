@@ -632,7 +632,7 @@ bool CSoundGen::IsRunning() const
 
 //// Sound buffer handling /////////////////////////////////////////////////////////////////////////////////
 
-bool CSoundGen::InitializeSound(HWND hWnd)
+bool CSoundGen::InitializeSound()
 {
 	// Initialize sound, this is only called once!
 	// Start with NTSC by default
@@ -644,8 +644,8 @@ bool CSoundGen::InitializeSound(HWND hWnd)
 	// Event used to interrupt the sound buffer synchronization
 	m_hInterruptEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
 
-	// Create DirectSound object
-	m_pSoundInterface = new CSoundInterface(hWnd, m_hInterruptEvent);
+	// Create sound interface object
+	m_pSoundInterface = new CSoundInterface(m_hInterruptEvent);
 
 	// Out of memory
 	if (!m_pSoundInterface)
@@ -720,9 +720,9 @@ bool CSoundGen::ResetAudioDevice()
 		pSettings->Sound.iDevice = 0;
 	}
 
-	// Reinitialize direct sound
+	// Reinitialize sound interface
 	if (!m_pSoundInterface->SetupDevice(Device)) {
-		AfxMessageBox(IDS_DSOUND_ERROR, MB_ICONERROR);
+		AfxMessageBox(IDS_SOUND_ERROR, MB_ICONERROR);
 		return false;
 	}
 
@@ -737,13 +737,13 @@ bool CSoundGen::ResetAudioDevice()
 
 	// Channel failed
 	if (m_pSoundStream == NULL) {
-		AfxMessageBox(IDS_DSOUND_BUFFER_ERROR, MB_ICONERROR);
+		AfxMessageBox(IDS_SOUND_BUFFER_ERROR, MB_ICONERROR);
 		return false;
 	}
 
 	// Create a buffer
-	m_iBufSizeBytes	  = m_pSoundStream->GetBlockSize();
-	m_iBufSizeSamples = m_iBufSizeBytes / (SampleSize / 8);
+	m_iBufSizeBytes	  = m_pSoundStream->TotalBufferSizeBytes();
+	m_iBufSizeSamples = m_pSoundStream->TotalBufferSizeFrames();
 
 	// Temp. audio buffer
 	SAFE_RELEASE_ARRAY(m_pAccumBuffer);
@@ -801,7 +801,7 @@ bool CSoundGen::ResetAudioDevice()
 
 void CSoundGen::CloseAudioDevice()
 {
-	// Kill DirectSound
+	// Kill sound stream
 	if (m_pSoundStream) {
 		m_pSoundStream->Stop();
 		m_pSoundInterface->CloseChannel(m_pSoundStream);
@@ -841,6 +841,52 @@ void CSoundGen::ResetBuffer()
 	m_pAPU->Reset();
 }
 
+bool CSoundGen::TryWaitForWritable(uint32_t& framesWritable, uint32_t& bytesWritable) {
+	// Waits for sound stream, even in WAV export mode. Not a big deal (doesn't
+	// slow down export), and redesigning to avoid this is hard.
+	while (true) {
+		WaitResult result = m_pSoundStream->WaitForReady(AUDIO_TIMEOUT);
+		TRACE("WaitResult %d\n", result);
+		switch (result) {
+		case WaitResult::Ready:
+			goto endWhile;
+
+		case WaitResult::InternalError:
+		case WaitResult::Timeout:
+			// Show in the UI, "It appears the current sound settings aren't working,
+			// change settings and try again."
+			m_bBufferTimeout = true;
+			[[fallthrough]];
+
+			// Custom event (requested quit)
+		case WaitResult::Interrupted:
+			// Forget queued audio and quit.
+			m_iBufferPtr = 0;
+			return false;
+
+		case WaitResult::OutOfSync:
+			// Buffer underrun detected (unreachable since underruns are not reported)
+			m_iAudioUnderruns++;
+			m_bBufferUnderrun = true;
+			continue;
+		}
+	}
+endWhile:
+
+	framesWritable = GetBufferFramesWritable();
+	bytesWritable = m_pSoundStream->FramesToPubBytes(framesWritable);
+	return true;
+}
+
+unsigned int CSoundGen::GetBufferFramesWritable() const {
+	if (m_bRendering) {
+		return m_iBufSizeSamples;
+	}
+	else {
+		return m_pSoundStream->BufferFramesWritable();
+	}
+}
+
 void CSoundGen::FlushBuffer(int16_t const * pBuffer, uint32_t Size)
 {
 	// Callback method from emulation
@@ -874,6 +920,11 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 	const int SAMPLE_MAX = 32768;
 
 	T *pConversionBuffer = (T*)m_pAccumBuffer;
+
+	unsigned int framesWritable, bytesWritable;
+	if (!TryWaitForWritable(framesWritable, bytesWritable)) {
+		return;
+	}
 
 	for (uint32_t i = 0; i < Size; ++i) {
 		int16_t Sample = pBuffer[i];
@@ -917,58 +968,38 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 
 		pConversionBuffer[m_iBufferPtr++] = (T)Sample;
 
-		// If buffer is filled, throw it to direct sound
-		if (m_iBufferPtr >= m_iBufSizeSamples) {
-			if (!PlayBuffer())
+		// If buffer is filled, throw it to sound interface
+		// TODO if we add stereo support, ensure m_iBufferPtr is frames not samples
+		// (otherwise this code breaks).
+		if (m_iBufferPtr >= framesWritable) {
+			if (!PlayBuffer(framesWritable, bytesWritable))
 				return;
+
+			if (!TryWaitForWritable(framesWritable, bytesWritable)) {
+				return;
+			}
 		}
 	}
 }
 
-bool CSoundGen::PlayBuffer()
+bool CSoundGen::PlayBuffer(unsigned int framesToWrite, unsigned int bytesToWrite)
 {
 	if (m_bRendering) {
 		// Output to file
 		ASSERT(m_pWaveFile);		// // //
-		m_pWaveFile->WriteWave(m_pAccumBuffer, m_iBufSizeBytes);
+		m_pWaveFile->WriteWave(m_pAccumBuffer, bytesToWrite);
 		m_iBufferPtr = 0;
 	}
 	else {
-		// Output to direct sound
-		// Wait for a buffer event
-		while (true) {
-			DWORD dwEvent = m_pSoundStream->WaitForSyncEvent(AUDIO_TIMEOUT);
-			switch (dwEvent) {
-				case BUFFER_IN_SYNC:
-					goto done;
-
-				case BUFFER_TIMEOUT:
-					// Buffer timeout
-					m_bBufferTimeout = true;
-					[[fallthrough]];	// Is this intentional??
-
-				case BUFFER_CUSTOM_EVENT:
-					// Custom event, quit
-					m_iBufferPtr = 0;
-					return false;
-
-				case BUFFER_OUT_OF_SYNC:
-					// Buffer underrun detected
-					m_iAudioUnderruns++;
-					m_bBufferUnderrun = true;
-					break;
-			}
-		}
-		done:
-
+		// Output audio
 		// Write audio to buffer
-		m_pSoundStream->WriteBuffer(m_pAccumBuffer, m_iBufSizeBytes);
+		m_pSoundStream->WriteBuffer(m_pAccumBuffer, bytesToWrite);
 
 		// Draw graph
 		m_csVisualizerWndLock.Lock();
 
 		if (m_pVisualizerWnd)
-			m_pVisualizerWnd->FlushSamples(m_iGraphBuffer, m_iBufSizeSamples);
+			m_pVisualizerWnd->FlushSamples(m_iGraphBuffer, framesToWrite);
 
 		m_csVisualizerWndLock.Unlock();
 

@@ -28,12 +28,12 @@ include(cmake/exe.cmake)
 
 #builds the .chm file
 if(WIN32)
-	add_custom_command(TARGET ${exe}
-		PRE_BUILD
-		COMMAND cmd /c ${CMAKE_CURRENT_SOURCE_DIR}/cmake/compile-chm.bat
-		COMMAND move Dn-Famitracker.chm ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-		COMMENT "Generating help file...")
+    add_custom_command(TARGET ${exe}
+        PRE_BUILD
+        COMMAND cmd /c ${CMAKE_CURRENT_SOURCE_DIR}/cmake/compile-chm.bat
+        COMMAND move Dn-Famitracker.chm ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Generating help file...")
 endif()
 
 target_compile_features(${exe} PRIVATE cxx_std_17)
@@ -47,7 +47,7 @@ endif()
 
 # linking
 TARGET_LINK_LIBRARIES(${exe}
-        Dbghelp winmm comctl32 dsound Version htmlhelp)
+        Dbghelp winmm comctl32 Avrt Version htmlhelp)
 
 # Dn-FamiTracker.rc includes res/Dn-FamiTracker.manifest.
 # To prevent manifest linking errors:

@@ -109,7 +109,7 @@ BOOL CConfigSound::OnInitDialog()
 	const int iCount = pSoundInterface->GetDeviceCount();
 
 	for (int i = 0; i < iCount; ++i)
-		pDevices->AddString(pSoundInterface->GetDeviceName(i));
+		pDevices->AddString(pSoundInterface->GetDeviceName(i).c_str());
 
 	pDevices->SetCurSel(pSettings->Sound.iDevice);
 

@@ -25,101 +25,151 @@
 #ifndef SOUNDINTERFACE_H
 #define SOUNDINTERFACE_H
 
-#include <mmsystem.h>
-#include <InitGuid.h>
-#include <dsound.h>
+#include <cstdint>
+#include <memory>
+#include <wrl/client.h>
+#include "str_conv/str_conv.hpp"
 
-// Return values from WaitForDirectSoundEvent()
-enum buffer_event_t {
-	BUFFER_NONE = 0,
-	BUFFER_CUSTOM_EVENT = 1,
-	BUFFER_TIMEOUT,
-	BUFFER_IN_SYNC,
-	BUFFER_OUT_OF_SYNC
+using Microsoft::WRL::ComPtr;
+
+struct CloseHandleT {
+	void operator()(HANDLE handle) {
+		if (handle) {
+			CloseHandle(handle);
+		}
+	}
 };
 
-// DirectSound channel
+/// HANDLE is void*, so unique_ptr<void, CloseHandleT> is a RAII HANDLE.
+using HandlePtr = std::unique_ptr<void, CloseHandleT>;
+
+// Return values from CSoundStream::WaitForReady()
+enum class WaitResult {
+	InternalError = 0,
+
+	/// Stop playback, etc.
+	Interrupted = 1,
+
+	/// Audio stream stuck, can't play audio
+	Timeout,
+
+	/// Ready to write data
+	Ready,
+
+	/// TODO how to identify underruns?
+	OutOfSync,
+};
+
+struct IAudioClient;
+struct IAudioRenderClient;
+
+enum class StreamState {
+	Stopped,
+	ReadyToStart,
+	Started,
+};
+
+// Audio output stream to a device
 class CSoundStream
 {
 	friend class CSoundInterface;
 
 public:
-	CSoundStream();
+	CSoundStream(
+		ComPtr<IAudioClient> pAudioClient,
+		ComPtr<IAudioRenderClient> pAudioRenderClient,
+		HANDLE hInterrupt,
+		HandlePtr bufferEvent,
+		unsigned int iSampleRate,
+		unsigned int bufferFrameCount,
+		unsigned int bytesPerSample,
+		unsigned int inputChannels,
+		unsigned int outputChannels);
 	~CSoundStream();
 
-	bool Play() const;
-	bool Stop() const;
-	bool IsPlaying() const;
+	// State changes
+	bool Play();
+	bool Stop();
 	bool ClearBuffer();
-	bool WriteBuffer(char const * pBuffer, unsigned int Samples);
 
-	buffer_event_t WaitForSyncEvent(DWORD dwTimeout) const;
+	// Buffer calculations
 
-	int GetBlockSize() const	{ return m_iBlockSize; };
-	int GetBlockSamples() const	{ return m_iBlockSize >> ((m_iSampleSize >> 3) - 1); };
-	int GetBlocks()	const		{ return m_iBlocks; };
-	int	GetBufferLength() const	{ return m_iBufferLength; };
-	int GetSampleSize()	const	{ return m_iSampleSize;	};
-	int	GetSampleRate()	const	{ return m_iSampleRate;	};
-	int GetChannels() const		{ return m_iChannels; };
+	uint32_t PubBytesToFrames(uint32_t Bytes) const;
+	uint32_t FramesToPubBytes(uint32_t Frames) const;
 
-private:
-	int GetPlayBlock() const;
+	uint32_t TotalBufferSizeFrames() const;
 
-	/*!
-	https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee418062(v%3Dvs.85)
-	The write cursor is the point in the buffer ahead of which it is safe to write data to the buffer.
-	Data should not be written to the part of the buffer after the play cursor and before the write cursor.
+	/// Get public/input buffer size. If upmixing mono to stereo, this is mono.
+	uint32_t TotalBufferSizeBytes() const;
 
-	Data should not be written to the blocks in (?, write cursor's block].
-	Otherwise, you risk writing before the write cursor, which will not be played back properly.
-	*/
-	int GetWritableBlock() const;
+	uint32_t GetSampleRate() const {
+		return m_iSampleRate;
+	};
 
-	void AdvanceWritePointer();
+	// Steady-state
+
+	/// Automatically starts the stream when enough audio is buffered.
+	WaitResult WaitForReady(DWORD dwTimeout);
+
+	uint32_t BufferFramesWritable() const;
+	uint32_t BufferBytesWritable() const;
+
+	bool WriteBuffer(char const * pBuffer, unsigned int Bytes);
 
 private:
-	LPDIRECTSOUNDBUFFER	m_lpDirectSoundBuffer;
-	LPDIRECTSOUNDNOTIFY	m_lpDirectSoundNotify;
+	// m_bufferEvent should outlive IAudioClient probably, so list it first.
+	HandlePtr m_bufferEvent;
 
-	HANDLE			m_hEventList[2];
-	HWND			m_hWndTarget;
+	ComPtr<IAudioClient> m_pAudioClient;
+	ComPtr<IAudioRenderClient> m_pAudioRenderClient;
+	StreamState m_state;
+
+	/// Owned by CSoundGen, borrowed by CSoundStream.
+	HANDLE m_hInterrupt;
+
+	/// Returned from AvSetMmThreadCharacteristicsW(), passed into
+	/// AvRevertMmThreadCharacteristics()
+	HANDLE  m_hTask;
 
 	// Configuration
-	unsigned int	m_iSampleSize;
-	unsigned int	m_iSampleRate;
-	unsigned int	m_iChannels;
-	unsigned int	m_iBufferLength;
-	unsigned int	m_iSoundBufferSize;			// in bytes
-	unsigned int	m_iBlocks;
-	unsigned int	m_iBlockSize;				// in bytes
+	unsigned int m_iSampleRate;
+	unsigned int m_bufferFrameCount;
+	unsigned int m_bytesPerSample;
 
-	// State
-	unsigned int	m_iCurrentWriteBlock;
+	// Public, picked by user, 1 for mono sound.
+	unsigned int m_inputChannels;
+
+	// Private, generally 2 or greater since WASAPI shared mode doesn't support mono.
+	unsigned int m_outputChannels;
 };
 
-// DirectSound
+struct IMMDeviceEnumerator;
+struct IMMDeviceCollection;
+struct IMMDevice;
+
+// WASAPI interface
 class CSoundInterface
 {
 public:
-	CSoundInterface(HWND hWnd, HANDLE hNotification);
+	CSoundInterface(HANDLE hNotification);
 	~CSoundInterface();
 
+	// Listing devices
+	void			EnumerateDevices();
+	void			ClearEnumeration();
+	unsigned int	GetDeviceCount() const;
+	conv::tstring	GetDeviceName(unsigned int iDevice) const;
+
+	// Picking active device
 	bool			SetupDevice(int iDevice);
 	void			CloseDevice();
 
+	// Opening streams for active device
 	CSoundStream	*OpenChannel(int SampleRate, int SampleSize, int Channels, int BufferLength, int Blocks);
 	void			CloseChannel(CSoundStream *pChannel);
 
-	int				CalculateBufferLength(int BufferLen, int Samplerate, int Samplesize, int Channels) const;
-
-	// Enumeration
-	void			EnumerateDevices();
-	void			ClearEnumeration();
-	BOOL			EnumerateCallback(LPGUID lpGuid, LPCTSTR lpcstrDescription, LPCTSTR lpcstrModule, LPVOID lpContext);
-	unsigned int	GetDeviceCount() const;
-	LPCTSTR			GetDeviceName(unsigned int iDevice) const;
-	int				MatchDeviceID(LPCTSTR Name) const;
+	// Utility
+	static int		CalculateBufferLength(int BufferLen, int Samplerate, int Samplesize, int Channels);
 
 public:
 	static const unsigned int MAX_DEVICES = 256;
@@ -127,19 +177,20 @@ public:
 	static const unsigned int MAX_SAMPLE_RATE = 96000;
 	static const unsigned int MAX_BUFFER_LENGTH = 10000;
 
-protected:
-	static BOOL CALLBACK DSEnumCallback(LPGUID lpGuid, LPCTSTR lpcstrDescription, LPCTSTR lpcstrModule, LPVOID lpContext);
-	static CSoundInterface *pThisObject;
-
 private:
-	HWND			m_hWndTarget;
-	HANDLE			m_hNotificationHandle;
-	LPDIRECTSOUND	m_lpDirectSound;
+	/// Owned by CSoundGen, borrowed by CSoundInterface.
+	HANDLE m_hInterrupt;
+	bool m_CoInitialized;
 
 	// For enumeration
-	unsigned int	m_iDevices;
-	LPCTSTR			m_pcDevice[MAX_DEVICES];
-	GUID			*m_pGUIDs[MAX_DEVICES];
+	ComPtr<IMMDeviceEnumerator> m_maybeDeviceEnumerator;
+
+	// In addition to the physical devices present, we expose a virtual device 0 named
+	// "Default Device". So all externally exposed device IDs must be converted to a raw ID
+	// by adding 1.
+	ComPtr<IMMDeviceCollection> m_maybeRawDeviceList;
+
+	ComPtr<IMMDevice> m_maybeDevice;
 };
 
 #endif /* SOUNDINTERFACE_H */

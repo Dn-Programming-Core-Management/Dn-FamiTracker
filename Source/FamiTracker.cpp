@@ -254,7 +254,7 @@ BOOL CFamiTrackerApp::InitInstance()
 	m_pMainWnd->DragAcceptFiles();
 	
 	// Initialize the sound interface, also resumes the thread
-	if (!m_pSoundGenerator->InitializeSound(m_pMainWnd->m_hWnd)) {
+	if (!m_pSoundGenerator->InitializeSound()) {
 		// If failed, restore and save default settings
 		m_pSettings->DefaultSettings();
 		m_pSettings->SaveSettings();

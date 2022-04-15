@@ -33,6 +33,7 @@
 #include "Common.h"
 
 #include <atomic>
+#include <cstdint>
 #include <memory>
 #include <mutex>
 
@@ -122,7 +123,14 @@ public:
 	void		LoadMachineSettings();		// // // 050B
 
 	// Sound
-	bool		InitializeSound(HWND hWnd);
+	bool		InitializeSound();
+
+	/// Waits for room to write audio to the output buffer.
+	///
+	/// If ready to write audio, writes room available to parameters and returns true.
+	/// If waiting for buffer failed (due to GUI interruption or audio timeout),
+	/// returns false.
+	bool TryWaitForWritable(uint32_t& framesWritable, uint32_t& bytesWritable);
 	void		FlushBuffer(int16_t const * pBuffer, uint32_t Size);
 	CSoundInterface		*GetSoundInterface() const { return m_pSoundInterface; };
 
@@ -254,7 +262,8 @@ private:
 	void		CloseAudioDevice();
 	void		CloseAudio();
 	template<class T, int SHIFT> void FillBuffer(int16_t const * pBuffer, uint32_t Size);
-	bool		PlayBuffer();
+	unsigned int GetBufferFramesWritable() const;
+	bool		PlayBuffer(unsigned int framesToWrite, unsigned int bytesToWrite);
 
 	// Player
 	void		UpdateChannels();

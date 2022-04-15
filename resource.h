@@ -197,8 +197,8 @@
 #define IDS_WAVE_PROGRESS_TIME_FORMAT   310
 #define IDS_WAVE_PROGRESS_ELAPSED_FORMAT 311
 #define IDR_EXPORT_TEST_REPORT          311
-#define IDS_DSOUND_ERROR                312
-#define IDS_DSOUND_BUFFER_ERROR         313
+#define IDS_SOUND_ERROR                 312
+#define IDS_SOUND_BUFFER_ERROR          313
 #define IDS_EDIT_MODE                   314
 #define IDI_LEFT                        314
 #define IDS_NORMAL_MODE                 315

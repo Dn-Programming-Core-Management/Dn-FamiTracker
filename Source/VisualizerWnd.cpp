@@ -113,6 +113,10 @@ void CVisualizerWnd::FlushSamples(short *pSamples, int Count)
 	if (!m_bThreadRunning)
 		return;
 
+	// TODO don't replace buffer contents, but push to a ring buffer with two pages
+	// each large enough to compute a spectrum without zero-padding.
+	// Or alternatively call CVisualizerWnd::FlushSamples() with a fixed size, independently
+	// of CSoundStream::WriteBuffer().
 	if (Count != m_iBufferSize) {
 		m_csBuffer.Lock();
 		SAFE_RELEASE_ARRAY(m_pBuffer1);
