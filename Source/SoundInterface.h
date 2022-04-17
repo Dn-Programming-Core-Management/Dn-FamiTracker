@@ -180,7 +180,6 @@ public:
 private:
 	/// Owned by CSoundGen, borrowed by CSoundInterface.
 	HANDLE m_hInterrupt;
-	bool m_CoInitialized;
 
 	// For enumeration
 	ComPtr<IMMDeviceEnumerator> m_maybeDeviceEnumerator;

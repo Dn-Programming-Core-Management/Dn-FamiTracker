@@ -45,23 +45,11 @@
 // Instance members
 
 CSoundInterface::CSoundInterface(HANDLE hInterrupt) :
-	m_hInterrupt(hInterrupt),
-	m_CoInitialized(false)
+	m_hInterrupt(hInterrupt)
 {
 	// Based off:
 	// https://github.com/wareya/AudioLibraryRosettaStone/blob/master/wasapi.cpp#L52
 	// https://github.com/thestk/rtaudio/blob/e9b1d0262a5e75e09c510eb9c5825daf86884d29/RtAudio.cpp#L4320
-
-	HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-	// Ignore error RPC_E_CHANGED_MODE and proceed.
-	if (FAILED(hr) && hr != RPC_E_CHANGED_MODE) {
-		// COM setup failed, don't try initializing audio.
-		return;
-	}
-	if (!FAILED(hr)) {
-		// Call CoUninitialize() on shutdown.
-		m_CoInitialized = true;
-	}
 
 	// Instantiate device enumerator
 	if (FAILED(CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL,
@@ -74,9 +62,6 @@ CSoundInterface::CSoundInterface(HANDLE hInterrupt) :
 
 CSoundInterface::~CSoundInterface()
 {
-	if (m_CoInitialized) {
-		CoUninitialize();
-	}
 }
 
 void CSoundInterface::EnumerateDevices()

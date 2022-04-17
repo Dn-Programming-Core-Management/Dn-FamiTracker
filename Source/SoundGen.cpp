@@ -128,6 +128,7 @@ CSoundGen::CSoundGen() :
 	m_pInstRecorder(new CInstrumentRecorder(this)),		// // //
 	m_bWaveChanged(0),
 	m_iMachineType(NTSC),
+	m_CoInitialized(false),
 	m_bRunning(false),
 	m_hInterruptEvent(NULL),
 	m_bBufferTimeout(false),
@@ -1994,6 +1995,15 @@ BOOL CSoundGen::InitInstance()
 	// Setup the sound player object, called when thread is started
 	//
 
+	HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+	if (FAILED(hr)) {
+		TRACE("SoundGen: Failed to CoInitializeEx COM!\n");
+	}
+	if (!FAILED(hr)) {
+		// Call CoUninitialize() on shutdown.
+		m_CoInitialized = true;
+	}
+
 	ASSERT(m_pDocument != NULL);
 	ASSERT(m_pTrackerView != NULL);
 
@@ -2065,6 +2075,10 @@ int CSoundGen::ExitInstance()
 	theApp.RemoveSoundGenerator();
 
 	m_bRunning = false;
+
+	if (m_CoInitialized) {
+		CoUninitialize();
+	}
 
 	return CWinThread::ExitInstance();
 }

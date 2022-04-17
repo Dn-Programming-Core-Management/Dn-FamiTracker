@@ -316,6 +316,7 @@ private:
 
 	const CDSample		*m_pPreviewSample;
 
+	bool m_CoInitialized;
 	bool				m_bRunning;
 
 	// Thread synchronization

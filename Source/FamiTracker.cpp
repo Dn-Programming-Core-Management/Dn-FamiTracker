@@ -78,6 +78,7 @@ END_MESSAGE_MAP()
 // CFamiTrackerApp construction
 
 CFamiTrackerApp::CFamiTrackerApp() :
+	m_CoInitialized(false),
 	m_bThemeActive(false),
 	m_pMIDI(NULL),
 	m_pAccel(NULL),
@@ -121,6 +122,15 @@ BOOL CFamiTrackerApp::InitInstance()
 
 	if (!AfxOleInit()) {
 		TRACE("OLE initialization failed\n");
+	}
+
+	HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+	if (FAILED(hr)) {
+		TRACE("CFamiTrackerApp: Failed to CoInitializeEx COM!\n");
+	}
+	if (!FAILED(hr)) {
+		// Call CoUninitialize() on shutdown.
+		m_CoInitialized = true;
 	}
 
 	// Standard initialization
@@ -335,6 +345,10 @@ int CFamiTrackerApp::ExitInstance()
 #endif
 
 	m_pVersionChecker.reset();		// // //
+
+	if (m_CoInitialized) {
+		CoUninitialize();
+	}
 
 	TRACE("App: End ExitInstance\n");
 
