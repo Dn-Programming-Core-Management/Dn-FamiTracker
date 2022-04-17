@@ -26,6 +26,7 @@
 #pragma once
 
 #include "VisualizerBase.h"		// // //
+#include <cstdint>
 
 // CVisualizerScope, scope style visualizer
 
@@ -37,15 +38,16 @@ public:
 
 	void Create(int Width, int Height) override;
 	void SetSampleRate(int SampleRate) override;
+	bool SetScopeData(short const* iSamples, unsigned int iCount) override;
 	void Draw() override;
 	void Display(CDC *pDC, bool bPaintMsg) override;
+	size_t NeededSamples() const;
 
 private:
 	void RenderBuffer();
 	void ClearBackground();
 
 private:
-	int	 m_iWindowBufPtr;
 	short *m_pWindowBuf;
 	bool m_bBlur;
 

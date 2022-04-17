@@ -1023,7 +1023,7 @@ bool CSoundGen::PlayBuffer(unsigned int framesToWrite, unsigned int bytesToWrite
 		m_csVisualizerWndLock.Lock();
 
 		if (m_pVisualizerWnd)
-			m_pVisualizerWnd->FlushSamples(m_iGraphBuffer, framesToWrite);
+			m_pVisualizerWnd->FlushSamples(gsl::span(m_iGraphBuffer, framesToWrite));
 
 		m_csVisualizerWndLock.Unlock();
 

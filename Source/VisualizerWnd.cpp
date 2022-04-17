@@ -28,17 +28,68 @@
 #include "VisualizerScope.h"
 #include "VisualizerSpectrum.h"
 #include "VisualizerStatic.h"
+#include <algorithm>  // std::copy, std::fill
+#include <tuple>
 
-// Thread entry helper
-
-UINT CVisualizerWnd::ThreadProcFunc(LPVOID pParam)
+void TripleBuffer::Initialize(size_t Size)
 {
-	CVisualizerWnd *pObj = reinterpret_cast<CVisualizerWnd*>(pParam);
+	this->pShared = std::make_unique<std::atomic<uint8_t>>(INIT_SHARED);
 
-	if (pObj == NULL || !pObj->IsKindOf(RUNTIME_CLASS(CVisualizerWnd)))
-		return 1;
+	for (size_t i = 0; i < 3; i++) {
+		this->pBuffers[i] = std::make_unique<short[]>(Size);
+		auto pBuffer = this->pBuffers[i].get();
+		std::fill(pBuffer, pBuffer + Size, 0);
+	}
+}
 
-	return pObj->ThreadProc();
+Reader::Reader(TripleBuffer* pBuffer) :
+	m_pBuffer(pBuffer),
+	m_ReadIndex(TripleBuffer::INIT_READ)
+{
+}
+
+Reader::~Reader() = default;
+
+short const* Reader::Curr() const
+{
+	return m_pBuffer->pBuffers[m_ReadIndex].get();
+}
+
+bool Reader::Fetch()
+{
+	if (!(m_pBuffer->pShared->load(std::memory_order_relaxed) & TripleBuffer::SHARED_WRITTEN)) {
+		return false;
+	}
+
+	// Release currently owned buffer and acquire new one to read from.
+	auto readTmp = m_pBuffer->pShared->exchange(m_ReadIndex, std::memory_order_acq_rel);
+	ASSERT(readTmp & TripleBuffer::SHARED_WRITTEN);
+	m_ReadIndex = readTmp & TripleBuffer::SHARED_INDEX;
+	ASSERT(m_ReadIndex < 3);
+	return true;
+}
+
+Writer::Writer(TripleBuffer* pBuffer) :
+	m_pBuffer(pBuffer),
+	m_WriteIndex(TripleBuffer::INIT_WRITE)
+{
+}
+
+Writer::~Writer() = default;
+
+short* Writer::Curr()
+{
+	return m_pBuffer->pBuffers[m_WriteIndex].get();
+}
+
+void Writer::Publish()
+{
+	// Release currently owned buffer and acquire new one to write to.
+	uint8_t writeTmp = m_pBuffer->pShared->exchange(
+		m_WriteIndex | TripleBuffer::SHARED_WRITTEN, std::memory_order_acq_rel
+	);
+	m_WriteIndex = writeTmp & TripleBuffer::SHARED_INDEX;
+	ASSERT(m_WriteIndex < 3);
 }
 
 // CSampleWindow
@@ -46,17 +97,23 @@ UINT CVisualizerWnd::ThreadProcFunc(LPVOID pParam)
 IMPLEMENT_DYNAMIC(CVisualizerWnd, CWnd)
 
 CVisualizerWnd::CVisualizerWnd() :
+	m_pStates(),
 	m_iCurrentState(0),
-	m_bThreadRunning(false),
-	m_pWorkerThread(NULL),
-	m_iBufferSize(0),
-	m_pBuffer1(NULL),
-	m_pBuffer2(NULL),
-	m_pFillBuffer(NULL),
+	m_pScope(nullptr),
+	m_ScopeBufferSize(0),
+	m_pScopeData(std::make_unique<TripleBuffer>()),
+	m_pSpectrumData(std::make_unique<TripleBuffer>()),
+	m_ScopeWriter(m_pScopeData.get()),
+	m_ScopeWriteProgress(0),
+	m_SpectrumWriter(m_pSpectrumData.get()),
+	m_pSpectrumHistory(std::make_unique<short[]>(FFT_POINTS)),
 	m_hNewSamples(NULL),
-	m_bNoAudio(false)
+	m_bNoAudio(false),
+	m_pWorkerThread(NULL),
+	m_bThreadRunning(false),
+	m_csBuffer()
 {
-	m_pStates[0] = new CVisualizerScope(false);
+	m_pStates[0] = m_pScope = new CVisualizerScope(false);
 	m_pStates[1] = new CVisualizerScope(true);
 	m_pStates[2] = new CVisualizerSpectrum(4);		// // //
 	m_pStates[3] = new CVisualizerSpectrum(1);
@@ -68,9 +125,6 @@ CVisualizerWnd::~CVisualizerWnd()
 	for (int i = 0; i < STATE_COUNT; ++i) {		// // //
 		SAFE_RELEASE(m_pStates[i]);
 	}
-
-	SAFE_RELEASE_ARRAY(m_pBuffer1);
-	SAFE_RELEASE_ARRAY(m_pBuffer2);
 }
 
 HANDLE CVisualizerWnd::GetThreadHandle() const {		// // //
@@ -85,102 +139,6 @@ BEGIN_MESSAGE_MAP(CVisualizerWnd, CWnd)
 	ON_WM_RBUTTONUP()
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
-
-// State methods
-
-void CVisualizerWnd::NextState()
-{
-	m_csBuffer.Lock();
-	m_iCurrentState = (m_iCurrentState + 1) % STATE_COUNT;
-	m_csBuffer.Unlock();
-
-	Invalidate();
-
-	theApp.GetSettings()->SampleWinState = m_iCurrentState;
-}
-
-// CSampleWindow message handlers
-
-void CVisualizerWnd::SetSampleRate(int SampleRate)
-{
-	for (auto &state : m_pStates)		// // //
-		if (state)
-			state->SetSampleRate(SampleRate);
-}
-
-void CVisualizerWnd::FlushSamples(short *pSamples, int Count)
-{
-	if (!m_bThreadRunning)
-		return;
-
-	// TODO don't replace buffer contents, but push to a ring buffer with two pages
-	// each large enough to compute a spectrum without zero-padding.
-	// Or alternatively call CVisualizerWnd::FlushSamples() with a fixed size, independently
-	// of CSoundStream::WriteBuffer().
-	if (Count != m_iBufferSize) {
-		m_csBuffer.Lock();
-		SAFE_RELEASE_ARRAY(m_pBuffer1);
-		SAFE_RELEASE_ARRAY(m_pBuffer2);
-		m_pBuffer1 = new short[Count];
-		m_pBuffer2 = new short[Count];
-		m_iBufferSize = Count;
-		m_pFillBuffer = m_pBuffer1;
-		m_csBuffer.Unlock();
-	}
-
-	m_csBufferSelect.Lock();
-	memcpy(m_pFillBuffer, pSamples, sizeof(short) * Count);
-	m_csBufferSelect.Unlock();
-
-	SetEvent(m_hNewSamples);
-}
-
-void CVisualizerWnd::ReportAudioProblem()
-{
-	m_bNoAudio = true;
-	Invalidate();
-}
-
-UINT CVisualizerWnd::ThreadProc()
-{
-	DWORD nThreadID = AfxGetThread()->m_nThreadID;
-	m_bThreadRunning = true;
-
-	TRACE("Visualizer: Started thread (0x%04x)\n", nThreadID);
-
-	while (::WaitForSingleObject(m_hNewSamples, INFINITE) == WAIT_OBJECT_0 && m_bThreadRunning) {
-
-		m_bNoAudio = false;
-
-		// Switch buffers
-		m_csBuffer.Lock();
-		m_csBufferSelect.Lock();
-
-		short *pDrawBuffer = m_pFillBuffer;
-
-		if (m_pFillBuffer == m_pBuffer1)
-			m_pFillBuffer = m_pBuffer2;
-		else
-			m_pFillBuffer = m_pBuffer1;
-
-		m_csBufferSelect.Unlock();
-
-		// Draw
-		CDC *pDC = GetDC();
-		if (pDC != NULL) {
-			m_pStates[m_iCurrentState]->SetSampleData(pDrawBuffer, m_iBufferSize);
-			m_pStates[m_iCurrentState]->Draw();
-			m_pStates[m_iCurrentState]->Display(pDC, false);
-			ReleaseDC(pDC);
-		}
-
-		m_csBuffer.Unlock();
-	}
-
-	TRACE("Visualizer: Closed thread (0x%04x)\n", nThreadID);
-
-	return 0;
-}
 
 BOOL CVisualizerWnd::CreateEx(DWORD dwExStyle, LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext)
 {
@@ -200,11 +158,188 @@ BOOL CVisualizerWnd::CreateEx(DWORD dwExStyle, LPCTSTR lpszClassName, LPCTSTR lp
 			m_pStates[i]->Create(crect.Width(), crect.Height());
 		}
 
+		m_ScopeBufferSize = m_pScope->NeededSamples();
+
+		// Initialize triple buffer.
+		m_pScopeData->Initialize(m_ScopeBufferSize);
+		m_pSpectrumData->Initialize(FFT_POINTS);
+
 		// Create a worker thread
 		m_pWorkerThread = AfxBeginThread(&ThreadProcFunc, (LPVOID)this, THREAD_PRIORITY_BELOW_NORMAL);
 	}
 
 	return Result;
+}
+
+// Thread entry helper
+
+UINT CVisualizerWnd::ThreadProcFunc(LPVOID pParam)
+{
+	CVisualizerWnd* pObj = reinterpret_cast<CVisualizerWnd*>(pParam);
+
+	if (pObj == NULL || !pObj->IsKindOf(RUNTIME_CLASS(CVisualizerWnd)))
+		return 1;
+
+	return pObj->ThreadProc();
+}
+
+UINT CVisualizerWnd::ThreadProc()
+{
+	DWORD nThreadID = AfxGetThread()->m_nThreadID;
+	m_bThreadRunning.store(true, std::memory_order_release);
+
+	TRACE("Visualizer: Started thread (0x%04x)\n", nThreadID);
+	auto scopeReader = Reader(m_pScopeData.get());
+	auto spectrumReader = Reader(m_pSpectrumData.get());
+
+	while (
+		::WaitForSingleObject(m_hNewSamples, INFINITE) == WAIT_OBJECT_0
+		&& m_bThreadRunning.load(std::memory_order_relaxed)
+	) {
+
+		m_bNoAudio = false;
+
+		bool scopeChanged = scopeReader.Fetch();
+		bool spectrumChanged = spectrumReader.Fetch();
+
+		// CVisualizerWnd::FlushSamples always publishes buffers before signalling
+		// m_hNewSamples, and we just waited for m_hNewSamples to be signalled.
+		// You'd think the buffers are guaranteed to be changed.
+		//
+		// But it's possible CVisualizerWnd::FlushSamples is called again and publishes
+		// again, before we see m_hNewSamples and fetch the new buffer contents.
+		// Then on the next iteration WaitForSingleObject passes but the buffer
+		// isn't changed.
+		//
+		// If this happens, retry the loop instead of drawing unchanged data.
+		//
+		// (This can also happen on program shutdown, when CVisualizerWnd::OnDestroy()
+		// signals m_hNewSamples.)
+		if (!(scopeChanged || spectrumChanged)) {
+			continue;
+		}
+
+		m_csBuffer.Lock();
+
+		// Draw
+		CDC* pDC = GetDC();
+		if (pDC != NULL) {
+			auto* state = m_pStates[m_iCurrentState];
+
+			bool updated = false;
+			if (scopeChanged) {
+				updated |= state->SetScopeData(
+					scopeReader.Curr(), (unsigned int) m_ScopeBufferSize
+				);
+			}
+			if (spectrumChanged) {
+				updated |= state->SetSpectrumData(
+					spectrumReader.Curr(), FFT_POINTS
+				);
+			}
+
+			if (updated) {
+				state->Draw();
+				state->Display(pDC, false);
+			}
+			ReleaseDC(pDC);
+		}
+
+		m_csBuffer.Unlock();
+	}
+
+	TRACE("Visualizer: Closed thread (0x%04x)\n", nThreadID);
+
+	return 0;
+}
+
+// State methods
+
+void CVisualizerWnd::NextState()
+{
+	// Acquiring a lock here is probably unnecessary?
+	m_csBuffer.Lock();
+	m_iCurrentState = (m_iCurrentState + 1) % STATE_COUNT;
+	m_csBuffer.Unlock();
+
+	Invalidate();
+
+	theApp.GetSettings()->SampleWinState = m_iCurrentState;
+}
+
+// CSampleWindow message handlers
+
+void CVisualizerWnd::SetSampleRate(int SampleRate)
+{
+	for (auto &state : m_pStates)		// // //
+		if (state)
+			state->SetSampleRate(SampleRate);
+}
+
+void CVisualizerWnd::FlushSamples(gsl::span<const short> Samples)
+{
+	if (!m_bThreadRunning.load(std::memory_order_acquire))
+		return;
+
+	// On GUI thread, buffers are initialized before visualizer thread is started.
+	// After visualizer thread is started, m_bThreadRunning.store(true, Release).
+	// On audio thread, after m_bThreadRunning.load(Acquire) == true, buffers are
+	// initialized.
+
+	// Fill m_pSpectrumHistory. (We can't write incrementally to m_SpectrumWriter.Curr()
+	// because we keep some old data from one publish-swap to the next.)
+	{
+		auto tail = Samples;
+		if (tail.size() > (size_t)FFT_POINTS) {
+			tail = tail.subspan(tail.size() - (size_t)FFT_POINTS);
+		}
+		ASSERT(tail.size() <= (size_t)FFT_POINTS);
+
+		auto history = m_pSpectrumHistory.get();
+		// Push tail to end of history.
+		std::copy(
+			history + tail.size(),
+			history + FFT_POINTS,
+			history);
+		std::copy(
+			tail.begin(),
+			tail.end(),
+			history + FFT_POINTS - tail.size());
+
+		short* pSpectrumBuffer = m_SpectrumWriter.Curr();
+		std::copy(history, history + FFT_POINTS, pSpectrumBuffer);
+		m_SpectrumWriter.Publish();
+	}
+
+	// Fill pScopeBuffer. (We can write incrementally to m_ScopeWriter.Curr() because
+	// we discard all old contents between publishing.)
+	short* pScopeBuffer = m_ScopeWriter.Curr();
+	while (!Samples.empty()) {
+		size_t push = std::min(Samples.size(), m_ScopeBufferSize - m_ScopeWriteProgress);
+		for (size_t i = 0; i < push; i++) {
+			pScopeBuffer[m_ScopeWriteProgress] = Samples[i];
+			m_ScopeWriteProgress++;
+		}
+
+		ASSERT(m_ScopeWriteProgress <= m_ScopeBufferSize);
+		if (m_ScopeWriteProgress == m_ScopeBufferSize) {
+			// Release currently owned buffer and acquire new one to write to.
+			m_ScopeWriter.Publish();
+			pScopeBuffer = m_ScopeWriter.Curr();
+			m_ScopeWriteProgress = 0;
+		}
+
+		// Drop initial samples already processed.
+		Samples = Samples.subspan(push);
+	}
+
+	SetEvent(m_hNewSamples);
+}
+
+void CVisualizerWnd::ReportAudioProblem()
+{
+	m_bNoAudio = true;
+	Invalidate();
 }
 
 void CVisualizerWnd::OnLButtonDown(UINT nFlags, CPoint point)
@@ -285,7 +420,7 @@ void CVisualizerWnd::OnDestroy()
 	if (m_pWorkerThread != NULL) {
 		HANDLE hThread = m_pWorkerThread->m_hThread;
 
-		m_bThreadRunning = false;
+		m_bThreadRunning.store(false, std::memory_order_relaxed);
 		::SetEvent(m_hNewSamples);
 
 		TRACE("Visualizer: Joining thread...\n");
