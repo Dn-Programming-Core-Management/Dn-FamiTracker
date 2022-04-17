@@ -968,7 +968,7 @@ bool CSoundGen::PlayBuffer()
 		m_csVisualizerWndLock.Lock();
 
 		if (m_pVisualizerWnd)
-			m_pVisualizerWnd->FlushSamples(m_iGraphBuffer, m_iBufSizeSamples);
+			m_pVisualizerWnd->FlushSamples(gsl::span(m_iGraphBuffer, m_iBufSizeSamples));
 
 		m_csVisualizerWndLock.Unlock();
 
