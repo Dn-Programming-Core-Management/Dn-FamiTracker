@@ -492,8 +492,18 @@ WaitResult CSoundStream::WaitForReady(DWORD dwTimeout)
 
 	HANDLE waitEvents[2] = { m_hInterrupt, m_bufferEvent.get() };
 
+	static LONGLONG prev;
+	LARGE_INTEGER t;
+	QueryPerformanceCounter(&t);
+	TRACE("%lld before wait\n", t.QuadPart - prev);
+	prev = t.QuadPart;
+	
 	// Wait for events
-	switch (WaitForMultipleObjects(2, waitEvents, FALSE, dwTimeout)) {
+	DWORD v = WaitForMultipleObjects(2, waitEvents, FALSE, dwTimeout);
+	QueryPerformanceCounter(&t);
+	TRACE("spent %lld waiting\n", t.QuadPart - prev);
+	prev = t.QuadPart;
+	switch (v) {
 	case WAIT_OBJECT_0:  // hInterrupt: interrupted by GUI
 		return WaitResult::Interrupted;
 
