@@ -2137,6 +2137,12 @@ void CSoundGen::ExitInstance()
 
 void CSoundGen::OnIdle()
 {
+	static LONGLONG prev;
+	LARGE_INTEGER t;
+	QueryPerformanceCounter(&t);
+	TRACE("waited %lld before CSoundGen::OnIdle\n", t.QuadPart - prev);
+	prev = t.QuadPart;
+
 	//
 	// Main loop for audio playback thread
 	//
@@ -2204,6 +2210,10 @@ void CSoundGen::OnIdle()
 		delete m_pPreviewSample;
 		m_pPreviewSample = NULL;
 	}
+
+	QueryPerformanceCounter(&t);
+	TRACE("spent %lld in CSoundGen::OnIdle\n", t.QuadPart - prev);
+	prev = t.QuadPart;
 }
 
 void CSoundGen::PlayChannelNotes()
