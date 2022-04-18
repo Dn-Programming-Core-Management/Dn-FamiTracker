@@ -2085,12 +2085,22 @@ int CSoundGen::ExitInstance()
 
 BOOL CSoundGen::OnIdle(LONG lCount)
 {
+	static LONGLONG prev;
+	LARGE_INTEGER t;
+	QueryPerformanceCounter(&t);
+	TRACE("waited %lld before CSoundGen::OnIdle\n", t.QuadPart - prev);
+	prev = t.QuadPart;
+
 	//
 	// Main loop for audio playback thread
 	//
 
-	if (CWinThread::OnIdle(lCount))
+	if (CWinThread::OnIdle(lCount)) {
+		QueryPerformanceCounter(&t);
+		TRACE("spent %lld in CSoundGen::OnIdle, CWinThread::OnIdle\n", t.QuadPart - prev);
+		prev = t.QuadPart;
 		return TRUE;
+	}
 
 	if (!m_pDocument || !m_pSoundStream || !m_pDocument->IsFileLoaded())
 		return TRUE;
@@ -2156,6 +2166,9 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 		m_pPreviewSample = NULL;
 	}
 
+	QueryPerformanceCounter(&t);
+	TRACE("spent %lld in CSoundGen::OnIdle\n", t.QuadPart - prev);
+	prev = t.QuadPart;
 	return TRUE;
 }
 
