@@ -59,18 +59,18 @@ public:
 
 	template <typename InputIt>
 	void CopyIn(InputIt Samples, std::size_t SampleCount) {
-		if (SampleCount > GetPoints()) {
-			SampleCount = GetPoints();
-			std::advance(Samples, SampleCount - GetPoints());
+		if (SampleCount > N) {
+			std::advance(Samples, SampleCount - N);
+			SampleCount = N;
 		}
 		std::copy(samples_.cbegin() + SampleCount, samples_.cend(), samples_.begin());
-		std::transform(Samples, Samples + SampleCount, samples_.begin(), [] (auto x) {
+		std::transform(Samples, Samples + SampleCount, samples_.end() - SampleCount, [] (auto x) {
 			return std::complex<double>(x, 0);
 		});
 	}
 
 	double GetIntensity(int i) const {
-		const double sqrtpoints = 1 << (FFT::details::floor_log2(GetPoints()) / 2);
+		const double sqrtpoints = 1 << (FFT::details::floor_log2(N) / 2);
 		return std::abs(buffer_[i]) / sqrtpoints;
 	}
 
