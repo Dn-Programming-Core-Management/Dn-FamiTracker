@@ -1838,17 +1838,27 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 
 	// For noise and DPCM.
 	const auto GetPitchTextFuncLong = [](int digits, int pitchReg, double freq, bool rate) {
-		const CString fmt = _T("%s = $%0*X (%9.2fHz %-4s %+03i)");
 		const double note = NoteFromFreq(freq);
 		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
 		const int cents = int((note - double(note_conv)) * 100.0);
 
 		CString str;
-		CString ratepitch = rate ? _T("rate ") : _T("pitch");
-		if (freq != 0.)
-			str.Format(fmt, ratepitch, digits, pitchReg, freq, NoteToStr(note_conv), cents);
-		else
-			str.Format(fmt, ratepitch, digits, pitchReg, 0., _T("---"), 0);
+		CString noteNameBuf;
+		LPCTSTR noteName;
+		if (freq != 0.) {
+			noteNameBuf = NoteToStr(note_conv);
+			noteName = noteNameBuf;
+		}
+		else {
+			noteName = _T("---");
+		}
+
+		if (rate) {
+			str.Format(_T("rate  = $%0*X (%9.2fHz         )"), digits, pitchReg, freq);
+		}
+		else {
+			str.Format(_T("pitch = $%0*X (%9.2fHz %-4s %+03i)"), digits, pitchReg, freq, noteName, cents);
+		}
 		return str;
 	};
 
