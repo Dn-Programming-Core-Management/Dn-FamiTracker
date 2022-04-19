@@ -409,6 +409,18 @@ void CPatternEditor::DrawScreen(CDC *pDC, CFamiTrackerView *pView)
 
 //#define BENCHMARK
 
+	// If FamiTracker is closed when (on Windows 10) offscreen or (on Windows 7) too small,
+	// and the pattern editor is not visible the next time you launch it,
+	// CFamiTrackerView::OnEraseBkgnd() fails to call CPatternEditor::CreateBackground().
+	// Call it here; it's better than nothing.
+	//
+	// Calling CPatternEditor::CreateBackground() is necessary both to initialize the
+	// various pDCs for CPatternEditor::DrawScreen(), and because it calls
+	// CPatternEditor::CalculatePatternLayout(), which is needed for the *frame* editor
+	// to scroll with playback.
+	if (m_pPatternDC == nullptr) {
+		CreateBackground(pDC);
+	}
 	ASSERT(m_pPatternDC != NULL);
 	ASSERT(m_pHeaderDC != NULL);
 	ASSERT(m_pRegisterDC != NULL);		// // //
