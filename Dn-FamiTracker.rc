@@ -2040,8 +2040,7 @@ BEGIN
     LTEXT           "Channel view limit",IDC_STATIC,14,17,58,8
     LTEXT           "Idle refresh rate",IDC_STATIC,14,52,54,8
     CONTROL         "",IDC_IDLE_REFRESH_SLIDER,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,133,50,91,12
-    CONTROL         "Smooth register frequency view",IDC_SMOOTHREGFREQ_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,65,118,10
+    CONTROL         "Precise pitch bar",IDC_SMOOTHREGFREQ_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,65,118,10
     EDITTEXT        IDC_MAXCHANVIEW_EDIT,231,14,12,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_IDLE_REFRESH_EDIT,231,49,24,14,ES_AUTOHSCROLL
     RTEXT           "chans",IDC_STATIC,246,16,20,8
