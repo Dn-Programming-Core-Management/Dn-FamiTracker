@@ -1822,17 +1822,17 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		}
 	};
 
-	const auto GetPitchTextFunc = [] (int digits, int periodReg, double freq) {
-		const CString fmt = _T("pitch = $%0*X (%7.2fHz %-4s %+03i)");
+	const auto GetPitchTextFunc = [] (int digits, int periodReg, double freq, LPCTSTR pitchText = _T("pitch")) {
+		const CString fmt = _T("%s = $%0*X (%7.2fHz %-4s %+03i)");
 		const double note = NoteFromFreq(freq);
 		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
 		const int cents = int((note - double(note_conv)) * 100.0);
 		
 		CString str;
 		if (freq != 0.)
-			str.Format(fmt, digits, periodReg, freq, NoteToStr(note_conv), cents);
+			str.Format(fmt, pitchText, digits, periodReg, freq, NoteToStr(note_conv), cents);
 		else
-			str.Format(fmt, digits, periodReg, 0., _T("---"), 0);
+			str.Format(fmt, pitchText, digits, periodReg, 0., _T("---"), 0);
 		return str;
 	};
 
@@ -2048,7 +2048,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		CString Modtext;
 
 		FDStext.Format(_T("%s, vol = %02i"), GetPitchTextFunc(3, period, freq), vol);
-		Modtext.Format(_T("modulation %s, depth = %02i"), GetPitchTextFunc(3, modperiod, modfreq), moddepth);
+		Modtext.Format(_T("%s, depth = %02i"), GetPitchTextFunc(3, modperiod, modfreq, _T("mod  ")), moddepth);
 
 		for (int i = 0; i < 3; ++i) {
 			GetRegsFunc(SNDCHIP_FDS, [&](int x) { return 0x4080 + i * 4 + x; }, 4);
