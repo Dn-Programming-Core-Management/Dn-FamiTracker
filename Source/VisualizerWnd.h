@@ -75,7 +75,9 @@ private:
 	CWinThread *m_pWorkerThread;
 	bool m_bThreadRunning;
 
+	// Held while (visualizer) switching m_pFillBuffer or (audio) writing to m_pFillBuffer.
 	CCriticalSection m_csBufferSelect;
+	// Held while (visualizer) reading either buffer or (audio) reallocating both buffers.
 	CCriticalSection m_csBuffer;
 
 public:
