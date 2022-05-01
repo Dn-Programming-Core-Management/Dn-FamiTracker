@@ -162,7 +162,7 @@ public:
 	struct {
 		int		iLowRefreshRate;	// // !!
 		int		iMaxChannelView;	// // !!
-		bool	bSmoothRegFreq;
+		bool	bPreciseRegPitch;
 	} GUI;
 
 	struct {

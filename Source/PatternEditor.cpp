@@ -1800,7 +1800,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
 		if (Volume > 0xFF) Volume = 0xFF;
 		if (note_conv >= -12 && note_conv <= 96 && Volume) {		// // //
-			if (theApp.GetSettings()->GUI.bSmoothRegFreq)
+			if (theApp.GetSettings()->GUI.bPreciseRegPitch)
 				pDC->FillSolidRect((int)(29.0 + 6.0 * (note + 12)), BAR_OFFSET + vis_line * 10, 3, 7, RGB(Volume, Volume, Volume));
 			else
 				pDC->FillSolidRect(29 + 6 * (note_conv + 12), BAR_OFFSET + vis_line * 10, 3, 7, RGB(Volume, Volume, Volume));

@@ -619,7 +619,7 @@
 #define IDC_CHECK1                      1482
 #define IDC_N163_MULTIPLEXER            1482
 #define IDC_UPDATE_REMIND               1482
-#define IDC_SMOOTHREGFREQ_CHECK         1482
+#define IDC_PRECISEREGPITCH_CHECK         1482
 #define IDC_SLIDER_FDS_LOWPASS          1484
 #define IDC_COMBO_S5B_EMULATOR          1485
 #define IDC_COMBO_VRC7_PATCH            1486

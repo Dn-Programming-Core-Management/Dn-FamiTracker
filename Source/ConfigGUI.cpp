@@ -52,7 +52,7 @@ void CConfigGUI::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CConfigGUI, CPropertyPage)
 	ON_WM_HSCROLL()
-	ON_BN_CLICKED(IDC_SMOOTHREGFREQ_CHECK, &CConfigGUI::OnBnClickedSmoothregfreqCheck)
+	ON_BN_CLICKED(IDC_PRECISEREGPITCH_CHECK, &CConfigGUI::OnBnClickedSmoothregfreqCheck)
 	ON_EN_KILLFOCUS(IDC_MAXCHANVIEW_EDIT, &CConfigGUI::OnEnKillfocusMaxchanviewEdit)
 	ON_EN_KILLFOCUS(IDC_IDLE_REFRESH_EDIT, &CConfigGUI::OnEnKillfocusIdleRefreshEdit)
 	ON_EN_CHANGE(IDC_MAXCHANVIEW_EDIT, &CConfigGUI::OnEnChangeMaxchanviewEdit)
@@ -74,8 +74,8 @@ BOOL CConfigGUI::OnInitDialog()
 	pMaxChanSlider->SetRange(5, 28);
 	pMaxChanSlider->SetPos(pSettings->GUI.iMaxChannelView);
 
-	m_bSmoothRegFreq = pSettings->GUI.bSmoothRegFreq;
-	CheckDlgButton(IDC_SMOOTHREGFREQ_CHECK, pSettings->GUI.bSmoothRegFreq);
+	m_bPreciseRegPitch = pSettings->GUI.bPreciseRegPitch;
+	CheckDlgButton(IDC_PRECISEREGPITCH_CHECK, pSettings->GUI.bPreciseRegPitch);
 
 	UpdateSliderTexts();
 	CPropertyPage::OnInitDialog();
@@ -89,7 +89,7 @@ BOOL CConfigGUI::OnApply()
 
 	theApp.GetSettings()->GUI.iLowRefreshRate = static_cast<CSliderCtrl*>(GetDlgItem(IDC_IDLE_REFRESH_SLIDER))->GetPos();
 	theApp.GetSettings()->GUI.iMaxChannelView = static_cast<CSliderCtrl*>(GetDlgItem(IDC_MAXCHANVIEW_SLIDER))->GetPos();
-	theApp.GetSettings()->GUI.bSmoothRegFreq = IsDlgButtonChecked(IDC_SMOOTHREGFREQ_CHECK);
+	theApp.GetSettings()->GUI.bPreciseRegPitch = IsDlgButtonChecked(IDC_PRECISEREGPITCH_CHECK);
 
 	// trigger CMainFrame::ResizeFrameWindow()
 	theApp.RefreshFrameEditor();
@@ -118,7 +118,7 @@ void CConfigGUI::UpdateSliderTexts()
 
 void CConfigGUI::OnBnClickedSmoothregfreqCheck()
 {
-	m_bSmoothRegFreq = !IsDlgButtonChecked(IDC_SMOOTHREGFREQ_CHECK);
+	m_bPreciseRegPitch = !IsDlgButtonChecked(IDC_PRECISEREGPITCH_CHECK);
 	SetModified();
 }
 

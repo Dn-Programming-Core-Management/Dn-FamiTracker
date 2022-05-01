@@ -45,7 +45,7 @@ protected:
 
 	int		m_iLowRefreshRate;
 	int		m_iMaxChannelView;
-	bool	m_bSmoothRegFreq;
+	bool	m_bPreciseRegPitch;
 
 	void UpdateSliderTexts();
 
