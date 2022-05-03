@@ -447,9 +447,9 @@ double CAPU::GetFreq(int Chip, int Chan) const
 	}
 }
 
-double CAPU::GetFDSModFreq() const
+int CAPU::GetFDSModCounter() const
 {
-	return m_pFDS->GetModFreq();
+	return m_pFDS->GetModCounter();
 }
 
 CRegisterState *CAPU::GetRegState(int Chip, int Reg) const		// // //

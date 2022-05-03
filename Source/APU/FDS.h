@@ -49,13 +49,15 @@ public:
 	int GetChannelLevel(int Channel) override;
 	int GetChannelLevelRange(int Channel) const override;
 
-	double	GetModFreq() const;
+	int CFDS::GetModCounter() const;
 
 	void UpdateFdsFilter(int CutoffHz);
 	void UpdateMixLevel(double v);
 
 private:
 	void RecomputeFdsFilter();
+	double	GetModFreq() const;
+	double CFDS::GetOutputFreq() const;
 
 private:
 	int m_CutoffHz;

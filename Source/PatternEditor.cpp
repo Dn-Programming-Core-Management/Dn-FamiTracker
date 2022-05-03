@@ -1762,7 +1762,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		m_pDocument->ExpansionEnabled(SNDCHIP_VRC6) * 5 +
 		m_pDocument->ExpansionEnabled(SNDCHIP_MMC5) * 4 +
 		m_pDocument->ExpansionEnabled(SNDCHIP_N163) * 18 +
-		m_pDocument->ExpansionEnabled(SNDCHIP_FDS) * 7 +
+		m_pDocument->ExpansionEnabled(SNDCHIP_FDS) * 13 +
 		m_pDocument->ExpansionEnabled(SNDCHIP_VRC7) * 9 +
 		m_pDocument->ExpansionEnabled(SNDCHIP_S5B) * 8);		// // //
 	int vis_line = 0;
@@ -1806,6 +1806,28 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 				pDC->FillSolidRect(29 + 6 * (note_conv + 12), BAR_OFFSET + vis_line * 10, 3, 7, RGB(Volume, Volume, Volume));
 		}
 		++vis_line;
+	};
+	// must draw initial frequency first!
+	const auto DrawVolFDSMod = [&](double Freq, int Volume, int Depth) {
+		--vis_line;
+		const double note = NoteFromFreq(Freq);
+		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
+		if (Volume > 0xFF) Volume = 0xFF;
+		if (Depth > 0xFF) Depth = 0xFF;
+		if (note_conv >= -12 && note_conv <= 96 && Volume) {		// // //
+			if (theApp.GetSettings()->GUI.bPreciseRegPitch) {
+				pDC->FillSolidRect((int)(29.0 + 6.0 * (note + 12)),
+					BAR_OFFSET + vis_line * 10,
+					3, 7,
+					RGB(Depth, Volume, Volume));
+			}
+			else {
+				pDC->FillSolidRect(29 + 6 * (note_conv + 12),
+					BAR_OFFSET + vis_line * 10,
+					3, 7,
+					RGB(Depth , Volume, Volume));
+			}
+		}
 	};
 
 	const auto DrawTextFunc = [&] (int xOffsNoDPI, CString text) {
@@ -2013,12 +2035,12 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		DrawHeaderFunc(_T("FDS"));		// // //
 
 		// // // FDS wave
-		const int wave_x = x + DPI::SX(180);
+		const int wave_x = x + DPI::SX(300);
 		const double xScale = 1, yScale = 0.5;
 		const int wave_width = (int)(64 * xScale);
 		const int wave_height = (int)(64 * yScale);
 
-		y += 18 + LINE_HEIGHT * 2;
+		y += 18;
 
 		pDC->FillSolidRect(wave_x-1, y-1, wave_width+2, wave_height+2, 0x808080);	// draw box
 		pDC->FillSolidRect(wave_x, y, wave_width, wave_height-1, 0);              // fill box
@@ -2033,35 +2055,49 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			pDC->FillSolidRect(wave_x + i, y + (int)((0x3F-state)*yScale), 1, 1, DIM(Col,(int)(100*(state*yScale-(int)(state*yScale))))); // antialiasing
 		}
 
-		y -= 18 + LINE_HEIGHT * 2;
+		y -= 18;
 
 		// other
 		int period = (pSoundGen->GetReg(SNDCHIP_FDS, 0x4082) & 0xFF) | ((pSoundGen->GetReg(SNDCHIP_FDS, 0x4083) & 0x0F) << 8);
 		int vol = (pSoundGen->GetReg(SNDCHIP_FDS, 0x4080) & 0x3F);
 		double freq = theApp.GetSoundGenerator()->GetChannelFrequency(SNDCHIP_FDS, 0);		// // //
 
+		// hacky implementation of FDS modulation pitch view
 		int modperiod = (pSoundGen->GetReg(SNDCHIP_FDS, 0x4086) & 0xFF) | ((pSoundGen->GetReg(SNDCHIP_FDS, 0x4087) & 0x0F) << 8);
 		int moddepth = (pSoundGen->GetReg(SNDCHIP_FDS, 0x4084) & 0x3F);
-		double modfreq = theApp.GetSoundGenerator()->GetFDSModFrequency();
+		int modcounter = (pSoundGen->GetFDSModCounter() & 0x7F);
+		double modfreq = theApp.GetSoundGenerator()->GetChannelFrequency(SNDCHIP_FDS, 1);		// // //
 
 		CString FDStext;
 		CString Modtext;
 
 		FDStext.Format(_T("%s, vol = %02i"), GetPitchTextFunc(3, period, freq), vol);
-		Modtext.Format(_T("%s, depth = %02i"), GetPitchTextFunc(3, modperiod, modfreq, _T("mod  ")), moddepth);
+		Modtext.Format(_T("%s, depth = %02i, counter = %02i"), GetPitchTextFunc(3, modperiod, modfreq, _T("mod  ")), moddepth, modcounter);
 
-		for (int i = 0; i < 3; ++i) {
-			GetRegsFunc(SNDCHIP_FDS, [&](int x) { return 0x4080 + i * 4 + x; }, 4);
-			text.Format(_T("$%04X:"), 0x4080 + i * 4);
-			DrawRegFunc(text, 4);
+		for (int i = 0; i < 11; ++i) {
+			GetRegsFunc(SNDCHIP_FDS, [&](int x) { return 0x4040 + i * 8 + x; }, 8);
+			if (i < 8) {
+				text.Format(_T("$%04X:"), 0x4040 + i * 8);
+				DrawRegFunc(text, 8);
+			}
+			else
+			{
+				text.Format(_T("$%04X:"), 0x4080 + (i - 8) * 4);
+				DrawRegFunc(text, 4);
+			}
 			switch (i) {
-			case 0: DrawTextFunc(180, FDStext); break;
-			case 1: DrawTextFunc(180, Modtext); break;
+			case 8: DrawTextFunc(180, FDStext); break;
+			case 9: DrawTextFunc(180, Modtext); break;
 			}
 		}
-		
+		//for (int i = 0; i < 3; ++i) {
+		//	GetRegsFunc(SNDCHIP_FDS, [&](int x) { return 0x4080 + i * 4 + x; }, 4);
+		//	text.Format(_T("$%04X:"), 0x4080 + i * 4);
+		//	DrawRegFunc(text, 4);
+		//}
+
 		DrawVolFunc(freq, vol << 3);
-		line += 2; y += LINE_HEIGHT * 2;
+		DrawVolFDSMod(modfreq, vol << 3, moddepth << 3);
 	}
 
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_VRC7)) {		// // //

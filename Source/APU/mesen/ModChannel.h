@@ -148,4 +148,9 @@ public:
 	{
 		return IsEnabled() ? _output : 0;
 	}
+
+	int8_t GetCounter() const
+	{
+		return _counter;
+	}
 };

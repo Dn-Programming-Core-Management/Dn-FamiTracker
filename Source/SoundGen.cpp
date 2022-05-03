@@ -1432,9 +1432,9 @@ double CSoundGen::GetChannelFrequency(unsigned Chip, int Channel) const		// // /
 	return m_pAPU->GetFreq(Chip, Channel);
 }
 
-double CSoundGen::GetFDSModFrequency() const
+int CSoundGen::GetFDSModCounter() const
 {
-	return m_pAPU->GetFDSModFreq();
+	return m_pAPU->GetFDSModCounter();
 }
 
 void CSoundGen::MakeSilent()
