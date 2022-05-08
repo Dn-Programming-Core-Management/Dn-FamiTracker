@@ -50,15 +50,11 @@ CS5BChannel::CS5BChannel(CMixer *pMixer, uint8_t ID) : CChannel(pMixer, SNDCHIP_
 	m_bNoiseDisable(false)
 {
 }
-
-void CS5BChannel::Process(uint32_t Time)
-{
-	m_iPeriodClock += Time;
-	if (m_iPeriodClock >= m_iPeriod) {
-		m_iPeriodClock = 0;
-		m_bSquareHigh = !m_bSquareHigh;
-	}
-	m_iTime += Time;
+void CS5BChannel::Process(uint32_t Time) {
+    while (Time > 0) {
+        Clock();
+        Time--;
+    }
 }
 
 void CS5BChannel::Reset()
