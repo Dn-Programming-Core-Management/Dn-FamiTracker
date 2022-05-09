@@ -57,7 +57,8 @@ public:
 private:
 	void RecomputeFdsFilter();
 	double	GetModFreq() const;
-	double CFDS::GetOutputFreq() const;
+	double	GetOutPrevFreq() const;
+	double	GetOutputFreq() const;
 
 private:
 	int m_CutoffHz;

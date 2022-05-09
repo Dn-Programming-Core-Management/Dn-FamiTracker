@@ -160,13 +160,16 @@ void CFDS::EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer)
 
 double CFDS::GetFreq(int Channel) const		// // //
 {
-	if (Channel) return GetOutputFreq();		// hack for modulated pitch
-	int Lo = m_pRegisterLogger->GetRegister(0x4082)->GetValue();
-	int Hi = m_pRegisterLogger->GetRegister(0x4083)->GetValue();
-	if (Hi & 0x80)
-		return 0.;
-	Lo |= (Hi << 8) & 0xF00;
-	return CAPU::BASE_FREQ_NTSC * (Lo / 4194304.);
+	if (Channel == 1) return GetOutputFreq();	// hack for modulated pitch
+	if (Channel == 0) {
+		int Lo = m_pRegisterLogger->GetRegister(0x4082)->GetValue();
+		int Hi = m_pRegisterLogger->GetRegister(0x4083)->GetValue();
+		if (Hi & 0x80)
+			return 0.;
+		Lo |= (Hi << 8) & 0xF00;
+		return CAPU::BASE_FREQ_NTSC * (Lo / 4194304.);
+	}
+	return 0.;
 }
 
 int CFDS::GetModCounter() const
@@ -182,9 +185,19 @@ double CFDS::GetOutputFreq() const
 	if (Hi & 0x80)
 		return 0.;
 	Lo |= (Hi << 8) & 0xF00;
-	return CAPU::BASE_FREQ_NTSC * ((m_FDS.GetModOutput() + Lo) / 4194304.);
+	return CAPU::BASE_FREQ_NTSC * ((Lo + (int)m_FDS.GetModOutput()) / 4194304.);
+
 }
 
+double CFDS::GetModFreq() const
+{
+	int Lo = m_pRegisterLogger->GetRegister(0x4086)->GetValue();
+	int Hi = m_pRegisterLogger->GetRegister(0x4087)->GetValue();
+	if (Hi & 0x80)
+		return 0.;
+	Lo |= (Hi << 8) & 0xF00;
+	return CAPU::BASE_FREQ_NTSC * (Lo / 4194304.);
+}
 int CFDS::GetChannelLevel(int Channel)
 {
 	ASSERT(Channel == 0);
