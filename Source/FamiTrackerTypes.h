@@ -268,7 +268,7 @@ inline int MIDI_NOTE(int octave, int note)		// // //
 inline int GET_OCTAVE(int midi_note)
 {
 	int x = midi_note / NOTE_RANGE;
-	if (midi_note < 0 && !(midi_note % NOTE_RANGE)) --x;
+	if (midi_note < 0 && (midi_note % NOTE_RANGE)) --x;
 	return x;
 }
 

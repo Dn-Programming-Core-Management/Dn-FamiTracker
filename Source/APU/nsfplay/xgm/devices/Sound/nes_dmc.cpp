@@ -132,6 +132,9 @@ namespace xgm
 
   double NES_DMC::GetFrequencyNoise() const     // // !!
   {
+      if (!(length_counter[1] > 0 && enable[1] &&
+          (envelope_disable ? (noise_volume > 0) : (envelope_counter > 0))))
+          return 0.0;
       return clock / double(wavlen_table[pal][reg[0x400e - 0x4008] & 0xF] * ((noise_tap & (1 << 6)) ? 93 : 1));
   }
 

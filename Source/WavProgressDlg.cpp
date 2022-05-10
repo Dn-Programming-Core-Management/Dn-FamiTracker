@@ -76,7 +76,7 @@ BOOL CWavProgressDlg::OnInitDialog()
 	CView *pView = static_cast<CFrameWnd*>(AfxGetMainWnd())->GetActiveView();		// // //
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 
-	m_iTimerPeriod = theApp.GetSettings()->General.iLowRefreshRate;
+	m_iTimerPeriod = theApp.GetSettings()->GUI.iLowRefreshRate;
 	
 	pView->Invalidate();
 	pView->RedrawWindow();

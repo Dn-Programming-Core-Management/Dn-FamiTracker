@@ -315,10 +315,10 @@ void CChannelHandlerFDS::FillModulationTable(const char *pBuffer)		// // //
 
 		// Disable modulation
 		WriteRegister(0x4087, 0x80);
-		// Reset modulation table pointer, set bias to zero
-		WriteRegister(0x4085, 0x00);
 		// Fill the table
 		for (int i = 0; i < 32; ++i)
 			WriteRegister(0x4088, m_iModTable[i]);
+		// Reset modulation table pointer, set bias to zero
+		WriteRegister(0x4085, 0x00);
 	}
 }

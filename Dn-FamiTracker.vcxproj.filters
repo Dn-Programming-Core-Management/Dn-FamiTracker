@@ -726,9 +726,6 @@
     <ClCompile Include="Source\utils\ftmath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\ConfigEmulation.cpp">
-      <Filter>Source Files\Dialog Boxes\Config</Filter>
-    </ClCompile>
     <ClCompile Include="Source\VersionChecker.cpp">
       <Filter>Source Files\Other</Filter>
     </ClCompile>
@@ -749,6 +746,12 @@
     </ClCompile>
     <ClCompile Include="Source\APU\FDS.cpp">
       <Filter>Source Files\Sound Driver\Emulation\Sound Chips</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ConfigGUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ConfigEmulation.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1433,9 +1436,6 @@
     <ClInclude Include="Source\utils\ftmath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\ConfigEmulation.h">
-      <Filter>Header Files\Dialog Boxes Headers\Config Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Source\APU\old\vrc7tone.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\old</Filter>
     </ClInclude>
@@ -1498,6 +1498,12 @@
     </ClInclude>
     <ClInclude Include="Source\APU\ChannelLevelState.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ConfigGUI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ConfigEmulation.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

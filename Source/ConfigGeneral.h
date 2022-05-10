@@ -72,8 +72,6 @@ protected:
 
 	int		m_iEditStyle;
 	int		m_iPageStepSize;
-	int		m_iLowRefreshRate;		// // !!
-	int		m_iMaxChannelView;
 
 	int		m_iKeyNoteCut;
 	int		m_iKeyNoteRelease;
@@ -85,8 +83,6 @@ protected:
 	static const CString CONFIG_DESC[SETTINGS_BOOL_COUNT];		// // //
 
 	CToolTipCtrl m_wndToolTip;
-
-	void UpdateTexts();
 
 	DECLARE_MESSAGE_MAP()
 public:

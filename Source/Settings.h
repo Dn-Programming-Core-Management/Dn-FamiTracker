@@ -157,9 +157,13 @@ public:
 		bool	bHexKeypad;
 		bool	bMultiFrameSel;
 		bool	bCheckVersion;		// // //
+	} General;
+
+	struct {
 		int		iLowRefreshRate;	// // !!
 		int		iMaxChannelView;	// // !!
-	} General;
+		bool	bPreciseRegPitch;
+	} GUI;
 
 	struct {
 		int		iErrorLevel;

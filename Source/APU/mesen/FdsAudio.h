@@ -134,6 +134,17 @@ public:
 		}
 	}
 
+	uint8_t GetModOutput() const
+	{
+		return _mod.GetOutput();
+	}
+
+	uint8_t GetModCounter() const
+	{
+		return _mod.GetCounter();
+	}
+
+
 private:
 	uint32_t UpdateOutput()
 	{
@@ -164,6 +175,9 @@ public:
 		} else if(addr == 0x4092) {
 			value &= 0xC0;
 			value |= _mod.GetGain();
+		} else if (addr == 0x4097) {
+			value &= 0x80;
+			value |= _mod.GetCounter();
 		}
 
 		return value;

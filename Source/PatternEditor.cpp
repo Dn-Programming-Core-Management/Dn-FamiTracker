@@ -1811,8 +1811,68 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		const double note = NoteFromFreq(Freq);
 		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
 		if (Volume > 0xFF) Volume = 0xFF;
-		if (note_conv >= -12 && note_conv <= 96 && Volume)		// // //
-			pDC->FillSolidRect(29 + 6 * (note_conv + 12), BAR_OFFSET + vis_line * 10, 3, 7, RGB(Volume, Volume, Volume));
+		if (note_conv >= -12 && note_conv <= 96 && Volume) {		// // //
+			if (theApp.GetSettings()->GUI.bPreciseRegPitch)
+				pDC->FillSolidRect((int)(29.0 + 6.0 * (note + 12)), BAR_OFFSET + vis_line * 10, 3, 7, RGB(Volume, Volume, Volume));
+			else
+				pDC->FillSolidRect(29 + 6 * (note_conv + 12), BAR_OFFSET + vis_line * 10, 3, 7, RGB(Volume, Volume, Volume));
+		}
+		++vis_line;
+	};
+
+	const auto DrawVolFDSMod = [&](double Freq, int Volume, double ModFreq, int Depth, double OutFreq) {
+		pDC->FillSolidRect(x - 1, BAR_OFFSET + vis_line * 10 - 1, 6 * 108 + 3, 9, 0x808080);
+		pDC->FillSolidRect(x, BAR_OFFSET + vis_line * 10, 6 * 108 + 1, 7, 0);
+		for (int i = 0; i < 10; i++)
+			pDC->SetPixelV(x + 72 * i, BAR_OFFSET + vis_line * 10 + 3, i == 4 ? 0x808080 : 0x303030);
+		
+		
+		const double note = NoteFromFreq(Freq);
+		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
+		const double outnote = NoteFromFreq(OutFreq);
+		const int outnote_conv = outnote >= 0 ? int(outnote + 0.5) : int(outnote - 0.5);
+
+		if (Volume > 0xFF) Volume = 0xFF;
+		if (Depth > 0xFF) Depth = 0xFF;
+
+		// modulated note
+		if (note_conv >= -12 && note_conv <= 96 && Volume) {		// // //
+			if (theApp.GetSettings()->GUI.bPreciseRegPitch) {
+				pDC->FillSolidRect((int)(29.0 + 6.0 * (note + 12)),
+					BAR_OFFSET + vis_line * 10,
+					(int)(3 + ((29.0 + 6.0 * (outnote + 12)) - (29.0 + 6.0 * (note + 12)))),
+					7,
+					RGB((int)(Volume * 0.5),
+						(int)(Volume * 0.5),
+						(int)(Volume * 0.5)));
+			}
+			else {
+				pDC->FillSolidRect(29 + 6 * (note_conv + 12),
+					BAR_OFFSET + vis_line * 10,
+					3 + (int)((29.0 + 6.0 * (note_conv + 12)) - (29.0 + 6.0 * (outnote_conv + 12))),
+					7,
+					RGB((int)(Volume * 0.5),
+						(int)(Volume * 0.5),
+						(int)(Volume * 0.5)));
+			}
+		}
+		// unmodulated note
+		if (note_conv >= -12 && note_conv <= 96 && Volume) {		// // //
+			if (theApp.GetSettings()->GUI.bPreciseRegPitch) {
+				pDC->FillSolidRect((int)(29.0 + 6.0 * (note + 12)),
+					BAR_OFFSET + vis_line * 10,
+					3,
+					7,
+					RGB(Volume, Volume, Volume));
+			}
+			else {
+				pDC->FillSolidRect(29 + 6 * (note_conv + 12),
+					BAR_OFFSET + vis_line * 10,
+					3,
+					7,
+					RGB(Volume, Volume, Volume));
+			}
+		}
 		++vis_line;
 	};
 
@@ -1830,17 +1890,43 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		}
 	};
 
-	const auto GetPitchTextFunc = [] (int digits, int period, double freq) {
-		const CString fmt = _T("pitch = $%0*X (%7.2fHz %s %+03i)");
+	const auto GetPitchTextFunc = [] (int digits, int periodReg, double freq, LPCTSTR pitchText = _T("pitch")) {
+		const CString fmt = _T("%s = $%0*X (%7.2fHz %-4s %+03i)");
 		const double note = NoteFromFreq(freq);
 		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
 		const int cents = int((note - double(note_conv)) * 100.0);
 		
 		CString str;
 		if (freq != 0.)
-			str.Format(fmt, digits, period, freq, NoteToStr(note_conv), cents);
+			str.Format(fmt, pitchText, digits, periodReg, freq, NoteToStr(note_conv), cents);
 		else
-			str.Format(fmt, digits, period, 0., _T("---"), 0);
+			str.Format(fmt, pitchText, digits, periodReg, 0., _T("---"), 0);
+		return str;
+	};
+
+	// For noise and DPCM.
+	const auto GetPitchTextFuncLong = [](int digits, int pitchReg, double freq, bool rate) {
+		const double note = NoteFromFreq(freq);
+		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
+		const int cents = int((note - double(note_conv)) * 100.0);
+
+		CString str;
+		CString noteNameBuf;
+		LPCTSTR noteName;
+		if (freq != 0.) {
+			noteNameBuf = NoteToStr(note_conv);
+			noteName = noteNameBuf;
+		}
+		else {
+			noteName = _T("---");
+		}
+
+		if (rate) {
+			str.Format(_T("rate  = $%0*X (%9.2fHz         )"), digits, pitchReg, freq);
+		}
+		else {
+			str.Format(_T("pitch = $%0*X (%9.2fHz %-4s %+03i)"), digits, pitchReg, freq, noteName, cents);
+		}
 		return str;
 	};
 
@@ -1852,35 +1938,36 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		text.Format(_T("$%04X:"), 0x4000 + i * 4);		// // //
 		DrawRegFunc(text, 4);
 
-		int period, vol;
+		int pitch, vol;
 		double freq = theApp.GetSoundGenerator()->GetChannelFrequency(SNDCHIP_NONE, i);		// // //
 //		pDC->FillSolidRect(x + 200, y, x + 400, y + 18, m_colEmptyBg);
 
 		switch (i) {
 		case 0: case 1:
-			period = reg[2] | ((reg[3] & 7) << 8);
+			pitch = reg[2] | ((reg[3] & 7) << 8);
 			vol = reg[0] & 0x0F;
-			text.Format(_T("%s, vol = %02i, duty = %i"), GetPitchTextFunc(3, period, freq), vol, reg[0] >> 6); break;
+			text.Format(_T("%s, vol = %02i, duty = %i"), GetPitchTextFunc(3, pitch, freq), vol, reg[0] >> 6); break;
 		case 2:
-			period = reg[2] | ((reg[3] & 7) << 8);
+			pitch = reg[2] | ((reg[3] & 7) << 8);
 			vol = reg[0] ? 15 : 0;
-			text.Format(_T("%s"), GetPitchTextFunc(3, period, freq)); break;
+			text.Format(_T("%s"), GetPitchTextFunc(3, pitch, freq)); break;
 		case 3:
-			period = reg[2] & 0x0F;
+			pitch = reg[2] & 0x0F;
 			vol = reg[0] & 0x0F;
-			text.Format(_T("pitch = $%01X, vol = %02i, mode = %i"), period, vol, reg[2] >> 7);
-			period = (period << 4) | ((reg[2] & 0x80) >> 4);
+			text.Format(_T("%s, vol = %02i, mode = %i"), GetPitchTextFuncLong(1, pitch, freq, !(reg[2] >> 7)), vol, reg[2] >> 7);
+			pitch = (pitch << 4) | ((reg[2] & 0x80) >> 4);
 			freq /= 16; break; // for display
+
 		case 4:
-			period = reg[0] & 0x0F;
-			vol = 15 * !pSoundGen->PreviewDone();
-			text.Format(_T("%s, %s, size = %i byte%c"), GetPitchTextFunc(1, period & 0x0F, freq),
-				(reg[0] & 0x40) ? _T("looped") : _T("once"), (reg[3] << 4) | 1, reg[3] ? 's' : ' ');
+			pitch = reg[0] & 0x0F;
+			vol = 15 *!pSoundGen->PreviewDone();
+			text.Format(_T("%s, %-5s size = %-4i byte%c"), GetPitchTextFuncLong(1, (pitch & 0x0F), freq, 1),
+				(reg[0] & 0x40) ? _T("loop,") : _T("once,"), (reg[3] << 4) | 1, reg[3] ? 's' : ' ');
 			freq /= 16; break; // for display
 		}
 /*
 		pDC->FillSolidRect(250 + i * 30, 0, 20, m_iWinHeight - HEADER_CHAN_HEIGHT, 0);
-		pDC->FillSolidRect(250 + i * 30, (period >> 1), 20, 5, RGB(vol << 4, vol << 4, vol << 4));
+		pDC->FillSolidRect(250 + i * 30, (pitch >> 1), 20, 5, RGB(vol << 4, vol << 4, vol << 4));
 */
 		DrawTextFunc(180, text);
 		DrawVolFunc(freq, vol << 4);
@@ -1994,37 +2081,62 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		DrawHeaderFunc(_T("FDS"));		// // //
 
 		// // // FDS wave
-		const int wave_x = x + DPI::SX(180);
+		const int wave_x = x + DPI::SX(300);
 		const double xScale = 1, yScale = 0.5;
+		const int wave_width = (int)(64 * xScale);
+		const int wave_height = (int)(64 * yScale);
 
-		y += 36;
-		pDC->FillSolidRect(wave_x - 1, y - 1, (int)(64*xScale) + 2, (int)(64*yScale)+2, 0x808080); // draw box
-		pDC->FillSolidRect(wave_x, y, (int)(64*xScale), (int)(64*yScale)-1, 0);                    // fill box
-		for (double i = 0; i < 64; i+=(1/xScale)) {
-			auto pState = pSoundGen->GetRegState(SNDCHIP_FDS, 0x4040 + ((int)(i) & 0x3F));
+		y += 18;
+
+		pDC->FillSolidRect(wave_x-1, y-1, wave_width+2, wave_height+2, 0x808080);	// draw box
+		pDC->FillSolidRect(wave_x, y, wave_width, wave_height-1, 0);              // fill box
+		for (int i = 0; i < wave_width; i++) {
+			// get register state
+			auto pState = pSoundGen->GetRegState(SNDCHIP_FDS, 0x4040 + ((int)(i/xScale) & 0x3F));
 			int state = pState->GetValue();
+			// calculate color
 			COLORREF Col = BLEND(0xC0C0C0, DECAY_COLOR[pState->GetNewValueTime()], 100 * pState->GetLastUpdatedTime() / CRegisterState::DECAY_RATE);
-			pDC->FillSolidRect(wave_x + (int)(i * xScale), y + (int)((0x3F - state) * yScale), 1, (int)(state* yScale) + 1, Col);
-			pDC->FillSolidRect(wave_x + (int)(i*xScale), y + (int)((0x3F-state)*yScale), 1, 1, DIM(Col,(int)(100*(state*yScale-(int)(state*yScale))))); // antialiasing
+			// draw wave
+			pDC->FillSolidRect(wave_x + i, y + (int)((0x3F-state)*yScale), 1, (int)(state*yScale)+1, Col);
+			pDC->FillSolidRect(wave_x + i, y + (int)((0x3F-state)*yScale), 1, 1, DIM(Col,(int)(100*(state*yScale-(int)(state*yScale))))); // antialiasing
 		}
-		y -= 36;
+
+		y -= 18;
 
 		// other
 		int period = (pSoundGen->GetReg(SNDCHIP_FDS, 0x4082) & 0xFF) | ((pSoundGen->GetReg(SNDCHIP_FDS, 0x4083) & 0x0F) << 8);
 		int vol = (pSoundGen->GetReg(SNDCHIP_FDS, 0x4080) & 0x3F);
 		double freq = theApp.GetSoundGenerator()->GetChannelFrequency(SNDCHIP_FDS, 0);		// // //
 
+		// hacky implementation of FDS modulation pitch view
+		int modperiod = (pSoundGen->GetReg(SNDCHIP_FDS, 0x4086) & 0xFF) | ((pSoundGen->GetReg(SNDCHIP_FDS, 0x4087) & 0x0F) << 8);
+		int moddepth = (pSoundGen->GetReg(SNDCHIP_FDS, 0x4084) & 0x3F);
+		int modcounter = (pSoundGen->GetFDSModCounter() & 0x7F);
+		double outfreq = theApp.GetSoundGenerator()->GetChannelFrequency(SNDCHIP_FDS, 1);		// // //
+
 		CString FDStext;
-		FDStext.Format(_T("%s, vol = %02i"), GetPitchTextFunc(3, period, freq), vol);
+		CString Modtext;
+
+		FDStext.Format(_T("%s, vol   = %02i"), GetPitchTextFunc(3, period, freq), vol);
+		Modtext.Format(_T("%s, depth = %02i, counter = %02i"), GetPitchTextFunc(3, modperiod, outfreq, _T("mod  ")), moddepth, modcounter);
 
 		for (int i = 0; i < 11; ++i) {
-			GetRegsFunc(SNDCHIP_FDS, [&] (int) { return 0x4080 + i; }, 1);
-			text.Format(_T("$%04X:"), 0x4080 + i);
-			DrawRegFunc(text, 1);
-			if (!i) DrawTextFunc(180, FDStext);
+			GetRegsFunc(SNDCHIP_FDS, [&](int x) { return 0x4040 + i * 8 + x; }, 8);
+			if (i < 8) {
+				text.Format(_T("$%04X:"), 0x4040 + i * 8);
+				DrawRegFunc(text, 8);
+			}
+			else
+			{
+				text.Format(_T("$%04X:"), 0x4080 + (i - 8) * 4);
+				DrawRegFunc(text, 4);
+			}
+			switch (i) {
+			case 8: DrawTextFunc(180, FDStext); break;
+			case 9: DrawTextFunc(180, Modtext); break;
+			}
 		}
-		
-		DrawVolFunc(freq, vol << 3);
+		DrawVolFDSMod(freq, vol << 3, outfreq, moddepth << 3, outfreq);
 	}
 
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_VRC7)) {		// // //

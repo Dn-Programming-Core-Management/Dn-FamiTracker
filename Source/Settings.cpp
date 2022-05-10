@@ -134,9 +134,11 @@ void CSettings::SetupSettings()
 	SETTING_BOOL("General", "Hexadecimal keypad", false, &General.bHexKeypad);
 	SETTING_BOOL("General", "Multi-frame selection", false, &General.bMultiFrameSel);
 	SETTING_BOOL("General", "Check for new versions", true, &General.bCheckVersion);
-	// // !!
-	SETTING_INT("Appearance", "Idle refresh rate", 100, &General.iLowRefreshRate);
-	SETTING_INT("Appearance", "Maximum frame editor channel view", 8, &General.iMaxChannelView);		// // !!
+
+	// GUI
+	SETTING_INT("GUI", "Idle refresh rate", 100, &GUI.iLowRefreshRate);
+	SETTING_INT("GUI", "Maximum frame editor channel view", 28, &GUI.iMaxChannelView);		// // !!
+	SETTING_BOOL("GUI", "Precise register pitch view", true, &GUI.bPreciseRegPitch);
 
 	// // // Version / Compatibility info
 	SETTING_INT("Version", "Module error level", MODULE_ERROR_DEFAULT, &Version.iErrorLevel);

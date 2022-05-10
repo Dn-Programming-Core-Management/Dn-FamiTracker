@@ -34,7 +34,7 @@
 
 CFDS::CFDS()
 {
-	m_pRegisterLogger->AddRegisterRange(0x4040, 0x408F);		// // //
+	m_pRegisterLogger->AddRegisterRange(0x4040, 0x4098);		// // //
 
 	// Reset() is called by CAPU::SetExternalSound(), but let's call it ourself.
 	Reset();
@@ -96,7 +96,7 @@ void CFDS::Write(uint16_t Address, uint8_t Value)
 
 uint8_t CFDS::Read(uint16_t Address, bool &Mapped)
 {
-	Mapped = ((0x4040 <= Address && Address <= 0x407f) || (0x4090 == Address) || (0x4092 == Address));
+	Mapped = ((0x4040 <= Address && Address <= 0x407f) || (0x4090 == Address) || (0x4092 == Address) || (0x4097 == Address));
 	return m_FDS.ReadRegister(Address);
 }
 
@@ -160,15 +160,44 @@ void CFDS::EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer)
 
 double CFDS::GetFreq(int Channel) const		// // //
 {
-	if (Channel) return 0.;
+	if (Channel == 1) return GetOutputFreq();	// hack for modulated pitch
+	if (Channel == 0) {
+		int Lo = m_pRegisterLogger->GetRegister(0x4082)->GetValue();
+		int Hi = m_pRegisterLogger->GetRegister(0x4083)->GetValue();
+		if (Hi & 0x80)
+			return 0.;
+		Lo |= (Hi << 8) & 0xF00;
+		return CAPU::BASE_FREQ_NTSC * (Lo / 4194304.);
+	}
+	return 0.;
+}
+
+int CFDS::GetModCounter() const
+{
+	return m_FDS.GetModCounter();
+}
+
+// get actual output frequency, modified by modulator
+double CFDS::GetOutputFreq() const
+{
 	int Lo = m_pRegisterLogger->GetRegister(0x4082)->GetValue();
 	int Hi = m_pRegisterLogger->GetRegister(0x4083)->GetValue();
 	if (Hi & 0x80)
 		return 0.;
 	Lo |= (Hi << 8) & 0xF00;
-	return CAPU::BASE_FREQ_NTSC * (Lo / 4194304.);
+	return CAPU::BASE_FREQ_NTSC * ((Lo + (int)m_FDS.GetModOutput()) / 4194304.);
+
 }
 
+double CFDS::GetModFreq() const
+{
+	int Lo = m_pRegisterLogger->GetRegister(0x4086)->GetValue();
+	int Hi = m_pRegisterLogger->GetRegister(0x4087)->GetValue();
+	if (Hi & 0x80)
+		return 0.;
+	Lo |= (Hi << 8) & 0xF00;
+	return CAPU::BASE_FREQ_NTSC * (Lo / 4194304.);
+}
 int CFDS::GetChannelLevel(int Channel)
 {
 	ASSERT(Channel == 0);
