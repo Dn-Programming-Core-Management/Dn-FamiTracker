@@ -86,7 +86,6 @@ public:
 	int32_t	GetChanOutput(uint8_t Chan) const;
 	void	SetChipLevel(chip_level_t Chip, float Level);
 	uint32_t	ResampleDuration(uint32_t Time) const;
-	void	SetNamcoVolume(float fVol);
 
 	int		GetMeterDecayRate() const;		// // // 050B
 	void	SetMeterDecayRate(int Rate);		// // // 050B

@@ -68,6 +68,7 @@
 #include "APU.h"
 #include "2A03.h"
 #include "FDS.h"
+#include "N163.h"
 #include "nsfplay/xgm/devices/Sound/legacy/emu2413.h"
 #include "utils/variadic_minmax.h"
 
@@ -218,7 +219,7 @@ void CMixer::RecomputeMixing()
 	chip2A03.UpdateMixingAPU2(Volume * m_fLevelAPU2);
 	chipVRC7.UpdateMixLevel(Volume * m_fLevelVRC7);
 	chipFDS.UpdateMixLevel(Volume * m_fLevelFDS);
-	//chipN163.UpdateMixLevel(Volume * m_fLevelN163);
+	chipN163.UpdateMixLevel(Volume * m_fLevelN163);
 
 //	chipN163.UpdateN163Filter(m_MixerConfig.N163Lowpass);
 	chipFDS.UpdateFdsFilter(m_MixerConfig.FDSLowpass);
