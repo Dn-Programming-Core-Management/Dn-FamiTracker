@@ -3391,6 +3391,7 @@ void CFamiTrackerDoc::SetMachine(machine_t Machine)
 {
 	ASSERT(Machine == PAL || Machine == NTSC);
 	m_iMachine = Machine;
+	UpdateAllViews(NULL, UPDATE_PATTERN);
 	SetModifiedFlag();
 	SetExceededFlag();		// // //
 }
