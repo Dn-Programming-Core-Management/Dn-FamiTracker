@@ -723,7 +723,7 @@ bool CSoundGen::ResetAudioDevice()
 
 	// Reinitialize sound interface
 	if (!m_pSoundInterface->SetupDevice(Device)) {
-		AfxMessageBox(IDS_SOUND_ERROR, MB_ICONERROR);
+		m_pTrackerView->PostMessage(WM_USER_ERROR, IDS_SOUND_ERROR, MB_ICONERROR);
 		return false;
 	}
 
@@ -738,7 +738,7 @@ bool CSoundGen::ResetAudioDevice()
 
 	// Channel failed
 	if (m_pSoundStream == NULL) {
-		AfxMessageBox(IDS_SOUND_BUFFER_ERROR, MB_ICONERROR);
+		m_pTrackerView->PostMessage(WM_USER_ERROR, IDS_SOUND_BUFFER_ERROR, MB_ICONERROR);
 		return false;
 	}
 
@@ -1886,7 +1886,7 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 	// Unfortunately, destructor doesn't cleanup object. Only CloseFile() does.
 	if (!m_pWaveFile ||
 		!m_pWaveFile->OpenFile(pFile, theApp.GetSettings()->Sound.iSampleRate, theApp.GetSettings()->Sound.iSampleSize, 1)) {
-		AfxMessageBox(IDS_FILE_OPEN_ERROR);
+		m_pTrackerView->PostMessage(WM_USER_ERROR, IDS_FILE_OPEN_ERROR);
 		return false;
 	}
 	else {

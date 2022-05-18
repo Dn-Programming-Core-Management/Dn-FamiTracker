@@ -33,4 +33,20 @@ enum {
 	WM_USER_MIDI_EVENT,				// There is a new MIDI command	
 	WM_USER_NOTE_EVENT,				// There is a new note command (by player)
 	WM_USER_DUMP_INST,				// // // End of track, add instrument
+	
+	WM_USER_ERROR,  // audio thread error, (nIDPrompt, nType)
+	/*
+	Previously the audio thread would call AfxMessageBox upon errors. The resulting
+	message boxes would often appear under the main window.
+
+	https://forums.codeguru.com/showthread.php?454091-AfxMessageBox-from-a-worker-thread
+	says to never call AfxMessageBox from a non-GUI thread, but instead call PostMessage
+	to an object on the main window. http://flounder.com/workerthreads.htm says it can
+	be a view rather than a CWinApp.
+
+	As a result, the audio thread now calls
+	CFamiTrackerView::PostMessage(WM_USER_ERROR, nIDPrompt, nType), which messages the
+	main thread to call CFamiTrackerView::OnAudioThreadError(), which calls
+	AfxMessageBox(nIDPrompt, nType).
+	*/
 };
