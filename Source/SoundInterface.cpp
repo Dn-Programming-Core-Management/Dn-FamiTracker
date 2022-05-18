@@ -532,7 +532,7 @@ unsigned int CSoundStream::BufferFramesWritable() const {
 	if (FAILED(hr)) return 0;
 
 	UINT32 numFramesAvailable = m_bufferFrameCount - numFramesPadding;
-	TRACE("%d frames available of %d\n", numFramesAvailable, m_bufferFrameCount);
+	// TRACE("%d frames available of %d\n", numFramesAvailable, m_bufferFrameCount);
 	return numFramesAvailable;
 }
 

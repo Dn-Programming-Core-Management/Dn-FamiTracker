@@ -846,7 +846,7 @@ bool CSoundGen::TryWaitForWritable(uint32_t& framesWritable, uint32_t& bytesWrit
 	// slow down export), and redesigning to avoid this is hard.
 	while (true) {
 		WaitResult result = m_pSoundStream->WaitForReady(AUDIO_TIMEOUT);
-		TRACE("WaitResult %d\n", result);
+		// TRACE("WaitResult %d\n", result);
 		switch (result) {
 		case WaitResult::Ready:
 			goto endWhile;
