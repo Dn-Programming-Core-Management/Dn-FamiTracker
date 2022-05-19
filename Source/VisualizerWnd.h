@@ -41,7 +41,7 @@ class CVisualizerScope;
 // CVisualizerWnd
 
 /// https://github.com/nyanpasu64/spectro2/blob/master/flip-cell/src/lib.rs
-class TripleBuffer {
+class alignas(64) TripleBuffer {
 	// Constants
 	static constexpr uint8_t INIT_WRITE = 0;
 	static constexpr uint8_t INIT_SHARED = 1;
@@ -53,8 +53,8 @@ class TripleBuffer {
 	// [3] box[...] short
 	std::unique_ptr<short[]> pBuffers[3];
 
-	// box atomic u8
-	std::unique_ptr<std::atomic<uint8_t>> pShared;
+	// atomic u8
+	alignas(64) std::atomic<uint8_t> shared;
 
 	friend class Reader;
 	friend class Writer;

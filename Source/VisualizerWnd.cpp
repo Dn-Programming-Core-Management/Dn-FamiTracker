@@ -33,7 +33,7 @@
 
 void TripleBuffer::Initialize(size_t Size)
 {
-	this->pShared = std::make_unique<std::atomic<uint8_t>>(INIT_SHARED);
+	shared.store(INIT_SHARED, std::memory_order_relaxed);
 
 	for (size_t i = 0; i < 3; i++) {
 		this->pBuffers[i] = std::make_unique<short[]>(Size);
@@ -57,12 +57,12 @@ short const* Reader::Curr() const
 
 bool Reader::Fetch()
 {
-	if (!(m_pBuffer->pShared->load(std::memory_order_relaxed) & TripleBuffer::SHARED_WRITTEN)) {
+	if (!(m_pBuffer->shared.load(std::memory_order_relaxed) & TripleBuffer::SHARED_WRITTEN)) {
 		return false;
 	}
 
 	// Release currently owned buffer and acquire new one to read from.
-	auto readTmp = m_pBuffer->pShared->exchange(m_ReadIndex, std::memory_order_acq_rel);
+	auto readTmp = m_pBuffer->shared.exchange(m_ReadIndex, std::memory_order_acq_rel);
 	ASSERT(readTmp & TripleBuffer::SHARED_WRITTEN);
 	m_ReadIndex = readTmp & TripleBuffer::SHARED_INDEX;
 	ASSERT(m_ReadIndex < 3);
@@ -85,7 +85,7 @@ short* Writer::Curr()
 void Writer::Publish()
 {
 	// Release currently owned buffer and acquire new one to write to.
-	uint8_t writeTmp = m_pBuffer->pShared->exchange(
+	uint8_t writeTmp = m_pBuffer->shared.exchange(
 		m_WriteIndex | TripleBuffer::SHARED_WRITTEN, std::memory_order_acq_rel
 	);
 	m_WriteIndex = writeTmp & TripleBuffer::SHARED_INDEX;
