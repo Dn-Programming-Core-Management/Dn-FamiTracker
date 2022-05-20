@@ -2297,7 +2297,9 @@ void CSoundGen::UpdateAPU()
 
 	{
 		auto l = DeferLock();
+		Lap("UpdateAPU/DeferLock");
 		if (l.try_lock()) {
+			Lap("UpdateAPU/try_lock()");
 			// Update APU channel registers
 			unsigned int PrevChip = SNDCHIP_NONE;		// // // 050B
 			for (int i = 0; i < CHANNELS; ++i) {
@@ -2326,9 +2328,12 @@ void CSoundGen::UpdateAPU()
 			}
 
 			m_pAPU->AddCycles(m_iUpdateCycles - m_iConsumedCycles);
+			Lap("UpdateAPU/before Process");
 			m_pAPU->Process();
+			Lap("UpdateAPU/Process()");
 
 			l.unlock();
+			Lap("UpdateAPU/unlock()");
 		}
 	}
 
