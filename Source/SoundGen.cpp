@@ -1767,8 +1767,11 @@ void CSoundGen::CheckControl()
 
 	if (m_bDirty) {
 		m_bDirty = false;
-		if (!m_bRendering)
+		if (!m_bRendering) {
+			Lap("CheckControl before PostMessage");
 			m_pTrackerView->PostMessage(WM_USER_PLAYER, m_iPlayFrame, m_iPlayRow);
+			Lap("CheckControl PostMessage");
+		}
 	}
 }
 
@@ -2468,8 +2471,11 @@ void CSoundGen::OnRemoveDocument(WPARAM wParam, LPARAM lParam)
 
 void CSoundGen::RegisterKeyState(int Channel, int Note)
 {
-	if (m_pTrackerView != NULL)
+	if (m_pTrackerView != NULL) {
+		Lap("RegisterKeyState before PostMessage");
 		m_pTrackerView->PostMessage(WM_USER_NOTE_EVENT, Channel, Note);
+		Lap("RegisterKeyState after PostMessage");
+	}
 }
 
 // FDS & N163
