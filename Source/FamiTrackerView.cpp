@@ -51,6 +51,7 @@
 
 #include <cmath>
 #include <assert.h>
+#include <synchapi.h>  // CreateEvent
 
 using std::get_if;
 
@@ -191,13 +192,13 @@ BEGIN_MESSAGE_MAP(CFamiTrackerView, CView)
 	ON_COMMAND(ID_BLOCK_END, OnBlockEnd)
 	ON_COMMAND(ID_POPUP_PICKUPROW, OnPickupRow)
 	ON_MESSAGE(WM_USER_MIDI_EVENT, OnUserMidiEvent)
-	ON_MESSAGE(WM_USER_PLAYER, OnUserPlayerEvent)
-	ON_MESSAGE(WM_USER_NOTE_EVENT, OnUserNoteEvent)
-	ON_MESSAGE(WM_USER_ERROR, &CFamiTrackerView::OnAudioThreadError)
+	ON_MESSAGE(AM_PLAYER, OnUserPlayerEvent)
+	ON_MESSAGE(AM_NOTE_EVENT, OnUserNoteEvent)
+	ON_MESSAGE(AM_ERROR, &CFamiTrackerView::OnAudioThreadError)
 	ON_WM_CLOSE()
 	ON_WM_DESTROY()
 	// // //
-	ON_MESSAGE(WM_USER_DUMP_INST, OnUserDumpInst)
+	ON_MESSAGE(AM_DUMP_INST, OnUserDumpInst)
 	ON_COMMAND(ID_MODULE_DETUNE, OnTrackerDetune)
 	ON_UPDATE_COMMAND_UI(ID_FIND_NEXT, OnUpdateFind)
 	ON_UPDATE_COMMAND_UI(ID_FIND_PREVIOUS, OnUpdateFind)
@@ -227,6 +228,20 @@ BEGIN_MESSAGE_MAP(CFamiTrackerView, CView)
 	ON_COMMAND(ID_DECAY_FAST, CMainFrame::OnDecayFast)		// // //
 	ON_COMMAND(ID_DECAY_SLOW, CMainFrame::OnDecaySlow)		// // //
 END_MESSAGE_MAP()
+
+bool CFamiTrackerView::PostAudioMessage(AudioMessageId message, WPARAM wParam, LPARAM lParam)
+{
+	ASSERT(std::this_thread::get_id() == theApp.GetSoundGenerator()->m_audioThreadID);
+
+	if (m_MessageQueue.try_push(AudioMessage{
+		message,
+		wParam,
+		lParam,
+	})) {
+		SetEvent(m_hQueueEvent.get());
+	}
+	return false;
+}
 
 // Convert keys 0-F to numbers, -1 = invalid key
 static int ConvertKeyToHex(Keycode Key)
@@ -274,39 +289,46 @@ static int ConvertKeyExtra(Keycode Key)		// // //
 // CFamiTrackerView construction/destruction
 
 CFamiTrackerView::CFamiTrackerView() :
+	m_MessageQueue(8192),
 	mClipboardFormat(0),
+	m_iMenuChannel(-1),
 	m_iInsertKeyStepping(1),
 	m_bEditEnable(false),
-	m_bMaskInstrument(false),
-	m_bMaskVolume(true),
 	m_bSwitchToInstrument(false),
-	m_iPastePos(PASTE_CURSOR),		// // //
-	m_iLastNote(NONE),		// // //
-	m_iLastVolume(MAX_VOLUME),
-	m_iLastInstrument(0),
-	m_iLastEffect(EF_NONE),		// // //
-	m_iLastEffectParam(0),		// // //
-	m_iSwitchToInstrument(-1),
 	m_bFollowMode(true),
 	m_bCompactMode(false),		// // //
-	m_iMarkerFrame(-1),		// // // 050B
-	m_iMarkerRow(-1),		// // // 050B
-	m_iAutoArpNotes(),		// // //
-	m_iAutoArpPtr(0),
-	m_iLastAutoArpPtr(0),
-	m_iAutoArpKeyCount(0),
+	m_bMaskInstrument(false),		// // //
+	m_bMaskVolume(true),
+	m_iPastePos(PASTE_CURSOR),
+	m_iSwitchToInstrument(-1),		// // //
+	m_iMarkerFrame(-1),		// // //
+	m_iMarkerRow(-1),
+	m_iAutoArpNotes(),
+	m_iAutoArpPtr(0),		// // //
+	m_iLastAutoArpPtr(0),		// // // 050B
+	m_iAutoArpKeyCount(0),		// // // 050B
+	m_iKeyboardNote(-1),		// // //
+	m_iLastNote(NONE),
+	m_iLastInstrument(0),
+	m_iLastVolume(MAX_VOLUME),
+	m_iLastEffect(EF_NONE),		// // //
+	m_iLastEffectParam(0),		// // //
 	m_iSplitNote(-1),		// // //
 	m_iSplitChannel(-1),		// // //
 	m_iSplitInstrument(MAX_INSTRUMENTS),		// // //
 	m_iSplitTranspose(0),		// // //
-	m_iNoteCorrection(),		// // //
-	m_pNoteQueue(new CNoteQueue { }),		// // //
-	m_iMenuChannel(-1),
-	m_iKeyboardNote(-1),
+	m_iNoteCorrection(),
+	m_pNoteQueue(new CNoteQueue { }),
+	m_pPatternEditor(new CPatternEditor()),
 	m_nDropEffect(DROPEFFECT_NONE),
-	m_bDragSource(false),
-	m_pPatternEditor(new CPatternEditor())
+	m_bDragSource(false)
 {
+	m_hQuitEvent = HandlePtr(::CreateEvent(NULL, FALSE, FALSE, NULL));
+	ASSERT(m_hQuitEvent);
+
+	m_hQueueEvent = HandlePtr(::CreateEvent(NULL, FALSE, FALSE, NULL));
+	ASSERT(m_hQueueEvent);
+
 	memset(m_bMuteChannels, 0, sizeof(bool) * MAX_CHANNELS);
 	memset(m_iActiveNotes, 0, sizeof(int) * MAX_CHANNELS);
 	memset(m_cKeyList, 0, sizeof(char) * 256);
@@ -316,11 +338,31 @@ CFamiTrackerView::CFamiTrackerView() :
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 	ASSERT(pSoundGen);
 
+	m_ReceiveThread = std::thread([this]() {
+		HANDLE events[2] = {
+			m_hQueueEvent.get(),
+			m_hQuitEvent.get(),
+		};
+		while (true) {
+			while (auto msg = m_MessageQueue.front()) {
+				m_MessageQueue.pop();
+				PostMessage(msg->message, msg->wParam, msg->lParam);
+			}
+
+			if (WaitForMultipleObjects(2, events, FALSE, INFINITE) != WAIT_OBJECT_0) {
+				break;
+			}
+		}
+	});
+
 	pSoundGen->AssignView(this);
 }
 
 CFamiTrackerView::~CFamiTrackerView()
 {
+	SetEvent(m_hQuitEvent.get());
+	m_ReceiveThread.join();
+
 	// Release allocated objects
 	SAFE_RELEASE(m_pPatternEditor);
 	SAFE_RELEASE(m_pNoteQueue);		// // //

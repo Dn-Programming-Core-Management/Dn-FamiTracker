@@ -781,7 +781,7 @@ bool CSoundGen::ResetAudioDevice()
 
 	// Reinitialize sound interface
 	if (!m_pSoundInterface->SetupDevice(Device)) {
-		m_pTrackerView->PostMessage(WM_USER_ERROR, IDS_SOUND_ERROR, MB_ICONERROR);
+		m_pTrackerView->PostAudioMessage(AM_ERROR, IDS_SOUND_ERROR, MB_ICONERROR);
 		return false;
 	}
 
@@ -796,7 +796,7 @@ bool CSoundGen::ResetAudioDevice()
 
 	// Channel failed
 	if (m_pSoundStream == NULL) {
-		m_pTrackerView->PostMessage(WM_USER_ERROR, IDS_SOUND_BUFFER_ERROR, MB_ICONERROR);
+		m_pTrackerView->PostAudioMessage(AM_ERROR, IDS_SOUND_BUFFER_ERROR, MB_ICONERROR);
 		return false;
 	}
 
@@ -1417,7 +1417,7 @@ void CSoundGen::HaltPlayer()
 
 	// Signal that playback has stopped
 	if (m_pTrackerView != NULL) {
-		m_pTrackerView->PostMessage(WM_USER_PLAYER, m_iPlayFrame, m_iPlayRow);
+		m_pTrackerView->PostAudioMessage(AM_PLAYER, m_iPlayFrame, m_iPlayRow);
 		m_pInstRecorder->StopRecording(m_pTrackerView);		// // //
 	}
 
@@ -1748,7 +1748,7 @@ void CSoundGen::CheckControl()
 	if (m_bDirty) {
 		m_bDirty = false;
 		if (!m_bRendering)
-			m_pTrackerView->PostMessage(WM_USER_PLAYER, m_iPlayFrame, m_iPlayRow);
+			m_pTrackerView->PostAudioMessage(AM_PLAYER, m_iPlayFrame, m_iPlayRow);
 	}
 }
 
@@ -1941,7 +1941,7 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 	// Unfortunately, destructor doesn't cleanup object. Only CloseFile() does.
 	if (!m_pWaveFile ||
 		!m_pWaveFile->OpenFile(pFile, theApp.GetSettings()->Sound.iSampleRate, theApp.GetSettings()->Sound.iSampleSize, 1)) {
-		m_pTrackerView->PostMessage(WM_USER_ERROR, IDS_FILE_OPEN_ERROR);
+		m_pTrackerView->PostAudioMessage(AM_ERROR, IDS_FILE_OPEN_ERROR);
 		return false;
 	}
 	else {
@@ -2436,7 +2436,7 @@ void CSoundGen::OnRemoveDocument(WPARAM wParam, LPARAM lParam)
 void CSoundGen::RegisterKeyState(int Channel, int Note)
 {
 	if (m_pTrackerView != NULL)
-		m_pTrackerView->PostMessage(WM_USER_NOTE_EVENT, Channel, Note);
+		m_pTrackerView->PostAudioMessage(AM_NOTE_EVENT, Channel, Note);
 }
 
 // FDS & N163

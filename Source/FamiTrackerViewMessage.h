@@ -29,12 +29,18 @@
 
 // Custom window messages for CFamiTrackerView
 enum {
-	WM_USER_PLAYER = WM_USER,		// Pattern play row has changed
-	WM_USER_MIDI_EVENT,				// There is a new MIDI command
-	WM_USER_NOTE_EVENT,				// There is a new note command (by player)
-	WM_USER_DUMP_INST,				// // // End of track, add instrument
+	WM_USER_MIDI_EVENT = WM_USER,				// There is a new MIDI command
+	WM_USER_GUI_COUNT,
+};
 
-	WM_USER_ERROR,  // audio thread error, (nIDPrompt, nType)
+/// Sent from audio to GUI thread. Only pass into CFamiTrackerView::PostQueueMessage()
+/// to avoid blocking the audio thread!
+enum AudioMessageId {
+	AM_PLAYER = WM_USER_GUI_COUNT,  // Pattern play row has changed
+	AM_NOTE_EVENT,  // There is a new note command (by player)
+	AM_DUMP_INST,  // // // End of track, add instrument
+
+	AM_ERROR,  // audio thread error, (nIDPrompt, nType)
 	/*
 	Previously the audio thread would call AfxMessageBox upon errors. The resulting
 	message boxes would often appear under the main window.
@@ -49,4 +55,10 @@ enum {
 	main thread to call CFamiTrackerView::OnAudioThreadError(), which calls
 	AfxMessageBox(nIDPrompt, nType).
 	*/
+};
+
+struct AudioMessage {
+	AudioMessageId message;
+	WPARAM wParam;
+	LPARAM lParam;
 };
