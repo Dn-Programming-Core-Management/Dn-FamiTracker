@@ -83,6 +83,7 @@ add_executable(${exe}
         Source/resampler/resample.inl
         Source/resampler/sinc.cpp
         Source/resampler/sinc.hpp
+        Source/rigtorp/SPSCQueue.h
         Source/str_conv/str_conv.hpp
         Source/str_conv/utf8_conv.hpp
         Source/type_safe/arithmetic_policy.hpp
