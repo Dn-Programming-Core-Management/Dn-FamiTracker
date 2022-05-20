@@ -2569,7 +2569,7 @@ void CMainFrame::OnDestroy()
 		pSoundGen->SetVisualizerWindow(NULL);
 		// Kill the sound interface since the main window is being destroyed
 		CEvent *pSoundEvent = new CEvent(FALSE, FALSE);
-		pSoundGen->PostThreadMessage(WM_USER_CLOSE_SOUND, (WPARAM)pSoundEvent, NULL);
+		pSoundGen->PostGuiMessage(WM_USER_CLOSE_SOUND, (WPARAM)pSoundEvent, NULL);
 		// Wait for sound to close
 		DWORD dwResult = ::WaitForSingleObject(pSoundEvent->m_hObject, CSoundGen::AUDIO_TIMEOUT + 1000);
 

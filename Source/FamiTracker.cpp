@@ -47,6 +47,7 @@
 #include "VersionChecker.h"		// // //
 #include "VersionCheckerDlg.h"		// // !!
 #include <iostream>		// // //
+#include <utility>  // std::move
 #include "str_conv/str_conv.hpp"		// // //
 
 // 0CC uses AfxRegSetValue() and AfxGetModuleShortFileName(),
@@ -177,16 +178,6 @@ BOOL CFamiTrackerApp::InitInstance()
 	// Create channel map
 	m_pChannelMap = new CChannelMap();
 
-	// Start sound generator thread, initially suspended
-	if (!m_pSoundGenerator->CreateThread(CREATE_SUSPENDED)) {
-		// If failed, restore and save default settings
-		m_pSettings->DefaultSettings();
-		m_pSettings->SaveSettings();
-		// Show message and quit
-		AfxMessageBox(IDS_START_ERROR, MB_ICONERROR);
-		return FALSE;
-	}
-
 	// Check if the application is themed
 	CheckAppThemed();
 
@@ -263,8 +254,8 @@ BOOL CFamiTrackerApp::InitInstance()
 	// Enable drag/drop open
 	m_pMainWnd->DragAcceptFiles();
 
-	// Initialize the sound interface, also resumes the thread
-	if (!m_pSoundGenerator->InitializeSound()) {
+	// Initialize the sound interface, also starts the thread
+	if (!m_pSoundGenerator->BeginThread()) {
 		// If failed, restore and save default settings
 		m_pSettings->DefaultSettings();
 		m_pSettings->SaveSettings();
@@ -481,10 +472,9 @@ void CFamiTrackerApp::ShutDownSynth()
 		return;
 	}
 
-	// Save a handle to the thread since the object will delete itself
-	HANDLE hThread = m_pSoundGenerator->m_hThread;
+	auto stdThread = std::move(m_pSoundGenerator->m_audioThread);
 
-	if (hThread == NULL) {
+	if (!stdThread.joinable()) {
 		// Object was found but thread not created
 		delete m_pSoundGenerator;
 		m_pSoundGenerator = NULL;
@@ -494,25 +484,24 @@ void CFamiTrackerApp::ShutDownSynth()
 
 	TRACE("App: Waiting for sound player thread to close\n");
 
-	// Resume if thread was suspended
-	if (m_pSoundGenerator->ResumeThread() == 0) {
-		// Thread was not suspended, send quit message
-		// Note that this object may be deleted now!
-		m_pSoundGenerator->PostThreadMessage(WM_QUIT, 0, 0);
-	}
-	// If thread was suspended then it will auto-terminate, because sound hasn't been initialized
+	// Send quit message. Note that this object may be deleted now!
+	m_pSoundGenerator->PostGuiMessage(AM_QUIT, 0, 0);
 
 	// Wait for thread to exit
-	DWORD dwResult = ::WaitForSingleObject(hThread, CSoundGen::AUDIO_TIMEOUT + 1000);
+	DWORD dwResult = ::WaitForSingleObject(
+		stdThread.native_handle(), CSoundGen::AUDIO_TIMEOUT + 1000
+	);
 
 	if (dwResult != WAIT_OBJECT_0 && m_pSoundGenerator != NULL) {
 		TRACE("App: Closing the sound generator thread failed\n");
 #ifdef _DEBUG
 		AfxMessageBox(_T("Error: Could not close sound generator thread"));
 #endif
+		stdThread.detach();
 		// Unclean exit
 		return;
 	}
+	stdThread.join();
 
 	// Object should be auto-deleted
 	ASSERT(m_pSoundGenerator == NULL);
@@ -647,7 +636,7 @@ int CFamiTrackerApp::GetCPUUsage() const
 	// Calculate CPU usage
 	const HANDLE hThreads[] = {
 		m_hThread,
-		m_pSoundGenerator->m_hThread,
+		m_pSoundGenerator->m_audioThread.native_handle(),
 		GetMainFrame()->GetVisualizerWnd()->GetThreadHandle(),
 	};
 

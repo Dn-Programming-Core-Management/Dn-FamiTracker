@@ -318,7 +318,7 @@ CFamiTrackerView::CFamiTrackerView() :
 
 	// Register this object in the sound generator
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
-	ASSERT_VALID(pSoundGen);
+	ASSERT(pSoundGen);
 
 	pSoundGen->AssignView(this);
 }
