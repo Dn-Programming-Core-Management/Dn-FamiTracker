@@ -28,6 +28,12 @@
 // This thread will take care of the NES sound generation
 //
 
+// SPSCQueue uses placement new, which is broken by MFC's #define new DEBUG_NEW.
+#pragma push_macro("new")
+#undef new
+#include "rigtorp/SPSCQueue.h"
+#pragma pop_macro("new")
+
 #include <queue>		// // //
 #include "Common.h"
 
@@ -35,9 +41,16 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
+#include <thread>
 
 const int VIBRATO_LENGTH = 256;
 const int TREMOLO_LENGTH = 256;
+
+struct WindowMessage {
+	UINT   message;
+	WPARAM wParam;
+	LPARAM lParam;
+};
 
 // Custom messages
 enum {
@@ -94,10 +107,8 @@ class CRegisterState;		// // //
 
 // CSoundGen
 
-class CSoundGen : public CWinThread, IAudioCallback
+class CSoundGen : IAudioCallback
 {
-protected:
-	DECLARE_DYNCREATE(CSoundGen)
 public:
 	CSoundGen();
 	virtual ~CSoundGen();
@@ -121,8 +132,19 @@ public:
 	void		SelectChip(int Chip);
 	void		LoadMachineSettings();		// // // 050B
 
+	// Thread management functions
+	bool		BeginThread();
+
+private:
+	void ThreadEntry();
+
+public:
+	bool PostThreadMessage(
+		UINT message,
+		WPARAM wParam,
+		LPARAM lParam);
+
 	// Sound
-	bool		InitializeSound();
 
 	/// Waits for room to write audio to the output buffer.
 	///
@@ -299,7 +321,16 @@ public:
 	//
 	// Private variables
 	//
+public:
+	/// Accessed by main thread only.
+	std::thread m_stdThread;
+
+	/// Accessed by audio thread only.
+	std::thread::id m_stdThreadID;
+
 private:
+	rigtorp::SPSCQueue<WindowMessage> m_MessageQueue;
+
 	// Objects
 	CChannelHandler		*m_pChannels[CHANNELS];
 	CTrackerChannel		*m_pTrackerChannels[CHANNELS];
@@ -426,15 +457,17 @@ private:
 	int					m_iSequencePlayPos;
 	int					m_iSequenceTimeout;
 
-	// Overloaded functions
-public:
-	virtual BOOL InitInstance();
-	virtual int	 ExitInstance();
-	virtual BOOL OnIdle(LONG lCount);
+	// Thread life cycle functions
+private:
+	bool InitInstance();
+	void ExitInstance();
+	void OnIdle();
 
 	// Implementation
+private:
+	bool DispatchSpscMessage(WindowMessage msg);
+
 public:
-	DECLARE_MESSAGE_MAP()
 	afx_msg void OnSilentAll(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnLoadSettings(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnStartPlayer(WPARAM wParam, LPARAM lParam);
