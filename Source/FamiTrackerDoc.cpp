@@ -79,10 +79,6 @@
 
 using json = nlohmann::json;
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
 const char* CFamiTrackerDoc::NEW_INST_NAME = "";
 
 // Make 1 channel default since 8 sounds bad
