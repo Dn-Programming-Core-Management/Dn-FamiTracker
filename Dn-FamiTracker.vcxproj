@@ -642,6 +642,7 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
     <ClInclude Include="Source\type_safe\types.hpp" />
     <ClInclude Include="Source\type_safe\variant.hpp" />
     <ClInclude Include="Source\type_safe\visitor.hpp" />
+    <ClInclude Include="Source\utils\handle_ptr.h" />
     <ClInclude Include="Source\utils\variadic_minmax.h" />
     <ClInclude Include="Source\utils\ftmath.h" />
     <ClInclude Include="Source\utils\input.h" />

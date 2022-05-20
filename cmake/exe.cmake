@@ -160,6 +160,7 @@ add_executable(${exe}
         Source/drivers/drv_vrc7.h
         Source/utils/ftmath.cpp
         Source/utils/ftmath.h
+        Source/utils/handle_ptr.h
         Source/utils/input.h
         Source/utils/variadic_minmax.h
         Source/AboutDlg.cpp

@@ -1493,6 +1493,9 @@
     <ClInclude Include="Source\ConfigEmulation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\utils\handle_ptr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Dn-FamiTracker.rc">
