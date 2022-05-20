@@ -318,9 +318,10 @@ void CSoundGen::SetVisualizerWindow(CVisualizerWnd *pWnd)
 	// Called from main thread
 	ASSERT(GetCurrentThreadId() == theApp.m_nThreadID);
 
-	m_csVisualizerWndLock.Lock();
-	m_pVisualizerWnd = pWnd;
-	m_csVisualizerWndLock.Unlock();
+	{
+		std::unique_lock<std::mutex> lock(m_csVisualizerWndLock);
+		m_pVisualizerWnd = pWnd;
+	}
 }
 
 void CSoundGen::RegisterChannels(int Chip, CFamiTrackerDoc *pDoc)
@@ -755,12 +756,11 @@ bool CSoundGen::ResetAudioDevice()
 	m_iGraphBuffer = new short[m_iBufSizeSamples];
 
 	// Sample graph rate
-	m_csVisualizerWndLock.Lock();
-
-	if (m_pVisualizerWnd)
-		m_pVisualizerWnd->SetSampleRate(SampleRate);
-
-	m_csVisualizerWndLock.Unlock();
+	{
+		std::unique_lock<std::mutex> lock(m_csVisualizerWndLock);
+		if (m_pVisualizerWnd)
+			m_pVisualizerWnd->SetSampleRate(SampleRate);
+	}
 
 	if (!m_pAPU->SetupSound(SampleRate, 1, (m_iMachineType == NTSC) ? MACHINE_NTSC : MACHINE_PAL))
 		return false;
@@ -1019,12 +1019,11 @@ bool CSoundGen::PlayBuffer(unsigned int framesToWrite, unsigned int bytesToWrite
 		m_pSoundStream->WriteBuffer(m_pAccumBuffer, bytesToWrite);
 
 		// Draw graph
-		m_csVisualizerWndLock.Lock();
-
-		if (m_pVisualizerWnd)
-			m_pVisualizerWnd->FlushSamples(gsl::span(m_iGraphBuffer, framesToWrite));
-
-		m_csVisualizerWndLock.Unlock();
+		{
+			std::unique_lock<std::mutex> lock(m_csVisualizerWndLock);
+			if (m_pVisualizerWnd)
+				m_pVisualizerWnd->FlushSamples(gsl::span(m_iGraphBuffer, framesToWrite));
+		}
 
 		// Reset buffer position
 		m_iBufferPtr = 0;

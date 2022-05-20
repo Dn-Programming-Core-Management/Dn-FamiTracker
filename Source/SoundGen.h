@@ -28,7 +28,6 @@
 // This thread will take care of the NES sound generation
 //
 
-#include <afxmt.h>		// Synchronization objects
 #include <queue>		// // //
 #include "Common.h"
 
@@ -322,7 +321,7 @@ private:
 	// Thread synchronization
 private:
 	mutable std::mutex m_csAPULock;		// // //
-	mutable CCriticalSection m_csVisualizerWndLock;
+	mutable std::mutex m_csVisualizerWndLock;
 
 	// Handles
 	HANDLE				m_hInterruptEvent;					// Used to interrupt sound buffer syncing
