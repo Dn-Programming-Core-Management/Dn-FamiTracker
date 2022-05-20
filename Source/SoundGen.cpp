@@ -122,7 +122,7 @@ static void Lap(TCHAR* label) {
 	static LONGLONG prev;
 	LARGE_INTEGER t;
 	QueryPerformanceCounter(&t);
-	TRACE("waited %lld on %s\n", t.QuadPart - prev, label);
+	TRACE("%s took %lld\n", label, t.QuadPart - prev);
 	prev = t.QuadPart;
 }
 
@@ -956,7 +956,7 @@ unsigned int CSoundGen::GetBufferFramesWritable() const {
 void CSoundGen::FlushBuffer(int16_t const * pBuffer, uint32_t Size)
 {
 	// Callback method from emulation
-	Lap("FlushBuffer {");
+	Lap("{ FlushBuffer");
 
 	// May only be called from sound player thread
 	ASSERT(std::this_thread::get_id() == m_stdThreadID);
@@ -964,7 +964,7 @@ void CSoundGen::FlushBuffer(int16_t const * pBuffer, uint32_t Size)
 	if (!m_pSoundStream)
 		return;
 
-	Lap("FillBuffer {");
+	Lap("{ FillBuffer");
 	if (m_iSampleSize == 8)
 		FillBuffer<uint8_t, 8>(pBuffer, Size);
 	else
@@ -992,9 +992,11 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 	T *pConversionBuffer = (T*)m_pAccumBuffer;
 
 	unsigned int framesWritable, bytesWritable;
+	Lap("{ TryWaitForWritable");
 	if (!TryWaitForWritable(framesWritable, bytesWritable)) {
 		return;
 	}
+	Lap("} TryWaitForWritable");
 
 	for (uint32_t i = 0; i < Size; ++i) {
 		int16_t Sample = pBuffer[i];
@@ -1042,12 +1044,15 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 		// TODO if we add stereo support, ensure m_iBufferPtr is frames not samples
 		// (otherwise this code breaks).
 		if (m_iBufferPtr >= framesWritable) {
+			Lap("{ PlayBuffer full");
 			if (!PlayBuffer(framesWritable, bytesWritable))
 				return;
+			Lap("} PlayBuffer full, { TryWaitForWritable repeat");
 
 			if (!TryWaitForWritable(framesWritable, bytesWritable)) {
 				return;
 			}
+			Lap("} TryWaitForWritable repeat");
 		}
 	}
 
@@ -1070,8 +1075,10 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 	*/
 	if (m_iBufferPtr > 0) {
 		ASSERT(m_iBufferPtr < framesWritable);
+		Lap("{ PlayBuffer partial");
 		if (!PlayBuffer(m_iBufferPtr, m_pSoundStream->FramesToPubBytes(m_iBufferPtr)))
 			return;
+		Lap("} PlayBuffer partial");
 	}
 }
 
@@ -2149,7 +2156,7 @@ void CSoundGen::ExitInstance()
 
 void CSoundGen::OnIdle()
 {
-	Lap("OnIdle {");
+	Lap("{ OnIdle");
 	//
 	// Main loop for audio playback thread
 	//
@@ -2161,7 +2168,7 @@ void CSoundGen::OnIdle()
 
 	// Access the document object, skip if access wasn't granted to avoid gaps in audio playback
 	if (m_pDocument->LockDocument(0)) {
-		Lap("LockDocument=1 {");
+		Lap("{ LockDocument=1");
 
 		// Read module framerate
 		m_iFrameRate = m_pDocument->GetFrameRate();
