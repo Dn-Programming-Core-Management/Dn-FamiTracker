@@ -2135,14 +2135,17 @@ void CSoundGen::ExitInstance()
 	}
 }
 
-void CSoundGen::OnIdle()
-{
+static void Lap(TCHAR* label) {
 	static LONGLONG prev;
 	LARGE_INTEGER t;
 	QueryPerformanceCounter(&t);
-	TRACE("waited %lld before CSoundGen::OnIdle\n", t.QuadPart - prev);
+	TRACE("waited %lld on %s\n", t.QuadPart - prev, label);
 	prev = t.QuadPart;
+}
 
+void CSoundGen::OnIdle()
+{
+	Lap("begin OnIdle");
 	//
 	// Main loop for audio playback thread
 	//
@@ -2154,27 +2157,37 @@ void CSoundGen::OnIdle()
 
 	// Access the document object, skip if access wasn't granted to avoid gaps in audio playback
 	if (m_pDocument->LockDocument(0)) {
+		Lap("LockDocument=1");
 
 		// Read module framerate
 		m_iFrameRate = m_pDocument->GetFrameRate();
+		Lap("GetFrameRate");
 
 		RunFrame();
+		Lap("RunFrame");
 
 		// Play queued notes
 		PlayChannelNotes();
+		Lap("PlayChannelNotes");
 
 		// Update player
 		UpdatePlayer();
+		Lap("UpdatePlayer");
 
 		// Channel updates (instruments, effects etc)
 		UpdateChannels();
+		Lap("UpdateChannels");
 
 		// Unlock document
 		m_pDocument->UnlockDocument();
+		Lap("UnlockDocument");
+	} else {
+		Lap("LockDocument=0");
 	}
 
 	// Update APU registers
 	UpdateAPU();
+	Lap("UpdateAPU");
 
 	if (IsPlaying()) {		// // //
 		int Channel = m_pInstRecorder->GetRecordChannel();
@@ -2211,9 +2224,7 @@ void CSoundGen::OnIdle()
 		m_pPreviewSample = NULL;
 	}
 
-	QueryPerformanceCounter(&t);
-	TRACE("spent %lld in CSoundGen::OnIdle\n", t.QuadPart - prev);
-	prev = t.QuadPart;
+	Lap("end OnIdle");
 }
 
 void CSoundGen::PlayChannelNotes()
