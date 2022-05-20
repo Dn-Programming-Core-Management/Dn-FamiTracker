@@ -67,10 +67,6 @@
 #include "DPI.h"		// // //
 #include "HistoryFileDlg.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
 static UINT indicators[] =
 {
 	ID_SEPARATOR,           // status line indicator

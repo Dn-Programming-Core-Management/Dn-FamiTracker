@@ -54,10 +54,6 @@
 
 using std::get_if;
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
 // Clipboard ID
 const TCHAR CFamiTrackerView::CLIPBOARD_ID[] = _T("FamiTracker Pattern");
 

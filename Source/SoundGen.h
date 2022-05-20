@@ -28,12 +28,7 @@
 // This thread will take care of the NES sound generation
 //
 
-// SPSCQueue uses placement new, which is broken by MFC's #define new DEBUG_NEW.
-#pragma push_macro("new")
-#undef new
 #include "rigtorp/SPSCQueue.h"
-#pragma pop_macro("new")
-
 #include <queue>		// // //
 #include "Common.h"
 
