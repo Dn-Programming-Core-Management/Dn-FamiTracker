@@ -27,7 +27,7 @@
 
 // CFamiTrackerView, the document view class
 
-#include <afxmt.h>	// Include synchronization objects
+#include <mutex>
 #include <unordered_map>		// // //
 
 #include "PatternEditorTypes.h"		// // //
@@ -326,7 +326,7 @@ private:
 	bool				m_bDropped;								// Drop was performed on this window
 
 	// Thread synchronization
-	mutable CCriticalSection m_csDrawLock;						// Lock for DCs
+	mutable std::mutex m_csDrawLock;						// Lock for DCs
 
 // Operations
 public:

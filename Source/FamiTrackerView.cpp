@@ -478,15 +478,17 @@ void CFamiTrackerView::SetupColors()
 void CFamiTrackerView::UpdateMeters()
 {
 	// TODO: Change this to use the ordinary drawing routines
-	m_csDrawLock.Lock();
+	{
+		// "what is the use of a mutex that only one thread locks?"
+		// "what is the sound of one hand clapping?"
+		std::unique_lock<std::mutex> lock(m_csDrawLock);
 
-	CDC *pDC = GetDC();
-	if (pDC && pDC->m_hDC) {
-		m_pPatternEditor->DrawMeters(pDC);
-		ReleaseDC(pDC);
+		CDC* pDC = GetDC();
+		if (pDC && pDC->m_hDC) {
+			m_pPatternEditor->DrawMeters(pDC);
+			ReleaseDC(pDC);
+		}
 	}
-
-	m_csDrawLock.Unlock();
 }
 
 void CFamiTrackerView::InvalidateCursor()
