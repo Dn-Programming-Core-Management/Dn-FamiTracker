@@ -118,6 +118,14 @@ int dither(long size);
 // the default window message limit is 10000. Let's use 8192 for our replacement queue.
 static constexpr size_t MESSAGE_QUEUE_SIZE = 8192;
 
+static void Lap(TCHAR* label) {
+	static LONGLONG prev;
+	LARGE_INTEGER t;
+	QueryPerformanceCounter(&t);
+	TRACE("waited %lld on %s\n", t.QuadPart - prev, label);
+	prev = t.QuadPart;
+}
+
 CSoundGen::CSoundGen() :
 	m_MessageQueue(MESSAGE_QUEUE_SIZE),
 	m_pAPU(NULL),
@@ -948,6 +956,7 @@ unsigned int CSoundGen::GetBufferFramesWritable() const {
 void CSoundGen::FlushBuffer(int16_t const * pBuffer, uint32_t Size)
 {
 	// Callback method from emulation
+	Lap("FlushBuffer {");
 
 	// May only be called from sound player thread
 	ASSERT(std::this_thread::get_id() == m_stdThreadID);
@@ -955,10 +964,12 @@ void CSoundGen::FlushBuffer(int16_t const * pBuffer, uint32_t Size)
 	if (!m_pSoundStream)
 		return;
 
+	Lap("FillBuffer {");
 	if (m_iSampleSize == 8)
 		FillBuffer<uint8_t, 8>(pBuffer, Size);
 	else
 		FillBuffer<int16_t, 0>(pBuffer, Size);
+	Lap("} FillBuffer");
 
 	if (m_iClipCounter > 50) {
 		// Ignore some clipping to allow the HP-filter adjust itself
@@ -967,6 +978,7 @@ void CSoundGen::FlushBuffer(int16_t const * pBuffer, uint32_t Size)
 	}
 	else if (m_iClipCounter > 0)
 		--m_iClipCounter;
+	Lap("} FlushBuffer");
 }
 
 template <class T, int SHIFT>
@@ -2135,17 +2147,9 @@ void CSoundGen::ExitInstance()
 	}
 }
 
-static void Lap(TCHAR* label) {
-	static LONGLONG prev;
-	LARGE_INTEGER t;
-	QueryPerformanceCounter(&t);
-	TRACE("waited %lld on %s\n", t.QuadPart - prev, label);
-	prev = t.QuadPart;
-}
-
 void CSoundGen::OnIdle()
 {
-	Lap("begin OnIdle");
+	Lap("OnIdle {");
 	//
 	// Main loop for audio playback thread
 	//
@@ -2157,7 +2161,7 @@ void CSoundGen::OnIdle()
 
 	// Access the document object, skip if access wasn't granted to avoid gaps in audio playback
 	if (m_pDocument->LockDocument(0)) {
-		Lap("LockDocument=1");
+		Lap("LockDocument=1 {");
 
 		// Read module framerate
 		m_iFrameRate = m_pDocument->GetFrameRate();
@@ -2180,7 +2184,7 @@ void CSoundGen::OnIdle()
 
 		// Unlock document
 		m_pDocument->UnlockDocument();
-		Lap("UnlockDocument");
+		Lap("} UnlockDocument");
 	} else {
 		Lap("LockDocument=0");
 	}
@@ -2224,7 +2228,7 @@ void CSoundGen::OnIdle()
 		m_pPreviewSample = NULL;
 	}
 
-	Lap("end OnIdle");
+	Lap("} OnIdle");
 }
 
 void CSoundGen::PlayChannelNotes()
