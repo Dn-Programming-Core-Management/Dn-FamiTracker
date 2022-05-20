@@ -89,11 +89,11 @@ void CInstrumentRecorder::RecordInstrument(const unsigned Tick, CView *pView)		/
 	int Pos = (Tick - 1) % Intv;
 
 	signed char Val = 0;
-	
+
 	int PitchReg = 0;
 	int Detune = 0x7FFFFFFF;
 	int ID = m_iRecordChannel;
-	
+
 	char Chip = m_pDocument->GetChannel(m_pDocument->GetChannelIndex(m_iRecordChannel))->GetChip();
 	const auto REG = [&] (int x) { return m_pSoundGen->GetReg(Chip, x); };
 
@@ -239,7 +239,7 @@ void CInstrumentRecorder::RecordInstrument(const unsigned Tick, CView *pView)		/
 			m_pSequenceCache[k]->SetItem(Pos, Val);
 		}
 	}
-	
+
 	if (!(Tick % Intv))
 		FinalizeRecordInstrument();
 }
@@ -332,7 +332,7 @@ void CInstrumentRecorder::InitRecordInstrument()
 	CString str;
 	str.Format(_T("from %s"), pChan->GetChannelName());
 	(*m_pDumpInstrument)->SetName(str);
-	
+
 	if (Type == INST_FDS) {
 		m_pSequenceCache[SEQ_ARPEGGIO]->SetSetting(SETTING_ARP_FIXED);
 		return;

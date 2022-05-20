@@ -77,10 +77,10 @@ public:
 	void		 SelectFrame(unsigned int Frame);
 	void		 SelectRow(unsigned int Row);		// // //
 	void		 SelectChannel(unsigned int Channel);
-	 
+
 	unsigned int GetSelectedFrame() const;
 	unsigned int GetSelectedChannel() const;
-	unsigned int GetSelectedRow() const; 
+	unsigned int GetSelectedRow() const;
 
 	void		 SetFollowMode(bool Mode);
 	bool		 GetFollowMode() const;
@@ -153,7 +153,7 @@ private:
 
 	// Drawing
 	void	UpdateMeters();
-	
+
 	void	InvalidateCursor();
 	void	InvalidateHeader();
 	void	InvalidatePatternEditor();
@@ -163,7 +163,7 @@ private:
 	void	RedrawFrameEditor();
 
 	void	PeriodicUpdate();
-	
+
 	int		TimerDelayer; // Refresh rate depending on playback
 
 	// Instruments
@@ -194,12 +194,12 @@ private:
 	// Input handling
 	void	KeyIncreaseAction();
 	void	KeyDecreaseAction();
-	
+
 	int		TranslateKey(Keycode Key) const;
 	int		TranslateKeyDefault(Keycode Key) const;
 	int		TranslateKeyModplug(Keycode Key) const;
 	int		TranslateKeyFT2JP(Keycode Key) const;
-	
+
 	bool	CheckClearKey(Keycode Key) const;
 	bool	CheckHaltKey(Keycode Key) const;
 	bool	CheckReleaseKey(Keycode Key) const;
@@ -232,10 +232,10 @@ private:
 	void	ReleaseNote(unsigned int Channel, unsigned int Note, unsigned int Octave) const;		// // //
 	void	HaltNote(unsigned int Channel, unsigned int Note, unsigned int Octave) const;		// // //
 	void	HaltNoteSingle(unsigned int Channel) const;		// // //
-	
+
 	void	UpdateArpDisplay();
 	void	UpdateNoteQueues();		// // //
-	
+
 	// Mute methods
 	bool	IsChannelSolo(unsigned int Channel) const;
 	bool	IsChipSolo(unsigned int Chip) const;		// // //
