@@ -983,9 +983,8 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 	}
 
 	/*
-	Write the entire remaining buffer to WASAPI. In practice, this eliminates
-	stuttering at low latencies (below 30ms or so), though I'm not sure why.
-	How do we know it's legal to do so?
+	Write the entire remaining buffer to WASAPI. This is not necessary to prevent
+	stuttering, but it's harmless to keep. How do we know it's legal to do so?
 
 	Before the loop, we call TryWaitForWritable(), which calls WaitForReady() before
 	updating framesWritable.

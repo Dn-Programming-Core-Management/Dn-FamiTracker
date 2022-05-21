@@ -464,6 +464,24 @@ uint32_t CSoundStream::TotalBufferSizeBytes() const {
 
 WaitResult CSoundStream::WaitForReady(DWORD dwTimeout)
 {
+	auto onInterrupted = []() {
+		return WaitResult::Interrupted;
+	};
+
+	auto onWritable = []() {
+		// I don't know of any way to detect playback buffer underruns in WASAPI,
+		// to return WaitResult::OutOfSync.
+		// https://stackoverflow.com/q/32112562 has no answer, and
+		// https://github.com/mackron/miniaudio/issues/81 couldn't figure it out either.
+		return WaitResult::Ready;
+	};
+
+	// Check for cancellation upfront.
+	if (WaitForSingleObject(m_hInterrupt, 0) == WAIT_OBJECT_0) {
+		return onInterrupted();
+	}
+
+	// Check for special cases.
 	switch (m_state) {
 	case StreamState::Stopped:
 		// The first time CSoundGen waits to write audio, don't start stream playback.
@@ -490,18 +508,20 @@ WaitResult CSoundStream::WaitForReady(DWORD dwTimeout)
 	// CSoundStream::WaitForReady before generating audio, rather than before
 	// converting/buffering it.
 
-	HANDLE waitEvents[2] = { m_hInterrupt, m_bufferEvent.get() };
+	// Check if we can write audio without waiting at all.
+	if (BufferFramesWritable()) {
+		return onWritable();
+	}
 
 	// Wait for events
+	HANDLE waitEvents[2] = { m_hInterrupt, m_bufferEvent.get() };
+
 	switch (WaitForMultipleObjects(2, waitEvents, FALSE, dwTimeout)) {
 	case WAIT_OBJECT_0:  // hInterrupt: interrupted by GUI
-		return WaitResult::Interrupted;
+		return onInterrupted();
 
 	case WAIT_OBJECT_0 + 1:  // m_bufferEvent: WASAPI buffer ready to write
-		// I don't know of any way to detect playback buffer underruns in WASAPI.
-		// https://stackoverflow.com/q/32112562 has no answer, and
-		// https://github.com/mackron/miniaudio/issues/81 couldn't figure it out either.
-		return false ? WaitResult::OutOfSync : WaitResult::Ready;
+		return onWritable();
 
 	case WAIT_TIMEOUT:  // Timeout
 		return WaitResult::Timeout;
