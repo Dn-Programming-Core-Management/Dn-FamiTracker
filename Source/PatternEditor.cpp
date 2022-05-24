@@ -1896,7 +1896,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 	const auto GetPitchTextFuncLong = [](int digits, int pitchReg, double freq, bool rate) {
 		const double note = NoteFromFreq(freq);
 		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
-		const int cents = int((note - double(note_conv)) * 100.0);
+		int cents = int((note - double(note_conv)) * 100.0);
 
 		CString str;
 		CString noteNameBuf;
@@ -1907,6 +1907,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		}
 		else {
 			noteName = _T("---");
+			cents = 0;
 		}
 
 		if (rate) {
