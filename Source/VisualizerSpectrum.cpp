@@ -53,38 +53,20 @@ void CVisualizerSpectrum::SetSampleRate(int SampleRate)
 	m_iFillPos = 0;
 }
 
-void CVisualizerSpectrum::Transform(short *pSamples, unsigned int Count)
+void CVisualizerSpectrum::Transform(short const* pSamples, unsigned int Count)
 {
 	fft_buffer_.CopyIn(pSamples, Count);
 	fft_buffer_.Transform();
 }
 
-void CVisualizerSpectrum::SetSampleData(short *pSamples, unsigned int iCount)
+bool CVisualizerSpectrum::SetSpectrumData(short const* pSamples, unsigned int iCount)
 {
-	CVisualizerBase::SetSampleData(pSamples, iCount);
+	m_pSamples = pSamples;
+	m_iSampleCount = iCount;
+	ASSERT(m_iSampleCount == FFT_POINTS);
 
 	Transform(pSamples, iCount);
-	/*
-	int offset = 0;
-
-	if (m_iFillPos > 0) {
-		const int size = std::min((int)iCount, FFT_POINTS - m_iFillPos);
-		std::copy_n(pSamples, size, m_pSampleBuffer.begin() + m_iFillPos);
-		Transform(m_pSampleBuffer.data(), FFT_POINTS);
-		offset += size;
-		iCount -= size;
-	}
-
-	while (iCount >= FFT_POINTS) {
-		Transform(pSamples + offset, FFT_POINTS);
-		offset += FFT_POINTS;
-		iCount -= FFT_POINTS;
-	}
-
-	// Copy rest
-	std::copy_n(pSamples + offset, iCount, m_pSampleBuffer.begin());
-	m_iFillPos = iCount;
-	*/
+	return true;
 }
 
 void CVisualizerSpectrum::Draw()
@@ -100,13 +82,13 @@ void CVisualizerSpectrum::Draw()
 
 	for (int i = 0; i < m_iWidth / m_iBarSize; i++) {		// // //
 		int iStep = int(Pos + 0.5f);
-		
+
 		float level = 0;
 		int steps = (iStep - LastStep) + 1;
 		for (int j = 0; j < steps; ++j)
 			level += float(fft_buffer_.GetIntensity(LastStep + j)) / SCALING;
 		level /= steps;
-		
+
 		// linear -> db
 		level = (20 * std::log10(level));// *0.8f;
 
@@ -138,8 +120,8 @@ void CVisualizerSpectrum::Draw()
 					Color = DIM(Color, 50);
 				m_pBlitBuffer[(m_iHeight - 1 - y) * m_iWidth + i * m_iBarSize + x + OFFSET] = y < level ? Color : BG_COLOR;
 			}
-		}	
-		
+		}
+
 		LastStep = iStep;
 		Pos += Step;
 	}

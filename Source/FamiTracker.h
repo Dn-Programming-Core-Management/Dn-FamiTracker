@@ -170,6 +170,7 @@ private:
 	CMutex			*m_pInstanceMutex;
 	HANDLE			m_hWndMapFile;
 
+	bool m_CoInitialized;
 	bool			m_bRunning = false;		// // //
 	bool			m_bThemeActive;
 

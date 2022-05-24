@@ -36,8 +36,13 @@ public:
 	virtual void Create(int Width, int Height);
 	// Set rate of samples
 	virtual void SetSampleRate(int SampleRate) = 0;
-	// Set new sample data
-	virtual void SetSampleData(short *iSamples, unsigned int iCount);
+
+	// Set new sample data (block-aligned)
+	virtual bool SetScopeData(short const* iSamples, unsigned int iCount);
+
+	// Set new sample data (latest)
+	virtual bool SetSpectrumData(short const* iSamples, unsigned int iCount);
+
 	// Render an image from the sample data
 	virtual void Draw() = 0;
 	// Display the image
@@ -51,5 +56,5 @@ protected:
 	int m_iHeight = 0;
 
 	unsigned int m_iSampleCount = 0;
-	short *m_pSamples = nullptr;
+	short const* m_pSamples = nullptr;
 };

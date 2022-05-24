@@ -41,11 +41,11 @@ public:
 
 	void Create(int Width, int Height) override;
 	void SetSampleRate(int SampleRate) override;
-	void SetSampleData(short *iSamples, unsigned int iCount) override;
+	bool SetSpectrumData(short const* pSamples, unsigned int iCount) override;
 	void Draw() override;
 
 protected:
-	void Transform(short *pSamples, unsigned int Count);
+	void Transform(short const* pSamples, unsigned int Count);
 
 private:
 	static const COLORREF BG_COLOR = 0;

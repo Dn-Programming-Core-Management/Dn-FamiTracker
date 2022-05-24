@@ -504,7 +504,7 @@
     <ClCompile Include="Source\ChannelsVRC7.cpp">
       <Filter>Source Files\Sound Driver\Channels</Filter>
     </ClCompile>
-    <ClCompile Include="Source\DirectSound.cpp">
+    <ClCompile Include="Source\SoundInterface.cpp">
       <Filter>Source Files\Sound Driver\Audio</Filter>
     </ClCompile>
     <ClCompile Include="Source\MIDI.cpp">
@@ -839,7 +839,7 @@
     <ClInclude Include="Source\ChannelsVRC7.h">
       <Filter>Header Files\Sound Driver Headers\Channels Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\DirectSound.h">
+    <ClInclude Include="Source\SoundInterface.h">
       <Filter>Header Files\Sound Driver Headers\Audio Headers</Filter>
     </ClInclude>
     <ClInclude Include="Source\AboutDlg.h">

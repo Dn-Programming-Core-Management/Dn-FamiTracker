@@ -104,11 +104,11 @@ auto to_wide(T&& str) {
 
 // defined by nyanpasu64:
 
-typedef std::basic_string<TCHAR> _tstring;
+typedef std::basic_string<TCHAR> tstring;
 
 template <typename T>
 auto to_t(T&& str) {
-	return details::to_utf_string<_tstring>(std::forward<T>(str));
+	return details::to_utf_string<tstring>(std::forward<T>(str));
 }
 
 } // namespace conv

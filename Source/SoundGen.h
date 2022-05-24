@@ -33,6 +33,7 @@
 #include "Common.h"
 
 #include <atomic>
+#include <cstdint>
 #include <memory>
 #include <mutex>
 
@@ -40,7 +41,7 @@ const int VIBRATO_LENGTH = 256;
 const int TREMOLO_LENGTH = 256;
 
 // Custom messages
-enum { 
+enum {
 	WM_USER_SILENT_ALL = WM_USER + 1,
 	WM_USER_LOAD_SETTINGS,
 	WM_USER_PLAY,
@@ -66,9 +67,9 @@ enum play_mode_t {
 	MODE_PLAY_MARKER,		// // // 050B (row marker, aka "bookmark")
 };
 
-enum render_end_t { 
-	SONG_TIME_LIMIT, 
-	SONG_LOOP_LIMIT 
+enum render_end_t {
+	SONG_TIME_LIMIT,
+	SONG_LOOP_LIMIT
 };
 
 class stChanNote;		// // //
@@ -82,8 +83,8 @@ class CFamiTrackerDoc;
 class CInstrument;		// // //
 class CSequence;		// // //
 class CAPU;
-class CDSound;
-class CDSoundChannel;
+class CSoundInterface;
+class CSoundStream;
 class CWaveFile;		// // //
 class CVisualizerWnd;
 class CDSample;
@@ -110,7 +111,7 @@ private:		// // //
 	//
 public:
 
-	// One time initialization 
+	// One time initialization
 	void		AssignDocument(CFamiTrackerDoc *pDoc);
 	void		AssignView(CFamiTrackerView *pView);
 	void		RemoveDocument();
@@ -122,9 +123,16 @@ public:
 	void		LoadMachineSettings();		// // // 050B
 
 	// Sound
-	bool		InitializeSound(HWND hWnd);
+	bool		InitializeSound();
+
+	/// Waits for room to write audio to the output buffer.
+	///
+	/// If ready to write audio, writes room available to parameters and returns true.
+	/// If waiting for buffer failed (due to GUI interruption or audio timeout),
+	/// returns false.
+	bool TryWaitForWritable(uint32_t& framesWritable, uint32_t& bytesWritable);
 	void		FlushBuffer(int16_t const * pBuffer, uint32_t Size);
-	CDSound		*GetSoundInterface() const { return m_pDSound; };
+	CSoundInterface		*GetSoundInterface() const { return m_pSoundInterface; };
 
 	void		Interrupt() const;
 	bool		GetSoundTimeout() const;
@@ -146,7 +154,7 @@ public:
 	int			 ReadPeriodTable(int Index, int Table) const;		// // //
 
 	// Player interface
-	void		 StartPlayer(play_mode_t Mode, int Track);	
+	void		 StartPlayer(play_mode_t Mode, int Track);
 	void		 StopPlayer();
 	void		 ResetPlayer(int Track);
 	void		 LoadSettings();
@@ -176,7 +184,7 @@ public:
 	bool		 RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEndParam, int Track);
 	void		 StopRendering();
 	void		 GetRenderStat(int &Frame, int &Time, bool &Done, int &FramesToRender, int &Row, int &RowCount) const;
-	bool		 IsRendering() const;	
+	bool		 IsRendering() const;
 	bool		 IsBackgroundTask() const;
 
 	// Sample previewing
@@ -240,7 +248,7 @@ public:
 
 	int GetDefaultInstrument() const;
 
-	// 
+	//
 	// Private functions
 	//
 private:
@@ -254,7 +262,8 @@ private:
 	void		CloseAudioDevice();
 	void		CloseAudio();
 	template<class T, int SHIFT> void FillBuffer(int16_t const * pBuffer, uint32_t Size);
-	bool		PlayBuffer();
+	unsigned int GetBufferFramesWritable() const;
+	bool		PlayBuffer(unsigned int framesToWrite, unsigned int bytesToWrite);
 
 	// Player
 	void		UpdateChannels();
@@ -272,7 +281,7 @@ private:
 
 	// Misc
 	void		PlaySample(const CDSample *pSample, int Offset, int Pitch);
-	
+
 	// Player
 	void		ReadPatternRow();
 	void		PlayerStepRow();
@@ -299,14 +308,15 @@ private:
 	CFamiTrackerView	*m_pTrackerView;
 
 	// Sound
-	CDSound				*m_pDSound;
-	CDSoundChannel		*m_pDSoundChannel;
+	CSoundInterface				*m_pSoundInterface;
+	CSoundStream		*m_pSoundStream;
 	CVisualizerWnd		*m_pVisualizerWnd;
 	CAPU				*m_pAPU;
 	int currN163LevelOffset;
 
 	const CDSample		*m_pPreviewSample;
 
+	bool m_CoInitialized;
 	bool				m_bRunning;
 
 	// Thread synchronization
@@ -330,11 +340,11 @@ private:
 	bool				m_bBufferUnderrun;
 	bool				m_bAudioClipping;
 	int					m_iClipCounter;
-	
+
 // Tracker playing variables
 private:
 	unsigned int		m_iTempo;							// Tempo and speed
-	unsigned int		m_iSpeed;							
+	unsigned int		m_iSpeed;
 	int					m_iGrooveIndex;						// // // Current groove
 	unsigned int		m_iGroovePosition;					// // // Groove position
 	int					m_iTempoAccum;						// Used for speed calculation

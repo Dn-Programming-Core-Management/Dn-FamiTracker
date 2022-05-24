@@ -58,8 +58,11 @@ void CFDS::UpdateFilter(blip_eq_t eq)
 {
 	m_SynthFDS.treble_eq(eq); // Apply 2A03 global EQ on top of FDS's dedicated lowpass.
 
-	// This line of code was copied from CMixer::AllocateBuffer(),
-	// which does some math in order to calculate the length of the Blip_Buffer.
+	// Blip_Buffer::set_sample_rate(new_rate, msec=250) treats the second msec argument
+	// (or its default value) as the length of the buffer.
+	//
+	// CMixer::AllocateBuffer() calls Blip_Buffer::set_sample_rate(new_rate, msec) on the
+	// global Blip_Buffer, and does some math in order to calculate its length.
 	// What nobody realized is that the value passed in is *always* 125 ms,
 	// modulo rounding error:
 	//
@@ -69,8 +72,8 @@ void CFDS::UpdateFilter(blip_eq_t eq)
 	//
 	// just... wtf.
 	//
-	// We can't access the length of the global Blip_Buffer, so leave the length as default.
-	// The default value of 250 ms is more than enough.
+	// We can't access the length of the global Blip_Buffer, so leave m_BlipFDS's length
+	// as default. The default value of 250 ms is more than enough.
 	m_BlipFDS.set_sample_rate(eq.sample_rate);
 
 	// BlipFDS is used to render FDS.

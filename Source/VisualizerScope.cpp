@@ -23,7 +23,9 @@
 */
 
 #include "VisualizerScope.h"
+#include <algorithm>  // std::fill
 #include <cmath>
+#include <stdexcept>
 #include "FamiTracker.h"
 #include "Graphics.h"
 
@@ -34,8 +36,7 @@
 
 CVisualizerScope::CVisualizerScope(bool bBlur) :
 	m_pWindowBuf(NULL),
-	m_bBlur(bBlur),
-	m_iWindowBufPtr(0)
+	m_bBlur(bBlur)
 {
 }
 
@@ -50,11 +51,21 @@ void CVisualizerScope::Create(int Width, int Height)
 
 	SAFE_RELEASE_ARRAY(m_pWindowBuf);
 	m_pWindowBuf = new short[Width];
-	m_iWindowBufPtr = 0;
+	std::fill(m_pWindowBuf, m_pWindowBuf + Width, 0);
 }
 
 void CVisualizerScope::SetSampleRate(int SampleRate)
 {
+}
+
+static constexpr int TIME_SCALING = 7;
+
+bool CVisualizerScope::SetScopeData(short const* pSamples, unsigned int iCount)
+{
+	m_pSamples = pSamples;
+	m_iSampleCount = iCount;
+	ASSERT(m_iSampleCount == (unsigned int)(m_iWidth * TIME_SCALING));
+	return true;
 }
 
 void CVisualizerScope::ClearBackground()
@@ -121,39 +132,31 @@ void CVisualizerScope::Draw()
 	static int _max = 0;
 #endif
 
-	const int TIME_SCALING = 7;
-
-	static int LastPos = 0;
-	static int Accum = 0;
-
-	for (unsigned int i = 0; i < m_iSampleCount; ++i) {
-		
-#ifdef _DEBUG
-		if (_min > m_pSamples[i])
-			_min = m_pSamples[i];
-		if (_max < m_pSamples[i])
-			_max = m_pSamples[i];
-		if (abs(m_pSamples[i]) > _peak)
-			_peak = abs(m_pSamples[i]);
-#endif
-
-		int Pos = m_iWindowBufPtr++ / TIME_SCALING;
-
-		Accum += m_pSamples[i];
-
-		if (Pos != LastPos) {
-			m_pWindowBuf[LastPos] = Accum / TIME_SCALING;
-			Accum = 0;
-		}
-
-		LastPos = Pos;
-
-		if (Pos == m_iWidth) {
-			m_iWindowBufPtr = 0;
-			LastPos = 0;
-			RenderBuffer();
-		}
+	if (!(m_iSampleCount >= (unsigned int)(m_iWidth * TIME_SCALING))) {
+		throw std::runtime_error("Not enough data supplied to CVisualizerScope::Draw()");
 	}
+
+	for (unsigned int Pos = 0; Pos < (unsigned int)m_iWidth; Pos++) {
+		const unsigned int startSmp = TIME_SCALING * Pos;
+		int Accum = 0;
+
+		for (unsigned int rel = 0; rel < TIME_SCALING; rel++) {
+			const auto Amplitude = m_pSamples[startSmp + rel];
+			Accum += Amplitude;
+#ifdef _DEBUG
+			if (_min > Amplitude)
+				_min = Amplitude;
+			if (_max < Amplitude)
+				_max = Amplitude;
+			if (abs(Amplitude) > _peak)
+				_peak = abs(Amplitude);
+#endif
+		}
+
+		m_pWindowBuf[Pos] = Accum / TIME_SCALING;
+	}
+
+	RenderBuffer();
 
 #ifdef _DEBUG
 	_peak = _max - _min;
@@ -175,4 +178,9 @@ void CVisualizerScope::Display(CDC *pDC, bool bPaintMsg)
 	PeakText.Format(_T("-%gdB"), 20.0 * log(double(m_iPeak) / 65535.0));
 	pDC->TextOut(0, 16, PeakText);
 #endif
+}
+
+size_t CVisualizerScope::NeededSamples() const
+{
+	return (size_t)(m_iWidth * TIME_SCALING);
 }

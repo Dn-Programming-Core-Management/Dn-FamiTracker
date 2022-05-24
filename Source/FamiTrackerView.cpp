@@ -197,6 +197,7 @@ BEGIN_MESSAGE_MAP(CFamiTrackerView, CView)
 	ON_MESSAGE(WM_USER_MIDI_EVENT, OnUserMidiEvent)
 	ON_MESSAGE(WM_USER_PLAYER, OnUserPlayerEvent)
 	ON_MESSAGE(WM_USER_NOTE_EVENT, OnUserNoteEvent)
+	ON_MESSAGE(WM_USER_ERROR, &CFamiTrackerView::OnAudioThreadError)
 	ON_WM_CLOSE()
 	ON_WM_DESTROY()
 	// // //
@@ -590,6 +591,12 @@ LRESULT CFamiTrackerView::OnUserNoteEvent(WPARAM wParam, LPARAM lParam)
 
 	RegisterKeyState(Channel, Note);
 
+	return 0;
+}
+
+LRESULT CFamiTrackerView::OnAudioThreadError(WPARAM wParam, LPARAM lParam)
+{
+	AfxMessageBox((UINT)wParam, (UINT)lParam);
 	return 0;
 }
 

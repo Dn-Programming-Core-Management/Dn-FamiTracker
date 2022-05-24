@@ -25,7 +25,7 @@
 //
 // This file takes care of the NES sound playback
 //
-// TODO: 
+// TODO:
 //  - Break out actual player functions to a new class CPlayer
 //  - Create new interface for CFamiTrackerView with thread-safe functions
 //  - Same for CFamiTrackerDoc
@@ -41,7 +41,7 @@
 #include "FamiTrackerView.h"
 #include "VisualizerWnd.h"
 #include "MainFrm.h"
-#include "DirectSound.h"
+#include "SoundInterface.h"
 #include "WaveFile.h"		// // //
 #include "APU/APU.h"
 #include "ChannelHandler.h"
@@ -106,10 +106,10 @@ int dither(long size);
 
 // CSoundGen
 
-CSoundGen::CSoundGen() : 
+CSoundGen::CSoundGen() :
 	m_pAPU(NULL),
-	m_pDSound(NULL),
-	m_pDSoundChannel(NULL),
+	m_pSoundInterface(NULL),
+	m_pSoundStream(NULL),
 	m_pAccumBuffer(NULL),
 	m_iGraphBuffer(NULL),
 	m_pDocument(NULL),
@@ -128,6 +128,7 @@ CSoundGen::CSoundGen() :
 	m_pInstRecorder(new CInstrumentRecorder(this)),		// // //
 	m_bWaveChanged(0),
 	m_iMachineType(NTSC),
+	m_CoInitialized(false),
 	m_bRunning(false),
 	m_hInterruptEvent(NULL),
 	m_bBufferTimeout(false),
@@ -383,9 +384,9 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 	if (pDocument != m_pDocument)
 		return;
 	ASSERT(pDocument != NULL);
-	
+
 	SetupVibratoTable(pDocument->GetVibratoStyle());		// // //
-	
+
 	machine_t Machine = pDocument->GetMachine();
 	const double A440_NOTE = 45. - pDocument->GetTuningSemitone() - pDocument->GetTuningCent() / 100.;
 	double clock_ntsc = CAPU::BASE_FREQ_NTSC / 16.0;
@@ -399,7 +400,7 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 		// 2A07
 		Pitch = (clock_pal / Freq) - 0.5;
 		m_iNoteLookupTablePAL[i] = (unsigned int)(Pitch - pDocument->GetDetuneOffset(1, i));		// // //
-		
+
 		// 2A03 / MMC5 / VRC6
 		Pitch = (clock_ntsc / Freq) - 0.5;
 		m_iNoteLookupTableNTSC[i] = (unsigned int)(Pitch - pDocument->GetDetuneOffset(0, i));		// // //
@@ -432,7 +433,7 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 			m_iNoteLookupTableVRC7[i] = (unsigned int)(Pitch + pDocument->GetDetuneOffset(3, i));		// // //
 		}
 	}
-	
+
 	// // // Setup note tables
 	for (int i = 0; i < CHANNELS; ++i) {
 		if (!m_pChannels[i]) continue;
@@ -526,7 +527,7 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 			str.Format("$%04X, ", m_iNoteLookupTableVRC7[i] << 2);
 		period_file.WriteString(str);
 	}
-	
+
 	period_file.WriteString("ft_note_table_vrc7_l: ;; Patch\n");
 	period_file.WriteString("\t.lobytes ft_vrc7_table\n");
 	period_file.WriteString("ft_note_table_vrc7_h:\n");
@@ -545,7 +546,7 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 		if (auto pChan = dynamic_cast<CChannelHandlerN163*>(m_pChannels[i]))
 			pChan->SetChannelCount(pDocument->GetNamcoChannels());
 	}
-	
+
 	m_iSpeedSplitPoint = pDocument->GetSpeedSplitPoint();
 
 	if (currN163LevelOffset != pDocument->GetN163LevelOffset()) {
@@ -613,7 +614,7 @@ void CSoundGen::PreviewSample(const CDSample *pSample, int Offset, int Pitch)		/
 	if (!m_hThread)
 		return;
 
-	// Preview a DPCM sample. If the name of sample is null, 
+	// Preview a DPCM sample. If the name of sample is null,
 	// the sample will be removed after played
 	PostThreadMessage(WM_USER_PREVIEW_SAMPLE, (WPARAM)pSample, MAKELPARAM(Offset, Pitch));
 }
@@ -632,26 +633,26 @@ bool CSoundGen::IsRunning() const
 
 //// Sound buffer handling /////////////////////////////////////////////////////////////////////////////////
 
-bool CSoundGen::InitializeSound(HWND hWnd)
+bool CSoundGen::InitializeSound()
 {
 	// Initialize sound, this is only called once!
 	// Start with NTSC by default
 
 	// Called from main thread
 	ASSERT(GetCurrentThread() == theApp.m_hThread);
-	ASSERT(m_pDSound == NULL);
+	ASSERT(m_pSoundInterface == NULL);
 
 	// Event used to interrupt the sound buffer synchronization
 	m_hInterruptEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
 
-	// Create DirectSound object
-	m_pDSound = new CDSound(hWnd, m_hInterruptEvent);
+	// Create sound interface object
+	m_pSoundInterface = new CSoundInterface(m_hInterruptEvent);
 
 	// Out of memory
-	if (!m_pDSound)
+	if (!m_pSoundInterface)
 		return false;
 
-	m_pDSound->EnumerateDevices();
+	m_pSoundInterface->EnumerateDevices();
 
 	// Start thread when audio is done
 	ResumeThread();
@@ -665,7 +666,7 @@ void CSoundGen::Interrupt() const
 		::SetEvent(m_hInterruptEvent);
 }
 
-bool CSoundGen::GetSoundTimeout() const 
+bool CSoundGen::GetSoundTimeout() const
 {
 	// Read without reset
 	return m_bBufferTimeout;
@@ -696,7 +697,7 @@ bool CSoundGen::ResetAudioDevice()
 
 	// Called from player thread
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
-	ASSERT(m_pDSound != NULL);
+	ASSERT(m_pSoundInterface != NULL);
 
 	CSettings *pSettings = theApp.GetSettings();
 
@@ -714,15 +715,15 @@ bool CSoundGen::ResetAudioDevice()
 	// Close the old sound channel
 	CloseAudioDevice();
 
-	if (Device >= m_pDSound->GetDeviceCount()) {
+	if (Device >= m_pSoundInterface->GetDeviceCount()) {
 		// Invalid device detected, reset to 0
 		Device = 0;
 		pSettings->Sound.iDevice = 0;
 	}
 
-	// Reinitialize direct sound
-	if (!m_pDSound->SetupDevice(Device)) {
-		AfxMessageBox(IDS_DSOUND_ERROR, MB_ICONERROR);
+	// Reinitialize sound interface
+	if (!m_pSoundInterface->SetupDevice(Device)) {
+		m_pTrackerView->PostMessage(WM_USER_ERROR, IDS_SOUND_ERROR, MB_ICONERROR);
 		return false;
 	}
 
@@ -733,17 +734,17 @@ bool CSoundGen::ResetAudioDevice()
 		iBlocks += (BufferLen / 66);
 
 	// Create channel
-	m_pDSoundChannel = m_pDSound->OpenChannel(SampleRate, SampleSize, 1, BufferLen, iBlocks);
+	m_pSoundStream = m_pSoundInterface->OpenChannel(SampleRate, SampleSize, 1, BufferLen, iBlocks);
 
 	// Channel failed
-	if (m_pDSoundChannel == NULL) {
-		AfxMessageBox(IDS_DSOUND_BUFFER_ERROR, MB_ICONERROR);
+	if (m_pSoundStream == NULL) {
+		m_pTrackerView->PostMessage(WM_USER_ERROR, IDS_SOUND_BUFFER_ERROR, MB_ICONERROR);
 		return false;
 	}
 
 	// Create a buffer
-	m_iBufSizeBytes	  = m_pDSoundChannel->GetBlockSize();
-	m_iBufSizeSamples = m_iBufSizeBytes / (SampleSize / 8);
+	m_iBufSizeBytes	  = m_pSoundStream->TotalBufferSizeBytes();
+	m_iBufSizeSamples = m_pSoundStream->TotalBufferSizeFrames();
 
 	// Temp. audio buffer
 	SAFE_RELEASE_ARRAY(m_pAccumBuffer);
@@ -801,11 +802,11 @@ bool CSoundGen::ResetAudioDevice()
 
 void CSoundGen::CloseAudioDevice()
 {
-	// Kill DirectSound
-	if (m_pDSoundChannel) {
-		m_pDSoundChannel->Stop();
-		m_pDSound->CloseChannel(m_pDSoundChannel);
-		m_pDSoundChannel = NULL;
+	// Kill sound stream
+	if (m_pSoundStream) {
+		m_pSoundStream->Stop();
+		m_pSoundInterface->CloseChannel(m_pSoundStream);
+		m_pSoundStream = NULL;
 	}
 }
 
@@ -816,10 +817,10 @@ void CSoundGen::CloseAudio()
 
 	CloseAudioDevice();
 
-	if (m_pDSound) {
-		m_pDSound->CloseDevice();
-		delete m_pDSound;
-		m_pDSound = NULL;
+	if (m_pSoundInterface) {
+		m_pSoundInterface->CloseDevice();
+		delete m_pSoundInterface;
+		m_pSoundInterface = NULL;
 	}
 
 	if (m_hInterruptEvent) {
@@ -835,10 +836,56 @@ void CSoundGen::ResetBuffer()
 
 	m_iBufferPtr = 0;
 
-	if (m_pDSoundChannel)
-		m_pDSoundChannel->ClearBuffer();
+	if (m_pSoundStream)
+		m_pSoundStream->ClearBuffer();
 
 	m_pAPU->Reset();
+}
+
+bool CSoundGen::TryWaitForWritable(uint32_t& framesWritable, uint32_t& bytesWritable) {
+	// Waits for sound stream, even in WAV export mode. Not a big deal (doesn't
+	// slow down export), and redesigning to avoid this is hard.
+	while (true) {
+		WaitResult result = m_pSoundStream->WaitForReady(AUDIO_TIMEOUT);
+		// TRACE("WaitResult %d\n", result);
+		switch (result) {
+		case WaitResult::Ready:
+			goto endWhile;
+
+		case WaitResult::InternalError:
+		case WaitResult::Timeout:
+			// Show in the UI, "It appears the current sound settings aren't working,
+			// change settings and try again."
+			m_bBufferTimeout = true;
+			[[fallthrough]];
+
+			// Custom event (requested quit)
+		case WaitResult::Interrupted:
+			// Forget queued audio and quit.
+			m_iBufferPtr = 0;
+			return false;
+
+		case WaitResult::OutOfSync:
+			// Buffer underrun detected (unreachable since underruns are not reported)
+			m_iAudioUnderruns++;
+			m_bBufferUnderrun = true;
+			continue;
+		}
+	}
+endWhile:
+
+	framesWritable = GetBufferFramesWritable();
+	bytesWritable = m_pSoundStream->FramesToPubBytes(framesWritable);
+	return true;
+}
+
+unsigned int CSoundGen::GetBufferFramesWritable() const {
+	if (m_bRendering) {
+		return m_iBufSizeSamples;
+	}
+	else {
+		return m_pSoundStream->BufferFramesWritable();
+	}
 }
 
 void CSoundGen::FlushBuffer(int16_t const * pBuffer, uint32_t Size)
@@ -848,7 +895,7 @@ void CSoundGen::FlushBuffer(int16_t const * pBuffer, uint32_t Size)
 	// May only be called from sound player thread
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
 
-	if (!m_pDSoundChannel)
+	if (!m_pSoundStream)
 		return;
 
 	if (m_iSampleSize == 8)
@@ -875,6 +922,11 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 
 	T *pConversionBuffer = (T*)m_pAccumBuffer;
 
+	unsigned int framesWritable, bytesWritable;
+	if (!TryWaitForWritable(framesWritable, bytesWritable)) {
+		return;
+	}
+
 	for (uint32_t i = 0; i < Size; ++i) {
 		int16_t Sample = pBuffer[i];
 
@@ -889,7 +941,7 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 		if (freq > 20000)
 			freq = 20;
 
-		sine_phase += freq / (double(m_pDSoundChannel->GetSampleRate()) / 6.283184);
+		sine_phase += freq / (double(m_pSoundStream->GetSampleRate()) / 6.283184);
 		if (sine_phase > 6.283184)
 			sine_phase -= 6.283184;
 #endif /* AUDIO_TEST */
@@ -917,58 +969,60 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 
 		pConversionBuffer[m_iBufferPtr++] = (T)Sample;
 
-		// If buffer is filled, throw it to direct sound
-		if (m_iBufferPtr >= m_iBufSizeSamples) {
-			if (!PlayBuffer())
+		// If buffer is filled, throw it to sound interface
+		// TODO if we add stereo support, ensure m_iBufferPtr is frames not samples
+		// (otherwise this code breaks).
+		if (m_iBufferPtr >= framesWritable) {
+			if (!PlayBuffer(framesWritable, bytesWritable))
 				return;
+
+			if (!TryWaitForWritable(framesWritable, bytesWritable)) {
+				return;
+			}
 		}
+	}
+
+	/*
+	Write the entire remaining buffer to WASAPI. This is not necessary to prevent
+	stuttering, but it's harmless to keep. How do we know it's legal to do so?
+
+	Before the loop, we call TryWaitForWritable(), which calls WaitForReady() before
+	updating framesWritable.
+
+	On every loop iteration, we check if m_iBufferPtr >= framesWritable.
+	If so, we call CSoundGen::PlayBuffer() (which sets m_iBufferPtr to 0), then call
+	TryWaitForWritable() again. So after each loop iteration, we've called
+	TryWaitForWritable() at least once since last calling CSoundGen::PlayBuffer(),
+	and either m_iBufferPtr == 0 or m_iBufferPtr < framesWritable.
+
+	Therefore once the loop finishes, if m_iBufferPtr > 0, it's legal to write the
+	entire remaining buffer to WASAPI.
+	*/
+	if (m_iBufferPtr > 0) {
+		ASSERT(m_iBufferPtr < framesWritable);
+		if (!PlayBuffer(m_iBufferPtr, m_pSoundStream->FramesToPubBytes(m_iBufferPtr)))
+			return;
 	}
 }
 
-bool CSoundGen::PlayBuffer()
+bool CSoundGen::PlayBuffer(unsigned int framesToWrite, unsigned int bytesToWrite)
 {
 	if (m_bRendering) {
 		// Output to file
 		ASSERT(m_pWaveFile);		// // //
-		m_pWaveFile->WriteWave(m_pAccumBuffer, m_iBufSizeBytes);
+		m_pWaveFile->WriteWave(m_pAccumBuffer, bytesToWrite);
 		m_iBufferPtr = 0;
 	}
 	else {
-		// Output to direct sound
-		// Wait for a buffer event
-		while (true) {
-			DWORD dwEvent = m_pDSoundChannel->WaitForSyncEvent(AUDIO_TIMEOUT);
-			switch (dwEvent) {
-				case BUFFER_IN_SYNC:
-					goto done;
-
-				case BUFFER_TIMEOUT:
-					// Buffer timeout
-					m_bBufferTimeout = true;
-					[[fallthrough]];	// Is this intentional??
-
-				case BUFFER_CUSTOM_EVENT:
-					// Custom event, quit
-					m_iBufferPtr = 0;
-					return false;
-
-				case BUFFER_OUT_OF_SYNC:
-					// Buffer underrun detected
-					m_iAudioUnderruns++;
-					m_bBufferUnderrun = true;
-					break;
-			}
-		}
-		done:
-
+		// Output audio
 		// Write audio to buffer
-		m_pDSoundChannel->WriteBuffer(m_pAccumBuffer, m_iBufSizeBytes);
+		m_pSoundStream->WriteBuffer(m_pAccumBuffer, bytesToWrite);
 
 		// Draw graph
 		m_csVisualizerWndLock.Lock();
 
 		if (m_pVisualizerWnd)
-			m_pVisualizerWnd->FlushSamples(m_iGraphBuffer, m_iBufSizeSamples);
+			m_pVisualizerWnd->FlushSamples(gsl::span(m_iGraphBuffer, framesToWrite));
 
 		m_csVisualizerWndLock.Unlock();
 
@@ -996,7 +1050,7 @@ unsigned int CSoundGen::GetFrameRate()
 
 void CSoundGen::GenerateVibratoTable(vibrato_t Type)
 {
-	for (int i = 0; i < 16; ++i) {	// depth 
+	for (int i = 0; i < 16; ++i) {	// depth
 		for (int j = 0; j < 16; ++j) {	// phase
 			int value = 0;
 			double angle = (double(j) / 16.0) * (3.1415 / 2.0);
@@ -1015,7 +1069,7 @@ void CSoundGen::GenerateVibratoTable(vibrato_t Type)
 	CStdioFile a("..\\nsf driver\\vibrato.s", CFile::modeWrite | CFile::modeCreate);
 	a.WriteString("; Vibrato table (256 bytes)\n"
 				  "ft_vibrato_table: ;; Patch\n");
-	for (int i = 0; i < 16; i++) {	// depth 
+	for (int i = 0; i < 16; i++) {	// depth
 		a.WriteString("\t.byte ");
 		for (int j = 0; j < 16; j++) {	// phase
 			CString b;
@@ -1060,7 +1114,7 @@ void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 	ASSERT(m_pDocument != NULL);
 	ASSERT(m_pTrackerView != NULL);
 
-	if (!m_pDocument || !m_pDSoundChannel || !m_pDocument->IsFileLoaded())
+	if (!m_pDocument || !m_pSoundStream || !m_pDocument->IsFileLoaded())
 		return;
 
 	switch (Mode) {
@@ -1186,7 +1240,7 @@ static CString GetStateString(const stChannelState &State)
 	else
 		log.AppendFormat(_T("%02X"), State.Instrument);
 	log.AppendFormat(_T("        Vol.: %X        Active effects:"), State.Volume >= MAX_VOLUME ? 0xF : State.Volume);
-	
+
 	CString effStr = _T("");
 
 	const effect_t SLIDE_EFFECT = State.Effect[EF_ARPEGGIO] >= 0 ? EF_ARPEGGIO :
@@ -1295,7 +1349,7 @@ void CSoundGen::HaltPlayer()
 	m_bDoHalt = false;		// // //
 
 	MakeSilent();
-	
+
 	m_pAPU->ClearSample();		// // //
 /*
 	for (int i = 0; i < CHANNELS; ++i) {
@@ -1377,7 +1431,7 @@ void CSoundGen::HaltPlayer()
 			*reinterpret_cast<int*>(Header + 0x78) = 0x0110;
 		}
 	}
-	
+
 	vgm.Write(Header, 256);
 	vgm.Close();
 #endif
@@ -1394,7 +1448,7 @@ void CSoundGen::ResetAPU()
 	// Enable all channels
 	m_pAPU->Write(0x4015, 0x0F);
 	m_pAPU->Write(0x4017, 0x00);
-	
+
 	// // // for VGM
 	WriteRegister(0x4015, 0x0F);
 	WriteRegister(0x4017, 0x00);
@@ -1418,7 +1472,7 @@ void CSoundGen::AddCyclesUnlessEndOfFrame(int Count)
 }
 
 uint8_t CSoundGen::GetReg(int Chip, int Reg) const
-{ 
+{
 	return m_pAPU->GetReg(Chip, Reg);
 }
 
@@ -1470,7 +1524,7 @@ void CSoundGen::ResetTempo()
 	m_iSpeed = m_pDocument->GetSongSpeed(m_iPlayTrack);
 	m_iTempo = m_pDocument->GetSongTempo(m_iPlayTrack);
 	m_iLastHighlight = m_pDocument->GetHighlight().First;		// // //
-	
+
 	m_iTempoAccum = 0;
 
 	if (m_pDocument->GetSongGroove(m_iPlayTrack) && m_pDocument->GetGroove(m_iSpeed) != NULL) {		// // //
@@ -1553,7 +1607,7 @@ void CSoundGen::RunFrame()
 	m_pTrackerView->PlayerTick();
 
 	if (IsPlaying()) {
-		
+
 		++m_iPlayTicks;
 
 		if (m_bRendering) {
@@ -1717,7 +1771,7 @@ int CSoundGen::GetChannelVolume(int Channel) const
 }
 
 void CSoundGen::PlayNote(int Channel, stChanNote *NoteData, int EffColumns)
-{	
+{
 	if (!NoteData)
 		return;
 
@@ -1756,7 +1810,7 @@ void CSoundGen::EvaluateGlobalEffects(stChanNote *NoteData, int EffColumns)
 				}
 				SetupSpeed();
 				break;
-				
+
 			// Oxx: Sets groove to xx
 			// currently does not support starting at arbitrary index of a groove
 			case EF_GROOVE:		// // //
@@ -1831,7 +1885,7 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 	// Unfortunately, destructor doesn't cleanup object. Only CloseFile() does.
 	if (!m_pWaveFile ||
 		!m_pWaveFile->OpenFile(pFile, theApp.GetSettings()->Sound.iSampleRate, theApp.GetSettings()->Sound.iSampleSize, 1)) {
-		AfxMessageBox(IDS_FILE_OPEN_ERROR);
+		m_pTrackerView->PostMessage(WM_USER_ERROR, IDS_FILE_OPEN_ERROR);
 		return false;
 	}
 	else {
@@ -1904,7 +1958,7 @@ void CSoundGen::PlaySample(const CDSample *pSample, int Offset, int Pitch)
 	m_pAPU->Write(0x4013, Length);			// length
 	m_pAPU->Write(0x4015, 0x0F);
 	m_pAPU->Write(0x4015, 0x1F);			// fire sample
-	
+
 	// Auto-delete samples with no name
 	if (*pSample->GetName() == 0)
 		m_pPreviewSample = pSample;
@@ -1940,13 +1994,22 @@ BOOL CSoundGen::InitInstance()
 	// Setup the sound player object, called when thread is started
 	//
 
+	HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+	if (FAILED(hr)) {
+		TRACE("SoundGen: Failed to CoInitializeEx COM!\n");
+	}
+	if (!FAILED(hr)) {
+		// Call CoUninitialize() on shutdown.
+		m_CoInitialized = true;
+	}
+
 	ASSERT(m_pDocument != NULL);
 	ASSERT(m_pTrackerView != NULL);
 
 	// First check if thread creation should be cancelled
 	// This will occur when no sound object is available
-	
-	if (m_pDSound == NULL)
+
+	if (m_pSoundInterface == NULL)
 		return FALSE;
 
 	// Set running flag
@@ -1976,6 +2039,22 @@ BOOL CSoundGen::InitInstance()
 
 //	SetupChannels();
 
+	// We need to initialize state before playback begins.
+	//
+	// Normally, CSoundStream comes up and the GUI sends a WM_USER_STOP message,
+	// calling CSoundGen::OnStopPlayer() -> CSoundGen::HaltPlayer() which initializes
+	// state.
+	//
+	// However, if CSoundStream fails to initialize (for example due to WASAPI
+	// sampling rate not matching system rate), WM_USER_STOP never arrives
+	// and CSoundGen::HaltPlayer() is never called to initialize state.
+	// Once you fix the sampling rate and properly initialize CSoundStream,
+	// FT crashes in CChannelHandler::GetVibrato() because
+	// CChannelHandler::m_iVibratoDepth is uninitialized.
+	//
+	// To avoid the crash, we need to initialize state on startup.
+	HaltPlayer();
+
 	return TRUE;
 }
 
@@ -1996,6 +2075,10 @@ int CSoundGen::ExitInstance()
 
 	m_bRunning = false;
 
+	if (m_CoInitialized) {
+		CoUninitialize();
+	}
+
 	return CWinThread::ExitInstance();
 }
 
@@ -2008,7 +2091,7 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 	if (CWinThread::OnIdle(lCount))
 		return TRUE;
 
-	if (!m_pDocument || !m_pDSoundChannel || !m_pDocument->IsFileLoaded())
+	if (!m_pDocument || !m_pSoundStream || !m_pDocument->IsFileLoaded())
 		return TRUE;
 
 	++m_iFrameCounter;
@@ -2082,7 +2165,7 @@ void CSoundGen::PlayChannelNotes()
 		int Index = m_pTrackerChannels[i]->GetID();
 		int Channel = m_pDocument->GetChannelIndex(m_pTrackerChannels[Index]->GetID());
 		if (Channel == -1) continue;
-		
+
 		// Run auto-arpeggio, if enabled
 		int Arpeggio = m_pTrackerView->GetAutoArpeggio(Channel);
 		if (Arpeggio > 0) {
@@ -2142,7 +2225,7 @@ void CSoundGen::UpdateAPU()
 	// Copy wave changed flag
 	m_bInternalWaveChanged = m_bWaveChanged;
 	m_bWaveChanged = false;
-	
+
 	{
 		auto l = DeferLock();
 		if (l.try_lock()) {
@@ -2396,7 +2479,7 @@ void CSoundGen::PlayerSkipTo(int Row)
 {
 	const int Frames = m_pDocument->GetFrameCount(m_iPlayTrack);
 	const int Rows = m_pDocument->GetPatternLength(m_iPlayTrack);
-	
+
 	m_bFramePlayed[m_iPlayFrame] = true;
 
 	if (++m_iPlayFrame >= Frames)
@@ -2406,7 +2489,7 @@ void CSoundGen::PlayerSkipTo(int Row)
 
 	if (m_iPlayRow >= Rows)
 		m_iPlayRow = Rows - 1;
-	
+
 	++m_iFramesPlayed;
 	++m_iRowsPlayed;		// // //
 

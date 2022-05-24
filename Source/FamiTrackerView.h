@@ -409,6 +409,7 @@ public:
 	afx_msg LRESULT OnUserMidiEvent(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnUserPlayerEvent(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnUserNoteEvent(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnAudioThreadError(WPARAM wParam, LPARAM lParam);
 	virtual void OnInitialUpdate();
 	virtual DROPEFFECT OnDragEnter(COleDataObject* pDataObject, DWORD dwKeyState, CPoint point);
 	virtual void OnDragLeave();

@@ -38,10 +38,12 @@ void CVisualizerBase::Create(int Width, int Height)
 	m_pBlitBuffer = std::make_unique<COLORREF[]>(Width * Height);		// // //
 }
 
-void CVisualizerBase::SetSampleData(short *pSamples, unsigned int iCount)
-{
-	m_pSamples = pSamples;
-	m_iSampleCount = iCount;
+bool CVisualizerBase::SetScopeData(short const* iSamples, unsigned int iCount) {
+	return false;
+}
+
+bool CVisualizerBase::SetSpectrumData(short const* iSamples, unsigned int iCount) {
+	return false;
 }
 
 void CVisualizerBase::Display(CDC *pDC, bool bPaintMsg) {		// // //
