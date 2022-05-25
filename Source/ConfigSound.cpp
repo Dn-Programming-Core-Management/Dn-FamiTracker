@@ -131,12 +131,14 @@ BOOL CConfigSound::OnApply()
 	CComboBox *pSampleSize = static_cast<CComboBox*>(GetDlgItem(IDC_SAMPLE_SIZE));
 	CSliderCtrl *pBufSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_BUF_LENGTH));
 
+	CSettings* pSettings = theApp.GetSettings();
+
 	switch (pSampleRate->GetCurSel()) {
-		case 0: theApp.GetSettings()->Sound.iSampleRate = 11025; break;
-		case 1: theApp.GetSettings()->Sound.iSampleRate = 22050; break;
-		case 2: theApp.GetSettings()->Sound.iSampleRate = 44100; break;
-		case 3: theApp.GetSettings()->Sound.iSampleRate = 48000; break;
-		case 4: theApp.GetSettings()->Sound.iSampleRate = 96000; break;
+		case 0: pSettings->Sound.iSampleRate = 11025; break;
+		case 1: pSettings->Sound.iSampleRate = 22050; break;
+		case 2: pSettings->Sound.iSampleRate = 44100; break;
+		case 3: pSettings->Sound.iSampleRate = 48000; break;
+		case 4: pSettings->Sound.iSampleRate = 96000; break;
 	}
 
 	switch (pSampleSize->GetCurSel()) {
@@ -144,14 +146,14 @@ BOOL CConfigSound::OnApply()
 		case 1: theApp.GetSettings()->Sound.iSampleSize = 8; break;
 	}
 
-	theApp.GetSettings()->Sound.iBufferLength = pBufSlider->GetPos();
+	pSettings->Sound.iBufferLength = pBufSlider->GetPos();
 
-	theApp.GetSettings()->Sound.iBassFilter		= static_cast<CSliderCtrl*>(GetDlgItem(IDC_BASS_FREQ))->GetPos();
-	theApp.GetSettings()->Sound.iTrebleFilter	= static_cast<CSliderCtrl*>(GetDlgItem(IDC_TREBLE_FREQ))->GetPos();
-	theApp.GetSettings()->Sound.iTrebleDamping	= static_cast<CSliderCtrl*>(GetDlgItem(IDC_TREBLE_DAMP))->GetPos();
-	theApp.GetSettings()->Sound.iMixVolume		= static_cast<CSliderCtrl*>(GetDlgItem(IDC_VOLUME))->GetPos();
+	pSettings->Sound.iBassFilter	= static_cast<CSliderCtrl*>(GetDlgItem(IDC_BASS_FREQ))->GetPos();
+	pSettings->Sound.iTrebleFilter	= static_cast<CSliderCtrl*>(GetDlgItem(IDC_TREBLE_FREQ))->GetPos();
+	pSettings->Sound.iTrebleDamping	= static_cast<CSliderCtrl*>(GetDlgItem(IDC_TREBLE_DAMP))->GetPos();
+	pSettings->Sound.iMixVolume		= static_cast<CSliderCtrl*>(GetDlgItem(IDC_VOLUME))->GetPos();
 
-	theApp.GetSettings()->Sound.iDevice	= pDevices->GetCurSel();
+	pSettings->Sound.iDevice		= pDevices->GetCurSel();
 
 	theApp.LoadSoundConfig();
 
