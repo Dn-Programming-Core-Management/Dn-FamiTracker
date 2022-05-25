@@ -165,7 +165,7 @@ public:
 	void			CloseDevice();
 
 	// Opening streams for active device
-	CSoundStream	*OpenChannel(int SampleRate, int SampleSize, int Channels, int BufferLength, int Blocks);
+	CSoundStream	*OpenChannel(int DefaultSampleRate, int SampleSize, int Channels, int BufferLength, int Blocks);
 	void			CloseChannel(CSoundStream *pChannel);
 
 	// Utility

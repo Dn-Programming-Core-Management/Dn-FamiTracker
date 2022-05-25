@@ -210,7 +210,7 @@ int CSoundInterface::CalculateBufferLength(int BufferLen, int Samplerate, int Sa
 	return ((Samplerate * BufferLen) / 1000) * (Samplesize / 8) * Channels;
 }
 
-CSoundStream *CSoundInterface::OpenChannel(int SampleRate, int SampleSize, int Channels, int BufferLength, int Blocks)
+CSoundStream *CSoundInterface::OpenChannel(int DefaultSampleRate, int SampleSize, int Channels, int BufferLength, int Blocks)
 {
 	// Based off https://docs.microsoft.com/en-us/windows/win32/coreaudio/exclusive-mode-streams
 	if (!m_maybeDevice) {
@@ -231,7 +231,7 @@ CSoundStream *CSoundInterface::OpenChannel(int SampleRate, int SampleSize, int C
 		// https://docs.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-waveformatex#members
 		format.wFormatTag = WAVE_FORMAT_PCM;
 		format.nChannels = (WORD)Channels;
-		format.nSamplesPerSec = (DWORD)SampleRate;
+		format.nSamplesPerSec = (DWORD)DefaultSampleRate;
 		format.wBitsPerSample = (WORD)SampleSize;
 
 		// If wFormatTag is WAVE_FORMAT_PCM or WAVE_FORMAT_EXTENSIBLE, nBlockAlign must be equal to
@@ -255,10 +255,12 @@ CSoundStream *CSoundInterface::OpenChannel(int SampleRate, int SampleSize, int C
 	hr = pAudioClient->IsFormatSupported(AUDCLNT_SHAREMODE_SHARED, &format, &pClosestMatch);
 	if (Channels == 1 && (hr == S_FALSE || hr == AUDCLNT_E_UNSUPPORTED_FORMAT)) {
 		CoTaskMemFree(pClosestMatch);
-		pClosestMatch = nullptr;
+		//pClosestMatch = nullptr;
 
 		// Try again in stereo. We will upmix input mono to stereo.
 		Channels = 2;
+		// Set samplerate to closest match
+		DefaultSampleRate = pClosestMatch->nSamplesPerSec;
 		format = create_wave_format();
 		hr = pAudioClient->IsFormatSupported(AUDCLNT_SHAREMODE_SHARED, &format, &pClosestMatch);
 	}
@@ -323,7 +325,7 @@ CSoundStream *CSoundInterface::OpenChannel(int SampleRate, int SampleSize, int C
 		std::move(pAudioRenderClient),
 		m_hInterrupt,
 		std::move(bufferEvent),
-		SampleRate,
+		DefaultSampleRate,
 		bufferFrameCount,
 		SampleSize / 8,  // bytesPerSample
 		InputChannels,
