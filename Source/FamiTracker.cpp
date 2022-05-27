@@ -483,6 +483,11 @@ void CFamiTrackerApp::ShutDownSynth()
 	// Send quit message. Note that this object may be deleted now!
 	m_pSoundGenerator->PostGuiMessage(AM_QUIT, 0, 0);
 
+	// If audio thread is waiting on stuck WASAPI, interrupt the wait. On the next loop
+	// iteration, it will see the quit message.
+	// TODO fix data race on closing m_hInterruptEvent or deleting m_pSoundGenerator
+	m_pSoundGenerator->Interrupt();
+
 	// Wait for thread to exit
 	DWORD dwResult = ::WaitForSingleObject(
 		stdThread.native_handle(), CSoundGen::AUDIO_TIMEOUT + 1000
