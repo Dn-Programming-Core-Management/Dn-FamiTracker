@@ -759,14 +759,13 @@ bool CSoundGen::ResetAudioDevice()
 
 	CSettings *pSettings = theApp.GetSettings();
 
-	unsigned int SampleSize = pSettings->Sound.iSampleSize;
+	// unsigned int SampleSize	= pSettings->Sound.iSampleSize; (always 16)
 	unsigned int SampleRate = pSettings->Sound.iSampleRate;
 	unsigned int BufferLen	= pSettings->Sound.iBufferLength;
 	unsigned int Device		= pSettings->Sound.iDevice;
 
 	auto l = Lock();
 
-	m_iSampleSize = SampleSize;
 	m_iAudioUnderruns = 0;
 	m_iBufferPtr = 0;
 
@@ -792,7 +791,7 @@ bool CSoundGen::ResetAudioDevice()
 		iBlocks += (BufferLen / 66);
 
 	// Create channel
-	m_pSoundStream = m_pSoundInterface->OpenChannel(SampleRate, SampleSize, 1, BufferLen, iBlocks);
+	m_pSoundStream = m_pSoundInterface->OpenChannel(SampleRate, 16, 1, BufferLen, iBlocks);
 
 	// Channel failed
 	if (m_pSoundStream == NULL) {
@@ -852,7 +851,7 @@ bool CSoundGen::ResetAudioDevice()
 	m_bBufferTimeout = false;
 	m_iClipCounter = 0;
 
-	TRACE("SoundGen: Created sound channel with params: %i Hz, %i bits, %i ms (%i blocks)\n", SampleRate, SampleSize, BufferLen, iBlocks);
+	TRACE("SoundGen: Created sound channel with params: %i Hz, 16 bits, %i ms (%i blocks)\n", SampleRate, BufferLen, iBlocks);
 
 	return true;
 }
@@ -955,10 +954,7 @@ void CSoundGen::FlushBuffer(int16_t const * pBuffer, uint32_t Size)
 	if (!m_pSoundStream)
 		return;
 
-	if (m_iSampleSize == 8)
-		FillBuffer<uint8_t, 8>(pBuffer, Size);
-	else
-		FillBuffer<int16_t, 0>(pBuffer, Size);
+	FillBuffer(pBuffer, Size);
 
 	if (m_iClipCounter > 50) {
 		// Ignore some clipping to allow the HP-filter adjust itself
@@ -969,7 +965,6 @@ void CSoundGen::FlushBuffer(int16_t const * pBuffer, uint32_t Size)
 		--m_iClipCounter;
 }
 
-template <class T, int SHIFT>
 void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 {
 	// Called when the APU audio buffer is full and
@@ -977,7 +972,7 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 
 	const int SAMPLE_MAX = 32768;
 
-	T *pConversionBuffer = (T*)m_pAccumBuffer;
+	auto pConversionBuffer = (int16_t *) m_pAccumBuffer;
 
 	unsigned int framesWritable, bytesWritable;
 	if (!TryWaitForWritable(framesWritable, bytesWritable)) {
@@ -1014,17 +1009,7 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 		m_iGraphBuffer[m_iBufferPtr] = (short)Sample;
 
 		// Convert sample and store in temp buffer
-#ifdef DITHERING
-		if (SHIFT > 0)
-			Sample = (Sample + dither(1 << SHIFT)) >> SHIFT;
-#else
-		Sample >>= SHIFT;
-#endif
-
-		if (SHIFT == 8)
-			Sample ^= 0x80;
-
-		pConversionBuffer[m_iBufferPtr++] = (T)Sample;
+		pConversionBuffer[m_iBufferPtr++] = (int16_t)Sample;
 
 		// If buffer is filled, throw it to sound interface
 		// TODO if we add stereo support, ensure m_iBufferPtr is frames not samples

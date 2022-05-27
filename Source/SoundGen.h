@@ -278,7 +278,7 @@ private:
 	bool		ResetAudioDevice();
 	void		CloseAudioDevice();
 	void		CloseAudio();
-	template<class T, int SHIFT> void FillBuffer(int16_t const * pBuffer, uint32_t Size);
+	void FillBuffer(int16_t const * pBuffer, uint32_t Size);
 	unsigned int GetBufferFramesWritable() const;
 	bool		PlayBuffer(unsigned int framesToWrite, unsigned int bytesToWrite);
 
@@ -355,7 +355,6 @@ private:
 
 // Sound variables (TODO: move sound to a new class?)
 private:
-	unsigned int		m_iSampleSize;						// Size of samples, in bits
 	unsigned int		m_iBufSizeSamples;					// Buffer size in samples
 	unsigned int		m_iBufSizeBytes;					// Buffer size in bytes
 	unsigned int		m_iBufferPtr;						// This will point in samples
