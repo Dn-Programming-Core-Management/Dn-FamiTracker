@@ -96,6 +96,7 @@ public:
 
 	/// Mostly orthogonal.
 	void	SetNamcoMixing(bool bLinear);		// // //
+	bool m_bNamcoMixing;
 
 private:
 	void	SetExternalSound(uint8_t Chip);

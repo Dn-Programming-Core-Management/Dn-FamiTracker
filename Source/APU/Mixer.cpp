@@ -194,19 +194,6 @@ void CMixer::RecomputeMixing()
 		chip->UpdateFilter(eq);
 	}
 
-	//// N163 special filtering
-	//double n163_treble = 24;
-	//long n163_rolloff = 12000;
-
-	//if (HighDamp > n163_treble)
-	//	n163_treble = HighDamp;
-
-	//if (n163_rolloff > HighCut)
-	//	n163_rolloff = HighCut;
-
-	//blip_eq_t eq_n163(-n163_treble, n163_rolloff, m_iSampleRate);
-	//SynthN163.treble_eq(eq_n163);
-
 	// Volume levels
 	auto &chip2A03 = *m_APU->m_p2A03;
 	auto &chipVRC7 = *m_APU->m_pVRC7;
@@ -221,7 +208,8 @@ void CMixer::RecomputeMixing()
 	chipFDS.UpdateMixLevel(Volume * m_fLevelFDS);
 	chipN163.UpdateMixLevel(Volume * m_fLevelN163);
 
-//	chipN163.UpdateN163Filter(m_MixerConfig.N163Lowpass);
+// TODO: calculate cutoff Hz based on no. of channels
+	chipN163.UpdateN163Filter(m_MixerConfig.N163Lowpass, m_MixerConfig.N163Multiplexing);
 	chipFDS.UpdateFdsFilter(m_MixerConfig.FDSLowpass);
 	chipVRC7.UpdatePatchSet(m_MixerConfig.VRC7Patchset);
 

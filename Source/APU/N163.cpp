@@ -42,9 +42,6 @@
 
 CN163::CN163()
 {
-//	m_pRegisterLogger->AddRegisterRange(0xE000, 0xE7FF);		// // //
-//	m_pRegisterLogger->AddRegisterRange(0xF800, 0xFFFF);		// // //
-//	m_pRegisterLogger->AddRegisterRange(0x4800, 0x4FFF);		// // //
 	m_pRegisterLogger->AddRegisterRange(0x00, 0x7F);		// // //
 	Reset();
 }
@@ -66,7 +63,8 @@ void CN163::UpdateFilter(blip_eq_t eq)
 	m_BlipN163.set_sample_rate(eq.sample_rate);
 	m_SynthN163.treble_eq(eq);
 	m_BlipN163.bass_freq(0);
-	m_CutoffHz = 12000;		// TODO: calculate cutoff Hz based on no. of channels
+	m_CutoffHz = 12000;
+	m_N163.SetMixing(m_bOldMixing);
 	RecomputeN163Filter();
 }
 
@@ -83,25 +81,69 @@ void CN163::Write(uint16_t Address, uint8_t Value)
 uint8_t CN163::Read(uint16_t Address, bool &Mapped)
 {
 	// Addresses for N163
-	Mapped = ((0xE000 <= Address && Address <= 0xE7FF) ||
-		(0xF800 >= Address && Address <= 0xFFFF) ||
-		(0x4800 >= Address && Address <= 0x4FFF));
+	Mapped = (0x4800 <= Address && Address <= 0x4FFF);
 	return m_N163.ReadRegister(Address);
 }
 
 void CN163::Process(uint32_t Time, Blip_Buffer& Output)
 {
-	
+	uint32_t now = 0;
+
+	while (true) {
+		//assert(now <= Time);
+		if (now >= Time)
+			break;
+
+		//auto tmp = m_FDS.ClockAudioMaxSkip();
+		//auto clock_skip = std::min(tmp, Time - now);
+		//if (clock_skip > 0) {
+		//	m_FDS.SkipClockAudio(clock_skip);
+		//	now += clock_skip;
+		//}
+
+		//if (tmp < (1 << 24))
+		//	assert(tmp - m_FDS.ClockAudioMaxSkip() == clock_skip);
+		//assert(now <= Time);
+		//if (now >= Time)
+		//	break;
+
+		m_N163.ClockAudio();
+		for (int i = 0; i < 8; i++)
+			m_ChannelLevels[i].update(m_N163._channelOutput[i]);
+
+		auto master_out = m_N163.UpdateOutputLevel();
+		m_SynthN163.update(m_iTime + now, (int)master_out, &m_BlipN163);
+		now++;
+	}
+
+	m_iTime += Time;
+
 }
 
 void CN163::EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer)
 {
-	
+	m_BlipN163.end_frame(m_iTime);
+
+	ASSERT(size_t(m_BlipN163.samples_avail()) <= TempBuffer.size());
+
+	auto nsamp_read = m_BlipN163.read_samples(TempBuffer.data(), m_BlipN163.samples_avail());
+
+	auto unfilteredData = TempBuffer.subspan(0, nsamp_read);
+
+	for (auto& amplitude : unfilteredData) {
+		float out = m_lowPassState + m_alpha * (float(amplitude) - m_lowPassState);
+		amplitude = (int16_t)roundf(out);
+		m_lowPassState = out + 1e-18f;  // prevent denormal numbers
+	}
+
+	Output.mix_samples_raw(unfilteredData.data(), unfilteredData.size());
+
+	m_iTime = 0;
 }
 
 double CN163::GetFreq(int Channel) const
 {
-	return .0;
+	return m_N163.GetFrequency(Channel);
 }
 
 int CN163::GetChannelLevel(int Channel)
@@ -122,15 +164,29 @@ int CN163::GetChannelLevelRange(int Channel) const
 	return 1;
 }
 
-void CN163::UpdateN163Filter(int CutoffHz)
+void CN163::UpdateN163Filter(int CutoffHz, bool Multiplex)
 {
 	m_CutoffHz = CutoffHz;
 	RecomputeN163Filter();
+	SetMixingMethod(Multiplex);
 }
 
 void CN163::UpdateMixLevel(double v)
 {
 	m_SynthN163.volume(v * 1.1f, 1600);
+}
+
+void CN163::Log(uint16_t Address, uint8_t Value)		// // //
+{
+	switch (Address) {
+	case 0xF800:
+		m_pRegisterLogger->SetPort(Value & 0x7F);
+		m_pRegisterLogger->SetAutoincrement((Value & 0x80) != 0);
+		break;
+	case 0x4800:
+		m_pRegisterLogger->Write(Value);
+		break;
+	}
 }
 
 void CN163::SetMixingMethod(bool bLinear)		// // //
@@ -140,12 +196,10 @@ void CN163::SetMixingMethod(bool bLinear)		// // //
 
 void CN163::RecomputeN163Filter()
 {
-	// Compute first-order lowpass coefficient from N163 cutoff frequency and sampling rate.
+	// Code taken from FDS.cpp
 	auto sampleRate_hz = float(m_BlipN163.sample_rate());
 	auto cutoff_rad = M_PI * 2 * (float)m_CutoffHz / sampleRate_hz;
 
-	// Wonder if this'll get messed up
-	// Despite the exponential, this formula will never blow up
-	// because -cutoff_rad is negative, so e^(-cutoff_rad) lies between 0 and 1.
+	// Wonder if this'll get messed up due to its large cutoff frequency
 	m_alpha = 1 - (float)std::exp(-cutoff_rad);
 }

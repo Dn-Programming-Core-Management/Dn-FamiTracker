@@ -1536,6 +1536,9 @@ void CSoundGen::ResetAPU()
 	WriteRegister(0x4017, 0x00);
 	WriteRegister(0x4023, 0x02); // FDS enable
 
+	// N163
+	m_pAPU->Write(0xE7FF, 0x00); // N163 enable
+
 	// MMC5
 	m_pAPU->Write(0x5015, 0x03);
 

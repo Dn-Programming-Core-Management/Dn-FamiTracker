@@ -7,15 +7,16 @@ class Namco163Audio
 public:
 	static constexpr uint32_t AudioRamSize = 0x80;
 
-private:
-	uint8_t _internalRam[Namco163Audio::AudioRamSize];
 	int16_t _channelOutput[8];
+
+private:
 	uint8_t _ramPosition;
 	bool _autoIncrement;
 	uint8_t _updateCounter;
 	int8_t _currentChannel;
 	int16_t _lastOutput;
 	bool _disableSound;
+	bool _mixMultiplex;
 
 	enum SoundReg
 	{
@@ -31,7 +32,10 @@ private:
 	};
 
 public:
-	uint32_t GetFrequency(int channel)
+
+	uint8_t _internalRam[Namco163Audio::AudioRamSize];
+
+	uint32_t GetFrequency(int channel) const
 	{
 		uint8_t baseAddr = 0x40 + channel * 0x08;
 		return ((_internalRam[baseAddr + SoundReg::FrequencyHigh] & 0x03) << 16) | (_internalRam[baseAddr + SoundReg::FrequencyMid] << 8) | _internalRam[baseAddr + SoundReg::FrequencyLow];
@@ -74,7 +78,17 @@ public:
 		return (_internalRam[0x7F] >> 4) & 0x07;
 	}
 
-	uint32_t UpdateChannel(int channel)
+	uint8_t GetActiveChannel()
+	{
+		return _currentChannel;
+	}
+
+	void SetMixing(bool mixMultiplex)
+	{
+		_mixMultiplex = mixMultiplex;
+	}
+
+	void UpdateChannel(int channel)
 	{
 		uint32_t phase = GetPhase(channel);
 		uint32_t freq = GetFrequency(channel);
@@ -97,26 +111,30 @@ public:
 		}
 
 		_channelOutput[channel] = (sample - 8) * volume;
-		UpdateOutputLevel();
 		SetPhase(channel, phase);
 	}
 
 	uint32_t UpdateOutputLevel()
 	{
 		int16_t summedOutput = 0;
-		for(int i = 7, min = 7 - GetNumberOfChannels(); i >= min; i--) {
-			summedOutput += _channelOutput[i];
+		if (_mixMultiplex) {		// toggle multiplexing
+			summedOutput = _channelOutput[_currentChannel];
 		}
-		summedOutput /= GetNumberOfChannels() + 1;
+		else {
+			for (int i = 7, min = 7 - GetNumberOfChannels(); i >= min; i--) {
+				summedOutput += _channelOutput[i];
+			}
+			summedOutput /= GetNumberOfChannels() + 1;
+		}
 		return summedOutput;
 	}
 
-	uint32_t ClockAudio()
+	void ClockAudio()
 	{
 		if(!_disableSound) {
 			_updateCounter++;
 			if(_updateCounter == 15) {
-				return UpdateChannel(_currentChannel);
+				UpdateChannel(_currentChannel);
 
 				_updateCounter = 0;
 				_currentChannel--;
@@ -126,11 +144,12 @@ public:
 				}
 			}
 		}
-		return 0;
 	}
 
 	/// Compute how many clock cycles Namco163Audio can skip ahead in time
 	/// without changing internal modulator state or output.
+	///
+	/// N163 audio is clocked every 15 cycles, so
 	uint32_t ClockAudioMaxSkip() const
 	{
 

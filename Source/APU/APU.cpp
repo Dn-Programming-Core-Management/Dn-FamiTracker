@@ -398,9 +398,11 @@ void CAPU::Log()
 }
 #endif
 
+// TODO: Refactor this to use UpdateN163Filter
 void CAPU::SetNamcoMixing(bool bLinear)		// // //
 {
 	m_pN163->SetMixingMethod(bLinear);
+	m_bNamcoMixing = bLinear;
 }
 
 void CAPU::SetMeterDecayRate(int Type) const		// // // 050B
