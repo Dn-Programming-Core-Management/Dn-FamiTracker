@@ -232,12 +232,6 @@
     <Filter Include="Source Files\utils">
       <UniqueIdentifier>{5b5628bb-0b1c-41b9-919d-73689e71d621}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\old">
-      <UniqueIdentifier>{beb189dc-9d30-47cd-983b-cb0020af33af}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Sound Driver\Emulation\Sound Chips\External\old">
-      <UniqueIdentifier>{758675ec-da50-40ab-b4a3-0d47e196eb29}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Sound Driver\Emulation\Sound Chips\External\nsfplay">
       <UniqueIdentifier>{741b1515-d38b-4f27-bd80-1dcc3d442822}</UniqueIdentifier>
     </Filter>
@@ -1328,9 +1322,6 @@
     <ClInclude Include="Source\to_sv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\array_view.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\utils\input.h">
       <Filter>Header Files\utils</Filter>
     </ClInclude>
@@ -1435,9 +1426,6 @@
     </ClInclude>
     <ClInclude Include="Source\utils\ftmath.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\APU\old\vrc7tone.h">
-      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\old</Filter>
     </ClInclude>
     <ClInclude Include="Source\VersionChecker.h">
       <Filter>Header Files\Other Headers</Filter>

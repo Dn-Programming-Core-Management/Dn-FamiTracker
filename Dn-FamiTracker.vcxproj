@@ -523,12 +523,7 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
     <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\nes_dmc.h" />
     <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\nsfplay_math.h" />
     <ClInclude Include="Source\APU\nsfplay\xgm\xtypes.h" />
-    <ClInclude Include="Source\APU\old\vrc7tone.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="Source\APU\SoundChip2.h" />
-    <ClInclude Include="Source\array_view.h" />
     <ClInclude Include="Source\NoNotifyEdit.h" />
     <ClInclude Include="Source\HistoryFileDlg.h" />
     <ClInclude Include="Source\APU\2A03.h" />

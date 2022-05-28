@@ -25,6 +25,7 @@
 
 #pragma once
 
+#include <iterator>
 #include <string>
 #include <string_view>
 #include "../to_sv.h"
