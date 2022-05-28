@@ -909,11 +909,11 @@ void CSoundGen::ResetBuffer()
 	m_pAPU->Reset();
 }
 
-bool CSoundGen::TryWaitForWritable(uint32_t& framesWritable) {
+bool CSoundGen::TryWaitForWritable(uint32_t& framesWritable, bool SkipIfWritable) {
 	ASSERT(!m_bRendering);
 
 	while (true) {
-		WaitResult result = m_pSoundStream->WaitForReady(AUDIO_TIMEOUT);
+		WaitResult result = m_pSoundStream->WaitForReady(AUDIO_TIMEOUT, SkipIfWritable);
 		// TRACE("WaitResult %d\n", result);
 		switch (result) {
 		case WaitResult::Ready:
@@ -1013,6 +1013,11 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 		return;
 	}
 
+	// Only the last loop iteration of one call to CSoundGen::FillBuffer() can be a
+	// partial write to a WASAPI block. So we only need to allow writing without waiting
+	// for a new block (filling the remainder of the old one) on the first iteration of
+	// the next call.
+	bool first = true;
 	unsigned int framesWritable;
 	const bool shouldResample = m_resamplerArgs.src_ratio != 1.0;
 	uint32_t bufferOffset = 0;
@@ -1025,9 +1030,10 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 		src_short_to_float_array(pBuffer, pResampleInBuffer, Size);
 
 		while (bufferOffset < Size) {
-			if (!TryWaitForWritable(framesWritable)) {
+			if (!TryWaitForWritable(framesWritable, first)) {
 				return;
 			}
+			first = false;
 
 			// Resample audio.
 
@@ -1064,9 +1070,10 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 	} else {
 		// Do *NOT* use `m_resamplerArgs` in this block!!!
 		while (bufferOffset < Size) {
-			if (!TryWaitForWritable(framesWritable)) {
+			if (!TryWaitForWritable(framesWritable, first)) {
 				return;
 			}
+			first = false;
 
 			// Copy audio.
 			uint32_t framesToPlay = std::min(framesWritable, Size - bufferOffset);

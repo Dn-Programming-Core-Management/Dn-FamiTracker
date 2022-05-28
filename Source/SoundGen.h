@@ -146,10 +146,14 @@ public:
 
 	/// Waits for room to write audio to the output buffer.
 	///
+	/// If SkipIfWritable is true, check for room and if so return immediately. If
+	/// SkipIfWritable is false, wait for WASAPI to make a full block of space available
+	/// to write.
+	///
 	/// If ready to write audio, writes room available to parameters and returns true.
 	/// If waiting for buffer failed (due to GUI interruption or audio timeout),
 	/// returns false.
-	bool TryWaitForWritable(uint32_t& framesWritable);
+	bool TryWaitForWritable(uint32_t& framesWritable, bool SkipIfWritable);
 	void		FlushBuffer(int16_t const * pBuffer, uint32_t Size);
 	CSoundInterface		*GetSoundInterface() const { return m_pSoundInterface; };
 

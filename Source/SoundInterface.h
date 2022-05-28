@@ -99,7 +99,10 @@ public:
 	// Steady-state
 
 	/// Automatically starts the stream when enough audio is buffered.
-	WaitResult WaitForReady(DWORD dwTimeout);
+	///
+	/// If SkipIfWritable is true (after a partial write), return immediately if there is
+	/// already room to write audio.
+	WaitResult WaitForReady(DWORD dwTimeout, bool SkipIfWritable);
 
 	uint32_t BufferFramesWritable() const;
 	uint32_t BufferBytesWritable() const;

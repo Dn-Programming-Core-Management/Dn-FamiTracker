@@ -479,7 +479,7 @@ uint32_t CSoundStream::TotalBufferSizeBytes() const {
 
 // Steady-state
 
-WaitResult CSoundStream::WaitForReady(DWORD dwTimeout)
+WaitResult CSoundStream::WaitForReady(DWORD dwTimeout, bool SkipIfWritable)
 {
 	auto onInterrupted = []() {
 		return WaitResult::Interrupted;
@@ -525,8 +525,16 @@ WaitResult CSoundStream::WaitForReady(DWORD dwTimeout)
 	// CSoundStream::WaitForReady before generating audio, rather than before
 	// converting/buffering it.
 
-	// Check if we can write audio without waiting at all.
-	if (BufferFramesWritable()) {
+	// Check if we can write audio without waiting at all (which is the case if the
+	// previous WriteBuffer() didn't fill the whole buffer).
+	//
+	// SkipIfWritable=false (after a full write) causes WaitForReady() to block if WASAPI
+	// hasn't set m_bufferEvent, but BufferFramesWritable() > 0. I've never seen this
+	// happen after a full write, on either Windows or Wine. So not checking
+	// BufferFramesWritable() if SkipIfWritable=false isn't needed to avoid an endless
+	// loop of writing 1 sample at a time, but saves an IAudioClient::GetCurrentPadding()
+	// call.
+	if (SkipIfWritable && BufferFramesWritable()) {
 		return onWritable();
 	}
 
