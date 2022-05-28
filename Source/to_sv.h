@@ -27,7 +27,6 @@
 
 #include <string_view>
 #include <string>
-#include "array_view.h"
 #ifdef _WINDOWS
 #include "stdafx.h" // windows-specific
 #endif
@@ -49,11 +48,6 @@ std::basic_string_view<CharT> to_sv(std::basic_string<CharT, TraitsT, AllocT> &&
 template <typename CharT>
 constexpr std::basic_string_view<CharT> to_sv(std::basic_string_view<CharT> str) noexcept {
 	return str;
-}
-
-template <typename CharT>
-constexpr std::basic_string_view<CharT> to_sv(array_view<CharT> str) noexcept {
-	return std::basic_string_view<CharT>(str.data(), str.size());
 }
 
 #ifdef _WINDOWS

@@ -168,7 +168,6 @@ add_executable(${exe}
         Source/Accelerator.h
         Source/Action.cpp
         Source/Action.h
-        Source/array_view.h
         Source/Bookmark.cpp
         Source/Bookmark.h
         Source/BookmarkCollection.cpp
