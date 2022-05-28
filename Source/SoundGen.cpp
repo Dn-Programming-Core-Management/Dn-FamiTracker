@@ -1969,7 +1969,7 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 	m_pWaveFile = std::make_unique<CWaveFile>();
 	// Unfortunately, destructor doesn't cleanup object. Only CloseFile() does.
 	if (!m_pWaveFile ||
-		!m_pWaveFile->OpenFile(pFile, theApp.GetSettings()->Sound.iSampleRate, theApp.GetSettings()->Sound.iSampleSize, 1)) {
+		!m_pWaveFile->OpenFile(pFile, theApp.GetSettings()->Sound.iSampleRate, 16, 1)) {
 		m_pTrackerView->PostAudioMessage(AM_ERROR, IDS_FILE_OPEN_ERROR);
 		return false;
 	}

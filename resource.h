@@ -239,7 +239,6 @@
 #define IDC_FRAME_INC                   1036
 #define IDC_KEYREPEAT                   1038
 #define IDC_SAMPLE_RATE                 1039
-#define IDC_SAMPLE_SIZE                 1040
 #define IDC_RESAMPLING                  1040
 #define IDC_BUF_LENGTH                  1041
 #define IDC_SAMPLESIZE                  1041
@@ -800,7 +799,7 @@
 #define ID_INDICATOR_DPCM_ENDPOS        53257
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        379

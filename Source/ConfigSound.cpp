@@ -52,7 +52,6 @@ void CConfigSound::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CConfigSound, CPropertyPage)
 	ON_WM_HSCROLL()
 	ON_CBN_SELCHANGE(IDC_SAMPLE_RATE, OnCbnSelchangeSampleRate)
-	ON_CBN_SELCHANGE(IDC_SAMPLE_SIZE, OnCbnSelchangeSampleSize)
 	ON_CBN_SELCHANGE(IDC_DEVICES, OnCbnSelchangeDevices)
 END_MESSAGE_MAP()
 
@@ -65,7 +64,6 @@ BOOL CConfigSound::OnInitDialog()
 	CPropertyPage::OnInitDialog();
 
 	CComboBox *pSampleRate	= static_cast<CComboBox*>(GetDlgItem(IDC_SAMPLE_RATE));
-	CComboBox *pSampleSize	= static_cast<CComboBox*>(GetDlgItem(IDC_SAMPLE_SIZE));
 	CComboBox *pDevices		= static_cast<CComboBox*>(GetDlgItem(IDC_DEVICES));
 
 	CSliderCtrl *pBufSlider			  = static_cast<CSliderCtrl*>(GetDlgItem(IDC_BUF_LENGTH));
@@ -90,11 +88,6 @@ BOOL CConfigSound::OnInitDialog()
 		case 44100: pSampleRate->SelectString(0, _T("44 100 Hz")); break;
 		case 48000: pSampleRate->SelectString(0, _T("48 000 Hz")); break;
 		case 96000: pSampleRate->SelectString(0, _T("96 000 Hz")); break;
-	}
-
-	switch (pSettings->Sound.iSampleSize) {
-		case 16: pSampleSize->SelectString(0, _T("16 bit")); break;
-		case 8:	 pSampleSize->SelectString(0, _T("8 bit")); break;
 	}
 
 	pBufSlider->SetPos(pSettings->Sound.iBufferLength);
@@ -128,7 +121,6 @@ BOOL CConfigSound::OnApply()
 {
 	CComboBox *pDevices = static_cast<CComboBox*>(GetDlgItem(IDC_DEVICES));
 	CComboBox *pSampleRate = static_cast<CComboBox*>(GetDlgItem(IDC_SAMPLE_RATE));
-	CComboBox *pSampleSize = static_cast<CComboBox*>(GetDlgItem(IDC_SAMPLE_SIZE));
 	CSliderCtrl *pBufSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_BUF_LENGTH));
 
 	CSettings* pSettings = theApp.GetSettings();
@@ -139,11 +131,6 @@ BOOL CConfigSound::OnApply()
 		case 2: pSettings->Sound.iSampleRate = 44100; break;
 		case 3: pSettings->Sound.iSampleRate = 48000; break;
 		case 4: pSettings->Sound.iSampleRate = 96000; break;
-	}
-
-	switch (pSampleSize->GetCurSel()) {
-		case 0: theApp.GetSettings()->Sound.iSampleSize = 16; break;
-		case 1: theApp.GetSettings()->Sound.iSampleSize = 8; break;
 	}
 
 	pSettings->Sound.iBufferLength = pBufSlider->GetPos();
@@ -161,11 +148,6 @@ BOOL CConfigSound::OnApply()
 }
 
 void CConfigSound::OnCbnSelchangeSampleRate()
-{
-	SetModified();
-}
-
-void CConfigSound::OnCbnSelchangeSampleSize()
 {
 	SetModified();
 }
