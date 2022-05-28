@@ -55,7 +55,6 @@ struct IAudioRenderClient;
 
 enum class StreamState {
 	Stopped,
-	ReadyToStart,
 	Started,
 };
 

@@ -499,27 +499,14 @@ WaitResult CSoundStream::WaitForReady(DWORD dwTimeout, bool SkipIfWritable)
 	}
 
 	// Check for special cases.
-	switch (m_state) {
-	case StreamState::Stopped:
-		// The first time CSoundGen waits to write audio, don't start stream playback.
+	if (m_state == StreamState::Stopped) {
+		// The first few times CSoundGen waits to write audio, don't start stream playback.
 		// Instead return and let CSoundGen write audio. (At this point,
 		// CSoundStream::BufferFramesWritable() returns the full buffer size.)
-		m_state = StreamState::ReadyToStart;
+		//
+		// When WriteBuffer() is called, if m_state == StreamState::Stopped and the buffer is
+		// full, it calls Play() which sets m_state = StreamState::Started.
 		return WaitResult::Ready;
-
-	case StreamState::ReadyToStart:
-		// The second time CSoundGen waits to write audio, start the playback stream,
-		// then let CSoundGen write audio.
-		if (!Play()) {
-			return WaitResult::InternalError;
-		}
-		// If CSoundStream::Play() succeeds (returns true), it sets m_state =
-		// StreamState::Started.
-		break;
-
-	case StreamState::Started:
-		// Otherwise wait for room to write audio, like normal.
-		break;
 	}
 	// TODO we can get marginally less latency by having CSoundGen call
 	// CSoundStream::WaitForReady before generating audio, rather than before
@@ -594,6 +581,13 @@ bool CSoundStream::WriteBuffer(float const* pSrcBuffer, unsigned int Bytes)
 	}
 	hr = m_pAudioRenderClient->ReleaseBuffer(frames, 0);
 	if (FAILED(hr)) return false;
+
+	if (m_state == StreamState::Stopped && BufferFramesWritable() == 0) {
+		if (!Play()) {
+			return false;
+		}
+		// m_state = StreamState::Started (in Play())
+	}
 
 	return true;
 }
