@@ -107,12 +107,17 @@ void CN163::Process(uint32_t Time, Blip_Buffer& Output)
 		//if (now >= Time)
 		//	break;
 
+		// clock the emulator
 		m_N163.ClockAudio();
+
+		// update the channel levels
 		for (int i = 0; i < 8; i++)
 			m_ChannelLevels[i].update(m_N163._channelOutput[i]);
 
+		// output master audio
 		auto master_out = m_N163.UpdateOutputLevel();
 		m_SynthN163.update(m_iTime + now, (int)master_out, &m_BlipN163);
+
 		now++;
 	}
 
@@ -159,7 +164,10 @@ int CN163::GetChannelLevelRange(int Channel) const
 {
 	ASSERT(0 <= Channel && Channel < 8);
 	if (0 <= Channel && Channel < 8) {
-		return 255; // (4 bit sample * 4 bit volume) - 1
+		// _channelOutput[channel] = (sample - 8) * volume;
+		// lowest output:  120
+		// highest output: 105
+		return 225;
 	}
 	return 1;
 }
