@@ -120,46 +120,46 @@ int dither(long size);
 static constexpr size_t MESSAGE_QUEUE_SIZE = 8192;
 
 CSoundGen::CSoundGen() :
+	m_pInstRecorder(new CInstrumentRecorder(this)),
 	m_MessageQueue(MESSAGE_QUEUE_SIZE),
-	m_pAPU(NULL),
-	m_pSoundInterface(NULL),
-	m_pSoundStream(NULL),
 	m_pDocument(NULL),
 	m_pTrackerView(NULL),
-	m_bRequestRenderStart(false),
-	m_bRendering(false),
-	m_bPlaying(false),
-	m_bHaltRequest(false),
-	m_bDoHalt(false),		// // //
-	m_pPreviewSample(NULL),
+	m_pSoundInterface(NULL),
+	m_pSoundStream(NULL),
 	m_pVisualizerWnd(NULL),
-	m_iSpeed(0),
-	m_iTempo(0),
-	m_iGrooveIndex(-1),		// // //
-	m_iGroovePosition(0),		// // //
-	m_pInstRecorder(new CInstrumentRecorder(this)),		// // //
-	m_bWaveChanged(0),
-	m_iMachineType(NTSC),
-	m_CoInitialized(false),
+	m_pAPU(NULL),
+	currN163LevelOffset(0),
+	m_pPreviewSample(NULL),
+	m_CoInitialized(false),		// // //
 	m_bRunning(false),
 	m_hInterruptEvent(NULL),
 	m_bBufferTimeout(false),
-	m_bDirty(false),
+	m_bBufferUnderrun(false),
+	m_bAudioClipping(false),		// // //
+	m_iClipCounter(0),		// // //
+	m_iTempo(0),		// // //
+	m_iSpeed(0),
+	m_iGrooveIndex(-1),
+	m_iGroovePosition(0),
+	m_iPlayTicks(0),
+	m_bPlaying(false),
+	m_bHaltRequest(false),
+	m_iConsumedCycles(0),
+	m_bDoHalt(false),
+	m_iMachineType(NTSC),
+	m_bRequestRenderStart(false),
+	m_bRendering(false),
+	m_iBPMCachePosition(0),
+	m_iRegisterStream(),
+	m_bWaveChanged(0),		// // //
 	m_iQueuedFrame(-1),
+	m_iPlayTrack(0),
 	m_iPlayFrame(0),
 	m_iPlayRow(0),
-	m_iPlayTrack(0),
-	m_iPlayTicks(0),
-	m_iConsumedCycles(0),
-	m_iRegisterStream(),		// // //
-	m_bBufferUnderrun(false),
-	m_bAudioClipping(false),
-	m_iClipCounter(0),
+	m_bDirty(false),
 	m_pSequencePlayPos(NULL),
-	m_iSequencePlayPos(0),
-	m_iSequenceTimeout(0),
-	m_iBPMCachePosition(0),		// // //
-	currN163LevelOffset(0)
+	m_iSequencePlayPos(0),		// // //
+	m_iSequenceTimeout(0)
 {
 	TRACE("SoundGen: Object created\n");
 
