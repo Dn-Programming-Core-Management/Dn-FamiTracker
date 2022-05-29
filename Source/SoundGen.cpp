@@ -2175,8 +2175,10 @@ void CSoundGen::OnIdle()
 	// Main loop for audio playback thread
 	//
 
-	if (!m_pDocument || !m_pSoundStream || !m_pDocument->IsFileLoaded())
+	if (!m_pDocument || !m_pSoundStream || !m_pDocument->IsFileLoaded()) {
+		Sleep(100);
 		return;
+	}
 
 	++m_iFrameCounter;
 
