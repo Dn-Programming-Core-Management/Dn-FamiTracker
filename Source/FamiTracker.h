@@ -41,7 +41,7 @@
 
 // Inter-process commands
 enum {
-	IPC_LOAD = 1,	
+	IPC_LOAD = 1,
 	IPC_LOAD_PLAY
 };
 
@@ -139,7 +139,7 @@ public:
 	CMIDI			*GetMIDI() const			{ ASSERT(m_pMIDI); return m_pMIDI; }
 	CSettings		*GetSettings() const		{ ASSERT(m_pSettings); return m_pSettings; }
 	CChannelMap		*GetChannelMap() const		{ ASSERT(m_pChannelMap); return m_pChannelMap; }
-	
+
 	CCustomExporters *GetCustomExporters() const;
 
 	//
@@ -187,7 +187,7 @@ public:
 	// Overrides
 public:
 	virtual BOOL InitInstance();
-	virtual int ExitInstance();	
+	virtual int ExitInstance();
 
 	// Implementation
 	DECLARE_MESSAGE_MAP()
