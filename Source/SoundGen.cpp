@@ -132,7 +132,7 @@ CSoundGen::CSoundGen() :
 	m_pPreviewSample(NULL),
 	m_CoInitialized(false),		// // //
 	m_bRunning(false),
-	m_hInterruptEvent(NULL),
+	m_hInterruptEvent(::CreateEvent(NULL, FALSE, FALSE, NULL)),
 	m_bBufferTimeout(false),
 	m_bBufferUnderrun(false),
 	m_bAudioClipping(false),		// // //
@@ -161,6 +161,10 @@ CSoundGen::CSoundGen() :
 	m_iSequencePlayPos(0),		// // //
 	m_iSequenceTimeout(0)
 {
+	if (!m_hInterruptEvent) {
+		throw std::runtime_error("Could not create CSoundGen::m_hInterruptEvent");
+	}
+
 	TRACE("SoundGen: Object created\n");
 
 	// Create APU
@@ -667,10 +671,11 @@ bool CSoundGen::BeginThread()
 	ASSERT(!m_audioThread.joinable());
 
 	// Event used to interrupt the sound buffer synchronization
-	m_hInterruptEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
+	ASSERT(m_hInterruptEvent != NULL);
+	ResetEvent(m_hInterruptEvent.get());
 
 	// Create sound interface object
-	m_pSoundInterface = new CSoundInterface(m_hInterruptEvent);
+	m_pSoundInterface = new CSoundInterface(m_hInterruptEvent.get());
 
 	// Out of memory
 	if (!m_pSoundInterface)
@@ -728,8 +733,8 @@ bool CSoundGen::PostGuiMessage(GuiMessageId message, WPARAM wParam, LPARAM lPara
 
 void CSoundGen::Interrupt() const
 {
-	if (m_hInterruptEvent != NULL)
-		::SetEvent(m_hInterruptEvent);
+	ASSERT(m_hInterruptEvent != NULL);
+	SetEvent(m_hInterruptEvent.get());
 }
 
 bool CSoundGen::GetSoundTimeout() const
@@ -889,10 +894,8 @@ void CSoundGen::CloseAudio()
 		m_pSoundInterface = NULL;
 	}
 
-	if (m_hInterruptEvent) {
-		::CloseHandle(m_hInterruptEvent);
-		m_hInterruptEvent = NULL;
-	}
+	ASSERT(m_hInterruptEvent != NULL);
+	ResetEvent(m_hInterruptEvent.get());
 }
 
 void CSoundGen::ResetBuffer()
