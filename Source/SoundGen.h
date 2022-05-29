@@ -34,6 +34,7 @@
 #include "utils/handle_ptr.h"
 #include <queue>		// // //
 #include "Common.h"
+#include "FamiTrackerTypes.h"
 
 #include <atomic>
 #include <cstdint>
