@@ -132,7 +132,7 @@ public:
 	void		LoadMachineSettings();		// // // 050B
 
 	// Thread management functions
-	bool		BeginThread();
+	bool BeginThread(std::shared_ptr<CSoundGen> self);
 
 private:
 	void ThreadEntry();

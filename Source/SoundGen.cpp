@@ -658,8 +658,10 @@ bool CSoundGen::IsRunning() const
 
 //// Sound buffer handling /////////////////////////////////////////////////////////////////////////////////
 
-bool CSoundGen::BeginThread()
+bool CSoundGen::BeginThread(std::shared_ptr<CSoundGen> self_shared)
 {
+	ASSERT(this == self_shared.get());
+
 	// Initialize sound, this is only called once!
 	// Start with NTSC by default
 
@@ -684,8 +686,8 @@ bool CSoundGen::BeginThread()
 	m_pSoundInterface->EnumerateDevices();
 
 	// Start thread when audio is done
-	m_audioThread = std::thread([this]() {
-		ThreadEntry();
+	m_audioThread = std::thread([self_shared = std::move(self_shared)]() {
+		self_shared->ThreadEntry();
 	});
 
 	return true;
@@ -717,8 +719,6 @@ void CSoundGen::ThreadEntry()
 	end_while:
 
 	ExitInstance();
-	// lolmfc
-	delete this;
 }
 
 
@@ -2159,8 +2159,6 @@ void CSoundGen::ExitInstance()
 
 	// Make sure sound interface is shut down
 	CloseAudio();
-
-	theApp.RemoveSoundGenerator();
 
 	m_bRunning = false;
 

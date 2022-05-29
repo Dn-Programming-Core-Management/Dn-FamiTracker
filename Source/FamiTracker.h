@@ -27,8 +27,9 @@
 
 // FamiTracker.h : main header file for the FamiTracker application
 
-#include <thread>		// // //
+#include <memory>
 #include <string>
+#include <thread>		// // //
 
 // Support DLL translations
 #define SUPPORT_TRANSLATIONS
@@ -117,7 +118,6 @@ public:
 	void			ReloadColorScheme();
 	int				GetCPUUsage() const;
 	bool			IsThemeActive() const;
-	void			RemoveSoundGenerator();
 	void			RefreshFrameEditor();
 	void			ThreadDisplayMessage(LPCTSTR lpszText, UINT nType = 0, UINT nIDHelp = 0);
 	void			ThreadDisplayMessage(UINT nIDPrompt, UINT nType = 0, UINT nIDHelp = 0);
@@ -135,7 +135,7 @@ public:
 	// Get-functions
 	CMainFrame		*GetMainFrame() const;		// // //
 	CAccelerator	*GetAccelerator() const		{ ASSERT(m_pAccel); return m_pAccel; }
-	CSoundGen		*GetSoundGenerator() const	{ ASSERT(m_pSoundGenerator); return m_pSoundGenerator; }
+	CSoundGen		*GetSoundGenerator() const	{ ASSERT(m_pSoundGenerator); return m_pSoundGenerator.get(); }
 	CMIDI			*GetMIDI() const			{ ASSERT(m_pMIDI); return m_pMIDI; }
 	CSettings		*GetSettings() const		{ ASSERT(m_pSettings); return m_pSettings; }
 	CChannelMap		*GetChannelMap() const		{ ASSERT(m_pChannelMap); return m_pChannelMap; }
@@ -160,7 +160,7 @@ private:
 	// Objects
 	CMIDI			*m_pMIDI;
 	CAccelerator	*m_pAccel;					// Keyboard accelerator
-	CSoundGen		*m_pSoundGenerator;			// Sound synth & player
+	std::shared_ptr<CSoundGen> m_pSoundGenerator;			// Sound synth & player
 	CSettings		*m_pSettings;				// Program settings
 	CChannelMap		*m_pChannelMap;
 

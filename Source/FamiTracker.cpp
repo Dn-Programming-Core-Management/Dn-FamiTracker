@@ -169,7 +169,7 @@ BOOL CFamiTrackerApp::InitInstance()
 	m_pMIDI = new CMIDI();
 
 	// Create sound generator
-	m_pSoundGenerator = new CSoundGen();
+	m_pSoundGenerator = std::make_shared<CSoundGen>();
 
 	// Create channel map
 	m_pChannelMap = new CChannelMap();
@@ -251,7 +251,7 @@ BOOL CFamiTrackerApp::InitInstance()
 	m_pMainWnd->DragAcceptFiles();
 
 	// Initialize the sound interface, also starts the thread
-	if (!m_pSoundGenerator->BeginThread()) {
+	if (!m_pSoundGenerator->BeginThread(m_pSoundGenerator)) {
 		// If failed, restore and save default settings
 		m_pSettings->DefaultSettings();
 		m_pSettings->SaveSettings();
@@ -472,20 +472,18 @@ void CFamiTrackerApp::ShutDownSynth()
 
 	if (!stdThread.joinable()) {
 		// Object was found but thread not created
-		delete m_pSoundGenerator;
-		m_pSoundGenerator = NULL;
+		m_pSoundGenerator.reset();
 		TRACE("App: Sound generator object was found but no thread created\n");
 		return;
 	}
 
 	TRACE("App: Waiting for sound player thread to close\n");
 
-	// Send quit message. Note that this object may be deleted now!
+	// Send quit message.
 	m_pSoundGenerator->PostGuiMessage(AM_QUIT, 0, 0);
 
 	// If audio thread is waiting on stuck WASAPI, interrupt the wait. On the next loop
 	// iteration, it will see the quit message.
-	// TODO fix data race on closing m_hInterruptEvent or deleting m_pSoundGenerator
 	m_pSoundGenerator->Interrupt();
 
 	// Wait for thread to exit
@@ -493,7 +491,7 @@ void CFamiTrackerApp::ShutDownSynth()
 		stdThread.native_handle(), CSoundGen::AUDIO_TIMEOUT + 1000
 	);
 
-	if (dwResult != WAIT_OBJECT_0 && m_pSoundGenerator != NULL) {
+	if (dwResult != WAIT_OBJECT_0) {
 		TRACE("App: Closing the sound generator thread failed\n");
 #ifdef _DEBUG
 		AfxMessageBox(_T("Error: Could not close sound generator thread"));
@@ -503,6 +501,7 @@ void CFamiTrackerApp::ShutDownSynth()
 		return;
 	}
 	stdThread.join();
+	m_pSoundGenerator.reset();
 
 	// Object should be auto-deleted
 	ASSERT(m_pSoundGenerator == NULL);
@@ -510,11 +509,8 @@ void CFamiTrackerApp::ShutDownSynth()
 	TRACE("App: Sound generator has closed\n");
 }
 
-void CFamiTrackerApp::RemoveSoundGenerator()
-{
-	// Sound generator object has been deleted, remove reference
-	m_pSoundGenerator = NULL;
-}
+// It is unsafe for the audio thread to overwrite CFamiTrackerApp::m_soundGenerator
+// (racing with accesses by the GUI thread), because ~shared_ptr() performs work.
 
 CCustomExporters* CFamiTrackerApp::GetCustomExporters(void) const
 {
