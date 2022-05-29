@@ -392,6 +392,8 @@ bool CSoundStream::Play()
 	// while the low-latency stream plays.
 	DWORD taskIndex = 0;
 	if (m_hTask == nullptr) {
+		// AvSetMmThreadCharacteristicsW is unimplemented on Wine (prints fixme), but
+		// returns a handle anyway.
 		m_hTask = AvSetMmThreadCharacteristicsW(L"Pro Audio", &taskIndex);
 		TRACE("AvSetMmThreadCharacteristicsW success: %d", m_hTask != 0);
 	}

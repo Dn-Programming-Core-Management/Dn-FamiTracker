@@ -99,7 +99,6 @@
 #endif
 
 #ifdef _DEBUG
-#define new DEBUG_NEW
 template <typename... T>
 bool _trace(TCHAR *format, T... args)
 {

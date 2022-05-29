@@ -27,7 +27,10 @@
 
 // CFamiTrackerView, the document view class
 
-#include <afxmt.h>	// Include synchronization objects
+#include "rigtorp/SPSCQueue.h"
+#include "utils/handle_ptr.h"
+#include <mutex>
+#include <thread>
 #include <unordered_map>		// // //
 
 #include "PatternEditorTypes.h"		// // //
@@ -77,10 +80,10 @@ public:
 	void		 SelectFrame(unsigned int Frame);
 	void		 SelectRow(unsigned int Row);		// // //
 	void		 SelectChannel(unsigned int Channel);
-	 
+
 	unsigned int GetSelectedFrame() const;
 	unsigned int GetSelectedChannel() const;
-	unsigned int GetSelectedRow() const; 
+	unsigned int GetSelectedRow() const;
 
 	void		 SetFollowMode(bool Mode);
 	bool		 GetFollowMode() const;
@@ -153,7 +156,7 @@ private:
 
 	// Drawing
 	void	UpdateMeters();
-	
+
 	void	InvalidateCursor();
 	void	InvalidateHeader();
 	void	InvalidatePatternEditor();
@@ -163,7 +166,7 @@ private:
 	void	RedrawFrameEditor();
 
 	void	PeriodicUpdate();
-	
+
 	int		TimerDelayer; // Refresh rate depending on playback
 
 	// Instruments
@@ -194,12 +197,12 @@ private:
 	// Input handling
 	void	KeyIncreaseAction();
 	void	KeyDecreaseAction();
-	
+
 	int		TranslateKey(Keycode Key) const;
 	int		TranslateKeyDefault(Keycode Key) const;
 	int		TranslateKeyModplug(Keycode Key) const;
 	int		TranslateKeyFT2JP(Keycode Key) const;
-	
+
 	bool	CheckClearKey(Keycode Key) const;
 	bool	CheckHaltKey(Keycode Key) const;
 	bool	CheckReleaseKey(Keycode Key) const;
@@ -232,10 +235,10 @@ private:
 	void	ReleaseNote(unsigned int Channel, unsigned int Note, unsigned int Octave) const;		// // //
 	void	HaltNote(unsigned int Channel, unsigned int Note, unsigned int Octave) const;		// // //
 	void	HaltNoteSingle(unsigned int Channel) const;		// // //
-	
+
 	void	UpdateArpDisplay();
 	void	UpdateNoteQueues();		// // //
-	
+
 	// Mute methods
 	bool	IsChannelSolo(unsigned int Channel) const;
 	bool	IsChipSolo(unsigned int Chip) const;		// // //
@@ -259,6 +262,17 @@ public:
 // View variables
 //
 private:
+	/// Receive thread handle.
+	std::thread m_ReceiveThread;
+	/// Set by audio thread after pushing to m_MessageQueue.
+	HandlePtr m_hQueueEvent;
+	/// Set by main thread ~CFamiTrackerView() to terminate m_ReceiveThread.
+	HandlePtr m_hQuitEvent;
+
+	/// Pushed by audio thread (CFamiTrackerView::PostQueueMessage()) and popped by
+	/// receive thread.
+	rigtorp::SPSCQueue<AudioMessage> m_MessageQueue;
+
 	// General
 	bool				m_bHasFocus;
 	UINT				mClipboardFormat;
@@ -326,7 +340,7 @@ private:
 	bool				m_bDropped;								// Drop was performed on this window
 
 	// Thread synchronization
-	mutable CCriticalSection m_csDrawLock;						// Lock for DCs
+	mutable std::mutex m_csDrawLock;						// Lock for DCs
 
 // Operations
 public:
@@ -346,6 +360,8 @@ public:
 protected:
 	DECLARE_MESSAGE_MAP()
 public:
+	bool PostAudioMessage(AudioMessageId message, WPARAM wParam = 0, LPARAM lParam = 0);
+
 	virtual void OnDraw(CDC* /*pDC*/);
 	virtual void CalcWindowRect(LPRECT lpClientRect, UINT nAdjustType = adjustBorder);
 	virtual void OnUpdate(CView* /*pSender*/, LPARAM /*lHint*/, CObject* /*pHint*/);

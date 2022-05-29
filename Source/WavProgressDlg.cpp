@@ -77,7 +77,7 @@ BOOL CWavProgressDlg::OnInitDialog()
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 
 	m_iTimerPeriod = theApp.GetSettings()->GUI.iLowRefreshRate;
-	
+
 	pView->Invalidate();
 	pView->RedrawWindow();
 
@@ -101,7 +101,7 @@ void CWavProgressDlg::OnTimer(UINT_PTR nIDEvent)
 	// Update progress status
 	CString Text;
 	DWORD Time = (GetTickCount() - m_dwStartTime) / 1000;
-	
+
 	CProgressCtrl *pProgressBar = static_cast<CProgressCtrl*>(GetDlgItem(IDC_PROGRESS_BAR));
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 
@@ -172,7 +172,7 @@ void CWavProgressDlg::OnCancel()
 
 	if (pSoundGen->IsRendering()) {
 		//pSoundGen->StopRendering();
-		pSoundGen->PostThreadMessage(WM_USER_STOP_RENDER, 0, 0);
+		pSoundGen->PostGuiMessage(WM_USER_STOP_RENDER, 0, 0);
 	}
 	CancelRender = true;
 

@@ -83,6 +83,7 @@ add_executable(${exe}
         Source/resampler/resample.inl
         Source/resampler/sinc.cpp
         Source/resampler/sinc.hpp
+        Source/rigtorp/SPSCQueue.h
         Source/str_conv/str_conv.hpp
         Source/str_conv/utf8_conv.hpp
         Source/type_safe/arithmetic_policy.hpp
@@ -160,6 +161,7 @@ add_executable(${exe}
         Source/drivers/drv_vrc7.h
         Source/utils/ftmath.cpp
         Source/utils/ftmath.h
+        Source/utils/handle_ptr.h
         Source/utils/input.h
         Source/utils/variadic_minmax.h
         Source/AboutDlg.cpp

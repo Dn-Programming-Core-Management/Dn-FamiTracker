@@ -83,22 +83,30 @@ const double CSoundGen::OLD_VIBRATO_DEPTH[] = {
 	1.0, 1.0, 2.0, 3.0, 4.0, 7.0, 8.0, 15.0, 16.0, 31.0, 32.0, 63.0, 64.0, 127.0, 128.0, 255.0
 };
 
-IMPLEMENT_DYNCREATE(CSoundGen, CWinThread)
+bool CSoundGen::DispatchGuiMessage(GuiMessage msg) {
+	switch (msg.message) {
+	#define ON_SPSC_MESSAGE(message, memberFxn) \
+		case message: memberFxn(msg.wParam, msg.lParam); return true;
 
-BEGIN_MESSAGE_MAP(CSoundGen, CWinThread)
-	ON_THREAD_MESSAGE(WM_USER_SILENT_ALL, OnSilentAll)
-	ON_THREAD_MESSAGE(WM_USER_LOAD_SETTINGS, OnLoadSettings)
-	ON_THREAD_MESSAGE(WM_USER_PLAY, OnStartPlayer)
-	ON_THREAD_MESSAGE(WM_USER_STOP, OnStopPlayer)
-	ON_THREAD_MESSAGE(WM_USER_RESET, OnResetPlayer)
-	ON_THREAD_MESSAGE(WM_USER_START_RENDER, OnStartRender)
-	ON_THREAD_MESSAGE(WM_USER_STOP_RENDER, OnStopRender)
-	ON_THREAD_MESSAGE(WM_USER_PREVIEW_SAMPLE, OnPreviewSample)
-	ON_THREAD_MESSAGE(WM_USER_WRITE_APU, OnWriteAPU)
-	ON_THREAD_MESSAGE(WM_USER_CLOSE_SOUND, OnCloseSound)
-	ON_THREAD_MESSAGE(WM_USER_SET_CHIP, OnSetChip)
-	ON_THREAD_MESSAGE(WM_USER_REMOVE_DOCUMENT, OnRemoveDocument)
-END_MESSAGE_MAP()
+	ON_SPSC_MESSAGE(WM_USER_SILENT_ALL, OnSilentAll)
+	ON_SPSC_MESSAGE(WM_USER_LOAD_SETTINGS, OnLoadSettings)
+	ON_SPSC_MESSAGE(WM_USER_PLAY, OnStartPlayer)
+	ON_SPSC_MESSAGE(WM_USER_STOP, OnStopPlayer)
+	ON_SPSC_MESSAGE(WM_USER_RESET, OnResetPlayer)
+	ON_SPSC_MESSAGE(WM_USER_START_RENDER, OnStartRender)
+	ON_SPSC_MESSAGE(WM_USER_STOP_RENDER, OnStopRender)
+	ON_SPSC_MESSAGE(WM_USER_PREVIEW_SAMPLE, OnPreviewSample)
+	ON_SPSC_MESSAGE(WM_USER_WRITE_APU, OnWriteAPU)
+	ON_SPSC_MESSAGE(WM_USER_CLOSE_SOUND, OnCloseSound)
+	ON_SPSC_MESSAGE(WM_USER_SET_CHIP, OnSetChip)
+	ON_SPSC_MESSAGE(WM_USER_REMOVE_DOCUMENT, OnRemoveDocument)
+
+	default:
+		TRACE("Error: unrecognized SPSC message %d sent to audio thread", msg.message);
+		ASSERT(false);
+		return true;
+	}
+}
 
 #ifdef DITHERING
 int dither(long size);
@@ -106,7 +114,12 @@ int dither(long size);
 
 // CSoundGen
 
+// According to https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postthreadmessagea,
+// the default window message limit is 10000. Let's use 8192 for our replacement queue.
+static constexpr size_t MESSAGE_QUEUE_SIZE = 8192;
+
 CSoundGen::CSoundGen() :
+	m_MessageQueue(MESSAGE_QUEUE_SIZE),
 	m_pAPU(NULL),
 	m_pSoundInterface(NULL),
 	m_pSoundStream(NULL),
@@ -295,13 +308,13 @@ void CSoundGen::RemoveDocument()
 	// Called from main thread
 	ASSERT(GetCurrentThreadId() == theApp.m_nThreadID);
 	ASSERT(m_pDocument != NULL);
-	ASSERT(m_hThread != NULL);
+	ASSERT(m_audioThread.joinable());
 
 	// Player cannot play when removing the document
 	StopPlayer();
 	WaitForStop();
 
-	PostThreadMessage(WM_USER_REMOVE_DOCUMENT, 0, 0);
+	PostGuiMessage(WM_USER_REMOVE_DOCUMENT, 0, 0);
 
 	// Wait 5s for thread to clear the pointer
 	for (int i = 0; i < 50 && m_pDocument != NULL; ++i)
@@ -318,9 +331,10 @@ void CSoundGen::SetVisualizerWindow(CVisualizerWnd *pWnd)
 	// Called from main thread
 	ASSERT(GetCurrentThreadId() == theApp.m_nThreadID);
 
-	m_csVisualizerWndLock.Lock();
-	m_pVisualizerWnd = pWnd;
-	m_csVisualizerWndLock.Unlock();
+	{
+		std::unique_lock<std::mutex> lock(m_csVisualizerWndLock);
+		m_pVisualizerWnd = pWnd;
+	}
 }
 
 void CSoundGen::RegisterChannels(int Chip, CFamiTrackerDoc *pDoc)
@@ -361,7 +375,7 @@ void CSoundGen::SelectChip(int Chip)
 		return;
 	}
 
-	PostThreadMessage(WM_USER_SET_CHIP, Chip, 0);
+	PostGuiMessage(WM_USER_SET_CHIP, Chip, 0);
 }
 
 CChannelHandler *CSoundGen::GetChannel(int Index) const
@@ -562,61 +576,61 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 
 void CSoundGen::StartPlayer(play_mode_t Mode, int Track)
 {
-	if (!m_hThread)
+	if (!m_audioThread.joinable())
 		return;
 
-	PostThreadMessage(WM_USER_PLAY, Mode, Track);
+	PostGuiMessage(WM_USER_PLAY, Mode, Track);
 }
 
 void CSoundGen::StopPlayer()
 {
-	if (!m_hThread)
+	if (!m_audioThread.joinable())
 		return;
 
-	PostThreadMessage(WM_USER_STOP, 0, 0);
+	PostGuiMessage(WM_USER_STOP, 0, 0);
 }
 
 void CSoundGen::ResetPlayer(int Track)
 {
-	if (!m_hThread)
+	if (!m_audioThread.joinable())
 		return;
 
-	PostThreadMessage(WM_USER_RESET, Track, 0);
+	PostGuiMessage(WM_USER_RESET, Track, 0);
 }
 
 void CSoundGen::LoadSettings()
 {
-	if (!m_hThread)
+	if (!m_audioThread.joinable())
 		return;
 
-	PostThreadMessage(WM_USER_LOAD_SETTINGS, 0, 0);
+	PostGuiMessage(WM_USER_LOAD_SETTINGS, 0, 0);
 }
 
 void CSoundGen::SilentAll()
 {
-	if (!m_hThread)
+	if (!m_audioThread.joinable())
 		return;
 
-	PostThreadMessage(WM_USER_SILENT_ALL, 0, 0);
+	PostGuiMessage(WM_USER_SILENT_ALL, 0, 0);
 }
 
 void CSoundGen::WriteAPU(int Address, char Value)
 {
-	if (!m_hThread)
+	if (!m_audioThread.joinable())
 		return;
 
 	// Direct APU interface
-	PostThreadMessage(WM_USER_WRITE_APU, (WPARAM)Address, (LPARAM)Value);
+	PostGuiMessage(WM_USER_WRITE_APU, (WPARAM)Address, (LPARAM)Value);
 }
 
 void CSoundGen::PreviewSample(const CDSample *pSample, int Offset, int Pitch)		// // //
 {
-	if (!m_hThread)
+	if (!m_audioThread.joinable())
 		return;
 
 	// Preview a DPCM sample. If the name of sample is null,
 	// the sample will be removed after played
-	PostThreadMessage(WM_USER_PREVIEW_SAMPLE, (WPARAM)pSample, MAKELPARAM(Offset, Pitch));
+	PostGuiMessage(WM_USER_PREVIEW_SAMPLE, (WPARAM)pSample, MAKELPARAM(Offset, Pitch));
 }
 
 void CSoundGen::CancelPreviewSample()
@@ -628,12 +642,12 @@ void CSoundGen::CancelPreviewSample()
 
 bool CSoundGen::IsRunning() const
 {
-	return (m_hThread != NULL) && m_bRunning;
+	return (m_audioThread.joinable()) && m_bRunning;
 }
 
 //// Sound buffer handling /////////////////////////////////////////////////////////////////////////////////
 
-bool CSoundGen::InitializeSound()
+bool CSoundGen::BeginThread()
 {
 	// Initialize sound, this is only called once!
 	// Start with NTSC by default
@@ -641,6 +655,9 @@ bool CSoundGen::InitializeSound()
 	// Called from main thread
 	ASSERT(GetCurrentThread() == theApp.m_hThread);
 	ASSERT(m_pSoundInterface == NULL);
+
+	// Make sure we only start one thread
+	ASSERT(!m_audioThread.joinable());
 
 	// Event used to interrupt the sound buffer synchronization
 	m_hInterruptEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -655,9 +672,50 @@ bool CSoundGen::InitializeSound()
 	m_pSoundInterface->EnumerateDevices();
 
 	// Start thread when audio is done
-	ResumeThread();
+	m_audioThread = std::thread([this]() {
+		ThreadEntry();
+	});
 
 	return true;
+}
+
+void CSoundGen::ThreadEntry()
+{
+	m_audioThreadID = std::this_thread::get_id();
+
+	if (!InitInstance()) {
+		ExitInstance();
+		return;
+	}
+	while (true) {
+		while (auto pMessage = m_MessageQueue.front()) {
+			m_MessageQueue.pop();
+			if (pMessage->message == WM_QUIT) {
+				goto end_while;
+			}
+			if (!DispatchGuiMessage(*pMessage)) {
+				goto end_while;
+			}
+		}
+
+		// Blocks on audio output.
+		OnIdle();
+	}
+	end_while:
+
+	ExitInstance();
+	// lolmfc
+	delete this;
+}
+
+
+bool CSoundGen::PostGuiMessage(GuiMessageId message, WPARAM wParam, LPARAM lParam)
+{
+	return m_MessageQueue.try_push(GuiMessage{
+		message,
+		wParam,
+		lParam,
+	});
 }
 
 void CSoundGen::Interrupt() const
@@ -696,7 +754,7 @@ bool CSoundGen::ResetAudioDevice()
 	//
 
 	// Called from player thread
-	ASSERT(GetCurrentThreadId() == m_nThreadID);
+	ASSERT(std::this_thread::get_id() == m_audioThreadID);
 	ASSERT(m_pSoundInterface != NULL);
 
 	CSettings *pSettings = theApp.GetSettings();
@@ -723,7 +781,7 @@ bool CSoundGen::ResetAudioDevice()
 
 	// Reinitialize sound interface
 	if (!m_pSoundInterface->SetupDevice(Device)) {
-		m_pTrackerView->PostMessage(WM_USER_ERROR, IDS_SOUND_ERROR, MB_ICONERROR);
+		m_pTrackerView->PostAudioMessage(AM_ERROR, IDS_SOUND_ERROR, MB_ICONERROR);
 		return false;
 	}
 
@@ -738,7 +796,7 @@ bool CSoundGen::ResetAudioDevice()
 
 	// Channel failed
 	if (m_pSoundStream == NULL) {
-		m_pTrackerView->PostMessage(WM_USER_ERROR, IDS_SOUND_BUFFER_ERROR, MB_ICONERROR);
+		m_pTrackerView->PostAudioMessage(AM_ERROR, IDS_SOUND_BUFFER_ERROR, MB_ICONERROR);
 		return false;
 	}
 
@@ -755,12 +813,11 @@ bool CSoundGen::ResetAudioDevice()
 	m_iGraphBuffer = new short[m_iBufSizeSamples];
 
 	// Sample graph rate
-	m_csVisualizerWndLock.Lock();
-
-	if (m_pVisualizerWnd)
-		m_pVisualizerWnd->SetSampleRate(SampleRate);
-
-	m_csVisualizerWndLock.Unlock();
+	{
+		std::unique_lock<std::mutex> lock(m_csVisualizerWndLock);
+		if (m_pVisualizerWnd)
+			m_pVisualizerWnd->SetSampleRate(SampleRate);
+	}
 
 	if (!m_pAPU->SetupSound(SampleRate, 1, (m_iMachineType == NTSC) ? MACHINE_NTSC : MACHINE_PAL))
 		return false;
@@ -813,7 +870,7 @@ void CSoundGen::CloseAudioDevice()
 void CSoundGen::CloseAudio()
 {
 	// Called from player thread
-	ASSERT(GetCurrentThreadId() == m_nThreadID);
+	ASSERT(std::this_thread::get_id() == m_audioThreadID);
 
 	CloseAudioDevice();
 
@@ -832,7 +889,7 @@ void CSoundGen::CloseAudio()
 void CSoundGen::ResetBuffer()
 {
 	// Called from player thread
-	ASSERT(GetCurrentThreadId() == m_nThreadID);
+	ASSERT(std::this_thread::get_id() == m_audioThreadID);
 
 	m_iBufferPtr = 0;
 
@@ -893,7 +950,7 @@ void CSoundGen::FlushBuffer(int16_t const * pBuffer, uint32_t Size)
 	// Callback method from emulation
 
 	// May only be called from sound player thread
-	ASSERT(GetCurrentThreadId() == m_nThreadID);
+	ASSERT(std::this_thread::get_id() == m_audioThreadID);
 
 	if (!m_pSoundStream)
 		return;
@@ -1019,12 +1076,11 @@ bool CSoundGen::PlayBuffer(unsigned int framesToWrite, unsigned int bytesToWrite
 		m_pSoundStream->WriteBuffer(m_pAccumBuffer, bytesToWrite);
 
 		// Draw graph
-		m_csVisualizerWndLock.Lock();
-
-		if (m_pVisualizerWnd)
-			m_pVisualizerWnd->FlushSamples(gsl::span(m_iGraphBuffer, framesToWrite));
-
-		m_csVisualizerWndLock.Unlock();
+		{
+			std::unique_lock<std::mutex> lock(m_csVisualizerWndLock);
+			if (m_pVisualizerWnd)
+				m_pVisualizerWnd->FlushSamples(gsl::span(m_iGraphBuffer, framesToWrite));
+		}
 
 		// Reset buffer position
 		m_iBufferPtr = 0;
@@ -1110,7 +1166,7 @@ int CSoundGen::ReadPeriodTable(int Index, int Table) const		// // //
 void CSoundGen::BeginPlayer(play_mode_t Mode, int Track)
 {
 	// Called from player thread
-	ASSERT(GetCurrentThreadId() == m_nThreadID);
+	ASSERT(std::this_thread::get_id() == m_audioThreadID);
 	ASSERT(m_pDocument != NULL);
 	ASSERT(m_pTrackerView != NULL);
 
@@ -1341,7 +1397,7 @@ CString CSoundGen::RecallChannelState(int Channel) const		// // //
 void CSoundGen::HaltPlayer()
 {
 	// Called from player thread
-	ASSERT(GetCurrentThreadId() == m_nThreadID);
+	ASSERT(std::this_thread::get_id() == m_audioThreadID);
 
 	// Move player to non-playing state
 	m_bPlaying = false;
@@ -1361,7 +1417,7 @@ void CSoundGen::HaltPlayer()
 
 	// Signal that playback has stopped
 	if (m_pTrackerView != NULL) {
-		m_pTrackerView->PostMessage(WM_USER_PLAYER, m_iPlayFrame, m_iPlayRow);
+		m_pTrackerView->PostAudioMessage(AM_PLAYER, m_iPlayFrame, m_iPlayRow);
 		m_pInstRecorder->StopRecording(m_pTrackerView);		// // //
 	}
 
@@ -1440,7 +1496,7 @@ void CSoundGen::HaltPlayer()
 void CSoundGen::ResetAPU()
 {
 	// Called from player thread
-	ASSERT(GetCurrentThreadId() == m_nThreadID);
+	ASSERT(std::this_thread::get_id() == m_audioThreadID);
 
 	// Reset the APU
 	m_pAPU->Reset();
@@ -1463,7 +1519,7 @@ void CSoundGen::ResetAPU()
 void CSoundGen::AddCyclesUnlessEndOfFrame(int Count)
 {
 	// Called from player thread
-	ASSERT(GetCurrentThreadId() == m_nThreadID);
+	ASSERT(std::this_thread::get_id() == m_audioThreadID);
 
 	// Add APU cycles
 	Count = std::min(Count, m_iUpdateCycles - m_iConsumedCycles);
@@ -1494,7 +1550,7 @@ int CSoundGen::GetFDSModCounter() const
 void CSoundGen::MakeSilent()
 {
 	// Called from player thread
-	ASSERT(GetCurrentThreadId() == m_nThreadID);
+	ASSERT(std::this_thread::get_id() == m_audioThreadID);
 
 	m_pAPU->Reset();
 	m_pAPU->ClearSample();		// // //
@@ -1599,7 +1655,7 @@ float CSoundGen::GetCurrentBPM() const		// // //
 void CSoundGen::RunFrame()
 {
 	// Called from player thread
-	ASSERT(GetCurrentThreadId() == m_nThreadID);
+	ASSERT(std::this_thread::get_id() == m_audioThreadID);
 	ASSERT(m_pDocument != NULL);
 	ASSERT(m_pTrackerView != NULL);
 
@@ -1692,7 +1748,7 @@ void CSoundGen::CheckControl()
 	if (m_bDirty) {
 		m_bDirty = false;
 		if (!m_bRendering)
-			m_pTrackerView->PostMessage(WM_USER_PLAYER, m_iPlayFrame, m_iPlayRow);
+			m_pTrackerView->PostAudioMessage(AM_PLAYER, m_iPlayFrame, m_iPlayRow);
 	}
 }
 
@@ -1885,12 +1941,12 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 	// Unfortunately, destructor doesn't cleanup object. Only CloseFile() does.
 	if (!m_pWaveFile ||
 		!m_pWaveFile->OpenFile(pFile, theApp.GetSettings()->Sound.iSampleRate, theApp.GetSettings()->Sound.iSampleSize, 1)) {
-		m_pTrackerView->PostMessage(WM_USER_ERROR, IDS_FILE_OPEN_ERROR);
+		m_pTrackerView->PostAudioMessage(AM_ERROR, IDS_FILE_OPEN_ERROR);
 		return false;
 	}
 	else {
 		m_bRequestRenderStart = true;
-		PostThreadMessage(WM_USER_START_RENDER, 0, 0);
+		PostGuiMessage(WM_USER_START_RENDER, 0, 0);
 	}
 
 	return true;
@@ -1899,7 +1955,7 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 void CSoundGen::StopRendering()
 {
 	// Called from player thread
-	ASSERT(GetCurrentThreadId() == m_nThreadID);
+	ASSERT(std::this_thread::get_id() == m_audioThreadID);
 	ASSERT(m_bRendering);
 
 	auto l = Lock();
@@ -1974,7 +2030,7 @@ bool CSoundGen::WaitForStop() const
 	// Wait for player to stop, timeout = 4s
 	// The player must have received the stop command or this will fail
 
-	ASSERT(GetCurrentThreadId() != m_nThreadID);
+	ASSERT(GetCurrentThreadId() == theApp.m_nThreadID);
 
 	//return ::WaitForSingleObject(m_hIsPlaying, 4000) == WAIT_OBJECT_0;
 
@@ -1988,7 +2044,7 @@ bool CSoundGen::WaitForStop() const
 // Overloaded functions
 //
 
-BOOL CSoundGen::InitInstance()
+bool CSoundGen::InitInstance()
 {
 	//
 	// Setup the sound player object, called when thread is started
@@ -2030,9 +2086,12 @@ BOOL CSoundGen::InitInstance()
 	m_iSpeed = DEFAULT_SPEED;
 	m_iTempo = (DEFAULT_MACHINE_TYPE == NTSC) ? DEFAULT_TEMPO_NTSC : DEFAULT_TEMPO_PAL;
 
-	TRACE("SoundGen: Created thread (0x%04x)\n", m_nThreadID);
+	TRACE("SoundGen: Created thread (0x%04x)\n", GetCurrentThreadId());
 
-	SetThreadPriority(THREAD_PRIORITY_TIME_CRITICAL);
+	// SetThreadPriority may or may not be unimplemented on Wine (I don't see a fixme
+	// on Mac or Linux).
+	auto success = SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+	TRACE("SoundGen: SetThreadPriority success %d\n", success);
 
 	m_iDelayedStart = 0;
 	m_iFrameCounter = 0;
@@ -2058,11 +2117,11 @@ BOOL CSoundGen::InitInstance()
 	return TRUE;
 }
 
-int CSoundGen::ExitInstance()
+void CSoundGen::ExitInstance()
 {
 	// Shutdown the thread
 
-	TRACE("SoundGen: Closing thread (0x%04x)\n", m_nThreadID);
+	TRACE("SoundGen: Closing thread (0x%04x)\n", GetCurrentThreadId());
 
 	// Free allocated memory
 	SAFE_RELEASE_ARRAY(m_iGraphBuffer);
@@ -2078,21 +2137,16 @@ int CSoundGen::ExitInstance()
 	if (m_CoInitialized) {
 		CoUninitialize();
 	}
-
-	return CWinThread::ExitInstance();
 }
 
-BOOL CSoundGen::OnIdle(LONG lCount)
+void CSoundGen::OnIdle()
 {
 	//
 	// Main loop for audio playback thread
 	//
 
-	if (CWinThread::OnIdle(lCount))
-		return TRUE;
-
 	if (!m_pDocument || !m_pSoundStream || !m_pDocument->IsFileLoaded())
-		return TRUE;
+		return;
 
 	++m_iFrameCounter;
 
@@ -2145,7 +2199,7 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 	if (m_iDelayedStart > 0) {
 		--m_iDelayedStart;
 		if (!m_iDelayedStart) {
-			PostThreadMessage(WM_USER_PLAY, MODE_PLAY_START, m_iRenderTrack);
+			PostGuiMessage(WM_USER_PLAY, MODE_PLAY_START, m_iRenderTrack);
 		}
 	}
 
@@ -2154,8 +2208,6 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 		delete m_pPreviewSample;
 		m_pPreviewSample = NULL;
 	}
-
-	return TRUE;
 }
 
 void CSoundGen::PlayChannelNotes()
@@ -2384,7 +2436,7 @@ void CSoundGen::OnRemoveDocument(WPARAM wParam, LPARAM lParam)
 void CSoundGen::RegisterKeyState(int Channel, int Note)
 {
 	if (m_pTrackerView != NULL)
-		m_pTrackerView->PostMessage(WM_USER_NOTE_EVENT, Channel, Note);
+		m_pTrackerView->PostAudioMessage(AM_NOTE_EVENT, Channel, Note);
 }
 
 // FDS & N163

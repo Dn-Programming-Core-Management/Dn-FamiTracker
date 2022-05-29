@@ -47,6 +47,7 @@
 #include "VersionChecker.h"		// // //
 #include "VersionCheckerDlg.h"		// // !!
 #include <iostream>		// // //
+#include <utility>  // std::move
 #include "str_conv/str_conv.hpp"		// // //
 
 // 0CC uses AfxRegSetValue() and AfxGetModuleShortFileName(),
@@ -58,10 +59,6 @@
 const TCHAR FT_SHARED_MUTEX_NAME[]	= _T("FamiTrackerMutex");	// Name of global mutex
 const TCHAR FT_SHARED_MEM_NAME[]	= _T("FamiTrackerWnd");		// Name of global memory area
 const DWORD	SHARED_MEM_SIZE			= 256;
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
 
 // CFamiTrackerApp
 
@@ -156,7 +153,7 @@ BOOL CFamiTrackerApp::InitInstance()
 
 	//who: added by Derek Andrews <derek.george.andrews@gmail.com>
 	//why: Load all custom exporter plugins on startup.
-	
+
 	TCHAR pathToPlugins[MAX_PATH];
 	GetModuleFileName(NULL, pathToPlugins, MAX_PATH);
 	PathRemoveFileSpec(pathToPlugins);
@@ -177,30 +174,20 @@ BOOL CFamiTrackerApp::InitInstance()
 	// Create channel map
 	m_pChannelMap = new CChannelMap();
 
-	// Start sound generator thread, initially suspended
-	if (!m_pSoundGenerator->CreateThread(CREATE_SUSPENDED)) {
-		// If failed, restore and save default settings
-		m_pSettings->DefaultSettings();
-		m_pSettings->SaveSettings();
-		// Show message and quit
-		AfxMessageBox(IDS_START_ERROR, MB_ICONERROR);
-		return FALSE;
-	}
-
 	// Check if the application is themed
 	CheckAppThemed();
 
 	// Register the application's document templates.  Document templates
 	//  serve as the connection between documents, frame windows and views
 	CDocTemplate0CC* pDocTemplate = new CDocTemplate0CC(		// // //
-		IDR_MAINFRAME, 
-		RUNTIME_CLASS(CFamiTrackerDoc), 
-		RUNTIME_CLASS(CMainFrame), 
+		IDR_MAINFRAME,
+		RUNTIME_CLASS(CFamiTrackerDoc),
+		RUNTIME_CLASS(CMainFrame),
 		RUNTIME_CLASS(CFamiTrackerView));
 
 	if (!pDocTemplate)
 		return FALSE;
-	
+
 	if (m_pDocManager == NULL)		// // //
 		m_pDocManager = new CDocManager0CC { };
 	m_pDocManager->AddDocTemplate(pDocTemplate);
@@ -262,9 +249,9 @@ BOOL CFamiTrackerApp::InitInstance()
 	//  In an SDI app, this should occur after ProcessShellCommand
 	// Enable drag/drop open
 	m_pMainWnd->DragAcceptFiles();
-	
-	// Initialize the sound interface, also resumes the thread
-	if (!m_pSoundGenerator->InitializeSound()) {
+
+	// Initialize the sound interface, also starts the thread
+	if (!m_pSoundGenerator->BeginThread()) {
 		// If failed, restore and save default settings
 		m_pSettings->DefaultSettings();
 		m_pSettings->SaveSettings();
@@ -272,10 +259,10 @@ BOOL CFamiTrackerApp::InitInstance()
 		AfxMessageBox(IDS_START_ERROR, MB_ICONERROR);
 		return FALSE;
 	}
-	
+
 	// Initialize midi unit
 	m_pMIDI->Init();
-	
+
 	if (cmdInfo.m_bPlay)
 		theApp.StartPlayer(MODE_PLAY);
 
@@ -372,7 +359,7 @@ BOOL CFamiTrackerApp::PreTranslateMessage(MSG* pMsg)
 void CFamiTrackerApp::CheckAppThemed()
 {
 	HMODULE hinstDll = ::LoadLibrary(_T("UxTheme.dll"));
-	
+
 	if (hinstDll) {
 		typedef BOOL (*ISAPPTHEMEDPROC)();
 		ISAPPTHEMEDPROC pIsAppThemed;
@@ -386,7 +373,7 @@ void CFamiTrackerApp::CheckAppThemed()
 }
 
 bool CFamiTrackerApp::IsThemeActive() const
-{ 
+{
 	return m_bThemeActive;
 }
 
@@ -415,7 +402,7 @@ bool GetFileVersion(LPCTSTR Filename, WORD &Major, WORD &Minor, WORD &Revision, 
 			else
 				Success = false;
 		}
-		else 
+		else
 			Success = false;
 
 		SAFE_RELEASE_ARRAY(pData);
@@ -481,10 +468,9 @@ void CFamiTrackerApp::ShutDownSynth()
 		return;
 	}
 
-	// Save a handle to the thread since the object will delete itself
-	HANDLE hThread = m_pSoundGenerator->m_hThread;
+	auto stdThread = std::move(m_pSoundGenerator->m_audioThread);
 
-	if (hThread == NULL) {
+	if (!stdThread.joinable()) {
 		// Object was found but thread not created
 		delete m_pSoundGenerator;
 		m_pSoundGenerator = NULL;
@@ -494,25 +480,24 @@ void CFamiTrackerApp::ShutDownSynth()
 
 	TRACE("App: Waiting for sound player thread to close\n");
 
-	// Resume if thread was suspended
-	if (m_pSoundGenerator->ResumeThread() == 0) {
-		// Thread was not suspended, send quit message
-		// Note that this object may be deleted now!
-		m_pSoundGenerator->PostThreadMessage(WM_QUIT, 0, 0);
-	}
-	// If thread was suspended then it will auto-terminate, because sound hasn't been initialized
+	// Send quit message. Note that this object may be deleted now!
+	m_pSoundGenerator->PostGuiMessage(AM_QUIT, 0, 0);
 
 	// Wait for thread to exit
-	DWORD dwResult = ::WaitForSingleObject(hThread, CSoundGen::AUDIO_TIMEOUT + 1000);
+	DWORD dwResult = ::WaitForSingleObject(
+		stdThread.native_handle(), CSoundGen::AUDIO_TIMEOUT + 1000
+	);
 
 	if (dwResult != WAIT_OBJECT_0 && m_pSoundGenerator != NULL) {
 		TRACE("App: Closing the sound generator thread failed\n");
 #ifdef _DEBUG
 		AfxMessageBox(_T("Error: Could not close sound generator thread"));
 #endif
+		stdThread.detach();
 		// Unclean exit
 		return;
 	}
+	stdThread.join();
 
 	// Object should be auto-deleted
 	ASSERT(m_pSoundGenerator == NULL);
@@ -541,7 +526,7 @@ void CFamiTrackerApp::RegisterSingleInstance()
 
 	if (m_hWndMapFile != NULL) {
 		LPTSTR pBuf = (LPTSTR) MapViewOfFile(m_hWndMapFile, FILE_MAP_ALL_ACCESS, 0, 0, SHARED_MEM_SIZE);
-		if (pBuf != NULL) { 
+		if (pBuf != NULL) {
 			// Create a string of main window handle
 			_itot_s((int)GetMainWnd()->m_hWnd, pBuf, SHARED_MEM_SIZE, 10);
 			UnmapViewOfFile(pBuf);
@@ -550,7 +535,7 @@ void CFamiTrackerApp::RegisterSingleInstance()
 }
 
 void CFamiTrackerApp::UnregisterSingleInstance()
-{	
+{
 	// Close shared memory area
 	if (m_hWndMapFile) {
 		CloseHandle(m_hWndMapFile);
@@ -567,9 +552,9 @@ void CFamiTrackerApp::CheckNewVersion(bool StartUp)		// // //
 }
 
 bool CFamiTrackerApp::CheckSingleInstance(CFTCommandLineInfo &cmdInfo)
-{	
+{
 	// Returns true if program should close
-	
+
 	if (!GetSettings()->General.bSingleInstance)
 		return false;
 
@@ -581,7 +566,7 @@ bool CFamiTrackerApp::CheckSingleInstance(CFTCommandLineInfo &cmdInfo)
 	if (GetLastError() == ERROR_ALREADY_EXISTS) {
 		// Another instance detected, get window handle
 		HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, FT_SHARED_MEM_NAME);
-		if (hMapFile != NULL) {	
+		if (hMapFile != NULL) {
 			LPCTSTR pBuf = (LPTSTR) MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, SHARED_MEM_SIZE);
 			if (pBuf != NULL) {
 				// Get window handle
@@ -608,7 +593,7 @@ bool CFamiTrackerApp::CheckSingleInstance(CFTCommandLineInfo &cmdInfo)
 			CloseHandle(hMapFile);
 		}
 	}
-	
+
 	return false;
 }
 
@@ -647,9 +632,9 @@ int CFamiTrackerApp::GetCPUUsage() const
 	// Calculate CPU usage
 	const HANDLE hThreads[] = {
 		m_hThread,
-		m_pSoundGenerator->m_hThread,
+		m_pSoundGenerator->m_audioThread.native_handle(),
 		GetMainFrame()->GetVisualizerWnd()->GetThreadHandle(),
-	};	
+	};
 
 	static FILETIME KernelLastTime[std::size(hThreads)] = { };
 	static FILETIME UserLastTime[std::size(hThreads)] = { };
@@ -723,7 +708,7 @@ BOOL CFamiTrackerApp::OnIdle(LONG lCount)		// // //
 }
 
 void CFamiTrackerApp::OnVersionCheck()
-{	
+{
 	CVersionCheckerDlg VCDlg;
 	VCDlg.DoModal();
 }
@@ -796,7 +781,7 @@ void CFamiTrackerApp::ResetPlayer()
 
 // File load/save
 
-void CFamiTrackerApp::OnFileOpen() 
+void CFamiTrackerApp::OnFileOpen()
 {
 	CString newName = _T("");		// // //
 
@@ -804,10 +789,10 @@ void CFamiTrackerApp::OnFileOpen()
 		return; // open cancelled
 
 	CFrameWnd *pFrameWnd = (CFrameWnd*)GetMainWnd();
-	
+
 	if (pFrameWnd)
 		pFrameWnd->SetMessageText(IDS_LOADING_FILE);
-	
+
 	AfxGetApp()->OpenDocumentFile(newName);
 
 	if (pFrameWnd)
@@ -889,9 +874,9 @@ CString MakeFloatString(float val, LPCTSTR format)
  *
  */
 
-CFTCommandLineInfo::CFTCommandLineInfo() : CCommandLineInfo(), 
-	m_bLog(false), 
-	m_bExport(false), 
+CFTCommandLineInfo::CFTCommandLineInfo() : CCommandLineInfo(),
+	m_bLog(false),
+	m_bExport(false),
 	m_bPlay(false),
 	m_bHelp(false),		// // !!
 	m_strExportFile(_T("")),
@@ -917,7 +902,7 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 			return;
 		}
 		// Disable crash dumps (/nodump)
-		else if (!_tcsicmp(pszParam, _T("nodump"))) { 
+		else if (!_tcsicmp(pszParam, _T("nodump"))) {
 #ifdef ENABLE_CRASH_HANDLER
 			UninstallExceptionHandler();
 #endif
