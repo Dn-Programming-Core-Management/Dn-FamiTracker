@@ -114,7 +114,7 @@ public:
 		SetPhase(channel, phase);
 	}
 
-	uint32_t UpdateOutputLevel()
+	int16_t UpdateOutputLevel()
 	{
 		int16_t summedOutput = 0;
 		if (_mixMultiplex) {		// toggle multiplexing
