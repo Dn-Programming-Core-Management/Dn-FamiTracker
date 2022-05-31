@@ -30,7 +30,6 @@ CodeGraphData
 *.lastbuildstate
 0CC-FamiTracker.opensdf
 0CC-FamiTracker.sdf
-config.h
 apu_log.txt
 0CC-FamiTracker.vcproj
 *.db
