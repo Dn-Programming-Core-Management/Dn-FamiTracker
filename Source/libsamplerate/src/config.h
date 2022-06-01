@@ -67,7 +67,7 @@
 #define ENABLE_SINC_MEDIUM_CONVERTER
 
 /* define best samplerate convertor */
-#define ENABLE_SINC_BEST_CONVERTER
+/* #undef ENABLE_SINC_BEST_CONVERTER */
 
 /* The size of `int', as computed by sizeof. */
 #define SIZEOF_INT 
