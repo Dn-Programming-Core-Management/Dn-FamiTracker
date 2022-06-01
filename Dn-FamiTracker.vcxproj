@@ -125,7 +125,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;samplerate.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <DataExecutionPrevention>true</DataExecutionPrevention>
@@ -165,7 +165,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;samplerate.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <DataExecutionPrevention>true</DataExecutionPrevention>
@@ -206,7 +206,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;samplerate.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Version>
       </Version>
       <AdditionalLibraryDirectories>$(LibraryPath);$(SolutionDir)Source\libsamplerate\src\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -249,7 +249,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;samplerate.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Version>
       </Version>
       <AdditionalLibraryDirectories>$(LibraryPath);$(SolutionDir)Source\libsamplerate\src\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -811,6 +811,11 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\Application.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Source\libsamplerate\src\libsamplerate.vcxproj">
+      <Project>{5b4c1aa7-4ae9-4ff2-a7e6-8eee50edc6e2}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
