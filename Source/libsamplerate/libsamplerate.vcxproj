@@ -76,31 +76,31 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)Source\libsamplerate\src\$(Configuration)\</OutDir>
-    <IntDir>samplerate.dir\$(Configuration)\</IntDir>
+    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)samplerate.dir\$(Configuration)\</IntDir>
     <TargetName>samplerate</TargetName>
-    <ExternalIncludePath>$(SolutionDir)Source\libsamplerate\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(ProjectDir)include;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)Source\libsamplerate\src\$(Configuration)\</OutDir>
-    <IntDir>samplerate.dir\$(Configuration)\</IntDir>
+    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)samplerate.dir\$(Configuration)\</IntDir>
     <TargetName>samplerate</TargetName>
-    <ExternalIncludePath>$(SolutionDir)Source\libsamplerate\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(ProjectDir)include;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)Source\libsamplerate\src\$(Configuration)\</OutDir>
-    <IntDir>samplerate.dir\$(Configuration)\</IntDir>
+    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)samplerate.dir\$(Configuration)\</IntDir>
     <TargetName>samplerate</TargetName>
-    <ExternalIncludePath>$(SolutionDir)Source\libsamplerate\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(ProjectDir)include;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)Source\libsamplerate\src\$(Configuration)\</OutDir>
-    <IntDir>samplerate.dir\$(Configuration)\</IntDir>
+    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)samplerate.dir\$(Configuration)\</IntDir>
     <TargetName>samplerate</TargetName>
-    <ExternalIncludePath>$(SolutionDir)Source\libsamplerate\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(ProjectDir)include;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -196,27 +196,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="CMakeLists.txt">
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
-    </Text>
+    <ClInclude Include="src\common.h" />
+    <ClInclude Include="src\config.h" />
+    <ClInclude Include="src\fastest_coeffs.h" />
+    <ClInclude Include="src\high_qual_coeffs.h" />
+    <ClInclude Include="src\mid_qual_coeffs.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common.h" />
-    <ClInclude Include="config.h">
-      <DeploymentContent>true</DeploymentContent>
-    </ClInclude>
-    <ClInclude Include="fastest_coeffs.h" />
-    <ClInclude Include="high_qual_coeffs.h" />
-    <ClInclude Include="mid_qual_coeffs.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="samplerate.c" />
-    <ClCompile Include="src_linear.c" />
-    <ClCompile Include="src_sinc.c" />
-    <ClCompile Include="src_zoh.c" />
+    <ClCompile Include="src\samplerate.c" />
+    <ClCompile Include="src\src_linear.c" />
+    <ClCompile Include="src\src_sinc.c" />
+    <ClCompile Include="src\src_zoh.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

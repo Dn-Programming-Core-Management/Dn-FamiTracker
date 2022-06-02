@@ -15,37 +15,34 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common.h">
+    <ClInclude Include="src\common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fastest_coeffs.h">
+    <ClInclude Include="src\config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="high_qual_coeffs.h">
+    <ClInclude Include="src\fastest_coeffs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mid_qual_coeffs.h">
+    <ClInclude Include="src\high_qual_coeffs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="config.h">
+    <ClInclude Include="src\mid_qual_coeffs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="samplerate.c">
+    <ClCompile Include="src\samplerate.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src_linear.c">
+    <ClCompile Include="src\src_linear.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src_sinc.c">
+    <ClCompile Include="src\src_sinc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src_zoh.c">
+    <ClCompile Include="src\src_zoh.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="CMakeLists.txt" />
   </ItemGroup>
 </Project>
