@@ -798,7 +798,7 @@ bool CSoundGen::ResetAudioDevice()
 		iBlocks += (BufferLen / 66);
 
 	// Create channel
-	m_pSoundStream = m_pSoundInterface->OpenFloatChannel(SampleRate, 1, BufferLen, iBlocks);
+	m_pSoundStream = m_pSoundInterface->OpenFloatChannel(1, BufferLen, iBlocks);
 
 	// Channel failed
 	if (m_pSoundStream == NULL) {

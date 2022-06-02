@@ -211,7 +211,7 @@ int CSoundInterface::CalculateBufferLength(int BufferLen, int Samplerate, int Sa
 }
 
 CSoundStream *CSoundInterface::OpenFloatChannel(
-	int TargetSampleRate, int Channels, int BufferLength, int Blocks
+	int Channels, int BufferLength, int Blocks
 ) {
 	// Based off https://docs.microsoft.com/en-us/windows/win32/coreaudio/exclusive-mode-streams
 	if (!m_maybeDevice) {
@@ -225,14 +225,30 @@ CSoundStream *CSoundInterface::OpenFloatChannel(
 
 	const int InputChannels = Channels;
 
-	auto create_wave_format = [&]() {
+	// Set sample rate to mix format. This is necessary on Windows since WASAPI rejects
+	// non-system sampling rates, and a good idea on Linux since Wine delegates resampling
+	// to PulseAudio/PipeWire, and PulseAudio uses a low-quality resampler by default
+	// (https://gitlab.freedesktop.org/pulseaudio/pulseaudio/-/issues/310).
+	DWORD SampleRate{};
+	{
+		WAVEFORMATEX* pMixFormat{};
+		hr = pAudioClient->GetMixFormat(&pMixFormat);
+		if (FAILED(hr)) {
+			CoTaskMemFree(pMixFormat);
+			return nullptr;
+		}
+		SampleRate = (int) pMixFormat->nSamplesPerSec;
+		CoTaskMemFree(pMixFormat);
+	}
+
+	auto create_wave_format = [](WORD Channels, DWORD SampleRate) {
 		// Can't use designated initializers since we're not in C++20 mode.
 		WAVEFORMATEX format{};
 
 		// https://docs.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-waveformatex#members
 		format.wFormatTag = WAVE_FORMAT_IEEE_FLOAT;
-		format.nChannels = (WORD)Channels;
-		format.nSamplesPerSec = (DWORD)TargetSampleRate;
+		format.nChannels = Channels;
+		format.nSamplesPerSec = SampleRate;
 		format.wBitsPerSample = 32;
 
 		// If wFormatTag is WAVE_FORMAT_PCM or WAVE_FORMAT_EXTENSIBLE, nBlockAlign must be equal to
@@ -249,7 +265,7 @@ CSoundStream *CSoundInterface::OpenFloatChannel(
 
 		return format;
 	};
-	WAVEFORMATEX format = create_wave_format();
+	WAVEFORMATEX format = create_wave_format((WORD)Channels, SampleRate);
 
 	// Ensure that chosen audio format is supported.
 	WAVEFORMATEX* pClosestMatch{};
@@ -258,28 +274,17 @@ CSoundStream *CSoundInterface::OpenFloatChannel(
 		CoTaskMemFree(pClosestMatch);
 		pClosestMatch = nullptr;
 
-		// Set sample rate to mix format.
-		{
-			WAVEFORMATEX* pMixFormat{};
-			hr = pAudioClient->GetMixFormat(&pMixFormat);
-			if (FAILED(hr)) {
-				CoTaskMemFree(pMixFormat);
-				return nullptr;
-			}
-			TargetSampleRate = (int) pMixFormat->nSamplesPerSec;
-			CoTaskMemFree(pMixFormat);
-		}
-
 		// Try again in stereo. We will upmix input mono to stereo.
-		// TODO pick stereo by default?
+		// (Should we pick stereo by default?)
 		Channels = 2;
 
-		format = create_wave_format();
+		format = create_wave_format((WORD)Channels, SampleRate);
 		hr = pAudioClient->IsFormatSupported(AUDCLNT_SHAREMODE_SHARED, &format, &pClosestMatch);
 	}
 
 	// So far we don't need to handle audio format fallback, since Windows 7/10 and
 	// Wine all support int16 audio.
+	// If the audio format is still unsupported, give up and show an error to the user.
 	if (hr != S_OK) {
 		CoTaskMemFree(pClosestMatch);
 		return nullptr;
@@ -338,7 +343,7 @@ CSoundStream *CSoundInterface::OpenFloatChannel(
 		std::move(pAudioRenderClient),
 		m_hInterrupt,
 		std::move(bufferEvent),
-		TargetSampleRate,
+		SampleRate,
 		bufferFrameCount,
 		4,  // bytesPerSample = 4 for float
 		InputChannels,
