@@ -55,6 +55,7 @@
 #include "ChannelFactory.h"		// // // test
 #include "DetuneTable.h"		// // //
 #include <iostream>
+#include <stdexcept>
 
 // 1kHz test tone
 //#define AUDIO_TEST
@@ -123,8 +124,6 @@ CSoundGen::CSoundGen() :
 	m_pAPU(NULL),
 	m_pSoundInterface(NULL),
 	m_pSoundStream(NULL),
-	m_pAccumBuffer(NULL),
-	m_iGraphBuffer(NULL),
 	m_pDocument(NULL),
 	m_pTrackerView(NULL),
 	m_bRequestRenderStart(false),
@@ -167,6 +166,12 @@ CSoundGen::CSoundGen() :
 	// Create APU
 	m_pAPU = new CAPU(this);		// // //
 
+	// May be nullptr! This is an error.
+	m_resampler = src_new(SRC_SINC_MEDIUM_QUALITY, 1, nullptr);
+	if (!m_resampler) {
+		throw std::runtime_error("Could not create resampler");
+	}
+
 	// Create all kinds of channels
 	CreateChannels();
 }
@@ -183,6 +188,8 @@ CSoundGen::~CSoundGen()
 	}
 
 	SAFE_RELEASE(m_pInstRecorder);		// // //
+
+	src_delete(m_resampler);
 }
 
 //
@@ -759,15 +766,15 @@ bool CSoundGen::ResetAudioDevice()
 
 	CSettings *pSettings = theApp.GetSettings();
 
-	// unsigned int SampleSize	= pSettings->Sound.iSampleSize; (always 16)
-	unsigned int SampleRate = pSettings->Sound.iSampleRate;
-	unsigned int BufferLen	= pSettings->Sound.iBufferLength;
-	unsigned int Device		= pSettings->Sound.iDevice;
+	// unsigned int SampleSize = pSettings->Sound.iSampleSize; (always 16)
+	unsigned int SampleRate	= pSettings->Sound.iSampleRate;
+	unsigned int BufferLen = pSettings->Sound.iBufferLength;
+	unsigned int Device = pSettings->Sound.iDevice;
 
 	auto l = Lock();
 
 	m_iAudioUnderruns = 0;
-	m_iBufferPtr = 0;
+	src_reset(m_resampler);
 
 	// Close the old sound channel
 	CloseAudioDevice();
@@ -791,7 +798,7 @@ bool CSoundGen::ResetAudioDevice()
 		iBlocks += (BufferLen / 66);
 
 	// Create channel
-	m_pSoundStream = m_pSoundInterface->OpenChannel(SampleRate, 16, 1, BufferLen, iBlocks);
+	m_pSoundStream = m_pSoundInterface->OpenFloatChannel(SampleRate, 1, BufferLen, iBlocks);
 
 	// Channel failed
 	if (m_pSoundStream == NULL) {
@@ -799,27 +806,31 @@ bool CSoundGen::ResetAudioDevice()
 		return false;
 	}
 
+	int ResampleRate = m_pSoundStream->GetSampleRate();
+	m_resamplerArgs.src_ratio = (double) ResampleRate / (double) SampleRate;
+
 	// Create a buffer
 	m_iBufSizeBytes	  = m_pSoundStream->TotalBufferSizeBytes();
 	m_iBufSizeSamples = m_pSoundStream->TotalBufferSizeFrames();
 
 	// Temp. audio buffer
-	SAFE_RELEASE_ARRAY(m_pAccumBuffer);
-	m_pAccumBuffer = new char[m_iBufSizeBytes];
-
-	// Sample graph buffer
-	SAFE_RELEASE_ARRAY(m_iGraphBuffer);
-	m_iGraphBuffer = new short[m_iBufSizeSamples];
+	m_pResampleOutBuffer = std::make_unique<float[]>(m_iBufSizeSamples);
 
 	// Sample graph rate
 	{
 		std::unique_lock<std::mutex> lock(m_csVisualizerWndLock);
 		if (m_pVisualizerWnd)
-			m_pVisualizerWnd->SetSampleRate(SampleRate);
+			m_pVisualizerWnd->SetSampleRate(ResampleRate);
 	}
 
 	if (!m_pAPU->SetupSound(SampleRate, 1, (m_iMachineType == NTSC) ? MACHINE_NTSC : MACHINE_PAL))
 		return false;
+
+	{
+		auto inputBufferSize = m_pAPU->GetSoundBufferSamples();
+		m_inputBufferSize = inputBufferSize;
+		m_pResampleInBuffer = std::make_unique<float[]>(inputBufferSize);
+	}
 
 	currN163LevelOffset = m_pDocument->GetN163LevelOffset();
 
@@ -851,7 +862,7 @@ bool CSoundGen::ResetAudioDevice()
 	m_bBufferTimeout = false;
 	m_iClipCounter = 0;
 
-	TRACE("SoundGen: Created sound channel with params: %i Hz, 16 bits, %i ms (%i blocks)\n", SampleRate, BufferLen, iBlocks);
+	TRACE("SoundGen: Created sound channel with params: %i Hz, 16 bits, %i ms (%i blocks)\n", ResampleRate, BufferLen, iBlocks);
 
 	return true;
 }
@@ -890,7 +901,7 @@ void CSoundGen::ResetBuffer()
 	// Called from player thread
 	ASSERT(std::this_thread::get_id() == m_audioThreadID);
 
-	m_iBufferPtr = 0;
+	src_reset(m_resampler);
 
 	if (m_pSoundStream)
 		m_pSoundStream->ClearBuffer();
@@ -898,9 +909,9 @@ void CSoundGen::ResetBuffer()
 	m_pAPU->Reset();
 }
 
-bool CSoundGen::TryWaitForWritable(uint32_t& framesWritable, uint32_t& bytesWritable) {
-	// Waits for sound stream, even in WAV export mode. Not a big deal (doesn't
-	// slow down export), and redesigning to avoid this is hard.
+bool CSoundGen::TryWaitForWritable(uint32_t& framesWritable) {
+	ASSERT(!m_bRendering);
+
 	while (true) {
 		WaitResult result = m_pSoundStream->WaitForReady(AUDIO_TIMEOUT);
 		// TRACE("WaitResult %d\n", result);
@@ -918,7 +929,6 @@ bool CSoundGen::TryWaitForWritable(uint32_t& framesWritable, uint32_t& bytesWrit
 			// Custom event (requested quit)
 		case WaitResult::Interrupted:
 			// Forget queued audio and quit.
-			m_iBufferPtr = 0;
 			return false;
 
 		case WaitResult::OutOfSync:
@@ -930,18 +940,9 @@ bool CSoundGen::TryWaitForWritable(uint32_t& framesWritable, uint32_t& bytesWrit
 	}
 endWhile:
 
-	framesWritable = GetBufferFramesWritable();
-	bytesWritable = m_pSoundStream->FramesToPubBytes(framesWritable);
+	framesWritable = m_pSoundStream->BufferFramesWritable();
+	ASSERT(framesWritable <= m_iBufSizeSamples);
 	return true;
-}
-
-unsigned int CSoundGen::GetBufferFramesWritable() const {
-	if (m_bRendering) {
-		return m_iBufSizeSamples;
-	}
-	else {
-		return m_pSoundStream->BufferFramesWritable();
-	}
 }
 
 void CSoundGen::FlushBuffer(int16_t const * pBuffer, uint32_t Size)
@@ -970,22 +971,19 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 	// Called when the APU audio buffer is full and
 	// ready for playing
 
+	// pBuffer and Size come from CAPU, and Size is unaffected by m_iBufSizeSamples
+	// (both now and before WASAPI). Therefore it's safe for m_iBufSizeSamples to only
+	// reflect the output buffer size (storing samples after resampling).
+
 	const int SAMPLE_MAX = 32768;
 
-	auto pConversionBuffer = (int16_t *) m_pAccumBuffer;
-
-	unsigned int framesWritable, bytesWritable;
-	if (!TryWaitForWritable(framesWritable, bytesWritable)) {
-		return;
-	}
-
 	for (uint32_t i = 0; i < Size; ++i) {
-		int16_t Sample = pBuffer[i];
-
 		// 1000 Hz test tone
 #ifdef AUDIO_TEST
 		static double sine_phase = 0;
-		Sample = int32_t(sin(sine_phase) * 10000.0);
+
+		// This is evil. But I don't care.
+		((int16_t *)pBuffer)[i] = int32_t(sin(sine_phase) * 10000.0);
 
 		static double freq = 1000;
 		// Sweep
@@ -993,86 +991,125 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 		if (freq > 20000)
 			freq = 20;
 
+		// The frequency is wrong when resampling. I don't really care.
 		sine_phase += freq / (double(m_pSoundStream->GetSampleRate()) / 6.283184);
 		if (sine_phase > 6.283184)
 			sine_phase -= 6.283184;
 #endif /* AUDIO_TEST */
 
+		int16_t Sample = pBuffer[i];
+
 		// Clip detection
 		if (Sample == (SAMPLE_MAX - 1) || Sample == -SAMPLE_MAX) {
 			++m_iClipCounter;
 		}
-
-		ASSERT(m_iBufferPtr < m_iBufSizeSamples);
-
-		// Visualizer
-		m_iGraphBuffer[m_iBufferPtr] = (short)Sample;
-
-		// Convert sample and store in temp buffer
-		pConversionBuffer[m_iBufferPtr++] = (int16_t)Sample;
-
-		// If buffer is filled, throw it to sound interface
-		// TODO if we add stereo support, ensure m_iBufferPtr is frames not samples
-		// (otherwise this code breaks).
-		if (m_iBufferPtr >= framesWritable) {
-			if (!PlayBuffer(framesWritable, bytesWritable))
-				return;
-
-			if (!TryWaitForWritable(framesWritable, bytesWritable)) {
-				return;
-			}
-		}
 	}
 
-	/*
-	Write the entire remaining buffer to WASAPI. This is not necessary to prevent
-	stuttering, but it's harmless to keep. How do we know it's legal to do so?
-
-	Before the loop, we call TryWaitForWritable(), which calls WaitForReady() before
-	updating framesWritable.
-
-	On every loop iteration, we check if m_iBufferPtr >= framesWritable.
-	If so, we call CSoundGen::PlayBuffer() (which sets m_iBufferPtr to 0), then call
-	TryWaitForWritable() again. So after each loop iteration, we've called
-	TryWaitForWritable() at least once since last calling CSoundGen::PlayBuffer(),
-	and either m_iBufferPtr == 0 or m_iBufferPtr < framesWritable.
-
-	Therefore once the loop finishes, if m_iBufferPtr > 0, it's legal to write the
-	entire remaining buffer to WASAPI.
-	*/
-	if (m_iBufferPtr > 0) {
-		ASSERT(m_iBufferPtr < framesWritable);
-		if (!PlayBuffer(m_iBufferPtr, m_pSoundStream->FramesToPubBytes(m_iBufferPtr)))
-			return;
-	}
-}
-
-bool CSoundGen::PlayBuffer(unsigned int framesToWrite, unsigned int bytesToWrite)
-{
 	if (m_bRendering) {
 		// Output to file
 		ASSERT(m_pWaveFile);		// // //
-		m_pWaveFile->WriteWave(m_pAccumBuffer, bytesToWrite);
-		m_iBufferPtr = 0;
+		// This code needs to be changed if we add stereo support.
+		m_pWaveFile->WriteWave((char *) pBuffer, 2 * Size);
+		return;
 	}
-	else {
-		// Output audio
-		// Write audio to buffer
-		m_pSoundStream->WriteBuffer(m_pAccumBuffer, bytesToWrite);
 
-		// Draw graph
-		{
-			std::unique_lock<std::mutex> lock(m_csVisualizerWndLock);
-			if (m_pVisualizerWnd)
-				m_pVisualizerWnd->FlushSamples(gsl::span(m_iGraphBuffer, framesToWrite));
+	unsigned int framesWritable;
+	const bool shouldResample = m_resamplerArgs.src_ratio != 1.0;
+	uint32_t bufferOffset = 0;
+
+	if (shouldResample) {
+		ASSERT(m_pAPU->GetSoundBufferSamples() == m_inputBufferSize);
+		ASSERT(Size <= m_inputBufferSize);
+
+		auto pResampleInBuffer = m_pResampleInBuffer.get();
+		src_short_to_float_array(pBuffer, pResampleInBuffer, Size);
+
+		while (bufferOffset < Size) {
+			if (!TryWaitForWritable(framesWritable)) {
+				return;
+			}
+
+			// Resample audio.
+
+			// If we add stereo support, be sure to multiply by channel count.
+			m_resamplerArgs.data_in = pResampleInBuffer + bufferOffset;
+			m_resamplerArgs.data_out = m_pResampleOutBuffer.get();
+			m_resamplerArgs.input_frames = (long) (Size - bufferOffset);
+			m_resamplerArgs.output_frames = framesWritable;
+			// input_frames_used and output_frames_gen are out only.
+			// end_of_input is never mutated by src_process().
+			// src_ratio only changes when settings change or wav export begins/ends.
+
+			int err = src_process(m_resampler, &m_resamplerArgs);
+			ASSERT(!err);
+			if (err) {
+				// TODO print error
+				return;
+			}
+
+			GraphBuffer(gsl::span(
+				pBuffer + bufferOffset, m_resamplerArgs.input_frames_used
+			));
+
+			bufferOffset += m_resamplerArgs.input_frames_used;
+			auto framesToPlay = m_resamplerArgs.output_frames_gen;
+
+			// Unconditionally call even if framesToPlay < framesWritable.
+			// This reduces the chances of WASAPI buffer underrun or m_pResampleBuffer
+			// buffer overflow.
+			if (!PlayBuffer(m_pSoundStream->FramesToPubBytes(framesToPlay)))
+				return;
 		}
 
-		// Reset buffer position
-		m_iBufferPtr = 0;
-		m_bBufferTimeout = false;
+	} else {
+		// Do *NOT* use `m_resamplerArgs` in this block!!!
+		while (bufferOffset < Size) {
+			if (!TryWaitForWritable(framesWritable)) {
+				return;
+			}
+
+			// Copy audio.
+			uint32_t framesToPlay = std::min(framesWritable, Size - bufferOffset);
+
+			// Problem: bufferOffset and framesToPlay are currently treated as samples, which
+			// contradicts their name. The code currently still works though, because
+			// FamiTracker only outputs 1 channel = 1 sample per frame.
+
+			src_short_to_float_array(
+				pBuffer + bufferOffset, m_pResampleOutBuffer.get(), (int) framesToPlay
+			);
+
+			GraphBuffer(gsl::span(pBuffer + bufferOffset, framesToPlay));
+
+			bufferOffset += framesToPlay;
+
+			// Unconditionally call even if framesToPlay < framesWritable.
+			// This reduces the chances of WASAPI buffer underrun or m_pResampleBuffer
+			// buffer overflow.
+			if (!PlayBuffer(m_pSoundStream->FramesToPubBytes(framesToPlay)))
+				return;
+		}
 	}
+}
+
+bool CSoundGen::PlayBuffer(unsigned int bytesToWrite) {
+	ASSERT(!m_bRendering);
+
+	// Output audio
+	// Write audio to buffer
+	m_pSoundStream->WriteBuffer(m_pResampleOutBuffer.get(), bytesToWrite);
+
+	// Reset buffer position
+	m_bBufferTimeout = false;
 
 	return true;
+}
+
+void CSoundGen::GraphBuffer(gsl::span<const int16_t> data) {
+	// Draw graph
+	std::unique_lock<std::mutex> lock(m_csVisualizerWndLock);
+	if (m_pVisualizerWnd)
+		m_pVisualizerWnd->FlushSamples(data);
 }
 
 unsigned int CSoundGen::GetUnderruns() const
@@ -2107,10 +2144,6 @@ void CSoundGen::ExitInstance()
 	// Shutdown the thread
 
 	TRACE("SoundGen: Closing thread (0x%04x)\n", GetCurrentThreadId());
-
-	// Free allocated memory
-	SAFE_RELEASE_ARRAY(m_iGraphBuffer);
-	SAFE_RELEASE_ARRAY(m_pAccumBuffer);
 
 	// Make sure sound interface is shut down
 	CloseAudio();

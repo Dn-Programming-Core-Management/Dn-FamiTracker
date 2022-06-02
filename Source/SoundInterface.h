@@ -104,7 +104,7 @@ public:
 	uint32_t BufferFramesWritable() const;
 	uint32_t BufferBytesWritable() const;
 
-	bool WriteBuffer(char const * pBuffer, unsigned int Bytes);
+	bool WriteBuffer(float const * pBuffer, unsigned int Bytes);
 
 private:
 	// m_bufferEvent should outlive IAudioClient probably, so list it first.
@@ -155,7 +155,16 @@ public:
 	void			CloseDevice();
 
 	// Opening streams for active device
-	CSoundStream	*OpenChannel(int SampleRate, int SampleSize, int Channels, int BufferLength, int Blocks);
+
+	/// May return a CSoundStream with a different sampling rate than specified. Call
+	/// CSoundStream::GetSampleRate() to get the actual rate.
+	///
+	/// Always returns a CSoundStream with the same channel count as provided. If Channels
+	/// = 1 and not supported by WASAPI (on Windows, possibly Wine), we accept 1ch audio
+	/// and upmix to 2ch before sending to WASAPI.
+	CSoundStream	*OpenFloatChannel(
+		int TargetSampleRate, int Channels, int BufferLength, int Blocks
+	);
 	void			CloseChannel(CSoundStream *pChannel);
 
 	// Utility

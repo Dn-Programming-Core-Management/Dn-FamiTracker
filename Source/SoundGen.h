@@ -28,7 +28,9 @@
 // This thread will take care of the NES sound generation
 //
 
+#include "gsl/span"
 #include "rigtorp/SPSCQueue.h"
+#include "libsamplerate/include/samplerate.h"
 #include <queue>		// // //
 #include "Common.h"
 
@@ -147,7 +149,7 @@ public:
 	/// If ready to write audio, writes room available to parameters and returns true.
 	/// If waiting for buffer failed (due to GUI interruption or audio timeout),
 	/// returns false.
-	bool TryWaitForWritable(uint32_t& framesWritable, uint32_t& bytesWritable);
+	bool TryWaitForWritable(uint32_t& framesWritable);
 	void		FlushBuffer(int16_t const * pBuffer, uint32_t Size);
 	CSoundInterface		*GetSoundInterface() const { return m_pSoundInterface; };
 
@@ -279,8 +281,8 @@ private:
 	void		CloseAudioDevice();
 	void		CloseAudio();
 	void FillBuffer(int16_t const * pBuffer, uint32_t Size);
-	unsigned int GetBufferFramesWritable() const;
-	bool		PlayBuffer(unsigned int framesToWrite, unsigned int bytesToWrite);
+	bool		PlayBuffer(unsigned int bytesToWrite);
+	void GraphBuffer(gsl::span<const int16_t> data);
 
 	// Player
 	void		UpdateChannels();
@@ -355,16 +357,23 @@ private:
 
 // Sound variables (TODO: move sound to a new class?)
 private:
+	// These are output (post-resampling) buffer sizes, for m_pResampleBuffer!
 	unsigned int		m_iBufSizeSamples;					// Buffer size in samples
 	unsigned int		m_iBufSizeBytes;					// Buffer size in bytes
-	unsigned int		m_iBufferPtr;						// This will point in samples
-	char				*m_pAccumBuffer;
-	short				*m_iGraphBuffer;
+
+	// unsigned int		m_iResampleOutPtr;					// This will point in samples
+	uint32_t m_inputBufferSize;
+	std::unique_ptr<float[]> m_pResampleInBuffer;
+	std::unique_ptr<float[]> m_pResampleOutBuffer;
+
 	int					m_iAudioUnderruns;					// Keep track of underruns to inform user
 	bool				m_bBufferTimeout;
 	bool				m_bBufferUnderrun;
 	bool				m_bAudioClipping;
 	int					m_iClipCounter;
+
+	SRC_STATE * m_resampler = nullptr;
+	SRC_DATA m_resamplerArgs = {};
 
 // Tracker playing variables
 private:

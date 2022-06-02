@@ -2861,7 +2861,7 @@ BEGIN
     IDS_WAVE_PROGRESS_TIME_FORMAT "Time: %1 (%2 done)"
     IDS_WAVE_PROGRESS_ELAPSED_FORMAT "Elapsed time: %1"
     IDS_SOUND_ERROR         "WASAPI error: Could not find sound device!"
-    IDS_SOUND_BUFFER_ERROR  "WASAPI error: Could not open audio stream (likely wrong sampling rate)!"
+    IDS_SOUND_BUFFER_ERROR  "WASAPI error: Could not open audio stream!"
     IDS_EDIT_MODE           "Changed to edit mode"
     IDS_NORMAL_MODE         "Changed to normal mode"
     IDS_MIDI_MESSAGE_ON_FORMAT 
