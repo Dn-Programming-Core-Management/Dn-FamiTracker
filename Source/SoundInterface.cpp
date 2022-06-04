@@ -210,9 +210,7 @@ int CSoundInterface::CalculateBufferLength(int BufferLen, int Samplerate, int Sa
 	return ((Samplerate * BufferLen) / 1000) * (Samplesize / 8) * Channels;
 }
 
-CSoundStream *CSoundInterface::OpenFloatChannel(
-	int Channels, int BufferLength, int Blocks
-) {
+CSoundStream *CSoundInterface::OpenFloatChannel(int Channels, int BufferLength) {
 	// Based off https://docs.microsoft.com/en-us/windows/win32/coreaudio/exclusive-mode-streams
 	if (!m_maybeDevice) {
 		return nullptr;

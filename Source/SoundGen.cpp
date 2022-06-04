@@ -791,14 +791,8 @@ bool CSoundGen::ResetAudioDevice()
 		return false;
 	}
 
-	int iBlocks = 2;	// default = 2
-
-	// Create more blocks if a bigger buffer than 100ms is used to reduce lag
-	if (BufferLen > 100)
-		iBlocks += (BufferLen / 66);
-
 	// Create channel
-	m_pSoundStream = m_pSoundInterface->OpenFloatChannel(1, BufferLen, iBlocks);
+	m_pSoundStream = m_pSoundInterface->OpenFloatChannel(1, BufferLen);
 
 	// Channel failed
 	if (m_pSoundStream == NULL) {
@@ -862,7 +856,7 @@ bool CSoundGen::ResetAudioDevice()
 	m_bBufferTimeout = false;
 	m_iClipCounter = 0;
 
-	TRACE("SoundGen: Created sound channel with params: %i Hz, 16 bits, %i ms (%i blocks)\n", ResampleRate, BufferLen, iBlocks);
+	TRACE("SoundGen: Created sound channel with params: %i Hz, 16 bits, %i ms\n", ResampleRate, BufferLen);
 
 	return true;
 }

@@ -164,7 +164,7 @@ public:
 	/// Always returns a CSoundStream with the same channel count as provided. If Channels
 	/// = 1 and not supported by WASAPI (on Windows, possibly Wine), we accept 1ch audio
 	/// and upmix to 2ch before sending to WASAPI.
-	CSoundStream	*OpenFloatChannel(int Channels, int BufferLength, int Blocks);
+	CSoundStream	*OpenFloatChannel(int Channels, int BufferLength);
 	void			CloseChannel(CSoundStream *pChannel);
 
 	// Utility
