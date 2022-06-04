@@ -856,7 +856,9 @@ bool CSoundGen::ResetAudioDevice()
 	m_bBufferTimeout = false;
 	m_iClipCounter = 0;
 
-	TRACE("SoundGen: Created sound channel with params: %i Hz, 16 bits, %i ms\n", ResampleRate, BufferLen);
+	TRACE(
+		"SoundGen: Created sound channel with params: %i Hz, 16 bits, %u ms (-> %u samples)\n",
+		ResampleRate, BufferLen, m_iBufSizeSamples);
 
 	return true;
 }
