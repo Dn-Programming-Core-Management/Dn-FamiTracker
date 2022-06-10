@@ -69,13 +69,13 @@ public:
 
 	void	Write(uint16_t Address, uint8_t Value);		// // //
 	uint8_t	Read(uint16_t Address);
-	
+
 	int32_t	GetVol(uint8_t Chan) const;
 	uint8_t	GetReg(int Chip, int Reg) const;
 	double	GetFreq(int Chip, int Chan) const;		// // //
 	int	GetFDSModCounter() const;		// TODO: reading $4097 returns $00 for some reason, fix that and remove this hack instead
 	CRegisterState *GetRegState(int Chip, int Reg) const;		// // //
-	
+
 	uint8_t	GetSamplePos() const;
 	uint8_t	GetDeltaCounter() const;
 	bool	DPCMPlaying() const;
@@ -88,6 +88,11 @@ public:
 	bool	SetupSound(int SampleRate, int NrChannels, int Speed);
 	/// Mostly orthogonal.
 	void	ChangeMachineRate(int Machine, int Rate);		// // //
+
+	/// Called after SetupSound().
+	uint32_t GetSoundBufferSamples() const {
+		return m_iSoundBufferSamples;
+	}
 
 	/// Mostly orthogonal.
 	void	SetNamcoMixing(bool bLinear);		// // //
@@ -113,10 +118,10 @@ public:
 
 private:
 	static const int SEQUENCER_FREQUENCY;		// // //
-	
+
 	void StepSequence();		// // //
 	void EndFrame();
-	
+
 	void LogWrite(uint16_t Address, uint8_t Value);
 
 private:

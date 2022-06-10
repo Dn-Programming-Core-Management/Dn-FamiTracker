@@ -172,7 +172,6 @@ public:
 	struct {
 		int		iDevice;
 		int		iSampleRate;
-		int		iSampleSize;
 		int		iBufferLength;
 		int		iBassFilter;
 		int		iTrebleFilter;

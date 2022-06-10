@@ -210,8 +210,7 @@ int CSoundInterface::CalculateBufferLength(int BufferLen, int Samplerate, int Sa
 	return ((Samplerate * BufferLen) / 1000) * (Samplesize / 8) * Channels;
 }
 
-CSoundStream *CSoundInterface::OpenChannel(int SampleRate, int SampleSize, int Channels, int BufferLength, int Blocks)
-{
+CSoundStream *CSoundInterface::OpenFloatChannel(int Channels, int BufferLength) {
 	// Based off https://docs.microsoft.com/en-us/windows/win32/coreaudio/exclusive-mode-streams
 	if (!m_maybeDevice) {
 		return nullptr;
@@ -224,15 +223,31 @@ CSoundStream *CSoundInterface::OpenChannel(int SampleRate, int SampleSize, int C
 
 	const int InputChannels = Channels;
 
-	auto create_wave_format = [&]() {
+	// Set sample rate to mix format. This is necessary on Windows since WASAPI rejects
+	// non-system sampling rates, and a good idea on Linux since Wine delegates resampling
+	// to PulseAudio/PipeWire, and PulseAudio uses a low-quality resampler by default
+	// (https://gitlab.freedesktop.org/pulseaudio/pulseaudio/-/issues/310).
+	DWORD SampleRate{};
+	{
+		WAVEFORMATEX* pMixFormat{};
+		hr = pAudioClient->GetMixFormat(&pMixFormat);
+		if (FAILED(hr)) {
+			CoTaskMemFree(pMixFormat);
+			return nullptr;
+		}
+		SampleRate = (int) pMixFormat->nSamplesPerSec;
+		CoTaskMemFree(pMixFormat);
+	}
+
+	auto create_wave_format = [](WORD Channels, DWORD SampleRate) {
 		// Can't use designated initializers since we're not in C++20 mode.
 		WAVEFORMATEX format{};
 
 		// https://docs.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-waveformatex#members
-		format.wFormatTag = WAVE_FORMAT_PCM;
-		format.nChannels = (WORD)Channels;
-		format.nSamplesPerSec = (DWORD)SampleRate;
-		format.wBitsPerSample = (WORD)SampleSize;
+		format.wFormatTag = WAVE_FORMAT_IEEE_FLOAT;
+		format.nChannels = Channels;
+		format.nSamplesPerSec = SampleRate;
+		format.wBitsPerSample = 32;
 
 		// If wFormatTag is WAVE_FORMAT_PCM or WAVE_FORMAT_EXTENSIBLE, nBlockAlign must be equal to
 		// the product of nChannels and wBitsPerSample divided by 8 (bits per byte).
@@ -248,23 +263,26 @@ CSoundStream *CSoundInterface::OpenChannel(int SampleRate, int SampleSize, int C
 
 		return format;
 	};
-	WAVEFORMATEX format = create_wave_format();
+	WAVEFORMATEX format = create_wave_format((WORD)Channels, SampleRate);
 
 	// Ensure that chosen audio format is supported.
 	WAVEFORMATEX* pClosestMatch{};
 	hr = pAudioClient->IsFormatSupported(AUDCLNT_SHAREMODE_SHARED, &format, &pClosestMatch);
-	if (Channels == 1 && (hr == S_FALSE || hr == AUDCLNT_E_UNSUPPORTED_FORMAT)) {
+	if (hr == S_FALSE || hr == AUDCLNT_E_UNSUPPORTED_FORMAT) {
 		CoTaskMemFree(pClosestMatch);
 		pClosestMatch = nullptr;
 
 		// Try again in stereo. We will upmix input mono to stereo.
+		// (Should we pick stereo by default?)
 		Channels = 2;
-		format = create_wave_format();
+
+		format = create_wave_format((WORD)Channels, SampleRate);
 		hr = pAudioClient->IsFormatSupported(AUDCLNT_SHAREMODE_SHARED, &format, &pClosestMatch);
 	}
 
 	// So far we don't need to handle audio format fallback, since Windows 7/10 and
 	// Wine all support int16 audio.
+	// If the audio format is still unsupported, give up and show an error to the user.
 	if (hr != S_OK) {
 		CoTaskMemFree(pClosestMatch);
 		return nullptr;
@@ -325,7 +343,7 @@ CSoundStream *CSoundInterface::OpenChannel(int SampleRate, int SampleSize, int C
 		std::move(bufferEvent),
 		SampleRate,
 		bufferFrameCount,
-		SampleSize / 8,  // bytesPerSample
+		4,  // bytesPerSample = 4 for float
 		InputChannels,
 		Channels);
 }
@@ -464,7 +482,7 @@ uint32_t CSoundStream::TotalBufferSizeBytes() const {
 
 // Steady-state
 
-WaitResult CSoundStream::WaitForReady(DWORD dwTimeout)
+WaitResult CSoundStream::WaitForReady(DWORD dwTimeout, bool SkipIfWritable)
 {
 	auto onInterrupted = []() {
 		return WaitResult::Interrupted;
@@ -484,34 +502,29 @@ WaitResult CSoundStream::WaitForReady(DWORD dwTimeout)
 	}
 
 	// Check for special cases.
-	switch (m_state) {
-	case StreamState::Stopped:
-		// The first time CSoundGen waits to write audio, don't start stream playback.
+	if (m_state == StreamState::Stopped) {
+		// The first few times CSoundGen waits to write audio, don't start stream playback.
 		// Instead return and let CSoundGen write audio. (At this point,
 		// CSoundStream::BufferFramesWritable() returns the full buffer size.)
-		m_state = StreamState::ReadyToStart;
+		//
+		// When WriteBuffer() is called, if m_state == StreamState::Stopped and the buffer is
+		// full, it calls Play() which sets m_state = StreamState::Started.
 		return WaitResult::Ready;
-
-	case StreamState::ReadyToStart:
-		// The second time CSoundGen waits to write audio, start the playback stream,
-		// then let CSoundGen write audio.
-		if (!Play()) {
-			return WaitResult::InternalError;
-		}
-		// If CSoundStream::Play() succeeds (returns true), it sets m_state =
-		// StreamState::Started.
-		break;
-
-	case StreamState::Started:
-		// Otherwise wait for room to write audio, like normal.
-		break;
 	}
 	// TODO we can get marginally less latency by having CSoundGen call
 	// CSoundStream::WaitForReady before generating audio, rather than before
 	// converting/buffering it.
 
-	// Check if we can write audio without waiting at all.
-	if (BufferFramesWritable()) {
+	// Check if we can write audio without waiting at all (which is the case if the
+	// previous WriteBuffer() didn't fill the whole buffer).
+	//
+	// SkipIfWritable=false (after a full write) causes WaitForReady() to block if WASAPI
+	// hasn't set m_bufferEvent, but BufferFramesWritable() > 0. I've never seen this
+	// happen after a full write, on either Windows or Wine. So not checking
+	// BufferFramesWritable() if SkipIfWritable=false isn't needed to avoid an endless
+	// loop of writing 1 sample at a time, but saves an IAudioClient::GetCurrentPadding()
+	// call.
+	if (SkipIfWritable && BufferFramesWritable()) {
 		return onWritable();
 	}
 
@@ -547,7 +560,7 @@ uint32_t CSoundStream::BufferBytesWritable() const {
 	return FramesToPubBytes(BufferFramesWritable());
 }
 
-bool CSoundStream::WriteBuffer(char const * pSrcBuffer, unsigned int Bytes)
+bool CSoundStream::WriteBuffer(float const* pSrcBuffer, unsigned int Bytes)
 {
 	// Bytes comes from CSoundStream::BufferBytesWritable().
 	unsigned int frames = PubBytesToFrames(Bytes);
@@ -558,31 +571,26 @@ bool CSoundStream::WriteBuffer(char const * pSrcBuffer, unsigned int Bytes)
 
 	if (m_outputChannels == 2 && m_inputChannels == 1) {
 		// Upmix mono to stereo.
-		ASSERT(m_bytesPerSample == 1 || m_bytesPerSample == 2);
-		switch (m_bytesPerSample) {
-		case 1: {
-			// feeling fancy, might remove __restrict later
-			auto src8 = (int8_t const* __restrict)pSrcBuffer;
-			auto dst8 = (int8_t * __restrict)pOutData;
-			for (size_t i = 0; i < frames; i++) {
-				dst8[2 * i] = dst8[2 * i + 1] = src8[i];
-			}
-			break;
-		}
-		case 2: {
-			auto src16 = (int16_t const* __restrict)pSrcBuffer;
-			auto dst16 = (int16_t * __restrict)pOutData;
-			for (size_t i = 0; i < frames; i++) {
-				dst16[2 * i] = dst16[2 * i + 1] = src16[i];
-			}
-			break;
-		}
+		ASSERT(m_bytesPerSample == 4);
+
+		// feeling fancy, might remove __restrict later
+		auto src8 = (float const* __restrict)pSrcBuffer;
+		auto dst8 = (float * __restrict)pOutData;
+		for (size_t i = 0; i < frames; i++) {
+			dst8[2 * i] = dst8[2 * i + 1] = src8[i];
 		}
 	} else {
 		memcpy(pOutData, pSrcBuffer, Bytes);
 	}
 	hr = m_pAudioRenderClient->ReleaseBuffer(frames, 0);
 	if (FAILED(hr)) return false;
+
+	if (m_state == StreamState::Stopped && BufferFramesWritable() == 0) {
+		if (!Play()) {
+			return false;
+		}
+		// m_state = StreamState::Started (in Play())
+	}
 
 	return true;
 }

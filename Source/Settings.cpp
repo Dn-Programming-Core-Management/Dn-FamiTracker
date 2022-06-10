@@ -79,7 +79,7 @@ void CSettings::SetupSettings()
 	// All settings are loaded on program start and saved when closing the program
 	//
 
-	// The SETTING macros takes four arguments: 
+	// The SETTING macros takes four arguments:
 	//
 	//  1. Registry section
 	//  2. Registry key name
@@ -153,7 +153,6 @@ void CSettings::SetupSettings()
 	// Sound
 	SETTING_INT("Sound", "Audio Device", 0, &Sound.iDevice);
 	SETTING_INT("Sound", "Sample rate",	44100, &Sound.iSampleRate);
-	SETTING_INT("Sound", "Sample size", 16, &Sound.iSampleSize);
 	SETTING_INT("Sound", "Buffer length", 40, &Sound.iBufferLength);
 	SETTING_INT("Sound", "Bass filter freq", 30, &Sound.iBassFilter);
 	SETTING_INT("Sound", "Treble filter freq", 12000, &Sound.iTrebleFilter);
@@ -198,7 +197,7 @@ void CSettings::SetupSettings()
 		->UpdateDefault("Appearance", "Pattern colors");
 	SETTING_BOOL("Appearance", "Display flats", false, &Appearance.bDisplayFlats)
 		->UpdateDefault("Appearance", "Display flats");
-	
+
 	// Window position
 	SETTING_INT("Window position", "Left", 100, &WindowPos.iLeft);
 	SETTING_INT("Window position", "Top", 100, &WindowPos.iTop);
@@ -223,7 +222,7 @@ void CSettings::SetupSettings()
 	SETTING_STRING("Paths", "FTI path", "", &Paths[PATH_FTI]);
 	SETTING_STRING("Paths", "DMC path", "", &Paths[PATH_DMC]);
 	SETTING_STRING("Paths", "WAV path", "", &Paths[PATH_WAV_IMPORT]);
-	
+
 	//SETTING_STRING("Paths", "NSF path", "", &Paths[PATH_NSF]);
 	//SETTING_STRING("Paths", "TXT Export path", "", &Paths[PATH_EXPORT]);
 
