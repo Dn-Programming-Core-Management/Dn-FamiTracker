@@ -55,8 +55,8 @@ void CALLBACK CMIDI::MidiInProc(HMIDIIN hMidiIn, UINT wMsg, DWORD dwInstance, DW
 
 // Instance stuff
 
-CMIDI::CMIDI() : 
-	m_bInStarted(false), 
+CMIDI::CMIDI() :
+	m_bInStarted(false),
 	m_iInDevice(0),
 	m_iOutDevice(0),
 	m_MidiQueue(MAX_QUEUE),
@@ -253,7 +253,7 @@ void CMIDI::Event(unsigned char Status, unsigned char Data1, unsigned char Data2
 	default:
 		switch (MsgType) {
 			case MIDI_MSG_NOTE_OFF:
-			case MIDI_MSG_NOTE_ON: 
+			case MIDI_MSG_NOTE_ON:
 			case MIDI_MSG_PITCH_WHEEL:
 				Enqueue(MsgType, MsgChannel, Data1, Data2);
 				pView->PostMessage(WM_USER_MIDI_EVENT);
@@ -265,16 +265,17 @@ void CMIDI::Event(unsigned char Status, unsigned char Data1, unsigned char Data2
 bool CMIDI::ReadMessage(unsigned char & Message, unsigned char & Channel, unsigned char & Data1, unsigned char & Data2)
 {
 	bool Result = false;
-	
-	if (auto MidiMessage = m_MidiQueue.front()) {
-		m_MidiQueue.pop();
+
+	if (auto pMidiMessage = m_MidiQueue.front()) {
 		Result = true;
 
-		Message = MidiMessage->MsgType;
-		Channel = MidiMessage->MsgChan;
-		Data1	= MidiMessage->Data1;
-		Data2	= MidiMessage->Data2;
-		m_iQuant = MidiMessage->Quantization;
+		Message = pMidiMessage->MsgType;
+		Channel = pMidiMessage->MsgChan;
+		Data1	= pMidiMessage->Data1;
+		Data2	= pMidiMessage->Data2;
+		m_iQuant = pMidiMessage->Quantization;
+
+		m_MidiQueue.pop();
 	}
 
 	return Result;
@@ -359,12 +360,12 @@ bool CMIDI::IsAvailable() const
 	return m_hMIDIIn != NULL;
 }
 
-int CMIDI::GetInputDevice() const 
-{ 
-	return m_iInDevice; 
+int CMIDI::GetInputDevice() const
+{
+	return m_iInDevice;
 }
 
-int CMIDI::GetOutputDevice() const 
-{ 
-	return m_iOutDevice; 
+int CMIDI::GetOutputDevice() const
+{
+	return m_iOutDevice;
 }

@@ -344,9 +344,10 @@ CFamiTrackerView::CFamiTrackerView() :
 			m_hQuitEvent.get(),
 		};
 		while (true) {
-			while (auto msg = m_MessageQueue.front()) {
+			while (auto pMsg = m_MessageQueue.front()) {
+				auto msg = *pMsg;
 				m_MessageQueue.pop();
-				PostMessage(msg->message, msg->wParam, msg->lParam);
+				PostMessage(msg.message, msg.wParam, msg.lParam);
 			}
 
 			if (WaitForMultipleObjects(2, events, FALSE, INFINITE) != WAIT_OBJECT_0) {

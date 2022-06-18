@@ -696,11 +696,12 @@ void CSoundGen::ThreadEntry()
 	}
 	while (true) {
 		while (auto pMessage = m_MessageQueue.front()) {
+			GuiMessage message = *pMessage;
 			m_MessageQueue.pop();
-			if (pMessage->message == WM_QUIT) {
+			if (message.message == WM_QUIT) {
 				goto end_while;
 			}
-			if (!DispatchGuiMessage(*pMessage)) {
+			if (!DispatchGuiMessage(message)) {
 				goto end_while;
 			}
 		}
