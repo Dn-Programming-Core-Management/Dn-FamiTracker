@@ -3383,11 +3383,13 @@ void CFamiTrackerDoc::SetEngineSpeed(unsigned int Speed)
 	SetExceededFlag();		// // //
 }
 
-void CFamiTrackerDoc::SetMachine(machine_t Machine)
+void CFamiTrackerDoc::SetMachine(machine_t Machine, bool Redraw)
 {
 	ASSERT(Machine == PAL || Machine == NTSC);
 	m_iMachine = Machine;
-	UpdateAllViews(NULL, UPDATE_PATTERN);
+	if (Redraw) {
+		UpdateAllViews(NULL, UPDATE_PATTERN);
+	}
 	SetModifiedFlag();
 	SetExceededFlag();		// // //
 }
@@ -4011,8 +4013,10 @@ void CFamiTrackerDoc::SetupChannels(unsigned char Chip)
 	// This will select a chip in the sound emulator
 
 	if (Chip != SNDCHIP_NONE) {
-		// Do not allow expansion chips in PAL mode
-		SetMachine(NTSC);
+		// Do not allow expansion chips in PAL mode.
+		// Do not redraw pattern editor since we're in the middle of loading document,
+		// and the program is in an inconsistent state.
+		SetMachine(NTSC, false);
 	}
 
 	// Store the chip
@@ -5153,7 +5157,9 @@ void CFamiTrackerDoc::MakeKraid()			// // // Easter Egg
 	SetTrackTitle(0, CPatternData::DEFAULT_TITLE);
 	m_pTracks[0]->ClearEverything();
 	SetEngineSpeed(0);
-	SetMachine(NTSC);
+	// Do not redraw pattern editor since we're in the middle of loading document,
+	// and the program is in an inconsistent state.
+	SetMachine(NTSC, false);
 	SetFrameCount(0, 14);
 	SetPatternLength(0, 24);
 	SetSongSpeed(0, 8);

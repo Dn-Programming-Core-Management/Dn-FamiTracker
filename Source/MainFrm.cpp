@@ -3587,7 +3587,7 @@ void CMainFrame::OnTrackerPal()
 	ASSERT_VALID(pDoc);
 
 	machine_t Machine = PAL;
-	pDoc->SetMachine(Machine);
+	pDoc->SetMachine(Machine, true);
 	theApp.GetSoundGenerator()->LoadMachineSettings();		// // //
 	theApp.GetSoundGenerator()->DocumentPropertiesChanged(pDoc);		// // //
 	m_wndInstEdit.SetRefreshRate(static_cast<float>(pDoc->GetFrameRate()));		// // //
@@ -3599,7 +3599,7 @@ void CMainFrame::OnTrackerNtsc()
 	ASSERT_VALID(pDoc);
 
 	machine_t Machine = NTSC;
-	pDoc->SetMachine(Machine);
+	pDoc->SetMachine(Machine, true);
 	theApp.GetSoundGenerator()->LoadMachineSettings();		// // //
 	theApp.GetSoundGenerator()->DocumentPropertiesChanged(pDoc);		// // //
 	m_wndInstEdit.SetRefreshRate(static_cast<float>(pDoc->GetFrameRate()));		// // //

@@ -206,7 +206,7 @@ public:
 
 	// Global (module) data
 	void			SetEngineSpeed(unsigned int Speed);
-	void			SetMachine(machine_t Machine);		// // //
+	void			SetMachine(machine_t Machine, bool Redraw);		// // //
 	machine_t		GetMachine() const		{ return m_iMachine; };		// // //
 	unsigned int	GetEngineSpeed() const	{ return m_iEngineSpeed; };
 	unsigned int	GetFrameRate() const;

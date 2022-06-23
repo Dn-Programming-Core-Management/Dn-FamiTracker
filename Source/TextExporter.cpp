@@ -716,7 +716,9 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 				break;
 			case CT_MACHINE:
 				CHECK(t.ReadInt(i,0,PAL,&sResult));
-				pDoc->SetMachine(static_cast<machine_t>(i));
+				// Do not redraw pattern editor since we're in the middle of loading document,
+				// and the program is in an inconsistent state.
+				pDoc->SetMachine(static_cast<machine_t>(i), false);
 				CHECK(t.ReadEOL(&sResult));
 				break;
 			case CT_FRAMERATE:
