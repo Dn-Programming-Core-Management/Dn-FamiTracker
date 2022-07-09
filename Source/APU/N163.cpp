@@ -112,11 +112,12 @@ void CN163::Process(uint32_t Time, Blip_Buffer& Output)
 
 		// update the channel levels
 		for (int i = 0; i < 8; i++)
+			// channel 7 is at index 0
 			m_ChannelLevels[i].update(m_N163._channelOutput[i]);
 
 		// output master audio
 		int16_t master_out = m_N163.UpdateOutputLevel();
-		m_SynthN163.update(m_iTime + now, (int)master_out, &m_BlipN163);
+		m_SynthN163.update(m_iTime + now, master_out, &m_BlipN163);
 
 		now++;
 	}
@@ -165,7 +166,7 @@ int CN163::GetChannelLevelRange(int Channel) const
 	ASSERT(0 <= Channel && Channel < 8);
 	if (0 <= Channel && Channel < 8) {
 		// _channelOutput[channel] = (sample - 8) * volume;
-		// lowest output:  120
+		// lowest output: -120
 		// highest output: 105
 		return 225;
 	}

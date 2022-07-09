@@ -67,7 +67,7 @@ private:
 	Blip_Synth<blip_good_quality> m_SynthN163;
 
 	// up to 8 channels of N163
-	ChannelLevelState<uint32_t> m_ChannelLevels[8];
+	ChannelLevelState<int32_t> m_ChannelLevels[8];
 
 	// The lower this value is, the stronger the lowpass filter is.
 	float m_alpha = 0;
@@ -75,6 +75,6 @@ private:
 
 	uint32_t	m_iTime = 0;  // Clock counter, used as a timestamp for Blip_Buffer, resets every new frame
 
-	int m_iChannelSample[8];
+	int32_t m_iChannelSample[8];
 	bool m_bOldMixing;		// // //
 };
