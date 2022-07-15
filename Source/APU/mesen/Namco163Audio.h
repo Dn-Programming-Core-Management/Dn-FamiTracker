@@ -16,7 +16,7 @@ private:
 	int8_t _currentChannel;
 	int16_t _lastOutput;
 	bool _disableSound;
-	bool _mixMultiplex;
+	bool _mixLinear;
 
 	enum SoundReg
 	{
@@ -83,9 +83,9 @@ public:
 		return _currentChannel;
 	}
 
-	void SetMixing(bool mixMultiplex)
+	void SetMixing(bool mixLinear)
 	{
-		_mixMultiplex = mixMultiplex;
+		_mixLinear = mixLinear;
 	}
 
 	void UpdateChannel(int channel)
@@ -117,14 +117,14 @@ public:
 	int16_t UpdateOutputLevel()
 	{
 		int16_t summedOutput = 0;
-		if (_mixMultiplex) {		// toggle multiplexing
-			summedOutput = _channelOutput[_currentChannel];
-		}
-		else {
+		if (_mixLinear) {
 			for (int i = 7, min = 7 - GetNumberOfChannels(); i >= min; i--) {
 				summedOutput += _channelOutput[i];
 			}
 			summedOutput /= GetNumberOfChannels() + 1;
+		}
+		else {
+			summedOutput = _channelOutput[_currentChannel];
 		}
 		return summedOutput;
 	}
