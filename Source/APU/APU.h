@@ -94,10 +94,6 @@ public:
 		return m_iSoundBufferSamples;
 	}
 
-	/// Mostly orthogonal.
-	void	SetNamcoMixing(bool bLinear);		// // //
-	bool m_bNamcoMixing;
-
 private:
 	void	SetExternalSound(uint8_t Chip);
 	// End configuration methods.

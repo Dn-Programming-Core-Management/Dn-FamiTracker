@@ -2479,11 +2479,6 @@ bool CSoundGen::HasWaveChanged() const
 	return m_bInternalWaveChanged;
 }
 
-void CSoundGen::SetNamcoMixing(bool bLinear)		// // //
-{
-	m_pAPU->SetNamcoMixing(theApp.GetSettings()->Emulation.bNamcoMixing);
-}
-
 // Player state functions
 
 void CSoundGen::ReadPatternRow()

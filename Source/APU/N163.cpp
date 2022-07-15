@@ -171,9 +171,9 @@ int CN163::GetChannelLevelRange(int Channel) const
 	return 1;
 }
 
-void CN163::UpdateN163Filter(int CutoffHz, bool Multiplex)
+void CN163::UpdateN163Filter(int CutoffHz, bool DisableMultiplex)
 {
-	SetMixingMethod(Multiplex);
+	SetMixingMethod(DisableMultiplex);
 	m_CutoffHz = CutoffHz;
 	RecomputeN163Filter();
 }

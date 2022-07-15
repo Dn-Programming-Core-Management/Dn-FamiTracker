@@ -53,7 +53,7 @@ struct MixerConfig {
 	int FDSLowpass = 2000;
 	int N163Lowpass = 12000;
 	int VRC7Patchset = 0;
-	bool N163Multiplexing = 0;
+	bool N163DisableMultiplexing = true;
 };
 
 class CMixer

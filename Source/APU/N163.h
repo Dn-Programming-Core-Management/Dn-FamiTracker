@@ -49,7 +49,7 @@ public:
 	int GetChannelLevel(int Channel) override;
 	int GetChannelLevelRange(int Channel) const override;
 
-	void UpdateN163Filter(int CutoffHz, bool Multiplex);
+	void UpdateN163Filter(int CutoffHz, bool DisableMultiplex);
 	void UpdateMixLevel(double v);
 
 	void Log(uint16_t Address, uint8_t Value) override;		// // //

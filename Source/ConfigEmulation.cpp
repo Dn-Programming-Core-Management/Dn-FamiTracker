@@ -102,7 +102,6 @@ BOOL CConfigEmulation::OnApply()
 
 	// N163
 	pSettings->Emulation.bNamcoMixing = m_bDisableNamcoMultiplex;
-	pSoundGen->SetNamcoMixing(theApp.GetSettings()->Emulation.bNamcoMixing);
 
 	// VRC7
 	CComboBox* pVRC7Patch = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_VRC7_PATCH));
