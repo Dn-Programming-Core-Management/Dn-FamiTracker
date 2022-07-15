@@ -37,11 +37,11 @@ public:
 
 	double GetChannelFrequency(int channel, int cpu_clock) const
 	{
-		auto period = GetFrequency(channel);
-		auto wavelength = GetWaveLength(channel);
-		auto channelcount = GetNumberOfChannels() + 1;
+		double period = GetFrequency(channel);
+		double wavelength = GetWaveLength(channel);
+		double channelcount = GetNumberOfChannels() + 1;
 		if (wavelength > 0)
-			return cpu_clock / 983040 * period / (wavelength);
+			return cpu_clock * period / 983040 / wavelength / channelcount;
 		else
 			return 0.0;
 	}

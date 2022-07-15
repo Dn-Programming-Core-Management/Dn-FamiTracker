@@ -145,26 +145,10 @@ void CN163::EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer)
 double CN163::GetFreq(int Channel) const
 {
 	double freq = 0.0;
-	// channel 7 is at index 0
-	switch (Channel) {
-	case 0:
-		freq = m_N163.GetChannelFrequency(7, CAPU::BASE_FREQ_NTSC); break;
-	case 1:
-		freq = m_N163.GetChannelFrequency(6, CAPU::BASE_FREQ_NTSC); break;
-	case 2:
-		freq = m_N163.GetChannelFrequency(5, CAPU::BASE_FREQ_NTSC); break;
-	case 3:
-		freq = m_N163.GetChannelFrequency(4, CAPU::BASE_FREQ_NTSC); break;
-	case 4:
-		freq = m_N163.GetChannelFrequency(3, CAPU::BASE_FREQ_NTSC); break;
-	case 5:
-		freq = m_N163.GetChannelFrequency(2, CAPU::BASE_FREQ_NTSC); break;
-	case 6:
-		freq = m_N163.GetChannelFrequency(1, CAPU::BASE_FREQ_NTSC); break;
-	case 7:
-		freq = m_N163.GetChannelFrequency(0, CAPU::BASE_FREQ_NTSC); break;
+	if (0 <= Channel && Channel < 8) {
+		return m_N163.GetChannelFrequency(7 - Channel, CAPU::BASE_FREQ_NTSC);
 	}
-	return freq;
+	return 0.0;
 }
 
 int CN163::GetChannelLevel(int Channel)
