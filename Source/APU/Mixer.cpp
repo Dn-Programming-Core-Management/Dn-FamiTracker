@@ -393,11 +393,6 @@ void CMixer::StoreChannelLevel(int Channel, int Value)
 	if (Channel == CHANID_VRC6_SAWTOOTH)
 		AbsVol = (AbsVol * 3) / 4;
 
-	if (Channel >= CHANID_N163_CH1 && Channel <= CHANID_N163_CH8) {
-		AbsVol = (AbsVol * 2) / 15;
-		Channel = (7 - (Channel - CHANID_N163_CH1)) + CHANID_N163_CH1;
-	}
-
 	if (Channel >= CHANID_VRC7_CH1 && Channel <= CHANID_VRC7_CH6) {
 		AbsVol = (int)(logf((float)AbsVol) * 3.0f);
 	}

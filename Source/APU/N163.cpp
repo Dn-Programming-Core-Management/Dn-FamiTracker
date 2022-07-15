@@ -101,8 +101,7 @@ void CN163::Process(uint32_t Time, Blip_Buffer& Output)
 			
 		// update the channel levels
 		for (int i = 0; i < 8; i++)
-			// channel 7 is at index 0
-			m_ChannelLevels[i].update(m_N163._channelOutput[i]);
+			m_ChannelLevels[i].update((int32_t) m_N163._channelOutput[7 - i]);
 
 		now++;
 	}
