@@ -322,6 +322,10 @@ void CMixer::FinishBuffer(int t)
 	auto& chipVRC7 = *m_APU->m_pVRC7;
 	for (int i = 0; i < 6; ++i)
 		StoreChannelLevel(CHANID_VRC7_CH1 + i, get_channel_level(chipVRC7, i));
+
+	auto& chipN163 = *m_APU->m_pN163;
+	for (int i = 0; i < 8; i++)
+		StoreChannelLevel(CHANID_N163_CH1 + i, get_channel_level(chipN163, i));
 }
 
 //

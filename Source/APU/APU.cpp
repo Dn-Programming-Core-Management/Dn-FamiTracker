@@ -477,9 +477,20 @@ void CAPUConfig::SetupMixer(int LowCut,
 	int HighDamp,
 	int Volume,
 	int FDSLowpass,
-	int VRC7Patchset)
+	int VRC7Patchset,
+	bool NamcoMixing,
+	int N163Lowpass)
 {
-	m_MixerConfig = MixerConfig{ LowCut, HighCut, HighDamp, float(Volume) / 100.0f, FDSLowpass, VRC7Patchset };
+	m_MixerConfig = MixerConfig{
+		LowCut,
+		HighCut,
+		HighDamp,
+		float(Volume) / 100.0f,
+		FDSLowpass,
+		N163Lowpass,
+		VRC7Patchset,
+		NamcoMixing
+	};
 }
 
 void CAPUConfig::SetChipLevel(chip_level_t Chip, float LeveldB)

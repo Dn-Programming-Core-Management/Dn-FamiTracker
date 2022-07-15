@@ -849,7 +849,9 @@ bool CSoundGen::ResetAudioDevice()
 			pSettings->Sound.iTrebleDamping,
 			pSettings->Sound.iMixVolume,
 			pSettings->Emulation.iFDSLowpass,
-			pSettings->Emulation.iVRC7Patch);
+			pSettings->Emulation.iVRC7Patch,
+			pSettings->Emulation.bNamcoMixing,
+			pSettings->Emulation.iN163Lowpass);
 	}
 
 	m_bAudioClipping = false;

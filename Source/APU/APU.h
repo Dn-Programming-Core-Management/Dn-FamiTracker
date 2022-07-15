@@ -193,7 +193,7 @@ public:
 	}
 
 	void SetChipLevel(chip_level_t Chip, float LeveldB);
-	void SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume, int FDSLowpass, int VRC7Patchset);
+	void SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume, int FDSLowpass, int VRC7Patchset, bool NamcoMixing, int N163Lowpass);
 
 	/// Commit changes if no exception is active.
 	///
