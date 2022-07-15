@@ -42,6 +42,7 @@
 
 CN163::CN163()
 {
+	// internal N163 RAM
 	m_pRegisterLogger->AddRegisterRange(0x00, 0x7F);		// // //
 	Reset();
 }
@@ -90,34 +91,18 @@ void CN163::Process(uint32_t Time, Blip_Buffer& Output)
 	uint32_t now = 0;
 
 	while (true) {
-		//assert(now <= Time);
+		assert(now <= Time);
 		if (now >= Time)
 			break;
 
-		//auto tmp = m_FDS.ClockAudioMaxSkip();
-		//auto clock_skip = std::min(tmp, Time - now);
-		//if (clock_skip > 0) {
-		//	m_FDS.SkipClockAudio(clock_skip);
-		//	now += clock_skip;
-		//}
-
-		//if (tmp < (1 << 24))
-		//	assert(tmp - m_FDS.ClockAudioMaxSkip() == clock_skip);
-		//assert(now <= Time);
-		//if (now >= Time)
-		//	break;
-
-		// clock the emulator
-		m_N163.ClockAudio();
-
+		// output master audio
+		auto master_out = m_N163.ClockAudio();
+		m_SynthN163.update(m_iTime + now, master_out, &m_BlipN163);
+			
 		// update the channel levels
 		for (int i = 0; i < 8; i++)
 			// channel 7 is at index 0
 			m_ChannelLevels[i].update(m_N163._channelOutput[i]);
-
-		// output master audio
-		int16_t master_out = m_N163.UpdateOutputLevel();
-		m_SynthN163.update(m_iTime + now, master_out, &m_BlipN163);
 
 		now++;
 	}
@@ -128,6 +113,16 @@ void CN163::Process(uint32_t Time, Blip_Buffer& Output)
 
 void CN163::EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer)
 {
+	// log phase registers
+	for (int i = 0; i < 8; ++i) {
+		if (i <= m_N163.GetNumberOfChannels())
+			for (int j : {1, 3, 5}) {
+				int Address = 0x78 - i * 8 + j;
+				m_pRegisterLogger->SetPort(Address);
+				m_pRegisterLogger->Write(m_N163._internalRam[Address]);
+			}
+	}
+
 	m_BlipN163.end_frame(m_iTime);
 
 	ASSERT(size_t(m_BlipN163.samples_avail()) <= TempBuffer.size());
@@ -149,7 +144,27 @@ void CN163::EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer)
 
 double CN163::GetFreq(int Channel) const
 {
-	return m_N163.GetFrequency(Channel);
+	double freq = 0.0;
+	// channel 7 is at index 0
+	switch (Channel) {
+	case 0:
+		freq = m_N163.GetChannelFrequency(7, CAPU::BASE_FREQ_NTSC); break;
+	case 1:
+		freq = m_N163.GetChannelFrequency(6, CAPU::BASE_FREQ_NTSC); break;
+	case 2:
+		freq = m_N163.GetChannelFrequency(5, CAPU::BASE_FREQ_NTSC); break;
+	case 3:
+		freq = m_N163.GetChannelFrequency(4, CAPU::BASE_FREQ_NTSC); break;
+	case 4:
+		freq = m_N163.GetChannelFrequency(3, CAPU::BASE_FREQ_NTSC); break;
+	case 5:
+		freq = m_N163.GetChannelFrequency(2, CAPU::BASE_FREQ_NTSC); break;
+	case 6:
+		freq = m_N163.GetChannelFrequency(1, CAPU::BASE_FREQ_NTSC); break;
+	case 7:
+		freq = m_N163.GetChannelFrequency(0, CAPU::BASE_FREQ_NTSC); break;
+	}
+	return freq;
 }
 
 int CN163::GetChannelLevel(int Channel)
@@ -175,9 +190,9 @@ int CN163::GetChannelLevelRange(int Channel) const
 
 void CN163::UpdateN163Filter(int CutoffHz, bool Multiplex)
 {
+	SetMixingMethod(Multiplex);
 	m_CutoffHz = CutoffHz;
 	RecomputeN163Filter();
-	SetMixingMethod(Multiplex);
 }
 
 void CN163::UpdateMixLevel(double v)
@@ -209,6 +224,5 @@ void CN163::RecomputeN163Filter()
 	auto sampleRate_hz = float(m_BlipN163.sample_rate());
 	auto cutoff_rad = M_PI * 2 * (float)m_CutoffHz / sampleRate_hz;
 
-	// Wonder if this'll get messed up due to its large cutoff frequency
 	m_alpha = 1 - (float)std::exp(-cutoff_rad);
 }

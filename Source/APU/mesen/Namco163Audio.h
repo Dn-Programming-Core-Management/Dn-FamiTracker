@@ -35,6 +35,17 @@ public:
 
 	uint8_t _internalRam[Namco163Audio::AudioRamSize];
 
+	double GetChannelFrequency(int channel, int cpu_clock) const
+	{
+		auto period = GetFrequency(channel);
+		auto wavelength = GetWaveLength(channel);
+		auto channelcount = GetNumberOfChannels() + 1;
+		if (wavelength > 0)
+			return cpu_clock / 983040 * period / (wavelength);
+		else
+			return 0.0;
+	}
+
 	uint32_t GetFrequency(int channel) const
 	{
 		uint8_t baseAddr = 0x40 + channel * 0x08;
@@ -61,7 +72,7 @@ public:
 		return _internalRam[baseAddr + SoundReg::WaveAddress];
 	}
 
-	uint8_t GetWaveLength(int channel)
+	uint8_t GetWaveLength(int channel) const
 	{
 		uint8_t baseAddr = 0x40 + channel * 0x08;
 		return 256 - (_internalRam[baseAddr + SoundReg::WaveLength] & 0xFC);
@@ -73,7 +84,7 @@ public:
 		return _internalRam[baseAddr + SoundReg::Volume] & 0x0F;
 	}
 	
-	uint8_t GetNumberOfChannels()
+	uint8_t GetNumberOfChannels() const
 	{
 		return (_internalRam[0x7F] >> 4) & 0x07;
 	}
@@ -129,7 +140,7 @@ public:
 		return summedOutput;
 	}
 
-	void ClockAudio()
+	int16_t ClockAudio()
 	{
 		if(!_disableSound) {
 			_updateCounter++;
@@ -140,10 +151,11 @@ public:
 				_currentChannel--;
 				if(_currentChannel < 7 - GetNumberOfChannels()) {
 					_currentChannel = 7;
-
 				}
 			}
 		}
+		auto out = UpdateOutputLevel();
+		return out;
 	}
 
 	/// Compute how many clock cycles Namco163Audio can skip ahead in time
