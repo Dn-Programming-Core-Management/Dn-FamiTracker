@@ -32,8 +32,6 @@
 #include "FamiTracker.h"
 #include "Settings.h"
 
-class CMixer;
-
 class CN163 : public CSoundChip2 {
 public:
 	CN163();
@@ -60,6 +58,9 @@ private:
 	void RecomputeN163Filter();
 
 	int m_CutoffHz;
+
+	// master volume attenuation
+	double m_Attenuation;
 
 	Namco163Audio m_N163;
 

@@ -132,9 +132,10 @@ public:
 			for (int i = 7, min = 7 - GetNumberOfChannels(); i >= min; i--) {
 				summedOutput += _channelOutput[i];
 			}
+			summedOutput /= (GetNumberOfChannels() + 1);
 		}
 		else {
-			summedOutput = _channelOutput[_currentChannel] * (GetNumberOfChannels() + 1);
+			summedOutput = _channelOutput[_currentChannel];
 		}
 		return summedOutput;
 	}
