@@ -117,9 +117,9 @@ void CN163::EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer)
 	for (int i = 0; i < 8; ++i) {
 		if (i <= m_N163.GetNumberOfChannels())
 			for (int j : {1, 3, 5}) {
-				int Address = 0x78 - i * 8 + j;
-				m_pRegisterLogger->SetPort(Address);
-				m_pRegisterLogger->Write(m_N163._internalRam[Address]);
+				int RAMAddress = 0x78 - i * 8 + j;
+				m_pRegisterLogger->SetPort(RAMAddress);
+				m_pRegisterLogger->Write(m_N163._internalRam[RAMAddress]);
 			}
 	}
 
