@@ -102,7 +102,7 @@ void CN163::Process(uint32_t Time, Blip_Buffer& Output)
 			break;
 
 		// output master audio
-		auto master_out = m_N163.ClockAudio();
+		auto master_out = m_N163.ClockAudio() * -1;
 		m_SynthN163.update(m_iTime + now, master_out, &m_BlipN163);
 			
 		// update the channel levels
