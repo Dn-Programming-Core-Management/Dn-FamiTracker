@@ -179,29 +179,6 @@ void CMixer::RecomputeMixing()
 
 	float Volume = m_MixerConfig.OverallVol * GetAttenuation();
 
-	// Volume levels
-	auto &chip2A03 = *m_APU->m_p2A03;
-	auto &chipVRC7 = *m_APU->m_pVRC7;
-	auto &chipFDS = *m_APU->m_pFDS;
-	auto &chipN163 = *m_APU->m_pN163;
-
-	// Maybe the range argument, as well as the constant factor in the volume,
-	// should be supplied by the CSoundChip2 subclass rather than CMixer.
-	chip2A03.UpdateMixingAPU1(Volume * m_fLevelAPU1);
-	chip2A03.UpdateMixingAPU2(Volume * m_fLevelAPU2);
-	chipVRC7.UpdateMixLevel(Volume * m_fLevelVRC7);
-	chipFDS.UpdateMixLevel(Volume * m_fLevelFDS);
-	chipN163.UpdateMixLevel(Volume * m_fLevelN163);
-
-	// prioritize updating the emulation config before eq filter config for N163
-	chipN163.UpdateN163Filter(m_MixerConfig.N163Lowpass, m_MixerConfig.N163DisableMultiplexing);		// TODO: calculate cutoff Hz based on no. of channels
-	chipFDS.UpdateFdsFilter(m_MixerConfig.FDSLowpass);
-	chipVRC7.UpdatePatchSet(m_MixerConfig.VRC7Patchset);
-
-	SynthVRC6.volume(Volume * 3.98333f * m_fLevelVRC6, 500);
-	SynthMMC5.volume(Volume * 1.18421f * m_fLevelMMC5, 130);
-	SynthS5B.volume(Volume * m_fLevelS5B, 1200);  // Not checked
-
 	// Blip-buffer filtering
 	BlipBuffer.bass_freq(LowCut);
 
@@ -211,11 +188,36 @@ void CMixer::RecomputeMixing()
 	SynthMMC5.treble_eq(eq);
 	SynthS5B.treble_eq(eq);
 
+	// Volume levels
+	auto &chip2A03 = *m_APU->m_p2A03;
+	auto &chipVRC7 = *m_APU->m_pVRC7;
+	auto &chipFDS = *m_APU->m_pFDS;
+	auto &chipN163 = *m_APU->m_pN163;
+
+	// prioritize updating the emulation config before eq filter config for N163
+	chipN163.UpdateN163Filter(m_MixerConfig.N163Lowpass, m_MixerConfig.N163DisableMultiplexing);		// TODO: calculate cutoff Hz based on no. of channels
+
 	// See https://docs.google.com/document/d/19vtipTYI-vqL3-BPrE9HPjHmPpkFuIZKvWfevP3Oo_A/edit#heading=h.h70ipevgjbn7
 	// for an exploration of how I came to this design.
 	for (auto* chip : m_APU->m_SoundChips2) {
 		chip->UpdateFilter(eq);
 	}
+
+	// Maybe the range argument, as well as the constant factor in the volume,
+	// should be supplied by the CSoundChip2 subclass rather than CMixer.
+	chip2A03.UpdateMixingAPU1(Volume * m_fLevelAPU1);
+	chip2A03.UpdateMixingAPU2(Volume * m_fLevelAPU2);
+	chipVRC7.UpdateMixLevel(Volume * m_fLevelVRC7);
+	chipFDS.UpdateMixLevel(Volume * m_fLevelFDS);
+	chipN163.UpdateMixLevel(Volume * m_fLevelN163);
+
+	chipN163.UpdateN163Filter(m_MixerConfig.N163Lowpass, m_MixerConfig.N163DisableMultiplexing);
+	chipFDS.UpdateFdsFilter(m_MixerConfig.FDSLowpass);
+	chipVRC7.UpdatePatchSet(m_MixerConfig.VRC7Patchset);
+
+	SynthVRC6.volume(Volume * 3.98333f * m_fLevelVRC6, 500);
+	SynthMMC5.volume(Volume * 1.18421f * m_fLevelMMC5, 130);
+	SynthS5B.volume(Volume * m_fLevelS5B, 1200);  // Not checked
 }
 
 int CMixer::GetMeterDecayRate() const		// // // 050B
