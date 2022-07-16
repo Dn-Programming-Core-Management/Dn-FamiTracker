@@ -101,6 +101,20 @@ void CN163::Process(uint32_t Time, Blip_Buffer& Output)
 		if (now >= Time)
 			break;
 
+
+		auto tmp = m_N163.ClockAudioMaxSkip();
+		auto clock_skip = std::min(tmp, Time - now);
+		if (clock_skip > 0) {
+			m_N163.SkipClockAudio(clock_skip);
+			now += clock_skip;
+		}
+
+		if (tmp < (1 << 24))
+			assert(tmp - m_N163.ClockAudioMaxSkip() == clock_skip);
+		assert(now <= Time);
+		if (now >= Time)
+			break;
+
 		// output master audio
 		auto master_out = m_N163.ClockAudio() * -1;
 		m_SynthN163.update(m_iTime + now, master_out, &m_BlipN163);

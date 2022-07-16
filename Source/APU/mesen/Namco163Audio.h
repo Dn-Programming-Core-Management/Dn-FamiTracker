@@ -37,11 +37,11 @@ public:
 
 	double GetChannelFrequency(int channel, int cpu_clock) const
 	{
-		double period = GetFrequency(channel);
-		double wavelength = GetWaveLength(channel);
-		double channelcount = GetNumberOfChannels() + 1;
+		auto period = GetFrequency(channel);
+		auto wavelength = GetWaveLength(channel);
+		auto channelcount = GetNumberOfChannels() + 1;
 		if (wavelength > 0)
-			return cpu_clock * period / 983040 / wavelength / channelcount;
+			return cpu_clock * (double)period / 983040 / (double)wavelength / (double)channelcount;
 		else
 			return 0.0;
 	}
@@ -159,12 +159,16 @@ public:
 	}
 
 	/// Compute how many clock cycles Namco163Audio can skip ahead in time
-	/// without changing internal modulator state or output.
-	///
-	/// N163 audio is clocked every 15 cycles, so
+	/// without changing output.
 	uint32_t ClockAudioMaxSkip() const
 	{
+		// off-by-one due to the counter incrementing upon clocking
+		return 14 - _updateCounter;
+	}
 
+	void SkipClockAudio(uint32_t clocks)
+	{
+		_updateCounter += clocks;
 	}
 
 	void Reset() {
