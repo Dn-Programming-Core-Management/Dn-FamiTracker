@@ -618,7 +618,7 @@
 #define IDC_CHECK1                      1482
 #define IDC_N163_MULTIPLEXER            1482
 #define IDC_UPDATE_REMIND               1482
-#define IDC_PRECISEREGPITCH_CHECK         1482
+#define IDC_PRECISEREGPITCH_CHECK       1482
 #define IDC_SLIDER_FDS_LOWPASS          1484
 #define IDC_COMBO_S5B_EMULATOR          1485
 #define IDC_COMBO_VRC7_PATCH            1486
@@ -632,6 +632,12 @@
 #define IDC_IDLE_REFRESH_SLIDER         1505
 #define IDC_MAXCHANVIEW_EDIT            1508
 #define IDC_IDLE_REFRESH_EDIT           1512
+#define IDC_EDIT_LOWPASS_FDS            1514
+#define IDC_SPIN_LOWPASS_FDS            1515
+#define IDC_EDIT_LOWPASS_N163           1516
+#define IDC_SPIN_LOWPASS_N163           1517
+#define IDC_SLIDER_LOWPASS_N163         1519
+#define IDC_SLIDER_LOWPASS_FDS          1520
 #define IDS_FIND_BEGIN                  9001
 #define IDS_FIND_END                    9002
 #define ID_TRACKER_PLAY                 32771
@@ -804,7 +810,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        379
 #define _APS_NEXT_COMMAND_VALUE         33215
-#define _APS_NEXT_CONTROL_VALUE         1514
+#define _APS_NEXT_CONTROL_VALUE         1521
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif

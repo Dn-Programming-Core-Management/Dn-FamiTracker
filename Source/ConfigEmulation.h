@@ -53,8 +53,12 @@ public:
 	virtual BOOL OnInitDialog();
 	virtual BOOL OnApply();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-	//afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-	//afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	afx_msg void OnBnClickedN163Multiplexer();
 	afx_msg void OnCbnSelchangeComboVrc7Patch();
+	afx_msg void OnEnKillfocusEditLowpassFDS();
+	afx_msg void OnEnKillfocusEditLowpassN163();
+	afx_msg void OnEnChangeEditLowpassFDS();
+	afx_msg void OnEnChangeEditLowpassN163();
+	afx_msg void OnDeltaposSpinLowpassFDS(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnDeltaposSpinLowpassN163(NMHDR* pNMHDR, LRESULT* pResult);
 };
