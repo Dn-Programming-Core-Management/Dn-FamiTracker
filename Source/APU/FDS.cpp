@@ -256,5 +256,5 @@ void CFDS::RecomputeFdsFilter()
 	// compared to the audio sampling rate.
 	// Despite the exponential, this formula will never blow up
 	// because -cutoff_rad is negative, so e^(-cutoff_rad) lies between 0 and 1.
-	m_alpha = 1 - std::exp(-cutoff_rad);
+	m_alpha = 1 - (float)std::exp(-cutoff_rad);
 }
