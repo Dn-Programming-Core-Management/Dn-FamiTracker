@@ -8,7 +8,7 @@ Dn-Famitracker is a fork of 0CC-FamiTracker that incorporates numerous fixes and
 - Multitrack per-channel export
 - More accessible DPCM pitch preview
 - More accessible VRC7 envelope editing
-- Improved FDS, VRC7 and 2A03 emulation
+- Improved FDS, N163 VRC7 and 2A03 emulation
 - Restored Help manual, now under maintenance at [Dn-help](https://github.com/Dn-Programming-Core-Management/Dn-help)
 - and more to come, see the [release page](https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/releases) for more info
 
@@ -28,7 +28,7 @@ Notice: Due to delayed Appveyor reintegration, builds for commits `dc4c9e8` to `
 
 ## License
 
-The application and the source code are distributed under the GNU GPL 2 license or any later version, but depends on FDS sound emulation only under the GPL v3. Dn modifications and additions in the source code and ASM code are marked with "// // !!" and ";; ;; !!", respectively.
+The application and the source code are distributed under the GNU GPL 2 license or any later version, but depends on FDS and N163 sound emulation only under the GPL v3.
 
 ## See also:
 

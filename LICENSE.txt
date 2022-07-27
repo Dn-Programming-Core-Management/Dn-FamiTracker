@@ -1,9 +1,9 @@
-The majority of FamiTracker's codebase is available under the GNU General
+The majority of Dn-FamiTracker's codebase is available under the GNU General
 Public License, version 2 or later.
 
 It incorporates code from nsfplay, licensed under an informal permissive
 license, as well as code from Mesen, which is licensed under the GPL v3 only.
-As a result, FamiTracker as a whole is only available under the GPL v3.
+As a result, Dn-FamiTracker as a whole is only available under the GPL v3.
 
 The text of the GPL v2 is listed below:
 

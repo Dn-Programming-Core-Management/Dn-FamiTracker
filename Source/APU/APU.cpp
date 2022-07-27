@@ -61,6 +61,7 @@ CAPU::CAPU(IAudioCallback *pCallback) :		// // //
 	m_pMixer(new CMixer(this)),
 	m_p2A03(std::make_unique<C2A03>()),
 	m_pFDS(std::make_unique<CFDS>()),
+	m_pN163(std::make_unique<CN163>()),
 	m_pVRC7(std::make_unique<CVRC7>()),
 	m_iExternalSoundChips(0),
 	m_iCyclesToRun(0),
@@ -68,7 +69,6 @@ CAPU::CAPU(IAudioCallback *pCallback) :		// // //
 {
 	m_pMMC5 = new CMMC5(m_pMixer);
 	m_pVRC6 = new CVRC6(m_pMixer);
-	m_pN163 = new CN163(m_pMixer);
 	m_pS5B  = new CS5B(m_pMixer);
 
 	m_fLevelVRC7 = 1.0f;
@@ -83,7 +83,6 @@ CAPU::~CAPU()
 {
 	SAFE_RELEASE(m_pMMC5);
 	SAFE_RELEASE(m_pVRC6);
-	SAFE_RELEASE(m_pN163);
 	SAFE_RELEASE(m_pS5B);
 
 	SAFE_RELEASE(m_pMixer);
@@ -208,7 +207,7 @@ void CAPU::SetExternalSound(uint8_t Chip)
 	if (Chip & SNDCHIP_MMC5)
 		m_SoundChips.push_back(m_pMMC5);
 	if (Chip & SNDCHIP_N163)
-		m_SoundChips.push_back(m_pN163);
+		m_SoundChips2.push_back(m_pN163.get());
 	if (Chip & SNDCHIP_S5B)
 		m_SoundChips.push_back(m_pS5B);
 
@@ -399,11 +398,6 @@ void CAPU::Log()
 }
 #endif
 
-void CAPU::SetNamcoMixing(bool bLinear)		// // //
-{
-	m_pN163->SetMixingMethod(bLinear);
-}
-
 void CAPU::SetMeterDecayRate(int Type) const		// // // 050B
 {
 	m_pMixer->SetMeterDecayRate(Type);
@@ -476,9 +470,20 @@ void CAPUConfig::SetupMixer(int LowCut,
 	int HighDamp,
 	int Volume,
 	int FDSLowpass,
-	int VRC7Patchset)
+	int VRC7Patchset,
+	bool NamcoMixing,
+	int N163Lowpass)
 {
-	m_MixerConfig = MixerConfig{ LowCut, HighCut, HighDamp, float(Volume) / 100.0f, FDSLowpass, VRC7Patchset };
+	m_MixerConfig = MixerConfig{
+		LowCut,
+		HighCut,
+		HighDamp,
+		float(Volume) / 100.0f,
+		FDSLowpass,
+		N163Lowpass,
+		VRC7Patchset,
+		NamcoMixing
+	};
 }
 
 void CAPUConfig::SetChipLevel(chip_level_t Chip, float LeveldB)

@@ -849,7 +849,9 @@ bool CSoundGen::ResetAudioDevice()
 			pSettings->Sound.iTrebleDamping,
 			pSettings->Sound.iMixVolume,
 			pSettings->Emulation.iFDSLowpass,
-			pSettings->Emulation.iVRC7Patch);
+			pSettings->Emulation.iVRC7Patch,
+			pSettings->Emulation.bNamcoMixing,
+			pSettings->Emulation.iN163Lowpass);
 	}
 
 	m_bAudioClipping = false;
@@ -1535,6 +1537,9 @@ void CSoundGen::ResetAPU()
 	WriteRegister(0x4015, 0x0F);
 	WriteRegister(0x4017, 0x00);
 	WriteRegister(0x4023, 0x02); // FDS enable
+
+	// N163
+	m_pAPU->Write(0xE7FF, 0x00); // N163 enable
 
 	// MMC5
 	m_pAPU->Write(0x5015, 0x03);
@@ -2472,11 +2477,6 @@ void CSoundGen::WaveChanged()
 bool CSoundGen::HasWaveChanged() const
 {
 	return m_bInternalWaveChanged;
-}
-
-void CSoundGen::SetNamcoMixing(bool bLinear)		// // //
-{
-	m_pAPU->SetNamcoMixing(theApp.GetSettings()->Emulation.bNamcoMixing);
 }
 
 // Player state functions

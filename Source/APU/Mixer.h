@@ -51,7 +51,9 @@ struct MixerConfig {
 	int HighDamp = 0;
 	float OverallVol = 0;
 	int FDSLowpass = 2000;
+	int N163Lowpass = 12000;
 	int VRC7Patchset = 0;
+	bool N163DisableMultiplexing = true;
 };
 
 class CMixer
@@ -85,13 +87,11 @@ public:
 	int32_t	GetChanOutput(uint8_t Chan) const;
 	void	SetChipLevel(chip_level_t Chip, float Level);
 	uint32_t	ResampleDuration(uint32_t Time) const;
-	void	SetNamcoVolume(float fVol);
 
 	int		GetMeterDecayRate() const;		// // // 050B
 	void	SetMeterDecayRate(int Rate);		// // // 050B
 
 private:
-	void MixN163(int Value, int Time);
 	void MixVRC6(int Value, int Time);
 	void MixMMC5(int Value, int Time);
 	void MixS5B(int Value, int Time);
@@ -111,7 +111,6 @@ private:
 	// even if chips are not active in current module.
 	Blip_Synth<blip_good_quality> SynthVRC6;
 	Blip_Synth<blip_good_quality> SynthMMC5;
-	Blip_Synth<blip_good_quality> SynthN163;
 	Blip_Synth<blip_good_quality> SynthS5B;		// // // 050B
 
 	/// Only used by CMixer::ClearBuffer(), which clears the global Blip_Buffer
@@ -126,7 +125,6 @@ private:
 	#define FOREACH_SYNTH(X, SEP) \
 		X(SynthVRC6) SEP \
 		X(SynthMMC5) SEP \
-		X(SynthN163) SEP \
 		X(SynthS5B)
 
 	// Blip buffer object
@@ -145,6 +143,7 @@ private:
 	float		m_fLevelAPU1;
 	float		m_fLevelAPU2;
 	float		m_fLevelVRC6;
+	float		m_fLevelVRC7;
 	float		m_fLevelMMC5;
 	float		m_fLevelFDS;
 	float		m_fLevelN163;

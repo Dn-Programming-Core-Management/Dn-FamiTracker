@@ -21,13 +21,15 @@
 ** Any permitted reproduction of these routines, in whole or in part,
 ** must bear this legend.
 */
+#define _USE_MATH_DEFINES
 
 #include "../stdafx.h"
 #include "APU.h"
 #include "FDS.h"
-#include "../RegisterState.h"		// // //
+#include "../RegisterState.h"		// // //s
 
 #include <cstdint>
+
 #include <cmath>
 
 // FDS interface, actual FDS emulation is in FDSSound.cpp
@@ -51,8 +53,6 @@ void CFDS::Reset()
 	m_SynthFDS.clear();
 	m_BlipFDS.clear();
 }
-
-constexpr float TWOPI = 2 * 3.141592653589793238462643383279502884f;
 
 void CFDS::UpdateFilter(blip_eq_t eq)
 {
@@ -250,11 +250,11 @@ void CFDS::RecomputeFdsFilter()
 {
 	// Compute first-order lowpass coefficient from FDS cutoff frequency and sampling rate.
 	auto sampleRate_hz = float(m_BlipFDS.sample_rate());
-	auto cutoff_rad = TWOPI * (float)m_CutoffHz / sampleRate_hz;
+	auto cutoff_rad = 2 * M_PI * (float)m_CutoffHz / sampleRate_hz;
 
 	// This formula is approximate, but good enough because the FDS cutoff frequency is small
 	// compared to the audio sampling rate.
 	// Despite the exponential, this formula will never blow up
 	// because -cutoff_rad is negative, so e^(-cutoff_rad) lies between 0 and 1.
-	m_alpha = 1 - std::exp(-cutoff_rad);
+	m_alpha = 1 - (float)std::exp(-cutoff_rad);
 }

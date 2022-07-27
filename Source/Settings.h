@@ -259,6 +259,7 @@ public:
 		int		iFDSLowpass;
 		// N163
 		bool	bNamcoMixing;		// // //
+		int		iN163Lowpass;
 		// VRC7
 		int		iVRC7Patch;
 	} Emulation;

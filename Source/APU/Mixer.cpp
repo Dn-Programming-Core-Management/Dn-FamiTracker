@@ -50,7 +50,14 @@
 
  ---
 
- N163 & 5B are still unknown
+ Based on findings from the NESDev Wiki: https://wiki.nesdev.org/w/index.php?title=Namco_163_audio#Mixing
+ Along with plgDavid's list of details on various N163 cartridge details: https://docs.google.com/spreadsheets/d/12qGAqMeQFleSPEIZFlxrPzH3MTRKXEa1LIQPXSFD4tk
+
+ N163:
+	Varies depending on die revision and components of the cartridge.
+	TODO: implement INES 2.0 submapper levels
+ 
+ 5B is still unknown
 
 */
 
@@ -61,6 +68,7 @@
 #include "APU.h"
 #include "2A03.h"
 #include "FDS.h"
+#include "N163.h"
 #include "nsfplay/xgm/devices/Sound/legacy/emu2413.h"
 #include "utils/variadic_minmax.h"
 
@@ -79,6 +87,7 @@ CMixer::CMixer(CAPU * Parent)
 	m_fLevelAPU1 = 1.0f;
 	m_fLevelAPU2 = 1.0f;
 	m_fLevelVRC6 = 1.0f;
+	m_fLevelVRC7 = 1.0f;
 	m_fLevelMMC5 = 1.0f;
 	m_fLevelFDS = 1.0f;
 	m_fLevelN163 = 1.0f;
@@ -162,8 +171,6 @@ float CMixer::GetAttenuation() const
 	return Attenuation;
 }
 
-constexpr int N163_RANGE = 1600;
-
 void CMixer::RecomputeMixing()
 {
 	auto LowCut = m_MixerConfig.LowCut;
@@ -181,55 +188,36 @@ void CMixer::RecomputeMixing()
 	SynthMMC5.treble_eq(eq);
 	SynthS5B.treble_eq(eq);
 
+	// Volume levels
+	auto &chip2A03 = *m_APU->m_p2A03;
+	auto &chipVRC7 = *m_APU->m_pVRC7;
+	auto &chipFDS = *m_APU->m_pFDS;
+	auto &chipN163 = *m_APU->m_pN163;
+
+	// Prioritize updating the emulation config before eq filter config for N163
+	chipN163.UpdateN163Filter(m_MixerConfig.N163Lowpass, m_MixerConfig.N163DisableMultiplexing);
+
 	// See https://docs.google.com/document/d/19vtipTYI-vqL3-BPrE9HPjHmPpkFuIZKvWfevP3Oo_A/edit#heading=h.h70ipevgjbn7
 	// for an exploration of how I came to this design.
-	for (auto * chip : m_APU->m_SoundChips2) {
+	for (auto* chip : m_APU->m_SoundChips2) {
 		chip->UpdateFilter(eq);
 	}
-
-	// N163 special filtering
-	double n163_treble = 24;
-	long n163_rolloff = 12000;
-
-	if (HighDamp > n163_treble)
-		n163_treble = HighDamp;
-
-	if (n163_rolloff > HighCut)
-		n163_rolloff = HighCut;
-
-	blip_eq_t eq_n163(-n163_treble, n163_rolloff, m_iSampleRate);
-	SynthN163.treble_eq(eq_n163);
-
-	// Volume levels
-	auto & chip2A03 = *m_APU->m_p2A03;
-	auto & chipFDS = *m_APU->m_pFDS;
-	auto & chipVRC7 = *m_APU->m_pVRC7;
 
 	// Maybe the range argument, as well as the constant factor in the volume,
 	// should be supplied by the CSoundChip2 subclass rather than CMixer.
 	chip2A03.UpdateMixingAPU1(Volume * m_fLevelAPU1);
 	chip2A03.UpdateMixingAPU2(Volume * m_fLevelAPU2);
+	chipVRC7.UpdateMixLevel(Volume * m_fLevelVRC7);
 	chipFDS.UpdateMixLevel(Volume * m_fLevelFDS);
-	chipVRC7.UpdateMixLevel(Volume * m_fLevelFDS);
+	chipN163.UpdateMixLevel(Volume * m_fLevelN163);
 
+	chipN163.UpdateN163Filter(m_MixerConfig.N163Lowpass, m_MixerConfig.N163DisableMultiplexing);
 	chipFDS.UpdateFdsFilter(m_MixerConfig.FDSLowpass);
 	chipVRC7.UpdatePatchSet(m_MixerConfig.VRC7Patchset);
 
 	SynthVRC6.volume(Volume * 3.98333f * m_fLevelVRC6, 500);
 	SynthMMC5.volume(Volume * 1.18421f * m_fLevelMMC5, 130);
-	SynthN163.volume(Volume * 1.1f * m_fLevelN163, N163_RANGE);  // Not checked
 	SynthS5B.volume(Volume * m_fLevelS5B, 1200);  // Not checked
-}
-
-/// CN163::Process() calls CMixer::SetNamcoVolume().
-/// This overrides the N163 volume (which is supposed to be set by
-/// CMixer::RecomputeMixing()) on every single emulation call.
-/// This is gross, but works and doesn't have any dependency ordering problems.
-void CMixer::SetNamcoVolume(float fVol)
-{
-	float fVolume = fVol * m_MixerConfig.OverallVol * GetAttenuation();
-
-	SynthN163.volume(fVolume * 1.1f * m_fLevelN163, N163_RANGE);
 }
 
 int CMixer::GetMeterDecayRate() const		// // // 050B
@@ -336,16 +324,15 @@ void CMixer::FinishBuffer(int t)
 	auto& chipVRC7 = *m_APU->m_pVRC7;
 	for (int i = 0; i < 6; ++i)
 		StoreChannelLevel(CHANID_VRC7_CH1 + i, get_channel_level(chipVRC7, i));
+
+	auto& chipN163 = *m_APU->m_pN163;
+	for (int i = 0; i < 8; i++)
+		StoreChannelLevel(CHANID_N163_CH1 + i, get_channel_level(chipN163, i));
 }
 
 //
 // Mixing
 //
-
-void CMixer::MixN163(int Value, int Time)
-{
-	SynthN163.offset(Time, Value, &BlipBuffer);
-}
 
 void CMixer::MixVRC6(int Value, int Time)
 {
@@ -377,9 +364,6 @@ void CMixer::AddValue(int ChanID, int Chip, int Value, int AbsValue, int FrameCy
 			// 2A03 nonlinear mixing bypasses CMixer now, and talks directly to BlipBuffer
 			// (obtained by CMixer::GetBuffer()).
 			break;
-		case SNDCHIP_N163:
-			MixN163(Value, FrameCycles);
-			break;
 		case SNDCHIP_MMC5:
 			// Value == AbsValue.
 			MixMMC5(Delta, FrameCycles);
@@ -410,11 +394,6 @@ void CMixer::StoreChannelLevel(int Channel, int Value)
 	// Adjust channel levels for some channels
 	if (Channel == CHANID_VRC6_SAWTOOTH)
 		AbsVol = (AbsVol * 3) / 4;
-
-	if (Channel >= CHANID_N163_CH1 && Channel <= CHANID_N163_CH8) {
-		AbsVol = (AbsVol * 2) / 15;
-		Channel = (7 - (Channel - CHANID_N163_CH1)) + CHANID_N163_CH1;
-	}
 
 	if (Channel >= CHANID_VRC7_CH1 && Channel <= CHANID_VRC7_CH6) {
 		AbsVol = (int)(logf((float)AbsVol) * 3.0f);

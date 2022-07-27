@@ -243,6 +243,7 @@ void CSettings::SetupSettings()
 	SETTING_INT("Emulation", "FDS lowpass filter cutoff", 2000, &Emulation.iFDSLowpass);
 		// N163
 	SETTING_BOOL("Emulation", "N163 multiplexing", true, &Emulation.bNamcoMixing);
+	SETTING_INT("Emulation", "N163 lowpass filter cutoff", 12000, &Emulation.iN163Lowpass);
 		// VRC7
 	SETTING_INT("Emulation", "VRC7 hardware patch", PATCH_NUKE, &Emulation.iVRC7Patch);
 }

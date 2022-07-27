@@ -1499,6 +1499,9 @@
     <ClInclude Include="Source\rigtorp\SPSCQueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\APU\mesen\Namco163Audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Dn-FamiTracker.rc">

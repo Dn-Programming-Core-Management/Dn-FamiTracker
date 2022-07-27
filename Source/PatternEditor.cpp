@@ -2080,6 +2080,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 
 		// N163
 		for (int i = 0; i < 16; ++i) {
+			// Register view needs direct access to internal N163 RAM
 			GetRegsFunc(SNDCHIP_N163, [&] (int x) { return i * 8 + x; }, 8);
 			text.Format(_T("$%02X:"), i * 8);
 			DrawRegFunc(text, 8);
