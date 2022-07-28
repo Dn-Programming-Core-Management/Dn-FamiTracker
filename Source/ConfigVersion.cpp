@@ -27,6 +27,8 @@
 #include "ConfigVersion.h"
 #include "FamiTrackerTypes.h"
 #include "Settings.h"
+#include <algorithm>  // std::clamp
+#include <iterator>  // std::size
 
 const CString CConfigVersion::VERSION_TEXT[] = {
 	_T("FamiTracker 0.2.2"),
@@ -103,11 +105,10 @@ const stVerInfo CConfigVersion::VERSION_INFO[] = {
 const CString MODULE_ERROR_DESC[] = {
 	_T("None: Perform no validation at all while loading or saving modules. "
 	   "The tracker might crash or enter an inconsistent state."),
-	_T("Default: Perform the usual error checking according to the most recent official stable build."),
-	_T("Official: Perform extra bounds checking to ensure that modules are openable in the official build."),
-	_T("Strict: Validate all modules so that they do not contain any illegal data. "
-	   "Modules openable in the official build might be rejected."),
+	_T("Default: Perform the usual error checking."),
+	_T("Strict: Validate all modules so that they do not contain any illegal data."),
 };
+static_assert(std::size(MODULE_ERROR_DESC) == MODULE_ERROR_MAX + 1);
 
 // CConfigVersion dialog
 
@@ -153,7 +154,10 @@ BOOL CConfigVersion::OnInitDialog()
 	GetDlgItem(IDC_CHECK_VERSION_SAVE)->EnableWindow(FALSE);
 #endif
 
-	m_iModuleErrorLevel = theApp.GetSettings()->Version.iErrorLevel;
+	m_iModuleErrorLevel = std::clamp(
+		theApp.GetSettings()->Version.iErrorLevel,
+		0,
+		(int) MODULE_ERROR_MAX);
 
 	m_cComboVersion = new CComboBox();
 	m_cComboVersion->SubclassDlgItem(IDC_COMBO_VERSION_SELECT, this);
@@ -164,8 +168,8 @@ BOOL CConfigVersion::OnInitDialog()
 
 	m_cSliderErrorLevel = new CSliderCtrl();
 	m_cSliderErrorLevel->SubclassDlgItem(IDC_SLIDER_VERSION_ERRORLEVEL, this);
-	m_cSliderErrorLevel->SetRange(MODULE_ERROR_NONE, MODULE_ERROR_STRICT);
-	m_cSliderErrorLevel->SetPos(MODULE_ERROR_STRICT - m_iModuleErrorLevel);
+	m_cSliderErrorLevel->SetRange(MODULE_ERROR_NONE, MODULE_ERROR_MAX);
+	m_cSliderErrorLevel->SetPos(MODULE_ERROR_MAX - m_iModuleErrorLevel);
 
 	UpdateInfo();
 
@@ -200,11 +204,11 @@ void CConfigVersion::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar *pScrollBar)
 
 void CConfigVersion::OnNMCustomdrawSliderVersionErrorlevel(NMHDR *pNMHDR, LRESULT *pResult)
 {
-	int NewLevel = MODULE_ERROR_STRICT - m_cSliderErrorLevel->GetPos();
+	int NewLevel = MODULE_ERROR_MAX - m_cSliderErrorLevel->GetPos();
 	if (m_iModuleErrorLevel != NewLevel) {
 		m_iModuleErrorLevel = NewLevel;
 		SetModified();
 	}
-	
+
 	*pResult = 0;
 }
