@@ -143,3 +143,8 @@ void CInstrumentEditorVRC7Envelope::OnKeyReturn()
 	GetDlgItemText(IDC_SEQUENCE_STRING, string);
 	TranslateMML(string);
 }
+
+BOOL CInstrumentEditorVRC7Envelope::PreTranslateMessage(MSG* pMsg)
+{
+	return CInstrumentEditPanel::PreTranslateMessage(pMsg);
+}
