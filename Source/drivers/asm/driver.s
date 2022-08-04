@@ -290,6 +290,7 @@ var_Tempo_Count:		.res 2						;  (if tempo support is not needed then this can b
 var_Tempo_Dec:			.res 2
 var_Tempo_Modulus:		.res 2						;;; ;; ; from 0.4.6
 var_Sweep:				.res 1						; This has to be saved
+var_VolumeSlideStarted:	.res 1						;; ;; !! Flag to allow simultaneous volume + slide 
 
 .if .defined(USE_BANKSWITCH)
 ;var_Bank:				.res 1
@@ -336,6 +337,7 @@ var_ch_PeriodCalcLo:	.res EFF_CHANS 				; Frequency after fine pitch and vibrato
 var_ch_PeriodCalcHi:	.res EFF_CHANS
 ;var_ch_OutVolume:		.res EFF_CHANS				; Volume for the APU
 var_ch_VolSlide:		.res EFF_CHANS				;;; ;; ; Volume slide
+var_ch_VolSlideTarget:	.res EFF_CHANS				;; ;; !! Volume slide target
 var_ch_DutyDefault:		.res EFF_CHANS				;;; ;; ; Duty cycle / Noise mode
 var_ch_DutyCurrent:		.res EFF_CHANS				; ;; ;;; do not rely on bitwise operations
 

@@ -496,6 +496,9 @@ protected:
 	unsigned char	m_iDefaultDuty;
 	/*!	\brief The effect command parameter of the Axy volume slide effect. */
 	unsigned char	m_iVolSlide;
+	/*!	\brief The targeted channel volume set by the Nxy targeted volume slide effect.
+		\details Remains at -1 (255) if a non-targeted volume slide is used. */
+	char			m_iVolSlideTarget;
 
 	// Misc
 	/*!	\brief A pointer to the underlying sound channel controller object. */

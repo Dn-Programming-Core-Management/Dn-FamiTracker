@@ -115,6 +115,7 @@ const CString EFFECT_TEXTS[] = {		// // //
 	_T("Zxx - Auto FDS modulation rate bias, XX - 80 = offset"),
 	_T("=00 - Reset channel phase"),
 	_T("Kxx - Multiply frequency by XX, does not affect FDS Ixy modulator"),
+	_T("Nxy - Target volume slide, X = speed, Y = volume"),
 };
 
 // OLE copy and mix

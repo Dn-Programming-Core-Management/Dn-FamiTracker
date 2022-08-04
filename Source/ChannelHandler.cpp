@@ -66,7 +66,8 @@ CChannelHandler::CChannelHandler(int MaxPeriod, int MaxVolume) :
 	m_bNewVibratoMode(false),
 	m_bLinearPitch(false),
 	m_bForceReload(false),		// // //
-	m_iEffectParam(0)		// // //
+	m_iEffectParam(0),		// // //
+	m_iVolSlideTarget(-1)		// // !!
 {
 }
 
@@ -163,6 +164,7 @@ void CChannelHandler::ResetChannel()
 	m_iFinePitch		= 0x80;
 	m_iPeriod			= 0;
 	m_iVolSlide			= 0;
+	m_iVolSlideTarget	= -1;		// // !!
 	m_bDelayEnabled		= false;
 	m_iNoteCut			= 0;
 	m_iNoteRelease		= 0;		// // //
@@ -331,6 +333,7 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 	bool Trigger = (pNoteData->Note != NONE) && (pNoteData->Note != HALT) && (pNoteData->Note != RELEASE) &&
 		Instrument != HOLD_INSTRUMENT;		// // // 050B
 	bool pushNone = false;
+	bool handledTargetVolumeSlide = false;	// // !!
 
 	// // // Echo buffer
 	if (pNoteData->Note == ECHO && pNoteData->Octave <= ECHO_BUFFER_LENGTH)
@@ -378,12 +381,20 @@ void CChannelHandler::HandleNoteData(stChanNote *pNoteData, int EffColumns)
 			m_iVolume = m_iDefaultVolume;
 			m_iNoteVolume = -1;
 		}
+		else if (EffNum == EF_TARGET_VOLUME_SLIDE) {	// // !!
+			handledTargetVolumeSlide = true;
+		}
 	}
 
 	// Volume
 	if (pNoteData->Vol < MAX_VOLUME) {
 		m_iVolume = pNoteData->Vol << VOL_COLUMN_SHIFT;
 		m_iDefaultVolume = m_iVolume;		// // //
+
+		if (!handledTargetVolumeSlide && m_iVolSlideTarget >= 0) {	// // !!
+			m_iVolSlide = 0x00;		// Cancel slide upon new volume command similar to Q/Rxx
+			m_iVolSlideTarget = -1;
+		}
 	}
 
 	// Instrument
@@ -614,6 +625,7 @@ bool CChannelHandler::HandleEffect(effect_t EffCmd, unsigned char EffParam)
 		break;
 	case EF_VOLUME_SLIDE:
 		m_iVolSlide = EffParam;
+		m_iVolSlideTarget = -1;
 		if (!EffParam)		// // //
 			m_iDefaultVolume = m_iVolume;
 		break;
@@ -638,9 +650,17 @@ bool CChannelHandler::HandleEffect(effect_t EffCmd, unsigned char EffParam)
 	case EF_HARMONIC:
 		m_iHarmonic = EffParam;
 		break;
-//	case EF_TARGET_VOLUME_SLIDE:
-		// TODO implement
-//		break;
+	case EF_TARGET_VOLUME_SLIDE:
+		if (EffParam) {		// // !!
+			m_iVolSlide = (EffParam & 0xF0) >> 4;
+			m_iVolSlideTarget = (EffParam & 0x0F) << VOL_COLUMN_SHIFT;
+		}
+		else {
+			m_iVolSlide = 0x00;
+			m_iVolSlideTarget = -1;
+			m_iDefaultVolume = m_iVolume;
+		}
+		break;
 	default:
 		return false;
 	}
@@ -699,8 +719,13 @@ void CChannelHandler::UpdateNoteRelease()		// // //
 void CChannelHandler::UpdateNoteVolume()		// // //
 {
 	// Delayed channel volume (Mxy)
-	if (m_iNoteVolume > 0) if (!--m_iNoteVolume)
+	if (m_iNoteVolume > 0) if (!--m_iNoteVolume) {
 		m_iVolume = m_iNewVolume;
+		if (m_iVolSlideTarget >= 0) {			// // !!
+			m_iVolSlideTarget = -1;
+			m_iVolSlide = 0x00;
+		}
+	}
 }
 
 void CChannelHandler::UpdateTranspose()		// // //
@@ -740,7 +765,24 @@ void CChannelHandler::UpdateVolumeSlide()
 
 void CChannelHandler::UpdateTargetVolumeSlide()
 {
-	// TODO implement
+	// Target volume slide (Nxy)				// // !!
+	if (m_iVolume > m_iVolSlideTarget) {
+		m_iVolume -= (m_iVolSlide & 0x0F);
+		if (m_iVolume <= m_iVolSlideTarget) {
+			m_iVolume = m_iVolSlideTarget;
+			m_iVolSlide = 0x00;
+			m_iVolSlideTarget = -1;
+		}
+	}
+	else
+	{
+		m_iVolume += (m_iVolSlide & 0x0F);
+		if (m_iVolume >= m_iVolSlideTarget) {
+			m_iVolume = m_iVolSlideTarget;
+			m_iVolSlide = 0x00;
+			m_iVolSlideTarget = -1;
+		}
+	}
 }
 
 void CChannelHandler::UpdateVibratoTremolo()
@@ -855,7 +897,10 @@ void CChannelHandler::ProcessChannel()
 	UpdateNoteRelease();		// // //
 	UpdateNoteVolume();			// // //
 	UpdateTranspose();			// // //
-	UpdateVolumeSlide();
+	if (m_iVolSlideTarget < 0)	// // !!
+		UpdateVolumeSlide();
+	else
+		UpdateTargetVolumeSlide();
 	UpdateVibratoTremolo();
 	UpdateEffects();
 	if (m_pInstHandler) m_pInstHandler->UpdateInstrument();		// // //

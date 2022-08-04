@@ -161,6 +161,7 @@ enum effect_t : unsigned char {
 	EF_FDS_MOD_BIAS,    	// // // FDS auto-FM bias
 	EF_PHASE_RESET,  // Reset waveform phase without retriggering note (VRC6-only so far)
 	EF_HARMONIC,  // Multiply the note pitch by an integer
+	EF_TARGET_VOLUME_SLIDE,	// // !! Target volume slide
 
 	EF_COUNT
 };
@@ -224,6 +225,7 @@ const char EFF_CHAR[] = {
 	'Z',   	// EF_FDS_MOD_BIAS,
 	'=',	// EF_PHASE_RESET
 	'K',	// EF_HARMONIC
+	'N',	// // !! EF_TARGET_VOLUME_SLIDE
 };
 
 struct Effect {

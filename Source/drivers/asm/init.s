@@ -270,6 +270,7 @@ ft_load_song:
 	sta var_ch_VolDefault, x		;;; ;; ;
 	lda #$80
 	sta var_ch_FinePitch, x
+	sta var_ch_VolSlideTarget, x	;; ;; !!
 	lda #$00
 	;
 	;lda #$00
