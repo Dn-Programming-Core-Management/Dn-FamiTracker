@@ -240,6 +240,7 @@ ft_check_fds_fm:
 	sta $4087
 	rts
 @AutoFM:
+	; ModFreq = PeriodCalc * ModRate_Hi / ModRate_Lo + ModBias
 	lda var_ch_ModRate + 1
 	and #$7F
 	sta var_Temp
@@ -251,22 +252,35 @@ ft_check_fds_fm:
 	sta var_Temp16
 	lda #$00
 	sta AUX + 1
-
 	jsr MUL
+
 	lda EXT
 	beq :+
 	lda #$FF
 	sta ACC
 	sta ACC + 1
 :	jsr DIV
+
 	lda var_ch_ModBias
 	eor #$80
 	bpl :+
 	dec ACC + 1
 :	clc
 	adc ACC
+
+	; if (ModFreq > 0xFFF) ModFreq = 0xFFF;
+	clc
+	lda ACC + 1
+	cmp #$10
+	bcc :+
+	lda #$0F
+	sta ACC + 1
+	lda #$FF
+	sta ACC + 0
+
+:	clc
+	lda ACC + 0
 	sta $4086
 	lda ACC + 1
-	adc #$00
 	sta $4087
 	rts
