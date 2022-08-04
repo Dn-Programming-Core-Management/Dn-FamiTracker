@@ -265,20 +265,8 @@ ft_check_fds_fm:
 	dec ACC + 1
 :	clc
 	adc ACC
+	sta $4086
 	lda ACC + 1
-
-; check for overflow
 	adc #$00
-	cmp #$10
-	bcs :+
-
-	sta $4086
-	lda ACC + 1
-	sta $4087
-	rts
-:	
-	lda #$FF
-	sta $4086
-	lda #$0F
 	sta $4087
 	rts
