@@ -708,27 +708,29 @@ ft_command_table:
 	.word ft_cmd_groove				; A0
 	.word ft_cmd_delayed_volume		; A1
 	.word ft_cmd_transpose			; A2
-	.word ft_cmd_target_vol_slide	; A3	;; ;; !!
+	.word ft_cmd_phase_reset		; A3	;; ;; !!
+	.word ft_cmd_harmonic			; A4	;; ;; !!
+	.word ft_cmd_target_vol_slide	; A5	;; ;; !!
 .if .defined(USE_VRC7)
-	.word ft_cmd_vrc7_patch_change	; A4
-	.word ft_cmd_vrc7_port			; A5
-	.word ft_cmd_vrc7_write			; A6
+	.word ft_cmd_vrc7_patch_change	; A6
+	.word ft_cmd_vrc7_port			; A7
+	.word ft_cmd_vrc7_write			; A8
 .endif
 .if .defined(USE_FDS)
-	.word ft_cmd_fds_mod_depth		; A7
-	.word ft_cmd_fds_mod_rate_hi	; A8
-	.word ft_cmd_fds_mod_rate_lo	; A9
-	.word ft_cmd_fds_volume			; AA
-	.word ft_cmd_fds_mod_bias		; AB
+	.word ft_cmd_fds_mod_depth		; A9
+	.word ft_cmd_fds_mod_rate_hi	; AA
+	.word ft_cmd_fds_mod_rate_lo	; AB
+	.word ft_cmd_fds_volume			; AC
+	.word ft_cmd_fds_mod_bias		; AD
 .endif
 .if .defined(USE_N163)
-	.word ft_cmd_n163_wave_buffer	; AC
+	.word ft_cmd_n163_wave_buffer	; AE
 .endif
 .if .defined(USE_S5B)		;;; ;; ;
-	.word ft_cmd_s5b_env_type		; AD
-	.word ft_cmd_s5b_env_rate_hi	; AE
-	.word ft_cmd_s5b_env_rate_lo	; AF
-	.word ft_cmd_s5b_noise			; B0
+	.word ft_cmd_s5b_env_type		; AF
+	.word ft_cmd_s5b_env_rate_hi	; B0
+	.word ft_cmd_s5b_env_rate_lo	; B1
+	.word ft_cmd_s5b_noise			; B2
 .endif				; ;; ;;;
 ;	.word ft_cmd_expand
 
@@ -1040,6 +1042,17 @@ ft_cmd_transpose:
 	jsr ft_get_pattern_byte
 	sta var_ch_Transpose, x
 	rts
+;; ;; !! Effect: Phase reset (=xx)
+ft_cmd_phase_reset:					; TODO: implement for all available channels
+	jsr ft_get_pattern_byte
+	sta var_ch_EffParam, x
+	rts
+;; ;; !! Effect: Frequency Multiplier (Kxx)
+ft_cmd_harmonic:
+	jsr ft_get_pattern_byte
+	beq :+							; K00 is UB
+	sta var_ch_Harmonic, x
+:	rts
 ;; ;; !! Effect: Target note slide (Nxy)
 ft_cmd_target_vol_slide:
 	jsr ft_get_pattern_byte			; Fetch speed / volume
@@ -1060,7 +1073,7 @@ ft_cmd_target_vol_slide:
 	sta var_ch_VolSlideTarget, x
 	rts
 :	sta var_ch_VolSlide, x
-	sta var_ch_VolDefault, x;
+	sta var_ch_VolDefault, x
 	lda #$80
 	sta var_ch_VolSlideTarget, x
 	rts

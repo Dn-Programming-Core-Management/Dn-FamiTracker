@@ -1,6 +1,6 @@
 ;;; ;; ;
-;;; ;; ; 0CC-FamiTracker NSF Driver
-;;; ;; ; By HertzDevil
+;;; ;; ; Dn-FamiTracker NSF Driver
+;;; ;; ; By jsr, HertzDevil, D.P.C.M., etc.
 ;;; ;; ;
 
 ;
@@ -128,6 +128,7 @@ CHANNELS	= DPCM_OFFSET + .defined(USE_DPCM)
 	EFF_SLIDE_UP
 	EFF_SLIDE_DOWN_LOAD
 	EFF_SLIDE_DOWN
+	EFF_PHASE_RESET
 .endenum
 
 .enum
@@ -214,6 +215,7 @@ var_ch_ModInstRate:		.res 2		;;; ;; ;
 var_ch_ModEffWritten:	.res 1
 var_ch_FDSVolume:		.res 1		;;; ;; ;
 var_ch_ModBias:			.res 1		;;; ;; ;
+var_ch_FDSCarrier:		.res 2		;; ;; !! for auto-FM in conjunction with frequency multiplier
 .endif
 
 .if .defined(USE_N163)
@@ -238,6 +240,9 @@ var_EnvelopeType:		.res 1						; $0D
 var_AutoEnv_Channel:	.res 1						;;; ;; ; 050B
 var_EnvelopeTrigger:	.res 1						; Hxy issued
 .endif												; ;; ;;;
+
+; hack effect variable to zeropage due to low space remaining in BSS when all expansions are enabled
+var_ch_Harmonic:		.res EFF_CHANS				;; ;; !! Frequency multiplier
 
 last_zp_var:			.res 1						; Not used
 
@@ -383,6 +388,7 @@ var_ch_TremoloPos:		.res EFF_CHANS				; Tremolo
 var_ch_TremoloDepth:	.res EFF_CHANS				; combine these
 var_ch_TremoloSpeed:	.res EFF_CHANS
 var_ch_TremoloResult:   .res EFF_CHANS
+;var_ch_PhaseReset:		.res EFF_CHANS				;; ;; !! Phase reset
 ;var_ch_VibratoParam:	.res EFF_CHANS
 ;var_ch_TremoloParam:	.res EFF_CHANS
 

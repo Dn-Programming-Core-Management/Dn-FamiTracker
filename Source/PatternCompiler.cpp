@@ -94,6 +94,8 @@ enum command_t {
 	CMD_EFF_GROOVE,				// // //
 	CMD_EFF_DELAYED_VOLUME,		// // //
 	CMD_EFF_TRANSPOSE,			// // //
+	CMD_EFF_PHASE_RESET,		// // !!
+	CMD_EFF_HARMONIC,			// // !!
 	CMD_EFF_TARGET_VOL_SLIDE,	// // !!
 
 	CMD_EFF_VRC7_PATCH,			// // // 050B
@@ -553,6 +555,18 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 				case EF_TRANSPOSE:			// // //
 					if (ChanID != CHANID_DPCM) {
 						WriteData(Command(CMD_EFF_TRANSPOSE));
+						WriteData(EffParam);
+					}
+					break;
+				case EF_PHASE_RESET:	// // !!
+					if (ChanID != CHANID_DPCM) {
+						WriteData(Command(CMD_EFF_PHASE_RESET));
+						WriteData(EffParam);
+					}
+					break;
+				case EF_HARMONIC:	// // !!
+					if (ChanID != CHANID_DPCM) {
+						WriteData(Command(CMD_EFF_HARMONIC));
 						WriteData(EffParam);
 					}
 					break;

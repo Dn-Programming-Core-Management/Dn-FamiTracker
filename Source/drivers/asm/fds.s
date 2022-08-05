@@ -246,9 +246,9 @@ ft_check_fds_fm:
 	sta var_Temp
 	lda var_ch_ModRate + 0
 	sta AUX
-	lda var_ch_PeriodCalcHi + FDS_OFFSET
+	lda var_ch_FDSCarrier + 1
 	sta var_Temp16 + 1
-	lda var_ch_PeriodCalcLo + FDS_OFFSET
+	lda var_ch_FDSCarrier
 	sta var_Temp16
 	lda #$00
 	sta AUX + 1

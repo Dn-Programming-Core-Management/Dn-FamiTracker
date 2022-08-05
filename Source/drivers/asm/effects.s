@@ -94,6 +94,9 @@ ft_jump_to_effect:
 	beq @EffLoadSlide
 	cmp #EFF_SLIDE_DOWN_LOAD
 	beq @EffLoadSlide
+	
+	cmp #EFF_PHASE_RESET
+	beq @EffPhaseReset
 
 	jmp ft_portamento_down
 
@@ -109,6 +112,8 @@ ft_jump_to_effect:
 	jmp	ft_portamento ; ft_slide_down
 @EffLoadSlide:
 	jmp ft_load_slide
+@EffPhaseReset:
+	jmp ft_phase_reset
 @NoEffect:
 ;.endif
 ft_post_effects:
@@ -118,6 +123,7 @@ ft_post_effects:
 ft_effect_table:
 	.word ft_arpeggio, ft_portamento, ft_portamento_up, ft_portamento_down
 	.word ft_load_slide, ft_slide_up, ft_load_slide, ft_slide_down
+	.word ft_phase_reset
 .endif
 
 ft_load_slide:
@@ -310,6 +316,56 @@ ft_calc_period:
 	sta var_ch_PeriodCalcLo, x
 @Skip:
 
+	; apply frequency multiplication
+	lda ft_channel_type, x
+	cmp #CHAN_NOI
+	beq @SkipHarmonic
+.if .defined(USE_VRC7)
+	lda ft_channel_type, x
+	cmp #CHAN_VRC7
+	beq @SkipHarmonic
+.endif
+.if .defined(USE_FDS)
+	lda ft_channel_type, x
+	cmp #CHAN_FDS
+	beq @HarmonicMultiply
+.endif
+.if .defined(USE_N163)
+	lda ft_channel_type, x
+	cmp #CHAN_N163
+	beq @HarmonicMultiply
+.endif
+@HarmonicDivide:
+	lda var_ch_PeriodCalcLo, x
+	sta ACC
+	lda var_ch_PeriodCalcHi, x
+	sta ACC + 1
+	lda var_ch_Harmonic, x
+	sta AUX
+	lda #$00
+	sta AUX + 1
+	jsr DIV
+	jmp @HarmonicEnd
+@HarmonicMultiply:
+	lda var_ch_PeriodCalcLo, x
+	sta var_Temp16
+.if .defined(USE_FDS)
+	sta var_ch_FDSCarrier
+.endif
+	lda var_ch_PeriodCalcHi, x
+	sta var_Temp16 + 1
+.if .defined(USE_FDS)
+	sta var_ch_FDSCarrier + 1
+.endif
+	lda var_ch_Harmonic, x
+	sta var_Temp
+	jsr MUL
+@HarmonicEnd:
+	lda ACC
+	sta var_ch_PeriodCalcLo, x
+	lda ACC + 1
+	sta var_ch_PeriodCalcHi, x
+@SkipHarmonic:
 	jsr ft_vibrato
 	jsr ft_tremolo
 
@@ -747,4 +803,9 @@ ft_tremolo:
 :	lda #$00
 	sta var_ch_OutVolume, x
 .endif
+	rts
+; Channel phase reset
+;
+ft_phase_reset:
+	; todo implement phase reset
 	rts
