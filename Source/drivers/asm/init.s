@@ -282,7 +282,7 @@ ft_load_song:
 	sta var_ch_ArpeggioCycle, x
 	; sta var_ch_PhaseReset, x
 	sta var_ch_Harmonic, x
-	inc var_ch_Harmonic, x
+	inc var_ch_Harmonic, x			; default value is 1
 	;
 	sta var_ch_Note, x
 	inx

@@ -216,7 +216,7 @@ ft_load_slide:
 	lda #EFF_SLIDE_UP
 	sta var_ch_Effect, x
 	jmp ft_jump_to_effect
-;    rts
+	;rts
 :   lda #EFF_SLIDE_DOWN
 	sta var_ch_Effect, x
 :	;rts
@@ -309,22 +309,24 @@ ft_calc_period:
 	lda var_ch_PeriodCalcHi, x
 	sbc #$00
 	sta var_ch_PeriodCalcHi, x
-	cmp #$ff
-	bne @Skip						; prevent overflow
-	lda #$00
-	sta var_ch_PeriodCalcHi, x
-	sta var_ch_PeriodCalcLo, x
 @Skip:
-
+	lda var_ch_Harmonic, x
+	cmp #$01
+	; skip over calculation if it's not affecting pitch
+	beq @SkipHarmonic
+	
 	; apply frequency multiplication
 	lda ft_channel_type, x
 	cmp #CHAN_NOI
 	beq @SkipHarmonic
+
 .if .defined(USE_VRC7)
+	; VRC7 not yet implemented
 	lda ft_channel_type, x
 	cmp #CHAN_VRC7
 	beq @SkipHarmonic
 .endif
+; FDS and N163 use angular frequency
 .if .defined(USE_FDS)
 	lda ft_channel_type, x
 	cmp #CHAN_FDS
@@ -366,11 +368,11 @@ ft_calc_period:
 	lda ACC + 1
 	sta var_ch_PeriodCalcHi, x
 @SkipHarmonic:
+
 	jsr ft_vibrato
 	jsr ft_tremolo
 
 	rts
-
 
 ;
 ; Portamento
