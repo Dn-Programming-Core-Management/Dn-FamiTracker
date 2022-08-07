@@ -249,9 +249,9 @@ ft_calc_period:
 	; Apply fine pitch
 	lda var_ch_FinePitch, x
 	cmp #$80
-	beq @Skip
+	beq :+
 	lda var_ch_Note, x    ; Skip on note off as well to avoid problems with VRC7
-	beq @Skip
+:	beq @Skip
 
 ;	.if 0
 
@@ -291,7 +291,11 @@ ft_calc_period:
 	lda var_ch_PeriodCalcHi, x
 	sbc var_Temp16 + 1
 	sta var_ch_PeriodCalcHi, x
-	; check for pitch overflow
+	; check for pitch underflow
+	bcs :+
+	lda #$00
+	sta var_ch_PeriodCalcLo, x
+	sta var_ch_PeriodCalcHi, x
 	jmp @Skip
 :
 .endif
@@ -311,12 +315,16 @@ ft_calc_period:
 	sbc #$00
 	sta var_ch_PeriodCalcHi, x
 	; check for pitch overflow
+	bcs @Skip
+	lda #$00
+	sta var_ch_PeriodCalcLo, x
+	sta var_ch_PeriodCalcHi, x
 @Skip:
 	
 	; apply frequency multiplication
 	lda var_ch_Harmonic, x
 	cmp #$01
-	beq @SkipHarmonic								; skip over calculation if it's not affecting pitch
+	beq @SkipHarmonic								; skip calculation if it's not affecting pitch
 	cmp #$00
 	beq @MaxPeriod									; K00 results in lowest possible frequency
 	
