@@ -291,6 +291,7 @@ ft_calc_period:
 	lda var_ch_PeriodCalcHi, x
 	sbc var_Temp16 + 1
 	sta var_ch_PeriodCalcHi, x
+	; check for pitch overflow
 	jmp @Skip
 :
 .endif
@@ -309,32 +310,31 @@ ft_calc_period:
 	lda var_ch_PeriodCalcHi, x
 	sbc #$00
 	sta var_ch_PeriodCalcHi, x
+	; check for pitch overflow
 @Skip:
-	lda var_ch_Harmonic, x
-	cmp #$01
-	; skip over calculation if it's not affecting pitch
-	beq @SkipHarmonic
 	
 	; apply frequency multiplication
-	lda ft_channel_type, x
-	cmp #CHAN_NOI
+	lda var_ch_Harmonic, x
+	cmp #$01
+	beq @SkipHarmonic								; skip over calculation if it's not affecting pitch
+	cmp #$00
+	beq @MaxPeriod									; K00 results in lowest possible frequency
+	
+	cpx #CHAN_NOI
 	beq @SkipHarmonic
 
 .if .defined(USE_VRC7)
 	; VRC7 not yet implemented
-	lda ft_channel_type, x
-	cmp #CHAN_VRC7
+	cpx #CHAN_VRC7
 	beq @SkipHarmonic
 .endif
 ; FDS and N163 use angular frequency
 .if .defined(USE_FDS)
-	lda ft_channel_type, x
-	cmp #CHAN_FDS
+	cpx #CHAN_FDS
 	beq @HarmonicMultiply
 .endif
 .if .defined(USE_N163)
-	lda ft_channel_type, x
-	cmp #CHAN_N163
+	cpx #CHAN_N163
 	beq @HarmonicMultiply
 .endif
 @HarmonicDivide:
@@ -371,7 +371,35 @@ ft_calc_period:
 
 	jsr ft_vibrato
 	jsr ft_tremolo
-
+	rts
+@MaxPeriod:
+	; no limits for noise
+	cpx #CHAN_NOI
+	beq @EndCalcPeriod
+.if .defined(USE_VRC7)
+	cpx #CHAN_VRC7
+	beq @EndCalcPeriod
+.endif
+.if .defined(USE_N163)
+	cpx #CHAN_N163
+	beq @InvertedPeriod
+.endif
+.if .defined(USE_FDS)
+	cpx #CHAN_FDS
+	beq @InvertedPeriod
+.endif
+	; 12-bit/11-bit period
+	; will be handled in their respective chip handlers
+	lda #$FF
+	sta var_ch_PeriodCalcHi, x
+	lda #$0F
+	sta var_ch_PeriodCalcLo, x
+	jmp @EndCalcPeriod
+@InvertedPeriod:
+	lda #$00
+	sta var_ch_PeriodCalcHi, x
+	sta var_ch_PeriodCalcLo, x
+@EndCalcPeriod:
 	rts
 
 ;

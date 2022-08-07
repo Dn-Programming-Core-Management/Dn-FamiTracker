@@ -1050,9 +1050,8 @@ ft_cmd_phase_reset:					; TODO: implement for all available channels
 ;; ;; !! Effect: Frequency Multiplier (Kxx)
 ft_cmd_harmonic:
 	jsr ft_get_pattern_byte
-	beq :+							; K00 is UB
 	sta var_ch_Harmonic, x
-:	rts
+	rts
 ;; ;; !! Effect: Target note slide (Nxy)
 ft_cmd_target_vol_slide:
 	jsr ft_get_pattern_byte			; Fetch speed / volume
