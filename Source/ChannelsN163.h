@@ -58,6 +58,8 @@ protected:
 	CString	GetSlideEffectString() const override;		// // //
 	CString	GetCustomEffectString() const override;		// // //
 
+	void	resetPhase();
+
 private:
 	void WriteReg(int Reg, int Value);
 	void SetAddress(char Addr, bool AutoInc);

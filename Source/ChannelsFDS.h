@@ -34,10 +34,14 @@ protected:
 	void	HandleEmptyNote() override;
 	void	HandleCut() override;
 	void	HandleRelease() override;
+	void	HandleNote(int Note, int Octave) override;
 	int		CalculateVolume() const override;		// // //
 	bool	CreateInstHandler(inst_type_t Type) override;		// // //
 	void	ClearRegisters() override;
 	CString	GetCustomEffectString() const override;		// // //
+
+	void	resetPhase();
+	void	writeModTable();
 
 public:		// // //
 	// FDS functions

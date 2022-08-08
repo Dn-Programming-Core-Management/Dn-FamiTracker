@@ -107,6 +107,11 @@ bool CChannelHandlerFDS::HandleEffect(effect_t EffNum, unsigned char EffParam)
 	case EF_FDS_MOD_BIAS:		// // //
 		m_iModulationOffset = EffParam - 0x80;
 		break;
+	case EF_PHASE_RESET:
+		if (EffParam == 0) {
+			resetPhase();
+		}
+		break;
 	default: return FrequencyChannelHandler::HandleEffect(EffNum, EffParam);
 	}
 
@@ -127,6 +132,14 @@ void CChannelHandlerFDS::HandleRelease()
 	if (!m_bRelease) {
 		ReleaseNote();
 	}
+}
+
+void CChannelHandlerFDS::HandleNote(int Note, int Octave)
+{
+	// New note
+	CChannelHandler::HandleNote(Note, Octave);		// // //
+	// Reset modulator phase by writing the mod table again
+	writeModTable();
 }
 
 int CChannelHandlerFDS::CalculateVolume() const		// // //
@@ -269,6 +282,22 @@ CString CChannelHandlerFDS::GetCustomEffectString() const		// // //
 	return str;
 }
 
+void CChannelHandlerFDS::resetPhase()
+{
+	WriteRegister(0x4083, 0x80);
+}
+
+void CChannelHandlerFDS::writeModTable()
+{
+	// Disable modulation
+	WriteRegister(0x4087, 0x80);
+	// Fill the table
+	for (int i = 0; i < 32; ++i)
+		WriteRegister(0x4088, m_iModTable[i]);
+	// Reset modulation table pointer, set bias to zero
+	WriteRegister(0x4085, 0x00);
+}
+
 void CChannelHandlerFDS::SetFMSpeed(int Speed)		// // //
 {
 	ASSERT(Speed >= 0 && Speed <= 0xFFF);
@@ -312,13 +341,6 @@ void CChannelHandlerFDS::FillModulationTable(const char *pBuffer)		// // //
 {
 	if (memcmp(m_iModTable, pBuffer, sizeof(m_iModTable))) {
 		memcpy(m_iModTable, pBuffer, sizeof(m_iModTable));
-
-		// Disable modulation
-		WriteRegister(0x4087, 0x80);
-		// Fill the table
-		for (int i = 0; i < 32; ++i)
-			WriteRegister(0x4088, m_iModTable[i]);
-		// Reset modulation table pointer, set bias to zero
-		WriteRegister(0x4085, 0x00);
+		writeModTable();
 	}
 }

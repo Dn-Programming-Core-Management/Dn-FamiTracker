@@ -90,6 +90,11 @@ bool CChannelHandlerN163::HandleEffect(effect_t EffNum, unsigned char EffParam)
 		if (auto pHandler = dynamic_cast<CSeqInstHandlerN163*>(m_pInstHandler.get()))
 			pHandler->RequestWaveUpdate();
 		break;
+	case EF_PHASE_RESET:
+		if (EffParam == 0) {
+			resetPhase();
+		}
+		break;
 	default: return FrequencyChannelHandler::HandleEffect(EffNum, EffParam);
 	}
 
@@ -307,6 +312,11 @@ CString CChannelHandlerN163::GetCustomEffectString() const		// // //
 		str.AppendFormat(_T(" Z%02X"), m_iWavePos >> 1);
 
 	return str;
+}
+
+void CChannelHandlerN163::resetPhase()
+{
+	m_bResetPhase = true;
 }
 
 void CChannelHandlerN163::WriteReg(int Reg, int Value)

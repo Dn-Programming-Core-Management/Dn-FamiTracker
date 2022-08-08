@@ -71,6 +71,11 @@ bool CChannelHandlerMMC5::HandleEffect(effect_t EffNum, unsigned char EffParam)
 	case EF_DUTY_CYCLE:
 		m_iDefaultDuty = m_iDutyPeriod = EffParam;
 		break;
+	case EF_PHASE_RESET:
+		if (EffParam == 0) {
+			resetPhase();
+		}
+		break;
 	default: return CChannelHandler::HandleEffect(EffNum, EffParam);
 	}
 
@@ -179,4 +184,11 @@ CString CChannelHandlerMMC5::GetCustomEffectString() const		// // //
 		str.AppendFormat(_T(" EE%X"), !m_bEnvelopeLoop * 2 + m_bHardwareEnvelope);
 
 	return str;
+}
+
+void CChannelHandlerMMC5::resetPhase()
+{
+	int Address = 0x5000 + (m_iChannelID - CHANID_MMC5_SQUARE1) * 4;
+	int LoPeriod = CalculatePeriod() >> 8;
+	WriteRegister(Address + 3, LoPeriod + (m_iLengthCounter << 3));
 }

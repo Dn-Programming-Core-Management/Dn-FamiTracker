@@ -240,7 +240,14 @@ bool CTrackerChannel::IsEffectCompatible(effect_t EffNumber, int EffParam) const
 		case EF_VRC7_PORT: case EF_VRC7_WRITE:		// // // 050B
 			return m_iChip == SNDCHIP_VRC7;
 		case EF_PHASE_RESET:
-			return m_iChip == SNDCHIP_VRC6 && EffParam == 0x00;
+			// Triangle and noise can't reset phase during runtime.
+			if (m_iChannelID == CHANID_TRIANGLE) return false;
+			if (m_iChannelID == CHANID_NOISE) return false;
+			if (m_iChannelID == CHANID_MMC5_VOICE) return false;
+			// VRC7 and S5B is not supported yet.
+			if (m_iChip == SNDCHIP_VRC7) return false;
+			if (m_iChip == SNDCHIP_S5B) return false;
+			return EffParam == 0x00;
 		case EF_HARMONIC:
 			// VRC7 is not supported yet.
 			if (m_iChip == SNDCHIP_VRC7) return false;

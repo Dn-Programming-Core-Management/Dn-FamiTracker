@@ -68,6 +68,8 @@ protected:
 	void	HandleNote(int Note, int Octave) override;
 	CString	GetCustomEffectString() const override;		// // //
 
+	void	resetPhase();
+
 	unsigned char m_iChannel;		// // //
 	unsigned char m_cSweep;
 	bool	m_bSweeping;
@@ -129,6 +131,8 @@ protected:
 	void	HandleRelease() override;
 	void	HandleNote(int Note, int Octave) override;
 	bool	CreateInstHandler(inst_type_t Type) override;		// // //
+
+	void	resetPhase();
 
 	void triggerSample();
 	void queueSample();
