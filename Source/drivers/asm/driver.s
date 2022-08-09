@@ -216,6 +216,7 @@ var_ch_ModEffWritten:	.res 1
 var_ch_FDSVolume:		.res 1		;;; ;; ;
 var_ch_ModBias:			.res 1		;;; ;; ;
 var_ch_FDSCarrier:		.res 2		;; ;; !! for auto-FM in conjunction with frequency multiplier
+var_ch_ModTable:		.res 1		;; ;; !! 
 .endif
 
 .if .defined(USE_N163)
@@ -388,7 +389,6 @@ var_ch_TremoloPos:		.res EFF_CHANS				; Tremolo
 var_ch_TremoloDepth:	.res EFF_CHANS				; combine these
 var_ch_TremoloSpeed:	.res EFF_CHANS
 var_ch_TremoloResult:   .res EFF_CHANS
-;var_ch_PhaseReset:		.res EFF_CHANS				;; ;; !! Phase reset
 ;var_ch_VibratoParam:	.res EFF_CHANS
 ;var_ch_TremoloParam:	.res EFF_CHANS
 
@@ -475,7 +475,8 @@ last_bss_var:			.res 1						; Not used
 ; NSF entry addresses
 
 .if .defined(PACKAGE)
-	.byte "DN-FT ", $02, $0C		 ;; ;; !!
+	; version 2.13
+	.byte "DN-FT ", $02, $0D
 .endif
 
 LOAD:

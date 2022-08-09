@@ -126,6 +126,41 @@ ft_effect_table:
 	.word ft_phase_reset
 .endif
 
+; Channel phase reset
+;
+ft_phase_reset:
+	rts
+	cpx #CHAN_TRI
+	beq @SkipPhaseReset
+	cpx #CHAN_NOI
+	beq @SkipPhaseReset
+.if .defined(USE_VRC7)
+	cpx #CHAN_VRC7
+	beq @SkipPhaseReset
+.endif
+.if .defined(USE_S5B)
+	cpx #CHAN_S5B
+	beq @SkipPhaseReset
+.endif
+	; 2A03 pulse phase reset
+	cpx #CHAN_2A03
+	bne :+
+	; write to high byte of pitch register
+	txa
+	asl
+	asl
+	tay
+	dey
+	lda var_ch_PeriodCalcHi + APU_OFFSET, x
+	sta $4000, y
+:
+	cpx #CHAN_DPCM
+	bne :+
+	; DPCM phase reset retriggers the sample
+:
+@SkipPhaseReset:
+	rts
+
 ft_load_slide:
 .if .defined(USE_VRC7)
 .if .defined(USE_LINEARPITCH)		;;; ;; ;
@@ -841,9 +876,4 @@ ft_tremolo:
 :	lda #$00
 	sta var_ch_OutVolume, x
 .endif
-	rts
-; Channel phase reset
-;
-ft_phase_reset:
-	; todo implement phase reset
 	rts

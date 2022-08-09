@@ -280,7 +280,6 @@ ft_load_song:
 	sta var_ch_VolSlide, x
 	sta var_ch_NoteDelay, x
 	sta var_ch_ArpeggioCycle, x
-	; sta var_ch_PhaseReset, x
 	sta var_ch_Harmonic, x
 	inc var_ch_Harmonic, x			; default value is 1
 	;

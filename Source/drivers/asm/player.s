@@ -1043,9 +1043,10 @@ ft_cmd_transpose:
 	sta var_ch_Transpose, x
 	rts
 ;; ;; !! Effect: Phase reset (=xx)
-ft_cmd_phase_reset:					; TODO: implement for all available channels
+ft_cmd_phase_reset:
 	jsr ft_get_pattern_byte
-	sta var_ch_EffParam, x
+	lda #EFF_PHASE_RESET
+	sta var_ch_Effect, x
 	rts
 ;; ;; !! Effect: Frequency Multiplier (Kxx)
 ft_cmd_harmonic:

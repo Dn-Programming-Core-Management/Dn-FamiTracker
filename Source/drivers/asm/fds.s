@@ -7,25 +7,9 @@ ft_load_inst_extra_fds:
 	ldy var_Temp
 	rts
 :
-	tya							;;; ;; ;
-	clc
-	adc #$10
-	sta var_Temp2				; ;; ;;;
 	; Load modulation table
-	jsr ft_reset_modtable
-:
-	lda (var_Temp_Pointer), y
-	pha
-	and #$07
-	sta $4088
-	pla
-	lsr a
-	lsr a
-	lsr a
-	sta $4088
-	iny
-	cpy var_Temp2				;;; ;; ;
-	bcc :-
+	sty var_ch_ModTable
+	jsr ft_write_modtable
 
 	lda (var_Temp_Pointer), y	; Modulation delay
 	iny
@@ -126,7 +110,7 @@ ft_update_fds:
 
 	lda var_ch_Trigger + FDS_OFFSET			;;; ;; ;
 	beq :+
-	jsr ft_reset_modtable
+	jsr ft_write_modtable
 	;lda #$00
 	;sta $4085
 	lda var_ch_ModInstDepth					;;; ;; ;
@@ -200,9 +184,29 @@ ft_load_fds_wave:
 	sta $4089		; Disable wave RAM
 	rts
 
-ft_reset_modtable:
+ft_write_modtable:
 	lda #$80
 	sta $4087
+	ldy var_ch_ModTable
+	tya							;;; ;; ;
+	clc
+	adc #$10
+	sta var_Temp2				; ;; ;;;
+	; Load modulation table
+:
+	lda (var_Temp_Pointer), y
+	pha
+	and #$07
+	sta $4088
+	pla
+	lsr a
+	lsr a
+	lsr a
+	sta $4088
+	iny
+	cpy var_Temp2				;;; ;; ;
+	bcc :-
+	lda #$00
 	sta $4085
 	rts
 
