@@ -7,9 +7,27 @@ ft_load_inst_extra_fds:
 	ldy var_Temp
 	rts
 :
+	txa
+	pha
+	ldx #$00
+	tya							;;; ;; ;
+	clc
+	adc #$10
+	sta var_Temp2				; ;; ;;;
 	; Load modulation table
-	sty var_ch_ModTable
+:
+	; mod table is 32 entries
+	; each entry is 3 bits long
+	; data is compressed to 16 bytes
+	lda (var_Temp_Pointer), y
+	sta var_ch_ModTable, x
+	iny
+	inx
+	cpy var_Temp2				;;; ;; ;
+	bcc :-
 	jsr ft_write_modtable
+	pla
+	tax
 
 	lda (var_Temp_Pointer), y	; Modulation delay
 	iny
@@ -111,8 +129,6 @@ ft_update_fds:
 	lda var_ch_Trigger + FDS_OFFSET			;;; ;; ;
 	beq :+
 	jsr ft_write_modtable
-	;lda #$00
-	;sta $4085
 	lda var_ch_ModInstDepth					;;; ;; ;
 	sta var_ch_ModDepth
 	lda var_ch_ModRate + 1
@@ -185,16 +201,13 @@ ft_load_fds_wave:
 	rts
 
 ft_write_modtable:
+	txa
+	pha
 	lda #$80
 	sta $4087
-	ldy var_ch_ModTable
-	tya							;;; ;; ;
-	clc
-	adc #$10
-	sta var_Temp2				; ;; ;;;
-	; Load modulation table
+	ldx #$00
 :
-	lda (var_Temp_Pointer), y
+	lda var_ch_ModTable, x
 	pha
 	and #$07
 	sta $4088
@@ -203,11 +216,13 @@ ft_write_modtable:
 	lsr a
 	lsr a
 	sta $4088
-	iny
-	cpy var_Temp2				;;; ;; ;
+	inx
+	cpx #$10				;;; ;; ;
 	bcc :-
 	lda #$00
 	sta $4085
+	pla
+	tax
 	rts
 
 ft_check_fds_effects:

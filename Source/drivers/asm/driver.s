@@ -216,7 +216,7 @@ var_ch_ModEffWritten:	.res 1
 var_ch_FDSVolume:		.res 1		;;; ;; ;
 var_ch_ModBias:			.res 1		;;; ;; ;
 var_ch_FDSCarrier:		.res 2		;; ;; !! for auto-FM in conjunction with frequency multiplier
-var_ch_ModTable:		.res 1		;; ;; !! 
+var_ch_ModTable:		.res 16
 .endif
 
 .if .defined(USE_N163)

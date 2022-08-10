@@ -1043,7 +1043,7 @@ ft_cmd_transpose:
 	sta var_ch_Transpose, x
 	rts
 ;; ;; !! Effect: Phase reset (=xx)
-ft_cmd_phase_reset:
+ft_cmd_phase_reset:					; TODO: implement for all available channels
 	jsr ft_get_pattern_byte
 	lda #EFF_PHASE_RESET
 	sta var_ch_Effect, x

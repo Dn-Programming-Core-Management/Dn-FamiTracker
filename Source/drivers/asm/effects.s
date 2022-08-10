@@ -362,22 +362,23 @@ ft_calc_period:
 	beq @SkipHarmonic								; skip calculation if it's not affecting pitch
 	cmp #$00
 	beq @MaxPeriod									; K00 results in lowest possible frequency
-	
-	cpx #CHAN_NOI
+
+	lda ft_channel_type, x
+	cmp #CHAN_NOI
 	beq @SkipHarmonic
 
 .if .defined(USE_VRC7)
 	; VRC7 not yet implemented
-	cpx #CHAN_VRC7
+	cmp #CHAN_VRC7
 	beq @SkipHarmonic
 .endif
 ; FDS and N163 use angular frequency
 .if .defined(USE_FDS)
-	cpx #CHAN_FDS
+	cmp #CHAN_FDS
 	beq @HarmonicMultiply
 .endif
 .if .defined(USE_N163)
-	cpx #CHAN_N163
+	cmp #CHAN_N163
 	beq @HarmonicMultiply
 .endif
 @HarmonicDivide:
@@ -417,18 +418,19 @@ ft_calc_period:
 	rts
 @MaxPeriod:
 	; no limits for noise
-	cpx #CHAN_NOI
+	lda ft_channel_type, x
+	cmp #CHAN_NOI
 	beq @EndCalcPeriod
 .if .defined(USE_VRC7)
-	cpx #CHAN_VRC7
+	cmp #CHAN_VRC7
 	beq @EndCalcPeriod
 .endif
 .if .defined(USE_N163)
-	cpx #CHAN_N163
+	cmp #CHAN_N163
 	beq @InvertedPeriod
 .endif
 .if .defined(USE_FDS)
-	cpx #CHAN_FDS
+	cmp #CHAN_FDS
 	beq @InvertedPeriod
 .endif
 	; 12-bit/11-bit period
