@@ -220,7 +220,6 @@ void CChannelHandlerFDS::RefreshChannel()
 		WriteRegister(0x4087, 0x80);
 		m_iModulationDelay--;
 	}
-
 }
 
 void CChannelHandlerFDS::ClearRegisters()
@@ -284,6 +283,9 @@ void CChannelHandlerFDS::writeModTable()
 {
 	// Disable modulation
 	WriteRegister(0x4087, 0x80);
+
+	// This is the time the loop takes in NSF code
+	AddCycles(543);
 	// Fill the table
 	for (int i = 0; i < 32; ++i)
 		WriteRegister(0x4088, m_iModTable[i]);
@@ -334,6 +336,8 @@ void CChannelHandlerFDS::FillModulationTable(const char *pBuffer)		// // //
 {
 	if (memcmp(m_iModTable, pBuffer, sizeof(m_iModTable))) {
 		memcpy(m_iModTable, pBuffer, sizeof(m_iModTable));
+		// This is the time the loop takes in NSF code
+		AddCycles(319);
 		writeModTable();
 	}
 }

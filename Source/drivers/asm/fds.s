@@ -19,13 +19,13 @@ ft_load_inst_extra_fds:
 	; mod table is 32 entries
 	; each entry is 3 bits long
 	; data is compressed to 16 bytes
-	lda (var_Temp_Pointer), y
-	sta var_ch_ModTable, x
-	iny
-	inx
-	cpy var_Temp2				;;; ;; ;
-	bcc :-
-	jsr ft_write_modtable
+	lda (var_Temp_Pointer), y	; 5 cycles
+	sta var_ch_ModTable, x		; 5 cycles
+	iny							; 2 cycles
+	inx							; 2 cycles
+	cpy var_Temp2				; 3 cycles
+	bcc :-						; 3 cycles (last iteration is 2 cycles)
+	jsr ft_write_modtable		; total of 20 x 16 - 1 iterations = 319 cycles
 	pla
 	tax
 
@@ -207,18 +207,18 @@ ft_write_modtable:
 	sta $4087
 	ldx #$00
 :
-	lda var_ch_ModTable, x
-	pha
-	and #$07
-	sta $4088
-	pla
-	lsr a
-	lsr a
-	lsr a
-	sta $4088
-	inx
-	cpx #$10				;;; ;; ;
-	bcc :-
+	lda var_ch_ModTable, x			; 4
+	pha								; 3
+	and #$07						; 2
+	sta $4088						; 4
+	pla								; 4
+	lsr a							; 2
+	lsr a							; 2
+	lsr a							; 2
+	sta $4088						; 4
+	inx								; 2
+	cpx #$10						; 2
+	bcc :-							; 3*16 - 1 = 543 cycles
 	lda #$00
 	sta $4085
 	pla
