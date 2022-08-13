@@ -1530,19 +1530,18 @@ void CSoundGen::ResetAPU()
 	m_pAPU->Reset();
 
 	// Enable all channels
-	m_pAPU->Write(0x4015, 0x0F);
-	m_pAPU->Write(0x4017, 0x00);
-
-	// // // for VGM
 	WriteRegister(0x4015, 0x0F);
 	WriteRegister(0x4017, 0x00);
-	WriteRegister(0x4023, 0x02); // FDS enable
+
+	// FDS
+	WriteRegister(0x4023, 0x02);
+	WriteRegister(0x4023, 0x83);
 
 	// N163
-	m_pAPU->Write(0xE7FF, 0x00); // N163 enable
+	WriteRegister(0xE7FF, 0x00);
 
 	// MMC5
-	m_pAPU->Write(0x5015, 0x03);
+	WriteRegister(0x5015, 0x03);
 
 	m_pAPU->ClearSample();		// // //
 }

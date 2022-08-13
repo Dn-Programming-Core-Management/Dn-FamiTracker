@@ -134,14 +134,6 @@ void CChannelHandlerFDS::HandleRelease()
 	}
 }
 
-void CChannelHandlerFDS::HandleNote(int Note, int Octave)
-{
-	// New note
-	CChannelHandler::HandleNote(Note, Octave);		// // //
-	// Reset modulator phase by writing the mod table again
-	writeModTable();
-}
-
 int CChannelHandlerFDS::CalculateVolume() const		// // //
 {
 	if (!theApp.GetSettings()->General.bFDSOldVolume)		// // // match NSF setting
@@ -173,6 +165,13 @@ bool CChannelHandlerFDS::CreateInstHandler(inst_type_t Type)
 
 void CChannelHandlerFDS::RefreshChannel()
 {
+	unsigned char Volume = CalculateVolume();
+
+	if (!m_bGate) {		// // //
+		WriteRegister(0x4080, 0x80 | Volume);
+		return;
+	}
+
 	int CarrierFrequency = CalculatePeriod();
 	unsigned char LoFreq = CarrierFrequency & 0xFF;
 	unsigned char HiFreq = (CarrierFrequency >> 8) & 0x0F;
@@ -188,17 +187,6 @@ void CChannelHandlerFDS::RefreshChannel()
 		ModFreqHi = (ModFrequency >> 8) & 0x0F;
 	}
 
-	unsigned char Volume = CalculateVolume();
-
-	if (!m_bGate) {		// // //
-		WriteRegister(0x4080, 0x80 | Volume);
-		return;
-	}
-
-	// Write frequency
-	WriteRegister(0x4082, LoFreq);
-	WriteRegister(0x4083, HiFreq);
-
 	// Write volume
 	if (m_iVolModMode) {		// // //
 		if (m_bVolModTrigger) {
@@ -210,8 +198,13 @@ void CChannelHandlerFDS::RefreshChannel()
 	else
 		WriteRegister(0x4080, 0x80 | Volume);
 
-	if (m_bTrigger)		// // //
-		WriteRegister(0x4085, 0);
+	// Write frequency
+	WriteRegister(0x4082, LoFreq);
+	WriteRegister(0x4083, HiFreq);
+
+	// Reset mod phase on new note
+	if (m_bTrigger)
+		writeModTable();
 
 	// Update modulation unit
 	if (m_iModulationDelay == 0) {
