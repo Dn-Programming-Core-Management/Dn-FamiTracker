@@ -120,47 +120,51 @@ int dither(long size);
 static constexpr size_t MESSAGE_QUEUE_SIZE = 8192;
 
 CSoundGen::CSoundGen() :
+	m_pInstRecorder(new CInstrumentRecorder(this)),
 	m_MessageQueue(MESSAGE_QUEUE_SIZE),
-	m_pAPU(NULL),
-	m_pSoundInterface(NULL),
-	m_pSoundStream(NULL),
 	m_pDocument(NULL),
 	m_pTrackerView(NULL),
-	m_bRequestRenderStart(false),
-	m_bRendering(false),
+	m_pSoundInterface(NULL),
+	m_pSoundStream(NULL),
+	m_pVisualizerWnd(NULL),
+	m_pAPU(NULL),
+	currN163LevelOffset(0),
+	m_pPreviewSample(NULL),
+	m_CoInitialized(false),		// // //
+	m_bRunning(false),
+	m_hInterruptEvent(::CreateEvent(NULL, FALSE, FALSE, NULL)),
+	m_bBufferTimeout(false),
+	m_bBufferUnderrun(false),
+	m_bAudioClipping(false),		// // //
+	m_iClipCounter(0),		// // //
+	m_iTempo(0),		// // //
+	m_iSpeed(0),
+	m_iGrooveIndex(-1),
+	m_iGroovePosition(0),
+	m_iPlayTicks(0),
 	m_bPlaying(false),
 	m_bHaltRequest(false),
-	m_bDoHalt(false),		// // //
-	m_pPreviewSample(NULL),
-	m_pVisualizerWnd(NULL),
-	m_iSpeed(0),
-	m_iTempo(0),
-	m_iGrooveIndex(-1),		// // //
-	m_iGroovePosition(0),		// // //
-	m_pInstRecorder(new CInstrumentRecorder(this)),		// // //
-	m_bWaveChanged(0),
+	m_iConsumedCycles(0),
+	m_bDoHalt(false),
 	m_iMachineType(NTSC),
-	m_CoInitialized(false),
-	m_bRunning(false),
-	m_hInterruptEvent(NULL),
-	m_bBufferTimeout(false),
-	m_bDirty(false),
+	m_bRequestRenderStart(false),
+	m_bRendering(false),
+	m_iBPMCachePosition(0),
+	m_iRegisterStream(),
+	m_bWaveChanged(0),		// // //
 	m_iQueuedFrame(-1),
+	m_iPlayTrack(0),
 	m_iPlayFrame(0),
 	m_iPlayRow(0),
-	m_iPlayTrack(0),
-	m_iPlayTicks(0),
-	m_iConsumedCycles(0),
-	m_iRegisterStream(),		// // //
-	m_bBufferUnderrun(false),
-	m_bAudioClipping(false),
-	m_iClipCounter(0),
+	m_bDirty(false),
 	m_pSequencePlayPos(NULL),
-	m_iSequencePlayPos(0),
-	m_iSequenceTimeout(0),
-	m_iBPMCachePosition(0),		// // //
-	currN163LevelOffset(0)
+	m_iSequencePlayPos(0),		// // //
+	m_iSequenceTimeout(0)
 {
+	if (!m_hInterruptEvent) {
+		throw std::runtime_error("Could not create CSoundGen::m_hInterruptEvent");
+	}
+
 	TRACE("SoundGen: Object created\n");
 
 	// Create APU
@@ -654,8 +658,10 @@ bool CSoundGen::IsRunning() const
 
 //// Sound buffer handling /////////////////////////////////////////////////////////////////////////////////
 
-bool CSoundGen::BeginThread()
+bool CSoundGen::BeginThread(std::shared_ptr<CSoundGen> self_shared)
 {
+	ASSERT(this == self_shared.get());
+
 	// Initialize sound, this is only called once!
 	// Start with NTSC by default
 
@@ -667,10 +673,11 @@ bool CSoundGen::BeginThread()
 	ASSERT(!m_audioThread.joinable());
 
 	// Event used to interrupt the sound buffer synchronization
-	m_hInterruptEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
+	ASSERT(m_hInterruptEvent != NULL);
+	ResetEvent(m_hInterruptEvent.get());
 
 	// Create sound interface object
-	m_pSoundInterface = new CSoundInterface(m_hInterruptEvent);
+	m_pSoundInterface = new CSoundInterface(m_hInterruptEvent.get());
 
 	// Out of memory
 	if (!m_pSoundInterface)
@@ -679,8 +686,8 @@ bool CSoundGen::BeginThread()
 	m_pSoundInterface->EnumerateDevices();
 
 	// Start thread when audio is done
-	m_audioThread = std::thread([this]() {
-		ThreadEntry();
+	m_audioThread = std::thread([self_shared = std::move(self_shared)]() {
+		self_shared->ThreadEntry();
 	});
 
 	return true;
@@ -712,8 +719,6 @@ void CSoundGen::ThreadEntry()
 	end_while:
 
 	ExitInstance();
-	// lolmfc
-	delete this;
 }
 
 
@@ -728,8 +733,8 @@ bool CSoundGen::PostGuiMessage(GuiMessageId message, WPARAM wParam, LPARAM lPara
 
 void CSoundGen::Interrupt() const
 {
-	if (m_hInterruptEvent != NULL)
-		::SetEvent(m_hInterruptEvent);
+	ASSERT(m_hInterruptEvent != NULL);
+	SetEvent(m_hInterruptEvent.get());
 }
 
 bool CSoundGen::GetSoundTimeout() const
@@ -889,10 +894,8 @@ void CSoundGen::CloseAudio()
 		m_pSoundInterface = NULL;
 	}
 
-	if (m_hInterruptEvent) {
-		::CloseHandle(m_hInterruptEvent);
-		m_hInterruptEvent = NULL;
-	}
+	ASSERT(m_hInterruptEvent != NULL);
+	ResetEvent(m_hInterruptEvent.get());
 }
 
 void CSoundGen::ResetBuffer()
@@ -2157,8 +2160,6 @@ void CSoundGen::ExitInstance()
 	// Make sure sound interface is shut down
 	CloseAudio();
 
-	theApp.RemoveSoundGenerator();
-
 	m_bRunning = false;
 
 	if (m_CoInitialized) {
@@ -2172,8 +2173,10 @@ void CSoundGen::OnIdle()
 	// Main loop for audio playback thread
 	//
 
-	if (!m_pDocument || !m_pSoundStream || !m_pDocument->IsFileLoaded())
+	if (!m_pDocument || !m_pSoundStream || !m_pDocument->IsFileLoaded()) {
+		Sleep(100);
 		return;
+	}
 
 	++m_iFrameCounter;
 
