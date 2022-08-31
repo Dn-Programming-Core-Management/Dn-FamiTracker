@@ -709,28 +709,29 @@ ft_command_table:
 	.word ft_cmd_delayed_volume		; A1
 	.word ft_cmd_transpose			; A2
 	.word ft_cmd_phase_reset		; A3	;; ;; !!
-	.word ft_cmd_harmonic			; A4	;; ;; !!
-	.word ft_cmd_target_vol_slide	; A5	;; ;; !!
+	.word ft_cmd_DPCM_phase_reset	; A4	;; ;; !!
+	.word ft_cmd_harmonic			; A5	;; ;; !!
+	.word ft_cmd_target_vol_slide	; A6	;; ;; !!
 .if .defined(USE_VRC7)
-	.word ft_cmd_vrc7_patch_change	; A6
-	.word ft_cmd_vrc7_port			; A7
-	.word ft_cmd_vrc7_write			; A8
+	.word ft_cmd_vrc7_patch_change	; A7
+	.word ft_cmd_vrc7_port			; A8
+	.word ft_cmd_vrc7_write			; A9
 .endif
 .if .defined(USE_FDS)
-	.word ft_cmd_fds_mod_depth		; A9
-	.word ft_cmd_fds_mod_rate_hi	; AA
-	.word ft_cmd_fds_mod_rate_lo	; AB
-	.word ft_cmd_fds_volume			; AC
-	.word ft_cmd_fds_mod_bias		; AD
+	.word ft_cmd_fds_mod_depth		; AA
+	.word ft_cmd_fds_mod_rate_hi	; AB
+	.word ft_cmd_fds_mod_rate_lo	; AC
+	.word ft_cmd_fds_volume			; AD
+	.word ft_cmd_fds_mod_bias		; AE
 .endif
 .if .defined(USE_N163)
-	.word ft_cmd_n163_wave_buffer	; AE
+	.word ft_cmd_n163_wave_buffer	; AF
 .endif
 .if .defined(USE_S5B)		;;; ;; ;
-	.word ft_cmd_s5b_env_type		; AF
-	.word ft_cmd_s5b_env_rate_hi	; B0
-	.word ft_cmd_s5b_env_rate_lo	; B1
-	.word ft_cmd_s5b_noise			; B2
+	.word ft_cmd_s5b_env_type		; B0
+	.word ft_cmd_s5b_env_rate_hi	; B1
+	.word ft_cmd_s5b_env_rate_lo	; B2
+	.word ft_cmd_s5b_noise			; B3
 .endif				; ;; ;;;
 ;	.word ft_cmd_expand
 
@@ -1043,10 +1044,15 @@ ft_cmd_transpose:
 	sta var_ch_Transpose, x
 	rts
 ;; ;; !! Effect: Phase reset (=xx)
-ft_cmd_phase_reset:					; TODO: implement for all available channels
+ft_cmd_phase_reset:
 	jsr ft_get_pattern_byte
-	lda #EFF_PHASE_RESET
-	sta var_ch_Effect, x
+	lda #$01
+	sta var_ch_PhaseReset, x
+	rts
+ft_cmd_DPCM_phase_reset:
+	jsr ft_get_pattern_byte
+	lda #$01
+	sta var_ch_DPCMPhaseReset
 	rts
 ;; ;; !! Effect: Frequency Multiplier (Kxx)
 ft_cmd_harmonic:

@@ -94,9 +94,6 @@ ft_jump_to_effect:
 	beq @EffLoadSlide
 	cmp #EFF_SLIDE_DOWN_LOAD
 	beq @EffLoadSlide
-	
-	cmp #EFF_PHASE_RESET
-	beq @EffPhaseReset
 
 	jmp ft_portamento_down
 
@@ -112,8 +109,6 @@ ft_jump_to_effect:
 	jmp	ft_portamento ; ft_slide_down
 @EffLoadSlide:
 	jmp ft_load_slide
-@EffPhaseReset:
-	jmp ft_phase_reset
 @NoEffect:
 ;.endif
 ft_post_effects:
@@ -123,43 +118,7 @@ ft_post_effects:
 ft_effect_table:
 	.word ft_arpeggio, ft_portamento, ft_portamento_up, ft_portamento_down
 	.word ft_load_slide, ft_slide_up, ft_load_slide, ft_slide_down
-	.word ft_phase_reset
 .endif
-
-; Channel phase reset
-;
-ft_phase_reset:
-	rts
-	cpx #CHAN_TRI
-	beq @SkipPhaseReset
-	cpx #CHAN_NOI
-	beq @SkipPhaseReset
-.if .defined(USE_VRC7)
-	cpx #CHAN_VRC7
-	beq @SkipPhaseReset
-.endif
-.if .defined(USE_S5B)
-	cpx #CHAN_S5B
-	beq @SkipPhaseReset
-.endif
-	; 2A03 pulse phase reset
-	cpx #CHAN_2A03
-	bne :+
-	; write to high byte of pitch register
-	txa
-	asl
-	asl
-	tay
-	dey
-	lda var_ch_PeriodCalcHi + APU_OFFSET, x
-	sta $4000, y
-:
-	cpx #CHAN_DPCM
-	bne :+
-	; DPCM phase reset retriggers the sample
-:
-@SkipPhaseReset:
-	rts
 
 ft_load_slide:
 .if .defined(USE_VRC7)

@@ -101,25 +101,36 @@ ft_update_vrc6:
 :	and #$3F
 	; Write to registers
 :	ldy #$00
-	sta (var_Temp_Pointer), y
+	sta (var_Temp_Pointer), y				; $9000/A000/B000
 	iny
 	lda	var_ch_PeriodCalcLo + VRC6_OFFSET, x
-	sta (var_Temp_Pointer), y
+	sta (var_Temp_Pointer), y				; $9001/A001/B001
 	iny
 	lda	var_ch_PeriodCalcHi + VRC6_OFFSET, x
 	ora #$80
-	sta (var_Temp_Pointer), y
+	sta (var_Temp_Pointer), y				; $9002/A002/B002
 	bmi @NextChan         ; Branch always
 @KillChan:
 	ldy #$02
 	lda #$00
 	sta (var_Temp_Pointer), y
 @NextChan:
+	lda var_ch_PhaseReset + VRC6_OFFSET, x
+	bne @VRC6PhaseReset
 	inx
 	cpx #CH_COUNT_VRC6
 	bcs :+
 	jmp @ChannelLoop
 :	rts
+@VRC6PhaseReset:
+	lda #$00
+	sta var_ch_PhaseReset + VRC6_OFFSET, x
+	ldy #$02
+	sta (var_Temp_Pointer), y
+	lda	var_ch_PeriodCalcHi + VRC6_OFFSET, x
+	ora #$80
+	sta (var_Temp_Pointer), y
+	rts
 
 ft_duty_table_vrc6:
 .repeat 8, i

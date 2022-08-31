@@ -151,13 +151,8 @@ ft_update_fds:
 	jsr ft_check_fds_fm
 
 @Return:
-	rts
-@TickDownDelay:
-	dec var_ch_ModDelayTick
-@DisableMod:
-	; Disable modulation
-	lda #$80
-	sta $4087
+	lda var_ch_PhaseReset + FDS_OFFSET
+	bne @FDSPhaseReset
 	rts
 @KillFDS:
 	lda var_ch_FDSVolume					;;; ;; ; return if volume envelope is enabled
@@ -169,7 +164,21 @@ ft_update_fds:
 	sta $4087
 	rts
 	padjmp		6
-
+@TickDownDelay:
+	dec var_ch_ModDelayTick
+@DisableMod:
+	; Disable modulation
+	lda #$80
+	sta $4087
+	rts
+@FDSPhaseReset:
+	lda #$00
+	sta var_ch_PhaseReset + FDS_OFFSET
+	lda #$80
+	sta $4083
+	lda var_ch_PeriodCalcHi + FDS_OFFSET
+	sta $4083
+	rts
 ; Load the waveform, index in A
 ft_load_fds_wave:
 	sta var_Temp16 + 1		;;; ;; ;

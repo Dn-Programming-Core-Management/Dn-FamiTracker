@@ -133,7 +133,6 @@ CHANNELS	= DPCM_OFFSET + .defined(USE_DPCM)
 	EFF_SLIDE_UP
 	EFF_SLIDE_DOWN_LOAD
 	EFF_SLIDE_DOWN
-	EFF_PHASE_RESET
 .endenum
 
 .enum
@@ -249,6 +248,8 @@ var_EnvelopeTrigger:	.res 1						; Hxy issued
 
 ; hack effect variable to zeropage due to low space remaining in BSS when all expansions are enabled
 var_ch_Harmonic:		.res EFF_CHANS				;; ;; !! Frequency multiplier
+var_ch_PhaseReset:		.res EFF_CHANS				;; ;; !! Phase reset
+var_ch_DPCMPhaseReset:	.res 1						;; ;; !! DPCM exclusive phase reset
 
 last_zp_var:			.res 1						; Not used
 

@@ -81,7 +81,7 @@ ft_init_n163:
 	; Clear wave ram
 	lda #$80
 	sta $F800
-	ldx #$7E ;
+	ldx #$7E
 	lda #$00
 :   sta $4800
 	dex
@@ -212,11 +212,33 @@ ft_update_n163:
 
 @SkipChannel:
 	; End
+	lda var_ch_PhaseReset + N163_OFFSET, x
+	bne @N163PhaseReset
 	inx
 	cpx var_NamcoChannels
 	beq :+
 	jmp @ChannelLoop
 :	rts
+
+@N163PhaseReset:
+	lda #$00
+	sta var_ch_PhaseReset + N163_OFFSET, x
+
+	lda #$01
+	jsr @LoadAddr					; low phase
+	lda #$00
+	sta $4800
+
+	lda #$03
+	jsr @LoadAddr					; mid phase
+	lda #$00
+	sta $4800
+
+	lda #$05
+	jsr @LoadAddr					; hi phase
+	lda #$00
+	sta $4800
+	rts
 
 @LoadAddr:                    ; Load N163 RAM address
 	clc

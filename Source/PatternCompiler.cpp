@@ -95,6 +95,7 @@ enum command_t {
 	CMD_EFF_DELAYED_VOLUME,		// // //
 	CMD_EFF_TRANSPOSE,			// // //
 	CMD_EFF_PHASE_RESET,		// // !!
+	CMD_EFF_DPCM_PHASE_RESET,	// // !!
 	CMD_EFF_HARMONIC,			// // !!
 	CMD_EFF_TARGET_VOL_SLIDE,	// // !!
 
@@ -559,13 +560,23 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 					}
 					break;
 				case EF_PHASE_RESET:	// // !!
-					if (ChanID != CHANID_DPCM) {
+					if (ChanID != CHANID_DPCM ||
+					ChanID != CHANID_TRIANGLE ||
+					ChanID != CHANID_NOISE ||
+					ChipID != SNDCHIP_VRC7 ||
+					ChipID != SNDCHIP_S5B) {
 						WriteData(Command(CMD_EFF_PHASE_RESET));
+						WriteData(EffParam);
+					}
+					else if (ChanID == CHANID_DPCM) {
+						WriteData(Command(CMD_EFF_DPCM_PHASE_RESET));
 						WriteData(EffParam);
 					}
 					break;
 				case EF_HARMONIC:	// // !!
-					if (ChanID != CHANID_DPCM) {
+					if (ChanID != CHANID_DPCM ||
+					ChanID != CHANID_NOISE ||
+					ChipID != SNDCHIP_VRC7) {
 						WriteData(Command(CMD_EFF_HARMONIC));
 						WriteData(EffParam);
 					}
