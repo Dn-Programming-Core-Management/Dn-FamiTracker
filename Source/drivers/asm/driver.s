@@ -3,6 +3,11 @@
 ;;; ;; ; By jsr, HertzDevil, D.P.C.M., etc.
 ;;; ;; ;
 
+.define DRIVER_NAME "Dn-FT "
+; version 2.13
+.define VERSION_MAJ 2
+.define VERSION_MIN 13
+
 ;
 ; Assembler code switches
 ;
@@ -475,8 +480,7 @@ last_bss_var:			.res 1						; Not used
 ; NSF entry addresses
 
 .if .defined(PACKAGE)
-	; version 2.13
-	.byte "DN-FT ", $02, $0D
+	.byte DRIVER_NAME, VERSION_MAJ, VERSION_MIN
 .endif
 
 LOAD:
