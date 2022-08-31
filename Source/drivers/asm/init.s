@@ -29,7 +29,7 @@ ft_music_init:
 	sta $4005
 	lda #$80		;;; ;; ;
 	sta $4017
-	lda #$00
+	lda #$40
 	sta $4017		; ;; ;;; Disable frame IRQs
 
 	lda #$FF		;;; ;; ; Reset triangle linear counter
