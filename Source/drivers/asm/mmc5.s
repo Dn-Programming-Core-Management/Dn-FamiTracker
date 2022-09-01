@@ -125,17 +125,9 @@ ft_update_mmc5:
 	lda #$00
 	sta var_ch_PhaseReset + MMC5_OFFSET, x
 	dey
-	lda var_ch_LengthCounter + MMC5_OFFSET, x	;;; ;; ;
-	and #$03
-	beq :+
-	lda var_ch_Trigger + MMC5_OFFSET, x
-	bne :++
-	beq @Next ; always
-:	lda var_ch_PeriodCalcHi + MMC5_OFFSET, x
-	sta var_ch_PrevFreqHighMMC5, x
-:	lda var_ch_LengthCounter + MMC5_OFFSET, x
+	lda var_ch_LengthCounter + MMC5_OFFSET, x
 	and #$F8
 	ora var_ch_PeriodCalcHi + MMC5_OFFSET, x
 	sta $5000, y ; y == 3 || y == 7			$5003/5007
-	iny										; ;; ;;;
+	iny
 	rts

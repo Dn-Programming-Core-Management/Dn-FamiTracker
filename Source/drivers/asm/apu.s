@@ -225,15 +225,7 @@ ft_update_2a03:
 @SquarePhaseReset:
 	lda #$00
 	sta var_ch_PhaseReset + APU_OFFSET, x
-	lda var_ch_LengthCounter + APU_OFFSET, x	;;; ;; ;
-	and #$03
-	beq :+
-	lda var_ch_Trigger + APU_OFFSET, x
-	beq @DoneSquare
-	bne :++
-:	lda var_ch_PeriodCalcHi + APU_OFFSET, x
-	sta var_ch_PrevFreqHigh + APU_OFFSET, x
-:	lda var_ch_LengthCounter + APU_OFFSET, x
+	lda var_ch_LengthCounter + APU_OFFSET, x
 	and #$F8
 	ora var_ch_PeriodCalcHi + APU_OFFSET, x
 	sta $4000, y								; $4003/4007

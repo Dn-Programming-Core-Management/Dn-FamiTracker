@@ -47,7 +47,7 @@ ft_load_inst_extra_n163:
 	iny
 .endif
 @DoneParams:
-	lda var_NamcoInstrument, x
+	lda var_NamcoInstrument - N163_OFFSET, x
 	cmp var_Temp2
 	beq :+
 	lda #$00             ; reset wave
@@ -56,7 +56,7 @@ ft_load_inst_extra_n163:
 	lda var_Temp2
 	; Load N163 wave
 ;    jsr ft_n163_load_wave
-:   sta var_NamcoInstrument, x
+:   sta var_NamcoInstrument - N163_OFFSET, x
 	lda ft_channel_type, x	;;; ;; ;
 	cmp #CHAN_N163
 	bne :+					; ;; ;;;
