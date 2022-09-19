@@ -221,8 +221,7 @@ ft_update_n163:
 :	rts
 
 @N163PhaseReset:
-	lda #$00
-	sta var_ch_PhaseReset + N163_OFFSET, x
+	dec var_ch_PhaseReset + N163_OFFSET, x
 
 	lda #$01
 	jsr @LoadAddr					; low phase

@@ -1033,13 +1033,11 @@ ft_cmd_transpose:
 ;; ;; !! Effect: Phase reset (=xx)
 ft_cmd_phase_reset:
 	jsr ft_get_pattern_byte
-	lda #$01
-	sta var_ch_PhaseReset, x
+	inc var_ch_PhaseReset, x
 	rts
 ft_cmd_DPCM_phase_reset:
 	jsr ft_get_pattern_byte
-	lda #$01
-	sta var_ch_DPCMPhaseReset
+	inc var_ch_DPCMPhaseReset
 	rts
 ;; ;; !! Effect: Frequency Multiplier (Kxx)
 ft_cmd_harmonic:

@@ -172,8 +172,7 @@ ft_update_fds:
 	sta $4087
 	rts
 @FDSPhaseReset:
-	lda #$00
-	sta var_ch_PhaseReset + FDS_OFFSET
+	dec var_ch_PhaseReset + FDS_OFFSET
 	lda #$80
 	sta $4083
 	lda var_ch_PeriodCalcHi + FDS_OFFSET

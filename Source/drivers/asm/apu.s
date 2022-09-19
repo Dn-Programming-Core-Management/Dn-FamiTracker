@@ -223,8 +223,7 @@ ft_update_2a03:
 :	jmp @Triangle
 
 @SquarePhaseReset:
-	lda #$00
-	sta var_ch_PhaseReset + APU_OFFSET, x
+	dec var_ch_PhaseReset + APU_OFFSET, x
 	lda var_ch_LengthCounter + APU_OFFSET, x
 	and #$F8
 	ora var_ch_PeriodCalcHi + APU_OFFSET, x
@@ -485,8 +484,7 @@ ft_update_2a03:
 	sta var_ch_Note, x
 	rts
 @DPCMPhaseReset:
-	lda #$00
-	sta var_ch_DPCMPhaseReset
+	dec var_ch_DPCMPhaseReset
 	lda #$01
 	sta var_ch_Note, x
 	rts

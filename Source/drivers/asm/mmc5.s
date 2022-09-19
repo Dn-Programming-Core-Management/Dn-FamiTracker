@@ -122,8 +122,7 @@ ft_update_mmc5:
 	jmp @ChannelLoop
 :	rts
 @MMC5PhaseReset:
-	lda #$00
-	sta var_ch_PhaseReset + MMC5_OFFSET, x
+	dec var_ch_PhaseReset + MMC5_OFFSET, x
 	dey
 	lda var_ch_LengthCounter + MMC5_OFFSET, x
 	and #$F8

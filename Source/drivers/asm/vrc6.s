@@ -123,8 +123,7 @@ ft_update_vrc6:
 	jmp @ChannelLoop
 :	rts
 @VRC6PhaseReset:
-	lda #$00
-	sta var_ch_PhaseReset + VRC6_OFFSET, x
+	dec var_ch_PhaseReset + VRC6_OFFSET, x
 	ldy #$02
 	sta (var_Temp_Pointer), y
 	lda	var_ch_PeriodCalcHi + VRC6_OFFSET, x
