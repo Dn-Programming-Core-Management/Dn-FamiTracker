@@ -19,16 +19,9 @@ ft_music_play:
 	ldx #$00
 @ChanLoop:
 	CH_LOOP_START @ChanLoopEpilog
-	jsr ft_fetch_speed
-	cmp	var_ch_Delay, x
-	bcs :+
-	sta var_ch_Delay, x
-:
 	lda var_ch_Delay, x
 	beq @SkipDelay
-	sec
-	sbc #$01
-	sta var_ch_Delay, x
+	dec var_ch_Delay, x
 	bne @SkipDelay
 	jsr ft_read_pattern					; Read the delayed note
 	jmp @ChanLoopEpilog		; ;; ;;;
@@ -61,20 +54,9 @@ ft_do_row_update:
 :
 	; Switches to new frames are delayed to next row to resolve issues with delayed notes.
 	; It won't work if new pattern adresses are loaded before the delayed note is played
-	lda var_Load_Frame
-	beq @SkipFrameLoad
 	;;; ;; ; from 0.4.6
-	ldx #$00
-@Delay:
-	CH_LOOP_START @DelayEpilog
-	lda var_ch_Delay, x
-	beq @DelayEpilog
-	lda #$00
-	sta var_ch_Delay, x
-	jsr ft_read_pattern ; skip over missed delay note
-@DelayEpilog:
-	CH_LOOP_END @Delay
-	
+	lda var_Load_Frame
+	beq @SkipFrameLoad	
 	lda #$00
 	sta var_Load_Frame
 	lda var_Current_Frame
@@ -85,7 +67,12 @@ ft_do_row_update:
 	ldx #$00
 ft_read_channels:
 	CH_LOOP_START ft_read_channels_epilog
-	jsr ft_read_pattern					; Get new notes
+	lda var_ch_Delay, x
+	beq :+
+	lda #$00
+	sta var_ch_Delay, x
+	jsr ft_read_pattern					; In case a delayed note has not been played, skip it to get next note
+:	jsr ft_read_pattern					; Get new notes
 ft_read_channels_epilog:
 	CH_LOOP_END ft_read_channels
 
