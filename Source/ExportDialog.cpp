@@ -42,20 +42,20 @@
 // Define internal exporters
 const LPTSTR CExportDialog::DEFAULT_EXPORT_NAMES[] = {
 	_T("NSF - Nintendo Sound File"),
+	_T("NSFe - Extended Nintendo Sound File"),		// // //
 	_T("NES - iNES ROM image"),
 	_T("BIN - Raw music data"),
 	_T("PRG - Clean 32kB ROM image"),
 	_T("ASM - Assembly source"),
-	_T("NSFe - Extended Nintendo Sound File"),		// // //
 };
 
 const exportFunc_t CExportDialog::DEFAULT_EXPORT_FUNCS[] = {
 	&CExportDialog::CreateNSF,
+	&CExportDialog::CreateNSFe,		// // //
 	&CExportDialog::CreateNES,
 	&CExportDialog::CreateBIN,
 	&CExportDialog::CreatePRG,
 	&CExportDialog::CreateASM,
-	&CExportDialog::CreateNSFe,		// // //
 };
 
 const int CExportDialog::DEFAULT_EXPORTERS = 6;		// // //
@@ -65,12 +65,12 @@ int CExportDialog::m_iExportOption = 0;
 
 // File filters
 LPCTSTR CExportDialog::NSF_FILTER[]   = { _T("NSF file (*.nsf)"), _T(".nsf") };
+LPCTSTR CExportDialog::NSFE_FILTER[]  = { _T("NSFe file (*.nsfe)"), _T(".nsfe") };		// // //
 LPCTSTR CExportDialog::NES_FILTER[]   = { _T("NES ROM image (*.nes)"), _T(".nes") };
 LPCTSTR CExportDialog::RAW_FILTER[]   = { _T("Raw song data (*.bin)"), _T(".bin") };
 LPCTSTR CExportDialog::DPCMS_FILTER[] = { _T("DPCM sample bank (*.bin)"), _T(".bin") };
 LPCTSTR CExportDialog::PRG_FILTER[]   = { _T("NES program bank (*.prg)"), _T(".prg") };
-LPCTSTR CExportDialog::ASM_FILTER[]	  = { _T("Assembly text (*.asm)"), _T(".asm") };
-LPCTSTR CExportDialog::NSFE_FILTER[]  = { _T("NSFe file (*.nsfe)"), _T(".nsfe") };		// // //
+LPCTSTR CExportDialog::ASM_FILTER[]   = { _T("Assembly text (*.asm)"), _T(".asm") };
 
 // Compiler logger
 
