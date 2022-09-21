@@ -418,29 +418,29 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	}
 
 	// // // Create NSFe header
-	std::size_t iAuthSize = 0, iTimeSize = 0, iTlblSize = 0, iDataSize = 0;
-	CString str = _T(APP_NAME_VERSION);
-	iAuthSize = strlen(m_pDocument->GetSongName()) + strlen(m_pDocument->GetSongArtist())
-		+ strlen(m_pDocument->GetSongCopyright()) + str.GetLength() + 4;
 
+	// Write NSFE, INFO, and BANK chunks
 	stNSFeHeader Header;
 	CreateNSFeHeader(&Header, MachineType);
 	OutputFile.Write(&Header, sizeof(Header));
 
-	const unsigned char AuthIdent[] = {'a', 'u', 't', 'h'};
-	OutputFile.Write(reinterpret_cast<char*>(&iAuthSize), sizeof(int));
-	OutputFile.Write(&AuthIdent, sizeof(AuthIdent));
-	OutputFile.Write(m_pDocument->GetSongName(), strlen(m_pDocument->GetSongName()) + 1);
-	OutputFile.Write(m_pDocument->GetSongArtist(), strlen(m_pDocument->GetSongArtist()) + 1);
-	OutputFile.Write(m_pDocument->GetSongCopyright(), strlen(m_pDocument->GetSongCopyright()) + 1);
-	OutputFile.Write((char*)((PCSTR)str), str.GetLength() + 1);
-	str.ReleaseBuffer();
+	// TODO write NSF2 chunk?
+
+	// TODO write VRC7 chunk?
+
+	std::size_t
+		iAuthSize = 0,
+		iTimeSize = 0,
+		iTlblSize = 0,
+		iDataSize = 0,
+		iTextSize = 0;
 
 	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
 		iTimeSize += 4;
 		iTlblSize += strlen(m_pDocument->GetTrackTitle(i)) + 1;
 	}
 
+	// write time chunk
 	const unsigned char TimeIdent[] = {'t', 'i', 'm', 'e'};
 	OutputFile.Write(reinterpret_cast<char*>(&iTimeSize), sizeof(int));
 	OutputFile.Write(&TimeIdent, sizeof(TimeIdent));
@@ -449,6 +449,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 		OutputFile.Write(reinterpret_cast<char*>(&t), sizeof(int));
 	}
 
+	//  write tlbl chunk
 	const unsigned char TlblIdent[] = {'t', 'l', 'b', 'l'};
 	OutputFile.Write(reinterpret_cast<char*>(&iTlblSize), sizeof(int));
 	OutputFile.Write(&TlblIdent, sizeof(TlblIdent));
@@ -456,10 +457,33 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 		OutputFile.Write(m_pDocument->GetTrackTitle(i), strlen(m_pDocument->GetTrackTitle(i)) + 1);
 	}
 
+	// write auth chunk
+	CString ripper = _T(APP_NAME_VERSION);
+	iAuthSize = strlen(m_pDocument->GetSongName()) + strlen(m_pDocument->GetSongArtist())
+		+ strlen(m_pDocument->GetSongCopyright()) + ripper.GetLength() + 4;
+
+	const unsigned char AuthIdent[] = { 'a', 'u', 't', 'h' };
+	OutputFile.Write(reinterpret_cast<char*>(&iAuthSize), sizeof(int));
+	OutputFile.Write(&AuthIdent, sizeof(AuthIdent));
+	OutputFile.Write(m_pDocument->GetSongName(), strlen(m_pDocument->GetSongName()) + 1);
+	OutputFile.Write(m_pDocument->GetSongArtist(), strlen(m_pDocument->GetSongArtist()) + 1);
+	OutputFile.Write(m_pDocument->GetSongCopyright(), strlen(m_pDocument->GetSongCopyright()) + 1);
+	OutputFile.Write((char*)((PCSTR)ripper), ripper.GetLength() + 1);
+	ripper.ReleaseBuffer();
+
+	// write text chunk
+	const unsigned char TextIdent[] = { 't', 'e', 'x', 't' };
+	iTextSize = strlen(m_pDocument->GetComment()) + 1;
+	OutputFile.Write(reinterpret_cast<char*>(&iTextSize), sizeof(int));
+	OutputFile.Write(&TextIdent, sizeof(TextIdent));
+	OutputFile.Write(m_pDocument->GetComment(), strlen(m_pDocument->GetComment()) + 1);
+
+	// TODO write mixe chunk?
+
 	// Write NSF data
 	CChunkRenderNSF Render(&OutputFile, m_iLoadAddress);
 
-	// // //
+	// write DATA chunk
 	ULONGLONG iDataSizePos = OutputFile.GetPosition();
 	const unsigned char DataIdent[] = {'D', 'A', 'T', 'A'};
 	OutputFile.Write(reinterpret_cast<char*>(&iDataSize), sizeof(int));
@@ -500,6 +524,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 		Print(_T(" * NSF type: Linear (driver @ $%04X)\n"), m_iDriverAddress);
 	}
 
+	// write NEND chunk
 	const unsigned char NEndIdent[] = {'\0', '\0', '\0', '\0', 'N', 'E', 'N', 'D'};		// // //
 	OutputFile.Write(&NEndIdent, sizeof(NEndIdent));
 	OutputFile.Seek(iDataSizePos, CFile::begin);
