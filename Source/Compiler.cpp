@@ -471,12 +471,14 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	OutputFile.Write((char*)((PCSTR)ripper), ripper.GetLength() + 1);
 	ripper.ReleaseBuffer();
 
-	// write text chunk
-	const unsigned char TextIdent[] = { 't', 'e', 'x', 't' };
-	iTextSize = strlen(m_pDocument->GetComment()) + 1;
-	OutputFile.Write(reinterpret_cast<char*>(&iTextSize), sizeof(int));
-	OutputFile.Write(&TextIdent, sizeof(TextIdent));
-	OutputFile.Write(m_pDocument->GetComment(), strlen(m_pDocument->GetComment()) + 1);
+	// write text chunk, if available
+	if (strlen(m_pDocument->GetComment())) {
+		const unsigned char TextIdent[] = { 't', 'e', 'x', 't' };
+		iTextSize = strlen(m_pDocument->GetComment()) + 1;
+		OutputFile.Write(reinterpret_cast<char*>(&iTextSize), sizeof(int));
+		OutputFile.Write(&TextIdent, sizeof(TextIdent));
+		OutputFile.Write(m_pDocument->GetComment(), strlen(m_pDocument->GetComment()) + 1);
+	}
 
 	// TODO write mixe chunk?
 
