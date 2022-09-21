@@ -55,10 +55,13 @@ struct stNSFeHeader {		// // //
 	unsigned char	SoundChip;
 	unsigned char	TotalSongs;
 	unsigned char	StartSong;
-	unsigned short	Speed_NTSC;
 	unsigned int	BankSize;
 	unsigned char	BankIdent[4];
 	unsigned char	BankValues[8];
+	unsigned int	RateSize;
+	unsigned char	RateIdent[4];
+	unsigned short	Speed_NTSC;
+	unsigned short	Speed_PAL;
 };
 
 struct driver_t;

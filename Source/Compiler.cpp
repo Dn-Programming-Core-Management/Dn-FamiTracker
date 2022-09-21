@@ -978,7 +978,7 @@ void CCompiler::CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType)		// // 
 {
 	memset(pHeader, 0, 40);
 
-	int SpeedPAL, SpeedNTSC, Speed;
+	unsigned int SpeedPAL, SpeedNTSC, Speed;
 	Speed = m_pDocument->GetEngineSpeed();
 	if (Speed == 0) {
 		SpeedNTSC = 1000000 / 60;
@@ -988,6 +988,7 @@ void CCompiler::CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType)		// // 
 
 	pHeader->InfoSize = 12;
 	pHeader->BankSize = 8;
+	pHeader->RateSize = 4;
 
 	pHeader->NSFeIdent[0] = 'N';
 	pHeader->NSFeIdent[1] = 'S';
@@ -1001,6 +1002,10 @@ void CCompiler::CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType)		// // 
 	pHeader->BankIdent[1] = 'A';
 	pHeader->BankIdent[2] = 'N';
 	pHeader->BankIdent[3] = 'K';
+	pHeader->RateIdent[0] = 'R';
+	pHeader->RateIdent[1] = 'A';
+	pHeader->RateIdent[2] = 'T';
+	pHeader->RateIdent[3] = 'E';
 
 	pHeader->TotalSongs	= m_pDocument->GetTrackCount();
 	pHeader->StartSong	= 0;
@@ -1038,6 +1043,7 @@ void CCompiler::CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType)		// // 
 	}
 
 	pHeader->Speed_NTSC = SpeedNTSC;
+	pHeader->Speed_PAL = SpeedPAL;
 	pHeader->SoundChip = m_iActualChip;		// // //
 }
 
