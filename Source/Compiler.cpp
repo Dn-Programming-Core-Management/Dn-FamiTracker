@@ -532,7 +532,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 
 	// write actual size of DATA chunk
 	OutputFile.Seek(iDataSizePos, CFile::begin);
-	iDataSize = Render.GetLength();
+	iDataSize = Render.GetTotalDataSize();
 	OutputFile.Write(reinterpret_cast<char*>(&iDataSize), sizeof(int));
 
 	Print(_T("Done, total file size: %i bytes\n"), OutputFile.GetLength());
