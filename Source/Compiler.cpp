@@ -527,11 +527,10 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	// write NEND chunk
 	const unsigned char NEndIdent[] = {'\0', '\0', '\0', '\0', 'N', 'E', 'N', 'D'};		// // //
 	OutputFile.Write(&NEndIdent, sizeof(NEndIdent));
+
+	// write actual size of DATA chunk
 	OutputFile.Seek(iDataSizePos, CFile::begin);
-	if (m_bBankSwitched)
-		iDataSize = 0x1000 * (Render.GetBankCount() - 1);
-	else
-		iDataSize = m_iDriverSize + m_iMusicDataSize + m_iSamplesSize;
+	iDataSize = Render.GetLength();
 	OutputFile.Write(reinterpret_cast<char*>(&iDataSize), sizeof(int));
 
 	Print(_T("Done, total file size: %i bytes\n"), OutputFile.GetLength());

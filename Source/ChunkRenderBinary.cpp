@@ -122,7 +122,8 @@ void CChunkRenderBinary::StoreSample(const CDSample *pDSample)
 CChunkRenderNSF::CChunkRenderNSF(CFile *pFile, unsigned int StartAddr) : 
 	CBinaryFileWriter(pFile),
 	m_iStartAddr(StartAddr),
-	m_iSampleAddr(0)
+	m_iSampleAddr(0),
+	m_iLength(0)
 {
 }
 
@@ -130,6 +131,7 @@ void CChunkRenderNSF::StoreDriver(const char *pDriver, unsigned int Size)
 {
 	// Store NSF driver
 	Store(pDriver, Size);
+	m_iLength += Size;
 }
 
 void CChunkRenderNSF::StoreChunks(const std::vector<CChunk*> &Chunks)
@@ -155,7 +157,9 @@ void CChunkRenderNSF::StoreSamples(const std::vector<const CDSample*> &Samples)
 		AllocateNewBank();
 
 	// Align first sample to valid address
-	Fill(CCompiler::AdjustSampleAddress(GetAbsoluteAddr()));
+	int SampleAlign = CCompiler::AdjustSampleAddress(GetAbsoluteAddr());
+	Fill(SampleAlign);
+	m_iLength += SampleAlign;
 	std::for_each(Samples.begin(), Samples.end(), [this] (const CDSample *pSample) {
 		StoreSample(pSample);
 	});
@@ -178,6 +182,7 @@ void CChunkRenderNSF::StoreSample(const CDSample *pDSample)
 	// Store sample and fill with zeros
 	Store(pDSample->GetData(), pDSample->GetSize());
 	Fill(CCompiler::AdjustSampleAddress(GetAbsoluteAddr()));
+	m_iLength += pDSample->GetSize();
 }
 
 void CChunkRenderNSF::StoreSampleBankswitched(const CDSample *pDSample)
@@ -195,11 +200,18 @@ void CChunkRenderNSF::StoreSampleBankswitched(const CDSample *pDSample)
 	Store(pDSample->GetData(), SampleSize);
 	Fill(Adjust);
 	m_iSampleAddr += SampleSize + Adjust;
+
+	m_iLength += SampleSize + Adjust;
 }
 
 int CChunkRenderNSF::GetBankCount() const
 {
 	return GetBank() + 1;
+}
+
+int CChunkRenderNSF::GetLength() const
+{
+	return m_iLength;
 }
 
 void CChunkRenderNSF::StoreChunkBankswitched(const CChunk *pChunk)
@@ -223,11 +235,13 @@ void CChunkRenderNSF::StoreChunk(const CChunk *pChunk)
 		if (pChunk->GetType() == CHUNK_PATTERN) {
 			const std::vector<char> &vec = pChunk->GetStringData(CCompiler::PATTERN_CHUNK_INDEX);
 			Store(&vec.front(), vec.size());			
+			m_iLength += vec.size();
 		}
 		else {
 			unsigned short data = pChunk->GetData(i);
 			unsigned short size = pChunk->GetDataSize(i);
 			Store(&data, size);
+			m_iLength += size;
 		}
 	}
 }
@@ -243,6 +257,7 @@ void CChunkRenderNSF::AllocateNewBank()
 	// Get new NSF bank
 	int Remaining = GetRemainingSize();
 	Fill(Remaining);
+	m_iLength += Remaining;
 }
 
 int CChunkRenderNSF::GetBank() const
@@ -274,4 +289,5 @@ void CChunkRenderNES::StoreCaller(const void *pData, unsigned int Size)
 	int FillSize = (0x10000 - GetAbsoluteAddr()) - Size;
 	Fill(FillSize);
 	Store(pData, Size);
+	m_iLength += FillSize + Size;
 }
