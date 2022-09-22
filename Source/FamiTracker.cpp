@@ -940,7 +940,7 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 			helpmessage += "export\t: exports the module to a specified format. the format is determined by the filetype of the output.\n";
 			helpmessage += "\t-export [output file] [optional log file] [DPCM file for BIN export]\n";
 			helpmessage += "\tthe following formats are available:\n";
-			helpmessage += "\t\t.nsf\n\t\t.nes\n\t\t.bin\n\t\t.prg\n\t\t.asm\n\t\t.nsfe\n\t\t.txt\n";
+			helpmessage += "\t\t.nsf\n\t\t.nsfe\n\t\t.nes\n\t\t.bin\n\t\t.prg\n\t\t.asm\n\t\t.txt\n";
 			helpmessage += "nodump\t: disables the crash dump generation, for cases where these are undesirable\n";
 			helpmessage += "log\t: enables the register logger, available in debug builds only\n";
 			helpmessage += "Press enter to continue . . .";
