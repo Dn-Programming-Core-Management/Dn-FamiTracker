@@ -167,6 +167,7 @@ BOOL CAboutDlg::OnInitDialog()
 		_T("- Additional improvements by nyanpasu64\r\n")
 		_T("- Export plugin support by Gradualore\r\n")
 		_T("- Sunsoft 5B information in manual by Blue Mario\r\n")		// // !!
+		_T("- Additional manual information by Persune\r\n")		// // !!
 		_T("- Toolbar icons are made by ilkke\r\n")
 		_T("- Dn-FT icon design by Compass Man\r\n")		// // !!
 		_T("- DPCM import resampler by Jarhmander\r\n")
@@ -177,7 +178,7 @@ BOOL CAboutDlg::OnInitDialog()
 		_T("- FFT code is (C) 2017 Project Nayuki (MIT)\r\n")
 		_T("- emu2413 v1.5.2 (C) Mitsutaka Okazaki (MIT)\r\n")
 		_T("- 2A03 sound emulator from NSFPlay\r\n")
-		_T("- FDS sound emulator from Mesen (C) Sourmesen (GPL v3)\r\n")
+		_T("- FDS and N163 sound emulator from Mesen (C) Sourmesen (GPL v3)\r\n")
 		_T("- JSON for Modern C++ is Copyright (C) Niels Lohmann (MIT)"));
 
 	m_pHead = new CHead();
