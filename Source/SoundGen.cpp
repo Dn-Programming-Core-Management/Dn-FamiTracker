@@ -419,38 +419,39 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 		double Pitch;
 
 		// 2A07
-		Pitch = (clock_pal / Freq) - 0.5;
+		Pitch = (clock_pal / Freq) - 1.0;
 		m_iNoteLookupTablePAL[i] = (unsigned int)(Pitch - pDocument->GetDetuneOffset(1, i));		// // //
 
 		// 2A03 / MMC5 / VRC6
-		Pitch = (clock_ntsc / Freq) - 0.5;
+		Pitch = (clock_ntsc / Freq) - 1.0;
 		m_iNoteLookupTableNTSC[i] = (unsigned int)(Pitch - pDocument->GetDetuneOffset(0, i));		// // //
-		m_iNoteLookupTableS5B[i] = m_iNoteLookupTableNTSC[i] + 1;		// correction
+
+		// // // Sunsoft 5B
+		Pitch = (clock_ntsc / Freq);
+		m_iNoteLookupTableS5B[i] = (unsigned int)(Pitch - pDocument->GetDetuneOffset(0, i));
 
 		// VRC6 Saw
-		Pitch = ((clock_ntsc * 16.0) / (Freq * 14.0)) - 0.5;
+		Pitch = ((clock_ntsc * 16.0) / (Freq * 14.0)) - 1.0;
 		m_iNoteLookupTableSaw[i] = (unsigned int)(Pitch - pDocument->GetDetuneOffset(2, i));		// // //
 
 		// FDS
 #ifdef TRANSPOSE_FDS
-		Pitch = (Freq * 65536.0) / (clock_ntsc / 1.0) + 0.5;
+		Pitch = (Freq * 65536.0) / (clock_ntsc / 1.0);
 #else
-		Pitch = (Freq * 65536.0) / (clock_ntsc / 4.0) + 0.5;
+		Pitch = (Freq * 65536.0) / (clock_ntsc / 4.0);
 #endif
 		m_iNoteLookupTableFDS[i] = (unsigned int)(Pitch + pDocument->GetDetuneOffset(4, i));		// // //
 
 		// N163
-		Pitch = ((Freq * pDocument->GetNamcoChannels() * 983040.0) / clock_ntsc + 0.5) / 4;		// // //
+		Pitch = ((Freq * pDocument->GetNamcoChannels() * 983040.0) / clock_ntsc) / 4.0;		// // //
 		m_iNoteLookupTableN163[i] = (unsigned int)(Pitch + pDocument->GetDetuneOffset(5, i));		// // //
 
 		if (m_iNoteLookupTableN163[i] > 0xFFFF)	// 0x3FFFF
 			m_iNoteLookupTableN163[i] = 0xFFFF;	// 0x3FFFF
 
-		// // // Sunsoft 5B uses NTSC table
-
 		// // // VRC7
 		if (i < NOTE_RANGE) {
-			Pitch = Freq * 262144.0 / 49716.0 + 0.5;
+			Pitch = Freq * 262144.0 / 49716.0;
 			m_iNoteLookupTableVRC7[i] = (unsigned int)(Pitch + pDocument->GetDetuneOffset(3, i));		// // //
 		}
 	}
