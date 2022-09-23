@@ -1813,7 +1813,7 @@ void CSoundGen::LoadMachineSettings()		// // //
 		m_pAPU->Reset();
 	}
 
-#if WRITE_VOLUME_FILE
+#ifdef WRITE_VOLUME_FILE
 	CFile file("vol.txt", CFile::modeWrite | CFile::modeCreate);
 
 	for (int i = 0; i < 16; i++) {
