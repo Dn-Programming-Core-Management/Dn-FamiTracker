@@ -418,7 +418,6 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 		double Freq = 440. * pow(2.0, double(i - A440_NOTE) / 12.);
 		double Pitch;
 
-
 		// 2A03 / MMC5 / VRC6
 		Pitch = (clock_ntsc / (Freq * 16.0)) - 1.0;
 		m_iNoteLookupTableNTSC[i] = std::lround(Pitch - pDocument->GetDetuneOffset(0, i));		// // //
