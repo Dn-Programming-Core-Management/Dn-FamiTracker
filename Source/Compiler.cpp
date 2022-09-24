@@ -489,27 +489,27 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	// TODO: optimize this
 	if (m_pDocument->GetLevelOffset(0)) {
 		mixe_apu1 = m_pDocument->GetLevelOffset(0);
-		iMixeSize += sizeof(int16_t) + 1;
+		iMixeSize += 3;
 	}
 	if (m_pDocument->GetLevelOffset(1)) {
 		mixe_apu2 = m_pDocument->GetLevelOffset(1) - 20;
-		iMixeSize += sizeof(int16_t) + 1;
+		iMixeSize += 3;
 	}
 	if (m_pDocument->GetLevelOffset(2)) {
 		mixe_vrc6 = m_pDocument->GetLevelOffset(2);
-		iMixeSize += sizeof(int16_t) + 1;
+		iMixeSize += 3;
 	}
 	if (m_pDocument->GetLevelOffset(3)) {
 		mixe_vrc7 = m_pDocument->GetLevelOffset(3) + 1340;
-		iMixeSize += sizeof(int16_t) + 1;
+		iMixeSize += 3;
 	}
 	if (m_pDocument->GetLevelOffset(4)) {
 		mixe_fds = m_pDocument->GetLevelOffset(4) + 690;
-		iMixeSize += sizeof(int16_t) + 1;
+		iMixeSize += 3;
 	}
 	if (m_pDocument->GetLevelOffset(5)) {
 		mixe_mmc5 = m_pDocument->GetLevelOffset(5);
-		iMixeSize += sizeof(int16_t) + 1;
+		iMixeSize += 3;
 	}
 	if (m_pDocument->GetLevelOffset(6)) {
 		mixe_n163 = m_pDocument->GetLevelOffset(6) + 1540;
@@ -517,7 +517,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	}
 	if (m_pDocument->GetLevelOffset(7)) {
 		mixe_s5b = m_pDocument->GetLevelOffset(7) - 250;
-		iMixeSize += sizeof(int16_t) + 1;
+		iMixeSize += 3;
 	}
 	OutputFile.Write(reinterpret_cast<char*>(&iMixeSize), sizeof(int));
 	OutputFile.Write(&MixeIdent, sizeof(MixeIdent));
