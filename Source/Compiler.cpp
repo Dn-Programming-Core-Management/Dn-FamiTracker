@@ -513,7 +513,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	}
 	if (m_pDocument->GetLevelOffset(6)) {
 		mixe_n163 = m_pDocument->GetLevelOffset(6) + 1540;
-		iMixeSize += sizeof(int16_t) + 1;
+		iMixeSize += 3;
 	}
 	if (m_pDocument->GetLevelOffset(7)) {
 		mixe_s5b = m_pDocument->GetLevelOffset(7) - 250;
@@ -612,7 +612,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 
 	// write actual size of DATA chunk
 	OutputFile.Seek(iDataSizePos, CFile::begin);
-	iDataSize = Render.GetTotalDataSize();
+	iDataSize = Render.GetTotalCompiledDataSize();
 	OutputFile.Write(reinterpret_cast<char*>(&iDataSize), sizeof(int));
 
 	Print(_T("Done, total file size: %i bytes\n"), OutputFile.GetLength());

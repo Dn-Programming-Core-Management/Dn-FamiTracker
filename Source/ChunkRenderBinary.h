@@ -72,7 +72,7 @@ public:
 	void StoreSamples(const std::vector<const CDSample*> &Samples);
 	void StoreSamplesBankswitched(const std::vector<const CDSample*> &Samples);
 	int  GetBankCount() const;
-	int  GetTotalDataSize() const;
+	int  GetTotalCompiledDataSize() const;
 
 protected:
 	void StoreChunk(const CChunk *pChunk);
@@ -88,7 +88,7 @@ protected:
 protected:
 	unsigned int m_iStartAddr;
 	unsigned int m_iSampleAddr;
-	int m_iTotalDataSize;		// Count total driver and music data. Accounts for bank padding alignment.
+	int m_iTotalCompiledDataSize;		// Count total driver and music data. Accounts for bank padding alignment.
 };
 
 // NES render
