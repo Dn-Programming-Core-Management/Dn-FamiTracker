@@ -571,7 +571,14 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 
 	m_iSpeedSplitPoint = pDocument->GetSpeedSplitPoint();
 
-	if (currN163LevelOffset != pDocument->GetN163LevelOffset()) {
+	if (currAPU1LevelOffset != pDocument->GetLevelOffset(0) ||
+		currAPU2LevelOffset != pDocument->GetLevelOffset(1) ||
+		currVRC6LevelOffset != pDocument->GetLevelOffset(2) ||
+		currVRC7LevelOffset != pDocument->GetLevelOffset(3) ||
+		currFDSLevelOffset != pDocument->GetLevelOffset(4) ||
+		currMMC5LevelOffset != pDocument->GetLevelOffset(5) ||
+		currN163LevelOffset != pDocument->GetLevelOffset(6) ||
+		currS5BLevelOffset != pDocument->GetLevelOffset(7)) {
 		// Player thread calls OnLoadSettings() which calls ResetAudioDevice()
 		// Why are GetCurrentThreadId and GetCurrentThread used interchangably?
 		LoadSettings();
@@ -828,20 +835,34 @@ bool CSoundGen::ResetAudioDevice()
 		m_pResampleInBuffer = std::make_unique<float[]>(inputBufferSize);
 	}
 
-	currN163LevelOffset = m_pDocument->GetN163LevelOffset();
+	currAPU1LevelOffset = m_pDocument->GetLevelOffset(0);
+	currAPU2LevelOffset = m_pDocument->GetLevelOffset(1);
+	currVRC6LevelOffset = m_pDocument->GetLevelOffset(2);
+	currVRC7LevelOffset = m_pDocument->GetLevelOffset(3);
+	currFDSLevelOffset = m_pDocument->GetLevelOffset(4);
+	currMMC5LevelOffset = m_pDocument->GetLevelOffset(5);
+	currN163LevelOffset = m_pDocument->GetLevelOffset(6);
+	currS5BLevelOffset = m_pDocument->GetLevelOffset(7);
 
 	{
 		auto config = CAPUConfig(m_pAPU);
 
-		config.SetChipLevel(CHIP_LEVEL_APU1, float(pSettings->ChipLevels.iLevelAPU1 / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_APU2, float(pSettings->ChipLevels.iLevelAPU2 / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_VRC6, float(pSettings->ChipLevels.iLevelVRC6 / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_VRC7, float(pSettings->ChipLevels.iLevelVRC7 / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_MMC5, float(pSettings->ChipLevels.iLevelMMC5 / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_FDS, float(pSettings->ChipLevels.iLevelFDS / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_APU1, float(
+			pSettings->ChipLevels.iLevelAPU1 + currAPU1LevelOffset / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_APU2, float(
+			pSettings->ChipLevels.iLevelAPU2 + currAPU2LevelOffset / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_VRC6, float(
+			pSettings->ChipLevels.iLevelVRC6 + currVRC6LevelOffset / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_VRC7, float(
+			pSettings->ChipLevels.iLevelVRC7 + currVRC7LevelOffset / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_FDS, float(
+			pSettings->ChipLevels.iLevelFDS + currFDSLevelOffset / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_MMC5, float(
+			pSettings->ChipLevels.iLevelMMC5 + currMMC5LevelOffset / 10.0f));
 		config.SetChipLevel(CHIP_LEVEL_N163, float(
 			(pSettings->ChipLevels.iLevelN163 + currN163LevelOffset) / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_S5B, float(pSettings->ChipLevels.iLevelS5B / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_S5B, float(
+			pSettings->ChipLevels.iLevelS5B + currS5BLevelOffset / 10.0f));
 
 		// Update blip-buffer filtering
 		config.SetupMixer(

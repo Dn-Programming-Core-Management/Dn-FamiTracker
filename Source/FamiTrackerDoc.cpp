@@ -400,7 +400,7 @@ void CFamiTrackerDoc::DeleteContents()
 	m_iExpansionChip = SNDCHIP_NONE;
 	m_iVibratoStyle = VIBRATO_OLD;
 	m_bLinearPitch = DEFAULT_LINEAR_PITCH;
-	SetN163LevelOffset(0);
+	for (int i = 0; i < 7; i++) { SetLevelOffset(i, 0); }
 
 	m_iChannelsAvailable = CHANNELS_DEFAULT;
 	m_iSpeedSplitPoint	 = DEFAULT_SPEED_SPLIT_POINT;
@@ -464,7 +464,7 @@ void CFamiTrackerDoc::CreateEmpty()
 	// Auto-select new style vibrato for new modules
 	m_iVibratoStyle = VIBRATO_NEW;
 	m_bLinearPitch = DEFAULT_LINEAR_PITCH;
-	SetN163LevelOffset(0);
+	for (int i = 0; i < 7; i++) { SetLevelOffset(i, 0); }
 
 	m_iNamcoChannels = 0;		// // //
 
@@ -1337,7 +1337,7 @@ BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 			// Auto-select old style vibrato for old files
 			m_iVibratoStyle = VIBRATO_OLD;
 			m_bLinearPitch = false;
-			SetN163LevelOffset(0);
+			for (int i = 0; i < 7; i++) { SetLevelOffset(i, 0); }
 		}
 		else {
 			if (!OpenDocumentNew(OpenFile))
@@ -1385,7 +1385,7 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 
 	m_iVibratoStyle = VIBRATO_OLD;
 	m_bLinearPitch = false;
-	SetN163LevelOffset(0);
+	for (int i = 0; i < 7; i++) { SetLevelOffset(i, 0); }
 
 	// // // local structs
 	struct {
@@ -2568,11 +2568,25 @@ bool CFamiTrackerDoc::WriteBlock_Bookmarks(CDocumentFile *pDocFile, const int Ve
 }
 
 
+const char *APU1_OFFSET = "apu1-offset";
+const char *APU2_OFFSET = "apu2-offset";
+const char *VRC6_OFFSET = "vrc6-offset";
+const char *VRC7_OFFSET = "vrc7-offset";
+const char *FDS_OFFSET = "fds-offset";
+const char *MMC5_OFFSET = "mmc5-offset";
 const char *N163_OFFSET = "n163-offset";
+const char *S5B_OFFSET = "s5b-offset";
 
 // http://jsonapi.org/format/ except {data:{ is unnecessary.
 const json DEFAULT = {
-	{ N163_OFFSET, 0 }
+	{ APU1_OFFSET, 0 },
+	{ APU2_OFFSET, 0 },
+	{ VRC6_OFFSET, 0 },
+	{ VRC7_OFFSET, 0 },
+	{ FDS_OFFSET, 0 },
+	{ MMC5_OFFSET, 0 },
+	{ N163_OFFSET, 0 },
+	{ S5B_OFFSET, 0 }
 };
 
 void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile *pDocFile, const int Version) {
@@ -2595,12 +2609,26 @@ void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile *pDocFile, const int Version)
 		AfxMessageBox(conv::to_t(std::move(err)).c_str(), MB_ICONWARNING);
 	}
 
-	SetN163LevelOffset(out[N163_OFFSET]);
+	SetLevelOffset(0, out[APU1_OFFSET]);
+	SetLevelOffset(1, out[APU2_OFFSET]);
+	SetLevelOffset(2, out[VRC6_OFFSET]);
+	SetLevelOffset(3, out[VRC7_OFFSET]);
+	SetLevelOffset(4, out[FDS_OFFSET]);
+	SetLevelOffset(5, out[MMC5_OFFSET]);
+	SetLevelOffset(6, out[N163_OFFSET]);
+	SetLevelOffset(7, out[S5B_OFFSET]);
 }
 
 bool CFamiTrackerDoc::WriteBlock_JSON(CDocumentFile *pDocFile, const int Version) const {
 	const json j = {
-		{ N163_OFFSET, GetN163LevelOffset() }
+		{ APU1_OFFSET, GetLevelOffset(0) },
+		{ APU2_OFFSET, GetLevelOffset(1) },
+		{ VRC6_OFFSET, GetLevelOffset(2) },
+		{ VRC7_OFFSET, GetLevelOffset(3) },
+		{ FDS_OFFSET, GetLevelOffset(4) },
+		{ MMC5_OFFSET, GetLevelOffset(5) },
+		{ N163_OFFSET, GetLevelOffset(6) },
+		{ S5B_OFFSET, GetLevelOffset(7) }
 	};
 	if (j == DEFAULT) {
 		return true;
@@ -4311,15 +4339,70 @@ void CFamiTrackerDoc::SetLinearPitch(bool Enable)
 }
 
 // N163 Volume Offset
-int CFamiTrackerDoc::GetN163LevelOffset() const {
-	return _N163LevelOffset;
+int16_t CFamiTrackerDoc::GetLevelOffset(int device) const {
+	switch (device) {
+	case 0: return _APU1LevelOffset;
+	case 1: return _APU2LevelOffset;
+	case 2: return _VRC6LevelOffset;
+	case 3: return _VRC7LevelOffset;
+	case 4: return _FDSLevelOffset;
+	case 5: return _MMC5LevelOffset;
+	case 6: return _N163LevelOffset;
+	case 7: return _S5BLevelOffset;
+	}
 }
 
 // DocumentPropertiesChanged calls GetN163LevelOffset and updates synth if modified.
-void CFamiTrackerDoc::SetN163LevelOffset(int offset) {
-	if (_N163LevelOffset != offset) {
-		ModifyIrreversible();
-		_N163LevelOffset = offset;
+void CFamiTrackerDoc::SetLevelOffset(int device, int16_t offset) {
+	switch (device) {
+	case 0:
+		if (_APU1LevelOffset != offset) {
+			ModifyIrreversible();
+			_APU1LevelOffset = offset;
+		}
+		break;
+	case 1:
+		if (_APU2LevelOffset != offset) {
+			ModifyIrreversible();
+			_APU2LevelOffset = offset;
+		}
+		break;
+	case 2:
+		if (_VRC6LevelOffset != offset) {
+			ModifyIrreversible();
+			_VRC6LevelOffset = offset;
+		}
+		break;
+	case 3:
+		if (_VRC7LevelOffset != offset) {
+			ModifyIrreversible();
+			_VRC7LevelOffset = offset;
+		}
+		break;
+	case 4:
+		if (_FDSLevelOffset != offset) {
+			ModifyIrreversible();
+			_FDSLevelOffset = offset;
+		}
+		break;
+	case 5:
+		if (_MMC5LevelOffset != offset) {
+			ModifyIrreversible();
+			_MMC5LevelOffset = offset;
+		}
+		break;
+	case 6:
+		if (_N163LevelOffset != offset) {
+			ModifyIrreversible();
+			_N163LevelOffset = offset;
+		}
+		break;
+	case 7:
+		if (_S5BLevelOffset != offset) {
+			ModifyIrreversible();
+			_S5BLevelOffset = offset;
+		}
+		break;
 	}
 }
 

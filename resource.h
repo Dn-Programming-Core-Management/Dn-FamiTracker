@@ -604,24 +604,46 @@
 #define IDC_MAINFRAME_INST_TOOLBAR      1458
 #define IDC_STATIC_DPCM_ZOOM            1459
 #define IDC_N163_OFFSET_SLIDER          1461
+#define IDC_APU1_OFFSET_SLIDER          1462
 #define IDC_N163_OFFSET_EDIT            1463
 #define IDC_N163_OFFSET_DB              1464
 #define IDC_FONT_PERCENT                1465
+#define IDC_APU1_OFFSET_EDIT            1465
+#define IDC_APU2_OFFSET_SLIDER          1466
 #define IDC_BIT_REVERSE                 1467
+#define IDC_APU2_OFFSET_EDIT            1467
+#define IDC_S5B_OFFSET_SLIDER           1468
 #define IDC_SEPERATE_CHANNEL_EXPORT     1469
+#define IDC_VRC6_OFFSET_SLIDER          1469
+#define IDC_VRC6_OFFSET_EDIT            1470
 #define IDC_PREVIEW_PITCH               1471
+#define IDC_VRC7_OFFSET_SLIDER          1471
+#define IDC_VRC7_OFFSET_EDIT            1472
+#define IDC_FDS_OFFSET_SLIDER           1473
+#define IDC_MMC5_OFFSET_SLIDER          1474
 #define IDC_IDLE_REFRESH                1475
+#define IDC_FDS_OFFSET_EDIT             1475
 #define IDC_IDLE_REFRESH_T              1476
+#define IDC_MMC5_OFFSET_EDIT            1476
 #define IDC_MAXCHANVIEW_T               1477
+#define IDC_S5B_OFFSET_EDIT             1477
 #define IDC_COMBO1                      1478
 #define IDC_COMBO_FDS_EMULATOR          1478
+#define IDC_S5B_OFFSET_DB               1478
+#define IDC_MMC5_OFFSET_DB              1480
+#define IDC_FDS_OFFSET_DB               1481
 #define IDC_CHECK1                      1482
 #define IDC_N163_MULTIPLEXER            1482
 #define IDC_UPDATE_REMIND               1482
 #define IDC_PRECISEREGPITCH_CHECK       1482
+#define IDC_VRC7_OFFSET_DB              1482
+#define IDC_VRC6_OFFSET_DB              1483
 #define IDC_SLIDER_FDS_LOWPASS          1484
 #define IDC_COMBO_S5B_EMULATOR          1485
+#define IDC_APU2_OFFSET_DB              1485
 #define IDC_COMBO_VRC7_PATCH            1486
+#define IDC_APU2_OFFSET_DB2             1486
+#define IDC_APU1_OFFSET_DB              1486
 #define IDC_FDS_LOWPASS_FREQ            1488
 #define IDC_VERSIONDATE_MSG             1489
 #define IDC_RELEASE_MSG                 1492
@@ -805,7 +827,7 @@
 #define ID_INDICATOR_DPCM_ENDPOS        53257
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        379

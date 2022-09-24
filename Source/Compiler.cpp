@@ -433,7 +433,8 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 		iTimeSize = 0,
 		iTlblSize = 0,
 		iDataSize = 0,
-		iTextSize = 0;
+		iTextSize = 0,
+		iMixeSize = 0;
 
 	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
 		iTimeSize += 4;
@@ -480,7 +481,86 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 		OutputFile.Write(m_pDocument->GetComment(), strlen(m_pDocument->GetComment()) + 1);
 	}
 
-	// TODO write mixe chunk?
+	// write mixe chunk
+	const unsigned char MixeIdent[] = { 'm', 'i', 'x', 'e' };
+	// default values derived from NSFplay
+	int16_t mixe_apu1, mixe_apu2, mixe_vrc6, mixe_vrc7,
+		mixe_fds, mixe_mmc5, mixe_n163, mixe_s5b;
+	// TODO: optimize this
+	if (m_pDocument->GetLevelOffset(0)) {
+		mixe_apu1 = m_pDocument->GetLevelOffset(0);
+		iMixeSize += sizeof(int16_t) + 1;
+	}
+	if (m_pDocument->GetLevelOffset(1)) {
+		mixe_apu2 = m_pDocument->GetLevelOffset(1) - 20;
+		iMixeSize += sizeof(int16_t) + 1;
+	}
+	if (m_pDocument->GetLevelOffset(2)) {
+		mixe_vrc6 = m_pDocument->GetLevelOffset(2);
+		iMixeSize += sizeof(int16_t) + 1;
+	}
+	if (m_pDocument->GetLevelOffset(3)) {
+		mixe_vrc7 = m_pDocument->GetLevelOffset(3) + 1340;
+		iMixeSize += sizeof(int16_t) + 1;
+	}
+	if (m_pDocument->GetLevelOffset(4)) {
+		mixe_fds = m_pDocument->GetLevelOffset(4) + 690;
+		iMixeSize += sizeof(int16_t) + 1;
+	}
+	if (m_pDocument->GetLevelOffset(5)) {
+		mixe_mmc5 = m_pDocument->GetLevelOffset(5);
+		iMixeSize += sizeof(int16_t) + 1;
+	}
+	if (m_pDocument->GetLevelOffset(6)) {
+		mixe_n163 = m_pDocument->GetLevelOffset(6) + 1540;
+		iMixeSize += sizeof(int16_t) + 1;
+	}
+	if (m_pDocument->GetLevelOffset(7)) {
+		mixe_s5b = m_pDocument->GetLevelOffset(7) - 250;
+		iMixeSize += sizeof(int16_t) + 1;
+	}
+	OutputFile.Write(reinterpret_cast<char*>(&iMixeSize), sizeof(int));
+	OutputFile.Write(&MixeIdent, sizeof(MixeIdent));
+	if (m_pDocument->GetLevelOffset(0)) {
+		unsigned char devicebyte = 0;
+		OutputFile.Write(&devicebyte, 1);
+		OutputFile.Write(reinterpret_cast<char*>(&mixe_apu1), sizeof(int16_t));
+	}
+	if (m_pDocument->GetLevelOffset(1)) {
+		unsigned char devicebyte = 1;
+		OutputFile.Write(&devicebyte, 1);
+		OutputFile.Write(reinterpret_cast<char*>(&mixe_apu2), sizeof(int16_t));
+	}
+	if (m_pDocument->GetLevelOffset(2)) {
+		unsigned char devicebyte = 2;
+		OutputFile.Write(&devicebyte, 1);
+		OutputFile.Write(reinterpret_cast<char*>(&mixe_vrc6), sizeof(int16_t));
+	}
+	if (m_pDocument->GetLevelOffset(3)) {
+		unsigned char devicebyte = 3;
+		OutputFile.Write(&devicebyte, 1);
+		OutputFile.Write(reinterpret_cast<char*>(&mixe_vrc7), sizeof(int16_t));
+	}
+	if (m_pDocument->GetLevelOffset(4)) {
+		unsigned char devicebyte = 4;
+		OutputFile.Write(&devicebyte, 1);
+		OutputFile.Write(reinterpret_cast<char*>(&mixe_fds), sizeof(int16_t));
+	}
+	if (m_pDocument->GetLevelOffset(5)) {
+		unsigned char devicebyte = 5;
+		OutputFile.Write(&devicebyte, 1);
+		OutputFile.Write(reinterpret_cast<char*>(&mixe_mmc5), sizeof(int16_t));
+	}
+	if (m_pDocument->GetLevelOffset(6)) {
+		unsigned char devicebyte = 6;
+		OutputFile.Write(&devicebyte, 1);
+		OutputFile.Write(reinterpret_cast<char*>(&mixe_n163), sizeof(int16_t));
+	}
+	if (m_pDocument->GetLevelOffset(7)) {
+		unsigned char devicebyte = 7;
+		OutputFile.Write(&devicebyte, 1);
+		OutputFile.Write(reinterpret_cast<char*>(&mixe_s5b), sizeof(int16_t));
+	}
 
 	// Write NSF data
 	CChunkRenderNSF Render(&OutputFile, m_iLoadAddress);

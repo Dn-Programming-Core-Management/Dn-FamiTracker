@@ -78,7 +78,15 @@ BEGIN_MESSAGE_MAP(CModulePropertiesDlg, CDialog)
 	ON_BN_CLICKED(IDC_EXPANSION_MMC5, OnBnClickedExpansionMMC5)
 	ON_BN_CLICKED(IDC_EXPANSION_S5B, OnBnClickedExpansionS5B)
 	ON_BN_CLICKED(IDC_EXPANSION_N163, OnBnClickedExpansionN163)
-	ON_EN_CHANGE(IDC_N163_OFFSET_EDIT, &CModulePropertiesDlg::OnEnChangeEditN163Offset)
+	ON_WM_VSCROLL()
+	ON_EN_CHANGE(IDC_APU1_OFFSET_EDIT, &CModulePropertiesDlg::OnEnChangeApu1OffsetEdit)
+	ON_EN_CHANGE(IDC_APU2_OFFSET_EDIT, &CModulePropertiesDlg::OnEnChangeApu2OffsetEdit)
+	ON_EN_CHANGE(IDC_VRC6_OFFSET_EDIT, &CModulePropertiesDlg::OnEnChangeVrc6OffsetEdit)
+	ON_EN_CHANGE(IDC_VRC7_OFFSET_EDIT, &CModulePropertiesDlg::OnEnChangeVrc7OffsetEdit)
+	ON_EN_CHANGE(IDC_FDS_OFFSET_EDIT, &CModulePropertiesDlg::OnEnChangeFdsOffsetEdit)
+	ON_EN_CHANGE(IDC_MMC5_OFFSET_EDIT, &CModulePropertiesDlg::OnEnChangeMmc5OffsetEdit)
+	ON_EN_CHANGE(IDC_N163_OFFSET_EDIT, &CModulePropertiesDlg::OnEnChangeN163OffsetEdit)
+	ON_EN_CHANGE(IDC_S5B_OFFSET_EDIT, &CModulePropertiesDlg::OnEnChangeS5bOffsetEdit)
 END_MESSAGE_MAP()
 
 
@@ -96,7 +104,14 @@ BOOL CModulePropertiesDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
+	APU1LevelEdit.SubclassDlgItem(IDC_APU1_OFFSET_EDIT, this);
+	APU2LevelEdit.SubclassDlgItem(IDC_APU2_OFFSET_EDIT, this);
+	VRC6LevelEdit.SubclassDlgItem(IDC_VRC6_OFFSET_EDIT, this);
+	VRC7LevelEdit.SubclassDlgItem(IDC_VRC7_OFFSET_EDIT, this);
+	FDSLevelEdit.SubclassDlgItem(IDC_FDS_OFFSET_EDIT, this);
+	MMC5LevelEdit.SubclassDlgItem(IDC_MMC5_OFFSET_EDIT, this);
 	N163LevelEdit.SubclassDlgItem(IDC_N163_OFFSET_EDIT, this);
+	S5BLevelEdit.SubclassDlgItem(IDC_S5B_OFFSET_EDIT, this);
 
 	// Get active document
 	CFrameWnd *pFrameWnd = static_cast<CFrameWnd*>(GetParent());
@@ -121,9 +136,8 @@ BOOL CModulePropertiesDlg::OnInitDialog()
 	// Namco channel count
 	CSliderCtrl *pChanSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_CHANNELS));
 	pChanSlider->SetRange(1, 8);
-
 	m_iN163Channels = m_pDocument->GetNamcoChannels();
-
+	updateN163ChannelCount();
 
 	// Vibrato 
 	CComboBox *pVibratoBox = static_cast<CComboBox*>(GetDlgItem(IDC_VIBRATO));
@@ -133,15 +147,28 @@ BOOL CModulePropertiesDlg::OnInitDialog()
 	CComboBox *pPitchBox = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_LINEARPITCH));		// // //
 	pPitchBox->SetCurSel(m_pDocument->GetLinearPitch() ? 1 : 0);
 	
-	// N163 Level Offset
-	N163LevelOffset = m_pDocument->GetN163LevelOffset();
-	// (Slider)
-	CSliderCtrl *pSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_N163_OFFSET_SLIDER));
-	pSlider->SetRange(-LEVEL_RANGE * COARSE_DELTA, LEVEL_RANGE * COARSE_DELTA);
-	pSlider->SetTicFreq(COARSE_DELTA * 2);
-	pSlider->SetPageSize(PAGEUP);
+	// Level Offsets
+	APU1LevelOffset = -m_pDocument->GetLevelOffset(0);
+	APU2LevelOffset = -m_pDocument->GetLevelOffset(1);
+	VRC6LevelOffset = -m_pDocument->GetLevelOffset(2);
+	VRC7LevelOffset = -m_pDocument->GetLevelOffset(3);
+	FDSLevelOffset = -m_pDocument->GetLevelOffset(4);
+	MMC5LevelOffset = -m_pDocument->GetLevelOffset(5);
+	N163LevelOffset = -m_pDocument->GetLevelOffset(6);
+	S5BLevelOffset = -m_pDocument->GetLevelOffset(7);
 
-	updateN163GUI();
+	// Level sliders
+	SetupSlider(IDC_APU1_OFFSET_SLIDER);
+	SetupSlider(IDC_APU2_OFFSET_SLIDER);
+	SetupSlider(IDC_VRC6_OFFSET_SLIDER);
+	SetupSlider(IDC_VRC7_OFFSET_SLIDER);
+	SetupSlider(IDC_FDS_OFFSET_SLIDER);
+	SetupSlider(IDC_MMC5_OFFSET_SLIDER);
+	SetupSlider(IDC_N163_OFFSET_SLIDER);
+	SetupSlider(IDC_S5B_OFFSET_SLIDER);
+
+	for (int i = 0; i < 8; i++)
+		updateLevelGUI(i);
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -188,10 +215,15 @@ void CModulePropertiesDlg::OnBnClickedOk()
 	CComboBox *pPitchBox = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_LINEARPITCH));		// // //
 	m_pDocument->SetLinearPitch(pPitchBox->GetCurSel() == 1);
 
-	// N163 Volume 
-	if (m_pDocument->GetN163LevelOffset() != N163LevelOffset) {
-		m_pDocument->SetN163LevelOffset(N163LevelOffset);
-	}
+	// Volume 
+	if (m_pDocument->GetLevelOffset(0) != APU1LevelOffset) m_pDocument->SetLevelOffset(0, -APU1LevelOffset);
+	if (m_pDocument->GetLevelOffset(1) != APU2LevelOffset) m_pDocument->SetLevelOffset(1, -APU2LevelOffset);
+	if (m_pDocument->GetLevelOffset(2) != VRC6LevelOffset) m_pDocument->SetLevelOffset(2, -VRC6LevelOffset);
+	if (m_pDocument->GetLevelOffset(3) != VRC7LevelOffset) m_pDocument->SetLevelOffset(3, -VRC7LevelOffset);
+	if (m_pDocument->GetLevelOffset(4) != FDSLevelOffset) m_pDocument->SetLevelOffset(4, -FDSLevelOffset);
+	if (m_pDocument->GetLevelOffset(5) != MMC5LevelOffset) m_pDocument->SetLevelOffset(5, -MMC5LevelOffset);
+	if (m_pDocument->GetLevelOffset(6) != N163LevelOffset) m_pDocument->SetLevelOffset(6, -N163LevelOffset);
+	if (m_pDocument->GetLevelOffset(7) != S5BLevelOffset) m_pDocument->SetLevelOffset(7, -S5BLevelOffset);
 
 
 	if (pMainFrame->GetSelectedTrack() != m_iSelectedSong)
@@ -210,18 +242,50 @@ void CModulePropertiesDlg::OnBnClickedOk()
 // **** events ****
 void CModulePropertiesDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
-	CSliderCtrl *pSlider = reinterpret_cast<CSliderCtrl*>(pScrollBar);
+	CSliderCtrl* pSlider = reinterpret_cast<CSliderCtrl*>(pScrollBar);
 	int pos = pSlider->GetPos();
 	if (pSlider->GetDlgCtrlID() == IDC_CHANNELS) {
 		setN163NChannels(pos);
-	}
-	else if (pSlider->GetDlgCtrlID() == IDC_N163_OFFSET_SLIDER) {
-		N163OffsetSlider(pos);
 	}
 
 	CDialog::OnHScroll(nSBCode, nPos, pScrollBar);
 }
 
+void CModulePropertiesDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+{
+	CSliderCtrl* pSlider = reinterpret_cast<CSliderCtrl*>(pScrollBar);
+	int pos = pSlider->GetPos();
+	switch (pSlider->GetDlgCtrlID()) {
+	case IDC_APU1_OFFSET_SLIDER:
+		OffsetSlider(0, pos); break;
+	case IDC_APU2_OFFSET_SLIDER:
+		OffsetSlider(1, pos); break;
+	case IDC_VRC6_OFFSET_SLIDER:
+		OffsetSlider(2, pos); break;
+	case IDC_VRC7_OFFSET_SLIDER:
+		OffsetSlider(3, pos); break;
+	case IDC_FDS_OFFSET_SLIDER:
+		OffsetSlider(4, pos); break;
+	case IDC_MMC5_OFFSET_SLIDER:
+		OffsetSlider(5, pos); break;
+	case IDC_N163_OFFSET_SLIDER:
+		OffsetSlider(6, pos); break;
+	case IDC_S5B_OFFSET_SLIDER:
+		OffsetSlider(7, pos); break;
+	}
+
+	UpdateData(TRUE);
+	CDialog::OnVScroll(nSBCode, nPos, pScrollBar);
+}
+
+
+void CModulePropertiesDlg::SetupSlider(int nID) const
+{
+	CSliderCtrl* pSlider = static_cast<CSliderCtrl*>(GetDlgItem(nID));
+	pSlider->SetRange(-LEVEL_RANGE * COARSE_DELTA, LEVEL_RANGE * COARSE_DELTA);
+	pSlider->SetTicFreq(COARSE_DELTA * 2);
+	pSlider->SetPageSize(PAGEUP);
+}
 
 // **** song selection ****
 
@@ -398,7 +462,7 @@ void CModulePropertiesDlg::OnBnClickedSongImport()
 	CModuleImportDlg importDlg(m_pDocument);
 
 	// TODO use string table
-	CFileDialog OpenFileDlg(TRUE, _T("0cc"), 0, OFN_HIDEREADONLY,
+	CFileDialog OpenFileDlg(TRUE, _T("dnm"), 0, OFN_HIDEREADONLY,
 							_T(APP_NAME " modules (*.dnm;*.0cc;*.ftm)|*.dnm; *.0cc; *.ftm|All files (*.*)|*.*||"),		// // //
 							theApp.GetMainWnd(), 0);
 
@@ -415,12 +479,18 @@ void CModulePropertiesDlg::OnBnClickedSongImport()
 
 	m_iExpansions = m_pDocument->GetExpansionChip();		// // //
 	m_iN163Channels = m_pDocument->GetNamcoChannels();
+	updateN163ChannelCount();
 	((CButton*)GetDlgItem(IDC_EXPANSION_VRC6))->SetCheck((m_iExpansions & SNDCHIP_VRC6) != 0);
 	((CButton*)GetDlgItem(IDC_EXPANSION_VRC7))->SetCheck((m_iExpansions & SNDCHIP_VRC7) != 0);
 	((CButton*)GetDlgItem(IDC_EXPANSION_FDS))->SetCheck((m_iExpansions & SNDCHIP_FDS) != 0);
 	((CButton*)GetDlgItem(IDC_EXPANSION_MMC5))->SetCheck((m_iExpansions & SNDCHIP_MMC5) != 0);
 	((CButton*)GetDlgItem(IDC_EXPANSION_N163))->SetCheck((m_iExpansions & SNDCHIP_N163) != 0);
 	((CButton*)GetDlgItem(IDC_EXPANSION_S5B))->SetCheck((m_iExpansions & SNDCHIP_S5B) != 0);
+
+
+	for (int i = 0; i < 8; i++)
+		updateLevelGUI(i);
+
 	m_pDocument->UpdateAllViews(NULL, UPDATE_PROPERTIES);
 }
 
@@ -491,6 +561,8 @@ void CModulePropertiesDlg::OnBnClickedExpansionVRC6()
 		m_iExpansions |= SNDCHIP_VRC6;
 	else
 		m_iExpansions &= ~SNDCHIP_VRC6;
+
+	updateLevelGUI(2);
 }
 
 void CModulePropertiesDlg::OnBnClickedExpansionVRC7()
@@ -501,6 +573,8 @@ void CModulePropertiesDlg::OnBnClickedExpansionVRC7()
 		m_iExpansions |= SNDCHIP_VRC7;
 	else
 		m_iExpansions &= ~SNDCHIP_VRC7;
+
+	updateLevelGUI(3);
 }
 
 void CModulePropertiesDlg::OnBnClickedExpansionFDS()
@@ -511,6 +585,8 @@ void CModulePropertiesDlg::OnBnClickedExpansionFDS()
 		m_iExpansions |= SNDCHIP_FDS;
 	else
 		m_iExpansions &= ~SNDCHIP_FDS;
+
+	updateLevelGUI(4);
 }
 
 void CModulePropertiesDlg::OnBnClickedExpansionMMC5()
@@ -521,6 +597,8 @@ void CModulePropertiesDlg::OnBnClickedExpansionMMC5()
 		m_iExpansions |= SNDCHIP_MMC5;
 	else
 		m_iExpansions &= ~SNDCHIP_MMC5;
+
+	updateLevelGUI(5);
 }
 
 void CModulePropertiesDlg::OnBnClickedExpansionS5B()
@@ -531,6 +609,8 @@ void CModulePropertiesDlg::OnBnClickedExpansionS5B()
 		m_iExpansions |= SNDCHIP_S5B;
 	else
 		m_iExpansions &= ~SNDCHIP_S5B;		// // //
+
+	updateLevelGUI(7);
 }
 
 void CModulePropertiesDlg::OnBnClickedExpansionN163()
@@ -543,7 +623,8 @@ void CModulePropertiesDlg::OnBnClickedExpansionN163()
 		m_iExpansions &= ~SNDCHIP_N163;
 	}
 	
-	updateN163GUI();
+	updateN163ChannelCount();
+	updateLevelGUI(6);
 }
 
 
@@ -561,26 +642,22 @@ void CModulePropertiesDlg::setN163NChannels(int nchan) {
 // N163 GUI
 void CModulePropertiesDlg::strFromLevel(CString &target, int Level)
 {
-	target.Format(_T("%+.1f"), float(Level) / float(FINE_DELTA));
+	target.Format(_T("%+.1f"), float(-Level) / float(FINE_DELTA));
 }
 
-void CModulePropertiesDlg::updateN163GUI(bool renderText) {
-
+void CModulePropertiesDlg::updateN163ChannelCount(bool renderText)
+{
 	CStatic *pChannelsLabel = (CStatic*)GetDlgItem(IDC_CHANNELS_NR);
 	CString channelsStr;
 	channelsStr.LoadString(IDS_PROPERTIES_CHANNELS);
 
 	CSliderCtrl *pChanSlider = (CSliderCtrl*)GetDlgItem(IDC_CHANNELS);
-	auto levelSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_N163_OFFSET_SLIDER));
 	
 	// FIXME https://web.archive.org/web/20080218162024/https://www.microsoft.com/msj/1297/c1297.aspx
 	// look up, look down, everything is wrong, this file must be burnt to the ground
 	// https://github.com/HertzDevil/0CC-FamiTracker/commit/3400bbb24974ee10ab8ba7afcfa1a3e96f96e7f9#diff-413168e8ded8a41a4d8f9a8b18a34628
-	
-	auto levelEdit = GetDlgItem(IDC_N163_OFFSET_EDIT);
-	auto levelText = GetDlgItem(IDC_N163_OFFSET_DB);
 
-	CWnd *N163Enable[]{pChanSlider, pChannelsLabel, levelSlider, levelEdit, levelText};
+	CWnd *N163Enable[]{pChanSlider, pChannelsLabel};
 
 	// Is N163 enabled?
 	bool N163Enabled = m_iExpansions & SNDCHIP_N163;
@@ -590,7 +667,6 @@ void CModulePropertiesDlg::updateN163GUI(bool renderText) {
 	}
 	else {
 		m_iN163Channels = 0;
-		N163LevelOffset = 0;
 		channelsStr.Append(_T(" N/A"));
 	}
 	
@@ -599,40 +675,267 @@ void CModulePropertiesDlg::updateN163GUI(bool renderText) {
 	
 	// Redraw UI.
 	pChanSlider->SetPos(m_iN163Channels);
-	levelSlider->SetPos((int)std::round(1.0 * N163LevelOffset * COARSE_DELTA / FINE_DELTA));
-	if (renderText) {
-		CString n163LevelStr;
-		strFromLevel(n163LevelStr, N163LevelOffset);
-		N163LevelEdit.SetWindowTextNoNotify(n163LevelStr);
-	}
 
 	SetDlgItemText(IDC_CHANNELS_NR, channelsStr);
 }
 
+void CModulePropertiesDlg::updateLevelGUI(int device, bool renderText)
+{
+	int const deviceLevelSlider[8] = {
+		IDC_APU1_OFFSET_SLIDER,
+		IDC_APU2_OFFSET_SLIDER,
+		IDC_VRC6_OFFSET_SLIDER,
+		IDC_VRC7_OFFSET_SLIDER,
+		IDC_FDS_OFFSET_SLIDER,
+		IDC_MMC5_OFFSET_SLIDER,
+		IDC_N163_OFFSET_SLIDER,
+		IDC_S5B_OFFSET_SLIDER
+	};
+	int const deviceLevelEdit[8] = {
+		IDC_APU1_OFFSET_EDIT,
+		IDC_APU2_OFFSET_EDIT,
+		IDC_VRC6_OFFSET_EDIT,
+		IDC_VRC7_OFFSET_EDIT,
+		IDC_FDS_OFFSET_EDIT,
+		IDC_MMC5_OFFSET_EDIT,
+		IDC_N163_OFFSET_EDIT,
+		IDC_S5B_OFFSET_EDIT
+	};
 
-// N163 Level Offset callbacks
-void CModulePropertiesDlg::N163OffsetSlider(int pos) {
-	N163LevelOffset = (int)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
-	updateN163GUI();
+	int const deviceLevelText[8] = {
+		IDC_APU1_OFFSET_DB,
+		IDC_APU2_OFFSET_DB,
+		IDC_VRC6_OFFSET_DB,
+		IDC_VRC7_OFFSET_DB,
+		IDC_FDS_OFFSET_DB,
+		IDC_MMC5_OFFSET_DB,
+		IDC_N163_OFFSET_DB,
+		IDC_S5B_OFFSET_DB
+	};
+
+	int const chipenable[8] = {
+		255,
+		255,
+		SNDCHIP_VRC6,
+		SNDCHIP_VRC7,
+		SNDCHIP_FDS,
+		SNDCHIP_MMC5,
+		SNDCHIP_N163,
+		SNDCHIP_S5B
+	};
+
+	auto levelSlider = static_cast<CSliderCtrl*>(GetDlgItem(deviceLevelSlider[device]));
+	auto levelEdit = GetDlgItem(deviceLevelEdit[device]);
+	auto levelText = GetDlgItem(deviceLevelText[device]);
+
+	CWnd* ChipEnable[]{ levelSlider, levelEdit, levelText };
+
+	bool ChipEnabled = m_iExpansions & chipenable[device];
+	// Always enable 2A03
+	if (device <= 1)
+		ChipEnabled = true;
+	
+
+	if (!ChipEnabled) {
+		switch (device) {
+		case 0: APU1LevelOffset = 0; break;
+		case 1: APU2LevelOffset = 0; break;
+		case 2: VRC6LevelOffset = 0; break;
+		case 3: VRC7LevelOffset = 0; break;
+		case 4: FDSLevelOffset = 0; break;
+		case 5: MMC5LevelOffset = 0; break;
+		case 6: N163LevelOffset = 0; break;
+		case 7: S5BLevelOffset = 0; break;
+		}
+	}
+
+	// Enable/disable UI.
+	for (CWnd* widget : ChipEnable)
+		widget->EnableWindow(ChipEnabled);
+
+	// Redraw UI.
+
+	switch (device) {
+	case 0:
+		levelSlider->SetPos((int)std::round(1.0 * APU1LevelOffset * COARSE_DELTA / FINE_DELTA));
+		if (renderText) {
+			CString LevelStr;
+			strFromLevel(LevelStr, APU1LevelOffset);
+			APU1LevelEdit.SetWindowTextNoNotify(LevelStr);
+		}
+		break;
+	case 1:
+		levelSlider->SetPos((int)std::round(1.0 * APU2LevelOffset * COARSE_DELTA / FINE_DELTA));
+		if (renderText) {
+			CString LevelStr;
+			strFromLevel(LevelStr, APU2LevelOffset);
+			APU2LevelEdit.SetWindowTextNoNotify(LevelStr);
+		}
+		break;
+	case 2:
+		levelSlider->SetPos((int)std::round(1.0 * VRC6LevelOffset * COARSE_DELTA / FINE_DELTA));
+		if (renderText) {
+			CString LevelStr;
+			strFromLevel(LevelStr, VRC6LevelOffset);
+			VRC6LevelEdit.SetWindowTextNoNotify(LevelStr);
+		}
+		break;
+	case 3:
+		levelSlider->SetPos((int)std::round(1.0 * VRC7LevelOffset * COARSE_DELTA / FINE_DELTA));
+		if (renderText) {
+			CString LevelStr;
+			strFromLevel(LevelStr, VRC7LevelOffset);
+			VRC7LevelEdit.SetWindowTextNoNotify(LevelStr);
+		}
+		break;
+	case 4:
+		levelSlider->SetPos((int)std::round(1.0 * FDSLevelOffset * COARSE_DELTA / FINE_DELTA));
+		if (renderText) {
+			CString LevelStr;
+			strFromLevel(LevelStr, FDSLevelOffset);
+			FDSLevelEdit.SetWindowTextNoNotify(LevelStr);
+		}
+		break;
+	case 5:
+		levelSlider->SetPos((int)std::round(1.0 * MMC5LevelOffset * COARSE_DELTA / FINE_DELTA));
+		if (renderText) {
+			CString LevelStr;
+			strFromLevel(LevelStr, MMC5LevelOffset);
+			MMC5LevelEdit.SetWindowTextNoNotify(LevelStr);
+		}
+		break;
+	case 6:
+		levelSlider->SetPos((int)std::round(1.0 * N163LevelOffset * COARSE_DELTA / FINE_DELTA));
+		if (renderText) {
+			CString LevelStr;
+			strFromLevel(LevelStr, N163LevelOffset);
+			N163LevelEdit.SetWindowTextNoNotify(LevelStr);
+		}
+		break;
+	case 7:
+		levelSlider->SetPos((int)std::round(1.0 * S5BLevelOffset * COARSE_DELTA / FINE_DELTA));
+		if (renderText) {
+			CString LevelStr;
+			strFromLevel(LevelStr, S5BLevelOffset);
+			S5BLevelEdit.SetWindowTextNoNotify(LevelStr);
+		}
+		break;
+	}
 }
 
+// Level offset callbacks
+void CModulePropertiesDlg::OffsetSlider(int device, int pos)
+{
+	switch (device) {
+	case 0:
+		APU1LevelOffset = (int)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
+		break;
+	case 1:
+		APU2LevelOffset = (int)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
+		break;
+	case 2:
+		VRC6LevelOffset = (int)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
+		break;
+	case 3:
+		VRC7LevelOffset = (int)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
+		break;
+	case 4:
+		FDSLevelOffset = (int)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
+		break;
+	case 5:
+		MMC5LevelOffset = (int)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
+		break;
+	case 6:
+		N163LevelOffset = (int)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
+		break;
+	case 7:
+		S5BLevelOffset = (int)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
+		break;
+	}
+	updateLevelGUI(device);
+}
 
 bool CModulePropertiesDlg::levelFromStr(int &target, CString dBstr) {
 	char *endptr;
 	double dBval = strtod(dBstr, &endptr);
 	if (*endptr == '\0') {									// if no error
 		target = static_cast<int>(std::round(dBval * 10));
-		target = std::clamp(target, -MAX_FINE, MAX_FINE);
+		target = std::clamp((-target), -MAX_FINE, MAX_FINE);
 		return true;
 	}
 	return false;
 }
 
-void CModulePropertiesDlg::OnEnChangeEditN163Offset()
+void CModulePropertiesDlg::OnEnChangeApu1OffsetEdit()
+{
+	CString str;
+	APU1LevelEdit.GetWindowText(str);
+	if (levelFromStr(APU1LevelOffset, str)) {
+		updateLevelGUI(0, false);
+	}
+}
+
+void CModulePropertiesDlg::OnEnChangeApu2OffsetEdit()
+{
+	CString str;
+	APU2LevelEdit.GetWindowText(str);
+	if (levelFromStr(APU2LevelOffset, str)) {
+		updateLevelGUI(1, false);
+	}
+}
+
+
+void CModulePropertiesDlg::OnEnChangeVrc6OffsetEdit()
+{
+	CString str;
+	VRC6LevelEdit.GetWindowText(str);
+	if (levelFromStr(VRC6LevelOffset, str)) {
+		updateLevelGUI(2, false);
+	}
+}
+
+void CModulePropertiesDlg::OnEnChangeVrc7OffsetEdit()
+{
+	CString str;
+	VRC7LevelEdit.GetWindowText(str);
+	if (levelFromStr(VRC7LevelOffset, str)) {
+		updateLevelGUI(3, false);
+	}
+}
+
+void CModulePropertiesDlg::OnEnChangeFdsOffsetEdit()
+{
+	CString str;
+	FDSLevelEdit.GetWindowText(str);
+	if (levelFromStr(FDSLevelOffset, str)) {
+		updateLevelGUI(4, false);
+	}
+}
+
+
+void CModulePropertiesDlg::OnEnChangeMmc5OffsetEdit()
+{
+	CString str;
+	MMC5LevelEdit.GetWindowText(str);
+	if (levelFromStr(MMC5LevelOffset, str)) {
+		updateLevelGUI(5, false);
+	}
+}
+
+void CModulePropertiesDlg::OnEnChangeN163OffsetEdit()
 {
 	CString str;
 	N163LevelEdit.GetWindowText(str);
 	if (levelFromStr(N163LevelOffset, str)) {
-		updateN163GUI(false);
+		updateLevelGUI(6, false);
+	}
+}
+
+void CModulePropertiesDlg::OnEnChangeS5bOffsetEdit()
+{
+	CString str;
+	S5BLevelEdit.GetWindowText(str);
+	if (levelFromStr(S5BLevelOffset, str)) {
+		updateLevelGUI(7, false);
 	}
 }

@@ -36,12 +36,20 @@ class CModulePropertiesDlg : public CDialog
 private:
 	void SelectSong(int Song);
 	void UpdateSongButtons();
+	void SetupSlider(int nID) const;
 	
 	bool m_bSingleSelection;		// // //
 	unsigned int m_iSelectedSong;
 	unsigned char m_iExpansions;		// // //
 	int m_iN163Channels;
+	int APU1LevelOffset;
+	int APU2LevelOffset;
+	int VRC6LevelOffset;
+	int VRC7LevelOffset;
+	int FDSLevelOffset;
+	int MMC5LevelOffset;
 	int N163LevelOffset;
+	int S5BLevelOffset;
 
 	CFamiTrackerDoc *m_pDocument;
 
@@ -60,7 +68,14 @@ protected:
 	
 	void FillSongList();
 
+	NoNotifyEdit APU1LevelEdit;
+	NoNotifyEdit APU2LevelEdit;
+	NoNotifyEdit VRC6LevelEdit;
+	NoNotifyEdit VRC7LevelEdit;
+	NoNotifyEdit FDSLevelEdit;
+	NoNotifyEdit MMC5LevelEdit;
 	NoNotifyEdit N163LevelEdit;
+	NoNotifyEdit S5BLevelEdit;
 
 	DECLARE_MESSAGE_MAP()
 public:
@@ -75,6 +90,7 @@ public:
 	afx_msg void OnBnClickedSongImport();
 	
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnLvnItemchangedSonglist(NMHDR *pNMHDR, LRESULT *pResult);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnBnClickedExpansionVRC6();		// // //
@@ -84,7 +100,15 @@ public:
 	afx_msg void OnBnClickedExpansionS5B();
 	afx_msg void OnBnClickedExpansionN163();
 	void setN163NChannels(int nchan);
-	void updateN163GUI(bool renderText=true);
-	void N163OffsetSlider(int pos);
-	afx_msg void OnEnChangeEditN163Offset();
+	void updateN163ChannelCount(bool renderText=true);
+	void updateLevelGUI(int device, bool renderText=true);
+	void OffsetSlider(int device, int pos);
+	afx_msg void OnEnChangeApu1OffsetEdit();
+	afx_msg void OnEnChangeApu2OffsetEdit();
+	afx_msg void OnEnChangeVrc6OffsetEdit();
+	afx_msg void OnEnChangeVrc7OffsetEdit();
+	afx_msg void OnEnChangeFdsOffsetEdit();
+	afx_msg void OnEnChangeMmc5OffsetEdit();
+	afx_msg void OnEnChangeN163OffsetEdit();
+	afx_msg void OnEnChangeS5bOffsetEdit();
 };
