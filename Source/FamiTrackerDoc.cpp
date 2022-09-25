@@ -4349,6 +4349,7 @@ int16_t CFamiTrackerDoc::GetLevelOffset(int device) const {
 	case 5: return _MMC5LevelOffset;
 	case 6: return _N163LevelOffset;
 	case 7: return _S5BLevelOffset;
+	default: return 0;
 	}
 }
 
