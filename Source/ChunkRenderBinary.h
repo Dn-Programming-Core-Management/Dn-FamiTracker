@@ -38,10 +38,10 @@ protected:
 	void Store(const void *pData, unsigned int Size);
 	void Fill(unsigned int Size);
 	unsigned int GetWritten() const;
+	unsigned int m_iDataWritten;
 
 private:
 	CFile		*m_pFile;
-	unsigned int m_iDataWritten;
 };
 
 // Binary data render
@@ -88,7 +88,6 @@ protected:
 protected:
 	unsigned int m_iStartAddr;
 	unsigned int m_iSampleAddr;
-	int m_iTotalCompiledDataSize;		// Count total driver and music data. Accounts for bank padding alignment.
 };
 
 // NES render
