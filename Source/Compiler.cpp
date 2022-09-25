@@ -293,23 +293,23 @@ void CCompiler::ExportNSF(LPCTSTR lpszFileName, int MachineType)
 	OutputFile.Write(&Header, sizeof(stNSFHeader));
 
 	// Write NSF data
-	CChunkRenderNSF Render(&OutputFile, m_iLoadAddress);
+	std::unique_ptr<CChunkRenderNSF> Render(new CChunkRenderNSF(&OutputFile, m_iLoadAddress));
 
 	if (m_bBankSwitched) {
-		Render.StoreDriver(pDriver, m_iDriverSize);
-		Render.StoreChunksBankswitched(m_vChunks);
-		Render.StoreSamplesBankswitched(m_vSamples);
+		Render->StoreDriver(pDriver, m_iDriverSize);
+		Render->StoreChunksBankswitched(m_vChunks);
+		Render->StoreSamplesBankswitched(m_vSamples);
 	}
 	else {
 		if (bCompressedMode) {
-			Render.StoreChunks(m_vChunks);
-			Render.StoreDriver(pDriver, m_iDriverSize);
-			Render.StoreSamples(m_vSamples);
+			Render->StoreChunks(m_vChunks);
+			Render->StoreDriver(pDriver, m_iDriverSize);
+			Render->StoreSamples(m_vSamples);
 		}
 		else {
-			Render.StoreDriver(pDriver, m_iDriverSize);
-			Render.StoreChunks(m_vChunks);
-			Render.StoreSamples(m_vSamples);
+			Render->StoreDriver(pDriver, m_iDriverSize);
+			Render->StoreChunks(m_vChunks);
+			Render->StoreSamples(m_vSamples);
 		}
 	}
 
@@ -320,7 +320,7 @@ void CCompiler::ExportNSF(LPCTSTR lpszFileName, int MachineType)
 
 	if (m_bBankSwitched) {
 		int Percent = (100 * m_iMusicDataSize) / (0x80000 - m_iDriverSize - m_iSamplesSize);
-		int Banks = Render.GetBankCount();
+		int Banks = Render->GetBankCount();
 		Print(_T(" * Song data size: %i bytes (%i%%)\n"), m_iMusicDataSize, Percent);
 		Print(_T(" * NSF type: Bankswitched (%i banks)\n"), Banks - 1);
 	}
@@ -563,7 +563,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	}
 
 	// Write NSF data
-	CChunkRenderNSF Render(&OutputFile, m_iLoadAddress);
+	std::unique_ptr<CChunkRenderNSF> Render(new CChunkRenderNSF(&OutputFile, m_iLoadAddress));
 
 	// write DATA chunk
 	ULONGLONG iDataSizePos = OutputFile.GetPosition();
@@ -572,20 +572,20 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	OutputFile.Write(&DataIdent, sizeof(DataIdent));
 
 	if (m_bBankSwitched) {
-		Render.StoreDriver(pDriver, m_iDriverSize);
-		Render.StoreChunksBankswitched(m_vChunks);
-		Render.StoreSamplesBankswitched(m_vSamples);
+		Render->StoreDriver(pDriver, m_iDriverSize);
+		Render->StoreChunksBankswitched(m_vChunks);
+		Render->StoreSamplesBankswitched(m_vSamples);
 	}
 	else {
 		if (bCompressedMode) {
-			Render.StoreChunks(m_vChunks);
-			Render.StoreDriver(pDriver, m_iDriverSize);
-			Render.StoreSamples(m_vSamples);
+			Render->StoreChunks(m_vChunks);
+			Render->StoreDriver(pDriver, m_iDriverSize);
+			Render->StoreSamples(m_vSamples);
 		}
 		else {
-			Render.StoreDriver(pDriver, m_iDriverSize);
-			Render.StoreChunks(m_vChunks);
-			Render.StoreSamples(m_vSamples);
+			Render->StoreDriver(pDriver, m_iDriverSize);
+			Render->StoreChunks(m_vChunks);
+			Render->StoreSamples(m_vSamples);
 		}
 	}
 
@@ -596,7 +596,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 
 	if (m_bBankSwitched) {
 		int Percent = (100 * m_iMusicDataSize) / (0x80000 - m_iDriverSize - m_iSamplesSize);
-		int Banks = Render.GetBankCount();
+		int Banks = Render->GetBankCount();
 		Print(_T(" * Song data size: %i bytes (%i%%)\n"), m_iMusicDataSize, Percent);
 		Print(_T(" * NSF type: Bankswitched (%i banks)\n"), Banks - 1);
 	}
@@ -612,7 +612,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 
 	// write actual size of DATA chunk
 	OutputFile.Seek(iDataSizePos, CFile::begin);
-	iDataSize = Render.GetTotalCompiledDataSize();
+	iDataSize = Render->GetTotalCompiledDataSize();
 	OutputFile.Write(reinterpret_cast<char*>(&iDataSize), sizeof(int));
 
 	Print(_T("Done, total file size: %i bytes\n"), OutputFile.GetLength());
@@ -691,11 +691,11 @@ void CCompiler::ExportNES(LPCTSTR lpszFileName, bool EnablePAL)
 	OutputFile.Write(NES_HEADER, 0x10);
 
 	// Write NES data
-	CChunkRenderNES Render(&OutputFile, m_iLoadAddress);
-	Render.StoreDriver(pDriver, m_iDriverSize);
-	Render.StoreChunks(m_vChunks);
-	Render.StoreSamples(m_vSamples);
-	Render.StoreCaller(NSF_CALLER_BIN, NSF_CALLER_SIZE);
+	std::unique_ptr<CChunkRenderNES> Render(new CChunkRenderNES(&OutputFile, m_iLoadAddress));
+	Render->StoreDriver(pDriver, m_iDriverSize);
+	Render->StoreChunks(m_vChunks);
+	Render->StoreSamples(m_vSamples);
+	Render->StoreCaller(NSF_CALLER_BIN, NSF_CALLER_SIZE);
 
 	Print(_T("Done, total file size: %i bytes\n"), 0x8000 + 0x10);
 
@@ -810,11 +810,11 @@ void CCompiler::ExportPRG(LPCTSTR lpszFileName, bool EnablePAL)
 	Print(_T(" * Song data size: %i bytes (%i%%)\n"), m_iMusicDataSize, Percent);
 
 	// Write NES data
-	CChunkRenderNES Render(&OutputFile, m_iLoadAddress);
-	Render.StoreDriver(pDriver, m_iDriverSize);
-	Render.StoreChunks(m_vChunks);
-	Render.StoreSamples(m_vSamples);
-	Render.StoreCaller(NSF_CALLER_BIN, NSF_CALLER_SIZE);
+	std::unique_ptr<CChunkRenderNES> Render(new CChunkRenderNES(&OutputFile, m_iLoadAddress));
+	Render->StoreDriver(pDriver, m_iDriverSize);
+	Render->StoreChunks(m_vChunks);
+	Render->StoreSamples(m_vSamples);
+	Render->StoreCaller(NSF_CALLER_BIN, NSF_CALLER_SIZE);
 
 	// Done
 	OutputFile.Close();
