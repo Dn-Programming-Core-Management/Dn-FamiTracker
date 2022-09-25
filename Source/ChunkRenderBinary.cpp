@@ -181,8 +181,9 @@ void CChunkRenderNSF::StoreSample(const CDSample *pDSample)
 {
 	// Store sample and fill with zeros
 	Store(pDSample->GetData(), pDSample->GetSize());
-	Fill(CCompiler::AdjustSampleAddress(GetAbsoluteAddr()));
 	m_iTotalCompiledDataSize += pDSample->GetSize();
+	Fill(CCompiler::AdjustSampleAddress(GetAbsoluteAddr()));
+	m_iTotalCompiledDataSize += CCompiler::AdjustSampleAddress(GetAbsoluteAddr());
 }
 
 void CChunkRenderNSF::StoreSampleBankswitched(const CDSample *pDSample)
