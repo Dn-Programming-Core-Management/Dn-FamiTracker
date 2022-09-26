@@ -1913,9 +1913,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		if (Volume > 0xFF) Volume = 0xFF;
 
 		if (note_envelope >= -12.0 && note_envelope <= 96.0 && envelope_enable)
-			pDC->FillSolidRect((int)(29.0 + 6.0 * (note_envelope + 12)), BAR_OFFSET + vis_line * 10, 3, 7, RGB(0xFF, 0, 0xFF));
+			pDC->FillSolidRect((int)(29.0 + 6.0 * (note_envelope + 12)), BAR_OFFSET + vis_line * 10, 3, 7, RGB(0xFF, 0xFF, 0));
 		if (note_noise >= -12.0 && note_noise <= 96.0 && noise_enable)
-			pDC->FillSolidRect((int)(29.0 + 6.0 * (note_noise + 12)), BAR_OFFSET + vis_line * 10, 3, 7, RGB(Volume, Volume, 0));
+			pDC->FillSolidRect((int)(29.0 + 6.0 * (note_noise + 12)), BAR_OFFSET + vis_line * 10, 3, 7, RGB(Volume, 0, Volume));
 		if (note_conv >= -12 && note_conv <= 96 && Volume) {		// // //
 			if (theApp.GetSettings()->GUI.bPreciseRegPitch) {
 				pDC->FillSolidRect((int)(29.0 + 6.0 * (note + 12)), BAR_OFFSET + vis_line * 10, 3, 7, RGB(Volume, Volume, Volume));
