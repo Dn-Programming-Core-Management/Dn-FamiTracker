@@ -829,7 +829,7 @@ bool CFamiTrackerDoc::WriteBlock_Parameters(CDocumentFile *pDocFile, const int V
 	
 	if (Version >= 3) {
 		pDocFile->WriteBlockInt(m_iVibratoStyle);
-		// TODO write m_bLinearPitch
+		// m_bLinearPitch is written in WriteBlock_ParamsExtra
 
 		if (Version >= 4) {
 			pDocFile->WriteBlockInt(m_vHighlight.First);
@@ -2604,6 +2604,10 @@ const char *S5B_OFFSET = "s5b-offset";
 
 // http://jsonapi.org/format/ except {data:{ is unnecessary.
 const json DEFAULT = {
+	{ N163_OFFSET, 0 }
+};
+
+const json DEFAULT_2 = {
 	{ APU1_OFFSET, 0 },
 	{ APU2_OFFSET, 0 },
 	{ VRC6_OFFSET, 0 },
@@ -2614,8 +2618,13 @@ const json DEFAULT = {
 	{ S5B_OFFSET, 0 }
 };
 
-void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile *pDocFile, const int Version) {
-	json out(DEFAULT);
+void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile *pDocFile, const int Version)
+{
+	json out;
+	if (Version == 2)
+		out = DEFAULT_2;
+	else
+		out = DEFAULT;
 
 	CT2A fileData(pDocFile->ReadString());
 	json in = json::parse(static_cast<char*>(fileData));
@@ -2623,8 +2632,15 @@ void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile *pDocFile, const int Version)
 	json unknowns;
 	for (auto it : in.items()) {
 		auto key = it.key();					// std::string is bad? If exists non-string, we can't handle it. So pass verbatim into unknowns.
-		if (DEFAULT.find(key) == DEFAULT.end()) {
-			unknowns[key] = it.value();
+		if (Version == 2) {
+			if (DEFAULT_2.find(key) == DEFAULT_2.end()) {
+				unknowns[key] = it.value();
+			}
+		}
+		else {
+			if (DEFAULT.find(key) == DEFAULT.end()) {
+				unknowns[key] = it.value();
+			}
 		}
 		out[key] = it.value();
 	}
@@ -2634,30 +2650,43 @@ void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile *pDocFile, const int Version)
 		AfxMessageBox(conv::to_t(std::move(err)).c_str(), MB_ICONWARNING);
 	}
 
-	SetLevelOffset(0, out[APU1_OFFSET]);
-	SetLevelOffset(1, out[APU2_OFFSET]);
-	SetLevelOffset(2, out[VRC6_OFFSET]);
-	SetLevelOffset(3, out[VRC7_OFFSET]);
-	SetLevelOffset(4, out[FDS_OFFSET]);
-	SetLevelOffset(5, out[MMC5_OFFSET]);
-	SetLevelOffset(6, out[N163_OFFSET]);
-	SetLevelOffset(7, out[S5B_OFFSET]);
+	if (Version == 2) {
+		SetLevelOffset(0, out[APU1_OFFSET]);
+		SetLevelOffset(1, out[APU2_OFFSET]);
+		SetLevelOffset(2, out[VRC6_OFFSET]);
+		SetLevelOffset(3, out[VRC7_OFFSET]);
+		SetLevelOffset(4, out[FDS_OFFSET]);
+		SetLevelOffset(5, out[MMC5_OFFSET]);
+		SetLevelOffset(6, out[N163_OFFSET]);
+		SetLevelOffset(7, out[S5B_OFFSET]);
+	}
+	else
+		SetLevelOffset(6, out[N163_OFFSET]);
 }
 
 bool CFamiTrackerDoc::WriteBlock_JSON(CDocumentFile *pDocFile, const int Version) const {
-	const json j = {
-		{ APU1_OFFSET, GetLevelOffset(0) },
-		{ APU2_OFFSET, GetLevelOffset(1) },
-		{ VRC6_OFFSET, GetLevelOffset(2) },
-		{ VRC7_OFFSET, GetLevelOffset(3) },
-		{ FDS_OFFSET, GetLevelOffset(4) },
-		{ MMC5_OFFSET, GetLevelOffset(5) },
-		{ N163_OFFSET, GetLevelOffset(6) },
-		{ S5B_OFFSET, GetLevelOffset(7) }
-	};
-	if (j == DEFAULT) {
-		return true;
+	json j;
+	if (Version == 2)
+		j = {
+			{ APU1_OFFSET, GetLevelOffset(0) },
+			{ APU2_OFFSET, GetLevelOffset(1) },
+			{ VRC6_OFFSET, GetLevelOffset(2) },
+			{ VRC7_OFFSET, GetLevelOffset(3) },
+			{ FDS_OFFSET, GetLevelOffset(4) },
+			{ MMC5_OFFSET, GetLevelOffset(5) },
+			{ N163_OFFSET, GetLevelOffset(6) },
+			{ S5B_OFFSET, GetLevelOffset(7) }
+		};
+	else
+		j = { { N163_OFFSET, GetLevelOffset(6) }, };
+
+	if (Version == 2) {
+		if (j == DEFAULT_2)
+			return true;
 	}
+	else
+		if (j == DEFAULT)
+			return true;
 
 	pDocFile->CreateBlock(FILE_BLOCK_JSON, Version);
 	pDocFile->WriteString(j.dump());
@@ -2673,6 +2702,7 @@ void CFamiTrackerDoc::ReadBlock_ParamsExtra(CDocumentFile *pDocFile, const int V
 	if (Version >= 2) {
 		m_iDetuneSemitone = AssertRange(pDocFile->GetBlockChar(), -12, 12, "Global semitone tuning");
 		m_iDetuneCent = AssertRange(pDocFile->GetBlockChar(), -100, 100, "Global cent tuning");
+		if (Version >= 3) {		// !! !!
 	}
 }
 
@@ -2684,6 +2714,7 @@ bool CFamiTrackerDoc::WriteBlock_ParamsExtra(CDocumentFile *pDocFile, const int 
 	if (Version >= 2) {
 		pDocFile->WriteBlockChar(m_iDetuneSemitone);
 		pDocFile->WriteBlockChar(m_iDetuneCent);
+		if (Version >= 3) {		// !! !!
 	}
 	return pDocFile->FlushBlock();
 }
@@ -5200,6 +5231,7 @@ int CFamiTrackerDoc::GetTuningCent() const		// // // 050B
 	return m_iDetuneCent;
 }
 
+int CFamiTrackerDoc::GetTuningReference()
 CGroove* CFamiTrackerDoc::GetGroove(int Index) const		// // //
 {
 	return m_pGrooveTable[Index];
