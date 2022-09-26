@@ -647,7 +647,7 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 
 	// First write to a temp file (if saving fails, the original is not destroyed)
 	CString updir = "/..";
-	GetTempFileName(lpszPathName + updir, _T("0CC"), 0, TempFile);
+	GetTempFileName(lpszPathName + updir, _T("DNM"), 0, TempFile);
 
 	if (!DocumentFile.Open(TempFile, CFile::modeWrite | CFile::modeCreate, &ex)) {
 		// Could not open file
@@ -752,13 +752,38 @@ bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 {
 	static const int DEFAULT_BLOCK_VERSION[] = {		// // // TODO: use version info
 #ifdef TRANSPOSE_FDS
-		6, 1, 3, 6, 6, 3, 5, 1, 1,	// internal
+		// internal
+		6,		// Parameters
+		1,		// Song Info
+		3,		// Header
+		6,		// Instruments
+		6,		// Sequences
+		3,		// Frames
+		5,		// Patterns
+		1,		// DSamples
+		1,		// Comments
 #else
-		6, 1, 3, 6, 6, 3, 4, 1, 1,
+		6,		// Parameters
+		1,		// Song Info
+		3,		// Header
+		6,		// Instruments
+		6,		// Sequences
+		3,		// Frames
+		4,		// Patterns
+		1,		// DSamples
+		1,		// Comments
 #endif
-		6, 1, 1,					// expansion
-		2, 1, 1, 1,					// 0cc-ft
-		1							// json
+		// expansion
+		6,		// SequencesVRC6
+		1,		// SequencesN163
+		1,		// SequencesS5B
+		// 0cc-ft
+		2,		// ParamsExtra
+		1,		// DetuneTables
+		1,		// Grooves
+		1,		// Bookmarks
+		// json
+		2
 	};
 
 	static bool (CFamiTrackerDoc::*FTM_WRITE_FUNC[])(CDocumentFile*, const int) const = {		// // //
