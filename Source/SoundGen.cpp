@@ -409,14 +409,13 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 	SetupVibratoTable(pDocument->GetVibratoStyle());		// // //
 
 	machine_t Machine = pDocument->GetMachine();
-	const int A4_reference = pDocument->GetTuningReference();
 	const double A440_NOTE = 45. - pDocument->GetTuningSemitone() - pDocument->GetTuningCent() / 100.;
 	uint32_t clock_ntsc = CAPU::BASE_FREQ_NTSC;
 	uint32_t clock_pal = CAPU::BASE_FREQ_PAL;
 
 	for (int i = 0; i < NOTE_COUNT; ++i) {
 		// Frequency (in Hz)
-		double Freq = (A4_reference) * pow(2.0, double(i - A440_NOTE) / 12.);
+		double Freq = 440. * pow(2.0, double(i - A440_NOTE) / 12.);
 		double Pitch;
 
 		// 2A03 / MMC5 / VRC6

@@ -34,8 +34,8 @@
 
 // Class constants
 const unsigned int CDocumentFile::FILE_VER		 = 0x0440;			// Current file version (4.40)
-const unsigned int CDocumentFile::COMPATIBLE_FORWARD_VER = 0x450;	// Compatible forwards compatible file version (4.50)
-const unsigned int CDocumentFile::COMPATIBLE_VER = 0x0100;			// Compatible file version (1.0)
+const unsigned int CDocumentFile::COMPATIBLE_FORWARD_VER = 0x450;	// Forwards compatible file version (4.50)
+const unsigned int CDocumentFile::COMPATIBLE_VER = 0x0100;			// Backwards compatible file version (1.0)
 
 const char *CDocumentFile::FILE_HEADER_ID = "FamiTracker Module";
 const char *CDocumentFile::FILE_END_ID	  = "END";

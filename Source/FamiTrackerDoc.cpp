@@ -406,7 +406,6 @@ void CFamiTrackerDoc::DeleteContents()
 	m_iSpeedSplitPoint	 = DEFAULT_SPEED_SPLIT_POINT;
 	m_iDetuneSemitone	 = 0;		// // // 050B
 	m_iDetuneCent		 = 0;		// // // 050B
-	m_iTuningReference = 440;		// !! !! A4 tuning reference
 
 	m_vHighlight = CPatternData::DEFAULT_HIGHLIGHT;		// // //
 
@@ -779,7 +778,7 @@ bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 		1,		// SequencesN163
 		1,		// SequencesS5B
 		// 0cc-ft
-		3,		// ParamsExtra
+		2,		// ParamsExtra
 		1,		// DetuneTables
 		1,		// Grooves
 		1,		// Bookmarks
@@ -2703,9 +2702,6 @@ void CFamiTrackerDoc::ReadBlock_ParamsExtra(CDocumentFile *pDocFile, const int V
 	if (Version >= 2) {
 		m_iDetuneSemitone = AssertRange(pDocFile->GetBlockChar(), -12, 12, "Global semitone tuning");
 		m_iDetuneCent = AssertRange(pDocFile->GetBlockChar(), -100, 100, "Global cent tuning");
-		if (Version >= 3) {		// !! !!
-			m_iTuningReference = AssertRange(pDocFile->GetBlockChar(), 1, 1000, "A4 tuning reference");
-		}
 	}
 }
 
@@ -2717,9 +2713,6 @@ bool CFamiTrackerDoc::WriteBlock_ParamsExtra(CDocumentFile *pDocFile, const int 
 	if (Version >= 2) {
 		pDocFile->WriteBlockChar(m_iDetuneSemitone);
 		pDocFile->WriteBlockChar(m_iDetuneCent);
-		if (Version >= 3) {		// !! !!
-			pDocFile->WriteBlockChar(m_iTuningReference);
-		}
 	}
 	return pDocFile->FlushBlock();
 }
@@ -5234,11 +5227,6 @@ int CFamiTrackerDoc::GetTuningSemitone() const		// // // 050B
 int CFamiTrackerDoc::GetTuningCent() const		// // // 050B
 {
 	return m_iDetuneCent;
-}
-
-int CFamiTrackerDoc::GetTuningReference()
-{
-	return m_iTuningReference;
 }
 
 CGroove* CFamiTrackerDoc::GetGroove(int Index) const		// // //
