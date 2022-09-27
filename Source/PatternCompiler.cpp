@@ -972,10 +972,10 @@ const std::vector<char> &CPatternCompiler::GetCompressedData() const
 
 unsigned int CPatternCompiler::GetDataSize() const
 {
-	return m_vData.size();
+	return static_cast<unsigned int>(m_vData.size());
 }
 
 unsigned int CPatternCompiler::GetCompressedDataSize() const
 {
-	return m_vCompressedData.size();
+	return static_cast<unsigned int>(m_vCompressedData.size());
 }

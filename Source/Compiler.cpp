@@ -455,7 +455,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	OutputFile.Write(reinterpret_cast<char*>(&iTlblSize), sizeof(int));
 	OutputFile.Write(&TlblIdent, sizeof(TlblIdent));
 	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
-		OutputFile.Write(m_pDocument->GetTrackTitle(i), (UINT)strlen(m_pDocument->GetTrackTitle(i)) + 1);
+		OutputFile.Write(m_pDocument->GetTrackTitle(i), static_cast<UINT>(strlen(m_pDocument->GetTrackTitle(i)) + 1));
 	}
 
 	// write auth chunk
@@ -466,9 +466,9 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	const unsigned char AuthIdent[] = { 'a', 'u', 't', 'h' };
 	OutputFile.Write(reinterpret_cast<char*>(&iAuthSize), sizeof(int));
 	OutputFile.Write(&AuthIdent, sizeof(AuthIdent));
-	OutputFile.Write(m_pDocument->GetSongName(), (UINT)strlen(m_pDocument->GetSongName()) + 1);
-	OutputFile.Write(m_pDocument->GetSongArtist(), (UINT)strlen(m_pDocument->GetSongArtist()) + 1);
-	OutputFile.Write(m_pDocument->GetSongCopyright(), (UINT)strlen(m_pDocument->GetSongCopyright()) + 1);
+	OutputFile.Write(m_pDocument->GetSongName(), static_cast<UINT>(strlen(m_pDocument->GetSongName()) + 1));
+	OutputFile.Write(m_pDocument->GetSongArtist(), static_cast<UINT>(strlen(m_pDocument->GetSongArtist()) + 1));
+	OutputFile.Write(m_pDocument->GetSongCopyright(), static_cast<UINT>(strlen(m_pDocument->GetSongCopyright()) + 1));
 	OutputFile.Write((char*)((PCSTR)ripper), ripper.GetLength() + 1);
 	ripper.ReleaseBuffer();
 
@@ -478,7 +478,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 		iTextSize = strlen(m_pDocument->GetComment()) + 1;
 		OutputFile.Write(reinterpret_cast<char*>(&iTextSize), sizeof(int));
 		OutputFile.Write(&TextIdent, sizeof(TextIdent));
-		OutputFile.Write(m_pDocument->GetComment(), (UINT)strlen(m_pDocument->GetComment()) + 1);
+		OutputFile.Write(m_pDocument->GetComment(), static_cast<UINT>(strlen(m_pDocument->GetComment()) + 1));
 	}
 
 	// write mixe chunk

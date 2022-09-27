@@ -2378,7 +2378,7 @@ void CSoundGen::UpdateAPU()
 
 void CSoundGen::OnStartPlayer(WPARAM wParam, LPARAM lParam)
 {
-	BeginPlayer((play_mode_t)wParam, lParam);
+	BeginPlayer((play_mode_t)wParam, static_cast<int>(lParam));
 }
 
 void CSoundGen::OnSilentAll(WPARAM wParam, LPARAM lParam)
@@ -2406,9 +2406,9 @@ void CSoundGen::OnResetPlayer(WPARAM wParam, LPARAM lParam)
 	// Called when the selected song has changed
 
 	if (IsPlaying())
-		BeginPlayer(MODE_PLAY_START, wParam);		// // //
+		BeginPlayer(MODE_PLAY_START, static_cast<int>(wParam));		// // //
 
-	m_iPlayTrack = wParam;
+	m_iPlayTrack = static_cast<int>(wParam);
 }
 
 void CSoundGen::OnStartRender(WPARAM wParam, LPARAM lParam)
@@ -2450,7 +2450,7 @@ void CSoundGen::OnCloseSound(WPARAM wParam, LPARAM lParam)
 
 void CSoundGen::OnSetChip(WPARAM wParam, LPARAM lParam)
 {
-	int Chip = wParam;
+	int Chip = static_cast<int>(wParam);
 
 	auto l = Lock();
 

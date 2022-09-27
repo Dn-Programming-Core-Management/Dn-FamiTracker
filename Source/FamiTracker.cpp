@@ -528,7 +528,8 @@ void CFamiTrackerApp::RegisterSingleInstance()
 		LPTSTR pBuf = (LPTSTR) MapViewOfFile(m_hWndMapFile, FILE_MAP_ALL_ACCESS, 0, 0, SHARED_MEM_SIZE);
 		if (pBuf != NULL) {
 			// Create a string of main window handle
-			_itot_s((int)GetMainWnd()->m_hWnd, pBuf, SHARED_MEM_SIZE, 10);
+			uint64_t mainWnd = reinterpret_cast<uint64_t>(GetMainWnd()->m_hWnd);		// HWND is 64 bit on x64 builds
+			_itot_s(static_cast<int>(mainWnd), static_cast<char *>(pBuf), SHARED_MEM_SIZE, 10);
 			UnmapViewOfFile(pBuf);
 		}
 	}
@@ -570,7 +571,7 @@ bool CFamiTrackerApp::CheckSingleInstance(CFTCommandLineInfo &cmdInfo)
 			LPCTSTR pBuf = (LPTSTR) MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, SHARED_MEM_SIZE);
 			if (pBuf != NULL) {
 				// Get window handle
-				HWND hWnd = (HWND)_ttoi(pBuf);
+				HWND hWnd = HWND(std::stoull(pBuf));
 				if (hWnd != NULL) {
 					// Get file name
 					LPTSTR pFilePath = cmdInfo.m_strFileName.GetBuffer();

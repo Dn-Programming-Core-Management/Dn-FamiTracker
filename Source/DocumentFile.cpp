@@ -168,7 +168,7 @@ void CDocumentFile::WriteString(CString String)
 
 // adapted from hertzdevil/25d77a
 void CDocumentFile::WriteString(std::string_view sv) {
-	WriteBlock((const char *)sv.data(), (int)sv.size());
+	WriteBlock((const char *)sv.data(), static_cast<int>(sv.size()));
 	WriteBlockChar(0);
 }
 

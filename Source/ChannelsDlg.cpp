@@ -176,7 +176,7 @@ void CChannelsDlg::OnDblClickAdded(NMHDR *pNMHDR, LRESULT *result)
 
 	if (Index != -1 && Count > 1) {
 
-		int ChanID = m_pAddedChannels->GetItemData(Index);
+		int ChanID = static_cast<int>(m_pAddedChannels->GetItemData(Index));
 
 		m_pAvailableTree->GetRootItem();
 
@@ -207,7 +207,7 @@ void CChannelsDlg::AddChannel(int ChanID)
 		HTREEITEM hItem = m_pAvailableTree->GetNextItem(m_hRootItems[i], TVGN_CHILD);
 		for (int j = 0; hItem != NULL; ++j) {
 
-			int ID = m_pAvailableTree->GetItemData(hItem);
+			int ID = static_cast<int>(m_pAvailableTree->GetItemData(hItem));
 
 			if (ID == ChanID) {
 				InsertChannel(hItem);
@@ -231,7 +231,7 @@ void CChannelsDlg::InsertChannel(HTREEITEM hItem)
 		CString AddStr = ChipName + _T(" :: ") + ChanName.Right(ChanName.GetLength() - 3);
 
 		// Channel ID
-		int ChanId = m_pAvailableTree->GetItemData(hItem);
+		int ChanId = static_cast<int>(m_pAvailableTree->GetItemData(hItem));
 
 		int ChansAdded = m_pAddedChannels->GetItemCount();
 		int Index = m_pAddedChannels->InsertItem(ChansAdded, AddStr);
@@ -251,7 +251,7 @@ void CChannelsDlg::OnBnClickedMoveDown()
 		return;
 
 	CString text = m_pAddedChannels->GetItemText(Index, 0);
-	int data = m_pAddedChannels->GetItemData(Index);
+	int data = static_cast<int>(m_pAddedChannels->GetItemData(Index));
 
 	m_pAddedChannels->SetItemText(Index, 0, m_pAddedChannels->GetItemText(Index + 1, 0));
 	m_pAddedChannels->SetItemData(Index, m_pAddedChannels->GetItemData(Index + 1));
@@ -272,7 +272,7 @@ void CChannelsDlg::OnBnClickedMoveUp()
 		return;
 
 	CString text = m_pAddedChannels->GetItemText(Index, 0);
-	int data = m_pAddedChannels->GetItemData(Index);
+	int data = static_cast<int>(m_pAddedChannels->GetItemData(Index));
 
 	m_pAddedChannels->SetItemText(Index, 0, m_pAddedChannels->GetItemText(Index - 1, 0));
 	m_pAddedChannels->SetItemData(Index, m_pAddedChannels->GetItemData(Index - 1));

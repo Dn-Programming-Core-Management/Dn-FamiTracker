@@ -156,7 +156,7 @@ void CFDS::EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer)
 		m_lowPassState = out + 1e-18f;  // prevent denormal numbers
 	}
 
-	Output.mix_samples_raw(unfilteredData.data(), (blip_nsamp_t)unfilteredData.size());
+	Output.mix_samples_raw(unfilteredData.data(), static_cast<blip_nsamp_t>(unfilteredData.size()));
 
 	m_iTime = 0;
 }

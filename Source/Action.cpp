@@ -102,12 +102,12 @@ Action *History::GetLastAction() const
 
 int History::GetUndoLevel() const
 {
-	return m_UndoStack.size();
+	return static_cast<int>(m_UndoStack.size());
 }
 
 int History::GetRedoLevel() const
 {
-	return m_RedoStack.size();
+	return static_cast<int>(m_RedoStack.size());
 }
 
 bool History::CanUndo() const

@@ -85,7 +85,7 @@ class CChunkDataString : public CChunkData
 {
 public:
 	CChunkDataString(const std::vector<char> &data) : CChunkData(), m_vData(data) {}
-	int GetSize() const { return (int)m_vData.size(); }
+	int GetSize() const { return static_cast<int>(m_vData.size()); }
 	unsigned short GetData() const { return 0; };	// Invalid for this type
 	std::vector<char> m_vData;
 };

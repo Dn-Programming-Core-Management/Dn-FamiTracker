@@ -359,7 +359,7 @@ void CGrooveDlg::OnBnClickedButtonGrooveCopyFxx()
 	}
 	
 	std::shared_ptr<CPatternClipData> pClipData(Fxx);
-	SIZE_T Size = pClipData->GetAllocSize();
+	UINT Size = static_cast<UINT>(pClipData->GetAllocSize());
 	HGLOBAL hMem = Clipboard.AllocMem(Size);
 	if (hMem != NULL) {
 		pClipData->ToMem(hMem);

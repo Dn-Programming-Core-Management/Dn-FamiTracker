@@ -56,7 +56,7 @@ void CSimpleFile::WriteString(CString Str)
 void CSimpleFile::WriteStringNull(CString Str)
 {
 	CT2CA s(Str);
-	Write(s, strlen(s.m_psz) + 1);
+	Write(s, static_cast<UINT>(strlen(s.m_psz) + 1));
 }
 
 char CSimpleFile::ReadChar()

@@ -402,7 +402,7 @@ void CVisualizerWnd::OnRButtonUp(UINT nFlags, CPoint point)
 
 	for (size_t i = 0; i < sizeof(menuIds) / sizeof(UINT); i++)		// // //
 		if (Result == menuIds[i]) {
-			m_iCurrentState = i;
+			m_iCurrentState = static_cast<int>(i);
 			break;
 		}
 

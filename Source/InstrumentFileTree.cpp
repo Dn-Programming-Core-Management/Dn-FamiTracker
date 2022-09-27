@@ -132,7 +132,7 @@ bool CInstrumentFileTree::ScanDirectory(CString path, CMenu *pMenu, int level)
 			bool bDisabled = false;
 			if (!ScanDirectory(path + _T("\\") + fileFinder.GetFileName(), pSubMenu, level + 1))
 				bDisabled = true;
-			pMenu->AppendMenu(MF_STRING | MF_POPUP | (bDisabled ? MF_DISABLED : MF_ENABLED), (UINT)pSubMenu->m_hMenu, fileFinder.GetFileName());		
+			pMenu->AppendMenuA(MF_STRING | MF_POPUP | (bDisabled ? MF_DISABLED : MF_ENABLED), reinterpret_cast<UINT_PTR>(pSubMenu->m_hMenu), fileFinder.GetFileName());
 			bNoFile = false;
 		}
 	}

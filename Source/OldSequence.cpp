@@ -39,7 +39,7 @@ void COldSequence::AddItem(char len, char val)
 
 unsigned int COldSequence::GetLength() const
 {
-	return Length.size();
+	return static_cast<unsigned int>(Length.size());
 }
 
 // // // moved from CFamiTrackerDoc::ConvertSequence
