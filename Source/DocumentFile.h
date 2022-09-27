@@ -82,6 +82,7 @@ public:
 public:
 	// Constants
 	static const unsigned int FILE_VER;
+	static const unsigned int COMPATIBLE_FORWARD_VER;
 	static const unsigned int COMPATIBLE_VER;
 
 	static const char *FILE_HEADER_ID;

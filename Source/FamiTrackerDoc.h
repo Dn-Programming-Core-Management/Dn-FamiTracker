@@ -259,6 +259,8 @@ public:
 	void			SetTuning(int Semitone, int Cent);		// // // 050B
 	int				GetTuningSemitone() const;		// // // 050B
 	int				GetTuningCent() const;		// // // 050B
+	void			SetTuningReference();
+	int				GetTuningReference();
 
 	CGroove			*GetGroove(int Index) const;		// // //
 	void			SetGroove(int Index, const CGroove* Groove);
@@ -528,6 +530,7 @@ private:
 	unsigned int	m_iSpeedSplitPoint;							// Speed/tempo split-point
 	int				m_iDetuneTable[6][96];						// // // Detune tables
 	int				m_iDetuneSemitone, m_iDetuneCent;			// // // 050B tuning
+	int				m_iTuningReference;							// !! !! A4 tuning reference
 
 	// NSF info
 	char			m_strName[32];								// Song name

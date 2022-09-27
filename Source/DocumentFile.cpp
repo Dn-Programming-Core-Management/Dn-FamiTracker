@@ -34,6 +34,7 @@
 
 // Class constants
 const unsigned int CDocumentFile::FILE_VER		 = 0x0440;			// Current file version (4.40)
+const unsigned int CDocumentFile::COMPATIBLE_FORWARD_VER = 0x450;	// Compatible forwards compatible file version (4.50)
 const unsigned int CDocumentFile::COMPATIBLE_VER = 0x0100;			// Compatible file version (1.0)
 
 const char *CDocumentFile::FILE_HEADER_ID = "FamiTracker Module";
@@ -167,7 +168,7 @@ void CDocumentFile::WriteString(CString String)
 
 // adapted from hertzdevil/25d77a
 void CDocumentFile::WriteString(std::string_view sv) {
-	WriteBlock((const char *)sv.data(), sv.size());
+	WriteBlock((const char *)sv.data(), (int)sv.size());
 	WriteBlockChar(0);
 }
 
@@ -217,7 +218,7 @@ void CDocumentFile::ValidateFile()
 		e->Raise();
 	}
 	// // // File version is too new
-	if (GetFileVersion() > 0x450U /*FILE_VER*/) {		// // // 050B
+	if (GetFileVersion() > COMPATIBLE_FORWARD_VER) {		// // // 050B
 		e->AppendError("FamiTracker module version too new (0x%X), expected 0x%X or below", GetFileVersion(), FILE_VER);
 		e->Raise();
 	}
