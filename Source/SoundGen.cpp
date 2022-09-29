@@ -61,7 +61,7 @@
 //#define AUDIO_TEST
 
 // Write period tables to files
-#define WRITE_PERIOD_FILES
+//#define WRITE_PERIOD_FILES
 
 // // // Write vibrato table to file
 //#define WRITE_VIBRATO_FILE
