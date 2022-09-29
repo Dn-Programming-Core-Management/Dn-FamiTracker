@@ -61,9 +61,8 @@ protected:
 	int    m_iDetuneTable[6][96];		// NTSC PAL VRC6 VRC7 FDS N163
 	int    m_iGlobalSemitone, m_iGlobalCent;
 
-	// 0CC: merge with definitions from PatternEditor.cpp
-	unsigned int FreqToReg(double Freq, int Chip, int Octave);
-	double       RegToFreq(unsigned int Reg, int Chip, int Octave);
+	unsigned int FreqToPeriod(double Freq, int Chip, int Octave);
+	double       PeriodToFreq(unsigned int Period, int Chip, int Octave);
 	double       NoteToFreq(double Note);
 
 	void UpdateOctave();

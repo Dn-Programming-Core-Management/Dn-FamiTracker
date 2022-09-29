@@ -44,6 +44,7 @@
 const int		CAPU::SEQUENCER_FREQUENCY	= 240;		// // //
 const uint32_t	CAPU::BASE_FREQ_NTSC		= 1789773;		// 72.667
 const uint32_t	CAPU::BASE_FREQ_PAL			= 1662607;
+const uint32_t	CAPU::BASE_FREQ_VRC7		= 3579545;
 const uint8_t	CAPU::FRAME_RATE_NTSC		= 60;
 const uint8_t	CAPU::FRAME_RATE_PAL		= 50;
 

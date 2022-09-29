@@ -61,7 +61,7 @@
 //#define AUDIO_TEST
 
 // Write period tables to files
-//#define WRITE_PERIOD_FILES
+#define WRITE_PERIOD_FILES
 
 // // // Write vibrato table to file
 //#define WRITE_VIBRATO_FILE
@@ -412,6 +412,7 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 	const double A440_NOTE = 45. - pDocument->GetTuningSemitone() - pDocument->GetTuningCent() / 100.;
 	uint32_t clock_ntsc = CAPU::BASE_FREQ_NTSC;
 	uint32_t clock_pal = CAPU::BASE_FREQ_PAL;
+	uint32_t clock_vrc7 = CAPU::BASE_FREQ_VRC7;
 
 	for (int i = 0; i < NOTE_COUNT; ++i) {
 		// Frequency (in Hz)
@@ -436,7 +437,7 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 
 		// // // VRC7
 		if (i < NOTE_RANGE) {
-			Pitch = (Freq * 262144.0) / 49716.0;
+			Pitch = (Freq * std::pow(2, (19 - 1))) / (clock_vrc7 / 72.0);
 			m_iNoteLookupTableVRC7[i] = std::lround(Pitch - pDocument->GetDetuneOffset(3, i));		// // //
 		}
 
@@ -449,7 +450,7 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 		m_iNoteLookupTableFDS[i] = std::lround(Pitch - pDocument->GetDetuneOffset(4, i));		// // //
 
 		// N163
-		Pitch = (Freq * 983040.0 * 4.0 * pDocument->GetNamcoChannels()) / (clock_ntsc);		// // //
+		Pitch = (Freq * 15.0 * 65536.0 * 4.0 * pDocument->GetNamcoChannels()) / (clock_ntsc);		// // //
 		m_iNoteLookupTableN163[i] = std::lround(Pitch - pDocument->GetDetuneOffset(5, i));		// // //
 
 		if (m_iNoteLookupTableN163[i] > 0xFFFF)	// 0x3FFFF

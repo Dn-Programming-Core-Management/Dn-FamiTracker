@@ -110,6 +110,7 @@ public:
 	static const uint8_t	LENGTH_TABLE[];
 	static const uint32_t	BASE_FREQ_NTSC;
 	static const uint32_t	BASE_FREQ_PAL;
+	static const uint32_t	BASE_FREQ_VRC7;
 	static const uint8_t	FRAME_RATE_NTSC;
 	static const uint8_t	FRAME_RATE_PAL;
 
