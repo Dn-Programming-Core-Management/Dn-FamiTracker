@@ -1922,7 +1922,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 
 		const double note = NoteFromFreq(Freq);
 		const double note_envelope = NoteFromFreq(EnvelopeFreq);
-		const double note_noise = ((108.0 / double(0x1F)) * double((0x1F - NoisePeriod)));
+		const double note_noise = ((108.0 / double(0x1F)) * double(0x1F - NoisePeriod)) - 12.0;
 		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
 		if (Volume > 0xFF) Volume = 0xFF;
 
