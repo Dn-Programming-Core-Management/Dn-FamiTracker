@@ -1919,23 +1919,23 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		for (int i = 0; i < 10; i++)
 			pDC->SetPixelV(x + 72 * i, BAR_OFFSET + vis_line * 10 + 3, i == 4 ? 0x808080 : 0x303030);
 		
-
+		int vol = int(0xFF * (std::pow(10.0, (((Volume + 1.0) * 3.0) / 20.0)) / 251.18864315095801110850320677993));		// 3db per step
 		const double note = NoteFromFreq(Freq);
 		const double note_envelope = NoteFromFreq(EnvelopeFreq);
 		const double note_noise = ((108.0 / double(0x1F)) * double(0x1F - NoisePeriod)) - 12.0;
 		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
-		if (Volume > 0xFF) Volume = 0xFF;
+		if (vol > 0xFF) vol = 0xFF;
 
-		if (note_conv >= -12 && note_conv <= 96 && (Volume || envelope_enable)) {		// // //
+		if (note_conv >= -12 && note_conv <= 96 && (vol || envelope_enable)) {		// // //
 			if (theApp.GetSettings()->GUI.bPreciseRegPitch) {
-				pDC->FillSolidRect((int)(29.0 + 6.0 * (note + 12)), BAR_OFFSET + vis_line * 10, 3, 7, RGB(envelope_enable ? 0xFF : Volume, envelope_enable ? 0xFF : Volume, envelope_enable ? 0xFF : Volume));
+				pDC->FillSolidRect((int)(29.0 + 6.0 * (note + 12)), BAR_OFFSET + vis_line * 10, 3, 7, RGB(envelope_enable ? 0xFF : vol, envelope_enable ? 0xFF : vol, envelope_enable ? 0xFF : vol));
 			}
 			else {
-				pDC->FillSolidRect(29 + 6 * (note_conv + 12), BAR_OFFSET + vis_line * 10, 3, 7, RGB(envelope_enable ? 0xFF : Volume, envelope_enable ? 0xFF : Volume, envelope_enable ? 0xFF : Volume));
+				pDC->FillSolidRect(29 + 6 * (note_conv + 12), BAR_OFFSET + vis_line * 10, 3, 7, RGB(envelope_enable ? 0xFF : vol, envelope_enable ? 0xFF : vol, envelope_enable ? 0xFF : vol));
 			}
 		}
 		if (note_noise >= -12.0 && note_noise <= 96.0 && noise_enable)
-			pDC->FillSolidRect((int)(29.0 + 6.0 * (note_noise + 12)), BAR_OFFSET + vis_line * 10, 3, 7, RGB(envelope_enable ? 0xFF : Volume, 0, envelope_enable ? 0xFF : Volume));
+			pDC->FillSolidRect((int)(29.0 + 6.0 * (note_noise + 12)), BAR_OFFSET + vis_line * 10, 3, 7, RGB(envelope_enable ? 0xFF : vol, 0, envelope_enable ? 0xFF : vol));
 		if (note_envelope >= -12.0 && note_envelope <= 96.0 && envelope_enable)
 			pDC->FillSolidRect((int)(29.0 + 6.0 * (note_envelope + 12)), BAR_OFFSET + vis_line * 10, 3, 7, RGB(0xFF, 0xFF, 0));
 		++vis_line;
@@ -2261,7 +2261,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			DrawTextFunc(180, text);
 
 			if (i < 3)
-				DrawVolFuncS5B(freq, freq_env, period_noise, vol << 4, enable_env, enable_noise);
+				DrawVolFuncS5B(freq, freq_env, period_noise, vol, enable_env, enable_noise);
 		}
 
 		for (int i = 0; i < 2; ++i) {
