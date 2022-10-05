@@ -2011,7 +2011,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		switch (i) {
 		case 0: case 1:
 			period = reg[2] | ((reg[3] & 7) << 8);
-			vol = reg[0] & 0x0F;
+			vol = (reg[0] & 0x10) ? reg[0] & 0x0F : 0x15;
 			text.Format(_T("%s, vol = %02i, duty = %i"), GetPitchTextFunc(3, period, freq), vol, reg[0] >> 6); break;
 		case 2:
 			period = reg[2] | ((reg[3] & 7) << 8);
@@ -2019,7 +2019,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			text.Format(_T("%s"), GetPitchTextFunc(3, period, freq)); break;
 		case 3:
 			period = reg[2] & 0x0F;
-			vol = reg[0] & 0x0F;
+			vol = (reg[0] & 0x10) ? reg[0] & 0x0F : 0x15;
 			text.Format(_T("%s, vol = %02i, mode = %i"), GetPitchTextFuncLong(1, period, freq, !(reg[2] >> 7)), vol, reg[2] >> 7);
 			break;
 		case 4:
@@ -2080,7 +2080,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			DrawRegFunc(text, 4);
 			
 			int period = (reg[2] | ((reg[3] & 7) << 8));
-			int vol = (reg[0] & 0x0F);
+			int vol = (reg[0] & 0x10) ? reg[0] & 0x0F : 0x15;
 			double freq = theApp.GetSoundGenerator()->GetChannelFrequency(SNDCHIP_MMC5, i);		// // //
 
 			text.Format(_T("%s, vol = %02i, duty = %i"), GetPitchTextFunc(3, period, freq), vol, reg[0] >> 6);

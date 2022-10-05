@@ -343,6 +343,8 @@ namespace xgm
   double NES_APU::GetFrequencyPulse1() const    // // !!
   {
       if (!(length_counter[0] > 0 &&
+          enable[0] &&
+          (envelope_disable[0] ? (volume[0] > 0) : (envelope_counter[0] > 0)) &&
           freq[0] >= 8 &&
           sfreq[0] < 0x800))
       return 0.0;
@@ -352,6 +354,8 @@ namespace xgm
   double NES_APU::GetFrequencyPulse2() const    // // !!
   {
     if (!(length_counter[1] > 0 &&
+        enable[1] &&
+        (envelope_disable[1] ? (volume[1] > 0) : (envelope_counter[1] > 0)) &&
         freq[1] >= 8 &&
         sfreq[1] < 0x800))
       return 0.0;
