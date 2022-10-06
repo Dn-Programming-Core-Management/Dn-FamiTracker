@@ -641,13 +641,13 @@ ft_music_addr:
 	; Include music
 .if .defined(INC_MUSIC_ASM)
 	; Included assembly file music, DPCM included
-	.include "music.asm"
+	.include "driver_tests/music.asm"
 .else
 	; Binary chunk music
-	.incbin "music.bin"			; Music data
+	.incbin "driver_tests/music.bin"
 .if .defined(USE_DPCM)
 	.segment "DPCM"				; DPCM samples goes here
-	.incbin "samples.bin"
+	.incbin "driver_tests/samples.bin"
 .endif
 .endif
 .endif
