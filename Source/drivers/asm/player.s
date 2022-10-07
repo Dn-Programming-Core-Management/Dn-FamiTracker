@@ -1219,15 +1219,30 @@ ft_cmd_s5b_env_rate_lo:
 	sta var_EnvelopeRate
 	rts
 ft_cmd_s5b_noise:
-	lda var_ch_DutyCurrent, x		;; ;; !!
-	and #$E0
-	pha
 	jsr ft_get_pattern_byte
 	sta var_Noise_Period
-	pla
+	txa							; overwrite noise period in all channels
+	pha
+	ldx #S5B_OFFSET
+	lda var_ch_DutyCurrent, x		;; ;; !!
+	and #$E0
 	ora var_Noise_Period
 	sta var_ch_DutyCurrent, x
 	sta var_ch_DutyDefault, x
+	inx
+	lda var_ch_DutyCurrent, x
+	and #$E0
+	ora var_Noise_Period
+	sta var_ch_DutyCurrent, x
+	sta var_ch_DutyDefault, x
+	inx
+	lda var_ch_DutyCurrent, x
+	and #$E0
+	ora var_Noise_Period
+	sta var_ch_DutyCurrent, x
+	sta var_ch_DutyDefault, x
+	pla
+	tax
 	rts
 .endif						; ;; ;;;
 
