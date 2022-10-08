@@ -11,6 +11,8 @@ ft_init_s5b:
 	sta var_Noise_Prev
 	sta var_AutoEnv_Channel
 	lda #$00
+	sta var_Noise_Period
+	sta var_Noise_Default
 	sta var_EnvelopeRate
 	sta var_EnvelopeRate + 1
 	lda #$07
@@ -37,14 +39,7 @@ ft_update_s5b:
 	ldx #$00
 	stx var_Pul_Noi
 @UpdateNoise:
-	lda var_ch_DutyCurrent + S5B_OFFSET, x
-	bpl :+									; no noise
-	and #$1F
-	sta var_Noise_Period					; overwrite noise period with noise envelope sequence
-:	inx
-	cpx #CH_COUNT_S5B
-	bcc @UpdateNoise
-
+	; this is handled in instrument.s
 	ldx #(CH_COUNT_S5B - 1)
 @UpdateNoiseMask:
 	asl var_Pul_Noi
@@ -152,11 +147,13 @@ ft_update_s5b:
 :
 	; Global variables
 	ldx #$06
+;	if (s_iNoiseFreq != s_iNoisePrev)
+;		WriteReg(0x06, (s_iNoisePrev = s_iNoiseFreq) ^ 0x1F);
 	lda var_Noise_Period
-	eor #$1F
 	cmp var_Noise_Prev
 	beq :+
 	sta var_Noise_Prev
+	eor #$1F
 	stx $C000
 	sta $E000
 :	inx

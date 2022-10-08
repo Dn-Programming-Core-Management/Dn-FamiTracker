@@ -282,6 +282,14 @@ ft_run_instrument:
 	lda var_sequence_result
 @DoneConvert:		; ;; ;;;
 	sta var_ch_DutyCurrent, x
+.if .defined(USE_S5B)
+;	if (Value & S5B_MODE_NOISE)
+;		pChan->SetNoiseFreq(Value & 0x1F);
+	bpl :+
+	and #$1F
+	sta var_Noise_Period
+:
+.endif
 	jmp @LoadWave
 	; Save pitch
 @SkipDutyUpdate:

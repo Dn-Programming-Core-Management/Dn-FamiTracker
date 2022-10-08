@@ -237,6 +237,7 @@ var_NamcoInstrument:    .res CH_COUNT_N163
 .endif
 
 .if .defined(USE_S5B)								;;; ;; ;
+var_Noise_Default:		.res 1						;; ;; !!
 var_Noise_Period:		.res 1						; $06
 var_Noise_Prev:			.res 1						; cache noise value
 var_Pul_Noi:			.res 1						; $07

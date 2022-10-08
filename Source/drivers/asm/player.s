@@ -427,6 +427,19 @@ ft_read_note:
 	jmp @RestoreDuty
 :	; VRC7 skip
 .endif
+.if .defined(USE_S5B)
+	;; ;; !!
+;	if (this->m_iDefaultDuty & S5B_MODE_NOISE)
+;		s_iNoiseFreq = s_iDefaultNoise;
+	lda ft_channel_type, x		;;; ;; ;
+	cmp #CHAN_S5B
+	bne :+
+	lda var_ch_DutyDefault + S5B_OFFSET, x
+	bpl :+
+	lda var_Noise_Default
+	sta var_Noise_Period
+:
+.endif
 .if 0
 .if .defined(USE_N163)					;;; ;; ;
 	lda ft_channel_type, x
@@ -1219,30 +1232,12 @@ ft_cmd_s5b_env_rate_lo:
 	sta var_EnvelopeRate
 	rts
 ft_cmd_s5b_noise:
+;	case EF_SUNSOFT_NOISE: // W
+;		s_iDefaultNoise = s_iNoiseFreq = EffParam & 0x1F;		// // // 050B
 	jsr ft_get_pattern_byte
+	and #$1F
 	sta var_Noise_Period
-	txa							; overwrite noise period in all channels
-	pha
-	ldx #S5B_OFFSET
-	lda var_ch_DutyCurrent, x		;; ;; !!
-	and #$E0
-	ora var_Noise_Period
-	sta var_ch_DutyCurrent, x
-	sta var_ch_DutyDefault, x
-	inx
-	lda var_ch_DutyCurrent, x
-	and #$E0
-	ora var_Noise_Period
-	sta var_ch_DutyCurrent, x
-	sta var_ch_DutyDefault, x
-	inx
-	lda var_ch_DutyCurrent, x
-	and #$E0
-	ora var_Noise_Period
-	sta var_ch_DutyCurrent, x
-	sta var_ch_DutyDefault, x
-	pla
-	tax
+	sta var_Noise_Default
 	rts
 .endif						; ;; ;;;
 
