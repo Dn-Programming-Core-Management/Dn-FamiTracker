@@ -29,7 +29,7 @@
 //
 
 // Change this for new versions
-const char DRIVER_ID[] = "NSF-driver v2.11";
+const char DRIVER_ID[] = "NSF-driver v2.13";
 
 #pragma warning( disable : 4309 ) // disable warning 4309: 'initializing' : truncation of constant value
 #pragma warning( disable : 4838 ) // 4838: conversion from 'int' to 'const char' requires a narrowing conversion

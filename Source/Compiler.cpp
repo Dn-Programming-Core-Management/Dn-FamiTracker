@@ -974,12 +974,13 @@ void CCompiler::CreateHeader(stNSFHeader *pHeader, int MachineType) const
 	// Speed will be the same for NTSC/PAL
 	//
 
-	int Speed = m_pDocument->GetEngineSpeed();
+	unsigned int SpeedPAL, SpeedNTSC, Speed;
+	Speed = m_pDocument->GetEngineSpeed();
 
 	// If speed is default, write correct NTSC/PAL speed periods
 	// else, set the same custom speed for both
-	int SpeedNTSC = (Speed == 0) ? 1000000 / 60 : 1000000 / Speed;
-	int SpeedPAL = (Speed == 0) ? 1000000 / 50 : 1000000 / Speed; 
+	SpeedNTSC = (Speed == 0) ? 1000000 / 60 : 1000000 / Speed;
+	SpeedPAL = (Speed == 0) ? 1000000 / 50 : 1000000 / Speed;
 
 	memset(pHeader, 0, 0x80);
 
@@ -1060,11 +1061,8 @@ void CCompiler::CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType)		// // 
 
 	unsigned int SpeedPAL, SpeedNTSC, Speed;
 	Speed = m_pDocument->GetEngineSpeed();
-	if (Speed == 0) {
-		SpeedNTSC = 1000000 / 60;
-		SpeedPAL = 1000000 / 50;
-	}
-	else SpeedNTSC = SpeedPAL = 1000000 / Speed;
+	SpeedNTSC = (Speed == 0) ? 1000000 / 60 : 1000000 / Speed;
+	SpeedPAL = (Speed == 0) ? 1000000 / 50 : 1000000 / Speed;
 
 	pHeader->InfoSize = 12;
 	pHeader->BankSize = 8;

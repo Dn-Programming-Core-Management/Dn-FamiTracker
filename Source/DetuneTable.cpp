@@ -23,19 +23,18 @@
 */
 
 #include "DetuneTable.h"
+#include "APU/APU.h"
 #include <cmath>
 
 // // // detune table class
 
-const unsigned CDetuneTable::A440_NOTE = 45U;
-const double CDetuneTable::BASE_FREQ_NTSC = 630000000. / 352.;
-
-CDetuneTable::CDetuneTable(type_t Type, int Low, int High) :
+CDetuneTable::CDetuneTable(type_t Type, int Low, int High, double A440_Note) :
 	m_iType(Type),
 	m_iRangeLow(Low),
 	m_iRangeHigh(High),
 	m_iRegisterValue(96, 0U),
-	m_iOffsetValue(96, 0U)
+	m_iOffsetValue(96, 0U),
+	m_dA440_NOTE(A440_Note)
 {
 }
 
@@ -99,64 +98,134 @@ double CDetuneTable::GetDefaultReg(double Note) const
 	return Val;
 }
 
-double CDetuneTable::NoteToFreq(double Note)
+double CDetuneTable::NoteToFreq(double Note) const
 {
-	return 440. * std::pow(2., (Note - A440_NOTE) / 12.);
+	return 440.0 * std::pow(2.0, (Note - m_dA440_NOTE) / 12.0);
 }
 
-double CDetuneTable::FreqToNote(double Freq)
+double CDetuneTable::FreqToNote(double Freq) const
 {
-	return static_cast<double>(A440_NOTE) + std::log2(Freq / 440.) * 12.;
+	return m_dA440_NOTE + std::log2(Freq / 440.0) * 12.0;
 }
 
-CDetuneNTSC::CDetuneNTSC() :
-	CDetuneTable(DETUNE_NTSC, 0, 0x7FF)
+unsigned int CDetuneTable::FrequencyToPeriod(double Freq, int Octave, int NamcoChannels) const
 {
-	SetGenerator([] (double x) { return BASE_FREQ_NTSC / 16. / x - 1.; });
-	SetFrequencyFunc([] (double x) { return BASE_FREQ_NTSC / 16. / (x + 1.); });
+	return 0;
+}
+
+double CDetuneTable::PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const
+{
+	return 0.0;
+}
+
+CDetuneNTSC::CDetuneNTSC(double A440_Note) :
+	CDetuneTable(DETUNE_NTSC, 0, 0x7FF, A440_Note)
+{
+	SetGenerator([this](double x) { return FrequencyToPeriod(x, 1, 0); });
+	SetFrequencyFunc([this](double x) { return PeriodToFrequency(static_cast<int>(x), 1, 0); });
 	GenerateRegisters();
 }
 
-CDetunePAL::CDetunePAL() :
-	CDetuneTable(DETUNE_PAL, 0, 0x7FF)
+unsigned int CDetuneNTSC::FrequencyToPeriod(double Freq, int Octave, int NamcoChannels) const
 {
-	SetGenerator([] (double x) { return 266017125. / 16. / 16. / x - 1.; });
-	SetFrequencyFunc([] (double x) { return 266017125. / 16. / 16. / (x + 1.); });
+	return std::lround((CAPU::BASE_FREQ_NTSC / (Freq * 16.0)) - 1.0);
+}
+
+double CDetuneNTSC::PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const
+{
+	return CAPU::BASE_FREQ_NTSC / (16.0 * (Period + 1.0));
+}
+
+CDetunePAL::CDetunePAL(double A440_Note) :
+	CDetuneTable(DETUNE_PAL, 0, 0x7FF, A440_Note)
+{
+	SetGenerator([this](double x) { return FrequencyToPeriod(x, 1, 0); });
+	SetFrequencyFunc([this](double x) { return PeriodToFrequency(static_cast<int>(x), 1, 0); });
 	GenerateRegisters();
 }
 
-CDetuneSaw::CDetuneSaw() :
-	CDetuneTable(DETUNE_SAW, 0, 0xFFF)
+unsigned int CDetunePAL::FrequencyToPeriod(double Freq, int Octave, int NamcoChannels) const
 {
-	SetGenerator([] (double x) { return BASE_FREQ_NTSC / 14. / x - 1.; });
-	SetFrequencyFunc([] (double x) { return BASE_FREQ_NTSC / 14. / (x + 1.); });
+	return std::lround((CAPU::BASE_FREQ_PAL / (Freq * 16.0)) - 1.0);
+}
+
+double CDetunePAL::PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const
+{
+	return CAPU::BASE_FREQ_PAL / (16.0 * (Period + 1.0));
+}
+
+CDetuneSaw::CDetuneSaw(double A440_Note) :
+	CDetuneTable(DETUNE_SAW, 0, 0xFFF, A440_Note)
+{
+	SetGenerator([this](double x) { return FrequencyToPeriod(x, 1, 0); });
+	SetFrequencyFunc([this](double x) { return PeriodToFrequency(static_cast<int>(x), 1, 0); });
 	GenerateRegisters();
 }
 
-CDetuneVRC7::CDetuneVRC7() :
-	CDetuneTable(DETUNE_VRC7, 0, 0x1FF)
+unsigned int CDetuneSaw::FrequencyToPeriod(double Freq, int Octave, int NamcoChannels) const
+{
+	return std::lround((CAPU::BASE_FREQ_NTSC / (Freq * 14.0)) - 1.0);
+}
+
+double CDetuneSaw::PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const
+{
+	return CAPU::BASE_FREQ_NTSC / (14.0 * (Period + 1.0));
+}
+
+CDetuneVRC7::CDetuneVRC7(double A440_Note) :
+	CDetuneTable(DETUNE_VRC7, 0, 0x1FF, A440_Note)
 {
 	SetNoteCount(12);
-	SetGenerator([] (double x) { return x / 49716. * (1 << 18); });		// provisional
-	SetFrequencyFunc([] (double x) { return 49716. * std::fmod(x, 512.) / (1 << (18 - (static_cast<int>(x) >> 9))); });
+	SetGenerator([this](double x) { return FrequencyToPeriod(x, 1, 0); });
+	SetFrequencyFunc([this](double x) { return PeriodToFrequency(static_cast<int>(x), 1, 0); });
 	GenerateRegisters();
 }
 
-CDetuneFDS::CDetuneFDS() :
-	CDetuneTable(DETUNE_FDS, 0, 0xFFF)
+unsigned int CDetuneVRC7::FrequencyToPeriod(double Freq, int Octave, int NamcoChannels) const
 {
-	SetGenerator([] (double x) { return x / BASE_FREQ_NTSC * (1 << 20); });
-	SetFrequencyFunc([] (double x) { return BASE_FREQ_NTSC * x / (1 << 20); });
+	return std::lround((Freq * std::pow(2, (19 - Octave))) / (CAPU::BASE_FREQ_VRC7 / 72.0));
+}
+
+double CDetuneVRC7::PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const
+{
+	return ((CAPU::BASE_FREQ_VRC7 / 72.0) * Period) / std::pow(2, (19 - Octave - 1));
+}
+
+CDetuneFDS::CDetuneFDS(double A440_Note) :
+	CDetuneTable(DETUNE_FDS, 0, 0xFFF, A440_Note)
+{
+	SetGenerator([this](double x) { return FrequencyToPeriod(x, 1, 0); });
+	SetFrequencyFunc([this](double x) { return PeriodToFrequency(static_cast<int>(x), 1, 0); });
 	GenerateRegisters();
 }
 
-CDetuneN163::CDetuneN163() :
-	CDetuneTable(DETUNE_N163, 0, 0xFFFF),
+unsigned int CDetuneFDS::FrequencyToPeriod(double Freq, int Octave, int NamcoChannels) const
+{
+	return std::lround((Freq * 65536.0 * 16.0) / (CAPU::BASE_FREQ_NTSC));
+}
+
+double CDetuneFDS::PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const
+{
+	return (CAPU::BASE_FREQ_NTSC * (double)Period) / (65536.0);
+}
+
+CDetuneN163::CDetuneN163(double A440_Note) :
+	CDetuneTable(DETUNE_N163, 0, 0xFFFF, A440_Note),
 	m_iChannelCount(1)
 {
-	SetGenerator([&] (double x) { return x / BASE_FREQ_NTSC * 15. * (1 << 18) * m_iChannelCount; });
-	SetFrequencyFunc([&] (double x) { return BASE_FREQ_NTSC * x / 15. / (1 << 18) / m_iChannelCount; });
+	SetGenerator([this](double x) { return FrequencyToPeriod(x, 1, m_iChannelCount); });
+	SetFrequencyFunc([this](double x) { return PeriodToFrequency(static_cast<int>(x), 1, m_iChannelCount); });
 	GenerateRegisters();
+}
+
+unsigned int CDetuneN163::FrequencyToPeriod(double Freq, int Octave, int NamcoChannels) const
+{
+	return std::lround((Freq * 15.0 * 65536.0 * 4.0 * NamcoChannels) / (CAPU::BASE_FREQ_NTSC));
+}
+
+double CDetuneN163::PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const
+{
+	return std::lround((Period * 15.0 * 65536.0 * 4.0 * NamcoChannels) / (CAPU::BASE_FREQ_NTSC));
 }
 
 void CDetuneN163::SetChannelCount(unsigned Count) // special
@@ -164,10 +233,20 @@ void CDetuneN163::SetChannelCount(unsigned Count) // special
 	m_iChannelCount = Count;
 }
 
-CDetuneS5B::CDetuneS5B() :
-	CDetuneTable(DETUNE_S5B, 0, 0xFFF)
+CDetuneS5B::CDetuneS5B(double A440_Note) :
+	CDetuneTable(DETUNE_S5B, 0, 0xFFF, A440_Note)
 {
-	SetGenerator([] (double x) { return BASE_FREQ_NTSC / 16. / x; });
-	SetFrequencyFunc([] (double x) { return BASE_FREQ_NTSC / 16. / x; });
+	SetGenerator([this](double x) { return FrequencyToPeriod(x, 1, 0); });
+	SetFrequencyFunc([this](double x) { return PeriodToFrequency(static_cast<int>(x), 1, 0); });
 	GenerateRegisters();
+}
+
+unsigned int CDetuneS5B::FrequencyToPeriod(double Freq, int Octave, int NamcoChannels) const
+{
+	return std::lround(CAPU::BASE_FREQ_NTSC / (Freq * 16.0));
+}
+
+double CDetuneS5B::PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const
+{
+	return CAPU::BASE_FREQ_NTSC / (16.0 * (Period));
 }

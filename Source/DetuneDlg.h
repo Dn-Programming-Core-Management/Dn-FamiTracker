@@ -27,6 +27,14 @@
 
 // CDetuneDlg dialog
 
+class CDetuneNTSC;
+class CDetunePAL;
+class CDetuneSaw;
+class CDetuneVRC7;
+class CDetuneFDS;
+class CDetuneN163;
+
+
 class CDetuneDlg : public CDialog
 {
 	DECLARE_DYNAMIC(CDetuneDlg)
@@ -50,6 +58,14 @@ protected:
 
 	CSliderCtrl *m_cSliderOctave, *m_cSliderNote, *m_cSliderOffset;
 	CEdit *m_cEditOctave, *m_cEditNote, *m_cEditOffset;
+
+
+	std::unique_ptr<CDetuneNTSC> m_pDetuneNTSC;
+	std::unique_ptr<CDetunePAL> m_pDetunePAL;
+	std::unique_ptr<CDetuneSaw> m_pDetuneSaw;
+	std::unique_ptr<CDetuneVRC7> m_pDetuneVRC7;
+	std::unique_ptr<CDetuneFDS> m_pDetuneFDS;
+	std::unique_ptr<CDetuneN163> m_pDetuneN163;
 	
 	static const TCHAR *m_pNote[12];
 	static const TCHAR *m_pNoteFlat[12];
@@ -63,7 +79,7 @@ protected:
 
 	unsigned int FreqToPeriod(double Freq, int Chip, int Octave);
 	double       PeriodToFreq(unsigned int Period, int Chip, int Octave);
-	double       NoteToFreq(double Note);
+	double       NoteToFreq(double Note, int Chip);
 
 	void UpdateOctave();
 	void UpdateNote();

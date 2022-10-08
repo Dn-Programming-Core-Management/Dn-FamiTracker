@@ -410,78 +410,54 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 
 	machine_t Machine = pDocument->GetMachine();
 	const double A440_NOTE = 45. - pDocument->GetTuningSemitone() - pDocument->GetTuningCent() / 100.;
-	uint32_t clock_ntsc = CAPU::BASE_FREQ_NTSC;
-	uint32_t clock_pal = CAPU::BASE_FREQ_PAL;
-	uint32_t clock_vrc7 = CAPU::BASE_FREQ_VRC7;
+
+	std::unique_ptr<CDetuneNTSC> pDetuneNTSC(new CDetuneNTSC(A440_NOTE));
+	std::unique_ptr<CDetunePAL> pDetunePAL(new CDetunePAL(A440_NOTE));
+	std::unique_ptr<CDetuneSaw> pDetuneSaw(new CDetuneSaw(A440_NOTE));
+	std::unique_ptr<CDetuneVRC7> pDetuneVRC7(new CDetuneVRC7(A440_NOTE));
+	std::unique_ptr<CDetuneFDS> pDetuneFDS(new CDetuneFDS(A440_NOTE));
+	std::unique_ptr<CDetuneN163> pDetuneN163(new CDetuneN163(A440_NOTE));
+	std::unique_ptr<CDetuneS5B> pDetuneS5B(new CDetuneS5B(A440_NOTE));
 
 	for (int i = 0; i < NOTE_COUNT; ++i) {
-		// Frequency (in Hz)
-		double Freq = 440. * pow(2.0, double(i - A440_NOTE) / 12.);
 		double Pitch;
-
+		
 		// 2A03 / MMC5 / VRC6
-		Pitch = (clock_ntsc / (Freq * 16.0)) - 1.0;
+		Pitch = pDetuneNTSC->FrequencyToPeriod(pDetuneNTSC->NoteToFreq(i), 1, 0);
 		m_iNoteLookupTableNTSC[i] = std::lround(Pitch - pDocument->GetDetuneOffset(0, i));		// // //
 
-		// // // Sunsoft 5B
-		// Period value + 1 matches NSF driver behavior
-		m_iNoteLookupTableS5B[i] = std::lround(Pitch + 1.0 - pDocument->GetDetuneOffset(0, i));
-
 		// 2A07
-		Pitch = (clock_pal / (Freq * 16.0)) - 1.0;
+		Pitch = pDetunePAL->FrequencyToPeriod(pDetunePAL->NoteToFreq(i), 1, 0);
 		m_iNoteLookupTablePAL[i] = std::lround(Pitch - pDocument->GetDetuneOffset(1, i));		// // //
 
 		// VRC6 Saw
-		Pitch = (clock_ntsc / (Freq * 14.0)) - 1.0;
+		Pitch = pDetuneSaw->FrequencyToPeriod(pDetuneSaw->NoteToFreq(i), 1, 0);
 		m_iNoteLookupTableSaw[i] = std::lround(Pitch - pDocument->GetDetuneOffset(2, i));		// // //
 
 		// // // VRC7
 		if (i < NOTE_RANGE) {
-			Pitch = (Freq * std::pow(2, (19 - 1))) / (clock_vrc7 / 72.0);
+			Pitch = pDetuneVRC7->FrequencyToPeriod(pDetuneVRC7->NoteToFreq(i), 1, 0);
 			m_iNoteLookupTableVRC7[i] = std::lround(Pitch - pDocument->GetDetuneOffset(3, i));		// // //
 		}
 
 		// FDS
 #ifdef TRANSPOSE_FDS
-		Pitch = (Freq * 65536.0 * 16.0) / (clock_ntsc);
+		Pitch = pDetuneFDS->FrequencyToPeriod(pDetuneFDS->NoteToFreq(i), 1, 0);
 #else
-		Pitch = (Freq * 65536.0) / (clock_ntsc / 4.0);
+		Pitch = (NoteToFreq(i) * 65536.0) / (clock_ntsc / 4.0);
 #endif
 		m_iNoteLookupTableFDS[i] = std::lround(Pitch - pDocument->GetDetuneOffset(4, i));		// // //
 
 		// N163
-		Pitch = (Freq * 15.0 * 65536.0 * 4.0 * pDocument->GetNamcoChannels()) / (clock_ntsc);		// // //
+		Pitch = pDetuneN163->FrequencyToPeriod(pDetuneN163->NoteToFreq(i), 1, pDocument->GetNamcoChannels());
 		m_iNoteLookupTableN163[i] = std::lround(Pitch - pDocument->GetDetuneOffset(5, i));		// // //
 
 		if (m_iNoteLookupTableN163[i] > 0xFFFF)	// 0x3FFFF
 			m_iNoteLookupTableN163[i] = 0xFFFF;	// 0x3FFFF
-	}
 
-	// // // Setup note tables
-	for (int i = 0; i < CHANNELS; ++i) {
-		if (!m_pChannels[i]) continue;
-		const unsigned int *Table = nullptr;
-		switch (m_pTrackerChannels[i]->GetID()) {
-		case CHANID_SQUARE1: case CHANID_SQUARE2: case CHANID_TRIANGLE:
-			Table = Machine == PAL ? m_iNoteLookupTablePAL : m_iNoteLookupTableNTSC; break;
-		case CHANID_VRC6_PULSE1: case CHANID_VRC6_PULSE2:
-		case CHANID_MMC5_SQUARE1: case CHANID_MMC5_SQUARE2:
-			Table = m_iNoteLookupTableNTSC; break;
-		case CHANID_VRC6_SAWTOOTH:
-			Table = m_iNoteLookupTableSaw; break;
-		case CHANID_VRC7_CH1: case CHANID_VRC7_CH2: case CHANID_VRC7_CH3:
-		case CHANID_VRC7_CH4: case CHANID_VRC7_CH5: case CHANID_VRC7_CH6:
-			Table = m_iNoteLookupTableVRC7; break;
-		case CHANID_FDS:
-			Table = m_iNoteLookupTableFDS; break;
-		case CHANID_N163_CH1: case CHANID_N163_CH2: case CHANID_N163_CH3: case CHANID_N163_CH4:
-		case CHANID_N163_CH5: case CHANID_N163_CH6: case CHANID_N163_CH7: case CHANID_N163_CH8:
-			Table = m_iNoteLookupTableN163; break;
-		case CHANID_S5B_CH1: case CHANID_S5B_CH2: case CHANID_S5B_CH3:
-			Table = m_iNoteLookupTableS5B; break;
-		default: continue;
-		}
-		m_pChannels[i]->SetNoteTable(Table);
+		// // // Sunsoft 5B
+		Pitch = pDetuneS5B->FrequencyToPeriod(pDetuneS5B->NoteToFreq(i), 1, 0);
+		m_iNoteLookupTableS5B[i] = std::lround(Pitch - pDocument->GetDetuneOffset(0, i));
 	}
 
 #ifdef WRITE_PERIOD_FILES
@@ -489,7 +465,7 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 	// Write periods to a single file with assembly formatting
 	CStdioFile period_file("..\\nsf driver\\periods.s", CStdioFile::modeWrite | CStdioFile::modeCreate);
 
-	const auto DumpFunc = [&period_file] (const unsigned int *Table) {
+	const auto DumpFunc = [&period_file](const unsigned int* Table) {
 		for (int i = 0; i < NOTE_COUNT; ++i) {
 			unsigned int Val = Table[i] & 0xFFFF;
 			CString str;
@@ -560,6 +536,33 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 	period_file.Close();
 
 #endif
+
+	// // // Setup note tables
+	for (int i = 0; i < CHANNELS; ++i) {
+		if (!m_pChannels[i]) continue;
+		const unsigned int *Table = nullptr;
+		switch (m_pTrackerChannels[i]->GetID()) {
+		case CHANID_SQUARE1: case CHANID_SQUARE2: case CHANID_TRIANGLE:
+			Table = Machine == PAL ? m_iNoteLookupTablePAL : m_iNoteLookupTableNTSC; break;
+		case CHANID_VRC6_PULSE1: case CHANID_VRC6_PULSE2:
+		case CHANID_MMC5_SQUARE1: case CHANID_MMC5_SQUARE2:
+			Table = m_iNoteLookupTableNTSC; break;
+		case CHANID_VRC6_SAWTOOTH:
+			Table = m_iNoteLookupTableSaw; break;
+		case CHANID_VRC7_CH1: case CHANID_VRC7_CH2: case CHANID_VRC7_CH3:
+		case CHANID_VRC7_CH4: case CHANID_VRC7_CH5: case CHANID_VRC7_CH6:
+			Table = m_iNoteLookupTableVRC7; break;
+		case CHANID_FDS:
+			Table = m_iNoteLookupTableFDS; break;
+		case CHANID_N163_CH1: case CHANID_N163_CH2: case CHANID_N163_CH3: case CHANID_N163_CH4:
+		case CHANID_N163_CH5: case CHANID_N163_CH6: case CHANID_N163_CH7: case CHANID_N163_CH8:
+			Table = m_iNoteLookupTableN163; break;
+		case CHANID_S5B_CH1: case CHANID_S5B_CH2: case CHANID_S5B_CH3:
+			Table = m_iNoteLookupTableS5B; break;
+		default: continue;
+		}
+		m_pChannels[i]->SetNoteTable(Table);
+	}
 
 	for (int i = 0; i < CHANNELS; ++i) {
 		if (m_pChannels[i]) {
@@ -1208,7 +1211,7 @@ int CSoundGen::ReadPeriodTable(int Index, int Table) const		// // //
 	case CDetuneTable::DETUNE_VRC7: return m_iNoteLookupTableVRC7[Index]; break;
 	case CDetuneTable::DETUNE_FDS:  return m_iNoteLookupTableFDS[Index]; break;
 	case CDetuneTable::DETUNE_N163: return m_iNoteLookupTableN163[Index]; break;
-	case CDetuneTable::DETUNE_S5B:  return m_iNoteLookupTableNTSC[Index] + 1; break;
+	case CDetuneTable::DETUNE_S5B:  return m_iNoteLookupTableS5B[Index]; break;
 	default:
 		AfxDebugBreak(); return m_iNoteLookupTableNTSC[Index];
 	}

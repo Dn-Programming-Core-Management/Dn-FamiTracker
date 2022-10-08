@@ -174,6 +174,9 @@ public:
 	void		 GenerateVibratoTable(vibrato_t Type);
 	void		 SetupVibratoTable(vibrato_t Type);
 	int			 ReadVibratoTable(int index) const;
+
+	// Period
+	// Generating and setting up the period tables is already done in DocumentPropertiesChanged()
 	int			 ReadPeriodTable(int Index, int Table) const;		// // //
 
 	// Player interface
@@ -237,7 +240,6 @@ public:
 	void		WriteRegister(uint16_t Reg, uint8_t Value);
 
 	void		RegisterKeyState(int Channel, int Note);
-	void		SetNamcoMixing(bool bLinear);			// // //
 
 	// Player
 	int			GetPlayerRow() const;
