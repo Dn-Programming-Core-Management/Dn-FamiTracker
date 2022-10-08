@@ -5,7 +5,39 @@ It incorporates code from nsfplay, licensed under an informal permissive
 license, as well as code from Mesen, which is licensed under the GPL v3 only.
 As a result, Dn-FamiTracker as a whole is only available under the GPL v3.
 
-The text of the GPL v2 is listed below:
+On the FamiTracker website, the NSF driver code is distributed seperately from
+the rest of the source code. This is because jsr wanted to license the driver
+under a more permissive license than GPL 2, but didn't seem to get around doing
+so.
+
+HertzDevil erroneously licensed his modified NSF driver code under GPL v2,
+which restricts anyone sharing compiled NSFs and binaries without sharing the
+assembly source!
+
+Therefore, Dn-FT NSF driver changes are distributed under a seperate MIT-0
+license, while 0CC FT NSF driver changes are distributed under GPL v2. The
+remaining original driver code is not under any license.
+
+The texts for the MIT-0 and GPL v2 licenses are listed below:
+
+MIT No Attribution
+
+Copyright 2022 D.P.C.M.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 		    GNU GENERAL PUBLIC LICENSE
 		       Version 2, June 1991
