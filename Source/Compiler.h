@@ -153,6 +153,8 @@ private:
 
 	// File writing
 	void	WriteAssembly(CFile *pFile);
+	void	WritePeriods(CFile *pFile);
+	void	WriteVibrato(CFile *pFile);
 	void	WriteBinary(CFile *pFile);
 	void	WriteSamplesBinary(CFile *pFile);
 

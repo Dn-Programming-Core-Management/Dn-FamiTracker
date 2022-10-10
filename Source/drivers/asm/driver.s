@@ -621,10 +621,20 @@ bit_mask:		;;; ;; ; general-purpose bit mask
 .endrep
 
 ; Include period tables
-.include "periods.s"
+.if .defined(INC_MUSIC) .or .defined(INC_MUSIC_ASM)
+	; Period tables are overwritten when detune settings are present.
+	.include "driver_tests/periods.s"
+.else
+	.include "periods.s"
+.endif
 
 ;;; ;; ; Include vibrato table
-.include "vibrato.s"
+.if .defined(INC_MUSIC) .or .defined(INC_MUSIC_ASM)
+	; Vibrato tables are overwritten depending on old/new vibrato mode.
+	.include "driver_tests/vibrato.s"
+.else
+	.include "vibrato.s"
+.endif
 
 ;
 ; An example of including music follows
@@ -639,18 +649,18 @@ ft_music_addr:
 
 .if .defined(INC_MUSIC)
 
-	; Include music
-.if .defined(INC_MUSIC_ASM)
-	; Included assembly file music, DPCM included
-	.include "driver_tests/music.asm"
-.else
-	; Binary chunk music
-	.incbin "driver_tests/music.bin"
-.if .defined(USE_DPCM)
-	.segment "DPCM"				; DPCM samples goes here
-	.incbin "driver_tests/samples.bin"
-.endif
-.endif
+		; Include music
+	.if .defined(INC_MUSIC_ASM)
+		; Included assembly file music, DPCM included
+		.include "driver_tests/music.asm"
+	.else
+		; Binary chunk music
+		.incbin "driver_tests/music.bin"
+		.if .defined(USE_DPCM)
+			.segment "DPCM"				; DPCM samples goes here
+			.incbin "driver_tests/samples.bin"
+		.endif
+	.endif
 .endif
 
 .if .defined(HAS_NSF_HEADER)

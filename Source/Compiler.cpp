@@ -165,7 +165,7 @@ CCompiler::~CCompiler()
 template <typename... T>
 void CCompiler::Print(LPCTSTR text, T... args) const		// // //
 {
- 	static TCHAR buf[256];
+	static TCHAR buf[256];
 
 	if (m_pLogger == NULL || !text)
 		return;
@@ -734,12 +734,39 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File)
 		}
 	}
 
+	// Get the directory of the BIN
+	CString BINDirectory = OutputFileBIN.GetFilePath();
+	BINDirectory.Delete(
+		(OutputFileBIN.GetFilePath().GetLength()) - (OutputFileBIN.GetFileName().GetLength()),
+		OutputFileBIN.GetFileName().GetLength());
+
+	// Write period file
+	CFile OutputFilePeriod;
+	CString period_directory = BINDirectory;
+	period_directory += _T("periods.s");
+
+	if (!OpenFile(period_directory, OutputFilePeriod)) {
+		return;
+	}
+
+	// Write vibrato file
+	CFile OutputFileVibrato;
+	CString vibrato_directory = BINDirectory;
+	vibrato_directory += _T("vibrato.s");
+
+	if (!OpenFile(vibrato_directory, OutputFileVibrato)) {
+		return;
+	}
+
 	Print(_T("Writing output files...\n"));
 
 	WriteBinary(&OutputFileBIN);
 
 	if (_tcslen(lpszDPCM_File) != 0)
 		WriteSamplesBinary(&OutputFileDPCM);
+
+	WritePeriods(&OutputFilePeriod);
+	WriteVibrato(&OutputFileVibrato);
 
 	Print(_T("Done\n"));
 
@@ -748,6 +775,9 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File)
 
 	if (_tcslen(lpszDPCM_File) != 0)
 		OutputFileDPCM.Close();
+
+	OutputFilePeriod.Close();
+	OutputFileVibrato.Close();
 
 	Cleanup();
 }
@@ -852,11 +882,42 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName)
 		return;
 	}
 
+	// Get the directory of the output file
+	CString FileDirectory = OutputFile.GetFilePath();
+	FileDirectory.Delete(
+		(OutputFile.GetFilePath().GetLength()) - (OutputFile.GetFileName().GetLength()),
+		OutputFile.GetFileName().GetLength());
+
+	// Write period file
+	CFile OutputFilePeriod;
+	CString period_directory = FileDirectory;
+	period_directory += _T("periods.s");
+
+	if (!OpenFile(period_directory, OutputFilePeriod)) {
+		return;
+	}
+
+	// Write vibrato file
+	CFile OutputFileVibrato;
+	CString vibrato_directory = FileDirectory;
+	vibrato_directory += _T("vibrato.s");
+
+	if (!OpenFile(vibrato_directory, OutputFileVibrato)) {
+		return;
+	}
+
+
 	// Write output file
 	WriteAssembly(&OutputFile);
 
+	WritePeriods(&OutputFilePeriod);
+	WriteVibrato(&OutputFileVibrato);
+
 	// Done
 	OutputFile.Close();
+
+	OutputFilePeriod.Close();
+	OutputFileVibrato.Close();
 
 	Print(_T("Done\n"));
 
@@ -979,8 +1040,8 @@ void CCompiler::CreateHeader(stNSFHeader *pHeader, int MachineType) const
 
 	// If speed is default, write correct NTSC/PAL speed periods
 	// else, set the same custom speed for both
-	SpeedNTSC = (Speed == 0) ? 1000000 / 60 : 1000000 / Speed;
-	SpeedPAL = (Speed == 0) ? 1000000 / 50 : 1000000 / Speed;
+	SpeedNTSC = (Speed == 0) ? 1000000 / CAPU::FRAME_RATE_NTSC : 1000000 / Speed;
+	SpeedPAL = (Speed == 0) ? 1000000 / CAPU::FRAME_RATE_NTSC : 1000000 / Speed;
 
 	memset(pHeader, 0, 0x80);
 
@@ -1061,8 +1122,8 @@ void CCompiler::CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType)		// // 
 
 	unsigned int SpeedPAL, SpeedNTSC, Speed;
 	Speed = m_pDocument->GetEngineSpeed();
-	SpeedNTSC = (Speed == 0) ? 1000000 / 60 : 1000000 / Speed;
-	SpeedPAL = (Speed == 0) ? 1000000 / 50 : 1000000 / Speed;
+	SpeedNTSC = (Speed == 0) ? 1000000 / CAPU::FRAME_RATE_NTSC : 1000000 / Speed;
+	SpeedPAL = (Speed == 0) ? 1000000 / CAPU::FRAME_RATE_NTSC : 1000000 / Speed;
 
 	pHeader->InfoSize = 12;
 	pHeader->BankSize = 8;
@@ -2260,6 +2321,136 @@ void CCompiler::WriteAssembly(CFile *pFile)
 	Print(_T(" * Music data size: %i bytes\n"), m_iMusicDataSize);
 	Render.StoreSamples(m_vSamples);
 	Print(_T(" * DPCM samples size: %i bytes\n"), m_iSamplesSize);
+}
+
+void CCompiler::WritePeriods(CFile* pFile)
+{
+	const auto WriteString = [&pFile](CString str) {
+		pFile->Write(const_cast<CStringA&>(str).GetBuffer(), str.GetLength());
+	};
+
+	const auto DumpFunc = [WriteString](unsigned int* Table) {
+		for (int i = 0; i < NOTE_COUNT; ++i) {
+			unsigned int Val = Table[i] & 0xFFFF;
+			CString str;
+			if (i < NOTE_COUNT - 1) {
+				if (i % NOTE_RANGE < NOTE_RANGE - 1)
+					str.Format("$%04X, ", Val);
+				else
+					str.Format("$%04X\n\t.word\t", Val);
+			}
+			else
+				str.Format("$%04X\n", Val);
+			WriteString(str);
+		}
+	};
+
+	unsigned int NoteLookupTableNTSC[NOTE_COUNT];
+	unsigned int NoteLookupTablePAL[NOTE_COUNT];
+	unsigned int NoteLookupTableSaw[NOTE_COUNT];
+	unsigned int NoteLookupTableFDS[NOTE_COUNT];
+	unsigned int NoteLookupTableN163[NOTE_COUNT];
+	unsigned int NoteLookupTableVRC7[NOTE_COUNT];
+
+	CSoundGen* pSoundGen = theApp.GetSoundGenerator();
+	for (unsigned int i = 0; i < CDetuneTable::DETUNE_N163; ++i) {		// // //
+		switch (i) {
+		case CDetuneTable::DETUNE_NTSC:
+			for (int j = 0; j < NOTE_COUNT; ++j) NoteLookupTableNTSC[j] = pSoundGen->ReadPeriodTable(j, i); break;
+		case CDetuneTable::DETUNE_PAL:
+			for (int j = 0; j < NOTE_COUNT; ++j) NoteLookupTablePAL[j] = pSoundGen->ReadPeriodTable(j, i); break;
+		case CDetuneTable::DETUNE_SAW:
+			for (int j = 0; j < NOTE_COUNT; ++j) NoteLookupTableSaw[j] = pSoundGen->ReadPeriodTable(j, i); break;
+		case CDetuneTable::DETUNE_VRC7:
+			for (int j = 0; j < NOTE_COUNT; ++j) NoteLookupTableVRC7[j] = pSoundGen->ReadPeriodTable(j, i); break;
+		case CDetuneTable::DETUNE_FDS:
+			for (int j = 0; j < NOTE_COUNT; ++j) NoteLookupTableFDS[j] = pSoundGen->ReadPeriodTable(j, i); break;
+		case CDetuneTable::DETUNE_N163:
+			for (int j = 0; j < NOTE_COUNT; ++j) NoteLookupTableN163[j] = pSoundGen->ReadPeriodTable(j, i); break;
+		default:
+			AfxDebugBreak();
+		}
+	}
+
+	// One possible optimization is to store the PAL table as the difference from the NTSC table
+
+	WriteString("; 2A03 NTSC\n");
+	WriteString(".if .defined(NTSC_PERIOD_TABLE)\n");
+	WriteString("ft_periods_ntsc: ;; Patch\n\t.word\t");
+	DumpFunc(NoteLookupTableNTSC);
+
+	WriteString(".endif\n\n");
+	WriteString("; 2A03 PAL\n");
+	WriteString(".if .defined(PAL_PERIOD_TABLE)\n");
+	WriteString("ft_periods_pal: ;; Patch\n\t.word\t");
+	DumpFunc(NoteLookupTablePAL);
+
+	WriteString(".endif\n\n");
+	WriteString("; VRC6 Sawtooth\n");
+	WriteString(".if .defined(USE_VRC6)\n");
+	WriteString("ft_periods_sawtooth: ;; Patch\n\t.word\t");
+	DumpFunc(NoteLookupTableSaw);
+
+	WriteString(".endif\n\n");
+	WriteString("; FDS\n");
+	WriteString(".if .defined(USE_FDS)\n");
+	WriteString("ft_periods_fds: ;; Patch\n\t.word\t");
+	DumpFunc(NoteLookupTableFDS);
+
+	WriteString(".endif\n\n");
+	WriteString("; N163\n");
+	WriteString(".if .defined(USE_N163)\n");
+	WriteString("ft_periods_n163: ;; Patch\n\t.word\t");
+	DumpFunc(NoteLookupTableN163);
+
+	WriteString(".endif\n\n");
+	WriteString("; VRC7\n");
+	WriteString(".if .defined(USE_VRC7)\n");
+	WriteString("; Fnum table, multiplied by 4 for higher resolution\n");
+	WriteString(".define ft_vrc7_table ");
+
+	for (int i = 0; i <= NOTE_RANGE; ++i) {		// // // include last item for linear pitch code optimization
+		CString str;
+		if (i == NOTE_RANGE)
+			str.Format("$%04X\n\n", NoteLookupTableVRC7[0] << 3);
+		else
+			str.Format("$%04X, ", NoteLookupTableVRC7[i] << 2);
+		WriteString(str);
+	}
+
+	WriteString("ft_note_table_vrc7_l: ;; Patch\n");
+	WriteString("\t.lobytes ft_vrc7_table\n");
+	WriteString("ft_note_table_vrc7_h:\n");
+	WriteString("\t.hibytes ft_vrc7_table\n");
+	WriteString(".endif\n");
+}
+
+void CCompiler::WriteVibrato(CFile* pFile)
+{
+	const auto WriteString = [&pFile](CString str) {
+		pFile->Write(const_cast<CStringA&>(str).GetBuffer(), str.GetLength());
+	};
+
+	unsigned int VibratoTable[VIBRATO_LENGTH];
+
+	// Copy the vibrato table, the stock one only works for new vibrato mode
+	const CSoundGen* pSoundGen = theApp.GetSoundGenerator();
+
+	for (int i = 0; i < 256; ++i) {
+		VibratoTable[i] = pSoundGen->ReadVibratoTable(i);
+	}
+
+	WriteString("; Vibrato table (256 bytes)\n"
+		"ft_vibrato_table: ;; Patch\n");
+	for (int i = 0; i < 16; i++) {	// depth
+		WriteString("\t.byte ");
+		for (int j = 0; j < 16; j++) {	// phase
+			CString b;
+			b.Format("$%02X%s", VibratoTable[i * 16 + j], j < 15 ? ", " : "");
+			WriteString(b);
+		}
+		WriteString("\n");
+	}
 }
 
 void CCompiler::WriteBinary(CFile *pFile)
