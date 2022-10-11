@@ -106,7 +106,7 @@ void CCommandLineExport::CommandLineExport(const CString& fileIn, const CString&
 	if (0 == ext.CompareNoCase(_T(".nsf")))
 	{
 		CCompiler compiler(pExportDoc, bLog ? new CCommandLineLog(&tLog) : NULL);
-		compiler.ExportNSF(fileOut, pExportDoc->GetMachine() );
+		compiler.ExportNSF(fileOut, pExportDoc->GetMachine());
 		if (bLog)
 		{
 			tLog += _T("\nNSF export complete.\n");
@@ -131,7 +131,7 @@ void CCommandLineExport::CommandLineExport(const CString& fileIn, const CString&
 	else if (0 == ext.CompareNoCase(_T(".bin")))
 	{
 		CCompiler compiler(pExportDoc, bLog ? new CCommandLineLog(&tLog) : NULL);
-		compiler.ExportBIN(fileOut, fileDPCM);
+		compiler.ExportBIN(fileOut, fileDPCM, pExportDoc->GetMachine(), false);
 		if (bLog)
 		{
 			tLog += _T("\nBIN export complete.\n");
@@ -155,7 +155,7 @@ void CCommandLineExport::CommandLineExport(const CString& fileIn, const CString&
 	else if (0 == ext.CompareNoCase(_T(".asm")))
 	{
 		CCompiler compiler(pExportDoc, bLog ? new CCommandLineLog(&tLog) : NULL);
-		compiler.ExportASM(fileOut);
+		compiler.ExportASM(fileOut, pExportDoc->GetMachine(), false);
 		if (bLog)
 		{
 			tLog += _T("\nASM export complete.\n");

@@ -287,7 +287,7 @@ void CCompiler::ExportNSF(LPCTSTR lpszFileName, int MachineType)
 
 	// Create NSF header
 	stNSFHeader Header;
-	CreateHeader(&Header, MachineType);
+	CreateHeader(&Header, MachineType, 0x00);
 
 	// Write header
 	OutputFile.Write(&Header, sizeof(stNSFHeader));
@@ -705,24 +705,32 @@ void CCompiler::ExportNES(LPCTSTR lpszFileName, bool EnablePAL)
 	Cleanup();
 }
 
-void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File)
+void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int MachineType, bool ExtraData)
 {
 	ClearLog();
 
 	// Build the music data
-	if (!CompileData())
-		return;
-
-	if (m_bBankSwitched) {
-		Print(_T("Error: Can't write bankswitched songs!\n"));
+	if (!CompileData()) {
+		// Failed
+		Cleanup();
 		return;
 	}
 
-	// Convert to binary
-	ResolveLabels();
+	if (m_bBankSwitched) {
+		// TODO: write multiple binary banks
+		Print(_T("Error: Can't write bankswitched songs!\n"));
+		return;
+	}
+	else {
+		ResolveLabels();
+	}
 
+	// Open output files
 	CFile OutputFileBIN;
 	if (!OpenFile(lpszBIN_File, OutputFileBIN)) {
+		OutputFileBIN.Close();
+		Print(_T("Error: Could not open output binary file\n"));
+		Cleanup();
 		return;
 	}
 
@@ -730,32 +738,10 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File)
 	if (_tcslen(lpszDPCM_File) != 0) {
 		if (!OpenFile(lpszDPCM_File, OutputFileDPCM)) {
 			OutputFileBIN.Close();
+			Print(_T("Error: Could not open output binary DPCM file\n"));
+			Cleanup();
 			return;
 		}
-	}
-
-	// Get the directory of the BIN
-	CString BINDirectory = OutputFileBIN.GetFilePath();
-	BINDirectory.Delete(
-		(OutputFileBIN.GetFilePath().GetLength()) - (OutputFileBIN.GetFileName().GetLength()),
-		OutputFileBIN.GetFileName().GetLength());
-
-	// Write period file
-	CFile OutputFilePeriod;
-	CString period_directory = BINDirectory;
-	period_directory += _T("periods.s");
-
-	if (!OpenFile(period_directory, OutputFilePeriod)) {
-		return;
-	}
-
-	// Write vibrato file
-	CFile OutputFileVibrato;
-	CString vibrato_directory = BINDirectory;
-	vibrato_directory += _T("vibrato.s");
-
-	if (!OpenFile(vibrato_directory, OutputFileVibrato)) {
-		return;
 	}
 
 	Print(_T("Writing output files...\n"));
@@ -765,8 +751,56 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File)
 	if (_tcslen(lpszDPCM_File) != 0)
 		WriteSamplesBinary(&OutputFileDPCM);
 
-	WritePeriods(&OutputFilePeriod);
-	WriteVibrato(&OutputFileVibrato);
+	if (ExtraData) {
+		// Get the directory of the BIN
+		CString BINDirectory = OutputFileBIN.GetFilePath();
+		BINDirectory.Delete(
+			(OutputFileBIN.GetFilePath().GetLength()) - (OutputFileBIN.GetFileName().GetLength()),
+			OutputFileBIN.GetFileName().GetLength());
+
+		// Write period file
+		CFile OutputFilePeriod;
+		CString period_directory = BINDirectory;
+		period_directory += _T("periods.s");
+		if (!OpenFile(period_directory, OutputFilePeriod)) {
+			OutputFilePeriod.Close();
+			Print(_T("Error: Could not open output periods file\n"));
+			Cleanup();
+			return;
+		}
+
+		// Write vibrato file
+		CFile OutputFileVibrato;
+		CString vibrato_directory = BINDirectory;
+		vibrato_directory += _T("vibrato.s");
+		if (!OpenFile(vibrato_directory, OutputFileVibrato)) {
+			OutputFileVibrato.Close();
+			Print(_T("Error: Could not open output vibrato file\n"));
+			Cleanup();
+			return;
+		}
+
+		// Write NSF header, if specified
+		stNSFHeader Header;
+		CreateHeader(&Header, MachineType, 0x00);
+		CFile OutputFileNSFHeader;
+		CString header_directory = BINDirectory;
+		header_directory += _T("nsf_header.s");
+
+		if (!OpenFile(header_directory, OutputFileNSFHeader)) {
+			OutputFileNSFHeader.Close();
+			Print(_T("Error: Could not open NSF header file\n"));
+			Cleanup();
+			return;
+		}
+		Print(_T("Writing additional data files...\n"));
+		WritePeriods(&OutputFilePeriod);
+		WriteVibrato(&OutputFileVibrato);
+		WriteNSFHeader(&OutputFileNSFHeader, Header);
+		OutputFilePeriod.Close();
+		OutputFileVibrato.Close();
+		OutputFileNSFHeader.Close();
+	}
 
 	Print(_T("Done\n"));
 
@@ -776,8 +810,6 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File)
 	if (_tcslen(lpszDPCM_File) != 0)
 		OutputFileDPCM.Close();
 
-	OutputFilePeriod.Close();
-	OutputFileVibrato.Close();
 
 	Cleanup();
 }
@@ -852,13 +884,16 @@ void CCompiler::ExportPRG(LPCTSTR lpszFileName, bool EnablePAL)
 	Cleanup();
 }
 
-void CCompiler::ExportASM(LPCTSTR lpszFileName)
+void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 {
 	ClearLog();
 
 	// Build the music data
-	if (!CompileData())
+	if (!CompileData()) {
+		// Failed
+		Cleanup();
 		return;
+	}
 
 	if (m_bBankSwitched) {
 		// TODO: bankswitching is still unsupported when exporting to ASM
@@ -875,49 +910,75 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName)
 
 	UpdateSamplePointers(PAGE_SAMPLES);		// Always start at C000 when exporting to ASM
 
-	Print(_T("Writing output files...\n"));
-
+	// Open output files
 	CFile OutputFile;
 	if (!OpenFile(lpszFileName, OutputFile)) {
+		OutputFile.Close();
+		Print(_T("Error: Could not open output file\n"));
+		Cleanup();
 		return;
 	}
-
-	// Get the directory of the output file
-	CString FileDirectory = OutputFile.GetFilePath();
-	FileDirectory.Delete(
-		(OutputFile.GetFilePath().GetLength()) - (OutputFile.GetFileName().GetLength()),
-		OutputFile.GetFileName().GetLength());
-
-	// Write period file
-	CFile OutputFilePeriod;
-	CString period_directory = FileDirectory;
-	period_directory += _T("periods.s");
-
-	if (!OpenFile(period_directory, OutputFilePeriod)) {
-		return;
-	}
-
-	// Write vibrato file
-	CFile OutputFileVibrato;
-	CString vibrato_directory = FileDirectory;
-	vibrato_directory += _T("vibrato.s");
-
-	if (!OpenFile(vibrato_directory, OutputFileVibrato)) {
-		return;
-	}
-
 
 	// Write output file
+	Print(_T("Writing output files...\n"));
+
 	WriteAssembly(&OutputFile);
 
-	WritePeriods(&OutputFilePeriod);
-	WriteVibrato(&OutputFileVibrato);
+	if (ExtraData) {
+		// Get the directory of the output file
+		CString FileDirectory = OutputFile.GetFilePath();
+		FileDirectory.Delete(
+			(OutputFile.GetFilePath().GetLength()) - (OutputFile.GetFileName().GetLength()),
+			OutputFile.GetFileName().GetLength());
+
+		// Write period file
+		CFile OutputFilePeriod;
+		CString period_directory = FileDirectory;
+		period_directory += _T("periods.s");
+
+		if (!OpenFile(period_directory, OutputFilePeriod)) {
+			OutputFilePeriod.Close();
+			Print(_T("Error: Could not open output periods file\n"));
+			Cleanup();
+			return;
+		}
+
+		// Write vibrato file
+		CFile OutputFileVibrato;
+		CString vibrato_directory = FileDirectory;
+		vibrato_directory += _T("vibrato.s");
+
+		if (!OpenFile(vibrato_directory, OutputFileVibrato)) {
+			OutputFileVibrato.Close();
+			Print(_T("Error: Could not open output vibrato file\n"));
+			Cleanup();
+			return;
+		}
+
+		// Write NSF header, if specified
+		stNSFHeader Header;
+		CreateHeader(&Header, MachineType, 0x00);
+		CFile OutputFileNSFHeader;
+		CString header_directory = FileDirectory;
+		header_directory += _T("nsf_header.s");
+
+		if (!OpenFile(header_directory, OutputFileNSFHeader)) {
+			OutputFileNSFHeader.Close();
+			Print(_T("Error: Could not open output NSF header file\n"));
+			Cleanup();
+			return;
+		}
+		Print(_T("Writing additional data files...\n"));
+		WritePeriods(&OutputFilePeriod);
+		WriteVibrato(&OutputFileVibrato);
+		WriteNSFHeader(&OutputFileNSFHeader, Header);
+		OutputFilePeriod.Close();
+		OutputFileVibrato.Close();
+		OutputFileNSFHeader.Close();
+	}
 
 	// Done
 	OutputFile.Close();
-
-	OutputFilePeriod.Close();
-	OutputFileVibrato.Close();
 
 	Print(_T("Done\n"));
 
@@ -1028,7 +1089,7 @@ void CCompiler::PatchVibratoTable(char *pDriver) const
 
 #pragma warning (push)
 #pragma warning (disable : 4996)
-void CCompiler::CreateHeader(stNSFHeader *pHeader, int MachineType) const
+void CCompiler::CreateHeader(stNSFHeader *pHeader, int MachineType, unsigned int NSF2Flags) const
 {
 	// Fill the NSF header
 	//
@@ -1109,10 +1170,10 @@ void CCompiler::CreateHeader(stNSFHeader *pHeader, int MachineType) const
 	// Expansion chip
 	pHeader->SoundChip = m_iActualChip;		// // //
 
-	pHeader->Reserved[0] = 0x00;
-	pHeader->Reserved[1] = 0x00;
-	pHeader->Reserved[2] = 0x00;
-	pHeader->Reserved[3] = 0x00;
+	pHeader->NSF2Flags = NSF2Flags;
+	pHeader->NSFDataLength[0] = 0;		// !! !! Allow this to be overwritten
+	pHeader->NSFDataLength[1] = 0;
+	pHeader->NSFDataLength[2] = 0;
 }
 #pragma warning (pop)
 
@@ -2451,6 +2512,102 @@ void CCompiler::WriteVibrato(CFile* pFile)
 		}
 		WriteString("\n");
 	}
+}
+
+void CCompiler::WriteNSFHeader(CFile* pFile, stNSFHeader Header)
+{
+	CString str;
+	const auto WriteString = [&pFile](CString str) {
+		pFile->Write(const_cast<CStringA&>(str).GetBuffer(), str.GetLength());
+	};
+
+	const auto WriteByte = [&WriteString](unsigned int Byte) {
+		CString str;
+		str.Format("$%02X", Byte);
+		WriteString(str);
+	};
+
+	const auto WriteWord = [&WriteString](unsigned int Word) {
+		CString str;
+		str.Format("$%04X", Word);
+		WriteString(str);
+	};
+
+	const auto WriteInt = [&WriteString](unsigned int Int) {
+		CString str;
+		str.Format("%i", Int);
+		WriteString(str);
+	};
+
+	const auto WriteNSFIdent = [&WriteString](unsigned char* Ident) {
+		for (int i = 0; i < 5; ++i) {
+			CString str;
+			str.Format("$%02X%s", Ident[i], i < 4 ? ", " : "");
+			WriteString(str);
+		}
+	};
+
+	const auto WriteBankValues = [&WriteString](unsigned char* BankValues) {
+		for (int i = 0; i < 8; ++i) {
+			CString str;
+			str.Format("%i%s", BankValues[i], i < 7 ? ", " : "");
+			WriteString(str);
+		}
+	};
+
+	const auto WriteNSFLength = [&WriteString](unsigned char* Length) {
+		for (int i = 0; i < 3; ++i) {
+			CString str;
+			str.Format("$%02X%s", Length[i], i < 2 ? ", " : "");
+			WriteString(str);
+		}
+	};
+
+	WriteString(";\n; NSF Header\n;\n");
+	if (Header.SoundChip & SNDCHIP_VRC6) WriteString("USE_VRC6 = 1\n");
+	if (Header.SoundChip & SNDCHIP_VRC7) WriteString("USE_VRC7 = 1\n");
+	if (Header.SoundChip & SNDCHIP_FDS) WriteString("USE_FDS = 1\n");
+	if (Header.SoundChip & SNDCHIP_MMC5) WriteString("USE_MMC5 = 1\n");
+	if (Header.SoundChip & SNDCHIP_N163) WriteString("USE_N163 = 1\n");
+	if (Header.SoundChip & SNDCHIP_S5B) WriteString("USE_S5B = 1\n");
+	WriteString("\n.segment \"HEADER1\"\n");
+	WriteString(".byte "); WriteNSFIdent(Header.Ident);
+	WriteString("\t; ID\n");
+	WriteString(".byte $01\t\t\t\t\t\t; Version\n");
+	WriteString(".byte "); WriteInt(Header.TotalSongs);
+	WriteString("\t\t\t\t\t\t\t; Number of songs\n");
+	WriteString(".byte "); WriteInt(Header.StartSong);
+	WriteString("\t\t\t\t\t\t\t; Start song\n");
+	WriteString(".word LOAD\t\t\t\t\t\t; LOAD address\n");
+	WriteString(".word INIT\t\t\t\t\t\t; INIT address\n");
+	WriteString(".word PLAY\t\t\t\t\t\t; PLAY address\n\n");
+
+	WriteString(".segment \"HEADER2\"\n");
+	WriteString(".asciiz \""); WriteString(static_cast<CString>(Header.SongName));
+	WriteString("\"\t; Name, 32 bytes\n\n");
+
+	WriteString(".segment \"HEADER3\"\n");
+	WriteString(".asciiz \""); WriteString(static_cast<CString>(Header.ArtistName));
+	WriteString("\"\t; Artist, 32 bytes\n\n");
+
+	WriteString(".segment \"HEADER4\"\n");
+	WriteString(".asciiz \""); WriteString(static_cast<CString>(Header.Copyright));
+	WriteString("\"\t; Copyright, 32 bytes\n\n");
+
+	WriteString(".segment \"HEADER5\"\n");
+	WriteString(".word "); WriteWord(Header.Speed_NTSC);
+	WriteString("\t\t\t\t\t\t; NTSC speed\n");
+	WriteString(".byte "); WriteBankValues(Header.BankValues);
+	WriteString("\t; Bank values\n");
+	WriteString(".word "); WriteWord(Header.Speed_PAL);
+	WriteString("\t\t\t\t\t\t; PAL speed\n");
+	WriteString(".byte "); WriteInt(Header.Flags);
+	WriteString("\t\t\t\t\t\t\t; Flags, NTSC\n");
+	WriteString(".byte EXPANSION_FLAG\t\t\t; Expansion audio flags\n");
+	WriteString(".byte "); WriteByte(Header.NSF2Flags);
+	WriteString("\t\t\t\t\t\t; NSF2 flags\n");
+	WriteString(".byte "); WriteNSFLength(Header.NSFDataLength);
+	WriteString("\t\t\t\t; NSF data length\n");
 }
 
 void CCompiler::WriteBinary(CFile *pFile)

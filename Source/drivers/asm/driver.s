@@ -35,6 +35,15 @@ ENABLE_ROW_SKIP = 1		; Enable this to add code for seeking to a row > 0 when usi
 
 ;USE_MMC5_MULTIPLIER = 1	;;; ;; ; optimize multiplication using MMC5 hardware multiplier
 
+.if .defined(HAS_NSF_HEADER)
+	.segment "HEADER"
+	.if .defined(USE_AUX_DATA)
+		.include "driver_tests/nsf_header.s"
+	.else
+		.include "nsf_wrap.s"
+	.endif
+.endif
+
 .if .defined(USE_ALL)	;;; ;; ;
 	USE_VRC6 = 1
 	USE_VRC7 = 1
@@ -621,7 +630,7 @@ bit_mask:		;;; ;; ; general-purpose bit mask
 .endrep
 
 ; Include period tables
-.if .defined(INC_MUSIC) .or .defined(INC_MUSIC_ASM)
+.if .defined(USE_AUX_DATA)
 	; Period tables are overwritten when detune settings are present.
 	.include "driver_tests/periods.s"
 .else
@@ -629,7 +638,7 @@ bit_mask:		;;; ;; ; general-purpose bit mask
 .endif
 
 ;;; ;; ; Include vibrato table
-.if .defined(INC_MUSIC) .or .defined(INC_MUSIC_ASM)
+.if .defined(USE_AUX_DATA)
 	; Vibrato tables are overwritten depending on old/new vibrato mode.
 	.include "driver_tests/vibrato.s"
 .else
@@ -646,9 +655,7 @@ bit_mask:		;;; ;; ; general-purpose bit mask
 ft_music_addr:
 	.word * + 2					; This is the point where music data is stored
 
-
 .if .defined(INC_MUSIC)
-
 		; Include music
 	.if .defined(INC_MUSIC_ASM)
 		; Included assembly file music, DPCM included
@@ -661,9 +668,4 @@ ft_music_addr:
 			.incbin "driver_tests/samples.bin"
 		.endif
 	.endif
-.endif
-
-.if .defined(HAS_NSF_HEADER)
-.segment "HEADER"
-.include "nsf_wrap.s"
 .endif

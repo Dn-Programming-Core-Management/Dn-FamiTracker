@@ -637,6 +637,7 @@
 #define IDC_UPDATE_REMIND               1482
 #define IDC_PRECISEREGPITCH_CHECK       1482
 #define IDC_VRC7_OFFSET_DB              1482
+#define IDC_CHECK_EXTRADATA             1482
 #define IDC_VRC6_OFFSET_DB              1483
 #define IDC_SLIDER_FDS_LOWPASS          1484
 #define IDC_COMBO_S5B_EMULATOR          1485
@@ -830,9 +831,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        379
+#define _APS_NEXT_RESOURCE_VALUE        380
 #define _APS_NEXT_COMMAND_VALUE         33215
-#define _APS_NEXT_CONTROL_VALUE         1521
+#define _APS_NEXT_CONTROL_VALUE         1524
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif
