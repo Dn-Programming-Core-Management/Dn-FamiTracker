@@ -12,6 +12,15 @@
 ; Assembler code switches
 ;
 
+.if .defined(HAS_NSF_HEADER)
+	.segment "HEADER"
+	.if .defined(USE_AUX_DATA)
+		.include "driver_tests/nsf_header.s"
+	.else
+		.include "nsf_wrap.s"
+	.endif
+.endif
+
 USE_BANKSWITCH = 1		; Enable bankswitching code
 USE_OLDVIBRATO = 1		;;; ;; ; Enable old vibrato code
 USE_LINEARPITCH = 1		;;; ;; ; Enable linear pitch code
@@ -34,15 +43,6 @@ ENABLE_ROW_SKIP = 1		; Enable this to add code for seeking to a row > 0 when usi
 ;USE_ALL  = 1			;;; ;; ; All expansion chips, always assumes 8 N163 channels
 
 ;USE_MMC5_MULTIPLIER = 1	;;; ;; ; optimize multiplication using MMC5 hardware multiplier
-
-.if .defined(HAS_NSF_HEADER)
-	.segment "HEADER"
-	.if .defined(USE_AUX_DATA)
-		.include "driver_tests/nsf_header.s"
-	.else
-		.include "nsf_wrap.s"
-	.endif
-.endif
 
 .if .defined(USE_ALL)	;;; ;; ;
 	USE_VRC6 = 1

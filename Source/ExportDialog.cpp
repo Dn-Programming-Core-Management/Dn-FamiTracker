@@ -177,6 +177,14 @@ BOOL CExportDialog::OnInitDialog()
 #ifdef _DEBUG
 	GetDlgItem(IDC_PLAY)->ShowWindow(SW_SHOW);
 #endif
+	CString ItemText;
+	pTypeBox->GetLBText(m_iExportOption, ItemText);
+
+	// Check if .bin or .asm export
+	if (!ItemText.Compare(DEFAULT_EXPORT_NAMES[4]) || !ItemText.Compare(DEFAULT_EXPORT_NAMES[6]))
+		GetDlgItem(IDC_CHECK_EXTRADATA)->EnableWindow(true);
+	else
+		GetDlgItem(IDC_CHECK_EXTRADATA)->EnableWindow(false);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE

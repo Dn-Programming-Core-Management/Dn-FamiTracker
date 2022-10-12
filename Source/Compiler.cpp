@@ -144,7 +144,8 @@ CCompiler::CCompiler(CFamiTrackerDoc *pDoc, CCompilerLog *pLogger) :
 	m_pHeaderChunk(NULL),
 	m_pDriverData(NULL),
 	m_iLastBank(0),
-	m_iHashCollisions(0)
+	m_iHashCollisions(0),
+	m_iFirstSampleBank(0)
 {
 	ASSERT(CCompiler::pCompiler == NULL);
 	CCompiler::pCompiler = this;
@@ -717,13 +718,44 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 	}
 
 	if (m_bBankSwitched) {
-		// TODO: write multiple binary banks
+		// TODO: write seperate binary banks
 		Print(_T("Error: Can't write bankswitched songs!\n"));
+		Cleanup();
 		return;
 	}
 	else {
 		ResolveLabels();
+		ClearSongBanks();
 	}
+
+	// Rewrite DPCM sample pointers
+	UpdateSamplePointers(m_iSampleStart);
+
+	// Compressed mode means that driver and music is located just below the sample space, no space is lost even when samples are used
+	bool bCompressedMode;
+	unsigned short MusicDataAddress;
+
+	// Find out load address
+	if ((PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize) < 0x8000 || m_bBankSwitched || m_iActualChip != m_pDocument->GetExpansionChip()) // // //
+		bCompressedMode = false;
+	else
+		bCompressedMode = true;
+
+	if (bCompressedMode) {
+		// Locate driver at $C000 - (driver size)
+		m_iLoadAddress = PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize;
+		m_iDriverAddress = PAGE_SAMPLES - m_iDriverSize;
+		MusicDataAddress = m_iLoadAddress;
+	}
+	else {
+		// Locate driver at $8000
+		m_iLoadAddress = PAGE_START;
+		m_iDriverAddress = PAGE_START;
+		MusicDataAddress = m_iLoadAddress + m_iDriverSize;
+	}
+
+	// Init is located first at the driver
+	m_iInitAddress = m_iDriverAddress + DATA_HEADER_SIZE;		// // //
 
 	// Open output files
 	CFile OutputFileBIN;
@@ -737,6 +769,7 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 	CFile OutputFileDPCM;
 	if (_tcslen(lpszDPCM_File) != 0) {
 		if (!OpenFile(lpszDPCM_File, OutputFileDPCM)) {
+			OutputFileDPCM.Close();
 			OutputFileBIN.Close();
 			Print(_T("Error: Could not open output binary DPCM file\n"));
 			Cleanup();
@@ -774,6 +807,7 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 		CString vibrato_directory = BINDirectory;
 		vibrato_directory += _T("vibrato.s");
 		if (!OpenFile(vibrato_directory, OutputFileVibrato)) {
+			OutputFilePeriod.Close();
 			OutputFileVibrato.Close();
 			Print(_T("Error: Could not open output vibrato file\n"));
 			Cleanup();
@@ -788,6 +822,8 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 		header_directory += _T("nsf_header.s");
 
 		if (!OpenFile(header_directory, OutputFileNSFHeader)) {
+			OutputFilePeriod.Close();
+			OutputFileVibrato.Close();
 			OutputFileNSFHeader.Close();
 			Print(_T("Error: Could not open NSF header file\n"));
 			Cleanup();
@@ -809,7 +845,6 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 
 	if (_tcslen(lpszDPCM_File) != 0)
 		OutputFileDPCM.Close();
-
 
 	Cleanup();
 }
@@ -896,10 +931,15 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 	}
 
 	if (m_bBankSwitched) {
-		// TODO: bankswitching is still unsupported when exporting to ASM
+		// Expand and allocate label addresses
 		AddBankswitching();
-		ResolveLabelsBankswitched();
+		if (!ResolveLabelsBankswitched()) {
+			Cleanup();
+			return;
+		}
+		// Make driver aware of bankswitching
 		EnableBankswitching();
+		// Write bank data
 		UpdateFrameBanks();
 		UpdateSongBanks();
 	}
@@ -908,9 +948,35 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 		ClearSongBanks();
 	}
 
-	UpdateSamplePointers(PAGE_SAMPLES);		// Always start at C000 when exporting to ASM
+	// Rewrite DPCM sample pointers
+	UpdateSamplePointers(m_iSampleStart);
 
-	// Open output files
+	// Compressed mode means that driver and music is located just below the sample space, no space is lost even when samples are used
+	bool bCompressedMode;
+	unsigned short MusicDataAddress;
+
+	// Find out load address
+	if ((PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize) < 0x8000 || m_bBankSwitched || m_iActualChip != m_pDocument->GetExpansionChip()) // // //
+		bCompressedMode = false;
+	else
+		bCompressedMode = true;
+
+	if (bCompressedMode) {
+		// Locate driver at $C000 - (driver size)
+		m_iLoadAddress = PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize;
+		m_iDriverAddress = PAGE_SAMPLES - m_iDriverSize;
+		MusicDataAddress = m_iLoadAddress;
+	}
+	else {
+		// Locate driver at $8000
+		m_iLoadAddress = PAGE_START;
+		m_iDriverAddress = PAGE_START;
+		MusicDataAddress = m_iLoadAddress + m_iDriverSize;
+	}
+
+	// Init is located first at the driver
+	m_iInitAddress = m_iDriverAddress + DATA_HEADER_SIZE;		// // //
+
 	CFile OutputFile;
 	if (!OpenFile(lpszFileName, OutputFile)) {
 		OutputFile.Close();
@@ -949,6 +1015,7 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 		vibrato_directory += _T("vibrato.s");
 
 		if (!OpenFile(vibrato_directory, OutputFileVibrato)) {
+			OutputFilePeriod.Close();
 			OutputFileVibrato.Close();
 			Print(_T("Error: Could not open output vibrato file\n"));
 			Cleanup();
@@ -963,6 +1030,8 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 		header_directory += _T("nsf_header.s");
 
 		if (!OpenFile(header_directory, OutputFileNSFHeader)) {
+			OutputFilePeriod.Close();
+			OutputFileVibrato.Close();
 			OutputFileNSFHeader.Close();
 			Print(_T("Error: Could not open output NSF header file\n"));
 			Cleanup();
@@ -2386,8 +2455,10 @@ void CCompiler::WriteAssembly(CFile *pFile)
 
 void CCompiler::WritePeriods(CFile* pFile)
 {
-	const auto WriteString = [&pFile](CString str) {
+	unsigned int length = 0;
+	const auto WriteString = [&pFile, &length](CString str) {
 		pFile->Write(const_cast<CStringA&>(str).GetBuffer(), str.GetLength());
+		length += str.GetLength();
 	};
 
 	const auto DumpFunc = [WriteString](unsigned int* Table) {
@@ -2484,12 +2555,16 @@ void CCompiler::WritePeriods(CFile* pFile)
 	WriteString("ft_note_table_vrc7_h:\n");
 	WriteString("\t.hibytes ft_vrc7_table\n");
 	WriteString(".endif\n");
+
+	Print(_T(" * Period table size: %i bytes\n"), length);
 }
 
 void CCompiler::WriteVibrato(CFile* pFile)
 {
-	const auto WriteString = [&pFile](CString str) {
+	unsigned int length = 0;
+	const auto WriteString = [&pFile, &length](CString str) {
 		pFile->Write(const_cast<CStringA&>(str).GetBuffer(), str.GetLength());
+		length += str.GetLength();
 	};
 
 	unsigned int VibratoTable[VIBRATO_LENGTH];
@@ -2512,13 +2587,17 @@ void CCompiler::WriteVibrato(CFile* pFile)
 		}
 		WriteString("\n");
 	}
+
+	Print(_T(" * Vibrato table size: %i bytes\n"), length);
 }
 
 void CCompiler::WriteNSFHeader(CFile* pFile, stNSFHeader Header)
 {
 	CString str;
-	const auto WriteString = [&pFile](CString str) {
+	unsigned int length = 0;
+	const auto WriteString = [&pFile, &length](CString str) {
 		pFile->Write(const_cast<CStringA&>(str).GetBuffer(), str.GetLength());
+		length += str.GetLength();
 	};
 
 	const auto WriteByte = [&WriteString](unsigned int Byte) {
@@ -2570,6 +2649,9 @@ void CCompiler::WriteNSFHeader(CFile* pFile, stNSFHeader Header)
 	if (Header.SoundChip & SNDCHIP_MMC5) WriteString("USE_MMC5 = 1\n");
 	if (Header.SoundChip & SNDCHIP_N163) WriteString("USE_N163 = 1\n");
 	if (Header.SoundChip & SNDCHIP_S5B) WriteString("USE_S5B = 1\n");
+	if (m_bBankSwitched) WriteString("USE_BANKSWITCH = 1\n");
+	if (m_pDocument->GetVibratoStyle() == VIBRATO_OLD) WriteString("USE_OLDVIBRATO = 1\n");
+	if (m_pDocument->GetLinearPitch()) WriteString("USE_LINEARPITCH = 1\n");
 	WriteString("\n.segment \"HEADER1\"\n");
 	WriteString(".byte "); WriteNSFIdent(Header.Ident);
 	WriteString("\t; ID\n");
@@ -2608,6 +2690,8 @@ void CCompiler::WriteNSFHeader(CFile* pFile, stNSFHeader Header)
 	WriteString("\t\t\t\t\t\t; NSF2 flags\n");
 	WriteString(".byte "); WriteNSFLength(Header.NSFDataLength);
 	WriteString("\t\t\t\t; NSF data length\n");
+
+	Print(_T(" * NSF header size: %i bytes\n"), length);
 }
 
 void CCompiler::WriteBinary(CFile *pFile)

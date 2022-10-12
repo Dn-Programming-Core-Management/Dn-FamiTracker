@@ -1788,7 +1788,6 @@ ft_calculate_speed:
 
 	rts
 
-.if .defined(USE_LINEARPITCH) || .defined(USE_FDS)
 .if .defined(USE_MMC5) && .defined(USE_MMC5_MULTIPLIER)
 MUL:
 	lda var_Temp16
@@ -1839,7 +1838,6 @@ MUL:		;;; ;; ; var_Temp16 * var_Temp -> ACC (highest byte in EXT)
 	dey
 	bne @MultStep
 	rts
-.endif
 .endif
 
 ; If anyone knows a way to calculate speed without using
