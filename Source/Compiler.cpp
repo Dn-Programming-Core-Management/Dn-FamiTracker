@@ -892,7 +892,7 @@ void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
 	Print(_T(" * Driver size: %i bytes\n"), m_iDriverSize);
 
 	if (m_bBankSwitched) {
-		int Percent = (100 * m_iMusicDataSize) / (0x8000 - m_iDriverSize - m_iSamplesSize);
+		int Percent = (100 * m_iMusicDataSize) / (0x80000 - m_iDriverSize - m_iSamplesSize);
 		int Banks = Render->GetBankCount();
 		Print(_T(" * Song data size: %i bytes (%i%%)\n"), m_iMusicDataSize, Percent);
 		Print(_T(" * NSF type: Bankswitched (%i banks)\n"), Banks - 1);
