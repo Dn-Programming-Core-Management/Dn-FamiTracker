@@ -159,6 +159,7 @@ private:
 	void	WritePeriods(CFile* pFile);
 	void	WriteVibrato(CFile* pFile);
 	void	WriteNSFHeader(CFile* pFile, stNSFHeader Header);
+	void	WriteNSFConfig(CFile* pFile, unsigned int DPCMSegment, stNSFHeader Header);
 	void	WriteSamplesBinary(CFile *pFile);
 
 	// Object list functions

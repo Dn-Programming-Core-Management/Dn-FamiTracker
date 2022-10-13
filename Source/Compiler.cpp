@@ -757,6 +757,9 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 	// Init is located first at the driver
 	m_iInitAddress = m_iDriverAddress + DATA_HEADER_SIZE;		// // //
 
+	stNSFHeader Header;
+	CreateHeader(&Header, MachineType, 0x00);
+
 	// Open output files
 	CFile OutputFileBIN;
 	if (!OpenFile(lpszBIN_File, OutputFileBIN)) {
@@ -814,9 +817,7 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 			return;
 		}
 
-		// Write NSF header, if specified
-		stNSFHeader Header;
-		CreateHeader(&Header, MachineType, 0x00);
+		// Write NSF header
 		CFile OutputFileNSFHeader;
 		CString header_directory = BINDirectory;
 		header_directory += _T("nsf_header.s");
@@ -829,13 +830,30 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 			Cleanup();
 			return;
 		}
+
+		// Write NSF config file
+		CFile OutputNSFConfig;
+		CString config_directory = BINDirectory;
+		config_directory += _T("nsf.cfg");
+		if (!OpenFile(config_directory, OutputNSFConfig)) {
+			OutputFilePeriod.Close();
+			OutputFileVibrato.Close();
+			OutputFileNSFHeader.Close();
+			OutputNSFConfig.Close();
+			Print(_T("Error: Could not open NSF config file\n"));
+			Cleanup();
+			return;
+		}
+
 		Print(_T("Writing additional data files...\n"));
 		WritePeriods(&OutputFilePeriod);
 		WriteVibrato(&OutputFileVibrato);
 		WriteNSFHeader(&OutputFileNSFHeader, Header);
+		WriteNSFConfig(&OutputNSFConfig, m_iSampleStart, Header);
 		OutputFilePeriod.Close();
 		OutputFileVibrato.Close();
 		OutputFileNSFHeader.Close();
+		OutputNSFConfig.Close();
 	}
 
 	Print(_T("Done\n"));
@@ -977,6 +995,9 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 	// Init is located first at the driver
 	m_iInitAddress = m_iDriverAddress + DATA_HEADER_SIZE;		// // //
 
+	stNSFHeader Header;
+	CreateHeader(&Header, MachineType, 0x00);
+
 	CFile OutputFile;
 	if (!OpenFile(lpszFileName, OutputFile)) {
 		OutputFile.Close();
@@ -1022,9 +1043,7 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 			return;
 		}
 
-		// Write NSF header, if specified
-		stNSFHeader Header;
-		CreateHeader(&Header, MachineType, 0x00);
+		// Write NSF header
 		CFile OutputFileNSFHeader;
 		CString header_directory = FileDirectory;
 		header_directory += _T("nsf_header.s");
@@ -1037,13 +1056,30 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 			Cleanup();
 			return;
 		}
+
+		// Write NSF config file
+		CFile OutputNSFConfig;
+		CString config_directory = FileDirectory;
+		config_directory += _T("nsf.cfg");
+		if (!OpenFile(config_directory, OutputNSFConfig)) {
+			OutputFilePeriod.Close();
+			OutputFileVibrato.Close();
+			OutputFileNSFHeader.Close();
+			OutputNSFConfig.Close();
+			Print(_T("Error: Could not open NSF config file\n"));
+			Cleanup();
+			return;
+		}
+
 		Print(_T("Writing additional data files...\n"));
 		WritePeriods(&OutputFilePeriod);
 		WriteVibrato(&OutputFileVibrato);
 		WriteNSFHeader(&OutputFileNSFHeader, Header);
+		WriteNSFConfig(&OutputNSFConfig, m_iSampleStart, Header);
 		OutputFilePeriod.Close();
 		OutputFileVibrato.Close();
 		OutputFileNSFHeader.Close();
+		OutputNSFConfig.Close();
 	}
 
 	// Done
@@ -2692,6 +2728,47 @@ void CCompiler::WriteNSFHeader(CFile* pFile, stNSFHeader Header)
 	WriteString("\t\t\t\t; NSF data length\n");
 
 	Print(_T(" * NSF header size: %i bytes\n"), length);
+}
+
+void CCompiler::WriteNSFConfig(CFile* pFile, unsigned int DPCMSegment, stNSFHeader Header)
+{
+	CString str;
+	unsigned int length = 0;
+	const auto WriteString = [&pFile, &length](CString str) {
+		pFile->Write(const_cast<CStringA&>(str).GetBuffer(), str.GetLength());
+		length += str.GetLength();
+	};
+
+	const auto WriteWord = [&WriteString](unsigned int Word) {
+		CString str;
+		str.Format("$%04X", Word);
+		WriteString(str);
+	};
+
+	WriteString("MEMORY {\n");
+	WriteString("  ZP:  start = $00, size = $100, type = rw, file = \"\";\n");
+	WriteString("  RAM: start = $200,  size = $600,   type = rw, file = \"\";\n");
+	WriteString("  HDR: start = $00,   size = $80,    type = ro, file = %O;\n");
+	WriteString("  PRG: start = $8000, size = $40000, type = ro, file = %O;\n");
+	WriteString("}\n\n");
+	WriteString("SEGMENTS {\n");
+	WriteString("  ZEROPAGE: load = ZP,  type = zp;\n");
+	WriteString("  BSS:      load = RAM, type = bss, define = yes;\n");
+	WriteString("  HEADER1:  load = HDR, type = ro;\n");
+	WriteString("  HEADER2:  load = HDR, type = ro,  start = $0E, fillval = $0;\n");
+	WriteString("  HEADER3:  load = HDR, type = ro,  start = $2E, fillval = $0;\n");
+	WriteString("  HEADER4:  load = HDR, type = ro,  start = $4E, fillval = $0;\n");
+	WriteString("  HEADER5:  load = HDR, type = ro,  start = $6E;\n");
+	WriteString("  CODE:     load = PRG, type = ");
+	WriteString(Header.SoundChip & SNDCHIP_FDS ? "rw" : "ro");
+	WriteString(",  start = $8000; \n");
+	WriteString("  DPCM:     load = PRG, type = ");
+	WriteString(Header.SoundChip & SNDCHIP_FDS ? "rw" : "ro");
+	WriteString(",  start = "); WriteWord(DPCMSegment);
+	WriteString(";\n");
+	WriteString("}\n");
+
+	Print(_T(" * NSF config size: %i bytes\n"), length);
 }
 
 void CCompiler::WriteBinary(CFile *pFile)
