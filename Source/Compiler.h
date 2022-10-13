@@ -104,7 +104,7 @@ public:
 private:
 	bool	OpenFile(LPCTSTR lpszFileName, CFile &file) const;
 
-	void	CreateHeader(stNSFHeader *pHeader, int MachineType, unsigned int NSF2Flags) const;
+	void	CreateHeader(stNSFHeader *pHeader, int MachineType, unsigned int NSF2Flags, bool NSF2) const;
 	void	CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType);		// // //
 	void	SetDriverSongAddress(char *pDriver, unsigned short Address) const;
 #if 0

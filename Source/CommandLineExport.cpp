@@ -115,6 +115,33 @@ void CCommandLineExport::CommandLineExport(const CString& fileIn, const CString&
 		}
 		return;
 	}
+	else if (0 == ext.CompareNoCase(_T(".nsfe")))		// // //
+	{
+		CCompiler compiler(pExportDoc, bLog ? new CCommandLineLog(&tLog) : NULL);
+		compiler.ExportNSFE(fileOut, pExportDoc->GetMachine());
+		if (bLog)
+		{
+			tLog += _T("\nNSFe export complete.\n");
+			CommandLineMessage(tLog);
+			fLog.WriteString(tLog.c_str());
+		}
+		return;
+	}
+	else if (0 == ext.CompareNoCase(_T(".nsf2")))		// // //
+	{
+		CCompiler compiler(pExportDoc, bLog ? new CCommandLineLog(&tLog) : NULL);
+		CString actualFileOut = fileOut;
+		actualFileOut.Delete(nPos, ext.GetLength());
+		actualFileOut += ".nsf";
+		compiler.ExportNSF2(actualFileOut, pExportDoc->GetMachine());
+		if (bLog)
+		{
+			tLog += _T("\nNSF2 export complete.\n");
+			CommandLineMessage(tLog);
+			fLog.WriteString(tLog.c_str());
+		}
+		return;
+	}
 	else if (0 == ext.CompareNoCase(_T(".nes")))
 	{
 		CCompiler compiler(pExportDoc, bLog ? new CCommandLineLog(&tLog) : NULL);
@@ -135,6 +162,21 @@ void CCommandLineExport::CommandLineExport(const CString& fileIn, const CString&
 		if (bLog)
 		{
 			tLog += _T("\nBIN export complete.\n");
+			CommandLineMessage(tLog);
+			fLog.WriteString(tLog.c_str());
+		}
+		return;
+	}
+	else if (0 == ext.CompareNoCase(_T(".bin_aux")))
+	{
+		CCompiler compiler(pExportDoc, bLog ? new CCommandLineLog(&tLog) : NULL);
+		CString actualFileOut = fileOut;
+		actualFileOut.Delete(nPos, ext.GetLength());
+		actualFileOut += ".bin";
+		compiler.ExportBIN(actualFileOut, fileDPCM, pExportDoc->GetMachine(), true);
+		if (bLog)
+		{
+			tLog += _T("\nBIN export with auxiliary data complete.\n");
 			CommandLineMessage(tLog);
 			fLog.WriteString(tLog.c_str());
 		}
@@ -164,13 +206,16 @@ void CCommandLineExport::CommandLineExport(const CString& fileIn, const CString&
 		}
 		return;
 	}
-	else if (0 == ext.CompareNoCase(_T(".nsfe")))		// // //
+	else if (0 == ext.CompareNoCase(_T(".asm_aux")))
 	{
 		CCompiler compiler(pExportDoc, bLog ? new CCommandLineLog(&tLog) : NULL);
-		compiler.ExportNSFE(fileOut, pExportDoc->GetMachine());
+		CString actualFileOut = fileOut;
+		actualFileOut.Delete(nPos, ext.GetLength());
+		actualFileOut += ".asm";
+		compiler.ExportASM(actualFileOut, pExportDoc->GetMachine(), true);
 		if (bLog)
 		{
-			tLog += _T("\nNSFe export complete.\n");
+			tLog += _T("\nASM export with auxiliary data complete.\n");
 			CommandLineMessage(tLog);
 			fLog.WriteString(tLog.c_str());
 		}

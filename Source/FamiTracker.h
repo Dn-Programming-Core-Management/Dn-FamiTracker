@@ -52,7 +52,7 @@ public:
 	CFTCommandLineInfo();
 	virtual void ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLast);
 public:
-	bool m_bHelp;		// // !!
+	bool m_bHelp;		// !! !!
 	bool m_bLog;
 	bool m_bExport;
 	bool m_bPlay;

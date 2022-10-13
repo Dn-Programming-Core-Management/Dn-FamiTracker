@@ -72,7 +72,7 @@ public:
 	void StoreSamples(const std::vector<const CDSample*> &Samples);
 	void StoreSamplesBankswitched(const std::vector<const CDSample*> &Samples);
 	int  GetBankCount() const;
-	int  GetTotalCompiledDataSize() const;
+	int  GetDATAChunkSize() const;
 
 protected:
 	void StoreChunk(const CChunk *pChunk);

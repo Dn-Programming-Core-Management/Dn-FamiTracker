@@ -204,7 +204,7 @@ int CChunkRenderNSF::GetBankCount() const
 	return GetBank() + 1;
 }
 
-int CChunkRenderNSF::GetTotalCompiledDataSize() const
+int CChunkRenderNSF::GetDATAChunkSize() const
 {
 	return GetWritten();
 }

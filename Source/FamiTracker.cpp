@@ -223,7 +223,7 @@ BOOL CFamiTrackerApp::InitInstance()
 		exporter.CommandLineExport(cmdInfo.m_strFileName, cmdInfo.m_strExportFile, cmdInfo.m_strExportLogFile, cmdInfo.m_strExportDPCMFile);
 		ExitProcess(0);
 	}
-	if (cmdInfo.m_bHelp) {		// // !!
+	if (cmdInfo.m_bHelp) {		// !! !!
 		ExitProcess(0);
 	}
 
@@ -941,7 +941,7 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 			helpmessage += "export\t: exports the module to a specified format. the format is determined by the filetype of the output.\n";
 			helpmessage += "\t-export [output file] [optional log file] [DPCM file for BIN export]\n";
 			helpmessage += "\tthe following formats are available:\n";
-			helpmessage += "\t\t.nsf\n\t\t.nsfe\n\t\t.nes\n\t\t.bin\n\t\t.prg\n\t\t.asm\n\t\t.txt\n";
+			helpmessage += "\t\t.nsf\n\t\t.nsfe\n\t\t.nsf2\t\t\t(generates NSF2 formatted file)\n\t\t.nes\n\t\t.bin\n\t\t.bin_aux\t\t(generates auxiliary data)\n\t\t.prg\n\t\t.asm\n\t\t.asm_aux\t\t(generates auxiliary data)\n\t\t.txt\n";
 			helpmessage += "nodump\t: disables the crash dump generation, for cases where these are undesirable\n";
 			helpmessage += "log\t: enables the register logger, available in debug builds only\n";
 			helpmessage += "Press enter to continue . . .";

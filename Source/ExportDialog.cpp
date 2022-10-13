@@ -331,7 +331,7 @@ void CExportDialog::CreateNSF2()
 	// Display wait cursor
 	CWaitCursor wait;
 
-	Compiler.ExportNSF(FileDialog.GetPathName(), MachineType);
+	Compiler.ExportNSF2(FileDialog.GetPathName(), MachineType);
 
 	theApp.GetSettings()->SetPath(FileDialog.GetPathName(), PATH_NSF);
 }
