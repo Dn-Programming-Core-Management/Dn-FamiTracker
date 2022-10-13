@@ -2761,7 +2761,7 @@ void CCompiler::WriteNSFConfig(CFile* pFile, unsigned int DPCMSegment, stNSFHead
 	WriteString("  HEADER5:  load = HDR, type = ro,  start = $6E;\n");
 	WriteString("  CODE:     load = PRG, type = ");
 	WriteString(Header.SoundChip & SNDCHIP_FDS ? "rw" : "ro");
-	WriteString(",  start = $8000; \n");
+	WriteString(",  start = $8000;\n");
 	WriteString("  DPCM:     load = PRG, type = ");
 	WriteString(Header.SoundChip & SNDCHIP_FDS ? "rw" : "ro");
 	WriteString(",  start = "); WriteWord(DPCMSegment);
