@@ -234,8 +234,20 @@ public:
 	bool			GetLinearPitch() const;
 	void			SetLinearPitch(bool Enable);
 
-	int16_t GetLevelOffset(int device) const;
-	void SetLevelOffset(int device, int16_t offset);
+	bool			GetSurveyMix() const;
+	void			SetSurveyMix(bool SurveyMix);
+
+	int16_t			GetLevelOffset(int device) const;
+	void			SetLevelOffset(int device, int16_t offset);
+
+	uint8_t*		GetOPLLPatchSet() const;
+	void			SetOPLLPatchSet(uint8_t* PatchSet);
+
+	std::vector<std::string>	GetOPLLPatchNames() const;
+	void			SetOPLLPatchNames(std::vector<std::string> PatchNames);
+
+	bool			GetExternalOPLLChipCheck() const;
+	void			SetExternalOPLLChipCheck(bool UserDefined);
 
 	void			SetComment(CString &comment, bool bShowOnLoad);
 	CString			GetComment() const;
@@ -514,15 +526,19 @@ private:
 	unsigned int	m_iNamcoChannels;
 	vibrato_t		m_iVibratoStyle;							// 0 = old style, 1 = new style
 	bool			m_bLinearPitch;
-	int16_t			_APU1LevelOffset;
-	int16_t			_APU2LevelOffset;
-	int16_t			_VRC6LevelOffset;
-	int16_t			_VRC7LevelOffset;
-	int16_t			_FDSLevelOffset;
-	int16_t			_MMC5LevelOffset;
-	int16_t			_N163LevelOffset;
-	int16_t			_S5BLevelOffset;
-	
+	int16_t			m_iAPU1LevelOffset;							// !! !! Device level offsets, described in centibels
+	int16_t			m_iAPU2LevelOffset;
+	int16_t			m_iVRC6LevelOffset;
+	int16_t			m_iVRC7LevelOffset;
+	int16_t			m_iFDSLevelOffset;
+	int16_t			m_iMMC5LevelOffset;
+	int16_t			m_iN163LevelOffset;
+	int16_t			m_iS5BLevelOffset;
+	bool			m_bUseExternalOPLLChip;						// !! !! User-defined hardware patch set for OPLL
+	uint8_t			m_iUserPatchSet[19 * 8];
+	std::vector<std::string>	m_strUserPatchNames;
+	bool			m_bUseSurveyMixing;							// !! !! Uses better mixing values derived from survey: https://forums.nesdev.org/viewtopic.php?f=2&t=17741
+
 	machine_t		m_iMachine;									// // // NTSC / PAL
 	unsigned int	m_iEngineSpeed;								// Refresh rate
 	unsigned int	m_iSpeedSplitPoint;							// Speed/tempo split-point

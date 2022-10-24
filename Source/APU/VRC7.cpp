@@ -34,7 +34,6 @@ const uint32_t CVRC7::OPL_CLOCK = CAPU::BASE_FREQ_VRC7;	// Clock frequency
 
 CVRC7::CVRC7()
 {
-
 	m_pRegisterLogger->AddRegisterRange(0x00, 0x07);		// // //
 	m_pRegisterLogger->AddRegisterRange(0x10, 0x15);
 	m_pRegisterLogger->AddRegisterRange(0x20, 0x25);
@@ -57,8 +56,10 @@ void CVRC7::Reset()
 	m_iBufferPtr = 0;
 	m_iTime = 0;
 	m_BlipVRC7.clear();
-	if (m_pOPLLInt != NULL)
+	if (m_pOPLLInt != NULL) {
 		OPLL_reset(m_pOPLLInt);
+		OPLL_setChipType(m_pOPLLInt, static_cast<uint8_t>(!m_bUseExternalOPLLChip));		// !! !!
+	}
 }
 
 void CVRC7::UpdateFilter(blip_eq_t eq)
@@ -192,12 +193,24 @@ int CVRC7::GetChannelLevelRange(int Channel) const
 
 void CVRC7::UpdateMixLevel(double v)
 {
-	// the range of the emulator seems to be 65536
+	// The output of emu2413 is resampled. This means
+	// that the emulator output suffers no multiplex hiss and
+	// bit depth quantization.
+	// TODO: replace emu2413 with Nuked-OPLL
 	m_SynthVRC7.volume(v * AMPLIFY, 10000);
 }
 
-void CVRC7::UpdatePatchSet(int Patchset)
+void CVRC7::UpdatePatchSet(int Patchset, bool UseExternalOPLLChip, uint8_t* PatchSet)
 {
+	m_bUseExternalOPLLChip = UseExternalOPLLChip;
 	m_iPatchTone = Patchset;
 	OPLL_resetPatch(m_pOPLLInt, m_iPatchTone);
+
+	if (m_bUseExternalOPLLChip) {
+		// dump patchset into OPLL_PATCH object
+		OPLL_dumpToPatch(PatchSet, m_iUserPatchset);
+		// then copy patches into emulator
+		for (int i = 0; i < 19 * 2; i++)
+			OPLL_copyPatch(m_pOPLLInt, i, m_iUserPatchset);
+	}
 }

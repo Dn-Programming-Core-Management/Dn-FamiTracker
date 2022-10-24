@@ -640,7 +640,7 @@ void CModulePropertiesDlg::setN163NChannels(int nchan) {
 
 
 // N163 GUI
-void CModulePropertiesDlg::strFromLevel(CString &target, int Level)
+void CModulePropertiesDlg::strFromLevel(CString &target, int16_t Level)
 {
 	target.Format(_T("%+.1f"), float(-Level) / float(FINE_DELTA));
 }
@@ -828,38 +828,38 @@ void CModulePropertiesDlg::OffsetSlider(int device, int pos)
 {
 	switch (device) {
 	case 0:
-		APU1LevelOffset = (int)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
+		APU1LevelOffset = (int16_t)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
 		break;
 	case 1:
-		APU2LevelOffset = (int)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
+		APU2LevelOffset = (int16_t)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
 		break;
 	case 2:
-		VRC6LevelOffset = (int)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
+		VRC6LevelOffset = (int16_t)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
 		break;
 	case 3:
-		VRC7LevelOffset = (int)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
+		VRC7LevelOffset = (int16_t)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
 		break;
 	case 4:
-		FDSLevelOffset = (int)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
+		FDSLevelOffset = (int16_t)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
 		break;
 	case 5:
-		MMC5LevelOffset = (int)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
+		MMC5LevelOffset = (int16_t)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
 		break;
 	case 6:
-		N163LevelOffset = (int)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
+		N163LevelOffset = (int16_t)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
 		break;
 	case 7:
-		S5BLevelOffset = (int)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
+		S5BLevelOffset = (int16_t)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
 		break;
 	}
 	updateLevelGUI(device);
 }
 
-bool CModulePropertiesDlg::levelFromStr(int &target, CString dBstr) {
+bool CModulePropertiesDlg::levelFromStr(int16_t &target, CString dBstr) {
 	char *endptr;
 	double dBval = strtod(dBstr, &endptr);
 	if (*endptr == '\0') {									// if no error
-		target = static_cast<int>(std::round(dBval * 10));
+		target = static_cast<int16_t>(std::round(dBval * 10));
 		target = std::clamp((-target), -MAX_FINE, MAX_FINE);
 		return true;
 	}

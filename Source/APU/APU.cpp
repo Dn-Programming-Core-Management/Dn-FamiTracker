@@ -466,13 +466,12 @@ CRegisterState *CAPU::GetRegState(int Chip, int Reg) const		// // //
 }
 
 
-void CAPUConfig::SetupMixer(int LowCut,
+void CAPUConfig::SetupMixer(
+	int LowCut,
 	int HighCut,
 	int HighDamp,
 	int Volume,
 	int FDSLowpass,
-	int VRC7Patchset,
-	bool NamcoMixing,
 	int N163Lowpass)
 {
 	m_MixerConfig = MixerConfig{
@@ -481,9 +480,7 @@ void CAPUConfig::SetupMixer(int LowCut,
 		HighDamp,
 		float(Volume) / 100.0f,
 		FDSLowpass,
-		N163Lowpass,
-		VRC7Patchset,
-		NamcoMixing
+		N163Lowpass
 	};
 }
 
@@ -491,6 +488,20 @@ void CAPUConfig::SetChipLevel(chip_level_t Chip, float LeveldB)
 {
 	float LevelLinear = powf(10, LeveldB / 20.0f);		// Convert dB to linear
 	m_ChipLevels[Chip] = LevelLinear;
+}
+
+void CAPUConfig::SetupEmulation(
+	bool N163DisableMultiplexing,
+	int VRC7PatchSelection,
+	uint8_t* VRC7PatchSet,
+	bool UseExternalOPLLChip)
+{
+	m_EmulatorConfig = EmulatorConfig{
+		N163DisableMultiplexing,
+		VRC7PatchSelection,
+		VRC7PatchSet,
+		UseExternalOPLLChip
+	};
 }
 
 CAPUConfig::~CAPUConfig() noexcept(false) {
@@ -543,6 +554,11 @@ CAPUConfig::~CAPUConfig() noexcept(false) {
 		m_APU->m_pVRC7->SetVolume(cfg.OverallVol * m_APU->m_fLevelVRC7);
 
 		m_Mixer->SetMixing(cfg);
+		mixingDirty = true;
+	}
+	if (m_EmulatorConfig) {
+		auto& cfg = *m_EmulatorConfig;
+		m_Mixer->SetEmulation(cfg);
 		mixingDirty = true;
 	}
 

@@ -41,15 +41,15 @@ private:
 	bool m_bSingleSelection;		// // //
 	unsigned int m_iSelectedSong;
 	unsigned char m_iExpansions;		// // //
-	int m_iN163Channels;
-	int APU1LevelOffset;
-	int APU2LevelOffset;
-	int VRC6LevelOffset;
-	int VRC7LevelOffset;
-	int FDSLevelOffset;
-	int MMC5LevelOffset;
-	int N163LevelOffset;
-	int S5BLevelOffset;
+	int16_t m_iN163Channels;
+	int16_t APU1LevelOffset;
+	int16_t APU2LevelOffset;
+	int16_t VRC6LevelOffset;
+	int16_t VRC7LevelOffset;
+	int16_t FDSLevelOffset;
+	int16_t MMC5LevelOffset;
+	int16_t N163LevelOffset;
+	int16_t S5BLevelOffset;
 
 	CFamiTrackerDoc *m_pDocument;
 
@@ -63,8 +63,8 @@ public:
 protected:
 	// virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-	void strFromLevel(CString & target, int Level);
-	bool levelFromStr(int & target, CString dBstr);
+	void strFromLevel(CString & target, int16_t Level);
+	bool levelFromStr(int16_t & target, CString dBstr);
 	
 	void FillSongList();
 

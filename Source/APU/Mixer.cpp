@@ -195,7 +195,7 @@ void CMixer::RecomputeMixing()
 	auto &chipN163 = *m_APU->m_pN163;
 
 	// Prioritize updating the emulation config before eq filter config for N163
-	chipN163.UpdateN163Filter(m_MixerConfig.N163Lowpass, m_MixerConfig.N163DisableMultiplexing);
+	chipN163.UpdateN163Filter(m_MixerConfig.N163Lowpass, m_EmulatorConfig.N163DisableMultiplexing);
 
 	// See https://docs.google.com/document/d/19vtipTYI-vqL3-BPrE9HPjHmPpkFuIZKvWfevP3Oo_A/edit#heading=h.h70ipevgjbn7
 	// for an exploration of how I came to this design.
@@ -211,9 +211,12 @@ void CMixer::RecomputeMixing()
 	chipFDS.UpdateMixLevel(Volume * m_fLevelFDS);
 	chipN163.UpdateMixLevel(Volume * m_fLevelN163);
 
-	chipN163.UpdateN163Filter(m_MixerConfig.N163Lowpass, m_MixerConfig.N163DisableMultiplexing);
+	chipN163.UpdateN163Filter(m_MixerConfig.N163Lowpass, m_EmulatorConfig.N163DisableMultiplexing);
 	chipFDS.UpdateFdsFilter(m_MixerConfig.FDSLowpass);
-	chipVRC7.UpdatePatchSet(m_MixerConfig.VRC7Patchset);
+	chipVRC7.UpdatePatchSet(
+		m_EmulatorConfig.VRC7PatchSelection,
+		m_EmulatorConfig.UseExternalOPLLChip,
+		m_EmulatorConfig.VRC7PatchSet);
 
 	SynthVRC6.volume(Volume * 3.98333f * m_fLevelVRC6, 500);
 	SynthMMC5.volume(Volume * 1.18421f * m_fLevelMMC5, 130);

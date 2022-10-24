@@ -54,7 +54,7 @@ public:
 
 	void UpdateMixLevel(double v);
 
-	void UpdatePatchSet(int Patchset);
+	void UpdatePatchSet(int PatchSelection, bool UseExternalOPLLChip, uint8_t *PatchSet);
 
 protected:
 	static const float  AMPLIFY;
@@ -71,6 +71,8 @@ private:
 	uint8_t		m_iSoundReg = 0;
 
 	int		m_iPatchTone = 0;
+	OPLL_PATCH m_iUserPatchset[38];
+	bool m_bUseExternalOPLLChip = false;
 
 	float	m_fVolume = 1.0f;
 

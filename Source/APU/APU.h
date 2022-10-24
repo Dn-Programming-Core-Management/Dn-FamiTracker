@@ -190,7 +190,20 @@ public:
 	}
 
 	void SetChipLevel(chip_level_t Chip, float LeveldB);
-	void SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume, int FDSLowpass, int VRC7Patchset, bool NamcoMixing, int N163Lowpass);
+	void SetupEmulation(
+		bool N163DisableMultiplexing,
+		int VRC7PatchSelection,
+		uint8_t *VRC7PatchSet,
+		bool UseExternalOPLLChip
+	);
+	void SetupMixer(
+		int LowCut,
+		int HighCut,
+		int HighDamp,
+		int Volume,
+		int FDSLowpass,
+		int N163Lowpass
+	);
 
 	/// Commit changes if no exception is active.
 	///
@@ -210,4 +223,5 @@ private:
 	std::optional<uint8_t> m_ExternalSound;
 	std::optional<float> m_ChipLevels[CHIP_LEVEL_COUNT];
 	std::optional<MixerConfig> m_MixerConfig;
+	std::optional<EmulatorConfig> m_EmulatorConfig;
 };

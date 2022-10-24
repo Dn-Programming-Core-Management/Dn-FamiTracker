@@ -661,6 +661,8 @@
 #define IDC_SPIN_LOWPASS_N163           1517
 #define IDC_SLIDER_LOWPASS_N163         1519
 #define IDC_SLIDER_LOWPASS_FDS          1520
+#define IDC_SURVEY_MIXING               1524
+#define IDC_EXTERNAL_OPLL               1525
 #define IDS_FIND_BEGIN                  9001
 #define IDS_FIND_END                    9002
 #define ID_TRACKER_PLAY                 32771
@@ -833,7 +835,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        380
 #define _APS_NEXT_COMMAND_VALUE         33215
-#define _APS_NEXT_CONTROL_VALUE         1524
+#define _APS_NEXT_CONTROL_VALUE         1526
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif

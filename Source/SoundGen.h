@@ -354,6 +354,8 @@ private:
 	int16_t currMMC5LevelOffset;
 	int16_t currN163LevelOffset;
 	int16_t currS5BLevelOffset;
+	uint8_t* VRC7PatchSet;
+	bool UseExternalOPLLChip;
 
 	const CDSample		*m_pPreviewSample;
 

@@ -52,8 +52,13 @@ struct MixerConfig {
 	float OverallVol = 0;
 	int FDSLowpass = 2000;
 	int N163Lowpass = 12000;
-	int VRC7Patchset = 0;
+};
+
+struct EmulatorConfig {
 	bool N163DisableMultiplexing = true;
+	int VRC7PatchSelection = 0;
+	uint8_t* VRC7PatchSet = nullptr;
+	bool UseExternalOPLLChip = false;
 };
 
 class CMixer
@@ -68,7 +73,10 @@ public:
 	void	SetMixing(MixerConfig cfg) {
 		m_MixerConfig = cfg;
 	}
-	void	RecomputeMixing();
+	void	SetEmulation(EmulatorConfig cfg) {
+		m_EmulatorConfig = cfg;
+	};
+	void	RecomputeMixing();		// must be called after SetMixing() and SetEmulation()
 
 	bool	AllocateBuffer(unsigned int Size, uint32_t SampleRate, uint8_t NrChannels);
 	Blip_Buffer& GetBuffer() {
@@ -139,6 +147,11 @@ private:
 
 	int			m_iMeterDecayRate;		// // // 050B
 	MixerConfig m_MixerConfig;
+	EmulatorConfig m_EmulatorConfig;
+
+	uint8_t m_VRC7PatchSelection;
+	uint8_t m_VRC7PatchSet[19 * 8];
+	bool m_VRC7PatchUserDefined;
 
 	float		m_fLevelAPU1;
 	float		m_fLevelAPU2;

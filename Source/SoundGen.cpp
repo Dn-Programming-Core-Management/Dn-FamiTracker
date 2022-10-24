@@ -848,25 +848,34 @@ bool CSoundGen::ResetAudioDevice()
 	currN163LevelOffset = m_pDocument->GetLevelOffset(6);
 	currS5BLevelOffset = m_pDocument->GetLevelOffset(7);
 
+	VRC7PatchSet = m_pDocument->GetOPLLPatchSet();
+	UseExternalOPLLChip = m_pDocument->GetExternalOPLLChipCheck();
+
 	{
 		auto config = CAPUConfig(m_pAPU);
 
 		config.SetChipLevel(CHIP_LEVEL_APU1, float(
-			pSettings->ChipLevels.iLevelAPU1 + currAPU1LevelOffset / 10.0f));
+			(pSettings->ChipLevels.iLevelAPU1 + currAPU1LevelOffset) / 10.0f));
 		config.SetChipLevel(CHIP_LEVEL_APU2, float(
-			pSettings->ChipLevels.iLevelAPU2 + currAPU2LevelOffset / 10.0f));
+			(pSettings->ChipLevels.iLevelAPU2 + currAPU2LevelOffset) / 10.0f));
 		config.SetChipLevel(CHIP_LEVEL_VRC6, float(
-			pSettings->ChipLevels.iLevelVRC6 + currVRC6LevelOffset / 10.0f));
+			(pSettings->ChipLevels.iLevelVRC6 + currVRC6LevelOffset) / 10.0f));
 		config.SetChipLevel(CHIP_LEVEL_VRC7, float(
-			pSettings->ChipLevels.iLevelVRC7 + currVRC7LevelOffset / 10.0f));
+			(pSettings->ChipLevels.iLevelVRC7 + currVRC7LevelOffset) / 10.0f));
 		config.SetChipLevel(CHIP_LEVEL_FDS, float(
-			pSettings->ChipLevels.iLevelFDS + currFDSLevelOffset / 10.0f));
+			(pSettings->ChipLevels.iLevelFDS + currFDSLevelOffset) / 10.0f));
 		config.SetChipLevel(CHIP_LEVEL_MMC5, float(
-			pSettings->ChipLevels.iLevelMMC5 + currMMC5LevelOffset / 10.0f));
+			(pSettings->ChipLevels.iLevelMMC5 + currMMC5LevelOffset) / 10.0f));
 		config.SetChipLevel(CHIP_LEVEL_N163, float(
 			(pSettings->ChipLevels.iLevelN163 + currN163LevelOffset) / 10.0f));
 		config.SetChipLevel(CHIP_LEVEL_S5B, float(
-			pSettings->ChipLevels.iLevelS5B + currS5BLevelOffset / 10.0f));
+			(pSettings->ChipLevels.iLevelS5B + currS5BLevelOffset) / 10.0f));
+
+		config.SetupEmulation(
+			pSettings->Emulation.bNamcoMixing,
+			pSettings->Emulation.iVRC7Patch,
+			VRC7PatchSet,
+			UseExternalOPLLChip);
 
 		// Update blip-buffer filtering
 		config.SetupMixer(
@@ -875,8 +884,6 @@ bool CSoundGen::ResetAudioDevice()
 			pSettings->Sound.iTrebleDamping,
 			pSettings->Sound.iMixVolume,
 			pSettings->Emulation.iFDSLowpass,
-			pSettings->Emulation.iVRC7Patch,
-			pSettings->Emulation.bNamcoMixing,
 			pSettings->Emulation.iN163Lowpass);
 	}
 

@@ -54,7 +54,7 @@ static uint8_t default_inst[OPLL_TONE_NUM][(16 + 3) * 8] = {
 #include "vrc7tone_kt1.h"
   },
   {
-#include "2413tone.h" 
+#include "2413tone.h"
   },
   {
 #include "281btone.h"
