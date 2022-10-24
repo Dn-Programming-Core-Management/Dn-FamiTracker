@@ -51,7 +51,7 @@
 #include <array>		// // //
 #include <unordered_map>		// // //
 
-#include "json/json.hpp"
+#include "json/json.hpp" // !! !!
 
 #include "FamiTracker.h"
 #include "ChannelState.h"		// // //
@@ -76,8 +76,6 @@
 #include "BookmarkManager.h"		// // //
 #include "APU/APU.h"
 #include "str_conv/str_conv.hpp"
-
-using json = nlohmann::json;
 
 const char* CFamiTrackerDoc::NEW_INST_NAME = "";
 
@@ -172,6 +170,59 @@ static const auto EFF_CONVERSION_050 = MakeEffectConversion({
 	{EF_FDS_VOLUME,			EF_VRC7_PORT},
 	{EF_FDS_MOD_BIAS,		EF_VRC7_WRITE},
 });
+
+
+//
+// JSON-struct conversions
+//
+
+using json = nlohmann::json;
+
+// JSON key names
+const char* APU1_OFFSET = "apu1-offset";
+const char* APU2_OFFSET = "apu2-offset";
+const char* VRC6_OFFSET = "vrc6-offset";
+const char* VRC7_OFFSET = "vrc7-offset";
+const char* FDS_OFFSET = "fds-offset";
+const char* MMC5_OFFSET = "mmc5-offset";
+const char* N163_OFFSET = "n163-offset";
+const char* S5B_OFFSET = "s5b-offset";
+const char* USE_SURVEY_MIX = "use-survey-mix"; 
+const char* USE_OPLL_EXT = "use-opll-ext";
+const char* USE_OPLL_PATCHES = "use-opll-patches";
+const char* USE_OPLL_PATCH_NAMES = "use-opll-patch-names";
+
+void from_json(const json& j, JSONData& d) {
+	j.at(APU1_OFFSET).get_to(d.APU1_OFFSET);
+	j.at(APU2_OFFSET).get_to(d.APU2_OFFSET);
+	j.at(VRC6_OFFSET).get_to(d.VRC6_OFFSET);
+	j.at(VRC7_OFFSET).get_to(d.VRC7_OFFSET);
+	j.at(FDS_OFFSET).get_to(d.FDS_OFFSET);
+	j.at(MMC5_OFFSET).get_to(d.MMC5_OFFSET);
+	j.at(N163_OFFSET).get_to(d.N163_OFFSET);
+	j.at(S5B_OFFSET).get_to(d.S5B_OFFSET);
+	j.at(USE_OPLL_EXT).get_to(d.USE_OPLL_EXT);
+	j.at(USE_OPLL_PATCHES).get_to(d.USE_OPLL_PATCHES);
+	j.at(USE_OPLL_PATCH_NAMES).get_to(d.USE_OPLL_PATCH_NAMES);
+	j.at(USE_SURVEY_MIX).get_to(d.USE_SURVEY_MIX);
+};
+void to_json(json& j, const JSONData& d) {
+	j = json{
+		{ APU1_OFFSET, d.APU1_OFFSET },
+		{ APU2_OFFSET, d.APU2_OFFSET },
+		{ VRC6_OFFSET, d.VRC6_OFFSET },
+		{ VRC7_OFFSET, d.VRC7_OFFSET },
+		{ FDS_OFFSET, d.FDS_OFFSET },
+		{ MMC5_OFFSET, d.MMC5_OFFSET },
+		{ N163_OFFSET, d.N163_OFFSET },
+		{ S5B_OFFSET, d.S5B_OFFSET },
+		{ USE_OPLL_EXT, d.USE_OPLL_EXT },
+		{ USE_OPLL_PATCHES, d.USE_OPLL_PATCHES },
+		{ USE_OPLL_PATCH_NAMES, d.USE_OPLL_PATCH_NAMES },
+		{ USE_SURVEY_MIX, d.USE_SURVEY_MIX }
+	};
+};
+
 
 //
 // CFamiTrackerDoc
@@ -2593,88 +2644,10 @@ bool CFamiTrackerDoc::WriteBlock_Bookmarks(CDocumentFile *pDocFile, const int Ve
 	return pDocFile->FlushBlock();
 }
 
-const char* APU1_OFFSET = "apu1-offset";
-const char* APU2_OFFSET = "apu2-offset";
-const char* VRC6_OFFSET = "vrc6-offset";
-const char* VRC7_OFFSET = "vrc7-offset";
-const char* FDS_OFFSET = "fds-offset";
-const char* MMC5_OFFSET = "mmc5-offset";
-const char* N163_OFFSET = "n163-offset";
-const char* S5B_OFFSET = "s5b-offset";
-const char* USE_SURVEY_MIX = "use-survey-mix";
-const char* USE_OPLL_EXT = "use-opll-ext";
-const char* USE_OPLL_PATCHES = "use-opll-patches";
-const char* USE_OPLL_PATCH_NAMES = "use-opll-patch-names";
-
-// http://jsonapi.org/format/ except {data:{ is unnecessary.
-// Dn-FT JSON block format version 1.1
-const json DEFAULT = {
-	// Device mixing offsets, described in centibels. too late to change to millibels.
-	// range is +- 12 db.
-	{ APU1_OFFSET, 0 },
-	{ APU2_OFFSET, 0 },
-	{ VRC6_OFFSET, 0 },
-	{ VRC7_OFFSET, 0 },
-	{ FDS_OFFSET, 0 },
-	{ MMC5_OFFSET, 0 },
-	{ N163_OFFSET, 0 },
-	{ S5B_OFFSET, 0 },
-
-	// Use external OPLL instead of VRC7
-	{ USE_OPLL_EXT, false },
-
-	// User-defined hardware patch set for external OPLL
-	{ USE_OPLL_PATCHES, {
-		0, 0, 0, 0, 0, 0, 0, 0,		// Patch 0 must always be 0
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0
-	}},
-
-	// User-defined hardware patch names for external OPLL
-	{ USE_OPLL_PATCH_NAMES, {
-		"(custom instrument)"		// patch 0 must always be named "(custom instrument)"
-		""
-		""
-		""
-		""
-		""
-		""
-		""
-		""
-		""
-		""
-		""
-		""
-		""
-		""
-		""
-		""
-		""
-		""
-	}},
-
-	// Use better mixing values derived from survey: https://forums.nesdev.org/viewtopic.php?f=2&t=17741
-	{ USE_SURVEY_MIX, false }
-};
-
 void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile *pDocFile, const int Version)
 {
+	const JSONData JDataDefault;
+	const json DEFAULT = JDataDefault;
 	json out = DEFAULT;
 
 	CT2A fileData(pDocFile->ReadString());
@@ -2694,35 +2667,37 @@ void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile *pDocFile, const int Version)
 		auto err = "Warning: unknown JSON data (will be discarded upon saving!):\n" + unknowns.dump();
 		AfxMessageBox(conv::to_t(std::move(err)).c_str(), MB_ICONWARNING);
 	}
-	SetLevelOffset(0, out[APU1_OFFSET]);
-	SetLevelOffset(1, out[APU2_OFFSET]);
-	SetLevelOffset(2, out[VRC6_OFFSET]);
-	SetLevelOffset(3, out[VRC7_OFFSET]);
-	SetLevelOffset(4, out[FDS_OFFSET]);
-	SetLevelOffset(5, out[MMC5_OFFSET]);
-	SetLevelOffset(6, out[N163_OFFSET]);
-	SetLevelOffset(7, out[S5B_OFFSET]);
+	if (JDataDefault.APU1_OFFSET != out[APU1_OFFSET]) SetLevelOffset(0, out[APU1_OFFSET]);
+	if (JDataDefault.APU2_OFFSET != out[APU2_OFFSET]) SetLevelOffset(1, out[APU2_OFFSET]);
+	if (JDataDefault.VRC6_OFFSET != out[VRC6_OFFSET]) SetLevelOffset(2, out[VRC6_OFFSET]);
+	if (JDataDefault.VRC7_OFFSET != out[VRC7_OFFSET]) SetLevelOffset(3, out[VRC7_OFFSET]);
+	if (JDataDefault.FDS_OFFSET != out[FDS_OFFSET]) SetLevelOffset(4, out[FDS_OFFSET]);
+	if (JDataDefault.MMC5_OFFSET != out[MMC5_OFFSET]) SetLevelOffset(5, out[MMC5_OFFSET]);
+	if (JDataDefault.N163_OFFSET != out[N163_OFFSET]) SetLevelOffset(6, out[N163_OFFSET]);
+	if (JDataDefault.S5B_OFFSET != out[S5B_OFFSET]) SetLevelOffset(7, out[S5B_OFFSET]);
 	
-	SetExternalOPLLChipCheck(out[USE_OPLL_EXT]);
-	
-	uint8_t patchdump[19 * 8];
-	for (int i = 0; i < 19 * 8; ++i)
-		patchdump[i] = out[USE_OPLL_PATCHES][i];
-	SetOPLLPatchSet(patchdump);
+	if (out.at(USE_OPLL_EXT)) SetExternalOPLLChipCheck(out[USE_OPLL_EXT]);
 
-	std::vector<std::string> patchnames(19);
-	for (int i = 0; i < 19; ++i)
-		patchnames.at(i) = out[USE_OPLL_PATCH_NAMES][i];
-	SetOPLLPatchNames(patchnames);
+	if (JDataDefault.USE_OPLL_PATCHES != out[USE_OPLL_PATCHES]) {
+		uint8_t patchdump[19 * 8];
+		for (int i = 0; i < 19 * 8; ++i)
+			patchdump[i] = out[USE_OPLL_PATCH_NAMES].at(i);
+		SetOPLLPatchSet(patchdump);
+	}
 
-	SetSurveyMix(out[USE_SURVEY_MIX]);
+	if (JDataDefault.USE_OPLL_PATCH_NAMES != out[USE_OPLL_PATCH_NAMES])
+		SetOPLLPatchNames(out[USE_OPLL_PATCH_NAMES]);
+
+	if (out.at(USE_SURVEY_MIX)) SetSurveyMix(out[USE_SURVEY_MIX]);
 }
 
 bool CFamiTrackerDoc::WriteBlock_JSON(CDocumentFile *pDocFile, const int Version) const
 {
-	// get int array of patches from pointer
+	const JSONData JDataDefault;
+
+	// get uint8_t vector of patches from pointer
 	uint8_t *patchpointer = GetOPLLPatchSet();
-	uint8_t patchdump[19 * 8];
+	std::vector<uint8_t> patchdump(19 * 8);
 	for (int i = 0; i < 19 * 8; ++i)
 		patchdump[i] = patchpointer[i];
 
@@ -2731,22 +2706,21 @@ bool CFamiTrackerDoc::WriteBlock_JSON(CDocumentFile *pDocFile, const int Version
 	// patch 0 must always be "(custom instrument)"
 	patchnames.at(0) = "(custom instrument)";
 
-	const json j = {
-		{ APU1_OFFSET, GetLevelOffset(0) },
-		{ APU2_OFFSET, GetLevelOffset(1) },
-		{ VRC6_OFFSET, GetLevelOffset(2) },
-		{ VRC7_OFFSET, GetLevelOffset(3) },
-		{ FDS_OFFSET, GetLevelOffset(4) },
-		{ MMC5_OFFSET, GetLevelOffset(5) },
-		{ N163_OFFSET, GetLevelOffset(6) },
-		{ S5B_OFFSET, GetLevelOffset(7) },
-		{ USE_OPLL_EXT, GetExternalOPLLChipCheck() },
-		{ USE_OPLL_PATCHES, patchdump },
-		{ USE_OPLL_PATCH_NAMES, patchnames },
-		{ USE_SURVEY_MIX, GetSurveyMix() }
-	};
+	json j;
+	if (GetLevelOffset(0)) j[APU1_OFFSET] = GetLevelOffset(0);
+	if (GetLevelOffset(1)) j[APU2_OFFSET] = GetLevelOffset(0);
+	if (GetLevelOffset(2)) j[VRC6_OFFSET] = GetLevelOffset(2);
+	if (GetLevelOffset(3)) j[VRC7_OFFSET] = GetLevelOffset(3);
+	if (GetLevelOffset(4)) j[FDS_OFFSET] = GetLevelOffset(4);
+	if (GetLevelOffset(5)) j[MMC5_OFFSET] = GetLevelOffset(5);
+	if (GetLevelOffset(6)) j[N163_OFFSET] = GetLevelOffset(6);
+	if (GetLevelOffset(7)) j[S5B_OFFSET] = GetLevelOffset(7);
+	if (GetExternalOPLLChipCheck()) j[USE_OPLL_EXT] = GetExternalOPLLChipCheck();
+	if (patchdump != JDataDefault.USE_OPLL_PATCHES) j[USE_OPLL_PATCHES] = patchdump;
+	if (patchnames != JDataDefault.USE_OPLL_PATCH_NAMES) j[USE_OPLL_PATCH_NAMES] = patchnames;
+	if (GetSurveyMix()) j[USE_SURVEY_MIX] = GetSurveyMix();
 
-	if (j == DEFAULT)
+	if (j.empty())
 		return true;
 
 	pDocFile->CreateBlock(FILE_BLOCK_JSON, Version);

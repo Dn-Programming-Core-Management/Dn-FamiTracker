@@ -29,6 +29,7 @@
 #include <afxmt.h>
 
 #include <vector>
+#include <string>		// !! !!
 #include <memory>		// // //
 
 // Get access to some APU constants
@@ -66,6 +67,73 @@ struct stSequence {
 	unsigned int Count;
 	signed char Length[MAX_SEQUENCE_ITEMS];
 	signed char Value[MAX_SEQUENCE_ITEMS];
+};
+
+// Dn-FT JSON block format version 1.1
+// https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/wiki/JSON-block-format
+struct JSONData {
+	// Device mixing offsets, described in centibels. too late to change to millibels.
+	// range is +- 12 db.
+	int16_t APU1_OFFSET = 0;
+	int16_t APU2_OFFSET = 0;
+	int16_t VRC6_OFFSET = 0;
+	int16_t VRC7_OFFSET = 0;
+	int16_t FDS_OFFSET = 0;
+	int16_t MMC5_OFFSET = 0;
+	int16_t N163_OFFSET = 0;
+	int16_t S5B_OFFSET = 0;
+
+	// Use external OPLL instead of VRC7
+	bool USE_OPLL_EXT = 0;
+
+	// User-defined hardware patch set for external OPLL
+	std::vector<uint8_t> USE_OPLL_PATCHES = {
+		0, 0, 0, 0, 0, 0, 0, 0,		// patch 0 must always be 0
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0
+	};
+
+	// User-defined hardware patch names for external OPLL
+	std::vector<std::string> USE_OPLL_PATCH_NAMES = {
+		"(custom instrument)",		// patch 0 must always be named "(custom instrument)"
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		""
+	};
+
+	// Use better mixing values derived from survey: https://forums.nesdev.org/viewtopic.php?f=2&t=17741
+	bool USE_SURVEY_MIX = false;
 };
 
 // Access data types used by the document class
@@ -351,7 +419,6 @@ public:
 	static const int	DEFAULT_NAMCO_CHANS;
 
 	static const bool	DEFAULT_LINEAR_PITCH;
-
 
 	//
 	// Private functions
