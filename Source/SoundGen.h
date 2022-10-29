@@ -31,8 +31,10 @@
 #include "gsl/span"
 #include "rigtorp/SPSCQueue.h"
 #include "libsamplerate/include/samplerate.h"
+#include "utils/handle_ptr.h"
 #include <queue>		// // //
 #include "Common.h"
+#include "FamiTrackerTypes.h"
 
 #include <atomic>
 #include <cstdint>
@@ -131,7 +133,7 @@ public:
 	void		LoadMachineSettings();		// // // 050B
 
 	// Thread management functions
-	bool		BeginThread();
+	bool BeginThread(std::shared_ptr<CSoundGen> self);
 
 private:
 	void ThreadEntry();
@@ -362,7 +364,14 @@ private:
 	mutable std::mutex m_csVisualizerWndLock;
 
 	// Handles
-	HANDLE				m_hInterruptEvent;					// Used to interrupt sound buffer syncing
+
+	/// Used to interrupt sound buffer syncing. Never null. To avoid data races, we never
+	/// overwrite this handle. Instead we assign once (in the constructor), then
+	/// SetEvent/ResetEvent afterwards.
+	///
+	/// It doesn't really matter, considering CSoundGen::BeginThread() is only ever
+	/// called once, but it's cleaner this way.
+	HandlePtr m_hInterruptEvent;
 
 // Sound variables (TODO: move sound to a new class?)
 private:

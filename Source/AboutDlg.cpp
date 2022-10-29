@@ -167,6 +167,7 @@ BOOL CAboutDlg::OnInitDialog()
 		_T("- Additional improvements by nyanpasu64\r\n")
 		_T("- Export plugin support by Gradualore\r\n")
 		_T("- Sunsoft 5B information in manual by Blue Mario\r\n")		// // !!
+		_T("- Additional manual information by Persune\r\n")		// // !!
 		_T("- Toolbar icons are made by ilkke\r\n")
 		_T("- Dn-FT icon design by Compass Man\r\n")		// // !!
 		_T("- DPCM import resampler by Jarhmander\r\n")
