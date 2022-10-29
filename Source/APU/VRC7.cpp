@@ -196,7 +196,7 @@ void CVRC7::UpdateMixLevel(double v)
 	// The output of emu2413 is resampled. This means
 	// that the emulator output suffers no multiplex hiss and
 	// bit depth quantization.
-	// TODO: replace emu2413 with Nuked-OPLL
+	// TODO: replace emu2413 with Nuked-OPLL for better accuracy?
 	m_SynthVRC7.volume(v * AMPLIFY, 10000);
 }
 

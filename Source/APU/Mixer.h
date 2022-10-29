@@ -29,6 +29,9 @@
 #include "../Common.h"
 #include "../Blip_Buffer/blip_buffer.h"
 
+#include <vector>		// !! !!
+#include <string>		// !! !!
+
 enum chip_level_t {
 	CHIP_LEVEL_APU1,
 	CHIP_LEVEL_APU2,
@@ -50,15 +53,80 @@ struct MixerConfig {
 	int HighCut = 0;
 	int HighDamp = 0;
 	float OverallVol = 0;
-	int FDSLowpass = 2000;
-	int N163Lowpass = 12000;
+
+	// Use better mixing values derived from survey: https://forums.nesdev.org/viewtopic.php?f=2&t=17741
+	bool UseSurveyMix = false;
+
+	// Device lowpassing, described in integer Hz.
+	int16_t FDSLowpass = 2000;
+	int16_t N163Lowpass = 12000;
+
+	// Device mixing offsets, described in centibels. too late to change to millibels.
+	// range is +- 12 db.
+	std::vector<int16_t> DeviceMixOffsets = {
+		0,		// APU1Offset
+		0,		// APU2Offset
+		0,		// VRC6Offset
+		0,		// VRC7Offset
+		0,		// FDSOffset
+		0,		// MMC5Offset
+		0,		// N163Offset
+		0		// S5BOffset
+	};
 };
 
 struct EmulatorConfig {
 	bool N163DisableMultiplexing = true;
-	int VRC7PatchSelection = 0;
-	uint8_t* VRC7PatchSet = nullptr;
-	bool UseExternalOPLLChip = false;
+	int UseOPLLPatchSet = 0;
+
+	// Use external OPLL instead of VRC7
+	bool UseOPLLExt = false;
+
+	// User-defined hardware patch set for external OPLL
+	std::vector<uint8_t> UseOPLLPatches = {
+		0, 0, 0, 0, 0, 0, 0, 0,		// patch 0 must always be 0
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0
+	};
+
+	// User-defined hardware patch names for external OPLL
+	std::vector<std::string> UseOPLLPatchNames = {
+		"(custom instrument)",		// patch 0 must always be named "(custom instrument)"
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		""
+	};
 };
 
 class CMixer

@@ -465,43 +465,51 @@ CRegisterState *CAPU::GetRegState(int Chip, int Reg) const		// // //
 	}
 }
 
+void CAPUConfig::SetupEmulation(
+	bool N163DisableMultiplexing,
+	int UseOPLLPatchSet,
+	bool UseOPLLExt,
+	std::vector<uint8_t> UseOPLLPatches,
+	std::vector<std::string> UseOPLLPatchNames)
+{
+	m_EmulatorConfig = EmulatorConfig{
+		N163DisableMultiplexing,
+		UseOPLLPatchSet,
+		UseOPLLExt,
+		UseOPLLPatches,
+		UseOPLLPatchNames
+	};
+}
 
 void CAPUConfig::SetupMixer(
 	int LowCut,
 	int HighCut,
 	int HighDamp,
 	int Volume,
-	int FDSLowpass,
-	int N163Lowpass)
+	bool SurveyMix,
+	int16_t FDSLowpass,
+	int16_t N163Lowpass,
+	std::vector<int16_t> DeviceMixOffsets)
 {
 	m_MixerConfig = MixerConfig{
 		LowCut,
 		HighCut,
 		HighDamp,
 		float(Volume) / 100.0f,
+		SurveyMix,
 		FDSLowpass,
-		N163Lowpass
+		N163Lowpass,
+		DeviceMixOffsets
 	};
 }
 
+// must be called after SetupMixer()
+// DeviceMixOffsets[] need to be set first
 void CAPUConfig::SetChipLevel(chip_level_t Chip, float LeveldB)
 {
-	float LevelLinear = powf(10, LeveldB / 20.0f);		// Convert dB to linear
+	// Convert dB to linear
+	float LevelLinear = powf(10, (LeveldB + (static_cast<float>(m_MixerConfig->DeviceMixOffsets[Chip]) / 10.0f)) / 20.0f);
 	m_ChipLevels[Chip] = LevelLinear;
-}
-
-void CAPUConfig::SetupEmulation(
-	bool N163DisableMultiplexing,
-	int VRC7PatchSelection,
-	uint8_t* VRC7PatchSet,
-	bool UseExternalOPLLChip)
-{
-	m_EmulatorConfig = EmulatorConfig{
-		N163DisableMultiplexing,
-		VRC7PatchSelection,
-		VRC7PatchSet,
-		UseExternalOPLLChip
-	};
 }
 
 CAPUConfig::~CAPUConfig() noexcept(false) {

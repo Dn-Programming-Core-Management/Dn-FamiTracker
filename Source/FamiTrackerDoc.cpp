@@ -111,7 +111,10 @@ const char *FILE_BLOCK_DETUNETABLES			= "DETUNETABLES";
 const char *FILE_BLOCK_GROOVES				= "GROOVES";
 const char *FILE_BLOCK_BOOKMARKS			= "BOOKMARKS";
 const char *FILE_BLOCK_PARAMS_EXTRA			= "PARAMS_EXTRA";
+
+// !! !! Dn-FamiTracker specific
 const char *FILE_BLOCK_JSON = "JSON";
+const char *FILE_BLOCK_PARAMS_EMU = "PARAMS_EMU";
 
 // FTI instruments files
 static const char INST_HEADER[] = "FTI";
@@ -187,10 +190,7 @@ const char* FDS_OFFSET = "fds-offset";
 const char* MMC5_OFFSET = "mmc5-offset";
 const char* N163_OFFSET = "n163-offset";
 const char* S5B_OFFSET = "s5b-offset";
-const char* USE_SURVEY_MIX = "use-survey-mix"; 
-const char* USE_OPLL_EXT = "use-opll-ext";
-const char* USE_OPLL_PATCHES = "use-opll-patches";
-const char* USE_OPLL_PATCH_NAMES = "use-opll-patch-names";
+const char* USE_SURVEY_MIX = "use-survey-mix";
 
 void from_json(const json& j, JSONData& d) {
 	j.at(APU1_OFFSET).get_to(d.APU1_OFFSET);
@@ -201,11 +201,9 @@ void from_json(const json& j, JSONData& d) {
 	j.at(MMC5_OFFSET).get_to(d.MMC5_OFFSET);
 	j.at(N163_OFFSET).get_to(d.N163_OFFSET);
 	j.at(S5B_OFFSET).get_to(d.S5B_OFFSET);
-	j.at(USE_OPLL_EXT).get_to(d.USE_OPLL_EXT);
-	j.at(USE_OPLL_PATCHES).get_to(d.USE_OPLL_PATCHES);
-	j.at(USE_OPLL_PATCH_NAMES).get_to(d.USE_OPLL_PATCH_NAMES);
 	j.at(USE_SURVEY_MIX).get_to(d.USE_SURVEY_MIX);
 };
+
 void to_json(json& j, const JSONData& d) {
 	j = json{
 		{ APU1_OFFSET, d.APU1_OFFSET },
@@ -216,13 +214,9 @@ void to_json(json& j, const JSONData& d) {
 		{ MMC5_OFFSET, d.MMC5_OFFSET },
 		{ N163_OFFSET, d.N163_OFFSET },
 		{ S5B_OFFSET, d.S5B_OFFSET },
-		{ USE_OPLL_EXT, d.USE_OPLL_EXT },
-		{ USE_OPLL_PATCHES, d.USE_OPLL_PATCHES },
-		{ USE_OPLL_PATCH_NAMES, d.USE_OPLL_PATCH_NAMES },
 		{ USE_SURVEY_MIX, d.USE_SURVEY_MIX }
 	};
 };
-
 
 //
 // CFamiTrackerDoc
@@ -244,7 +238,9 @@ CFamiTrackerDoc::CFamiTrackerDoc() :
 	m_iNamcoChannels(0),		// // //
 	m_bDisplayComment(false),
 	m_pInstrumentManager(new CInstrumentManager(this)),
-	m_pBookmarkManager(new CBookmarkManager(MAX_TRACKS))
+	m_pBookmarkManager(new CBookmarkManager(MAX_TRACKS)),
+	m_bUseExternalOPLLChip(false),
+	m_bUseSurveyMixing(false)
 {
 	// Initialize document object
 
@@ -259,8 +255,6 @@ CFamiTrackerDoc::CFamiTrackerDoc() :
 
 	if (pSoundGen)
 		pSoundGen->AssignDocument(this);
-
-	m_strUserPatchNames.resize(19);
 }
 
 CFamiTrackerDoc::~CFamiTrackerDoc()
@@ -480,6 +474,31 @@ void CFamiTrackerDoc::DeleteContents()
 	SetExceededFlag(FALSE);		// // //
 
 	m_csDocumentLock.Unlock();
+
+	// !! !!
+	m_iAPU1LevelOffset = 0;
+	m_iAPU2LevelOffset = 0;
+	m_iVRC6LevelOffset = 0;
+	m_iVRC7LevelOffset = 0;
+	m_iFDSLevelOffset = 0;
+	m_iMMC5LevelOffset = 0;
+	m_iN163LevelOffset = 0;
+	m_iS5BLevelOffset = 0;
+
+	m_bUseSurveyMixing = false;
+
+	m_bUseExternalOPLLChip = false;
+
+	{
+		int bytecount = 0;
+		for (int i = 0; i < 19; i++) {
+			for (int j = 0; j < 8; j++) {
+				m_iOPLLPatchSet[bytecount] = 0;
+				bytecount++;
+			}
+			m_strOPLLPatchNames[i].clear();
+		}
+	}
 
 	CDocument::DeleteContents();
 }
@@ -830,12 +849,14 @@ bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 		6,		// SequencesVRC6
 		1,		// SequencesN163
 		1,		// SequencesS5B
-		// 0cc/Dn-ft
+		// 0cc-ft
 		2,		// ParamsExtra
 		1,		// DetuneTables
 		1,		// Grooves
 		1,		// Bookmarks
-		1		// JSON; should always be backwards compatible!
+		// Dn-ft
+		1,		// JSON; should always be backwards compatible!
+		1		// ParamsEmu
 	};
 
 	static bool (CFamiTrackerDoc::*FTM_WRITE_FUNC[])(CDocumentFile*, const int) const = {		// // //
@@ -855,7 +876,8 @@ bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 		&CFamiTrackerDoc::WriteBlock_DetuneTables,		// // //
 		&CFamiTrackerDoc::WriteBlock_Grooves,			// // //
 		&CFamiTrackerDoc::WriteBlock_Bookmarks,			// // //
-		&CFamiTrackerDoc::WriteBlock_JSON
+		&CFamiTrackerDoc::WriteBlock_JSON,				// !! !!
+		&CFamiTrackerDoc::WriteBlock_ParamsEmu,			// !! !!
 	};
 
 	for (size_t i = 0; i < sizeof(FTM_WRITE_FUNC) / sizeof(*FTM_WRITE_FUNC); ++i) {
@@ -1670,7 +1692,8 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 	FTM_READ_FUNC[FILE_BLOCK_GROOVES]			= &CFamiTrackerDoc::ReadBlock_Grooves;			// // //
 	FTM_READ_FUNC[FILE_BLOCK_BOOKMARKS]			= &CFamiTrackerDoc::ReadBlock_Bookmarks;		// // //
 	FTM_READ_FUNC[FILE_BLOCK_PARAMS_EXTRA]		= &CFamiTrackerDoc::ReadBlock_ParamsExtra;		// // //
-	FTM_READ_FUNC[FILE_BLOCK_JSON]				= &CFamiTrackerDoc::ReadBlock_JSON;		// // //
+	FTM_READ_FUNC[FILE_BLOCK_JSON]				= &CFamiTrackerDoc::ReadBlock_JSON;				// !! !!
+	FTM_READ_FUNC[FILE_BLOCK_PARAMS_EMU]		= &CFamiTrackerDoc::ReadBlock_ParamsEmu;		// !! !!
 	
 	const char *BlockID;
 	bool ErrorFlag = false;
@@ -2636,13 +2659,15 @@ bool CFamiTrackerDoc::WriteBlock_Bookmarks(CDocumentFile *pDocFile, const int Ve
 			pDocFile->WriteBlockInt(pMark->m_Highlight.Second);
 			pDocFile->WriteBlockChar(pMark->m_bPersist);
 			//pDocFile->WriteBlockInt(pMark->m_sName.size());
-			//pDocFile->WriteBlock(pMark->m_sName, (int)strlen(Name));	
+			//pDocFile->WriteBlock(pMark->m_sName, (int)strlen(Name));
 			pDocFile->WriteString(pMark->m_sName);
 		}
 	}
 
 	return pDocFile->FlushBlock();
 }
+
+// !! !! JSON optional data
 
 void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile *pDocFile, const int Version)
 {
@@ -2667,6 +2692,7 @@ void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile *pDocFile, const int Version)
 		auto err = "Warning: unknown JSON data (will be discarded upon saving!):\n" + unknowns.dump();
 		AfxMessageBox(conv::to_t(std::move(err)).c_str(), MB_ICONWARNING);
 	}
+
 	if (JDataDefault.APU1_OFFSET != out[APU1_OFFSET]) SetLevelOffset(0, out[APU1_OFFSET]);
 	if (JDataDefault.APU2_OFFSET != out[APU2_OFFSET]) SetLevelOffset(1, out[APU2_OFFSET]);
 	if (JDataDefault.VRC6_OFFSET != out[VRC6_OFFSET]) SetLevelOffset(2, out[VRC6_OFFSET]);
@@ -2675,36 +2701,12 @@ void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile *pDocFile, const int Version)
 	if (JDataDefault.MMC5_OFFSET != out[MMC5_OFFSET]) SetLevelOffset(5, out[MMC5_OFFSET]);
 	if (JDataDefault.N163_OFFSET != out[N163_OFFSET]) SetLevelOffset(6, out[N163_OFFSET]);
 	if (JDataDefault.S5B_OFFSET != out[S5B_OFFSET]) SetLevelOffset(7, out[S5B_OFFSET]);
-	
-	if (out.at(USE_OPLL_EXT)) SetExternalOPLLChipCheck(out[USE_OPLL_EXT]);
-
-	if (JDataDefault.USE_OPLL_PATCHES != out[USE_OPLL_PATCHES]) {
-		uint8_t patchdump[19 * 8];
-		for (int i = 0; i < 19 * 8; ++i)
-			patchdump[i] = out[USE_OPLL_PATCH_NAMES].at(i);
-		SetOPLLPatchSet(patchdump);
-	}
-
-	if (JDataDefault.USE_OPLL_PATCH_NAMES != out[USE_OPLL_PATCH_NAMES])
-		SetOPLLPatchNames(out[USE_OPLL_PATCH_NAMES]);
-
 	if (out.at(USE_SURVEY_MIX)) SetSurveyMix(out[USE_SURVEY_MIX]);
 }
 
 bool CFamiTrackerDoc::WriteBlock_JSON(CDocumentFile *pDocFile, const int Version) const
 {
 	const JSONData JDataDefault;
-
-	// get uint8_t vector of patches from pointer
-	uint8_t *patchpointer = GetOPLLPatchSet();
-	std::vector<uint8_t> patchdump(19 * 8);
-	for (int i = 0; i < 19 * 8; ++i)
-		patchdump[i] = patchpointer[i];
-
-	std::vector<std::string> patchnames = GetOPLLPatchNames();
-
-	// patch 0 must always be "(custom instrument)"
-	patchnames.at(0) = "(custom instrument)";
 
 	json j;
 	if (GetLevelOffset(0)) j[APU1_OFFSET] = GetLevelOffset(0);
@@ -2715,9 +2717,6 @@ bool CFamiTrackerDoc::WriteBlock_JSON(CDocumentFile *pDocFile, const int Version
 	if (GetLevelOffset(5)) j[MMC5_OFFSET] = GetLevelOffset(5);
 	if (GetLevelOffset(6)) j[N163_OFFSET] = GetLevelOffset(6);
 	if (GetLevelOffset(7)) j[S5B_OFFSET] = GetLevelOffset(7);
-	if (GetExternalOPLLChipCheck()) j[USE_OPLL_EXT] = GetExternalOPLLChipCheck();
-	if (patchdump != JDataDefault.USE_OPLL_PATCHES) j[USE_OPLL_PATCHES] = patchdump;
-	if (patchnames != JDataDefault.USE_OPLL_PATCH_NAMES) j[USE_OPLL_PATCH_NAMES] = patchnames;
 	if (GetSurveyMix()) j[USE_SURVEY_MIX] = GetSurveyMix();
 
 	if (j.empty())
@@ -2749,6 +2748,58 @@ bool CFamiTrackerDoc::WriteBlock_ParamsExtra(CDocumentFile *pDocFile, const int 
 		pDocFile->WriteBlockChar(m_iDetuneSemitone);
 		pDocFile->WriteBlockChar(m_iDetuneCent);
 	}
+	return pDocFile->FlushBlock();
+}
+
+// !! !! Emulation parameters
+
+void CFamiTrackerDoc::ReadBlock_ParamsEmu(CDocumentFile* pDocFile, const int Version)
+{
+	m_bUseExternalOPLLChip = (pDocFile->GetBlockInt() != 0);
+
+	int bytecount = 0;
+	for (int i = 0; i < 19; i++) {
+		for (int j = 0; j < 8; j++) {
+			m_iOPLLPatchSet[bytecount] = static_cast<uint8_t>(pDocFile->GetBlockChar());
+			bytecount++;
+		}
+		m_strOPLLPatchNames[i] = std::string(pDocFile->ReadString());
+	}
+}
+
+bool CFamiTrackerDoc::WriteBlock_ParamsEmu(CDocumentFile* pDocFile, const int Version) const
+{
+	bool haspatchnames = false;
+	bool haspatchbytes = false;
+	{
+		int bytecount = 0;
+		for (int i = 0; i < 19; i++) {
+			for (int j = 0; j < 8; j++) {
+				haspatchnames |= !(m_iOPLLPatchSet[bytecount] == 0);
+				bytecount++;
+			}
+			haspatchbytes |= !(m_strOPLLPatchNames[i].empty());
+		}
+	}
+
+	if (!m_bUseExternalOPLLChip &&
+		!haspatchnames &&
+		!haspatchbytes)
+		return true;
+
+	pDocFile->CreateBlock(FILE_BLOCK_PARAMS_EMU, Version);
+
+	pDocFile->WriteBlockInt(m_bUseExternalOPLLChip);
+
+	int bytecount = 0;
+	for (int i = 0; i < 19; i++) {
+		for (int j = 0; j < 8; j++) {
+			pDocFile->WriteBlockChar(static_cast<char>(m_iOPLLPatchSet[bytecount]));
+			bytecount++;
+		}
+		pDocFile->WriteString(m_strOPLLPatchNames[i]);
+	}
+
 	return pDocFile->FlushBlock();
 }
 
@@ -4453,7 +4504,7 @@ int16_t CFamiTrackerDoc::GetLevelOffset(int device) const
 	}
 }
 
-// DocumentPropertiesChanged calls GetN163LevelOffset and updates synth if modified.
+// DocumentPropertiesChanged calls GetLevelOffset() and updates synth if modified.
 void CFamiTrackerDoc::SetLevelOffset(int device, int16_t offset)
 {
 	switch (device) {
@@ -4508,28 +4559,30 @@ void CFamiTrackerDoc::SetLevelOffset(int device, int16_t offset)
 	}
 }
 
-uint8_t* CFamiTrackerDoc::GetOPLLPatchSet() const
+uint8_t CFamiTrackerDoc::GetOPLLPatch(int index) const
 {
-	return const_cast<uint8_t*>(m_iUserPatchSet);
+	return m_iOPLLPatchSet[index];
 }
 
-void CFamiTrackerDoc::SetOPLLPatchSet(uint8_t* PatchSet)
+void CFamiTrackerDoc::SetOPLLPatch(int index, uint8_t data)
 {
-	for (int i = 0; i < 19 * 8; ++i)
-		m_iUserPatchSet[i] = PatchSet[i];
+	if (index >= 8)
+		m_iOPLLPatchSet[index] = data;
+	else
+		m_iOPLLPatchSet[index] = 0;		// patch 0 must always be 0
 }
 
-std::vector<std::string> CFamiTrackerDoc::GetOPLLPatchNames() const
+std::string CFamiTrackerDoc::GetOPLLPatchName(int index) const
 {
-	return m_strUserPatchNames;
+	return m_strOPLLPatchNames[index];
 }
 
-void CFamiTrackerDoc::SetOPLLPatchNames(std::vector<std::string> PatchNames)
+void CFamiTrackerDoc::SetOPLLPatchName(int index, std::string PatchName)
 {
-	m_strUserPatchNames = PatchNames;
+	m_strOPLLPatchNames[index] = PatchName;
 
 	// patch 0 must always be "(custom instrument)"
-	m_strUserPatchNames.at(0) = "(custom instrument)";
+	m_strOPLLPatchNames[0] = "(custom instrument)";
 }
 
 bool CFamiTrackerDoc::GetExternalOPLLChipCheck() const
@@ -4537,9 +4590,9 @@ bool CFamiTrackerDoc::GetExternalOPLLChipCheck() const
 	return m_bUseExternalOPLLChip;
 }
 
-void CFamiTrackerDoc::SetExternalOPLLChipCheck(bool UserDefined)
+void CFamiTrackerDoc::SetExternalOPLLChipCheck(bool UseExternalOPLLChip)
 {
-	m_bUseExternalOPLLChip = UserDefined;
+	m_bUseExternalOPLLChip = UseExternalOPLLChip;
 }
 
 // Attributes

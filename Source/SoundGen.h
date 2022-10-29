@@ -346,16 +346,10 @@ private:
 	CSoundStream		*m_pSoundStream;
 	CVisualizerWnd		*m_pVisualizerWnd;
 	CAPU				*m_pAPU;
-	int16_t currAPU1LevelOffset;
-	int16_t currAPU2LevelOffset;
-	int16_t currVRC6LevelOffset;
-	int16_t currVRC7LevelOffset;
-	int16_t currFDSLevelOffset;
-	int16_t currMMC5LevelOffset;
-	int16_t currN163LevelOffset;
-	int16_t currS5BLevelOffset;
-	uint8_t* VRC7PatchSet;
-	bool UseExternalOPLLChip;
+	std::vector<int16_t> DeviceMixOffset;
+	std::vector<uint8_t> OPLLHardwarePatches;
+	std::vector<std::string> OPLLHardwarePatchNames;
+
 
 	const CDSample		*m_pPreviewSample;
 

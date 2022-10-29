@@ -189,21 +189,26 @@ public:
 		m_ExternalSound = Chip;
 	}
 
-	void SetChipLevel(chip_level_t Chip, float LeveldB);
 	void SetupEmulation(
-		bool N163DisableMultiplexing,
-		int VRC7PatchSelection,
-		uint8_t *VRC7PatchSet,
-		bool UseExternalOPLLChip
+		bool N163DisableMultiplexing ,
+		int UseOPLLPatchSet,
+		bool UseOPLLExt,
+		std::vector<uint8_t> UseOPLLPatches,
+		std::vector<std::string> UseOPLLPatchNames
 	);
+
 	void SetupMixer(
 		int LowCut,
 		int HighCut,
 		int HighDamp,
 		int Volume,
-		int FDSLowpass,
-		int N163Lowpass
+		bool SurveyMix,
+		int16_t FDSLowpass,
+		int16_t N163Lowpass,
+		std::vector<int16_t> DeviceMixOffsets
 	);
+
+	void SetChipLevel(chip_level_t Chip, float LeveldB);
 
 	/// Commit changes if no exception is active.
 	///

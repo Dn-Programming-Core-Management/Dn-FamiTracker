@@ -203,6 +203,8 @@ void CMixer::RecomputeMixing()
 		chip->UpdateFilter(eq);
 	}
 
+	// TODO: input survey mixing on enable
+
 	// Maybe the range argument, as well as the constant factor in the volume,
 	// should be supplied by the CSoundChip2 subclass rather than CMixer.
 	chip2A03.UpdateMixingAPU1(Volume * m_fLevelAPU1);
@@ -213,10 +215,15 @@ void CMixer::RecomputeMixing()
 
 	chipN163.UpdateN163Filter(m_MixerConfig.N163Lowpass, m_EmulatorConfig.N163DisableMultiplexing);
 	chipFDS.UpdateFdsFilter(m_MixerConfig.FDSLowpass);
+
+	uint8_t patchdump[19 * 8];
+	for (int i = 0; i < 19 * 8; ++i)
+		patchdump[i] = m_EmulatorConfig.UseOPLLPatches.at(i);
+	
 	chipVRC7.UpdatePatchSet(
-		m_EmulatorConfig.VRC7PatchSelection,
-		m_EmulatorConfig.UseExternalOPLLChip,
-		m_EmulatorConfig.VRC7PatchSet);
+		m_EmulatorConfig.UseOPLLPatchSet,
+		m_EmulatorConfig.UseOPLLExt,
+		patchdump);
 
 	SynthVRC6.volume(Volume * 3.98333f * m_fLevelVRC6, 500);
 	SynthMMC5.volume(Volume * 1.18421f * m_fLevelMMC5, 130);

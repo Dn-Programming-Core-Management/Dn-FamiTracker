@@ -83,55 +83,6 @@ struct JSONData {
 	int16_t N163_OFFSET = 0;
 	int16_t S5B_OFFSET = 0;
 
-	// Use external OPLL instead of VRC7
-	bool USE_OPLL_EXT = 0;
-
-	// User-defined hardware patch set for external OPLL
-	std::vector<uint8_t> USE_OPLL_PATCHES = {
-		0, 0, 0, 0, 0, 0, 0, 0,		// patch 0 must always be 0
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0
-	};
-
-	// User-defined hardware patch names for external OPLL
-	std::vector<std::string> USE_OPLL_PATCH_NAMES = {
-		"(custom instrument)",		// patch 0 must always be named "(custom instrument)"
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		""
-	};
-
 	// Use better mixing values derived from survey: https://forums.nesdev.org/viewtopic.php?f=2&t=17741
 	bool USE_SURVEY_MIX = false;
 };
@@ -308,11 +259,11 @@ public:
 	int16_t			GetLevelOffset(int device) const;
 	void			SetLevelOffset(int device, int16_t offset);
 
-	uint8_t*		GetOPLLPatchSet() const;
-	void			SetOPLLPatchSet(uint8_t* PatchSet);
+	uint8_t			GetOPLLPatch(int index) const;
+	void			SetOPLLPatch(int index, uint8_t data);
 
-	std::vector<std::string>	GetOPLLPatchNames() const;
-	void			SetOPLLPatchNames(std::vector<std::string> PatchNames);
+	std::string		GetOPLLPatchName(int index) const;
+	void			SetOPLLPatchName(int index, std::string PatchName);
 
 	bool			GetExternalOPLLChipCheck() const;
 	void			SetExternalOPLLChipCheck(bool UserDefined);
@@ -457,7 +408,9 @@ private:
 	bool			WriteBlock_DetuneTables(CDocumentFile *pDocFile, const int Version) const;
 	bool			WriteBlock_Grooves(CDocumentFile *pDocFile, const int Version) const;
 	bool			WriteBlock_Bookmarks(CDocumentFile *pDocFile, const int Version) const;
+	// !! !!
 	bool			WriteBlock_JSON(CDocumentFile * pDocFile, const int Version) const;
+	bool			WriteBlock_ParamsEmu(CDocumentFile* pDocFile, const int Version) const;
 
 	void			ReadBlock_Parameters(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_SongInfo(CDocumentFile *pDocFile, const int Version);		// // //
@@ -477,7 +430,9 @@ private:
 	void			ReadBlock_DetuneTables(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_Grooves(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_Bookmarks(CDocumentFile *pDocFile, const int Version);
+	// !! !!
 	void			ReadBlock_JSON(CDocumentFile * pDocFile, const int Version);
+	void			ReadBlock_ParamsEmu(CDocumentFile* pDocFile, const int Version);
 
 	// For file version compability
 	void			ReorderSequences();
@@ -593,6 +548,19 @@ private:
 	unsigned int	m_iNamcoChannels;
 	vibrato_t		m_iVibratoStyle;							// 0 = old style, 1 = new style
 	bool			m_bLinearPitch;
+
+	machine_t		m_iMachine;									// // // NTSC / PAL
+	unsigned int	m_iEngineSpeed;								// Refresh rate
+	unsigned int	m_iSpeedSplitPoint;							// Speed/tempo split-point
+	int				m_iDetuneTable[6][96];						// // // Detune tables
+	int				m_iDetuneSemitone, m_iDetuneCent;			// // // 050B tuning
+
+	// Emulation properties
+	bool			m_bUseExternalOPLLChip;						// !! !! User-defined hardware patch set for OPLL
+	uint8_t			m_iOPLLPatchSet[19 * 8];
+	std::string		m_strOPLLPatchNames[19];
+
+	// Optional properties
 	int16_t			m_iAPU1LevelOffset;							// !! !! Device level offsets, described in centibels
 	int16_t			m_iAPU2LevelOffset;
 	int16_t			m_iVRC6LevelOffset;
@@ -601,16 +569,7 @@ private:
 	int16_t			m_iMMC5LevelOffset;
 	int16_t			m_iN163LevelOffset;
 	int16_t			m_iS5BLevelOffset;
-	bool			m_bUseExternalOPLLChip;						// !! !! User-defined hardware patch set for OPLL
-	uint8_t			m_iUserPatchSet[19 * 8];
-	std::vector<std::string>	m_strUserPatchNames;
-	bool			m_bUseSurveyMixing;							// !! !! Uses better mixing values derived from survey: https://forums.nesdev.org/viewtopic.php?f=2&t=17741
-
-	machine_t		m_iMachine;									// // // NTSC / PAL
-	unsigned int	m_iEngineSpeed;								// Refresh rate
-	unsigned int	m_iSpeedSplitPoint;							// Speed/tempo split-point
-	int				m_iDetuneTable[6][96];						// // // Detune tables
-	int				m_iDetuneSemitone, m_iDetuneCent;			// // // 050B tuning
+	bool			m_bUseSurveyMixing;							// !! !! Use better mixing values derived from survey: https://forums.nesdev.org/viewtopic.php?f=2&t=17741
 
 	// NSF info
 	char			m_strName[32];								// Song name

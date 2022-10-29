@@ -158,8 +158,7 @@ CSoundGen::CSoundGen() :
 	m_pSequencePlayPos(NULL),
 	m_iSequencePlayPos(0),
 	m_iSequenceTimeout(0),
-	m_iBPMCachePosition(0),		// // //
-	currN163LevelOffset(0)
+	m_iBPMCachePosition(0)		// // //
 {
 	TRACE("SoundGen: Object created\n");
 
@@ -174,6 +173,17 @@ CSoundGen::CSoundGen() :
 
 	// Create all kinds of channels
 	CreateChannels();
+
+	// Initialize DeviceMixOffset, OPLLHardwarePatches and OPLLHardwarePatchNames
+	DeviceMixOffset.resize(8);
+	std::fill(DeviceMixOffset.begin(), DeviceMixOffset.end(), 0);
+
+	OPLLHardwarePatches.resize(19 * 8);
+	std::fill(OPLLHardwarePatches.begin(), OPLLHardwarePatches.end(), 0);
+
+	OPLLHardwarePatchNames.resize(19);
+	std::fill(OPLLHardwarePatchNames.begin(), OPLLHardwarePatchNames.end(), "");
+	OPLLHardwarePatchNames.at(0) = "(custom instrument)";		// patch 0 must always be named "(custom instrument)"
 }
 
 CSoundGen::~CSoundGen()
@@ -575,14 +585,14 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 
 	m_iSpeedSplitPoint = pDocument->GetSpeedSplitPoint();
 
-	if (currAPU1LevelOffset != pDocument->GetLevelOffset(0) ||
-		currAPU2LevelOffset != pDocument->GetLevelOffset(1) ||
-		currVRC6LevelOffset != pDocument->GetLevelOffset(2) ||
-		currVRC7LevelOffset != pDocument->GetLevelOffset(3) ||
-		currFDSLevelOffset != pDocument->GetLevelOffset(4) ||
-		currMMC5LevelOffset != pDocument->GetLevelOffset(5) ||
-		currN163LevelOffset != pDocument->GetLevelOffset(6) ||
-		currS5BLevelOffset != pDocument->GetLevelOffset(7)) {
+	if (DeviceMixOffset[0] != pDocument->GetLevelOffset(0) ||
+		DeviceMixOffset[1] != pDocument->GetLevelOffset(1) ||
+		DeviceMixOffset[2] != pDocument->GetLevelOffset(2) ||
+		DeviceMixOffset[3] != pDocument->GetLevelOffset(3) ||
+		DeviceMixOffset[4] != pDocument->GetLevelOffset(4) ||
+		DeviceMixOffset[5] != pDocument->GetLevelOffset(5) ||
+		DeviceMixOffset[6] != pDocument->GetLevelOffset(6) ||
+		DeviceMixOffset[7] != pDocument->GetLevelOffset(7)) {
 		// Player thread calls OnLoadSettings() which calls ResetAudioDevice()
 		// Why are GetCurrentThreadId and GetCurrentThread used interchangably?
 		LoadSettings();
@@ -839,43 +849,30 @@ bool CSoundGen::ResetAudioDevice()
 		m_pResampleInBuffer = std::make_unique<float[]>(inputBufferSize);
 	}
 
-	currAPU1LevelOffset = m_pDocument->GetLevelOffset(0);
-	currAPU2LevelOffset = m_pDocument->GetLevelOffset(1);
-	currVRC6LevelOffset = m_pDocument->GetLevelOffset(2);
-	currVRC7LevelOffset = m_pDocument->GetLevelOffset(3);
-	currFDSLevelOffset = m_pDocument->GetLevelOffset(4);
-	currMMC5LevelOffset = m_pDocument->GetLevelOffset(5);
-	currN163LevelOffset = m_pDocument->GetLevelOffset(6);
-	currS5BLevelOffset = m_pDocument->GetLevelOffset(7);
+	for (int i = 0; i < 7; ++i)
+		DeviceMixOffset[i] = m_pDocument->GetLevelOffset(i);
 
-	VRC7PatchSet = m_pDocument->GetOPLLPatchSet();
-	UseExternalOPLLChip = m_pDocument->GetExternalOPLLChipCheck();
+	{
+		int bytecount = 0;
+		for (int i = 0; i < 19; ++i) {
+			for (int j = 0; j < 8; ++j) {
+				OPLLHardwarePatches.at(bytecount) = m_pDocument->GetOPLLPatch(bytecount);
+				bytecount++;
+			}
+			OPLLHardwarePatchNames.at(i) = m_pDocument->GetOPLLPatchName(i);
+		}
+	}
 
 	{
 		auto config = CAPUConfig(m_pAPU);
 
-		config.SetChipLevel(CHIP_LEVEL_APU1, float(
-			(pSettings->ChipLevels.iLevelAPU1 + currAPU1LevelOffset) / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_APU2, float(
-			(pSettings->ChipLevels.iLevelAPU2 + currAPU2LevelOffset) / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_VRC6, float(
-			(pSettings->ChipLevels.iLevelVRC6 + currVRC6LevelOffset) / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_VRC7, float(
-			(pSettings->ChipLevels.iLevelVRC7 + currVRC7LevelOffset) / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_FDS, float(
-			(pSettings->ChipLevels.iLevelFDS + currFDSLevelOffset) / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_MMC5, float(
-			(pSettings->ChipLevels.iLevelMMC5 + currMMC5LevelOffset) / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_N163, float(
-			(pSettings->ChipLevels.iLevelN163 + currN163LevelOffset) / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_S5B, float(
-			(pSettings->ChipLevels.iLevelS5B + currS5BLevelOffset) / 10.0f));
-
 		config.SetupEmulation(
 			pSettings->Emulation.bNamcoMixing,
 			pSettings->Emulation.iVRC7Patch,
-			VRC7PatchSet,
-			UseExternalOPLLChip);
+			m_pDocument->GetExternalOPLLChipCheck(),
+			OPLLHardwarePatches,
+			OPLLHardwarePatchNames
+		);
 
 		// Update blip-buffer filtering
 		config.SetupMixer(
@@ -883,8 +880,20 @@ bool CSoundGen::ResetAudioDevice()
 			pSettings->Sound.iTrebleFilter,
 			pSettings->Sound.iTrebleDamping,
 			pSettings->Sound.iMixVolume,
+			m_pDocument->GetSurveyMix(),
 			pSettings->Emulation.iFDSLowpass,
-			pSettings->Emulation.iN163Lowpass);
+			pSettings->Emulation.iN163Lowpass,
+			DeviceMixOffset
+		);
+
+		config.SetChipLevel(CHIP_LEVEL_APU1, float(pSettings->ChipLevels.iLevelAPU1 / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_APU2, float(pSettings->ChipLevels.iLevelAPU2 / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_VRC6, float(pSettings->ChipLevels.iLevelVRC6 / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_VRC7, float(pSettings->ChipLevels.iLevelVRC7 / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_FDS, float(pSettings->ChipLevels.iLevelFDS / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_MMC5, float(pSettings->ChipLevels.iLevelMMC5 / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_N163, float(pSettings->ChipLevels.iLevelN163 / 10.0f));
+		config.SetChipLevel(CHIP_LEVEL_S5B, float(pSettings->ChipLevels.iLevelS5B / 10.0f));
 	}
 
 	m_bAudioClipping = false;
