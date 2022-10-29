@@ -69,7 +69,6 @@
 #include "2A03.h"
 #include "FDS.h"
 #include "N163.h"
-#include "digital-sound-antiques/emu2413.h"
 #include "utils/variadic_minmax.h"
 
 //#define LINEAR_MIXING

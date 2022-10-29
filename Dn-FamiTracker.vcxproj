@@ -127,12 +127,14 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;nafxcwd.lib;Libcmtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <AdditionalLibraryDirectories>$(LibraryPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Link>
     <Manifest />
     <Manifest />
@@ -168,12 +170,14 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;nafxcwd.lib;Libcmtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <AdditionalLibraryDirectories>$(LibraryPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Link>
     <Manifest />
     <Manifest />
@@ -209,7 +213,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;nafxcw.lib;Libcmt.lib</AdditionalDependencies>
       <Version>
       </Version>
       <AdditionalLibraryDirectories>$(LibraryPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -219,6 +223,8 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <DataExecutionPrevention>true</DataExecutionPrevention>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Link>
     <Manifest />
   </ItemDefinitionGroup>
@@ -253,7 +259,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;nafxcw.lib;Libcmt.lib</AdditionalDependencies>
       <Version>
       </Version>
       <AdditionalLibraryDirectories>$(LibraryPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -263,6 +269,8 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <DataExecutionPrevention>true</DataExecutionPrevention>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Link>
     <Manifest />
   </ItemDefinitionGroup>
@@ -510,16 +518,6 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hlp\HTMLDefines.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">hlp\HTMLDefines.h;%(Outputs)</Outputs>
     </CustomBuild>
-    <ClInclude Include="Source\APU\digital-sound-antiques\2413tone.h" />
-    <ClInclude Include="Source\APU\digital-sound-antiques\281btone.h" />
-    <ClInclude Include="Source\APU\digital-sound-antiques\emu2413.h" />
-    <ClInclude Include="Source\APU\digital-sound-antiques\vrc7tone_ft35.h" />
-    <ClInclude Include="Source\APU\digital-sound-antiques\vrc7tone_ft36.h" />
-    <ClInclude Include="Source\APU\digital-sound-antiques\vrc7tone_kt1.h" />
-    <ClInclude Include="Source\APU\digital-sound-antiques\vrc7tone_kt2.h" />
-    <ClInclude Include="Source\APU\digital-sound-antiques\vrc7tone_mo.h" />
-    <ClInclude Include="Source\APU\digital-sound-antiques\vrc7tone_nuke.h" />
-    <ClInclude Include="Source\APU\digital-sound-antiques\vrc7tone_rw.h" />
     <ClInclude Include="Source\ConfigEmulation.h" />
     <ClInclude Include="Source\ConfigGUI.h" />
     <ClInclude Include="Source\APU\ChannelLevelState.h" />
@@ -772,10 +770,6 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\nsf driver\n163.s" />
-    <None Include="..\nsf driver\nsf_wrap.s" />
-    <None Include="..\nsf driver\periods.s" />
-    <None Include="..\nsf driver\s5b.s" />
     <None Include="Dn-FamiTracker.reg" />
     <None Include="0CC-readme.txt" />
     <None Include="res\Document.ico" />
@@ -800,18 +794,7 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
     <None Include="res\key_white_unpressed.bmp" />
     <None Include="res\MainToolbar-16.bmp" />
     <None Include="res\MainToolbar-256.bmp" />
-    <None Include="..\nsf driver\apu.s" />
-    <None Include="..\nsf driver\driver.s" />
-    <None Include="..\nsf driver\effects.s" />
-    <None Include="..\nsf driver\fds.s" />
-    <None Include="..\nsf driver\init.s" />
-    <None Include="..\nsf driver\instrument.s" />
-    <None Include="..\nsf driver\mmc5.s" />
-    <None Include="..\nsf driver\player.s" />
-    <None Include="..\nsf driver\vrc6.s" />
-    <None Include="..\nsf driver\vrc7.s" />
     <None Include="changelog.txt" />
-    <None Include="gpl.txt" />
     <None Include="Source\resampler\resample.inl" />
     <None Include="specs.txt" />
   </ItemGroup>
