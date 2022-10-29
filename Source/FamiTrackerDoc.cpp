@@ -498,6 +498,7 @@ void CFamiTrackerDoc::DeleteContents()
 			}
 			m_strOPLLPatchNames[i].clear();
 		}
+		m_strOPLLPatchNames[0] = "(custom instrument)";		// patch 0 must always be named "(custom instrument)"
 	}
 
 	CDocument::DeleteContents();
