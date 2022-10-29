@@ -128,7 +128,6 @@ CSoundGen::CSoundGen() :
 	m_pSoundStream(NULL),
 	m_pVisualizerWnd(NULL),
 	m_pAPU(NULL),
-	currN163LevelOffset(0),
 	m_pPreviewSample(NULL),
 	m_CoInitialized(false),		// // //
 	m_bRunning(false),
@@ -159,8 +158,7 @@ CSoundGen::CSoundGen() :
 	m_bDirty(false),
 	m_pSequencePlayPos(NULL),
 	m_iSequencePlayPos(0),
-	m_iSequenceTimeout(0),
-	m_iBPMCachePosition(0)		// // //
+	m_iSequenceTimeout(0)
 {
 	if (!m_hInterruptEvent) {
 		throw std::runtime_error("Could not create CSoundGen::m_hInterruptEvent");
