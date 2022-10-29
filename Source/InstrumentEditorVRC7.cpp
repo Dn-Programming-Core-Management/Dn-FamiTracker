@@ -39,35 +39,36 @@ static constexpr size_t REGS_PER_INSTR = 8;
 static constexpr int CUSTOM_PATCH = 0;
 
 // based off NSFPlay emu2413's hardware patch scheme
+// TODO: replace this with FamitrackerDoc's m_iOPLLPatchSet instead
 static constexpr int OPLL_TONE_NUM = 9;
 static constexpr uint8_t DEFAULT_PATCHES[OPLL_TONE_NUM][(16 + 3) * REGS_PER_INSTR] =
 {
 	{
-#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_nuke.h"
+#include "APU/digital-sound-antiques/vrc7tone_nuke.h"
 	},
 	{
-#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_rw.h"
+#include "APU/digital-sound-antiques/vrc7tone_rw.h"
 	},
 	{
-#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_ft36.h"
+#include "APU/digital-sound-antiques/vrc7tone_ft36.h"
 	},
 	{
-#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_ft35.h"
+#include "APU/digital-sound-antiques/vrc7tone_ft35.h"
 	},
 	{
-#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_mo.h"
+#include "APU/digital-sound-antiques/vrc7tone_mo.h"
 	},
 	{
-#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_kt2.h"
+#include "APU/digital-sound-antiques/vrc7tone_kt2.h"
 	},
 	{
-#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_kt1.h"
+#include "APU/digital-sound-antiques/vrc7tone_kt1.h"
 	},
 	{
-#include "APU/nsfplay/xgm/devices/Sound/legacy/2413tone.h"
+#include "APU/digital-sound-antiques/2413tone.h"
 	},
 	{
-#include "APU/nsfplay/xgm/devices/Sound/legacy/281btone.h"
+#include "APU/digital-sound-antiques/281btone.h"
 	},
 };
 
@@ -120,6 +121,8 @@ BOOL CInstrumentEditorVRC7::OnInitDialog()
 
 	CComboBox* pPatchBox = static_cast<CComboBox*>(GetDlgItem(IDC_PATCH));
 	CString Text;
+
+	// TODO: replace this with FamitrackerDoc's m_strOPLLPatchNames instead
 	const _TCHAR* VRC7_patchnames[16] = {
 		// various VRC7 patch versions
 		_T("(custom patch)"),

@@ -735,9 +735,6 @@
     <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\nes_dmc.cpp">
       <Filter>Source Files\Sound Driver\Emulation\Sound Chips\External\nsfplay</Filter>
     </ClCompile>
-    <ClCompile Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\emu2413.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\APU\FDS.cpp">
       <Filter>Source Files\Sound Driver\Emulation\Sound Chips</Filter>
     </ClCompile>
@@ -745,6 +742,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\ConfigEmulation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\APU\digital-sound-antiques\emu2413.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1463,15 +1463,6 @@
     <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\nsfplay_math.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\nsfplay</Filter>
     </ClInclude>
-    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\2413tone.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\emu2413.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\legacy\vrc7tone_nuke.h">
-      <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\nsfplay</Filter>
-    </ClInclude>
     <ClInclude Include="Source\APU\FDS.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers</Filter>
     </ClInclude>
@@ -1500,6 +1491,36 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\APU\mesen\Namco163Audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\digital-sound-antiques\281btone.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\digital-sound-antiques\2413tone.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\digital-sound-antiques\emu2413.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\digital-sound-antiques\vrc7tone_ft35.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\digital-sound-antiques\vrc7tone_ft36.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\digital-sound-antiques\vrc7tone_kt1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\digital-sound-antiques\vrc7tone_kt2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\digital-sound-antiques\vrc7tone_mo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\digital-sound-antiques\vrc7tone_nuke.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\APU\digital-sound-antiques\vrc7tone_rw.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

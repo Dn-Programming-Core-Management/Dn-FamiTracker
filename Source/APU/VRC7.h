@@ -28,7 +28,7 @@
 #include "SoundChip2.h"
 #include "ChannelLevelState.h"
 
-#include "nsfplay/xgm/devices/Sound/legacy/emu2413.h"
+#include "digital-sound-antiques/emu2413.h"
 
 class CVRC7 : public CSoundChip2 {
 public:
