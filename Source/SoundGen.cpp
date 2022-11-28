@@ -178,12 +178,14 @@ CSoundGen::CSoundGen() :
 	// Create all kinds of channels
 	CreateChannels();
 
-	// Initialize DeviceMixOffset, OPLLHardwarePatches and OPLLHardwarePatchNames
+	// Initialize DeviceMixOffset, OPLLHardwarePatchBytes, UseExtOPLL and OPLLHardwarePatchNames
 	DeviceMixOffset.resize(8);
 	std::fill(DeviceMixOffset.begin(), DeviceMixOffset.end(), 0);
 
-	OPLLHardwarePatches.resize(19 * 8);
-	std::fill(OPLLHardwarePatches.begin(), OPLLHardwarePatches.end(), 0);
+	UseExtOPLL = false;
+
+	OPLLHardwarePatchBytes.resize(19 * 8);
+	std::fill(OPLLHardwarePatchBytes.begin(), OPLLHardwarePatchBytes.end(), 0);
 
 	OPLLHardwarePatchNames.resize(19);
 	std::fill(OPLLHardwarePatchNames.begin(), OPLLHardwarePatchNames.end(), "");
@@ -589,14 +591,36 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 
 	m_iSpeedSplitPoint = pDocument->GetSpeedSplitPoint();
 
-	if (DeviceMixOffset[0] != pDocument->GetLevelOffset(0) ||
-		DeviceMixOffset[1] != pDocument->GetLevelOffset(1) ||
-		DeviceMixOffset[2] != pDocument->GetLevelOffset(2) ||
-		DeviceMixOffset[3] != pDocument->GetLevelOffset(3) ||
-		DeviceMixOffset[4] != pDocument->GetLevelOffset(4) ||
-		DeviceMixOffset[5] != pDocument->GetLevelOffset(5) ||
-		DeviceMixOffset[6] != pDocument->GetLevelOffset(6) ||
-		DeviceMixOffset[7] != pDocument->GetLevelOffset(7)) {
+	bool refreshsettings = false;
+
+	for (int i = 0; i < 8; i++)
+		refreshsettings |= DeviceMixOffset[i] != pDocument->GetLevelOffset(i);
+
+	CSettings* pSettings = theApp.GetSettings();
+	int PatchNum = pSettings->Emulation.iVRC7Patch;
+
+	if (UseExtOPLL)
+		for (int i = 0; i < 19; i++) {
+			for (int j = 0; j < 8; j++)
+				refreshsettings |= OPLLHardwarePatchBytes.at((8 * i) + j) != pDocument->GetOPLLPatchByte((8 * i) + j);
+			refreshsettings |= OPLLHardwarePatchNames.at(i) != pDocument->GetOPLLPatchName(i);
+		}
+	else
+		for (int i = 0; i < 19; ++i) {
+			for (int j = 0; j < 8; ++j)
+				refreshsettings |= OPLLHardwarePatchBytes.at((8 * i) + j) != CAPU::OPLL_DEFAULT_PATCHES[PatchNum][(8 * i) + j];
+			// Set OPLL patch names
+			if (PatchNum <= 6)
+				refreshsettings |= OPLLHardwarePatchNames.at(i) != CAPU::OPLL_PATCHNAME_VRC7[i];
+			else if (PatchNum == 7)
+				refreshsettings |= OPLLHardwarePatchNames.at(i) != CAPU::OPLL_PATCHNAME_YM2413[i];
+			else if (PatchNum == 8)
+				refreshsettings |= OPLLHardwarePatchNames.at(i) != CAPU::OPLL_PATCHNAME_YMF281B[i];
+		}
+
+	refreshsettings |= UseExtOPLL != pDocument->GetExternalOPLLChipCheck();
+
+	if (refreshsettings) {
 		// Player thread calls OnLoadSettings() which calls ResetAudioDevice()
 		// Why are GetCurrentThreadId and GetCurrentThread used interchangably?
 		LoadSettings();
@@ -854,16 +878,29 @@ bool CSoundGen::ResetAudioDevice()
 		m_pResampleInBuffer = std::make_unique<float[]>(inputBufferSize);
 	}
 
+	int PatchNum = pSettings->Emulation.iVRC7Patch;
+
 	for (int i = 0; i < 7; ++i)
 		DeviceMixOffset[i] = m_pDocument->GetLevelOffset(i);
 
 	{
-		int bytecount = 0;
-		for (int i = 0; i < 19; ++i) {
-			for (int j = 0; j < 8; ++j) {
-				OPLLHardwarePatches.at(bytecount) = m_pDocument->GetOPLLPatch(bytecount);
-				bytecount++;
+		// Set OPLL patch to current patchset if not using external OPLL
+		if (!m_pDocument->GetExternalOPLLChipCheck()) {
+			for (int i = 0; i < 19; ++i) {
+				for (int j = 0; j < 8; ++j)
+					m_pDocument->SetOPLLPatchByte((8 * i) + j, CAPU::OPLL_DEFAULT_PATCHES[PatchNum][(8 * i) + j]);
+				// Set OPLL patch names
+				if (PatchNum <= 6)
+					m_pDocument->SetOPLLPatchName(i, CAPU::OPLL_PATCHNAME_VRC7[i]);
+				else if (PatchNum == 7)
+					m_pDocument->SetOPLLPatchName(i, CAPU::OPLL_PATCHNAME_YM2413[i]);
+				else if (PatchNum == 8)
+					m_pDocument->SetOPLLPatchName(i, CAPU::OPLL_PATCHNAME_YMF281B[i]);
 			}
+		}
+		for (int i = 0; i < 19; ++i) {
+			for (int j = 0; j < 8; ++j)
+				OPLLHardwarePatchBytes.at((8 * i) + j) = m_pDocument->GetOPLLPatchByte((8 * i) + j);
 			OPLLHardwarePatchNames.at(i) = m_pDocument->GetOPLLPatchName(i);
 		}
 	}
@@ -871,11 +908,12 @@ bool CSoundGen::ResetAudioDevice()
 	{
 		auto config = CAPUConfig(m_pAPU);
 
+		// Update FamiTracker emulation
 		config.SetupEmulation(
 			pSettings->Emulation.bNamcoMixing,
-			pSettings->Emulation.iVRC7Patch,
+			PatchNum,
 			m_pDocument->GetExternalOPLLChipCheck(),
-			OPLLHardwarePatches,
+			OPLLHardwarePatchBytes,
 			OPLLHardwarePatchNames
 		);
 

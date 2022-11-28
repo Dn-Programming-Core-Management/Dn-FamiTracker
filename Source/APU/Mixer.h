@@ -83,7 +83,7 @@ struct EmulatorConfig {
 	bool UseOPLLExt = false;
 
 	// User-defined hardware patch set for external OPLL
-	std::vector<uint8_t> UseOPLLPatches = {
+	std::vector<uint8_t> UseOPLLPatchBytes = {
 		0, 0, 0, 0, 0, 0, 0, 0,		// patch 0 must always be 0
 		0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0,

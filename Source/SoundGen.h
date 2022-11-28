@@ -348,14 +348,15 @@ private:
 	CSoundStream		*m_pSoundStream;
 	CVisualizerWnd		*m_pVisualizerWnd;
 	CAPU				*m_pAPU;
+	bool UseExtOPLL;
 	std::vector<int16_t> DeviceMixOffset;
-	std::vector<uint8_t> OPLLHardwarePatches;
+	std::vector<uint8_t> OPLLHardwarePatchBytes;
 	std::vector<std::string> OPLLHardwarePatchNames;
 
 
 	const CDSample		*m_pPreviewSample;
 
-	bool m_CoInitialized;
+	bool				m_CoInitialized;
 	bool				m_bRunning;
 
 	// Thread synchronization

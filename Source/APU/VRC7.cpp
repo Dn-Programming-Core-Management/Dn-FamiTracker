@@ -137,6 +137,7 @@ void CVRC7::EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer)
 
 	static int32_t LastSample = 0;
 
+	// TODO: manually clipping and mixing here is terrible. do this in CMixer or something
 	// Generate VRC7 samples
 	while (m_iBufferPtr < WantSamples) {
 		int32_t RawSample = OPLL_calc(m_pOPLLInt);
@@ -200,17 +201,16 @@ void CVRC7::UpdateMixLevel(double v)
 	m_SynthVRC7.volume(v * AMPLIFY, 10000);
 }
 
-void CVRC7::UpdatePatchSet(int Patchset, bool UseExternalOPLLChip, uint8_t* PatchSet)
+void CVRC7::UpdatePatchSet(int PatchSelection, bool UseExternalOPLLChip, uint8_t* PatchSet)
 {
 	m_bUseExternalOPLLChip = UseExternalOPLLChip;
-	m_iPatchTone = Patchset;
-	OPLL_resetPatch(m_pOPLLInt, m_iPatchTone);
+	m_iPatchTone = PatchSelection;
 
 	if (m_bUseExternalOPLLChip) {
-		// dump patchset into OPLL_PATCH object
-		OPLL_dumpToPatch(PatchSet, m_iUserPatchset);
-		// then copy patches into emulator
-		for (int i = 0; i < 19 * 2; i++)
-			OPLL_copyPatch(m_pOPLLInt, i, m_iUserPatchset);
+		OPLL_setPatch(m_pOPLLInt, PatchSet);
+	}
+	else {
+		// patchset option from NSFPlay
+		OPLL_resetPatch(m_pOPLLInt, m_iPatchTone);
 	}
 }

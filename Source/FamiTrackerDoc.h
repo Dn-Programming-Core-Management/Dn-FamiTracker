@@ -259,8 +259,8 @@ public:
 	int16_t			GetLevelOffset(int device) const;
 	void			SetLevelOffset(int device, int16_t offset);
 
-	uint8_t			GetOPLLPatch(int index) const;
-	void			SetOPLLPatch(int index, uint8_t data);
+	uint8_t			GetOPLLPatchByte(int index) const;
+	void			SetOPLLPatchByte(int index, uint8_t data);
 
 	std::string		GetOPLLPatchName(int index) const;
 	void			SetOPLLPatchName(int index, std::string PatchName);
@@ -557,7 +557,7 @@ private:
 
 	// Emulation properties
 	bool			m_bUseExternalOPLLChip;						// !! !! User-defined hardware patch set for OPLL
-	uint8_t			m_iOPLLPatchSet[19 * 8];
+	uint8_t			m_iOPLLPatchBytes[19 * 8];
 	std::string		m_strOPLLPatchNames[19];
 
 	// Optional properties

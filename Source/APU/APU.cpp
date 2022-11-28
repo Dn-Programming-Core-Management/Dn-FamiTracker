@@ -48,6 +48,106 @@ const uint32_t	CAPU::BASE_FREQ_VRC7		= 3579545;
 const uint8_t	CAPU::FRAME_RATE_NTSC		= 60;
 const uint8_t	CAPU::FRAME_RATE_PAL		= 50;
 
+const int OPLL_TONE_NUM = 9;
+
+// based off NSFPlay emu2413's hardware patch scheme
+const uint8_t CAPU::OPLL_DEFAULT_PATCHES[OPLL_TONE_NUM][19 * 8] =
+{
+	{
+#include "digital-sound-antiques/vrc7tone_nuke.h"
+	},
+	{
+#include "digital-sound-antiques/vrc7tone_rw.h"
+	},
+	{
+#include "digital-sound-antiques/vrc7tone_ft36.h"
+	},
+	{
+#include "digital-sound-antiques/vrc7tone_ft35.h"
+	},
+	{
+#include "digital-sound-antiques/vrc7tone_mo.h"
+	},
+	{
+#include "digital-sound-antiques/vrc7tone_kt2.h"
+	},
+	{
+#include "digital-sound-antiques/vrc7tone_kt1.h"
+	},
+	{
+#include "digital-sound-antiques/2413tone.h"
+	},
+	{
+#include "digital-sound-antiques/281btone.h"
+	},
+};
+
+const std::string CAPU::OPLL_PATCHNAME_VRC7[19] = {
+	"(custom patch)",
+	"Bell",
+	"Guitar",
+	"Piano",
+	"Flute",
+	"Clarinet",
+	"Rattling Bell",
+	"Trumpet",
+	"Reed Organ",
+	"Soft Bell",
+	"Xylophone",
+	"Vibraphone",
+	"Brass",
+	"Bass Guitar",
+	"Synthesizer",
+	"Chorus",
+	"Bass Drum",
+	"Snare Drum / Hi-Hat",
+	"Tom / Top Cymbal"
+};
+
+const std::string CAPU::OPLL_PATCHNAME_YM2413[19] = {
+	"(custom patch)",
+	"Violin",
+	"Guitar",
+	"Piano",
+	"Flute",
+	"Clarinet",
+	"Oboe",
+	"Trumpet",
+	"Organ",
+	"Horn",
+	"Synthesizer",
+	"Harpsichord",
+	"Vibraphone",
+	"Synthsizer Bass",
+	"Acoustic Bass",
+	"Electric Guitar",
+	"Bass Drum",
+	"Snare Drum / Hi-Hat",
+	"Tom / Top Cymbal"
+};
+
+const std::string CAPU::OPLL_PATCHNAME_YMF281B[19] = {
+	"(custom patch)",
+	"Electric Strings",
+	"Bow Wow",
+	"Electric Guitar",
+	"Organ",
+	"Clarinet",
+	"Saxophone",
+	"Trumpet",
+	"Street Organ",
+	"Synth Brass",
+	"Electric Piano",
+	"Bass",
+	"Vibraphone",
+	"Chimes",
+	"Tom Tom II",
+	"Noise",
+	"Bass Drum",
+	"Snare Drum / Hi-Hat",
+	"Tom / Top Cymbal"
+};
+
 const uint8_t CAPU::LENGTH_TABLE[] = {
 	0x0A, 0xFE, 0x14, 0x02, 0x28, 0x04, 0x50, 0x06,
 	0xA0, 0x08, 0x3C, 0x0A, 0x0E, 0x0C, 0x1A, 0x0E,
@@ -469,14 +569,14 @@ void CAPUConfig::SetupEmulation(
 	bool N163DisableMultiplexing,
 	int UseOPLLPatchSet,
 	bool UseOPLLExt,
-	std::vector<uint8_t> UseOPLLPatches,
+	std::vector<uint8_t> UseOPLLPatchBytes,
 	std::vector<std::string> UseOPLLPatchNames)
 {
 	m_EmulatorConfig = EmulatorConfig{
 		N163DisableMultiplexing,
 		UseOPLLPatchSet,
 		UseOPLLExt,
-		UseOPLLPatches,
+		UseOPLLPatchBytes,
 		UseOPLLPatchNames
 	};
 }

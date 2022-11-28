@@ -1433,6 +1433,9 @@
     <ClInclude Include="Source\VersionCheckerDlg.h">
       <Filter>Header Files\Dialog Boxes Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Source\APU\digital-sound-antiques\emu2413.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers</Filter>
+    </ClInclude>
     <ClInclude Include="Source\APU\nsfplay\xgm\devices\device.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1475,6 +1478,9 @@
     <ClInclude Include="Source\APU\mesen\ModChannel.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\mesen</Filter>
     </ClInclude>
+    <ClInclude Include="Source\APU\mesen\Namco163Audio.h">
+      <Filter>Header Files\Sound Driver Headers\Emulation Headers</Filter>
+    </ClInclude>
     <ClInclude Include="Source\APU\ChannelLevelState.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers</Filter>
     </ClInclude>
@@ -1488,9 +1494,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\rigtorp\SPSCQueue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\APU\mesen\Namco163Audio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

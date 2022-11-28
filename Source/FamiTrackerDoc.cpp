@@ -492,10 +492,8 @@ void CFamiTrackerDoc::DeleteContents()
 	{
 		int bytecount = 0;
 		for (int i = 0; i < 19; i++) {
-			for (int j = 0; j < 8; j++) {
-				m_iOPLLPatchSet[bytecount] = 0;
-				bytecount++;
-			}
+			for (int j = 0; j < 8; j++)
+				m_iOPLLPatchBytes[(8 * i) + j] = 0;
 			m_strOPLLPatchNames[i].clear();
 		}
 		m_strOPLLPatchNames[0] = "(custom instrument)";		// patch 0 must always be named "(custom instrument)"
@@ -2758,12 +2756,9 @@ void CFamiTrackerDoc::ReadBlock_ParamsEmu(CDocumentFile* pDocFile, const int Ver
 {
 	m_bUseExternalOPLLChip = (pDocFile->GetBlockInt() != 0);
 
-	int bytecount = 0;
 	for (int i = 0; i < 19; i++) {
-		for (int j = 0; j < 8; j++) {
-			m_iOPLLPatchSet[bytecount] = static_cast<uint8_t>(pDocFile->GetBlockChar());
-			bytecount++;
-		}
+		for (int j = 0; j < 8; j++)
+			m_iOPLLPatchBytes[(8 * i) + j] = static_cast<uint8_t>(pDocFile->GetBlockChar());
 		m_strOPLLPatchNames[i] = std::string(pDocFile->ReadString());
 	}
 }
@@ -2773,12 +2768,9 @@ bool CFamiTrackerDoc::WriteBlock_ParamsEmu(CDocumentFile* pDocFile, const int Ve
 	bool haspatchnames = false;
 	bool haspatchbytes = false;
 	{
-		int bytecount = 0;
 		for (int i = 0; i < 19; i++) {
-			for (int j = 0; j < 8; j++) {
-				haspatchnames |= !(m_iOPLLPatchSet[bytecount] == 0);
-				bytecount++;
-			}
+			for (int j = 0; j < 8; j++)
+				haspatchnames |= !(m_iOPLLPatchBytes[(8 * i) + j] == 0);
 			haspatchbytes |= !(m_strOPLLPatchNames[i].empty());
 		}
 	}
@@ -2794,10 +2786,8 @@ bool CFamiTrackerDoc::WriteBlock_ParamsEmu(CDocumentFile* pDocFile, const int Ve
 
 	int bytecount = 0;
 	for (int i = 0; i < 19; i++) {
-		for (int j = 0; j < 8; j++) {
-			pDocFile->WriteBlockChar(static_cast<char>(m_iOPLLPatchSet[bytecount]));
-			bytecount++;
-		}
+		for (int j = 0; j < 8; j++)
+			pDocFile->WriteBlockChar(static_cast<char>(m_iOPLLPatchBytes[(8 * i) + j]));
 		pDocFile->WriteString(m_strOPLLPatchNames[i]);
 	}
 
@@ -4560,17 +4550,17 @@ void CFamiTrackerDoc::SetLevelOffset(int device, int16_t offset)
 	}
 }
 
-uint8_t CFamiTrackerDoc::GetOPLLPatch(int index) const
+uint8_t CFamiTrackerDoc::GetOPLLPatchByte(int index) const
 {
-	return m_iOPLLPatchSet[index];
+	return m_iOPLLPatchBytes[index];
 }
 
-void CFamiTrackerDoc::SetOPLLPatch(int index, uint8_t data)
+void CFamiTrackerDoc::SetOPLLPatchByte(int index, uint8_t data)
 {
-	if (index >= 8)
-		m_iOPLLPatchSet[index] = data;
+	if (index < 8)
+		m_iOPLLPatchBytes[index] = 0;		// patch 0 must always be 0
 	else
-		m_iOPLLPatchSet[index] = 0;		// patch 0 must always be 0
+		m_iOPLLPatchBytes[index] = data;
 }
 
 std::string CFamiTrackerDoc::GetOPLLPatchName(int index) const

@@ -71,7 +71,6 @@ private:
 	uint8_t		m_iSoundReg = 0;
 
 	int		m_iPatchTone = 0;
-	OPLL_PATCH m_iUserPatchset[38];
 	bool m_bUseExternalOPLLChip = false;
 
 	float	m_fVolume = 1.0f;

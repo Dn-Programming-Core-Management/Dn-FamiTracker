@@ -513,6 +513,7 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
     <ClInclude Include="Source\ConfigEmulation.h" />
     <ClInclude Include="Source\ConfigGUI.h" />
     <ClInclude Include="Source\APU\ChannelLevelState.h" />
+    <ClInclude Include="Source\APU\digital-sound-antiques\emu2413.h" />
     <ClInclude Include="Source\APU\FDS.h" />
     <ClInclude Include="Source\APU\mesen\BaseFdsChannel.h" />
     <ClInclude Include="Source\APU\mesen\FdsAudio.h" />

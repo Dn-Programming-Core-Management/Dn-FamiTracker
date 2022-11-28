@@ -217,7 +217,7 @@ void CMixer::RecomputeMixing()
 
 	uint8_t patchdump[19 * 8];
 	for (int i = 0; i < 19 * 8; ++i)
-		patchdump[i] = m_EmulatorConfig.UseOPLLPatches.at(i);
+		patchdump[i] = m_EmulatorConfig.UseOPLLPatchBytes.at(i);
 	
 	chipVRC7.UpdatePatchSet(
 		m_EmulatorConfig.UseOPLLPatchSet,

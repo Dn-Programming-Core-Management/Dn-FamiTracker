@@ -107,12 +107,17 @@ public:
 #endif
 
 public:
+	static const int		OPLL_TONE_NUM = 9;
 	static const uint8_t	LENGTH_TABLE[];
 	static const uint32_t	BASE_FREQ_NTSC;
 	static const uint32_t	BASE_FREQ_PAL;
 	static const uint32_t	BASE_FREQ_VRC7;
 	static const uint8_t	FRAME_RATE_NTSC;
 	static const uint8_t	FRAME_RATE_PAL;
+	static const uint8_t	OPLL_DEFAULT_PATCHES[OPLL_TONE_NUM][19 * 8];
+	static const std::string	OPLL_PATCHNAME_VRC7[19];
+	static const std::string	OPLL_PATCHNAME_YM2413[19];
+	static const std::string	OPLL_PATCHNAME_YMF281B[19];
 
 private:
 	static const int SEQUENCER_FREQUENCY;		// // //
@@ -193,7 +198,7 @@ public:
 		bool N163DisableMultiplexing ,
 		int UseOPLLPatchSet,
 		bool UseOPLLExt,
-		std::vector<uint8_t> UseOPLLPatches,
+		std::vector<uint8_t> UseOPLLPatchBytes,
 		std::vector<std::string> UseOPLLPatchNames
 	);
 
