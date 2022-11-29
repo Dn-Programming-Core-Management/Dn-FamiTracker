@@ -139,112 +139,120 @@ const int PAGEUP = COARSE_DELTA * 2;	// 2 dB per pageup.
 const int MAX_FINE = LEVEL_RANGE * FINE_DELTA;
 	// user input is clamped to +-MAX_FINE.
 
+constexpr std::array<unsigned int, 19> IDC_STATIC_PATCH = {
+	IDC_STATIC_PATCH0,
+	IDC_STATIC_PATCH1,
+	IDC_STATIC_PATCH2,
+	IDC_STATIC_PATCH3,
+	IDC_STATIC_PATCH4,
+	IDC_STATIC_PATCH5,
+	IDC_STATIC_PATCH6,
+	IDC_STATIC_PATCH7,
+	IDC_STATIC_PATCH8,
+	IDC_STATIC_PATCH9,
+	IDC_STATIC_PATCH10,
+	IDC_STATIC_PATCH11,
+	IDC_STATIC_PATCH12,
+	IDC_STATIC_PATCH13,
+	IDC_STATIC_PATCH14,
+	IDC_STATIC_PATCH15,
+	IDC_STATIC_PATCH16,
+	IDC_STATIC_PATCH17,
+	IDC_STATIC_PATCH18
+};
+
+constexpr std::array<unsigned int, 19> IDC_OPLL_PATCHBYTE = {
+	IDC_OPLL_PATCHBYTE0,
+	IDC_OPLL_PATCHBYTE1,
+	IDC_OPLL_PATCHBYTE2,
+	IDC_OPLL_PATCHBYTE3,
+	IDC_OPLL_PATCHBYTE4,
+	IDC_OPLL_PATCHBYTE5,
+	IDC_OPLL_PATCHBYTE6,
+	IDC_OPLL_PATCHBYTE7,
+	IDC_OPLL_PATCHBYTE8,
+	IDC_OPLL_PATCHBYTE9,
+	IDC_OPLL_PATCHBYTE10,
+	IDC_OPLL_PATCHBYTE11,
+	IDC_OPLL_PATCHBYTE12,
+	IDC_OPLL_PATCHBYTE13,
+	IDC_OPLL_PATCHBYTE14,
+	IDC_OPLL_PATCHBYTE15,
+	IDC_OPLL_PATCHBYTE16,
+	IDC_OPLL_PATCHBYTE17,
+	IDC_OPLL_PATCHBYTE18
+};
+
+constexpr std::array<unsigned int, 19> IDC_OPLL_PATCHNAME = {
+	IDC_OPLL_PATCHNAME0,
+	IDC_OPLL_PATCHNAME1,
+	IDC_OPLL_PATCHNAME2,
+	IDC_OPLL_PATCHNAME3,
+	IDC_OPLL_PATCHNAME4,
+	IDC_OPLL_PATCHNAME5,
+	IDC_OPLL_PATCHNAME6,
+	IDC_OPLL_PATCHNAME7,
+	IDC_OPLL_PATCHNAME8,
+	IDC_OPLL_PATCHNAME9,
+	IDC_OPLL_PATCHNAME10,
+	IDC_OPLL_PATCHNAME11,
+	IDC_OPLL_PATCHNAME12,
+	IDC_OPLL_PATCHNAME13,
+	IDC_OPLL_PATCHNAME14,
+	IDC_OPLL_PATCHNAME15,
+	IDC_OPLL_PATCHNAME16,
+	IDC_OPLL_PATCHNAME17,
+	IDC_OPLL_PATCHNAME18
+};
+
+constexpr std::array<unsigned int, 8> IDC_DEVICE_OFFSET_EDIT = {
+	IDC_APU1_OFFSET_EDIT,
+	IDC_APU2_OFFSET_EDIT,
+	IDC_VRC6_OFFSET_EDIT,
+	IDC_VRC7_OFFSET_EDIT,
+	IDC_FDS_OFFSET_EDIT,
+	IDC_MMC5_OFFSET_EDIT,
+	IDC_N163_OFFSET_EDIT,
+	IDC_S5B_OFFSET_EDIT
+};
+
+constexpr std::array<unsigned int, 8> IDC_DEVICE_OFFSET_SLIDER = {
+	IDC_APU1_OFFSET_SLIDER,
+	IDC_APU2_OFFSET_SLIDER,
+	IDC_VRC6_OFFSET_SLIDER,
+	IDC_VRC7_OFFSET_SLIDER,
+	IDC_FDS_OFFSET_SLIDER,
+	IDC_MMC5_OFFSET_SLIDER,
+	IDC_N163_OFFSET_SLIDER,
+	IDC_S5B_OFFSET_SLIDER
+};
+
+constexpr std::array<unsigned int, 8> IDC_DEVICE_OFFSET_DB = {
+	IDC_APU1_OFFSET_DB,
+	IDC_APU2_OFFSET_DB,
+	IDC_VRC6_OFFSET_DB,
+	IDC_VRC7_OFFSET_DB,
+	IDC_FDS_OFFSET_DB,
+	IDC_MMC5_OFFSET_DB,
+	IDC_N163_OFFSET_DB,
+	IDC_S5B_OFFSET_DB
+};
+
+constexpr std::array<unsigned int, 8> IDC_STATIC_DEVICE = {
+	IDC_STATIC_APU1,
+	IDC_STATIC_APU2,
+	IDC_STATIC_VRC6,
+	IDC_STATIC_VRC7,
+	IDC_STATIC_FDS,
+	IDC_STATIC_MMC5,
+	IDC_STATIC_N163,
+	IDC_STATIC_S5B
+};
+
 // CModulePropertiesDlg message handlers
 BOOL CModulePropertiesDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
-
-	// N163 channel count UI
-	m_cChannelsLabel.SubclassDlgItem(IDC_CHANNELS_NR, this);
-	m_cChanSlider.SubclassDlgItem(IDC_CHANNELS, this);
-
-	// Device mix offset UI
-	m_cAPU1LevelEdit.SubclassDlgItem(IDC_APU1_OFFSET_EDIT, this);
-	m_cAPU2LevelEdit.SubclassDlgItem(IDC_APU2_OFFSET_EDIT, this);
-	m_cVRC6LevelEdit.SubclassDlgItem(IDC_VRC6_OFFSET_EDIT, this);
-	m_cVRC7LevelEdit.SubclassDlgItem(IDC_VRC7_OFFSET_EDIT, this);
-	m_cFDSLevelEdit.SubclassDlgItem(IDC_FDS_OFFSET_EDIT, this);
-	m_cMMC5LevelEdit.SubclassDlgItem(IDC_MMC5_OFFSET_EDIT, this);
-	m_cN163LevelEdit.SubclassDlgItem(IDC_N163_OFFSET_EDIT, this);
-	m_cS5BLevelEdit.SubclassDlgItem(IDC_S5B_OFFSET_EDIT, this);
-
-	m_cAPU1LevelSlider.SubclassDlgItem(IDC_APU1_OFFSET_SLIDER, this);
-	m_cAPU2LevelSlider.SubclassDlgItem(IDC_APU2_OFFSET_SLIDER, this);
-	m_cVRC6LevelSlider.SubclassDlgItem(IDC_VRC6_OFFSET_SLIDER, this);
-	m_cVRC7LevelSlider.SubclassDlgItem(IDC_VRC7_OFFSET_SLIDER, this);
-	m_cFDSLevelSlider.SubclassDlgItem(IDC_FDS_OFFSET_SLIDER, this);
-	m_cMMC5LevelSlider.SubclassDlgItem(IDC_MMC5_OFFSET_SLIDER, this);
-	m_cN163LevelSlider.SubclassDlgItem(IDC_N163_OFFSET_SLIDER, this);
-	m_cS5BLevelSlider.SubclassDlgItem(IDC_S5B_OFFSET_SLIDER, this);
-
-	m_cAPU1dBLabel.SubclassDlgItem(IDC_APU1_OFFSET_DB, this);
-	m_cAPU2dBLabel.SubclassDlgItem(IDC_APU2_OFFSET_DB, this);
-	m_cVRC6dBLabel.SubclassDlgItem(IDC_VRC6_OFFSET_DB, this);
-	m_cVRC7dBLabel.SubclassDlgItem(IDC_VRC7_OFFSET_DB, this);
-	m_cFDSdBLabel.SubclassDlgItem(IDC_FDS_OFFSET_DB, this);
-	m_cMMC5dBLabel.SubclassDlgItem(IDC_MMC5_OFFSET_DB, this);
-	m_cN163dBLabel.SubclassDlgItem(IDC_N163_OFFSET_DB, this);
-	m_cS5BdBLabel.SubclassDlgItem(IDC_S5B_OFFSET_DB, this);
-
-	m_cAPU1LevelLabel.SubclassDlgItem(IDC_STATIC_APU1, this);
-	m_cAPU2LevelLabel.SubclassDlgItem(IDC_STATIC_APU2, this);
-	m_cVRC6LevelLabel.SubclassDlgItem(IDC_STATIC_VRC6, this);
-	m_cVRC7LevelLabel.SubclassDlgItem(IDC_STATIC_VRC7, this);
-	m_cFDSLevelLabel.SubclassDlgItem(IDC_STATIC_FDS, this);
-	m_cMMC5LevelLabel.SubclassDlgItem(IDC_STATIC_MMC5, this);
-	m_cN163LevelLabel.SubclassDlgItem(IDC_STATIC_N163, this);
-	m_cS5BLevelLabel.SubclassDlgItem(IDC_STATIC_S5B, this);
-
-	// External OPLL UI
-	m_cOPLLPatchLabel0.SubclassDlgItem(IDC_STATIC_PATCH0, this);
-	m_cOPLLPatchLabel1.SubclassDlgItem(IDC_STATIC_PATCH1, this);
-	m_cOPLLPatchLabel2.SubclassDlgItem(IDC_STATIC_PATCH2, this);
-	m_cOPLLPatchLabel3.SubclassDlgItem(IDC_STATIC_PATCH3, this);
-	m_cOPLLPatchLabel4.SubclassDlgItem(IDC_STATIC_PATCH4, this);
-	m_cOPLLPatchLabel5.SubclassDlgItem(IDC_STATIC_PATCH5, this);
-	m_cOPLLPatchLabel6.SubclassDlgItem(IDC_STATIC_PATCH6, this);
-	m_cOPLLPatchLabel7.SubclassDlgItem(IDC_STATIC_PATCH7, this);
-	m_cOPLLPatchLabel8.SubclassDlgItem(IDC_STATIC_PATCH8, this);
-	m_cOPLLPatchLabel9.SubclassDlgItem(IDC_STATIC_PATCH9, this);
-	m_cOPLLPatchLabel10.SubclassDlgItem(IDC_STATIC_PATCH10, this);
-	m_cOPLLPatchLabel11.SubclassDlgItem(IDC_STATIC_PATCH11, this);
-	m_cOPLLPatchLabel12.SubclassDlgItem(IDC_STATIC_PATCH12, this);
-	m_cOPLLPatchLabel13.SubclassDlgItem(IDC_STATIC_PATCH13, this);
-	m_cOPLLPatchLabel14.SubclassDlgItem(IDC_STATIC_PATCH14, this);
-	m_cOPLLPatchLabel15.SubclassDlgItem(IDC_STATIC_PATCH15, this);
-	m_cOPLLPatchLabel16.SubclassDlgItem(IDC_STATIC_PATCH16, this);
-	m_cOPLLPatchLabel17.SubclassDlgItem(IDC_STATIC_PATCH17, this);
-	m_cOPLLPatchLabel18.SubclassDlgItem(IDC_STATIC_PATCH18, this);
-
-	m_cOPLLPatchBytesEdit0.SubclassDlgItem(IDC_OPLL_PATCHBYTE0, this);
-	m_cOPLLPatchBytesEdit1.SubclassDlgItem(IDC_OPLL_PATCHBYTE1, this);
-	m_cOPLLPatchBytesEdit2.SubclassDlgItem(IDC_OPLL_PATCHBYTE2, this);
-	m_cOPLLPatchBytesEdit3.SubclassDlgItem(IDC_OPLL_PATCHBYTE3, this);
-	m_cOPLLPatchBytesEdit4.SubclassDlgItem(IDC_OPLL_PATCHBYTE4, this);
-	m_cOPLLPatchBytesEdit5.SubclassDlgItem(IDC_OPLL_PATCHBYTE5, this);
-	m_cOPLLPatchBytesEdit6.SubclassDlgItem(IDC_OPLL_PATCHBYTE6, this);
-	m_cOPLLPatchBytesEdit7.SubclassDlgItem(IDC_OPLL_PATCHBYTE7, this);
-	m_cOPLLPatchBytesEdit8.SubclassDlgItem(IDC_OPLL_PATCHBYTE8, this);
-	m_cOPLLPatchBytesEdit9.SubclassDlgItem(IDC_OPLL_PATCHBYTE9, this);
-	m_cOPLLPatchBytesEdit10.SubclassDlgItem(IDC_OPLL_PATCHBYTE10, this);
-	m_cOPLLPatchBytesEdit11.SubclassDlgItem(IDC_OPLL_PATCHBYTE11, this);
-	m_cOPLLPatchBytesEdit12.SubclassDlgItem(IDC_OPLL_PATCHBYTE12, this);
-	m_cOPLLPatchBytesEdit13.SubclassDlgItem(IDC_OPLL_PATCHBYTE13, this);
-	m_cOPLLPatchBytesEdit14.SubclassDlgItem(IDC_OPLL_PATCHBYTE14, this);
-	m_cOPLLPatchBytesEdit15.SubclassDlgItem(IDC_OPLL_PATCHBYTE15, this);
-	m_cOPLLPatchBytesEdit16.SubclassDlgItem(IDC_OPLL_PATCHBYTE16, this);
-	m_cOPLLPatchBytesEdit17.SubclassDlgItem(IDC_OPLL_PATCHBYTE17, this);
-	m_cOPLLPatchBytesEdit18.SubclassDlgItem(IDC_OPLL_PATCHBYTE18, this);
-
-	m_cOPLLPatchNameEdit0.SubclassDlgItem(IDC_OPLL_PATCHNAME0, this);
-	m_cOPLLPatchNameEdit1.SubclassDlgItem(IDC_OPLL_PATCHNAME1, this);
-	m_cOPLLPatchNameEdit2.SubclassDlgItem(IDC_OPLL_PATCHNAME2, this);
-	m_cOPLLPatchNameEdit3.SubclassDlgItem(IDC_OPLL_PATCHNAME3, this);
-	m_cOPLLPatchNameEdit4.SubclassDlgItem(IDC_OPLL_PATCHNAME4, this);
-	m_cOPLLPatchNameEdit5.SubclassDlgItem(IDC_OPLL_PATCHNAME5, this);
-	m_cOPLLPatchNameEdit6.SubclassDlgItem(IDC_OPLL_PATCHNAME6, this);
-	m_cOPLLPatchNameEdit7.SubclassDlgItem(IDC_OPLL_PATCHNAME7, this);
-	m_cOPLLPatchNameEdit8.SubclassDlgItem(IDC_OPLL_PATCHNAME8, this);
-	m_cOPLLPatchNameEdit9.SubclassDlgItem(IDC_OPLL_PATCHNAME9, this);
-	m_cOPLLPatchNameEdit10.SubclassDlgItem(IDC_OPLL_PATCHNAME10, this);
-	m_cOPLLPatchNameEdit11.SubclassDlgItem(IDC_OPLL_PATCHNAME11, this);
-	m_cOPLLPatchNameEdit12.SubclassDlgItem(IDC_OPLL_PATCHNAME12, this);
-	m_cOPLLPatchNameEdit13.SubclassDlgItem(IDC_OPLL_PATCHNAME13, this);
-	m_cOPLLPatchNameEdit14.SubclassDlgItem(IDC_OPLL_PATCHNAME14, this);
-	m_cOPLLPatchNameEdit15.SubclassDlgItem(IDC_OPLL_PATCHNAME15, this);
-	m_cOPLLPatchNameEdit16.SubclassDlgItem(IDC_OPLL_PATCHNAME16, this);
-	m_cOPLLPatchNameEdit17.SubclassDlgItem(IDC_OPLL_PATCHNAME17, this);
-	m_cOPLLPatchNameEdit18.SubclassDlgItem(IDC_OPLL_PATCHNAME18, this);
 
 	// Get active document
 	CFrameWnd *pFrameWnd = static_cast<CFrameWnd*>(GetParent());
@@ -266,6 +274,35 @@ BOOL CModulePropertiesDlg::OnInitDialog()
 	((CButton*)GetDlgItem(IDC_EXPANSION_N163))->SetCheck((m_iExpansions & SNDCHIP_N163) != 0);
 	((CButton*)GetDlgItem(IDC_EXPANSION_S5B))->SetCheck((m_iExpansions & SNDCHIP_S5B) != 0);
 
+	// N163 channel count UI
+	m_cChannelsLabel.SubclassDlgItem(IDC_CHANNELS_NR, this);
+	m_cChanSlider.SubclassDlgItem(IDC_CHANNELS, this);
+
+	// Device mix offset UI
+	for (int i = 0; i < 8; i++) {
+		m_cDeviceLevelEdit[i].SubclassDlgItem(IDC_DEVICE_OFFSET_EDIT[i], this);
+		m_cDeviceLevelSlider[i].SubclassDlgItem(IDC_DEVICE_OFFSET_SLIDER[i], this);
+		m_cDevicedBLabel[i].SubclassDlgItem(IDC_DEVICE_OFFSET_DB[i], this);
+		m_cDeviceLevelLabel[i].SubclassDlgItem(IDC_STATIC_DEVICE[i], this);
+
+		SetupSlider(IDC_DEVICE_OFFSET_SLIDER[i]);
+		m_iDeviceLevelOffset[i] = -m_pDocument->GetLevelOffset(i);
+		updateDeviceMixOffsetUI(i);
+	}
+
+	// OPLL patch bytes and patch names
+	m_bExternalOPLL = m_pDocument->GetExternalOPLLChipCheck();
+	((CButton*)GetDlgItem(IDC_EXTERNAL_OPLL))->SetCheck(m_bExternalOPLL);
+	for (int i = 0; i < 19; ++i) {
+		m_cOPLLPatchLabel[i].SubclassDlgItem(IDC_STATIC_PATCH[i], this);
+		m_cOPLLPatchBytesEdit[i].SubclassDlgItem(IDC_OPLL_PATCHBYTE[i], this);
+		m_cOPLLPatchNameEdit[i].SubclassDlgItem(IDC_OPLL_PATCHNAME[i], this);
+		for (int j = 0; j < 8; j++)
+			m_iOPLLPatchBytes[(8 * i) + j] = m_pDocument->GetOPLLPatchByte((8 * i) + j);
+		m_strOPLLPatchNames[i] = m_pDocument->GetOPLLPatchName(i);
+		updateExternallOPLLUI(i);
+	}
+
 	// Namco channel count
 	CSliderCtrl *pChanSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_CHANNELS));
 	pChanSlider->SetRange(1, 8);
@@ -280,41 +317,7 @@ BOOL CModulePropertiesDlg::OnInitDialog()
 	CComboBox *pPitchBox = static_cast<CComboBox*>(GetDlgItem(IDC_COMBO_LINEARPITCH));		// // //
 	pPitchBox->SetCurSel(m_pDocument->GetLinearPitch() ? 1 : 0);
 	
-	// Level Offsets
-	m_iAPU1LevelOffset = -m_pDocument->GetLevelOffset(0);
-	m_iAPU2LevelOffset = -m_pDocument->GetLevelOffset(1);
-	m_iVRC6LevelOffset = -m_pDocument->GetLevelOffset(2);
-	m_iVRC7LevelOffset = -m_pDocument->GetLevelOffset(3);
-	m_iFDSLevelOffset = -m_pDocument->GetLevelOffset(4);
-	m_iMMC5LevelOffset = -m_pDocument->GetLevelOffset(5);
-	m_iN163LevelOffset = -m_pDocument->GetLevelOffset(6);
-	m_iS5BLevelOffset = -m_pDocument->GetLevelOffset(7);
 
-	// Level sliders
-	SetupSlider(IDC_APU1_OFFSET_SLIDER);
-	SetupSlider(IDC_APU2_OFFSET_SLIDER);
-	SetupSlider(IDC_VRC6_OFFSET_SLIDER);
-	SetupSlider(IDC_VRC7_OFFSET_SLIDER);
-	SetupSlider(IDC_FDS_OFFSET_SLIDER);
-	SetupSlider(IDC_MMC5_OFFSET_SLIDER);
-	SetupSlider(IDC_N163_OFFSET_SLIDER);
-	SetupSlider(IDC_S5B_OFFSET_SLIDER);
-
-	for (int i = 0; i < 8; i++)
-		updateDeviceMixOffsetUI(i);
-
-	// OPLL patch bytes and patch names
-	m_bExternalOPLL = m_pDocument->GetExternalOPLLChipCheck();
-	((CButton*)GetDlgItem(IDC_EXTERNAL_OPLL))->SetCheck(m_bExternalOPLL);
-
-	for (int i = 0; i < 19; i++) {
-		for (int j = 0; j < 8; j++)
-			m_iOPLLPatchBytes[(8 * i) + j] = m_pDocument->GetOPLLPatchByte((8 * i) + j);
-		m_strOPLLPatchNames[i] = m_pDocument->GetOPLLPatchName(i);
-	}
-
-	for (int i = 0; i < 19; i++)
-		updateExternallOPLLUI(i);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE
@@ -363,14 +366,8 @@ void CModulePropertiesDlg::OnBnClickedOk()
 	m_pDocument->SetLinearPitch(pPitchBox->GetCurSel() == 1);
 
 	// Device mix offset
-	if (m_pDocument->GetLevelOffset(0) != m_iAPU1LevelOffset) m_pDocument->SetLevelOffset(0, -m_iAPU1LevelOffset);
-	if (m_pDocument->GetLevelOffset(1) != m_iAPU2LevelOffset) m_pDocument->SetLevelOffset(1, -m_iAPU2LevelOffset);
-	if (m_pDocument->GetLevelOffset(2) != m_iVRC6LevelOffset) m_pDocument->SetLevelOffset(2, -m_iVRC6LevelOffset);
-	if (m_pDocument->GetLevelOffset(3) != m_iVRC7LevelOffset) m_pDocument->SetLevelOffset(3, -m_iVRC7LevelOffset);
-	if (m_pDocument->GetLevelOffset(4) != m_iFDSLevelOffset) m_pDocument->SetLevelOffset(4, -m_iFDSLevelOffset);
-	if (m_pDocument->GetLevelOffset(5) != m_iMMC5LevelOffset) m_pDocument->SetLevelOffset(5, -m_iMMC5LevelOffset);
-	if (m_pDocument->GetLevelOffset(6) != m_iN163LevelOffset) m_pDocument->SetLevelOffset(6, -m_iN163LevelOffset);
-	if (m_pDocument->GetLevelOffset(7) != m_iS5BLevelOffset) m_pDocument->SetLevelOffset(7, -m_iS5BLevelOffset);
+	for (int i = 0; i < 8; i++)
+		if (m_pDocument->GetLevelOffset(i) != m_iDeviceLevelOffset[i]) m_pDocument->SetLevelOffset(i, -m_iDeviceLevelOffset[i]);
 
 	// Externall OPLL
 	for (int i = 0; i < 19; i++) {
@@ -791,7 +788,6 @@ void CModulePropertiesDlg::setN163NChannels(int nchan) {
 	SetDlgItemText(IDC_CHANNELS_NR, text);
 }
 
-
 // Device mix offset GUI
 void CModulePropertiesDlg::strFromLevel(CString &target, int16_t Level)
 {
@@ -802,8 +798,6 @@ void CModulePropertiesDlg::updateN163ChannelCountUI()
 {
 	CString channelsStr;
 	channelsStr.LoadString(IDS_PROPERTIES_CHANNELS);
-
-	std::array<CWnd*, 2> N163ChannelcountUI = {&m_cChannelsLabel, &m_cChanSlider};
 
 	// Is N163 enabled?
 	bool N163Enabled = m_iExpansions & SNDCHIP_N163;
@@ -817,8 +811,8 @@ void CModulePropertiesDlg::updateN163ChannelCountUI()
 	}
 	
 	// Enable/disable UI.
-	for (auto *widget : N163ChannelcountUI)
-		widget->EnableWindow(N163Enabled);
+	m_cChannelsLabel.EnableWindow(N163Enabled);
+	m_cChanSlider.EnableWindow(N163Enabled);
 	
 	// Redraw UI.
 	m_cChanSlider.SetPos(m_iN163Channels);
@@ -828,7 +822,6 @@ void CModulePropertiesDlg::updateN163ChannelCountUI()
 
 void CModulePropertiesDlg::updateDeviceMixOffsetUI(int device, bool renderText)
 {
-
 	int const chipenable[8] = {
 		255,
 		255,
@@ -840,55 +833,11 @@ void CModulePropertiesDlg::updateDeviceMixOffsetUI(int device, bool renderText)
 		SNDCHIP_S5B
 	};
 
-	std::array<CWnd*, 8> DeviceLevelEdit = {
-		&m_cAPU1LevelEdit,
-		&m_cAPU2LevelEdit,
-		&m_cVRC6LevelEdit,
-		&m_cVRC7LevelEdit,
-		&m_cFDSLevelEdit,
-		&m_cMMC5LevelEdit,
-		&m_cN163LevelEdit,
-		&m_cS5BLevelEdit
-	};
-
-	std::array<CWnd*, 8> DeviceLevelSlider = {
-		&m_cAPU1LevelSlider,
-		&m_cAPU2LevelSlider,
-		&m_cVRC6LevelSlider,
-		&m_cVRC7LevelSlider,
-		&m_cFDSLevelSlider,
-		&m_cMMC5LevelSlider,
-		&m_cN163LevelSlider,
-		&m_cS5BLevelSlider,
-	};
-
-	std::array<CWnd*, 8> DevicedBStatic = {
-		&m_cAPU1dBLabel,
-		&m_cAPU2dBLabel,
-		&m_cVRC6dBLabel,
-		&m_cVRC7dBLabel,
-		&m_cFDSdBLabel,
-		&m_cMMC5dBLabel,
-		&m_cN163dBLabel,
-		&m_cS5BdBLabel
-	};
-
-	std::array<CWnd*, 8> DeviceLevelStatic = {
-		&m_cAPU1LevelLabel,
-		&m_cAPU2LevelLabel,
-		&m_cVRC6LevelLabel,
-		&m_cVRC7LevelLabel,
-		&m_cFDSLevelLabel,
-		&m_cMMC5LevelLabel,
-		&m_cN163LevelLabel,
-		&m_cS5BLevelLabel
-	};
-
 	std::array<CWnd*, 4> DeviceMixOffsetUI = {
-		DeviceLevelSlider[device],
-		DeviceLevelEdit[device],
-		DevicedBStatic[device],
-		DeviceLevelStatic[device]
+		&m_cDeviceLevelSlider[device],
+		&m_cDeviceLevelEdit[device],
+		&m_cDevicedBLabel[device],
+		&m_cDeviceLevelLabel[device]
 	};
 
 	bool ChipEnabled = m_iExpansions & chipenable[device];
@@ -896,20 +845,9 @@ void CModulePropertiesDlg::updateDeviceMixOffsetUI(int device, bool renderText)
 	// Always enable 2A03
 	if (device <= 1)
 		ChipEnabled = true;
-	
 
-	if (!ChipEnabled) {
-		switch (device) {
-		case 0: m_iAPU1LevelOffset = 0; break;
-		case 1: m_iAPU2LevelOffset = 0; break;
-		case 2: m_iVRC6LevelOffset = 0; break;
-		case 3: m_iVRC7LevelOffset = 0; break;
-		case 4: m_iFDSLevelOffset = 0; break;
-		case 5: m_iMMC5LevelOffset = 0; break;
-		case 6: m_iN163LevelOffset = 0; break;
-		case 7: m_iS5BLevelOffset = 0; break;
-		}
-	}
+	if (!ChipEnabled)
+		m_iDeviceLevelOffset[device] = 0;
 
 	// Enable/disable UI.
 	for (auto *widget : DeviceMixOffsetUI)
@@ -919,103 +857,18 @@ void CModulePropertiesDlg::updateDeviceMixOffsetUI(int device, bool renderText)
 		((CButton*)GetDlgItem(IDC_EXTERNAL_OPLL))->EnableWindow(ChipEnabled);
 
 	// Redraw UI.
-	switch (device) {
-	case 0:
-		m_cAPU1LevelSlider.SetPos((int)std::round(1.0 * m_iAPU1LevelOffset * COARSE_DELTA / FINE_DELTA));
-		if (renderText) {
-			CString LevelStr;
-			strFromLevel(LevelStr, m_iAPU1LevelOffset);
-			m_cAPU1LevelEdit.SetWindowTextNoNotify(LevelStr);
-		}
-		break;
-	case 1:
-		m_cAPU2LevelSlider.SetPos((int)std::round(1.0 * m_iAPU2LevelOffset * COARSE_DELTA / FINE_DELTA));
-		if (renderText) {
-			CString LevelStr;
-			strFromLevel(LevelStr, m_iAPU2LevelOffset);
-			m_cAPU2LevelEdit.SetWindowTextNoNotify(LevelStr);
-		}
-		break;
-	case 2:
-		m_cVRC6LevelSlider.SetPos((int)std::round(1.0 * m_iVRC6LevelOffset * COARSE_DELTA / FINE_DELTA));
-		if (renderText) {
-			CString LevelStr;
-			strFromLevel(LevelStr, m_iVRC6LevelOffset);
-			m_cVRC6LevelEdit.SetWindowTextNoNotify(LevelStr);
-		}
-		break;
-	case 3:
-		m_cVRC7LevelSlider.SetPos((int)std::round(1.0 * m_iVRC7LevelOffset * COARSE_DELTA / FINE_DELTA));
-		if (renderText) {
-			CString LevelStr;
-			strFromLevel(LevelStr, m_iVRC7LevelOffset);
-			m_cVRC7LevelEdit.SetWindowTextNoNotify(LevelStr);
-		}
-		break;
-	case 4:
-		m_cFDSLevelSlider.SetPos((int)std::round(1.0 * m_iFDSLevelOffset * COARSE_DELTA / FINE_DELTA));
-		if (renderText) {
-			CString LevelStr;
-			strFromLevel(LevelStr, m_iFDSLevelOffset);
-			m_cFDSLevelEdit.SetWindowTextNoNotify(LevelStr);
-		}
-		break;
-	case 5:
-		m_cMMC5LevelSlider.SetPos((int)std::round(1.0 * m_iMMC5LevelOffset * COARSE_DELTA / FINE_DELTA));
-		if (renderText) {
-			CString LevelStr;
-			strFromLevel(LevelStr, m_iMMC5LevelOffset);
-			m_cMMC5LevelEdit.SetWindowTextNoNotify(LevelStr);
-		}
-		break;
-	case 6:
-		m_cN163LevelSlider.SetPos((int)std::round(1.0 * m_iN163LevelOffset * COARSE_DELTA / FINE_DELTA));
-		if (renderText) {
-			CString LevelStr;
-			strFromLevel(LevelStr, m_iN163LevelOffset);
-			m_cN163LevelEdit.SetWindowTextNoNotify(LevelStr);
-		}
-		break;
-	case 7:
-		m_cS5BLevelSlider.SetPos((int)std::round(1.0 * m_iS5BLevelOffset * COARSE_DELTA / FINE_DELTA));
-		if (renderText) {
-			CString LevelStr;
-			strFromLevel(LevelStr, m_iS5BLevelOffset);
-			m_cS5BLevelEdit.SetWindowTextNoNotify(LevelStr);
-		}
-		break;
+	m_cDeviceLevelSlider[device].SetPos((int)std::round(1.0 * m_iDeviceLevelOffset[device] * COARSE_DELTA / FINE_DELTA));
+	if (renderText) {
+		CString LevelStr;
+		strFromLevel(LevelStr, m_iDeviceLevelOffset[device]);
+		m_cDeviceLevelEdit[device].SetWindowTextNoNotify(LevelStr);
 	}
 }
 
 // Level offset callbacks
 void CModulePropertiesDlg::OffsetSlider(int device, int pos)
 {
-	switch (device) {
-	case 0:
-		m_iAPU1LevelOffset = (int16_t)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
-		break;
-	case 1:
-		m_iAPU2LevelOffset = (int16_t)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
-		break;
-	case 2:
-		m_iVRC6LevelOffset = (int16_t)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
-		break;
-	case 3:
-		m_iVRC7LevelOffset = (int16_t)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
-		break;
-	case 4:
-		m_iFDSLevelOffset = (int16_t)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
-		break;
-	case 5:
-		m_iMMC5LevelOffset = (int16_t)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
-		break;
-	case 6:
-		m_iN163LevelOffset = (int16_t)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
-		break;
-	case 7:
-		m_iS5BLevelOffset = (int16_t)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
-		break;
-	}
+	m_iDeviceLevelOffset[device] = (int16_t)std::round(1.0 * pos * FINE_DELTA / COARSE_DELTA);
 	updateDeviceMixOffsetUI(device);
 }
 
@@ -1030,154 +883,64 @@ bool CModulePropertiesDlg::levelFromStr(int16_t &target, CString dBstr) {
 	return false;
 }
 
-void CModulePropertiesDlg::OnEnChangeApu1OffsetEdit()
+void CModulePropertiesDlg::DeviceOffsetEdit(int device)
 {
 	CString str;
-	m_cAPU1LevelEdit.GetWindowText(str);
-	if (levelFromStr(m_iAPU1LevelOffset, str)) {
-		updateDeviceMixOffsetUI(0, false);
+	m_cDeviceLevelEdit[device].GetWindowText(str);
+	if (levelFromStr(m_iDeviceLevelOffset[device], str)) {
+		updateDeviceMixOffsetUI(device, false);
 	}
+}
+
+void CModulePropertiesDlg::OnEnChangeApu1OffsetEdit()
+{
+	DeviceOffsetEdit(0);
 }
 
 void CModulePropertiesDlg::OnEnChangeApu2OffsetEdit()
 {
-	CString str;
-	m_cAPU2LevelEdit.GetWindowText(str);
-	if (levelFromStr(m_iAPU2LevelOffset, str)) {
-		updateDeviceMixOffsetUI(1, false);
-	}
+	DeviceOffsetEdit(1);
 }
 
 void CModulePropertiesDlg::OnEnChangeVrc6OffsetEdit()
 {
-	CString str;
-	m_cVRC6LevelEdit.GetWindowText(str);
-	if (levelFromStr(m_iVRC6LevelOffset, str)) {
-		updateDeviceMixOffsetUI(2, false);
-	}
+	DeviceOffsetEdit(2);
 }
 
 void CModulePropertiesDlg::OnEnChangeVrc7OffsetEdit()
 {
-	CString str;
-	m_cVRC7LevelEdit.GetWindowText(str);
-	if (levelFromStr(m_iVRC7LevelOffset, str)) {
-		updateDeviceMixOffsetUI(3, false);
-	}
+	DeviceOffsetEdit(3);
 }
 
 void CModulePropertiesDlg::OnEnChangeFdsOffsetEdit()
 {
-	CString str;
-	m_cFDSLevelEdit.GetWindowText(str);
-	if (levelFromStr(m_iFDSLevelOffset, str)) {
-		updateDeviceMixOffsetUI(4, false);
-	}
+	DeviceOffsetEdit(4);
 }
 
 void CModulePropertiesDlg::OnEnChangeMmc5OffsetEdit()
 {
-	CString str;
-	m_cMMC5LevelEdit.GetWindowText(str);
-	if (levelFromStr(m_iMMC5LevelOffset, str)) {
-		updateDeviceMixOffsetUI(5, false);
-	}
+	DeviceOffsetEdit(5);
 }
 
 void CModulePropertiesDlg::OnEnChangeN163OffsetEdit()
 {
-	CString str;
-	m_cN163LevelEdit.GetWindowText(str);
-	if (levelFromStr(m_iN163LevelOffset, str)) {
-		updateDeviceMixOffsetUI(6, false);
-	}
+	DeviceOffsetEdit(6);
 }
 
 void CModulePropertiesDlg::OnEnChangeS5bOffsetEdit()
 {
-	CString str;
-	m_cS5BLevelEdit.GetWindowText(str);
-	if (levelFromStr(m_iS5BLevelOffset, str)) {
-		updateDeviceMixOffsetUI(7, false);
-	}
+	DeviceOffsetEdit(7);
 }
 
 // Externall OPLL UI
 void CModulePropertiesDlg::updateExternallOPLLUI(int patchnum, bool renderText)
 {
-	std::array<NoNotifyEdit*, 19> OPLLPatchByteEdit = {
-		&m_cOPLLPatchBytesEdit0,
-		&m_cOPLLPatchBytesEdit1,
-		&m_cOPLLPatchBytesEdit2,
-		&m_cOPLLPatchBytesEdit3,
-		&m_cOPLLPatchBytesEdit4,
-		&m_cOPLLPatchBytesEdit5,
-		&m_cOPLLPatchBytesEdit6,
-		&m_cOPLLPatchBytesEdit7,
-		&m_cOPLLPatchBytesEdit8,
-		&m_cOPLLPatchBytesEdit9,
-		&m_cOPLLPatchBytesEdit10,
-		&m_cOPLLPatchBytesEdit11,
-		&m_cOPLLPatchBytesEdit12,
-		&m_cOPLLPatchBytesEdit13,
-		&m_cOPLLPatchBytesEdit14,
-		&m_cOPLLPatchBytesEdit15,
-		&m_cOPLLPatchBytesEdit16,
-		&m_cOPLLPatchBytesEdit17,
-		&m_cOPLLPatchBytesEdit18
-	};
-
-	std::array<NoNotifyEdit*, 19> OPLLPatchNameEdit = {
-		&m_cOPLLPatchNameEdit0,
-		&m_cOPLLPatchNameEdit1,
-		&m_cOPLLPatchNameEdit2,
-		&m_cOPLLPatchNameEdit3,
-		&m_cOPLLPatchNameEdit4,
-		&m_cOPLLPatchNameEdit5,
-		&m_cOPLLPatchNameEdit6,
-		&m_cOPLLPatchNameEdit7,
-		&m_cOPLLPatchNameEdit8,
-		&m_cOPLLPatchNameEdit9,
-		&m_cOPLLPatchNameEdit10,
-		&m_cOPLLPatchNameEdit11,
-		&m_cOPLLPatchNameEdit12,
-		&m_cOPLLPatchNameEdit13,
-		&m_cOPLLPatchNameEdit14,
-		&m_cOPLLPatchNameEdit15,
-		&m_cOPLLPatchNameEdit16,
-		&m_cOPLLPatchNameEdit17,
-		&m_cOPLLPatchNameEdit18
-	};
-
-	std::array<CWnd*, 19> OPLLPatchLabel = {
-		&m_cOPLLPatchLabel0,
-		&m_cOPLLPatchLabel1,
-		&m_cOPLLPatchLabel2,
-		&m_cOPLLPatchLabel3,
-		&m_cOPLLPatchLabel4,
-		&m_cOPLLPatchLabel5,
-		&m_cOPLLPatchLabel6,
-		&m_cOPLLPatchLabel7,
-		&m_cOPLLPatchLabel8,
-		&m_cOPLLPatchLabel9,
-		&m_cOPLLPatchLabel10,
-		&m_cOPLLPatchLabel11,
-		&m_cOPLLPatchLabel12,
-		&m_cOPLLPatchLabel13,
-		&m_cOPLLPatchLabel14,
-		&m_cOPLLPatchLabel15,
-		&m_cOPLLPatchLabel16,
-		&m_cOPLLPatchLabel17,
-		&m_cOPLLPatchLabel18
-	};
-
 	// Enable/disable UI.
-	for (auto* widget : OPLLPatchByteEdit)
-		widget->EnableWindow(m_bExternalOPLL);
-	for (auto* widget : OPLLPatchNameEdit)
-		widget->EnableWindow(m_bExternalOPLL);
-	for (auto* widget : OPLLPatchLabel)
-		widget->EnableWindow(m_bExternalOPLL);
+	for (int i = 0; i < 19; i++) {
+		m_cOPLLPatchLabel[i].EnableWindow(m_bExternalOPLL);
+		m_cOPLLPatchBytesEdit[i].EnableWindow(m_bExternalOPLL);
+		m_cOPLLPatchNameEdit[i].EnableWindow(m_bExternalOPLL);
+	}
 
 	// Redraw UI.
 	// update patch names
@@ -1185,8 +948,8 @@ void CModulePropertiesDlg::updateExternallOPLLUI(int patchnum, bool renderText)
 		uint8_t patchbytes[8]{};
 		for (int i = 0; i < 8; i++)
 			patchbytes[i] = m_iOPLLPatchBytes[(8 * patchnum) + i];
-		OPLLPatchByteEdit[patchnum]->SetWindowTextNoNotify(PatchBytesToText(patchbytes));
-		OPLLPatchNameEdit[patchnum]->SetWindowTextNoNotify(m_strOPLLPatchNames[patchnum].c_str());
+		m_cOPLLPatchBytesEdit[patchnum].SetWindowTextNoNotify(PatchBytesToText(patchbytes));
+		m_cOPLLPatchNameEdit[patchnum].SetWindowTextNoNotify(m_strOPLLPatchNames[patchnum].c_str());
 	}
 }
 
@@ -1228,344 +991,201 @@ void CModulePropertiesDlg::OnBnClickedExternalOpll()
 		updateExternallOPLLUI(i);
 }
 
-void CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte1()
+void CModulePropertiesDlg::OpllPatchByteEdit(int patchnum)
 {
 	CString str;
-	m_cOPLLPatchBytesEdit1.GetWindowText(str);
+	m_cOPLLPatchBytesEdit[patchnum].GetWindowText(str);
 
 	for (int i = 0; i < 8; i++)
 		m_iOPLLPatchBytes[(8 * 1) + i] = PatchTextToBytes(str, i);
 
-	updateExternallOPLLUI(1, false);
+	updateExternallOPLLUI(patchnum, false);
+}
+
+void CModulePropertiesDlg::OpllPatchNameEdit(int patchnum)
+{
+	CString str;
+	m_cOPLLPatchNameEdit[patchnum].GetWindowText(str);
+	m_strOPLLPatchNames[patchnum] = str;
+	updateExternallOPLLUI(patchnum, false);
+}
+
+void CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte1()
+{
+	OpllPatchByteEdit(1);
 }
 
 void CModulePropertiesDlg::OnEnChangeOpllPatchname1()
 {
-	CString str;
-	m_cOPLLPatchNameEdit1.GetWindowText(str);
-	m_strOPLLPatchNames[1] = str;
-	updateExternallOPLLUI(1, false);
+	OpllPatchNameEdit(1);
 }
 
 void CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte2()
 {
-	CString str;
-	m_cOPLLPatchBytesEdit2.GetWindowText(str);
-
-	for (int i = 0; i < 8; i++)
-		m_iOPLLPatchBytes[(8 * 2) + i] = PatchTextToBytes(str, i);
-
-	updateExternallOPLLUI(2, false);
+	OpllPatchByteEdit(2);
 }
 
 void CModulePropertiesDlg::OnEnChangeOpllPatchname2()
 {
-	CString str;
-	m_cOPLLPatchNameEdit2.GetWindowText(str);
-	m_strOPLLPatchNames[2] = str;
-	updateExternallOPLLUI(2, false);
+	OpllPatchNameEdit(2);
 }
 
 void CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte3()
 {
-	CString str;
-	m_cOPLLPatchBytesEdit3.GetWindowText(str);
-
-	for (int i = 0; i < 8; i++)
-		m_iOPLLPatchBytes[(8 * 3) + i] = PatchTextToBytes(str, i);
-
-	updateExternallOPLLUI(3, false);
+	OpllPatchByteEdit(3);
 }
 
 void CModulePropertiesDlg::OnEnChangeOpllPatchname3()
 {
-	CString str;
-	m_cOPLLPatchNameEdit3.GetWindowText(str);
-	m_strOPLLPatchNames[3] = str;
-	updateExternallOPLLUI(3, false);
+	OpllPatchNameEdit(3);
 }
 
 void CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte4()
 {
-	CString str;
-	m_cOPLLPatchBytesEdit4.GetWindowText(str);
-
-	for (int i = 0; i < 8; i++)
-		m_iOPLLPatchBytes[(8 * 4) + i] = PatchTextToBytes(str, i);
-
-	updateExternallOPLLUI(4, false);
+	OpllPatchByteEdit(4);
 }
 
 void CModulePropertiesDlg::OnEnChangeOpllPatchname4()
 {
-	CString str;
-	m_cOPLLPatchNameEdit4.GetWindowText(str);
-	m_strOPLLPatchNames[4] = str;
-	updateExternallOPLLUI(4, false);
+	OpllPatchNameEdit(4);
 }
 
 void CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte5()
 {
-	CString str;
-	m_cOPLLPatchBytesEdit5.GetWindowText(str);
-
-	for (int i = 0; i < 8; i++)
-		m_iOPLLPatchBytes[(8 * 5) + i] = PatchTextToBytes(str, i);
-
-	updateExternallOPLLUI(5, false);
+	OpllPatchByteEdit(5);
 }
 
 void CModulePropertiesDlg::OnEnChangeOpllPatchname5()
 {
-	CString str;
-	m_cOPLLPatchNameEdit5.GetWindowText(str);
-	m_strOPLLPatchNames[5] = str;
-	updateExternallOPLLUI(5, false);
+	OpllPatchNameEdit(5);
 }
 
 void CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte6()
 {
-	CString str;
-	m_cOPLLPatchBytesEdit6.GetWindowText(str);
-
-	for (int i = 0; i < 8; i++)
-		m_iOPLLPatchBytes[(8 * 6) + i] = PatchTextToBytes(str, i);
-
-	updateExternallOPLLUI(6, false);
+	OpllPatchByteEdit(6);
 }
 
 void CModulePropertiesDlg::OnEnChangeOpllPatchname6()
 {
-	CString str;
-	m_cOPLLPatchNameEdit6.GetWindowText(str);
-	m_strOPLLPatchNames[6] = str;
-	updateExternallOPLLUI(6, false);
+	OpllPatchNameEdit(6);
 }
 
 void CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte7()
 {
-	CString str;
-	m_cOPLLPatchBytesEdit7.GetWindowText(str);
-
-	for (int i = 0; i < 8; i++)
-		m_iOPLLPatchBytes[(8 * 7) + i] = PatchTextToBytes(str, i);
-
-	updateExternallOPLLUI(7, false);
+	OpllPatchByteEdit(7);
 }
 
 void CModulePropertiesDlg::OnEnChangeOpllPatchname7()
 {
-	CString str;
-	m_cOPLLPatchNameEdit7.GetWindowText(str);
-	m_strOPLLPatchNames[7] = str;
-	updateExternallOPLLUI(7, false);
+	OpllPatchNameEdit(7);
 }
 
 void CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte8()
 {
-	CString str;
-	m_cOPLLPatchBytesEdit8.GetWindowText(str);
-
-	for (int i = 0; i < 8; i++)
-		m_iOPLLPatchBytes[(8 * 8) + i] = PatchTextToBytes(str, i);
-
-	updateExternallOPLLUI(8, false);
+	OpllPatchByteEdit(8);
 }
 
 void CModulePropertiesDlg::OnEnChangeOpllPatchname8()
 {
-	CString str;
-	m_cOPLLPatchNameEdit8.GetWindowText(str);
-	m_strOPLLPatchNames[8] = str;
-	updateExternallOPLLUI(8, false);
+	OpllPatchNameEdit(8);
 }
 
 void CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte9()
 {
-	CString str;
-	m_cOPLLPatchBytesEdit9.GetWindowText(str);
-
-	for (int i = 0; i < 8; i++)
-		m_iOPLLPatchBytes[(8 * 9) + i] = PatchTextToBytes(str, i);
-
-	updateExternallOPLLUI(9, false);
+	OpllPatchByteEdit(9);
 }
 
 void CModulePropertiesDlg::OnEnChangeOpllPatchname9()
 {
-	CString str;
-	m_cOPLLPatchNameEdit9.GetWindowText(str);
-	m_strOPLLPatchNames[9] = str;
-	updateExternallOPLLUI(9, false);
+	OpllPatchNameEdit(9);
 }
 
 void CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte10()
 {
-	CString str;
-	m_cOPLLPatchBytesEdit10.GetWindowText(str);
-
-	for (int i = 0; i < 8; i++)
-		m_iOPLLPatchBytes[(8 * 10) + i] = PatchTextToBytes(str, i);
-
-	updateExternallOPLLUI(10, false);
+	OpllPatchByteEdit(10);
 }
 
 void CModulePropertiesDlg::OnEnChangeOpllPatchname10()
 {
-	CString str;
-	m_cOPLLPatchNameEdit10.GetWindowText(str);
-	m_strOPLLPatchNames[10] = str;
-	updateExternallOPLLUI(10, false);
+	OpllPatchNameEdit(10);
 }
 
 void CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte11()
 {
-	CString str;
-	m_cOPLLPatchBytesEdit11.GetWindowText(str);
-
-	for (int i = 0; i < 8; i++)
-		m_iOPLLPatchBytes[(8 * 11) + i] = PatchTextToBytes(str, i);
-
-	updateExternallOPLLUI(11, false);
+	OpllPatchByteEdit(11);
 }
 
 void CModulePropertiesDlg::OnEnChangeOpllPatchname11()
 {
-	CString str;
-	m_cOPLLPatchNameEdit11.GetWindowText(str);
-	m_strOPLLPatchNames[11] = str;
-	updateExternallOPLLUI(11, false);
+	OpllPatchNameEdit(11);
 }
 
 void CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte12()
 {
-	CString str;
-	m_cOPLLPatchBytesEdit12.GetWindowText(str);
-
-	for (int i = 0; i < 8; i++)
-		m_iOPLLPatchBytes[(8 * 12) + i] = PatchTextToBytes(str, i);
-
-	updateExternallOPLLUI(12, false);
+	OpllPatchByteEdit(12);
 }
 
 void CModulePropertiesDlg::OnEnChangeOpllPatchname12()
 {
-	CString str;
-	m_cOPLLPatchNameEdit12.GetWindowText(str);
-	m_strOPLLPatchNames[12] = str;
-	updateExternallOPLLUI(12, false);
+	OpllPatchNameEdit(12);
 }
 
 void CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte13()
 {
-	CString str;
-	m_cOPLLPatchBytesEdit13.GetWindowText(str);
-
-	for (int i = 0; i < 8; i++)
-		m_iOPLLPatchBytes[(8 * 13) + i] = PatchTextToBytes(str, i);
-
-	updateExternallOPLLUI(13, false);
+	OpllPatchByteEdit(13);
 }
 
 void CModulePropertiesDlg::OnEnChangeOpllPatchname13()
 {
-	CString str;
-	m_cOPLLPatchNameEdit13.GetWindowText(str);
-	m_strOPLLPatchNames[13] = str;
-	updateExternallOPLLUI(13, false);
+	OpllPatchNameEdit(13);
 }
 
 void CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte14()
 {
-	CString str;
-	m_cOPLLPatchBytesEdit14.GetWindowText(str);
-
-	for (int i = 0; i < 8; i++)
-		m_iOPLLPatchBytes[(8 * 14) + i] = PatchTextToBytes(str, i);
-
-	updateExternallOPLLUI(14, false);
+	OpllPatchByteEdit(14);
 }
 
 void CModulePropertiesDlg::OnEnChangeOpllPatchname14()
 {
-	CString str;
-	m_cOPLLPatchNameEdit14.GetWindowText(str);
-	m_strOPLLPatchNames[14] = str;
-	updateExternallOPLLUI(14, false);
+	OpllPatchNameEdit(14);
 }
 
 void CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte15()
 {
-	CString str;
-	m_cOPLLPatchBytesEdit15.GetWindowText(str);
-
-	for (int i = 0; i < 8; i++)
-		m_iOPLLPatchBytes[(8 * 15) + i] = PatchTextToBytes(str, i);
-
-	updateExternallOPLLUI(15, false);
+	OpllPatchByteEdit(15);
 }
 
 void CModulePropertiesDlg::OnEnChangeOpllPatchname15()
 {
-	CString str;
-	m_cOPLLPatchNameEdit15.GetWindowText(str);
-	m_strOPLLPatchNames[15] = str;
-	updateExternallOPLLUI(15, false);
+	OpllPatchNameEdit(15);
 }
 
 void CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte16()
 {
-	CString str;
-	m_cOPLLPatchBytesEdit16.GetWindowText(str);
-
-	for (int i = 0; i < 8; i++)
-		m_iOPLLPatchBytes[(8 * 16) + i] = PatchTextToBytes(str, i);
-
-	updateExternallOPLLUI(16, false);
+	OpllPatchByteEdit(16);
 }
 
 void CModulePropertiesDlg::OnEnChangeOpllPatchname16()
 {
-	CString str;
-	m_cOPLLPatchNameEdit16.GetWindowText(str);
-	m_strOPLLPatchNames[16] = str;
-	updateExternallOPLLUI(16, false);
+	OpllPatchNameEdit(16);
 }
 
 void CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte17()
 {
-	CString str;
-	m_cOPLLPatchBytesEdit17.GetWindowText(str);
-
-	for (int i = 0; i < 8; i++)
-		m_iOPLLPatchBytes[(8 * 17) + i] = PatchTextToBytes(str, i);
-
-	updateExternallOPLLUI(17, false);
+	OpllPatchByteEdit(17);
 }
 
 void CModulePropertiesDlg::OnEnChangeOpllPatchname17()
 {
-	CString str;
-	m_cOPLLPatchNameEdit17.GetWindowText(str);
-	m_strOPLLPatchNames[17] = str;
-	updateExternallOPLLUI(17, false);
+	OpllPatchNameEdit(17);
 }
 
 void CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte18()
 {
-	CString str;
-	m_cOPLLPatchBytesEdit18.GetWindowText(str);
-
-	for (int i = 0; i < 8; i++)
-		m_iOPLLPatchBytes[(8 * 18) + i] = PatchTextToBytes(str, i);
-
-	updateExternallOPLLUI(18, false);
+	OpllPatchByteEdit(18);
 }
 
 void CModulePropertiesDlg::OnEnChangeOpllPatchname18()
 {
-	CString str;
-	m_cOPLLPatchNameEdit18.GetWindowText(str);
-	m_strOPLLPatchNames[18] = str;
-	updateExternallOPLLUI(18, false);
+	OpllPatchNameEdit(18);
 }
