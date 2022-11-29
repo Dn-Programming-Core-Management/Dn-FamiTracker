@@ -54,6 +54,7 @@ CN163::~CN163()
 void CN163::Reset()
 {
 	m_N163.Reset();
+	m_N163.SetMixing(m_bOldMixing);
 
 	m_SynthN163.clear();
 	m_BlipN163.clear();
@@ -65,7 +66,6 @@ void CN163::UpdateFilter(blip_eq_t eq)
 	m_SynthN163.treble_eq(eq);
 	m_BlipN163.bass_freq(0);
 	m_CutoffHz = 12000;
-	m_N163.SetMixing(m_bOldMixing);
 	RecomputeN163Filter();
 }
 
@@ -220,6 +220,7 @@ void CN163::Log(uint16_t Address, uint8_t Value)		// // //
 void CN163::SetMixingMethod(bool bLinear)		// // //
 {
 	m_bOldMixing = bLinear;
+	m_N163.SetMixing(m_bOldMixing);
 }
 
 void CN163::RecomputeN163Filter()

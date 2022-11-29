@@ -77,5 +77,5 @@ private:
 	uint32_t	m_iTime = 0;  // Clock counter, used as a timestamp for Blip_Buffer, resets every new frame
 
 	int32_t m_iChannelSample[8];
-	bool m_bOldMixing;		// // //
+	bool m_bOldMixing = false;		// // //
 };

@@ -193,9 +193,6 @@ void CMixer::RecomputeMixing()
 	auto &chipFDS = *m_APU->m_pFDS;
 	auto &chipN163 = *m_APU->m_pN163;
 
-	// Prioritize updating the emulation config before eq filter config for N163
-	chipN163.UpdateN163Filter(m_MixerConfig.N163Lowpass, m_EmulatorConfig.N163DisableMultiplexing);
-
 	// See https://docs.google.com/document/d/19vtipTYI-vqL3-BPrE9HPjHmPpkFuIZKvWfevP3Oo_A/edit#heading=h.h70ipevgjbn7
 	// for an exploration of how I came to this design.
 	for (auto* chip : m_APU->m_SoundChips2) {
