@@ -211,6 +211,19 @@ void CCompiler::ExportNSF(LPCTSTR lpszFileName, int MachineType)
 {
 	ClearLog();
 
+	bool nsfewarning = false;
+
+	for (int i = 0; i < 8; i++) {
+		nsfewarning |= m_pDocument->GetLevelOffset(i) != 0;
+	}
+
+	nsfewarning |= m_pDocument->GetExternalOPLLChipCheck();
+
+	if (nsfewarning) {
+		Print(_T("Warning: NSFe optional metadata will not be exported in this format!\n"));
+		AfxMessageBox(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
+	}
+
 	// Build the music data
 	if (!CompileData()) {
 		// Failed
@@ -427,9 +440,8 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 
 	// TODO write NSF2 chunk?
 
-	// TODO write VRC7 chunk?
-
 	std::size_t
+		iVRC7Size = 0,
 		iAuthSize = 0,
 		iTimeSize = 0,
 		iTlblSize = 0,
@@ -441,6 +453,23 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 		iTimeSize += 4;
 		iTlblSize += strlen(m_pDocument->GetTrackTitle(i)) + 1;
 	}
+
+	// write VRC7 chunk
+	uint8_t extOPLL = m_pDocument->GetExternalOPLLChipCheck(); iVRC7Size++;
+	uint8_t patchset[19 * 8];
+	if (extOPLL)
+		for (int i = 0; i < 19; i++)
+			for (int j = 0; j < 8; j++) {
+				patchset[(8 * i) + j] = m_pDocument->GetOPLLPatchByte((8 * i) + j);
+				iVRC7Size++;
+			}
+
+	const unsigned char VRC7Ident[] = { 'V', 'R', 'C', '7' };
+	OutputFile.Write(reinterpret_cast<char*>(&iVRC7Size), sizeof(int));
+	OutputFile.Write(&VRC7Ident, sizeof(VRC7Ident));
+	OutputFile.Write(&extOPLL, sizeof(uint8_t));
+	if (extOPLL)
+		OutputFile.Write(&patchset, (sizeof(uint8_t) * 19 * 8));
 
 	// write time chunk
 	const unsigned char TimeIdent[] = {'t', 'i', 'm', 'e'};
@@ -484,83 +513,35 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 
 	// write mixe chunk
 	const unsigned char MixeIdent[] = { 'm', 'i', 'x', 'e' };
+
 	// default values derived from NSFplay
-	int16_t mixe_apu1, mixe_apu2, mixe_vrc6, mixe_vrc7,
-		mixe_fds, mixe_mmc5, mixe_n163, mixe_s5b;
-	// TODO: optimize this
-	if (m_pDocument->GetLevelOffset(0)) {
-		mixe_apu1 = m_pDocument->GetLevelOffset(0);
-		iMixeSize += 3;
-	}
-	if (m_pDocument->GetLevelOffset(1)) {
-		mixe_apu2 = m_pDocument->GetLevelOffset(1) - 20;
-		iMixeSize += 3;
-	}
-	if (m_pDocument->GetLevelOffset(2)) {
-		mixe_vrc6 = m_pDocument->GetLevelOffset(2);
-		iMixeSize += 3;
-	}
-	if (m_pDocument->GetLevelOffset(3)) {
-		mixe_vrc7 = m_pDocument->GetLevelOffset(3) + 1340;
-		iMixeSize += 3;
-	}
-	if (m_pDocument->GetLevelOffset(4)) {
-		mixe_fds = m_pDocument->GetLevelOffset(4) + 690;
-		iMixeSize += 3;
-	}
-	if (m_pDocument->GetLevelOffset(5)) {
-		mixe_mmc5 = m_pDocument->GetLevelOffset(5);
-		iMixeSize += 3;
-	}
-	if (m_pDocument->GetLevelOffset(6)) {
-		mixe_n163 = m_pDocument->GetLevelOffset(6) + 1540;
-		iMixeSize += 3;
-	}
-	if (m_pDocument->GetLevelOffset(7)) {
-		mixe_s5b = m_pDocument->GetLevelOffset(7) - 250;
-		iMixeSize += 3;
+	int16_t mixe_device_default[8] = {
+		0,
+		-20,
+		0,
+		1100,
+		690,
+		0,
+		1540,
+		-250
+	};
+
+	int16_t mixe_device[8]{};
+
+	for (int i = 0; i < 8; i++) {
+		if (m_pDocument->GetLevelOffset(i)) {
+			mixe_device[i] = m_pDocument->GetLevelOffset(i) + mixe_device_default[i];
+			iMixeSize += 3;
+		}
 	}
 	OutputFile.Write(reinterpret_cast<char*>(&iMixeSize), sizeof(int));
 	OutputFile.Write(&MixeIdent, sizeof(MixeIdent));
-	if (m_pDocument->GetLevelOffset(0)) {
-		unsigned char devicebyte = 0;
-		OutputFile.Write(&devicebyte, 1);
-		OutputFile.Write(reinterpret_cast<char*>(&mixe_apu1), sizeof(int16_t));
-	}
-	if (m_pDocument->GetLevelOffset(1)) {
-		unsigned char devicebyte = 1;
-		OutputFile.Write(&devicebyte, 1);
-		OutputFile.Write(reinterpret_cast<char*>(&mixe_apu2), sizeof(int16_t));
-	}
-	if (m_pDocument->GetLevelOffset(2)) {
-		unsigned char devicebyte = 2;
-		OutputFile.Write(&devicebyte, 1);
-		OutputFile.Write(reinterpret_cast<char*>(&mixe_vrc6), sizeof(int16_t));
-	}
-	if (m_pDocument->GetLevelOffset(3)) {
-		unsigned char devicebyte = 3;
-		OutputFile.Write(&devicebyte, 1);
-		OutputFile.Write(reinterpret_cast<char*>(&mixe_vrc7), sizeof(int16_t));
-	}
-	if (m_pDocument->GetLevelOffset(4)) {
-		unsigned char devicebyte = 4;
-		OutputFile.Write(&devicebyte, 1);
-		OutputFile.Write(reinterpret_cast<char*>(&mixe_fds), sizeof(int16_t));
-	}
-	if (m_pDocument->GetLevelOffset(5)) {
-		unsigned char devicebyte = 5;
-		OutputFile.Write(&devicebyte, 1);
-		OutputFile.Write(reinterpret_cast<char*>(&mixe_mmc5), sizeof(int16_t));
-	}
-	if (m_pDocument->GetLevelOffset(6)) {
-		unsigned char devicebyte = 6;
-		OutputFile.Write(&devicebyte, 1);
-		OutputFile.Write(reinterpret_cast<char*>(&mixe_n163), sizeof(int16_t));
-	}
-	if (m_pDocument->GetLevelOffset(7)) {
-		unsigned char devicebyte = 7;
-		OutputFile.Write(&devicebyte, 1);
-		OutputFile.Write(reinterpret_cast<char*>(&mixe_s5b), sizeof(int16_t));
+	for (uint8_t i = 0; i < 8; i++) {
+		if (m_pDocument->GetLevelOffset(i)) {
+			unsigned char devicebyte = 0;
+			OutputFile.Write(&i, sizeof(uint8_t));
+			OutputFile.Write(reinterpret_cast<char*>(&mixe_device[i]), sizeof(int16_t));
+		}
 	}
 
 	// Write NSF data
@@ -735,11 +716,8 @@ void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
 
 	// // // Create NSFe metadata
 
-	// TODO write NSF2 chunk?
-
-	// TODO write VRC7 chunk?
-
 	std::size_t
+		iVRC7Size = 0,
 		iAuthSize = 0,
 		iTimeSize = 0,
 		iTlblSize = 0,
@@ -751,6 +729,23 @@ void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
 		iTimeSize += 4;
 		iTlblSize += strlen(m_pDocument->GetTrackTitle(i)) + 1;
 	}
+
+	// write VRC7 chunk
+	uint8_t extOPLL = m_pDocument->GetExternalOPLLChipCheck(); iVRC7Size++;
+	uint8_t patchset[19 * 8];
+	if (extOPLL)
+		for (int i = 0; i < 19; i++)
+			for (int j = 0; j < 8; j++) {
+				patchset[(8 * i) + j] = m_pDocument->GetOPLLPatchByte((8 * i) + j);
+				iVRC7Size++;
+			}
+
+	const unsigned char VRC7Ident[] = { 'V', 'R', 'C', '7' };
+	OutputFile.Write(reinterpret_cast<char*>(&iVRC7Size), sizeof(int));
+	OutputFile.Write(&VRC7Ident, sizeof(VRC7Ident));
+	OutputFile.Write(&extOPLL, sizeof(uint8_t));
+	if (extOPLL)
+		OutputFile.Write(&patchset, (sizeof(uint8_t)*19*8));
 
 	// write time chunk
 	const unsigned char TimeIdent[] = { 't', 'i', 'm', 'e' };
@@ -794,83 +789,35 @@ void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
 
 	// write mixe chunk
 	const unsigned char MixeIdent[] = { 'm', 'i', 'x', 'e' };
+
 	// default values derived from NSFplay
-	int16_t mixe_apu1, mixe_apu2, mixe_vrc6, mixe_vrc7,
-		mixe_fds, mixe_mmc5, mixe_n163, mixe_s5b;
-	// TODO: optimize this
-	if (m_pDocument->GetLevelOffset(0)) {
-		mixe_apu1 = m_pDocument->GetLevelOffset(0);
-		iMixeSize += 3;
-	}
-	if (m_pDocument->GetLevelOffset(1)) {
-		mixe_apu2 = m_pDocument->GetLevelOffset(1) - 20;
-		iMixeSize += 3;
-	}
-	if (m_pDocument->GetLevelOffset(2)) {
-		mixe_vrc6 = m_pDocument->GetLevelOffset(2);
-		iMixeSize += 3;
-	}
-	if (m_pDocument->GetLevelOffset(3)) {
-		mixe_vrc7 = m_pDocument->GetLevelOffset(3) + 1340;
-		iMixeSize += 3;
-	}
-	if (m_pDocument->GetLevelOffset(4)) {
-		mixe_fds = m_pDocument->GetLevelOffset(4) + 690;
-		iMixeSize += 3;
-	}
-	if (m_pDocument->GetLevelOffset(5)) {
-		mixe_mmc5 = m_pDocument->GetLevelOffset(5);
-		iMixeSize += 3;
-	}
-	if (m_pDocument->GetLevelOffset(6)) {
-		mixe_n163 = m_pDocument->GetLevelOffset(6) + 1540;
-		iMixeSize += 3;
-	}
-	if (m_pDocument->GetLevelOffset(7)) {
-		mixe_s5b = m_pDocument->GetLevelOffset(7) - 250;
-		iMixeSize += 3;
+	int16_t mixe_device_default[8] = {
+		0,
+		-20,
+		0,
+		1100,
+		690,
+		0,
+		1540,
+		-250
+	};
+
+	int16_t mixe_device[8]{};
+
+	for (int i = 0; i < 8; i++) {
+		if (m_pDocument->GetLevelOffset(i)) {
+			mixe_device[i] = m_pDocument->GetLevelOffset(i) + mixe_device_default[i];
+			iMixeSize += 3;
+		}
 	}
 	OutputFile.Write(reinterpret_cast<char*>(&iMixeSize), sizeof(int));
 	OutputFile.Write(&MixeIdent, sizeof(MixeIdent));
-	if (m_pDocument->GetLevelOffset(0)) {
-		unsigned char devicebyte = 0;
-		OutputFile.Write(&devicebyte, 1);
-		OutputFile.Write(reinterpret_cast<char*>(&mixe_apu1), sizeof(int16_t));
-	}
-	if (m_pDocument->GetLevelOffset(1)) {
-		unsigned char devicebyte = 1;
-		OutputFile.Write(&devicebyte, 1);
-		OutputFile.Write(reinterpret_cast<char*>(&mixe_apu2), sizeof(int16_t));
-	}
-	if (m_pDocument->GetLevelOffset(2)) {
-		unsigned char devicebyte = 2;
-		OutputFile.Write(&devicebyte, 1);
-		OutputFile.Write(reinterpret_cast<char*>(&mixe_vrc6), sizeof(int16_t));
-	}
-	if (m_pDocument->GetLevelOffset(3)) {
-		unsigned char devicebyte = 3;
-		OutputFile.Write(&devicebyte, 1);
-		OutputFile.Write(reinterpret_cast<char*>(&mixe_vrc7), sizeof(int16_t));
-	}
-	if (m_pDocument->GetLevelOffset(4)) {
-		unsigned char devicebyte = 4;
-		OutputFile.Write(&devicebyte, 1);
-		OutputFile.Write(reinterpret_cast<char*>(&mixe_fds), sizeof(int16_t));
-	}
-	if (m_pDocument->GetLevelOffset(5)) {
-		unsigned char devicebyte = 5;
-		OutputFile.Write(&devicebyte, 1);
-		OutputFile.Write(reinterpret_cast<char*>(&mixe_mmc5), sizeof(int16_t));
-	}
-	if (m_pDocument->GetLevelOffset(6)) {
-		unsigned char devicebyte = 6;
-		OutputFile.Write(&devicebyte, 1);
-		OutputFile.Write(reinterpret_cast<char*>(&mixe_n163), sizeof(int16_t));
-	}
-	if (m_pDocument->GetLevelOffset(7)) {
-		unsigned char devicebyte = 7;
-		OutputFile.Write(&devicebyte, 1);
-		OutputFile.Write(reinterpret_cast<char*>(&mixe_s5b), sizeof(int16_t));
+	for (uint8_t i = 0; i < 8; i++) {
+		if (m_pDocument->GetLevelOffset(i)) {
+			unsigned char devicebyte = 0;
+			OutputFile.Write(&i, sizeof(uint8_t));
+			OutputFile.Write(reinterpret_cast<char*>(&mixe_device[i]), sizeof(int16_t));
+		}
 	}
 
 	// write NEND chunk
@@ -921,14 +868,29 @@ void CCompiler::ExportNES(LPCTSTR lpszFileName, bool EnablePAL)
 
 	ClearLog();
 
+	bool nsfewarning = false;
+
+	for (int i = 0; i < 8; i++) {
+		nsfewarning |= m_pDocument->GetLevelOffset(i) != 0;
+	}
+
+	nsfewarning |= m_pDocument->GetExternalOPLLChipCheck();
+
+	if (nsfewarning) {
+		Print(_T("Warning: NSFe optional metadata will not be exported in this format!\n"));
+		AfxMessageBox(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
+	}
+
 	if (m_pDocument->GetExpansionChip() != SNDCHIP_NONE) {
 		Print(_T("Error: Expansion chips not supported.\n"));
 		AfxMessageBox(_T("Expansion chips are currently not supported when exporting to .NES!"), 0, 0);
+		Cleanup();
 		return;
 	}
 
 	CFile OutputFile;
 	if (!OpenFile(lpszFileName, OutputFile)) {
+		Cleanup();
 		return;
 	}
 
@@ -996,6 +958,19 @@ void CCompiler::ExportNES(LPCTSTR lpszFileName, bool EnablePAL)
 void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int MachineType, bool ExtraData)
 {
 	ClearLog();
+
+	bool nsfewarning = false;
+
+	for (int i = 0; i < 8; i++) {
+		nsfewarning |= m_pDocument->GetLevelOffset(i) != 0;
+	}
+
+	nsfewarning |= m_pDocument->GetExternalOPLLChipCheck();
+
+	if (nsfewarning) {
+		Print(_T("Warning: NSFe optional metadata will not be exported in this format!\n"));
+		AfxMessageBox(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
+	}
 
 	// Build the music data
 	if (!CompileData()) {
@@ -1160,25 +1135,43 @@ void CCompiler::ExportPRG(LPCTSTR lpszFileName, bool EnablePAL)
 
 	ClearLog();
 
+	bool nsfewarning = false;
+
+	for (int i = 0; i < 8; i++) {
+		nsfewarning |= m_pDocument->GetLevelOffset(i) != 0;
+	}
+
+	nsfewarning |= m_pDocument->GetExternalOPLLChipCheck();
+
+	if (nsfewarning) {
+		Print(_T("Warning: NSFe optional metadata will not be exported in this format!\n"));
+		AfxMessageBox(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
+	}
+
 	if (m_pDocument->GetExpansionChip() != SNDCHIP_NONE) {
 		Print(_T("Expansion chips not supported.\n"));
 		AfxMessageBox(_T("Error: Expansion chips is currently not supported when exporting to PRG!"), 0, 0);
+		Cleanup();
 		return;
 	}
 
 	CFile OutputFile;
 	if (!OpenFile(lpszFileName, OutputFile)) {
+		Cleanup();
 		return;
 	}
 
 	// Build the music data
-	if (!CompileData())
+	if (!CompileData()) {
+		Cleanup();
 		return;
+	}
 
 	if (m_bBankSwitched) {
 		// Abort if larger than 32kb
 		Print(_T("Song is too big, aborted.\n"));
 		AfxMessageBox(_T("Error: Song is too big to fit!"), 0, 0);
+		Cleanup();
 		return;
 	}
 
@@ -1227,6 +1220,19 @@ void CCompiler::ExportPRG(LPCTSTR lpszFileName, bool EnablePAL)
 void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 {
 	ClearLog();
+
+	bool nsfewarning = false;
+
+	for (int i = 0; i < 8; i++) {
+		nsfewarning |= m_pDocument->GetLevelOffset(i) != 0;
+	}
+
+	nsfewarning |= m_pDocument->GetExternalOPLLChipCheck();
+
+	if (nsfewarning) {
+		Print(_T("Warning: NSFe optional metadata will not be exported in this format!\n"));
+		AfxMessageBox(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
+	}
 
 	// Build the music data
 	if (!CompileData()) {
@@ -1586,14 +1592,17 @@ void CCompiler::CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType)		// // 
 	pHeader->NSFeIdent[1] = 'S';
 	pHeader->NSFeIdent[2] = 'F';
 	pHeader->NSFeIdent[3] = 'E';
+
 	pHeader->InfoIdent[0] = 'I';
 	pHeader->InfoIdent[1] = 'N';
 	pHeader->InfoIdent[2] = 'F';
 	pHeader->InfoIdent[3] = 'O';
+
 	pHeader->BankIdent[0] = 'B';
 	pHeader->BankIdent[1] = 'A';
 	pHeader->BankIdent[2] = 'N';
 	pHeader->BankIdent[3] = 'K';
+
 	pHeader->RateIdent[0] = 'R';
 	pHeader->RateIdent[1] = 'A';
 	pHeader->RateIdent[2] = 'T';

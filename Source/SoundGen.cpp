@@ -898,6 +898,7 @@ bool CSoundGen::ResetAudioDevice()
 					m_pDocument->SetOPLLPatchName(i, CAPU::OPLL_PATCHNAME_YMF281B[i]);
 			}
 		}
+		if (PatchNum > 6) m_pDocument->SetExternalOPLLChipCheck(true);
 		for (int i = 0; i < 19; ++i) {
 			for (int j = 0; j < 8; ++j)
 				OPLLHardwarePatchBytes.at((8 * i) + j) = m_pDocument->GetOPLLPatchByte((8 * i) + j);
