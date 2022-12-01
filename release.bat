@@ -1,4 +1,7 @@
 rem usage: release.bat configuration platform [commithash]
+
+rem delete existing distribution files, if it exists
+del distribute /q /f
 mkdir distribute
 
 if "%2"=="Win32" (
