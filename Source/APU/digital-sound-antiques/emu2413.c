@@ -62,7 +62,7 @@ static uint8_t default_inst[OPLL_TONE_NUM][(16 + 3) * 8] = {
 };
 
 // Added by jsr
-int16_t opll_volumes[10];
+int16_t opll_volumes[14];
 
 /* clang-format on */
 
@@ -1020,6 +1020,9 @@ INLINE static void mix_output(OPLL *opll) {
   int i;
   for (i = 0; i < 14; i++) {
     out += opll->ch_out[i];
+    int16_t absvol = abs(opll->ch_out[i]);
+    if (absvol > opll_volumes[i])
+        opll_volumes[i] = absvol;
   }
   if (opll->conv) {
     OPLL_RateConv_putData(opll->conv, 0, out);

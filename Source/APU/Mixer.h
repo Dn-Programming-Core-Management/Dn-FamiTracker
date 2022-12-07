@@ -37,8 +37,8 @@ enum chip_level_t {
 	CHIP_LEVEL_APU2,
 	CHIP_LEVEL_VRC6,
 	CHIP_LEVEL_VRC7,
-	CHIP_LEVEL_MMC5,
 	CHIP_LEVEL_FDS,
+	CHIP_LEVEL_MMC5,
 	CHIP_LEVEL_N163,
 	CHIP_LEVEL_S5B,
 	CHIP_LEVEL_COUNT
@@ -49,13 +49,31 @@ class CFDS;
 class CAPU;
 
 struct MixerConfig {
+	// Global lowpass
 	int LowCut = 0;
+	// Global highpass
 	int HighCut = 0;
+	// Global higpass damping
 	int HighDamp = 0;
+	// Global volume
 	float OverallVol = 0;
 
-	// Use better mixing values derived from survey: https://forums.nesdev.org/viewtopic.php?f=2&t=17741
+	// https://forums.nesdev.org/viewtopic.php?t=17741
+	// Use survey derived default mix levels. Overrides the chip levels.
 	bool UseSurveyMix = false;
+
+	// Survey derived default mix levels, described in millibels.
+	std::vector<int16_t> SurveyMixLevels = {
+		// default values derived from NSFplay
+		0,			// APU1
+		-20,		// APU2
+		0,			// VRC6
+		1100,		// VRC7
+		690,		// FDS
+		0,			// MMC5
+		1540,		// N163
+		-250		// S5B
+	};
 
 	// Device lowpassing, described in integer Hz.
 	int16_t FDSLowpass = 2000;
@@ -144,7 +162,7 @@ public:
 	void	SetEmulation(EmulatorConfig cfg) {
 		m_EmulatorConfig = cfg;
 	};
-	void	RecomputeMixing();		// must be called after SetMixing() and SetEmulation()
+	void	RecomputeEmuMixState();		// must be called after SetMixing() and SetEmulation()
 
 	bool	AllocateBuffer(unsigned int Size, uint32_t SampleRate, uint8_t NrChannels);
 	Blip_Buffer& GetBuffer() {
@@ -210,7 +228,9 @@ private:
 	uint8_t		m_iExternalChip;
 	uint32_t	m_iSampleRate;
 
+	// channel levels for volume meter
 	float		m_fChannelLevels[CHANNELS];
+	// volume meter falloff rate
 	uint32_t	m_iChanLevelFallOff[CHANNELS];
 
 	int			m_iMeterDecayRate;		// // // 050B
@@ -221,6 +241,8 @@ private:
 	uint8_t m_VRC7PatchSet[19 * 8];
 	bool m_VRC7PatchUserDefined;
 
+	// device level gain multipliers, in linear scale
+	// default level (0dB) is at 1.0
 	float		m_fLevelAPU1;
 	float		m_fLevelAPU2;
 	float		m_fLevelVRC6;

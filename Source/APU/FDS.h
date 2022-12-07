@@ -51,8 +51,8 @@ public:
 
 	int CFDS::GetModCounter() const;
 
-	void UpdateFdsFilter(int CutoffHz);
-	void UpdateMixLevel(double v);
+	void UpdateFDSFilter(int CutoffHz);
+	void UpdateMixLevel(double v, bool UseSurveyMix = false);
 
 private:
 	void RecomputeFdsFilter();

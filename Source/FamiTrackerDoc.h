@@ -253,8 +253,8 @@ public:
 	bool			GetLinearPitch() const;
 	void			SetLinearPitch(bool Enable);
 
-	bool			GetSurveyMix() const;
-	void			SetSurveyMix(bool SurveyMix);
+	bool			GetSurveyMixCheck() const;
+	void			SetSurveyMixCheck(bool SurveyMix);
 
 	int16_t			GetLevelOffset(int device) const;
 	void			SetLevelOffset(int device, int16_t offset);

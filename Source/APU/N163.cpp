@@ -54,7 +54,7 @@ CN163::~CN163()
 void CN163::Reset()
 {
 	m_N163.Reset();
-	m_N163.SetMixing(m_bOldMixing);
+	m_N163.SetMixing(m_bUseLinearMixing);
 
 	m_SynthN163.clear();
 	m_BlipN163.clear();
@@ -88,12 +88,6 @@ uint8_t CN163::Read(uint16_t Address, bool &Mapped)
 
 void CN163::Process(uint32_t Time, Blip_Buffer& Output)
 {
-	// Change level output based on number of channels
-	int channels = m_N163.GetNumberOfChannels();
-	double N163_volume = (channels == 0) ? 1.3f : (1.5f + float(channels) / 1.5f);
-	N163_volume *= m_Attenuation;
-	m_SynthN163.volume(N163_volume * 1.1, 1600);
-
 	uint32_t now = 0;
 
 	while (true) {
@@ -198,10 +192,17 @@ void CN163::UpdateN163Filter(int CutoffHz, bool DisableMultiplex)
 	RecomputeN163Filter();
 }
 
-void CN163::UpdateMixLevel(double v)
+void CN163::UpdateMixLevel(double v, bool UseSurveyMix)
 {
-	m_Attenuation = v;
-	// Mix level will dynamically change in Process() based on number of channels
+	if (UseSurveyMix)
+		m_SynthN163.volume(v, 225);
+	else {
+		// Mix level will dynamically change based on number of channels
+		int channels = m_N163.GetNumberOfChannels();
+		double N163_volume = (channels == 0) ? 1.3f : (1.5f + float(channels) / 1.5f);
+		N163_volume *= v;
+		m_SynthN163.volume(N163_volume * 1.1, 1600);
+	}
 }
 
 void CN163::Log(uint16_t Address, uint8_t Value)		// // //
@@ -219,8 +220,8 @@ void CN163::Log(uint16_t Address, uint8_t Value)		// // //
 
 void CN163::SetMixingMethod(bool bLinear)		// // //
 {
-	m_bOldMixing = bLinear;
-	m_N163.SetMixing(m_bOldMixing);
+	m_bUseLinearMixing = bLinear;
+	m_N163.SetMixing(m_bUseLinearMixing);
 }
 
 void CN163::RecomputeN163Filter()

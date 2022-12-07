@@ -174,7 +174,6 @@ static const auto EFF_CONVERSION_050 = MakeEffectConversion({
 	{EF_FDS_MOD_BIAS,		EF_VRC7_WRITE},
 });
 
-
 //
 // JSON-struct conversions
 //
@@ -2700,7 +2699,7 @@ void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile *pDocFile, const int Version)
 	if (JDataDefault.MMC5_OFFSET != out[MMC5_OFFSET]) SetLevelOffset(5, out[MMC5_OFFSET]);
 	if (JDataDefault.N163_OFFSET != out[N163_OFFSET]) SetLevelOffset(6, out[N163_OFFSET]);
 	if (JDataDefault.S5B_OFFSET != out[S5B_OFFSET]) SetLevelOffset(7, out[S5B_OFFSET]);
-	if (out.at(USE_SURVEY_MIX)) SetSurveyMix(out[USE_SURVEY_MIX]);
+	if (out.at(USE_SURVEY_MIX)) SetSurveyMixCheck(out[USE_SURVEY_MIX]);
 }
 
 bool CFamiTrackerDoc::WriteBlock_JSON(CDocumentFile *pDocFile, const int Version) const
@@ -2716,7 +2715,7 @@ bool CFamiTrackerDoc::WriteBlock_JSON(CDocumentFile *pDocFile, const int Version
 	if (GetLevelOffset(5)) j[MMC5_OFFSET] = GetLevelOffset(5);
 	if (GetLevelOffset(6)) j[N163_OFFSET] = GetLevelOffset(6);
 	if (GetLevelOffset(7)) j[S5B_OFFSET] = GetLevelOffset(7);
-	if (GetSurveyMix()) j[USE_SURVEY_MIX] = GetSurveyMix();
+	if (GetSurveyMixCheck()) j[USE_SURVEY_MIX] = GetSurveyMixCheck();
 
 	if (j.empty())
 		return true;
@@ -2725,7 +2724,6 @@ bool CFamiTrackerDoc::WriteBlock_JSON(CDocumentFile *pDocFile, const int Version
 	pDocFile->WriteString(j.dump(-1, '\0', true));		// FT modules aren't UTF-8 yet, so ensure that text is ASCII
 	return pDocFile->FlushBlock();
 }
-
 
 // // // Extra parameters
 
@@ -4469,13 +4467,15 @@ void CFamiTrackerDoc::SetLinearPitch(bool Enable)
 	m_bLinearPitch = Enable;
 }
 
-bool CFamiTrackerDoc::GetSurveyMix() const
+bool CFamiTrackerDoc::GetSurveyMixCheck() const
 {
 	return m_bUseSurveyMixing;
 }
 
-void CFamiTrackerDoc::SetSurveyMix(bool SurveyMix)
+void CFamiTrackerDoc::SetSurveyMixCheck(bool SurveyMix)
 {
+	if (m_bUseSurveyMixing != SurveyMix)
+		ModifyIrreversible();
 	m_bUseSurveyMixing = SurveyMix;
 }
 

@@ -178,10 +178,10 @@ CSoundGen::CSoundGen() :
 	// Create all kinds of channels
 	CreateChannels();
 
-	// Initialize DeviceMixOffset, OPLLHardwarePatchBytes, UseExtOPLL and OPLLHardwarePatchNames
+	// Initialize DeviceMixOffset, UseSurveyMix, OPLLHardwarePatchBytes, UseExtOPLL and OPLLHardwarePatchNames
 	DeviceMixOffset.resize(8);
 	std::fill(DeviceMixOffset.begin(), DeviceMixOffset.end(), 0);
-
+	UseSurveyMix = false;
 	UseExtOPLL = false;
 
 	OPLLHardwarePatchBytes.resize(19 * 8);
@@ -596,6 +596,8 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 	for (int i = 0; i < 8; i++)
 		refreshsettings |= DeviceMixOffset[i] != pDocument->GetLevelOffset(i);
 
+	refreshsettings |= UseSurveyMix != pDocument->GetSurveyMixCheck();
+
 	CSettings* pSettings = theApp.GetSettings();
 	int PatchNum = pSettings->Emulation.iVRC7Patch;
 
@@ -883,6 +885,20 @@ bool CSoundGen::ResetAudioDevice()
 	for (int i = 0; i < 7; ++i)
 		DeviceMixOffset[i] = m_pDocument->GetLevelOffset(i);
 
+	UseSurveyMix = m_pDocument->GetSurveyMixCheck();
+
+	std::vector<int16_t> SurveyMixLevels{};
+	SurveyMixLevels.resize(CHIP_LEVEL_COUNT);
+
+	SurveyMixLevels.at(CHIP_LEVEL_APU1) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixAPU1);
+	SurveyMixLevels.at(CHIP_LEVEL_APU2) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixAPU2);
+	SurveyMixLevels.at(CHIP_LEVEL_VRC6) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixVRC6);
+	SurveyMixLevels.at(CHIP_LEVEL_VRC7) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixVRC7);
+	SurveyMixLevels.at(CHIP_LEVEL_FDS) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixFDS);
+	SurveyMixLevels.at(CHIP_LEVEL_MMC5) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixMMC5);
+	SurveyMixLevels.at(CHIP_LEVEL_N163) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixN163);
+	SurveyMixLevels.at(CHIP_LEVEL_S5B) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixS5B);
+
 	{
 		// Set OPLL patch to current patchset if not using external OPLL
 		if (!m_pDocument->GetExternalOPLLChipCheck()) {
@@ -898,12 +914,16 @@ bool CSoundGen::ResetAudioDevice()
 					m_pDocument->SetOPLLPatchName(i, CAPU::OPLL_PATCHNAME_YMF281B[i]);
 			}
 		}
+
 		if (PatchNum > 6) m_pDocument->SetExternalOPLLChipCheck(true);
+		
 		for (int i = 0; i < 19; ++i) {
 			for (int j = 0; j < 8; ++j)
 				OPLLHardwarePatchBytes.at((8 * i) + j) = m_pDocument->GetOPLLPatchByte((8 * i) + j);
 			OPLLHardwarePatchNames.at(i) = m_pDocument->GetOPLLPatchName(i);
 		}
+
+		UseExtOPLL = m_pDocument->GetExternalOPLLChipCheck();
 	}
 
 	{
@@ -913,7 +933,7 @@ bool CSoundGen::ResetAudioDevice()
 		config.SetupEmulation(
 			pSettings->Emulation.bNamcoMixing,
 			PatchNum,
-			m_pDocument->GetExternalOPLLChipCheck(),
+			UseExtOPLL,
 			OPLLHardwarePatchBytes,
 			OPLLHardwarePatchNames
 		);
@@ -924,7 +944,8 @@ bool CSoundGen::ResetAudioDevice()
 			pSettings->Sound.iTrebleFilter,
 			pSettings->Sound.iTrebleDamping,
 			pSettings->Sound.iMixVolume,
-			m_pDocument->GetSurveyMix(),
+			UseSurveyMix,
+			SurveyMixLevels,
 			pSettings->Emulation.iFDSLowpass,
 			pSettings->Emulation.iN163Lowpass,
 			DeviceMixOffset

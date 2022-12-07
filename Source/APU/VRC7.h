@@ -52,7 +52,7 @@ public:
 	void SetVolume(float Volume);
 	void Log(uint16_t Address, uint8_t Value) override;		// // //
 
-	void UpdateMixLevel(double v);
+	void UpdateMixLevel(double v, bool UseSurveyMix = false);
 
 	void UpdatePatchSet(int PatchSelection, bool UseExternalOPLLChip, uint8_t *PatchSet);
 

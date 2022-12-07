@@ -586,7 +586,8 @@ void CAPUConfig::SetupMixer(
 	int HighCut,
 	int HighDamp,
 	int Volume,
-	bool SurveyMix,
+	bool UseSurveyMix,
+	std::vector<int16_t> SurveyMixLevels,
 	int16_t FDSLowpass,
 	int16_t N163Lowpass,
 	std::vector<int16_t> DeviceMixOffsets)
@@ -596,7 +597,8 @@ void CAPUConfig::SetupMixer(
 		HighCut,
 		HighDamp,
 		float(Volume) / 100.0f,
-		SurveyMix,
+		UseSurveyMix,
+		SurveyMixLevels,
 		FDSLowpass,
 		N163Lowpass,
 		DeviceMixOffsets
@@ -604,7 +606,7 @@ void CAPUConfig::SetupMixer(
 }
 
 // must be called after SetupMixer()
-// DeviceMixOffsets[] need to be set first
+// DeviceMixOffsets[] needs to be initialized first
 void CAPUConfig::SetChipLevel(chip_level_t Chip, float LeveldB)
 {
 	// Convert dB to linear
@@ -623,7 +625,7 @@ CAPUConfig::~CAPUConfig() noexcept(false) {
 	bool mixingDirty = false;
 
 	// Writes to CMixer::m_iExternalChip.
-	// This is read by CMixer::GetAttenuation(), which is called by CMixer::RecomputeMixing().
+	// This is read by CMixer::GetAttenuation(), which is called by CMixer::RecomputeEmuMixState().
 	if (m_ExternalSound) {
 		// This eagerly calls m_pMixer->SetClockRate(m_pMixer->BlipBuffer.clock_rate())
 		// (reinitializing the clock rate to the same value, but to a different set of expansion chips).
@@ -635,31 +637,58 @@ CAPUConfig::~CAPUConfig() noexcept(false) {
 		mixingDirty = true;
 	}
 
-	// Writes to CAPU::m_fLevelVRC7 and CMixer::m_fLevel[...].
-	// This is read by CMixer::RecomputeMixing().
+	// Writes to CMixer::m_fLevel[...].
+	// This is read by CMixer::RecomputeEmuMixState().
 	for (int chip = 0; chip < CHIP_LEVEL_COUNT; chip++) {
 		if (m_ChipLevels[chip]) {
 			auto level = *m_ChipLevels[chip];
-			switch (chip) {
-			case CHIP_LEVEL_VRC7:
-				m_APU->m_fLevelVRC7 = level;
-				break;
-			default:
-				m_Mixer->SetChipLevel((chip_level_t)chip, level);
-				mixingDirty = true;
-				break;
-			}
+			m_Mixer->SetChipLevel((chip_level_t)chip, level);
+			mixingDirty = true;
 		}
 	}
 
 	// Writes to CMixer::m_MixerConfig.
-	// This is read by CMixer::RecomputeMixing().
+	// This is read by CMixer::RecomputeEmuMixState().
 	if (m_MixerConfig) {
 		auto& cfg = *m_MixerConfig;
-		// Volume does not decrease as you enable expansion chips.
-		// This is probably a bug, but it's too late to change it now
-		// (it would break old modules).
-		m_APU->m_pVRC7->SetVolume(cfg.OverallVol * m_APU->m_fLevelVRC7);
+
+		// Override legacy expansion chip level mixing
+		// when using survey hardware levels
+		if (cfg.UseSurveyMix) {
+			for (int chip = 0; chip < CHIP_LEVEL_COUNT; chip++) {
+				int16_t surveylevel = cfg.SurveyMixLevels[chip];
+				
+				// compensate for blip_buffer output scaling differences
+				// issue with rounding errors?
+				switch (chip) {
+				case CHIP_LEVEL_APU2:
+					surveylevel -= 13;
+					break;
+				case CHIP_LEVEL_VRC6:
+					surveylevel -= 494;
+					break;
+				case CHIP_LEVEL_VRC7:
+					surveylevel += 776;
+					break;
+				case CHIP_LEVEL_FDS:
+					surveylevel -= 1700;
+					break;
+				case CHIP_LEVEL_MMC5:
+					surveylevel += 869;
+					break;
+				case CHIP_LEVEL_N163:
+					surveylevel -= 1681;
+					break;
+				case CHIP_LEVEL_S5B:
+					surveylevel += 108;
+					break;
+				}
+				if (surveylevel) {
+					float LevelLinear = powf(10, ((static_cast<float>((cfg.DeviceMixOffsets[chip] * 10) + surveylevel) / 100.0f)) / 20.0f);
+					m_Mixer->SetChipLevel((chip_level_t)chip, LevelLinear);
+				}
+			}
+		}
 
 		m_Mixer->SetMixing(cfg);
 		mixingDirty = true;
@@ -673,6 +702,6 @@ CAPUConfig::~CAPUConfig() noexcept(false) {
 	if (mixingDirty) {
 		// Volume decreases exponentially as you enable expansion chips linearly.
 		// This is probably a bug, but it might be too late to change it now.
-		m_Mixer->RecomputeMixing();
+		m_Mixer->RecomputeEmuMixState();
 	}
 }

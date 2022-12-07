@@ -127,6 +127,7 @@ BEGIN_MESSAGE_MAP(CModulePropertiesDlg, CDialog)
 	ON_EN_CHANGE(IDC_OPLL_PATCHNAME17, &CModulePropertiesDlg::OnEnChangeOpllPatchname17)
 	ON_EN_KILLFOCUS(IDC_OPLL_PATCHBYTE18, &CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte18)
 	ON_EN_CHANGE(IDC_OPLL_PATCHNAME18, &CModulePropertiesDlg::OnEnChangeOpllPatchname18)
+	ON_BN_CLICKED(IDC_SURVEY_MIXING, &CModulePropertiesDlg::OnBnClickedSurveyMixing)
 END_MESSAGE_MAP()
 
 
@@ -290,6 +291,10 @@ BOOL CModulePropertiesDlg::OnInitDialog()
 		updateDeviceMixOffsetUI(i);
 	}
 
+	// Hardware-based mixing
+	m_bSurveyMixing = m_pDocument->GetSurveyMixCheck();
+	((CButton*)GetDlgItem(IDC_SURVEY_MIXING))->SetCheck(m_bSurveyMixing);
+
 	// OPLL patch bytes and patch names
 	m_bExternalOPLL = m_pDocument->GetExternalOPLLChipCheck();
 	((CButton*)GetDlgItem(IDC_EXTERNAL_OPLL))->SetCheck(m_bExternalOPLL);
@@ -368,6 +373,9 @@ void CModulePropertiesDlg::OnBnClickedOk()
 	// Device mix offset
 	for (int i = 0; i < 8; i++)
 		if (m_pDocument->GetLevelOffset(i) != m_iDeviceLevelOffset[i]) m_pDocument->SetLevelOffset(i, -m_iDeviceLevelOffset[i]);
+
+	// Hardware-based mixing
+	m_pDocument->SetSurveyMixCheck(m_bSurveyMixing);
 
 	// Externall OPLL
 	for (int i = 0; i < 19; i++) {
@@ -1188,4 +1196,9 @@ void CModulePropertiesDlg::OnEnKillfocusOpllPatchbyte18()
 void CModulePropertiesDlg::OnEnChangeOpllPatchname18()
 {
 	OpllPatchNameEdit(18);
+}
+
+void CModulePropertiesDlg::OnBnClickedSurveyMixing()
+{
+	m_bSurveyMixing = (((CButton*)GetDlgItem(IDC_SURVEY_MIXING))->GetCheck() == BST_CHECKED);
 }

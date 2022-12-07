@@ -48,7 +48,7 @@ public:
 	int GetChannelLevelRange(int Channel) const override;
 
 	void UpdateN163Filter(int CutoffHz, bool DisableMultiplex);
-	void UpdateMixLevel(double v);
+	void UpdateMixLevel(double v, bool UseSurveyMix = false);
 
 	void Log(uint16_t Address, uint8_t Value) override;		// // //
 
@@ -58,9 +58,6 @@ private:
 	void RecomputeN163Filter();
 
 	int m_CutoffHz;
-
-	// master volume attenuation
-	double m_Attenuation;
 
 	Namco163Audio m_N163;
 
@@ -77,5 +74,5 @@ private:
 	uint32_t	m_iTime = 0;  // Clock counter, used as a timestamp for Blip_Buffer, resets every new frame
 
 	int32_t m_iChannelSample[8];
-	bool m_bOldMixing = false;		// // //
+	bool m_bUseLinearMixing = false;		// // //
 };

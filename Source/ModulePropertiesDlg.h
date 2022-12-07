@@ -40,6 +40,7 @@ private:
 
 	bool m_bSingleSelection;		// // //
 	bool m_bExternalOPLL;		// !! !!
+	bool m_bSurveyMixing;		// !! !!
 	unsigned int m_iSelectedSong;
 	unsigned char m_iExpansions;		// // //
 	uint8_t m_iN163Channels;
@@ -155,4 +156,5 @@ public:
 	afx_msg void OnEnChangeOpllPatchname17();
 	afx_msg void OnEnKillfocusOpllPatchbyte18();
 	afx_msg void OnEnChangeOpllPatchname18();
+	afx_msg void OnBnClickedSurveyMixing();
 };

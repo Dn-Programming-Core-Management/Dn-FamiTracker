@@ -350,6 +350,7 @@ private:
 	CAPU				*m_pAPU;
 	bool UseExtOPLL;
 	std::vector<int16_t> DeviceMixOffset;
+	bool UseSurveyMix;
 	std::vector<uint8_t> OPLLHardwarePatchBytes;
 	std::vector<std::string> OPLLHardwarePatchNames;
 

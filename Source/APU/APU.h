@@ -207,7 +207,8 @@ public:
 		int HighCut,
 		int HighDamp,
 		int Volume,
-		bool SurveyMix,
+		bool UseSurveyMix,
+		std::vector<int16_t> SurveyMixLevels,
 		int16_t FDSLowpass,
 		int16_t N163Lowpass,
 		std::vector<int16_t> DeviceMixOffsets

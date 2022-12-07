@@ -82,7 +82,7 @@ void CFDS::UpdateFilter(blip_eq_t eq)
 	// So BlipFDS should skip bass removal.
 	m_BlipFDS.bass_freq(0);
 
-	// Default cutoff frequency, will be overriden when UpdateFdsFilter() is called.
+	// Default cutoff frequency, will be overriden when UpdateFDSFilter() is called.
 	m_CutoffHz = 2000;
 	RecomputeFdsFilter();
 }
@@ -132,7 +132,6 @@ void CFDS::Process(uint32_t Time, Blip_Buffer& Output)
 	}
 
 	m_iTime += Time;
-
 }
 
 void CFDS::EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer)
@@ -225,19 +224,23 @@ int CFDS::GetChannelLevelRange(int Channel) const
 	return 0;
 }
 
-void CFDS::UpdateFdsFilter(int CutoffHz)
+void CFDS::UpdateFDSFilter(int CutoffHz)
 {
 	m_CutoffHz = CutoffHz;
 	RecomputeFdsFilter();
 }
 
-void CFDS::UpdateMixLevel(double v)
+void CFDS::UpdateMixLevel(double v, bool UseSurveyMix)
 {
 	// (m_SynthFDS: FdsAudio) used to generate output samples between [0..63] inclusive,
 	// but was changed to  [0 .. 63*1152] inclusive to prevent quantization at low volumes.
-	// The following mixing levels match nsfplay's FDS output,
-	// using 2A03 Pulse as a baseline.
-	m_SynthFDS.volume(v * 1.122f, 256 * 1152);
+
+	if (UseSurveyMix)
+		m_SynthFDS.volume(v, 63 * 1152);
+	else
+		// The following mixing levels match nsfplay's FDS output,
+		// using 2A03 Pulse as a baseline.
+		m_SynthFDS.volume(v * 1.122f, 256 * 1152);
 }
 
 /// Input:

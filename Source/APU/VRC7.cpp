@@ -94,7 +94,7 @@ void CVRC7::SetSampleSpeed(uint32_t SampleRate, double ClockRate, uint32_t Frame
 
 void CVRC7::SetVolume(float Volume)
 {
-	m_fVolume = Volume * AMPLIFY;
+	m_fVolume = Volume;
 }
 
 void CVRC7::Write(uint16_t Address, uint8_t Value)
@@ -125,9 +125,6 @@ uint8_t CVRC7::Read(uint16_t Address, bool &Mapped)
 void CVRC7::Process(uint32_t Time, Blip_Buffer& Output)
 {
 	// This cannot run in sync, fetch all samples at end of frame instead
-	for (int i = 0; i < 6; i++)
-		m_ChannelLevels[i].update(OPLL_getchanvol(i));
-
 	m_iTime += Time;
 }
 
@@ -137,18 +134,16 @@ void CVRC7::EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer)
 
 	static int32_t LastSample = 0;
 
-	// TODO: manually clipping and mixing here is terrible. do this in CMixer or something
 	// Generate VRC7 samples
 	while (m_iBufferPtr < WantSamples) {
 		int32_t RawSample = OPLL_calc(m_pOPLLInt);
 
-		// Clipping is slightly asymmetric
-		if (RawSample > 3600)
-			RawSample = 3600;
-		if (RawSample < -3200)
-			RawSample = -3200;
+		// emu2413's waveform output ranges from -4095...4095
+		// fully rectified by abs(), so resulting waveform is around 0-4095
+		for (int i = 0; i < 6; i++)
+			m_ChannelLevels[i].update(static_cast<uint8_t>((255.0 * (OPLL_getchanvol(i) + 1.0)/4096.0)));
 
-		// Apply volume
+		// Apply volume, hacky workaround
 		int32_t Sample = int(float(RawSample) * m_fVolume);
 
 		if (Sample > 32767)
@@ -188,17 +183,24 @@ int CVRC7::GetChannelLevel(int Channel)
 
 int CVRC7::GetChannelLevelRange(int Channel) const
 {
-	// unknown for now
-	return 15;
+	return 127;
 }
 
-void CVRC7::UpdateMixLevel(double v)
+void CVRC7::UpdateMixLevel(double v, bool UseSurveyMix)
 {
 	// The output of emu2413 is resampled. This means
 	// that the emulator output suffers no multiplex hiss and
 	// bit depth quantization.
-	// TODO: replace emu2413 with Nuked-OPLL for better accuracy?
-	m_SynthVRC7.volume(v * AMPLIFY, 10000);
+	// TODO: replace emu2413 with Nuked-OPLL for better multiplexing accuracy?
+
+	// hacky solution, since VRC7 uses asynchronous direct buffer writes
+	if (UseSurveyMix)
+		SetVolume(static_cast<float>(v));
+	else
+		SetVolume(static_cast<float>(v * AMPLIFY));
+	
+	// emu2413's waveform output ranges from -4095...4095
+	m_SynthVRC7.volume(v, 8191);
 }
 
 void CVRC7::UpdatePatchSet(int PatchSelection, bool UseExternalOPLLChip, uint8_t* PatchSet)
