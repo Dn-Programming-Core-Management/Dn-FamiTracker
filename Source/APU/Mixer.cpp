@@ -24,6 +24,19 @@
 
 /*
 
+ Hardware-based mixing levels are based on NSFPlay's default NSFe
+ mixe chunk values: https://github.com/bbbradsmith/nsfplay/blob/master/xgm/player/nsf/nsfplay.cpp#L843
+
+ Exported NSFe files use these constants with delta mix levels
+ (CFamiTrackerDoc::m_iDeviceLevelOffset[]) for the "mixe" chunk
+ https://www.nesdev.org/wiki/NSFe
+
+ The information below is kept for archival purposes.
+
+*/
+
+/*
+
  This will mix and synthesize the APU audio using blargg's blip-buffer
 
  Mixing of internal audio relies on Blargg's findings
@@ -50,14 +63,7 @@
 
  ---
 
- Based on findings from the NESDev Wiki: https://wiki.nesdev.org/w/index.php?title=Namco_163_audio#Mixing
- Along with plgDavid's list of details on various N163 cartridge details: https://docs.google.com/spreadsheets/d/12qGAqMeQFleSPEIZFlxrPzH3MTRKXEa1LIQPXSFD4tk
-
- N163:
-	Varies depending on die revision and components of the cartridge.
-	TODO: implement INES 2.0 submapper levels
-
- 5B is still unknown
+ N163 & 5B are still unknown
 
 */
 
