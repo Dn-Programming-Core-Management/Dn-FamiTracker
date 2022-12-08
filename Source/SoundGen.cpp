@@ -880,8 +880,6 @@ bool CSoundGen::ResetAudioDevice()
 		m_pResampleInBuffer = std::make_unique<float[]>(inputBufferSize);
 	}
 
-	int PatchNum = pSettings->Emulation.iVRC7Patch;
-
 	for (int i = 0; i < 7; ++i)
 		DeviceMixOffset[i] = m_pDocument->GetLevelOffset(i);
 
@@ -899,22 +897,32 @@ bool CSoundGen::ResetAudioDevice()
 	SurveyMixLevels.at(CHIP_LEVEL_N163) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixN163);
 	SurveyMixLevels.at(CHIP_LEVEL_S5B) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixS5B);
 
+	int PatchNum = pSettings->Emulation.iVRC7Patch;
+
+	assert(PatchNum <= CAPU::OPLL_TONE_NUM);
+
 	{
+		std::string *pOPLLPatchName{};
+
+		if (PatchNum <= 6)
+			pOPLLPatchName = const_cast<std::string*>(CAPU::OPLL_PATCHNAME_VRC7);
+		else if (PatchNum == 7)
+			pOPLLPatchName = const_cast<std::string*>(CAPU::OPLL_PATCHNAME_YM2413);
+		else if (PatchNum == 8)
+			pOPLLPatchName = const_cast<std::string*>(CAPU::OPLL_PATCHNAME_YMF281B);
+
+		uint8_t *pOPLLPatchByte = const_cast<uint8_t*>(CAPU::OPLL_DEFAULT_PATCHES[PatchNum]);
+
 		// Set OPLL patch to current patchset if not using external OPLL
 		if (!m_pDocument->GetExternalOPLLChipCheck()) {
 			for (int i = 0; i < 19; ++i) {
 				for (int j = 0; j < 8; ++j)
-					m_pDocument->SetOPLLPatchByte((8 * i) + j, CAPU::OPLL_DEFAULT_PATCHES[PatchNum][(8 * i) + j]);
-				// Set OPLL patch names
-				if (PatchNum <= 6)
-					m_pDocument->SetOPLLPatchName(i, CAPU::OPLL_PATCHNAME_VRC7[i]);
-				else if (PatchNum == 7)
-					m_pDocument->SetOPLLPatchName(i, CAPU::OPLL_PATCHNAME_YM2413[i]);
-				else if (PatchNum == 8)
-					m_pDocument->SetOPLLPatchName(i, CAPU::OPLL_PATCHNAME_YMF281B[i]);
+					m_pDocument->SetOPLLPatchByte((8 * i) + j, pOPLLPatchByte[(8 * i) + j]);
+				m_pDocument->SetOPLLPatchName(i, pOPLLPatchName[i]);
 			}
 		}
 
+		// YMF281B and YM2413 are considered external OPLL
 		if (PatchNum > 6) m_pDocument->SetExternalOPLLChipCheck(true);
 		
 		for (int i = 0; i < 19; ++i) {
@@ -938,7 +946,7 @@ bool CSoundGen::ResetAudioDevice()
 			OPLLHardwarePatchNames
 		);
 
-		// Update blip-buffer filtering
+		// Update blip-buffer filtering and hardware-based expansion mixing
 		config.SetupMixer(
 			pSettings->Sound.iBassFilter,
 			pSettings->Sound.iTrebleFilter,

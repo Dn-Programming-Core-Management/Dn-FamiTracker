@@ -193,7 +193,7 @@ private:
 	void StoreChannelLevel(int Channel, int Value);
 	void ClearChannelLevels();
 
-	float GetAttenuation() const;
+	float GetAttenuation(bool UseSurveyMix) const;
 
 private:
 	// Pointer to parent/owning CAPU object.

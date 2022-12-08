@@ -42,7 +42,7 @@ public:
 	void	WriteControl(uint8_t Value);
 	uint8_t	ReadControl();
 	void	Process(uint32_t Time);
-	double	GetFrequency() const;		// // //
+	double	GetFrequency() const override;		// // //
 
 	void	LengthCounterUpdate();
 	void	SweepUpdate(int Diff);

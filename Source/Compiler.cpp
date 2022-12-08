@@ -530,7 +530,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 
 	for (int i = 0; i < 8; i++) {
 		if (m_pDocument->GetLevelOffset(i)) {
-			mixe_device[i] = m_pDocument->GetLevelOffset(i) + mixe_device_default[i];
+			mixe_device[i] = (m_pDocument->GetLevelOffset(i) * 10) + mixe_device_default[i];
 			iMixeSize += 3;
 		}
 	}
@@ -806,7 +806,7 @@ void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
 
 	for (int i = 0; i < 8; i++) {
 		if (m_pDocument->GetLevelOffset(i)) {
-			mixe_device[i] = m_pDocument->GetLevelOffset(i) + mixe_device_default[i];
+			mixe_device[i] = (m_pDocument->GetLevelOffset(i) * 10) + mixe_device_default[i];
 			iMixeSize += 3;
 		}
 	}

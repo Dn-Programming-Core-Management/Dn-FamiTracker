@@ -30,7 +30,7 @@
 #include "../RegisterState.h"		// // //
 
 const float  CVRC7::AMPLIFY = 4.6f;		// Mixing amplification, VRC7 patch 14 is 4, 88 times stronger than a 50 % square @ v = 15
-const uint32_t CVRC7::OPL_CLOCK = CAPU::BASE_FREQ_VRC7;	// Clock frequency
+const uint32_t CVRC7::OPLL_CLOCK = CAPU::BASE_FREQ_VRC7;	// Clock frequency
 
 CVRC7::CVRC7()
 {
@@ -58,7 +58,7 @@ void CVRC7::Reset()
 	m_BlipVRC7.clear();
 	if (m_pOPLLInt != NULL) {
 		OPLL_reset(m_pOPLLInt);
-		OPLL_setChipType(m_pOPLLInt, static_cast<uint8_t>(!m_bUseExternalOPLLChip));		// !! !!
+		// patchset and OPLL type is set in UpdatePatchSet()
 	}
 }
 
@@ -80,10 +80,9 @@ void CVRC7::SetSampleSpeed(uint32_t SampleRate, double ClockRate, uint32_t Frame
 		OPLL_delete(m_pOPLLInt);
 	}
 
-	m_pOPLLInt = OPLL_new(OPL_CLOCK, SampleRate);
+	m_pOPLLInt = OPLL_new(OPLL_CLOCK, SampleRate);
 
 	OPLL_reset(m_pOPLLInt);
-	OPLL_resetPatch(m_pOPLLInt, m_iPatchTone);
 
 	m_iMaxSamples = (SampleRate / FrameRate) * 2;	// Allow some overflow
 
@@ -92,9 +91,9 @@ void CVRC7::SetSampleSpeed(uint32_t SampleRate, double ClockRate, uint32_t Frame
 	memset(m_pBuffer, 0, sizeof(int16_t) * m_iMaxSamples);
 }
 
-void CVRC7::SetVolume(float Volume)
+void CVRC7::SetDirectVolume(double Volume)
 {
-	m_fVolume = Volume;
+	m_DirectVolume = Volume;
 }
 
 void CVRC7::Write(uint16_t Address, uint8_t Value)
@@ -143,8 +142,8 @@ void CVRC7::EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer)
 		for (int i = 0; i < 6; i++)
 			m_ChannelLevels[i].update(static_cast<uint8_t>((255.0 * (OPLL_getchanvol(i) + 1.0)/4096.0)));
 
-		// Apply volume, hacky workaround
-		int32_t Sample = int(float(RawSample) * m_fVolume);
+		// Apply direct volume, hacky workaround
+		int32_t Sample = static_cast<int32_t>(double(RawSample) * m_DirectVolume);
 
 		if (Sample > 32767)
 			Sample = 32767;
@@ -194,10 +193,7 @@ void CVRC7::UpdateMixLevel(double v, bool UseSurveyMix)
 	// TODO: replace emu2413 with Nuked-OPLL for better multiplexing accuracy?
 
 	// hacky solution, since VRC7 uses asynchronous direct buffer writes
-	if (UseSurveyMix)
-		SetVolume(static_cast<float>(v));
-	else
-		SetVolume(static_cast<float>(v * AMPLIFY));
+	SetDirectVolume(UseSurveyMix ? v : (v * AMPLIFY));
 	
 	// emu2413's waveform output ranges from -4095...4095
 	m_SynthVRC7.volume(v, 8191);
@@ -205,14 +201,10 @@ void CVRC7::UpdateMixLevel(double v, bool UseSurveyMix)
 
 void CVRC7::UpdatePatchSet(int PatchSelection, bool UseExternalOPLLChip, uint8_t* PatchSet)
 {
-	m_bUseExternalOPLLChip = UseExternalOPLLChip;
-	m_iPatchTone = PatchSelection;
+	OPLL_setChipType(m_pOPLLInt, (UseExternalOPLLChip ? 0 : 1));
 
-	if (m_bUseExternalOPLLChip) {
+	if (UseExternalOPLLChip)
 		OPLL_setPatch(m_pOPLLInt, PatchSet);
-	}
-	else {
-		// patchset option from NSFPlay
-		OPLL_resetPatch(m_pOPLLInt, m_iPatchTone);
-	}
+	else
+		OPLL_resetPatch(m_pOPLLInt, PatchSelection);
 }

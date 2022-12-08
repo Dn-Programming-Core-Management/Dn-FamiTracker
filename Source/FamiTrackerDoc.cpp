@@ -191,7 +191,7 @@ const char* N163_OFFSET = "n163-offset";
 const char* S5B_OFFSET = "s5b-offset";
 const char* USE_SURVEY_MIX = "use-survey-mix";
 
-void from_json(const json& j, JSONData& d) {
+void from_json(const json& j, stJSONOptionalData& d) {
 	j.at(APU1_OFFSET).get_to(d.APU1_OFFSET);
 	j.at(APU2_OFFSET).get_to(d.APU2_OFFSET);
 	j.at(VRC6_OFFSET).get_to(d.VRC6_OFFSET);
@@ -203,7 +203,7 @@ void from_json(const json& j, JSONData& d) {
 	j.at(USE_SURVEY_MIX).get_to(d.USE_SURVEY_MIX);
 };
 
-void to_json(json& j, const JSONData& d) {
+void to_json(json& j, const stJSONOptionalData& d) {
 	j = json{
 		{ APU1_OFFSET, d.APU1_OFFSET },
 		{ APU2_OFFSET, d.APU2_OFFSET },
@@ -446,7 +446,6 @@ void CFamiTrackerDoc::DeleteContents()
 	m_iExpansionChip = SNDCHIP_NONE;
 	m_iVibratoStyle = VIBRATO_OLD;
 	m_bLinearPitch = DEFAULT_LINEAR_PITCH;
-	for (int i = 0; i < 7; i++) { SetLevelOffset(i, 0); }
 
 	m_iChannelsAvailable = CHANNELS_DEFAULT;
 	m_iSpeedSplitPoint	 = DEFAULT_SPEED_SPLIT_POINT;
@@ -474,29 +473,20 @@ void CFamiTrackerDoc::DeleteContents()
 
 	m_csDocumentLock.Unlock();
 
-	// !! !!
-	m_iAPU1LevelOffset = 0;
-	m_iAPU2LevelOffset = 0;
-	m_iVRC6LevelOffset = 0;
-	m_iVRC7LevelOffset = 0;
-	m_iFDSLevelOffset = 0;
-	m_iMMC5LevelOffset = 0;
-	m_iN163LevelOffset = 0;
-	m_iS5BLevelOffset = 0;
+	for (int i = 0; i < 7; i++) {
+		m_iDeviceLevelOffset[i] = 0;
+	}
 
 	m_bUseSurveyMixing = false;
 
 	m_bUseExternalOPLLChip = false;
 
-	{
-		int bytecount = 0;
-		for (int i = 0; i < 19; i++) {
-			for (int j = 0; j < 8; j++)
-				m_iOPLLPatchBytes[(8 * i) + j] = 0;
-			m_strOPLLPatchNames[i].clear();
-		}
-		m_strOPLLPatchNames[0] = "(custom instrument)";		// patch 0 must always be named "(custom instrument)"
+	for (int i = 0; i < 19; i++) {
+		for (int j = 0; j < 8; j++)
+			m_iOPLLPatchBytes[(8 * i) + j] = 0;
+		m_strOPLLPatchNames[i].clear();
 	}
+	m_strOPLLPatchNames[0] = "(custom instrument)";		// patch 0 must always be named "(custom instrument)"
 
 	CDocument::DeleteContents();
 }
@@ -534,7 +524,21 @@ void CFamiTrackerDoc::CreateEmpty()
 	// Auto-select new style vibrato for new modules
 	m_iVibratoStyle = VIBRATO_NEW;
 	m_bLinearPitch = DEFAULT_LINEAR_PITCH;
-	for (int i = 0; i < 7; i++) { SetLevelOffset(i, 0); }
+
+	for (int i = 0; i < 7; i++) {
+		m_iDeviceLevelOffset[i] = 0;
+	}
+
+	m_bUseSurveyMixing = false;
+
+	m_bUseExternalOPLLChip = false;
+
+	for (int i = 0; i < 19; i++) {
+		for (int j = 0; j < 8; j++)
+			m_iOPLLPatchBytes[(8 * i) + j] = 0;
+		m_strOPLLPatchNames[i].clear();
+	}
+	m_strOPLLPatchNames[0] = "(custom instrument)";		// patch 0 must always be named "(custom instrument)"
 
 	m_iNamcoChannels = 0;		// // //
 
@@ -1434,7 +1438,23 @@ BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 			// Auto-select old style vibrato for old files
 			m_iVibratoStyle = VIBRATO_OLD;
 			m_bLinearPitch = false;
-			for (int i = 0; i < 7; i++) { SetLevelOffset(i, 0); }
+
+			for (int i = 0; i < 7; i++) {
+				m_iDeviceLevelOffset[i] = 0;
+			}
+
+			m_bUseSurveyMixing = false;
+
+			m_bUseExternalOPLLChip = false;
+
+			for (int i = 0; i < 19; i++) {
+				for (int j = 0; j < 8; j++)
+					m_iOPLLPatchBytes[(8 * i) + j] = 0;
+				m_strOPLLPatchNames[i].clear();
+			}
+			m_strOPLLPatchNames[0] = "(custom instrument)";		// patch 0 must always be named "(custom instrument)"
+
+			m_iNamcoChannels = 0;		// // //
 		}
 		else {
 			if (!OpenDocumentNew(OpenFile))
@@ -1482,7 +1502,23 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 
 	m_iVibratoStyle = VIBRATO_OLD;
 	m_bLinearPitch = false;
-	for (int i = 0; i < 7; i++) { SetLevelOffset(i, 0); }
+
+	for (int i = 0; i < 7; i++) {
+		m_iDeviceLevelOffset[i] = 0;
+	}
+
+	m_bUseSurveyMixing = false;
+
+	m_bUseExternalOPLLChip = false;
+
+	for (int i = 0; i < 19; i++) {
+		for (int j = 0; j < 8; j++)
+			m_iOPLLPatchBytes[(8 * i) + j] = 0;
+		m_strOPLLPatchNames[i].clear();
+	}
+	m_strOPLLPatchNames[0] = "(custom instrument)";		// patch 0 must always be named "(custom instrument)"
+
+	m_iNamcoChannels = 0;		// // //
 
 	// // // local structs
 	struct {
@@ -2669,8 +2705,8 @@ bool CFamiTrackerDoc::WriteBlock_Bookmarks(CDocumentFile *pDocFile, const int Ve
 
 void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile *pDocFile, const int Version)
 {
-	const JSONData JDataDefault;
-	const json DEFAULT = JDataDefault;
+	const stJSONOptionalData DnDefaultJSONData;
+	const json DEFAULT = DnDefaultJSONData;
 	json out = DEFAULT;
 
 	CT2A fileData(pDocFile->ReadString());
@@ -2691,31 +2727,38 @@ void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile *pDocFile, const int Version)
 		AfxMessageBox(conv::to_t(std::move(err)).c_str(), MB_ICONWARNING);
 	}
 
-	if (JDataDefault.APU1_OFFSET != out[APU1_OFFSET]) SetLevelOffset(0, out[APU1_OFFSET]);
-	if (JDataDefault.APU2_OFFSET != out[APU2_OFFSET]) SetLevelOffset(1, out[APU2_OFFSET]);
-	if (JDataDefault.VRC6_OFFSET != out[VRC6_OFFSET]) SetLevelOffset(2, out[VRC6_OFFSET]);
-	if (JDataDefault.VRC7_OFFSET != out[VRC7_OFFSET]) SetLevelOffset(3, out[VRC7_OFFSET]);
-	if (JDataDefault.FDS_OFFSET != out[FDS_OFFSET]) SetLevelOffset(4, out[FDS_OFFSET]);
-	if (JDataDefault.MMC5_OFFSET != out[MMC5_OFFSET]) SetLevelOffset(5, out[MMC5_OFFSET]);
-	if (JDataDefault.N163_OFFSET != out[N163_OFFSET]) SetLevelOffset(6, out[N163_OFFSET]);
-	if (JDataDefault.S5B_OFFSET != out[S5B_OFFSET]) SetLevelOffset(7, out[S5B_OFFSET]);
-	if (out.at(USE_SURVEY_MIX)) SetSurveyMixCheck(out[USE_SURVEY_MIX]);
+	// If unchanged, stop loading data
+	if (out == DEFAULT) return;
+
+	// TODO: find a better way to transfer data between JSON and interface
+	SetLevelOffset(0, out.at(APU1_OFFSET));
+	SetLevelOffset(1, out.at(APU2_OFFSET));
+	SetLevelOffset(2, out.at(VRC6_OFFSET));
+	SetLevelOffset(3, out.at(VRC7_OFFSET));
+	SetLevelOffset(4, out.at(FDS_OFFSET));
+	SetLevelOffset(5, out.at(MMC5_OFFSET));
+	SetLevelOffset(6, out.at(N163_OFFSET));
+	SetLevelOffset(7, out.at(S5B_OFFSET));
+
+	SetSurveyMixCheck(out.at(USE_SURVEY_MIX));
 }
 
 bool CFamiTrackerDoc::WriteBlock_JSON(CDocumentFile *pDocFile, const int Version) const
 {
-	const JSONData JDataDefault;
-
 	json j;
-	if (GetLevelOffset(0)) j[APU1_OFFSET] = GetLevelOffset(0);
-	if (GetLevelOffset(1)) j[APU2_OFFSET] = GetLevelOffset(0);
-	if (GetLevelOffset(2)) j[VRC6_OFFSET] = GetLevelOffset(2);
-	if (GetLevelOffset(3)) j[VRC7_OFFSET] = GetLevelOffset(3);
-	if (GetLevelOffset(4)) j[FDS_OFFSET] = GetLevelOffset(4);
-	if (GetLevelOffset(5)) j[MMC5_OFFSET] = GetLevelOffset(5);
-	if (GetLevelOffset(6)) j[N163_OFFSET] = GetLevelOffset(6);
-	if (GetLevelOffset(7)) j[S5B_OFFSET] = GetLevelOffset(7);
-	if (GetSurveyMixCheck()) j[USE_SURVEY_MIX] = GetSurveyMixCheck();
+	const stJSONOptionalData DEFAULT;
+
+	// TODO: find a better way to transfer data between JSON and interface
+	if (GetLevelOffset(0) != DEFAULT.APU1_OFFSET) j[APU1_OFFSET] = GetLevelOffset(0);
+	if (GetLevelOffset(1) != DEFAULT.APU2_OFFSET) j[APU2_OFFSET] = GetLevelOffset(0);
+	if (GetLevelOffset(2) != DEFAULT.VRC6_OFFSET) j[VRC6_OFFSET] = GetLevelOffset(2);
+	if (GetLevelOffset(3) != DEFAULT.VRC7_OFFSET) j[VRC7_OFFSET] = GetLevelOffset(3);
+	if (GetLevelOffset(4) != DEFAULT.FDS_OFFSET) j[FDS_OFFSET] = GetLevelOffset(4);
+	if (GetLevelOffset(5) != DEFAULT.MMC5_OFFSET) j[MMC5_OFFSET] = GetLevelOffset(5);
+	if (GetLevelOffset(6) != DEFAULT.N163_OFFSET) j[N163_OFFSET] = GetLevelOffset(6);
+	if (GetLevelOffset(7) != DEFAULT.S5B_OFFSET) j[S5B_OFFSET] = GetLevelOffset(7);
+
+	if (GetSurveyMixCheck() != DEFAULT.USE_SURVEY_MIX) j[USE_SURVEY_MIX] = GetSurveyMixCheck();
 
 	if (j.empty())
 		return true;
@@ -4482,71 +4525,15 @@ void CFamiTrackerDoc::SetSurveyMixCheck(bool SurveyMix)
 // Device level offset
 int16_t CFamiTrackerDoc::GetLevelOffset(int device) const
 {
-	switch (device) {
-	case 0: return m_iAPU1LevelOffset;
-	case 1: return m_iAPU2LevelOffset;
-	case 2: return m_iVRC6LevelOffset;
-	case 3: return m_iVRC7LevelOffset;
-	case 4: return m_iFDSLevelOffset;
-	case 5: return m_iMMC5LevelOffset;
-	case 6: return m_iN163LevelOffset;
-	case 7: return m_iS5BLevelOffset;
-	default: return 0;
-	}
+	return m_iDeviceLevelOffset[device];
 }
 
 // DocumentPropertiesChanged calls GetLevelOffset() and updates synth if modified.
 void CFamiTrackerDoc::SetLevelOffset(int device, int16_t offset)
 {
-	switch (device) {
-	case 0:
-		if (m_iAPU1LevelOffset != offset) {
-			ModifyIrreversible();
-			m_iAPU1LevelOffset = offset;
-		}
-		break;
-	case 1:
-		if (m_iAPU2LevelOffset != offset) {
-			ModifyIrreversible();
-			m_iAPU2LevelOffset = offset;
-		}
-		break;
-	case 2:
-		if (m_iVRC6LevelOffset != offset) {
-			ModifyIrreversible();
-			m_iVRC6LevelOffset = offset;
-		}
-		break;
-	case 3:
-		if (m_iVRC7LevelOffset != offset) {
-			ModifyIrreversible();
-			m_iVRC7LevelOffset = offset;
-		}
-		break;
-	case 4:
-		if (m_iFDSLevelOffset != offset) {
-			ModifyIrreversible();
-			m_iFDSLevelOffset = offset;
-		}
-		break;
-	case 5:
-		if (m_iMMC5LevelOffset != offset) {
-			ModifyIrreversible();
-			m_iMMC5LevelOffset = offset;
-		}
-		break;
-	case 6:
-		if (m_iN163LevelOffset != offset) {
-			ModifyIrreversible();
-			m_iN163LevelOffset = offset;
-		}
-		break;
-	case 7:
-		if (m_iS5BLevelOffset != offset) {
-			ModifyIrreversible();
-			m_iS5BLevelOffset = offset;
-		}
-		break;
+	if (m_iDeviceLevelOffset[device] != offset) {
+		ModifyIrreversible();
+		m_iDeviceLevelOffset[device] = offset;
 	}
 }
 

@@ -614,7 +614,8 @@ void CAPUConfig::SetChipLevel(chip_level_t Chip, float LeveldB)
 	m_ChipLevels[Chip] = LevelLinear;
 }
 
-CAPUConfig::~CAPUConfig() noexcept(false) {
+CAPUConfig::~CAPUConfig() noexcept(false)
+{
 	// if unwinding, skip reconfiguring CAPU.
 	// it would be a *lot* easier to simply not call ~CAPUConfig in the unwind table...
 	// but C++ makes many simple things complicated and slow.
@@ -652,37 +653,24 @@ CAPUConfig::~CAPUConfig() noexcept(false) {
 	if (m_MixerConfig) {
 		auto& cfg = *m_MixerConfig;
 
-		// Override legacy expansion chip level mixing
-		// when using survey hardware levels
+		// Override expansion chip level mixing when using survey hardware levels
 		if (cfg.UseSurveyMix) {
+			// Compensate for blip_buffer output scaling differences
+			// Issue with rounding errors?
+			int16_t outputlevelcorrection[CHIP_LEVEL_COUNT]{
+				0,		// APU1
+				-13,	// APU2
+				-494,	// VRC6
+				776,	// VRC7
+				-1700,	// FDS
+				869,	// MMC5
+				-1681,	// N163
+				108		// S5B
+			};
+
 			for (int chip = 0; chip < CHIP_LEVEL_COUNT; chip++) {
-				int16_t surveylevel = cfg.SurveyMixLevels[chip];
-				
-				// compensate for blip_buffer output scaling differences
-				// issue with rounding errors?
-				switch (chip) {
-				case CHIP_LEVEL_APU2:
-					surveylevel -= 13;
-					break;
-				case CHIP_LEVEL_VRC6:
-					surveylevel -= 494;
-					break;
-				case CHIP_LEVEL_VRC7:
-					surveylevel += 776;
-					break;
-				case CHIP_LEVEL_FDS:
-					surveylevel -= 1700;
-					break;
-				case CHIP_LEVEL_MMC5:
-					surveylevel += 869;
-					break;
-				case CHIP_LEVEL_N163:
-					surveylevel -= 1681;
-					break;
-				case CHIP_LEVEL_S5B:
-					surveylevel += 108;
-					break;
-				}
+				int16_t surveylevel = cfg.SurveyMixLevels[chip] + outputlevelcorrection[chip];
+
 				if (surveylevel) {
 					float LevelLinear = powf(10, ((static_cast<float>((cfg.DeviceMixOffsets[chip] * 10) + surveylevel) / 100.0f)) / 20.0f);
 					m_Mixer->SetChipLevel((chip_level_t)chip, LevelLinear);

@@ -42,6 +42,7 @@ public:
 	virtual void	Write(uint16_t Address, uint8_t Value) = 0;
 	virtual uint8_t	Read(uint16_t Address, bool &Mapped) = 0;
 
+	// TODO: unify with definitions in DetuneTable.cpp?
 	virtual double	GetFreq(int Channel) const;		// // //
 
 	virtual void	Log(uint16_t Address, uint8_t Value);		// // //

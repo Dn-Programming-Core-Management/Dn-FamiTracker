@@ -43,7 +43,7 @@ public:
 	uint32_t GetTime();
 	void Output(uint32_t Noise, uint32_t Envelope);
 
-	double GetFrequency() const;
+	double GetFrequency() const override;
 
 private:
 	uint8_t m_iVolume;
@@ -69,7 +69,7 @@ public:
 	uint8_t	Read(uint16_t Address, bool &Mapped);
 	void	Log(uint16_t Address, uint8_t Value);		// // //
 
-	double	GetFreq(int Channel) const;		// // //
+	double	GetFreq(int Channel) const override;		// // //
 
 private:
 	void	WriteReg(uint8_t Port, uint8_t Value);

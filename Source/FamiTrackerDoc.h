@@ -71,7 +71,7 @@ struct stSequence {
 
 // Dn-FT JSON block format version 1.1
 // https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/wiki/JSON-block-format
-struct JSONData {
+struct stJSONOptionalData {
 	// Device mixing offsets, described in centibels. too late to change to millibels.
 	// range is +- 12 db.
 	int16_t APU1_OFFSET = 0;
@@ -83,7 +83,7 @@ struct JSONData {
 	int16_t N163_OFFSET = 0;
 	int16_t S5B_OFFSET = 0;
 
-	// Use better mixing values derived from survey: https://forums.nesdev.org/viewtopic.php?f=2&t=17741
+	// Use hardware based mixing values derived from survey: https://forums.nesdev.org/viewtopic.php?f=2&t=17741
 	bool USE_SURVEY_MIX = false;
 };
 
@@ -560,16 +560,10 @@ private:
 	uint8_t			m_iOPLLPatchBytes[19 * 8];
 	std::string		m_strOPLLPatchNames[19];
 
-	// Optional properties
-	int16_t			m_iAPU1LevelOffset;							// !! !! Device level offsets, described in centibels
-	int16_t			m_iAPU2LevelOffset;
-	int16_t			m_iVRC6LevelOffset;
-	int16_t			m_iVRC7LevelOffset;
-	int16_t			m_iFDSLevelOffset;
-	int16_t			m_iMMC5LevelOffset;
-	int16_t			m_iN163LevelOffset;
-	int16_t			m_iS5BLevelOffset;
-	bool			m_bUseSurveyMixing;							// !! !! Use better mixing values derived from survey: https://forums.nesdev.org/viewtopic.php?f=2&t=17741
+	// JSON Optional properties
+	int16_t			m_iDeviceLevelOffset[8];		// !! !! Device level offsets, described in centibels
+
+	bool			m_bUseSurveyMixing;							// !! !! Use hardware-based mixing values, derived from survey: https://forums.nesdev.org/viewtopic.php?f=2&t=17741
 
 	// NSF info
 	char			m_strName[32];								// Song name

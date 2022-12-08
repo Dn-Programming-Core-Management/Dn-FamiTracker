@@ -140,36 +140,50 @@ void CMixer::SetChipLevel(chip_level_t Chip, float Level)
 	}
 }
 
-float CMixer::GetAttenuation() const
+float CMixer::GetAttenuation(bool UseSurveyMix) const
 {
 	float Attenuation = 1.0f;
-	const float ATTENUATION_VRC6 = 0.80f;
-	const float ATTENUATION_VRC7 = 0.64f;
-	const float ATTENUATION_MMC5 = 0.83f;
-	const float ATTENUATION_FDS = 0.90f;
-	const float ATTENUATION_N163 = 0.70f;
-	const float ATTENUATION_S5B = 0.50f;		// // // 050B
 
-	// Increase headroom if some expansion chips are enabled
+	if (!UseSurveyMix) {
+		const float ATTENUATION_VRC6 = 0.80f;
+		const float ATTENUATION_VRC7 = 0.64f;
+		const float ATTENUATION_MMC5 = 0.83f;
+		const float ATTENUATION_FDS = 0.90f;
+		const float ATTENUATION_N163 = 0.70f;
+		const float ATTENUATION_S5B = 0.50f;		// // // 050B
 
-	if (m_iExternalChip & SNDCHIP_VRC6)
-		Attenuation *= ATTENUATION_VRC6;
+		// Increase headroom if some expansion chips are enabled
 
-	if (m_iExternalChip & SNDCHIP_VRC7)
-		Attenuation *= ATTENUATION_VRC7;
+		if (m_iExternalChip & SNDCHIP_VRC6)
+			Attenuation *= ATTENUATION_VRC6;
 
-	if (m_iExternalChip & SNDCHIP_FDS)
-		Attenuation *= ATTENUATION_FDS;
+		if (m_iExternalChip & SNDCHIP_VRC7)
+			Attenuation *= ATTENUATION_VRC7;
 
-	if (m_iExternalChip & SNDCHIP_MMC5)
-		Attenuation *= ATTENUATION_MMC5;
+		if (m_iExternalChip & SNDCHIP_FDS)
+			Attenuation *= ATTENUATION_FDS;
 
-	if (m_iExternalChip & SNDCHIP_N163)
-		Attenuation *= ATTENUATION_N163;
+		if (m_iExternalChip & SNDCHIP_MMC5)
+			Attenuation *= ATTENUATION_MMC5;
 
-	if (m_iExternalChip & SNDCHIP_S5B)		// // // 050B
-	Attenuation *= ATTENUATION_S5B;
+		if (m_iExternalChip & SNDCHIP_N163)
+			Attenuation *= ATTENUATION_N163;
 
+		if (m_iExternalChip & SNDCHIP_S5B)		// // // 050B
+			Attenuation *= ATTENUATION_S5B;
+	}
+	else {
+		// attenuation scaling is exponential based on total chips used
+		uint8_t TotalChipsUsed = 1;
+		if (m_iExternalChip & SNDCHIP_VRC6) TotalChipsUsed++;
+		if (m_iExternalChip & SNDCHIP_VRC7) TotalChipsUsed++;
+		if (m_iExternalChip & SNDCHIP_FDS) TotalChipsUsed++;
+		if (m_iExternalChip & SNDCHIP_MMC5) TotalChipsUsed++;
+		if (m_iExternalChip & SNDCHIP_N163) TotalChipsUsed++;
+		if (m_iExternalChip & SNDCHIP_S5B) TotalChipsUsed++;
+
+		Attenuation *= static_cast<float>(1.0 / (float)TotalChipsUsed);
+	}
 
 	return Attenuation;
 }
@@ -185,6 +199,12 @@ void CMixer::RecomputeEmuMixState()
 
 	blip_eq_t eq(-HighDamp, HighCut, m_iSampleRate);
 
+	// See https://docs.google.com/document/d/19vtipTYI-vqL3-BPrE9HPjHmPpkFuIZKvWfevP3Oo_A/edit#heading=h.h70ipevgjbn7
+	// for an exploration of how I came to this design.
+	for (auto* chip : m_APU->m_SoundChips2) {
+		chip->UpdateFilter(eq);
+	}
+
 	SynthVRC6.treble_eq(eq);
 	SynthMMC5.treble_eq(eq);
 	SynthS5B.treble_eq(eq);
@@ -195,35 +215,12 @@ void CMixer::RecomputeEmuMixState()
 	auto &chipFDS = *m_APU->m_pFDS;
 	auto &chipN163 = *m_APU->m_pN163;
 
-	// See https://docs.google.com/document/d/19vtipTYI-vqL3-BPrE9HPjHmPpkFuIZKvWfevP3Oo_A/edit#heading=h.h70ipevgjbn7
-	// for an exploration of how I came to this design.
-	for (auto* chip : m_APU->m_SoundChips2) {
-		chip->UpdateFilter(eq);
-	}
-
 	bool UseSurveyMixing = m_MixerConfig.UseSurveyMix;
 
-	float Attenuation = 1.0f;
-
-	if (UseSurveyMixing) {
-		// attenuation scaling is exponential based on total chips used
-		uint8_t TotalChipsUsed = 1;
-		if (m_iExternalChip & SNDCHIP_VRC6) TotalChipsUsed++;
-		if (m_iExternalChip & SNDCHIP_VRC7) TotalChipsUsed++;
-		if (m_iExternalChip & SNDCHIP_FDS) TotalChipsUsed++;
-		if (m_iExternalChip & SNDCHIP_MMC5) TotalChipsUsed++;
-		if (m_iExternalChip & SNDCHIP_N163) TotalChipsUsed++;
-		if (m_iExternalChip & SNDCHIP_S5B) TotalChipsUsed++;
-
-		Attenuation *= static_cast<float>(1.0 / (float)TotalChipsUsed);
-	}
-
-	else {
-		Attenuation = GetAttenuation();
-	}
-
-	float Volume = m_MixerConfig.OverallVol * Attenuation;
+	float Volume = m_MixerConfig.OverallVol * GetAttenuation(UseSurveyMixing);
 	
+	// Update mixing
+
 	// Maybe the range argument, as well as the constant factor in the volume,
 	// should be supplied by the CSoundChip2 subclass rather than CMixer.
 	chip2A03.UpdateMixingAPU1(Volume * m_fLevelAPU1);
@@ -246,10 +243,14 @@ void CMixer::RecomputeEmuMixState()
 		SynthMMC5.volume(Volume * 1.18421f * m_fLevelMMC5, 130);
 		SynthS5B.volume(Volume * m_fLevelS5B, 1200);  // Not checked
 	}
+
+	// Update per-chip filtering and emulation
+
 	chipN163.UpdateN163Filter(m_MixerConfig.N163Lowpass, m_EmulatorConfig.N163DisableMultiplexing);
 	chipFDS.UpdateFDSFilter(m_MixerConfig.FDSLowpass);
 
 	uint8_t patchdump[19 * 8];
+
 	for (int i = 0; i < 19 * 8; ++i)
 		patchdump[i] = m_EmulatorConfig.UseOPLLPatchBytes.at(i);
 
