@@ -902,36 +902,15 @@ bool CSoundGen::ResetAudioDevice()
 	assert(PatchNum <= CAPU::OPLL_TONE_NUM);
 
 	{
-		std::string *pOPLLPatchName{};
+		UseExtOPLL = m_pDocument->GetExternalOPLLChipCheck();
 
-		if (PatchNum <= 6)
-			pOPLLPatchName = const_cast<std::string*>(CAPU::OPLL_PATCHNAME_VRC7);
-		else if (PatchNum == 7)
-			pOPLLPatchName = const_cast<std::string*>(CAPU::OPLL_PATCHNAME_YM2413);
-		else if (PatchNum == 8)
-			pOPLLPatchName = const_cast<std::string*>(CAPU::OPLL_PATCHNAME_YMF281B);
-
-		uint8_t *pOPLLPatchByte = const_cast<uint8_t*>(CAPU::OPLL_DEFAULT_PATCHES[PatchNum]);
-
-		// Set OPLL patch to current patchset if not using external OPLL
-		if (!m_pDocument->GetExternalOPLLChipCheck()) {
+		if (UseExtOPLL) {
 			for (int i = 0; i < 19; ++i) {
 				for (int j = 0; j < 8; ++j)
-					m_pDocument->SetOPLLPatchByte((8 * i) + j, pOPLLPatchByte[(8 * i) + j]);
-				m_pDocument->SetOPLLPatchName(i, pOPLLPatchName[i]);
+					OPLLHardwarePatchBytes.at((8 * i) + j) = m_pDocument->GetOPLLPatchByte((8 * i) + j);
+				OPLLHardwarePatchNames.at(i) = m_pDocument->GetOPLLPatchName(i);
 			}
 		}
-
-		// YMF281B and YM2413 are considered external OPLL
-		if (PatchNum > 6) m_pDocument->SetExternalOPLLChipCheck(true);
-		
-		for (int i = 0; i < 19; ++i) {
-			for (int j = 0; j < 8; ++j)
-				OPLLHardwarePatchBytes.at((8 * i) + j) = m_pDocument->GetOPLLPatchByte((8 * i) + j);
-			OPLLHardwarePatchNames.at(i) = m_pDocument->GetOPLLPatchName(i);
-		}
-
-		UseExtOPLL = m_pDocument->GetExternalOPLLChipCheck();
 	}
 
 	{

@@ -291,12 +291,14 @@ BOOL CModulePropertiesDlg::OnInitDialog()
 		updateDeviceMixOffsetUI(i);
 	}
 
+
 	// Hardware-based mixing
 	m_bSurveyMixing = m_pDocument->GetSurveyMixCheck();
 	((CButton*)GetDlgItem(IDC_SURVEY_MIXING))->SetCheck(m_bSurveyMixing);
 
 	// OPLL patch bytes and patch names
 	m_bExternalOPLL = m_pDocument->GetExternalOPLLChipCheck();
+
 	((CButton*)GetDlgItem(IDC_EXTERNAL_OPLL))->SetCheck(m_bExternalOPLL);
 	for (int i = 0; i < 19; ++i) {
 		m_cOPLLPatchLabel[i].SubclassDlgItem(IDC_STATIC_PATCH[i], this);
@@ -305,8 +307,12 @@ BOOL CModulePropertiesDlg::OnInitDialog()
 		for (int j = 0; j < 8; j++)
 			m_iOPLLPatchBytes[(8 * i) + j] = m_pDocument->GetOPLLPatchByte((8 * i) + j);
 		m_strOPLLPatchNames[i] = m_pDocument->GetOPLLPatchName(i);
-		updateExternallOPLLUI(i);
 	}
+
+	// Update UI after, since this updates all components at once,
+	// and all window objects need to be valid at this point
+	for (int i = 0; i < 19; i++)
+		updateExternallOPLLUI(i);
 
 	// Namco channel count
 	CSliderCtrl *pChanSlider = static_cast<CSliderCtrl*>(GetDlgItem(IDC_CHANNELS));
@@ -372,18 +378,19 @@ void CModulePropertiesDlg::OnBnClickedOk()
 
 	// Device mix offset
 	for (int i = 0; i < 8; i++)
-		if (m_pDocument->GetLevelOffset(i) != m_iDeviceLevelOffset[i]) m_pDocument->SetLevelOffset(i, -m_iDeviceLevelOffset[i]);
+		m_pDocument->SetLevelOffset(i, -m_iDeviceLevelOffset[i]);
 
 	// Hardware-based mixing
 	m_pDocument->SetSurveyMixCheck(m_bSurveyMixing);
 
 	// Externall OPLL
+	m_pDocument->SetExternalOPLLChipCheck(m_bExternalOPLL);
+
 	for (int i = 0; i < 19; i++) {
 		for (int j = 0; j < 8; j++)
 			m_pDocument->SetOPLLPatchByte((8 * i) + j, m_iOPLLPatchBytes[(8 * i) + j]);
 		m_pDocument->SetOPLLPatchName(i, m_strOPLLPatchNames[i]);
 	}
-	m_pDocument->SetExternalOPLLChipCheck(m_bExternalOPLL);
 
 	if (pMainFrame->GetSelectedTrack() != m_iSelectedSong)
 		pMainFrame->SelectTrack(m_iSelectedSong);
@@ -943,11 +950,13 @@ void CModulePropertiesDlg::OnEnChangeS5bOffsetEdit()
 // Externall OPLL UI
 void CModulePropertiesDlg::updateExternallOPLLUI(int patchnum, bool renderText)
 {
-	// Enable/disable UI.
+	bool ValidOPLLState = m_bExternalOPLL && (m_iExpansions & SNDCHIP_VRC7);
+
+	// Enable/disable entire UI.
 	for (int i = 0; i < 19; i++) {
-		m_cOPLLPatchLabel[i].EnableWindow(m_bExternalOPLL);
-		m_cOPLLPatchBytesEdit[i].EnableWindow(m_bExternalOPLL);
-		m_cOPLLPatchNameEdit[i].EnableWindow(m_bExternalOPLL);
+		m_cOPLLPatchLabel[i].EnableWindow(ValidOPLLState);
+		m_cOPLLPatchBytesEdit[i].EnableWindow(ValidOPLLState);
+		m_cOPLLPatchNameEdit[i].EnableWindow(ValidOPLLState);
 	}
 
 	// Redraw UI.
@@ -993,7 +1002,7 @@ uint8_t CModulePropertiesDlg::PatchTextToBytes(LPCTSTR pString, int index)
 
 void CModulePropertiesDlg::OnBnClickedExternalOpll()
 {
-	m_bExternalOPLL = (((CButton*)GetDlgItem(IDC_EXTERNAL_OPLL))->GetCheck() == BST_CHECKED);
+	m_bExternalOPLL = ((CButton*)GetDlgItem(IDC_EXTERNAL_OPLL))->GetCheck() == BST_CHECKED;
 
 	for (int i = 0; i < 19; i++)
 		updateExternallOPLLUI(i);

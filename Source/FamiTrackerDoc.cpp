@@ -481,11 +481,32 @@ void CFamiTrackerDoc::DeleteContents()
 
 	m_bUseExternalOPLLChip = false;
 
+	int DefaultPatchSetNumber = theApp.GetSettings()->Emulation.iVRC7Patch;
+
+	// YM2413 and YMF281B are considered external OPLL
+	if (DefaultPatchSetNumber > 6)
+		m_bUseExternalOPLLChip = true;
+
+	// Set to current default OPLL patchset
 	for (int i = 0; i < 19; i++) {
-		for (int j = 0; j < 8; j++)
-			m_iOPLLPatchBytes[(8 * i) + j] = 0;
-		m_strOPLLPatchNames[i].clear();
+		for (int j = 0; j < 8; j++) {
+			if (i == 0)
+				m_iOPLLPatchBytes[(8 * i) + j] = 0;
+			m_iOPLLPatchBytes[(8 * i) + j] = CAPU::OPLL_DEFAULT_PATCHES[DefaultPatchSetNumber][(8 * i) + j];
+		}
+		switch (DefaultPatchSetNumber) {
+		case 7:
+			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YM2413[i];
+			break;
+		case 8:
+			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YMF281B[i];
+			break;
+		default:
+			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_VRC7[i];
+			break;
+		}
 	}
+
 	m_strOPLLPatchNames[0] = "(custom instrument)";		// patch 0 must always be named "(custom instrument)"
 
 	CDocument::DeleteContents();
@@ -533,12 +554,31 @@ void CFamiTrackerDoc::CreateEmpty()
 
 	m_bUseExternalOPLLChip = false;
 
+	int DefaultPatchSetNumber = theApp.GetSettings()->Emulation.iVRC7Patch;
+
+	// YM2413 and YMF281B are considered external OPLL
+	if (DefaultPatchSetNumber > 6)
+		m_bUseExternalOPLLChip = true;
+
+	// Set to current default OPLL patchset
 	for (int i = 0; i < 19; i++) {
-		for (int j = 0; j < 8; j++)
-			m_iOPLLPatchBytes[(8 * i) + j] = 0;
-		m_strOPLLPatchNames[i].clear();
+		for (int j = 0; j < 8; j++) {
+			if (i == 0)
+				m_iOPLLPatchBytes[(8 * i) + j] = 0;
+			m_iOPLLPatchBytes[(8 * i) + j] = CAPU::OPLL_DEFAULT_PATCHES[DefaultPatchSetNumber][(8 * i) + j];
+		}
+		switch (DefaultPatchSetNumber) {
+		case 7:
+			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YM2413[i];
+			break;
+		case 8:
+			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YMF281B[i];
+			break;
+		default:
+			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_VRC7[i];
+			break;
+		}
 	}
-	m_strOPLLPatchNames[0] = "(custom instrument)";		// patch 0 must always be named "(custom instrument)"
 
 	m_iNamcoChannels = 0;		// // //
 
@@ -1333,7 +1373,11 @@ bool CFamiTrackerDoc::WriteBlock_Patterns(CDocumentFile *pDocFile, const int Ver
 							int EffColumns = (m_pTracks[t]->GetEffectColumnCount(i) + 1);
 
 							for (int n = 0; n < EffColumns; n++) {
-								pDocFile->WriteBlockChar(EFF_CONVERSION_050.second[Note->EffNumber[n]]);		// // // 050B
+								// TODO: beta 0.5.0 compatibility mode
+								if (false)
+									pDocFile->WriteBlockChar(EFF_CONVERSION_050.second[Note->EffNumber[n]]);		// // // 050B
+								else
+									pDocFile->WriteBlockChar(Note->EffNumber[n]);
 								pDocFile->WriteBlockChar(Note->EffParam[n]);
 							}
 						}
@@ -1444,15 +1488,34 @@ BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 			}
 
 			m_bUseSurveyMixing = false;
-
+			
 			m_bUseExternalOPLLChip = false;
 
+			int DefaultPatchSetNumber = theApp.GetSettings()->Emulation.iVRC7Patch;
+
+			// YM2413 and YMF281B are considered external OPLL
+			if (DefaultPatchSetNumber > 6)
+				m_bUseExternalOPLLChip = true;
+
+			// Set to current default OPLL patchset
 			for (int i = 0; i < 19; i++) {
-				for (int j = 0; j < 8; j++)
-					m_iOPLLPatchBytes[(8 * i) + j] = 0;
-				m_strOPLLPatchNames[i].clear();
+				for (int j = 0; j < 8; j++) {
+					if (i == 0)
+						m_iOPLLPatchBytes[(8 * i) + j] = 0;
+					m_iOPLLPatchBytes[(8 * i) + j] = CAPU::OPLL_DEFAULT_PATCHES[DefaultPatchSetNumber][(8 * i) + j];
+				}
+				switch (DefaultPatchSetNumber) {
+				case 7:
+					m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YM2413[i];
+					break;
+				case 8:
+					m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YMF281B[i];
+					break;
+				default:
+					m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_VRC7[i];
+					break;
+				}
 			}
-			m_strOPLLPatchNames[0] = "(custom instrument)";		// patch 0 must always be named "(custom instrument)"
 
 			m_iNamcoChannels = 0;		// // //
 		}
@@ -1511,12 +1574,31 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 
 	m_bUseExternalOPLLChip = false;
 
+	int DefaultPatchSetNumber = theApp.GetSettings()->Emulation.iVRC7Patch;
+
+	// YM2413 and YMF281B are considered external OPLL
+	if (DefaultPatchSetNumber > 6)
+		m_bUseExternalOPLLChip = true;
+
+	// Set to current default OPLL patchset
 	for (int i = 0; i < 19; i++) {
-		for (int j = 0; j < 8; j++)
-			m_iOPLLPatchBytes[(8 * i) + j] = 0;
-		m_strOPLLPatchNames[i].clear();
+		for (int j = 0; j < 8; j++) {
+			if (i == 0)
+				m_iOPLLPatchBytes[(8 * i) + j] = 0;
+			m_iOPLLPatchBytes[(8 * i) + j] = CAPU::OPLL_DEFAULT_PATCHES[DefaultPatchSetNumber][(8 * i) + j];
+		}
+		switch (DefaultPatchSetNumber) {
+		case 7:
+			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YM2413[i];
+			break;
+		case 8:
+			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YMF281B[i];
+			break;
+		default:
+			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_VRC7[i];
+			break;
+		}
 	}
-	m_strOPLLPatchNames[0] = "(custom instrument)";		// patch 0 must always be named "(custom instrument)"
 
 	m_iNamcoChannels = 0;		// // //
 
@@ -2795,37 +2877,82 @@ bool CFamiTrackerDoc::WriteBlock_ParamsExtra(CDocumentFile *pDocFile, const int 
 
 void CFamiTrackerDoc::ReadBlock_ParamsEmu(CDocumentFile* pDocFile, const int Version)
 {
+	int DefaultPatchSetNumber = theApp.GetSettings()->Emulation.iVRC7Patch;
+
 	m_bUseExternalOPLLChip = (pDocFile->GetBlockInt() != 0);
 
-	for (int i = 0; i < 19; i++) {
-		for (int j = 0; j < 8; j++)
-			m_iOPLLPatchBytes[(8 * i) + j] = static_cast<uint8_t>(pDocFile->GetBlockChar());
-		m_strOPLLPatchNames[i] = std::string(pDocFile->ReadString());
+	if (!m_bUseExternalOPLLChip) {
+		// YM2413 and YMF281B are considered external OPLL
+		if (DefaultPatchSetNumber > 6)
+			m_bUseExternalOPLLChip = true;
+
+		// Set to current default OPLL patchset
+		for (int i = 0; i < 19; i++) {
+			for (int j = 0; j < 8; j++) {
+				if (i == 0)
+					m_iOPLLPatchBytes[(8 * i) + j] = 0;
+				m_iOPLLPatchBytes[(8 * i) + j] = CAPU::OPLL_DEFAULT_PATCHES[DefaultPatchSetNumber][(8 * i) + j];
+			}
+			switch (DefaultPatchSetNumber) {
+			case 7:
+				m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YM2413[i];
+				break;
+			case 8:
+				m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YMF281B[i];
+				break;
+			default:
+				m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_VRC7[i];
+				break;
+			}
+		}
+	}
+	else {
+		for (int i = 0; i < 19; i++) {
+			for (int j = 0; j < 8; j++)
+				m_iOPLLPatchBytes[(8 * i) + j] = static_cast<uint8_t>(pDocFile->GetBlockChar());
+			m_strOPLLPatchNames[i] = std::string(pDocFile->ReadString());
+		}
 	}
 }
 
 bool CFamiTrackerDoc::WriteBlock_ParamsEmu(CDocumentFile* pDocFile, const int Version) const
 {
-	bool haspatchnames = false;
-	bool haspatchbytes = false;
-	{
+	bool modifiedpatchnames = false;
+	bool modifiedpatchbytes = false;
+
+	int DefaultPatchSetNumber = theApp.GetSettings()->Emulation.iVRC7Patch;
+
+	// Compare to current default OPLL patchset
+	if (DefaultPatchSetNumber > 6) {
 		for (int i = 0; i < 19; i++) {
-			for (int j = 0; j < 8; j++)
-				haspatchnames |= !(m_iOPLLPatchBytes[(8 * i) + j] == 0);
-			haspatchbytes |= !(m_strOPLLPatchNames[i].empty());
+			for (int j = 0; j < 8; j++) {
+				if (i == 0)
+					modifiedpatchbytes = m_iOPLLPatchBytes[(8 * i) + j] != 0;
+				modifiedpatchbytes = (m_iOPLLPatchBytes[(8 * i) + j] != CAPU::OPLL_DEFAULT_PATCHES[DefaultPatchSetNumber][(8 * i) + j]);
+			}
+			switch (DefaultPatchSetNumber) {
+			case 7:
+				modifiedpatchnames = m_strOPLLPatchNames[i] != CAPU::OPLL_PATCHNAME_YM2413[i];
+				break;
+			case 8:
+				modifiedpatchnames = m_strOPLLPatchNames[i] != CAPU::OPLL_PATCHNAME_YMF281B[i];
+				break;
+			default:
+				modifiedpatchnames = m_strOPLLPatchNames[i] != CAPU::OPLL_PATCHNAME_VRC7[i];
+				break;
+			}
 		}
 	}
 
 	if (!m_bUseExternalOPLLChip &&
-		!haspatchnames &&
-		!haspatchbytes)
+		!modifiedpatchnames &&
+		!modifiedpatchbytes)
 		return true;
 
 	pDocFile->CreateBlock(FILE_BLOCK_PARAMS_EMU, Version);
 
 	pDocFile->WriteBlockInt(m_bUseExternalOPLLChip);
 
-	int bytecount = 0;
 	for (int i = 0; i < 19; i++) {
 		for (int j = 0; j < 8; j++)
 			pDocFile->WriteBlockChar(static_cast<char>(m_iOPLLPatchBytes[(8 * i) + j]));
@@ -4531,10 +4658,9 @@ int16_t CFamiTrackerDoc::GetLevelOffset(int device) const
 // DocumentPropertiesChanged calls GetLevelOffset() and updates synth if modified.
 void CFamiTrackerDoc::SetLevelOffset(int device, int16_t offset)
 {
-	if (m_iDeviceLevelOffset[device] != offset) {
+	if (m_iDeviceLevelOffset[device] != offset)
 		ModifyIrreversible();
-		m_iDeviceLevelOffset[device] = offset;
-	}
+	m_iDeviceLevelOffset[device] = offset;
 }
 
 uint8_t CFamiTrackerDoc::GetOPLLPatchByte(int index) const
@@ -4544,9 +4670,11 @@ uint8_t CFamiTrackerDoc::GetOPLLPatchByte(int index) const
 
 void CFamiTrackerDoc::SetOPLLPatchByte(int index, uint8_t data)
 {
-	if (index < 8)
-		m_iOPLLPatchBytes[index] = 0;		// patch 0 must always be 0
-	else
+	if (m_iOPLLPatchBytes[index] != data)
+		ModifyIrreversible();
+
+	// patch 0 must always be 0
+	if (index >= 8)
 		m_iOPLLPatchBytes[index] = data;
 }
 
@@ -4557,10 +4685,12 @@ std::string CFamiTrackerDoc::GetOPLLPatchName(int index) const
 
 void CFamiTrackerDoc::SetOPLLPatchName(int index, std::string PatchName)
 {
-	m_strOPLLPatchNames[index] = PatchName;
+	if (m_strOPLLPatchNames[index] != PatchName)
+		ModifyIrreversible();
 
 	// patch 0 must always be "(custom instrument)"
-	m_strOPLLPatchNames[0] = "(custom instrument)";
+	if (index != 0)
+		m_strOPLLPatchNames[index] = PatchName;
 }
 
 bool CFamiTrackerDoc::GetExternalOPLLChipCheck() const
@@ -4570,6 +4700,9 @@ bool CFamiTrackerDoc::GetExternalOPLLChipCheck() const
 
 void CFamiTrackerDoc::SetExternalOPLLChipCheck(bool UseExternalOPLLChip)
 {
+	if (m_bUseExternalOPLLChip != UseExternalOPLLChip)
+		ModifyIrreversible();
+
 	m_bUseExternalOPLLChip = UseExternalOPLLChip;
 }
 
