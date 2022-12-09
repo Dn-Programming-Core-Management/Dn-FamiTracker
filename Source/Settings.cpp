@@ -45,7 +45,7 @@ stOldSettingContext::stOldSettingContext()
 stOldSettingContext::~stOldSettingContext()
 {
 	CString s;
-	s.LoadString(AFX_IDS_APP_TITLE);
+	s.LoadString(theApp.m_hInstance, AFX_IDS_APP_TITLE);
 	theApp.m_pszProfileName = _tcsdup(s);
 }
 
