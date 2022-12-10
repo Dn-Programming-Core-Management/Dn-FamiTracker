@@ -1379,7 +1379,11 @@ bool CFamiTrackerDoc::WriteBlock_Patterns(CDocumentFile *pDocFile, const int Ver
 							int EffColumns = (m_pTracks[t]->GetEffectColumnCount(i) + 1);
 
 							for (int n = 0; n < EffColumns; n++) {
-								pDocFile->WriteBlockChar(EFF_CONVERSION_050.second[Note->EffNumber[n]]);		// // // 050B
+								if (m_iFileVersion < 0x450 && !m_bFileDnModule)
+								// Convert from 0CC-type to FamiTracker 0.5.0 beta type effect
+									pDocFile->WriteBlockChar(EFF_CONVERSION_050.second[Note->EffNumber[n]]);		// // // 050B
+								else
+									pDocFile->WriteBlockChar(Note->EffNumber[n]);
 								pDocFile->WriteBlockChar(Note->EffParam[n]);
 							}
 						}
@@ -1738,7 +1742,9 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 							if (Note->Vol == 0)
 								Note->Vol = MAX_VOLUME;
 							if (Note->EffNumber[0] < EF_COUNT)		// // //
-								Note->EffNumber[0] = EFF_CONVERSION_050.first[Note->EffNumber[0]];
+								if (m_iFileVersion < 0x450 && !m_bFileDnModule)
+									// Convert from FamiTracker 0.5.0 beta type to 0CC-type effect
+									Note->EffNumber[0] = EFF_CONVERSION_050.first[Note->EffNumber[0]];
 						}
 					}
 				}
@@ -2541,6 +2547,7 @@ void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Vers
 				if (m_iFileVersion < 0x450 && !m_bFileDnModule) {		// // // 050B
 					for (auto &x : Note->EffNumber)
 						if (x < EF_COUNT)
+							// Convert from FamiTracker 0.5.0 beta type to 0CC-type effect
 							x = EFF_CONVERSION_050.first[x];
 				}
 				/*
