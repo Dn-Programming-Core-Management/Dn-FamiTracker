@@ -86,6 +86,7 @@ const bool	CFamiTrackerDoc::DEFAULT_LINEAR_PITCH = false;
 
 // File I/O constants
 static const char *FILE_HEADER				= "FamiTracker Module";
+static const char *FILE_HEADER_DN			= "Dn-FamiTracker Module";
 static const char *FILE_BLOCK_PARAMS		= "PARAMS";
 static const char *FILE_BLOCK_INFO			= "INFO";
 static const char *FILE_BLOCK_INSTRUMENTS	= "INSTRUMENTS";
@@ -380,6 +381,11 @@ BOOL CFamiTrackerDoc::OnSaveDocument(LPCTSTR lpszPathName)
 		m_bBackupDone = true;
 	}
 
+	// TODO: Dn-FamiTracker compatibility modes
+
+	// to avoid conflicts with FamiTracker beta 0.5.0 modules, set as Dn-FT module
+	if (m_iFileVersion >= 0x450U)
+		m_bFileDnModule = true;
 	if (!SaveDocument(lpszPathName))
 		return FALSE;
 
@@ -451,6 +457,8 @@ void CFamiTrackerDoc::DeleteContents()
 	m_iSpeedSplitPoint	 = DEFAULT_SPEED_SPLIT_POINT;
 	m_iDetuneSemitone	 = 0;		// // // 050B
 	m_iDetuneCent		 = 0;		// // // 050B
+
+	m_bFileDnModule = false;
 
 	m_vHighlight = CPatternData::DEFAULT_HIGHLIGHT;		// // //
 
@@ -725,7 +733,7 @@ void CFamiTrackerDoc::AssertFileData(bool Cond, std::string Msg) const
 
 /*** File format description ***
 
-0000: "FamiTracker Module"					id string
+0000: "(Dn-)FamiTracker Module"				id string
 000x: Version								int, version number
 000x: Start of blocks
 
@@ -772,7 +780,7 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 		return FALSE;
 	}
 
-	DocumentFile.BeginDocument();
+	DocumentFile.BeginDocument(m_bFileDnModule);
 
 	if (!WriteBlocks(&DocumentFile)) {
 		// The save process failed, delete temp file
@@ -1371,11 +1379,7 @@ bool CFamiTrackerDoc::WriteBlock_Patterns(CDocumentFile *pDocFile, const int Ver
 							int EffColumns = (m_pTracks[t]->GetEffectColumnCount(i) + 1);
 
 							for (int n = 0; n < EffColumns; n++) {
-								// TODO: beta 0.5.0 compatibility mode
-								if (false)
-									pDocFile->WriteBlockChar(EFF_CONVERSION_050.second[Note->EffNumber[n]]);		// // // 050B
-								else
-									pDocFile->WriteBlockChar(Note->EffNumber[n]);
+								pDocFile->WriteBlockChar(EFF_CONVERSION_050.second[Note->EffNumber[n]]);		// // // 050B
 								pDocFile->WriteBlockChar(Note->EffParam[n]);
 							}
 						}
@@ -1467,6 +1471,7 @@ BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 		OpenFile.ValidateFile();
 
 		m_iFileVersion = OpenFile.GetFileVersion();
+		m_bFileDnModule = OpenFile.GetModuleType();
 		DeleteContents();		// // //
 
 		if (m_iFileVersion < 0x0200U) {
@@ -2532,7 +2537,8 @@ void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Vers
 					}
 				}
 
-				if (m_iFileVersion < 0x450) {		// // // 050B
+				// TODO: Dn-FamiTracker compatibility modes
+				if (m_iFileVersion < 0x450 && !m_bFileDnModule) {		// // // 050B
 					for (auto &x : Note->EffNumber)
 						if (x < EF_COUNT)
 							x = EFF_CONVERSION_050.first[x];
@@ -2942,9 +2948,10 @@ bool CFamiTrackerDoc::WriteBlock_ParamsEmu(CDocumentFile* pDocFile, const int Ve
 		}
 	}
 
-	if (!m_bUseExternalOPLLChip &&
-		!modifiedpatchnames &&
-		!modifiedpatchbytes)
+	if (!((m_bUseExternalOPLLChip &&
+		modifiedpatchnames &&
+		modifiedpatchbytes) &&
+		(m_iExpansionChip & SNDCHIP_VRC7)))
 		return true;
 
 	pDocFile->CreateBlock(FILE_BLOCK_PARAMS_EMU, Version);

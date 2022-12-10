@@ -514,6 +514,7 @@ private:
 	bool			m_bFileLoaded;			// Is a file loaded?
 	bool			m_bFileLoadFailed;		// Last file load operation failed
 	unsigned int	m_iFileVersion;			// Loaded file version
+	bool			m_bFileDnModule;		// Is a Dn-FT module (non-vanilla)
 
 	bool			m_bForceBackup;
 	bool			m_bBackupDone;
