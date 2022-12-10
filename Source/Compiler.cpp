@@ -514,23 +514,13 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	// write mixe chunk
 	const unsigned char MixeIdent[] = { 'm', 'i', 'x', 'e' };
 
-	// default values derived from NSFplay
-	int16_t mixe_device_default[8] = {
-		0,
-		-20,
-		0,
-		1100,
-		690,
-		0,
-		1540,
-		-250
-	};
-
 	int16_t mixe_device[8]{};
+
+	CSoundGen* pSoundGen = theApp.GetSoundGenerator();
 
 	for (int i = 0; i < 8; i++) {
 		if (m_pDocument->GetLevelOffset(i)) {
-			mixe_device[i] = (m_pDocument->GetLevelOffset(i) * 10) + mixe_device_default[i];
+			mixe_device[i] = (m_pDocument->GetLevelOffset(i) * 10) + pSoundGen->SurveyMixLevels[i];
 			iMixeSize += 3;
 		}
 	}
@@ -788,25 +778,15 @@ void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
 	}
 
 	// write mixe chunk
-	const unsigned char MixeIdent[] = { 'm', 'i', 'x', 'e' };
-
-	// default values derived from NSFplay
-	int16_t mixe_device_default[8] = {
-		0,
-		-20,
-		0,
-		1100,
-		690,
-		0,
-		1540,
-		-250
-	};
+	const unsigned char MixeIdent[] = { 'm', 'i', 'x', 'e' };;
 
 	int16_t mixe_device[8]{};
 
+	CSoundGen* pSoundGen = theApp.GetSoundGenerator();
+
 	for (int i = 0; i < 8; i++) {
 		if (m_pDocument->GetLevelOffset(i)) {
-			mixe_device[i] = (m_pDocument->GetLevelOffset(i) * 10) + mixe_device_default[i];
+			mixe_device[i] = (m_pDocument->GetLevelOffset(i) * 10) + pSoundGen->SurveyMixLevels[i];
 			iMixeSize += 3;
 		}
 	}

@@ -334,6 +334,8 @@ public:
 	/// Accessed by audio thread only.
 	std::thread::id m_audioThreadID;
 
+	// Accessed by CCompiler for mixe chunk
+	std::vector<int16_t> SurveyMixLevels;
 private:
 	rigtorp::SPSCQueue<GuiMessage> m_MessageQueue;
 

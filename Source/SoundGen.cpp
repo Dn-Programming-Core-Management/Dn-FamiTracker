@@ -178,10 +178,11 @@ CSoundGen::CSoundGen() :
 	// Create all kinds of channels
 	CreateChannels();
 
-	// Initialize DeviceMixOffset, UseSurveyMix, OPLLHardwarePatchBytes, UseExtOPLL and OPLLHardwarePatchNames
-	DeviceMixOffset.resize(8);
+	// Initialize DeviceMixOffset, UseSurveyMix, SurveyMixLevels, OPLLHardwarePatchBytes, UseExtOPLL and OPLLHardwarePatchNames
+	DeviceMixOffset.resize(CHIP_LEVEL_COUNT);
 	std::fill(DeviceMixOffset.begin(), DeviceMixOffset.end(), 0);
-	UseSurveyMix = false;
+	SurveyMixLevels.resize(CHIP_LEVEL_COUNT);
+	std::fill(SurveyMixLevels.begin(), SurveyMixLevels.end(), 0);
 	UseExtOPLL = false;
 
 	OPLLHardwarePatchBytes.resize(19 * 8);
@@ -880,13 +881,10 @@ bool CSoundGen::ResetAudioDevice()
 		m_pResampleInBuffer = std::make_unique<float[]>(inputBufferSize);
 	}
 
-	for (int i = 0; i < 7; ++i)
+	for (int i = 0; i < CHIP_LEVEL_COUNT; ++i)
 		DeviceMixOffset[i] = m_pDocument->GetLevelOffset(i);
 
 	UseSurveyMix = m_pDocument->GetSurveyMixCheck();
-
-	std::vector<int16_t> SurveyMixLevels{};
-	SurveyMixLevels.resize(CHIP_LEVEL_COUNT);
 
 	SurveyMixLevels.at(CHIP_LEVEL_APU1) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixAPU1);
 	SurveyMixLevels.at(CHIP_LEVEL_APU2) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixAPU2);
