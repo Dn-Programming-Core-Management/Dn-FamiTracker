@@ -217,6 +217,7 @@ void CDocumentFile::ValidateFile()
 	if (memcmp(Buffer, FILE_HEADER_ID, strlen(FILE_HEADER_ID)) != 0) {
 		// might be a Dn-FT module, try again
 		RollbackPointer(int(strlen(FILE_HEADER_ID)));
+		RollbackFilePointer(int(strlen(FILE_HEADER_ID)));
 
 		Read(Buffer, int(strlen(FILE_HEADER_ID_DN)));
 
@@ -265,8 +266,8 @@ bool CDocumentFile::ReadBlock()
 	memset(m_cBlockID, 0, 16);
 
 	BytesRead = Read(m_cBlockID, 16);
-	Read(&m_iBlockVersion, sizeof(int));
-	Read(&m_iBlockSize, sizeof(int));
+	Read(&m_iBlockVersion, sizeof(unsigned int));
+	Read(&m_iBlockSize, sizeof(unsigned int));
 
 	if (m_iBlockSize > 50000000) {
 		// File is probably corrupt
@@ -305,12 +306,18 @@ int CDocumentFile::GetBlockVersion() const
 	return m_iBlockVersion;
 }
 
+// avoid using this as much as possible
 void CDocumentFile::RollbackPointer(int count)
 {
 	m_iBlockPointer -= count;
 	m_iPreviousPointer = m_iBlockPointer; // ?
 	m_iFilePosition -= count;		// // //
 	m_iPreviousPosition -= count;
+}
+
+// avoid using this as much as possible
+void CDocumentFile::RollbackFilePointer(int count)
+{
 	CFile::Seek((count * -1), CFile::current);
 }
 

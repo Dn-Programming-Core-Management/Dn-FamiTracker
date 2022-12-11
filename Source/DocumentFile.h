@@ -67,7 +67,8 @@ public:
 
 	CString		ReadString();
 
-	void		RollbackPointer(int count);	// avoid this
+	void		RollbackPointer(int count);		// avoid this
+	void		RollbackFilePointer(int count);	// avoid this
 
 	bool		IsFileIncomplete() const;
 
