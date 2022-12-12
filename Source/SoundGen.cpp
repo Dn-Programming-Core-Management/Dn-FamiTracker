@@ -592,6 +592,18 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 
 	m_iSpeedSplitPoint = pDocument->GetSpeedSplitPoint();
 
+	CSettings* pSettings = theApp.GetSettings();
+
+	// Set survey mix level object. Will be used by CCompiler for mixe chunk.
+	SurveyMixLevels.at(CHIP_LEVEL_APU1) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixAPU1);
+	SurveyMixLevels.at(CHIP_LEVEL_APU2) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixAPU2);
+	SurveyMixLevels.at(CHIP_LEVEL_VRC6) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixVRC6);
+	SurveyMixLevels.at(CHIP_LEVEL_VRC7) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixVRC7);
+	SurveyMixLevels.at(CHIP_LEVEL_FDS) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixFDS);
+	SurveyMixLevels.at(CHIP_LEVEL_MMC5) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixMMC5);
+	SurveyMixLevels.at(CHIP_LEVEL_N163) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixN163);
+	SurveyMixLevels.at(CHIP_LEVEL_S5B) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixS5B);
+
 	bool refreshsettings = false;
 
 	for (int i = 0; i < 8; i++)
@@ -599,7 +611,6 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 
 	refreshsettings |= UseSurveyMix != pDocument->GetSurveyMixCheck();
 
-	CSettings* pSettings = theApp.GetSettings();
 	int PatchNum = pSettings->Emulation.iVRC7Patch;
 
 	if (UseExtOPLL)
@@ -885,16 +896,6 @@ bool CSoundGen::ResetAudioDevice()
 		DeviceMixOffset[i] = m_pDocument->GetLevelOffset(i);
 
 	UseSurveyMix = m_pDocument->GetSurveyMixCheck();
-
-	// Set survey mix level object. Will be used by CCompiler for mixe chunk.
-	SurveyMixLevels.at(CHIP_LEVEL_APU1) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixAPU1);
-	SurveyMixLevels.at(CHIP_LEVEL_APU2) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixAPU2);
-	SurveyMixLevels.at(CHIP_LEVEL_VRC6) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixVRC6);
-	SurveyMixLevels.at(CHIP_LEVEL_VRC7) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixVRC7);
-	SurveyMixLevels.at(CHIP_LEVEL_FDS) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixFDS);
-	SurveyMixLevels.at(CHIP_LEVEL_MMC5) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixMMC5);
-	SurveyMixLevels.at(CHIP_LEVEL_N163) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixN163);
-	SurveyMixLevels.at(CHIP_LEVEL_S5B) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixS5B);
 
 	int PatchNum = pSettings->Emulation.iVRC7Patch;
 
