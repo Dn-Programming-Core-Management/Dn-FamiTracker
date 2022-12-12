@@ -587,7 +587,6 @@ void CAPUConfig::SetupMixer(
 	int HighDamp,
 	int Volume,
 	bool UseSurveyMix,
-	std::vector<int16_t> SurveyMixLevels,
 	int16_t FDSLowpass,
 	int16_t N163Lowpass,
 	std::vector<int16_t> DeviceMixOffsets)
@@ -598,7 +597,6 @@ void CAPUConfig::SetupMixer(
 		HighDamp,
 		float(Volume) / 100.0f,
 		UseSurveyMix,
-		SurveyMixLevels,
 		FDSLowpass,
 		N163Lowpass,
 		DeviceMixOffsets
@@ -606,11 +604,37 @@ void CAPUConfig::SetupMixer(
 }
 
 // must be called after SetupMixer()
-// DeviceMixOffsets[] needs to be initialized first
-void CAPUConfig::SetChipLevel(chip_level_t Chip, float LeveldB)
+// Device chip levels needs to be initialized first
+void CAPUConfig::SetChipLevel(chip_level_t Chip, float LeveldB, bool SurveyMix)
 {
+	// Compensate for blip_buffer output scaling differences
+	// values are derived by setting m_ChipLevels[] to 1.0
+	// and measuring the dB RMS delta between APU1 and other chips
+	// using methods described here: https://www.nesdev.org/wiki/NSFe#mixe
+	// TODO: investigate issues with rounding error
+	int16_t dblevelcorrection[CHIP_LEVEL_COUNT] {
+		0,		// APU1
+		-13,	// APU2
+		-494,	// VRC6
+		776,	// VRC7
+		-1700,	// FDS
+		869,	// MMC5
+		-1681,	// N163
+		108		// S5B
+	};
+
 	// Convert dB to linear
-	float LevelLinear = powf(10, (LeveldB + (static_cast<float>(m_MixerConfig->DeviceMixOffsets[Chip]) / 10.0f)) / 20.0f);
+	float LevelLinear = 1.0f;
+	if (SurveyMix) {
+		LevelLinear = powf(10,
+			((LeveldB + (static_cast<float>(dblevelcorrection[Chip]) / 100.0f)) +
+				(static_cast<float>(m_MixerConfig->DeviceMixOffsets[Chip]) / 10.0f)) / 20.0f);
+	}
+	else {
+		LevelLinear = powf(10, (LeveldB +
+			(static_cast<float>(m_MixerConfig->DeviceMixOffsets[Chip]) / 10.0f)) / 20.0f);
+	}
+
 	m_ChipLevels[Chip] = LevelLinear;
 }
 
@@ -623,7 +647,7 @@ CAPUConfig::~CAPUConfig() noexcept(false)
 		return;
 	}
 
-	bool mixingDirty = false;
+	bool RecomputeEmuMixState = false;
 
 	// Writes to CMixer::m_iExternalChip.
 	// This is read by CMixer::GetAttenuation(), which is called by CMixer::RecomputeEmuMixState().
@@ -635,7 +659,7 @@ CAPUConfig::~CAPUConfig() noexcept(false)
 		// CAPU::ChangeMachineRate() will call CMixer::SetClockRate() a second time.
 		// Ugly, but it works.
 		m_APU->SetExternalSound(*m_ExternalSound);
-		mixingDirty = true;
+		RecomputeEmuMixState = true;
 	}
 
 	// Writes to CMixer::m_fLevel[...].
@@ -644,7 +668,7 @@ CAPUConfig::~CAPUConfig() noexcept(false)
 		if (m_ChipLevels[chip]) {
 			auto level = *m_ChipLevels[chip];
 			m_Mixer->SetChipLevel((chip_level_t)chip, level);
-			mixingDirty = true;
+			RecomputeEmuMixState = true;
 		}
 	}
 
@@ -653,43 +677,18 @@ CAPUConfig::~CAPUConfig() noexcept(false)
 	if (m_MixerConfig) {
 		auto& cfg = *m_MixerConfig;
 
-		// Override expansion chip level mixing when using survey hardware levels
-		if (cfg.UseSurveyMix) {
-			// Compensate for blip_buffer output scaling differences
-			// Issue with rounding errors?
-			int16_t outputlevelcorrection[CHIP_LEVEL_COUNT]{
-				0,		// APU1
-				-13,	// APU2
-				-494,	// VRC6
-				776,	// VRC7
-				-1700,	// FDS
-				869,	// MMC5
-				-1681,	// N163
-				108		// S5B
-			};
-
-			for (int chip = 0; chip < CHIP_LEVEL_COUNT; chip++) {
-				int16_t surveylevel = cfg.SurveyMixLevels[chip] + outputlevelcorrection[chip];
-
-				if (surveylevel) {
-					float LevelLinear = powf(10, ((static_cast<float>((cfg.DeviceMixOffsets[chip] * 10) + surveylevel) / 100.0f)) / 20.0f);
-					m_Mixer->SetChipLevel((chip_level_t)chip, LevelLinear);
-				}
-			}
-		}
-
 		m_Mixer->SetMixing(cfg);
-		mixingDirty = true;
+		RecomputeEmuMixState = true;
 	}
+
+	// Writes to CMixer::m_EmulatorConfig.
+	// This is read by CMixer::RecomputeEmuMixState().
 	if (m_EmulatorConfig) {
 		auto& cfg = *m_EmulatorConfig;
 		m_Mixer->SetEmulation(cfg);
-		mixingDirty = true;
+		RecomputeEmuMixState = true;
 	}
 
-	if (mixingDirty) {
-		// Volume decreases exponentially as you enable expansion chips linearly.
-		// This is probably a bug, but it might be too late to change it now.
+	if (RecomputeEmuMixState)
 		m_Mixer->RecomputeEmuMixState();
-	}
 }

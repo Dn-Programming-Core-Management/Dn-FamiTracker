@@ -178,7 +178,7 @@ CSoundGen::CSoundGen() :
 	// Create all kinds of channels
 	CreateChannels();
 
-	// Initialize DeviceMixOffset, UseSurveyMix, SurveyMixLevels, OPLLHardwarePatchBytes, UseExtOPLL and OPLLHardwarePatchNames
+	// Initialize emulation/mixer objects
 	DeviceMixOffset.resize(CHIP_LEVEL_COUNT);
 	std::fill(DeviceMixOffset.begin(), DeviceMixOffset.end(), 0);
 	SurveyMixLevels.resize(CHIP_LEVEL_COUNT);
@@ -886,6 +886,7 @@ bool CSoundGen::ResetAudioDevice()
 
 	UseSurveyMix = m_pDocument->GetSurveyMixCheck();
 
+	// Set survey mix level object. Will be used by CCompiler for mixe chunk.
 	SurveyMixLevels.at(CHIP_LEVEL_APU1) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixAPU1);
 	SurveyMixLevels.at(CHIP_LEVEL_APU2) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixAPU2);
 	SurveyMixLevels.at(CHIP_LEVEL_VRC6) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixVRC6);
@@ -930,20 +931,26 @@ bool CSoundGen::ResetAudioDevice()
 			pSettings->Sound.iTrebleDamping,
 			pSettings->Sound.iMixVolume,
 			UseSurveyMix,
-			SurveyMixLevels,
 			pSettings->Emulation.iFDSLowpass,
 			pSettings->Emulation.iN163Lowpass,
 			DeviceMixOffset
 		);
 
-		config.SetChipLevel(CHIP_LEVEL_APU1, float(pSettings->ChipLevels.iLevelAPU1 / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_APU2, float(pSettings->ChipLevels.iLevelAPU2 / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_VRC6, float(pSettings->ChipLevels.iLevelVRC6 / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_VRC7, float(pSettings->ChipLevels.iLevelVRC7 / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_FDS, float(pSettings->ChipLevels.iLevelFDS / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_MMC5, float(pSettings->ChipLevels.iLevelMMC5 / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_N163, float(pSettings->ChipLevels.iLevelN163 / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_S5B, float(pSettings->ChipLevels.iLevelS5B / 10.0f));
+		if (UseSurveyMix) {
+			// Override expansion chip level mixing when using survey hardware levels
+			for (int i = 0; i < CHIP_LEVEL_COUNT; i++)
+				config.SetChipLevel(static_cast<chip_level_t>(i), float(SurveyMixLevels.at(i) / 100.0f), true);
+		}
+		else {
+			config.SetChipLevel(CHIP_LEVEL_APU1, float(pSettings->ChipLevels.iLevelAPU1 / 10.0f));
+			config.SetChipLevel(CHIP_LEVEL_APU2, float(pSettings->ChipLevels.iLevelAPU2 / 10.0f));
+			config.SetChipLevel(CHIP_LEVEL_VRC6, float(pSettings->ChipLevels.iLevelVRC6 / 10.0f));
+			config.SetChipLevel(CHIP_LEVEL_VRC7, float(pSettings->ChipLevels.iLevelVRC7 / 10.0f));
+			config.SetChipLevel(CHIP_LEVEL_FDS, float(pSettings->ChipLevels.iLevelFDS / 10.0f));
+			config.SetChipLevel(CHIP_LEVEL_MMC5, float(pSettings->ChipLevels.iLevelMMC5 / 10.0f));
+			config.SetChipLevel(CHIP_LEVEL_N163, float(pSettings->ChipLevels.iLevelN163 / 10.0f));
+			config.SetChipLevel(CHIP_LEVEL_S5B, float(pSettings->ChipLevels.iLevelS5B / 10.0f));
+		}
 	}
 
 	m_bAudioClipping = false;

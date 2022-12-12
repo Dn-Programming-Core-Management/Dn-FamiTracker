@@ -208,13 +208,12 @@ public:
 		int HighDamp,
 		int Volume,
 		bool UseSurveyMix,
-		std::vector<int16_t> SurveyMixLevels,
 		int16_t FDSLowpass,
 		int16_t N163Lowpass,
 		std::vector<int16_t> DeviceMixOffsets
 	);
 
-	void SetChipLevel(chip_level_t Chip, float LeveldB);
+	void SetChipLevel(chip_level_t Chip, float LeveldB, bool SurveyMix = false);
 
 	/// Commit changes if no exception is active.
 	///
@@ -232,7 +231,7 @@ private:
 
 	// Mutations.
 	std::optional<uint8_t> m_ExternalSound;
-	std::optional<float> m_ChipLevels[CHIP_LEVEL_COUNT];
+	std::optional<float> m_ChipLevels[CHIP_LEVEL_COUNT];		// Chip levels, in linear gain factor scale
 	std::optional<MixerConfig> m_MixerConfig;
 	std::optional<EmulatorConfig> m_EmulatorConfig;
 };

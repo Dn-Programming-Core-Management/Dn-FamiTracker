@@ -62,19 +62,6 @@ struct MixerConfig {
 	// Use survey derived default mix levels. Overrides the chip levels.
 	bool UseSurveyMix = false;
 
-	// Survey derived default mix levels, described in millibels.
-	std::vector<int16_t> SurveyMixLevels = {
-		// default values derived from NSFplay
-		0,			// APU1
-		-20,		// APU2
-		0,			// VRC6
-		1100,		// VRC7
-		690,		// FDS
-		0,			// MMC5
-		1540,		// N163
-		-250		// S5B
-	};
-
 	// Device lowpassing, described in integer Hz.
 	int16_t FDSLowpass = 2000;
 	int16_t N163Lowpass = 12000;
