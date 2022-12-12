@@ -219,6 +219,17 @@ BOOL CFamiTrackerApp::InitInstance()
 
 	// Handle command line export
 	if (cmdInfo.m_bExport) {
+		// Initialize the sound interface, CCompiler depends on CSoundGen
+		// for mixe, vibrato and period tables
+		if (!m_pSoundGenerator->BeginThread(m_pSoundGenerator)) {
+			// If failed, restore and save default settings
+			m_pSettings->DefaultSettings();
+			m_pSettings->SaveSettings();
+			// Quit program
+			AfxMessageBox(IDS_START_ERROR, MB_ICONERROR);
+			return FALSE;
+		}
+
 		CCommandLineExport exporter;
 		exporter.CommandLineExport(cmdInfo.m_strFileName, cmdInfo.m_strExportFile, cmdInfo.m_strExportLogFile, cmdInfo.m_strExportDPCMFile);
 		ExitProcess(0);
