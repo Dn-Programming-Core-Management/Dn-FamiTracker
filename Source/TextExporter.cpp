@@ -43,12 +43,13 @@
 enum
 {
 	CT_COMMENTLINE,    // anything may follow
-	// song info
+	// INFO block
 	CT_TITLE,          // string
 	CT_AUTHOR,         // string
 	CT_COPYRIGHT,      // string
+	// COMMENTS block
 	CT_COMMENT,        // string (concatenates line)
-	// global settings
+	// PARAMS block
 	CT_MACHINE,        // uint (0=NTSC, 1=PAL)
 	CT_FRAMERATE,      // uint (0=default)
 	CT_EXPANSION,      // uint (0=none, 1=VRC6, 2=VRC7, 4=FDS, 8=MMC5, 16=N163, 32=S5B)
@@ -57,41 +58,46 @@ enum
 	// // // 050B
 	CT_PLAYBACKRATE,   // uint (0=default, 1=custom, 2=video) uint (us)
 	CT_TUNING,         // uint (semitones) uint (cents)
-	// namco global settings
+
 	CT_N163CHANNELS,   // uint
-	// macros
+	// SEQUENCES block
 	CT_MACRO,          // uint (type) uint (index) int (loop) int (release) int (setting) : int_list
 	CT_MACROVRC6,      // uint (type) uint (index) int (loop) int (release) int (setting) : int_list
 	CT_MACRON163,      // uint (type) uint (index) int (loop) int (release) int (setting) : int_list
 	CT_MACROS5B,       // uint (type) uint (index) int (loop) int (release) int (setting) : int_list
-	// dpcm samples
+	// DPCM SAMPLES block
 	CT_DPCMDEF,        // uint (index) uint (size) string (name)
 	CT_DPCM,           // : hex_list
-	// // // detune settings
+	// // // DETUNETABLES block
 	CT_DETUNE,         // uint (chip) uint (oct) uint (note) int (offset)
-	// // // grooves
+	// // // GROOVES block
 	CT_GROOVE,         // uint (index) uint (size) : int_list
 	CT_USEGROOVE,      // : int_list
-	// instruments
+	// INSTRUMENTS block
 	CT_INST2A03,       // uint (index) int int int int int string (name)
 	CT_INSTVRC6,       // uint (index) int int int int int string (name)
 	CT_INSTVRC7,       // uint (index) int (patch) hex hex hex hex hex hex hex hex string (name)
 	CT_INSTFDS,        // uint (index) int (mod enable) int (m speed) int (m depth) int (m delay) string (name)
 	CT_INSTN163,       // uint (index) int int int int int uint (w size) uint (w pos) uint (w count) string (name)
 	CT_INSTS5B,        // uint (index) int int int int int  string (name)
-	// instrument data
+
 	CT_KEYDPCM,        // uint (inst) uint (oct) uint (note) uint (sample) uint (pitch) uint (loop) uint (loop_point)
 	CT_FDSWAVE,        // uint (inst) : uint_list x 64
 	CT_FDSMOD,         // uint (inst) : uint_list x 32
 	CT_FDSMACRO,       // uint (inst) uint (type) int (loop) int (release) int (setting) : int_list
 	CT_N163WAVE,       // uint (inst) uint (wave) : uint_list
-	// track info
+	// HEADER block
 	CT_TRACK,          // uint (pat length) uint (speed) uint (tempo) string (name)
 	CT_COLUMNS,        // : uint_list (effect columns)
+	// FRAMES block
 	CT_ORDER,          // hex (frame) : hex_list
-	// pattern data
+	// PATTERNS block
 	CT_PATTERN,        // hex (pattern)
 	CT_ROW,            // row data
+	// BOOKMARKS block
+	// PARAMS_EXTRA block
+	// JSON block
+	// PARAMS_EMU block
 	// end of command list
 	CT_COUNT
 };
@@ -100,12 +106,13 @@ static const TCHAR* CT[CT_COUNT] =
 {
 	// comment
 	_T("#"),
-	// song info
+	// INFO block
 	_T("TITLE"),
 	_T("AUTHOR"),
 	_T("COPYRIGHT"),
+	// COMMENTS block
 	_T("COMMENT"),
-	// global settings
+	// PARAMS block
 	_T("MACHINE"),
 	_T("FRAMERATE"),
 	_T("EXPANSION"),
@@ -114,41 +121,46 @@ static const TCHAR* CT[CT_COUNT] =
 	// // // 050B
 	_T("PLAYBACKRATE"),
 	_T("TUNING"),
-	// namco global settings
+
 	_T("N163CHANNELS"),
-	// macros
+	// SEQUENCES block
 	_T("MACRO"),
 	_T("MACROVRC6"),
 	_T("MACRON163"),
 	_T("MACROS5B"),
-	// dpcm
+	// DPCM SAMPLES block
 	_T("DPCMDEF"),
 	_T("DPCM"),
-	// // // detune settings
+	// // // DETUNETABLES block
 	_T("DETUNE"),
-	// // // grooves
+	// // // GROOVES block
 	_T("GROOVE"),
 	_T("USEGROOVE"),
-	// instruments
+	// INSTRUMENTS block
 	_T("INST2A03"),
 	_T("INSTVRC6"),
 	_T("INSTVRC7"),
 	_T("INSTFDS"),
 	_T("INSTN163"),
 	_T("INSTS5B"),
-	// instrument data
+
 	_T("KEYDPCM"),
 	_T("FDSWAVE"),
 	_T("FDSMOD"),
 	_T("FDSMACRO"),
 	_T("N163WAVE"),
-	// track info
+	// HEADER block
 	_T("TRACK"),
 	_T("COLUMNS"),
+	// FRAMES block
 	_T("ORDER"),
-	// pattern data
+	// PATTERNS block
 	_T("PATTERN"),
 	_T("ROW"),
+	// BOOKMARKS block
+	// PARAMS_EXTRA block
+	// JSON block
+	// PARAMS_EMU block
 };
 
 // =============================================================================
@@ -1139,6 +1151,10 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					CHECK(t.ReadEOL(&sResult));
 				}
 				break;
+			// BOOKMARKS block
+			// PARAMS_EXTRA block
+			// JSON block
+			// PARAMS_EMU block
 			case CT_COUNT:
 			default:
 				sResult.Format(_T("Unrecognized command at line %d: '%s'."), t.line, command);
@@ -1218,7 +1234,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	s.Format(_T("# " APP_NAME " text export %i.%i.%i.%i\n\n"), VERSION);		// // //
 	f.WriteString(s);
 
-	s.Format(_T("# Song information\n"
+	s.Format(_T("# INFO block\n"
 	            "%-15s %s\n"
 	            "%-15s %s\n"
 	            "%-15s %s\n"
@@ -1228,7 +1244,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	            CT[CT_COPYRIGHT], ExportString(pDoc->GetSongCopyright()));
 	f.WriteString(s);
 
-	f.WriteString(_T("# Song comment\n"));
+	f.WriteString(_T("# COMMENTS block\n"));
 	CString sComment = pDoc->GetComment();
 	bool bCommentLines = false;
 	do
@@ -1250,7 +1266,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	} while (bCommentLines);
 	f.WriteString(_T("\n"));
 
-	s.Format(_T("# Global settings\n"
+	s.Format(_T("# PARAMS block\n"
 				"%-15s %d\n"
 				"%-15s %d\n"
 				"%-15s %d\n"
@@ -1276,14 +1292,13 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 		N163count = pDoc->GetNamcoChannels();
 		pDoc->SetNamcoChannels(8, true);
 		pDoc->SelectExpansionChip(pDoc->GetExpansionChip()); // calls ApplyExpansionChip()
-		s.Format(_T("# Namco 163 global settings\n"
-		            "%-15s %d\n"
+		s.Format(_T("%-15s %d\n"
 		            "\n"),
 		            CT[CT_N163CHANNELS], N163count);
 		f.WriteString(s);
 	}
 
-	f.WriteString(_T("# Macros\n"));
+	f.WriteString(_T("# SEQUENCES block\n"));
 	for (int c=0; c<4; ++c)
 	{
 		const inst_type_t CHIP_MACRO[4] = { INST_2A03, INST_VRC6, INST_N163, INST_S5B };
@@ -1313,7 +1328,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	}
 	f.WriteString(_T("\n"));
 
-	f.WriteString(_T("# DPCM samples\n"));
+	f.WriteString(_T("# DPCM SAMPLES block\n"));
 	for (int smp=0; smp < MAX_DSAMPLES; ++smp)
 	{
 		if (const CDSample* pSample = pDoc->GetSample(smp))		// // //
@@ -1341,7 +1356,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	}
 	f.WriteString(_T("\n"));
 
-	f.WriteString(_T("# Detune settings\n"));		// // //
+	f.WriteString(_T("# DETUNETABLES block\n"));		// // //
 	for (int i = 0; i < 6; i++) for (int j = 0; j < NOTE_COUNT; j++) {
 		int Offset = pDoc->GetDetuneOffset(i, j);
 		if (Offset != 0) {
@@ -1351,7 +1366,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	}
 	f.WriteString(_T("\n"));
 	
-	f.WriteString(_T("# Grooves\n"));		// // //
+	f.WriteString(_T("# GROOVES block\n"));		// // //
 	for (int i = 0; i < MAX_GROOVE; i++) {
 		CGroove *Groove = pDoc->GetGroove(i);
 		if (Groove != NULL) {
@@ -1380,7 +1395,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 		f.WriteString(_T("\n\n"));
 	}
 	
-	f.WriteString(_T("# Instruments\n"));
+	f.WriteString(_T("# INSTRUMENTS block\n"));
 	for (unsigned int i=0; i<MAX_INSTRUMENTS; ++i)
 	{
 		auto pInst = pDoc->GetInstrument(i);
@@ -1536,7 +1551,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	}
 	f.WriteString(_T("\n"));
 
-	f.WriteString(_T("# Tracks\n\n"));
+	f.WriteString(_T("# HEADER block, FRAMES block, PATTERNS block\n\n"));
 
 	for (unsigned int t=0; t < pDoc->GetTrackCount(); ++t)
 	{
@@ -1611,6 +1626,10 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 		pDoc->SetNamcoChannels(N163count, true);
 		pDoc->SelectExpansionChip(pDoc->GetExpansionChip()); // calls ApplyExpansionChip()
 	}
+	// BOOKMARKS block
+	// PARAMS_EXTRA block
+	// JSON block
+	// PARAMS_EMU block
 	f.WriteString(_T("# End of export\n"));
 	pDoc->UpdateAllViews(NULL, UPDATE_FRAME);
 	pDoc->UpdateAllViews(NULL, UPDATE_PATTERN);

@@ -967,6 +967,8 @@ bool CFamiTrackerDoc::WriteBlock_Parameters(CDocumentFile *pDocFile, const int V
 				if (Version >= 8) {		// // // 050B
 					pDocFile->WriteBlockChar(m_iDetuneSemitone);
 					pDocFile->WriteBlockChar(m_iDetuneCent);
+
+					// TODO: write playback rate and tuning
 				}
 			}
 		}
@@ -1934,7 +1936,7 @@ void CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile, const int Ve
 	else
 		m_iVibratoStyle = VIBRATO_OLD;
 
-	// TODO read m_bLinearPitch
+	// m_bLinearPitch is read in ReadBlock_ParamsExtra()
 	if (Version >= 9) {		// // // 050B
 		bool SweepReset = pDocFile->GetBlockInt() != 0;
 	}
@@ -1985,6 +1987,8 @@ void CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile, const int Ve
 	if (Version >= 8) {		// // // 050B
 		m_iDetuneSemitone = pDocFile->GetBlockChar();
 		m_iDetuneCent = pDocFile->GetBlockChar();
+
+		// TODO: write playback rate and tuning
 	}
 
 	SetupChannels(m_iExpansionChip);
@@ -2794,9 +2798,32 @@ bool CFamiTrackerDoc::WriteBlock_Bookmarks(CDocumentFile *pDocFile, const int Ve
 	return pDocFile->FlushBlock();
 }
 
+// // // Extra parameters
+
+void CFamiTrackerDoc::ReadBlock_ParamsExtra(CDocumentFile *pDocFile, const int Version)
+{
+	m_bLinearPitch = pDocFile->GetBlockInt() != 0;
+	if (Version >= 2) {
+		m_iDetuneSemitone = AssertRange(pDocFile->GetBlockChar(), -12, 12, "Global semitone tuning");
+		m_iDetuneCent = AssertRange(pDocFile->GetBlockChar(), -100, 100, "Global cent tuning");
+	}
+}
+
+bool CFamiTrackerDoc::WriteBlock_ParamsExtra(CDocumentFile *pDocFile, const int Version) const
+{
+	if (!m_bLinearPitch && !m_iDetuneSemitone && !m_iDetuneCent) return true;
+	pDocFile->CreateBlock(FILE_BLOCK_PARAMS_EXTRA, Version);
+	pDocFile->WriteBlockInt(m_bLinearPitch);
+	if (Version >= 2) {
+		pDocFile->WriteBlockChar(m_iDetuneSemitone);
+		pDocFile->WriteBlockChar(m_iDetuneCent);
+	}
+	return pDocFile->FlushBlock();
+}
+
 // !! !! JSON optional data
 
-void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile *pDocFile, const int Version)
+void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile* pDocFile, const int Version)
 {
 	const stJSONOptionalData DnDefaultJSONData;
 	const json DEFAULT = DnDefaultJSONData;
@@ -2836,7 +2863,7 @@ void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile *pDocFile, const int Version)
 	SetSurveyMixCheck(out.at(USE_SURVEY_MIX));
 }
 
-bool CFamiTrackerDoc::WriteBlock_JSON(CDocumentFile *pDocFile, const int Version) const
+bool CFamiTrackerDoc::WriteBlock_JSON(CDocumentFile* pDocFile, const int Version) const
 {
 	json j;
 	const stJSONOptionalData DEFAULT;
@@ -2858,29 +2885,6 @@ bool CFamiTrackerDoc::WriteBlock_JSON(CDocumentFile *pDocFile, const int Version
 
 	pDocFile->CreateBlock(FILE_BLOCK_JSON, Version);
 	pDocFile->WriteString(j.dump(-1, '\0', true));		// FT modules aren't UTF-8 yet, so ensure that text is ASCII
-	return pDocFile->FlushBlock();
-}
-
-// // // Extra parameters
-
-void CFamiTrackerDoc::ReadBlock_ParamsExtra(CDocumentFile *pDocFile, const int Version)
-{
-	m_bLinearPitch = pDocFile->GetBlockInt() != 0;
-	if (Version >= 2) {
-		m_iDetuneSemitone = AssertRange(pDocFile->GetBlockChar(), -12, 12, "Global semitone tuning");
-		m_iDetuneCent = AssertRange(pDocFile->GetBlockChar(), -100, 100, "Global cent tuning");
-	}
-}
-
-bool CFamiTrackerDoc::WriteBlock_ParamsExtra(CDocumentFile *pDocFile, const int Version) const
-{
-	if (!m_bLinearPitch && !m_iDetuneSemitone && !m_iDetuneCent) return true;
-	pDocFile->CreateBlock(FILE_BLOCK_PARAMS_EXTRA, Version);
-	pDocFile->WriteBlockInt(m_bLinearPitch);
-	if (Version >= 2) {
-		pDocFile->WriteBlockChar(m_iDetuneSemitone);
-		pDocFile->WriteBlockChar(m_iDetuneCent);
-	}
 	return pDocFile->FlushBlock();
 }
 
