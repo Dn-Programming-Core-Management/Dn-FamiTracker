@@ -27,6 +27,9 @@
 #include "PatternData.h"		// // //
 #include "TextExporter.h"
 #include "FamiTrackerDoc.h"
+#include "Bookmark.h"		// // //
+#include "BookmarkCollection.h"		// // //
+#include "BookmarkManager.h"		// // //
 #include "../version.h"		// // //
 
 #include "DSample.h"		// // //
@@ -95,6 +98,7 @@ enum
 	CT_PATTERN,        // hex (pattern)
 	CT_ROW,            // row data
 	// BOOKMARKS block
+	CT_BOOKMARK,      // hex (frame) hex (row) int (highlight_1) int (highlight_2) uint (persist) string (name)
 	// PARAMS_EXTRA block
 	// JSON block
 	// PARAMS_EMU block
@@ -158,6 +162,7 @@ static const TCHAR* CT[CT_COUNT] =
 	_T("PATTERN"),
 	_T("ROW"),
 	// BOOKMARKS block
+	_T("BOOKMARK"),
 	// PARAMS_EXTRA block
 	// JSON block
 	// PARAMS_EMU block
@@ -688,6 +693,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	unsigned int pattern = 0;
 	int N163count = -1;		// // //
 	bool UseGroove[MAX_TRACKS] = {};		// // //
+	int BookmarkCount = 0;		// !! !!
 	while (!t.Finished())
 	{
 		// read first token on line
@@ -1151,7 +1157,32 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					CHECK(t.ReadEOL(&sResult));
 				}
 				break;
-			// BOOKMARKS block
+			case CT_BOOKMARK:
+				{
+					if (track == 0)
+					{
+						sResult.Format(_T("Line %d column %d: no TRACK defined, cannot add bookmark data."), t.line, t.GetColumn());
+						return sResult;
+					}
+					CBookmark* pMark = new CBookmark();
+					CHECK(t.ReadHex(i, 0, (int)pDoc->GetFrameCount(track - 1) - 1, &sResult));
+					pMark->m_iFrame = i;
+					CHECK(t.ReadHex(i, 0, (int)pDoc->GetPatternLength(track - 1) - 1, &sResult));
+					pMark->m_iRow = i;
+					CHECK(t.ReadInt(i, 0, MAX_PATTERN_LENGTH, &sResult));
+					pMark->m_Highlight.First = i;
+					CHECK(t.ReadInt(i, 0, MAX_PATTERN_LENGTH, &sResult));
+					pMark->m_Highlight.Second = i;
+					CHECK(t.ReadInt(i, 0, 1, &sResult));
+					pMark->m_bPersist = static_cast<bool>(i);
+					pMark->m_sName = std::string(t.ReadToken());
+					if (!(pDoc->GetBookmarkManager()->GetCollection(track - 1)->AddBookmark(pMark))) {
+						sResult.Format(_T("Line %d column %d: Failed to add bookmark."), t.line, t.GetColumn());
+						return sResult;
+					}
+					CHECK(t.ReadEOL(&sResult));
+				}
+				break;
 			// PARAMS_EXTRA block
 			// JSON block
 			// PARAMS_EMU block
@@ -1234,14 +1265,15 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	s.Format(_T("# " APP_NAME " text export %i.%i.%i.%i\n\n"), VERSION);		// // //
 	f.WriteString(s);
 
-	s.Format(_T("# INFO block\n"
-	            "%-15s %s\n"
-	            "%-15s %s\n"
-	            "%-15s %s\n"
-	            "\n"),
-	            CT[CT_TITLE],     ExportString(pDoc->GetSongName()),
-	            CT[CT_AUTHOR],    ExportString(pDoc->GetSongArtist()),
-	            CT[CT_COPYRIGHT], ExportString(pDoc->GetSongCopyright()));
+	f.WriteString(_T("# INFO block\n"));
+
+	s.Format(_T("%-15s %s\n"
+				"%-15s %s\n"
+				"%-15s %s\n"
+				"\n"),
+				CT[CT_TITLE],     ExportString(pDoc->GetSongName()),
+				CT[CT_AUTHOR],    ExportString(pDoc->GetSongArtist()),
+				CT[CT_COPYRIGHT], ExportString(pDoc->GetSongCopyright()));
 	f.WriteString(s);
 
 	f.WriteString(_T("# COMMENTS block\n"));
@@ -1266,8 +1298,8 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	} while (bCommentLines);
 	f.WriteString(_T("\n"));
 
-	s.Format(_T("# PARAMS block\n"
-				"%-15s %d\n"
+	f.WriteString(_T("# PARAMS block\n"));
+	s.Format(_T("%-15s %d\n"
 				"%-15s %d\n"
 				"%-15s %d\n"
 				"%-15s %d\n"
@@ -1293,8 +1325,8 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 		pDoc->SetNamcoChannels(8, true);
 		pDoc->SelectExpansionChip(pDoc->GetExpansionChip()); // calls ApplyExpansionChip()
 		s.Format(_T("%-15s %d\n"
-		            "\n"),
-		            CT[CT_N163CHANNELS], N163count);
+					"\n"),
+					CT[CT_N163CHANNELS], N163count);
 		f.WriteString(s);
 	}
 
@@ -1381,7 +1413,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	}
 	f.WriteString(_T("\n"));
 	
-	f.WriteString(_T("# Tracks using default groove\n"));		// // //
+	f.WriteString(_T("# Tracks using default groove:\n"));		// // //
 	bool UsedGroove = false;
 	for (unsigned int i = 0; i < pDoc->GetTrackCount(); i++)
 		if (pDoc->GetSongGroove(i)) UsedGroove = true;
@@ -1392,8 +1424,9 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 			s.Format(_T(" %d"), i + 1);
 			f.WriteString(s);
 		}
-		f.WriteString(_T("\n\n"));
+		f.WriteString(_T("\n"));
 	}
+	f.WriteString(_T("\n"));
 	
 	f.WriteString(_T("# INSTRUMENTS block\n"));
 	for (unsigned int i=0; i<MAX_INSTRUMENTS; ++i)
@@ -1551,12 +1584,12 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	}
 	f.WriteString(_T("\n"));
 
-	f.WriteString(_T("# HEADER block, FRAMES block, PATTERNS block\n\n"));
-
 	for (unsigned int t=0; t < pDoc->GetTrackCount(); ++t)
 	{
 		const char* zpTitle = pDoc->GetTrackTitle(t).GetString();
 		if (zpTitle == NULL) zpTitle = "";
+
+		f.WriteString(_T("# track HEADER block\n"));
 
 		s.Format(_T("%s %3d %3d %3d %s\n"),
 			CT[CT_TRACK],
@@ -1575,6 +1608,8 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 		}
 		f.WriteString(_T("\n\n"));
 
+		f.WriteString(_T("# track FRAMES block\n"));
+
 		for (unsigned int o=0; o < pDoc->GetFrameCount(t); ++o)
 		{
 			s.Format(_T("%s %02X :"), CT[CT_ORDER], o);
@@ -1587,6 +1622,8 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 			f.WriteString(_T("\n"));
 		}
 		f.WriteString(_T("\n"));
+
+		f.WriteString(_T("# track PATTERNS block\n"));
 
 		for (int p=0; p < MAX_PATTERN; ++p)
 		{
@@ -1620,6 +1657,26 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 			}
 			f.WriteString(_T("\n"));
 		}
+
+		f.WriteString(_T("# track BOOKMARKS block\n"));
+
+		CBookmarkCollection *pBookmarkCollection = pDoc->GetBookmarkManager()->GetCollection(t);
+
+		unsigned int bookmarkcount = pBookmarkCollection->GetCount();
+		if (bookmarkcount) for (unsigned int b = 0; b < bookmarkcount; ++b) {
+			CBookmark* pMark = pBookmarkCollection->GetBookmark(b);
+			s.Format(_T("%s %02X %02X %3d %3d %3d %s"),
+				CT[CT_BOOKMARK],
+				pMark->m_iFrame,
+				pMark->m_iRow,
+				pMark->m_Highlight.First,
+				pMark->m_Highlight.Second,
+				pMark->m_bPersist,
+				ExportString(pMark->m_sName.c_str()));
+			f.WriteString(s);
+			f.WriteString(_T("\n"));
+		}
+		f.WriteString(_T("\n\n"));
 	}
 
 	if (N163count != -1) {		// // //
