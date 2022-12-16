@@ -229,6 +229,9 @@ public:
 	machine_t		GetMachine() const		{ return m_iMachine; };		// // //
 	unsigned int	GetEngineSpeed() const	{ return m_iEngineSpeed; };
 	unsigned int	GetFrameRate() const;
+	void			SetPlaybackRate(unsigned int Rate, unsigned int Type);
+	unsigned int	GetPlaybackRate() const;
+	unsigned int	GetPlaybackRateType() const { return m_iPlaybackRateType; };
 
 	void			SelectExpansionChip(unsigned char Chip, bool Move = false);		// // //
 	unsigned char	GetExpansionChip() const { return m_iExpansionChip; };
@@ -551,10 +554,12 @@ private:
 	bool			m_bLinearPitch;
 
 	machine_t		m_iMachine;									// // // NTSC / PAL
-	unsigned int	m_iEngineSpeed;								// Refresh rate
+	unsigned int	m_iEngineSpeed;								// Engine refresh rate, in Hz
 	unsigned int	m_iSpeedSplitPoint;							// Speed/tempo split-point
 	int				m_iDetuneTable[6][96];						// // // Detune tables
 	int				m_iDetuneSemitone, m_iDetuneCent;			// // // 050B tuning
+	unsigned int	m_iPlaybackRate;							// NSF playback rate, in microseconds
+	unsigned int	m_iPlaybackRateType;						// Playback rate type, 0 = default, 1 = custom, 2 = video
 
 	// Emulation properties
 	bool			m_bUseExternalOPLLChip;						// !! !! User-defined hardware patch set for OPLL

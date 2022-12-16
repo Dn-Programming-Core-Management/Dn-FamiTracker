@@ -114,6 +114,8 @@ public:
 	static const uint32_t	BASE_FREQ_VRC7;
 	static const uint8_t	FRAME_RATE_NTSC;
 	static const uint8_t	FRAME_RATE_PAL;
+	static const uint16_t	NSF_RATE_NTSC;
+	static const uint16_t	NSF_RATE_PAL;
 	static const uint8_t	OPLL_DEFAULT_PATCHES[OPLL_TONE_NUM][19 * 8];
 	static const std::string	OPLL_PATCHNAME_VRC7[19];
 	static const std::string	OPLL_PATCHNAME_YM2413[19];

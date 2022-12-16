@@ -762,11 +762,13 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 				CHECK(t.ReadEOL(&sResult));
 				break;
 			case CT_PLAYBACKRATE:		// // // 050B
-				CHECK(t.ReadInt(i,0,2,&sResult));
-
-				CHECK(t.ReadInt(i,0,0xFFFF,&sResult));
-
-				CHECK(t.ReadEOL(&sResult));
+			{
+				CHECK(t.ReadInt(i, 0, 2, &sResult));
+				int rate = 0;
+				CHECK(t.ReadInt(rate, 0, 0xFFFF, &sResult));
+				pDoc->SetPlaybackRate(i, rate);
+				CHECK(t.ReadEOL(&sResult)); 
+			}
 				break;
 			case CT_TUNING:		// // // 050B
 			{
@@ -1312,14 +1314,14 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 				"%-15s %d\n"
 				"%-15s %d\n"
 				"%-15s %d\n"
-//				"%-15s %d %d\n"		// // // 050B
+				"%-15s %d %d\n"		// // // 050B
 				),
 				CT[CT_MACHINE],   pDoc->GetMachine(),
 				CT[CT_FRAMERATE], pDoc->GetEngineSpeed(),
 				CT[CT_EXPANSION], pDoc->GetExpansionChip(),
 				CT[CT_VIBRATO],   pDoc->GetVibratoStyle(),
-				CT[CT_SPLIT],     pDoc->GetSpeedSplitPoint()
-//				,CT[CT_PLAYBACKRATE], pDoc->, pDoc->
+				CT[CT_SPLIT],     pDoc->GetSpeedSplitPoint(),
+				CT[CT_PLAYBACKRATE], pDoc->GetPlaybackRateType(), pDoc->GetPlaybackRate()
 				);
 	if (pDoc->GetTuningSemitone() || pDoc->GetTuningCent())		// // // 050B
 		s.AppendFormat(_T("%-15s %d %d\n"), CT[CT_TUNING], pDoc->GetTuningSemitone(), pDoc->GetTuningCent());

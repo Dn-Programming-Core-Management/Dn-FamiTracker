@@ -47,6 +47,8 @@ const uint32_t	CAPU::BASE_FREQ_PAL			= 1662607;
 const uint32_t	CAPU::BASE_FREQ_VRC7		= 3579545;
 const uint8_t	CAPU::FRAME_RATE_NTSC		= 60;
 const uint8_t	CAPU::FRAME_RATE_PAL		= 50;
+const uint16_t	CAPU::NSF_RATE_NTSC			= 16639;
+const uint16_t	CAPU::NSF_RATE_PAL			= 19997;
 
 const int OPLL_TONE_NUM = 9;
 

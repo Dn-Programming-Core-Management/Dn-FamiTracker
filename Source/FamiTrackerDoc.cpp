@@ -1918,13 +1918,17 @@ void CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile, const int Ve
 	AssertFileData(m_iMachine == NTSC || m_iMachine == PAL, "Unknown machine");
 
 	if (Version >= 7) {		// // // 050B
-		switch (pDocFile->GetBlockInt()) {
+		m_iPlaybackRateType = AssertRange(pDocFile->GetBlockInt(), 0, 2, "Playback rate type");
+		switch (m_iPlaybackRateType) {
 		case 1:
-			m_iEngineSpeed = static_cast<int>(1000000. / pDocFile->GetBlockInt() + .5);
+			// TODO: implement NSF rate
+			m_iPlaybackRate = AssertRange(pDocFile->GetBlockInt(), 0, 0xFFFF, "Playback rate");
+			// workaround for now
+			m_iEngineSpeed = static_cast<int>(1000000. / m_iPlaybackRate + .5);
 			break;
 		case 0: case 2:
 		default:
-			pDocFile->GetBlockInt();
+			m_iPlaybackRate = AssertRange(pDocFile->GetBlockInt(), 0, 0xFFFF, "Playback rate");
 			m_iEngineSpeed = 0;
 		}
 	}
@@ -3720,6 +3724,34 @@ void CFamiTrackerDoc::SetEngineSpeed(unsigned int Speed)
 	m_iEngineSpeed = Speed;
 	SetModifiedFlag();
 	SetExceededFlag();		// // //
+}
+
+void CFamiTrackerDoc::SetPlaybackRate(unsigned int Rate, unsigned int Type)
+{
+	m_iPlaybackRateType = Type;
+	if (m_iPlaybackRate != Rate) {
+		SetModifiedFlag();
+		SetExceededFlag();
+	}
+	m_iPlaybackRate = Rate;
+}
+
+unsigned int CFamiTrackerDoc::GetPlaybackRate() const
+{
+	if (m_iPlaybackRate == 0) {
+		switch (m_iMachine) {
+		case NTSC:
+			return CAPU::NSF_RATE_NTSC;
+			break;
+		case PAL:
+			return CAPU::NSF_RATE_PAL;
+			break;
+		default:
+			break;
+		}
+	}
+
+	return m_iPlaybackRate;
 }
 
 void CFamiTrackerDoc::SetMachine(machine_t Machine, bool Redraw)
