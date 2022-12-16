@@ -395,6 +395,7 @@ private:
 
 	bool			WriteBlock_Parameters(CDocumentFile *pDocFile, const int Version) const;		// // // version
 	bool			WriteBlock_SongInfo(CDocumentFile *pDocFile, const int Version) const;
+	bool			WriteBlock_Tuning(CDocumentFile *pDocFile, const int Version) const;
 	bool			WriteBlock_Header(CDocumentFile *pDocFile, const int Version) const;
 	bool			WriteBlock_Instruments(CDocumentFile *pDocFile, const int Version) const;
 	bool			WriteBlock_Sequences(CDocumentFile *pDocFile, const int Version) const;
@@ -417,6 +418,7 @@ private:
 
 	void			ReadBlock_Parameters(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_SongInfo(CDocumentFile *pDocFile, const int Version);		// // //
+	void			ReadBlock_Tuning(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_Header(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_Instruments(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_Sequences(CDocumentFile *pDocFile, const int Version);

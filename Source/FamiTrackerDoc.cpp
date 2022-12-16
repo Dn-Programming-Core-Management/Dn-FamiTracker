@@ -88,6 +88,7 @@ const bool	CFamiTrackerDoc::DEFAULT_LINEAR_PITCH = false;
 static const char *FILE_HEADER				= "FamiTracker Module";
 static const char *FILE_HEADER_DN			= "Dn-FamiTracker Module";
 static const char *FILE_BLOCK_PARAMS		= "PARAMS";
+static const char *FILE_BLOCK_TUNING		= "TUNING";
 static const char *FILE_BLOCK_INFO			= "INFO";
 static const char *FILE_BLOCK_INSTRUMENTS	= "INSTRUMENTS";
 static const char *FILE_BLOCK_SEQUENCES		= "SEQUENCES";
@@ -875,6 +876,7 @@ bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 		// internal
 		6,		// Parameters
 		1,		// Song Info
+		1,		// Tuning
 		3,		// Header
 		6,		// Instruments
 		6,		// Sequences
@@ -910,6 +912,7 @@ bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 	static bool (CFamiTrackerDoc::*FTM_WRITE_FUNC[])(CDocumentFile*, const int) const = {		// // //
 		&CFamiTrackerDoc::WriteBlock_Parameters,
 		&CFamiTrackerDoc::WriteBlock_SongInfo,
+		&CFamiTrackerDoc::WriteBlock_Tuning,
 		&CFamiTrackerDoc::WriteBlock_Header,
 		&CFamiTrackerDoc::WriteBlock_Instruments,
 		&CFamiTrackerDoc::WriteBlock_Sequences,
@@ -947,30 +950,38 @@ bool CFamiTrackerDoc::WriteBlock_Parameters(CDocumentFile *pDocFile, const int V
 
 	pDocFile->WriteBlockInt(m_iChannelsAvailable);
 	pDocFile->WriteBlockInt(static_cast<int>(m_iMachine));
-	pDocFile->WriteBlockInt(m_iEngineSpeed);
+
+
+	if (Version >= 7) {		// // // 050B
+		pDocFile->WriteBlockInt(m_iPlaybackRateType);
+		pDocFile->WriteBlockInt(m_iPlaybackRate);
+	}
+	else
+		pDocFile->WriteBlockInt(m_iEngineSpeed);
 	
 	if (Version >= 3) {
 		pDocFile->WriteBlockInt(m_iVibratoStyle);
 		// m_bLinearPitch is written in WriteBlock_ParamsExtra
+		if (Version >= 7)
+			pDocFile->WriteBlockInt(1);		// Hardware sweep pitch reset
 
-		if (Version >= 4) {
+		if (Version > 3 && Version <= 6) {
 			pDocFile->WriteBlockInt(m_vHighlight.First);
 			pDocFile->WriteBlockInt(m_vHighlight.Second);
+		}
 
-			if (Version >= 5) {
-				if (ExpansionEnabled(SNDCHIP_N163))
-					pDocFile->WriteBlockInt(m_iNamcoChannels);
+		if (Version >= 5) {
+			if (ExpansionEnabled(SNDCHIP_N163))
+				pDocFile->WriteBlockInt(m_iNamcoChannels);
+		}
 
-				if (Version >= 6)
-					pDocFile->WriteBlockInt(m_iSpeedSplitPoint);
+		if (Version >= 6) {
+			pDocFile->WriteBlockInt(m_iSpeedSplitPoint);
+		}
 
-				if (Version >= 8) {		// // // 050B
-					pDocFile->WriteBlockChar(m_iDetuneSemitone);
-					pDocFile->WriteBlockChar(m_iDetuneCent);
-
-					// TODO: write playback rate and tuning
-				}
-			}
+		if (Version == 8) {		// // // 050B 2015
+			pDocFile->WriteBlockChar(m_iDetuneSemitone);
+			pDocFile->WriteBlockChar(m_iDetuneCent);
 		}
 	}
 
@@ -985,6 +996,17 @@ bool CFamiTrackerDoc::WriteBlock_SongInfo(CDocumentFile *pDocFile, const int Ver
 	pDocFile->WriteBlock(m_strName, 32);
 	pDocFile->WriteBlock(m_strArtist, 32);
 	pDocFile->WriteBlock(m_strCopyright, 32);
+
+	return pDocFile->FlushBlock();
+}
+
+bool CFamiTrackerDoc::WriteBlock_Tuning(CDocumentFile* pDocFile, const int Version) const
+{
+	// Song info
+	pDocFile->CreateBlock(FILE_BLOCK_TUNING, Version);
+
+	pDocFile->WriteBlockChar(m_iDetuneSemitone);
+	pDocFile->WriteBlockChar(m_iDetuneCent);
 
 	return pDocFile->FlushBlock();
 }
@@ -1804,6 +1826,7 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 	static std::unordered_map<std::string, void (CFamiTrackerDoc::*)(CDocumentFile*, const int)> FTM_READ_FUNC;
 	FTM_READ_FUNC[FILE_BLOCK_PARAMS]			= &CFamiTrackerDoc::ReadBlock_Parameters;
 	FTM_READ_FUNC[FILE_BLOCK_INFO]				= &CFamiTrackerDoc::ReadBlock_SongInfo;
+	FTM_READ_FUNC[FILE_BLOCK_TUNING]			= &CFamiTrackerDoc::ReadBlock_Tuning;
 	FTM_READ_FUNC[FILE_BLOCK_INSTRUMENTS]		= &CFamiTrackerDoc::ReadBlock_Instruments;
 	FTM_READ_FUNC[FILE_BLOCK_SEQUENCES]			= &CFamiTrackerDoc::ReadBlock_Sequences;
 	FTM_READ_FUNC[FILE_BLOCK_FRAMES]			= &CFamiTrackerDoc::ReadBlock_Frames;
@@ -1919,16 +1942,15 @@ void CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile, const int Ve
 
 	if (Version >= 7) {		// // // 050B
 		m_iPlaybackRateType = AssertRange(pDocFile->GetBlockInt(), 0, 2, "Playback rate type");
+		// TODO: implement NSF rate
+		m_iPlaybackRate = AssertRange(pDocFile->GetBlockInt(), 0, 0xFFFF, "Playback rate");
 		switch (m_iPlaybackRateType) {
 		case 1:
-			// TODO: implement NSF rate
-			m_iPlaybackRate = AssertRange(pDocFile->GetBlockInt(), 0, 0xFFFF, "Playback rate");
 			// workaround for now
 			m_iEngineSpeed = static_cast<int>(1000000. / m_iPlaybackRate + .5);
 			break;
 		case 0: case 2:
 		default:
-			m_iPlaybackRate = AssertRange(pDocFile->GetBlockInt(), 0, 0xFFFF, "Playback rate");
 			m_iEngineSpeed = 0;
 		}
 	}
@@ -1988,11 +2010,9 @@ void CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile, const int Ve
 
 	AssertRange<MODULE_ERROR_STRICT>(m_iExpansionChip, 0, 0x3F, "Expansion chip flag");
 
-	if (Version >= 8) {		// // // 050B
+	if (Version == 8) {		// // // 050B 2015
 		m_iDetuneSemitone = pDocFile->GetBlockChar();
 		m_iDetuneCent = pDocFile->GetBlockChar();
-
-		// TODO: write playback rate and tuning
 	}
 
 	SetupChannels(m_iExpansionChip);
@@ -2003,6 +2023,14 @@ void CFamiTrackerDoc::ReadBlock_SongInfo(CDocumentFile *pDocFile, const int Vers
 	pDocFile->GetBlock(m_strName, 32);
 	pDocFile->GetBlock(m_strArtist, 32);
 	pDocFile->GetBlock(m_strCopyright, 32);
+}
+
+void CFamiTrackerDoc::ReadBlock_Tuning(CDocumentFile* pDocFile, const int Version)
+{
+	if (Version == 1) {
+		m_iDetuneSemitone = AssertRange(pDocFile->GetBlockChar(), -12, 12, "Global semitone tuning");
+		m_iDetuneCent = AssertRange(pDocFile->GetBlockChar(), -100, 100, "Global cent tuning");
+	}
 }
 
 void CFamiTrackerDoc::ReadBlock_Header(CDocumentFile *pDocFile, const int Version)
