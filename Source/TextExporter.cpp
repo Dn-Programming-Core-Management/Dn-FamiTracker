@@ -98,8 +98,9 @@ enum
 	CT_PATTERN,        // hex (pattern)
 	CT_ROW,            // row data
 	// BOOKMARKS block
-	CT_BOOKMARK,      // hex (frame) hex (row) int (highlight_1) int (highlight_2) uint (persist) string (name)
+	CT_BOOKMARK,       // hex (frame) hex (row) int (highlight_1) int (highlight_2) uint (persist; 0 = false, 1 = true) string (name)
 	// PARAMS_EXTRA block
+	CT_LINEARPITCH,    // uint (0 = linear period, 1 = linear pitch)
 	// JSON block
 	// PARAMS_EMU block
 	// end of command list
@@ -164,6 +165,7 @@ static const TCHAR* CT[CT_COUNT] =
 	// BOOKMARKS block
 	_T("BOOKMARK"),
 	// PARAMS_EXTRA block
+	_T("LINEARPITCH"),
 	// JSON block
 	// PARAMS_EMU block
 };
@@ -775,6 +777,13 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 				CHECK(t.ReadEOL(&sResult));
 			}
 				break;
+			case CT_LINEARPITCH:		// !! !!
+			{
+				CHECK(t.ReadInt(i, 0, 1, &sResult));
+				pDoc->SetLinearPitch(static_cast<bool>(i));
+				CHECK(t.ReadEOL(&sResult)); 
+			}
+				break;
 			case CT_N163CHANNELS:
 				CHECK(t.ReadInt(i,1,8,&sResult));
 				N163count = i;		// // //
@@ -1183,7 +1192,6 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					CHECK(t.ReadEOL(&sResult));
 				}
 				break;
-			// PARAMS_EXTRA block
 			// JSON block
 			// PARAMS_EMU block
 			case CT_COUNT:
@@ -1315,7 +1323,10 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 				);
 	if (pDoc->GetTuningSemitone() || pDoc->GetTuningCent())		// // // 050B
 		s.AppendFormat(_T("%-15s %d %d\n"), CT[CT_TUNING], pDoc->GetTuningSemitone(), pDoc->GetTuningCent());
+	if (pDoc->GetLinearPitch())
+		s.AppendFormat(_T("%-15s %d\n"), CT[CT_LINEARPITCH], static_cast<int>(pDoc->GetLinearPitch()));
 	f.WriteString(s);
+
 	f.WriteString(_T("\n"));
 
 	int N163count = -1;		// // //
@@ -1657,6 +1668,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 			}
 			f.WriteString(_T("\n"));
 		}
+		f.WriteString(_T("\n"));
 
 		f.WriteString(_T("# track BOOKMARKS block\n"));
 
@@ -1683,8 +1695,6 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 		pDoc->SetNamcoChannels(N163count, true);
 		pDoc->SelectExpansionChip(pDoc->GetExpansionChip()); // calls ApplyExpansionChip()
 	}
-	// BOOKMARKS block
-	// PARAMS_EXTRA block
 	// JSON block
 	// PARAMS_EMU block
 	f.WriteString(_T("# End of export\n"));
