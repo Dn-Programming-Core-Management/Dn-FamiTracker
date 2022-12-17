@@ -1334,6 +1334,9 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 
 	f.WriteString(_T("\n"));
 
+	// JSON block
+	// PARAMS_EMU block
+
 	int N163count = -1;		// // //
 	if (pDoc->ExpansionEnabled(SNDCHIP_N163))
 	{
@@ -1546,7 +1549,7 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 
 					for (int smp=0; smp < pDI->GetWaveSize(); ++smp)
 					{
-						s.Format(_T(" %d"), pDI->GetSample(w, smp));
+						s.Format(_T(" %2d"), pDI->GetSample(w, smp));
 						f.WriteString(s);
 					}
 					f.WriteString(_T("\n"));
@@ -1671,7 +1674,6 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 				}
 				f.WriteString(_T("\n"));
 			}
-			f.WriteString(_T("\n"));
 		}
 		f.WriteString(_T("\n"));
 
@@ -1693,15 +1695,15 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 			f.WriteString(s);
 			f.WriteString(_T("\n"));
 		}
-		f.WriteString(_T("\n\n"));
+		f.WriteString(_T("\n"));
 	}
+	f.WriteString(_T("\n"));
 
 	if (N163count != -1) {		// // //
 		pDoc->SetNamcoChannels(N163count, true);
 		pDoc->SelectExpansionChip(pDoc->GetExpansionChip()); // calls ApplyExpansionChip()
 	}
-	// JSON block
-	// PARAMS_EMU block
+
 	f.WriteString(_T("# End of export\n"));
 	pDoc->UpdateAllViews(NULL, UPDATE_FRAME);
 	pDoc->UpdateAllViews(NULL, UPDATE_PATTERN);
