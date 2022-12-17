@@ -105,6 +105,8 @@ enum
 	// JSON block
 	CT_JSON,			// string (JSON data)
 	// PARAMS_EMU block
+	CT_USEEXTOPLL,		// uint (0 = VRC7, 1 = external OPLL)
+	CT_OPLLPATCH,		// uint (patch number) : hex x 8 (patch bytes) string (patch name)
 	// end of command list
 	CT_COUNT
 };
@@ -169,8 +171,10 @@ static const TCHAR* CT[CT_COUNT] =
 	// PARAMS_EXTRA block
 	_T("LINEARPITCH"),
 	// JSON block
-	_T("JSON")
+	_T("JSON"),
 	// PARAMS_EMU block
+	_T("USEEXTERNALOPLL"),
+	_T("OPLLPATCH"),
 };
 
 // =============================================================================
@@ -701,6 +705,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	int BookmarkCount = 0;		// !! !!
 
 	std::string jsonparse;
+
 	while (!t.Finished())
 	{
 		// read first token on line
@@ -1207,6 +1212,27 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 			}
 				break;
 			// PARAMS_EMU block
+			case CT_USEEXTOPLL:
+			{
+				CHECK(t.ReadInt(i, 0, 1, &sResult));
+				pDoc->SetExternalOPLLChipCheck(static_cast<bool>(i));
+				CHECK(t.ReadEOL(&sResult));
+			}
+				break;
+			case CT_OPLLPATCH:
+			{
+				int patchnum = 0;
+				int patchbyte[8]{};
+				CHECK(t.ReadInt(patchnum, 0, 18, &sResult));
+				CHECK_COLON();
+				for (int index = 0; index < 8; index++) {
+					CHECK(t.ReadHex(patchbyte[index], 0x00, 0xFF, &sResult));
+					pDoc->SetOPLLPatchByte(((8 * patchnum) + index), patchbyte[index]);
+				}
+				pDoc->SetOPLLPatchName(patchnum, std::string(t.ReadToken()));
+				CHECK(t.ReadEOL(&sResult));
+			}
+			break;
 			case CT_COUNT:
 			default:
 				sResult.Format(_T("Unrecognized command at line %d: '%s'."), t.line, command);
@@ -1226,6 +1252,7 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 		pDoc->SetNamcoChannels(N163count, true);
 		pDoc->SelectExpansionChip(pDoc->GetExpansionChip()); // calls ApplyExpansionChip()
 	}
+
 	return sResult;
 }
 
@@ -1717,9 +1744,8 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	}
 
 	f.WriteString(_T("# JSON block\n"));
-
-	json j = pDoc->InterfaceToOptionalJSON();
 	{
+		json j = pDoc->InterfaceToOptionalJSON();
 		std::string &jsondump = j.dump(4, ' ', true);
 		std::string &delimiter = std::string("\n");
 		std::string::size_type pos = 0, prev = 0;
@@ -1732,10 +1758,33 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 		f.WriteString(s);
 	}
 	f.WriteString(_T("\n"));
+
+	f.WriteString(_T("# PARAMS_EMU block\n"));
+
+	s.Format(_T("%s %d\n"), CT[CT_USEEXTOPLL], static_cast<int>(pDoc->GetExternalOPLLChipCheck()));
+	f.WriteString(s);
+	if (pDoc->GetExternalOPLLChipCheck()) {
+		for (int patch = 0; patch < 19; patch++) {
+			s.Format(_T("%s %2d :"), CT[CT_OPLLPATCH], patch);
+			f.WriteString(s);
+			for (int patchbyte = 0; patchbyte < 8; patchbyte++) {
+				s.Format(_T(" %02X"), pDoc->GetOPLLPatchByte((8 * patch) + patchbyte));
+				f.WriteString(s);
+			}
+			s.Format(_T(" %s"), ExportString(pDoc->GetOPLLPatchName(patch).c_str()));
+			f.WriteString(s);
+			f.WriteString(_T("\n"));
+		}
+	}
+	f.WriteString(_T("\n"));
 	
 	if (N163count != -1) {		// // //
 		pDoc->SetNamcoChannels(N163count, true);
 		pDoc->SelectExpansionChip(pDoc->GetExpansionChip()); // calls ApplyExpansionChip()
+
+		// Do not set modules modified when exporting text
+		pDoc->SetModifiedFlag(FALSE);
+		pDoc->SetExceededFlag(FALSE);
 	}
 
 	f.WriteString(_T("# End of export\n"));

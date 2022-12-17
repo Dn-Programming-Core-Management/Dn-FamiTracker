@@ -549,40 +549,6 @@ void CFamiTrackerDoc::CreateEmpty()
 	m_iVibratoStyle = VIBRATO_NEW;
 	m_bLinearPitch = DEFAULT_LINEAR_PITCH;
 
-	for (int i = 0; i < 7; i++) {
-		m_iDeviceLevelOffset[i] = 0;
-	}
-
-	m_bUseSurveyMixing = false;
-
-	m_bUseExternalOPLLChip = false;
-
-	int DefaultPatchSetNumber = theApp.GetSettings()->Emulation.iVRC7Patch;
-
-	// YM2413 and YMF281B are considered external OPLL
-	if (DefaultPatchSetNumber > 6)
-		m_bUseExternalOPLLChip = true;
-
-	// Set to current default OPLL patchset
-	for (int i = 0; i < 19; i++) {
-		for (int j = 0; j < 8; j++) {
-			if (i == 0)
-				m_iOPLLPatchBytes[(8 * i) + j] = 0;
-			m_iOPLLPatchBytes[(8 * i) + j] = CAPU::OPLL_DEFAULT_PATCHES[DefaultPatchSetNumber][(8 * i) + j];
-		}
-		switch (DefaultPatchSetNumber) {
-		case 7:
-			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YM2413[i];
-			break;
-		case 8:
-			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YMF281B[i];
-			break;
-		default:
-			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_VRC7[i];
-			break;
-		}
-	}
-
 	m_iNamcoChannels = 0;		// // //
 
 	// and select 2A03 only
@@ -1510,40 +1476,6 @@ BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 			m_iVibratoStyle = VIBRATO_OLD;
 			m_bLinearPitch = false;
 
-			for (int i = 0; i < 7; i++) {
-				m_iDeviceLevelOffset[i] = 0;
-			}
-
-			m_bUseSurveyMixing = false;
-			
-			m_bUseExternalOPLLChip = false;
-
-			int DefaultPatchSetNumber = theApp.GetSettings()->Emulation.iVRC7Patch;
-
-			// YM2413 and YMF281B are considered external OPLL
-			if (DefaultPatchSetNumber > 6)
-				m_bUseExternalOPLLChip = true;
-
-			// Set to current default OPLL patchset
-			for (int i = 0; i < 19; i++) {
-				for (int j = 0; j < 8; j++) {
-					if (i == 0)
-						m_iOPLLPatchBytes[(8 * i) + j] = 0;
-					m_iOPLLPatchBytes[(8 * i) + j] = CAPU::OPLL_DEFAULT_PATCHES[DefaultPatchSetNumber][(8 * i) + j];
-				}
-				switch (DefaultPatchSetNumber) {
-				case 7:
-					m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YM2413[i];
-					break;
-				case 8:
-					m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YMF281B[i];
-					break;
-				default:
-					m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_VRC7[i];
-					break;
-				}
-			}
-
 			m_iNamcoChannels = 0;		// // //
 		}
 		else {
@@ -1592,40 +1524,6 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 
 	m_iVibratoStyle = VIBRATO_OLD;
 	m_bLinearPitch = false;
-
-	for (int i = 0; i < 7; i++) {
-		m_iDeviceLevelOffset[i] = 0;
-	}
-
-	m_bUseSurveyMixing = false;
-
-	m_bUseExternalOPLLChip = false;
-
-	int DefaultPatchSetNumber = theApp.GetSettings()->Emulation.iVRC7Patch;
-
-	// YM2413 and YMF281B are considered external OPLL
-	if (DefaultPatchSetNumber > 6)
-		m_bUseExternalOPLLChip = true;
-
-	// Set to current default OPLL patchset
-	for (int i = 0; i < 19; i++) {
-		for (int j = 0; j < 8; j++) {
-			if (i == 0)
-				m_iOPLLPatchBytes[(8 * i) + j] = 0;
-			m_iOPLLPatchBytes[(8 * i) + j] = CAPU::OPLL_DEFAULT_PATCHES[DefaultPatchSetNumber][(8 * i) + j];
-		}
-		switch (DefaultPatchSetNumber) {
-		case 7:
-			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YM2413[i];
-			break;
-		case 8:
-			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YMF281B[i];
-			break;
-		default:
-			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_VRC7[i];
-			break;
-		}
-	}
 
 	m_iNamcoChannels = 0;		// // //
 
@@ -2897,36 +2795,9 @@ bool CFamiTrackerDoc::WriteBlock_JSON(CDocumentFile* pDocFile, const int Version
 
 void CFamiTrackerDoc::ReadBlock_ParamsEmu(CDocumentFile* pDocFile, const int Version)
 {
-	int DefaultPatchSetNumber = theApp.GetSettings()->Emulation.iVRC7Patch;
-
 	m_bUseExternalOPLLChip = (pDocFile->GetBlockInt() != 0);
 
-	if (!m_bUseExternalOPLLChip) {
-		// YM2413 and YMF281B are considered external OPLL
-		if (DefaultPatchSetNumber > 6)
-			m_bUseExternalOPLLChip = true;
-
-		// Set to current default OPLL patchset
-		for (int i = 0; i < 19; i++) {
-			for (int j = 0; j < 8; j++) {
-				if (i == 0)
-					m_iOPLLPatchBytes[(8 * i) + j] = 0;
-				m_iOPLLPatchBytes[(8 * i) + j] = CAPU::OPLL_DEFAULT_PATCHES[DefaultPatchSetNumber][(8 * i) + j];
-			}
-			switch (DefaultPatchSetNumber) {
-			case 7:
-				m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YM2413[i];
-				break;
-			case 8:
-				m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YMF281B[i];
-				break;
-			default:
-				m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_VRC7[i];
-				break;
-			}
-		}
-	}
-	else {
+	if (m_bUseExternalOPLLChip) {
 		for (int i = 0; i < 19; i++) {
 			for (int j = 0; j < 8; j++)
 				m_iOPLLPatchBytes[(8 * i) + j] = static_cast<uint8_t>(pDocFile->GetBlockChar());
@@ -2937,38 +2808,8 @@ void CFamiTrackerDoc::ReadBlock_ParamsEmu(CDocumentFile* pDocFile, const int Ver
 
 bool CFamiTrackerDoc::WriteBlock_ParamsEmu(CDocumentFile* pDocFile, const int Version) const
 {
-	bool modifiedpatchnames = false;
-	bool modifiedpatchbytes = false;
-
-	int DefaultPatchSetNumber = theApp.GetSettings()->Emulation.iVRC7Patch;
-
-	// Compare to current default OPLL patchset
-	if (DefaultPatchSetNumber > 6) {
-		for (int i = 0; i < 19; i++) {
-			for (int j = 0; j < 8; j++) {
-				if (i == 0)
-					modifiedpatchbytes = m_iOPLLPatchBytes[(8 * i) + j] != 0;
-				modifiedpatchbytes = (m_iOPLLPatchBytes[(8 * i) + j] != CAPU::OPLL_DEFAULT_PATCHES[DefaultPatchSetNumber][(8 * i) + j]);
-			}
-			switch (DefaultPatchSetNumber) {
-			case 7:
-				modifiedpatchnames = m_strOPLLPatchNames[i] != CAPU::OPLL_PATCHNAME_YM2413[i];
-				break;
-			case 8:
-				modifiedpatchnames = m_strOPLLPatchNames[i] != CAPU::OPLL_PATCHNAME_YMF281B[i];
-				break;
-			default:
-				modifiedpatchnames = m_strOPLLPatchNames[i] != CAPU::OPLL_PATCHNAME_VRC7[i];
-				break;
-			}
-		}
-	}
-
 	// VRC7 emulator parameters
-	if (!((m_iExpansionChip & SNDCHIP_VRC7) &&
-		m_bUseExternalOPLLChip &&
-		modifiedpatchnames &&
-		modifiedpatchbytes))
+	if (!m_bUseExternalOPLLChip)
 		return true;
 
 	pDocFile->CreateBlock(FILE_BLOCK_PARAMS_EMU, Version);
@@ -4777,18 +4618,18 @@ json CFamiTrackerDoc::InterfaceToOptionalJSON() const
 }
 
 // Translates JSON object to interface state
-void CFamiTrackerDoc::OptionalJSONToInterface(json& json)
+void CFamiTrackerDoc::OptionalJSONToInterface(json& j)
 {
-	SetLevelOffset(0, json.at(APU1_OFFSET));
-	SetLevelOffset(1, json.at(APU2_OFFSET));
-	SetLevelOffset(2, json.at(VRC6_OFFSET));
-	SetLevelOffset(3, json.at(VRC7_OFFSET));
-	SetLevelOffset(4, json.at(FDS_OFFSET));
-	SetLevelOffset(5, json.at(MMC5_OFFSET));
-	SetLevelOffset(6, json.at(N163_OFFSET));
-	SetLevelOffset(7, json.at(S5B_OFFSET));
+	if (j.find(APU1_OFFSET) != j.end()) SetLevelOffset(0, j.at(APU1_OFFSET));
+	if (j.find(APU2_OFFSET) != j.end()) SetLevelOffset(1, j.at(APU2_OFFSET));
+	if (j.find(VRC6_OFFSET) != j.end()) SetLevelOffset(2, j.at(VRC6_OFFSET));
+	if (j.find(VRC7_OFFSET) != j.end()) SetLevelOffset(3, j.at(VRC7_OFFSET));
+	if (j.find(FDS_OFFSET) != j.end()) SetLevelOffset(4, j.at(FDS_OFFSET));
+	if (j.find(MMC5_OFFSET) != j.end()) SetLevelOffset(5, j.at(MMC5_OFFSET));
+	if (j.find(N163_OFFSET) != j.end()) SetLevelOffset(6, j.at(N163_OFFSET));
+	if (j.find(S5B_OFFSET) != j.end()) SetLevelOffset(7, j.at(S5B_OFFSET));
 
-	SetSurveyMixCheck(json.at(USE_SURVEY_MIX));
+	if (j.find(USE_SURVEY_MIX) != j.end()) SetSurveyMixCheck(j.at(USE_SURVEY_MIX));
 }
 
 // Attributes
