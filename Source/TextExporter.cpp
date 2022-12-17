@@ -27,10 +27,11 @@
 #include "PatternData.h"		// // //
 #include "TextExporter.h"
 #include "FamiTrackerDoc.h"
-#include "Bookmark.h"		// // //
-#include "BookmarkCollection.h"		// // //
-#include "BookmarkManager.h"		// // //
 #include "../version.h"		// // //
+#include "Bookmark.h"		// !! !!
+#include "BookmarkCollection.h"		// !! !!
+#include "BookmarkManager.h"		// !! !!
+#include "DocumentFile.h"		// !! !!
 
 #include "DSample.h"		// // //
 #include "SeqInstrument.h"		// // //
@@ -1272,7 +1273,9 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 
 	CString s;
 
-	s.Format(_T("# " APP_NAME " text export %i.%i.%i.%i\n\n"), VERSION);		// // //
+	s.Format(_T("# " APP_NAME " text export %i.%i.%i.%i\n"), VERSION);		// // //
+	f.WriteString(s);
+	s.Format(_T("# Module version %04X\n\n"), CDocumentFile::FILE_VER);		// // //
 	f.WriteString(s);
 
 	f.WriteString(_T("# INFO block\n"));
