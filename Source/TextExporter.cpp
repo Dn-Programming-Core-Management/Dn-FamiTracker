@@ -46,63 +46,64 @@
 // command tokens
 enum
 {
-	CT_COMMENTLINE,    // anything may follow
+	CT_COMMENTLINE,		// anything may follow
 	// INFO block
-	CT_TITLE,          // string
-	CT_AUTHOR,         // string
-	CT_COPYRIGHT,      // string
+	CT_TITLE,			// string
+	CT_AUTHOR,			// string
+	CT_COPYRIGHT,		// string
 	// COMMENTS block
-	CT_COMMENT,        // string (concatenates line)
+	CT_COMMENT,			// string (concatenates line)
 	// PARAMS block
-	CT_MACHINE,        // uint (0=NTSC, 1=PAL)
-	CT_FRAMERATE,      // uint (0=default)
-	CT_EXPANSION,      // uint (0=none, 1=VRC6, 2=VRC7, 4=FDS, 8=MMC5, 16=N163, 32=S5B)
-	CT_VIBRATO,        // uint (0=old, 1=new)
-	CT_SPLIT,          // uint (32=default)
+	CT_MACHINE,			// uint (0=NTSC, 1=PAL)
+	CT_FRAMERATE,		// uint (0=default)
+	CT_EXPANSION,		// uint (0=none, 1=VRC6, 2=VRC7, 4=FDS, 8=MMC5, 16=N163, 32=S5B)
+	CT_VIBRATO,			// uint (0=old, 1=new)
+	CT_SPLIT,			// uint (32=default)
 	// // // 050B
-	CT_PLAYBACKRATE,   // uint (0=default, 1=custom, 2=video) uint (us)
-	CT_TUNING,         // uint (semitones) uint (cents)
+	CT_PLAYBACKRATE,	// uint (0=default, 1=custom, 2=video) uint (us)
+	CT_TUNING,			// uint (semitones) uint (cents)
 
 	CT_N163CHANNELS,   // uint
 	// SEQUENCES block
-	CT_MACRO,          // uint (type) uint (index) int (loop) int (release) int (setting) : int_list
-	CT_MACROVRC6,      // uint (type) uint (index) int (loop) int (release) int (setting) : int_list
-	CT_MACRON163,      // uint (type) uint (index) int (loop) int (release) int (setting) : int_list
-	CT_MACROS5B,       // uint (type) uint (index) int (loop) int (release) int (setting) : int_list
+	CT_MACRO,			// uint (type) uint (index) int (loop) int (release) int (setting) : int_list
+	CT_MACROVRC6,		// uint (type) uint (index) int (loop) int (release) int (setting) : int_list
+	CT_MACRON163,		// uint (type) uint (index) int (loop) int (release) int (setting) : int_list
+	CT_MACROS5B,		// uint (type) uint (index) int (loop) int (release) int (setting) : int_list
 	// DPCM SAMPLES block
-	CT_DPCMDEF,        // uint (index) uint (size) string (name)
-	CT_DPCM,           // : hex_list
+	CT_DPCMDEF,			// uint (index) uint (size) string (name)
+	CT_DPCM,			// : hex_list
 	// // // DETUNETABLES block
-	CT_DETUNE,         // uint (chip) uint (oct) uint (note) int (offset)
+	CT_DETUNE,			// uint (chip) uint (oct) uint (note) int (offset)
 	// // // GROOVES block
-	CT_GROOVE,         // uint (index) uint (size) : int_list
-	CT_USEGROOVE,      // : int_list
+	CT_GROOVE,			// uint (index) uint (size) : int_list
+	CT_USEGROOVE,		// : int_list
 	// INSTRUMENTS block
-	CT_INST2A03,       // uint (index) int int int int int string (name)
-	CT_INSTVRC6,       // uint (index) int int int int int string (name)
-	CT_INSTVRC7,       // uint (index) int (patch) hex hex hex hex hex hex hex hex string (name)
-	CT_INSTFDS,        // uint (index) int (mod enable) int (m speed) int (m depth) int (m delay) string (name)
-	CT_INSTN163,       // uint (index) int int int int int uint (w size) uint (w pos) uint (w count) string (name)
-	CT_INSTS5B,        // uint (index) int int int int int  string (name)
+	CT_INST2A03,		// uint (index) int int int int int string (name)
+	CT_INSTVRC6,		// uint (index) int int int int int string (name)
+	CT_INSTVRC7,		// uint (index) int (patch) hex hex hex hex hex hex hex hex string (name)
+	CT_INSTFDS,			// uint (index) int (mod enable) int (m speed) int (m depth) int (m delay) string (name)
+	CT_INSTN163,		// uint (index) int int int int int uint (w size) uint (w pos) uint (w count) string (name)
+	CT_INSTS5B,			// uint (index) int int int int int  string (name)
 
-	CT_KEYDPCM,        // uint (inst) uint (oct) uint (note) uint (sample) uint (pitch) uint (loop) uint (loop_point)
-	CT_FDSWAVE,        // uint (inst) : uint_list x 64
-	CT_FDSMOD,         // uint (inst) : uint_list x 32
-	CT_FDSMACRO,       // uint (inst) uint (type) int (loop) int (release) int (setting) : int_list
-	CT_N163WAVE,       // uint (inst) uint (wave) : uint_list
+	CT_KEYDPCM,			// uint (inst) uint (oct) uint (note) uint (sample) uint (pitch) uint (loop) uint (loop_point)
+	CT_FDSWAVE,			// uint (inst) : uint_list x 64
+	CT_FDSMOD,			// uint (inst) : uint_list x 32
+	CT_FDSMACRO,		// uint (inst) uint (type) int (loop) int (release) int (setting) : int_list
+	CT_N163WAVE,		// uint (inst) uint (wave) : uint_list
 	// HEADER block
-	CT_TRACK,          // uint (pat length) uint (speed) uint (tempo) string (name)
-	CT_COLUMNS,        // : uint_list (effect columns)
+	CT_TRACK,			// uint (pat length) uint (speed) uint (tempo) string (name)
+	CT_COLUMNS,			// : uint_list (effect columns)
 	// FRAMES block
-	CT_ORDER,          // hex (frame) : hex_list
+	CT_ORDER,			// hex (frame) : hex_list
 	// PATTERNS block
-	CT_PATTERN,        // hex (pattern)
-	CT_ROW,            // row data
+	CT_PATTERN,			// hex (pattern)
+	CT_ROW,				// row data
 	// BOOKMARKS block
-	CT_BOOKMARK,       // hex (frame) hex (row) int (highlight_1) int (highlight_2) uint (persist; 0 = false, 1 = true) string (name)
+	CT_BOOKMARK,		// hex (frame) hex (row) int (highlight_1) int (highlight_2) uint (persist; 0 = false, 1 = true) string (name)
 	// PARAMS_EXTRA block
-	CT_LINEARPITCH,    // uint (0 = linear period, 1 = linear pitch)
+	CT_LINEARPITCH,		// uint (0 = linear period, 1 = linear pitch)
 	// JSON block
+	CT_JSON,			// string (JSON data)
 	// PARAMS_EMU block
 	// end of command list
 	CT_COUNT
@@ -168,6 +169,7 @@ static const TCHAR* CT[CT_COUNT] =
 	// PARAMS_EXTRA block
 	_T("LINEARPITCH"),
 	// JSON block
+	_T("JSON")
 	// PARAMS_EMU block
 };
 
@@ -697,6 +699,8 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	int N163count = -1;		// // //
 	bool UseGroove[MAX_TRACKS] = {};		// // //
 	int BookmarkCount = 0;		// !! !!
+
+	std::string jsonparse;
 	while (!t.Finished())
 	{
 		// read first token on line
@@ -1196,12 +1200,26 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 				}
 				break;
 			// JSON block
+			case CT_JSON:
+			{
+				jsonparse += t.ReadToken();
+				CHECK(t.ReadEOL(&sResult));
+			}
+				break;
 			// PARAMS_EMU block
 			case CT_COUNT:
 			default:
 				sResult.Format(_T("Unrecognized command at line %d: '%s'."), t.line, command);
 				return sResult;
 		}
+	}
+
+	try {
+		json j = json::parse(jsonparse);
+		pDoc->OptionalJSONToInterface(j);
+	}
+	catch (json::parse_error& e) {
+		sResult.Format(_T("JSON parsing error:\n%s\n\nException ID: %d\nByte position of error: %d\n\nOptional JSON data will be ignored."), e.what(), e.id, e.byte);
 	}
 
 	if (N163count != -1) {		// // //
@@ -1697,8 +1715,24 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 		}
 		f.WriteString(_T("\n"));
 	}
-	f.WriteString(_T("\n"));
 
+	f.WriteString(_T("# JSON block\n"));
+
+	json j = pDoc->InterfaceToOptionalJSON();
+	{
+		std::string &jsondump = j.dump(4, ' ', true);
+		std::string &delimiter = std::string("\n");
+		std::string::size_type pos = 0, prev = 0;
+		while ((pos = jsondump.find(delimiter, prev)) != std::string::npos) {
+			s.Format(_T("%s %s\n"), CT[CT_JSON], ExportString(jsondump.substr(prev, pos - prev).c_str()));
+			f.WriteString(s);
+			prev = pos + delimiter.size();
+		}
+		s.Format(_T("%s %s\n"), CT[CT_JSON], ExportString(jsondump.substr(prev).c_str()));
+		f.WriteString(s);
+	}
+	f.WriteString(_T("\n"));
+	
 	if (N163count != -1) {		// // //
 		pDoc->SetNamcoChannels(N163count, true);
 		pDoc->SelectExpansionChip(pDoc->GetExpansionChip()); // calls ApplyExpansionChip()

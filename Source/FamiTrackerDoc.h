@@ -40,6 +40,10 @@
 #include "FTMComponentInterface.h"
 #include "Settings.h"		// // //
 
+#include "json/json.hpp" // !! !!
+
+using json = nlohmann::json;
+
 #define TRANSPOSE_FDS
 
 // #define DISABLE_SAVE		// // //
@@ -270,6 +274,9 @@ public:
 
 	bool			GetExternalOPLLChipCheck() const;
 	void			SetExternalOPLLChipCheck(bool UserDefined);
+
+	json			InterfaceToOptionalJSON() const;
+	void			OptionalJSONToInterface(json& json);
 
 	void			SetComment(CString &comment, bool bShowOnLoad);
 	CString			GetComment() const;
@@ -569,8 +576,7 @@ private:
 	std::string		m_strOPLLPatchNames[19];
 
 	// JSON Optional properties
-	int16_t			m_iDeviceLevelOffset[8];		// !! !! Device level offsets, described in centibels
-
+	int16_t			m_iDeviceLevelOffset[8];					// !! !! Device level offsets, described in centibels
 	bool			m_bUseSurveyMixing;							// !! !! Use hardware-based mixing values, derived from survey: https://forums.nesdev.org/viewtopic.php?f=2&t=17741
 
 	// NSF info

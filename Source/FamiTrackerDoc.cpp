@@ -51,8 +51,6 @@
 #include <array>		// // //
 #include <unordered_map>		// // //
 
-#include "json/json.hpp" // !! !!
-
 #include "FamiTracker.h"
 #include "ChannelState.h"		// // //
 #include "Instrument.h"		// // //
@@ -179,8 +177,6 @@ static const auto EFF_CONVERSION_050 = MakeEffectConversion({
 //
 // JSON-struct conversions
 //
-
-using json = nlohmann::json;
 
 // JSON key names
 const char* APU1_OFFSET = "apu1-offset";
@@ -2882,35 +2878,12 @@ void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile* pDocFile, const int Version)
 	// If unchanged, stop loading data
 	if (out == DEFAULT) return;
 
-	// TODO: find a better way to transfer data between JSON and interface
-	SetLevelOffset(0, out.at(APU1_OFFSET));
-	SetLevelOffset(1, out.at(APU2_OFFSET));
-	SetLevelOffset(2, out.at(VRC6_OFFSET));
-	SetLevelOffset(3, out.at(VRC7_OFFSET));
-	SetLevelOffset(4, out.at(FDS_OFFSET));
-	SetLevelOffset(5, out.at(MMC5_OFFSET));
-	SetLevelOffset(6, out.at(N163_OFFSET));
-	SetLevelOffset(7, out.at(S5B_OFFSET));
-
-	SetSurveyMixCheck(out.at(USE_SURVEY_MIX));
+	OptionalJSONToInterface(out);
 }
 
 bool CFamiTrackerDoc::WriteBlock_JSON(CDocumentFile* pDocFile, const int Version) const
 {
-	json j;
-	const stJSONOptionalData DEFAULT;
-
-	// TODO: find a better way to transfer data between JSON and interface
-	if (GetLevelOffset(0) != DEFAULT.APU1_OFFSET) j[APU1_OFFSET] = GetLevelOffset(0);
-	if (GetLevelOffset(1) != DEFAULT.APU2_OFFSET) j[APU2_OFFSET] = GetLevelOffset(0);
-	if (GetLevelOffset(2) != DEFAULT.VRC6_OFFSET) j[VRC6_OFFSET] = GetLevelOffset(2);
-	if (GetLevelOffset(3) != DEFAULT.VRC7_OFFSET) j[VRC7_OFFSET] = GetLevelOffset(3);
-	if (GetLevelOffset(4) != DEFAULT.FDS_OFFSET) j[FDS_OFFSET] = GetLevelOffset(4);
-	if (GetLevelOffset(5) != DEFAULT.MMC5_OFFSET) j[MMC5_OFFSET] = GetLevelOffset(5);
-	if (GetLevelOffset(6) != DEFAULT.N163_OFFSET) j[N163_OFFSET] = GetLevelOffset(6);
-	if (GetLevelOffset(7) != DEFAULT.S5B_OFFSET) j[S5B_OFFSET] = GetLevelOffset(7);
-
-	if (GetSurveyMixCheck() != DEFAULT.USE_SURVEY_MIX) j[USE_SURVEY_MIX] = GetSurveyMixCheck();
+	json j = InterfaceToOptionalJSON();
 
 	if (j.empty())
 		return true;
@@ -4781,6 +4754,41 @@ void CFamiTrackerDoc::SetExternalOPLLChipCheck(bool UseExternalOPLLChip)
 		ModifyIrreversible();
 
 	m_bUseExternalOPLLChip = UseExternalOPLLChip;
+}
+
+// Translates current interface state to JSON object
+json CFamiTrackerDoc::InterfaceToOptionalJSON() const
+{
+	json json;
+	const stJSONOptionalData DEFAULT;
+
+	if (GetLevelOffset(0) != DEFAULT.APU1_OFFSET) json[APU1_OFFSET] = GetLevelOffset(0);
+	if (GetLevelOffset(1) != DEFAULT.APU2_OFFSET) json[APU2_OFFSET] = GetLevelOffset(0);
+	if (GetLevelOffset(2) != DEFAULT.VRC6_OFFSET) json[VRC6_OFFSET] = GetLevelOffset(2);
+	if (GetLevelOffset(3) != DEFAULT.VRC7_OFFSET) json[VRC7_OFFSET] = GetLevelOffset(3);
+	if (GetLevelOffset(4) != DEFAULT.FDS_OFFSET) json[FDS_OFFSET] = GetLevelOffset(4);
+	if (GetLevelOffset(5) != DEFAULT.MMC5_OFFSET) json[MMC5_OFFSET] = GetLevelOffset(5);
+	if (GetLevelOffset(6) != DEFAULT.N163_OFFSET) json[N163_OFFSET] = GetLevelOffset(6);
+	if (GetLevelOffset(7) != DEFAULT.S5B_OFFSET) json[S5B_OFFSET] = GetLevelOffset(7);
+
+	if (GetSurveyMixCheck() != DEFAULT.USE_SURVEY_MIX) json[USE_SURVEY_MIX] = GetSurveyMixCheck();
+
+	return json;
+}
+
+// Translates JSON object to interface state
+void CFamiTrackerDoc::OptionalJSONToInterface(json& json)
+{
+	SetLevelOffset(0, json.at(APU1_OFFSET));
+	SetLevelOffset(1, json.at(APU2_OFFSET));
+	SetLevelOffset(2, json.at(VRC6_OFFSET));
+	SetLevelOffset(3, json.at(VRC7_OFFSET));
+	SetLevelOffset(4, json.at(FDS_OFFSET));
+	SetLevelOffset(5, json.at(MMC5_OFFSET));
+	SetLevelOffset(6, json.at(N163_OFFSET));
+	SetLevelOffset(7, json.at(S5B_OFFSET));
+
+	SetSurveyMixCheck(json.at(USE_SURVEY_MIX));
 }
 
 // Attributes
