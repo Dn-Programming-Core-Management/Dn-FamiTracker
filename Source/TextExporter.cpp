@@ -1204,14 +1204,12 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 					CHECK(t.ReadEOL(&sResult));
 				}
 				break;
-			// JSON block
 			case CT_JSON:
 			{
 				jsonparse += t.ReadToken();
 				CHECK(t.ReadEOL(&sResult));
 			}
 				break;
-			// PARAMS_EMU block
 			case CT_USEEXTOPLL:
 			{
 				CHECK(t.ReadInt(i, 0, 1, &sResult));
@@ -1378,9 +1376,6 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	f.WriteString(s);
 
 	f.WriteString(_T("\n"));
-
-	// JSON block
-	// PARAMS_EMU block
 
 	int N163count = -1;		// // //
 	if (pDoc->ExpansionEnabled(SNDCHIP_N163))
