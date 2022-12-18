@@ -2784,7 +2784,7 @@ void CFamiTrackerDoc::ReadBlock_ParamsEmu(CDocumentFile* pDocFile, const int Ver
 bool CFamiTrackerDoc::WriteBlock_ParamsEmu(CDocumentFile* pDocFile, const int Version) const
 {
 	// VRC7 emulator parameters
-	if (!m_bUseExternalOPLLChip)
+	if (!(m_bUseExternalOPLLChip && (m_iExpansionChip & SNDCHIP_VRC7)))
 		return true;
 
 	pDocFile->CreateBlock(FILE_BLOCK_PARAMS_EMU, Version);
