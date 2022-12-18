@@ -904,12 +904,10 @@ bool CSoundGen::ResetAudioDevice()
 	{
 		UseExtOPLL = m_pDocument->GetExternalOPLLChipCheck();
 
-		if (UseExtOPLL) {
-			for (int i = 0; i < 19; ++i) {
-				for (int j = 0; j < 8; ++j)
-					OPLLHardwarePatchBytes.at((8 * i) + j) = m_pDocument->GetOPLLPatchByte((8 * i) + j);
-				OPLLHardwarePatchNames.at(i) = m_pDocument->GetOPLLPatchName(i);
-			}
+		for (int i = 0; i < 19; ++i) {
+			for (int j = 0; j < 8; ++j)
+				OPLLHardwarePatchBytes.at((8 * i) + j) = m_pDocument->GetOPLLPatchByte((8 * i) + j);
+			OPLLHardwarePatchNames.at(i) = m_pDocument->GetOPLLPatchName(i);
 		}
 	}
 

@@ -242,6 +242,7 @@ CFamiTrackerDoc::CFamiTrackerDoc() :
 	// Initialize document object
 
 	ResetDetuneTables();		// // //
+	ResetOPLLPatches();
 
 	// Clear pointer arrays
 	memset(m_pTracks, 0, sizeof(CPatternData*) * MAX_TRACKS);
@@ -484,33 +485,7 @@ void CFamiTrackerDoc::DeleteContents()
 
 	m_bUseSurveyMixing = false;
 
-	m_bUseExternalOPLLChip = false;
-
-	int DefaultPatchSetNumber = theApp.GetSettings()->Emulation.iVRC7Patch;
-
-	// YM2413 and YMF281B are considered external OPLL
-	if (DefaultPatchSetNumber > 6)
-		m_bUseExternalOPLLChip = true;
-
-	// Set to current default OPLL patchset
-	for (int i = 0; i < 19; i++) {
-		for (int j = 0; j < 8; j++) {
-			if (i == 0)
-				m_iOPLLPatchBytes[(8 * i) + j] = 0;
-			m_iOPLLPatchBytes[(8 * i) + j] = CAPU::OPLL_DEFAULT_PATCHES[DefaultPatchSetNumber][(8 * i) + j];
-		}
-		switch (DefaultPatchSetNumber) {
-		case 7:
-			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YM2413[i];
-			break;
-		case 8:
-			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YMF281B[i];
-			break;
-		default:
-			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_VRC7[i];
-			break;
-		}
-	}
+	ResetOPLLPatches();
 
 	CDocument::DeleteContents();
 }
@@ -4567,6 +4542,37 @@ void CFamiTrackerDoc::SetOPLLPatchByte(int index, uint8_t data)
 	// patch 0 must always be 0
 	if (index >= 8)
 		m_iOPLLPatchBytes[index] = data;
+}
+
+void CFamiTrackerDoc::ResetOPLLPatches()
+{
+	m_bUseExternalOPLLChip = false;
+
+	int DefaultPatchSetNumber = theApp.GetSettings()->Emulation.iVRC7Patch;
+
+	// YM2413 and YMF281B are considered external OPLL
+	if (DefaultPatchSetNumber > 6)
+		m_bUseExternalOPLLChip = true;
+
+	// Set to current default OPLL patchset
+	for (int i = 0; i < 19; i++) {
+		for (int j = 0; j < 8; j++) {
+			if (i == 0)
+				m_iOPLLPatchBytes[(8 * i) + j] = 0;
+			m_iOPLLPatchBytes[(8 * i) + j] = CAPU::OPLL_DEFAULT_PATCHES[DefaultPatchSetNumber][(8 * i) + j];
+		}
+		switch (DefaultPatchSetNumber) {
+		case 7:
+			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YM2413[i];
+			break;
+		case 8:
+			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YMF281B[i];
+			break;
+		default:
+			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_VRC7[i];
+			break;
+		}
+	}
 }
 
 std::string CFamiTrackerDoc::GetOPLLPatchName(int index) const

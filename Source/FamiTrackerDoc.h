@@ -268,6 +268,7 @@ public:
 
 	uint8_t			GetOPLLPatchByte(int index) const;
 	void			SetOPLLPatchByte(int index, uint8_t data);
+	void			ResetOPLLPatches();
 
 	std::string		GetOPLLPatchName(int index) const;
 	void			SetOPLLPatchName(int index, std::string PatchName);
