@@ -238,6 +238,9 @@ UINT CVisualizerWnd::ThreadProc()
 				);
 			}
 
+			// Always update static visualizer
+			updated |= (m_iCurrentState == 4);
+
 			if (updated) {
 				state->Draw();
 				state->Display(pDC, false);
