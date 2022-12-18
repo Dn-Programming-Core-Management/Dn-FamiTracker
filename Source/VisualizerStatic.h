@@ -39,7 +39,7 @@ public:
 	void Draw() override;
 
 private:
-	void DrawChar(char n, int xPos, int yPos, const COLORREF &Color);		// // //
+	void DrawChar(char letter, int xPos, int yPos, const COLORREF &Color);		// // //
 
 	CBitmap m_bmpImage;
 	CBitmap *m_pOldBmp = nullptr;
