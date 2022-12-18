@@ -28,5 +28,6 @@ class CCommandLineExport
 {
 public:
 	void CommandLineExport(const CString& fileIn, const CString& fileOut, const CString& fileLog,  const CString& fileDPCM);
-	void CommandLineMessage(std::string message);	// // !!
+private:
+	void PrintCommandlineMessage(CStdioFile &LogFile, std::string &text, bool writelog);
 };

@@ -106,6 +106,7 @@ CFamiTrackerApp	theApp;
 
 BOOL CFamiTrackerApp::InitInstance()
 {
+	EnableMFCPrint();
 	// InitCommonControls() is required on Windows XP if an application
 	// manifest specifies use of ComCtl32.dll version 6 or later to enable
 	// visual styles.  Otherwise, any window creation will fail.
@@ -692,6 +693,19 @@ void CFamiTrackerApp::RefreshFrameEditor()
 	CFamiTrackerView::GetView()->RefreshFrameEditor();
 }
 
+void CFamiTrackerApp::EnableMFCPrint()
+{
+	// Enable console output
+	if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+		FILE* pcout;
+		errno_t err = freopen_s(&pcout, "CONOUT$", "w", stdout);
+		errno_t err2 = freopen_s(&pcout, "CONOUT$", "w", stderr);
+		std::cout.clear();
+		std::wcout.clear();
+		fprintf(stdout, "%s\n", APP_NAME_VERSION);
+	}
+}
+
 BOOL CFamiTrackerApp::OnIdle(LONG lCount)		// // //
 {
 	if (CWinApp::OnIdle(lCount))
@@ -917,17 +931,6 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 			return;
 #endif
 		}
-		// Enable console output (TODO)
-		// This is intended for a small helper program that avoids the problem with console on win32 programs,
-		// and should remain undocumented. I'm using it for testing.
-		else if (!_tcsicmp(pszParam, _T("console"))) {
-			FILE *f;
-			AttachConsole(ATTACH_PARENT_PROCESS);
-			errno_t err = freopen_s(&f, "CON", "w", stdout);
-			errno_t err2 = freopen_s(&f, "CON", "w", stderr);
-			fprintf(stderr, "%s\n", APP_NAME_VERSION);		// // //
-			return;
-		}
 		// // !! help (/help)
 		else if (!_tcsicmp(pszParam, _T("help")) || !_tcsicmp(pszParam, _T("h"))) {
 			m_bHelp = true;
@@ -947,7 +950,6 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 			helpmessage += "log\t: enables the register logger, available in debug builds only\n";
 			helpmessage += "Press enter to continue . . .";
 			fprintf(stdout, "%s\n", helpmessage.c_str());
-			fclose(cout);
 			return;
 		}
 	}

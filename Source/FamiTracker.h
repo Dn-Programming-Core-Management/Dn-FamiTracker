@@ -119,6 +119,7 @@ public:
 	int				GetCPUUsage() const;
 	bool			IsThemeActive() const;
 	void			RefreshFrameEditor();
+	void			EnableMFCPrint();
 	void			ThreadDisplayMessage(LPCTSTR lpszText, UINT nType = 0, UINT nIDHelp = 0);
 	void			ThreadDisplayMessage(UINT nIDPrompt, UINT nType = 0, UINT nIDHelp = 0);
 
