@@ -1,5 +1,5 @@
 /**
- * emu2413 v1.5.6
+ * emu2413 v1.5.9
  * https://github.com/digital-sound-antiques/emu2413
  * Copyright (C) 2020 Mitsutaka Okazaki
  *
@@ -54,7 +54,7 @@ static uint8_t default_inst[OPLL_TONE_NUM][(16 + 3) * 8] = {
 #include "vrc7tone_kt1.h"
   },
   {
-#include "2413tone.h" 
+#include "2413tone.h"
   },
   {
 #include "281btone.h"
@@ -62,7 +62,7 @@ static uint8_t default_inst[OPLL_TONE_NUM][(16 + 3) * 8] = {
 };
 
 // Added by jsr
-int16_t opll_volumes[10];
+int16_t opll_volumes[14];
 
 /* clang-format on */
 
@@ -75,7 +75,7 @@ int16_t opll_volumes[10];
 #define EG_STEP 0.375
 #define EG_BITS 7
 #define EG_MUTE ((1 << EG_BITS) - 1)
-#define EG_MAX (EG_MUTE - 3)
+#define EG_MAX (EG_MUTE - 4)
 
 /* dynamic range of total level */
 #define TL_STEP 0.75
@@ -195,8 +195,13 @@ static int32_t rks_table[8 * 2][2];
 static OPLL_PATCH null_patch = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 static OPLL_PATCH default_patch[OPLL_TONE_NUM][(16 + 3) * 2];
 
-#define min(i, j) (((i) < (j)) ? (i) : (j))
-#define max(i, j) (((i) > (j)) ? (i) : (j))
+/* don't forget min/max is defined as a macro in stdlib.h of Visual C. */
+#ifndef min
+static INLINE int min(int i, int j) { return (i < j) ? i : j; }
+#endif
+#ifndef max
+static INLINE int max(int i, int j) { return (i > j) ? i : j; }
+#endif
 
 /***************************************************
 
@@ -361,7 +366,7 @@ static void makeRksTable(void) {
     }
 }
 
-static void makeDefaultPatch() {
+static void makeDefaultPatch(void) {
   int i, j;
   for (i = 0; i < OPLL_TONE_NUM; i++)
     for (j = 0; j < 19; j++)
@@ -370,7 +375,7 @@ static void makeDefaultPatch() {
 
 static uint8_t table_initialized = 0;
 
-static void initializeTables() {
+static void initializeTables(void) {
   makeTllTable();
   makeRksTable();
   makeSinTable();
@@ -777,7 +782,6 @@ static INLINE void start_envelope(OPLL_SLOT *slot) {
     slot->eg_out = 0;
   } else {
     slot->eg_state = ATTACK;
-    slot->eg_out = EG_MUTE;
   }
   request_update(slot, UPDATE_EG);
 }
@@ -802,7 +806,9 @@ static INLINE void calc_envelope(OPLL_SLOT *slot, OPLL_SLOT *buddy, uint16_t eg_
 
   switch (slot->eg_state) {
   case DAMP:
-    if (slot->eg_out >= EG_MUTE) {
+    // DAMP to ATTACK transition is occured when the envelope reaches EG_MAX (max attenuation but it's not mute).
+    // Do not forget to check (eg_counter & mask) == 0 to synchronize it with the progress of the envelope.
+    if (slot->eg_out >= EG_MAX && (eg_counter & mask) == 0) {
       start_envelope(slot);
       if (slot->type & 1) {
         if (!slot->pg_keep) {
@@ -823,6 +829,8 @@ static INLINE void calc_envelope(OPLL_SLOT *slot, OPLL_SLOT *buddy, uint16_t eg_
     break;
 
   case DECAY:
+    // DECAY to SUSTAIN transition must be checked at every cycle regardless of the conditions of the envelope rate and
+    // counter. i.e. the transition is not synchronized with the progress of the envelope.
     if ((slot->eg_out >> 3) == slot->patch->SL) {
       slot->eg_state = SUSTAIN;
       request_update(slot, UPDATE_EG);
@@ -871,10 +879,10 @@ static INLINE int16_t lookup_exp_table(uint16_t i) {
 
 static INLINE int16_t to_linear(uint16_t h, OPLL_SLOT *slot, int16_t am) {
   uint16_t att;
-  if (slot->eg_out >= EG_MAX)
+  if (slot->eg_out > EG_MAX)
     return 0;
 
-  att = min(EG_MAX, (slot->eg_out + slot->tll + am)) << 4;
+  att = min(EG_MUTE, (slot->eg_out + slot->tll + am)) << 4;
   return lookup_exp_table(h + att);
 }
 
@@ -959,13 +967,7 @@ static void update_output(OPLL *opll) {
 
   /* CH1-6 */
   for (i = 0; i < 6; i++) {
-    if (!(opll->mask & OPLL_MASK_CH(i))) { 
-      out[i] = _MO(calc_slot_car(opll, i, calc_slot_mod(opll, i))); 
-
-      int16_t absval;
-      absval = abs(out[i]);
-      if (absval > opll_volumes[i])
-          opll_volumes[i] = out[i];
+    if (!(opll->mask & OPLL_MASK_CH(i))) {
       out[i] = _MO(calc_slot_car(opll, i, calc_slot_mod(opll, i)));
     }
   }
@@ -1018,6 +1020,9 @@ INLINE static void mix_output(OPLL *opll) {
   int i;
   for (i = 0; i < 14; i++) {
     out += opll->ch_out[i];
+    int16_t absvol = abs(opll->ch_out[i]);
+    if (absvol > opll_volumes[i])
+        opll_volumes[i] = absvol;
   }
   if (opll->conv) {
     OPLL_RateConv_putData(opll->conv, 0, out);

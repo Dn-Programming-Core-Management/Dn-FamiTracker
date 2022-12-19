@@ -199,11 +199,15 @@ int C2A03::GetChannelLevelRange(int Channel) const
 
 
 void C2A03::UpdateMixingAPU1(double v) {
-	Synth2A03SS.volume(v, 10000);
+	// NSFPlay output waveform ranges from 0 - 8191
+	// should not affect legacy mixing
+	Synth2A03SS.volume(v, 8191);
 }
 
 void C2A03::UpdateMixingAPU2(double v) {
-	Synth2A03TND.volume(v, 10000);
+	// NSFPlay output waveform ranges from 0 - 8191
+	// should not affect legacy mixing
+	Synth2A03TND.volume(v, 8191);
 }
 
 void C2A03::ClockSequence()

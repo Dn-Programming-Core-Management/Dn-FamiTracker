@@ -107,11 +107,19 @@ public:
 #endif
 
 public:
+	static const int		OPLL_TONE_NUM = 9;
 	static const uint8_t	LENGTH_TABLE[];
 	static const uint32_t	BASE_FREQ_NTSC;
 	static const uint32_t	BASE_FREQ_PAL;
+	static const uint32_t	BASE_FREQ_VRC7;
 	static const uint8_t	FRAME_RATE_NTSC;
 	static const uint8_t	FRAME_RATE_PAL;
+	static const uint16_t	NSF_RATE_NTSC;
+	static const uint16_t	NSF_RATE_PAL;
+	static const uint8_t	OPLL_DEFAULT_PATCHES[OPLL_TONE_NUM][19 * 8];
+	static const std::string	OPLL_PATCHNAME_VRC7[19];
+	static const std::string	OPLL_PATCHNAME_YM2413[19];
+	static const std::string	OPLL_PATCHNAME_YMF281B[19];
 
 private:
 	static const int SEQUENCER_FREQUENCY;		// // //
@@ -188,8 +196,26 @@ public:
 		m_ExternalSound = Chip;
 	}
 
-	void SetChipLevel(chip_level_t Chip, float LeveldB);
-	void SetupMixer(int LowCut, int HighCut, int HighDamp, int Volume, int FDSLowpass, int VRC7Patchset, bool NamcoMixing, int N163Lowpass);
+	void SetupEmulation(
+		bool N163DisableMultiplexing ,
+		int UseOPLLPatchSet,
+		bool UseOPLLExt,
+		std::vector<uint8_t> UseOPLLPatchBytes,
+		std::vector<std::string> UseOPLLPatchNames
+	);
+
+	void SetupMixer(
+		int LowCut,
+		int HighCut,
+		int HighDamp,
+		int Volume,
+		bool UseSurveyMix,
+		int16_t FDSLowpass,
+		int16_t N163Lowpass,
+		std::vector<int16_t> DeviceMixOffsets
+	);
+
+	void SetChipLevel(chip_level_t Chip, float LeveldB, bool SurveyMix = false);
 
 	/// Commit changes if no exception is active.
 	///
@@ -207,6 +233,7 @@ private:
 
 	// Mutations.
 	std::optional<uint8_t> m_ExternalSound;
-	std::optional<float> m_ChipLevels[CHIP_LEVEL_COUNT];
+	std::optional<float> m_ChipLevels[CHIP_LEVEL_COUNT];		// Chip levels, in linear gain factor scale
 	std::optional<MixerConfig> m_MixerConfig;
+	std::optional<EmulatorConfig> m_EmulatorConfig;
 };

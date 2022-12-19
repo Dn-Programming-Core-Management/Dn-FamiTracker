@@ -130,7 +130,7 @@ const std::vector<stAccelEntry> CAccelerator::DEFAULT_TABLE {
 	{_T("Compact View"),				MOD_NONE,		0,				IDC_COMPACT_TOGGLE},				// // //
 };
 
-const int CAccelerator::ACCEL_COUNT = DEFAULT_TABLE.size();
+const int CAccelerator::ACCEL_COUNT = static_cast<int>(DEFAULT_TABLE.size());
 
 // Registry key
 LPCTSTR CAccelerator::SHORTCUTS_SECTION = _T("Shortcuts");

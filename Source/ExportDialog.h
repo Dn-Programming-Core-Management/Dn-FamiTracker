@@ -50,12 +50,13 @@ protected:
 	static const int		  DEFAULT_EXPORTERS;
 
 	static LPCTSTR NSF_FILTER[2];
+	static LPCTSTR NSFE_FILTER[2];		// // //
+	static LPCTSTR NSF2_FILTER[2];		// !! !!
 	static LPCTSTR NES_FILTER[2];
 	static LPCTSTR RAW_FILTER[2];
 	static LPCTSTR DPCMS_FILTER[2];
 	static LPCTSTR PRG_FILTER[2];
 	static LPCTSTR ASM_FILTER[2];
-	static LPCTSTR NSFE_FILTER[2];		// // //
 
 #ifdef _DEBUG
 	CString m_strFile;
@@ -64,11 +65,12 @@ protected:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	void CreateNSF();
+	void CreateNSFe();		// // //
+	void CreateNSF2();		// !! !!
 	void CreateNES();
 	void CreateBIN();
 	void CreatePRG();
 	void CreateASM();
-	void CreateNSFe();		// // //
 	void CreateCustom( CString name );
 
 	DECLARE_MESSAGE_MAP()
@@ -77,4 +79,5 @@ public:
 	afx_msg void OnBnClickedClose();
 	afx_msg void OnBnClickedExport();
 	afx_msg void OnBnClickedPlay();
+	afx_msg void OnCbnSelchangeType();
 };

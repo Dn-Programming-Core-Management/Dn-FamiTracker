@@ -29,6 +29,7 @@
 #include "FamiTrackerDoc.h"
 #include "DetuneDlg.h"
 #include "DetuneTable.h"
+#include "SoundGen.h"
 
 
 // CDetuneDlg dialog
@@ -38,7 +39,6 @@ IMPLEMENT_DYNAMIC(CDetuneDlg, CDialog)
 CDetuneDlg::CDetuneDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CDetuneDlg::IDD, pParent)
 {
-
 }
 
 CDetuneDlg::~CDetuneDlg()
@@ -96,6 +96,13 @@ BOOL CDetuneDlg::OnInitDialog()
 		m_iDetuneTable[i][j] = m_pDocument->GetDetuneOffset(i, j);
 	m_iGlobalSemitone = m_pDocument->GetTuningSemitone();		// // // 050B
 	m_iGlobalCent = m_pDocument->GetTuningCent();
+
+	m_pDetuneNTSC = std::make_unique<CDetuneNTSC>(45.0);
+	m_pDetunePAL = std::make_unique<CDetunePAL>(45.0);
+	m_pDetuneSaw = std::make_unique<CDetuneSaw>(45.0);
+	m_pDetuneVRC7 = std::make_unique<CDetuneVRC7>(45.0);
+	m_pDetuneFDS = std::make_unique<CDetuneFDS>(45.0);
+	m_pDetuneN163 = std::make_unique<CDetuneN163>(45.0);
 	
 	m_cSliderOctave = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_OCTAVE);
 	m_cSliderNote = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_NOTE);
@@ -164,41 +171,45 @@ int CDetuneDlg::GetDetuneCent() const
 	return m_iGlobalCent;
 }
 
-unsigned int CDetuneDlg::FreqToReg(double Freq, int Chip, int Octave)
+unsigned int CDetuneDlg::FreqToPeriod(double Freq, int Chip, int Octave)
 {
-	const double BASE_FREQ_NTSC = 236250000.0 / 132.0;
-	const double BASE_FREQ_PAL  = 4433618.75 * 6.0 / 16.0;
-	double dReg;
 	switch (Chip) {
 	default:
-	case 0: dReg = BASE_FREQ_NTSC / Freq / 16.0 - 1.0; break;
-	case 1: dReg = BASE_FREQ_PAL  / Freq / 16.0 - 1.0; break;
-	case 2: dReg = BASE_FREQ_NTSC / Freq / 14.0 - 1.0; break;
-	case 3: dReg = Freq / 49716.0 * (1 << (18 - Octave)); break;
-	case 4: dReg = Freq / BASE_FREQ_NTSC * (1 << 20); break;
-	case 5: dReg = Freq / BASE_FREQ_NTSC * 15.0 * (1 << 18) * m_pDocument->GetNamcoChannels(); break;
-	}
-	return (unsigned int)(dReg + .5);
-}
-
-double CDetuneDlg::RegToFreq(unsigned int Reg, int Chip, int Octave)
-{
-	const double BASE_FREQ_NTSC = 236250000.0 / 132.0;
-	const double BASE_FREQ_PAL  = 4433618.75 * 6.0 / 16.0;
-	switch (Chip) {
-	default:
-	case 0: return BASE_FREQ_NTSC / 16.0 / (Reg + 1.0); break;
-	case 1: return BASE_FREQ_PAL  / 16.0 / (Reg + 1.0); break;
-	case 2: return BASE_FREQ_NTSC / 14.0 / (Reg + 1.0); break;
-	case 3: return 49716.0 * Reg / (1 << (18 - Octave)); break;
-	case 4: return BASE_FREQ_NTSC * Reg / (1 << 20); break;
-	case 5: return BASE_FREQ_NTSC * Reg / 15 / (1 << 18) / m_pDocument->GetNamcoChannels(); break;
+	case 0: return m_pDetuneNTSC->FrequencyToPeriod(Freq, Octave, 0); break;
+	case 1: return m_pDetunePAL->FrequencyToPeriod(Freq, Octave, 0); break;
+	case 2: return m_pDetuneSaw->FrequencyToPeriod(Freq, Octave, 0); break;
+	case 3: return m_pDetuneVRC7->FrequencyToPeriod(Freq, Octave, 0); break;
+	case 4: return m_pDetuneFDS->FrequencyToPeriod(Freq, Octave, 0); break;
+	case 5: return m_pDetuneN163->FrequencyToPeriod(Freq, Octave, m_pDocument->GetNamcoChannels()); break;
 	}
 }
 
-double CDetuneDlg::NoteToFreq(double Note)
+double CDetuneDlg::PeriodToFreq(unsigned int Period, int Chip, int Octave)
 {
-	return 440. * pow(2., (Note - 45.) / 12.);
+	switch (Chip) {
+	default:
+	case 0: return m_pDetuneNTSC->PeriodToFrequency(Period, Octave, 0); break;
+	case 1: return m_pDetunePAL->PeriodToFrequency(Period, Octave, 0); break;
+	case 2: return m_pDetuneSaw->PeriodToFrequency(Period, Octave, 0); break;
+	case 3: return m_pDetuneVRC7->PeriodToFrequency(Period, Octave, 0); break;
+	case 4: return m_pDetuneFDS->PeriodToFrequency(Period, Octave, 0); break;
+	case 5: return m_pDetuneN163->PeriodToFrequency(Period, Octave, m_pDocument->GetNamcoChannels()); break;
+	}
+}
+
+double CDetuneDlg::NoteToFreq(double Note, int Chip)
+{
+	// I could instead create a pointer directly to CDetuneTable,
+	// but these pointers to its children are already available.
+	switch (Chip) {
+	default:
+	case 0: return m_pDetuneNTSC->NoteToFreq(Note); break;
+	case 1: return m_pDetunePAL->NoteToFreq(Note); break;
+	case 2: return m_pDetuneSaw->NoteToFreq(Note); break;
+	case 3: return m_pDetuneVRC7->NoteToFreq(Note); break;
+	case 4: return m_pDetuneFDS->NoteToFreq(Note); break;
+	case 5: return m_pDetuneN163->NoteToFreq(Note); break;
+	}
 }
 
 void CDetuneDlg::UpdateOctave()
@@ -248,13 +259,13 @@ void CDetuneDlg::UpdateOffset()
 			continue;
 		}
 		double Note = m_iGlobalSemitone + .01 * m_iGlobalCent + m_iNote;
-		int oldReg = FreqToReg(NoteToFreq(Note), i, m_iNote / NOTE_RANGE);
+		int oldReg = FreqToPeriod(NoteToFreq(Note, i), i, m_iNote / NOTE_RANGE);
 		int newReg = std::max(0, (int)oldReg + m_iDetuneTable[i][m_iNote] * (i >= 3 ? 1 : -1));
-		double newFreq = RegToFreq(newReg, i, m_iNote / NOTE_RANGE);
-		double values[4] = {RegToFreq(oldReg, i, m_iNote / NOTE_RANGE) * (i == 4 ? .25 : 1),
+		double newFreq = PeriodToFreq(newReg, i, m_iNote / NOTE_RANGE);
+		double values[4] = {PeriodToFreq(oldReg, i, m_iNote / NOTE_RANGE) * (i == 4 ? .25 : 1),
 							newFreq * (i == 4 ? .25 : 1),
-							NoteToFreq(Note) * (i == 4 ? .25 : 1),
-							1200.0 * log(newFreq / NoteToFreq(Note)) / log(2.0)};
+							NoteToFreq(Note, i) * (i == 4 ? .25 : 1),
+							1200.0 * log(newFreq / NoteToFreq(Note, i)) / log(2.0)};
 		for (const auto x : values)
 			fmt += DoubleFunc(x);
 

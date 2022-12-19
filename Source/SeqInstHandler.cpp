@@ -43,7 +43,7 @@ CSeqInstHandler::CSeqInstHandler(CChannelHandlerInterface *pInterface, int Vol, 
 	m_iDefaultDuty(Duty)
 {
 	for (std::size_t i = 0; i < sizeof(m_pSequence) / sizeof(CSequence*); i++)
-		ClearSequence(i);
+		ClearSequence(static_cast<int>(i));
 }
 
 void CSeqInstHandler::LoadInstrument(std::shared_ptr<CInstrument> pInst)
@@ -52,12 +52,12 @@ void CSeqInstHandler::LoadInstrument(std::shared_ptr<CInstrument> pInst)
 	auto pSeqInst = std::dynamic_pointer_cast<CSeqInstrument>(pInst);
 	if (pSeqInst == nullptr) return;
 	for (std::size_t i = 0; i < sizeof(m_pSequence) / sizeof(CSequence*); i++) {
-		const CSequence *pSequence = pSeqInst->GetSequence(i);
-		bool Enable = pSeqInst->GetSeqEnable(i) == SEQ_STATE_RUNNING;
+		const CSequence *pSequence = pSeqInst->GetSequence(static_cast<int>(i));
+		bool Enable = pSeqInst->GetSeqEnable(static_cast<int>(i)) == SEQ_STATE_RUNNING;
 		if (!Enable)
-			ClearSequence(i);
+			ClearSequence(static_cast<int>(i));
 		else if (pSequence != m_pSequence[i] || m_iSeqState[i] == SEQ_STATE_DISABLED)
-			SetupSequence(i, pSequence);
+			SetupSequence(static_cast<int>(i), pSequence);
 	}
 }
 
@@ -100,7 +100,7 @@ void CSeqInstHandler::UpdateInstrument()
 		switch (m_iSeqState[i]) {
 		case SEQ_STATE_RUNNING:
 			Value = m_pSequence[i]->GetItem(m_iSeqPointer[i]);
-			ProcessSequence(i, m_pSequence[i]->GetSetting(), Value);
+			ProcessSequence(static_cast<int>(i), m_pSequence[i]->GetSetting(), Value);
 			++m_iSeqPointer[i];
 
 			{	

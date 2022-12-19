@@ -27,16 +27,107 @@
 #include "FamiTracker.h"		// // //
 #include "Settings.h"		// // //
 
-static const char LOGO_FONT[][7] = {		// // !!
-	{0x7E, 0x60, 0x60, 0x78, 0x60, 0x60, 0x60}, // F
-	{0x3C, 0x66, 0x66, 0x66, 0x7E, 0x66, 0x66}, // A
-	{0x63, 0x77, 0x7F, 0x6B, 0x63, 0x63, 0x63}, // M
-	{0x7E, 0x18, 0x18, 0x18, 0x18, 0x18, 0x7E}, // I
-	{0x7E, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18}, // T
-	{0x7C, 0x66, 0x66, 0x7C, 0x66, 0x66, 0x66}, // R
-	{0x3C, 0x66, 0x60, 0x60, 0x60, 0x66, 0x3C}, // C
-	{0x66, 0x6C, 0x78, 0x70, 0x78, 0x6C, 0x66}, // K
-	{0x7E, 0x60, 0x60, 0x78, 0x60, 0x60, 0x7E}, // E
+// derived from Generic bitmap font
+// https://forums.nesdev.org/viewtopic.php?t=10284&start=6
+static const uint8_t LOGO_FONT[][7] = {		// // !!
+	// D
+	{	0b01111110,
+		0b01100011,
+		0b01100011,
+		0b01100011,
+		0b01100011,
+		0b01100011,
+		0b01111110},
+	// n
+	{	0b00000000,
+		0b00000000,
+		0b01111110,
+		0b01100011,
+		0b01100011,
+		0b01100011,
+		0b01100011},
+	// -
+	{	0b00000000,
+		0b00000000,
+		0b00000000,
+		0b00111110,
+		0b00000000,
+		0b00000000,
+		0b00000000},
+	// F
+	{	0b00111111,
+		0b01100000,
+		0b01100000,
+		0b01111100,
+		0b01100000,
+		0b01100000,
+		0b01100000},
+	// A
+	{	0b00111110,
+		0b01100011,
+		0b01100011,
+		0b01111111,
+		0b01100011,
+		0b01100011,
+		0b01100011},
+	// M
+	{	0b01100011,
+		0b01110111,
+		0b01111111,
+		0b01101011,
+		0b01100011,
+		0b01100011,
+		0b01100011},
+	// I
+	{	0b00001100,
+		0b00000000,
+		0b00001100,
+		0b00001100,
+		0b00001100,
+		0b00001100,
+		0b00001100},
+	// T
+	{	0b00111111,
+		0b00001100,
+		0b00001100,
+		0b00001100,
+		0b00001100,
+		0b00001100,
+		0b00001100},
+	// R
+	{	0b01111110,
+		0b01100011,
+		0b01100011,
+		0b01111110,
+		0b01100011,
+		0b01100011,
+		0b01100011},
+	// C
+	{	0b00111110,
+		0b01100000,
+		0b01100000,
+		0b01100000,
+		0b01100000,
+		0b01100000,
+		0b00111110},
+	// K
+	{	0b01100011,
+		0b01100011,
+		0b01100110,
+		0b01111100,
+		0b01100110,
+		0b01100011,
+		0b01100011},
+	// E
+	{	0b00111111,
+		0b01100000,
+		0b01100000,
+		0b01111100,
+		0b01100000,
+		0b01100000,
+		0b00111111},
+	// cool string
+	{'D','n','-','F','T','!','~'}
 };
 
 CVisualizerStatic::~CVisualizerStatic()
@@ -51,7 +142,7 @@ void CVisualizerStatic::SetSampleRate(int SampleRate)
 
 void CVisualizerStatic::Draw()
 {
-	static const char STR[] = APP_NAME;		// // //
+	std::string STR = std::string(APP_NAME) + "~";		// // //
 	static const size_t COUNT = std::size(STR);
 	static long long t = 0;
 
@@ -90,9 +181,9 @@ void CVisualizerStatic::Draw()
 	++t;
 }
 
-void CVisualizerStatic::DrawChar(char n, int xPos, int yPos, const COLORREF &Color)		// // //
+void CVisualizerStatic::DrawChar(char letter, int xPos, int yPos, const COLORREF &Color)		// // //
 {
-	const auto drawFunc = [&] (const char (&glyph)[7]) {
+	const auto drawFunc = [&] (const uint8_t (&glyph)[7]) {
 		for (int i = 0; i < 7; ++i) {
 			if (yPos >= 0 && yPos < m_iHeight) {
 				int x = xPos;
@@ -108,15 +199,19 @@ void CVisualizerStatic::DrawChar(char n, int xPos, int yPos, const COLORREF &Col
 		}
 	};
 
-	switch (n) {
-	case 'F': case 'f': return drawFunc(LOGO_FONT[0]);
-	case 'A': case 'a': return drawFunc(LOGO_FONT[1]);
-	case 'M': case 'm': return drawFunc(LOGO_FONT[2]);
-	case 'I': case 'i': return drawFunc(LOGO_FONT[3]);
-	case 'T': case 't': return drawFunc(LOGO_FONT[4]);
-	case 'R': case 'r': return drawFunc(LOGO_FONT[5]);
-	case 'C': case 'c': return drawFunc(LOGO_FONT[6]);
-	case 'K': case 'k': return drawFunc(LOGO_FONT[7]);
-	case 'E': case 'e': return drawFunc(LOGO_FONT[8]);
+
+	switch (letter) {
+	case 'D': case 'd': return drawFunc(LOGO_FONT[0]);
+	case 'N': case 'n': return drawFunc(LOGO_FONT[1]);
+	case '-':			return drawFunc(LOGO_FONT[2]);
+	case 'F': case 'f': return drawFunc(LOGO_FONT[3]);
+	case 'A': case 'a': return drawFunc(LOGO_FONT[4]);
+	case 'M': case 'm': return drawFunc(LOGO_FONT[5]);
+	case 'I': case 'i': return drawFunc(LOGO_FONT[6]);
+	case 'T': case 't': return drawFunc(LOGO_FONT[7]);
+	case 'R': case 'r': return drawFunc(LOGO_FONT[8]);
+	case 'C': case 'c': return drawFunc(LOGO_FONT[9]);
+	case 'K': case 'k': return drawFunc(LOGO_FONT[10]);
+	case 'E': case 'e': return drawFunc(LOGO_FONT[11]);
 	}
 }

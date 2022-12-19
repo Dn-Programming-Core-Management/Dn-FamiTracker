@@ -19,16 +19,9 @@ ft_music_play:
 	ldx #$00
 @ChanLoop:
 	CH_LOOP_START @ChanLoopEpilog
-	jsr ft_fetch_speed
-	cmp	var_ch_Delay, x
-	bcs :+
-	sta var_ch_Delay, x
-:
 	lda var_ch_Delay, x
 	beq @SkipDelay
-	sec
-	sbc #$01
-	sta var_ch_Delay, x
+	dec var_ch_Delay, x
 	bne @SkipDelay
 	jsr ft_read_pattern					; Read the delayed note
 	jmp @ChanLoopEpilog		; ;; ;;;
@@ -61,20 +54,9 @@ ft_do_row_update:
 :
 	; Switches to new frames are delayed to next row to resolve issues with delayed notes.
 	; It won't work if new pattern adresses are loaded before the delayed note is played
-	lda var_Load_Frame
-	beq @SkipFrameLoad
 	;;; ;; ; from 0.4.6
-	ldx #$00
-@Delay:
-	CH_LOOP_START @DelayEpilog
-	lda var_ch_Delay, x
-	beq @DelayEpilog
-	lda #$00
-	sta var_ch_Delay, x
-	jsr ft_read_pattern ; skip over missed delay note
-@DelayEpilog:
-	CH_LOOP_END @Delay
-	
+	lda var_Load_Frame
+	beq @SkipFrameLoad	
 	lda #$00
 	sta var_Load_Frame
 	lda var_Current_Frame
@@ -85,7 +67,12 @@ ft_do_row_update:
 	ldx #$00
 ft_read_channels:
 	CH_LOOP_START ft_read_channels_epilog
-	jsr ft_read_pattern					; Get new notes
+	lda var_ch_Delay, x
+	beq :+
+	lda #$00
+	sta var_ch_Delay, x
+	jsr ft_read_pattern					; In case a delayed note has not been played, skip it to get next note
+:	jsr ft_read_pattern					; Get new notes
 ft_read_channels_epilog:
 	CH_LOOP_END ft_read_channels
 
@@ -440,6 +427,19 @@ ft_read_note:
 	jmp @RestoreDuty
 :	; VRC7 skip
 .endif
+.if .defined(USE_S5B)
+	;; ;; !!
+;	if (this->m_iDefaultDuty & S5B_MODE_NOISE)
+;		s_iNoiseFreq = s_iDefaultNoise;
+	lda ft_channel_type, x		;;; ;; ;
+	cmp #CHAN_S5B
+	bne :+
+	lda var_ch_DutyDefault + S5B_OFFSET, x
+	bpl :+
+	lda var_Noise_Default
+	sta var_Noise_Period
+:
+.endif
 .if 0
 .if .defined(USE_N163)					;;; ;; ;
 	lda ft_channel_type, x
@@ -708,27 +708,30 @@ ft_command_table:
 	.word ft_cmd_groove				; A0
 	.word ft_cmd_delayed_volume		; A1
 	.word ft_cmd_transpose			; A2
-	.word ft_cmd_target_vol_slide	; A3	;; ;; !!
+	.word ft_cmd_phase_reset		; A3	;; ;; !!
+	.word ft_cmd_DPCM_phase_reset	; A4	;; ;; !!
+	.word ft_cmd_harmonic			; A5	;; ;; !!
+	.word ft_cmd_target_vol_slide	; A6	;; ;; !!
 .if .defined(USE_VRC7)
-	.word ft_cmd_vrc7_patch_change	; A4
-	.word ft_cmd_vrc7_port			; A5
-	.word ft_cmd_vrc7_write			; A6
+	.word ft_cmd_vrc7_patch_change	; A7
+	.word ft_cmd_vrc7_port			; A8
+	.word ft_cmd_vrc7_write			; A9
 .endif
 .if .defined(USE_FDS)
-	.word ft_cmd_fds_mod_depth		; A7
-	.word ft_cmd_fds_mod_rate_hi	; A8
-	.word ft_cmd_fds_mod_rate_lo	; A9
-	.word ft_cmd_fds_volume			; AA
-	.word ft_cmd_fds_mod_bias		; AB
+	.word ft_cmd_fds_mod_depth		; AA
+	.word ft_cmd_fds_mod_rate_hi	; AB
+	.word ft_cmd_fds_mod_rate_lo	; AC
+	.word ft_cmd_fds_volume			; AD
+	.word ft_cmd_fds_mod_bias		; AE
 .endif
 .if .defined(USE_N163)
-	.word ft_cmd_n163_wave_buffer	; AC
+	.word ft_cmd_n163_wave_buffer	; AF
 .endif
 .if .defined(USE_S5B)		;;; ;; ;
-	.word ft_cmd_s5b_env_type		; AD
-	.word ft_cmd_s5b_env_rate_hi	; AE
-	.word ft_cmd_s5b_env_rate_lo	; AF
-	.word ft_cmd_s5b_noise			; B0
+	.word ft_cmd_s5b_env_type		; B0
+	.word ft_cmd_s5b_env_rate_hi	; B1
+	.word ft_cmd_s5b_env_rate_lo	; B2
+	.word ft_cmd_s5b_noise			; B3
 .endif				; ;; ;;;
 ;	.word ft_cmd_expand
 
@@ -1040,6 +1043,20 @@ ft_cmd_transpose:
 	jsr ft_get_pattern_byte
 	sta var_ch_Transpose, x
 	rts
+;; ;; !! Effect: Phase reset (=xx)
+ft_cmd_phase_reset:
+	jsr ft_get_pattern_byte
+	inc var_ch_PhaseReset, x
+	rts
+ft_cmd_DPCM_phase_reset:
+	jsr ft_get_pattern_byte
+	inc var_ch_DPCMPhaseReset
+	rts
+;; ;; !! Effect: Frequency Multiplier (Kxx)
+ft_cmd_harmonic:
+	jsr ft_get_pattern_byte
+	sta var_ch_Harmonic, x
+	rts
 ;; ;; !! Effect: Target note slide (Nxy)
 ft_cmd_target_vol_slide:
 	jsr ft_get_pattern_byte			; Fetch speed / volume
@@ -1060,7 +1077,7 @@ ft_cmd_target_vol_slide:
 	sta var_ch_VolSlideTarget, x
 	rts
 :	sta var_ch_VolSlide, x
-	sta var_ch_VolDefault, x;
+	sta var_ch_VolDefault, x
 	lda #$80
 	sta var_ch_VolSlideTarget, x
 	rts
@@ -1215,8 +1232,12 @@ ft_cmd_s5b_env_rate_lo:
 	sta var_EnvelopeRate
 	rts
 ft_cmd_s5b_noise:
+;	case EF_SUNSOFT_NOISE: // W
+;		s_iDefaultNoise = s_iNoiseFreq = EffParam & 0x1F;		// // // 050B
 	jsr ft_get_pattern_byte
+	and #$1F
 	sta var_Noise_Period
+	sta var_Noise_Default
 	rts
 .endif						; ;; ;;;
 
@@ -1767,7 +1788,6 @@ ft_calculate_speed:
 
 	rts
 
-.if .defined(USE_LINEARPITCH) || .defined(USE_FDS)
 .if .defined(USE_MMC5) && .defined(USE_MMC5_MULTIPLIER)
 MUL:
 	lda var_Temp16
@@ -1818,7 +1838,6 @@ MUL:		;;; ;; ; var_Temp16 * var_Temp -> ACC (highest byte in EXT)
 	dey
 	bne @MultStep
 	rts
-.endif
 .endif
 
 ; If anyone knows a way to calculate speed without using

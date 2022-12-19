@@ -76,7 +76,7 @@ public:
 	uint8_t Read(uint16_t Address, bool &Mapped);
 	void EndFrame();
 	void Process(uint32_t Time);
-	double GetFreq(int Channel) const;		// // //
+	double GetFreq(int Channel) const override;		// // //
 
 private:
 	CVRC6_Pulse	*m_pPulse1, *m_pPulse2;

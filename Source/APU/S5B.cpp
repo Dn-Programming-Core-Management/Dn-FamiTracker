@@ -86,7 +86,7 @@ void CS5BChannel::Output(uint32_t Noise, uint32_t Envelope)
 		Output = 0;
 	if (!m_bNoiseDisable && !Noise)
 		Output = 0;
-	Mix(Output);
+	Mix(static_cast<int32_t>(Output) * -1);
 }
 
 double CS5BChannel::GetFrequency() const		// // //

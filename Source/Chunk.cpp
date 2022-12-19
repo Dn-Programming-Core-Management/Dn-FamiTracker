@@ -71,7 +71,7 @@ unsigned char CChunk::GetBank() const
 int CChunk::GetLength() const
 {
 	// Return number of data items in the collection
-	return m_vChunkData.size();
+	return static_cast<int>(m_vChunkData.size());
 }
 
 unsigned short CChunk::GetData(int index) const

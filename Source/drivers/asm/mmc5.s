@@ -75,7 +75,7 @@ ft_update_mmc5:
 	asl a
 	asl a
 	ora var_Temp							; ;; ;;;
-	sta $5000, y ; y == 0 || y == 4
+	sta $5000, y ; y == 0 || y == 4			$5000/5004
 	iny
 	iny
 	; Period table isn't limited to $7FF anymore
@@ -87,7 +87,7 @@ ft_update_mmc5:
 	lda #$FF
 	sta var_ch_PeriodCalcLo + MMC5_OFFSET, x
 :	lda var_ch_PeriodCalcLo + MMC5_OFFSET, x
-	sta $5000, y ; y == 2 || y == 6
+	sta $5000, y ; y == 2 || y == 6			$5002/5006
 	iny
 	lda var_ch_LengthCounter + MMC5_OFFSET, x	;;; ;; ;
 	and #$03
@@ -102,7 +102,7 @@ ft_update_mmc5:
 :	lda var_ch_LengthCounter + MMC5_OFFSET, x
 	and #$F8
 	ora var_ch_PeriodCalcHi + MMC5_OFFSET, x
-	sta $5000, y
+	sta $5000, y ; y == 3 || y == 7			$5003/5007
 	iny										; ;; ;;;
 	jmp @Next
 @KillChannel:
@@ -113,9 +113,20 @@ ft_update_mmc5:
 	bne @Next ; always
 :	sta $5004
 @Next:
+	lda var_ch_PhaseReset + MMC5_OFFSET, x
+	bne @MMC5PhaseReset
 	inx
 	cpx #CH_COUNT_MMC5
 	bcs :+
 	ldy #$04
 	jmp @ChannelLoop
 :	rts
+@MMC5PhaseReset:
+	dec var_ch_PhaseReset + MMC5_OFFSET, x
+	dey
+	lda var_ch_LengthCounter + MMC5_OFFSET, x
+	and #$F8
+	ora var_ch_PeriodCalcHi + MMC5_OFFSET, x
+	sta $5000, y ; y == 3 || y == 7			$5003/5007
+	iny
+	rts

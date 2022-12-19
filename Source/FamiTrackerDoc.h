@@ -29,6 +29,7 @@
 #include <afxmt.h>
 
 #include <vector>
+#include <string>		// !! !!
 #include <memory>		// // //
 
 // Get access to some APU constants
@@ -38,6 +39,10 @@
 // // //
 #include "FTMComponentInterface.h"
 #include "Settings.h"		// // //
+
+#include "json/json.hpp" // !! !!
+
+using json = nlohmann::json;
 
 #define TRANSPOSE_FDS
 
@@ -66,6 +71,24 @@ struct stSequence {
 	unsigned int Count;
 	signed char Length[MAX_SEQUENCE_ITEMS];
 	signed char Value[MAX_SEQUENCE_ITEMS];
+};
+
+// Dn-FT JSON block format version 1.1
+// https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/wiki/JSON-block-format
+struct stJSONOptionalData {
+	// Device mixing offsets, described in centibels. too late to change to millibels.
+	// range is +- 12 db.
+	int16_t APU1_OFFSET = 0;
+	int16_t APU2_OFFSET = 0;
+	int16_t VRC6_OFFSET = 0;
+	int16_t VRC7_OFFSET = 0;
+	int16_t FDS_OFFSET = 0;
+	int16_t MMC5_OFFSET = 0;
+	int16_t N163_OFFSET = 0;
+	int16_t S5B_OFFSET = 0;
+
+	// Use hardware based mixing values derived from survey: https://forums.nesdev.org/viewtopic.php?f=2&t=17741
+	bool USE_SURVEY_MIX = false;
 };
 
 // Access data types used by the document class
@@ -210,6 +233,9 @@ public:
 	machine_t		GetMachine() const		{ return m_iMachine; };		// // //
 	unsigned int	GetEngineSpeed() const	{ return m_iEngineSpeed; };
 	unsigned int	GetFrameRate() const;
+	void			SetPlaybackRate(unsigned int Rate, unsigned int Type);
+	unsigned int	GetPlaybackRate() const;
+	unsigned int	GetPlaybackRateType() const { return m_iPlaybackRateType; };
 
 	void			SelectExpansionChip(unsigned char Chip, bool Move = false);		// // //
 	unsigned char	GetExpansionChip() const { return m_iExpansionChip; };
@@ -234,8 +260,24 @@ public:
 	bool			GetLinearPitch() const;
 	void			SetLinearPitch(bool Enable);
 
-	int GetN163LevelOffset() const;
-	void SetN163LevelOffset(int offset);
+	bool			GetSurveyMixCheck() const;
+	void			SetSurveyMixCheck(bool SurveyMix);
+
+	int16_t			GetLevelOffset(int device) const;
+	void			SetLevelOffset(int device, int16_t offset);
+
+	uint8_t			GetOPLLPatchByte(int index) const;
+	void			SetOPLLPatchByte(int index, uint8_t data);
+	void			ResetOPLLPatches();
+
+	std::string		GetOPLLPatchName(int index) const;
+	void			SetOPLLPatchName(int index, std::string PatchName);
+
+	bool			GetExternalOPLLChipCheck() const;
+	void			SetExternalOPLLChipCheck(bool UserDefined);
+
+	json			InterfaceToOptionalJSON() const;
+	void			OptionalJSONToInterface(json& json);
 
 	void			SetComment(CString &comment, bool bShowOnLoad);
 	CString			GetComment() const;
@@ -340,7 +382,6 @@ public:
 
 	static const bool	DEFAULT_LINEAR_PITCH;
 
-
 	//
 	// Private functions
 	//
@@ -362,6 +403,7 @@ private:
 
 	bool			WriteBlock_Parameters(CDocumentFile *pDocFile, const int Version) const;		// // // version
 	bool			WriteBlock_SongInfo(CDocumentFile *pDocFile, const int Version) const;
+	bool			WriteBlock_Tuning(CDocumentFile *pDocFile, const int Version) const;
 	bool			WriteBlock_Header(CDocumentFile *pDocFile, const int Version) const;
 	bool			WriteBlock_Instruments(CDocumentFile *pDocFile, const int Version) const;
 	bool			WriteBlock_Sequences(CDocumentFile *pDocFile, const int Version) const;
@@ -378,10 +420,13 @@ private:
 	bool			WriteBlock_DetuneTables(CDocumentFile *pDocFile, const int Version) const;
 	bool			WriteBlock_Grooves(CDocumentFile *pDocFile, const int Version) const;
 	bool			WriteBlock_Bookmarks(CDocumentFile *pDocFile, const int Version) const;
+	// !! !!
 	bool			WriteBlock_JSON(CDocumentFile * pDocFile, const int Version) const;
+	bool			WriteBlock_ParamsEmu(CDocumentFile* pDocFile, const int Version) const;
 
 	void			ReadBlock_Parameters(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_SongInfo(CDocumentFile *pDocFile, const int Version);		// // //
+	void			ReadBlock_Tuning(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_Header(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_Instruments(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_Sequences(CDocumentFile *pDocFile, const int Version);
@@ -398,7 +443,9 @@ private:
 	void			ReadBlock_DetuneTables(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_Grooves(CDocumentFile *pDocFile, const int Version);
 	void			ReadBlock_Bookmarks(CDocumentFile *pDocFile, const int Version);
+	// !! !!
 	void			ReadBlock_JSON(CDocumentFile * pDocFile, const int Version);
+	void			ReadBlock_ParamsEmu(CDocumentFile* pDocFile, const int Version);
 
 	// For file version compability
 	void			ReorderSequences();
@@ -480,6 +527,7 @@ private:
 	bool			m_bFileLoaded;			// Is a file loaded?
 	bool			m_bFileLoadFailed;		// Last file load operation failed
 	unsigned int	m_iFileVersion;			// Loaded file version
+	bool			m_bFileDnModule;		// Is a Dn-FT module (non-vanilla)
 
 	bool			m_bForceBackup;
 	bool			m_bBackupDone;
@@ -514,13 +562,23 @@ private:
 	unsigned int	m_iNamcoChannels;
 	vibrato_t		m_iVibratoStyle;							// 0 = old style, 1 = new style
 	bool			m_bLinearPitch;
-	int				_N163LevelOffset;
-	
+
 	machine_t		m_iMachine;									// // // NTSC / PAL
-	unsigned int	m_iEngineSpeed;								// Refresh rate
+	unsigned int	m_iEngineSpeed;								// Engine refresh rate, in Hz
 	unsigned int	m_iSpeedSplitPoint;							// Speed/tempo split-point
 	int				m_iDetuneTable[6][96];						// // // Detune tables
 	int				m_iDetuneSemitone, m_iDetuneCent;			// // // 050B tuning
+	unsigned int	m_iPlaybackRate;							// NSF playback rate, in microseconds
+	unsigned int	m_iPlaybackRateType;						// Playback rate type, 0 = default, 1 = custom, 2 = video
+
+	// Emulation properties
+	bool			m_bUseExternalOPLLChip;						// !! !! User-defined hardware patch set for OPLL
+	uint8_t			m_iOPLLPatchBytes[19 * 8];
+	std::string		m_strOPLLPatchNames[19];
+
+	// JSON Optional properties
+	int16_t			m_iDeviceLevelOffset[8];					// !! !! Device level offsets, described in centibels
+	bool			m_bUseSurveyMixing;							// !! !! Use hardware-based mixing values, derived from survey: https://forums.nesdev.org/viewtopic.php?f=2&t=17741
 
 	// NSF info
 	char			m_strName[32];								// Song name

@@ -33,43 +33,10 @@
 #include "Clipboard.h"
 
 #include "FamiTracker.h"
+#include "FamiTrackerDoc.h"
 #include "Settings.h"
 
-static constexpr size_t REGS_PER_INSTR = 8;
 static constexpr int CUSTOM_PATCH = 0;
-
-// based off NSFPlay emu2413's hardware patch scheme
-static constexpr int OPLL_TONE_NUM = 9;
-static constexpr uint8_t DEFAULT_PATCHES[OPLL_TONE_NUM][(16 + 3) * REGS_PER_INSTR] =
-{
-	{
-#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_nuke.h"
-	},
-	{
-#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_rw.h"
-	},
-	{
-#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_ft36.h"
-	},
-	{
-#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_ft35.h"
-	},
-	{
-#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_mo.h"
-	},
-	{
-#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_kt2.h"
-	},
-	{
-#include "APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_kt1.h"
-	},
-	{
-#include "APU/nsfplay/xgm/devices/Sound/legacy/2413tone.h"
-	},
-	{
-#include "APU/nsfplay/xgm/devices/Sound/legacy/281btone.h"
-	},
-};
 
 // CInstrumentSettingsVRC7 dialog
 
@@ -116,90 +83,22 @@ BOOL CInstrumentEditorVRC7::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	PatchBank = (PatchTone)theApp.GetSettings()->Emulation.iVRC7Patch;
-
 	CComboBox* pPatchBox = static_cast<CComboBox*>(GetDlgItem(IDC_PATCH));
 	CString Text;
-	const _TCHAR* VRC7_patchnames[16] = {
-		// various VRC7 patch versions
-		_T("(custom patch)"),
-		_T("Bell"),
-		_T("Guitar"),
-		_T("Piano"),
-		_T("Flute"),
-		_T("Clarinet"),
-		_T("Rattling Bell"),
-		_T("Trumpet"),
-		_T("Reed Organ"),
-		_T("Soft Bell"),
-		_T("Xylophone"),
-		_T("Vibraphone"),
-		_T("Brass"),
-		_T("Bass Guitar"),
-		_T("Synthesizer"),
-		_T("Chorus")
-	};
-	const _TCHAR* YM2413_patchnames[16] = {
-		// YM2413 tone by Mitsutaka Okazaki, 2020
-		_T("(custom patch)"),
-		_T("Violin"),
-		_T("Guitar"),
-		_T("Piano"),
-		_T("Flute"),
-		_T("Clarinet"),
-		_T("Oboe"),
-		_T("Trumpet"),
-		_T("Organ"),
-		_T("Horn"),
-		_T("Synthesizer"),
-		_T("Harpsichord"),
-		_T("Vibraphone"),
-		_T("Synthsizer Bass"),
-		_T("Acoustic Bass"),
-		_T("Electric Guitar")
-	};
-	const _TCHAR* YMF281B_patchnames[16] = {
-		// YMF281B tone by Chabin (4/10/2004) with fixes from plgDavid
-		_T("(custom patch)"),
-		_T("Electric Strings"),
-		_T("Bow Wow"),
-		_T("Electric Guitar"),
-		_T("Organ"),
-		_T("Clarinet"),
-		_T("Saxophone"),
-		_T("Trumpet"),
-		_T("Street Organ"),
-		_T("Synth Brass"),
-		_T("Electric Piano"),
-		_T("Bass"),
-		_T("Vibraphone"),
-		_T("Chimes"),
-		_T("Tom Tom II"),
-		_T("Noise")
-	};
 
-	_TCHAR const* const* patch_names;
 
-	switch (PatchBank) {
-	case VRC7_NUKE:
-	case VRC7_RW:
-	case VRC7_FT36:
-	case VRC7_FT35:
-	case VRC7_MO:
-	case VRC7_KT2:
-	case VRC7_KT1:
-		patch_names = VRC7_patchnames;
-		break;
-	case TONE_2413:
-		patch_names = YM2413_patchnames;
-		break;
-	case TONE_281B:
-		patch_names = YMF281B_patchnames;
-		break;
+	// Get active document
+	m_pDocument = GetDocument();
+
+	// fetch patch names and bytes
+	for (int i = 0; i < 19; i++) {
+		for (int j = 0; j < 8; j++)
+			OPLLPatchBytes[(8 * i) + j] = m_pDocument->GetOPLLPatchByte((8 * i) + j);
+		OPLLPatchNames[i] = m_pDocument->GetOPLLPatchName(i);
 	}
 
 	for (int i = 0; i < 16; ++i) {
-		Text.Format(_T("Patch #%i - %s"), i, patch_names[i]);
+		Text.Format(_T("Patch #%i - %s"), i, OPLLPatchNames[i].c_str());
 		pPatchBox->AddString(Text);
 	}
 
@@ -311,7 +210,7 @@ void CInstrumentEditorVRC7::LoadPatch(int Num)
 {
 	uint8_t inst_params[8];
 	for (int i = 0; i < 8; ++i)
-		inst_params[i] = FetchPatchByte(PatchBank, Num, i);
+		inst_params[i] = FetchPatchByte(Num, i);
 
 	// Register 0
 	CheckDlgButton(IDC_M_AM, inst_params[0] & 0x80 ? 1 : 0);
@@ -353,7 +252,7 @@ void CInstrumentEditorVRC7::LoadPatch(int Num)
 	SetSliderVal(IDC_C_SL, inst_params[7] >> 4);
 	SetSliderVal(IDC_C_RR, inst_params[7] & 0x0F);
 
-	WritePatchText(Num);
+	PatchBytesToText(Num);
 }
 
 void CInstrumentEditorVRC7::SaveCustomPatch()
@@ -408,15 +307,15 @@ void CInstrumentEditorVRC7::SaveCustomPatch()
 	Reg |= GetSliderVal(IDC_C_RR);
 	m_pInstrument->SetCustomReg(7, Reg);
 
-	WritePatchText(CUSTOM_PATCH);
+	PatchBytesToText(CUSTOM_PATCH);
 }
 
-void CInstrumentEditorVRC7::WritePatchText(int Patch)
+void CInstrumentEditorVRC7::PatchBytesToText(int Patch)
 {
 	CString patchtxt;
 
 	for (int i = 0; i < 8; ++i)
-		patchtxt.AppendFormat(_T("$%02X "), FetchPatchByte(PatchBank, Patch, i));
+		patchtxt.AppendFormat(_T("$%02X "), FetchPatchByte(Patch, i));
 
 	CWnd* pPatchText = GetDlgItem(IDC_PATCH_TEXT);
 	pPatchText->SetWindowText(patchtxt);
@@ -471,7 +370,7 @@ void CInstrumentEditorVRC7::OnCopy()
 	int patch = m_pInstrument->GetPatch();
 	// Assemble a MML string
 	for (int i = 0; i < 8; ++i)
-		MML.AppendFormat(_T("$%02X "), FetchPatchByte(PatchBank, patch, i));
+		MML.AppendFormat(_T("$%02X "), FetchPatchByte(patch, i));
 	
 	CClipboard Clipboard(this, CF_TEXT);
 
@@ -488,7 +387,7 @@ void CInstrumentEditorVRC7::CopyAsPlainText()		// // //
 	int patch = m_pInstrument->GetPatch();
 	unsigned char reg[8] = {};
 	for (int i = 0; i < 8; ++i)
-		reg[i] = FetchPatchByte(PatchBank, patch, i);//patch == 0 ? m_pInstrument->GetCustomReg(i) : DEFAULT_PATCHES[PatchBank][patch * 8 + i];
+		reg[i] = FetchPatchByte(patch, i);//patch == 0 ? m_pInstrument->GetCustomReg(i) : DEFAULT_PATCHES[PatchBank][patch * 8 + i];
 	
 	CString MML;
 	GetDlgItemTextA(IDC_PATCH, MML);
@@ -511,10 +410,10 @@ void CInstrumentEditorVRC7::CopyAsPlainText()		// // //
 	Clipboard.SetDataPointer(MML.GetBuffer(), MML.GetLength() + 1);
 }
 
-uint8_t CInstrumentEditorVRC7::FetchPatchByte(PatchTone patch_bank_id, int patch, unsigned char patch_byte)
+uint8_t CInstrumentEditorVRC7::FetchPatchByte(int patch, unsigned char patch_byte)
 {
 	if (patch > CUSTOM_PATCH)
-		return DEFAULT_PATCHES[patch_bank_id][patch * REGS_PER_INSTR + patch_byte];
+		return OPLLPatchBytes[(8 * patch) + patch_byte];
 	else
 		return m_pInstrument->GetCustomReg(patch_byte);
 }
@@ -532,11 +431,11 @@ void CInstrumentEditorVRC7::OnPaste()
 	if (Clipboard.IsDataAvailable()) {
 		LPCTSTR text = (LPCTSTR)Clipboard.GetDataPointer();
 		if (text != NULL)
-			PasteSettings(text);
+			PatchTextToBytes(text);
 	}
 }
 
-void CInstrumentEditorVRC7::PasteSettings(LPCTSTR pString)
+void CInstrumentEditorVRC7::PatchTextToBytes(LPCTSTR pString)
 {
 	std::string str(pString);
 
@@ -575,10 +474,10 @@ BOOL CInstrumentEditorVRC7::PreTranslateMessage(MSG* pMsg)
 				if (Patch != CUSTOM_PATCH) {
 					SelectPatch(CUSTOM_PATCH);
 					static_cast<CComboBox*>(GetDlgItem(IDC_PATCH))->SetCurSel(0);
-					PasteSettings(patchtxt);
+					PatchTextToBytes(patchtxt);
 				}
 				else
-					PasteSettings(patchtxt);
+					PatchTextToBytes(patchtxt);
 			}
 		}
 		else if (GetFocus() != GetDlgItem(IDC_PATCH)) {

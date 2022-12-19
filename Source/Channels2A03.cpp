@@ -238,6 +238,11 @@ bool C2A03Square::HandleEffect(effect_t EffNum, unsigned char EffParam)
 		m_iLastPeriod = 0xFFFF;
 		m_bSweeping = true;
 		break;
+	case EF_PHASE_RESET:
+		if (EffParam == 0) {
+			resetPhase();
+		}
+		break;
 	default: return CChannelHandler2A03::HandleEffect(EffNum, EffParam);
 	}
 
@@ -275,6 +280,13 @@ CString C2A03Square::GetCustomEffectString() const		// // //
 		str.AppendFormat(_T(" EE%X"), !m_bEnvelopeLoop * 2 + m_bHardwareEnvelope);
 
 	return str;
+}
+
+void C2A03Square::resetPhase()
+{
+	int Address = 0x4000 + m_iChannel * 4;
+	int LoPeriod = CalculatePeriod() >> 8;
+	WriteRegister(Address + 3, LoPeriod + (m_iLengthCounter << 3));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -581,6 +593,11 @@ bool CDPCMChan::HandleEffect(effect_t EffNum, unsigned char EffParam)
 			queueSample();
 		}
 		break;
+	case EF_PHASE_RESET:
+		if (EffParam == 0) {
+			resetPhase();
+		}
+		break;
 	case EF_NOTE_CUT:
 	case EF_NOTE_RELEASE:
 		return CChannelHandler::HandleEffect(EffNum, EffParam);
@@ -625,6 +642,12 @@ bool CDPCMChan::CreateInstHandler(inst_type_t Type)
 		}
 	}
 	return false;
+}
+
+void CDPCMChan::resetPhase()
+{
+	// Trigger the sample again
+	triggerSample();
 }
 
 

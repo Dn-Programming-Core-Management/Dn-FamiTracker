@@ -30,11 +30,10 @@
 #include "../RegisterState.h"		// // //
 
 const float  CVRC7::AMPLIFY = 4.6f;		// Mixing amplification, VRC7 patch 14 is 4, 88 times stronger than a 50 % square @ v = 15
-const uint32_t CVRC7::OPL_CLOCK = 3579545;	// Clock frequency
+const uint32_t CVRC7::OPLL_CLOCK = CAPU::BASE_FREQ_VRC7;	// Clock frequency
 
 CVRC7::CVRC7()
 {
-
 	m_pRegisterLogger->AddRegisterRange(0x00, 0x07);		// // //
 	m_pRegisterLogger->AddRegisterRange(0x10, 0x15);
 	m_pRegisterLogger->AddRegisterRange(0x20, 0x25);
@@ -57,8 +56,10 @@ void CVRC7::Reset()
 	m_iBufferPtr = 0;
 	m_iTime = 0;
 	m_BlipVRC7.clear();
-	if (m_pOPLLInt != NULL)
+	if (m_pOPLLInt != NULL) {
 		OPLL_reset(m_pOPLLInt);
+		// patchset and OPLL type is set in UpdatePatchSet()
+	}
 }
 
 void CVRC7::UpdateFilter(blip_eq_t eq)
@@ -79,10 +80,9 @@ void CVRC7::SetSampleSpeed(uint32_t SampleRate, double ClockRate, uint32_t Frame
 		OPLL_delete(m_pOPLLInt);
 	}
 
-	m_pOPLLInt = OPLL_new(OPL_CLOCK, SampleRate);
+	m_pOPLLInt = OPLL_new(OPLL_CLOCK, SampleRate);
 
 	OPLL_reset(m_pOPLLInt);
-	OPLL_resetPatch(m_pOPLLInt, m_iPatchTone);
 
 	m_iMaxSamples = (SampleRate / FrameRate) * 2;	// Allow some overflow
 
@@ -91,9 +91,9 @@ void CVRC7::SetSampleSpeed(uint32_t SampleRate, double ClockRate, uint32_t Frame
 	memset(m_pBuffer, 0, sizeof(int16_t) * m_iMaxSamples);
 }
 
-void CVRC7::SetVolume(float Volume)
+void CVRC7::SetDirectVolume(double Volume)
 {
-	m_fVolume = Volume * AMPLIFY;
+	m_DirectVolume = Volume;
 }
 
 void CVRC7::Write(uint16_t Address, uint8_t Value)
@@ -124,9 +124,6 @@ uint8_t CVRC7::Read(uint16_t Address, bool &Mapped)
 void CVRC7::Process(uint32_t Time, Blip_Buffer& Output)
 {
 	// This cannot run in sync, fetch all samples at end of frame instead
-	for (int i = 0; i < 6; i++)
-		m_ChannelLevels[i].update(OPLL_getchanvol(i));
-
 	m_iTime += Time;
 }
 
@@ -140,14 +137,13 @@ void CVRC7::EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer)
 	while (m_iBufferPtr < WantSamples) {
 		int32_t RawSample = OPLL_calc(m_pOPLLInt);
 
-		// Clipping is slightly asymmetric
-		if (RawSample > 3600)
-			RawSample = 3600;
-		if (RawSample < -3200)
-			RawSample = -3200;
+		// emu2413's waveform output ranges from -4095...4095
+		// fully rectified by abs(), so resulting waveform is around 0-4095
+		for (int i = 0; i < 6; i++)
+			m_ChannelLevels[i].update(static_cast<uint8_t>((255.0 * (OPLL_getchanvol(i) + 1.0)/4096.0)));
 
-		// Apply volume
-		int32_t Sample = int(float(RawSample) * m_fVolume);
+		// Apply direct volume, hacky workaround
+		int32_t Sample = static_cast<int32_t>(double(RawSample) * m_DirectVolume);
 
 		if (Sample > 32767)
 			Sample = 32767;
@@ -186,18 +182,29 @@ int CVRC7::GetChannelLevel(int Channel)
 
 int CVRC7::GetChannelLevelRange(int Channel) const
 {
-	// unknown for now
-	return 15;
+	return 127;
 }
 
-void CVRC7::UpdateMixLevel(double v)
+void CVRC7::UpdateMixLevel(double v, bool UseSurveyMix)
 {
-	// the range of the emulator seems to be 65536
-	m_SynthVRC7.volume(v * AMPLIFY, 10000);
+	// The output of emu2413 is resampled. This means
+	// that the emulator output suffers no multiplex hiss and
+	// bit depth quantization.
+	// TODO: replace emu2413 with Nuked-OPLL for better multiplexing accuracy?
+
+	// hacky solution, since VRC7 uses asynchronous direct buffer writes
+	SetDirectVolume(UseSurveyMix ? v : (v * AMPLIFY));
+	
+	// emu2413's waveform output ranges from -4095...4095
+	m_SynthVRC7.volume(v, 8191);
 }
 
-void CVRC7::UpdatePatchSet(int Patchset)
+void CVRC7::UpdatePatchSet(int PatchSelection, bool UseExternalOPLLChip, uint8_t* PatchSet)
 {
-	m_iPatchTone = Patchset;
-	OPLL_resetPatch(m_pOPLLInt, m_iPatchTone);
+	OPLL_setChipType(m_pOPLLInt, (UseExternalOPLLChip ? 0 : 1));
+
+	if (UseExternalOPLLChip)
+		OPLL_setPatch(m_pOPLLInt, PatchSet);
+	else
+		OPLL_resetPatch(m_pOPLLInt, PatchSelection);
 }

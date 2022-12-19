@@ -88,7 +88,7 @@ void CChunkRenderBinary::StoreChunk(CChunk *pChunk)
 	for (int i = 0; i < pChunk->GetLength(); ++i) {
 		if (pChunk->GetType() == CHUNK_PATTERN) {
 			const std::vector<char> &vec = pChunk->GetStringData(CCompiler::PATTERN_CHUNK_INDEX);
-			Store(&vec.front(), vec.size());
+			Store(&vec.front(), static_cast<unsigned int>(vec.size()));
 		}
 		else {
 			unsigned short data = pChunk->GetData(i);
@@ -155,7 +155,8 @@ void CChunkRenderNSF::StoreSamples(const std::vector<const CDSample*> &Samples)
 		AllocateNewBank();
 
 	// Align first sample to valid address
-	Fill(CCompiler::AdjustSampleAddress(GetAbsoluteAddr()));
+	int SampleAlign = CCompiler::AdjustSampleAddress(GetAbsoluteAddr());
+	Fill(SampleAlign);
 	std::for_each(Samples.begin(), Samples.end(), [this] (const CDSample *pSample) {
 		StoreSample(pSample);
 	});
@@ -177,7 +178,8 @@ void CChunkRenderNSF::StoreSample(const CDSample *pDSample)
 {
 	// Store sample and fill with zeros
 	Store(pDSample->GetData(), pDSample->GetSize());
-	Fill(CCompiler::AdjustSampleAddress(GetAbsoluteAddr()));
+	int PadSample = CCompiler::AdjustSampleAddress(GetAbsoluteAddr());
+	Fill(PadSample);
 }
 
 void CChunkRenderNSF::StoreSampleBankswitched(const CDSample *pDSample)
@@ -191,15 +193,20 @@ void CChunkRenderNSF::StoreSampleBankswitched(const CDSample *pDSample)
 		m_iSampleAddr = CCompiler::PAGE_SAMPLES;
 	}
 
-	int Adjust = CCompiler::AdjustSampleAddress(m_iSampleAddr + SampleSize);
+	int Align = CCompiler::AdjustSampleAddress(m_iSampleAddr + SampleSize);
 	Store(pDSample->GetData(), SampleSize);
-	Fill(Adjust);
-	m_iSampleAddr += SampleSize + Adjust;
+	Fill(Align);
+	m_iSampleAddr += SampleSize + Align;
 }
 
 int CChunkRenderNSF::GetBankCount() const
 {
 	return GetBank() + 1;
+}
+
+int CChunkRenderNSF::GetDATAChunkSize() const
+{
+	return GetWritten();
 }
 
 void CChunkRenderNSF::StoreChunkBankswitched(const CChunk *pChunk)
@@ -222,7 +229,7 @@ void CChunkRenderNSF::StoreChunk(const CChunk *pChunk)
 	for (int i = 0; i < pChunk->GetLength(); ++i) {
 		if (pChunk->GetType() == CHUNK_PATTERN) {
 			const std::vector<char> &vec = pChunk->GetStringData(CCompiler::PATTERN_CHUNK_INDEX);
-			Store(&vec.front(), vec.size());			
+			Store(&vec.front(), static_cast<unsigned int>(vec.size()));
 		}
 		else {
 			unsigned short data = pChunk->GetData(i);

@@ -67,7 +67,7 @@ unsigned int CDSampleManager::GetFirstFree() const
 {
 	for (size_t i = 0; i < MAX_DSAMPLES; ++i)
 		if (!m_pDSample[i])
-			return i;
+			return static_cast<int>(i);
 	return -1;
 }
 

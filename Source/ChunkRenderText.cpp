@@ -401,7 +401,7 @@ void CChunkRenderText::StorePatternChunk(CChunk *pChunk, CFile *pFile)
 	const std::vector<char> &vec = pChunk->GetStringData(0);
 	len = vec.size();
 
-	StoreByteString(&vec.front(), vec.size(), str, DEFAULT_LINE_BREAK);
+	StoreByteString(&vec.front(), static_cast<int>(vec.size()), str, DEFAULT_LINE_BREAK);
 /*
 	for (int i = 0; i < len; ++i) {
 		str.AppendFormat("$%02X", (unsigned char)vec[i]);

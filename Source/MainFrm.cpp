@@ -2050,11 +2050,9 @@ void CMainFrame::OnFileImportText()
 
 	SetSongInfo(pDoc->GetSongName(), pDoc->GetSongArtist(), pDoc->GetSongCopyright());
 	pDoc->SetModifiedFlag(TRUE);
-	// TODO figure out how to handle this case, call OnInitialUpdate??
-	//pDoc->UpdateAllViews(NULL, CHANGED_ERASE);		// Remove
-	pDoc->UpdateAllViews(NULL, UPDATE_PROPERTIES);
-	pDoc->UpdateAllViews(NULL, UPDATE_INSTRUMENT);
-	//pDoc->UpdateAllViews(NULL, UPDATE_ENTIRE);		// TODO Remove
+
+	// A new module is loaded, update everything
+	CFamiTrackerView::GetView()->OnInitialUpdate();
 	theApp.GetSoundGenerator()->DocumentPropertiesChanged(pDoc);
 	pDoc->SetExceededFlag(false);			// // //
 }
@@ -3400,16 +3398,9 @@ void CMainFrame::OnToggleMultiplexer()
 {
 	CSettings *pSettings = theApp.GetSettings();
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
-	if (!pSettings->Emulation.bNamcoMixing){
-		pSettings->Emulation.bNamcoMixing = true;
-		theApp.LoadSoundConfig();
-		SetStatusText(_T("Namco 163 multiplexer emulation disabled"));
-	}
-	else{
-		pSettings->Emulation.bNamcoMixing = false;
-		theApp.LoadSoundConfig();
-		SetStatusText(_T("Namco 163 multiplexer emulation enabled"));
-	}
+	pSettings->Emulation.bNamcoMixing = !pSettings->Emulation.bNamcoMixing;
+	theApp.LoadSoundConfig();
+	SetStatusText((pSettings->Emulation.bNamcoMixing ? _T("Namco 163 multiplexer emulation disabled") : _T("Namco 163 multiplexer emulation enabled")));
 }
 
 void CMainFrame::OnToggleGroove()

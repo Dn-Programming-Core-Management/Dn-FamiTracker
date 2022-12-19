@@ -7,25 +7,27 @@ ft_load_inst_extra_fds:
 	ldy var_Temp
 	rts
 :
+	txa
+	pha
+	ldx #$00
 	tya							;;; ;; ;
 	clc
 	adc #$10
 	sta var_Temp2				; ;; ;;;
 	; Load modulation table
-	jsr ft_reset_modtable
 :
-	lda (var_Temp_Pointer), y
-	pha
-	and #$07
-	sta $4088
+	; mod table is 32 entries
+	; each entry is 3 bits long
+	; data is compressed to 16 bytes
+	lda (var_Temp_Pointer), y	; 5 cycles
+	sta var_ch_ModTable, x		; 5 cycles
+	iny							; 2 cycles
+	inx							; 2 cycles
+	cpy var_Temp2				; 3 cycles
+	bcc :-						; 3 cycles (last iteration is 2 cycles)
+	jsr ft_write_modtable		; total of 20 x 16 - 1 iterations = 319 cycles
 	pla
-	lsr a
-	lsr a
-	lsr a
-	sta $4088
-	iny
-	cpy var_Temp2				;;; ;; ;
-	bcc :-
+	tax
 
 	lda (var_Temp_Pointer), y	; Modulation delay
 	iny
@@ -126,9 +128,7 @@ ft_update_fds:
 
 	lda var_ch_Trigger + FDS_OFFSET			;;; ;; ;
 	beq :+
-	jsr ft_reset_modtable
-	;lda #$00
-	;sta $4085
+	jsr ft_write_modtable
 	lda var_ch_ModInstDepth					;;; ;; ;
 	sta var_ch_ModDepth
 	lda var_ch_ModRate + 1
@@ -151,13 +151,8 @@ ft_update_fds:
 	jsr ft_check_fds_fm
 
 @Return:
-	rts
-@TickDownDelay:
-	dec var_ch_ModDelayTick
-@DisableMod:
-	; Disable modulation
-	lda #$80
-	sta $4087
+	lda var_ch_PhaseReset + FDS_OFFSET
+	bne @FDSPhaseReset
 	rts
 @KillFDS:
 	lda var_ch_FDSVolume					;;; ;; ; return if volume envelope is enabled
@@ -169,7 +164,20 @@ ft_update_fds:
 	sta $4087
 	rts
 	padjmp		6
-
+@TickDownDelay:
+	dec var_ch_ModDelayTick
+@DisableMod:
+	; Disable modulation
+	lda #$80
+	sta $4087
+	rts
+@FDSPhaseReset:
+	dec var_ch_PhaseReset + FDS_OFFSET
+	lda #$80
+	sta $4083
+	lda var_ch_PeriodCalcHi + FDS_OFFSET
+	sta $4083
+	rts
 ; Load the waveform, index in A
 ft_load_fds_wave:
 	sta var_Temp16 + 1		;;; ;; ;
@@ -200,10 +208,29 @@ ft_load_fds_wave:
 	sta $4089		; Disable wave RAM
 	rts
 
-ft_reset_modtable:
+ft_write_modtable:
+	txa
+	pha
 	lda #$80
 	sta $4087
+	ldx #$00
+:
+	lda var_ch_ModTable, x			; 4
+	pha								; 3
+	and #$07						; 2
+	sta $4088						; 4
+	pla								; 4
+	lsr a							; 2
+	lsr a							; 2
+	lsr a							; 2
+	sta $4088						; 4
+	inx								; 2
+	cpx #$10						; 2
+	bcc :-							; 3*16 - 1 = 543 cycles
+	lda #$00
 	sta $4085
+	pla
+	tax
 	rts
 
 ft_check_fds_effects:
@@ -240,45 +267,47 @@ ft_check_fds_fm:
 	sta $4087
 	rts
 @AutoFM:
+	; ModFreq = PeriodCalc * ModRate_Hi / ModRate_Lo + ModBias
 	lda var_ch_ModRate + 1
 	and #$7F
 	sta var_Temp
 	lda var_ch_ModRate + 0
 	sta AUX
-	lda var_ch_PeriodCalcHi + FDS_OFFSET
+	lda var_ch_FDSCarrier + 1
 	sta var_Temp16 + 1
-	lda var_ch_PeriodCalcLo + FDS_OFFSET
+	lda var_ch_FDSCarrier
 	sta var_Temp16
 	lda #$00
 	sta AUX + 1
-
 	jsr MUL
+
 	lda EXT
 	beq :+
 	lda #$FF
 	sta ACC
 	sta ACC + 1
 :	jsr DIV
+
 	lda var_ch_ModBias
 	eor #$80
 	bpl :+
 	dec ACC + 1
 :	clc
 	adc ACC
-	lda ACC + 1
 
-; check for overflow
-	adc #$00
+	; if (ModFreq > 0xFFF) ModFreq = 0xFFF;
+	clc
+	lda ACC + 1
 	cmp #$10
-	bcs :+
+	bcc :+
+	lda #$0F
+	sta ACC + 1
+	lda #$FF
+	sta ACC + 0
 
+:	clc
+	lda ACC + 0
 	sta $4086
 	lda ACC + 1
-	sta $4087
-	rts
-:	
-	lda #$FF
-	sta $4086
-	lda #$0F
 	sta $4087
 	rts

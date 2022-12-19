@@ -38,7 +38,7 @@ CBookmarkCollection::CBookmarkCollection()
 
 unsigned CBookmarkCollection::GetCount() const
 {
-	return m_pBookmark.size();
+	return static_cast<unsigned>(m_pBookmark.size());
 }
 
 CBookmark *CBookmarkCollection::GetBookmark(unsigned Index) const
@@ -121,7 +121,7 @@ int CBookmarkCollection::GetBookmarkIndex(const CBookmark *const pMark) const
 	if (unsigned Count = GetCount())
 		for (std::size_t i = 0; i < Count; ++i)
 			if (m_pBookmark[i].get() == pMark)
-				return i;
+				return static_cast<int>(i);
 	return -1;
 }
 

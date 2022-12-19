@@ -36,9 +36,10 @@
 class CCommandLineLog : public CCompilerLog
 {
 public:
-	CCommandLineLog(std::string *pText) : m_pText(pText) {};	// // !!
-	void WriteLog(LPCTSTR text) {
-		*m_pText += text; // somehow send text to m_pText
+	CCommandLineLog(std::string *pText) : m_pText(pText) {};
+	void WriteLog(LPCTSTR text)
+	{
+		*m_pText += text;
 	};
 	void Clear() {};
 private:
@@ -49,53 +50,48 @@ private:
 void CCommandLineExport::CommandLineExport(const CString& fileIn, const CString& fileOut, const CString& fileLog,  const CString& fileDPCM)
 {
 	// open log
-	bool bLog = true;
-	CStdioFile fLog;
-	std::string tLog = "";		// // !!
+	bool bLog = false;
+	CStdioFile LogFile;
+	std::string LogText = "";
 
 	if (fileLog.GetLength() > 0)
-	{
-		fLog.Open(fileLog, CFile::modeCreate | CFile::modeWrite | CFile::typeText, NULL);
-	}
-
+		bLog = (LogFile.Open(fileLog, CFile::modeCreate | CFile::modeWrite | CFile::typeText, NULL));
+	
 	// create CFamiTrackerDoc for export
 	CRuntimeClass* pRuntimeClass = RUNTIME_CLASS(CFamiTrackerDoc);
 	CObject* pObject = pRuntimeClass->CreateObject();
 	if (pObject == NULL || !pObject->IsKindOf(RUNTIME_CLASS(CFamiTrackerDoc)))
 	{
-		if (bLog) tLog += _T("Error: unable to create CFamiTrackerDoc\n");
+		LogText += "Error: unable to create CFamiTrackerDoc\n";
+		LogText += "Press enter to continue . . .";
+		PrintCommandlineMessage(LogFile, LogText, bLog);
 		return;
 	}
 	CFamiTrackerDoc* pExportDoc = static_cast<CFamiTrackerDoc*>(pObject);
 
 	// open file
-	if(!pExportDoc->OnOpenDocument(fileIn))
-	{
-		if (bLog)
-		{
-			tLog += _T("Error: unable to open document: ");
-			tLog += fileIn;
-			tLog += _T("\n");
-		}
+	if(!pExportDoc->OnOpenDocument(fileIn)) {
+		LogText += "Error: unable to open document: ";
+		LogText += fileIn;
+		LogText += "\n";
+		LogText += "Press enter to continue . . .";
+		PrintCommandlineMessage(LogFile, LogText, bLog);
 		return;
 	}
-	if (bLog)
-	{
-		tLog += _T("Opened: ");
-		tLog += fileIn;
-		tLog += _T("\n");
-	}
+
+		LogText += "Opened: ";
+		LogText += fileIn;
+		LogText += "\n";
 
 	// find extension
 	int nPos = fileOut.ReverseFind(TCHAR('.'));
 	if (nPos < 0)
 	{
-		if (bLog)
-		{
-			tLog += _T("Error: export filename has no extension: ");
-			tLog += fileOut;
-			tLog += _T("\n");
-		}
+		LogText += "Error: export filename has no extension: ";
+		LogText += fileOut;
+		LogText += "\n";
+		LogText += "Press enter to continue . . .";
+		PrintCommandlineMessage(LogFile, LogText, bLog);
 		return;
 	}
 	CString ext = fileOut.Mid(nPos);
@@ -103,119 +99,116 @@ void CCommandLineExport::CommandLineExport(const CString& fileIn, const CString&
 	theApp.GetSoundGenerator()->GenerateVibratoTable(pExportDoc->GetVibratoStyle());
 
 	// export
-	if (0 == ext.CompareNoCase(_T(".nsf")))
-	{
-		CCompiler compiler(pExportDoc, bLog ? new CCommandLineLog(&tLog) : NULL);
-		compiler.ExportNSF(fileOut, pExportDoc->GetMachine() );
-		if (bLog)
-		{
-			tLog += _T("\nNSF export complete.\n");
-			CommandLineMessage(tLog);
-			fLog.WriteString(tLog.c_str());
-		}
+	CCompiler compiler(pExportDoc, new CCommandLineLog(&LogText));
+	if (0 == ext.CompareNoCase(_T(".nsf"))) {
+		compiler.ExportNSF(fileOut, pExportDoc->GetMachine());
+		LogText += "\nNSF export complete.\n";
+		LogText += "Press enter to continue . . .";
+		PrintCommandlineMessage(LogFile, LogText, bLog);
 		return;
 	}
-	else if (0 == ext.CompareNoCase(_T(".nes")))
-	{
-		CCompiler compiler(pExportDoc, bLog ? new CCommandLineLog(&tLog) : NULL);
+
+	else if (0 == ext.CompareNoCase(_T(".nsfe"))) {
+		compiler.ExportNSFE(fileOut, pExportDoc->GetMachine());
+		LogText += "\nNSFe export complete.\n";
+		LogText += "Press enter to continue . . .";
+		PrintCommandlineMessage(LogFile, LogText, bLog);
+		return;
+	}
+
+	else if (0 == ext.CompareNoCase(_T(".nsf2"))) {
+		CString actualFileOut = fileOut;
+		actualFileOut.Delete(nPos, ext.GetLength());
+		actualFileOut += ".nsf";
+		compiler.ExportNSF2(actualFileOut, pExportDoc->GetMachine());
+		LogText += "\nNSF2 export complete.\n";
+		LogText += "Press enter to continue . . .";
+		PrintCommandlineMessage(LogFile, LogText, bLog);
+		return;
+	}
+
+	else if (0 == ext.CompareNoCase(_T(".nes"))) {
 		compiler.ExportNES(fileOut, pExportDoc->GetMachine() == PAL);
-		if (bLog)
-		{
-			tLog += _T("\nNES export complete.\n");
-			CommandLineMessage(tLog);
-			fLog.WriteString(tLog.c_str());
-		}
+		LogText += "\nNES export complete.\n";
+		LogText += "Press enter to continue . . .";
+		PrintCommandlineMessage(LogFile, LogText, bLog);
 		return;
 	}
 	// BIN export requires two files
-	else if (0 == ext.CompareNoCase(_T(".bin")))
-	{
-		CCompiler compiler(pExportDoc, bLog ? new CCommandLineLog(&tLog) : NULL);
-		compiler.ExportBIN(fileOut, fileDPCM);
-		if (bLog)
-		{
-			tLog += _T("\nBIN export complete.\n");
-			CommandLineMessage(tLog);
-			fLog.WriteString(tLog.c_str());
-		}
+	else if (0 == ext.CompareNoCase(_T(".bin"))) {
+		compiler.ExportBIN(fileOut, fileDPCM, pExportDoc->GetMachine(), false);
+		LogText += "\nBIN export complete.\n";
+		LogText += "Press enter to continue . . .";
+		PrintCommandlineMessage(LogFile, LogText, bLog);
 		return;
 	}
-	else if (0 == ext.CompareNoCase(_T(".prg")))
-	{
-		CCompiler compiler(pExportDoc, bLog ? new CCommandLineLog(&tLog) : NULL);
+
+	else if (0 == ext.CompareNoCase(_T(".bin_aux"))) {
+		CString actualFileOut = fileOut;
+		actualFileOut.Delete(nPos, ext.GetLength());
+		actualFileOut += ".bin";
+		compiler.ExportBIN(actualFileOut, fileDPCM, pExportDoc->GetMachine(), true);
+		LogText += "\nBIN export with auxiliary data complete.\n";
+		LogText += "Press enter to continue . . .";
+		PrintCommandlineMessage(LogFile, LogText, bLog);
+		return;
+	}
+
+	else if (0 == ext.CompareNoCase(_T(".prg"))) {
 		compiler.ExportPRG(fileOut, pExportDoc->GetMachine() == PAL);
-		if (bLog)
-		{
-			tLog += _T("\nPRG export complete.\n");
-			CommandLineMessage(tLog);
-			fLog.WriteString(tLog.c_str());
-		}
+		LogText += "\nPRG export complete.\n";
+		LogText += "Press enter to continue . . .";
+		PrintCommandlineMessage(LogFile, LogText, bLog);
 		return;
 	}
-	else if (0 == ext.CompareNoCase(_T(".asm")))
-	{
-		CCompiler compiler(pExportDoc, bLog ? new CCommandLineLog(&tLog) : NULL);
-		compiler.ExportASM(fileOut);
-		if (bLog)
-		{
-			tLog += _T("\nASM export complete.\n");
-			CommandLineMessage(tLog);
-			fLog.WriteString(tLog.c_str());
-		}
+
+	else if (0 == ext.CompareNoCase(_T(".asm"))) {
+		compiler.ExportASM(fileOut, pExportDoc->GetMachine(), false);
+		LogText += "\nASM export complete.\n";
+		LogText += "Press enter to continue . . .";
+		PrintCommandlineMessage(LogFile, LogText, bLog);
 		return;
 	}
-	else if (0 == ext.CompareNoCase(_T(".nsfe")))		// // //
-	{
-		CCompiler compiler(pExportDoc, bLog ? new CCommandLineLog(&tLog) : NULL);
-		compiler.ExportNSFE(fileOut, pExportDoc->GetMachine());
-		if (bLog)
-		{
-			tLog += _T("\nNSFe export complete.\n");
-			CommandLineMessage(tLog);
-			fLog.WriteString(tLog.c_str());
-		}
+
+	else if (0 == ext.CompareNoCase(_T(".asm_aux"))) {
+		CString actualFileOut = fileOut;
+		actualFileOut.Delete(nPos, ext.GetLength());
+		actualFileOut += ".asm";
+		compiler.ExportASM(actualFileOut, pExportDoc->GetMachine(), true);
+		LogText += "\nASM export with auxiliary data complete.\n";
+		LogText += "Press enter to continue . . .";
+		PrintCommandlineMessage(LogFile, LogText, bLog);
 		return;
 	}
 	else if (0 == ext.CompareNoCase(_T(".wav")))		// // !!
 	{
-		if (bLog)
-		{
-			tLog += _T("\nWAVE export complete.\n");
-			CommandLineMessage(tLog);
-			fLog.WriteString(tLog.c_str());
-		}
+		LogText += "\nWAVE export complete.\n";
+		LogText += "Press enter to continue . . .";
+		PrintCommandlineMessage(LogFile, LogText, bLog);
 		return;
 	}
-	else if (0 == ext.CompareNoCase(_T(".txt")))
-	{
+
+	else if (0 == ext.CompareNoCase(_T(".txt"))) {
 		CTextExport textExport;
 		CString result = textExport.ExportFile(fileOut, pExportDoc);
-		if (result.GetLength() > 0)
-		{
-			if (bLog)
-			{
-				tLog += _T("Error: ");
-				tLog += result;
-				tLog += _T("\n");
-				CommandLineMessage(tLog);
-				fLog.WriteString(tLog.c_str());
-			}
+		if (result.GetLength() > 0) {
+			LogText += "Error: ";
+			LogText += result;
+			LogText += "\n";
+			PrintCommandlineMessage(LogFile, LogText, bLog);
 		}
-		else if (bLog)
-		{
-			tLog += _T("Exported: ");
-			tLog += fileOut;
-			tLog += _T("\n");
-			CommandLineMessage(tLog);
-			fLog.WriteString(tLog.c_str());
-		}
+
+		LogText += "Exported: ";
+		LogText += fileOut;
+		LogText += "\n";
+		LogText += "Press enter to continue . . .";
+		PrintCommandlineMessage(LogFile, LogText, bLog);
 		return;
 	}
-	else // use first custom exporter
-	{
+
+	else {		// use first custom exporter
 		CCustomExporters* pExporters = theApp.GetCustomExporters();
-		if (pExporters)
-		{
+		if (pExporters) {
 			CStringArray sNames;
 			pExporters->GetNames(sNames);
 			if (sNames.GetCount())
@@ -223,38 +216,32 @@ void CCommandLineExport::CommandLineExport(const CString& fileIn, const CString&
 				pExporters->SetCurrentExporter(sNames[0]);
 				CFamiTrackerDocWrapper documentWrapper(CFamiTrackerDoc::GetDoc(), 0);
 				bool bResult = (pExporters->GetCurrentExporter().Export(&documentWrapper, fileOut));
-				if (bLog)
-				{
-					tLog += _T("Custom exporter: ");
-					tLog += sNames[0];
-					tLog += _T("\n");
-					tLog += _T("Export ");
-					tLog += bResult ? _T("succesful: ") : _T("failed: ");
-					tLog += fileOut;
-					tLog += _T("\n");
-					CommandLineMessage(tLog);
-					fLog.WriteString(tLog.c_str());
-				}
+				LogText += "Custom exporter: ";
+				LogText += sNames[0];
+				LogText += "\n";
+				LogText += "Export ";
+				LogText += bResult ? "succesful: " : "failed: ";
+				LogText += fileOut;
+				LogText += "\n";
+				LogText += "Press enter to continue . . .";
+				PrintCommandlineMessage(LogFile, LogText, bLog);
 				return;
 			}
 		}
 	}
 
-	if (bLog)
-	{
-		tLog += _T("Error: unable to find matching export extension for: ");
-		tLog += fileOut;
-		tLog += _T("\n");
-		CommandLineMessage(tLog);
-		fLog.WriteString(tLog.c_str());
-	}
+	LogText += "Error: unable to find matching export extension for: ";
+	LogText += fileOut;
+	LogText += "\n";
+	LogText += "Press enter to continue . . .";
+	PrintCommandlineMessage(LogFile, LogText, bLog);
+
 	return;
 }
-void CCommandLineExport::CommandLineMessage(std::string message) {		// // !!
-	FILE* cout;
-	AttachConsole(ATTACH_PARENT_PROCESS);
-	errno_t err = freopen_s(&cout, "CON", "w", stdout);
-	std::string cLog = _T("\n") + message + _T("\nPress enter to continue . . .");
-	fprintf(stdout, "%s\n", cLog.c_str());
-	fclose(cout);
+
+void CCommandLineExport::PrintCommandlineMessage(CStdioFile &LogFile, std::string &text, bool writelog)
+{
+	if (writelog)
+		LogFile.WriteString(text.c_str());
+	fprintf(stdout, "%s\n", text.c_str());
 }

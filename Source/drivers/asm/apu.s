@@ -146,7 +146,7 @@ ft_update_2a03:
 	asl a
 	asl a
 	ora var_Temp								; ;; ;;;
-	sta $4000, y
+	sta $4000, y								; $4000/4004
 	iny
 	; Period table isn't limited to $7FF anymore
 	lda var_ch_PeriodCalcHi + APU_OFFSET, x
@@ -163,7 +163,7 @@ ft_update_2a03:
 	beq @DoneSquare								; See if sweep is triggered, if then don't touch sound registers until next note
 
 	lda var_ch_Sweep + APU_OFFSET, x			; Trigger sweep
-	sta $4000, y
+	sta $4000, y								; $4001/4005
 	iny
 	and #$7F
 	sta var_ch_Sweep + APU_OFFSET, x
@@ -171,10 +171,10 @@ ft_update_2a03:
 	jsr @KillSweepUnit
 
 	lda var_ch_PeriodCalcLo + APU_OFFSET, x
-	sta $4000, y
+	sta $4000, y								; $4002/4006
 	iny
 	lda var_ch_PeriodCalcHi + APU_OFFSET, x
-	sta $4000, y
+	sta $4000, y								; $4003/4007
 	lda #$FF
 	sta var_ch_PrevFreqHigh + APU_OFFSET, x
 
@@ -182,11 +182,11 @@ ft_update_2a03:
 
 @NoSquareSweep:									; No Sweep
 	lda #$08
-	sta $4000, y
+	sta $4000, y								; $4001/4005
 	iny
 	;jsr @KillSweepUnit							; test
 	lda var_ch_PeriodCalcLo + APU_OFFSET, x
-	sta $4000, y
+	sta $4000, y								; $4002/4006
 	iny
 	lda var_ch_LengthCounter + APU_OFFSET, x	;;; ;; ;
 	and #$03
@@ -201,14 +201,16 @@ ft_update_2a03:
 :	lda var_ch_LengthCounter + APU_OFFSET, x
 	and #$F8
 	ora var_ch_PeriodCalcHi + APU_OFFSET, x
-	sta $4000, y								; ;; ;;;
+	sta $4000, y								; $4003/4007
 	jmp @DoneSquare
 	
 @KillSquare:
 	lda #$30
-	sta $4000, y
+	sta $4000, y								; $4000/4004
 
 @DoneSquare:
+	lda var_ch_PhaseReset + APU_OFFSET, x
+	bne @SquarePhaseReset
 	inx
 	cpx #$02
 	bcs :+
@@ -218,7 +220,15 @@ ft_update_2a03:
 	;asl a
 	;tay
 	jmp @Square
-:
+:	jmp @Triangle
+
+@SquarePhaseReset:
+	dec var_ch_PhaseReset + APU_OFFSET, x
+	lda var_ch_LengthCounter + APU_OFFSET, x
+	and #$F8
+	ora var_ch_PeriodCalcHi + APU_OFFSET, x
+	sta $4000, y								; $4003/4007
+	rts
 
 ; ==============================================================================
 ;  Triangle
@@ -394,11 +404,11 @@ ft_update_2a03:
 :
 .endif
 .if .defined(USE_ALL)		;;; ;; ;
-	ldx #EFF_CHANS
+	ldx #DPCM_OFFSET
 .elseif .defined(USE_N163)
 	ldx var_EffChannels
 .else
-	ldx #EFF_CHANS
+	ldx #DPCM_OFFSET
 .endif
 	lda var_ch_DPCM_Retrig			; Retrigger
 	beq @SkipRetrigger
@@ -408,13 +418,15 @@ ft_update_2a03:
 	lda #$01
 	sta var_ch_Note, x
 @SkipRetrigger:
-
 	lda var_ch_DPCMDAC				; See if delta counter should be updated
 	bmi @SkipDAC
 	sta $4011
 @SkipDAC:
 	lda #$80						; store a negative value to mark that it's already updated
 	sta var_ch_DPCMDAC
+
+	lda var_ch_DPCMPhaseReset		; trigger note again if phase is reset
+	bne @DPCMPhaseReset
 
 	lda var_ch_Note, x
 	beq @KillDPCM
@@ -429,7 +441,6 @@ ft_update_2a03:
 	sta $4010
 	lda #$80
 	sta var_ch_DPCM_EffPitch
-
 
 	; Setup sample bank (if used)
  .if .defined(USE_BANKSWITCH)
@@ -470,6 +481,11 @@ ft_update_2a03:
 	lda #$0F
 	sta $4015
 	lda #$80
+	sta var_ch_Note, x
+	rts
+@DPCMPhaseReset:
+	dec var_ch_DPCMPhaseReset
+	lda #$01
 	sta var_ch_Note, x
 	rts
 @KillDPCM:

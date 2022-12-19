@@ -9,3 +9,4 @@ samples.bin
 music_nsf_map.txt
 
 build/drivers/*
+driver_tests/*

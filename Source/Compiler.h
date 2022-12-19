@@ -41,7 +41,8 @@ struct stNSFHeader {
 	unsigned short	Speed_PAL;
 	unsigned char	Flags;
 	unsigned char	SoundChip;
-	unsigned char	Reserved[4];
+	unsigned char	NSF2Flags;
+	unsigned char	NSFDataLength[3];
 };
 
 struct stNSFeHeader {		// // //
@@ -55,10 +56,13 @@ struct stNSFeHeader {		// // //
 	unsigned char	SoundChip;
 	unsigned char	TotalSongs;
 	unsigned char	StartSong;
-	unsigned short	Speed_NTSC;
 	unsigned int	BankSize;
 	unsigned char	BankIdent[4];
 	unsigned char	BankValues[8];
+	unsigned int	RateSize;
+	unsigned char	RateIdent[4];
+	unsigned short	Speed_NTSC;
+	unsigned short	Speed_PAL;
 };
 
 struct driver_t;
@@ -91,15 +95,16 @@ public:
 	
 	void	ExportNSF(LPCTSTR lpszFileName, int MachineType);
 	void	ExportNSFE(LPCTSTR lpszFileName, int MachineType);		// // //
+	void	ExportNSF2(LPCTSTR lpszFileName, int MachineType);		// // //
 	void	ExportNES(LPCTSTR lpszFileName, bool EnablePAL);
-	void	ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File);
+	void	ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int MachineType, bool ExtraData);
 	void	ExportPRG(LPCTSTR lpszFileName, bool EnablePAL);
-	void	ExportASM(LPCTSTR lpszFileName);
+	void	ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData);
 
 private:
 	bool	OpenFile(LPCTSTR lpszFileName, CFile &file) const;
 
-	void	CreateHeader(stNSFHeader *pHeader, int MachineType) const;
+	void	CreateHeader(stNSFHeader *pHeader, int MachineType, unsigned int NSF2Flags, bool NSF2) const;
 	void	CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType);		// // //
 	void	SetDriverSongAddress(char *pDriver, unsigned short Address) const;
 #if 0
@@ -151,6 +156,10 @@ private:
 	// File writing
 	void	WriteAssembly(CFile *pFile);
 	void	WriteBinary(CFile *pFile);
+	void	WritePeriods(CFile* pFile);
+	void	WriteVibrato(CFile* pFile);
+	void	WriteNSFHeader(CFile* pFile, stNSFHeader Header);
+	void	WriteNSFConfig(CFile* pFile, unsigned int DPCMSegment, stNSFHeader Header);
 	void	WriteSamplesBinary(CFile *pFile);
 
 	// Object list functions

@@ -45,7 +45,7 @@ stOldSettingContext::stOldSettingContext()
 stOldSettingContext::~stOldSettingContext()
 {
 	CString s;
-	s.LoadString(AFX_IDS_APP_TITLE);
+	s.LoadString(theApp.m_hInstance, AFX_IDS_APP_TITLE);
 	theApp.m_pszProfileName = _tcsdup(s);
 }
 
@@ -229,23 +229,35 @@ void CSettings::SetupSettings()
 	SETTING_STRING("Paths", "Instrument menu", "", &InstrumentMenuPath);
 
 	// Mixing
+		// Chip mixing levels, described in centibels.
 	SETTING_INT("Mixer", "APU1", 0, &ChipLevels.iLevelAPU1);
 	SETTING_INT("Mixer", "APU2", 0, &ChipLevels.iLevelAPU2);
 	SETTING_INT("Mixer", "VRC6", 0, &ChipLevels.iLevelVRC6);
 	SETTING_INT("Mixer", "VRC7", 0, &ChipLevels.iLevelVRC7);
-	SETTING_INT("Mixer", "MMC5", 0, &ChipLevels.iLevelMMC5);
 	SETTING_INT("Mixer", "FDS", 0, &ChipLevels.iLevelFDS);
+	SETTING_INT("Mixer", "MMC5", 0, &ChipLevels.iLevelMMC5);
 	SETTING_INT("Mixer", "N163", 0, &ChipLevels.iLevelN163);
 	SETTING_INT("Mixer", "S5B", 0, &ChipLevels.iLevelS5B);
+		// Survey mixing levels, described in millibels.
+		// Default values derived from NSFplay
+		// https://github.com/bbbradsmith/nsfplay/blob/master/xgm/player/nsf/nsfplay.cpp#L843
+	SETTING_INT("Mixer", "APU1 survey level", 0, &ChipLevels.iSurveyMixAPU1);
+	SETTING_INT("Mixer", "APU2 survey level", -20, &ChipLevels.iSurveyMixAPU2);
+	SETTING_INT("Mixer", "VRC6 survey level", 0, &ChipLevels.iSurveyMixVRC6);
+	SETTING_INT("Mixer", "VRC7 survey level", 1340, &ChipLevels.iSurveyMixVRC7);
+	SETTING_INT("Mixer", "FDS survey level", 690, &ChipLevels.iSurveyMixFDS);
+	SETTING_INT("Mixer", "MMC5 survey level", 0, &ChipLevels.iSurveyMixMMC5);
+	SETTING_INT("Mixer", "N163 survey level", 1540, &ChipLevels.iSurveyMixN163);
+	SETTING_INT("Mixer", "S5B survey level", -250, &ChipLevels.iSurveyMixS5B);
 
 	// Emulation
+		// VRC7
+	SETTING_INT("Emulation", "VRC7 hardware patch", PATCH_NUKE, &Emulation.iVRC7Patch);
 		// FDS
 	SETTING_INT("Emulation", "FDS lowpass filter cutoff", 2000, &Emulation.iFDSLowpass);
 		// N163
 	SETTING_BOOL("Emulation", "N163 multiplexing", true, &Emulation.bNamcoMixing);
 	SETTING_INT("Emulation", "N163 lowpass filter cutoff", 12000, &Emulation.iN163Lowpass);
-		// VRC7
-	SETTING_INT("Emulation", "VRC7 hardware patch", PATCH_NUKE, &Emulation.iVRC7Patch);
 }
 
 template<class T>

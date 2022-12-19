@@ -38,10 +38,10 @@ protected:
 	void Store(const void *pData, unsigned int Size);
 	void Fill(unsigned int Size);
 	unsigned int GetWritten() const;
+	unsigned int m_iDataWritten;
 
 private:
 	CFile		*m_pFile;
-	unsigned int m_iDataWritten;
 };
 
 // Binary data render
@@ -72,6 +72,7 @@ public:
 	void StoreSamples(const std::vector<const CDSample*> &Samples);
 	void StoreSamplesBankswitched(const std::vector<const CDSample*> &Samples);
 	int  GetBankCount() const;
+	int  GetDATAChunkSize() const;
 
 protected:
 	void StoreChunk(const CChunk *pChunk);

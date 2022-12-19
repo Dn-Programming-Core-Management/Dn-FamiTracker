@@ -1,11 +1,25 @@
 ;;; ;; ;
-;;; ;; ; 0CC-FamiTracker NSF Driver
-;;; ;; ; By HertzDevil
+;;; ;; ; Dn-FamiTracker NSF Driver
+;;; ;; ; By jsr, HertzDevil, D.P.C.M., etc.
 ;;; ;; ;
+
+.define DRIVER_NAME "Dn-FT "
+; version 2.13
+.define VERSION_MAJ 2
+.define VERSION_MIN 13
 
 ;
 ; Assembler code switches
 ;
+
+.if .defined(HAS_NSF_HEADER)
+	.segment "HEADER"
+	.if .defined(USE_AUX_DATA)
+		.include "driver_tests/nsf_header.s"
+	.else
+		.include "nsf_wrap.s"
+	.endif
+.endif
 
 USE_BANKSWITCH = 1		; Enable bankswitching code
 USE_OLDVIBRATO = 1		;;; ;; ; Enable old vibrato code
@@ -214,6 +228,8 @@ var_ch_ModInstRate:		.res 2		;;; ;; ;
 var_ch_ModEffWritten:	.res 1
 var_ch_FDSVolume:		.res 1		;;; ;; ;
 var_ch_ModBias:			.res 1		;;; ;; ;
+var_ch_FDSCarrier:		.res 2		;; ;; !! for auto-FM in conjunction with frequency multiplier
+var_ch_ModTable:		.res 16
 .endif
 
 .if .defined(USE_N163)
@@ -230,6 +246,7 @@ var_NamcoInstrument:    .res CH_COUNT_N163
 .endif
 
 .if .defined(USE_S5B)								;;; ;; ;
+var_Noise_Default:		.res 1						;; ;; !!
 var_Noise_Period:		.res 1						; $06
 var_Noise_Prev:			.res 1						; cache noise value
 var_Pul_Noi:			.res 1						; $07
@@ -238,6 +255,11 @@ var_EnvelopeType:		.res 1						; $0D
 var_AutoEnv_Channel:	.res 1						;;; ;; ; 050B
 var_EnvelopeTrigger:	.res 1						; Hxy issued
 .endif												; ;; ;;;
+
+; hack effect variable to zeropage due to low space remaining in BSS when all expansions are enabled
+var_ch_Harmonic:		.res EFF_CHANS				;; ;; !! Frequency multiplier
+var_ch_PhaseReset:		.res EFF_CHANS				;; ;; !! Phase reset
+var_ch_DPCMPhaseReset:	.res 1						;; ;; !! DPCM exclusive phase reset
 
 last_zp_var:			.res 1						; Not used
 
@@ -469,7 +491,7 @@ last_bss_var:			.res 1						; Not used
 ; NSF entry addresses
 
 .if .defined(PACKAGE)
-	.byte "DN-FT ", $02, $0C		 ;; ;; !!
+	.byte DRIVER_NAME, VERSION_MAJ, VERSION_MIN
 .endif
 
 LOAD:
@@ -608,10 +630,20 @@ bit_mask:		;;; ;; ; general-purpose bit mask
 .endrep
 
 ; Include period tables
-.include "periods.s"
+.if .defined(USE_AUX_DATA)
+	; Period tables are overwritten when detune settings are present.
+	.include "driver_tests/periods.s"
+.else
+	.include "periods.s"
+.endif
 
 ;;; ;; ; Include vibrato table
-.include "vibrato.s"
+.if .defined(USE_AUX_DATA)
+	; Vibrato tables are overwritten depending on old/new vibrato mode.
+	.include "driver_tests/vibrato.s"
+.else
+	.include "vibrato.s"
+.endif
 
 ;
 ; An example of including music follows
@@ -623,24 +655,17 @@ bit_mask:		;;; ;; ; general-purpose bit mask
 ft_music_addr:
 	.word * + 2					; This is the point where music data is stored
 
-
 .if .defined(INC_MUSIC)
-
-	; Include music
-.if .defined(INC_MUSIC_ASM)
-	; Included assembly file music, DPCM included
-	.include "music.asm"
-.else
-	; Binary chunk music
-	.incbin "music.bin"			; Music data
-.if .defined(USE_DPCM)
-	.segment "DPCM"				; DPCM samples goes here
-	.incbin "samples.bin"
-.endif
-.endif
-.endif
-
-.if .defined(HAS_NSF_HEADER)
-.segment "HEADER"
-.include "nsf_wrap.s"
+		; Include music
+	.if .defined(INC_MUSIC_ASM)
+		; Included assembly file music, DPCM included
+		.include "driver_tests/music.asm"
+	.else
+		; Binary chunk music
+		.incbin "driver_tests/music.bin"
+		.if .defined(USE_DPCM)
+			.segment "DPCM"				; DPCM samples goes here
+			.incbin "driver_tests/samples.bin"
+		.endif
+	.endif
 .endif

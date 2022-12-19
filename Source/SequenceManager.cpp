@@ -38,7 +38,7 @@ CSequenceManager::CSequenceManager(int Count)
 
 int CSequenceManager::GetCount() const
 {
-	return m_pCollection.size();
+	return static_cast<int>(m_pCollection.size());
 }
 
 CSequenceCollection *CSequenceManager::GetCollection(unsigned int Index)

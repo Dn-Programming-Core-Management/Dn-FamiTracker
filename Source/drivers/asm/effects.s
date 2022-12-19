@@ -210,7 +210,7 @@ ft_load_slide:
 	lda #EFF_SLIDE_UP
 	sta var_ch_Effect, x
 	jmp ft_jump_to_effect
-;    rts
+	;rts
 :   lda #EFF_SLIDE_DOWN
 	sta var_ch_Effect, x
 :	;rts
@@ -243,9 +243,9 @@ ft_calc_period:
 	; Apply fine pitch
 	lda var_ch_FinePitch, x
 	cmp #$80
-	beq @Skip
+	beq :+
 	lda var_ch_Note, x    ; Skip on note off as well to avoid problems with VRC7
-	beq @Skip
+:	beq @Skip
 
 ;	.if 0
 
@@ -285,6 +285,11 @@ ft_calc_period:
 	lda var_ch_PeriodCalcHi, x
 	sbc var_Temp16 + 1
 	sta var_ch_PeriodCalcHi, x
+	; check for pitch underflow
+	bcs :+
+	lda #$00
+	sta var_ch_PeriodCalcLo, x
+	sta var_ch_PeriodCalcHi, x
 	jmp @Skip
 :
 .endif
@@ -303,18 +308,103 @@ ft_calc_period:
 	lda var_ch_PeriodCalcHi, x
 	sbc #$00
 	sta var_ch_PeriodCalcHi, x
-	cmp #$ff
-	bne @Skip						; prevent overflow
+	; check for pitch overflow
+	bcs @Skip
 	lda #$00
-	sta var_ch_PeriodCalcHi, x
 	sta var_ch_PeriodCalcLo, x
+	sta var_ch_PeriodCalcHi, x
 @Skip:
+	
+	; apply frequency multiplication
+	lda var_ch_Harmonic, x
+	cmp #$01
+	beq @SkipHarmonic								; skip calculation if it's not affecting pitch
+	cmp #$00
+	beq @MaxPeriod									; K00 results in lowest possible frequency
+
+	lda ft_channel_type, x
+	cmp #CHAN_NOI
+	beq @SkipHarmonic
+
+.if .defined(USE_VRC7)
+	; VRC7 not yet implemented
+	cmp #CHAN_VRC7
+	beq @SkipHarmonic
+.endif
+; FDS and N163 use angular frequency
+.if .defined(USE_FDS)
+	cmp #CHAN_FDS
+	beq @HarmonicMultiply
+.endif
+.if .defined(USE_N163)
+	cmp #CHAN_N163
+	beq @HarmonicMultiply
+.endif
+@HarmonicDivide:
+	lda var_ch_PeriodCalcLo, x
+	sta ACC
+	lda var_ch_PeriodCalcHi, x
+	sta ACC + 1
+	lda var_ch_Harmonic, x
+	sta AUX
+	lda #$00
+	sta AUX + 1
+	jsr DIV
+	jmp @HarmonicEnd
+@HarmonicMultiply:
+	lda var_ch_PeriodCalcLo, x
+	sta var_Temp16
+.if .defined(USE_FDS)
+	sta var_ch_FDSCarrier
+.endif
+	lda var_ch_PeriodCalcHi, x
+	sta var_Temp16 + 1
+.if .defined(USE_FDS)
+	sta var_ch_FDSCarrier + 1
+.endif
+	lda var_ch_Harmonic, x
+	sta var_Temp
+	jsr MUL
+@HarmonicEnd:
+	lda ACC
+	sta var_ch_PeriodCalcLo, x
+	lda ACC + 1
+	sta var_ch_PeriodCalcHi, x
+@SkipHarmonic:
 
 	jsr ft_vibrato
 	jsr ft_tremolo
-
 	rts
-
+@MaxPeriod:
+	; no limits for noise
+	lda ft_channel_type, x
+	cmp #CHAN_NOI
+	beq @EndCalcPeriod
+.if .defined(USE_VRC7)
+	cmp #CHAN_VRC7
+	beq @EndCalcPeriod
+.endif
+.if .defined(USE_N163)
+	cmp #CHAN_N163
+	beq @InvertedPeriod
+.endif
+.if .defined(USE_FDS)
+	cmp #CHAN_FDS
+	beq @InvertedPeriod
+.endif
+	; 12-bit/11-bit period
+	; will be handled in their respective chip handlers
+	lda #$FF
+	sta var_ch_PeriodCalcHi, x
+	lda #$0F
+	sta var_ch_PeriodCalcLo, x
+	jmp @EndCalcPeriod
+@InvertedPeriod:
+	lda #$00
+	sta var_ch_PeriodCalcHi, x
+	sta var_ch_PeriodCalcLo, x
+@EndCalcPeriod:
+	rts
 
 ;
 ; Portamento

@@ -94,7 +94,7 @@ void CSequenceSetting::OnPaint()
 	dc.SetBkColor(BgColor);
 
 	rect.top += 2;
-	dc.DrawText(str, _tcslen(str), rect, DT_CENTER);
+	dc.DrawText(str, static_cast<int>(_tcslen(str)), rect, DT_CENTER);
 }
 
 void CSequenceSetting::OnLButtonDown(UINT nFlags, CPoint point)

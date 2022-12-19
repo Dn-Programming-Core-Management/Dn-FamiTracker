@@ -176,6 +176,9 @@ public:
 	void		 GenerateVibratoTable(vibrato_t Type);
 	void		 SetupVibratoTable(vibrato_t Type);
 	int			 ReadVibratoTable(int index) const;
+
+	// Period
+	// Generating and setting up the period tables is already done in DocumentPropertiesChanged()
 	int			 ReadPeriodTable(int Index, int Table) const;		// // //
 
 	// Player interface
@@ -239,7 +242,6 @@ public:
 	void		WriteRegister(uint16_t Reg, uint8_t Value);
 
 	void		RegisterKeyState(int Channel, int Note);
-	void		SetNamcoMixing(bool bLinear);			// // //
 
 	// Player
 	int			GetPlayerRow() const;
@@ -332,6 +334,8 @@ public:
 	/// Accessed by audio thread only.
 	std::thread::id m_audioThreadID;
 
+	// Accessed by CCompiler for mixe chunk
+	std::vector<int16_t> SurveyMixLevels;
 private:
 	rigtorp::SPSCQueue<GuiMessage> m_MessageQueue;
 
@@ -346,11 +350,16 @@ private:
 	CSoundStream		*m_pSoundStream;
 	CVisualizerWnd		*m_pVisualizerWnd;
 	CAPU				*m_pAPU;
-	int currN163LevelOffset;
+	bool UseExtOPLL;
+	std::vector<int16_t> DeviceMixOffset;
+	bool UseSurveyMix;
+	std::vector<uint8_t> OPLLHardwarePatchBytes;
+	std::vector<std::string> OPLLHardwarePatchNames;
+
 
 	const CDSample		*m_pPreviewSample;
 
-	bool m_CoInitialized;
+	bool				m_CoInitialized;
 	bool				m_bRunning;
 
 	// Thread synchronization

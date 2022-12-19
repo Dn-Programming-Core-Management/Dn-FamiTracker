@@ -33,10 +33,12 @@
 // No unicode allowed here
 
 // Class constants
-const unsigned int CDocumentFile::FILE_VER		 = 0x0440;			// Current file version (4.40)
-const unsigned int CDocumentFile::COMPATIBLE_VER = 0x0100;			// Compatible file version (1.0)
+const unsigned int CDocumentFile::FILE_VER		 = 0x0450;			// Current file version (4.50)
+const unsigned int CDocumentFile::COMPATIBLE_FORWARD_VER = 0x450;	// Forwards compatible file version (4.50)
+const unsigned int CDocumentFile::COMPATIBLE_VER = 0x0100;			// Backwards compatible file version (1.0)
 
 const char *CDocumentFile::FILE_HEADER_ID = "FamiTracker Module";
+const char *CDocumentFile::FILE_HEADER_ID_DN = "Dn-FamiTracker Module";
 const char *CDocumentFile::FILE_END_ID	  = "END";
 
 const unsigned int CDocumentFile::MAX_BLOCK_SIZE = 0x80000;
@@ -61,11 +63,15 @@ bool CDocumentFile::Finished() const
 	return m_bFileDone;
 }
 
-bool CDocumentFile::BeginDocument()
+bool CDocumentFile::BeginDocument(bool isDnModule)
 {
 	try {
-		Write(FILE_HEADER_ID, int(strlen(FILE_HEADER_ID)));
-		Write(&FILE_VER, sizeof(int));
+		// TODO: Dn-FamiTracker compatibility modes
+		if (isDnModule)
+			Write(FILE_HEADER_ID_DN, int(strlen(FILE_HEADER_ID_DN)));
+		else
+			Write(FILE_HEADER_ID, int(strlen(FILE_HEADER_ID)));
+		Write(&FILE_VER, sizeof(unsigned int));
 	}
 	catch (CFileException *e) {
 		e->Delete();
@@ -167,7 +173,7 @@ void CDocumentFile::WriteString(CString String)
 
 // adapted from hertzdevil/25d77a
 void CDocumentFile::WriteString(std::string_view sv) {
-	WriteBlock((const char *)sv.data(), sv.size());
+	WriteBlock((const char *)sv.data(), static_cast<int>(sv.size()));
 	WriteBlockChar(0);
 }
 
@@ -197,18 +203,32 @@ void CDocumentFile::ValidateFile()
 {
 	// Checks if loaded file is valid
 
-	char Buffer[256];
+	char Buffer[256]{};
+
+	m_bFileDnModule = false;
+
+	CModuleException* e = new CModuleException();		// // // blank
 
 	// Check ident string
+	// TODO: Dn-FamiTracker compatibility modes
 	Read(Buffer, int(strlen(FILE_HEADER_ID)));
 
-	CModuleException *e = new CModuleException();		// // // blank
+	// TODO: avoid using RollbackPointer()
+	if (memcmp(Buffer, FILE_HEADER_ID, strlen(FILE_HEADER_ID)) != 0) {
+		// might be a Dn-FT module, try again
+		RollbackPointer(int(strlen(FILE_HEADER_ID)));
+		RollbackFilePointer(int(strlen(FILE_HEADER_ID)));
 
-	if (memcmp(Buffer, FILE_HEADER_ID, strlen(FILE_HEADER_ID)) != 0)
-		RaiseModuleException("File is not a FamiTracker module");
+		Read(Buffer, int(strlen(FILE_HEADER_ID_DN)));
+
+		if (memcmp(Buffer, FILE_HEADER_ID_DN, strlen(FILE_HEADER_ID_DN)) != 0)
+			RaiseModuleException("File is not a recognized Dn-FamiTracker module");
+		else
+			m_bFileDnModule = true;
+	}
 
 	// Read file version
-	Read(Buffer, 4);
+	Read(Buffer, sizeof(unsigned int));
 	m_iFileVersion = (Buffer[3] << 24) | (Buffer[2] << 16) | (Buffer[1] << 8) | Buffer[0];
 	
 	// // // Older file version
@@ -217,7 +237,7 @@ void CDocumentFile::ValidateFile()
 		e->Raise();
 	}
 	// // // File version is too new
-	if (GetFileVersion() > 0x450U /*FILE_VER*/) {		// // // 050B
+	if (GetFileVersion() > COMPATIBLE_FORWARD_VER) {		// // // 050B
 		e->AppendError("FamiTracker module version too new (0x%X), expected 0x%X or below", GetFileVersion(), FILE_VER);
 		e->Raise();
 	}
@@ -232,6 +252,11 @@ unsigned int CDocumentFile::GetFileVersion() const
 	return m_iFileVersion & 0xFFFF;
 }
 
+bool CDocumentFile::GetModuleType() const
+{
+	return m_bFileDnModule;
+}
+
 bool CDocumentFile::ReadBlock()
 {
 	int BytesRead;
@@ -241,8 +266,8 @@ bool CDocumentFile::ReadBlock()
 	memset(m_cBlockID, 0, 16);
 
 	BytesRead = Read(m_cBlockID, 16);
-	Read(&m_iBlockVersion, sizeof(int));
-	Read(&m_iBlockSize, sizeof(int));
+	Read(&m_iBlockVersion, sizeof(unsigned int));
+	Read(&m_iBlockSize, sizeof(unsigned int));
 
 	if (m_iBlockSize > 50000000) {
 		// File is probably corrupt
@@ -281,12 +306,19 @@ int CDocumentFile::GetBlockVersion() const
 	return m_iBlockVersion;
 }
 
+// avoid using this as much as possible
 void CDocumentFile::RollbackPointer(int count)
 {
 	m_iBlockPointer -= count;
 	m_iPreviousPointer = m_iBlockPointer; // ?
 	m_iFilePosition -= count;		// // //
 	m_iPreviousPosition -= count;
+}
+
+// avoid using this as much as possible
+void CDocumentFile::RollbackFilePointer(int count)
+{
+	CFile::Seek((count * -1), CFile::current);
 }
 
 int CDocumentFile::GetBlockInt()

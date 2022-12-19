@@ -165,11 +165,11 @@ BOOL CConfigShortcuts::PreTranslateMessage(MSG* pMsg)
 		switch (pMsg->message) {
 			case WM_KEYDOWN:
 			case WM_SYSKEYDOWN:
-				KeyPressed(pMsg->wParam);
+				KeyPressed(static_cast<int>(pMsg->wParam));
 				return TRUE;
 			case WM_KEYUP:
 			case WM_SYSKEYUP:
-				KeyReleased(pMsg->wParam);
+				KeyReleased(static_cast<int>(pMsg->wParam));
 				return TRUE;
 		}
 	}

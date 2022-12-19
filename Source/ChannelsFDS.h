@@ -39,6 +39,9 @@ protected:
 	void	ClearRegisters() override;
 	CString	GetCustomEffectString() const override;		// // //
 
+	void	resetPhase();
+	void	writeModTable();
+
 public:		// // //
 	// FDS functions
 	void SetFMSpeed(int Speed);

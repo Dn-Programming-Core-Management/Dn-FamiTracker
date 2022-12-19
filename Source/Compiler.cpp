@@ -144,7 +144,8 @@ CCompiler::CCompiler(CFamiTrackerDoc *pDoc, CCompilerLog *pLogger) :
 	m_pHeaderChunk(NULL),
 	m_pDriverData(NULL),
 	m_iLastBank(0),
-	m_iHashCollisions(0)
+	m_iHashCollisions(0),
+	m_iFirstSampleBank(0)
 {
 	ASSERT(CCompiler::pCompiler == NULL);
 	CCompiler::pCompiler = this;
@@ -165,7 +166,7 @@ CCompiler::~CCompiler()
 template <typename... T>
 void CCompiler::Print(LPCTSTR text, T... args) const		// // //
 {
- 	static TCHAR buf[256];
+	static TCHAR buf[256];
 
 	if (m_pLogger == NULL || !text)
 		return;
@@ -209,6 +210,19 @@ bool CCompiler::OpenFile(LPCTSTR lpszFileName, CFile &file) const
 void CCompiler::ExportNSF(LPCTSTR lpszFileName, int MachineType)
 {
 	ClearLog();
+
+	bool nsfewarning = false;
+
+	for (int i = 0; i < 8; i++) {
+		nsfewarning |= m_pDocument->GetLevelOffset(i) != 0;
+	}
+
+	nsfewarning |= m_pDocument->GetExternalOPLLChipCheck();
+
+	if (nsfewarning) {
+		Print(_T("Warning: NSFe optional metadata will not be exported in this format!\n"));
+		AfxMessageBox(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
+	}
 
 	// Build the music data
 	if (!CompileData()) {
@@ -287,29 +301,29 @@ void CCompiler::ExportNSF(LPCTSTR lpszFileName, int MachineType)
 
 	// Create NSF header
 	stNSFHeader Header;
-	CreateHeader(&Header, MachineType);
+	CreateHeader(&Header, MachineType, 0x00, false);
 
 	// Write header
 	OutputFile.Write(&Header, sizeof(stNSFHeader));
 
 	// Write NSF data
-	CChunkRenderNSF Render(&OutputFile, m_iLoadAddress);
+	std::unique_ptr<CChunkRenderNSF> Render(new CChunkRenderNSF(&OutputFile, m_iLoadAddress));
 
 	if (m_bBankSwitched) {
-		Render.StoreDriver(pDriver, m_iDriverSize);
-		Render.StoreChunksBankswitched(m_vChunks);
-		Render.StoreSamplesBankswitched(m_vSamples);
+		Render->StoreDriver(pDriver, m_iDriverSize);
+		Render->StoreChunksBankswitched(m_vChunks);
+		Render->StoreSamplesBankswitched(m_vSamples);
 	}
 	else {
 		if (bCompressedMode) {
-			Render.StoreChunks(m_vChunks);
-			Render.StoreDriver(pDriver, m_iDriverSize);
-			Render.StoreSamples(m_vSamples);
+			Render->StoreChunks(m_vChunks);
+			Render->StoreDriver(pDriver, m_iDriverSize);
+			Render->StoreSamples(m_vSamples);
 		}
 		else {
-			Render.StoreDriver(pDriver, m_iDriverSize);
-			Render.StoreChunks(m_vChunks);
-			Render.StoreSamples(m_vSamples);
+			Render->StoreDriver(pDriver, m_iDriverSize);
+			Render->StoreChunks(m_vChunks);
+			Render->StoreSamples(m_vSamples);
 		}
 	}
 
@@ -320,7 +334,7 @@ void CCompiler::ExportNSF(LPCTSTR lpszFileName, int MachineType)
 
 	if (m_bBankSwitched) {
 		int Percent = (100 * m_iMusicDataSize) / (0x80000 - m_iDriverSize - m_iSamplesSize);
-		int Banks = Render.GetBankCount();
+		int Banks = Render->GetBankCount();
 		Print(_T(" * Song data size: %i bytes (%i%%)\n"), m_iMusicDataSize, Percent);
 		Print(_T(" * NSF type: Bankswitched (%i banks)\n"), Banks - 1);
 	}
@@ -418,29 +432,46 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	}
 
 	// // // Create NSFe header
-	std::size_t iAuthSize = 0, iTimeSize = 0, iTlblSize = 0, iDataSize = 0;
-	CString str = _T(APP_NAME_VERSION);
-	iAuthSize = strlen(m_pDocument->GetSongName()) + strlen(m_pDocument->GetSongArtist())
-		+ strlen(m_pDocument->GetSongCopyright()) + str.GetLength() + 4;
 
+	// Write NSFE, INFO, and BANK chunks
 	stNSFeHeader Header;
 	CreateNSFeHeader(&Header, MachineType);
 	OutputFile.Write(&Header, sizeof(Header));
 
-	const unsigned char AuthIdent[] = {'a', 'u', 't', 'h'};
-	OutputFile.Write(reinterpret_cast<char*>(&iAuthSize), sizeof(int));
-	OutputFile.Write(&AuthIdent, sizeof(AuthIdent));
-	OutputFile.Write(m_pDocument->GetSongName(), strlen(m_pDocument->GetSongName()) + 1);
-	OutputFile.Write(m_pDocument->GetSongArtist(), strlen(m_pDocument->GetSongArtist()) + 1);
-	OutputFile.Write(m_pDocument->GetSongCopyright(), strlen(m_pDocument->GetSongCopyright()) + 1);
-	OutputFile.Write((char*)((PCSTR)str), str.GetLength() + 1);
-	str.ReleaseBuffer();
+	// TODO write NSF2 chunk?
+
+	std::size_t
+		iVRC7Size = 0,
+		iAuthSize = 0,
+		iTimeSize = 0,
+		iTlblSize = 0,
+		iDataSize = 0,
+		iTextSize = 0,
+		iMixeSize = 0;
 
 	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
 		iTimeSize += 4;
 		iTlblSize += strlen(m_pDocument->GetTrackTitle(i)) + 1;
 	}
 
+	// write VRC7 chunk
+	uint8_t extOPLL = m_pDocument->GetExternalOPLLChipCheck(); iVRC7Size++;
+	uint8_t patchset[19 * 8];
+	if (extOPLL)
+		for (int i = 0; i < 19; i++)
+			for (int j = 0; j < 8; j++) {
+				patchset[(8 * i) + j] = m_pDocument->GetOPLLPatchByte((8 * i) + j);
+				iVRC7Size++;
+			}
+
+	const unsigned char VRC7Ident[] = { 'V', 'R', 'C', '7' };
+	OutputFile.Write(reinterpret_cast<char*>(&iVRC7Size), sizeof(int));
+	OutputFile.Write(&VRC7Ident, sizeof(VRC7Ident));
+	OutputFile.Write(&extOPLL, sizeof(uint8_t));
+	if (extOPLL)
+		OutputFile.Write(&patchset, (sizeof(uint8_t) * 19 * 8));
+
+	// write time chunk
 	const unsigned char TimeIdent[] = {'t', 'i', 'm', 'e'};
 	OutputFile.Write(reinterpret_cast<char*>(&iTimeSize), sizeof(int));
 	OutputFile.Write(&TimeIdent, sizeof(TimeIdent));
@@ -449,37 +480,84 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 		OutputFile.Write(reinterpret_cast<char*>(&t), sizeof(int));
 	}
 
+	//  write tlbl chunk
 	const unsigned char TlblIdent[] = {'t', 'l', 'b', 'l'};
 	OutputFile.Write(reinterpret_cast<char*>(&iTlblSize), sizeof(int));
 	OutputFile.Write(&TlblIdent, sizeof(TlblIdent));
 	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
-		OutputFile.Write(m_pDocument->GetTrackTitle(i), strlen(m_pDocument->GetTrackTitle(i)) + 1);
+		OutputFile.Write(m_pDocument->GetTrackTitle(i), static_cast<UINT>(strlen(m_pDocument->GetTrackTitle(i)) + 1));
+	}
+
+	// write auth chunk
+	CString ripper = _T(APP_NAME_VERSION);
+	iAuthSize = strlen(m_pDocument->GetSongName()) + strlen(m_pDocument->GetSongArtist())
+		+ strlen(m_pDocument->GetSongCopyright()) + ripper.GetLength() + 4;
+
+	const unsigned char AuthIdent[] = { 'a', 'u', 't', 'h' };
+	OutputFile.Write(reinterpret_cast<char*>(&iAuthSize), sizeof(int));
+	OutputFile.Write(&AuthIdent, sizeof(AuthIdent));
+	OutputFile.Write(m_pDocument->GetSongName(), static_cast<UINT>(strlen(m_pDocument->GetSongName()) + 1));
+	OutputFile.Write(m_pDocument->GetSongArtist(), static_cast<UINT>(strlen(m_pDocument->GetSongArtist()) + 1));
+	OutputFile.Write(m_pDocument->GetSongCopyright(), static_cast<UINT>(strlen(m_pDocument->GetSongCopyright()) + 1));
+	OutputFile.Write((char*)((PCSTR)ripper), ripper.GetLength() + 1);
+	ripper.ReleaseBuffer();
+
+	// write text chunk, if available
+	if (strlen(m_pDocument->GetComment())) {
+		const unsigned char TextIdent[] = { 't', 'e', 'x', 't' };
+		iTextSize = strlen(m_pDocument->GetComment()) + 1;
+		OutputFile.Write(reinterpret_cast<char*>(&iTextSize), sizeof(int));
+		OutputFile.Write(&TextIdent, sizeof(TextIdent));
+		OutputFile.Write(m_pDocument->GetComment(), static_cast<UINT>(strlen(m_pDocument->GetComment()) + 1));
+	}
+
+	// write mixe chunk
+	const unsigned char MixeIdent[] = { 'm', 'i', 'x', 'e' };
+
+	int16_t mixe_device[8]{};
+
+	CSoundGen* pSoundGen = theApp.GetSoundGenerator();
+
+	for (int i = 0; i < 8; i++) {
+		if (m_pDocument->GetLevelOffset(i)) {
+			mixe_device[i] = (m_pDocument->GetLevelOffset(i) * 10) + pSoundGen->SurveyMixLevels[i];
+			iMixeSize += 3;
+		}
+	}
+	OutputFile.Write(reinterpret_cast<char*>(&iMixeSize), sizeof(int));
+	OutputFile.Write(&MixeIdent, sizeof(MixeIdent));
+	for (uint8_t i = 0; i < 8; i++) {
+		if (m_pDocument->GetLevelOffset(i)) {
+			unsigned char devicebyte = 0;
+			OutputFile.Write(&i, sizeof(uint8_t));
+			OutputFile.Write(reinterpret_cast<char*>(&mixe_device[i]), sizeof(int16_t));
+		}
 	}
 
 	// Write NSF data
-	CChunkRenderNSF Render(&OutputFile, m_iLoadAddress);
+	std::unique_ptr<CChunkRenderNSF> Render(new CChunkRenderNSF(&OutputFile, m_iLoadAddress));
 
-	// // //
+	// write DATA chunk
 	ULONGLONG iDataSizePos = OutputFile.GetPosition();
 	const unsigned char DataIdent[] = {'D', 'A', 'T', 'A'};
 	OutputFile.Write(reinterpret_cast<char*>(&iDataSize), sizeof(int));
 	OutputFile.Write(&DataIdent, sizeof(DataIdent));
 
 	if (m_bBankSwitched) {
-		Render.StoreDriver(pDriver, m_iDriverSize);
-		Render.StoreChunksBankswitched(m_vChunks);
-		Render.StoreSamplesBankswitched(m_vSamples);
+		Render->StoreDriver(pDriver, m_iDriverSize);
+		Render->StoreChunksBankswitched(m_vChunks);
+		Render->StoreSamplesBankswitched(m_vSamples);
 	}
 	else {
 		if (bCompressedMode) {
-			Render.StoreChunks(m_vChunks);
-			Render.StoreDriver(pDriver, m_iDriverSize);
-			Render.StoreSamples(m_vSamples);
+			Render->StoreChunks(m_vChunks);
+			Render->StoreDriver(pDriver, m_iDriverSize);
+			Render->StoreSamples(m_vSamples);
 		}
 		else {
-			Render.StoreDriver(pDriver, m_iDriverSize);
-			Render.StoreChunks(m_vChunks);
-			Render.StoreSamples(m_vSamples);
+			Render->StoreDriver(pDriver, m_iDriverSize);
+			Render->StoreChunks(m_vChunks);
+			Render->StoreSamples(m_vSamples);
 		}
 	}
 
@@ -490,7 +568,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 
 	if (m_bBankSwitched) {
 		int Percent = (100 * m_iMusicDataSize) / (0x80000 - m_iDriverSize - m_iSamplesSize);
-		int Banks = Render.GetBankCount();
+		int Banks = Render->GetBankCount();
 		Print(_T(" * Song data size: %i bytes (%i%%)\n"), m_iMusicDataSize, Percent);
 		Print(_T(" * NSF type: Bankswitched (%i banks)\n"), Banks - 1);
 	}
@@ -500,14 +578,257 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 		Print(_T(" * NSF type: Linear (driver @ $%04X)\n"), m_iDriverAddress);
 	}
 
+	// write NEND chunk
 	const unsigned char NEndIdent[] = {'\0', '\0', '\0', '\0', 'N', 'E', 'N', 'D'};		// // //
 	OutputFile.Write(&NEndIdent, sizeof(NEndIdent));
+
+	// write actual size of DATA chunk
 	OutputFile.Seek(iDataSizePos, CFile::begin);
-	if (m_bBankSwitched)
-		iDataSize = 0x1000 * (Render.GetBankCount() - 1);
-	else
-		iDataSize = m_iDriverSize + m_iMusicDataSize + m_iSamplesSize;
+	iDataSize = Render->GetDATAChunkSize();
 	OutputFile.Write(reinterpret_cast<char*>(&iDataSize), sizeof(int));
+
+	Print(_T("Done, total file size: %i bytes\n"), OutputFile.GetLength());
+
+	// Done
+	OutputFile.Close();
+
+	Cleanup();
+}
+
+void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
+{
+	ClearLog();
+
+	// Build the music data
+	if (!CompileData()) {
+		// Failed
+		Cleanup();
+		return;
+	}
+
+	if (m_bBankSwitched) {
+		// Expand and allocate label addresses
+		AddBankswitching();
+		if (!ResolveLabelsBankswitched()) {
+			Cleanup();
+			return;
+		}
+		// Write bank data
+		UpdateFrameBanks();
+		UpdateSongBanks();
+		// Make driver aware of bankswitching
+		EnableBankswitching();
+	}
+	else {
+		ResolveLabels();
+		ClearSongBanks();
+	}
+
+	// Rewrite DPCM sample pointers
+	UpdateSamplePointers(m_iSampleStart);
+
+	// Compressed mode means that driver and music is located just below the sample space, no space is lost even when samples are used
+	bool bCompressedMode;
+	unsigned short MusicDataAddress;
+
+	// Find out load address
+	if ((PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize) < 0x8000 || m_bBankSwitched || m_iActualChip != m_pDocument->GetExpansionChip()) // // //
+		bCompressedMode = false;
+	else
+		bCompressedMode = true;
+
+	if (bCompressedMode) {
+		// Locate driver at $C000 - (driver size)
+		m_iLoadAddress = PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize;
+		m_iDriverAddress = PAGE_SAMPLES - m_iDriverSize;
+		MusicDataAddress = m_iLoadAddress;
+	}
+	else {
+		// Locate driver at $8000
+		m_iLoadAddress = PAGE_START;
+		m_iDriverAddress = PAGE_START;
+		MusicDataAddress = m_iLoadAddress + m_iDriverSize;
+	}
+
+	// Init is located first at the driver
+	m_iInitAddress = m_iDriverAddress + DATA_HEADER_SIZE;		// // //
+
+	// Load driver
+	std::unique_ptr<char[]> pDriverPtr(LoadDriver(m_pDriverData, m_iDriverAddress));		// // //
+	char* pDriver = pDriverPtr.get();
+
+	// Patch driver binary
+	PatchVibratoTable(pDriver);
+
+	// Copy the Namco table, if used
+	// // // nothing here, ft_channel_type is taken care in LoadDriver
+
+	// Write music data address
+	SetDriverSongAddress(pDriver, MusicDataAddress);
+
+	// Open output file
+	CFile OutputFile;
+	if (!OpenFile(lpszFileName, OutputFile)) {
+		Print(_T("Error: Could not open output file\n"));
+		Cleanup();
+		return;
+	}
+
+	// Write NSF data
+	std::unique_ptr<CChunkRenderNSF> Render(new CChunkRenderNSF(&OutputFile, m_iLoadAddress));
+
+	// Create NSF header
+	stNSFHeader Header;
+	CreateHeader(&Header, MachineType, 0x80, true);
+
+	// Write header
+	OutputFile.Write(&Header, sizeof(stNSFHeader));
+
+	ULONGLONG iDataSizePos = OutputFile.GetPosition() - 3;
+
+	if (m_bBankSwitched) {
+		Render->StoreDriver(pDriver, m_iDriverSize);
+		Render->StoreChunksBankswitched(m_vChunks);
+		Render->StoreSamplesBankswitched(m_vSamples);
+	}
+	else {
+		if (bCompressedMode) {
+			Render->StoreChunks(m_vChunks);
+			Render->StoreDriver(pDriver, m_iDriverSize);
+			Render->StoreSamples(m_vSamples);
+		}
+		else {
+			Render->StoreDriver(pDriver, m_iDriverSize);
+			Render->StoreChunks(m_vChunks);
+			Render->StoreSamples(m_vSamples);
+		}
+	}
+
+	// // // Create NSFe metadata
+
+	std::size_t
+		iVRC7Size = 0,
+		iAuthSize = 0,
+		iTimeSize = 0,
+		iTlblSize = 0,
+		iDataSize = 0,
+		iTextSize = 0,
+		iMixeSize = 0;
+
+	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
+		iTimeSize += 4;
+		iTlblSize += strlen(m_pDocument->GetTrackTitle(i)) + 1;
+	}
+
+	// write VRC7 chunk
+	uint8_t extOPLL = m_pDocument->GetExternalOPLLChipCheck(); iVRC7Size++;
+	uint8_t patchset[19 * 8];
+	if (extOPLL)
+		for (int i = 0; i < 19; i++)
+			for (int j = 0; j < 8; j++) {
+				patchset[(8 * i) + j] = m_pDocument->GetOPLLPatchByte((8 * i) + j);
+				iVRC7Size++;
+			}
+
+	const unsigned char VRC7Ident[] = { 'V', 'R', 'C', '7' };
+	OutputFile.Write(reinterpret_cast<char*>(&iVRC7Size), sizeof(int));
+	OutputFile.Write(&VRC7Ident, sizeof(VRC7Ident));
+	OutputFile.Write(&extOPLL, sizeof(uint8_t));
+	if (extOPLL)
+		OutputFile.Write(&patchset, (sizeof(uint8_t)*19*8));
+
+	// write time chunk
+	const unsigned char TimeIdent[] = { 't', 'i', 'm', 'e' };
+	OutputFile.Write(reinterpret_cast<char*>(&iTimeSize), sizeof(int));
+	OutputFile.Write(&TimeIdent, sizeof(TimeIdent));
+	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
+		int t = static_cast<int>(m_pDocument->GetStandardLength(i, 1) * 1000.0 + 0.5);
+		OutputFile.Write(reinterpret_cast<char*>(&t), sizeof(int));
+	}
+
+	//  write tlbl chunk
+	const unsigned char TlblIdent[] = { 't', 'l', 'b', 'l' };
+	OutputFile.Write(reinterpret_cast<char*>(&iTlblSize), sizeof(int));
+	OutputFile.Write(&TlblIdent, sizeof(TlblIdent));
+	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
+		OutputFile.Write(m_pDocument->GetTrackTitle(i), static_cast<UINT>(strlen(m_pDocument->GetTrackTitle(i)) + 1));
+	}
+
+	// write auth chunk
+	CString ripper = _T(APP_NAME_VERSION);
+	iAuthSize = strlen(m_pDocument->GetSongName()) + strlen(m_pDocument->GetSongArtist())
+		+ strlen(m_pDocument->GetSongCopyright()) + ripper.GetLength() + 4;
+
+	const unsigned char AuthIdent[] = { 'a', 'u', 't', 'h' };
+	OutputFile.Write(reinterpret_cast<char*>(&iAuthSize), sizeof(int));
+	OutputFile.Write(&AuthIdent, sizeof(AuthIdent));
+	OutputFile.Write(m_pDocument->GetSongName(), static_cast<UINT>(strlen(m_pDocument->GetSongName()) + 1));
+	OutputFile.Write(m_pDocument->GetSongArtist(), static_cast<UINT>(strlen(m_pDocument->GetSongArtist()) + 1));
+	OutputFile.Write(m_pDocument->GetSongCopyright(), static_cast<UINT>(strlen(m_pDocument->GetSongCopyright()) + 1));
+	OutputFile.Write((char*)((PCSTR)ripper), ripper.GetLength() + 1);
+	ripper.ReleaseBuffer();
+
+	// write text chunk, if available
+	if (strlen(m_pDocument->GetComment())) {
+		const unsigned char TextIdent[] = { 't', 'e', 'x', 't' };
+		iTextSize = strlen(m_pDocument->GetComment()) + 1;
+		OutputFile.Write(reinterpret_cast<char*>(&iTextSize), sizeof(int));
+		OutputFile.Write(&TextIdent, sizeof(TextIdent));
+		OutputFile.Write(m_pDocument->GetComment(), static_cast<UINT>(strlen(m_pDocument->GetComment()) + 1));
+	}
+
+	// write mixe chunk
+	const unsigned char MixeIdent[] = { 'm', 'i', 'x', 'e' };;
+
+	int16_t mixe_device[8]{};
+
+	CSoundGen* pSoundGen = theApp.GetSoundGenerator();
+
+	for (int i = 0; i < 8; i++) {
+		if (m_pDocument->GetLevelOffset(i)) {
+			mixe_device[i] = (m_pDocument->GetLevelOffset(i) * 10) + pSoundGen->SurveyMixLevels[i];
+			iMixeSize += 3;
+		}
+	}
+	OutputFile.Write(reinterpret_cast<char*>(&iMixeSize), sizeof(int));
+	OutputFile.Write(&MixeIdent, sizeof(MixeIdent));
+	for (uint8_t i = 0; i < 8; i++) {
+		if (m_pDocument->GetLevelOffset(i)) {
+			unsigned char devicebyte = 0;
+			OutputFile.Write(&i, sizeof(uint8_t));
+			OutputFile.Write(reinterpret_cast<char*>(&mixe_device[i]), sizeof(int16_t));
+		}
+	}
+
+	// write NEND chunk
+	const unsigned char NEndIdent[] = { '\0', '\0', '\0', '\0', 'N', 'E', 'N', 'D' };		// // //
+	OutputFile.Write(&NEndIdent, sizeof(NEndIdent));
+
+	// write actual size of DATA
+	OutputFile.Seek(iDataSizePos, CFile::begin);
+	iDataSize = Render->GetDATAChunkSize();
+	unsigned char NSFSize[3] = {
+		char(iDataSize & 0xFF),
+		char((iDataSize >> 8) & 0xFF),
+		char((iDataSize >> 16) & 0xFF)};
+	OutputFile.Write(&NSFSize, sizeof(NSFSize));
+
+	// Writing done, print some stats
+	Print(_T(" * NSF load address: $%04X\n"), m_iLoadAddress);
+	Print(_T("Writing output file...\n"));
+	Print(_T(" * Driver size: %i bytes\n"), m_iDriverSize);
+
+	if (m_bBankSwitched) {
+		int Percent = (100 * m_iMusicDataSize) / (0x80000 - m_iDriverSize - m_iSamplesSize);
+		int Banks = Render->GetBankCount();
+		Print(_T(" * Song data size: %i bytes (%i%%)\n"), m_iMusicDataSize, Percent);
+		Print(_T(" * NSF type: Bankswitched (%i banks)\n"), Banks - 1);
+	}
+	else {
+		int Percent = (100 * m_iMusicDataSize) / (0x8000 - m_iDriverSize - m_iSamplesSize);
+		Print(_T(" * Song data size: %i bytes (%i%%)\n"), m_iMusicDataSize, Percent);
+		Print(_T(" * NSF type: Linear (driver @ $%04X)\n"), m_iDriverAddress);
+	}
 
 	Print(_T("Done, total file size: %i bytes\n"), OutputFile.GetLength());
 
@@ -527,14 +848,29 @@ void CCompiler::ExportNES(LPCTSTR lpszFileName, bool EnablePAL)
 
 	ClearLog();
 
+	bool nsfewarning = false;
+
+	for (int i = 0; i < 8; i++) {
+		nsfewarning |= m_pDocument->GetLevelOffset(i) != 0;
+	}
+
+	nsfewarning |= m_pDocument->GetExternalOPLLChipCheck();
+
+	if (nsfewarning) {
+		Print(_T("Warning: NSFe optional metadata will not be exported in this format!\n"));
+		AfxMessageBox(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
+	}
+
 	if (m_pDocument->GetExpansionChip() != SNDCHIP_NONE) {
 		Print(_T("Error: Expansion chips not supported.\n"));
 		AfxMessageBox(_T("Expansion chips are currently not supported when exporting to .NES!"), 0, 0);
+		Cleanup();
 		return;
 	}
 
 	CFile OutputFile;
 	if (!OpenFile(lpszFileName, OutputFile)) {
+		Cleanup();
 		return;
 	}
 
@@ -585,11 +921,11 @@ void CCompiler::ExportNES(LPCTSTR lpszFileName, bool EnablePAL)
 	OutputFile.Write(NES_HEADER, 0x10);
 
 	// Write NES data
-	CChunkRenderNES Render(&OutputFile, m_iLoadAddress);
-	Render.StoreDriver(pDriver, m_iDriverSize);
-	Render.StoreChunks(m_vChunks);
-	Render.StoreSamples(m_vSamples);
-	Render.StoreCaller(NSF_CALLER_BIN, NSF_CALLER_SIZE);
+	std::unique_ptr<CChunkRenderNES> Render(new CChunkRenderNES(&OutputFile, m_iLoadAddress));
+	Render->StoreDriver(pDriver, m_iDriverSize);
+	Render->StoreChunks(m_vChunks);
+	Render->StoreSamples(m_vSamples);
+	Render->StoreCaller(NSF_CALLER_BIN, NSF_CALLER_SIZE);
 
 	Print(_T("Done, total file size: %i bytes\n"), 0x8000 + 0x10);
 
@@ -599,31 +935,89 @@ void CCompiler::ExportNES(LPCTSTR lpszFileName, bool EnablePAL)
 	Cleanup();
 }
 
-void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File)
+void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int MachineType, bool ExtraData)
 {
 	ClearLog();
 
-	// Build the music data
-	if (!CompileData())
-		return;
+	bool nsfewarning = false;
 
-	if (m_bBankSwitched) {
-		Print(_T("Error: Can't write bankswitched songs!\n"));
+	for (int i = 0; i < 8; i++) {
+		nsfewarning |= m_pDocument->GetLevelOffset(i) != 0;
+	}
+
+	nsfewarning |= m_pDocument->GetExternalOPLLChipCheck();
+
+	if (nsfewarning) {
+		Print(_T("Warning: NSFe optional metadata will not be exported in this format!\n"));
+		AfxMessageBox(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
+	}
+
+	// Build the music data
+	if (!CompileData()) {
+		// Failed
+		Cleanup();
 		return;
 	}
 
-	// Convert to binary
-	ResolveLabels();
+	if (m_bBankSwitched) {
+		// TODO: write seperate binary banks
+		Print(_T("Error: Can't write bankswitched songs!\n"));
+		Cleanup();
+		return;
+	}
+	else {
+		ResolveLabels();
+		ClearSongBanks();
+	}
 
+	// Rewrite DPCM sample pointers
+	UpdateSamplePointers(m_iSampleStart);
+
+	// Compressed mode means that driver and music is located just below the sample space, no space is lost even when samples are used
+	bool bCompressedMode;
+	unsigned short MusicDataAddress;
+
+	// Find out load address
+	if ((PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize) < 0x8000 || m_bBankSwitched || m_iActualChip != m_pDocument->GetExpansionChip()) // // //
+		bCompressedMode = false;
+	else
+		bCompressedMode = true;
+
+	if (bCompressedMode) {
+		// Locate driver at $C000 - (driver size)
+		m_iLoadAddress = PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize;
+		m_iDriverAddress = PAGE_SAMPLES - m_iDriverSize;
+		MusicDataAddress = m_iLoadAddress;
+	}
+	else {
+		// Locate driver at $8000
+		m_iLoadAddress = PAGE_START;
+		m_iDriverAddress = PAGE_START;
+		MusicDataAddress = m_iLoadAddress + m_iDriverSize;
+	}
+
+	// Init is located first at the driver
+	m_iInitAddress = m_iDriverAddress + DATA_HEADER_SIZE;		// // //
+
+	stNSFHeader Header;
+	CreateHeader(&Header, MachineType, 0x00, false);
+
+	// Open output files
 	CFile OutputFileBIN;
 	if (!OpenFile(lpszBIN_File, OutputFileBIN)) {
+		OutputFileBIN.Close();
+		Print(_T("Error: Could not open output binary file\n"));
+		Cleanup();
 		return;
 	}
 
 	CFile OutputFileDPCM;
 	if (_tcslen(lpszDPCM_File) != 0) {
 		if (!OpenFile(lpszDPCM_File, OutputFileDPCM)) {
+			OutputFileDPCM.Close();
 			OutputFileBIN.Close();
+			Print(_T("Error: Could not open output binary DPCM file\n"));
+			Cleanup();
 			return;
 		}
 	}
@@ -634,6 +1028,75 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File)
 
 	if (_tcslen(lpszDPCM_File) != 0)
 		WriteSamplesBinary(&OutputFileDPCM);
+
+	if (ExtraData) {
+		// Get the directory of the BIN
+		CString BINDirectory = OutputFileBIN.GetFilePath();
+		BINDirectory.Delete(
+			(OutputFileBIN.GetFilePath().GetLength()) - (OutputFileBIN.GetFileName().GetLength()),
+			OutputFileBIN.GetFileName().GetLength());
+
+		// Write period file
+		CFile OutputFilePeriod;
+		CString period_directory = BINDirectory;
+		period_directory += _T("periods.s");
+		if (!OpenFile(period_directory, OutputFilePeriod)) {
+			OutputFilePeriod.Close();
+			Print(_T("Error: Could not open output periods file\n"));
+			Cleanup();
+			return;
+		}
+
+		// Write vibrato file
+		CFile OutputFileVibrato;
+		CString vibrato_directory = BINDirectory;
+		vibrato_directory += _T("vibrato.s");
+		if (!OpenFile(vibrato_directory, OutputFileVibrato)) {
+			OutputFilePeriod.Close();
+			OutputFileVibrato.Close();
+			Print(_T("Error: Could not open output vibrato file\n"));
+			Cleanup();
+			return;
+		}
+
+		// Write NSF header
+		CFile OutputFileNSFHeader;
+		CString header_directory = BINDirectory;
+		header_directory += _T("nsf_header.s");
+
+		if (!OpenFile(header_directory, OutputFileNSFHeader)) {
+			OutputFilePeriod.Close();
+			OutputFileVibrato.Close();
+			OutputFileNSFHeader.Close();
+			Print(_T("Error: Could not open NSF header file\n"));
+			Cleanup();
+			return;
+		}
+
+		// Write NSF config file
+		CFile OutputNSFConfig;
+		CString config_directory = BINDirectory;
+		config_directory += _T("nsf.cfg");
+		if (!OpenFile(config_directory, OutputNSFConfig)) {
+			OutputFilePeriod.Close();
+			OutputFileVibrato.Close();
+			OutputFileNSFHeader.Close();
+			OutputNSFConfig.Close();
+			Print(_T("Error: Could not open NSF config file\n"));
+			Cleanup();
+			return;
+		}
+
+		Print(_T("Writing additional data files...\n"));
+		WritePeriods(&OutputFilePeriod);
+		WriteVibrato(&OutputFileVibrato);
+		WriteNSFHeader(&OutputFileNSFHeader, Header);
+		WriteNSFConfig(&OutputNSFConfig, m_iSampleStart, Header);
+		OutputFilePeriod.Close();
+		OutputFileVibrato.Close();
+		OutputFileNSFHeader.Close();
+		OutputNSFConfig.Close();
+	}
 
 	Print(_T("Done\n"));
 
@@ -652,25 +1115,43 @@ void CCompiler::ExportPRG(LPCTSTR lpszFileName, bool EnablePAL)
 
 	ClearLog();
 
+	bool nsfewarning = false;
+
+	for (int i = 0; i < 8; i++) {
+		nsfewarning |= m_pDocument->GetLevelOffset(i) != 0;
+	}
+
+	nsfewarning |= m_pDocument->GetExternalOPLLChipCheck();
+
+	if (nsfewarning) {
+		Print(_T("Warning: NSFe optional metadata will not be exported in this format!\n"));
+		AfxMessageBox(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
+	}
+
 	if (m_pDocument->GetExpansionChip() != SNDCHIP_NONE) {
 		Print(_T("Expansion chips not supported.\n"));
 		AfxMessageBox(_T("Error: Expansion chips is currently not supported when exporting to PRG!"), 0, 0);
+		Cleanup();
 		return;
 	}
 
 	CFile OutputFile;
 	if (!OpenFile(lpszFileName, OutputFile)) {
+		Cleanup();
 		return;
 	}
 
 	// Build the music data
-	if (!CompileData())
+	if (!CompileData()) {
+		Cleanup();
 		return;
+	}
 
 	if (m_bBankSwitched) {
 		// Abort if larger than 32kb
 		Print(_T("Song is too big, aborted.\n"));
 		AfxMessageBox(_T("Error: Song is too big to fit!"), 0, 0);
+		Cleanup();
 		return;
 	}
 
@@ -704,11 +1185,11 @@ void CCompiler::ExportPRG(LPCTSTR lpszFileName, bool EnablePAL)
 	Print(_T(" * Song data size: %i bytes (%i%%)\n"), m_iMusicDataSize, Percent);
 
 	// Write NES data
-	CChunkRenderNES Render(&OutputFile, m_iLoadAddress);
-	Render.StoreDriver(pDriver, m_iDriverSize);
-	Render.StoreChunks(m_vChunks);
-	Render.StoreSamples(m_vSamples);
-	Render.StoreCaller(NSF_CALLER_BIN, NSF_CALLER_SIZE);
+	std::unique_ptr<CChunkRenderNES> Render(new CChunkRenderNES(&OutputFile, m_iLoadAddress));
+	Render->StoreDriver(pDriver, m_iDriverSize);
+	Render->StoreChunks(m_vChunks);
+	Render->StoreSamples(m_vSamples);
+	Render->StoreCaller(NSF_CALLER_BIN, NSF_CALLER_SIZE);
 
 	// Done
 	OutputFile.Close();
@@ -716,19 +1197,40 @@ void CCompiler::ExportPRG(LPCTSTR lpszFileName, bool EnablePAL)
 	Cleanup();
 }
 
-void CCompiler::ExportASM(LPCTSTR lpszFileName)
+void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 {
 	ClearLog();
 
+	bool nsfewarning = false;
+
+	for (int i = 0; i < 8; i++) {
+		nsfewarning |= m_pDocument->GetLevelOffset(i) != 0;
+	}
+
+	nsfewarning |= m_pDocument->GetExternalOPLLChipCheck();
+
+	if (nsfewarning) {
+		Print(_T("Warning: NSFe optional metadata will not be exported in this format!\n"));
+		AfxMessageBox(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
+	}
+
 	// Build the music data
-	if (!CompileData())
+	if (!CompileData()) {
+		// Failed
+		Cleanup();
 		return;
+	}
 
 	if (m_bBankSwitched) {
-		// TODO: bankswitching is still unsupported when exporting to ASM
+		// Expand and allocate label addresses
 		AddBankswitching();
-		ResolveLabelsBankswitched();
+		if (!ResolveLabelsBankswitched()) {
+			Cleanup();
+			return;
+		}
+		// Make driver aware of bankswitching
 		EnableBankswitching();
+		// Write bank data
 		UpdateFrameBanks();
 		UpdateSongBanks();
 	}
@@ -737,17 +1239,121 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName)
 		ClearSongBanks();
 	}
 
-	UpdateSamplePointers(PAGE_SAMPLES);		// Always start at C000 when exporting to ASM
+	// Rewrite DPCM sample pointers
+	UpdateSamplePointers(m_iSampleStart);
 
-	Print(_T("Writing output files...\n"));
+	// Compressed mode means that driver and music is located just below the sample space, no space is lost even when samples are used
+	bool bCompressedMode;
+	unsigned short MusicDataAddress;
+
+	// Find out load address
+	if ((PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize) < 0x8000 || m_bBankSwitched || m_iActualChip != m_pDocument->GetExpansionChip()) // // //
+		bCompressedMode = false;
+	else
+		bCompressedMode = true;
+
+	if (bCompressedMode) {
+		// Locate driver at $C000 - (driver size)
+		m_iLoadAddress = PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize;
+		m_iDriverAddress = PAGE_SAMPLES - m_iDriverSize;
+		MusicDataAddress = m_iLoadAddress;
+	}
+	else {
+		// Locate driver at $8000
+		m_iLoadAddress = PAGE_START;
+		m_iDriverAddress = PAGE_START;
+		MusicDataAddress = m_iLoadAddress + m_iDriverSize;
+	}
+
+	// Init is located first at the driver
+	m_iInitAddress = m_iDriverAddress + DATA_HEADER_SIZE;		// // //
+
+	stNSFHeader Header;
+	CreateHeader(&Header, MachineType, 0x00, false);
 
 	CFile OutputFile;
 	if (!OpenFile(lpszFileName, OutputFile)) {
+		OutputFile.Close();
+		Print(_T("Error: Could not open output file\n"));
+		Cleanup();
 		return;
 	}
 
 	// Write output file
+	Print(_T("Writing output files...\n"));
+
 	WriteAssembly(&OutputFile);
+
+	if (ExtraData) {
+		// Get the directory of the output file
+		CString FileDirectory = OutputFile.GetFilePath();
+		FileDirectory.Delete(
+			(OutputFile.GetFilePath().GetLength()) - (OutputFile.GetFileName().GetLength()),
+			OutputFile.GetFileName().GetLength());
+
+		// Write period file
+		CFile OutputFilePeriod;
+		CString period_directory = FileDirectory;
+		period_directory += _T("periods.s");
+
+		if (!OpenFile(period_directory, OutputFilePeriod)) {
+			OutputFilePeriod.Close();
+			Print(_T("Error: Could not open output periods file\n"));
+			Cleanup();
+			return;
+		}
+
+		// Write vibrato file
+		CFile OutputFileVibrato;
+		CString vibrato_directory = FileDirectory;
+		vibrato_directory += _T("vibrato.s");
+
+		if (!OpenFile(vibrato_directory, OutputFileVibrato)) {
+			OutputFilePeriod.Close();
+			OutputFileVibrato.Close();
+			Print(_T("Error: Could not open output vibrato file\n"));
+			Cleanup();
+			return;
+		}
+
+		// Write NSF header
+		CFile OutputFileNSFHeader;
+		CString header_directory = FileDirectory;
+		header_directory += _T("nsf_header.s");
+
+		if (!OpenFile(header_directory, OutputFileNSFHeader)) {
+			OutputFilePeriod.Close();
+			OutputFileVibrato.Close();
+			OutputFileNSFHeader.Close();
+			Print(_T("Error: Could not open output NSF header file\n"));
+			Cleanup();
+			return;
+		}
+
+		// Write NSF config file
+		CFile OutputNSFConfig;
+		CString config_directory = FileDirectory;
+		config_directory += _T("nsf.cfg");
+		if (!OpenFile(config_directory, OutputNSFConfig)) {
+			OutputFilePeriod.Close();
+			OutputFileVibrato.Close();
+			OutputFileNSFHeader.Close();
+			OutputNSFConfig.Close();
+			Print(_T("Error: Could not open NSF config file\n"));
+			Cleanup();
+			return;
+		}
+
+		Print(_T("Writing additional data files...\n"));
+		WritePeriods(&OutputFilePeriod);
+		WriteVibrato(&OutputFileVibrato);
+		WriteNSFHeader(&OutputFileNSFHeader, Header);
+		WriteNSFConfig(&OutputNSFConfig, m_iSampleStart, Header);
+		OutputFilePeriod.Close();
+		OutputFileVibrato.Close();
+		OutputFileNSFHeader.Close();
+		OutputNSFConfig.Close();
+	}
 
 	// Done
 	OutputFile.Close();
@@ -861,19 +1467,20 @@ void CCompiler::PatchVibratoTable(char *pDriver) const
 
 #pragma warning (push)
 #pragma warning (disable : 4996)
-void CCompiler::CreateHeader(stNSFHeader *pHeader, int MachineType) const
+void CCompiler::CreateHeader(stNSFHeader *pHeader, int MachineType, unsigned int NSF2Flags, bool NSF2) const
 {
 	// Fill the NSF header
 	//
 	// Speed will be the same for NTSC/PAL
 	//
 
-	int Speed = m_pDocument->GetEngineSpeed();
+	unsigned int SpeedPAL, SpeedNTSC, Speed;
+	Speed = m_pDocument->GetEngineSpeed();
 
 	// If speed is default, write correct NTSC/PAL speed periods
 	// else, set the same custom speed for both
-	int SpeedNTSC = (Speed == 0) ? 1000000 / 60 : 1000000 / Speed;
-	int SpeedPAL = (Speed == 0) ? 1000000 / 50 : 1000000 / Speed; 
+	SpeedNTSC = (Speed == 0) ? 1000000 / CAPU::FRAME_RATE_NTSC : 1000000 / Speed;
+	SpeedPAL = (Speed == 0) ? 1000000 / CAPU::FRAME_RATE_NTSC : 1000000 / Speed;
 
 	memset(pHeader, 0, 0x80);
 
@@ -883,7 +1490,7 @@ void CCompiler::CreateHeader(stNSFHeader *pHeader, int MachineType) const
 	pHeader->Ident[3]	= 0x4D;
 	pHeader->Ident[4]	= 0x1A;
 
-	pHeader->Version	= 0x01;
+	pHeader->Version	= NSF2 ? 0x02 : 0x01;
 	pHeader->TotalSongs	= m_pDocument->GetTrackCount();
 	pHeader->StartSong	= 1;
 	pHeader->LoadAddr	= m_iLoadAddress;
@@ -941,10 +1548,10 @@ void CCompiler::CreateHeader(stNSFHeader *pHeader, int MachineType) const
 	// Expansion chip
 	pHeader->SoundChip = m_iActualChip;		// // //
 
-	pHeader->Reserved[0] = 0x00;
-	pHeader->Reserved[1] = 0x00;
-	pHeader->Reserved[2] = 0x00;
-	pHeader->Reserved[3] = 0x00;
+	pHeader->NSF2Flags = NSF2Flags;
+	pHeader->NSFDataLength[0] = 0;		// !! !! Allow this to be overwritten
+	pHeader->NSFDataLength[1] = 0;
+	pHeader->NSFDataLength[2] = 0;
 }
 #pragma warning (pop)
 
@@ -952,29 +1559,34 @@ void CCompiler::CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType)		// // 
 {
 	memset(pHeader, 0, 40);
 
-	int SpeedPAL, SpeedNTSC, Speed;
+	unsigned int SpeedPAL, SpeedNTSC, Speed;
 	Speed = m_pDocument->GetEngineSpeed();
-	if (Speed == 0) {
-		SpeedNTSC = 1000000 / 60;
-		SpeedPAL = 1000000 / 50;
-	}
-	else SpeedNTSC = SpeedPAL = 1000000 / Speed;
+	SpeedNTSC = (Speed == 0) ? 1000000 / CAPU::FRAME_RATE_NTSC : 1000000 / Speed;
+	SpeedPAL = (Speed == 0) ? 1000000 / CAPU::FRAME_RATE_NTSC : 1000000 / Speed;
 
 	pHeader->InfoSize = 12;
 	pHeader->BankSize = 8;
+	pHeader->RateSize = 4;
 
 	pHeader->NSFeIdent[0] = 'N';
 	pHeader->NSFeIdent[1] = 'S';
 	pHeader->NSFeIdent[2] = 'F';
 	pHeader->NSFeIdent[3] = 'E';
+
 	pHeader->InfoIdent[0] = 'I';
 	pHeader->InfoIdent[1] = 'N';
 	pHeader->InfoIdent[2] = 'F';
 	pHeader->InfoIdent[3] = 'O';
+
 	pHeader->BankIdent[0] = 'B';
 	pHeader->BankIdent[1] = 'A';
 	pHeader->BankIdent[2] = 'N';
 	pHeader->BankIdent[3] = 'K';
+
+	pHeader->RateIdent[0] = 'R';
+	pHeader->RateIdent[1] = 'A';
+	pHeader->RateIdent[2] = 'T';
+	pHeader->RateIdent[3] = 'E';
 
 	pHeader->TotalSongs	= m_pDocument->GetTrackCount();
 	pHeader->StartSong	= 0;
@@ -1012,6 +1624,7 @@ void CCompiler::CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType)		// // 
 	}
 
 	pHeader->Speed_NTSC = SpeedNTSC;
+	pHeader->Speed_PAL = SpeedPAL;
 	pHeader->SoundChip = m_iActualChip;		// // //
 }
 
@@ -2150,6 +2763,288 @@ void CCompiler::WriteAssembly(CFile *pFile)
 	Print(_T(" * Music data size: %i bytes\n"), m_iMusicDataSize);
 	Render.StoreSamples(m_vSamples);
 	Print(_T(" * DPCM samples size: %i bytes\n"), m_iSamplesSize);
+}
+
+void CCompiler::WritePeriods(CFile* pFile)
+{
+	unsigned int length = 0;
+	const auto WriteString = [&pFile, &length](CString str) {
+		pFile->Write(const_cast<CStringA&>(str).GetBuffer(), str.GetLength());
+		length += str.GetLength();
+	};
+
+	const auto DumpFunc = [WriteString](unsigned int* Table) {
+		for (int i = 0; i < NOTE_COUNT; ++i) {
+			unsigned int Val = Table[i] & 0xFFFF;
+			CString str;
+			if (i < NOTE_COUNT - 1) {
+				if (i % NOTE_RANGE < NOTE_RANGE - 1)
+					str.Format("$%04X, ", Val);
+				else
+					str.Format("$%04X\n\t.word\t", Val);
+			}
+			else
+				str.Format("$%04X\n", Val);
+			WriteString(str);
+		}
+	};
+
+	unsigned int NoteLookupTableNTSC[NOTE_COUNT];
+	unsigned int NoteLookupTablePAL[NOTE_COUNT];
+	unsigned int NoteLookupTableSaw[NOTE_COUNT];
+	unsigned int NoteLookupTableFDS[NOTE_COUNT];
+	unsigned int NoteLookupTableN163[NOTE_COUNT];
+	unsigned int NoteLookupTableVRC7[NOTE_COUNT];
+
+	CSoundGen* pSoundGen = theApp.GetSoundGenerator();
+	for (unsigned int i = 0; i < CDetuneTable::DETUNE_N163; ++i) {		// // //
+		switch (i) {
+		case CDetuneTable::DETUNE_NTSC:
+			for (int j = 0; j < NOTE_COUNT; ++j) NoteLookupTableNTSC[j] = pSoundGen->ReadPeriodTable(j, i); break;
+		case CDetuneTable::DETUNE_PAL:
+			for (int j = 0; j < NOTE_COUNT; ++j) NoteLookupTablePAL[j] = pSoundGen->ReadPeriodTable(j, i); break;
+		case CDetuneTable::DETUNE_SAW:
+			for (int j = 0; j < NOTE_COUNT; ++j) NoteLookupTableSaw[j] = pSoundGen->ReadPeriodTable(j, i); break;
+		case CDetuneTable::DETUNE_VRC7:
+			for (int j = 0; j < NOTE_COUNT; ++j) NoteLookupTableVRC7[j] = pSoundGen->ReadPeriodTable(j, i); break;
+		case CDetuneTable::DETUNE_FDS:
+			for (int j = 0; j < NOTE_COUNT; ++j) NoteLookupTableFDS[j] = pSoundGen->ReadPeriodTable(j, i); break;
+		case CDetuneTable::DETUNE_N163:
+			for (int j = 0; j < NOTE_COUNT; ++j) NoteLookupTableN163[j] = pSoundGen->ReadPeriodTable(j, i); break;
+		default:
+			AfxDebugBreak();
+		}
+	}
+
+	// One possible optimization is to store the PAL table as the difference from the NTSC table
+
+	WriteString("; 2A03 NTSC\n");
+	WriteString(".if .defined(NTSC_PERIOD_TABLE)\n");
+	WriteString("ft_periods_ntsc: ;; Patch\n\t.word\t");
+	DumpFunc(NoteLookupTableNTSC);
+
+	WriteString(".endif\n\n");
+	WriteString("; 2A03 PAL\n");
+	WriteString(".if .defined(PAL_PERIOD_TABLE)\n");
+	WriteString("ft_periods_pal: ;; Patch\n\t.word\t");
+	DumpFunc(NoteLookupTablePAL);
+
+	WriteString(".endif\n\n");
+	WriteString("; VRC6 Sawtooth\n");
+	WriteString(".if .defined(USE_VRC6)\n");
+	WriteString("ft_periods_sawtooth: ;; Patch\n\t.word\t");
+	DumpFunc(NoteLookupTableSaw);
+
+	WriteString(".endif\n\n");
+	WriteString("; FDS\n");
+	WriteString(".if .defined(USE_FDS)\n");
+	WriteString("ft_periods_fds: ;; Patch\n\t.word\t");
+	DumpFunc(NoteLookupTableFDS);
+
+	WriteString(".endif\n\n");
+	WriteString("; N163\n");
+	WriteString(".if .defined(USE_N163)\n");
+	WriteString("ft_periods_n163: ;; Patch\n\t.word\t");
+	DumpFunc(NoteLookupTableN163);
+
+	WriteString(".endif\n\n");
+	WriteString("; VRC7\n");
+	WriteString(".if .defined(USE_VRC7)\n");
+	WriteString("; Fnum table, multiplied by 4 for higher resolution\n");
+	WriteString(".define ft_vrc7_table ");
+
+	for (int i = 0; i <= NOTE_RANGE; ++i) {		// // // include last item for linear pitch code optimization
+		CString str;
+		if (i == NOTE_RANGE)
+			str.Format("$%04X\n\n", NoteLookupTableVRC7[0] << 3);
+		else
+			str.Format("$%04X, ", NoteLookupTableVRC7[i] << 2);
+		WriteString(str);
+	}
+
+	WriteString("ft_note_table_vrc7_l: ;; Patch\n");
+	WriteString("\t.lobytes ft_vrc7_table\n");
+	WriteString("ft_note_table_vrc7_h:\n");
+	WriteString("\t.hibytes ft_vrc7_table\n");
+	WriteString(".endif\n");
+
+	Print(_T(" * Period table size: %i bytes\n"), length);
+}
+
+void CCompiler::WriteVibrato(CFile* pFile)
+{
+	unsigned int length = 0;
+	const auto WriteString = [&pFile, &length](CString str) {
+		pFile->Write(const_cast<CStringA&>(str).GetBuffer(), str.GetLength());
+		length += str.GetLength();
+	};
+
+	unsigned int VibratoTable[VIBRATO_LENGTH];
+
+	// Copy the vibrato table, the stock one only works for new vibrato mode
+	const CSoundGen* pSoundGen = theApp.GetSoundGenerator();
+
+	for (int i = 0; i < 256; ++i) {
+		VibratoTable[i] = pSoundGen->ReadVibratoTable(i);
+	}
+
+	WriteString("; Vibrato table (256 bytes)\n"
+		"ft_vibrato_table: ;; Patch\n");
+	for (int i = 0; i < 16; i++) {	// depth
+		WriteString("\t.byte ");
+		for (int j = 0; j < 16; j++) {	// phase
+			CString b;
+			b.Format("$%02X%s", VibratoTable[i * 16 + j], j < 15 ? ", " : "");
+			WriteString(b);
+		}
+		WriteString("\n");
+	}
+
+	Print(_T(" * Vibrato table size: %i bytes\n"), length);
+}
+
+void CCompiler::WriteNSFHeader(CFile* pFile, stNSFHeader Header)
+{
+	CString str;
+	unsigned int length = 0;
+	const auto WriteString = [&pFile, &length](CString str) {
+		pFile->Write(const_cast<CStringA&>(str).GetBuffer(), str.GetLength());
+		length += str.GetLength();
+	};
+
+	const auto WriteByte = [&WriteString](unsigned int Byte) {
+		CString str;
+		str.Format("$%02X", Byte);
+		WriteString(str);
+	};
+
+	const auto WriteWord = [&WriteString](unsigned int Word) {
+		CString str;
+		str.Format("$%04X", Word);
+		WriteString(str);
+	};
+
+	const auto WriteInt = [&WriteString](unsigned int Int) {
+		CString str;
+		str.Format("%i", Int);
+		WriteString(str);
+	};
+
+	const auto WriteNSFIdent = [&WriteString](unsigned char* Ident) {
+		for (int i = 0; i < 5; ++i) {
+			CString str;
+			str.Format("$%02X%s", Ident[i], i < 4 ? ", " : "");
+			WriteString(str);
+		}
+	};
+
+	const auto WriteBankValues = [&WriteString](unsigned char* BankValues) {
+		for (int i = 0; i < 8; ++i) {
+			CString str;
+			str.Format("%i%s", BankValues[i], i < 7 ? ", " : "");
+			WriteString(str);
+		}
+	};
+
+	const auto WriteNSFLength = [&WriteString](unsigned char* Length) {
+		for (int i = 0; i < 3; ++i) {
+			CString str;
+			str.Format("$%02X%s", Length[i], i < 2 ? ", " : "");
+			WriteString(str);
+		}
+	};
+
+	WriteString(";\n; NSF Header\n;\n");
+	if (Header.SoundChip & SNDCHIP_VRC6) WriteString("USE_VRC6 = 1\n");
+	if (Header.SoundChip & SNDCHIP_VRC7) WriteString("USE_VRC7 = 1\n");
+	if (Header.SoundChip & SNDCHIP_FDS) WriteString("USE_FDS = 1\n");
+	if (Header.SoundChip & SNDCHIP_MMC5) WriteString("USE_MMC5 = 1\n");
+	if (Header.SoundChip & SNDCHIP_N163) WriteString("USE_N163 = 1\n");
+	if (Header.SoundChip & SNDCHIP_S5B) WriteString("USE_S5B = 1\n");
+	if (m_bBankSwitched) WriteString("USE_BANKSWITCH = 1\n");
+	if (m_pDocument->GetVibratoStyle() == VIBRATO_OLD) WriteString("USE_OLDVIBRATO = 1\n");
+	if (m_pDocument->GetLinearPitch()) WriteString("USE_LINEARPITCH = 1\n");
+	WriteString("\n.segment \"HEADER1\"\n");
+	WriteString(".byte "); WriteNSFIdent(Header.Ident);
+	WriteString("\t; ID\n");
+	WriteString(".byte $01\t\t\t\t\t\t; Version\n");
+	WriteString(".byte "); WriteInt(Header.TotalSongs);
+	WriteString("\t\t\t\t\t\t\t; Number of songs\n");
+	WriteString(".byte "); WriteInt(Header.StartSong);
+	WriteString("\t\t\t\t\t\t\t; Start song\n");
+	WriteString(".word LOAD\t\t\t\t\t\t; LOAD address\n");
+	WriteString(".word INIT\t\t\t\t\t\t; INIT address\n");
+	WriteString(".word PLAY\t\t\t\t\t\t; PLAY address\n\n");
+
+	WriteString(".segment \"HEADER2\"\n");
+	WriteString(".asciiz \""); WriteString(static_cast<CString>(Header.SongName));
+	WriteString("\"\t; Name, 32 bytes\n\n");
+
+	WriteString(".segment \"HEADER3\"\n");
+	WriteString(".asciiz \""); WriteString(static_cast<CString>(Header.ArtistName));
+	WriteString("\"\t; Artist, 32 bytes\n\n");
+
+	WriteString(".segment \"HEADER4\"\n");
+	WriteString(".asciiz \""); WriteString(static_cast<CString>(Header.Copyright));
+	WriteString("\"\t; Copyright, 32 bytes\n\n");
+
+	WriteString(".segment \"HEADER5\"\n");
+	WriteString(".word "); WriteWord(Header.Speed_NTSC);
+	WriteString("\t\t\t\t\t\t; NTSC speed\n");
+	WriteString(".byte "); WriteBankValues(Header.BankValues);
+	WriteString("\t; Bank values\n");
+	WriteString(".word "); WriteWord(Header.Speed_PAL);
+	WriteString("\t\t\t\t\t\t; PAL speed\n");
+	WriteString(".byte "); WriteInt(Header.Flags);
+	WriteString("\t\t\t\t\t\t\t; Flags, NTSC\n");
+	WriteString(".byte EXPANSION_FLAG\t\t\t; Expansion audio flags\n");
+	WriteString(".byte "); WriteByte(Header.NSF2Flags);
+	WriteString("\t\t\t\t\t\t; NSF2 flags\n");
+	WriteString(".byte "); WriteNSFLength(Header.NSFDataLength);
+	WriteString("\t\t\t\t; NSF data length\n");
+
+	Print(_T(" * NSF header size: %i bytes\n"), length);
+}
+
+void CCompiler::WriteNSFConfig(CFile* pFile, unsigned int DPCMSegment, stNSFHeader Header)
+{
+	CString str;
+	unsigned int length = 0;
+	const auto WriteString = [&pFile, &length](CString str) {
+		pFile->Write(const_cast<CStringA&>(str).GetBuffer(), str.GetLength());
+		length += str.GetLength();
+	};
+
+	const auto WriteWord = [&WriteString](unsigned int Word) {
+		CString str;
+		str.Format("$%04X", Word);
+		WriteString(str);
+	};
+
+	WriteString("MEMORY {\n");
+	WriteString("  ZP:  start = $00, size = $100, type = rw, file = \"\";\n");
+	WriteString("  RAM: start = $200,  size = $600,   type = rw, file = \"\";\n");
+	WriteString("  HDR: start = $00,   size = $80,    type = ro, file = %O;\n");
+	WriteString("  PRG: start = $8000, size = $40000, type = ro, file = %O;\n");
+	WriteString("}\n\n");
+	WriteString("SEGMENTS {\n");
+	WriteString("  ZEROPAGE: load = ZP,  type = zp;\n");
+	WriteString("  BSS:      load = RAM, type = bss, define = yes;\n");
+	WriteString("  HEADER1:  load = HDR, type = ro;\n");
+	WriteString("  HEADER2:  load = HDR, type = ro,  start = $0E, fillval = $0;\n");
+	WriteString("  HEADER3:  load = HDR, type = ro,  start = $2E, fillval = $0;\n");
+	WriteString("  HEADER4:  load = HDR, type = ro,  start = $4E, fillval = $0;\n");
+	WriteString("  HEADER5:  load = HDR, type = ro,  start = $6E;\n");
+	WriteString("  CODE:     load = PRG, type = ");
+	WriteString(Header.SoundChip & SNDCHIP_FDS ? "rw" : "ro");
+	WriteString(",  start = $8000;\n");
+	WriteString("  DPCM:     load = PRG, type = ");
+	WriteString(Header.SoundChip & SNDCHIP_FDS ? "rw" : "ro");
+	WriteString(",  start = "); WriteWord(DPCMSegment);
+	WriteString(";\n");
+	WriteString("}\n");
+
+	Print(_T(" * NSF config size: %i bytes\n"), length);
 }
 
 void CCompiler::WriteBinary(CFile *pFile)

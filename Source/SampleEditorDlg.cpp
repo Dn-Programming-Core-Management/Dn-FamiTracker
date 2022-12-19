@@ -341,7 +341,7 @@ void CSampleEditorDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar
 BOOL CSampleEditorDlg::PreTranslateMessage(MSG* pMsg)
 {
 	if (pMsg->message == WM_KEYDOWN) {
-		OnKeyDown(pMsg->wParam, 0, 0);
+		OnKeyDown(static_cast<UINT>(pMsg->wParam), 0, 0);
 		return TRUE;
 	}
 

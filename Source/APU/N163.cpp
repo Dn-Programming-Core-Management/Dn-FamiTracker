@@ -54,6 +54,7 @@ CN163::~CN163()
 void CN163::Reset()
 {
 	m_N163.Reset();
+	m_N163.SetMixing(m_bUseLinearMixing);
 
 	m_SynthN163.clear();
 	m_BlipN163.clear();
@@ -65,7 +66,6 @@ void CN163::UpdateFilter(blip_eq_t eq)
 	m_SynthN163.treble_eq(eq);
 	m_BlipN163.bass_freq(0);
 	m_CutoffHz = 12000;
-	m_N163.SetMixing(m_bOldMixing);
 	RecomputeN163Filter();
 }
 
@@ -88,12 +88,6 @@ uint8_t CN163::Read(uint16_t Address, bool &Mapped)
 
 void CN163::Process(uint32_t Time, Blip_Buffer& Output)
 {
-	// Change level output based on number of channels
-	int channels = m_N163.GetNumberOfChannels();
-	double N163_volume = (channels == 0) ? 1.3f : (1.5f + float(channels) / 1.5f);
-	N163_volume *= m_Attenuation;
-	m_SynthN163.volume(N163_volume * 1.1, 1600);
-
 	uint32_t now = 0;
 
 	while (true) {
@@ -156,7 +150,7 @@ void CN163::EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer)
 		m_lowPassState = out + 1e-18f;  // prevent denormal numbers
 	}
 
-	Output.mix_samples_raw(unfilteredData.data(), unfilteredData.size());
+	Output.mix_samples_raw(unfilteredData.data(), static_cast<blip_nsamp_t>(unfilteredData.size()));
 
 	m_iTime = 0;
 }
@@ -198,10 +192,17 @@ void CN163::UpdateN163Filter(int CutoffHz, bool DisableMultiplex)
 	RecomputeN163Filter();
 }
 
-void CN163::UpdateMixLevel(double v)
+void CN163::UpdateMixLevel(double v, bool UseSurveyMix)
 {
-	m_Attenuation = v;
-	// Mix level will dynamically change in Process() based on number of channels
+	if (UseSurveyMix)
+		m_SynthN163.volume(v, 225);
+	else {
+		// Mix level will dynamically change based on number of channels
+		int channels = m_N163.GetNumberOfChannels();
+		double N163_volume = (channels == 0) ? 1.3f : (1.5f + float(channels) / 1.5f);
+		N163_volume *= v;
+		m_SynthN163.volume(N163_volume * 1.1, 1600);
+	}
 }
 
 void CN163::Log(uint16_t Address, uint8_t Value)		// // //
@@ -219,7 +220,8 @@ void CN163::Log(uint16_t Address, uint8_t Value)		// // //
 
 void CN163::SetMixingMethod(bool bLinear)		// // //
 {
-	m_bOldMixing = bLinear;
+	m_bUseLinearMixing = bLinear;
+	m_N163.SetMixing(m_bUseLinearMixing);
 }
 
 void CN163::RecomputeN163Filter()

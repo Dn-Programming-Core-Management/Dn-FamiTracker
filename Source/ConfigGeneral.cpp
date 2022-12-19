@@ -381,7 +381,7 @@ BOOL CConfigGeneral::PreTranslateMessage(MSG* pMsg)
 	if (pMsg->message == WM_KEYDOWN) {
 		char Text[64];
 		int id = GetFocus()->GetDlgCtrlID();
-		int key = pMsg->wParam;
+		int key = static_cast<int>(pMsg->wParam);
 
 		if (key == 27)		// ESC
 			key = 0;
@@ -406,7 +406,7 @@ BOOL CConfigGeneral::PreTranslateMessage(MSG* pMsg)
 				return CPropertyPage::PreTranslateMessage(pMsg);
 		}
 
-		GetKeyNameText(key ? pMsg->lParam : 0, Text, 64);
+		GetKeyNameText(key ? static_cast<LONG>(pMsg->lParam) : 0, Text, 64);
 		SetDlgItemText(id, Text);
 
 		SetModified();

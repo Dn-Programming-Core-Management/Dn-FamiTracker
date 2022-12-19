@@ -47,7 +47,7 @@ ft_load_inst_extra_n163:
 	iny
 .endif
 @DoneParams:
-	lda var_NamcoInstrument, x
+	lda var_NamcoInstrument - N163_OFFSET, x
 	cmp var_Temp2
 	beq :+
 	lda #$00             ; reset wave
@@ -56,7 +56,7 @@ ft_load_inst_extra_n163:
 	lda var_Temp2
 	; Load N163 wave
 ;    jsr ft_n163_load_wave
-:   sta var_NamcoInstrument, x
+:   sta var_NamcoInstrument - N163_OFFSET, x
 	lda ft_channel_type, x	;;; ;; ;
 	cmp #CHAN_N163
 	bne :+					; ;; ;;;
@@ -81,7 +81,7 @@ ft_init_n163:
 	; Clear wave ram
 	lda #$80
 	sta $F800
-	ldx #$7E ;
+	ldx #$7E
 	lda #$00
 :   sta $4800
 	dex
@@ -212,11 +212,32 @@ ft_update_n163:
 
 @SkipChannel:
 	; End
+	lda var_ch_PhaseReset + N163_OFFSET, x
+	bne @N163PhaseReset
 	inx
 	cpx var_NamcoChannels
 	beq :+
 	jmp @ChannelLoop
 :	rts
+
+@N163PhaseReset:
+	dec var_ch_PhaseReset + N163_OFFSET, x
+
+	lda #$01
+	jsr @LoadAddr					; low phase
+	lda #$00
+	sta $4800
+
+	lda #$03
+	jsr @LoadAddr					; mid phase
+	lda #$00
+	sta $4800
+
+	lda #$05
+	jsr @LoadAddr					; hi phase
+	lda #$00
+	sta $4800
+	rts
 
 @LoadAddr:                    ; Load N163 RAM address
 	clc

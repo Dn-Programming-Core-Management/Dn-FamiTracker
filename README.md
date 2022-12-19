@@ -28,7 +28,7 @@ Notice: Due to delayed Appveyor reintegration, builds for commits `dc4c9e8` to `
 
 ## License
 
-The application and the source code are distributed under the GNU GPL 2 license or any later version, but depends on FDS and N163 sound emulation only under the GPL v3.
+The application and the source code are distributed under the GNU GPL 2 license or any later version, but depends on FDS and N163 sound emulation only under the GPL v3. The original NSF driver source code is unlicensed. 0CC FT NSF driver changes are licensed under GPL v2. Dn-FT NSF driver changes are licensed under MIT-0.
 
 ## See also:
 

@@ -221,6 +221,8 @@ bool CInstrumentFDS::Load(CDocumentFile *pDocFile)
 */
 	unsigned int a = pDocFile->GetBlockInt();
 	unsigned int b = pDocFile->GetBlockInt();
+
+	// TODO: investigate why loading FDS instruments uses RollbackPointer()
 	pDocFile->RollbackPointer(8);
 
 	if (a < 256 && (b & 0xFF) != 0x00) {

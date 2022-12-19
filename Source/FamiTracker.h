@@ -53,7 +53,7 @@ public:
 	CFTCommandLineInfo();
 	virtual void ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLast);
 public:
-	bool m_bHelp;		// // !!
+	bool m_bHelp;		// !! !!
 	bool m_bLog;
 	bool m_bExport;
 	bool m_bPlay;
@@ -119,6 +119,7 @@ public:
 	int				GetCPUUsage() const;
 	bool			IsThemeActive() const;
 	void			RefreshFrameEditor();
+	void			EnableMFCPrint();
 	void			ThreadDisplayMessage(LPCTSTR lpszText, UINT nType = 0, UINT nIDHelp = 0);
 	void			ThreadDisplayMessage(UINT nIDPrompt, UINT nType = 0, UINT nIDHelp = 0);
 

@@ -47,6 +47,8 @@ protected:
 	void	ClearRegisters() override;
 	CString	GetCustomEffectString() const override;		// // //
 
+	void	resetPhase();
+
 protected:
 	// // //
 	bool m_bHardwareEnvelope;	// // // (constant volume flag, bit 4)

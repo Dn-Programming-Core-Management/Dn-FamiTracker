@@ -847,7 +847,7 @@ BOOL CFrameEditor::PreTranslateMessage(MSG* pMsg)
 	}
 
 	if (pMsg->message == WM_KEYDOWN) {
-		OnKeyDown(pMsg->wParam, pMsg->lParam & 0xFFFF, pMsg->lParam & 0xFF0000);
+		OnKeyDown(static_cast<UINT>(pMsg->wParam), pMsg->lParam & 0xFFFF, pMsg->lParam & 0xFF0000);
 		// Remove the beep
 		pMsg->message = WM_NULL;
 	}
@@ -1198,7 +1198,7 @@ void CFrameEditor::OnEditCopy()
 		return;
 	}
 
-	if (HGLOBAL hMem = Clipboard.AllocMem(ClipData->GetAllocSize())) {
+	if (HGLOBAL hMem = Clipboard.AllocMem(static_cast<UINT>(ClipData->GetAllocSize()))) {
 		// Copy to clipboard
 		ClipData->ToMem(hMem);
 		// Set clipboard for internal data, hMem may not be used after this point

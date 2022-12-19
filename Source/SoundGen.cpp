@@ -128,7 +128,6 @@ CSoundGen::CSoundGen() :
 	m_pSoundStream(NULL),
 	m_pVisualizerWnd(NULL),
 	m_pAPU(NULL),
-	currN163LevelOffset(0),
 	m_pPreviewSample(NULL),
 	m_CoInitialized(false),		// // //
 	m_bRunning(false),
@@ -158,7 +157,7 @@ CSoundGen::CSoundGen() :
 	m_iPlayRow(0),
 	m_bDirty(false),
 	m_pSequencePlayPos(NULL),
-	m_iSequencePlayPos(0),		// // //
+	m_iSequencePlayPos(0),
 	m_iSequenceTimeout(0)
 {
 	if (!m_hInterruptEvent) {
@@ -178,6 +177,20 @@ CSoundGen::CSoundGen() :
 
 	// Create all kinds of channels
 	CreateChannels();
+
+	// Initialize emulation/mixer objects
+	DeviceMixOffset.resize(CHIP_LEVEL_COUNT);
+	std::fill(DeviceMixOffset.begin(), DeviceMixOffset.end(), 0);
+	SurveyMixLevels.resize(CHIP_LEVEL_COUNT);
+	std::fill(SurveyMixLevels.begin(), SurveyMixLevels.end(), 0);
+	UseExtOPLL = false;
+
+	OPLLHardwarePatchBytes.resize(19 * 8);
+	std::fill(OPLLHardwarePatchBytes.begin(), OPLLHardwarePatchBytes.end(), 0);
+
+	OPLLHardwarePatchNames.resize(19);
+	std::fill(OPLLHardwarePatchNames.begin(), OPLLHardwarePatchNames.end(), "");
+	OPLLHardwarePatchNames.at(0) = "(custom instrument)";		// patch 0 must always be named "(custom instrument)"
 }
 
 CSoundGen::~CSoundGen()
@@ -414,76 +427,54 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 
 	machine_t Machine = pDocument->GetMachine();
 	const double A440_NOTE = 45. - pDocument->GetTuningSemitone() - pDocument->GetTuningCent() / 100.;
-	double clock_ntsc = CAPU::BASE_FREQ_NTSC / 16.0;
-	double clock_pal = CAPU::BASE_FREQ_PAL / 16.0;
+
+	std::unique_ptr<CDetuneNTSC> pDetuneNTSC(new CDetuneNTSC(A440_NOTE));
+	std::unique_ptr<CDetunePAL> pDetunePAL(new CDetunePAL(A440_NOTE));
+	std::unique_ptr<CDetuneSaw> pDetuneSaw(new CDetuneSaw(A440_NOTE));
+	std::unique_ptr<CDetuneVRC7> pDetuneVRC7(new CDetuneVRC7(A440_NOTE));
+	std::unique_ptr<CDetuneFDS> pDetuneFDS(new CDetuneFDS(A440_NOTE));
+	std::unique_ptr<CDetuneN163> pDetuneN163(new CDetuneN163(A440_NOTE));
+	std::unique_ptr<CDetuneS5B> pDetuneS5B(new CDetuneS5B(A440_NOTE));
 
 	for (int i = 0; i < NOTE_COUNT; ++i) {
-		// Frequency (in Hz)
-		double Freq = 440. * pow(2.0, double(i - A440_NOTE) / 12.);
 		double Pitch;
+		
+		// 2A03 / MMC5 / VRC6
+		Pitch = pDetuneNTSC->FrequencyToPeriod(pDetuneNTSC->NoteToFreq(i), 1, 0);
+		m_iNoteLookupTableNTSC[i] = std::lround(Pitch - pDocument->GetDetuneOffset(0, i));		// // //
 
 		// 2A07
-		Pitch = (clock_pal / Freq) - 0.5;
-		m_iNoteLookupTablePAL[i] = (unsigned int)(Pitch - pDocument->GetDetuneOffset(1, i));		// // //
-
-		// 2A03 / MMC5 / VRC6
-		Pitch = (clock_ntsc / Freq) - 0.5;
-		m_iNoteLookupTableNTSC[i] = (unsigned int)(Pitch - pDocument->GetDetuneOffset(0, i));		// // //
-		m_iNoteLookupTableS5B[i] = m_iNoteLookupTableNTSC[i] + 1;		// correction
+		Pitch = pDetunePAL->FrequencyToPeriod(pDetunePAL->NoteToFreq(i), 1, 0);
+		m_iNoteLookupTablePAL[i] = std::lround(Pitch - pDocument->GetDetuneOffset(1, i));		// // //
 
 		// VRC6 Saw
-		Pitch = ((clock_ntsc * 16.0) / (Freq * 14.0)) - 0.5;
-		m_iNoteLookupTableSaw[i] = (unsigned int)(Pitch - pDocument->GetDetuneOffset(2, i));		// // //
+		Pitch = pDetuneSaw->FrequencyToPeriod(pDetuneSaw->NoteToFreq(i), 1, 0);
+		m_iNoteLookupTableSaw[i] = std::lround(Pitch - pDocument->GetDetuneOffset(2, i));		// // //
+
+		// // // VRC7
+		if (i < NOTE_RANGE) {
+			Pitch = pDetuneVRC7->FrequencyToPeriod(pDetuneVRC7->NoteToFreq(i), 1, 0);
+			m_iNoteLookupTableVRC7[i] = std::lround(Pitch - pDocument->GetDetuneOffset(3, i));		// // //
+		}
 
 		// FDS
 #ifdef TRANSPOSE_FDS
-		Pitch = (Freq * 65536.0) / (clock_ntsc / 1.0) + 0.5;
+		Pitch = pDetuneFDS->FrequencyToPeriod(pDetuneFDS->NoteToFreq(i), 1, 0);
 #else
-		Pitch = (Freq * 65536.0) / (clock_ntsc / 4.0) + 0.5;
+		Pitch = (NoteToFreq(i) * 65536.0) / (clock_ntsc / 4.0);
 #endif
-		m_iNoteLookupTableFDS[i] = (unsigned int)(Pitch + pDocument->GetDetuneOffset(4, i));		// // //
+		m_iNoteLookupTableFDS[i] = std::lround(Pitch - pDocument->GetDetuneOffset(4, i));		// // //
 
 		// N163
-		Pitch = ((Freq * pDocument->GetNamcoChannels() * 983040.0) / clock_ntsc + 0.5) / 4;		// // //
-		m_iNoteLookupTableN163[i] = (unsigned int)(Pitch + pDocument->GetDetuneOffset(5, i));		// // //
+		Pitch = pDetuneN163->FrequencyToPeriod(pDetuneN163->NoteToFreq(i), 1, pDocument->GetNamcoChannels());
+		m_iNoteLookupTableN163[i] = std::lround(Pitch - pDocument->GetDetuneOffset(5, i));		// // //
 
 		if (m_iNoteLookupTableN163[i] > 0xFFFF)	// 0x3FFFF
 			m_iNoteLookupTableN163[i] = 0xFFFF;	// 0x3FFFF
 
-		// // // Sunsoft 5B uses NTSC table
-
-		// // // VRC7
-		if (i < NOTE_RANGE) {
-			Pitch = Freq * 262144.0 / 49716.0 + 0.5;
-			m_iNoteLookupTableVRC7[i] = (unsigned int)(Pitch + pDocument->GetDetuneOffset(3, i));		// // //
-		}
-	}
-
-	// // // Setup note tables
-	for (int i = 0; i < CHANNELS; ++i) {
-		if (!m_pChannels[i]) continue;
-		const unsigned int *Table = nullptr;
-		switch (m_pTrackerChannels[i]->GetID()) {
-		case CHANID_SQUARE1: case CHANID_SQUARE2: case CHANID_TRIANGLE:
-			Table = Machine == PAL ? m_iNoteLookupTablePAL : m_iNoteLookupTableNTSC; break;
-		case CHANID_VRC6_PULSE1: case CHANID_VRC6_PULSE2:
-		case CHANID_MMC5_SQUARE1: case CHANID_MMC5_SQUARE2:
-			Table = m_iNoteLookupTableNTSC; break;
-		case CHANID_VRC6_SAWTOOTH:
-			Table = m_iNoteLookupTableSaw; break;
-		case CHANID_VRC7_CH1: case CHANID_VRC7_CH2: case CHANID_VRC7_CH3:
-		case CHANID_VRC7_CH4: case CHANID_VRC7_CH5: case CHANID_VRC7_CH6:
-			Table = m_iNoteLookupTableVRC7; break;
-		case CHANID_FDS:
-			Table = m_iNoteLookupTableFDS; break;
-		case CHANID_N163_CH1: case CHANID_N163_CH2: case CHANID_N163_CH3: case CHANID_N163_CH4:
-		case CHANID_N163_CH5: case CHANID_N163_CH6: case CHANID_N163_CH7: case CHANID_N163_CH8:
-			Table = m_iNoteLookupTableN163; break;
-		case CHANID_S5B_CH1: case CHANID_S5B_CH2: case CHANID_S5B_CH3:
-			Table = m_iNoteLookupTableS5B; break;
-		default: continue;
-		}
-		m_pChannels[i]->SetNoteTable(Table);
+		// // // Sunsoft 5B
+		Pitch = pDetuneS5B->FrequencyToPeriod(pDetuneS5B->NoteToFreq(i), 1, 0);
+		m_iNoteLookupTableS5B[i] = std::lround(Pitch - pDocument->GetDetuneOffset(0, i));
 	}
 
 #ifdef WRITE_PERIOD_FILES
@@ -491,7 +482,7 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 	// Write periods to a single file with assembly formatting
 	CStdioFile period_file("..\\nsf driver\\periods.s", CStdioFile::modeWrite | CStdioFile::modeCreate);
 
-	const auto DumpFunc = [&period_file] (const unsigned int *Table) {
+	const auto DumpFunc = [&period_file](const unsigned int* Table) {
 		for (int i = 0; i < NOTE_COUNT; ++i) {
 			unsigned int Val = Table[i] & 0xFFFF;
 			CString str;
@@ -563,6 +554,33 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 
 #endif
 
+	// // // Setup note tables
+	for (int i = 0; i < CHANNELS; ++i) {
+		if (!m_pChannels[i]) continue;
+		const unsigned int *Table = nullptr;
+		switch (m_pTrackerChannels[i]->GetID()) {
+		case CHANID_SQUARE1: case CHANID_SQUARE2: case CHANID_TRIANGLE:
+			Table = Machine == PAL ? m_iNoteLookupTablePAL : m_iNoteLookupTableNTSC; break;
+		case CHANID_VRC6_PULSE1: case CHANID_VRC6_PULSE2:
+		case CHANID_MMC5_SQUARE1: case CHANID_MMC5_SQUARE2:
+			Table = m_iNoteLookupTableNTSC; break;
+		case CHANID_VRC6_SAWTOOTH:
+			Table = m_iNoteLookupTableSaw; break;
+		case CHANID_VRC7_CH1: case CHANID_VRC7_CH2: case CHANID_VRC7_CH3:
+		case CHANID_VRC7_CH4: case CHANID_VRC7_CH5: case CHANID_VRC7_CH6:
+			Table = m_iNoteLookupTableVRC7; break;
+		case CHANID_FDS:
+			Table = m_iNoteLookupTableFDS; break;
+		case CHANID_N163_CH1: case CHANID_N163_CH2: case CHANID_N163_CH3: case CHANID_N163_CH4:
+		case CHANID_N163_CH5: case CHANID_N163_CH6: case CHANID_N163_CH7: case CHANID_N163_CH8:
+			Table = m_iNoteLookupTableN163; break;
+		case CHANID_S5B_CH1: case CHANID_S5B_CH2: case CHANID_S5B_CH3:
+			Table = m_iNoteLookupTableS5B; break;
+		default: continue;
+		}
+		m_pChannels[i]->SetNoteTable(Table);
+	}
+
 	for (int i = 0; i < CHANNELS; ++i) {
 		if (m_pChannels[i]) {
 			m_pChannels[i]->SetVibratoStyle(pDocument->GetVibratoStyle());		// // //
@@ -574,7 +592,49 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 
 	m_iSpeedSplitPoint = pDocument->GetSpeedSplitPoint();
 
-	if (currN163LevelOffset != pDocument->GetN163LevelOffset()) {
+	CSettings* pSettings = theApp.GetSettings();
+
+	// Set survey mix level object. Will be used by CCompiler for mixe chunk.
+	SurveyMixLevels.at(CHIP_LEVEL_APU1) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixAPU1);
+	SurveyMixLevels.at(CHIP_LEVEL_APU2) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixAPU2);
+	SurveyMixLevels.at(CHIP_LEVEL_VRC6) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixVRC6);
+	SurveyMixLevels.at(CHIP_LEVEL_VRC7) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixVRC7);
+	SurveyMixLevels.at(CHIP_LEVEL_FDS) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixFDS);
+	SurveyMixLevels.at(CHIP_LEVEL_MMC5) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixMMC5);
+	SurveyMixLevels.at(CHIP_LEVEL_N163) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixN163);
+	SurveyMixLevels.at(CHIP_LEVEL_S5B) = static_cast<int16_t>(pSettings->ChipLevels.iSurveyMixS5B);
+
+	bool refreshsettings = false;
+
+	for (int i = 0; i < 8; i++)
+		refreshsettings |= DeviceMixOffset[i] != pDocument->GetLevelOffset(i);
+
+	refreshsettings |= UseSurveyMix != pDocument->GetSurveyMixCheck();
+
+	int PatchNum = pSettings->Emulation.iVRC7Patch;
+
+	if (UseExtOPLL)
+		for (int i = 0; i < 19; i++) {
+			for (int j = 0; j < 8; j++)
+				refreshsettings |= OPLLHardwarePatchBytes.at((8 * i) + j) != pDocument->GetOPLLPatchByte((8 * i) + j);
+			refreshsettings |= OPLLHardwarePatchNames.at(i) != pDocument->GetOPLLPatchName(i);
+		}
+	else
+		for (int i = 0; i < 19; ++i) {
+			for (int j = 0; j < 8; ++j)
+				refreshsettings |= OPLLHardwarePatchBytes.at((8 * i) + j) != CAPU::OPLL_DEFAULT_PATCHES[PatchNum][(8 * i) + j];
+			// Set OPLL patch names
+			if (PatchNum <= 6)
+				refreshsettings |= OPLLHardwarePatchNames.at(i) != CAPU::OPLL_PATCHNAME_VRC7[i];
+			else if (PatchNum == 7)
+				refreshsettings |= OPLLHardwarePatchNames.at(i) != CAPU::OPLL_PATCHNAME_YM2413[i];
+			else if (PatchNum == 8)
+				refreshsettings |= OPLLHardwarePatchNames.at(i) != CAPU::OPLL_PATCHNAME_YMF281B[i];
+		}
+
+	refreshsettings |= UseExtOPLL != pDocument->GetExternalOPLLChipCheck();
+
+	if (refreshsettings) {
 		// Player thread calls OnLoadSettings() which calls ResetAudioDevice()
 		// Why are GetCurrentThreadId and GetCurrentThread used interchangably?
 		LoadSettings();
@@ -832,31 +892,64 @@ bool CSoundGen::ResetAudioDevice()
 		m_pResampleInBuffer = std::make_unique<float[]>(inputBufferSize);
 	}
 
-	currN163LevelOffset = m_pDocument->GetN163LevelOffset();
+	for (int i = 0; i < CHIP_LEVEL_COUNT; ++i)
+		DeviceMixOffset[i] = m_pDocument->GetLevelOffset(i);
+
+	UseSurveyMix = m_pDocument->GetSurveyMixCheck();
+
+	int PatchNum = pSettings->Emulation.iVRC7Patch;
+
+	assert(PatchNum <= CAPU::OPLL_TONE_NUM);
+
+	{
+		UseExtOPLL = m_pDocument->GetExternalOPLLChipCheck();
+
+		for (int i = 0; i < 19; ++i) {
+			for (int j = 0; j < 8; ++j)
+				OPLLHardwarePatchBytes.at((8 * i) + j) = m_pDocument->GetOPLLPatchByte((8 * i) + j);
+			OPLLHardwarePatchNames.at(i) = m_pDocument->GetOPLLPatchName(i);
+		}
+	}
 
 	{
 		auto config = CAPUConfig(m_pAPU);
 
-		config.SetChipLevel(CHIP_LEVEL_APU1, float(pSettings->ChipLevels.iLevelAPU1 / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_APU2, float(pSettings->ChipLevels.iLevelAPU2 / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_VRC6, float(pSettings->ChipLevels.iLevelVRC6 / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_VRC7, float(pSettings->ChipLevels.iLevelVRC7 / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_MMC5, float(pSettings->ChipLevels.iLevelMMC5 / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_FDS, float(pSettings->ChipLevels.iLevelFDS / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_N163, float(
-			(pSettings->ChipLevels.iLevelN163 + currN163LevelOffset) / 10.0f));
-		config.SetChipLevel(CHIP_LEVEL_S5B, float(pSettings->ChipLevels.iLevelS5B / 10.0f));
+		// Update FamiTracker emulation
+		config.SetupEmulation(
+			pSettings->Emulation.bNamcoMixing,
+			PatchNum,
+			UseExtOPLL,
+			OPLLHardwarePatchBytes,
+			OPLLHardwarePatchNames
+		);
 
-		// Update blip-buffer filtering
+		// Update blip-buffer filtering and hardware-based expansion mixing
 		config.SetupMixer(
 			pSettings->Sound.iBassFilter,
 			pSettings->Sound.iTrebleFilter,
 			pSettings->Sound.iTrebleDamping,
 			pSettings->Sound.iMixVolume,
+			UseSurveyMix,
 			pSettings->Emulation.iFDSLowpass,
-			pSettings->Emulation.iVRC7Patch,
-			pSettings->Emulation.bNamcoMixing,
-			pSettings->Emulation.iN163Lowpass);
+			pSettings->Emulation.iN163Lowpass,
+			DeviceMixOffset
+		);
+
+		if (UseSurveyMix) {
+			// Override expansion chip level mixing when using survey hardware levels
+			for (int i = 0; i < CHIP_LEVEL_COUNT; i++)
+				config.SetChipLevel(static_cast<chip_level_t>(i), float(SurveyMixLevels.at(i) / 100.0f), true);
+		}
+		else {
+			config.SetChipLevel(CHIP_LEVEL_APU1, float(pSettings->ChipLevels.iLevelAPU1 / 10.0f));
+			config.SetChipLevel(CHIP_LEVEL_APU2, float(pSettings->ChipLevels.iLevelAPU2 / 10.0f));
+			config.SetChipLevel(CHIP_LEVEL_VRC6, float(pSettings->ChipLevels.iLevelVRC6 / 10.0f));
+			config.SetChipLevel(CHIP_LEVEL_VRC7, float(pSettings->ChipLevels.iLevelVRC7 / 10.0f));
+			config.SetChipLevel(CHIP_LEVEL_FDS, float(pSettings->ChipLevels.iLevelFDS / 10.0f));
+			config.SetChipLevel(CHIP_LEVEL_MMC5, float(pSettings->ChipLevels.iLevelMMC5 / 10.0f));
+			config.SetChipLevel(CHIP_LEVEL_N163, float(pSettings->ChipLevels.iLevelN163 / 10.0f));
+			config.SetChipLevel(CHIP_LEVEL_S5B, float(pSettings->ChipLevels.iLevelS5B / 10.0f));
+		}
 	}
 
 	m_bAudioClipping = false;
@@ -1188,7 +1281,7 @@ int CSoundGen::ReadPeriodTable(int Index, int Table) const		// // //
 	case CDetuneTable::DETUNE_VRC7: return m_iNoteLookupTableVRC7[Index]; break;
 	case CDetuneTable::DETUNE_FDS:  return m_iNoteLookupTableFDS[Index]; break;
 	case CDetuneTable::DETUNE_N163: return m_iNoteLookupTableN163[Index]; break;
-	case CDetuneTable::DETUNE_S5B:  return m_iNoteLookupTableNTSC[Index] + 1; break;
+	case CDetuneTable::DETUNE_S5B:  return m_iNoteLookupTableS5B[Index]; break;
 	default:
 		AfxDebugBreak(); return m_iNoteLookupTableNTSC[Index];
 	}
@@ -1533,19 +1626,18 @@ void CSoundGen::ResetAPU()
 	m_pAPU->Reset();
 
 	// Enable all channels
-	m_pAPU->Write(0x4015, 0x0F);
-	m_pAPU->Write(0x4017, 0x00);
-
-	// // // for VGM
 	WriteRegister(0x4015, 0x0F);
 	WriteRegister(0x4017, 0x00);
-	WriteRegister(0x4023, 0x02); // FDS enable
+
+	// FDS
+	WriteRegister(0x4023, 0x02);
+	WriteRegister(0x4023, 0x83);
 
 	// N163
-	m_pAPU->Write(0xE7FF, 0x00); // N163 enable
+	WriteRegister(0xE7FF, 0x00);
 
 	// MMC5
-	m_pAPU->Write(0x5015, 0x03);
+	WriteRegister(0x5015, 0x03);
 
 	m_pAPU->ClearSample();		// // //
 }
@@ -1816,7 +1908,7 @@ void CSoundGen::LoadMachineSettings()		// // //
 		m_pAPU->Reset();
 	}
 
-#if WRITE_VOLUME_FILE
+#ifdef WRITE_VOLUME_FILE
 	CFile file("vol.txt", CFile::modeWrite | CFile::modeCreate);
 
 	for (int i = 0; i < 16; i++) {
@@ -2359,7 +2451,7 @@ void CSoundGen::UpdateAPU()
 
 void CSoundGen::OnStartPlayer(WPARAM wParam, LPARAM lParam)
 {
-	BeginPlayer((play_mode_t)wParam, lParam);
+	BeginPlayer((play_mode_t)wParam, static_cast<int>(lParam));
 }
 
 void CSoundGen::OnSilentAll(WPARAM wParam, LPARAM lParam)
@@ -2387,9 +2479,9 @@ void CSoundGen::OnResetPlayer(WPARAM wParam, LPARAM lParam)
 	// Called when the selected song has changed
 
 	if (IsPlaying())
-		BeginPlayer(MODE_PLAY_START, wParam);		// // //
+		BeginPlayer(MODE_PLAY_START, static_cast<int>(wParam));		// // //
 
-	m_iPlayTrack = wParam;
+	m_iPlayTrack = static_cast<int>(wParam);
 }
 
 void CSoundGen::OnStartRender(WPARAM wParam, LPARAM lParam)
@@ -2431,7 +2523,7 @@ void CSoundGen::OnCloseSound(WPARAM wParam, LPARAM lParam)
 
 void CSoundGen::OnSetChip(WPARAM wParam, LPARAM lParam)
 {
-	int Chip = wParam;
+	int Chip = static_cast<int>(wParam);
 
 	auto l = Lock();
 

@@ -94,6 +94,9 @@ enum command_t {
 	CMD_EFF_GROOVE,				// // //
 	CMD_EFF_DELAYED_VOLUME,		// // //
 	CMD_EFF_TRANSPOSE,			// // //
+	CMD_EFF_PHASE_RESET,		// // !!
+	CMD_EFF_DPCM_PHASE_RESET,	// // !!
+	CMD_EFF_HARMONIC,			// // !!
 	CMD_EFF_TARGET_VOL_SLIDE,	// // !!
 
 	CMD_EFF_VRC7_PATCH,			// // // 050B
@@ -556,6 +559,28 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 						WriteData(EffParam);
 					}
 					break;
+				case EF_PHASE_RESET:	// // !!
+					if (ChanID != CHANID_DPCM ||
+					ChanID != CHANID_TRIANGLE ||
+					ChanID != CHANID_NOISE ||
+					ChipID != SNDCHIP_VRC7 ||
+					ChipID != SNDCHIP_S5B) {
+						WriteData(Command(CMD_EFF_PHASE_RESET));
+						WriteData(EffParam);
+					}
+					else if (ChanID == CHANID_DPCM) {
+						WriteData(Command(CMD_EFF_DPCM_PHASE_RESET));
+						WriteData(EffParam);
+					}
+					break;
+				case EF_HARMONIC:	// // !!
+					if (ChanID != CHANID_DPCM ||
+					ChanID != CHANID_NOISE ||
+					ChipID != SNDCHIP_VRC7) {
+						WriteData(Command(CMD_EFF_HARMONIC));
+						WriteData(EffParam);
+					}
+					break;
 				case EF_TARGET_VOLUME_SLIDE:	// // !!
 					if (ChanID != CHANID_DPCM) {
 						WriteData(Command(CMD_EFF_TARGET_VOL_SLIDE));
@@ -947,10 +972,10 @@ const std::vector<char> &CPatternCompiler::GetCompressedData() const
 
 unsigned int CPatternCompiler::GetDataSize() const
 {
-	return m_vData.size();
+	return static_cast<unsigned int>(m_vData.size());
 }
 
 unsigned int CPatternCompiler::GetCompressedDataSize() const
 {
-	return m_vCompressedData.size();
+	return static_cast<unsigned int>(m_vCompressedData.size());
 }

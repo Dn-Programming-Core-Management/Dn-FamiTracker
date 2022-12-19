@@ -54,7 +54,7 @@ void CInstHandlerVRC7::UpdateInstrument()
 	pInterface->SetPatch(pVRC7Inst->GetPatch());
 	if (!pVRC7Inst->GetPatch())
 		for (std::size_t i = 0; i < 8; i++)
-			pInterface->SetCustomReg(i, pVRC7Inst->GetCustomReg(i));
+			pInterface->SetCustomReg(i, pVRC7Inst->GetCustomReg(static_cast<int>(i)));
 	m_bUpdate = false;
 }
 

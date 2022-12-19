@@ -470,7 +470,7 @@ void CFamiTrackerView::OnDraw(CDC* pDC)
 		pDC->FillSolidRect(0, 0, m_iWindowWidth, m_iWindowHeight, 0x000000);
 		pDC->SetTextColor(0xFFFFFF);
 		CRect textRect(0, 0, m_iWindowWidth, m_iWindowHeight);
-		pDC->DrawText(str, _tcslen(str), &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+		pDC->DrawText(str, static_cast<int>(_tcslen(str)), &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 		return;
 	}
 
@@ -628,8 +628,8 @@ LRESULT CFamiTrackerView::OnUserPlayerEvent(WPARAM wParam, LPARAM lParam)
 
 LRESULT CFamiTrackerView::OnUserNoteEvent(WPARAM wParam, LPARAM lParam)
 {
-	int Channel = wParam;
-	int Note = lParam;
+	int Channel = static_cast<int>(wParam);
+	int Note = static_cast<int>(lParam);
 
 	RegisterKeyState(Channel, Note);
 
@@ -982,7 +982,7 @@ void CFamiTrackerView::OnEditCopy()
 		return;
 	}
 
-	SIZE_T Size = pClipData->GetAllocSize();
+	UINT Size = static_cast<UINT>(pClipData->GetAllocSize());
 	HGLOBAL hMem = Clipboard.AllocMem(Size);
 
 	if (hMem != NULL) {
@@ -1120,7 +1120,7 @@ void CFamiTrackerView::OnTrackerDetune()			// // //
 	CFamiTrackerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	CDetuneDlg DetuneDlg;
-	UINT nResult = DetuneDlg.DoModal();
+	UINT nResult = static_cast<UINT>(DetuneDlg.DoModal());
 	if (nResult != IDOK) return;
 	const int *Table = DetuneDlg.GetDetuneTable();
 	for (int i = 0; i < 6; i++) for (int j = 0; j < NOTE_COUNT; j++)

@@ -176,9 +176,9 @@ BOOL CAboutDlg::OnInitDialog()
 	SetDlgItemText(IDC_ABOUT_LIB, // // !!
 		_T("- Blip_buffer 0.4.1 is Copyright (C) blargg (LGPL v2.1)\r\n   (modified by nyanpasu64)\r\n")
 		_T("- FFT code is (C) 2017 Project Nayuki (MIT)\r\n")
-		_T("- emu2413 v1.5.2 (C) Mitsutaka Okazaki (MIT)\r\n")
+		_T("- emu2413 v1.5.9 (C) Mitsutaka Okazaki (MIT)\r\n")
 		_T("- 2A03 sound emulator from NSFPlay\r\n")
-		_T("- FDS and N163 sound emulator from Mesen (C) Sourmesen (GPL v3)\r\n")
+		_T("- FDS and N163 sound emulator from Mesen\r\n   (C) Sourmesen (GPL v3)\r\n")
 		_T("- JSON for Modern C++ is Copyright (C) Niels Lohmann (MIT)"));
 
 	m_pHead = new CHead();

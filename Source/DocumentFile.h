@@ -38,7 +38,7 @@ public:
 	bool		Finished() const;
 
 	// Write functions
-	bool		BeginDocument();
+	bool		BeginDocument(bool isDnModule = false);
 	bool		EndDocument();
 
 	void		CreateBlock(const char *ID, int Version);
@@ -52,6 +52,7 @@ public:
 	// Read functions
 	void		ValidateFile();		// // //
 	unsigned int GetFileVersion() const;
+	bool		GetModuleType() const;
 
 	bool		ReadBlock();
 	void		GetBlock(void *Buffer, int Size);
@@ -66,7 +67,8 @@ public:
 
 	CString		ReadString();
 
-	void		RollbackPointer(int count);	// avoid this
+	void		RollbackPointer(int count);		// avoid this
+	void		RollbackFilePointer(int count);	// avoid this
 
 	bool		IsFileIncomplete() const;
 
@@ -82,9 +84,11 @@ public:
 public:
 	// Constants
 	static const unsigned int FILE_VER;
+	static const unsigned int COMPATIBLE_FORWARD_VER;
 	static const unsigned int COMPATIBLE_VER;
 
 	static const char *FILE_HEADER_ID;
+	static const char *FILE_HEADER_ID_DN;
 	static const char *FILE_END_ID;
 
 	static const unsigned int MAX_BLOCK_SIZE;
@@ -100,6 +104,7 @@ protected:
 	unsigned int	m_iFileVersion;
 	bool			m_bFileDone;
 	bool			m_bIncomplete;
+	bool			m_bFileDnModule;
 
 	char			*m_cBlockID;
 	unsigned int	m_iBlockSize;

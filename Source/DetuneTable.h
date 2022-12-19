@@ -22,11 +22,12 @@
 ** must bear this legend.
 */
 
-
 #pragma once
 
 #include <vector>
 #include <functional>
+
+class CSoundGen;
 
 class CDetuneTable
 {
@@ -45,8 +46,9 @@ protected:
 	/*!	\brief Constructor of the detune table.
 		\param Type An index representing the detune table type.
 		\param Low The smallest register value this table supports. 
-		\param High The greatest register value this table supports. */
-	CDetuneTable(type_t Type, int Low, int High);
+		\param High The greatest register value this table supports.
+		\param A440_Note A440 reference note*/
+	CDetuneTable(type_t Type, int Low, int High, double A440_Note);
 
 	typedef std::function<double(double)> GenFunc;
 
@@ -85,11 +87,25 @@ public:
 	/*!	\brief Converts a note index to its frequency.
 		\param Note The note index, which may be a fractional number.
 		\return The note's frequency. */
-	static double NoteToFreq(double Note);
+	double NoteToFreq(double Note) const;
 	/*!	\brief Converts a frequency value to a note index.
 		\param Freq The frequency value.
 		\return The note index, which may be a fractional number. */
-	static double FreqToNote(double Freq);
+	double FreqToNote(double Freq) const;
+	/*! \brief Central conversion equations for converting frequency to period.
+		\param Freq The frequency value.
+		\param Type An index representing the detune table type
+		\param Octave The given octave of a note.
+		\param NamcoChannels The amount of N163 channels present.
+		\return The corresponding period value for a given chip and frequency.*/
+	virtual unsigned int FrequencyToPeriod(double Freq, int Octave, int NamcoChannels) const;
+	/*! \brief Central conversion equations for converting period to frequency.
+		\param Freq The frequency value.
+		\param Type An index representing the detune table type
+		\param Octave The given octave of a note.
+		\param NamcoChannels The amount of N163 channels present.
+		\return The corresponding frequency value for a given chip and period.*/
+	virtual double PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const;
 
 protected:
 	void SetNoteCount(size_t Count);
@@ -102,42 +118,48 @@ protected:
 	std::vector<int> m_iRegisterValue;
 	std::vector<int> m_iOffsetValue;
 	GenFunc m_fFunction, m_fInvFunction;
+	double m_dA440_NOTE;
 
-protected:
-	static const double BASE_FREQ_NTSC;
-
-private:
-	static const unsigned A440_NOTE;
 };
 
 class CDetuneNTSC : public CDetuneTable
 {
 public:
-	CDetuneNTSC();
+	CDetuneNTSC(double A440_Note);
+	virtual unsigned int FrequencyToPeriod(double Freq, int Octave, int NamcoChannels) const override;
+	virtual double PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const override;
 };
 
 class CDetunePAL : public CDetuneTable
 {
 public:
-	CDetunePAL();
+	CDetunePAL(double A440_Note);
+	virtual unsigned int FrequencyToPeriod(double Freq, int Octave, int NamcoChannels) const override;
+	virtual double PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const override;
 };
 
 class CDetuneSaw : public CDetuneTable
 {
 public:
-	CDetuneSaw();
+	CDetuneSaw(double A440_Note);
+	virtual unsigned int FrequencyToPeriod(double Freq, int Octave, int NamcoChannels) const override;
+	virtual double PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const override;
 };
 
 class CDetuneFDS : public CDetuneTable
 {
 public:
-	CDetuneFDS();
+	CDetuneFDS(double A440_Note);
+	virtual unsigned int FrequencyToPeriod(double Freq, int Octave, int NamcoChannels) const override;
+	virtual double PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const override;
 };
 
 class CDetuneN163 : public CDetuneTable
 {
 public:
-	CDetuneN163();
+	CDetuneN163(double A440_Note);
+	virtual unsigned int FrequencyToPeriod(double Freq, int Octave, int NamcoChannels) const override;
+	virtual double PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const override;
 	void SetChannelCount(unsigned Count);
 private:
 	unsigned m_iChannelCount;
@@ -146,11 +168,15 @@ private:
 class CDetuneVRC7 : public CDetuneTable
 {
 public:
-	CDetuneVRC7();
+	CDetuneVRC7(double A440_Note);
+	virtual unsigned int FrequencyToPeriod(double Freq, int Octave, int NamcoChannels) const override;
+	virtual double PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const override;
 };
 
 class CDetuneS5B : public CDetuneTable
 {
 public:
-	CDetuneS5B();
+	CDetuneS5B(double A440_Note);
+	virtual unsigned int FrequencyToPeriod(double Freq, int Octave, int NamcoChannels) const override;
+	virtual double PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const override;
 };

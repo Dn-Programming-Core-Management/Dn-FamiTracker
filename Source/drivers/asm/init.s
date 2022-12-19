@@ -29,7 +29,7 @@ ft_music_init:
 	sta $4005
 	lda #$80		;;; ;; ;
 	sta $4017
-	lda #$00
+	lda #$40
 	sta $4017		; ;; ;;; Disable frame IRQs
 
 	lda #$FF		;;; ;; ; Reset triangle linear counter
@@ -280,6 +280,10 @@ ft_load_song:
 	sta var_ch_VolSlide, x
 	sta var_ch_NoteDelay, x
 	sta var_ch_ArpeggioCycle, x
+	sta var_ch_PhaseReset, x
+	sta var_ch_DPCMPhaseReset, x
+	sta var_ch_Harmonic, x
+	inc var_ch_Harmonic, x			; default value is 1
 	;
 	sta var_ch_Note, x
 	inx

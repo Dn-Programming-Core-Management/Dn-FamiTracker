@@ -28,7 +28,7 @@
 #include "SoundChip2.h"
 #include "ChannelLevelState.h"
 
-#include "nsfplay/xgm/devices/Sound/legacy/emu2413.h"
+#include "digital-sound-antiques/emu2413.h"
 
 class CVRC7 : public CSoundChip2 {
 public:
@@ -44,21 +44,21 @@ public:
 	void Write(uint16_t Address, uint8_t Value) override;
 	uint8_t Read(uint16_t Address, bool& Mapped) override;
 
-	double GetFreq(int Channel) const;		// // //
+	double GetFreq(int Channel) const override;		// // //
 	int GetChannelLevel(int Channel) override;
 	int GetChannelLevelRange(int Channel) const override;
 
 	void SetSampleSpeed(uint32_t SampleRate, double ClockRate, uint32_t FrameRate);
-	void SetVolume(float Volume);
+	void SetDirectVolume(double Volume);
 	void Log(uint16_t Address, uint8_t Value) override;		// // //
 
-	void UpdateMixLevel(double v);
+	void UpdateMixLevel(double v, bool UseSurveyMix = false);
 
-	void UpdatePatchSet(int Patchset);
+	void UpdatePatchSet(int PatchSelection, bool UseExternalOPLLChip, uint8_t *PatchSet);
 
 protected:
 	static const float  AMPLIFY;
-	static const uint32_t OPL_CLOCK;
+	static const uint32_t OPLL_CLOCK;
 
 private:
 	OPLL		*m_pOPLLInt = NULL;
@@ -70,9 +70,7 @@ private:
 
 	uint8_t		m_iSoundReg = 0;
 
-	int		m_iPatchTone = 0;
-
-	float	m_fVolume = 1.0f;
+	double		m_DirectVolume = 1.0f;
 
 	// [0..8] corresponds to the 9 channels of the YM2413. Future support for percussion mode?
 	ChannelLevelState<uint8_t> m_ChannelLevels[9];

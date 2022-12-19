@@ -106,6 +106,7 @@ CFamiTrackerApp	theApp;
 
 BOOL CFamiTrackerApp::InitInstance()
 {
+	EnableMFCPrint();
 	// InitCommonControls() is required on Windows XP if an application
 	// manifest specifies use of ComCtl32.dll version 6 or later to enable
 	// visual styles.  Otherwise, any window creation will fail.
@@ -223,7 +224,7 @@ BOOL CFamiTrackerApp::InitInstance()
 		exporter.CommandLineExport(cmdInfo.m_strFileName, cmdInfo.m_strExportFile, cmdInfo.m_strExportLogFile, cmdInfo.m_strExportDPCMFile);
 		ExitProcess(0);
 	}
-	if (cmdInfo.m_bHelp) {		// // !!
+	if (cmdInfo.m_bHelp) {		// !! !!
 		ExitProcess(0);
 	}
 
@@ -529,7 +530,8 @@ void CFamiTrackerApp::RegisterSingleInstance()
 		LPTSTR pBuf = (LPTSTR) MapViewOfFile(m_hWndMapFile, FILE_MAP_ALL_ACCESS, 0, 0, SHARED_MEM_SIZE);
 		if (pBuf != NULL) {
 			// Create a string of main window handle
-			_itot_s((int)GetMainWnd()->m_hWnd, pBuf, SHARED_MEM_SIZE, 10);
+			uint64_t mainWnd = reinterpret_cast<uint64_t>(GetMainWnd()->m_hWnd);		// HWND is 64 bit on x64 builds
+			_itot_s(static_cast<int>(mainWnd), static_cast<char *>(pBuf), SHARED_MEM_SIZE, 10);
 			UnmapViewOfFile(pBuf);
 		}
 	}
@@ -571,7 +573,7 @@ bool CFamiTrackerApp::CheckSingleInstance(CFTCommandLineInfo &cmdInfo)
 			LPCTSTR pBuf = (LPTSTR) MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, SHARED_MEM_SIZE);
 			if (pBuf != NULL) {
 				// Get window handle
-				HWND hWnd = (HWND)_ttoi(pBuf);
+				HWND hWnd = HWND(std::stoull(pBuf));
 				if (hWnd != NULL) {
 					// Get file name
 					LPTSTR pFilePath = cmdInfo.m_strFileName.GetBuffer();
@@ -689,6 +691,19 @@ void CFamiTrackerApp::RefreshFrameEditor()
 	GetMainFrame()->ResizeFrameWindow();
 
 	CFamiTrackerView::GetView()->RefreshFrameEditor();
+}
+
+void CFamiTrackerApp::EnableMFCPrint()
+{
+	// Enable console output
+	if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+		FILE* pcout;
+		errno_t err = freopen_s(&pcout, "CONOUT$", "w", stdout);
+		errno_t err2 = freopen_s(&pcout, "CONOUT$", "w", stderr);
+		std::cout.clear();
+		std::wcout.clear();
+		fprintf(stdout, "%s\n", APP_NAME_VERSION);
+	}
 }
 
 BOOL CFamiTrackerApp::OnIdle(LONG lCount)		// // //
@@ -916,17 +931,6 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 			return;
 #endif
 		}
-		// Enable console output (TODO)
-		// This is intended for a small helper program that avoids the problem with console on win32 programs,
-		// and should remain undocumented. I'm using it for testing.
-		else if (!_tcsicmp(pszParam, _T("console"))) {
-			FILE *f;
-			AttachConsole(ATTACH_PARENT_PROCESS);
-			errno_t err = freopen_s(&f, "CON", "w", stdout);
-			errno_t err2 = freopen_s(&f, "CON", "w", stderr);
-			fprintf(stderr, "%s\n", APP_NAME_VERSION);		// // //
-			return;
-		}
 		// // !! help (/help)
 		else if (!_tcsicmp(pszParam, _T("help")) || !_tcsicmp(pszParam, _T("h"))) {
 			m_bHelp = true;
@@ -941,12 +945,11 @@ void CFTCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLas
 			helpmessage += "export\t: exports the module to a specified format. the format is determined by the filetype of the output.\n";
 			helpmessage += "\t-export [output file] [optional log file] [DPCM file for BIN export]\n";
 			helpmessage += "\tthe following formats are available:\n";
-			helpmessage += "\t\t.nsf\n\t\t.nes\n\t\t.bin\n\t\t.prg\n\t\t.asm\n\t\t.nsfe\n\t\t.txt\n";
+			helpmessage += "\t\t.nsf\n\t\t.nsfe\n\t\t.nsf2\t\t\t(generates NSF2 formatted file)\n\t\t.nes\n\t\t.bin\n\t\t.bin_aux\t\t(generates auxiliary data)\n\t\t.prg\n\t\t.asm\n\t\t.asm_aux\t\t(generates auxiliary data)\n\t\t.txt\n";
 			helpmessage += "nodump\t: disables the crash dump generation, for cases where these are undesirable\n";
 			helpmessage += "log\t: enables the register logger, available in debug builds only\n";
 			helpmessage += "Press enter to continue . . .";
 			fprintf(stdout, "%s\n", helpmessage.c_str());
-			fclose(cout);
 			return;
 		}
 	}

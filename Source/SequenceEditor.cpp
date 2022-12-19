@@ -140,7 +140,7 @@ void CSequenceEditor::OnPaint()
 LRESULT CSequenceEditor::OnSizeChange(WPARAM wParam, LPARAM lParam)
 {
 	// Number of sequence items has changed
-	m_pSequence->SetItemCount(wParam);
+	m_pSequence->SetItemCount(static_cast<unsigned int>(wParam));
 	m_pGraphEditor->RedrawWindow();
 	RedrawWindow();
 	PostMessage(WM_SEQUENCE_CHANGED, 1);
