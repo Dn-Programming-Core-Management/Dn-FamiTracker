@@ -32,6 +32,10 @@
 				<param name="Local" value="config_appearance.htm">
 				</OBJECT>
 			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Version">
+				<param name="Local" value="config_version.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
 				<param name="Name" value="MIDI">
 				<param name="Local" value="config_midi.htm">
 				</OBJECT>
@@ -47,6 +51,14 @@
 				<param name="Name" value="Mixer">
 				<param name="Local" value="config_mixer.htm">
 				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Emulation">
+				<param name="Local" value="config_emulation.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="GUI">
+				<param name="Local" value="config_gui.htm">
+				</OBJECT>
 		</UL>
 		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="Menus">
@@ -60,6 +72,14 @@
 			<LI> <OBJECT type="text/sitemap">
 				<param name="Name" value="Edit">
 				<param name="Local" value="menu_edit.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Pattern">
+				<param name="Local" value="menu_pattern.htm">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Song">
+				<param name="Local" value="menu_song.htm">
 				</OBJECT>
 			<LI> <OBJECT type="text/sitemap">
 				<param name="Name" value="Module">

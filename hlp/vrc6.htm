@@ -7,39 +7,42 @@
 <BODY>
 
     <span class="topic">Konami VRC6</span><hr />
-    
+
+    <center><p>
+    <img id="img" style="height: 25%; float: center;" src="img/chip_VRC6.png"
+        alt="Picture of the VRC6 chip"></p></center>
+
     <p class="heading">About</p>
 
     <p class="text">
-        The VRC6 chip has two square wave channels and one sawtooth wave 
-        channel. This chip was used in games as Akumajou Densetsu and Madara by 
+        The VRC6 chip has two square wave channels and one sawtooth wave
+        channel. This chip was used in games as Akumajou Densetsu and Madara by
         Konami.</p>
-    
+
     <p class="text"><b>Pulse 1 and 2</b></p>
-    
+
     <p class="text">
-        Produces pulse waves like the internal channels, but have eight different duty 
+        Produces pulse waves like the internal channels, but have eight different duty
         settings and lacks hardware sweep. They can also go deeper in frequency.</p>
-    
+
     <p class="text"><b>Sawtooth</b></p>
-    
+
     <p class="text">
-        Generates a sawtooth wave. This channel has no duty functionalty but 
-        still uses that instrument setting to calculate the volume since the volume 
-        register is larger than 4 bits (0 - 15), one bit from the duty 
-        setting is used to form a 5-bit volume value. A volume level too high causes the wave to wrap around and 
-        will sound distorted (happens when duty = 1 and volume &gt; 5), so the useful volume range is usually 0 - 15 
+        Generates a sawtooth wave. This channel has no duty functionalty but
+        still uses that instrument setting to calculate the volume since the volume
+        register is larger than 4 bits (0 - 15), one bit from the duty
+        setting is used to form a 5-bit volume value. A volume level too high causes the wave to wrap around and
+        will sound distorted (happens when duty = 1 and volume &gt; 5), so the useful volume range is usually 0 - 15
         anyway.</p>
-    
     <hr />
-    
+
     <p class="heading">Instruments</p>
 
     <p class="text">
-        Instruments are specific for VRC6 but behaves much like those for 2A03, except 
-        that 8 duty levels are available and 
+        Instruments are specific for VRC6 but behaves much like those for 2A03, except
+        that 8 duty levels are available and
         has no DPCM tab.</p>
-        
+
     <p class="text">
         See <a href="2a03.htm#Instruments">2A03 instruments</a> for more information.</p>
 

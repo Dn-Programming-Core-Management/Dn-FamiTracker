@@ -7,114 +7,174 @@
 <BODY>
 
     <span class="topic">General configuration</span><hr />
-    
+
     <p class="text">These settings controls general application behaviour.</p>
-    
+
     <p class="heading">General settings</p>
-    
+
     <table border="1" cellpadding="3px" class="default">
         <tr>
             <td class="highlight" style="width: 200px">
                 <b>Setting</b></td>
             <td class="highlight">
                 <b>Description</b></td>
-        </tr>        
+        </tr>
         <tr>
             <td>
                 Wrap cursor</td>
             <td>
-                Cursor wraps when it has reached the end or beginning of the pattern.</td>
+                Wrap around the cursor when reaching top or bottom in the
+                pattern editor.</td>
         </tr>
         <tr>
             <td>
                 Wrap across frames</td>
             <td>
-                The cursor in the pattern window can move across frames.</td>
+                Move to next or previous frame when reaching top or bottom
+                in the pattern editor.</td>
         </tr>
         <tr>
             <td>
                 Free cursor edit</td>
             <td>
-                Unlocks the cursor from the middle row.</td>
+                Unlock the cursor from the center of the pattern editor.</td>
         </tr>
         <tr>
             <td>
                 Preview wave files</td>
             <td>
-                Preview wave files when importing to DPCM.</td>
+                Preview wave and DPCM files in the open file dialog when
+                loading samples to the module.</td>
         </tr>
         <tr>
             <td>
                 Key repeat</td>
             <td>
-                Enable key repetition. The same setting as in the control panel.</td>
+                Enable key repetition in the pattern editor.</td>
         </tr>
         <tr>
             <td>
                 Show row numbers in hex</td>
             <td>
-                Display row numbers in hexadecimal.</td>
+                Display row numbers and the frame count on the status bar
+                in hexadecimal.</td>
         </tr>
         <tr>
             <td>
                 Preview next/previous frame</td>
             <td>
-                Preview the next and prevous frame in the pattern editor.</td>
+                Preview next and previous frames in the pattern editor.</td>
         </tr>
         <tr>
             <td>
                 Don't reset DPCM on note stop</td>
             <td>
-                Don&#39;t reset the DPCM channel when stopping the channel. Can remove 
-                annoying popping 
-                sounds when editing.</td>
+                Prevent resetting the DPCM channel after previewing any
+                DPCM sample.</td>
         </tr>
         <tr>
             <td>
                 Ignore step when moving</td>
             <td>
-                Ignore the step setting when moving the cursor, only use it when inserting 
-                notes.</td>
+                Ignore the pattern step setting when moving the cursor,
+                only use it when inserting notes.</td>
         </tr>
         <tr>
             <td>
-                Delete-key will pull up rows</td>
+                Delete-key pulls up rows</td>
             <td>
-                Delete key is pulling up rows.</td>
+                Make delete key pull up rows rather than only deleting
+                the value, as if by Shift+Delete.</td>
         </tr>
         <tr>
             <td>
-                Backup files</td>
+                Backup unmodified files</td>
             <td>
-                Creates backups when saving files.</td>
+                Create backup copy of unmodified file, when you open
+                and save a module.</td>
         </tr>
         <tr>
             <td>
                 Single instance</td>
             <td>
-                Prevents opening multiple instances of famitracker. You must restart the 
-                program for this setting to take effect!</td>
+                Only allow one single instance of the Dn-FamiTracker
+                application. You must restart the program for this setting
+                to take effect!</td>
         </tr>
         <tr>
             <td>
                 Preview full row</td>
             <td>
-                Plays the complete row when inserting or previewing notes, 
-                instead of just the selected channel.</td>
+                Preview all channels when inserting notes in the pattern
+                editor.</td>
         </tr>
         <tr>
             <td>
                 Don't select on double-click</td>
             <td>
-                Disable whole channel selection when double clicking in
+                Do not select the whole channel when double-clicking in
                 the pattern editor.</td>
         </tr>
+        <tr>
+            <td>
+                Warp pattern values</td>
+            <td>
+                When using Shift + Mouse Wheel to modify a pattern value,
+                allow the parameter to wrap around its limit values.</td>
+        </tr>
+        <tr>
+            <td>
+                Cut sub-volume</td>
+            <td>
+                Always silent volume values below 1 due to Axy or 7xy effects.</td>
+        </tr>
+        <tr>
+            <td>
+                Use old FDS volume table</td>
+            <td>
+                Use the existing volume table for the FDS channel which has
+                higher precision than in exported NSFs.</td>
+        </tr>
+        <tr>
+            <td>
+                Retrieve channel state</td>
+            <td>
+                Reconstruct the current channel's state from previous
+                frames upon playing (except when playing one row).</td>
+        </tr>
+        <tr>
+            <td>
+                Overflow paste mode</td>
+            <td>
+                Move pasted pattern data outside the rows of the current
+                frame to subsequent frames.</td>
+        </tr>
+        <tr>
+            <td>
+                Show skipped rows</td>
+            <td>
+                Display rows that are truncated by Bxx, Cxx, or Dxx effects.</td>
+        </tr>
+        <tr>
+            <td>
+                Hexadecimal keypad</td>
+            <td>
+                Use the extra keys on the keypad as hexadecimal digits in
+                the pattern editor.</td>
+        </tr>
+        <tr>
+            <td>
+                Check version on startup</td>
+            <td>
+                Check for new Dn-FamiTracker versions on startup if an internet
+                connection could be established.</td>
+        </tr>
     </table>
-    
+
     <br />
-    
-    <p class="heading">Tracker edit style</p>
-    
+
+    <p class="heading">Pattern edit style</p>
+
     <table border="1" cellpadding="3px" class="default">
         <tr>
             <td class="highlight" style="width: 200px">
@@ -132,29 +192,35 @@
             <td>
                 Modplug</td>
             <td>
-                Stays on the same line after inserting instrument / effect number, also 
+                Stays on the same line after inserting instrument / effect number, also
                 affects keyboard layout.</td>
         </tr>
         <tr>
             <td>
                 Impulse Tracker</td>
             <td>
-                Impulse tracker style when inserting instrument / effect numbers. Doesn&#39;t 
+                Impulse tracker style when inserting instrument / effect numbers. Doesn&#39;t
                 release instruments on key up actions. Changes behaviour of home/end keys.</td>
         </tr>
+        <tr>
+            <td>
+                FastTracker II (JP106)</td>
+            <td>
+                Same as FastTracker II but with modifications to get correct layout on JP106 keyboards.</td>
+        </tr>
     </table>
-    
+
     <br />
-    
+
     <p class="heading">Keys</p>
-    
+
     <table border="1" cellpadding="3px" class="default">
         <tr>
             <td class="highlight" style="width: 200px">
                 <b>Key</b></td>
             <td class="highlight">
                 <b>Description</b></td>
-        </tr>        
+        </tr>
         <tr>
             <td>
                 Note cut</td>
@@ -179,8 +245,14 @@
             <td>
                 Inserts a note release command in the pattern editor.</td>
         </tr>
+        <tr>
+            <td>
+                Echo buffer</td>
+            <td>
+                Inserts an echo buffer note in the pattern editor.</td>
+        </tr>
     </table>
-    
+
     <br />
     <hr />
     <span class="footer">Back to <a href="configuration.htm">configuration</a> &middot; <a href="interface.htm">interface</a> &middot; <a href="main_index.htm">main index</a></span>
