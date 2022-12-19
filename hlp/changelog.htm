@@ -12,6 +12,7 @@
 			}
 		</style>
 	</HEAD>
+
 	<BODY>
 		<span class="topic">Change log</span><HR>
 		<br>
@@ -20,7 +21,7 @@
 			<td>
 				<p class="text">
 					<b>Note:</b>
-					This change log is updated manually. To ensure the latest updates, visit
+					This change log is updated manually. To view pull request/issue tracker links, and to ensure the latest updates, visit
 					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/releases" target="new">
 					https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/releases</a>
 				</p>
@@ -61,70 +62,173 @@
 <!-- Add new changes here -->
 
 <!-- all data below is Dn-FT changes-->
-<br>
-	<span class="heading">Dn-FamiTracker Version 0.4.0.1</span>
-		<ul class="changelog">
-			<li>Patch fixes:</li>
-			<ul class="changelog">
-				<li>Fix internal version numbering (@Gumball2415)</li>
-			</ul>
-		</ul>
-<br>
-	<span class="heading">Dn-FamiTracker Version 0.4.0.0</span>
+	<span class="heading">Dn-FamiTracker Version 0.5.0.0</span>
 		<ul class="changelog">
 			<li>Important Changes:</li>
 			<ul class="changelog">
-				<li>New file extension format for modules: *.dnm (@Gumball2415
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/71" target="new">#71</a>)</li>
-				<li>New file extension format for instruments: *.dni (@Gumball2415
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/71" target="new">#71</a>)</li>
-				<li>Support for Windows XP has been dropped (@Gumball2415, @nyanpasu64, @N-SPC700
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/issues/82" target="new">#82</a>,
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/84" target="new">#84</a>)</li>
+				<li>Dn-FamiTracker modules are no longer backwards compatible with "vanilla" and 0CC</li>
+				<li>Dn-FamiTracker Demo Compo 1 modules are now added</li>
+				<li>N163 emulation core is replaced with Mesen's</li>
+				<li>New effects: =xx, and Nxy</li>
+				<li>Exports are now updated (text, NSF/NSFe, binary, asm)</li>
+				<li>NSF2 export added</li>
+				<li>External OPLL option (export only available for NSFe/NSF2)</li>
+				<li>Per-module expansion mixing (export only available for NSFe/NSF2)</li>
+				<li>Hardware-based module expansion mixing (export only available for NSFe/NSF2)</li>
+				<li>DirectSound backend now replaced with WASAPI</li>
 			</ul>
 			<li>Additions:</li>
 			<ul class="changelog">
-				<li>Add new D.P.C.M. organization info, links and metadata (@Gumball2415
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/71" target="new">#71</a>)</li>
-				<li>New instrument names are blank on creation (@Gumball2415)</li>
-				<li>Add empty instrument in newly created modules (@Gumball2415, @nyanpasu64, @N-SPC700 
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/issues/77" target="new">#77</a>)</li>
+				<li>Add FDS waveform view (@EulousDev #113)</li>
+				<li>Add invalid note indicator (@EulousDev #119)</li>
+				<li>Add Dn-FT Demo Compo 1 Modules (@Gumball2415 #153)</li>
+				<li>Target volume slide effect (Nxy) (@ipidev #109)</li>
+				<li>Implement Kxx and =xx in NSF driver (@Gumball2415 nyanpasu64/j0CC-FamiTracker#122, #156)</li>
+				<li>Add supplemental NSF data on bin/asm export (NSF header, config, period tables and vibrato tables) (@Gumball2415 #156)</li>
+				<li>Add mixe chunk support and per-module device mixing (@Gumball2415 #68, #156)</li>
+				<li>Add hardware-based expansion audio mixing (@Gumball2415 #156)</li>
+				<li>Implement external OPLL patchset editing (@Gumball2415 #68, #156)</li>
+				<li>Implement VRC7 NSFe chunk (@Gumball2415 #156)</li>
 			</ul>
 			<li>Improvements:</li>
 			<ul class="changelog">
-				<li>Adjustable frame editor channel view limit (@Gumball2415
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/72" target="new">#72</a>)</li>
-				<li>Fix frame editor channel view truncation (@Gumball2415
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/72" target="new">#72</a>)</li>
+				<li>Register view improvements (@Gumball2415 @nyanpasu64 @EulousDev #118, #120)</li>
+				<li>Replace N163 audio core with Mesen (@Gumball2415 nyanpasu64/j0CC-FamiTracker#151, #111, #138, #152)</li>
+				<li>Refactor FDS auto-FM overflow fix (@Gumball2415 #80, #65, #nyanpasu64/j0CC-FamiTracker#133, #156)</li>
+				<li>Refactor Pxx overflow fix (@Gumball2415 #80, #156)</li>
+				<li>Refactor Gxx overflow fix (@Gumball2415 #80, nyanpasu64/j0CC-FamiTracker#129, #156)</li>
+				<li>Reset FDS modulator phase on new note (@Gumball2415 #156)</li>
+				<li>Refactor period table calculation (@Gumball2415 #156)</li>
+				<li>Update text import/export parity (@Gumball2415 #161, #162, #156)<li>
 			</ul>
 			<li>Bug fixes:</li>
 			<ul class="changelog">
-				<li>Fix Gxx delay command overflow in NSF driver (@Gumball2415, @smbhacks
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/80" target="new">#80</a>)</li>
-				<li>Fix FDS automatic modulation overflow in NSF driver (@Gumball2415, @galap-1 
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/issues/65" target="new">#65</a>,
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/80" target="new">#80</a>)</li>
-				<li>Fix period calculation overflow in NSF driver (@Gumball2415, @smbhacks #80)</li>
-				<li>Reset VRC7 emulator core on channel handler reset (@Gumball2415, @TakuikaNinja
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/issues/79" target="new">#79</a>)</li>
-				<li>Flush file to disk before renaming to prevent module corruption (@Gumball2415, @nyanpasu64
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/issues/81" target="new">#81</a>)</li>
-				<li>Fix commandline parameter processing when flags are used (@Gumball2415)</li>
+				<li>Prevent ctrl/shift+wheel edit outside edit mode (copyrat90 #87)</li>
+				<li>Fix random crash when exporting channels as WAV (@nyanpasu64 #92, #93)</li>
+				<li>Fix module reload on config confirmation (@Gumball2415 #89, #97)</li>
+				<li>Fix N163 volume meter level (@EulousDev #99, #103)</li>
+				<li>Fix VRC7 data race and use-after-free when reloading/closing modules (@nyanpasu64 #106)</li>
+				<li>Update source code copyright declaration and GPL 2.0+ notice (@Gumball2415 #116)</li>
+				<li>Fix wave export dialog refresh rate to GUI rate (@Gumball2415 #108)</li>
+				<li>Fix high-res spectrum visualizer at small buffer sizes (@nyanpasu64 #126)</li>
+				<li>Fix use-after-free race condition in visualizer (@nyanpasu64 #130)</li>
+				<li>Fix crash when starting program with pattern editor off-screen (@nyanpasu64 #128, #129)</li>
+				<li>Fix periodic noise showing cents when muted (@Gumball2415 #139)</li>
+				<li>Stop rejecting valid files using features missing from vanilla FT (@nyanpasu64 #150)</li>
+				<li>Fix N163 instrument pointer data overflow (@Gumball2415 #156)</li>
+				<li>Fix NSFe export from using incorrect DATA chunk size (@Gumball2415 #110, nyanpasu64/j0CC-FamiTracker#5, #156)</li>
+				<li>Fix 5B Wxx being overwritten by blank duty macros (@Gumball2415 #160, nyanpasu64/j0CC-FamiTracker#105, #156)</li>
+				<li>Fix N163 multiplex state desync (@Gumball2415 #163, #156)</li>
+				<li>Dn-FamiTracker modules are no longer backwards compatible with "vanilla" and 0CC (@Gumball2415 #156)</li>
+				<li>FamiTracker 0.5.0 beta modules no longer conflict with Dn-FamiTracker 0.5.0.0 modules (@Gumball2415 #156)</li>
 			</ul>
 			<li>Internal:</li>
 			<ul class="changelog">
-				<li>Fix CString::Format() memory corruption bug on Wine (@nyanpasu64
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/56" target="new">#56</a>)</li>
-				<li>Fix uninitialized echo buffer values (@nyanpasu64
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/56" target="new">#56</a>)</li>
-				<li>Clarify nsfplay value_or() (@nyanpasu64 #56)</li>
-				<li>Clarify integer widths in CBookmark::Distance() (@nyanpasu64
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/56" target="new">#56</a>)</li>
-				<li>Fix broken Open dialog after launching Dn by opening a file (@nyanpasu64
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/issues/74" target="new">#74</a>,
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/76" target="new">#76</a>)</li>
-				<li>Fix out-of-bounds read in oscilloscope (@nyanpasu64
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/85" target="new">#85</a>)</li>
+				<li>Revise README (@Gumball2415 #114)</li>
+				<li>Replace DirectSound backend with WASAPI (@nyanpasu64 #124)</li>
+				<li>Remove unused files, add headers to CMakeLists.txt (@nyanpasu64 #142)</li>
+				<li>Eliminate audio thread blocking on GUI messages and main thread (@nyanpasu64 #134, #137)</li>
+				<li>Add WASAPI resampling so all sampling rates work (@nyanpasu64 @Gumball2415 #143)</li>
+				<li>Fix crash when activating non-initial song then opening document with expansion chip(s) (@nyanpasu64 #147, #148)</li>
+				<li>Fix mostly-theoretical data race when popping from SPSC queues (@nyanpasu64 #149)</li>
+				<li>Properly terminate stuck audio thread when closing the program (@nyanpasu64 #155)</li>
+			</ul>
+		</ul>
+<br>
+	<span class="heading">Dn-FamiTracker Version 0.4.0.1</span>
+		
+				<ul class="changelog">
+		<li>Important Changes:</li>
+			<ul class="changelog">
+				<li>Fix internal version numbering
+				(<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>)
+			</ul>
+		</ul>
+
+	<span class="heading">Dn-FamiTracker Version 0.4.0.0</span>
+
+		<ul class="changelog">
+			<li>Important Changes:</li>
+			<ul class="changelog">
+				<li>New file extension format for modules: *.dnm
+				(<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>
+				<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/71" target="new">#71</a>)</li>
+				<li>New file extension format for instruments: *.dni
+				(<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>
+				<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/71" target="new">#71</a>)</li>
+				<li>Support for Windows XP has been dropped
+				(<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>,
+				<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>, @N-SPC700
+				<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/issues/82" target="new">#82</a>,
+				<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/84" target="new">#84</a>)</li>
+			</ul>
+			<li>Additions:</li>
+			<ul class="changelog">
+				<li>Add new D.P.C.M. organization info, links and metadata
+				(<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>
+				<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/71" target="new">#71</a>)</li>
+				<li>New instrument names are blank on creation
+				(<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>)</li>
+				<li>Add empty instrument in newly created modules
+				(<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>, <a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>, @N-SPC700 
+				<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/issues/77" target="new">#77</a>)</li>
+			</ul>
+			<li>Improvements:</li>
+			<ul class="changelog">
+				<li>Adjustable frame editor channel view limit
+				(<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>
+				<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/72" target="new">#72</a>)</li>
+				<li>Fix frame editor channel view truncation
+				(<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>
+				<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/72" target="new">#72</a>)</li>
+			</ul>
+			<li>Bug fixes:</li>
+			<ul class="changelog">
+				<li>Fix Gxx delay command overflow in NSF driver
+				(<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>,
+				<a href="https://github.com/smbhacks" target="new">@smbhacks</a>
+				<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/80" target="new">#80</a>)</li>
+				<li>Fix FDS automatic modulation overflow in NSF driver
+				(<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>,
+				<a href="https://github.com/galap-1 " target="new">@galap-1 </a>
+				<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/issues/65" target="new">#65</a>,
+				<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/80" target="new">#80</a>)</li>
+				<li>Fix period calculation overflow in NSF driver
+				(<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>,
+				<a href="https://github.com/smbhacks" target="new">@smbhacks</a>
+				#80)</li>
+				<li>Reset VRC7 emulator core on channel handler reset
+				(<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>,
+				<a href="https://github.com/TakuikaNinja" target="new">@TakuikaNinja</a>
+				<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/issues/79" target="new">#79</a>)</li>
+				<li>Flush file to disk before renaming to prevent module corruption
+				(<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>,
+				<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+				<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/issues/81" target="new">#81</a>)</li>
+				<li>Fix commandline parameter processing when flags are used
+				(<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>)</li>
+			</ul>
+			<li>Internal:</li>
+			<ul class="changelog">
+				<li>Fix CString::Format() memory corruption bug on Wine
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/56" target="new">#56</a>)</li>
+				<li>Fix uninitialized echo buffer values
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/56" target="new">#56</a>)</li>
+				<li>Clarify nsfplay value_or()
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/56" target="new">#56</a>)</li>
+				<li>Clarify integer widths in CBookmark::Distance()
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/56" target="new">#56</a>)</li>
+				<li>Fix broken Open dialog after launching Dn by opening a file
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/issues/74" target="new">#74</a>,
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/76" target="new">#76</a>)</li>
+				<li>Fix out-of-bounds read in oscilloscope
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/85" target="new">#85</a>)</li>
 			</ul>
 		</ul>
 <br>
@@ -132,38 +236,46 @@
 		<ul class="changelog">
 			<li>Important Changes:</li>
 			<ul class="changelog">
-				<li>N163 and 5B expansion audio mixing has been restored to 0.2.1 levels (@nyanpasu64
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/66" target="new">#66</a>)</li>
-				<li>Adjusted APU 2 levels to match blargg's original formula (@Gumball2415
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/69" target="new">#69</a>)</li>
+				<li>N163 and 5B expansion audio mixing has been restored to 0.2.1 levels
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/66" target="new">#66</a>)</li>
+				<li>Adjusted APU 2 levels to match blargg's original formula
+					(<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/69" target="new">#69</a>)</li>
 			</ul>
 			<li>Additions:</li>
 			<ul class="changelog">
-				<li>Added a textbox for patch editing within the VRC7 instrument editor (@Gumball2415
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/60" target="new">#60</a>)</li>
+				<li>Added a textbox for patch editing within the VRC7 instrument editor
+					(<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/60" target="new">#60</a>)</li>
 			</ul>
 			<li>Improvements:</li>
 			<ul class="changelog">
-				<li>Edit NSF export format to allow adding more effects (@Gumball2415, @nyanpasu64
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/46" target="new">#46</a>)</li>
+				<li>Edit NSF export format to allow adding more effects
+					(<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>,
+					<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/46" target="new">#46</a>)</li>
 			</ul>
 			<li>Bug fixes:</li>
 			<ul class="changelog">
-				<li>Fix VRC7 hardware patch bank presets not reading properly (@Gumball2415
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/60" target="new">#60</a>)</li>
-				<li>Fix crash when increasing engine speed with VRC7 enabled (@nyanpasu64
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/62" target="new">#62</a>)</li>
-				<li>Fix N163 and 5B mixing levels which were swapped in 0.3.0 (causing N163 to be louder and 5B to be quieter) (@nyanpasu64
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/66" target="new">#66</a>)</li>
+				<li>Fix VRC7 hardware patch bank presets not reading properly
+					(<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/60" target="new">#60</a>)</li>
+				<li>Fix crash when increasing engine speed with VRC7 enabled
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/62" target="new">#62</a>)</li>
+				<li>Fix N163 and 5B mixing levels which were swapped in 0.3.0 (causing N163 to be louder and 5B to be quieter)
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/66" target="new">#66</a>)</li>
 			</ul>
 			<li>Internal:</li>
 			<ul class="changelog">
-				<li>Update VRC7 emulator core (emu2413) to v1.5.6 (@Gumball2415
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/59" target="new">#59</a>)</li>
-				<li>Port CVRC7 to CSoundChip2 (@Gumball2415
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/59" target="new">#59</a>)</li>
-				<li>Refactor VRC7 hardware patch bank swapping (@Gumball2415
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/59" target="new">#59</a>)</li>
+				<li>Update VRC7 emulator core (emu2413) to v1.5.6 (<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>
+				<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/59" target="new">#59</a>)</li>
+				<li>Port CVRC7 to CSoundChip2 (<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>
+				<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/59" target="new">#59</a>)</li>
+				<li>Refactor VRC7 hardware patch bank swapping (<a href="https://github.com/Gumball2415" target="new">@Gumball2415</a>
+				<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/59" target="new">#59</a>)</li>
 			</ul>
 		</ul>
 <br>
@@ -172,73 +284,89 @@
 			<li>Important Changes:</li>
 			<ul class="changelog">
 				<li>Reenabled version checking, which can also be accesed in the Help popup</li>
-				<li>Replaced FDS emulation core with Mesen's version (@nyanpasu64
-					<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/32" target="new">#32</a>)</li>
-				<li>Replaced 2A03 emulation core with NSFPlay's version (@nyanpasu64
-					<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/32" target="new">#32</a>)</li>
+				<li>Replaced FDS emulation core with Mesen's version
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/32" target="new">#32</a>)</li>
+				<li>Replaced 2A03 emulation core with NSFPlay's version
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/32" target="new">#32</a>)</li>
 				<li>Added back the help manual, with additional updated info contributed by:</li>
 				<ul class="changelog">
-					<li>Blue Mario for Sunsoft 5B information (@N-SPC700
-					<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/12" target="new">#12</a>)</li>
+					<li>Blue Mario for Sunsoft 5B information
+						(<a href="https://github.com/N-SPC700" target="new">@N-SPC700/a>
+						<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/12" target="new">#12</a>)</li>
 					<li>Compass Man for providing updated screenshots
-					(<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/12" target="new">#12</a>)</li>
+						(<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/12" target="new">#12</a>)</li>
 				</ul>
 			</ul>
 			<li>Additions:</li>
 			<ul class="changelog">
-				<li>Added FastTracker 2 (JP106) keymap (@sdhizumi
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/8" target="new">#8</a>)</li>
+				<li>Added FastTracker 2 (JP106) keymap
+					(<a href="https://github.com/sdhizumi" target="new">@sdhizumi</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/8" target="new">#8</a>)</li>
 				<li>Adjustable idle refresh rate in configuration</li>
 				<li>Emulation tab in Configuration, which currently includes:</li>
 				<ul class="changelog">
 					<li>Toggleable N163 multiplexing</li>
 					<li>Swappable VRC7 hardware patches</li>
-					<li>Adjustable FDS cutoff filter (@nyanpasu64
-					<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/42" target="new">#42</a>)</li>
+					<li>Adjustable FDS cutoff filter
+						(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+						<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/42" target="new">#42</a>)</li>
 				</ul>
-				<li>Added the Kxx multiply frequency effect, not currently supported in NSF export (@nyanpasu64
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/16" target="new">#16</a>)</li>
+				<li>Added the Kxx multiply frequency effect, not currently supported in NSF export
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/16" target="new">#16</a>)</li>
 				<li>Adjustable channel view in frame editor</li>
 			</ul>
 			<li>Improvements:</li>
 			<ul class="changelog">
-				<li>Enable DPI scaling for pattern editor (@nyanpasu
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/5" target="new">#5</a>)</li>
+				<li>Enable DPI scaling for pattern editor
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/5" target="new">#5</a>)</li>
 				<li>Updated About information</li>
 				<li>Export wave shortcut (Ctrl + Shift + E)</li>
 			</ul>
 			<li>Bug fixes:</li>
 			<ul class="changelog">
-				<li>Fixed DC drifting (when no highpass is applied) due to rounding errors in Blip_Buffer calculation (@nyanpasu64
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/27" target="new">#27</a>)</li>
-				<li>Fixed N163 detuning when multiplexing is disabled (@nyanpasu64
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/31" target="new">#31</a>)</li>
-				<li>Fixed undoing "delete frame" adding a new frame (<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/43" target="new">#43</a>)</li>
+				<li>Fixed DC drifting (when no highpass is applied) due to rounding errors in Blip_Buffer calculation
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/27" target="new">#27</a>)</li>
+				<li>Fixed N163 detuning when multiplexing is disabled
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/31" target="new">#31</a>)</li>
+				<li>Fixed undoing "delete frame" adding a new frame
+					(<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/43" target="new">#43</a>)</li>
 				<li>Fixed VRC7 note cuts being inconsistent with in-tracker note cuts (@Kouzeru 
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/47" target="new">#47</a>)</li>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/47" target="new">#47</a>)</li>
 			</ul>
 			<li>Internal:</li>
 			<ul class="changelog">
-				<li>Fix CMake MFC detection and link flag conflicts (@nyanpasu
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/6" target="new">#6</a>)</li>
-				<li>Removed more occurences of old program name and renamed more files to Dn (@nyanpasu
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/7" target="new">#7</a>)</li>
+				<li>Fix CMake MFC detection and link flag conflicts
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/6" target="new">#6</a>)</li>
+				<li>Removed more occurences of old program name and renamed more files to Dn
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/7" target="new">#7</a>)</li>
 				<li>Replaced the application icon (design by Compass Man)</li>
 				<li>Enabled x64 build compiling in Visual Studio</li>
 				<li>Updated the VRC7 emulation core</li>
 				<li>Include changelogs of vanilla, j0CC, and Dn in changelog.txt</li>
 				<li>Moved resource.h and Dn-FamiTracker.rc back to root folder due to HTMLHelp compilation</li>
-				<li>Corrected paths on case-sensitive filesystems (@nyanpasu64
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/18" target="new">#18</a>)</li>
-				<li>Removed header files from CMake (@nyanpasu
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/26" target="new">#26</a>)</li>
-				<li>Replaced Blip_Buffer with an improved fork (@nyanpasu64
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/27" target="new">#27</a>)</li>
-				<li>Added emulation clock-skipping until next level change to save CPU, currently implemented
-				in 2A03 and FDS emulator cores (@nyanpasu64
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/32" target="new">#32</a>)</li>
-				<li>Fixed file extension association in Dn-FamiTracker.reg (@Raphaelo24
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/36" target="new">#36</a>)</li>
+				<li>Corrected paths on case-sensitive filesystems
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/18" target="new">#18</a>)</li>
+				<li>Removed header files from CMake
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/26" target="new">#26</a>)</li>
+				<li>Replaced Blip_Buffer with an improved fork
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/27" target="new">#27</a>)</li>
+				<li>Added emulation clock-skipping until next level change to save CPU, currently implementedin 2A03 and FDS emulator cores
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/32" target="new">#32</a>)</li>
+				<li>Fixed file extension association in Dn-FamiTracker.reg
+					(<a href="https://github.com/Raphaelo24" target="new">@Raphaelo24</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/36" target="new">#36</a>)</li>
 			</ul>
 		</ul>
 <br>
@@ -267,7 +395,7 @@
 			<li>Additions:</li>
 			<ul class="changelog">
 				<li>Multiple .wav per-channel export
-				(<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/2" target="new">#2</a>)</li>
+					(<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/2" target="new">#2</a>)</li>
 				<li>Adaptive register state refresh rate(≈60fps during playback, otherwise 10fps)</li>
 			</ul>
 			<li>Bug fixes:</li>
@@ -278,8 +406,9 @@
 			<li>Internal:</li>
 			<ul class="changelog">
 				<li>Changed most of the internal names from j0CC-FamiTracker to Dn-FamiTracker</li>
-				<li>Use precompiled headers in CMake builds (@nyanpasu64
-				<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/3" target="new">#3</a>)</li>
+				<li>Use precompiled headers in CMake builds
+					(<a href="https://github.com/nyanpasu64" target="new">@nyanpasu64</a>
+					<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/3" target="new">#3</a>)</li>
 			</ul>
 		</ul>
 <br>
@@ -288,7 +417,7 @@
 			<li>Additions:</li>
 			<ul class="changelog">
 				<li>DPCM sample bit order reversal (located in the DPCM sample editor)
-				(<a href="https://github.com/Gumball2415/Dn-FamiTracker/pull/1" target="new">#1</a>)</li>
+					(<a href="https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/pull/1" target="new">#1</a>)</li>
 			</ul>
 		</ul>
 <br>
@@ -301,28 +430,28 @@
 			<li>Bug fixes:</li>
 			<ul class="changelog">
 				<li>Fix 5B instrument recording
-				(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/138" target="new">#138</a>,
-				@Teuthida255)</li>
+					(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/138" target="new">#138</a>,
+					<a href="https://github.com/Teuthdia255" target="new">@Teuthida255</a>)</li>
 				<li>Remove popup message box when enabling linear pitch mode
-				(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/144" target="new">#144</a>)</li>
+					(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/144" target="new">#144</a>)</li>
 				<li>Fix memory corruption on Wine during find-and-replace
-				(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/164" target="new">#164</a>)</li>
+					(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/164" target="new">#164</a>)</li>
 				<li>Fix out-of-bounds read (garbage data or crashes) with N163 Vxx effects over 0x80
-				(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/165" target="new">#165</a>)</li>
+					(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/165" target="new">#165</a>)</li>
 			</ul>
 			<li>Internal:</li>
 			<ul class="changelog">
 				<li>Re-add ability to disable "retrieve channel state"
-				(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/146" target="new">#146</a>)</li>
+					(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/146" target="new">#146</a>)</li>
 				<li>Removed 'Transpose Song' instrument check
-				(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/147" target="new">#147</a>,
-				@Teuthida255)</li>
+					(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/147" target="new">#147</a>,
+					<a href="https://github.com/Teuthida255" target="new">@Teuthida255</a>)</li>
 				<li>Refactor sound output code (DirectSound code)
-				(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/143" target="new">#143</a>)</li>
+					(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/143" target="new">#143</a>)</li>
 				<li>Remove build dependency on DXSDK and dxguid.lib
-				(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/160" target="new">#160</a>)</li>
+					(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/160" target="new">#160</a>)</li>
 				<li>Enable 64-bit builds
-				(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/154" target="new">#154</a>)</li>
+					(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/154" target="new">#154</a>)</li>
 			</ul>
 		</ul>
 <br>
@@ -331,13 +460,13 @@
 			<li>Bug fixes:</li>
 			<ul class="changelog">
 				<li>Fix crash when pasting large selections near the rightmost channel
-				(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/137" target="new">#137</a>)</li>
+					(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/137" target="new">#137</a>)</li>
 			</ul>
 			<li>Internal:</li>
 			<ul class="changelog">
 				<li>Update VRC7 preset patches
-				(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/135" target="new">#135</a>)
-				(by @Teuthida255)</li>
+					(<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/135" target="new">#135</a>)
+					(by <a href="https://github.com/Teuthida255" target="new">@Teuthida255</a>)</li>
 			</ul>
 		</ul>
 <br>
@@ -472,8 +601,9 @@
 			</ul>
 			<li>Bug fixes:</li>
 			<ul class="changelog">
-				<li>Fixed <a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/10" target="new">#10</a>
-				and <a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/11" target="new">#11</a> for Wine users.</li>
+				<li>Fixed
+					<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/10" target="new">#10</a> and
+					<a href="https://github.com/nyanpasu64/j0CC-FamiTracker/issues/11" target="new">#11</a> for Wine users.</li>
 			</ul>
 		</ul>
 <br>
@@ -497,7 +627,7 @@
 			<li>Enhancements:</li>
 			<ul class="changelog">
 				<li>N163 wave editor's copy/paste buttons copy all waves at once, separated/terminated with semicolons. This allows for highly efficient Audacity-N163 import workflows
-				<br>(see <a href="https://gist.github.com/nyanpasu64/424110eab84dad50cf1a6646a72b2627" target="new">https://gist.github.com/nyanpasu64/424110eab84dad50cf1a6646a72b2627</a>).</li>
+					<br>(see <a href="https://gist.github.com/nyanpasu64/424110eab84dad50cf1a6646a72b2627" target="new">https://gist.github.com/nyanpasu64/424110eab84dad50cf1a6646a72b2627</a>).</li>
 				<li>Hi-res FFT spectrogram (like master).</li>
 			</ul>
 		</ul>

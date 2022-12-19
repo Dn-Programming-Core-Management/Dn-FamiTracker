@@ -1,46 +1,66 @@
 <HTML>
 <HEAD>
 <META NAME="GENERATOR" Content="Microsoft Visual Studio 8.0">
-<TIT2LE></TITLE>
+<TITLE></TITLE>
     <link href="style.css" rel="stylesheet" type="text/css" />
 </HEAD>
 <BODY>
     <span class="topic">Module properties</span><hr />
+
+    <p class="text">
+        The module properties is used to manage songs, configure expansion chip,
+        vibrato style, and pitch mode.</p>
+
+    <p>
+        <IMG id="IMG1" src="img/properties.png" alt="Screenshot of module properties"></p>
+
+    <p class="text">
+        The song editor is used to manage multiple songs in a single module. The same
+        instrument set will be used for all songs, and up to 64 songs are supported in a
+        single file.</p>
+
+    <p class="text">
+        It is also possible to import module files as songs. Including
+        instruments is optional: if you choose to then the new instruments and sequences will be
+        added to the current project (it will not look for identical existing
+        instruments). If you choose not then only pattern data will be included, this is
+        used to combine multiple files where the same instrument set is
+        used.</p>
+
+    <p class="text">
+        The expansion chip box is used to enable
+        <a href="sound_overview.htm">expansion chips</a>
+        for the module. Any combination of expansion chips may be enabled.</p>
+
+    <p class="text">
+        The channel count selector is only available for <a href="n163.htm">Namco 163</a>.</p>
+
+    <p class="text">
+        The Device mix offset box is used to adjust a module's
+        <a href="sound_overview.htm">expansion chip</a>
+        mixing level. They are correspondingly enabled by the current expansion chips used.</p>
+    
     
     <p class="text">
-        Module properties is used to manage songs and configure expansion chip and 
-        vibrato style.</p>
-        
-    <p>
-        <IMG id="IMG1" src="img/properties.PNG" alt=""></p>
-        
+        The Hardware-based mixing checkbox toggles between legacy expansion mixing, and
+        hardware-based expansion mixing, whose measurements are based on the
+        <a href="https://forums.nesdev.org/viewtopic.php?t=17741">audio mixing survey</a>.</p>
+
     <p class="text">
-        The song editor is used to manage multiple songs in a single module. The same 
-        instrument set will be used for all songs, and up to 64 songs are supported in a 
-        single file.</p>
-        
+        The OPLL settings box is used to modify a module's current OPLL patch set when
+        VRC7 expansion audio and the "Use external OPLL" checkbox is selected. This is intended
+        for modules which use an external OPLL in place of VRC7 registers, such as TNS-HFC.</p>
+
     <p class="text">
-        It is also possible to import FTM files as songs. Including 
-        instruments is optional: if you choose to then the new instruments and sequences will be 
-        added to the current project (it will not look for identical existing 
-        instruments). If you choose not then only pattern data will be included, this is 
-        used to combine multiple files where the same instrument set is 
-        used.</p>
-        
+        As of vanilla version 0.3.5, a new vibrato style is available. The new
+        style is bending both up and down, as opposed to down only with the old style.
+        The new style is default for new songs and the old style will be default for files created with earler versions of
+        vanilla Famitracker. Here it's possible to change the style as you wish.</p>
+
     <p class="text">
-        The expansion chip box is used to enable an 
-        <a href="sound_overview.htm">expansion chip</a> 
-        for the module. Only one extra chip may be enabled at the moment.</p>
-        
-    <p class="text">
-        The channel count selector is only available for <a href="n163.htm">Namco 163</a>, where the number of 
-        channels affects the sound quality.</p>
-        
-    <p class="text">
-        As of version 0.3.5, a new vibrato style is available. The new 
-        style is bending both up and down, as opposed to down only with the old style. 
-        The new style is default for new songs and the old style will be default for files created with earler versions of 
-        famitracker. Here it&#39;s possible to change the style as you wish.</p>
+        As of vanilla version 0.4.0, linear pitch was added but not available.
+        It is implemented in 0CC version 0.3.14.2. Linear pitch treats all pitch effects
+        on melodic channels uniformly by subdividing each semitone into 32 equal parts.</p>
 
     <hr />
     <span class="footer">Back to <a href="interface.htm">interface</a> &middot; <a href="main_index.htm">main index</a></span>

@@ -65,6 +65,11 @@ img\Icon.png
 style.css
 gpl.txt
 sunsoft.htm
+config_version.htm
+config_gui.htm
+config_emulation.htm
+menu_pattern.htm
+menu_song.htm
 
 [ALIAS]
 CHANGE_LOG						= changelog.htm
@@ -74,11 +79,14 @@ HIDD_ABOUTBOX					= main_index.htm
 HIDD_COMMAND_LINE				= command_line.htm
 HIDD_COMMENTS					= comments.htm
 HIDD_CONFIG_APPEARANCE			= config_appearance.htm
+HIDD_CONFIG_EMULATION=config_emulation.htm
 HIDD_CONFIG_GENERAL				= config_general.htm
+HIDD_CONFIG_GUI=config_gui.htm
 HIDD_CONFIG_MIDI				= config_midi.htm
 HIDD_CONFIG_MIXER				= config_mixer.htm
 HIDD_CONFIG_SHORTCUTS			= config_shortcuts.htm
 HIDD_CONFIG_SOUND				= config_sound.htm
+HIDD_CONFIG_VERSION=config_version.htm
 HIDD_CREATEWAV					= export_wave.htm
 HIDD_EXPORT						= nsf_export.htm
 HIDD_INSTRUMENT_DPCM			= 2a03.htm

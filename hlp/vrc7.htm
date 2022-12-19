@@ -14,64 +14,68 @@
 <BODY>
 
     <span class="topic">Konami VRC7</span><hr />
-    
+
+    <center><p>
+    <img id="img" style="height: 25%; float: center;" src="img/chip_VRC7.png"
+        alt="Picture of the VRC7 chip"></p></center>
+
     <p class="heading">About</p>
-    
+
     <p class="text">
-        The VRC7 chip contains a customized OPLL unit (YM2413) that has 6 channels for 
-        frequency modulation synthesis. The sound capabilities of this chip was only used in the game Lagrange Point 
+        The VRC7 chip contains a customized OPLL unit (YM2413) that has 6 channels for
+        frequency modulation synthesis. The sound capabilities of this chip was only used in the game Lagrange Point
         by Konami, with the other game (Tiny Toon Adventures 2) using it for standard memory management.</p>
-<br>
+
     <p class="text">
-	Much like the Sunsoft 5B, this chip was produced by Yamaha, under the product code <b>DS1001</b>.</p>
+    Much like the Sunsoft 5B, this chip was produced by Yamaha, under the product code <b>DS1001</b>.</p>
 
     <p class="text">
         This chip has 15 predefined patches and can hold one user defined patch,
-        the predefined patches are 
+        the predefined patches are
         customized for VRC7 and are not the default ones for
         YM2413. </p>
-    
+
     <p class="text">
-        Note cut command will clear the key on flag, note release command will clear the 
+        Note cut command will clear the key on flag, note release command will clear the
         key on flag but keep the sustained flag.</p>
-    
+
     <table class="noteFrame" cellpadding="5px"><tr><td>
         <p class="text">
-            <b>Note:</b> 
-            The chip is limited to only <b>one</b> user 
-            defined patch, so it&#39;s not possible to simultaneously use different user defined 
+            <b>Note:</b>
+            The chip is limited to only <b>one</b> user
+            defined patch, so it&#39;s not possible to simultaneously use different user defined
             patches in different channels!
             See documents about YM2413 if you need more information.<br /><br />
-            
+
             The available headroom range is limited by this chip and clipping will occur when the total level is too loud,
             this occurs already when two channels are running at maximum volume, so keep the volume levels down.
         </p>
     </td></tr></table>
-            
+
     <hr />
     <p class="heading">Instruments</p>
-    
+
     <IMG id="IMG1" src="img/inst_vrc7.png" alt="">
 
     <p class="text">
-        Instruments contains a patch setting and the parameters for the 
-        custom patch (patch #0). The predefined patches (patch #1 
-        - #15) are defined in 
+        Instruments contains a patch setting and the parameters for the
+        custom patch (patch #0). The predefined patches (patch #1
+        - #15) are defined in
         hardware and cannot be changed.</p>
-        
+
     <p class="text">
-        Use copy/paste to create and read MML strings from the clipboard of the  
+        Use copy/paste to create and read MML strings from the clipboard of the
         patch settings.</p>
-    
+
     <p class="text">
         The custom patch settings are enabled when patch 0 is selected
-        and are used to customize the modulator and carrier oscillator, 
+        and are used to customize the modulator and carrier oscillator,
         but it will also display the settings for the internal patches.</p>
     <p class="text">
-        <b>Note:</b> when using sustained patches, use the <b>note cut</b> command to move on 
-        to the release phase. The note release command will also release the note, but 
+        <b>Note:</b> when using sustained patches, use the <b>note cut</b> command to move on
+        to the release phase. The note release command will also release the note, but
         does so at a fixed rate.</p>
-        
+
     <table border="1" cellpadding="3px" cellspacing="0" class="default" style="width: 12%">
         <tr>
             <td class="highlight" style="width: 200px">
@@ -162,18 +166,18 @@
                 0 - 31</td>
         </tr>
     </table>
-    
+
     <span class="tableDescription">Table 1, Instrument parameters</span>
     <br />
     <br />
-    
+
     <table class="default" border="1" cellpadding="3px" cellspacing="0" style="width: 110px">
         <tr>
             <td class="highlight" style="width: 40px">
                 <b>Value</b></td>
             <td clasS="highlight" align="center">
                 <b>Rate</b></td>
-        </tr>    
+        </tr>
         <tr>
             <td>
                 0</td>
@@ -199,18 +203,18 @@
                 6 dB/oct</td>
         </tr>
     </table>
-    
+
     <span class="tableDescription">Table 2, Key Scale Level Table</span>
     <br />
     <br />
-    
+
     <table class="default" border="1" cellpadding="3px" cellspacing="0" style="width: 110px">
         <tr>
             <td class="highlight" style="width: 40px">
                 <b>Value</b></td>
             <td class="highlight" align="center">
                 <b>Factor</b></td>
-        </tr>    
+        </tr>
         <tr>
             <td>
                 0</td>

@@ -9,9 +9,9 @@
 <span class="topic">Text import and export</span><hr>
 
 <p class="text">
-    This feature creates a text equivalent of an FTM file.
+    This feature creates a text equivalent of a module file.
     It is intended to facilitate the creation of automated tools for
-    reading or creating Famitracker data.
+    reading or creating Dn-Famitracker data.
 </p>
 
 <p class="text">
@@ -25,12 +25,12 @@
 <p class="text">
     The format is not case-sensitive.
     Future versions may not be backwards compatible;
-    save as FTM instead if this is needed.
+    save as a module instead if this is needed.
 </p>
 
 <p class="heading">Commands</p>
 
-<p><ul>
+<p><ul class="text">
     <li><b>#</b> ...
         <ul>
             A line beginning with a # command is ignored by the importer, treated as a comment.
@@ -82,6 +82,18 @@
     <li><b>SPLIT</b> [split]
         <ul>
             <li><i>split</i>: int[0,255] - split point where Fxx effect sets tempo instead of speed</li>
+        </ul>
+    </li>
+    <li><b>PLAYBACKRATE </b> [type] [rate]
+        <ul>
+            <li><i>type</i>: int[0,2] - 0 for default playback rate (framerate system), 1 for custom rate in microseconds, 2 for video-based rate (60.0988Hz or 50.0070Hz)</li>
+            <li><i>rate</i>: int[0,65535] - custom playback rate, in microseconds</li>
+        </ul>
+    </li>
+    <li><b>TUNING </b> [semitones] [cents]
+        <ul>
+            <li><i>semitones</i>: int[-12, 12] - global detuning, in semitones</li>
+            <li><i>cents</i>: int[-100, 100] - global detuning, in cents</li>
         </ul>
     </li>
     <li><b>N163CHANNELS</b> [channels]
@@ -320,7 +332,7 @@
             were editing a frame where all pattern indices are the same
             (e.g. ORDER 00 : 00 00 00 00 00).<br />
             The first field represents the note, the first character a letter (C,D,E,F,G,A,B)
-            then 
+            then
             <li><i>row</i>: hex[00,7F] - index of pattern</li>
             <li><i>c0...</i>: channel data for each channel.
                 The channel data looks like: <tt>nnn ii v eee</tt>
@@ -341,6 +353,33 @@
                                     </li>
                 </ul>
             </li>
+        </ul>
+    </li>
+    <li><b>BOOKMARK </b> [frame] [row] [1st highlight] [2nd highlight] [persist] [name]
+        <ul>
+            <li><i>frame</i>: hex[00,7F] - index of frame</li>
+            <li><i>row</i>: hex[00,7F] - index of pattern</li>
+            <li><i>1st highlight</i>: int[1,256] - Cycle length of first highlight</li>
+            <li><i>2nd highlight</i>: int[1,256] - Cycle length of second highlight</li>
+            <li><i>persist</i>: int[0,1] - 0 to not persist, 1 to apply to all following frames</li>
+            <li><i>name</i>: string - name of the bookmark</li>
+        </ul>
+    </li>
+    <li><b>JSON </b> [JSON data]
+        <ul>
+            <li><i>JSON data</i>: string - optional formatted JSON data</li>
+        </ul>
+    </li>
+    <li><b>USEEXTERNALOPLL </b> [use]
+        <ul>
+            <li><i>use</i>: int[0,1] - 0 for VRC7, 1 for external OPLL</li>
+        </ul>
+    </li>
+    <li><b>OPLLPATCH </b> [patch number] : [patch byte] [patch byte] [patch byte] [patch byte] [patch byte] [patch byte] [patch byte] [patch byte] [patch name]
+        <ul>
+            <li><i>patch number</i>: int[0,18] - patch number to modify</li>
+            <li><i>patch byte</i>: hex[00,FF] - 8 bytes for patch ROM data</li>
+            <li><i>patch name</i>: string - corresponding patch name</li>
         </ul>
     </li>
 

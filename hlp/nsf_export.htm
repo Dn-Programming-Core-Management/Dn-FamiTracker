@@ -26,21 +26,30 @@
         <UL class="text">
 			<LI>
 			    <b>NSF</b><br />
-			    Creates the NSF file.
+			    Creates an NSF file.
+			    <br /><br /></LI>
+			<LI>
+			    <b>NSFe</b><br />
+			    Creates an NSFe file with extra metadata for track labels, track times, and comments.
+			    <br /><br /></LI>
+			<LI>
+			    <b>NSF2</b><br />
+			    Creates an NSF-compatible file containing NSFe metadata. This metadata may be safely ignored in
+				older NSF players.
 			    <br /><br /></LI>
             <LI>
                 <b>NES</b><br />
-                Encapsulates the NSF into a NES file that can be played in emulators or with carts like PowerPak.
+                Encapsulates an NSF into an NROM NES file that can be played in emulators or with flash carts like PowerPaks and Everdrives.<br />
+				Note that only non-expansion audio, non-bankswitching modules whose data is smaller than 32KB in total are allowed.
                 <br /><br /></LI>
             <LI>
 				<b>BIN</b><br />
 				Stores only the music data and DPCM samples in separate files, 
-				for use with the NSF driver sources which are available from the web page.
+				for use with the NSF driver sources.
 				<br /><br /></LI>
 			<LI>
 				<b>PRG</b><br />
-				Creates a single 32 kB program ROM file, 
-				ready to be used with a NROM-compatible cart for playback on NES hardware.
+				Creates a single 32 kB program ROM file, ready to be used with a NROM-compatible cart for playback on NES hardware.
 				<br /><br /></LI>
 			<LI>
 				<b>ASM</b><br />
