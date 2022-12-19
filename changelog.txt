@@ -6,6 +6,97 @@ Version 0.4.0.1 - September 14, 2021
 
 --------------------------------------------------------------------------------
 
+Dn0.5.0.0 - 12/19/2022
+
+Important changes:
+
+- Dn-FamiTracker modules are no longer backwards compatible with "vanilla" and
+    0CC
+- Dn-FamiTracker Demo Compo 1 modules are now added
+- N163 emulation core is replaced with Mesen's
+- New effects: =xx, and Nxy
+- Exports are now updated (text, NSF/NSFe, binary, asm)
+- NSF2 export added
+- External OPLL option (export only available for NSFe/NSF2)
+- Per-module expansion mixing (export only available for NSFe/NSF2)
+- Hardware-based module expansion mixing (export only available for NSFe/NSF2)
+- DirectSound backend now replaced with WASAPI
+
+Additions:
+
+- Add FDS waveform view (@EulousDev #113)
+- Add invalid note indicator (@EulousDev #119)
+- Add Dn-FT Demo Compo 1 Modules (@Gumball2415 #153)
+- Target volume slide effect (Nxy) (@ipidev #109)
+- Implement Kxx and =xx in NSF driver (@Gumball2415
+    nyanpasu64/j0CC-FamiTracker#122, #156)
+- Add supplemental NSF data on bin/asm export (NSF header, config, period tables
+    and vibrato tables) (@Gumball2415 #156)
+- Add mixe chunk support and per-module device mixing (@Gumball2415 #68, #156)
+- Add hardware-based expansion audio mixing (@Gumball2415 #156)
+- Implement external OPLL patchset editing (@Gumball2415 #68, #156)
+- Implement VRC7 NSFe chunk (@Gumball2415 #156)
+
+Improvements:
+
+- Register view improvements (@Gumball2415 @nyanpasu64 @EulousDev #118, #120)
+- Replace N163 audio core with Mesen (@Gumball2415
+    nyanpasu64/j0CC-FamiTracker#151, #111, #138, #152)
+- Refactor FDS auto-FM overflow fix (@Gumball2415 #80, #65,
+    #nyanpasu64/j0CC-FamiTracker#133, #156)
+- Refactor Pxx overflow fix (@Gumball2415 #80, #156)
+- Refactor Gxx overflow fix (@Gumball2415 #80, nyanpasu64/j0CC-FamiTracker#129,
+    #156)
+- Reset FDS modulator phase on new note (@Gumball2415 #156)
+- Refactor period table calculation (@Gumball2415 #156)
+- Update text import/export parity (@Gumball2415 #161, #162, #156)
+
+Bug fixes:
+
+- Prevent ctrl/shift+wheel edit outside edit mode (copyrat90 #87)
+- Fix random crash when exporting channels as WAV (@nyanpasu64 #92, #93)
+- Fix module reload on config confirmation (@Gumball2415 #89, #97)
+- Fix N163 volume meter level (@EulousDev #99, #103)
+- Fix VRC7 data race and use-after-free when reloading/closing modules
+    (@nyanpasu64 #106)
+- Update source code copyright declaration and GPL 2.0+ notice (@Gumball2415
+    #116)
+- Fix wave export dialog refresh rate to GUI rate (@Gumball2415 #108)
+- Fix high-res spectrum visualizer at small buffer sizes (@nyanpasu64 #126)
+- Fix use-after-free race condition in visualizer (@nyanpasu64 #130)
+- Fix crash when starting program with pattern editor off-screen (@nyanpasu64
+    #128, #129)
+- Fix periodic noise showing cents when muted (@Gumball2415 #139)
+- Stop rejecting valid files using features missing from vanilla FT (@nyanpasu64
+    #150)
+- Fix N163 instrument pointer data overflow (@Gumball2415 #156)
+- Fix NSFe export from using incorrect DATA chunk size (@Gumball2415 #110,
+    nyanpasu64/j0CC-FamiTracker#5, #156)
+- Fix 5B Wxx being overwritten by blank duty macros (@Gumball2415 #160,
+    nyanpasu64/j0CC-FamiTracker#105, #156)
+- Fix N163 multiplex state desync (@Gumball2415 #163, #156)
+- Dn-FamiTracker modules are no longer backwards compatible with "vanilla" and
+    0CC (@Gumball2415 #156)
+- FamiTracker 0.5.0 beta modules no longer conflict with Dn-FamiTracker 0.5.0.0
+    modules (@Gumball2415 #156)
+
+Internal:
+
+- Revise README (@Gumball2415 #114)
+- Replace DirectSound backend with WASAPI (@nyanpasu64 #124)
+- Remove unused files, add headers to CMakeLists.txt (@nyanpasu64 #142)
+- Eliminate audio thread blocking on GUI messages and main thread (@nyanpasu64
+    #134, #137)
+- Add WASAPI resampling so all sampling rates work (@nyanpasu64 @Gumball2415 #143)
+- Fix crash when activating non-initial song then opening document with expansion
+    chip(s) (@nyanpasu64 #147, #148)
+- Fix mostly-theoretical data race when popping from SPSC queues (@nyanpasu64
+    #149)
+- Properly terminate stuck audio thread when closing the program (@nyanpasu64
+    #155)
+
+
+
 Dn0.4.0.1 - 09/14/2021
 
 Patch fixes:
@@ -38,9 +129,11 @@ Improvements:
 Bug fixes:
 
  - Fix Gxx delay command overflow in NSF driver (@Gumball2415, @smbhacks #80)
- - Fix FDS automatic modulation overflow in NSF driver (@Gumball2415, @galap-1 #65, #80)
+ - Fix FDS automatic modulation overflow in NSF driver (@Gumball2415, @galap-1
+    #65, #80)
  - Fix period calculation overflow in NSF driver (@Gumball2415, @smbhacks #80)
- - Reset VRC7 emulator core on channel handler reset (@Gumball2415, @TakuikaNinja #79)
+ - Reset VRC7 emulator core on channel handler reset (@Gumball2415, @TakuikaNinja
+    #79)
  - Flush file to disk before renaming to prevent module corruption
     (@Gumball2415, @nyanpasu64 #81)
  - Fix commandline parameter processing when flags are used (@Gumball2415)
@@ -51,7 +144,8 @@ Internal:
  - Fix uninitialized echo buffer values (@nyanpasu64 #56)
  - Clarify nsfplay value_or() (@nyanpasu64 #56)
  - Clarify integer widths in CBookmark::Distance() (@nyanpasu64 #56)
- - Fix broken Open dialog after launching Dn by opening a file (@nyanpasu64 #74, #76)
+ - Fix broken Open dialog after launching Dn by opening a file (@nyanpasu64 #74,
+    #76)
  - Fix out-of-bounds read in oscilloscope (@nyanpasu64 #85)
 
 
@@ -319,7 +413,7 @@ Bugfixes:
  - Not broken in NSF export
  - Fixed bug where N163 Zxx (wave position) effects would fail when switching
     instruments. (Removed Zxx error checking, since it checked the old wave
-	size)
+    size)
  - Fixed bug where "Ignore Step when moving" wouldn't take effect until changing
     step size.
 
@@ -404,13 +498,13 @@ Bugfixes:
  - Fix text import instrument loop/release (@owomomo, fixed in 0.3.15.1).
  - Update channel count after importing text (like master). Mark file as
     modified.
-	
+    
 Enhancements:
 
  - N163 wave editor's copy/paste buttons copy all waves at once,
     separated/terminated with semicolons. This allows for highly efficient
-	Audacity-N163 import workflows(see
-	https://gist.github.com/nyanpasu64/424110eab84dad50cf1a6646a72b2627).
+    Audacity-N163 import workflows(see
+    https://gist.github.com/nyanpasu64/424110eab84dad50cf1a6646a72b2627).
  - Hi-res FFT spectrogram (like master).
 
 
@@ -423,7 +517,7 @@ My changes:
  - Fix memory corruption when entering MML volume sequences over 252 items long.
  - Modify N163 dialog buttons to copy/paste all waveforms at once, separated by
      semicolons. A very useful import format for Audacity wavetable exporting,
-	 and copy-pasting between instruments.
+     and copy-pasting between instruments.
 
 Bugfixes from HertzDevil:
  - Changing channels does not clear bookmarks.
