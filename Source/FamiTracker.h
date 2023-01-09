@@ -120,6 +120,8 @@ public:
 	bool			IsThemeActive() const;
 	void			RefreshFrameEditor();
 	void			EnableMFCPrint();
+	void			DisplayMessage(LPCTSTR lpszText, UINT nType = 0, UINT nIDHelp = 0);
+	void			DisplayMessage(UINT nIDPrompt, UINT nType = 0, UINT nIDHelp = 0);
 	void			ThreadDisplayMessage(LPCTSTR lpszText, UINT nType = 0, UINT nIDHelp = 0);
 	void			ThreadDisplayMessage(UINT nIDPrompt, UINT nType = 0, UINT nIDHelp = 0);
 
@@ -173,6 +175,7 @@ private:
 
 	bool m_CoInitialized;
 	bool			m_bRunning = false;		// // //
+	bool			m_bIsCLI = false;
 	bool			m_bThemeActive;
 
 	bool			m_bVersionReady;

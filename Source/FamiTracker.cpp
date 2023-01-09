@@ -718,6 +718,8 @@ void CFamiTrackerApp::EnableMFCPrint()
 		}
 
 		puts(APP_NAME_VERSION);
+
+		m_bIsCLI = true;
 	}
 }
 
@@ -828,6 +830,25 @@ void CFamiTrackerApp::OnFileOpen()
 
 	if (pFrameWnd)
 		pFrameWnd->SetMessageText(IDS_LOADING_DONE);
+}
+
+void CFamiTrackerApp::DisplayMessage(LPCTSTR lpszText, UINT nType, UINT nIDHelp)
+{
+	if (m_bIsCLI)
+		_putts(lpszText);
+	else
+		AfxMessageBox(lpszText, nType, nIDHelp);
+}
+
+void CFamiTrackerApp::DisplayMessage(UINT nIDPrompt, UINT nType, UINT nIDHelp)
+{
+	if (m_bIsCLI) {
+		CString strFormatted;
+		AfxFormatString1(strFormatted, nIDPrompt, "");
+		_putts(strFormatted);
+	}
+	else
+		AfxMessageBox(nIDPrompt, nType, nIDHelp);
 }
 
 // Used to display a messagebox on the main thread
