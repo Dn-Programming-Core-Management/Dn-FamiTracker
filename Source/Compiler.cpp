@@ -200,7 +200,7 @@ bool CCompiler::OpenFile(LPCTSTR lpszFileName, CFile &file) const
 		CString strFormatted;
 		ex.GetErrorMessage(szCause, 255);
 		AfxFormatString1(strFormatted, IDS_OPEN_FILE_ERROR, szCause);
-		AfxMessageBox(strFormatted, MB_OK | MB_ICONERROR);
+		theApp.DisplayMessage(strFormatted, MB_OK | MB_ICONERROR);
 		return false;
 	}
 
@@ -221,7 +221,7 @@ void CCompiler::ExportNSF(LPCTSTR lpszFileName, int MachineType)
 
 	if (nsfewarning) {
 		Print(_T("Warning: NSFe optional metadata will not be exported in this format!\n"));
-		AfxMessageBox(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
+		theApp.DisplayMessage(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
 	}
 
 	// Build the music data
@@ -858,12 +858,12 @@ void CCompiler::ExportNES(LPCTSTR lpszFileName, bool EnablePAL)
 
 	if (nsfewarning) {
 		Print(_T("Warning: NSFe optional metadata will not be exported in this format!\n"));
-		AfxMessageBox(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
+		theApp.DisplayMessage(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
 	}
 
 	if (m_pDocument->GetExpansionChip() != SNDCHIP_NONE) {
 		Print(_T("Error: Expansion chips not supported.\n"));
-		AfxMessageBox(_T("Expansion chips are currently not supported when exporting to .NES!"), 0, 0);
+		theApp.DisplayMessage(_T("Expansion chips are currently not supported when exporting to .NES!"), 0, 0);
 		Cleanup();
 		return;
 	}
@@ -883,7 +883,7 @@ void CCompiler::ExportNES(LPCTSTR lpszFileName, bool EnablePAL)
 	if (m_bBankSwitched) {
 		// Abort if larger than 32kb
 		Print(_T("Error: Song is too large, aborted.\n"));
-		AfxMessageBox(_T("Song is too big to fit into 32kB!"), 0, 0);
+		theApp.DisplayMessage(_T("Song is too big to fit into 32kB!"), 0, 0);
 		Cleanup();
 		return;
 	}
@@ -949,7 +949,7 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 
 	if (nsfewarning) {
 		Print(_T("Warning: NSFe optional metadata will not be exported in this format!\n"));
-		AfxMessageBox(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
+		theApp.DisplayMessage(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
 	}
 
 	// Build the music data
@@ -1125,12 +1125,12 @@ void CCompiler::ExportPRG(LPCTSTR lpszFileName, bool EnablePAL)
 
 	if (nsfewarning) {
 		Print(_T("Warning: NSFe optional metadata will not be exported in this format!\n"));
-		AfxMessageBox(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
+		theApp.DisplayMessage(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
 	}
 
 	if (m_pDocument->GetExpansionChip() != SNDCHIP_NONE) {
 		Print(_T("Expansion chips not supported.\n"));
-		AfxMessageBox(_T("Error: Expansion chips is currently not supported when exporting to PRG!"), 0, 0);
+		theApp.DisplayMessage(_T("Error: Expansion chips is currently not supported when exporting to PRG!"), 0, 0);
 		Cleanup();
 		return;
 	}
@@ -1150,7 +1150,7 @@ void CCompiler::ExportPRG(LPCTSTR lpszFileName, bool EnablePAL)
 	if (m_bBankSwitched) {
 		// Abort if larger than 32kb
 		Print(_T("Song is too big, aborted.\n"));
-		AfxMessageBox(_T("Error: Song is too big to fit!"), 0, 0);
+		theApp.DisplayMessage(_T("Error: Song is too big to fit!"), 0, 0);
 		Cleanup();
 		return;
 	}
@@ -1211,7 +1211,7 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 
 	if (nsfewarning) {
 		Print(_T("Warning: NSFe optional metadata will not be exported in this format!\n"));
-		AfxMessageBox(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
+		theApp.DisplayMessage(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
 	}
 
 	// Build the music data

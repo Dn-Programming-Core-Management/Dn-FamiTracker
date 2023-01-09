@@ -713,7 +713,7 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 		CString strFormatted;
 		ex.GetErrorMessage(szCause, 255);
 		AfxFormatString1(strFormatted, IDS_SAVE_FILE_ERROR, szCause);
-		AfxMessageBox(strFormatted, MB_OK | MB_ICONERROR);
+		theApp.DisplayMessage(strFormatted, MB_OK | MB_ICONERROR);
 		m_pCurrentDocument = nullptr;		// // //
 		return FALSE;
 	}
@@ -727,7 +727,7 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 		// Display error
 		CString	ErrorMsg;
 		ErrorMsg.LoadString(IDS_SAVE_ERROR);
-		AfxMessageBox(ErrorMsg, MB_OK | MB_ICONERROR);
+		theApp.DisplayMessage(ErrorMsg, MB_OK | MB_ICONERROR);
 		m_pCurrentDocument = nullptr;		// // //
 		return FALSE;
 	}
@@ -752,7 +752,7 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 		strFormatted += ErrorMsg;
 		
 		AfxFormatString1(strFormatted, IDS_SAVE_FILE_ERROR, lpMsgBuf);
-		AfxMessageBox(strFormatted, MB_OK | MB_ICONERROR);
+		theApp.DisplayMessage(strFormatted, MB_OK | MB_ICONERROR);
 		
 		m_pCurrentDocument = nullptr;
 		return FALSE;
@@ -786,7 +786,7 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 		str.Format("%d", err);
 		strFormatted += str;
 
-		AfxMessageBox(strFormatted, MB_OK | MB_ICONERROR);
+		theApp.DisplayMessage(strFormatted, MB_OK | MB_ICONERROR);
 		LocalFree(lpMsgBuf);
 
 		// FIXME: Remove temp file. May or may not be what you want.
@@ -1418,7 +1418,7 @@ BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 		ex.GetErrorMessage(szCause, sizeof(szCause));
 		strFormatted = _T("Could not open file.\n\n");
 		strFormatted += szCause;
-		AfxMessageBox(strFormatted);
+		theApp.DisplayMessage(strFormatted);
 		//OnNewDocument();
 		return FALSE;
 	}
@@ -1462,7 +1462,7 @@ BOOL CFamiTrackerDoc::OpenDocument(LPCTSTR lpszPathName)
 		}
 	}
 	catch (CModuleException *e) {
-		AfxMessageBox(e->GetErrorString().c_str(), MB_ICONERROR);
+		theApp.DisplayMessage(e->GetErrorString().c_str(), MB_ICONERROR);
 		m_pCurrentDocument = nullptr;		// // //
 		delete e;
 		return FALSE;
@@ -1743,7 +1743,7 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 		// This shouldn't show up in release (debug only)
 #ifdef _DEBUG
 			if (++_msgs_ < 5)
-				AfxMessageBox(_T("Unknown file block!"));
+				theApp.DisplayMessage(_T("Unknown file block!"));
 #endif
 			if (DocumentFile.IsFileIncomplete())
 				ErrorFlag = true;
@@ -1753,7 +1753,7 @@ BOOL CFamiTrackerDoc::OpenDocumentNew(CDocumentFile &DocumentFile)
 	DocumentFile.Close();
 
 	if (ErrorFlag) {
-		AfxMessageBox(IDS_FILE_LOAD_ERROR, MB_ICONERROR);
+		theApp.DisplayMessage(IDS_FILE_LOAD_ERROR, MB_ICONERROR);
 		DeleteContents();
 		return FALSE;
 	}
@@ -2745,7 +2745,7 @@ void CFamiTrackerDoc::ReadBlock_JSON(CDocumentFile* pDocFile, const int Version)
 
 	if (!unknowns.empty()) {
 		auto err = "Warning: unknown JSON data (will be discarded upon saving!):\n" + unknowns.dump();
-		AfxMessageBox(conv::to_t(std::move(err)).c_str(), MB_ICONWARNING);
+		theApp.DisplayMessage(conv::to_t(std::move(err)).c_str(), MB_ICONWARNING);
 	}
 
 	// If unchanged, stop loading data
@@ -2838,7 +2838,7 @@ bool CFamiTrackerDoc::ImportInstruments(CFamiTrackerDoc *pImported, int *pInstTa
 	// Check instrument count
 	if (GetInstrumentCount() + pImported->GetInstrumentCount() > MAX_INSTRUMENTS) {
 		// Out of instrument slots
-		AfxMessageBox(IDS_IMPORT_INSTRUMENT_COUNT, MB_ICONERROR);
+		theApp.DisplayMessage(IDS_IMPORT_INSTRUMENT_COUNT, MB_ICONERROR);
 		return false;
 	}
 
@@ -2849,7 +2849,7 @@ bool CFamiTrackerDoc::ImportInstruments(CFamiTrackerDoc *pImported, int *pInstTa
 	// Copy sequences
 	for (size_t i = 0; i < sizeof(chip); i++) for (int t = 0; t < SEQ_COUNT; ++t) {
 		if (GetSequenceCount(inst[i], t) + pImported->GetSequenceCount(inst[i], t) > MAX_SEQUENCES) {		// // //
-			AfxMessageBox(IDS_IMPORT_SEQUENCE_COUNT, MB_ICONERROR);
+			theApp.DisplayMessage(IDS_IMPORT_SEQUENCE_COUNT, MB_ICONERROR);
 			return false;
 		}
 		for (unsigned int s = 0; s < MAX_SEQUENCES; ++s) if (pImported->GetSequenceItemCount(inst[i], s, t) > 0) {
@@ -2886,7 +2886,7 @@ bool CFamiTrackerDoc::ImportInstruments(CFamiTrackerDoc *pImported, int *pInstTa
 
 	if (bOutOfSampleSpace) {
 		// Out of sample space
-		AfxMessageBox(IDS_IMPORT_SAMPLE_SLOTS, MB_ICONEXCLAMATION);
+		theApp.DisplayMessage(IDS_IMPORT_SAMPLE_SLOTS, MB_ICONEXCLAMATION);
 		return false;
 	}
 
@@ -2941,7 +2941,7 @@ bool CFamiTrackerDoc::ImportGrooves(CFamiTrackerDoc *pImported, int *pGrooveMap)
 		if (pImported->GetGroove(i) != NULL) {
 			while (GetGroove(Index) != NULL) Index++;
 			if (Index >= MAX_GROOVE) {
-				AfxMessageBox(IDS_IMPORT_GROOVE_SLOTS, MB_ICONEXCLAMATION);
+				theApp.DisplayMessage(IDS_IMPORT_GROOVE_SLOTS, MB_ICONEXCLAMATION);
 				return false;
 			}
 			pGrooveMap[i] = Index;
@@ -3312,7 +3312,7 @@ void CFamiTrackerDoc::SaveInstrument(unsigned int Index, CString FileName) const
 	ASSERT(pInstrument);
 	
 	if (file.m_hFile == CFile::hFileNull) {
-		AfxMessageBox(IDS_FILE_OPEN_ERROR, MB_ICONERROR);
+		theApp.DisplayMessage(IDS_FILE_OPEN_ERROR, MB_ICONERROR);
 		return;
 	}
 
@@ -3390,13 +3390,13 @@ int CFamiTrackerDoc::LoadInstrument(CString FileName)
 	}
 	catch (int ID) {		// // // TODO: put all error messages into string table then add exception ctor
 		m_csDocumentLock.Unlock();
-		AfxMessageBox(ID, MB_ICONERROR);
+		theApp.DisplayMessage(ID, MB_ICONERROR);
 		return INVALID_INSTRUMENT;
 	}
 	catch (CModuleException *e) {
 		m_csDocumentLock.Unlock();
 		m_pInstrumentManager->RemoveInstrument(Slot);
-		AfxMessageBox(e->GetErrorString().c_str(), MB_ICONERROR);
+		theApp.DisplayMessage(e->GetErrorString().c_str(), MB_ICONERROR);
 		delete e;
 		return INVALID_INSTRUMENT;
 	}
