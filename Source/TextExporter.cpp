@@ -1238,12 +1238,14 @@ const CString& CTextExport::ImportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 		}
 	}
 
-	try {
-		json j = json::parse(jsonparse);
-		pDoc->OptionalJSONToInterface(j);
-	}
-	catch (json::parse_error& e) {
-		sResult.Format(_T("JSON parsing error:\n%s\n\nException ID: %d\nByte position of error: %d\n\nOptional JSON data will be ignored."), e.what(), e.id, e.byte);
+	if (jsonparse.size()) {
+		try {
+			json j = json::parse(jsonparse);
+			pDoc->OptionalJSONToInterface(j);
+		}
+		catch (json::parse_error& e) {
+			sResult.Format(_T("JSON parsing error:\n%s\n\nException ID: %d\nByte position of error: %d\n\nOptional JSON data will be ignored."), e.what(), e.id, e.byte);
+		}
 	}
 
 	if (N163count != -1) {		// // //
