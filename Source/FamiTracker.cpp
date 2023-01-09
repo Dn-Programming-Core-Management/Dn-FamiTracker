@@ -222,10 +222,11 @@ BOOL CFamiTrackerApp::InitInstance()
 	if (cmdInfo.m_bExport) {
 		CCommandLineExport exporter;
 		exporter.CommandLineExport(cmdInfo.m_strFileName, cmdInfo.m_strExportFile, cmdInfo.m_strExportLogFile, cmdInfo.m_strExportDPCMFile);
-		ExitProcess(0);
+
+		return FALSE;
 	}
 	if (cmdInfo.m_bHelp) {		// !! !!
-		ExitProcess(0);
+		return FALSE;
 	}
 
 	// Dispatch commands specified on the command line.  Will return FALSE if
@@ -695,14 +696,28 @@ void CFamiTrackerApp::RefreshFrameEditor()
 
 void CFamiTrackerApp::EnableMFCPrint()
 {
-	// Enable console output
+	// GUI subsystem apps only receive standard handles for inputs/outputs that are being redirected. If the app was run from the command line the app can attach to the console of its parent and use its handles.
+	HANDLE stdOut = GetStdHandle(STD_OUTPUT_HANDLE),
+		stdErr = GetStdHandle(STD_ERROR_HANDLE);
+
 	if (AttachConsole(ATTACH_PARENT_PROCESS)) {
 		FILE* pcout;
-		errno_t err = freopen_s(&pcout, "CONOUT$", "w", stdout);
-		errno_t err2 = freopen_s(&pcout, "CONOUT$", "w", stderr);
-		std::cout.clear();
-		std::wcout.clear();
-		fprintf(stdout, "%s\n", APP_NAME_VERSION);
+		errno_t err = 0, err2 = 0;
+
+		if (!stdOut) {
+			err = freopen_s(&pcout, "CONOUT$", "w", stdout);
+
+			std::cout.clear();
+			std::wcout.clear();
+		}
+		if (!stdErr) {
+			err2 = freopen_s(&pcout, "CONOUT$", "w", stderr);
+
+			std::cerr.clear();
+			std::wcerr.clear();
+		}
+
+		puts(APP_NAME_VERSION);
 	}
 }
 
