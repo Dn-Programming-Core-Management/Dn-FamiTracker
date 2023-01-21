@@ -63,9 +63,28 @@ endif()
 
 
 # linking
-TARGET_LINK_LIBRARIES(${exe}
-        Dbghelp winmm comctl32 Avrt Version htmlhelp
-        samplerate)
+# Specify static MFC libraries nafxcw and Libcmt to avoid linker order issues
+if (STATIC_MSVCRT)
+	if (CMAKE_BUILD_TYPE MATCHES DEBUG)
+		TARGET_LINK_LIBRARIES(${exe}
+				Dbghelp winmm comctl32 Avrt Version htmlhelp
+				samplerate nafxcwd Libcmtd)
+	else ()
+		TARGET_LINK_LIBRARIES(${exe}
+				Dbghelp winmm comctl32 Avrt Version htmlhelp
+				samplerate nafxcw Libcmt)
+	endif ()
+else ()
+	if (CMAKE_BUILD_TYPE MATCHES DEBUG)
+		TARGET_LINK_LIBRARIES(${exe}
+				Dbghelp winmm comctl32 Avrt Version htmlhelp
+				samplerate MSVCRTD)
+	else ()
+		TARGET_LINK_LIBRARIES(${exe}
+				Dbghelp winmm comctl32 Avrt Version htmlhelp
+				samplerate MSVCRT)
+	endif ()
+endif ()
 
 # Dn-FamiTracker.rc includes res/Dn-FamiTracker.manifest.
 # To prevent manifest linking errors:

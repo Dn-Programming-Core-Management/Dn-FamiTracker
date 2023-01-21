@@ -209,7 +209,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;nafxcw.lib;Libcmt.lib</AdditionalDependencies>
+      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;nafxcw.lib;Libcmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Version>
       </Version>
       <AdditionalLibraryDirectories>$(LibraryPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -253,7 +253,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;nafxcw.lib;Libcmt.lib</AdditionalDependencies>
+      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;nafxcw.lib;Libcmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Version>
       </Version>
       <AdditionalLibraryDirectories>$(LibraryPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
