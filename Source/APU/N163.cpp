@@ -21,7 +21,6 @@
 ** Any permitted reproduction of these routines, in whole or in part,
 ** must bear this legend.
 */
-#define _USE_MATH_DEFINES
 
 #include "../stdafx.h"
 #include "../FamiTracker.h"
@@ -30,9 +29,8 @@
 #include "APU.h"
 #include "N163.h"
 #include "../RegisterState.h"		// // //
-
-#include <cstdint>
-#include <cmath>
+#define _USE_MATH_DEFINES
+#include <math.h>		// !! !! M_PI
 
 //
 // Namco 163
