@@ -141,6 +141,15 @@
     <None Include="config_sound.htm">
       <Filter>HTML Help Topics\Interface\Configuration</Filter>
     </None>
+    <None Include="config_version.htm">
+      <Filter>HTML Help Topics\Interface\Configuration</Filter>
+    </None>
+    <None Include="config_gui.htm">
+      <Filter>HTML Help Topics\Interface\Configuration</Filter>
+    </None>
+    <None Include="config_emulation.htm">
+      <Filter>HTML Help Topics\Interface\Configuration</Filter>
+    </None>
     <None Include="menu_edit.htm">
       <Filter>HTML Help Topics\Interface\Menus</Filter>
     </None>
@@ -160,6 +169,12 @@
       <Filter>HTML Help Topics\Interface\Menus</Filter>
     </None>
     <None Include="menu_view.htm">
+      <Filter>HTML Help Topics\Interface\Menus</Filter>
+    </None>
+    <None Include="menu_song.htm">
+      <Filter>HTML Help Topics\Interface\Menus</Filter>
+    </None>
+    <None Include="menu_pattern.htm">
       <Filter>HTML Help Topics\Interface\Menus</Filter>
     </None>
     <None Include="comments.htm">
@@ -184,6 +199,12 @@
       <Filter>HTML Help Topics\Interface\Dialogs</Filter>
     </None>
     <None Include="speed.htm">
+      <Filter>HTML Help Topics\Interface\Dialogs</Filter>
+    </None>
+    <None Include="instruments.htm">
+      <Filter>HTML Help Topics\Interface\Dialogs</Filter>
+    </None>
+    <None Include="sound.htm">
       <Filter>HTML Help Topics\Interface\Dialogs</Filter>
     </None>
   </ItemGroup>
