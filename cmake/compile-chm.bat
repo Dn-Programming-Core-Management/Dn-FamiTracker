@@ -1,6 +1,6 @@
 rem call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
 @echo off
-echo // Generated Help Map file.  Used by Dn-FamiTracker.HHP. > "hlp\HTMLDefines.h"
+echo // Generated Help Map file.  Used by Dn-FamiTracker.hhp. > "hlp\HTMLDefines.h"
 echo. > "hlp\HTMLDefines.h"
 echo // Commands (ID_* and IDM_*) >> "hlp\HTMLDefines.h"
 makehm /h ID_,HID_,0x10000 IDM_,HIDM_,0x10000 "resource.h" >> "hlp\HTMLDefines.h"

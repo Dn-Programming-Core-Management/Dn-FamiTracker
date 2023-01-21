@@ -14,7 +14,7 @@ Dn-Famitracker is a fork of 0CC-FamiTracker that incorporates numerous fixes and
 
 ## Contributing
 
-[Contributing and compiling](CONTRIBUTING.md)
+[Contributing and compiling](docs/CONTRIBUTING.md)
 
 ## Downloads
 
