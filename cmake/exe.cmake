@@ -36,9 +36,22 @@ add_executable(${exe}
         version.h
 
         # Emulator cores
+        Source/APU/digital-sound-antiques/2413tone.h
+        Source/APU/digital-sound-antiques/281btone.h
+        Source/APU/digital-sound-antiques/emu2413.c
+        Source/APU/digital-sound-antiques/emu2413.h
+        Source/APU/digital-sound-antiques/vrc7tone_ft35.h
+        Source/APU/digital-sound-antiques/vrc7tone_ft36.h
+        Source/APU/digital-sound-antiques/vrc7tone_kt1.h
+        Source/APU/digital-sound-antiques/vrc7tone_kt2.h
+        Source/APU/digital-sound-antiques/vrc7tone_mo.h
+        Source/APU/digital-sound-antiques/vrc7tone_nuke.h
+        Source/APU/digital-sound-antiques/vrc7tone_rw.h
+
         Source/APU/mesen/BaseFdsChannel.h
         Source/APU/mesen/FdsAudio.h
         Source/APU/mesen/ModChannel.h
+        Source/APU/mesen/Namco163Audio.h
 
         Source/APU/nsfplay/xgm/debugout.h
         Source/APU/nsfplay/xgm/xtypes.h
@@ -46,17 +59,6 @@ add_executable(${exe}
         Source/APU/nsfplay/xgm/devices/devinfo.h
         Source/APU/nsfplay/xgm/devices/CPU/nes_cpu.h
         Source/APU/nsfplay/xgm/devices/Sound/nsfplay_math.h
-        Source/APU/nsfplay/xgm/devices/Sound/legacy/emu2413.c
-        Source/APU/nsfplay/xgm/devices/Sound/legacy/emu2413.h
-        Source/APU/nsfplay/xgm/devices/Sound/legacy/2413tone.h
-        Source/APU/nsfplay/xgm/devices/Sound/legacy/281btone.h
-        Source/APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_ft35.h
-        Source/APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_ft36.h
-        Source/APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_kt1.h
-        Source/APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_kt2.h
-        Source/APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_mo.h
-        Source/APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_nuke.h
-        Source/APU/nsfplay/xgm/devices/Sound/legacy/vrc7tone_rw.h
         Source/APU/nsfplay/xgm/devices/Sound/nes_apu.cpp
         Source/APU/nsfplay/xgm/devices/Sound/nes_apu.h
         Source/APU/nsfplay/xgm/devices/Sound/nes_dmc.cpp
@@ -65,8 +67,10 @@ add_executable(${exe}
         # Libraries
         Source/Blip_Buffer/Blip_Buffer.cpp
         Source/Blip_Buffer/Blip_Buffer.h
+
         Source/FFT/FftBuffer.h
         Source/FFT/FftComplex.hpp
+
         Source/gsl/gsl
         Source/gsl/gsl_algorithm
         Source/gsl/gsl_assert
@@ -77,15 +81,20 @@ add_executable(${exe}
         Source/gsl/span
         Source/gsl/span_ext
         Source/gsl/string_span
+
         Source/json/json.hpp
+
         Source/resampler/resample.cpp
         Source/resampler/resample.hpp
         Source/resampler/resample.inl
         Source/resampler/sinc.cpp
         Source/resampler/sinc.hpp
+
         Source/rigtorp/SPSCQueue.h
+
         Source/str_conv/str_conv.hpp
         Source/str_conv/utf8_conv.hpp
+
         Source/type_safe/arithmetic_policy.hpp
         Source/type_safe/boolean.hpp
         Source/type_safe/bounded_type.hpp
@@ -119,8 +128,26 @@ add_executable(${exe}
         Source/type_safe/types.hpp
         Source/type_safe/variant.hpp
         Source/type_safe/visitor.hpp
+
         Source/WinSDK/VersionHelpers.h
         Source/WinSDK/winapifamily.h
+
+        # NSF driver binaries
+        Source/drivers/drv_2a03.h
+        Source/drivers/drv_all.h
+        Source/drivers/drv_fds.h
+        Source/drivers/drv_mmc5.h
+        Source/drivers/drv_n163.h
+        Source/drivers/drv_s5b.h
+        Source/drivers/drv_vrc6.h
+        Source/drivers/drv_vrc7.h
+
+        # Utilities
+        Source/utils/ftmath.cpp
+        Source/utils/ftmath.h
+        Source/utils/handle_ptr.h
+        Source/utils/input.h
+        Source/utils/variadic_minmax.h
 
         # Sources
         Source/APU/2A03.cpp
@@ -151,19 +178,7 @@ add_executable(${exe}
         Source/APU/VRC6.h
         Source/APU/VRC7.cpp
         Source/APU/VRC7.h
-        Source/drivers/drv_2a03.h
-        Source/drivers/drv_all.h
-        Source/drivers/drv_fds.h
-        Source/drivers/drv_mmc5.h
-        Source/drivers/drv_n163.h
-        Source/drivers/drv_s5b.h
-        Source/drivers/drv_vrc6.h
-        Source/drivers/drv_vrc7.h
-        Source/utils/ftmath.cpp
-        Source/utils/ftmath.h
-        Source/utils/handle_ptr.h
-        Source/utils/input.h
-        Source/utils/variadic_minmax.h
+		
         Source/AboutDlg.cpp
         Source/AboutDlg.h
         Source/Accelerator.cpp
@@ -249,11 +264,11 @@ add_executable(${exe}
         Source/CustomControls.h
         Source/CustomExporter.cpp
         Source/CustomExporter.h
-        Source/CustomExporter_C_Interface.cpp
-        Source/CustomExporter_C_Interface.h
         Source/CustomExporterInterfaces.h
         Source/CustomExporters.cpp
         Source/CustomExporters.h
+        Source/CustomExporter_C_Interface.cpp
+        Source/CustomExporter_C_Interface.h
         Source/DetuneDlg.cpp
         Source/DetuneDlg.h
         Source/DetuneTable.cpp
