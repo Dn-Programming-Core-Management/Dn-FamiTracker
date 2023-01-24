@@ -560,17 +560,18 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 					}
 					break;
 				case EF_PHASE_RESET:	// // !!
-					if (ChanID != CHANID_DPCM ||
-					ChanID != CHANID_TRIANGLE ||
+					if (ChanID != CHANID_TRIANGLE ||
 					ChanID != CHANID_NOISE ||
 					ChipID != SNDCHIP_VRC7 ||
 					ChipID != SNDCHIP_S5B) {
-						WriteData(Command(CMD_EFF_PHASE_RESET));
-						WriteData(EffParam);
-					}
-					else if (ChanID == CHANID_DPCM) {
-						WriteData(Command(CMD_EFF_DPCM_PHASE_RESET));
-						WriteData(EffParam);
+						if (ChanID == CHANID_DPCM) {
+							WriteData(Command(CMD_EFF_DPCM_PHASE_RESET));
+							WriteData(EffParam);
+						}
+						else {
+							WriteData(Command(CMD_EFF_PHASE_RESET));
+							WriteData(EffParam);
+						}
 					}
 					break;
 				case EF_HARMONIC:	// // !!
