@@ -31,27 +31,27 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Static</UseOfMfc>
     <UseOfAtl>false</UseOfAtl>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Static</UseOfMfc>
     <UseOfAtl>false</UseOfAtl>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Static</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Static</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -209,7 +209,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;nafxcw.lib;Libcmt.lib</AdditionalDependencies>
+      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;nafxcw.lib;Libcmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Version>
       </Version>
       <AdditionalLibraryDirectories>$(LibraryPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -253,7 +253,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;nafxcw.lib;Libcmt.lib</AdditionalDependencies>
+      <AdditionalDependencies>Dbghelp.lib;winmm.lib;comctl32.lib;Avrt.lib;Version.lib;htmlhelp.lib;nafxcw.lib;Libcmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Version>
       </Version>
       <AdditionalLibraryDirectories>$(LibraryPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -437,7 +437,7 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="resource.h">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">echo // Generated Help Map file.  Used by Dn-FamiTracker.HHP. &gt; "hlp\HTMLDefines.h"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">echo // Generated Help Map file.  Used by $(SolutionName).hhp. &gt; "hlp\HTMLDefines.h"
 echo. &gt; "hlp\HTMLDefines.h"
 echo // Commands (ID_* and IDM_*) &gt;&gt; "hlp\HTMLDefines.h"
 makehm /h ID_,HID_,0x10000 IDM_,HIDM_,0x10000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.h"
@@ -453,7 +453,7 @@ makehm /h IDD_,HIDD_,0x20000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.h"
 echo. &gt;&gt; "hlp\HTMLDefines.h"
 echo // Frame Controls (IDW_*) &gt;&gt; "hlp\HTMLDefines.h"
 makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.h"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">echo // Generated Help Map file.  Used by Dn-FamiTracker.HHP. &gt; "hlp\HTMLDefines.h"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">echo // Generated Help Map file.  Used by $(SolutionName).hhp. &gt; "hlp\HTMLDefines.h"
 echo. &gt; "hlp\HTMLDefines.h"
 echo // Commands (ID_* and IDM_*) &gt;&gt; "hlp\HTMLDefines.h"
 makehm /h ID_,HID_,0x10000 IDM_,HIDM_,0x10000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.h"
@@ -473,7 +473,7 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Generating map file for help compiler.</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hlp\HTMLDefines.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">hlp\HTMLDefines.h;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">echo // Generated Help Map file.  Used by Dn-FamiTracker.HHP. &gt; "hlp\HTMLDefines.h"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">echo // Generated Help Map file.  Used by $(SolutionName).hhp. &gt; "hlp\HTMLDefines.h"
 echo. &gt; "hlp\HTMLDefines.h"
 echo // Commands (ID_* and IDM_*) &gt;&gt; "hlp\HTMLDefines.h"
 makehm /h ID_,HID_,0x10000 IDM_,HIDM_,0x10000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.h"
@@ -489,7 +489,7 @@ makehm /h IDD_,HIDD_,0x20000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.h"
 echo. &gt;&gt; "hlp\HTMLDefines.h"
 echo // Frame Controls (IDW_*) &gt;&gt; "hlp\HTMLDefines.h"
 makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.h"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">echo // Generated Help Map file.  Used by Dn-FamiTracker.HHP. &gt; "hlp\HTMLDefines.h"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">echo // Generated Help Map file.  Used by $(SolutionName).hhp. &gt; "hlp\HTMLDefines.h"
 echo. &gt; "hlp\HTMLDefines.h"
 echo // Commands (ID_* and IDM_*) &gt;&gt; "hlp\HTMLDefines.h"
 makehm /h ID_,HID_,0x10000 IDM_,HIDM_,0x10000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.h"

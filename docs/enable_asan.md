@@ -6,8 +6,6 @@
 
 Project -> Dn-FamiTracker Properties
 - Configuration Properties
-	- General
-		- Platform Toolset: Visual Studio 2022 (v143)
 	- Advanced
 		- Use of MFC: Use MFC in a Shared DLL
 	- C/C++

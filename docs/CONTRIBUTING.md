@@ -15,26 +15,25 @@ FamiTracker (and most of its forks) is an MFC application with project files mad
 
 
 ## Dependencies and Building
-To edit and/or build the source, you may use Visual Studio 2019, or alternatively, any IDE that supports CMake. You will need the following dependencies:
+To edit and/or build the source, you may use Visual Studio 2022, or alternatively, any IDE that supports CMake. You will need the following dependencies:
 
-- [HTMLHelp](https://docs.microsoft.com/en-us/previous-versions/windows/desktop/htmlhelp/microsoft-html-help-downloads) to build the manual
+- [HTML Help Workshop](https://docs.microsoft.com/en-us/previous-versions/windows/desktop/htmlhelp/microsoft-html-help-downloads) to build the manual. Note that HTML Help Workshop is no longer supported and thus no longer available to download on Microsoft's website. [Link to archived download.](https://web.archive.org/web/20200720082840/http://download.microsoft.com/download/0/A/9/0A939EF6-E31C-430F-A3DF-DFAE7960D564/htmlhelp.exe)
 - For any IDE that supports building via CMake:
   - CMake
   - The latest MSVC build tools (may be from VS Installer or from other sources)
   - These dependencies can be installed through the Visual Studio Installer:
-     - C++ MFC for latest v142 build tools (x86 & x64)
-     - C++ ATL for latest v142 build tools (x86 & x64)
+     - C++ MFC for latest v143 build tools (x86 & x64)
+     - C++ ATL for latest v143 build tools (x86 & x64)
 
-- For Visual Studio 2019:
-   - C++ Windows XP Support for VS 2017
+- For Visual Studio 2022:
    - Windows Universal CRT SDK
-   - C++ MFC for latest v142 build tools (x86 & x64)
-   - C++ ATL for latest v142 build tools (x86 & x64)
+   - C++ MFC for latest v143 build tools (x86 & x64)
+   - C++ ATL for latest v143 build tools (x86 & x64)
    - The Desktop development with C++ workload, which includes:
       - MSVC v142 - VS 2019 C++ x64/x86 build tools (latest version)
       - C++ CMake tools for Windows
 
-  - Alternatively, you can install the components mentioned via the [provided .vsconfig file](Dn-FT_VS_Dependencies.vsconfig).
+  - Alternatively, you can install the components mentioned via the [provided .vsconfig file](../Dn-FT_VS_Dependencies.vsconfig).
 
 
 

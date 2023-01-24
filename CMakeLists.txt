@@ -46,14 +46,12 @@ add_subdirectory_optimized("Source/libsamplerate" EXCLUDE_FROM_ALL)
 include(cmake/exe.cmake)
 
 #builds the .chm file
-if(WIN32)
-    add_custom_command(TARGET ${exe}
-        PRE_BUILD
-        COMMAND cmd /c ${CMAKE_CURRENT_SOURCE_DIR}/cmake/compile-chm.bat
-        COMMAND move Dn-Famitracker.chm ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "Generating help file...")
-endif()
+add_custom_command(TARGET ${exe}
+	PRE_BUILD
+	COMMAND cmd /c ${CMAKE_CURRENT_SOURCE_DIR}/cmake/compile-chm.bat
+	COMMAND move Dn-Famitracker.chm ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	COMMENT "Generating help file...")
 
 target_compile_features(${exe} PRIVATE cxx_std_17)
 
@@ -65,9 +63,28 @@ endif()
 
 
 # linking
-TARGET_LINK_LIBRARIES(${exe}
-        Dbghelp winmm comctl32 Avrt Version htmlhelp
-        samplerate)
+# Specify static MFC libraries nafxcw and Libcmt to avoid linker order issues
+if (STATIC_MSVCRT)
+	if (CMAKE_BUILD_TYPE MATCHES DEBUG)
+		TARGET_LINK_LIBRARIES(${exe}
+				Dbghelp winmm comctl32 Avrt Version htmlhelp
+				samplerate nafxcwd Libcmtd)
+	else ()
+		TARGET_LINK_LIBRARIES(${exe}
+				Dbghelp winmm comctl32 Avrt Version htmlhelp
+				samplerate nafxcw Libcmt)
+	endif ()
+else ()
+	if (CMAKE_BUILD_TYPE MATCHES DEBUG)
+		TARGET_LINK_LIBRARIES(${exe}
+				Dbghelp winmm comctl32 Avrt Version htmlhelp
+				samplerate MSVCRTD)
+	else ()
+		TARGET_LINK_LIBRARIES(${exe}
+				Dbghelp winmm comctl32 Avrt Version htmlhelp
+				samplerate MSVCRT)
+	endif ()
+endif ()
 
 # Dn-FamiTracker.rc includes res/Dn-FamiTracker.manifest.
 # To prevent manifest linking errors:

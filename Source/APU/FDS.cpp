@@ -21,16 +21,13 @@
 ** Any permitted reproduction of these routines, in whole or in part,
 ** must bear this legend.
 */
-#define _USE_MATH_DEFINES
 
 #include "../stdafx.h"
 #include "APU.h"
 #include "FDS.h"
-#include "../RegisterState.h"		// // //s
-
-#include <cstdint>
-
-#include <cmath>
+#include "../RegisterState.h"		// // //
+#define _USE_MATH_DEFINES
+#include <math.h>		// !! !! M_PI
 
 // FDS interface, actual FDS emulation is in FDSSound.cpp
 
