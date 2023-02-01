@@ -274,17 +274,25 @@ void CChunkRenderText::StoreSamplePointersChunk(CChunk *pChunk, CFile *pFile)
 	str.Format("%s:\n", pChunk->GetLabel());
 
 	if (len > 0) {
-		str.Append("\t.byte ");
 
 		int len = pChunk->GetLength();
-		for (int i = 0; i < len; ++i) {
-			str.AppendFormat("%i%s", pChunk->GetData(i), (i < len - 1) && (i % 3 != 2) ? ", " : "");
-			if (i % 3 == 2 && i < (len - 1))
-				str.Append("\n\t.byte ");
+		int samplenum = 0;
+		for (int i = 0; i < len; i += 3) {
+			CStringA label;
+			label.Format(LABEL_SAMPLE, samplenum);
+			str.Append("\t.byte ");
+			// location
+			//str.AppendFormat("%i, ", pChunk->GetData(i + 0));
+			str.AppendFormat("<((%s - $C000) >> 6), ", label);
+
+			// size
+			str.AppendFormat("%i, ", pChunk->GetData(i + 1));
+
+			//str.AppendFormat("%i", pChunk->GetData(i + 2));
+			str.AppendFormat("<.bank(%s)\n", label);
+			samplenum++;
 		}
 	}
-
-	str.Append("\n");
 
 	m_samplePointersStrings.Add(str);
 }
