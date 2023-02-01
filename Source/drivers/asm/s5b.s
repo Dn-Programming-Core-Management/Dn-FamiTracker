@@ -173,11 +173,11 @@ ft_update_s5b:
 	sta $E000
 	jmp @Finished
 
-@AutoEnv:
+@AutoEnv:       ; Hxy overrides envelope period
 	lda var_ch_PeriodCalcLo, x
-	sta var_Temp16
+	sta var_EnvelopeRate
 	lda var_ch_PeriodCalcHi, x
-	sta var_Temp16 + 1
+	sta var_EnvelopeRate + 1
 
 	lda var_EnvelopeType		;;; ;; ; 050B
 	lsr
@@ -191,14 +191,14 @@ ft_update_s5b:
 	sec
 	sbc #$08
 	tay
-:	lsr var_Temp16 + 1
-	ror var_Temp16
+:	lsr var_EnvelopeRate + 1
+	ror var_EnvelopeRate
 	dey
 	bne :-
 	bcc @Write
-	inc var_Temp16
+	inc var_EnvelopeRate
 	bne @Write
-	inc var_Temp16 + 1
+	inc var_EnvelopeRate + 1
 	bne @Write ; always
 @LowerOctave:
 	sta var_Temp
@@ -206,18 +206,18 @@ ft_update_s5b:
 	lda #$08
 	sbc var_Temp
 	tay
-:	asl var_Temp16
-	rol var_Temp16 + 1
+:	asl var_EnvelopeRate
+	rol var_EnvelopeRate + 1
 	dey
 	bne :-
 @Write:
 	ldx #$0B
 	stx $C000
-	lda var_Temp16
+	lda var_EnvelopeRate
 	sta $E000
 	inx
 	stx $C000
-	lda var_Temp16 + 1
+	lda var_EnvelopeRate + 1
 	sta $E000
 
 @Finished:
