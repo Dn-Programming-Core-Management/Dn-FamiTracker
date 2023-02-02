@@ -9,12 +9,17 @@ ft_init_s5b:
 	sta var_ch_DutyDefault + S5B_OFFSET + 2
 	lda #$FF
 	sta var_Noise_Prev
-	sta var_AutoEnv_Channel
 	lda #$00
 	sta var_Noise_Period
 	sta var_Noise_Default
 	sta var_EnvelopeRate
 	sta var_EnvelopeRate + 1
+	sta var_EnvelopeType
+	ldx #(CH_COUNT_S5B - 1)
+:	sta var_EnvelopeAutoShift, x
+	sta var_EnvelopeEnabled, x
+	dex
+	bne :-
 	lda #$07
 	sta $C000
 	lda #%00111000
@@ -73,6 +78,46 @@ ft_update_s5b:
 	ldx #$00
 	ldy #$00
 @ChannelLoop:
+	; CChannelHandlerS5B::UpdateAutoEnvelope()
+	lda var_EnvelopeAutoShift, x
+	beq @Continue
+	lda var_EnvelopeEnabled
+	beq @Continue
+
+@AutoEnv:		; Hxy overrides envelope period
+	lda var_ch_PeriodCalcLo + S5B_OFFSET, x
+	sta var_EnvelopeRate
+	lda var_ch_PeriodCalcHi + S5B_OFFSET, x
+	sta var_EnvelopeRate + 1
+
+	lda var_EnvelopeAutoShift, x		;;; ;; ; 050B
+	cmp #$08
+	beq @Continue
+	bcc @LowerOctave
+@RaiseOctave:
+	sec
+	sbc #$08
+	tay
+:	lsr var_EnvelopeRate + 1
+	ror var_EnvelopeRate
+	dey
+	bne :-
+	bcc @Continue
+	inc var_EnvelopeRate
+	bne @Continue
+	inc var_EnvelopeRate + 1
+	bne @Continue ; always
+@LowerOctave:
+	sta var_Temp
+	sec
+	lda #$08
+	sbc var_Temp
+	tay
+:	asl var_EnvelopeRate
+	rol var_EnvelopeRate + 1
+	dey
+	bne :-
+@Continue:
 	lda var_ch_Note + S5B_OFFSET, x				; Kill channel if note = off
 	bne :+
 	txa
@@ -84,7 +129,7 @@ ft_update_s5b:
 	sta $E000
 	iny
 	iny
-	bpl @S5B_next ; always
+	jpl @S5B_next ; always
 	; Load volume
 :	txa
 	ora #$08
@@ -139,6 +184,7 @@ ft_update_s5b:
 	lda var_ch_Trigger + S5B_OFFSET, x
 	beq @S5B_next
 	sta var_EnvelopeTrigger ; should be 1 anyway
+
 @S5B_next:
 	inx
 	cpx #CH_COUNT_S5B
@@ -161,56 +207,6 @@ ft_update_s5b:
 	lda var_Pul_Noi
 	sta $E000
 
-	ldx var_AutoEnv_Channel
-	bpl @AutoEnv
-	ldx #$0B
-	stx $C000
-	lda var_EnvelopeRate
-	sta $E000
-	inx
-	stx $C000
-	lda var_EnvelopeRate + 1
-	sta $E000
-	jmp @Finished
-
-@AutoEnv:       ; Hxy overrides envelope period
-	lda var_ch_PeriodCalcLo, x
-	sta var_EnvelopeRate
-	lda var_ch_PeriodCalcHi, x
-	sta var_EnvelopeRate + 1
-
-	lda var_EnvelopeType		;;; ;; ; 050B
-	lsr
-	lsr
-	lsr
-	lsr
-	cmp #$08
-	beq @Write
-	bcc @LowerOctave
-@RaiseOctave:
-	sec
-	sbc #$08
-	tay
-:	lsr var_EnvelopeRate + 1
-	ror var_EnvelopeRate
-	dey
-	bne :-
-	bcc @Write
-	inc var_EnvelopeRate
-	bne @Write
-	inc var_EnvelopeRate + 1
-	bne @Write ; always
-@LowerOctave:
-	sta var_Temp
-	sec
-	lda #$08
-	sbc var_Temp
-	tay
-:	asl var_EnvelopeRate
-	rol var_EnvelopeRate + 1
-	dey
-	bne :-
-@Write:
 	ldx #$0B
 	stx $C000
 	lda var_EnvelopeRate
@@ -228,6 +224,5 @@ ft_update_s5b:
 	lda #$0D
 	sta $C000
 	lda var_EnvelopeType
-	and #$0F
 	sta $E000
 :	rts

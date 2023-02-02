@@ -1214,15 +1214,24 @@ ft_cmd_n163_wave_buffer:
 ft_cmd_s5b_env_type:
 	lda #$01
 	sta var_EnvelopeTrigger
+	sta var_EnvelopeEnabled - S5B_OFFSET, x
 	jsr ft_get_pattern_byte
 	sta var_EnvelopeType
-	and #$F0
 	bne :+
-	lda #$FF
-	sta var_AutoEnv_Channel
-	rts
-:	stx var_AutoEnv_Channel
-	rts
+	lda #$00
+	sta var_EnvelopeEnabled - S5B_OFFSET, x
+	lda var_EnvelopeType
+:	and #$F0
+	lsr a
+	lsr a
+	lsr a
+	lsr a
+	sta var_EnvelopeAutoShift - S5B_OFFSET, x
+	beq :+
+	lda var_EnvelopeType
+	and #$0F
+	sta var_EnvelopeType
+:	rts
 ft_cmd_s5b_env_rate_hi:
 	jsr ft_get_pattern_byte
 	sta var_EnvelopeRate + 1
