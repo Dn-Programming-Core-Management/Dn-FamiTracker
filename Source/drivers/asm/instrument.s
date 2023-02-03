@@ -103,24 +103,18 @@ ft_run_instrument:
 	jmp @Limit
 @Relative:
 	; Relative
-	lda var_sequence_result
-	bmi :+
-	; overflow check
-	; if (#$7F - note) < sequence delta, will result in overflow
-	sec
-	lda #$7F
-	sbc var_ch_Note, x
-	clc
-	cmp var_sequence_result
-	bcs :+
-	lda #$60
-	jmp @Limit
-:
 	clc
 	lda var_ch_Note, x
 	adc var_sequence_result
+	bpl :++
+	; if negative, check for overflow
+	clc
+	lda var_sequence_result
 	bpl :+
-	lda #$01
+	lda #$01		; if underflow, clamp to #$01
+	jmp :++
+:
+	lda #$60		; if overflow, clamp to #$60
 :	jsr ft_limit_note
 	sta var_ch_Note, x
 	jmp @ArpDone
@@ -132,22 +126,18 @@ ft_run_instrument:
 	jmp @Limit
 @Absolute:
 	; Absolute
-	lda var_sequence_result
-	bmi :+
-	; overflow check
-	; if (#$7F - note) < sequence delta, will result in overflow
-	sec
-	lda #$7F
-	sbc var_ch_Note, x
-	clc
-	cmp var_sequence_result
-	bcs :+
-	lda #$60
-	jmp @Limit
-:
 	clc
 	lda var_ch_Note, x
 	adc var_sequence_result
+	bpl @Limit
+	; if negative, check for overflow
+	clc
+	lda var_sequence_result
+	bpl :+
+	adc var_ch_Note, x
+	jmp @Limit		; handles underflow
+:	
+	lda #$60		; if overflow, clamp to #$60
 @Limit:
 	jsr ft_limit_note
 @ArpDone:
