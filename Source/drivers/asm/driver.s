@@ -6,7 +6,7 @@
 .define DRIVER_NAME "Dn-FT "
 ; version 2.13
 .define VERSION_MAJ 2
-.define VERSION_MIN 13
+.define VERSION_MIN 14
 
 ;
 ; Assembler code switches
