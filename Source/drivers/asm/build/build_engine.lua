@@ -15,7 +15,7 @@ end
 
 local build = function (chip)
   print("Building NSF driver for " .. chip .. "...")
-  os.execute([[ca65 ../driver.s -l out_]]..chip..[[.lst -D USE_]]..chip..[[ -D PACKAGE]])
+  os.execute([[ca65 ../driver.s -l out_]]..chip..[[.lst -D USE_]]..chip..[[ -D PACKAGE -D USE_BANKSWITCH -D USE_OLDVIBRATO -D USE_LINEARPITCH]])
   os.execute([[ld65 -o c0_]] .. chip .. [[.bin ../driver.o -C c0.cfg]])
   os.execute([[ld65 -o c1_]] .. chip .. [[.bin ../driver.o -C c1.cfg]])
   

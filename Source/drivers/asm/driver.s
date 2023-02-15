@@ -21,9 +21,9 @@
 	.endif
 .endif
 
-USE_BANKSWITCH = 1		; Enable bankswitching code
-USE_OLDVIBRATO = 1		;;; ;; ; Enable old vibrato code
-USE_LINEARPITCH = 1		;;; ;; ; Enable linear pitch code
+;USE_BANKSWITCH = 1		; Enable bankswitching code
+;USE_OLDVIBRATO = 1		;;; ;; ; Enable old vibrato code
+;USE_LINEARPITCH = 1		;;; ;; ; Enable linear pitch code
 
 USE_DPCM = 1			; Enable DPCM channel (currently broken, leave enabled to avoid trouble).
 						; Also leave enabled when using expansion chips
