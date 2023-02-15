@@ -3025,7 +3025,9 @@ void CCompiler::WriteNSFConfig(CFile* pFile, unsigned int DPCMSegment, stNSFHead
 	WriteString("  ZP:  start = $00, size = $100, type = rw, file = \"\";\n");
 	WriteString("  RAM: start = $200,  size = $600,   type = rw, file = \"\";\n");
 	WriteString("  HDR: start = $00,   size = $80,    type = ro, file = %O;\n");
-	WriteString("  PRG: start = $8000, size = $40000, type = ro, file = %O;\n");
+	WriteString("  PRG: start = $8000, size = $40000, type = ");
+	WriteString(Header.SoundChip & SNDCHIP_FDS ? "rw" : "ro");
+	WriteString(", file = %O;\n");
 	WriteString("}\n\n");
 	WriteString("SEGMENTS {\n");
 	WriteString("  ZEROPAGE: load = ZP,  type = zp;\n");
