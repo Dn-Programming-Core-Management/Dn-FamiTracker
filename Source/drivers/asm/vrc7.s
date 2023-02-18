@@ -137,14 +137,9 @@ ft_update_vrc7:
 	ldx #$00					; x = channel
 @LoopChannels:
 
-	; Check note off
-	lda var_ch_Note + VRC7_OFFSET, x
-	bne :+
-	lda #VRC7_HALT
-	sta var_ch_vrc7_Command, x
-
+	; note off is checked in player.s
 	; See if retrigger is needed
-:	lda var_ch_vrc7_Command, x
+	lda var_ch_vrc7_Command, x
 	cmp #VRC7_TRIGGER
 	bne @UpdateChannel
 

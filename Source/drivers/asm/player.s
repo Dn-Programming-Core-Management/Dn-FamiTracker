@@ -510,6 +510,7 @@ ft_read_note:
 	ora #STATE_RELEASE
 	sta var_ch_State, x
 .if .defined(USE_VRC7)
+;	TODO: VRC7 instrument envelopes? (maybe in bhop instead)
 	lda ft_channel_type, x		;;; ;; ;
 	cmp #CHAN_VRC7				; ;; ;;;
 	beq @JumpToDone
@@ -517,25 +518,22 @@ ft_read_note:
 	jsr ft_instrument_release
 	jmp @ReadIsDone
 @NoteOff:
+	; VRC7 note-off handling
+.if .defined(USE_VRC7)
+	lda ft_channel_type, x
+	cmp #CHAN_VRC7
+	bne :+
+	lda #VRC7_HALT
+	sta var_ch_vrc7_Command - VRC7_OFFSET, x
+	jmp @ReadIsDone
+:
+.endif
 	lda #$00
 	sta var_ch_Note, x
 .if .defined(USE_DPCM)
 	lda ft_channel_type, x		;;; ;; ;
 	cmp #CHAN_DPCM				; ;; ;;;
 	bne :+
-	jmp @ReadIsDone
-:   lda #$00
-.endif
-.if .defined(USE_VRC7)
-	lda ft_channel_type, x
-	cmp #CHAN_VRC7
-	bne :+
-	lda #$00							; Halt VRC7 channel
-	sta var_ch_vrc7_Command - VRC7_OFFSET, x
-	sta var_ch_PortaToLo, x
-	sta var_ch_PortaToHi, x
-	sta var_ch_TimerPeriodLo, x
-	sta var_ch_TimerPeriodHi, x
 	jmp @ReadIsDone
 :   lda #$00
 .endif
