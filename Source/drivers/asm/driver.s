@@ -4,9 +4,9 @@
 ;;; ;; ;
 
 .define DRIVER_NAME "Dn-FT "
-; version 2.13
+; version 2.14
 .define VERSION_MAJ 2
-.define VERSION_MIN 13
+.define VERSION_MIN 14
 
 ;
 ; Assembler code switches
@@ -21,9 +21,9 @@
 	.endif
 .endif
 
-USE_BANKSWITCH = 1		; Enable bankswitching code
-USE_OLDVIBRATO = 1		;;; ;; ; Enable old vibrato code
-USE_LINEARPITCH = 1		;;; ;; ; Enable linear pitch code
+;USE_BANKSWITCH = 1		; Enable bankswitching code
+;USE_OLDVIBRATO = 1		;;; ;; ; Enable old vibrato code
+;USE_LINEARPITCH = 1		;;; ;; ; Enable linear pitch code
 
 USE_DPCM = 1			; Enable DPCM channel (currently broken, leave enabled to avoid trouble).
 						; Also leave enabled when using expansion chips
@@ -252,7 +252,8 @@ var_Noise_Prev:			.res 1						; cache noise value
 var_Pul_Noi:			.res 1						; $07
 var_EnvelopeRate:		.res 2						; $0B, $0C
 var_EnvelopeType:		.res 1						; $0D
-var_AutoEnv_Channel:	.res 1						;;; ;; ; 050B
+var_EnvelopeAutoShift:	.res CH_COUNT_S5B			;; ;; !!
+var_EnvelopeEnabled:	.res 1						;; ;; !! 050B; reduced to 1 because of ZP constraints
 var_EnvelopeTrigger:	.res 1						; Hxy issued
 .endif												; ;; ;;;
 
@@ -312,7 +313,7 @@ var_Tempo_Count:		.res 2						;  (if tempo support is not needed then this can b
 var_Tempo_Dec:			.res 2
 var_Tempo_Modulus:		.res 2						;;; ;; ; from 0.4.6
 var_Sweep:				.res 1						; This has to be saved
-var_VolumeSlideStarted:	.res 1						;; ;; !! Flag to allow simultaneous volume + slide 
+var_VolumeSlideStarted:	.res 1						;; ;; !! Flag to allow simultaneous volume + slide
 
 .if .defined(USE_BANKSWITCH)
 ;var_Bank:				.res 1

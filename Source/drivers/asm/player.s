@@ -510,6 +510,7 @@ ft_read_note:
 	ora #STATE_RELEASE
 	sta var_ch_State, x
 .if .defined(USE_VRC7)
+;	TODO: VRC7 instrument envelopes? (maybe in bhop instead)
 	lda ft_channel_type, x		;;; ;; ;
 	cmp #CHAN_VRC7				; ;; ;;;
 	beq @JumpToDone
@@ -517,25 +518,22 @@ ft_read_note:
 	jsr ft_instrument_release
 	jmp @ReadIsDone
 @NoteOff:
+	; VRC7 note-off handling
+.if .defined(USE_VRC7)
+	lda ft_channel_type, x
+	cmp #CHAN_VRC7
+	bne :+
+	lda #VRC7_HALT
+	sta var_ch_vrc7_Command - VRC7_OFFSET, x
+	jmp @ReadIsDone
+:
+.endif
 	lda #$00
 	sta var_ch_Note, x
 .if .defined(USE_DPCM)
 	lda ft_channel_type, x		;;; ;; ;
 	cmp #CHAN_DPCM				; ;; ;;;
 	bne :+
-	jmp @ReadIsDone
-:   lda #$00
-.endif
-.if .defined(USE_VRC7)
-	lda ft_channel_type, x
-	cmp #CHAN_VRC7
-	bne :+
-	lda #$00							; Halt VRC7 channel
-	sta var_ch_vrc7_Command - VRC7_OFFSET, x
-	sta var_ch_PortaToLo, x
-	sta var_ch_PortaToHi, x
-	sta var_ch_TimerPeriodLo, x
-	sta var_ch_TimerPeriodHi, x
 	jmp @ReadIsDone
 :   lda #$00
 .endif
@@ -1214,15 +1212,24 @@ ft_cmd_n163_wave_buffer:
 ft_cmd_s5b_env_type:
 	lda #$01
 	sta var_EnvelopeTrigger
+	sta var_EnvelopeEnabled - S5B_OFFSET, x
 	jsr ft_get_pattern_byte
 	sta var_EnvelopeType
-	and #$F0
 	bne :+
-	lda #$FF
-	sta var_AutoEnv_Channel
-	rts
-:	stx var_AutoEnv_Channel
-	rts
+	lda #$00
+	sta var_EnvelopeEnabled - S5B_OFFSET, x
+	lda var_EnvelopeType
+:	and #$F0
+	lsr a
+	lsr a
+	lsr a
+	lsr a
+	sta var_EnvelopeAutoShift - S5B_OFFSET, x
+	beq :+
+	lda var_EnvelopeType
+	and #$0F
+	sta var_EnvelopeType
+:	rts
 ft_cmd_s5b_env_rate_hi:
 	jsr ft_get_pattern_byte
 	sta var_EnvelopeRate + 1
