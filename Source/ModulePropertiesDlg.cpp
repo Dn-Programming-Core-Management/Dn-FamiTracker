@@ -980,10 +980,10 @@ CString CModulePropertiesDlg::PatchBytesToText(uint8_t* patchbytes)
 	return patchtxt;
 }
 
-uint8_t CModulePropertiesDlg::PatchTextToBytes(LPCTSTR pString, int index)
+void CModulePropertiesDlg::PatchTextToBytes(LPCTSTR pString, int index)
 {
 	std::string str(pString);
-	uint8_t patchbytes[8]{};
+	std::vector<uint8_t> patchbytes(8, 0);
 
 	// Convert to register values
 	std::istringstream values(str);
@@ -994,10 +994,8 @@ uint8_t CModulePropertiesDlg::PatchTextToBytes(LPCTSTR pString, int index)
 		int value = CSequenceInstrumentEditPanel::ReadStringValue(*begin++, false);		// // //
 		if (value < 0) value = 0;
 		if (value > 0xFF) value = 0xFF;
-		patchbytes[i] = value;
+		m_iOPLLPatchBytes[(8 * index) + i] = value;
 	}
-	
-	return patchbytes[index];
 }
 
 void CModulePropertiesDlg::OnBnClickedExternalOpll()
@@ -1012,9 +1010,7 @@ void CModulePropertiesDlg::OpllPatchByteEdit(int patchnum)
 {
 	CString str;
 	m_cOPLLPatchBytesEdit[patchnum].GetWindowText(str);
-
-	for (int i = 0; i < 8; i++)
-		m_iOPLLPatchBytes[(8 * 1) + i] = PatchTextToBytes(str, i);
+	PatchTextToBytes(str, patchnum);
 
 	updateExternallOPLLUI(patchnum, false);
 }
