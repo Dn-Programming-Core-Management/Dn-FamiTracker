@@ -59,6 +59,10 @@ private:
 
 	int m_CutoffHz;
 
+	// master volume attenuation
+	double m_Attenuation;
+	bool m_UseSurveyMix = false;
+
 	Namco163Audio m_N163;
 
 	Blip_Buffer m_BlipN163;
