@@ -255,15 +255,13 @@ void CMixer::RecomputeEmuMixState()
 	chipN163.UpdateN163Filter(m_MixerConfig.N163Lowpass, m_EmulatorConfig.N163DisableMultiplexing);
 	chipFDS.UpdateFDSFilter(m_MixerConfig.FDSLowpass);
 
-	uint8_t patchdump[19 * 8];
-
-	for (int i = 0; i < 19 * 8; ++i)
-		patchdump[i] = m_EmulatorConfig.UseOPLLPatchBytes.at(i);
+	ASSERT(!m_EmulatorConfig.UseOPLLPatchBytes.empty());
+	ASSERT(m_EmulatorConfig.UseOPLLPatchBytes.size() == 19 * 8);
 
 	chipVRC7.UpdatePatchSet(
 		m_EmulatorConfig.UseOPLLPatchSet,
 		m_EmulatorConfig.UseOPLLExt,
-		patchdump);
+		&m_EmulatorConfig.UseOPLLPatchBytes[0]);
 }
 
 int CMixer::GetMeterDecayRate() const		// // // 050B
