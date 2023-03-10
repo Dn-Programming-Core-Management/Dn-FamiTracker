@@ -4561,9 +4561,9 @@ void CFamiTrackerDoc::ResetOPLLPatches()
 	// Set to current default OPLL patchset
 	for (int i = 0; i < 19; i++) {
 		for (int j = 0; j < 8; j++) {
+			m_iOPLLPatchBytes[(8 * i) + j] = CAPU::OPLL_DEFAULT_PATCHES[DefaultPatchSetNumber][(8 * i) + j];
 			if (i == 0)
 				m_iOPLLPatchBytes[(8 * i) + j] = 0;
-			m_iOPLLPatchBytes[(8 * i) + j] = CAPU::OPLL_DEFAULT_PATCHES[DefaultPatchSetNumber][(8 * i) + j];
 		}
 		switch (DefaultPatchSetNumber) {
 		case 7:

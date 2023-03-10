@@ -609,27 +609,27 @@ void CAPUConfig::SetupMixer(
 // Device chip levels needs to be initialized first
 void CAPUConfig::SetChipLevel(chip_level_t Chip, float LeveldB, bool SurveyMix)
 {
-	// Compensate for blip_buffer output scaling differences
-	// values are derived by setting m_ChipLevels[] to 1.0
-	// and measuring the dB RMS delta between APU1 and other chips
-	// using methods described here: https://www.nesdev.org/wiki/NSFe#mixe
-	// TODO: investigate issues with rounding error
-	int16_t dblevelcorrection[CHIP_LEVEL_COUNT] {
-		0,		// APU1
-		-13,	// APU2
-		-494,	// VRC6
-		776,	// VRC7
-		-1700,	// FDS
-		869,	// MMC5
-		-1681,	// N163
-		108		// S5B
-	};
 
 	// Convert dB to linear
 	float LevelLinear = 1.0f;
 	if (SurveyMix) {
-		LevelLinear = powf(10,
-			((LeveldB + (static_cast<float>(dblevelcorrection[Chip]) / 100.0f)) +
+		// Compensate for blip_buffer output scaling differences
+		// values are derived by setting m_ChipLevels[] to 1.0
+		// and measuring the dB RMS delta between APU1 and other chips
+		// using methods described here: https://www.nesdev.org/wiki/NSFe#mixe
+		// TODO: investigate issues with rounding error
+		int16_t dblevelcorrection[CHIP_LEVEL_COUNT]{
+			0,		// APU1
+			-13,	// APU2
+			-494,	// VRC6
+			776,	// VRC7
+			-1700,	// FDS
+			869,	// MMC5
+			-1681,	// N163
+			108		// S5B
+		};
+		LevelLinear = powf(10, (LeveldB +
+			((static_cast<float>(dblevelcorrection[Chip]) / 100.0f)) +
 				(static_cast<float>(m_MixerConfig->DeviceMixOffsets[Chip]) / 10.0f)) / 20.0f);
 	}
 	else {
