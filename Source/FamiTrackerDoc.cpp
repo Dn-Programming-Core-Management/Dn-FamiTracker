@@ -161,6 +161,11 @@ std::pair<EffTable, EffTable> MakeEffectConversion(std::initializer_list<std::pa
 }
 
 // .first[] converts to 0CC, .second[] converts to FT 050B
+// 0CC for some reason a slightly different effects type order within the tracker,
+// but converts to FT 050B+ effects type order when saved to a file.
+// my guess is cross compatibility with earlier 0CC versions that didn't
+// respect FT 050B+'s effect type order? we can't do anything to change it, now.
+// https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/wiki/0CC-vs-FT-effects-type-order
 static const auto EFF_CONVERSION_050 = MakeEffectConversion({
 //	{EF_SUNSOFT_ENV_LO,		EF_SUNSOFT_ENV_TYPE},
 //	{EF_SUNSOFT_ENV_TYPE,	EF_SUNSOFT_ENV_LO},
@@ -1341,12 +1346,8 @@ bool CFamiTrackerDoc::WriteBlock_Patterns(CDocumentFile *pDocFile, const int Ver
 							int EffColumns = (m_pTracks[t]->GetEffectColumnCount(i) + 1);
 
 							for (int n = 0; n < EffColumns; n++) {
-								if (m_iFileVersion >= 0x450 && !m_bFileDnModule)
-								// Convert from 0CC-type to FamiTracker 0.5.0 beta type effect
-								// only if module is FT 0.5.0 beta
-									pDocFile->WriteBlockChar(EFF_CONVERSION_050.second[Note->EffNumber[n]]);		// // // 050B
-								else
-									pDocFile->WriteBlockChar(Note->EffNumber[n]);
+								// write 0CC effect type order as FamiTracker 0.5.0 beta+ effect type order
+								pDocFile->WriteBlockChar(EFF_CONVERSION_050.second[Note->EffNumber[n]]);		// // // 050B
 								pDocFile->WriteBlockChar(Note->EffParam[n]);
 							}
 						}
@@ -1637,10 +1638,8 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 							if (Note->Vol == 0)
 								Note->Vol = MAX_VOLUME;
 							if (Note->EffNumber[0] < EF_COUNT)		// // //
-								if (m_iFileVersion >= 0x450 && !m_bFileDnModule)
-									// Convert from FamiTracker 0.5.0 beta type to 0CC-type effect
-									// only if module is FT 0.5.0 beta
-									Note->EffNumber[0] = EFF_CONVERSION_050.first[Note->EffNumber[0]];
+								// read FamiTracker 0.5.0 beta+ effect type order as 0CC effect type order
+								Note->EffNumber[0] = EFF_CONVERSION_050.first[Note->EffNumber[0]];
 						}
 					}
 				}
@@ -2452,11 +2451,10 @@ void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Vers
 				}
 
 				// TODO: Dn-FamiTracker compatibility modes
-				if (m_iFileVersion >= 0x450 && !m_bFileDnModule) {		// // // 050B
+				if (m_iFileVersion < 0x450 || m_bFileDnModule) {		// // // 050B
 					for (auto &x : Note->EffNumber)
 						if (x < EF_COUNT)
-							// Convert from FamiTracker 0.5.0 beta type to 0CC-type effect
-							// only if module is FT 0.5.0 beta
+							// read FamiTracker 0.5.0 beta+ effect type order as 0CC effect type order
 							x = EFF_CONVERSION_050.first[x];
 				}
 				/*
