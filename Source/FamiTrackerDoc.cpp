@@ -249,6 +249,7 @@ CFamiTrackerDoc::CFamiTrackerDoc() :
 
 	ResetDetuneTables();		// // //
 	ResetOPLLPatches();
+	ResetLevelOffset();
 
 	// Clear pointer arrays
 	memset(m_pTracks, 0, sizeof(CPatternData*) * MAX_TRACKS);
@@ -467,6 +468,8 @@ void CFamiTrackerDoc::DeleteContents()
 	m_vHighlight = CPatternData::DEFAULT_HIGHLIGHT;		// // //
 
 	ResetDetuneTables();		// // //
+	ResetOPLLPatches();
+	ResetLevelOffset();
 
 	// Used for loading older files
 	m_vTmpSequences.clear();		// // //
@@ -485,13 +488,7 @@ void CFamiTrackerDoc::DeleteContents()
 
 	m_csDocumentLock.Unlock();
 
-	for (int i = 0; i < 7; i++) {
-		m_iDeviceLevelOffset[i] = 0;
-	}
-
 	m_bUseSurveyMixing = false;
-
-	ResetOPLLPatches();
 
 	CDocument::DeleteContents();
 }
@@ -4529,6 +4526,12 @@ void CFamiTrackerDoc::SetLevelOffset(int device, int16_t offset)
 	if (m_iDeviceLevelOffset[device] != offset)
 		ModifyIrreversible();
 	m_iDeviceLevelOffset[device] = offset;
+}
+
+void CFamiTrackerDoc::ResetLevelOffset()
+{
+	for (int i = 0; i < 8; i++)
+		m_iDeviceLevelOffset[i] = 0;
 }
 
 uint8_t CFamiTrackerDoc::GetOPLLPatchByte(int index) const
