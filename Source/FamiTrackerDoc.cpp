@@ -463,8 +463,6 @@ void CFamiTrackerDoc::DeleteContents()
 	m_iDetuneSemitone	 = 0;		// // // 050B
 	m_iDetuneCent		 = 0;		// // // 050B
 
-	m_bFileDnModule = false;
-
 	m_vHighlight = CPatternData::DEFAULT_HIGHLIGHT;		// // //
 
 	ResetDetuneTables();		// // //
