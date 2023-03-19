@@ -114,6 +114,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Import Text...",             ID_FILE_IMPORTTEXT
         MENUITEM "&Export Text...",             ID_FILE_EXPORTTEXT
+        MENUITEM "&Export JSON...",             ID_FILE_EXPORTJSON
         MENUITEM "Export Ro&ws...",             ID_FILE_EXPORTROWS
         MENUITEM SEPARATOR
         MENUITEM "&Configuration...",           ID_FILE_GENERALSETTINGS
@@ -2999,6 +3000,7 @@ STRINGTABLE
 BEGIN
     ID_FILE_IMPORTTEXT      "Imports module text files\nImport Text"
     ID_FILE_EXPORTTEXT      "Exports module as a text file\nExport Text"
+    ID_FILE_EXPORTJSON      "Exports module in JavaScript Object Notation, for use in scripts\nExport JSON"
     ID_CLEANUP_MERGEDUPLICATEDPATTERNS 
                             "Combine copies of duplicated patterns\nMerge Duplicated Patterns"
     ID_EDIT_VOLUMEMASK      "Disable writing to the volume column while entering a note\nVolume Mark"

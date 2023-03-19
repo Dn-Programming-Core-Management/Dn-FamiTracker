@@ -36,6 +36,7 @@
 #include "ChannelsDlg.h"
 #include "VisualizerWnd.h"
 #include "TextExporter.h"
+#include "JsonExporter.h"
 #include "ConfigGeneral.h"
 #include "ConfigVersion.h"		// // //
 #include "ConfigAppearance.h"
@@ -310,6 +311,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_NOTIFY(UDN_DELTAPOS, IDC_HIGHLIGHTSPIN1, OnDeltaposHighlightSpin1)
 	ON_NOTIFY(UDN_DELTAPOS, IDC_HIGHLIGHTSPIN2, OnDeltaposHighlightSpin2)
 	ON_COMMAND(ID_FILE_EXPORTROWS, OnFileExportRows)
+	ON_COMMAND(ID_FILE_EXPORTJSON, OnFileExportJson)
 	ON_COMMAND(ID_COPYAS_TEXT, OnEditCopyAsText)
 	ON_COMMAND(ID_COPYAS_VOLUMESEQUENCE, OnEditCopyAsVolumeSequence)
 	ON_COMMAND(ID_COPYAS_PPMCK, OnEditCopyAsPPMCK)
@@ -2100,6 +2102,31 @@ void CMainFrame::OnFileExportRows()		// // //
 
 	CTextExport Exporter;
 	CString sResult = Exporter.ExportRows(FileDialog.GetPathName(), pDoc);
+	if (sResult.GetLength() > 0)
+	{
+		AfxMessageBox(sResult, MB_OK | MB_ICONEXCLAMATION);
+	}
+}
+
+void CMainFrame::OnFileExportJson() {		// // //
+
+#ifdef DISABLE_SAVE		// // //
+	SetMessageText(IDS_DISABLE_SAVE);
+	return;
+#endif
+
+	CFamiTrackerDoc* pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
+	CString	DefFileName = pDoc->GetFileTitle();
+
+	CString fileFilter = LoadDefaultFilter(IDS_FILTER_TXT, _T(".json"));
+	HistoryFileDlg FileDialog(PATH_EXPORT, FALSE, _T(".json"), DefFileName, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, fileFilter);
+	// FileDialog.m_pOFN->lpstrInitialDir = theApp.GetSettings()->GetPath(PATH_NSF);
+
+	if (FileDialog.DoModal() == IDCANCEL)
+		return;
+
+	CJsonExport Exporter;
+	CString sResult = Exporter.ExportFile(FileDialog.GetPathName(), pDoc);
 	if (sResult.GetLength() > 0)
 	{
 		AfxMessageBox(sResult, MB_OK | MB_ICONEXCLAMATION);
