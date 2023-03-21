@@ -243,7 +243,9 @@ CFamiTrackerDoc::CFamiTrackerDoc() :
 	m_pInstrumentManager(new CInstrumentManager(this)),
 	m_pBookmarkManager(new CBookmarkManager(MAX_TRACKS)),
 	m_bUseExternalOPLLChip(false),
-	m_bUseSurveyMixing(false)
+	m_bUseSurveyMixing(false),
+	m_iPlaybackRate(0),
+	m_iPlaybackRateType(0)
 {
 	// Initialize document object
 
