@@ -90,6 +90,11 @@ BOOL CInstrumentEditorVRC7::OnInitDialog()
 	// Get active document
 	m_pDocument = GetDocument();
 
+	// initialize default patchset if it hasn't been already
+	// FIXME: initialize immediately after CConfigEmulation::OnApply()
+	if (!m_pDocument->GetExternalOPLLChipCheck())
+		m_pDocument->SetOPLLPatchSet(theApp.GetSettings()->Emulation.iVRC7Patch);
+
 	// fetch patch names and bytes
 	for (int i = 0; i < 19; i++) {
 		for (int j = 0; j < 8; j++)

@@ -609,7 +609,6 @@ void CAPUConfig::SetupMixer(
 // Device chip levels needs to be initialized first
 void CAPUConfig::SetChipLevel(chip_level_t Chip, float LeveldB, bool SurveyMix)
 {
-
 	// Convert dB to linear
 	float LevelLinear = 1.0f;
 	if (SurveyMix) {

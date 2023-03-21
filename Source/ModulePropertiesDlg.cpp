@@ -304,9 +304,23 @@ BOOL CModulePropertiesDlg::OnInitDialog()
 		m_cOPLLPatchLabel[i].SubclassDlgItem(IDC_STATIC_PATCH[i], this);
 		m_cOPLLPatchBytesEdit[i].SubclassDlgItem(IDC_OPLL_PATCHBYTE[i], this);
 		m_cOPLLPatchNameEdit[i].SubclassDlgItem(IDC_OPLL_PATCHNAME[i], this);
-		for (int j = 0; j < 8; j++)
-			m_iOPLLPatchBytes[(8 * i) + j] = m_pDocument->GetOPLLPatchByte((8 * i) + j);
-		m_strOPLLPatchNames[i] = m_pDocument->GetOPLLPatchName(i);
+	}
+
+	if (m_bExternalOPLL)
+		for (int i = 0; i < 19; ++i) {
+			for (int j = 0; j < 8; j++)
+				m_iOPLLPatchBytes[(8 * i) + j] = m_pDocument->GetOPLLPatchByte((8 * i) + j);
+			m_strOPLLPatchNames[i] = m_pDocument->GetOPLLPatchName(i);
+		}
+	else {
+		// initialize default patchset if it hasn't been already
+		// FIXME: initialize immediately after CConfigEmulation::OnApply()
+		m_pDocument->SetOPLLPatchSet(theApp.GetSettings()->Emulation.iVRC7Patch);
+		for (int i = 0; i < 19; ++i) {
+			for (int j = 0; j < 8; j++)
+				m_iOPLLPatchBytes[(8 * i) + j] = m_pDocument->GetOPLLPatchByte((8 * i) + j);
+			m_strOPLLPatchNames[i] = m_pDocument->GetOPLLPatchName(i);
+		}
 	}
 
 	// Update UI after, since this updates all components at once,
@@ -386,11 +400,16 @@ void CModulePropertiesDlg::OnBnClickedOk()
 	// Externall OPLL
 	m_pDocument->SetExternalOPLLChipCheck(m_bExternalOPLL);
 
-	for (int i = 0; i < 19; i++) {
-		for (int j = 0; j < 8; j++)
-			m_pDocument->SetOPLLPatchByte((8 * i) + j, m_iOPLLPatchBytes[(8 * i) + j]);
-		m_pDocument->SetOPLLPatchName(i, m_strOPLLPatchNames[i]);
-	}
+	if (m_bExternalOPLL)
+		for (int i = 0; i < 19; i++) {
+			for (int j = 0; j < 8; j++)
+				m_pDocument->SetOPLLPatchByte((8 * i) + j, m_iOPLLPatchBytes[(8 * i) + j]);
+			m_pDocument->SetOPLLPatchName(i, m_strOPLLPatchNames[i]);
+		}
+	else
+		// initialize default patchset if it hasn't been already
+		// FIXME: initialize immediately after CConfigEmulation::OnApply()
+		m_pDocument->SetOPLLPatchSet(theApp.GetSettings()->Emulation.iVRC7Patch);
 
 	if (pMainFrame->GetSelectedTrack() != m_iSelectedSong)
 		pMainFrame->SelectTrack(m_iSelectedSong);

@@ -4553,18 +4553,19 @@ void CFamiTrackerDoc::ResetOPLLPatches()
 
 	int DefaultPatchSetNumber = theApp.GetSettings()->Emulation.iVRC7Patch;
 
-	// YM2413 and YMF281B are considered external OPLL
-	if (DefaultPatchSetNumber > 6)
-		m_bUseExternalOPLLChip = true;
+	SetOPLLPatchSet(DefaultPatchSetNumber);
+}
 
+void CFamiTrackerDoc::SetOPLLPatchSet(int patchset)
+{
 	// Set to current default OPLL patchset
 	for (int i = 0; i < 19; i++) {
 		for (int j = 0; j < 8; j++) {
-			m_iOPLLPatchBytes[(8 * i) + j] = CAPU::OPLL_DEFAULT_PATCHES[DefaultPatchSetNumber][(8 * i) + j];
+			m_iOPLLPatchBytes[(8 * i) + j] = CAPU::OPLL_DEFAULT_PATCHES[patchset][(8 * i) + j];
 			if (i == 0)
 				m_iOPLLPatchBytes[(8 * i) + j] = 0;
 		}
-		switch (DefaultPatchSetNumber) {
+		switch (patchset) {
 		case 7:
 			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YM2413[i];
 			break;
