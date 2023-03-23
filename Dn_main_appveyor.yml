@@ -3,25 +3,24 @@ pull_requests:
   do_not_increment_build_number: true
 branches:
   only:
-  - master
+  - main
 skip_tags: true
 skip_branch_with_pr: true
-image: Visual Studio 2019
+image: Visual Studio 2022
 platform:
 - x64
 - Win32
 configuration:
 - Release
 - Debug
-shallow_clone: true
-clone_depth: 5
+shallow_clone: false
 build:
   project: Dn-FamiTracker.sln
   parallel: true
   verbosity: minimal
 after_build:
-- cmd: >-
-    call release.bat %configuration% %platform% %APPVEYOR_REPO_COMMIT%_%APPVEYOR_BUILD_VERSION%
+- cmd: for /f "tokens=*" %%a in ('git describe --tags') do (set commithash=%%a)
+- cmd: call release.bat %configuration% %platform% %commithash%_%APPVEYOR_BUILD_VERSION%
 artifacts:
 - path: distribute\*.7z
   name: 7z
