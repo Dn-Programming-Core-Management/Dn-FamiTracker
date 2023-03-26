@@ -18,7 +18,7 @@ goto endfile
 if "%~3"=="" goto compileversion
 
 cd  %2/%1/
-call 7z a -t7z -mx=9 -mmt=3 -m0=LZMA2:d=26:fb=128 -ms=on ..\..\distribute\Dn-FamiTracker_"%~3"_%conf_name%_"%~1".7z Dn-FamiTracker.exe Dn-FamiTracker.chm Dn-FamiTracker.pdb vc142.pdb ..\..\changelog.txt ..\..\demo
+call 7z a -t7z -mx=9 -mmt=3 -m0=LZMA2:d=26:fb=128 -ms=on ..\..\distribute\Dn-FamiTracker_"%~3"_%conf_name%_"%~1".7z Dn-FamiTracker.exe Dn-FamiTracker.chm Dn-FamiTracker.pdb vc143.pdb ..\..\changelog.txt ..\..\demo
 cd ..\..
 goto endfile
 
@@ -29,6 +29,6 @@ for /F "tokens=1,2,3,4,5 delims=, " %%A in (Dn-FamiTracker.rc) do (
 	)
 )
 cd  %2/%1/
-call 7z a -t7z -mx=9 -mmt=3 -m0=LZMA2:d=26:fb=128 -ms=on ..\..\distribute\Dn-FamiTracker_%version%_%conf_name%_"%~1".7z Dn-FamiTracker.exe Dn-FamiTracker.chm Dn-FamiTracker.pdb vc142.pdb ..\..\changelog.txt ..\..\demo
+call 7z a -t7z -mx=9 -mmt=3 -m0=LZMA2:d=26:fb=128 -ms=on ..\..\distribute\Dn-FamiTracker_%version%_%conf_name%_"%~1".7z Dn-FamiTracker.exe Dn-FamiTracker.chm Dn-FamiTracker.pdb vc143.pdb ..\..\changelog.txt ..\..\demo
 cd ..\..
 :endfile

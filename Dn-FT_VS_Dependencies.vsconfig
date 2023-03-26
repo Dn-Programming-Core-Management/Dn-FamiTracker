@@ -22,7 +22,6 @@
     "Microsoft.VisualStudio.Component.VC.ATLMFC.Spectre",
     "Microsoft.VisualStudio.Component.VC.ASAN",
     "Microsoft.VisualStudio.Component.Windows10SDK.20348",
-    "Microsoft.VisualStudio.Component.Windows11SDK.22621",
     "Microsoft.Component.VC.Runtime.UCRTSDK",
     "Microsoft.VisualStudio.Workload.NativeDesktop",
     "Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre"
