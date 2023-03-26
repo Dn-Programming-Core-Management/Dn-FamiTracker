@@ -20,7 +20,10 @@ To edit and/or build the source, you may use Visual Studio 2022, or alternativel
 - [HTML Help Workshop](https://docs.microsoft.com/en-us/previous-versions/windows/desktop/htmlhelp/microsoft-html-help-downloads) to build the manual. Note that HTML Help Workshop is no longer supported and thus no longer available to download on Microsoft's website. [Link to archived download.](https://web.archive.org/web/20200720082840/http://download.microsoft.com/download/0/A/9/0A939EF6-E31C-430F-A3DF-DFAE7960D564/htmlhelp.exe)
 - For any IDE that supports building via CMake:
   - CMake
-  - The latest MSVC build tools (may be from VS Installer or from other sources)
+  - The latest MSVC build tools 
+	  - may be installed by VS Installer or by other sources
+  - Windows 10 SDK version 2104 (10.0.20348.0)
+	  - may be installed by VS Installer or by other sources
   - These dependencies can be installed through the Visual Studio Installer:
      - C++ MFC for latest v143 build tools (x86 & x64)
      - C++ ATL for latest v143 build tools (x86 & x64)
