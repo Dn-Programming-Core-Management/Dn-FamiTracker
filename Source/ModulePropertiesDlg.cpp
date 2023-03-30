@@ -314,7 +314,6 @@ BOOL CModulePropertiesDlg::OnInitDialog()
 		}
 	else {
 		// initialize default patchset if it hasn't been already
-		// FIXME: initialize immediately after CConfigEmulation::OnApply()
 		m_pDocument->SetOPLLPatchSet(theApp.GetSettings()->Emulation.iVRC7Patch);
 		for (int i = 0; i < 19; ++i) {
 			for (int j = 0; j < 8; j++)
@@ -407,8 +406,6 @@ void CModulePropertiesDlg::OnBnClickedOk()
 			m_pDocument->SetOPLLPatchName(i, m_strOPLLPatchNames[i]);
 		}
 	else
-		// initialize default patchset if it hasn't been already
-		// FIXME: initialize immediately after CConfigEmulation::OnApply()
 		m_pDocument->SetOPLLPatchSet(theApp.GetSettings()->Emulation.iVRC7Patch);
 
 	if (pMainFrame->GetSelectedTrack() != m_iSelectedSong)

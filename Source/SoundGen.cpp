@@ -179,11 +179,13 @@ CSoundGen::CSoundGen() :
 	CreateChannels();
 
 	// Initialize emulation/mixer objects
+	UseSurveyMix = false;
 	DeviceMixOffset.resize(CHIP_LEVEL_COUNT);
 	std::fill(DeviceMixOffset.begin(), DeviceMixOffset.end(), 0);
 	SurveyMixLevels.resize(CHIP_LEVEL_COUNT);
 	std::fill(SurveyMixLevels.begin(), SurveyMixLevels.end(), 0);
 	UseExtOPLL = false;
+	OPLLDefaultPatchSet = theApp.GetSettings()->Emulation.iVRC7Patch;
 
 	OPLLHardwarePatchBytes.resize(19 * 8);
 	std::fill(OPLLHardwarePatchBytes.begin(), OPLLHardwarePatchBytes.end(), 0);
@@ -613,6 +615,8 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 
 	int PatchNum = pSettings->Emulation.iVRC7Patch;
 
+	refreshsettings |= OPLLDefaultPatchSet != PatchNum;
+
 	if (UseExtOPLL)
 		for (int i = 0; i < 19; i++) {
 			for (int j = 0; j < 8; j++)
@@ -622,13 +626,13 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 	else
 		for (int i = 0; i < 19; ++i) {
 			for (int j = 0; j < 8; ++j)
-				refreshsettings |= OPLLHardwarePatchBytes.at((8 * i) + j) != CAPU::OPLL_DEFAULT_PATCHES[PatchNum][(8 * i) + j];
+				refreshsettings |= OPLLHardwarePatchBytes.at((8 * i) + j) != CAPU::OPLL_DEFAULT_PATCHES[OPLLDefaultPatchSet][(8 * i) + j];
 			// Set OPLL patch names
-			if (PatchNum <= 6)
+			if (OPLLDefaultPatchSet <= 6)
 				refreshsettings |= OPLLHardwarePatchNames.at(i) != CAPU::OPLL_PATCHNAME_VRC7[i];
-			else if (PatchNum == 7)
+			else if (OPLLDefaultPatchSet == 7)
 				refreshsettings |= OPLLHardwarePatchNames.at(i) != CAPU::OPLL_PATCHNAME_YM2413[i];
-			else if (PatchNum == 8)
+			else if (OPLLDefaultPatchSet == 8)
 				refreshsettings |= OPLLHardwarePatchNames.at(i) != CAPU::OPLL_PATCHNAME_YMF281B[i];
 		}
 
@@ -897,16 +901,19 @@ bool CSoundGen::ResetAudioDevice()
 
 	UseSurveyMix = m_pDocument->GetSurveyMixCheck();
 
-	int PatchNum = pSettings->Emulation.iVRC7Patch;
+	OPLLDefaultPatchSet = pSettings->Emulation.iVRC7Patch;
 
-	assert(PatchNum <= CAPU::OPLL_TONE_NUM);
+	assert(OPLLDefaultPatchSet <= CAPU::OPLL_TONE_NUM);
 
 	{
 		UseExtOPLL = m_pDocument->GetExternalOPLLChipCheck();
+		// initialize default patchset if it hasn't been already
+		// ONLY IF a module is present
+		if (!UseExtOPLL && m_pDocument->IsFileLoaded())
+			m_pDocument->SetOPLLPatchSet(OPLLDefaultPatchSet);
 
 		for (int i = 0; i < 19; ++i) {
-			for (int j = 0; j < 8; ++j)
-				OPLLHardwarePatchBytes.at((8 * i) + j) = m_pDocument->GetOPLLPatchByte((8 * i) + j);
+			for (int j = 0; j < 8; ++j) OPLLHardwarePatchBytes.at((8 * i) + j) = m_pDocument->GetOPLLPatchByte((8 * i) + j);
 			OPLLHardwarePatchNames.at(i) = m_pDocument->GetOPLLPatchName(i);
 		}
 	}
@@ -917,7 +924,7 @@ bool CSoundGen::ResetAudioDevice()
 		// Update FamiTracker emulation
 		config.SetupEmulation(
 			pSettings->Emulation.bNamcoMixing,
-			PatchNum,
+			OPLLDefaultPatchSet,
 			UseExtOPLL,
 			OPLLHardwarePatchBytes,
 			OPLLHardwarePatchNames
