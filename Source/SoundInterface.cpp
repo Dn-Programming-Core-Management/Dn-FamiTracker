@@ -31,6 +31,7 @@
 #include <utility>  // std::move
 #include "Common.h"
 #include "SoundInterface.h"
+#include <stdexcept>
 #include "../resource.h"
 
 // WASAPI headers
@@ -210,7 +211,7 @@ int CSoundInterface::CalculateBufferLength(int BufferLen, int Samplerate, int Sa
 	return ((Samplerate * BufferLen) / 1000) * (Samplesize / 8) * Channels;
 }
 
-CSoundStream *CSoundInterface::OpenFloatChannel(int Channels, int BufferLength) {
+CSoundStream *CSoundInterface::OpenFloatChannel(const int InputChannels, int BufferLength) {
 	// Based off https://docs.microsoft.com/en-us/windows/win32/coreaudio/exclusive-mode-streams
 	if (!m_maybeDevice) {
 		return nullptr;
@@ -221,13 +222,14 @@ CSoundStream *CSoundInterface::OpenFloatChannel(int Channels, int BufferLength) 
 	);
 	if (FAILED(hr)) return nullptr;
 
-	const int InputChannels = Channels;
-
 	// Set sample rate to mix format. This is necessary on Windows since WASAPI rejects
 	// non-system sampling rates, and a good idea on Linux since Wine delegates resampling
 	// to PulseAudio/PipeWire, and PulseAudio uses a low-quality resampler by default
 	// (https://gitlab.freedesktop.org/pulseaudio/pulseaudio/-/issues/310).
 	DWORD SampleRate{};
+	int OutputChannels{};
+	DWORD outChannelMask{};
+	
 	{
 		WAVEFORMATEX* pMixFormat{};
 		hr = pAudioClient->GetMixFormat(&pMixFormat);
@@ -235,53 +237,61 @@ CSoundStream *CSoundInterface::OpenFloatChannel(int Channels, int BufferLength) 
 			CoTaskMemFree(pMixFormat);
 			return nullptr;
 		}
-		SampleRate = (int) pMixFormat->nSamplesPerSec;
+		SampleRate = pMixFormat->nSamplesPerSec;
+		OutputChannels = (int) pMixFormat->nChannels;
+
+		// https://learn.microsoft.com/en-us/windows/win32/api/audioclient/nf-audioclient-iaudioclient-getmixformat
+		// "the GetMixFormat method retrieves a format descriptor that is in the
+		// form of a WAVEFORMATEXTENSIBLE structure instead of a standalone
+		// WAVEFORMATEX structure. Through the ppDeviceFormat parameter, the method
+		// outputs a pointer to the WAVEFORMATEX structure that is embedded at the
+		// start of this WAVEFORMATEXTENSIBLE structure."
+		if (pMixFormat->wFormatTag != WAVE_FORMAT_EXTENSIBLE) {
+			throw std::runtime_error("GetMixFormat() wFormatTag not WAVE_FORMAT_EXTENSIBLE!");
+		}
+		ASSERT(pMixFormat->cbSize >= 22);
+		auto mixFormatExt = (WAVEFORMATEXTENSIBLE*)pMixFormat;
+		outChannelMask = mixFormatExt->dwChannelMask;
+
 		CoTaskMemFree(pMixFormat);
 	}
 
-	auto create_wave_format = [](WORD Channels, DWORD SampleRate) {
-		// Can't use designated initializers since we're not in C++20 mode.
-		WAVEFORMATEX format{};
+	// Can't use designated initializers since we're not in C++20 mode.
+	WAVEFORMATEXTENSIBLE format{}; // Format.cbSize = 22
+	
+	constexpr WORD FLOAT32_BITS = 32;
+	{
+		// Bytes per frame.
+		auto blockAlign = (WORD)(OutputChannels * FLOAT32_BITS / 8);
 
 		// https://docs.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-waveformatex#members
-		format.wFormatTag = WAVE_FORMAT_IEEE_FLOAT;
-		format.nChannels = Channels;
-		format.nSamplesPerSec = SampleRate;
-		format.wBitsPerSample = 32;
+		format.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
+		format.Format.nChannels = OutputChannels;
+		format.Format.nSamplesPerSec = SampleRate;
+		format.Format.nAvgBytesPerSec = (DWORD)(SampleRate * blockAlign);
+		format.Format.nBlockAlign = blockAlign;
+		format.Format.wBitsPerSample = FLOAT32_BITS;
+		
+		// Both WAVEFORMATEX and WAVEFORMATEXTENSIBLE (and the entirety of mmreg.h)
+		// are packed (alignof=1).
+		format.Format.cbSize = 22;
 
-		// If wFormatTag is WAVE_FORMAT_PCM or WAVE_FORMAT_EXTENSIBLE, nBlockAlign must be equal to
-		// the product of nChannels and wBitsPerSample divided by 8 (bits per byte).
-		format.nBlockAlign = (WORD)(format.nChannels * format.wBitsPerSample / 8);
+		// IEEE_FLOAT is uncompressed, so set wValidBitsPerSample.
+		// https://www.ambisonic.net/mulchaud.html#_Toc446153097
+		format.Samples.wValidBitsPerSample = FLOAT32_BITS;
+		format.dwChannelMask = outChannelMask;
 
-		// If wFormatTag is WAVE_FORMAT_PCM, nAvgBytesPerSec should be equal to the product of
-		// nSamplesPerSec and nBlockAlign.
-		format.nAvgBytesPerSec = (DWORD)(format.nSamplesPerSec * format.nBlockAlign);
-
-		// Size, in bytes, of extra format information appended to the end of the WAVEFORMATEX
-		// structure.
-		format.cbSize = 0;
-
-		return format;
+		format.SubFormat = KSDATAFORMAT_SUBTYPE_IEEE_FLOAT;
 	};
-	WAVEFORMATEX format = create_wave_format((WORD)Channels, SampleRate);
+
+	auto pFormat = (WAVEFORMATEX*)&format;
 
 	// Ensure that chosen audio format is supported.
 	WAVEFORMATEX* pClosestMatch{};
-	hr = pAudioClient->IsFormatSupported(AUDCLNT_SHAREMODE_SHARED, &format, &pClosestMatch);
-	if (hr == S_FALSE || hr == AUDCLNT_E_UNSUPPORTED_FORMAT) {
-		CoTaskMemFree(pClosestMatch);
-		pClosestMatch = nullptr;
-
-		// Try again in stereo. We will upmix input mono to stereo.
-		// (Should we pick stereo by default?)
-		Channels = 2;
-
-		format = create_wave_format((WORD)Channels, SampleRate);
-		hr = pAudioClient->IsFormatSupported(AUDCLNT_SHAREMODE_SHARED, &format, &pClosestMatch);
-	}
+	hr = pAudioClient->IsFormatSupported(AUDCLNT_SHAREMODE_SHARED, pFormat, &pClosestMatch);
 
 	// So far we don't need to handle audio format fallback, since Windows 7/10 and
-	// Wine all support int16 audio.
+	// Wine all support float32 audio.
 	// If the audio format is still unsupported, give up and show an error to the user.
 	if (hr != S_OK) {
 		CoTaskMemFree(pClosestMatch);
@@ -307,7 +317,7 @@ CSoundStream *CSoundInterface::OpenFloatChannel(int Channels, int BufferLength) 
 		AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
 		bufferLengthTime,
 		0,  // periodicity must be 0 for shared streams
-		&format,
+		pFormat,
 		nullptr);  // We ignore GUID.
 	if (FAILED(hr)) return nullptr;
 
@@ -345,7 +355,7 @@ CSoundStream *CSoundInterface::OpenFloatChannel(int Channels, int BufferLength) 
 		bufferFrameCount,
 		4,  // bytesPerSample = 4 for float
 		InputChannels,
-		Channels);
+		OutputChannels);
 }
 
 void CSoundInterface::CloseChannel(CSoundStream *pSoundStream)
@@ -381,6 +391,7 @@ CSoundStream::CSoundStream(
 	m_inputChannels(inputChannels),
 	m_outputChannels(outputChannels)
 {
+	ASSERT(m_inputChannels == 1);
 }
 
 CSoundStream::~CSoundStream()
@@ -563,26 +574,37 @@ uint32_t CSoundStream::BufferBytesWritable() const {
 bool CSoundStream::WriteBuffer(float const* pSrcBuffer, unsigned int Bytes)
 {
 	// Bytes comes from CSoundStream::BufferBytesWritable().
-	unsigned int frames = PubBytesToFrames(Bytes);
+	const unsigned int nFrames = PubBytesToFrames(Bytes);
 
 	BYTE* pOutData = nullptr;
-	auto hr = m_pAudioRenderClient->GetBuffer(frames, &pOutData);
+	auto hr = m_pAudioRenderClient->GetBuffer(nFrames, &pOutData);
 	if (FAILED(hr)) return false;
 
-	if (m_outputChannels == 2 && m_inputChannels == 1) {
-		// Upmix mono to stereo.
-		ASSERT(m_bytesPerSample == 4);
+	// https://johnnysswlab.com/decreasing-the-number-of-memory-accesses-the-compilers-secret-life-2-2/ idk
+	const auto nOutputChannels = m_outputChannels;
+	if (nOutputChannels >= 2) {
+		ASSERT(m_inputChannels == 1);
+		ASSERT(m_bytesPerSample == sizeof(float));
 
-		// feeling fancy, might remove __restrict later
-		auto src8 = (float const* __restrict)pSrcBuffer;
-		auto dst8 = (float * __restrict)pOutData;
-		for (size_t i = 0; i < frames; i++) {
-			dst8[2 * i] = dst8[2 * i + 1] = src8[i];
+		// Upmix mono input to stereo output.
+		auto  *__restrict inputSpan = (float const*)pSrcBuffer;  // idx < nFrames * (m_inputChannels=1)
+		auto *__restrict outputSpan = (float *)pOutData;  // idx < nFrames * nOutputChannels
+
+		// If output has over 2 channels, fill trailing channels with silence.
+		if (nOutputChannels > 2) {
+			std::fill(outputSpan, outputSpan + nFrames * nOutputChannels, 0.f);
+		}
+
+		// Fill first 2 output channels with single input channel.
+		for (size_t frame = 0; frame < nFrames; frame++) {
+			outputSpan[(frame) * nOutputChannels]
+				= outputSpan[(frame) * nOutputChannels + 1]
+				= inputSpan[frame];
 		}
 	} else {
 		memcpy(pOutData, pSrcBuffer, Bytes);
 	}
-	hr = m_pAudioRenderClient->ReleaseBuffer(frames, 0);
+	hr = m_pAudioRenderClient->ReleaseBuffer(nFrames, 0);
 	if (FAILED(hr)) return false;
 
 	if (m_state == StreamState::Stopped && BufferFramesWritable() == 0) {
