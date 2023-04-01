@@ -85,7 +85,7 @@ public:
 	void updateDeviceMixOffsetUI(int device, bool renderText = true);
 	void updateExternallOPLLUI(int patchnum, bool renderText = true);
 	CString PatchBytesToText(uint8_t* patchbytes);
-	uint8_t PatchTextToBytes(LPCTSTR pString, int index);
+	void PatchTextToBytes(LPCTSTR pString, int index);
 	void OffsetSlider(int device, int pos);
 	void DeviceOffsetEdit(int device);
 	void OpllPatchByteEdit(int patchnum);

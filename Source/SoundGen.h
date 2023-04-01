@@ -350,11 +350,16 @@ private:
 	CSoundStream		*m_pSoundStream;
 	CVisualizerWnd		*m_pVisualizerWnd;
 	CAPU				*m_pAPU;
+
+	// Emulation objects
 	bool UseExtOPLL;
-	std::vector<int16_t> DeviceMixOffset;
-	bool UseSurveyMix;
+	int OPLLDefaultPatchSet;
 	std::vector<uint8_t> OPLLHardwarePatchBytes;
 	std::vector<std::string> OPLLHardwarePatchNames;
+
+	// Mixer objects
+	bool UseSurveyMix;
+	std::vector<int16_t> DeviceMixOffset;
 
 
 	const CDSample		*m_pPreviewSample;

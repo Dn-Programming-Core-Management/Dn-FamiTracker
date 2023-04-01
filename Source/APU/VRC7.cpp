@@ -57,8 +57,15 @@ void CVRC7::Reset()
 	m_iTime = 0;
 	m_BlipVRC7.clear();
 	if (m_pOPLLInt != NULL) {
+		// update patchset and OPLL type
+		OPLL_setChipType(m_pOPLLInt, ((m_UseExternalOPLLChip || m_PatchSelection > 6) ? 0 : 1));
+
+		if (m_UseExternalOPLLChip && m_PatchSet != NULL)
+			OPLL_setPatch(m_pOPLLInt, m_PatchSet);
+		else
+			OPLL_resetPatch(m_pOPLLInt, m_PatchSelection);
+
 		OPLL_reset(m_pOPLLInt);
-		// patchset and OPLL type is set in UpdatePatchSet()
 	}
 }
 
@@ -201,10 +208,7 @@ void CVRC7::UpdateMixLevel(double v, bool UseSurveyMix)
 
 void CVRC7::UpdatePatchSet(int PatchSelection, bool UseExternalOPLLChip, uint8_t* PatchSet)
 {
-	OPLL_setChipType(m_pOPLLInt, (UseExternalOPLLChip ? 0 : 1));
-
-	if (UseExternalOPLLChip)
-		OPLL_setPatch(m_pOPLLInt, PatchSet);
-	else
-		OPLL_resetPatch(m_pOPLLInt, PatchSelection);
+	m_PatchSelection = PatchSelection;
+	m_UseExternalOPLLChip = UseExternalOPLLChip;
+	m_PatchSet = PatchSet;
 }

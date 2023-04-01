@@ -160,6 +160,12 @@ std::pair<EffTable, EffTable> MakeEffectConversion(std::initializer_list<std::pa
 	return std::make_pair(forward, backward);
 }
 
+// .first[] converts to 0CC, .second[] converts to FT 050B
+// 0CC for some reason a slightly different effects type order within the tracker,
+// but converts to FT 050B+ effects type order when saved to a file.
+// my guess is cross compatibility with earlier 0CC versions that didn't
+// respect FT 050B+'s effect type order? we can't do anything to change it, now.
+// https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/wiki/0CC-vs-FT-effects-type-order
 static const auto EFF_CONVERSION_050 = MakeEffectConversion({
 //	{EF_SUNSOFT_ENV_LO,		EF_SUNSOFT_ENV_TYPE},
 //	{EF_SUNSOFT_ENV_TYPE,	EF_SUNSOFT_ENV_LO},
@@ -237,12 +243,15 @@ CFamiTrackerDoc::CFamiTrackerDoc() :
 	m_pInstrumentManager(new CInstrumentManager(this)),
 	m_pBookmarkManager(new CBookmarkManager(MAX_TRACKS)),
 	m_bUseExternalOPLLChip(false),
-	m_bUseSurveyMixing(false)
+	m_bUseSurveyMixing(false),
+	m_iPlaybackRate(0),
+	m_iPlaybackRateType(0)
 {
 	// Initialize document object
 
 	ResetDetuneTables();		// // //
 	ResetOPLLPatches();
+	ResetLevelOffset();
 
 	// Clear pointer arrays
 	memset(m_pTracks, 0, sizeof(CPatternData*) * MAX_TRACKS);
@@ -456,11 +465,11 @@ void CFamiTrackerDoc::DeleteContents()
 	m_iDetuneSemitone	 = 0;		// // // 050B
 	m_iDetuneCent		 = 0;		// // // 050B
 
-	m_bFileDnModule = false;
-
 	m_vHighlight = CPatternData::DEFAULT_HIGHLIGHT;		// // //
 
 	ResetDetuneTables();		// // //
+	ResetOPLLPatches();
+	ResetLevelOffset();
 
 	// Used for loading older files
 	m_vTmpSequences.clear();		// // //
@@ -479,13 +488,7 @@ void CFamiTrackerDoc::DeleteContents()
 
 	m_csDocumentLock.Unlock();
 
-	for (int i = 0; i < 7; i++) {
-		m_iDeviceLevelOffset[i] = 0;
-	}
-
 	m_bUseSurveyMixing = false;
-
-	ResetOPLLPatches();
 
 	CDocument::DeleteContents();
 }
@@ -1340,11 +1343,8 @@ bool CFamiTrackerDoc::WriteBlock_Patterns(CDocumentFile *pDocFile, const int Ver
 							int EffColumns = (m_pTracks[t]->GetEffectColumnCount(i) + 1);
 
 							for (int n = 0; n < EffColumns; n++) {
-								if (m_iFileVersion < 0x450 && !m_bFileDnModule)
-								// Convert from 0CC-type to FamiTracker 0.5.0 beta type effect
-									pDocFile->WriteBlockChar(EFF_CONVERSION_050.second[Note->EffNumber[n]]);		// // // 050B
-								else
-									pDocFile->WriteBlockChar(Note->EffNumber[n]);
+								// write 0CC effect type order as FamiTracker 0.5.0 beta+ effect type order
+								pDocFile->WriteBlockChar(EFF_CONVERSION_050.second[Note->EffNumber[n]]);		// // // 050B
 								pDocFile->WriteBlockChar(Note->EffParam[n]);
 							}
 						}
@@ -1635,9 +1635,8 @@ BOOL CFamiTrackerDoc::OpenDocumentOld(CFile *pOpenFile)
 							if (Note->Vol == 0)
 								Note->Vol = MAX_VOLUME;
 							if (Note->EffNumber[0] < EF_COUNT)		// // //
-								if (m_iFileVersion < 0x450 && !m_bFileDnModule)
-									// Convert from FamiTracker 0.5.0 beta type to 0CC-type effect
-									Note->EffNumber[0] = EFF_CONVERSION_050.first[Note->EffNumber[0]];
+								// read FamiTracker 0.5.0 beta+ effect type order as 0CC effect type order
+								Note->EffNumber[0] = EFF_CONVERSION_050.first[Note->EffNumber[0]];
 						}
 					}
 				}
@@ -2449,10 +2448,10 @@ void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Vers
 				}
 
 				// TODO: Dn-FamiTracker compatibility modes
-				if (m_iFileVersion < 0x450 && !m_bFileDnModule) {		// // // 050B
+				if (m_iFileVersion < 0x450 || m_bFileDnModule) {		// // // 050B
 					for (auto &x : Note->EffNumber)
 						if (x < EF_COUNT)
-							// Convert from FamiTracker 0.5.0 beta type to 0CC-type effect
+							// read FamiTracker 0.5.0 beta+ effect type order as 0CC effect type order
 							x = EFF_CONVERSION_050.first[x];
 				}
 				/*
@@ -4529,6 +4528,12 @@ void CFamiTrackerDoc::SetLevelOffset(int device, int16_t offset)
 	m_iDeviceLevelOffset[device] = offset;
 }
 
+void CFamiTrackerDoc::ResetLevelOffset()
+{
+	for (int i = 0; i < 8; i++)
+		m_iDeviceLevelOffset[i] = 0;
+}
+
 uint8_t CFamiTrackerDoc::GetOPLLPatchByte(int index) const
 {
 	return m_iOPLLPatchBytes[index];
@@ -4550,18 +4555,19 @@ void CFamiTrackerDoc::ResetOPLLPatches()
 
 	int DefaultPatchSetNumber = theApp.GetSettings()->Emulation.iVRC7Patch;
 
-	// YM2413 and YMF281B are considered external OPLL
-	if (DefaultPatchSetNumber > 6)
-		m_bUseExternalOPLLChip = true;
+	SetOPLLPatchSet(DefaultPatchSetNumber);
+}
 
+void CFamiTrackerDoc::SetOPLLPatchSet(int patchset)
+{
 	// Set to current default OPLL patchset
 	for (int i = 0; i < 19; i++) {
 		for (int j = 0; j < 8; j++) {
+			m_iOPLLPatchBytes[(8 * i) + j] = CAPU::OPLL_DEFAULT_PATCHES[patchset][(8 * i) + j];
 			if (i == 0)
 				m_iOPLLPatchBytes[(8 * i) + j] = 0;
-			m_iOPLLPatchBytes[(8 * i) + j] = CAPU::OPLL_DEFAULT_PATCHES[DefaultPatchSetNumber][(8 * i) + j];
 		}
-		switch (DefaultPatchSetNumber) {
+		switch (patchset) {
 		case 7:
 			m_strOPLLPatchNames[i] = CAPU::OPLL_PATCHNAME_YM2413[i];
 			break;

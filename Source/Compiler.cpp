@@ -455,7 +455,8 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	}
 
 	// write VRC7 chunk
-	uint8_t extOPLL = m_pDocument->GetExternalOPLLChipCheck(); iVRC7Size++;
+	// YM2413 and YMF281B are considered external OPLL
+	uint8_t extOPLL = m_pDocument->GetExternalOPLLChipCheck() || (theApp.GetSettings()->Emulation.iVRC7Patch > 6); iVRC7Size++;
 	uint8_t patchset[19 * 8];
 	if (extOPLL)
 		for (int i = 0; i < 19; i++)
@@ -721,7 +722,8 @@ void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
 	}
 
 	// write VRC7 chunk
-	uint8_t extOPLL = m_pDocument->GetExternalOPLLChipCheck(); iVRC7Size++;
+	// YM2413 and YMF281B are considered external OPLL
+	uint8_t extOPLL = m_pDocument->GetExternalOPLLChipCheck() || (theApp.GetSettings()->Emulation.iVRC7Patch > 6); iVRC7Size++;
 	uint8_t patchset[19 * 8];
 	if (extOPLL)
 		for (int i = 0; i < 19; i++)

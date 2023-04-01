@@ -72,6 +72,13 @@ private:
 
 	double		m_DirectVolume = 1.0f;
 
+	// OPLL chip type
+	bool m_UseExternalOPLLChip = false;
+	// default OPLL patchset
+	int m_PatchSelection = 0;
+	// pointer to document OPLL patchset
+	uint8_t* m_PatchSet = NULL;
+
 	// [0..8] corresponds to the 9 channels of the YM2413. Future support for percussion mode?
 	ChannelLevelState<uint8_t> m_ChannelLevels[9];
 

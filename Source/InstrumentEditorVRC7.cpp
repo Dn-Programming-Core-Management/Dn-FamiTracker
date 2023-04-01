@@ -86,7 +86,6 @@ BOOL CInstrumentEditorVRC7::OnInitDialog()
 	CComboBox* pPatchBox = static_cast<CComboBox*>(GetDlgItem(IDC_PATCH));
 	CString Text;
 
-
 	// Get active document
 	m_pDocument = GetDocument();
 
