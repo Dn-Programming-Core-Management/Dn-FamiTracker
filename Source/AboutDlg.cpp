@@ -166,7 +166,7 @@ BOOL CAboutDlg::OnInitDialog()
 		_T("- 0CC-FamiTracker by HertzDevil\r\n")
 		_T("- Additional improvements by nyanpasu64\r\n")
 		_T("- Export plugin support by Gradualore\r\n")
-		_T("- Sunsoft 5B information in manual by Blue Mario\r\n")		// // !!
+		_T("- Sunsoft 5B information in manual by forple\r\n")		// // !!
 		_T("- Additional manual information by Persune\r\n")		// // !!
 		_T("- Toolbar icons are made by ilkke\r\n")
 		_T("- Dn-FT icon design by Accuracy\r\n")		// // !!
