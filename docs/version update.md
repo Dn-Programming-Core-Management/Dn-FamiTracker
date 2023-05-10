@@ -1,6 +1,10 @@
 # How to update version info in Dn-FT:
 
-- Edit every file with version info
+- Update changelogs:
+	- changelog.txt
+	- the release page in Github
+	- changelog.htm (in Dn-Help)
+- Edit every file with version info:
 	- Dn-FamiTracker.rc
 	- Version.h
 - Edit every file with the copyright info:
