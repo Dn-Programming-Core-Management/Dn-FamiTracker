@@ -31,6 +31,8 @@
         <li><a href="#Harmonic">Kxx - Frequency multiplier</a></li>
         <li><a href="#DelayedRelease">Lxx - Delayed note release</a></li>
         <li><a href="#DelayedVolume">Mxy - Delayed note volume</a></li>
+        <li><a href="#TargetVolumeSlide">Nxy - Target volume slide</a></li>
+        <li><a href="#Groove">Oxx - Groove index</a></li>
         <li><a href="#FinePitch">Pxx - Fine pitch</a></li>
         <li><a href="#NoteSlideUp">Qxy - Note slide up</a></li>
         <li><a href="#NoteSlideDown">Rxy - Note slide down</a></li>
@@ -45,6 +47,12 @@
         <li><a href="#DpcmRetrigger">Xxx - Retrigger</a></li>
         <li><a href="#DpcmOffset">Yxx - Sample offset</a></li>
         <li><a href="#DpcmDelta">Zxx - Delta counter</a></li>
+    </ul>
+
+    <p class="boldText">VRC7 effects</p>
+    <ul class="text">
+        <li><a href="#VRC7Port">Hxx - Custom patch byte port</a></li>
+        <li><a href="#VRC7Write">Ixx - Custom patch byte write</a></li>
     </ul>
 
     <p class="boldText">FDS modulation effects</p>
@@ -75,6 +83,15 @@
     <ul class="text">
         <li><a href="#WaveRamPositionSet">Zxx - Wave RAM position set</a></li>
         <li><a href="#WaveRamPositionRestore">Z7F - Wave RAM position restore</a></li>
+    </ul>
+
+    <p class="boldText">S5B effects</p>
+    <ul class="text">
+        <li><a href="#S5BEnvelopeType">H0y - Envelope type</a></li>
+        <li><a href="#S5BEnvelopePitch">Hxy - Envelope automatic pitch</a></li>
+        <li><a href="#S5BEnvelopePitchHi">Ixx - Envelope manual pitch, high</a></li>
+        <li><a href="#S5BEnvelopePitchLo">Jxx - Envelope manual pitch, low</a></li>
+        <li><a href="#S5BNoisePitch">Wxx - Noise pitch</a></li>
     </ul>
 
     <hr />
@@ -175,6 +192,14 @@
     <p class="text">Sets the channel volume to <b>y</b> after <b>x</b> number of ticks.</p>
     <br />
 
+    <a name="TargetVolumeSlide" class="boldText">Nxy - Target volume slide</a><br />
+    <p class="text">Slides the channel volume to <b>y</b> at a speed of <b>x</b>, similar to <a href="#VolumeSlide">Axy</a>.</p>
+    <br />
+
+    <a name="Groove" class="boldText">Oxx - Groove index</a><br />
+    <p class="text">If groove mode is enabled, sets the groove to index <b>xx</b> of the groove list.</p>
+    <br />
+
     <a name="FinePitch" class="boldText">Pxx - Fine pitch</a><br />
     <p class="text">Sets the fine pitch in <b>xx</b> pitch units.<br />
     The default value is <b>80</b>.<br />
@@ -198,15 +223,19 @@
     <br />
 
     <a name="Timbre" class="boldText">Vxx - Timbre control</a><br />
-    <p class="text">This effect controls the duty period of the pulse channels and noise mode of the noise channel.
-    On N163 it can be used to select the wave index.<br />
+    <p class="text">This effect controls the duty period of the pulse channels and noise mode of the noise channel.<br />
+    On N163, it can be used to select the wave index.<br />
+	On VRC7, it can be used to select the patch index.<br />
+	On S5B, it can be used to select the channel mode bitmask.<br />
     Valid values are:
     </p>
     <ul class="text">
         <li>2A03/MMC5 pulse channels: <b>00 - 03</b></li>
-        <li>Noise channel: <b>00 - 01</b></li>
+        <li>2A03 Noise channel: <b>00 - 01</b></li>
         <li>VRC6 pulse channels: <b>00 - 07</b></li>
+        <li>VRC7 channels: <b>00 - 0F</b></li>
         <li>N163 channels: <b>00 - 3F</b></li>
+        <li>S5B channels: <b>00 - 07</b></li>
     </ul>
     <br />
 
@@ -231,6 +260,19 @@
     <p class="text">Directly controls the DPCM delta counter. This can be used to control the amplitude of the triangle,
     noise and DPCM channels due to the non-linear mixing of audio signals.<br />
     Valid range: <b>00 - 7F</b></p>
+    <br />
+
+    <hr />
+
+    <p class="heading">VRC7 effects</p>
+
+    <a name="VRC7Port" class="boldText">Hxx - Custom patch byte port</a><br />
+    <p class="text">Select port address <b>xx</b> of custom patch to be written. To be used with <b>Ixx</b>.<br />
+    Valid range: <b>00 - 07</b>.</p>
+    <br />
+
+    <a name="VRC7Write" class="boldText">Ixx - Custom patch byte write</a><br />
+    <p class="text">Byte <b>xx</b> to be written at the address port specified. To be used with <b>Hxx</b>.<br />
     <br />
 
     <hr />
@@ -389,6 +431,32 @@
     <a name="WaveRamPositionRestore" class="boldText">Z7F - Wave RAM position restore</a><br />
     <p class="text">Restores the wave RAM position control to all the instruments in a given N163 channel.<br /></p>
     <br />
+
+    <hr />
+
+    <p class="heading">S5B effects</p>
+
+    <a name="S5BEnvelopeType" class="boldText">H0y - Envelope type</a><br />
+    <p class="text">Sets <a href="sunsoft.htm#5BEnvelopes">envelope type</a> <b>y</b>.<br /></p>
+    <br />
+
+    <a name="S5BEnvelopePitch" class="boldText">Hxy - Envelope automatic pitch</a><br />
+    <p class="text">Sets envelope period to the note period shifted by <b>x</b> and <a href="sunsoft.htm#5BEnvelopes">envelope type</a> <b>y</b>.<br />
+	Approximate envelope frequency is note frequency * (2^|<b>x</b> - 8|) / 32.</p>
+    <br />
+
+    <a name="S5BEnvelopePitchHi" class="boldText">Ixx - Envelope manual pitch, high</a><br />
+    <p class="text">Sets the highest 8 bits of the 16-bit envelope period.</p>
+	<br />
+
+    <a name="S5BEnvelopePitchLo" class="boldText">jxx - Envelope manual pitch, low</a><br />
+    <p class="text">Sets the lowest 8 bits of the 16-bit envelope period.</p>
+	<br />
+
+    <a name="S5BNoisePitch" class="boldText">Wxx - Noise pitch</a><br />
+    <p class="text">Sets the noise pitch.<br />
+    Valid range: <b>00 - 1F</b>.</p>
+	<br />
 
     <hr />
     <span class="footer">Back to <a href="interface.htm">interface</a> &middot; <a href="main_index.htm">main index</a></span>
