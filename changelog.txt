@@ -2,16 +2,54 @@ Dn-FamiTracker Mod
 Change Log
 Written by Persune
 
-Version 0.4.0.1 - September 14, 2021
+Version 0.5.0.1 - May 10, 2023
 
 --------------------------------------------------------------------------------
+
+Dn0.5.0.1 - 05/10/2023
+
+Important changes:
+- Module breaking bugs have now been fixed. (@Gumball2415 #195)
+- Fix effects type order bug (@Threxx11 @Gumball2415 #184 #195)
+- Fix custom OPLL patch entry bug (@galap-1 @Gumball2415 #176 #195)
+- Fix N163 mixing bug (@recme @Gumball2415 #174 #195)
+
+Improvements:
+- Implement proper commandline support (@TheRealQuantam #168 #181)
+
+Bug fixes:
+- Fix NSF driver S5B envelope autoperiod (@N-SPC700 @Gumball2415 #186 #189)
+- Fix NSF driver arpeggio sequence note overflow (@N-SPC700 @Gumball2415 #189)
+- Fix NSF driver VRC7 note cut behavior to match in-tracker (@MovieMovies1
+    @Gumball2415 #189)
+- Fix effects type order bug (@Threxx11 @Gumball2415 #184 #195)
+- Fix custom OPLL patch entry bug (@galap-1 @Gumball2415 #176 #195)
+- Fix N163 mixing bug (@recme @Firespike33 @Gumball2415 #174 #195)
+- Fully initialize device level offset object (@Gumball2415 #195)
+- Prevent module compatibility mode reinitialization (@Threxx11 @Gumball2415
+    #184 #195)
+- Reinitialize OPLL patchset (@galap-1 @Gumball2415 #203 #195)
+- Initialize PlaybackRate and PlaybackRateType (@N-SPC700 @Gumball2415 #202
+    #195)
+
+Internal:
+- Update build tools, VS solution, CMake lists, and corresponding documentation
+    (@Gumball241 #186)
+- Add version increment documentation (@Gumball2415 #194)
+- Update VC++ program database file name in build script (@Gumball2415 #204)
+- Improve Appveyor build version info (@Gumball2415 #204)
+- Add Github Actions for build artifacts (@Gumball2415 #204)
+- Use Windows 10 SDK version 2104 (10.0.20348.0) to avoid unexpected linker
+    failure (@Gumball2415 #204)
+
+
 
 Dn0.5.0.0 - 12/19/2022
 
 Important changes:
 
 - Dn-FamiTracker modules are no longer backwards compatible with "vanilla" and
-    0CC
+    0CC FamiTracker.
 - Dn-FamiTracker Demo Compo 1 modules are now added
 - N163 emulation core is replaced with Mesen's
 - New effects: =xx, and Nxy
