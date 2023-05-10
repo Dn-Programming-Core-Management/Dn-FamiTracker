@@ -7,6 +7,7 @@
 - Edit every file with version info:
 	- Dn-FamiTracker.rc
 	- Version.h
+- IMPORTANT: update ConfigVersion.cpp
 - Edit every file with the copyright info:
 ```
 FamiTracker - NES/Famicom sound tracker
