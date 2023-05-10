@@ -23,33 +23,33 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{afd2f6e3-e658-4a1b-a691-8f10a858321b}</ProjectGuid>
     <RootNamespace>hlp</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141_xp</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v141_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141_xp</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v141_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -156,39 +156,39 @@
     </None>
     <CustomBuild Include="Dn-FamiTracker.hhp">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">start /wait hhc "$(SolutionName).hhp"
-if not exist "$(SolutionName).chm" goto :HelpError
-copy "$(SolutionName).chm" "$(OutDir)$(SolutionName).chm"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">start /wait hhc "Dn-FamiTracker.hhp"
+if not exist "Dn-FamiTracker.chm" goto :HelpError
+copy "Dn-FamiTracker.chm" "$(OutDir)Dn-FamiTracker.chm"
 goto :HelpDone
 :HelpError
-echo $(ProjectDir)$(SolutionName).hhp(1) : error:Problem encountered creating help file
+echo hlp\Dn-FamiTracker.hhp(1) : error:Problem encountered creating help file
 echo.
 :HelpDone
 echo.</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">start /wait hhc "$(SolutionName).hhp"
-if not exist "$(SolutionName).chm" goto :HelpError
-copy "$(SolutionName).chm" "$(OutDir)$(SolutionName).chm"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">start /wait hhc "Dn-FamiTracker.hhp"
+if not exist "Dn-FamiTracker.chm" goto :HelpError
+copy "Dn-FamiTracker.chm" "$(OutDir)Dn-FamiTracker.chm"
 goto :HelpDone
 :HelpError
-echo $(ProjectDir)$(SolutionName).hhp(1) : error:Problem encountered creating help file
+echo hlp\Dn-FamiTracker.hhp(1) : error:Problem encountered creating help file
 echo.
 :HelpDone
 echo.</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">start /wait hhc "$(SolutionName).hhp"
-if not exist "$(SolutionName).chm" goto :HelpError
-copy "$(SolutionName).chm" "$(OutDir)$(SolutionName).chm"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">start /wait hhc "Dn-FamiTracker.hhp"
+if not exist "Dn-FamiTracker.chm" goto :HelpError
+copy "Dn-FamiTracker.chm" "$(OutDir)Dn-FamiTracker.chm"
 goto :HelpDone
 :HelpError
-echo $(ProjectDir)$(SolutionName).hhp(1) : error:Problem encountered creating help file
+echo hlp\Dn-FamiTracker.hhp(1) : error:Problem encountered creating help file
 echo.
 :HelpDone
 echo.</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">start /wait hhc "$(SolutionName).hhp"
-if not exist "$(SolutionName).chm" goto :HelpError
-copy "$(SolutionName).chm" "$(OutDir)$(SolutionName).chm"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">start /wait hhc "Dn-FamiTracker.hhp"
+if not exist "Dn-FamiTracker.chm" goto :HelpError
+copy "Dn-FamiTracker.chm" "$(OutDir)Dn-FamiTracker.chm"
 goto :HelpDone
 :HelpError
-echo $(ProjectDir)$(SolutionName).hhp(1) : error:Problem encountered creating help file
+echo hlp\Dn-FamiTracker.hhp(1) : error:Problem encountered creating help file
 echo.
 :HelpDone
 echo.</Command>
@@ -196,14 +196,14 @@ echo.</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Making help file...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Making help file...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Making help file...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)$(SolutionName).chm</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)$(SolutionName).chm</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)$(SolutionName).chm</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)$(SolutionName).chm</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)$(ProjectName).chm</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)$(ProjectName).chm</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)$(ProjectName).chm</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)$(ProjectName).chm</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\HTMLDefines.h;%(AdditionalInputs)</AdditionalInputs>
     </CustomBuild>
     <None Include="2a03.htm">
       <DeploymentContent>true</DeploymentContent>
@@ -223,13 +223,7 @@ echo.</Command>
     <None Include="config_appearance.htm">
       <DeploymentContent>true</DeploymentContent>
     </None>
-    <None Include="config_emulation.htm">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
     <None Include="config_general.htm">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="config_gui.htm">
       <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="config_midi.htm">
@@ -242,9 +236,6 @@ echo.</Command>
       <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="config_sound.htm">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="config_version.htm">
       <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="control_panel.htm">
@@ -270,9 +261,6 @@ echo.</Command>
     <None Include="fds.htm">
       <DeploymentContent>true</DeploymentContent>
     </None>
-    <None Include="instruments.htm">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
     <None Include="interface.htm">
       <DeploymentContent>true</DeploymentContent>
     </None>
@@ -295,12 +283,6 @@ echo.</Command>
       <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="menu_module.htm">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="menu_pattern.htm">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="menu_song.htm">
       <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="menu_tracker.htm">
@@ -328,9 +310,6 @@ echo.</Command>
       <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="shortcuts.htm">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="sound.htm">
       <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="sound_overview.htm">

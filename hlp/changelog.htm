@@ -56,17 +56,53 @@
 			</ul>
 		</ul>
 <br>
-
 -->
 
 <!-- Add new changes here -->
 
 <!-- all data below is Dn-FT changes-->
+	<span class="heading">Dn-FamiTracker Version 0.5.0.1</span>
+		<ul class="changelog">
+			<li>Important Changes:</li>
+			<ul class="changelog">
+				<li>Module breaking bugs have now been fixed (@Gumball2415 #195)</li>
+				<li>Fix effects type order bug (@Threxx11 @Gumball2415 #184 #195)</li>
+				<li>Fix custom OPLL patch entry bug (@galap-1 @Gumball2415 #176 #195)</li>
+				<li>Fix N163 mixing bug (@recme @Gumball2415 #174 #195)</li>
+			</ul>
+			<li>Improvements:</li>
+			<ul class="changelog">
+				<li>Implement proper commandline support (@TheRealQuantam #168 #181)</li>
+			</ul>
+			<li>Bug fixes:</li>
+			<ul class="changelog">
+				<li>Fix NSF driver S5B envelope autoperiod (@N-SPC700 @Gumball2415 #186 #189)</li>
+				<li>Fix NSF driver arpeggio sequence note overflow (@N-SPC700 @Gumball2415 #189)</li>
+				<li>Fix NSF driver VRC7 note cut behavior to match in-tracker (@MovieMovies1 @Gumball2415 #189)</li>
+				<li>Fix effects type order bug (@Threxx11 @Gumball2415 #184 #195)</li>
+				<li>Fix custom OPLL patch entry bug (@galap-1 @Gumball2415 #176 #195)</li>
+				<li>Fix N163 mixing bug (@recme @Firespike33 @Gumball2415 #174 #195)</li>
+				<li>Fully initialize device level offset object (@Gumball2415 #195)</li>
+				<li>Prevent module compatibility mode reinitialization (@Threxx11 @Gumball2415 #184 #195)</li>
+				<li>Reinitialize OPLL patchset (@galap-1 @Gumball2415 #203 #195)</li>
+				<li>Initialize PlaybackRate and PlaybackRateType (@N-SPC700 @Gumball2415 #202 #195)</li>
+			</ul>
+			<li>Internal:</li>
+			<ul class="changelog">
+				<li>Update build tools, VS solution, CMake lists, and corresponding documentation (@Gumball241 #186)</li>
+				<li>Add version increment documentation (@Gumball2415 #194)</li>
+				<li>Update VC++ program database file name in build script (@Gumball2415 #204)</li>
+				<li>Improve Appveyor build version info (@Gumball2415 #204)</li>
+				<li>Add Github Actions for build artifacts (@Gumball2415 #204)</li>
+				<li>Use Windows 10 SDK version 2104 (10.0.20348.0) to avoid unexpected linker failure (@Gumball2415 #204)</li>
+			</ul>
+		</ul>
+<br>
 	<span class="heading">Dn-FamiTracker Version 0.5.0.0</span>
 		<ul class="changelog">
 			<li>Important Changes:</li>
 			<ul class="changelog">
-				<li>Dn-FamiTracker modules are no longer backwards compatible with "vanilla" and 0CC</li>
+				<li>Dn-FamiTracker modules are no longer backwards compatible with "vanilla" and 0CC FamiTracker</li>
 				<li>Dn-FamiTracker Demo Compo 1 modules are now added</li>
 				<li>N163 emulation core is replaced with Mesen's</li>
 				<li>New effects: =xx, and Nxy</li>
