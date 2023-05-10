@@ -1,0 +1,26 @@
+name: build-artifact-publish
+on:
+  release:
+    types: [published]
+jobs:
+  build-matrix-publish:
+    runs-on: windows-2022
+    strategy:
+      matrix:
+        platform: [x64, Win32]
+        configuration: [Release, Debug]
+    steps:
+      - uses: actions/checkout@master
+      - name: Build program
+        shell: cmd
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsamd64_x86.bat"
+          call msbuild -m:5 -nologo -p:Configuration="${{ matrix.configuration }}" -p:Platform="${{ matrix.platform }}"
+          if %ERRORLEVEL%==1 exit %ERRORLEVEL%
+          call release.bat ${{ matrix.configuration }} ${{ matrix.platform }}
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@master
+        with:
+          name: build-artifacts
+          path: distribute/*.7z
