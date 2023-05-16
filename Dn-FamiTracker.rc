@@ -2947,7 +2947,7 @@ BEGIN
     ID_EDIT_PASTEINSERT     "Pasted notes will be inserted above the destination\nPaste Insert"
     ID_PASTESPECIAL_CURSOR  "Paste operations occur at the cursor\nCursor"
     ID_PASTESPECIAL_SELECTION 
-                            "Go to https://github.com/Gumball2415/Dn-FamiTracker"
+                            "Paste operations occur at the start of selection\nSelection"
     ID_PASTESPECIAL_FILL    "Paste operations loop throughout the current selection\nFill"
     ID_CLEANUP_POPULATEUNIQUEPATTERNS 
                             "Copy a unique pattern for each frame\nPopulate Unique Patterns"
