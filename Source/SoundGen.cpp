@@ -2407,40 +2407,50 @@ void CSoundGen::UpdateAPU()
 	m_bInternalWaveChanged = m_bWaveChanged;
 	m_bWaveChanged = false;
 
-	{
-		auto l = DeferLock();
-		if (l.try_lock()) {
-			// Update APU channel registers
-			unsigned int PrevChip = SNDCHIP_NONE;		// // // 050B
-			for (int i = 0; i < CHANNELS; ++i) {
-				if (m_pChannels[i] != NULL) {
-					m_pChannels[i]->RefreshChannel();
-					m_pChannels[i]->FinishTick();		// // //
-					unsigned int Chip = m_pTrackerChannels[i]->GetChip();
-					if (m_pDocument->ExpansionEnabled(Chip)) {
-						int Delay = (Chip == PrevChip) ? 150 : 250;
+	auto UpdateAPU = [&]() {
+		unsigned int PrevChip = SNDCHIP_NONE;		// // // 050B
+		for (int i = 0; i < CHANNELS; ++i) {
+			if (m_pChannels[i] != NULL) {
+				m_pChannels[i]->RefreshChannel();
+				m_pChannels[i]->FinishTick();		// // //
+				unsigned int Chip = m_pTrackerChannels[i]->GetChip();
+				if (m_pDocument->ExpansionEnabled(Chip)) {
+					int Delay = (Chip == PrevChip) ? 150 : 250;
 
-						AddCyclesUnlessEndOfFrame(Delay);
-						m_pAPU->Process();
+					AddCyclesUnlessEndOfFrame(Delay);
+					m_pAPU->Process();
 
-						PrevChip = Chip;
-					}
+					PrevChip = Chip;
 				}
 			}
-		#ifdef WRITE_VGM		// // //
-			if (m_bPlaying)
-				m_iRegisterStream.push(0x62);		// // //
-		#endif
+		}
+#ifdef WRITE_VGM		// // //
+		if (m_bPlaying)
+			m_iRegisterStream.push(0x62);		// // //
+#endif
 
-			// Finish the audio frame
-			if (m_iConsumedCycles > m_iUpdateCycles) {
-				throw std::runtime_error("overflowed vblank!");
-			}
+		// Finish the audio frame
+		if (m_iConsumedCycles > m_iUpdateCycles) {
+			throw std::runtime_error("overflowed vblank!");
+		}
 
-			m_pAPU->AddCycles(m_iUpdateCycles - m_iConsumedCycles);
-			m_pAPU->Process();
+		m_pAPU->AddCycles(m_iUpdateCycles - m_iConsumedCycles);
+		m_pAPU->Process();
+	};
 
+	{
+		if (m_bRendering) {
+			auto l = Lock();
+			UpdateAPU();
 			l.unlock();
+		}
+		else {
+			auto l = DeferLock();
+			if (l.try_lock()) {
+				UpdateAPU();
+				l.unlock();
+			}
+			else TRACE("SoundGen: APU mutex lock failed");
 		}
 	}
 
