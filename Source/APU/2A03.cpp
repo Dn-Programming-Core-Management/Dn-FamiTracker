@@ -198,16 +198,16 @@ int C2A03::GetChannelLevelRange(int Channel) const
 }
 
 
-void C2A03::UpdateMixingAPU1(double v) {
+void C2A03::UpdateMixingAPU1(double v, bool UseSurveyMix) {
 	// NSFPlay output waveform ranges from 0 - 8191
-	// should not affect legacy mixing
-	Synth2A03SS.volume(v, 8191);
+	// legacy mixing absolutely requires the range 10000
+	Synth2A03SS.volume(v, UseSurveyMix ? 8191 : 10000);
 }
 
-void C2A03::UpdateMixingAPU2(double v) {
+void C2A03::UpdateMixingAPU2(double v, bool UseSurveyMix) {
 	// NSFPlay output waveform ranges from 0 - 8191
-	// should not affect legacy mixing
-	Synth2A03TND.volume(v, 8191);
+	// legacy mixing absolutely requires the range 10000
+	Synth2A03TND.volume(v, UseSurveyMix ? 8191 : 10000);
 }
 
 void C2A03::ClockSequence()

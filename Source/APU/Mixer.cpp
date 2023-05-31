@@ -148,7 +148,7 @@ void CMixer::SetChipLevel(chip_level_t Chip, float Level)
 
 float CMixer::GetAttenuation(bool UseSurveyMix) const
 {
-	float Attenuation = 1.0f;
+	float ATTENUATION_2A03 = 1.0f;
 
 	if (!UseSurveyMix) {
 		const float ATTENUATION_VRC6 = 0.80f;
@@ -161,22 +161,17 @@ float CMixer::GetAttenuation(bool UseSurveyMix) const
 		// Increase headroom if some expansion chips are enabled
 
 		if (m_iExternalChip & SNDCHIP_VRC6)
-			Attenuation *= ATTENUATION_VRC6;
-
+			ATTENUATION_2A03 *= ATTENUATION_VRC6;
 		if (m_iExternalChip & SNDCHIP_VRC7)
-			Attenuation *= ATTENUATION_VRC7;
-
+			ATTENUATION_2A03 *= ATTENUATION_VRC7;
 		if (m_iExternalChip & SNDCHIP_FDS)
-			Attenuation *= ATTENUATION_FDS;
-
+			ATTENUATION_2A03 *= ATTENUATION_FDS;
 		if (m_iExternalChip & SNDCHIP_MMC5)
-			Attenuation *= ATTENUATION_MMC5;
-
+			ATTENUATION_2A03 *= ATTENUATION_MMC5;
 		if (m_iExternalChip & SNDCHIP_N163)
-			Attenuation *= ATTENUATION_N163;
-
+			ATTENUATION_2A03 *= ATTENUATION_N163;
 		if (m_iExternalChip & SNDCHIP_S5B)		// // // 050B
-			Attenuation *= ATTENUATION_S5B;
+			ATTENUATION_2A03 *= ATTENUATION_S5B;
 	}
 	else {
 		// attenuation scaling is exponential based on total chips used
@@ -188,10 +183,10 @@ float CMixer::GetAttenuation(bool UseSurveyMix) const
 		if (m_iExternalChip & SNDCHIP_N163) TotalChipsUsed++;
 		if (m_iExternalChip & SNDCHIP_S5B) TotalChipsUsed++;
 
-		Attenuation *= static_cast<float>(1.0 / (float)TotalChipsUsed);
+		ATTENUATION_2A03 *= static_cast<float>(1.0 / (float)TotalChipsUsed);
 	}
 
-	return Attenuation;
+	return ATTENUATION_2A03;
 }
 
 void CMixer::RecomputeEmuMixState()
@@ -229,8 +224,8 @@ void CMixer::RecomputeEmuMixState()
 
 	// Maybe the range argument, as well as the constant factor in the volume,
 	// should be supplied by the CSoundChip2 subclass rather than CMixer.
-	chip2A03.UpdateMixingAPU1(Volume * m_fLevelAPU1);
-	chip2A03.UpdateMixingAPU2(Volume * m_fLevelAPU2);
+	chip2A03.UpdateMixingAPU1(Volume * m_fLevelAPU1, UseSurveyMixing);
+	chip2A03.UpdateMixingAPU2(Volume * m_fLevelAPU2, UseSurveyMixing);
 	chipFDS.UpdateMixLevel(Volume * m_fLevelFDS, UseSurveyMixing);
 	chipN163.UpdateMixLevel(Volume * m_fLevelN163, UseSurveyMixing);
 
