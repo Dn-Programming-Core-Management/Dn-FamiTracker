@@ -44,7 +44,7 @@ namespace {
 			hOpen = InternetOpenW(L"Dn_FamiTracker", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
 			hConnect = InternetConnectW(hOpen, L"api.github.com",
 				INTERNET_DEFAULT_HTTPS_PORT, L"", L"", INTERNET_SERVICE_HTTP, 0, 0);
-			hRequest = HttpOpenRequestW(hConnect, L"GET", L"/repos/Gumball2415/Dn-FamiTracker/releases",
+			hRequest = HttpOpenRequestW(hConnect, L"GET", L"/repos/Dn-Programming-Core-Management/Dn-FamiTracker/releases",
 				L"HTTP/1.0", NULL, rgpszAcceptTypes,
 				INTERNET_FLAG_RELOAD | INTERNET_FLAG_SECURE | INTERNET_FLAG_NO_CACHE_WRITE, NULL);
 		}

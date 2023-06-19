@@ -18,9 +18,13 @@ Dn-Famitracker is a fork of 0CC-FamiTracker that incorporates numerous fixes and
 
 ## Downloads
 
-Download releases: [![GitHub all releases](https://img.shields.io/github/downloads/Gumball2415/Dn-FamiTracker/total?logo=github&style=flat-square)](https://github.com/Gumball2415/Dn-FamiTracker/releases)
+Download releases: [![GitHub all releases](https://img.shields.io/github/downloads/Dn-Programming-Core-Management/Dn-FamiTracker/total?logo=github&style=flat-square)](https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/releases)
 
 Development builds: [![AppVeyor](https://img.shields.io/appveyor/build/Gumball2415/dn-famitracker?logo=appveyor&style=flat-square)](https://ci.appveyor.com/project/Gumball2415/dn-famitracker/history)
+
+Github Actions automated builds: [![GitHub Actions](https://img.shields.io/github/actions/workflow/status/Dn-Programming-Core-Management/Dn-FamiTracker/build-artifact.yml?style=flat-square)](https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/actions/workflows/build-artifact.yml)
+
+Github Actions automated release builds: [![GitHub](https://img.shields.io/github/actions/workflow/status/Dn-Programming-Core-Management/Dn-FamiTracker/build-release-artifact.yml?style=flat-square)](https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/actions/workflows/build-release-artifact.yml)
 
 Legacy Dev Builds: [![AppVeyor](https://img.shields.io/appveyor/build/Gumball2415/dn-famitracker-legacy?logo=appveyor&style=flat-square)](https://ci.appveyor.com/project/Gumball2415/dn-famitracker-legacy/history)
 
