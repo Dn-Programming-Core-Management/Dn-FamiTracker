@@ -31,7 +31,6 @@
 #include <utility>  // std::move
 #include "Common.h"
 #include "SoundInterface.h"
-#include <stdexcept>
 #include "../resource.h"
 
 // WASAPI headers
@@ -247,7 +246,9 @@ CSoundStream *CSoundInterface::OpenFloatChannel(const int InputChannels, int Buf
 		// outputs a pointer to the WAVEFORMATEX structure that is embedded at the
 		// start of this WAVEFORMATEXTENSIBLE structure."
 		if (pMixFormat->wFormatTag != WAVE_FORMAT_EXTENSIBLE) {
-			throw std::runtime_error("GetMixFormat() wFormatTag not WAVE_FORMAT_EXTENSIBLE!");
+			TRACE("GetMixFormat() wFormatTag=%x not WAVE_FORMAT_EXTENSIBLE!", pMixFormat->wFormatTag);
+			CoTaskMemFree(pMixFormat);
+			return nullptr;
 		}
 		ASSERT(pMixFormat->cbSize >= 22);
 		auto mixFormatExt = (WAVEFORMATEXTENSIBLE*)pMixFormat;
