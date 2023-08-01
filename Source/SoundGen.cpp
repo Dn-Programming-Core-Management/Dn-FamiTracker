@@ -456,7 +456,7 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 		// // // VRC7
 		if (i < NOTE_RANGE) {
 			Pitch = pDetuneVRC7->FrequencyToPeriod(pDetuneVRC7->NoteToFreq(i), 1, 0);
-			m_iNoteLookupTableVRC7[i] = std::lround(Pitch - pDocument->GetDetuneOffset(3, i));		// // //
+			m_iNoteLookupTableVRC7[i] = std::lround(Pitch + pDocument->GetDetuneOffset(3, i));		// // //
 		}
 
 		// FDS
@@ -465,11 +465,11 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 #else
 		Pitch = (NoteToFreq(i) * 65536.0) / (clock_ntsc / 4.0);
 #endif
-		m_iNoteLookupTableFDS[i] = std::lround(Pitch - pDocument->GetDetuneOffset(4, i));		// // //
+		m_iNoteLookupTableFDS[i] = std::lround(Pitch + pDocument->GetDetuneOffset(4, i));		// // //
 
 		// N163
 		Pitch = pDetuneN163->FrequencyToPeriod(pDetuneN163->NoteToFreq(i), 1, pDocument->GetNamcoChannels());
-		m_iNoteLookupTableN163[i] = std::lround(Pitch - pDocument->GetDetuneOffset(5, i));		// // //
+		m_iNoteLookupTableN163[i] = std::lround(Pitch + pDocument->GetDetuneOffset(5, i));		// // //
 
 		if (m_iNoteLookupTableN163[i] > 0xFFFF)	// 0x3FFFF
 			m_iNoteLookupTableN163[i] = 0xFFFF;	// 0x3FFFF
