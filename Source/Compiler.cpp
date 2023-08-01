@@ -1482,7 +1482,7 @@ void CCompiler::CreateHeader(stNSFHeader *pHeader, int MachineType, unsigned int
 	// If speed is default, write correct NTSC/PAL speed periods
 	// else, set the same custom speed for both
 	SpeedNTSC = (Speed == 0) ? 1000000 / CAPU::FRAME_RATE_NTSC : 1000000 / Speed;
-	SpeedPAL = (Speed == 0) ? 1000000 / CAPU::FRAME_RATE_NTSC : 1000000 / Speed;
+	SpeedPAL = (Speed == 0) ? 1000000 / CAPU::FRAME_RATE_PAL : 1000000 / Speed;
 
 	memset(pHeader, 0, 0x80);
 
@@ -1564,7 +1564,7 @@ void CCompiler::CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType)		// // 
 	unsigned int SpeedPAL, SpeedNTSC, Speed;
 	Speed = m_pDocument->GetEngineSpeed();
 	SpeedNTSC = (Speed == 0) ? 1000000 / CAPU::FRAME_RATE_NTSC : 1000000 / Speed;
-	SpeedPAL = (Speed == 0) ? 1000000 / CAPU::FRAME_RATE_NTSC : 1000000 / Speed;
+	SpeedPAL = (Speed == 0) ? 1000000 / CAPU::FRAME_RATE_PAL : 1000000 / Speed;
 
 	pHeader->InfoSize = 12;
 	pHeader->BankSize = 8;
