@@ -224,6 +224,7 @@ void to_json(json& j, const CSequence& seq) {
 void to_json(json& j, const CDSample& dpcm) {
 	j = json{
 		{"name", std::string {dpcm.GetName() ? dpcm.GetName() : ""}},
+		//{"samples", json::array()},		// what's this used for in 0CC?
 		{"values", json::array()},
 	};
 	char* data = dpcm.GetData();
@@ -272,20 +273,19 @@ void to_json_2a03(json& j, const CInstrument2A03& inst) {
 	to_json_seq(j, static_cast<const CSeqInstrument&>(inst));
 
 	j["dpcm_map"] = json::array();
-	// FIXME: what's causing this off-by-one?
-	for (int n = 1; n < NOTE_COUNT; ++n)
-	{
-		int oct = GET_OCTAVE(n-1);
-		int note = GET_NOTE(n-1);
-		if (auto d_index = inst.GetSampleIndex(oct, note); d_index != 0)
-		{
-			j["dpcm_map"].push_back(json{
-				{"dpcm_index", d_index-1},
-				{"pitch", inst.GetSamplePitch(oct, note) & 0x0Fu},
-				{"loop", inst.GetSampleLoop(oct, note)},
-				{"delta", inst.GetSampleDeltaValue(oct, note)},
-				{"note", n}, 
-				});
+	for (int oct = 0; oct < OCTAVE_RANGE; ++oct) {
+		for (int note = 0; note < NOTE_RANGE; ++note) {
+			int d_index = (inst.GetSampleIndex(oct, note) - 1);
+			if (d_index > 0)		// offset d_index by -1
+			{
+				j["dpcm_map"].push_back(json{
+					{"dpcm_index", d_index},
+					{"pitch", inst.GetSamplePitch(oct, note) & 0x0Fu},
+					{"loop", inst.GetSampleLoop(oct, note)},
+					{"delta", inst.GetSampleDeltaValue(oct, note)},
+					{"note", MIDI_NOTE(oct, note)},
+					});
+			}
 		}
 	}
 }
@@ -382,13 +382,28 @@ void to_json(json& j, const CFamiTrackerDoc& modfile) {
 	auto channels = json::array();
 	for (int i = 0; i < modfile.GetChannelCount(); ++i)
 	{
+		// hack to get the equivalent 0CC-exclusive channel subindex
+		// TODO: implement whatever 0CC's doing for better compatibility
 		CTrackerChannel* ch = modfile.GetChannel(i);
+		auto chip_type = ch->GetChip();
+		uint8_t subindex = ch->GetID();
+
+		switch (chip_type) {	// see chan_id_t
+		case SNDCHIP_VRC6: subindex -= 5; break;
+		case SNDCHIP_MMC5: subindex -= 8; break;
+		case SNDCHIP_N163: subindex -= 11; break;
+		case SNDCHIP_FDS: subindex -= 19; break;
+		case SNDCHIP_VRC7: subindex -= 20; break;
+		case SNDCHIP_S5B: subindex -= 26; break;
+		default: break;
+		}
+
 		channels.push_back({
-			{ "chip", GetChannelChipName(ch->GetChip())},
-			//{ "subindex", ???},
+			{ "chip", GetChannelChipName(chip_type)},
+			{ "subindex", subindex},
 			});
 	}
-
+	 
 	j = json{
 		{"metadata", {
 			{"title", std::string {modfile.GetSongName()}},
@@ -430,17 +445,48 @@ void to_json(json& j, const CFamiTrackerDoc& modfile) {
 			{"tracks", json::array()},
 			// Note: 0CC exports only a two-value array with no Offset field.
 			{"highlight", {modfile.GetHighlight().First, modfile.GetHighlight().Second, modfile.GetHighlight().Offset}},
+			{"bookmarks", json::array()},
 		};
+
+		auto pBookmarkCollection = modfile.GetBookmarkManager()->GetCollection(Track);
+		unsigned int bookmarkcount = pBookmarkCollection->GetCount();
+		if (bookmarkcount) for (unsigned int b = 0; b < bookmarkcount; ++b) {
+			auto pMark = pBookmarkCollection->GetBookmark(b);
+			sj["bookmarks"].push_back(json{
+				{"frame", pMark->m_iFrame},
+				{"highlight",{pMark->m_Highlight.First, pMark->m_Highlight.Second}},
+				{"name", pMark->m_sName},
+				{"persist", pMark->m_bPersist},
+				{"row", pMark->m_iRow},
+				});
+		}
 
 		// TODO
 		for (int Channel = 0; Channel < modfile.GetChannelCount(); ++Channel)
 		{
+
+			// hack to get the equivalent 0CC-exclusive channel subindex
+			// TODO: implement whatever 0CC's doing for better compatibility
+			CTrackerChannel* ch = modfile.GetChannel(Channel);
+			auto chip_type = ch->GetChip();
+			uint8_t subindex = ch->GetID();
+
+			switch (chip_type) {	// see chan_id_t
+			case SNDCHIP_VRC6: subindex -= 5; break;
+			case SNDCHIP_MMC5: subindex -= 8; break;
+			case SNDCHIP_N163: subindex -= 11; break;
+			case SNDCHIP_FDS: subindex -= 19; break;
+			case SNDCHIP_VRC7: subindex -= 20; break;
+			case SNDCHIP_S5B: subindex -= 26; break;
+			default: break;
+			}
+
 			json cj = json{
 				{ "frame_list", json::array() },
 				{ "patterns", json::array() },
-				{ "effect_columns", MAX_EFFECT_COLUMNS },
+				{ "effect_columns", (modfile.GetEffColumns(Track, Channel)+1) },		// off-by-one
 				{ "chip", GetChannelChipName((inst_type_t)modfile.GetChipType(Channel))},
-				//{ "subindex", ???}
+				{ "subindex", subindex},
 			};
 
 			for (unsigned int Frame = 0; Frame < modfile.GetFrameCount(Track); ++Frame)
