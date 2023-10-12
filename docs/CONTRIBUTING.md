@@ -30,7 +30,7 @@ To edit and/or build the source, you may use Visual Studio 2022, or alternativel
 
 - For Visual Studio 2022:
   - Windows Universal CRT SDK
-  - The **Desktop development with C++** workload, which includes:
+  - The **Desktop development with C++** workload, including:
     - MSVC v142 - VS 2019 C++ x64/x86 build tools (latest version)
     - C++ CMake tools for Windows
 	- C++ AddressSanitizer

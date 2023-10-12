@@ -1,4 +1,6 @@
-# How to enable ASAN builds in Dn-FT:
+# How to manually enable ASAN builds in Dn-FT:
+
+As of commit `f5d17004ec4c87912e3f5f16bac5c53bbc2b65ea`, ASAN builds are integrated within the solution. However, for earlier commits, this may be used as a guide.
 
 1. Open in Visual Studio 2022.
 
