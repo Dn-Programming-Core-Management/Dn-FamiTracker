@@ -29,12 +29,14 @@ To edit and/or build the source, you may use Visual Studio 2022, or alternativel
      - C++ ATL for latest v143 build tools (x86 & x64)
 
 - For Visual Studio 2022:
-   - Windows Universal CRT SDK
-   - C++ MFC for latest v143 build tools (x86 & x64)
-   - C++ ATL for latest v143 build tools (x86 & x64)
-   - The Desktop development with C++ workload, which includes:
-      - MSVC v142 - VS 2019 C++ x64/x86 build tools (latest version)
-      - C++ CMake tools for Windows
+  - Windows Universal CRT SDK
+  - The **Desktop development with C++** workload, including:
+    - MSVC v142 - VS 2019 C++ x64/x86 build tools (latest version)
+    - C++ CMake tools for Windows
+	- C++ AddressSanitizer
+    - C++ ATL for latest v143 build tools (x86 & x64)
+    - C++ MFC for latest v143 build tools (x86 & x64)
+    - Windows 10 SDK version 2104 (10.0.20348.0)
 
   - Alternatively, you can install the components mentioned via the [provided .vsconfig file](../Dn-FT_VS_Dependencies.vsconfig).
 
