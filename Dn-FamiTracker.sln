@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30523.141
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34202.233
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Dn-FamiTracker", "Dn-FamiTracker.vcxproj", "{92FE0690-CE4F-4CCF-A52C-23265AE7429F}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -16,12 +16,24 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libsamplerate", "Source\lib
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		ASAN-Debug|Win32 = ASAN-Debug|Win32
+		ASAN-Debug|x64 = ASAN-Debug|x64
+		ASAN-Release|Win32 = ASAN-Release|Win32
+		ASAN-Release|x64 = ASAN-Release|x64
 		Debug|Win32 = Debug|Win32
 		Debug|x64 = Debug|x64
 		Release|Win32 = Release|Win32
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{92FE0690-CE4F-4CCF-A52C-23265AE7429F}.ASAN-Debug|Win32.ActiveCfg = ASAN-Debug|Win32
+		{92FE0690-CE4F-4CCF-A52C-23265AE7429F}.ASAN-Debug|Win32.Build.0 = ASAN-Debug|Win32
+		{92FE0690-CE4F-4CCF-A52C-23265AE7429F}.ASAN-Debug|x64.ActiveCfg = ASAN-Debug|x64
+		{92FE0690-CE4F-4CCF-A52C-23265AE7429F}.ASAN-Debug|x64.Build.0 = ASAN-Debug|x64
+		{92FE0690-CE4F-4CCF-A52C-23265AE7429F}.ASAN-Release|Win32.ActiveCfg = ASAN-Release|Win32
+		{92FE0690-CE4F-4CCF-A52C-23265AE7429F}.ASAN-Release|Win32.Build.0 = ASAN-Release|Win32
+		{92FE0690-CE4F-4CCF-A52C-23265AE7429F}.ASAN-Release|x64.ActiveCfg = ASAN-Release|x64
+		{92FE0690-CE4F-4CCF-A52C-23265AE7429F}.ASAN-Release|x64.Build.0 = ASAN-Release|x64
 		{92FE0690-CE4F-4CCF-A52C-23265AE7429F}.Debug|Win32.ActiveCfg = Debug|Win32
 		{92FE0690-CE4F-4CCF-A52C-23265AE7429F}.Debug|Win32.Build.0 = Debug|Win32
 		{92FE0690-CE4F-4CCF-A52C-23265AE7429F}.Debug|x64.ActiveCfg = Debug|x64
@@ -30,6 +42,14 @@ Global
 		{92FE0690-CE4F-4CCF-A52C-23265AE7429F}.Release|Win32.Build.0 = Release|Win32
 		{92FE0690-CE4F-4CCF-A52C-23265AE7429F}.Release|x64.ActiveCfg = Release|x64
 		{92FE0690-CE4F-4CCF-A52C-23265AE7429F}.Release|x64.Build.0 = Release|x64
+		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.ASAN-Debug|Win32.ActiveCfg = ASAN-Debug|Win32
+		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.ASAN-Debug|Win32.Build.0 = ASAN-Debug|Win32
+		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.ASAN-Debug|x64.ActiveCfg = ASAN-Debug|x64
+		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.ASAN-Debug|x64.Build.0 = ASAN-Debug|x64
+		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.ASAN-Release|Win32.ActiveCfg = ASAN-Release|Win32
+		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.ASAN-Release|Win32.Build.0 = ASAN-Release|Win32
+		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.ASAN-Release|x64.ActiveCfg = ASAN-Release|x64
+		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.ASAN-Release|x64.Build.0 = ASAN-Release|x64
 		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.Debug|Win32.ActiveCfg = Debug|Win32
 		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.Debug|Win32.Build.0 = Debug|Win32
 		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.Debug|x64.ActiveCfg = Debug|x64
@@ -38,6 +58,14 @@ Global
 		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.Release|Win32.Build.0 = Release|Win32
 		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.Release|x64.ActiveCfg = Release|x64
 		{AFD2F6E3-E658-4A1B-A691-8F10A858321B}.Release|x64.Build.0 = Release|x64
+		{5B4C1AA7-4AE9-4FF2-A7E6-8EEE50EDC6E2}.ASAN-Debug|Win32.ActiveCfg = ASAN-Debug|Win32
+		{5B4C1AA7-4AE9-4FF2-A7E6-8EEE50EDC6E2}.ASAN-Debug|Win32.Build.0 = ASAN-Debug|Win32
+		{5B4C1AA7-4AE9-4FF2-A7E6-8EEE50EDC6E2}.ASAN-Debug|x64.ActiveCfg = ASAN-Debug|x64
+		{5B4C1AA7-4AE9-4FF2-A7E6-8EEE50EDC6E2}.ASAN-Debug|x64.Build.0 = ASAN-Debug|x64
+		{5B4C1AA7-4AE9-4FF2-A7E6-8EEE50EDC6E2}.ASAN-Release|Win32.ActiveCfg = ASAN-Release|Win32
+		{5B4C1AA7-4AE9-4FF2-A7E6-8EEE50EDC6E2}.ASAN-Release|Win32.Build.0 = ASAN-Release|Win32
+		{5B4C1AA7-4AE9-4FF2-A7E6-8EEE50EDC6E2}.ASAN-Release|x64.ActiveCfg = ASAN-Release|x64
+		{5B4C1AA7-4AE9-4FF2-A7E6-8EEE50EDC6E2}.ASAN-Release|x64.Build.0 = ASAN-Release|x64
 		{5B4C1AA7-4AE9-4FF2-A7E6-8EEE50EDC6E2}.Debug|Win32.ActiveCfg = Debug|Win32
 		{5B4C1AA7-4AE9-4FF2-A7E6-8EEE50EDC6E2}.Debug|Win32.Build.0 = Debug|Win32
 		{5B4C1AA7-4AE9-4FF2-A7E6-8EEE50EDC6E2}.Debug|x64.ActiveCfg = Debug|x64

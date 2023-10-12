@@ -7,7 +7,7 @@ jobs:
     strategy:
       matrix:
         platform: [x64, Win32]
-        configuration: [Release, Debug]
+        configuration: [Release, Debug, ASAN-Release, ASAN-Debug]
     steps:
       - uses: actions/checkout@master
         with:

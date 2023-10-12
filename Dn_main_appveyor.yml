@@ -13,6 +13,8 @@ platform:
 configuration:
 - Release
 - Debug
+- ASAN-Release
+- ASAN-Debug
 shallow_clone: false
 build:
   project: Dn-FamiTracker.sln

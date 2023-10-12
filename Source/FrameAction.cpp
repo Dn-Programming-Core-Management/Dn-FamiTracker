@@ -34,7 +34,7 @@
 
 CFrameEditorState::CFrameEditorState(const CFamiTrackerView *pView, int Track) :		// // //
 	Track(Track),
-	Cursor {static_cast<CMainFrame*>(pView->GetParentFrame())->GetFrameEditor()->GetEditFrame(), pView->GetSelectedChannel()},
+	Cursor {static_cast<CMainFrame*>(pView->GetParentFrame())->GetFrameEditor()->GetEditFrame(), (int)pView->GetSelectedChannel()},
 	OriginalSelection(static_cast<CMainFrame*>(pView->GetParentFrame())->GetFrameEditor()->GetSelection()),
 	IsSelecting(static_cast<CMainFrame*>(pView->GetParentFrame())->GetFrameEditor()->IsSelecting())
 {
