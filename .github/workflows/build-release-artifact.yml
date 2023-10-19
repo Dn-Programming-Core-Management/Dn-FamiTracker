@@ -1,25 +1,41 @@
 name: build-artifact-publish
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "*"
 jobs:
   build-matrix-publish:
     runs-on: windows-2022
     strategy:
       matrix:
         platform: [x64, Win32]
-        configuration: [Release, Debug]
+        # configuration is Release only
     steps:
       - uses: actions/checkout@master
       - name: Build program
         shell: cmd
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsamd64_x86.bat"
-          call msbuild -m:5 -nologo -p:Configuration="${{ matrix.configuration }}" -p:Platform="${{ matrix.platform }}"
+          call msbuild -m:5 -nologo -p:Configuration="Release" -p:Platform="${{ matrix.platform }}"
           if %ERRORLEVEL%==1 exit %ERRORLEVEL%
-          call release.bat ${{ matrix.configuration }} ${{ matrix.platform }}
+          call release.bat Release ${{ matrix.platform }}
       - name: Upload binaries
         uses: actions/upload-artifact@master
         with:
-          name: Dn-FamiTracker_${{ matrix.platform }}_${{ matrix.configuration }}
-          path: distribute/*_${{ matrix.platform }}_${{ matrix.configuration }}.7z
+          path: distribute/*_${{ matrix.platform }}_Release.7z
+  publish-build:
+    needs: build-matrix-publish
+    runs-on: windows-2022
+    steps:
+      - uses: actions/download-artifact@master
+      - name: Download binaries
+        shell: powershell
+        run: ls -R
+      - name: Upload release    
+        uses: marvinpinto/action-automatic-releases@master
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          draft: true
+          prerelease: false
+          automatic_release_tag: draft
+          files: artifact/*.7z

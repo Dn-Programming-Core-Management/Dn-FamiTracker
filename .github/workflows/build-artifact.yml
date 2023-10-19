@@ -1,5 +1,7 @@
 name: build-artifact
 on: push
+env:
+  commithash: ""
 jobs:
   build-matrix:
     runs-on: windows-2022
@@ -14,13 +16,13 @@ jobs:
       - name: Build program
         shell: cmd
         run: |
-          for /f "tokens=*" %%a in ('git describe --tags') do (set commithash=%%a)
+          for /f "tokens=*" %%a in ('git describe --tags') do (set ${{ env.commithash }}=%%a)
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsamd64_x86.bat"
           call msbuild -m:5 -nologo -p:Configuration="${{ matrix.configuration }}" -p:Platform="${{ matrix.platform }}"
           if %ERRORLEVEL%==1 exit %ERRORLEVEL%
-          call release.bat ${{ matrix.configuration }} ${{ matrix.platform }} %commithash%_%GITHUB_RUN_ID%
+          call release.bat ${{ matrix.configuration }} ${{ matrix.platform }} ${{ env.commithash }}_${{ github.run_id }}
       - name: Upload binaries
         uses: actions/upload-artifact@master
         with:
-          name: Dn-FamiTracker_${{ matrix.platform }}_${{ matrix.configuration }}
+          name: Dn-FamiTracker_${{ env.commithash }}_${{ github.run_id }}_${{ matrix.platform }}_${{ matrix.configuration }}
           path: distribute/*_${{ matrix.platform }}_${{ matrix.configuration }}.7z
