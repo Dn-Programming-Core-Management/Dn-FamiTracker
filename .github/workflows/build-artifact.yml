@@ -13,10 +13,12 @@ jobs:
       - uses: actions/checkout@master
         with:
           fetch-depth: 0
+      - name: Set commit hash variable
+        shell: powershell
+        run: echo "commithash=$(git describe --tags)" >> $env:GITHUB_ENV
       - name: Build program
         shell: cmd
         run: |
-          for /f "tokens=*" %%a in ('git describe --tags') do (set ${{ env.commithash }}=%%a)
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsamd64_x86.bat"
           call msbuild -m:5 -nologo -p:Configuration="${{ matrix.configuration }}" -p:Platform="${{ matrix.platform }}"
           if %ERRORLEVEL%==1 exit %ERRORLEVEL%
