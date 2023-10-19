@@ -80,7 +80,7 @@ void CInstrument2A03::Store(CDocumentFile *pDocFile)
 		for (int j = 0; j < NOTE_RANGE; ++j) {
 			if (Version >= 7) {		// // // 050B
 				if (!GetSampleIndex(i, j)) continue;
-				pDocFile->WriteBlockChar(i * NOTE_COUNT + j);
+				pDocFile->WriteBlockChar(i * NOTE_RANGE + j);
 			}
 			pDocFile->WriteBlockChar(GetSampleIndex(i, j));
 			pDocFile->WriteBlockChar(GetSamplePitch(i, j));

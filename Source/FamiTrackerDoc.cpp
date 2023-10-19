@@ -1029,7 +1029,7 @@ bool CFamiTrackerDoc::WriteBlock_Instruments(CDocumentFile *pDocFile, const int 
 			// Store the name
 			pInst->GetName(Name);
 			pDocFile->WriteBlockInt((int)strlen(Name));
-			pDocFile->WriteBlock(Name, (int)strlen(Name));			
+			pDocFile->WriteBlock(Name, (int)strlen(Name));
 		}
 	}
 
