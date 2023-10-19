@@ -1,6 +1,5 @@
 name: build-artifact
 on: push
-
 jobs:
   build-matrix:
     runs-on: windows-2022
@@ -20,9 +19,8 @@ jobs:
           call msbuild -m:5 -nologo -p:Configuration="${{ matrix.configuration }}" -p:Platform="${{ matrix.platform }}"
           if %ERRORLEVEL%==1 exit %ERRORLEVEL%
           call release.bat ${{ matrix.configuration }} ${{ matrix.platform }} %commithash%_%GITHUB_RUN_ID%
-
       - name: Upload binaries
         uses: actions/upload-artifact@master
         with:
-          name: build-artifacts
-          path: distribute/*.7z
+          name: Dn-FamiTracker_${{ matrix.platform }}_${{ matrix.configuration }}
+          path: distribute/*_${{ matrix.platform }}_${{ matrix.configuration }}.7z
