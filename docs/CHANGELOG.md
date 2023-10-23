@@ -1,25 +1,27 @@
 # Dn-FamiTracker Mod
+
 Change Log
-Written by Persune
+
+Written by D.P.C.M.
 
 Version 0.5.0.1 - May 10, 2023
 
 ---
 
-### Dn0.5.0.1 - 05/10/2023
+## Dn0.5.0.1 - 05/10/2023
 
-- #### Important changes:
+- ### Important changes:
 
 	- Module breaking bugs have now been fixed. (@Gumball2415 #195)
 	- Fix effects type order bug (@Threxx11 @Gumball2415 #184 #195)
 	- Fix custom OPLL patch entry bug (@galap-1 @Gumball2415 #176 #195)
 	- Fix N163 mixing bug (@recme @Gumball2415 #174 #195)
 
-- #### Improvements:
+- ### Improvements:
 
 	- Implement proper commandline support (@TheRealQuantam #168 #181)
 
-- #### Bug fixes:
+- ### Bug fixes:
 
 	- Fix NSF driver S5B envelope autoperiod (@N-SPC700 @Gumball2415 #186 #189)
 	- Fix NSF driver arpeggio sequence note overflow (@N-SPC700 @Gumball2415 #189)
@@ -32,7 +34,7 @@ Version 0.5.0.1 - May 10, 2023
 	- Reinitialize OPLL patchset (@galap-1 @Gumball2415 #203 #195)
 	- Initialize PlaybackRate and PlaybackRateType (@N-SPC700 @Gumball2415 #202 #195)
 
-- #### Internal:
+- ### Internal:
 
 	- Update build tools, VS solution, CMake lists, and corresponding documentation (@Gumball2415 #186)
 	- Add version increment documentation (@Gumball2415 #194)
@@ -43,9 +45,9 @@ Version 0.5.0.1 - May 10, 2023
 
 
 
-### Dn0.5.0.0 - 12/19/2022
+## Dn0.5.0.0 - 12/19/2022
 
-- #### Important changes:
+- ### Important changes:
 
 	- Dn-FamiTracker modules are no longer backwards compatible with "vanilla" and 0CC FamiTracker.
 	- Dn-FamiTracker Demo Compo 1 modules are now added
@@ -58,7 +60,7 @@ Version 0.5.0.1 - May 10, 2023
 	- Hardware-based module expansion mixing (export only available for NSFe/NSF2)
 	- DirectSound backend now replaced with WASAPI
 
-- #### Additions:
+- ### Additions:
 
 	- Add FDS waveform view (@EulousDev #113)
 	- Add invalid note indicator (@EulousDev #119)
@@ -71,7 +73,7 @@ Version 0.5.0.1 - May 10, 2023
 	- Implement external OPLL patchset editing (@Gumball2415 #68, #156)
 	- Implement VRC7 NSFe chunk (@Gumball2415 #156)
 
-- #### Improvements:
+- ### Improvements:
 
 	- Register view improvements (@Gumball2415 @nyanpasu64 @EulousDev #118, #120)
 	- Replace N163 audio core with Mesen (@Gumball2415 nyanpasu64/j0CC-FamiTracker#151, #111, #138, #152)
@@ -82,7 +84,7 @@ Version 0.5.0.1 - May 10, 2023
 	- Refactor period table calculation (@Gumball2415 #156)
 	- Update text import/export parity (@Gumball2415 #161, #162, #156)
 
-- #### Bug fixes:
+- ### Bug fixes:
 
 	- Prevent ctrl/shift+wheel edit outside edit mode (copyrat90 #87)
 	- Fix random crash when exporting channels as WAV (@nyanpasu64 #92, #93)
@@ -103,7 +105,7 @@ Version 0.5.0.1 - May 10, 2023
 	- Dn-FamiTracker modules are no longer backwards compatible with "vanilla" and 0CC (@Gumball2415 #156)
 	- FamiTracker 0.5.0 beta modules no longer conflict with Dn-FamiTracker 0.5.0.0 modules (@Gumball2415 #156)
 
-- #### Internal:
+- ### Internal:
 
 	- Revise README (@Gumball2415 #114)
 	- Replace DirectSound backend with WASAPI (@nyanpasu64 #124)
@@ -116,32 +118,32 @@ Version 0.5.0.1 - May 10, 2023
 
 
 
-### Dn0.4.0.1 - 09/14/2021
+## Dn0.4.0.1 - 09/14/2021
 
-- #### Patch fixes:
+- ### Patch fixes:
 
 	- Fix internal version numbering (@Gumball2415)
 
-### Dn0.4.0.0 - 09/13/2021
+## Dn0.4.0.0 - 09/13/2021
 
-- #### Important changes:
+- ### Important changes:
 
 	- New file extension format for modules: *.dnm (@Gumball2415 #71)
 	- New file extension format for instruments: *.dni (@Gumball2415 #71)
 	- Support for Windows XP has been dropped (@Gumball2415, @nyanpasu64, @N-SPC700 #82, #84)
 
-- #### Additions:
+- ### Additions:
 
 	- Add new D.P.C.M. organization info, links and metadata (@Gumball2415 #71)
 	- New instrument names are blank on creation (@Gumball2415)
 	- Add empty instrument in newly created modules (@Gumball2415, @nyanpasu64, @N-SPC700 #77)
 
-- #### Improvements:
+- ### Improvements:
 
 	- Adjustable frame editor channel view limit (@Gumball2415 #72)
 	- Fix frame editor channel view truncation (@Gumball2415 #72)
 
-- #### Bug fixes:
+- ### Bug fixes:
 
 	- Fix Gxx delay command overflow in NSF driver (@Gumball2415, @smbhacks #80)
 	- Fix FDS automatic modulation overflow in NSF driver (@Gumball2415, @galap-1 #65, #80)
@@ -150,7 +152,7 @@ Version 0.5.0.1 - May 10, 2023
 	- Flush file to disk before renaming to prevent module corruption (@Gumball2415, @nyanpasu64 #81)
 	- Fix commandline parameter processing when flags are used (@Gumball2415)
 
-- #### Internal:
+- ### Internal:
 
 	- Fix CString::Format() memory corruption bug on Wine (@nyanpasu64 #56)
 	- Fix uninitialized echo buffer values (@nyanpasu64 #56)
@@ -161,28 +163,28 @@ Version 0.5.0.1 - May 10, 2023
 
 
 
-### Dn0.3.1.0 - 06/30/2021
+## Dn0.3.1.0 - 06/30/2021
 
-- #### Important changes:
+- ### Important changes:
 
 	- N163 and 5B expansion audio mixing has been restored to 0.2.1 levels (@nyanpasu64 #66)
 	- Adjusted APU 2 levels to match blargg's original formula (@Gumball2415 #69)
 
-- #### Additions:
+- ### Additions:
 
 	- Added a textbox for patch editing within the VRC7 instrument editor (@Gumball2415 #60)
 
-- #### Improvements:
+- ### Improvements:
 
 	- Edit NSF export format to allow adding more effects (@Gumball2415, @nyanpasu64 #46)
 
-- #### Bug fixes:
+- ### Bug fixes:
 
 	- Fix VRC7 hardware patch bank presets not reading properly (@Gumball2415 #60)
 	- Fix crash when increasing engine speed with VRC7 enabled (@nyanpasu64 #62)
 	- Fix N163 and 5B mixing levels which were swapped in 0.3.0 (causing N163 to be louder and 5B to be quieter) (@nyanpasu64 #66)
 
-- #### Internal:
+- ### Internal:
 
 	- Update VRC7 emulator core (emu2413) to v1.5.6 (@Gumball2415 #59)
 	- Port CVRC7 to CSoundChip2 (@Gumball2415 #59)
@@ -190,9 +192,9 @@ Version 0.5.0.1 - May 10, 2023
 
 
 
-### Dn0.3.0.0 - 04/03/2021
+## Dn0.3.0.0 - 04/03/2021
 
-- #### Important changes:
+- ### Important changes:
 
 	- Reenabled version checking, which can also be accessed in the Help popup
 	- Replaced FDS emulation core with Mesen's version (@nyanpasu64 #32)
@@ -201,7 +203,7 @@ Version 0.5.0.1 - May 10, 2023
 		- Blue Mario for Sunsoft 5B information (@N-SPC700 #12)
 		- Accuracy (Compass Man) for providing updated screenshots (#12)
 
-- #### Additions:
+- ### Additions:
 
 	- Added FastTracker 2 (JP106) keymap (@sdhizumi #8)
 	- Adjustable idle refresh rate in configuration
@@ -212,20 +214,20 @@ Version 0.5.0.1 - May 10, 2023
 	- Added the Kxx multiply frequency effect, not currently supported in NSF export @nyanpasu64 #16)
 	- Adjustable channel view in frame editor
 
-- #### Improvements:
+- ### Improvements:
 
 	- Enable DPI scaling for pattern editor (@nyanpasu64 #5)
 	- Updated About information
 	- Export wave shortcut (Ctrl + Shift + E)
 
-- #### Bug fixes:
+- ### Bug fixes:
 
 	- Fixed DC drifting (when no highpass is applied) due to rounding errors in Blip_Buffer calculation (@nyanpasu64 #27)
 	- Fixed N163 detuning when multiplexing is disabled (@nyanpasu64 #31)
 	- Fixed undoing "delete frame" adding a new frame (#43)
 	- Fixed VRC7 note cuts being inconsistent with in-tracker note cuts (@Kouzeru #47)
 
-- #### Internal:
+- ### Internal:
 
 	- Fixed CMake MFC detection and link flag conflicts (@nyanpasu64 #6)
 	- Removed more occurences of old program name and renamed more files to Dn (@nyanpasu64 #7)
@@ -242,49 +244,49 @@ Version 0.5.0.1 - May 10, 2023
 
 
 
-### Dn0.2.1.0 - 09/13/20
+## Dn0.2.1.0 - 09/13/20
 
-- #### Additions:
+- ### Additions:
 
 	- Adjustable preview pitch.
 
-- #### Improvements:
+- ### Improvements:
 
 	- Readjusted the DPCM sample editor dialog size limit.
 
-- #### Bug fixes:
+- ### Bug fixes:
 
 	- Fixed drag-scrolling not working.
 	- Readjusted the DPCM sample editor dialog size limit.
 
-- #### Internal:
+- ### Internal:
 
 	- Changed the project and corresponding project file names accordingly to Dn-FamiTracker.
 
 
 
-### Dn0.2.0.0 - 09/07/20
+## Dn0.2.0.0 - 09/07/20
 
-- #### Additions:
+- ### Additions:
 
 	- Multiple .wav per-channel export (#2)
 	- Adaptive register state refresh rate(≈60fps during playback, otherwise 10fps)
 
-- #### Bug fixes:
+- ### Bug fixes:
 
 	- DPCM sample bit reversal now includes the first bit of the sample
 	- Fixed the version numbering
 
-- #### Internal:
+- ### Internal:
 
 	- Changed most of the internal names from j0CC-FamiTracker to Dn-FamiTracker
 	- Use precompiled headers in CMake builds (@nyanpasu64 #3)
 
 
 
-### Dn0.1.0.0 - 08/05/20
+## Dn0.1.0.0 - 08/05/20
 
-- #### Additions:
+- ### Additions:
 
 	- DPCM sample bit order reversal (located in the DPCM sample editor) (#1)
 
@@ -293,7 +295,9 @@ Version 0.5.0.1 - May 10, 2023
 
 
 # j0CC-FamiTracker Mod
+
 Change Log
+
 Written by nyanpasu64
 
 Version 0.6.3 - August 1 2020
@@ -301,7 +305,7 @@ Version 0.6.3 - August 1 2020
 
 ---
 
-### 0.6.3 - 08/01/20
+## 0.6.3 - 08/01/20
 
 This will be the final release. This program has been effectively dead for
 months to years, as my priorities have moved elsewhere, to building a new
@@ -331,11 +335,11 @@ FamiTracker-Next. I may participate if I regain interest.
 - Fix memory corruption on Wine during find-and-replace (#164)
 - Fix out-of-bounds read (garbage data or crashes) with N163 Vxx effects over 0x80 (#165)
 
-🚪🐈
+:door::cat2:
 
 
 
-### j0.6.2 - 06/16/19
+## j0.6.2 - 06/16/19
 
 the version number in the .exe is wrong. Ignore it.
 
@@ -345,7 +349,7 @@ the version number in the .exe is wrong. Ignore it.
 See https://ci.appveyor.com/project/nyanpasu64/0cc-famitracker/history for dev
 builds.
 
-### j0.6.1 - 09/30/18
+## j0.6.1 - 09/30/18
 
 Bugfixes:
 
@@ -359,7 +363,7 @@ Internal:
 
 
 
-### j0.6.0a - 07/08/18
+## j0.6.0a - 07/08/18
 
 j0.6.0a is identical to j0.6.0, except with correct .exe version number, and
 .pdb debug info available in release builds, to help debug crash dumps.
@@ -392,7 +396,7 @@ Internal:
 
 
 
-### j0.5.3 - 06/01/18
+## j0.5.3 - 06/01/18
 
 Changelog:
 
@@ -411,7 +415,7 @@ Bugfixes:
 
 
 
-### j0.0.5.2 - 04/29/18
+## j0.0.5.2 - 04/29/18
 
 Changelog:
 
@@ -424,7 +428,7 @@ Bugfixes:
 
 
 
-### j0.0.5.1 - 04/16/18
+## j0.0.5.1 - 04/16/18
 
 Changelog:
 
@@ -436,7 +440,7 @@ See https://ci.appveyor.com/project/nyanpasu64/0cc-famitracker/history for past 
 
 
 
-### j0.0.5 - 04/13/18
+## j0.0.5 - 04/13/18
 
 Changelog:
 
@@ -454,7 +458,7 @@ See https://ci.appveyor.com/project/nyanpasu64/0cc-famitracker/history for dev b
 
 
 
-### j0.0.4 - 03/22/18
+## j0.0.4 - 03/22/18
 
 Changelog:
 
@@ -469,7 +473,7 @@ Bug fixes:
 
 
 
-### j0.0.3 - 03/02/18
+## j0.0.3 - 03/02/18
 
 Disabled update checking (may reenable checking this repo later). Changed the version number.
 
@@ -477,13 +481,13 @@ Fixed #10 and #11 for Wine users.
 
 
 
-### j0.0.2 - 03/02/18
+## j0.0.2 - 03/02/18
 
 Fixed a crashing issue in debug builds, and reported to occur in release builds. (Caused by hires FFT)
 
 
 
-### j0.0.1 - 03/02/18
+## j0.0.1 - 03/02/18
 
 This is a fork of HertzDevil's 0CC-Famitracker 0.3.14.5 (since 0.3.15.1 and master are quite buggy and changing rapidly). It contains bugfixes which HertzDevil has not merged yet (some for months, some fixed independently in 0.3.15.1 or master), as well as N163 multi-wave copy-paste support.
 
@@ -501,7 +505,7 @@ Enhancements:
 
 
 
-### n163-2018-02-10 - 02/12/18
+## n163-2018-02-10 - 02/12/18
 
 My changes:
 - Fixed importing FTI instruments containing DPCM samples where length's bytes >= 0x80. This fixes Extends Levant bass.
@@ -525,14 +529,16 @@ Known bugs:
 
 
 # 0CC-FamiTracker Mod
+
 Change Log
+
 Written by HertzDevil
 
- Version 0.3.15.3 - May 20 2018
+Version 0.3.15.3 - May 20 2018
 
 ---
 
-### V0.3.15.3 - 05/20/18
+## V0.3.15.3 - 05/20/18
 
 Bug fixes:
 
@@ -541,7 +547,7 @@ Bug fixes:
 
 
 
-### V0.3.15.2 - 05/20/18
+## V0.3.15.2 - 05/20/18
 
 Additions:
 
@@ -602,14 +608,14 @@ Bug fixes:
 
 
 
-### V0.3.15.1 - 10/30/17
+## V0.3.15.1 - 10/30/17
 
 Bug fixes:
 - Fixed pattern block corruption for songs containing more than 256 rows
 
 
 
-### V0.3.15.0 - 10/30/17
+## V0.3.15.0 - 10/30/17
 
 Important Changes:
 - Custom exporter support has been dropped because of lack of use
@@ -633,7 +639,7 @@ Bug fixes:
 
 
 
-### V0.3.14.5 - 01/16/17
+## V0.3.14.5 - 01/16/17
 
 Important Changes:
 - Effect indices are now remapped to match new effects in vanilla 0.5.0 beta
@@ -666,7 +672,7 @@ Bug fixes:
 
 
 
-### V0.3.14.4 - 08/04/16
+## V0.3.14.4 - 08/04/16
 
 Bug fixes:
 - Fixed recent file list not updating the registry if cleared without being viewed again at least once
@@ -675,7 +681,7 @@ Bug fixes:
 
 
 
-### V0.3.14.3 - 08/03/16
+## V0.3.14.3 - 08/03/16
 
 Additions:
 - Ported the following features from 0.5.0 beta:
@@ -733,7 +739,7 @@ Bug fixes:
 
 
 
-### V0.3.14.2 - 05/23/16
+## V0.3.14.2 - 05/23/16
 
 Additions:
 - Added linear pitch mode (originally from official 0.4.0)
@@ -779,7 +785,7 @@ Bug fixes:
 
 
 
-### V0.3.14.1 - 04/09/16
+## V0.3.14.1 - 04/09/16
 
 Improvements:
 - Tracker now pads DPCM samples with invalid size on opening a module
@@ -809,7 +815,7 @@ Bug fixes:
 
 
 
-### V0.3.14.0 - 03/31/16
+## V0.3.14.0 - 03/31/16
 
 Additions:
 - Added the *.0cc file extension
@@ -842,7 +848,7 @@ Bug fixes:
 
 
 
-### V0.3.13 - 11/16/15
+## V0.3.13 - 11/16/15
 
 Additions:
 - Added a command to create new instruments by recording the output of certain channels as instrument sequences
@@ -879,7 +885,7 @@ Bug fixes:
 
 
 
-### V0.3.12 - 10/17/15
+## V0.3.12 - 10/17/15
 
 Additions:
 - Added FDS automatic frequency modulation effects
@@ -917,7 +923,7 @@ Bug fixes:
 
 
 
-### V0.3.11r1 - 07/12/15
+## V0.3.11r1 - 07/12/15
 
 Improvements:
 - Added simple wildcard for search query ("." character)
@@ -933,7 +939,7 @@ Bug fixes:
 
 
 
-### V0.3.11 - 07/09/15
+## V0.3.11 - 07/09/15
 
 Additions:
 - Added pattern bookmark manager and go to dialog
@@ -964,7 +970,7 @@ Bug fixes:
 
 
 
-### V0.3.10 - 06/02/15
+## V0.3.10 - 06/02/15
 
 Additions:
 - Added Exx effect for the FDS channel's hardware volume envelope control
@@ -1013,7 +1019,7 @@ Bug fixes:
 
 
 
-### V0.3.9 - 04/12/15
+## V0.3.9 - 04/12/15
 
 Additions:
 - Selection can now span across frame boundaries
@@ -1085,7 +1091,7 @@ Bug fixes:
 
 
 
-### V0.3.8 - 02/16/15
+## V0.3.8 - 02/16/15
 
 Additions:
 - Added Txy delayed transpose effect
@@ -1121,7 +1127,7 @@ Bug fixes:
 
 
 
-### V0.3.7 - 01/18/15
+## V0.3.7 - 01/18/15
 
 Additions:
 - Added Yxx wave buffer access for N163 channels
@@ -1142,7 +1148,7 @@ Bug fixes:
 
 
 
-### V0.3.6 - 01/09/15
+## V0.3.6 - 01/09/15
 
 Additions:
 - Added ad-hoc support for NSF export using multiple expansion chips
@@ -1163,7 +1169,7 @@ Bug fixes:
 
 
 
-### V0.3.5 - 01/01/15
+## V0.3.5 - 01/01/15
 
 Additions:
 - Added echo buffer
@@ -1187,7 +1193,7 @@ Bug fixes:
 
 
 
-### V0.3.4 - 12/28/14
+## V0.3.4 - 12/28/14
 
 Additions:
 - Added groove settings
@@ -1203,7 +1209,7 @@ Bug fixes:
 
 
 
-### V0.3.3 - 12/25/14
+## V0.3.3 - 12/25/14
 
 Additions:
 - Added Exx effect for hardware envelope and length counter control
@@ -1225,7 +1231,7 @@ Bug fixes:
 
 
 
-### V0.3.2 - 12/20/14
+## V0.3.2 - 12/20/14
 
 Additions:
 - Added DETUNETABLES block in FTM format
@@ -1241,7 +1247,7 @@ Bug Fixes:
 
 
 
-### V0.3.1 - 12/16/14
+## V0.3.1 - 12/16/14
 
 Bug Fixes:
 - Fixed Vxx not working on 5B channels
@@ -1249,7 +1255,7 @@ Bug Fixes:
 
 
 
-### V0.3.0 - 12/15/14
+## V0.3.0 - 12/15/14
 
 Additions:
 - Added full support for the Sunsoft 5B expansion chip
@@ -1263,7 +1269,7 @@ Improvements:
 
 
 
-### V0.2.4 - 12/11/14
+## V0.2.4 - 12/11/14
 
 Additions:
 - Added one demo FTM demonstrating the tempo fix
@@ -1275,7 +1281,7 @@ Bug Fixes:
 
 
 
-### V0.2.3 - 12/07/14
+## V0.2.3 - 12/07/14
 
 Additions:
 - Sunsoft 5B envelope toggle is now incorporated into instrument duty sequences
@@ -1296,7 +1302,7 @@ Bug Fixes:
 
 
 
-### V0.2.2 - 12/03/14
+## V0.2.2 - 12/03/14
 
 Additions:
 - Ctrl+Shift+M now toggles Namco 163 multiplexer emulation, enabled by default
@@ -1316,7 +1322,7 @@ Bug Fixes:
 
 
 
-### V0.2.1 - 11/29/14
+## V0.2.1 - 11/29/14
 
 Additions:
 - Added an easter egg (included in source code since V0.3.8)
@@ -1329,7 +1335,7 @@ Bug Fixes:
 
 
 
-### V0.2.0 - 11/28/14
+## V0.2.0 - 11/28/14
 
 Additions:
 - Added the ability to read custom pitch tables
@@ -1340,7 +1346,7 @@ Bug Fixes:
 
 
 
-### V0.1.1 - 09/14/14
+## V0.1.1 - 09/14/14
 
 Improvements:
 - MML field now displays arpeggio schemes with "x" and "y" properly
@@ -1352,7 +1358,7 @@ Bug Fixes:
 
 
 
-### V0.1.0 - 09/12/14
+## V0.1.0 - 09/12/14
 
 Additions:
 - Initial release
@@ -1374,11 +1380,12 @@ For enquiries mail to nicetas.c@gmail.com
 # FamiTracker
 
 Change log
+
 Version 0.4.6 - February 4 2015
 
 ---
 
-### Version 0.4.6
+## Version 0.4.6
 
  New stuff:
   - Pattern rows with unspecified instruments will use the selected instrument
@@ -1388,7 +1395,7 @@ Version 0.4.6 - February 4 2015
   - Fixed instrument clone command bug
 
 
-### Version 0.4.5
+## Version 0.4.5
 
  New stuff:
   - Improved VRC7 emulation, clipping will occur when audio is too loud
@@ -1408,7 +1415,7 @@ Version 0.4.6 - February 4 2015
   - Fixed MIDI note on/off priority problem
 
 
-### Version 0.4.4
+## Version 0.4.4
 
  Fixed bugs:
   - Fixed a problem with fixed arpeggio not playing the final note
@@ -1422,7 +1429,7 @@ Version 0.4.6 - February 4 2015
   - Updated PAL DPCM period table
 
 
-### Version 0.4.3
+## Version 0.4.3
 
  New stuff:
   - Added names to the built in VRC7 patches
@@ -1446,7 +1453,7 @@ Version 0.4.6 - February 4 2015
   - Fixed note slide effects on VRC7
 
 
-### Version 0.4.2
+## Version 0.4.2
 
  New stuff:
   - Added selection + drag & drop capability to the frame editor
@@ -1468,7 +1475,7 @@ Version 0.4.6 - February 4 2015
   - Fixed some problems with the Dxx command
 
 
-### Version 0.4.1
+## Version 0.4.1
 
  New stuff:
   - Added an instrument files menu
@@ -1484,7 +1491,7 @@ Version 0.4.6 - February 4 2015
   - Fixed some wave file export bugs
 
 
-### Version 0.4.0
+## Version 0.4.0
 
 New stuff:
  - Added fixed and relative arpeggio modes
@@ -1517,7 +1524,7 @@ Fixed bugs:
  - Fixed volume problem when using the note halt command on VRC6 and MMC5
 
 
-### Version 0.3.7
+## Version 0.3.7
 
 New stuff:
  - Added MML string copy/paste to VRC7 instrument editor
@@ -1548,7 +1555,7 @@ Fixed bugs:
  - Fixed a small vibrato export bug
 
 
-### Version 0.3.6b4
+## Version 0.3.6b4
 
 Fixed bugs:
  - Fixed a problem when loading multiple FTI files with DPCM samples
@@ -1603,13 +1610,13 @@ Fixed beta bugs: (ocurred only in earlier betas)
 
 ---
 
-##### Note from Dn-FT maintainer:
+#### Note from Dn-FT maintainer:
 
 `changelog.txt` did not exist prior to FT 0.4.0 source. Due to this, versions 0.3.6 and below were not documented there. The following changelog text is derived from `changelog.htm`, in the HTMLHelp source.
 
 ---
 
-### Version 0.3.6
+## Version 0.3.6
 
  - Added support for module importing
  - Added a shortcut option to show/hide control panel (in settings/shortcuts)
@@ -1647,7 +1654,7 @@ Fixed beta bugs: (ocurred only in earlier betas)
  - Fixed a crash bug when using a custom refresh rate with expansion chips
 
 
-### Version 0.3.5
+## Version 0.3.5
 
  - Delete key deleted two rows on the bottom row, fixed
  - Entering an instrument column number moves to that instrument
@@ -1684,7 +1691,7 @@ Fixed beta bugs: (ocurred only in earlier betas)
  - Ctrl+C: copy current frame, Ctrl+V: paste frame into selected frame
 
 
-### Version 0.3.0
+## Version 0.3.0
 
  - MMC5 expansion sound support
  - Improved pattern editor (possible to select multiple channels, drag'n'drop, control+drag = copy, shift+drag = mix)
@@ -1700,7 +1707,7 @@ Fixed beta bugs: (ocurred only in earlier betas)
  - Fixed a bug with the tremolo effect
 
 
-### Version 0.2.9
+## Version 0.2.9
 
  - New effects Q, R (pitch slide), A (volume slide) A (volume slide)
  - Fixed a tempo bug in the tracker
@@ -1716,7 +1723,7 @@ Fixed beta bugs: (ocurred only in earlier betas)
  - Fixed some problems with note delay command in tracker and NSF
 
 
-### Version 0.2.7
+## Version 0.2.7
 
  - New NSF code, creates smaller NSF files (and use less 6502 CPU).
  - NSF bank switching is used automatically when needed.
@@ -1765,6 +1772,6 @@ Fixed beta bugs: (ocurred only in earlier betas)
 
 ---
 
-##### Note from Dn-FT maintainer:
+#### Note from Dn-FT maintainer:
 
 `changelog.htm` did not exist prior to FT 0.2.7 source. There seems to be no recorded changelog for versions 0.2.6 and below.
