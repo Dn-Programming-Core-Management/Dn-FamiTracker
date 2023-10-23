@@ -10,7 +10,7 @@ Dn-Famitracker is a fork of 0CC-FamiTracker that incorporates numerous fixes and
 - More accessible VRC7 envelope editing
 - Improved FDS, N163 VRC7 and 2A03 emulation
 - Restored Help manual, now under maintenance at [Dn-help](https://github.com/Dn-Programming-Core-Management/Dn-help)
-- and more to come, see the [release page](https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/releases) for more info
+- and more to come, see the [release page](https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/releases) and the [changelog](docs/CHANGELOG.md) for more info
 
 ## Contributing
 
