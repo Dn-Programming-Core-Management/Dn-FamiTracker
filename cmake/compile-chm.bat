@@ -1,5 +1,6 @@
 rem call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
 @echo off
+powershell -Command "(Get-Content Dn-help\hlp\changelog_shell.htm).Replace('<!-- INSERT-CHANGELOG-HERE -->', (pandoc docs/CHANGELOG.md -f gfm -t html5)) | Set-Content -encoding UTF8 Dn-help\hlp\changelog.htm"
 echo // Generated Help Map file.  Used by Dn-FamiTracker.hhp. > "Dn-help\hlp\HTMLDefines.h"
 echo. > "Dn-help\hlp\HTMLDefines.h"
 echo // Commands (ID_* and IDM_*) >> "Dn-help\hlp\HTMLDefines.h"
