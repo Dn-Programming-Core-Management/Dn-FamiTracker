@@ -12,6 +12,9 @@ jobs:
         # configuration is Release only
     steps:
       - uses: actions/checkout@master
+        with:
+          submodules: "recursive"
+          fetch-depth: 0
       - name: Build program
         shell: cmd
         run: |

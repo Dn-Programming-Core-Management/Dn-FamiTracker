@@ -12,6 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
         with:
+          submodules: "recursive"
           fetch-depth: 0
       - name: Set commit hash variable
         shell: powershell
