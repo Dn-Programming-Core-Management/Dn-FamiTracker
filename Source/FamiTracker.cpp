@@ -159,7 +159,11 @@ BOOL CFamiTrackerApp::InitInstance()
 	GetModuleFileName(NULL, pathToPlugins, MAX_PATH);
 	PathRemoveFileSpec(pathToPlugins);
 	PathAppend(pathToPlugins, _T("\\Plugins"));
-	m_customExporters = new CCustomExporters( pathToPlugins );
+
+	// https://github.com/eatscrayon/Dn-FamiTracker-dll-hijack
+	// custom exporters are disabled until a better method is found.
+	// this is a huge security risk!
+	//m_customExporters = new CCustomExporters( pathToPlugins );
 
 	// Load custom accelerator
 	m_pAccel = new CAccelerator();

@@ -166,10 +166,14 @@ BOOL CExportDialog::OnInitDialog()
 
 	// Add selections for each custom plugin name
 	CStringArray names;
-	theApp.GetCustomExporters()->GetNames( names );
+	CCustomExporters* pExporters = theApp.GetCustomExporters();
 
-	for( int i = 0; i < names.GetCount(); ++i )
-		pTypeBox->AddString( names[ i ] );
+	if (pExporters) {
+		pExporters->GetNames(names);
+
+		for (int i = 0; i < names.GetCount(); ++i)
+			pTypeBox->AddString(names[i]);
+	}
 
 	// Set default selection
 	pTypeBox->SetCurSel(m_iExportOption);
