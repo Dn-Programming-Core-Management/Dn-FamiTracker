@@ -65,7 +65,7 @@ bool CSeqConversionDefault::ToValue(const std::string &String)
 		if (!GetNextInteger(b, e, m_iRepeat))
 			return false;
 	}
-	if (b != e || m_iRepeat <= 0)
+	if (b != e || m_iRepeat <= 0 || m_iValueDiv <= 0)
 		return false;
 	m_iValueInc = m_iTargetValue - m_iCurrentValue;
 	m_iRepeatCounter = m_iCounter = m_iValueMod = 0;
