@@ -2973,9 +2973,6 @@ bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, Input input, int Ef
 				bStepDown = true;
 			return true;
 		}
-
-		if (key >= VK_NUMPAD0 && key <= VK_NUMPAD9)
-			key = '0' + (key - VK_NUMPAD0);
 	}
 
 	CFamiTrackerDoc* pDoc = GetDocument();
@@ -2990,6 +2987,10 @@ bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, Input input, int Ef
 
 	if (auto p = get_if<Keycode>(&input)) {
 		auto key = *p;
+
+		if (key >= VK_NUMPAD0 && key <= VK_NUMPAD9)
+			key = '0' + (key - VK_NUMPAD0);
+
 		if (!isAlphanumeric(key)) {
 			return false;
 		}
