@@ -2450,7 +2450,7 @@ void CSoundGen::UpdateAPU()
 				UpdateAPU();
 				l.unlock();
 			}
-			else TRACE("SoundGen: APU mutex lock failed");
+			else TRACE("SoundGen: APU mutex lock failed\n");
 		}
 	}
 
