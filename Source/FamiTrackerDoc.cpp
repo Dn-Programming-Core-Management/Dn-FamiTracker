@@ -4616,7 +4616,7 @@ json CFamiTrackerDoc::InterfaceToOptionalJSON() const
 	const stJSONOptionalData DEFAULT;
 
 	if (GetLevelOffset(0) != DEFAULT.APU1_OFFSET) json[APU1_OFFSET] = GetLevelOffset(0);
-	if (GetLevelOffset(1) != DEFAULT.APU2_OFFSET) json[APU2_OFFSET] = GetLevelOffset(0);
+	if (GetLevelOffset(1) != DEFAULT.APU2_OFFSET) json[APU2_OFFSET] = GetLevelOffset(1);
 	if (GetLevelOffset(2) != DEFAULT.VRC6_OFFSET) json[VRC6_OFFSET] = GetLevelOffset(2);
 	if (GetLevelOffset(3) != DEFAULT.VRC7_OFFSET) json[VRC7_OFFSET] = GetLevelOffset(3);
 	if (GetLevelOffset(4) != DEFAULT.FDS_OFFSET) json[FDS_OFFSET] = GetLevelOffset(4);

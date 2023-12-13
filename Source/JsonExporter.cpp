@@ -4,7 +4,7 @@
 **
 ** 0CC-FamiTracker is (C) 2014-2018 HertzDevil
 **
-** Dn-FamiTracker is (C) 2020-2022 D.P.C.M.
+** Dn-FamiTracker is (C) 2020-2023 D.P.C.M.
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -49,6 +49,8 @@
 #include <optional>
 
 #define DEBUG_OUT(...) { CString s__; s__.Format(__VA_ARGS__); OutputDebugString(s__); }
+
+const unsigned int JSON_VER = 0x0100;			// Current JSON export version (1.00)
 
 using json = nlohmann::json;
 
@@ -187,11 +189,16 @@ void to_json(json& j, const stChanNote& note) {
 	}
 }
 
+// Note: 0CC exports only a two-value array with no Offset field.
+void to_json(json& j, const stHighlight& hl) {
+	j = json::array({ hl.First, hl.Second, hl.Offset });
+}
+
 void to_json(json& j, const CBookmark& bm) {
 	j = json{
 		{"name", bm.m_sName},
 		// Note: 0CC exports only a two-value array with no Offset field.
-		{"highlight", json::array({ bm.m_Highlight.First, bm.m_Highlight.Second, bm.m_Highlight.Offset })},
+		{"highlight", json(bm.m_Highlight)},
 		{"frame", bm.m_iFrame},
 		{"row", bm.m_iRow},
 		{"persist", bm.m_bPersist},
@@ -377,6 +384,7 @@ void to_json(json& j, const CGroove& groove) {
 		j["values"].push_back(groove.GetEntry(i));
 }
 
+// TODO: compartmentalize all blocks within their own subclass?
 void to_json(json& j, const CFamiTrackerDoc& modfile) {
 
 	auto channels = json::array();
@@ -399,12 +407,27 @@ void to_json(json& j, const CFamiTrackerDoc& modfile) {
 		}
 
 		channels.push_back({
-			{ "chip", GetChannelChipName(chip_type)},
-			{ "subindex", subindex},
-			});
+			{ "chip", GetChannelChipName(chip_type) },
+			{ "subindex", subindex },
+		});
 	}
-	 
+
+	auto opll_patches = json::array();
+	for (int i = 0; i < 19; i++) {
+		uint8_t opll_bytes[8]{};
+		std::string patch_name;
+		for (int j = 0; j < 8; j++)
+			opll_bytes[j] = modfile.GetOPLLPatchByte((8 * i) + j);
+		patch_name = modfile.GetOPLLPatchName(i);
+		opll_patches.push_back({
+			{ "name", patch_name },
+			{ "bytes", opll_bytes },
+		});
+	}
+
 	j = json{
+		{"_dn_famitracker_module_version", CDocumentFile::FILE_VER},
+		{"_json_export_version", JSON_VER},
 		{"metadata", {
 			{"title", std::string {modfile.GetSongName()}},
 			{"artist", std::string {modfile.GetSongArtist()}},
@@ -422,8 +445,12 @@ void to_json(json& j, const CFamiTrackerDoc& modfile) {
 				{"semitones", modfile.GetTuningSemitone()},
 				{"cents", modfile.GetTuningCent()},
 			}},
+			{ "optional_json_data", modfile.InterfaceToOptionalJSON() },
+			{ "emulation_parameters", {
+				{ "use_external_OPLL", modfile.GetExternalOPLLChipCheck() },
+				{ "external_OPLL_patches", opll_patches},
+			}},
 		}},
-
 		{"channels", channels},
 		{"songs", json::array()},
 		{"instruments", json::array()},
@@ -433,6 +460,7 @@ void to_json(json& j, const CFamiTrackerDoc& modfile) {
 		{"grooves", json::array()},
 	};
 
+	// CSongData
 	for (unsigned int Track = 0; Track < modfile.GetTrackCount(); ++Track)
 	{
 		auto sj = json{
@@ -443,23 +471,9 @@ void to_json(json& j, const CFamiTrackerDoc& modfile) {
 			{"title", std::string {modfile.GetTrackTitle(Track)}},
 			{"uses_groove", modfile.GetSongGroove(Track)},
 			{"tracks", json::array()},
-			// Note: 0CC exports only a two-value array with no Offset field.
-			{"highlight", {modfile.GetHighlight().First, modfile.GetHighlight().Second, modfile.GetHighlight().Offset}},
-			{"bookmarks", json::array()},
+			{"highlight", json(modfile.GetHighlight()) },
+			{"bookmarks", json(*modfile.GetBookmarkManager()->GetCollection(Track))},
 		};
-
-		auto pBookmarkCollection = modfile.GetBookmarkManager()->GetCollection(Track);
-		unsigned int bookmarkcount = pBookmarkCollection->GetCount();
-		if (bookmarkcount) for (unsigned int b = 0; b < bookmarkcount; ++b) {
-			auto pMark = pBookmarkCollection->GetBookmark(b);
-			sj["bookmarks"].push_back(json{
-				{"frame", pMark->m_iFrame},
-				{"highlight",{pMark->m_Highlight.First, pMark->m_Highlight.Second}},
-				{"name", pMark->m_sName},
-				{"persist", pMark->m_bPersist},
-				{"row", pMark->m_iRow},
-				});
-		}
 
 		// TODO
 		for (int Channel = 0; Channel < modfile.GetChannelCount(); ++Channel)
@@ -481,6 +495,8 @@ void to_json(json& j, const CFamiTrackerDoc& modfile) {
 			default: break;
 			}
 
+
+			// CTrackData
 			json cj = json{
 				{ "frame_list", json::array() },
 				{ "patterns", json::array() },
@@ -555,19 +571,21 @@ void to_json(json& j, const CFamiTrackerDoc& modfile) {
 		auto name = std::string{ GetInstrumentChipName(inst_type) };
 		for (sequence_t t = sequence_t::SEQ_VOLUME; t < sequence_t::SEQ_COUNT; t = (sequence_t)(unsigned int)(t+1))
 			if (const CSequenceCollection* seqcol = smanager.GetCollection(t))
-				for (unsigned i = 0; i < MAX_SEQUENCES; ++i)
-					if (auto pSeq = seqcol->GetSequence(i)) {
+				for (unsigned i = 0; i < MAX_SEQUENCES; ++i) {
+					auto pSeq = seqcol->GetSequence(i);
+					if (pSeq != nullptr) {
 						auto sj = json(*pSeq);
 						sj["chip"] = name;
 						sj["macro_id"] = (unsigned int)(t);
 						sj["index"] = i;
 						j["sequences"].push_back(std::move(sj));
 					}
+				}
 	};
 
 	InsertSequences(INST_2A03);
 	InsertSequences(INST_VRC6);
-	//	InsertSequences(INST_FDS);
+//	InsertSequences(INST_FDS);
 	InsertSequences(INST_N163);
 	InsertSequences(INST_S5B);
 }
