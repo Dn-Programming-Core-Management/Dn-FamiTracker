@@ -632,6 +632,7 @@
     <ClCompile Include="Source\CustomExporters.cpp" />
     <ClCompile Include="Source\DocumentWrapper.cpp" />
     <ClCompile Include="Source\TextExporter.cpp" />
+    <ClCompile Include="Source\JsonExporter.cpp" />
     <ClCompile Include="Source\Chunk.cpp" />
     <ClCompile Include="Source\ChunkRenderBinary.cpp" />
     <ClCompile Include="Source\ChunkRenderText.cpp" />
@@ -981,6 +982,7 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "hlp\HTMLDefines.
     <ClInclude Include="Source\WavegenBuiltin.h" />
     <ClInclude Include="Source\WinSDK\VersionHelpers.h" />
     <ClInclude Include="Source\WinSDK\winapifamily.h" />
+    <ClInclude Include="Source\JsonExporter.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="Source\ChannelMap.h" />
     <ClInclude Include="Source\Common.h" />

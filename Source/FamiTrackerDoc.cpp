@@ -1029,7 +1029,7 @@ bool CFamiTrackerDoc::WriteBlock_Instruments(CDocumentFile *pDocFile, const int 
 			// Store the name
 			pInst->GetName(Name);
 			pDocFile->WriteBlockInt((int)strlen(Name));
-			pDocFile->WriteBlock(Name, (int)strlen(Name));			
+			pDocFile->WriteBlock(Name, (int)strlen(Name));
 		}
 	}
 
@@ -2782,18 +2782,20 @@ void CFamiTrackerDoc::ReadBlock_ParamsEmu(CDocumentFile* pDocFile, const int Ver
 
 bool CFamiTrackerDoc::WriteBlock_ParamsEmu(CDocumentFile* pDocFile, const int Version) const
 {
-	// VRC7 emulator parameters
 	if (!(m_bUseExternalOPLLChip && (m_iExpansionChip & SNDCHIP_VRC7)))
 		return true;
 
 	pDocFile->CreateBlock(FILE_BLOCK_PARAMS_EMU, Version);
 
-	pDocFile->WriteBlockInt(m_bUseExternalOPLLChip);
+	// VRC7 emulator parameters
+	if (m_iExpansionChip & SNDCHIP_VRC7) {
+		pDocFile->WriteBlockInt(m_bUseExternalOPLLChip);
 
-	for (int i = 0; i < 19; i++) {
-		for (int j = 0; j < 8; j++)
-			pDocFile->WriteBlockChar(static_cast<char>(m_iOPLLPatchBytes[(8 * i) + j]));
-		pDocFile->WriteString(m_strOPLLPatchNames[i]);
+		for (int i = 0; i < 19; i++) {
+			for (int j = 0; j < 8; j++)
+				pDocFile->WriteBlockChar(static_cast<char>(m_iOPLLPatchBytes[(8 * i) + j]));
+			pDocFile->WriteString(m_strOPLLPatchNames[i]);
+		}
 	}
 
 	return pDocFile->FlushBlock();
@@ -4616,7 +4618,7 @@ json CFamiTrackerDoc::InterfaceToOptionalJSON() const
 	const stJSONOptionalData DEFAULT;
 
 	if (GetLevelOffset(0) != DEFAULT.APU1_OFFSET) json[APU1_OFFSET] = GetLevelOffset(0);
-	if (GetLevelOffset(1) != DEFAULT.APU2_OFFSET) json[APU2_OFFSET] = GetLevelOffset(0);
+	if (GetLevelOffset(1) != DEFAULT.APU2_OFFSET) json[APU2_OFFSET] = GetLevelOffset(1);
 	if (GetLevelOffset(2) != DEFAULT.VRC6_OFFSET) json[VRC6_OFFSET] = GetLevelOffset(2);
 	if (GetLevelOffset(3) != DEFAULT.VRC7_OFFSET) json[VRC7_OFFSET] = GetLevelOffset(3);
 	if (GetLevelOffset(4) != DEFAULT.FDS_OFFSET) json[FDS_OFFSET] = GetLevelOffset(4);

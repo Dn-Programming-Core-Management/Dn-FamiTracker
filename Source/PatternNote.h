@@ -43,4 +43,27 @@ public:
 public:
 	static const CString NOTE_NAME[NOTE_RANGE];
 	static const CString NOTE_NAME_FLAT[NOTE_RANGE];
+
+	bool operator==(const stChanNote& other) const {
+		if (Note != other.Note
+			|| Octave != other.Octave
+			|| Vol != other.Vol
+			|| Instrument != other.Instrument)
+		{
+			return false;
+		}
+		for (int i = 0; i < MAX_EFFECT_COLUMNS; ++i)
+		{
+			if (EffNumber[i] != other.EffNumber[i] || EffParam[i] != other.EffParam[i])
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	bool operator!=(const stChanNote& other) const {
+		return !(*this == other);
+	}
 };

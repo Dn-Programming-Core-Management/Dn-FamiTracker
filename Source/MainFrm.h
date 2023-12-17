@@ -397,6 +397,7 @@ public:
 	afx_msg void OnDeltaposHighlightSpin1(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnDeltaposHighlightSpin2(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnFileExportRows();
+	afx_msg void OnFileExportJson();
 	afx_msg void OnEditCopyAsText();
 	afx_msg void OnEditCopyAsVolumeSequence();
 	afx_msg void OnEditCopyAsPPMCK();
