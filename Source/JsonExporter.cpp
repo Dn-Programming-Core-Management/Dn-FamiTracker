@@ -123,26 +123,26 @@ namespace {
 
 	constexpr std::string_view GetInstrumentChipName(inst_type_t inst_type) noexcept {
 		switch (inst_type) {
-		case inst_type_t::INST_2A03: return "2A03"sv;
-		case inst_type_t::INST_VRC6: return "VRC6"sv;
-		case inst_type_t::INST_VRC7: return "VRC7"sv;
-		case inst_type_t::INST_FDS:  return "FDS"sv;
-		case inst_type_t::INST_N163: return "N163"sv;
-		case inst_type_t::INST_S5B:  return "5B"sv;
-		default: return ""sv;
+			case inst_type_t::INST_2A03: return "2A03"sv;
+			case inst_type_t::INST_VRC6: return "VRC6"sv;
+			case inst_type_t::INST_VRC7: return "VRC7"sv;
+			case inst_type_t::INST_FDS:  return "FDS"sv;
+			case inst_type_t::INST_N163: return "N163"sv;
+			case inst_type_t::INST_S5B:  return "5B"sv;
+			default: return ""sv;
 		}
 	}
 
 	constexpr std::string_view GetChannelChipName(uint8_t sndchip) noexcept {
 		switch (sndchip) {
-		case SNDCHIP_NONE: return "2A03"sv;
-		case SNDCHIP_VRC6: return "VRC6"sv;
-		case SNDCHIP_VRC7: return "VRC7"sv;
-		case SNDCHIP_FDS:  return "FDS"sv;
-		case SNDCHIP_MMC5: return "MMC5"sv;
-		case SNDCHIP_N163: return "N163"sv;
-		case SNDCHIP_S5B:  return "S5B"sv;
-		default: return ""sv;
+			case SNDCHIP_NONE: return "2A03"sv;
+			case SNDCHIP_VRC6: return "VRC6"sv;
+			case SNDCHIP_VRC7: return "VRC7"sv;
+			case SNDCHIP_FDS:  return "FDS"sv;
+			case SNDCHIP_MMC5: return "MMC5"sv;
+			case SNDCHIP_N163: return "N163"sv;
+			case SNDCHIP_S5B:  return "S5B"sv;
+			default: return ""sv;
 		}
 	}
 
@@ -189,15 +189,13 @@ void to_json(json& j, const stChanNote& note) {
 	}
 }
 
-// Note: 0CC exports only a two-value array with no Offset field.
 void to_json(json& j, const stHighlight& hl) {
-	j = json::array({ hl.First, hl.Second, hl.Offset });
+	j = json::array({ hl.First, hl.Second });
 }
 
 void to_json(json& j, const CBookmark& bm) {
 	j = json{
 		{"name", bm.m_sName},
-		// Note: 0CC exports only a two-value array with no Offset field.
 		{"highlight", json(bm.m_Highlight)},
 		{"frame", bm.m_iFrame},
 		{"row", bm.m_iRow},
@@ -231,7 +229,10 @@ void to_json(json& j, const CSequence& seq) {
 void to_json(json& j, const CDSample& dpcm) {
 	j = json{
 		{"name", std::string {dpcm.GetName() ? dpcm.GetName() : ""}},
-		//{"samples", json::array()},		// what's this used for in 0CC?
+		// ft0cc::doc::to_json(json &j, const dpcm_sample &dpcm)
+		// might indicate that this has replaced the "values" key
+		// since it parses the "samples" key for the DPCM bytes
+//		{"samples", json::array()},
 		{"values", json::array()},
 	};
 	char* data = dpcm.GetData();
@@ -273,7 +274,7 @@ void to_json_seq(json& j, const CSeqInstrument& inst) {
 			j["sequence_flags"].push_back(json{
 				{"macro_id", (unsigned int)t},
 				{"seq_index", inst.GetSeqIndex(t)},
-				});
+			});
 }
 
 void to_json_2a03(json& j, const CInstrument2A03& inst) {
@@ -291,7 +292,7 @@ void to_json_2a03(json& j, const CInstrument2A03& inst) {
 					{"loop", inst.GetSampleLoop(oct, note)},
 					{"delta", inst.GetSampleDeltaValue(oct, note)},
 					{"note", MIDI_NOTE(oct, note)},
-					});
+				});
 			}
 		}
 	}
@@ -387,43 +388,20 @@ void to_json(json& j, const CGroove& groove) {
 // TODO: compartmentalize all blocks within their own subclass?
 void to_json(json& j, const CFamiTrackerDoc& modfile) {
 
-	auto channels = json::array();
-	for (int i = 0; i < modfile.GetChannelCount(); ++i)
-	{
-		// hack to get the equivalent 0CC-exclusive channel subindex
-		// TODO: implement whatever 0CC's doing for better compatibility
-		CTrackerChannel* ch = modfile.GetChannel(i);
-		auto chip_type = ch->GetChip();
-		uint8_t subindex = ch->GetID();
+	const auto GenerateChannelSubindex = [&](CTrackerChannel* ch, auto &chip_type, auto &subindex) {
+		chip_type = ch->GetChip();
+		subindex = ch->GetID();
 
 		switch (chip_type) {	// see chan_id_t
-		case SNDCHIP_VRC6: subindex -= 5; break;
-		case SNDCHIP_MMC5: subindex -= 8; break;
-		case SNDCHIP_N163: subindex -= 11; break;
-		case SNDCHIP_FDS: subindex -= 19; break;
-		case SNDCHIP_VRC7: subindex -= 20; break;
-		case SNDCHIP_S5B: subindex -= 26; break;
-		default: break;
+			case SNDCHIP_VRC6: subindex -= CHANID_VRC6_PULSE1; break;
+			case SNDCHIP_MMC5: subindex -= CHANID_MMC5_SQUARE1; break;
+			case SNDCHIP_N163: subindex -= CHANID_N163_CH1; break;
+			case SNDCHIP_FDS: subindex -= CHANID_FDS; break;
+			case SNDCHIP_VRC7: subindex -= CHANID_VRC7_CH1; break;
+			case SNDCHIP_S5B: subindex -= CHANID_S5B_CH1; break;
+			default: break;
 		}
-
-		channels.push_back({
-			{ "chip", GetChannelChipName(chip_type) },
-			{ "subindex", subindex },
-		});
-	}
-
-	auto opll_patches = json::array();
-	for (int i = 0; i < 19; i++) {
-		uint8_t opll_bytes[8]{};
-		std::string patch_name;
-		for (int j = 0; j < 8; j++)
-			opll_bytes[j] = modfile.GetOPLLPatchByte((8 * i) + j);
-		patch_name = modfile.GetOPLLPatchName(i);
-		opll_patches.push_back({
-			{ "name", patch_name },
-			{ "bytes", opll_bytes },
-		});
-	}
+	};
 
 	j = json{
 		{"_dn_famitracker_module_version", CDocumentFile::FILE_VER},
@@ -446,12 +424,9 @@ void to_json(json& j, const CFamiTrackerDoc& modfile) {
 				{"cents", modfile.GetTuningCent()},
 			}},
 			{ "optional_json_data", modfile.InterfaceToOptionalJSON() },
-			{ "emulation_parameters", {
-				{ "use_external_OPLL", modfile.GetExternalOPLLChipCheck() },
-				{ "external_OPLL_patches", opll_patches},
-			}},
+			{ "emulation_parameters", json::array() },
 		}},
-		{"channels", channels},
+		{"channels", json::array()},
 		{"songs", json::array()},
 		{"instruments", json::array()},
 		{"sequences", json::array()},
@@ -478,31 +453,18 @@ void to_json(json& j, const CFamiTrackerDoc& modfile) {
 		// TODO
 		for (int Channel = 0; Channel < modfile.GetChannelCount(); ++Channel)
 		{
-
-			// hack to get the equivalent 0CC-exclusive channel subindex
-			// TODO: implement whatever 0CC's doing for better compatibility
 			CTrackerChannel* ch = modfile.GetChannel(Channel);
-			auto chip_type = ch->GetChip();
-			uint8_t subindex = ch->GetID();
-
-			switch (chip_type) {	// see chan_id_t
-			case SNDCHIP_VRC6: subindex -= 5; break;
-			case SNDCHIP_MMC5: subindex -= 8; break;
-			case SNDCHIP_N163: subindex -= 11; break;
-			case SNDCHIP_FDS: subindex -= 19; break;
-			case SNDCHIP_VRC7: subindex -= 20; break;
-			case SNDCHIP_S5B: subindex -= 26; break;
-			default: break;
-			}
-
+			uint8_t chip_type;
+			uint8_t subindex;
+			GenerateChannelSubindex(ch, chip_type, subindex);
 
 			// CTrackData
 			json cj = json{
 				{ "frame_list", json::array() },
 				{ "patterns", json::array() },
 				{ "effect_columns", (modfile.GetEffColumns(Track, Channel)+1) },		// off-by-one
-				{ "chip", GetChannelChipName((inst_type_t)modfile.GetChipType(Channel))},
-				{ "subindex", subindex},
+				{ "chip", GetChannelChipName(chip_type) },
+				{ "subindex", subindex },
 			};
 
 			for (unsigned int Frame = 0; Frame < modfile.GetFrameCount(Track); ++Frame)
@@ -541,6 +503,40 @@ void to_json(json& j, const CFamiTrackerDoc& modfile) {
 			sj["tracks"].push_back(std::move(cj));
 		}
 		j["songs"].push_back(std::move(sj));
+	}
+
+	for (int i = 0; i < modfile.GetChannelCount(); ++i)
+	{
+		CTrackerChannel* ch = modfile.GetChannel(i);
+		uint8_t chip_type;
+		uint8_t subindex;
+		GenerateChannelSubindex(ch, chip_type, subindex);
+
+		j["channels"].push_back({
+			{ "chip", GetChannelChipName(chip_type) },
+			{ "subindex", subindex },
+		});
+	}
+
+	// emulator params
+	// VRC7
+	if (modfile.GetExpansionChip() & SNDCHIP_VRC7) {
+		auto opll_patch_data = json();
+
+		for (int i = 0; i < 19; i++) {
+			uint8_t opll_bytes[8]{};
+			for (int j = 0; j < 8; j++)
+				opll_bytes[j] = modfile.GetOPLLPatchByte((8 * i) + j);
+			opll_patch_data.push_back({
+				{ "name", modfile.GetOPLLPatchName(i) },
+				{ "bytes", opll_bytes },
+			});
+		}
+
+		j["emulation_parameters"].push_back({
+			{ "use_external_OPLL", modfile.GetExternalOPLLChipCheck() },
+			{ "OPLL_patch_data", opll_patch_data },
+		});
 	}
 
 	for (unsigned i = 0; i < MAX_INSTRUMENTS; ++i)

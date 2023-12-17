@@ -1757,10 +1757,10 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	f.WriteString(_T("\n"));
 
 	f.WriteString(_T("# PARAMS_EMU block\n"));
+	if (pDoc->GetExternalOPLLChipCheck() && (pDoc->GetExpansionChip() & SNDCHIP_VRC7)) {
+		s.Format(_T("%s %d\n"), CT[CT_USEEXTOPLL], static_cast<int>(pDoc->GetExternalOPLLChipCheck()));
+		f.WriteString(s);
 
-	s.Format(_T("%s %d\n"), CT[CT_USEEXTOPLL], static_cast<int>(pDoc->GetExternalOPLLChipCheck()));
-	f.WriteString(s);
-	if (pDoc->GetExternalOPLLChipCheck()) {
 		for (int patch = 0; patch < 19; patch++) {
 			s.Format(_T("%s %2d :"), CT[CT_OPLLPATCH], patch);
 			f.WriteString(s);
