@@ -2407,7 +2407,7 @@ void CSoundGen::UpdateAPU()
 	m_bInternalWaveChanged = m_bWaveChanged;
 	m_bWaveChanged = false;
 
-	auto UpdateAPU = [&]() {
+	auto UpdateAPUImpl = [&]() {
 		unsigned int PrevChip = SNDCHIP_NONE;		// // // 050B
 		for (int i = 0; i < CHANNELS; ++i) {
 			if (m_pChannels[i] != NULL) {
@@ -2441,13 +2441,13 @@ void CSoundGen::UpdateAPU()
 	{
 		if (m_bRendering) {
 			auto l = Lock();
-			UpdateAPU();
+			UpdateAPUImpl();
 			l.unlock();
 		}
 		else {
 			auto l = DeferLock();
 			if (l.try_lock()) {
-				UpdateAPU();
+				UpdateAPUImpl();
 				l.unlock();
 			}
 			else TRACE("SoundGen: APU mutex lock failed\n");
