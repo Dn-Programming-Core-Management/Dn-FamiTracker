@@ -32,6 +32,7 @@
 #include "rigtorp/SPSCQueue.h"
 #include "libsamplerate/include/samplerate.h"
 #include "utils/handle_ptr.h"
+#include "yamc/fair_mutex.hpp"
 #include <queue>		// // //
 #include "Common.h"
 #include "FamiTrackerTypes.h"
@@ -39,7 +40,6 @@
 #include <atomic>
 #include <cstdint>
 #include <memory>
-#include <mutex>
 #include <thread>
 
 const int VIBRATO_LENGTH = 256;
@@ -106,6 +106,8 @@ class CInstrumentRecorder;		// // //
 class CRegisterState;		// // //
 
 // CSoundGen
+
+using FairMutex = yamc::fair::mutex;
 
 class CSoundGen : IAudioCallback
 {
@@ -369,7 +371,10 @@ private:
 
 	// Thread synchronization
 private:
-	mutable std::mutex m_csAPULock;		// // //
+	/// A fair mutex ensures that if the audio thread holds m_csAPULock,
+	/// and the UI thread is waiting for m_csAPULock,
+	/// the audio thread cannot release and reacquire m_csAPULock (starving the UI thread of access).
+	mutable FairMutex m_csAPULock;		// // //
 	mutable std::mutex m_csVisualizerWndLock;
 
 	// Handles
@@ -513,11 +518,11 @@ public:
 	afx_msg void OnRemoveDocument(WPARAM wParam, LPARAM lParam);
 
 public:
-	std::unique_lock<std::mutex> Lock() {
-		return std::unique_lock<std::mutex>(m_csAPULock);
+	std::unique_lock<FairMutex> Lock() {
+		return std::unique_lock<FairMutex>(m_csAPULock);
 	}
 
-	std::unique_lock<std::mutex> DeferLock() {
-		return std::unique_lock<std::mutex>(m_csAPULock, std::defer_lock);
+	std::unique_lock<FairMutex> DeferLock() {
+		return std::unique_lock<FairMutex>(m_csAPULock, std::defer_lock);
 	}
 };
