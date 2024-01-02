@@ -91,11 +91,6 @@ void CChunkRenderText::StoreChunks(const std::vector<CChunk*> &Chunks)
 			if (pChunk->GetType() == RENDER_FUNCTIONS[j].type)
 				CALL_MEMBER_FN(this, RENDER_FUNCTIONS[j].function)(pChunk, m_pFile);
 
-	// Write strings to file
-	WriteFileString(CStringA("; " APP_NAME " exported music data: "), m_pFile);
-	WriteFileString(CFamiTrackerDoc::GetDoc()->GetTitle(), m_pFile);
-	WriteFileString(CStringA("\n;\n\n"), m_pFile);
-
 	// Module header
 	DumpStrings(CStringA("; Module header\n"), CStringA("\n"), m_headerStrings, m_pFile);
 

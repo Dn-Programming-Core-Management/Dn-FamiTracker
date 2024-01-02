@@ -44,6 +44,7 @@ public:
 	CChunkRenderText(CFile *pFile);
 	void StoreChunks(const std::vector<CChunk*> &Chunks);
 	void StoreSamples(const std::vector<const CDSample*> &Samples);
+	void WriteFileString(const CStringA& str, CFile* pFile) const;
 
 	// Labels
 	// // // moved from CCompiler
@@ -72,7 +73,6 @@ private:
 
 private:
 	void DumpStrings(const CStringA &preStr, const CStringA &postStr, CStringArray &stringArray, CFile *pFile) const;
-	void WriteFileString(const CStringA &str, CFile *pFile) const;
 	void StoreByteString(const char *pData, int Len, CStringA &str, int LineBreak) const;
 	void StoreByteString(const CChunk *pChunk, CStringA &str, int LineBreak) const;
 

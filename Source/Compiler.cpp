@@ -2761,6 +2761,13 @@ void CCompiler::WriteAssembly(CFile *pFile)
 {
 	// Dump all chunks and samples as assembly text
 	CChunkRenderText Render(pFile);
+
+	// Write export comments
+	// !! !! use CCompiler pointer instead of poking the main UI
+	Render.WriteFileString(CStringA("; " APP_NAME " exported music data: "), pFile);
+	Render.WriteFileString(m_pDocument->GetTitle(), pFile);
+	Render.WriteFileString(CStringA("\n;\n\n"), pFile);
+
 	Render.StoreChunks(m_vChunks);
 	Print(_T(" * Music data size: %i bytes\n"), m_iMusicDataSize);
 	Render.StoreSamples(m_vSamples);
