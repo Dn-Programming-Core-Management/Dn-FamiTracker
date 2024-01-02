@@ -456,7 +456,7 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 		// // // VRC7
 		if (i < NOTE_RANGE) {
 			Pitch = pDetuneVRC7->FrequencyToPeriod(pDetuneVRC7->NoteToFreq(i), 1, 0);
-			m_iNoteLookupTableVRC7[i] = std::lround(Pitch - pDocument->GetDetuneOffset(3, i));		// // //
+			m_iNoteLookupTableVRC7[i] = std::lround(Pitch + pDocument->GetDetuneOffset(3, i));		// // //
 		}
 
 		// FDS
@@ -465,11 +465,11 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 #else
 		Pitch = (NoteToFreq(i) * 65536.0) / (clock_ntsc / 4.0);
 #endif
-		m_iNoteLookupTableFDS[i] = std::lround(Pitch - pDocument->GetDetuneOffset(4, i));		// // //
+		m_iNoteLookupTableFDS[i] = std::lround(Pitch + pDocument->GetDetuneOffset(4, i));		// // //
 
 		// N163
 		Pitch = pDetuneN163->FrequencyToPeriod(pDetuneN163->NoteToFreq(i), 1, pDocument->GetNamcoChannels());
-		m_iNoteLookupTableN163[i] = std::lround(Pitch - pDocument->GetDetuneOffset(5, i));		// // //
+		m_iNoteLookupTableN163[i] = std::lround(Pitch + pDocument->GetDetuneOffset(5, i));		// // //
 
 		if (m_iNoteLookupTableN163[i] > 0xFFFF)	// 0x3FFFF
 			m_iNoteLookupTableN163[i] = 0xFFFF;	// 0x3FFFF
@@ -2407,40 +2407,50 @@ void CSoundGen::UpdateAPU()
 	m_bInternalWaveChanged = m_bWaveChanged;
 	m_bWaveChanged = false;
 
-	{
-		auto l = DeferLock();
-		if (l.try_lock()) {
-			// Update APU channel registers
-			unsigned int PrevChip = SNDCHIP_NONE;		// // // 050B
-			for (int i = 0; i < CHANNELS; ++i) {
-				if (m_pChannels[i] != NULL) {
-					m_pChannels[i]->RefreshChannel();
-					m_pChannels[i]->FinishTick();		// // //
-					unsigned int Chip = m_pTrackerChannels[i]->GetChip();
-					if (m_pDocument->ExpansionEnabled(Chip)) {
-						int Delay = (Chip == PrevChip) ? 150 : 250;
+	auto UpdateAPUImpl = [&]() {
+		unsigned int PrevChip = SNDCHIP_NONE;		// // // 050B
+		for (int i = 0; i < CHANNELS; ++i) {
+			if (m_pChannels[i] != NULL) {
+				m_pChannels[i]->RefreshChannel();
+				m_pChannels[i]->FinishTick();		// // //
+				unsigned int Chip = m_pTrackerChannels[i]->GetChip();
+				if (m_pDocument->ExpansionEnabled(Chip)) {
+					int Delay = (Chip == PrevChip) ? 150 : 250;
 
-						AddCyclesUnlessEndOfFrame(Delay);
-						m_pAPU->Process();
+					AddCyclesUnlessEndOfFrame(Delay);
+					m_pAPU->Process();
 
-						PrevChip = Chip;
-					}
+					PrevChip = Chip;
 				}
 			}
-		#ifdef WRITE_VGM		// // //
-			if (m_bPlaying)
-				m_iRegisterStream.push(0x62);		// // //
-		#endif
+		}
+#ifdef WRITE_VGM		// // //
+		if (m_bPlaying)
+			m_iRegisterStream.push(0x62);		// // //
+#endif
 
-			// Finish the audio frame
-			if (m_iConsumedCycles > m_iUpdateCycles) {
-				throw std::runtime_error("overflowed vblank!");
-			}
+		// Finish the audio frame
+		if (m_iConsumedCycles > m_iUpdateCycles) {
+			throw std::runtime_error("overflowed vblank!");
+		}
 
-			m_pAPU->AddCycles(m_iUpdateCycles - m_iConsumedCycles);
-			m_pAPU->Process();
+		m_pAPU->AddCycles(m_iUpdateCycles - m_iConsumedCycles);
+		m_pAPU->Process();
+	};
 
+	{
+		if (m_bRendering) {
+			auto l = Lock();
+			UpdateAPUImpl();
 			l.unlock();
+		}
+		else {
+			auto l = DeferLock();
+			if (l.try_lock()) {
+				UpdateAPUImpl();
+				l.unlock();
+			}
+			else TRACE("SoundGen: APU mutex lock failed\n");
 		}
 	}
 

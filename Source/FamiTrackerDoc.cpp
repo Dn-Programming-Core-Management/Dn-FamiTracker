@@ -391,8 +391,7 @@ BOOL CFamiTrackerDoc::OnSaveDocument(LPCTSTR lpszPathName)
 	// TODO: Dn-FamiTracker compatibility modes
 
 	// to avoid conflicts with FamiTracker beta 0.5.0 modules, set as Dn-FT module
-	if (m_iFileVersion >= 0x450U)
-		m_bFileDnModule = true;
+	m_bFileDnModule = true;
 	if (!SaveDocument(lpszPathName))
 		return FALSE;
 
@@ -816,7 +815,7 @@ bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 		// internal
 		6,		// Parameters
 		1,		// Song Info
-		1,		// Tuning
+		0,		// Tuning
 		3,		// Header
 		6,		// Instruments
 		6,		// Sequences
@@ -827,6 +826,7 @@ bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 #else
 		6,		// Parameters
 		1,		// Song Info
+		0,		// Tuning
 		3,		// Header
 		6,		// Instruments
 		6,		// Sequences
@@ -872,8 +872,9 @@ bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 	};
 
 	for (size_t i = 0; i < sizeof(FTM_WRITE_FUNC) / sizeof(*FTM_WRITE_FUNC); ++i) {
-		if (!CALL_MEMBER_FN(this, FTM_WRITE_FUNC[i])(pDocFile, DEFAULT_BLOCK_VERSION[i]))
-			return false;
+		if (DEFAULT_BLOCK_VERSION[i] != 0)		// !! !! check if block version is nonzero
+			if (!CALL_MEMBER_FN(this, FTM_WRITE_FUNC[i])(pDocFile, DEFAULT_BLOCK_VERSION[i]))
+				return false;
 	}
 	return true;
 }

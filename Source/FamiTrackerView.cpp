@@ -1778,21 +1778,21 @@ void CFamiTrackerView::MoveCursorPrevChannel()
 
 void CFamiTrackerView::SelectFrame(unsigned int Frame)
 {
-	ASSERT(Frame < MAX_FRAMES);
+	ASSERT(static_cast<int>(Frame) < MAX_FRAMES);		// avoid comparing against UINT32_MAX
 	m_pPatternEditor->MoveToFrame(Frame);
 	InvalidateCursor();
 }
 
 void CFamiTrackerView::SelectRow(unsigned int Row)
 {
-	ASSERT(Row < MAX_PATTERN_LENGTH);
+	ASSERT(static_cast<int>(Row) < MAX_PATTERN_LENGTH);		// avoid comparing against UINT32_MAX
 	m_pPatternEditor->MoveToRow(Row);
 	InvalidateCursor();
 }
 
 void CFamiTrackerView::SelectChannel(unsigned int Channel)
 {
-	ASSERT(Channel < MAX_CHANNELS);
+	ASSERT(static_cast<int>(Channel) < MAX_CHANNELS);		// avoid comparing against UINT32_MAX
 	m_pPatternEditor->MoveToChannel(Channel);
 	InvalidateCursor();
 }
@@ -2973,9 +2973,6 @@ bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, Input input, int Ef
 				bStepDown = true;
 			return true;
 		}
-
-		if (key >= VK_NUMPAD0 && key <= VK_NUMPAD9)
-			key = '0' + (key - VK_NUMPAD0);
 	}
 
 	CFamiTrackerDoc* pDoc = GetDocument();
@@ -2990,6 +2987,10 @@ bool CFamiTrackerView::EditEffNumberColumn(stChanNote &Note, Input input, int Ef
 
 	if (auto p = get_if<Keycode>(&input)) {
 		auto key = *p;
+
+		if (key >= VK_NUMPAD0 && key <= VK_NUMPAD9)
+			key = '0' + (key - VK_NUMPAD0);
+
 		if (!isAlphanumeric(key)) {
 			return false;
 		}

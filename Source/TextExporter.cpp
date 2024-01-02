@@ -1743,16 +1743,18 @@ const CString& CTextExport::ExportFile(LPCTSTR FileName, CFamiTrackerDoc *pDoc)
 	f.WriteString(_T("# JSON block\n"));
 	{
 		json j = pDoc->InterfaceToOptionalJSON();
-		std::string &jsondump = j.dump(4, ' ', true);
-		std::string &delimiter = std::string("\n");
-		std::string::size_type pos = 0, prev = 0;
-		while ((pos = jsondump.find(delimiter, prev)) != std::string::npos) {
-			s.Format(_T("%s %s\n"), CT[CT_JSON], ExportString(jsondump.substr(prev, pos - prev).c_str()));
+		if (!j.is_null()) {
+			std::string& jsondump = j.dump(4, ' ', true);
+			std::string& delimiter = std::string("\n");
+			std::string::size_type pos = 0, prev = 0;
+			while ((pos = jsondump.find(delimiter, prev)) != std::string::npos) {
+				s.Format(_T("%s %s\n"), CT[CT_JSON], ExportString(jsondump.substr(prev, pos - prev).c_str()));
+				f.WriteString(s);
+				prev = pos + delimiter.size();
+			}
+			s.Format(_T("%s %s\n"), CT[CT_JSON], ExportString(jsondump.substr(prev).c_str()));
 			f.WriteString(s);
-			prev = pos + delimiter.size();
 		}
-		s.Format(_T("%s %s\n"), CT[CT_JSON], ExportString(jsondump.substr(prev).c_str()));
-		f.WriteString(s);
 	}
 	f.WriteString(_T("\n"));
 

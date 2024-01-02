@@ -118,6 +118,8 @@ double CDetuneTable::PeriodToFrequency(unsigned int Period, int Octave, int Namc
 	return 0.0;
 }
 
+// https://www.nesdev.org/wiki/APU_Pulse#Sequencer_behavior
+// no compensation is done for triangle
 CDetuneNTSC::CDetuneNTSC(double A440_Note) :
 	CDetuneTable(DETUNE_NTSC, 0, 0x7FF, A440_Note)
 {
@@ -126,16 +128,19 @@ CDetuneNTSC::CDetuneNTSC(double A440_Note) :
 	GenerateRegisters();
 }
 
+// period = CPU_clk / (16 * frequency) - 1
 unsigned int CDetuneNTSC::FrequencyToPeriod(double Freq, int Octave, int NamcoChannels) const
 {
 	return std::lround((CAPU::BASE_FREQ_NTSC / (Freq * 16.0)) - 1.0);
 }
 
+// frequency = CPU_clk / 16 * (period + 1)
 double CDetuneNTSC::PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const
 {
-	return CAPU::BASE_FREQ_NTSC / (16.0 * (Period + 1.0));
+	return CAPU::BASE_FREQ_NTSC / (16.0 * ((double)Period + 1.0));
 }
 
+// same as CDetuneNTSC, but with different clock frequency
 CDetunePAL::CDetunePAL(double A440_Note) :
 	CDetuneTable(DETUNE_PAL, 0, 0x7FF, A440_Note)
 {
@@ -151,9 +156,10 @@ unsigned int CDetunePAL::FrequencyToPeriod(double Freq, int Octave, int NamcoCha
 
 double CDetunePAL::PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const
 {
-	return CAPU::BASE_FREQ_PAL / (16.0 * (Period + 1.0));
+	return CAPU::BASE_FREQ_PAL / (16.0 * ((double)Period + 1.0));
 }
 
+// https://www.nesdev.org/wiki/VRC6_audio#Sawtooth_Channel
 CDetuneSaw::CDetuneSaw(double A440_Note) :
 	CDetuneTable(DETUNE_SAW, 0, 0xFFF, A440_Note)
 {
@@ -162,16 +168,19 @@ CDetuneSaw::CDetuneSaw(double A440_Note) :
 	GenerateRegisters();
 }
 
+// period = (CPU_clk / (14 * frequency)) - 1
 unsigned int CDetuneSaw::FrequencyToPeriod(double Freq, int Octave, int NamcoChannels) const
 {
 	return std::lround((CAPU::BASE_FREQ_NTSC / (Freq * 14.0)) - 1.0);
 }
 
+// frequency = CPU_clk / (14 * (period + 1))
 double CDetuneSaw::PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const
 {
-	return CAPU::BASE_FREQ_NTSC / (14.0 * (Period + 1.0));
+	return CAPU::BASE_FREQ_NTSC / (14.0 * ((double)Period + 1.0));
 }
 
+// https://www.nesdev.org/wiki/VRC7_audio#Channels
 CDetuneVRC7::CDetuneVRC7(double A440_Note) :
 	CDetuneTable(DETUNE_VRC7, 0, 0x1FF, A440_Note)
 {
@@ -186,9 +195,10 @@ unsigned int CDetuneVRC7::FrequencyToPeriod(double Freq, int Octave, int NamcoCh
 	return std::lround((Freq * std::pow(2, (19 - Octave))) / (CAPU::BASE_FREQ_VRC7 / 72.0));
 }
 
+// frequency = (VRC7_Xclock / 72 * period) / 2^(19 - octave - 1)
 double CDetuneVRC7::PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const
 {
-	return ((CAPU::BASE_FREQ_VRC7 / 72.0) * Period) / std::pow(2, (19 - Octave - 1));
+	return ((CAPU::BASE_FREQ_VRC7 / 72.0) * (double)Period) / std::pow(2, (19 - Octave - 1));
 }
 
 CDetuneFDS::CDetuneFDS(double A440_Note) :
@@ -209,6 +219,7 @@ double CDetuneFDS::PeriodToFrequency(unsigned int Period, int Octave, int NamcoC
 	return (CAPU::BASE_FREQ_NTSC * (double)Period) / (65536.0);
 }
 
+// https://www.nesdev.org/wiki/Namco_163_audio#Frequency
 CDetuneN163::CDetuneN163(double A440_Note) :
 	CDetuneTable(DETUNE_N163, 0, 0xFFFF, A440_Note),
 	m_iChannelCount(1)
@@ -218,14 +229,16 @@ CDetuneN163::CDetuneN163(double A440_Note) :
 	GenerateRegisters();
 }
 
+// period = (frequency * 15 * (65536 * 4) * channel_count) / CPU_clk
 unsigned int CDetuneN163::FrequencyToPeriod(double Freq, int Octave, int NamcoChannels) const
 {
-	return std::lround((Freq * 15.0 * 65536.0 * 4.0 * NamcoChannels) / (CAPU::BASE_FREQ_NTSC));
+	return std::lround((Freq * 15.0 * 262144.0 * NamcoChannels) / CAPU::BASE_FREQ_NTSC);
 }
 
+// frequency = (CPU_clk * period) / (15 * (65536 * 4) * channel_count)
 double CDetuneN163::PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const
 {
-	return std::lround((Period * 15.0 * 65536.0 * 4.0 * NamcoChannels) / (CAPU::BASE_FREQ_NTSC));
+	return std::lround((CAPU::BASE_FREQ_NTSC * (double)Period) / (15.0 * 262144.0 * NamcoChannels));
 }
 
 void CDetuneN163::SetChannelCount(unsigned Count) // special
@@ -233,6 +246,7 @@ void CDetuneN163::SetChannelCount(unsigned Count) // special
 	m_iChannelCount = Count;
 }
 
+// https://www.nesdev.org/wiki/Sunsoft_5B_audio#Sound
 CDetuneS5B::CDetuneS5B(double A440_Note) :
 	CDetuneTable(DETUNE_S5B, 0, 0xFFF, A440_Note)
 {
@@ -241,12 +255,16 @@ CDetuneS5B::CDetuneS5B(double A440_Note) :
 	GenerateRegisters();
 }
 
+// in the driver, S5B's note LUT uses the regular NTSC note LUT +- 1, since it's off-by-one
+// so for compatibility, the frequency is doubled
+// period = CPU_clk / (frequency * 16)
 unsigned int CDetuneS5B::FrequencyToPeriod(double Freq, int Octave, int NamcoChannels) const
 {
 	return std::lround(CAPU::BASE_FREQ_NTSC / (Freq * 16.0));
 }
 
+// frequency = CPU_clk / (16 * period)
 double CDetuneS5B::PeriodToFrequency(unsigned int Period, int Octave, int NamcoChannels) const
 {
-	return CAPU::BASE_FREQ_NTSC / (16.0 * (Period));
+	return CAPU::BASE_FREQ_NTSC / (16.0 * ((double)Period));
 }

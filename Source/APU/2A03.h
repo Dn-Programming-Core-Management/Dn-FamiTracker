@@ -99,8 +99,8 @@ public:
 	int GetChannelLevelRange(int Channel) const override;
 
 public:
-	void UpdateMixingAPU1(double v);
-	void UpdateMixingAPU2(double v);
+	void UpdateMixingAPU1(double v, bool UseSurveyMix = false);
+	void UpdateMixingAPU2(double v, bool UseSurveyMix = false);
 
 	void	ClockSequence();		// // //
 	

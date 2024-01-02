@@ -159,7 +159,11 @@ BOOL CFamiTrackerApp::InitInstance()
 	GetModuleFileName(NULL, pathToPlugins, MAX_PATH);
 	PathRemoveFileSpec(pathToPlugins);
 	PathAppend(pathToPlugins, _T("\\Plugins"));
-	m_customExporters = new CCustomExporters( pathToPlugins );
+
+	// https://github.com/eatscrayon/Dn-FamiTracker-dll-hijack
+	// custom exporters are disabled until a better method is found.
+	// this is a huge security risk!
+	//m_customExporters = new CCustomExporters( pathToPlugins );
 
 	// Load custom accelerator
 	m_pAccel = new CAccelerator();
@@ -455,11 +459,11 @@ void CFamiTrackerApp::OnRecentFilesClear()		// // //
 
 void CFamiTrackerApp::OnUpdateRecentFiles(CCmdUI *pCmdUI)		// // //
 {
-	// https://www.codeguru.com/cpp/controls/menu/miscellaneous/article.php/c167
+	// https://web.archive.org/web/20190906190854/https://www.codeguru.com/cpp/controls/menu/miscellaneous/article.php/c167/MRU-list-in-a-submenu-the-MFC-bug-and-how-to-correct-it.htm
 	// updating a submenu?
 	if (pCmdUI->m_pSubMenu != NULL) return;
 
-	m_pRecentFileList->UpdateMenu(pCmdUI);
+	CWinApp::OnUpdateRecentFileMenu(pCmdUI);
 }
 
 void CFamiTrackerApp::ShutDownSynth()

@@ -203,7 +203,7 @@ void CVRC7::UpdateMixLevel(double v, bool UseSurveyMix)
 	SetDirectVolume(UseSurveyMix ? v : (v * AMPLIFY));
 	
 	// emu2413's waveform output ranges from -4095...4095
-	m_SynthVRC7.volume(v, 8191);
+	m_SynthVRC7.volume(v, UseSurveyMix ? 8191 : 10000);
 }
 
 void CVRC7::UpdatePatchSet(int PatchSelection, bool UseExternalOPLLChip, uint8_t* PatchSet)
