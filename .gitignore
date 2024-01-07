@@ -37,6 +37,9 @@ Testing/Temporary
 
 distribute/*
 
+# ignore submodules
+Dn-help/*
+
 # this should be automatically generated at build
 hlp/HTMLDefines.h
 

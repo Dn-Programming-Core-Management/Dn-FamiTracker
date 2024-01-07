@@ -1,3 +1,6 @@
+Notice: changelog.txt will no longer be maintained as of 10/23/2023.
+For further changelog updates, please go to docs/CHANGELOG.md
+
 Dn-FamiTracker Mod
 Change Log
 Written by Persune

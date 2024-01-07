@@ -1,0 +1,3 @@
+[submodule "Dn-help"]
+	path = Dn-help
+	url = https://github.com/Dn-Programming-Core-Management/Dn-help.git
