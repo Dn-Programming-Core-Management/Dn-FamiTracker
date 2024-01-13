@@ -99,9 +99,6 @@
 // Enable bankswitching on all songs (default off)
 //#define FORCE_BANKSWITCH
 
-// // //
-#define DATA_HEADER_SIZE 8
-
 const int CCompiler::PATTERN_CHUNK_INDEX		= 0;		// Fixed at 0 for the moment
 
 const int CCompiler::PAGE_SIZE					= 0x1000;
@@ -213,6 +210,7 @@ void CCompiler::ExportNSF(LPCTSTR lpszFileName, int MachineType)
 
 	bool nsfewarning = false;
 
+	// TODO: toggle NSFe metadata warning
 	for (int i = 0; i < 8; i++) {
 		nsfewarning |= m_pDocument->GetLevelOffset(i) != 0;
 	}
@@ -224,8 +222,9 @@ void CCompiler::ExportNSF(LPCTSTR lpszFileName, int MachineType)
 		theApp.DisplayMessage(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
 	}
 
+
 	// Build the music data
-	if (!CompileData()) {
+	if (!CompileData(true)) {
 		// Failed
 		Cleanup();
 		return;
@@ -256,27 +255,11 @@ void CCompiler::ExportNSF(LPCTSTR lpszFileName, int MachineType)
 	bool bCompressedMode;
 	unsigned short MusicDataAddress;
 
-	// Find out load address
-	if ((PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize) < 0x8000 || m_bBankSwitched || m_iActualChip != m_pDocument->GetExpansionChip()) // // //
-		bCompressedMode = false;
-	else
-		bCompressedMode = true;
-	
-	if (bCompressedMode) {
-		// Locate driver at $C000 - (driver size)
-		m_iLoadAddress = PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize;
-		m_iDriverAddress = PAGE_SAMPLES - m_iDriverSize;
-		MusicDataAddress = m_iLoadAddress;
-	}
-	else {
-		// Locate driver at $8000
-		m_iLoadAddress = PAGE_START;
-		m_iDriverAddress = PAGE_START;
-		MusicDataAddress = m_iLoadAddress + m_iDriverSize;
-	}
+	CalculateLoadAddresses(MusicDataAddress, bCompressedMode);
 
-	// Init is located first at the driver
-	m_iInitAddress = m_iDriverAddress + DATA_HEADER_SIZE;		// // //
+	// Load driver identifier
+	std::unique_ptr<char[]> pNSFDRVPtr(LoadNSFDRV(m_pDriverData));
+	char* pNSFDRV = pNSFDRVPtr.get();
 
 	// Load driver
 	std::unique_ptr<char[]> pDriverPtr(LoadDriver(m_pDriverData, m_iDriverAddress));		// // //
@@ -309,6 +292,8 @@ void CCompiler::ExportNSF(LPCTSTR lpszFileName, int MachineType)
 	// Write NSF data
 	std::unique_ptr<CChunkRenderNSF> Render(new CChunkRenderNSF(&OutputFile, m_iLoadAddress));
 
+	Render->StoreNSFDRV(pNSFDRV, m_iNSFDRVSize);
+
 	if (m_bBankSwitched) {
 		Render->StoreDriver(pDriver, m_iDriverSize);
 		Render->StoreChunksBankswitched(m_vChunks);
@@ -333,15 +318,20 @@ void CCompiler::ExportNSF(LPCTSTR lpszFileName, int MachineType)
 	Print(_T(" * Driver size: %i bytes\n"), m_iDriverSize);
 
 	if (m_bBankSwitched) {
-		int Percent = (100 * m_iMusicDataSize) / (0x80000 - m_iDriverSize - m_iSamplesSize);
+		int Percent = (100 * m_iMusicDataSize) / (0x80000 - m_iDriverSize - m_iSamplesSize - m_iNSFDRVSize);
 		int Banks = Render->GetBankCount();
 		Print(_T(" * Song data size: %i bytes (%i%%)\n"), m_iMusicDataSize, Percent);
 		Print(_T(" * NSF type: Bankswitched (%i banks)\n"), Banks - 1);
 	}
 	else {
-		int Percent = (100 * m_iMusicDataSize) / (0x8000 - m_iDriverSize - m_iSamplesSize);
+		int Percent = (100 * m_iMusicDataSize) / (0x8000 - m_iDriverSize - m_iSamplesSize - m_iNSFDRVSize);
 		Print(_T(" * Song data size: %i bytes (%i%%)\n"), m_iMusicDataSize, Percent);
-		Print(_T(" * NSF type: Linear (driver @ $%04X)\n"), m_iDriverAddress);
+		if (bCompressedMode) {
+			Print(_T(" * NSF type: Non-bankswitched compressed (driver @ $%04X)\n"), m_iDriverAddress);
+		}
+		else {
+			Print(_T(" * NSF type: Non-bankswitched (driver @ $%04X)\n"), m_iDriverAddress);
+		}
 	}
 
 	Print(_T("Done, total file size: %i bytes\n"), OutputFile.GetLength());
@@ -357,7 +347,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	ClearLog();
 
 	// Build the music data
-	if (!CompileData()) {
+	if (!CompileData(true)) {
 		// Failed
 		Cleanup();
 		return;
@@ -388,27 +378,11 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	bool bCompressedMode;
 	unsigned short MusicDataAddress;
 
-	// Find out load address
-	if ((PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize) < 0x8000 || m_bBankSwitched || m_iActualChip != m_pDocument->GetExpansionChip()) // // //
-		bCompressedMode = false;
-	else
-		bCompressedMode = true;
-	
-	if (bCompressedMode) {
-		// Locate driver at $C000 - (driver size)
-		m_iLoadAddress = PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize;
-		m_iDriverAddress = PAGE_SAMPLES - m_iDriverSize;
-		MusicDataAddress = m_iLoadAddress;
-	}
-	else {
-		// Locate driver at $8000
-		m_iLoadAddress = PAGE_START;
-		m_iDriverAddress = PAGE_START;
-		MusicDataAddress = m_iLoadAddress + m_iDriverSize;
-	}
+	CalculateLoadAddresses(MusicDataAddress, bCompressedMode);
 
-	// Init is located first at the driver
-	m_iInitAddress = m_iDriverAddress + DATA_HEADER_SIZE;		// // //
+	// Load driver identifier
+	std::unique_ptr<char[]> pNSFDRVPtr(LoadNSFDRV(m_pDriverData));
+	char* pNSFDRV = pNSFDRVPtr.get();
 
 	// Load driver
 	std::unique_ptr<char[]> pDriverPtr(LoadDriver(m_pDriverData, m_iDriverAddress));		// // //
@@ -544,6 +518,8 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	OutputFile.Write(reinterpret_cast<char*>(&iDataSize), sizeof(int));
 	OutputFile.Write(&DataIdent, sizeof(DataIdent));
 
+	Render->StoreNSFDRV(pNSFDRV, m_iNSFDRVSize);
+
 	if (m_bBankSwitched) {
 		Render->StoreDriver(pDriver, m_iDriverSize);
 		Render->StoreChunksBankswitched(m_vChunks);
@@ -601,7 +577,7 @@ void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
 	ClearLog();
 
 	// Build the music data
-	if (!CompileData()) {
+	if (!CompileData(true)) {
 		// Failed
 		Cleanup();
 		return;
@@ -632,27 +608,14 @@ void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
 	bool bCompressedMode;
 	unsigned short MusicDataAddress;
 
-	// Find out load address
-	if ((PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize) < 0x8000 || m_bBankSwitched || m_iActualChip != m_pDocument->GetExpansionChip()) // // //
-		bCompressedMode = false;
-	else
-		bCompressedMode = true;
-
-	if (bCompressedMode) {
-		// Locate driver at $C000 - (driver size)
-		m_iLoadAddress = PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize;
-		m_iDriverAddress = PAGE_SAMPLES - m_iDriverSize;
-		MusicDataAddress = m_iLoadAddress;
-	}
-	else {
-		// Locate driver at $8000
-		m_iLoadAddress = PAGE_START;
-		m_iDriverAddress = PAGE_START;
-		MusicDataAddress = m_iLoadAddress + m_iDriverSize;
-	}
+	CalculateLoadAddresses(MusicDataAddress, bCompressedMode);
 
 	// Init is located first at the driver
-	m_iInitAddress = m_iDriverAddress + DATA_HEADER_SIZE;		// // //
+	m_iInitAddress = m_iDriverAddress;		// !! !!
+
+	// Load driver identifier
+	std::unique_ptr<char[]> pNSFDRVPtr(LoadNSFDRV(m_pDriverData));
+	char* pNSFDRV = pNSFDRVPtr.get();
 
 	// Load driver
 	std::unique_ptr<char[]> pDriverPtr(LoadDriver(m_pDriverData, m_iDriverAddress));		// // //
@@ -686,6 +649,8 @@ void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
 	OutputFile.Write(&Header, sizeof(stNSFHeader));
 
 	ULONGLONG iDataSizePos = OutputFile.GetPosition() - 3;
+
+	Render->StoreNSFDRV(pNSFDRV, m_iNSFDRVSize);
 
 	if (m_bBankSwitched) {
 		Render->StoreDriver(pDriver, m_iDriverSize);
@@ -901,7 +866,7 @@ void CCompiler::ExportNES(LPCTSTR lpszFileName, bool EnablePAL)
 	unsigned short MusicDataAddress = m_iLoadAddress + m_iDriverSize;
 
 	// Init is located first at the driver
-	m_iInitAddress = m_iDriverAddress + DATA_HEADER_SIZE;		// // //
+	m_iInitAddress = m_iDriverAddress;		// // //
 
 	// Load driver
 	std::unique_ptr<char[]> pDriverPtr(LoadDriver(m_pDriverData, m_iDriverAddress));		// // //
@@ -979,27 +944,10 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 	bool bCompressedMode;
 	unsigned short MusicDataAddress;
 
-	// Find out load address
-	if ((PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize) < 0x8000 || m_bBankSwitched || m_iActualChip != m_pDocument->GetExpansionChip()) // // //
-		bCompressedMode = false;
-	else
-		bCompressedMode = true;
-
-	if (bCompressedMode) {
-		// Locate driver at $C000 - (driver size)
-		m_iLoadAddress = PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize;
-		m_iDriverAddress = PAGE_SAMPLES - m_iDriverSize;
-		MusicDataAddress = m_iLoadAddress;
-	}
-	else {
-		// Locate driver at $8000
-		m_iLoadAddress = PAGE_START;
-		m_iDriverAddress = PAGE_START;
-		MusicDataAddress = m_iLoadAddress + m_iDriverSize;
-	}
+	CalculateLoadAddresses(MusicDataAddress, bCompressedMode);
 
 	// Init is located first at the driver
-	m_iInitAddress = m_iDriverAddress + DATA_HEADER_SIZE;		// // //
+	m_iInitAddress = m_iDriverAddress;		// !! !!
 
 	stNSFHeader Header;
 	CreateHeader(&Header, MachineType, 0x00, false);
@@ -1168,7 +1116,7 @@ void CCompiler::ExportPRG(LPCTSTR lpszFileName, bool EnablePAL)
 	unsigned short MusicDataAddress = m_iLoadAddress + m_iDriverSize;
 
 	// Init is located first at the driver
-	m_iInitAddress = m_iDriverAddress + DATA_HEADER_SIZE;		// // //
+	m_iInitAddress = m_iDriverAddress;		// // //
 
 	// Load driver
 	std::unique_ptr<char[]> pDriverPtr(LoadDriver(m_pDriverData, m_iDriverAddress));		// // //
@@ -1248,27 +1196,7 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 	bool bCompressedMode;
 	unsigned short MusicDataAddress;
 
-	// Find out load address
-	if ((PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize) < 0x8000 || m_bBankSwitched || m_iActualChip != m_pDocument->GetExpansionChip()) // // //
-		bCompressedMode = false;
-	else
-		bCompressedMode = true;
-
-	if (bCompressedMode) {
-		// Locate driver at $C000 - (driver size)
-		m_iLoadAddress = PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize;
-		m_iDriverAddress = PAGE_SAMPLES - m_iDriverSize;
-		MusicDataAddress = m_iLoadAddress;
-	}
-	else {
-		// Locate driver at $8000
-		m_iLoadAddress = PAGE_START;
-		m_iDriverAddress = PAGE_START;
-		MusicDataAddress = m_iLoadAddress + m_iDriverSize;
-	}
-
-	// Init is located first at the driver
-	m_iInitAddress = m_iDriverAddress + DATA_HEADER_SIZE;		// // //
+	CalculateLoadAddresses(MusicDataAddress, bCompressedMode);
 
 	stNSFHeader Header;
 	CreateHeader(&Header, MachineType, 0x00, false);
@@ -1373,7 +1301,7 @@ char* CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 	
 	// // // Custom pitch tables
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
-	for (size_t i = 0; i < pDriver->freq_table_size; i += 2) {		// // //
+	for (int i = 0; i < pDriver->freq_table_size; i += 2) {		// // //
 		int Table = pDriver->freq_table[i + 1];
 		switch (Table) {
 		case CDetuneTable::DETUNE_NTSC:
@@ -1399,17 +1327,17 @@ char* CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 	}
 
 	// Relocate driver
-	for (size_t i = 0; i < pDriver->word_reloc_size; ++i) {
+	for (int i = 0; i < pDriver->word_reloc_size; ++i) {
 		// Words
 		unsigned short value = pData[pDriver->word_reloc[i]] + (pData[pDriver->word_reloc[i] + 1] << 8);
-		value += Origin;
+		value += Origin - pDriver->nsfdrv_size;
 		pData[pDriver->word_reloc[i]] = value & 0xFF;
 		pData[pDriver->word_reloc[i] + 1] = value >> 8;
 	}
 
-	for (size_t i = 0; i < pDriver->adr_reloc_size; i += 2) {		// // //
+	for (int i = 0; i < pDriver->adr_reloc_size; i += 2) {		// // //
 		unsigned short value = pData[pDriver->adr_reloc[i]] + (pData[pDriver->adr_reloc[i + 1]] << 8);
-		value += Origin;
+		value += Origin - pDriver->nsfdrv_size;
 		pData[pDriver->adr_reloc[i]] = value & 0xFF;
 		pData[pDriver->adr_reloc[i + 1]] = value >> 8;
 	}
@@ -1446,6 +1374,15 @@ char* CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 		for (const int x : m_vChanOrder)
 			pData[FT_CH_ENABLE_ADR + CH_MAP[m_pDocument->GetChannelType(x)]] = 1;
 	}
+
+	return (char*)pData;
+}
+
+char* CCompiler::LoadNSFDRV(const driver_t *pDriver) const
+{
+	// Copy embedded driver
+	unsigned char* pData = new unsigned char[pDriver->nsfdrv_size];
+	memcpy(pData, pDriver->nsfdrv, pDriver->nsfdrv_size);
 
 	return (char*)pData;
 }
@@ -1682,6 +1619,7 @@ void CCompiler::UpdateSamplePointers(unsigned int Origin)
 void CCompiler::UpdateFrameBanks()
 {
 	// Write bank numbers to frame lists (can only be used when bankswitching is used)
+	ASSERT(m_bBankSwitched);
 
 	int Channels = m_pDocument->GetAvailableChannels();
 
@@ -1701,6 +1639,7 @@ void CCompiler::UpdateFrameBanks()
 void CCompiler::UpdateSongBanks()
 {
 	// Write bank numbers to song lists (can only be used when bankswitching is used)
+	ASSERT(m_bBankSwitched);
 	for (CChunk *pChunk : m_vSongChunks) {
 		int bank = GetObjectByRef(pChunk->GetDataRefName(0))->GetBank();
 		if (bank < PATTERN_SWITCH_BANK)
@@ -1767,6 +1706,8 @@ bool CCompiler::CollectLabelsBankswitched(CMap<CStringA, LPCSTR, int, int> &labe
 	int Offset = 0;
 	int Bank = PATTERN_SWITCH_BANK;
 
+	int DriverSizeAndNSFDRV = m_iDriverSize + m_iNSFDRVSize;
+
 	// Instruments and stuff
 	for (const CChunk *pChunk : m_vChunks) {
 		int Size = pChunk->CountDataSize();
@@ -1782,7 +1723,7 @@ bool CCompiler::CollectLabelsBankswitched(CMap<CStringA, LPCSTR, int, int> &labe
 		}
 	}
 
-	if (Offset + m_iDriverSize > 0x3000) {
+	if (Offset + DriverSizeAndNSFDRV > 0x3000) {
 		// Instrument data did not fit within the limit, display an error and abort?
 		Print(_T("Error: Instrument data overflow, can't export file!\n"));
 		return false;
@@ -1797,23 +1738,23 @@ bool CCompiler::CollectLabelsBankswitched(CMap<CStringA, LPCSTR, int, int> &labe
 		switch (pChunk->GetType()) {
 			case CHUNK_FRAME_LIST:
 				// Make sure the entire frame list will fit, if not then allocate a new bank
-				if (Offset + m_iDriverSize + m_iTrackFrameSize[Track++] > 0x4000) {
-					Offset = 0x3000 - m_iDriverSize;
+				if (Offset + DriverSizeAndNSFDRV + m_iTrackFrameSize[Track++] > 0x4000) {
+					Offset = 0x3000 - DriverSizeAndNSFDRV;
 					++Bank;
 				}
 			case CHUNK_FRAME:
 				labelMap[pChunk->GetLabel()] = Offset;
-				pChunk->SetBank(Bank < 4 ? ((Offset + m_iDriverSize) >> 12) : Bank);
+				pChunk->SetBank(Bank < 4 ? ((Offset + DriverSizeAndNSFDRV) >> 12) : Bank);
 				Offset += Size;
 				break;
 			case CHUNK_PATTERN:
 				// Make sure entire pattern will fit
-				if (Offset + m_iDriverSize + Size > 0x4000) {
-					Offset = 0x3000 - m_iDriverSize;
+				if (Offset + DriverSizeAndNSFDRV + Size > 0x4000) {
+					Offset = 0x3000 - DriverSizeAndNSFDRV;
 					++Bank;
 				}
 				labelMap[pChunk->GetLabel()] = Offset;
-				pChunk->SetBank(Bank < 4 ? ((Offset + m_iDriverSize) >> 12) : Bank);
+				pChunk->SetBank(Bank < 4 ? ((Offset + DriverSizeAndNSFDRV) >> 12) : Bank);
 				Offset += Size;
 			default:
 				break;
@@ -1821,7 +1762,7 @@ bool CCompiler::CollectLabelsBankswitched(CMap<CStringA, LPCSTR, int, int> &labe
 	}
 
 	if (m_bBankSwitched)
-		m_iFirstSampleBank = ((Bank < 4) ? ((Offset + m_iDriverSize) >> 12) : Bank) + 1;
+		m_iFirstSampleBank = ((Bank < 4) ? ((Offset + DriverSizeAndNSFDRV) >> 12) : Bank) + 1;
 
 	m_iLastBank = m_iFirstSampleBank;
 
@@ -1835,7 +1776,7 @@ void CCompiler::AssignLabels(CMap<CStringA, LPCSTR, int, int> &labelMap)
 		pChunk->AssignLabels(labelMap);
 }
 
-bool CCompiler::CompileData()
+bool CCompiler::CompileData(bool bUseNSFDRV)
 {
 	// Compile music data to an object tree
 	//
@@ -1929,6 +1870,9 @@ bool CCompiler::CompileData()
 	}
 	m_vChanOrder.push_back(CHANID_DPCM);
 
+	// set NSFDRV header offset, if used
+	SetNSFDRVHeaderSize(bUseNSFDRV);
+
 	// Driver size
 	m_iDriverSize = m_pDriverData->driver_size;
 
@@ -1951,20 +1895,23 @@ bool CCompiler::CompileData()
 	m_iMusicDataSize = CountData();
 
 	// Get samples start address
-	m_iSampleStart = m_iDriverSize + m_iMusicDataSize;
+	m_iSampleStart = m_iNSFDRVSize + m_iDriverSize + m_iMusicDataSize;
 
+	// Align to closet 64-byte page after $C000
 	if (m_iSampleStart < 0x4000)
 		m_iSampleStart = PAGE_SAMPLES;
 	else
 		m_iSampleStart += AdjustSampleAddress(m_iSampleStart) + PAGE_START;
 
+	// If sample size exceeds 16KiB, enable bankswitching
 	if (m_iSampleStart + m_iSamplesSize > 0xFFFF)
 		m_bBankSwitched = true;
 
 	if (m_iSamplesSize > 0x4000)
 		m_bBankSwitched = true;
 
-	if ((m_iMusicDataSize + m_iSamplesSize + m_iDriverSize) > 0x8000)
+	// if driver, music, and sample data exceeds 32KiB, enable bankswitching
+	if ((m_iNSFDRVSize + m_iMusicDataSize + m_iSamplesSize + m_iDriverSize) > 0x8000)
 		m_bBankSwitched = true;
 
 	if (m_bBankSwitched)
@@ -2005,6 +1952,40 @@ void CCompiler::Cleanup()
 		m_pDocument->SetNamcoChannels(m_iActualNamcoChannels, true);
 		m_pDocument->SelectExpansionChip(m_iActualChip, true);
 	}
+}
+
+void CCompiler::CalculateLoadAddresses(unsigned short &MusicDataAddress, bool &bCompressedMode)
+{
+	// Find out load address
+
+	// if we can fit the entire music and driver within the first 16kB of data,
+	// enable compressed mode
+	if ((PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize - m_iNSFDRVSize) < 0x8000
+		|| m_bBankSwitched || m_iActualChip != m_pDocument->GetExpansionChip()) // // //
+		bCompressedMode = false;
+	else
+		bCompressedMode = true;
+
+	if (bCompressedMode) {
+		// Locate driver at $C000 - (driver size)
+		m_iLoadAddress = PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize - m_iNSFDRVSize;
+		m_iDriverAddress = PAGE_SAMPLES - m_iDriverSize;
+		MusicDataAddress = m_iLoadAddress + m_iNSFDRVSize;
+	}
+	else {
+		// Locate driver at $8000
+		m_iLoadAddress = PAGE_START;
+		m_iDriverAddress = m_iLoadAddress + m_iNSFDRVSize;
+		MusicDataAddress = m_iDriverAddress + m_iDriverSize;
+	}
+
+	// Init is located at the driver
+	m_iInitAddress = m_iDriverAddress;		// !! !!
+}
+
+void CCompiler::SetNSFDRVHeaderSize(bool bUseNSFDRV)
+{
+	m_iNSFDRVSize = bUseNSFDRV ? m_pDriverData->nsfdrv_size : 0;
 }
 
 void CCompiler::AddBankswitching()
@@ -3031,7 +3012,7 @@ void CCompiler::WriteNSFConfig(CFile* pFile, unsigned int DPCMSegment, stNSFHead
 	};
 
 	WriteString("MEMORY {\n");
-	WriteString("  ZP:  start = $00, size = $100, type = rw, file = \"\";\n");
+	WriteString("  ZP:  start = $00,   size = $100,   type = rw, file = \"\";\n");
 	WriteString("  RAM: start = $200,  size = $600,   type = rw, file = \"\";\n");
 	WriteString("  HDR: start = $00,   size = $80,    type = ro, file = %O;\n");
 	WriteString("  PRG: start = $8000, size = $40000, type = ");

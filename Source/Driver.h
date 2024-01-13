@@ -75,6 +75,8 @@ const char NSF_CALLER_BIN_VRC6[] = {
 #include "drivers/drv_all.h"		// // //
 
 struct driver_t {
+	const unsigned char* nsfdrv;
+	const unsigned int nsfdrv_size;
 	const unsigned char *driver;
 	const unsigned int driver_size;
 	const int *word_reloc;
@@ -86,6 +88,8 @@ struct driver_t {
 };
 
 const driver_t DRIVER_PACK_2A03 = { 
+	NSFDRV_2A03,
+	sizeof(NSFDRV_2A03),
 	DRIVER_2A03, 
 	sizeof(DRIVER_2A03),
 	DRIVER_RELOC_WORD_2A03, 
@@ -96,7 +100,9 @@ const driver_t DRIVER_PACK_2A03 = {
 	sizeof(DRIVER_RELOC_ADR_2A03) / sizeof(int),
 };
 
-const driver_t DRIVER_PACK_VRC6 = { 
+const driver_t DRIVER_PACK_VRC6 = {
+	NSFDRV_VRC6,
+	sizeof(NSFDRV_VRC6),
 	DRIVER_VRC6, 
 	sizeof(DRIVER_VRC6),
 	DRIVER_RELOC_WORD_VRC6, 
@@ -107,7 +113,9 @@ const driver_t DRIVER_PACK_VRC6 = {
 	sizeof(DRIVER_RELOC_ADR_VRC6) / sizeof(int),
 };
 
-const driver_t DRIVER_PACK_VRC7 = { 
+const driver_t DRIVER_PACK_VRC7 = {
+	NSFDRV_VRC7,
+	sizeof(NSFDRV_VRC7),
 	DRIVER_VRC7, 
 	sizeof(DRIVER_VRC7),
 	DRIVER_RELOC_WORD_VRC7, 
@@ -118,7 +126,9 @@ const driver_t DRIVER_PACK_VRC7 = {
 	sizeof(DRIVER_RELOC_ADR_VRC7) / sizeof(int),
 };
 
-const driver_t DRIVER_PACK_MMC5 = { 
+const driver_t DRIVER_PACK_MMC5 = {
+	NSFDRV_MMC5,
+	sizeof(NSFDRV_MMC5),
 	DRIVER_MMC5, 
 	sizeof(DRIVER_MMC5),
 	DRIVER_RELOC_WORD_MMC5, 
@@ -129,7 +139,9 @@ const driver_t DRIVER_PACK_MMC5 = {
 	sizeof(DRIVER_RELOC_ADR_MMC5) / sizeof(int),
 };
 
-const driver_t DRIVER_PACK_FDS = { 
+const driver_t DRIVER_PACK_FDS = {
+	NSFDRV_FDS,
+	sizeof(NSFDRV_FDS),
 	DRIVER_FDS, 
 	sizeof(DRIVER_FDS),
 	DRIVER_RELOC_WORD_FDS, 
@@ -140,7 +152,9 @@ const driver_t DRIVER_PACK_FDS = {
 	sizeof(DRIVER_RELOC_ADR_FDS) / sizeof(int),
 };
 
-const driver_t DRIVER_PACK_N163 = { 
+const driver_t DRIVER_PACK_N163 = {
+	NSFDRV_N163,
+	sizeof(NSFDRV_N163),
 	DRIVER_N163, 
 	sizeof(DRIVER_N163),
 	DRIVER_RELOC_WORD_N163, 
@@ -152,6 +166,8 @@ const driver_t DRIVER_PACK_N163 = {
 };
 
 const driver_t DRIVER_PACK_S5B = {		// // //
+	NSFDRV_S5B,
+	sizeof(NSFDRV_S5B),
 	DRIVER_S5B, 
 	sizeof(DRIVER_S5B),
 	DRIVER_RELOC_WORD_S5B, 
@@ -163,6 +179,8 @@ const driver_t DRIVER_PACK_S5B = {		// // //
 };
 
 const driver_t DRIVER_PACK_ALL = {		// // //
+	NSFDRV_ALL,
+	sizeof(NSFDRV_ALL),
 	DRIVER_ALL, 
 	sizeof(DRIVER_ALL),
 	DRIVER_RELOC_WORD_ALL, 

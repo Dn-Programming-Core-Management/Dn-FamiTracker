@@ -115,9 +115,10 @@ private:
 	void	PatchVibratoTable(char *pDriver) const;
 
 	char*	LoadDriver(const driver_t *pDriver, unsigned short Origin) const;
+	char*	LoadNSFDRV(const driver_t *pDriver) const;
 
 	// Compiler
-	bool	CompileData();
+	bool	CompileData(bool bUseNSFDRV = false);
 	void	ResolveLabels();
 	bool	ResolveLabelsBankswitched();
 	void	CollectLabels(CMap<CStringA, LPCSTR, int, int> &labelMap) const;
@@ -125,6 +126,8 @@ private:
 	void	AssignLabels(CMap<CStringA, LPCSTR, int, int> &labelMap);
 	void	AddBankswitching();
 	void	Cleanup();
+	void	CalculateLoadAddresses(unsigned short &MusicDataAddress, bool &bCompressedMode);
+	void	SetNSFDRVHeaderSize(bool bUseNSFDRV);
 
 	void	ScanSong();
 	int		GetSampleIndex(int SampleNumber);
@@ -161,6 +164,7 @@ private:
 	void	WriteNSFHeader(CFile* pFile, stNSFHeader Header);
 	void	WriteNSFConfig(CFile* pFile, unsigned int DPCMSegment, stNSFHeader Header);
 	void	WriteSamplesBinary(CFile *pFile);
+	//void	WriteNSFData(std::unique_ptr<CChunkRenderNSF> Render, char *pNSFDRV, char *pDriver);
 
 	// Object list functions
 	CChunk	*CreateChunk(chunk_type_t Type, CStringA label);
@@ -247,6 +251,7 @@ private:
 	// General
 	unsigned int	m_iMusicDataSize;		// All music data
 	unsigned int	m_iDriverSize;			// Size of selected music driver
+	unsigned int	m_iNSFDRVSize;			// Size of NSFDRV header, 0 if it is not written
 	unsigned int	m_iSamplesSize;
 
 	unsigned int	m_iLoadAddress;			// NSF load address

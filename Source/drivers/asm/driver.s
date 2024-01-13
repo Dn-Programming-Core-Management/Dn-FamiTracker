@@ -149,6 +149,7 @@ CHANNELS	= DPCM_OFFSET + .defined(USE_DPCM)
 	STATE_HOLD    = %00000010
 .endenum
 
+; must match definitions in CCompiler!
 .enum
 	FLAG_BANKSWITCH  = %00000001
 	FLAG_OLDVIBRATO  = %00000010
@@ -491,11 +492,10 @@ last_bss_var:			.res 1						; Not used
 
 ; NSF entry addresses
 
+LOAD:
 .if .defined(PACKAGE)
 	.byte DRIVER_NAME, VERSION_MAJ, VERSION_MIN
 .endif
-
-LOAD:
 INIT:
 	jmp	ft_music_init
 PLAY:
@@ -555,10 +555,12 @@ ft_enable_channel:
 .endif
 
 ft_bankswitch:
+; bankswitch part of song data (frames + patterns, 1 page only)
 ;	sta $5FFA
 	sta $5FFB
 	rts
 ft_bankswitch2:
+; bankswitch DPCM samples (3 pages)
 	clc
 	sta $5FFC
 	adc #$01
