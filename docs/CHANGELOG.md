@@ -4,9 +4,48 @@ Change Log
 
 Written by D.P.C.M.
 
-Version 0.5.0.1 - May 10, 2023
+Version 0.5.0.2 - January 13, 2024
 
 ---
+
+## Dn0.5.0.2 - 01/13/2024
+
+- ### Important changes:
+
+	- Modules will be saved as Dn-FT modules
+	- Reintroduced JSON export
+	- Update app icon to mimic Frutiger Aero/Y2K aesthetic
+
+- ### Improvements:
+
+	- Reintroduce JSON export from 0CC-FT (@nstbayless @Gumball2415 #197 #199)
+	- Update application icon (@Gumball2415 #236)
+	- Rewrite change log in markdown (@Gumball2415 #238)
+
+- ### Bug fixes:
+
+	- Fix effect number input using numpad (@Gumball2415 #48 #214)
+	- Force modules to be saved as Dn-FT modules (@Gumball2415 #184 #214)
+	- Fix outputting audio to multi-channel output devices (@nyanpasu64 #205 #226)
+	- Wait for APU mutex lock during .wav export (@nyanpasu64 @Gumball2415 #206 #214)
+	- Avoid checking assert with unsigned integer cast (@Gumball2415 #209 #214)
+	- Assert legacy mixing levels and ranges (@Gumball2415 #213 #214)
+	- Avoid division by zero in MML sequence parsing (@Gumball2415 #222 #214)
+	- Fix incorrect speed in PAL NSF exports (@Gumball2415 #223 #214)
+	- Fix detune offset direction (@Gumball2415 #225 #214)
+	- Disable Custom Exporter DLL loading (@Gumball2415 #232 #214)
+	- Fix access violation in MRU submenu list update (@Gumball2415 #243 #214)
+
+- ### Internal:
+
+	- Fix version checker repository link (@Gumball2415 #212)
+	- Include logo and icon resources in the repository (@Gumball2415 #236)
+	- Add AddressSanitizer project configurations (@Gumball2415 #236)
+	- Separate Github Actions binary downloads (@Gumball2415 #237)
+	- Add automated draft release binary upload (@Gumball2415 #237)
+	- Integrate Dn-help as submodule (@Gumball2415 #238)
+	- Generate HTMLHelp manual change log on build time (@Gumball2415 #238)
+
 
 ## Dn0.5.0.1 - 05/10/2023
 
