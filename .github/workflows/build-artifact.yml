@@ -10,7 +10,7 @@ jobs:
         platform: [x64, Win32]
         configuration: [Release, Debug, ASAN-Release, ASAN-Debug]
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
         with:
           submodules: "recursive"
           fetch-depth: 0
@@ -28,7 +28,7 @@ jobs:
           if %ERRORLEVEL%==1 exit %ERRORLEVEL%
           call release.bat ${{ matrix.configuration }} ${{ matrix.platform }} ${{ env.commithash }}_${{ github.run_id }}
       - name: Upload binaries
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v4
         with:
           name: Dn-FamiTracker_${{ env.commithash }}_${{ github.run_id }}_${{ matrix.platform }}_${{ matrix.configuration }}
           path: distribute/*_${{ matrix.platform }}_${{ matrix.configuration }}.7z

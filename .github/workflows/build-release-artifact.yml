@@ -3,6 +3,8 @@ on:
   push:
     tags:
       - "*"
+env:
+  commithash: ""
 jobs:
   build-matrix-publish:
     runs-on: windows-2022
@@ -11,13 +13,16 @@ jobs:
         platform: [x64, Win32]
         # configuration is Release only
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
         with:
           submodules: "recursive"
           fetch-depth: 0
       - uses: r-lib/actions/setup-pandoc@v2
         with:
           pandoc-version: '3.1.8'
+      - name: Set commit hash variable
+        shell: powershell
+        run: echo "commithash=$(git describe --tags)" >> $env:GITHUB_ENV
       - name: Build program
         shell: cmd
         run: |
@@ -26,22 +31,27 @@ jobs:
           if %ERRORLEVEL%==1 exit %ERRORLEVEL%
           call release.bat Release ${{ matrix.platform }}
       - name: Upload binaries
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v4
         with:
+          name: Dn-FamiTracker_${{ env.commithash }}_${{ github.run_id }}_${{ matrix.platform }}
           path: distribute/*_${{ matrix.platform }}_Release.7z
   publish-build:
     needs: build-matrix-publish
     runs-on: windows-2022
     steps:
-      - uses: actions/download-artifact@master
       - name: Download binaries
-        shell: powershell
-        run: ls -R
+        uses: actions/download-artifact@v4
+        with:
+          path: Dn-FamiTracker_artifacts
+          pattern: Dn-FamiTracker_*
+          merge-multiple: true
+          shell: powershell
+      - run: ls -R
       - name: Upload release    
-        uses: marvinpinto/action-automatic-releases@master
+        uses: marvinpinto/action-automatic-releases@v1.2.1
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           draft: true
           prerelease: false
           automatic_release_tag: draft
-          files: artifact/*.7z
+          files: Dn-FamiTracker_artifacts/*.7z
