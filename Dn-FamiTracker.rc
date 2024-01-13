@@ -535,8 +535,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,5,0,1
- PRODUCTVERSION 0,5,0,1
+ FILEVERSION 0,5,0,2
+ PRODUCTVERSION 0,5,0,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -553,12 +553,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Dn Programming Core Management"
             VALUE "FileDescription", "Dn-FamiTracker, Extension of FamiTracker"
-            VALUE "FileVersion", "0.5.0.1"
+            VALUE "FileVersion", "0.5.0.2"
             VALUE "InternalName", "Dn-FamiTracker.exe"
-            VALUE "LegalCopyright", "(c) jsr 2005-2020, HertzDevil 2014-2018, Dn Programming Core Management 2020-2023. All rights reserved."
+            VALUE "LegalCopyright", "(c) jsr 2005-2020, HertzDevil 2014-2018, Dn Programming Core Management 2020-2024. All rights reserved."
             VALUE "OriginalFilename", "Dn-FamiTracker.exe"
             VALUE "ProductName", "Dn-FamiTracker"
-            VALUE "ProductVersion", "0.5.0.1"
+            VALUE "ProductVersion", "0.5.0.2"
         END
     END
     BLOCK "VarFileInfo"
@@ -1105,7 +1105,7 @@ BEGIN
     ICON            IDR_MAINFRAME,IDC_ICON_STATIC,11,58,20,20,SS_REALSIZEIMAGE
     LTEXT           "Dn-FamiTracker",IDC_ABOUT1,54,58,219,11,SS_NOPREFIX
     LTEXT           "Extension of 0CC-FamiTracker",IDC_ABOUT2,54,72,167,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2005 - 2020 jsr, 2014 - 2018 HertzDevil,\n2020 - 2023 Dn Programming Core Management.",IDC_ABOUT3,54,84,215,16
+    LTEXT           "Copyright (C) 2005 - 2020 jsr, 2014 - 2018 HertzDevil,\n2020 - 2024 Dn Programming Core Management.",IDC_ABOUT3,54,84,215,16
     LTEXT           "Web:",IDC_STATIC,54,107,24,9
     LTEXT           "Dn-FamiTracker issue tracker",IDC_BUG,84,134,194,9,SS_NOTIFY
     LTEXT           "All comments and feedback are welcome\nGreets to everyone who has helped spread information about this mod or contributed with bug reports and suggestions!",IDC_STATIC,54,150,224,26
