@@ -24,27 +24,28 @@ Version 0.5.0.2 - January 13, 2024
 
 - ### Bug fixes:
 
-	- Fix effect number input using numpad (@Gumball2415 #48 #214)
-	- Force modules to be saved as Dn-FT modules (@Gumball2415 #184 #214)
-	- Fix outputting audio to multi-channel output devices (@nyanpasu64 #205 #226)
+	- Fix effect number input using numpad (@ZeroJanitor @Gumball2415 #48 #214)
+	- Force modules to be saved as Dn-FT modules (@Threxx11 @Gumball2415 #184 #214)
+	- Fix outputting audio to multi-channel output devices (@CoolJosh3k @nyanpasu64 #205 #226)
 	- Wait for APU mutex lock during .wav export (@nyanpasu64 @Gumball2415 #206 #214)
-	- Avoid checking assert with unsigned integer cast (@Gumball2415 #209 #214)
-	- Assert legacy mixing levels and ranges (@Gumball2415 #213 #214)
+	- Avoid checking assert with unsigned integer cast (@freq-mod @N-SPC700 @Gumball2415 #209 #214)
+	- Assert legacy mixing levels and ranges (@trashbinenthusiast @N-SPC700 @nyanpasu64 @Gumball2415 #213 #214)
 	- Avoid division by zero in MML sequence parsing (@Gumball2415 #222 #214)
-	- Fix incorrect speed in PAL NSF exports (@Gumball2415 #223 #214)
+	- Fix incorrect speed in PAL NSF exports (@TakuikaNinja @eugene-s-nesdev @Gumball2415 #223 #242 #214)
 	- Fix detune offset direction (@Gumball2415 #225 #214)
-	- Disable Custom Exporter DLL loading (@Gumball2415 #232 #214)
-	- Fix access violation in MRU submenu list update (@Gumball2415 #243 #214)
+	- Disable Custom Exporter DLL loading (@eatscrayon @Gumball2415 #232 #214)
+	- Fix access violation in MRU submenu list update (@eugene-s-nesdev @Gumball2415 #243 #214)
 
 - ### Internal:
 
-	- Fix version checker repository link (@Gumball2415 #212)
-	- Include logo and icon resources in the repository (@Gumball2415 #236)
+	- Fix version checker repository link (@Gumball2415 #229 #212)
+	- Include logo and icon resources in the repository (@Gumball2415 #218 #236)
 	- Add AddressSanitizer project configurations (@Gumball2415 #236)
 	- Separate Github Actions binary downloads (@Gumball2415 #237)
 	- Add automated draft release binary upload (@Gumball2415 #237)
 	- Integrate Dn-help as submodule (@Gumball2415 #238)
 	- Generate HTMLHelp manual change log on build time (@Gumball2415 #238)
+
 
 
 ## Dn0.5.0.1 - 05/10/2023
