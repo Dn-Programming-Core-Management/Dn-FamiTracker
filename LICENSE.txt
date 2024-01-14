@@ -22,7 +22,7 @@ The texts for the MIT-0 and GPL v2 licenses are listed below:
 
 MIT No Attribution
 
-Copyright 2022 D.P.C.M.
+Copyright 2024 D.P.C.M.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in

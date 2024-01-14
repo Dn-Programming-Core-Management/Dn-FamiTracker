@@ -1,9 +1,8 @@
 # How to update version info in Dn-FT:
 
 - Update changelogs:
-	- changelog.txt
-	- the release page in Github
-	- changelog.htm (in Dn-Help)
+	- CHANGELOG.md, which will update upon build:
+		- changelog.htm (in Dn-Help)
 - Edit every file with version info:
 	- Dn-FamiTracker.rc
 	- Version.h
@@ -15,7 +14,7 @@ Copyright (C) 2005-2020 Jonathan Liss
 
 0CC-FamiTracker is (C) 2014-2018 HertzDevil
 
-Dn-FamiTracker is (C) 2020-2023 D.P.C.M.
+Dn-FamiTracker is (C) 2020-2024 D.P.C.M.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -32,3 +31,9 @@ Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 Any permitted reproduction of these routines, in whole or in part,
 must bear this legend.
 ```
+- Update copyright years in all licenses
+	- LICENSE.txt
+	- all source files with copyright info
+- Push version tag to the repo
+	- This triggers Github Actions to build a draft release
+- Edit and publish the draft release page in Github

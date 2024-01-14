@@ -4,7 +4,7 @@
 **
 ** 0CC-FamiTracker is (C) 2014-2018 HertzDevil
 **
-** Dn-FamiTracker is (C) 2020-2023 D.P.C.M.
+** Dn-FamiTracker is (C) 2020-2024 D.P.C.M.
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -169,7 +169,7 @@ BOOL CAboutDlg::OnInitDialog()
 		_T("- Sunsoft 5B information in manual by forple\r\n")		// // !!
 		_T("- Additional manual information by Persune\r\n")		// // !!
 		_T("- Toolbar icons are made by ilkke\r\n")
-		_T("- Dn-FT icon design by Accuracy\r\n")		// // !!
+		_T("- Dn-FT icon design by Pale Moon\r\n")		// // !!
 		_T("- DPCM import resampler by Jarhmander\r\n")
 		_T("- DPCM sample bit order reverser mod by Persune\r\n")		// // !!
 		_T("- Module text import/export by rainwarrior"));		// // //
