@@ -157,14 +157,9 @@ private:
 	void	AddWavetable(CInstrumentFDS *pInstrument, CChunk *pChunk);
 
 	// File writing
-	void	WriteAssembly(CFile *pFile);
-	void	WriteBinary(CFile *pFile);
-	void	WritePeriods(CFile* pFile);
-	void	WriteVibrato(CFile* pFile);
-	void	WriteNSFHeader(CFile* pFile, stNSFHeader Header);
-	void	WriteNSFConfig(CFile* pFile, unsigned int DPCMSegment, stNSFHeader Header);
+	void	WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header, int MachineType = 0, CFile* pFileNSFHeader = nullptr, CFile* pFileNSFConfig = nullptr, CFile* pFilePeriods = nullptr, CFile* pFileVibrato = nullptr);
+	void	WriteBinary(CFile *pFile, bool bExtraData, stNSFHeader Header, int MachineType = 0, CFile* pFileNSFHeader = nullptr, CFile* pFileNSFConfig = nullptr, CFile* pFilePeriods = nullptr, CFile* pFileVibrato = nullptr);
 	void	WriteSamplesBinary(CFile *pFile);
-	//void	WriteNSFData(std::unique_ptr<CChunkRenderNSF> Render, char *pNSFDRV, char *pDriver);
 
 	// Object list functions
 	CChunk	*CreateChunk(chunk_type_t Type, CStringA label);

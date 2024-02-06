@@ -79,7 +79,11 @@ const stChunkRenderFunc CChunkRenderText::RENDER_FUNCTIONS[] = {
 	{CHUNK_WAVES,			&CChunkRenderText::StoreWavesChunk}
 };
 
-CChunkRenderText::CChunkRenderText(CFile *pFile) : m_pFile(pFile)
+CChunkRenderText::CChunkRenderText(CFile *pFile) : m_pFile(pFile),
+	m_pFileNSFHeader(nullptr),
+	m_pFileNSFConfig(nullptr),
+	m_pFilePeriods(nullptr),
+	m_pFileVibrato(nullptr)
 {
 }
 
@@ -476,7 +480,191 @@ void CChunkRenderText::StoreWavesChunk(CChunk *pChunk, CFile *pFile)
 
 void CChunkRenderText::WriteFileString(const CStringA &str, CFile *pFile) const
 {
+	if (!pFile) return;
 	pFile->Write(const_cast<CStringA&>(str).GetBuffer(), str.GetLength());
+}
+
+// These functions write to a separate file. CFile path to those separate files must be the same as export.
+
+void CChunkRenderText::StoreNSFHeader(stNSFHeader Header) const
+{
+	CString str;
+
+	str.Append(";\n; NSF Header\n;\n");
+	// TODO: make seperate stub file
+	//if (Header.SoundChip & SNDCHIP_VRC6) str.Append("USE_VRC6 = 1\n");
+	//if (Header.SoundChip & SNDCHIP_VRC7) str.Append("USE_VRC7 = 1\n");
+	//if (Header.SoundChip & SNDCHIP_FDS) str.Append("USE_FDS = 1\n");
+	//if (Header.SoundChip & SNDCHIP_MMC5) str.Append("USE_MMC5 = 1\n");
+	//if (Header.SoundChip & SNDCHIP_N163) str.Append("USE_N163 = 1\n");
+	//if (Header.SoundChip & SNDCHIP_S5B) str.Append("USE_S5B = 1\n");
+	//if (m_bBankSwitched) str.Append("USE_BANKSWITCH = 1\n");
+	//if (m_pDocument->GetVibratoStyle() == VIBRATO_OLD) str.Append("USE_OLDVIBRATO = 1\n");
+	//if (m_pDocument->GetLinearPitch()) str.Append("USE_LINEARPITCH = 1\n");
+
+	str.Append("\n.segment \"HEADER1\"\n");
+	str.AppendFormat(".byte $%02X, $%02X, $%02X, $%02X, $%02X\t; ID\n",
+		Header.Ident[0], Header.Ident[1], Header.Ident[2], Header.Ident[3], Header.Ident[4]);
+	str.Append(".byte $01\t\t\t\t\t\t; Version\n");
+	str.AppendFormat(".byte $%02X\t\t\t\t\t\t\t; Number of songs\n", Header.TotalSongs);
+	str.AppendFormat(".byte $%02X\t\t\t\t\t\t\t; Start song\n", Header.StartSong);
+	str.Append(".word LOAD\t\t\t\t\t\t; LOAD address\n");
+	str.Append(".word INIT\t\t\t\t\t\t; INIT address\n");
+	str.Append(".word PLAY\t\t\t\t\t\t; PLAY address\n\n");
+
+	str.Append(".segment \"HEADER2\"\n");
+	str.AppendFormat(".byte \"%s\"\t; Name, 32 bytes\n\n", Header.SongName);
+
+	str.Append(".segment \"HEADER3\"\n");
+	str.AppendFormat(".byte \"%s\"\t; Artist, 32 bytes\n\n", Header.ArtistName);
+
+	str.Append(".segment \"HEADER4\"\n");
+	str.AppendFormat(".byte \"%s\"\t; Copyright, 32 bytes\n\n", Header.Copyright);
+
+	str.Append(".segment \"HEADER5\"\n");
+	str.AppendFormat(".word $%04X\t\t\t\t\t\t; NTSC speed\n", Header.Speed_NTSC);
+	str.AppendFormat(".byte $%02X, $%02X, $%02X, $%02X, $%02X, $%02X, $%02X, $%02X\t; Bank values\n",
+		Header.BankValues[0], Header.BankValues[1], Header.BankValues[2], Header.BankValues[3],
+		Header.BankValues[4], Header.BankValues[5], Header.BankValues[6], Header.BankValues[7]);
+	str.AppendFormat(".word $%04X\t\t\t\t\t\t; PAL speed\n", Header.Speed_PAL);
+	str.AppendFormat(".byte $%02X\t\t\t\t\t\t\t; Region flags\n", Header.Flags);
+	str.Append(".byte EXPANSION_FLAG\t\t\t; Expansion audio flags\n");
+	str.AppendFormat(".byte $%02X\t\t\t\t\t\t; NSF2 flags\n", Header.NSF2Flags);
+	str.AppendFormat(".byte $%02X, $%02X, $%02X\t\t\t\t; NSF data length\n",
+		Header.NSFDataLength[0], Header.NSFDataLength[1], Header.NSFDataLength[2]);
+
+	WriteFileString(str, m_pFileNSFHeader);
+}
+
+void CChunkRenderText::StoreNSFConfig(unsigned int DPCMSegment, stNSFHeader Header, bool Bankswitched) const
+{
+	CString str;
+	CString segmentAttr = (Header.SoundChip & SNDCHIP_FDS ? "rw" : "ro");
+
+	if (Bankswitched) {
+		// TODO: dynamically allocate memory chunks
+	}
+	else {
+		str.Append("MEMORY {\n");
+		str.Append("  ZP:  start = $00,   size = $100,   type = rw, file = \"\";\n");
+		str.Append("  RAM: start = $200,  size = $600,   type = rw, file = \"\";\n");
+		str.Append("  HDR: start = $00,   size = $80,    type = ro, file = %O;\n");
+		str.Append("  PRG: start = $8000, size = $40000, type = " + segmentAttr + ", file = %O;\n");
+		str.Append("}\n\n");
+		str.Append("SEGMENTS {\n");
+		str.Append("  ZEROPAGE: load = ZP,  type = zp;\n");
+		str.Append("  BSS:      load = RAM, type = bss, define = yes;\n");
+		str.Append("  HEADER1:  load = HDR, type = ro;\n");
+		str.Append("  HEADER2:  load = HDR, type = ro,  start = $0E, fillval = $0;\n");
+		str.Append("  HEADER3:  load = HDR, type = ro,  start = $2E, fillval = $0;\n");
+		str.Append("  HEADER4:  load = HDR, type = ro,  start = $4E, fillval = $0;\n");
+		str.Append("  HEADER5:  load = HDR, type = ro,  start = $6E;\n");
+		str.Append("  CODE:     load = PRG, type = " + segmentAttr + ",  start = $8000;\n");
+		str.AppendFormat(("  DPCM:     load = PRG, type = " + segmentAttr + ",  start = $%04X;\n"), DPCMSegment);
+		str.Append("}\n");
+	}
+
+	WriteFileString(str, m_pFileNSFConfig);
+}
+
+void CChunkRenderText::StorePeriods(unsigned int *pNoteLUTNTSC, unsigned int* pNoteLUTPAL, unsigned int* pNoteLUTSaw, unsigned int* pNoteLUTFDS, unsigned int* pNoteLUTN163, unsigned int* pNoteLUTVRC7) const
+{
+	CString str;
+
+	const auto StoreWordString = [&](unsigned int* Table) {
+		str.Append("\t.word\t");
+		for (int i = 0; i < NOTE_COUNT; ++i) {
+			unsigned int Val = Table[i] & 0xFFFF;
+			if (i < NOTE_COUNT - 1) {
+				if (i % NOTE_RANGE < NOTE_RANGE - 1)
+					str.AppendFormat("$%04X, ", Val);
+				else
+					str.AppendFormat("$%04X\n\t.word\t", Val);
+			}
+			else
+				str.AppendFormat("$%04X\n", Val);
+		}
+	};
+
+	// One possible optimization is to store the PAL table as the difference from the NTSC table
+
+	str.Append("; 2A03 NTSC\n");
+	str.Append(".if .defined(NTSC_PERIOD_TABLE)\n");
+	str.Append("ft_periods_ntsc: ;; Patched\n");
+	StoreWordString(pNoteLUTNTSC);
+
+	str.Append(".endif\n\n");
+	str.Append("; 2A03 PAL\n");
+	str.Append(".if .defined(PAL_PERIOD_TABLE)\n");
+	str.Append("ft_periods_pal: ;; Patched\n");
+	StoreWordString(pNoteLUTPAL);
+
+	str.Append(".endif\n\n");
+	str.Append("; VRC6 Sawtooth\n");
+	str.Append(".if .defined(USE_VRC6)\n");
+	str.Append("ft_periods_sawtooth: ;; Patched\n");
+	StoreWordString(pNoteLUTSaw);
+
+	str.Append(".endif\n\n");
+	str.Append("; FDS\n");
+	str.Append(".if .defined(USE_FDS)\n");
+	str.Append("ft_periods_fds: ;; Patched\n");
+	StoreWordString(pNoteLUTFDS);
+
+	str.Append(".endif\n\n");
+	str.Append("; N163\n");
+	str.Append(".if .defined(USE_N163)\n");
+	str.Append("ft_periods_n163: ;; Patched\n");
+	StoreWordString(pNoteLUTN163);
+
+	str.Append(".endif\n\n");
+	str.Append("; VRC7\n");
+	str.Append(".if .defined(USE_VRC7)\n");
+	str.Append("; Fnum table, multiplied by 4 for higher resolution\n");
+	str.Append(".define ft_vrc7_table ");
+
+	for (int i = 0; i <= NOTE_RANGE; ++i) {		// // // include last item for linear pitch code optimization
+		CString str;
+		if (i == NOTE_RANGE)
+			str.AppendFormat("$%04X\n", pNoteLUTVRC7[0] << 3);
+		else
+			str.AppendFormat("$%04X, ", pNoteLUTVRC7[i] << 2);
+		str.Append(str);
+	}
+
+	str.Append("\n");
+	str.Append("ft_note_table_vrc7_l: ;; Patched\n");
+	str.Append("\t.lobytes ft_vrc7_table\n");
+	str.Append("ft_note_table_vrc7_h:\n");
+	str.Append("\t.hibytes ft_vrc7_table\n");
+	str.Append(".endif\n");
+
+	WriteFileString(str, m_pFilePeriods);
+}
+
+void CChunkRenderText::StoreVibrato(unsigned int *pLUTVibrato) const
+{
+	CString str;
+
+	str.Append("; Vibrato table (256 bytes)\n"
+		"ft_vibrato_table: ;; Patched\n");
+	for (int i = 0; i < 16; i++) {	// depth
+		str.Append("\t.byte ");
+		for (int j = 0; j < 16; j++) {	// phase
+			str.AppendFormat("$%02X%s", pLUTVibrato[i * 16 + j], j < 15 ? ", " : "");
+		}
+		str.Append("\n");
+	}
+
+	WriteFileString(str, m_pFileVibrato);
+}
+
+void CChunkRenderText::SetExtraDataFiles(CFile* pFileNSFHeader, CFile* pFileNSFConfig, CFile* pFilePeriods, CFile* pFileVibrato)
+{
+	m_pFileNSFHeader = pFileNSFHeader;
+	m_pFileNSFConfig = pFileNSFConfig;
+	m_pFilePeriods = pFilePeriods;
+	m_pFileVibrato = pFileVibrato;
 }
 
 void CChunkRenderText::StoreByteString(const char *pData, int Len, CStringA &str, int LineBreak) const

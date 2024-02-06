@@ -974,24 +974,49 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 
 	Print(_T("Writing output files...\n"));
 
-	WriteBinary(&OutputFileBIN);
-
 	if (_tcslen(lpszDPCM_File) != 0)
 		WriteSamplesBinary(&OutputFileDPCM);
 
 	if (ExtraData) {
 		// Get the directory of the BIN
-		CString BINDirectory = OutputFileBIN.GetFilePath();
-		BINDirectory.Delete(
+		CString FileDirectory = OutputFileBIN.GetFilePath();
+		FileDirectory.Delete(
 			(OutputFileBIN.GetFilePath().GetLength()) - (OutputFileBIN.GetFileName().GetLength()),
 			OutputFileBIN.GetFileName().GetLength());
 
+		// Write NSF header
+		CFile OutputFileNSFHeader;
+		CString header_directory = FileDirectory;
+		header_directory += _T("nsf_header.s");
+
+		if (!OpenFile(header_directory, OutputFileNSFHeader)) {
+			OutputFileNSFHeader.Close();
+			Print(_T("Error: Could not open output NSF header file\n"));
+			Cleanup();
+			return;
+		}
+
+		// Write NSF config file
+		CFile OutputFileNSFConfig;
+		CString config_directory = FileDirectory;
+		config_directory += _T("nsf.cfg");
+		if (!OpenFile(config_directory, OutputFileNSFConfig)) {
+			OutputFileNSFHeader.Close();
+			OutputFileNSFConfig.Close();
+			Print(_T("Error: Could not open NSF config file\n"));
+			Cleanup();
+			return;
+		}
+
 		// Write period file
-		CFile OutputFilePeriod;
-		CString period_directory = BINDirectory;
-		period_directory += _T("periods.s");
-		if (!OpenFile(period_directory, OutputFilePeriod)) {
-			OutputFilePeriod.Close();
+		CFile OutputFilePeriods;
+		CString periods_directory = FileDirectory;
+		periods_directory += _T("periods.s");
+
+		if (!OpenFile(periods_directory, OutputFilePeriods)) {
+			OutputFileNSFHeader.Close();
+			OutputFileNSFConfig.Close();
+			OutputFilePeriods.Close();
 			Print(_T("Error: Could not open output periods file\n"));
 			Cleanup();
 			return;
@@ -999,54 +1024,27 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 
 		// Write vibrato file
 		CFile OutputFileVibrato;
-		CString vibrato_directory = BINDirectory;
+		CString vibrato_directory = FileDirectory;
 		vibrato_directory += _T("vibrato.s");
+
 		if (!OpenFile(vibrato_directory, OutputFileVibrato)) {
-			OutputFilePeriod.Close();
+			OutputFileNSFHeader.Close();
+			OutputFileNSFConfig.Close();
+			OutputFilePeriods.Close();
 			OutputFileVibrato.Close();
 			Print(_T("Error: Could not open output vibrato file\n"));
 			Cleanup();
 			return;
 		}
 
-		// Write NSF header
-		CFile OutputFileNSFHeader;
-		CString header_directory = BINDirectory;
-		header_directory += _T("nsf_header.s");
-
-		if (!OpenFile(header_directory, OutputFileNSFHeader)) {
-			OutputFilePeriod.Close();
-			OutputFileVibrato.Close();
-			OutputFileNSFHeader.Close();
-			Print(_T("Error: Could not open NSF header file\n"));
-			Cleanup();
-			return;
-		}
-
-		// Write NSF config file
-		CFile OutputNSFConfig;
-		CString config_directory = BINDirectory;
-		config_directory += _T("nsf.cfg");
-		if (!OpenFile(config_directory, OutputNSFConfig)) {
-			OutputFilePeriod.Close();
-			OutputFileVibrato.Close();
-			OutputFileNSFHeader.Close();
-			OutputNSFConfig.Close();
-			Print(_T("Error: Could not open NSF config file\n"));
-			Cleanup();
-			return;
-		}
-
-		Print(_T("Writing additional data files...\n"));
-		WritePeriods(&OutputFilePeriod);
-		WriteVibrato(&OutputFileVibrato);
-		WriteNSFHeader(&OutputFileNSFHeader, Header);
-		WriteNSFConfig(&OutputNSFConfig, m_iSampleStart, Header);
-		OutputFilePeriod.Close();
+		WriteAssembly(&OutputFileBIN, ExtraData, Header, MachineType, &OutputFileNSFHeader, &OutputFileNSFConfig, &OutputFilePeriods, &OutputFileVibrato);
+		OutputFilePeriods.Close();
 		OutputFileVibrato.Close();
 		OutputFileNSFHeader.Close();
-		OutputNSFConfig.Close();
+		OutputFileNSFConfig.Close();
 	}
+	else
+		WriteAssembly(&OutputFileBIN, ExtraData, Header);
 
 	Print(_T("Done\n"));
 
@@ -1212,8 +1210,6 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 	// Write output file
 	Print(_T("Writing output files...\n"));
 
-	WriteAssembly(&OutputFile);
-
 	if (ExtraData) {
 		// Get the directory of the output file
 		CString FileDirectory = OutputFile.GetFilePath();
@@ -1221,13 +1217,39 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 			(OutputFile.GetFilePath().GetLength()) - (OutputFile.GetFileName().GetLength()),
 			OutputFile.GetFileName().GetLength());
 
-		// Write period file
-		CFile OutputFilePeriod;
-		CString period_directory = FileDirectory;
-		period_directory += _T("periods.s");
+		// Write NSF header
+		CFile OutputFileNSFHeader;
+		CString header_directory = FileDirectory;
+		header_directory += _T("nsf_header.s");
 
-		if (!OpenFile(period_directory, OutputFilePeriod)) {
-			OutputFilePeriod.Close();
+		if (!OpenFile(header_directory, OutputFileNSFHeader)) {
+			OutputFileNSFHeader.Close();
+			Print(_T("Error: Could not open output NSF header file\n"));
+			Cleanup();
+			return;
+		}
+
+		// Write NSF config file
+		CFile OutputFileNSFConfig;
+		CString config_directory = FileDirectory;
+		config_directory += _T("nsf.cfg");
+		if (!OpenFile(config_directory, OutputFileNSFConfig)) {
+			OutputFileNSFHeader.Close();
+			OutputFileNSFConfig.Close();
+			Print(_T("Error: Could not open NSF config file\n"));
+			Cleanup();
+			return;
+		}
+
+		// Write period file
+		CFile OutputFilePeriods;
+		CString periods_directory = FileDirectory;
+		periods_directory += _T("periods.s");
+
+		if (!OpenFile(periods_directory, OutputFilePeriods)) {
+			OutputFileNSFHeader.Close();
+			OutputFileNSFConfig.Close();
+			OutputFilePeriods.Close();
 			Print(_T("Error: Could not open output periods file\n"));
 			Cleanup();
 			return;
@@ -1239,50 +1261,23 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 		vibrato_directory += _T("vibrato.s");
 
 		if (!OpenFile(vibrato_directory, OutputFileVibrato)) {
-			OutputFilePeriod.Close();
+			OutputFileNSFHeader.Close();
+			OutputFileNSFConfig.Close();
+			OutputFilePeriods.Close();
 			OutputFileVibrato.Close();
 			Print(_T("Error: Could not open output vibrato file\n"));
 			Cleanup();
 			return;
 		}
 
-		// Write NSF header
-		CFile OutputFileNSFHeader;
-		CString header_directory = FileDirectory;
-		header_directory += _T("nsf_header.s");
-
-		if (!OpenFile(header_directory, OutputFileNSFHeader)) {
-			OutputFilePeriod.Close();
-			OutputFileVibrato.Close();
-			OutputFileNSFHeader.Close();
-			Print(_T("Error: Could not open output NSF header file\n"));
-			Cleanup();
-			return;
-		}
-
-		// Write NSF config file
-		CFile OutputNSFConfig;
-		CString config_directory = FileDirectory;
-		config_directory += _T("nsf.cfg");
-		if (!OpenFile(config_directory, OutputNSFConfig)) {
-			OutputFilePeriod.Close();
-			OutputFileVibrato.Close();
-			OutputFileNSFHeader.Close();
-			OutputNSFConfig.Close();
-			Print(_T("Error: Could not open NSF config file\n"));
-			Cleanup();
-			return;
-		}
-
-		Print(_T("Writing additional data files...\n"));
-		WritePeriods(&OutputFilePeriod);
-		WriteVibrato(&OutputFileVibrato);
-		WriteNSFHeader(&OutputFileNSFHeader, Header);
-		WriteNSFConfig(&OutputNSFConfig, m_iSampleStart, Header);
-		OutputFilePeriod.Close();
+		WriteAssembly(&OutputFile, ExtraData, Header, MachineType, &OutputFileNSFHeader, &OutputFileNSFConfig, &OutputFilePeriods, &OutputFileVibrato);
+		OutputFilePeriods.Close();
 		OutputFileVibrato.Close();
 		OutputFileNSFHeader.Close();
-		OutputNSFConfig.Close();
+		OutputFileNSFConfig.Close();
+	}
+	else {
+		WriteAssembly(&OutputFile, ExtraData, Header);
 	}
 
 	// Done
@@ -1742,6 +1737,7 @@ bool CCompiler::CollectLabelsBankswitched(CMap<CStringA, LPCSTR, int, int> &labe
 					Offset = 0x3000 - DriverSizeAndNSFDRV;
 					++Bank;
 				}
+				// fall through
 			case CHUNK_FRAME:
 				labelMap[pChunk->GetLabel()] = Offset;
 				pChunk->SetBank(Bank < 4 ? ((Offset + DriverSizeAndNSFDRV) >> 12) : Bank);
@@ -1756,6 +1752,7 @@ bool CCompiler::CollectLabelsBankswitched(CMap<CStringA, LPCSTR, int, int> &labe
 				labelMap[pChunk->GetLabel()] = Offset;
 				pChunk->SetBank(Bank < 4 ? ((Offset + DriverSizeAndNSFDRV) >> 12) : Bank);
 				Offset += Size;
+				// fall through
 			default:
 				break;
 		}
@@ -2127,6 +2124,8 @@ void CCompiler::CreateMainHeader()
 	unsigned char Flags = 0; // bankswitch flag is set later
 	if (m_pDocument->GetVibratoStyle() == VIBRATO_OLD) Flags |= FLAG_VIBRATO;
 	if (m_pDocument->GetLinearPitch()) Flags |= FLAG_LINEARPITCH;		// // //
+
+	// FLAG_USEPAL is dynamically set during runtime
 
 	// Write header
 
@@ -2738,7 +2737,7 @@ void CCompiler::AddWavetable(CInstrumentFDS *pInstrument, CChunk *pChunk)
 	m_iWaveTables++;
 }
 
-void CCompiler::WriteAssembly(CFile *pFile)
+void CCompiler::WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header, int MachineType, CFile* pFileNSFHeader, CFile* pFileNSFConfig, CFile* pFilePeriods, CFile* pFileVibrato)
 {
 	// Dump all chunks and samples as assembly text
 	CChunkRenderText Render(pFile);
@@ -2753,298 +2752,105 @@ void CCompiler::WriteAssembly(CFile *pFile)
 	Print(_T(" * Music data size: %i bytes\n"), m_iMusicDataSize);
 	Render.StoreSamples(m_vSamples);
 	Print(_T(" * DPCM samples size: %i bytes\n"), m_iSamplesSize);
-}
 
-void CCompiler::WritePeriods(CFile* pFile)
-{
-	unsigned int length = 0;
-	const auto WriteString = [&pFile, &length](CString str) {
-		pFile->Write(const_cast<CStringA&>(str).GetBuffer(), str.GetLength());
-		length += str.GetLength();
-	};
+	if (bExtraData) {
+		unsigned int LUTNTSC[NOTE_COUNT]{};
+		unsigned int LUTPAL[NOTE_COUNT]{};
+		unsigned int LUTSaw[NOTE_COUNT]{};
+		unsigned int LUTFDS[NOTE_COUNT]{};
+		unsigned int LUTN163[NOTE_COUNT]{};
+		unsigned int LUTVRC7[NOTE_COUNT]{};
 
-	const auto DumpFunc = [WriteString](unsigned int* Table) {
-		for (int i = 0; i < NOTE_COUNT; ++i) {
-			unsigned int Val = Table[i] & 0xFFFF;
-			CString str;
-			if (i < NOTE_COUNT - 1) {
-				if (i % NOTE_RANGE < NOTE_RANGE - 1)
-					str.Format("$%04X, ", Val);
-				else
-					str.Format("$%04X\n\t.word\t", Val);
+		const CSoundGen* pSoundGen = theApp.GetSoundGenerator();
+		for (int i = 0; i < CDetuneTable::DETUNE_N163; ++i) {		// // //
+			switch (i) {
+			case CDetuneTable::DETUNE_NTSC:
+				for (int j = 0; j < NOTE_COUNT; ++j) LUTNTSC[j] = pSoundGen->ReadPeriodTable(j, i); break;
+			case CDetuneTable::DETUNE_PAL:
+				if (MachineType)
+					for (int j = 0; j < NOTE_COUNT; ++j) LUTPAL[j] = pSoundGen->ReadPeriodTable(j, i); break;
+			case CDetuneTable::DETUNE_SAW:
+				if (m_iActualChip & SNDCHIP_VRC6)
+					for (int j = 0; j < NOTE_COUNT; ++j) LUTSaw[j] = pSoundGen->ReadPeriodTable(j, i); break;
+			case CDetuneTable::DETUNE_VRC7:
+				if (m_iActualChip & SNDCHIP_VRC7)
+					for (int j = 0; j < NOTE_COUNT; ++j) LUTVRC7[j] = pSoundGen->ReadPeriodTable(j, i); break;
+			case CDetuneTable::DETUNE_FDS:
+				if (m_iActualChip & SNDCHIP_FDS)
+					for (int j = 0; j < NOTE_COUNT; ++j) LUTFDS[j] = pSoundGen->ReadPeriodTable(j, i); break;
+			case CDetuneTable::DETUNE_N163:
+				if (m_iActualChip & SNDCHIP_N163)
+					for (int j = 0; j < NOTE_COUNT; ++j) LUTN163[j] = pSoundGen->ReadPeriodTable(j, i); break;
+			default:
+				AfxDebugBreak();
 			}
-			else
-				str.Format("$%04X\n", Val);
-			WriteString(str);
 		}
-	};
 
-	unsigned int NoteLookupTableNTSC[NOTE_COUNT];
-	unsigned int NoteLookupTablePAL[NOTE_COUNT];
-	unsigned int NoteLookupTableSaw[NOTE_COUNT];
-	unsigned int NoteLookupTableFDS[NOTE_COUNT];
-	unsigned int NoteLookupTableN163[NOTE_COUNT];
-	unsigned int NoteLookupTableVRC7[NOTE_COUNT];
+		unsigned int LUTVibrato[VIBRATO_LENGTH]{};
 
-	CSoundGen* pSoundGen = theApp.GetSoundGenerator();
-	for (unsigned int i = 0; i < CDetuneTable::DETUNE_N163; ++i) {		// // //
-		switch (i) {
-		case CDetuneTable::DETUNE_NTSC:
-			for (int j = 0; j < NOTE_COUNT; ++j) NoteLookupTableNTSC[j] = pSoundGen->ReadPeriodTable(j, i); break;
-		case CDetuneTable::DETUNE_PAL:
-			for (int j = 0; j < NOTE_COUNT; ++j) NoteLookupTablePAL[j] = pSoundGen->ReadPeriodTable(j, i); break;
-		case CDetuneTable::DETUNE_SAW:
-			for (int j = 0; j < NOTE_COUNT; ++j) NoteLookupTableSaw[j] = pSoundGen->ReadPeriodTable(j, i); break;
-		case CDetuneTable::DETUNE_VRC7:
-			for (int j = 0; j < NOTE_COUNT; ++j) NoteLookupTableVRC7[j] = pSoundGen->ReadPeriodTable(j, i); break;
-		case CDetuneTable::DETUNE_FDS:
-			for (int j = 0; j < NOTE_COUNT; ++j) NoteLookupTableFDS[j] = pSoundGen->ReadPeriodTable(j, i); break;
-		case CDetuneTable::DETUNE_N163:
-			for (int j = 0; j < NOTE_COUNT; ++j) NoteLookupTableN163[j] = pSoundGen->ReadPeriodTable(j, i); break;
-		default:
-			AfxDebugBreak();
+		for (int i = 0; i < 256; ++i) {
+			LUTVibrato[i] = pSoundGen->ReadVibratoTable(i);
 		}
+		Render.SetExtraDataFiles(pFileNSFHeader, pFileNSFConfig, pFilePeriods, pFileVibrato);
+		Render.StoreNSFHeader(Header);
+		Render.StoreNSFConfig(m_iSampleStart, Header);
+		Render.StorePeriods(LUTNTSC, LUTPAL, LUTSaw, LUTVRC7, LUTFDS, LUTN163);
+		Render.StoreVibrato(LUTVibrato);
 	}
-
-	// One possible optimization is to store the PAL table as the difference from the NTSC table
-
-	WriteString("; 2A03 NTSC\n");
-	WriteString(".if .defined(NTSC_PERIOD_TABLE)\n");
-	WriteString("ft_periods_ntsc: ;; Patch\n\t.word\t");
-	DumpFunc(NoteLookupTableNTSC);
-
-	WriteString(".endif\n\n");
-	WriteString("; 2A03 PAL\n");
-	WriteString(".if .defined(PAL_PERIOD_TABLE)\n");
-	WriteString("ft_periods_pal: ;; Patch\n\t.word\t");
-	DumpFunc(NoteLookupTablePAL);
-
-	WriteString(".endif\n\n");
-	WriteString("; VRC6 Sawtooth\n");
-	WriteString(".if .defined(USE_VRC6)\n");
-	WriteString("ft_periods_sawtooth: ;; Patch\n\t.word\t");
-	DumpFunc(NoteLookupTableSaw);
-
-	WriteString(".endif\n\n");
-	WriteString("; FDS\n");
-	WriteString(".if .defined(USE_FDS)\n");
-	WriteString("ft_periods_fds: ;; Patch\n\t.word\t");
-	DumpFunc(NoteLookupTableFDS);
-
-	WriteString(".endif\n\n");
-	WriteString("; N163\n");
-	WriteString(".if .defined(USE_N163)\n");
-	WriteString("ft_periods_n163: ;; Patch\n\t.word\t");
-	DumpFunc(NoteLookupTableN163);
-
-	WriteString(".endif\n\n");
-	WriteString("; VRC7\n");
-	WriteString(".if .defined(USE_VRC7)\n");
-	WriteString("; Fnum table, multiplied by 4 for higher resolution\n");
-	WriteString(".define ft_vrc7_table ");
-
-	for (int i = 0; i <= NOTE_RANGE; ++i) {		// // // include last item for linear pitch code optimization
-		CString str;
-		if (i == NOTE_RANGE)
-			str.Format("$%04X\n\n", NoteLookupTableVRC7[0] << 3);
-		else
-			str.Format("$%04X, ", NoteLookupTableVRC7[i] << 2);
-		WriteString(str);
-	}
-
-	WriteString("ft_note_table_vrc7_l: ;; Patch\n");
-	WriteString("\t.lobytes ft_vrc7_table\n");
-	WriteString("ft_note_table_vrc7_h:\n");
-	WriteString("\t.hibytes ft_vrc7_table\n");
-	WriteString(".endif\n");
-
-	Print(_T(" * Period table size: %i bytes\n"), length);
 }
 
-void CCompiler::WriteVibrato(CFile* pFile)
-{
-	unsigned int length = 0;
-	const auto WriteString = [&pFile, &length](CString str) {
-		pFile->Write(const_cast<CStringA&>(str).GetBuffer(), str.GetLength());
-		length += str.GetLength();
-	};
-
-	unsigned int VibratoTable[VIBRATO_LENGTH];
-
-	// Copy the vibrato table, the stock one only works for new vibrato mode
-	const CSoundGen* pSoundGen = theApp.GetSoundGenerator();
-
-	for (int i = 0; i < 256; ++i) {
-		VibratoTable[i] = pSoundGen->ReadVibratoTable(i);
-	}
-
-	WriteString("; Vibrato table (256 bytes)\n"
-		"ft_vibrato_table: ;; Patch\n");
-	for (int i = 0; i < 16; i++) {	// depth
-		WriteString("\t.byte ");
-		for (int j = 0; j < 16; j++) {	// phase
-			CString b;
-			b.Format("$%02X%s", VibratoTable[i * 16 + j], j < 15 ? ", " : "");
-			WriteString(b);
-		}
-		WriteString("\n");
-	}
-
-	Print(_T(" * Vibrato table size: %i bytes\n"), length);
-}
-
-void CCompiler::WriteNSFHeader(CFile* pFile, stNSFHeader Header)
-{
-	CString str;
-	unsigned int length = 0;
-	const auto WriteString = [&pFile, &length](CString str) {
-		pFile->Write(const_cast<CStringA&>(str).GetBuffer(), str.GetLength());
-		length += str.GetLength();
-	};
-
-	const auto WriteByte = [&WriteString](unsigned int Byte) {
-		CString str;
-		str.Format("$%02X", Byte);
-		WriteString(str);
-	};
-
-	const auto WriteWord = [&WriteString](unsigned int Word) {
-		CString str;
-		str.Format("$%04X", Word);
-		WriteString(str);
-	};
-
-	const auto WriteInt = [&WriteString](unsigned int Int) {
-		CString str;
-		str.Format("%i", Int);
-		WriteString(str);
-	};
-
-	const auto WriteNSFIdent = [&WriteString](unsigned char* Ident) {
-		for (int i = 0; i < 5; ++i) {
-			CString str;
-			str.Format("$%02X%s", Ident[i], i < 4 ? ", " : "");
-			WriteString(str);
-		}
-	};
-
-	const auto WriteBankValues = [&WriteString](unsigned char* BankValues) {
-		for (int i = 0; i < 8; ++i) {
-			CString str;
-			str.Format("%i%s", BankValues[i], i < 7 ? ", " : "");
-			WriteString(str);
-		}
-	};
-
-	const auto WriteNSFLength = [&WriteString](unsigned char* Length) {
-		for (int i = 0; i < 3; ++i) {
-			CString str;
-			str.Format("$%02X%s", Length[i], i < 2 ? ", " : "");
-			WriteString(str);
-		}
-	};
-
-	WriteString(";\n; NSF Header\n;\n");
-	if (Header.SoundChip & SNDCHIP_VRC6) WriteString("USE_VRC6 = 1\n");
-	if (Header.SoundChip & SNDCHIP_VRC7) WriteString("USE_VRC7 = 1\n");
-	if (Header.SoundChip & SNDCHIP_FDS) WriteString("USE_FDS = 1\n");
-	if (Header.SoundChip & SNDCHIP_MMC5) WriteString("USE_MMC5 = 1\n");
-	if (Header.SoundChip & SNDCHIP_N163) WriteString("USE_N163 = 1\n");
-	if (Header.SoundChip & SNDCHIP_S5B) WriteString("USE_S5B = 1\n");
-	if (m_bBankSwitched) WriteString("USE_BANKSWITCH = 1\n");
-	if (m_pDocument->GetVibratoStyle() == VIBRATO_OLD) WriteString("USE_OLDVIBRATO = 1\n");
-	if (m_pDocument->GetLinearPitch()) WriteString("USE_LINEARPITCH = 1\n");
-	WriteString("\n.segment \"HEADER1\"\n");
-	WriteString(".byte "); WriteNSFIdent(Header.Ident);
-	WriteString("\t; ID\n");
-	WriteString(".byte $01\t\t\t\t\t\t; Version\n");
-	WriteString(".byte "); WriteInt(Header.TotalSongs);
-	WriteString("\t\t\t\t\t\t\t; Number of songs\n");
-	WriteString(".byte "); WriteInt(Header.StartSong);
-	WriteString("\t\t\t\t\t\t\t; Start song\n");
-	WriteString(".word LOAD\t\t\t\t\t\t; LOAD address\n");
-	WriteString(".word INIT\t\t\t\t\t\t; INIT address\n");
-	WriteString(".word PLAY\t\t\t\t\t\t; PLAY address\n\n");
-
-	WriteString(".segment \"HEADER2\"\n");
-	WriteString(".asciiz \""); WriteString(static_cast<CString>(Header.SongName));
-	WriteString("\"\t; Name, 32 bytes\n\n");
-
-	WriteString(".segment \"HEADER3\"\n");
-	WriteString(".asciiz \""); WriteString(static_cast<CString>(Header.ArtistName));
-	WriteString("\"\t; Artist, 32 bytes\n\n");
-
-	WriteString(".segment \"HEADER4\"\n");
-	WriteString(".asciiz \""); WriteString(static_cast<CString>(Header.Copyright));
-	WriteString("\"\t; Copyright, 32 bytes\n\n");
-
-	WriteString(".segment \"HEADER5\"\n");
-	WriteString(".word "); WriteWord(Header.Speed_NTSC);
-	WriteString("\t\t\t\t\t\t; NTSC speed\n");
-	WriteString(".byte "); WriteBankValues(Header.BankValues);
-	WriteString("\t; Bank values\n");
-	WriteString(".word "); WriteWord(Header.Speed_PAL);
-	WriteString("\t\t\t\t\t\t; PAL speed\n");
-	WriteString(".byte "); WriteInt(Header.Flags);
-	WriteString("\t\t\t\t\t\t\t; Flags, NTSC\n");
-	WriteString(".byte EXPANSION_FLAG\t\t\t; Expansion audio flags\n");
-	WriteString(".byte "); WriteByte(Header.NSF2Flags);
-	WriteString("\t\t\t\t\t\t; NSF2 flags\n");
-	WriteString(".byte "); WriteNSFLength(Header.NSFDataLength);
-	WriteString("\t\t\t\t; NSF data length\n");
-
-	Print(_T(" * NSF header size: %i bytes\n"), length);
-}
-
-void CCompiler::WriteNSFConfig(CFile* pFile, unsigned int DPCMSegment, stNSFHeader Header)
-{
-	CString str;
-	unsigned int length = 0;
-	const auto WriteString = [&pFile, &length](CString str) {
-		pFile->Write(const_cast<CStringA&>(str).GetBuffer(), str.GetLength());
-		length += str.GetLength();
-	};
-
-	const auto WriteWord = [&WriteString](unsigned int Word) {
-		CString str;
-		str.Format("$%04X", Word);
-		WriteString(str);
-	};
-
-	WriteString("MEMORY {\n");
-	WriteString("  ZP:  start = $00,   size = $100,   type = rw, file = \"\";\n");
-	WriteString("  RAM: start = $200,  size = $600,   type = rw, file = \"\";\n");
-	WriteString("  HDR: start = $00,   size = $80,    type = ro, file = %O;\n");
-	WriteString("  PRG: start = $8000, size = $40000, type = ");
-	WriteString(Header.SoundChip & SNDCHIP_FDS ? "rw" : "ro");
-	WriteString(", file = %O;\n");
-	WriteString("}\n\n");
-	WriteString("SEGMENTS {\n");
-	WriteString("  ZEROPAGE: load = ZP,  type = zp;\n");
-	WriteString("  BSS:      load = RAM, type = bss, define = yes;\n");
-	WriteString("  HEADER1:  load = HDR, type = ro;\n");
-	WriteString("  HEADER2:  load = HDR, type = ro,  start = $0E, fillval = $0;\n");
-	WriteString("  HEADER3:  load = HDR, type = ro,  start = $2E, fillval = $0;\n");
-	WriteString("  HEADER4:  load = HDR, type = ro,  start = $4E, fillval = $0;\n");
-	WriteString("  HEADER5:  load = HDR, type = ro,  start = $6E;\n");
-	WriteString("  CODE:     load = PRG, type = ");
-	WriteString(Header.SoundChip & SNDCHIP_FDS ? "rw" : "ro");
-	WriteString(",  start = $8000;\n");
-	WriteString("  DPCM:     load = PRG, type = ");
-	WriteString(Header.SoundChip & SNDCHIP_FDS ? "rw" : "ro");
-	WriteString(",  start = "); WriteWord(DPCMSegment);
-	WriteString(";\n");
-	WriteString("}\n");
-
-	Print(_T(" * NSF config size: %i bytes\n"), length);
-}
-
-void CCompiler::WriteBinary(CFile *pFile)
+void CCompiler::WriteBinary(CFile *pFile, bool bExtraData, stNSFHeader Header, int MachineType, CFile* pFileNSFHeader, CFile* pFileNSFConfig, CFile* pFilePeriods, CFile* pFileVibrato)
 {
 	// Dump all chunks as binary
 	CChunkRenderBinary Render(pFile);
 	Render.StoreChunks(m_vChunks);
 	Print(_T(" * Music data size: %i bytes\n"), m_iMusicDataSize);
+
+	if (bExtraData) {
+		unsigned int LUTNTSC[NOTE_COUNT]{};
+		unsigned int LUTPAL[NOTE_COUNT]{};
+		unsigned int LUTSaw[NOTE_COUNT]{};
+		unsigned int LUTFDS[NOTE_COUNT]{};
+		unsigned int LUTN163[NOTE_COUNT]{};
+		unsigned int LUTVRC7[NOTE_COUNT]{};
+
+		const CSoundGen* pSoundGen = theApp.GetSoundGenerator();
+		for (int i = 0; i < CDetuneTable::DETUNE_N163; ++i) {		// // //
+			switch (i) {
+			case CDetuneTable::DETUNE_NTSC:
+				for (int j = 0; j < NOTE_COUNT; ++j) LUTNTSC[j] = pSoundGen->ReadPeriodTable(j, i); break;
+			case CDetuneTable::DETUNE_PAL:
+					if (MachineType != 0)
+				for (int j = 0; j < NOTE_COUNT; ++j) LUTPAL[j] = pSoundGen->ReadPeriodTable(j, i); break;
+			case CDetuneTable::DETUNE_SAW:
+				if (m_iActualChip & SNDCHIP_VRC6)
+					for (int j = 0; j < NOTE_COUNT; ++j) LUTSaw[j] = pSoundGen->ReadPeriodTable(j, i); break;
+			case CDetuneTable::DETUNE_VRC7:
+				if (m_iActualChip & SNDCHIP_VRC7)
+					for (int j = 0; j < NOTE_COUNT; ++j) LUTVRC7[j] = pSoundGen->ReadPeriodTable(j, i); break;
+			case CDetuneTable::DETUNE_FDS:
+				if (m_iActualChip & SNDCHIP_FDS)
+					for (int j = 0; j < NOTE_COUNT; ++j) LUTFDS[j] = pSoundGen->ReadPeriodTable(j, i); break;
+			case CDetuneTable::DETUNE_N163:
+				if (m_iActualChip & SNDCHIP_N163)
+					for (int j = 0; j < NOTE_COUNT; ++j) LUTN163[j] = pSoundGen->ReadPeriodTable(j, i); break;
+			default:
+				AfxDebugBreak();
+			}
+		}
+
+		unsigned int LUTVibrato[VIBRATO_LENGTH]{};
+
+		for (int i = 0; i < 256; ++i) {
+			LUTVibrato[i] = pSoundGen->ReadVibratoTable(i);
+		}
+		CChunkRenderText RenderText(nullptr);
+		RenderText.SetExtraDataFiles(pFileNSFHeader, pFileNSFConfig, pFilePeriods, pFileVibrato);
+		RenderText.StoreNSFHeader(Header);
+		RenderText.StoreNSFConfig(m_iSampleStart, Header);
+		RenderText.StorePeriods(LUTNTSC, LUTPAL, LUTSaw, LUTVRC7, LUTFDS, LUTN163);
+		RenderText.StoreVibrato(LUTVibrato);
+	}
 }
 
 void CCompiler::WriteSamplesBinary(CFile *pFile)

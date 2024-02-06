@@ -151,10 +151,10 @@ CHANNELS	= DPCM_OFFSET + .defined(USE_DPCM)
 
 ; must match definitions in CCompiler!
 .enum
-	FLAG_BANKSWITCH  = %00000001
-	FLAG_OLDVIBRATO  = %00000010
-	FLAG_LINEARPITCH = %00000100
-	FLAG_USEPAL      = %10000000
+	FLAG_BANKSWITCH  = 1 << 0
+	FLAG_OLDVIBRATO  = 1 << 1
+	FLAG_LINEARPITCH = 1 << 2
+	FLAG_USEPAL      = 1 << 7
 .endenum
 
 .segment "ZEROPAGE"
