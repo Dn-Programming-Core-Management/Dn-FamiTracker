@@ -47,6 +47,11 @@ ft_load_inst_extra_n163:
 	iny
 .endif
 @DoneParams:
+    ; check if non-N163 type
+	lda ft_channel_type, x
+	cmp #CHAN_N163
+	bne :++
+    ; check if N163 instrument is about to change
 	lda var_NamcoInstrument - N163_OFFSET, x
 	cmp var_Temp2
 	beq :+
