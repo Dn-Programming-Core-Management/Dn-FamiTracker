@@ -2797,7 +2797,7 @@ void CCompiler::WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header,
 		unsigned int LUTVRC7[NOTE_COUNT]{};
 
 		const CSoundGen *pSoundGen = theApp.GetSoundGenerator();
-		for (int i = 0; i < CDetuneTable::DETUNE_N163; ++i) {		// // //
+		for (int i = 0; i <= CDetuneTable::DETUNE_N163; ++i) {		// // //
 			switch (i) {
 			case CDetuneTable::DETUNE_NTSC:
 				for (int j = 0; j < NOTE_COUNT; ++j) LUTNTSC[j] = pSoundGen->ReadPeriodTable(j, i); break;

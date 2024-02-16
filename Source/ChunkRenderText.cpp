@@ -595,7 +595,7 @@ void CChunkRenderText::StoreNSFConfig(unsigned int DPCMSegment, stNSFHeader Head
 	WriteFileString(str, m_pFileNSFConfig);
 }
 
-void CChunkRenderText::StorePeriods(unsigned int *pNoteLUTNTSC, unsigned int* pNoteLUTPAL, unsigned int* pNoteLUTSaw, unsigned int* pNoteLUTFDS, unsigned int* pNoteLUTN163, unsigned int* pNoteLUTVRC7) const
+void CChunkRenderText::StorePeriods(unsigned int *pLUTNTSC, unsigned int* pLUTPAL, unsigned int* pLUTSaw, unsigned int *pLUTVRC7, unsigned int *pLUTFDS, unsigned int *pLUTN163) const
 {
 	CString str;
 
@@ -619,31 +619,31 @@ void CChunkRenderText::StorePeriods(unsigned int *pNoteLUTNTSC, unsigned int* pN
 	str.Append("; 2A03 NTSC\n");
 	str.Append(".if .defined(NTSC_PERIOD_TABLE)\n");
 	str.Append("ft_periods_ntsc: ;; Patched\n");
-	StoreWordString(pNoteLUTNTSC);
+	StoreWordString(pLUTNTSC);
 
 	str.Append(".endif\n\n");
 	str.Append("; 2A03 PAL\n");
 	str.Append(".if .defined(PAL_PERIOD_TABLE)\n");
 	str.Append("ft_periods_pal: ;; Patched\n");
-	StoreWordString(pNoteLUTPAL);
+	StoreWordString(pLUTPAL);
 
 	str.Append(".endif\n\n");
 	str.Append("; VRC6 Sawtooth\n");
 	str.Append(".if .defined(USE_VRC6)\n");
 	str.Append("ft_periods_sawtooth: ;; Patched\n");
-	StoreWordString(pNoteLUTSaw);
+	StoreWordString(pLUTSaw);
 
 	str.Append(".endif\n\n");
 	str.Append("; FDS\n");
 	str.Append(".if .defined(USE_FDS)\n");
 	str.Append("ft_periods_fds: ;; Patched\n");
-	StoreWordString(pNoteLUTFDS);
+	StoreWordString(pLUTFDS);
 
 	str.Append(".endif\n\n");
 	str.Append("; N163\n");
 	str.Append(".if .defined(USE_N163)\n");
 	str.Append("ft_periods_n163: ;; Patched\n");
-	StoreWordString(pNoteLUTN163);
+	StoreWordString(pLUTN163);
 
 	str.Append(".endif\n\n");
 	str.Append("; VRC7\n");
@@ -654,9 +654,9 @@ void CChunkRenderText::StorePeriods(unsigned int *pNoteLUTNTSC, unsigned int* pN
 	for (int i = 0; i <= NOTE_RANGE; ++i) {		// // // include last item for linear pitch code optimization
 		CString str;
 		if (i == NOTE_RANGE)
-			str.AppendFormat("$%04X\n", pNoteLUTVRC7[0] << 3);
+			str.AppendFormat("$%04X\n", pLUTVRC7[0] << 3);
 		else
-			str.AppendFormat("$%04X, ", pNoteLUTVRC7[i] << 2);
+			str.AppendFormat("$%04X, ", pLUTVRC7[i] << 2);
 		str.Append(str);
 	}
 

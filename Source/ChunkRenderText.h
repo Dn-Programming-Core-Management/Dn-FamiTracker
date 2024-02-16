@@ -50,7 +50,7 @@ public:
 	void StoreNSFStub(stNSFHeader Header, bool Bankswitched, vibrato_t VibratoStyle, bool LinearPitch, int ActualNamcoChannels, bool IsAssembly = false) const;
 	void StoreNSFHeader(stNSFHeader Header) const;
 	void StoreNSFConfig(unsigned int DPCMSegment, stNSFHeader Header, bool Bankswitched = false) const;
-	void StorePeriods(unsigned int *pLUTNTSC, unsigned int *pLUTPAL, unsigned int *pLUTSaw, unsigned int *pLUTFDS, unsigned int *pLUTN163, unsigned int *pLUTVRC7) const;
+	void StorePeriods(unsigned int *pLUTNTSC, unsigned int *pLUTPAL, unsigned int *pLUTSaw, unsigned int *pLUTVRC7, unsigned int *pLUTFDS, unsigned int *pLUTN163) const;
 	void StoreVibrato(unsigned int *pLUTVibrato) const;
 	void SetExtraDataFiles(CFile *pFileNSFStub, CFile *pFileNSFHeader, CFile *pFileNSFConfig, CFile *pFilePeriods, CFile *pFileVibrato);
 
