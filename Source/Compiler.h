@@ -157,8 +157,18 @@ private:
 	void	AddWavetable(CInstrumentFDS *pInstrument, CChunk *pChunk);
 
 	// File writing
-	void	WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header, int MachineType = 0, CFile* pFileNSFHeader = nullptr, CFile* pFileNSFConfig = nullptr, CFile* pFilePeriods = nullptr, CFile* pFileVibrato = nullptr);
-	void	WriteBinary(CFile *pFile, bool bExtraData, stNSFHeader Header, int MachineType = 0, CFile* pFileNSFHeader = nullptr, CFile* pFileNSFConfig = nullptr, CFile* pFilePeriods = nullptr, CFile* pFileVibrato = nullptr);
+	void	WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header, int MachineType = 0,
+		CFile *pFileNSFStub = nullptr,
+		CFile *pFileNSFHeader = nullptr,
+		CFile *pFileNSFConfig = nullptr,
+		CFile *pFilePeriods = nullptr,
+		CFile *pFileVibrato = nullptr);
+	void	WriteBinary(CFile *pFile, bool bExtraData, stNSFHeader Header, int MachineType = 0,
+		CFile *pFileNSFStub = nullptr,
+		CFile *pFileNSFHeader = nullptr,
+		CFile *pFileNSFConfig = nullptr,
+		CFile *pFilePeriods = nullptr,
+		CFile *pFileVibrato = nullptr);
 	void	WriteSamplesBinary(CFile *pFile);
 
 	// Object list functions

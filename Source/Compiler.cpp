@@ -133,8 +133,8 @@ unsigned int CCompiler::AdjustSampleAddress(unsigned int Address)
 
 // CCompiler
 
-CCompiler::CCompiler(CFamiTrackerDoc *pDoc, CCompilerLog *pLogger) : 
-	m_pDocument(pDoc), 
+CCompiler::CCompiler(CFamiTrackerDoc *pDoc, CCompilerLog *pLogger) :
+	m_pDocument(pDoc),
 	m_pLogger(pLogger),
 	m_iWaveTables(0),
 	m_pSamplePointersChunk(NULL),
@@ -259,7 +259,7 @@ void CCompiler::ExportNSF(LPCTSTR lpszFileName, int MachineType)
 
 	// Load driver identifier
 	std::unique_ptr<char[]> pNSFDRVPtr(LoadNSFDRV(m_pDriverData));
-	char* pNSFDRV = pNSFDRVPtr.get();
+	char *pNSFDRV = pNSFDRVPtr.get();
 
 	// Load driver
 	std::unique_ptr<char[]> pDriverPtr(LoadDriver(m_pDriverData, m_iDriverAddress));		// // //
@@ -382,7 +382,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 
 	// Load driver identifier
 	std::unique_ptr<char[]> pNSFDRVPtr(LoadNSFDRV(m_pDriverData));
-	char* pNSFDRV = pNSFDRVPtr.get();
+	char *pNSFDRV = pNSFDRVPtr.get();
 
 	// Load driver
 	std::unique_ptr<char[]> pDriverPtr(LoadDriver(m_pDriverData, m_iDriverAddress));		// // //
@@ -440,24 +440,24 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 			}
 
 	const unsigned char VRC7Ident[] = { 'V', 'R', 'C', '7' };
-	OutputFile.Write(reinterpret_cast<char*>(&iVRC7Size), sizeof(int));
+	OutputFile.Write(reinterpret_cast<char *>(&iVRC7Size), sizeof(int));
 	OutputFile.Write(&VRC7Ident, sizeof(VRC7Ident));
 	OutputFile.Write(&extOPLL, sizeof(uint8_t));
 	if (extOPLL)
 		OutputFile.Write(&patchset, (sizeof(uint8_t) * 19 * 8));
 
 	// write time chunk
-	const unsigned char TimeIdent[] = {'t', 'i', 'm', 'e'};
-	OutputFile.Write(reinterpret_cast<char*>(&iTimeSize), sizeof(int));
+	const unsigned char TimeIdent[] = { 't', 'i', 'm', 'e' };
+	OutputFile.Write(reinterpret_cast<char *>(&iTimeSize), sizeof(int));
 	OutputFile.Write(&TimeIdent, sizeof(TimeIdent));
 	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
 		int t = static_cast<int>(m_pDocument->GetStandardLength(i, 1) * 1000.0 + 0.5);
-		OutputFile.Write(reinterpret_cast<char*>(&t), sizeof(int));
+		OutputFile.Write(reinterpret_cast<char *>(&t), sizeof(int));
 	}
 
 	//  write tlbl chunk
-	const unsigned char TlblIdent[] = {'t', 'l', 'b', 'l'};
-	OutputFile.Write(reinterpret_cast<char*>(&iTlblSize), sizeof(int));
+	const unsigned char TlblIdent[] = { 't', 'l', 'b', 'l' };
+	OutputFile.Write(reinterpret_cast<char *>(&iTlblSize), sizeof(int));
 	OutputFile.Write(&TlblIdent, sizeof(TlblIdent));
 	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
 		OutputFile.Write(m_pDocument->GetTrackTitle(i), static_cast<UINT>(strlen(m_pDocument->GetTrackTitle(i)) + 1));
@@ -469,19 +469,19 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 		+ strlen(m_pDocument->GetSongCopyright()) + ripper.GetLength() + 4;
 
 	const unsigned char AuthIdent[] = { 'a', 'u', 't', 'h' };
-	OutputFile.Write(reinterpret_cast<char*>(&iAuthSize), sizeof(int));
+	OutputFile.Write(reinterpret_cast<char *>(&iAuthSize), sizeof(int));
 	OutputFile.Write(&AuthIdent, sizeof(AuthIdent));
 	OutputFile.Write(m_pDocument->GetSongName(), static_cast<UINT>(strlen(m_pDocument->GetSongName()) + 1));
 	OutputFile.Write(m_pDocument->GetSongArtist(), static_cast<UINT>(strlen(m_pDocument->GetSongArtist()) + 1));
 	OutputFile.Write(m_pDocument->GetSongCopyright(), static_cast<UINT>(strlen(m_pDocument->GetSongCopyright()) + 1));
-	OutputFile.Write((char*)((PCSTR)ripper), ripper.GetLength() + 1);
+	OutputFile.Write((char *)((PCSTR)ripper), ripper.GetLength() + 1);
 	ripper.ReleaseBuffer();
 
 	// write text chunk, if available
 	if (strlen(m_pDocument->GetComment())) {
 		const unsigned char TextIdent[] = { 't', 'e', 'x', 't' };
 		iTextSize = strlen(m_pDocument->GetComment()) + 1;
-		OutputFile.Write(reinterpret_cast<char*>(&iTextSize), sizeof(int));
+		OutputFile.Write(reinterpret_cast<char *>(&iTextSize), sizeof(int));
 		OutputFile.Write(&TextIdent, sizeof(TextIdent));
 		OutputFile.Write(m_pDocument->GetComment(), static_cast<UINT>(strlen(m_pDocument->GetComment()) + 1));
 	}
@@ -491,7 +491,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 
 	int16_t mixe_device[8]{};
 
-	CSoundGen* pSoundGen = theApp.GetSoundGenerator();
+	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 
 	for (int i = 0; i < 8; i++) {
 		if (m_pDocument->GetLevelOffset(i)) {
@@ -499,13 +499,13 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 			iMixeSize += 3;
 		}
 	}
-	OutputFile.Write(reinterpret_cast<char*>(&iMixeSize), sizeof(int));
+	OutputFile.Write(reinterpret_cast<char *>(&iMixeSize), sizeof(int));
 	OutputFile.Write(&MixeIdent, sizeof(MixeIdent));
 	for (uint8_t i = 0; i < 8; i++) {
 		if (m_pDocument->GetLevelOffset(i)) {
 			unsigned char devicebyte = 0;
 			OutputFile.Write(&i, sizeof(uint8_t));
-			OutputFile.Write(reinterpret_cast<char*>(&mixe_device[i]), sizeof(int16_t));
+			OutputFile.Write(reinterpret_cast<char *>(&mixe_device[i]), sizeof(int16_t));
 		}
 	}
 
@@ -514,8 +514,8 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 
 	// write DATA chunk
 	ULONGLONG iDataSizePos = OutputFile.GetPosition();
-	const unsigned char DataIdent[] = {'D', 'A', 'T', 'A'};
-	OutputFile.Write(reinterpret_cast<char*>(&iDataSize), sizeof(int));
+	const unsigned char DataIdent[] = { 'D', 'A', 'T', 'A' };
+	OutputFile.Write(reinterpret_cast<char *>(&iDataSize), sizeof(int));
 	OutputFile.Write(&DataIdent, sizeof(DataIdent));
 
 	Render->StoreNSFDRV(pNSFDRV, m_iNSFDRVSize);
@@ -556,13 +556,13 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	}
 
 	// write NEND chunk
-	const unsigned char NEndIdent[] = {'\0', '\0', '\0', '\0', 'N', 'E', 'N', 'D'};		// // //
+	const unsigned char NEndIdent[] = { '\0', '\0', '\0', '\0', 'N', 'E', 'N', 'D' };		// // //
 	OutputFile.Write(&NEndIdent, sizeof(NEndIdent));
 
 	// write actual size of DATA chunk
 	OutputFile.Seek(iDataSizePos, CFile::begin);
 	iDataSize = Render->GetDATAChunkSize();
-	OutputFile.Write(reinterpret_cast<char*>(&iDataSize), sizeof(int));
+	OutputFile.Write(reinterpret_cast<char *>(&iDataSize), sizeof(int));
 
 	Print(_T("Done, total file size: %i bytes\n"), OutputFile.GetLength());
 
@@ -615,11 +615,11 @@ void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
 
 	// Load driver identifier
 	std::unique_ptr<char[]> pNSFDRVPtr(LoadNSFDRV(m_pDriverData));
-	char* pNSFDRV = pNSFDRVPtr.get();
+	char *pNSFDRV = pNSFDRVPtr.get();
 
 	// Load driver
 	std::unique_ptr<char[]> pDriverPtr(LoadDriver(m_pDriverData, m_iDriverAddress));		// // //
-	char* pDriver = pDriverPtr.get();
+	char *pDriver = pDriverPtr.get();
 
 	// Patch driver binary
 	PatchVibratoTable(pDriver);
@@ -698,24 +698,24 @@ void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
 			}
 
 	const unsigned char VRC7Ident[] = { 'V', 'R', 'C', '7' };
-	OutputFile.Write(reinterpret_cast<char*>(&iVRC7Size), sizeof(int));
+	OutputFile.Write(reinterpret_cast<char *>(&iVRC7Size), sizeof(int));
 	OutputFile.Write(&VRC7Ident, sizeof(VRC7Ident));
 	OutputFile.Write(&extOPLL, sizeof(uint8_t));
 	if (extOPLL)
-		OutputFile.Write(&patchset, (sizeof(uint8_t)*19*8));
+		OutputFile.Write(&patchset, (sizeof(uint8_t) * 19 * 8));
 
 	// write time chunk
 	const unsigned char TimeIdent[] = { 't', 'i', 'm', 'e' };
-	OutputFile.Write(reinterpret_cast<char*>(&iTimeSize), sizeof(int));
+	OutputFile.Write(reinterpret_cast<char *>(&iTimeSize), sizeof(int));
 	OutputFile.Write(&TimeIdent, sizeof(TimeIdent));
 	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
 		int t = static_cast<int>(m_pDocument->GetStandardLength(i, 1) * 1000.0 + 0.5);
-		OutputFile.Write(reinterpret_cast<char*>(&t), sizeof(int));
+		OutputFile.Write(reinterpret_cast<char *>(&t), sizeof(int));
 	}
 
 	//  write tlbl chunk
 	const unsigned char TlblIdent[] = { 't', 'l', 'b', 'l' };
-	OutputFile.Write(reinterpret_cast<char*>(&iTlblSize), sizeof(int));
+	OutputFile.Write(reinterpret_cast<char *>(&iTlblSize), sizeof(int));
 	OutputFile.Write(&TlblIdent, sizeof(TlblIdent));
 	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
 		OutputFile.Write(m_pDocument->GetTrackTitle(i), static_cast<UINT>(strlen(m_pDocument->GetTrackTitle(i)) + 1));
@@ -727,19 +727,19 @@ void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
 		+ strlen(m_pDocument->GetSongCopyright()) + ripper.GetLength() + 4;
 
 	const unsigned char AuthIdent[] = { 'a', 'u', 't', 'h' };
-	OutputFile.Write(reinterpret_cast<char*>(&iAuthSize), sizeof(int));
+	OutputFile.Write(reinterpret_cast<char *>(&iAuthSize), sizeof(int));
 	OutputFile.Write(&AuthIdent, sizeof(AuthIdent));
 	OutputFile.Write(m_pDocument->GetSongName(), static_cast<UINT>(strlen(m_pDocument->GetSongName()) + 1));
 	OutputFile.Write(m_pDocument->GetSongArtist(), static_cast<UINT>(strlen(m_pDocument->GetSongArtist()) + 1));
 	OutputFile.Write(m_pDocument->GetSongCopyright(), static_cast<UINT>(strlen(m_pDocument->GetSongCopyright()) + 1));
-	OutputFile.Write((char*)((PCSTR)ripper), ripper.GetLength() + 1);
+	OutputFile.Write((char *)((PCSTR)ripper), ripper.GetLength() + 1);
 	ripper.ReleaseBuffer();
 
 	// write text chunk, if available
 	if (strlen(m_pDocument->GetComment())) {
 		const unsigned char TextIdent[] = { 't', 'e', 'x', 't' };
 		iTextSize = strlen(m_pDocument->GetComment()) + 1;
-		OutputFile.Write(reinterpret_cast<char*>(&iTextSize), sizeof(int));
+		OutputFile.Write(reinterpret_cast<char *>(&iTextSize), sizeof(int));
 		OutputFile.Write(&TextIdent, sizeof(TextIdent));
 		OutputFile.Write(m_pDocument->GetComment(), static_cast<UINT>(strlen(m_pDocument->GetComment()) + 1));
 	}
@@ -749,7 +749,7 @@ void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
 
 	int16_t mixe_device[8]{};
 
-	CSoundGen* pSoundGen = theApp.GetSoundGenerator();
+	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 
 	for (int i = 0; i < 8; i++) {
 		if (m_pDocument->GetLevelOffset(i)) {
@@ -757,13 +757,13 @@ void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
 			iMixeSize += 3;
 		}
 	}
-	OutputFile.Write(reinterpret_cast<char*>(&iMixeSize), sizeof(int));
+	OutputFile.Write(reinterpret_cast<char *>(&iMixeSize), sizeof(int));
 	OutputFile.Write(&MixeIdent, sizeof(MixeIdent));
 	for (uint8_t i = 0; i < 8; i++) {
 		if (m_pDocument->GetLevelOffset(i)) {
 			unsigned char devicebyte = 0;
 			OutputFile.Write(&i, sizeof(uint8_t));
-			OutputFile.Write(reinterpret_cast<char*>(&mixe_device[i]), sizeof(int16_t));
+			OutputFile.Write(reinterpret_cast<char *>(&mixe_device[i]), sizeof(int16_t));
 		}
 	}
 
@@ -777,7 +777,7 @@ void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
 	unsigned char NSFSize[3] = {
 		char(iDataSize & 0xFF),
 		char((iDataSize >> 8) & 0xFF),
-		char((iDataSize >> 16) & 0xFF)};
+		char((iDataSize >> 16) & 0xFF) };
 	OutputFile.Write(&NSFSize, sizeof(NSFSize));
 
 	// Writing done, print some stats
@@ -809,7 +809,7 @@ void CCompiler::ExportNES(LPCTSTR lpszFileName, bool EnablePAL)
 {
 	// 32kb NROM, no CHR
 	const char NES_HEADER[] = {
-		0x4E, 0x45, 0x53, 0x1A, 0x02, 0x00, 0x00, 0x00, 
+		0x4E, 0x45, 0x53, 0x1A, 0x02, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 	};
 
@@ -984,12 +984,25 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 			(OutputFileBIN.GetFilePath().GetLength()) - (OutputFileBIN.GetFileName().GetLength()),
 			OutputFileBIN.GetFileName().GetLength());
 
+		// Write NSF stub
+		CFile OutputFileNSFStub;
+		CString stub_directory = FileDirectory;
+		stub_directory += _T("nsf_stub.s");
+
+		if (!OpenFile(stub_directory, OutputFileNSFStub)) {
+			OutputFileNSFStub.Close();
+			Print(_T("Error: Could not open output NSF stub file\n"));
+			Cleanup();
+			return;
+		}
+
 		// Write NSF header
 		CFile OutputFileNSFHeader;
 		CString header_directory = FileDirectory;
 		header_directory += _T("nsf_header.s");
 
 		if (!OpenFile(header_directory, OutputFileNSFHeader)) {
+			OutputFileNSFStub.Close();
 			OutputFileNSFHeader.Close();
 			Print(_T("Error: Could not open output NSF header file\n"));
 			Cleanup();
@@ -1001,6 +1014,7 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 		CString config_directory = FileDirectory;
 		config_directory += _T("nsf.cfg");
 		if (!OpenFile(config_directory, OutputFileNSFConfig)) {
+			OutputFileNSFStub.Close();
 			OutputFileNSFHeader.Close();
 			OutputFileNSFConfig.Close();
 			Print(_T("Error: Could not open NSF config file\n"));
@@ -1014,6 +1028,7 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 		periods_directory += _T("periods.s");
 
 		if (!OpenFile(periods_directory, OutputFilePeriods)) {
+			OutputFileNSFStub.Close();
 			OutputFileNSFHeader.Close();
 			OutputFileNSFConfig.Close();
 			OutputFilePeriods.Close();
@@ -1028,6 +1043,7 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 		vibrato_directory += _T("vibrato.s");
 
 		if (!OpenFile(vibrato_directory, OutputFileVibrato)) {
+			OutputFileNSFStub.Close();
 			OutputFileNSFHeader.Close();
 			OutputFileNSFConfig.Close();
 			OutputFilePeriods.Close();
@@ -1037,14 +1053,14 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 			return;
 		}
 
-		WriteAssembly(&OutputFileBIN, ExtraData, Header, MachineType, &OutputFileNSFHeader, &OutputFileNSFConfig, &OutputFilePeriods, &OutputFileVibrato);
+		WriteBinary(&OutputFileBIN, ExtraData, Header, MachineType, &OutputFileNSFStub, &OutputFileNSFHeader, &OutputFileNSFConfig, &OutputFilePeriods, &OutputFileVibrato);
 		OutputFilePeriods.Close();
 		OutputFileVibrato.Close();
 		OutputFileNSFHeader.Close();
 		OutputFileNSFConfig.Close();
 	}
 	else
-		WriteAssembly(&OutputFileBIN, ExtraData, Header);
+		WriteBinary(&OutputFileBIN, ExtraData, Header);
 
 	Print(_T("Done\n"));
 
@@ -1217,12 +1233,25 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 			(OutputFile.GetFilePath().GetLength()) - (OutputFile.GetFileName().GetLength()),
 			OutputFile.GetFileName().GetLength());
 
+		// Write NSF stub
+		CFile OutputFileNSFStub;
+		CString stub_directory = FileDirectory;
+		stub_directory += _T("nsf_stub.s");
+
+		if (!OpenFile(stub_directory, OutputFileNSFStub)) {
+			OutputFileNSFStub.Close();
+			Print(_T("Error: Could not open output NSF stub file\n"));
+			Cleanup();
+			return;
+		}
+
 		// Write NSF header
 		CFile OutputFileNSFHeader;
 		CString header_directory = FileDirectory;
 		header_directory += _T("nsf_header.s");
 
 		if (!OpenFile(header_directory, OutputFileNSFHeader)) {
+			OutputFileNSFStub.Close();
 			OutputFileNSFHeader.Close();
 			Print(_T("Error: Could not open output NSF header file\n"));
 			Cleanup();
@@ -1234,6 +1263,7 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 		CString config_directory = FileDirectory;
 		config_directory += _T("nsf.cfg");
 		if (!OpenFile(config_directory, OutputFileNSFConfig)) {
+			OutputFileNSFStub.Close();
 			OutputFileNSFHeader.Close();
 			OutputFileNSFConfig.Close();
 			Print(_T("Error: Could not open NSF config file\n"));
@@ -1247,6 +1277,7 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 		periods_directory += _T("periods.s");
 
 		if (!OpenFile(periods_directory, OutputFilePeriods)) {
+			OutputFileNSFStub.Close();
 			OutputFileNSFHeader.Close();
 			OutputFileNSFConfig.Close();
 			OutputFilePeriods.Close();
@@ -1261,6 +1292,7 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 		vibrato_directory += _T("vibrato.s");
 
 		if (!OpenFile(vibrato_directory, OutputFileVibrato)) {
+			OutputFileNSFStub.Close();
 			OutputFileNSFHeader.Close();
 			OutputFileNSFConfig.Close();
 			OutputFilePeriods.Close();
@@ -1270,7 +1302,7 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 			return;
 		}
 
-		WriteAssembly(&OutputFile, ExtraData, Header, MachineType, &OutputFileNSFHeader, &OutputFileNSFConfig, &OutputFilePeriods, &OutputFileVibrato);
+		WriteAssembly(&OutputFile, ExtraData, Header, MachineType, &OutputFileNSFStub, &OutputFileNSFHeader, &OutputFileNSFConfig, &OutputFilePeriods, &OutputFileVibrato);
 		OutputFilePeriods.Close();
 		OutputFileVibrato.Close();
 		OutputFileNSFHeader.Close();
@@ -1288,15 +1320,15 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 	Cleanup();
 }
 
-char* CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) const
+char *CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) const
 {
 	// Copy embedded driver
-	unsigned char* pData = new unsigned char[pDriver->driver_size];
+	unsigned char *pData = new unsigned char[pDriver->driver_size];
 	memcpy(pData, pDriver->driver, pDriver->driver_size);
-	
+
 	// // // Custom pitch tables
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
-	for (int i = 0; i < pDriver->freq_table_size; i += 2) {		// // //
+	for (size_t i = 0; i < pDriver->freq_table_size; i += 2) {		// // //
 		int Table = pDriver->freq_table[i + 1];
 		switch (Table) {
 		case CDetuneTable::DETUNE_NTSC:
@@ -1306,14 +1338,14 @@ char* CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 		case CDetuneTable::DETUNE_N163:
 			for (int j = 0; j < NOTE_COUNT; ++j) {
 				int Reg = pSoundGen->ReadPeriodTable(j, Table);
-				pData[pDriver->freq_table[i] + 2 * j    ] = Reg & 0xFF;
+				pData[pDriver->freq_table[i] + 2 * j] = Reg & 0xFF;
 				pData[pDriver->freq_table[i] + 2 * j + 1] = Reg >> 8;
 			} break;
 		case CDetuneTable::DETUNE_VRC7:
 			for (int j = 0; j <= NOTE_RANGE; ++j) { // one extra item
 				int Reg = pSoundGen->ReadPeriodTable(j % NOTE_RANGE, Table) * 4;
 				if (j == NOTE_RANGE) Reg <<= 1;
-				pData[pDriver->freq_table[i] + j                 ] = Reg & 0xFF;
+				pData[pDriver->freq_table[i] + j] = Reg & 0xFF;
 				pData[pDriver->freq_table[i] + j + NOTE_RANGE + 1] = Reg >> 8;
 			} break;
 		default:
@@ -1322,7 +1354,7 @@ char* CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 	}
 
 	// Relocate driver
-	for (int i = 0; i < pDriver->word_reloc_size; ++i) {
+	for (size_t i = 0; i < pDriver->word_reloc_size; ++i) {
 		// Words
 		unsigned short value = pData[pDriver->word_reloc[i]] + (pData[pDriver->word_reloc[i] + 1] << 8);
 		value += Origin - pDriver->nsfdrv_size;
@@ -1330,7 +1362,7 @@ char* CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 		pData[pDriver->word_reloc[i] + 1] = value >> 8;
 	}
 
-	for (int i = 0; i < pDriver->adr_reloc_size; i += 2) {		// // //
+	for (size_t i = 0; i < pDriver->adr_reloc_size; i += 2) {		// // //
 		unsigned short value = pData[pDriver->adr_reloc[i]] + (pData[pDriver->adr_reloc[i + 1]] << 8);
 		value += Origin - pDriver->nsfdrv_size;
 		pData[pDriver->adr_reloc[i]] = value & 0xFF;
@@ -1370,16 +1402,16 @@ char* CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 			pData[FT_CH_ENABLE_ADR + CH_MAP[m_pDocument->GetChannelType(x)]] = 1;
 	}
 
-	return (char*)pData;
+	return (char *)pData;
 }
 
-char* CCompiler::LoadNSFDRV(const driver_t *pDriver) const
+char *CCompiler::LoadNSFDRV(const driver_t *pDriver) const
 {
 	// Copy embedded driver
-	unsigned char* pData = new unsigned char[pDriver->nsfdrv_size];
+	unsigned char *pData = new unsigned char[pDriver->nsfdrv_size];
 	memcpy(pData, pDriver->nsfdrv, pDriver->nsfdrv_size);
 
-	return (char*)pData;
+	return (char *)pData;
 }
 
 void CCompiler::SetDriverSongAddress(char *pDriver, unsigned short Address) const
@@ -1435,9 +1467,9 @@ void CCompiler::CreateHeader(stNSFHeader *pHeader, int MachineType, unsigned int
 	memset(pHeader->ArtistName, 0x00, 32);
 	memset(pHeader->Copyright, 0x00, 32);
 
-	strncpy((char*)pHeader->SongName,   m_pDocument->GetSongName(), 32);
-	strncpy((char*)pHeader->ArtistName, m_pDocument->GetSongArtist(), 32);
-	strncpy((char*)pHeader->Copyright,  m_pDocument->GetSongCopyright(), 32);
+	strncpy((char *)pHeader->SongName, m_pDocument->GetSongName(), 32);
+	strncpy((char *)pHeader->ArtistName, m_pDocument->GetSongArtist(), 32);
+	strncpy((char *)pHeader->Copyright, m_pDocument->GetSongCopyright(), 32);
 
 	pHeader->Speed_NTSC = SpeedNTSC; //0x411A; // default ntsc speed
 
@@ -2024,19 +2056,18 @@ void CCompiler::ScanSong()
 	memset(m_bSequencesUsedVRC6, false, sizeof(bool) * MAX_SEQUENCES * SEQ_COUNT);
 	memset(m_bSequencesUsedN163, false, sizeof(bool) * MAX_SEQUENCES * SEQ_COUNT);
 	memset(m_bSequencesUsedS5B, false, sizeof(bool) * MAX_SEQUENCES * SEQ_COUNT);		// // //
-	
-	static const inst_type_t inst[] = {INST_2A03, INST_VRC6, INST_N163, INST_S5B};		// // //
-	bool *used[] = {*m_bSequencesUsed2A03, *m_bSequencesUsedVRC6, *m_bSequencesUsedN163, *m_bSequencesUsedS5B};
+	static const inst_type_t inst[] = { INST_2A03, INST_VRC6, INST_N163, INST_S5B };		// // //
+	bool *used[] = { *m_bSequencesUsed2A03, *m_bSequencesUsedVRC6, *m_bSequencesUsedN163, *m_bSequencesUsedS5B };
 
 	for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
 		if (m_pDocument->IsInstrumentUsed(i) && IsInstrumentInPattern(i)) {
-			
+
 			// List of used instruments
 			m_iAssignedInstruments[m_iInstruments++] = i;
-			
+
 			// Create a list of used sequences
 			inst_type_t it = m_pDocument->GetInstrumentType(i);		// // //
-			for (size_t z = 0; z < sizeof(used) / sizeof(bool*); z++) if (it == inst[z]) {
+			for (size_t z = 0; z < sizeof(used) / sizeof(bool *); z++) if (it == inst[z]) {
 				auto pInstrument = std::static_pointer_cast<CSeqInstrument>(m_pDocument->GetInstrument(i));
 				for (int j = 0; j < SEQ_COUNT; ++j) if (pInstrument->GetSeqEnable(j))
 					*(used[z] + pInstrument->GetSeqIndex(j) * SEQ_COUNT + j) = true;
@@ -2093,7 +2124,7 @@ bool CCompiler::IsInstrumentInPattern(int index) const
 				}
 			}
 		}
-	}	
+	}
 
 	return false;
 }
@@ -2134,7 +2165,7 @@ void CCompiler::CreateMainHeader()
 	pChunk->StoreReference(CChunkRenderText::LABEL_SAMPLES_LIST);
 	pChunk->StoreReference(CChunkRenderText::LABEL_SAMPLES);
 	pChunk->StoreReference(CChunkRenderText::LABEL_GROOVE_LIST);		// // //
-	
+
 	m_iHeaderFlagOffset = pChunk->GetLength();		// Save the flags offset
 	pChunk->StoreByte(Flags);
 
@@ -2163,8 +2194,8 @@ void CCompiler::CreateSequenceList()
 	//
 
 	unsigned int Size = 0, StoredCount = 0;
-	static const inst_type_t inst[] = {INST_2A03, INST_VRC6, INST_N163, INST_S5B};
-	const bool *used[] = {*m_bSequencesUsed2A03, *m_bSequencesUsedVRC6, *m_bSequencesUsedN163, *m_bSequencesUsedS5B};
+	static const inst_type_t inst[] = { INST_2A03, INST_VRC6, INST_N163, INST_S5B };
+	const bool *used[] = { *m_bSequencesUsed2A03, *m_bSequencesUsedVRC6, *m_bSequencesUsedN163, *m_bSequencesUsedS5B };
 	static const char *format[] = {
 		CChunkRenderText::LABEL_SEQ_2A03, CChunkRenderText::LABEL_SEQ_VRC6,
 		CChunkRenderText::LABEL_SEQ_N163, CChunkRenderText::LABEL_SEQ_S5B
@@ -2174,7 +2205,7 @@ void CCompiler::CreateSequenceList()
 	// TODO: merge identical sequences from all chips
 	for (size_t c = 0; c < sizeof(inst) / sizeof(inst_type_t); c++) {
 		for (int i = 0; i < MAX_SEQUENCES; ++i)  for (int j = 0; j < SEQ_COUNT; ++j) {
-			CSequence* pSeq = m_pDocument->GetSequence(inst[c], i, j);
+			CSequence *pSeq = m_pDocument->GetSequence(inst[c], i, j);
 			int Index = i * SEQ_COUNT + j;
 			if (*(used[c] + Index) && pSeq->GetItemCount() > 0) {
 				CStringA label;
@@ -2188,7 +2219,7 @@ void CCompiler::CreateSequenceList()
 	for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
 		if (auto pInstrument = std::dynamic_pointer_cast<CInstrumentFDS>(m_pDocument->GetInstrument(i))) {
 			for (int j = 0; j < CInstrumentFDS::SEQUENCE_COUNT; ++j) {
-				const CSequence* pSeq = pInstrument->GetSequence(j);		// // //
+				const CSequence *pSeq = pInstrument->GetSequence(j);		// // //
 				if (pSeq->GetItemCount() > 0) {
 					int Index = i * SEQ_COUNT + j;
 					CStringA label;
@@ -2246,13 +2277,13 @@ void CCompiler::CreateInstrumentList()
 	 *
 	 */
 
-	unsigned int iTotalSize = 0;	
+	unsigned int iTotalSize = 0;
 	CChunk *pWavetableChunk = NULL;	// FDS
 	CChunk *pWavesChunk = NULL;		// N163
 	int iWaveSize = 0;				// N163 waves size
 
 	CChunk *pInstListChunk = CreateChunk(CHUNK_INSTRUMENT_LIST, CChunkRenderText::LABEL_INSTRUMENT_LIST);
-	
+
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_FDS)) {
 		pWavetableChunk = CreateChunk(CHUNK_WAVETABLE, CChunkRenderText::LABEL_WAVETABLE);
 	}
@@ -2346,7 +2377,7 @@ void CCompiler::CreateSampleList()
 
 	// Clear the sample list
 	memset(m_iSampleBank, 0xFF, MAX_DSAMPLES);
-	
+
 	CChunk *pChunk = CreateChunk(CHUNK_SAMPLE_LIST, CChunkRenderText::LABEL_SAMPLES_LIST);
 
 	// Store sample instruments
@@ -2440,7 +2471,7 @@ int CCompiler::GetSampleIndex(int SampleNumber)
 	for (int i = 0; i < MAX_DSAMPLES; i++) {
 		if (m_iSampleBank[i] == SampleNumber)
 			return i;							// Sample is already stored
-		else if(m_iSampleBank[i] == 0xFF) {
+		else if (m_iSampleBank[i] == 0xFF) {
 			m_iSampleBank[i] = SampleNumber;	// Allocate new position
 			m_iSamplesUsed++;
 			return i;
@@ -2460,7 +2491,7 @@ void CCompiler::StoreGrooves()
 	 */
 
 	unsigned int Size = 1, Count = 0;
-	
+
 	CChunk *pGrooveListChunk = CreateChunk(CHUNK_GROOVE_LIST, CChunkRenderText::LABEL_GROOVE_LIST);
 	pGrooveListChunk->StoreByte(0); // padding; possibly used to disable groove
 
@@ -2468,7 +2499,7 @@ void CCompiler::StoreGrooves()
 		unsigned int Pos = Size;
 		CGroove *Groove = m_pDocument->GetGroove(i);
 		if (Groove == NULL) continue;
-		
+
 		CStringA label;
 		label.Format(CChunkRenderText::LABEL_GROOVE, i);
 		// pGrooveListChunk->StoreReference(label);
@@ -2494,7 +2525,7 @@ void CCompiler::StoreSongs()
 {
 	/*
 	 * Store patterns and frames for each song
-	 * 
+	 *
 	 */
 
 	const int TrackCount = m_pDocument->GetTrackCount();
@@ -2552,7 +2583,7 @@ void CCompiler::StoreSongs()
 
 	if (m_iDuplicatePatterns > 0)
 		Print(_T(" * %i duplicated pattern(s) removed\n"), m_iDuplicatePatterns);
-	
+
 #ifdef _DEBUG
 	Print(_T("Hash collisions: %i (of %i items)\r\n"), m_iHashCollisions, m_PatternMap.GetCount());
 #endif
@@ -2580,7 +2611,6 @@ void CCompiler::CreateFrameList(unsigned int Track)
 	 * ---------------------
 	 *
 	 */
-	
 	const int FrameCount   = m_pDocument->GetFrameCount(Track);
 	const int ChannelCount = m_pDocument->GetAvailableChannels();
 
@@ -2621,14 +2651,14 @@ void CCompiler::CreateFrameList(unsigned int Track)
 
 void CCompiler::StorePatterns(unsigned int Track)
 {
-	/* 
+	/*
 	 * Store patterns and save references to them for the frame list
-	 * 
+	 *
 	 */
 
 	const int iChannels = m_pDocument->GetAvailableChannels();
 
-	CPatternCompiler PatternCompiler(m_pDocument, m_iAssignedInstruments, (DPCM_List_t*)&m_iSamplesLookUp, m_pLogger);
+	CPatternCompiler PatternCompiler(m_pDocument, m_iAssignedInstruments, (DPCM_List_t *)&m_iSamplesLookUp, m_pLogger);
 
 	int PatternCount = 0;
 	int PatternSize = 0;
@@ -2649,7 +2679,7 @@ void CCompiler::StorePatterns(unsigned int Track)
 
 #ifdef REMOVE_DUPLICATE_PATTERNS
 				unsigned int Hash = PatternCompiler.GetHash();
-				
+
 				// Check for duplicate patterns
 				CChunk *pDuplicate = m_PatternMap[Hash];
 
@@ -2674,7 +2704,7 @@ void CCompiler::StorePatterns(unsigned int Track)
 						m_iHashCollisions++;
 					m_PatternMap[Hash] = pChunk;
 #endif /* REMOVE_DUPLICATE_PATTERNS */
-					
+
 					// Store pattern data as string
 					pChunk->StoreString(PatternCompiler.GetData());
 
@@ -2711,7 +2741,7 @@ bool CCompiler::IsPatternAddressed(unsigned int Track, int Pattern, int Channel)
 {
 	// Scan the frame list to see if a pattern is accessed for that frame
 	const int FrameCount = m_pDocument->GetFrameCount(Track);
-	
+
 	for (int i = 0; i < FrameCount; ++i) {
 		if (m_pDocument->GetPatternAtFrame(Track, i, Channel) == Pattern)
 			return true;
@@ -2737,13 +2767,18 @@ void CCompiler::AddWavetable(CInstrumentFDS *pInstrument, CChunk *pChunk)
 	m_iWaveTables++;
 }
 
-void CCompiler::WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header, int MachineType, CFile* pFileNSFHeader, CFile* pFileNSFConfig, CFile* pFilePeriods, CFile* pFileVibrato)
+void CCompiler::WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header, int MachineType,
+	CFile *pFileNSFStub,
+	CFile *pFileNSFHeader,
+	CFile *pFileNSFConfig,
+	CFile *pFilePeriods,
+	CFile *pFileVibrato)
 {
 	// Dump all chunks and samples as assembly text
 	CChunkRenderText Render(pFile);
 
 	// Write export comments
-	// !! !! use CCompiler pointer instead of poking the main UI
+	// !! !! use CCompiler's pointer instead of poking the main UI
 	Render.WriteFileString(CStringA("; " APP_NAME " exported music data: "), pFile);
 	Render.WriteFileString(m_pDocument->GetTitle(), pFile);
 	Render.WriteFileString(CStringA("\n;\n\n"), pFile);
@@ -2761,7 +2796,7 @@ void CCompiler::WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header,
 		unsigned int LUTN163[NOTE_COUNT]{};
 		unsigned int LUTVRC7[NOTE_COUNT]{};
 
-		const CSoundGen* pSoundGen = theApp.GetSoundGenerator();
+		const CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 		for (int i = 0; i < CDetuneTable::DETUNE_N163; ++i) {		// // //
 			switch (i) {
 			case CDetuneTable::DETUNE_NTSC:
@@ -2791,7 +2826,8 @@ void CCompiler::WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header,
 		for (int i = 0; i < 256; ++i) {
 			LUTVibrato[i] = pSoundGen->ReadVibratoTable(i);
 		}
-		Render.SetExtraDataFiles(pFileNSFHeader, pFileNSFConfig, pFilePeriods, pFileVibrato);
+		Render.SetExtraDataFiles(pFileNSFStub, pFileNSFHeader, pFileNSFConfig, pFilePeriods, pFileVibrato);
+		Render.StoreNSFStub(Header, m_bBankSwitched, m_pDocument->GetVibratoStyle(), m_pDocument->GetLinearPitch(), m_iActualNamcoChannels, true);
 		Render.StoreNSFHeader(Header);
 		Render.StoreNSFConfig(m_iSampleStart, Header);
 		Render.StorePeriods(LUTNTSC, LUTPAL, LUTSaw, LUTVRC7, LUTFDS, LUTN163);
@@ -2799,7 +2835,12 @@ void CCompiler::WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header,
 	}
 }
 
-void CCompiler::WriteBinary(CFile *pFile, bool bExtraData, stNSFHeader Header, int MachineType, CFile* pFileNSFHeader, CFile* pFileNSFConfig, CFile* pFilePeriods, CFile* pFileVibrato)
+void CCompiler::WriteBinary(CFile *pFile, bool bExtraData, stNSFHeader Header, int MachineType,
+	CFile *pFileNSFStub,
+	CFile *pFileNSFHeader,
+	CFile *pFileNSFConfig,
+	CFile *pFilePeriods,
+	CFile *pFileVibrato)
 {
 	// Dump all chunks as binary
 	CChunkRenderBinary Render(pFile);
@@ -2814,7 +2855,7 @@ void CCompiler::WriteBinary(CFile *pFile, bool bExtraData, stNSFHeader Header, i
 		unsigned int LUTN163[NOTE_COUNT]{};
 		unsigned int LUTVRC7[NOTE_COUNT]{};
 
-		const CSoundGen* pSoundGen = theApp.GetSoundGenerator();
+		const CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 		for (int i = 0; i < CDetuneTable::DETUNE_N163; ++i) {		// // //
 			switch (i) {
 			case CDetuneTable::DETUNE_NTSC:
@@ -2844,10 +2885,11 @@ void CCompiler::WriteBinary(CFile *pFile, bool bExtraData, stNSFHeader Header, i
 		for (int i = 0; i < 256; ++i) {
 			LUTVibrato[i] = pSoundGen->ReadVibratoTable(i);
 		}
+		// get an instance of CChunkRenderText to use its extra data plotting
 		CChunkRenderText RenderText(nullptr);
-		RenderText.SetExtraDataFiles(pFileNSFHeader, pFileNSFConfig, pFilePeriods, pFileVibrato);
+		RenderText.SetExtraDataFiles(pFileNSFStub, pFileNSFHeader, pFileNSFConfig, pFilePeriods, pFileVibrato);
+		RenderText.StoreNSFStub(Header, m_bBankSwitched, m_pDocument->GetVibratoStyle(), m_pDocument->GetLinearPitch(), m_iActualNamcoChannels);
 		RenderText.StoreNSFHeader(Header);
-		RenderText.StoreNSFConfig(m_iSampleStart, Header);
 		RenderText.StorePeriods(LUTNTSC, LUTPAL, LUTSaw, LUTVRC7, LUTFDS, LUTN163);
 		RenderText.StoreVibrato(LUTVibrato);
 	}
@@ -2894,7 +2936,7 @@ CChunk *CCompiler::GetObjectByRef(CStringA label) const
 void CCompiler::WriteChannelMap()
 {
 	CChunk *pChunk = CreateChunk(CHUNK_CHANNEL_MAP, "");
-	
+
 	pChunk->StoreByte(CHANID_SQUARE1 + 1);
 	pChunk->StoreByte(CHANID_SQUARE2 + 1);
 	pChunk->StoreByte(CHANID_TRIANGLE + 1);
@@ -2944,7 +2986,7 @@ void CCompiler::WriteChannelTypes()
 	const int TYPE_S5B	= 12;
 
 	CChunk *pChunk = CreateChunk(CHUNK_CHANNEL_TYPES, "");
-	
+
 	for (int i = 0; i < 4; ++i)
 		pChunk->StoreByte(TYPE_2A03);
 

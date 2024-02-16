@@ -221,12 +221,6 @@
     <Manifest />
     <Manifest />
     <Manifest />
-    <PreBuildEvent>
-      <Command>call "$(ProjectDir)Source\drivers\build.cmd"</Command>
-    </PreBuildEvent>
-    <PreBuildEvent>
-      <Message>Compiling NSF driver</Message>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|Win32'">
     <Midl>
@@ -267,12 +261,6 @@
     <Manifest />
     <Manifest />
     <Manifest />
-    <PreBuildEvent>
-      <Command>call "$(ProjectDir)Source\drivers\build.cmd"</Command>
-    </PreBuildEvent>
-    <PreBuildEvent>
-      <Message>Compiling NSF driver</Message>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
@@ -314,12 +302,6 @@
     <Manifest />
     <Manifest />
     <Manifest />
-    <PreBuildEvent>
-      <Command>call "$(ProjectDir)Source\drivers\build.cmd"</Command>
-    </PreBuildEvent>
-    <PreBuildEvent>
-      <Message>Compiling NSF driver</Message>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|x64'">
     <Midl>
@@ -361,12 +343,6 @@
     <Manifest />
     <Manifest />
     <Manifest />
-    <PreBuildEvent>
-      <Command>call "$(ProjectDir)Source\drivers\build.cmd"</Command>
-    </PreBuildEvent>
-    <PreBuildEvent>
-      <Message>Compiling NSF driver</Message>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
@@ -410,12 +386,6 @@
       <DataExecutionPrevention>true</DataExecutionPrevention>
     </Link>
     <Manifest />
-    <PreBuildEvent>
-      <Command>call "$(ProjectDir)Source\drivers\build.cmd"</Command>
-    </PreBuildEvent>
-    <PreBuildEvent>
-      <Message>Compiling NSF driver</Message>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|Win32'">
     <Midl>
@@ -459,12 +429,6 @@
       <DataExecutionPrevention>true</DataExecutionPrevention>
     </Link>
     <Manifest />
-    <PreBuildEvent>
-      <Command>call "$(ProjectDir)Source\drivers\build.cmd"</Command>
-    </PreBuildEvent>
-    <PreBuildEvent>
-      <Message>Compiling NSF driver</Message>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
@@ -509,12 +473,6 @@
       <DataExecutionPrevention>true</DataExecutionPrevention>
     </Link>
     <Manifest />
-    <PreBuildEvent>
-      <Command>call "$(ProjectDir)Source\drivers\build.cmd"</Command>
-    </PreBuildEvent>
-    <PreBuildEvent>
-      <Message>Compiling NSF driver</Message>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|x64'">
     <Midl>
@@ -559,12 +517,6 @@
       <DataExecutionPrevention>true</DataExecutionPrevention>
     </Link>
     <Manifest />
-    <PreBuildEvent>
-      <Command>call "$(ProjectDir)Source\drivers\build.cmd"</Command>
-    </PreBuildEvent>
-    <PreBuildEvent>
-      <Message>Compiling NSF driver</Message>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\APU\digital-sound-antiques\emu2413.c" />

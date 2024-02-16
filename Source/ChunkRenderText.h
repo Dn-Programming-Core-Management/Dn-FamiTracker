@@ -31,7 +31,7 @@
 class CChunkRenderText;
 class CDSample;		// // //
 
-typedef void (CChunkRenderText::*renderFunc_t)(CChunk *pChunk, CFile *pFile);
+typedef void (CChunkRenderText:: *renderFunc_t)(CChunk *pChunk, CFile *pFile);
 
 struct stNSFHeader;
 
@@ -44,14 +44,15 @@ class CChunkRenderText
 {
 public:
 	CChunkRenderText(CFile *pFile);
-	void StoreChunks(const std::vector<CChunk*> &Chunks);
-	void StoreSamples(const std::vector<const CDSample*> &Samples);
-	void WriteFileString(const CStringA& str, CFile* pFile) const;
+	void StoreChunks(const std::vector<CChunk *> &Chunks);
+	void StoreSamples(const std::vector<const CDSample *> &Samples);
+	void WriteFileString(const CStringA &str, CFile *pFile) const;
+	void StoreNSFStub(stNSFHeader Header, bool Bankswitched, vibrato_t VibratoStyle, bool LinearPitch, int ActualNamcoChannels, bool IsAssembly = false) const;
 	void StoreNSFHeader(stNSFHeader Header) const;
 	void StoreNSFConfig(unsigned int DPCMSegment, stNSFHeader Header, bool Bankswitched = false) const;
-	void StorePeriods(unsigned int* pLUTNTSC, unsigned int* pLUTPAL, unsigned int* pLUTSaw, unsigned int* pLUTFDS, unsigned int* pLUTN163, unsigned int* pLUTVRC7) const;
-	void StoreVibrato(unsigned int* pLUTVibrato) const;
-	void SetExtraDataFiles(CFile* pFileNSFHeader, CFile* pFileNSFConfig, CFile* pFilePeriods, CFile* pFileVibrato);
+	void StorePeriods(unsigned int *pLUTNTSC, unsigned int *pLUTPAL, unsigned int *pLUTSaw, unsigned int *pLUTFDS, unsigned int *pLUTN163, unsigned int *pLUTVRC7) const;
+	void StoreVibrato(unsigned int *pLUTVibrato) const;
+	void SetExtraDataFiles(CFile *pFileNSFStub, CFile *pFileNSFHeader, CFile *pFileNSFConfig, CFile *pFilePeriods, CFile *pFileVibrato);
 
 	// Labels
 	// // // moved from CCompiler
@@ -116,6 +117,7 @@ private:
 	CStringArray m_wavesStrings;
 
 	CFile *m_pFile;
+	CFile *m_pFileNSFStub;
 	CFile *m_pFileNSFHeader;
 	CFile *m_pFileNSFConfig;
 	CFile *m_pFilePeriods;

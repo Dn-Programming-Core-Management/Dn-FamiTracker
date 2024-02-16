@@ -216,7 +216,7 @@ int CChunkRenderNSF::GetDATAChunkSize() const
 
 void CChunkRenderNSF::StoreChunkBankswitched(const CChunk *pChunk)
 {
-	switch (pChunk->GetType()) {			
+	switch (pChunk->GetType()) {
 		case CHUNK_FRAME_LIST:
 		case CHUNK_FRAME:
 		case CHUNK_PATTERN:

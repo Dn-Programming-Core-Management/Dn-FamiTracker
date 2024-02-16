@@ -80,6 +80,7 @@ const stChunkRenderFunc CChunkRenderText::RENDER_FUNCTIONS[] = {
 };
 
 CChunkRenderText::CChunkRenderText(CFile *pFile) : m_pFile(pFile),
+	m_pFileNSFStub(nullptr),
 	m_pFileNSFHeader(nullptr),
 	m_pFileNSFConfig(nullptr),
 	m_pFilePeriods(nullptr),
@@ -486,21 +487,48 @@ void CChunkRenderText::WriteFileString(const CStringA &str, CFile *pFile) const
 
 // These functions write to a separate file. CFile path to those separate files must be the same as export.
 
+void CChunkRenderText::StoreNSFStub(stNSFHeader Header, bool Bankswitched, vibrato_t VibratoStyle, bool LinearPitch, int ActualNamcoChannels, bool IsAssembly) const
+{
+	CString str;
+
+	str.Append(";\n; NSF stub file, used to define compile constants\n;\n\n");
+	str.Append("PACKAGE = 1\n");
+	str.Append("HAS_NSF_HEADER = 1\n");
+	str.Append("USE_AUX_DATA = 1\n");
+	if (Header.SoundChip & SNDCHIP_VRC6)
+		str.Append("USE_VRC6 = 1\n");
+	if (Header.SoundChip & SNDCHIP_VRC7)
+		str.Append("USE_VRC7 = 1\n");
+	if (Header.SoundChip & SNDCHIP_FDS)
+		str.Append("USE_FDS = 1\n");
+	if (Header.SoundChip & SNDCHIP_MMC5)
+		str.Append("USE_MMC5 = 1\n");
+	if (Header.SoundChip & SNDCHIP_N163)
+		str.Append("USE_N163 = 1\n");
+	if (Header.SoundChip & SNDCHIP_S5B)
+		str.Append("USE_S5B = 1\n");
+	if (Bankswitched)
+		str.Append("USE_BANKSWITCH = 1\n");
+	if (VibratoStyle == VIBRATO_OLD)
+		str.Append("USE_OLDVIBRATO = 1\n");
+	if (LinearPitch)
+		str.Append("USE_LINEARPITCH = 1\n");
+	str.AppendFormat("NAMCO_CHANNELS = %d\n", ActualNamcoChannels);
+
+	str.Append("\n.include \"driver/driver.s\"\t; path to NSF driver source\n");
+
+	str.Append("\n.include \"music.asm\"\t; path to NSF export source\n");
+
+	WriteFileString(str, m_pFileNSFStub);
+}
+
 void CChunkRenderText::StoreNSFHeader(stNSFHeader Header) const
 {
 	CString str;
 
 	str.Append(";\n; NSF Header\n;\n");
-	// TODO: make seperate stub file
-	//if (Header.SoundChip & SNDCHIP_VRC6) str.Append("USE_VRC6 = 1\n");
-	//if (Header.SoundChip & SNDCHIP_VRC7) str.Append("USE_VRC7 = 1\n");
-	//if (Header.SoundChip & SNDCHIP_FDS) str.Append("USE_FDS = 1\n");
-	//if (Header.SoundChip & SNDCHIP_MMC5) str.Append("USE_MMC5 = 1\n");
-	//if (Header.SoundChip & SNDCHIP_N163) str.Append("USE_N163 = 1\n");
-	//if (Header.SoundChip & SNDCHIP_S5B) str.Append("USE_S5B = 1\n");
-	//if (m_bBankSwitched) str.Append("USE_BANKSWITCH = 1\n");
-	//if (m_pDocument->GetVibratoStyle() == VIBRATO_OLD) str.Append("USE_OLDVIBRATO = 1\n");
-	//if (m_pDocument->GetLinearPitch()) str.Append("USE_LINEARPITCH = 1\n");
+	str.Append(".import __FTR_FILEOFFS__\n");
+	str.Append("NSF2_SIZE = __FTR_FILEOFFS__\n\n");
 
 	str.Append("\n.segment \"HEADER1\"\n");
 	str.AppendFormat(".byte $%02X, $%02X, $%02X, $%02X, $%02X\t; ID\n",
@@ -527,11 +555,10 @@ void CChunkRenderText::StoreNSFHeader(stNSFHeader Header) const
 		Header.BankValues[0], Header.BankValues[1], Header.BankValues[2], Header.BankValues[3],
 		Header.BankValues[4], Header.BankValues[5], Header.BankValues[6], Header.BankValues[7]);
 	str.AppendFormat(".word $%04X\t\t\t\t\t\t; PAL speed\n", Header.Speed_PAL);
-	str.AppendFormat(".byte $%02X\t\t\t\t\t\t\t; Region flags\n", Header.Flags);
+	str.AppendFormat(".byte $%02X\t\t\t\t\t\t; Region flags\n", Header.Flags);
 	str.Append(".byte EXPANSION_FLAG\t\t\t; Expansion audio flags\n");
 	str.AppendFormat(".byte $%02X\t\t\t\t\t\t; NSF2 flags\n", Header.NSF2Flags);
-	str.AppendFormat(".byte $%02X, $%02X, $%02X\t\t\t\t; NSF data length\n",
-		Header.NSFDataLength[0], Header.NSFDataLength[1], Header.NSFDataLength[2]);
+	str.Append(".faraddr NSF2_SIZE\t\t\t\t; NSF data length\n");
 
 	WriteFileString(str, m_pFileNSFHeader);
 }
@@ -549,7 +576,8 @@ void CChunkRenderText::StoreNSFConfig(unsigned int DPCMSegment, stNSFHeader Head
 		str.Append("  ZP:  start = $00,   size = $100,   type = rw, file = \"\";\n");
 		str.Append("  RAM: start = $200,  size = $600,   type = rw, file = \"\";\n");
 		str.Append("  HDR: start = $00,   size = $80,    type = ro, file = %O;\n");
-		str.Append("  PRG: start = $8000, size = $40000, type = " + segmentAttr + ", file = %O;\n");
+		str.Append("  PRG: start = $8000, size = $8000, type = " + segmentAttr + ", file = %O;\n");
+		str.Append("  FTR: start = $0000, size = $4000, type = ro, file = %O, define = yes;\n");
 		str.Append("}\n\n");
 		str.Append("SEGMENTS {\n");
 		str.Append("  ZEROPAGE: load = ZP,  type = zp;\n");
@@ -559,7 +587,7 @@ void CChunkRenderText::StoreNSFConfig(unsigned int DPCMSegment, stNSFHeader Head
 		str.Append("  HEADER3:  load = HDR, type = ro,  start = $2E, fillval = $0;\n");
 		str.Append("  HEADER4:  load = HDR, type = ro,  start = $4E, fillval = $0;\n");
 		str.Append("  HEADER5:  load = HDR, type = ro,  start = $6E;\n");
-		str.Append("  CODE:     load = PRG, type = " + segmentAttr + ",  start = $8000;\n");
+		str.Append("  CODE:     load = PRG, type = " + segmentAttr + ";\n");
 		str.AppendFormat(("  DPCM:     load = PRG, type = " + segmentAttr + ",  start = $%04X;\n"), DPCMSegment);
 		str.Append("}\n");
 	}
@@ -659,8 +687,9 @@ void CChunkRenderText::StoreVibrato(unsigned int *pLUTVibrato) const
 	WriteFileString(str, m_pFileVibrato);
 }
 
-void CChunkRenderText::SetExtraDataFiles(CFile* pFileNSFHeader, CFile* pFileNSFConfig, CFile* pFilePeriods, CFile* pFileVibrato)
+void CChunkRenderText::SetExtraDataFiles(CFile *pFileNSFStub, CFile* pFileNSFHeader, CFile* pFileNSFConfig, CFile* pFilePeriods, CFile* pFileVibrato)
 {
+	m_pFileNSFStub = pFileNSFStub;
 	m_pFileNSFHeader = pFileNSFHeader;
 	m_pFileNSFConfig = pFileNSFConfig;
 	m_pFilePeriods = pFilePeriods;
