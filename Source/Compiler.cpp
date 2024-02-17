@@ -2792,24 +2792,24 @@ void CCompiler::WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header,
 		unsigned int LUTNTSC[NOTE_COUNT]{};
 		unsigned int LUTPAL[NOTE_COUNT]{};
 		unsigned int LUTSaw[NOTE_COUNT]{};
+		unsigned int LUTVRC7[NOTE_RANGE]{};
 		unsigned int LUTFDS[NOTE_COUNT]{};
 		unsigned int LUTN163[NOTE_COUNT]{};
-		unsigned int LUTVRC7[NOTE_COUNT]{};
 
 		const CSoundGen *pSoundGen = theApp.GetSoundGenerator();
-		for (int i = 0; i <= CDetuneTable::DETUNE_N163; ++i) {		// // //
+		for (int i = 0; i < CDetuneTable::DETUNE_N163; ++i) {		// // //
 			switch (i) {
 			case CDetuneTable::DETUNE_NTSC:
 				for (int j = 0; j < NOTE_COUNT; ++j) LUTNTSC[j] = pSoundGen->ReadPeriodTable(j, i); break;
 			case CDetuneTable::DETUNE_PAL:
-				if (MachineType)
+				if (MachineType != 0)
 					for (int j = 0; j < NOTE_COUNT; ++j) LUTPAL[j] = pSoundGen->ReadPeriodTable(j, i); break;
 			case CDetuneTable::DETUNE_SAW:
 				if (m_iActualChip & SNDCHIP_VRC6)
 					for (int j = 0; j < NOTE_COUNT; ++j) LUTSaw[j] = pSoundGen->ReadPeriodTable(j, i); break;
 			case CDetuneTable::DETUNE_VRC7:
 				if (m_iActualChip & SNDCHIP_VRC7)
-					for (int j = 0; j < NOTE_COUNT; ++j) LUTVRC7[j] = pSoundGen->ReadPeriodTable(j, i); break;
+					for (int j = 0; j < NOTE_RANGE; ++j) LUTVRC7[j] = pSoundGen->ReadPeriodTable(j, i); break;
 			case CDetuneTable::DETUNE_FDS:
 				if (m_iActualChip & SNDCHIP_FDS)
 					for (int j = 0; j < NOTE_COUNT; ++j) LUTFDS[j] = pSoundGen->ReadPeriodTable(j, i); break;
@@ -2827,7 +2827,7 @@ void CCompiler::WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header,
 			LUTVibrato[i] = pSoundGen->ReadVibratoTable(i);
 		}
 		Render.SetExtraDataFiles(pFileNSFStub, pFileNSFHeader, pFileNSFConfig, pFilePeriods, pFileVibrato);
-		Render.StoreNSFStub(Header, m_bBankSwitched, m_pDocument->GetVibratoStyle(), m_pDocument->GetLinearPitch(), m_iActualNamcoChannels, true);
+		Render.StoreNSFStub(Header.SoundChip, m_bBankSwitched, m_pDocument->GetVibratoStyle(), m_pDocument->GetLinearPitch(), m_iActualNamcoChannels, true);
 		Render.StoreNSFHeader(Header);
 		Render.StoreNSFConfig(m_iSampleStart, Header);
 		Render.StorePeriods(LUTNTSC, LUTPAL, LUTSaw, LUTVRC7, LUTFDS, LUTN163);
@@ -2851,9 +2851,9 @@ void CCompiler::WriteBinary(CFile *pFile, bool bExtraData, stNSFHeader Header, i
 		unsigned int LUTNTSC[NOTE_COUNT]{};
 		unsigned int LUTPAL[NOTE_COUNT]{};
 		unsigned int LUTSaw[NOTE_COUNT]{};
+		unsigned int LUTVRC7[NOTE_RANGE]{};
 		unsigned int LUTFDS[NOTE_COUNT]{};
 		unsigned int LUTN163[NOTE_COUNT]{};
-		unsigned int LUTVRC7[NOTE_COUNT]{};
 
 		const CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 		for (int i = 0; i < CDetuneTable::DETUNE_N163; ++i) {		// // //
@@ -2868,7 +2868,7 @@ void CCompiler::WriteBinary(CFile *pFile, bool bExtraData, stNSFHeader Header, i
 					for (int j = 0; j < NOTE_COUNT; ++j) LUTSaw[j] = pSoundGen->ReadPeriodTable(j, i); break;
 			case CDetuneTable::DETUNE_VRC7:
 				if (m_iActualChip & SNDCHIP_VRC7)
-					for (int j = 0; j < NOTE_COUNT; ++j) LUTVRC7[j] = pSoundGen->ReadPeriodTable(j, i); break;
+					for (int j = 0; j < NOTE_RANGE; ++j) LUTVRC7[j] = pSoundGen->ReadPeriodTable(j, i); break;
 			case CDetuneTable::DETUNE_FDS:
 				if (m_iActualChip & SNDCHIP_FDS)
 					for (int j = 0; j < NOTE_COUNT; ++j) LUTFDS[j] = pSoundGen->ReadPeriodTable(j, i); break;
@@ -2888,7 +2888,7 @@ void CCompiler::WriteBinary(CFile *pFile, bool bExtraData, stNSFHeader Header, i
 		// get an instance of CChunkRenderText to use its extra data plotting
 		CChunkRenderText RenderText(nullptr);
 		RenderText.SetExtraDataFiles(pFileNSFStub, pFileNSFHeader, pFileNSFConfig, pFilePeriods, pFileVibrato);
-		RenderText.StoreNSFStub(Header, m_bBankSwitched, m_pDocument->GetVibratoStyle(), m_pDocument->GetLinearPitch(), m_iActualNamcoChannels);
+		RenderText.StoreNSFStub(Header.SoundChip, m_bBankSwitched, m_pDocument->GetVibratoStyle(), m_pDocument->GetLinearPitch(), m_iActualNamcoChannels);
 		RenderText.StoreNSFHeader(Header);
 		RenderText.StorePeriods(LUTNTSC, LUTPAL, LUTSaw, LUTVRC7, LUTFDS, LUTN163);
 		RenderText.StoreVibrato(LUTVibrato);

@@ -487,7 +487,7 @@ void CChunkRenderText::WriteFileString(const CStringA &str, CFile *pFile) const
 
 // These functions write to a separate file. CFile path to those separate files must be the same as export.
 
-void CChunkRenderText::StoreNSFStub(stNSFHeader Header, bool Bankswitched, vibrato_t VibratoStyle, bool LinearPitch, int ActualNamcoChannels, bool IsAssembly) const
+void CChunkRenderText::StoreNSFStub(unsigned char Expansion, bool Bankswitched, vibrato_t VibratoStyle, bool LinearPitch, int ActualNamcoChannels, bool IsAssembly) const
 {
 	CString str;
 
@@ -495,17 +495,17 @@ void CChunkRenderText::StoreNSFStub(stNSFHeader Header, bool Bankswitched, vibra
 	str.Append("PACKAGE = 1\n");
 	str.Append("HAS_NSF_HEADER = 1\n");
 	str.Append("USE_AUX_DATA = 1\n");
-	if (Header.SoundChip & SNDCHIP_VRC6)
+	if (Expansion & SNDCHIP_VRC6)
 		str.Append("USE_VRC6 = 1\n");
-	if (Header.SoundChip & SNDCHIP_VRC7)
+	if (Expansion & SNDCHIP_VRC7)
 		str.Append("USE_VRC7 = 1\n");
-	if (Header.SoundChip & SNDCHIP_FDS)
+	if (Expansion & SNDCHIP_FDS)
 		str.Append("USE_FDS = 1\n");
-	if (Header.SoundChip & SNDCHIP_MMC5)
+	if (Expansion & SNDCHIP_MMC5)
 		str.Append("USE_MMC5 = 1\n");
-	if (Header.SoundChip & SNDCHIP_N163)
+	if (Expansion & SNDCHIP_N163)
 		str.Append("USE_N163 = 1\n");
-	if (Header.SoundChip & SNDCHIP_S5B)
+	if (Expansion & SNDCHIP_S5B)
 		str.Append("USE_S5B = 1\n");
 	if (Bankswitched)
 		str.Append("USE_BANKSWITCH = 1\n");
@@ -652,12 +652,10 @@ void CChunkRenderText::StorePeriods(unsigned int *pLUTNTSC, unsigned int* pLUTPA
 	str.Append(".define ft_vrc7_table ");
 
 	for (int i = 0; i <= NOTE_RANGE; ++i) {		// // // include last item for linear pitch code optimization
-		CString str;
 		if (i == NOTE_RANGE)
 			str.AppendFormat("$%04X\n", pLUTVRC7[0] << 3);
 		else
 			str.AppendFormat("$%04X, ", pLUTVRC7[i] << 2);
-		str.Append(str);
 	}
 
 	str.Append("\n");
