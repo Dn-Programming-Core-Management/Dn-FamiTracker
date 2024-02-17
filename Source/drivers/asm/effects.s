@@ -317,10 +317,9 @@ ft_calc_period:
 	
 	; apply frequency multiplication
 	lda var_ch_Harmonic, x
+	beq @MaxPeriod									; K00 results in lowest possible frequency
 	cmp #$01
 	beq @SkipHarmonic								; skip calculation if it's not affecting pitch
-	cmp #$00
-	beq @MaxPeriod									; K00 results in lowest possible frequency
 
 	lda ft_channel_type, x
 	cmp #CHAN_NOI
@@ -334,7 +333,7 @@ ft_calc_period:
 ; FDS and N163 use angular frequency
 .if .defined(USE_FDS)
 	cmp #CHAN_FDS
-	beq @HarmonicMultiply
+	beq @HarmonicMultiplyFDS
 .endif
 .if .defined(USE_N163)
 	cmp #CHAN_N163
@@ -351,6 +350,10 @@ ft_calc_period:
 	sta AUX + 1
 	jsr DIV
 	jmp @HarmonicEnd
+.if .defined(USE_FDS)
+@HarmonicMultiplyFDS:
+	jsr @CopyPeriodToCarrier
+.endif
 @HarmonicMultiply:
 	lda var_ch_PeriodCalcLo, x
 	sta var_Temp16
@@ -370,11 +373,19 @@ ft_calc_period:
 	sta var_ch_PeriodCalcLo, x
 	lda ACC + 1
 	sta var_ch_PeriodCalcHi, x
+	jmp @JumpHarmonicEnd
 @SkipHarmonic:
-
+.if .defined(USE_FDS)
+	lda ft_channel_type, x
+	cmp #CHAN_FDS
+	bne @JumpHarmonicEnd
+	jsr @CopyPeriodToCarrier
+.endif
+@JumpHarmonicEnd:
 	jsr ft_vibrato
 	jsr ft_tremolo
 	rts
+
 @MaxPeriod:
 	; no limits for noise
 	lda ft_channel_type, x
@@ -405,6 +416,17 @@ ft_calc_period:
 	sta var_ch_PeriodCalcLo, x
 @EndCalcPeriod:
 	rts
+
+.if .defined(USE_FDS)
+@CopyPeriodToCarrier:
+	; copy period to var_ch_FDSCarrier
+	; needed for modulation
+	lda var_ch_PeriodCalcLo, x
+	sta var_ch_FDSCarrier
+	lda var_ch_PeriodCalcHi, x
+	sta var_ch_FDSCarrier + 1
+	rts
+.endif
 
 ;
 ; Portamento
