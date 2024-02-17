@@ -286,6 +286,9 @@ ft_update_apu:
 	; Finally update APU and expansion chip registers
 	jsr ft_update_2a03
 ft_update_ext:		;; Patch
+.if .defined(USE_AUX_DATA) .and .defined(USE_ALL)
+    .include "../update_ext.s"
+.else
 .if .defined(USE_VRC6)
 	jsr	ft_update_vrc6
 .endif
@@ -303,6 +306,7 @@ ft_update_ext:		;; Patch
 .endif
 .if .defined(USE_S5B)
 	jsr ft_update_s5b
+.endif
 .endif
 
 END:		; End of music routine, return

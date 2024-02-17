@@ -118,7 +118,7 @@ private:
 	char*	LoadNSFDRV(const driver_t *pDriver) const;
 
 	// Compiler
-	bool	CompileData(bool bUseNSFDRV = false);
+	bool	CompileData(bool bUseNSFDRV = false, bool UseAllExp = true);
 	void	ResolveLabels();
 	bool	ResolveLabelsBankswitched();
 	void	CollectLabels(CMap<CStringA, LPCSTR, int, int> &labelMap) const;
@@ -134,7 +134,7 @@ private:
 	bool	IsPatternAddressed(unsigned int Track, int Pattern, int Channel) const;
 	bool	IsInstrumentInPattern(int index) const;
 
-	void	CreateMainHeader();
+	void	CreateMainHeader(bool UseAllExp);
 	void	CreateSequenceList();
 	void	CreateInstrumentList();
 	void	CreateSampleList();
@@ -162,13 +162,17 @@ private:
 		CFile *pFileNSFHeader = nullptr,
 		CFile *pFileNSFConfig = nullptr,
 		CFile *pFilePeriods = nullptr,
-		CFile *pFileVibrato = nullptr);
+		CFile *pFileVibrato = nullptr,
+		CFile *FileMultiChipEnable = nullptr,
+		CFile *FileMultiChipUpdate = nullptr);
 	void	WriteBinary(CFile *pFile, bool bExtraData, stNSFHeader Header, int MachineType = 0,
 		CFile *pFileNSFStub = nullptr,
 		CFile *pFileNSFHeader = nullptr,
 		CFile *pFileNSFConfig = nullptr,
 		CFile *pFilePeriods = nullptr,
-		CFile *pFileVibrato = nullptr);
+		CFile *pFileVibrato = nullptr,
+		CFile *FileMultiChipEnable = nullptr,
+		CFile *FileMultiChipUpdate = nullptr);
 	void	WriteSamplesBinary(CFile *pFile);
 
 	// Object list functions

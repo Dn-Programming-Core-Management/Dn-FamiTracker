@@ -118,6 +118,10 @@ const int CCompiler::FLAG_BANKSWITCHED	= 1 << 0;
 const int CCompiler::FLAG_VIBRATO		= 1 << 1;
 const int CCompiler::FLAG_LINEARPITCH	= 1 << 2;		// // //
 
+
+// Enable this to simulate NSF driver export multichip for assembly, which enables all chips internally
+constexpr bool UseAllChips = true;
+
 CCompiler *CCompiler::pCompiler = NULL;
 
 CCompiler *CCompiler::GetCompiler()
@@ -920,7 +924,7 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 	}
 
 	// Build the music data
-	if (!CompileData()) {
+	if (!CompileData(false, UseAllChips)) {
 		// Failed
 		Cleanup();
 		return;
@@ -986,8 +990,7 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 
 		// Write NSF stub
 		CFile OutputFileNSFStub;
-		CString stub_directory = FileDirectory;
-		stub_directory += _T("nsf_stub.s");
+		CString stub_directory = FileDirectory + "nsf_stub.s";
 
 		if (!OpenFile(stub_directory, OutputFileNSFStub)) {
 			OutputFileNSFStub.Close();
@@ -998,8 +1001,7 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 
 		// Write NSF header
 		CFile OutputFileNSFHeader;
-		CString header_directory = FileDirectory;
-		header_directory += _T("nsf_header.s");
+		CString header_directory = FileDirectory + "nsf_header.s";
 
 		if (!OpenFile(header_directory, OutputFileNSFHeader)) {
 			OutputFileNSFStub.Close();
@@ -1011,8 +1013,7 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 
 		// Write NSF config file
 		CFile OutputFileNSFConfig;
-		CString config_directory = FileDirectory;
-		config_directory += _T("nsf.cfg");
+		CString config_directory = FileDirectory + "nsf.cfg";
 		if (!OpenFile(config_directory, OutputFileNSFConfig)) {
 			OutputFileNSFStub.Close();
 			OutputFileNSFHeader.Close();
@@ -1024,8 +1025,7 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 
 		// Write period file
 		CFile OutputFilePeriods;
-		CString periods_directory = FileDirectory;
-		periods_directory += _T("periods.s");
+		CString periods_directory = FileDirectory + "periods.s";
 
 		if (!OpenFile(periods_directory, OutputFilePeriods)) {
 			OutputFileNSFStub.Close();
@@ -1039,8 +1039,7 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 
 		// Write vibrato file
 		CFile OutputFileVibrato;
-		CString vibrato_directory = FileDirectory;
-		vibrato_directory += _T("vibrato.s");
+		CString vibrato_directory = FileDirectory + "vibrato.s";
 
 		if (!OpenFile(vibrato_directory, OutputFileVibrato)) {
 			OutputFileNSFStub.Close();
@@ -1053,11 +1052,54 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 			return;
 		}
 
-		WriteBinary(&OutputFileBIN, ExtraData, Header, MachineType, &OutputFileNSFStub, &OutputFileNSFHeader, &OutputFileNSFConfig, &OutputFilePeriods, &OutputFileVibrato);
-		OutputFilePeriods.Close();
-		OutputFileVibrato.Close();
+		// Write multichip enable file
+		CFile OutputFileMultiChipEnable;
+		CString enable_ext_directory = FileDirectory + "enable_ext.s";
+
+		if (!OpenFile(enable_ext_directory, OutputFileMultiChipEnable)) {
+			OutputFileNSFStub.Close();
+			OutputFileNSFHeader.Close();
+			OutputFileNSFConfig.Close();
+			OutputFilePeriods.Close();
+			OutputFileVibrato.Close();
+			OutputFileMultiChipEnable.Close();
+			Print(_T("Error: Could not open output multichip handler file\n"));
+			Cleanup();
+			return;
+		}
+
+		// Write multichip enable file
+		CFile OutputFileMultiChipUpdate;
+		CString update_ext_directory = FileDirectory + "update_ext.s";
+
+		if (!OpenFile(update_ext_directory, OutputFileMultiChipUpdate)) {
+			OutputFileNSFStub.Close();
+			OutputFileNSFHeader.Close();
+			OutputFileNSFConfig.Close();
+			OutputFilePeriods.Close();
+			OutputFileVibrato.Close();
+			OutputFileMultiChipEnable.Close();
+			OutputFileMultiChipUpdate.Close();
+			Print(_T("Error: Could not open output multichip handler file\n"));
+			Cleanup();
+			return;
+		}
+
+		WriteBinary(&OutputFileBIN, ExtraData, Header, MachineType,
+			&OutputFileNSFStub,
+			&OutputFileNSFHeader,
+			&OutputFileNSFConfig,
+			&OutputFilePeriods,
+			&OutputFileVibrato,
+			&OutputFileMultiChipEnable,
+			&OutputFileMultiChipUpdate);
+		OutputFileNSFStub.Close();
 		OutputFileNSFHeader.Close();
 		OutputFileNSFConfig.Close();
+		OutputFilePeriods.Close();
+		OutputFileVibrato.Close();
+		OutputFileMultiChipEnable.Close();
+		OutputFileMultiChipUpdate.Close();
 	}
 	else
 		WriteBinary(&OutputFileBIN, ExtraData, Header);
@@ -1179,7 +1221,7 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 	}
 
 	// Build the music data
-	if (!CompileData()) {
+	if (!CompileData(false, UseAllChips)) {
 		// Failed
 		Cleanup();
 		return;
@@ -1235,8 +1277,7 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 
 		// Write NSF stub
 		CFile OutputFileNSFStub;
-		CString stub_directory = FileDirectory;
-		stub_directory += _T("nsf_stub.s");
+		CString stub_directory = FileDirectory + "nsf_stub.s";
 
 		if (!OpenFile(stub_directory, OutputFileNSFStub)) {
 			OutputFileNSFStub.Close();
@@ -1247,8 +1288,7 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 
 		// Write NSF header
 		CFile OutputFileNSFHeader;
-		CString header_directory = FileDirectory;
-		header_directory += _T("nsf_header.s");
+		CString header_directory = FileDirectory + "nsf_header.s";
 
 		if (!OpenFile(header_directory, OutputFileNSFHeader)) {
 			OutputFileNSFStub.Close();
@@ -1260,8 +1300,7 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 
 		// Write NSF config file
 		CFile OutputFileNSFConfig;
-		CString config_directory = FileDirectory;
-		config_directory += _T("nsf.cfg");
+		CString config_directory = FileDirectory + "nsf.cfg";
 		if (!OpenFile(config_directory, OutputFileNSFConfig)) {
 			OutputFileNSFStub.Close();
 			OutputFileNSFHeader.Close();
@@ -1273,8 +1312,7 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 
 		// Write period file
 		CFile OutputFilePeriods;
-		CString periods_directory = FileDirectory;
-		periods_directory += _T("periods.s");
+		CString periods_directory = FileDirectory + "periods.s";
 
 		if (!OpenFile(periods_directory, OutputFilePeriods)) {
 			OutputFileNSFStub.Close();
@@ -1288,8 +1326,7 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 
 		// Write vibrato file
 		CFile OutputFileVibrato;
-		CString vibrato_directory = FileDirectory;
-		vibrato_directory += _T("vibrato.s");
+		CString vibrato_directory = FileDirectory + "vibrato.s";
 
 		if (!OpenFile(vibrato_directory, OutputFileVibrato)) {
 			OutputFileNSFStub.Close();
@@ -1302,11 +1339,54 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 			return;
 		}
 
-		WriteAssembly(&OutputFile, ExtraData, Header, MachineType, &OutputFileNSFStub, &OutputFileNSFHeader, &OutputFileNSFConfig, &OutputFilePeriods, &OutputFileVibrato);
-		OutputFilePeriods.Close();
-		OutputFileVibrato.Close();
+		// Write multichip enable file
+		CFile OutputFileMultiChipEnable;
+		CString enable_ext_directory = FileDirectory + "enable_ext.s";
+
+		if (!OpenFile(enable_ext_directory, OutputFileMultiChipEnable)) {
+			OutputFileNSFStub.Close();
+			OutputFileNSFHeader.Close();
+			OutputFileNSFConfig.Close();
+			OutputFilePeriods.Close();
+			OutputFileVibrato.Close();
+			OutputFileMultiChipEnable.Close();
+			Print(_T("Error: Could not open output multichip handler file\n"));
+			Cleanup();
+			return;
+		}
+
+		// Write multichip enable file
+		CFile OutputFileMultiChipUpdate;
+		CString update_ext_directory = FileDirectory + "update_ext.s";
+
+		if (!OpenFile(update_ext_directory, OutputFileMultiChipUpdate)) {
+			OutputFileNSFStub.Close();
+			OutputFileNSFHeader.Close();
+			OutputFileNSFConfig.Close();
+			OutputFilePeriods.Close();
+			OutputFileVibrato.Close();
+			OutputFileMultiChipEnable.Close();
+			OutputFileMultiChipUpdate.Close();
+			Print(_T("Error: Could not open output multichip handler file\n"));
+			Cleanup();
+			return;
+		}
+
+		WriteAssembly(&OutputFile, ExtraData, Header, MachineType,
+			&OutputFileNSFStub,
+			&OutputFileNSFHeader,
+			&OutputFileNSFConfig,
+			&OutputFilePeriods,
+			&OutputFileVibrato,
+			&OutputFileMultiChipEnable,
+			&OutputFileMultiChipUpdate);
+		OutputFileNSFStub.Close();
 		OutputFileNSFHeader.Close();
 		OutputFileNSFConfig.Close();
+		OutputFilePeriods.Close();
+		OutputFileVibrato.Close();
+		OutputFileMultiChipEnable.Close();
+		OutputFileMultiChipUpdate.Close();
 	}
 	else {
 		WriteAssembly(&OutputFile, ExtraData, Header);
@@ -1805,7 +1885,7 @@ void CCompiler::AssignLabels(CMap<CStringA, LPCSTR, int, int> &labelMap)
 		pChunk->AssignLabels(labelMap);
 }
 
-bool CCompiler::CompileData(bool bUseNSFDRV)
+bool CCompiler::CompileData(bool bUseNSFDRV, bool bUseAllExp)
 {
 	// Compile music data to an object tree
 	//
@@ -1911,7 +1991,7 @@ bool CCompiler::CompileData(bool bUseNSFDRV)
 	Print(_T("Building music data...\n"));
 
 	// Build music data
-	CreateMainHeader();
+	CreateMainHeader(bUseAllExp);
 	CreateSequenceList();
 	CreateInstrumentList();
 	CreateSampleList();
@@ -2129,15 +2209,15 @@ bool CCompiler::IsInstrumentInPattern(int index) const
 	return false;
 }
 
-void CCompiler::CreateMainHeader()
+void CCompiler::CreateMainHeader(bool UseAllExp)
 {
 	// Writes the music header
 	int TicksPerSec = m_pDocument->GetEngineSpeed();
 
-	int Chip = m_pDocument->GetExpansionChip();		// // //
-	bool bMultichip = (Chip & (Chip - 1)) != 0;
-
 	unsigned short DividerNTSC, DividerPAL;
+
+	int Chip = m_pDocument->GetExpansionChip();		// // //
+	bool bMultichip = ((Chip & (Chip - 1)) != 0) && UseAllExp;
 
 	CChunk *pChunk = CreateChunk(CHUNK_HEADER, "");
 
@@ -2170,14 +2250,17 @@ void CCompiler::CreateMainHeader()
 	pChunk->StoreByte(Flags);
 
 	// FDS table, only if FDS is enabled
-	if (m_pDocument->ExpansionEnabled(SNDCHIP_FDS) || bMultichip)
-		pChunk->StoreReference(CChunkRenderText::LABEL_WAVETABLE);
+	if ((Chip & SNDCHIP_FDS) || bMultichip)
+		if (!(Chip & SNDCHIP_FDS))
+			pChunk->StoreReference("0");
+		else
+			pChunk->StoreReference(CChunkRenderText::LABEL_WAVETABLE);
 
 	pChunk->StoreWord(DividerNTSC);
 	pChunk->StoreWord(DividerPAL);
 
 	// N163 channel count
-	if (m_pDocument->ExpansionEnabled(SNDCHIP_N163) || bMultichip) {
+	if ((Chip & SNDCHIP_N163) || bMultichip) {
 		/*if (m_pDocument->GetExpansionChip() != SNDCHIP_N163)		// // //
 			pChunk->StoreByte(8);
 		else*/ pChunk->StoreByte(std::max(m_iActualNamcoChannels, 1));
@@ -2772,7 +2855,9 @@ void CCompiler::WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header,
 	CFile *pFileNSFHeader,
 	CFile *pFileNSFConfig,
 	CFile *pFilePeriods,
-	CFile *pFileVibrato)
+	CFile *pFileVibrato,
+	CFile *pFileMultiChipEnable,
+	CFile *pFileMultiChipUpdate)
 {
 	// Dump all chunks and samples as assembly text
 	CChunkRenderText Render(pFile);
@@ -2826,12 +2911,16 @@ void CCompiler::WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header,
 		for (int i = 0; i < 256; ++i) {
 			LUTVibrato[i] = pSoundGen->ReadVibratoTable(i);
 		}
-		Render.SetExtraDataFiles(pFileNSFStub, pFileNSFHeader, pFileNSFConfig, pFilePeriods, pFileVibrato);
-		Render.StoreNSFStub(Header.SoundChip, m_bBankSwitched, m_pDocument->GetVibratoStyle(), m_pDocument->GetLinearPitch(), m_iActualNamcoChannels, true);
+		Render.SetExtraDataFiles(pFileNSFStub, pFileNSFHeader, pFileNSFConfig, pFilePeriods, pFileVibrato, pFileMultiChipEnable, pFileMultiChipUpdate);
+		Render.StoreNSFStub(Header.SoundChip, m_bBankSwitched, m_pDocument->GetVibratoStyle(), m_pDocument->GetLinearPitch(), m_iActualNamcoChannels, UseAllChips, true);
 		Render.StoreNSFHeader(Header);
 		Render.StoreNSFConfig(m_iSampleStart, Header);
 		Render.StorePeriods(LUTNTSC, LUTPAL, LUTSaw, LUTVRC7, LUTFDS, LUTN163);
 		Render.StoreVibrato(LUTVibrato);
+		if (UseAllChips) {
+			Render.StoreEnableExt(Header.SoundChip);
+			Render.StoreUpdateExt(Header.SoundChip);
+		}
 	}
 }
 
@@ -2840,7 +2929,9 @@ void CCompiler::WriteBinary(CFile *pFile, bool bExtraData, stNSFHeader Header, i
 	CFile *pFileNSFHeader,
 	CFile *pFileNSFConfig,
 	CFile *pFilePeriods,
-	CFile *pFileVibrato)
+	CFile *pFileVibrato,
+	CFile *pFileMultiChipEnable,
+	CFile *pFileMultiChipUpdate)
 {
 	// Dump all chunks as binary
 	CChunkRenderBinary Render(pFile);
@@ -2887,11 +2978,15 @@ void CCompiler::WriteBinary(CFile *pFile, bool bExtraData, stNSFHeader Header, i
 		}
 		// get an instance of CChunkRenderText to use its extra data plotting
 		CChunkRenderText RenderText(nullptr);
-		RenderText.SetExtraDataFiles(pFileNSFStub, pFileNSFHeader, pFileNSFConfig, pFilePeriods, pFileVibrato);
-		RenderText.StoreNSFStub(Header.SoundChip, m_bBankSwitched, m_pDocument->GetVibratoStyle(), m_pDocument->GetLinearPitch(), m_iActualNamcoChannels);
+		RenderText.SetExtraDataFiles(pFileNSFStub, pFileNSFHeader, pFileNSFConfig, pFilePeriods, pFileVibrato, pFileMultiChipEnable, pFileMultiChipUpdate);
+		RenderText.StoreNSFStub(Header.SoundChip, m_bBankSwitched, m_pDocument->GetVibratoStyle(), m_pDocument->GetLinearPitch(), m_iActualNamcoChannels, UseAllChips);
 		RenderText.StoreNSFHeader(Header);
 		RenderText.StorePeriods(LUTNTSC, LUTPAL, LUTSaw, LUTVRC7, LUTFDS, LUTN163);
 		RenderText.StoreVibrato(LUTVibrato);
+		if (UseAllChips) {
+			RenderText.StoreEnableExt(Header.SoundChip);
+			RenderText.StoreUpdateExt(Header.SoundChip);
+		}
 	}
 }
 

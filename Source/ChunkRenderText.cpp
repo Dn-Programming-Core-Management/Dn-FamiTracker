@@ -487,7 +487,7 @@ void CChunkRenderText::WriteFileString(const CStringA &str, CFile *pFile) const
 
 // These functions write to a separate file. CFile path to those separate files must be the same as export.
 
-void CChunkRenderText::StoreNSFStub(unsigned char Expansion, bool Bankswitched, vibrato_t VibratoStyle, bool LinearPitch, int ActualNamcoChannels, bool IsAssembly) const
+void CChunkRenderText::StoreNSFStub(unsigned char Expansion, bool Bankswitched, vibrato_t VibratoStyle, bool LinearPitch, int ActualNamcoChannels, bool UseAllChips, bool IsAssembly) const
 {
 	CString str;
 
@@ -495,29 +495,40 @@ void CChunkRenderText::StoreNSFStub(unsigned char Expansion, bool Bankswitched, 
 	str.Append("PACKAGE = 1\n");
 	str.Append("HAS_NSF_HEADER = 1\n");
 	str.Append("USE_AUX_DATA = 1\n");
-	if (Expansion & SNDCHIP_VRC6)
-		str.Append("USE_VRC6 = 1\n");
-	if (Expansion & SNDCHIP_VRC7)
-		str.Append("USE_VRC7 = 1\n");
-	if (Expansion & SNDCHIP_FDS)
-		str.Append("USE_FDS = 1\n");
-	if (Expansion & SNDCHIP_MMC5)
-		str.Append("USE_MMC5 = 1\n");
-	if (Expansion & SNDCHIP_N163)
-		str.Append("USE_N163 = 1\n");
-	if (Expansion & SNDCHIP_S5B)
-		str.Append("USE_S5B = 1\n");
-	if (Bankswitched)
-		str.Append("USE_BANKSWITCH = 1\n");
-	if (VibratoStyle == VIBRATO_OLD)
+	bool MultiChip = ((Expansion & (Expansion - 1)) != 0) && UseAllChips;
+	if (MultiChip) {
+		// Simulate NSF export multichip
+		str.Append("USE_ALL = 1\n");
+		str.Append("NAMCO_CHANNELS = 8\n");
 		str.Append("USE_OLDVIBRATO = 1\n");
-	if (LinearPitch)
+		str.Append("USE_BANKSWITCH = 1\n");
 		str.Append("USE_LINEARPITCH = 1\n");
-	str.AppendFormat("NAMCO_CHANNELS = %d\n", ActualNamcoChannels);
+	}
+	else {
+		if (Expansion & SNDCHIP_VRC6)
+			str.Append("USE_VRC6 = 1\n");
+		if (Expansion & SNDCHIP_VRC7)
+			str.Append("USE_VRC7 = 1\n");
+		if (Expansion & SNDCHIP_FDS)
+			str.Append("USE_FDS = 1\n");
+		if (Expansion & SNDCHIP_MMC5)
+			str.Append("USE_MMC5 = 1\n");
+		if (Expansion & SNDCHIP_N163)
+			str.Append("USE_N163 = 1\n");
+		if (Expansion & SNDCHIP_S5B)
+			str.Append("USE_S5B = 1\n");
+		str.AppendFormat("NAMCO_CHANNELS = %d\n", ActualNamcoChannels);
+		if (Bankswitched)
+			str.Append("USE_BANKSWITCH = 1\n");
+		if (VibratoStyle == VIBRATO_OLD)
+			str.Append("USE_OLDVIBRATO = 1\n");
+		if (LinearPitch)
+			str.Append("USE_LINEARPITCH = 1\n");
+	}
 
 	str.Append("\n.include \"driver/driver.s\"\t; path to NSF driver source\n");
 
-	str.Append("\n.include \"music.asm\"\t; path to NSF export source\n");
+	str.Append(".include \"music.asm\"\t\t; path to NSF export source\n");
 
 	WriteFileString(str, m_pFileNSFStub);
 }
@@ -685,13 +696,126 @@ void CChunkRenderText::StoreVibrato(unsigned int *pLUTVibrato) const
 	WriteFileString(str, m_pFileVibrato);
 }
 
-void CChunkRenderText::SetExtraDataFiles(CFile *pFileNSFStub, CFile* pFileNSFHeader, CFile* pFileNSFConfig, CFile* pFilePeriods, CFile* pFileVibrato)
+void CChunkRenderText::StoreUpdateExt(unsigned char Expansion) const
+{
+	// // // special processing for multichip
+	if ((Expansion & (Expansion - 1)) == false) return;
+	
+	CString str;
+
+	str.Append("\t; VRC6\n");
+	if (Expansion & SNDCHIP_VRC6)
+		str.Append("\tjsr ft_update_vrc6");
+	else
+		str.Append("\tnop\n\tnop\n\tnop\n");
+	str.Append("\t; VRC7\n");
+	if (Expansion & SNDCHIP_VRC7)
+		str.Append("\tjsr ft_update_vrc7");
+	else
+		str.Append("\tnop\n\tnop\n\tnop\n");
+	str.Append("\t; FDS\n");
+	if (Expansion & SNDCHIP_FDS)
+		str.Append("\tjsr ft_update_fds");
+	else
+		str.Append("\tnop\n\tnop\n\tnop\n");
+	str.Append("\t; MMC5\n");
+	if (Expansion & SNDCHIP_MMC5)
+		str.Append("\tjsr ft_update_mmc5");
+	else
+		str.Append("\tnop\n\tnop\n\tnop\n");
+	str.Append("\t; N163\n");
+	if (Expansion & SNDCHIP_N163)
+		str.Append("\tjsr ft_update_n163");
+	else
+		str.Append("\tnop\n\tnop\n\tnop\n");
+	str.Append("\t; S5B\n");
+	if (Expansion & SNDCHIP_S5B)
+		str.Append("\tjsr ft_update_s5b");
+	else
+		str.Append("\tnop\n\tnop\n\tnop\n");
+	WriteFileString(str, m_pFileMultiChipUpdate);
+}
+
+void CChunkRenderText::StoreEnableExt(unsigned char Expansion) const
+{
+	// // // special processing for multichip
+	if ((Expansion & (Expansion - 1)) == false) return;
+	/*
+	if (Expansion & (Expansion - 1)) {		// // // special processing for multichip
+		const int CH_MAP[] = {
+			0, 1, 2, 3, 27,
+			6, 7, 8,
+			4, 5, -1,
+			9, 10, 11, 12, 13, 14, 15, 16,
+			17,
+			21, 22, 23, 24, 25, 26,
+			18, 19, 20,
+		};
+
+		for (int i = 0; i < CHANNELS; ++i)
+			pData[FT_CH_ENABLE_ADR + i] = 0;
+		for (const int x : m_vChanOrder)
+			pData[FT_CH_ENABLE_ADR + CH_MAP[m_pDocument->GetChannelType(x)]] = 1;
+	}
+	*/
+	// // // special processing for multichip
+	if ((Expansion & (Expansion - 1)) == false) return;
+
+	CString str;
+
+	str.Append("ft_channel_enable: ;; Patched\n");
+	str.Append("\t.byte 1, 1, 1, 1\n");
+
+	str.Append("\t; MMC5\n");
+	if (Expansion & SNDCHIP_MMC5)
+		str.Append("\t.byte 1, 1\n");
+	else
+		str.Append("\t.byte 0, 0\n");
+
+	str.Append("\t; VRC6\n");
+	if (Expansion & SNDCHIP_VRC6)
+		str.Append("\t.byte 1, 1, 1\n");
+	else
+		str.Append("\t.byte 0, 0, 0\n");
+
+	str.Append("\t; N163\n");
+	if (Expansion & SNDCHIP_N163)
+		str.Append("\t.byte 1, 1, 1, 1, 1, 1, 1, 1\n");
+	else
+		str.Append("\t.byte 0, 0, 0, 0, 0, 0, 0, 0\n");
+
+	str.Append("\t; FDS\n");
+	if (Expansion & SNDCHIP_FDS)
+		str.Append("\t.byte 1\n");
+	else
+		str.Append("\t.byte 0\n");
+
+	str.Append("\t; S5B\n");
+	if (Expansion & SNDCHIP_S5B)
+		str.Append("\t.byte 1, 1, 1\n");
+	else
+		str.Append("\t.byte 0, 0, 0\n");
+
+	str.Append("\t; VRC7\n");
+	if (Expansion & SNDCHIP_VRC7)
+		str.Append("\t.byte 1, 1, 1, 1, 1, 1\n");
+	else
+		str.Append("\t.byte 0, 0, 0, 0, 0, 0\n");
+
+	str.Append("\t; DPCM\n");
+	str.Append("\t.byte 1\n");
+	WriteFileString(str, m_pFileMultiChipEnable);
+}
+
+void CChunkRenderText::SetExtraDataFiles(CFile *pFileNSFStub, CFile* pFileNSFHeader, CFile* pFileNSFConfig, CFile* pFilePeriods, CFile* pFileVibrato, CFile *pFileMultiChipEnable, CFile *pFileMultiChipUpdate)
 {
 	m_pFileNSFStub = pFileNSFStub;
 	m_pFileNSFHeader = pFileNSFHeader;
 	m_pFileNSFConfig = pFileNSFConfig;
 	m_pFilePeriods = pFilePeriods;
 	m_pFileVibrato = pFileVibrato;
+	m_pFileMultiChipEnable = pFileMultiChipEnable;
+	m_pFileMultiChipUpdate = pFileMultiChipUpdate;
 }
 
 void CChunkRenderText::StoreByteString(const char *pData, int Len, CStringA &str, int LineBreak) const
