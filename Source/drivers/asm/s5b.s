@@ -15,10 +15,10 @@ ft_init_s5b:
 	sta var_EnvelopeRate
 	sta var_EnvelopeRate + 1
 	sta var_EnvelopeType
-	ldx #(CH_COUNT_S5B - 1)
-:	sta var_EnvelopeAutoShift, x
-	sta var_EnvelopeEnabled, x
-	dex
+	sta var_EnvelopeEnabled
+	ldx #CH_COUNT_S5B
+:	dex
+	sta var_EnvelopeAutoShift, x
 	bne :-
 	lda #$07
 	sta $C000
