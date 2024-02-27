@@ -52,17 +52,31 @@ ft_do_row_update:
 	and #%11111100
 	sta var_PlayerFlags
 :
+	lda var_Load_Frame
+	beq @SkipFrameLoad
+	ldx #$00
+
+	; handle delay part 1: skip over missed delay notes from the previous frame
+	; this allows the driver to read all the extra commands that come after Gxx
+@Delay:
+	CH_LOOP_START @DelayEpilog
+	lda var_ch_Delay, x
+	beq @DelayEpilog
+	lda #$00
+	sta var_ch_Delay, x
+	jsr ft_read_pattern ; skip over missed delay note
+@DelayEpilog:
+	CH_LOOP_END @Delay
+
 	; Switches to new frames are delayed to next row to resolve issues with delayed notes.
 	; It won't work if new pattern adresses are loaded before the delayed note is played
-	;;; ;; ; from 0.4.6
-	lda var_Load_Frame
-	beq @SkipFrameLoad	
 	lda #$00
 	sta var_Load_Frame
 	lda var_Current_Frame
 	jsr ft_load_frame
 @SkipFrameLoad:
 
+	; handle delay part 2: skip over missed delay notes from the previous row
 	; Read one row from all patterns
 	ldx #$00
 ft_read_channels:
