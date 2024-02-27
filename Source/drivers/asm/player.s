@@ -624,7 +624,7 @@ ft_read_is_done:
 
 ; Read pattern to A and move to next byte
 ft_get_pattern_byte:
-	lda (var_Temp_Pattern), y			; Get the instrument number
+	lda (var_Temp_Pattern), y			; Get the instrument number/effect bytecode
 	pha
 	iny
 	pla
