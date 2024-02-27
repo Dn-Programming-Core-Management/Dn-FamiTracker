@@ -120,7 +120,11 @@ const int CCompiler::FLAG_LINEARPITCH	= 1 << 2;		// // //
 
 
 // Enable this to simulate NSF driver export multichip for assembly, which enables all chips internally
+#ifdef _DEBUG
 constexpr bool UseAllChips = true;
+#else
+constexpr bool UseAllChips = false;
+#endif
 
 CCompiler *CCompiler::pCompiler = NULL;
 
