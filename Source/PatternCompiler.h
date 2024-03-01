@@ -66,7 +66,8 @@ private:
 	void			ScanNoteLengths(stSpacingInfo &Info, int Track, unsigned int StartRow, int Pattern, int Channel);
 
 	// Debugging
-	void			Print(LPCTSTR text) const;
+	template <typename... T>
+	void	Print(LPCTSTR text, T... args) const;		// // //
 
 private:
 	std::vector<char> m_vData;
