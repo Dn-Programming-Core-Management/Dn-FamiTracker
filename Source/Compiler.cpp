@@ -1836,7 +1836,8 @@ bool CCompiler::CollectLabelsBankswitched(CMap<CStringA, LPCSTR, int, int> &labe
 
 	if (Offset + DriverSizeAndNSFDRV > 0x3000) {
 		// Instrument data did not fit within the limit, display an error and abort?
-		Print(_T("Error: Instrument data overflow, can't export file!\n"));
+		Print(_T("Error: Instrument, frame & pattern data can't fit within bank allocation, can't export file!\n"));
+		Print(_T(" * $%02X bytes used out of $3000 allowed\n"), Offset + DriverSizeAndNSFDRV);
 		return false;
 	}
 
@@ -2073,11 +2074,8 @@ void CCompiler::CalculateLoadAddresses(unsigned short &MusicDataAddress, bool &b
 
 	// if we can fit the entire music and driver within the first 16kB of data,
 	// enable compressed mode
-	if ((PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize - m_iNSFDRVSize) < 0x8000
-		|| m_bBankSwitched || m_iActualChip != m_pDocument->GetExpansionChip()) // // //
-		bCompressedMode = false;
-	else
-		bCompressedMode = true;
+	bCompressedMode = !((PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize - m_iNSFDRVSize) < 0x8000
+		|| m_bBankSwitched || m_iActualChip != m_pDocument->GetExpansionChip());
 
 	if (bCompressedMode) {
 		// Locate driver at $C000 - (driver size)
