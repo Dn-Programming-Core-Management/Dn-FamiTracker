@@ -159,8 +159,9 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 
 		// !! !! if invalid note data, reset to default
 		// some of them may slip through the cracks during module loading
+		// comparison syntax based on AssertRange() template code from FamiTrackerDoc.h
 		unsigned char Note = ChanNote.Note;
-		if (!(NONE <= Note && Note <= ECHO)) {
+		if (!(Note >= NONE && Note <= ECHO)) {
 #ifdef _DEBUG
 			CString str;
 			str.Format(_T("Error: Invalid note pattern (0x%02X on row %i, channel %i, pattern %i)\n"), Note, i, Channel, Pattern);
@@ -169,7 +170,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 			Note = NONE;
 		}
 		unsigned char Octave = ChanNote.Octave;
-		if (!(0 <= Octave && Octave < OCTAVE_RANGE)) {
+		if (!(Octave >= 0 && Octave < OCTAVE_RANGE)) {
 #ifdef _DEBUG
 			CString str;
 			str.Format(_T("Error: Invalid octave pattern (0x%02X on row %i, channel %i, pattern %i)\n"), Octave, i, Channel, Pattern);
@@ -178,16 +179,16 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 			Octave = 0;
 		}
 		unsigned char Instrument = FindInstrument(ChanNote.Instrument);
-		if (!(0 <= Instrument && Instrument <= MAX_INSTRUMENTS)) {
+		if (!((Instrument >= 0 && Instrument <= MAX_INSTRUMENTS) || Instrument == HOLD_INSTRUMENT)) {
 #ifdef _DEBUG
 			CString str;
-			str.Format(_T("Error: Invalid instrument pattern (0x%02X on row %i, channel %i, pattern %i)\n"), Instrument, i, Channel, Pattern);
+			str.Format(_T("Error: Invalid instrument index (0x%02X on row %i, channel %i, pattern %i)\n"), Instrument, i, Channel, Pattern);
 			Print(str);
 #endif
 			Instrument = MAX_INSTRUMENTS;
 		}
 		unsigned char Volume = ChanNote.Vol;
-		if (!(0 <= Volume && Volume <= MAX_VOLUME)) {
+		if (!(Volume >= 0 && Volume <= MAX_VOLUME)) {
 #ifdef _DEBUG
 			CString str;
 			str.Format(_T("Error: Invalid volume pattern (0x%02X on row %i, channel %i, pattern %i)\n"), Volume, i, Channel, Pattern);
@@ -215,7 +216,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 		// Check for delays, must come first
 		for (int j = 0; j < EffColumns; ++j) {
 			unsigned char Effect = ChanNote.EffNumber[j];
-			if (!(EF_NONE <= Effect && Effect <= EF_COUNT)) {
+			if (!(Effect >= EF_NONE && Effect <= EF_COUNT)) {
 #ifdef _DEBUG
 				CString str;
 				str.Format(_T("Error: Invalid effect command data (0x%02X on row %i, channel %i, pattern %i)\n"), Effect, i, Channel, Pattern);
@@ -302,7 +303,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 				else {
 					DPCMInst = ChanNote.Instrument;
 					// double check if DPCMInst is a valid instrument index
-					if (!(0 <= DPCMInst && DPCMInst < MAX_INSTRUMENTS)) {
+					if (!(DPCMInst >= 0 && DPCMInst < MAX_INSTRUMENTS)) {
 #ifdef _DEBUG
 						CString str;
 						str.Format(_T("Error: Invalid instrument index (0x%02X on row %i, channel %i, pattern %i)\n"), DPCMInst, i, Channel, Pattern);
@@ -379,7 +380,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 		for (int j = 0; j < EffColumns; ++j) {
 
 			unsigned char Effect = ChanNote.EffNumber[j];
-			if (!(EF_NONE <= Effect && Effect <= EF_COUNT)) {
+			if (!(Effect >= EF_NONE && Effect <= EF_COUNT)) {
 				CString str;
 				str.Format(_T("Error: Invalid effect command data (0x%02X on row %i, channel %i, pattern %i)\n"), Effect, i, Channel, Pattern);
 				Print(str);
