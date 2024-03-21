@@ -1232,12 +1232,12 @@ ft_cmd_n163_wave_buffer:
 ft_cmd_s5b_env_type:
 	lda #$01
 	sta var_EnvelopeTrigger
-	sta var_EnvelopeEnabled - S5B_OFFSET, x
+	sta var_EnvelopeEnabled
 	jsr ft_get_pattern_byte
 	sta var_EnvelopeType
 	bne :+
 	lda #$00
-	sta var_EnvelopeEnabled - S5B_OFFSET, x
+	sta var_EnvelopeEnabled
 	lda var_EnvelopeType
 :	and #$F0
 	lsr a

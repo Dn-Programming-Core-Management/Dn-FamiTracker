@@ -20,6 +20,7 @@ ft_init_s5b:
 :	dex
 	sta var_EnvelopeAutoShift, x
 	bne :-
+    ; disable noise on all channels
 	lda #$07
 	sta $C000
 	lda #%00111000
@@ -30,6 +31,7 @@ ft_init_s5b:
 ft_update_s5b:
 	lda var_PlayerFlags
 	bne :+
+    ; silence all channels
 	ldx #$08
 	stx $C000
 	sta $E000
@@ -43,8 +45,8 @@ ft_update_s5b:
 :
 	ldx #$00
 	stx var_Pul_Noi
-@UpdateNoise:
-	; this is handled in instrument.s
+;@UpdateNoise:
+	; var_Noise_Period is handled in instrument.s
 	ldx #(CH_COUNT_S5B - 1)
 @UpdateNoiseMask:
 	asl var_Pul_Noi
@@ -78,12 +80,15 @@ ft_update_s5b:
 	ldx #$00
 	ldy #$00
 @ChannelLoop:
-	; CChannelHandlerS5B::UpdateAutoEnvelope()
+	; see CChannelHandlerS5B::UpdateAutoEnvelope()
 	lda var_EnvelopeAutoShift, x
-	beq @Continue
+	beq @ContinueChannelLoop
 	lda var_EnvelopeEnabled
-	beq @Continue
+	beq @ContinueChannelLoop
 
+    ; avoid clobbering Y pointer
+    tya
+    pha
 @AutoEnv:		; Hxy overrides envelope period
 	lda var_ch_PeriodCalcLo + S5B_OFFSET, x
 	sta var_EnvelopeRate
@@ -92,7 +97,7 @@ ft_update_s5b:
 
 	lda var_EnvelopeAutoShift, x		;;; ;; ; 050B
 	cmp #$08
-	beq @Continue
+	beq @ContinueAutoEnv
 	bcc @LowerOctave
 @RaiseOctave:
 	sec
@@ -102,11 +107,11 @@ ft_update_s5b:
 	ror var_EnvelopeRate
 	dey
 	bne :-
-	bcc @Continue
+	bcc @ContinueAutoEnv
 	inc var_EnvelopeRate
-	bne @Continue
+	bne @ContinueAutoEnv
 	inc var_EnvelopeRate + 1
-	bne @Continue ; always
+	bne @ContinueAutoEnv ; always
 @LowerOctave:
 	sta var_Temp
 	sec
@@ -117,25 +122,24 @@ ft_update_s5b:
 	rol var_EnvelopeRate + 1
 	dey
 	bne :-
-@Continue:
+@ContinueAutoEnv:
+    pla
+    tay
+@ContinueChannelLoop:
 	lda var_ch_Note + S5B_OFFSET, x				; Kill channel if note = off
 	bne :+
 	txa
 	ora #$08
-;	clc
-;	adc #$08
-	sta $C000
+	sta $C000		; $08/$09/$0A
 	lda #$00
 	sta $E000
 	iny
 	iny
-	jpl @S5B_next ; always
+	bpl @S5B_next ; always
 	; Load volume
 :	txa
 	ora #$08
-;	clc
-;	adc #$08
-	sta $C000
+	sta $C000		; $08/$09/$0A
 	lda var_ch_VolColumn + S5B_OFFSET, x
 	beq @StoreVolume
 	lsr a
@@ -169,11 +173,12 @@ ft_update_s5b:
 	inc var_ch_PeriodCalcLo + S5B_OFFSET, x		; correction
 	bne :+
 	inc var_ch_PeriodCalcHi + S5B_OFFSET, x
-:	sty $C000
+	; Y register is preset by volume/enable code above
+:	sty $C000		; $00/$02/$04
 	iny
-	lda var_ch_PeriodCalcLo + S5B_OFFSET, x
+    lda var_ch_PeriodCalcLo + S5B_OFFSET, x
 	sta $E000
-	sty $C000
+	sty $C000		; $01/$03/$05
 	iny
 	lda var_ch_PeriodCalcHi + S5B_OFFSET, x
 	sta $E000
@@ -184,7 +189,6 @@ ft_update_s5b:
 	lda var_ch_Trigger + S5B_OFFSET, x
 	beq @S5B_next
 	sta var_EnvelopeTrigger ; should be 1 anyway
-
 @S5B_next:
 	inx
 	cpx #CH_COUNT_S5B
@@ -200,10 +204,10 @@ ft_update_s5b:
 	beq :+
 	sta var_Noise_Prev
 	eor #$1F
-	stx $C000
+	stx $C000		; $06
 	sta $E000
 :	inx
-	stx $C000
+	stx $C000		; $07
 	lda var_Pul_Noi
 	sta $E000
 

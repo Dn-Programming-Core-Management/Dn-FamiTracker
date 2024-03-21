@@ -299,6 +299,7 @@ ft_run_instrument:
 @DoneConvert:		; ;; ;;;
 	sta var_ch_DutyCurrent, x
 .if .defined(USE_S5B)
+; see CChannelHandlerS5B::UpdateRegs()
 ;	if (Value & S5B_MODE_NOISE)
 ;		pChan->SetNoiseFreq(Value & 0x1F);
 	bpl :+
