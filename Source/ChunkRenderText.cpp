@@ -79,7 +79,12 @@ const stChunkRenderFunc CChunkRenderText::RENDER_FUNCTIONS[] = {
 	{CHUNK_WAVES,			&CChunkRenderText::StoreWavesChunk}
 };
 
-CChunkRenderText::CChunkRenderText(CFile *pFile) : m_pFile(pFile)
+CChunkRenderText::CChunkRenderText(CFile *pFile) : m_pFile(pFile),
+	m_pFileNSFStub(nullptr),
+	m_pFileNSFHeader(nullptr),
+	m_pFileNSFConfig(nullptr),
+	m_pFilePeriods(nullptr),
+	m_pFileVibrato(nullptr)
 {
 }
 
@@ -90,11 +95,6 @@ void CChunkRenderText::StoreChunks(const std::vector<CChunk*> &Chunks)
 		for (int j = 0; j < sizeof(RENDER_FUNCTIONS) / sizeof(stChunkRenderFunc); ++j)
 			if (pChunk->GetType() == RENDER_FUNCTIONS[j].type)
 				CALL_MEMBER_FN(this, RENDER_FUNCTIONS[j].function)(pChunk, m_pFile);
-
-	// Write strings to file
-	WriteFileString(CStringA("; " APP_NAME " exported music data: "), m_pFile);
-	WriteFileString(CFamiTrackerDoc::GetDoc()->GetTitle(), m_pFile);
-	WriteFileString(CStringA("\n;\n\n"), m_pFile);
 
 	// Module header
 	DumpStrings(CStringA("; Module header\n"), CStringA("\n"), m_headerStrings, m_pFile);
@@ -481,7 +481,341 @@ void CChunkRenderText::StoreWavesChunk(CChunk *pChunk, CFile *pFile)
 
 void CChunkRenderText::WriteFileString(const CStringA &str, CFile *pFile) const
 {
+	if (!pFile) return;
 	pFile->Write(const_cast<CStringA&>(str).GetBuffer(), str.GetLength());
+}
+
+// These functions write to a separate file. CFile path to those separate files must be the same as export.
+
+void CChunkRenderText::StoreNSFStub(unsigned char Expansion, bool Bankswitched, vibrato_t VibratoStyle, bool LinearPitch, int ActualNamcoChannels, bool UseAllChips, bool IsAssembly) const
+{
+	CString str;
+
+	str.Append(";\n; NSF stub file, used to define compile constants\n;\n\n");
+	str.Append("PACKAGE = 1\n");
+	str.Append("HAS_NSF_HEADER = 1\n");
+	str.Append("USE_AUX_DATA = 1\n");
+	bool MultiChip = ((Expansion & (Expansion - 1)) != 0) && UseAllChips;
+	if (MultiChip) {
+		// Simulate NSF export multichip
+		str.Append("USE_ALL = 1\n");
+		str.Append("NAMCO_CHANNELS = 8\n");
+		str.Append("USE_OLDVIBRATO = 1\n");
+		str.Append("USE_BANKSWITCH = 1\n");
+		str.Append("USE_LINEARPITCH = 1\n");
+	}
+	else {
+		if (Expansion & SNDCHIP_VRC6)
+			str.Append("USE_VRC6 = 1\n");
+		if (Expansion & SNDCHIP_VRC7)
+			str.Append("USE_VRC7 = 1\n");
+		if (Expansion & SNDCHIP_FDS)
+			str.Append("USE_FDS = 1\n");
+		if (Expansion & SNDCHIP_MMC5)
+			str.Append("USE_MMC5 = 1\n");
+		if (Expansion & SNDCHIP_N163)
+			str.Append("USE_N163 = 1\n");
+		if (Expansion & SNDCHIP_S5B)
+			str.Append("USE_S5B = 1\n");
+		str.AppendFormat("NAMCO_CHANNELS = %d\n", ActualNamcoChannels);
+		if (Bankswitched)
+			str.Append("USE_BANKSWITCH = 1\n");
+		if (VibratoStyle == VIBRATO_OLD)
+			str.Append("USE_OLDVIBRATO = 1\n");
+		if (LinearPitch)
+			str.Append("USE_LINEARPITCH = 1\n");
+	}
+
+	str.Append("\n.include \"driver/driver.s\"\t; path to NSF driver source\n");
+
+	str.Append(".include \"music.asm\"\t\t; path to NSF export source\n");
+
+	WriteFileString(str, m_pFileNSFStub);
+}
+
+void CChunkRenderText::StoreNSFHeader(stNSFHeader Header) const
+{
+	CString str;
+
+	str.Append(";\n; NSF Header\n;\n");
+	str.Append(".import __FTR_FILEOFFS__\n");
+	str.Append("NSF2_SIZE = __FTR_FILEOFFS__\n\n");
+
+	str.Append("\n.segment \"HEADER1\"\n");
+	str.AppendFormat(".byte $%02X, $%02X, $%02X, $%02X, $%02X\t; ID\n",
+		Header.Ident[0], Header.Ident[1], Header.Ident[2], Header.Ident[3], Header.Ident[4]);
+	str.Append(".byte $01\t\t\t\t\t\t; Version\n");
+	str.AppendFormat(".byte $%02X\t\t\t\t\t\t\t; Number of songs\n", Header.TotalSongs);
+	str.AppendFormat(".byte $%02X\t\t\t\t\t\t\t; Start song\n", Header.StartSong);
+	str.Append(".word LOAD\t\t\t\t\t\t; LOAD address\n");
+	str.Append(".word INIT\t\t\t\t\t\t; INIT address\n");
+	str.Append(".word PLAY\t\t\t\t\t\t; PLAY address\n\n");
+
+	str.Append(".segment \"HEADER2\"\n");
+	str.AppendFormat(".byte \"%s\"\t; Name, 32 bytes\n\n", Header.SongName);
+
+	str.Append(".segment \"HEADER3\"\n");
+	str.AppendFormat(".byte \"%s\"\t; Artist, 32 bytes\n\n", Header.ArtistName);
+
+	str.Append(".segment \"HEADER4\"\n");
+	str.AppendFormat(".byte \"%s\"\t; Copyright, 32 bytes\n\n", Header.Copyright);
+
+	str.Append(".segment \"HEADER5\"\n");
+	str.AppendFormat(".word $%04X\t\t\t\t\t\t; NTSC speed\n", Header.Speed_NTSC);
+	str.AppendFormat(".byte $%02X, $%02X, $%02X, $%02X, $%02X, $%02X, $%02X, $%02X\t; Bank values\n",
+		Header.BankValues[0], Header.BankValues[1], Header.BankValues[2], Header.BankValues[3],
+		Header.BankValues[4], Header.BankValues[5], Header.BankValues[6], Header.BankValues[7]);
+	str.AppendFormat(".word $%04X\t\t\t\t\t\t; PAL speed\n", Header.Speed_PAL);
+	str.AppendFormat(".byte $%02X\t\t\t\t\t\t; Region flags\n", Header.Flags);
+	str.Append(".byte EXPANSION_FLAG\t\t\t; Expansion audio flags\n");
+	str.AppendFormat(".byte $%02X\t\t\t\t\t\t; NSF2 flags\n", Header.NSF2Flags);
+	str.Append(".faraddr NSF2_SIZE\t\t\t\t; NSF data length\n");
+
+	WriteFileString(str, m_pFileNSFHeader);
+}
+
+void CChunkRenderText::StoreNSFConfig(unsigned int DPCMSegment, stNSFHeader Header, bool Bankswitched) const
+{
+	CString str;
+	CString segmentAttr = (Header.SoundChip & SNDCHIP_FDS ? "rw" : "ro");
+
+	if (Bankswitched) {
+		// TODO: dynamically allocate memory chunks
+	}
+	else {
+		str.Append("MEMORY {\n");
+		str.Append("  ZP:  start = $00,   size = $100,   type = rw, file = \"\";\n");
+		str.Append("  RAM: start = $200,  size = $600,   type = rw, file = \"\";\n");
+		str.Append("  HDR: start = $00,   size = $80,    type = ro, file = %O;\n");
+		str.Append("  PRG: start = $8000, size = $8000, type = " + segmentAttr + ", file = %O;\n");
+		str.Append("  FTR: start = $0000, size = $4000, type = ro, file = %O, define = yes;\n");
+		str.Append("}\n\n");
+		str.Append("SEGMENTS {\n");
+		str.Append("  ZEROPAGE: load = ZP,  type = zp;\n");
+		str.Append("  BSS:      load = RAM, type = bss, define = yes;\n");
+		str.Append("  HEADER1:  load = HDR, type = ro;\n");
+		str.Append("  HEADER2:  load = HDR, type = ro,  start = $0E, fillval = $0;\n");
+		str.Append("  HEADER3:  load = HDR, type = ro,  start = $2E, fillval = $0;\n");
+		str.Append("  HEADER4:  load = HDR, type = ro,  start = $4E, fillval = $0;\n");
+		str.Append("  HEADER5:  load = HDR, type = ro,  start = $6E;\n");
+		str.Append("  CODE:     load = PRG, type = " + segmentAttr + ";\n");
+		str.AppendFormat(("  DPCM:     load = PRG, type = " + segmentAttr + ",  start = $%04X;\n"), DPCMSegment);
+		str.Append("}\n");
+	}
+
+	WriteFileString(str, m_pFileNSFConfig);
+}
+
+void CChunkRenderText::StorePeriods(unsigned int *pLUTNTSC, unsigned int* pLUTPAL, unsigned int* pLUTSaw, unsigned int *pLUTVRC7, unsigned int *pLUTFDS, unsigned int *pLUTN163) const
+{
+	CString str;
+
+	const auto StoreWordString = [&](unsigned int* Table) {
+		str.Append("\t.word\t");
+		for (int i = 0; i < NOTE_COUNT; ++i) {
+			unsigned int Val = Table[i] & 0xFFFF;
+			if (i < NOTE_COUNT - 1) {
+				if (i % NOTE_RANGE < NOTE_RANGE - 1)
+					str.AppendFormat("$%04X, ", Val);
+				else
+					str.AppendFormat("$%04X\n\t.word\t", Val);
+			}
+			else
+				str.AppendFormat("$%04X\n", Val);
+		}
+	};
+
+	// One possible optimization is to store the PAL table as the difference from the NTSC table
+
+	str.Append("; 2A03 NTSC\n");
+	str.Append(".if .defined(NTSC_PERIOD_TABLE)\n");
+	str.Append("ft_periods_ntsc: ;; Patched\n");
+	StoreWordString(pLUTNTSC);
+
+	str.Append(".endif\n\n");
+	str.Append("; 2A03 PAL\n");
+	str.Append(".if .defined(PAL_PERIOD_TABLE)\n");
+	str.Append("ft_periods_pal: ;; Patched\n");
+	StoreWordString(pLUTPAL);
+
+	str.Append(".endif\n\n");
+	str.Append("; VRC6 Sawtooth\n");
+	str.Append(".if .defined(USE_VRC6)\n");
+	str.Append("ft_periods_sawtooth: ;; Patched\n");
+	StoreWordString(pLUTSaw);
+
+	str.Append(".endif\n\n");
+	str.Append("; FDS\n");
+	str.Append(".if .defined(USE_FDS)\n");
+	str.Append("ft_periods_fds: ;; Patched\n");
+	StoreWordString(pLUTFDS);
+
+	str.Append(".endif\n\n");
+	str.Append("; N163\n");
+	str.Append(".if .defined(USE_N163)\n");
+	str.Append("ft_periods_n163: ;; Patched\n");
+	StoreWordString(pLUTN163);
+
+	str.Append(".endif\n\n");
+	str.Append("; VRC7\n");
+	str.Append(".if .defined(USE_VRC7)\n");
+	str.Append("; Fnum table, multiplied by 4 for higher resolution\n");
+	str.Append(".define ft_vrc7_table ");
+
+	for (int i = 0; i <= NOTE_RANGE; ++i) {		// // // include last item for linear pitch code optimization
+		if (i == NOTE_RANGE)
+			str.AppendFormat("$%04X\n", pLUTVRC7[0] << 3);
+		else
+			str.AppendFormat("$%04X, ", pLUTVRC7[i] << 2);
+	}
+
+	str.Append("\n");
+	str.Append("ft_note_table_vrc7_l: ;; Patched\n");
+	str.Append("\t.lobytes ft_vrc7_table\n");
+	str.Append("ft_note_table_vrc7_h:\n");
+	str.Append("\t.hibytes ft_vrc7_table\n");
+	str.Append(".endif\n");
+
+	WriteFileString(str, m_pFilePeriods);
+}
+
+void CChunkRenderText::StoreVibrato(unsigned int *pLUTVibrato) const
+{
+	CString str;
+
+	str.Append("; Vibrato table (256 bytes)\n"
+		"ft_vibrato_table: ;; Patched\n");
+	for (int i = 0; i < 16; i++) {	// depth
+		str.Append("\t.byte ");
+		for (int j = 0; j < 16; j++) {	// phase
+			str.AppendFormat("$%02X%s", pLUTVibrato[i * 16 + j], j < 15 ? ", " : "");
+		}
+		str.Append("\n");
+	}
+
+	WriteFileString(str, m_pFileVibrato);
+}
+
+void CChunkRenderText::StoreUpdateExt(unsigned char Expansion) const
+{
+	// // // special processing for multichip
+	if ((Expansion & (Expansion - 1)) == false) return;
+	
+	CString str;
+
+	str.Append("\t; VRC6\n");
+	if (Expansion & SNDCHIP_VRC6)
+		str.Append("\tjsr ft_update_vrc6");
+	else
+		str.Append("\tnop\n\tnop\n\tnop\n");
+	str.Append("\t; VRC7\n");
+	if (Expansion & SNDCHIP_VRC7)
+		str.Append("\tjsr ft_update_vrc7");
+	else
+		str.Append("\tnop\n\tnop\n\tnop\n");
+	str.Append("\t; FDS\n");
+	if (Expansion & SNDCHIP_FDS)
+		str.Append("\tjsr ft_update_fds");
+	else
+		str.Append("\tnop\n\tnop\n\tnop\n");
+	str.Append("\t; MMC5\n");
+	if (Expansion & SNDCHIP_MMC5)
+		str.Append("\tjsr ft_update_mmc5");
+	else
+		str.Append("\tnop\n\tnop\n\tnop\n");
+	str.Append("\t; N163\n");
+	if (Expansion & SNDCHIP_N163)
+		str.Append("\tjsr ft_update_n163");
+	else
+		str.Append("\tnop\n\tnop\n\tnop\n");
+	str.Append("\t; S5B\n");
+	if (Expansion & SNDCHIP_S5B)
+		str.Append("\tjsr ft_update_s5b");
+	else
+		str.Append("\tnop\n\tnop\n\tnop\n");
+	WriteFileString(str, m_pFileMultiChipUpdate);
+}
+
+void CChunkRenderText::StoreEnableExt(unsigned char Expansion) const
+{
+	// // // special processing for multichip
+	if ((Expansion & (Expansion - 1)) == false) return;
+	/*
+	if (Expansion & (Expansion - 1)) {		// // // special processing for multichip
+		const int CH_MAP[] = {
+			0, 1, 2, 3, 27,
+			6, 7, 8,
+			4, 5, -1,
+			9, 10, 11, 12, 13, 14, 15, 16,
+			17,
+			21, 22, 23, 24, 25, 26,
+			18, 19, 20,
+		};
+
+		for (int i = 0; i < CHANNELS; ++i)
+			pData[FT_CH_ENABLE_ADR + i] = 0;
+		for (const int x : m_vChanOrder)
+			pData[FT_CH_ENABLE_ADR + CH_MAP[m_pDocument->GetChannelType(x)]] = 1;
+	}
+	*/
+	// // // special processing for multichip
+	if ((Expansion & (Expansion - 1)) == false) return;
+
+	CString str;
+
+	str.Append("ft_channel_enable: ;; Patched\n");
+	str.Append("\t.byte 1, 1, 1, 1\n");
+
+	str.Append("\t; MMC5\n");
+	if (Expansion & SNDCHIP_MMC5)
+		str.Append("\t.byte 1, 1\n");
+	else
+		str.Append("\t.byte 0, 0\n");
+
+	str.Append("\t; VRC6\n");
+	if (Expansion & SNDCHIP_VRC6)
+		str.Append("\t.byte 1, 1, 1\n");
+	else
+		str.Append("\t.byte 0, 0, 0\n");
+
+	str.Append("\t; N163\n");
+	if (Expansion & SNDCHIP_N163)
+		str.Append("\t.byte 1, 1, 1, 1, 1, 1, 1, 1\n");
+	else
+		str.Append("\t.byte 0, 0, 0, 0, 0, 0, 0, 0\n");
+
+	str.Append("\t; FDS\n");
+	if (Expansion & SNDCHIP_FDS)
+		str.Append("\t.byte 1\n");
+	else
+		str.Append("\t.byte 0\n");
+
+	str.Append("\t; S5B\n");
+	if (Expansion & SNDCHIP_S5B)
+		str.Append("\t.byte 1, 1, 1\n");
+	else
+		str.Append("\t.byte 0, 0, 0\n");
+
+	str.Append("\t; VRC7\n");
+	if (Expansion & SNDCHIP_VRC7)
+		str.Append("\t.byte 1, 1, 1, 1, 1, 1\n");
+	else
+		str.Append("\t.byte 0, 0, 0, 0, 0, 0\n");
+
+	str.Append("\t; DPCM\n");
+	str.Append("\t.byte 1\n");
+	WriteFileString(str, m_pFileMultiChipEnable);
+}
+
+void CChunkRenderText::SetExtraDataFiles(CFile *pFileNSFStub, CFile* pFileNSFHeader, CFile* pFileNSFConfig, CFile* pFilePeriods, CFile* pFileVibrato, CFile *pFileMultiChipEnable, CFile *pFileMultiChipUpdate)
+{
+	m_pFileNSFStub = pFileNSFStub;
+	m_pFileNSFHeader = pFileNSFHeader;
+	m_pFileNSFConfig = pFileNSFConfig;
+	m_pFilePeriods = pFilePeriods;
+	m_pFileVibrato = pFileVibrato;
+	m_pFileMultiChipEnable = pFileMultiChipEnable;
+	m_pFileMultiChipUpdate = pFileMultiChipUpdate;
 }
 
 void CChunkRenderText::StoreByteString(const char *pData, int Len, CStringA &str, int LineBreak) const

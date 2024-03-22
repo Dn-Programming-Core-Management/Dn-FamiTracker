@@ -317,10 +317,9 @@ ft_calc_period:
 	
 	; apply frequency multiplication
 	lda var_ch_Harmonic, x
+	beq @MaxPeriod									; K00 results in lowest possible frequency
 	cmp #$01
 	beq @SkipHarmonic								; skip calculation if it's not affecting pitch
-	cmp #$00
-	beq @MaxPeriod									; K00 results in lowest possible frequency
 
 	lda ft_channel_type, x
 	cmp #CHAN_NOI
@@ -334,7 +333,7 @@ ft_calc_period:
 ; FDS and N163 use angular frequency
 .if .defined(USE_FDS)
 	cmp #CHAN_FDS
-	beq @HarmonicMultiply
+	beq @HarmonicMultiplyFDS
 .endif
 .if .defined(USE_N163)
 	cmp #CHAN_N163
@@ -351,6 +350,10 @@ ft_calc_period:
 	sta AUX + 1
 	jsr DIV
 	jmp @HarmonicEnd
+.if .defined(USE_FDS)
+@HarmonicMultiplyFDS:
+	jsr @CopyPeriodToCarrier
+.endif
 @HarmonicMultiply:
 	lda var_ch_PeriodCalcLo, x
 	sta var_Temp16
@@ -370,11 +373,19 @@ ft_calc_period:
 	sta var_ch_PeriodCalcLo, x
 	lda ACC + 1
 	sta var_ch_PeriodCalcHi, x
+	jmp @JumpHarmonicEnd
 @SkipHarmonic:
-
+.if .defined(USE_FDS)
+	lda ft_channel_type, x
+	cmp #CHAN_FDS
+	bne @JumpHarmonicEnd
+	jsr @CopyPeriodToCarrier
+.endif
+@JumpHarmonicEnd:
 	jsr ft_vibrato
 	jsr ft_tremolo
 	rts
+
 @MaxPeriod:
 	; no limits for noise
 	lda ft_channel_type, x
@@ -405,6 +416,17 @@ ft_calc_period:
 	sta var_ch_PeriodCalcLo, x
 @EndCalcPeriod:
 	rts
+
+.if .defined(USE_FDS)
+@CopyPeriodToCarrier:
+	; copy period to var_ch_FDSCarrier
+	; needed for modulation
+	lda var_ch_PeriodCalcLo, x
+	sta var_ch_FDSCarrier
+	lda var_ch_PeriodCalcHi, x
+	sta var_ch_FDSCarrier + 1
+	rts
+.endif
 
 ;
 ; Portamento
@@ -495,27 +517,7 @@ ft_portamento_up:
 	sta var_Temp16
 	lda #$00
 	sta var_Temp16 + 1
-	jsr ft_period_remove
-	jsr ft_limit_freq
-:	jmp ft_post_effects
-ft_portamento_down:
-	lda var_ch_Note, x
-	beq :+
-	lda var_ch_EffParam, x
-	sta var_Temp16
-	lda #$00
-	sta var_Temp16 + 1
-	jsr ft_period_add
-	jsr ft_limit_freq
-:	jmp ft_post_effects
-
-ft_period_add:
 .if .defined(USE_N163)
-.if .defined(USE_LINEARPITCH)		;;; ;; ;
-	lda var_SongFlags
-	and #FLAG_LINEARPITCH
-	bne :+
-.endif								; ;; ;;;
     lda ft_channel_type, x
     cmp #CHAN_N163
     bne :+
@@ -526,6 +528,37 @@ ft_period_add:
     rol var_Temp16 + 1
 :
 .endif
+	jsr ft_period_remove
+	jsr ft_limit_freq
+	jmp ft_post_effects
+ft_portamento_down:
+	lda var_ch_Note, x
+	beq :+
+	lda var_ch_EffParam, x
+	sta var_Temp16
+	lda #$00
+	sta var_Temp16 + 1
+.if .defined(USE_N163)
+    lda ft_channel_type, x
+    cmp #CHAN_N163
+    bne :+
+    ; Multiply by 4
+    asl var_Temp16
+    rol var_Temp16 + 1
+    asl var_Temp16
+    rol var_Temp16 + 1
+:
+.endif
+	jsr ft_period_add
+	jsr ft_limit_freq
+	jmp ft_post_effects
+
+ft_period_add:
+.if .defined(USE_LINEARPITCH)		;;; ;; ;
+	lda var_SongFlags
+	and #FLAG_LINEARPITCH
+	bne :+
+.endif								; ;; ;;;
 	clc
 	lda var_ch_TimerPeriodLo, x
 	adc var_Temp16
@@ -539,26 +572,12 @@ ft_period_add:
 	sta var_ch_TimerPeriodHi, x
 :   rts
 ft_period_remove:
-.if .defined(USE_N163)
 .if .defined(USE_LINEARPITCH)		;;; ;; ;
 	lda var_SongFlags
 	padjmp_h	8
 	and #FLAG_LINEARPITCH
 	bne :+
 .endif								; ;; ;;;
-    lda ft_channel_type, x
-    cmp #CHAN_N163
-	padjmp		7
-	padjmp_h	4
-    bne :+
-    ; Multiply by 4
-    asl var_Temp16
-    rol var_Temp16 + 1
-    asl var_Temp16
-	padjmp		5
-    rol var_Temp16 + 1
-:
-.endif
 	sec
 	lda var_ch_TimerPeriodLo, x
 	sbc var_Temp16

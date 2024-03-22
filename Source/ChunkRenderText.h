@@ -31,7 +31,9 @@
 class CChunkRenderText;
 class CDSample;		// // //
 
-typedef void (CChunkRenderText::*renderFunc_t)(CChunk *pChunk, CFile *pFile);
+typedef void (CChunkRenderText:: *renderFunc_t)(CChunk *pChunk, CFile *pFile);
+
+struct stNSFHeader;
 
 struct stChunkRenderFunc {
 	chunk_type_t type;
@@ -42,8 +44,17 @@ class CChunkRenderText
 {
 public:
 	CChunkRenderText(CFile *pFile);
-	void StoreChunks(const std::vector<CChunk*> &Chunks);
-	void StoreSamples(const std::vector<const CDSample*> &Samples);
+	void StoreChunks(const std::vector<CChunk *> &Chunks);
+	void StoreSamples(const std::vector<const CDSample *> &Samples);
+	void WriteFileString(const CStringA &str, CFile *pFile) const;
+	void StoreNSFStub(unsigned char Header, bool Bankswitched, vibrato_t VibratoStyle, bool LinearPitch, int ActualNamcoChannels, bool UseAllChips, bool IsAssembly = false) const;
+	void StoreNSFHeader(stNSFHeader Header) const;
+	void StoreNSFConfig(unsigned int DPCMSegment, stNSFHeader Header, bool Bankswitched = false) const;
+	void StorePeriods(unsigned int *pLUTNTSC, unsigned int *pLUTPAL, unsigned int *pLUTSaw, unsigned int *pLUTVRC7, unsigned int *pLUTFDS, unsigned int *pLUTN163) const;
+	void StoreVibrato(unsigned int *pLUTVibrato) const;
+	void StoreUpdateExt(unsigned char Expansion) const;
+	void StoreEnableExt(unsigned char Expansion) const;
+	void SetExtraDataFiles(CFile *pFileNSFStub, CFile *pFileNSFHeader, CFile *pFileNSFConfig, CFile *pFilePeriods, CFile *pVibrato, CFile *pFileMultiChipEnable, CFile *pFileMultiChipUpdate);
 
 	// Labels
 	// // // moved from CCompiler
@@ -72,7 +83,6 @@ private:
 
 private:
 	void DumpStrings(const CStringA &preStr, const CStringA &postStr, CStringArray &stringArray, CFile *pFile) const;
-	void WriteFileString(const CStringA &str, CFile *pFile) const;
 	void StoreByteString(const char *pData, int Len, CStringA &str, int LineBreak) const;
 	void StoreByteString(const CChunk *pChunk, CStringA &str, int LineBreak) const;
 
@@ -109,4 +119,11 @@ private:
 	CStringArray m_wavesStrings;
 
 	CFile *m_pFile;
+	CFile *m_pFileNSFStub;
+	CFile *m_pFileNSFHeader;
+	CFile *m_pFileNSFConfig;
+	CFile *m_pFilePeriods;
+	CFile *m_pFileVibrato;
+	CFile *m_pFileMultiChipEnable;
+	CFile *m_pFileMultiChipUpdate;
 };

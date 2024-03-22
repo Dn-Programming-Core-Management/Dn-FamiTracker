@@ -2347,9 +2347,9 @@ void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Vers
 		CPatternData *pTrack = GetTrack(Track);
 
 		for (unsigned i = 0; i < Items; ++i) try {
-			unsigned Row;
+			unsigned char Row;
 			if (m_iFileVersion == 0x0200 || Version >= 6)
-				Row = static_cast<unsigned char>(pDocFile->GetBlockChar());
+				Row = pDocFile->GetBlockChar();
 			else
 				Row = AssertRange(pDocFile->GetBlockInt(), 0, 0xFF, "Row index");		// // //
 
@@ -2361,7 +2361,7 @@ void CFamiTrackerDoc::ReadBlock_Patterns(CDocumentFile *pDocFile, const int Vers
 					pDocFile->GetBlockChar(), NONE, ECHO, "Note value");
 				Note->Octave = AssertRange<MODULE_ERROR_STRICT>(
 					pDocFile->GetBlockChar(), 0, OCTAVE_RANGE - 1, "Octave value");
-				int Inst = static_cast<unsigned char>(pDocFile->GetBlockChar());
+				int Inst = pDocFile->GetBlockChar();
 				if (Inst != HOLD_INSTRUMENT)		// // // 050B
 					AssertRange<MODULE_ERROR_STRICT>(Inst, 0, m_pInstrumentManager->MAX_INSTRUMENTS, "Instrument index");
 				Note->Instrument = Inst;
