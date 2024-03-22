@@ -1595,11 +1595,11 @@ ft_limit_note:		;;; ;; ;
 ;	pla
 	cpx #APU_NOI
 	beq :+++
-	cmp #$00
+	cmp #$00	; no note
 	beq :+
 	bpl :++
 :	lda #$01
-:	cmp #$60
+:	cmp #$60	; note 95 (incremented by one earlier)
 	bcc :+
 	lda #$60
 :	rts				; ;; ;;;

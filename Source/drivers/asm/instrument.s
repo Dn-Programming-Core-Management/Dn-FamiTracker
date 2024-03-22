@@ -179,20 +179,22 @@ ft_run_instrument:
 	jsr ft_translate_freq_only
 
 	; Check this
-:	clc
+:	lda #$00
+	sta var_Temp16 + 1
 	lda var_sequence_result
-	adc var_ch_TimerPeriodLo, x
-	sta var_ch_TimerPeriodLo, x
-	lda var_sequence_result
-	bpl @NoNegativePitch
-	lda #$FF
-	bmi @LoadLowPitch
-@NoNegativePitch:
-	lda #$00
-@LoadLowPitch:
-	adc var_ch_TimerPeriodHi, x
-	sta var_ch_TimerPeriodHi, x
-	jsr ft_limit_freq
+    sta var_Temp16
+	bpl @PositivePitch
+@NegativePitch:
+    ;; !! !! change the sign
+    lda #$FF
+    eor var_Temp16
+    sta var_Temp16
+    inc var_Temp16
+	jsr ft_period_remove
+	jmp :+
+@PositivePitch:
+	jsr ft_period_add
+:	jsr ft_limit_freq
 	; ^^^^^^^^^^
 
 	; Save pitch
@@ -211,32 +213,39 @@ ft_run_instrument:
 	sta var_ch_SequencePtr4, x
 
 	; Check this
-	lda var_sequence_result
-	sta var_Temp16
-	rol a
-	bcc @AddHiPitch
-	lda #$FF
-	sta var_Temp16 + 1
-	jmp @StoreHiPitch
-@AddHiPitch:
 	lda #$00
 	sta var_Temp16 + 1
-@StoreHiPitch:
+	lda var_sequence_result
+	sta var_Temp16
 	ldy #$04
 :	clc
-	rol var_Temp16 						; multiply by 2
+	rol var_Temp16 						; multiply by 16
 	rol var_Temp16 + 1
 	dey
 	bne :-
 
-	clc
-	lda var_Temp16
-	adc var_ch_TimerPeriodLo, x
-	sta var_ch_TimerPeriodLo, x
-	lda var_Temp16 + 1
-	adc var_ch_TimerPeriodHi, x
-	sta var_ch_TimerPeriodHi, x
-	jsr ft_limit_freq
+	lda var_sequence_result
+	bpl @PositiveHiPitch
+@NegativeHiPitch:
+    ;; !! !! change the sign
+    lda #$FF
+    eor var_Temp16 + 1
+    sta var_Temp16 + 1
+    lda #$FF
+    eor var_Temp16
+    clc
+    adc #$01
+    sta var_Temp16
+    lda #$00
+    adc var_Temp16 + 1
+    sta var_Temp16 + 1
+	jsr ft_period_remove
+    ; check for over/underflow
+    ; limitperiod()
+	jmp :+
+@PositiveHiPitch:
+	jsr ft_period_add
+:	jsr ft_limit_freq
 	; ^^^^^^^^^^
 
 @SkipHiPitchUpdate:
