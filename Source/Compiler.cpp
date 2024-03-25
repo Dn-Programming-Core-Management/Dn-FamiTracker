@@ -988,9 +988,9 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 	if (ExtraData) {
 		// Get the directory of the BIN
 		CString FileDirectory = OutputFileBIN.GetFilePath();
-		FileDirectory.Delete(
-			(OutputFileBIN.GetFilePath().GetLength()) - (OutputFileBIN.GetFileName().GetLength()),
-			OutputFileBIN.GetFileName().GetLength());
+		int trimcount = OutputFileBIN.GetFilePath().GetLength() - OutputFileBIN.GetFileName().GetLength();
+		int trimindex = OutputFileBIN.GetFilePath().GetLength() - trimcount;
+		FileDirectory.Delete(trimindex, trimcount);
 
 		// Write NSF stub
 		CFile OutputFileNSFStub;

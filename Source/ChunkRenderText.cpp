@@ -84,7 +84,9 @@ CChunkRenderText::CChunkRenderText(CFile *pFile) : m_pFile(pFile),
 	m_pFileNSFHeader(nullptr),
 	m_pFileNSFConfig(nullptr),
 	m_pFilePeriods(nullptr),
-	m_pFileVibrato(nullptr)
+	m_pFileVibrato(nullptr),
+	m_pFileMultiChipEnable(nullptr),
+	m_pFileMultiChipUpdate(nullptr)
 {
 }
 
@@ -142,6 +144,10 @@ void CChunkRenderText::StoreSamples(const std::vector<const CDSample*> &Samples)
 
 	if (Samples.size() > 0) {
 		str.Format("\n\t.segment \"DPCM\"\n");
+
+		// align first sample for external programs using assembly export
+		// this allows more flexible memory configurations to directly use the export
+		str.Format("\n\t.align 64\n\n");
 		WriteFileString(str, m_pFile);
 	}
 
@@ -577,7 +583,7 @@ void CChunkRenderText::StoreNSFHeader(stNSFHeader Header) const
 void CChunkRenderText::StoreNSFConfig(unsigned int DPCMSegment, stNSFHeader Header, bool Bankswitched) const
 {
 	CString str;
-	CString segmentAttr = (Header.SoundChip & SNDCHIP_FDS ? "rw" : "ro");
+	CString segmentType = (Header.SoundChip & SNDCHIP_FDS ? "rw" : "ro");
 
 	if (Bankswitched) {
 		// TODO: dynamically allocate memory chunks
@@ -587,7 +593,7 @@ void CChunkRenderText::StoreNSFConfig(unsigned int DPCMSegment, stNSFHeader Head
 		str.Append("  ZP:  start = $00,   size = $100,   type = rw, file = \"\";\n");
 		str.Append("  RAM: start = $200,  size = $600,   type = rw, file = \"\";\n");
 		str.Append("  HDR: start = $00,   size = $80,    type = ro, file = %O;\n");
-		str.Append("  PRG: start = $8000, size = $8000, type = " + segmentAttr + ", file = %O;\n");
+		str.Append("  PRG: start = $8000, size = $8000, type = " + segmentType + ", file = %O;\n");
 		str.Append("  FTR: start = $0000, size = $4000, type = ro, file = %O, define = yes;\n");
 		str.Append("}\n\n");
 		str.Append("SEGMENTS {\n");
@@ -598,8 +604,8 @@ void CChunkRenderText::StoreNSFConfig(unsigned int DPCMSegment, stNSFHeader Head
 		str.Append("  HEADER3:  load = HDR, type = ro,  start = $2E, fillval = $0;\n");
 		str.Append("  HEADER4:  load = HDR, type = ro,  start = $4E, fillval = $0;\n");
 		str.Append("  HEADER5:  load = HDR, type = ro,  start = $6E;\n");
-		str.Append("  CODE:     load = PRG, type = " + segmentAttr + ";\n");
-		str.AppendFormat(("  DPCM:     load = PRG, type = " + segmentAttr + ",  start = $%04X;\n"), DPCMSegment);
+		str.Append("  CODE:     load = PRG, type = " + segmentType + ";\n");
+		str.AppendFormat(("  DPCM:     load = PRG, type = " + segmentType + ",  start = $%04X;\n"), DPCMSegment);
 		str.Append("}\n");
 	}
 
