@@ -218,14 +218,10 @@ ft_update_n163:
 @SkipChannel:
 	; End
 	lda var_ch_PhaseReset + N163_OFFSET, x
-	bne @N163PhaseReset
-	inx
-	cpx var_NamcoChannels
 	beq :+
-	jmp @ChannelLoop
-:	rts
-
-@N163PhaseReset:
+    ; do not attempt to reset phase if note is cut
+	lda var_ch_Note + N163_OFFSET, x
+	beq :+
 	dec var_ch_PhaseReset + N163_OFFSET, x
 
 	lda #$01
@@ -242,7 +238,12 @@ ft_update_n163:
 	jsr @LoadAddr					; hi phase
 	lda #$00
 	sta $4800
-	rts
+:
+	inx
+	cpx var_NamcoChannels
+	beq :+
+	jmp @ChannelLoop
+:	rts
 
 @LoadAddr:                    ; Load N163 RAM address
 	clc

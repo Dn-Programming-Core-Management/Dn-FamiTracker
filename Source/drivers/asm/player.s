@@ -1062,12 +1062,12 @@ ft_cmd_transpose:
 ;; ;; !! Effect: Phase reset (=xx)
 ft_cmd_phase_reset:
 	jsr ft_get_pattern_byte
-	beq :+		; skip if not zero
+	bne :+		; skip if not zero
 	inc var_ch_PhaseReset, x
 :	rts
 ft_cmd_DPCM_phase_reset:
 	jsr ft_get_pattern_byte
-	beq :+		; skip if not zero
+	bne :+		; skip if not zero
 	inc var_ch_DPCMPhaseReset
 :	rts
 ;; ;; !! Effect: Frequency Multiplier (Kxx)
