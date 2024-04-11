@@ -1834,6 +1834,11 @@ bool CCompiler::CollectLabelsBankswitched(CMap<CStringA, LPCSTR, int, int> &labe
 		}
 	}
 
+
+	int PatternSwitchBankMaxSize = PAGE_SAMPLES - PAGE_BANKED;
+	int FixedBankMaxSize = PAGE_BANKED - PAGE_START;
+	int FixedBankPages = PATTERN_SWITCH_BANK + 1;
+
 	if (Offset + DriverSizeAndNSFDRV > 0x3000) {
 		// Instrument data did not fit within the limit, display an error and abort?
 		Print(_T("Error: Instrument, frame & pattern data can't fit within bank allocation, can't export file!\n"));
@@ -1850,24 +1855,24 @@ bool CCompiler::CollectLabelsBankswitched(CMap<CStringA, LPCSTR, int, int> &labe
 		switch (pChunk->GetType()) {
 			case CHUNK_FRAME_LIST:
 				// Make sure the entire frame list will fit, if not then allocate a new bank
-				if (Offset + DriverSizeAndNSFDRV + m_iTrackFrameSize[Track++] > 0x4000) {
-					Offset = 0x3000 - DriverSizeAndNSFDRV;
+				if (Offset + DriverSizeAndNSFDRV + (int)m_iTrackFrameSize[Track++] > FixedBankMaxSize + PatternSwitchBankMaxSize) {
+					Offset = FixedBankMaxSize - DriverSizeAndNSFDRV;
 					++Bank;
 				}
 				// fall through
 			case CHUNK_FRAME:
 				labelMap[pChunk->GetLabel()] = Offset;
-				pChunk->SetBank(Bank < 4 ? ((Offset + DriverSizeAndNSFDRV) >> 12) : Bank);
+				pChunk->SetBank(Bank < FixedBankPages ? ((Offset + DriverSizeAndNSFDRV) >> 12) : Bank);
 				Offset += Size;
 				break;
 			case CHUNK_PATTERN:
 				// Make sure entire pattern will fit
-				if (Offset + DriverSizeAndNSFDRV + Size > 0x4000) {
-					Offset = 0x3000 - DriverSizeAndNSFDRV;
+				if (Offset + DriverSizeAndNSFDRV + Size > FixedBankMaxSize + PatternSwitchBankMaxSize) {
+					Offset = FixedBankMaxSize - DriverSizeAndNSFDRV;
 					++Bank;
 				}
 				labelMap[pChunk->GetLabel()] = Offset;
-				pChunk->SetBank(Bank < 4 ? ((Offset + DriverSizeAndNSFDRV) >> 12) : Bank);
+				pChunk->SetBank(Bank < FixedBankPages ? ((Offset + DriverSizeAndNSFDRV) >> 12) : Bank);
 				Offset += Size;
 				// fall through
 			default:
@@ -1876,7 +1881,7 @@ bool CCompiler::CollectLabelsBankswitched(CMap<CStringA, LPCSTR, int, int> &labe
 	}
 
 	if (m_bBankSwitched)
-		m_iFirstSampleBank = ((Bank < 4) ? ((Offset + DriverSizeAndNSFDRV) >> 12) : Bank) + 1;
+		m_iFirstSampleBank = ((Bank < FixedBankPages) ? ((Offset + DriverSizeAndNSFDRV) >> 12) : Bank) + 1;
 
 	m_iLastBank = m_iFirstSampleBank;
 
@@ -2869,10 +2874,13 @@ void CCompiler::WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header,
 	Render.WriteFileString(CStringA("; " APP_NAME " exported music data: "), pFile);
 	Render.WriteFileString(m_pDocument->GetTitle(), pFile);
 	Render.WriteFileString(CStringA("\n;\n\n"), pFile);
-
+	Render.SetBankSwitching(m_bBankSwitched);
 	Render.StoreChunks(m_vChunks);
 	Print(_T(" * Music data size: %i bytes\n"), m_iMusicDataSize);
-	Render.StoreSamples(m_vSamples);
+	// !! !! bank info must be included
+	for (const auto pChunk : m_vChunks)
+		if (pChunk->GetType() == CHUNK_SAMPLE_POINTERS)
+			Render.StoreSamples(m_vSamples, pChunk);
 	Print(_T(" * DPCM samples size: %i bytes\n"), m_iSamplesSize);
 
 	if (bExtraData) {
@@ -2914,7 +2922,7 @@ void CCompiler::WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header,
 			LUTVibrato[i] = pSoundGen->ReadVibratoTable(i);
 		}
 		Render.SetExtraDataFiles(pFileNSFStub, pFileNSFHeader, pFileNSFConfig, pFilePeriods, pFileVibrato, pFileMultiChipEnable, pFileMultiChipUpdate);
-		Render.StoreNSFStub(Header.SoundChip, m_bBankSwitched, m_pDocument->GetVibratoStyle(), m_pDocument->GetLinearPitch(), m_iActualNamcoChannels, UseAllChips, true);
+		Render.StoreNSFStub(Header.SoundChip, m_pDocument->GetVibratoStyle(), m_pDocument->GetLinearPitch(), m_iActualNamcoChannels, UseAllChips, true);
 		Render.StoreNSFHeader(Header);
 		Render.StoreNSFConfig(m_iSampleStart, Header);
 		Render.StorePeriods(LUTNTSC, LUTPAL, LUTSaw, LUTVRC7, LUTFDS, LUTN163);
@@ -2981,7 +2989,7 @@ void CCompiler::WriteBinary(CFile *pFile, bool bExtraData, stNSFHeader Header, i
 		// get an instance of CChunkRenderText to use its extra data plotting
 		CChunkRenderText RenderText(nullptr);
 		RenderText.SetExtraDataFiles(pFileNSFStub, pFileNSFHeader, pFileNSFConfig, pFilePeriods, pFileVibrato, pFileMultiChipEnable, pFileMultiChipUpdate);
-		RenderText.StoreNSFStub(Header.SoundChip, m_bBankSwitched, m_pDocument->GetVibratoStyle(), m_pDocument->GetLinearPitch(), m_iActualNamcoChannels, UseAllChips);
+		RenderText.StoreNSFStub(Header.SoundChip, m_pDocument->GetVibratoStyle(), m_pDocument->GetLinearPitch(), m_iActualNamcoChannels, UseAllChips);
 		RenderText.StoreNSFHeader(Header);
 		RenderText.StorePeriods(LUTNTSC, LUTPAL, LUTSaw, LUTVRC7, LUTFDS, LUTN163);
 		RenderText.StoreVibrato(LUTVibrato);

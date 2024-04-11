@@ -86,7 +86,9 @@ CChunkRenderText::CChunkRenderText(CFile *pFile) : m_pFile(pFile),
 	m_pFilePeriods(nullptr),
 	m_pFileVibrato(nullptr),
 	m_pFileMultiChipEnable(nullptr),
-	m_pFileMultiChipUpdate(nullptr)
+	m_pFileMultiChipUpdate(nullptr),
+	m_bBankSwitched(false),
+	m_iDataWritten(0)
 {
 }
 
@@ -99,6 +101,9 @@ void CChunkRenderText::StoreChunks(const std::vector<CChunk*> &Chunks)
 				CALL_MEMBER_FN(this, RENDER_FUNCTIONS[j].function)(pChunk, m_pFile);
 
 	// Module header
+	if (m_bBankSwitched)
+		WriteFileString(CStringA("\t.segment \"MUS_FIXED\"\n"), m_pFile);
+
 	DumpStrings(CStringA("; Module header\n"), CStringA("\n"), m_headerStrings, m_pFile);
 
 	// Instrument list
@@ -135,43 +140,50 @@ void CChunkRenderText::StoreChunks(const std::vector<CChunk*> &Chunks)
 	// Actual DPCM samples are stored later
 }
 
-void CChunkRenderText::StoreSamples(const std::vector<const CDSample*> &Samples)
+void CChunkRenderText::StoreSamples(const std::vector<const CDSample*> &Samples, CChunk *pChunk)
 {
+	ASSERT(pChunk != nullptr);
+
 	// Store DPCM samples in file, assembly format
 	CStringA str;
 	str.Format("\n; DPCM samples (located at DPCM segment)\n");
-	WriteFileString(str, m_pFile);
 
-	if (Samples.size() > 0) {
-		str.Format("\n\t.segment \"DPCM\"\n");
-
-		// align first sample for external programs using assembly export
-		// this allows more flexible memory configurations to directly use the export
-		str.Format("\n\t.align 64\n\n");
-		WriteFileString(str, m_pFile);
+	if (Samples.size() > 0 && !m_bBankSwitched) {
+		str.Append("\n\t.segment \"DPCM\"\n");
 	}
+
 
 	unsigned int Address = CCompiler::PAGE_SAMPLES;
 	for (size_t i = 0; i < Samples.size(); ++i) if (const CDSample *pDSample = Samples[i]) {		// // //
 		const unsigned int SampleSize = pDSample->GetSize();
 		const char *pData = pDSample->GetData();
-		
+
 		CStringA label;
 		label.Format(LABEL_SAMPLE, i);		// // //
-		str.Format("%s: ; %s\n", LPCSTR(label), pDSample->GetName());
+		// take advantage of the fact that the list is stored in the same order as the samples vector
+		unsigned char bank = (unsigned char)pChunk->GetData((int(i)*3) + 2);
+
+		if (m_bBankSwitched)
+			StoreDPCMBankSegment(bank, str);
+
+		// align first sample for external programs using assembly export
+		// this allows more flexible memory configurations to directly use the export
+		if (i == 0)	str.Append("\n\t.align 64\n\n");
+
+		// adjust padding if necessary
+		if ((Address & 0x3F) > 0) {
+			str.Append("\n\t.align 64\n");
+			int PadSize = 0x40 - (Address & 0x3F);
+			Address += PadSize;
+		}
+		str.AppendFormat("; %s\n%s:\n", pDSample->GetName(), LPCSTR(label));
 		StoreByteString(pData, SampleSize, str, DEFAULT_LINE_BREAK);
 		Address += SampleSize;
 
-		// Adjust if necessary
-		if ((Address & 0x3F) > 0) {
-			int PadSize = 0x40 - (Address & 0x3F);
-			Address	+= PadSize;
-			str.Append("\n\t.align 64\n");
-		}
-
 		str.Append("\n");
-		WriteFileString(str, m_pFile);
 	}
+
+	WriteFileString(str, m_pFile);
 }
 
 void CChunkRenderText::DumpStrings(const CStringA &preStr, const CStringA &postStr, CStringArray &stringArray, CFile *pFile) const
@@ -365,8 +377,13 @@ void CChunkRenderText::StoreFrameListChunk(CChunk *pChunk, CFile *pFile)
 {
 	CStringA str;
 
+	unsigned char bank = pChunk->GetBank();
+
 	// Pointers to frames
-	str.Format("; Bank %i\n", pChunk->GetBank());
+//	str.Format("; Bank %i\n", pChunk->GetBank());
+	if (m_bBankSwitched)
+		StoreMusicBankSegment(bank, str);
+
 	str.AppendFormat("%s:\n", pChunk->GetLabel());
 
 	for (int i = 0; i < pChunk->GetLength(); ++i) {
@@ -381,21 +398,24 @@ void CChunkRenderText::StoreFrameChunk(CChunk *pChunk, CFile *pFile)
 	CStringA str;
 	int len = pChunk->GetLength();
 
+	unsigned char bank = pChunk->GetBank();
+
+	if (m_bBankSwitched)
+		StoreMusicBankSegment(bank, str);
+
 	// Frame list
-	str.Format("%s:\n\t.word ", pChunk->GetLabel());
+	str.AppendFormat("%s:\n\t.word ", pChunk->GetLabel());
 
 	for (int i = 0, j = 0; i < len; ++i) {
 		if (pChunk->IsDataReference(i))
 			str.AppendFormat("%s%s", (j++ > 0) ? _T(", ") : _T(""), pChunk->GetDataRefName(i));
 	}
 
+	str.AppendFormat("\n\t.byte ", pChunk->GetLabel());
 	// Bank values
 	for (int i = 0, j = 0; i < len; ++i) {
-		if (pChunk->IsDataBank(i)) {
-			if (j == 0) {
-				str.AppendFormat("\n\t.byte ", pChunk->GetLabel());
-			}
-			str.AppendFormat("%s$%02X", (j++ > 0) ? _T(", ") : _T(""), pChunk->GetData(i));
+		if (pChunk->IsDataReference(i)) {
+			str.AppendFormat("%s<.bank(%s)", (j++ > 0) ? _T(", ") : _T(""), pChunk->GetDataRefName(i));
 		}
 	}
 
@@ -409,8 +429,11 @@ void CChunkRenderText::StorePatternChunk(CChunk *pChunk, CFile *pFile)
 	CStringA str;
 	std::size_t len = pChunk->GetLength();
 
+	unsigned char bank = pChunk->GetBank();
+
 	// Patterns
-	str.Format("; Bank %i\n", pChunk->GetBank());
+	if (m_bBankSwitched)
+		StoreMusicBankSegment(bank, str);
 	str.AppendFormat("%s:\n", pChunk->GetLabel());
 
 	const std::vector<char> &vec = pChunk->GetStringData(0);
@@ -486,6 +509,47 @@ void CChunkRenderText::StoreWavesChunk(CChunk *pChunk, CFile *pFile)
 	m_wavesStrings.Add(str);
 }
 
+void CChunkRenderText::StoreMusicBankSegment(unsigned char bank, CStringA &str)
+{
+	if (bank < CCompiler::PATTERN_SWITCH_BANK)
+		return;
+	CStringA segmenttxt, memorytxt;
+	bool duplicate = false;
+	str.Format("\t.segment \"MUS_%02X\"\n", bank);
+	memorytxt.Format("  PRG_MUSIC_%02X:     start = $B000, size = $1000, type = ro, file = %%O, fill = yes, fillval = $00, bank = $%02X;\n", bank, bank);
+	segmenttxt.Format("  MUS_%02X:    load = PRG_MUSIC_%02X, type = ro;\n", bank, bank);
+
+	for (const CStringA string : m_configMemoryAreaStrings)
+		if (string == memorytxt) duplicate |= true;
+
+	for (const CStringA string : m_configSegmentStrings)
+		if (string == segmenttxt) duplicate |= true;
+
+	if (!duplicate) {
+		m_configMemoryAreaStrings.push_back(memorytxt);
+		m_configSegmentStrings.push_back(segmenttxt);
+	}
+}
+
+void CChunkRenderText::StoreDPCMBankSegment(unsigned char bank, CStringA &str)
+{
+	CStringA segmenttxt, memorytxt;
+	bool duplicate = false;
+	str.AppendFormat("\n\t.segment \"DMC_%02X\"\n", bank);
+	memorytxt.Format("  PRG_DPCM_%02X:      start = $C000, size = $3000, type = ro, file = %%O, fill = yes, fillval = $00, bank = $%02X;\n", bank, bank);
+	segmenttxt.Format("  DMC_%02X:    load = PRG_DPCM_%02X, type = ro;\n", bank, bank);
+
+	for (const auto &string : m_configMemoryAreaStrings)
+		if (string == memorytxt) duplicate |= true;
+	for (const auto &string : m_configSegmentStrings)
+		if (string == segmenttxt) duplicate |= true;
+
+	if (!duplicate) {
+		m_configMemoryAreaStrings.push_back(memorytxt);
+		m_configSegmentStrings.push_back(segmenttxt);
+	}
+}
+
 void CChunkRenderText::WriteFileString(const CStringA &str, CFile *pFile) const
 {
 	if (!pFile) return;
@@ -494,7 +558,7 @@ void CChunkRenderText::WriteFileString(const CStringA &str, CFile *pFile) const
 
 // These functions write to a separate file. CFile path to those separate files must be the same as export.
 
-void CChunkRenderText::StoreNSFStub(unsigned char Expansion, bool Bankswitched, vibrato_t VibratoStyle, bool LinearPitch, int ActualNamcoChannels, bool UseAllChips, bool IsAssembly) const
+void CChunkRenderText::StoreNSFStub(unsigned char Expansion, vibrato_t VibratoStyle, bool LinearPitch, int ActualNamcoChannels, bool UseAllChips, bool IsAssembly) const
 {
 	CString str;
 
@@ -525,7 +589,7 @@ void CChunkRenderText::StoreNSFStub(unsigned char Expansion, bool Bankswitched, 
 		if (Expansion & SNDCHIP_S5B)
 			str.Append("USE_S5B = 1\n");
 		str.AppendFormat("NAMCO_CHANNELS = %d\n", ActualNamcoChannels);
-		if (Bankswitched)
+		if (m_bBankSwitched)
 			str.Append("USE_BANKSWITCH = 1\n");
 		if (VibratoStyle == VIBRATO_OLD)
 			str.Append("USE_OLDVIBRATO = 1\n");
@@ -581,34 +645,46 @@ void CChunkRenderText::StoreNSFHeader(stNSFHeader Header) const
 	WriteFileString(str, m_pFileNSFHeader);
 }
 
-void CChunkRenderText::StoreNSFConfig(unsigned int DPCMSegment, stNSFHeader Header, bool Bankswitched) const
+void CChunkRenderText::StoreNSFConfig(unsigned int DPCMSegment, stNSFHeader Header) const
 {
 	CString str;
 	CString segmentType = (Header.SoundChip & SNDCHIP_FDS ? "rw" : "ro");
 
-	if (Bankswitched) {
-		// TODO: dynamically allocate memory chunks
+	str.Append("MEMORY {\n");
+	str.Append("  ZP:               start = $00,   size = $100,   type = rw, file = \"\";\n");
+	str.Append("  RAM:              start = $200,  size = $600,   type = rw, file = \"\";\n");
+	str.Append("  HDR:              start = $00,   size = $80,    type = ro, file = \"%O_header\";\n");
+
+	if (m_bBankSwitched) {
+		str.Append("  PRG_DRIVER_MUSIC: start = $8000, size = $3000, type = " + segmentType + ", file = %O, fill = yes, fillval = $00, bank = $00;\n");
+		for (const auto &string : m_configMemoryAreaStrings)
+			str.Append(string);
+	}
+	else
+		str.Append("  PRG: start = $8000, size = $8000, type = " + segmentType + ", file = %O;\n");
+	str.Append("  FTR:              start = $0000, size = $4000, type = ro, file = %O, define = yes;\n");
+	str.Append("}\n\n");
+	str.Append("SEGMENTS {\n");
+	str.Append("  ZEROPAGE:  load = ZP,  type = zp;\n");
+	str.Append("  BSS:       load = RAM, type = bss, define = yes;\n");
+	str.Append("  HEADER1:   load = HDR, type = ro;\n");
+	str.Append("  HEADER2:   load = HDR, type = ro,  start = $0E, fillval = $0;\n");
+	str.Append("  HEADER3:   load = HDR, type = ro,  start = $2E, fillval = $0;\n");
+	str.Append("  HEADER4:   load = HDR, type = ro,  start = $4E, fillval = $0;\n");
+	str.Append("  HEADER5:   load = HDR, type = ro,  start = $6E;\n");
+
+	if (m_bBankSwitched) {
+		str.Append("  CODE:      load = PRG_DRIVER_MUSIC, type = " + segmentType + ";\n");
+		str.Append("  MUS_FIXED: load = PRG_DRIVER_MUSIC, type = " + segmentType + ";\n");
+		for (const auto &string : m_configSegmentStrings)
+			str.Append(string);
 	}
 	else {
-		str.Append("MEMORY {\n");
-		str.Append("  ZP:  start = $00,   size = $100,   type = rw, file = \"\";\n");
-		str.Append("  RAM: start = $200,  size = $600,   type = rw, file = \"\";\n");
-		str.Append("  HDR: start = $00,   size = $80,    type = ro, file = %O;\n");
-		str.Append("  PRG: start = $8000, size = $8000, type = " + segmentType + ", file = %O;\n");
-		str.Append("  FTR: start = $0000, size = $4000, type = ro, file = %O, define = yes;\n");
-		str.Append("}\n\n");
-		str.Append("SEGMENTS {\n");
-		str.Append("  ZEROPAGE: load = ZP,  type = zp;\n");
-		str.Append("  BSS:      load = RAM, type = bss, define = yes;\n");
-		str.Append("  HEADER1:  load = HDR, type = ro;\n");
-		str.Append("  HEADER2:  load = HDR, type = ro,  start = $0E, fillval = $0;\n");
-		str.Append("  HEADER3:  load = HDR, type = ro,  start = $2E, fillval = $0;\n");
-		str.Append("  HEADER4:  load = HDR, type = ro,  start = $4E, fillval = $0;\n");
-		str.Append("  HEADER5:  load = HDR, type = ro,  start = $6E;\n");
-		str.Append("  CODE:     load = PRG, type = " + segmentType + ";\n");
-		str.AppendFormat(("  DPCM:     load = PRG, type = " + segmentType + ",  start = $%04X;\n"), DPCMSegment);
-		str.Append("}\n");
+		str.Append("  CODE:      load = PRG, type = " + segmentType + ";\n");
+		str.AppendFormat(("  DPCM:      load = PRG, type = " + segmentType + ",  start = $%04X;\n"), DPCMSegment);
 	}
+
+	str.Append("}\nFILES {\n  # hack to get .dbg symbols to align with code\n  %O: format = bin;\n  \"%O_header\": format = bin;\n}");
 
 	WriteFileString(str, m_pFileNSFConfig);
 }
@@ -823,6 +899,11 @@ void CChunkRenderText::SetExtraDataFiles(CFile *pFileNSFStub, CFile* pFileNSFHea
 	m_pFileVibrato = pFileVibrato;
 	m_pFileMultiChipEnable = pFileMultiChipEnable;
 	m_pFileMultiChipUpdate = pFileMultiChipUpdate;
+}
+
+void CChunkRenderText::SetBankSwitching(bool bBankSwitched)
+{
+	m_bBankSwitched = bBankSwitched;
 }
 
 void CChunkRenderText::StoreByteString(const char *pData, int Len, CStringA &str, int LineBreak) const
