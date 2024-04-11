@@ -554,11 +554,6 @@ ft_portamento_down:
 	jmp ft_post_effects
 
 ft_period_add:
-.if .defined(USE_LINEARPITCH)		;;; ;; ;
-	lda var_SongFlags
-	and #FLAG_LINEARPITCH
-	bne :+
-.endif								; ;; ;;;
 	clc
 	lda var_ch_TimerPeriodLo, x
 	adc var_Temp16
@@ -572,12 +567,6 @@ ft_period_add:
 	sta var_ch_TimerPeriodHi, x
 :   rts
 ft_period_remove:
-.if .defined(USE_LINEARPITCH)		;;; ;; ;
-	lda var_SongFlags
-	padjmp_h	8
-	and #FLAG_LINEARPITCH
-	bne :+
-.endif								; ;; ;;;
 	sec
 	lda var_ch_TimerPeriodLo, x
 	sbc var_Temp16
