@@ -346,13 +346,14 @@ void CChunkRenderText::StoreSongChunk(CChunk *pChunk, CFile *pFile)
 	str.Format("%s:\n", pChunk->GetLabel());
 
 	for (int i = 0; i < pChunk->GetLength();) {
-		str.AppendFormat("\t.word %s\n", pChunk->GetDataRefName(i++));
+		LPCSTR datarefname = pChunk->GetDataRefName(i++);
+		str.AppendFormat("\t.word %s\n", datarefname);
 		str.AppendFormat("\t.byte %i\t; frame count\n", pChunk->GetData(i++));
 		str.AppendFormat("\t.byte %i\t; pattern length\n", pChunk->GetData(i++));
 		str.AppendFormat("\t.byte %i\t; speed\n", pChunk->GetData(i++));
 		str.AppendFormat("\t.byte %i\t; tempo\n", pChunk->GetData(i++));
 		str.AppendFormat("\t.byte %i\t; groove position\n", pChunk->GetData(i++));		// // //
-		str.AppendFormat("\t.byte %i\t; initial bank\n", pChunk->GetData(i++));
+		str.AppendFormat("\t.byte <.bank(%s)\t; initial bank\n", datarefname); i++;		// !! !!
 	}
 
 	str.Append("\n");
