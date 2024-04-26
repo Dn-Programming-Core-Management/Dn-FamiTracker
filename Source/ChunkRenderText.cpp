@@ -517,7 +517,7 @@ void CChunkRenderText::StoreMusicBankSegment(unsigned char bank, CStringA &str)
 	bool duplicate = false;
 	str.Format("\t.segment \"MUS_%02X\"\n", bank);
 	memorytxt.Format("  PRG_MUSIC_%02X:     start = $B000, size = $1000, type = ro, file = %%O, fill = yes, fillval = $00, bank = $%02X;\n", bank, bank);
-	segmenttxt.Format("  MUS_%02X:    load = PRG_MUSIC_%02X, type = ro;\n", bank, bank);
+	segmenttxt.Format("  MUS_%02X:    load = PRG_MUSIC_%02X,     type = ro;\n", bank, bank);
 
 	for (const CStringA string : m_configMemoryAreaStrings)
 		if (string == memorytxt) duplicate |= true;
@@ -537,7 +537,7 @@ void CChunkRenderText::StoreDPCMBankSegment(unsigned char bank, CStringA &str)
 	bool duplicate = false;
 	str.AppendFormat("\n\t.segment \"DMC_%02X\"\n", bank);
 	memorytxt.Format("  PRG_DPCM_%02X:      start = $C000, size = $3000, type = ro, file = %%O, fill = yes, fillval = $00, bank = $%02X;\n", bank, bank);
-	segmenttxt.Format("  DMC_%02X:    load = PRG_DPCM_%02X, type = ro;\n", bank, bank);
+	segmenttxt.Format("  DMC_%02X:    load = PRG_DPCM_%02X,      type = ro;\n", bank, bank);
 
 	for (const auto &string : m_configMemoryAreaStrings)
 		if (string == memorytxt) duplicate |= true;
@@ -651,9 +651,9 @@ void CChunkRenderText::StoreNSFConfig(unsigned int DPCMSegment, stNSFHeader Head
 	CString segmentType = (Header.SoundChip & SNDCHIP_FDS ? "rw" : "ro");
 
 	str.Append("MEMORY {\n");
-	str.Append("  ZP:               start = $00,   size = $100,   type = rw, file = \"\";\n");
-	str.Append("  RAM:              start = $200,  size = $600,   type = rw, file = \"\";\n");
-	str.Append("  HDR:              start = $00,   size = $80,    type = ro, file = \"%O_header\";\n");
+	str.Append("  ZP:               start = $00,   size = $100,  type = rw, file = \"\";\n");
+	str.Append("  RAM:              start = $200,  size = $600,  type = rw, file = \"\";\n");
+	str.Append("  HDR:              start = $00,   size = $80,   type = ro, file = \"%O_header\";\n");
 
 	if (m_bBankSwitched) {
 		str.Append("  PRG_DRIVER_MUSIC: start = $8000, size = $3000, type = " + segmentType + ", file = %O, fill = yes, fillval = $00, bank = $00;\n");
@@ -661,17 +661,17 @@ void CChunkRenderText::StoreNSFConfig(unsigned int DPCMSegment, stNSFHeader Head
 			str.Append(string);
 	}
 	else
-		str.Append("  PRG: start = $8000, size = $8000, type = " + segmentType + ", file = %O;\n");
+		str.Append("  PRG:              start = $8000, size = $8000, type = " + segmentType + ", file = %O, bank = $00;\n");
 	str.Append("  FTR:              start = $0000, size = $4000, type = ro, file = %O, define = yes;\n");
 	str.Append("}\n\n");
 	str.Append("SEGMENTS {\n");
-	str.Append("  ZEROPAGE:  load = ZP,  type = zp;\n");
-	str.Append("  BSS:       load = RAM, type = bss, define = yes;\n");
-	str.Append("  HEADER1:   load = HDR, type = ro;\n");
-	str.Append("  HEADER2:   load = HDR, type = ro,  start = $0E, fillval = $0;\n");
-	str.Append("  HEADER3:   load = HDR, type = ro,  start = $2E, fillval = $0;\n");
-	str.Append("  HEADER4:   load = HDR, type = ro,  start = $4E, fillval = $0;\n");
-	str.Append("  HEADER5:   load = HDR, type = ro,  start = $6E;\n");
+	str.Append("  ZEROPAGE:  load = ZP,               type = zp;\n");
+	str.Append("  BSS:       load = RAM,              type = bss, define = yes;\n");
+	str.Append("  HEADER1:   load = HDR,              type = ro;\n");
+	str.Append("  HEADER2:   load = HDR,              type = ro, start = $0E, fillval = $0;\n");
+	str.Append("  HEADER3:   load = HDR,              type = ro, start = $2E, fillval = $0;\n");
+	str.Append("  HEADER4:   load = HDR,              type = ro, start = $4E, fillval = $0;\n");
+	str.Append("  HEADER5:   load = HDR,              type = ro, start = $6E;\n");
 
 	if (m_bBankSwitched) {
 		str.Append("  CODE:      load = PRG_DRIVER_MUSIC, type = " + segmentType + ";\n");
