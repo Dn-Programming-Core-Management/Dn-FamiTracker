@@ -65,6 +65,24 @@ struct stNSFeHeader {		// // //
 	unsigned short	Speed_PAL;
 };
 
+struct stNSFeChunk {
+	uint8_t Ident[4];
+	uint8_t Size[4];
+	std::vector<uint8_t> Data;
+};
+
+struct stNSFeFooter {		// !! !!
+	// DATA chunk is written manually
+	stNSFeChunk VRC7;
+	stNSFeChunk time;
+	stNSFeChunk auth;
+	stNSFeChunk tlbl;
+	stNSFeChunk text;
+	stNSFeChunk mixe;
+	// NEND has no data yet
+	stNSFeChunk NEND;
+};
+
 struct driver_t;
 class CChunk;
 enum chunk_type_t;
@@ -106,6 +124,7 @@ private:
 
 	void	CreateHeader(stNSFHeader *pHeader, int MachineType, unsigned int NSF2Flags, bool NSF2) const;
 	void	CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType);		// // //
+	void	CreateNSFeFooter(stNSFeFooter *pHeader);		// !! !!
 	void	SetDriverSongAddress(char *pDriver, unsigned short Address) const;
 #if 0
 	void	WriteChannelMap();

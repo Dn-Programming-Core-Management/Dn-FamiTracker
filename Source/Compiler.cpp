@@ -415,115 +415,19 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 
 	// // // Create NSFe header
 
-	// Write NSFE, INFO, and BANK chunks
+	// Write NSFE, INFO, BANK. and RATE chunks
 	stNSFeHeader Header;
 	CreateNSFeHeader(&Header, MachineType);
 	OutputFile.Write(&Header, sizeof(Header));
 
-	// TODO write NSF2 chunk?
-
-	std::size_t
-		iVRC7Size = 0,
-		iAuthSize = 0,
-		iTimeSize = 0,
-		iTlblSize = 0,
-		iDataSize = 0,
-		iTextSize = 0,
-		iMixeSize = 0;
-
-	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
-		iTimeSize += 4;
-		iTlblSize += strlen(m_pDocument->GetTrackTitle(i)) + 1;
-	}
-
-	// write VRC7 chunk
-	// YM2413 and YMF281B are considered external OPLL
-	uint8_t extOPLL = m_pDocument->GetExternalOPLLChipCheck() || (theApp.GetSettings()->Emulation.iVRC7Patch > 6); iVRC7Size++;
-	uint8_t patchset[19 * 8];
-	if (extOPLL)
-		for (int i = 0; i < 19; i++)
-			for (int j = 0; j < 8; j++) {
-				patchset[(8 * i) + j] = m_pDocument->GetOPLLPatchByte((8 * i) + j);
-				iVRC7Size++;
-			}
-
-	const unsigned char VRC7Ident[] = { 'V', 'R', 'C', '7' };
-	OutputFile.Write(reinterpret_cast<char *>(&iVRC7Size), sizeof(int));
-	OutputFile.Write(&VRC7Ident, sizeof(VRC7Ident));
-	OutputFile.Write(&extOPLL, sizeof(uint8_t));
-	if (extOPLL)
-		OutputFile.Write(&patchset, (sizeof(uint8_t) * 19 * 8));
-
-	// write time chunk
-	const unsigned char TimeIdent[] = { 't', 'i', 'm', 'e' };
-	OutputFile.Write(reinterpret_cast<char *>(&iTimeSize), sizeof(int));
-	OutputFile.Write(&TimeIdent, sizeof(TimeIdent));
-	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
-		int t = static_cast<int>(m_pDocument->GetStandardLength(i, 1) * 1000.0 + 0.5);
-		OutputFile.Write(reinterpret_cast<char *>(&t), sizeof(int));
-	}
-
-	//  write tlbl chunk
-	const unsigned char TlblIdent[] = { 't', 'l', 'b', 'l' };
-	OutputFile.Write(reinterpret_cast<char *>(&iTlblSize), sizeof(int));
-	OutputFile.Write(&TlblIdent, sizeof(TlblIdent));
-	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
-		OutputFile.Write(m_pDocument->GetTrackTitle(i), static_cast<UINT>(strlen(m_pDocument->GetTrackTitle(i)) + 1));
-	}
-
-	// write auth chunk
-	CString ripper = _T(APP_NAME_VERSION);
-	iAuthSize = strlen(m_pDocument->GetSongName()) + strlen(m_pDocument->GetSongArtist())
-		+ strlen(m_pDocument->GetSongCopyright()) + ripper.GetLength() + 4;
-
-	const unsigned char AuthIdent[] = { 'a', 'u', 't', 'h' };
-	OutputFile.Write(reinterpret_cast<char *>(&iAuthSize), sizeof(int));
-	OutputFile.Write(&AuthIdent, sizeof(AuthIdent));
-	OutputFile.Write(m_pDocument->GetSongName(), static_cast<UINT>(strlen(m_pDocument->GetSongName()) + 1));
-	OutputFile.Write(m_pDocument->GetSongArtist(), static_cast<UINT>(strlen(m_pDocument->GetSongArtist()) + 1));
-	OutputFile.Write(m_pDocument->GetSongCopyright(), static_cast<UINT>(strlen(m_pDocument->GetSongCopyright()) + 1));
-	OutputFile.Write((char *)((PCSTR)ripper), ripper.GetLength() + 1);
-	ripper.ReleaseBuffer();
-
-	// write text chunk, if available
-	if (strlen(m_pDocument->GetComment())) {
-		const unsigned char TextIdent[] = { 't', 'e', 'x', 't' };
-		iTextSize = strlen(m_pDocument->GetComment()) + 1;
-		OutputFile.Write(reinterpret_cast<char *>(&iTextSize), sizeof(int));
-		OutputFile.Write(&TextIdent, sizeof(TextIdent));
-		OutputFile.Write(m_pDocument->GetComment(), static_cast<UINT>(strlen(m_pDocument->GetComment()) + 1));
-	}
-
-	// write mixe chunk
-	const unsigned char MixeIdent[] = { 'm', 'i', 'x', 'e' };
-
-	int16_t mixe_device[8]{};
-
-	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
-
-	for (int i = 0; i < 8; i++) {
-		if (m_pDocument->GetLevelOffset(i)) {
-			mixe_device[i] = (m_pDocument->GetLevelOffset(i) * 10) + pSoundGen->SurveyMixLevels[i];
-			iMixeSize += 3;
-		}
-	}
-	OutputFile.Write(reinterpret_cast<char *>(&iMixeSize), sizeof(int));
-	OutputFile.Write(&MixeIdent, sizeof(MixeIdent));
-	for (uint8_t i = 0; i < 8; i++) {
-		if (m_pDocument->GetLevelOffset(i)) {
-			unsigned char devicebyte = 0;
-			OutputFile.Write(&i, sizeof(uint8_t));
-			OutputFile.Write(reinterpret_cast<char *>(&mixe_device[i]), sizeof(int16_t));
-		}
-	}
-
-	// Write NSF data
+	// Write DATA data
 	std::unique_ptr<CChunkRenderNSF> Render(new CChunkRenderNSF(&OutputFile, m_iLoadAddress));
 
 	// write DATA chunk
+	uint32_t iDataSize = 0;
 	ULONGLONG iDataSizePos = OutputFile.GetPosition();
 	const unsigned char DataIdent[] = { 'D', 'A', 'T', 'A' };
-	OutputFile.Write(reinterpret_cast<char *>(&iDataSize), sizeof(int));
+	OutputFile.Write(reinterpret_cast<char *>(&iDataSize), sizeof(uint32_t));
 	OutputFile.Write(&DataIdent, sizeof(DataIdent));
 
 	Render->StoreNSFDRV(pNSFDRV, m_iNSFDRVSize);
@@ -546,6 +450,50 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 		}
 	}
 
+	ULONGLONG iPostDataPos = OutputFile.GetPosition();
+
+	// write actual size of DATA chunk
+	OutputFile.Seek(iDataSizePos, CFile::begin);
+	iDataSize = Render->GetDATAChunkSize();
+	OutputFile.Write(reinterpret_cast<char *>(&iDataSize), sizeof(uint32_t));
+
+	// continue writing
+	OutputFile.Seek(iPostDataPos, CFile::begin);
+
+	// !! !! Create NSFe footer
+	stNSFeFooter Footer;
+	CreateNSFeFooter(&Footer);
+
+	// TODO write NSF2 chunk?
+
+	auto write_chunk = [&](stNSFeChunk chunk, CFile &file) {
+		file.Write(&chunk.Size, sizeof(chunk.Size));
+		file.Write(&chunk.Ident, sizeof(chunk.Ident));
+		if (!chunk.Data.empty())
+			file.Write(reinterpret_cast<char *>(chunk.Data.data()), (UINT)chunk.Data.size());
+	};
+
+	// write VRC7 chunk
+	write_chunk(Footer.VRC7, OutputFile);
+
+	// write time chunk
+	write_chunk(Footer.time, OutputFile);
+
+	// write tlbl chunk
+	write_chunk(Footer.tlbl, OutputFile);
+
+	// write auth chunk
+	write_chunk(Footer.auth, OutputFile);
+
+	// write text chunk
+	write_chunk(Footer.text, OutputFile);
+
+	// write mixe chunk
+	write_chunk(Footer.mixe, OutputFile);
+
+	// write NEND chunk
+	write_chunk(Footer.NEND, OutputFile);
+
 	// Writing done, print some stats
 	Print(_T(" * NSF load address: $%04X\n"), m_iLoadAddress);
 	Print(_T("Writing output file...\n"));
@@ -562,15 +510,6 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 		Print(_T(" * Song data size: %i bytes (%i%%)\n"), m_iMusicDataSize, Percent);
 		Print(_T(" * NSF type: Linear (driver @ $%04X)\n"), m_iDriverAddress);
 	}
-
-	// write NEND chunk
-	const unsigned char NEndIdent[] = { '\0', '\0', '\0', '\0', 'N', 'E', 'N', 'D' };		// // //
-	OutputFile.Write(&NEndIdent, sizeof(NEndIdent));
-
-	// write actual size of DATA chunk
-	OutputFile.Seek(iDataSizePos, CFile::begin);
-	iDataSize = Render->GetDATAChunkSize();
-	OutputFile.Write(reinterpret_cast<char *>(&iDataSize), sizeof(int));
 
 	Print(_T("Done, total file size: %i bytes\n"), OutputFile.GetLength());
 
@@ -678,115 +617,51 @@ void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
 		}
 	}
 
-	// // // Create NSFe metadata
-
-	std::size_t
-		iVRC7Size = 0,
-		iAuthSize = 0,
-		iTimeSize = 0,
-		iTlblSize = 0,
-		iDataSize = 0,
-		iTextSize = 0,
-		iMixeSize = 0;
-
-	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
-		iTimeSize += 4;
-		iTlblSize += strlen(m_pDocument->GetTrackTitle(i)) + 1;
-	}
-
-	// write VRC7 chunk
-	// YM2413 and YMF281B are considered external OPLL
-	uint8_t extOPLL = m_pDocument->GetExternalOPLLChipCheck() || (theApp.GetSettings()->Emulation.iVRC7Patch > 6); iVRC7Size++;
-	uint8_t patchset[19 * 8];
-	if (extOPLL)
-		for (int i = 0; i < 19; i++)
-			for (int j = 0; j < 8; j++) {
-				patchset[(8 * i) + j] = m_pDocument->GetOPLLPatchByte((8 * i) + j);
-				iVRC7Size++;
-			}
-
-	const unsigned char VRC7Ident[] = { 'V', 'R', 'C', '7' };
-	OutputFile.Write(reinterpret_cast<char *>(&iVRC7Size), sizeof(int));
-	OutputFile.Write(&VRC7Ident, sizeof(VRC7Ident));
-	OutputFile.Write(&extOPLL, sizeof(uint8_t));
-	if (extOPLL)
-		OutputFile.Write(&patchset, (sizeof(uint8_t) * 19 * 8));
-
-	// write time chunk
-	const unsigned char TimeIdent[] = { 't', 'i', 'm', 'e' };
-	OutputFile.Write(reinterpret_cast<char *>(&iTimeSize), sizeof(int));
-	OutputFile.Write(&TimeIdent, sizeof(TimeIdent));
-	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
-		int t = static_cast<int>(m_pDocument->GetStandardLength(i, 1) * 1000.0 + 0.5);
-		OutputFile.Write(reinterpret_cast<char *>(&t), sizeof(int));
-	}
-
-	//  write tlbl chunk
-	const unsigned char TlblIdent[] = { 't', 'l', 'b', 'l' };
-	OutputFile.Write(reinterpret_cast<char *>(&iTlblSize), sizeof(int));
-	OutputFile.Write(&TlblIdent, sizeof(TlblIdent));
-	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
-		OutputFile.Write(m_pDocument->GetTrackTitle(i), static_cast<UINT>(strlen(m_pDocument->GetTrackTitle(i)) + 1));
-	}
-
-	// write auth chunk
-	CString ripper = _T(APP_NAME_VERSION);
-	iAuthSize = strlen(m_pDocument->GetSongName()) + strlen(m_pDocument->GetSongArtist())
-		+ strlen(m_pDocument->GetSongCopyright()) + ripper.GetLength() + 4;
-
-	const unsigned char AuthIdent[] = { 'a', 'u', 't', 'h' };
-	OutputFile.Write(reinterpret_cast<char *>(&iAuthSize), sizeof(int));
-	OutputFile.Write(&AuthIdent, sizeof(AuthIdent));
-	OutputFile.Write(m_pDocument->GetSongName(), static_cast<UINT>(strlen(m_pDocument->GetSongName()) + 1));
-	OutputFile.Write(m_pDocument->GetSongArtist(), static_cast<UINT>(strlen(m_pDocument->GetSongArtist()) + 1));
-	OutputFile.Write(m_pDocument->GetSongCopyright(), static_cast<UINT>(strlen(m_pDocument->GetSongCopyright()) + 1));
-	OutputFile.Write((char *)((PCSTR)ripper), ripper.GetLength() + 1);
-	ripper.ReleaseBuffer();
-
-	// write text chunk, if available
-	if (strlen(m_pDocument->GetComment())) {
-		const unsigned char TextIdent[] = { 't', 'e', 'x', 't' };
-		iTextSize = strlen(m_pDocument->GetComment()) + 1;
-		OutputFile.Write(reinterpret_cast<char *>(&iTextSize), sizeof(int));
-		OutputFile.Write(&TextIdent, sizeof(TextIdent));
-		OutputFile.Write(m_pDocument->GetComment(), static_cast<UINT>(strlen(m_pDocument->GetComment()) + 1));
-	}
-
-	// write mixe chunk
-	const unsigned char MixeIdent[] = { 'm', 'i', 'x', 'e' };;
-
-	int16_t mixe_device[8]{};
-
-	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
-
-	for (int i = 0; i < 8; i++) {
-		if (m_pDocument->GetLevelOffset(i)) {
-			mixe_device[i] = (m_pDocument->GetLevelOffset(i) * 10) + pSoundGen->SurveyMixLevels[i];
-			iMixeSize += 3;
-		}
-	}
-	OutputFile.Write(reinterpret_cast<char *>(&iMixeSize), sizeof(int));
-	OutputFile.Write(&MixeIdent, sizeof(MixeIdent));
-	for (uint8_t i = 0; i < 8; i++) {
-		if (m_pDocument->GetLevelOffset(i)) {
-			unsigned char devicebyte = 0;
-			OutputFile.Write(&i, sizeof(uint8_t));
-			OutputFile.Write(reinterpret_cast<char *>(&mixe_device[i]), sizeof(int16_t));
-		}
-	}
-
-	// write NEND chunk
-	const unsigned char NEndIdent[] = { '\0', '\0', '\0', '\0', 'N', 'E', 'N', 'D' };		// // //
-	OutputFile.Write(&NEndIdent, sizeof(NEndIdent));
+	ULONGLONG iPostDataPos = OutputFile.GetPosition();
 
 	// write actual size of DATA
 	OutputFile.Seek(iDataSizePos, CFile::begin);
-	iDataSize = Render->GetDATAChunkSize();
+	unsigned int iDataSize = Render->GetDATAChunkSize();
 	unsigned char NSFSize[3] = {
 		char(iDataSize & 0xFF),
 		char((iDataSize >> 8) & 0xFF),
 		char((iDataSize >> 16) & 0xFF) };
 	OutputFile.Write(&NSFSize, sizeof(NSFSize));
+
+	// continue writing
+	OutputFile.Seek(iPostDataPos, CFile::begin);
+
+	// !! !! Create NSFe footer
+	stNSFeFooter Footer;
+	CreateNSFeFooter(&Footer);
+
+	auto write_chunk = [&](stNSFeChunk chunk, CFile &file) {
+		file.Write(&chunk.Size, sizeof(chunk.Size));
+		file.Write(&chunk.Ident, sizeof(chunk.Ident));
+		if (!chunk.Data.empty())
+			file.Write(reinterpret_cast<char *>(chunk.Data.data()), (UINT)chunk.Data.size());
+	};
+
+	// write VRC7 chunk
+	write_chunk(Footer.VRC7, OutputFile);
+
+	// write time chunk
+	write_chunk(Footer.time, OutputFile);
+
+	// write tlbl chunk
+	write_chunk(Footer.tlbl, OutputFile);
+
+	// write auth chunk
+	write_chunk(Footer.auth, OutputFile);
+
+	// write text chunk
+	write_chunk(Footer.text, OutputFile);
+
+	// write mixe chunk
+	write_chunk(Footer.mixe, OutputFile);
+
+	// write NEND chunk
+	write_chunk(Footer.NEND, OutputFile);
 
 	// Writing done, print some stats
 	Print(_T(" * NSF load address: $%04X\n"), m_iLoadAddress);
@@ -1678,6 +1553,101 @@ void CCompiler::CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType)		// // 
 	pHeader->SoundChip = m_iActualChip;		// // //
 }
 
+// technically NSFe has no footer
+// but the same data will be written in the footer of NSF2
+void CCompiler::CreateNSFeFooter(stNSFeFooter *pFooter)
+{
+	auto emplace_str = [&](auto &bytedata, std::string_view str) {
+		bytedata.insert(bytedata.end(), str.begin(), str.end());
+
+		// safely null terminate instead of fudging range
+		bytedata.emplace_back(0);
+	};
+
+	auto emplace_int32 = [&](auto &bytedata, uint32_t integer) {
+		// little endian
+		bytedata.emplace_back(uint8_t(integer >> 0x00));
+		bytedata.emplace_back(uint8_t(integer >> 0x08));
+		bytedata.emplace_back(uint8_t(integer >> 0x10));
+		bytedata.emplace_back(uint8_t(integer >> 0x18));
+	};
+
+	auto emplace_int16 = [&](auto &bytedata, uint16_t integer) {
+		// little endian
+		bytedata.emplace_back(uint8_t(integer >> 0x00));
+		bytedata.emplace_back(uint8_t(integer >> 0x08));
+	};
+
+	// write VRC7 chunk
+	memcpy(pFooter->VRC7.Ident, "VRC7", 4);
+	{
+		// "The first byte designates a variant device replacing the VRC7 at the same register addresses."
+		size_t patch_byte_size = size_t(19 * 8);
+		bool extOPLL = m_pDocument->GetExternalOPLLChipCheck()
+			// YM2413 and YMF281B are considered external OPLL
+			|| (theApp.GetSettings()->Emulation.iVRC7Patch > 6);
+		pFooter->VRC7.Data.emplace_back(uint8_t(extOPLL));
+		if (extOPLL)
+			for (unsigned int byte = 0; byte < patch_byte_size; byte++)
+				pFooter->VRC7.Data.emplace_back(m_pDocument->GetOPLLPatchByte(byte));
+	}
+
+	// write time chunk
+	memcpy(pFooter->time.Ident, "time", 4);
+
+	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
+		emplace_int32(pFooter->time.Data, static_cast<int32_t>(m_pDocument->GetStandardLength(i, 1) * 1000.0 + 0.5));
+	}
+
+	// write tlbl chunk
+	memcpy(pFooter->tlbl.Ident, "tlbl", 4);
+	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
+		emplace_str(pFooter->tlbl.Data, LPCTSTR(m_pDocument->GetTrackTitle(i)));
+	}
+
+	// write auth chunk
+	memcpy(pFooter->auth.Ident, "auth", 4);
+	emplace_str(pFooter->auth.Data, m_pDocument->GetSongName());
+	emplace_str(pFooter->auth.Data, m_pDocument->GetSongArtist());
+	emplace_str(pFooter->auth.Data, m_pDocument->GetSongCopyright());
+	emplace_str(pFooter->auth.Data, APP_NAME_VERSION);
+
+	// write text chunk, if available
+	if (strlen(m_pDocument->GetComment())) {
+		memcpy(pFooter->text.Ident, "text", 4);
+		emplace_str(pFooter->text.Data, LPCTSTR(m_pDocument->GetComment()));
+	}
+
+	// write mixe chunk
+	memcpy(pFooter->mixe.Ident, "mixe", 4);
+	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
+
+	for (uint8_t i = 0; i < CHIP_LEVEL_COUNT; i++) {
+		if (m_pDocument->GetLevelOffset(i) != 0) {
+			pFooter->mixe.Data.emplace_back(i);
+			emplace_int16(pFooter->mixe.Data, int16_t(m_pDocument->GetLevelOffset(i) * 10 + pSoundGen->SurveyMixLevels[i]));
+		}
+	}
+
+	// write NEND chunk
+	memcpy(pFooter->NEND.Ident, "NEND", 4);
+
+	auto size_little_endian = [&](stNSFeChunk &chunk) {
+		chunk.Size[0] = uint8_t(chunk.Data.size() >> 0x00);
+		chunk.Size[1] = uint8_t(chunk.Data.size() >> 0x08);
+		chunk.Size[2] = uint8_t(chunk.Data.size() >> 0x10);
+		chunk.Size[3] = uint8_t(chunk.Data.size() >> 0x18);
+	};
+
+	// write size in little endian
+	size_little_endian(pFooter->VRC7);
+	size_little_endian(pFooter->time);
+	size_little_endian(pFooter->auth);
+	size_little_endian(pFooter->tlbl);
+	size_little_endian(pFooter->text);
+	size_little_endian(pFooter->mixe);
+	size_little_endian(pFooter->NEND);
+}
 
 void CCompiler::UpdateSamplePointers(unsigned int Origin)
 {
