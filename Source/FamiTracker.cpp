@@ -184,6 +184,10 @@ BOOL CFamiTrackerApp::InitInstance()
 
 	// Register the application's document templates.  Document templates
 	//  serve as the connection between documents, frame windows and views
+
+	// The IDR_MAINFRAME string is used to create file associations with .dnm files.
+	// See https://learn.microsoft.com/en-us/cpp/mfc/reference/cdoctemplate-class?view=msvc-170#getdocstring
+	// for the format of this string.
 	CDocTemplate0CC* pDocTemplate = new CDocTemplate0CC(		// // //
 		IDR_MAINFRAME,
 		RUNTIME_CLASS(CFamiTrackerDoc),
@@ -208,7 +212,7 @@ BOOL CFamiTrackerApp::InitInstance()
 	// Add shell options
 	RegisterShellFileTypes();		// // //
 	static const LPCTSTR FILE_ASSOC_NAME = _T(APP_NAME " Module");
-	AfxRegSetValue(HKEY_CLASSES_ROOT, "0CCFamiTracker.Document", REG_SZ, FILE_ASSOC_NAME, lstrlen(FILE_ASSOC_NAME) * sizeof(TCHAR));
+	AfxRegSetValue(HKEY_CLASSES_ROOT, "DnFamiTracker.Document", REG_SZ, FILE_ASSOC_NAME, lstrlen(FILE_ASSOC_NAME) * sizeof(TCHAR));
 	// Add an option to play files
 	CString strPathName, strTemp, strFileTypeId;
 	AfxGetModuleShortFileName(AfxGetInstanceHandle(), strPathName);

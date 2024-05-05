@@ -2551,7 +2551,7 @@ IDR_HTML1               HTML                    "res/export_report.htm"
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "Dn-FamiTracker\n\nDn-FamiTracker\nDn-FamiTracker modules (*.0cc;*.ftm)\n.0cc\n0CCFamiTracker.Document\n0CCFamiTracker.Document"
+    IDR_MAINFRAME           "Dn-FamiTracker\n\nDn-FamiTracker\nDn-FamiTracker modules (*.dnm;*.0cc;*.ftm)\n.dnm\nDnFamiTracker.Document\nDn-FamiTracker Document"
     IDS_FRAME_DROP_MOVE     "Drop selection to move frames"
     IDS_DPCM_IMPORT_QUALITY_FORMAT "Quality: %1"
     IDS_CLIPBOARD_ERROR     "Could not register clipboard format"
