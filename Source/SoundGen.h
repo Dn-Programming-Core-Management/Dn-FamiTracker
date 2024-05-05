@@ -40,6 +40,7 @@
 #include <atomic>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <thread>
 
 const int VIBRATO_LENGTH = 256;
@@ -139,6 +140,11 @@ public:
 
 private:
 	void ThreadEntry();
+
+	bool PostSelfMessage(
+		GuiMessageId message,
+		WPARAM wParam,
+		LPARAM lParam);
 
 public:
 	bool PostGuiMessage(
@@ -339,6 +345,7 @@ public:
 	// Accessed by CCompiler for mixe chunk
 	std::vector<int16_t> SurveyMixLevels;
 private:
+	std::optional<GuiMessage> m_maybeSelfMessage;
 	rigtorp::SPSCQueue<GuiMessage> m_MessageQueue;
 
 	// Objects

@@ -766,6 +766,16 @@ void CSoundGen::ThreadEntry()
 		return;
 	}
 	while (true) {
+		if (m_maybeSelfMessage) {
+			GuiMessage message = *m_maybeSelfMessage;
+			m_maybeSelfMessage = {};
+
+			// PostSelfMessage() is only called with WM_USER_PLAY, no need to check for WM_QUIT.
+			if (!DispatchGuiMessage(message)) {
+				goto end_while;
+			}
+		}
+
 		while (auto pMessage = m_MessageQueue.front()) {
 			GuiMessage message = *pMessage;
 			m_MessageQueue.pop();
@@ -786,8 +796,25 @@ void CSoundGen::ThreadEntry()
 }
 
 
+bool CSoundGen::PostSelfMessage(GuiMessageId message, WPARAM wParam, LPARAM lParam)
+{
+	// Called from player thread
+	ASSERT(std::this_thread::get_id() == m_audioThreadID);
+
+	ASSERT(!m_maybeSelfMessage);
+	m_maybeSelfMessage = GuiMessage{
+		message,
+		wParam,
+		lParam,
+	};
+	return true;
+}
+
 bool CSoundGen::PostGuiMessage(GuiMessageId message, WPARAM wParam, LPARAM lParam)
 {
+	// Called from main thread
+	ASSERT(GetCurrentThreadId() == theApp.m_nThreadID);
+
 	return m_MessageQueue.try_push(GuiMessage{
 		message,
 		wParam,
@@ -2328,7 +2355,7 @@ void CSoundGen::OnIdle()
 	if (m_iDelayedStart > 0) {
 		--m_iDelayedStart;
 		if (!m_iDelayedStart) {
-			PostGuiMessage(WM_USER_PLAY, MODE_PLAY_START, m_iRenderTrack);
+			PostSelfMessage(WM_USER_PLAY, MODE_PLAY_START, m_iRenderTrack);
 		}
 	}
 
