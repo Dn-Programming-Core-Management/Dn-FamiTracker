@@ -78,6 +78,8 @@ protected:
 	static const int ITEM_MAX_WIDTH = 40;
 	static const int COLOR_LINES = 0x404040;
 
+	int m_graphLeft;
+
 protected:
 	CWnd *m_pParentWnd;
 	CSequence *const m_pSequence;
