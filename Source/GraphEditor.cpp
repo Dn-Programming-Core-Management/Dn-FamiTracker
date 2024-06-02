@@ -52,7 +52,8 @@ BEGIN_MESSAGE_MAP(CGraphEditor, CWnd)
 END_MESSAGE_MAP()
 
 
-CGraphEditor::CGraphEditor(CSequence *pSequence) : 
+CGraphEditor::CGraphEditor(CSequence *pSequence) :
+	m_graphLeft(0),
 	m_pBackDC(NULL), 
 	m_pBitmap(NULL), 
 	m_pSmallFont(NULL),
@@ -95,14 +96,16 @@ BOOL CGraphEditor::CreateEx(DWORD dwExStyle, LPCTSTR lpszClassName, LPCTSTR lpsz
 	m_pSmallFont->CreateFontIndirect(&LogFont);
 
 	// Calculate the draw areas
+	m_graphLeft = DPI::SX(GRAPH_LEFT);
+
 	GetClientRect(m_GraphRect);
 	GetClientRect(m_BottomRect);
 	GetClientRect(m_ClientRect);
 
-	m_GraphRect.left += DPI::SX(GRAPH_LEFT);		// // //
+	m_GraphRect.left += m_graphLeft;		// // //
 	m_GraphRect.top += DPI::SY(GRAPH_BOTTOM);
 	m_GraphRect.bottom -= DPI::SY(16);
-	m_BottomRect.left += GRAPH_LEFT;
+	m_BottomRect.left += m_graphLeft;
 	m_BottomRect.top = m_GraphRect.bottom + 1;
 
 	m_pParentWnd = pParentWnd;
@@ -226,7 +229,7 @@ void CGraphEditor::DrawRange(CDC *pDC, int Max, int Min) const
 	pDC->SetTextColor(0xFFFFFF);
 	pDC->SetBkColor(pDC->GetPixel(0, 0));	// Ugly but works
 
-	CRect textRect(2, 0, GRAPH_LEFT - 5, 10);
+	CRect textRect(2, 0, m_graphLeft - 5, 10);
 	CRect topRect = textRect, bottomRect = textRect;
 	
 	topRect.MoveToY(Top - 3);
@@ -248,7 +251,7 @@ void CGraphEditor::DrawLoopPoint(CDC *pDC, int StepWidth) const
 	CFont *pOldFont = pDC->SelectObject(m_pSmallFont);
 
 	if (LoopPoint > -1) {
-		int x = StepWidth * LoopPoint + GRAPH_LEFT + 1;
+		int x = StepWidth * LoopPoint + m_graphLeft + 1;
 
 		GradientBar(pDC, x + 1, m_BottomRect.top, m_BottomRect.right - x, m_BottomRect.Height(), 0x808000, 0x202000);
 		pDC->FillSolidRect(x, m_BottomRect.top, 1, m_BottomRect.bottom, 0xF0F000);
@@ -269,7 +272,7 @@ void CGraphEditor::DrawReleasePoint(CDC *pDC, int StepWidth) const
 	CFont *pOldFont = pDC->SelectObject(m_pSmallFont);
 
 	if (ReleasePoint > -1) {
-		int x = StepWidth * ReleasePoint + GRAPH_LEFT + 1;
+		int x = StepWidth * ReleasePoint + m_graphLeft + 1;
 
 		GradientBar(pDC, x + 1, m_BottomRect.top, m_BottomRect.right - x, m_BottomRect.Height(), 0x800080, 0x200020);
 		pDC->FillSolidRect(x, m_BottomRect.top, 1, m_BottomRect.bottom, 0xF000F0);
@@ -298,7 +301,7 @@ void CGraphEditor::DrawLoopRelease(CDC *pDC, int StepWidth) const		// // //
 	else if (LoopPoint > -1) { // LoopPoint == ReleasePoint
 		CFont *pOldFont = pDC->SelectObject(m_pSmallFont);
 
-		int x = StepWidth * LoopPoint + GRAPH_LEFT + 1;
+		int x = StepWidth * LoopPoint + m_graphLeft + 1;
 
 		GradientBar(pDC, x + 1, m_BottomRect.top, m_BottomRect.right - x, m_BottomRect.Height(), 0x008080, 0x002020);
 		pDC->FillSolidRect(x, m_BottomRect.top, 1, m_BottomRect.bottom, 0x00F0F0);
@@ -396,8 +399,8 @@ void CGraphEditor::OnLButtonDown(UINT nFlags, CPoint point)
 	if (point.y < m_GraphRect.bottom) {
 		m_iEditing = EDIT_POINT;
 		ModifyItem(point, true);
-		if (point.x > GRAPH_LEFT)
-			CursorChanged(point.x - GRAPH_LEFT);
+		if (point.x > m_graphLeft)
+			CursorChanged(point.x - m_graphLeft);
 	}
 	else if (point.y > m_GraphRect.bottom) {
 		m_iEditing = EDIT_LOOP;
@@ -467,8 +470,8 @@ void CGraphEditor::OnMouseMove(UINT nFlags, CPoint point)
 	}
 
 	// Notify parent
-	if (m_pSequence->GetItemCount() > 0 && point.x > GRAPH_LEFT) {
-		CursorChanged(point.x - GRAPH_LEFT);
+	if (m_pSequence->GetItemCount() > 0 && point.x > m_graphLeft) {
+		CursorChanged(point.x - m_graphLeft);
 	}
 	else
 		m_pParentWnd->PostMessage(WM_CURSOR_CHANGE, 0, 0);
@@ -518,7 +521,7 @@ void CGraphEditor::ModifyLoopPoint(CPoint point, bool Redraw)
 		return;
 
 	int ItemWidth = GetItemWidth();
-	int LoopPoint = (point.x - GRAPH_LEFT + (ItemWidth / 2)) / ItemWidth;
+	int LoopPoint = (point.x - m_graphLeft + (ItemWidth / 2)) / ItemWidth;
 
 	// Disable loop point by dragging it to far right
 	if (LoopPoint >= (int)m_pSequence->GetItemCount())
@@ -538,7 +541,7 @@ void CGraphEditor::ModifyReleasePoint(CPoint point, bool Redraw)
 		return;
 
 	int ItemWidth = GetItemWidth();
-	int ReleasePoint = (point.x - GRAPH_LEFT + (ItemWidth / 2)) / ItemWidth;
+	int ReleasePoint = (point.x - m_graphLeft + (ItemWidth / 2)) / ItemWidth;
 
 	// Disable loop point by dragging it to far right
 	if (ReleasePoint >= (int)m_pSequence->GetItemCount())
@@ -650,7 +653,7 @@ void CBarGraphEditor::HighlightItem(CPoint point)
 {
 	int ItemWidth = GetItemWidth();
 	int ItemHeight = GetItemHeight();
-	int ItemIndex = (point.x - GRAPH_LEFT) / ItemWidth;
+	int ItemIndex = (point.x - m_graphLeft) / ItemWidth;
 	int ItemValue = m_iLevels - (((point.y - GetItemTop()) + (ItemHeight / 2)) / ItemHeight);		// // //
 	int LastItem = m_iHighlightedItem;
 	int LastValue = m_iHighlightedValue;
@@ -671,7 +674,7 @@ void CBarGraphEditor::ModifyItem(CPoint point, bool Redraw)
 {
 	int ItemWidth = GetItemWidth();
 	int ItemHeight = GetItemHeight();
-	int ItemIndex = (point.x - GRAPH_LEFT) / ItemWidth;
+	int ItemIndex = (point.x - m_graphLeft) / ItemWidth;
 	int ItemValue = m_iLevels - (((point.y - GetItemTop()) + (ItemHeight / 2)) / ItemHeight);
 
 	if (ItemValue < 0)
@@ -950,7 +953,7 @@ void CArpeggioGraphEditor::OnPaint()
 void CArpeggioGraphEditor::ModifyItem(CPoint point, bool Redraw)
 {
 	int ItemWidth = GetItemWidth();
-	int ItemIndex = (point.x - GRAPH_LEFT) / ItemWidth;
+	int ItemIndex = (point.x - m_graphLeft) / ItemWidth;
 	int ItemValue = GetItemValue(point.y);
 
 	if (ItemIndex < 0 || ItemIndex >= (int)m_pSequence->GetItemCount())
@@ -980,7 +983,7 @@ void CArpeggioGraphEditor::ModifyItem(CPoint point, bool Redraw)
 void CArpeggioGraphEditor::HighlightItem(CPoint point)
 {
 	int ItemWidth = GetItemWidth();
-	int ItemIndex = (point.x - GRAPH_LEFT) / ItemWidth;
+	int ItemIndex = (point.x - m_graphLeft) / ItemWidth;
 	int ItemValue = GetItemValue(point.y);
 	int LastItem = m_iHighlightedItem;
 	int LastValue = m_iHighlightedValue;
@@ -1193,7 +1196,7 @@ void CPitchGraphEditor::ModifyItem(CPoint point, bool Redraw)
 	int MouseY = (point.y - m_GraphRect.top) - (m_GraphRect.Height() / 2);
 	int ItemWidth = GetItemWidth();
 	int ItemHeight = GetItemHeight();
-	int ItemIndex = (point.x - GRAPH_LEFT) / ItemWidth;
+	int ItemIndex = (point.x - m_graphLeft) / ItemWidth;
 	int ItemValue = -(MouseY * 255) / m_GraphRect.Height();
 
 	if (ItemValue < -128)
@@ -1217,7 +1220,7 @@ void CPitchGraphEditor::HighlightItem(CPoint point)
 	int MouseY = (point.y - m_GraphRect.top) - (m_GraphRect.Height() / 2);
 	int ItemWidth = GetItemWidth();
 	int ItemHeight = GetItemHeight();
-	int ItemIndex = (point.x - GRAPH_LEFT) / ItemWidth;
+	int ItemIndex = (point.x - m_graphLeft) / ItemWidth;
 	int ItemValue = -(MouseY * 255) / m_GraphRect.Height();
 	int LastItem = m_iHighlightedItem;
 	int LastValue = m_iHighlightedValue;
@@ -1314,7 +1317,7 @@ void CNoiseEditor::ModifyItem(CPoint point, bool Redraw)
 	int ItemHeight = GetItemHeight();
 	const int Top = GetItemTop();		// // //
 
-	int ItemIndex = (point.x - GRAPH_LEFT) / ItemWidth;
+	int ItemIndex = (point.x - m_graphLeft) / ItemWidth;
 
 	int Offset = m_GraphRect.bottom - BUTTON_MARGIN;		// // //
 
