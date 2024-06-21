@@ -833,7 +833,7 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 	bool bCompressedMode;
 	unsigned short MusicDataAddress;
 
-	CalculateLoadAddresses(MusicDataAddress, bCompressedMode);
+	CalculateLoadAddresses(MusicDataAddress, bCompressedMode, true);
 
 	// Init is located first at the driver
 	m_iInitAddress = m_iDriverAddress;		// !! !!
@@ -1143,7 +1143,7 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 	bool bCompressedMode;
 	unsigned short MusicDataAddress;
 
-	CalculateLoadAddresses(MusicDataAddress, bCompressedMode);
+	CalculateLoadAddresses(MusicDataAddress, bCompressedMode, true);
 
 	stNSFHeader Header;
 	CreateHeader(&Header, MachineType, 0x00, false);
@@ -1998,7 +1998,7 @@ bool CCompiler::CompileData(bool bUseNSFDRV, bool bUseAllExp)
 	// Get samples start address
 	m_iSampleStart = m_iNSFDRVSize + m_iDriverSize + m_iMusicDataSize;
 
-	// Align to closet 64-byte page after $C000
+	// Align to closest 64-byte page after $C000
 	if (m_iSampleStart < 0x4000)
 		m_iSampleStart = PAGE_SAMPLES;
 	else

@@ -681,7 +681,14 @@ void CChunkRenderText::StoreNSFConfig(unsigned int DPCMSegment, stNSFHeader Head
 	}
 	else {
 		str.Append("  CODE:      load = PRG, type = " + segmentType + ";\n");
-		str.AppendFormat(("  DPCM:      load = PRG, type = " + segmentType + ",  start = $%04X;\n"), DPCMSegment);
+		str.Append("  DPCM:      load = PRG, type = " + segmentType);
+		// this is tricky. the driver size is unpredictable here.
+		// so instead, we only start at address DPCMSegment
+		// *only if* the nonbankswitching DPCM segment address remains at CCompiler::PAGE_SAMPLES
+		if (DPCMSegment == CCompiler::PAGE_SAMPLES)
+			str.AppendFormat(",  start = $%04X;\n", DPCMSegment);
+		else
+			str.Append(";\n");
 	}
 
 	str.Append("}\nFILES {\n  # hack to get .dbg symbols to align with code\n  %O: format = bin;\n  \"%O_header\": format = bin;\n}");
