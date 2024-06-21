@@ -65,6 +65,24 @@ struct stNSFeHeader {		// // //
 	unsigned short	Speed_PAL;
 };
 
+struct stNSFeChunk {
+	uint8_t Ident[4];
+	uint8_t Size[4];
+	std::vector<uint8_t> Data;
+};
+
+struct stNSFeFooter {		// !! !!
+	// DATA chunk is written manually
+	stNSFeChunk VRC7;
+	stNSFeChunk time;
+	stNSFeChunk auth;
+	stNSFeChunk tlbl;
+	stNSFeChunk text;
+	stNSFeChunk mixe;
+	// NEND has no data yet
+	stNSFeChunk NEND;
+};
+
 struct driver_t;
 class CChunk;
 enum chunk_type_t;
@@ -106,6 +124,7 @@ private:
 
 	void	CreateHeader(stNSFHeader *pHeader, int MachineType, unsigned int NSF2Flags, bool NSF2) const;
 	void	CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType);		// // //
+	void	CreateNSFeFooter(stNSFeFooter *pHeader);		// !! !!
 	void	SetDriverSongAddress(char *pDriver, unsigned short Address) const;
 #if 0
 	void	WriteChannelMap();
@@ -115,9 +134,10 @@ private:
 	void	PatchVibratoTable(char *pDriver) const;
 
 	char*	LoadDriver(const driver_t *pDriver, unsigned short Origin) const;
+	char*	LoadNSFDRV(const driver_t *pDriver) const;
 
 	// Compiler
-	bool	CompileData();
+	bool	CompileData(bool bUseNSFDRV = false, bool UseAllExp = true);
 	void	ResolveLabels();
 	bool	ResolveLabelsBankswitched();
 	void	CollectLabels(CMap<CStringA, LPCSTR, int, int> &labelMap) const;
@@ -125,13 +145,15 @@ private:
 	void	AssignLabels(CMap<CStringA, LPCSTR, int, int> &labelMap);
 	void	AddBankswitching();
 	void	Cleanup();
+	void	CalculateLoadAddresses(unsigned short &MusicDataAddress, bool &bCompressedMode, bool ForceDecompress = false);
+	void	SetNSFDRVHeaderSize(bool bUseNSFDRV);
 
 	void	ScanSong();
 	int		GetSampleIndex(int SampleNumber);
 	bool	IsPatternAddressed(unsigned int Track, int Pattern, int Channel) const;
 	bool	IsInstrumentInPattern(int index) const;
 
-	void	CreateMainHeader();
+	void	CreateMainHeader(bool UseAllExp);
 	void	CreateSequenceList();
 	void	CreateInstrumentList();
 	void	CreateSampleList();
@@ -154,12 +176,22 @@ private:
 	void	AddWavetable(CInstrumentFDS *pInstrument, CChunk *pChunk);
 
 	// File writing
-	void	WriteAssembly(CFile *pFile);
-	void	WriteBinary(CFile *pFile);
-	void	WritePeriods(CFile* pFile);
-	void	WriteVibrato(CFile* pFile);
-	void	WriteNSFHeader(CFile* pFile, stNSFHeader Header);
-	void	WriteNSFConfig(CFile* pFile, unsigned int DPCMSegment, stNSFHeader Header);
+	void	WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header, int MachineType = 0,
+		CFile *pFileNSFStub = nullptr,
+		CFile *pFileNSFHeader = nullptr,
+		CFile *pFileNSFConfig = nullptr,
+		CFile *pFilePeriods = nullptr,
+		CFile *pFileVibrato = nullptr,
+		CFile *FileMultiChipEnable = nullptr,
+		CFile *FileMultiChipUpdate = nullptr);
+	void	WriteBinary(CFile *pFile, bool bExtraData, stNSFHeader Header, int MachineType = 0,
+		CFile *pFileNSFStub = nullptr,
+		CFile *pFileNSFHeader = nullptr,
+		CFile *pFileNSFConfig = nullptr,
+		CFile *pFilePeriods = nullptr,
+		CFile *pFileVibrato = nullptr,
+		CFile *FileMultiChipEnable = nullptr,
+		CFile *FileMultiChipUpdate = nullptr);
 	void	WriteSamplesBinary(CFile *pFile);
 
 	// Object list functions
@@ -247,6 +279,7 @@ private:
 	// General
 	unsigned int	m_iMusicDataSize;		// All music data
 	unsigned int	m_iDriverSize;			// Size of selected music driver
+	unsigned int	m_iNSFDRVSize;			// Size of NSFDRV header, 0 if it is not written
 	unsigned int	m_iSamplesSize;
 
 	unsigned int	m_iLoadAddress;			// NSF load address

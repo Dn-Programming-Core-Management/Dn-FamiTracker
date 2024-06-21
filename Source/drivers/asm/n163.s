@@ -47,6 +47,11 @@ ft_load_inst_extra_n163:
 	iny
 .endif
 @DoneParams:
+    ; check if non-N163 type
+	lda ft_channel_type, x
+	cmp #CHAN_N163
+	bne :++
+    ; check if N163 instrument is about to change
 	lda var_NamcoInstrument - N163_OFFSET, x
 	cmp var_Temp2
 	beq :+
@@ -213,14 +218,10 @@ ft_update_n163:
 @SkipChannel:
 	; End
 	lda var_ch_PhaseReset + N163_OFFSET, x
-	bne @N163PhaseReset
-	inx
-	cpx var_NamcoChannels
 	beq :+
-	jmp @ChannelLoop
-:	rts
-
-@N163PhaseReset:
+    ; do not attempt to reset phase if note is cut
+	lda var_ch_Note + N163_OFFSET, x
+	beq :+
 	dec var_ch_PhaseReset + N163_OFFSET, x
 
 	lda #$01
@@ -237,7 +238,12 @@ ft_update_n163:
 	jsr @LoadAddr					; hi phase
 	lda #$00
 	sta $4800
-	rts
+:
+	inx
+	cpx var_NamcoChannels
+	beq :+
+	jmp @ChannelLoop
+:	rts
 
 @LoadAddr:                    ; Load N163 RAM address
 	clc

@@ -31,7 +31,9 @@
 class CChunkRenderText;
 class CDSample;		// // //
 
-typedef void (CChunkRenderText::*renderFunc_t)(CChunk *pChunk, CFile *pFile);
+typedef void (CChunkRenderText:: *renderFunc_t)(CChunk *pChunk, CFile *pFile);
+
+struct stNSFHeader;
 
 struct stChunkRenderFunc {
 	chunk_type_t type;
@@ -42,8 +44,18 @@ class CChunkRenderText
 {
 public:
 	CChunkRenderText(CFile *pFile);
-	void StoreChunks(const std::vector<CChunk*> &Chunks);
-	void StoreSamples(const std::vector<const CDSample*> &Samples);
+	void StoreChunks(const std::vector<CChunk *> &Chunks);
+	void StoreSamples(const std::vector<const CDSample *> &Samples, CChunk *pChunk = nullptr);
+	void WriteFileString(const CStringA &str, CFile *pFile) const;
+	void StoreNSFStub(unsigned char Header, vibrato_t VibratoStyle, bool LinearPitch, int ActualNamcoChannels, bool UseAllChips, bool IsAssembly = false) const;
+	void StoreNSFHeader(stNSFHeader Header) const;
+	void StoreNSFConfig(unsigned int DPCMSegment, stNSFHeader Header) const;
+	void StorePeriods(unsigned int *pLUTNTSC, unsigned int *pLUTPAL, unsigned int *pLUTSaw, unsigned int *pLUTVRC7, unsigned int *pLUTFDS, unsigned int *pLUTN163) const;
+	void StoreVibrato(unsigned int *pLUTVibrato) const;
+	void StoreUpdateExt(unsigned char Expansion) const;
+	void StoreEnableExt(unsigned char Expansion) const;
+	void SetExtraDataFiles(CFile *pFileNSFStub, CFile *pFileNSFHeader, CFile *pFileNSFConfig, CFile *pFilePeriods, CFile *pVibrato, CFile *pFileMultiChipEnable, CFile *pFileMultiChipUpdate);
+	void SetBankSwitching(bool bBankSwitched = false);
 
 	// Labels
 	// // // moved from CCompiler
@@ -72,7 +84,6 @@ private:
 
 private:
 	void DumpStrings(const CStringA &preStr, const CStringA &postStr, CStringArray &stringArray, CFile *pFile) const;
-	void WriteFileString(const CStringA &str, CFile *pFile) const;
 	void StoreByteString(const char *pData, int Len, CStringA &str, int LineBreak) const;
 	void StoreByteString(const CChunk *pChunk, CStringA &str, int LineBreak) const;
 
@@ -92,6 +103,10 @@ private:
 	void StorePatternChunk(CChunk *pChunk, CFile *pFile);
 	void StoreWavetableChunk(CChunk *pChunk, CFile *pFile);
 	void StoreWavesChunk(CChunk *pChunk, CFile *pFile);
+	void StoreMusicBankSegment(unsigned char bank, CStringA &str);
+	void StoreDPCMBankSegment(unsigned char bank, CStringA &str);
+
+	// taken from ChunkRenderBinary.cpp
 
 private:
 	CStringArray m_headerStrings;
@@ -107,6 +122,18 @@ private:
 	CStringArray m_songDataStrings;
 	CStringArray m_wavetableStrings;
 	CStringArray m_wavesStrings;
+	std::vector<CStringA> m_configMemoryAreaStrings;
+	std::vector<CStringA> m_configSegmentStrings;
 
 	CFile *m_pFile;
+	CFile *m_pFileNSFStub;
+	CFile *m_pFileNSFHeader;
+	CFile *m_pFileNSFConfig;
+	CFile *m_pFilePeriods;
+	CFile *m_pFileVibrato;
+	CFile *m_pFileMultiChipEnable;
+	CFile *m_pFileMultiChipUpdate;
+
+	bool m_bBankSwitched;
+	unsigned int m_iDataWritten;
 };

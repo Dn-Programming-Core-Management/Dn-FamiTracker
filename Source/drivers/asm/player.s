@@ -52,17 +52,31 @@ ft_do_row_update:
 	and #%11111100
 	sta var_PlayerFlags
 :
+	lda var_Load_Frame
+	beq @SkipFrameLoad
+	ldx #$00
+
+	; handle delay part 1: skip over missed delay notes from the previous frame
+	; this allows the driver to read all the extra commands that come after Gxx
+@Delay:
+	CH_LOOP_START @DelayEpilog
+	lda var_ch_Delay, x
+	beq @DelayEpilog
+	lda #$00
+	sta var_ch_Delay, x
+	jsr ft_read_pattern ; skip over missed delay note
+@DelayEpilog:
+	CH_LOOP_END @Delay
+
 	; Switches to new frames are delayed to next row to resolve issues with delayed notes.
 	; It won't work if new pattern adresses are loaded before the delayed note is played
-	;;; ;; ; from 0.4.6
-	lda var_Load_Frame
-	beq @SkipFrameLoad	
 	lda #$00
 	sta var_Load_Frame
 	lda var_Current_Frame
 	jsr ft_load_frame
 @SkipFrameLoad:
 
+	; handle delay part 2: skip over missed delay notes from the previous row
 	; Read one row from all patterns
 	ldx #$00
 ft_read_channels:
@@ -286,6 +300,9 @@ ft_update_apu:
 	; Finally update APU and expansion chip registers
 	jsr ft_update_2a03
 ft_update_ext:		;; Patch
+.if .defined(USE_AUX_DATA) .and .defined(USE_ALL)
+    .include "../update_ext.s"
+.else
 .if .defined(USE_VRC6)
 	jsr	ft_update_vrc6
 .endif
@@ -303,6 +320,7 @@ ft_update_ext:		;; Patch
 .endif
 .if .defined(USE_S5B)
 	jsr ft_update_s5b
+.endif
 .endif
 
 END:		; End of music routine, return
@@ -620,7 +638,7 @@ ft_read_is_done:
 
 ; Read pattern to A and move to next byte
 ft_get_pattern_byte:
-	lda (var_Temp_Pattern), y			; Get the instrument number
+	lda (var_Temp_Pattern), y			; Get the instrument number/effect bytecode
 	pha
 	iny
 	pla
@@ -1044,12 +1062,14 @@ ft_cmd_transpose:
 ;; ;; !! Effect: Phase reset (=xx)
 ft_cmd_phase_reset:
 	jsr ft_get_pattern_byte
+	bne :+		; skip if not zero
 	inc var_ch_PhaseReset, x
-	rts
+:	rts
 ft_cmd_DPCM_phase_reset:
 	jsr ft_get_pattern_byte
+	bne :+		; skip if not zero
 	inc var_ch_DPCMPhaseReset
-	rts
+:	rts
 ;; ;; !! Effect: Frequency Multiplier (Kxx)
 ft_cmd_harmonic:
 	jsr ft_get_pattern_byte
@@ -1212,12 +1232,12 @@ ft_cmd_n163_wave_buffer:
 ft_cmd_s5b_env_type:
 	lda #$01
 	sta var_EnvelopeTrigger
-	sta var_EnvelopeEnabled - S5B_OFFSET, x
+	sta var_EnvelopeEnabled
 	jsr ft_get_pattern_byte
 	sta var_EnvelopeType
 	bne :+
 	lda #$00
-	sta var_EnvelopeEnabled - S5B_OFFSET, x
+	sta var_EnvelopeEnabled
 	lda var_EnvelopeType
 :	and #$F0
 	lsr a
@@ -1575,11 +1595,11 @@ ft_limit_note:		;;; ;; ;
 ;	pla
 	cpx #APU_NOI
 	beq :+++
-	cmp #$00
+	cmp #$00	; no note
 	beq :+
 	bpl :++
 :	lda #$01
-:	cmp #$60
+:	cmp #$60	; note 95 (incremented by one earlier)
 	bcc :+
 	lda #$60
 :	rts				; ;; ;;;

@@ -196,7 +196,14 @@ ft_update_2a03:
 	bne :++
 :	lda var_ch_PeriodCalcHi + APU_OFFSET, x
 	cmp var_ch_PrevFreqHigh + APU_OFFSET, x
+    bne @SkipCheckPhaseReset
+	; check if we're gonna trigger a phase reset at the same time as a note on
+	lda var_ch_PhaseReset + APU_OFFSET, x
 	beq @DoneSquare
+	; if so, trigger phase reset by writing high byte anyway
+	dec var_ch_PhaseReset + APU_OFFSET, x
+	lda var_ch_PeriodCalcHi + APU_OFFSET, x
+@SkipCheckPhaseReset:
 	sta var_ch_PrevFreqHigh + APU_OFFSET, x
 :	lda var_ch_LengthCounter + APU_OFFSET, x
 	and #$F8
@@ -210,7 +217,16 @@ ft_update_2a03:
 
 @DoneSquare:
 	lda var_ch_PhaseReset + APU_OFFSET, x
-	bne @SquarePhaseReset
+	beq :+
+    ; do not attempt to reset phase if note is cut
+	lda var_ch_Note, x
+	beq :+
+	dec var_ch_PhaseReset + APU_OFFSET, x
+	lda var_ch_LengthCounter + APU_OFFSET, x
+	and #$F8
+	ora var_ch_PeriodCalcHi + APU_OFFSET, x
+	sta $4000, y								; $4003/4007
+:
 	inx
 	cpx #$02
 	bcs :+
@@ -221,13 +237,6 @@ ft_update_2a03:
 	;tay
 	jmp @Square
 :	jmp @Triangle
-
-@SquarePhaseReset:
-	dec var_ch_PhaseReset + APU_OFFSET, x
-	lda var_ch_LengthCounter + APU_OFFSET, x
-	and #$F8
-	ora var_ch_PeriodCalcHi + APU_OFFSET, x
-	sta $4000, y								; $4003/4007
 	rts
 
 ; ==============================================================================
