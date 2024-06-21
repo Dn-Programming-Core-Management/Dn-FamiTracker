@@ -725,7 +725,7 @@ void CCompiler::ExportNES(LPCTSTR lpszFileName, bool EnablePAL)
 	}
 
 	// Build the music data
-	if (!CompileData()) {
+	if (!CompileData(true)) {
 		Cleanup();
 		return;
 	}
@@ -743,13 +743,15 @@ void CCompiler::ExportNES(LPCTSTR lpszFileName, bool EnablePAL)
 	// Rewrite DPCM sample pointers
 	UpdateSamplePointers(m_iSampleStart);
 
-	// Locate driver at $8000
-	m_iLoadAddress = PAGE_START;
-	m_iDriverAddress = PAGE_START;
-	unsigned short MusicDataAddress = m_iLoadAddress + m_iDriverSize;
+	// Compressed mode means that driver and music is located just below the sample space, no space is lost even when samples are used
+	bool bCompressedMode;
+	unsigned short MusicDataAddress;
 
-	// Init is located first at the driver
-	m_iInitAddress = m_iDriverAddress;		// // //
+	CalculateLoadAddresses(MusicDataAddress, bCompressedMode, true);
+
+	// Load driver identifier
+	std::unique_ptr<char[]> pNSFDRVPtr(LoadNSFDRV(m_pDriverData));
+	char *pNSFDRV = pNSFDRVPtr.get();
 
 	// Load driver
 	std::unique_ptr<char[]> pDriverPtr(LoadDriver(m_pDriverData, m_iDriverAddress));		// // //
@@ -757,6 +759,9 @@ void CCompiler::ExportNES(LPCTSTR lpszFileName, bool EnablePAL)
 
 	// Patch driver binary
 	PatchVibratoTable(pDriver);
+
+	// Copy the Namco table, if used
+	// // // nothing here, ft_channel_type is taken care in LoadDriver
 
 	// Write music data address
 	SetDriverSongAddress(pDriver, MusicDataAddress);
@@ -772,6 +777,7 @@ void CCompiler::ExportNES(LPCTSTR lpszFileName, bool EnablePAL)
 
 	// Write NES data
 	std::unique_ptr<CChunkRenderNES> Render(new CChunkRenderNES(&OutputFile, m_iLoadAddress));
+	Render->StoreNSFDRV(pNSFDRV, m_iNSFDRVSize);
 	Render->StoreDriver(pDriver, m_iDriverSize);
 	Render->StoreChunks(m_vChunks);
 	Render->StoreSamples(m_vSamples);
@@ -1027,7 +1033,7 @@ void CCompiler::ExportPRG(LPCTSTR lpszFileName, bool EnablePAL)
 	}
 
 	// Build the music data
-	if (!CompileData()) {
+	if (!CompileData(true)) {
 		Cleanup();
 		return;
 	}
@@ -1045,13 +1051,15 @@ void CCompiler::ExportPRG(LPCTSTR lpszFileName, bool EnablePAL)
 	// Rewrite DPCM sample pointers
 	UpdateSamplePointers(m_iSampleStart);
 
-	// Locate driver at $8000
-	m_iLoadAddress = PAGE_START;
-	m_iDriverAddress = PAGE_START;
-	unsigned short MusicDataAddress = m_iLoadAddress + m_iDriverSize;
+	// Compressed mode means that driver and music is located just below the sample space, no space is lost even when samples are used
+	bool bCompressedMode;
+	unsigned short MusicDataAddress;
 
-	// Init is located first at the driver
-	m_iInitAddress = m_iDriverAddress;		// // //
+	CalculateLoadAddresses(MusicDataAddress, bCompressedMode, true);
+
+	// Load driver identifier
+	std::unique_ptr<char[]> pNSFDRVPtr(LoadNSFDRV(m_pDriverData));
+	char *pNSFDRV = pNSFDRVPtr.get();
 
 	// Load driver
 	std::unique_ptr<char[]> pDriverPtr(LoadDriver(m_pDriverData, m_iDriverAddress));		// // //
@@ -1059,6 +1067,9 @@ void CCompiler::ExportPRG(LPCTSTR lpszFileName, bool EnablePAL)
 
 	// Patch driver binary
 	PatchVibratoTable(pDriver);
+
+	// Copy the Namco table, if used
+	// // // nothing here, ft_channel_type is taken care in LoadDriver
 
 	// Write music data address
 	SetDriverSongAddress(pDriver, MusicDataAddress);
@@ -1071,6 +1082,7 @@ void CCompiler::ExportPRG(LPCTSTR lpszFileName, bool EnablePAL)
 
 	// Write NES data
 	std::unique_ptr<CChunkRenderNES> Render(new CChunkRenderNES(&OutputFile, m_iLoadAddress));
+	Render->StoreNSFDRV(pNSFDRV, m_iNSFDRVSize);
 	Render->StoreDriver(pDriver, m_iDriverSize);
 	Render->StoreChunks(m_vChunks);
 	Render->StoreSamples(m_vSamples);
@@ -2043,7 +2055,7 @@ void CCompiler::Cleanup()
 	}
 }
 
-void CCompiler::CalculateLoadAddresses(unsigned short &MusicDataAddress, bool &bCompressedMode)
+void CCompiler::CalculateLoadAddresses(unsigned short &MusicDataAddress, bool &bCompressedMode, bool ForceDecompress)
 {
 	// Find out load address
 
@@ -2052,7 +2064,7 @@ void CCompiler::CalculateLoadAddresses(unsigned short &MusicDataAddress, bool &b
 	bCompressedMode = !((PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize - m_iNSFDRVSize) < 0x8000
 		|| m_bBankSwitched || m_iActualChip != m_pDocument->GetExpansionChip());
 
-	if (bCompressedMode) {
+	if (bCompressedMode && !ForceDecompress) {
 		// Locate driver at $C000 - (driver size)
 		m_iLoadAddress = PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize - m_iNSFDRVSize;
 		m_iDriverAddress = PAGE_SAMPLES - m_iDriverSize;

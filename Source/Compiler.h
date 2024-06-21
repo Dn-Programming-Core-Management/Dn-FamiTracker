@@ -145,7 +145,7 @@ private:
 	void	AssignLabels(CMap<CStringA, LPCSTR, int, int> &labelMap);
 	void	AddBankswitching();
 	void	Cleanup();
-	void	CalculateLoadAddresses(unsigned short &MusicDataAddress, bool &bCompressedMode);
+	void	CalculateLoadAddresses(unsigned short &MusicDataAddress, bool &bCompressedMode, bool ForceDecompress = false);
 	void	SetNSFDRVHeaderSize(bool bUseNSFDRV);
 
 	void	ScanSong();
