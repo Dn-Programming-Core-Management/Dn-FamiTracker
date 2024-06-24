@@ -702,13 +702,14 @@ void CFamiTrackerView::OnRButtonUp(UINT nFlags, CPoint point)
 	GetWindowRect(WinRect);
 
 	if (m_pPatternEditor->IsOverHeader(point)) {
+		int ChannelCount = GetDocument()->GetAvailableChannels();
 		// Pattern header
 		m_iMenuChannel = m_pPatternEditor->GetChannelAtPoint(point.x);
 		PopupMenuBar.LoadMenu(IDR_PATTERN_HEADER_POPUP);
 		static_cast<CMainFrame*>(theApp.GetMainWnd())->UpdateMenu(&PopupMenuBar);
 		pPopupMenu = PopupMenuBar.GetSubMenu(0);
-		pPopupMenu->EnableMenuItem(ID_TRACKER_RECORDTOINST, theApp.IsPlaying() ? MF_DISABLED : MF_ENABLED);		// // //
-		pPopupMenu->EnableMenuItem(ID_TRACKER_RECORDERSETTINGS, theApp.IsPlaying() ? MF_DISABLED : MF_ENABLED);		// // //
+		pPopupMenu->EnableMenuItem(ID_TRACKER_RECORDTOINST, (theApp.IsPlaying() || m_iMenuChannel >= ChannelCount) ? MF_DISABLED : MF_ENABLED);		// // //
+		pPopupMenu->EnableMenuItem(ID_TRACKER_RECORDERSETTINGS, (theApp.IsPlaying() || m_iMenuChannel >= ChannelCount) ? MF_DISABLED : MF_ENABLED);		// // //
 		CMenu *pMeterMenu = pPopupMenu->GetSubMenu(6);		// // // 050B
 		int Rate = theApp.GetSoundGenerator()->GetMeterDecayRate();
 		pMeterMenu->CheckMenuItem(Rate == DECAY_FAST ? ID_DECAY_FAST : ID_DECAY_SLOW, MF_CHECKED | MF_BYCOMMAND);
