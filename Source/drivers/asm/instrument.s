@@ -175,21 +175,28 @@ ft_run_instrument:
 	ldy #$03		;;; ;; ; 050B
 	lda (var_Temp_Pointer), y
 	beq :+
+	; absolute pitch mode
+	; m_pInterface->SetPeriod(m_pInterface->TriggerNote(m_pInterface->GetNote()) + Value);
 	lda var_ch_Note, x
 	jsr ft_translate_freq_only
 
+	; relative pitch mode
+	; m_pInterface->SetPeriod(m_pInterface->GetPeriod() + Value);
 	; Check this
 :	lda #$00
-	sta var_Temp16 + 1
+	sta var_Temp16 + 1	; 0 either way
 	lda var_sequence_result
     sta var_Temp16
 	bpl @PositivePitch
 @NegativePitch:
     ;; !! !! change the sign
+	;; this is stupid, but what more can i do
+	;; we could easily just use the same addition macro
+	;; but the code explicitly checks for overflow
     lda #$FF
     eor var_Temp16
     sta var_Temp16
-    inc var_Temp16
+	inc var_Temp16
 	jsr ft_period_remove
 	jmp :+
 @PositivePitch:
@@ -213,37 +220,44 @@ ft_run_instrument:
 	sta var_ch_SequencePtr4, x
 
 	; Check this
+	;m_pInterface->SetPeriod(m_pInterface->GetPeriod() + (Value << 4));
 	lda #$00
-	sta var_Temp16 + 1
+	sta var_Temp16 + 1	; 0 either way
 	lda var_sequence_result
 	sta var_Temp16
-	ldy #$04
-:	clc
-	rol var_Temp16 						; multiply by 16
-	rol var_Temp16 + 1
-	dey
-	bne :-
-
-	lda var_sequence_result
 	bpl @PositiveHiPitch
 @NegativeHiPitch:
     ;; !! !! change the sign
-    lda #$FF
-    eor var_Temp16 + 1
-    sta var_Temp16 + 1
+	;; !! !! this is stupid, but what more can i do
     lda #$FF
     eor var_Temp16
-    clc
-    adc #$01
     sta var_Temp16
-    lda #$00
-    adc var_Temp16 + 1
-    sta var_Temp16 + 1
+	inc var_Temp16
+	; left shift 4
+	clc
+	asl var_Temp16
+	rol var_Temp16 + 1
+	asl var_Temp16
+	rol var_Temp16 + 1
+	asl var_Temp16
+	rol var_Temp16 + 1
+	asl var_Temp16
+	rol var_Temp16 + 1
 	jsr ft_period_remove
     ; check for over/underflow
     ; limitperiod()
 	jmp :+
 @PositiveHiPitch:
+	; left shift 4
+	clc
+	asl var_Temp16
+	rol var_Temp16 + 1
+	asl var_Temp16
+	rol var_Temp16 + 1
+	asl var_Temp16
+	rol var_Temp16 + 1
+	asl var_Temp16
+	rol var_Temp16 + 1
 	jsr ft_period_add
 :	jsr ft_limit_freq
 	; ^^^^^^^^^^
