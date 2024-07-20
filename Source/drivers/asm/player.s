@@ -1817,6 +1817,142 @@ ft_calculate_speed:
 
 	rts
 
+
+
+; Make sure the period doesn't exceed max or min
+ft_limit_freq:
+
+.if .defined(USE_LINEARPITCH)
+	; linear pitch mode has different bounds check
+	lda var_SongFlags
+	and #FLAG_LINEARPITCH
+	beq :+
+; std::min(std::max(Period, 0), (NOTE_COUNT - 1) << LINEAR_PITCH_AMOUNT);
+; even though this is a virtual function,
+; nothing seems to override this in linear pitch mode
+	lda #<LIMIT_PERIOD_LINEAR
+	sta var_Temp16
+	lda #>LIMIT_PERIOD_LINEAR
+	sta var_Temp16 + 1
+	jmp ft_check_limit_freq
+:
+.endif
+ft_limit_freq_raw:
+	lda ft_channel_type, x
+	cmp #CHAN_NOI
+	bne :+
+	rts
+:
+	cmp #CHAN_DPCM
+	bne :+
+	rts
+:
+.if .defined(USE_N163)
+	cmp #CHAN_N163
+	bne :+
+	; if N163, pitch ranges from 0 to $FFFF
+	; there is nothing we can do
+	rts
+:
+.endif
+
+	tay
+	lda ft_limit_freq_lo, y
+	sta var_Temp16
+	lda ft_limit_freq_hi, y
+	sta var_Temp16 + 1
+
+ft_check_limit_freq:
+	lda var_ch_TimerPeriodHi, x
+	bmi @LimitMin
+	sec
+	lda var_ch_TimerPeriodLo, x
+	sbc var_Temp16
+	lda var_ch_TimerPeriodHi, x
+	sbc var_Temp16 + 1
+	bcc @LimitEnd
+@LimitMax:
+	lda var_Temp16 + 1
+	sta var_ch_TimerPeriodHi, x
+	lda var_Temp16
+	sta var_ch_TimerPeriodLo, x
+	jmp @LimitEnd
+@LimitMin:
+	lda #$00
+	sta var_ch_TimerPeriodLo, x
+	sta var_ch_TimerPeriodHi, x
+@LimitEnd:
+	rts
+
+
+; same as above but for var_ch_PeriodCalcHi/var_ch_PeriodCalcLo
+; roughly correlates to CChannelHandler::LimitRawPeriod()
+ft_limit_final_freq:
+
+.if .defined(USE_LINEARPITCH)
+	; linear pitch mode has different bounds check
+	lda var_SongFlags
+	and #FLAG_LINEARPITCH
+	beq :+
+; std::min(std::max(Period, 0), (NOTE_COUNT - 1) << LINEAR_PITCH_AMOUNT);
+; even though this is a virtual function,
+; nothing seems to override this in linear pitch mode
+	lda #<LIMIT_PERIOD_LINEAR
+	sta var_Temp16
+	lda #>LIMIT_PERIOD_LINEAR
+	sta var_Temp16 + 1
+	jmp ft_check_limit_final_freq
+:
+.endif
+
+ft_limit_final_freq_raw:
+	lda ft_channel_type, x
+	cmp #CHAN_NOI
+	bne :+
+	rts
+:
+	cmp #CHAN_DPCM
+	bne :+
+	rts
+:
+.if .defined(USE_N163)
+	cmp #CHAN_N163
+	bne :+
+	; if N163, pitch ranges from 0 to $FFFF
+	; there is nothing we can do
+	rts
+:
+.endif
+
+	tay
+	lda ft_limit_freq_lo, y
+	sta var_Temp16
+	lda ft_limit_freq_hi, y
+	sta var_Temp16 + 1
+
+ft_check_limit_final_freq:
+	lda var_ch_PeriodCalcHi, x
+	bmi @LimitMin
+	sec
+	lda var_ch_PeriodCalcLo, x
+	sbc var_Temp16
+	lda var_ch_PeriodCalcHi, x
+	sbc var_Temp16 + 1
+	bcc @LimitEnd
+@LimitMax:
+	lda var_Temp16 + 1
+	sta var_ch_PeriodCalcHi, x
+	lda var_Temp16
+	sta var_ch_PeriodCalcLo, x
+	jmp @LimitEnd
+@LimitMin:
+	lda #$00
+	sta var_ch_PeriodCalcLo, x
+	sta var_ch_PeriodCalcHi, x
+@LimitEnd:
+	rts
+
+
 .if .defined(USE_MMC5) && .defined(USE_MMC5_MULTIPLIER)
 MUL:
 	lda var_Temp16

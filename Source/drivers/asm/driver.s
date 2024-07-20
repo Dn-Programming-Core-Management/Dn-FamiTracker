@@ -647,6 +647,39 @@ bit_mask:		;;; ;; ; general-purpose bit mask
 	.include "vibrato.s"
 .endif
 
+LIMIT_PERIOD_2A03 = $7FF
+LIMIT_PERIOD_VRC6 = $FFF
+; VRC7: period is between 0 to (1 << (VRC7_PITCH_RESOLUTION + 9)) - 1 or $7FF
+LIMIT_PERIOD_VRC7 = LIMIT_PERIOD_2A03
+LIMIT_PERIOD_N163 = $FFFF
+LIMIT_PERIOD_LINEAR = (95<<5)
+
+ft_limit_freq_lo:
+	.byte >LIMIT_PERIOD_2A03		; 2A03
+	.byte >LIMIT_PERIOD_2A03		; 2A03
+	.byte >0						; 2A03 noise
+	.byte >0						; 2A03 dpcm
+	.byte >LIMIT_PERIOD_VRC6		; VRC6
+	.byte >LIMIT_PERIOD_VRC6		; VRC6
+	.byte >LIMIT_PERIOD_2A03		; VRC7
+	.byte >LIMIT_PERIOD_VRC6		; FDS
+	.byte >LIMIT_PERIOD_2A03		; MMC5
+	.byte >LIMIT_PERIOD_N163		; N163
+	.byte >LIMIT_PERIOD_VRC6		; S5B
+ft_limit_freq_hi:
+	.byte <LIMIT_PERIOD_2A03		; 2A03
+	.byte <LIMIT_PERIOD_2A03		; 2A03
+	.byte <0						; 2A03 noise
+	.byte <0						; 2A03 dpcm
+	.byte <LIMIT_PERIOD_VRC6		; VRC6
+	.byte <LIMIT_PERIOD_VRC6		; VRC6
+	.byte <LIMIT_PERIOD_2A03		; VRC7
+	.byte <LIMIT_PERIOD_VRC6		; FDS
+	.byte <LIMIT_PERIOD_2A03		; MMC5
+	.byte <LIMIT_PERIOD_N163		; N163
+	.byte <LIMIT_PERIOD_VRC6		; S5B
+
+
 ;
 ; An example of including music follows
 ;

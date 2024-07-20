@@ -316,6 +316,7 @@ ft_calc_period:
 	sta var_ch_PeriodCalcHi, x
 @Skip:
 
+	; apply vibrato and tremolo
 	jsr ft_vibrato
 	jsr ft_tremolo
 
@@ -330,35 +331,57 @@ ft_calc_period:
 	beq :+
 	cmp #CHAN_DPCM
 	beq :+
+	; TODO: implement VRC7 linear pitch?
+.if .defined(USE_VRC7)
+	cmp #CHAN_VRC7
+	beq :+
+.endif
 	jsr ft_load_freq_table
 	jsr ft_linear_fetch_pitch
 :
 .endif								; ;; ;;;
 
 	; apply frequency multiplication
+.if .defined(USE_FDS)
+	lda ft_channel_type, x
+	cmp #CHAN_FDS
+	bne :+
+	; copy unmultiplied period to FDS carrier
+	jsr @CopyPeriodToCarrier
+:
+.endif
+
 	lda var_ch_Harmonic, x
-	beq @MaxPeriod									; K00 results in lowest possible frequency
+
+	; K00 results in lowest possible frequency
+	beq @MaxPeriod
+
+	; skip calculation if it's not affecting pitch
 	cmp #$01
-	beq @SkipHarmonic								; skip calculation if it's not affecting pitch
+	beq @EndHarmonic
 
 	lda ft_channel_type, x
+	; noise does not use this
 	cmp #CHAN_NOI
-	beq @SkipHarmonic
+	beq @EndHarmonic
 
 .if .defined(USE_VRC7)
 	; VRC7 not yet implemented
 	cmp #CHAN_VRC7
-	beq @SkipHarmonic
+	beq @EndHarmonic
 .endif
+
 ; FDS and N163 use angular frequency
 .if .defined(USE_FDS)
 	cmp #CHAN_FDS
-	beq @HarmonicMultiplyFDS
+	beq @HarmonicMultiply
 .endif
+
 .if .defined(USE_N163)
 	cmp #CHAN_N163
 	beq @HarmonicMultiply
 .endif
+
 @HarmonicDivide:
 	lda var_ch_PeriodCalcLo, x
 	sta ACC
@@ -369,11 +392,7 @@ ft_calc_period:
 	lda #$00
 	sta AUX + 1
 	jsr DIV
-	jmp @HarmonicEnd
-.if .defined(USE_FDS)
-@HarmonicMultiplyFDS:
-	jsr @CopyPeriodToCarrier
-.endif
+	jmp @HarmonicEpilogue
 @HarmonicMultiply:
 	lda var_ch_PeriodCalcLo, x
 	sta var_Temp16
@@ -388,30 +407,21 @@ ft_calc_period:
 	lda var_ch_Harmonic, x
 	sta var_Temp
 	jsr MUL
-@HarmonicEnd:
+@HarmonicEpilogue:
 	lda ACC
 	sta var_ch_PeriodCalcLo, x
 	lda ACC + 1
 	sta var_ch_PeriodCalcHi, x
-	jmp @JumpHarmonicEnd
-@SkipHarmonic:
-.if .defined(USE_FDS)
-	lda ft_channel_type, x
-	cmp #CHAN_FDS
-	bne @JumpHarmonicEnd
-	jsr @CopyPeriodToCarrier
-.endif
-@JumpHarmonicEnd:
-	rts
+	jmp @EndHarmonic
 
 @MaxPeriod:
 	; no limits for noise
 	lda ft_channel_type, x
 	cmp #CHAN_NOI
-	beq @EndCalcPeriod
+	beq @EndHarmonic
 .if .defined(USE_VRC7)
 	cmp #CHAN_VRC7
-	beq @EndCalcPeriod
+	beq @EndHarmonic
 .endif
 .if .defined(USE_N163)
 	cmp #CHAN_N163
@@ -421,19 +431,25 @@ ft_calc_period:
 	cmp #CHAN_FDS
 	beq @InvertedPeriod
 .endif
-	; 12-bit/11-bit period
-	; will be handled in their respective chip handlers
 	lda #$FF
-	sta var_ch_PeriodCalcHi, x
-	lda #$0F
 	sta var_ch_PeriodCalcLo, x
-	jmp @EndCalcPeriod
+	lda #$0F
+	sta var_ch_PeriodCalcHi, x
+	jmp @EndHarmonic
 @InvertedPeriod:
 	lda #$00
 	sta var_ch_PeriodCalcHi, x
 	sta var_ch_PeriodCalcLo, x
-@EndCalcPeriod:
-	rts
+@EndHarmonic:
+
+
+	; CChannelHandler::LimitRawPeriod()
+	jmp ft_limit_final_freq_raw
+	; we're done here
+	; in the case of CChannelHandlerVRC7::CalculatePeriod() and
+	; CChannelHandlerN163::CalculatePeriod(), the freq bitshifts will be applied
+	; in their respective chip handlers (see n163.s, vrc7.s)
+;	rts
 
 .if .defined(USE_FDS)
 @CopyPeriodToCarrier:
