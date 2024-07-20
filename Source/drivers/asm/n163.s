@@ -118,19 +118,6 @@ ft_update_n163:
 	bne :-
 	rts
 @Play:
-.if .defined(USE_LINEARPITCH)		;;; ;; ;
-	lda var_SongFlags
-	and #FLAG_LINEARPITCH
-	beq :++
-	jsr ft_load_n163_table
-	lda var_NamcoChannels
-	sta var_Temp3
-	ldx #N163_OFFSET
-:	jsr ft_linear_fetch_pitch
-	dec var_Temp3
-	bne :-
-:
-.endif								; ;; ;;;
 	; x = channel
 	ldx #$00
 @ChannelLoop:

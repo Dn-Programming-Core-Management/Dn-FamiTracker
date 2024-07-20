@@ -67,15 +67,6 @@ ft_update_fds:
 	sta $4080
 	rts
 @Play:
-.if .defined(USE_LINEARPITCH)		;;; ;; ;
-	lda var_SongFlags
-	and #FLAG_LINEARPITCH
-	beq :+
-	jsr ft_load_fds_table
-	ldx #FDS_OFFSET
-	jsr ft_linear_fetch_pitch
-:
-.endif								; ;; ;;;
 
 	lda var_ch_Note + FDS_OFFSET
 	jeq @KillFDS

@@ -625,6 +625,24 @@ ft_load_instrument_vrc7:
 ; Make sure the period doesn't exceed max or min
 ft_limit_freq:
 
+.if .defined(USE_LINEARPITCH)
+	; linear pitch mode has different bounds check
+	lda var_SongFlags
+	and #FLAG_LINEARPITCH
+	beq :+
+	lda ft_channel_type, x
+	asl
+	tay
+	lda ft_limit_linear_pointers, y
+	sta var_Temp16
+	iny
+	lda ft_limit_linear_pointers, y
+	sta var_Temp16 + 1
+	ldy #$00
+	jmp (var_Temp16)
+:
+.endif
+
 	; Jump to the instrument setup routine
 	lda ft_channel_type, x
 	asl		;;; ;; ;
@@ -652,6 +670,7 @@ ft_limit_pointers:			;;; ;; ; 0CC: optimize this
 	.word ft_limit_period_vrc6		;;; ;; ; S5B
 
 ft_limit_period_no:
+ft_limit_linear_period_no:
 	rts
 
 ; 2A03: period is between 0 to $7FF
@@ -681,6 +700,44 @@ ft_limit_period_vrc6:
 	lda #$0F
 	sta var_ch_TimerPeriodHi, x
 	lda #$FF
+	sta var_ch_TimerPeriodLo, x
+@NoLimit:
+	rts
+@LimitMin:
+	lda #$00
+	sta var_ch_TimerPeriodLo, x
+	sta var_ch_TimerPeriodHi, x
+	rts
+
+ft_limit_linear_pointers:			;;; ;; ; 0CC: optimize this
+	.word ft_limit_linear_period_2a03		; 2A03
+	.word ft_limit_linear_period_2a03		; 2A03
+	.word ft_limit_linear_period_no		; 2A03 noise
+	.word ft_limit_linear_period_no		; 2A03 dpcm
+	.word ft_limit_linear_period_vrc6		; VRC6
+	.word ft_limit_linear_period_vrc6		; VRC6
+	.word ft_limit_linear_period_no		; VRC7
+	.word ft_limit_linear_period_vrc6		; FDS
+	.word ft_limit_linear_period_2a03		; MMC5
+	.word ft_limit_linear_period_no		; N163
+	.word ft_limit_linear_period_vrc6		;;; ;; ; S5B
+
+; std::min(std::max(Period, 0), (NOTE_COUNT - 1) << LINEAR_PITCH_AMOUNT);
+; even though this is a virtual function,
+; nothing seems to override this in linear pitch mode
+ft_limit_linear_period_2a03:
+ft_limit_linear_period_vrc6:
+	lda var_ch_TimerPeriodHi, x
+	bmi @LimitMin
+	sec
+	lda var_ch_TimerPeriodLo, x
+	sbc #<(95<<5)
+	lda var_ch_TimerPeriodHi, x
+	sbc #>(95<<5)
+	bcc @NoLimit
+	lda #>(95<<5)
+	sta var_ch_TimerPeriodHi, x
+	lda #<(95<<5)
 	sta var_ch_TimerPeriodLo, x
 @NoLimit:
 	rts

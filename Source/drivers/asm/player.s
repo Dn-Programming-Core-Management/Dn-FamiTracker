@@ -1272,7 +1272,6 @@ ft_cmd_s5b_noise:
 ; End of commands
 ;
 
-.if .defined(USE_N163) || .defined(USE_FDS) || .defined(USE_VRC6)		;;; ;; ;
 ft_load_freq_table:
 	lda ft_channel_type, x
 .if .defined(USE_N163)
@@ -1288,6 +1287,11 @@ ft_load_freq_table:
 	beq ft_load_saw_table
 .endif
 	; fallthrough
+
+.if .defined(PAL_PERIOD_TABLE)
+	lda var_SongFlags
+	and #FLAG_USEPAL
+	bne ft_load_pal_table
 .endif
 
 .if .defined(NTSC_PERIOD_TABLE)
@@ -1296,8 +1300,8 @@ ft_load_ntsc_table:
 	sta var_Note_Table
 	lda #>ft_periods_ntsc		;; Reloc
 	sta var_Note_Table + 1
-.endif
 	rts
+.endif
 
 .if .defined(PAL_PERIOD_TABLE)
 ft_load_pal_table:
@@ -1617,7 +1621,7 @@ ft_linear_prescale:
 	sta var_Temp
 	rts
 
-ft_linear_fetch_pitch: ; increments x
+ft_linear_fetch_pitch:
 	jsr ft_linear_prescale
 	asl var_ch_PeriodCalcHi, x
 	
@@ -1629,9 +1633,9 @@ ft_linear_fetch_pitch: ; increments x
 	sta var_ch_PeriodCalcHi, x
 
 	cpy #$BF
-	bcs @Return
+	bcs :+	;Return
 	lda var_Temp
-	beq @Return
+	beq :+	;Return
 
 	lda ft_channel_type, x
 	cmp #CHAN_FDS
@@ -1660,9 +1664,7 @@ ft_linear_fetch_pitch: ; increments x
 	lda var_ch_PeriodCalcHi, x
 	sbc EXT
 	sta var_ch_PeriodCalcHi, x
-@Return:
-	inx
-	rts
+	jmp :+	;Return
 @FrequencyReg:
 	sec
 	iny
@@ -1684,7 +1686,7 @@ ft_linear__final:
 	lda var_ch_PeriodCalcHi, x
 	adc EXT
 	sta var_ch_PeriodCalcHi, x
-	inx
+:
 	rts
 
 ft_correct_finepitch:

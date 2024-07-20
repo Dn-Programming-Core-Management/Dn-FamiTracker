@@ -216,6 +216,7 @@ ft_load_slide:
 :	;rts
 	jmp ft_jump_to_effect
 
+; see CChannelHandler::CalculatePeriod()
 ft_calc_period:
 
 	; Load period
@@ -314,7 +315,26 @@ ft_calc_period:
 	sta var_ch_PeriodCalcLo, x
 	sta var_ch_PeriodCalcHi, x
 @Skip:
-	
+
+	jsr ft_vibrato
+	jsr ft_tremolo
+
+.if .defined(USE_LINEARPITCH)		;;; ;; ;
+	; apply linear pitch
+	lda var_SongFlags
+	and #FLAG_LINEARPITCH
+	beq :+
+	; these channels don't use linear pitch adjustments
+	lda ft_channel_type, x
+	cmp #CHAN_NOI
+	beq :+
+	cmp #CHAN_DPCM
+	beq :+
+	jsr ft_load_freq_table
+	jsr ft_linear_fetch_pitch
+:
+.endif								; ;; ;;;
+
 	; apply frequency multiplication
 	lda var_ch_Harmonic, x
 	beq @MaxPeriod									; K00 results in lowest possible frequency
@@ -382,8 +402,6 @@ ft_calc_period:
 	jsr @CopyPeriodToCarrier
 .endif
 @JumpHarmonicEnd:
-	jsr ft_vibrato
-	jsr ft_tremolo
 	rts
 
 @MaxPeriod:

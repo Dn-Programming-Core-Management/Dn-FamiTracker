@@ -9,16 +9,6 @@ ft_update_mmc5:
 	sta $5015
 	rts
 :
-.if .defined(USE_LINEARPITCH)		;;; ;; ;
-	lda var_SongFlags
-	and #FLAG_LINEARPITCH
-	beq :+
-	jsr ft_load_ntsc_table
-	ldx #MMC5_OFFSET
-	jsr ft_linear_fetch_pitch
-	jsr ft_linear_fetch_pitch
-:
-.endif								; ;; ;;;
 	ldx #$00
 @ChannelLoop:		; MMC5 pulse channels
 	lda var_ch_Note + MMC5_OFFSET, x		; Kill channel if note = off
