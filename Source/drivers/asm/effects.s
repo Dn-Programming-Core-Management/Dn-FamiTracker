@@ -518,6 +518,12 @@ ft_portamento_up:
 	lda #$00
 	sta var_Temp16 + 1
 .if .defined(USE_N163)
+.if .defined(USE_LINEARPITCH)		;; !! !!
+	lda var_SongFlags
+	and #FLAG_LINEARPITCH
+	bne :+
+	;; !! !! only apply N163 pitch slide shift when linear pitch is disabled
+.endif
     lda ft_channel_type, x
     cmp #CHAN_N163
     bne :+
@@ -539,6 +545,12 @@ ft_portamento_down:
 	lda #$00
 	sta var_Temp16 + 1
 .if .defined(USE_N163)
+.if .defined(USE_LINEARPITCH)
+	lda var_SongFlags
+	and #FLAG_LINEARPITCH
+	bne :+
+	;; !! !! only apply N163 pitch slide shift when linear pitch is disabled
+.endif
     lda ft_channel_type, x
     cmp #CHAN_N163
     bne :+
