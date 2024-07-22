@@ -467,10 +467,10 @@ ft_calc_period:
 ;
 ft_portamento:
 	lda var_ch_EffParam, x							; Check portamento, if speed > 0
-	beq @NoPortamento
+	jeq @NoPortamento
 	lda var_ch_PortaToLo, x							; and if freq > 0, else stop
 	ora var_ch_PortaToHi, x
-	beq @NoPortamento
+	jeq @NoPortamento
 	lda var_ch_TimerPeriodHi, x						; Compare high byte
 	cmp var_ch_PortaToHi, x
 	bcc @Increase
@@ -487,6 +487,24 @@ ft_portamento:
 	sta var_Temp16
 	lda #$00
 	sta var_Temp16 + 1
+.if .defined(USE_N163)
+.if .defined(USE_LINEARPITCH)
+	lda var_SongFlags
+	and #FLAG_LINEARPITCH
+	bne :+
+	;; !! !! only apply N163 pitch slide shift when linear pitch is disabled
+	; see CChannelHandlerN163::SetupSlide()
+.endif
+    lda ft_channel_type, x
+    cmp #CHAN_N163
+    bne :+
+    ; Multiply by 4
+    asl var_Temp16
+    rol var_Temp16 + 1
+    asl var_Temp16
+    rol var_Temp16 + 1
+:
+.endif
 	jsr ft_period_remove
 
 .if 0
@@ -515,6 +533,24 @@ ft_portamento:
 	sta var_Temp16
 	lda #$00
 	sta var_Temp16 + 1
+.if .defined(USE_N163)
+.if .defined(USE_LINEARPITCH)
+	lda var_SongFlags
+	and #FLAG_LINEARPITCH
+	bne :+
+	;; !! !! only apply N163 pitch slide shift when linear pitch is disabled
+	; see CChannelHandlerN163::SetupSlide()
+.endif
+    lda ft_channel_type, x
+    cmp #CHAN_N163
+    bne :+
+    ; Multiply by 4
+    asl var_Temp16
+    rol var_Temp16 + 1
+    asl var_Temp16
+    rol var_Temp16 + 1
+:
+.endif
 	jsr ft_period_add
 .if 0
 	clc
@@ -557,6 +593,7 @@ ft_portamento_up:
 	and #FLAG_LINEARPITCH
 	bne :+
 	;; !! !! only apply N163 pitch slide shift when linear pitch is disabled
+	; see CChannelHandlerN163::HandleEffect()
 .endif
     lda ft_channel_type, x
     cmp #CHAN_N163
@@ -584,6 +621,7 @@ ft_portamento_down:
 	and #FLAG_LINEARPITCH
 	bne :+
 	;; !! !! only apply N163 pitch slide shift when linear pitch is disabled
+	; see CChannelHandlerN163::HandleEffect()
 .endif
     lda ft_channel_type, x
     cmp #CHAN_N163
@@ -831,7 +869,7 @@ ft_vibrato:
 	beq @Inverted
 .endif
 
-	  ; TODO use ft_period_remove
+	; ft_period_remove applies clamp. we don't need that yet
 	sec
 	lda var_ch_PeriodCalcLo, x
 	sbc var_Temp16
@@ -842,6 +880,7 @@ ft_vibrato:
 	rts
 
 @Inverted:
+	; ft_period_add applies clamp. we don't need that yet
 	clc
 	lda var_ch_PeriodCalcLo, x
 	adc var_Temp16
