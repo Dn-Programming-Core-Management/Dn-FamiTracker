@@ -842,21 +842,17 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 	CreateHeader(&Header, MachineType, 0x00, false);
 
 	// Open output files
-	CFile OutputFileBIN;
-	if (!OpenFile(lpszBIN_File, OutputFileBIN)) {
-		OutputFileBIN.Close();
-		Print(_T("Error: Could not open output binary file\n"));
-		Cleanup();
+	CFilePtrArray OutputFiles = {};
+	size_t OutputFileBINIndex = OutputFiles.size();
+	CString errormsg = _T("Error: Could not open output binary file\n");
+	if (!OpenArrayFile(OutputFiles, lpszBIN_File, errormsg)) {
 		return;
 	}
 
-	CFile OutputFileDPCM;
+	size_t OutputFileDPCMIndex = OutputFiles.size();	// off-by-one gets corrected
+	errormsg = _T("Error: Could not open output binary DPCM file\n");
 	if (_tcslen(lpszDPCM_File) != 0) {
-		if (!OpenFile(lpszDPCM_File, OutputFileDPCM)) {
-			OutputFileDPCM.Close();
-			OutputFileBIN.Close();
-			Print(_T("Error: Could not open output binary DPCM file\n"));
-			Cleanup();
+		if (!OpenArrayFile(OutputFiles, lpszDPCM_File, errormsg)) {
 			return;
 		}
 	}
@@ -864,139 +860,83 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 	Print(_T("Writing output files...\n"));
 
 	if (_tcslen(lpszDPCM_File) != 0)
-		WriteSamplesBinary(&OutputFileDPCM);
+		WriteSamplesBinary(OutputFiles.at(OutputFileDPCMIndex).get());
 
 	if (ExtraData) {
-		// Get the directory of the BIN
-		CString FileDirectory = OutputFileBIN.GetFilePath();
-		int trimcount = OutputFileBIN.GetFilePath().GetLength() - OutputFileBIN.GetFileName().GetLength();
-		int trimindex = OutputFileBIN.GetFilePath().GetLength() - trimcount;
-		FileDirectory.Delete(trimindex, trimcount);
+		// Get the directory of the output BIN file
+		CFile *OutputFileBin = OutputFiles.at(OutputFileBINIndex).get();
+		CString FilePath = OutputFileBin->GetFilePath();
+		CString FileName = OutputFileBin->GetFileName();
+		int trimcount = FilePath.GetLength() - FileName.GetLength();
+		int trimindex = FilePath.GetLength() - trimcount;
+		FilePath.Delete(trimindex, trimcount);
 
-		// Write NSF stub
-		CFile OutputFileNSFStub;
-		CString stub_directory = FileDirectory + "nsf_stub.s";
-
-		if (!OpenFile(stub_directory, OutputFileNSFStub)) {
-			OutputFileNSFStub.Close();
-			Print(_T("Error: Could not open output NSF stub file\n"));
-			Cleanup();
+		// NSF stub
+		size_t OutputFileNSFStubIndex = OutputFiles.size();
+		errormsg = _T("Error: Could not open output NSF stub file\n");
+		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "nsf_stub.s"), errormsg)) {
 			return;
 		}
 
-		// Write NSF header
-		CFile OutputFileNSFHeader;
-		CString header_directory = FileDirectory + "nsf_header.s";
-
-		if (!OpenFile(header_directory, OutputFileNSFHeader)) {
-			OutputFileNSFStub.Close();
-			OutputFileNSFHeader.Close();
-			Print(_T("Error: Could not open output NSF header file\n"));
-			Cleanup();
+		// NSF header
+		size_t OutputFileNSFHeaderIndex = OutputFiles.size();
+		errormsg = _T("Error: Could not open output NSF header file\n");
+		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "nsf_header.s"), errormsg)) {
 			return;
 		}
 
-		// Write NSF config file
-		CFile OutputFileNSFConfig;
-		CString config_directory = FileDirectory + "nsf.cfg";
-		if (!OpenFile(config_directory, OutputFileNSFConfig)) {
-			OutputFileNSFStub.Close();
-			OutputFileNSFHeader.Close();
-			OutputFileNSFConfig.Close();
-			Print(_T("Error: Could not open NSF config file\n"));
-			Cleanup();
+		// NSF config file
+		size_t OutputFileNSFConfigIndex = OutputFiles.size();
+		errormsg = _T("Error: Could not open output NSF config file\n");
+		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "nsf.cfg"), errormsg)) {
 			return;
 		}
 
-		// Write period file
-		CFile OutputFilePeriods;
-		CString periods_directory = FileDirectory + "periods.s";
-
-		if (!OpenFile(periods_directory, OutputFilePeriods)) {
-			OutputFileNSFStub.Close();
-			OutputFileNSFHeader.Close();
-			OutputFileNSFConfig.Close();
-			OutputFilePeriods.Close();
-			Print(_T("Error: Could not open output periods file\n"));
-			Cleanup();
+		// period table file
+		size_t OutputFilePeriodsIndex = OutputFiles.size();
+		errormsg = _T("Error: Could not open output period table file\n");
+		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "periods.s"), errormsg)) {
 			return;
 		}
 
-		// Write vibrato file
-		CFile OutputFileVibrato;
-		CString vibrato_directory = FileDirectory + "vibrato.s";
-
-		if (!OpenFile(vibrato_directory, OutputFileVibrato)) {
-			OutputFileNSFStub.Close();
-			OutputFileNSFHeader.Close();
-			OutputFileNSFConfig.Close();
-			OutputFilePeriods.Close();
-			OutputFileVibrato.Close();
-			Print(_T("Error: Could not open output vibrato file\n"));
-			Cleanup();
+		// vibrato table file
+		size_t OutputFileVibratoIndex = OutputFiles.size();
+		errormsg = _T("Error: Could not open output vibrato table file\n");
+		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "vibrato.s"), errormsg)) {
 			return;
 		}
 
-		// Write multichip enable file
-		CFile OutputFileMultiChipEnable;
-		CString enable_ext_directory = FileDirectory + "enable_ext.s";
-
-		if (!OpenFile(enable_ext_directory, OutputFileMultiChipEnable)) {
-			OutputFileNSFStub.Close();
-			OutputFileNSFHeader.Close();
-			OutputFileNSFConfig.Close();
-			OutputFilePeriods.Close();
-			OutputFileVibrato.Close();
-			OutputFileMultiChipEnable.Close();
-			Print(_T("Error: Could not open output multichip handler file\n"));
-			Cleanup();
+		// multichip enable table file
+		size_t OutputFileMultiChipEnableIndex = OutputFiles.size();
+		errormsg = _T("Error: Could not open output multichip enable table file\n");
+		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "enable_ext.s"), errormsg)) {
 			return;
 		}
 
-		// Write multichip enable file
-		CFile OutputFileMultiChipUpdate;
-		CString update_ext_directory = FileDirectory + "update_ext.s";
-
-		if (!OpenFile(update_ext_directory, OutputFileMultiChipUpdate)) {
-			OutputFileNSFStub.Close();
-			OutputFileNSFHeader.Close();
-			OutputFileNSFConfig.Close();
-			OutputFilePeriods.Close();
-			OutputFileVibrato.Close();
-			OutputFileMultiChipEnable.Close();
-			OutputFileMultiChipUpdate.Close();
-			Print(_T("Error: Could not open output multichip handler file\n"));
-			Cleanup();
+		// Write multichip update handler file
+		size_t OutputFileMultiChipUpdateIndex = OutputFiles.size();
+		errormsg = _T("Error: Could not open output multichip update handler file\n");
+		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "update_ext.s"), errormsg)) {
 			return;
 		}
 
-		WriteBinary(&OutputFileBIN, ExtraData, Header, MachineType,
-			&OutputFileNSFStub,
-			&OutputFileNSFHeader,
-			&OutputFileNSFConfig,
-			&OutputFilePeriods,
-			&OutputFileVibrato,
-			&OutputFileMultiChipEnable,
-			&OutputFileMultiChipUpdate);
-		OutputFileNSFStub.Close();
-		OutputFileNSFHeader.Close();
-		OutputFileNSFConfig.Close();
-		OutputFilePeriods.Close();
-		OutputFileVibrato.Close();
-		OutputFileMultiChipEnable.Close();
-		OutputFileMultiChipUpdate.Close();
+		WriteBinary(OutputFiles, ExtraData, Header, MachineType,
+			OutputFileBINIndex,
+			OutputFileNSFStubIndex,
+			OutputFileNSFHeaderIndex,
+			OutputFileNSFConfigIndex,
+			OutputFilePeriodsIndex,
+			OutputFileVibratoIndex,
+			OutputFileMultiChipEnableIndex,
+			OutputFileMultiChipUpdateIndex);
 	}
 	else
-		WriteBinary(&OutputFileBIN, ExtraData, Header);
+		WriteBinary(OutputFiles, ExtraData, Header, MachineType, OutputFileBINIndex);
 
 	Print(_T("Done\n"));
 
 	// Done
-	OutputFileBIN.Close();
-
-	if (_tcslen(lpszDPCM_File) != 0)
-		OutputFileDPCM.Close();
-
+	CloseFileArray(OutputFiles);
 	Cleanup();
 }
 
@@ -1148,11 +1088,10 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 	stNSFHeader Header;
 	CreateHeader(&Header, MachineType, 0x00, false);
 
-	CFile OutputFile;
-	if (!OpenFile(lpszFileName, OutputFile)) {
-		OutputFile.Close();
-		Print(_T("Error: Could not open output file\n"));
-		Cleanup();
+	CFilePtrArray OutputFiles = {};
+	size_t OutputFileASMIndex = OutputFiles.size();
+	CString errormsg = _T("Error: Could not open output assembly file\n");
+	if (!OpenArrayFile(OutputFiles, lpszFileName, errormsg)) {
 		return;
 	}
 
@@ -1160,134 +1099,81 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 	Print(_T("Writing output files...\n"));
 
 	if (ExtraData) {
-		// Get the directory of the output file
-		CString FileDirectory = OutputFile.GetFilePath();
-		FileDirectory.Delete(
-			(OutputFile.GetFilePath().GetLength()) - (OutputFile.GetFileName().GetLength()),
-			OutputFile.GetFileName().GetLength());
+		// Get the directory of the output assembly file
+		CFile *OutputFileBin = OutputFiles.at(OutputFileASMIndex).get();
+		CString FilePath = OutputFileBin->GetFilePath();
+		CString FileName = OutputFileBin->GetFileName();
+		int trimcount = FileName.GetLength();
+		int trimindex = FilePath.GetLength() - trimcount;
+		FilePath.Delete(trimindex, trimcount);
 
-		// Write NSF stub
-		CFile OutputFileNSFStub;
-		CString stub_directory = FileDirectory + "nsf_stub.s";
-
-		if (!OpenFile(stub_directory, OutputFileNSFStub)) {
-			OutputFileNSFStub.Close();
-			Print(_T("Error: Could not open output NSF stub file\n"));
-			Cleanup();
+		// NSF stub
+		size_t OutputFileNSFStubIndex = OutputFiles.size();
+		errormsg = _T("Error: Could not open output NSF stub file\n");
+		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "nsf_stub.s"), errormsg)) {
 			return;
 		}
 
-		// Write NSF header
-		CFile OutputFileNSFHeader;
-		CString header_directory = FileDirectory + "nsf_header.s";
-
-		if (!OpenFile(header_directory, OutputFileNSFHeader)) {
-			OutputFileNSFStub.Close();
-			OutputFileNSFHeader.Close();
-			Print(_T("Error: Could not open output NSF header file\n"));
-			Cleanup();
+		// NSF header
+		size_t OutputFileNSFHeaderIndex = OutputFiles.size();
+		errormsg = _T("Error: Could not open output NSF header file\n");
+		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "nsf_header.s"), errormsg)) {
 			return;
 		}
 
-		// Write NSF config file
-		CFile OutputFileNSFConfig;
-		CString config_directory = FileDirectory + "nsf.cfg";
-		if (!OpenFile(config_directory, OutputFileNSFConfig)) {
-			OutputFileNSFStub.Close();
-			OutputFileNSFHeader.Close();
-			OutputFileNSFConfig.Close();
-			Print(_T("Error: Could not open NSF config file\n"));
-			Cleanup();
+		// NSF config file
+		size_t OutputFileNSFConfigIndex = OutputFiles.size();
+		errormsg = _T("Error: Could not open output NSF config file\n");
+		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "nsf.cfg"), errormsg)) {
 			return;
 		}
 
-		// Write period file
-		CFile OutputFilePeriods;
-		CString periods_directory = FileDirectory + "periods.s";
-
-		if (!OpenFile(periods_directory, OutputFilePeriods)) {
-			OutputFileNSFStub.Close();
-			OutputFileNSFHeader.Close();
-			OutputFileNSFConfig.Close();
-			OutputFilePeriods.Close();
-			Print(_T("Error: Could not open output periods file\n"));
-			Cleanup();
+		// period table file
+		size_t OutputFilePeriodsIndex = OutputFiles.size();
+		errormsg = _T("Error: Could not open output period table file\n");
+		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "periods.s"), errormsg)) {
 			return;
 		}
 
-		// Write vibrato file
-		CFile OutputFileVibrato;
-		CString vibrato_directory = FileDirectory + "vibrato.s";
-
-		if (!OpenFile(vibrato_directory, OutputFileVibrato)) {
-			OutputFileNSFStub.Close();
-			OutputFileNSFHeader.Close();
-			OutputFileNSFConfig.Close();
-			OutputFilePeriods.Close();
-			OutputFileVibrato.Close();
-			Print(_T("Error: Could not open output vibrato file\n"));
-			Cleanup();
+		// vibrato table file
+		size_t OutputFileVibratoIndex = OutputFiles.size();
+		errormsg = _T("Error: Could not open output vibrato table file\n");
+		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "vibrato.s"), errormsg)) {
 			return;
 		}
 
-		// Write multichip enable file
-		CFile OutputFileMultiChipEnable;
-		CString enable_ext_directory = FileDirectory + "enable_ext.s";
-
-		if (!OpenFile(enable_ext_directory, OutputFileMultiChipEnable)) {
-			OutputFileNSFStub.Close();
-			OutputFileNSFHeader.Close();
-			OutputFileNSFConfig.Close();
-			OutputFilePeriods.Close();
-			OutputFileVibrato.Close();
-			OutputFileMultiChipEnable.Close();
-			Print(_T("Error: Could not open output multichip handler file\n"));
-			Cleanup();
+		// multichip enable table file
+		size_t OutputFileMultiChipEnableIndex = OutputFiles.size();
+		errormsg = _T("Error: Could not open output multichip enable table file\n");
+		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "enable_ext.s"), errormsg)) {
 			return;
 		}
 
-		// Write multichip enable file
-		CFile OutputFileMultiChipUpdate;
-		CString update_ext_directory = FileDirectory + "update_ext.s";
-
-		if (!OpenFile(update_ext_directory, OutputFileMultiChipUpdate)) {
-			OutputFileNSFStub.Close();
-			OutputFileNSFHeader.Close();
-			OutputFileNSFConfig.Close();
-			OutputFilePeriods.Close();
-			OutputFileVibrato.Close();
-			OutputFileMultiChipEnable.Close();
-			OutputFileMultiChipUpdate.Close();
-			Print(_T("Error: Could not open output multichip handler file\n"));
-			Cleanup();
+		// Write multichip update handler file
+		size_t OutputFileMultiChipUpdateIndex = OutputFiles.size();
+		errormsg = _T("Error: Could not open output multichip update handler file\n");
+		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "update_ext.s"), errormsg)) {
 			return;
 		}
 
-		WriteAssembly(&OutputFile, ExtraData, Header, MachineType,
-			&OutputFileNSFStub,
-			&OutputFileNSFHeader,
-			&OutputFileNSFConfig,
-			&OutputFilePeriods,
-			&OutputFileVibrato,
-			&OutputFileMultiChipEnable,
-			&OutputFileMultiChipUpdate);
-		OutputFileNSFStub.Close();
-		OutputFileNSFHeader.Close();
-		OutputFileNSFConfig.Close();
-		OutputFilePeriods.Close();
-		OutputFileVibrato.Close();
-		OutputFileMultiChipEnable.Close();
-		OutputFileMultiChipUpdate.Close();
+		WriteAssembly(OutputFiles, ExtraData, Header, MachineType,
+			OutputFileASMIndex,
+			OutputFileNSFStubIndex,
+			OutputFileNSFHeaderIndex,
+			OutputFileNSFConfigIndex,
+			OutputFilePeriodsIndex,
+			OutputFileVibratoIndex,
+			OutputFileMultiChipEnableIndex,
+			OutputFileMultiChipUpdateIndex);
 	}
 	else {
-		WriteAssembly(&OutputFile, ExtraData, Header);
+		WriteAssembly(OutputFiles, ExtraData, Header, MachineType, OutputFileASMIndex);
 	}
-
-	// Done
-	OutputFile.Close();
 
 	Print(_T("Done\n"));
 
+	// Done
+	CloseFileArray(OutputFiles);
 	Cleanup();
 }
 
@@ -2839,20 +2725,24 @@ void CCompiler::AddWavetable(CInstrumentFDS *pInstrument, CChunk *pChunk)
 	m_iWaveTables++;
 }
 
-void CCompiler::WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header, int MachineType,
-	CFile *pFileNSFStub,
-	CFile *pFileNSFHeader,
-	CFile *pFileNSFConfig,
-	CFile *pFilePeriods,
-	CFile *pFileVibrato,
-	CFile *pFileMultiChipEnable,
-	CFile *pFileMultiChipUpdate)
+// File writing
+
+void CCompiler::WriteAssembly(CFilePtrArray &files, bool bExtraData, stNSFHeader Header, int MachineType,
+	size_t OutputFileASMIndex,
+	size_t FileNSFStubIndex,
+	size_t FileNSFHeaderIndex,
+	size_t FileNSFConfigIndex,
+	size_t FilePeriodsIndex,
+	size_t FileVibratoIndex,
+	size_t FileMultiChipEnableIndex,
+	size_t FileMultiChipUpdateIndex)
 {
 	// Dump all chunks and samples as assembly text
+	CFile *pFile = files.at(OutputFileASMIndex).get();
 	CChunkRenderText Render(pFile);
 
 	// Write export comments
-	// !! !! use CCompiler's pointer instead of poking the main UI
+	// !! !! use CCompiler's document pointer instead of poking the main UI
 	Render.WriteFileString(CStringA("; " APP_NAME " exported music data: "), pFile);
 	Render.WriteFileString(m_pDocument->GetTitle(), pFile);
 	Render.WriteFileString(CStringA("\n;\n\n"), pFile);
@@ -2866,43 +2756,24 @@ void CCompiler::WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header,
 	Print(_T(" * DPCM samples size: %i bytes\n"), m_iSamplesSize);
 
 	if (bExtraData) {
+		CFile *pFileNSFStub = files.at(FileNSFStubIndex).get();
+		CFile *pFileNSFHeader = files.at(FileNSFHeaderIndex).get();
+		CFile *pFileNSFConfig = files.at(FileNSFConfigIndex).get();
+		CFile *pFilePeriods = files.at(FilePeriodsIndex).get();
+		CFile *pFileVibrato = files.at(FileVibratoIndex).get();
+		CFile *pFileMultiChipEnable = files.at(FileMultiChipEnableIndex).get();
+		CFile *pFileMultiChipUpdate = files.at(FileMultiChipUpdateIndex).get();
+
 		unsigned int LUTNTSC[NOTE_COUNT]{};
 		unsigned int LUTPAL[NOTE_COUNT]{};
 		unsigned int LUTSaw[NOTE_COUNT]{};
 		unsigned int LUTVRC7[NOTE_RANGE]{};
 		unsigned int LUTFDS[NOTE_COUNT]{};
 		unsigned int LUTN163[NOTE_COUNT]{};
-
-		const CSoundGen *pSoundGen = theApp.GetSoundGenerator();
-		for (int i = 0; i <= CDetuneTable::DETUNE_N163; ++i) {		// // //
-			switch (i) {
-			case CDetuneTable::DETUNE_NTSC:
-				for (int j = 0; j < NOTE_COUNT; ++j) LUTNTSC[j] = pSoundGen->ReadPeriodTable(j, i); break;
-			case CDetuneTable::DETUNE_PAL:
-				if (MachineType != 0)
-					for (int j = 0; j < NOTE_COUNT; ++j) LUTPAL[j] = pSoundGen->ReadPeriodTable(j, i); break;
-			case CDetuneTable::DETUNE_SAW:
-				if (m_iActualChip & SNDCHIP_VRC6)
-					for (int j = 0; j < NOTE_COUNT; ++j) LUTSaw[j] = pSoundGen->ReadPeriodTable(j, i); break;
-			case CDetuneTable::DETUNE_VRC7:
-				if (m_iActualChip & SNDCHIP_VRC7)
-					for (int j = 0; j < NOTE_RANGE; ++j) LUTVRC7[j] = pSoundGen->ReadPeriodTable(j, i); break;
-			case CDetuneTable::DETUNE_FDS:
-				if (m_iActualChip & SNDCHIP_FDS)
-					for (int j = 0; j < NOTE_COUNT; ++j) LUTFDS[j] = pSoundGen->ReadPeriodTable(j, i); break;
-			case CDetuneTable::DETUNE_N163:
-				if (m_iActualChip & SNDCHIP_N163)
-					for (int j = 0; j < NOTE_COUNT; ++j) LUTN163[j] = pSoundGen->ReadPeriodTable(j, i); break;
-			default:
-				AfxDebugBreak();
-			}
-		}
-
 		unsigned int LUTVibrato[VIBRATO_LENGTH]{};
 
-		for (int i = 0; i < 256; ++i) {
-			LUTVibrato[i] = pSoundGen->ReadVibratoTable(i);
-		}
+		ReadPeriodVibratoTables(MachineType, LUTNTSC, LUTPAL, LUTSaw, LUTVRC7, LUTFDS, LUTN163, LUTVibrato);
+
 		Render.SetExtraDataFiles(pFileNSFStub, pFileNSFHeader, pFileNSFConfig, pFilePeriods, pFileVibrato, pFileMultiChipEnable, pFileMultiChipUpdate);
 		Render.StoreNSFStub(Header.SoundChip, m_pDocument->GetVibratoStyle(), m_pDocument->GetLinearPitch(), m_iActualNamcoChannels, UseAllChips, true);
 		Render.StoreNSFHeader(Header);
@@ -2916,58 +2787,47 @@ void CCompiler::WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header,
 	}
 }
 
-void CCompiler::WriteBinary(CFile *pFile, bool bExtraData, stNSFHeader Header, int MachineType,
-	CFile *pFileNSFStub,
-	CFile *pFileNSFHeader,
-	CFile *pFileNSFConfig,
-	CFile *pFilePeriods,
-	CFile *pFileVibrato,
-	CFile *pFileMultiChipEnable,
-	CFile *pFileMultiChipUpdate)
+void CCompiler::WriteBinary(CFilePtrArray &files, bool bExtraData, stNSFHeader Header, int MachineType,
+	size_t OutputFileBINIndex,
+	size_t FileNSFStubIndex,
+	size_t FileNSFHeaderIndex,
+	size_t FileNSFConfigIndex,
+	size_t FilePeriodsIndex,
+	size_t FileVibratoIndex,
+	size_t FileMultiChipEnableIndex,
+	size_t FileMultiChipUpdateIndex)
 {
 	// Dump all chunks as binary
+	CFile *pFile = files.at(OutputFileBINIndex).get();
 	CChunkRenderBinary Render(pFile);
-	Render.StoreChunks(m_vChunks);
+	if (!m_bBankSwitched)
+		Render.StoreChunks(m_vChunks);
+	else {
+		theApp.DisplayMessage(_T("Error: bankswitched BIN export not implemented yet!"), 0, 0);
+		Cleanup();
+		return;
+	}
 	Print(_T(" * Music data size: %i bytes\n"), m_iMusicDataSize);
 
 	if (bExtraData) {
+		CFile *pFileNSFStub = files.at(FileNSFStubIndex).get();
+		CFile *pFileNSFHeader = files.at(FileNSFHeaderIndex).get();
+		CFile *pFileNSFConfig = files.at(FileNSFConfigIndex).get();
+		CFile *pFilePeriods = files.at(FilePeriodsIndex).get();
+		CFile *pFileVibrato = files.at(FileVibratoIndex).get();
+		CFile *pFileMultiChipEnable = files.at(FileMultiChipEnableIndex).get();
+		CFile *pFileMultiChipUpdate = files.at(FileMultiChipUpdateIndex).get();
+
 		unsigned int LUTNTSC[NOTE_COUNT]{};
 		unsigned int LUTPAL[NOTE_COUNT]{};
 		unsigned int LUTSaw[NOTE_COUNT]{};
 		unsigned int LUTVRC7[NOTE_RANGE]{};
 		unsigned int LUTFDS[NOTE_COUNT]{};
 		unsigned int LUTN163[NOTE_COUNT]{};
-
-		const CSoundGen *pSoundGen = theApp.GetSoundGenerator();
-		for (int i = 0; i <= CDetuneTable::DETUNE_N163; ++i) {		// // //
-			switch (i) {
-			case CDetuneTable::DETUNE_NTSC:
-				for (int j = 0; j < NOTE_COUNT; ++j) LUTNTSC[j] = pSoundGen->ReadPeriodTable(j, i); break;
-			case CDetuneTable::DETUNE_PAL:
-					if (MachineType != 0)
-				for (int j = 0; j < NOTE_COUNT; ++j) LUTPAL[j] = pSoundGen->ReadPeriodTable(j, i); break;
-			case CDetuneTable::DETUNE_SAW:
-				if (m_iActualChip & SNDCHIP_VRC6)
-					for (int j = 0; j < NOTE_COUNT; ++j) LUTSaw[j] = pSoundGen->ReadPeriodTable(j, i); break;
-			case CDetuneTable::DETUNE_VRC7:
-				if (m_iActualChip & SNDCHIP_VRC7)
-					for (int j = 0; j < NOTE_RANGE; ++j) LUTVRC7[j] = pSoundGen->ReadPeriodTable(j, i); break;
-			case CDetuneTable::DETUNE_FDS:
-				if (m_iActualChip & SNDCHIP_FDS)
-					for (int j = 0; j < NOTE_COUNT; ++j) LUTFDS[j] = pSoundGen->ReadPeriodTable(j, i); break;
-			case CDetuneTable::DETUNE_N163:
-				if (m_iActualChip & SNDCHIP_N163)
-					for (int j = 0; j < NOTE_COUNT; ++j) LUTN163[j] = pSoundGen->ReadPeriodTable(j, i); break;
-			default:
-				AfxDebugBreak();
-			}
-		}
-
 		unsigned int LUTVibrato[VIBRATO_LENGTH]{};
 
-		for (int i = 0; i < 256; ++i) {
-			LUTVibrato[i] = pSoundGen->ReadVibratoTable(i);
-		}
+		ReadPeriodVibratoTables(MachineType, LUTNTSC, LUTPAL, LUTSaw, LUTVRC7, LUTFDS, LUTN163, LUTVibrato);
+
 		// get an instance of CChunkRenderText to use its extra data plotting
 		CChunkRenderText RenderText(nullptr);
 		RenderText.SetExtraDataFiles(pFileNSFStub, pFileNSFHeader, pFileNSFConfig, pFilePeriods, pFileVibrato, pFileMultiChipEnable, pFileMultiChipUpdate);
@@ -2988,6 +2848,72 @@ void CCompiler::WriteSamplesBinary(CFile *pFile)
 	CChunkRenderBinary Render(pFile);
 	Render.StoreSamples(m_vSamples);
 	Print(_T(" * DPCM samples size: %i bytes\n"), m_iSamplesSize);
+}
+
+void CCompiler::ReadPeriodVibratoTables(int MachineType,
+	unsigned int *LUTNTSC,
+	unsigned int *LUTPAL,
+	unsigned int *LUTSaw,
+	unsigned int *LUTVRC7,
+	unsigned int *LUTFDS,
+	unsigned int *LUTN163,
+	unsigned int *LUTVibrato) const
+{
+	const CSoundGen *pSoundGen = theApp.GetSoundGenerator();
+	for (int i = 0; i <= CDetuneTable::DETUNE_N163; ++i) {		// // //
+		switch (i) {
+		case CDetuneTable::DETUNE_NTSC:
+			for (int j = 0; j < NOTE_COUNT; ++j)
+				LUTNTSC[j] = pSoundGen->ReadPeriodTable(j, i); break;
+		case CDetuneTable::DETUNE_PAL:
+			if (MachineType != 0)
+				for (int j = 0; j < NOTE_COUNT; ++j)
+					LUTPAL[j] = pSoundGen->ReadPeriodTable(j, i); break;
+		case CDetuneTable::DETUNE_SAW:
+			if (m_iActualChip & SNDCHIP_VRC6)
+				for (int j = 0; j < NOTE_COUNT; ++j)
+					LUTSaw[j] = pSoundGen->ReadPeriodTable(j, i); break;
+		case CDetuneTable::DETUNE_VRC7:
+			if (m_iActualChip & SNDCHIP_VRC7)
+				for (int j = 0; j < NOTE_RANGE; ++j)
+					LUTVRC7[j] = pSoundGen->ReadPeriodTable(j, i); break;
+		case CDetuneTable::DETUNE_FDS:
+			if (m_iActualChip & SNDCHIP_FDS)
+				for (int j = 0; j < NOTE_COUNT; ++j)
+					LUTFDS[j] = pSoundGen->ReadPeriodTable(j, i); break;
+		case CDetuneTable::DETUNE_N163:
+			if (m_iActualChip & SNDCHIP_N163)
+				for (int j = 0; j < NOTE_COUNT; ++j)
+					LUTN163[j] = pSoundGen->ReadPeriodTable(j, i); break;
+		default:
+			AfxDebugBreak();
+		}
+	}
+
+	for (int i = 0; i < VIBRATO_LENGTH; ++i) {
+		LUTVibrato[i] = pSoundGen->ReadVibratoTable(i);
+	}
+}
+
+bool CCompiler::OpenArrayFile(CFilePtrArray &files, LPCTSTR filepath, CString message)
+{
+	auto index = files.size();
+	auto file = files.emplace_back(std::make_unique<CFile>()).get();
+
+	if (!OpenFile(filepath, *file)) {
+		CloseFileArray(files);
+		Print(message);
+		Cleanup();
+		return false;
+	}
+	return true;
+}
+
+void CCompiler::CloseFileArray(CFilePtrArray &files)
+{
+	for (auto &file : files) {
+		file->Close();
+	}
 }
 
 // Object list functions

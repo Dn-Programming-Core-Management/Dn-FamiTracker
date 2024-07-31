@@ -24,6 +24,8 @@
 
 #pragma once
 
+#include <memory>
+
 // NSF file header
 struct stNSFHeader {
 	unsigned char	Ident[5];
@@ -176,23 +178,37 @@ private:
 	void	AddWavetable(CInstrumentFDS *pInstrument, CChunk *pChunk);
 
 	// File writing
-	void	WriteAssembly(CFile *pFile, bool bExtraData, stNSFHeader Header, int MachineType = 0,
-		CFile *pFileNSFStub = nullptr,
-		CFile *pFileNSFHeader = nullptr,
-		CFile *pFileNSFConfig = nullptr,
-		CFile *pFilePeriods = nullptr,
-		CFile *pFileVibrato = nullptr,
-		CFile *FileMultiChipEnable = nullptr,
-		CFile *FileMultiChipUpdate = nullptr);
-	void	WriteBinary(CFile *pFile, bool bExtraData, stNSFHeader Header, int MachineType = 0,
-		CFile *pFileNSFStub = nullptr,
-		CFile *pFileNSFHeader = nullptr,
-		CFile *pFileNSFConfig = nullptr,
-		CFile *pFilePeriods = nullptr,
-		CFile *pFileVibrato = nullptr,
-		CFile *FileMultiChipEnable = nullptr,
-		CFile *FileMultiChipUpdate = nullptr);
+
+	using CFilePtrArray = std::vector<std::unique_ptr<CFile>>;
+
+	void	WriteAssembly(CFilePtrArray &files, bool bExtraData, stNSFHeader Header, int MachineType = 0,
+		size_t OutputFileASMIndex = 0,
+		size_t FileNSFStubIndex = 0,
+		size_t FileNSFHeaderIndex = 0,
+		size_t FileNSFConfigIndex = 0,
+		size_t FilePeriodsIndex = 0,
+		size_t FileVibratoIndex = 0,
+		size_t FileMultiChipEnableIndex = 0,
+		size_t FileMultiChipUpdateIndex = 0);
+	void	WriteBinary(CFilePtrArray &files, bool bExtraData, stNSFHeader Header, int MachineType = 0,
+		size_t OutputFileBINIndex = 0,
+		size_t FileNSFStubIndex = 0,
+		size_t FileNSFHeaderIndex = 0,
+		size_t FileNSFConfigIndex = 0,
+		size_t FilePeriodsIndex = 0,
+		size_t FileVibratoIndex = 0,
+		size_t FileMultiChipEnableIndex = 0,
+		size_t FileMultiChipUpdateIndex = 0);
 	void	WriteSamplesBinary(CFile *pFile);
+	void	ReadPeriodVibratoTables(int MachineType, unsigned int *LUTNTSC,
+		unsigned int *LUTPAL,
+		unsigned int *LUTSaw,
+		unsigned int *LUTVRC7,
+		unsigned int *LUTFDS,
+		unsigned int *LUTN163,
+		unsigned int *LUTVibrato) const;
+	bool	OpenArrayFile(CFilePtrArray &files, LPCTSTR filepath, CString message);
+	void	CloseFileArray(CFilePtrArray &files);
 
 	// Object list functions
 	CChunk	*CreateChunk(chunk_type_t Type, CStringA label);
