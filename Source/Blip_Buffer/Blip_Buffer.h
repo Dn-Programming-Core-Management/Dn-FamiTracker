@@ -398,7 +398,8 @@ inline void Blip_Synth<quality>::offset_resampled( blip_resampled_time_t time,
     imp_t const* BLIP_RESTRICT imp = impulses + blip_res - phase;
 
     #if defined (_M_IX86) || defined (_M_IA64) || defined (__i486__) || \
-            defined (__x86_64__) || defined (__ia64__) || defined (__i386__)
+            defined (__x86_64__) || defined (__ia64__) || defined (__i386__) || \
+            defined(_WIN64)
 
     // straight forward implementation resulted in better code on GCC for x86
 
