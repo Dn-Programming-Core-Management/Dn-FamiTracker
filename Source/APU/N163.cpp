@@ -54,6 +54,7 @@ void CN163::Reset()
 	m_N163.Reset();
 	m_N163.SetMixing(m_bUseLinearMixing);
 
+	m_iTime = 0;
 	m_SynthN163.clear();
 	m_BlipN163.clear();
 }
