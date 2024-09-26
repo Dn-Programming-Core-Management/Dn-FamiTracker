@@ -166,6 +166,19 @@ public:
 		_updateCounter += clocks;
 	}
 
+	Namco163Audio()
+		: _channelOutput{}
+		, _internalRam{}
+	{
+		_ramPosition = 0;
+		_autoIncrement = false;
+		_updateCounter = 0;
+		_currentChannel = 7;
+		_lastOutput = 0;
+		_disableSound = false;
+		_mixLinear = false;
+	}
+
 	void Reset() {
 		*this = {};
 	}
