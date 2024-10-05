@@ -67,29 +67,18 @@ ft_update_fds:
 	sta $4080
 	rts
 @Play:
-.if .defined(USE_LINEARPITCH)		;;; ;; ;
-	lda var_SongFlags
-	and #FLAG_LINEARPITCH
-	beq :+
-	jsr ft_load_fds_table
-	ldx #FDS_OFFSET
-	jsr ft_linear_fetch_pitch
-:
-.endif								; ;; ;;;
 
 	lda var_ch_Note + FDS_OFFSET
-	bne :+ ; branch
-	jmp @KillFDS
-:
+	jeq @KillFDS
 	; Calculate volume
 	lda var_ch_VolColumn + FDS_OFFSET		; Kill channel if volume column = 0
 	lsr a
 	lsr a
 	lsr a
-	beq @KillFDS
+	jeq @KillFDS
 	sta var_Temp2							; 4 bit vol
 	lda var_ch_Volume + FDS_OFFSET			; Kill channel if volume = 0
-	beq @KillFDS
+	jeq @KillFDS
 	sta var_Temp							; 5 bit vol
 	ldx #FDS_OFFSET
 	jsr ft_multiply_volume
@@ -152,7 +141,16 @@ ft_update_fds:
 
 @Return:
 	lda var_ch_PhaseReset + FDS_OFFSET
-	bne @FDSPhaseReset
+	beq :+
+    ; do not attempt to reset phase if note is cut
+	lda var_ch_Note + FDS_OFFSET, x
+	beq :+
+	dec var_ch_PhaseReset + FDS_OFFSET
+	lda #$80
+	sta $4083
+	lda var_ch_PeriodCalcHi + FDS_OFFSET
+	sta $4083
+:
 	rts
 @KillFDS:
 	lda var_ch_FDSVolume					;;; ;; ; return if volume envelope is enabled
@@ -170,13 +168,6 @@ ft_update_fds:
 	; Disable modulation
 	lda #$80
 	sta $4087
-	rts
-@FDSPhaseReset:
-	dec var_ch_PhaseReset + FDS_OFFSET
-	lda #$80
-	sta $4083
-	lda var_ch_PeriodCalcHi + FDS_OFFSET
-	sta $4083
 	rts
 ; Load the waveform, index in A
 ft_load_fds_wave:

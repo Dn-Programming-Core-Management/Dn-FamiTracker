@@ -37,6 +37,9 @@ To edit and/or build the source, you may use Visual Studio 2022, or alternativel
 
 - [HTML Help Workshop](https://docs.microsoft.com/en-us/previous-versions/windows/desktop/htmlhelp/microsoft-html-help-downloads) to build the manual. Note that HTML Help Workshop is no longer supported and thus no longer available to download on Microsoft's website. [Link to archived download.](https://web.archive.org/web/20200720082840/http://download.microsoft.com/download/0/A/9/0A939EF6-E31C-430F-A3DF-DFAE7960D564/htmlhelp.exe)
 - [Pandoc](https://pandoc.org), for markdown document conversion.
+- For NSF driver compiling:
+	- [CC65 build tools](https://cc65.github.io/), make sure `ld65` and `ca65` is available in environment path.
+	- [Lua](https://www.lua.org/)
 - For any IDE that supports building via CMake:
 	- CMake
 	- The latest MSVC build tools 

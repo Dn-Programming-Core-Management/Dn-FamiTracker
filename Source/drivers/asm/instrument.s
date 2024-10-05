@@ -175,24 +175,33 @@ ft_run_instrument:
 	ldy #$03		;;; ;; ; 050B
 	lda (var_Temp_Pointer), y
 	beq :+
+	; absolute pitch mode
+	; m_pInterface->SetPeriod(m_pInterface->TriggerNote(m_pInterface->GetNote()) + Value);
 	lda var_ch_Note, x
 	jsr ft_translate_freq_only
 
+	; relative pitch mode
+	; m_pInterface->SetPeriod(m_pInterface->GetPeriod() + Value);
 	; Check this
-:	clc
+:	lda #$00
+	sta var_Temp16 + 1	; 0 either way
 	lda var_sequence_result
-	adc var_ch_TimerPeriodLo, x
-	sta var_ch_TimerPeriodLo, x
-	lda var_sequence_result
-	bpl @NoNegativePitch
-	lda #$FF
-	bmi @LoadLowPitch
-@NoNegativePitch:
-	lda #$00
-@LoadLowPitch:
-	adc var_ch_TimerPeriodHi, x
-	sta var_ch_TimerPeriodHi, x
-	jsr ft_limit_freq
+    sta var_Temp16
+	bpl @PositivePitch
+@NegativePitch:
+    ;; !! !! change the sign
+	;; this is stupid, but what more can i do
+	;; we could easily just use the same addition macro
+	;; but the code explicitly checks for overflow
+    lda #$FF
+    eor var_Temp16
+    sta var_Temp16
+	inc var_Temp16
+	jsr ft_period_remove
+	jmp :+
+@PositivePitch:
+	jsr ft_period_add
+:	jsr ft_limit_freq
 	; ^^^^^^^^^^
 
 	; Save pitch
@@ -211,32 +220,46 @@ ft_run_instrument:
 	sta var_ch_SequencePtr4, x
 
 	; Check this
+	;m_pInterface->SetPeriod(m_pInterface->GetPeriod() + (Value << 4));
+	lda #$00
+	sta var_Temp16 + 1	; 0 either way
 	lda var_sequence_result
 	sta var_Temp16
-	rol a
-	bcc @AddHiPitch
-	lda #$FF
-	sta var_Temp16 + 1
-	jmp @StoreHiPitch
-@AddHiPitch:
-	lda #$00
-	sta var_Temp16 + 1
-@StoreHiPitch:
-	ldy #$04
-:	clc
-	rol var_Temp16 						; multiply by 2
-	rol var_Temp16 + 1
-	dey
-	bne :-
-
+	bpl @PositiveHiPitch
+@NegativeHiPitch:
+    ;; !! !! change the sign
+	;; !! !! this is stupid, but what more can i do
+    lda #$FF
+    eor var_Temp16
+    sta var_Temp16
+	inc var_Temp16
+	; left shift 4
 	clc
-	lda var_Temp16
-	adc var_ch_TimerPeriodLo, x
-	sta var_ch_TimerPeriodLo, x
-	lda var_Temp16 + 1
-	adc var_ch_TimerPeriodHi, x
-	sta var_ch_TimerPeriodHi, x
-	jsr ft_limit_freq
+	asl var_Temp16
+	rol var_Temp16 + 1
+	asl var_Temp16
+	rol var_Temp16 + 1
+	asl var_Temp16
+	rol var_Temp16 + 1
+	asl var_Temp16
+	rol var_Temp16 + 1
+	jsr ft_period_remove
+    ; check for over/underflow
+    ; limitperiod()
+	jmp :+
+@PositiveHiPitch:
+	; left shift 4
+	clc
+	asl var_Temp16
+	rol var_Temp16 + 1
+	asl var_Temp16
+	rol var_Temp16 + 1
+	asl var_Temp16
+	rol var_Temp16 + 1
+	asl var_Temp16
+	rol var_Temp16 + 1
+	jsr ft_period_add
+:	jsr ft_limit_freq
 	; ^^^^^^^^^^
 
 @SkipHiPitchUpdate:
@@ -299,6 +322,7 @@ ft_run_instrument:
 @DoneConvert:		; ;; ;;;
 	sta var_ch_DutyCurrent, x
 .if .defined(USE_S5B)
+; see CChannelHandlerS5B::UpdateRegs()
 ;	if (Value & S5B_MODE_NOISE)
 ;		pChan->SetNoiseFreq(Value & 0x1F);
 	bpl :+
@@ -597,122 +621,3 @@ ft_load_instrument_vrc7:
 
 	ldy var_Temp		;;; ;; ;
 	rts
-
-; Make sure the period doesn't exceed max or min
-ft_limit_freq:
-
-	; Jump to the instrument setup routine
-	lda ft_channel_type, x
-	asl		;;; ;; ;
-	tay
-	lda ft_limit_pointers, y
-	sta var_Temp16
-	iny
-	lda ft_limit_pointers, y
-	sta var_Temp16 + 1
-	ldy #$00
-	jmp (var_Temp16)
-
-
-ft_limit_pointers:			;;; ;; ; 0CC: optimize this
-	.word ft_limit_period_2a03		; 2A03
-	.word ft_limit_period_2a03		; 2A03
-	.word ft_limit_period_no		; 2A03 noise
-	.word ft_limit_period_no		; 2A03 dpcm
-	.word ft_limit_period_vrc6		; VRC6
-	.word ft_limit_period_vrc6		; VRC6
-	.word ft_limit_period_no		; VRC7
-	.word ft_limit_period_vrc6		; FDS
-	.word ft_limit_period_2a03		; MMC5
-	.word ft_limit_period_no		; N163
-	.word ft_limit_period_vrc6		;;; ;; ; S5B
-
-ft_limit_period_no:
-	rts
-
-; 2A03: period is between 0 to $7FF
-ft_limit_period_2a03:
-	lda var_ch_TimerPeriodHi, x
-	bmi @LimitMin
-	cmp #$08
-	bcc @NoLimit
-	lda #$07
-	sta var_ch_TimerPeriodHi, x
-	lda #$FF
-	sta var_ch_TimerPeriodLo, x
-@NoLimit:
-	rts
-@LimitMin:
-	lda #$00
-	sta var_ch_TimerPeriodLo, x
-	sta var_ch_TimerPeriodHi, x
-	rts
-
-; VRC6: period is between 0 to $FFF
-ft_limit_period_vrc6:
-	lda var_ch_TimerPeriodHi, x
-	bmi @LimitMin
-	cmp #$10
-	bcc @NoLimit
-	lda #$0F
-	sta var_ch_TimerPeriodHi, x
-	lda #$FF
-	sta var_ch_TimerPeriodLo, x
-@NoLimit:
-	rts
-@LimitMin:
-	lda #$00
-	sta var_ch_TimerPeriodLo, x
-	sta var_ch_TimerPeriodHi, x
-	rts
-
-.if 0
-
-	lda var_ch_TimerPeriodHi, x
-	bmi @LimitMin						; period < 0
-.if .defined(USE_VRC6)
-	pha									;;; ;; ;
-	lda ft_channel_type, x
-	cmp #CHAN_VRC6
-	beq :+
-	cmp #CHAN_SAW
-	beq :+
-	pla
-	bpl :++ ; always
-:	pla									; ;; ;;;
-	cmp #$10							; period > $FFF
-	bcc @NoLimit
-	lda #$0F
-	sta var_ch_TimerPeriodHi, x
-	lda #$FF
-	sta var_ch_TimerPeriodLo, x
-	rts
-:
-.endif
-.if .defined(USE_FDS)
-	cpx #FDS_OFFSET
-	bne :+
-	cmp #$11							; period > $1000?
-	bcc @NoLimit
-	lda #$10
-	sta var_ch_TimerPeriodHi, x
-	lda #$FF
-	sta var_ch_TimerPeriodLo, x
-	rts
-:
-.endif
-	cmp #$08							; period > $7FF
-	bcc @NoLimit
-	lda #$07
-	sta var_ch_TimerPeriodHi, x
-	lda #$FF
-	sta var_ch_TimerPeriodLo, x
-@NoLimit:
-	rts
-@LimitMin:
-	lda #$00
-	sta var_ch_TimerPeriodLo, x
-	sta var_ch_TimerPeriodHi, x
-	rts
-
-.endif

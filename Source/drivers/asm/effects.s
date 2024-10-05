@@ -216,6 +216,7 @@ ft_load_slide:
 :	;rts
 	jmp ft_jump_to_effect
 
+; see CChannelHandler::CalculatePeriod()
 ft_calc_period:
 
 	; Load period
@@ -314,32 +315,73 @@ ft_calc_period:
 	sta var_ch_PeriodCalcLo, x
 	sta var_ch_PeriodCalcHi, x
 @Skip:
-	
-	; apply frequency multiplication
-	lda var_ch_Harmonic, x
-	cmp #$01
-	beq @SkipHarmonic								; skip calculation if it's not affecting pitch
-	cmp #$00
-	beq @MaxPeriod									; K00 results in lowest possible frequency
 
+	; apply vibrato and tremolo
+	jsr ft_vibrato
+	jsr ft_tremolo
+
+.if .defined(USE_LINEARPITCH)		;;; ;; ;
+	; apply linear pitch
+	lda var_SongFlags
+	and #FLAG_LINEARPITCH
+	beq :+
+	; these channels don't use linear pitch adjustments
 	lda ft_channel_type, x
 	cmp #CHAN_NOI
-	beq @SkipHarmonic
+	beq :+
+	cmp #CHAN_DPCM
+	beq :+
+	; TODO: implement VRC7 linear pitch?
+.if .defined(USE_VRC7)
+	cmp #CHAN_VRC7
+	beq :+
+.endif
+	jsr ft_load_freq_table
+	jsr ft_linear_fetch_pitch
+:
+.endif								; ;; ;;;
+
+	; apply frequency multiplication
+.if .defined(USE_FDS)
+	lda ft_channel_type, x
+	cmp #CHAN_FDS
+	bne :+
+	; copy unmultiplied period to FDS carrier
+	jsr @CopyPeriodToCarrier
+:
+.endif
+
+	lda var_ch_Harmonic, x
+
+	; K00 results in lowest possible frequency
+	beq @MaxPeriod
+
+	; skip calculation if it's not affecting pitch
+	cmp #$01
+	beq @EndHarmonic
+
+	lda ft_channel_type, x
+	; noise does not use this
+	cmp #CHAN_NOI
+	beq @EndHarmonic
 
 .if .defined(USE_VRC7)
 	; VRC7 not yet implemented
 	cmp #CHAN_VRC7
-	beq @SkipHarmonic
+	beq @EndHarmonic
 .endif
+
 ; FDS and N163 use angular frequency
 .if .defined(USE_FDS)
 	cmp #CHAN_FDS
 	beq @HarmonicMultiply
 .endif
+
 .if .defined(USE_N163)
 	cmp #CHAN_N163
 	beq @HarmonicMultiply
 .endif
+
 @HarmonicDivide:
 	lda var_ch_PeriodCalcLo, x
 	sta ACC
@@ -350,7 +392,7 @@ ft_calc_period:
 	lda #$00
 	sta AUX + 1
 	jsr DIV
-	jmp @HarmonicEnd
+	jmp @HarmonicEpilogue
 @HarmonicMultiply:
 	lda var_ch_PeriodCalcLo, x
 	sta var_Temp16
@@ -365,24 +407,21 @@ ft_calc_period:
 	lda var_ch_Harmonic, x
 	sta var_Temp
 	jsr MUL
-@HarmonicEnd:
+@HarmonicEpilogue:
 	lda ACC
 	sta var_ch_PeriodCalcLo, x
 	lda ACC + 1
 	sta var_ch_PeriodCalcHi, x
-@SkipHarmonic:
+	jmp @EndHarmonic
 
-	jsr ft_vibrato
-	jsr ft_tremolo
-	rts
 @MaxPeriod:
 	; no limits for noise
 	lda ft_channel_type, x
 	cmp #CHAN_NOI
-	beq @EndCalcPeriod
+	beq @EndHarmonic
 .if .defined(USE_VRC7)
 	cmp #CHAN_VRC7
-	beq @EndCalcPeriod
+	beq @EndHarmonic
 .endif
 .if .defined(USE_N163)
 	cmp #CHAN_N163
@@ -392,29 +431,46 @@ ft_calc_period:
 	cmp #CHAN_FDS
 	beq @InvertedPeriod
 .endif
-	; 12-bit/11-bit period
-	; will be handled in their respective chip handlers
 	lda #$FF
-	sta var_ch_PeriodCalcHi, x
-	lda #$0F
 	sta var_ch_PeriodCalcLo, x
-	jmp @EndCalcPeriod
+	lda #$0F
+	sta var_ch_PeriodCalcHi, x
+	jmp @EndHarmonic
 @InvertedPeriod:
 	lda #$00
 	sta var_ch_PeriodCalcHi, x
 	sta var_ch_PeriodCalcLo, x
-@EndCalcPeriod:
+@EndHarmonic:
+
+
+	; CChannelHandler::LimitRawPeriod()
+	jmp ft_limit_final_freq_raw
+	; we're done here
+	; in the case of CChannelHandlerVRC7::CalculatePeriod() and
+	; CChannelHandlerN163::CalculatePeriod(), the freq bitshifts will be applied
+	; in their respective chip handlers (see n163.s, vrc7.s)
+;	rts
+
+.if .defined(USE_FDS)
+@CopyPeriodToCarrier:
+	; copy period to var_ch_FDSCarrier
+	; needed for modulation
+	lda var_ch_PeriodCalcLo, x
+	sta var_ch_FDSCarrier
+	lda var_ch_PeriodCalcHi, x
+	sta var_ch_FDSCarrier + 1
 	rts
+.endif
 
 ;
 ; Portamento
 ;
 ft_portamento:
 	lda var_ch_EffParam, x							; Check portamento, if speed > 0
-	beq @NoPortamento
+	jeq @NoPortamento
 	lda var_ch_PortaToLo, x							; and if freq > 0, else stop
 	ora var_ch_PortaToHi, x
-	beq @NoPortamento
+	jeq @NoPortamento
 	lda var_ch_TimerPeriodHi, x						; Compare high byte
 	cmp var_ch_PortaToHi, x
 	bcc @Increase
@@ -431,6 +487,24 @@ ft_portamento:
 	sta var_Temp16
 	lda #$00
 	sta var_Temp16 + 1
+.if .defined(USE_N163)
+.if .defined(USE_LINEARPITCH)
+	lda var_SongFlags
+	and #FLAG_LINEARPITCH
+	bne :+
+	;; !! !! only apply N163 pitch slide shift when linear pitch is disabled
+	; see CChannelHandlerN163::SetupSlide()
+.endif
+    lda ft_channel_type, x
+    cmp #CHAN_N163
+    bne :+
+    ; Multiply by 4
+    asl var_Temp16
+    rol var_Temp16 + 1
+    asl var_Temp16
+    rol var_Temp16 + 1
+:
+.endif
 	jsr ft_period_remove
 
 .if 0
@@ -459,6 +533,24 @@ ft_portamento:
 	sta var_Temp16
 	lda #$00
 	sta var_Temp16 + 1
+.if .defined(USE_N163)
+.if .defined(USE_LINEARPITCH)
+	lda var_SongFlags
+	and #FLAG_LINEARPITCH
+	bne :+
+	;; !! !! only apply N163 pitch slide shift when linear pitch is disabled
+	; see CChannelHandlerN163::SetupSlide()
+.endif
+    lda ft_channel_type, x
+    cmp #CHAN_N163
+    bne :+
+    ; Multiply by 4
+    asl var_Temp16
+    rol var_Temp16 + 1
+    asl var_Temp16
+    rol var_Temp16 + 1
+:
+.endif
 	jsr ft_period_add
 .if 0
 	clc
@@ -495,27 +587,14 @@ ft_portamento_up:
 	sta var_Temp16
 	lda #$00
 	sta var_Temp16 + 1
-	jsr ft_period_remove
-	jsr ft_limit_freq
-:	jmp ft_post_effects
-ft_portamento_down:
-	lda var_ch_Note, x
-	beq :+
-	lda var_ch_EffParam, x
-	sta var_Temp16
-	lda #$00
-	sta var_Temp16 + 1
-	jsr ft_period_add
-	jsr ft_limit_freq
-:	jmp ft_post_effects
-
-ft_period_add:
 .if .defined(USE_N163)
-.if .defined(USE_LINEARPITCH)		;;; ;; ;
+.if .defined(USE_LINEARPITCH)		;; !! !!
 	lda var_SongFlags
 	and #FLAG_LINEARPITCH
 	bne :+
-.endif								; ;; ;;;
+	;; !! !! only apply N163 pitch slide shift when linear pitch is disabled
+	; see CChannelHandlerN163::HandleEffect()
+.endif
     lda ft_channel_type, x
     cmp #CHAN_N163
     bne :+
@@ -526,6 +605,39 @@ ft_period_add:
     rol var_Temp16 + 1
 :
 .endif
+	jsr ft_period_remove
+	jsr ft_limit_freq
+	jmp ft_post_effects
+ft_portamento_down:
+	lda var_ch_Note, x
+	beq :+
+	lda var_ch_EffParam, x
+	sta var_Temp16
+	lda #$00
+	sta var_Temp16 + 1
+.if .defined(USE_N163)
+.if .defined(USE_LINEARPITCH)
+	lda var_SongFlags
+	and #FLAG_LINEARPITCH
+	bne :+
+	;; !! !! only apply N163 pitch slide shift when linear pitch is disabled
+	; see CChannelHandlerN163::HandleEffect()
+.endif
+    lda ft_channel_type, x
+    cmp #CHAN_N163
+    bne :+
+    ; Multiply by 4
+    asl var_Temp16
+    rol var_Temp16 + 1
+    asl var_Temp16
+    rol var_Temp16 + 1
+:
+.endif
+	jsr ft_period_add
+	jsr ft_limit_freq
+	jmp ft_post_effects
+
+ft_period_add:
 	clc
 	lda var_ch_TimerPeriodLo, x
 	adc var_Temp16
@@ -539,26 +651,6 @@ ft_period_add:
 	sta var_ch_TimerPeriodHi, x
 :   rts
 ft_period_remove:
-.if .defined(USE_N163)
-.if .defined(USE_LINEARPITCH)		;;; ;; ;
-	lda var_SongFlags
-	padjmp_h	8
-	and #FLAG_LINEARPITCH
-	bne :+
-.endif								; ;; ;;;
-    lda ft_channel_type, x
-    cmp #CHAN_N163
-	padjmp		7
-	padjmp_h	4
-    bne :+
-    ; Multiply by 4
-    asl var_Temp16
-    rol var_Temp16 + 1
-    asl var_Temp16
-	padjmp		5
-    rol var_Temp16 + 1
-:
-.endif
 	sec
 	lda var_ch_TimerPeriodLo, x
 	sbc var_Temp16
@@ -777,7 +869,7 @@ ft_vibrato:
 	beq @Inverted
 .endif
 
-	  ; TODO use ft_period_remove
+	; ft_period_remove applies clamp. we don't need that yet
 	sec
 	lda var_ch_PeriodCalcLo, x
 	sbc var_Temp16
@@ -788,6 +880,7 @@ ft_vibrato:
 	rts
 
 @Inverted:
+	; ft_period_add applies clamp. we don't need that yet
 	clc
 	lda var_ch_PeriodCalcLo, x
 	adc var_Temp16

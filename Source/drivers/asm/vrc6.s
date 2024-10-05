@@ -11,18 +11,6 @@ ft_update_vrc6:
 	sta $B002
 	rts
 :
-.if .defined(USE_LINEARPITCH)		;;; ;; ;
-	lda var_SongFlags
-	and #FLAG_LINEARPITCH
-	beq :+
-	jsr ft_load_ntsc_table
-	ldx #VRC6_OFFSET
-	jsr ft_linear_fetch_pitch
-	jsr ft_linear_fetch_pitch
-	jsr ft_load_saw_table
-	jsr ft_linear_fetch_pitch
-:
-.endif								; ;; ;;;
 	ldx #$00
 	txa
 	sta var_Temp_Pointer
@@ -32,10 +20,9 @@ ft_update_vrc6:
 	ora #$80
 	sta var_Temp_Pointer + 1				; ;; ;;;
 	lda var_ch_Note + VRC6_OFFSET, x		; Kill channel if note = off
-	bne :+
-	jmp @KillChan
+	jeq @KillChan
 	; sawtooth volume handling
-:	cpx #$02								;;; ;; ; 050B
+	cpx #$02								;;; ;; ; 050B
 	bne :+
 	lda var_ch_SeqVolume + SFX_WAVE_CHANS + VRC6_OFFSET + 2
 	beq :+
@@ -116,20 +103,22 @@ ft_update_vrc6:
 	sta (var_Temp_Pointer), y
 @NextChan:
 	lda var_ch_PhaseReset + VRC6_OFFSET, x
-	bne @VRC6PhaseReset
+	beq :+
+    ; do not attempt to reset phase if note is cut
+	lda var_ch_Note + VRC6_OFFSET, x
+	beq :+
+	dec var_ch_PhaseReset + VRC6_OFFSET, x
+	ldy #$02
+	lda	var_ch_PeriodCalcHi + VRC6_OFFSET, x
+	sta (var_Temp_Pointer), y
+	ora #$80
+	sta (var_Temp_Pointer), y
+:
 	inx
 	cpx #CH_COUNT_VRC6
 	bcs :+
 	jmp @ChannelLoop
 :	rts
-@VRC6PhaseReset:
-	dec var_ch_PhaseReset + VRC6_OFFSET, x
-	ldy #$02
-	sta (var_Temp_Pointer), y
-	lda	var_ch_PeriodCalcHi + VRC6_OFFSET, x
-	ora #$80
-	sta (var_Temp_Pointer), y
-	rts
 
 ft_duty_table_vrc6:
 .repeat 8, i

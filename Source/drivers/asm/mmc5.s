@@ -9,16 +9,6 @@ ft_update_mmc5:
 	sta $5015
 	rts
 :
-.if .defined(USE_LINEARPITCH)		;;; ;; ;
-	lda var_SongFlags
-	and #FLAG_LINEARPITCH
-	beq :+
-	jsr ft_load_ntsc_table
-	ldx #MMC5_OFFSET
-	jsr ft_linear_fetch_pitch
-	jsr ft_linear_fetch_pitch
-:
-.endif								; ;; ;;;
 	ldx #$00
 @ChannelLoop:		; MMC5 pulse channels
 	lda var_ch_Note + MMC5_OFFSET, x		; Kill channel if note = off
@@ -97,13 +87,19 @@ ft_update_mmc5:
 	beq @Next ; always
 :	lda var_ch_PeriodCalcHi + MMC5_OFFSET, x
 	cmp var_ch_PrevFreqHighMMC5, x
+	bne @SkipCheckPhaseResetMMC5
+	; check if we're gonna trigger a phase reset at the same time as a note on
+	lda var_ch_PhaseReset + MMC5_OFFSET, x
 	beq @Next ; always
+	; if so, trigger phase reset by writing high byte anyway
+	dec var_ch_PhaseReset + MMC5_OFFSET, x
+	lda var_ch_PeriodCalcHi + MMC5_OFFSET, x
+@SkipCheckPhaseResetMMC5:
 	sta var_ch_PrevFreqHighMMC5, x
 :	lda var_ch_LengthCounter + MMC5_OFFSET, x
 	and #$F8
 	ora var_ch_PeriodCalcHi + MMC5_OFFSET, x
 	sta $5000, y ; y == 3 || y == 7			$5003/5007
-	iny										; ;; ;;;
 	jmp @Next
 @KillChannel:
 	lda #$30
@@ -114,19 +110,19 @@ ft_update_mmc5:
 :	sta $5004
 @Next:
 	lda var_ch_PhaseReset + MMC5_OFFSET, x
-	bne @MMC5PhaseReset
+	beq :+
+    ; do not attempt to reset phase if note is cut
+	lda var_ch_Note + MMC5_OFFSET, x
+	beq :+
+	dec var_ch_PhaseReset + MMC5_OFFSET, x
+	lda var_ch_LengthCounter + MMC5_OFFSET, x
+	and #$F8
+	ora var_ch_PeriodCalcHi + MMC5_OFFSET, x
+	sta $5000, y ; y == 3 || y == 7			$5003/5007
+:
 	inx
 	cpx #CH_COUNT_MMC5
 	bcs :+
 	ldy #$04
 	jmp @ChannelLoop
 :	rts
-@MMC5PhaseReset:
-	dec var_ch_PhaseReset + MMC5_OFFSET, x
-	dey
-	lda var_ch_LengthCounter + MMC5_OFFSET, x
-	and #$F8
-	ora var_ch_PeriodCalcHi + MMC5_OFFSET, x
-	sta $5000, y ; y == 3 || y == 7			$5003/5007
-	iny
-	rts
