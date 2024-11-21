@@ -4126,6 +4126,7 @@ void CFamiTrackerView::BeginDragData(int ChanOffset, int RowOffset)
 		m_bDragSource = true;
 		m_bDropped = false;
 
+		// move hMem
 		pSrc->CacheGlobalData(mClipboardFormat, hMem);
 		DROPEFFECT res = pSrc->DoDragDrop(DROPEFFECT_COPY | DROPEFFECT_MOVE);
 
@@ -4144,7 +4145,7 @@ void CFamiTrackerView::BeginDragData(int ChanOffset, int RowOffset)
 
 	m_bDragSource = false;
 
-	::GlobalFree(hMem);
+	// ~pSrc() calls GlobalFree on hMem.
 }
 
 bool CFamiTrackerView::IsDragging() const
