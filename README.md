@@ -18,19 +18,15 @@ Dn-Famitracker is a fork of 0CC-FamiTracker that incorporates numerous fixes and
 
 ## Downloads
 
-Download releases: [![GitHub all releases](https://img.shields.io/github/downloads/Dn-Programming-Core-Management/Dn-FamiTracker/total?logo=github&style=flat-square)](https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/releases)
-
-Development builds: [![AppVeyor](https://img.shields.io/appveyor/build/Gumball2415/dn-famitracker?logo=appveyor&style=flat-square)](https://ci.appveyor.com/project/Gumball2415/dn-famitracker/history)
-
-Github Actions automated builds: [![GitHub Actions](https://img.shields.io/github/actions/workflow/status/Dn-Programming-Core-Management/Dn-FamiTracker/build-artifact.yml?style=flat-square)](https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/actions/workflows/build-artifact.yml)
-
-Github Actions automated release builds: [![GitHub](https://img.shields.io/github/actions/workflow/status/Dn-Programming-Core-Management/Dn-FamiTracker/build-release-artifact.yml?style=flat-square)](https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/actions/workflows/build-release-artifact.yml)
-
-Legacy Dev Builds: [![AppVeyor](https://img.shields.io/appveyor/build/Gumball2415/dn-famitracker-legacy?logo=appveyor&style=flat-square)](https://ci.appveyor.com/project/Gumball2415/dn-famitracker-legacy/history)
-
-Notice: Due to delayed Appveyor reintegration, builds for commits `dc4c9e8` to `2141360` are not available.
-
-Notice: Due to delayed branch renaming, builds for commits `bc46c86` to `a591d15` are not available.
+- Download releases: [![GitHub all releases](https://img.shields.io/github/downloads/Dn-Programming-Core-Management/Dn-FamiTracker/total?logo=github&style=flat-square)](https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/releases)
+- GitHub Actions automated builds: [![GitHub Actions](https://img.shields.io/github/actions/workflow/status/Dn-Programming-Core-Management/Dn-FamiTracker/build-artifact.yml?style=flat-square)](https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/actions/workflows/build-artifact.yml)
+- Github Actions automated release builds: [![GitHub](https://img.shields.io/github/actions/workflow/status/Dn-Programming-Core-Management/Dn-FamiTracker/build-release-artifact.yml?style=flat-square)](https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/actions/workflows/build-release-artifact.yml)
+- Legacy AppVeyor Gumball2415 builds: [![AppVeyor](https://img.shields.io/appveyor/build/Gumball2415/dn-famitracker-legacy?logo=appveyor&style=flat-square)](https://ci.appveyor.com/project/Gumball2415/dn-famitracker-legacy/history)
+- Legacy AppVeyor automated D.P.C.M. builds: [![AppVeyor](https://img.shields.io/appveyor/build/Gumball2415/dn-famitracker?logo=appveyor&style=flat-square)](https://ci.appveyor.com/project/Gumball2415/dn-famitracker/history)
+- AppVeyor notice:
+	- Due to delayed AppVeyor reintegration, builds for commits `dc4c9e86` to `21413603` are not available.
+	- Due to delayed AppVeyor branch reconfiguration, builds for commits `bc46c86c` to `a591d154` are not available.
+	- Due to less reliability, AppVeyor builds beyond `2c997736` are not available.
 
 ## Licenses
 
