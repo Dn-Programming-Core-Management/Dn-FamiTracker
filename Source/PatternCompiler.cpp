@@ -302,6 +302,8 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 				}
 				else {
 					DPCMInst = ChanNote.Instrument;
+					Volume = MAX_VOLUME;
+
 					// double check if DPCMInst is a valid instrument index
 					if (!(DPCMInst >= 0 && DPCMInst < MAX_INSTRUMENTS)) {
 #ifdef _DEBUG
