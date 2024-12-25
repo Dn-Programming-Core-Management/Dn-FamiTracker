@@ -187,7 +187,7 @@ int CInstrumentN163::Compile(CChunk *pChunk, int Index)
 int CInstrumentN163::StoreWave(CChunk *pChunk) const
 {
 	// Number of waves
-//	pChunk->StoreByte(m_iWaveCount);
+	pChunk->StoreByte(m_iWaveCount);
 
 	// Pack samples
 	for (int i = 0; i < m_iWaveCount; ++i) {
@@ -196,7 +196,7 @@ int CInstrumentN163::StoreWave(CChunk *pChunk) const
 		}
 	}
 
-	return m_iWaveCount * (m_iWaveSize >> 1);
+	return (m_iWaveCount * (m_iWaveSize >> 1)) + 1;
 }
 
 bool CInstrumentN163::IsWaveEqual(CInstrumentN163 *pInstrument)

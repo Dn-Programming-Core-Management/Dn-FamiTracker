@@ -46,11 +46,6 @@ ft_load_inst_extra_n163:
 	sta var_ch_WavePtrHi - N163_OFFSET, x
 	iny
 .endif
-@DoneParams:
-    ; check if non-N163 type
-	lda ft_channel_type, x
-	cmp #CHAN_N163
-	bne :++
     ; check if N163 instrument is about to change
 	lda var_NamcoInstrument - N163_OFFSET, x
 	cmp var_Temp2
@@ -62,11 +57,9 @@ ft_load_inst_extra_n163:
 	; Load N163 wave
 ;    jsr ft_n163_load_wave
 :   sta var_NamcoInstrument - N163_OFFSET, x
-	lda ft_channel_type, x	;;; ;; ;
-	cmp #CHAN_N163
-	bne :+					; ;; ;;;
 	jsr ft_n163_load_wave2
-:	ldy var_Temp
+@DoneParams:
+	ldy var_Temp
 	rts
 
 ft_init_n163:
@@ -292,19 +285,16 @@ ft_n163_load_wave2:
 	sta $C000
 .endif						; ;; ;;;
 
-	tya
+	tya		; Save Y
 	pha
+	; for pointer access
+	ldy #$00
 
 	; Get wave pack pointer
 	lda var_ch_WavePtrLo - N163_OFFSET, x
 	sta var_Temp_Pointer2
 	lda var_ch_WavePtrHi - N163_OFFSET, x
 	sta var_Temp_Pointer2 + 1
-
-	; Get number of waves
-	ldy #$00
-	lda (var_Temp_Pointer2), y
-	sta var_Temp3
 
 	; Setup wave RAM
 	lda var_ch_WavePos - N163_OFFSET, x
@@ -314,7 +304,13 @@ ft_n163_load_wave2:
 
 	; Get wave index
 	lda var_ch_DutyCurrent, x
-	beq @EndMul		;;; ;; ; Multiply wave index with wave len
+	beq @EndMul
+
+	;; !! !! check if within actual wave count
+	cmp (var_Temp_Pointer2), y
+	bcs @EndMul
+
+	;;; ;; ; Multiply wave index with wave len
 .if .defined(USE_MMC5) && .defined(USE_MMC5_MULTIPLIER)
 	sta $5205
 	lda	var_ch_WaveLen - N163_OFFSET, x
@@ -343,21 +339,21 @@ ft_n163_load_wave2:
 .endif
 @EndMul:		; ;; ;;;
 
-	txa          ; Save X
+	txa		; Save X
 	pha
 	lda var_ch_WaveLen - N163_OFFSET, x
 	and #$7F		;;; ;; ;
 	tax
 
 	; Load wave
-	ldy #$00		;;; ;; ;
+	ldy #$01		;; !! !!
 :	lda (var_Temp_Pointer2), y
 	sta $4800
 	iny
 	dex
 	bne :-
 
-	pla     ; Restore x & y
+	pla		; Restore x & y
 	tax
 	pla
 	tay

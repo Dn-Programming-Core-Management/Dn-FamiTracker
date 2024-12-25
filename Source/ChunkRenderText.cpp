@@ -485,18 +485,18 @@ void CChunkRenderText::StoreWavesChunk(CChunk *pChunk, CFile *pFile)
 	CStringA str;
 	int len = pChunk->GetLength();
 
-//				int waves = pChunk->GetData(0);
-	int wave_len = 16;//(len - 1) / waves;
+	int waves = pChunk->GetData(0);
+	int wave_len = (len - 1) / waves;
 
 	// Namco waves
 	str.Format("%s:\n", pChunk->GetLabel());
-//				str.AppendFormat("\t.byte %i\n", waves);
+	str.AppendFormat("\t.byte %i\n", waves);
 	
 	str.Append("\t.byte ");
 
-	for (int i = 0; i < len; ++i) {
+	for (int i = 1; i < len; ++i) {
 		str.AppendFormat("$%02X", pChunk->GetData(i));
-		if ((i % wave_len == (wave_len - 1)) && (i < len - 1))
+		if (((i-1) % wave_len == 0) && (i < len))
 			str.Append("\n\t.byte ");
 		else {
 			if (i < len - 1)
