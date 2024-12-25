@@ -139,7 +139,7 @@ ft_update_2a03:
 	lda var_ch_Sweep + APU_OFFSET, x			; Check if sweep is active
 	beq @NoSquareSweep
 	and #$80
-	beq @DoneSquare								; See if sweep is triggered, if then don't touch sound registers until next note
+	beq @DoneSquare								; If sweep is triggered, if then don't touch sound registers until next note
 
 	lda var_ch_Sweep + APU_OFFSET, x			; Trigger sweep
 	sta $4000, y								; $4001/4005
@@ -152,7 +152,9 @@ ft_update_2a03:
 	lda var_ch_PeriodCalcLo + APU_OFFSET, x
 	sta $4000, y								; $4002/4006
 	iny
-	lda var_ch_PeriodCalcHi + APU_OFFSET, x
+	lda var_ch_LengthCounter + APU_OFFSET, x
+	and #$F8
+	ora var_ch_PeriodCalcHi + APU_OFFSET, x
 	sta $4000, y								; $4003/4007
 	lda #$FF
 	sta var_ch_PrevFreqHigh + APU_OFFSET, x
