@@ -739,7 +739,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 		}
 
 		// Volume command
-		if (Volume < 0x10) {
+		if (Volume < MAX_VOLUME) {
 			WriteDuration();
 			WriteData(0xF0 | Volume);
 			Action = true;			// Terminate command

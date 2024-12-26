@@ -597,9 +597,12 @@ void CChunkRenderText::StoreNSFStub(unsigned char Expansion, vibrato_t VibratoSt
 			str.Append("USE_LINEARPITCH = 1\n");
 	}
 
-	str.Append("\n.include \"driver/driver.s\"\t; path to NSF driver source\n");
+	str.Append("\n; path to NSF driver source\n");
+	str.Append(".include \"driver/driver.s\"\n");
 
-	str.Append(".include \"music.asm\"\t\t; path to NSF export source\n");
+	std::string asmfile = m_pFile->GetFileName();
+	str.Append("; path to NSF export source\n");
+	str.AppendFormat(".include \"%s\"\n", asmfile.c_str());
 
 	WriteFileString(str, m_pFileNSFStub);
 }
