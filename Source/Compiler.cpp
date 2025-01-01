@@ -169,14 +169,14 @@ CCompiler::~CCompiler()
 }
 
 template <typename... T>
-void CCompiler::Print(LPCTSTR text, T... args) const		// // //
+void CCompiler::Print(std::string_view text, T... args) const		// // //
 {
 	static TCHAR buf[256];
 
-	if (m_pLogger == NULL || !text)
+	if (m_pLogger == NULL || text.empty())
 		return;
 
-	_sntprintf_s(buf, sizeof(buf), _TRUNCATE, text, args...);
+	_sntprintf_s(buf, sizeof(buf), _TRUNCATE, text.data(), args...);
 
 	size_t len = _tcslen(buf);
 
@@ -226,7 +226,7 @@ void CCompiler::ExportNSF(LPCTSTR lpszFileName, int MachineType)
 	nsfewarning |= m_pDocument->GetExternalOPLLChipCheck();
 
 	if (nsfewarning) {
-		Print(_T("Warning: NSFe optional metadata will not be exported in this format!\n"));
+		Print("Warning: NSFe optional metadata will not be exported in this format!\n");
 		theApp.DisplayMessage(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
 	}
 
@@ -285,7 +285,7 @@ void CCompiler::ExportNSF(LPCTSTR lpszFileName, int MachineType)
 	// Open output file
 	CFile OutputFile;
 	if (!OpenFile(lpszFileName, OutputFile)) {
-		Print(_T("Error: Could not open output file\n"));
+		Print("Error: Could not open output file\n");
 		Cleanup();
 		return;
 	}
@@ -321,28 +321,28 @@ void CCompiler::ExportNSF(LPCTSTR lpszFileName, int MachineType)
 	}
 
 	// Writing done, print some stats
-	Print(_T(" * NSF load address: $%04X\n"), m_iLoadAddress);
-	Print(_T("Writing output file...\n"));
-	Print(_T(" * Driver size: %i bytes\n"), m_iDriverSize);
+	Print(" * NSF load address: $%04X\n", m_iLoadAddress);
+	Print("Writing output file...\n");
+	Print(" * Driver size: %i bytes\n", m_iDriverSize);
 
 	if (m_bBankSwitched) {
 		int Percent = (100 * m_iMusicDataSize) / (0x80000 - m_iDriverSize - m_iSamplesSize - m_iNSFDRVSize);
 		int Banks = Render->GetBankCount();
-		Print(_T(" * Song data size: %i bytes (%i%%)\n"), m_iMusicDataSize, Percent);
-		Print(_T(" * NSF type: Bankswitched (%i banks)\n"), Banks - 1);
+		Print(" * Song data size: %i bytes (%i%%)\n", m_iMusicDataSize, Percent);
+		Print(" * NSF type: Bankswitched (%i banks)\n", Banks - 1);
 	}
 	else {
 		int Percent = (100 * m_iMusicDataSize) / (0x8000 - m_iDriverSize - m_iSamplesSize - m_iNSFDRVSize);
-		Print(_T(" * Song data size: %i bytes (%i%%)\n"), m_iMusicDataSize, Percent);
+		Print(" * Song data size: %i bytes (%i%%)\n", m_iMusicDataSize, Percent);
 		if (bCompressedMode) {
-			Print(_T(" * NSF type: Non-bankswitched compressed (driver @ $%04X)\n"), m_iDriverAddress);
+			Print(" * NSF type: Non-bankswitched compressed (driver @ $%04X)\n", m_iDriverAddress);
 		}
 		else {
-			Print(_T(" * NSF type: Non-bankswitched (driver @ $%04X)\n"), m_iDriverAddress);
+			Print(" * NSF type: Non-bankswitched (driver @ $%04X)\n", m_iDriverAddress);
 		}
 	}
 
-	Print(_T("Done, total file size: %i bytes\n"), OutputFile.GetLength());
+	Print("Done, total file size: %i bytes\n", OutputFile.GetLength());
 
 	// Done
 	OutputFile.Close();
@@ -408,7 +408,7 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	// Open output file
 	CFile OutputFile;
 	if (!OpenFile(lpszFileName, OutputFile)) {
-		Print(_T("Error: Could not open output file\n"));
+		Print("Error: Could not open output file\n");
 		Cleanup();
 		return;
 	}
@@ -495,23 +495,23 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 	write_chunk(Footer.NEND, OutputFile);
 
 	// Writing done, print some stats
-	Print(_T(" * NSF load address: $%04X\n"), m_iLoadAddress);
-	Print(_T("Writing output file...\n"));
-	Print(_T(" * Driver size: %i bytes\n"), m_iDriverSize);
+	Print(" * NSF load address: $%04X\n", m_iLoadAddress);
+	Print("Writing output file...\n");
+	Print(" * Driver size: %i bytes\n", m_iDriverSize);
 
 	if (m_bBankSwitched) {
 		int Percent = (100 * m_iMusicDataSize) / (0x80000 - m_iDriverSize - m_iSamplesSize);
 		int Banks = Render->GetBankCount();
-		Print(_T(" * Song data size: %i bytes (%i%%)\n"), m_iMusicDataSize, Percent);
-		Print(_T(" * NSF type: Bankswitched (%i banks)\n"), Banks - 1);
+		Print(" * Song data size: %i bytes (%i%%)\n", m_iMusicDataSize, Percent);
+		Print(" * NSF type: Bankswitched (%i banks)\n", Banks - 1);
 	}
 	else {
 		int Percent = (100 * m_iMusicDataSize) / (0x8000 - m_iDriverSize - m_iSamplesSize);
-		Print(_T(" * Song data size: %i bytes (%i%%)\n"), m_iMusicDataSize, Percent);
-		Print(_T(" * NSF type: Linear (driver @ $%04X)\n"), m_iDriverAddress);
+		Print(" * Song data size: %i bytes (%i%%)\n", m_iMusicDataSize, Percent);
+		Print(" * NSF type: Linear (driver @ $%04X)\n", m_iDriverAddress);
 	}
 
-	Print(_T("Done, total file size: %i bytes\n"), OutputFile.GetLength());
+	Print("Done, total file size: %i bytes\n", OutputFile.GetLength());
 
 	// Done
 	OutputFile.Close();
@@ -580,7 +580,7 @@ void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
 	// Open output file
 	CFile OutputFile;
 	if (!OpenFile(lpszFileName, OutputFile)) {
-		Print(_T("Error: Could not open output file\n"));
+		Print("Error: Could not open output file\n");
 		Cleanup();
 		return;
 	}
@@ -664,23 +664,23 @@ void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
 	write_chunk(Footer.NEND, OutputFile);
 
 	// Writing done, print some stats
-	Print(_T(" * NSF load address: $%04X\n"), m_iLoadAddress);
-	Print(_T("Writing output file...\n"));
-	Print(_T(" * Driver size: %i bytes\n"), m_iDriverSize);
+	Print(" * NSF load address: $%04X\n", m_iLoadAddress);
+	Print("Writing output file...\n");
+	Print(" * Driver size: %i bytes\n", m_iDriverSize);
 
 	if (m_bBankSwitched) {
 		int Percent = (100 * m_iMusicDataSize) / (0x80000 - m_iDriverSize - m_iSamplesSize);
 		int Banks = Render->GetBankCount();
-		Print(_T(" * Song data size: %i bytes (%i%%)\n"), m_iMusicDataSize, Percent);
-		Print(_T(" * NSF type: Bankswitched (%i banks)\n"), Banks - 1);
+		Print(" * Song data size: %i bytes (%i%%)\n", m_iMusicDataSize, Percent);
+		Print(" * NSF type: Bankswitched (%i banks)\n", Banks - 1);
 	}
 	else {
 		int Percent = (100 * m_iMusicDataSize) / (0x8000 - m_iDriverSize - m_iSamplesSize);
-		Print(_T(" * Song data size: %i bytes (%i%%)\n"), m_iMusicDataSize, Percent);
-		Print(_T(" * NSF type: Linear (driver @ $%04X)\n"), m_iDriverAddress);
+		Print(" * Song data size: %i bytes (%i%%)\n", m_iMusicDataSize, Percent);
+		Print(" * NSF type: Linear (driver @ $%04X)\n", m_iDriverAddress);
 	}
 
-	Print(_T("Done, total file size: %i bytes\n"), OutputFile.GetLength());
+	Print("Done, total file size: %i bytes\n", OutputFile.GetLength());
 
 	// Done
 	OutputFile.Close();
@@ -707,13 +707,13 @@ void CCompiler::ExportNES(LPCTSTR lpszFileName, bool EnablePAL)
 	nsfewarning |= m_pDocument->GetExternalOPLLChipCheck();
 
 	if (nsfewarning) {
-		Print(_T("Warning: NSFe optional metadata will not be exported in this format!\n"));
+		Print("Warning: NSFe optional metadata will not be exported in this format!\n");
 		theApp.DisplayMessage(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
 	}
 
 	if (m_pDocument->GetExpansionChip() != SNDCHIP_NONE) {
-		Print(_T("Error: Expansion chips not supported.\n"));
-		theApp.DisplayMessage(_T("Expansion chips are currently not supported when exporting to .NES!"), 0, 0);
+		Print("Error: Expansion chips not supported.\n");
+		theApp.DisplayMessage("Expansion chips are currently not supported when exporting to .NES!", 0, 0);
 		Cleanup();
 		return;
 	}
@@ -732,7 +732,7 @@ void CCompiler::ExportNES(LPCTSTR lpszFileName, bool EnablePAL)
 
 	if (m_bBankSwitched) {
 		// Abort if larger than 32kb
-		Print(_T("Error: Song is too large, aborted.\n"));
+		Print("Error: Song is larger than 32kB, aborted.\n");
 		theApp.DisplayMessage(_T("Song is too big to fit into 32kB!"), 0, 0);
 		Cleanup();
 		return;
@@ -768,9 +768,9 @@ void CCompiler::ExportNES(LPCTSTR lpszFileName, bool EnablePAL)
 
 	int Percent = (100 * m_iMusicDataSize) / (0x8000 - m_iDriverSize - m_iSamplesSize);
 
-	Print(_T("Writing file...\n"));
-	Print(_T(" * Driver size: %i bytes\n"), m_iDriverSize);
-	Print(_T(" * Song data size: %i bytes (%i%%)\n"), m_iMusicDataSize, Percent);
+	Print("Writing file...\n");
+	Print(" * Driver size: %i bytes\n", m_iDriverSize);
+	Print(" * Song data size: %i bytes (%i%%)\n", m_iMusicDataSize, Percent);
 
 	// Write header
 	OutputFile.Write(NES_HEADER, 0x10);
@@ -783,7 +783,7 @@ void CCompiler::ExportNES(LPCTSTR lpszFileName, bool EnablePAL)
 	Render->StoreSamples(m_vSamples);
 	Render->StoreCaller(NSF_CALLER_BIN, NSF_CALLER_SIZE);
 
-	Print(_T("Done, total file size: %i bytes\n"), 0x8000 + 0x10);
+	Print("Done, total file size: %i bytes\n", 0x8000 + 0x10);
 
 	// Done
 	OutputFile.Close();
@@ -804,7 +804,7 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 	nsfewarning |= m_pDocument->GetExternalOPLLChipCheck();
 
 	if (nsfewarning) {
-		Print(_T("Warning: NSFe optional metadata will not be exported in this format!\n"));
+		Print("Warning: NSFe optional metadata will not be exported in this format!\n");
 		theApp.DisplayMessage(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
 	}
 
@@ -817,7 +817,7 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 
 	if (m_bBankSwitched) {
 		// TODO: write seperate binary banks
-		Print(_T("Error: Can't write bankswitched songs!\n"));
+		Print("Error: Can't write bankswitched songs!\n");
 		Cleanup();
 		return;
 	}
@@ -844,20 +844,20 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 	// Open output files
 	CFilePtrArray OutputFiles = {};
 	size_t OutputFileBINIndex = OutputFiles.size();
-	CString errormsg = _T("Error: Could not open output binary file\n");
+	std::string_view errormsg = "Error: Could not open output binary file\n";
 	if (!OpenArrayFile(OutputFiles, lpszBIN_File, errormsg)) {
 		return;
 	}
 
 	size_t OutputFileDPCMIndex = OutputFiles.size();	// off-by-one gets corrected
-	errormsg = _T("Error: Could not open output binary DPCM file\n");
+	errormsg = "Error: Could not open output binary DPCM file\n";
 	if (_tcslen(lpszDPCM_File) != 0) {
 		if (!OpenArrayFile(OutputFiles, lpszDPCM_File, errormsg)) {
 			return;
 		}
 	}
 
-	Print(_T("Writing output files...\n"));
+	Print("Writing output files...\n");
 
 	if (_tcslen(lpszDPCM_File) != 0)
 		WriteSamplesBinary(OutputFiles.at(OutputFileDPCMIndex).get());
@@ -873,49 +873,49 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 
 		// NSF stub
 		size_t OutputFileNSFStubIndex = OutputFiles.size();
-		errormsg = _T("Error: Could not open output NSF stub file\n");
+		errormsg = "Error: Could not open output NSF stub file\n";
 		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "nsf_stub.s"), errormsg)) {
 			return;
 		}
 
 		// NSF header
 		size_t OutputFileNSFHeaderIndex = OutputFiles.size();
-		errormsg = _T("Error: Could not open output NSF header file\n");
+		errormsg = "Error: Could not open output NSF header file\n";
 		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "nsf_header.s"), errormsg)) {
 			return;
 		}
 
 		// NSF config file
 		size_t OutputFileNSFConfigIndex = OutputFiles.size();
-		errormsg = _T("Error: Could not open output NSF config file\n");
+		errormsg = "Error: Could not open output NSF config file\n";
 		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "nsf.cfg"), errormsg)) {
 			return;
 		}
 
 		// period table file
 		size_t OutputFilePeriodsIndex = OutputFiles.size();
-		errormsg = _T("Error: Could not open output period table file\n");
+		errormsg = "Error: Could not open output period table file\n";
 		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "periods.s"), errormsg)) {
 			return;
 		}
 
 		// vibrato table file
 		size_t OutputFileVibratoIndex = OutputFiles.size();
-		errormsg = _T("Error: Could not open output vibrato table file\n");
+		errormsg = "Error: Could not open output vibrato table file\n";
 		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "vibrato.s"), errormsg)) {
 			return;
 		}
 
 		// multichip enable table file
 		size_t OutputFileMultiChipEnableIndex = OutputFiles.size();
-		errormsg = _T("Error: Could not open output multichip enable table file\n");
+		errormsg = "Error: Could not open output multichip enable table file\n";
 		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "enable_ext.s"), errormsg)) {
 			return;
 		}
 
 		// Write multichip update handler file
 		size_t OutputFileMultiChipUpdateIndex = OutputFiles.size();
-		errormsg = _T("Error: Could not open output multichip update handler file\n");
+		errormsg = "Error: Could not open output multichip update handler file\n";
 		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "update_ext.s"), errormsg)) {
 			return;
 		}
@@ -933,7 +933,7 @@ void CCompiler::ExportBIN(LPCTSTR lpszBIN_File, LPCTSTR lpszDPCM_File, int Machi
 	else
 		WriteBinary(OutputFiles, ExtraData, Header, MachineType, OutputFileBINIndex);
 
-	Print(_T("Done\n"));
+	Print("Done\n");
 
 	// Done
 	CloseFileArray(OutputFiles);
@@ -955,12 +955,12 @@ void CCompiler::ExportPRG(LPCTSTR lpszFileName, bool EnablePAL)
 	nsfewarning |= m_pDocument->GetExternalOPLLChipCheck();
 
 	if (nsfewarning) {
-		Print(_T("Warning: NSFe optional metadata will not be exported in this format!\n"));
+		Print("Warning: NSFe optional metadata will not be exported in this format!\n");
 		theApp.DisplayMessage(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
 	}
 
 	if (m_pDocument->GetExpansionChip() != SNDCHIP_NONE) {
-		Print(_T("Expansion chips not supported.\n"));
+		Print("Error: Expansion audio not supported.\n");
 		theApp.DisplayMessage(_T("Error: Expansion chips is currently not supported when exporting to PRG!"), 0, 0);
 		Cleanup();
 		return;
@@ -980,8 +980,8 @@ void CCompiler::ExportPRG(LPCTSTR lpszFileName, bool EnablePAL)
 
 	if (m_bBankSwitched) {
 		// Abort if larger than 32kb
-		Print(_T("Song is too big, aborted.\n"));
-		theApp.DisplayMessage(_T("Error: Song is too big to fit!"), 0, 0);
+		Print("Error: Can't write bankswitched songs!\n");
+		theApp.DisplayMessage(_T("Error: Can't write bankswitched songs!"), 0, 0);
 		Cleanup();
 		return;
 	}
@@ -1016,9 +1016,9 @@ void CCompiler::ExportPRG(LPCTSTR lpszFileName, bool EnablePAL)
 
 	int Percent = (100 * m_iMusicDataSize) / (0x8000 - m_iDriverSize - m_iSamplesSize);
 
-	Print(_T("Writing file...\n"));
-	Print(_T(" * Driver size: %i bytes\n"), m_iDriverSize);
-	Print(_T(" * Song data size: %i bytes (%i%%)\n"), m_iMusicDataSize, Percent);
+	Print("Writing file...\n");
+	Print(" * Driver size: %i bytes\n", m_iDriverSize);
+	Print(" * Song data size: %i bytes (%i%%)\n", m_iMusicDataSize, Percent);
 
 	// Write NES data
 	std::unique_ptr<CChunkRenderNES> Render(new CChunkRenderNES(&OutputFile, m_iLoadAddress));
@@ -1047,7 +1047,7 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 	nsfewarning |= m_pDocument->GetExternalOPLLChipCheck();
 
 	if (nsfewarning) {
-		Print(_T("Warning: NSFe optional metadata will not be exported in this format!\n"));
+		Print("Warning: NSFe optional metadata will not be exported in this format!\n");
 		theApp.DisplayMessage(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
 	}
 
@@ -1090,13 +1090,13 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 
 	CFilePtrArray OutputFiles = {};
 	size_t OutputFileASMIndex = OutputFiles.size();
-	CString errormsg = _T("Error: Could not open output assembly file\n");
+	std::string_view errormsg = "Error: Could not open output assembly file\n";
 	if (!OpenArrayFile(OutputFiles, lpszFileName, errormsg)) {
 		return;
 	}
 
 	// Write output file
-	Print(_T("Writing output files...\n"));
+	Print("Writing output files...\n");
 
 	if (ExtraData) {
 		// Get the directory of the output assembly file
@@ -1109,49 +1109,49 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 
 		// NSF stub
 		size_t OutputFileNSFStubIndex = OutputFiles.size();
-		errormsg = _T("Error: Could not open output NSF stub file\n");
+		errormsg = "Error: Could not open output NSF stub file\n";
 		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "nsf_stub.s"), errormsg)) {
 			return;
 		}
 
 		// NSF header
 		size_t OutputFileNSFHeaderIndex = OutputFiles.size();
-		errormsg = _T("Error: Could not open output NSF header file\n");
+		errormsg = "Error: Could not open output NSF header file\n";
 		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "nsf_header.s"), errormsg)) {
 			return;
 		}
 
 		// NSF config file
 		size_t OutputFileNSFConfigIndex = OutputFiles.size();
-		errormsg = _T("Error: Could not open output NSF config file\n");
+		errormsg = "Error: Could not open output NSF config file\n";
 		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "nsf.cfg"), errormsg)) {
 			return;
 		}
 
 		// period table file
 		size_t OutputFilePeriodsIndex = OutputFiles.size();
-		errormsg = _T("Error: Could not open output period table file\n");
+		errormsg = "Error: Could not open output period table file\n";
 		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "periods.s"), errormsg)) {
 			return;
 		}
 
 		// vibrato table file
 		size_t OutputFileVibratoIndex = OutputFiles.size();
-		errormsg = _T("Error: Could not open output vibrato table file\n");
+		errormsg = "Error: Could not open output vibrato table file\n";
 		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "vibrato.s"), errormsg)) {
 			return;
 		}
 
 		// multichip enable table file
 		size_t OutputFileMultiChipEnableIndex = OutputFiles.size();
-		errormsg = _T("Error: Could not open output multichip enable table file\n");
+		errormsg = "Error: Could not open output multichip enable table file\n";
 		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "enable_ext.s"), errormsg)) {
 			return;
 		}
 
 		// Write multichip update handler file
 		size_t OutputFileMultiChipUpdateIndex = OutputFiles.size();
-		errormsg = _T("Error: Could not open output multichip update handler file\n");
+		errormsg = "Error: Could not open output multichip update handler file\n";
 		if (!OpenArrayFile(OutputFiles, LPCTSTR(FilePath + "update_ext.s"), errormsg)) {
 			return;
 		}
@@ -1170,7 +1170,7 @@ void CCompiler::ExportASM(LPCTSTR lpszFileName, int MachineType, bool ExtraData)
 		WriteAssembly(OutputFiles, ExtraData, Header, MachineType, OutputFileASMIndex);
 	}
 
-	Print(_T("Done\n"));
+	Print("Done\n");
 
 	// Done
 	CloseFileArray(OutputFiles);
@@ -1566,6 +1566,8 @@ void CCompiler::UpdateSamplePointers(unsigned int Origin)
 
 	// The list is stored in the same order as the samples vector
 
+	Print(" * DPCM samples:\n");
+
 	for (auto pDSample : m_vSamples) {
 		unsigned int Size = pDSample->GetSize();
 
@@ -1581,15 +1583,14 @@ void CCompiler::UpdateSamplePointers(unsigned int Origin)
 		m_pSamplePointersChunk->StoreByte(Size >> 4);
 		m_pSamplePointersChunk->StoreByte(Bank);
 
-#ifdef _DEBUG
-		Print(_T(" * DPCM sample %s: $%04X, bank %i (%i bytes)\n"), pDSample->GetName(), Address, Bank, Size);
-#endif
+		Print("      %s\n", pDSample->GetName());
+		Print("         Address $%04X, bank %i (%i bytes)\n", Address, Bank, Size);
+
 		Address += Size;
 		Address += AdjustSampleAddress(Address);
 	}
-#ifdef _DEBUG
-	Print(_T(" * DPCM sample banks: %i\n"), Bank - m_iFirstSampleBank + DPCM_PAGE_WINDOW);
-#endif
+
+	Print("      Sample banks: %i\n", Bank - m_iFirstSampleBank + DPCM_PAGE_WINDOW);
 
 	// Save last bank number for NSF header
 	m_iLastBank = Bank + 1;
@@ -1709,8 +1710,8 @@ bool CCompiler::CollectLabelsBankswitched(CMap<CStringA, LPCSTR, int, int> &labe
 
 	if (Offset + DriverSizeAndNSFDRV > 0x3000) {
 		// Instrument data did not fit within the limit, display an error and abort?
-		Print(_T("Error: Instrument, frame & pattern data can't fit within bank allocation, can't export file!\n"));
-		Print(_T(" * $%02X bytes used out of $3000 allowed\n"), Offset + DriverSizeAndNSFDRV);
+		Print("Error: Instrument, frame & pattern data can't fit within bank allocation, can't export file!\n");
+		Print(" * $%02X bytes used out of $3000 allowed\n", Offset + DriverSizeAndNSFDRV);
 		return false;
 	}
 
@@ -1777,42 +1778,42 @@ bool CCompiler::CompileData(bool bUseNSFDRV, bool bUseAllExp)
 		case SNDCHIP_NONE:
 			m_pDriverData = &DRIVER_PACK_2A03;
 			m_iVibratoTableLocation = VIBRATO_TABLE_LOCATION_2A03;
-			Print(_T(" * No expansion chip\n"));
+			Print(" * No expansion chip\n");
 			break;
 		case SNDCHIP_VRC6:
 			m_pDriverData = &DRIVER_PACK_VRC6;
 			m_iVibratoTableLocation = VIBRATO_TABLE_LOCATION_VRC6;
-			Print(_T(" * VRC6 expansion enabled\n"));
+			Print(" * VRC6 expansion enabled\n");
 			break;
 		case SNDCHIP_MMC5:
 			m_pDriverData = &DRIVER_PACK_MMC5;
 			m_iVibratoTableLocation = VIBRATO_TABLE_LOCATION_MMC5;
-			Print(_T(" * MMC5 expansion enabled\n"));
+			Print(" * MMC5 expansion enabled\n");
 			break;
 		case SNDCHIP_VRC7:
 			m_pDriverData = &DRIVER_PACK_VRC7;
 			m_iVibratoTableLocation = VIBRATO_TABLE_LOCATION_VRC7;
-			Print(_T(" * VRC7 expansion enabled\n"));
+			Print(" * VRC7 expansion enabled\n");
 			break;
 		case SNDCHIP_FDS:
 			m_pDriverData = &DRIVER_PACK_FDS;
 			m_iVibratoTableLocation = VIBRATO_TABLE_LOCATION_FDS;
-			Print(_T(" * FDS expansion enabled\n"));
+			Print(" * FDS expansion enabled\n");
 			break;
 		case SNDCHIP_N163:
 			m_pDriverData = &DRIVER_PACK_N163;
 			m_iVibratoTableLocation = VIBRATO_TABLE_LOCATION_N163;
-			Print(_T(" * N163 expansion enabled\n"));
+			Print(" * N163 expansion enabled\n");
 			break;
 		case SNDCHIP_S5B:
 			m_pDriverData = &DRIVER_PACK_S5B;
 			m_iVibratoTableLocation = VIBRATO_TABLE_LOCATION_S5B;
-			Print(_T(" * S5B expansion enabled\n"));
+			Print(" * S5B expansion enabled\n");
 			break;
 		default:		// // // crude, not meant for release
 			m_pDriverData = &DRIVER_PACK_ALL;
 			m_iVibratoTableLocation = VIBRATO_TABLE_LOCATION_ALL;
-			Print(_T(" * Multiple expansion chips enabled\n"));
+			Print(" * Multiple expansion chips enabled\n");
 //			if (m_pDocument->ExpansionEnabled(SNDCHIP_N163))
 //				m_pDocument->SetNamcoChannels(8, true);
 //			m_pDocument->SelectExpansionChip(0x3F, true);
@@ -1866,7 +1867,7 @@ bool CCompiler::CompileData(bool bUseNSFDRV, bool bUseAllExp)
 	// Scan and optimize song
 	ScanSong();
 
-	Print(_T("Building music data...\n"));
+	Print("Building music data...\n");
 
 	// Build music data
 	CreateMainHeader(bUseAllExp);
@@ -1905,7 +1906,7 @@ bool CCompiler::CompileData(bool bUseNSFDRV, bool bUseAllExp)
 		m_iSampleStart = PAGE_SAMPLES;
 
 	// Compiling done
-	Print(_T(" * Samples located at: $%04X\n"), m_iSampleStart);
+	Print(" * Samples located at: $%04X\n", m_iSampleStart);
 
 #ifdef FORCE_BANKSWITCH
 	m_bBankSwitched = true;
@@ -2189,7 +2190,7 @@ void CCompiler::CreateSequenceList()
 		}
 	}
 
-	Print(_T(" * Sequences used: %i (%i bytes)\n"), StoredCount, Size);
+	Print(" * Sequences used: %i (%i bytes)\n", StoredCount, Size);
 }
 
 int CCompiler::StoreSequence(const CSequence *pSeq, CStringA &label)
@@ -2314,10 +2315,10 @@ void CCompiler::CreateInstrumentList()
 		}
 	}
 
-	Print(_T(" * Instruments used: %i (%i bytes)\n"), m_iInstruments, iTotalSize);
+	Print(" * Instruments used: %i (%i bytes)\n", m_iInstruments, iTotalSize);
 
 	if (iWaveSize > 0)
-		Print(_T(" * N163 waves size: %i bytes\n"), iWaveSize);
+		Print(" * N163 waves size: %i bytes\n", iWaveSize);
 }
 
 // Samples
@@ -2420,7 +2421,7 @@ void CCompiler::StoreSamples()
 		}
 	}
 
-	Print(_T(" * DPCM samples used: %i (%i bytes)\n"), m_iSamplesUsed, m_iSamplesSize);
+	Print(" * DPCM samples used: %i (%i bytes)\n", m_iSamplesUsed, m_iSamplesSize);
 }
 
 int CCompiler::GetSampleIndex(int SampleNumber)
@@ -2532,7 +2533,7 @@ void CCompiler::StoreSongs()
 
 	// Store actual songs
 	for (int i = 0; i < TrackCount; ++i) {
-		Print(_T(" * Song %i: "), i);
+		Print(" * Song %i:\n", i);
 		// Store frames
 		CreateFrameList(i);
 		// Store pattern data
@@ -2540,11 +2541,9 @@ void CCompiler::StoreSongs()
 	}
 
 	if (m_iDuplicatePatterns > 0)
-		Print(_T(" * %i duplicated pattern(s) removed\n"), m_iDuplicatePatterns);
+		Print(" * %i duplicated pattern(s) removed\n", m_iDuplicatePatterns);
 
-#ifdef _DEBUG
-	Print(_T("Hash collisions: %i (of %i items)\r\n"), m_iHashCollisions, m_PatternMap.GetCount());
-#endif
+	Print("      Hash collisions: %i (of %i items)\n", m_iHashCollisions, m_PatternMap.GetCount());
 }
 
 // Frames
@@ -2602,7 +2601,7 @@ void CCompiler::CreateFrameList(unsigned int Track)
 
 	m_iTrackFrameSize[Track] = TotalSize;
 
-	Print(_T("%i frames (%i bytes), "), FrameCount, TotalSize);
+	Print("      %i frames (%i bytes)\n", FrameCount, TotalSize);
 }
 
 // Patterns
@@ -2692,7 +2691,7 @@ void CCompiler::StorePatterns(unsigned int Track)
 	m_DuplicateMap.RemoveAll();
 #endif /* LOCAL_DUPLICATE_PATTERN_REMOVAL */
 
-	Print(_T("%i patterns (%i bytes)\r\n"), PatternCount, PatternSize);
+	Print("      %i patterns (%i bytes)\n", PatternCount, PatternSize);
 }
 
 bool CCompiler::IsPatternAddressed(unsigned int Track, int Pattern, int Channel) const
@@ -2748,12 +2747,12 @@ void CCompiler::WriteAssembly(CFilePtrArray &files, bool bExtraData, stNSFHeader
 	Render.WriteFileString(CStringA("\n;\n\n"), pFile);
 	Render.SetBankSwitching(m_bBankSwitched);
 	Render.StoreChunks(m_vChunks);
-	Print(_T(" * Music data size: %i bytes\n"), m_iMusicDataSize);
+	Print(" * Music data size: %i bytes\n", m_iMusicDataSize);
 	// !! !! bank info must be included
 	for (const auto pChunk : m_vChunks)
 		if (pChunk->GetType() == CHUNK_SAMPLE_POINTERS)
 			Render.StoreSamples(m_vSamples, pChunk);
-	Print(_T(" * DPCM samples size: %i bytes\n"), m_iSamplesSize);
+	Print(" * DPCM samples size: %i bytes\n", m_iSamplesSize);
 
 	if (bExtraData) {
 		CFile *pFileNSFStub = files.at(FileNSFStubIndex).get();
@@ -2803,11 +2802,11 @@ void CCompiler::WriteBinary(CFilePtrArray &files, bool bExtraData, stNSFHeader H
 	if (!m_bBankSwitched)
 		Render.StoreChunks(m_vChunks);
 	else {
-		theApp.DisplayMessage(_T("Error: bankswitched BIN export not implemented yet!"), 0, 0);
+		theApp.DisplayMessage("Error: bankswitched BIN export not implemented yet!", 0, 0);
 		Cleanup();
 		return;
 	}
-	Print(_T(" * Music data size: %i bytes\n"), m_iMusicDataSize);
+	Print(" * Music data size: %i bytes\n", m_iMusicDataSize);
 
 	if (bExtraData) {
 		CFile *pFileNSFStub = files.at(FileNSFStubIndex).get();
@@ -2847,7 +2846,7 @@ void CCompiler::WriteSamplesBinary(CFile *pFile)
 	// Dump all samples as binary
 	CChunkRenderBinary Render(pFile);
 	Render.StoreSamples(m_vSamples);
-	Print(_T(" * DPCM samples size: %i bytes\n"), m_iSamplesSize);
+	Print(" * DPCM samples size: %i bytes\n", m_iSamplesSize);
 }
 
 void CCompiler::ReadPeriodVibratoTables(int MachineType,
@@ -2895,7 +2894,7 @@ void CCompiler::ReadPeriodVibratoTables(int MachineType,
 	}
 }
 
-bool CCompiler::OpenArrayFile(CFilePtrArray &files, LPCTSTR filepath, CString message)
+bool CCompiler::OpenArrayFile(CFilePtrArray &files, LPCTSTR filepath, std::string_view message)
 {
 	auto index = files.size();
 	auto file = files.emplace_back(std::make_unique<CFile>()).get();

@@ -380,7 +380,6 @@ void CChunkRenderText::StoreFrameListChunk(CChunk *pChunk, CFile *pFile)
 	unsigned char bank = pChunk->GetBank();
 
 	// Pointers to frames
-//	str.Format("; Bank %i\n", pChunk->GetBank());
 	if (m_bBankSwitched)
 		StoreMusicBankSegment(bank, str);
 

@@ -67,7 +67,7 @@ private:
 
 	// Debugging
 	template <typename... T>
-	void	Print(LPCTSTR text, T... args) const;		// // //
+	void	Print(std::string_view text, T... args) const;		// !! !!
 
 private:
 	std::vector<char> m_vData;

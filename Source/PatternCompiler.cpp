@@ -123,7 +123,10 @@ CPatternCompiler::CPatternCompiler(CFamiTrackerDoc *pDoc, unsigned int *pInstLis
 	m_pDocument(pDoc),
 	m_pInstrumentList(pInstList),
 	m_pDPCMList(pDPCMList),
-	m_pLogger(pLogger)
+	m_pLogger(pLogger),
+	m_iHash(0),
+	m_iDuration(0),
+	m_iCurrentDefaultDuration(0xFF)
 {
 	memset(m_bDSamplesAccessed, 0, sizeof(bool) * MAX_DSAMPLES);
 }
@@ -162,38 +165,22 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 		// comparison syntax based on AssertRange() template code from FamiTrackerDoc.h
 		unsigned char Note = ChanNote.Note;
 		if (!(Note >= NONE && Note <= ECHO)) {
-#ifdef _DEBUG
-			CString str;
-			str.Format(_T("Error: Invalid note pattern (0x%02X on row %i, channel %i, pattern %i)\n"), Note, i, Channel, Pattern);
-			Print(str);
-#endif
+			Print("         Warning: Invalid note pattern (0x%02X on row %i, channel %i, pattern %i)\n", Note, i, Channel, Pattern);
 			Note = NONE;
 		}
 		unsigned char Octave = ChanNote.Octave;
 		if (!(Octave >= 0 && Octave < OCTAVE_RANGE)) {
-#ifdef _DEBUG
-			CString str;
-			str.Format(_T("Error: Invalid octave pattern (0x%02X on row %i, channel %i, pattern %i)\n"), Octave, i, Channel, Pattern);
-			Print(str);
-#endif
+			Print("         Warning: Invalid octave pattern (0x%02X on row %i, channel %i, pattern %i)\n", Octave, i, Channel, Pattern);
 			Octave = 0;
 		}
 		unsigned char Instrument = FindInstrument(ChanNote.Instrument);
-		if (!((Instrument >= 0 && Instrument <= MAX_INSTRUMENTS) || Instrument == HOLD_INSTRUMENT)) {
-#ifdef _DEBUG
-			CString str;
-			str.Format(_T("Error: Invalid instrument index (0x%02X on row %i, channel %i, pattern %i)\n"), Instrument, i, Channel, Pattern);
-			Print(str);
-#endif
+		if (!((Instrument >= 0 && Instrument <= MAX_INSTRUMENTS) || Instrument == HOLD_INSTRUMENT)) {\
+			Print("         Warning: Invalid instrument index (0x%02X on row %i, channel %i, pattern %i)\n", Instrument, i, Channel, Pattern);
 			Instrument = MAX_INSTRUMENTS;
 		}
 		unsigned char Volume = ChanNote.Vol;
 		if (!(Volume >= 0 && Volume <= MAX_VOLUME)) {
-#ifdef _DEBUG
-			CString str;
-			str.Format(_T("Error: Invalid volume pattern (0x%02X on row %i, channel %i, pattern %i)\n"), Volume, i, Channel, Pattern);
-			Print(str);
-#endif
+			Print("         Warning: Invalid volume pattern (0x%02X on row %i, channel %i, pattern %i)\n", Volume, i, Channel, Pattern);
 			Volume = MAX_VOLUME;
 		}
 		
@@ -207,9 +194,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 			Note != HALT && Note != NONE && Note != RELEASE) {		// // //
 			if (!pTrackerChannel->IsInstrumentCompatible(ChanNote.Instrument,
 				m_pDocument->GetInstrumentType(ChanNote.Instrument))) {		// // //
-				CString str;
-				str.Format(_T("Error: Missing or incompatible instrument (on row %i, channel %i, pattern %i)\n"), i, Channel, Pattern);
-				Print(str);
+				Print("         Warning: Missing or incompatible instrument (on row %i, channel %i, pattern %i)\n", i, Channel, Pattern);
 			}
 		}
 
@@ -217,11 +202,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 		for (int j = 0; j < EffColumns; ++j) {
 			unsigned char Effect = ChanNote.EffNumber[j];
 			if (!(Effect >= EF_NONE && Effect <= EF_COUNT)) {
-#ifdef _DEBUG
-				CString str;
-				str.Format(_T("Error: Invalid effect command data (0x%02X on row %i, channel %i, pattern %i)\n"), Effect, i, Channel, Pattern);
-				Print(str);
-#endif
+				Print("         Warning: Invalid effect command data (0x%02X on row %i, channel %i, pattern %i)\n", Effect, i, Channel, Pattern);
 				Effect = EF_NONE;
 			}
 			unsigned char EffParam = ChanNote.EffParam[j];
@@ -306,11 +287,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 
 					// double check if DPCMInst is a valid instrument index
 					if (!(DPCMInst >= 0 && DPCMInst < MAX_INSTRUMENTS)) {
-#ifdef _DEBUG
-						CString str;
-						str.Format(_T("Error: Invalid instrument index (0x%02X on row %i, channel %i, pattern %i)\n"), DPCMInst, i, Channel, Pattern);
-						Print(str);
-#endif
+						Print("         Warning: Invalid instrument index (0x%02X on row %i, channel %i, pattern %i)\n", DPCMInst, i, Channel, Pattern);
 						DPCMInst = MAX_INSTRUMENTS;
 					}
 				}
@@ -354,9 +331,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 						Note != HALT && Note != NONE && Note != RELEASE) {		// // //
 						if (!pTrackerChannel->IsInstrumentCompatible(DPCMInst,
 							m_pDocument->GetInstrumentType(DPCMInst))) {		// // //
-							CString str;
-							str.Format(_T("Error: Missing or incompatible instrument (on row %i, channel %i, pattern %i)\n"), i, Channel, Pattern);
-							Print(str);
+							Print("         Warning: Missing or incompatible instrument (on row %i, channel %i, pattern %i)\n", i, Channel, Pattern);
 						}
 						else if (auto pInstrument = std::dynamic_pointer_cast<CInstrument2A03>(m_pDocument->GetInstrument(DPCMInst)))
 							m_bDSamplesAccessed[pInstrument->GetSampleIndex(Octave, Note - 1) - 1] = true;
@@ -364,9 +339,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 				}
 				else {
 					NESNote = 0xFF;		// Invalid sample, skip
-					CString str;
-					str.Format(_T("Error: Missing DPCM sample (on row %i, channel %i, pattern %i)\n"), i, Channel, Pattern);
-					Print(str);
+					Print("         Warning: Missing DPCM sample (on row %i, channel %i, pattern %i)\n", i, Channel, Pattern);
 				}
 			}
 			else if (ChanID == CHANID_NOISE) {
@@ -383,9 +356,7 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel)
 
 			unsigned char Effect = ChanNote.EffNumber[j];
 			if (!(Effect >= EF_NONE && Effect <= EF_COUNT)) {
-				CString str;
-				str.Format(_T("Error: Invalid effect command data (0x%02X on row %i, channel %i, pattern %i)\n"), Effect, i, Channel, Pattern);
-				Print(str);
+				Print("         Warning: Invalid effect command data (0x%02X on row %i, channel %i, pattern %i)\n", Effect, i, Channel, Pattern);
 				Effect = EF_NONE;
 			}
 
@@ -1022,14 +993,14 @@ unsigned int CPatternCompiler::GetHash() const
 }
 
 template <typename... T>
-void CPatternCompiler::Print(LPCTSTR text, T... args) const
+void CPatternCompiler::Print(std::string_view text, T... args) const
 {
-	static TCHAR buf[256];
-
-	if (m_pLogger == NULL || !text)
+	if (!m_pLogger || text.empty())
 		return;
 
-	_sntprintf_s(buf, sizeof(buf), _TRUNCATE, text, args...);
+	static TCHAR buf[256];
+
+	_sntprintf_s(buf, sizeof(buf), _TRUNCATE, text.data(), args...);
 
 	size_t len = _tcslen(buf);
 

@@ -37,9 +37,9 @@ class CCommandLineLog : public CCompilerLog
 {
 public:
 	CCommandLineLog(std::string *pText) : m_pText(pText) {};
-	void WriteLog(LPCTSTR text)
+	void WriteLog(std::string_view text)
 	{
-		*m_pText += text;
+		*m_pText += std::string(text);
 	};
 	void Clear() {};
 private:

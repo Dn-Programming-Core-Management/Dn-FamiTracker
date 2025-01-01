@@ -25,6 +25,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
 // NSF file header
 struct stNSFHeader {
@@ -100,7 +101,7 @@ class CCompilerLog
 {
 public:
 	virtual ~CCompilerLog() {}
-	virtual void WriteLog(LPCTSTR text) = 0;
+	virtual void WriteLog(std::string_view text) = 0;
 	virtual void Clear() = 0;
 };
 
@@ -207,7 +208,7 @@ private:
 		unsigned int *LUTFDS,
 		unsigned int *LUTN163,
 		unsigned int *LUTVibrato) const;
-	bool	OpenArrayFile(CFilePtrArray &files, LPCTSTR filepath, CString message);
+	bool	OpenArrayFile(CFilePtrArray &files, LPCTSTR filepath, std::string_view message);
 	void	CloseFileArray(CFilePtrArray &files);
 
 	// Object list functions
@@ -217,7 +218,7 @@ private:
 
 	// Debugging
 	template <typename... T>
-	void	Print(LPCTSTR text, T... args) const;		// // //
+	void	Print(std::string_view text, T... args) const;		// // //
 	void	ClearLog() const;
 
 public:

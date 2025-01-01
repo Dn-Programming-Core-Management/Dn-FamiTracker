@@ -81,25 +81,19 @@ class CEditLog : public CCompilerLog
 {
 public:
 	CEditLog(CWnd *pEdit) : m_pEdit(static_cast<CEdit*>(pEdit)) {};
-	void WriteLog(LPCTSTR text);
-	void Clear();
+	void WriteLog(std::string_view text) {
+		int Len = m_pEdit->GetWindowTextLength();
+		m_pEdit->SetSel(Len, Len, 0);
+		m_pEdit->ReplaceSel(text.data(), 0);
+		m_pEdit->RedrawWindow();
+	};
+	void Clear() override {
+		m_pEdit->SetWindowText(_T(""));
+		m_pEdit->RedrawWindow();
+	};
 private:
 	CEdit *m_pEdit;
 };
-
-void CEditLog::WriteLog(LPCTSTR text)
-{
-	int Len = m_pEdit->GetWindowTextLength();
-	m_pEdit->SetSel(Len, Len, 0);
-	m_pEdit->ReplaceSel(text, 0);
-	m_pEdit->RedrawWindow();
-}
-
-void CEditLog::Clear()
-{
-	m_pEdit->SetWindowText(_T(""));
-	m_pEdit->RedrawWindow();
-}
 
 // CExportDialog dialog
 
