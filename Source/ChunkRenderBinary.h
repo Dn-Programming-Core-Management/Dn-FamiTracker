@@ -67,6 +67,7 @@ public:
 	CChunkRenderNSF(CFile *pFile, unsigned int StartAddr);
 
 	void StoreDriver(const char *pDriver, unsigned int Size);
+	void StoreNSFDRV(const char *pNSFDRV, unsigned int Size);
 	void StoreChunks(const std::vector<CChunk*> &Chunks);
 	void StoreChunksBankswitched(const std::vector<CChunk*> &Chunks);
 	void StoreSamples(const std::vector<const CDSample*> &Samples);

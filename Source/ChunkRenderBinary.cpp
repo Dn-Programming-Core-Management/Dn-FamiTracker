@@ -132,6 +132,11 @@ void CChunkRenderNSF::StoreDriver(const char *pDriver, unsigned int Size)
 	Store(pDriver, Size);
 }
 
+void CChunkRenderNSF::StoreNSFDRV(const char* pNSFDRV, unsigned int Size)
+{
+	Store(pNSFDRV, Size);
+}
+
 void CChunkRenderNSF::StoreChunks(const std::vector<CChunk*> &Chunks)
 {
 	// Store chunks into NSF banks
@@ -211,7 +216,7 @@ int CChunkRenderNSF::GetDATAChunkSize() const
 
 void CChunkRenderNSF::StoreChunkBankswitched(const CChunk *pChunk)
 {
-	switch (pChunk->GetType()) {			
+	switch (pChunk->GetType()) {
 		case CHUNK_FRAME_LIST:
 		case CHUNK_FRAME:
 		case CHUNK_PATTERN:

@@ -46,7 +46,7 @@ ft_load_inst_extra_n163:
 	sta var_ch_WavePtrHi - N163_OFFSET, x
 	iny
 .endif
-@DoneParams:
+    ; check if N163 instrument is about to change
 	lda var_NamcoInstrument - N163_OFFSET, x
 	cmp var_Temp2
 	beq :+
@@ -57,11 +57,9 @@ ft_load_inst_extra_n163:
 	; Load N163 wave
 ;    jsr ft_n163_load_wave
 :   sta var_NamcoInstrument - N163_OFFSET, x
-	lda ft_channel_type, x	;;; ;; ;
-	cmp #CHAN_N163
-	bne :+					; ;; ;;;
 	jsr ft_n163_load_wave2
-:	ldy var_Temp
+@DoneParams:
+	ldy var_Temp
 	rts
 
 ft_init_n163:
@@ -113,19 +111,6 @@ ft_update_n163:
 	bne :-
 	rts
 @Play:
-.if .defined(USE_LINEARPITCH)		;;; ;; ;
-	lda var_SongFlags
-	and #FLAG_LINEARPITCH
-	beq :++
-	jsr ft_load_n163_table
-	lda var_NamcoChannels
-	sta var_Temp3
-	ldx #N163_OFFSET
-:	jsr ft_linear_fetch_pitch
-	dec var_Temp3
-	bne :-
-:
-.endif								; ;; ;;;
 	; x = channel
 	ldx #$00
 @ChannelLoop:
@@ -213,14 +198,10 @@ ft_update_n163:
 @SkipChannel:
 	; End
 	lda var_ch_PhaseReset + N163_OFFSET, x
-	bne @N163PhaseReset
-	inx
-	cpx var_NamcoChannels
 	beq :+
-	jmp @ChannelLoop
-:	rts
-
-@N163PhaseReset:
+    ; do not attempt to reset phase if note is cut
+	lda var_ch_Note + N163_OFFSET, x
+	beq :+
 	dec var_ch_PhaseReset + N163_OFFSET, x
 
 	lda #$01
@@ -237,7 +218,12 @@ ft_update_n163:
 	jsr @LoadAddr					; hi phase
 	lda #$00
 	sta $4800
-	rts
+:
+	inx
+	cpx var_NamcoChannels
+	beq :+
+	jmp @ChannelLoop
+:	rts
 
 @LoadAddr:                    ; Load N163 RAM address
 	clc
@@ -299,19 +285,16 @@ ft_n163_load_wave2:
 	sta $C000
 .endif						; ;; ;;;
 
-	tya
+	tya		; Save Y
 	pha
+	; for pointer access
+	ldy #$00
 
 	; Get wave pack pointer
 	lda var_ch_WavePtrLo - N163_OFFSET, x
 	sta var_Temp_Pointer2
 	lda var_ch_WavePtrHi - N163_OFFSET, x
 	sta var_Temp_Pointer2 + 1
-
-	; Get number of waves
-	ldy #$00
-	lda (var_Temp_Pointer2), y
-	sta var_Temp3
 
 	; Setup wave RAM
 	lda var_ch_WavePos - N163_OFFSET, x
@@ -321,7 +304,13 @@ ft_n163_load_wave2:
 
 	; Get wave index
 	lda var_ch_DutyCurrent, x
-	beq @EndMul		;;; ;; ; Multiply wave index with wave len
+	beq @EndMul
+
+	;; !! !! check if within actual wave count
+	cmp (var_Temp_Pointer2), y
+	bcs @EndMul
+
+	;;; ;; ; Multiply wave index with wave len
 .if .defined(USE_MMC5) && .defined(USE_MMC5_MULTIPLIER)
 	sta $5205
 	lda	var_ch_WaveLen - N163_OFFSET, x
@@ -350,21 +339,21 @@ ft_n163_load_wave2:
 .endif
 @EndMul:		; ;; ;;;
 
-	txa          ; Save X
+	txa		; Save X
 	pha
 	lda var_ch_WaveLen - N163_OFFSET, x
 	and #$7F		;;; ;; ;
 	tax
 
 	; Load wave
-	ldy #$00		;;; ;; ;
+	ldy #$01		;; !! !!
 :	lda (var_Temp_Pointer2), y
 	sta $4800
 	iny
 	dex
 	bne :-
 
-	pla     ; Restore x & y
+	pla		; Restore x & y
 	tax
 	pla
 	tay

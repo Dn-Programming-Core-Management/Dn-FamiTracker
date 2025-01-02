@@ -747,6 +747,9 @@
     <ClCompile Include="Source\ConfigEmulation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\JsonExporter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Exception.h">
@@ -1494,6 +1497,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\rigtorp\SPSCQueue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\JsonExporter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

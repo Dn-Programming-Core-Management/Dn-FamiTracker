@@ -15,7 +15,7 @@
 .if .defined(HAS_NSF_HEADER)
 	.segment "HEADER"
 	.if .defined(USE_AUX_DATA)
-		.include "driver_tests/nsf_header.s"
+		.include "../nsf_header.s"
 	.else
 		.include "nsf_wrap.s"
 	.endif
@@ -29,7 +29,7 @@ USE_DPCM = 1			; Enable DPCM channel (currently broken, leave enabled to avoid t
 						; Also leave enabled when using expansion chips
 
 ;INC_MUSIC_ASM = 1		; Music is in assembler style
-RELOCATE_MUSIC = 1		; Enable if music data must be relocated
+;RELOCATE_MUSIC = 1		; Enable if music data must be relocated
 
 ENABLE_ROW_SKIP = 1		; Enable this to add code for seeking to a row > 0 when using skip command
 
@@ -74,16 +74,12 @@ NTSC_PERIOD_TABLE = 1
 ;;; ;; ; many of these have been renamed for consistency
 ;;; ;; ; some are moved from the respective chips' asm files
 
-NAMCO_CHANNELS = 8
+;NAMCO_CHANNELS = 8
 
 CH_COUNT_2A03 = 4
 CH_COUNT_MMC5 = 2 * .defined(USE_MMC5)
 CH_COUNT_VRC6 = 3 * .defined(USE_VRC6)
-.if EXPANSION_FLAG - .defined(USE_N163) << 4
-CH_COUNT_N163 = 8 * .defined(USE_N163) ; allow this to change once cc65 is embedded into 0CC-FT
-.else
 CH_COUNT_N163 = NAMCO_CHANNELS * .defined(USE_N163)
-.endif
 CH_COUNT_FDS  = 1 * .defined(USE_FDS)
 CH_COUNT_S5B  = 3 * .defined(USE_S5B)
 CH_COUNT_VRC7 = 6 * .defined(USE_VRC7)
@@ -149,11 +145,12 @@ CHANNELS	= DPCM_OFFSET + .defined(USE_DPCM)
 	STATE_HOLD    = %00000010
 .endenum
 
+; must match definitions in CCompiler!
 .enum
-	FLAG_BANKSWITCH  = %00000001
-	FLAG_OLDVIBRATO  = %00000010
-	FLAG_LINEARPITCH = %00000100
-	FLAG_USEPAL      = %10000000
+	FLAG_BANKSWITCH  = 1 << 0
+	FLAG_OLDVIBRATO  = 1 << 1
+	FLAG_LINEARPITCH = 1 << 2
+	FLAG_USEPAL      = 1 << 7
 .endenum
 
 .segment "ZEROPAGE"
@@ -490,12 +487,10 @@ last_bss_var:			.res 1						; Not used
 .endmacro
 
 ; NSF entry addresses
-
+LOAD:
 .if .defined(PACKAGE)
 	.byte DRIVER_NAME, VERSION_MAJ, VERSION_MIN
 .endif
-
-LOAD:
 INIT:
 	jmp	ft_music_init
 PLAY:
@@ -555,10 +550,12 @@ ft_enable_channel:
 .endif
 
 ft_bankswitch:
+; bankswitch part of song data (frames + patterns, 1 page only)
 ;	sta $5FFA
 	sta $5FFB
 	rts
 ft_bankswitch2:
+; bankswitch DPCM samples (3 pages)
 	clc
 	sta $5FFC
 	adc #$01
@@ -600,28 +597,32 @@ ft_channel_type:
 .endif
 
 .if MULTICHIP		;;; ;; ;
-ft_channel_enable: ;; Patch
-	.byte 1, 1, 1, 1
-.repeat CH_COUNT_MMC5
-	.byte .defined(USE_MMC5)
-.endrep
-.if .defined(USE_VRC6)
-	.byte .defined(USE_VRC6)
-.endif
-.repeat CH_COUNT_N163		; 0CC: check
-	.byte .defined(USE_N163)
-.endrep
-.repeat CH_COUNT_FDS
-	.byte .defined(USE_FDS)
-.endrep
-.repeat CH_COUNT_S5B
-	.byte .defined(USE_S5B)
-.endrep
-.repeat CH_COUNT_VRC7
-	.byte .defined(USE_VRC7)
-.endrep
-.if .defined(USE_DPCM)
-	.byte 1
+.if .defined(USE_AUX_DATA) .and .defined(USE_ALL)
+    .include "../enable_ext.s"
+.else
+    ft_channel_enable: ;; Patch
+        .byte 1, 1, 1, 1
+    .repeat CH_COUNT_MMC5
+        .byte .defined(USE_MMC5)
+    .endrep
+    .if .defined(USE_VRC6)
+        .byte .defined(USE_VRC6)
+    .endif
+    .repeat CH_COUNT_N163		; 0CC: check
+        .byte .defined(USE_N163)
+    .endrep
+    .repeat CH_COUNT_FDS
+        .byte .defined(USE_FDS)
+    .endrep
+    .repeat CH_COUNT_S5B
+        .byte .defined(USE_S5B)
+    .endrep
+    .repeat CH_COUNT_VRC7
+        .byte .defined(USE_VRC7)
+    .endrep
+    .if .defined(USE_DPCM)
+        .byte 1
+    .endif
 .endif
 .endif
 
@@ -633,7 +634,7 @@ bit_mask:		;;; ;; ; general-purpose bit mask
 ; Include period tables
 .if .defined(USE_AUX_DATA)
 	; Period tables are overwritten when detune settings are present.
-	.include "driver_tests/periods.s"
+	.include "../periods.s"
 .else
 	.include "periods.s"
 .endif
@@ -641,10 +642,43 @@ bit_mask:		;;; ;; ; general-purpose bit mask
 ;;; ;; ; Include vibrato table
 .if .defined(USE_AUX_DATA)
 	; Vibrato tables are overwritten depending on old/new vibrato mode.
-	.include "driver_tests/vibrato.s"
+	.include "../vibrato.s"
 .else
 	.include "vibrato.s"
 .endif
+
+LIMIT_PERIOD_2A03 = $7FF
+LIMIT_PERIOD_VRC6 = $FFF
+; VRC7: period is between 0 to (1 << (VRC7_PITCH_RESOLUTION + 9)) - 1 or $7FF
+LIMIT_PERIOD_VRC7 = LIMIT_PERIOD_2A03
+LIMIT_PERIOD_N163 = $FFFF
+LIMIT_PERIOD_LINEAR = (95<<5)
+
+ft_limit_freq_lo:
+	.byte >LIMIT_PERIOD_2A03		; 2A03
+	.byte >LIMIT_PERIOD_2A03		; 2A03
+	.byte >0						; 2A03 noise
+	.byte >0						; 2A03 dpcm
+	.byte >LIMIT_PERIOD_VRC6		; VRC6
+	.byte >LIMIT_PERIOD_VRC6		; VRC6
+	.byte >LIMIT_PERIOD_2A03		; VRC7
+	.byte >LIMIT_PERIOD_VRC6		; FDS
+	.byte >LIMIT_PERIOD_2A03		; MMC5
+	.byte >LIMIT_PERIOD_N163		; N163
+	.byte >LIMIT_PERIOD_VRC6		; S5B
+ft_limit_freq_hi:
+	.byte <LIMIT_PERIOD_2A03		; 2A03
+	.byte <LIMIT_PERIOD_2A03		; 2A03
+	.byte <0						; 2A03 noise
+	.byte <0						; 2A03 dpcm
+	.byte <LIMIT_PERIOD_VRC6		; VRC6
+	.byte <LIMIT_PERIOD_VRC6		; VRC6
+	.byte <LIMIT_PERIOD_2A03		; VRC7
+	.byte <LIMIT_PERIOD_VRC6		; FDS
+	.byte <LIMIT_PERIOD_2A03		; MMC5
+	.byte <LIMIT_PERIOD_N163		; N163
+	.byte <LIMIT_PERIOD_VRC6		; S5B
+
 
 ;
 ; An example of including music follows
@@ -654,19 +688,19 @@ bit_mask:		;;; ;; ; general-purpose bit mask
 ;  A simple way to handle multiple songs is to move this
 ;  to RAM and setup a table of pointers to music data
 ft_music_addr:
-	.word * + 2					; This is the point where music data is stored
+	.addr * + 2					; This is the point where music data is stored
 
 .if .defined(INC_MUSIC)
 		; Include music
 	.if .defined(INC_MUSIC_ASM)
 		; Included assembly file music, DPCM included
-		.include "driver_tests/music.asm"
+		.include "../music.asm"
 	.else
 		; Binary chunk music
-		.incbin "driver_tests/music.bin"
+		.incbin "../music.bin"
 		.if .defined(USE_DPCM)
 			.segment "DPCM"				; DPCM samples goes here
-			.incbin "driver_tests/samples.bin"
+			.incbin "../samples.bin"
 		.endif
 	.endif
 .endif

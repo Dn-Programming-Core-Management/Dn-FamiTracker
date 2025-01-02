@@ -1353,41 +1353,6 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 	const char *NOTES_A = m_bDisplayFlat ? NOTES_A_FLAT : NOTES_A_SHARP;
 	const char *NOTES_B = m_bDisplayFlat ? NOTES_B_FLAT : NOTES_B_SHARP;
 
-	const CTrackerChannel *pTrackerChannel = m_pDocument->GetChannel(Channel);
-
-	effect_t EffNumber = Column >= 4 ? pNoteData->EffNumber[(Column - 4) / 3] : EF_NONE;		// // //
-	int EffParam  = Column >= 4 ? pNoteData->EffParam[(Column - 4) / 3] : 0;
-
-	// Detect invalid note data
-	if (pNoteData->Note > ECHO ||		// // //
-		pNoteData->Octave > 8 ||
-		EffNumber >= EF_COUNT || 
-		pNoteData->Instrument > MAX_INSTRUMENTS && pNoteData->Instrument != HOLD_INSTRUMENT) {		// // // 050B
-		if (Column == C_NOTE/* || Column == 4*/) {
-			CString Text;
-			Text.Format(_T("(invalid)"));
-			pDC->SetTextColor(RGB(255, 0, 0));
-			pDC->TextOut(PosX, -1, Text);
-		}
-		return;
-	}
-
-	COLORREF InstColor = pColorInfo->Instrument;
-	COLORREF EffColor = pColorInfo->Effect;
-	COLORREF DimInst = pColorInfo->Compact;		// // //
-	COLORREF DimEff = pColorInfo->Compact;		// // //
-
-	// Make non-available instruments red in the pattern editor
-	if (pNoteData->Instrument < MAX_INSTRUMENTS && 
-		(!m_pDocument->IsInstrumentUsed(pNoteData->Instrument) ||
-		!pTrackerChannel->IsInstrumentCompatible(pNoteData->Instrument, m_pDocument->GetInstrumentType(pNoteData->Instrument)))) { // // //
-		DimInst = InstColor = RGB(255, 0, 0);
-	}
-
-	// // // effects too
-	if (EffNumber != EF_NONE) if (!pTrackerChannel->IsEffectCompatible(EffNumber, EffParam))
-		DimEff = EffColor = RGB(255, 0, 0);		// // //
-
 	// Compute font vertical position
 	// TODO resize font about center = avg(cap, base + descender/2)?
 
@@ -1410,6 +1375,92 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 	};
 
 	pDC->SetTextAlign(TA_CENTER | TA_BASELINE);		// // //
+
+	const CTrackerChannel *pTrackerChannel = m_pDocument->GetChannel(Channel);
+
+	effect_t EffNumber = Column >= 4 ? pNoteData->EffNumber[(Column - 4) / 3] : EF_NONE;		// // //
+	int EffParam  = Column >= 4 ? pNoteData->EffParam[(Column - 4) / 3] : 0;
+
+	COLORREF WarningColor = RGB(255, 0, 0);
+	COLORREF ErrorColor = RGB(255, 0, 255);
+
+	// Detect invalid note data
+	if (pNoteData->Note > ECHO ||		// // //
+		pNoteData->Octave > 8 ||
+		pNoteData->Vol > MAX_VOLUME ||
+		EffNumber >= EF_COUNT ||
+		pNoteData->Instrument > MAX_INSTRUMENTS && pNoteData->Instrument != HOLD_INSTRUMENT) {		// // // 050B
+		switch (Column) {
+		case C_NOTE:
+			if (pNoteData->Note > ECHO || pNoteData->Octave > 8) {
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, '?', ErrorColor);		// // //
+				DrawChar(pDC, PosX + m_iCharWidth * 3 / 2, PosY, '?', ErrorColor);
+				if (pNoteData->Octave > 8)
+					DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, '?', ErrorColor);
+				else
+					DrawChar(pDC, PosX + m_iCharWidth * 5 / 2, PosY, NOTES_C[pNoteData->Octave], WarningColor);
+				break;
+			}
+			else {
+				BAR(PosX);
+				BAR(PosX + m_iCharWidth);
+				BAR(PosX + m_iCharWidth * 2);
+			}
+			break;
+		case C_INSTRUMENT1: case C_INSTRUMENT2:
+			if (pNoteData->Instrument > MAX_INSTRUMENTS && pNoteData->Instrument != HOLD_INSTRUMENT)
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, '?', ErrorColor);		// // //
+			else
+				BAR(PosX);
+			break;
+		case C_VOLUME:
+			if (pNoteData->Vol > MAX_VOLUME)
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, '?', ErrorColor);		// // //
+			else
+				BAR(PosX);
+			break;
+		case C_EFF1_NUM: case C_EFF2_NUM: case C_EFF3_NUM: case C_EFF4_NUM:
+			if (EffNumber >= EF_COUNT)
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, '?', ErrorColor);		// // //
+			else if (EffNumber == 0)
+				BAR(PosX);
+			else
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, EFF_CHAR[EffNumber], WarningColor);		// // //
+			break;
+		// draw effect param as normal
+		case C_EFF1_PARAM1: case C_EFF2_PARAM1: case C_EFF3_PARAM1: case C_EFF4_PARAM1:
+			// Effect param x
+			if (EffNumber == EF_NONE)
+				BAR(PosX);
+			else
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[(EffParam >> 4) & 0x0F], pColorInfo->Note);		// // //
+			break;
+		case C_EFF1_PARAM2: case C_EFF2_PARAM2: case C_EFF3_PARAM2: case C_EFF4_PARAM2:
+			// Effect param y
+			if (EffNumber == EF_NONE)
+				BAR(PosX);
+			else
+				DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, HEX[EffParam & 0x0F], pColorInfo->Note);		// // //
+			break;
+		}
+		return;
+	}
+
+	COLORREF InstColor = pColorInfo->Instrument;
+	COLORREF EffColor = pColorInfo->Effect;
+	COLORREF DimInst = pColorInfo->Compact;		// // //
+	COLORREF DimEff = pColorInfo->Compact;		// // //
+
+	// Make non-available instruments red in the pattern editor
+	if (pNoteData->Instrument < MAX_INSTRUMENTS && 
+		(!m_pDocument->IsInstrumentUsed(pNoteData->Instrument) ||
+		!pTrackerChannel->IsInstrumentCompatible(pNoteData->Instrument, m_pDocument->GetInstrumentType(pNoteData->Instrument)))) { // // //
+		DimInst = InstColor = WarningColor;
+	}
+
+	// // // effects too
+	if (EffNumber != EF_NONE) if (!pTrackerChannel->IsEffectCompatible(EffNumber, EffParam))
+		DimEff = EffColor = WarningColor;		// // //
 
 	switch (Column) {
 		case C_NOTE:
@@ -1486,16 +1537,16 @@ void CPatternEditor::DrawCell(CDC *pDC, int PosX, cursor_column_t Column, int Ch
 						if (((pTrackerChannel->GetID() <= CHANID_TRIANGLE || pTrackerChannel->GetChip() == SNDCHIP_MMC5) && (pNoteData->Note-1+pNoteData->Octave*12 < 9-m_pDocument->GetMachine())) ||
 							(pTrackerChannel->GetChip() == SNDCHIP_FDS && pNoteData->Note-1+pNoteData->Octave*12 > 92) ||
 							(pTrackerChannel->GetChip() == SNDCHIP_N163 && pNoteData->Note-1+pNoteData->Octave*12 > N163limits[m_pDocument->GetNamcoChannels()-1]))
-							noteCol = RGB(255, 0, 0);
+							noteCol = WarningColor;
 						if (pNoteData->Instrument != MAX_INSTRUMENTS && pNoteData->Instrument != HOLD_INSTRUMENT && pTrackerChannel->GetID() == CHANID_DPCM) {
 							if (auto pDPCMInst = std::dynamic_pointer_cast<const CInstrument2A03>(m_pDocument->GetInstrument(pNoteData->Instrument))) {
 								if (pDPCMInst->GetDSample(pNoteData->Octave, pNoteData->Note - 1) == nullptr)
-									noteCol = RGB(255, 0, 0);
+									noteCol = WarningColor;
 							}
 							else if (m_pDocument->GetInstrument(pNoteData->Instrument) == nullptr || m_pDocument->GetInstrument(pNoteData->Instrument)->GetType() != INST_2A03)
-								noteCol = RGB(255, 0, 0);
+								noteCol = WarningColor;
 						} else if (pNoteData->Instrument == HOLD_INSTRUMENT && pTrackerChannel->GetID() == CHANID_DPCM)
-							noteCol = RGB(255, 0, 0);
+							noteCol = WarningColor;
 					
 						
 						DrawChar(pDC, PosX + m_iCharWidth / 2, PosY, NOTES_A[pNoteData->Note - 1], noteCol);		// // //

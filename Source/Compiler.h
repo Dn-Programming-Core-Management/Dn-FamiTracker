@@ -24,6 +24,9 @@
 
 #pragma once
 
+#include <memory>
+#include <string>
+
 // NSF file header
 struct stNSFHeader {
 	unsigned char	Ident[5];
@@ -65,6 +68,24 @@ struct stNSFeHeader {		// // //
 	unsigned short	Speed_PAL;
 };
 
+struct stNSFeChunk {
+	uint8_t Ident[4];
+	uint8_t Size[4];
+	std::vector<uint8_t> Data;
+};
+
+struct stNSFeFooter {		// !! !!
+	// DATA chunk is written manually
+	stNSFeChunk VRC7;
+	stNSFeChunk time;
+	stNSFeChunk auth;
+	stNSFeChunk tlbl;
+	stNSFeChunk text;
+	stNSFeChunk mixe;
+	// NEND has no data yet
+	stNSFeChunk NEND;
+};
+
 struct driver_t;
 class CChunk;
 enum chunk_type_t;
@@ -80,7 +101,7 @@ class CCompilerLog
 {
 public:
 	virtual ~CCompilerLog() {}
-	virtual void WriteLog(LPCTSTR text) = 0;
+	virtual void WriteLog(std::string_view text) = 0;
 	virtual void Clear() = 0;
 };
 
@@ -106,6 +127,7 @@ private:
 
 	void	CreateHeader(stNSFHeader *pHeader, int MachineType, unsigned int NSF2Flags, bool NSF2) const;
 	void	CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType);		// // //
+	void	CreateNSFeFooter(stNSFeFooter *pHeader);		// !! !!
 	void	SetDriverSongAddress(char *pDriver, unsigned short Address) const;
 #if 0
 	void	WriteChannelMap();
@@ -115,9 +137,10 @@ private:
 	void	PatchVibratoTable(char *pDriver) const;
 
 	char*	LoadDriver(const driver_t *pDriver, unsigned short Origin) const;
+	char*	LoadNSFDRV(const driver_t *pDriver) const;
 
 	// Compiler
-	bool	CompileData();
+	bool	CompileData(bool bUseNSFDRV = false, bool UseAllExp = true);
 	void	ResolveLabels();
 	bool	ResolveLabelsBankswitched();
 	void	CollectLabels(CMap<CStringA, LPCSTR, int, int> &labelMap) const;
@@ -125,13 +148,15 @@ private:
 	void	AssignLabels(CMap<CStringA, LPCSTR, int, int> &labelMap);
 	void	AddBankswitching();
 	void	Cleanup();
+	void	CalculateLoadAddresses(unsigned short &MusicDataAddress, bool &bCompressedMode, bool ForceDecompress = false);
+	void	SetNSFDRVHeaderSize(bool bUseNSFDRV);
 
 	void	ScanSong();
 	int		GetSampleIndex(int SampleNumber);
 	bool	IsPatternAddressed(unsigned int Track, int Pattern, int Channel) const;
 	bool	IsInstrumentInPattern(int index) const;
 
-	void	CreateMainHeader();
+	void	CreateMainHeader(bool UseAllExp);
 	void	CreateSequenceList();
 	void	CreateInstrumentList();
 	void	CreateSampleList();
@@ -154,13 +179,37 @@ private:
 	void	AddWavetable(CInstrumentFDS *pInstrument, CChunk *pChunk);
 
 	// File writing
-	void	WriteAssembly(CFile *pFile);
-	void	WriteBinary(CFile *pFile);
-	void	WritePeriods(CFile* pFile);
-	void	WriteVibrato(CFile* pFile);
-	void	WriteNSFHeader(CFile* pFile, stNSFHeader Header);
-	void	WriteNSFConfig(CFile* pFile, unsigned int DPCMSegment, stNSFHeader Header);
+
+	using CFilePtrArray = std::vector<std::unique_ptr<CFile>>;
+
+	void	WriteAssembly(CFilePtrArray &files, bool bExtraData, stNSFHeader Header, int MachineType = 0,
+		size_t OutputFileASMIndex = 0,
+		size_t FileNSFStubIndex = 0,
+		size_t FileNSFHeaderIndex = 0,
+		size_t FileNSFConfigIndex = 0,
+		size_t FilePeriodsIndex = 0,
+		size_t FileVibratoIndex = 0,
+		size_t FileMultiChipEnableIndex = 0,
+		size_t FileMultiChipUpdateIndex = 0);
+	void	WriteBinary(CFilePtrArray &files, bool bExtraData, stNSFHeader Header, int MachineType = 0,
+		size_t OutputFileBINIndex = 0,
+		size_t FileNSFStubIndex = 0,
+		size_t FileNSFHeaderIndex = 0,
+		size_t FileNSFConfigIndex = 0,
+		size_t FilePeriodsIndex = 0,
+		size_t FileVibratoIndex = 0,
+		size_t FileMultiChipEnableIndex = 0,
+		size_t FileMultiChipUpdateIndex = 0);
 	void	WriteSamplesBinary(CFile *pFile);
+	void	ReadPeriodVibratoTables(int MachineType, unsigned int *LUTNTSC,
+		unsigned int *LUTPAL,
+		unsigned int *LUTSaw,
+		unsigned int *LUTVRC7,
+		unsigned int *LUTFDS,
+		unsigned int *LUTN163,
+		unsigned int *LUTVibrato) const;
+	bool	OpenArrayFile(CFilePtrArray &files, LPCTSTR filepath, std::string_view message);
+	void	CloseFileArray(CFilePtrArray &files);
 
 	// Object list functions
 	CChunk	*CreateChunk(chunk_type_t Type, CStringA label);
@@ -169,7 +218,7 @@ private:
 
 	// Debugging
 	template <typename... T>
-	void	Print(LPCTSTR text, T... args) const;		// // //
+	void	Print(std::string_view text, T... args) const;		// // //
 	void	ClearLog() const;
 
 public:
@@ -247,6 +296,7 @@ private:
 	// General
 	unsigned int	m_iMusicDataSize;		// All music data
 	unsigned int	m_iDriverSize;			// Size of selected music driver
+	unsigned int	m_iNSFDRVSize;			// Size of NSFDRV header, 0 if it is not written
 	unsigned int	m_iSamplesSize;
 
 	unsigned int	m_iLoadAddress;			// NSF load address

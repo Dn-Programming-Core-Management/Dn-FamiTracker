@@ -530,7 +530,7 @@ ft_SkipToRow:
 	jmp @Finished
 
 @EffectDispatch:		;;; ;; ;
-	jsr @Effect
+	jsr @SkipEffect
 @NoRowDelay:
 	; Read a row
 	lda (var_Temp_Pattern), y
@@ -577,45 +577,53 @@ ft_SkipToRow:
 	sta var_SkipTo
 	rts
 
-@Effect:
+@SkipEffect:
+	; ft_cmd_instrument
 	cmp #$80
-	beq @LoadInstCmd
-	cmp #$84
-	beq @EffectDuration
-	cmp #$86
-	beq @EffectNoDuration
+	beq @SkipCmdInst
+	; ft_cmd_duration
+	cmp #$82
+	beq @SkipCmdDuration
+	; ft_cmd_noduration
+	cmp #$83
+	beq @SkipCmdNoDuration
 	cmp #$F0							; See if volume
-	bcs @OneByteCommand
+	bcs @SkipOneByteCommand
 	cmp #$E0							; See if a quick instrument command
-	bcs @LoadInst
-;	cmp #$8E
-;	beq @OneByteCommand
-	cmp #$94
-	beq @OneByteCommand
-	cmp #$A4
-	beq @OneByteCommand
+	bcs @SkipInstChange
+;	; ft_cmd_skip
+;	cmp #$87
+;	beq @SkipOneByteCommand
+	; ft_cmd_clear
+	cmp #$8A
+	beq @SkipOneByteCommand
+	; ft_cmd_reset_pitch
+	cmp #$92
+	beq @SkipOneByteCommand
 	iny									; Command takes two bytes
-@OneByteCommand:						; Command takes one byte
+@SkipOneByteCommand:					; Command takes one byte
 	iny
 	rts									; A new command or note is immediately following
-@EffectDuration:
+@SkipCmdDuration:
 	iny
 	lda (var_Temp_Pattern), y
 	iny
 	sta var_ch_DefaultDelay, x
 	rts
-@EffectNoDuration:
+@SkipCmdNoDuration:
 	iny
 	lda #$FF
 	sta var_ch_DefaultDelay, x
 	rts
-@LoadInstCmd:    ; mult-byte
+@SkipCmdInst:		; mult-byte
+	; jsr ft_get_pattern_byte
+	; jmp ft_load_instrument
 	iny
 	lda (var_Temp_Pattern), y
 	iny
 	sta var_Temp3
 	rts
-@LoadInst:       ; single byte
+@SkipInstChange:	; single byte
 	iny
 	and #$0F
 	asl a
