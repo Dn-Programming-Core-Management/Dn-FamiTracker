@@ -1,5 +1,24 @@
 # Version Update Checklist
 
+- [ ] Update changelogs:
+	- [CHANGELOG.md](CHANGELOG.md), which will update [../Dn-Help/hlp/changelog_shell.htm](changelog_shell.htm) upon build
+	- Format for changelog:
+		- categories
+			- `Important changes:`
+				- summary of immediate and obvious changes to the program
+			- `Improvements:`
+				- additions and refactorings
+			- `Bug fixes:`
+				- any bug fixes
+			- `Internal:`
+				- meta changes, including changes regarding to the repository or CI
+		- format
+			- `<description of singular change> ([issue_author] [commit_author] [#<issue number>] [#<PR number>])`
+			- only put in issue author and number if it exists
+			- only put one author if issue and commit author is the same
+			- sort by category, then by issue number, then by PR number
+			- ex:
+				- Fix access violation in MRU submenu list update (@eugene-s-nesdev @Gumball2415 #243 #214)
 - [ ] Create Version Tag
 	- Format: `Dnx.y.z.r`
 		- x: Major (API change)
@@ -8,8 +27,6 @@
 		- r: Revision (backward compatible quick fixes for typos)
 	- Double check that this tag is higher than the previous release tag
 	- Version tag must be appropriate to Semantic Versioning
-- [ ] Update changelogs:
-	- [CHANGELOG.md](CHANGELOG.md), which will update [../Dn-Help/hlp/changelog_shell.htm](changelog_shell.htm) upon build
 - [ ] Edit every file with version info:
 	- [Dn-FamiTracker.rc](../Dn-FamiTracker.rc)
 	- [version.h](../version.h)
@@ -24,7 +41,7 @@ Copyright (C) 2005-2020 Jonathan Liss
 
 0CC-FamiTracker is (C) 2014-2018 HertzDevil
 
-Dn-FamiTracker is (C) 2020-2024 D.P.C.M.
+Dn-FamiTracker is (C) 2020-2025 D.P.C.M.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
