@@ -1,25 +1,21 @@
 /*
-** FamiTracker - NES/Famicom sound tracker
-** Copyright (C) 2005-2020 Jonathan Liss
+** Dn-FamiTracker - NES/Famicom sound tracker
+** Copyright (C) 2020-2025 D.P.C.M.
+** FamiTracker Copyright (C) 2005-2020 Jonathan Liss
+** 0CC-FamiTracker Copyright (C) 2014-2018 HertzDevil
 **
-** 0CC-FamiTracker is (C) 2014-2018 HertzDevil
-**
-** Dn-FamiTracker is (C) 2020-2024 D.P.C.M.
-**
-** This program is free software; you can redistribute it and/or modify
+** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
-** the Free Software Foundation; either version 2 of the License, or
+** the Free Software Foundation, either version 3 of the License, or
 ** (at your option) any later version.
 **
 ** This program is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
-** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-** Library General Public License for more details. To obtain a
-** copy of the GNU Library General Public License, write to the Free
-** Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+** GNU General Public License for more details.
 **
-** Any permitted reproduction of these routines, in whole or in part,
-** must bear this legend.
+** You should have received a copy of the GNU General Public License
+** along with this program. If not, see https://www.gnu.org/licenses/.
 */
 
 #include "stdafx.h"
@@ -162,9 +158,12 @@ BOOL CAboutDlg::OnInitDialog()
 
 	SetDlgItemText(IDC_ABOUT1, aboutString);
 	SetDlgItemText(IDC_ABOUT_CONTRIB,
-		_T("- Original software by jsr\r\n")
-		_T("- 0CC-FamiTracker by HertzDevil\r\n")
-		_T("- Additional improvements by nyanpasu64\r\n")
+		_T("- FamiTracker\r\n")
+		_T("    Copyright (C) 2005-2020 Jonathan Liss\r\n")
+		_T("    Licensed under GPLv2\r\n")
+		_T("- 0CC-FamiTracker\r\n")
+		_T("    Copyright (C) 2014-2018 HertzDevil\r\n")
+		_T("    Licensed under GPLv2\r\n")
 		_T("- Export plugin support by Gradualore\r\n")
 		_T("- Sunsoft 5B information in manual by forple\r\n")		// // !!
 		_T("- Additional manual information by Persune\r\n")		// // !!
@@ -174,12 +173,27 @@ BOOL CAboutDlg::OnInitDialog()
 		_T("- DPCM sample bit order reverser mod by Persune\r\n")		// // !!
 		_T("- Module text import/export by rainwarrior"));		// // //
 	SetDlgItemText(IDC_ABOUT_LIB, // // !!
-		_T("- Blip_buffer 0.4.1 is Copyright (C) blargg (LGPL v2.1)\r\n   (modified by nyanpasu64)\r\n")
-		_T("- FFT code is (C) 2017 Project Nayuki (MIT)\r\n")
-		_T("- emu2413 v1.5.9 (C) Mitsutaka Okazaki (MIT)\r\n")
 		_T("- 2A03 sound emulator from NSFPlay\r\n")
-		_T("- FDS and N163 sound emulator from Mesen\r\n   (C) Sourmesen (GPL v3)\r\n")
-		_T("- JSON for Modern C++ is Copyright (C) Niels Lohmann (MIT)"));
+		_T("    Copyright (C) 2006 Brezza, 2012-2025 Brad Smith\r\n")
+		_T("- VRC7/OPLL sound emulator from emu2413 v1.5.9\r\n")
+		_T("    Copyright (C) 2001-2019 Mitsutaka Okazaki\r\n")
+		_T("    Licensed under the MIT license\r\n")
+		_T("- FDS and N163 sound emulator from Mesen\r\n")
+		_T("    Copyright (C) 2014-2024 Sour\r\n")
+		_T("    Licensed under GPLv3\r\n")
+		_T("- Blip_buffer 0.4.1\r\n")
+		_T("    Copyright (C) 2003-2006 Shay Green\r\n")
+		_T("    Licensed under LGPLv2.1\r\n")
+		_T("    modified by nyanpasu64\r\n")
+		_T("- Free FFT and convolution (C++)\r\n")
+		_T("    Copyright (C) 2017 Project Nayuki\r\n")
+		_T("    Licensed under the MIT license\r\n")
+		_T("- JSON for Modern C++\r\n")
+		_T("    Copyright (C) 2013-2024 Niels Lohmann <https://nlohmann.me>\r\n")
+		_T("    Licensed under the MIT license\r\n")
+		_T("- libsamplerate\r\n")
+		_T("    Copyright (C) 2012-2016, Erik de Castro Lopo <erikd@mega-nerd.com>.\r\n")
+		_T("    Licensed under the BSD-2-Clause license\r\n"));
 
 	m_pHead = new CHead();
 	m_pHead->SubclassDlgItem(IDC_HEAD, this);
