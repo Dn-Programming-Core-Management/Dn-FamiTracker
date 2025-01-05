@@ -193,6 +193,7 @@ void CInstrumentFDS::Store(CDocumentFile *pDocFile)
 
 bool CInstrumentFDS::Load(CDocumentFile *pDocFile)
 {
+	const int Version = pDocFile->GetBlockVersion();
 	for (int i = 0; i < WAVE_SIZE; ++i) {
 		SetSample(i, pDocFile->GetBlockChar());
 	}
@@ -205,8 +206,25 @@ bool CInstrumentFDS::Load(CDocumentFile *pDocFile)
 	SetModulationDepth(pDocFile->GetBlockInt());
 	SetModulationDelay(pDocFile->GetBlockInt());
 
-	// hack to fix earlier saved files (remove this eventually)
+	for (int i = 0; i < SEQUENCE_COUNT; ++i) {
+		if (Version > 2)
+			SetSequence(i, LoadSequence(pDocFile));
+		else
+			if (i < SEQ_PITCH)
+				// version 2 apparently does not have Pitch sequences
+				SetSequence(i, LoadSequence(pDocFile));
+	}
+
+	// Older files was 0-15, new is 0-31
+	if (Version <= 3) DoubleVolume();
+
+	return true;
+
+	// ancient code preserved for analysis
+
 /*
+	// hack to fix earlier saved files (remove this eventually)
+
 	if (pDocFile->GetBlockVersion() > 2) {
 		LoadSequence(pDocFile, GetSequence(SEQ_VOLUME));
 		LoadSequence(pDocFile, GetSequence(SEQ_ARPEGGIO));
@@ -215,10 +233,14 @@ bool CInstrumentFDS::Load(CDocumentFile *pDocFile)
 	}
 	else {
 */
+
+/*
+	TODO: investigate Instrument block v2 and FDS
+		- perhaps an release interstice bug fix?
+	
 	unsigned int a = pDocFile->GetBlockInt();
 	unsigned int b = pDocFile->GetBlockInt();
 
-	// TODO: investigate why loading FDS instruments uses RollbackPointer()
 	pDocFile->RollbackPointer(8);
 
 	if (a < 256 && (b & 0xFF) != 0x00) {
@@ -234,13 +256,9 @@ bool CInstrumentFDS::Load(CDocumentFile *pDocFile)
 		if (pDocFile->GetBlockVersion() > 2)
 			SetSequence(SEQ_PITCH, LoadSequence(pDocFile));
 	}
+*/
 
 //	}
-
-	// Older files was 0-15, new is 0-31
-	if (pDocFile->GetBlockVersion() <= 3) DoubleVolume();
-
-	return true;
 }
 
 void CInstrumentFDS::SaveFile(CInstrumentFile *pFile)
