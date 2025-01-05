@@ -4,23 +4,90 @@ Change Log
 
 Written by D.P.C.M.
 
-Version 0.5.0.2 - January 13, 2024
+Version 0.5.1.0 - January 7, 2025
 
 ---
 
-## Dn0.5.0.2 - 01/13/2024
+## Dn0.5.1.0 - 2025-01-07
 
 - ### Important changes:
 
-	- Modules will be saved as Dn-FT modules
-	- Reintroduced JSON export
-	- Update app icon to mimic Frutiger Aero/Y2K aesthetic
+	- Major export refactoring (@Gumball2415 #262)
+	- NSF driver fixes (@Gumball2415 #262)
 
 - ### Improvements:
 
+	- Use CCompiler pointer for writing ASM export title (@Gumball2415 #262)
+	- Decouple NSFDRV header from driver data (@Gumball2415 #262)
+	- Add NSF stub file for .asm export (@Gumball2415 #262)
+	- Implement "glob" multichip assembly export (@Gumball2415 #262)
+	- Specify what parts of pattern data are invalid (@Gumball2415 #262)
+	- Differentiate between error and warning colors (@Gumball2415 #262)
+	- Account for `HOLD_INSTRUMENT` in pattern checking (@Gumball2415 #262)
+	- Specify overflow in driver bank allocation (@Gumball2415 #262)
+	- Refactor compressed mode size calculation (@Gumball2415 #262)
+	- Include N163 period table in .asm export (@Gumball2415 #262)
+	- Declare alignment for first DPCM sample in assembly export (@Gumball2415 #262)
+	- Remove hardcoded bank references in assembly song header (@Gumball2415 #262)
+	- Implement bankswitched assembly config exports (@Gumball2415 #262)
+	- Add bank 0 for nonbankswitching config (@Gumball2415 #262)
+	- Refactor NSFe metadata generation (@Gumball2415 #262)
+	- Refactor multifile export (@Gumball2415 #262)
+
+- ### Bug fixes:
+
+	- Update effect bytecodes in row skip handling (@Threxx11 @Gumball2415 #183 #262)
+	- Write carrier frequency regardless of Kxx state (@Gumball2415 #196 #262)
+	- Handle Gxx delay commands in both row and frame transitions (@Gumball2415 #207 #262)
+	- Ignore invalid pattern data upon NSF export (@etoubleh @Gumball2415 #215 #262)
+	- Fix S5B init clobbering Kxx state (@etoubleh @Julllliot @DermotMacFlann @Arg-xz @Gumball2415 #215 #246 #256 #271 #262)
+	- Fix N163 instrument load clobbering Kxx state (@ThatRandomOctoling @Gumball2415 #224 #260 #262)
+	- Fix S5B instrument duty envelopes (@Gumball2415 #267 #262)
+	- Fix length counter load not being written with pitch (@badgertapes @Gumball2415 #297 #262)
+	- Prevent volume commands in DPCM channel to be written in NSF export (@nyanpasu64 @Gumball2415 #311 #262)
+	- Fix assembly period table export (@Gumball2415 #262)
+	- Fix VRC7 period table assembly export (@Gumball2415 #262)
+	- Fix NES ROM export data alignment (@Gumball2415 #278 #262)
+	- Fix DPCM segment start address in nonbankswitching assembly (@Gumball2415 #262)
+	- Fix phase reset behavior (@Gumball2415 #262)
+	- Refactor phase reset code (@Gumball2415 #262)
+	- Clamp pitch and hi-pitch envelope period results (@Gumball2415 #262)
+	- Enable pitch sliding in linear pitch mode (@Gumball2415 #262)
+	- Implement linear pitch period limit (@Gumball2415 #262)
+	- Correct linear pitch calculation sequence (@Gumball2415 #262)
+	- Fix debug constexpr (@Gumball2415 #262)
+	- Beta/indev build fixes:
+		- Refactor Pitch/HiPitch bend logic (@Gumball2415 #262)
+		- Apply N163 slide shift if linear pitch is disabled (@brickblock369 @Gumball2415 #276 #262)
+		- Refactor period limit subroutine (@brickblock369 @Gumball2415 #276 #262)
+		- Fix N163 portamento shift in linear period (@brickblock369 @Gumball2415 #276 #262)
+		- Include .asm filename in NSF stub file (@Gumball2415 #298 #262)
+		- Fix N163 Vxx indexing out of bounds (@Gumball2415 #299 #262)
+	- Properly associate .dnm files to open in Dn-FamiTracker, rather than .0cc files. (@nyanpasu64 #270)
+	- Fix data race UB (audio thread pushing to its own message queue) triggered by WAV export (@nyanpasu64 #272)
+	- Fix misaligned instrument editor graph/mouse at high DPI (@nyanpasu64 #274)
+	- Properly initialize Namco163Audio emulation core in constructor. (@nyanpasu64 #294)
+		- Fixes bug where if a N163 channel uses the Zxx effect to set wave position, the first note plays with corrupted sound until it switches waves or plays a new note.
+	- Fix random crackles in N163 playback and WAV export. (@nyanpasu64 #294)
+		- This was caused by N163 Blip_Buffer frames desynchronizing from global frames after reset.
+	-  Grey out record instrument option on invalid parts of header (@alvinhochun @eulyderg #279 #280)
+
+- ### Internal:
+
+	- Compact commit hash variable initialization in build artifact script (@Gumball2415 #310)
+	- Update GitHub Actions script for generating draft releases (@Gumball2415 #252 #310)
+		- Using `action-gh-release` as it is more recently maintained.
+	- Remove AppVeyor CI integration (@Gumball2415 #283 #310)
+		- AppVeyor is less convenient than GitHub Actions as it is much slower to complete multiple builds.
+	- Update `version_update.md` to be a checklist guide (@Gumball2415 #310)
+
+## Dn0.5.0.2 - 2024-01-13
+
+- ### Important changes:
+
+	- Modules will be saved as Dn-FT modules (@Gumball2415 #214)
 	- Reintroduce JSON export from 0CC-FT (@nstbayless @Gumball2415 #197 #199)
 	- Update application icon (@Gumball2415 #236)
-	- Rewrite change log in markdown (@Gumball2415 #238)
 
 - ### Bug fixes:
 
@@ -43,12 +110,13 @@ Version 0.5.0.2 - January 13, 2024
 	- Add AddressSanitizer project configurations (@Gumball2415 #236)
 	- Separate Github Actions binary downloads (@Gumball2415 #237)
 	- Add automated draft release binary upload (@Gumball2415 #237)
+	- Rewrite change log in markdown (@Gumball2415 #238)
 	- Integrate Dn-help as submodule (@Gumball2415 #238)
 	- Generate HTMLHelp manual change log on build time (@Gumball2415 #238)
 
 
 
-## Dn0.5.0.1 - 05/10/2023
+## Dn0.5.0.1 - 2023-05-10
 
 - ### Important changes:
 
@@ -85,7 +153,7 @@ Version 0.5.0.2 - January 13, 2024
 
 
 
-## Dn0.5.0.0 - 12/19/2022
+## Dn0.5.0.0 - 2022-12-19
 
 - ### Important changes:
 
@@ -158,13 +226,13 @@ Version 0.5.0.2 - January 13, 2024
 
 
 
-## Dn0.4.0.1 - 09/14/2021
+## Dn0.4.0.1 - 2021-09-14
 
 - ### Patch fixes:
 
 	- Fix internal version numbering (@Gumball2415)
 
-## Dn0.4.0.0 - 09/13/2021
+## Dn0.4.0.0 - 2021-09-13
 
 - ### Important changes:
 
@@ -203,7 +271,7 @@ Version 0.5.0.2 - January 13, 2024
 
 
 
-## Dn0.3.1.0 - 06/30/2021
+## Dn0.3.1.0 - 2021-06-30
 
 - ### Important changes:
 
@@ -232,7 +300,7 @@ Version 0.5.0.2 - January 13, 2024
 
 
 
-## Dn0.3.0.0 - 04/03/2021
+## Dn0.3.0.0 - 2021-04-03
 
 - ### Important changes:
 
@@ -284,7 +352,7 @@ Version 0.5.0.2 - January 13, 2024
 
 
 
-## Dn0.2.1.0 - 09/13/20
+## Dn0.2.1.0 - 2020-09-13
 
 - ### Additions:
 
@@ -305,7 +373,7 @@ Version 0.5.0.2 - January 13, 2024
 
 
 
-## Dn0.2.0.0 - 09/07/20
+## Dn0.2.0.0 - 2020-09-07
 
 - ### Additions:
 
@@ -324,7 +392,7 @@ Version 0.5.0.2 - January 13, 2024
 
 
 
-## Dn0.1.0.0 - 08/05/20
+## Dn0.1.0.0 - 2020-08-05
 
 - ### Additions:
 
