@@ -27,7 +27,7 @@
 
 
 // Define this for beta builds
-//#define WIP
+#define WIP
 
 
 #define VERSION_API  0
