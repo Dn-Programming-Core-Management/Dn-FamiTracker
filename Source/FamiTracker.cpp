@@ -451,10 +451,23 @@ void CFamiTrackerApp::OnRecentFilesClear()		// // //
 	SAFE_RELEASE(m_pRecentFileList);
 	m_pRecentFileList = new CRecentFileList(0, _T("Recent File List"), _T("File%d"), MAX_RECENT_FILES);
 
-	auto pMenu = m_pMainWnd->GetMenu()->GetSubMenu(0)->GetSubMenu(14);
-	for (int i = 0; i < MAX_RECENT_FILES; ++i)
-		pMenu->RemoveMenu(ID_FILE_MRU_FILE1 + i, MF_BYCOMMAND);
-	pMenu->AppendMenu(MF_STRING, ID_FILE_MRU_FILE1, _T("(File)"));
+	// Files menu
+	auto pFilesMenu = m_pMainWnd->GetMenu()->GetSubMenu(0);
+
+	// Try and find Recent Files submenu
+	for (int nPos = pFilesMenu->GetMenuItemCount(); nPos > 0; --nPos) {
+		UINT Status = pFilesMenu->GetMenuState(nPos, MF_BYPOSITION);
+		// check if valid menu state
+		if (Status != UINT(-1)) {
+			// check if it has a submenu and the first item is ID_RECENTFILES_CLEAR
+			auto pSubMenu = pFilesMenu->GetSubMenu(nPos);
+			if (pSubMenu != nullptr && pSubMenu->GetMenuItemID(0) == ID_RECENTFILES_CLEAR) {
+				for (int i = 0; i < MAX_RECENT_FILES; ++i)
+					pSubMenu->RemoveMenu(ID_FILE_MRU_FILE1 + i, MF_BYCOMMAND);
+				pSubMenu->AppendMenu(MF_STRING, ID_FILE_MRU_FILE1, _T("(File)"));
+			}
+		}
+	}
 }
 
 void CFamiTrackerApp::OnUpdateRecentFiles(CCmdUI *pCmdUI)		// // //
