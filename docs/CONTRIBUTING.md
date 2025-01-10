@@ -12,14 +12,17 @@ Welcome! Thank you for considering to contribute to Dn-FamiTracker. We really ne
 
 ## Git guidelines
 
-- Write pull requests that passes CI builds.
-- Make sure to adhere to the [pull request template](pull_request_template.md) message guidelines.
+- Write pull requests that passes CI builds and tests.
+- Make sure to adhere to the [pull request template](Dn-FamiTracker/docs/pull_request_template.md) message guidelines.
 - Base your pull request on the `main` branch.
-- If a merge conflict happens due to not being updated in a long time, resolve merge conflicts and rebase your pull request to the latest reasonable version of the `main` branch.
+- If a merge conflict happens due to not being updated in a long time, resolve merge conflicts and rebase your pull request to the latest compatible version of the `main` branch.
+- Be sure to update [Dn-Help](https://github.com/Dn-Programming-Core-Management/Dn-help) on your pull request as needed.
+	- Create a corresponding pull request on Dn-help that links to your main pull request.
 
 ### For Dn-FT maintainers:
 
-- Do **NOT** push directly to the `main` branch. Instead, push your changes to these branches first before writing a pull request:
+- Do **NOT** push directly to the `main` branch. Instead, push your changes to a branch first before writing a pull request.
+- These branches are designated to be reoccurring may be used for the following:
 	- `app-emu-module-nsf_driver-dev`
 		- This branch is for modifying the application itself, such as the NSF driver, the module format, loading and saving code, emulator core, audio drivers, etc.
 	- `docs-license-ver-meta-dev`
@@ -29,7 +32,7 @@ Welcome! Thank you for considering to contribute to Dn-FamiTracker. We really ne
 		- You will most likely force push this branch to hell and back, so be sure to do it on your own GitHub user's fork.
 - Other branches may be made for more niche/specific modifications and fixes.
 - If your pull request touches two or more of these categories, it's fine but please keep it minimal.
-	- Otherwise, create a new branch as mentioned previously.
+	- Otherwise, create a new branch.
 
 ## Dependencies and Building
 
@@ -64,5 +67,7 @@ To edit and/or build the source, you may use Visual Studio 2022, or alternativel
 
 ## Important Things to Note
 
-- When committing changes, **file extension case must be the same as the original file!** This might result in merge conflicts, because Git is case sensitive, but in Windows systems, the file system is case insensitive by default.
-- Additionally, case sensitivity in Windows can be enabled through WSL, but it **must only be enabled to resolve merge conflicts regarding file extension case sensitivity**. If case sensitivity is left enabled, Visual Studio throws a bunch of errors due to the way IntelliSense capitalizes paths internally.
+- When committing changes, ***file extension case must be the same as the original file!***
+	- This might result in merge conflicts, because Git is case sensitive, but in Windows systems, the file system is case insensitive by default.
+- Additionally, case sensitivity in Windows can be enabled through WSL, but it **must only be enabled to resolve merge conflicts regarding file extension case sensitivity**.
+	- If case sensitivity is left enabled, Visual Studio throws a lot of errors due to the way IntelliSense capitalizes paths internally.
