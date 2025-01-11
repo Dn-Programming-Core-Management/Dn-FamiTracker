@@ -4,5 +4,5 @@ This pull request aims to `(specify reason)`.
 
 ### Changes in this PR:
 
- - (cite all changes made in the PR for change log)
+- (cite all changes made in the PR for change log)
 	- Fixes/addresses issue `#<issue number>`.
