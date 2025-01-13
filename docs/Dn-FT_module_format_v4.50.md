@@ -190,7 +190,7 @@ Block ID: `INSTRUMENTS`
 | int         | 4                          |                | `m_pInstrumentManager->GetInstrumentCount()`                     | Instrument count       | 0 to `MAX_INSTRUMENTS`     | Count of existing instruments                                  | 1+                         |
 | int         | 4                          | Per instrument | Instrument index                                                 | Instrument index       | 0 to `MAX_INSTRUMENTS - 1` |                                                                | 1+                         |
 | char        | 1                          | ^              | `m_pInstrumentManager->GetInstrument()->m_iType`                 | Instrument type        | `enum inst_type_t`         | See table.                                                     | 1+                         |
-| CInstrument | size of CInstrument object | ^              | `m_pInstrumentManager->GetInstrument()`                          | Instrument definition  |                            | See [Dn-FT instrument format](Dn-FT%20instrument%20format.md). | 1+                         |
+| CInstrument | size of CInstrument object | ^              | `m_pInstrumentManager->GetInstrument()`                          | Instrument definition  |                            | See [Dn-FT_instrument_format_v2.4](Dn-FT_instrument_format_v2.4.md). | 1+                         |
 | int         | 4                          | ^              | `strlen()` of `m_pInstrumentManager->GetInstrument()->GetName()` | Instrument name length | 0 to `INST_NAME_MAX`       |                                                                | 1+                         |
 | char[]      | Instrument name length     | ^              | `m_pInstrumentManager->GetInstrument()->GetName()`               | Instrument name        |                            |                                                                | 1+                         |
 
@@ -207,14 +207,14 @@ Block ID: `INSTRUMENTS`
 
 #### Notes
 
-- See [Dn-FT instrument format](Dn-FT%20instrument%20format.md) for more details.
+- See [Dn-FT_instrument_format_v2.4](Dn-FT_instrument_format_v2.4.md) for more details.
 - If FDS is used then version must be at least 4 or recent files won't load
 - v6 adds DPCM delta settings
 - This block is only written if any instruments exist
 
 #### Instrument format
 
-See [Dn-FT instrument format](Dn-FT%20instrument%20format.md).
+See [Dn-FT_instrument_format_v2.4](Dn-FT_instrument_format_v2.4.md).
 
 ##### Notes
 

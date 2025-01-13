@@ -3,6 +3,8 @@
 This doc aims to detail how to add a custom chip to Dn-FT, should the
 NSF/NSFe/NSF2/INES/INES2.0 update to add new expansion audio.
 
+Update 2025-01-13: TODO rewrite this in a less passive aggressive tone
+
 ## Disclaimer
 
 Dn-FamiTracker's aim is to fill in the gaps of NSF, NSFe and NSF2 features and/or emerging NESDev homebrew standards that 0CC or Vanilla fails to meet due to a lack of maintenance.
