@@ -8,6 +8,16 @@ Version 0.5.1.0 - January 7, 2025
 
 ---
 
+## Dn0.5.1.1 - 2025-01-13
+
+- ### Hotfixes
+
+	- Match submenu item instead of hardcoding indices (@Gumball2415 #317 #318)
+
+- ### Internal:
+
+	- Port GitHub Wiki pages to markdown files in repo (@Gumball2415 #319)
+
 ## Dn0.5.1.0 - 2025-01-07
 
 - ### Important changes:
