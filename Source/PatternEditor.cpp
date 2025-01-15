@@ -1871,44 +1871,42 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		}
 	};
 
-	const auto DrawVolFunc = [&] (double Freq, int Volume) {
+	const auto DrawVolBar = [&]() {
 		pDC->FillSolidRect(x - 1, BAR_OFFSET + vis_line * 10 - 1, 6 * 108 + 3, 9, 0x808080);
 		pDC->FillSolidRect(x, BAR_OFFSET + vis_line * 10, 6 * 108 + 1, 7, 0);
 		for (int i = 0; i < 10; i++)
 			pDC->SetPixelV(x + 72 * i, BAR_OFFSET + vis_line * 10 + 3, i == 4 ? 0x808080 : 0x303030);
+	};
 
-		const double note = NoteFromFreq(Freq);
+	const auto DrawVolNote = [&](const double note, unsigned int Volume, float r = 1.f, float g = 1.f, float b = 1.f) {
+		ASSERT(Volume <= 255);
+		pDC->FillSolidRect(
+			(int)(29.0 + 6.0 * (note + 12)),
+			BAR_OFFSET + vis_line * 10, 3, 7,
+			RGB(Volume * r, Volume * g, Volume * b)
+		);
+	};
+
+	const auto DrawVolFunc = [&] (double Freq, unsigned int Volume, int Range=0, int Period=0, bool IsLength = true, float r=1.f, float g=1.f, float b=1.f) {
+		DrawVolBar();
+		double note = 0;
+		if (Range!=0)
+			note = ((108.0 / double(Range)) * double(IsLength ? (Range - Period) : Period)) - 12.0;
+		else
+			note = NoteFromFreq(Freq);
 		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
 		if (Volume > 0xFF) Volume = 0xFF;
 		if (note_conv >= -12 && note_conv <= 96 && Volume) {		// // //
-			if (theApp.GetSettings()->GUI.bPreciseRegPitch)
-				pDC->FillSolidRect((int)(29.0 + 6.0 * (note + 12)), BAR_OFFSET + vis_line * 10, 3, 7, RGB(Volume, Volume, Volume));
+			if (theApp.GetSettings()->GUI.bPreciseRegPitch || Range != 0)
+				DrawVolNote(note, Volume, r, g, b);
 			else
-				pDC->FillSolidRect(29 + 6 * (note_conv + 12), BAR_OFFSET + vis_line * 10, 3, 7, RGB(Volume, Volume, Volume));
+				DrawVolNote(note_conv, Volume, r, g, b);
 		}
 		++vis_line;
 	};
 
-	const auto DrawVolFuncRate = [&](int Period, int Volume, int Range, bool IsLength = true) {
-		pDC->FillSolidRect(x - 1, BAR_OFFSET + vis_line * 10 - 1, 6 * 108 + 3, 9, 0x808080);
-		pDC->FillSolidRect(x, BAR_OFFSET + vis_line * 10, 6 * 108 + 1, 7, 0);
-		for (int i = 0; i < 10; i++)
-			pDC->SetPixelV(x + 72 * i, BAR_OFFSET + vis_line * 10 + 3, i == 4 ? 0x808080 : 0x303030);
-
-		const double note = ((108.0 / double(Range)) * double(IsLength ? (Range - Period) : Period)) - 12.0;
-		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
-		if (Volume > 0xFF) Volume = 0xFF;
-		if (note_conv >= -12 && note_conv <= 96 && Volume)		// // //
-				pDC->FillSolidRect((int)(29.0 + 6.0 * (note + 12)), BAR_OFFSET + vis_line * 10, 3, 7, RGB(Volume, Volume, Volume));
-		++vis_line;
-	};
-
 	const auto DrawVolFDSMod = [&](double Freq, int Volume, double ModFreq, int Depth, double OutFreq) {
-		pDC->FillSolidRect(x - 1, BAR_OFFSET + vis_line * 10 - 1, 6 * 108 + 3, 9, 0x808080);
-		pDC->FillSolidRect(x, BAR_OFFSET + vis_line * 10, 6 * 108 + 1, 7, 0);
-		for (int i = 0; i < 10; i++)
-			pDC->SetPixelV(x + 72 * i, BAR_OFFSET + vis_line * 10 + 3, i == 4 ? 0x808080 : 0x303030);
-		
+		DrawVolBar();
 		
 		const double note = NoteFromFreq(Freq);
 		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
@@ -1961,10 +1959,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 
 	// Draw envelope and noise pitch
 	const auto DrawVolFuncS5B = [&](double Freq, double EnvelopeFreq, int NoisePeriod, int Volume, bool envelope_enable, bool noise_enable) {
-		pDC->FillSolidRect(x - 1, BAR_OFFSET + vis_line * 10 - 1, 6 * 108 + 3, 9, 0x808080);
-		pDC->FillSolidRect(x, BAR_OFFSET + vis_line * 10, 6 * 108 + 1, 7, 0);
-		for (int i = 0; i < 10; i++)
-			pDC->SetPixelV(x + 72 * i, BAR_OFFSET + vis_line * 10 + 3, i == 4 ? 0x808080 : 0x303030);
+		DrawVolBar();
 		
 		int vol = int(0xFF * (std::pow(10.0, (((Volume + 1.0) * 3.0) / 20.0)) / 251.18864315095801110850320677993));		// 3db per step
 		const double note = NoteFromFreq(Freq);
@@ -2081,13 +2076,20 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		pDC->FillSolidRect(250 + i * 30, (pitch >> 1), 20, 5, RGB(vol << 4, vol << 4, vol << 4));
 */
 		DrawTextFunc(180, text);
+
+		// // !! apply OETF gamma 2.2 so we can see lower values better
+		const BYTE vol_scaled = BYTE(max(min(pow((double)vol / (double)0xF, (1 / 2.2)), 1.0), 0.0) * 255);
 		switch (i) {
 		case 0: case 1: case 2:
-			DrawVolFunc(freq, vol << 4); break;
+			DrawVolFunc(freq, vol_scaled); break;
 		case 3:
-			DrawVolFuncRate(period, vol << 4, 0x0F); break;
+			if (reg[2] >> 7 == 1)
+				DrawVolFunc(freq, vol_scaled, 0, 0, false, 0, 0.5, 1);
+			else
+				DrawVolFunc(0, vol_scaled, 0x0F, period, true);
+			break;
 		case 4:
-			DrawVolFuncRate(period, vol << 4, 0x0F, false); break;
+			DrawVolFunc(0, vol_scaled, 0x0F, period, false); break;
 		}
 
 	}
