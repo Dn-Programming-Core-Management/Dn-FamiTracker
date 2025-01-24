@@ -226,21 +226,18 @@ ft_write_modtable:
 
 ft_check_fds_effects:
 	lda var_ch_ModEffWritten
-	and #$01
+	and #ModEffWritten::Depth
 	beq :+
-	; FDS modulation depth
 	lda var_ch_ModEffDepth
 	sta var_ch_ModDepth
 :   lda var_ch_ModEffWritten
-	and #$02
+	and #ModEffWritten::RateHi
 	beq :+
-	; FDS modulation rate high
 	lda var_ch_ModEffRate + 1
 	sta var_ch_ModRate + 1
 :   lda var_ch_ModEffWritten
-	and #$04
+	and #ModEffWritten::RateLo
 	beq :+
-	; FDS modulation rate low
 	lda var_ch_ModEffRate + 0
 	sta var_ch_ModRate + 0
 :
@@ -285,6 +282,10 @@ ft_check_fds_fm:
 	dec ACC + 1
 :	clc
 	adc ACC
+	sta ACC + 0
+	lda ACC + 1
+	adc #$00
+	sta ACC + 1
 
 	; if (ModFreq > 0xFFF) ModFreq = 0xFFF;
 	clc
