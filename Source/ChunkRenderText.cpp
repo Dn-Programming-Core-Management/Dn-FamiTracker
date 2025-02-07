@@ -145,6 +145,9 @@ void CChunkRenderText::StoreSamples(const std::vector<const CDSample*> &Samples,
 	str.Format("\n; DPCM samples (located at DPCM segment)\n");
 
 	if (Samples.size() > 0 && !m_bBankSwitched) {
+		// align first sample for external programs using assembly export
+		// this allows more flexible memory configurations to directly use the export
+		str.Append("\n\t.align 64\n");
 		str.Append("\n\t.segment \"DPCM\"\n");
 	}
 
@@ -161,10 +164,6 @@ void CChunkRenderText::StoreSamples(const std::vector<const CDSample*> &Samples,
 
 		if (m_bBankSwitched)
 			StoreDPCMBankSegment(bank, str);
-
-		// align first sample for external programs using assembly export
-		// this allows more flexible memory configurations to directly use the export
-		if (i == 0)	str.Append("\n\t.align 64\n\n");
 
 		// adjust padding if necessary
 		if ((Address & 0x3F) > 0) {
