@@ -33,7 +33,7 @@ USE_DPCM = 1			; Enable DPCM channel (currently broken, leave enabled to avoid t
 
 ENABLE_ROW_SKIP = 1		; Enable this to add code for seeking to a row > 0 when using skip command
 
-;PACKAGE = 1			; header
+;PACKAGE = 1			; Enable this when compiling an .nsf
 ;USE_VRC6 = 1 			; Enable this to include VRC6 code
 ;USE_VRC7 = 1			; Enable this to include VRC7 code
 ;USE_FDS  = 1			; Enable this to include FDS code
@@ -52,7 +52,9 @@ ENABLE_ROW_SKIP = 1		; Enable this to add code for seeking to a row > 0 when usi
 	USE_N163 = 1
 	USE_S5B  = 1
 .endif
+
 EXPANSION_FLAG = .defined(USE_VRC6) + .defined(USE_VRC7) << 1 + .defined(USE_FDS) << 2 + .defined(USE_MMC5) << 3 + .defined(USE_N163) << 4 + .defined(USE_S5B) << 5
+
 MULTICHIP = (EXPANSION_FLAG & (EXPANSION_FLAG - 1)) <> 0
 
 NTSC_PERIOD_TABLE = 1
@@ -117,8 +119,7 @@ CHANNELS	= DPCM_OFFSET + .defined(USE_DPCM)
 	CHAN_2A03
 	CHAN_TRI
 	CHAN_NOI
-	CHAN_DPCM	; should not be used since the N163 channel count may change and invalidate ft_channel_type
-				; although in practice ft_channel_type should be patched
+	CHAN_DPCM
 	CHAN_VRC6	; used
 	CHAN_SAW	; used
 	CHAN_VRC7	; used
@@ -428,6 +429,7 @@ last_bss_var:			.res 1						; Not used
 ; $9010
 ; $9030
 ; $A000 - $A002
+; $C000
 .macro padjmp count ; headerless padding
 	.local @end
 	.if .defined(USE_ALL)
@@ -581,7 +583,7 @@ ft_bankswitch2:
 
 ;;; ;; ; ft_channel_map is unnecessary
 
-ft_channel_type:
+ft_channel_type: ;; Patch
 	.byte CHAN_2A03, CHAN_2A03, CHAN_TRI, CHAN_NOI
 .repeat CH_COUNT_MMC5
 	.byte CHAN_MMC5
@@ -606,33 +608,38 @@ ft_channel_type:
 .endif
 
 .if MULTICHIP		;;; ;; ;
-.if .defined(USE_AUX_DATA) .and .defined(USE_ALL)
-    .include "../enable_ext.s"
-.else
-    ft_channel_enable: ;; Patch
-        .byte 1, 1, 1, 1
-    .repeat CH_COUNT_MMC5
-        .byte .defined(USE_MMC5)
-    .endrep
-    .if .defined(USE_VRC6)
-        .byte .defined(USE_VRC6)
-    .endif
-    .repeat CH_COUNT_N163		; 0CC: check
-        .byte .defined(USE_N163)
-    .endrep
-    .repeat CH_COUNT_FDS
-        .byte .defined(USE_FDS)
-    .endrep
-    .repeat CH_COUNT_S5B
-        .byte .defined(USE_S5B)
-    .endrep
-    .repeat CH_COUNT_VRC7
-        .byte .defined(USE_VRC7)
-    .endrep
-    .if .defined(USE_DPCM)
-        .byte 1
-    .endif
-.endif
+	.if .defined(USE_AUX_DATA) .and .defined(USE_ALL)
+		.include "../enable_ext.s"
+	.else
+		ft_channel_enable: ;; Patch
+		.if .defined(PACKAGE)
+			;; ;; !! patched by the tracker
+			.res CHANNELS, 0
+		.else
+				.byte 1, 1, 1, 1
+			.repeat CH_COUNT_MMC5
+				.byte .defined(USE_MMC5)
+			.endrep
+			.repeat CH_COUNT_VRC6
+				.byte .defined(USE_VRC6)
+			.endrepeat
+			.repeat CH_COUNT_N163		; 0CC: check
+				.byte .defined(USE_N163)
+			.endrep
+			.repeat CH_COUNT_FDS
+				.byte .defined(USE_FDS)
+			.endrep
+			.repeat CH_COUNT_S5B
+				.byte .defined(USE_S5B)
+			.endrep
+			.repeat CH_COUNT_VRC7
+				.byte .defined(USE_VRC7)
+			.endrep
+			.if .defined(USE_DPCM)
+				.byte 1
+			.endif
+		.endif
+	.endif
 .endif
 
 bit_mask:		;;; ;; ; general-purpose bit mask
