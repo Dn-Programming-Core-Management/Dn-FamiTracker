@@ -1960,9 +1960,9 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		DrawVolBar();
 		
 		// 3db per step
-		const double vol = envelope_enable ? 1 : (std::pow(10.0, (((Volume + 1.0) * 3.0) / 20.0)) / 251.18864315095801110850320677993);
+		double vol = envelope_enable ? 1 : (std::pow(10.0, (((Volume + 1.0) * 3.0) / 20.0)) / 251.18864315095801110850320677993);
 
-		const BYTE vol_scaled = OETF_gamma_vol(Volume);
+		const BYTE vol_scaled = OETF_gamma_vol(vol);
 		
 		const double note = NoteFromFreq(Freq);
 		const double note_envelope = NoteFromFreq(EnvelopeFreq);
@@ -1970,7 +1970,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
 
 
-		if (note_conv >= -12 && note_conv <= 96 && (vol_scaled || envelope_enable))		// // //
+		if (note_conv >= -12 && note_conv <= 96 && (Volume || envelope_enable))		// // //
 			if (noise_enable || envelope_enable)
 				DrawVolNote(PrecisePitch ? note : note_conv, vol_scaled,		// !! !!
 					CTINT_S5B_T[0], CTINT_S5B_T[1], CTINT_S5B_T[2]);
@@ -1986,6 +1986,24 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 				CTINT_S5B_E[0], CTINT_S5B_E[1], CTINT_S5B_E[2]);
 		++vis_line;
 	};
+
+	// Draw envelope and noise pitch
+	const auto DrawVolFuncVRC7 = [&](double Freq, int Volume) {
+		DrawVolBar();
+
+		// 3db per step
+		const double vol = std::pow(10.0, (((Volume + 1.0) * 3.0) / 20.0)) / 251.18864315095801110850320677993;
+
+		const BYTE vol_scaled = OETF_gamma_vol(vol);
+
+		const double note = NoteFromFreq(Freq);
+		const int note_conv = note >= 0 ? int(note + 0.5) : int(note - 0.5);
+
+
+		if (note_conv >= -12 && note_conv <= 96 && vol_scaled)		// // //
+			DrawVolNote(PrecisePitch ? note : note_conv, vol_scaled);
+		++vis_line;
+		};
 
 	const auto DrawTextFunc = [&] (int xOffsNoDPI, CString text) {
 		pDC->SetTextColor(BORDER_COLOR);
@@ -2282,7 +2300,7 @@ void CPatternEditor::DrawRegisters(CDC *pDC)
 			text.Format(_T("%s, vol = %02i, patch = $%01X"), GetPitchTextFunc(3, period, freq), vol, reg[2] >> 4);
 			DrawTextFunc(180, text);
 			
-			DrawVolFunc(freq, (double)vol/(double)0x0F);
+			DrawVolFuncVRC7(freq, vol);
 		}
 	}
 
