@@ -422,45 +422,48 @@ last_bss_var:			.res 1						; Not used
 .segment "CODE"
 .include "longbranch.mac"		;;; ;; ;
 
+
+; when using FDS + multichip, avoid any data in these addresses:
 ; $9000 - $9003
 ; $9010
 ; $9030
 ; $A000 - $A002
 .macro padjmp count ; headerless padding
-.local @end
-.if .defined(USE_ALL)
- .ifndef PACKAGE
-  .if count > 3
- 	jmp @end
-   .repeat count - 3
- 	nop
-   .endrep
-  .else
-   .repeat count
- 	nop
-   .endrep
-  .endif
- .endif
-.endif
-@end:
+	.local @end
+	.if .defined(USE_ALL)
+		.ifndef PACKAGE
+			.if count > 3
+				jmp @end	
+				.repeat count - 3
+					nop
+				.endrep
+			.else
+				.repeat count
+					nop
+				.endrep
+			.endif
+		.endif
+	.endif
+	@end:
 .endmacro
+
 .macro padjmp_h count ; headered padding
-.local @end
-.if .defined(USE_ALL)
- .ifdef PACKAGE
-  .if count > 3
- 	jmp @end
-   .repeat count - 3
- 	nop
-   .endrep
-  .else
-   .repeat count
- 	nop
-   .endrep
-  .endif
- .endif
-.endif
-@end:
+	.local @end
+	.if .defined(USE_ALL)
+		.ifdef PACKAGE
+			.if count > 3
+				jmp @end
+				.repeat count - 3
+					nop
+				.endrep
+			.else
+				.repeat count
+					nop
+				.endrep
+			.endif
+		.endif
+	.endif
+	@end:
 .endmacro
 
 .if MULTICHIP		;;; ;; ;
