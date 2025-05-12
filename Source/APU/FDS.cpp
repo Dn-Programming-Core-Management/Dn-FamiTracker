@@ -173,6 +173,7 @@ int CFDS::GetModCounter() const
 }
 
 // get actual output frequency, modified by modulator
+// TODO: fix this, the final frequency is wrong
 double CFDS::GetOutputFreq() const
 {
 	int Lo = m_pRegisterLogger->GetRegister(0x4082)->GetValue();
