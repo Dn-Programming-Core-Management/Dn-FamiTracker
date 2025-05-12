@@ -3,6 +3,7 @@ local resolveLabel = function (str)
   if str == "ft_note_table_vrc7_l" then return "CDetuneTable::DETUNE_VRC7" end
   if str == "ft_update_ext" then return "UPDATE_EXT" end
   if str == "ft_channel_enable" then return "CH_ENABLE" end
+  if str == "ft_channel_type" then return "CH_TYPE" end
   
   local chip = str:match("ft_periods_(.*)")
   if chip then
@@ -108,8 +109,11 @@ local build = function (chip)
       final:write(("\t0x%04X, 0x%04X,\n"):format(k, k2)); break
     end end
   end
-  final:write("};\n\nconst unsigned int VIBRATO_TABLE_LOCATION_",
-    chip, string.format(" = 0x%X;", pos.VIBRATO))
+  final:write("};\n\nconst unsigned int VIBRATO_TABLE_LOCATION_",    chip, string.format(" = 0x%X;", pos.VIBRATO))
+  
+  if chip == "N163" then
+    final:write(("\n\nconst int FT_CH_TYPE_ADR = 0x%X;"):format(pos.CH_TYPE))
+  end
   
   if chip == "ALL" then
     final:write(("\n\nconst int FT_UPDATE_EXT_ADR = 0x%X;"):format(pos.UPDATE_EXT))
@@ -152,8 +156,8 @@ end
 
 -- os.execute("rmdir /S /Q ..\\..\\famitracker\\Source\\drivers >nul")
 -- os.execute("move drivers ..\\..\\famitracker\\Source >nul")
--- os.remove("c1.cfg")
--- os.remove("c0.cfg")
+os.remove("c1.cfg")
+os.remove("c0.cfg")
 
 print("All driver headers created in " .. tonumber(os.clock()) .. " seconds.")
 -- os.execute("pause")

@@ -659,11 +659,6 @@ ft_period_remove:
 	sbc var_Temp16 + 1
 	sta var_ch_TimerPeriodHi, x
 	bcs :+                           ; Do not wrap
-.if .defined(PACKAGE)
-	bcc @pad
-	nop
-@pad:
-.endif
 	lda #$00
 	sta var_ch_TimerPeriodLo, x
 	sta var_ch_TimerPeriodHi, x

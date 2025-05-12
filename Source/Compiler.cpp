@@ -115,6 +115,17 @@ const int CCompiler::FLAG_VIBRATO		= 1 << 1;
 const int CCompiler::FLAG_LINEARPITCH	= 1 << 2;		// // //
 
 
+// chan_id_t to ft_channel_enable index
+const size_t CH_MAP[] = {
+	0, 1, 2, 3, 27,					// 2A03
+	6, 7, 8,						// VRC6
+	4, 5, -1,						// MMC5
+	9, 10, 11, 12, 13, 14, 15, 16,	// N163
+	17,								// FDS
+	21, 22, 23, 24, 25, 26,			// VRC7
+	18, 19, 20,						// S5B
+};
+
 // Enable this to simulate NSF driver export multichip for assembly, which enables all chips internally
 #ifdef _DEBUG
 constexpr bool CCompiler::UseAllChips = true;
@@ -152,6 +163,7 @@ CCompiler::CCompiler(CFamiTrackerDoc *pDoc, CCompilerLog *pLogger) :
 	CCompiler::pCompiler = this;
 
 	m_iActualChip = m_pDocument->GetExpansionChip();		// // //
+	m_bMultiChip = ((m_iActualChip & (m_iActualChip - 1)) != 0);
 	m_iActualNamcoChannels = m_pDocument->GetNamcoChannels();
 }
 
@@ -707,7 +719,7 @@ void CCompiler::ExportNES(LPCTSTR lpszFileName, bool EnablePAL)
 		theApp.DisplayMessage(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
 	}
 
-	if (m_pDocument->GetExpansionChip() != SNDCHIP_NONE) {
+	if (m_iActualChip != SNDCHIP_NONE) {
 		Print("Error: Expansion chips not supported.\n");
 		theApp.DisplayMessage("Expansion chips are currently not supported when exporting to .NES!", 0, 0);
 		Cleanup();
@@ -955,7 +967,7 @@ void CCompiler::ExportPRG(LPCTSTR lpszFileName, bool EnablePAL)
 		theApp.DisplayMessage(_T("NSFe optional metadata will not be exported in this format!"), 0, 0);
 	}
 
-	if (m_pDocument->GetExpansionChip() != SNDCHIP_NONE) {
+	if (m_iActualChip != SNDCHIP_NONE) {
 		Print("Error: Expansion audio not supported.\n");
 		theApp.DisplayMessage(_T("Error: Expansion chips is currently not supported when exporting to PRG!"), 0, 0);
 		Cleanup();
@@ -1222,16 +1234,16 @@ char *CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 		pData[pDriver->adr_reloc[i + 1]] = value >> 8;
 	}
 
-	if (m_iActualChip == SNDCHIP_N163) {
-		pData[m_iDriverSize - 2 - 0x100 - 0xC0 * 2 - 8 - 1 - 8 + m_iActualNamcoChannels] = 3;
-	}
+	size_t ptr = 0;
 
-	if (m_iActualChip & (m_iActualChip - 1)) {		// // // special processing for multichip
-		int ptr = FT_UPDATE_EXT_ADR;
+	if (m_bMultiChip) {		// // // special processing for multichip
+		ptr = FT_UPDATE_EXT_ADR;
+		// patch ft_update_ext
 		for (int i = 0; i < 6; ++i) {
 			ASSERT(pData[ptr] == 0x20); // jsr
 			if (!(m_iActualChip & (1 << i))) {
-				pData[ptr++] = 0xEA; // nop
+				// overwrite `jsr ft_update_<chip>` with nop nop nop
+				pData[ptr++] = 0xEA;
 				pData[ptr++] = 0xEA;
 				pData[ptr++] = 0xEA;
 			}
@@ -1239,20 +1251,31 @@ char *CCompiler::LoadDriver(const driver_t *pDriver, unsigned short Origin) cons
 				ptr += 3;
 		}
 
-		const int CH_MAP[] = {
-			0, 1, 2, 3, 27,
-			6, 7, 8,
-			4, 5, -1,
-			9, 10, 11, 12, 13, 14, 15, 16,
-			17,
-			21, 22, 23, 24, 25, 26,
-			18, 19, 20,
+		// patch ft_channel_enable
+		ptr = FT_CH_ENABLE_ADR;
+		for (auto x : m_vChanEnable)
+			pData[ptr++] = x;
+	}
+	else if (m_iActualChip & SNDCHIP_N163) {
+		// taken from driver.s
+		enum chan_type {
+			CHAN_2A03,
+			CHAN_TRI,
+			CHAN_NOI,
+			CHAN_DPCM,
+			CHAN_VRC6,
+			CHAN_SAW,
+			CHAN_VRC7,
+			CHAN_FDS,
+			CHAN_MMC5,
+			CHAN_N163,
+			CHAN_S5B,
 		};
 
-		for (int i = 0; i < CHANNELS; ++i)
-			pData[FT_CH_ENABLE_ADR + i] = 0;
-		for (const int x : m_vChanOrder)
-			pData[FT_CH_ENABLE_ADR + CH_MAP[m_pDocument->GetChannelType(x)]] = 1;
+		// quick fix: patch ft_channel_type to correct N163 channel count
+		// compiled table is set to 8 channels, but all we can do is patch it.
+		// offset and patch to DPCM index, module usually doesn't index beyond anyway
+		pData[FT_CH_TYPE_ADR + 4 + m_iActualNamcoChannels] = CHAN_DPCM;
 	}
 
 	return (char *)pData;
@@ -1347,7 +1370,7 @@ void CCompiler::CreateHeader(stNSFHeader *pHeader, int MachineType, unsigned int
 
 	// Allow PAL or dual tunes only if no expansion chip is selected
 	// Expansion chips weren't available in PAL areas
-	if (m_pDocument->GetExpansionChip() == SNDCHIP_NONE) {
+	if (m_iActualChip == SNDCHIP_NONE) {
 		switch (MachineType) {
 			case 0:	// NTSC
 				pHeader->Flags = 0x00;
@@ -1425,7 +1448,7 @@ void CCompiler::CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType)		// // 
 		}
 	}
 
-	if (m_pDocument->GetExpansionChip() == SNDCHIP_NONE) {
+	if (m_iActualChip == SNDCHIP_NONE) {
 		switch (MachineType) {
 			case 0:	// NTSC
 				pHeader->Flags = 0x00;
@@ -1766,11 +1789,9 @@ bool CCompiler::CompileData(bool bUseNSFDRV, bool bUseAllExp)
 	//
 
 	// // // Full chip export
-	m_iActualChip = m_pDocument->GetExpansionChip();
-	m_iActualNamcoChannels = m_pDocument->GetNamcoChannels();
 
 	// Select driver and channel order
-	switch (m_pDocument->GetExpansionChip()) {
+	switch (m_iActualChip) {
 		case SNDCHIP_NONE:
 			m_pDriverData = &DRIVER_PACK_2A03;
 			m_iVibratoTableLocation = VIBRATO_TABLE_LOCATION_2A03;
@@ -1817,42 +1838,50 @@ bool CCompiler::CompileData(bool bUseNSFDRV, bool bUseAllExp)
 	}
 
 	// // // Setup channel order list, DPCM is located last
+	// !! !! must match ft_channel_enable
 	const int Channels = m_pDocument->GetAvailableChannels();
-	const int Chip = m_pDocument->GetExpansionChip(); // 0CC: use m_iActualChip once cc65 is embedded
 	int Channel = 0;
 	for (int i = 0; i < 4; i++) {
 		int Channel = m_pDocument->GetChannelIndex(CHANID_SQUARE1 + i);
 		m_vChanOrder.push_back(Channel);
 	}
-	if (Chip & SNDCHIP_MMC5) for (int i = 0; i < 2; i++) {
+	if (m_iActualChip & SNDCHIP_MMC5) for (int i = 0; i < 2; i++) {
 		int Channel = m_pDocument->GetChannelIndex(CHANID_MMC5_SQUARE1 + i);
 		m_vChanOrder.push_back(Channel);
 	}
-	if (Chip & SNDCHIP_VRC6) for (int i = 0; i < 3; i++) {
+	if (m_iActualChip & SNDCHIP_VRC6) for (int i = 0; i < 3; i++) {
 		int Channel = m_pDocument->GetChannelIndex(CHANID_VRC6_PULSE1 + i);
 		m_vChanOrder.push_back(Channel);
 	}
-	if (Chip & SNDCHIP_N163) {
-		int lim = m_iActualNamcoChannels;
-//		if (Chip & ~SNDCHIP_N163) lim = 8;
-		for (int i = 0; i < lim; i++) { // 0CC: use m_iActualNamcoChannels once cc65 is embedded
+	if (m_iActualChip & SNDCHIP_N163) {
+		for (int i = 0; i < m_iActualNamcoChannels; i++) {
 			int Channel = m_pDocument->GetChannelIndex(CHANID_N163_CH1 + i);
 			m_vChanOrder.push_back(Channel);
 		}
 	}
-	if (Chip & SNDCHIP_FDS) {
+	if (m_iActualChip & SNDCHIP_FDS) {
 		int Channel = m_pDocument->GetChannelIndex(CHANID_FDS);
 		m_vChanOrder.push_back(Channel);
 	}
-	if (Chip & SNDCHIP_S5B) for (int i = 0; i < 3; i++) {
+	if (m_iActualChip & SNDCHIP_S5B) for (int i = 0; i < 3; i++) {
 		int Channel = m_pDocument->GetChannelIndex(CHANID_S5B_CH1 + i);
 		m_vChanOrder.push_back(Channel);
 	}
-	if (Chip & SNDCHIP_VRC7) for (int i = 0; i < 6; i++) {
+	if (m_iActualChip & SNDCHIP_VRC7) for (int i = 0; i < 6; i++) {
 		int Channel = m_pDocument->GetChannelIndex(CHANID_VRC7_CH1 + i);
 		m_vChanOrder.push_back(Channel);
 	}
 	m_vChanOrder.push_back(CHANID_DPCM);
+
+	// used for .asm and .nsf multichip export
+	m_vChanEnable.resize(CHANNELS - 1);		// not counting MMC5 PCM
+	std::fill(m_vChanEnable.begin(), m_vChanEnable.end(), 0);
+
+	for (const int x : m_vChanOrder) {
+		const int chan_order_id = m_pDocument->GetChannelType(x);
+		ASSERT(chan_order_id != CHANID_MMC5_VOICE);
+		m_vChanEnable[CH_MAP[chan_order_id]] = 1;
+	}
 
 	// set NSFDRV header offset, if used
 	SetNSFDRVHeaderSize(bUseNSFDRV);
@@ -1945,7 +1974,7 @@ void CCompiler::CalculateLoadAddresses(unsigned short &MusicDataAddress, bool &b
 	// if we can fit the entire music and driver within the first 16kB of data,
 	// enable compressed mode
 	bCompressedMode = !((PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize - m_iNSFDRVSize) < 0x8000
-		|| m_bBankSwitched || m_iActualChip != m_pDocument->GetExpansionChip());
+		|| m_bBankSwitched || m_iActualChip != m_iActualChip);
 
 	if (bCompressedMode && !ForceDecompress) {
 		// Locate driver at $C000 - (driver size)
@@ -2088,9 +2117,6 @@ void CCompiler::CreateMainHeader(bool UseAllExp)
 
 	unsigned short DividerNTSC, DividerPAL;
 
-	int Chip = m_pDocument->GetExpansionChip();		// // //
-	bool bMultichip = ((Chip & (Chip - 1)) != 0) && UseAllExp;
-
 	CChunk *pChunk = CreateChunk(CHUNK_HEADER, "");
 
 	if (TicksPerSec == 0) {
@@ -2122,8 +2148,8 @@ void CCompiler::CreateMainHeader(bool UseAllExp)
 	pChunk->StoreByte(Flags);
 
 	// FDS table, only if FDS is enabled
-	if ((Chip & SNDCHIP_FDS) || bMultichip)
-		if (!(Chip & SNDCHIP_FDS))
+	if ((m_iActualChip & SNDCHIP_FDS) || m_bMultiChip)
+		if (!(m_iActualChip & SNDCHIP_FDS))
 			pChunk->StoreReference("0");
 		else
 			pChunk->StoreReference(CChunkRenderText::LABEL_WAVETABLE);
@@ -2132,7 +2158,7 @@ void CCompiler::CreateMainHeader(bool UseAllExp)
 	pChunk->StoreWord(DividerPAL);
 
 	// N163 channel count
-	if ((Chip & SNDCHIP_N163) || bMultichip) {
+	if ((m_iActualChip & SNDCHIP_N163) || m_bMultiChip) {
 		/*if (m_pDocument->GetExpansionChip() != SNDCHIP_N163)		// // //
 			pChunk->StoreByte(8);
 		else*/ pChunk->StoreByte(std::max(m_iActualNamcoChannels, 1));
@@ -2776,7 +2802,7 @@ void CCompiler::WriteAssembly(CFilePtrArray &files, bool bExtraData, stNSFHeader
 		Render.StorePeriods(LUTNTSC, LUTPAL, LUTSaw, LUTVRC7, LUTFDS, LUTN163);
 		Render.StoreVibrato(LUTVibrato);
 		if (UseAllChips) {
-			Render.StoreEnableExt(Header.SoundChip);
+			if (m_bMultiChip) Render.StoreEnableExt(m_vChanEnable);
 			Render.StoreUpdateExt(Header.SoundChip);
 		}
 	}
@@ -2831,7 +2857,7 @@ void CCompiler::WriteBinary(CFilePtrArray &files, bool bExtraData, stNSFHeader H
 		RenderText.StorePeriods(LUTNTSC, LUTPAL, LUTSaw, LUTVRC7, LUTFDS, LUTN163);
 		RenderText.StoreVibrato(LUTVibrato);
 		if (UseAllChips) {
-			RenderText.StoreEnableExt(Header.SoundChip);
+			if (m_bMultiChip) RenderText.StoreEnableExt(m_vChanEnable);
 			RenderText.StoreUpdateExt(Header.SoundChip);
 		}
 	}
@@ -2975,7 +3001,7 @@ void CCompiler::WriteChannelMap()
 	}
 
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_N163)) {
-		for (unsigned int i = 0; i < m_pDocument->GetNamcoChannels(); ++i) {
+		for (unsigned int i = 0; i < m_iActualNamcoChannels; ++i) {
 			pChunk->StoreByte(CHANID_N163_CH1 + i + 1);
 		}
 	}
@@ -3018,7 +3044,7 @@ void CCompiler::WriteChannelTypes()
 	}
 
 	if (m_pDocument->ExpansionEnabled(SNDCHIP_N163)) {
-		for (unsigned int i = 0; i < m_pDocument->GetNamcoChannels(); ++i)
+		for (unsigned int i = 0; i < m_iActualNamcoChannels; ++i)
 			pChunk->StoreByte(TYPE_N163);
 	}
 
