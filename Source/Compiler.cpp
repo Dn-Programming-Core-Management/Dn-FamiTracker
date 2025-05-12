@@ -117,9 +117,9 @@ const int CCompiler::FLAG_LINEARPITCH	= 1 << 2;		// // //
 
 // Enable this to simulate NSF driver export multichip for assembly, which enables all chips internally
 #ifdef _DEBUG
-constexpr bool UseAllChips = true;
+constexpr bool CCompiler::UseAllChips = true;
 #else
-constexpr bool UseAllChips = false;
+constexpr bool CCompiler::UseAllChips = false;
 #endif
 
 CCompiler *CCompiler::pCompiler = NULL;
@@ -1872,7 +1872,7 @@ bool CCompiler::CompileData(bool bUseNSFDRV, bool bUseAllExp)
 	CreateSampleList();
 	StoreSamples();
 	StoreGrooves();		// // //
-	StoreSongs();
+	StoreSongs(bUseAllExp);
 
 	// Determine if bankswitching is needed
 	m_bBankSwitched = false;
@@ -2476,7 +2476,7 @@ void CCompiler::StoreGrooves()
 
 // Songs
 
-void CCompiler::StoreSongs()
+void CCompiler::StoreSongs(bool bUseAllExp)
 {
 	/*
 	 * Store patterns and frames for each song
@@ -2533,7 +2533,7 @@ void CCompiler::StoreSongs()
 		// Store frames
 		CreateFrameList(i);
 		// Store pattern data
-		StorePatterns(i);
+		StorePatterns(i, bUseAllExp);
 	}
 
 	if (m_iDuplicatePatterns > 0)
@@ -2602,7 +2602,7 @@ void CCompiler::CreateFrameList(unsigned int Track)
 
 // Patterns
 
-void CCompiler::StorePatterns(unsigned int Track)
+void CCompiler::StorePatterns(unsigned int Track, bool bUseAllExp)
 {
 	/*
 	 * Store patterns and save references to them for the frame list
@@ -2623,7 +2623,7 @@ void CCompiler::StorePatterns(unsigned int Track)
 			if (IsPatternAddressed(Track, i, j)) {
 
 				// Compile pattern data
-				PatternCompiler.CompileData(Track, i, j);
+				PatternCompiler.CompileData(Track, i, j, bUseAllExp);
 
 				CStringA label;
 				label.Format(CChunkRenderText::LABEL_PATTERN, Track, i, j);

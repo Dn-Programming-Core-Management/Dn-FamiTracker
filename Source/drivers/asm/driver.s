@@ -223,6 +223,12 @@ var_ch_ModEffRate:		.res 2
 var_ch_ModInstDepth:	.res 1		;;; ;; ;
 var_ch_ModInstRate:		.res 2		;;; ;; ;
 var_ch_ModEffWritten:	.res 1
+.enum ModEffWritten
+	Depth	= %00000001
+	RateHi	= %00000010
+	RateLo	= %00000100
+.endenum
+
 var_ch_FDSVolume:		.res 1		;;; ;; ;
 var_ch_ModBias:			.res 1		;;; ;; ;
 var_ch_FDSCarrier:		.res 2		;; ;; !! for auto-FM in conjunction with frequency multiplier

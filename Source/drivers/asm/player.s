@@ -1149,7 +1149,7 @@ ft_cmd_fds_mod_depth:
 	bmi @AutoFM					;;; ;; ;
 	sta var_ch_ModEffDepth
 	lda var_ch_ModEffWritten
-	ora #$01
+	ora #ModEffWritten::Depth
 	sta var_ch_ModEffWritten
 	rts
 @AutoFM:
@@ -1168,7 +1168,7 @@ ft_cmd_fds_mod_rate_hi:
 	lda var_Temp
 	sta var_ch_ModEffRate + 1
 	lda var_ch_ModEffWritten
-	ora #$02
+	ora #ModEffWritten::RateHi
 	sta var_ch_ModEffWritten
 	lda var_ch_ModRate + 1
 	bpl :+
@@ -1191,7 +1191,7 @@ ft_cmd_fds_mod_rate_lo:
 	jsr ft_get_pattern_byte
 	sta var_ch_ModEffRate + 0
 	lda var_ch_ModEffWritten
-	ora #$04
+	ora #ModEffWritten::RateLo
 	sta var_ch_ModEffWritten
 	lda var_ch_ModRate + 1
 	bpl :+

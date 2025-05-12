@@ -31,7 +31,7 @@ public:
 	CPatternCompiler(CFamiTrackerDoc *pDoc, unsigned int *pInstList, DPCM_List_t *pDPCMList, CCompilerLog *pLogger);
 	~CPatternCompiler();
 
-	void			CompileData(int Track, int Pattern, int Channel);
+	void			CompileData(int Track, int Pattern, int Channel, bool bUseAllExp = true);
 	
 	unsigned int	GetHash() const;
 	bool			CompareData(const std::vector<char> &data) const;
@@ -72,6 +72,7 @@ private:
 	unsigned int	m_iDuration;
 	unsigned int	m_iCurrentDefaultDuration;
 	bool			m_bDSamplesAccessed[OCTAVE_RANGE * NOTE_RANGE]; // <- check the range, its not optimal right now
+	bool			m_bUseAllChips;		// !! !! we store a local copy to accomodate both NSF and .asm/.bin export
 	unsigned int	m_iHash;
 	unsigned int	*m_pInstrumentList;
 
