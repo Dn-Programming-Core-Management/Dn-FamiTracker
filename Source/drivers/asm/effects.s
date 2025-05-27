@@ -208,10 +208,18 @@ ft_load_slide:
 	cmp #EFF_SLIDE_UP
 	beq :+
 	lda #EFF_SLIDE_UP
+
+	; skip $9000-9003
+	padjmp 7, $8FFD, $9003, .defined(USE_ALL)
+
 	sta var_ch_Effect, x
 	jmp ft_jump_to_effect
 	;rts
 :   lda #EFF_SLIDE_DOWN
+
+	; skip $9010
+	padjmp 5, $900C, $9010, .defined(USE_ALL)
+
 	sta var_ch_Effect, x
 :	;rts
 	jmp ft_jump_to_effect
@@ -232,6 +240,10 @@ ft_calc_period:
 	bne :+
 .endif								; ;; ;;;
 	lda ft_channel_type, x
+
+	; skip $9030
+	padjmp 4, $902D, $9030, .defined(USE_ALL)
+
 	cmp #CHAN_VRC7
 	bne :+
 	lsr var_ch_PeriodCalcHi, x
@@ -495,14 +507,14 @@ ft_portamento:
 	;; !! !! only apply N163 pitch slide shift when linear pitch is disabled
 	; see CChannelHandlerN163::SetupSlide()
 .endif
-    lda ft_channel_type, x
-    cmp #CHAN_N163
-    bne :+
-    ; Multiply by 4
-    asl var_Temp16
-    rol var_Temp16 + 1
-    asl var_Temp16
-    rol var_Temp16 + 1
+	lda ft_channel_type, x
+	cmp #CHAN_N163
+	bne :+
+	; Multiply by 4
+	asl var_Temp16
+	rol var_Temp16 + 1
+	asl var_Temp16
+	rol var_Temp16 + 1
 :
 .endif
 	jsr ft_period_remove
@@ -541,14 +553,14 @@ ft_portamento:
 	;; !! !! only apply N163 pitch slide shift when linear pitch is disabled
 	; see CChannelHandlerN163::SetupSlide()
 .endif
-    lda ft_channel_type, x
-    cmp #CHAN_N163
-    bne :+
-    ; Multiply by 4
-    asl var_Temp16
-    rol var_Temp16 + 1
-    asl var_Temp16
-    rol var_Temp16 + 1
+	lda ft_channel_type, x
+	cmp #CHAN_N163
+	bne :+
+	; Multiply by 4
+	asl var_Temp16
+	rol var_Temp16 + 1
+	asl var_Temp16
+	rol var_Temp16 + 1
 :
 .endif
 	jsr ft_period_add
@@ -595,14 +607,14 @@ ft_portamento_up:
 	;; !! !! only apply N163 pitch slide shift when linear pitch is disabled
 	; see CChannelHandlerN163::HandleEffect()
 .endif
-    lda ft_channel_type, x
-    cmp #CHAN_N163
-    bne :+
-    ; Multiply by 4
-    asl var_Temp16
-    rol var_Temp16 + 1
-    asl var_Temp16
-    rol var_Temp16 + 1
+	lda ft_channel_type, x
+	cmp #CHAN_N163
+	bne :+
+	; Multiply by 4
+	asl var_Temp16
+	rol var_Temp16 + 1
+	asl var_Temp16
+	rol var_Temp16 + 1
 :
 .endif
 	jsr ft_period_remove
@@ -623,14 +635,14 @@ ft_portamento_down:
 	;; !! !! only apply N163 pitch slide shift when linear pitch is disabled
 	; see CChannelHandlerN163::HandleEffect()
 .endif
-    lda ft_channel_type, x
-    cmp #CHAN_N163
-    bne :+
-    ; Multiply by 4
-    asl var_Temp16
-    rol var_Temp16 + 1
-    asl var_Temp16
-    rol var_Temp16 + 1
+	lda ft_channel_type, x
+	cmp #CHAN_N163
+	bne :+
+	; Multiply by 4
+	asl var_Temp16
+	rol var_Temp16 + 1
+	asl var_Temp16
+	rol var_Temp16 + 1
 :
 .endif
 	jsr ft_period_add
@@ -663,7 +675,6 @@ ft_period_remove:
 	sta var_ch_TimerPeriodLo, x
 	sta var_ch_TimerPeriodHi, x
 :   rts
-	padjmp		2
 
 .if 0
 ;

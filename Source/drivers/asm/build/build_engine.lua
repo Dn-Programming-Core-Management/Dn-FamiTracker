@@ -125,20 +125,22 @@ local build = function (chip)
   in1:close()
   in2:close()
   final:close()
-  os.remove("out_"..chip..".lst")
-  os.remove("c0_"..chip..".bin")
-  os.remove("c1_"..chip..".bin")
+  if not(arg[1] == "debug") then
+    os.remove("out_"..chip..".lst")
+    os.remove("c0_"..chip..".bin")
+    os.remove("c1_"..chip..".bin")
+  end
 end
 
 local cfgstr = [[MEMORY {
   ZP:  start = $00,   size = $100,   type = rw, file = "";
   RAM: start = $200,  size = $600,   type = rw, file = "";
-  PRG: start = $%04X, size = $40000, type = rw, file = %%O;
+  PRG: start = $%04X, size = $40000, type = rw, file = %%O, define = yes;
 }
 
 SEGMENTS {
   ZEROPAGE: load = ZP,  type = zp;
-  BSS:      load = RAM, type = bss, define = yes;
+  BSS:      load = RAM, type = bss;
   CODE:     load = PRG, type = rw;
 }]]
 
@@ -156,8 +158,10 @@ end
 
 -- os.execute("rmdir /S /Q ..\\..\\famitracker\\Source\\drivers >nul")
 -- os.execute("move drivers ..\\..\\famitracker\\Source >nul")
-os.remove("c1.cfg")
-os.remove("c0.cfg")
+if not(arg[1] == "debug") then
+  os.remove("c1.cfg")
+  os.remove("c0.cfg")
+end
 
 print("All driver headers created in " .. tonumber(os.clock()) .. " seconds.")
 -- os.execute("pause")

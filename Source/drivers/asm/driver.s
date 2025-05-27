@@ -424,49 +424,6 @@ last_bss_var:			.res 1						; Not used
 .include "longbranch.mac"		;;; ;; ;
 
 
-; when using FDS + multichip, avoid any data in these addresses:
-; $9000 - $9003
-; $9010
-; $9030
-; $A000 - $A002
-; $C000
-.macro padjmp count ; headerless padding
-	.local @end
-	.if .defined(USE_ALL)
-		.ifndef PACKAGE
-			.if count > 3
-				jmp @end	
-				.repeat count - 3
-					nop
-				.endrep
-			.else
-				.repeat count
-					nop
-				.endrep
-			.endif
-		.endif
-	.endif
-	@end:
-.endmacro
-
-.macro padjmp_h count ; headered padding
-	.local @end
-	.if .defined(USE_ALL)
-		.ifdef PACKAGE
-			.if count > 3
-				jmp @end
-				.repeat count - 3
-					nop
-				.endrep
-			.else
-				.repeat count
-					nop
-				.endrep
-			.endif
-		.endif
-	.endif
-	@end:
-.endmacro
 
 .if MULTICHIP		;;; ;; ;
 .macro CH_LOOP_START target
@@ -506,6 +463,35 @@ INIT:
 	jmp	ft_music_init
 PLAY:
 	jmp	ft_music_play
+
+; when using FDS + multichip, avoid any data in these addresses:
+; $9000 - $9003
+; $9010
+; $9030
+; $A000 - $A002
+; $B000 - $B002
+; $C000
+
+;;
+; pads with NOPs and jmps to end of padding
+; @param count: bytes in total that the padding takes; must be more than 3
+; @param startpad: start of register area to be padded with for assert 
+; @param endpad: end of register area to be padded with for assert
+.import __PRG_START__
+.macro padjmp count, startpad, endpad, condition
+	.if (count > 3) .and condition
+		.local end
+		.assert * = __PRG_START__+((startpad-$8000) & $FFFF), ldwarning, .sprintf("padding does not start at $%04X", startpad)
+			jmp end
+			.repeat count - 3
+				nop
+			.endrep
+			end:
+		.assert * = __PRG_START__+((endpad-$8000) & $FFFF)+1, ldwarning, .sprintf("padding does not end after $%04X", endpad)
+	.endif
+.endmacro
+
+
 
 .if .defined(CHANNEL_CONTROL)
 ;;; ;; ; TODO: channel flags for each expansion chip
@@ -720,3 +706,5 @@ ft_music_addr:
 		.endif
 	.endif
 .endif
+
+
