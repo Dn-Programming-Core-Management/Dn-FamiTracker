@@ -58,6 +58,8 @@ BEGIN_MESSAGE_MAP(CCreateWaveDlg, CDialog)
 	ON_BN_CLICKED(IDC_BEGIN, &CCreateWaveDlg::OnBnClickedBegin)
 	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN_LOOP, &CCreateWaveDlg::OnDeltaposSpinLoop)
 	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN_TIME, &CCreateWaveDlg::OnDeltaposSpinTime)
+	ON_EN_CHANGE(IDC_TIMES, &CCreateWaveDlg::OnEnChangeLoop)
+	ON_EN_CHANGE(IDC_SECONDS, &CCreateWaveDlg::OnEnChangeSeconds)
 END_MESSAGE_MAP()
 
 int CCreateWaveDlg::GetFrameLoopCount() const
@@ -197,8 +199,10 @@ BOOL CCreateWaveDlg::OnInitDialog()
 	CheckDlgButton(IDC_RADIO_LOOP, BST_CHECKED);
 	CheckDlgButton(IDC_RADIO_TIME, BST_UNCHECKED);
 
+	m_isSetup = true;
 	SetDlgItemText(IDC_TIMES, _T("1"));
 	SetDlgItemText(IDC_SECONDS, _T("01:00"));
+	m_isSetup = false;
 
 	m_ctlChannelList.SubclassDlgItem(IDC_CHANNELS, this);
 
@@ -270,4 +274,18 @@ void CCreateWaveDlg::OnDeltaposSpinTime(NMHDR *pNMHDR, LRESULT *pResult)
 	CheckDlgButton(IDC_RADIO_LOOP, BST_UNCHECKED);
 	CheckDlgButton(IDC_RADIO_TIME, BST_CHECKED);
 	*pResult = 0;
+}
+
+void CCreateWaveDlg::OnEnChangeLoop()
+{
+	if (m_isSetup) return;
+	CheckDlgButton(IDC_RADIO_LOOP, BST_CHECKED);
+	CheckDlgButton(IDC_RADIO_TIME, BST_UNCHECKED);
+}
+
+void CCreateWaveDlg::OnEnChangeSeconds()
+{
+	if (m_isSetup) return;
+	CheckDlgButton(IDC_RADIO_LOOP, BST_UNCHECKED);
+	CheckDlgButton(IDC_RADIO_TIME, BST_CHECKED);
 }
