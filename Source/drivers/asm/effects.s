@@ -209,16 +209,20 @@ ft_load_slide:
 	beq :+
 	lda #EFF_SLIDE_UP
 
-	; skip $9000-9003
-	padjmp 7, $8FFD, $9003, .defined(USE_ALL)
+	; FDS scratch write padding
+	padjmp 7, $8FFD, $9003, .defined(USE_ALL) && .defined(PACKAGE)
 
 	sta var_ch_Effect, x
 	jmp ft_jump_to_effect
 	;rts
 :   lda #EFF_SLIDE_DOWN
 
-	; skip $9010
-	padjmp 5, $900C, $9010, .defined(USE_ALL)
+	; FDS scratch write padding
+	padjmp 7, $8FFD, $9003, .defined(USE_ALL) && (.not .defined(PACKAGE))
+
+
+	; FDS scratch write padding
+	padjmp 5, $900C, $9010, .defined(USE_ALL) && .defined(PACKAGE)
 
 	sta var_ch_Effect, x
 :	;rts
@@ -229,6 +233,10 @@ ft_calc_period:
 
 	; Load period
 	lda var_ch_TimerPeriodLo, x
+
+	; FDS scratch write padding
+	padjmp 4, $900D, $9010, .defined(USE_ALL) && (.not .defined(PACKAGE))
+
 	sta var_ch_PeriodCalcLo, x
 	lda var_ch_TimerPeriodHi, x
 	sta var_ch_PeriodCalcHi, x
@@ -241,12 +249,16 @@ ft_calc_period:
 .endif								; ;; ;;;
 	lda ft_channel_type, x
 
-	; skip $9030
-	padjmp 4, $902D, $9030, .defined(USE_ALL)
+	; FDS scratch write padding
+	padjmp 4, $902D, $9030, .defined(USE_ALL) && .defined(PACKAGE)
 
 	cmp #CHAN_VRC7
 	bne :+
 	lsr var_ch_PeriodCalcHi, x
+
+	; FDS scratch write padding
+	padjmp 6, $902B, $9030, .defined(USE_ALL) && (.not .defined(PACKAGE))
+
 	ror var_ch_PeriodCalcLo, x
 	lsr var_ch_PeriodCalcHi, x
 	ror var_ch_PeriodCalcLo, x

@@ -44,6 +44,11 @@ ENABLE_ROW_SKIP = 1		; Enable this to add code for seeking to a row > 0 when usi
 
 ;USE_MMC5_MULTIPLIER = 1	;;; ;; ; optimize multiplication using MMC5 hardware multiplier
 
+; redundant, but necessary because enabling all chips does not enable USE_ALL
+.if .defined(USE_VRC6) & .defined(USE_VRC7) & .defined(USE_FDS) & .defined(USE_MMC5) & .defined(USE_N163) & .defined(USE_S5B)
+    USE_ALL = 1
+.endif
+
 .if .defined(USE_ALL)	;;; ;; ;
 	USE_VRC6 = 1
 	USE_VRC7 = 1
@@ -52,6 +57,15 @@ ENABLE_ROW_SKIP = 1		; Enable this to add code for seeking to a row > 0 when usi
 	USE_N163 = 1
 	USE_S5B  = 1
 .endif
+
+.enum EXP
+    VRC6 = 1 << 0
+    VRC7 = 1 << 1
+    FDS  = 1 << 2
+    MMC5 = 1 << 3
+    N163 = 1 << 4
+    S5B  = 1 << 5
+.endenum
 
 EXPANSION_FLAG = .defined(USE_VRC6) + .defined(USE_VRC7) << 1 + .defined(USE_FDS) << 2 + .defined(USE_MMC5) << 3 + .defined(USE_N163) << 4 + .defined(USE_S5B) << 5
 
@@ -472,22 +486,23 @@ PLAY:
 ; $B000 - $B002
 ; $C000
 
+USE_PADJMP = 1  ; disable if you don't need FDS write protection
+
 ;;
 ; pads with NOPs and jmps to end of padding
 ; @param count: bytes in total that the padding takes; must be more than 3
 ; @param startpad: start of register area to be padded with for assert 
 ; @param endpad: end of register area to be padded with for assert
-.import __PRG_START__
 .macro padjmp count, startpad, endpad, condition
-	.if (count > 3) .and condition
+	.if (count > 3) && condition && USE_PADJMP
 		.local end
-		.assert * = __PRG_START__+((startpad-$8000) & $FFFF), ldwarning, .sprintf("padding does not start at $%04X", startpad)
+		.assert * = LOAD+((startpad-$8000) & $FFFF), ldwarning, .sprintf("padding does not start at $%04X", startpad)
 			jmp end
 			.repeat count - 3
 				nop
 			.endrep
 			end:
-		.assert * = __PRG_START__+((endpad-$8000) & $FFFF)+1, ldwarning, .sprintf("padding does not end after $%04X", endpad)
+		.assert * = LOAD+((endpad-$8000) & $FFFF)+1, ldwarning, .sprintf("padding does not end after $%04X", endpad)
 	.endif
 .endmacro
 
