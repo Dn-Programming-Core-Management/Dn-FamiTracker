@@ -431,6 +431,10 @@ ft_vrc7_load_slide:
 
 	; Load note
 	lda var_ch_EffParam, x			; Store speed
+
+	; FDS scratch write padding
+	padjmp 7, $9FFC, $A002, .defined(USE_ALL) && .defined(PACKAGE)
+
 	and #$0F						; Get note
 	sta var_Temp					; Store note in temp
 

@@ -74,7 +74,7 @@ ft_init_n163:
 	; Enable all channels
 	lda #$7F
 	sta $F800
-	lda #$70
+	lda var_NamcoChannelsReg
 	sta $4800
 	; Clear wave ram
 	lda #$80
