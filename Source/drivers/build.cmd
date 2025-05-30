@@ -1,5 +1,5 @@
 setlocal
-
+@echo off
 cd %~dp0
 set drivers=%cd%
 cd asm\build || goto :error
