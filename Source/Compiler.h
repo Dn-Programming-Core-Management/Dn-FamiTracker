@@ -124,6 +124,7 @@ private:
 	void	CreateHeader(stNSFHeader *pHeader, int MachineType, unsigned int NSF2Flags, bool NSF2) const;
 	void	CreateNSFeHeader(stNSFeHeader *pHeader, int MachineType);		// // //
 	void	CreateNSFeFooter(stNSFeFooter *pHeader);		// !! !!
+	void	WriteNSFeChunk(stNSFeChunk chunk, CFile &file, bool force_write = false);		// !! !!
 	void	SetDriverSongAddress(char *pDriver, unsigned short Address) const;
 #if 0
 	void	WriteChannelMap();

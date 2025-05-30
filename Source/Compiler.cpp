@@ -474,33 +474,26 @@ void CCompiler::ExportNSFE(LPCTSTR lpszFileName, int MachineType)		// // //
 
 	// TODO write NSF2 chunk?
 
-	auto write_chunk = [&](stNSFeChunk chunk, CFile &file) {
-		file.Write(&chunk.Size, sizeof(chunk.Size));
-		file.Write(&chunk.Ident, sizeof(chunk.Ident));
-		if (!chunk.Data.empty())
-			file.Write(reinterpret_cast<char *>(chunk.Data.data()), (UINT)chunk.Data.size());
-	};
-
 	// write VRC7 chunk
-	write_chunk(Footer.VRC7, OutputFile);
+	WriteNSFeChunk(Footer.VRC7, OutputFile);
 
 	// write time chunk
-	write_chunk(Footer.time, OutputFile);
+	WriteNSFeChunk(Footer.time, OutputFile);
 
 	// write tlbl chunk
-	write_chunk(Footer.tlbl, OutputFile);
+	WriteNSFeChunk(Footer.tlbl, OutputFile);
 
 	// write auth chunk
-	write_chunk(Footer.auth, OutputFile);
+	WriteNSFeChunk(Footer.auth, OutputFile);
 
 	// write text chunk
-	write_chunk(Footer.text, OutputFile);
+	WriteNSFeChunk(Footer.text, OutputFile);
 
 	// write mixe chunk
-	write_chunk(Footer.mixe, OutputFile);
+	WriteNSFeChunk(Footer.mixe, OutputFile);
 
 	// write NEND chunk
-	write_chunk(Footer.NEND, OutputFile);
+	WriteNSFeChunk(Footer.NEND, OutputFile, true);
 
 	// Writing done, print some stats
 	Print(" * NSF load address: $%04X\n", m_iLoadAddress);
@@ -643,33 +636,26 @@ void CCompiler::ExportNSF2(LPCTSTR lpszFileName, int MachineType)
 	stNSFeFooter Footer;
 	CreateNSFeFooter(&Footer);
 
-	auto write_chunk = [&](stNSFeChunk chunk, CFile &file) {
-		file.Write(&chunk.Size, sizeof(chunk.Size));
-		file.Write(&chunk.Ident, sizeof(chunk.Ident));
-		if (!chunk.Data.empty())
-			file.Write(reinterpret_cast<char *>(chunk.Data.data()), (UINT)chunk.Data.size());
-	};
-
 	// write VRC7 chunk
-	write_chunk(Footer.VRC7, OutputFile);
+	WriteNSFeChunk(Footer.VRC7, OutputFile);
 
 	// write time chunk
-	write_chunk(Footer.time, OutputFile);
+	WriteNSFeChunk(Footer.time, OutputFile);
 
 	// write tlbl chunk
-	write_chunk(Footer.tlbl, OutputFile);
+	WriteNSFeChunk(Footer.tlbl, OutputFile);
 
 	// write auth chunk
-	write_chunk(Footer.auth, OutputFile);
+	WriteNSFeChunk(Footer.auth, OutputFile);
 
 	// write text chunk
-	write_chunk(Footer.text, OutputFile);
+	WriteNSFeChunk(Footer.text, OutputFile);
 
 	// write mixe chunk
-	write_chunk(Footer.mixe, OutputFile);
+	WriteNSFeChunk(Footer.mixe, OutputFile);
 
 	// write NEND chunk
-	write_chunk(Footer.NEND, OutputFile);
+	WriteNSFeChunk(Footer.NEND, OutputFile, true);
 
 	// Writing done, print some stats
 	Print(" * NSF load address: $%04X\n", m_iLoadAddress);
@@ -1498,28 +1484,33 @@ void CCompiler::CreateNSFeFooter(stNSFeFooter *pFooter)
 	// write VRC7 chunk
 	memcpy(pFooter->VRC7.Ident, "VRC7", 4);
 	{
-		// "The first byte designates a variant device replacing the VRC7 at the same register addresses."
 		size_t patch_byte_size = size_t(19 * 8);
 		bool extOPLL = m_pDocument->GetExternalOPLLChipCheck()
 			// YM2413 and YMF281B are considered external OPLL
 			|| (theApp.GetSettings()->Emulation.iVRC7Patch > 6);
-		pFooter->VRC7.Data.emplace_back(uint8_t(extOPLL));
-		if (extOPLL)
+		if (extOPLL) {
+			// "The first byte designates a variant device replacing the VRC7 at the same register addresses."
+			pFooter->VRC7.Data.emplace_back(uint8_t(extOPLL));
 			for (unsigned int byte = 0; byte < patch_byte_size; byte++)
 				pFooter->VRC7.Data.emplace_back(m_pDocument->GetOPLLPatchByte(byte));
+		}
 	}
 
 	// write time chunk
 	memcpy(pFooter->time.Ident, "time", 4);
 
 	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
-		emplace_int32(pFooter->time.Data, static_cast<int32_t>(m_pDocument->GetStandardLength(i, 1) * 1000.0 + 0.5));
+		int32_t time = static_cast<int32_t>(round(m_pDocument->GetStandardLength(i, 1) * 1000.0));
+		if (time)
+			emplace_int32(pFooter->time.Data, time);
 	}
 
 	// write tlbl chunk
 	memcpy(pFooter->tlbl.Ident, "tlbl", 4);
 	for (unsigned int i = 0; i < m_pDocument->GetTrackCount(); i++) {
-		emplace_str(pFooter->tlbl.Data, LPCTSTR(m_pDocument->GetTrackTitle(i)));
+		std::string_view label = LPCTSTR(m_pDocument->GetTrackTitle(i));
+		if (!label.empty())
+			emplace_str(pFooter->tlbl.Data, label);
 	}
 
 	// write auth chunk
@@ -1529,10 +1520,12 @@ void CCompiler::CreateNSFeFooter(stNSFeFooter *pFooter)
 	emplace_str(pFooter->auth.Data, m_pDocument->GetSongCopyright());
 	emplace_str(pFooter->auth.Data, APP_NAME_VERSION);
 
-	// write text chunk, if available
-	if (strlen(m_pDocument->GetComment())) {
-		memcpy(pFooter->text.Ident, "text", 4);
-		emplace_str(pFooter->text.Data, LPCTSTR(m_pDocument->GetComment()));
+	// write text chunk
+	memcpy(pFooter->text.Ident, "text", 4);
+	{
+		std::string_view text = LPCTSTR(m_pDocument->GetComment());
+		if (!text.empty())
+			emplace_str(pFooter->text.Data, text);
 	}
 
 	// write mixe chunk
@@ -1564,6 +1557,16 @@ void CCompiler::CreateNSFeFooter(stNSFeFooter *pFooter)
 	size_little_endian(pFooter->text);
 	size_little_endian(pFooter->mixe);
 	size_little_endian(pFooter->NEND);
+}
+
+void CCompiler::WriteNSFeChunk(stNSFeChunk chunk, CFile &file, bool force_write)
+{
+	if (chunk.Data.empty() && !force_write)
+		return;
+
+	file.Write(&chunk.Size, sizeof(chunk.Size));
+	file.Write(&chunk.Ident, sizeof(chunk.Ident));
+	file.Write(reinterpret_cast<char *>(chunk.Data.data()), (UINT)chunk.Data.size());
 }
 
 void CCompiler::UpdateSamplePointers(unsigned int Origin)
@@ -1973,8 +1976,7 @@ void CCompiler::CalculateLoadAddresses(unsigned short &MusicDataAddress, bool &b
 
 	// if we can fit the entire music and driver within the first 16kB of data,
 	// enable compressed mode
-	bCompressedMode = !((PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize - m_iNSFDRVSize) < 0x8000
-		|| m_bBankSwitched || m_iActualChip != m_iActualChip);
+	bCompressedMode = (PAGE_SAMPLES - m_iDriverSize - m_iMusicDataSize - m_iNSFDRVSize) >= 0x8000 && !m_bBankSwitched;
 
 	if (bCompressedMode && !ForceDecompress) {
 		// Locate driver at $C000 - (driver size)
