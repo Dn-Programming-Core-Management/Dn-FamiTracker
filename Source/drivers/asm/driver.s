@@ -46,7 +46,7 @@ ENABLE_ROW_SKIP = 1		; Enable this to add code for seeking to a row > 0 when usi
 
 ; redundant, but necessary because enabling all chips does not enable USE_ALL
 .if .defined(USE_VRC6) & .defined(USE_VRC7) & .defined(USE_FDS) & .defined(USE_MMC5) & .defined(USE_N163) & .defined(USE_S5B)
-    USE_ALL = 1
+	USE_ALL = 1
 .endif
 
 .if .defined(USE_ALL)	;;; ;; ;
@@ -59,12 +59,12 @@ ENABLE_ROW_SKIP = 1		; Enable this to add code for seeking to a row > 0 when usi
 .endif
 
 .enum EXP
-    VRC6 = 1 << 0
-    VRC7 = 1 << 1
-    FDS  = 1 << 2
-    MMC5 = 1 << 3
-    N163 = 1 << 4
-    S5B  = 1 << 5
+	VRC6 = 1 << 0
+	VRC7 = 1 << 1
+	FDS  = 1 << 2
+	MMC5 = 1 << 3
+	N163 = 1 << 4
+	S5B  = 1 << 5
 .endenum
 
 EXPANSION_FLAG = .defined(USE_VRC6) + .defined(USE_VRC7) << 1 + .defined(USE_FDS) << 2 + .defined(USE_MMC5) << 3 + .defined(USE_N163) << 4 + .defined(USE_S5B) << 5

@@ -38,14 +38,14 @@ def build(chip: str):
     print("Building NSF driver for " + chip + "...")
 
     # compile assembly to object
-    out = subprocess.run(f"ca65 ../driver.s -l out_{chip}.lst -D USE_{chip} -D NAMCO_CHANNELS=8 -D PACKAGE -D RELOCATE_MUSIC -D USE_BANKSWITCH -D USE_OLDVIBRATO -D USE_LINEARPITCH -o driver.o", shell=True, check=True, capture_output=True, text=True)
+    out = subprocess.run(f"ca65 ../driver.s -l out_{chip}.lst -D USE_{chip} -D NAMCO_CHANNELS=8 -D PACKAGE -D RELOCATE_MUSIC -D USE_BANKSWITCH -D USE_OLDVIBRATO -D USE_LINEARPITCH -o driver.o", shell=True, capture_output=True, text=True)
     print(out.stdout, end="")
     print(out.stderr, end="")
     # compile object with shifted memory config to determine pointer locations
-    out = subprocess.run(f"ld65 -o c0_{chip}.bin driver.o -C c0.cfg", shell=True, check=True, capture_output=True, text=True)
+    out = subprocess.run(f"ld65 -o c0_{chip}.bin driver.o -C c0.cfg", shell=True, capture_output=True, text=True)
     print(out.stdout, end="")
     print(out.stderr, end="")
-    out = subprocess.run(f"ld65 -o c1_{chip}.bin driver.o -C c1.cfg", shell=True, check=True, capture_output=True, text=True)
+    out = subprocess.run(f"ld65 -o c1_{chip}.bin driver.o -C c1.cfg", shell=True, capture_output=True, text=True)
     print(out.stdout, end="")
     print(out.stderr, end="")
 

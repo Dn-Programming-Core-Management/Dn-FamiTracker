@@ -46,7 +46,7 @@ ft_load_inst_extra_n163:
 	sta var_ch_WavePtrHi - N163_OFFSET, x
 	iny
 .endif
-    ; check if N163 instrument is about to change
+	; check if N163 instrument is about to change
 	lda var_NamcoInstrument - N163_OFFSET, x
 	cmp var_Temp2
 	beq :+
@@ -199,7 +199,7 @@ ft_update_n163:
 	; End
 	lda var_ch_PhaseReset + N163_OFFSET, x
 	beq :+
-    ; do not attempt to reset phase if note is cut
+	; do not attempt to reset phase if note is cut
 	lda var_ch_Note + N163_OFFSET, x
 	beq :+
 	dec var_ch_PhaseReset + N163_OFFSET, x
