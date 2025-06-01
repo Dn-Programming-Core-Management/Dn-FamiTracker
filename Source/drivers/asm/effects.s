@@ -187,10 +187,22 @@ ft_load_slide:
 	cpx #FDS_OFFSET
 	bne :++
 	cmp #EFF_SLIDE_UP
+
+	; FDS scratch write padding
+	padjmp 8, $8FFC, $9003, .defined(USE_ALL) && .defined(PACKAGE)
+
 	bne :+
 	lda #EFF_SLIDE_DOWN
 	jmp :++
 :	lda #EFF_SLIDE_UP
+
+	; FDS scratch write padding
+	padjmp 4, $900D, $9010, .defined(USE_ALL) && .defined(PACKAGE)
+
+	; FDS scratch write padding
+	padjmp 7, $8FFD, $9003, .defined(USE_ALL) && (.not .defined(PACKAGE))
+
+
 :
 .endif
 	sta var_ch_Effect, x
@@ -199,6 +211,10 @@ ft_load_slide:
 	lda ft_channel_type, x		;;; ;; ;
 .if .defined(USE_N163)
 	cpx #CHAN_N163
+
+	; FDS scratch write padding
+	padjmp 5, $900C, $9010, .defined(USE_ALL) && (.not .defined(PACKAGE))
+
 	beq @Invert
 .endif
 	cpx #CHAN_NOI
@@ -208,35 +224,24 @@ ft_load_slide:
 	cmp #EFF_SLIDE_UP
 	beq :+
 	lda #EFF_SLIDE_UP
+	sta var_ch_Effect, x
 
 	; FDS scratch write padding
-	padjmp 7, $8FFD, $9003, .defined(USE_ALL) && .defined(PACKAGE)
-
-	sta var_ch_Effect, x
-	jmp ft_jump_to_effect
+	jmppadjmp {jmp ft_jump_to_effect}, 6, $902B, $9030, .defined(USE_ALL) && .defined(PACKAGE)
+	
 	;rts
 :   lda #EFF_SLIDE_DOWN
-
-	; FDS scratch write padding
-	padjmp 7, $8FFD, $9003, .defined(USE_ALL) && (.not .defined(PACKAGE))
-
-
-	; FDS scratch write padding
-	padjmp 5, $900C, $9010, .defined(USE_ALL) && .defined(PACKAGE)
-
 	sta var_ch_Effect, x
 :	;rts
-	jmp ft_jump_to_effect
+
+	; FDS scratch write padding
+	jmppadjmp {jmp ft_jump_to_effect}, 6, $902B, $9030, .defined(USE_ALL) && (.not .defined(PACKAGE))
 
 ; see CChannelHandler::CalculatePeriod()
 ft_calc_period:
 
 	; Load period
 	lda var_ch_TimerPeriodLo, x
-
-	; FDS scratch write padding
-	padjmp 4, $900D, $9010, .defined(USE_ALL) && (.not .defined(PACKAGE))
-
 	sta var_ch_PeriodCalcLo, x
 	lda var_ch_TimerPeriodHi, x
 	sta var_ch_PeriodCalcHi, x
@@ -248,17 +253,9 @@ ft_calc_period:
 	bne :+
 .endif								; ;; ;;;
 	lda ft_channel_type, x
-
-	; FDS scratch write padding
-	padjmp 4, $902D, $9030, .defined(USE_ALL) && .defined(PACKAGE)
-
 	cmp #CHAN_VRC7
 	bne :+
 	lsr var_ch_PeriodCalcHi, x
-
-	; FDS scratch write padding
-	padjmp 6, $902B, $9030, .defined(USE_ALL) && (.not .defined(PACKAGE))
-
 	ror var_ch_PeriodCalcLo, x
 	lsr var_ch_PeriodCalcHi, x
 	ror var_ch_PeriodCalcLo, x

@@ -177,7 +177,7 @@ ft_update_2a03:
 	bne :++
 :	lda var_ch_PeriodCalcHi + APU_OFFSET, x
 	cmp var_ch_PrevFreqHigh + APU_OFFSET, x
-    bne @SkipCheckPhaseReset
+	bne @SkipCheckPhaseReset
 	; check if we're gonna trigger a phase reset at the same time as a note on
 	lda var_ch_PhaseReset + APU_OFFSET, x
 	beq @DoneSquare
@@ -199,7 +199,7 @@ ft_update_2a03:
 @DoneSquare:
 	lda var_ch_PhaseReset + APU_OFFSET, x
 	beq :+
-    ; do not attempt to reset phase if note is cut
+	; do not attempt to reset phase if note is cut
 	lda var_ch_Note, x
 	beq :+
 	dec var_ch_PhaseReset + APU_OFFSET, x
@@ -237,12 +237,14 @@ ft_update_2a03:
 	lda var_ch_Note + APU_TRI
 	beq @KillTriangle
 	lda var_ch_LengthCounter + APU_TRI	;;; ;; ;
-	and #%00000011
-	beq :+								; branch if no length counter and no linear counter
-	lda var_Linear_Counter
+	and #%00000111
+	beq :++								; branch if no length counter and no linear counter
+:	lda var_Linear_Counter
 	and #$7F
 	bpl :++								; always
-:	lda var_Linear_Counter
+:	lda var_Triangle_Trill              ; still write linear counter if we have retriggering enabled
+	bne :--
+	lda var_Linear_Counter
 	ora #$80							; ;; ;;;
 :	sta $4008
 @EndTriangleVolume:
@@ -259,11 +261,10 @@ ft_update_2a03:
 ;	sta $4009
 	lda var_ch_PeriodCalcLo + APU_TRI
 	sta $400A
-	
 	lda var_ch_Trigger + APU_TRI		;;; ;; ;
 	bne :+
 	lda var_ch_LengthCounter + APU_TRI
-	and #%00000011
+	and #%00000111
 	bne @SkipTriangleKill
 :	lda var_ch_LengthCounter + APU_TRI
 	and #%11111000
@@ -273,6 +274,10 @@ ft_update_2a03:
 @KillTriangle:
 	lda #$00
 	sta $4008
+	; kill linear counter immediately
+	lda var_ch_LengthCounter + APU_TRI
+	and #%11111000
+	sta $400B
 @SkipTriangleKill:
 
 ; ==============================================================================

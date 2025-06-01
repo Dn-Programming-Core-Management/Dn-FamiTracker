@@ -43,7 +43,6 @@ protected:
 	bool	m_bEnvelopeLoop;		// // // (halt length counter flag, bit 5 / triangle bit 7)
 	bool	m_bResetEnvelope;		// // //
 	int		m_iLengthCounter;		// // //
-	bool	m_bRetrigger;			// !! !! triangle linear counter retrigger
 };
 
 // // // 2A03 Square
@@ -87,6 +86,7 @@ protected:
 	CString	GetCustomEffectString() const override;		// // //
 private:
 	int		m_iLinearCounter;
+	bool	m_bRetrigger;			// !! !! triangle linear counter retrigger
 };
 
 // Noise

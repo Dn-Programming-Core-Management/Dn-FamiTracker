@@ -197,6 +197,7 @@ var_ch_PrevFreqHighMMC5: .res 2
 var_ch_LengthCounter:	 .res 4						; MMC5 has two extra pulse channels
 .endif
 var_Linear_Counter:		 .res 1						; Triangle linear counter
+var_Triangle_Trill:		 .res 1						; Triangle linear counter retrigger
 
 .if .defined(USE_DPCM)
 var_ch_SamplePtr:		.res 1						; DPCM sample pointer
@@ -489,6 +490,21 @@ PLAY:
 USE_PADJMP = 1  ; disable if you don't need FDS write protection
 
 ;;
+; manually define a jump command as an optimization
+.macro jmppadjmp jump, count, startpad, endpad, condition
+	.if (count > 3) && condition && USE_PADJMP
+		.assert * = LOAD+((startpad-$8000) & $FFFF), ldwarning, .sprintf("padding does not start at $%04X", startpad)
+			jump
+			.repeat count - 3
+				nop
+			.endrep
+		.assert * = LOAD+((endpad-$8000) & $FFFF)+1, ldwarning, .sprintf("padding does not end after $%04X", endpad)
+	.else
+		jump
+	.endif
+.endmacro
+
+;;
 ; pads with NOPs and jmps to end of padding
 ; @param count: bytes in total that the padding takes; must be more than 3
 ; @param startpad: start of register area to be padded with for assert 
@@ -496,13 +512,8 @@ USE_PADJMP = 1  ; disable if you don't need FDS write protection
 .macro padjmp count, startpad, endpad, condition
 	.if (count > 3) && condition && USE_PADJMP
 		.local end
-		.assert * = LOAD+((startpad-$8000) & $FFFF), ldwarning, .sprintf("padding does not start at $%04X", startpad)
-			jmp end
-			.repeat count - 3
-				nop
-			.endrep
-			end:
-		.assert * = LOAD+((endpad-$8000) & $FFFF)+1, ldwarning, .sprintf("padding does not end after $%04X", endpad)
+		jmppadjmp {jmp end}, count, startpad, endpad, condition
+		end:
 	.endif
 .endmacro
 
