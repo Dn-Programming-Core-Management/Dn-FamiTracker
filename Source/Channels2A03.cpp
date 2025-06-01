@@ -305,7 +305,7 @@ void CTriangleChan::RefreshChannel()
 	if (m_iInstVolume > 0 && m_iVolume > 0 && m_bGate) {
 		WriteRegister(0x4008, (m_bEnvelopeLoop << 7) | (m_iLinearCounter & 0x7F));		// // //
 		WriteRegister(0x400A, HiFreq);
-		if (m_bEnvelopeLoop || m_bResetEnvelope)		// // //
+		if (m_bEnvelopeLoop || m_bResetEnvelope || m_bRetrigger)		// // //
 			WriteRegister(0x400B, LoFreq + (m_iLengthCounter << 3));
 	}
 	else
@@ -318,6 +318,7 @@ void CTriangleChan::ResetChannel()
 {
 	CChannelHandler2A03::ResetChannel();
 	m_iLinearCounter = -1;
+	m_bRetrigger = false;
 }
 
 int CTriangleChan::GetChannelVolume() const
@@ -328,31 +329,48 @@ int CTriangleChan::GetChannelVolume() const
 bool CTriangleChan::HandleEffect(effect_t EffNum, unsigned char EffParam)
 {
 	switch (EffNum) {
-	case EF_VOLUME:
-		if (EffParam < 0x20) {		// // //
-			m_iLengthCounter = EffParam;
-			m_bEnvelopeLoop = false;
-			m_bResetEnvelope = true;
-			if (m_iLinearCounter == -1)	m_iLinearCounter = 0x7F;
-		}
-		else if (EffParam >= 0xE0 && EffParam < 0xE4) {
-			if (!m_bEnvelopeLoop)
+		case EF_VOLUME:
+			if (EffParam < 0x20) {		// // //
+				m_iLengthCounter = EffParam;
+				m_bEnvelopeLoop = false;
 				m_bResetEnvelope = true;
-			m_bEnvelopeLoop = ((EffParam & 0x01) != 0x01);
-		}
-		break;
-	case EF_NOTE_CUT:
-		if (EffParam >= 0x80) {
-			m_iLinearCounter = EffParam - 0x80;
-			m_bEnvelopeLoop = false;
-			m_bResetEnvelope = true;
-		}
-		else {
-			m_bEnvelopeLoop = true;
-			return CChannelHandler2A03::HandleEffect(EffNum, EffParam); // true
-		}
-		break;
-	default: return CChannelHandler2A03::HandleEffect(EffNum, EffParam);
+				if (m_iLinearCounter == -1)	m_iLinearCounter = 0x7F;
+			}
+			else if (EffParam >= 0xE0 && EffParam < 0xE4) {
+				if (!m_bEnvelopeLoop)
+					m_bResetEnvelope = true;
+				m_bEnvelopeLoop = ((EffParam & 0x01) != 0x01);
+			}
+			break;
+		case EF_NOTE_CUT:
+			if (EffParam >= 0x80) {
+				m_iLinearCounter = EffParam - 0x80;
+				m_bEnvelopeLoop = false;
+				m_bResetEnvelope = true;
+			}
+			else {
+				m_bEnvelopeLoop = true;
+				return CChannelHandler2A03::HandleEffect(EffNum, EffParam); // true
+			}
+			m_bRetrigger = false;
+			break;
+		case EF_RETRIGGER:
+			if (EffParam > 0x7f)
+				return false;
+			else if (EffParam == 0) {
+				// disable retrigger when xx=00
+				m_iLinearCounter = -1;
+				m_bEnvelopeLoop = true;
+				m_bRetrigger = false;
+			}
+			else if (m_bGate) {
+				m_iLinearCounter = EffParam;
+				m_bEnvelopeLoop = false;
+				m_bResetEnvelope = true;
+				m_bRetrigger = true;
+			}
+			break;
+		default: return CChannelHandler2A03::HandleEffect(EffNum, EffParam);
 	}
 
 	return true;
@@ -375,6 +393,8 @@ CString CTriangleChan::GetCustomEffectString() const		// // //
 		str.AppendFormat(_T(" E%02X"), m_iLengthCounter);
 	if (!m_bEnvelopeLoop)
 		str.AppendFormat(_T(" EE%X"), !m_bEnvelopeLoop);
+	if (m_bRetrigger)
+		str.AppendFormat(_T(" X%02X"), m_iLinearCounter);
 
 	return str;
 }

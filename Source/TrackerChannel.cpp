@@ -193,7 +193,10 @@ bool CTrackerChannel::IsEffectCompatible(effect_t EffNumber, int EffParam) const
 			return m_iChannelID == CHANID_SQUARE1 || m_iChannelID == CHANID_SQUARE2;
 		case EF_DAC: case EF_SAMPLE_OFFSET: case EF_RETRIGGER: case EF_DPCM_PITCH: {
 			// TODO move to virtual method of Effect subclasses.
-			if (m_iChannelID != CHANID_DPCM) return false;
+			if (m_iChannelID != CHANID_DPCM) {
+				if (m_iChannelID == CHANID_TRIANGLE) return EffParam <= 0x7F;
+				else return false;
+			}
 
 			int limit;
 			switch (EffNumber) {
