@@ -4,11 +4,15 @@
 # Copyright 2025 Persune, GPL-3.0
 # build_engine.lua Copyright 2017 HertzDevil, GPL-2.0
 
-import re, subprocess, os, time
+import re, subprocess, os, time, argparse, sys
 
 start_time = time.time()
 
-DEBUG = False
+parser = argparse.ArgumentParser()
+parser.add_argument("-d", "--debug", action="store_true")
+args = parser.parse_args()
+
+DEBUG = args.debug
 
 def resolvelabel(label: str) -> str:
     match label:
@@ -23,7 +27,7 @@ def resolvelabel(label: str) -> str:
         case "ft_channel_type":
             return "CH_TYPE"
     # Detune table locations
-    chip: str = re.search("ft_periods_(.*)", label)
+    chip = re.search(r"ft_periods_(.*)", label)
     if chip is not None:
         chipname = chip.group(1).upper()
         if chipname == "SAWTOOTH": chipname = "SAW"
@@ -34,11 +38,16 @@ def build(chip: str):
     print("Building NSF driver for " + chip + "...")
 
     # compile assembly to object
-    print(subprocess.run(f"ca65 ../driver.s -l out_{chip}.lst -D USE_{chip} -D NAMCO_CHANNELS=8 -D PACKAGE -D RELOCATE_MUSIC -D USE_BANKSWITCH -D USE_OLDVIBRATO -D USE_LINEARPITCH -o driver.o", shell=True, check=True, capture_output=True, text=True).stdout, end="")
-
+    out = subprocess.run(f"ca65 ../driver.s -l out_{chip}.lst -D USE_{chip} -D NAMCO_CHANNELS=8 -D PACKAGE -D RELOCATE_MUSIC -D USE_BANKSWITCH -D USE_OLDVIBRATO -D USE_LINEARPITCH -o driver.o", shell=True, check=True, capture_output=True, text=True)
+    print(out.stdout, end="")
+    print(out.stderr, end="")
     # compile object with shifted memory config to determine pointer locations
-    print(subprocess.run(f"ld65 -o c0_{chip}.bin driver.o -C c0.cfg", shell=True, check=True, capture_output=True, text=True).stdout, end="")
-    print(subprocess.run(f"ld65 -o c1_{chip}.bin driver.o -C c1.cfg", shell=True, check=True, capture_output=True, text=True).stdout, end="")
+    out = subprocess.run(f"ld65 -o c0_{chip}.bin driver.o -C c0.cfg", shell=True, check=True, capture_output=True, text=True)
+    print(out.stdout, end="")
+    print(out.stderr, end="")
+    out = subprocess.run(f"ld65 -o c1_{chip}.bin driver.o -C c1.cfg", shell=True, check=True, capture_output=True, text=True)
+    print(out.stdout, end="")
+    print(out.stderr, end="")
 
     adr = {}
     pos = {}

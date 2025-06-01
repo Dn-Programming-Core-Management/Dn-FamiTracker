@@ -84,7 +84,7 @@ ft_vrc7_linear_fetch_pitch:
 	sta var_Temp16 + 1
 
 	jsr ft_linear__final
-	dex ;
+	; dex ;
 :	lsr var_ch_PeriodCalcHi, x
 	ror var_ch_PeriodCalcLo, x
 	lsr var_ch_PeriodCalcHi, x
@@ -431,11 +431,11 @@ ft_vrc7_load_slide:
 
 	; Load note
 	lda var_ch_EffParam, x			; Store speed
+	and #$0F						; Get note
 
 	; FDS scratch write padding
-	padjmp 7, $9FFC, $A002, .defined(USE_ALL) && .defined(PACKAGE)
+	padjmp 6, $9FFD, $A002, .defined(USE_ALL) && .defined(PACKAGE)
 
-	and #$0F						; Get note
 	sta var_Temp					; Store note in temp
 
 	lda var_ch_Effect, x
