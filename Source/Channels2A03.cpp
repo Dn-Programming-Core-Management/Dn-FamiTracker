@@ -39,8 +39,7 @@ CChannelHandler2A03::CChannelHandler2A03() :
 	m_bHardwareEnvelope(false),
 	m_bEnvelopeLoop(true),
 	m_bResetEnvelope(false),
-	m_iLengthCounter(1),
-	m_bRetrigger(false)
+	m_iLengthCounter(1)
 {
 }
 
@@ -292,7 +291,8 @@ void C2A03Square::resetPhase()
 
 CTriangleChan::CTriangleChan() :		// // //
 	CChannelHandler2A03(),
-	m_iLinearCounter(-1)
+	m_iLinearCounter(-1),
+	m_bRetrigger(false)
 {
 }
 
@@ -312,7 +312,7 @@ void CTriangleChan::RefreshChannel()
 	else {
 		WriteRegister(0x4008, 0);
 		// interrupt linear counter on note cuts
-		WriteRegister(0x400B, LoFreq + (m_iLengthCounter << 3));
+		WriteRegister(0x400B, m_iLengthCounter << 3);
 	}
 
 	m_bResetEnvelope = false;		// // //
