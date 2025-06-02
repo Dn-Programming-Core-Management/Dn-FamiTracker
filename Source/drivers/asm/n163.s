@@ -308,8 +308,12 @@ ft_n163_load_wave2:
 
 	;; !! !! check if within actual wave count
 	cmp (var_Temp_Pointer2), y
-	bcs @EndMul
-
+	bcc :+
+	;; !! !! if not, use wave_count - 1
+	lda (var_Temp_Pointer2), y
+	sec
+	sbc #1
+:
 	;;; ;; ; Multiply wave index with wave len
 .if .defined(USE_MMC5) && .defined(USE_MMC5_MULTIPLIER)
 	sta $5205

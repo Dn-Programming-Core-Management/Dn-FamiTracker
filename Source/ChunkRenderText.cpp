@@ -500,12 +500,12 @@ void CChunkRenderText::StoreWavesChunk(CChunk *pChunk, CFile *pFile)
 
 		str.Append("\t.byte ");
 
-		for (int i = 1; i < len; ++i) {
-			str.AppendFormat("$%02X", pChunk->GetData(i));
-			if (((i - 1) % wave_len == 0) && (i < len))
+		for (int i = 0; i < (len-1); ++i) {
+			str.AppendFormat("$%02X", pChunk->GetData(i+1));
+			if (i % wave_len == (wave_len - 1) && i < len - 2)
 				str.Append("\n\t.byte ");
 			else {
-				if (i < len - 1)
+				if (i < len - 2)
 					str.Append(", ");
 			}
 		}
