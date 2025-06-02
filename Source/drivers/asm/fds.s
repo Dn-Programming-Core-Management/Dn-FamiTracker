@@ -156,12 +156,10 @@ ft_update_fds:
 	lda var_ch_FDSVolume					;;; ;; ; return if volume envelope is enabled
 	bpl @NoKill								; ;; ;;;
 	lda #$80
-	padjmp_h	7
 	sta $4080	; Make channel silent
 	sta $4084
 	sta $4087
 	rts
-	padjmp		6
 @TickDownDelay:
 	dec var_ch_ModDelayTick
 @DisableMod:

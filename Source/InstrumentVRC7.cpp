@@ -87,7 +87,7 @@ void CInstrumentVRC7::SaveFile(CInstrumentFile *pFile)
 
 bool CInstrumentVRC7::LoadFile(CInstrumentFile *pFile, int iVersion)
 {
-	m_iPatch = pFile->ReadInt();
+	m_iPatch = CModuleException::AssertRangeFmt(pFile->ReadInt(), 0U, 0xFU, "VRC7 patch number", "%i");
 
 	for (int i = 0; i < 8; ++i)
 		SetCustomReg(i, pFile->ReadChar());

@@ -46,7 +46,7 @@ ft_load_inst_extra_n163:
 	sta var_ch_WavePtrHi - N163_OFFSET, x
 	iny
 .endif
-    ; check if N163 instrument is about to change
+	; check if N163 instrument is about to change
 	lda var_NamcoInstrument - N163_OFFSET, x
 	cmp var_Temp2
 	beq :+
@@ -74,7 +74,7 @@ ft_init_n163:
 	; Enable all channels
 	lda #$7F
 	sta $F800
-	lda #$70
+	lda var_NamcoChannelsReg
 	sta $4800
 	; Clear wave ram
 	lda #$80
@@ -199,7 +199,7 @@ ft_update_n163:
 	; End
 	lda var_ch_PhaseReset + N163_OFFSET, x
 	beq :+
-    ; do not attempt to reset phase if note is cut
+	; do not attempt to reset phase if note is cut
 	lda var_ch_Note + N163_OFFSET, x
 	beq :+
 	dec var_ch_PhaseReset + N163_OFFSET, x
@@ -308,8 +308,12 @@ ft_n163_load_wave2:
 
 	;; !! !! check if within actual wave count
 	cmp (var_Temp_Pointer2), y
-	bcs @EndMul
-
+	bcc :+
+	;; !! !! if not, use wave_count - 1
+	lda (var_Temp_Pointer2), y
+	sec
+	sbc #1
+:
 	;;; ;; ; Multiply wave index with wave len
 .if .defined(USE_MMC5) && .defined(USE_MMC5_MULTIPLIER)
 	sta $5205
