@@ -1120,12 +1120,12 @@ ft_cmd_retrigger:
 .endif
 	lda ft_channel_type, x
 	cmp #CHAN_TRI
-	bne :+
+	bne :++
 	jsr ft_get_pattern_byte
+	beq :+		; X00 disables triangle trill
 	sta var_Linear_Counter
 	lda #1
-	sta var_Triangle_Trill
-	; length counter
+:	sta var_Triangle_Trill
 :
 	rts
 ; Effect: DPCM pitch setting
