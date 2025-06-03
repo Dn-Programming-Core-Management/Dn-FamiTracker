@@ -194,7 +194,7 @@ void CSampleEditorDlg::OnBnClickedDelete()
 	TRACE(_T("Removing selected part from sample, start: %i, end %i (diff: %i)\n"), StartSample, EndSample, EndSample - StartSample);
 
 	// Remove the selected part
-	memcpy(m_pSample->GetData() + StartSample, m_pSample->GetData() + EndSample, m_pSample->GetSize() - EndSample);
+	memmove(m_pSample->GetData() + StartSample, m_pSample->GetData() + EndSample, m_pSample->GetSize() - EndSample);
 	int NewSize = m_pSample->GetSize() - (EndSample - StartSample);
 
 	// Reallocate
