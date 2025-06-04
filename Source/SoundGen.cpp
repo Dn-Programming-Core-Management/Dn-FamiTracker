@@ -2098,6 +2098,11 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 	if (!m_pWaveFile ||
 		!m_pWaveFile->OpenFile(pFile, theApp.GetSettings()->Sound.iSampleRate, 16, 1)) {
 		AfxMessageBox(IDS_FILE_OPEN_ERROR);
+
+		// When writing to a locked file, hmmioOut is nullptr so we don't need to call
+		// m_pWaveFile->CloseFile().
+		m_pWaveFile.reset();
+
 		return false;
 	}
 	else {
