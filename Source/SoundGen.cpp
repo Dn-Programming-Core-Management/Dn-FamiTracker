@@ -290,6 +290,8 @@ CSoundGen::~CSoundGen()
 	SAFE_RELEASE(m_pInstRecorder);		// // //
 
 	src_delete(m_resampler);
+
+	LOGGER.dump();
 }
 
 //
