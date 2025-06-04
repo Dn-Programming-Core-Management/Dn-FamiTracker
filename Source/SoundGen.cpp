@@ -50,6 +50,8 @@
 #include "MIDI.h"
 #include "ChannelFactory.h"		// // // test
 #include "DetuneTable.h"		// // //
+#include <cstdio>
+#include <filesystem>
 #include <iostream>
 #include <stdexcept>
 
@@ -70,6 +72,89 @@
 
 // Enable audio dithering
 //#define DITHERING
+
+struct LogEntry {
+	DWORD child_tid;
+	const char /*'static*/* event;
+};
+
+namespace {
+class Log {
+public:
+	explicit Log() {}
+
+	void log(const char /*'static*/* event) {
+		auto lock = std::unique_lock(_mtx);
+
+		constexpr size_t MAX_ENTRY = 256;
+		if (_log.size() >= MAX_ENTRY) {
+			_log.pop_front();
+		}
+
+		//std::time_t result = std::time(nullptr);
+		const auto tid = GetCurrentThreadId();
+		const auto child_tid = (tid == theApp.m_nThreadID)
+			? 0
+			: tid;
+
+		_log.push_back(LogEntry{
+			/*.child_tid = */ child_tid,
+			/*.event = */ event,
+		});
+	}
+
+	void dump() {
+		// there should be no possiblity of deadlock since we never block while owning _mtx.
+		auto lock = std::unique_lock(_mtx);
+
+		// the children yearn for the ~~mines~~ std::format
+		char fname[99];
+		while (true) {
+			snprintf(fname, sizeof(fname), "wavlog-%d.txt", _generation);
+			if (!std::filesystem::exists(fname)) {
+				break;
+			}
+			_generation++;
+		}
+
+		auto f = fopen(fname, "w");
+		if (!f) {
+			lock.unlock();
+			MessageBoxA(nullptr,
+				"WAV export error, failed to dump logs.",
+				"WAV export error",
+				MB_OK | MB_ICONERROR);
+			return;
+		}
+
+		std::string s;
+		for (LogEntry const& entry : _log) {
+			// pray it works. if not, nothing we can do.
+			fprintf(f, "(%d) %s\n", entry.child_tid, entry.event);
+		}
+		// nothing we can do with an error.
+		fclose(f);
+
+		_generation++;
+		lock.unlock();
+
+		// i miss Mutex<T>...
+		log("dump()");
+		MessageBoxA(nullptr,
+			"WAV export error, please report and attach wavlog-*.txt",
+			"WAV export error",
+			MB_OK | MB_ICONERROR);
+	}
+
+	// fields
+private:
+	std::mutex _mtx;
+	std::deque<LogEntry> _log;  // TODO replace with fixed-length ringbuf?
+	int _generation = 0;
+};
+
+Log LOGGER;
+}
 
 // The depth of each vibrato level
 const double CSoundGen::NEW_VIBRATO_DEPTH[] = {
@@ -811,6 +896,10 @@ bool CSoundGen::PostGuiMessage(GuiMessageId message, WPARAM wParam, LPARAM lPara
 	// Called from main thread
 	ASSERT(GetCurrentThreadId() == theApp.m_nThreadID);
 
+	if (message == WM_USER_STOP_RENDER) {
+		LOGGER.log("CSoundGen::GuiPostMessage(WM_USER_STOP_RENDER)");
+	}
+
 	return m_MessageQueue.try_push(GuiMessage{
 		message,
 		wParam,
@@ -1132,6 +1221,10 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 
 	if (m_bRendering) {
 		// Output to file
+		if (!m_pWaveFile) {
+			LOGGER.log("CSoundGen::FillBuffer: ASSERT(m_pWaveFile) failed");
+			LOGGER.dump();
+		}
 		ASSERT(m_pWaveFile);		// // //
 		// This code needs to be changed if we add stereo support.
 		m_pWaveFile->WriteWave((char *) pBuffer, 2 * Size);
@@ -2064,6 +2157,8 @@ void CSoundGen::EvaluateGlobalEffects(stChanNote *NoteData, int EffColumns)
 
 bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEndParam, int Track)
 {
+	LOGGER.log("{ CSoundGen::RenderToFile");
+
 	// Called from main thread
 	ASSERT(GetCurrentThreadId() == theApp.m_nThreadID);
 	ASSERT(m_pDocument != NULL);
@@ -2091,8 +2186,17 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 		m_iRenderRowCount = m_iRenderEndParam;
 	}
 
+	if (m_bRendering) {
+		LOGGER.log("ASSERT(!m_bRendering) failed");
+		LOGGER.dump();
+	}
 	ASSERT(!m_bRendering);
+	if (m_pWaveFile) {
+		LOGGER.log("ASSERT(m_pWaveFile == nullptr) failed");
+		LOGGER.dump();
+	}
 	ASSERT(m_pWaveFile == nullptr);
+	LOGGER.log("m_pWaveFile = std::make_unique<CWaveFile>();");
 	m_pWaveFile = std::make_unique<CWaveFile>();
 	// Unfortunately, destructor doesn't cleanup object. Only CloseFile() does.
 	if (!m_pWaveFile ||
@@ -2103,31 +2207,44 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 		// m_pWaveFile->CloseFile().
 		m_pWaveFile.reset();
 
+		LOGGER.log("} RenderToFile error");
 		return false;
 	}
 	else {
 		m_bRequestRenderStart = true;
+		LOGGER.log("CSoundGen::GuiPostMessage(WM_USER_START_RENDER)");
 		PostGuiMessage(WM_USER_START_RENDER, 0, 0);
 	}
 
+	LOGGER.log("} CSoundGen::RenderToFile");
 	return true;
 }
 
 void CSoundGen::StopRendering()
 {
+	LOGGER.log("{ CSoundGen::StopRendering");
+
 	// Called from player thread
 	ASSERT(std::this_thread::get_id() == m_audioThreadID);
+	if (!m_bRendering) {
+		LOGGER.log("ASSERT(m_bRendering) failed");
+		LOGGER.dump();
+	}
 	ASSERT(m_bRendering);
 
 	auto l = Lock();
 
-	if (!IsRendering())
+	if (!IsRendering()) {
+		LOGGER.log("} !IsRendering(), CSoundGen::StopRendering");
 		return;
+	}
 
 	m_bPlaying = false;
 	m_bRendering = false;
 	m_bStoppingRender = false;		// // //
 	m_bRequestRenderStop = false;		// // //
+	m_iDelayedStart = 0;
+	m_iDelayedEnd = 0;
 	m_iPlayFrame = 0;
 	m_iPlayRow = 0;
 	m_pWaveFile->CloseFile();		// // //
@@ -2136,6 +2253,7 @@ void CSoundGen::StopRendering()
 	ResetBuffer();
 	ResetAPU();		// // //
 	HaltPlayer();
+	LOGGER.log("} CSoundGen::StopRendering");
 }
 
 void CSoundGen::GetRenderStat(int &Frame, int &Time, bool &Done, int &FramesToRender, int &Row, int &RowCount) const
@@ -2356,6 +2474,7 @@ void CSoundGen::OnIdle()
 	if (m_iDelayedStart > 0) {
 		--m_iDelayedStart;
 		if (!m_iDelayedStart) {
+			LOGGER.log("!m_iDelayedStart -> WM_USER_PLAY");
 			PostSelfMessage(WM_USER_PLAY, MODE_PLAY_START, m_iRenderTrack);
 		}
 	}
@@ -2531,7 +2650,9 @@ void CSoundGen::OnResetPlayer(WPARAM wParam, LPARAM lParam)
 
 void CSoundGen::OnStartRender(WPARAM wParam, LPARAM lParam)
 {
+	LOGGER.log("{ CSoundGen::OnStartRender");
 	auto l = Lock();
+	LOGGER.log("{} Lock()");
 	ResetBuffer();
 	m_bRequestRenderStart = false;
 	m_bRequestRenderStop = false;
@@ -2539,6 +2660,7 @@ void CSoundGen::OnStartRender(WPARAM wParam, LPARAM lParam)
 	m_bRendering = true;
 	m_iDelayedStart = 5;	// Wait 5 frames until player starts
 	m_iDelayedEnd = 5;
+	LOGGER.log("} CSoundGen::OnStartRender");
 }
 
 void CSoundGen::OnStopRender(WPARAM wParam, LPARAM lParam)
