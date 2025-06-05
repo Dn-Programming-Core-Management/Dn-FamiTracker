@@ -50,6 +50,7 @@
 #include "MIDI.h"
 #include "ChannelFactory.h"		// // // test
 #include "DetuneTable.h"		// // //
+#include <array>
 #include <cstdio>
 #include <filesystem>
 #include <iostream>
@@ -80,27 +81,31 @@ struct LogEntry {
 
 namespace {
 class Log {
+	static constexpr size_t LOG_SIZE = 256;
+
 public:
 	explicit Log() {}
 
 	void log(const char /*'static*/* event) {
 		auto lock = std::unique_lock(_mtx);
 
-		constexpr size_t MAX_ENTRY = 256;
-		if (_log.size() >= MAX_ENTRY) {
-			_log.pop_front();
-		}
-
-		//std::time_t result = std::time(nullptr);
 		const auto tid = GetCurrentThreadId();
 		const auto child_tid = (tid == theApp.m_nThreadID)
 			? 0
 			: tid;
 
-		_log.push_back(LogEntry{
+		_log[wrap(_end2)] = LogEntry{
 			/*.child_tid = */ child_tid,
 			/*.event = */ event,
-		});
+		};
+		_end2++;
+		if (_end2 - _begin2 > LOG_SIZE) {
+			_begin2 = _end2 - LOG_SIZE;
+			if (_begin2 >= LOG_SIZE) {
+				_begin2 -= LOG_SIZE;
+				_end2 -= LOG_SIZE;
+			}
+		}
 	}
 
 	void dump() {
@@ -128,7 +133,9 @@ public:
 		}
 
 		std::string s;
-		for (LogEntry const& entry : _log) {
+		for (unsigned index2 = _begin2; index2 != _end2; index2++) {
+			LogEntry const& entry = _log[wrap(index2)];
+			
 			// pray it works. if not, nothing we can do.
 			fprintf(f, "(%d) %s\n", entry.child_tid, entry.event);
 		}
@@ -146,10 +153,18 @@ public:
 			MB_OK | MB_ICONERROR);
 	}
 
+private:
+	unsigned wrap(unsigned index) const {
+		return index % LOG_SIZE;
+	}
+
 	// fields
 private:
 	std::mutex _mtx;
-	std::deque<LogEntry> _log;  // TODO replace with fixed-length ringbuf?
+	std::array<LogEntry, LOG_SIZE> _log{};
+	unsigned _begin2 = 0;
+	unsigned _end2 = 0;
+
 	int _generation = 0;
 };
 
