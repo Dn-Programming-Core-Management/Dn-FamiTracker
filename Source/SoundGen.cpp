@@ -81,7 +81,7 @@ struct LogEntry {
 
 namespace {
 class Log {
-	static constexpr size_t LOG_SIZE = 256;
+	static constexpr size_t LOG_SIZE = 4;
 
 public:
 	explicit Log() {}
@@ -98,6 +98,7 @@ public:
 			/*.child_tid = */ child_tid,
 			/*.event = */ event,
 		};
+		printf("pushing %s to %u\n", event, _end2);
 		_end2++;
 		if (_end2 - _begin2 > LOG_SIZE) {
 			_begin2 = _end2 - LOG_SIZE;
@@ -106,10 +107,18 @@ public:
 				_end2 -= LOG_SIZE;
 			}
 		}
+		printf("valid [%u, %u)\n", _begin2, _end2);
 	}
 
 	void dump() {
 		// there should be no possiblity of deadlock since we never block while owning _mtx.
+
+		for (int i = 0; i < 5; i++) log("filler");
+		log("0");
+		log("1");
+		log("2");
+		log("3");
+
 		auto lock = std::unique_lock(_mtx);
 
 		// the children yearn for the ~~mines~~ std::format
@@ -134,6 +143,7 @@ public:
 
 		std::string s;
 		for (unsigned index2 = _begin2; index2 != _end2; index2++) {
+			printf("writing %u\n", wrap(index2));
 			LogEntry const& entry = _log[wrap(index2)];
 			
 			// pray it works. if not, nothing we can do.
