@@ -44,6 +44,7 @@ protected:
 
 	CCheckListBox m_ctlChannelList;
 	CComboBox	  m_ctlTracks;
+	bool m_isSetup = false;
 
 	DECLARE_MESSAGE_MAP()
 public:
@@ -51,4 +52,6 @@ public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnDeltaposSpinLoop(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnDeltaposSpinTime(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnEnChangeLoop();
+	afx_msg void OnEnChangeSeconds();
 };
