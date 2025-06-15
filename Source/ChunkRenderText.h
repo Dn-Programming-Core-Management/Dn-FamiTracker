@@ -49,7 +49,7 @@ public:
 	void StorePeriods(unsigned int *pLUTNTSC, unsigned int *pLUTPAL, unsigned int *pLUTSaw, unsigned int *pLUTVRC7, unsigned int *pLUTFDS, unsigned int *pLUTN163) const;
 	void StoreVibrato(unsigned int *pLUTVibrato) const;
 	void StoreUpdateExt(unsigned char Expansion) const;
-	void StoreEnableExt(unsigned char Expansion) const;
+	void StoreEnableExt(std::vector<char> &ChannelOrder) const;
 	void SetExtraDataFiles(CFile *pFileNSFStub, CFile *pFileNSFHeader, CFile *pFileNSFConfig, CFile *pFilePeriods, CFile *pVibrato, CFile *pFileMultiChipEnable, CFile *pFileMultiChipUpdate);
 	void SetBankSwitching(bool bBankSwitched = false);
 

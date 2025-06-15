@@ -7,6 +7,40 @@ VRC7_HALT       = $00
 VRC7_TRIGGER    = $01
 VRC7_HOLD_NOTE  = $80
 
+
+
+; according to datasheet, data and addr write wait is at max 84 and 12 XTALs respectively
+; about 42 and 6 M2 cycles
+; https://www.smspower.org/maxim/Documents/YM2413ApplicationManual#tableii2
+
+.macro VRC7_WAIT_ADDR_WRITE write
+	write
+	; wait 12 XTAL cycles
+	; approx 6 M2 cycles
+	nop
+	nop
+	nop
+.endmacro
+
+.macro VRC7_WAIT_DATA_WRITE write
+	write
+	; wait 84 XTAL cycles
+	; approx 42 M2 cycles
+	jsr ft_vrc7_delay_data
+.endmacro
+
+ft_vrc7_delay_data:	; 6
+	pha				; 3
+	lda	#$10		; 2
+
+	; (2+3)*4 - 1
+:	asl	a			; 2
+	bcc	:-			; 3
+	; 19 cycles
+	nop
+	pla				; 4
+	rts				; 6
+
 ft_load_instrument_vrc7:
 	; Read VRC7 instrument
 	ldy #$01									;;; ;; ; skip inst type
@@ -31,10 +65,8 @@ ft_init_vrc7:
 	lda #$00
 	sta var_ch_vrc7_PatchFlag
 	tax
-:   stx $9010
-	jsr ft_vrc7_delay2
-	sta $9030
-	jsr ft_vrc7_delay
+:   VRC7_WAIT_ADDR_WRITE {stx $9010}
+	VRC7_WAIT_DATA_WRITE {sta $9030}
 	inx
 	cpx #$3F
 	bne :-
@@ -84,7 +116,6 @@ ft_vrc7_linear_fetch_pitch:
 	sta var_Temp16 + 1
 
 	jsr ft_linear__final
-	dex ;
 :	lsr var_ch_PeriodCalcHi, x
 	ror var_ch_PeriodCalcLo, x
 	lsr var_ch_PeriodCalcHi, x
@@ -96,11 +127,10 @@ ft_clear_vrc7:
 	clc
 	txa
 	adc #$20	; $20: Clear channel
-	sta $9010
+	VRC7_WAIT_ADDR_WRITE {sta $9010}
 	lda var_ch_vrc7_FnumHi, x
 	ora var_ch_vrc7_Bnum, x
-	sta $9030
-	jsr ft_vrc7_delay
+	VRC7_WAIT_DATA_WRITE {sta $9030}
 	rts
 
 ; Update all VRC7 channel registers
@@ -114,11 +144,9 @@ ft_update_vrc7:
 :	txa
 	clc
 	adc #$1F
-	sta $9010
-	jsr ft_vrc7_delay2
+	VRC7_WAIT_ADDR_WRITE {sta $9010}
 	lda #$00
-	sta $9030
-	jsr ft_vrc7_delay
+	VRC7_WAIT_DATA_WRITE {sta $9030}
 	dex
 	bne :-
 	rts
@@ -164,11 +192,9 @@ ft_update_vrc7:
 	clc
 	txa
 	adc #$10	; $10: Low part of Fnum
-	sta $9010
-	jsr ft_vrc7_delay2
+	VRC7_WAIT_ADDR_WRITE {sta $9010}
 	lda var_ch_vrc7_FnumLo, x
-	sta $9030
-	jsr ft_vrc7_delay
+	VRC7_WAIT_DATA_WRITE {sta $9030}
 
 	; Note on or off
 	lda #$00
@@ -187,7 +213,7 @@ ft_update_vrc7:
 :	clc
 	txa
 	adc #$30	; $30: Patch & Volume
-	sta $9010
+	VRC7_WAIT_ADDR_WRITE {sta $9010}
 
 	lda var_ch_vrc7_EffPatch, x		;;; ;; ;
 	cmp #$FF
@@ -207,19 +233,17 @@ ft_update_vrc7:
 	lda #$00
 :	eor #$0F
 	ora var_ch_DutyCurrent + VRC7_OFFSET, x
-	sta $9030
-	jsr ft_vrc7_delay
+	VRC7_WAIT_DATA_WRITE {sta $9030}
 
 	clc
 	txa
 	adc #$20	; $20: High part of Fnum, Bnum, Note on & sustain on
-	sta $9010
+	VRC7_WAIT_ADDR_WRITE {sta $9010}
 	lda var_ch_vrc7_Bnum, x
 	asl a
 	ora var_ch_vrc7_FnumHi, x
 	ora var_Temp2
-	sta $9030
-	jsr ft_vrc7_delay
+	VRC7_WAIT_DATA_WRITE {sta $9030}
 
 
 @NextChan:
@@ -232,11 +256,9 @@ ft_update_vrc7:
 	ldx #$07
 :	asl var_ch_vrc7_PatchFlag
 	bcc :+
-	stx $9010
-	jsr ft_vrc7_delay2
+	VRC7_WAIT_ADDR_WRITE {stx $9010}
 	lda var_ch_vrc7_Write, x
-	sta $9030
-	jsr ft_vrc7_delay
+	VRC7_WAIT_DATA_WRITE {sta $9030}
 :	dex
 	bpl :--
 	rts
@@ -413,12 +435,20 @@ ft_vrc7_get_freq_only:
 	lda ACC
 	sta var_ch_vrc7_Bnum - VRC7_OFFSET, x
 
+	; FDS scratch write padding
+	padjmp 7, $9FFC, $A002, .defined(USE_ALL) && .defined(PACKAGE)
+
+
 	jsr ft_set_trigger		;;; ;; ;
 
 	pla
 	tay
 
 	rts
+
+	; FDS scratch write padding
+	padjmp 8, $9FFB, $A002, .defined(USE_ALL) && (.not .defined(PACKAGE))
+
 
 ; Setup note slides
 ;
@@ -487,24 +517,13 @@ ft_load_vrc7_custom_patch:
 	pha
 	ldy #$00
 :	lda (var_CustomPatchPtr), y		            ; Load register
-	sty $9010						            ; Register index
-	jsr ft_vrc7_delay2
-	sta $9030						            ; Store the setting
-	jsr ft_vrc7_delay
+	VRC7_WAIT_ADDR_WRITE {sty $9010}            ; Register index
+	VRC7_WAIT_DATA_WRITE {sta $9030}            ; Store the setting
 	iny
 	cpy #$08
 	bne :-
 	pla
 	tay
-	rts
-
-ft_vrc7_delay:
-	pha
-	lda	#$01
-:	asl	a
-	bcc	:-
-	pla
-ft_vrc7_delay2:		;;; ;; ;
 	rts
 
 ft_vrc7_cmd:

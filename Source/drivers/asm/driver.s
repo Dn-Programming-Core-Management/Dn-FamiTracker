@@ -33,7 +33,7 @@ USE_DPCM = 1			; Enable DPCM channel (currently broken, leave enabled to avoid t
 
 ENABLE_ROW_SKIP = 1		; Enable this to add code for seeking to a row > 0 when using skip command
 
-;PACKAGE = 1			; header
+;PACKAGE = 1			; Enable this when compiling an .nsf
 ;USE_VRC6 = 1 			; Enable this to include VRC6 code
 ;USE_VRC7 = 1			; Enable this to include VRC7 code
 ;USE_FDS  = 1			; Enable this to include FDS code
@@ -44,6 +44,11 @@ ENABLE_ROW_SKIP = 1		; Enable this to add code for seeking to a row > 0 when usi
 
 ;USE_MMC5_MULTIPLIER = 1	;;; ;; ; optimize multiplication using MMC5 hardware multiplier
 
+; redundant, but necessary because enabling all chips does not enable USE_ALL
+.if .defined(USE_VRC6) & .defined(USE_VRC7) & .defined(USE_FDS) & .defined(USE_MMC5) & .defined(USE_N163) & .defined(USE_S5B)
+	USE_ALL = 1
+.endif
+
 .if .defined(USE_ALL)	;;; ;; ;
 	USE_VRC6 = 1
 	USE_VRC7 = 1
@@ -52,7 +57,18 @@ ENABLE_ROW_SKIP = 1		; Enable this to add code for seeking to a row > 0 when usi
 	USE_N163 = 1
 	USE_S5B  = 1
 .endif
+
+.enum EXP
+	VRC6 = 1 << 0
+	VRC7 = 1 << 1
+	FDS  = 1 << 2
+	MMC5 = 1 << 3
+	N163 = 1 << 4
+	S5B  = 1 << 5
+.endenum
+
 EXPANSION_FLAG = .defined(USE_VRC6) + .defined(USE_VRC7) << 1 + .defined(USE_FDS) << 2 + .defined(USE_MMC5) << 3 + .defined(USE_N163) << 4 + .defined(USE_S5B) << 5
+
 MULTICHIP = (EXPANSION_FLAG & (EXPANSION_FLAG - 1)) <> 0
 
 NTSC_PERIOD_TABLE = 1
@@ -117,8 +133,7 @@ CHANNELS	= DPCM_OFFSET + .defined(USE_DPCM)
 	CHAN_2A03
 	CHAN_TRI
 	CHAN_NOI
-	CHAN_DPCM	; should not be used since the N163 channel count may change and invalidate ft_channel_type
-				; although in practice ft_channel_type should be patched
+	CHAN_DPCM
 	CHAN_VRC6	; used
 	CHAN_SAW	; used
 	CHAN_VRC7	; used
@@ -422,46 +437,7 @@ last_bss_var:			.res 1						; Not used
 .segment "CODE"
 .include "longbranch.mac"		;;; ;; ;
 
-; $9000 - $9003
-; $9010
-; $9030
-; $A000 - $A002
-.macro padjmp count ; headerless padding
-.local @end
-.if .defined(USE_ALL)
- .ifndef PACKAGE
-  .if count > 3
- 	jmp @end
-   .repeat count - 3
- 	nop
-   .endrep
-  .else
-   .repeat count
- 	nop
-   .endrep
-  .endif
- .endif
-.endif
-@end:
-.endmacro
-.macro padjmp_h count ; headered padding
-.local @end
-.if .defined(USE_ALL)
- .ifdef PACKAGE
-  .if count > 3
- 	jmp @end
-   .repeat count - 3
- 	nop
-   .endrep
-  .else
-   .repeat count
- 	nop
-   .endrep
-  .endif
- .endif
-.endif
-@end:
-.endmacro
+
 
 .if MULTICHIP		;;; ;; ;
 .macro CH_LOOP_START target
@@ -501,6 +477,36 @@ INIT:
 	jmp	ft_music_init
 PLAY:
 	jmp	ft_music_play
+
+; when using FDS + multichip, avoid any data in these addresses:
+; $9000 - $9003
+; $9010
+; $9030
+; $A000 - $A002
+; $B000 - $B002
+; $C000
+
+USE_PADJMP = 1  ; disable if you don't need FDS write protection
+
+;;
+; pads with NOPs and jmps to end of padding
+; @param count: bytes in total that the padding takes; must be more than 3
+; @param startpad: start of register area to be padded with for assert 
+; @param endpad: end of register area to be padded with for assert
+.macro padjmp count, startpad, endpad, condition
+	.if (count > 3) && condition && USE_PADJMP
+		.local end
+		.assert * = LOAD+((startpad-$8000) & $FFFF), ldwarning, .sprintf("padding does not start at $%04X", startpad)
+			jmp end
+			.repeat count - 3
+				nop
+			.endrep
+			end:
+		.assert * = LOAD+((endpad-$8000) & $FFFF)+1, ldwarning, .sprintf("padding does not end after $%04X", endpad)
+	.endif
+.endmacro
+
+
 
 .if .defined(CHANNEL_CONTROL)
 ;;; ;; ; TODO: channel flags for each expansion chip
@@ -578,7 +584,7 @@ ft_bankswitch2:
 
 ;;; ;; ; ft_channel_map is unnecessary
 
-ft_channel_type:
+ft_channel_type: ;; Patch
 	.byte CHAN_2A03, CHAN_2A03, CHAN_TRI, CHAN_NOI
 .repeat CH_COUNT_MMC5
 	.byte CHAN_MMC5
@@ -603,33 +609,38 @@ ft_channel_type:
 .endif
 
 .if MULTICHIP		;;; ;; ;
-.if .defined(USE_AUX_DATA) .and .defined(USE_ALL)
-    .include "../enable_ext.s"
-.else
-    ft_channel_enable: ;; Patch
-        .byte 1, 1, 1, 1
-    .repeat CH_COUNT_MMC5
-        .byte .defined(USE_MMC5)
-    .endrep
-    .if .defined(USE_VRC6)
-        .byte .defined(USE_VRC6)
-    .endif
-    .repeat CH_COUNT_N163		; 0CC: check
-        .byte .defined(USE_N163)
-    .endrep
-    .repeat CH_COUNT_FDS
-        .byte .defined(USE_FDS)
-    .endrep
-    .repeat CH_COUNT_S5B
-        .byte .defined(USE_S5B)
-    .endrep
-    .repeat CH_COUNT_VRC7
-        .byte .defined(USE_VRC7)
-    .endrep
-    .if .defined(USE_DPCM)
-        .byte 1
-    .endif
-.endif
+	.if .defined(USE_AUX_DATA) .and .defined(USE_ALL)
+		.include "../enable_ext.s"
+	.else
+		ft_channel_enable: ;; Patch
+		.if .defined(PACKAGE)
+			;; ;; !! patched by the tracker
+			.res CHANNELS, 0
+		.else
+				.byte 1, 1, 1, 1
+			.repeat CH_COUNT_MMC5
+				.byte .defined(USE_MMC5)
+			.endrep
+			.repeat CH_COUNT_VRC6
+				.byte .defined(USE_VRC6)
+			.endrepeat
+			.repeat CH_COUNT_N163		; 0CC: check
+				.byte .defined(USE_N163)
+			.endrep
+			.repeat CH_COUNT_FDS
+				.byte .defined(USE_FDS)
+			.endrep
+			.repeat CH_COUNT_S5B
+				.byte .defined(USE_S5B)
+			.endrep
+			.repeat CH_COUNT_VRC7
+				.byte .defined(USE_VRC7)
+			.endrep
+			.if .defined(USE_DPCM)
+				.byte 1
+			.endif
+		.endif
+	.endif
 .endif
 
 bit_mask:		;;; ;; ; general-purpose bit mask
@@ -710,3 +721,5 @@ ft_music_addr:
 		.endif
 	.endif
 .endif
+
+

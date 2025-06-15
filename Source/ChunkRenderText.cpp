@@ -145,6 +145,9 @@ void CChunkRenderText::StoreSamples(const std::vector<const CDSample*> &Samples,
 	str.Format("\n; DPCM samples (located at DPCM segment)\n");
 
 	if (Samples.size() > 0 && !m_bBankSwitched) {
+		// align first sample for external programs using assembly export
+		// this allows more flexible memory configurations to directly use the export
+		str.Append("\n\t.align 64\n");
 		str.Append("\n\t.segment \"DPCM\"\n");
 	}
 
@@ -161,10 +164,6 @@ void CChunkRenderText::StoreSamples(const std::vector<const CDSample*> &Samples,
 
 		if (m_bBankSwitched)
 			StoreDPCMBankSegment(bank, str);
-
-		// align first sample for external programs using assembly export
-		// this allows more flexible memory configurations to directly use the export
-		if (i == 0)	str.Append("\n\t.align 64\n\n");
 
 		// adjust padding if necessary
 		if ((Address & 0x3F) > 0) {
@@ -199,18 +198,21 @@ void CChunkRenderText::StoreHeaderChunk(CChunk *pChunk, CFile *pFile)
 	int len = pChunk->GetLength();
 	int i = 0;
 
-	str.AppendFormat("\t.word %s\n", pChunk->GetDataRefName(i++));
-	str.AppendFormat("\t.word %s\n", pChunk->GetDataRefName(i++));
-	str.AppendFormat("\t.word %s\n", pChunk->GetDataRefName(i++));
-	str.AppendFormat("\t.word %s\n", pChunk->GetDataRefName(i++));
-	str.AppendFormat("\t.word %s\n", pChunk->GetDataRefName(i++));		// // // Groove
-	str.AppendFormat("\t.byte %i ; flags\n", pChunk->GetData(i++));
-	if (pChunk->IsDataReference(i))
-		str.AppendFormat("\t.word %s\n", pChunk->GetDataRefName(i++));	// FDS waves
-	str.AppendFormat("\t.word %i ; NTSC speed\n", pChunk->GetData(i++));
-	str.AppendFormat("\t.word %i ; PAL speed\n", pChunk->GetData(i++));
-	if (i < pChunk->GetLength())
-		str.AppendFormat("\t.word %i ; N163 channels\n", pChunk->GetData(i++));	// N163 channels
+	// don't write anything if data doesn't exist
+	if (len != 0) {
+		str.AppendFormat("\t.word %s\n", pChunk->GetDataRefName(i++));
+		str.AppendFormat("\t.word %s\n", pChunk->GetDataRefName(i++));
+		str.AppendFormat("\t.word %s\n", pChunk->GetDataRefName(i++));
+		str.AppendFormat("\t.word %s\n", pChunk->GetDataRefName(i++));
+		str.AppendFormat("\t.word %s\n", pChunk->GetDataRefName(i++));		// // // Groove
+		str.AppendFormat("\t.byte %i ; flags\n", pChunk->GetData(i++));
+		if (pChunk->IsDataReference(i))
+			str.AppendFormat("\t.word %s\n", pChunk->GetDataRefName(i++));	// FDS waves
+		str.AppendFormat("\t.word %i ; NTSC speed\n", pChunk->GetData(i++));
+		str.AppendFormat("\t.word %i ; PAL speed\n", pChunk->GetData(i++));
+		if (i < len)
+			str.AppendFormat("\t.word %i ; N163 channels\n", pChunk->GetData(i++));	// N163 channels
+	}
 
 	m_headerStrings.Add(str);
 }
@@ -234,18 +236,21 @@ void CChunkRenderText::StoreInstrumentChunk(CChunk *pChunk, CFile *pFile)
 	CStringA str;
 	int len = pChunk->GetLength();
 
-	str.Format("%s:\n\t.byte %i\n", pChunk->GetLabel(), pChunk->GetData(0));
+	// don't write anything if data doesn't exist
+	if (len != 0) {
+		str.Format("%s:\n\t.byte %i\n", pChunk->GetLabel(), pChunk->GetData(0));
 
-	for (int i = 1; i < len; ++i) {
-		if (pChunk->IsDataReference(i)) {
-			str.AppendFormat("\t.word %s\n", pChunk->GetDataRefName(i));
-		}
-		else {
-			if (pChunk->GetDataSize(i) == 1) {
-				str.AppendFormat("\t.byte $%02X\n", pChunk->GetData(i));
+		for (int i = 1; i < len; ++i) {
+			if (pChunk->IsDataReference(i)) {
+				str.AppendFormat("\t.word %s\n", pChunk->GetDataRefName(i));
 			}
 			else {
-				str.AppendFormat("\t.word $%04X\n", pChunk->GetData(i));
+				if (pChunk->GetDataSize(i) == 1) {
+					str.AppendFormat("\t.byte $%02X\n", pChunk->GetData(i));
+				}
+				else {
+					str.AppendFormat("\t.word $%04X\n", pChunk->GetData(i));
+				}
 			}
 		}
 	}
@@ -287,9 +292,8 @@ void CChunkRenderText::StoreSamplePointersChunk(CChunk *pChunk, CFile *pFile)
 	// Store sample pointer
 	str.Format("%s:\n", pChunk->GetLabel());
 
-	if (len > 0) {
-
-		int len = pChunk->GetLength();
+	// don't write anything if data doesn't exist
+	if (len != 0) {
 		int samplenum = 0;
 		for (int i = 0; i < len; i += 3) {
 			CStringA label;
@@ -458,15 +462,19 @@ void CChunkRenderText::StoreWavetableChunk(CChunk *pChunk, CFile *pFile)
 
 	// FDS waves
 	str.Format("%s:\n", pChunk->GetLabel());
-	str.Append("\t.byte ");
 
-	for (int i = 0; i < len; ++i) {
-		str.AppendFormat("$%02X", pChunk->GetData(i));
-		if ((i % 64 == 63) && (i < len - 1))
-			str.Append("\n\t.byte ");
-		else {
-			if (i < len - 1)
-				str.Append(", ");
+	// don't write anything if data doesn't exist
+	if (len != 0) {
+		str.Append("\t.byte ");
+
+		for (int i = 0; i < len; ++i) {
+			str.AppendFormat("$%02X", pChunk->GetData(i));
+			if ((i % 64 == 63) && (i < len - 1))
+				str.Append("\n\t.byte ");
+			else {
+				if (i < len - 1)
+					str.Append(", ");
+			}
 		}
 	}
 
@@ -485,17 +493,21 @@ void CChunkRenderText::StoreWavesChunk(CChunk *pChunk, CFile *pFile)
 
 	// Namco waves
 	str.Format("%s:\n", pChunk->GetLabel());
-	str.AppendFormat("\t.byte %i\n", waves);
-	
-	str.Append("\t.byte ");
 
-	for (int i = 1; i < len; ++i) {
-		str.AppendFormat("$%02X", pChunk->GetData(i));
-		if (((i-1) % wave_len == 0) && (i < len))
-			str.Append("\n\t.byte ");
-		else {
-			if (i < len - 1)
-				str.Append(", ");
+	// don't write anything if data doesn't exist
+	if (len != 0) {
+		str.AppendFormat("\t.byte %i\n", waves);
+
+		str.Append("\t.byte ");
+
+		for (int i = 0; i < (len-1); ++i) {
+			str.AppendFormat("$%02X", pChunk->GetData(i+1));
+			if (i % wave_len == (wave_len - 1) && i < len - 2)
+				str.Append("\n\t.byte ");
+			else {
+				if (i < len - 2)
+					str.Append(", ");
+			}
 		}
 	}
 
@@ -563,7 +575,7 @@ void CChunkRenderText::StoreNSFStub(unsigned char Expansion, vibrato_t VibratoSt
 	str.Append("USE_AUX_DATA = 1\n");
 	bool MultiChip = ((Expansion & (Expansion - 1)) != 0) && UseAllChips;
 	if (MultiChip) {
-		// Simulate NSF export multichip
+		// Simulate NSF export multichip kernel
 		str.Append("USE_ALL = 1\n");
 		str.Append("NAMCO_CHANNELS = 8\n");
 		str.Append("USE_OLDVIBRATO = 1\n");
@@ -824,74 +836,13 @@ void CChunkRenderText::StoreUpdateExt(unsigned char Expansion) const
 	WriteFileString(str, m_pFileMultiChipUpdate);
 }
 
-void CChunkRenderText::StoreEnableExt(unsigned char Expansion) const
+void CChunkRenderText::StoreEnableExt(std::vector<char> &ChannelOrder) const
 {
 	// // // special processing for multichip
-	if ((Expansion & (Expansion - 1)) == false) return;
-	/*
-	if (Expansion & (Expansion - 1)) {		// // // special processing for multichip
-		const int CH_MAP[] = {
-			0, 1, 2, 3, 27,
-			6, 7, 8,
-			4, 5, -1,
-			9, 10, 11, 12, 13, 14, 15, 16,
-			17,
-			21, 22, 23, 24, 25, 26,
-			18, 19, 20,
-		};
-
-		for (int i = 0; i < CHANNELS; ++i)
-			pData[FT_CH_ENABLE_ADR + i] = 0;
-		for (const int x : m_vChanOrder)
-			pData[FT_CH_ENABLE_ADR + CH_MAP[m_pDocument->GetChannelType(x)]] = 1;
-	}
-	*/
-	// // // special processing for multichip
-	if ((Expansion & (Expansion - 1)) == false) return;
-
-	CString str;
+	CStringA str;
 
 	str.Append("ft_channel_enable: ;; Patched\n");
-	str.Append("\t.byte 1, 1, 1, 1\n");
-
-	str.Append("\t; MMC5\n");
-	if (Expansion & SNDCHIP_MMC5)
-		str.Append("\t.byte 1, 1\n");
-	else
-		str.Append("\t.byte 0, 0\n");
-
-	str.Append("\t; VRC6\n");
-	if (Expansion & SNDCHIP_VRC6)
-		str.Append("\t.byte 1, 1, 1\n");
-	else
-		str.Append("\t.byte 0, 0, 0\n");
-
-	str.Append("\t; N163\n");
-	if (Expansion & SNDCHIP_N163)
-		str.Append("\t.byte 1, 1, 1, 1, 1, 1, 1, 1\n");
-	else
-		str.Append("\t.byte 0, 0, 0, 0, 0, 0, 0, 0\n");
-
-	str.Append("\t; FDS\n");
-	if (Expansion & SNDCHIP_FDS)
-		str.Append("\t.byte 1\n");
-	else
-		str.Append("\t.byte 0\n");
-
-	str.Append("\t; S5B\n");
-	if (Expansion & SNDCHIP_S5B)
-		str.Append("\t.byte 1, 1, 1\n");
-	else
-		str.Append("\t.byte 0, 0, 0\n");
-
-	str.Append("\t; VRC7\n");
-	if (Expansion & SNDCHIP_VRC7)
-		str.Append("\t.byte 1, 1, 1, 1, 1, 1\n");
-	else
-		str.Append("\t.byte 0, 0, 0, 0, 0, 0\n");
-
-	str.Append("\t; DPCM\n");
-	str.Append("\t.byte 1\n");
+	StoreByteString(ChannelOrder.data(), (int)ChannelOrder.size(), str, DEFAULT_LINE_BREAK);
 	WriteFileString(str, m_pFileMultiChipEnable);
 }
 
@@ -930,16 +881,19 @@ void CChunkRenderText::StoreByteString(const char *pData, int Len, CStringA &str
 void CChunkRenderText::StoreByteString(const CChunk *pChunk, CStringA &str, int LineBreak) const
 {
 	int len = pChunk->GetLength();
-	
-	str.Append("\t.byte ");
 
-	for (int i = 0; i < len; ++i) {
-		str.AppendFormat("$%02X", pChunk->GetData(i));
+	// don't write anything if data doesn't exist
+	if (len != 0) {
+		str.Append("\t.byte ");
 
-		if ((i % LineBreak == (LineBreak - 1)) && (i < len - 1))
-			str.Append("\n\t.byte ");
-		else if (i < len - 1)
-			str.Append(", ");
+		for (int i = 0; i < len; ++i) {
+			str.AppendFormat("$%02X", pChunk->GetData(i));
+
+			if ((i % LineBreak == (LineBreak - 1)) && (i < len - 1))
+				str.Append("\n\t.byte ");
+			else if (i < len - 1)
+				str.Append(", ");
+		}
 	}
 
 	str.Append("\n");

@@ -436,7 +436,7 @@ void CInstrumentEditorDPCM::OnNMClickTable(NMHDR *pNMHDR, LRESULT *pResult)
 	m_iSelectedKey = GET_NOTE(pTableListCtrl->GetSelectionMark()) - 1;		// // //
 	m_iOctave = GET_OCTAVE(pTableListCtrl->GetSelectionMark());
 
-	int Sample = m_pInstrument->GetSampleIndex(m_iOctave, m_iSelectedKey) - 1;
+	int Sample = m_pInstrument->GetSampleIndex(m_iOctave, m_iSelectedKey);
 	int Pitch = m_pInstrument->GetSamplePitch(m_iOctave, m_iSelectedKey);
 	int Delta = m_pInstrument->GetSampleDeltaValue(m_iOctave, m_iSelectedKey);
 

@@ -1812,7 +1812,7 @@ void CFamiTrackerDoc::ReadBlock_Parameters(CDocumentFile *pDocFile, const int Ve
 		switch (m_iPlaybackRateType) {
 		case 1:
 			// workaround for now
-			m_iEngineSpeed = static_cast<int>(1000000. / m_iPlaybackRate + .5);
+			m_iEngineSpeed = static_cast<unsigned int>(1000000. / m_iPlaybackRate + .5);
 			break;
 		case 0: case 2:
 		default:
@@ -1949,7 +1949,9 @@ void CFamiTrackerDoc::ReadBlock_Header(CDocumentFile *pDocFile, const int Versio
 			for (unsigned int i = 0; i < m_iTrackCount; ++i) {
 				int First = static_cast<unsigned char>(pDocFile->GetBlockChar());
 				int Second = static_cast<unsigned char>(pDocFile->GetBlockChar());
-				if (!i) {
+
+				// we don't have per-track row highlights yet, just use the first track
+				if (i == 0) {
 					m_vHighlight.First = First;
 					m_vHighlight.Second = Second;
 				}
