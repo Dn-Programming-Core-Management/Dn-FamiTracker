@@ -559,9 +559,12 @@ void CPatternCompiler::CompileData(int Track, int Pattern, int Channel, bool bUs
 					}
 					break;
 				case EF_RETRIGGER:
-					if (ChanID == CHANID_DPCM) {
+					if (ChanID == CHANID_DPCM || ChanID == CHANID_TRIANGLE) {
 						WriteData(Command(CMD_EFF_RETRIGGER));
-						WriteData(EffParam + 1);
+						if (ChanID == CHANID_DPCM)
+							WriteData(EffParam + 1);
+						else if (EffParam <= 0x7F)
+							WriteData(EffParam);
 					}
 					break;
 				case EF_DPCM_PITCH:

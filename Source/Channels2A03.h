@@ -85,7 +85,8 @@ protected:
 	void	ClearRegisters() override;
 	CString	GetCustomEffectString() const override;		// // //
 private:
-	int m_iLinearCounter;
+	int		m_iLinearCounter;
+	bool	m_bRetrigger;			// !! !! triangle linear counter retrigger
 };
 
 // Noise
