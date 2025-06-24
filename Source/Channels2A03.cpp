@@ -311,8 +311,9 @@ void CTriangleChan::RefreshChannel()
 	}
 	else {
 		WriteRegister(0x4008, 0);
-		// interrupt linear counter on note cuts
-		WriteRegister(0x400B, m_iLengthCounter << 3);
+		// interrupt linear counter on note cuts when retrigerring
+		if (m_bRetrigger)
+			WriteRegister(0x400B, (m_iLengthCounter << 3));
 	}
 
 	m_bResetEnvelope = false;		// // //

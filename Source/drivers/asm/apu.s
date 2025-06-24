@@ -274,7 +274,9 @@ ft_update_2a03:
 @KillTriangle:
 	lda #$00
 	sta $4008
-	; kill linear counter immediately
+	; kill linear counter immediately if retriggering
+	lda var_Triangle_Trill
+	beq @SkipTriangleKill
 	lda var_ch_LengthCounter + APU_TRI
 	and #%11111000
 	sta $400B
