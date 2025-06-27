@@ -301,7 +301,7 @@ ft_update_apu:
 	jsr ft_update_2a03
 ft_update_ext:		;; Patch
 .if .defined(USE_AUX_DATA) .and .defined(USE_ALL)
-    .include "../update_ext.s"
+	.include "../update_ext.s"
 .else
 .if .defined(USE_VRC6)
 	jsr	ft_update_vrc6
@@ -1029,12 +1029,15 @@ ft_cmd_note_cut:
 	lda ft_channel_type, x
 	cmp #CHAN_TRI							;;; ;; ;
 	bne :+
+	; linear counter
 	lda var_Linear_Counter
 	ora #$80
 	sta var_Linear_Counter
 	lda var_ch_LengthCounter + APU_TRI
-	and #%11111100
+	and #%11111000
 	sta var_ch_LengthCounter + APU_TRI		; ;; ;;;
+	lda #0
+	sta var_Triangle_Trill
 :	rts
 ft_cmd_linear_counter:				;;; ;; ;
 	jsr ft_get_pattern_byte
@@ -1042,6 +1045,8 @@ ft_cmd_linear_counter:				;;; ;; ;
 	lda var_ch_LengthCounter + APU_TRI
 	ora #%00000001
 	sta var_ch_LengthCounter + APU_TRI
+	lda #0
+	sta var_Triangle_Trill
 	rts								; ;; ;;;
 ;;; ;; ; Effect: Note release (Lxx)
 ft_cmd_note_release:
@@ -1102,14 +1107,26 @@ ft_cmd_target_vol_slide:
 ; Effect: Retrigger
 ft_cmd_retrigger:
 .if .defined(USE_DPCM)
+	lda ft_channel_type, x
+	cmp #CHAN_DPCM
+	bne :+
 	jsr ft_get_pattern_byte
 	sta var_ch_DPCM_Retrig
 	lda var_ch_DPCM_RetrigCntr
-	bne :+
+	bne :++
 	lda var_ch_DPCM_Retrig
 	sta var_ch_DPCM_RetrigCntr
 :
 .endif
+	lda ft_channel_type, x
+	cmp #CHAN_TRI
+	bne :++
+	jsr ft_get_pattern_byte
+	beq :+		; X00 disables triangle trill
+	sta var_Linear_Counter
+	lda #1
+:	sta var_Triangle_Trill
+:
 	rts
 ; Effect: DPCM pitch setting
 ft_cmd_dpcm_pitch:

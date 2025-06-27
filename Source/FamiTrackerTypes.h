@@ -137,7 +137,7 @@ enum effect_t : unsigned char {
 	EF_SLIDE_DOWN,      	// Slide down
 	EF_VOLUME_SLIDE,    	// Volume slide
 	EF_NOTE_CUT,        	// Note cut
-	EF_RETRIGGER,       	// DPCM retrigger
+	EF_RETRIGGER,       	// Triangle linear counter / DPCM sample retrigger
 	EF_DELAYED_VOLUME,  	// // // Delayed channel volume
 	EF_FDS_MOD_DEPTH,   	// FDS modulation depth
 	EF_FDS_MOD_SPEED_HI,	// FDS modulation speed hi
@@ -155,7 +155,7 @@ enum effect_t : unsigned char {
 	EF_N163_WAVE_BUFFER,	// // // N163 wave buffer
 	EF_FDS_VOLUME,      	// // // FDS volume envelope
 	EF_FDS_MOD_BIAS,    	// // // FDS auto-FM bias
-	EF_PHASE_RESET,  // Reset waveform phase without retriggering note (VRC6-only so far)
+	EF_PHASE_RESET,  // Reset waveform phase without retriggering note
 	EF_HARMONIC,  // Multiply the note pitch by an integer
 	EF_TARGET_VOLUME_SLIDE,	// // !! Target volume slide
 

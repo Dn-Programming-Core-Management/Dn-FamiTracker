@@ -403,6 +403,10 @@ ft_vrc7_get_freq:
 @NoPorta:
 	lda ft_note_table_vrc7_l, y
 	sta var_ch_TimerPeriodLo, x
+
+	; FDS scratch write padding
+	padjmp 6, $9FFD, $A002, .defined(USE_ALL) && .defined(PACKAGE)
+
 	lda ft_note_table_vrc7_h, y
 	sta var_ch_TimerPeriodHi, x
 
@@ -410,8 +414,12 @@ ft_vrc7_get_freq:
 	sta var_ch_vrc7_Bnum - VRC7_OFFSET, x
 
 	pla
+
+	; FDS scratch write padding
+	padjmp 6, $9FFD, $A002, .defined(USE_ALL) && (.not .defined(PACKAGE))
+
 	tay
-	jmp ft_set_trigger		;;; ;; ;
+	jmp ft_set_trigger
 
 ft_vrc7_get_freq_only:
 	tya
@@ -435,20 +443,12 @@ ft_vrc7_get_freq_only:
 	lda ACC
 	sta var_ch_vrc7_Bnum - VRC7_OFFSET, x
 
-	; FDS scratch write padding
-	padjmp 7, $9FFC, $A002, .defined(USE_ALL) && .defined(PACKAGE)
-
-
 	jsr ft_set_trigger		;;; ;; ;
 
 	pla
 	tay
 
 	rts
-
-	; FDS scratch write padding
-	padjmp 8, $9FFB, $A002, .defined(USE_ALL) && (.not .defined(PACKAGE))
-
 
 ; Setup note slides
 ;
