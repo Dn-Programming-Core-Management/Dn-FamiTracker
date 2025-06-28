@@ -54,66 +54,6 @@ using std::get_if;
 // Clipboard ID
 const TCHAR CFamiTrackerView::CLIPBOARD_ID[] = _T("FamiTracker Pattern");
 
-// Effect texts
-// 0CC: add verbose description as in modplug
-const CString EFFECT_TEXTS[] = {		// // //
-	_T(""),
-	_T("Fxx - Set speed to XX, cancels groove. If xx>=10, tempo must be fixed."),
-	_T("Fxx - Set tempo to XX (if tempo not fixed)"),
-	_T("Bxx - Jump to beginning of frame XX"),
-	_T("Dxx - Skip to row XX of next frame"),
-	_T("Cxx - Halt song"),
-	_T("Exx - Set length counter index to XX"),
-	_T("EEx - Set length counter mode, bit 0 = length counter, bit 1 = disable loop"),
-	_T("3xx - Automatic portamento, XX = speed"),
-	_T("(not used)"),
-	_T("Hxy - Hardware sweep up, X = speed, Y = shift"),
-	_T("Ixy - Hardware sweep down, X = speed, Y = shift"),
-	_T("0xy - Arpeggio, X = second note, Y = third note (if zero, produces 2-frame period)"),
-	_T("4xy - Vibrato, X = speed, Y = depth"),
-	_T("7xy - Tremolo, X = speed, Y = depth"),
-	_T("Pxx - Fine pitch, XX - 80 = offset"),
-	_T("Gxx - Row delay, XX = number of frames"),
-	_T("Zxx - DPCM delta counter setting, XX<=7F = DC bias"),
-	_T("1xx - Slide up, XX = speed (pitch/frame)"),
-	_T("2xx - Slide down, XX = speed (pitch/frame)"),
-	_T("Vxx - Set Square duty / Noise mode to XX"),
-	_T("Vxx - Set N163 wave index to XX"),
-	_T("Vxx - Set VRC7 patch index to XX"),
-	_T("Yxx - Set DPCM sample offset to XX<=3F"),
-	_T("Qxy - Portamento up, X = speed, Y = notes"),
-	_T("Rxy - Portamento down, X = speed, Y = notes"),
-	_T("Axy - Volume slide, X = up, Y = down"),
-	_T("Sxx - Note cut, XX = frames to wait"),
-	_T("Sxx - Triangle channel linear counter, XX - 80 = duration"),
-	_T("Xxx - DPCM retrigger, XX = frames to wait"),
-	_T("Mxy - Delayed channel volume, X = frames to wait, Y = channel volume"),
-	_T("Hxx - FDS modulation depth, XX = depth, 3F = highest"),
-	_T("Hxx - Auto FDS modulation ratio, XX - 80 = multiplier"),
-	_T("I0x - FDS modulation rate, high byte; disable auto modulation"),
-	_T("Ixy - Auto FDS modulation, X = multiplier, Y + 1 = divider"),
-	_T("Jxx - FDS modulation rate, low byte"),
-	_T("W0x - DPCM pitch, F = highest"),
-	_T("H0y - 5B envelope shape, bit 3 = Continue, bit 2 = Attack, bit 1 = Alternate, bit 0 = Hold"),
-	_T("Hxy - Auto 5B envelope, X - 8 = shift amount, Y = shape"),
-	_T("Ixx - 5B envelope rate, high byte"),
-	_T("Jxx - 5B envelope rate, low byte"),
-	_T("Wxx - 5B noise pitch, 1F = highest"),
-	_T("Hxx - VRC7 custom patch port, XX = register address"),
-	_T("Ixx - VRC7 custom patch write, XX = register value"),
-	_T("Lxx - Note release, XX = frames to wait"),
-	_T("Oxx - Set groove to XX"),
-	_T("Txy - Delayed transpose (upward), X = frames to wait, Y = semitone offset"),
-	_T("Txy - Delayed transpose (downward), X - 8 = frames to wait, Y = semitone offset"),
-	_T("Zxx - N163 wave buffer access, XX = position in bytes"),
-	_T("Exx - FDS volume envelope (attack), XX = rate"),
-	_T("Exx - FDS volume envelope (decay), XX - 40 = rate"),
-	_T("Zxx - Auto FDS modulation rate bias, XX - 80 = offset"),
-	_T("=00 - Reset channel phase"),
-	_T("Kxx - Multiply frequency by XX, does not affect FDS Ixy modulator"),
-	_T("Nxy - Target volume slide, X = speed, Y = volume"),
-};
-
 // OLE copy and mix
 #define	DROPEFFECT_COPY_MIX	( 8 )
 
@@ -4168,24 +4108,143 @@ void CFamiTrackerView::OnRecallChannelState()		// // //
 	GetParentFrame()->SetMessageText(theApp.GetSoundGenerator()->RecallChannelState(Channel));
 }
 
+// Effect texts
+// 0CC: add verbose description as in modplug
 CString	CFamiTrackerView::GetEffectHint(const stChanNote &Note, int Column) const		// // //
 {
-	int Index = Note.EffNumber[Column];
+	effect_t Index = Note.EffNumber[Column];
 	int Param = Note.EffParam[Column];
 	if (Index >= EF_COUNT) return _T("Undefined effect");
 
 	int Channel = m_pPatternEditor->GetChannel();
 	int Chip = GetDocument()->GetChannel(Channel)->GetChip();
-	if (Index > EF_FDS_VOLUME || (Index == EF_FDS_VOLUME && Param >= 0x40)) ++Index;
-	if (Index > EF_TRANSPOSE || (Index == EF_TRANSPOSE && Param >= 0x80)) ++Index;
-	if (Index > EF_SUNSOFT_ENV_TYPE || (Index == EF_SUNSOFT_ENV_TYPE && Param >= 0x10)) ++Index;
-	if (Index > EF_FDS_MOD_SPEED_HI || (Index == EF_FDS_MOD_SPEED_HI && Param >= 0x10)) ++Index;
-	if (Index > EF_FDS_MOD_DEPTH || (Index == EF_FDS_MOD_DEPTH && Param >= 0x80)) ++Index;
-	if (Index > EF_NOTE_CUT || (Index == EF_NOTE_CUT && Param >= 0x80 && Channel == CHANID_TRIANGLE)) ++Index;
-	if (Index > EF_DUTY_CYCLE || (Index == EF_DUTY_CYCLE && (Chip == SNDCHIP_VRC7 || Chip == SNDCHIP_N163))) ++Index;
-	if (Index > EF_DUTY_CYCLE || (Index == EF_DUTY_CYCLE && Chip == SNDCHIP_N163)) ++Index;
-	if (Index > EF_VOLUME || (Index == EF_VOLUME && Param >= 0xE0)) ++Index;
-	if (Index > EF_SPEED || (Index == EF_SPEED && Param >= GetDocument()->GetSpeedSplitPoint())) ++Index;
 
-	return EFFECT_TEXTS[Index];
+	switch (Index) {
+	case EF_SPEED:
+		if (Param >= GetDocument()->GetSpeedSplitPoint())
+			return _T("Fxx - Set tempo to XX (if tempo not fixed)");
+		else
+			return _T("Fxx - Set speed to XX, cancels groove. If xx>=10, tempo must be fixed.");
+	case EF_JUMP:
+		return _T("Bxx - Jump to beginning of frame XX");
+	case EF_SKIP:
+		return _T("Dxx - Skip to row XX of next frame");
+	case EF_HALT:
+		return _T("Cxx - Halt song");
+	case EF_VOLUME:
+		if (Param >= 0xE0)
+			return _T("EEx - Set length counter mode, bit 0 = length counter, bit 1 = disable loop");
+		else
+			return _T("Exx - Set length counter index to XX");
+	case EF_PORTAMENTO:
+		return _T("3xx - Automatic portamento, XX = speed");
+	case EF_PORTAOFF:
+		return _T("(not used)");
+	case EF_SWEEPUP:
+		return _T("Hxy - Hardware sweep up, X = speed, Y = shift");
+	case EF_SWEEPDOWN:
+		return _T("Ixy - Hardware sweep down, X = speed, Y = shift");
+	case EF_ARPEGGIO:
+		return _T("0xy - Arpeggio, X = second note, Y = third note (if zero, produces 2-frame period)");
+	case EF_VIBRATO:
+		return _T("4xy - Vibrato, X = speed, Y = depth");
+	case EF_TREMOLO:
+		return _T("7xy - Tremolo, X = speed, Y = depth");
+	case EF_PITCH:
+		return _T("Pxx - Fine pitch, XX - 80 = offset");
+	case EF_DELAY:
+		return _T("Gxx - Row delay, XX = number of frames");
+	case EF_DAC:
+		return _T("Zxx - DPCM delta counter setting, XX<=7F = DC bias");
+	case EF_PORTA_UP:
+		return _T("1xx - Slide up, XX = speed (pitch/frame)");
+	case EF_PORTA_DOWN:
+		return _T("2xx - Slide down; XX = speed (pitch/frame)");
+	case EF_DUTY_CYCLE:
+		if (Chip == SNDCHIP_N163)
+			return _T("Vxx - Set N163 wave index to XX");
+		else if (Chip == SNDCHIP_VRC7)
+			return _T("Vxx - Set VRC7 patch index to XX");
+		else
+			return _T("Vxx - Set Square duty / Noise mode to XX");
+	case EF_SAMPLE_OFFSET:
+		return _T("Yxx - Set DPCM sample offset to XX<=3F");
+	case EF_SLIDE_UP:
+		return _T("Qxy - Portamento up; X = speed; Y = notes");
+	case EF_SLIDE_DOWN:
+		return _T("Rxy - Portamento down; X = speed; Y = notes");
+	case EF_VOLUME_SLIDE:
+		return _T("Axy - Volume slide; X = up; Y = down");
+	case EF_NOTE_CUT:
+		if (Param >= 0x80 && Channel == CHANID_TRIANGLE)
+			return _T("Sxx - Triangle channel linear counter; XX - 80 = duration");
+		else
+			return _T("Sxx - Note cut; XX = frames to wait");
+	case EF_RETRIGGER:
+		if (Channel == CHANID_TRIANGLE)
+			if (Param)
+				return _T("Xxx - Triangle channel linear counter retrigger; XX = duration per tick.");
+			else
+				return _T("X00 - Triangle channel linear counter retrigger disable.");
+		else
+			return _T("Xxx - DPCM retrigger; XX = frames to wait");
+	case EF_DELAYED_VOLUME:
+		return _T("Mxy - Delayed channel volume; X = frames to wait; Y = channel volume");
+	case EF_FDS_MOD_DEPTH:
+		if (Param >= 0x80)
+			return _T("Hxx - Auto FDS modulation ratio; XX - 80 = multiplier");
+		else
+			return _T("Hxx - FDS modulation depth; XX = depth; 3F = highest");
+	case EF_FDS_MOD_SPEED_HI:
+		if (Param >= 0x10)
+			return _T("Ixy - Auto FDS modulation; X = multiplier; Y + 1 = divider");
+		else
+			return _T("I0x - FDS modulation rate; high byte; disable auto modulation");
+	case EF_FDS_MOD_SPEED_LO:
+		return _T("Jxx - FDS modulation rate; low byte");
+	case EF_DPCM_PITCH:
+		return _T("W0x - DPCM pitch; F = highest");
+	case EF_SUNSOFT_ENV_TYPE:
+		if (Param >= 0x10)
+			return _T("Hxy - Auto 5B envelope; X - 8 = shift amount; Y = shape");
+		else
+			return _T("H0y - 5B envelope shape; bit 3 = Continue; bit 2 = Attack; bit 1 = Alternate; bit 0 = Hold");
+	case EF_SUNSOFT_ENV_HI:
+		return _T("Ixx - 5B envelope rate; high byte");
+	case EF_SUNSOFT_ENV_LO:
+		return _T("Jxx - 5B envelope rate; low byte");
+	case EF_SUNSOFT_NOISE:
+		return _T("Wxx - 5B noise pitch; 1F = highest");
+	case EF_VRC7_PORT:
+		return _T("Hxx - VRC7 custom patch port; XX = register address");
+	case EF_VRC7_WRITE:
+		return _T("Ixx - VRC7 custom patch write; XX = register value");
+	case EF_NOTE_RELEASE:
+		return _T("Lxx - Note release; XX = frames to wait");
+	case EF_GROOVE:
+		return _T("Oxx - Set groove to XX");
+	case EF_TRANSPOSE:
+		if (Param >= 0x80)
+			return _T("Txy - Delayed transpose (downward); X - 8 = frames to wait; Y = semitone offset");
+		else
+			return _T("Txy - Delayed transpose (upward); X = frames to wait; Y = semitone offset");
+	case EF_N163_WAVE_BUFFER:
+		return _T("Zxx - N163 wave buffer access; XX = position in bytes");
+	case EF_FDS_VOLUME:
+		if (Param >= 0x40)
+			return _T("Exx - FDS volume envelope (decay); XX - 40 = rate");
+		else
+			return _T("Exx - FDS volume envelope (attack); XX = rate");
+	case EF_FDS_MOD_BIAS:
+		return _T("Zxx - Auto FDS modulation rate bias; XX - 80 = offset");
+	case EF_PHASE_RESET:
+		return _T("=00 - Reset channel phase");
+	case EF_HARMONIC:
+		return _T("Kxx - Multiply frequency by XX; does not affect Ixy Auto FDS modulation");
+	case EF_TARGET_VOLUME_SLIDE:
+		return _T("Nxy - Target volume slide; X = speed; Y = volume");
+
+	default:
+		return _T("");
+	}
 }
