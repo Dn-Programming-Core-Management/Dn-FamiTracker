@@ -6,7 +6,7 @@ env:
   # Fix cc65 segfault on 64-bit LLP64 Windows builds #1694
   cc65_ref: 2f4e2a34c32c679e4325652e461acce7f615a22e
 jobs:
-  prerequisites:
+  build-cc65:
     runs-on: windows-2022
     steps:
       # pull repo just to get the .yml files
@@ -19,7 +19,7 @@ jobs:
         cc65Path: ${{ env.cc65_path }}
         cc65Ref: ${{ env.cc65_ref }}
   build-matrix-artifacts:
-    needs: prerequisites
+    needs: build-cc65
     runs-on: windows-2022
     strategy:
       matrix:
@@ -38,6 +38,8 @@ jobs:
         platform: "${{ matrix.platform }}"
         configuration: "${{ matrix.configuration }}"
         commithash: "${{ env.commithash }}"
+    - run: call release.bat ${{ matrix.configuration }} ${{ matrix.platform }} ${{ env.commithash }}_${{ github.run_id }}
+      shell: cmd
     - name: Upload binaries
       uses: actions/upload-artifact@v4
       with:
