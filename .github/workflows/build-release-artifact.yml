@@ -23,6 +23,10 @@ jobs:
       - name: Set commit hash variable
         shell: powershell
         run: echo "commithash=$(git describe --tags)" >> $env:GITHUB_ENV
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: ./.github/actions/cache_cc65
       - name: Build program
         shell: cmd
         run: |
@@ -45,7 +49,6 @@ jobs:
           path: Dn-FamiTracker_artifacts
           pattern: Dn-FamiTracker_*
           merge-multiple: true
-          shell: powershell
       - run: ls -R
       - name: Upload release    
         uses: softprops/action-gh-release@v2

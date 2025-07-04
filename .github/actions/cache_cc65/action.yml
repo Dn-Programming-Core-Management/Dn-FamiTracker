@@ -1,0 +1,47 @@
+name: Cache CC65
+description: Caches CC65 and builds it from source if missing. (C) jroweboy (MIT). Modified to use MSYS2 for Windows binaries. (C) Persune 2025
+inputs:
+  cc65Ref:
+    description: "CC65 Git Ref (used to checkout a fixed version)"
+    required: false
+    default: "b8211a2921b11b045db0dd0d9ead6972c9b7bbf1"
+  cc65Path:
+    description: "CC65 path to cache"
+    required: false
+    default: ${{ github.workspace }}\opt\cc65
+runs:
+  using: "composite"
+  steps:
+      # Cache CC65
+      - uses: actions/cache@master
+        id: cache_cc65
+        with:
+          path: ${{ inputs.cc65Path }}
+          key: ${{ runner.os }}-cc65-${{ inputs.cc65Ref }}-${{ hashFiles('.github/actions/cache_cc65/*') }}
+      # setup msys2
+      - uses: msys2/setup-msys2@v2
+        if: steps.cache_cc65.outputs.cache-hit != 'true'
+        with:
+          msystem: UCRT64
+          install: |
+            make
+            mingw-w64-ucrt-x86_64-gcc
+          cache: true
+      # Checkout CC65
+      - uses: actions/checkout@master
+        if: steps.cache_cc65.outputs.cache-hit != 'true'
+        with:
+          repository: cc65/cc65
+          ref: ${{ inputs.cc65Ref }}
+          path: './cc65'
+      # Build CC65
+      - if: steps.cache_cc65.outputs.cache-hit != 'true'
+        run: |
+          cd cc65
+          PREFIX=$(cygpath -u "${{ inputs.cc65Path }}") make
+          PREFIX=$(cygpath -u "${{ inputs.cc65Path }}") make install
+        shell: msys2 {0}
+      # Add CC65 binaries to path
+      - run: |
+          echo "${{ inputs.cc65Path }}\bin" >> $GITHUB_PATH
+        shell: cmd
