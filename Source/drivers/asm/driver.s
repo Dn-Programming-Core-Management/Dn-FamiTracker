@@ -3,6 +3,9 @@
 ;;; ;; ; By jsr, HertzDevil, D.P.C.M., etc.
 ;;; ;; ;
 
+;; !! !! Note to maintainers: any new file `.include`ded here for NSF driver template building must be
+;        declared in `driver.s`'s Custom Build Tool Additional Dependencies.
+
 .define DRIVER_NAME "Dn-FT "
 ; version 2.15
 .define VERSION_MAJ 2
