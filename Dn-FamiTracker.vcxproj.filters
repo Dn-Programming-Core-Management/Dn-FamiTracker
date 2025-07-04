@@ -1502,6 +1502,9 @@
     <ClInclude Include="Source\JsonExporter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Dn-help\hlp\HTMLDefines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Dn-FamiTracker.rc">
@@ -1574,6 +1577,23 @@
     </None>
     <None Include="Dn-FamiTracker.reg" />
     <None Include="res\export_report.htm" />
+    <None Include="Source\drivers\asm\apu.s" />
+    <None Include="Source\drivers\asm\effects.s" />
+    <None Include="Source\drivers\asm\fds.s" />
+    <None Include="Source\drivers\asm\init.s" />
+    <None Include="Source\drivers\asm\instrument.s" />
+    <None Include="Source\drivers\asm\longbranch.mac" />
+    <None Include="Source\drivers\asm\mmc5.s" />
+    <None Include="Source\drivers\asm\n163.s" />
+    <None Include="Source\drivers\asm\periods.s" />
+    <None Include="Source\drivers\asm\player.s" />
+    <None Include="Source\drivers\asm\s5b.s" />
+    <None Include="Source\drivers\asm\vibrato.s" />
+    <None Include="Source\drivers\asm\vrc6.s" />
+    <None Include="Source\drivers\asm\vrc7.s" />
+    <None Include="Source\drivers\build.cmd" />
+    <None Include="Source\drivers\asm\build\build_engine.py" />
+    <None Include="Dn-help\hlp\changelog_shell.htm" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="res\Dn-FamiTracker.manifest">
@@ -1589,5 +1609,6 @@
     <CustomBuild Include="resource.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="Source\drivers\asm\driver.s" />
   </ItemGroup>
 </Project>

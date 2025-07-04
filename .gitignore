@@ -441,3 +441,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# generated headers
+/Source/drivers/*.h
