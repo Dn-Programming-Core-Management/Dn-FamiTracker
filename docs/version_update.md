@@ -7,7 +7,7 @@
 			- `Important changes:`
 				- summary of immediate and obvious changes to the program
 			- `Improvements:`
-				- additions and refactorings
+				- additions and refactoring
 			- `Bug fixes:`
 				- any bug fixes
 			- `Internal:`
@@ -18,7 +18,7 @@
 			- only put one author if issue and commit author is the same
 			- sort by category, then by issue number, then by PR number
 			- ex:
-				- Fix access violation in MRU submenu list update (@eugene-s-nesdev @Gumball2415 #243 #214)
+				- `Fix access violation in MRU submenu list update (@eugene-s-nesdev @Gumball2415 #243 #214)`
 - [ ] Create Version Tag
 	- Format: `Dnx.y.z.r`
 		- x: Major (API change)
