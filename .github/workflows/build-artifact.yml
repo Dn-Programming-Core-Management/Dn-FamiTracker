@@ -2,31 +2,46 @@ name: build-artifact
 on: push
 env:
   commithash: ""
+  cc65_path: ${{ github.workspace }}\opt\cc65
+  # Fix cc65 segfault on 64-bit LLP64 Windows builds #1694
+  cc65_ref: 2f4e2a34c32c679e4325652e461acce7f615a22e
 jobs:
-  build-matrix:
+  build-cc65:
+    runs-on: windows-2022
+    steps:
+      # pull repo just to get the .yml files
+    - uses: actions/checkout@v4
+      with:
+        submodules: "recursive"
+        fetch-depth: 0
+    - uses: ./.github/actions/cache_cc65
+      with:
+        cc65Path: ${{ env.cc65_path }}
+        cc65Ref: ${{ env.cc65_ref }}
+  build-matrix-artifacts:
+    needs: build-cc65
     runs-on: windows-2022
     strategy:
       matrix:
         platform: [x64, Win32]
         configuration: [Release, Debug, ASAN-Release, ASAN-Debug]
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: "recursive"
-          fetch-depth: 0
-      - uses: r-lib/actions/setup-pandoc@v2
-        with:
-          pandoc-version: '3.1.8'
-      - name: Build program
-        shell: cmd
-        run: |
-          powershell -Command "echo "commithash=$(git describe --tags)" >> $env:GITHUB_ENV"
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsamd64_x86.bat"
-          call msbuild -m:5 -nologo -p:Configuration="${{ matrix.configuration }}" -p:Platform="${{ matrix.platform }}"
-          if %ERRORLEVEL%==1 exit %ERRORLEVEL%
-          call release.bat ${{ matrix.configuration }} ${{ matrix.platform }} ${{ env.commithash }}_${{ github.run_id }}
-      - name: Upload binaries
-        uses: actions/upload-artifact@v4
-        with:
-          name: Dn-FamiTracker_${{ env.commithash }}_${{ github.run_id }}_${{ matrix.platform }}_${{ matrix.configuration }}
-          path: distribute/*_${{ matrix.platform }}_${{ matrix.configuration }}.7z
+      # pull repo just to get the .yml files
+    - uses: actions/checkout@v4
+      with:
+        submodules: "recursive"
+        fetch-depth: 0
+    - run: powershell -Command "echo "commithash=$(git describe --tags)" >> $env:GITHUB_ENV"
+    - name: Build program
+      uses: ./.github/actions/build_matrix
+      with:
+        platform: "${{ matrix.platform }}"
+        configuration: "${{ matrix.configuration }}"
+        commithash: "${{ env.commithash }}"
+    - run: call release.bat ${{ matrix.configuration }} ${{ matrix.platform }} ${{ env.commithash }}_${{ github.run_id }}
+      shell: cmd
+    - name: Upload binaries
+      uses: actions/upload-artifact@v4
+      with:
+        name: Dn-FamiTracker_${{ env.commithash }}_${{ github.run_id }}_${{ matrix.platform }}_${{ matrix.configuration }}
+        path: distribute/*_${{ matrix.platform }}_${{ matrix.configuration }}.7z

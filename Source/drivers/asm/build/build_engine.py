@@ -4,9 +4,9 @@
 # Copyright 2025 Persune, GPL-3.0
 # build_engine.lua Copyright 2017 HertzDevil, GPL-2.0
 
-import re, subprocess, os, time, argparse, sys
+import re, subprocess, os, time, argparse
 
-start_time = time.time()
+SINGLE_THREAD = False
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--debug", action="store_true")
@@ -38,14 +38,22 @@ def build(chip: str):
     print("Building NSF driver for " + chip + "...")
 
     # compile assembly to object
-    out = subprocess.run(f"ca65 ../driver.s -l out_{chip}.lst -D USE_{chip} -D NAMCO_CHANNELS=8 -D PACKAGE -D RELOCATE_MUSIC -D USE_BANKSWITCH -D USE_OLDVIBRATO -D USE_LINEARPITCH -o driver.o", shell=True, capture_output=True, text=True)
+    out = subprocess.run(f"ca65 ../driver.s -l out_{chip}.lst \
+        -D USE_{chip} -D NAMCO_CHANNELS=8 -D PACKAGE \
+        -D RELOCATE_MUSIC -D USE_BANKSWITCH -D USE_OLDVIBRATO \
+        -D USE_LINEARPITCH -o driver_{chip}.o",
+        shell=True, capture_output=True, text=True)
     print(out.stdout, end="")
     print(out.stderr, end="")
+
     # compile object with shifted memory config to determine pointer locations
-    out = subprocess.run(f"ld65 -o c0_{chip}.bin driver.o -C c0.cfg", shell=True, capture_output=True, text=True)
+    out = subprocess.run(f"ld65 -o c0_{chip}.bin driver_{chip}.o -C c0.cfg",
+        shell=True, capture_output=True, text=True)
     print(out.stdout, end="")
     print(out.stderr, end="")
-    out = subprocess.run(f"ld65 -o c1_{chip}.bin driver.o -C c1.cfg", shell=True, capture_output=True, text=True)
+
+    out = subprocess.run(f"ld65 -o c1_{chip}.bin driver_{chip}.o -C c1.cfg",
+        shell=True, capture_output=True, text=True)
     print(out.stdout, end="")
     print(out.stderr, end="")
 
@@ -162,40 +170,49 @@ def build(chip: str):
 
     # remove temp files
     if not DEBUG:
-        os.remove("out_"+chip+".lst")
-        os.remove("c0_"+chip+".bin")
-        os.remove("c1_"+chip+".bin")
-        os.remove("driver.o")
+        os.remove(f"out_{chip}.lst")
+        os.remove(f"c0_{chip}.bin")
+        os.remove(f"c1_{chip}.bin")
+        os.remove(f"driver_{chip}.o")
 
+if __name__ == '__main__':
 
+    start_time = time.time()
 
-cfgstr: str= """MEMORY {
-  ZP:  start = $00,   size = $100,   type = rw, file = "";
-  RAM: start = $200,  size = $600,   type = rw, file = "";
-  PRG: start = $%04X, size = $40000, type = rw, file = %%O;
-}
+    cfgstr: str = """MEMORY {
+    ZP:  start = $00,   size = $100,   type = rw, file = "";
+    RAM: start = $200,  size = $600,   type = rw, file = "";
+    PRG: start = $%04X, size = $40000, type = rw, file = %%O;
+    }
 
-SEGMENTS {
-  ZEROPAGE: load = ZP,  type = zp;
-  BSS:      load = RAM, type = bss;
-  CODE:     load = PRG, type = rw;
-}"""
+    SEGMENTS {
+    ZEROPAGE: load = ZP,  type = zp;
+    BSS:      load = RAM, type = bss;
+    CODE:     load = PRG, type = rw;
+    }"""
 
-with open("c0.cfg", "w", newline='') as cfgfile:
-    cfgfile.write(cfgstr % 0xC000)
+    with open("c0.cfg", "w", newline='') as cfgfile:
+        cfgfile.write(cfgstr % 0xC000)
 
-with open("c1.cfg", "w", newline='') as cfgfile:
-    cfgfile.write(cfgstr % 0xC100)
+    with open("c1.cfg", "w", newline='') as cfgfile:
+        cfgfile.write(cfgstr % 0xC100)
 
-subprocess.run("mkdir drivers", shell=True)
+    subprocess.run("mkdir drivers", shell=True)
 
-for chip in ["2A03", "VRC6", "VRC7", "FDS", "MMC5", "N163", "S5B", "ALL"]:
-    build(chip)
+    chips = ["2A03", "VRC6", "VRC7", "FDS", "MMC5", "N163", "S5B", "ALL"]
 
-if not DEBUG:
-    os.remove("c1.cfg")
-    os.remove("c0.cfg")
+    if SINGLE_THREAD:
+        for chip in chips:
+            build(chip)
+    else:
+        from multiprocessing import Pool
+        with Pool(len(chips)) as p:
+            p.map(build, chips)
 
-end_time = time.time()
+    if not DEBUG:
+        os.remove("c1.cfg")
+        os.remove("c0.cfg")
 
-print(f"All driver headers created in {end_time - start_time} seconds.")
+    end_time = time.time()
+
+    print(f"All driver headers created in {end_time - start_time} seconds.")
