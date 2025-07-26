@@ -251,6 +251,10 @@ CSoundGen::CSoundGen() :
 	m_iMachineType(NTSC),
 	m_bRequestRenderStart(false),
 	m_bRendering(false),
+	m_bRequestRenderStop(false),
+	m_bStoppingRender(false),
+	m_iDelayedStart(0),
+	m_iDelayedEnd(0),
 	m_iBPMCachePosition(0),
 	m_iRegisterStream(),
 	m_bWaveChanged(0),		// // //
