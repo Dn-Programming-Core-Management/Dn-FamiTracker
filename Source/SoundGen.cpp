@@ -154,6 +154,7 @@ public:
 		_generation++;
 
 		log_("dump()");
+		lock.unlock();
 		MessageBoxA(nullptr,
 			"WAV export error, please report and attach wavlog-*.txt",
 			"WAV export error",
