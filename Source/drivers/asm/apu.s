@@ -236,17 +236,11 @@ ft_update_2a03:
 	beq @KillTriangle
 	lda var_ch_Note + APU_TRI
 	beq @KillTriangle
-	lda var_ch_LengthCounter + APU_TRI	;;; ;; ;
-	and #%00000111
-	beq :++								; branch if no length counter and no linear counter
-:	lda var_Linear_Counter
-	and #$7F
-	bpl :++								; always
-:	lda var_Triangle_Trill              ; still write linear counter if we have retriggering enabled
-	bne :--
+
+	; linear counter is already processed at this point
 	lda var_Linear_Counter
-	ora #$80							; ;; ;;;
-:	sta $4008
+	sta $4008
+
 @EndTriangleVolume:
 	; Period table isn't limited to $7FF anymore
 	lda var_ch_PeriodCalcHi + APU_TRI
