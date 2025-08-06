@@ -3937,10 +3937,10 @@ void CPatternEditor::AutoScroll(const CPoint &point, UINT nFlags)
 
 	int Row = (point.y - HEADER_HEIGHT) / m_iRowHeight - (m_iLinesVisible / 2);		// // //
 
-	if (Row > (m_iLinesFullVisible / 2) - 3) {
+	if (Row > (m_iLinesFullVisible / 2) + 1) {
 		m_iScrolling |= SCROLL_DOWN;		// // //
 	}
-	else if (Row <= -(m_iLinesFullVisible / 2)) {
+	else if (Row <= -(m_iLinesFullVisible / 2) - 1) {
 		m_iScrolling |= SCROLL_UP;		// // //
 	}
 
