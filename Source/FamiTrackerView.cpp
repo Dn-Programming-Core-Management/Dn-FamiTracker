@@ -1582,7 +1582,11 @@ bool CFamiTrackerView::PlayerGetNote(int Track, int Frame, int Channel, int Row,
 	}
 	else {
 		// These effects will pass even if the channel is muted
-		const int PASS_EFFECTS[] = {EF_HALT, EF_JUMP, EF_SPEED, EF_SKIP, EF_GROOVE};		// // //
+		const int PASS_EFFECTS[] = {EF_HALT, EF_JUMP, EF_SPEED, EF_SKIP, EF_GROOVE,
+			EF_VRC7_PORT, EF_VRC7_WRITE,
+			EF_N163_WAVE_BUFFER,
+			EF_SUNSOFT_ENV_HI, EF_SUNSOFT_ENV_LO, EF_SUNSOFT_ENV_TYPE, EF_SUNSOFT_NOISE
+		};		// // //
 		int Columns = pDoc->GetEffColumns(Track, Channel) + 1;
 
 		NoteData.Note		= HALT;
