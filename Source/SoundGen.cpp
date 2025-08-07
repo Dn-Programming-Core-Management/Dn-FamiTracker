@@ -1858,17 +1858,39 @@ void CSoundGen::ResetTempo()
 
 	m_iTempoAccum = 0;
 
-	if (m_pDocument->GetSongGroove(m_iPlayTrack) && m_pDocument->GetGroove(m_iSpeed) != NULL) {		// // //
-		m_iGrooveIndex = m_iSpeed;
-		m_iGroovePosition = 0;
-		if (m_pDocument->GetGroove(m_iGrooveIndex) != NULL)
-			m_iSpeed = m_pDocument->GetGroove(m_iGrooveIndex)->GetEntry(m_iGroovePosition);
-	}
-	else {
-		m_iGrooveIndex = -1;
-		if (m_pDocument->GetSongGroove(m_iPlayTrack))
-			m_iSpeed = DEFAULT_SPEED;
-	}
+  if (theApp.GetSettings()->General.bRetrieveChanState)	{
+    int Frame = IsPlaying() ? GetPlayerFrame() : m_pTrackerView->GetSelectedFrame();
+	  int Row = IsPlaying() ? GetPlayerRow() : m_pTrackerView->GetSelectedRow();
+    if (stFullState *State = m_pDocument->RetrieveSoundState(GetPlayerTrack(), Frame, Row, -1)) {
+		if (State->Tempo != -1)
+			m_iTempo = State->Tempo;
+		if (State->GroovePos >= 0) {
+			m_iGroovePosition = State->GroovePos;
+			if (State->Speed >= 0)
+				m_iGrooveIndex = State->Speed;
+			if (m_pDocument->GetGroove(m_iGrooveIndex) != NULL)
+				m_iSpeed = m_pDocument->GetGroove(m_iGrooveIndex)->GetEntry(m_iGroovePosition);
+		}
+		else {
+			if (State->Speed >= 0)
+				m_iSpeed = State->Speed;
+			m_iGrooveIndex = -1;
+		  }
+    }
+  }
+  else {
+    if (m_pDocument->GetSongGroove(m_iPlayTrack) && m_pDocument->GetGroove(m_iSpeed) != NULL) {		// // //
+        m_iGrooveIndex = m_iSpeed;
+        m_iGroovePosition = 0;
+      if (m_pDocument->GetGroove(m_iGrooveIndex) != NULL)
+        m_iSpeed = m_pDocument->GetGroove(m_iGrooveIndex)->GetEntry(m_iGroovePosition);
+    }
+    else {
+      m_iGrooveIndex = -1;
+      if (m_pDocument->GetSongGroove(m_iPlayTrack))
+        m_iSpeed = DEFAULT_SPEED;
+    }
+  }
 	SetupSpeed();
 
 	m_bUpdateRow = false;
