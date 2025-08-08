@@ -40,7 +40,7 @@
     <Keyword>MFCProj</Keyword>
     <TargetPlatformVersion>8.1</TargetPlatformVersion>
     <ProjectName>Dn-FamiTracker</ProjectName>
-    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
