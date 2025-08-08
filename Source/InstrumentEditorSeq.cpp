@@ -75,8 +75,6 @@ void CInstrumentEditorSeq::SelectInstrument(std::shared_ptr<CInstrument> pInst)
 	SetDlgItemInt(IDC_SEQ_INDEX, m_pInstrument->GetSeqIndex(m_iSelectedSetting = Sel));
 
 	SelectSequence(m_pInstrument->GetSeqIndex(m_iSelectedSetting), m_iSelectedSetting);
-
-	SetFocus();
 }
 
 void CInstrumentEditorSeq::SelectSequence(int Sequence, int Type)
