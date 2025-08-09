@@ -54,8 +54,8 @@ To edit and/or build the source, you may use Visual Studio 2022, or alternativel
 	- CMake
 	- The latest MSVC build tools 
 		- may be installed by VS Installer or by other sources
-	- Windows 10 SDK version 2104 (10.0.20348.0)
-		- may be installed by VS Installer or by other sources
+	- Windows 11 SDK (10.0.26100.0)
+		- may be installed through VS Installer or by other sources
 	- These dependencies can be installed through the Visual Studio Installer:
 		- C++ MFC for latest v143 build tools (x86 & x64)
 		- C++ ATL for latest v143 build tools (x86 & x64)
