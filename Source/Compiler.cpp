@@ -116,6 +116,7 @@ const int CCompiler::FLAG_LINEARPITCH	= 1 << 2;		// // //
 
 
 // chan_id_t to ft_channel_enable index
+// TODO: utilize WriteChannelMap() ?
 const size_t CH_MAP[] = {
 	0, 1, 2, 3, 27,					// 2A03
 	6, 7, 8,						// VRC6

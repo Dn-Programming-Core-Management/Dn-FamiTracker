@@ -354,10 +354,11 @@ bool CTriangleChan::HandleEffect(effect_t EffNum, unsigned char EffParam)
 				m_bResetEnvelope = true;
 			}
 			else {
-				m_bEnvelopeLoop = true;
+				// Avoid touching the envelope loop flag if under a retrigger effect
+				if (!m_bRetrigger)
+					m_bEnvelopeLoop = true;
 				return CChannelHandler2A03::HandleEffect(EffNum, EffParam); // true
 			}
-			m_bRetrigger = false;
 			break;
 		case EF_RETRIGGER:
 			if (EffParam > 0x7f)

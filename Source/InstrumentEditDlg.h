@@ -34,7 +34,7 @@ public:
 	virtual ~CInstrumentEditDlg();
 
 	void ChangeNoteState(int Note);
-	void SetCurrentInstrument(int Index);
+	void SetCurrentInstrument(int Index, bool Focus = true);
 	float GetRefreshRate() const;		// // //
 	void SetRefreshRate(float Rate);		// // //
 	bool IsOpened() const;

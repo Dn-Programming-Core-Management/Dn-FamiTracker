@@ -186,21 +186,21 @@ ft_load_slide:
 	; FDS's frequency reg is inverted
 	cpx #FDS_OFFSET
 	bne :++
+	cmp #EFF_SLIDE_UP
+	bne :+
 
 	; FDS scratch write padding
 	padjmp 8, $8FFC, $9003, .defined(USE_ALL) && .defined(PACKAGE)
 
-	cmp #EFF_SLIDE_UP
-	bne :+
 	lda #EFF_SLIDE_DOWN
+	jmp :++
 
 	; FDS scratch write padding
-	jmppadjmp {jmp :++}, 7, $900A, $9010, .defined(USE_ALL) && .defined(PACKAGE)
-
-	; FDS scratch write padding
-	jmppadjmp {jmp :++}, 7, $8FFD, $9003, .defined(USE_ALL) && (.not .defined(PACKAGE))
-
+	padjmp 8, $9009, $9010, .defined(USE_ALL) && .defined(PACKAGE)
 :	lda #EFF_SLIDE_UP
+
+	; FDS scratch write padding
+	padjmp 9, $8FFB, $9003, .defined(USE_ALL) && (.not .defined(PACKAGE))
 
 :
 .endif
@@ -208,12 +208,12 @@ ft_load_slide:
 
 	; Work-around for noise
 	lda ft_channel_type, x		;;; ;; ;
+.if .defined(USE_N163)
+	cpx #CHAN_N163
 
 	; FDS scratch write padding
 	padjmp 5, $900C, $9010, .defined(USE_ALL) && (.not .defined(PACKAGE))
 
-.if .defined(USE_N163)
-	cpx #CHAN_N163
 	beq @Invert
 .endif
 	cpx #CHAN_NOI
@@ -223,17 +223,18 @@ ft_load_slide:
 	cmp #EFF_SLIDE_UP
 	beq :+
 	lda #EFF_SLIDE_UP
+	sta var_ch_Effect, x
 
 	; FDS scratch write padding
 	padjmp 4, $902D, $9030, .defined(USE_ALL) && .defined(PACKAGE)
 
-	sta var_ch_Effect, x
 :   lda #EFF_SLIDE_DOWN
 	sta var_ch_Effect, x
 :
+	jmp ft_jump_to_effect
 
 	; FDS scratch write padding
-	jmppadjmp {jmp ft_jump_to_effect}, 7, $902A, $9030, .defined(USE_ALL) && (.not .defined(PACKAGE))
+	padjmp 6, $902B, $9030, .defined(USE_ALL) && (.not .defined(PACKAGE))
 
 ; see CChannelHandler::CalculatePeriod()
 ft_calc_period:

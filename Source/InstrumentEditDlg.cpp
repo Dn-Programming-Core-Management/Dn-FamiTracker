@@ -165,7 +165,7 @@ void CInstrumentEditDlg::ClearPanels()
 	m_iInstrument = -1;
 }
 
-void CInstrumentEditDlg::SetCurrentInstrument(int Index)
+void CInstrumentEditDlg::SetCurrentInstrument(int Index, bool Focus)
 {
 	CFamiTrackerDoc *pDoc = CFamiTrackerDoc::GetDoc();
 	std::shared_ptr<CInstrument> pInstrument = pDoc->GetInstrument(Index);
@@ -220,6 +220,7 @@ void CInstrumentEditDlg::SetCurrentInstrument(int Index)
 	for (int i = 0; i < PANEL_COUNT; ++i) {
 		if (m_pPanels[i] != NULL) {
 			m_pPanels[i]->SelectInstrument(pInstrument);
+			if (Focus) m_pPanels[i]->SetFocus();
 		}
 	}
 
