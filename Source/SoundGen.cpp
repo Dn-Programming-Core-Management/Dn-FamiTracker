@@ -1858,18 +1858,23 @@ void CSoundGen::ResetTempo()
 
 	m_iTempoAccum = 0;
 
-	if (m_pDocument->GetSongGroove(m_iPlayTrack) && m_pDocument->GetGroove(m_iSpeed) != NULL) {		// // //
-		m_iGrooveIndex = m_iSpeed;
-		m_iGroovePosition = 0;
-		if (m_pDocument->GetGroove(m_iGrooveIndex) != NULL)
-			m_iSpeed = m_pDocument->GetGroove(m_iGrooveIndex)->GetEntry(m_iGroovePosition);
-	}
+	if (theApp.GetSettings()->General.bRetrieveChanState)		// // // 
+		ApplyGlobalState();
+	// Legacy behavior
 	else {
-		m_iGrooveIndex = -1;
-		if (m_pDocument->GetSongGroove(m_iPlayTrack))
-			m_iSpeed = DEFAULT_SPEED;
+		if (m_pDocument->GetSongGroove(m_iPlayTrack) && m_pDocument->GetGroove(m_iSpeed) != NULL) {		// // //
+			m_iGrooveIndex = m_iSpeed;
+			m_iGroovePosition = 0;
+			if (m_pDocument->GetGroove(m_iGrooveIndex) != NULL)
+				m_iSpeed = m_pDocument->GetGroove(m_iGrooveIndex)->GetEntry(m_iGroovePosition);
+		}
+		else {
+			m_iGrooveIndex = -1;
+			if (m_pDocument->GetSongGroove(m_iPlayTrack))
+				m_iSpeed = DEFAULT_SPEED;
+		}
+		SetupSpeed();
 	}
-	SetupSpeed();
 
 	m_bUpdateRow = false;
 }
