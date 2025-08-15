@@ -1553,8 +1553,8 @@ ft_translate_freq:
 .if .defined(USE_DPCM)
 StoreDPCM:							; Special case for DPCM
 
-	clc                             ; Multiply the DPCM instrument index by 3
-	pla                             ; and store in Temp16
+	clc								; Multiply the DPCM instrument index by 3
+	pla								; and store in Temp16
 	pha
 	asl a
 	adc var_dpcm_inst_list
@@ -1578,7 +1578,7 @@ StoreDPCM:							; Special case for DPCM
 	iny
 	lda var_ch_DPCMDAC
 	bpl :+
-	lda (var_Temp16), y             ; Read delta value
+	lda (var_Temp16), y				; Read delta value
 	bmi :+
 	sta var_ch_DPCMDAC
 :	iny

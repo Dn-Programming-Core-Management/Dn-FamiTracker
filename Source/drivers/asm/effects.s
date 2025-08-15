@@ -487,122 +487,24 @@ ft_calc_period:
 ;
 ft_portamento:
 	lda var_ch_EffParam, x							; Check portamento, if speed > 0
-	jeq @NoPortamento
+	jeq ft_slide_done
 	lda var_ch_PortaToLo, x							; and if freq > 0, else stop
 	ora var_ch_PortaToHi, x
-	jeq @NoPortamento
+	jeq ft_slide_done
 	lda var_ch_TimerPeriodHi, x						; Compare high byte
 	cmp var_ch_PortaToHi, x
-	bcc @Increase
-	bne @Decrease
+	jcc ft_slide_up
+	jne ft_slide_down
 	lda var_ch_TimerPeriodLo, x						; Compare low byte
 	cmp var_ch_PortaToLo, x
-	bcc @Increase
-	bne @Decrease
+	jcc ft_slide_up
+	jne ft_slide_down
 	;rts											; done
-	jmp ft_post_effects
-
-@Decrease:											; Decrease period
-	lda var_ch_EffParam, x
-	sta var_Temp16
-	lda #$00
-	sta var_Temp16 + 1
-.if .defined(USE_N163)
-.if .defined(USE_LINEARPITCH)
-	lda var_SongFlags
-	and #FLAG_LINEARPITCH
-	bne :+
-	;; !! !! only apply N163 pitch slide shift when linear pitch is disabled
-	; see CChannelHandlerN163::SetupSlide()
-.endif
-	lda ft_channel_type, x
-	cmp #CHAN_N163
-	bne :+
-	; Multiply by 4
-	asl var_Temp16
-	rol var_Temp16 + 1
-	asl var_Temp16
-	rol var_Temp16 + 1
-:
-.endif
-	jsr ft_period_remove
-
-.if 0
-	sec
-	lda var_ch_TimerPeriodLo, x
-	sbc var_ch_EffParam, x
-	sta var_ch_TimerPeriodLo, x
-	lda var_ch_TimerPeriodHi, x
-	sbc #$00
-	sta var_ch_TimerPeriodHi, x
-.endif
-	; Check if sign bit has changed, if so load the desired period
-;	lda var_ch_TimerPeriodHi, x			; Compare high byte
-	cmp var_ch_PortaToHi, x
-	bcc @LoadPeriod
-	bmi @LoadPeriod
-	bne @NoPortamento
-	lda var_ch_TimerPeriodLo, x						; Compare low byte
-	cmp var_ch_PortaToLo, x
-	bcc @LoadPeriod
-;	rts												; Portamento is done at this point
-	jmp ft_post_effects
-
-@Increase:											; Increase period
-	lda var_ch_EffParam, x
-	sta var_Temp16
-	lda #$00
-	sta var_Temp16 + 1
-.if .defined(USE_N163)
-.if .defined(USE_LINEARPITCH)
-	lda var_SongFlags
-	and #FLAG_LINEARPITCH
-	bne :+
-	;; !! !! only apply N163 pitch slide shift when linear pitch is disabled
-	; see CChannelHandlerN163::SetupSlide()
-.endif
-	lda ft_channel_type, x
-	cmp #CHAN_N163
-	bne :+
-	; Multiply by 4
-	asl var_Temp16
-	rol var_Temp16 + 1
-	asl var_Temp16
-	rol var_Temp16 + 1
-:
-.endif
-	jsr ft_period_add
-.if 0
-	clc
-	lda var_ch_TimerPeriodLo, x
-	adc var_ch_EffParam, x
-	sta var_ch_TimerPeriodLo, x
-	lda var_ch_TimerPeriodHi, x
-	adc #$00
-	sta var_ch_TimerPeriodHi, x
-.endif
-	; Check if sign bit has changed, if so load the desired period
-	lda var_ch_PortaToHi, x							; Compare high byte
-	cmp var_ch_TimerPeriodHi, x
-	bcc @LoadPeriod
-	bne @NoPortamento
-	lda var_ch_PortaToLo, x							; Compare low byte
-	cmp var_ch_TimerPeriodLo, x
-	bcc @LoadPeriod
-;	rts
-	jmp ft_post_effects
-
-@LoadPeriod:										; Load the correct period
-	lda var_ch_PortaToLo, x
-	sta var_ch_TimerPeriodLo, x
-	lda var_ch_PortaToHi, x
-	sta var_ch_TimerPeriodHi, x
-@NoPortamento:
 	jmp ft_post_effects
 
 ft_portamento_up:
 	lda var_ch_Note, x
-	beq :+
+	jeq ft_post_effects
 	lda var_ch_EffParam, x
 	sta var_Temp16
 	lda #$00
@@ -630,7 +532,7 @@ ft_portamento_up:
 	jmp ft_post_effects
 ft_portamento_down:
 	lda var_ch_Note, x
-	beq :+
+	jeq ft_post_effects
 	lda var_ch_EffParam, x
 	sta var_Temp16
 	lda #$00
@@ -684,43 +586,80 @@ ft_period_remove:
 	sta var_ch_TimerPeriodHi, x
 :   rts
 
-.if 0
 ;
-; Note slide
+; Note slides
 ;
 ft_slide_up:
-	sec
-	lda var_ch_TimerPeriodLo, x
-	sbc var_ch_EffParam, x
-	sta var_ch_TimerPeriodLo, x
-	lda var_ch_TimerPeriodHi, x
-	sbc #$00
-	sta var_ch_TimerPeriodHi, x
-	bmi ft_slide_done
-	cmp var_ch_PortaToHi, x			    ; Compare high byte
+	lda var_ch_EffParam, x
+	sta var_Temp16
+	lda #$00
+	sta var_Temp16 + 1
+.if .defined(USE_N163)
+.if .defined(USE_LINEARPITCH)
+	lda var_SongFlags
+	and #FLAG_LINEARPITCH
+	bne :+
+	;; !! !! only apply N163 pitch slide shift when linear pitch is disabled
+	; see CChannelHandlerN163::SetupSlide()
+.endif
+	lda ft_channel_type, x
+	cmp #CHAN_N163
+	bne :+
+	; Multiply by 4
+	asl var_Temp16
+	rol var_Temp16 + 1
+	asl var_Temp16
+	rol var_Temp16 + 1
+:
+.endif
+	jsr ft_period_add
+
+	; Check if sign bit has changed, if so load the desired period
+	lda var_ch_PortaToHi, x							; Compare high byte
+	cmp var_ch_TimerPeriodHi, x
 	bcc ft_slide_done
 	bne ft_slide_not_done
-	lda var_ch_TimerPeriodLo, x
-	cmp var_ch_PortaToLo, x				; Compare low byte
+	lda var_ch_PortaToLo, x							; Compare low byte
+	cmp var_ch_TimerPeriodLo, x
 	bcc ft_slide_done
-
+;	rts
 	jmp ft_post_effects
 
 ft_slide_down:
-	clc
-	lda var_ch_TimerPeriodLo, x
-	adc var_ch_EffParam, x
-	sta var_ch_TimerPeriodLo, x
-	lda var_ch_TimerPeriodHi, x
-	adc #$00
-	sta var_ch_TimerPeriodHi, x
+	lda var_ch_EffParam, x
+	sta var_Temp16
+	lda #$00
+	sta var_Temp16 + 1
+.if .defined(USE_N163)
+.if .defined(USE_LINEARPITCH)
+	;; !! !! only apply N163 pitch slide shift when linear pitch is disabled
+	; see CChannelHandlerN163::SetupSlide()
+	lda var_SongFlags
+	and #FLAG_LINEARPITCH
+	bne :+
+.endif
+	lda ft_channel_type, x
+	cmp #CHAN_N163
+	bne :+
+	; Multiply by 4
+	asl var_Temp16
+	rol var_Temp16 + 1
+	asl var_Temp16
+	rol var_Temp16 + 1
+:
+.endif
+	jsr ft_period_remove
 
-	cmp var_ch_PortaToHi, x			    ; Compare high byte
-	bcc ft_slide_not_done
-	bne ft_slide_done
-	lda var_ch_TimerPeriodLo, x
-	cmp var_ch_PortaToLo, x				; Compare low byte
-	bcs ft_slide_done
+	; Check if sign bit has changed, if so load the desired period
+;	lda var_ch_TimerPeriodHi, x			; Compare high byte
+	cmp var_ch_PortaToHi, x
+	bcc ft_slide_done
+	bmi ft_slide_done
+	bne ft_slide_not_done
+	lda var_ch_TimerPeriodLo, x						; Compare low byte
+	cmp var_ch_PortaToLo, x
+	bcc ft_slide_done
+;	rts												; Portamento is done at this point
 	jmp ft_post_effects
 
 ft_slide_done:
@@ -736,7 +675,6 @@ ft_slide_done:
 
 ft_slide_not_done:
 	jmp ft_post_effects
-.endif
 
 ;
 ; Arpeggio
