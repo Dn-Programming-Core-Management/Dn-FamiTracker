@@ -47,9 +47,11 @@ For more details, view the LICENSE.md file.
 Uninstalling and misc.
 ----------------------
 
-To uninstall, run "Dn-FamiTracker.exe /unregister". This will remove the file association.
+To uninstall, run "Dn-FamiTracker.exe /unregister". This will remove the file
+association.
 
-If you have problems viewing the help manual (Dn-FamiTracker.chm), right click it and open properties, then click the "Unblock" button in the general tab.
+If you have problems viewing the help manual (Dn-FamiTracker.chm), right click 
+it and open properties, then click the "Unblock" button in the general tab.
 
 
 
