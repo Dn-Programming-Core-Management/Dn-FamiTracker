@@ -1030,14 +1030,15 @@ ft_cmd_note_cut:
 	cmp #CHAN_TRI							;;; ;; ;
 	bne :+
 	; linear counter
+	; Avoid touching the envelope loop flag if under a retrigger effect
+	lda var_Triangle_Trill
+	bne :+
 	lda var_Linear_Counter
 	ora #$80
 	sta var_Linear_Counter
 	lda var_ch_LengthCounter + APU_TRI
 	and #%11111000
 	sta var_ch_LengthCounter + APU_TRI		; ;; ;;;
-	lda #0
-	sta var_Triangle_Trill
 :	rts
 ft_cmd_linear_counter:				;;; ;; ;
 	jsr ft_get_pattern_byte
@@ -1045,8 +1046,6 @@ ft_cmd_linear_counter:				;;; ;; ;
 	lda var_ch_LengthCounter + APU_TRI
 	ora #%00000001
 	sta var_ch_LengthCounter + APU_TRI
-	lda #0
-	sta var_Triangle_Trill
 	rts								; ;; ;;;
 ;;; ;; ; Effect: Note release (Lxx)
 ft_cmd_note_release:
@@ -1113,7 +1112,7 @@ ft_cmd_retrigger:
 	jsr ft_get_pattern_byte
 	sta var_ch_DPCM_Retrig
 	lda var_ch_DPCM_RetrigCntr
-	bne :++
+	bne :+++
 	lda var_ch_DPCM_Retrig
 	sta var_ch_DPCM_RetrigCntr
 :
@@ -1554,8 +1553,8 @@ ft_translate_freq:
 .if .defined(USE_DPCM)
 StoreDPCM:							; Special case for DPCM
 
-	clc                             ; Multiply the DPCM instrument index by 3
-	pla                             ; and store in Temp16
+	clc								; Multiply the DPCM instrument index by 3
+	pla								; and store in Temp16
 	pha
 	asl a
 	adc var_dpcm_inst_list
@@ -1579,7 +1578,7 @@ StoreDPCM:							; Special case for DPCM
 	iny
 	lda var_ch_DPCMDAC
 	bpl :+
-	lda (var_Temp16), y             ; Read delta value
+	lda (var_Temp16), y				; Read delta value
 	bmi :+
 	sta var_ch_DPCMDAC
 :	iny

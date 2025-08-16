@@ -807,7 +807,6 @@ BOOL CFamiTrackerDoc::SaveDocument(LPCTSTR lpszPathName) const
 bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 {
 	static const int DEFAULT_BLOCK_VERSION[] = {		// // // TODO: use version info
-#ifdef TRANSPOSE_FDS
 		// internal
 		6,		// Parameters
 		1,		// Song Info
@@ -816,21 +815,14 @@ bool CFamiTrackerDoc::WriteBlocks(CDocumentFile *pDocFile) const
 		6,		// Instruments
 		6,		// Sequences
 		3,		// Frames
-		5,		// Patterns
-		1,		// DSamples
-		1,		// Comments
+		// Patterns
+#ifdef TRANSPOSE_FDS
+		5,
 #else
-		6,		// Parameters
-		1,		// Song Info
-		0,		// Tuning
-		3,		// Header
-		6,		// Instruments
-		6,		// Sequences
-		3,		// Frames
-		4,		// Patterns
+		4,
+#endif
 		1,		// DSamples
 		1,		// Comments
-#endif
 		// expansion
 		6,		// SequencesVRC6
 		1,		// SequencesN163

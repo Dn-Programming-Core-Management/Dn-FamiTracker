@@ -995,7 +995,8 @@ void CMainFrame::SelectInstrument(int Index)
 
 		// Update instrument editor
 		if (m_wndInstEdit.IsOpened())
-			m_wndInstEdit.SetCurrentInstrument(Index);
+			// Do not shift focus when selecting the instrument due to a instrument column edit
+			m_wndInstEdit.SetCurrentInstrument(Index, false);
 	}
 	else {
 		// Remove selection

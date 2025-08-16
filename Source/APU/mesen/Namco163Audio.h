@@ -131,7 +131,7 @@ public:
 		for (int i = 7, min = 7 - GetNumberOfChannels(); i >= min; i--) {
 			summedOutput += _channelOutput[i];
 		}
-		summedOutput /= (GetNumberOfChannels() + 1);
+		// Adjust the volume range on the blip_synth!
 		return (_mixLinear ? summedOutput : _channelOutput[_currentChannel]);
 	}
 

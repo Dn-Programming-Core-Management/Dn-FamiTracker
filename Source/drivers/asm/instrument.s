@@ -189,13 +189,13 @@ ft_run_instrument:
     sta var_Temp16
 	bpl @PositivePitch
 @NegativePitch:
-    ;; !! !! change the sign
+	;; !! !! change the sign
 	;; this is stupid, but what more can i do
 	;; we could easily just use the same addition macro
 	;; but the code explicitly checks for overflow
-    lda #$FF
-    eor var_Temp16
-    sta var_Temp16
+	lda #$FF
+	eor var_Temp16
+	sta var_Temp16
 	inc var_Temp16
 	jsr ft_period_remove
 	jmp :+

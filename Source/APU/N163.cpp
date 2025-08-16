@@ -84,11 +84,16 @@ uint8_t CN163::Read(uint16_t Address, bool &Mapped)
 void CN163::Process(uint32_t Time, Blip_Buffer& Output)
 {
 	// Mix level will dynamically change based on number of channels
-	if (!m_UseSurveyMix) {
-		int channels = m_N163.GetNumberOfChannels();
+	auto channels = m_N163.GetNumberOfChannels();
+	auto scale = m_bUseLinearMixing ? (channels + 1) : 1;
+
+	if (m_UseSurveyMix) {
+		m_SynthN163.volume(m_Attenuation, 225 * scale);
+	}
+	else {
 		double N163_volume = (channels == 0) ? 1.3f : (1.5f + float(channels) / 1.5f);
 		N163_volume *= m_Attenuation;
-		m_SynthN163.volume(N163_volume * 1.1, 1600);
+		m_SynthN163.volume(N163_volume * 1.1, 1600 * scale);
 	}
 
 	uint32_t now = 0;
@@ -199,9 +204,8 @@ void CN163::UpdateMixLevel(double v, bool UseSurveyMix)
 {
 	m_Attenuation = v;
 	m_UseSurveyMix = UseSurveyMix;
-	if (UseSurveyMix)
-		m_SynthN163.volume(m_Attenuation, 225);
-	// Legacy mixing recalculates chip levels at runtime
+	// Recalculate chip levels at runtime; this is dependent on the amount of
+	// N163 channels at execution.
 }
 
 void CN163::Log(uint16_t Address, uint8_t Value)		// // //
