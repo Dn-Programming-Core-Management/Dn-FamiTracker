@@ -84,14 +84,13 @@ uint8_t CN163::Read(uint16_t Address, bool &Mapped)
 void CN163::Process(uint32_t Time, Blip_Buffer& Output)
 {
 	// Mix level will dynamically change based on number of channels
+	auto channels = m_N163.GetNumberOfChannels();
+	auto scale = m_bUseLinearMixing ? (channels + 1) : 1;
+
 	if (m_UseSurveyMix) {
-		auto channels = m_N163.GetNumberOfChannels();
-		auto scale = m_bUseLinearMixing ? (channels + 1) : 1;
 		m_SynthN163.volume(m_Attenuation, 225 * scale);
 	}
 	else {
-		int channels = m_N163.GetNumberOfChannels();
-		auto scale = m_bUseLinearMixing ? (channels + 1) : 1;
 		double N163_volume = (channels == 0) ? 1.3f : (1.5f + float(channels) / 1.5f);
 		N163_volume *= m_Attenuation;
 		m_SynthN163.volume(N163_volume * 1.1, 1600 * scale);

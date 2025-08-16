@@ -399,7 +399,7 @@ ft_vrc7_get_freq:
 	sta var_ch_vrc7_OldOctave
 
 	; FDS scratch write padding
-	jmppadjmp {jmp :+}, 7, $9FFC, $A002, .defined(USE_ALL) && .defined(PACKAGE)
+	jmppad {jmp :+}, 7, $9FFC, $A002, .defined(USE_ALL) && .defined(PACKAGE)
 
 	; jmp :+
 

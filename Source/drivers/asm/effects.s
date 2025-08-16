@@ -193,10 +193,9 @@ ft_load_slide:
 	padjmp 8, $8FFC, $9003, .defined(USE_ALL) && .defined(PACKAGE)
 
 	lda #EFF_SLIDE_DOWN
-	jmp :++
 
 	; FDS scratch write padding
-	padjmp 8, $9009, $9010, .defined(USE_ALL) && .defined(PACKAGE)
+	jmppad {jmp :++}, 11, $9006, $9010, .defined(USE_ALL) && .defined(PACKAGE)
 :	lda #EFF_SLIDE_UP
 
 	; FDS scratch write padding
@@ -231,10 +230,9 @@ ft_load_slide:
 :   lda #EFF_SLIDE_DOWN
 	sta var_ch_Effect, x
 :
-	jmp ft_jump_to_effect
 
 	; FDS scratch write padding
-	padjmp 6, $902B, $9030, .defined(USE_ALL) && (.not .defined(PACKAGE))
+	jmppad {jmp ft_jump_to_effect}, 9, $9028, $9030, .defined(USE_ALL) && (.not .defined(PACKAGE))
 
 ; see CChannelHandler::CalculatePeriod()
 ft_calc_period:

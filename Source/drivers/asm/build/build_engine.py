@@ -10,9 +10,12 @@ SINGLE_THREAD = False
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--debug", action="store_true")
+parser.add_argument("-n", "--no-nsfdrv", action="store_true")
 args = parser.parse_args()
 
 DEBUG = args.debug
+
+HEADERLESS = args.no_nsfdrv
 
 def resolvelabel(label: str) -> str:
     match label:
@@ -37,25 +40,39 @@ def resolvelabel(label: str) -> str:
 def build(chip: str):
     print("Building NSF driver for " + chip + "...")
 
+    package = "" if HEADERLESS else "-D PACKAGE"
+    hdrless = "_hdrless" if HEADERLESS else ""
+
     # compile assembly to object
-    out = subprocess.run(f"ca65 ../driver.s -l out_{chip}.lst \
-        -D USE_{chip} -D NAMCO_CHANNELS=8 -D PACKAGE \
+    out = subprocess.run(f"ca65 ../driver.s -l out_{chip}{hdrless}.lst \
+        -D USE_{chip} -D NAMCO_CHANNELS=8 \
         -D RELOCATE_MUSIC -D USE_BANKSWITCH -D USE_OLDVIBRATO \
-        -D USE_LINEARPITCH -o driver_{chip}.o",
+        -D USE_LINEARPITCH {package} -o driver_{chip}{hdrless}.o",
         shell=True, capture_output=True, text=True)
     print(out.stdout, end="")
     print(out.stderr, end="")
 
     # compile object with shifted memory config to determine pointer locations
-    out = subprocess.run(f"ld65 -o c0_{chip}.bin driver_{chip}.o -C c0.cfg",
+    out = subprocess.run(f"ld65 -o c0_{chip}{hdrless}.bin \
+        driver_{chip}{hdrless}.o -C c0.cfg",
         shell=True, capture_output=True, text=True)
     print(out.stdout, end="")
     print(out.stderr, end="")
 
-    out = subprocess.run(f"ld65 -o c1_{chip}.bin driver_{chip}.o -C c1.cfg",
+    out = subprocess.run(f"ld65 -o c1_{chip}{hdrless}.bin \
+        driver_{chip}{hdrless}.o -C c1.cfg",
         shell=True, capture_output=True, text=True)
     print(out.stdout, end="")
     print(out.stderr, end="")
+
+    # headerless NSF kernel binary not supported
+    if HEADERLESS:
+        print("debug: NSF kernel binary not supported")
+        os.remove(f"out_{chip}{hdrless}.lst")
+        os.remove(f"c0_{chip}{hdrless}.bin")
+        os.remove(f"c1_{chip}{hdrless}.bin")
+        os.remove(f"driver_{chip}{hdrless}.o")
+        return
 
     adr = {}
     pos = {}

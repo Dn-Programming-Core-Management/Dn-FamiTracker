@@ -493,8 +493,8 @@ PLAY:
 USE_PADJMP = 1  ; disable if you don't need FDS write protection
 
 ;;
-; manually define a jump command as an optimization
-.macro jmppadjmp jump, count, startpad, endpad, condition
+; manually define a jump command before padding as an optimization
+.macro jmppad jump, count, startpad, endpad, condition
 	.if (count > 3) && condition && USE_PADJMP
 		.assert * = LOAD+((startpad-$8000) & $FFFF), ldwarning, .sprintf("padding does not start at $%04X", startpad)
 			jump
@@ -515,7 +515,7 @@ USE_PADJMP = 1  ; disable if you don't need FDS write protection
 .macro padjmp count, startpad, endpad, condition
 	.if (count > 3) && condition && USE_PADJMP
 		.local end
-		jmppadjmp {jmp end}, count, startpad, endpad, condition
+		jmppad {jmp end}, count, startpad, endpad, condition
 		end:
 	.endif
 .endmacro
