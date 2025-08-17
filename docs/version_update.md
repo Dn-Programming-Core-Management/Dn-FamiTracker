@@ -32,9 +32,13 @@
 - [ ] Edit every file with version info:
 	- [Dn-FamiTracker.rc](../Dn-FamiTracker.rc)
 	- [version.h](../version.h)
+	- [Readme.txt](../Readme.txt)
 - [ ] **IMPORTANT**: update ConfigVersion.cpp
 - [ ] Update copyright years:
-	- all source files with copyright info:
+	- Update License years in
+		- [LICENSE.md](../LICENSE.md)
+		- [README.md](../README.md)
+	- Update all source files with copyright info:
 
 ```
 Dn-FamiTracker - NES/Famicom sound tracker

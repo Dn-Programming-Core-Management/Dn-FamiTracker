@@ -66,8 +66,7 @@ version.
 	- Copyright (C) 2012-2016, Erik de Castro Lopo <erikd@mega-nerd.com>.
 	  All rights reserved.
 	- Licensed under the
-	  [BSD-2-Clause
-	  license](https://www.freebsd.org/copyright/freebsd-license/).
+	  [BSD-2-Clause license](https://www.freebsd.org/copyright/freebsd-license/).
 
 ## NSFs, Exported music, modules, etc.
 
