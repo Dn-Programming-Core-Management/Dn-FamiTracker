@@ -162,10 +162,8 @@ void CVersionChecker::ThreadFn(bool startup, std::promise<std::optional<stVersio
 			desc.insert(pos + 1, "\r\n - ");
 			pos += t.size();
 		}
-		int StartUp = 0;
+		int StartUp = int(startup);
 		std::string VerInfo = "Version " + verStr + " (released on " + s + ")\n\n";
-		if (startup)
-			StartUp = 1;
 		std::string url = json["html_url"];
 
 		p.set_value(stVersionCheckResult{ std::move(StartUp), std::move(VerInfo), std::move(desc), std::move(url) });
