@@ -20,11 +20,13 @@
 			- ex:
 				- `Fix access violation in MRU submenu list update (@eugene-s-nesdev @Gumball2415 #243 #214)`
 - [ ] Create Version Tag
-	- Format: `Dnx.y.z.r`
+	- Format: `Dnx.y.z.b`
 		- x: Major (API change)
 		- y: Minor (backward compatible change)
 		- z: Patch (backward compatible bugfix)
-		- r: Revision (backward compatible quick fixes for typos)
+		- b: Build type (internal, not visible)
+			- 0: stable release
+			- 9: "dirty"/beta/in-development build
 	- Double check that this tag is higher than the previous release tag
 	- Version tag must be appropriate to Semantic Versioning
 - [ ] Edit every file with version info:

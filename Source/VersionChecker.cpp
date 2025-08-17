@@ -89,14 +89,14 @@ namespace {
 	using ft_version_t = std::tuple<int, int, int, int>;
 
 	std::pair<nlohmann::json, ft_version_t> FindBestVersion(const nlohmann::json& j) {
-		ft_version_t current = { VERSION_API, VERSION_MAJ, VERSION_MIN, VERSION_REV };
+		ft_version_t current = { VERSION_API, VERSION_MAJ, VERSION_MIN, VERSION_BLD };
 		const nlohmann::json* jPtr = nullptr;
 
 		for (const auto& i : j) {
 			ft_version_t ver = { };
-			auto& [api, maj, min, rev] = ver;
+			auto& [api, maj, min, bld] = ver;
 			const std::string& tag = i["tag_name"];
-			::sscanf_s(tag.data(), "Dn%u.%u.%u%*1[.r]%u", &api, &maj, &min, &rev);
+			::sscanf_s(tag.data(), "Dn%u.%u.%u%*1[.r]%u", &api, &maj, &min, &bld);
 			if (ver > current) {
 				current = ver;
 				jPtr = &i;
