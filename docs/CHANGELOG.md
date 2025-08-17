@@ -4,9 +4,78 @@ Change Log
 
 Written by D.P.C.M.
 
-Version 0.5.1.0 - January 7, 2025
+Version 0.5.2.0 - ???, 2025
 
 ---
+
+## Dn0.5.2 - 2025-xx-xx
+
+- ### Important changes:
+
+	- Set release number as SemVer (@Gumball2415 #365 #376)
+	- Triangle linear counter retrigger command (`Xxx`) (@zeta0134 @Gumball2415 #291 #349)
+
+- ### Improvements:
+
+	- Refactor and adjust tracker register view (@Gumball2415 #338)
+		- Refactor pitch, volume, and note drawing functions
+		- Apply OETF gamma 2.2 for viewing low volume values
+		- Reduce magic constants in source
+		- Add tone tints for 5B, FDS, and 2A03 periodic noise
+		- Implement pitched 2A03 periodic noise pitch-volume indicator
+		- Implement logarithmic level for VRC7 pitch-volume indicator
+	- Pick song length mode when typing length time in WAV export dialog (@nyanpasu64 #346)
+	- Add dialog indication for failed version check (@Gumball2415 #371 #376)
+
+- ### Bug fixes:
+
+	- Synchronize effect bytecode order when compiling "glob" multichip (@Gumball2415 #331 #341)
+	- Fix C-0 in instrument editor not playing (@Gumball2415 #342)
+	- Fix 64-byte alignment of DPCM segment in .asm export (@Gumball2415 #342)
+	- Patch NSF driver channel ID table with used channels in N163 .nsfs (@DarkZapOTron @Gumball2415 #337 #342)
+	- Fix `ft_channel_enable` in .asm export to list used channels (@Gumball2415 #342)
+	- Fix FDS multichip write protection padding for NSF kernel builds (@Gumball2415 #334 #342)
+	- Fix N163 channel count initialization (@Gumball2415 #342)
+	- Fix VRC7 linear pitch slide channel index bug (@Gumball2415 #340 #342)
+	- Match N163 wave index sequence limit behavior in NSF driver (@HeeminTV @Gumball2415 #344 #342)
+	- Fix spelling error in WAV export dialog (@nyanpasu64 #346)
+	- Fix pushing to main thread receive queue from wrong thread (@nyanpasu64 #346)
+	- Fix overlapping memcpy bug in DPCM sample editor (@nyanpasu64 #345)
+	- Fix bug where `m_pWaveFile` is not cleared if we fail to open a WAV file (@nyanpasu64 #353)
+	- Fix WAV export crash caused by uninitialized variables (@sunshinespecialist @nyanpasu64 #190 #367)
+	- Adjust selection auto-scroll offsets (@henrikvilhelmberglund #351 #368)
+	- Fix channel state retrieval on reset tempo (@henrikvilhelmberglund @Gumball2415 #357 #373)
+	- Fix N163 linear mix volume quantization (@Gumball2415 #366)
+	- Beta: Fix triangle `Xxx`-`Sxx` linear counter behavior (@Gumball2415 #355 #366)
+	- Prevent focus shifting with open instrument editor when inputting instrument patterns (@@henrikvilhelmberglund @Gumball2415 #350 #366)
+	- Fix note slide portamento reset in NSF driver (@Gumball2415 #363 #366)
+	- Fix `1xx`/`2xx` empty note early exit (@Gumball2415 #366)
+
+- ### Internal:
+
+	- Refactor FDS modulation implementation in NSF driver (@Gumball2415 #341)
+	- Refactor instrument loading (@Gumball2415 #342)
+	- Refactor NSF compiler code to use member variable instead of redundant calls (@Gumball2415 #342)
+	- Port `build_engine.lua` to Python for faster NSF kernel builds (@Gumball2415 #342)
+	- Enable `USE_ALL` when using all expansion audio flags (@Gumball2415 #342)
+	- Refactor NSFe metadata generation (@Gumball2415 #335 #342)
+	- Optimize VRC7 register/data write delay timings (@Gumball2415 #342)
+	- Add logging for WAV export events, to help identify cause of crashes (@nyanpasu64 #353)
+	- Add NSF binary header compiling to .sln build process (@Gumball2415 #359)
+	- Refactor `resource.h` custom build commands (@Gumball2415 #359)
+	- Add NSF binary compiling to GitHub Actions (@Gumball2415 #359)
+	- Add GitHub Actions CC65 build tool caching (@Gumball2415 #359)
+	- Refactor CI building (@Gumball2415 #359)
+	- Refactor release publish workflow (@Gumball2415 #359)
+	- Add parallel NSF driver building in build script (@Gumball2415 #359)
+	- Refactor Effect hint status logic (@Gumball2415 #352)
+	- Add effect hint for triangle linear counter retrigger (Xxx) (@Gumball2415 #352)
+	- Bypass mute disable on chip-global effects (@HeeminTV #369)
+	- Update Windows SDK version to `10.0.26100` (@Gumball2415 #370 #375 #366)
+	- Add `/utf` build flag to allow compiling in non-English system locales (@henrikvilhelmberglund @Gumball2415 #368 #372)
+	- Rename contributor to Sun Rays (@Gumball2415 #362 #366)
+	- Include readme and licenses in zipped distribution builds (@Gumball2415 #376)
+	- Remove old 0CC readme and changelog (@Gumball2415 #376)
 
 ## Dn0.5.1.1 - 2025-01-13
 

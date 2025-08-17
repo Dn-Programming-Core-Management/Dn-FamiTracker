@@ -59,6 +59,6 @@ Links
 -----
 
 GitHub repo: https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker
-Help manual: https://github.com/Dn-Programming-Core-Management/Dn-help
+Help manual repo: https://github.com/Dn-Programming-Core-Management/Dn-help
 FamiTracker: http://famitracker.com/
 FamiTracker.org community Discord: https://discord.gg/3fBEEyKfMn
