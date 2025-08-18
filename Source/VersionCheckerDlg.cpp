@@ -58,8 +58,21 @@ END_MESSAGE_MAP()
 
 BOOL CVersionCheckerDlg::OnInitDialog()
 {
-	SetDlgItemText(IDC_VERSIONDATE_MSG, conv::to_t(theApp.m_pVerInfo).data());
-	SetDlgItemText(IDC_RELEASE_MSG, conv::to_t(theApp.m_pVerDesc).data());
+	if (theApp.m_bNewVersion) {
+		SetDlgItemText(IDC_VERSION_STATIC, "A new version of Dn-FamiTracker is now available.");
+		SetDlgItemText(IDC_VERSIONDATE_MSG, conv::to_t(theApp.m_pVerInfo).data());
+		SetDlgItemText(IDC_RELEASE_MSG, conv::to_t(theApp.m_pVerDesc).data());
+		SetDlgItemText(IDC_VERSION_STATIC2, "Release notes:");
+		SetDlgItemText(IDC_VERSION_STATIC3, "Pressing \"Update\" will open the GitHub page for this release.");
+	}
+	else {
+		SetDlgItemText(IDC_VERSION_STATIC, "A new version of Dn-FamiTracker has not been found.");
+		SetDlgItemText(IDC_VERSIONDATE_MSG, "You might be on the latest version.");
+		SetDlgItemText(IDC_VERSION_STATIC2, "If not, go to the latest release to download the latest version.");
+		SetDlgItemText(IDC_VERSION_STATIC3, "Pressing \"Update\" will open the GitHub page for the latest release.");
+		SetDlgItemText(IDC_RELEASE_MSG, "");
+		GetDlgItem(IDC_RELEASE_MSG)->EnableWindow(false);
+	}
 	if (theApp.m_bStartUp)
 		SetDlgItemText(IDC_UPDATE_REMIND, _T("Do not remind me again. (may be re-enabled in config menu)"));
 		//set visible the message

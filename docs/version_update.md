@@ -19,20 +19,27 @@
 			- sort by category, then by issue number, then by PR number
 			- ex:
 				- `Fix access violation in MRU submenu list update (@eugene-s-nesdev @Gumball2415 #243 #214)`
+	- ***important***: set date of release at the last moment!
 - [ ] Create Version Tag
-	- Format: `Dnx.y.z.r`
+	- Format: `Dnx.y.z.b`
 		- x: Major (API change)
 		- y: Minor (backward compatible change)
 		- z: Patch (backward compatible bugfix)
-		- r: Revision (backward compatible quick fixes for typos)
+		- b: Build type (internal, not visible)
+			- 0: stable release
+			- 9: "dirty"/beta/in-development build
 	- Double check that this tag is higher than the previous release tag
 	- Version tag must be appropriate to Semantic Versioning
 - [ ] Edit every file with version info:
 	- [Dn-FamiTracker.rc](../Dn-FamiTracker.rc)
 	- [version.h](../version.h)
+	- [Readme.txt](../Readme.txt)
 - [ ] **IMPORTANT**: update ConfigVersion.cpp
 - [ ] Update copyright years:
-	- all source files with copyright info:
+	- Update License years in
+		- [LICENSE.md](../LICENSE.md)
+		- [README.md](../README.md)
+	- Update all source files with copyright info:
 
 ```
 Dn-FamiTracker - NES/Famicom sound tracker
@@ -58,6 +65,6 @@ along with this program. If not, see https://www.gnu.org/licenses/.
 	- There is a GitHub Actions script to build a drafted release upon a tag push
 	- Tag must be on commit deemed appropriate for release
 - [ ] Edit and publish the draft release page in GitHub
-	- [ ] Triple check that the tag on the release matches the Version Tag
+	- [ ] Triple check that the tag on the release matches the Version Tag (apart from the build type number)
 	- [ ] Double check the build artifacts to be accurate and working
 - [ ] Notify everyone about the new version

@@ -7,9 +7,9 @@
 ;        declared in `driver.s`'s Custom Build Tool Additional Dependencies.
 
 .define DRIVER_NAME "Dn-FT "
-; version 2.15
+; version 2.16
 .define VERSION_MAJ 2
-.define VERSION_MIN 15
+.define VERSION_MIN 16
 
 ;
 ; Assembler code switches

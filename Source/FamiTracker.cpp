@@ -426,7 +426,7 @@ void CFamiTrackerApp::LoadLocalization()
 	WORD Major, Minor, Build, Revision;
 
 	if (GetFileVersion(DLL_NAME, Major, Minor, Revision, Build)) {
-		if (Major != VERSION_API || Minor != VERSION_MAJ || Revision != VERSION_MIN || Build != VERSION_REV)		// // //
+		if (Major != VERSION_API || Minor != VERSION_MAJ || Revision != VERSION_MIN || Build != VERSION_BLD)		// // //
 			return;
 
 		m_hInstResDLL = ::LoadLibrary(DLL_NAME);
@@ -569,7 +569,10 @@ void CFamiTrackerApp::UnregisterSingleInstance()
 
 void CFamiTrackerApp::CheckNewVersion(bool StartUp)		// // //
 {
-	//return;
+	// !! !! This member will be overwritten.
+	// we do this so the "no new updates" pop-up will only show if the user checks
+	// also, why do we need to pass this to the version checker thread if we're gonna return it again?
+	m_bStartUp = StartUp;
 	m_pVersionChecker = std::make_unique<CVersionChecker>(StartUp);		// // //
 }
 
@@ -746,15 +749,21 @@ BOOL CFamiTrackerApp::OnIdle(LONG lCount)		// // //
 	if (CWinApp::OnIdle(lCount))
 		return TRUE;
 
-	if (m_pVersionChecker && m_pVersionChecker->IsReady())
-		if (auto pChecker = std::move(m_pVersionChecker); auto result = pChecker->GetVersionCheckResult())
-		{
+	if (m_pVersionChecker && m_pVersionChecker->IsReady()) {
+		if (auto pChecker = std::move(m_pVersionChecker); auto result = pChecker->GetVersionCheckResult()) {
 			m_pVersionURL = result->URL;
 			m_pVerInfo = result->VerInfo;
 			m_pVerDesc = result->VerDesc;
 			m_bStartUp = result->StartUp;
+			m_bNewVersion = true;
 			OnVersionCheck();
 		}
+		else {
+			m_bNewVersion = false;
+			m_pVersionURL = "https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/releases/latest";
+			if (!m_bStartUp) OnVersionCheck();
+		}
+	}
 	return FALSE;
 }
 

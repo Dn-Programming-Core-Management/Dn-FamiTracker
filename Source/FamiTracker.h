@@ -178,6 +178,7 @@ private:
 public:
 	std::unique_ptr<CVersionChecker> m_pVersionChecker;		// // //
 	std::string		m_pVersionURL, m_pVerInfo, m_pVerDesc;
+	bool m_bNewVersion;
 	bool m_bStartUp;
 
 #ifdef SUPPORT_TRANSLATIONS

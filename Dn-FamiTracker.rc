@@ -553,12 +553,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Dn Programming Core Management"
             VALUE "FileDescription", "Dn-FamiTracker, Extension of FamiTracker"
-            VALUE "FileVersion", "0.5.1.1"
+            VALUE "FileVersion", "0.5.2"
             VALUE "InternalName", "Dn-FamiTracker.exe"
             VALUE "LegalCopyright", "(c) jsr 2005-2020, HertzDevil 2014-2018, Dn Programming Core Management 2020-2025. All rights reserved."
             VALUE "OriginalFilename", "Dn-FamiTracker.exe"
             VALUE "ProductName", "Dn-FamiTracker"
-            VALUE "ProductVersion", "0.5.1.1"
+            VALUE "ProductVersion", "0.5.2"
         END
     END
     BLOCK "VarFileInfo"
@@ -2127,11 +2127,11 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "Update",IDOK,115,175,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,170,175,50,14
-    LTEXT           "A new version of Dn-FamiTracker is now available.",IDC_STATIC,7,7,162,8
+    LTEXT           "A new version of Dn-FamiTracker has not been found.",IDC_VERSION_STATIC,7,7,174,8
     LTEXT           "Version  (released on  )",IDC_VERSIONDATE_MSG,7,21,213,8
-    LTEXT           "Release notes:",IDC_STATIC,7,36,49,8
+    LTEXT           "Release notes:",IDC_VERSION_STATIC2,7,36,213,8
     EDITTEXT        IDC_RELEASE_MSG,7,52,213,80,ES_MULTILINE | ES_READONLY | WS_VSCROLL | NOT WS_TABSTOP,WS_EX_TRANSPARENT
-    LTEXT           "Pressing ""Update"" will launch the Github web page for this release.",IDC_STATIC,7,140,213,8
+    LTEXT           "Pressing ""Update"" will open the GitHub page for the latest release.",IDC_VERSION_STATIC3,7,140,213,8
     CONTROL         "Do not remind me again.",IDC_UPDATE_REMIND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,156,213,10
 END
 

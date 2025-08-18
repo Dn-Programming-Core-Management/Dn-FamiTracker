@@ -678,8 +678,12 @@
 #define IDC_OPLL_PATCHBYTE2             1538
 #define IDC_OPLL_PATCHNAME2             1539
 #define IDC_STATIC_PATCH3               1540
+#define IDC_VERSION_STATIC              1540
 #define IDC_STATIC_PATCH4               1541
+#define IDC_VERSION_STATIC4             1541
+#define IDC_VERSION_STATIC3             1541
 #define IDC_STATIC_PATCH5               1542
+#define IDC_VERSION_STATIC2             1542
 #define IDC_STATIC_PATCH6               1543
 #define IDC_STATIC_PATCH7               1544
 #define IDC_STATIC_PATCH8               1545
@@ -905,7 +909,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        380
 #define _APS_NEXT_COMMAND_VALUE         33215
-#define _APS_NEXT_CONTROL_VALUE         1537
+#define _APS_NEXT_CONTROL_VALUE         1543
 #define _APS_NEXT_SYMED_VALUE           179
 #endif
 #endif
