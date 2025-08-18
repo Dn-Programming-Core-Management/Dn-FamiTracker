@@ -72,7 +72,7 @@ version.
 
 The licenses mentioned for the NSF driver and the tracker source do not apply to
 exported media made with the program that does not contain executable code that
-resembles any source file, such as exported .wavs, .txts, .jsons, or .csvs.
+resembles any source file, such as exported `.wav`s, `.txt`s, `.json`s, or `.csv`s.
 
 [jsr's comment on music created with FT.](http://forums.famitracker.com/viewtopic.php?f=4&t=122&p=741#p741)
 

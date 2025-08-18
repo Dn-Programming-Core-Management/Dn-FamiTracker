@@ -3,7 +3,7 @@
  /  | |) | ' \|___|| _/ _ | |\/| || |  | | |   / / _ | (__| ' <| _||   /  /
 /===|___/|_||_|    |_/_/ _|_|  |_|___| |_| |_|_\/_/ _|\___|_|\_\___|_|_\=/
 
-Version 0.5.1.1 - January 7, 2025
+Version 0.5.2 - August 18, 2025
 
 --------------------------------------------------------------------------------
 
@@ -24,7 +24,7 @@ Notable additions
 - Fixed metadata support on NSF 2.0 and NSFe export
 - Complete text import/export
 - DPCM sample bit order reversal
-- Multitrack per-channel export
+- Multitrack per-channel .wav export
 - More accessible DPCM pitch preview
 - More accessible VRC7 patch and envelope editing
 - Improved FDS, N163 VRC7 and 2A03 emulation
@@ -55,8 +55,8 @@ it and open properties, then click the "Unblock" button in the general tab.
 
 
 
-Links
------
+Contact and links
+-----------------
 
 GitHub repo: https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker
 Help manual repo: https://github.com/Dn-Programming-Core-Management/Dn-help

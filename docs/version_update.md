@@ -19,6 +19,7 @@
 			- sort by category, then by issue number, then by PR number
 			- ex:
 				- `Fix access violation in MRU submenu list update (@eugene-s-nesdev @Gumball2415 #243 #214)`
+	- ***important***: set date of release at the last moment!
 - [ ] Create Version Tag
 	- Format: `Dnx.y.z.b`
 		- x: Major (API change)
@@ -64,6 +65,6 @@ along with this program. If not, see https://www.gnu.org/licenses/.
 	- There is a GitHub Actions script to build a drafted release upon a tag push
 	- Tag must be on commit deemed appropriate for release
 - [ ] Edit and publish the draft release page in GitHub
-	- [ ] Triple check that the tag on the release matches the Version Tag
+	- [ ] Triple check that the tag on the release matches the Version Tag (apart from the build type number)
 	- [ ] Double check the build artifacts to be accurate and working
 - [ ] Notify everyone about the new version

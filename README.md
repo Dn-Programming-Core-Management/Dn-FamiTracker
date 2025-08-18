@@ -18,7 +18,7 @@ the nth derivative of the original FamiTracker program.
 - Fixed metadata support on NSF 2.0 and NSFe export
 - Complete text import/export
 - DPCM sample bit order reversal
-- Multitrack per-channel export
+- Multitrack per-channel `.wav` export
 - More accessible DPCM pitch preview
 - More accessible VRC7 patch and envelope editing
 - Improved FDS, N163 VRC7 and 2A03 emulation

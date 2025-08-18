@@ -4,11 +4,11 @@ Change Log
 
 Written by D.P.C.M.
 
-Version 0.5.2.0 - ???, 2025
+Version 0.5.2.0 - August 18, 2025
 
 ---
 
-## Dn0.5.2 - 2025-xx-xx
+## Dn0.5.2 - 2025-08-18
 
 - ### Important changes:
 
