@@ -1787,7 +1787,7 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
 	switch (nIDEvent) {
 		// Welcome message
 		case TMR_WELCOME:
-			str.Format(_T("%i.%i.%i.%i"), VERSION);		// // //
+			str.Format(_T("%i.%i.%i"), VERSION);		// // //
 			AfxFormatString1(text, IDS_WELCOME_VER_FORMAT, str);
 			SetMessageText(text);
 			KillTimer(TMR_WELCOME);

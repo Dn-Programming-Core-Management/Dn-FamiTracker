@@ -1000,7 +1000,40 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTML
     <ClInclude Include="Source\WinSDK\VersionHelpers.h" />
     <ClInclude Include="Source\WinSDK\winapifamily.h" />
     <ClInclude Include="Source\JsonExporter.h" />
-    <ClInclude Include="version.h" />
+    <CustomBuild Include="version.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">python $(SolutionDir)resource_version_update.py</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Updating version info in resource file.</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|Win32'">python $(SolutionDir)resource_version_update.py</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|Win32'">Updating version info in resource file.</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|Win32'">python $(SolutionDir)resource_version_update.py</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|Win32'">Updating version info in resource file.</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">python $(SolutionDir)resource_version_update.py</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Updating version info in resource file.</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">python $(SolutionDir)resource_version_update.py</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Updating version info in resource file.</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|x64'">python $(SolutionDir)resource_version_update.py</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|x64'">Updating version info in resource file.</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|x64'">python $(SolutionDir)resource_version_update.py</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|x64'">Updating version info in resource file.</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">python $(SolutionDir)resource_version_update.py</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Updating version info in resource file.</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Dn-FamiTracker.rc;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|Win32'">$(SolutionDir)Dn-FamiTracker.rc;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|Win32'">$(SolutionDir)Dn-FamiTracker.rc;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Dn-FamiTracker.rc;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Dn-FamiTracker.rc;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|x64'">$(SolutionDir)Dn-FamiTracker.rc;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|x64'">$(SolutionDir)Dn-FamiTracker.rc;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Dn-FamiTracker.rc;%(Outputs)</Outputs>
+      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BuildInParallel>
+      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|Win32'">true</BuildInParallel>
+      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|Win32'">true</BuildInParallel>
+      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</BuildInParallel>
+      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BuildInParallel>
+      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|x64'">true</BuildInParallel>
+      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|x64'">true</BuildInParallel>
+      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</BuildInParallel>
+    </CustomBuild>
     <ClInclude Include="Source\ChannelMap.h" />
     <ClInclude Include="Source\Common.h" />
     <ClInclude Include="Source\SoundGen.h" />

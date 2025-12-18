@@ -19,7 +19,6 @@
 			- sort by category, then by issue number, then by PR number
 			- ex:
 				- `Fix access violation in MRU submenu list update (@eugene-s-nesdev @Gumball2415 #243 #214)`
-	- ***important***: set date of release at the last moment!
 - [ ] Create Version Tag
 	- Format: `Dnx.y.z.b`
 		- x: Major (API change)
@@ -30,9 +29,9 @@
 			- 9: "dirty"/beta/in-development build
 	- Double check that this tag is higher than the previous release tag
 	- Version tag must be appropriate to Semantic Versioning
-- [ ] Edit every file with version info:
-	- [Dn-FamiTracker.rc](../Dn-FamiTracker.rc)
+- [ ] Edit every file with version info:`
 	- [version.h](../version.h)
+		- [Dn-FamiTracker.rc](../Dn-FamiTracker.rc) gets its version constants from here
 	- [Readme.txt](../Readme.txt)
 - [ ] **IMPORTANT**: update ConfigVersion.cpp
 - [ ] Update copyright years:
@@ -61,6 +60,7 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see https://www.gnu.org/licenses/.
 ```
 
+- [ ] ***important***: set date of release at the last moment!
 - [ ] Create and push Version Tag to the repo
 	- There is a GitHub Actions script to build a drafted release upon a tag push
 	- Tag must be on commit deemed appropriate for release

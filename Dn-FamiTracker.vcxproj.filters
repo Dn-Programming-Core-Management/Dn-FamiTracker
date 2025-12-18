@@ -767,9 +767,6 @@
     <ClInclude Include="Source\MainFrm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="version.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\ChannelMap.h">
       <Filter>Header Files\Sound Driver Headers</Filter>
     </ClInclude>
@@ -1610,5 +1607,8 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="Source\drivers\asm\driver.s" />
+    <CustomBuild Include="version.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>
