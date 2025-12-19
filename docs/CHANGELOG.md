@@ -4,9 +4,32 @@ Change Log
 
 Written by D.P.C.M.
 
-Version 0.5.2.0 - August 18, 2025
+Version 0.5.2.9
+
+Last updated: December 22, 2025
 
 ---
+
+## Unreleased - 2025-12-22
+
+- ### Important changes:
+
+	- ...
+
+- ### Improvements:
+
+	- ...
+
+- ### Bug fixes:
+
+	- ...
+
+- ### Internal:
+
+	- Automate writing resource file version info based on `version.h` (@Gumball2415 #388 #389)
+	- Indicate build type in packaging script (@Gumball2415 #365 #389)
+	- Use only three version numbers for welcome message (@Gumball2415 #365 #389)
+	- Update documentation regarding version updating (@Gumball2415 #389)
 
 ## Dn0.5.2 - 2025-08-18
 
