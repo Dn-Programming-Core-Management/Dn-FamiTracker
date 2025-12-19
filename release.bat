@@ -1,3 +1,4 @@
+@echo off
 rem usage: release.bat configuration platform [commithash]
 
 rem delete existing distribution files, if it exists
@@ -22,8 +23,12 @@ goto endfile
 
 :compileversion
 for /F "tokens=1,2,3,4,5 delims=, " %%A in (Dn-FamiTracker.rc) do (
-	if "%%~A" == "FILEVERSION" (
-		set version=v%%B%%C%%D%%E
+	if "%%~A" == "PRODUCTVERSION" (
+		if "%%~E" == "0" (
+			set version=v%%B%%C%%D
+		) else (
+			set version=v%%B%%C%%D-WIP
+		)
 	)
 )
 cd  %2/%1/
