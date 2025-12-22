@@ -32,7 +32,6 @@
 #include "FamiTracker.h"
 #include "FamiTrackerTypes.h"
 #include "FTMComponentInterface.h"		// // //
-#include "ChannelState.h"		// // //
 #include "FamiTrackerDoc.h"
 #include "FamiTrackerView.h"
 #include "VisualizerWnd.h"
@@ -1527,30 +1526,39 @@ void CSoundGen::ApplyGlobalState()		// // //
 	int Frame = IsPlaying() ? GetPlayerFrame() : m_pTrackerView->GetSelectedFrame();
 	int Row = IsPlaying() ? GetPlayerRow() : m_pTrackerView->GetSelectedRow();
 	if (stFullState *State = m_pDocument->RetrieveSoundState(GetPlayerTrack(), Frame, Row, -1)) {
-		if (State->Tempo != -1)
-			m_iTempo = State->Tempo;
-		if (State->GroovePos >= 0) {
-			m_iGroovePosition = State->GroovePos;
-			if (State->Speed >= 0)
-				m_iGrooveIndex = State->Speed;
-			if (m_pDocument->GetGroove(m_iGrooveIndex) != NULL)
-				m_iSpeed = m_pDocument->GetGroove(m_iGrooveIndex)->GetEntry(m_iGroovePosition);
-		}
-		else {
-			if (State->Speed >= 0)
-				m_iSpeed = State->Speed;
-			m_iGrooveIndex = -1;
-		}
+		ApplyGlobalTempoState(State);
 		m_iLastHighlight = m_pDocument->GetHighlightAt(GetPlayerTrack(), Frame, Row).First;
-		SetupSpeed();
+
 		for (int i = 0; i < m_pDocument->GetChannelCount(); i++) {
 			for (int j = 0; j < sizeof(m_pTrackerChannels) / sizeof(CTrackerChannel*); ++j)		// // // pick this out later
 				if (m_pChannels[j] && m_pTrackerChannels[j]->GetID() == State->State[i].ChannelIndex) {
 					m_pChannels[j]->ApplyChannelState(&State->State[i]); break;
 				}
 		}
+
 		delete State;
 	}
+}
+
+// Separate updating groove, tempo and speed
+// to allow ResetTempo() to get the most recent state without updating the channel state
+void CSoundGen::ApplyGlobalTempoState(stFullState *pState)
+{
+	if (pState->Tempo != -1)
+		m_iTempo = pState->Tempo;
+	if (pState->GroovePos >= 0) {
+		m_iGroovePosition = pState->GroovePos;
+		if (pState->Speed >= 0)
+			m_iGrooveIndex = pState->Speed;
+		if (m_pDocument->GetGroove(m_iGrooveIndex) != NULL)
+			m_iSpeed = m_pDocument->GetGroove(m_iGrooveIndex)->GetEntry(m_iGroovePosition);
+	}
+	else {
+		if (pState->Speed >= 0)
+			m_iSpeed = pState->Speed;
+		m_iGrooveIndex = -1;
+	}
+	SetupSpeed();
 }
 
 /*!	\brief Obtains a human-readable form of a channel state object.
@@ -1858,10 +1866,20 @@ void CSoundGen::ResetTempo()
 
 	m_iTempoAccum = 0;
 
-	if (theApp.GetSettings()->General.bRetrieveChanState)		// // // 
-		ApplyGlobalState();
-	// Legacy behavior
+	if (theApp.GetSettings()->General.bRetrieveChanState) {		// !! !!
+		// Calling on ApplyGlobalState() causes crackly audio on FDS
+		// May have something to do with conflicting stFullState pointers? haven't investigated
+		// So we do a reduced version here where we don't update the channel handlers.
+		int Frame = IsPlaying() ? GetPlayerFrame() : m_pTrackerView->GetSelectedFrame();
+		int Row = IsPlaying() ? GetPlayerRow() : m_pTrackerView->GetSelectedRow();
+		if (stFullState *State = m_pDocument->RetrieveSoundState(GetPlayerTrack(), Frame, Row, -1)) {
+			ApplyGlobalTempoState(State);
+			m_iLastHighlight = m_pDocument->GetHighlightAt(GetPlayerTrack(), Frame, Row).First;
+			delete State;
+		}
+	}
 	else {
+		// Legacy behavior
 		if (m_pDocument->GetSongGroove(m_iPlayTrack) && m_pDocument->GetGroove(m_iSpeed) != NULL) {		// // //
 			m_iGrooveIndex = m_iSpeed;
 			m_iGroovePosition = 0;
