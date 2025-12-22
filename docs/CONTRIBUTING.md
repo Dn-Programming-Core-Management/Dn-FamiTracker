@@ -25,7 +25,7 @@ Welcome! Thank you for considering to contribute to Dn-FamiTracker. We really ne
 
 ### For Dn-FT maintainers:
 
-- Do **NOT** push directly to the `main` branch. Instead, push your changes to a branch first before writing a pull request.
+- ***Do not push directly to the `main` branch***. Instead, push your changes to a branch first before writing a pull request.
 - These branches are designated to be reoccurring may be used for the following:
 	- `app-emu-module-nsf_driver-dev`
 		- This branch is for modifying the application itself, such as the NSF driver, the module format, loading and saving code, emulator core, audio drivers, etc.
@@ -33,7 +33,7 @@ Welcome! Thank you for considering to contribute to Dn-FamiTracker. We really ne
 		- This branch is for meta related development, such as documentation, updating icons and logos, updating version info and license year text, etc.
 	- `ci-dev`
 		- This branch is for continuous integration development, such as GitHub Actions and AppVeyor.
-		- You will most likely force push this branch to hell and back, so be sure to do it on your own GitHub user's fork.
+		- You will most likely force push this branch to hell and back, so be sure to do it on your own fork repo.
 - Other branches may be made for more niche/specific modifications and fixes.
 - If your pull request touches two or more of these categories, it's fine but please keep it minimal.
 	- Otherwise, create a new branch.
@@ -49,6 +49,7 @@ To edit and/or build the source, you may use Visual Studio 2022, or alternativel
 	- Currently used for HTMLHelp manual changelog compiling.
 - For NSF driver compiling:
 	- [CC65 build tools](https://cc65.github.io/), make sure `ld65` and `ca65` is available in environment path.
+- For miscellaneous custom build scripts:
 	- [Python 3.10+](https://www.python.org/)
 - For any IDE that supports building via CMake:
 	- CMake
