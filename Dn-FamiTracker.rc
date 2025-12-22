@@ -553,7 +553,7 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Dn Programming Core Management"
             VALUE "FileDescription", "Dn-FamiTracker, Extension of FamiTracker"
-            VALUE "FileVersion", "0.5.2"
+            VALUE "FileVersion", "0.5.2.9"
             VALUE "InternalName", "Dn-FamiTracker.exe"
             VALUE "LegalCopyright", "(c) jsr 2005-2020, HertzDevil 2014-2018, Dn Programming Core Management 2020-2025. All rights reserved."
             VALUE "OriginalFilename", "Dn-FamiTracker.exe"
