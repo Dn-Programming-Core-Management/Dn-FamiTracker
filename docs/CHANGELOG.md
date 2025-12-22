@@ -4,9 +4,32 @@ Change Log
 
 Written by D.P.C.M.
 
-Version 0.5.2.0 - August 18, 2025
+Version 0.5.2.9
+
+Last updated: December 22, 2025
 
 ---
+
+## Unreleased - 2025-12-22
+
+- ### Important changes:
+
+	- ...
+
+- ### Improvements:
+
+	- ...
+
+- ### Bug fixes:
+
+	- ...
+
+- ### Internal:
+
+	- Automate writing resource file version info based on `version.h` (@Gumball2415 #388 #389)
+	- Indicate build type in packaging script (@Gumball2415 #365 #389)
+	- Use only three version numbers for welcome message (@Gumball2415 #365 #389)
+	- Update documentation regarding version updating (@Gumball2415 #389)
 
 ## Dn0.5.2 - 2025-08-18
 
@@ -452,11 +475,11 @@ Version 0.5.2.0 - August 18, 2025
 
 
 
-## Dn0.2.0.0 - 2020-09-07
+## Dn0.2.0 - 2020-09-07
 
 - ### Additions:
 
-	- Multiple .wav per-channel export (#2)
+	- Multiple .wav per-channel export (@nyanpasu64 #2)
 	- Adaptive register state refresh rate(≈60fps during playback, otherwise 10fps)
 
 - ### Bug fixes:
@@ -471,11 +494,11 @@ Version 0.5.2.0 - August 18, 2025
 
 
 
-## Dn0.1.0.0 - 2020-08-05
+## Dn0.1.0 - 2020-08-05
 
 - ### Additions:
 
-	- DPCM sample bit order reversal (located in the DPCM sample editor) (#1)
+	- DPCM sample bit order reversal (located in the DPCM sample editor) (@Gumball2415 #1)
 
 ---
 
