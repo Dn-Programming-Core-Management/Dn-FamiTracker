@@ -1527,6 +1527,7 @@ void CSoundGen::ApplyGlobalState()		// // //
 	int Row = IsPlaying() ? GetPlayerRow() : m_pTrackerView->GetSelectedRow();
 	if (stFullState *State = m_pDocument->RetrieveSoundState(GetPlayerTrack(), Frame, Row, -1)) {
 		ApplyGlobalTempoState(State);
+		SetupSpeed();
 		m_iLastHighlight = m_pDocument->GetHighlightAt(GetPlayerTrack(), Frame, Row).First;
 
 		for (int i = 0; i < m_pDocument->GetChannelCount(); i++) {
@@ -1558,7 +1559,6 @@ void CSoundGen::ApplyGlobalTempoState(stFullState *pState)
 			m_iSpeed = pState->Speed;
 		m_iGrooveIndex = -1;
 	}
-	SetupSpeed();
 }
 
 /*!	\brief Obtains a human-readable form of a channel state object.
@@ -1874,6 +1874,9 @@ void CSoundGen::ResetTempo()
 		int Row = IsPlaying() ? GetPlayerRow() : m_pTrackerView->GetSelectedRow();
 		if (stFullState *State = m_pDocument->RetrieveSoundState(GetPlayerTrack(), Frame, Row, -1)) {
 			ApplyGlobalTempoState(State);
+			// Set m_iSpeed to avoid division by zero in SetupSpeed()
+			if (m_pDocument->GetSongGroove(m_iPlayTrack) && m_pDocument->GetGroove(m_iSpeed) == NULL)
+				m_iSpeed = DEFAULT_SPEED;
 			m_iLastHighlight = m_pDocument->GetHighlightAt(GetPlayerTrack(), Frame, Row).First;
 			delete State;
 		}
@@ -1891,8 +1894,8 @@ void CSoundGen::ResetTempo()
 			if (m_pDocument->GetSongGroove(m_iPlayTrack))
 				m_iSpeed = DEFAULT_SPEED;
 		}
-		SetupSpeed();
 	}
+	SetupSpeed();
 
 	m_bUpdateRow = false;
 }
