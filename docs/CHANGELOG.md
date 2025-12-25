@@ -6,11 +6,11 @@ Written by D.P.C.M.
 
 Version 0.5.2.9
 
-Last updated: December 22, 2025
+Last updated: December 25, 2025
 
 ---
 
-## Unreleased - 2025-12-22
+## Unreleased - 2025-12-25
 
 - ### Important changes:
 
@@ -30,6 +30,9 @@ Last updated: December 22, 2025
 	- Indicate build type in packaging script (@Gumball2415 #365 #389)
 	- Use only three version numbers for welcome message (@Gumball2415 #365 #389)
 	- Update documentation regarding version updating (@Gumball2415 #389)
+	- Add issue templates (@Gumball2415 #395)
+	- Clarify the template nature of the PR template (@Gumball2415 #395)
+	- Include change log format in PR template (@Gumball2415 #395)
 
 ## Dn0.5.2 - 2025-08-18
 
