@@ -970,6 +970,9 @@ void CMainFrame::SelectInstrument(int Index)
 	// set that instrument and clear the selection in the instrument list
 	//
 
+	// Redraw the instrument list in case the name is too long
+	UpdateInstrumentList();
+
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
 
 	if (Index == -1)

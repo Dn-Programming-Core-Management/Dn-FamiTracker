@@ -32,6 +32,7 @@
 #include <queue>		// // //
 #include "Common.h"
 #include "FamiTrackerTypes.h"
+#include "ChannelState.h"		// // //
 
 #include <atomic>
 #include <cstdint>
@@ -321,6 +322,7 @@ private:
 	void		PlayerSkipTo(int Row);
 
 	void		ApplyGlobalState();		// // //
+	void		ApplyGlobalTempoState(stFullState *pState);
 
 public:
 	static const double NEW_VIBRATO_DEPTH[];
