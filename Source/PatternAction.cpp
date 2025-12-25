@@ -180,6 +180,9 @@ std::optional<CSelection> CPatternAction::SetTargetSelection(CPatternEditor *pPa
 				End.m_iColumn = C_EFF4_PARAM2;
 		}
 	}
+	// column end beyond last effect param - assuming paste from copy without a selection and setting end to last effect param
+	if (End.m_iColumn > C_EFF4_PARAM2)
+		End.m_iColumn = C_EFF4_PARAM2;
 
 	Start.fixInvalid(*pPatternEditor->m_pDocument);
 	End.fixInvalid(*pPatternEditor->m_pDocument);
