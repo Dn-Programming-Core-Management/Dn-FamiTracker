@@ -954,12 +954,17 @@ void CMainFrame::NewInstrument(int ChipType)
 
 void CMainFrame::UpdateInstrumentList()
 {
+	// Avoid visible flickering when updating
+	m_pInstrumentList->SetRedraw(FALSE);
+
 	// Rewrite the instrument list
 	ClearInstrumentList();
 
 	for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
 		m_pInstrumentList->InsertInstrument(i);
 	}
+
+	m_pInstrumentList->SetRedraw(TRUE);
 }
 
 void CMainFrame::SelectInstrument(int Index)
