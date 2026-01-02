@@ -954,12 +954,17 @@ void CMainFrame::NewInstrument(int ChipType)
 
 void CMainFrame::UpdateInstrumentList()
 {
+	// Avoid visible flickering when updating
+	m_pInstrumentList->SetRedraw(FALSE);
+
 	// Rewrite the instrument list
 	ClearInstrumentList();
 
 	for (int i = 0; i < MAX_INSTRUMENTS; ++i) {
 		m_pInstrumentList->InsertInstrument(i);
 	}
+
+	m_pInstrumentList->SetRedraw(TRUE);
 }
 
 void CMainFrame::SelectInstrument(int Index)
@@ -969,6 +974,9 @@ void CMainFrame::SelectInstrument(int Index)
 	// This might get called with non-existing instruments, in that case
 	// set that instrument and clear the selection in the instrument list
 	//
+
+	// Redraw the instrument list in case the name is too long
+	UpdateInstrumentList();
 
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
 
