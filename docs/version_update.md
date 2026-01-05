@@ -37,7 +37,7 @@
 	- Update License years in
 		- [LICENSE.md](../LICENSE.md)
 		- [README.md](../README.md)
-	- Update all source files with copyright info:
+	- Update all edited source files with latest copyright info:
 
 ```
 Dn-FamiTracker - NES/Famicom sound tracker
