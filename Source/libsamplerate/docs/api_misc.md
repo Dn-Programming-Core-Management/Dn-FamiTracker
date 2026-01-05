@@ -54,9 +54,11 @@ The details of these converters are as follows:
   SNR of 97dB and a bandwidth of 80%.
 - **SRC_ZERO_ORDER_HOLD** - A Zero Order Hold converter (interpolated value is
   equal to the last value). The quality is poor but the conversion speed is
-  blindlingly fast.
+  blindlingly fast. Be aware that this interpolator is not bandlimited, and the 
+  user is responsible for adding anti-aliasing filtering. 
 - **SRC_LINEAR** - A linear converter. Again the quality is poor, but the
-  conversion speed is blindingly fast.
+  conversion speed is blindingly fast. This interpolator is also not bandlimited, 
+  and the user is responsible for adding anti-aliasing filtering.
 
 There are two functions that give either a (text string) name or description for
 each converter:
@@ -125,9 +127,9 @@ converter to inform the caller of the number of frames consumed from the
 **data_in** array and the number of frames generated in the **data_out** array
 respectively. These values are for the current call to **src_process** only.
 
-## Auxillary Functions
+## Auxiliary Functions
 
-There are four auxillary functions for converting arrays of float data to and
+There are four auxiliary functions for converting arrays of float data to and
 from short or int data. These functions are defined as:
 
 ```c

@@ -83,6 +83,9 @@ add_executable(${exe}
         Source/gsl/string_span
 
         Source/json/json.hpp
+        
+        Source/JsonExporter.cpp
+        Source/JsonExporter.h
 
         Source/resampler/resample.cpp
         Source/resampler/resample.hpp
