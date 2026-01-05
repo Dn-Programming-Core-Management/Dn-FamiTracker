@@ -690,168 +690,12 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="resource.h">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">echo // Generated Help Map file.  Used by $(SolutionName).hhp. &gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Commands (ID_* and IDM_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h ID_,HID_,0x10000 IDM_,HIDM_,0x10000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Prompts (IDP_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDP_,HIDP_,0x30000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Resources (IDR_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDR_,HIDR_,0x20000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Dialogs (IDD_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDD_,HIDD_,0x20000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Frame Controls (IDW_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|Win32'">echo // Generated Help Map file.  Used by $(SolutionName).hhp. &gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Commands (ID_* and IDM_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h ID_,HID_,0x10000 IDM_,HIDM_,0x10000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Prompts (IDP_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDP_,HIDP_,0x30000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Resources (IDR_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDR_,HIDR_,0x20000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Dialogs (IDD_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDD_,HIDD_,0x20000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Frame Controls (IDW_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">echo // Generated Help Map file.  Used by $(SolutionName).hhp. &gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Commands (ID_* and IDM_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h ID_,HID_,0x10000 IDM_,HIDM_,0x10000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Prompts (IDP_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDP_,HIDP_,0x30000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Resources (IDR_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDR_,HIDR_,0x20000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Dialogs (IDD_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDD_,HIDD_,0x20000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Frame Controls (IDW_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|x64'">echo // Generated Help Map file.  Used by $(SolutionName).hhp. &gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Commands (ID_* and IDM_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h ID_,HID_,0x10000 IDM_,HIDM_,0x10000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Prompts (IDP_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDP_,HIDP_,0x30000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Resources (IDR_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDR_,HIDR_,0x20000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Dialogs (IDD_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDD_,HIDD_,0x20000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Frame Controls (IDW_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Generating map file for help compiler.</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|Win32'">Generating map file for help compiler.</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Generating map file for help compiler.</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|x64'">Generating map file for help compiler.</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Dn-help\hlp\HTMLDefines.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|Win32'">Dn-help\hlp\HTMLDefines.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Dn-help\hlp\HTMLDefines.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|x64'">Dn-help\hlp\HTMLDefines.h;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">echo // Generated Help Map file.  Used by $(SolutionName).hhp. &gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Commands (ID_* and IDM_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h ID_,HID_,0x10000 IDM_,HIDM_,0x10000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Prompts (IDP_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDP_,HIDP_,0x30000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Resources (IDR_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDR_,HIDR_,0x20000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Dialogs (IDD_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDD_,HIDD_,0x20000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Frame Controls (IDW_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|Win32'">echo // Generated Help Map file.  Used by $(SolutionName).hhp. &gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Commands (ID_* and IDM_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h ID_,HID_,0x10000 IDM_,HIDM_,0x10000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Prompts (IDP_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDP_,HIDP_,0x30000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Resources (IDR_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDR_,HIDR_,0x20000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Dialogs (IDD_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDD_,HIDD_,0x20000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Frame Controls (IDW_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">echo // Generated Help Map file.  Used by $(SolutionName).hhp. &gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Commands (ID_* and IDM_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h ID_,HID_,0x10000 IDM_,HIDM_,0x10000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Prompts (IDP_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDP_,HIDP_,0x30000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Resources (IDR_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDR_,HIDR_,0x20000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Dialogs (IDD_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDD_,HIDD_,0x20000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Frame Controls (IDW_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|x64'">echo // Generated Help Map file.  Used by $(SolutionName).hhp. &gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Commands (ID_* and IDM_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h ID_,HID_,0x10000 IDM_,HIDM_,0x10000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Prompts (IDP_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDP_,HIDP_,0x30000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Resources (IDR_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDR_,HIDR_,0x20000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Dialogs (IDD_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h IDD_,HIDD_,0x20000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo. &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-echo // Frame Controls (IDW_*) &gt;&gt; "Dn-help\hlp\HTMLDefines.h"
-makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTMLDefines.h"</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating map file for help compiler.</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|Win32'">Generating map file for help compiler.</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Generating map file for help compiler.</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|x64'">Generating map file for help compiler.</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Dn-help\hlp\HTMLDefines.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|Win32'">Dn-help\hlp\HTMLDefines.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Dn-help\hlp\HTMLDefines.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|x64'">Dn-help\hlp\HTMLDefines.h;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Dn-help\hlp\changelog_shell.htm;%(AdditionalInputs)</AdditionalInputs>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BuildInParallel>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|Win32'">$(SolutionDir)Dn-help\hlp\changelog_shell.htm;%(AdditionalInputs)</AdditionalInputs>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|Win32'">true</BuildInParallel>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|Win32'">$(SolutionDir)Dn-help\hlp\changelog_shell.htm;%(AdditionalInputs)</AdditionalInputs>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|Win32'">true</BuildInParallel>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Dn-help\hlp\changelog_shell.htm;%(AdditionalInputs)</AdditionalInputs>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</BuildInParallel>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Dn-help\hlp\changelog_shell.htm;%(AdditionalInputs)</AdditionalInputs>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BuildInParallel>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|x64'">$(SolutionDir)Dn-help\hlp\changelog_shell.htm;%(AdditionalInputs)</AdditionalInputs>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|x64'">true</BuildInParallel>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|x64'">$(SolutionDir)Dn-help\hlp\changelog_shell.htm;%(AdditionalInputs)</AdditionalInputs>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|x64'">true</BuildInParallel>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Dn-help\hlp\changelog_shell.htm;%(AdditionalInputs)</AdditionalInputs>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</BuildInParallel>
+      <Message>Generating map file for help compiler.</Message>
+      <Command>call $(SolutionDir)generate-helpmap.bat</Command>
+      <Outputs>Dn-help\hlp\HTMLDefines.h;%(Outputs)</Outputs>
+      <AdditionalInputs>$(SolutionDir)Dn-help\hlp\changelog_shell.htm;%(AdditionalInputs)</AdditionalInputs>
+      <BuildInParallel>true</BuildInParallel>
     </CustomBuild>
-    <ClInclude Include="Dn-help\hlp\HTMLDefines.h" />
     <ClInclude Include="Source\ConfigEmulation.h" />
     <ClInclude Include="Source\ConfigGUI.h" />
     <ClInclude Include="Source\APU\ChannelLevelState.h" />
@@ -1001,38 +845,10 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTML
     <ClInclude Include="Source\WinSDK\winapifamily.h" />
     <ClInclude Include="Source\JsonExporter.h" />
     <CustomBuild Include="version.h">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">python $(SolutionDir)resource_version_update.py</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Updating version info in resource file.</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|Win32'">python $(SolutionDir)resource_version_update.py</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|Win32'">Updating version info in resource file.</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|Win32'">python $(SolutionDir)resource_version_update.py</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|Win32'">Updating version info in resource file.</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">python $(SolutionDir)resource_version_update.py</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Updating version info in resource file.</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">python $(SolutionDir)resource_version_update.py</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Updating version info in resource file.</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|x64'">python $(SolutionDir)resource_version_update.py</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|x64'">Updating version info in resource file.</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|x64'">python $(SolutionDir)resource_version_update.py</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|x64'">Updating version info in resource file.</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">python $(SolutionDir)resource_version_update.py</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Updating version info in resource file.</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Dn-FamiTracker.rc;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|Win32'">$(SolutionDir)Dn-FamiTracker.rc;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|Win32'">$(SolutionDir)Dn-FamiTracker.rc;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Dn-FamiTracker.rc;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Dn-FamiTracker.rc;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|x64'">$(SolutionDir)Dn-FamiTracker.rc;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|x64'">$(SolutionDir)Dn-FamiTracker.rc;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Dn-FamiTracker.rc;%(Outputs)</Outputs>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BuildInParallel>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|Win32'">true</BuildInParallel>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|Win32'">true</BuildInParallel>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</BuildInParallel>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BuildInParallel>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|x64'">true</BuildInParallel>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|x64'">true</BuildInParallel>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</BuildInParallel>
+      <Command>python $(SolutionDir)resource_version_update.py</Command>
+      <Message>Updating version info in resource file.</Message>
+      <Outputs>$(SolutionDir)Dn-FamiTracker.rc;%(Outputs)</Outputs>
+      <BuildInParallel>true</BuildInParallel>
     </CustomBuild>
     <ClInclude Include="Source\ChannelMap.h" />
     <ClInclude Include="Source\Common.h" />
@@ -1139,11 +955,9 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTML
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="compile-chm.bat" />
     <None Include="Dn-FamiTracker.reg" />
-    <None Include="0CC-readme.txt" />
-    <None Include="Dn-help\hlp\changelog_shell.htm">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
+    <None Include="resource_version_update.py" />
     <None Include="res\Document.ico" />
     <None Include="res\export_report.htm">
       <DeploymentContent>true</DeploymentContent>
@@ -1166,53 +980,17 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTML
     <None Include="res\key_white_unpressed.bmp" />
     <None Include="res\MainToolbar-16.bmp" />
     <None Include="res\MainToolbar-256.bmp" />
-    <None Include="changelog.txt" />
     <None Include="Source\drivers\asm\apu.s" />
     <None Include="Source\drivers\asm\build\build_engine.py">
       <FileType>Document</FileType>
     </None>
     <CustomBuild Include="Source\drivers\asm\driver.s">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">call $(SolutionDir)Source\drivers\build.cmd</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building NSF driver headers.</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Source\drivers\drv_2a03.h;$(SolutionDir)Source\drivers\drv_all.h;$(SolutionDir)Source\drivers\drv_fds.h;$(SolutionDir)Source\drivers\drv_mmc5.h;$(SolutionDir)Source\drivers\drv_n163.h;$(SolutionDir)Source\drivers\drv_s5b.h;$(SolutionDir)Source\drivers\drv_vrc6.h;$(SolutionDir)Source\drivers\drv_vrc7.h;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Source\drivers\asm\longbranch.mac;$(SolutionDir)Source\drivers\asm\init.s;$(SolutionDir)Source\drivers\asm\player.s;$(SolutionDir)Source\drivers\asm\effects.s;$(SolutionDir)Source\drivers\asm\instrument.s;$(SolutionDir)Source\drivers\asm\apu.s;$(SolutionDir)Source\drivers\asm\vrc6.s;$(SolutionDir)Source\drivers\asm\vrc7.s;$(SolutionDir)Source\drivers\asm\mmc5.s;$(SolutionDir)Source\drivers\asm\fds.s;$(SolutionDir)Source\drivers\asm\n163.s;$(SolutionDir)Source\drivers\asm\s5b.s;$(SolutionDir)Source\drivers\asm\periods.s;$(SolutionDir)Source\drivers\asm\vibrato.s;%(AdditionalInputs)</AdditionalInputs>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BuildInParallel>
-      <Command Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|Win32'">call $(SolutionDir)Source\drivers\build.cmd</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|Win32'">Building NSF driver headers.</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|Win32'">$(SolutionDir)Source\drivers\drv_2a03.h;$(SolutionDir)Source\drivers\drv_all.h;$(SolutionDir)Source\drivers\drv_fds.h;$(SolutionDir)Source\drivers\drv_mmc5.h;$(SolutionDir)Source\drivers\drv_n163.h;$(SolutionDir)Source\drivers\drv_s5b.h;$(SolutionDir)Source\drivers\drv_vrc6.h;$(SolutionDir)Source\drivers\drv_vrc7.h;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|Win32'">$(SolutionDir)Source\drivers\asm\longbranch.mac;$(SolutionDir)Source\drivers\asm\init.s;$(SolutionDir)Source\drivers\asm\player.s;$(SolutionDir)Source\drivers\asm\effects.s;$(SolutionDir)Source\drivers\asm\instrument.s;$(SolutionDir)Source\drivers\asm\apu.s;$(SolutionDir)Source\drivers\asm\vrc6.s;$(SolutionDir)Source\drivers\asm\vrc7.s;$(SolutionDir)Source\drivers\asm\mmc5.s;$(SolutionDir)Source\drivers\asm\fds.s;$(SolutionDir)Source\drivers\asm\n163.s;$(SolutionDir)Source\drivers\asm\s5b.s;$(SolutionDir)Source\drivers\asm\periods.s;$(SolutionDir)Source\drivers\asm\vibrato.s;%(AdditionalInputs)</AdditionalInputs>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|Win32'">true</BuildInParallel>
-      <Command Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|Win32'">call $(SolutionDir)Source\drivers\build.cmd</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|Win32'">Building NSF driver headers.</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|Win32'">$(SolutionDir)Source\drivers\drv_2a03.h;$(SolutionDir)Source\drivers\drv_all.h;$(SolutionDir)Source\drivers\drv_fds.h;$(SolutionDir)Source\drivers\drv_mmc5.h;$(SolutionDir)Source\drivers\drv_n163.h;$(SolutionDir)Source\drivers\drv_s5b.h;$(SolutionDir)Source\drivers\drv_vrc6.h;$(SolutionDir)Source\drivers\drv_vrc7.h;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|Win32'">$(SolutionDir)Source\drivers\asm\longbranch.mac;$(SolutionDir)Source\drivers\asm\init.s;$(SolutionDir)Source\drivers\asm\player.s;$(SolutionDir)Source\drivers\asm\effects.s;$(SolutionDir)Source\drivers\asm\instrument.s;$(SolutionDir)Source\drivers\asm\apu.s;$(SolutionDir)Source\drivers\asm\vrc6.s;$(SolutionDir)Source\drivers\asm\vrc7.s;$(SolutionDir)Source\drivers\asm\mmc5.s;$(SolutionDir)Source\drivers\asm\fds.s;$(SolutionDir)Source\drivers\asm\n163.s;$(SolutionDir)Source\drivers\asm\s5b.s;$(SolutionDir)Source\drivers\asm\periods.s;$(SolutionDir)Source\drivers\asm\vibrato.s;%(AdditionalInputs)</AdditionalInputs>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|Win32'">true</BuildInParallel>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">call $(SolutionDir)Source\drivers\build.cmd</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building NSF driver headers.</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Source\drivers\drv_2a03.h;$(SolutionDir)Source\drivers\drv_all.h;$(SolutionDir)Source\drivers\drv_fds.h;$(SolutionDir)Source\drivers\drv_mmc5.h;$(SolutionDir)Source\drivers\drv_n163.h;$(SolutionDir)Source\drivers\drv_s5b.h;$(SolutionDir)Source\drivers\drv_vrc6.h;$(SolutionDir)Source\drivers\drv_vrc7.h;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Source\drivers\asm\longbranch.mac;$(SolutionDir)Source\drivers\asm\init.s;$(SolutionDir)Source\drivers\asm\player.s;$(SolutionDir)Source\drivers\asm\effects.s;$(SolutionDir)Source\drivers\asm\instrument.s;$(SolutionDir)Source\drivers\asm\apu.s;$(SolutionDir)Source\drivers\asm\vrc6.s;$(SolutionDir)Source\drivers\asm\vrc7.s;$(SolutionDir)Source\drivers\asm\mmc5.s;$(SolutionDir)Source\drivers\asm\fds.s;$(SolutionDir)Source\drivers\asm\n163.s;$(SolutionDir)Source\drivers\asm\s5b.s;$(SolutionDir)Source\drivers\asm\periods.s;$(SolutionDir)Source\drivers\asm\vibrato.s;%(AdditionalInputs)</AdditionalInputs>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</BuildInParallel>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">call $(SolutionDir)Source\drivers\build.cmd</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building NSF driver headers.</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Source\drivers\drv_2a03.h;$(SolutionDir)Source\drivers\drv_all.h;$(SolutionDir)Source\drivers\drv_fds.h;$(SolutionDir)Source\drivers\drv_mmc5.h;$(SolutionDir)Source\drivers\drv_n163.h;$(SolutionDir)Source\drivers\drv_s5b.h;$(SolutionDir)Source\drivers\drv_vrc6.h;$(SolutionDir)Source\drivers\drv_vrc7.h;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Source\drivers\asm\longbranch.mac;$(SolutionDir)Source\drivers\asm\init.s;$(SolutionDir)Source\drivers\asm\player.s;$(SolutionDir)Source\drivers\asm\effects.s;$(SolutionDir)Source\drivers\asm\instrument.s;$(SolutionDir)Source\drivers\asm\apu.s;$(SolutionDir)Source\drivers\asm\vrc6.s;$(SolutionDir)Source\drivers\asm\vrc7.s;$(SolutionDir)Source\drivers\asm\mmc5.s;$(SolutionDir)Source\drivers\asm\fds.s;$(SolutionDir)Source\drivers\asm\n163.s;$(SolutionDir)Source\drivers\asm\s5b.s;$(SolutionDir)Source\drivers\asm\periods.s;$(SolutionDir)Source\drivers\asm\vibrato.s;%(AdditionalInputs)</AdditionalInputs>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BuildInParallel>
-      <Command Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|x64'">call $(SolutionDir)Source\drivers\build.cmd</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|x64'">Building NSF driver headers.</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|x64'">$(SolutionDir)Source\drivers\drv_2a03.h;$(SolutionDir)Source\drivers\drv_all.h;$(SolutionDir)Source\drivers\drv_fds.h;$(SolutionDir)Source\drivers\drv_mmc5.h;$(SolutionDir)Source\drivers\drv_n163.h;$(SolutionDir)Source\drivers\drv_s5b.h;$(SolutionDir)Source\drivers\drv_vrc6.h;$(SolutionDir)Source\drivers\drv_vrc7.h;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|x64'">$(SolutionDir)Source\drivers\asm\longbranch.mac;$(SolutionDir)Source\drivers\asm\init.s;$(SolutionDir)Source\drivers\asm\player.s;$(SolutionDir)Source\drivers\asm\effects.s;$(SolutionDir)Source\drivers\asm\instrument.s;$(SolutionDir)Source\drivers\asm\apu.s;$(SolutionDir)Source\drivers\asm\vrc6.s;$(SolutionDir)Source\drivers\asm\vrc7.s;$(SolutionDir)Source\drivers\asm\mmc5.s;$(SolutionDir)Source\drivers\asm\fds.s;$(SolutionDir)Source\drivers\asm\n163.s;$(SolutionDir)Source\drivers\asm\s5b.s;$(SolutionDir)Source\drivers\asm\periods.s;$(SolutionDir)Source\drivers\asm\vibrato.s;%(AdditionalInputs)</AdditionalInputs>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='ASAN-Debug|x64'">true</BuildInParallel>
-      <Command Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|x64'">call $(SolutionDir)Source\drivers\build.cmd</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|x64'">Building NSF driver headers.</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|x64'">$(SolutionDir)Source\drivers\drv_2a03.h;$(SolutionDir)Source\drivers\drv_all.h;$(SolutionDir)Source\drivers\drv_fds.h;$(SolutionDir)Source\drivers\drv_mmc5.h;$(SolutionDir)Source\drivers\drv_n163.h;$(SolutionDir)Source\drivers\drv_s5b.h;$(SolutionDir)Source\drivers\drv_vrc6.h;$(SolutionDir)Source\drivers\drv_vrc7.h;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|x64'">$(SolutionDir)Source\drivers\asm\longbranch.mac;$(SolutionDir)Source\drivers\asm\init.s;$(SolutionDir)Source\drivers\asm\player.s;$(SolutionDir)Source\drivers\asm\effects.s;$(SolutionDir)Source\drivers\asm\instrument.s;$(SolutionDir)Source\drivers\asm\apu.s;$(SolutionDir)Source\drivers\asm\vrc6.s;$(SolutionDir)Source\drivers\asm\vrc7.s;$(SolutionDir)Source\drivers\asm\mmc5.s;$(SolutionDir)Source\drivers\asm\fds.s;$(SolutionDir)Source\drivers\asm\n163.s;$(SolutionDir)Source\drivers\asm\s5b.s;$(SolutionDir)Source\drivers\asm\periods.s;$(SolutionDir)Source\drivers\asm\vibrato.s;%(AdditionalInputs)</AdditionalInputs>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='ASAN-Release|x64'">true</BuildInParallel>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">call $(SolutionDir)Source\drivers\build.cmd</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building NSF driver headers.</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Source\drivers\drv_2a03.h;$(SolutionDir)Source\drivers\drv_all.h;$(SolutionDir)Source\drivers\drv_fds.h;$(SolutionDir)Source\drivers\drv_mmc5.h;$(SolutionDir)Source\drivers\drv_n163.h;$(SolutionDir)Source\drivers\drv_s5b.h;$(SolutionDir)Source\drivers\drv_vrc6.h;$(SolutionDir)Source\drivers\drv_vrc7.h;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Source\drivers\asm\longbranch.mac;$(SolutionDir)Source\drivers\asm\init.s;$(SolutionDir)Source\drivers\asm\player.s;$(SolutionDir)Source\drivers\asm\effects.s;$(SolutionDir)Source\drivers\asm\instrument.s;$(SolutionDir)Source\drivers\asm\apu.s;$(SolutionDir)Source\drivers\asm\vrc6.s;$(SolutionDir)Source\drivers\asm\vrc7.s;$(SolutionDir)Source\drivers\asm\mmc5.s;$(SolutionDir)Source\drivers\asm\fds.s;$(SolutionDir)Source\drivers\asm\n163.s;$(SolutionDir)Source\drivers\asm\s5b.s;$(SolutionDir)Source\drivers\asm\periods.s;$(SolutionDir)Source\drivers\asm\vibrato.s;%(AdditionalInputs)</AdditionalInputs>
-      <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</BuildInParallel>
+      <Command>call $(SolutionDir)Source\drivers\build.cmd</Command>
+      <Message>Building NSF driver headers.</Message>
+      <Outputs>$(SolutionDir)Source\drivers\drv_2a03.h;$(SolutionDir)Source\drivers\drv_all.h;$(SolutionDir)Source\drivers\drv_fds.h;$(SolutionDir)Source\drivers\drv_mmc5.h;$(SolutionDir)Source\drivers\drv_n163.h;$(SolutionDir)Source\drivers\drv_s5b.h;$(SolutionDir)Source\drivers\drv_vrc6.h;$(SolutionDir)Source\drivers\drv_vrc7.h;%(Outputs)</Outputs>
+      <AdditionalInputs>$(SolutionDir)Source\drivers\asm\longbranch.mac;$(SolutionDir)Source\drivers\asm\init.s;$(SolutionDir)Source\drivers\asm\player.s;$(SolutionDir)Source\drivers\asm\effects.s;$(SolutionDir)Source\drivers\asm\instrument.s;$(SolutionDir)Source\drivers\asm\apu.s;$(SolutionDir)Source\drivers\asm\vrc6.s;$(SolutionDir)Source\drivers\asm\vrc7.s;$(SolutionDir)Source\drivers\asm\mmc5.s;$(SolutionDir)Source\drivers\asm\fds.s;$(SolutionDir)Source\drivers\asm\n163.s;$(SolutionDir)Source\drivers\asm\s5b.s;$(SolutionDir)Source\drivers\asm\periods.s;$(SolutionDir)Source\drivers\asm\vibrato.s;%(AdditionalInputs)</AdditionalInputs>
+      <BuildInParallel>true</BuildInParallel>
     </CustomBuild>
     <None Include="Source\drivers\asm\effects.s" />
     <None Include="Source\drivers\asm\fds.s" />
@@ -1229,7 +1007,7 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 "%(FullPath)" &gt;&gt; "Dn-help\hlp\HTML
     <None Include="Source\drivers\asm\vrc7.s" />
     <None Include="Source\drivers\build.cmd" />
     <None Include="Source\resampler\resample.inl" />
-    <None Include="specs.txt" />
+    <None Include="update-changelog-htm.bat" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="res\Dn-FamiTracker.manifest">
