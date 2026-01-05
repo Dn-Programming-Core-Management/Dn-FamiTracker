@@ -26,7 +26,7 @@ the nth derivative of the original FamiTracker program.
   [Dn-help](https://github.com/Dn-Programming-Core-Management/Dn-help)
 - and more to come, see the
   [release page](https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/releases)
-  and the [changelog](docs/CHANGELOG.md) for more info
+  and the [changelog](Dn-FamiTracker/CHANGELOG.md) for more info
 
 ## Downloads
 
@@ -60,7 +60,7 @@ For more details, view the [license](LICENSE.md).
 
 ## Contributing
 
-[Contributing and compiling](./docs/CONTRIBUTING.md)
+[Contributing and compiling](Dn-FamiTracker/CONTRIBUTING.md)
 
 ## Program lineage
 

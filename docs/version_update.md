@@ -1,7 +1,7 @@
 # Version Update Checklist
 
 - [ ] Update changelogs:
-	- [CHANGELOG.md](CHANGELOG.md), which will update [../Dn-Help/hlp/changelog_shell.htm](changelog_shell.htm) upon build
+	- [CHANGELOG.md](Dn-FamiTracker/CHANGELOG.md), which will update [../Dn-Help/hlp/changelog_shell.htm](changelog_shell.htm) upon build
 	- Categories
 		- `Important changes:`
 			- summary of immediate and obvious changes to the program
