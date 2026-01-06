@@ -6,11 +6,11 @@ Written by D.P.C.M.
 
 Version 0.5.2.9
 
-Last updated: December 25, 2025
+Last updated: January 06, 2026
 
 ---
 
-## Unreleased - 2025-12-25
+## Unreleased - 2026-01-06
 
 ### Important changes
 
@@ -33,6 +33,11 @@ Last updated: December 25, 2025
 - Add issue templates (@Gumball2415 #395)
 - Clarify the template nature of the PR template (@Gumball2415 #395)
 - Include change log format in PR template (@Gumball2415 #395)
+- Reformat change log to not use bulleted headers (@Gumball2415 #398)
+- Move `CONTRIBUTING.md` and `CHANGELOG` to root folder (@Gumball2415 #398)
+- Refactor custom build commands in `.vcxproj`s (@Gumball2415 #398)
+- Update CMake build scripts (@Gumball2415 #398)
+- Update CMake source list in `exe.cmake` (@Gumball2415 #398)
 
 
 
