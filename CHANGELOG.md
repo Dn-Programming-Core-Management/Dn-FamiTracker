@@ -75,7 +75,7 @@ Last updated: December 25, 2025
 - Fix channel state retrieval on reset tempo (@henrikvilhelmberglund @Gumball2415 #357 #373)
 - Fix N163 linear mix volume quantization (@Gumball2415 #366)
 - Beta: Fix triangle `Xxx`-`Sxx` linear counter behavior (@Gumball2415 #355 #366)
-- Prevent focus shifting with open instrument editor when inputting instrument patterns (@@henrikvilhelmberglund @Gumball2415 #350 #366)
+- Prevent focus shifting with open instrument editor when inputting instrument patterns (@henrikvilhelmberglund @Gumball2415 #350 #366)
 - Fix note slide portamento reset in NSF driver (@Gumball2415 #363 #366)
 - Fix `1xx`/`2xx` empty note early exit (@Gumball2415 #366)
 

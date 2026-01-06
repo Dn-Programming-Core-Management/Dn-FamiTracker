@@ -1,0 +1,18 @@
+
+- Categories
+	- `Important changes:`
+		- summary of immediate and obvious changes to the program
+	- `Improvements:`
+		- additions and refactoring
+	- `Bug fixes:`
+		- any bug fixes
+	- `Internal:`
+		- meta changes, including changes regarding to the repository or CI
+- Format
+	- `<description of singular change> ([issue_author] [commit_author] [#<issue number>] [#<PR number>])`
+	- only put in issue author and number if it exists
+	- only put one author if issue and commit author is the same
+	- sort by category, then by issue number, then by PR number
+	- ex:
+		- `Fix access violation in MRU submenu list update (@eugene-s-nesdev @Gumball2415 #243 #214)`
+		- `Pick song length mode when typing length time in WAV export dialog (@nyanpasu64 #346)`
