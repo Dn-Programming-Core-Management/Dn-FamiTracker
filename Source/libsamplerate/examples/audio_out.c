@@ -438,7 +438,11 @@ opensoundsys_close (AUDIO_OUT *audio_out)
 
 #if (defined (__MACH__) && defined (__APPLE__)) /* MacOSX */
 
+#include <AvailabilityMacros.h>
 #include <CoreAudio/AudioHardware.h>
+#ifndef MAC_OS_VERSION_12_0
+#define kAudioObjectPropertyElementMain kAudioObjectPropertyElementMaster
+#endif
 
 #define	MACOSX_MAGIC	MAKE_MAGIC ('M', 'a', 'c', ' ', 'O', 'S', ' ', 'X')
 
@@ -493,7 +497,7 @@ macosx_open (int channels, int samplerate)
 	/*  get the default output device for the HAL */
 	propertyAddress.mSelector = kAudioHardwarePropertyDefaultOutputDevice;
 	propertyAddress.mScope = kAudioDevicePropertyScopeOutput;
-	propertyAddress.mElement = kAudioObjectPropertyElementMaster;
+	propertyAddress.mElement = kAudioObjectPropertyElementMain;
 
 	count = sizeof (AudioDeviceID) ;
 	if ((err = AudioObjectGetPropertyData(kAudioObjectSystemObject, &propertyAddress, 0, NULL,
@@ -960,7 +964,7 @@ solaris_play (get_audio_callback_t callback, AUDIO_OUT *audio_out, void *callbac
 
 	while ((read_frames = callback (callback_data, float_buffer, BUFFER_LEN / solaris_out->channels)))
 	{	for (k = 0 ; k < read_frames * solaris_out->channels ; k++)
-			buffer [k] = lrint (32767.0 * float_buffer [k]) ;
+			buffer [k] = psf_lrint (32767.0 * float_buffer [k]) ;
 		write (solaris_out->fd, buffer, read_frames * solaris_out->channels * sizeof (short)) ;
 		} ;
 

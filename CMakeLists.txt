@@ -20,13 +20,10 @@ set(LIBSAMPLERATE_ENABLE_SINC_BEST_CONVERTER FALSE CACHE BOOL "[libsamplerate] E
     # does not set mt vs md
 
 # Configure MFC
-if (CMAKE_BUILD_TYPE MATCHES DEBUG)
-    # Debug build requires dynamic MFC.
-    set(STATIC_MSVCRT 0)
-else ()
-    # Otherwise link MFC statically.
-    set(STATIC_MSVCRT 1)
-endif ()
+# Debug build requires dynamic MFC.
+# Otherwise link MFC statically.
+set(STATIC_MSVCRT $<NOT:$<CONFIG:Debug>>)
+
 include(cmake/mfc.cmake)
 
 # Acts like add_subdirectory(), but replaces Debug flags with RelWithDebugInfo flags.
@@ -45,20 +42,75 @@ add_subdirectory_optimized("Source/libsamplerate" EXCLUDE_FROM_ALL)
 # compiling
 include(cmake/exe.cmake)
 
-# builds the .chm file
-add_custom_command(TARGET ${exe}
-	PRE_BUILD
-	COMMAND cmd /c ${CMAKE_CURRENT_SOURCE_DIR}/cmake/compile-chm.bat
-	COMMAND move Dn-Famitracker.chm ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>
-	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-	COMMENT "Generating help file...")
+find_package(Python 3.10)
+
+# update version in Dn-FamiTracker.rc
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Dn-FamiTracker.rc
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/version.h
+    COMMAND ${Python_EXECUTABLE} resource_version_update.py
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Updating version info in resource file."
+    VERBATIM)
+
+# generate HTMLDefines.h
+set(DNHELP_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Dn-help/hlp")
+add_custom_command(
+    OUTPUT  ${DNHELP_SRC_DIR}/HTMLDefines.h
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/resource.h
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMAND call ${CMAKE_CURRENT_SOURCE_DIR}/generate-helpmap.bat
+    COMMENT "Generating map file for help compiler."
+    VERBATIM)
+
+# build the .chm file
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${project}.chm
+    DEPENDS ${DNHELP_SRC_DIR}/HTMLDefines.h
+    WORKING_DIRECTORY ${DNHELP_SRC_DIR}
+    COMMAND call ${DNHELP_SRC_DIR}/compile-chm.bat ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Making help file."
+    VERBATIM)
+
+# update changelog
+add_custom_command(
+    OUTPUT  ${DNHELP_SRC_DIR}/changelog.htm
+    DEPENDS ${DNHELP_SRC_DIR}/changelog-shell.htm
+            CHANGELOG.md
+    WORKING_DIRECTORY ${DNHELP_SRC_DIR}
+    COMMAND call ${DNHELP_SRC_DIR}/update-changelog-htm.bat
+    COMMENT "Updating changelog.htm."
+    VERBATIM)
 
 # builds the NSF driver
-add_custom_command(TARGET ${exe}
-	PRE_BUILD
-	COMMAND cmd /c ${CMAKE_CURRENT_SOURCE_DIR}/Source/drivers/build.cmd
-	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-	COMMENT "Compiling NSF driver...")
+set(DNNSF_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Source/drivers")
+add_custom_command(
+    OUTPUT  ${DNNSF_SRC_DIR}/drv_2a03.h
+            ${DNNSF_SRC_DIR}/drv_all.h
+            ${DNNSF_SRC_DIR}/drv_fds.h
+            ${DNNSF_SRC_DIR}/drv_mmc5.h
+            ${DNNSF_SRC_DIR}/drv_n163.h
+            ${DNNSF_SRC_DIR}/drv_s5b.h
+            ${DNNSF_SRC_DIR}/drv_vrc6.h
+            ${DNNSF_SRC_DIR}/drv_vrc7.h
+    DEPENDS ${DNNSF_SRC_DIR}/asm/longbranch.mac
+            ${DNNSF_SRC_DIR}/asm/init.s
+            ${DNNSF_SRC_DIR}/asm/player.s
+            ${DNNSF_SRC_DIR}/asm/effects.s
+            ${DNNSF_SRC_DIR}/asm/instrument.s
+            ${DNNSF_SRC_DIR}/asm/apu.s
+            ${DNNSF_SRC_DIR}/asm/vrc6.s
+            ${DNNSF_SRC_DIR}/asm/vrc7.s
+            ${DNNSF_SRC_DIR}/asm/mmc5.s
+            ${DNNSF_SRC_DIR}/asm/fds.s
+            ${DNNSF_SRC_DIR}/asm/n163.s
+            ${DNNSF_SRC_DIR}/asm/s5b.s
+            ${DNNSF_SRC_DIR}/asm/periods.s
+            ${DNNSF_SRC_DIR}/asm/vibrato.s
+    COMMAND call ${DNNSF_SRC_DIR}/build.cmd
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Building NSF driver headers."
+    VERBATIM)
 
 target_compile_features(${exe} PRIVATE cxx_std_17)
 
@@ -71,27 +123,14 @@ endif()
 
 # linking
 # Specify static MFC libraries nafxcw and Libcmt to avoid linker order issues
-if (STATIC_MSVCRT)
-	if (CMAKE_BUILD_TYPE MATCHES DEBUG)
-		TARGET_LINK_LIBRARIES(${exe}
-				Dbghelp winmm comctl32 Avrt Version htmlhelp
-				samplerate nafxcwd Libcmtd)
-	else ()
-		TARGET_LINK_LIBRARIES(${exe}
-				Dbghelp winmm comctl32 Avrt Version htmlhelp
-				samplerate nafxcw Libcmt)
-	endif ()
-else ()
-	if (CMAKE_BUILD_TYPE MATCHES DEBUG)
-		TARGET_LINK_LIBRARIES(${exe}
-				Dbghelp winmm comctl32 Avrt Version htmlhelp
-				samplerate MSVCRTD)
-	else ()
-		TARGET_LINK_LIBRARIES(${exe}
-				Dbghelp winmm comctl32 Avrt Version htmlhelp
-				samplerate MSVCRT)
-	endif ()
-endif ()
+set(static_msvcrt_libs "nafxcw$<$<CONFIG:Debug>:d>;libcmt$<$<CONFIG:Debug>:d>")
+set(dynamic_msvcrt_libs "msvcrt$<$<CONFIG:Debug>:d>")
+
+target_link_libraries(${exe}
+    $<IF:$<BOOL:STATIC_MSVCRT>,${static_msvcrt_libs},${dynamic_msvcrt_libs}>)
+
+target_link_libraries(${exe}
+    Dbghelp winmm comctl32 Avrt Version htmlhelp samplerate)
 
 # Dn-FamiTracker.rc includes res/Dn-FamiTracker.manifest.
 # To prevent manifest linking errors:
@@ -104,7 +143,7 @@ set_property(
 )
 
 # Generating .pdb files
-if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC" AND CMAKE_BUILD_TYPE MATCHES "Release")
+if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC" AND $<CONFIG:Release>)
    target_compile_options(${exe} PRIVATE /Zi)
 
    # Tell linker to include symbol data

@@ -6,502 +6,531 @@ Written by D.P.C.M.
 
 Version 0.5.2.9
 
-Last updated: December 25, 2025
+Last updated: January 06, 2026
 
 ---
 
-## Unreleased - 2025-12-25
+## Unreleased - 2026-01-06
 
-- ### Important changes:
+### Important changes
 
-	- ...
+- ...
 
-- ### Improvements:
+### Improvements
 
-	- ...
+- ...
 
-- ### Bug fixes:
+### Bug fixes
 
-	- ...
+- ...
 
-- ### Internal:
+### Internal
 
-	- Automate writing resource file version info based on `version.h` (@Gumball2415 #388 #389)
-	- Indicate build type in packaging script (@Gumball2415 #365 #389)
-	- Use only three version numbers for welcome message (@Gumball2415 #365 #389)
-	- Update documentation regarding version updating (@Gumball2415 #389)
-	- Add issue templates (@Gumball2415 #395)
-	- Clarify the template nature of the PR template (@Gumball2415 #395)
-	- Include change log format in PR template (@Gumball2415 #395)
+- Automate writing resource file version info based on `version.h` (@Gumball2415 #388 #389)
+- Indicate build type in packaging script (@Gumball2415 #365 #389)
+- Use only three version numbers for welcome message (@Gumball2415 #365 #389)
+- Update documentation regarding version updating (@Gumball2415 #389)
+- Add issue templates (@Gumball2415 #395)
+- Clarify the template nature of the PR template (@Gumball2415 #395)
+- Include change log format in PR template (@Gumball2415 #395)
+- Reformat change log to not use bulleted headers (@Gumball2415 #398)
+- Move `CONTRIBUTING.md` and `CHANGELOG` to root folder (@Gumball2415 #398)
+- Refactor custom build commands in `.vcxproj`s (@Gumball2415 #398)
+- Update CMake build scripts (@Gumball2415 #398)
+- Update CMake source list in `exe.cmake` (@Gumball2415 #398)
+
+
 
 ## Dn0.5.2 - 2025-08-18
 
-- ### Important changes:
+### Important changes
 
-	- Set release number as SemVer (@Gumball2415 #365 #376)
-	- Triangle linear counter retrigger command (`Xxx`) (@zeta0134 @Gumball2415 #291 #349)
+- Set release number as SemVer (@Gumball2415 #365 #376)
+- Triangle linear counter retrigger command (`Xxx`) (@zeta0134 @Gumball2415 #291 #349)
 
-- ### Improvements:
+### Improvements
 
-	- Refactor and adjust tracker register view (@Gumball2415 #338)
-		- Refactor pitch, volume, and note drawing functions
-		- Apply OETF gamma 2.2 for viewing low volume values
-		- Reduce magic constants in source
-		- Add tone tints for 5B, FDS, and 2A03 periodic noise
-		- Implement pitched 2A03 periodic noise pitch-volume indicator
-		- Implement logarithmic level for VRC7 pitch-volume indicator
-	- Pick song length mode when typing length time in WAV export dialog (@nyanpasu64 #346)
-	- Add dialog indication for failed version check (@Gumball2415 #371 #376)
+- Refactor and adjust tracker register view (@Gumball2415 #338)
+	- Refactor pitch, volume, and note drawing functions
+	- Apply OETF gamma 2.2 for viewing low volume values
+	- Reduce magic constants in source
+	- Add tone tints for 5B, FDS, and 2A03 periodic noise
+	- Implement pitched 2A03 periodic noise pitch-volume indicator
+	- Implement logarithmic level for VRC7 pitch-volume indicator
+- Pick song length mode when typing length time in WAV export dialog (@nyanpasu64 #346)
+- Add dialog indication for failed version check (@Gumball2415 #371 #376)
 
-- ### Bug fixes:
+### Bug fixes
 
-	- Synchronize effect bytecode order when compiling "glob" multichip (@Gumball2415 #331 #341)
-	- Fix C-0 in instrument editor not playing (@Gumball2415 #342)
-	- Fix 64-byte alignment of DPCM segment in .asm export (@Gumball2415 #342)
-	- Patch NSF driver channel ID table with used channels in N163 .nsfs (@DarkZapOTron @Gumball2415 #337 #342)
-	- Fix `ft_channel_enable` in .asm export to list used channels (@Gumball2415 #342)
-	- Fix FDS multichip write protection padding for NSF kernel builds (@Gumball2415 #334 #342)
-	- Fix N163 channel count initialization (@Gumball2415 #342)
-	- Fix VRC7 linear pitch slide channel index bug (@Gumball2415 #340 #342)
-	- Match N163 wave index sequence limit behavior in NSF driver (@HeeminTV @Gumball2415 #344 #342)
-	- Fix spelling error in WAV export dialog (@nyanpasu64 #346)
-	- Fix pushing to main thread receive queue from wrong thread (@nyanpasu64 #346)
-	- Fix overlapping memcpy bug in DPCM sample editor (@nyanpasu64 #345)
-	- Fix bug where `m_pWaveFile` is not cleared if we fail to open a WAV file (@nyanpasu64 #353)
-	- Fix WAV export crash caused by uninitialized variables (@sunshinespecialist @nyanpasu64 #190 #367)
-	- Adjust selection auto-scroll offsets (@henrikvilhelmberglund #351 #368)
-	- Fix channel state retrieval on reset tempo (@henrikvilhelmberglund @Gumball2415 #357 #373)
-	- Fix N163 linear mix volume quantization (@Gumball2415 #366)
-	- Beta: Fix triangle `Xxx`-`Sxx` linear counter behavior (@Gumball2415 #355 #366)
-	- Prevent focus shifting with open instrument editor when inputting instrument patterns (@@henrikvilhelmberglund @Gumball2415 #350 #366)
-	- Fix note slide portamento reset in NSF driver (@Gumball2415 #363 #366)
-	- Fix `1xx`/`2xx` empty note early exit (@Gumball2415 #366)
+- Synchronize effect bytecode order when compiling "glob" multichip (@Gumball2415 #331 #341)
+- Fix C-0 in instrument editor not playing (@Gumball2415 #342)
+- Fix 64-byte alignment of DPCM segment in .asm export (@Gumball2415 #342)
+- Patch NSF driver channel ID table with used channels in N163 .nsfs (@DarkZapOTron @Gumball2415 #337 #342)
+- Fix `ft_channel_enable` in .asm export to list used channels (@Gumball2415 #342)
+- Fix FDS multichip write protection padding for NSF kernel builds (@Gumball2415 #334 #342)
+- Fix N163 channel count initialization (@Gumball2415 #342)
+- Fix VRC7 linear pitch slide channel index bug (@Gumball2415 #340 #342)
+- Match N163 wave index sequence limit behavior in NSF driver (@HeeminTV @Gumball2415 #344 #342)
+- Fix spelling error in WAV export dialog (@nyanpasu64 #346)
+- Fix pushing to main thread receive queue from wrong thread (@nyanpasu64 #346)
+- Fix overlapping memcpy bug in DPCM sample editor (@nyanpasu64 #345)
+- Fix bug where `m_pWaveFile` is not cleared if we fail to open a WAV file (@nyanpasu64 #353)
+- Fix WAV export crash caused by uninitialized variables (@sunshinespecialist @nyanpasu64 #190 #367)
+- Adjust selection auto-scroll offsets (@henrikvilhelmberglund #351 #368)
+- Fix channel state retrieval on reset tempo (@henrikvilhelmberglund @Gumball2415 #357 #373)
+- Fix N163 linear mix volume quantization (@Gumball2415 #366)
+- Beta: Fix triangle `Xxx`-`Sxx` linear counter behavior (@Gumball2415 #355 #366)
+- Prevent focus shifting with open instrument editor when inputting instrument patterns (@henrikvilhelmberglund @Gumball2415 #350 #366)
+- Fix note slide portamento reset in NSF driver (@Gumball2415 #363 #366)
+- Fix `1xx`/`2xx` empty note early exit (@Gumball2415 #366)
 
-- ### Internal:
+### Internal
 
-	- Refactor FDS modulation implementation in NSF driver (@Gumball2415 #341)
-	- Refactor instrument loading (@Gumball2415 #342)
-	- Refactor NSF compiler code to use member variable instead of redundant calls (@Gumball2415 #342)
-	- Port `build_engine.lua` to Python for faster NSF kernel builds (@Gumball2415 #342)
-	- Enable `USE_ALL` when using all expansion audio flags (@Gumball2415 #342)
-	- Refactor NSFe metadata generation (@Gumball2415 #335 #342)
-	- Optimize VRC7 register/data write delay timings (@Gumball2415 #342)
-	- Add logging for WAV export events, to help identify cause of crashes (@nyanpasu64 #353)
-	- Add NSF binary header compiling to .sln build process (@Gumball2415 #359)
-	- Refactor `resource.h` custom build commands (@Gumball2415 #359)
-	- Add NSF binary compiling to GitHub Actions (@Gumball2415 #359)
-	- Add GitHub Actions CC65 build tool caching (@Gumball2415 #359)
-	- Refactor CI building (@Gumball2415 #359)
-	- Refactor release publish workflow (@Gumball2415 #359)
-	- Add parallel NSF driver building in build script (@Gumball2415 #359)
-	- Refactor Effect hint status logic (@Gumball2415 #352)
-	- Add effect hint for triangle linear counter retrigger (Xxx) (@Gumball2415 #352)
-	- Bypass mute disable on chip-global effects (@HeeminTV #369)
-	- Update Windows SDK version to `10.0.26100` (@Gumball2415 #370 #375 #366)
-	- Add `/utf` build flag to allow compiling in non-English system locales (@henrikvilhelmberglund @Gumball2415 #368 #372)
-	- Rename contributor to Sun Rays (@Gumball2415 #362 #366)
-	- Include readme and licenses in zipped distribution builds (@Gumball2415 #376)
-	- Remove old 0CC readme and changelog (@Gumball2415 #376)
+- Refactor FDS modulation implementation in NSF driver (@Gumball2415 #341)
+- Refactor instrument loading (@Gumball2415 #342)
+- Refactor NSF compiler code to use member variable instead of redundant calls (@Gumball2415 #342)
+- Port `build_engine.lua` to Python for faster NSF kernel builds (@Gumball2415 #342)
+- Enable `USE_ALL` when using all expansion audio flags (@Gumball2415 #342)
+- Refactor NSFe metadata generation (@Gumball2415 #335 #342)
+- Optimize VRC7 register/data write delay timings (@Gumball2415 #342)
+- Add logging for WAV export events, to help identify cause of crashes (@nyanpasu64 #353)
+- Add NSF binary header compiling to .sln build process (@Gumball2415 #359)
+- Refactor `resource.h` custom build commands (@Gumball2415 #359)
+- Add NSF binary compiling to GitHub Actions (@Gumball2415 #359)
+- Add GitHub Actions CC65 build tool caching (@Gumball2415 #359)
+- Refactor CI building (@Gumball2415 #359)
+- Refactor release publish workflow (@Gumball2415 #359)
+- Add parallel NSF driver building in build script (@Gumball2415 #359)
+- Refactor Effect hint status logic (@Gumball2415 #352)
+- Add effect hint for triangle linear counter retrigger (Xxx) (@Gumball2415 #352)
+- Bypass mute disable on chip-global effects (@HeeminTV #369)
+- Update Windows SDK version to `10.0.26100` (@Gumball2415 #370 #375 #366)
+- Add `/utf` build flag to allow compiling in non-English system locales (@henrikvilhelmberglund @Gumball2415 #368 #372)
+- Rename contributor to Sun Rays (@Gumball2415 #362 #366)
+- Include readme and licenses in zipped distribution builds (@Gumball2415 #376)
+- Remove old 0CC readme and changelog (@Gumball2415 #376)
+
+
 
 ## Dn0.5.1.1 - 2025-01-13
 
-- ### Hotfixes
+### Hotfixes
 
-	- Match submenu item instead of hardcoding indices (@Gumball2415 #317 #318)
+- Match submenu item instead of hardcoding indices (@Gumball2415 #317 #318)
 
-- ### Internal:
+### Internal
 
-	- Port GitHub Wiki pages to markdown files in repo (@Gumball2415 #319)
+- Port GitHub Wiki pages to markdown files in repo (@Gumball2415 #319)
+
+
 
 ## Dn0.5.1.0 - 2025-01-07
 
-- ### Important changes:
+### Important changes
 
-	- Major export refactoring (@Gumball2415 #262)
-	- NSF driver fixes (@Gumball2415 #262)
+- Major export refactoring (@Gumball2415 #262)
+- NSF driver fixes (@Gumball2415 #262)
 
-- ### Improvements:
+### Improvements
 
-	- Use CCompiler pointer for writing ASM export title (@Gumball2415 #262)
-	- Decouple NSFDRV header from driver data (@Gumball2415 #262)
-	- Add NSF stub file for .asm export (@Gumball2415 #262)
-	- Implement "glob" multichip assembly export (@Gumball2415 #262)
-	- Specify what parts of pattern data are invalid (@Gumball2415 #262)
-	- Differentiate between error and warning colors (@Gumball2415 #262)
-	- Account for `HOLD_INSTRUMENT` in pattern checking (@Gumball2415 #262)
-	- Specify overflow in driver bank allocation (@Gumball2415 #262)
-	- Refactor compressed mode size calculation (@Gumball2415 #262)
-	- Include N163 period table in .asm export (@Gumball2415 #262)
-	- Declare alignment for first DPCM sample in assembly export (@Gumball2415 #262)
-	- Remove hardcoded bank references in assembly song header (@Gumball2415 #262)
-	- Implement bankswitched assembly config exports (@Gumball2415 #262)
-	- Add bank 0 for nonbankswitching config (@Gumball2415 #262)
-	- Refactor NSFe metadata generation (@Gumball2415 #262)
-	- Refactor multifile export (@Gumball2415 #262)
+- Use CCompiler pointer for writing ASM export title (@Gumball2415 #262)
+- Decouple NSFDRV header from driver data (@Gumball2415 #262)
+- Add NSF stub file for .asm export (@Gumball2415 #262)
+- Implement "glob" multichip assembly export (@Gumball2415 #262)
+- Specify what parts of pattern data are invalid (@Gumball2415 #262)
+- Differentiate between error and warning colors (@Gumball2415 #262)
+- Account for `HOLD_INSTRUMENT` in pattern checking (@Gumball2415 #262)
+- Specify overflow in driver bank allocation (@Gumball2415 #262)
+- Refactor compressed mode size calculation (@Gumball2415 #262)
+- Include N163 period table in .asm export (@Gumball2415 #262)
+- Declare alignment for first DPCM sample in assembly export (@Gumball2415 #262)
+- Remove hardcoded bank references in assembly song header (@Gumball2415 #262)
+- Implement bankswitched assembly config exports (@Gumball2415 #262)
+- Add bank 0 for nonbankswitching config (@Gumball2415 #262)
+- Refactor NSFe metadata generation (@Gumball2415 #262)
+- Refactor multifile export (@Gumball2415 #262)
 
-- ### Bug fixes:
+### Bug fixes
 
-	- Update effect bytecodes in row skip handling (@Threxx11 @Gumball2415 #183 #262)
-	- Write carrier frequency regardless of Kxx state (@Gumball2415 #196 #262)
-	- Handle Gxx delay commands in both row and frame transitions (@Gumball2415 #207 #262)
-	- Ignore invalid pattern data upon NSF export (@etoubleh @Gumball2415 #215 #262)
-	- Fix S5B init clobbering Kxx state (@etoubleh @Julllliot @DermotMacFlann @Arg-xz @Gumball2415 #215 #246 #256 #271 #262)
-	- Fix N163 instrument load clobbering Kxx state (@ThatRandomOctoling @Gumball2415 #224 #260 #262)
-	- Fix S5B instrument duty envelopes (@Gumball2415 #267 #262)
-	- Fix length counter load not being written with pitch (@badgertapes @Gumball2415 #297 #262)
-	- Prevent volume commands in DPCM channel to be written in NSF export (@nyanpasu64 @Gumball2415 #311 #262)
-	- Fix assembly period table export (@Gumball2415 #262)
-	- Fix VRC7 period table assembly export (@Gumball2415 #262)
-	- Fix NES ROM export data alignment (@Gumball2415 #278 #262)
-	- Fix DPCM segment start address in nonbankswitching assembly (@Gumball2415 #262)
-	- Fix phase reset behavior (@Gumball2415 #262)
-	- Refactor phase reset code (@Gumball2415 #262)
-	- Clamp pitch and hi-pitch envelope period results (@Gumball2415 #262)
-	- Enable pitch sliding in linear pitch mode (@Gumball2415 #262)
-	- Implement linear pitch period limit (@Gumball2415 #262)
-	- Correct linear pitch calculation sequence (@Gumball2415 #262)
-	- Fix debug constexpr (@Gumball2415 #262)
-	- Beta/indev build fixes:
-		- Refactor Pitch/HiPitch bend logic (@Gumball2415 #262)
-		- Apply N163 slide shift if linear pitch is disabled (@brickblock369 @Gumball2415 #276 #262)
-		- Refactor period limit subroutine (@brickblock369 @Gumball2415 #276 #262)
-		- Fix N163 portamento shift in linear period (@brickblock369 @Gumball2415 #276 #262)
-		- Include .asm filename in NSF stub file (@Gumball2415 #298 #262)
-		- Fix N163 Vxx indexing out of bounds (@Gumball2415 #299 #262)
-	- Properly associate .dnm files to open in Dn-FamiTracker, rather than .0cc files. (@nyanpasu64 #270)
-	- Fix data race UB (audio thread pushing to its own message queue) triggered by WAV export (@nyanpasu64 #272)
-	- Fix misaligned instrument editor graph/mouse at high DPI (@nyanpasu64 #274)
-	- Properly initialize Namco163Audio emulation core in constructor. (@nyanpasu64 #294)
-		- Fixes bug where if a N163 channel uses the Zxx effect to set wave position, the first note plays with corrupted sound until it switches waves or plays a new note.
-	- Fix random crackles in N163 playback and WAV export. (@nyanpasu64 #294)
-		- This was caused by N163 Blip_Buffer frames desynchronizing from global frames after reset.
-	-  Grey out record instrument option on invalid parts of header (@alvinhochun @eulyderg #279 #280)
+- Update effect bytecodes in row skip handling (@Threxx11 @Gumball2415 #183 #262)
+- Write carrier frequency regardless of Kxx state (@Gumball2415 #196 #262)
+- Handle Gxx delay commands in both row and frame transitions (@Gumball2415 #207 #262)
+- Ignore invalid pattern data upon NSF export (@etoubleh @Gumball2415 #215 #262)
+- Fix S5B init clobbering Kxx state (@etoubleh @Julllliot @DermotMacFlann @Arg-xz @Gumball2415 #215 #246 #256 #271 #262)
+- Fix N163 instrument load clobbering Kxx state (@ThatRandomOctoling @Gumball2415 #224 #260 #262)
+- Fix S5B instrument duty envelopes (@Gumball2415 #267 #262)
+- Fix length counter load not being written with pitch (@badgertapes @Gumball2415 #297 #262)
+- Prevent volume commands in DPCM channel to be written in NSF export (@nyanpasu64 @Gumball2415 #311 #262)
+- Fix assembly period table export (@Gumball2415 #262)
+- Fix VRC7 period table assembly export (@Gumball2415 #262)
+- Fix NES ROM export data alignment (@Gumball2415 #278 #262)
+- Fix DPCM segment start address in nonbankswitching assembly (@Gumball2415 #262)
+- Fix phase reset behavior (@Gumball2415 #262)
+- Refactor phase reset code (@Gumball2415 #262)
+- Clamp pitch and hi-pitch envelope period results (@Gumball2415 #262)
+- Enable pitch sliding in linear pitch mode (@Gumball2415 #262)
+- Implement linear pitch period limit (@Gumball2415 #262)
+- Correct linear pitch calculation sequence (@Gumball2415 #262)
+- Fix debug constexpr (@Gumball2415 #262)
+- Beta/indev build fixes:
+	- Refactor Pitch/HiPitch bend logic (@Gumball2415 #262)
+	- Apply N163 slide shift if linear pitch is disabled (@brickblock369 @Gumball2415 #276 #262)
+	- Refactor period limit subroutine (@brickblock369 @Gumball2415 #276 #262)
+	- Fix N163 portamento shift in linear period (@brickblock369 @Gumball2415 #276 #262)
+	- Include .asm filename in NSF stub file (@Gumball2415 #298 #262)
+	- Fix N163 Vxx indexing out of bounds (@Gumball2415 #299 #262)
+- Properly associate .dnm files to open in Dn-FamiTracker, rather than .0cc files. (@nyanpasu64 #270)
+- Fix data race UB (audio thread pushing to its own message queue) triggered by WAV export (@nyanpasu64 #272)
+- Fix misaligned instrument editor graph/mouse at high DPI (@nyanpasu64 #274)
+- Properly initialize Namco163Audio emulation core in constructor. (@nyanpasu64 #294)
+	- Fixes bug where if a N163 channel uses the Zxx effect to set wave position, the first note plays with corrupted sound until it switches waves or plays a new note.
+- Fix random crackles in N163 playback and WAV export. (@nyanpasu64 #294)
+	- This was caused by N163 Blip_Buffer frames desynchronizing from global frames after reset.
+-  Grey out record instrument option on invalid parts of header (@alvinhochun @eulyderg #279 #280)
 
-- ### Internal:
+### Internal
 
-	- Compact commit hash variable initialization in build artifact script (@Gumball2415 #310)
-	- Update GitHub Actions script for generating draft releases (@Gumball2415 #252 #310)
-		- Using `action-gh-release` as it is more recently maintained.
-	- Remove AppVeyor CI integration (@Gumball2415 #283 #310)
-		- AppVeyor is less convenient than GitHub Actions as it is much slower to complete multiple builds.
-	- Update `version_update.md` to be a checklist guide (@Gumball2415 #310)
+- Compact commit hash variable initialization in build artifact script (@Gumball2415 #310)
+- Update GitHub Actions script for generating draft releases (@Gumball2415 #252 #310)
+	- Using `action-gh-release` as it is more recently maintained.
+- Remove AppVeyor CI integration (@Gumball2415 #283 #310)
+	- AppVeyor is less convenient than GitHub Actions as it is much slower to complete multiple builds.
+- Update `version_update.md` to be a checklist guide (@Gumball2415 #310)
+
+
 
 ## Dn0.5.0.2 - 2024-01-13
 
-- ### Important changes:
+### Important changes
 
-	- Modules will be saved as Dn-FT modules (@Gumball2415 #214)
-	- Reintroduce JSON export from 0CC-FT (@nstbayless @Gumball2415 #197 #199)
-	- Update application icon (@Gumball2415 #236)
+- Modules will be saved as Dn-FT modules (@Gumball2415 #214)
+- Reintroduce JSON export from 0CC-FT (@nstbayless @Gumball2415 #197 #199)
+- Update application icon (@Gumball2415 #236)
 
-- ### Bug fixes:
+### Bug fixes
 
-	- Fix effect number input using numpad (@ZeroJanitor @Gumball2415 #48 #214)
-	- Force modules to be saved as Dn-FT modules (@Threxx11 @Gumball2415 #184 #214)
-	- Fix outputting audio to multi-channel output devices (@CoolJosh3k @nyanpasu64 #205 #226)
-	- Wait for APU mutex lock during .wav export (@nyanpasu64 @Gumball2415 #206 #214)
-	- Avoid checking assert with unsigned integer cast (@freq-mod @N-SPC700 @Gumball2415 #209 #214)
-	- Assert legacy mixing levels and ranges (@trashbinenthusiast @N-SPC700 @nyanpasu64 @Gumball2415 #213 #214)
-	- Avoid division by zero in MML sequence parsing (@Gumball2415 #222 #214)
-	- Fix incorrect speed in PAL NSF exports (@TakuikaNinja @eugene-s-nesdev @Gumball2415 #223 #242 #214)
-	- Fix detune offset direction (@Gumball2415 #225 #214)
-	- Disable Custom Exporter DLL loading (@eatscrayon @Gumball2415 #232 #214)
-	- Fix access violation in MRU submenu list update (@eugene-s-nesdev @Gumball2415 #243 #214)
+- Fix effect number input using numpad (@ZeroJanitor @Gumball2415 #48 #214)
+- Force modules to be saved as Dn-FT modules (@Threxx11 @Gumball2415 #184 #214)
+- Fix outputting audio to multi-channel output devices (@CoolJosh3k @nyanpasu64 #205 #226)
+- Wait for APU mutex lock during .wav export (@nyanpasu64 @Gumball2415 #206 #214)
+- Avoid checking assert with unsigned integer cast (@freq-mod @N-SPC700 @Gumball2415 #209 #214)
+- Assert legacy mixing levels and ranges (@trashbinenthusiast @N-SPC700 @nyanpasu64 @Gumball2415 #213 #214)
+- Avoid division by zero in MML sequence parsing (@Gumball2415 #222 #214)
+- Fix incorrect speed in PAL NSF exports (@TakuikaNinja @eugene-s-nesdev @Gumball2415 #223 #242 #214)
+- Fix detune offset direction (@Gumball2415 #225 #214)
+- Disable Custom Exporter DLL loading (@eatscrayon @Gumball2415 #232 #214)
+- Fix access violation in MRU submenu list update (@eugene-s-nesdev @Gumball2415 #243 #214)
 
-- ### Internal:
+### Internal
 
-	- Fix version checker repository link (@Gumball2415 #229 #212)
-	- Include logo and icon resources in the repository (@Gumball2415 #218 #236)
-	- Add AddressSanitizer project configurations (@Gumball2415 #236)
-	- Separate Github Actions binary downloads (@Gumball2415 #237)
-	- Add automated draft release binary upload (@Gumball2415 #237)
-	- Rewrite change log in markdown (@Gumball2415 #238)
-	- Integrate Dn-help as submodule (@Gumball2415 #238)
-	- Generate HTMLHelp manual change log on build time (@Gumball2415 #238)
+- Fix version checker repository link (@Gumball2415 #229 #212)
+- Include logo and icon resources in the repository (@Gumball2415 #218 #236)
+- Add AddressSanitizer project configurations (@Gumball2415 #236)
+- Separate Github Actions binary downloads (@Gumball2415 #237)
+- Add automated draft release binary upload (@Gumball2415 #237)
+- Rewrite change log in markdown (@Gumball2415 #238)
+- Integrate Dn-help as submodule (@Gumball2415 #238)
+- Generate HTMLHelp manual change log on build time (@Gumball2415 #238)
 
 
 
 ## Dn0.5.0.1 - 2023-05-10
 
-- ### Important changes:
+### Important changes
 
-	- Module breaking bugs have now been fixed. (@Gumball2415 #195)
-	- Fix effects type order bug (@Threxx11 @Gumball2415 #184 #195)
-	- Fix custom OPLL patch entry bug (@galap-1 @Gumball2415 #176 #195)
-	- Fix N163 mixing bug (@recme @Gumball2415 #174 #195)
+- Module breaking bugs have now been fixed. (@Gumball2415 #195)
+- Fix effects type order bug (@Threxx11 @Gumball2415 #184 #195)
+- Fix custom OPLL patch entry bug (@galap-1 @Gumball2415 #176 #195)
+- Fix N163 mixing bug (@recme @Gumball2415 #174 #195)
 
-- ### Improvements:
+### Improvements
 
-	- Implement proper commandline support (@TheRealQuantam #168 #181)
+- Implement proper commandline support (@TheRealQuantam #168 #181)
 
-- ### Bug fixes:
+### Bug fixes
 
-	- Fix NSF driver S5B envelope autoperiod (@N-SPC700 @Gumball2415 #186 #189)
-	- Fix NSF driver arpeggio sequence note overflow (@N-SPC700 @Gumball2415 #189)
-	- Fix NSF driver VRC7 note cut behavior to match in-tracker (@MovieMovies1 @Gumball2415 #189)
-	- Fix effects type order bug (@Threxx11 @Gumball2415 #184 #195)
-	- Fix custom OPLL patch entry bug (@galap-1 @Gumball2415 #176 #195)
-	- Fix N163 mixing bug (@recme @Firespike33 @Gumball2415 #174 #195)
-	- Fully initialize device level offset object (@Gumball2415 #195)
-	- Prevent module compatibility mode reinitialization (@Threxx11 @Gumball2415 #184 #195)
-	- Reinitialize OPLL patchset (@galap-1 @Gumball2415 #203 #195)
-	- Initialize PlaybackRate and PlaybackRateType (@N-SPC700 @Gumball2415 #202 #195)
+- Fix NSF driver S5B envelope autoperiod (@N-SPC700 @Gumball2415 #186 #189)
+- Fix NSF driver arpeggio sequence note overflow (@N-SPC700 @Gumball2415 #189)
+- Fix NSF driver VRC7 note cut behavior to match in-tracker (@MovieMovies1 @Gumball2415 #189)
+- Fix effects type order bug (@Threxx11 @Gumball2415 #184 #195)
+- Fix custom OPLL patch entry bug (@galap-1 @Gumball2415 #176 #195)
+- Fix N163 mixing bug (@recme @Firespike33 @Gumball2415 #174 #195)
+- Fully initialize device level offset object (@Gumball2415 #195)
+- Prevent module compatibility mode reinitialization (@Threxx11 @Gumball2415 #184 #195)
+- Reinitialize OPLL patchset (@galap-1 @Gumball2415 #203 #195)
+- Initialize PlaybackRate and PlaybackRateType (@N-SPC700 @Gumball2415 #202 #195)
 
-- ### Internal:
+### Internal
 
-	- Update build tools, VS solution, CMake lists, and corresponding documentation (@Gumball2415 #186)
-	- Add version increment documentation (@Gumball2415 #194)
-	- Update VC++ program database file name in build script (@Gumball2415 #204)
-	- Improve Appveyor build version info (@Gumball2415 #204)
-	- Add Github Actions for build artifacts (@Gumball2415 #204)
-	- Use Windows 10 SDK version 2104 (10.0.20348.0) to avoid unexpected linker failure (@Gumball2415 #204)
+- Update build tools, VS solution, CMake lists, and corresponding documentation (@Gumball2415 #186)
+- Add version increment documentation (@Gumball2415 #194)
+- Update VC++ program database file name in build script (@Gumball2415 #204)
+- Improve Appveyor build version info (@Gumball2415 #204)
+- Add Github Actions for build artifacts (@Gumball2415 #204)
+- Use Windows 10 SDK version 2104 (10.0.20348.0) to avoid unexpected linker failure (@Gumball2415 #204)
 
 
 
 ## Dn0.5.0.0 - 2022-12-19
 
-- ### Important changes:
+### Advisory
 
-	- Dn-FamiTracker modules are no longer backwards compatible with "vanilla" and 0CC FamiTracker.
-	- Dn-FamiTracker Demo Compo 1 modules are now added
-	- N163 emulation core is replaced with Mesen's
-	- New effects: =xx, and Nxy
-	- Exports are now updated (text, NSF/NSFe, binary, asm)
-	- NSF2 export added
-	- External OPLL option (export only available for NSFe/NSF2)
-	- Per-module expansion mixing (export only available for NSFe/NSF2)
-	- Hardware-based module expansion mixing (export only available for NSFe/NSF2)
-	- DirectSound backend now replaced with WASAPI
+This version has broken module saving functions, which may corrupt your modules upon saving.
 
-- ### Additions:
+***Please use the latest version!***
 
-	- Add FDS waveform view (@EulousDev #113)
-	- Add invalid note indicator (@EulousDev #119)
-	- Add Dn-FT Demo Compo 1 Modules (@Gumball2415 #153)
-	- Target volume slide effect (Nxy) (@ipidev #109)
-	- Implement Kxx and =xx in NSF driver (@Gumball2415 nyanpasu64/j0CC-FamiTracker#122, #156)
-	- Add supplemental NSF data on bin/asm export (NSF header, config, period tables and vibrato tables) (@Gumball2415 #156)
-	- Add mixe chunk support and per-module device mixing (@Gumball2415 #68, #156)
-	- Add hardware-based expansion audio mixing (@Gumball2415 #156)
-	- Implement external OPLL patchset editing (@Gumball2415 #68, #156)
-	- Implement VRC7 NSFe chunk (@Gumball2415 #156)
+### Important changes
 
-- ### Improvements:
+- Dn-FamiTracker modules are no longer backwards compatible with "vanilla" and 0CC FamiTracker.
+- Dn-FamiTracker Demo Compo 1 modules are now added
+- N163 emulation core is replaced with Mesen's
+- New effects: =xx, and Nxy
+- Exports are now updated (text, NSF/NSFe, binary, asm)
+- NSF2 export added
+- External OPLL option (export only available for NSFe/NSF2)
+- Per-module expansion mixing (export only available for NSFe/NSF2)
+- Hardware-based module expansion mixing (export only available for NSFe/NSF2)
+- DirectSound backend now replaced with WASAPI
 
-	- Register view improvements (@Gumball2415 @nyanpasu64 @EulousDev #118, #120)
-	- Replace N163 audio core with Mesen (@Gumball2415 nyanpasu64/j0CC-FamiTracker#151, #111, #138, #152)
-	- Refactor FDS auto-FM overflow fix (@Gumball2415 #80, #65, nyanpasu64/j0CC-FamiTracker#133, #156)
-	- Refactor Pxx overflow fix (@Gumball2415 #80, #156)
-	- Refactor Gxx overflow fix (@Gumball2415 #80, nyanpasu64/j0CC-FamiTracker#129, #156)
-	- Reset FDS modulator phase on new note (@Gumball2415 #156)
-	- Refactor period table calculation (@Gumball2415 #156)
-	- Update text import/export parity (@Gumball2415 #161, #162, #156)
+### Additions
 
-- ### Bug fixes:
+- Add FDS waveform view (@EulousDev #113)
+- Add invalid note indicator (@EulousDev #119)
+- Add Dn-FT Demo Compo 1 Modules (@Gumball2415 #153)
+- Target volume slide effect (Nxy) (@ipidev #109)
+- Implement Kxx and =xx in NSF driver (@Gumball2415 nyanpasu64/j0CC-FamiTracker#122, #156)
+- Add supplemental NSF data on bin/asm export (NSF header, config, period tables and vibrato tables) (@Gumball2415 #156)
+- Add mixe chunk support and per-module device mixing (@Gumball2415 #68, #156)
+- Add hardware-based expansion audio mixing (@Gumball2415 #156)
+- Implement external OPLL patchset editing (@Gumball2415 #68, #156)
+- Implement VRC7 NSFe chunk (@Gumball2415 #156)
 
-	- Prevent ctrl/shift+wheel edit outside edit mode (copyrat90 #87)
-	- Fix random crash when exporting channels as WAV (@nyanpasu64 #92, #93)
-	- Fix module reload on config confirmation (@Gumball2415 #89, #97)
-	- Fix N163 volume meter level (@EulousDev #99, #103)
-	- Fix VRC7 data race and use-after-free when reloading/closing modules (@nyanpasu64 #106)
-	- Update source code copyright declaration and GPL 2.0+ notice (@Gumball2415 #116)
-	- Fix wave export dialog refresh rate to GUI rate (@Gumball2415 #108)
-	- Fix high-res spectrum visualizer at small buffer sizes (@nyanpasu64 #126)
-	- Fix use-after-free race condition in visualizer (@nyanpasu64 #130)
-	- Fix crash when starting program with pattern editor off-screen (@nyanpasu64 #128, #129)
-	- Fix periodic noise showing cents when muted (@Gumball2415 #139)
-	- Stop rejecting valid files using features missing from vanilla FT (@nyanpasu64 #150)
-	- Fix N163 instrument pointer data overflow (@Gumball2415 #156)
-	- Fix NSFe export from using incorrect DATA chunk size (@Gumball2415 #110, nyanpasu64/j0CC-FamiTracker#5, #156)
-	- Fix 5B Wxx being overwritten by blank duty macros (@Gumball2415 #160, nyanpasu64/j0CC-FamiTracker#105, #156)
-	- Fix N163 multiplex state desync (@Gumball2415 #163, #156)
-	- Dn-FamiTracker modules are no longer backwards compatible with "vanilla" and 0CC (@Gumball2415 #156)
-	- FamiTracker 0.5.0 beta modules no longer conflict with Dn-FamiTracker 0.5.0.0 modules (@Gumball2415 #156)
+### Improvements
 
-- ### Internal:
+- Register view improvements (@Gumball2415 @nyanpasu64 @EulousDev #118, #120)
+- Replace N163 audio core with Mesen (@Gumball2415 nyanpasu64/j0CC-FamiTracker#151, #111, #138, #152)
+- Refactor FDS auto-FM overflow fix (@Gumball2415 #80, #65, nyanpasu64/j0CC-FamiTracker#133, #156)
+- Refactor Pxx overflow fix (@Gumball2415 #80, #156)
+- Refactor Gxx overflow fix (@Gumball2415 #80, nyanpasu64/j0CC-FamiTracker#129, #156)
+- Reset FDS modulator phase on new note (@Gumball2415 #156)
+- Refactor period table calculation (@Gumball2415 #156)
+- Update text import/export parity (@Gumball2415 #161, #162, #156)
 
-	- Revise README (@Gumball2415 #114)
-	- Replace DirectSound backend with WASAPI (@nyanpasu64 #124)
-	- Remove unused files, add headers to CMakeLists.txt (@nyanpasu64 #142)
-	- Eliminate audio thread blocking on GUI messages and main thread (@nyanpasu64 #134, #137)
-	- Add WASAPI resampling so all sampling rates work (@nyanpasu64 @Gumball2415 #143)
-	- Fix crash when activating non-initial song then opening document with expansion chip(s) (@nyanpasu64 #147, #148)
-	- Fix mostly-theoretical data race when popping from SPSC queues (@nyanpasu64 #149)
-	- Properly terminate stuck audio thread when closing the program (@nyanpasu64 #155)
+### Bug fixes
+
+- Prevent ctrl/shift+wheel edit outside edit mode (copyrat90 #87)
+- Fix random crash when exporting channels as WAV (@nyanpasu64 #92, #93)
+- Fix module reload on config confirmation (@Gumball2415 #89, #97)
+- Fix N163 volume meter level (@EulousDev #99, #103)
+- Fix VRC7 data race and use-after-free when reloading/closing modules (@nyanpasu64 #106)
+- Update source code copyright declaration and GPL 2.0+ notice (@Gumball2415 #116)
+- Fix wave export dialog refresh rate to GUI rate (@Gumball2415 #108)
+- Fix high-res spectrum visualizer at small buffer sizes (@nyanpasu64 #126)
+- Fix use-after-free race condition in visualizer (@nyanpasu64 #130)
+- Fix crash when starting program with pattern editor off-screen (@nyanpasu64 #128, #129)
+- Fix periodic noise showing cents when muted (@Gumball2415 #139)
+- Stop rejecting valid files using features missing from vanilla FT (@nyanpasu64 #150)
+- Fix N163 instrument pointer data overflow (@Gumball2415 #156)
+- Fix NSFe export from using incorrect DATA chunk size (@Gumball2415 #110, nyanpasu64/j0CC-FamiTracker#5, #156)
+- Fix 5B Wxx being overwritten by blank duty macros (@Gumball2415 #160, nyanpasu64/j0CC-FamiTracker#105, #156)
+- Fix N163 multiplex state desync (@Gumball2415 #163, #156)
+- Dn-FamiTracker modules are no longer backwards compatible with "vanilla" and 0CC (@Gumball2415 #156)
+- FamiTracker 0.5.0 beta modules no longer conflict with Dn-FamiTracker 0.5.0.0 modules (@Gumball2415 #156)
+
+### Internal
+
+- Revise README (@Gumball2415 #114)
+- Replace DirectSound backend with WASAPI (@nyanpasu64 #124)
+- Remove unused files, add headers to CMakeLists.txt (@nyanpasu64 #142)
+- Eliminate audio thread blocking on GUI messages and main thread (@nyanpasu64 #134, #137)
+- Add WASAPI resampling so all sampling rates work (@nyanpasu64 @Gumball2415 #143)
+- Fix crash when activating non-initial song then opening document with expansion chip(s) (@nyanpasu64 #147, #148)
+- Fix mostly-theoretical data race when popping from SPSC queues (@nyanpasu64 #149)
+- Properly terminate stuck audio thread when closing the program (@nyanpasu64 #155)
 
 
 
 ## Dn0.4.0.1 - 2021-09-14
 
-- ### Patch fixes:
+### Patch fixes
 
-	- Fix internal version numbering (@Gumball2415)
+- Fix internal version numbering (@Gumball2415)
 
 ## Dn0.4.0.0 - 2021-09-13
 
-- ### Important changes:
+```
+Notice: the version numbers in the .exe are wrong, please ignore it.
+```
 
-	- New file extension format for modules: *.dnm (@Gumball2415 #71)
-	- New file extension format for instruments: *.dni (@Gumball2415 #71)
-	- Support for Windows XP has been dropped (@Gumball2415, @nyanpasu64, @N-SPC700 #82, #84)
+### Important changes
 
-- ### Additions:
+- New file extension format for modules: *.dnm (@Gumball2415 #71)
+- New file extension format for instruments: *.dni (@Gumball2415 #71)
+- Support for Windows XP has been dropped (@Gumball2415, @nyanpasu64, @N-SPC700 #82, #84)
 
-	- Add new D.P.C.M. organization info, links and metadata (@Gumball2415 #71)
-	- New instrument names are blank on creation (@Gumball2415)
-	- Add empty instrument in newly created modules (@Gumball2415, @nyanpasu64, @N-SPC700 #77)
+### Additions:
 
-- ### Improvements:
+- Add new D.P.C.M. organization info, links and metadata (@Gumball2415 #71)
+- New instrument names are blank on creation (@Gumball2415)
+- Add empty instrument in newly created modules (@Gumball2415, @nyanpasu64, @N-SPC700 #77)
 
-	- Adjustable frame editor channel view limit (@Gumball2415 #72)
-	- Fix frame editor channel view truncation (@Gumball2415 #72)
+### Improvements:
 
-- ### Bug fixes:
+- Adjustable frame editor channel view limit (@Gumball2415 #72)
+- Fix frame editor channel view truncation (@Gumball2415 #72)
 
-	- Fix Gxx delay command overflow in NSF driver (@Gumball2415, @smbhacks #80)
-	- Fix FDS automatic modulation overflow in NSF driver (@Gumball2415, @galap-1 #65, #80)
-	- Fix period calculation overflow in NSF driver (@Gumball2415, @smbhacks #80)
-	- Reset VRC7 emulator core on channel handler reset (@Gumball2415, @TakuikaNinja #79)
-	- Flush file to disk before renaming to prevent module corruption (@Gumball2415, @nyanpasu64 #81)
-	- Fix commandline parameter processing when flags are used (@Gumball2415)
+### Bug fixes:
 
-- ### Internal:
+- Fix Gxx delay command overflow in NSF driver (@Gumball2415, @smbhacks #80)
+- Fix FDS automatic modulation overflow in NSF driver (@Gumball2415, @galap-1 #65, #80)
+- Fix period calculation overflow in NSF driver (@Gumball2415, @smbhacks #80)
+- Reset VRC7 emulator core on channel handler reset (@Gumball2415, @TakuikaNinja #79)
+- Flush file to disk before renaming to prevent module corruption (@Gumball2415, @nyanpasu64 #81)
+- Fix commandline parameter processing when flags are used (@Gumball2415)
 
-	- Fix CString::Format() memory corruption bug on Wine (@nyanpasu64 #56)
-	- Fix uninitialized echo buffer values (@nyanpasu64 #56)
-	- Clarify nsfplay value_or() (@nyanpasu64 #56)
-	- Clarify integer widths in CBookmark::Distance() (@nyanpasu64 #56)
-	- Fix broken Open dialog after launching Dn by opening a file (@nyanpasu64 #74, #76)
-	- Fix out-of-bounds read in oscilloscope (@nyanpasu64 #85)
+### Internal:
+
+- Fix CString::Format() memory corruption bug on Wine (@nyanpasu64 #56)
+- Fix uninitialized echo buffer values (@nyanpasu64 #56)
+- Clarify nsfplay value_or() (@nyanpasu64 #56)
+- Clarify integer widths in CBookmark::Distance() (@nyanpasu64 #56)
+- Fix broken Open dialog after launching Dn by opening a file (@nyanpasu64 #74, #76)
+- Fix out-of-bounds read in oscilloscope (@nyanpasu64 #85)
 
 
 
 ## Dn0.3.1.0 - 2021-06-30
 
-- ### Important changes:
+### Important changes
 
-	- N163 and 5B expansion audio mixing has been restored to 0.2.1 levels (@nyanpasu64 #66)
-	- Adjusted APU 2 levels to match blargg's original formula (@Gumball2415 #69)
+- N163 and 5B expansion audio mixing has been restored to 0.2.1 levels (@nyanpasu64 #66)
+- Adjusted APU 2 levels to match blargg's original formula (@Gumball2415 #69)
 
-- ### Additions:
+### Additions
 
-	- Added a textbox for patch editing within the VRC7 instrument editor (@Gumball2415 #60)
+- Added a textbox for patch editing within the VRC7 instrument editor (@Gumball2415 #60)
 
-- ### Improvements:
+### Improvements
 
-	- Edit NSF export format to allow adding more effects (@Gumball2415, @nyanpasu64 #46)
+- Edit NSF export format to allow adding more effects (@Gumball2415, @nyanpasu64 #46)
 
-- ### Bug fixes:
+### Bug fixes
 
-	- Fix VRC7 hardware patch bank presets not reading properly (@Gumball2415 #60)
-	- Fix crash when increasing engine speed with VRC7 enabled (@nyanpasu64 #62)
-	- Fix N163 and 5B mixing levels which were swapped in 0.3.0 (causing N163 to be louder and 5B to be quieter) (@nyanpasu64 #66)
+- Fix VRC7 hardware patch bank presets not reading properly (@Gumball2415 #60)
+- Fix crash when increasing engine speed with VRC7 enabled (@nyanpasu64 #62)
+- Fix N163 and 5B mixing levels which were swapped in 0.3.0 (causing N163 to be louder and 5B to be quieter) (@nyanpasu64 #66)
 
-- ### Internal:
+### Internal
 
-	- Update VRC7 emulator core (emu2413) to v1.5.6 (@Gumball2415 #59)
-	- Port CVRC7 to CSoundChip2 (@Gumball2415 #59)
-	- Refactor VRC7 hardware patch bank swapping (@Gumball2415 #59)
+- Update VRC7 emulator core (emu2413) to v1.5.6 (@Gumball2415 #59)
+- Port CVRC7 to CSoundChip2 (@Gumball2415 #59)
+- Refactor VRC7 hardware patch bank swapping (@Gumball2415 #59)
 
 
 
 ## Dn0.3.0.0 - 2021-04-03
 
-- ### Important changes:
+### Important changes
 
-	- Reenabled version checking, which can also be accessed in the Help popup
-	- Replaced FDS emulation core with Mesen's version (@nyanpasu64 #32)
-	- Replaced 2A03 emulation core with NSFPlay's version (@nyanpasu64 #32)
-	- Added back the help manual, with additional updated info contributed by:
-		- Blue Mario for Sunsoft 5B information (@N-SPC700 #12)
-		- Accuracy (Compass Man) for providing updated screenshots (#12)
+- Reenabled version checking, which can also be accessed in the Help popup
+- Replaced FDS emulation core with Mesen's version (@nyanpasu64 #32)
+- Replaced 2A03 emulation core with NSFPlay's version (@nyanpasu64 #32)
+- Added back the help manual, with additional updated info contributed by:
+	- Blue Mario for Sunsoft 5B information (@N-SPC700 #12)
+	- Accuracy (Compass Man) for providing updated screenshots (#12)
 
-- ### Additions:
+### Additions
 
-	- Added FastTracker 2 (JP106) keymap (@sdhizumi #8)
-	- Adjustable idle refresh rate in configuration
-	- Emulation tab in Configuration, which currently includes:
-		- Toggleable N163 multiplexing
-		- Swappable VRC7 hardware patches
-		- Adjustable FDS cutoff filter (@nyanpasu64 #42)
-	- Added the Kxx multiply frequency effect, not currently supported in NSF export @nyanpasu64 #16)
-	- Adjustable channel view in frame editor
+- Added FastTracker 2 (JP106) keymap (@sdhizumi #8)
+- Adjustable idle refresh rate in configuration
+- Emulation tab in Configuration, which currently includes:
+	- Toggleable N163 multiplexing
+	- Swappable VRC7 hardware patches
+	- Adjustable FDS cutoff filter (@nyanpasu64 #42)
+- Added the Kxx multiply frequency effect, not currently supported in NSF export @nyanpasu64 #16)
+- Adjustable channel view in frame editor
 
-- ### Improvements:
+### Improvements
 
-	- Enable DPI scaling for pattern editor (@nyanpasu64 #5)
-	- Updated About information
-	- Export wave shortcut (Ctrl + Shift + E)
+- Enable DPI scaling for pattern editor (@nyanpasu64 #5)
+- Updated About information
+- Export wave shortcut (Ctrl + Shift + E)
 
-- ### Bug fixes:
+### Bug fixes
 
-	- Fixed DC drifting (when no highpass is applied) due to rounding errors in Blip_Buffer calculation (@nyanpasu64 #27)
-	- Fixed N163 detuning when multiplexing is disabled (@nyanpasu64 #31)
-	- Fixed undoing "delete frame" adding a new frame (#43)
-	- Fixed VRC7 note cuts being inconsistent with in-tracker note cuts (@Kouzeru #47)
+- Fixed DC drifting (when no highpass is applied) due to rounding errors in Blip_Buffer calculation (@nyanpasu64 #27)
+- Fixed N163 detuning when multiplexing is disabled (@nyanpasu64 #31)
+- Fixed undoing "delete frame" adding a new frame (#43)
+- Fixed VRC7 note cuts being inconsistent with in-tracker note cuts (@Kouzeru #47)
 
-- ### Internal:
+### Internal
 
-	- Fixed CMake MFC detection and link flag conflicts (@nyanpasu64 #6)
-	- Removed more occurences of old program name and renamed more files to Dn (@nyanpasu64 #7)
-	- Replaced the application icon (design by Accuracy (Compass Man))
-	- Enabled x64 build compiling in the Visual Studio files
-	- Updated the VRC7 emulation core to emu2413 v1.5.2
-	- Include changelogs of vanilla, j0CC, and Dn in changelog.txt
-	- Moved resource.h and Dn-FamiTracker.rc back to root folder due to HTMLHelp compilation
-	- Corrected paths on case-sensitive filesystems (@nyanpasu64 #18)
-	- Removed header files from CMake (@nyanpasu64 #26)
-	- Replaced Blip_Buffer with an improved fork (@nyanpasu64 #27)
-	- Added emulation clock-skipping until next level change to save CPU, currently implemented in 2A03 and FDS emulator cores (@nyanpasu64 #32)
-	- Fixed file extension association in Dn-FamiTracker.reg (@Raphaelo24 #36)
+- Fixed CMake MFC detection and link flag conflicts (@nyanpasu64 #6)
+- Removed more occurences of old program name and renamed more files to Dn (@nyanpasu64 #7)
+- Replaced the application icon (design by Accuracy (Compass Man))
+- Enabled x64 build compiling in the Visual Studio files
+- Updated the VRC7 emulation core to emu2413 v1.5.2
+- Include changelogs of vanilla, j0CC, and Dn in changelog.txt
+- Moved resource.h and Dn-FamiTracker.rc back to root folder due to HTMLHelp compilation
+- Corrected paths on case-sensitive filesystems (@nyanpasu64 #18)
+- Removed header files from CMake (@nyanpasu64 #26)
+- Replaced Blip_Buffer with an improved fork (@nyanpasu64 #27)
+- Added emulation clock-skipping until next level change to save CPU, currently implemented in 2A03 and FDS emulator cores (@nyanpasu64 #32)
+- Fixed file extension association in Dn-FamiTracker.reg (@Raphaelo24 #36)
 
 
 
 ## Dn0.2.1.0 - 2020-09-13
 
-- ### Additions:
+### Additions
 
-	- Adjustable preview pitch.
+- Adjustable preview pitch.
 
-- ### Improvements:
+### Improvements
 
-	- Readjusted the DPCM sample editor dialog size limit.
+- Readjusted the DPCM sample editor dialog size limit.
 
-- ### Bug fixes:
+### Bug fixes
 
-	- Fixed drag-scrolling not working.
-	- Readjusted the DPCM sample editor dialog size limit.
+- Fixed drag-scrolling not working.
+- Readjusted the DPCM sample editor dialog size limit.
 
-- ### Internal:
+### Internal
 
-	- Changed the project and corresponding project file names accordingly to Dn-FamiTracker.
+- Changed the project and corresponding project file names accordingly to Dn-FamiTracker.
 
 
 
 ## Dn0.2.0 - 2020-09-07
 
-- ### Additions:
+### Additions
 
-	- Multiple .wav per-channel export (@nyanpasu64 #2)
-	- Adaptive register state refresh rate(≈60fps during playback, otherwise 10fps)
+- Multiple .wav per-channel export (@nyanpasu64 #2)
+- Adaptive register state refresh rate(≈60fps during playback, otherwise 10fps)
 
-- ### Bug fixes:
+### Bug fixes
 
-	- DPCM sample bit reversal now includes the first bit of the sample
-	- Fixed the version numbering
+- DPCM sample bit reversal now includes the first bit of the sample
+- Fixed the version numbering
 
-- ### Internal:
+### Internal
 
-	- Changed most of the internal names from j0CC-FamiTracker to Dn-FamiTracker
-	- Use precompiled headers in CMake builds (@nyanpasu64 #3)
+- Changed most of the internal names from j0CC-FamiTracker to Dn-FamiTracker
+- Use precompiled headers in CMake builds (@nyanpasu64 #3)
 
 
 
 ## Dn0.1.0 - 2020-08-05
 
-- ### Additions:
+```
+(the filenames and versions don't reflect this revision number, sorry)
+I'm starting to do stuff with this source code now that j0CC-Famitracker has moved on.
+Don't expect a lot here, just tiny improvements that personally help my workflow for creating modules.
+```
 
-	- DPCM sample bit order reversal (located in the DPCM sample editor) (@Gumball2415 #1)
+### Additions
+
+- DPCM sample bit order reversal (located in the DPCM sample editor) (@Gumball2415 #1)
 
 ---
 

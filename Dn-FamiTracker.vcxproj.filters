@@ -1499,9 +1499,6 @@
     <ClInclude Include="Source\JsonExporter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Dn-help\hlp\HTMLDefines.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Dn-FamiTracker.rc">
@@ -1566,9 +1563,6 @@
     <None Include="res\MainToolbar-256.bmp">
       <Filter>Resource Files\Bitmaps</Filter>
     </None>
-    <None Include="changelog.txt" />
-    <None Include="specs.txt" />
-    <None Include="0CC-readme.txt" />
     <None Include="Source\resampler\resample.inl">
       <Filter>Header Files\Dialog Boxes Headers\Instrument Headers\Related Headers\Resampler Headers</Filter>
     </None>
@@ -1590,7 +1584,13 @@
     <None Include="Source\drivers\asm\vrc7.s" />
     <None Include="Source\drivers\build.cmd" />
     <None Include="Source\drivers\asm\build\build_engine.py" />
-    <None Include="Dn-help\hlp\changelog_shell.htm" />
+    <None Include="update-changelog-htm.bat">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="resource_version_update.py" />
+    <None Include="compile-chm.bat">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="res\Dn-FamiTracker.manifest">
