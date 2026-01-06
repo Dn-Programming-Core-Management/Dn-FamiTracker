@@ -83,9 +83,6 @@ add_executable(${exe}
         Source/gsl/string_span
 
         Source/json/json.hpp
-        
-        Source/JsonExporter.cpp
-        Source/JsonExporter.h
 
         Source/resampler/resample.cpp
         Source/resampler/resample.hpp
@@ -370,6 +367,8 @@ add_executable(${exe}
         Source/InstrumentVRC7.cpp
         Source/InstrumentVRC7.h
         Source/IntRange.h
+        Source/JsonExporter.cpp
+        Source/JsonExporter.h
         Source/MainFrm.cpp
         Source/MainFrm.h
         Source/MIDI.cpp
