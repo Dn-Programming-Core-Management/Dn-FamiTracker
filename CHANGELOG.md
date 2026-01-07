@@ -6,11 +6,11 @@ Written by D.P.C.M.
 
 Version 0.5.2.9
 
-Last updated: January 06, 2026
+Last updated: January 07, 2026
 
 ---
 
-## Unreleased - 2026-01-06
+## Unreleased - 2026-01-07
 
 ### Important changes
 
@@ -22,7 +22,11 @@ Last updated: January 06, 2026
 
 ### Bug fixes
 
-- ...
+- Revert "Fix C-0 not previewing DPCM sample" (@damifortune @Gumball2415 #383 #394)
+	- This reverts commit ac2648491c25473f0cc8c01ce8ef4cb09e9332c1.
+	- There doesn't seem to be any bug at the time of its writing upon further scrutiny.
+- Separate tempo state updating from channel state updating (@JG540 @Gumball2415 #382 #384 #394)
+- Set `m_iSpeed` to default when groove is enabled (@TakuikaNinja @Gumball2415 #379 #394)
 
 ### Internal
 
