@@ -60,7 +60,7 @@ For more details, view the [license](LICENSE.md).
 
 ## Contributing
 
-[Contributing and compiling](Dn-FamiTracker/CONTRIBUTING.md)
+[Contributing and compiling](CONTRIBUTING.md)
 
 ## Program lineage
 
