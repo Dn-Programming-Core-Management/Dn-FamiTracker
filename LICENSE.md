@@ -1,12 +1,14 @@
 # Licenses
 
+---
+
 The application is distributed under the
 [GPLv3+ license](https://www.gnu.org/licenses/gpl-3.0.en.html), or any later
 version.
 
-```_
+```text
 Dn-FamiTracker - NES/Famicom sound tracker
-Copyright (C) 2020-2025 D.P.C.M.
+Copyright (C) 2020-2026 D.P.C.M.
 FamiTracker Copyright (C) 2005-2020 Jonathan Liss
 0CC-FamiTracker Copyright (C) 2014-2018 HertzDevil
 
@@ -27,7 +29,7 @@ along with this program. If not, see https://www.gnu.org/licenses/.
 ## Tracker source code and libraries
 
 The tracker source code is distributed under the
-[GPLv3+ license](https://www.gnu.org/licenses/gpl-3.0.en.html), or any later
+[GPLv3+ license](https://www.gnu.org/licenses/gpl-3.0.html), or any later
 version.
 
 - FamiTracker
@@ -40,50 +42,36 @@ version.
 	- Licensed under
 	  [GPLv2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html), or any
 	  later version.
-	- Copyright (C) 2006 Brezza, 2012-2025 Brad Smith
-	- Used under an [informal license](Source/APU/nsfplay/readme.txt).
-- VRC7/OPLL sound emulator from emu2413 v1.5.9
-	- Copyright (C) 2001-2019 Mitsutaka Okazaki
+- NSFPlay
+	- Copyright (C) 2006 Brezza, 2012-2026 Brad Smith
+	- Used under an [informal license](https://github.com/bbbradsmith/nsfplay/blob/master/readme.txt).
+- VRC7/OPLL sound emulator from [emu2413](https://github.com/digital-sound-antiques/emu2413) v1.5.9
+	- Copyright (C) 2001-2022 Mitsutaka Okazaki
 	- Licensed under the [MIT license](https://mit-license.org/).
-- FDS and N163 sound emulator from Mesen
-	- Copyright (C) 2014-2024 Sour
+- FDS and N163 sound emulator from [Mesen](https://github.com/SourMesen/Mesen2)
+	- Copyright (C) 2014-2025 Sour
 	- Licensed under
-	  [GPLv3](https://www.gnu.org/licenses/old-licenses/gpl-3.0.en.html), or any
+	  [GPLv3](https://www.gnu.org/licenses/gpl-3.0.html), or any
 	  later version.
-- Blip_buffer 0.4.1
+- [Blip_buffer](https://www.slack.net/~ant/libs/audio.html#Blip_Buffer) 0.4.1
 	- Copyright (C) 2003-2006 Shay Green
 	- Licensed under
 	  [LGPLv2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html)
 	- modified by nyanpasu64
-- Free FFT and convolution (C++)
+- [Free FFT and convolution](https://www.nayuki.io/page/free-small-fft-in-multiple-languages) (C++)
 	- Copyright (C) 2017 Project Nayuki
 	- Licensed under the
 	  [MIT license](https://mit-license.org/).
-- JSON for Modern C++
+- [JSON for Modern C++](https://github.com/nlohmann/json/)
 	- Copyright (C) 2013-2024 Niels Lohmann <https://nlohmann.me>
 	- Licensed under the [MIT license](https://mit-license.org/).
-- libsamplerate
+- [libsamplerate](https://github.com/libsndfile/libsamplerate)
 	- Copyright (C) 2012-2016, Erik de Castro Lopo <erikd@mega-nerd.com>.
 	  All rights reserved.
 	- Licensed under the
 	  [BSD-2-Clause license](https://www.freebsd.org/copyright/freebsd-license/).
 
-## NSFs, Exported music, modules, etc.
-
-The licenses mentioned for the NSF driver and the tracker source do not apply to
-exported media made with the program that does not contain executable code that
-resembles any source file, such as exported `.wav`s, `.txt`s, `.json`s, or `.csv`s.
-
-[jsr's comment on music created with FT.](http://forums.famitracker.com/viewtopic.php?f=4&t=122&p=741#p741)
-
-However, NSFs/ROMs contain machine code that more or less corresponds to the NSF
-driver source, and thus the software licenses may apply. More details can be
-found [in the NSF source's license](./Source/drivers/asm/LICENSE.md).
-
-This does not apply to exported assembly or binary music data, as they do not
-include the NSF driver data.
-
 ## NSF driver source code
 
-Dn-FT NSF driver changes are under GPL v2 due to 0CC-FT. More details can be
-found [in the NSF source's license](./Source/drivers/asm/LICENSE.md).
+Dn-FT NSF driver modifications are under [MIT-0](LICENSE-MIT-0.txt). More details can be found
+[in the NSF driver source's license](https://github.com/Dn-Programming-Core-Management/Dn-FamiTracker/blob/main/Source/drivers/asm/LICENSE.md).
