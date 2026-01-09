@@ -12,14 +12,15 @@ To edit and/or build the source, you may use Visual Studio 2022, or alternativel
 	- Note that HTML Help Workshop is no longer supported and thus no longer available to download on Microsoft's website.
 	- [Link to archived download.](https://web.archive.org/web/20200720082840/http://download.microsoft.com/download/0/A/9/0A939EF6-E31C-430F-A3DF-DFAE7960D564/htmlhelp.exe)
 - [Pandoc](https://pandoc.org), for markdown document conversion.
-	- Currently used for HTMLHelp manual changelog compiling.
-- For NSF driver compiling:
-	- [CC65 build tools](https://cc65.github.io/), make sure `ld65` and `ca65` is available in environment path.
+	- Currently used for templated pages for the HTMLHelp manual.
+- [CC65 build tools](https://cc65.github.io/)
+	- Used for NSF driver compiling.
+	- Make sure `ld65` and `ca65` is available in environment path.
 - For miscellaneous custom build scripts:
 	- [Python 3.10+](https://www.python.org/)
 - For any IDE that supports building via CMake:
 	- CMake version 3.16+
-	- The latest MSVC build tools 
+	- The latest MSVC build tools
 		- may be installed by VS Installer or by other sources
 	- Windows 11 SDK (10.0.26100.0)
 		- may be installed through VS Installer or by other sources
