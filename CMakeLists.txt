@@ -75,10 +75,13 @@ add_custom_command(
 # update changelog
 add_custom_command(
     OUTPUT  ${DNHELP_SRC_DIR}/changelog.htm
-    DEPENDS ${DNHELP_SRC_DIR}/changelog-shell.htm
+            ${DNHELP_SRC_DIR}/license.htm
+    DEPENDS ${DNHELP_SRC_DIR}/changelog-template.htm
+            ${DNHELP_SRC_DIR}/license-template.htm
             CHANGELOG.md
+            LICENSE.md
     WORKING_DIRECTORY ${DNHELP_SRC_DIR}
-    COMMAND call ${DNHELP_SRC_DIR}/update-changelog-htm.bat
+    COMMAND call ${DNHELP_SRC_DIR}/update-htm-templates
     COMMENT "Updating changelog.htm."
     VERBATIM)
 
