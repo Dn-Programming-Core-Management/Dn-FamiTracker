@@ -127,13 +127,13 @@ def build(chip: str):
                 if x == y:
                     # NSFDRV
                     if len(t_nsfdrv) < 8:
-                        t_nsfdrv.append("0x%02X" % int.from_bytes(x))
+                        t_nsfdrv.append("0x%02X" % int.from_bytes(x, byteorder='little'))
                     # driver kernel
                     else:
-                        t_hed.append("0x%02X" % int.from_bytes(x))
+                        t_hed.append("0x%02X" % int.from_bytes(x, byteorder='little'))
                 else:
                     # pointer relocation
-                    t_hed.append("0x%02X" % (int.from_bytes(x)-0xC1))
+                    t_hed.append("0x%02X" % (int.from_bytes(x, byteorder='little')-0xC1))
                     reloc_query = in1.tell() - 1 - nsfdrv_size
                     if not reloc_lo.get(reloc_query) and not reloc_hi.get(reloc_query):
                         t_rel.append("0x%04X" % (reloc_query - 1))
