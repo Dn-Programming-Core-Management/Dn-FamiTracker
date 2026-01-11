@@ -6,11 +6,11 @@ Written by D.P.C.M.
 
 Version 0.5.2.9
 
-Last updated: January 07, 2026
+Last updated: January 11, 2026
 
 ---
 
-## Unreleased - 2026-01-07
+## Unreleased - 2026-01-11
 
 ### Important changes
 
@@ -18,7 +18,7 @@ Last updated: January 07, 2026
 
 ### Improvements
 
-- ...
+- Clarify NSF driver licensing (@Gumball2415 #401)
 
 ### Bug fixes
 
@@ -42,8 +42,9 @@ Last updated: January 07, 2026
 - Refactor custom build commands in `.vcxproj`s (@Gumball2415 #398)
 - Update CMake build scripts (@Gumball2415 #398)
 - Update CMake source list in `exe.cmake` (@Gumball2415 #398)
-
-
+- Update NSF driver licensing (@Gumball2415 #401)
+	- Add MIT-0 license for NSF driver license
+	- Fix `LICENSE.md` links
 
 ## Dn0.5.2 - 2025-08-18
 
