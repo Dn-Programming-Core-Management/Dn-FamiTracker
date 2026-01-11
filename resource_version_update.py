@@ -58,3 +58,11 @@ overwrite_rc(
 
 
 print(f"Resource versions updated as {ver_api}.{ver_maj}.{ver_min}.{ver_bld}")
+
+# TODO: Copy Dn-FamiTracker.rc to a temp file first before executing this
+# annoying; Visual Studio Custom build requires that we have an output
+# but during rebuilding or cleaning, it deletes that output
+# we can't just delete Dn-FamiTracker.rc!
+# so instead, we indicate that this is the output it can scapegoat
+with open("Dn-FamiTracker.rc_status.txt", mode="w") as output:
+    output.write("all good!")

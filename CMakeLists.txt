@@ -46,7 +46,7 @@ find_package(Python 3.10)
 
 # update version in Dn-FamiTracker.rc
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Dn-FamiTracker.rc
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Dn-FamiTracker.rc_status.txt
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/version.h
     COMMAND ${Python_EXECUTABLE} resource_version_update.py
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -75,11 +75,14 @@ add_custom_command(
 # update changelog
 add_custom_command(
     OUTPUT  ${DNHELP_SRC_DIR}/changelog.htm
-    DEPENDS ${DNHELP_SRC_DIR}/changelog-shell.htm
+            ${DNHELP_SRC_DIR}/license.htm
+    DEPENDS ${DNHELP_SRC_DIR}/changelog-template.htm
+            ${DNHELP_SRC_DIR}/license-template.htm
             CHANGELOG.md
+            LICENSE.md
     WORKING_DIRECTORY ${DNHELP_SRC_DIR}
-    COMMAND call ${DNHELP_SRC_DIR}/update-changelog-htm.bat
-    COMMENT "Updating changelog.htm."
+    COMMAND call ${DNHELP_SRC_DIR}/update-htm-templates
+    COMMENT "Updating templated pages."
     VERBATIM)
 
 # builds the NSF driver
