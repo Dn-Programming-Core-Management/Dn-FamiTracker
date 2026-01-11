@@ -693,7 +693,6 @@
       <Message>Generating map file for help compiler.</Message>
       <Command>call $(SolutionDir)generate-helpmap.bat</Command>
       <Outputs>Dn-help\hlp\HTMLDefines.h;%(Outputs)</Outputs>
-      <AdditionalInputs>$(SolutionDir)Dn-help\hlp\changelog_shell.htm;%(AdditionalInputs)</AdditionalInputs>
       <BuildInParallel>true</BuildInParallel>
     </CustomBuild>
     <ClInclude Include="Source\ConfigEmulation.h" />
@@ -847,7 +846,8 @@
     <CustomBuild Include="version.h">
       <Command>python $(SolutionDir)resource_version_update.py</Command>
       <Message>Updating version info in resource file.</Message>
-      <Outputs>$(SolutionDir)Dn-FamiTracker.rc;%(Outputs)</Outputs>
+      <AdditionalInputs>$(SolutionDir)Dn-FamiTracker.rc;</AdditionalInputs>
+      <Outputs>$(SolutionDir)Dn-FamiTracker.rc_status.txt;%(Outputs)</Outputs>
       <BuildInParallel>true</BuildInParallel>
     </CustomBuild>
     <ClInclude Include="Source\ChannelMap.h" />

@@ -35,13 +35,10 @@ libft0cc/build
 libft0cc/build_ms
 Testing/Temporary
 
-distribute/*
-
-# ignore submodules
-Dn-help/*
-
 # this should be automatically generated at build
+distribute/*
 hlp/HTMLDefines.h
+Dn-FamiTracker.rc_status.txt
 
 # generated headers
 /Source/drivers/*.h
