@@ -1741,6 +1741,7 @@ bool CCompiler::CollectLabelsBankswitched(CMap<CStringA, LPCSTR, int, int> &labe
 	unsigned int Track = 0;
 
 	// The switchable area is $B000-$C000
+	// !! !! TODO: refactor this!!!
 	for (CChunk *pChunk : m_vChunks) {
 		int Size = pChunk->CountDataSize();
 
@@ -1753,6 +1754,11 @@ bool CCompiler::CollectLabelsBankswitched(CMap<CStringA, LPCSTR, int, int> &labe
 				}
 				// fall through
 			case CHUNK_FRAME:
+				// Make sure frame does not exceed memory area
+				if (Offset + DriverSizeAndNSFDRV + Size > FixedBankMaxSize + PatternSwitchBankMaxSize) {
+					Offset = FixedBankMaxSize - DriverSizeAndNSFDRV;
+					++Bank;
+				}
 				labelMap[pChunk->GetLabel()] = Offset;
 				pChunk->SetBank(Bank < FixedBankPages ? ((Offset + DriverSizeAndNSFDRV) >> 12) : Bank);
 				Offset += Size;
@@ -2018,8 +2024,9 @@ void CCompiler::AddBankswitching()
 
 	// Frame lists sizes has changed
 	const int TrackCount = m_pDocument->GetTrackCount();
+	int Channels = m_pDocument->GetAvailableChannels();		// use same channel count method from UpdateFrameBanks()
 	for (int i = 0; i < TrackCount; ++i) {
-		m_iTrackFrameSize[i] += m_pDocument->GetChannelCount() * m_pDocument->GetFrameCount(i);
+		m_iTrackFrameSize[i] += Channels * m_pDocument->GetFrameCount(i);
 	}
 
 	// Data size has changed
