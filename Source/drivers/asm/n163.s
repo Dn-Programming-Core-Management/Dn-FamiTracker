@@ -311,7 +311,6 @@ ft_n163_load_wave2:
 	bcc :+
 	;; !! !! if not, use wave_count - 1
 	lda (var_Temp_Pointer2), y
-	sec
 	sbc #1
 :
 	;;; ;; ; Multiply wave index with wave len
@@ -328,18 +327,38 @@ ft_n163_load_wave2:
 	adc var_Temp_Pointer2 + 1
 	sta var_Temp_Pointer2 + 1
 .else
-	sta var_Temp3
+	tay
 	lda	var_ch_WaveLen - N163_OFFSET, x
 	and #$7F
+
+	dey
+	sty var_Temp2
+	lsr
+	sta var_Temp3
+	lda #$00
+	ldy #$04
+@loop:	
+	bcc @skip
+	adc var_Temp2
+@skip:	
+	ror
+	ror var_Temp3
+	bcc @skip2
+	adc var_Temp2
+@skip2:
+	ror
+	ror var_Temp3
+	dey
+	bne @loop
+				
 	tay
-:   tya
+	lda var_Temp3
 	clc
 	adc var_Temp_Pointer2
 	sta var_Temp_Pointer2
-	bcc :+
-	inc var_Temp_Pointer2 + 1
-:	dec var_Temp3
-	bne :--
+	tya
+	adc var_Temp_Pointer2 + 1
+	sta var_Temp_Pointer2 + 1
 .endif
 @EndMul:		; ;; ;;;
 
@@ -347,11 +366,15 @@ ft_n163_load_wave2:
 	pha
 	lda var_ch_WaveLen - N163_OFFSET, x
 	and #$7F		;;; ;; ;
+	lsr
 	tax
 
 	; Load wave
 	ldy #$01		;; !! !!
 :	lda (var_Temp_Pointer2), y
+	sta $4800
+	iny
+	lda (var_Temp_Pointer2), y
 	sta $4800
 	iny
 	dex

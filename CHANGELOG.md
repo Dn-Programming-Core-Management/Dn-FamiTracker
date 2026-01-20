@@ -19,6 +19,9 @@ Last updated: January 11, 2026
 ### Improvements
 
 - Clarify NSF driver licensing (@Gumball2415 #401)
+- Replace addition loop to the actual multiplication (@HeeminTV #400)
+	- This worked before 0CC, which had table-per-instrument limit of 16, but as it's now 64, the usage of CPU cycles in this loop became massive
+- Slighly unroll the loop for writing to $4800 (@HeeminTV #400)
 
 ### Bug fixes
 
@@ -27,6 +30,7 @@ Last updated: January 11, 2026
 	- There doesn't seem to be any bug at the time of its writing upon further scrutiny.
 - Separate tempo state updating from channel state updating (@JG540 @Gumball2415 #382 #384 #394)
 - Set `m_iSpeed` to default when groove is enabled (@TakuikaNinja @Gumball2415 #379 #394)
+- Specify `byteorder` argument in `build_engine.py` for Python 3.10 compatibility (@HeeminTV #400)
 
 ### Internal
 
