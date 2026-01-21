@@ -3537,32 +3537,51 @@ CPatternClipData *CPatternEditor::CopyEntire() const
 
 CPatternClipData *CPatternEditor::Copy() const
 {
-	// Copy selection
-	CPatternIterator it = GetIterators().first;		// // //
-	const int Channels	= m_selection.GetChanEnd() - m_selection.GetChanStart() + 1;
-	const int Rows		= GetSelectionSize();		// // //
-	stChanNote NoteData;
+  // Copy selection if selecting
+  if (m_bSelecting && GetSelectionSize() > 0) {
+    CPatternIterator it = GetIterators().first;		// // //
+    const int Channels = m_selection.GetChanEnd() - m_selection.GetChanStart() + 1;
+    const int Rows = GetSelectionSize();		// // //
+    stChanNote NoteData;
 
-	CPatternClipData *pClipData = new CPatternClipData(Channels, Rows);
-	pClipData->ClipInfo.Channels	= Channels;		// // //
-	pClipData->ClipInfo.Rows		= Rows;
-	pClipData->ClipInfo.StartColumn	= GetSelectColumn(m_selection.GetColStart());		// // //
-	pClipData->ClipInfo.EndColumn	= GetSelectColumn(m_selection.GetColEnd());		// // //
-	
-	for (int r = 0; r < Rows; r++) {		// // //
-		for (int i = 0; i < Channels; ++i) {
-			stChanNote *Target = pClipData->GetPattern(i, r);
-			it.Get(i + m_selection.GetChanStart(), &NoteData);
-			/*CopyNoteSection(Target, &NoteData, PASTE_DEFAULT,
+    CPatternClipData *pClipData = new CPatternClipData(Channels, Rows);
+    pClipData->ClipInfo.Channels	= Channels;		// // //
+	  pClipData->ClipInfo.Rows		= Rows;
+	  pClipData->ClipInfo.StartColumn	= GetSelectColumn(m_selection.GetColStart());		// // //
+	  pClipData->ClipInfo.EndColumn	= GetSelectColumn(m_selection.GetColEnd());		// // //
+
+    for (int r = 0; r < Rows; r++) {		// // //
+      for (int i = 0; i < Channels; ++i) {
+        stChanNote *Target = pClipData->GetPattern(i, r);
+        it.Get(i + m_selection.GetChanStart(), &NoteData);
+        /*CopyNoteSection(Target, &NoteData, PASTE_DEFAULT,
 				i == 0 ? ColStart : COLUMN_NOTE, i == Channels - 1 ? ColEnd : COLUMN_EFF4);*/
-			memcpy(Target, &NoteData, sizeof(stChanNote));
-			// the clip data should store the entire field;
-			// other methods should check ClipInfo.StartColumn and ClipInfo.EndColumn before operating
-		}
-		++it;
-	}
+			  memcpy(Target, &NoteData, sizeof(stChanNote));
+			  // the clip data should store the entire field;
+			  // other methods should check ClipInfo.StartColumn and ClipInfo.EndColumn before operating
+      }
+      ++it;
+    }
+    return pClipData;
+  }
 
-	return pClipData;
+  // If nothing is selected, copy the row under the cursor
+  const int Track = GetSelectedTrack();
+  const int Channel = m_cpCursorPos.m_iChannel;
+  const int Row = m_cpCursorPos.m_iRow;
+  const int Frame = m_cpCursorPos.m_iFrame;
+  const cursor_column_t Col = m_cpCursorPos.m_iColumn;
+
+  CPatternClipData *pSingleNote = new CPatternClipData(1, 1);
+  pSingleNote->ClipInfo.Channels = 1;
+  pSingleNote->ClipInfo.Rows = 1;
+
+  // Always copy note, instrument, volume, and all 4 effects
+  pSingleNote->ClipInfo.StartColumn = static_cast<column_t>(C_NOTE);
+  pSingleNote->ClipInfo.EndColumn = static_cast<column_t>(C_EFF4_PARAM2);
+
+  m_pDocument->GetNoteData(Track, Frame, Channel, Row, pSingleNote->GetPattern(0, 0));
+  return pSingleNote;
 }
 
 CPatternClipData *CPatternEditor::CopyRaw() const		// // //

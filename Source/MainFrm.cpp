@@ -2496,8 +2496,21 @@ void CMainFrame::OnUpdateEditCut(CCmdUI *pCmdUI)
 
 void CMainFrame::OnUpdateEditCopy(CCmdUI *pCmdUI)
 {
-	CFamiTrackerView *pView	= static_cast<CFamiTrackerView*>(GetActiveView());
-	pCmdUI->Enable((pView->IsSelecting() || GetFocus() == m_pFrameEditor) ? 1 : 0);
+  CFamiTrackerView *pView = static_cast<CFamiTrackerView*>(GetActiveView());
+  bool patternEditorFocused = (GetFocus() == pView);
+  bool hasSelection = pView->IsSelecting();
+
+  // Check if the cursor is on a valid cell in the pattern editor
+  bool cursorValid = false;
+  if (patternEditorFocused) {
+    auto *pEditor = pView->GetPatternEditor();
+    const auto &cursor = pEditor->GetCursor();
+    int frameLen = pEditor->GetCurrentPatternLength(cursor.m_iFrame);
+    int channelCount = static_cast<CFamiTrackerDoc*>(GetActiveDocument())->GetAvailableChannels();
+    cursorValid = cursor.IsValid(frameLen, channelCount);
+  }
+
+  pCmdUI->Enable(hasSelection || cursorValid);
 }
 
 void CMainFrame::OnUpdatePatternEditorSelected(CCmdUI *pCmdUI)		// // //
