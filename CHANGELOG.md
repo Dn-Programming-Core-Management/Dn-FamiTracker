@@ -6,9 +6,17 @@ Written by D.P.C.M.
 
 Version 0.5.2.9
 
-Last updated: January 11, 2026
+Last updated: May 18, 2026
 
 ---
+
+## Unreleased - 2026-05-18
+- Add Font and Color Changing feature for Pattern Editor's Header
+  - Font selection ListBox to ConfigAppearance Dialog
+  - Header Preview to ConfigAppearance Dialog
+  - Save / Load behavior for Theme.txt
+  - Some requierd member to `COLOR_SCHEME` structure 
+  - Changed `DrawHeader()` to apply color scheme and font
 
 ## Unreleased - 2026-01-11
 

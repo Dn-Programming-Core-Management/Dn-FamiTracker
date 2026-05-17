@@ -63,11 +63,16 @@ struct COLOR_SCHEME {
 	const COLORREF	TEXT_EFFECT;
 	const COLORREF	SELECTION;
 	const COLORREF	CURSOR;
-	const COLORREF	ROW_NORMAL;		// // //
-	const COLORREF	ROW_EDIT;		// // //
-	const COLORREF	ROW_PLAYING;		// // //
+	const COLORREF	ROW_NORMAL;
+	const COLORREF	ROW_EDIT;
+	const COLORREF	ROW_PLAYING;
+	const COLORREF	HEADER_BACKGND;
+	const COLORREF	HEADER_CORNER;
+	const COLORREF	HEADER_FONT_COL;
 	const TCHAR		*FONT_FACE;
+	const TCHAR 	*HEADER_FONT;
 	const int		FONT_SIZE;
+	const int		HEADER_FONT_SIZE;
 	const int FONT_PERCENT = 100;
 };
 
@@ -88,8 +93,13 @@ const COLOR_SCHEME DEFAULT_COLOR_SCHEME = {
 	0x00A02030,			// // // Current row
 	0x00302080,			// // // Current row (edit mode)
 	0x00400050,			// // // Current row (playing)
+	0xFFFFFFFF,			// Header Background color
+	0x00FFFFFF,			// Header corner color
+	0x00000000,			// Header text color
 	_T("Verdana"),		// Font
-	12					// Font size
+	_T("Verdana"),		// Header Font
+	12,					// Font size
+	12					// Header Font size
 };
 
 // Monochrome
@@ -109,8 +119,13 @@ const COLOR_SCHEME MONOCHROME_COLOR_SCHEME = {
 	0x00A02030,			// // // Current row
 	0x00302080,			// // // Current row (edit mode)
 	0x00400050,			// // // Current row (playing)
+	0xFFFFFFFF,			// Header Background color
+	0x00FFFFFF,			// Header corner color
+	0x00000000,			// Header text color
 	_T("Fixedsys"),		// Font
-	12					// Font size
+	_T("Fixedsys"),		// Header Font
+	12,					// Font size
+	12					// Header Font size
 };
 
 // Renoise
@@ -130,8 +145,13 @@ const COLOR_SCHEME RENOISE_COLOR_SCHEME = {
 	0x00A02030,			// // // Current row
 	0x00302080,			// // // Current row (edit mode)
 	0x00400050,			// // // Current row (playing)
+	0xFFFFFFFF,			// Header Background color
+	0x00FFFFFF,			// Header corner color
+	0x00000000,			// Header text color
 	_T("Fixedsys"),		// Font
-	12					// Font size
+	_T("Fixedsys"),		// Header Font
+	12,					// Font size
+	12					// Header Font size
 };
 
 // White
@@ -151,8 +171,13 @@ const COLOR_SCHEME WHITE_COLOR_SCHEME = {
 	0x00A02030,			// // // Current row
 	0x00302080,			// // // Current row (edit mode)
 	0x00400050,			// // // Current row (playing)
+	0xFFFFFFFF,			// Header Background color
+	0x00FFFFFF,			// Header corner color
+	0x00000000,			// Header text color
 	_T("Courier"),		// Font
-	12					// Font size
+	_T("Courier"),		// Header Font
+	12,					// Font size
+	12					// Header Font size
 };
 
 // // // Saturday
@@ -172,8 +197,13 @@ const COLOR_SCHEME SATURDAY_COLOR_SCHEME = {
 	0x00D01030,			// // // Current row
 	0x000030C0,			// // // Current row (edit mode)
 	0x00500070,			// // // Current row (playing)
+	0xFFFFFFFF,			// Header Background color
+	0x00FFFFFF,			// Header corner color
+	0x00000000,			// Header text color
 	_T("Courier"),		// Font
-	11					// Font size
+	_T("Courier"),		// Header Font
+	11,					// Font size
+	11					// Header Font size
 };
 
 

@@ -35,7 +35,10 @@ enum color_items_t {
 	COL_CURRENT_ROW_NORMAL,
 	COL_CURRENT_ROW_EDIT,
 	COL_CURRENT_ROW_PLAYING,
-	COLOR_ITEM_COUNT
+	COL_HEADER_BACKGND,
+	COL_HEADER_CORNER,
+	COL_HEADER_FONT,
+	COLOR_ITEM_COUNT,
 };
 
 #include "ColorScheme.h"
@@ -80,11 +83,13 @@ protected:
 
 protected:
 	CString		m_strFont;
-	
-	int			m_rowHeight;
-	int			fontPercent;
+	int				m_rowHeight;
+	int				fontPercent;
 	CComboBox	fontPercentList;
-	
+
+	CString		m_strHeaderFont;
+	int				m_headerFontHeight;
+
 	int			m_iSelectedItem;
 	bool		m_bPatternColors;
 	bool		m_bDisplayFlats;
@@ -95,16 +100,22 @@ protected:
 public:
 	afx_msg void OnPaint();
 	virtual BOOL OnInitDialog();
-	virtual BOOL OnApply();
-	afx_msg void OnCbnSelchangeFont();
 	virtual BOOL OnSetActive();
+	virtual BOOL OnApply();
 	afx_msg void OnBnClickedPickCol();
+	afx_msg void OnBnClickedPatterncolors();
 	afx_msg void OnCbnSelchangeColItem();
 	afx_msg void OnCbnSelchangeScheme();
-	afx_msg void OnCbnSelchangeFontSize();
-	afx_msg void OnBnClickedPatterncolors();
+	
 	afx_msg void OnBnClickedDisplayFlats();
+
+	afx_msg void OnCbnSelchangeFont();
+	afx_msg void OnCbnSelchangeFontSize();
 	afx_msg void OnCbnEditchangeFontSize();
+	
+	afx_msg void OnCbnSelchangeFontHeader();
+	afx_msg void OnCbnSelchangeFontSizeHeader();
+	afx_msg void OnCbnEditchangeFontSizeHeader();
 
 	afx_msg void OnBnClickedButtonAppearanceSave();		// // // 050B
 	afx_msg void OnBnClickedButtonAppearanceLoad();		// // // 050B

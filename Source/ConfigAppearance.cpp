@@ -50,9 +50,12 @@ const TCHAR *CConfigAppearance::COLOR_ITEMS[] = {
 	_T("Effect number column"),
 	_T("Selection"),
 	_T("Cursor"),
-	_T("Current row (normal mode)"),		// // //
+	_T("Current row (normal mode)"),
 	_T("Current row (edit mode)"),
-	_T("Current row (playing)")
+	_T("Current row (playing)"),
+	_T("Header Background"),
+	_T("Header Corner"),
+	_T("Header text")
 };
 
 const char CConfigAppearance::SETTING_SEPARATOR[] = " : ";		// // // 050B
@@ -128,10 +131,13 @@ BEGIN_MESSAGE_MAP(CConfigAppearance, CPropertyPage)
 
 	ON_BN_CLICKED(IDC_DISPLAYFLATS, OnBnClickedDisplayFlats)
 
-	ON_CBN_SELCHANGE(IDC_FONT, OnCbnSelchangeFont)
-	
-	ON_CBN_SELCHANGE(IDC_FONT_SIZE, OnCbnSelchangeFontSize)
-	ON_CBN_EDITCHANGE(IDC_FONT_SIZE, OnCbnEditchangeFontSize)
+	ON_CBN_SELCHANGE(IDC_FONT, 			OnCbnSelchangeFont)
+	ON_CBN_SELCHANGE(IDC_FONT_SIZE, 	OnCbnSelchangeFontSize)
+	ON_CBN_EDITCHANGE(IDC_FONT_SIZE, 	OnCbnEditchangeFontSize)
+
+	ON_CBN_SELCHANGE(IDC_HEADER_FONT, 		OnCbnSelchangeFontHeader)
+	ON_CBN_SELCHANGE(IDC_HEADER_FONT_SIZE, 	OnCbnSelchangeFontSizeHeader)
+	ON_CBN_EDITCHANGE(IDC_HEADER_FONT_SIZE, OnCbnEditchangeFontSizeHeader)
 
 	ON_CBN_SELCHANGE(IDC_FONT_PERCENT, OnCbnSelchangeFontPercent)
 	ON_CBN_EDITCHANGE(IDC_FONT_PERCENT, OnCbnEditchangeFontPercent)
@@ -181,8 +187,10 @@ void CConfigAppearance::OnPaint()
 	int WinHeight = Rect.bottom - Rect.top;
 	int WinWidth = Rect.right - Rect.left;
 
-	// Create font
-	CFont Font, *OldFont;
+	// Create font for pattern editor
+	CFont Font;
+	CFont FontOfHeader;
+	CFont *OldFont;
 	LOGFONT LogFont;
 
 	memset(&LogFont, 0, sizeof(LOGFONT));
@@ -191,10 +199,73 @@ void CConfigAppearance::OnPaint()
 	const int fontSize = calculateFontSize(m_rowHeight, this->fontPercent);
 	LogFont.lfHeight = -fontSize;
 	LogFont.lfPitchAndFamily = VARIABLE_PITCH | FF_SWISS;
-
 	Font.CreateFontIndirect(&LogFont);
 
 	OldFont = dc.SelectObject(&Font);
+
+	const unsigned int header_height = 36;
+
+	// Draw the pattern header (channel names, meters...)
+	// ---- Create font for header ----
+	memset(&LogFont, 0, sizeof(LOGFONT));
+	strcpy_s(LogFont.lfFaceName, LF_FACESIZE, m_strHeaderFont.GetBuffer());
+
+	const int fontSizeHeader = m_headerFontHeight;
+	LogFont.lfHeight = -fontSizeHeader;
+	LogFont.lfPitchAndFamily = VARIABLE_PITCH | FF_SWISS;
+
+	FontOfHeader.CreateFontIndirect(&LogFont);
+	
+	dc.SelectObject(&FontOfHeader);
+
+	COLORREF m_colHead1;
+	COLORREF m_colHead2;
+	COLORREF m_colHead3;
+	COLORREF m_colHead4;
+	m_colHead1 = GetColor(COL_HEADER_CORNER);
+	m_colHead2 = GetColor(COL_HEADER_BACKGND);
+	m_colHead3 = GetSysColor(COLOR_APPWORKSPACE);
+	m_colHead4 = BLEND(m_colHead3, GetColor(COL_CURRENT_ROW_EDIT), 80);
+	
+	dc.SetBkMode(TRANSPARENT);
+
+	const unsigned int chWidth = Rect.Width();
+
+	// ---- Channel header background ----
+	// while not editing
+	GradientRectTriple(&dc, 
+		Rect.left, Rect.top, 
+		chWidth / 2, header_height,
+		m_colHead1, m_colHead2, m_colHead3);
+
+	// while editing
+	GradientRectTriple(&dc,
+		Rect.left + chWidth / 2, Rect.top, 
+		chWidth / 2, header_height,
+		m_colHead1, m_colHead2, m_colHead4);
+	
+
+	// Frame
+	dc.Draw3dRect(Rect.left, Rect.top, chWidth, header_height,
+		STATIC_COLOR_SCHEME.FRAME_LIGHT, STATIC_COLOR_SCHEME.FRAME_DARK);
+
+	// ---- Text ----
+	CString pChanName = _T("Square 1");
+	COLORREF tmpHeadTextCol = GetColor(COL_HEADER_FONT);
+	// Shadow
+	COLORREF OldCol = \
+	dc.SetTextColor(BLEND(tmpHeadTextCol, 0x00FFFFFF, SHADE_LEVEL.TEXT_SHADOW));
+	dc.TextOut(Rect.left + 10 + 1, Rect.top + 6, pChanName);
+	// Foreground
+	dc.SetTextColor(tmpHeadTextCol);
+	dc.TextOut(Rect.left + 10, Rect.top + 5, pChanName);
+	dc.SetTextColor(OldCol);
+
+	dc.SetTextAlign(TA_LEFT);	
+
+	OldFont = dc.SelectObject(&Font);
+
+	Rect.top += header_height;
 
 	// Draw background
 	dc.FillSolidRect(Rect, GetColor(COL_BACKGROUND));
@@ -212,7 +283,7 @@ void CConfigAppearance::OnPaint()
 	COLORREF HilightBgCol = GetColor(COL_BACKGROUND_HILITE);
 	COLORREF Hilight2BgCol = GetColor(COL_BACKGROUND_HILITE2);
 
-	// TODO don't use hard-coded increments, disgusting
+	// TODO don't use hard-coded increments
 	// Use a CPatternEditor object to draw.
 	for (int i = 0; i < iRows; ++i) {
 
@@ -276,7 +347,8 @@ BOOL CConfigAppearance::OnInitDialog()
 	CPropertyPage::OnInitDialog();
 
 	const CSettings *pSettings = theApp.GetSettings();
-	m_strFont = pSettings->Appearance.strFont;		// // //
+	m_strFont 		= pSettings->Appearance.strFont;
+	m_strHeaderFont = pSettings->Appearance.strFontHeader;
 
 	CDC *pDC = GetDC();
 	if (pDC != NULL) {
@@ -296,6 +368,10 @@ BOOL CConfigAppearance::OnInitDialog()
 	// (Cannot perform in AddFontName, since fonts are processed
 	// non-sequentially, and assigning selection focus midway through is wrong.)
 	pFontList->SelectString(0, m_strFont);
+
+	CComboBox *pFontListHeader = static_cast<CComboBox*>(GetDlgItem(IDC_HEADER_FONT));
+	CComboBox *pFontSizeListHeader = static_cast<CComboBox*>(GetDlgItem(IDC_HEADER_FONT_SIZE));
+	pFontListHeader->SelectString(0, m_strHeaderFont);
 
 	// Color types
 
@@ -318,18 +394,23 @@ BOOL CConfigAppearance::OnInitDialog()
 	m_iColors[COL_PATTERN_EFF_NUM]		= pSettings->Appearance.iColPatternEffect;
 	m_iColors[COL_SELECTION]			= pSettings->Appearance.iColSelection;
 	m_iColors[COL_CURSOR]				= pSettings->Appearance.iColCursor;
-	m_iColors[COL_CURRENT_ROW_NORMAL]	= pSettings->Appearance.iColCurrentRowNormal;		// // //
+	m_iColors[COL_CURRENT_ROW_NORMAL]	= pSettings->Appearance.iColCurrentRowNormal;
 	m_iColors[COL_CURRENT_ROW_EDIT]		= pSettings->Appearance.iColCurrentRowEdit;
 	m_iColors[COL_CURRENT_ROW_PLAYING]	= pSettings->Appearance.iColCurrentRowPlaying;
+	m_iColors[COL_HEADER_CORNER]		= pSettings->Appearance.iColHeaderCorner;
+	m_iColors[COL_HEADER_BACKGND]		= pSettings->Appearance.iColHeaderBackGnd;
+	m_iColors[COL_HEADER_FONT]			= pSettings->Appearance.iColHeaderFont;
 
-	m_rowHeight	= pSettings->Appearance.rowHeight;		// // //
+	m_rowHeight	= pSettings->Appearance.rowHeight;
 	this->fontPercent = pSettings->Appearance.fontPercent;
+
+	m_headerFontHeight	= pSettings->Appearance.rowHeight;
 
 	m_bPatternColors = pSettings->Appearance.bPatternColor;		// // //
 	m_bDisplayFlats = pSettings->Appearance.bDisplayFlats;		// // //
 
 	
-	// Load color schemes
+	// ---- Load color schemes ----
 	pItemsBox = static_cast<CComboBox*>(GetDlgItem(IDC_SCHEME));
 
 	for (int i = 0; i < NUM_COLOR_SCHEMES; ++i) {
@@ -337,20 +418,25 @@ BOOL CConfigAppearance::OnInitDialog()
 	}
 
 
-	// Load font sizes
+	// ---- Load font sizes ---- 
 	TCHAR txtBuf[16];
 
 	for (int i = 0; i < FONT_SIZE_COUNT; ++i) {
 		_itot_s(FONT_SIZES[i], txtBuf, 16, 10);
 		pFontSizeList->AddString(txtBuf);
-	}		// // //
+		pFontSizeListHeader->AddString(txtBuf);
+	}
+	// pattern editor
 	_itot_s(m_rowHeight, txtBuf, 16, 10);
 	pFontSizeList->SelectString(0, txtBuf);
 	pFontSizeList->SetWindowText(txtBuf);
-	
+	// header
+	_itot_s(m_headerFontHeight, txtBuf, 16, 10);
+	pFontSizeListHeader->SelectString(0, txtBuf);
+	pFontSizeListHeader->SetWindowText(txtBuf);
 
 
-	// Load font percentages
+	// ---- Load font percentages ----
 	CString percentStr;
 
 	for (int percent : FONT_PERCENTAGES) {
@@ -371,18 +457,22 @@ BOOL CConfigAppearance::OnInitDialog()
 void CConfigAppearance::AddFontName(char *Name)
 {
 	CComboBox *pFontList = static_cast<CComboBox*>(GetDlgItem(IDC_FONT));
-
+	CComboBox *pFontListHeader = static_cast<CComboBox*>(GetDlgItem(IDC_HEADER_FONT));
 	pFontList->AddString(Name);
+	pFontListHeader->AddString(Name);
 }
 
 BOOL CConfigAppearance::OnApply()
 {
 	CSettings *pSettings = theApp.GetSettings();
 
-	pSettings->Appearance.strFont	 = m_strFont;		// // //
-	pSettings->Appearance.rowHeight	 = m_rowHeight;		// // //
+	pSettings->Appearance.strFont	 = m_strFont;
+	pSettings->Appearance.rowHeight	 = m_rowHeight;
 	pSettings->Appearance.fontPercent = this->fontPercent;
 
+	pSettings->Appearance.strFontHeader	 = m_strHeaderFont;
+	pSettings->Appearance.iHeaderFontHeight	 = m_headerFontHeight;
+	
 	pSettings->Appearance.bPatternColor = m_bPatternColors;		// // //
 	pSettings->Appearance.bDisplayFlats = m_bDisplayFlats;		// // //
 
@@ -401,6 +491,10 @@ BOOL CConfigAppearance::OnApply()
 	pSettings->Appearance.iColCurrentRowEdit		= m_iColors[COL_CURRENT_ROW_EDIT];
 	pSettings->Appearance.iColCurrentRowPlaying		= m_iColors[COL_CURRENT_ROW_PLAYING];
 
+	pSettings->Appearance.iColHeaderFont	= m_iColors[COL_HEADER_FONT];
+	pSettings->Appearance.iColHeaderCorner			= m_iColors[COL_HEADER_CORNER];			// gradient col of header's top side
+	pSettings->Appearance.iColHeaderBackGnd			= m_iColors[COL_HEADER_BACKGND];		// background col of header
+
 	theApp.ReloadColorScheme();
 
 	return CPropertyPage::OnApply();
@@ -410,6 +504,14 @@ void CConfigAppearance::OnCbnSelchangeFont()
 {
 	CComboBox *pFontList = static_cast<CComboBox*>(GetDlgItem(IDC_FONT));
 	pFontList->GetLBText(pFontList->GetCurSel(), m_strFont);
+	RedrawWindow();
+	SetModified();
+}
+
+void CConfigAppearance::OnCbnSelchangeFontHeader()
+{
+	CComboBox *pFontList = static_cast<CComboBox*>(GetDlgItem(IDC_HEADER_FONT));
+	pFontList->GetLBText(pFontList->GetCurSel(), m_strHeaderFont);
 	RedrawWindow();
 	SetModified();
 }
@@ -454,8 +556,11 @@ void CConfigAppearance::OnCbnSelchangeScheme()
 
 void CConfigAppearance::SelectColorScheme(const COLOR_SCHEME *pColorScheme)
 {
-	CComboBox *pFontList = static_cast<CComboBox*>(GetDlgItem(IDC_FONT));
-	CComboBox *pFontSizeList = static_cast<CComboBox*>(GetDlgItem(IDC_FONT_SIZE));
+	CComboBox *pFontList 			= static_cast<CComboBox*>(GetDlgItem(IDC_FONT));
+	CComboBox *pFontSizeList 		= static_cast<CComboBox*>(GetDlgItem(IDC_FONT_SIZE));
+
+	CComboBox* pHeaderFontList = static_cast<CComboBox*>(GetDlgItem(IDC_HEADER_FONT));
+	CComboBox *pHeaderFontSizeList 	= static_cast<CComboBox*>(GetDlgItem(IDC_HEADER_FONT_SIZE));
 
 	SetColor(COL_BACKGROUND, pColorScheme->BACKGROUND);
 	SetColor(COL_BACKGROUND_HILITE, pColorScheme->BACKGROUND_HILITE);
@@ -468,16 +573,23 @@ void CConfigAppearance::SelectColorScheme(const COLOR_SCHEME *pColorScheme)
 	SetColor(COL_PATTERN_EFF_NUM, pColorScheme->TEXT_EFFECT);
 	SetColor(COL_SELECTION, pColorScheme->SELECTION);
 	SetColor(COL_CURSOR, pColorScheme->CURSOR);
-	SetColor(COL_CURRENT_ROW_NORMAL, pColorScheme->ROW_NORMAL);		// // //
+	SetColor(COL_CURRENT_ROW_NORMAL, pColorScheme->ROW_NORMAL);
 	SetColor(COL_CURRENT_ROW_EDIT, pColorScheme->ROW_EDIT);
 	SetColor(COL_CURRENT_ROW_PLAYING, pColorScheme->ROW_PLAYING);
+	SetColor(COL_HEADER_BACKGND,	pColorScheme->HEADER_BACKGND);
+	SetColor(COL_HEADER_CORNER,		pColorScheme->HEADER_CORNER);
+	SetColor(COL_HEADER_FONT,		pColorScheme->HEADER_FONT_COL);
 
 	m_strFont = pColorScheme->FONT_FACE;
 	pFontList->SelectString(0, m_strFont);
-	
 	m_rowHeight = pColorScheme->FONT_SIZE;
 	pFontSizeList->SelectString(0, MakeIntString(m_rowHeight));
 	
+	m_strHeaderFont = pColorScheme->HEADER_FONT;
+	pHeaderFontList->SelectString(0, m_strHeaderFont);
+	m_headerFontHeight = pColorScheme->HEADER_FONT_SIZE;
+	pHeaderFontSizeList->SelectString(0, MakeIntString(m_headerFontHeight));
+
 	this->fontPercent = pColorScheme->FONT_PERCENT;
 	this->fontPercentList.SelectString(0, MakeIntString(fontPercent));
 }
@@ -502,7 +614,7 @@ void CConfigAppearance::OnCbnSelchangeFontSize()
 	SetModified();
 }
 
-void CConfigAppearance::OnCbnEditchangeFontSize()		// // //
+void CConfigAppearance::OnCbnEditchangeFontSize()
 {
 	CComboBox *pFontSizeList = static_cast<CComboBox*>(GetDlgItem(IDC_FONT_SIZE));
 	CString str;
@@ -514,6 +626,27 @@ void CConfigAppearance::OnCbnEditchangeFontSize()		// // //
 	SetModified();
 }
 
+void CConfigAppearance::OnCbnSelchangeFontSizeHeader()
+{
+	CString str;
+	CComboBox *pFontSizeList = static_cast<CComboBox*>(GetDlgItem(IDC_HEADER_FONT_SIZE));
+	pFontSizeList->GetLBText(pFontSizeList->GetCurSel(), str);
+	m_headerFontHeight = _ttoi(str);
+	RedrawWindow();
+	SetModified();
+}
+
+void CConfigAppearance::OnCbnEditchangeFontSizeHeader()
+{
+	CComboBox *pFontSizeList = static_cast<CComboBox*>(GetDlgItem(IDC_HEADER_FONT_SIZE));
+	CString str;
+	pFontSizeList->GetWindowText(str);
+	int newSize = _ttoi(str);
+	if (newSize < 5 || newSize > 30) return; // arbitrary
+	m_rowHeight = newSize;
+	RedrawWindow();
+	SetModified();
+}
 
 void CConfigAppearance::OnCbnSelchangeFontPercent() {
 	CString text;
@@ -562,7 +695,7 @@ void CConfigAppearance::OnBnClickedButtonAppearanceSave()		// // // 050B
 		ExportSettings(fileDialog.GetPathName().GetBuffer());
 }
 
-void CConfigAppearance::OnBnClickedButtonAppearanceLoad()		// // // 050B
+void CConfigAppearance::OnBnClickedButtonAppearanceLoad()
 {
 	CString fileFilter = LoadDefaultFilter(IDS_FILTER_TXT, _T(".txt"));
 	CFileDialog fileDialog {TRUE, NULL, _T("Theme.txt"), OFN_HIDEREADONLY, fileFilter};
@@ -570,6 +703,9 @@ void CConfigAppearance::OnBnClickedButtonAppearanceLoad()		// // // 050B
 		ImportSettings(fileDialog.GetPathName().GetBuffer());
 		static_cast<CComboBox*>(GetDlgItem(IDC_FONT))->SelectString(0, m_strFont);
 		static_cast<CComboBox*>(GetDlgItem(IDC_FONT_SIZE))->SelectString(0, MakeIntString(m_rowHeight));
+		static_cast<CComboBox*>(GetDlgItem(IDC_HEADER_FONT))->SelectString(0, m_strHeaderFont);
+		static_cast<CComboBox*>(GetDlgItem(IDC_HEADER_FONT_SIZE))->SelectString(0, MakeIntString(m_headerFontHeight));
+
 		this->fontPercentList.SelectString(0, MakeIntString(fontPercent));
 		RedrawWindow();
 		SetModified();
@@ -587,7 +723,9 @@ void CConfigAppearance::ExportSettings(const char *Path) const		// // // 050B
 		file << "Font" << SETTING_SEPARATOR << m_strFont << std::endl;
 		file << "Font size" << SETTING_SEPARATOR << m_rowHeight << std::endl;
 		file << "Font percent" << SETTING_SEPARATOR << this->fontPercent << std::endl;
-	}
+		file << "HeaderFont" << SETTING_SEPARATOR << m_strHeaderFont << std::endl;
+		file << "HeaderFont size" << SETTING_SEPARATOR << m_headerFontHeight << std::endl;
+		}
 }
 
 const std::regex SETTING_REGEX("([^:]+)"s + CConfigAppearance::SETTING_SEPARATOR + "(.*)");
@@ -666,8 +804,13 @@ void CConfigAppearance::ImportSettings(const char *Path)		// // // 050B
 		} else if (is_match(key, "Font percent")) {
 			if (auto x = conv::to_uint(value))
 				this->fontPercent = *x;
-		} else if (is_match(key, "Font"))
+		} else if (is_match(key, "Font")) {
 			m_strFont = value.data();
+		} else if (is_match(key, "HeaderFont")) {
+			m_strHeaderFont = value.data();
+		} else if (is_match(key, "HeaderFont size"))
+			if (auto x = conv::to_uint(value))
+				m_headerFontHeight = *x;
 
 	}
 

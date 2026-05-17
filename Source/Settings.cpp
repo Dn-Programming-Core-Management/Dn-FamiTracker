@@ -180,7 +180,11 @@ void CSettings::SetupSettings()
 	SETTING_INT("Appearance", "Current row (normal mode)", DEFAULT_COLOR_SCHEME.ROW_NORMAL, &Appearance.iColCurrentRowNormal);
 	SETTING_INT("Appearance", "Current row (edit mode)", DEFAULT_COLOR_SCHEME.ROW_EDIT, &Appearance.iColCurrentRowEdit);
 	SETTING_INT("Appearance", "Current row (playing)", DEFAULT_COLOR_SCHEME.ROW_PLAYING, &Appearance.iColCurrentRowPlaying);
-
+	
+	SETTING_INT("Appearance", "Header Background", 	DEFAULT_COLOR_SCHEME.HEADER_BACKGND, 	&Appearance.iColHeaderBackGnd);
+	SETTING_INT("Appearance", "Header Corner", 		DEFAULT_COLOR_SCHEME.HEADER_CORNER, 	&Appearance.iColHeaderCorner);
+	SETTING_INT("Appearance", "Header text", 		DEFAULT_COLOR_SCHEME.HEADER_FONT_COL, 	&Appearance.iColHeaderFont);
+	
 	SETTING_STRING("Appearance", "Pattern font", FONT_FACE, &Appearance.strFont)
 		->UpdateDefault("General", "Pattern font");
 	SETTING_INT("Appearance", "Pattern font size", FONT_SIZE, &Appearance.rowHeight)
@@ -194,6 +198,11 @@ void CSettings::SetupSettings()
 	SETTING_BOOL("Appearance", "Display flats", false, &Appearance.bDisplayFlats)
 		->UpdateDefault("Appearance", "Display flats");
 
+	SETTING_STRING("Appearance", "Header font", FONT_FACE, &Appearance.strFontHeader)
+		->UpdateDefault("General", "Header font");
+	SETTING_INT("Appearance", "HeaderFont size", FONT_SIZE, &Appearance.iHeaderFontHeight)
+		->UpdateDefault("General", "HeaderFont size");
+	
 	// Window position
 	SETTING_INT("Window position", "Left", 100, &WindowPos.iLeft);
 	SETTING_INT("Window position", "Top", 100, &WindowPos.iTop);

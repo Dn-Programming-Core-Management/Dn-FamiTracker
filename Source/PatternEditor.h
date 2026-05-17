@@ -341,6 +341,7 @@ private:
 	int		m_iCharWidth;					// // // no longer static const
 	int		m_iColumnSpacing;				// // //
 	int		m_iRowColumnWidth;				// // //
+	int		m_iHeaderFontSize;				// Size of pattern font
 
 	int		m_iChannelWidths[MAX_CHANNELS];	// Cached width in pixels of each channel
 	int		m_iChannelOffsets[MAX_CHANNELS];// Cached x position of channels
@@ -363,7 +364,8 @@ private:
 	COLORREF m_colHead2;
 	COLORREF m_colHead3;
 	COLORREF m_colHead4;
-	COLORREF m_colHead5;		// // //
+	COLORREF m_colHead5;
+	COLORREF m_iColHeaderFont;
 
 	// Meters and DPCM
 	stDPCMState m_DPCMState;
