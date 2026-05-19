@@ -735,7 +735,7 @@
 #define IDC_OPLL_PATCHNAME18            1599
 #define IDC_OPLL_PATCHNAME19            1600
 #define IDC_OPLL_PATCHNAME0             1600
-#define IDC_HEADER_FONT									1601
+#define IDC_HEADER_FONT                 1601
 #define IDC_HEADER_FONT_SIZE            1602
 
 #define IDS_FIND_BEGIN                  9001

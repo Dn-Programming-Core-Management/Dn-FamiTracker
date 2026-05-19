@@ -254,7 +254,7 @@ void CPatternEditor::ApplyColorScheme()
 	const CSettings *settings = theApp.GetSettings();
 
 	LOGFONT LogFont;
-	LPCTSTR FontName = settings->Appearance.strFont;
+	LPCTSTR FontName = settings->Appearance.strFont;		// // //
 	LPCTSTR HeaderFont = settings->Appearance.strFontHeader;
 	COLORREF iColorHeaderFont = settings->Appearance.iColPatternTextHilite;
 

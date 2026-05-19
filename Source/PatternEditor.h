@@ -364,7 +364,7 @@ private:
 	COLORREF m_colHead2;
 	COLORREF m_colHead3;
 	COLORREF m_colHead4;
-	COLORREF m_colHead5;
+	COLORREF m_colHead5;		// // //
 	COLORREF m_iColHeaderFont;
 
 	// Meters and DPCM

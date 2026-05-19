@@ -213,7 +213,6 @@ public:
 		int		rowHeight;
 		int		fontPercent;	// Font height (pixels), as a percentage of row height
 		
-		
 		bool	bPatternColor;
 		bool	bDisplayFlats;
 	} Appearance;

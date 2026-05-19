@@ -347,7 +347,7 @@ BOOL CConfigAppearance::OnInitDialog()
 	CPropertyPage::OnInitDialog();
 
 	const CSettings *pSettings = theApp.GetSettings();
-	m_strFont 		= pSettings->Appearance.strFont;
+	m_strFont 		= pSettings->Appearance.strFont;		// // //
 	m_strHeaderFont = pSettings->Appearance.strFontHeader;
 
 	CDC *pDC = GetDC();
@@ -425,7 +425,7 @@ BOOL CConfigAppearance::OnInitDialog()
 		_itot_s(FONT_SIZES[i], txtBuf, 16, 10);
 		pFontSizeList->AddString(txtBuf);
 		pFontSizeListHeader->AddString(txtBuf);
-	}
+	}		// // //
 	// pattern editor
 	_itot_s(m_rowHeight, txtBuf, 16, 10);
 	pFontSizeList->SelectString(0, txtBuf);
