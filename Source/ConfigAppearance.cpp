@@ -404,7 +404,7 @@ BOOL CConfigAppearance::OnInitDialog()
 	m_rowHeight	= pSettings->Appearance.rowHeight;
 	this->fontPercent = pSettings->Appearance.fontPercent;
 
-	m_headerFontHeight	= pSettings->Appearance.rowHeight;
+	m_headerFontHeight	= pSettings->Appearance.iHeaderFontHeight;
 
 	m_bPatternColors = pSettings->Appearance.bPatternColor;		// // //
 	m_bDisplayFlats = pSettings->Appearance.bDisplayFlats;		// // //
