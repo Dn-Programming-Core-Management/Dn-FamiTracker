@@ -7,9 +7,9 @@
 ;        declared in `driver.s`'s Custom Build Tool Additional Dependencies.
 
 .define DRIVER_NAME "Dn-FT "
-; version 2.16
+; version 2.17
 .define VERSION_MAJ 2
-.define VERSION_MIN 16
+.define VERSION_MIN 17
 
 ;
 ; Assembler code switches
@@ -24,6 +24,7 @@
 	.endif
 .endif
 
+REINIT_VARS = 1		;; !! !! reinitialize BSS and ZP vars
 ;USE_BANKSWITCH = 1		; Enable bankswitching code
 ;USE_OLDVIBRATO = 1		;;; ;; ; Enable old vibrato code
 ;USE_LINEARPITCH = 1		;;; ;; ; Enable linear pitch code
@@ -510,7 +511,7 @@ USE_PADJMP = 1  ; disable if you don't need FDS write protection
 ;;
 ; pads with NOPs and jmps to end of padding
 ; @param count: bytes in total that the padding takes; must be more than 3
-; @param startpad: start of register area to be padded with for assert 
+; @param startpad: start of register area to be padded with for assert
 ; @param endpad: end of register area to be padded with for assert
 .macro padjmp count, startpad, endpad, condition
 	.if (count > 3) && condition && USE_PADJMP

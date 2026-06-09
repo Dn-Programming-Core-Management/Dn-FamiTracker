@@ -6,10 +6,57 @@
 ; x = ntsc/pal
 ;
 ft_music_init:
+.if .defined(REINIT_VARS)
+	pha ; song number
+	txa
+	pha ; region
+
+	lda #$00
+	; init variables in ZP
+	ldx #last_zp_var
+@ClearZP:
+	dex
+	sta z:var_Temp, x
+	bne @ClearZP
+	sta var_Temp
+
+	; init variables in BSS from var_Song_list to last_bss_var
+	; do this the slow way; we have no way to guarantee where the final
+	; variables are in BSS, but we can be sure that they are contiguous
+
+	; https://www.nesdev.org/wiki/Scanning_large_tables
+	lda #<var_Song_list
+	clc
+	adc #<(last_bss_var - var_Song_list)
+	sta var_Temp16+0
+	lda #>var_Song_list
+	adc #$FF
+	sta var_Temp16+1
+	lda #0
+	sec
+	sbc #<(last_bss_var - var_Song_list)
+	tay
+	lda #0
+	sbc #>(last_bss_var - var_Song_list)
+	tax
+	lda #0
+@ClearBSS:
+	sta (var_Temp16),y
+	iny
+	bne @ClearBSS
+
+	inc var_Temp16+1
+	inx
+	bne @ClearBSS
+
+	pla
+	tax
+	pla
+.endif
 	asl a
 	jsr ft_load_song
+
 	; Kill APU registers
-	lda #$00
 	ldx #$0B
 @LoadRegs:
 	sta $4000, x
@@ -272,8 +319,7 @@ ft_load_song:
 	sta var_ch_FinePitch, x
 	sta var_ch_VolSlideTarget, x	;; ;; !!
 	lda #$00
-	;
-	;lda #$00
+
 	sta var_ch_VibratoSpeed, x
 	sta var_ch_TremoloSpeed, x
 	sta var_ch_Effect, x
