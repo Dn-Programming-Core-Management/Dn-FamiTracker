@@ -219,7 +219,7 @@ ft_load_slide:
 
 
 	; FDS scratch write padding: guard $9000-$9003
-	jmppad {jmp ft_jump_to_effect}, $8FF8, $9003, .defined(USE_ALL) && !.defined(PACKAGE)
+	jmppad {jmp ft_jump_to_effect}, $8FF8, $9003, .defined(USE_ALL) && .not .defined(PACKAGE)
 
 ; see CChannelHandler::CalculatePeriod()
 
@@ -234,7 +234,7 @@ ft_calc_period:
 	lda var_ch_TimerPeriodHi, x
 
 	; FDS scratch write padding: guard $9010
-	padjmp $900D, $9010, .defined(USE_ALL) && !.defined(PACKAGE)
+	padjmp $900D, $9010, .defined(USE_ALL) && .not .defined(PACKAGE)
 
 	sta var_ch_PeriodCalcHi, x
 
@@ -256,7 +256,7 @@ ft_calc_period:
 	lsr var_ch_PeriodCalcHi, x
 
 	; FDS scratch write padding: guard $9030
-	padjmp $902B, $9030, .defined(USE_ALL) && !.defined(PACKAGE)
+	padjmp $902B, $9030, .defined(USE_ALL) && .not .defined(PACKAGE)
 
 	ror var_ch_PeriodCalcLo, x
 :

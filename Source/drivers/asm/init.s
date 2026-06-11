@@ -113,7 +113,7 @@ ft_music_init:
 
 	; DPCM
 .if .defined(USE_DPCM)
-.if .defined(USE_N163) && !.defined(USE_ALL)
+.if .defined(USE_N163) && .not .defined(USE_ALL)
 	ldx var_EffChannels
 .else
 	ldx #EFF_CHANS

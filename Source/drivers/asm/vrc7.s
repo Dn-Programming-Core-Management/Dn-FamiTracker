@@ -430,7 +430,7 @@ ft_vrc7_get_freq_only:
 	sta var_ch_TimerPeriodLo, x
 
 	; FDS scratch write padding: guard $A000-$A002
-	padjmp $9FFB, $A002, .defined(USE_ALL) && !.defined(PACKAGE)
+	padjmp $9FFB, $A002, .defined(USE_ALL) && .not .defined(PACKAGE)
 
 	lda ft_note_table_vrc7_h, y
 	sta var_ch_TimerPeriodHi, x
