@@ -11,6 +11,7 @@ ft_music_init:
 	txa
 	pha ; region
 
+	; initialize all variables to #$00
 	lda #$00
 	; init variables in ZP
 	ldx #ZP_END
@@ -57,6 +58,7 @@ ft_music_init:
 	jsr ft_load_song
 
 	; Kill APU registers
+	lda #$00
 	ldx #$0B
 @LoadRegs:
 	sta $4000, x
@@ -88,52 +90,30 @@ ft_music_init:
 	sta var_ch_DPCM_EffPitch
 	sta var_ch_DPCMDAC
 
-	; Reset some variables for the wave channels
-	ldx #$00							;;; ;; ;
-:
-
-	cpx #(CH_COUNT_2A03 + CH_COUNT_MMC5)
-	bpl :+
+	; Reset channels with length counter
 	lda #$08
-	sta var_ch_LengthCounter, x			;;; ;; ;
-:	lda #$00
-	sta var_ch_NoteRelease, x			;;; ;; ;
-	sta var_ch_Transpose, x				;;; ;; ;
-	sta var_ch_NoteCut, x
-	sta var_ch_Effect, x
-	sta var_ch_EffParam, x
-	sta var_ch_PortaToLo, x
-	sta var_ch_PortaToHi, x
-	sta var_ch_TimerPeriodLo, x
-	sta var_ch_TimerPeriodHi, x
-	sta var_ch_Trigger, x				;;; ;; ;
-	inx
-	cpx #WAVE_CHANS
-	bne :--								; ;; ;;;
+	ldx #(CH_COUNT_2A03 + CH_COUNT_MMC5)
+:
+	dex
+	sta var_ch_LengthCounter, x
+	bne :-								; ;; ;;;
 
 .if .defined(USE_OLDVIBRATO)		;;; ;; ;
 	lda var_SongFlags
 	and #FLAG_OLDVIBRATO
-	beq :+
+	bne @SkipVibratoInit
 	lda #48
-:
-.endif
 	ldx #$00
 :	sta var_ch_VibratoPos, x
 	inx
 	cpx #WAVE_CHANS
 	bne :-
-.if .defined(USE_OLDVIBRATO)		;;; ;; ;
-	lda #$00
+@SkipVibratoInit:
 .endif
 
 	; DPCM
 .if .defined(USE_DPCM)
-	sta var_ch_NoteCut + DPCM_OFFSET
-	sta var_ch_NoteRelease + DPCM_OFFSET	;;; ;; ;
-.if .defined(USE_ALL)
-	ldx #EFF_CHANS
-.elseif .defined(USE_N163)
+.if .defined(USE_N163) && !.defined(USE_ALL)
 	ldx var_EffChannels
 .else
 	ldx #EFF_CHANS
@@ -306,8 +286,8 @@ ft_load_song:
 	; Load the song
 	jsr ft_load_track
 
-	; Clear variables to zero
 	; Important!
+	; Variables should be initialized to 0 in ft_music_init
 	ldx #$01
 	stx var_PlayerFlags				; Player flags, bit 0 = playing
 	dex
@@ -318,20 +298,8 @@ ft_load_song:
 	lda #$80
 	sta var_ch_FinePitch, x
 	sta var_ch_VolSlideTarget, x	;; ;; !!
-	lda #$00
-
-	sta var_ch_VibratoSpeed, x
-	sta var_ch_TremoloSpeed, x
-	sta var_ch_Effect, x
-	sta var_ch_VolSlide, x
-	sta var_ch_NoteDelay, x
-	sta var_ch_ArpeggioCycle, x
-	sta var_ch_PhaseReset, x
-	sta var_ch_DPCMPhaseReset, x
-	sta var_ch_Harmonic, x
-	inc var_ch_Harmonic, x			; default value is 1
-	;
-	sta var_ch_Note, x
+	; all variables initialized to 0, but Kxx buffer should be 1
+	inc var_ch_Harmonic, x
 	inx
 
 	cpx #EFF_CHANS		;;; ;; ;
@@ -341,10 +309,6 @@ ft_load_song:
 	stx var_ch_PrevFreqHigh			; Set prev freq to FF for Sq1 & 2
 	stx var_ch_PrevFreqHigh + 1
 
-.if .defined(USE_DPCM)
-	lda #$00
-	sta var_ch_DPCM_Offset
-.endif
 .if .defined(USE_MMC5)
 	stx var_ch_PrevFreqHighMMC5
 	stx var_ch_PrevFreqHighMMC5 + 1
@@ -356,10 +320,6 @@ ft_load_song:
 
 	jsr ft_calculate_speed
 	;jsr ft_restore_speed
-
-	lda #$00
-	sta var_Tempo_Accum
-	sta var_Tempo_Accum + 1
 
 	rts
 

@@ -4,6 +4,9 @@ last updated: 2026-06-11
 
 ---
 
+Note that all these variables pertain to the initialization routine on driver
+versions 2.16 and below.
+
 ## variables init by `ft_music_init`
 
 - var_Linear_Counter `#$FF`
@@ -21,9 +24,9 @@ last updated: 2026-06-11
 - var_ch_TimerPeriodLo `#$00`
 - var_ch_TimerPeriodHi `#$00`
 - var_ch_Trigger `#$00`
-- var_ch_VibratoPos `#$00` (old vibrato mode)
-- var_ch_VibratoPos `#$48` (new vibrato mode)
-- var_ch_Note `#$80`
+- var_ch_VibratoPos `#$00` (new vibrato mode)
+- var_ch_VibratoPos `#$48` (old vibrato mode)
+- var_ch_Note `#$80` (DPCM)
 
 ### chip-specific init routines
 

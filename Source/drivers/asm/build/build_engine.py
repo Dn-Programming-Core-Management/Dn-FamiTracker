@@ -68,10 +68,11 @@ def build(chip: str):
     # headerless NSF kernel binary not supported
     if HEADERLESS:
         print("debug: NSF kernel binary not supported")
-        os.remove(f"out_{chip}{hdrless}.lst")
-        os.remove(f"c0_{chip}{hdrless}.bin")
-        os.remove(f"c1_{chip}{hdrless}.bin")
-        os.remove(f"driver_{chip}{hdrless}.o")
+        if not DEBUG:
+            os.remove(f"out_{chip}{hdrless}.lst")
+            os.remove(f"c0_{chip}{hdrless}.bin")
+            os.remove(f"c1_{chip}{hdrless}.bin")
+            os.remove(f"driver_{chip}{hdrless}.o")
         return
 
     adr = {}
@@ -90,7 +91,7 @@ def build(chip: str):
                 label = resolvelabel(label)
                 pos[label] = hexpos
                 adr[hexpos] = label
-            
+
             # search for label pointers to relocate
             relocsearch = re.search(r"(......).....(..)(.*[><])([\w]*).*;; Reloc$", line)
             if relocsearch is not None:

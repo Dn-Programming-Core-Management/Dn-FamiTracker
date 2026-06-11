@@ -502,21 +502,32 @@ PLAY:
 USE_PADJMP = 1  ; disable if you don't need FDS write protection
 
 ;;
+; define a pad of nops, for areas that don't get executed
+; pads from startpad to endpad, inclusive
+.macro padnop startpad, endpad, condition
+	.local @padcount
+	@padcount = endpad-startpad+1
+	.if condition && USE_PADJMP
+.assert * = LOAD+((startpad-$8000) & $FFFF), warning, .sprintf("padding does not start at $%04X", startpad)
+		.repeat (@padcount)
+			nop
+		.endrep
+.assert * = LOAD+((endpad-$8000) & $FFFF)+1, warning, .sprintf("padding does not end after $%04X", endpad)
+	.endif
+.endmacro
+
+;;
 ; manually define a jump command before padding as an optimization
+; pads from startpad to endpad, inclusive, and also including the jmp command
 .macro jmppad jump, startpad, endpad, condition
 	; count: bytes in total that the padding takes; must be more than 3
 	; count = (endpad - startpad)
-	.local @padcount
-	@padcount = endpad-startpad-2
-	.assert (endpad-startpad > 0), warning, .sprintf("padding byte size %d must be bigger than 3", @padcount)
 	.if condition && USE_PADJMP
-		.assert * = LOAD+((startpad-$8000) & $FFFF), warning, .sprintf("padding does not start at $%04X", startpad)
+.assert * = LOAD+((startpad-$8000) & $FFFF), warning, .sprintf("padding does not start at $%04X", startpad)
 			jump
-			.assert * = LOAD+((startpad+3-$8000) & $FFFF), warning, "jump command is not 3 bytes long"
-			.repeat (@padcount)
-				nop
-			.endrep
-		.assert * = LOAD+((endpad-$8000) & $FFFF)+1, warning, .sprintf("padding does not end after $%04X", endpad)
+.assert * = LOAD+((startpad+3-$8000) & $FFFF), warning, "jump command is not 3 bytes long"
+			padnop (startpad+3), endpad, condition
+.assert * = LOAD+((endpad-$8000) & $FFFF)+1, warning, .sprintf("padding does not end after $%04X", endpad)
 	.else
 		jump
 	.endif
@@ -524,13 +535,12 @@ USE_PADJMP = 1  ; disable if you don't need FDS write protection
 
 ;;
 ; pads with NOPs and jmps to end of padding
-; @param startpad: start of register area to be padded with for assert, including the jmp command
-; @param endpad: end of register area to be padded with for assert
+; pads from startpad to endpad, inclusive, and also including the jmp command
 .macro padjmp startpad, endpad, condition
 	.if condition && USE_PADJMP
-		.local end
-		jmppad {jmp end}, startpad, endpad, condition
-		end:
+		.local @end
+		jmppad {jmp @end}, startpad, endpad, condition
+		@end:
 	.endif
 .endmacro
 
