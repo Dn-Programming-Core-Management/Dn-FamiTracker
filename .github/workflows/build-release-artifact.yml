@@ -7,7 +7,7 @@ env:
   commithash: ""
   cc65_path: ${{ github.workspace }}\opt\cc65
   # Fix cc65 segfault on 64-bit LLP64 Windows builds #1694
-  cc65_ref: 2f4e2a34c32c679e4325652e461acce7f615a22e
+  cc65_ref: cc3c40c54e51b2d9a22b63c85c418a2b11763377
 jobs:
   build-cc65:
     runs-on: windows-2022
@@ -58,7 +58,7 @@ jobs:
           pattern: Dn-FamiTracker_*
           merge-multiple: true
       - run: ls -R
-      - name: Upload release    
+      - name: Upload release
         uses: softprops/action-gh-release@v2
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
