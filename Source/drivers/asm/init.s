@@ -13,10 +13,10 @@ ft_music_init:
 
 	lda #$00
 	; init variables in ZP
-	ldx #last_zp_var
+	ldx #ZP_END
 @ClearZP:
 	dex
-	sta z:var_Temp, x
+	sta z:ZP_START, x
 	bne @ClearZP
 	sta var_Temp
 
@@ -25,19 +25,19 @@ ft_music_init:
 	; variables are in BSS, but we can be sure that they are contiguous
 
 	; https://www.nesdev.org/wiki/Scanning_large_tables
-	lda #<var_Song_list
+	lda #<BSS_START
 	clc
-	adc #<(last_bss_var - var_Song_list)
+	adc #<BSS_SIZE
 	sta var_Temp16+0
-	lda #>var_Song_list
+	lda #>BSS_START
 	adc #$FF
 	sta var_Temp16+1
 	lda #0
 	sec
-	sbc #<(last_bss_var - var_Song_list)
+	sbc #<BSS_SIZE
 	tay
 	lda #0
-	sbc #>(last_bss_var - var_Song_list)
+	sbc #>BSS_SIZE
 	tax
 	lda #0
 @ClearBSS:

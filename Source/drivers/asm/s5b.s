@@ -171,7 +171,7 @@ ft_update_s5b:
 	iny
 	lda var_ch_PeriodCalcHi + S5B_OFFSET, x
 	sta $E000
-	
+
 	lda var_ch_DutyCurrent + S5B_OFFSET, x
 	and #$20
 	beq @S5B_next

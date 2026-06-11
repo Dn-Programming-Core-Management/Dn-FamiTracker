@@ -372,8 +372,12 @@ ft_vrc7_get_freq:
 
 	; Retrigger channel
 	lda #$00		;;; ;; ;
-	sta ACC		; ;; ;;;
+	sta ACC 	; ;; ;;;
 	lda var_ch_vrc7_ActiveNote - VRC7_OFFSET, x
+
+	; FDS scratch write padding: guard $A000-$A002
+	padjmp $9FFC, $A002, .defined(USE_ALL) && .defined(PACKAGE)
+
 	jsr ft_translate_note_vrc7
 	tay
 
@@ -397,18 +401,14 @@ ft_vrc7_get_freq:
 
 	lda #$80				; Indicate new note (no previous)
 	sta var_ch_vrc7_OldOctave
-
-	; FDS scratch write padding
-	jmppad {jmp :+}, 7, $9FFC, $A002, .defined(USE_ALL) && .defined(PACKAGE)
-
-	; jmp :+
+	jmp :+
 
 @NoPorta:
 	lda ft_note_table_vrc7_l, y
 	sta var_ch_TimerPeriodLo, x
 
 	; FDS scratch write padding
-	padjmp 6, $9FFD, $A002, .defined(USE_ALL) && (.not .defined(PACKAGE))
+	padjmp $9FFD, $A002, .defined(USE_ALL) && (.not .defined(PACKAGE))
 
 	lda ft_note_table_vrc7_h, y
 	sta var_ch_TimerPeriodHi, x

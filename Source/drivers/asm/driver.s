@@ -174,6 +174,10 @@ CHANNELS	= DPCM_OFFSET + .defined(USE_DPCM)
 
 .segment "ZEROPAGE"
 
+ZP_START = var_Temp
+ZP_END = last_zp_var
+
+
 ;
 ; Variables that must be on zero-page
 ;
@@ -188,7 +192,7 @@ var_Temp_Pattern:		.res 2						; Pattern address (temporary)
 var_Note_Table:			.res 2
 var_currentChannel:		.res 1						;;; ;; ;
 
-ACC:					.res 2						; Used by division routine
+ACC:					.res 2						; Used by mul/div routines
 AUX:					.res 2
 EXT:					.res 2
 
@@ -210,46 +214,46 @@ var_ch_SampleBank:		.res 1						; DPCM sample bank
 var_ch_SamplePitch:		.res 1						; DPCM sample pitch
 var_ch_DPCMDAC:			.res 1						; DPCM delta counter setting
 var_ch_DPCM_Offset:		.res 1
-var_ch_DPCM_Retrig:		.res 1						; DPCM retrigger
+var_ch_DPCM_Retrig:		.res 1						; DPCM retrigger variables
 var_ch_DPCM_RetrigCntr:	.res 1
 var_ch_DPCM_EffPitch:	.res 1
 .endif
 
 .if .defined(USE_VRC7)
 ;;; ;; ; removed, since other chips also use 2 bytes for duty
-var_ch_vrc7_FnumLo:		 .res CH_COUNT_VRC7
-var_ch_vrc7_FnumHi:		 .res CH_COUNT_VRC7
-var_ch_vrc7_Bnum:		 .res CH_COUNT_VRC7
-var_ch_vrc7_ActiveNote:	 .res CH_COUNT_VRC7
-var_ch_vrc7_Command:	 .res CH_COUNT_VRC7			; 0 = halt, 1 = trigger, 80 = update
-var_ch_vrc7_OldOctave:	 .res 1						; Temp variable for old octave when triggering new notes
-var_ch_vrc7_EffPatch:	 .res CH_COUNT_VRC7			;;; ;; ; V-command
+var_ch_vrc7_FnumLo:		.res CH_COUNT_VRC7			; period cache
+var_ch_vrc7_FnumHi:		.res CH_COUNT_VRC7
+var_ch_vrc7_Bnum:		.res CH_COUNT_VRC7
+var_ch_vrc7_ActiveNote:	.res CH_COUNT_VRC7
+var_ch_vrc7_Command:	.res CH_COUNT_VRC7			; 0 = halt, 1 = trigger, 80 = update
+var_ch_vrc7_OldOctave:	.res 1						; Temp variable for old octave when triggering new notes
+var_ch_vrc7_EffPatch:	.res CH_COUNT_VRC7			;;; ;; ; V-command
 
-var_ch_vrc7_CustomHi:    .res CH_COUNT_VRC7
-var_ch_vrc7_CustomLo:    .res CH_COUNT_VRC7
-var_CustomPatchPtr:		 .res 2
-var_ch_vrc7_Port:		 .res CH_COUNT_VRC7			;;; ;; ; Hxx
-var_ch_vrc7_Write:		 .res 8						;;; ;; ; Ixx
-var_ch_vrc7_PatchFlag:	 .res 1
+var_ch_vrc7_CustomHi:	.res CH_COUNT_VRC7
+var_ch_vrc7_CustomLo:	.res CH_COUNT_VRC7
+var_CustomPatchPtr:		.res 2
+var_ch_vrc7_Port:		.res CH_COUNT_VRC7			;;; ;; ; Hxx
+var_ch_vrc7_Write:		.res 8						;;; ;; ; Ixx
+var_ch_vrc7_PatchFlag:	.res 1
 .endif
 
 .if .defined(USE_FDS)
-var_ch_ModDelay:		.res 1
-var_ch_ModDepth:		.res 1
-var_ch_ModRate:			.res 2
-var_ch_ModDelayTick:	.res 1
-var_ch_ModEffDepth:		.res 1
-var_ch_ModEffRate:		.res 2
-var_ch_ModInstDepth:	.res 1		;;; ;; ;
-var_ch_ModInstRate:		.res 2		;;; ;; ;
-var_ch_ModEffWritten:	.res 1
+var_ch_ModDelay:		.res 1		; Instrument modulation delay
+var_ch_ModDepth:		.res 1		; Modulation depth shadow variable
+var_ch_ModRate:			.res 2		; Modulation period shadow variable
+var_ch_ModDelayTick:	.res 1		; Modulation delay shadow variable
+var_ch_ModEffDepth:		.res 1		; Modulation depth from effect command
+var_ch_ModEffRate:		.res 2		; Modulation rate from effect command
+var_ch_ModInstDepth:	.res 1		;;; ;; ; Instrument mod depth
+var_ch_ModInstRate:		.res 2		;;; ;; ; Instrument mod period
+var_ch_ModEffWritten:	.res 1		; keeps track of mod effect writes
 .enum ModEffWritten
-	Depth	= %00000001
-	RateHi	= %00000010
-	RateLo	= %00000100
+	Depth	= %001
+	RateHi	= %010
+	RateLo	= %100
 .endenum
 
-var_ch_FDSVolume:		.res 1		;;; ;; ;
+var_ch_FDSVolume:		.res 1		;;; ;; ; hardware volume envelope
 var_ch_ModBias:			.res 1		;;; ;; ;
 var_ch_FDSCarrier:		.res 2		;; ;; !! for auto-FM in conjunction with frequency multiplier
 var_ch_ModTable:		.res 16
@@ -259,10 +263,10 @@ var_ch_ModTable:		.res 16
 var_ch_WavePtrLo:       .res CH_COUNT_N163
 var_ch_WavePtrHi:       .res CH_COUNT_N163
 var_ch_WaveLen:         .res CH_COUNT_N163			;;; ;; ; MSB is used for N163 Yxx
-var_ch_WavePos:         .res CH_COUNT_N163
+var_ch_WavePos:         .res CH_COUNT_N163			; Wave position and cache
 var_ch_WavePosOld:      .res CH_COUNT_N163			;;; ;; ; overridden by Yxx
 
-var_NamcoChannels:      .res 1                      ; Number of active N163 channels
+var_NamcoChannels:      .res 1						; Number of active N163 channels
 var_NamcoChannelsReg:   .res 1
 
 var_NamcoInstrument:    .res CH_COUNT_N163
@@ -290,6 +294,10 @@ last_zp_var:			.res 1						; Not used
 
 .segment "BSS"
 
+BSS_START = var_Song_list
+BSS_END = last_bss_var
+BSS_SIZE = BSS_END - BSS_START
+
 ;
 ; Driver variables
 ;
@@ -310,8 +318,8 @@ var_Wavetables:			.res 2						; FDS waves
 .if .defined(CHANNEL_CONTROL)
 var_Channels:			.res 1						; Channel enable/disable
 .endif
-var_AllChannels:        .res 1						;;; ;; ; moved from N163
-var_EffChannels:        .res 1						; ;; ;;; check against this for DPCM channel
+var_AllChannels:		.res 1						;;; ;; ; moved from N163
+var_EffChannels:		.res 1						; ;; ;;; check against this for DPCM channel
 
 ; Track header (necessary to be in order)
 var_Frame_List:			.res 2						; Pattern list address
@@ -347,8 +355,8 @@ var_Skip:				.res 1						; If a Skip should be executed
 var_SkipTo:				.res 1						; Skip to row number
 .endif
 
-var_sequence_ptr:		.res 1
-var_sequence_result:	.res 1
+var_sequence_ptr:		.res 1						; unused?
+var_sequence_result:	.res 1						; sequence data cache
 
 ;var_enabled_channels:	.res 1
 
@@ -412,7 +420,7 @@ var_ch_InstType:		.res SFX_WAVE_CHANS			;;; ;; ; Chip type, used for duty conver
 
 ;var_ch_fixed:			.res SFX_WAVE_CHANS
 
-var_ch_ArpFixed:        .res EFF_CHANS
+var_ch_ArpFixed:		.res EFF_CHANS
 
 ; Track variables for effects
 var_ch_Effect:			.res EFF_CHANS				; Arpeggio & portamento
@@ -428,7 +436,7 @@ var_ch_VibratoSpeed:	.res EFF_CHANS
 var_ch_TremoloPos:		.res EFF_CHANS				; Tremolo
 var_ch_TremoloDepth:	.res EFF_CHANS				; combine these
 var_ch_TremoloSpeed:	.res EFF_CHANS
-var_ch_TremoloResult:   .res EFF_CHANS
+var_ch_TremoloResult:	.res EFF_CHANS
 ;var_ch_VibratoParam:	.res EFF_CHANS
 ;var_ch_TremoloParam:	.res EFF_CHANS
 
@@ -495,14 +503,20 @@ USE_PADJMP = 1  ; disable if you don't need FDS write protection
 
 ;;
 ; manually define a jump command before padding as an optimization
-.macro jmppad jump, count, startpad, endpad, condition
-	.if (count > 3) && condition && USE_PADJMP
-		.assert * = LOAD+((startpad-$8000) & $FFFF), ldwarning, .sprintf("padding does not start at $%04X", startpad)
+.macro jmppad jump, startpad, endpad, condition
+	; count: bytes in total that the padding takes; must be more than 3
+	; count = (endpad - startpad)
+	.local @padcount
+	@padcount = endpad-startpad-2
+	.assert (endpad-startpad > 0), warning, .sprintf("padding byte size %d must be bigger than 3", @padcount)
+	.if condition && USE_PADJMP
+		.assert * = LOAD+((startpad-$8000) & $FFFF), warning, .sprintf("padding does not start at $%04X", startpad)
 			jump
-			.repeat count - 3
+			.assert * = LOAD+((startpad+3-$8000) & $FFFF), warning, "jump command is not 3 bytes long"
+			.repeat (@padcount)
 				nop
 			.endrep
-		.assert * = LOAD+((endpad-$8000) & $FFFF)+1, ldwarning, .sprintf("padding does not end after $%04X", endpad)
+		.assert * = LOAD+((endpad-$8000) & $FFFF)+1, warning, .sprintf("padding does not end after $%04X", endpad)
 	.else
 		jump
 	.endif
@@ -510,13 +524,12 @@ USE_PADJMP = 1  ; disable if you don't need FDS write protection
 
 ;;
 ; pads with NOPs and jmps to end of padding
-; @param count: bytes in total that the padding takes; must be more than 3
-; @param startpad: start of register area to be padded with for assert
+; @param startpad: start of register area to be padded with for assert, including the jmp command
 ; @param endpad: end of register area to be padded with for assert
-.macro padjmp count, startpad, endpad, condition
-	.if (count > 3) && condition && USE_PADJMP
+.macro padjmp startpad, endpad, condition
+	.if condition && USE_PADJMP
 		.local end
-		jmppad {jmp end}, count, startpad, endpad, condition
+		jmppad {jmp end}, startpad, endpad, condition
 		end:
 	.endif
 .endmacro

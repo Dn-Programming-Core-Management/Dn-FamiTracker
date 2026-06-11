@@ -160,9 +160,17 @@ ft_load_slide:
 @Done:
 	jsr ft_limit_note
 	sta var_ch_Note, x
+
+	; FDS scratch write padding: guard $9000-9003
+	padjmp $8FFC, $9003, .defined(USE_ALL) && .defined(PACKAGE)
+
 	sta var_ch_EchoBuffer, x		;;; ;; ;
 	jsr	ft_translate_freq_only
 	lda var_ch_TimerPeriodLo, x
+
+	; FDS scratch write padding: guard $9010
+	padjmp $900D, $9010, .defined(USE_ALL) && .defined(PACKAGE)
+
 	sta var_ch_PortaToLo, x
 	lda var_ch_TimerPeriodHi, x
 	sta var_ch_PortaToHi, x
@@ -179,6 +187,10 @@ ft_load_slide:
 	pla
 	sta var_ch_TimerPeriodLo, x
 	; change mode to sliding
+
+	; FDS scratch write padding: guard $9030
+	padjmp $902D, $9030, .defined(USE_ALL) && .defined(PACKAGE)
+
 	clc
 	lda var_ch_Effect, x
 	adc #01
@@ -188,18 +200,12 @@ ft_load_slide:
 	bne :++
 	cmp #EFF_SLIDE_UP
 	bne :+
-
-	; FDS scratch write padding
-	padjmp 8, $8FFC, $9003, .defined(USE_ALL) && .defined(PACKAGE)
-
 	lda #EFF_SLIDE_DOWN
-
-	; FDS scratch write padding
-	jmppad {jmp :++}, 11, $9006, $9010, .defined(USE_ALL) && .defined(PACKAGE)
+	jmp :++
 :	lda #EFF_SLIDE_UP
 
-	; FDS scratch write padding
-	padjmp 9, $8FFB, $9003, .defined(USE_ALL) && (.not .defined(PACKAGE))
+	; FDS scratch write padding: guard $9000-$9003
+	padjmp $8FFB, $9003, .defined(USE_ALL) && (.not .defined(PACKAGE))
 
 :
 .endif
@@ -210,8 +216,8 @@ ft_load_slide:
 .if .defined(USE_N163)
 	cpx #CHAN_N163
 
-	; FDS scratch write padding
-	padjmp 5, $900C, $9010, .defined(USE_ALL) && (.not .defined(PACKAGE))
+	; FDS scratch write padding: guard $9010
+	padjmp $900C, $9010, .defined(USE_ALL) && (.not .defined(PACKAGE))
 
 	beq @Invert
 .endif
@@ -223,16 +229,12 @@ ft_load_slide:
 	beq :+
 	lda #EFF_SLIDE_UP
 	sta var_ch_Effect, x
-
-	; FDS scratch write padding
-	padjmp 4, $902D, $9030, .defined(USE_ALL) && .defined(PACKAGE)
-
 :   lda #EFF_SLIDE_DOWN
 	sta var_ch_Effect, x
 :
 
 	; FDS scratch write padding
-	jmppad {jmp ft_jump_to_effect}, 9, $9028, $9030, .defined(USE_ALL) && (.not .defined(PACKAGE))
+	jmppad {jmp ft_jump_to_effect}, $9028, $9030, .defined(USE_ALL) && (.not .defined(PACKAGE))
 
 ; see CChannelHandler::CalculatePeriod()
 ft_calc_period:
