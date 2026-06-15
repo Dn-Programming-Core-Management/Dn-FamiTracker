@@ -43,11 +43,11 @@ ft_vrc7_delay_data:	; 6
 
 ft_load_instrument_vrc7:
 	; Read VRC7 instrument
-	ldy #$01									;;; ;; ; skip inst type
-	lda (var_Temp_Pointer), y		            ; Load patch number
-	sta var_ch_DutyCurrent, x					;;; ;; ; renamed
+	ldy #$01						;;; ;; ; skip inst type
+	lda (var_Temp_Pointer), y		; Load patch number
+	sta var_ch_DutyCurrent, x		;;; ;; ; renamed
 	sta var_ch_DutyDefault, x
-	bne :+							            ; Skip custom settings if patch > 0
+	bne :+						; Skip custom settings if patch > 0
 
 	; Store path to custom patch settings
 	clc

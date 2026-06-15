@@ -222,6 +222,7 @@ ft_write_modtable:
 	tax
 	rts
 
+; govern between instrument commands and effect commands
 ft_check_fds_effects:
 	lda var_ch_ModEffWritten
 	and #ModEffWritten::Depth

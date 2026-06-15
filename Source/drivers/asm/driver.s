@@ -221,20 +221,20 @@ var_ch_DPCM_EffPitch:	.res 1
 
 .if .defined(USE_VRC7)
 ;;; ;; ; removed, since other chips also use 2 bytes for duty
-var_ch_vrc7_FnumLo:		.res CH_COUNT_VRC7			; period cache
+var_ch_vrc7_FnumLo:		.res CH_COUNT_VRC7	; period cache
 var_ch_vrc7_FnumHi:		.res CH_COUNT_VRC7
 var_ch_vrc7_Bnum:		.res CH_COUNT_VRC7
 var_ch_vrc7_ActiveNote:	.res CH_COUNT_VRC7
-var_ch_vrc7_Command:	.res CH_COUNT_VRC7			; 0 = halt, 1 = trigger, 80 = update
-var_ch_vrc7_OldOctave:	.res 1						; Temp variable for old octave when triggering new notes
-var_ch_vrc7_EffPatch:	.res CH_COUNT_VRC7			;;; ;; ; V-command
+var_ch_vrc7_Command:	.res CH_COUNT_VRC7	; 0 = halt, 1 = trigger, 80 = update
+var_ch_vrc7_OldOctave:	.res 1				; Temp variable for old octave when triggering new notes
+var_ch_vrc7_EffPatch:	.res CH_COUNT_VRC7	;;; ;; ; V-command
 
-var_ch_vrc7_CustomHi:	.res CH_COUNT_VRC7
+var_ch_vrc7_CustomHi:	.res CH_COUNT_VRC7	; current custom patch on channel
 var_ch_vrc7_CustomLo:	.res CH_COUNT_VRC7
-var_CustomPatchPtr:		.res 2
-var_ch_vrc7_Port:		.res CH_COUNT_VRC7			;;; ;; ; Hxx
-var_ch_vrc7_Write:		.res 8						;;; ;; ; Ixx
-var_ch_vrc7_PatchFlag:	.res 1
+var_CustomPatchPtr:		.res 2				; pointer to custom patch
+var_ch_vrc7_Port:		.res CH_COUNT_VRC7	;;; ;; ; patch port address
+var_ch_vrc7_Write:		.res 8				;;; ;; ; patch port value
+var_ch_vrc7_PatchFlag:	.res 1				; tracks pending port to write
 .endif
 
 .if .defined(USE_FDS)
