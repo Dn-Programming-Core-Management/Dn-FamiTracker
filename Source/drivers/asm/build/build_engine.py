@@ -17,6 +17,13 @@ DEBUG = args.debug
 
 HEADERLESS = args.no_nsfdrv
 
+def remove_temp_files(chip, hdrless):
+    if not DEBUG:
+        os.remove(f"out_{chip}{hdrless}.lst")
+        os.remove(f"c0_{chip}{hdrless}.bin")
+        os.remove(f"c1_{chip}{hdrless}.bin")
+        os.remove(f"driver_{chip}{hdrless}.o")
+
 def resolvelabel(label: str) -> str:
     match label:
         case "ft_vibrato_table":
@@ -68,11 +75,7 @@ def build(chip: str):
     # headerless NSF kernel binary not supported
     if HEADERLESS:
         print("debug: NSF kernel binary not supported")
-        if not DEBUG:
-            os.remove(f"out_{chip}{hdrless}.lst")
-            os.remove(f"c0_{chip}{hdrless}.bin")
-            os.remove(f"c1_{chip}{hdrless}.bin")
-            os.remove(f"driver_{chip}{hdrless}.o")
+        remove_temp_files(chip, hdrless)
         return
 
     adr = {}
@@ -187,11 +190,7 @@ def build(chip: str):
         drv.write("\n")
 
     # remove temp files
-    if not DEBUG:
-        os.remove(f"out_{chip}.lst")
-        os.remove(f"c0_{chip}.bin")
-        os.remove(f"c1_{chip}.bin")
-        os.remove(f"driver_{chip}.o")
+    remove_temp_files(chip, hdrless)
 
 if __name__ == '__main__':
 

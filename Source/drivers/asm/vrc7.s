@@ -77,26 +77,38 @@ ft_init_vrc7:
 	bpl :-
 	rts
 
+;;
+; Calculate Fnum & Bnum using division by 12
+; (Note + 1) / 12 = Bnum, remainder in Fnum
+; https://www.nesdev.org/wiki/Division_by_a_constant_integer
+;
+; Note: initializes ACC with 0
+; @param A: Note + 1
+; @param X: global channel index
+; @param ACC: scratch variable
+; Outputs:
+;	Y = Fnum index
+;	A/ACC = Bnum
+; clobbers Y, A and ACC
 ft_translate_note_vrc7:
-	; Calculate Fnum & Bnum
-	; Input: A = note + 1
-	; Result: A = Fnum index, ACC = Bnum
-:	cmp #12
-	bcc :+ ; sec
-	sbc #12
-	inc ACC
-	bne :- ; always
-:	rts
+DIV_BITS = 4
+	ldy #0
+	sty ACC
+.repeat DIV_BITS, i
+	cmp #<(12<<(DIV_BITS-1-i))
+	bcc :+
+	sbc #<(12<<(DIV_BITS-1-i))
+:	rol ACC
+.endrepeat
+	tay
+	lda ACC
+	rts
 
 .if .defined(USE_LINEARPITCH)		;;; ;; ;
 ft_vrc7_linear_fetch_pitch:
 	jsr ft_linear_prescale
-	lda #$00
-	sta ACC
 	lda var_ch_PeriodCalcHi, x
 	jsr ft_translate_note_vrc7
-	tay
-	lda ACC
 	sta var_ch_vrc7_Bnum - VRC7_OFFSET, x
 	lda ft_note_table_vrc7_l, y
 	sta var_ch_PeriodCalcLo, x
@@ -266,14 +278,11 @@ ft_update_vrc7:
 ; Used to adjust Bnum when portamento is used
 ;
 ft_vrc7_adjust_octave:
-
 	; Get octave
-	lda #$00		;;; ;; ;
-	sta ACC
 	lda var_ch_vrc7_ActiveNote - VRC7_OFFSET, x
 	jsr ft_translate_note_vrc7		; ;; ;;;
 
-	lda	ACC					; if new octave > old octave
+;	lda	ACC					; if new octave > old octave
 	cmp var_ch_vrc7_OldOctave
 	bcs :+
 	; Old octave > new octave, shift down portamento frequency
@@ -350,7 +359,7 @@ ft_vrc7_trigger:
 	beq @Return
 	lda var_ch_vrc7_OldOctave
 	bmi @Return
-	jsr ft_vrc7_adjust_octave
+	jmp ft_vrc7_adjust_octave
 @Return:
 	rts
 
@@ -371,11 +380,8 @@ ft_vrc7_get_freq:
 	sta var_ch_vrc7_OldOctave
 
 	; Retrigger channel
-	lda #$00		;;; ;; ;
-	sta ACC 	; ;; ;;;
 	lda var_ch_vrc7_ActiveNote - VRC7_OFFSET, x
 	jsr ft_translate_note_vrc7
-	tay
 
 	lda var_ch_Effect, x
 	cmp #EFF_PORTAMENTO
@@ -412,26 +418,21 @@ ft_vrc7_get_freq:
 	tay
 	jmp ft_set_trigger
 
+	; FDS scratch write padding: guard $A000-$A002
+	padnop $9FFD, $A002, .defined(USE_ALL) && .defined(PACKAGE)
+
 ft_vrc7_get_freq_only:
 	tya
 	pha
-
 	; Retrigger channel
-	lda #$00		;;; ;; ;
-	sta ACC		; ;; ;;;
 	lda var_ch_vrc7_ActiveNote - VRC7_OFFSET, x
 	jsr ft_translate_note_vrc7
 
 	; FDS scratch write padding: guard $A000-$A002
-	padjmp $9FFD, $A002, .defined(USE_ALL) && .defined(PACKAGE)
-
-	tay
-	lda ft_note_table_vrc7_l, y
-	sta var_ch_TimerPeriodLo, x
-
-	; FDS scratch write padding: guard $A000-$A002
 	padjmp $9FFB, $A002, .defined(USE_ALL) && .not .defined(PACKAGE)
 
+	lda ft_note_table_vrc7_l, y
+	sta var_ch_TimerPeriodLo, x
 	lda ft_note_table_vrc7_h, y
 	sta var_ch_TimerPeriodHi, x
 
