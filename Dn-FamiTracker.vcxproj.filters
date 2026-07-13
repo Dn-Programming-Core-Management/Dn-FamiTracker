@@ -1445,9 +1445,6 @@
     <ClInclude Include="Source\utils\variadic_minmax.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\APU\SoundChip2.h">
-      <Filter>Header Files\Sound Driver Headers\Emulation Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Source\APU\nsfplay\xgm\devices\Sound\nes_apu.h">
       <Filter>Header Files\Sound Driver Headers\Emulation Headers\Sound Chip Headers\External\nsfplay</Filter>
     </ClInclude>
