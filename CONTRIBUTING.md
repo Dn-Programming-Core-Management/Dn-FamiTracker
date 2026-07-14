@@ -1,6 +1,6 @@
 # Contribution Guide
 
-- Last updated: 2026-05-25
+- Last updated: 2026-07-15
 
 Welcome! Thank you for contributing to Dn-FamiTracker. The following serves as a guide to those who want to get started.
 
@@ -8,7 +8,7 @@ Welcome! Thank you for contributing to Dn-FamiTracker. The following serves as a
 
 ## Dependencies and building
 
-To edit and/or build the source, you may use Visual Studio 2022, or alternatively, any IDE that supports CMake. You will need the following dependencies:
+To edit and/or build the source, you may use Visual Studio 2026, or alternatively, any IDE that supports CMake. You will need the following dependencies:
 
 - [HTML Help Workshop](https://docs.microsoft.com/en-us/previous-versions/windows/desktop/htmlhelp/microsoft-html-help-downloads) to build the manual.
 	- Note that HTML Help Workshop is no longer supported and thus no longer available to download on Microsoft's website.
@@ -17,8 +17,12 @@ To edit and/or build the source, you may use Visual Studio 2022, or alternativel
 	- Currently used for templated pages for the HTMLHelp manual.
 - [CC65 build tools](https://cc65.github.io/)
 	- Used for NSF driver compiling.
-	- Be sure to use the version on Git SHA `547d923588d870aacf0b0016c67d0f6a92a70f83`, as the most recent release (V2.19) has broken conditional parsing.
-	- Make sure `ld65` and `ca65` is available in environment path.
+	- Be sure to use the **latest snapshot**, after Git SHA `dbcfa910892b4e7f2213e8e0b7a272b11ad7f139`
+	- there are bugs interfering with builds in CC65's V2.19 release which was fixed:
+		- [CC65 PR #2863](https://github.com/cc65/cc65/pull/2863)
+		- [CC65 PR #2204](https://github.com/cc65/cc65/pull/2204)
+		- [CC65 PR #1694](https://github.com/cc65/cc65/pull/1694)
+	- Make sure `ld65` and `ca65` is available in the environment PATH.
 - For miscellaneous custom build scripts:
 	- [Python 3.10+](https://www.python.org/)
 - For any IDE that supports building via CMake:
@@ -30,14 +34,15 @@ To edit and/or build the source, you may use Visual Studio 2022, or alternativel
 	- These dependencies can be installed through the Visual Studio Installer:
 		- C++ MFC for latest v143 build tools (x86 & x64)
 		- C++ ATL for latest v143 build tools (x86 & x64)
-- For Visual Studio 2022:
+- For Visual Studio 2026:
 	- Windows Universal CRT SDK
 	- The **Desktop development with C++** workload, including:
-		- MSVC v143 - VS 2022 C++ x64/x86 build tools (latest version)
 		- C++ CMake tools for Windows
-		- C++ AddressSanitizer
-		- C++ ATL for latest v143 build tools (x86 & x64)
-		- C++ MFC for latest v143 build tools (x86 & x64)
+		- C++ v14.44 (17.14) ATL for v143 build tools (x86 & x64)
+		- C++ v14.44 (17.14) MFC for v143 build tools (x86 & x64)
+		- MSBuild
+		- MSVC AddressSanitizer
+		- MSVC v143 - VS 2022 C++ x64/x86 build tools (v14.44-17.14)
 		- Windows 11 SDK (10.0.26100.0)
 - Alternatively, you can install the components mentioned via the [provided .vsconfig file](../Dn-FT_VS_Dependencies.vsconfig).
 
