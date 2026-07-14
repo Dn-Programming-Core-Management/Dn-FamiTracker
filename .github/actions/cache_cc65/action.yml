@@ -9,6 +9,10 @@ inputs:
     description: "CC65 path to cache"
     required: false
     default: ${{ github.workspace }}\opt\cc65
+outputs:
+  cc65Binaries:
+    description: "Path to output CC65 binaries. Add to your PATH."
+    value: ${{ steps.cc65binpath.outputs.cc65binaries }}
 runs:
   using: "composite"
   steps:
@@ -19,6 +23,7 @@ runs:
           path: ${{ inputs.cc65Path }}
           key: ${{ runner.os }}-cc65-${{ inputs.cc65Ref }}-${{ hashFiles('.github/actions/cache_cc65/*') }}
           restore-keys: ${{ runner.os }}-cc65-${{ inputs.cc65Ref }}-
+
       - name: Checkout CC65
         uses: actions/checkout@main
         if: steps.cache_cc65.outputs.cache-hit != 'true'
@@ -26,22 +31,27 @@ runs:
           repository: cc65/cc65
           ref: ${{ inputs.cc65Ref }}
           path: ${{ inputs.cc65Path }}
+
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@main
         if: steps.cache_cc65.outputs.cache-hit != 'true'
+
       - name: Build CC65
         if: steps.cache_cc65.outputs.cache-hit != 'true'
         run: |
           cd ${{ inputs.cc65Path }}
           msbuild -m -mt src\cc65.sln -t:rebuild -p:Configuration=Release -p:Platform=x64
         shell: cmd
+
       - name: Save cache
         uses: actions/cache/save@main
-        if: always()
+        if: steps.cache_cc65.outputs.cache-hit != 'true'
         with:
           path: ${{ inputs.cc65Path }}
           key: ${{ runner.os }}-cc65-${{ inputs.cc65Ref }}-${{ hashFiles('.github/actions/cache_cc65/*') }}
+
       - name: Add CC65 binaries to path
+        id: cc65binpath
         run: |
-          echo "${{ inputs.cc65Path }}\bin" >> $GITHUB_PATH
+          echo "cc65binaries=${{ inputs.cc65Path }}\bin" >> "$GITHUB_OUTPUT"
         shell: cmd

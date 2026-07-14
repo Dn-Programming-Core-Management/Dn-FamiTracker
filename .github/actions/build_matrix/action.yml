@@ -7,6 +7,9 @@ inputs:
   platform:
     description: "Platform"
     required: true
+  cc65Binaries:
+    description: "Path to output CC65 binaries. Added to PATH."
+    required: true
 runs:
   using: "composite"
   steps:
@@ -28,11 +31,14 @@ runs:
     with:
       path: ${{ env.cc65_path }}
       key: ${{ runner.os }}-cc65-${{ env.cc65_ref }}-${{ hashFiles('.github/actions/cache_cc65/*') }}
+      fail-on-cache-miss: true
   - name: Set CC65 PATH
-    run: echo "${{ env.cc65_path }}\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+    run: echo "${{ inputs.cc65Binaries }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
     shell: powershell
   - name: Set msbuild PATH
     uses: microsoft/setup-msbuild@main
+    with:
+      msbuild-architecture: x64
   - name: Build program
     run: |
       call msbuild -m -nologo -p:Configuration="${{ inputs.configuration }}" -p:Platform="${{ inputs.platform }}"

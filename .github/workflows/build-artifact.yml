@@ -3,11 +3,12 @@ on: push
 env:
   commithash: ""
   cc65_path: ${{ github.workspace }}\opt\cc65
-  # Fix cc65 segfault on 64-bit LLP64 Windows builds #1694
   cc65_ref: 547d923588d870aacf0b0016c67d0f6a92a70f83
 jobs:
   build-cc65:
     runs-on: windows-latest
+    outputs:
+      cc65Binaries: ${{ steps.cc65cache.outputs.cc65Binaries }}
     steps:
       # pull repo just to get the .yml files
     - uses: actions/checkout@main
@@ -15,6 +16,7 @@ jobs:
         submodules: "recursive"
         fetch-depth: 0
     - uses: ./.github/actions/cache_cc65
+      id: cc65cache
       with:
         cc65Path: ${{ env.cc65_path }}
         cc65Ref: ${{ env.cc65_ref }}
@@ -37,6 +39,7 @@ jobs:
       with:
         platform: "${{ matrix.platform }}"
         configuration: "${{ matrix.configuration }}"
+        cc65Binaries: ${{ needs.build-cc65.outputs.cc65Binaries }}
     - run: call release.bat ${{ matrix.configuration }} ${{ matrix.platform }} ${{ env.commithash }}_${{ github.run_id }}
       shell: cmd
     - name: Upload binaries
