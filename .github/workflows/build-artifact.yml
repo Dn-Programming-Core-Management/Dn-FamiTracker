@@ -4,13 +4,13 @@ env:
   commithash: ""
   cc65_path: ${{ github.workspace }}\opt\cc65
   # Fix cc65 segfault on 64-bit LLP64 Windows builds #1694
-  cc65_ref: cc3c40c54e51b2d9a22b63c85c418a2b11763377
+  cc65_ref: 547d923588d870aacf0b0016c67d0f6a92a70f83
 jobs:
   build-cc65:
-    runs-on: windows-2022
+    runs-on: windows-latest
     steps:
       # pull repo just to get the .yml files
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@main
       with:
         submodules: "recursive"
         fetch-depth: 0
@@ -20,14 +20,14 @@ jobs:
         cc65Ref: ${{ env.cc65_ref }}
   build-matrix-artifacts:
     needs: build-cc65
-    runs-on: windows-2022
+    runs-on: windows-2022   # we still rely on MFC/ATL v143
     strategy:
       matrix:
         platform: [x64, Win32]
         configuration: [Release, Debug, ASAN-Release, ASAN-Debug]
     steps:
       # pull repo just to get the .yml files
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@main
       with:
         submodules: "recursive"
         fetch-depth: 0
@@ -37,11 +37,10 @@ jobs:
       with:
         platform: "${{ matrix.platform }}"
         configuration: "${{ matrix.configuration }}"
-        commithash: "${{ env.commithash }}"
     - run: call release.bat ${{ matrix.configuration }} ${{ matrix.platform }} ${{ env.commithash }}_${{ github.run_id }}
       shell: cmd
     - name: Upload binaries
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@main
       with:
         name: Dn-FamiTracker_${{ env.commithash }}_${{ github.run_id }}_${{ matrix.platform }}_${{ matrix.configuration }}
         path: distribute/*_${{ matrix.platform }}_${{ matrix.configuration }}.7z
