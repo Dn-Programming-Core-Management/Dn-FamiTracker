@@ -17,6 +17,7 @@ To edit and/or build the source, you may use Visual Studio 2022, or alternativel
 	- Currently used for templated pages for the HTMLHelp manual.
 - [CC65 build tools](https://cc65.github.io/)
 	- Used for NSF driver compiling.
+	- Be sure to use the version on Git SHA `547d923588d870aacf0b0016c67d0f6a92a70f83`, as the most recent release (V2.19) has broken conditional parsing.
 	- Make sure `ld65` and `ca65` is available in environment path.
 - For miscellaneous custom build scripts:
 	- [Python 3.10+](https://www.python.org/)
