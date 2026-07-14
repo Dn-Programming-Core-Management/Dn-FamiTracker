@@ -19,7 +19,7 @@ ft_update_mmc5:
 	and #$03
 	sta var_Temp2
 	lda var_ch_LengthCounter + MMC5_OFFSET, x	;;; ;; ;
-	and #$01
+	and #lencount::CONST_VOL
 	beq :+
 	lda var_ch_VolColumn + MMC5_OFFSET, x	; do not automatically kill channel when hardware envelope is enabled
 	asl a
@@ -58,8 +58,8 @@ ft_update_mmc5:
 	asl a
 	tay
 	lda var_ch_LengthCounter + MMC5_OFFSET, x
-	and #$03
-	eor #$03
+	and #lencount::CONST_VOL|lencount::HALT
+	eor #lencount::CONST_VOL|lencount::HALT
 	asl a
 	asl a
 	asl a
@@ -80,7 +80,7 @@ ft_update_mmc5:
 	sta $5000, y ; y == 2 || y == 6			$5002/5006
 	iny
 	lda var_ch_LengthCounter + MMC5_OFFSET, x	;;; ;; ;
-	and #$03
+	and #lencount::CONST_VOL|lencount::HALT
 	beq :+
 	lda var_ch_Trigger + MMC5_OFFSET, x
 	bne :++
@@ -97,7 +97,7 @@ ft_update_mmc5:
 @SkipCheckPhaseResetMMC5:
 	sta var_ch_PrevFreqHighMMC5, x
 :	lda var_ch_LengthCounter + MMC5_OFFSET, x
-	and #$F8
+	and #lencount::VALUE
 	ora var_ch_PeriodCalcHi + MMC5_OFFSET, x
 	sta $5000, y ; y == 3 || y == 7			$5003/5007
 	jmp @Next
@@ -116,7 +116,7 @@ ft_update_mmc5:
 	beq :+
 	dec var_ch_PhaseReset + MMC5_OFFSET, x
 	lda var_ch_LengthCounter + MMC5_OFFSET, x
-	and #$F8
+	and #lencount::VALUE
 	ora var_ch_PeriodCalcHi + MMC5_OFFSET, x
 	sta $5000, y ; y == 3 || y == 7			$5003/5007
 :

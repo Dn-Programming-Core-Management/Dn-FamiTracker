@@ -74,7 +74,7 @@ ft_update_2a03:
 .endif
 	; Calculate volume
 	lda var_ch_LengthCounter + APU_OFFSET, x	;;; ;; ;
-	and #$01
+	and #lencount::CONST_VOL
 	beq :+
 	lda var_ch_VolColumn + APU_OFFSET, x		; do not automatically kill channel when hardware envelope is enabled
 	asl a
@@ -118,8 +118,8 @@ ft_update_2a03:
 	asl a
 	tay
 	lda var_ch_LengthCounter + APU_OFFSET, x
-	and #$03
-	eor #$03
+	and #lencount::CONST_VOL|lencount::HALT
+	eor #lencount::CONST_VOL|lencount::HALT
 	asl a
 	asl a
 	asl a
@@ -131,9 +131,9 @@ ft_update_2a03:
 	lda var_ch_PeriodCalcHi + APU_OFFSET, x
 	and #$F8
 	beq :+
-	lda #$07
+	lda #<LIMIT_PERIOD_2A03
 	sta var_ch_PeriodCalcHi + APU_OFFSET, x
-	lda #$FF
+	lda #>LIMIT_PERIOD_2A03
 	sta var_ch_PeriodCalcLo + APU_OFFSET, x
 :
 	lda var_ch_Sweep + APU_OFFSET, x			; Check if sweep is active
@@ -153,7 +153,7 @@ ft_update_2a03:
 	sta $4000, y								; $4002/4006
 	iny
 	lda var_ch_LengthCounter + APU_OFFSET, x
-	and #$F8
+	and #lencount::VALUE
 	ora var_ch_PeriodCalcHi + APU_OFFSET, x
 	sta $4000, y								; $4003/4007
 	lda #$FF
@@ -170,11 +170,11 @@ ft_update_2a03:
 	sta $4000, y								; $4002/4006
 	iny
 	lda var_ch_LengthCounter + APU_OFFSET, x	;;; ;; ;
-	and #$03
+	and #lencount::CONST_VOL|lencount::HALT
 	beq :+
 	lda var_ch_Trigger + APU_OFFSET, x
-	beq @DoneSquare
 	bne :++
+	jmp @DoneSquare
 :	lda var_ch_PeriodCalcHi + APU_OFFSET, x
 	cmp var_ch_PrevFreqHigh + APU_OFFSET, x
 	bne @SkipCheckPhaseReset
@@ -187,7 +187,7 @@ ft_update_2a03:
 @SkipCheckPhaseReset:
 	sta var_ch_PrevFreqHigh + APU_OFFSET, x
 :	lda var_ch_LengthCounter + APU_OFFSET, x
-	and #$F8
+	and #lencount::VALUE
 	ora var_ch_PeriodCalcHi + APU_OFFSET, x
 	sta $4000, y								; $4003/4007
 	jmp @DoneSquare
@@ -204,7 +204,7 @@ ft_update_2a03:
 	beq :+
 	dec var_ch_PhaseReset + APU_OFFSET, x
 	lda var_ch_LengthCounter + APU_OFFSET, x
-	and #$F8
+	and #lencount::VALUE
 	ora var_ch_PeriodCalcHi + APU_OFFSET, x
 	sta $4000, y								; $4003/4007
 :
@@ -237,43 +237,40 @@ ft_update_2a03:
 	lda var_ch_Note + APU_TRI
 	beq @KillTriangle
 
-	; linear counter is already processed at this point
+	lda var_ch_LengthCounter + APU_TRI
+	and #lencount::HALT
+	beq :+
 	lda var_Linear_Counter
-	sta $4008
+	ora $80
+	jmp :++
+:	lda var_Linear_Counter
+:	sta $4008
 
 @EndTriangleVolume:
 	; Period table isn't limited to $7FF anymore
 	lda var_ch_PeriodCalcHi + APU_TRI
 	and #$F8
 	beq @TimerOverflow3
-	lda #$07
+	lda #<LIMIT_PERIOD_2A03
 	sta var_ch_PeriodCalcHi + APU_TRI
-	lda #$FF
+	lda #>LIMIT_PERIOD_2A03
 	sta var_ch_PeriodCalcLo + APU_TRI
 @TimerOverflow3:
 ;	lda #$08
 ;	sta $4009
 	lda var_ch_PeriodCalcLo + APU_TRI
 	sta $400A
-	lda var_ch_Trigger + APU_TRI		;;; ;; ;
-	bne :+
 	lda var_ch_LengthCounter + APU_TRI
-	and #%00000111
-	bne @SkipTriangleKill
-:	lda var_ch_LengthCounter + APU_TRI
-	and #%11111000
+	and #lencount::CONST_VOL|lencount::HALT|lencount::TRI_RETRIG
+	beq @SkipTriangleKill
+	lda var_ch_LengthCounter + APU_TRI
+	and #lencount::VALUE
 	ora var_ch_PeriodCalcHi + APU_TRI	; ;; ;;;
 	sta $400B
 	jmp @SkipTriangleKill
 @KillTriangle:
 	lda #$00
 	sta $4008
-	; kill linear counter immediately if retriggering
-	lda var_Triangle_Trill
-	beq @SkipTriangleKill
-	lda var_ch_LengthCounter + APU_TRI
-	and #%11111000
-	sta $400B
 @SkipTriangleKill:
 
 ; ==============================================================================
@@ -295,7 +292,7 @@ ft_update_2a03:
 
 	; Calculate volume
 	lda var_ch_LengthCounter + APU_NOI	;;; ;; ;
-	and #$01
+	and #lencount::CONST_VOL
 	beq :+
 	lda var_ch_VolColumn + APU_NOI		; do not automatically kill channel when hardware envelope is enabled
 	asl a
@@ -327,8 +324,8 @@ ft_update_2a03:
 	; Write to registers
 	sta var_Temp		;;; ;; ;
 	lda var_ch_LengthCounter + APU_NOI
-	and #$03
-	eor #$03
+	and #lencount::CONST_VOL|lencount::HALT
+	eor #lencount::CONST_VOL|lencount::HALT
 	asl a
 	asl a
 	asl a
@@ -370,7 +367,7 @@ ft_update_2a03:
 	ora var_Temp
 	sta $400E
 	lda var_ch_LengthCounter + APU_NOI	;;; ;; ;
-	and #$03
+	and #lencount::CONST_VOL|lencount::HALT
 	beq :+
 	lda var_ch_Trigger + APU_NOI
 	beq @DPCM

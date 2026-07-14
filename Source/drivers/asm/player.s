@@ -857,22 +857,23 @@ ft_cmd_halt:
 ;;; ;; ; Effect: Hardware envelope control (Exx)
 ft_cmd_effvolume:
 	jsr ft_get_pattern_byte
-	bmi :+
+	bmi :+	; set counter mode
 	asl a
 	asl a
 	asl a
-	sta var_Temp
-	lda var_ch_LengthCounter, x
-	and #$01
-	ora #$02
-	bpl :++					; always
-:	and #%00000011
-	sta var_Temp
-	lda var_ch_LengthCounter, x
-	and #%11111000
-:	ora var_Temp
+	and #<~lencount::HALT
+	ora #lencount::CONST_VOL
 	sta var_ch_LengthCounter, x
-	rts
+	jmp :++
+;;; ;; ; Effect: Set length counter mode (EEx)
+:
+	and #lencount::CONST_VOL|lencount::HALT
+	sta var_Temp
+	lda var_ch_LengthCounter, x
+	and #<~lencount::CONST_VOL|lencount::HALT
+	ora var_Temp
+	sta var_ch_LengthCounter, x
+:	rts
 ; Effect: Portamento (3xx)
 ft_cmd_portamento:
 	jsr ft_get_pattern_byte
@@ -1029,22 +1030,21 @@ ft_cmd_note_cut:
 	lda ft_channel_type, x
 	cmp #CHAN_TRI							;;; ;; ;
 	bne :+
-	; linear counter
 	; Avoid touching the envelope loop flag if under a retrigger effect
-	lda var_Triangle_Trill
-	bne :+
-	lda var_Linear_Counter
-	ora #$80
-	sta var_Linear_Counter
 	lda var_ch_LengthCounter + APU_TRI
-	and #%11111000
+	and #lencount::TRI_RETRIG
+	bne :+
+	lda var_ch_LengthCounter + APU_TRI
+	ora #lencount::HALT
 	sta var_ch_LengthCounter + APU_TRI		; ;; ;;;
 :	rts
+;;; ;; ; Effect: Triangle linear counter (S80+)
 ft_cmd_linear_counter:				;;; ;; ;
 	jsr ft_get_pattern_byte
 	sta var_Linear_Counter
 	lda var_ch_LengthCounter + APU_TRI
-	ora #%00000001
+	and #<~lencount::HALT
+	ora #lencount::CONST_VOL
 	sta var_ch_LengthCounter + APU_TRI
 	rts								; ;; ;;;
 ;;; ;; ; Effect: Note release (Lxx)
@@ -1123,8 +1123,19 @@ ft_cmd_retrigger:
 	jsr ft_get_pattern_byte
 	beq :+		; X00 disables triangle trill
 	sta var_Linear_Counter
-	lda #1
-:	sta var_Triangle_Trill
+
+	lda var_ch_LengthCounter + APU_TRI
+	and #<~lencount::HALT
+	ora #lencount::TRI_RETRIG
+	sta var_ch_LengthCounter + APU_TRI
+	jmp :++
+:
+	lda #$7F
+	sta var_Linear_Counter
+	lda var_ch_LengthCounter + APU_TRI
+	and #<~lencount::TRI_RETRIG
+	ora #lencount::HALT
+	sta var_ch_LengthCounter + APU_TRI
 :
 	rts
 ; Effect: DPCM pitch setting

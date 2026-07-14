@@ -202,41 +202,46 @@ ft_load_slide:
 	beq @Invert
 .endif
 	cpx #CHAN_NOI
+
+	; FDS scratch write padding: guard $9000-9003
+	padjmp $8FFD, $9003, .defined(USE_ALL) && .defined(PACKAGE)
+
 	bne :++
 @Invert:
 	lda var_ch_Effect, x
 	cmp #EFF_SLIDE_UP
-	beq :+
-	lda #EFF_SLIDE_UP
-	sta var_ch_Effect, x
-
-	; FDS scratch write padding: guard $9000-9003
-	padjmp $8FFB, $9003, .defined(USE_ALL) && .defined(PACKAGE)
-
-:	lda #EFF_SLIDE_DOWN
-	sta var_ch_Effect, x
-:
-
 
 	; FDS scratch write padding: guard $9000-$9003
-	jmppad {jmp ft_jump_to_effect}, $8FF8, $9003, .defined(USE_ALL) && .not .defined(PACKAGE)
+	padjmp $8FFC, $9003, .defined(USE_ALL) && .not .defined(PACKAGE)
 
-; see CChannelHandler::CalculatePeriod()
+	beq :+
 
 	; FDS scratch write padding: guard $9010
-	padnop $900C, $9010, .defined(USE_ALL) && .defined(PACKAGE)
+	padjmp $900D, $9010, .defined(USE_ALL) && .defined(PACKAGE)
 
+	lda #EFF_SLIDE_UP
+	sta var_ch_Effect, x
+:	lda #EFF_SLIDE_DOWN
+
+	; FDS scratch write padding: guard $9010
+	padjmp $900D, $9010, .defined(USE_ALL) && .not .defined(PACKAGE)
+
+	sta var_ch_Effect, x
+:
+	jmp ft_jump_to_effect
+
+; see CChannelHandler::CalculatePeriod()
 ft_calc_period:
 
 	; Load period
 	lda var_ch_TimerPeriodLo, x
 	sta var_ch_PeriodCalcLo, x
 	lda var_ch_TimerPeriodHi, x
-
-	; FDS scratch write padding: guard $9010
-	padjmp $900D, $9010, .defined(USE_ALL) && .not .defined(PACKAGE)
-
 	sta var_ch_PeriodCalcHi, x
+
+	; FDS scratch write padding: guard $9030
+	padjmp $902A, $9030, .defined(USE_ALL) && .defined(PACKAGE)
+
 
 .if .defined(USE_VRC7)
 .if .defined(USE_LINEARPITCH)		;;; ;; ;
@@ -245,19 +250,15 @@ ft_calc_period:
 	bne :+
 .endif								; ;; ;;;
 	lda ft_channel_type, x
-	cmp #CHAN_VRC7
-	bne :+
 
 	; FDS scratch write padding: guard $9030
-	padjmp $902B, $9030, .defined(USE_ALL) && .defined(PACKAGE)
+	padjmp $902D, $9030, .defined(USE_ALL) && .not .defined(PACKAGE)
 
+	cmp #CHAN_VRC7
+	bne :+
 	lsr var_ch_PeriodCalcHi, x
 	ror var_ch_PeriodCalcLo, x
 	lsr var_ch_PeriodCalcHi, x
-
-	; FDS scratch write padding: guard $9030
-	padjmp $902B, $9030, .defined(USE_ALL) && .not .defined(PACKAGE)
-
 	ror var_ch_PeriodCalcLo, x
 :
 .endif

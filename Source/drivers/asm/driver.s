@@ -198,14 +198,26 @@ EXT:					.res 2
 
 ;;; ;; ; all chip-specific variables have been moved to the zeropage
 
-.if .defined(USE_MMC5)
-var_ch_LengthCounter:	 .res 6						; LLLLL-HC Length counter, Enable length counter, Enable decay/linear
+.if .defined(USE_MMC5)		; MMC5 has two extra pulse channels
+var_ch_LengthCounter:	 .res 6						; Length counter load, Triangle linear counter retrigger flag, length counter halt, constant volume flag
 var_ch_PrevFreqHighMMC5: .res 2
 .else
-var_ch_LengthCounter:	 .res 4						; MMC5 has two extra pulse channels
+var_ch_LengthCounter:	 .res 4
 .endif
-var_Linear_Counter:		 .res 1						; Triangle linear counter
-var_Triangle_Trill:		 .res 1						; Triangle linear counter retrigger
+var_Linear_Counter:		 .res 1						; Triangle linear counter value
+
+; var_ch_LengthCounter bit field
+; LLLL LTHC
+; |||| |||+-- Constant volume flag (m_bResetEnvelope)
+; |||| ||+--- Length counter halt (m_bEnvelopeLoop)
+; |||| |+---- Triangle retrigger linear counter
+; ++++ +----- Length counter load
+.enum lencount
+	CONST_VOL	= %001		; m_bResetEnvelope
+	HALT		= %010		; m_bEnvelopeLoop
+	TRI_RETRIG	= %100		; m_bRetrigger
+	VALUE		= <(~%111)
+.endenum
 
 .if .defined(USE_DPCM)
 var_ch_SamplePtr:		.res 1						; DPCM sample pointer
