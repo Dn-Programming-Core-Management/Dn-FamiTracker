@@ -23,7 +23,7 @@ jobs:
         cc65Ref: ${{ env.cc65_ref }}
   build-matrix-publish:
     needs: build-cc65
-    runs-on: windows-2022   # we still rely on MFC/ATL v143
+    runs-on: windows-latest
     strategy:
       matrix:
         platform: [x64, Win32]
