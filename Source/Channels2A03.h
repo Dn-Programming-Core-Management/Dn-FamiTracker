@@ -39,9 +39,9 @@ protected:
 
 protected:
 	// // //
-	bool	m_bHardwareEnvelope;	// // // (constant volume flag, bit 4)
-	bool	m_bEnvelopeLoop;		// // // (halt length counter flag, bit 5 / triangle bit 7)
-	bool	m_bResetEnvelope;		// // //
+	bool	m_bHardwareEnvelope;	// // // constant volume flag
+	bool	m_bEnvelopeLoop;		// // // Length counter halt flag / triangle control flag
+	bool	m_bResetEnvelope;		// // // trigger length counter
 	int		m_iLengthCounter;		// // //
 };
 
@@ -86,7 +86,7 @@ protected:
 	CString	GetCustomEffectString() const override;		// // //
 private:
 	int		m_iLinearCounter;
-	bool	m_bRetrigger;			// !! !! triangle linear counter retrigger
+	bool	m_bRetrigger;			// !! !! keep setting linear counter reload flag; overrides m_bResetEnvelope
 };
 
 // Noise
