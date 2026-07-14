@@ -12,12 +12,13 @@ inputs:
 runs:
   using: "composite"
   steps:
-      - name: Cache CC65
-        uses: actions/cache@main
+      - name: Restore cache
+        uses: actions/cache/restore@main
         id: cache_cc65
         with:
           path: ${{ inputs.cc65Path }}
           key: ${{ runner.os }}-cc65-${{ inputs.cc65Ref }}-${{ hashFiles('.github/actions/cache_cc65/*') }}
+          restore-keys: ${{ runner.os }}-cc65-${{ inputs.cc65Ref }}-
       - name: Checkout CC65
         uses: actions/checkout@main
         if: steps.cache_cc65.outputs.cache-hit != 'true'
@@ -34,6 +35,12 @@ runs:
           cd ${{ inputs.cc65Path }}
           msbuild -m -mt src\cc65.sln -t:rebuild -p:Configuration=Release -p:Platform=x64
         shell: cmd
+      - name: Save cache
+        uses: actions/cache/save@main
+        if: always()
+        with:
+          path: ${{ inputs.cc65Path }}
+          key: ${{ runner.os }}-cc65-${{ inputs.cc65Ref }}-${{ hashFiles('.github/actions/cache_cc65/*') }}
       - name: Add CC65 binaries to path
         run: |
           echo "${{ inputs.cc65Path }}\bin" >> $GITHUB_PATH
