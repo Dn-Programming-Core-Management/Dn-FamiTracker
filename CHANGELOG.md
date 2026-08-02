@@ -10,7 +10,7 @@ Last updated: 2026-06-03
 
 ---
 
-## Unreleased - 2026-06-03
+## Unreleased - 2026-08-02
 
 ### Breaking changes
 
@@ -30,6 +30,7 @@ Last updated: 2026-06-03
 	- MMC5 also now has proper nonlinear mixing.
 - Port VRC6 to new CSoundChip and NSFPlay emulation core (@Gumball2415 @eulyderg #325 #417)
 	- VRC6 sawtooth volume meter reads the register value rather than the actual output, the only practical difference being that the meter now displays volume level 1 correctly.
+- N163 DC drifting fixed (@Nemo55aa #423)
 
 ### Bug fixes
 
