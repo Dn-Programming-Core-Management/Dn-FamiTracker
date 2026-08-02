@@ -172,6 +172,10 @@ private:
     public:
         int last_amp = 0;
         double delta_factor;
+        // Rounding error carried over from the previous delta. Without it, quantizing
+        // each delta independently breaks the telescoping property (sum of deltas ==
+        // amplitude) and lets a DC offset accumulate without bound.
+        mutable double delta_residual = 0.0;
 
         void volume_unit( double );
         Blip_Synth_Fast_();
@@ -182,6 +186,8 @@ private:
     public:
         int last_amp = 0;
         double delta_factor;
+        // See Blip_Synth_Fast_::delta_residual.
+        mutable double delta_residual = 0.0;
 
         void volume_unit( double );
         Blip_Synth_( short* impulses, int width );
@@ -213,7 +219,7 @@ public:
     // Configure low-pass filter (see blip_buffer.txt)
     void treble_eq( blip_eq_t const& eq )       { impl.treble_eq( eq ); }
 
-    void clear() { impl.last_amp = 0; }
+    void clear() { impl.last_amp = 0; impl.delta_residual = 0.0;  }
 
     /// Set the last-seen amplitude to `dc_amp` without outputting a step.
     /// If Blip_Buffer currently has output level 0,
@@ -372,7 +378,19 @@ inline void Blip_Synth<quality>::offset_resampled( blip_resampled_time_t time,
     // Fails if time is beyond end of Blip_Buffer, due to a bug in caller code or the
     // need for a longer buffer as set by set_sample_rate().
     assert( (blip_long) (time >> BLIP_BUFFER_ACCURACY) < blip_buf->buffer_size_ );
+    
+#if 0 // Nemo55aa 260802
     delta = (int)((double)delta * impl.delta_factor);
+#else
+    // Quantize with error feedback. Truncating each delta toward zero on its own
+    // biases the error against the sign of the delta, which on an asymmetric waveform
+    // integrates into an unbounded DC offset. Carrying the residual keeps the total
+    // error below one LSB forever.
+    double const scaled = (double)delta * impl.delta_factor + impl.delta_residual;
+    delta = (int) (scaled < 0 ? scaled - 0.5 : scaled + 0.5);
+    impl.delta_residual = scaled - (double)delta;
+#endif // end Nemo55aa 260802
+
     blip_long* BLIP_RESTRICT buf = blip_buf->buffer_ + (time >> BLIP_BUFFER_ACCURACY);
     int phase = (int) (time >> (BLIP_BUFFER_ACCURACY - BLIP_PHASE_BITS) & (blip_res - 1));
 
