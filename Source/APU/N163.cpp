@@ -55,11 +55,7 @@ void CN163::UpdateFilter(blip_eq_t eq)
 {
 	m_BlipN163.set_sample_rate(eq.sample_rate);
 	m_SynthN163.treble_eq(eq);
-	// Not 0: this buffer is read back into the master buffer as absolute samples,
-	// so any DC that leaks in here would accumulate forever and eventually saturate
-	// the 16-bit clamp in read_samples(), silencing the chip. 1 Hz is inaudible but
-	// bounds the offset.
-	m_BlipN163.bass_freq(1);
+	m_BlipN163.bass_freq(0);
 	m_CutoffHz = 12000;
 	RecomputeN163Filter();
 }
