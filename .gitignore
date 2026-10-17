@@ -2,6 +2,9 @@
 /cmake_user_begin.cmake
 /cmake_user_end.cmake
 
+# CMake build directories
+/build/
+
 # Editors
 *.sublime-*
 /enc_temp_folder

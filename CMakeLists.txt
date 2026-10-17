@@ -117,6 +117,19 @@ add_custom_command(
 
 target_compile_features(${exe} PRIVATE cxx_std_17)
 
+# Match Dn-FamiTracker.vcxproj: some sources contain UTF-8 text without a BOM,
+# which breaks the build on non-UTF-8 code pages (e.g. CP932) without /utf-8.
+if(MSVC)
+    target_compile_options(${exe} PRIVATE /utf-8)
+endif()
+
+# Match <MultiProcessorCompilation> in Dn-FamiTracker.vcxproj.
+# MSBuild compiles the files of a project one by one without /MP.
+# (Ninja and Makefile generators already run the compiler in parallel.)
+if(MSVC AND CMAKE_GENERATOR MATCHES "Visual Studio")
+    target_compile_options(${exe} PRIVATE /MP)
+endif()
+
 if(COMMAND target_precompile_headers)
     target_precompile_headers(${exe} PRIVATE
         "$<$<COMPILE_LANGUAGE:CXX>:Source/stdafx.cpp>"

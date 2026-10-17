@@ -38,6 +38,8 @@ add_executable(${exe}
         # Emulator cores
         Source/APU/digital-sound-antiques/2413tone.h
         Source/APU/digital-sound-antiques/281btone.h
+        Source/APU/digital-sound-antiques/emu2149.c
+        Source/APU/digital-sound-antiques/emu2149.h
         Source/APU/digital-sound-antiques/emu2413.c
         Source/APU/digital-sound-antiques/emu2413.h
         Source/APU/digital-sound-antiques/vrc7tone_ft35.h
@@ -63,6 +65,10 @@ add_executable(${exe}
         Source/APU/nsfplay/xgm/devices/Sound/nes_apu.h
         Source/APU/nsfplay/xgm/devices/Sound/nes_dmc.cpp
         Source/APU/nsfplay/xgm/devices/Sound/nes_dmc.h
+        Source/APU/nsfplay/xgm/devices/Sound/nes_mmc5.cpp
+        Source/APU/nsfplay/xgm/devices/Sound/nes_mmc5.h
+        Source/APU/nsfplay/xgm/devices/Sound/nes_vrc6.cpp
+        Source/APU/nsfplay/xgm/devices/Sound/nes_vrc6.h
 
         # Libraries
         Source/Blip_Buffer/Blip_Buffer.cpp
@@ -152,10 +158,8 @@ add_executable(${exe}
         # Sources
         Source/APU/2A03.cpp
         Source/APU/2A03.h
-        Source/APU/2A03Chan.h
         Source/APU/APU.cpp
         Source/APU/APU.h
-        Source/APU/Channel.h
         Source/APU/ChannelLevelState.h
         Source/APU/FDS.cpp
         Source/APU/FDS.h
@@ -169,10 +173,6 @@ add_executable(${exe}
         Source/APU/S5B.h
         Source/APU/SoundChip.cpp
         Source/APU/SoundChip.h
-        Source/APU/SoundChip2.cpp
-        Source/APU/SoundChip2.h
-        Source/APU/Square.cpp
-        Source/APU/Square.h
         Source/APU/Types.h
         Source/APU/VRC6.cpp
         Source/APU/VRC6.h
