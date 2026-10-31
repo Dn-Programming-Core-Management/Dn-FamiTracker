@@ -3,45 +3,48 @@ on: push
 env:
   commithash: ""
   cc65_path: ${{ github.workspace }}\opt\cc65
-  # Fix cc65 segfault on 64-bit LLP64 Windows builds #1694
-  cc65_ref: 2f4e2a34c32c679e4325652e461acce7f615a22e
+  cc65_ref: 547d923588d870aacf0b0016c67d0f6a92a70f83
 jobs:
   build-cc65:
-    runs-on: windows-2022
+    outputs:
+      cc65-cache-key: ${{ steps.cc65cache.outputs.cc65-cache-key }}
+    runs-on: windows-latest
     steps:
       # pull repo just to get the .yml files
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@main
       with:
         submodules: "recursive"
         fetch-depth: 0
     - uses: ./.github/actions/cache_cc65
+      id: cc65cache
       with:
         cc65Path: ${{ env.cc65_path }}
         cc65Ref: ${{ env.cc65_ref }}
   build-matrix-artifacts:
     needs: build-cc65
-    runs-on: windows-2022
+    runs-on: windows-latest
     strategy:
       matrix:
         platform: [x64, Win32]
         configuration: [Release, Debug, ASAN-Release, ASAN-Debug]
     steps:
       # pull repo just to get the .yml files
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@main
       with:
         submodules: "recursive"
         fetch-depth: 0
     - run: powershell -Command "echo "commithash=$(git describe --tags)" >> $env:GITHUB_ENV"
     - name: Build program
       uses: ./.github/actions/build_matrix
+      env:
+        cc65-cache-key: ${{ needs.build-cc65.outputs.cc65-cache-key }}
       with:
         platform: "${{ matrix.platform }}"
         configuration: "${{ matrix.configuration }}"
-        commithash: "${{ env.commithash }}"
     - run: call release.bat ${{ matrix.configuration }} ${{ matrix.platform }} ${{ env.commithash }}_${{ github.run_id }}
       shell: cmd
     - name: Upload binaries
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@main
       with:
         name: Dn-FamiTracker_${{ env.commithash }}_${{ github.run_id }}_${{ matrix.platform }}_${{ matrix.configuration }}
         path: distribute/*_${{ matrix.platform }}_${{ matrix.configuration }}.7z

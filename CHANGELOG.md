@@ -6,11 +6,11 @@ Written by D.P.C.M.
 
 Version 0.5.3.9
 
-Last updated: 2026-06-03
+Last updated: 2026-10-31
 
 ---
 
-## Unreleased - 2026-06-03
+## Unreleased - 2026-10-31
 
 ### Breaking changes
 
@@ -39,6 +39,11 @@ Last updated: 2026-06-03
 
 - Miscellaneous code documentation and minor cleanup (@eulyderg #417)
 - CSoundChip now reports the channel count and initial channel of the chip (@eulyderg #417)
+- Update Microsoft GSL to v4.2.2 (@Gumball2415 #432)
+- Update MSVC platform toolset to v145 (@Gumball2415 #432)
+- Build CC65 binaries with msbuild instead of MSYS2 (@Gumball2415 #432)
+- Update all workflow actions (@Gumball2415 #432 #411)
+- Refactor CC65 binary caching (@Gumball2415 #432)
 
 
 
