@@ -171,8 +171,9 @@ private:
     class Blip_Synth_Fast_ {
     public:
         int last_amp = 0;
+        mutable int input_abs = 0;
+        mutable int input_scaled_abs = 0;
         double delta_factor;
-        mutable double delta_error = 0;
 
         void volume_unit( double );
         Blip_Synth_Fast_();
@@ -182,8 +183,9 @@ private:
     class Blip_Synth_ {
     public:
         int last_amp = 0;
+        mutable int input_abs = 0;
+        mutable int input_scaled_abs = 0;
         double delta_factor;
-        mutable double delta_error = 0;
 
         void volume_unit( double );
         Blip_Synth_( short* impulses, int width );
@@ -215,12 +217,20 @@ public:
     // Configure low-pass filter (see blip_buffer.txt)
     void treble_eq( blip_eq_t const& eq )       { impl.treble_eq( eq ); }
 
-    void clear() { impl.last_amp = 0; impl.delta_error = 0.0; }
+    void clear() {
+        impl.last_amp = 0;
+        impl.input_abs = 0;
+        impl.input_scaled_abs = 0;
+    }
 
     /// Set the last-seen amplitude to `dc_amp` without outputting a step.
     /// If Blip_Buffer currently has output level 0,
     /// this acts like subtracting `dc_amp` from all future calls to update().
-    void center_dc(int dc_amp) { impl.last_amp = dc_amp; impl.delta_error = 0.0; }
+    void center_dc(int dc_amp) {
+        impl.last_amp = dc_amp;
+        impl.input_abs = 0;
+        impl.input_scaled_abs = 0;
+    }
 
     // Update amplitude of waveform at given time. Using this requires a separate
     // Blip_Synth for each waveform.
@@ -374,9 +384,14 @@ inline void Blip_Synth<quality>::offset_resampled( blip_resampled_time_t time,
     // Fails if time is beyond end of Blip_Buffer, due to a bug in caller code or the
     // need for a longer buffer as set by set_sample_rate().
     assert( (blip_long) (time >> BLIP_BUFFER_ACCURACY) < blip_buf->buffer_size_ );
-    double delta_ref = (double)delta * impl.delta_factor - impl.delta_error;
-    delta = (int)round(delta_ref);
-    impl.delta_error = (double)delta - delta_ref;
+
+    // get the absolute sample value from the delta and calculate the ideal scaled sample
+    impl.input_abs += delta;
+    int newScaledAbs = (int)((double)impl.input_abs * impl.delta_factor);
+    // recalculate the ideal delta from current and prev ideal samples
+    delta = newScaledAbs - impl.input_scaled_abs;
+    impl.input_scaled_abs = newScaledAbs;
+
     blip_long* BLIP_RESTRICT buf = blip_buf->buffer_ + (time >> BLIP_BUFFER_ACCURACY);
     int phase = (int) (time >> (BLIP_BUFFER_ACCURACY - BLIP_PHASE_BITS) & (blip_res - 1));
 

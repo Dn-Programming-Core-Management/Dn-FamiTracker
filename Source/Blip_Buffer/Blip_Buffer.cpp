@@ -374,17 +374,17 @@ void Blip_Synth_::volume_unit( double new_unit )
             treble_eq( -8.0 );
 
         volume_unit_ = new_unit;
-        double factor = new_unit * (1L << blip_sample_bits) / kernel_unit;
+        delta_factor = new_unit * (1L << blip_sample_bits) / kernel_unit;
 
-        if ( factor > 0.0 )
+        if (delta_factor > 0.0 )
         {
             int shift = 0;
 
             // if unit is really small, might need to attenuate kernel
-            while ( factor < 2.0 )
+            while (delta_factor < 2.0 )
             {
                 shift++;
-                factor *= 2.0;
+                delta_factor *= 2.0;
             }
 
             if ( shift )
@@ -401,7 +401,6 @@ void Blip_Synth_::volume_unit( double new_unit )
                 adjust_impulse();
             }
         }
-        delta_factor = factor;//(int) floor( factor + 0.5 );
         //printf( "delta_factor: %d, kernel_unit: %d\n", delta_factor, kernel_unit );
     }
 }
