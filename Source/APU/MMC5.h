@@ -32,7 +32,6 @@ public:
 
 	void	Reset() override;
 	void	UpdateFilter(blip_eq_t eq) override;
-	void	SetClockRate(uint32_t Rate) override;
 	void	Write(uint16_t Address, uint8_t Value) override;
 	uint8_t Read(uint16_t Address, bool &Mapped) override;
 	void	Process(uint32_t Time, Blip_Buffer& Output) override;
@@ -49,7 +48,6 @@ public:
 private:
 	xgm::NES_MMC5 m_MMC5;
 
-	Blip_Buffer m_BlipMMC5;
 	Blip_Synth<blip_good_quality> m_SynthMMC5;
 
 	ChannelLevelState<uint8_t> m_ChannelLevels[2];

@@ -36,18 +36,11 @@ void CMMC5::Reset()
 	m_MMC5.Reset();
 
 	m_SynthMMC5.clear();
-	m_BlipMMC5.clear();
 }
 
 void CMMC5::UpdateFilter(blip_eq_t eq)
 {
 	m_SynthMMC5.treble_eq(eq);
-	m_BlipMMC5.set_sample_rate(eq.sample_rate);
-}
-
-void CMMC5::SetClockRate(uint32_t Rate)
-{
-	m_BlipMMC5.clock_rate(Rate);
 }
 
 void CMMC5::Write(uint16_t Address, uint8_t Value)

@@ -37,18 +37,11 @@ void CVRC6::Reset()
 	m_VRC6.Reset();
 
 	m_SynthVRC6.clear();
-	m_BlipVRC6.clear();
 }
 
 void CVRC6::UpdateFilter(blip_eq_t eq)
 {
 	m_SynthVRC6.treble_eq(eq);
-	m_BlipVRC6.set_sample_rate(eq.sample_rate);
-}
-
-void CVRC6::SetClockRate(uint32_t Rate)
-{
-	m_BlipVRC6.clock_rate(Rate);
 }
 
 void CVRC6::Write(uint16_t Address, uint8_t Value)

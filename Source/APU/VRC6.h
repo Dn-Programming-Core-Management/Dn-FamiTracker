@@ -33,7 +33,6 @@ public:
 	// standard instance methods
 	void	Reset() override;
 	void	UpdateFilter(blip_eq_t eq) override;
-	void	SetClockRate(uint32_t Rate) override;
 	void	Write(uint16_t Address, uint8_t Value) override;
 	uint8_t Read(uint16_t Address, bool& Mapped) override;
 	void	Process(uint32_t Time, Blip_Buffer& Output) override;
@@ -52,7 +51,6 @@ private:
 	xgm::NES_VRC6 m_VRC6;
 
 	// The audio buffer
-	Blip_Buffer m_BlipVRC6;
 	Blip_Synth<blip_good_quality> m_SynthVRC6;
 
 	uint32_t m_iTime = 0;
