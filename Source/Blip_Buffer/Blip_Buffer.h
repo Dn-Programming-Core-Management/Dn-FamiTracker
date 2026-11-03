@@ -170,7 +170,9 @@ private:
 
     class Blip_Synth_Fast_ {
     public:
-        int last_amp = 0;
+        int input_dc = 0;
+        int curr_amplitude = 0;
+        int curr_ampl_scaled = 0;
         double delta_factor;
 
         void volume_unit( double );
@@ -180,7 +182,9 @@ private:
 
     class Blip_Synth_ {
     public:
-        int last_amp = 0;
+        int input_dc = 0;
+        int curr_amplitude = 0;
+        int curr_scaled_ampl = 0;
         double delta_factor;
 
         void volume_unit( double );
@@ -213,31 +217,41 @@ public:
     // Configure low-pass filter (see blip_buffer.txt)
     void treble_eq( blip_eq_t const& eq )       { impl.treble_eq( eq ); }
 
-    void clear() { impl.last_amp = 0; }
+    void clear() {
+        impl.input_dc = 0;
+        impl.curr_amplitude = 0;
+        impl.curr_scaled_ampl = 0;
+    }
 
-    /// Set the last-seen amplitude to `dc_amp` without outputting a step.
-    /// If Blip_Buffer currently has output level 0,
-    /// this acts like subtracting `dc_amp` from all future calls to update().
-    void center_dc(int dc_amp) { impl.last_amp = dc_amp; }
+    /// Sets the zero-output point of all future calls to update() to dc_amp.
+    /// Note that behavior is unspecified if the most recent call to update()
+    /// did not pass a neutral value (dc_amp or 0).
+    void center_dc(int dc_amp) {
+        impl.input_dc = dc_amp;
+    }
 
-    // Update amplitude of waveform at given time. Using this requires a separate
-    // Blip_Synth for each waveform.
-    // The actual output value (assuming no DC removal) is around
-    // (amplitude / range) * volume * 65536.
+    /// Update amplitude of waveform at given time. Using this requires a separate
+    /// Blip_Synth for each waveform.
+    /// The actual output value (assuming no DC removal) is around
+    /// (amplitude / range) * volume * 65536.
+    /// 
+    /// Note that behavior is unspecified if update() and offset() are mixed.
     void update( blip_nclock_t time, int amplitude, Blip_Buffer* );
 
 // Low-level interface
 
-    // Add an amplitude transition of specified delta, optionally into specified buffer
-    // rather than the one set with output(). Delta can be positive or negative.
-    // The actual change in amplitude is around (delta / range) * volume * 65536.
-    void offset( blip_nclock_t, int delta, Blip_Buffer* ) const;
+    /// Add an amplitude transition of specified delta, optionally into specified buffer
+    /// rather than the one set with output(). Delta can be positive or negative.
+    /// The actual change in amplitude is around (delta / range) * volume * 65536.
+    /// 
+    /// Note that behavior is unspecified if update() and offset() are mixed.
+    void offset( blip_nclock_t, int delta, Blip_Buffer* );
 
     // Works directly in terms of fractional output samples. Contact author for more info.
-    void offset_resampled( blip_resampled_time_t, int delta, Blip_Buffer* ) const;
+    void offset_resampled( blip_resampled_time_t, int delta, Blip_Buffer* );
 
     // Same as offset(), except code is inlined for higher performance
-    void offset_inline( blip_nclock_t t, int delta, Blip_Buffer* buf ) const {
+    void offset_inline( blip_nclock_t t, int delta, Blip_Buffer* buf ) {
         offset_resampled( t * buf->factor_ + buf->offset_, delta, buf );
     }
 
@@ -367,12 +381,23 @@ private:
 
 template<int quality>
 inline void Blip_Synth<quality>::offset_resampled( blip_resampled_time_t time,
-        int delta, Blip_Buffer* blip_buf ) const
+        const int delta_ampl, Blip_Buffer* blip_buf )
 {
     // Fails if time is beyond end of Blip_Buffer, due to a bug in caller code or the
     // need for a longer buffer as set by set_sample_rate().
     assert( (blip_long) (time >> BLIP_BUFFER_ACCURACY) < blip_buf->buffer_size_ );
-    delta = (int)((double)delta * impl.delta_factor);
+
+    // We maintain curr_amplitude as a running sum of deltas, convert it to scaled_amplitude,
+    // then bring the output's running sum to an integer multiple of scaled_amplitude.
+    // This prevents the output sum from drifting (which happens when multiplying delta by
+    // a float).
+    impl.curr_amplitude += delta_ampl;
+    int scaled_amplitude = (int)((double)impl.curr_amplitude * impl.delta_factor);
+    
+    // delta(scaled amplitude).
+    const int delta = scaled_amplitude - impl.curr_scaled_ampl;
+    impl.curr_scaled_ampl = scaled_amplitude;
+
     blip_long* BLIP_RESTRICT buf = blip_buf->buffer_ + (time >> BLIP_BUFFER_ACCURACY);
     int phase = (int) (time >> (BLIP_BUFFER_ACCURACY - BLIP_PHASE_BITS) & (blip_res - 1));
 
@@ -479,7 +504,7 @@ template<int quality>
 #if BLIP_BUFFER_FAST
     inline
 #endif
-void Blip_Synth<quality>::offset( blip_nclock_t t, int delta, Blip_Buffer* buf ) const
+void Blip_Synth<quality>::offset( blip_nclock_t t, int delta, Blip_Buffer* buf )
 {
     offset_resampled( t * buf->factor_ + buf->offset_, delta, buf );
 }
@@ -490,13 +515,13 @@ template<int quality>
 #endif
 void Blip_Synth<quality>::update( blip_nclock_t t, int amp, Blip_Buffer* blip_buf )
 {
-    int delta = amp - impl.last_amp;
+    amp -= impl.input_dc;
+    int delta = amp - impl.curr_amplitude;
 
     // nsfplay generates a new amplitude every clock.
     // Usually it's the same as the previous one.
     // If so, skip the slow synthesis process.
     if (delta != 0) {
-        impl.last_amp = amp;
         offset_resampled( t * blip_buf->factor_ + blip_buf->offset_, delta, blip_buf);
     }
 }

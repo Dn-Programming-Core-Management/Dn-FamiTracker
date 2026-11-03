@@ -205,13 +205,12 @@ void Blip_Buffer::remove_samples( blip_nsamp_t count )
 
 Blip_Synth_Fast_::Blip_Synth_Fast_()
 {
-    last_amp = 0;
-    delta_factor = 0;
+    delta_factor = 0.0;
 }
 
 void Blip_Synth_Fast_::volume_unit( double new_unit )
 {
-    delta_factor = int (new_unit * (1L << blip_sample_bits) + 0.5);
+    delta_factor = new_unit * (1L << blip_sample_bits);
 }
 
 #if !BLIP_BUFFER_FAST
@@ -222,8 +221,7 @@ Blip_Synth_::Blip_Synth_( short* p, int w ) :
 {
     volume_unit_ = 0.0;
     kernel_unit = 0;
-    last_amp = 0;
-    delta_factor = 0;
+    delta_factor = 0.0;
 }
 
 #undef PI
@@ -374,17 +372,17 @@ void Blip_Synth_::volume_unit( double new_unit )
             treble_eq( -8.0 );
 
         volume_unit_ = new_unit;
-        double factor = new_unit * (1L << blip_sample_bits) / kernel_unit;
+        delta_factor = new_unit * (1L << blip_sample_bits) / kernel_unit;
 
-        if ( factor > 0.0 )
+        if (delta_factor > 0.0 )
         {
             int shift = 0;
 
             // if unit is really small, might need to attenuate kernel
-            while ( factor < 2.0 )
+            while (delta_factor < 2.0 )
             {
                 shift++;
-                factor *= 2.0;
+                delta_factor *= 2.0;
             }
 
             if ( shift )
@@ -401,7 +399,6 @@ void Blip_Synth_::volume_unit( double new_unit )
                 adjust_impulse();
             }
         }
-        delta_factor = factor;//(int) floor( factor + 0.5 );
         //printf( "delta_factor: %d, kernel_unit: %d\n", delta_factor, kernel_unit );
     }
 }
